@@ -8254,55 +8254,81 @@ function gunGroupPick(list,sh,mk){
    По этому и читается сборка раньше первого выстрела (кодекс §13: сперва
    увидеть, потом узнать). У пиратов стволов пока нет — их сборки приходят
    в M368, и тогда эта же функция нарисует и их. */
-function gunBarrelsDraw(guns,shipA){
-  if(!guns||!guns.length)return;
-  ctx.save();
-  for(const A of guns){
-    const m=A.m;if(!m)continue;
-    const aim=(G.aim&&isFinite(G.aim[A.slot]))?G.aim[A.slot]:shipA;
-    const la=angWrap(aim-shipA);
-    const sz=sizeIdx(partSize(A.part));
-    /* длина мерена по корпусу: 2.6 читалось только на стенде, в игре ствола
-       было не видно вовсе. 4.5–9 единиц — это десятая-пятая часть корпуса,
-       столько и должен занимать ствол, чтобы сборка читалась силуэтом. */
-    const len=4.5+sz*2.2, w=1.05+sz*.3;
-    ctx.save();ctx.translate(m.x,m.y);ctx.rotate(la);
-    /* ствол — тело в тени, а не проволока: конусная трубка тёмной заливкой,
-       один светлый блик по верхней грани и дульный срез. Первая версия рисовала
-       светлую линию поверх корпуса, и на близком плане она читалась усиком
-       антенны, а не орудием (самокритика M363). */
-    ctx.fillStyle="rgba(20,24,30,.95)";
-    ctx.beginPath();
-    ctx.moveTo(0,-w);ctx.lineTo(len,-w*.62);ctx.lineTo(len,w*.62);ctx.lineTo(0,w);
-    ctx.closePath();ctx.fill();
-    /* обвод, как у пластин корпуса: тёмное тело на тёмном корпусе без него
-       не читается вовсе — на кадре ствол пропадал в силуэте */
-    ctx.strokeStyle="rgba(186,198,212,.5)";ctx.lineWidth=.4;ctx.stroke();
-    ctx.strokeStyle="rgba(214,224,236,.4)";ctx.lineWidth=.3;
-    ctx.beginPath();ctx.moveTo(.5,-w*.62);ctx.lineTo(len-.4,-w*.42);ctx.stroke();
-    /* жёсткая сидит в набор приливом, турель стоит на тумбе */
-    ctx.fillStyle=m.mount==="fix"?"rgba(20,24,30,.95)":"rgba(52,60,70,.95)";
-    ctx.beginPath();ctx.arc(0,0,m.mount==="fix"?w*.9:(m.mount==="tower"?w*2.1:w*1.35),0,TAU);ctx.fill();
-    /* башня (M479): круглый погон на спине с крестом — снаряжение читается силуэтом */
-    /* башня (M479, D14 18.09): крест читался прицелом, а не орудием. Теперь —
-       погон с болтами, купол со светом с одного бока, маска ствола и ствол
-       поверх купола: из тумбы торчит пушка, а не значок */
-    if(m.mount==="tower"){
-      ctx.strokeStyle="rgba(214,224,236,.55)";ctx.lineWidth=.45;ctx.stroke();
-      ctx.fillStyle="rgba(200,212,224,.7)";
-      for(let i=0;i<6;i++){const a=i*Math.PI/3+.3;ctx.beginPath();ctx.arc(Math.cos(a)*w*1.8,Math.sin(a)*w*1.8,.32,0,TAU);ctx.fill();}
-      const dg=ctx.createRadialGradient(-w*.5,-w*.5,0,0,0,w*1.5);
-      dg.addColorStop(0,"rgba(120,132,146,.98)");dg.addColorStop(1,"rgba(34,40,48,.98)");
-      ctx.fillStyle=dg;ctx.beginPath();ctx.arc(0,0,w*1.45,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(10,12,16,.6)";ctx.lineWidth=.35;ctx.stroke();
-      ctx.fillStyle="rgba(28,32,40,.98)";ctx.fillRect(w*.6,-w*.95,w*1.2,w*1.9);                 /* маска */
-      ctx.fillStyle="rgba(20,24,30,.98)";
-      ctx.beginPath();ctx.moveTo(w*1.2,-w*.8);ctx.lineTo(len,-w*.62);ctx.lineTo(len,w*.62);ctx.lineTo(w*1.2,w*.8);ctx.closePath();ctx.fill();
-      ctx.strokeStyle="rgba(186,198,212,.5)";ctx.lineWidth=.4;ctx.stroke();
-    }
-    ctx.restore();
+/* На видеокарте (25.09): ствол целиком — выпечка GPU-холста в его осях (рецепт кисти тот же),
+   ключ — размер, подвес и плотность экрана (dk); кадр кладёт её gpuImage с поворотом
+   курс+наводка и мипом корпуса (HG_BODY_LOD). Пусковая — повёрнутые прямоугольники в осях
+   корпуса. 2D-пути и стека матриц ctx нет */
+const GUN_BAKE=new Map();
+function gunDims(A){const sz=sizeIdx(partSize(A.part));return {sz,len:4.5+sz*2.2,w:1.05+sz*.3};}
+function gunPaint(g,len,w,m){
+  /* ствол — тело в тени, а не проволока: конусная трубка тёмной заливкой,
+     один светлый блик по верхней грани и дульный срез. Первая версия рисовала
+     светлую линию поверх корпуса, и на близком плане она читалась усиком
+     антенны, а не орудием (самокритика M363). */
+  g.fillStyle="rgba(20,24,30,.95)";
+  g.beginPath();
+  g.moveTo(0,-w);g.lineTo(len,-w*.62);g.lineTo(len,w*.62);g.lineTo(0,w);
+  g.closePath();g.fill();
+  /* обвод, как у пластин корпуса: тёмное тело на тёмном корпусе без него
+     не читается вовсе — на кадре ствол пропадал в силуэте */
+  g.strokeStyle="rgba(186,198,212,.5)";g.lineWidth=.4;g.stroke();
+  g.strokeStyle="rgba(214,224,236,.4)";g.lineWidth=.3;
+  g.beginPath();g.moveTo(.5,-w*.62);g.lineTo(len-.4,-w*.42);g.stroke();
+  /* жёсткая сидит в набор приливом, турель стоит на тумбе */
+  g.fillStyle=m.mount==="fix"?"rgba(20,24,30,.95)":"rgba(52,60,70,.95)";
+  g.beginPath();g.arc(0,0,m.mount==="fix"?w*.9:(m.mount==="tower"?w*2.1:w*1.35),0,TAU);g.fill();
+  /* башня (M479): круглый погон на спине с крестом — снаряжение читается силуэтом */
+  /* башня (M479, D14 18.09): крест читался прицелом, а не орудием. Теперь —
+     погон с болтами, купол со светом с одного бока, маска ствола и ствол
+     поверх купола: из тумбы торчит пушка, а не значок */
+  if(m.mount==="tower"){
+    g.strokeStyle="rgba(214,224,236,.55)";g.lineWidth=.45;g.stroke();
+    g.fillStyle="rgba(200,212,224,.7)";
+    for(let i=0;i<6;i++){const a=i*Math.PI/3+.3;g.beginPath();g.arc(Math.cos(a)*w*1.8,Math.sin(a)*w*1.8,.32,0,TAU);g.fill();}
+    const dg=g.createRadialGradient(-w*.5,-w*.5,0,0,0,w*1.5);
+    dg.addColorStop(0,"rgba(120,132,146,.98)");dg.addColorStop(1,"rgba(34,40,48,.98)");
+    g.fillStyle=dg;g.beginPath();g.arc(0,0,w*1.45,0,TAU);g.fill();
+    g.strokeStyle="rgba(10,12,16,.6)";g.lineWidth=.35;g.stroke();
+    g.fillStyle="rgba(28,32,40,.98)";g.fillRect(w*.6,-w*.95,w*1.2,w*1.9);                 /* маска */
+    g.fillStyle="rgba(20,24,30,.98)";
+    g.beginPath();g.moveTo(w*1.2,-w*.8);g.lineTo(len,-w*.62);g.lineTo(len,w*.62);g.lineTo(w*1.2,w*.8);g.closePath();g.fill();
+    g.strokeStyle="rgba(186,198,212,.5)";g.lineWidth=.4;g.stroke();
   }
-  ctx.restore();
+}
+function gunBake(A,dk){
+  /* мастер один на размер и подвес — вдвое плотнее потолка зума, как у корпуса (hullGpuSb):
+     мельче экрана уровень мипа выбирает выборка; печь в плотность экрана мылила ствол в 1 px */
+  const {sz,len,w}=gunDims(A),mt=A.m.mount||"",E=Math.max(len+.5,w*2.1+.6);
+  const sb=Math.pow(2,Math.ceil(Math.log2(2*shipScaleCap(ZOOM_MAX)*dk)*4)/4),side=Math.ceil(2*E*sb)+2;
+  return bakeKeep(GUN_BAKE,sz+"|"+mt+"|"+sb,12,()=>{
+    const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);gunPaint(g,len,w,A.m);
+      /* тень тела глубже кисти (×.4): сцена поднимает тёмное тоном, а 2D-ствол лежал поверх неё
+         чёрным — по эталону на корпусе (стенд gz: p5 10 против 29 без затемнения). Альфа та же */
+      g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation="source-atop";g.fillStyle="rgba(0,0,0,.6)";g.fillRect(0,0,side,side);},{mips:true});
+    return B&&{B,k:side/sb,sb,drop(){gpuBakeDrop(B);}};
+  });
+}
+/* стволы и пусковая на корпусе: (x,y) — центр корпуса в CSS, a — курс, s — масштаб корпуса */
+function shipGearGpu(guns,launcher,dry,x,y,a,s){
+  const pass=gpuScene();if(!pass)return;
+  const c=Math.cos(a),n=Math.sin(a),dk=GPU.bw/W,P=(lx,ly)=>[x+s*(lx*c-ly*n),y+s*(lx*n+ly*c)];
+  if(guns)for(const A of guns){const m=A.m;if(!m)continue;   /* наведён — куда метка; нет наводки — по носу */
+    const aim=(G.aim&&isFinite(G.aim[A.slot]))?G.aim[A.slot]:a,K=gunBake(A,dk);if(!K)continue;
+    const [gx,gy]=P(m.x,m.y),wd=K.k*s;
+    /* своим цветом, как рисовала кисть: ствол в тени читается тёмной чертой по светлому корпусу;
+       свет звезды (gpuLitSprite) разбеливал его в тон корпуса. Мипы с подточкой (sharp) — черта не мылится */
+    gpuImage(pass,K.B,[{x:gx,y:gy,w:wd,h:wd,rot:a+angWrap(aim-a),a:1}],{sharp:true});}
+  /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный сплошной,
+     сухой — только обвод с красной меткой. Прямоугольник (−5,6.5)–(4,9.5) в осях корпуса;
+     обвод 1 ед. по кромке — четыре полосы без нахлёста, поверх заливки, как штрих 2D */
+  if(launcher){
+    const q=(lx,ly,hx,hy,C)=>{const [px,py]=P(lx,ly);return [4,px,py,hx*s,hy*s,a,0,C[0],C[1],C[2],C[3]];};
+    const O=dry?[255,110,90,.9]:[40,46,54,.9],L=[];
+    if(!dry)L.push(q(-.5,8,4.5,1.5,[210,220,232,.9]));
+    L.push(q(-.5,6.5,5,.5,O),q(-.5,9.5,5,.5,O),q(-5,8,.5,1,O),q(4,8,.5,1,O));
+    if(dry&&Math.sin(G.t*.2)>0)L.push(q(-.5,8.1,1,.8,[255,110,90,.9]));
+    gpuShapes(pass,L);
+  }
 }
 function gunTotals(guns){
   const out={hull:0,shield:0,perEnergy:0};
@@ -11029,7 +11055,8 @@ function gpuPipeline(key,mk,code){
 /* текст шейдера по имени gpuPipe — для прогрева: [код, раскладка]. Поля (fld.*) — тело поля,
    шапку и раскладку добавляет рецепт. Где выражение длиннее константы, место вызова берёт его отсюда */
 const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>GNB_EMI,"fld.gew":()=>GEW_WGSL,
-  "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY};
+  "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
+  "fld.abil.cone":()=>ABIL_CONE_WGSL};
 const GPU_PIPE_SRC={
   "kit.img":()=>[GPU_IMG_WGSL],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
   gtr:()=>[GTR_WGSL],gex:()=>[GEX_WGSL],"gsy.orb":()=>[GSY_ORB_WGSL],gpl:()=>[GPL_WGSL],
@@ -11094,6 +11121,7 @@ const GPU_PIPE_KEYS=[
   "gnb.noise",
   "gps",
   "ovl",
+  "pipe:fld.abil.cone|over",
   "pipe:fld.gbm|add",
   "pipe:fld.gew|over",
   "pipe:fld.gnb.emi|add",
@@ -12126,9 +12154,10 @@ function gcMipDesc(){const m=gpuShader(GC_MIP_WGSL);return {layout:"auto",vertex
    следующей выпечки встаёт после чтения прошлой ── */
 /* великан 1024² (выпечки гостиницы 500×340 и её свечения при ss 2 — 1024×704) живёт в пуле с загрузки: холодный S23
    на 49f75cf (26.09) — подлёт к гостинице создал 6 разовых наборов 1024² разом (~120 МБ с обнулением), кадр 67 мс.
-   Прогрев с ним ~54 МБ; разовым остаётся только набор больше половины потолка */
+   Прогрев с ним ~54 МБ; разовым остаётся только набор больше половины потолка. Тень 512×128 — полоса
+   неона и щита (448×64 рождалась посреди полёта, холодный S23 cold3) */
 const GC_POOL_CAP=80<<20;
-const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["bake",1024,1024],["shadow",256,256],["shadow",512,512],["ramp",256,128]];
+const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["bake",1024,1024],["shadow",256,256],["shadow",512,128],["shadow",512,512],["ramp",256,128]];
 /* наборы: [формат, выборок, usage] — все одного размера */
 function gcPoolSpec(role){
   const U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT,TB=U.TEXTURE_BINDING;
@@ -50070,19 +50099,22 @@ function abilPadRim(){
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
     b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="Долгое · "+abilOf().ru.toLowerCase();}   /* режим входит в ключ: в вагоне подписи нет */
 }
-/* клин прожектора: радиальный градиент в секторе ±.35 — выпечка GPU-холста на размер экрана
-   (L — большая сторона, меняется только с окном); вершина у левого края, ось — вправо */
-const ABIL_CONE=new Map();
-function abilCone(R){
-  const d=DPR*2;   /* вдвое крупнее и уровень 0 (lod .5): повёрнутая кромка клина не мылится билинейной выборкой */
-  return bakeKeep(ABIL_CONE,Math.round(R*d)+"|"+d,2,()=>{
-    const Rd=R*d,w=Math.ceil(Rd)+2,h=2*Math.ceil(Rd*Math.sin(.35))+2;
-    const B=gpuBake(w,h,g=>{g.setTransform(d,0,0,d,1,h/2);
-      const gr=g.createRadialGradient(0,0,0,0,0,R);gr.addColorStop(0,"rgba(200,230,255,.102)");   /* .10 в 2D; проход сцены сводит на 2 % темнее */gr.addColorStop(1,"rgba(200,230,255,0)");
-      g.fillStyle=gr;g.beginPath();g.moveTo(0,0);g.arc(0,0,R,-.35,.35);g.closePath();g.fill();},{mips:true});
-    return B&&{B,w:w/d,h:h/d,ox:(w/2-1)/d,drop(){gpuBakeDrop(B);}};
-  });
-}
+/* клин прожектора: радиальный градиент в секторе ±.35, вершина на корабле, ось — курс. Поле, а не
+   выпечка: клин на экран шириной 1.2·max(W,H) печь MSAA ×4 вдвое крупнее DPR — на телефоне это
+   великан пула и десятки МБ ради градиента (ревью 25.09 п. 5c). Кромка — пиксель устройства
+   сглаживания по расстоянию до стороны клина; альфа .102 (.10 в 2D, проход сцены сводит на 2 % темнее) */
+const ABIL_CONE=new Float32Array(4);
+const ABIL_CONE_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let d=p-fu.v[0].xy;let R=fu.v[0].w;let r=length(d);
+  if(r>=R){return vec4f(0.);}
+  let ax=vec2f(cos(fu.v[0].z),sin(fu.v[0].z));
+  let x=dot(d,ax);let y=abs(d.x*ax.y-d.y*ax.x);
+  let e=y*.93937271-x*.34289781;   /* расстояние до стороны клина (угол .35), позади вершины — вне */
+  let m=clamp(.5-e*fu.res.x/fu.res.z,0.,1.);
+  let al=.102*(1.-r/R)*m;
+  return vec4f(vec3f(200.,230.,255.)/255.*al,al);
+}`;
 function drawAbil(zx,zy){
   /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep).
      На видеокарте (25.09): фигуры прохода сцены и выпечка клина, 2D-пути нет */
@@ -50107,9 +50139,9 @@ function drawAbil(zx,zy){
     const x0=zx(G.ship.x),y0=zy(G.ship.y),x1=zx(ABIL_ST.beam.x),y1=zy(ABIL_ST.beam.y);
     gpuShapes(pass,[[4,(x0+x1)/2,(y0+y1)/2,Math.hypot(x1-x0,y1-y0)/2,1.5,Math.atan2(y1-y0,x1-x0),0,255,190,110,.85]],{blend:"add"});
   }
-  if(abilOn("survey")){   /* прожектор: клин выпечки, вершина — на корабле */
-    const a=G.ship.a,x=zx(G.ship.x),y=zy(G.ship.y),K=abilCone(Math.max(W,H)*.6);
-    if(K)gpuImage(pass,K.B,[{x:x+Math.cos(a)*K.ox,y:y+Math.sin(a)*K.ox,w:K.w,h:K.h,rot:a,a:1}],{lod:.5});
+  if(abilOn("survey")){   /* прожектор: клин полем, вершина — на корабле */
+    const U=ABIL_CONE;U[0]=zx(G.ship.x);U[1]=zy(G.ship.y);U[2]=G.ship.a;U[3]=Math.max(W,H)*.6;
+    gpuField(pass,"abil.cone",ABIL_CONE_WGSL,U);
   }
 }
 
@@ -51391,11 +51423,11 @@ fn lcy(d:vec2f,i:vec4f)->f32{let x=max(d.x,0.);return d.y+lbend(i)*(x+.35*x*x);}
 /* окно: вокруг громадины газ отступает, туман гаснет — пустота чёрная, а не серая */
 fn lwin(d:vec2f,h:vec4f,i:vec4f)->f32{
   let t=h.w;var w=0.;
-  if(t<.5){w=smoothstep(1.45,.95,length(d));}
+  if(t<.5){w=(1.-smoothstep(.95,1.45,length(d)));}
   else if(t<1.5){let x=d.x;let yc=lcy(d,i);let wd=.012+.13*max(x,0.);
-    w=exp(-sq(yc/(wd*1.8+.04)))*smoothstep(.95,.35,x)*smoothstep(-.1,0.,x);}
-  else if(t<2.5){w=smoothstep(1.2,.55,length(vec2f(d.x,d.y/i.y)));}
-  else{let x=abs(d.x);w=exp(-sq(d.y/(.04+.2*x)))*smoothstep(1.8,.9,x);}
+    w=exp(-sq(yc/(wd*1.8+.04)))*(1.-smoothstep(.35,.95,x))*smoothstep(-.1,0.,x);}
+  else if(t<2.5){w=(1.-smoothstep(.55,1.2,length(vec2f(d.x,d.y/i.y))));}
+  else{let x=abs(d.x);w=exp(-sq(d.y/(.04+.2*x)))*(1.-smoothstep(.9,1.8,x));}
   return min(w*1.4,1.)*select(0.,1.,i.w>0.);}`;
 const GNB_GEN=`
 struct NU{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f,h:vec4f,i:vec4f,j:vec4f,k:vec4f,l:vec4f};
@@ -51520,7 +51552,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     let seam=1.-.7*exp(-sq((r-1.)/.012));
     e=mix(c1,c2,outer)*fil*sh*arc*seam*1.5;
     /* внутри — слабое свечение и клочья */
-    e=e+c1*(.05+.14*pow(rid,3.))*smoothstep(1.,.2,r)*(.4+.6*arc);
+    e=e+c1*(.05+.14*pow(rid,3.))*(1.-smoothstep(.2,1.,r))*(.4+.6*arc);
   } else if(ty<1.5){
     /* голова в начале координат, хвосты — вдоль +x. d в долях H·s: 1 px на 760 ≈ .0024.
        Голова — самая яркая точка громадины: ядро 2–3 px, кома ~12 px, тёплый белый.
@@ -51537,7 +51569,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
       +vec3f(1.,.95,.86)*(8.*exp(-sq(r/.0035))+.5*exp(-sq(r/.014)));
   } else if(ty<2.5){
     let g=vec2f(d.x,d.y/u.i.y);let r=length(g);let th=atan2(g.y,g.x);
-    let disk=exp(-r/.3)*smoothstep(1.05,.6,r);
+    let disk=exp(-r/.3)*(1.-smoothstep(.6,1.05,r));
     let spi=cos(2.*(th-3.2*log(r+.03))+fbt(g*5.+ls,2)*1.5);
     let arm=pow(.5+.5*spi,3.);
     let knot=smoothstep(.6,.8,fbt(g*18.+ls,3))*arm;
@@ -51548,8 +51580,8 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
       +vec3f(1.,.4,.65)*knot*disk*1.8;
     /* пыль по внутренней кромке рукава, ближняя половина диска темнее — она гасит и
        саму галактику, иначе та гладкая, как наклейка */
-    let lane=pow(.5+.5*cos(2.*(th-3.2*log(r+.03))-.9),10.)*smoothstep(.02,.12,r)*smoothstep(1.,.4,r);
-    ab=lane*(.5+.8*smoothstep(0.,-.3,g.y))*1.2;
+    let lane=pow(.5+.5*cos(2.*(th-3.2*log(r+.03))-.9),10.)*smoothstep(.02,.12,r)*(1.-smoothstep(.4,1.,r));
+    ab=lane*(.5+.8*(1.-smoothstep(-.3,0.,g.y)))*1.2;
     e=e*exp(-ab*1.6);
   }
   /* 3 — джеты рисует сама дыра (17g), поверх линзы: они у дыры, не за ней, и линза
@@ -51722,7 +51754,7 @@ fn fineT(p:vec2f,T0:f32)->f32{
   let r=1.-abs(2.*fbt(qf*1.9+vec2f(gnt(qf*.7),gnt(qf*.7+3.3))*1.6,2)-1.);
   /* края полос чуть резче бикубики — но мягко: резкий край пыли автор видит лужей */
   let Ts=clamp((T0-.5)*1.7+.5,0.,1.);
-  return clamp(mix(T0,Ts,.2)*mix(1.12,.86,r*r*smoothstep(.97,.6,T0)),0.,1.);}
+  return clamp(mix(T0,Ts,.2)*mix(1.12,.86,r*r*(1.-smoothstep(.6,.97,T0))),0.,1.);}
 fn fineE(p:vec2f)->f32{
   let H=fu.res.w;
   let qf=((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*9.+fu.v[0].w+vec2f(4.,9.);
@@ -52574,13 +52606,13 @@ function drawSystem(){
       if(G.found.has(m.key)&&mr>2.4){
         ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
         /* имя уступает кораблю (R6): на дальней от него стороне диска */
-        const ly=(m.y>=sh.y)?my+mr+11*uiK():my-mr-5*uiK(),lw=ctx.measureText(m.name).width;
+        const ly=(m.y>=sh.y)?my+mr+11*uiK():my-mr-5*uiK(),lw=gcMeasure(ctx.font,m.name).width;
         domLabel("mo"+(p.idx|0)+"_"+mi,mx,ly,m.name.toUpperCase(),ctx.font,"rgba(154,168,178,.7)","center");BODY_LABELS.push({x0:mx-lw/2,x1:mx+lw/2,y0:ly-8,y1:ly+2});
       }
     }
     if(G.found.has(p.key)){
       ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
-      const ly=(p.y>=sh.y)?y+r+15*uiK():y-r-7*uiK(),lw=ctx.measureText(p.name).width;   /* имя уступает кораблю (R6) */
+      const ly=(p.y>=sh.y)?y+r+15*uiK():y-r-7*uiK(),lw=gcMeasure(ctx.font,p.name).width;   /* имя уступает кораблю (R6); мерка атласа — без 2D на #c */
       domLabel("pl"+(p.idx|0),x,ly,p.name.toUpperCase(),ctx.font,"rgba(127,230,216,.55)","center");BODY_LABELS.push({x0:x-lw/2,x1:x+lw/2,y0:ly-9,y1:ly+2});
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
@@ -52625,31 +52657,17 @@ function drawSystem(){
   if(typeof drawDronesSystem==="function")drawDronesSystem(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
-  ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);
   /* пол масштаба .35, не .55 (M319): на дальнем отъезде корабль в .55 читался
-     крупнее малой луны; ниже .35 он уже не находится глазом */
-  ctx.scale(shipScaleAt(Z),shipScaleAt(Z));   /* один масштаб с буксиром (16c) */
+     крупнее малой луны; ниже .35 он уже не находится глазом. Один масштаб с буксиром (16c) */
+  const shS=shipScaleAt(Z);
   /* корпус на видеокарте (17c2): тело светом звезды, факел и огни — явным светом;
-     2D-пути нет (25.09): без видеокарты нет и полёта */
+     2D-пути нет (25.09): без видеокарты нет и полёта. Стека матриц ctx здесь больше нет —
+     место, курс и масштаб идут числами */
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
-  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shipScaleAt(Z),thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
-  /* стволы на подвесах, повёрнутые по наводке (M363): сборка читается
-     силуэтом раньше первого выстрела */
-  if(typeof gunBarrelsDraw==="function")gunBarrelsDraw(stat().guns,sh.a);
-  /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный
-     сплошной, сухой — только обвод с красной меткой. По нему и без панели
-     ясно, что стрелять нечем */
-  {
-    const stl=stat();
-    if(stl.launcher){
-      const dry=(G.cargo.missile|0)<=0;
-      ctx.fillStyle=dry?"rgba(0,0,0,0)":"rgba(210,220,232,.9)";
-      ctx.strokeStyle=dry?"rgba(255,110,90,.9)":"rgba(40,46,54,.9)";ctx.lineWidth=1;
-      ctx.beginPath();ctx.rect(-5,6.5,9,3);if(!dry)ctx.fill();ctx.stroke();
-      if(dry&&Math.sin(G.t*.2)>0){ctx.fillStyle="rgba(255,110,90,.9)";ctx.fillRect(-1.5,7.3,2,1.6);}
-    }
-  }
-  ctx.restore();
+  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
+  /* стволы на подвесах, повёрнутые по наводке (M363), и пусковая под корпусом (хвост M112):
+     сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c) */
+  {const stl=stat();shipGearGpu(stl.guns,!!stl.launcher,(G.cargo.missile|0)<=0,hsx,hsy,sh.a,shS);}
   if(typeof drawGestureTop==="function")drawGestureTop(zx,zy,Z);   /* жест поверх корпуса (17h) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
@@ -52824,7 +52842,7 @@ function drawSysHud(zx,zy,sh,sys,U){
     if(dy>1e-6)t=Math.min(t,(inset.y1-H/2)/dy);if(dy<-1e-6)t=Math.min(t,(inset.y0-H/2)/dy);
     const cx=W/2+dx*t,cy=H/2+dy*t;
     const label=m.l+" · "+chipDist(Math.hypot(m.x-sh.x,m.y-sh.y));
-    const tw=ctx.measureText(label).width,cw=tw+26,ch=16;
+    const tw=gcMeasure(ctx.font,label).width,cw=tw+26,ch=16;   /* мерка атласа (08cb): на #c ни одного вызова */
     const onSide=Math.abs(cx-inset.x0)<1||Math.abs(cx-inset.x1)<1;   // боковая кромка → двигаем по y
     cands.push({m,ang,dx,dy,cx,cy,label,cw,ch,onSide,dist:Math.hypot(m.x-sh.x,m.y-sh.y)});
   }
@@ -54999,7 +55017,7 @@ fn jets(p:vec2f,hv:vec4f,t:f32)->vec3f{
   let lp=vec2f(x-1.35,q.y*1.1);
   let wl=(vec2f(sf(lp*4.+sd+sg),sf(lp*4.+sd+3.+sg))-.5)*.4;
   let lb=sf(lp*9.+sd);
-  let lob=smoothstep(.42,.03,length(lp+wl))*(.3+.7*lb*lb)*.3;
+  let lob=(1.-smoothstep(.03,.42,length(lp+wl)))*(.3+.7*lb*lb)*.3;
   let jc=mix(vec3f(.55,.65,1.),vec3f(.8,.9,1.),exp(-x/.15));
   return (jc*jet*.9+vec3f(.75,.5,1.)*lob)*2.;
 }
@@ -63879,7 +63897,7 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
       let mu=sqrt(max(1.-r*r,0.));
       let red=mix(sc,vec3f(225.,88.,38.)/255.,min(dlow*1.3,1.));
       let limb=1.-.3*(1.-mu);
-      var dc=min(mix(min(red*1.4,vec3f(1.)),vec3f(1.,.99,.94),smoothstep(.75,0.,r)*(.95-dlow*.85))*limb,vec3f(1.));
+      var dc=min(mix(min(red*1.4,vec3f(1.)),vec3f(1.,.99,.94),(1.-smoothstep(0.,.75,r))*(.95-dlow*.85))*limb,vec3f(1.));
       let ext=1.-.62*dlow*smoothstep(.1,1.,q.y/sr);
       /* диск светит сам: небо за ним прибавляется, а не берётся по каналам через max —
          max брал синий канал неба, и низкое солнце выходило розовым, а не красным */

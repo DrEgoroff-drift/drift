@@ -121,19 +121,22 @@ function abilPadRim(){
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
     b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="Долгое · "+abilOf().ru.toLowerCase();}   /* режим входит в ключ: в вагоне подписи нет */
 }
-/* клин прожектора: радиальный градиент в секторе ±.35 — выпечка GPU-холста на размер экрана
-   (L — большая сторона, меняется только с окном); вершина у левого края, ось — вправо */
-const ABIL_CONE=new Map();
-function abilCone(R){
-  const d=DPR*2;   /* вдвое крупнее и уровень 0 (lod .5): повёрнутая кромка клина не мылится билинейной выборкой */
-  return bakeKeep(ABIL_CONE,Math.round(R*d)+"|"+d,2,()=>{
-    const Rd=R*d,w=Math.ceil(Rd)+2,h=2*Math.ceil(Rd*Math.sin(.35))+2;
-    const B=gpuBake(w,h,g=>{g.setTransform(d,0,0,d,1,h/2);
-      const gr=g.createRadialGradient(0,0,0,0,0,R);gr.addColorStop(0,"rgba(200,230,255,.102)");   /* .10 в 2D; проход сцены сводит на 2 % темнее */gr.addColorStop(1,"rgba(200,230,255,0)");
-      g.fillStyle=gr;g.beginPath();g.moveTo(0,0);g.arc(0,0,R,-.35,.35);g.closePath();g.fill();},{mips:true});
-    return B&&{B,w:w/d,h:h/d,ox:(w/2-1)/d,drop(){gpuBakeDrop(B);}};
-  });
-}
+/* клин прожектора: радиальный градиент в секторе ±.35, вершина на корабле, ось — курс. Поле, а не
+   выпечка: клин на экран шириной 1.2·max(W,H) печь MSAA ×4 вдвое крупнее DPR — на телефоне это
+   великан пула и десятки МБ ради градиента (ревью 25.09 п. 5c). Кромка — пиксель устройства
+   сглаживания по расстоянию до стороны клина; альфа .102 (.10 в 2D, проход сцены сводит на 2 % темнее) */
+const ABIL_CONE=new Float32Array(4);
+const ABIL_CONE_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let d=p-fu.v[0].xy;let R=fu.v[0].w;let r=length(d);
+  if(r>=R){return vec4f(0.);}
+  let ax=vec2f(cos(fu.v[0].z),sin(fu.v[0].z));
+  let x=dot(d,ax);let y=abs(d.x*ax.y-d.y*ax.x);
+  let e=y*.93937271-x*.34289781;   /* расстояние до стороны клина (угол .35), позади вершины — вне */
+  let m=clamp(.5-e*fu.res.x/fu.res.z,0.,1.);
+  let al=.102*(1.-r/R)*m;
+  return vec4f(vec3f(200.,230.,255.)/255.*al,al);
+}`;
 function drawAbil(zx,zy){
   /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep).
      На видеокарте (25.09): фигуры прохода сцены и выпечка клина, 2D-пути нет */
@@ -158,8 +161,8 @@ function drawAbil(zx,zy){
     const x0=zx(G.ship.x),y0=zy(G.ship.y),x1=zx(ABIL_ST.beam.x),y1=zy(ABIL_ST.beam.y);
     gpuShapes(pass,[[4,(x0+x1)/2,(y0+y1)/2,Math.hypot(x1-x0,y1-y0)/2,1.5,Math.atan2(y1-y0,x1-x0),0,255,190,110,.85]],{blend:"add"});
   }
-  if(abilOn("survey")){   /* прожектор: клин выпечки, вершина — на корабле */
-    const a=G.ship.a,x=zx(G.ship.x),y=zy(G.ship.y),K=abilCone(Math.max(W,H)*.6);
-    if(K)gpuImage(pass,K.B,[{x:x+Math.cos(a)*K.ox,y:y+Math.sin(a)*K.ox,w:K.w,h:K.h,rot:a,a:1}],{lod:.5});
+  if(abilOn("survey")){   /* прожектор: клин полем, вершина — на корабле */
+    const U=ABIL_CONE;U[0]=zx(G.ship.x);U[1]=zy(G.ship.y);U[2]=G.ship.a;U[3]=Math.max(W,H)*.6;
+    gpuField(pass,"abil.cone",ABIL_CONE_WGSL,U);
   }
 }
