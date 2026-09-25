@@ -317,7 +317,9 @@ function lifeBeastGpu(pass,b,x,y,hostile,stun,o){
   /* купол медузы сжимается и тянется — масштаб спрайта вокруг центра тела */
   const pu=al==="jelly"?.82+.18*Math.sin(t*1.6):1,kx=pu,ky=1/pu;
   const S={x:x+fc*(X.x0+X.x1)/2*kx*s,y:oy+(X.y0+X.y1)/2*ky*s,w:fc*bw*kx*s,h:bh*ky*s,
-    base:(R*.9+hov+bob-X.y0)/bh,lod:1.3,ao:R*1.15*s,dim:lifeDim(b.x),shadow:hov?clamp(1-hov/70,.25,1):1};
+    base:(R*.9+hov+bob-X.y0)/bh,lod:1.3,ao:R*1.15*s,dim:lifeDim(b.x),
+    /* земной зверь дышит: спина поднимается и опадает, у каждого своя фаза */
+    breath:al||stun>0?0:.035*(.5+.5*Math.sin(G.t*.05+b.phase*2)),waist:-X.y0/bh,shadow:hov?clamp(1-hov/70,.25,1):1};
   const P=(lx,ly)=>[x+fc*lx*s,oy+ly*s];
   const col=(k,d)=>lifeTint([c[0]*k,c[1]*k,c[2]*k],L,d);
   const seg=(A,a,b2,hw,C,al2)=>{const p=P(a[0],a[1]),q=P(b2[0],b2[1]);A.push([2,p[0],p[1],q[0],q[1],hw*s,.35*s,C[0],C[1],C[2],al2]);};
