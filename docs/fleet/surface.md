@@ -15,7 +15,8 @@ gpuOver #2 near ground — chunk textures + one multiply field (21e2 surfGroundG
            the lower-third sky shade (surfShadeGpu) in the same pass
 2D         everything that stands on the ground (water, POI, deco, built, home, settlement, rocks,
            lander, plants, beasts, walkers, deposits, astronaut)
-upload     #c → own texture (no composite); cast shadows drawn into pass #2, i.e. UNDER that 2D
+upload     #c → own texture (no composite); into pass #2: cast shadows, then the same snapshot back
+           through the world's light (surfRelightGpu); #c is cleared
 2D         labels (deferred list LBL), foreground, near weather, night, placesLit (11va), shafts, grade
 ```
 
@@ -52,6 +53,14 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    labels (cave, mine, deposits, «ИЗУЧЕН») moved to a deferred list drawn after it, so plaques cast no
    shadow. The lower-third shade moved into the ground pass (`fld.sshade`). The places ship's request
    applied: `placesLit(p,tr,camx,camy)` after the night block. Third ridge toned down (lower, paler).
+6. **what stands is lit by the world's light** — `surfRelightGpu`: the same snapshot of `#c` is drawn
+   back into the ground pass through `fld.slit` and `#c` is cleared. The silhouette normal comes from
+   the alpha gradient at two scales; a soft band of a few pixels along the sun-side silhouette takes
+   the star's colour, the band on the far side goes cold (sky colour); overexposure is scaled down as
+   a whole so hue survives and nothing crosses the bloom knee. POIs, deco, built, home, settlement,
+   lander, plants, beasts, walkers and the astronaut all get it at once, without touching a painter.
+   A contact-darkening term was tried and dropped: the home and settlements stand on yards over the
+   slope, so the terrain line cut their facades diagonally.
 
 ## Pairs (scratchpad, not in git)
 
@@ -66,11 +75,14 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pair-a9-fgrass.png`, `pair-a8-homeout.png` (+ `z-home.png` crop), `pair-a9-surface.png`,
   `pair-a9-noon.png` — «before» here is the original base e4c3a56: a ghost range behind two ridges,
   the house and the plants cast shadows on the ground band, warm lit ground skin.
+- `pair-b4-fgrass.png`, `pair-b4-homeout.png`, `pair-b4-noon.png`, `pair-b4-surface.png`, crop
+  `z-fg5.png` — roofs, leaves and walls catch the star on its side and cool on the other; plants throw
+  shadows down the slope.
 
 ## Requests outside the zone
 
 - `08b0-gpu-pipe.js` `GPU_FLD`: add `"fld.sridge":()=>GSR_WGSL` and `"fld.sground":()=>GSG_WGSL` so the
-  warm-up table can compile them; likewise `"fld.sshade":()=>GSS_WGSL`, `"fld.scast":()=>GSC_WGSL`.
+  warm-up table can compile them; likewise `"fld.sshade":()=>GSS_WGSL`, `"fld.scast":()=>GSC_WGSL`, `"fld.slit":()=>GSL_WGSL`.
 - `19-mode-landing-ground.js` (landing ship): the chunk bake recipe inside `drawGround` is copied in
   `surfGroundGpu`; a shared `groundChunkPaint(tr,fill,line,pal)` there would keep the two from drifting.
 
@@ -80,6 +92,7 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pipe:fld.sground|mul`
 - `pipe:fld.sshade|over`
 - `pipe:fld.scast|mul`
+- `pipe:fld.slit|over`
 - `pipe:kit.img|over` (already known)
 
 ## Open problems

@@ -273,7 +273,7 @@ function surfCastGpu(tr,p,camx,camy){
      свой слой, тень легла бы поверх предметов */
   const pass=GPU.overPass;
   if(!GPU.on||!pass||pass!==SURF_P2||!tr.farH)return false;
-  const day=dayK(p);if(day<.05)return false;
+  const day=dayK(p);
   if(GPU.cState===0)return false;           /* на #c ничего не стоит — заслонять нечему */
   /* снимок #c — очередью, сейчас: тень рисуется позже, при отправке кадра, а к тому
      времени #c дорисован подписями и погодой */
@@ -295,5 +295,64 @@ function surfCastGpu(tr,p,camx,camy){
   const am=ambRGB(p),la=lu(am);
   F[12]=am[0]/la*.42;F[13]=am[1]/la*.42;F[14]=am[2]/la*.42;
   gpuField(pass,"scast",GSC_WGSL,F,[HT,SURF_SHADOW],{blend:"mul"});
+  surfRelightGpu(tr,p,camx,camy,pass,HT);
   return true;
+}
+
+/* ══════════════ то, что стоит, — светом мира ══════════════
+   Снимок #c (тот же, что даёт тени) кладётся обратно в проход грунта через свет,
+   а сам #c очищается. Нарисованное 2D не знало, где звезда: у находки, куста и
+   дома один и тот же градиент «низ тёмный — верх светлый». Здесь:
+   · кромка со стороны звезды ловит её цвет — нормаль силуэта берётся из
+     градиента альфы (край предмета — это и есть его нормаль в профиль);
+   · обёртка света: полоса в несколько пикселей вдоль силуэта со стороны звезды
+     светлеет мягко, а не ободком в пиксель — тело получает объём;
+   · теневая сторона — такой же полосой холоднее, в цвет неба.
+   Контактной тени здесь нет: дом и посёлок стоят на своих дворах, и линия
+   рельефа режет их фасад — тёмная полоса ложилась по стене наискось.
+   Подписи, ночь и погода идут после и через это не проходят. */
+const GSL_WGSL=`
+fn slA(q:vec2f)->f32{return textureSampleLevel(t0,smp,q/fu.res.zw,0.).a;}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let c=textureSampleLevel(t0,smp,uv,0.);
+  if(c.a<=.002){return vec4f(0.);}
+  let V=fu.v;let sun=V[2].xy;let day=V[2].z;let str=V[2].w;
+  let px=fu.res.z/fu.res.x;
+  /* нормаль силуэта: градиент альфы на двух масштабах */
+  let r=1.6*max(px,.5);
+  let g1=vec2f(slA(p+vec2f(r,0.))-slA(p-vec2f(r,0.)),slA(p+vec2f(0.,r))-slA(p-vec2f(0.,r)));
+  let R=5.*max(px,.5);
+  let g2=vec2f(slA(p+vec2f(R,0.))-slA(p-vec2f(R,0.)),slA(p+vec2f(0.,R))-slA(p-vec2f(0.,R)));
+  let g=g1+g2*.6;let gl=length(g);
+  let n=select(vec2f(0.),-g/max(gl,1e-4),gl>.02);
+  let edge=clamp(gl*1.4,0.,1.);
+  let facing=dot(n,sun);
+  /* обёртка: пустота в сторону звезды на двух дальностях */
+  let u=sun*max(px,.5);
+  /* только полоса у силуэта: глубже рисунок 2D уже держит свою светотень */
+  let wrap=1.-(slA(p+u*2.5)*.4+slA(p+u*5.)*.35+slA(p+u*9.)*.25);
+  let back=1.-(slA(p-u*2.5)*.4+slA(p-u*5.)*.35+slA(p-u*9.)*.25);
+  var rgb=c.rgb;
+  let key=clamp(facing,0.,1.)*edge*.30+wrap*.26;
+  rgb=rgb*(vec3f(1.)+V[3].rgb*key*str*day);
+  let cold=clamp(-facing,0.,1.)*edge*.45+back*.30;
+  rgb=rgb*mix(vec3f(1.),V[4].rgb,clamp(cold*str*(.4+.6*day),0.,.8));
+  /* не ярче белого, и без выцветания в белое: пересвет сжимается целиком, оттенок
+     остаётся; свет мира не должен зажечь свечение кадра */
+  let mx=max(rgb.r,max(rgb.g,rgb.b));
+  if(mx>c.a){rgb=rgb*(c.a/mx);}
+  return vec4f(rgb,c.a);
+}`;
+const GSL=new Float32Array(20);
+function surfRelightGpu(tr,p,camx,camy,pass,HT){
+  const F=GSL;F.fill(0);
+  /* к звезде — на экране вверх и в её сторону */
+  F[8]=SUN_DIR.x;F[9]=SUN_DIR.y;F[10]=clamp(dayK(p)*1.3,0,1);F[11]=1;
+  const lu=c=>Math.max(1,.3*c[0]+.59*c[1]+.11*c[2]),sc=starRGB(),am=ambRGB(p);
+  const ls=lu(sc),la=lu(am);
+  F[12]=sc[0]/ls;F[13]=sc[1]/ls;F[14]=sc[2]/ls;
+  F[16]=am[0]/la*.78;F[17]=am[1]/la*.78;F[18]=am[2]/la*.78;
+  gpuField(pass,"slit",GSL_WGSL,F,[SURF_SHADOW]);
+  /* #c отдан видеокарте — чистим: то, что 2D нарисует дальше, ляжет поверх */
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cvs.width,cvs.height);ctx.restore();
 }
