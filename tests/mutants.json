@@ -50,5 +50,13 @@
   {"name":"belt-poi-2d","file":"src/24ba-belt-gpu.js",
    "find":"beltPoiGpu\\(pass,p\\.spr,","replace":"drawBeltPOISprite(",
    "kill":"ворота ступени 2",
-   "why":"ориентиры пояса вернулись на #c поверх сцены — и всплывают над камнями, за которыми стоят"}
+   "why":"ориентиры пояса вернулись на #c поверх сцены — и всплывают над камнями, за которыми стоят"},
+  {"name":"belt-hud-2d","file":"src/24ba-belt-gpu.js",
+   "find":"beltHudPush\\(b,proj,fwd,st\\);","replace":"drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);",
+   "kill":"ворота ступени 2",
+   "why":"кабина и стекло пояса вернулись на #c — и #c снова копируется в видеокарту каждый кадр"},
+  {"name":"belt-led-hud","file":"src/25-cockpit.js",
+   "find":"if\\(ledDom\\){","replace":"if(false){",
+   "kill":"ворота ступени 2",
+   "why":"лампы стоек моргают на слое приборов — кабина перерисовывается и в покое"}
 ]

@@ -1209,3 +1209,17 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   Mutants `belt-gpu-off`, `belt-poi-2d` red. Pairs (2D | GPU, same build via `beltGpuDraw=()=>false`): belt 760
   max|Δ| 37, mean +0.1/+0.6/+1.3 (band smooth, rock seams gone); phone 411×742 ×1.5 the same; landmarks 760
   max|Δ| 25 in the maw crop. gpu errs 0.
+- **Belt cockpit and glass on `#hud` (Контроль 25.09, stage 2 item 2).** The border as agreed: the cockpit and
+  the glass symbols are interface, so they go on the `#hud` layer (08bh `gpuHud`) at native DPR, rastered only
+  on change; 25c is not touched. The key is not a hand list: every frame the painter runs into a recording
+  context (24bc, a Proxy that logs calls and properties, coordinates at 1/16 px, angles at 1/4096 rad, text
+  measured by a real context) and the layer redraws only when the log differs — no state can be missed, and
+  needles creeping under a sixteenth of a pixel do not ask for a raster. The painter is pure (no `rnd`, no
+  writes to `G`), so the second run on the real layer draws the same. The strut lamps blink on their own:
+  the dark lamp stays on the layer, a lit one is a small native-DPR canvas above it, registered in `LABDOM`
+  so the flush hides it when unlit and the snapshot carries it. Gate `91zzzzzzy1`: `#c` calls 0 (cockpit
+  259/frame before), `#c` copies 0 (was 1/frame), submits 1/frame, uploads 0; at rest (ship stopped, no
+  controls held) 0 redraws in 60 frames. Pairs 760 and 411×742 ×1.5: the same picture (max|Δ| 68 / 201 on
+  glyph edges, mean +0.7 — the cockpit no longer goes through the post). 390×844 ×2.625: the panel's
+  needles and text sharp, top strip mean +2–3. Left: the node holder's swing and crown pulse (only with a
+  node fitted) still redraw the layer while they move.

@@ -3,9 +3,9 @@
    пять ориентиров перед носом. Мир пояса рисуется в проходе сцены (24ba, 24bb): #c
    мира не видит ни одного вызова, отправка в очередь одна на кадр, печёные холсты не
    грузятся (зев устья печётся и грузится раз, на прогреве). Кабина и стекло
-   (drawGlassHUD, drawCockpit) — граница с приборами, следующий шаг: пока они единственные,
-   кто рисует на #c, и копия #c не больше одной на кадр. Кто из мира рисует на #c —
-   называется по стеку */
+   (drawGlassHUD, drawCockpit) — на слое приборов #hud (24bc): на #c ни вызова, копий #c
+   нет; на ходу слой перерисовывается, а в покое (корабль встал, рук на органах нет) — ни
+   разу, лампы стоек моргают своими холстиками. Кто рисует на #c — называется по стеку */
 const BGATE_WARM=30,BGATE_N=60,BGATE_HUD=/drawGlassHUD|drawCockpit/;
 function bgateStand(){
   for(let r=0;r<=10;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
@@ -28,7 +28,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: пояс — мир �
   if(!ok(G.mode==="belt"&&G.belt,"вошли в пояс"))return;
   bgatePoi();
   const b=G.belt,Q=GPUQueue.prototype,q0={c:Q.copyExternalImageToTexture,s:Q.submit},run0=G.running,loop0=LOOP_OFF,C=MAIN_CTX,cm={};
-  const K={on:false,front:0,sub:0,up:{},bad:0,world:{},hud:0,poiDrawn:0};
+  const K={on:false,front:0,sub:0,up:{},bad:0,world:{},hud:0,poiDrawn:0,rd:0,rest:0,restN:0};
   const pd=beltPoiGpu;
   let i=0;
   try{
@@ -49,6 +49,16 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: пояс — мир �
       frameBody(wallMs());
       if(G.mode!=="belt")break;
     }
+    /* покой: корабль встал, рук на органах нет — кабина не перерисовывается */
+    K.rd=BHUD.redraw;K.on=false;
+    const kz={};for(const k in keys)if(typeof keys[k]==="boolean"){kz[k]=keys[k];keys[k]=false;}
+    for(let j=0;j<BGATE_WARM+BGATE_N&&G.mode==="belt";j++){
+      const bb=G.belt;bb.vx=bb.vy=bb.vz=0;bb.avYaw=bb.avPitch=0;if("avRoll" in bb)bb.avRoll=0;
+      if(j===BGATE_WARM)K.rest=BHUD.redraw;
+      frameBody(wallMs());K.restN++;
+    }
+    K.rest=BHUD.redraw-K.rest;
+    for(const k in kz)keys[k]=kz[k];
   }catch(e){ok(false,"кадр "+i+" упал: "+e.message);}
   finally{
     K.on=false;beltPoiGpu=pd;
@@ -60,8 +70,11 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: пояс — мир �
   eq(G.mode,"belt","все кадры прошли в поясе");
   ok(K.poiDrawn>=BGATE_N*5,"ориентиры в кадре: "+K.poiDrawn+" отрисовок за "+BGATE_N+" кадров (≥ пяти на кадр)");
   eq(Object.keys(K.world).length,0,"мир пояса не рисует на #c"+(Object.keys(K.world).length?": "+top(K.world):""));
-  ok(K.hud>0,"кабина и стекло пока на #c — граница с приборами, следующий шаг: вызовов "+K.hud);
-  ok(K.front<=BGATE_N,"копий #c не больше одной на кадр (кабина): "+K.front+" за "+BGATE_N);
+  eq(K.hud,0,"кабина и стекло не рисуют на #c — они на слое приборов #hud");
+  eq(K.front,0,"#c в видеокарту не копируется: копий "+K.front+" за "+BGATE_N);
+  ok(K.rd>0,"на ходу кабина перерисовывается (слой живой): "+K.rd+" за "+BGATE_N);
+  eq(K.restN,BGATE_WARM+BGATE_N,"покой прошёл в поясе");
+  eq(K.rest,0,"в покое кабина не перерисовывается: "+K.rest+" за "+BGATE_N+" кадров");
   eq(K.sub,BGATE_N,"отправок в очередь ровно по одной на кадр");
   eq(K.bad,0,"холсты не грузятся"+(K.bad?": "+top(K.up):""));
   resetWorld();

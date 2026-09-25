@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 613 · символов верхнего уровня: 6103
+Файлов: 614 · символов верхнего уровня: 6110
 
 ## СИМВОЛЫ
 
@@ -418,6 +418,7 @@ beltDots                     src/17c-system-draw.js:89-94
 beltFwd                      src/24-mode-belt.js:144-147
 beltGpuAdj                   src/24ba-belt-gpu.js:65-73
 beltGpuDraw                  src/24ba-belt-gpu.js:74-270
+beltHudPush                  src/24bc-belt-hud.js:73-80
 beltIcy                      src/24-mode-belt.js:70
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:19-100
 beltPoiMouthTex              src/24bb-belt-poi-gpu.js:8-18
@@ -433,6 +434,12 @@ BGPU_ADJ                     src/24ba-belt-gpu.js:64
 BGPU_SKY                     src/24ba-belt-gpu.js:37
 BGPU_U                       src/24ba-belt-gpu.js:61
 bHazard                      src/21aa-base-rooms.js:289-295
+BHUD                         src/24bc-belt-hud.js:11
+bhudId                       src/24bc-belt-hud.js:12
+bhudKind                     src/24bc-belt-hud.js:14-19
+bhudLed                      src/24bc-belt-hud.js:47-71
+bhudLedDom                   src/24bc-belt-hud.js:46
+bhudRecorder                 src/24bc-belt-hud.js:22-41
 bioMark                      src/20e-species.js:310-314
 bioPlanet                    tests/91zzzb-bio.js:10-14
 bioScan                      src/20e-species.js:315-329
@@ -1431,7 +1438,7 @@ drawCelest                   src/06a-celest.js:167-218
 drawCheburek                 src/17j-cheburek.js:72-113
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
-drawCockpit                  src/25-cockpit.js:400-674
+drawCockpit                  src/25-cockpit.js:400-681
 drawCombat                   src/13-pirates.js:363-474
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
@@ -7167,6 +7174,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/24bb-belt-poi-gpu.js · 7 КБ
   · ориентиры пояса на видеокарте (GPU, ступень 2):1
 
+## src/24bc-belt-hud.js · 6 КБ
+  · кабина пояса на слое приборов #hud (ступень 2, п.2; docs/DESIGN-gpu.md):1
+
 ## src/24c-mode-wanderer-draw.js · 29 КБ
   · «Сорока» изнутри: коридор к стойке (M343):1
 
@@ -8059,7 +8069,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy-gpugate.js · 23 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
-## tests/91zzzzzzy1-gpugate-belt.js · 5 КБ
+## tests/91zzzzzzy1-gpugate-belt.js · 6 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
