@@ -94,10 +94,19 @@ TEST_SUITES.push(()=>suite("растр: грунт и свод рисуются 
   for(const cn of tr.chunks.map.values())
     eq(cn.height,Math.round(tr.chunks.ch*DPR*tr.chunks.sck),"высота ломтя одна на всю полосу — иначе шов в градиенте");
   ok(typeof drawGroundGrass==="function","трава рисуется живой, поверх ломтей");
-  /* пещера */
+  /* пещера: свод с G7 пекут тайлами видеокарты (gpuTileStore, 22-mode-cave), и только
+     в кадре — вне кадра gpuScene() молчит, и тайл никому не нужен. Поэтому свод
+     меряется в настоящем кадре видеокарты (gpuManual), как его видит игрок */
   if(!G.surf.cave)G.surf.cave={x:G.surf.x+80};
-  enterCave();drawCave();
-  ok(!!G.cave.chunks&&G.cave.chunks.map.size>0,"свод пещеры лежит в ломтях");
+  enterCave();
+  if(ok(gpuManual(drawCave),"кадр пещеры собран видеокартой")){
+    const C=G.cave.chunks,n1=C?C.map.size:0;
+    ok(n1>0,"свод пещеры лежит в ломтях");
+    ok(n1>0&&[...C.map.values()].every(B=>!!(B&&B.tex)),"ломти свода — выпечки видеокарты, а не холсты");
+    gpuManual(drawCave);
+    eq(G.cave.chunks.map.size,n1,"повторный кадр пещеры ломтей не добавляет");
+    ok(n1<=TILE_KEEP,"ломтей свода не больше потолка");
+  }
   G.cave=null;G.mode="surface";
   /* слои во весь экран */
   const a=screenLayer("t|1",()=>{ctx.fillStyle="#f00";ctx.fillRect(0,0,W,H);});
