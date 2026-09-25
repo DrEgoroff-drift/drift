@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 616 · символов верхнего уровня: 6149
+Файлов: 617 · символов верхнего уровня: 6155
 
 ## СИМВОЛЫ
 
@@ -1470,7 +1470,7 @@ drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:132-153
 drawFleetMap                 src/12ai-fleet.js:323-358
-drawFleetShip                src/12ai1-fleet-art.js:418-444
+drawFleetShip                src/12ai1-fleet-art.js:424-450
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
@@ -1530,7 +1530,7 @@ drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
-drawRushTraffic              src/17g-sys-lane.js:155-169
+drawRushTraffic              src/17g-sys-lane.js:148-162
 drawScars                    src/03e-hull-draw.js:5-42
 drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeal                     src/03e-hull-draw.js:47-58
@@ -1554,8 +1554,8 @@ drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:706-984
-drawSysLane                  src/17g-sys-lane.js:96-140
-drawSysLaneShips             src/17g-sys-lane.js:170-198
+drawSysLane                  src/17g-sys-lane.js:108-134
+drawSysLaneShips             src/17g-sys-lane.js:163-191
 drawSysRail                  src/18f-rail-station.js:58-92
 drawSystem                   src/17-mode-system.js:498-705
 drawSysTraffic               src/17f-sys-traffic.js:39-43
@@ -1915,7 +1915,8 @@ fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipGpu                 src/12ai1-fleet-art.js:389-417
+fleetShipAt                  src/12ai1-fleet-art.js:395-423
+fleetShipGpu                 src/12ai1-fleet-art.js:389-393
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
 floraOf                      src/20e-species.js:91-105
@@ -2017,6 +2018,8 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
+GATE2D                       tests/91zzzzzzy3-gate2d.js:10-23
+GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:9
 gateFind                     tests/91zzzzzzy-gpugate.js:242-290
 gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-290
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
@@ -3077,20 +3080,23 @@ landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344-370
 landOnTestPlanet             tests/90-harness.js:371-377
 landStartY                   src/19-mode-landing.js:38-43
-LANE_BUOY                    src/17g-sys-lane.js:66
+LANE_BUOY                    src/17g-sys-lane.js:68
 LANE_CHASE                   src/17g-sys-lane.js:16
 LANE_DOCK                    src/17g-sys-lane.js:15
 LANE_GAP                     src/17g-sys-lane.js:13
-LANE_GLOW                    src/17g-sys-lane.js:95
+LANE_GLOW                    src/17g-sys-lane.js:107
+LANE_GLOW_SP                 src/17g-sys-lane.js:93
 LANE_Q_CLS                   src/17g-sys-lane.js:18
 LANE_Q_MAX                   src/17g-sys-lane.js:17
 LANE_RU                      src/26-ui-station.js:389
 LANE_RX                      src/26-ui-station.js:385-388
 LANE_W                       src/17g-sys-lane.js:14
-laneBuoySprite               src/17g-sys-lane.js:67-89
-laneLampCol                  src/17g-sys-lane.js:90-93
+laneBuoyPaint                src/17g-sys-lane.js:73-91
+laneBuoySprite               src/17g-sys-lane.js:69-72
+laneGlowSprite               src/17g-sys-lane.js:94-101
+laneLampCol                  src/17g-sys-lane.js:102-105
 laneLife                     src/17g-sys-lane.js:27-31
-laneShip                     src/17g-sys-lane.js:142-150
+laneShip                     src/17g-sys-lane.js:136-143
 last                         src/28-loop.js:107
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:108
@@ -6498,7 +6504,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ai-fleet.js · 28 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
-## src/12ai1-fleet-art.js · 36 КБ
+## src/12ai1-fleet-art.js · 37 КБ
   · ГЛАВТРАССА: как флот выглядит (выделено из 12ai, M415):1
 
 ## src/12aj-coop.js · 19 КБ
@@ -8116,6 +8122,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzy2-gpu-canvas.js · 4 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
+
+## tests/91zzzzzzy3-gate2d.js · 5 КБ
+  · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1

@@ -1326,3 +1326,18 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   seen: one `matchMedia("(max-width:720px)")` with its change event (no style reads in the frame) and the
   `inflight` mode list of 27z. `IPOD_SIG` is left alone, so the pod redraws when it wakes if anything changed.
   411×742 in the system view: 3077 → 0 pod canvas calls per 120 frames; 900 px wide unchanged (visible, drawn).
+- **Lane buoys off 2D (the GPU canvas, port 1 of GPU-3, 25.09).** The buoy (`laneBuoySprite`) and the lamp halo
+  (`laneGlowSprite`, the old `glowSprite` gradient) bake through `gpuBaked`; the queue ships stop borrowing the 2D
+  matrix stack: `laneShip` hands its place to `fleetShipAt(f,art,a,b,c,d,e,f,al)` in 12ai1 (`fleetShipGpu` is now
+  `getTransform` → the same call). The 2D fallback of `drawSysLane` is gone (no device, no lane). Census, the lane
+  scene, 120 frames with a zoom sweep: 17g's own 2D calls 22 → 0 a frame; what is left under it (12 a frame, all at the first sight of a queue
+  ship) is the fleet art itself — `fleetArtOf` paints a 2D canvas with the hull name (`fillText`) and
+  `fleetShipAt` uploads its mips by 2D downscale: v2 (text) moves it. Pairs l0|l3 (760, 411×1.5, far zoom .45):
+  whole frame max |Δ| 22 / 21 / 8, 0 pixels over 24, luminance equal; the ships bit-identical. The one soft spot is
+  the lamp cage ring (a 0.5-unit stroke): −2…−4 of 255 at 3–4 px from the lamp, +1…2 inside it, the lamp region
+  −0.5 % luminance, edge energy equal. It is the mip kernel: `gpuMipTex` built levels by 2D `drawImage` at
+  `imageSmoothingQuality="high"`, the GPU canvas by a 2×2 box. A bake at the screen size (√2 buckets, level 0) was
+  tried and is worse (edges −3 %: bilinear sampling of a rotated sprite near 1:1), so the master stays ×4 and
+  the kernel goes to the worker. New suite `91zzzzzzy3-gate2d` («0 вызовов 2D»): counts every 2D method and
+  setter whose stack holds a scene's painter, from the first frame (bakes included), named holes only
+  (`fleetArtOf`, `fleetShipAt`); mutants `lane-ship-2d`, `lane-glow-2d` die on it.

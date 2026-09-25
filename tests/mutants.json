@@ -78,5 +78,7 @@
   {"name":"labels-over-chips","file":"src/08bh-gpu-hud.js",
    "find":"c\\.before\\(b\\);return LABDOM\\.box=b;","replace":"c.after(b);return LABDOM.box=b;",
    "kill":"полёт по переписи",
-   "why":"слой подписей мира снова над фишками: подпись союзника ложится на фишку компаса и склеивает её цифры (0.458.0)"}
+   "why":"слой подписей мира снова над фишками: подпись союзника ложится на фишку компаса и склеивает её цифры (0.458.0)"},
+  {"name":"lane-ship-2d","file":"src/17g-sys-lane.js","find":"fleetShipAt\\(f,fleetArtOf\\(f\\),c,q,-q,c,x,y,al\\);","replace":"ctx.save();ctx.globalAlpha=al;ctx.translate(x,y);ctx.rotate(a);ctx.scale(s,s);drawFleetShip(f);ctx.restore();","kill":"0 вызовов 2D","why":"очередь у дока снова берёт место из 2D-стека: семь вызовов 2D на борт каждый кадр"},
+  {"name":"lane-glow-2d","file":"src/17g-sys-lane.js","find":"glow=laneGlowSprite\\(col\\);","replace":"glow=gpuMipTex(glowSprite(\"lane|\"+col.join(\",\"),()=>{ctx.fillStyle=\"#fff\";ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();}));","kill":"0 вызовов 2D","why":"ореол огня бакена снова печётся на 2D-холсте и грузится мипами"}
 ]

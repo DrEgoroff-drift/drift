@@ -387,10 +387,16 @@ function fleetGlyph(k,h){
    (правило 16/n): точка краской и узкий ореол сложением, в два-три её радиуса */
 const FLEET_ENG=1.3,FLEET_HALO=.45,FLEET_LOD=-1.2;
 function fleetShipGpu(f,art){
+  if(!gpuScene())return false;
+  const m=ctx.getTransform(),k=1/DPR;
+  return fleetShipAt(f,art,m.a*k,m.b*k,m.c*k,m.d*k,m.e*k,m.f*k,ctx.globalAlpha);
+}
+/* то же без 2D: матрица (a…f) — в пикселях CSS; её дают те, кто знает место сам (полоса 17g) */
+function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
   const pass=gpuScene();if(!pass)return false;
-  const m=ctx.getTransform(),k=1/DPR,al=ctx.globalAlpha,s=Math.hypot(m.a,m.b)*k;
-  const T=(lx,ly)=>[(m.a*lx+m.c*ly+m.e)*k,(m.b*lx+m.d*ly+m.f)*k],[x,y]=T(0,0),w=art.rad*2*s;
-  const rot=Math.atan2(m.b,m.a);
+  const s=Math.hypot(ma,mb);
+  const T=(lx,ly)=>[ma*lx+mc*ly+me,mb*lx+md*ly+mf],[x,y]=T(0,0),w=art.rad*2*s;
+  const rot=Math.atan2(mb,ma);
   /* светом звезды (Ships a): свет корпуса (GST, −1) по своей выпечке — краска как есть,
      дальний борт в тень, кромка цветом звезды; множитель станции (0) белил нос и знак.
      Уровень мипа на ступень мельче экрана: маски у GST нет, а резкость — не ниже 2D.
