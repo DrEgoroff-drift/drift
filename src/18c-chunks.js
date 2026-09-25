@@ -168,3 +168,73 @@ function drawTiles(store,camx,camy,paint){
     ctx.drawImage(cn,0,y0,cn.width,y1-y0,kx*TILE-camx,ky*TILE-camy+y0*k,TILE,(y1-y0)*k);
   }
 }
+
+/* ── то же на видеокарте (флот GPU, кит): выпечки GPU-холста вместо 2D-холстов ──
+   Договор рисовальщика тот же: paint(g,wx0,wy0) рисует в глобальный ctx (на время выпечки это
+   GcCtx), W и H — размер ломтя, плотность — DPR·SCK, как у mkCanvas. Выпечка переживает потерю
+   устройства: gpuImage печёт её заново тем же draw, поэтому draw сам ставит W, H и матрицу.
+   Кладётся не в ctx, а в проход (gpuScene/gpuOver) через gpuImage; место — из текущей матрицы
+   ctx (withScale, сдвиги), поворот не поддержан. Старые screenLayer/drawChunks/drawTiles
+   остаются для тех, кто ещё рисует 2D-холстом. */
+function gpuChunkBake(w,h,ox,oy,paint){
+  const s=DPR*SCK,bw=Math.max(1,Math.round(w*s)),bh=Math.max(1,Math.round(h*s));
+  return gpuBake(bw,bh,g=>{const pW=W,pH=H;W=w;H=h;g.setTransform(bw/w,0,0,bh/h,0,0);
+    try{paint(g,ox,oy);}finally{W=pW;H=pH;}},{mips:false});
+}
+/* положить выпечку в проход: x,y,w,h — в координатах текущего ctx (как у drawImage) */
+const GPU_CH_R=[{x:0,y:0,w:0,h:0,a:1}];
+function gpuChunkPut(pass,B,x,y,w,h){
+  if(!B)return;const m=ctx.getTransform(),R=GPU_CH_R[0],sx=m.a/DPR,sy=m.d/DPR;
+  R.w=w*sx;R.h=h*sy;R.x=(m.e/DPR)+x*sx+R.w/2;R.y=(m.f/DPR)+y*sy+R.h/2;
+  gpuImage(pass,B,GPU_CH_R);
+}
+function gpuStoreDrop(store){if(store&&store.map)for(const B of store.map.values())gpuBakeDrop(B);}
+/* слой во весь экран → выпечка; ключ и вытеснение как у screenLayer */
+const GPU_SCREEN_LAYERS=new Map();
+function gpuScreenLayer(key,paint){
+  const full=key+"|"+W+"x"+H+"@"+DPR+"~"+SCK;
+  let B=GPU_SCREEN_LAYERS.get(full);
+  if(B){GPU_SCREEN_LAYERS.delete(full);GPU_SCREEN_LAYERS.set(full,B);return B;}
+  B=gpuChunkBake(W,H,0,0,paint);if(!B)return null;
+  GPU_SCREEN_LAYERS.set(full,B);
+  if(GPU_SCREEN_LAYERS.size>12){const k=GPU_SCREEN_LAYERS.keys().next().value;gpuBakeDrop(GPU_SCREEN_LAYERS.get(k));GPU_SCREEN_LAYERS.delete(k);}
+  return B;
+}
+/* ломти по X: хранилище как у chunkStore; сменился ключ — старые выпечки сдаются */
+function gpuChunkStore(store,key,top,ch){
+  const k2=key+"~"+SCK;
+  if(store&&store.key===k2&&store.ch===ch&&store.top===top)return store;
+  gpuStoreDrop(store);return chunkStore(null,key,top,ch);
+}
+function gpuChunkAt(store,k,paint){
+  let B=store.map.get(k);if(B)return B;
+  B=gpuChunkBake(CHUNK_W,store.ch,k*CHUNK_W,store.top,paint);if(!B)return null;
+  store.map.set(k,B);store.order.push(k);
+  while(store.order.length>CHUNK_KEEP){const o=store.order.shift();gpuBakeDrop(store.map.get(o));store.map.delete(o);}
+  return B;
+}
+function gpuDrawChunks(pass,store,camx,camy,paint){
+  if(!pass)return;
+  const k0=Math.floor(camx/CHUNK_W),k1=Math.floor((camx+W)/CHUNK_W);
+  for(let k=k0;k<=k1;k++)gpuChunkPut(pass,gpuChunkAt(store,k,paint),k*CHUNK_W-camx,store.top-camy,CHUNK_W,store.ch);
+}
+/* квадратные тайлы: как tileStore/drawTiles, без полосы занятых строк (пустая плитка на
+   видеокарте — один проход по прозрачному, а читать её назад дороже) */
+function gpuTileStore(store,key){
+  const k2=key+"~"+SCK;
+  if(store&&store.key===k2)return store;
+  gpuStoreDrop(store);return tileStore(null,key);
+}
+function gpuTileAt(store,kx,ky,paint){
+  const k=kx+","+ky;let B=store.map.get(k);if(B)return B;
+  B=gpuChunkBake(TILE,TILE,kx*TILE,ky*TILE,paint);if(!B)return null;
+  store.map.set(k,B);store.order.push(k);
+  while(store.order.length>TILE_KEEP){const o=store.order.shift();gpuBakeDrop(store.map.get(o));store.map.delete(o);}
+  return B;
+}
+function gpuDrawTiles(pass,store,camx,camy,paint){
+  if(!pass)return;
+  const kx0=Math.floor(camx/TILE),kx1=Math.floor((camx+W)/TILE),ky0=Math.floor(camy/TILE),ky1=Math.floor((camy+H)/TILE);
+  for(let ky=ky0;ky<=ky1;ky++)for(let kx=kx0;kx<=kx1;kx++)
+    gpuChunkPut(pass,gpuTileAt(store,kx,ky,paint),kx*TILE-camx,ky*TILE-camy,TILE,TILE);
+}

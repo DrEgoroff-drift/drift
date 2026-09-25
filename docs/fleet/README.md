@@ -26,10 +26,16 @@ rebuilds, runs the fast tier and pushes. Nobody else merges.
    is frozen (PLAN G5): `19b-sky`, `19c-light`, `19c1-cast`, `19ca-gpu-sky`, `19d-weather`,
    `19e-clouds`. And: `PLAN.md`, `PATCHNOTES.md`, `docs/DESIGN-gpu.md`, `CLAUDE.md`, `VER`,
    `.github/`, `build.ps1`, `drift.html`, `tests.html`, `docs/INDEX.md`.
-4. **Better, not the same** (DESIGN-gpu §0, §1). A ported layer looks better within the frame's
-   laws — one light with a source, cold key and warm accent, grain instead of flat fill, motion not
-   blinking, a shadow under what stands. Parity is the floor. Canvas 2D stays the brush for text
-   and complex vector shapes, via `gpuBake`/`GcCtx` when it has to live on the GPU.
+4. **Better, not the same — the direction, not a loop.** The author, 25.09: «графика должна быть
+   лучше после переделки, прям пиздатой»; the same evening: «тут в облаке дорабатывать не будем …
+   нужен будет дизайн контроль и проход». So port with the richest look you reach in one honest
+   pass — one light with a source and falloff, cold key and warm accent, depth, grain instead of
+   flat fill, motion not blinking, a shadow under what stands (DESIGN-gpu §L, `docs/DESIGN-craft.md`)
+   — never worse than before, and move on through the zone. Do not loop on looks in the cloud: a
+   SwiftShader pair checks that the scene draws and nothing got worse; the verdict and the polish
+   are the design control (Контроль) and the design pass on a real GPU after the fleet (PLAN §0).
+   For each ported scene, write in your notes what that pass should look at. Canvas 2D stays the
+   brush for text and complex vector shapes, via `gpuBake`/`GcCtx` when it has to live on the GPU.
 5. **Only painting changes.** Save format, `stateHash`, game logic and balance stay as they are;
    chance for visuals only through `rndFx`, never `rnd`.
 6. **One commit per sub-item, pushed at once.** Before each push:
