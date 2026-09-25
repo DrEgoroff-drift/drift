@@ -34,6 +34,16 @@ new module `17z3-map-gpu`.
    cloud in the galaxy field (a gaussian mask per nebula, one shared fbm for the gas, a pink or amber core, a teal
    or blue edge, dark globules; `GNEB` is baked into the WGSL from the JS table). Cost: one 4-octave and one
    3-octave fbm per pixel, only where a nebula is within 4 sectors.
+5. **test** — `tests/91zzzzk-mapaddr.js`, suite «галактика: шейдер неба держит модель» (Node tier): the WGSL
+   carries the model constants and every named nebula, the CPU tile bake is gone, `drawMap` runs 40 frames
+   without a GPU and the rail net still grows a line a frame (dies if `railNetPartial` moves behind the pass check).
+
+## What stays 2D, on purpose
+
+Text everywhere (galaxy and nebula names, the system card, labels, rulers' numbers), and the address/holding
+vector layers of `18a`/`18b` (grid, rings, rumour hatch clipped to cells, house patches, chips, the rose): thin
+UI strokes with clips and dashes, where Canvas 2D is the brush (DESIGN-gpu §0) and a GPU copy would be parity,
+not a gain. `17z-map-backdrop` stays 2D for the site (`war.js`).
 
 ## Pairs (scratchpad of session a777c21e…, 760×475, before = fleet base e4c3a56)
 
