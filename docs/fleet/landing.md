@@ -26,6 +26,7 @@ gpuOver #2  →  under the lander (field lg.under, blend mul): the cut's grain a
 | — | merge of the fleet base | `origin/claude/optimistic-gates-u46osn` at 6c39cf9 (kit `Path2D`, `createPattern`, `gpuDrawChunks`; surface's `21e2`, all fourteen ships). No conflicts. |
 | 4 | the ground's grain and form | `lg.under` also models the near cut (only where the ground has a material, as surface): rock bumps lit from the star and fading with depth, convex crests lighter and hollows darker at the edge, per-pixel grain anchored to the world, a warm skin of the star's colour on the lit top and a cold sky tint deepening with the cut — the surface ship's recipe (21e2 `GSG_WGSL`, slightly quieter: seen from the approach height it is finer), on my height texture, so the ground reads the same before and after the switch to the surface. The field now answers `(M, 1)` with `M = form·(1−s)·(1+L)`. No new `gpuOver`: the chunks stay 2D canvases (see open problems). |
 | 5 | one chunk recipe | `groundChunkStore(tr,fill,line)` and `groundChunkPaint(tr,wx0,wy0,fill,line,pal)` in `19-mode-landing-ground` — the chunk key and the three-pass recipe (form, glaze, hue) that `drawGround` and surface's `surfGroundGpu` (21e2) each carried; `drawGround` now calls them. The surface ship asked for it: 21e2 can switch to `tr.chunks=groundChunkStore(tr,fill,line)` and `(g,wx0,wy0)=>groundChunkPaint(tr,wx0,wy0,fill,line,pal)`, and the two can no longer drift. Frame pixel-identical (`a5-landed.png` vs `a4-landed.png`, max diff 0). |
+| 6 | flames and dust on the GPU | The braking flames were 2D `drawFlame` rotated by π/2 — which points them **up**, into the belly (the comment said down); they jittered by `rndFx`. Now they are three drops in `lg.lander` firing down from the belly nozzles, width and length breathing on smooth time noise, a core above 1 so bloom takes it; the nozzle housings are hardware in the bake. The touchdown dust (`landingDust`, deleted) re-rolled its puffs every two frames — it jumped; now `lgDust` in the same field: a layer over the terrain line (height texture as `t1`), thick at the ground and under the ship, billows running outward with time, the ground's colour under the sky's and the star's light, drawn over the hull and flames; its strength is smoothed (`LG_DUST`, outside `G`). The `live` pass is now only the smoke of a broken hull. Test 91q1 updated (the live pass draws no flames). Note: the green translucent «bushes» in the old frames were the 2D dust itself (`pal[3]` is green on that world), not deco. |
 
 ## Pairs (scratchpad, not in git)
 
@@ -52,6 +53,9 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/490811e5-7c40-51c3-b489-f7ee7a447e9c
 - `pair4-landed.png`, `pair4-lowday.png`, `pair4-dusk.png`, `pair4-lownight.png` — against the new
   fleet base (6c39cf9, which has my 1–2): the cut of the ground reads as rock under the star — lit
   bumps and grain, a warm lit top, cold depth — instead of a printed slab; the hull is lit (3).
+- `pair6-lowday.png`, `pair6-lownight.png` — the flames fire down from the belly as hot short jets
+  that bloom (they pointed up into the hull); the dust is a pale cloud billowing out along the crest
+  instead of flat green discs jumping every two frames.
 - Variants are shot by `shoot.sh <tag> <root> <port> <scene…>` in the scratchpad (lowday, lownight,
   landed, dusk: `--js` sets the hour through the scene's own formula, clear weather, thrust on).
 
@@ -91,9 +95,6 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/490811e5-7c40-51c3-b489-f7ee7a447e9c
   covers ≤1 px of the feet, and the column's faint light crosses the hull on approach (reads as air
   light in front). Fixing it for real needs the pad on the GPU too (a small field or `gpuShapes`) —
   a next step in this zone.
-- The braking flames are still 2D `drawFlame` (03b) in the final front layer: they do not bloom.
-  A flame field in `lg.lander` (like `HG_FLAME_WGSL` in 17c2, which is flight's and not mine) would
-  let them glow.
 - The lander bake key reads the livery by value; `hullOf` is called per frame for it.
 - The near ground chunks are still 2D canvases drawn with `drawImage` on `#c`. Moving them to
   `gpuDrawChunks` (as surface did) needs them in a GPU pass *between* the far weather (2D) and the

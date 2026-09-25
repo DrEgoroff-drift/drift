@@ -50,9 +50,9 @@ function drawLandGear(h,len,hipY,lx,dgy,gear,sq,gnd){
   ctx.fillStyle="rgba(0,0,0,.28)";
   ctx.beginPath();ctx.ellipse(fx,fy+1,10,2.6,0,0,TAU);ctx.fill();
 }
-/* opt.bake — только тело: без факела, маяка, дыма, тлеющих сопел и света на грунте —
-   это выпечка для видеокарты (19g), живое и свет она кладёт сама;
-   opt.live — только живое поверх выпечки: факелы и дым */
+/* opt.bake — только тело (с тормозными соплами в брюхе): без факела, маяка, дыма,
+   тлеющих сопел и света на грунте — это выпечка для видеокарты (19g), живое и свет
+   она кладёт сама, факелы тоже; opt.live — только живое 2D поверх выпечки: дым */
 function drawLander(broken,fire,opt){
   opt=opt||{};
   const BAKE=!!opt.bake, LIVE=!!opt.live;
@@ -294,21 +294,27 @@ function drawLander(broken,fire,opt){
     }
     /* маршевые сопла на посадке только тлеют: тягу вниз дают не они */
   }
+  /* тормозные сопла в брюхе — железо, а не огонь: у выпечки они есть всегда,
+     факел из них бьёт поле видеокарты (19g) */
+  if(BAKE)for(const bx of [-half*.5,-half*.05,half*.42]){
+    const by=bY-bodyH*.02, br=bodyH*.13;
+    ctx.fillStyle=rgba(h.dark,1);ctx.fillRect(bx-br*.9,by-br*.6,br*1.8,br*1.2);
+  }
   }   /* тело */
   /* ── тормозные сопла в брюхе ──
      Тяга на посадке направлена ВВЕРХ (`L.vy-=cos(a)…`), а маршевые движки
      смотрят назад: пока факел бил из кормы, корабль на подходе выглядел так,
      будто разгоняется вбок, а не висит. Жмёт тягу — из брюха бьют вниз три
      коротких факела, и они же поднимают пыль. */
-  if(fire&&!BAKE){
+  if(fire&&!BAKE&&!LIVE){
     const lvl=1+(G.mods.engine||0)*.22;
     /* ── зарево тяги: источник у света и освещённое у источника ──
        Леджер кадров: «заход» — pair 0%, тонов 2, холодный монохром. Пламя
        было, а СВЕТА от него не было: тормозящий корабль — единственный
        честный тёплый источник кадра на любой высоте и в любой час. Тёплое
        зарево под соплами красит и низ корпуса — закон §1. На видеокарте
-       (live) это свет поля корабля (19g), а не наложенное пятно. */
-    if(!LIVE){
+       это свет поля корабля (19g), а не наложенное пятно, и факелы там же. */
+    {
       const FG=glowSprite("thrustglow",()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
         for(let i=0;i<=8;i++){const t=i/8;
@@ -348,35 +354,5 @@ function drawLander(broken,fire,opt){
       ctx.fillStyle="rgba(90,80,78,"+(.3-t*.05).toFixed(2)+")";
       ctx.beginPath();ctx.arc((i-1.5)*5,-12-t*7,3+t*2.2,0,TAU);ctx.fill();
     }
-  }
-}/* ── пыль от струи ──
-   Работает и на подходе (пока жмёшь тягу), и в первые мгновения после касания:
-   осевшее облако не исчезает мгновенно. На мире без атмосферы пыль ниже и
-   резче — ей нечем виться. */
-function landingDust(L,tr,camx,camy){
-  const alt=groundAt(tr,L.x)-L.y-LAND_GY;
-  const push=(L.thrOn?1:0)+(L.over>0&&L.ok?Math.max(0,1-(70-L.over)/40):0);
-  if(push<=0||alt>150)return;
-  const p=L.p, thin=p.T.atm==="отсутствует";
-  const k=push*clamp(1-alt/150,0,1);
-  const n=Math.round(10+k*16);
-  for(let i=0;i<n;i++){
-    const r=rng(hashi(i,Math.floor(G.t*.5)+i,0xD05));
-    const side=r()<.5?-1:1;
-    const t=r();
-    /* пыль расходится от точки под кораблём вдоль СВОЕГО грунта, а не по
-       прямой: на склоне ровное облако сразу выдаёт наклейку */
-    const dx=side*(10+t*90*k);
-    const gx=L.x+dx, gy=groundAt(tr,gx);
-    const rise=(thin?6:16)*k*(1-t)*(.5+r()*.7);
-    const x=gx-camx, y=gy-camy-rise;
-    const a=(thin?.3:.45)*k*(1-t)*(.6+r()*.7);
-    const rad=(3+t*13)*(thin?.8:1.25)*(.6+k);
-    /* пыль того же цвета, что грунт под ней, и ЛЕЖИТ по земле сплюснутым
-       облаком: круглые светлые шары читались мыльными пузырями */
-    const base=p.T.pal?p.T.pal[3]||p.T.pal[2]:[150,140,130];
-    const col=mixc(base,[40,34,30],.35);
-    ctx.fillStyle="rgba("+col.map(v=>Math.round(v)).join(",")+","+a.toFixed(2)+")";
-    ctx.beginPath();ctx.ellipse(x,y,rad*1.7,rad*.55,0,0,TAU);ctx.fill();
   }
 }
