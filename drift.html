@@ -84771,11 +84771,21 @@ function instrPodDraw(){
 }
 /* Показывается везде, кроме пояса: там есть настоящий потолочный блок, и две
    панели разом читались бы как брак. */
+/* Колодку прячет и CSS: узкий экран (@media max-width:720px, style.css) и режимы вне
+   полёта (body:not(.inflight), 27z). Невидимое полотно не рисуем: на телефоне оно
+   перерисовывалось ~10 раз в секунду при display:none, а холст вне композитора на каждом
+   рисовании ждёт весь хвост GPU-процесса. Узость — один matchMedia и его событие, без
+   чтения стилей в кадре; список режимов — тот же, что у класса inflight в 27z. Подпись
+   IPOD_SIG при этом не трогается: колодка проснётся и сравнит её со свежей */
+const IPOD_MQ=typeof matchMedia==="function"?matchMedia("(max-width:720px)"):null;
+let IPOD_NARROW=!!(IPOD_MQ&&IPOD_MQ.matches);
+if(IPOD_MQ&&IPOD_MQ.addEventListener)IPOD_MQ.addEventListener("change",e=>{IPOD_NARROW=e.matches;});
+const IPOD_FLY={system:1,map:1,belt:1,scoop:1,landing:1};
 function instrPodTick(){
   if(!$ipod)return;
   const on=G.running&&G.mode!=="belt"&&G.mode!=="dock";
   $ipod.style.display=on?"":"none";
-  if(on)instrPodDraw();
+  if(on&&!IPOD_NARROW&&IPOD_FLY[G.mode])instrPodDraw();
 }
 /* Колодка — не только показание, но и ручка: по ней открывается стойка (25d),
    где те же приборы стоят в полный рост. Единственный элемент строки приборов,

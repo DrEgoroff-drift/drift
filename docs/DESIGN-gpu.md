@@ -1250,3 +1250,9 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   straight 39.8 → 19.4 KB, 53.6 → 46.3 ms; rest 33.2 → 3.8 KB, 51.3 → 40.0 ms; push 5.5 → 0.47 ms. In flight with
   a target the layer still redraws every frame (the metres change) — a separate cached dashboard layer would cut
   that, at the price of another native-DPR full-screen canvas (~10 MB on the phone); not done.
+- **The 25c pod is not drawn while CSS hides it (Контроль 25.09, the 2D purge, item 3).** On the phone the pod
+  canvas was redrawn ~10 times a second under `display:none` (`@media (max-width:720px)`), and a canvas outside
+  the compositor makes every draw wait for the GPU process tail. `instrPodTick` now draws only when the pod can be
+  seen: one `matchMedia("(max-width:720px)")` with its change event (no style reads in the frame) and the
+  `inflight` mode list of 27z. `IPOD_SIG` is left alone, so the pod redraws when it wakes if anything changed.
+  411×742 in the system view: 3077 → 0 pod canvas calls per 120 frames; 900 px wide unchanged (visible, drawn).

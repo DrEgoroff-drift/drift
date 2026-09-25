@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 614 · символов верхнего уровня: 6117
+Файлов: 614 · символов верхнего уровня: 6120
 
 ## СИМВОЛЫ
 
@@ -2876,7 +2876,7 @@ instrPanel                   src/25a-instr.js:100-190
 instrPenWidth                src/05b-instr-kit.js:78-80
 instrPodDraw                 src/25c-instr-hud.js:32-96
 instrPodSig                  src/25c-instr-hud.js:27-31
-instrPodTick                 src/25c-instr-hud.js:99-104
+instrPodTick                 src/25c-instr-hud.js:109-114
 instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
@@ -2894,6 +2894,9 @@ instTick                     src/11ab-institute.js:80-94
 invalidateKeyMap             src/15-input.js:125
 invalidateParts              src/05-parts.js:310
 ipctx                        src/25c-instr-hud.js:17
+IPOD_FLY                     src/25c-instr-hud.js:108
+IPOD_MQ                      src/25c-instr-hud.js:105
+IPOD_NARROW                  src/25c-instr-hud.js:106
 IPOD_S                       src/25c-instr-hud.js:18
 IPOD_SIG                     src/25c-instr-hud.js:26
 isFitted                     src/05-parts.js:381-384
@@ -7202,7 +7205,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25b-tape.js · 12 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 7 КБ
+## src/25c-instr-hud.js · 9 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25d-instr-rack.js · 27 КБ
