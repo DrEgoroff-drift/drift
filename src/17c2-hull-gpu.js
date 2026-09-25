@@ -82,7 +82,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
 const HG_U=new Float32Array(60);
 /* свет факела: ядро, перо, зарево. Прежний ореол давало emit() над #c; в сцене
    свечение начинается с 1.4, поэтому зарево несёт его само (пара 760, 25.09) */
-const HG_GAIN=[2.6,2,3.2];
+const HG_GAIN=[2.6,1,1.2];
 function hullGpuFlames(pass,h,id,x,y,a,sc,cb,thr,lvl){
   const MF=(typeof makerFlame==="function")?makerFlame(h.by):null;
   let p=HG_THR.get(id)||0;p+=((thr?1:0)-p)*.22;if(p<.004)p=0;HG_THR.set(id,p);
@@ -145,7 +145,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     gpuImage(pass,gpuMipTex(Bl.cv),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
-  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,0,cb,lod);
+  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
   if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */
   if(braking){const f=4+(.5+.5*Math.sin(G.t*.9))*6,T=[];

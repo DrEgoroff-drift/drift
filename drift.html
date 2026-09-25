@@ -49841,9 +49841,14 @@ function gpuTrail(zx,zy,Z){
   const lanes={};
   for(const t of TRAIL){if(!t.hot)continue;const k=t.e+"/"+(t.b|0);(lanes[k]||(lanes[k]=[])).push(t);}
   GTR.n=0;const puffs=[];
+  /* под факелом ленты нет: там горит шлейф (gpuExhaust) и перо корпуса, и белое ядро
+     ленты, сложенное с ними, выбеливало весь факел (п.3, пара 760: S .21 → .38 без
+     ленты). Лента проявляется за длиной шлейфа — там газ уже остыл и отстал */
+  let dist=null,Lf=1;
   const node=(arr,i)=>{
     const t=arr[i],u=clamp(t.life/t.max,0,1);
-    const a=Math.min(TRAIL_AMAX,Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5);
+    const g=clamp((dist[i]-Lf*.3)/(Lf*.55),0,1),fo=.2+.8*g*g*(3-2*g);
+    const a=Math.min(TRAIL_AMAX,Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5)*fo;
     const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
     /* газ расходится: к хвосту лента шире (яркость и так гаснет с возрастом) */
     const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6);
@@ -49853,13 +49858,16 @@ function gpuTrail(zx,zy,Z){
   };
   for(const k in lanes){
     const arr=lanes[k];if(arr.length<2)continue;
+    dist=new Float32Array(arr.length);
+    for(let i=arr.length-2;i>=0;i--)dist[i]=dist[i+1]+Math.hypot(zx(arr[i].x)-zx(arr[i+1].x),zy(arr[i].y)-zy(arr[i+1].y));
+    Lf=Math.max(2.5,arr[arr.length-1].r*SZ*2.2)*9;   /* длина шлейфа при средней пульсации */
     let A=node(arr,0);
     for(let i=1;i<arr.length;i++){
       const B=node(arr,i);gtrLane(A,B);A=B;
     }
     /* добела раскалённый корешок у сопла */
     const f=arr[arr.length-1],x=zx(f.x),y=zy(f.y),r=Math.max(.8,f.r*SZ*1.3);
-    if(x>-40&&x<W+40&&y>-40&&y<H+40)puffs.push([1,x,y,r,0,0,r*.8,T.core[0],T.core[1],T.core[2],.62]);
+    if(x>-40&&x<W+40&&y>-40&&y<H+40)puffs.push([1,x,y,r,0,0,r*.8,T.core[0],T.core[1],T.core[2],.2]);   /* ядро сопла светит шлейф */
   }
   gtrDraw(pass,"gtr");
   /* холодные струи маневровых — мягкие дымки */
@@ -52733,7 +52741,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let V=fu.v;let c=V[0].xy;let R=V[0].z;let s=V[0].w;let sd=normalize(V[1].xy);let col=V[2].rgb;let ro=V[1].zw;
   let dp=p-c;let rr=length(dp);
   /* свой свет станции: тёплое гауссово пятно, окна и прожекторы */
-  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07)*V[3].x;
+  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07)*max(V[3].x,0.);
   if(rr>R*1.2){return vec4f(gl,0.);}
   /* спрайт повёрнут на ro=(cos,sin): место — в его осях, нормали — обратно в экран */
   /* V[3].y — сжатие крена по поперечной оси (корпус корабля, 17c2); 0 — без крена */
@@ -52759,13 +52767,20 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
   let dark=clamp(.45*smoothstep(-.1,.9,-side)+.25*away,0.,.55)*own;
   let lf=smoothstep(-.2,.8,side)*own;
-  let shade=(1.+.9*lf+max(dot(nb,L),0.)*(1.-nb.z)*1.2*own)*(1.-dark);
-  let lit=col*rim*1.1*own*a;
+  var shade=(1.+.9*lf+max(dot(nb,L),0.)*(1.-nb.z)*1.2*own)*(1.-dark);
+  var lit=col*rim*1.1*own*a;
+  /* корпус корабля (glow<0, 17c2): свет как у 2D-корпуса (gpuHullLight) — грунт выпечки
+     как есть, тень перепадом, звезда только кромкой и скатом к ней. Множитель станции
+     (до ×3 на светлом борту) выбеливал обшивку, а насыщенная краска (красный кант)
+     шла в огни ×2.3 и за коленом свечения уходила в розовое */
+  let hm=V[3].x<-.5;
+  if(hm){shade=1.-clamp(.3*smoothstep(-.4,.6,-side)+.15*away,0.,.4)*own;
+    lit=col*(rim*1.1+max(dot(nb,L),0.)*(1.-nb.z)*.3)*own*a;}
   /* L3: заслон звезды — станция тенит баржу у причала (у самой станции, glow>0, — нет);
      огни в тень не падают */
   let sk=mix(1.,select(shAt(p,sd),1.,V[3].x>0.),own);
   /* L3: точечный свет — лучи, разрывы, болты, факелы: ближний борт берёт их цвет */
-  let pl=plAt(p,normalize(nb+vec3f(n.xy*.6,0.)),R*.3,R*.22)*own;
+  let pl=plAt(p,normalize(nb+vec3f(n.xy*.6,0.)),R*.3,R*.22)*own*select(1.,.2,hm);
   /* металл (серое) — жёсткий блик-штрих со стороны звезды; стекло (голубое) — отражает звезду */
   let Hs=normalize(L+vec3f(0.,0.,1.));
   let met=(1.-smoothstep(.1,.28,sat))*smoothstep(.12,.35,mx)*own;
@@ -52773,7 +52788,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let gg0=glassG(uv,u1*6.);let gg=vec2f(gg0.x*ro.x-gg0.y*ro.y,gg0.x*ro.y+gg0.y*ro.x);
   let spec=(col*met*(1.-gls)*1.3*pow(max(dot(n,Hs),0.),40.)+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs))*sk*a;
   /* окна и огни светят сами: выше колена — их подхватывает свечение */
-  let em=1.+1.3*(1.-own);
+  let em=select(1.+1.3*(1.-own),1.,hm);
   return vec4f(c4.rgb*(shade*sk*em+pl)*mix(vec3f(1.),col,.08)+lit*sk+spec+gl*(1.-a),a);
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
@@ -53005,7 +53020,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
 const HG_U=new Float32Array(60);
 /* свет факела: ядро, перо, зарево. Прежний ореол давало emit() над #c; в сцене
    свечение начинается с 1.4, поэтому зарево несёт его само (пара 760, 25.09) */
-const HG_GAIN=[2.6,2,3.2];
+const HG_GAIN=[2.6,1,1.2];
 function hullGpuFlames(pass,h,id,x,y,a,sc,cb,thr,lvl){
   const MF=(typeof makerFlame==="function")?makerFlame(h.by):null;
   let p=HG_THR.get(id)||0;p+=((thr?1:0)-p)*.22;if(p<.004)p=0;HG_THR.set(id,p);
@@ -53068,7 +53083,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     gpuImage(pass,gpuMipTex(Bl.cv),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
-  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,0,cb,lod);
+  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
   if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */
   if(braking){const f=4+(.5+.5*Math.sin(G.t*.9))*6,T=[];

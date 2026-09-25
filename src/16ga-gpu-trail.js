@@ -57,9 +57,14 @@ function gpuTrail(zx,zy,Z){
   const lanes={};
   for(const t of TRAIL){if(!t.hot)continue;const k=t.e+"/"+(t.b|0);(lanes[k]||(lanes[k]=[])).push(t);}
   GTR.n=0;const puffs=[];
+  /* под факелом ленты нет: там горит шлейф (gpuExhaust) и перо корпуса, и белое ядро
+     ленты, сложенное с ними, выбеливало весь факел (п.3, пара 760: S .21 → .38 без
+     ленты). Лента проявляется за длиной шлейфа — там газ уже остыл и отстал */
+  let dist=null,Lf=1;
   const node=(arr,i)=>{
     const t=arr[i],u=clamp(t.life/t.max,0,1);
-    const a=Math.min(TRAIL_AMAX,Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5);
+    const g=clamp((dist[i]-Lf*.3)/(Lf*.55),0,1),fo=.2+.8*g*g*(3-2*g);
+    const a=Math.min(TRAIL_AMAX,Math.pow(u,TRAIL_LIFE.fall)*.30+u*u*u*u*.5)*fo;
     const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
     /* газ расходится: к хвосту лента шире (яркость и так гаснет с возрастом) */
     const hw=(Math.max(1,t.r*SZ*(2.4-u*1.3)*CW*1.35)*TRAIL_HALO.w*.5+1)*(1+(1-u)*1.6);
@@ -69,13 +74,16 @@ function gpuTrail(zx,zy,Z){
   };
   for(const k in lanes){
     const arr=lanes[k];if(arr.length<2)continue;
+    dist=new Float32Array(arr.length);
+    for(let i=arr.length-2;i>=0;i--)dist[i]=dist[i+1]+Math.hypot(zx(arr[i].x)-zx(arr[i+1].x),zy(arr[i].y)-zy(arr[i+1].y));
+    Lf=Math.max(2.5,arr[arr.length-1].r*SZ*2.2)*9;   /* длина шлейфа при средней пульсации */
     let A=node(arr,0);
     for(let i=1;i<arr.length;i++){
       const B=node(arr,i);gtrLane(A,B);A=B;
     }
     /* добела раскалённый корешок у сопла */
     const f=arr[arr.length-1],x=zx(f.x),y=zy(f.y),r=Math.max(.8,f.r*SZ*1.3);
-    if(x>-40&&x<W+40&&y>-40&&y<H+40)puffs.push([1,x,y,r,0,0,r*.8,T.core[0],T.core[1],T.core[2],.62]);
+    if(x>-40&&x<W+40&&y>-40&&y<H+40)puffs.push([1,x,y,r,0,0,r*.8,T.core[0],T.core[1],T.core[2],.2]);   /* ядро сопла светит шлейф */
   }
   gtrDraw(pass,"gtr");
   /* холодные струи маневровых — мягкие дымки */

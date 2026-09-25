@@ -434,7 +434,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let V=fu.v;let c=V[0].xy;let R=V[0].z;let s=V[0].w;let sd=normalize(V[1].xy);let col=V[2].rgb;let ro=V[1].zw;
   let dp=p-c;let rr=length(dp);
   /* свой свет станции: тёплое гауссово пятно, окна и прожекторы */
-  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07)*V[3].x;
+  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07)*max(V[3].x,0.);
   if(rr>R*1.2){return vec4f(gl,0.);}
   /* спрайт повёрнут на ro=(cos,sin): место — в его осях, нормали — обратно в экран */
   /* V[3].y — сжатие крена по поперечной оси (корпус корабля, 17c2); 0 — без крена */
@@ -460,13 +460,20 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
   let dark=clamp(.45*smoothstep(-.1,.9,-side)+.25*away,0.,.55)*own;
   let lf=smoothstep(-.2,.8,side)*own;
-  let shade=(1.+.9*lf+max(dot(nb,L),0.)*(1.-nb.z)*1.2*own)*(1.-dark);
-  let lit=col*rim*1.1*own*a;
+  var shade=(1.+.9*lf+max(dot(nb,L),0.)*(1.-nb.z)*1.2*own)*(1.-dark);
+  var lit=col*rim*1.1*own*a;
+  /* корпус корабля (glow<0, 17c2): свет как у 2D-корпуса (gpuHullLight) — грунт выпечки
+     как есть, тень перепадом, звезда только кромкой и скатом к ней. Множитель станции
+     (до ×3 на светлом борту) выбеливал обшивку, а насыщенная краска (красный кант)
+     шла в огни ×2.3 и за коленом свечения уходила в розовое */
+  let hm=V[3].x<-.5;
+  if(hm){shade=1.-clamp(.3*smoothstep(-.4,.6,-side)+.15*away,0.,.4)*own;
+    lit=col*(rim*1.1+max(dot(nb,L),0.)*(1.-nb.z)*.3)*own*a;}
   /* L3: заслон звезды — станция тенит баржу у причала (у самой станции, glow>0, — нет);
      огни в тень не падают */
   let sk=mix(1.,select(shAt(p,sd),1.,V[3].x>0.),own);
   /* L3: точечный свет — лучи, разрывы, болты, факелы: ближний борт берёт их цвет */
-  let pl=plAt(p,normalize(nb+vec3f(n.xy*.6,0.)),R*.3,R*.22)*own;
+  let pl=plAt(p,normalize(nb+vec3f(n.xy*.6,0.)),R*.3,R*.22)*own*select(1.,.2,hm);
   /* металл (серое) — жёсткий блик-штрих со стороны звезды; стекло (голубое) — отражает звезду */
   let Hs=normalize(L+vec3f(0.,0.,1.));
   let met=(1.-smoothstep(.1,.28,sat))*smoothstep(.12,.35,mx)*own;
@@ -474,7 +481,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let gg0=glassG(uv,u1*6.);let gg=vec2f(gg0.x*ro.x-gg0.y*ro.y,gg0.x*ro.y+gg0.y*ro.x);
   let spec=(col*met*(1.-gls)*1.3*pow(max(dot(n,Hs),0.),40.)+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs))*sk*a;
   /* окна и огни светят сами: выше колена — их подхватывает свечение */
-  let em=1.+1.3*(1.-own);
+  let em=select(1.+1.3*(1.-own),1.,hm);
   return vec4f(c4.rgb*(shade*sk*em+pl)*mix(vec3f(1.),col,.08)+lit*sk+spec+gl*(1.-a),a);
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;

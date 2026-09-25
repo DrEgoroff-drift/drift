@@ -1513,7 +1513,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:493-570
+drawStation                  src/17c-system-draw.js:500-577
 drawStationBody              src/17c-system-draw.js:154-357
 drawStationMods              src/17a-station-mod.js:207-210
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -1561,7 +1561,7 @@ DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
 DRONE_NAMES                  src/12e-drone-flight.js:43
 DRONE_QUIRKS                 src/12e-drone-flight.js:44-51
-DRONE_SEG                    src/16ga-gpu-trail.js:131
+DRONE_SEG                    src/16ga-gpu-trail.js:139
 DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:171-175
@@ -2041,12 +2041,12 @@ gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:99-193
 GEW                          src/17-mode-system.js:48
 GEW_WGSL                     src/17-mode-system.js:49
-GEX                          src/16ga-gpu-trail.js:186
-GEX_WGSL                     src/16ga-gpu-trail.js:187
-gexPush                      src/16ga-gpu-trail.js:252-258
+GEX                          src/16ga-gpu-trail.js:194
+GEX_WGSL                     src/16ga-gpu-trail.js:195
+gexPush                      src/16ga-gpu-trail.js:260-266
 ghf                          src/17ga-gpu-planets.js:349
-GHL                          src/16ga-gpu-trail.js:302
-GHL_WGSL                     src/16ga-gpu-trail.js:303
+GHL                          src/16ga-gpu-trail.js:310
+GHL_WGSL                     src/16ga-gpu-trail.js:311
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
@@ -2179,9 +2179,9 @@ gpuCanvasTex                 src/08c-gpu-kit.js:42-57
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:419-429
 gpuCvLevel                   src/08c-gpu-kit.js:73-84
-gpuDrones                    src/16ga-gpu-trail.js:132-176
+gpuDrones                    src/16ga-gpu-trail.js:140-184
 gpuDrop                      src/08b-gpu.js:81-86
-gpuExhaust                   src/16ga-gpu-trail.js:259-292
+gpuExhaust                   src/16ga-gpu-trail.js:267-300
 gpuField                     src/08c-gpu-kit.js:277-306
 gpuFrame                     src/08b-gpu.js:509-519
 gpuFrontClean                src/08c-gpu-kit.js:119-124
@@ -2191,11 +2191,11 @@ gpuHaze                      src/08b-gpu.js:442
 gpuHud                       src/08bh-gpu-hud.js:14-17
 gpuHudDpr                    src/08bh-gpu-hud.js:12
 gpuHudFlush                  src/08bh-gpu-hud.js:20-33
-gpuHullLight                 src/16ga-gpu-trail.js:345-364
+gpuHullLight                 src/16ga-gpu-trail.js:353-372
 gpuImage                     src/08c-gpu-kit.js:205-217
 gpuKitU                      src/08c-gpu-kit.js:163-167
 gpuLight                     src/08b-gpu.js:444
-gpuLitSprite                 src/17c-system-draw.js:484-492
+gpuLitSprite                 src/17c-system-draw.js:491-499
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:578-583
 gpuMipDrop                   src/08c-gpu-kit.js:103
@@ -2227,12 +2227,12 @@ gpuStationDraw               src/17c3-station-live.js:89-95
 gpuStationFlare              src/17c3-station-live.js:98-113
 gpuSysUnder                  src/17g-gpu-system.js:386-391
 gpuTakeSnap                  src/08b-gpu.js:27-34
-gpuTrail                     src/16ga-gpu-trail.js:53-90
+gpuTrail                     src/16ga-gpu-trail.js:53-98
 gpuTs                        src/28z-fps-probe.js:128-135
 gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
 gpuUni                       src/08b-gpu.js:493-505
-gpuWake                      src/16ga-gpu-trail.js:99-123
+gpuWake                      src/16ga-gpu-trail.js:107-131
 gpuWorld                     src/08b-gpu.js:586-605
 gradePass                    src/19c-light.js:260-296
 GREEN_BEDS                   src/21g-greenhouse.js:23
@@ -6762,7 +6762,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16g-gpu-space.js · 15 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
 
-## src/16ga-gpu-trail.js · 24 КБ
+## src/16ga-gpu-trail.js · 25 КБ
   · шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/16gaz-gpu-noise.js · 3 КБ
@@ -6780,7 +6780,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17b-finds.js · 18 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 36 КБ
+## src/17c-system-draw.js · 37 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17c1-station-dress.js · 4 КБ

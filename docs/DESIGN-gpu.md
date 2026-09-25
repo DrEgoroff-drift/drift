@@ -186,6 +186,10 @@ Then hulls (item 2) by the same «explicit emission» path.
   picture would differ. A signature of everything visible — needles, misclose text, tape head/length/scroll,
   pen jitter, canvas size, the tape object — decides; gate: the kept frame equals a fresh draw, redraws in
   steady flight well under one per frame, the pod unchanged on the pair.
+- Brief of **item 3, the player's hull and flame colour** (Контроль on 85a858c: «выбеленный корабль игрока —
+  первое, что видит автор»): the body lit as the 2D hull was (the bake as painted, a shadow slope, the star only
+  as a rim), not by the station's multiplier; the flame orange again. Gate as in the plan, 2D = the merge-base
+  build, the same flight (thrust, bank, Z 2.2) at ×1.5 and 760, body and flame measured in hull axes.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -193,8 +197,8 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
-  back 0); the instrument pod 25c redraws only on change. Next: item 3 (flame and body colour), then the
-  hotel's windows as live shapes, then the phone candidate.
+  back 0); the instrument pod 25c redraws only on change; item 3 done but for the rear pods (V>.6 +47/+52 %
+  over 2D, flame and wake light on them). Next: the hotel's windows as live shapes, then the phone candidate.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -517,6 +521,22 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   in 0 pixels. The tape suite asserts no redraw on 10 unchanged frames, one on a new column, and a kept frame
   equal to a fresh one — compared only after the readbacks have moved the canvas to the software raster,
   whose arc antialiasing differs from the accelerated one (the first attempt read that as 31 729 bytes).
+  **Item 3 — hull and flame colour (17c, 17c2, 16ga).** Reference: the merge-base build (2D, no GPU) through
+  `shot.py` with its `drift.html` swapped, the same flight; the ship is found by hooking `drawHull` /
+  `hullGpuDraw`, and body (front 2/3 of the hull box) and flame (12 nozzle radii behind the tail) are measured
+  in hull axes, per pixel of area (the GPU ship is 1.26× larger since `shipScaleCap`). Three causes:
+  (1) GST gave the hull the station's light — up to ×3.1 on the lit side, and every saturated pixel (the red
+  trim) went into «own light» ×2.3 and past the glow knee to pink. A hull flag (`glow` −1) now shades as
+  `gpuHullLight` did in 2D: the bake as painted, a shadow slope ≤ .4, the star as rim and slope, no lamp gain;
+  the flame's point light on its own hull at .2. (2) The trail's white core and the white-hot root sat under
+  the L4 plume and added up to white (plume S .21 → .38 with the trail off): the ribbon now fades in past the
+  plume's length, the root is .2. (3) The hull flame's plume and glow gains 2 / 3.2 → 1 / 1.2 (core 2.6 kept).
+  Numbers (2D → HEAD → now; ×1.5 | 760): body V>.6 per area 11.6 → 32.7 → 17.1 % | 12.6 → 35.2 → 19.2 %;
+  mean L 91 → 107 → 87 | 88 → 109 → 89; S .18 → .26 → .30 | .17 → .25 → .29; red per area 1.3 → 0.7 → 2.1 % |
+  1.1 → 0.5 → 1.6 %; edge/L 1.09 → 0.96 → 1.05 | 1.49 → 1.28 → 1.40; flame orange per area 4.0 → 1.9 → 6.3 % |
+  0.9 → 7.2 → 13 %, S .25 → .16 → .23 | .24 → .17 → .25. The body's bright excess left is on the rear pods,
+  lit by the plume and the wake (mask vm_b10_d); nose and waist match 2D. Halving rim and glint cut it by a
+  tenth and cost sharpness — not taken.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,
