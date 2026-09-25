@@ -31,6 +31,8 @@ could ever save.
   captions; Орднунг's law ring; trade barges lit by the star; the rescue tow with its rope and a flame of the
   brush's teardrop shape; «Сорока» - the gold foil sails computed per pixel, sharp at every zoom; the rail
   ring with its lamps and spiral. Captions ride the label layer. Belt mode itself is next.
+- **ГЛАВТРАССА ships' captions** (`12ai`): the name, number and line under a fleet ship ride the label layer
+  too - the tour never met a fleet ship, and its caption was the last text written on the 2D layer in flight.
 
 ## 0.457.0 - the world on the video card
 
