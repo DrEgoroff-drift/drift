@@ -105,6 +105,16 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
   mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut
   rays; clouds on the GPU first).
+- [ ] Review 25.09 №6 (phone speed): while a finger is on the stick, the stick key holds `GPU.frameNo`
+  (17-mode-system:701), so `gpuHudFlush` clears and re-rasters the whole native-DPR `#hud` every frame (S23
+  8 MiB); the same while the rack is open. Draw the live sticks on the GPU (`#ovl`: rings and capsules), or a
+  small canvas that follows the finger; measure with `?g11=deep`, finger held down. After GPU-3's `#ovl`
+  image primitive and the rack move.
+- [ ] Review 25.09 №7 (phone speed): `gpuImage` rebinds on every texture change (one `gpuBind` slot per
+  name, 08c:223) — a dozen `createBindGroup` a frame; per-call `Float32Array`s in `gpuImage`, `gpuShapes`,
+  `gpuField`, `gpuLitSprite`, `gpuKitU`, `ovFlush`. Split the group (uniform + arena in 0, texture + sampler
+  in 1, cached per view and blend in a `WeakMap`), scratch arrays sized to the largest count. Changes the kit
+  layouts: re-accept the warm table.
 - [ ] **G6 landing and surface, the bodies:** ground chunks and far ridges as textures; deco, flora and fauna as
   sprites where order needs it; the plants' wind on the GPU.
 - [ ] **G7 cave and mine:** tiles as textures, darkness and lamp light per pixel, ore glows, dust.

@@ -2353,8 +2353,8 @@ gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:201-219
 gpuSpaceTitle                src/16g-gpu-space.js:221-232
-gpuStationDraw               src/17c3-station-live.js:109-115
-gpuStationFlare              src/17c3-station-live.js:118-133
+gpuStationDraw               src/17c3-station-live.js:119-125
+gpuStationFlare              src/17c3-station-live.js:128-143
 gpuSysUnder                  src/17g-gpu-system.js:411-417
 gpuTakeSnap                  src/08b-gpu.js:27-34
 gpuTrail                     src/16ga-gpu-trail.js:53-98
@@ -5532,7 +5532,7 @@ stateHash                    src/08a-statehash.js:30-81
 stateHashParts               src/08a-statehash.js:82-90
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191
-stationMaster                src/17c3-station-live.js:89-101
+stationMaster                src/17c3-station-live.js:99-111
 stationMercs                 src/12a-crew.js:95-147
 stationMgrs                  src/12c-mgr-core.js:267-299
 stationMods                  src/17a-station-mod.js:30-72
@@ -5545,7 +5545,7 @@ statPreview                  src/05-parts.js:417-425
 stBar                        src/17c3-station-live.js:44-47
 stCore                       src/17c-system-draw.js:119-132
 stDel                        src/14-save.js:26
-stEmFlush                    src/17c3-station-live.js:102-107
+stEmFlush                    src/17c3-station-live.js:112-117
 stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
 steps                        tests/90-harness.js:418
@@ -5559,7 +5559,7 @@ stLampRect                   src/17c3-station-live.js:30-42
 stLive                       src/17c3-station-live.js:14-17
 stMakerDress                 src/17c1-station-dress.js:10-52
 stMasterDrop                 src/17c3-station-live.js:68
-stMasterJob                  src/17c3-station-live.js:73-88
+stMasterJob                  src/17c3-station-live.js:78-98
 stopEngine                   src/09-audio.js:369-373
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -7035,7 +7035,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17c2-hull-gpu.js · 13 КБ
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c3-station-live.js · 10 КБ
+## src/17c3-station-live.js · 11 КБ
 
 ## src/17d-house-shapes.js · 7 КБ
   · дома как язык форм:1
@@ -8296,7 +8296,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy4-pipes.js · 7 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
-## tests/91zzzzzzy5-gpu-loss.js · 6 КБ
+## tests/91zzzzzzy5-gpu-loss.js · 9 КБ
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

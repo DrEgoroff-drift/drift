@@ -12392,17 +12392,17 @@ const GC_GLYPHS={
 /* атлас масок: страницы r8 1024², полки через пиксель; крупная строка — своя страница.
    Маски нужны только на время выпечки (готовая выпечка их не держит), так что переполнение —
    просто сброс; смена устройства — тоже */
-const GC_ATL={dev:null,pages:[],map:new Map(),up:0};
+const GC_ATL={dev:null,pages:[],map:new Map(),up:0,gen:0};   /* gen — поколение страниц: растёт, когда они уходят в мусор */
 function gcAtlas(key,mk){
   const A=GC_ATL,d=GPU.dev,U=GPUTextureUsage;
-  if(A.dev!==d){A.dev=d;A.pages=[];A.map.clear();}
+  if(A.dev!==d){A.dev=d;A.pages=[];A.map.clear();A.gen++;}
   let e=A.map.get(key);if(e)return e;
   const r=mk(),page=(W,H)=>{const p={tex:d.createTexture({size:[W,H],format:"r8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST}),W,H,x:0,y:0,rh:0};
     p.view=p.tex.createView();return p;};
   let pg=A.pages[A.pages.length-1];
   const fit=p=>{if(p.x+r.w>p.W){p.x=0;p.y+=p.rh+1;p.rh=0;}return p.y+r.h<=p.H;};
   if(r.w>1024||r.h>1024||!pg||pg.big||!fit(pg)){
-    if(A.pages.length>=6){for(const p of A.pages)GPU.trash.push(p.tex);A.pages=[];A.map.clear();}
+    if(A.pages.length>=6){for(const p of A.pages)GPU.trash.push(p.tex);A.pages=[];A.map.clear();A.gen++;}
     pg=r.w>1024||r.h>1024?Object.assign(page(r.w,r.h),{big:1}):page(1024,1024);A.pages.push(pg);}
   const x=pg.x,y=pg.y;pg.x+=r.w+1;pg.rh=Math.max(pg.rh,r.h);
   d.queue.writeTexture({texture:pg.tex,origin:[x,y]},r.a,{bytesPerRow:r.w},[r.w,r.h]);A.up++;
@@ -54372,16 +54372,26 @@ function stMasterDrop(M){for(const q of M.Ly)gpuBakeDrop(q);if(M.U)gpuBakeDrop(M
    Готов — в ST_MASTER. Нет готового этой плотности (зум сменил четверть-октаву) —
    рисуем прежний мастер той же станции, а новый печётся по шагу за кадр; синхронно —
    только когда станции нечем показаться вовсе (загрузка), либо она за краем (sync=false) */
+/* Текст тела («СТ-nn», «★», номера рёбер) записан ссылками на страницы атласа масок GC_ATL.
+   Атлас, дойдя до шести страниц, отдаёт их все в мусор, и слой, выпеченный кадром позже по
+   прежней записи, связывал уничтоженную текстуру: выпечка падала целиком, слой выходил
+   прозрачным, а мастер числился готовым (ревью №5). Поэтому запись помнит поколение атласа;
+   сменилось — тело пишется заново (та же станция — те же разрезы), и слои идут дальше */
 function* stMasterJob(side,sb,V,S,ty){
-  const k=side*side<=262144?2:1,g=new GcCtx(side,side,k),prev=ctx,rec={L:[],z:0,cut:[0],inv:null};
-  rec.split=()=>{rec.cut.push(g._ops.length);rec.z++;};
-  ctx=g;
-  try{g.setTransform(sb,0,0,sb,side/2,side/2);rec.inv=DOMMatrix.fromMatrix(g.getTransform()).inverse();ST_REC=rec;drawStationBody(V,S,ty);}
-  finally{ST_REC=null;ctx=prev;}
-  rec.cut.push(g._ops.length);
-  const O=g._ops,Ly=[];let U=null,ok=false;
+  const k=side*side<=262144?2:1;
+  const record=()=>{const g=new GcCtx(side,side,k),prev=ctx,rec={L:[],z:0,cut:[0],inv:null};
+    rec.split=()=>{rec.cut.push(g._ops.length);rec.z++;};
+    ctx=g;
+    try{g.setTransform(sb,0,0,sb,side/2,side/2);rec.inv=DOMMatrix.fromMatrix(g.getTransform()).inverse();ST_REC=rec;drawStationBody(V,S,ty);}
+    finally{ST_REC=null;ctx=prev;}
+    rec.cut.push(g._ops.length);rec.O=g._ops;rec.gen=GC_ATL.gen;return rec;};
+  /* сброс мог случиться и посреди самой записи — тогда её начало уже ссылается на мусор */
+  let rec=record();for(let t=0;t<2&&rec.gen!==GC_ATL.gen;t++)rec=record();
+  const n=rec.cut.length,Ly=[];let U=null,ok=false;
   try{
-    for(let i=0;i+1<rec.cut.length;i++){yield;const a=rec.cut[i],b=rec.cut[i+1];
+    for(let i=0;i+1<n;i++){yield;
+      if(rec.gen!==GC_ATL.gen){rec=record();if(rec.cut.length!==n)return null;}
+      const O=rec.O,a=rec.cut[i],b=rec.cut[i+1];
       const B=gpuBake(side,side,q=>{for(let j=a;j<b;j++)q._ops.push(O[j]);},{ss:k});
       if(!B)return null;Ly.push(B);}
     if(Ly.length>1){yield;U=gpuBake(side,side,q=>{for(const B of Ly)q.drawImage(B,0,0);},{ss:1});}

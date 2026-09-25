@@ -689,7 +689,14 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   side in 1/1024 turn), at most 16 planets; the search (up to 63 000 `reg()` a frame) runs once per turn.
   Node suite: on grid sides the lights equal the old per-frame search (40 planets); a second frame in the
   same cell rescans nothing. Golden frames, gates, gate2d, canvas and pipes green.
-  Next: review №5 (station master vs the text atlas reset), then №6, №7 into PLAN.
+- **Review №5 done; №6, №7 in PLAN §0.** `GC_ATL.gen` grows whenever the atlas pages go to the trash (six
+  pages, a new device). `stMasterJob` records the body with the generation; a changed generation before a
+  layer bake re-records the body (same station, same cuts) — a recording from an earlier frame no longer
+  binds destroyed pages. A reset in the middle of the recording itself re-records at once. Browser suite in
+  91zzzzzzy5: a fresh atlas, the body writes text into it, the atlas is reset and its pages destroyed
+  between the recording and the first layer; `createBindGroup` sees no dead view, the master bakes. With the
+  re-record disabled it goes red (1 dead view bound).
+  Next: (4) the fleet merge scouting (optimistic-gates-u46osn into a fresh gpu, nothing committed).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

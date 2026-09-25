@@ -52,17 +52,17 @@ const GC_GLYPHS={
 /* атлас масок: страницы r8 1024², полки через пиксель; крупная строка — своя страница.
    Маски нужны только на время выпечки (готовая выпечка их не держит), так что переполнение —
    просто сброс; смена устройства — тоже */
-const GC_ATL={dev:null,pages:[],map:new Map(),up:0};
+const GC_ATL={dev:null,pages:[],map:new Map(),up:0,gen:0};   /* gen — поколение страниц: растёт, когда они уходят в мусор */
 function gcAtlas(key,mk){
   const A=GC_ATL,d=GPU.dev,U=GPUTextureUsage;
-  if(A.dev!==d){A.dev=d;A.pages=[];A.map.clear();}
+  if(A.dev!==d){A.dev=d;A.pages=[];A.map.clear();A.gen++;}
   let e=A.map.get(key);if(e)return e;
   const r=mk(),page=(W,H)=>{const p={tex:d.createTexture({size:[W,H],format:"r8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST}),W,H,x:0,y:0,rh:0};
     p.view=p.tex.createView();return p;};
   let pg=A.pages[A.pages.length-1];
   const fit=p=>{if(p.x+r.w>p.W){p.x=0;p.y+=p.rh+1;p.rh=0;}return p.y+r.h<=p.H;};
   if(r.w>1024||r.h>1024||!pg||pg.big||!fit(pg)){
-    if(A.pages.length>=6){for(const p of A.pages)GPU.trash.push(p.tex);A.pages=[];A.map.clear();}
+    if(A.pages.length>=6){for(const p of A.pages)GPU.trash.push(p.tex);A.pages=[];A.map.clear();A.gen++;}
     pg=r.w>1024||r.h>1024?Object.assign(page(r.w,r.h),{big:1}):page(1024,1024);A.pages.push(pg);}
   const x=pg.x,y=pg.y;pg.x+=r.w+1;pg.rh=Math.max(pg.rh,r.h);
   d.queue.writeTexture({texture:pg.tex,origin:[x,y]},r.a,{bytesPerRow:r.w},[r.w,r.h]);A.up++;
