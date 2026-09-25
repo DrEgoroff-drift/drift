@@ -536,41 +536,6 @@ function drawCaveRock(C,cp,wx0,wy0){
   dg.addColorStop(0,"rgba(0,1,5,0)");dg.addColorStop(.5,"rgba(0,1,5,.10)");
   dg.addColorStop(1,"rgba(0,1,5,.26)");
   ctx.fillStyle=dg;ctx.fill(P);ctx.strokeStyle=dg;ctx.lineWidth=CS;ctx.stroke(K);
-  /* ── холодные лессировки (M304, DESIGN-craft §16): свет мха лежит НА КАМНЕ ──
-     Мох, кристаллы и жилы светились точками в пустоту: ореол lighter поверх
-     всего, а порода рядом оставалась чёрной — свет без освещённого. Свет
-     каждого источника кладётся в сам тайл, source-atop: тайл прозрачен, где
-     пустота, и краска ложится только на тело породы и её кромку. Радиус
-     втрое больше пятна, альфа .10–.14 — лессировка, не второй фонарь; тон
-     холодный, чтобы фонарь остался единственным тёплым. Печётся в тайл. */
-  {
-    const src=[];
-    if(typeof caveMossSpots==="function")
-      for(const m of caveMossSpots(C))src.push({x:m.x,y:m.y,r:m.rr*5,col:m.col,a:.44});
-    const D=C.deco;
-    if(D){
-      for(const c of D.crystals){
-        const y=c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low);
-        src.push({x:c.x,y:y+(c.up?-10:10),r:Math.max(80,c.rad*4),col:c.col,a:.40});
-      }
-      for(const v of D.veins){
-        const p=v.pts[Math.floor(v.pts.length/2)];
-        const y=(v.up?caveCeilOf(C,p[0],v.low):caveFloorOf(C,p[0],v.low))+p[1];
-        src.push({x:p[0],y,r:100,col:v.col,a:.28});
-      }
-    }
-    ctx.save();ctx.globalCompositeOperation="source-atop";
-    for(const s of src){
-      const x=s.x-wx0,y=s.y-wy0;
-      if(x<-s.r||x>TILE+s.r||y<-s.r||y>TILE+s.r)continue;
-      const g=ctx.createRadialGradient(x,y,0,x,y,s.r);
-      g.addColorStop(0,"rgba("+s.col.join(",")+","+s.a+")");
-      g.addColorStop(.5,"rgba("+s.col.join(",")+","+(s.a*.5).toFixed(3)+")");
-      g.addColorStop(1,"rgba("+s.col.join(",")+",0)");
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,s.r,0,TAU);ctx.fill();
-    }
-    ctx.restore();
-  }
   /* влажный блик по кромке — единственный источник формы в темноте */
   ctx.strokeStyle="rgba(150,200,230,.15)";ctx.lineWidth=1.6;ctx.stroke(K);
   /* ── капли ловят свет (M257, движки — DESIGN-craft §1) ──
@@ -661,17 +626,13 @@ function drawCaveWorld(){
   drawCaveWater(C,camx,camy);
   /* то, что лежит в пещере (M305, 22b): до темноты — фонарь это освещает */
   drawCaveProps(C,camx,camy);
-  drawCaveDark(C,px,py);
-  /* дневной свет в устье: единственный холодный свет сверху, по нему видно,
-     где выход, даже отвернувшись */
-  const mx=60-camx, my=caveGalY(C,60)-camy;
-  if(mx>-200&&mx<W+200&&my>-300&&my<H+100){
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const lg=ctx.createLinearGradient(0,my-220,0,my+60);
-    lg.addColorStop(0,"rgba(150,190,230,.16)");lg.addColorStop(1,"rgba(150,190,230,0)");
-    ctx.fillStyle=lg;
-    ctx.beginPath();ctx.moveTo(mx-26,my-240);ctx.lineTo(mx+26,my-240);ctx.lineTo(mx+70,my+60);ctx.lineTo(mx-70,my+60);ctx.closePath();ctx.fill();
-    ctx.restore();
+  for(const pl of C.plants){
+    const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
+    drawPlant(pl,x,y);
+  }
+  for(const b of C.fauna){
+    const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
+    drawBeast(b,x,y+b.r*.9,true,b.stun);
   }
   /* чужие руки на камне у устья (M210): до света, чтобы дневной луч из устья
      лёг и на них — знак врезан в породу, а не наклеен поверх сцены */
@@ -682,36 +643,15 @@ function drawCaveWorld(){
       wallDraw(WALL_C,wx0,wx1,fy-50,fy-8,"rgba(236,232,214,.66)");
     }
   }
-  /* ── свет фонаря на ПОРОДЕ, а не в воздухе (M244) ──
-     Пещера была самым мёртвым кадром игры: прибор мерил 0% пары, контраст
-     0.11 и 86% пустоты. Причина простая — единственный источник светил в
-     пустоту: клин в воздухе, а пол и стены оставались чёрными. Кладём тёплое
-     пятно на пол перед ходоком (видно ОСВЕЩЁННОЕ, а не луч) и редкие пылинки
-     в самом луче: они и дают воздуху объём. Кристаллы рядом дают холодную
-     половину пары — оба источника оказываются в одном кадре. */
-  {
-    const f=C.face||1, lk=kitStat().lamp;
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const pg=ctx.createRadialGradient(px+f*46,py+8,0,px+f*46,py+8,120*lk);
-    pg.addColorStop(0,"rgba(255,214,150,.18)");
-    pg.addColorStop(.45,"rgba(255,196,120,.10)");
-    pg.addColorStop(1,"rgba(255,190,110,0)");
-    ctx.fillStyle=pg;
-    ctx.beginPath();ctx.ellipse(px+f*46,py+8,120*lk,44*lk,0,0,TAU);ctx.fill();
-    /* пыль в луче: восемь крупинок по кругу — воздух виден только так */
-    for(let i=0;i<8;i++){
-      const ph=(G.t*.004+i*.79)%1;
-      const dx=f*(16+ph*96*lk), dy=-14+Math.sin(i*2.1+G.t*.006)*13+ph*20;
-      const a=(1-Math.abs(ph-.5)*2)*.22;
-      if(a<=0)continue;
-      ctx.fillStyle="rgba(255,232,190,"+a.toFixed(3)+")";
-      ctx.beginPath();ctx.arc(px+dx,py+dy,.9+ph*1.4,0,TAU);ctx.fill();
-    }
-    ctx.restore();
-  }
+  /* ── свет (G7, 22c): всё, что выше, — альбедо; дальше поле умножает его ──
+     на свет источников с тенями от породы и складывает рассеяние луча и пыль.
+     Темнота больше не спрайт поверх кадра, а отсутствие света: фонарь, мох,
+     кристаллы, чужая лампа и день в устье — единственное, что здесь светит.
+     Жизнь пещеры рисуется ДО света: её освещают, она не светит сама */
+  drawCaveLight(C,camx,camy,{x:C.x,y:C.y-27,f:C.face||1});
   drawCaveGlow(C,camx,camy,px,py);
-  /* свой свет пещеры (M248): мох по своду и чужой фонарь на полу */
-  if(typeof drawCaveOwnLight==="function")drawCaveOwnLight(C,camx,camy);
+  /* свой свет пещеры (M248): пятна мха и чужой фонарь — сами вещи; их свет в поле */
+  drawCaveOwnLight(C,camx,camy);
   /* дозорные посёлка у устья (хвост M110): их видно, а не только читается
      в подсказке. Те же силуэты с шестом, что на поверхности, и факел */
   if(C.watch>0)for(let i=0;i<2;i++){
@@ -724,14 +664,6 @@ function drawCaveWorld(){
     ctx.strokeStyle="rgba(20,24,30,.95)";ctx.lineWidth=1.4;
     ctx.beginPath();ctx.moveTo(wx+(i?3:-3),wy-19);ctx.lineTo(wx+(i?3:-3),wy);ctx.stroke();
     ctx.fillStyle="rgba(255,206,130,.9)";ctx.fillRect(wx+(i?2:-4),wy-21,2,2.4);
-  }
-  for(const pl of C.plants){
-    const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
-    drawPlant(pl,x,y);
-  }
-  for(const b of C.fauna){
-    const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
-    drawBeast(b,x,y+b.r*.9,true,b.stun);
   }
   if(!C.found){
     const x=C.findX-camx,y=C.findY-camy;
