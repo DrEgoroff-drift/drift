@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 622 · символов верхнего уровня: 6197
+Файлов: 622 · символов верхнего уровня: 6198
 
 ## СИМВОЛЫ
 
@@ -377,12 +377,12 @@ BAZ_THROWN_MAX               src/17n-bazaar.js:9
 bazBought                    src/17n-bazaar.js:19-23
 bazBucket                    src/17n-bazaar.js:18
 bazBuy                       src/17n-bazaar.js:47-61
-bazClose                     src/17n-bazaar.js:167
+bazClose                     src/17n-bazaar.js:165
 bazHere                      src/17n-bazaar.js:10-17
 bazHulk                      src/17n-bazaar.js:74-90
-bazInteract                  src/17n-bazaar.js:160-166
+bazInteract                  src/17n-bazaar.js:158-164
 bazLots                      src/17n-bazaar.js:33-46
-bazOpen                      src/17n-bazaar.js:168-188
+bazOpen                      src/17n-bazaar.js:166-186
 bazPartBase                  src/17n-bazaar.js:31
 bazSign                      src/17n-bazaar.js:94-102
 bazThrow                     src/17n-bazaar.js:25-30
@@ -1425,7 +1425,7 @@ drawBarges                   src/12l-barge.js:594-629
 drawBargesMap                src/12l-barge.js:631-652
 drawBase                     src/21ac-base-draw.js:43-730
 drawBaseBuilding             src/21c-built.js:105-136
-drawBazaar                   src/17n-bazaar.js:103-159
+drawBazaar                   src/17n-bazaar.js:103-157
 drawBeast                    src/20f-fauna.js:231-339
 drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:360
@@ -1508,7 +1508,7 @@ drawMap                      src/18-mode-map.js:120-508
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModule                   src/21aa-base-rooms.js:384-500
 drawMonolith                 src/20aa-poi-shapes.js:193-210
-drawMooredBarge              src/17e-station-body.js:17-38
+drawMooredBarge              src/17e-station-body.js:17-36
 drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
@@ -1516,7 +1516,7 @@ drawPeaceFleet               src/17m-peace-fleet.js:73-144
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
-drawPlanetWorks              src/17e-station-body.js:62-111
+drawPlanetWorks              src/17e-station-body.js:71-116
 drawPlant                    src/20-life.js:406-415
 drawPlantAlien               src/20-life.js:210-377
 drawPOI                      src/20a-poi.js:173-234
@@ -2165,6 +2165,7 @@ GLOW_SP                      src/16a0-glow.js:22
 GLOW_TIERS                   src/11i-glow.js:121
 glowBlit                     src/16a0-glow.js:38
 glowCaveX                    src/11i-glow.js:139-142
+glowCone                     src/17e-station-body.js:55-59
 glowCorePlanet               src/11i-glow.js:33-37
 glowDepthAt                  src/11i-glow.js:24-29
 glowDepthHere                src/11i-glow.js:30
@@ -4132,8 +4133,8 @@ planetHaul                   src/12n-planet.js:67-86
 planetHeightAt               src/07a-terrain.js:65-72
 planetHere                   src/12n-planet.js:61-64
 planEtherLine                src/11r-plan.js:43-46
-planetLightsN                src/17e-station-body.js:40-45
-planetLightsOn               src/17e-station-body.js:48-52
+planetLightsN                src/17e-station-body.js:38-43
+planetLightsOn               src/17e-station-body.js:46-50
 planetLoadSum                src/12n-planet.js:122-125
 planetMat                    src/18a-material.js:99-106
 planetMatHue                 src/18a-material.js:363-366
@@ -6935,7 +6936,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17d-house-shapes.js · 7 КБ
   · дома как язык форм:1
 
-## src/17e-station-body.js · 7 КБ
+## src/17e-station-body.js · 9 КБ
   · тело станции и планеты: что построил игрок, видно:1
 
 ## src/17f-sys-traffic.js · 8 КБ
@@ -6980,7 +6981,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17m-peace-fleet.js · 11 КБ
   · мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3):1
 
-## src/17n-bazaar.js · 14 КБ
+## src/17n-bazaar.js · 13 КБ
   · барахолка, которая помнит (M463, DESIGN-life):1
 
 ## src/17o-giants.js · 18 КБ

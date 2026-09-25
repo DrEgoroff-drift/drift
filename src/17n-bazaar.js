@@ -135,7 +135,7 @@ function drawBazaar(zx,zy,Z){
     gpuShapes(pass,SH);
   }
   /* гирлянды: провод дугой, лампочки на коротких подвесах, качаются не в лад */
-  const WR=[],LT=[],gR=5*s,gK=1.1-.35/(gR*dk);
+  const WR=[],LT=[];
   for(let i=0;i<hulks.length-1;i++){
     const [ax,ay]=hulks[i],[bx,by]=hulks[i+1],mx=(ax+bx)/2,my=(ay+by)/2+12*s;
     let p=[ax,ay-16*s];
@@ -147,9 +147,7 @@ function drawBazaar(zx,zy,Z){
          квадрат той же площади покрытие считает точно, как растр */
       const br=.9*s,bh=br*.886;
       LT.push(br*dk<.7?[0,lx+sw-bh,ly+4.6*s-bh,lx+sw+bh,ly+4.6*s+bh,0,0,255,170+k*12,110,.8*on]:[1,lx+sw,ly+4.6*s,br,0,0,0,255,170+k*12,110,.8*on]);
-      /* ореол: был радиальный градиент 0→5s (конус). Мягкий край — гладкая ступень от −.5 px
-         до R+.5: пик тот же, а свет сходится с конусом в 3 % при поправке 1.1−.35/R (R в px) */
-      LT.push([1,lx+sw,ly+4.6*s,0,0,0,gR+.5/dk,255,190,120,.14*on*gK]);}
+      glowCone(LT,lx+sw,ly+4.6*s,5*s,[255,190,120],.14*on);}   /* ореол — конус градиента (17e) */
   }
   gpuShapes(pass,WR);gpuShapes(pass,LT,{blend:"add"});
   /* середина строки — x, базовая линия — y−48s; место на целый пиксель устройства */
