@@ -23988,8 +23988,8 @@ function drawFleet(zx,zy,Z){
   const F=fleetHere(G.sys);if(!F.length)return;
   for(const f of F){
     const p=fleetPos(f),x=zx(p.x),y=zy(p.y);
-    if(x<-260||x>W+260||y<-260||y>H+260)continue;
-    const s=fleetScale(Z),art=fleetArtOf(f);
+    if(x<-260||x>W+260||y<-260||y>H+260){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);continue;}   /* мастер заранее (17a0) */
+    const s=fleetScale(Z),art=fleetArtOf(f,false);if(!art)continue;
     /* место, курс и масштаб известны — матрица сразу в fleetShipAt, без 2D-стека на #c (25.09) */
     const c=Math.cos(p.a)*s,q=Math.sin(p.a)*s;
     fleetShipAt(f,art,c,q,-q,c,x,y,ctx.globalAlpha);
@@ -24222,8 +24222,26 @@ function drawFleetMap(vis,cell){
    '-' < '1' < 'a'). Здесь объявлен `FLEET_ART` — кэш спрайтов; его читает
    только `fleetArtOf`, то есть во время кадра, а не на верхнем уровне. */
 /* ── окраска: один конвейер на все классы (§18.5, §1) ── */
-const FLEET_ART={},FLEET_SS=3;
-function fleetArtOf(f){
+const FLEET_ART={},FLEET_SS=3,FLEET_PB={f:-1,k:""};
+/* рецепт облика (кисть cn): облик → (g)=>… в осях выпечки. Кадр его не зовёт — это для проверок
+   тестов (91zzza M317/M318): синхронно читать выпечку с видеокарты нечем, а свойства рецепта
+   (эмблема, медиана тела, тень под баком) — те же на любом растре */
+const FLEET_PAINT=new WeakMap();
+/* мастер борта — задача планировщика 17a0 (25.09): запись тела, потом по выпечке за шаг.
+   ahead — борт ещё за краем (до 1.6 экрана): шаг в кадр и не больше одного мастера флота
+   за кадр, до готовности null. Без ahead — борт уже на экране, а мастера нет (загрузка,
+   прыжок): допекаем целиком, планировщик считает PB_SYNC. На S23 пять мастеров за кадр
+   давали хвост в 100 мс (Контроль, 25.09) */
+function fleetArtOf(f,ahead){
+  const key="fl"+f.k+f.seed+"!"+(f.by||"gt");
+  if(FLEET_ART[key])return FLEET_ART[key];
+  if(!GPU.dev){const it=fleetArtJob(f);let r;do r=it.next();while(!r.done);return r.value;}   /* без устройства: геометрия, cn null; не в кэш */
+  if(ahead){if(FLEET_PB.f===GPU.frameNo&&FLEET_PB.k!==key)return null;FLEET_PB.f=GPU.frameNo;FLEET_PB.k=key;}
+  const art=prebake("fl|"+key,()=>fleetArtJob(f),!ahead);
+  if(art)FLEET_ART[key]=art;
+  return art;
+}
+function* fleetArtJob(f){
   /* ── флот тоже чей-то (M369a, §19.4) ──
      Тринадцать классов остаются классами: они про РАБОТУ — почтовик, танкер,
      буксир. Завод берёт у них измерения 5–7: грунт, огни и подпись тяги, — и
@@ -24231,8 +24249,6 @@ function fleetArtOf(f){
      Пока весь флот её и есть; чужие крылья прилетят с M371, и генератор их
      уже ждёт: достаточно положить `by` в запись. */
   const fby=f.by||"gt";
-  const key="fl"+f.k+f.seed+"!"+fby;
-  if(FLEET_ART[key])return FLEET_ART[key];
   const r=rng(hashi(f.seed,0xF1A7,5));
   const polys=[],lines=[],lights=[];
   const add=(pts,c,e)=>polys.push({p:pts,c,e:e||0});
@@ -24548,17 +24564,20 @@ function fleetArtOf(f){
   /* на видеокарте сторону света решает звезда (fleetShipGpu): её выпечка берёт этот
      слой мягче — верх светлее (.34), низ темнеет на .3, а не в III–IV: тень кладёт звезда,
      и двойная тень снизу гасила панели */
-  const bake=(top,dark)=>gpuBake(side,side,g=>{
+  const paint=(top,dark)=>g=>{
     g.setTransform(FLEET_SS,0,0,FLEET_SS,rad*FLEET_SS,rad*FLEET_SS);body();
     ctx.globalCompositeOperation="source-atop";
     const lg=ctx.createLinearGradient(0,-hw*1.8,0,hw*1.6);
     lg.addColorStop(0,top);lg.addColorStop(.5,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,"+dark+")");
-    ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);ctx.globalCompositeOperation="source-over";});
-  const dr=f.k==="derelict";
-  const cn=bake(dr?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)",.62);
-  const cnA=cn&&bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3);
-  const art={cn,cnA,rad,L,hw,lights,bx,by,emb};
-  FLEET_ART[key]=art;return art;
+    ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);ctx.globalCompositeOperation="source-over";};
+  const bake=(top,dark)=>gpuBake(side,side,paint(top,dark));
+  const dr=f.k==="derelict",topN=dr?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)";
+  let cn=null,cnA=null,ok=false;
+  try{
+    yield;cn=bake(topN,.62);
+    if(cn){yield;cnA=bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3);}
+    ok=true;const art={cn,cnA,rad,L,hw,lights,bx,by,emb,side};FLEET_PAINT.set(art,paint(topN,.62));return art;
+  }finally{if(!ok){gpuBakeDrop(cn);gpuBakeDrop(cnA);}}   /* брошена недопечённой — отдать выпечки */
 }
 /* ── алфавит знаков (§18.2): десять фигур, у каждой одна заливка; повороты
    0/45/90 и отражение — единственные операции; h — полуразмер фигуры ── */
@@ -24607,7 +24626,7 @@ function fleetShipGpu(f,art){
 }
 /* то же без 2D: матрица (a…f) — в пикселях CSS; её дают те, кто знает место сам (полоса 17g) */
 function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
-  const pass=gpuScene();if(!pass||!art.cn)return false;
+  const pass=gpuScene();if(!pass||!art||!art.cn)return false;
   const s=Math.hypot(ma,mb);
   const T=(lx,ly)=>[ma*lx+mc*ly+me,mb*lx+md*ly+mf],[x,y]=T(0,0),w=art.rad*2*s;
   const rot=Math.atan2(mb,ma);
@@ -49759,30 +49778,46 @@ function abilPadRim(){
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
     b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="ДОЛГОЕ · "+abilOf().ru;}   /* режим входит в ключ: в вагоне подписи нет */
 }
+/* клин прожектора: радиальный градиент в секторе ±.35 — выпечка GPU-холста на размер экрана
+   (L — большая сторона, меняется только с окном); вершина у левого края, ось — вправо */
+const ABIL_CONE=new Map();
+function abilCone(R){
+  const d=DPR*2;   /* вдвое крупнее и уровень 0 (lod .5): повёрнутая кромка клина не мылится билинейной выборкой */
+  return bakeKeep(ABIL_CONE,Math.round(R*d)+"|"+d,2,()=>{
+    const Rd=R*d,w=Math.ceil(Rd)+2,h=2*Math.ceil(Rd*Math.sin(.35))+2;
+    const B=gpuBake(w,h,g=>{g.setTransform(d,0,0,d,1,h/2);
+      const gr=g.createRadialGradient(0,0,0,0,0,R);gr.addColorStop(0,"rgba(200,230,255,.102)");   /* .10 в 2D; проход сцены сводит на 2 % темнее */gr.addColorStop(1,"rgba(200,230,255,0)");
+      g.fillStyle=gr;g.beginPath();g.moveTo(0,0);g.arc(0,0,R,-.35,.35);g.closePath();g.fill();},{mips:true});
+    return B&&{B,w:w/d,h:h/d,ox:(w/2-1)/d,drop(){gpuBakeDrop(B);}};
+  });
+}
 function drawAbil(zx,zy){
-  /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep) */
-  if(abilOn("yacht")){   /* СИРЕНА: два расходящихся кольца */
-    const x=zx(G.ship.x),y=zy(G.ship.y),u=1-(ABIL_ST.on-G.t)/(ABIL.yacht.dur*60);
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    for(const k of [0,.5]){const uu=(u+k)%1;ctx.strokeStyle="rgba(255,190,110,"+(.6*(1-uu)).toFixed(2)+")";ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(x,y,20+uu*260,0,TAU);ctx.stroke();}
-    ctx.restore();
+  /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep).
+     На видеокарте (25.09): фигуры прохода сцены и выпечка клина, 2D-пути нет */
+  const pass=gpuScene();if(!pass)return;
+  if(abilOn("yacht")){   /* СИРЕНА: два расходящихся кольца (штрих 2 px, сложение) */
+    const x=zx(G.ship.x),y=zy(G.ship.y),u=1-(ABIL_ST.on-G.t)/(ABIL.yacht.dur*60),R=[];
+    for(const k of [0,.5]){const uu=(u+k)%1;R.push([3,x,y,20+uu*260,0,1,0,255,190,110,.6*(1-uu)]);}
+    gpuShapes(pass,R,{blend:"add"});
   }
   if(abilOn("courier")&&ABIL_ST.crate){   /* СБРОС: ящик остаётся там, где выброшен */
-    const x=zx(ABIL_ST.crate.x),y=zy(ABIL_ST.crate.y),s=shipZ(G.zoom);
-    ctx.save();ctx.translate(x,y);ctx.rotate(ABIL_ST.crate.a+G.t*.01);ctx.scale(s,s);
-    ctx.fillStyle="#6a5a3c";ctx.fillRect(-6,-5,12,10);ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1;ctx.strokeRect(-6,-5,12,10);
-    ctx.strokeStyle="rgba(255,214,150,.7)";ctx.beginPath();ctx.moveTo(-6,0);ctx.lineTo(6,0);ctx.moveTo(0,-5);ctx.lineTo(0,5);ctx.stroke();
-    ctx.restore();
+    const x=zx(ABIL_ST.crate.x),y=zy(ABIL_ST.crate.y),s=shipZ(G.zoom),an=ABIL_ST.crate.a+G.t*.01,c=Math.cos(an),n=Math.sin(an);
+    /* прямоугольник в осях ящика: центр (ox,oy), полуразмеры (hx,hy) — в масштабе s */
+    const q=(ox,oy,hx,hy,C)=>[4,x+(ox*c-oy*n)*s,y+(ox*n+oy*c)*s,hx*s,hy*s,an,0,C[0],C[1],C[2],C[3]];
+    const O=[0,0,0,.5],X=[255,214,150,.7];
+    gpuShapes(pass,[q(0,0,6,5,[106,90,60,1]),
+      /* обвод 1 px по кромке — четыре полосы без нахлёста (у штриха пути углы не двоятся) */
+      q(0,-5,6.5,.5,O),q(0,5,6.5,.5,O),q(-6,0,.5,4.5,O),q(6,0,.5,4.5,O),
+      /* крест: вертикаль в два куска — в центре не двоится, как у одного пути */
+      q(0,0,6,.5,X),q(0,-2.75,.5,2.25,X),q(0,2.75,.5,2.25,X)]);
   }
-  if(ABIL_ST.k==="miner"&&abilOn("miner")&&ABIL_ST.beam){
-    ctx.save();ctx.globalCompositeOperation="lighter";ctx.strokeStyle="rgba(255,190,110,.85)";ctx.lineWidth=3;
-    ctx.beginPath();ctx.moveTo(zx(G.ship.x),zy(G.ship.y));ctx.lineTo(zx(ABIL_ST.beam.x),zy(ABIL_ST.beam.y));ctx.stroke();ctx.restore();
+  if(ABIL_ST.k==="miner"&&abilOn("miner")&&ABIL_ST.beam){   /* луч резака: 3 px, срез прямой, сложение */
+    const x0=zx(G.ship.x),y0=zy(G.ship.y),x1=zx(ABIL_ST.beam.x),y1=zy(ABIL_ST.beam.y);
+    gpuShapes(pass,[[4,(x0+x1)/2,(y0+y1)/2,Math.hypot(x1-x0,y1-y0)/2,1.5,Math.atan2(y1-y0,x1-x0),0,255,190,110,.85]],{blend:"add"});
   }
-  if(abilOn("survey")){
-    const a=G.ship.a,x=zx(G.ship.x),y=zy(G.ship.y),L=Math.max(W,H);
-    const g=ctx.createRadialGradient(x,y,0,x,y,L*.6);g.addColorStop(0,"rgba(200,230,255,.10)");g.addColorStop(1,"rgba(200,230,255,0)");
-    ctx.save();ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,L*.6,a-.35,a+.35);ctx.closePath();ctx.fill();ctx.restore();
+  if(abilOn("survey")){   /* прожектор: клин выпечки, вершина — на корабле */
+    const a=G.ship.a,x=zx(G.ship.x),y=zy(G.ship.y),K=abilCone(Math.max(W,H)*.6);
+    if(K)gpuImage(pass,K.B,[{x:x+Math.cos(a)*K.ox,y:y+Math.sin(a)*K.ox,w:K.w,h:K.h,rot:a,a:1}],{lod:.5});
   }
 }
 
@@ -54932,12 +54967,13 @@ function drawSysLane(zx,zy,Z){
 }
 /* ── очередь у дока и два движения мимо неё ── */
 function laneShip(f,x,y,a,al,Z){
-  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200)return;
+  /* за краем (до 1.6 экрана) или ещё прозрачен — мастер печётся заранее, шагом (17a0) */
+  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);return;}
   /* издали очередь сжимается с миром: эллипс ожидания 150×70 на ×0.16 — полсотни пикселей,
      корабли с полом масштаба ложились в нём друг на друга кашей (снимок автора 19.09) */
   const s=Math.min(fleetScale(Z),Z*1.4)*.62,c=Math.cos(a)*s,q=Math.sin(a)*s;
   /* место и курс известны — матрица сразу в fleetShipAt, без 2D-стека (было 7 вызовов на борт) */
-  fleetShipAt(f,fleetArtOf(f),c,q,-q,c,x,y,al);
+  fleetShipAt(f,fleetArtOf(f,false),c,q,-q,c,x,y,al);
 }
 /* ── ажиотаж на подъезде (M504, дизайн-проход 23.09) ──
    После ЖИЛЫ сюда летят все: от входа по оси полосы тянется вереница

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 624 · символов верхнего уровня: 6237
+Файлов: 624 · символов верхнего уровня: 6242
 
 ## СИМВОЛЫ
 
@@ -49,9 +49,11 @@ _mapDirty                    src/15-input.js:124
 _suite                       tests/90-harness.js:11
 ABIL                         src/16c-abil.js:15-23
 ABIL_BTN                     src/16c-abil.js:111
+ABIL_CONE                    src/16c-abil.js:126
 ABIL_HOLD                    src/16c-abil.js:24
 ABIL_KEY                     src/16c-abil.js:99
 ABIL_ST                      src/16c-abil.js:25
+abilCone                     src/16c-abil.js:127-136
 abilFire                     src/16c-abil.js:40-83
 abilKind                     src/16c-abil.js:26
 abilMul                      src/16c-abil.js:35-39
@@ -1414,7 +1416,7 @@ draftAll                     src/27jb-kb.js:24
 draftOf                      src/27jb-kb.js:26-42
 draftSave                    src/27jb-kb.js:43-47
 draftTowerAt                 src/27jb-kb.js:49-54
-drawAbil                     src/16c-abil.js:124-149
+drawAbil                     src/16c-abil.js:137-165
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-698
@@ -1472,7 +1474,7 @@ drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-360
-drawFleetShip                src/12ai1-fleet-art.js:426
+drawFleetShip                src/12ai1-fleet-art.js:445
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
@@ -1532,7 +1534,7 @@ drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
-drawRushTraffic              src/17g-sys-lane.js:148-162
+drawRushTraffic              src/17g-sys-lane.js:149-163
 drawScars                    src/03e-hull-draw.js:5-42
 drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeal                     src/03e-hull-draw.js:47-58
@@ -1557,7 +1559,7 @@ drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:705-982
 drawSysLane                  src/17g-sys-lane.js:108-134
-drawSysLaneShips             src/17g-sys-lane.js:163-191
+drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:58-92
 drawSystem                   src/17-mode-system.js:498-704
 drawSysTraffic               src/17f-sys-traffic.js:39-43
@@ -1882,7 +1884,7 @@ FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai1-fleet-art.js:12
 FLEET_CLASSES                src/12ai-fleet.js:20-40
 FLEET_COOL                   src/13-combat.js:212
-FLEET_ENG                    src/12ai1-fleet-art.js:389
+FLEET_ENG                    src/12ai1-fleet-art.js:408
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1892,6 +1894,7 @@ FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
 FLEET_NORM_SHIFTS            src/12ai-fleet.js:46
 FLEET_NOTE                   src/04b-fleet.js:61-79
+FLEET_PAINT                  src/12ai1-fleet-art.js:16
 FLEET_PAL                    src/04b-fleet.js:87-94
 FLEET_PERIOD                 src/12ai-fleet.js:45
 FLEET_PLACES                 src/12ai-fleet.js:44
@@ -1900,13 +1903,15 @@ FLEET_SEEN                   src/04b-fleet.js:99
 FLEET_TIER_CLS               src/04b-fleet.js:46-53
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16-29
-fleetArtBaked                tests/91zzza-cave-props.js:130
-fleetArtOf                   src/12ai1-fleet-art.js:13-349
+fleetArtBaked                tests/91zzza-cave-props.js:135
+fleetArtJob                  src/12ai1-fleet-art.js:31-368
+fleetArtOf                   src/12ai1-fleet-art.js:22-30
+fleetArtRef                  tests/91zzza-cave-props.js:130-134
 fleetCaravanActive           src/12ai-fleet.js:311-317
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:309
 fleetFire                    src/13-combat.js:213-234
-fleetGlyph                   src/12ai1-fleet-art.js:352-384
+fleetGlyph                   src/12ai1-fleet-art.js:371-403
 fleetHailFirst               src/12ai-fleet.js:165-185
 fleetHere                    src/12ai-fleet.js:50-87
 fleetInteract                src/12ai-fleet.js:186-306
@@ -1918,8 +1923,8 @@ fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipAt                  src/12ai1-fleet-art.js:396-424
-fleetShipGpu                 src/12ai1-fleet-art.js:390-394
+fleetShipAt                  src/12ai1-fleet-art.js:415-443
+fleetShipGpu                 src/12ai1-fleet-art.js:409-413
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
 floraOf                      src/20e-species.js:91-105
@@ -3165,7 +3170,7 @@ laneBuoySprite               src/17g-sys-lane.js:69-72
 laneGlowSprite               src/17g-sys-lane.js:94-101
 laneLampCol                  src/17g-sys-lane.js:102-105
 laneLife                     src/17g-sys-lane.js:27-31
-laneShip                     src/17g-sys-lane.js:136-143
+laneShip                     src/17g-sys-lane.js:136-144
 last                         src/28-loop.js:107
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:108
@@ -6595,7 +6600,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ai-fleet.js · 28 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
-## src/12ai1-fleet-art.js · 36 КБ
+## src/12ai1-fleet-art.js · 38 КБ
   · ГЛАВТРАССА: как флот выглядит (выделено из 12ai, M415):1
 
 ## src/12aj-coop.js · 19 КБ
@@ -6934,7 +6939,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · ракеты: боеприпас — это груз:1
   · пять видов боеприпаса (M367, §4):21
 
-## src/16c-abil.js · 10 КБ
+## src/16c-abil.js · 11 КБ
   · особая система корпуса (M484, DESIGN-shipyard):1
 
 ## src/16c-rescue.js · 47 КБ
@@ -7850,21 +7855,21 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzz-home-in.js · 5 КБ
 
-## tests/91zzza-cave-props.js · 31 КБ
+## tests/91zzza-cave-props.js · 32 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:34
-  · дом M307: мебель из материала, план сеян:63
-  · M308: дневной свет без приговора, карта и заход рисуются:83
-  · M309: трафик системы и туманность с кромкой:98
-  · M310: флот ГЛАВТРАССЫ:131
-  · M311: второй проход флота — три класса, буксир, плавбаза, конвой:167
-  · M312: все тринадцать нарисованы; почта, госпиталь, учёба:202
-  · M313: узловая «УЗ-1», чёрный дерелик, караван:235
-  · M314: трассы на карте, спасатель зовёт на сигнал:267
-  · M315: пропорции системы, призрачный клик, оклик на рунге 30:288
-  · M316: планеты и луны идут в одну сторону:332
-  · M317: флот на расстоянии встречи — шесть пунктов альманаха III:341
-  · M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка:373
+  · дом M307: мебель из материала, план сеян:61
+  · M308: дневной свет без приговора, карта и заход рисуются:81
+  · M309: трафик системы и туманность с кромкой:96
+  · M310: флот ГЛАВТРАССЫ:136
+  · M311: второй проход флота — три класса, буксир, плавбаза, конвой:172
+  · M312: все тринадцать нарисованы; почта, госпиталь, учёба:207
+  · M313: узловая «УЗ-1», чёрный дерелик, караван:240
+  · M314: трассы на карте, спасатель зовёт на сигнал:272
+  · M315: пропорции системы, призрачный клик, оклик на рунге 30:293
+  · M316: планеты и луны идут в одну сторону:337
+  · M317: флот на расстоянии встречи — шесть пунктов альманаха III:346
+  · M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка:378
 
 ## tests/91zzza-e2e.js · 7 КБ
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1
