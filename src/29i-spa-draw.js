@@ -46,24 +46,16 @@ function spaTookToday(S,k){return !!(S&&S.took&&S.took[S.day+":"+k]);}
    тени от низкого солнца. Сверху — свет: тёплый от солнца, прохладный от моря
    снизу, тень навеса, и пыль, что висит в солнце. Без устройства не рисуется
    ничего: 2D-пути у веранды больше нет. */
-const SPA_BAKE={};
-function spaBake(role,key,w,h,draw){
-  const e=SPA_BAKE[role];
-  if(e&&e.key===key&&e.B)return e.B;   /* пережил потерю устройства — gpuImage перепечёт сам */
-  if(e&&e.B)gpuBakeDrop(e.B);
-  const B=gpuBake(w*DPR,h*DPR,c=>{c.scale(DPR,DPR);draw();},{mips:false});
-  SPA_BAKE[role]={key,B};return B;
-}
 function drawSpa(){
   const S=spaAll();if(!S)return;
   const pass=gpuScene();if(!pass)return;
-  const g=spaGeom(),ft=(G.t/60)%3600,fh=H-g.deck,sz=W+"x"+H+"|"+DPR;
+  const g=spaGeom(),ft=(G.t/60)%3600,fh=H-g.deck,sz=roomSz();
   spaSea(pass,g,ft);
-  const fl=spaBake("floor",sz,W,fh,()=>{ctx.translate(0,-g.deck);spaFloor(g);});
+  const fl=roomBake("spa.floor",sz,W,fh,()=>{ctx.translate(0,-g.deck);spaFloor(g);});
   if(fl)gpuImage(pass,fl,[{x:W/2,y:g.deck+fh/2,w:W,h:fh}]);
   spaFeet(pass,g);
   const took=SPA_PLAN.map(P=>spaTookToday(S,P.k)?1:0).join("");
-  const pr=spaBake("props",sz+"|"+S.day+"/"+S.days+"|"+took+"|"+S.seed,W,H,()=>spaProps(g,S));
+  const pr=roomBake("spa.props",sz+"|"+S.day+"/"+S.days+"|"+took+"|"+S.seed,W,H,()=>spaProps(g,S));
   if(pr)gpuImage(pass,pr,[{x:W/2,y:H/2,w:W,h:H}]);
   spaAir(pass,g,ft);
 }
@@ -72,10 +64,7 @@ function drawSpa(){
    греет веранду (слева сверху, низкое): отражённое в волнах, оно само кладёт
    дорожку от горизонта до перил. Мелкая рябь гаснет там, где она мельче пикселя,
    иначе у горизонта море рябило бы муаром */
-const SPA_SEA_WGSL=`
-fn sh(p:vec2f)->f32{return fract(sin(dot(p,vec2f(127.1,311.7)))*43758.5453);}
-fn sn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let u=f*f*(3.-2.*f);
-  return mix(mix(sh(i),sh(i+vec2f(1.,0.)),u.x),mix(sh(i+vec2f(0.,1.)),sh(i+vec2f(1.,1.)),u.x),u.y);}
+const SPA_SEA_WGSL=ROOM_WGSL_NOISE+`
 fn capeH(x:f32)->f32{let c=fu.v[2];let q=(x-c.x)/c.y;
   if(q<0.){return -1.;}return sin(min(q,1.)*2.2+.6)*c.z*(1.-q*.3)+c.w;}
 fn field(p:vec2f,uv:vec2f)->vec4f{
@@ -90,7 +79,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let k=p.y/hor;
     c=mix(SKY*.84,SKY2,pow(k,2.4));
     let q=vec2f(p.x/Ht*1.3+t*.004,p.y/Ht*8.);
-    let cl=sn(q)*.6+sn(q*2.3+vec2f(3.1,1.7))*.4;
+    let cl=rn(q)*.6+rn(q*2.3+vec2f(3.1,1.7))*.4;
     c=mix(c,vec3f(.975,.975,.97),smoothstep(.55,.82,cl)*.30*smoothstep(.2,.9,k));
     let d=length(p-sun)/Ht;
     c=c+SUN*(.15*exp(-d*3.4)+.20*exp(-d*14.));
@@ -111,7 +100,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     for(var i=0;i<7;i++){
       let fi=f32(i);
       let lam=.36*pow(.64,fi);
-      let th=4.712+(sh(vec2f(fi,3.))-.5)*1.5;
+      let th=4.712+(rh(vec2f(fi,3.))-.5)*1.5;
       let dir=vec2f(cos(th),sin(th));
       let k=6.2832/lam;
       let ph=k*dot(dir,P)+sqrt(9.8*k)*.20*t+fi*1.7;
@@ -119,7 +108,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       gr=gr+dir*(lam*.075*k*cos(ph))*(1.-smoothstep(.12,.45,fp));
     }
     let rq=P*vec2f(11.,6.);let rf=1.-smoothstep(.12,.45,max(px*11.,pz*6.));
-    gr=gr+(vec2f(sn(rq+vec2f(t*.35,0.)),sn(rq+vec2f(5.2,1.3)-vec2f(0.,t*.3)))-.5)*.5*rf;
+    gr=gr+(vec2f(rn(rq+vec2f(t*.35,0.)),rn(rq+vec2f(5.2,1.3)-vec2f(0.,t*.3)))-.5)*.5*rf;
     let n=normalize(vec3f(-gr.x,1.,-gr.y));
     let v=normalize(vec3f(P.x,-cam,P.y));
     var r=reflect(v,n);r.y=abs(r.y);
@@ -139,12 +128,12 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       let zc=mix(10.,1.12,ph);
       let wz=z-zc-.10*sin(P.x*2.7+fj*2.)*zc;
       let w=abs(wz)/(zc*.035+pz*1.2);
-      let br=smoothstep(.35,.75,sn(P*vec2f(5.,1.5)+vec2f(fj*7.,t*.1)));
+      let br=smoothstep(.35,.75,rn(P*vec2f(5.,1.5)+vec2f(fj*7.,t*.1)));
       c=mix(c,FOAM,clamp((1.-smoothstep(0.,1.,w))*sin(ph*3.1416)*br*.55,0.,1.));
     }
     /* прибой у самого борта: пена лижет сваи */
     let sy=dk-Ht*.012+sin(p.x*.031+t*.9)*Ht*.004;
-    let fo=(1.-smoothstep(.2,1.,abs(p.y-sy)/(Ht*.006)))*(.35+.65*sn(vec2f(p.x*.07-t*.4,t*.25)));
+    let fo=(1.-smoothstep(.2,1.,abs(p.y-sy)/(Ht*.006)))*(.35+.65*rn(vec2f(p.x*.07-t*.4,t*.25)));
     c=mix(c,FOAM,clamp(fo*.6,0.,1.));
   }
   /* дымка у горизонта — по обе стороны; под мысом — тонкая светлая кромка воды */
