@@ -22,7 +22,10 @@ const GC_OPS={
   "multiply":{c:["one-minus-dst-alpha","one"],a:["one-minus-dst-alpha","one"]},
   "destination-in":{c:["zero","src-alpha"],a:["zero","src-alpha"],u:1},
   "source-in":{c:["dst-alpha","zero"],a:["dst-alpha","zero"],u:1},
-  "copy":{c:["one","zero"],a:["one","zero"],u:1}};
+  "copy":{c:["one","zero"],a:["one","zero"],u:1},
+  /* overlay смешением не собрать: фон читается из текстуры (проход режется перед вызовом, bk),
+     шейдер fover считает всю формулу, смешение — замена под трафаретом фигуры */
+  "overlay":{c:["one","zero"],a:["one","zero"],bk:1}};
 const GC_OPX={mul1:{c:["dst","one-minus-src-alpha"],a:["dst-alpha","one-minus-src-alpha"]}};   /* служебные смешения */
 const GC_MISS=[];   /* что просили и чего нет — тесты и стенд читают, кадр падает */
 function gcNo(what){GC_MISS.push(what);return new Error("GPU-холст: нет «"+what+"»");}
@@ -336,7 +339,15 @@ fn paintOf(k:u32,d:vec2f)->vec4f{
 /* тень: размытый слой — рамка атласа (r8): угол на холсте gp[b+2].xy, размер .zw, место в атласе gp[b+3].xy */
 @fragment fn fshadow(i:VO)->@location(0) vec4f{let b=i.k*5u;let o=gp[b+2u];let q=vec2i(floor(i.p.xy-o.xy));
   if(any(q<vec2i(0))||any(q>=vec2i(o.zw))){return vec4f(0.);}return gp[b]*textureLoad(img,q+vec2i(gp[b+3u].xy),0).r;}
-@fragment fn fmask(i:VO)->@location(0) vec4f{let m=textureSample(img,ism,i.uv).r;return paintOf(i.k,i.p.xy+gu.o.xy)*m;}`;
+@fragment fn fmask(i:VO)->@location(0) vec4f{let m=textureSample(img,ism,i.uv).r;return paintOf(i.k,i.p.xy+gu.o.xy)*m;}
+/* overlay: фон — resolve всего нарисованного до вызова; формула W3C в премультиплицированном цвете */
+@group(0) @binding(6) var bk:texture_2d<f32>;
+fn ovl1(b:f32,s:f32)->f32{if(b<=.5){return 2.*s*b;}return 1.-2.*(1.-s)*(1.-b);}
+@fragment fn fover(i:VO)->@location(0) vec4f{
+  let s=paintOf(i.k,i.p.xy+gu.o.xy);let b=textureLoad(bk,vec2i(i.p.xy),0);
+  let cs=s.rgb/max(s.a,1e-6);let cb=b.rgb/max(b.a,1e-6);
+  let B=vec3f(ovl1(cb.r,cs.r),ovl1(cb.g,cs.g),ovl1(cb.b,cs.b));
+  return vec4f(s.rgb*(1.-b.a)+b.rgb*(1.-s.a)+s.a*b.a*B,s.a+b.a*(1.-s.a));}`;
 const GC_MIP_WGSL=`
 @group(0) @binding(0) var s:texture_2d<f32>;
 @group(0) @binding(1) var sm:sampler;
@@ -365,7 +376,8 @@ function gcLay(){
   const d=GPU.dev,F=GPUShaderStage.FRAGMENT|GPUShaderStage.VERTEX,U=GPUTextureUsage;
   const bgl=d.createBindGroupLayout({entries:[{binding:0,visibility:F,buffer:{type:"uniform"}},{binding:1,visibility:F,buffer:{type:"read-only-storage"}},
     {binding:2,visibility:F,texture:{sampleType:"float"}},{binding:3,visibility:F,sampler:{type:"filtering"}},
-    {binding:4,visibility:F,texture:{sampleType:"float"}},{binding:5,visibility:F,sampler:{type:"filtering"}}]});
+    {binding:4,visibility:F,texture:{sampleType:"float"}},{binding:5,visibility:F,sampler:{type:"filtering"}},
+    {binding:6,visibility:F,texture:{sampleType:"float"}}]});
   const dm=d.createTexture({size:[1,1],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST});
   return GPU.lay["gc.L"]={bgl,pl:d.createPipelineLayout({bindGroupLayouts:[bgl]}),mod:gpuShader(GC_WGSL),dm:dm.createView(),
     near:d.createSampler({magFilter:"nearest",minFilter:"nearest"})};
@@ -380,7 +392,7 @@ function gcPipeDesc(key){
   return {layout:L.pl,
     vertex:{module:L.mod,entryPoint:"vs",buffers:[{arrayStride:20,attributes:[{shaderLocation:0,offset:0,format:"float32x2"},
       {shaderLocation:1,offset:8,format:"float32"},{shaderLocation:2,offset:12,format:"float32x2"}]}]},
-    fragment:{module:L.mod,entryPoint:S.c==="img"?"fimg":S.c==="mask"?"fmask":S.c==="shadow"?"fshadow":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
+    fragment:{module:L.mod,entryPoint:S.c==="paint"&&G&&G.bk?"fover":S.c==="img"?"fimg":S.c==="mask"?"fmask":S.c==="shadow"?"fshadow":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
     primitive:{topology:"triangle-list"},
     depthStencil:{format:"stencil8",depthWriteEnabled:false,depthCompare:"always",stencilFront:S.f,stencilBack:S.b||S.f,stencilReadMask:S.rm,stencilWriteMask:S.wm},
     multisample:{count:4}};
@@ -421,6 +433,11 @@ function gcPoolSet(role,w,h){
   Q.t.push({role,w:W,h:H,T,by});Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
   while(Q.by>GC_POOL_CAP&&Q.t.length>1){const o=Q.t.shift();Q.by-=o.by;GPU.trash.push(...o.T);}
   return T;}
+/* фоны для overlay: две resolve-цели размером с MSAA-цель набора, заводятся при первой нужде */
+const GC_BACK=new WeakMap();
+function gcBack(ms){let t=GC_BACK.get(ms);
+  if(!t){const U=GPUTextureUsage;t=[0,1].map(()=>GPU.dev.createTexture({size:[ms.width,ms.height],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT}));GC_BACK.set(ms,t);}
+  return t;}
 function gcPoolBuf(role,us,a){
   const Q=gcPool(),n=Math.max(256,a.byteLength);let b=Q.b[role];
   if(!b||b.size<n){if(b)GPU.trash.push(b);let s=256;while(s<n)s*=2;b=Q.b[role]=GPU.dev.createBuffer({size:s,usage:us|GPUBufferUsage.COPY_DST});Q.made++;}
@@ -519,7 +536,9 @@ function gpuBakeRedo(B){
     DL=ser.sd;emit(q,"source-over");DL=D;
     ser.pi=P.length/20;P.push(...sh.c,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
     ser.vf=vn/5;put("shw|"+q0.op,0x80,new Array(24).fill(0),ser.pi,ser.img);};
-  for(const q of g._ops){clip(q.clip);if(q.sh)shade(q);else drew(q);emit(q,q.op);}
+  for(const q of g._ops){
+    if(GC_OPS[q.op].bk&&q.t!=="f"&&q.t!=="s")throw gcNo(q.op+" у картинки и текста");
+    clip(q.clip);if(q.sh)shade(q);else drew(q);emit(q,q.op);}
   close();
   /* слои тени — рамки одного атласа (08cc) */
   const SA=SH.length?gcShadowPack(SH):null;
@@ -533,20 +552,31 @@ function gpuBakeRedo(B){
   const L=gcLay();let rv=L.dm;
   if(rt){const h=new Uint16Array(R.length*1024);
     R.forEach((r,i)=>{if(!r.h16){r.h16=new Uint16Array(1024);for(let j=0;j<1024;j++)r.h16[j]=f16(r[j]);}h.set(r.h16,i*1024);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);rv=rt.createView();}
-  const bgs=new Map(),bg=(q,u)=>{u=u||ub;const key=q?q.view:null,nr=q&&q.near,sl=(nr?1:0)+(q&&q.rep?2:0);let M=bgs.get(u);if(!M)bgs.set(u,M=new Map());
+  /* вызовы, что читают фон (overlay), — помечены; фонов два, по очереди: кусок, что пишет один, читает другой */
+  let nb=0;for(const c of D)if(GC_OPS[c.md.slice(c.md.indexOf("|")+1)]?.bk){c.bk=1;nb++;}
+  const BK=nb?gcBack(ms).map(t=>t.createView()):null;
+  const bgs=new Map(),bg=(q,u,x)=>{u=u||ub;x=x||L.dm;const key=q?q.view:null,nr=q&&q.near,sl=(nr?1:0)+(q&&q.rep?2:0);
+    let M0=bgs.get(u);if(!M0)bgs.set(u,M0=new Map());let M=M0.get(x);if(!M)M0.set(x,M=new Map());
     let b=M.get(key)&&M.get(key)[sl];if(b)return b;
     b=d.createBindGroup({layout:L.bgl,entries:[{binding:0,resource:u.buffer?u:{buffer:u,size:32}},{binding:1,resource:{buffer:pb}},{binding:2,resource:rv},
-      {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:q&&q.rep?gcRepSmp(nr):nr?L.near:gpuMipSmp()}]});
+      {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:q&&q.rep?gcRepSmp(nr):nr?L.near:gpuMipSmp()},
+      {binding:6,resource:x}]});
     const e=M.get(key)||[];e[sl]=b;M.set(key,e);return b;};
   const enc=d.createCommandEncoder();
-  const run=(p,list,u)=>{p.setVertexBuffer(0,vb);let m=null,im=run,r=-1;   /* состояние — только когда меняется */
-    for(const c of list){if(c.md!==m)p.setPipeline(gcPipe(m=c.md));if(c.img!==im)p.setBindGroup(0,bg(im=c.img,u));
+  const run=(p,list,u,j0,j1,x)=>{p.setVertexBuffer(0,vb);let m=null,im=run,r=-1,wx=run;   /* состояние — только когда меняется */
+    for(let j=j0||0,e=j1==null?list.length:j1;j<e;j++){const c=list[j],cx=c.bk?x:null;if(c.md!==m)p.setPipeline(gcPipe(m=c.md));
+      if(c.img!==im||cx!==wx)p.setBindGroup(0,bg(im=c.img,u,wx=cx));
       if(c.ref!==r)p.setStencilReference(r=c.ref);p.draw(c.n,1,c.f,0);}};
   B.shl=SH.length;if(SA)gcShadowPasses(enc,SH,SA,run);
-  const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
-    loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
-    depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilClearValue:0x80,stencilStoreOp:"discard"}});
-  run(ps,D);ps.end();
+  /* основной проход; вызов, что читает фон (overlay), режет его: всё до него — в фон (resolve в bk),
+     MSAA и трафарет сохраняются и грузятся следующим куском */
+  const msv=ms.createView(),stv=st.createView();let s0=0,fst=true,ki=0;
+  const seg=(to,last)=>{const p=enc.beginRenderPass({colorAttachments:[{view:msv,resolveTarget:last?rs.createView():BK[ki&1],
+      loadOp:fst?"clear":"load",clearValue:{r:0,g:0,b:0,a:0},storeOp:last?"discard":"store"}],
+    depthStencilAttachment:{view:stv,stencilLoadOp:fst?"clear":"load",stencilClearValue:0x80,stencilStoreOp:last?"discard":"store"}});
+    run(p,D,ub,s0,to,BK&&!fst?BK[(ki+1)&1]:null);p.end();s0=to;fst=false;if(!last)ki++;};
+  if(nb)for(let i=0;i<D.length;i++)if(D[i].bk)seg(i,false);
+  seg(D.length,true);
   /* мипы на видеокарте: проход на уровень, среднее 2×2 (и сброс resolve в нулевой: копия 1:1 или среднее 2×2) */
   const MP=gcMipPipe(),down=(src,lv,uo)=>{
     const p=enc.beginRenderPass({colorAttachments:[{view:B.tex.createView({baseMipLevel:lv,mipLevelCount:1}),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});
