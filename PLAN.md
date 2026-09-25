@@ -34,8 +34,8 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     world or a finger (chips, compass, brackets, sticks) as DOM with `transform` or a small canvas;
   - hulls: bake the material (albedo, height → normal, emission, gloss mask) once per hull, bank and scale in the
     shader, from `GST_WGSL`; the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`);
-    the colour gate is met but for one line: body V>.6 per area +47 % (×1.5) / +52 % (760) over 2D, all of it
-    on the rear pods where the L4 plume and the wake light them (gate ±25 %; nose and waist match);
+    the wake along the pods is brighter and whiter than 2D's blue-grey bars at the stern (gaussian core a×1.25,
+    halo ×2.3) — Контроль's call whether to cool it (item 3 closed without it);
     lights of fleet ships and lane buoys are explicit emission (rule 16/n): the dot painted, a narrow added halo
     at the thing (2–3 of its radii; `FLEET_HALO`, `LANE_HALO`) — judged with the flame in the same pair;
   - pirates, missiles and combat effects;

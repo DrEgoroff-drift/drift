@@ -10556,21 +10556,19 @@ fn frameHdr(uv:vec2f)->vec3f{
   let f=textureSampleLevel(tFront,sl,uv,0.);
   let e=textureSampleLevel(tEmit,sl,uv,0.).rgb;
   return (knee(sceneAt(uv),1.4)+e)*(1.-f.a);}
-/* свечение (L2): лестница из шести уровней. Первый — четверть кадра, честным ящиком 4×4
-   (мелкие яркие точки не мерцают): квадрат кадра в тонах экрана, как в 2D (газ и факел
-   светятся у себя), и сверх того — всё, что сцена светит выше плеча. Дальше каждый
-   уровень вдвое мельче и на ступень строже (колено по уровню), потом обратно вверх с
-   шатром, уровни складываются: узкое свечение даёт всё яркое, широкое — только то, что
-   светит много выше единицы (звезда). Поэтому у факела и газа ореол узкий, у звезды —
-   широкий, и пелены на полкадра нет */
+/* свечение (L2): шесть уровней. Первый — четверть кадра ящиком 4×4 (точки не мерцают):
+   квадрат кадра в тонах экрана, как в 2D, и всё, что сцена светит выше плеча. Дальше
+   уровень вдвое мельче и строже (колено по уровню), обратно вверх шатром: узкое
+   свечение — от всего яркого, широкое — от того, что много выше единицы (звезда).
+   У факела и газа ореол узкий, у звезды широкий, пелены на полкадра нет */
 @fragment fn fsDown(v:V)->@location(0) vec4f{
-  /* frameAt и frameHdr вручную: одна выборка переднего слоя и сцены на точку, не две
-     (P1: 48 выборок на пиксель вместо 80, арифметика та же) */
+  /* frameAt и frameHdr вручную: одна выборка слоя и сцены на точку (P1). Свой грунт
+     корабля (маска корпуса в круге u.hl) светит вполовину: белил обшивку (п.3) */
   let fp=1./u.qres;var c=vec3f(0.);var h=vec3f(0.);
   for(var j=0;j<4;j++){for(var i=0;i<4;i++){
     let q=v.uv+((vec2f(f32(i),f32(j))+.5)/4.-.5)*fp;
-    let f=textureSampleLevel(tFront,sl,q,0.);let s=sceneAt(q);let a=1.-f.a;
-    c+=tone(s)*a+f.rgb;h+=(knee(s,1.4)+textureSampleLevel(tEmit,sl,q,0.).rgb)*a;}}
+    let f=textureSampleLevel(tFront,sl,q,0.);let S=textureSampleLevel(tScene,sl,q,0.);let s=max(S.rgb,vec3f(0.))*u.scene;let a=1.-f.a;
+    c+=(tone(s)*a+f.rgb)*(1.-.5*silK(q)*u.scene*(1.-S.a));h+=(knee(s,1.4)+textureSampleLevel(tEmit,sl,q,0.).rgb)*a;}}
   c=c/16.;return vec4f(c*c+h/16.,1.);}
 fn bs(uv:vec2f)->vec3f{return textureSampleLevel(tBloom,sl,uv,0.).rgb;}
 @fragment fn fsMipDn(v:V)->@location(0) vec4f{
@@ -52774,7 +52772,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
      (до ×3 на светлом борту) выбеливал обшивку, а насыщенная краска (красный кант)
      шла в огни ×2.3 и за коленом свечения уходила в розовое */
   let hm=V[3].x<-.5;
-  if(hm){shade=1.-clamp(.3*smoothstep(-.4,.6,-side)+.15*away,0.,.4)*own;
+  if(hm){shade=1.-clamp(.2*smoothstep(-.4,.6,-side)+.1*away,0.,.3)*own;
     lit=col*(rim*1.1+max(dot(nb,L),0.)*(1.-nb.z)*.3)*own*a;}
   /* L3: заслон звезды — станция тенит баржу у причала (у самой станции, glow>0, — нет);
      огни в тень не падают */
@@ -53084,6 +53082,9 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     gpuImage(pass,gpuMipTex(Bl.cv),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
+  /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
+  if(GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
+    GPU.sepH.push([x,y,h._R*sc]);}
   if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */
   if(braking){const f=4+(.5+.5*Math.sin(G.t*.9))*6,T=[];

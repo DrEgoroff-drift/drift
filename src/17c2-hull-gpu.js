@@ -146,6 +146,9 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     gpuImage(pass,gpuMipTex(Bl.cv),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
+  /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
+  if(GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
+    GPU.sepH.push([x,y,h._R*sc]);}
   if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */
   if(braking){const f=4+(.5+.5*Math.sin(G.t*.9))*6,T=[];

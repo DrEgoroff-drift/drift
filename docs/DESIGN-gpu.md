@@ -190,6 +190,9 @@ Then hulls (item 2) by the same «explicit emission» path.
   первое, что видит автор»): the body lit as the 2D hull was (the bake as painted, a shadow slope, the star only
   as a rim), not by the station's multiplier; the flame orange again. Gate as in the plan, 2D = the merge-base
   build, the same flight (thrust, bank, Z 2.2) at ×1.5 and 760, body and flame measured in hull axes.
+- Brief of **item 3, the pods** (Контроль on 5820c0d: +50 % not taken, «гондолы бело-розовые, будто горят»):
+  first the order (plume, ribbon, wake off → pods back to 2D?), then the light; gate body V>.6 per area ±25 %
+  of 2D, pods' bright L and S ±15 %, cold; sharpness and trim kept; flame and wake on the phone not paler.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -197,8 +200,9 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
-  back 0); the instrument pod 25c redraws only on change; item 3 done but for the rear pods (V>.6 +47/+52 %
-  over 2D, flame and wake light on them). Next: the hotel's windows as live shapes, then the phone candidate.
+  back 0); the instrument pod 25c redraws only on change; item 3 done (body V>.6 +12/+13 % over 2D — the
+  excess was the final glow on the hull's own paint, not the exhaust). Next: the hotel's windows as live
+  shapes, then the phone candidate.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -537,6 +541,21 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   0.9 → 7.2 → 13 %, S .25 → .16 → .23 | .24 → .17 → .25. The body's bright excess left is on the rear pods,
   lit by the plume and the wake (mask vm_b10_d); nose and waist match 2D. Halving rim and glint cut it by a
   tenth and cost sharpness — not taken.
+  **Item 3, the pods.** The order was right and so was the light: with the plume, ribbon, wake, hull flame and
+  every L3 light off the rear body stayed at V>.6 39 % (2D 26 %), and the unlit bake without GST at 46 %. The
+  whitening came after the scene — the final glow's first level takes the square of the frame (`c*c`, «as in
+  2D»), so a light grey hull glowed from its own paint and the glow lay back over it (glow off: 43 → 24 %,
+  mean L 87 → 74). Now a ship's own paint — the hull mask (scene alpha) inside its circle `u.hl`, which the GPU
+  hull now fills as the 2D hull did — goes into that level at half; knee light and emission as before;
+  stations untouched (trade/yard/sci ×1 and ×1.5: luma ±0.1 %, bright −1 % from the ship in frame). The
+  hull's shadow slope eased (.3/.15/.4 → .2/.1/.3) so mean L does not drop with the glow. Numbers (2D → HEAD →
+  now; ×1.5 | 760): body V>.6 per area 11.6 → 17.1 → 13.0 % | 12.6 → 19.2 → 14.3 %; mean L 91 → 87 → 81 |
+  88 → 89 → 83; edge/L 1.09 → 1.05 → 1.19 | 1.49 → 1.40 → 1.60; pods' strip L 48 → 62 → 58 | 46 → 59 → 55,
+  bright L 151 → 166 → 164 | 156 → 172 → 177, S .25 → .24 → .25 | .22 → .15 → .14; flame L 169 → 167 |
+  171 → 168, orange up; wake unchanged. What stays white along the pods is the wake: in 2D it is the long
+  blue-grey bar beside each pod (additive, `lighter`), here the same lanes with a gaussian core (a×1.25,
+  halo ×2.3) — brighter and near-white at the stern. Composing core over halo as two 2D strokes cut it by 4 %
+  and did not cool it; the wake was left as it is (Контроль: not to be touched). 08b 47156 → 47017 bytes.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,
