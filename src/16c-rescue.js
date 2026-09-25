@@ -187,7 +187,6 @@ const HAUL_FREE=210;                  /* кадров отцепки: трос �
 const HAUL_BOOM_K=.2;                 /* стрела за соплами, доля длины баржи: трос не из огня (дизайнер 12.09) */
 const HAUL_CAM={x:0,y:0};             /* сдвиг камеры вперёд по тросу — догоняет плавно (вид, не мир) */
 let HAUL_FX=[];
-const haulRim={cv:null};              /* холст-маска кромки: один на сцену, не в G */
 /* масштаб корабля в drawSystem — один на двоих с буксиром. На тросе пол .7:
    пять минут игрок смотрит на СВОЙ корабль, а в .35 он был серым пятном в 12 px
    (дизайн-ревью 11.09, закон «себя находят с одного взгляда») */
@@ -509,135 +508,8 @@ function drawHaul(zx,zy,Z){
   const b=haulBarge(),art=bargeArtOf(b);
   const sS=shipScaleAt(Z),sB=sS*HAUL_BARGE_K;
   const x=zx(T.bx),y=zy(T.by),sx=zx(G.ship.x),sy=zy(G.ship.y);
-  const pass=gpuScene();if(pass){haulGpu(pass,T,b,art,sS,sB,x,y,sx,sy,zx,zy);return;}
-  /* отвалившееся и искры — под баржей и тросом */
-  for(const f of HAUL_FX){
-    const fx=zx(f.x),fy=zy(f.y),a=clamp(f.life,0,1);
-    if(f.k==="spark"){
-      ctx.fillStyle="rgba(255,"+(170+Math.round(80*a))+",90,"+a.toFixed(2)+")";
-      ctx.fillRect(fx-1,fy-1,2,2);continue;
-    }
-    ctx.save();ctx.translate(fx,fy);ctx.rotate(f.a);ctx.scale(sS,sS);ctx.globalAlpha=a;
-    ctx.fillStyle="#6d7480";ctx.strokeStyle="#20242b";ctx.lineWidth=1;
-    if(f.k==="plate"){ctx.fillRect(-7,-4,14,8);ctx.strokeRect(-7,-4,14,8);}
-    else if(f.k==="antenna"){ctx.strokeStyle="#9aa3ad";ctx.beginPath();ctx.moveTo(-9,0);ctx.lineTo(9,0);ctx.stroke();
-      ctx.fillStyle="#ff6b57";ctx.fillRect(8,-1.5,3,3);}
-    else{ctx.fillStyle="#b0703a";ctx.fillRect(-4,-6,8,12);ctx.strokeRect(-4,-6,8,12);}
-    ctx.restore();ctx.globalAlpha=1;
-  }
-  ctx.save();ctx.translate(x,y);ctx.rotate(T.ba);ctx.scale(sB,sB);
-  /* маршевые: факел из каждого сопла, дышит; на гашении хода и развороте — молчат */
-  if(T._fire){
-    ctx.globalCompositeOperation="lighter";
-    /* на тросе сопла разведены в стороны: факел в корабль на тросе читался
-       как «баржа толкает», а центральное сопло и вовсе било по тросу — глушим */
-    const haul=T.ph==="haul";
-    for(const li of art.lights){
-      if(li.c!=="eng")continue;
-      if(haul&&Math.abs(li.y)<art.hw*.25)continue;
-      const fl=.8+.2*Math.sin(G.t*.5+li.y)+.1*rndFx(),len=(26+li.r*3)*fl*(haul?.8:1),w=li.r*1.1;
-      ctx.save();ctx.translate(li.x,li.y);if(haul)ctx.rotate(-Math.sign(li.y)*.5);
-      const g=ctx.createLinearGradient(0,0,-len,0);
-      g.addColorStop(0,"rgba(255,236,190,.95)");g.addColorStop(.25,"rgba(255,170,90,.7)");
-      g.addColorStop(1,"rgba(255,90,40,0)");
-      ctx.fillStyle=g;ctx.beginPath();
-      ctx.moveTo(-1,-w);ctx.quadraticCurveTo(-len*.45,-w*1.2,-len,0);
-      ctx.quadraticCurveTo(-len*.45,w*1.2,-1,w);ctx.closePath();ctx.fill();
-      ctx.restore();
-    }
-    ctx.globalCompositeOperation="source-over";
-  }
-  drawBarge(b);
-  /* свет (дизайн-ревью 11.09, §13 «тело-обвод-один свет»): у источника есть
-     освещённое. Звезда кладёт тёплую кромку на свою сторону корпуса, факелы —
-     ореол на кормовые плиты. Один объект, считается на кадр */
-  {
-    /* кромка по самому силуэту: рисунок баржи как маска, тёплый градиент со
-       стороны звезды только по корпусу (обводка эллипсом читалась кольцом) */
-    const sa=Math.atan2(-T.by,-T.bx)-T.ba,cx=Math.cos(sa),cy=Math.sin(sa);
-    const sz=Math.ceil(art.rad*2);
-    const off=haulRim.cv||(haulRim.cv=document.createElement("canvas"));
-    if(off.width!==sz){off.width=sz;off.height=sz;}
-    /* экспозиция (дизайн-ревью 11.09, замер): кромка через «lighter» выжигала
-       кремовые модули в 255 — отражённое ярче факела, и корпус 66 рядом с белыми
-       ящиками читался двумя предметами. Теперь: тело целиком ×.82 умножением
-       (модули уходят с ~220 к ~180), кромка — «screen», он поднимает тёмное
-       сильнее светлого (корпус со стороны звезды ~120–130, модули ≤ ~205),
-       а ядро факела ниже — белое, самое светлое в кадре */
-    const o=off.getContext("2d");
-    const mask=fill=>{o.globalCompositeOperation="source-over";o.clearRect(0,0,sz,sz);
-      o.drawImage(art.cn,0,0,sz,sz);o.globalCompositeOperation="source-in";o.fillStyle=fill;o.fillRect(0,0,sz,sz);};
-    /* второй замер: ×.82 + screen .36 дали серую трубу (медиана 71, p90 116).
-       Цель: солнечная сторона — плиты 150–200, корпус 100–140; теневая — 50–70;
-       ядро факела ≥250. Тон сжат (×.78), тень глушится ещё градиентом, солнце
-       поднимается широким screen — плиты, а не проволока по ребру */
-    const draw=()=>ctx.drawImage(off,-art.rad,-art.rad,art.rad*2,art.rad*2);
-    const ax=sz/2-cx*sz*.4,ay=sz/2-cy*sz*.4,bx2=sz/2+cx*sz*.4,by2=sz/2+cy*sz*.4;
-    mask("rgb(214,212,206)");ctx.globalCompositeOperation="multiply";draw();
-    const sg=o.createLinearGradient(ax,ay,bx2,by2);
-    /* третий замер (12.09, мир автора): солнце 118 / тень 69 = 1.71 — тень
-       светлее цели (50–70 медианой, отношение ≥2). Теневой край глушится
-       глубже и холоднее; солнечная половина не тронута */
-    sg.addColorStop(0,"rgb(122,124,142)");sg.addColorStop(.5,"rgb(255,255,255)");sg.addColorStop(1,"rgb(255,255,255)");
-    mask(sg);draw();
-    const rg=o.createLinearGradient(ax,ay,bx2,by2);
-    rg.addColorStop(0,"rgba(255,205,150,0)");rg.addColorStop(.34,"rgba(255,205,150,0)");
-    rg.addColorStop(1,"rgba(255,208,156,.6)");
-    mask(rg);ctx.globalCompositeOperation="screen";draw();
-    ctx.globalCompositeOperation="lighter";
-    /* бело-горячее ядро у зева каждого сопла — поверх корпуса, иначе его закрывала корма */
-    if(T._fire)for(const li of art.lights){
-      if(li.c!=="eng"||(T.ph==="haul"&&Math.abs(li.y)<art.hw*.25))continue;
-      const cg=ctx.createRadialGradient(li.x-li.r*.5,li.y,0,li.x-li.r*.5,li.y,li.r*.95);
-      cg.addColorStop(0,"rgba(255,252,240,1)");cg.addColorStop(.55,"rgba(255,236,200,.85)");cg.addColorStop(1,"rgba(255,200,140,0)");
-      ctx.fillStyle=cg;ctx.beginPath();ctx.arc(li.x-li.r*.5,li.y,li.r*.95,0,TAU);ctx.fill();
-    }
-    if(T._fire){
-      const tx=-art.L*.48,gr=ctx.createRadialGradient(tx,0,0,tx,0,art.hw*1.6);
-      gr.addColorStop(0,"rgba(255,170,90,.45)");gr.addColorStop(1,"rgba(255,120,60,0)");
-      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(tx,0,art.hw*1.6,0,TAU);ctx.fill();
-    }
-    ctx.globalCompositeOperation="source-over";
-  }
-  /* носовые (гасят ход) и маневровые (разворот): короткие белые выхлопы */
-  if(T._retro||T._turn){
-    ctx.globalCompositeOperation="lighter";
-    const nose=art.L*.52,hw=art.hw;
-    const puff=(px,py,dx,dy)=>{
-      const n=.6+.4*rndFx(),g=ctx.createRadialGradient(px,py,0,px+dx*8*n,py+dy*8*n,10*n);
-      g.addColorStop(0,"rgba(230,240,255,.85)");g.addColorStop(1,"rgba(200,220,255,0)");
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+dx*6*n,py+dy*6*n,10*n,0,TAU);ctx.fill();
-    };
-    if(T._retro){puff(nose,-hw*.5,1,0);puff(nose,hw*.5,1,0);}
-    if(T._turn&&Math.floor(G.t/6)%2===0){puff(nose*.8,-hw,0,-1);puff(-nose*.8,hw,0,1);}
-    ctx.globalCompositeOperation="source-over";
-  }
-  /* стрела — железо (дизайнер 12.09: «огрызок в пару пикселей», трос выходил из
-     огня): брус за соплами, 0.2 длины и 0.25 полуширины корпуса, светлая грань
-     по одной стороне, гак на конце. Рисуется поверх факелов, трос — с гака */
-  if(T.ph!=="come"){
-    const bx0=-art.L*.48,bl=art.L*HAUL_BOOM_K,bh=Math.max(2,art.hw*.25),root=art.L*.06;
-    ctx.fillStyle="#4a4f57";ctx.fillRect(bx0-bl,-bh/2,bl+root,bh);
-    ctx.fillStyle="#aab2bb";ctx.fillRect(bx0-bl,-bh/2,bl+root,Math.max(1,bh*.24));
-    ctx.fillStyle="#2a2d33";ctx.fillRect(bx0-bl-2,-bh*.75,3.5,bh*1.5);
-  }
-  ctx.restore();
-  /* стрела и трос — поверх факелов (R4, дизайнер 12.09: трос выходил из сопла и
-     горел в факеле). Стрела выносит крепление за сопла; трос от носа корабля к
-     её концу, с провисом, рывок выбирает провис. На отцепке трос отдан: висит
-     со стрелы, укорачивается и гаснет, уходя вместе с баржей */
-  {
-    const R=haulRope(T,art,sS,sB,x,y,sx,sy);
-    if(R){
-      const {nx,ny,cx,cy,tx,ty,al}=R;
-      ctx.globalAlpha=al;
-      ctx.strokeStyle="rgba(40,36,30,.9)";ctx.lineWidth=Math.max(1.5,2.6*sS);
-      ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();
-      ctx.strokeStyle="rgba(214,200,168,.75)";ctx.lineWidth=Math.max(.8,1.2*sS);
-      ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();
-      ctx.globalAlpha=1;
-    }
-  }
+  /* только проход сцены (25.09): 2D-ветки нет — без видеокарты игры нет, экран «нет WebGPU» */
+  const pass=gpuScene();if(pass)haulGpu(pass,T,b,art,sS,sB,x,y,sx,sy,zx,zy);
 }
 
 /* взлёт с грунта без топлива: отказ называет причину (порог 91zzzzzl) и
