@@ -181,9 +181,10 @@ class GcCtx{
   setLineDash(a){if(!Array.isArray(a)||a.some(v=>!(v>=0)||!isFinite(v)))return;this._dash=a.length%2?a.concat(a):a.slice();}
   getLineDash(){return this._dash.slice();}
   /* рисование */
-  fill(a,b){if(a&&typeof a==="object")throw gcNo("fill(Path2D)");this._fill(this._sp,a==="evenodd",this.fillStyle,this.globalCompositeOperation,1);}
-  stroke(a){if(a)throw gcNo("stroke(Path2D)");this._stroke(this._sp);}
-  clip(a,b){if(a&&typeof a==="object")throw gcNo("clip(Path2D)");this._clip=this._clip.concat([{v:gcFan(this._sp,this._k),eo:a==="evenodd"}]);}
+  /* Path2D — записанный (08caa): проигрывается в подпути с преобразованием момента вызова */
+  fill(a,b){const P=a&&typeof a==="object";this._fill(P?gcPathSp(this,a):this._sp,(P?b:a)==="evenodd",this.fillStyle,this.globalCompositeOperation,1);}
+  stroke(a){this._stroke(a?gcPathSp(this,a):this._sp);}
+  clip(a,b){const P=a&&typeof a==="object";this._clip=this._clip.concat([{v:gcFan(P?gcPathSp(this,a):this._sp,this._k),eo:(P?b:a)==="evenodd"}]);}
   fillRect(x,y,w,h){if([x,y,w,h].every(isFinite)&&w&&h)this._fill(gcRectSp(this,x,y,w,h),false,this.fillStyle,this.globalCompositeOperation,1);}
   strokeRect(x,y,w,h){if([x,y,w,h].every(isFinite)&&(w||h))this._stroke(gcRectSp(this,x,y,w,h));}
   /* clearRect — вычитание непрозрачным: globalAlpha и смешение не действуют, клип — да */
