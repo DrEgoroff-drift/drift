@@ -10933,10 +10933,10 @@ function gpuScene3D(){
    Что 2D нарисует после — ляжет выше этого слоя. Каждый вызов — новый сегмент
    (загрузка #c, один полноэкранный проход, отправка); подряд идущие слои одного
    сегмента рисуют в один возвращённый проход. Вне кадра — null */
-/* #c → передний слой. GPU.kill.fpx (проба ?g11=deep): копия 1×1 — снимок холста (и растр его
-   2D) остаётся, байтов почти нет: разводит цену растра и цену копии (P1 10/n) */
+/* #c → передний слой; пустой не грузится (08c). GPU.kill.fpx (?g11=deep): копия 1×1 —
+   разводит цену растра и цену копии (P1 10/n) */
 function gpuFrontCopy(n){
-  gpuTsAround(n,()=>GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]));
+  if(gpuFrontClean())return;gpuTsAround(n,()=>GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]));
 }
 function gpuOver(){
   if(!GPU.on||!GPU.enc)return null;
@@ -11272,6 +11272,26 @@ function gpuMipTex(cv){
 }
 function gpuMipDrop(cv){const e=GPU_MIP.get(cv);if(e){GPU.trash.push(e.tex);GPU_MIP.delete(cv);}}
 function gpuMipSmp(){return GPU.S.mip||(GPU.S.mip=GPU.dev.createSampler({magFilter:"linear",minFilter:"linear",mipmapFilter:"linear"}));}
+/* пустой #c не грузится (ворота ступени 1: в ровном полёте выгрузок холстов 0).
+   cState: 0 — слой вычищен целиком и с тех пор пуст, 1 — на нём что-то есть. Следим за
+   самим контекстом #c: печки рисуют в свои холсты и сюда не попадают */
+function gpuFrontHook(){
+  if(GPU.cHook===MAIN_CTX)return;GPU.cHook=MAIN_CTX;GPU.cState=1;
+  const c=MAIN_CTX,P=CanvasRenderingContext2D.prototype;
+  for(const k of ["fill","stroke","fillRect","strokeRect","drawImage","fillText","strokeText","putImageData"]){
+    const o=P[k];c[k]=function(){GPU.cState=1;return o.apply(this,arguments);};}
+  const cr=P.clearRect;
+  c.clearRect=function(x,y,w,h){const m=this.getTransform(),x0=m.a*x+m.e,y0=m.d*y+m.f;
+    if(!m.b&&!m.c&&x0<=0&&y0<=0&&x0+m.a*w>=this.canvas.width&&y0+m.d*h>=this.canvas.height)GPU.cState=0;
+    return cr.apply(this,arguments);};
+}
+/* true — слой пуст, грузить нечего; текстуру переднего слоя чистим один раз проходом */
+function gpuFrontClean(){
+  gpuFrontHook();
+  if(GPU.cState){GPU.fClear=false;return false;}
+  if(!GPU.fClear){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.T.front.createView(),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.fClear=true;}
+  return true;
+}
 /* общие куски шейдеров слоёв: мерка кадра и покрытие фигур со сглаживанием.
    Покрытие честное, по площади пикселя — так же, как Skia гладит края в 2D */
 const GPU_WGSL_COMMON=`
@@ -11318,7 +11338,11 @@ function gpuKitU(){
 /* картинка: rects = [{x,y,w,h, a, rot, u0,v0,u1,v1, cubic}] — x,y — центр, w,h — размер в
    пикселях CSS, rot — поворот вокруг центра, u0..v1 — кусок текстуры (по умолчанию
    вся), cubic — бикубика для сильного растяжения. o.blend: over | add | mul.
-   Цвет умножается на a — на сложении это усиление: a>1 даёт свет выше единицы (эмиссия) */
+   Цвет умножается на a — на сложении это усиление: a>1 даёт свет выше единицы (эмиссия).
+   cv — холст или мастер gpuMipTex: мастер берётся трилинейно, уровень вдвое крупнее
+   экрана (GPU_MIP_GS = 2^-1: 2D тянет спрайт с холста в три раза крупнее, мягче
+   нельзя — пара флота 25.09), и зум ничего не грузит */
+const GPU_MIP_GS=.5;
 const GPU_IMG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(1) var<storage,read> iq:array<vec4f>;
 @group(0) @binding(2) var itx:texture_2d<f32>;
@@ -11327,7 +11351,7 @@ struct IO{@builtin(position) p:vec4f,@location(0) uv:vec2f,@location(1) @interpo
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->IO{
   let a=iq[ii*3u];let b=iq[ii*3u+1u];let c=iq[ii*3u+2u];let cn=kCorn(vi);
   let l=(cn-.5)*a.zw;let cs=cos(b.y);let sn=sin(b.y);
-  var o:IO;o.p=kClip(a.xy+vec2f(l.x*cs-l.y*sn,l.x*sn+l.y*cs));o.uv=mix(c.xy,c.zw,cn);o.k=vec4f(b.x,b.z,0.,0.);return o;}
+  var o:IO;o.p=kClip(a.xy+vec2f(l.x*cs-l.y*sn,l.x*sn+l.y*cs));o.uv=mix(c.xy,c.zw,cn);o.k=vec4f(b.x,b.z,b.w,0.);return o;}
 fn cubicW(v:f32)->vec4f{let n=vec4f(1.,2.,3.,4.)-v;let s=n*n*n;let x=s.x;let y=s.y-4.*s.x;let z=s.z-4.*s.y+6.*s.x;return vec4f(x,y,z,6.-x-y-z)/6.;}
 fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
   let ts=vec2f(textureDimensions(t));var c=uv*ts-.5;let f=fract(c);c=c-f;
@@ -11337,19 +11361,20 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
   let s2=textureSampleLevel(t,sm,o.xw,0.);let s3=textureSampleLevel(t,sm,o.yw,0.);
   let sx=s.x/(s.x+s.y);let sy=s.z/(s.z+s.w);return mix(mix(s3,s2,sx),mix(s1,s0,sx),sy);}
 @fragment fn fs(i:IO)->@location(0) vec4f{
-  var c:vec4f;if(i.k.y>.5){c=texCubic(itx,ism,i.uv);}else{c=textureSampleLevel(itx,ism,i.uv,0.);}
+  let gx=dpdx(i.uv)*i.k.z;let gy=dpdy(i.uv)*i.k.z;
+  var c:vec4f;if(i.k.y>.5){c=texCubic(itx,ism,i.uv);}else{c=textureSampleGrad(itx,ism,i.uv,gx,gy);}
   return c*i.k.x;}`;
 function gpuImage(pass,cv,rects,o){
   if(!pass||!rects.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
-  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12);
+  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?GPU_MIP_GS:1;
   for(let i=0;i<n;i++){const r=rects[i],k=i*12;
-    f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;
+    f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
-  const t=gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
+  const t=mip?cv:gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
-  pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,GPU.S.lin]));
+  pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,mip?gpuMipSmp():GPU.S.lin]));
   pass.draw(6,n,0,A.off/12);
 }
 /* фигуры: items = [[вид, x0,y0,x1,y1, hw, soft, r,g,b,a]] в пикселях CSS, цвет 0..255 и a 0..1:
@@ -23821,8 +23846,29 @@ function fleetGlyph(k,h){
     case "exped":compass();break;
   }
 }
+/* на видеокарте: место, курс и масштаб — из текущей матрицы 2D, прозрачность — из
+   globalAlpha; так все места вызова (полоса, флот, жесты, мирный флот) уходят с #c разом.
+   Зев сопла — свет (сложение): над #c его раздувал emit() */
+const FLEET_ENG=1.3;
+function fleetShipGpu(f,art){
+  const pass=gpuScene();if(!pass)return false;
+  const m=ctx.getTransform(),k=1/DPR,al=ctx.globalAlpha,s=Math.hypot(m.a,m.b)*k;
+  const T=(lx,ly)=>[(m.a*lx+m.c*ly+m.e)*k,(m.b*lx+m.d*ly+m.f)*k],[x,y]=T(0,0),w=art.rad*2*s;
+  gpuImage(pass,gpuMipTex(art.cn),[{x,y,w,h:w,rot:Math.atan2(m.b,m.a),a:al}]);
+  const L=[],A=[],by=f.by||"gt",MF=(typeof makerFlame==="function")?makerFlame(by):null;
+  const ec=(MF&&by!=="gt")?mixc(MF.col,[255,255,255],.2):[255,178,110];
+  for(const li of art.lights){const [px,py]=T(li.x,li.y);
+    if(li.c==="nav"){const c=li.g?[120,240,150]:[255,90,80];
+      L.push([1,px,py,1.4*s,0,0,0,c[0],c[1],c[2],(Math.sin(G.t*.05+(li.g?1.6:0))>.6?.95:.2)*al]);}
+    else if(li.c==="win")L.push([1,px,py,1.3*s,0,0,0,255,228,170,((Math.sin(G.t*.03+li.x)>-.4)?.9:.4)*al]);
+    else if(li.c==="eng"){const r=li.r*1.3*s;A.push([1,px,py,r*.2,0,0,r*.8,ec[0],ec[1],ec[2],.85*al*FLEET_ENG]);}}
+  if(L.length)gpuShapes(pass,L);
+  if(A.length)gpuShapes(pass,A,{blend:"add"});
+  return true;
+}
 function drawFleetShip(f){
   const art=fleetArtOf(f);
+  if(ctx===MAIN_CTX&&fleetShipGpu(f,art))return;
   ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
   for(const li of art.lights){
     if(li.c==="nav"){
@@ -52130,72 +52176,99 @@ function findInteract(sh){
    обвода, один свет последним. Четыре силуэта опознаются с расстояния, потому
    что различаются формой, а не подписью: капсула, коробка с крыльями панелей,
    ящик, переломленный корпус. Подпись — только пока не осмотрено. */
+/* форма находки в её осях (без живого блика зеркала): 2D рисует её на месте,
+   видеокарта — печёным спрайтом (findSprite) */
+function findShape(k){
+  ctx.fillStyle="rgba(22,25,31,.96)";ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.9;
+  if(k==="sos"){
+    /* спасательная капсула: короткое тело с иллюминатором */
+    ctx.beginPath();ctx.ellipse(0,0,13,7,0,0,TAU);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(60,70,84,.9)";
+    ctx.beginPath();ctx.ellipse(4,0,3.4,3.4,0,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(80,92,108,.8)";
+    ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-19,0);ctx.stroke();
+  }else if(k==="sat"){
+    /* спутник: коробка приборов и две панели — силуэт, который ни с чем
+       не спутать даже точкой */
+    ctx.beginPath();ctx.rect(-6,-5,12,10);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(34,44,60,.95)";
+    ctx.beginPath();ctx.rect(-22,-3.4,14,6.8);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.rect(8,-3.4,14,6.8);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(70,84,104,.7)";ctx.lineWidth=.6;
+    for(let i=1;i<4;i++){
+      ctx.beginPath();ctx.moveTo(-22+i*3.5,-3.4);ctx.lineTo(-22+i*3.5,3.4);
+      ctx.moveTo(8+i*3.5,-3.4);ctx.lineTo(8+i*3.5,3.4);ctx.stroke();
+    }
+    /* тарелка: она и передаёт */
+    ctx.fillStyle="rgba(48,58,72,.95)";
+    ctx.beginPath();ctx.arc(0,-9,4.2,Math.PI,TAU);ctx.fill();
+  }else if(k==="cont"){
+    /* Ящик, а не панель. В первом кадре контейнер был прямоугольником в
+       клетку и путался с крылом спутника: два разных предмета читались одной
+       фигурой. Отличает его толщина и торцы — то, чем ящик и отличается от
+       листа: тяжёлые оковки по краям и одна стяжка поперёк. */
+    ctx.beginPath();ctx.rect(-15,-9,30,18);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(38,42,50,.98)";
+    ctx.fillRect(-17,-10,5,20);ctx.fillRect(12,-10,5,20);
+    ctx.strokeStyle="rgba(0,0,0,.5)";
+    ctx.strokeRect(-17,-10,5,20);ctx.strokeRect(12,-10,5,20);
+    ctx.strokeStyle="rgba(96,110,126,.65)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(-12,-2);ctx.lineTo(12,-2);ctx.stroke();
+  }else if(k==="echo"){
+    /* зеркало (11f): тонкая пластина ребром, почти ничего — поверхность, а не
+       предмет. Блик один, и он не горит, а скользит */
+    ctx.beginPath();ctx.ellipse(0,0,26,3.2,0,0,TAU);ctx.fill();ctx.stroke();
+  }else{
+    /* остов разведчика: тот же язык, что у остова баржи, но мельче и с
+       отломанным крылом */
+    ctx.beginPath();
+    ctx.moveTo(-20,-4);ctx.lineTo(-2,-7);ctx.lineTo(17,-4);ctx.lineTo(19,2);
+    ctx.lineTo(-3,5);ctx.lineTo(-18,4);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(24,3);ctx.lineTo(33,-2);ctx.lineTo(31,6);ctx.closePath();ctx.fill();
+  }
+}
+const FIND_R=36,FIND_SS=4,FIND_SP={};
+function findSprite(k){
+  if(FIND_SP[k])return FIND_SP[k];
+  const cv=document.createElement("canvas");cv.width=cv.height=FIND_R*2*FIND_SS;
+  const prev=ctx;ctx=cv.getContext("2d");
+  try{ctx.scale(FIND_SS,FIND_SS);ctx.translate(FIND_R,FIND_R);findShape(k);}finally{ctx=prev;}
+  return FIND_SP[k]=cv;
+}
 function drawFindsSystem(zx,zy,Z){
   const list=findsHere();
   if(!list.length)return;
+  const pass=gpuScene();
   for(const f of list){
     const x=zx(f.x),y=zy(f.y);
     if(x<-70||x>W+70||y<-70||y>H+70)continue;
     const K=FIND_KINDS[f.k],taken=findSeen(f);
     const s=clamp(Z,.5,1.5);
-    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
     const spin=(f.seed%628)/100+G.t*.002*((f.seed&1)?1:-1);
+    if(pass){const w=FIND_R*2*s;
+      gpuImage(pass,gpuMipTex(findSprite(f.k)),[{x,y,w,h:w,rot:spin}]);
+      if(f.k==="echo"){const gl=((G.t*.01)%1)*52-26,c=Math.cos(spin)*s,q=Math.sin(spin)*s;
+        const P=(u,v)=>[x+u*c-v*q,y+u*q+v*c],[x0,y0]=P(gl-6,-1.2),[x1,y1]=P(gl+6,-1.2);
+        gpuShapes(pass,[[2,x0,y0,x1,y1,.4*s,0,159,183,255,.55]]);}
+    }else{
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
     ctx.rotate(spin);
-    ctx.fillStyle="rgba(22,25,31,.96)";ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.9;
-    if(f.k==="sos"){
-      /* спасательная капсула: короткое тело с иллюминатором */
-      ctx.beginPath();ctx.ellipse(0,0,13,7,0,0,TAU);ctx.fill();ctx.stroke();
-      ctx.fillStyle="rgba(60,70,84,.9)";
-      ctx.beginPath();ctx.ellipse(4,0,3.4,3.4,0,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(80,92,108,.8)";
-      ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-19,0);ctx.stroke();
-    }else if(f.k==="sat"){
-      /* спутник: коробка приборов и две панели — силуэт, который ни с чем
-         не спутать даже точкой */
-      ctx.beginPath();ctx.rect(-6,-5,12,10);ctx.fill();ctx.stroke();
-      ctx.fillStyle="rgba(34,44,60,.95)";
-      ctx.beginPath();ctx.rect(-22,-3.4,14,6.8);ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.rect(8,-3.4,14,6.8);ctx.fill();ctx.stroke();
-      ctx.strokeStyle="rgba(70,84,104,.7)";ctx.lineWidth=.6;
-      for(let i=1;i<4;i++){
-        ctx.beginPath();ctx.moveTo(-22+i*3.5,-3.4);ctx.lineTo(-22+i*3.5,3.4);
-        ctx.moveTo(8+i*3.5,-3.4);ctx.lineTo(8+i*3.5,3.4);ctx.stroke();
-      }
-      /* тарелка: она и передаёт */
-      ctx.fillStyle="rgba(48,58,72,.95)";
-      ctx.beginPath();ctx.arc(0,-9,4.2,Math.PI,TAU);ctx.fill();
-    }else if(f.k==="cont"){
-      /* Ящик, а не панель. В первом кадре контейнер был прямоугольником в
-         клетку и путался с крылом спутника: два разных предмета читались одной
-         фигурой. Отличает его толщина и торцы — то, чем ящик и отличается от
-         листа: тяжёлые оковки по краям и одна стяжка поперёк. */
-      ctx.beginPath();ctx.rect(-15,-9,30,18);ctx.fill();ctx.stroke();
-      ctx.fillStyle="rgba(38,42,50,.98)";
-      ctx.fillRect(-17,-10,5,20);ctx.fillRect(12,-10,5,20);
-      ctx.strokeStyle="rgba(0,0,0,.5)";
-      ctx.strokeRect(-17,-10,5,20);ctx.strokeRect(12,-10,5,20);
-      ctx.strokeStyle="rgba(96,110,126,.65)";ctx.lineWidth=1.4;
-      ctx.beginPath();ctx.moveTo(-12,-2);ctx.lineTo(12,-2);ctx.stroke();
-    }else if(f.k==="echo"){
-      /* зеркало (11f): тонкая пластина ребром, почти ничего — поверхность, а не
-         предмет. Блик один, и он не горит, а скользит */
-      ctx.beginPath();ctx.ellipse(0,0,26,3.2,0,0,TAU);ctx.fill();ctx.stroke();
+    findShape(f.k);
+    if(f.k==="echo"){
       ctx.strokeStyle="rgba(159,183,255,.55)";ctx.lineWidth=.8;
       const gl=((G.t*.01)%1)*52-26;
       ctx.beginPath();ctx.moveTo(gl-6,-1.2);ctx.lineTo(gl+6,-1.2);ctx.stroke();
-    }else{
-      /* остов разведчика: тот же язык, что у остова баржи, но мельче и с
-         отломанным крылом */
-      ctx.beginPath();
-      ctx.moveTo(-20,-4);ctx.lineTo(-2,-7);ctx.lineTo(17,-4);ctx.lineTo(19,2);
-      ctx.lineTo(-3,5);ctx.lineTo(-18,4);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.moveTo(24,3);ctx.lineTo(33,-2);ctx.lineTo(31,6);ctx.closePath();ctx.fill();
     }
-    ctx.restore();
+    ctx.restore();}
     if(taken)continue;
     /* один свет на находку: маяк своего цвета. Спутник ещё и «говорит» —
        кольцо передачи расходится в пустоту, которую никто не слушает */
     const bl=Math.pow(Math.max(0,Math.sin(G.t*.045+f.seed)),8);
+    if(pass){const c=hex2rgb(K.col),L=[];
+      if(bl>.02)L.push([1,x,y-11*s,2.2,0,0,0,c[0],c[1],c[2],.9*bl]);
+      if(f.k==="sat"){const ph=(G.t*.012+f.seed%10)%1;L.push([3,x,y,14+ph*46,0,.5,0,242,178,92,.3*(1-ph)]);}
+      if(L.length)gpuShapes(pass,L);
+    }else{
     if(bl>.02){
       ctx.fillStyle=K.col;
       ctx.globalAlpha=.9*bl;
@@ -52206,6 +52279,7 @@ function drawFindsSystem(zx,zy,Z){
       const ph=(G.t*.012+f.seed%10)%1;
       ctx.strokeStyle="rgba(242,178,92,"+(.30*(1-ph)).toFixed(3)+")";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,14+ph*46,0,TAU);ctx.stroke();
+    }
     }
     domLabel("fd"+f.seed,x,y+24*s,K.ru.toUpperCase(),"8px ui-monospace,monospace",K.col,"center",.75);
   }
@@ -52853,7 +52927,7 @@ function hullGpuBake(h,id,sb){
   b={cv,E:side/(2*sb),sb};M.set(key,b);return b;
 }
 function hullGpuBelly(h,sb){
-  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;
+  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuMipDrop(b.cv);
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
   const cv=document.createElement("canvas");cv.width=cv.height=side;
   const prev=ctx;ctx=cv.getContext("2d");
@@ -52967,7 +53041,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   }
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
-    gpuImage(pass,gpuCvLevel(Bl.cv,0,Bl.E*2*sc*dk),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
+    gpuImage(pass,gpuMipTex(Bl.cv),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,0,cb,lod);
   if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */
@@ -53813,6 +53887,8 @@ function laneLampCol(by){
   const MF=(typeof makerFlame==="function")?makerFlame(by):null;
   return (MF&&MF.col)?MF.col:[255,190,110];
 }
+/* огонь бакена: ореол кладётся краской, как в 2D — сложение выжигало клетку огня в белое */
+const LANE_GLOW=1;
 function drawSysLane(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
   const P=sysLane(sys);if(!P||!P.buoys.length)return;
@@ -53827,6 +53903,21 @@ function drawSysLane(zx,zy,Z){
      пауза в полторы пары между проходами — чтобы читалось направление */
   const lead=P.pairs-1-((G.t/60*LANE_CHASE)%(P.pairs+1.5));
   const na=Math.atan2(P.uy,P.ux)+Math.PI/2;       /* бакен стоит поперёк полосы */
+  /* на видеокарте: бакены одной пачкой, ореол огня краской, лампа — точкой */
+  const pass=gpuScene();
+  if(pass){const B=[],Gl=[],Lp=[],lc=mixc(col,[255,255,255],.5);
+    for(const b of P.buoys){
+      const x=zx(b.x),y=zy(b.y);
+      if(x<-40||x>W+40||y<-40||y>H+40)continue;
+      const k=Math.max(0,1-Math.abs(b.i-lead)*1.4),r=(7+22*k)*s;
+      const lx=x+Math.cos(na-Math.PI/2)*11.5*s,ly=y+Math.sin(na-Math.PI/2)*11.5*s;
+      B.push({x,y,w:R*2,h:R*2,rot:na});
+      Gl.push({x:lx,y:ly,w:r*2,h:r*2,a:(.35+.65*k)*LANE_GLOW});
+      Lp.push([1,lx,ly,Math.max(1,1.3*s),0,0,0,lc[0],lc[1],lc[2],.5+.5*k]);}
+    gpuImage(pass,gpuMipTex(sp),B);
+    gpuImage(pass,gpuMipTex(glow),Gl);
+    gpuShapes(pass,Lp);
+    return;}
   for(const b of P.buoys){
     const x=zx(b.x),y=zy(b.y);
     if(x<-40||x>W+40||y<-40||y>H+40)continue;
@@ -54509,12 +54600,17 @@ function drawGestPost(zx,zy,Z){
   const g=GEST&&GEST.sx===G.sx&&GEST.sy===G.sy?GEST:{seed:hashi(G.sx,G.sy,0x6E57)>>>0};
   const text=by==="gt"?GEST_POST.gt+gestPostNo(g):GEST_POST[by];
   const cv=gestPostSprite(by,text);
-  ctx.drawImage(cv,x-60*k,y-68*k,120*k,70*k);
+  const pass=gpuScene();
+  if(pass)gpuImage(pass,gpuMipTex(cv),[{x,y:y-33*k,w:120*k,h:70*k}]);
+  else ctx.drawImage(cv,x-60*k,y-68*k,120*k,70*k);
   /* одна лампа — у каждого своё движение: ровно, вращаясь, дыша */
   const col=(typeof laneLampCol==="function")?laneLampCol(by):[255,190,110];
   const ts=G.t/60;
   const lit=by==="gt"?.5+.5*Math.max(0,Math.cos(ts*3.2)):by==="km"?.55+.35*Math.sin(ts*1.1)
     :by==="or"?1:by==="co"?.7+.3*Math.sin(ts*5):by==="ra"?.6+.4*Math.abs(Math.sin(ts*.7+Math.sin(ts*2.3))):.8;
+  if(pass){const c=mixc(col,[255,255,255],.5);
+    gpuShapes(pass,[[1,x,y-40*k,9*k,0,0,0,col[0],col[1],col[2],.22*lit],[1,x,y-40*k,1.8*k,0,0,0,c[0],c[1],c[2],.9*lit]],{blend:"add"});
+    return;}
   ctx.save();ctx.globalCompositeOperation="lighter";
   ctx.fillStyle=rgba(col,.22*lit);ctx.beginPath();ctx.arc(x,y-40*k,9*k,0,TAU);ctx.fill();
   ctx.fillStyle=rgba(mixc(col,[255,255,255],.5),.9*lit);ctx.beginPath();ctx.arc(x,y-40*k,1.8*k,0,TAU);ctx.fill();

@@ -548,10 +548,10 @@ function gpuScene3D(){
    Что 2D нарисует после — ляжет выше этого слоя. Каждый вызов — новый сегмент
    (загрузка #c, один полноэкранный проход, отправка); подряд идущие слои одного
    сегмента рисуют в один возвращённый проход. Вне кадра — null */
-/* #c → передний слой. GPU.kill.fpx (проба ?g11=deep): копия 1×1 — снимок холста (и растр его
-   2D) остаётся, байтов почти нет: разводит цену растра и цену копии (P1 10/n) */
+/* #c → передний слой; пустой не грузится (08c). GPU.kill.fpx (?g11=deep): копия 1×1 —
+   разводит цену растра и цену копии (P1 10/n) */
 function gpuFrontCopy(n){
-  gpuTsAround(n,()=>GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]));
+  if(gpuFrontClean())return;gpuTsAround(n,()=>GPU.dev.queue.copyExternalImageToTexture({source:cvs},{texture:GPU.T.front,premultipliedAlpha:true},GPU.kill.fpx?[1,1]:[GPU.bw,GPU.bh]));
 }
 function gpuOver(){
   if(!GPU.on||!GPU.enc)return null;

@@ -372,8 +372,29 @@ function fleetGlyph(k,h){
     case "exped":compass();break;
   }
 }
+/* на видеокарте: место, курс и масштаб — из текущей матрицы 2D, прозрачность — из
+   globalAlpha; так все места вызова (полоса, флот, жесты, мирный флот) уходят с #c разом.
+   Зев сопла — свет (сложение): над #c его раздувал emit() */
+const FLEET_ENG=1.3;
+function fleetShipGpu(f,art){
+  const pass=gpuScene();if(!pass)return false;
+  const m=ctx.getTransform(),k=1/DPR,al=ctx.globalAlpha,s=Math.hypot(m.a,m.b)*k;
+  const T=(lx,ly)=>[(m.a*lx+m.c*ly+m.e)*k,(m.b*lx+m.d*ly+m.f)*k],[x,y]=T(0,0),w=art.rad*2*s;
+  gpuImage(pass,gpuMipTex(art.cn),[{x,y,w,h:w,rot:Math.atan2(m.b,m.a),a:al}]);
+  const L=[],A=[],by=f.by||"gt",MF=(typeof makerFlame==="function")?makerFlame(by):null;
+  const ec=(MF&&by!=="gt")?mixc(MF.col,[255,255,255],.2):[255,178,110];
+  for(const li of art.lights){const [px,py]=T(li.x,li.y);
+    if(li.c==="nav"){const c=li.g?[120,240,150]:[255,90,80];
+      L.push([1,px,py,1.4*s,0,0,0,c[0],c[1],c[2],(Math.sin(G.t*.05+(li.g?1.6:0))>.6?.95:.2)*al]);}
+    else if(li.c==="win")L.push([1,px,py,1.3*s,0,0,0,255,228,170,((Math.sin(G.t*.03+li.x)>-.4)?.9:.4)*al]);
+    else if(li.c==="eng"){const r=li.r*1.3*s;A.push([1,px,py,r*.2,0,0,r*.8,ec[0],ec[1],ec[2],.85*al*FLEET_ENG]);}}
+  if(L.length)gpuShapes(pass,L);
+  if(A.length)gpuShapes(pass,A,{blend:"add"});
+  return true;
+}
 function drawFleetShip(f){
   const art=fleetArtOf(f);
+  if(ctx===MAIN_CTX&&fleetShipGpu(f,art))return;
   ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
   for(const li of art.lights){
     if(li.c==="nav"){

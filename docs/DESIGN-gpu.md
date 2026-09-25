@@ -166,6 +166,9 @@ Then hulls (item 2) by the same «explicit emission» path.
   nozzles, belly, brake tongues, nav lights and the engine line are scene-pass shapes. Gate: the pair at 760 and
   ×1.5 (thrusting, bank .35) not dimmer, gpu errs 0. Pass 1b: one mipped master per hull (0 uploads in flight
   and on a zoom sweep), runline and crowns as shapes over the body — no hull left on `#c`.
+- Brief of **`#c` zero** (Контроль on 85a858c: «бери сам всё, что держит ворота»): whatever still draws on `#c`
+  in flight moves to the scene pass (the lane, fleet ships, finds, the gesture post), and an empty `#c` is not
+  uploaded. Gate: steady flight uploads `#c` 0 times and submits once a frame; pairs not softer, not dimmer.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -412,6 +415,23 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   31.3 → 34.1, far plan 39.9 → 44.5; mean luma equal. Pairs `cutm1..m4_*.png`, sheet `mipsheet.py`, `sharp.py`.
   Still open (pass 2): the bake keeps hullPart1's painted ridge highlight under the GST light, so the body reads
   lighter than the 2D one — against the 2D path with crowns (cutm4) clearly lighter and pinker.
+  `#c` zero (Контроль on 85a858c): the last four flight painters of `#c` draw in the scene pass. The lane (17g):
+  buoys in one batch, the fire's halo laid over like the 2D paint (added, it burnt the cage white), the lamp a
+  disc. Fleet ships (12ai1 `fleetShipGpu`) read the ctx matrix and alpha, so the lane, the fleet, gestures and
+  the peace fleet leave at once: the body a sprite, nav and window lights discs, nozzles added (gain 1.3). Finds
+  (17b): `findShape` split out of the draw and baked once per kind (`findSprite`, 4×); the echo glint a capsule,
+  the beacon a disc, the satellite's ring a ring. The gesture post (17h): sign sprite, the lamp two added discs.
+  An empty `#c` is not uploaded: 08c `gpuFrontHook` wraps the draw methods on the MAIN_CTX instance (a draw
+  marks it dirty, a full-canvas `clearRect` clean), `gpuFrontCopy` returns early when clean and the front
+  texture is cleared once by a pass. Kit: `gpuImage` takes a `gpuMipTex` master, trilinear through
+  `textureSampleGrad`, one octave above the screen (`GPU_MIP_GS` .5 — at .785 the fleet pair lost 16 % of its
+  Laplacian: 2D draws the ×3 sprite straight); fleet, finds, lane, post and the hull's belly are masters,
+  uploaded once. Gate (pass 1b's stand): 60 steady frames — submits 60, `#c` 0, uploads 4 (the station); the
+  120-frame zoom sweep — submits 120, `#c` 0, uploads hotel 17, Cheburek 21, billboard 22, neon 14, station 14
+  (the next steps), plus fleet masters 31 and finds 7 once per sprite; `dirt.js` (who dirties an empty `#c`)
+  finds nobody. Pair `cutfl_was/now.png` (760, Z 1.2, the lane with its fleet), sheet `mipsheet.png` (crop
+  290,630–440,740 ×3): Laplacian sd 24.9 → 23.5, luma 22.4 → 22.6; per ship −7…−10 %, the rest of the gap is the
+  2D lamps' `emit()` glow.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 608 · символов верхнего уровня: 6030
+Файлов: 608 · символов верхнего уровня: 6039
 
 ## СИМВОЛЫ
 
@@ -1436,17 +1436,17 @@ drawElevator                 src/20aa-poi-shapes.js:91-113
 drawExhaust                  src/16a-space.js:323
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
-drawFindsSystem              src/17b-finds.js:181-260
+drawFindsSystem              src/17b-finds.js:240-288
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:132-151
 drawFleetMap                 src/12ai-fleet.js:321-356
-drawFleetShip                src/12ai1-fleet-art.js:375-400
+drawFleetShip                src/12ai1-fleet-art.js:395-421
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
 drawGalaxyNames              src/17z2-galaxy-names.js:38-63
 drawGalaxyStars              src/17z1-galaxy.js:156-195
-drawGestPost                 src/17h-sys-gesture.js:192-213
+drawGestPost                 src/17h-sys-gesture.js:192-218
 drawGesture                  src/17h-sys-gesture.js:87-172
 drawGiant                    src/17o-giants.js:162-189
 drawGiantsMap                src/17o-giants.js:49-61
@@ -1500,7 +1500,7 @@ drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
-drawRushTraffic              src/17g-sys-lane.js:137-151
+drawRushTraffic              src/17g-sys-lane.js:154-168
 drawScars                    src/03e-hull-draw.js:5-42
 drawScoop                    src/19a-mode-scoop.js:271-602
 drawSeal                     src/03e-hull-draw.js:47-58
@@ -1524,8 +1524,8 @@ drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:706-984
-drawSysLane                  src/17g-sys-lane.js:94-122
-drawSysLaneShips             src/17g-sys-lane.js:152-180
+drawSysLane                  src/17g-sys-lane.js:96-139
+drawSysLaneShips             src/17g-sys-lane.js:169-197
 drawSysRail                  src/18f-rail-station.js:32-65
 drawSystem                   src/17-mode-system.js:498-705
 drawSysTraffic               src/17f-sys-traffic.js:39-43
@@ -1793,13 +1793,16 @@ FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19-25
+FIND_R                       src/17b-finds.js:232
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:139-175
 findLandingNear              src/17b-finds.js:131-138
 findsBlock                   src/12aa-need.js:167-194
 findSeen                     src/17b-finds.js:54
+findShape                    src/17b-finds.js:183-231
 findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27-52
+findSprite                   src/17b-finds.js:233-239
 findTake                     src/17b-finds.js:58-128
 findTestSys                  tests/91x-finds.js:3-10
 FIRE_ALONE                   src/21a5-base-dir.js:121
@@ -1847,6 +1850,7 @@ FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai1-fleet-art.js:12
 FLEET_CLASSES                src/12ai-fleet.js:20-40
 FLEET_COOL                   src/13-combat.js:212
+FLEET_ENG                    src/12ai1-fleet-art.js:378
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1881,6 +1885,7 @@ fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
+fleetShipGpu                 src/12ai1-fleet-art.js:379-394
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
 floraOf                      src/20e-species.js:91-105
@@ -2143,16 +2148,17 @@ gplSun                       src/17ga-gpu-planets.js:314-317
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-25
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:60
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:222
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:144
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:247
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:168
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
-GPU_KIT_WGSL                 src/08c-gpu-kit.js:130
+GPU_KIT_WGSL                 src/08c-gpu-kit.js:150
 GPU_MIP                      src/08c-gpu-kit.js:81
+GPU_MIP_GS                   src/08c-gpu-kit.js:167
 GPU_PL_WGSL                  src/08b-gpu.js:460
 GPU_POST_WGSL                src/08b-gpu.js:88
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:181
-GPU_WGSL_COMMON              src/08c-gpu-kit.js:99
-gpuArena                     src/08c-gpu-kit.js:119-129
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:206
+GPU_WGSL_COMMON              src/08c-gpu-kit.js:119
+gpuArena                     src/08c-gpu-kit.js:139-149
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:33-39
 gpuBloom                     src/08b-gpu.js:607-614
@@ -2166,16 +2172,18 @@ gpuCvLevel                   src/08c-gpu-kit.js:65-76
 gpuDrones                    src/16ga-gpu-trail.js:132-176
 gpuDrop                      src/08b-gpu.js:81-86
 gpuExhaust                   src/16ga-gpu-trail.js:259-292
-gpuField                     src/08c-gpu-kit.js:236-265
+gpuField                     src/08c-gpu-kit.js:261-290
 gpuFrame                     src/08b-gpu.js:509-519
+gpuFrontClean                src/08c-gpu-kit.js:111-116
 gpuFrontCopy                 src/08b-gpu.js:553-555
+gpuFrontHook                 src/08c-gpu-kit.js:100-109
 gpuHaze                      src/08b-gpu.js:442
 gpuHud                       src/08bh-gpu-hud.js:14-17
 gpuHudDpr                    src/08bh-gpu-hud.js:12
 gpuHudFlush                  src/08bh-gpu-hud.js:20-33
 gpuHullLight                 src/16ga-gpu-trail.js:345-364
-gpuImage                     src/08c-gpu-kit.js:164-176
-gpuKitU                      src/08c-gpu-kit.js:135-139
+gpuImage                     src/08c-gpu-kit.js:189-201
+gpuKitU                      src/08c-gpu-kit.js:155-159
 gpuLight                     src/08b-gpu.js:444
 gpuLitSprite                 src/17c-system-draw.js:480-488
 gpuLtWrite                   src/08b-gpu.js:448-455
@@ -2199,7 +2207,7 @@ gpuResize                    src/08b-gpu.js:382-417
 gpuScene                     src/08b-gpu.js:523-533
 gpuScene3D                   src/08b-gpu.js:537-545
 gpuSeg                       src/28z-fps-probe.js:139-142
-gpuShapes                    src/08c-gpu-kit.js:206-217
+gpuShapes                    src/08c-gpu-kit.js:231-242
 gpuShock                     src/08b-gpu.js:443
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
@@ -2986,6 +2994,7 @@ LANE_BUOY                    src/17g-sys-lane.js:66
 LANE_CHASE                   src/17g-sys-lane.js:16
 LANE_DOCK                    src/17g-sys-lane.js:15
 LANE_GAP                     src/17g-sys-lane.js:13
+LANE_GLOW                    src/17g-sys-lane.js:95
 LANE_Q_CLS                   src/17g-sys-lane.js:18
 LANE_Q_MAX                   src/17g-sys-lane.js:17
 LANE_RU                      src/26-ui-station.js:389
@@ -2994,7 +3003,7 @@ LANE_W                       src/17g-sys-lane.js:14
 laneBuoySprite               src/17g-sys-lane.js:67-89
 laneLampCol                  src/17g-sys-lane.js:90-93
 laneLife                     src/17g-sys-lane.js:27-31
-laneShip                     src/17g-sys-lane.js:124-132
+laneShip                     src/17g-sys-lane.js:141-149
 last                         src/28-loop.js:107
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:108
@@ -6174,7 +6183,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 11 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08c-gpu-kit.js · 19 КБ
+## src/08c-gpu-kit.js · 21 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/09-audio.js · 18 КБ
@@ -6376,7 +6385,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ai-fleet.js · 28 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
-## src/12ai1-fleet-art.js · 33 КБ
+## src/12ai1-fleet-art.js · 34 КБ
   · ГЛАВТРАССА: как флот выглядит (выделено из 12ai, M415):1
 
 ## src/12aj-coop.js · 19 КБ
@@ -6739,7 +6748,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17a-station-mod.js · 13 КБ
   · модули станции:1
 
-## src/17b-finds.js · 17 КБ
+## src/17b-finds.js · 18 КБ
   · находки в полёте:1
 
 ## src/17c-system-draw.js · 35 КБ
@@ -6763,7 +6772,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17g-gpu-system.js · 26 КБ
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
-## src/17g-sys-lane.js · 13 КБ
+## src/17g-sys-lane.js · 14 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
 ## src/17ga-gpu-planets.js · 26 КБ

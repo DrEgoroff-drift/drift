@@ -200,12 +200,17 @@ function drawGestPost(zx,zy,Z){
   const g=GEST&&GEST.sx===G.sx&&GEST.sy===G.sy?GEST:{seed:hashi(G.sx,G.sy,0x6E57)>>>0};
   const text=by==="gt"?GEST_POST.gt+gestPostNo(g):GEST_POST[by];
   const cv=gestPostSprite(by,text);
-  ctx.drawImage(cv,x-60*k,y-68*k,120*k,70*k);
+  const pass=gpuScene();
+  if(pass)gpuImage(pass,gpuMipTex(cv),[{x,y:y-33*k,w:120*k,h:70*k}]);
+  else ctx.drawImage(cv,x-60*k,y-68*k,120*k,70*k);
   /* одна лампа — у каждого своё движение: ровно, вращаясь, дыша */
   const col=(typeof laneLampCol==="function")?laneLampCol(by):[255,190,110];
   const ts=G.t/60;
   const lit=by==="gt"?.5+.5*Math.max(0,Math.cos(ts*3.2)):by==="km"?.55+.35*Math.sin(ts*1.1)
     :by==="or"?1:by==="co"?.7+.3*Math.sin(ts*5):by==="ra"?.6+.4*Math.abs(Math.sin(ts*.7+Math.sin(ts*2.3))):.8;
+  if(pass){const c=mixc(col,[255,255,255],.5);
+    gpuShapes(pass,[[1,x,y-40*k,9*k,0,0,0,col[0],col[1],col[2],.22*lit],[1,x,y-40*k,1.8*k,0,0,0,c[0],c[1],c[2],.9*lit]],{blend:"add"});
+    return;}
   ctx.save();ctx.globalCompositeOperation="lighter";
   ctx.fillStyle=rgba(col,.22*lit);ctx.beginPath();ctx.arc(x,y-40*k,9*k,0,TAU);ctx.fill();
   ctx.fillStyle=rgba(mixc(col,[255,255,255],.5),.9*lit);ctx.beginPath();ctx.arc(x,y-40*k,1.8*k,0,TAU);ctx.fill();

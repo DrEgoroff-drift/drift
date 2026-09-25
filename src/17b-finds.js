@@ -178,72 +178,99 @@ function findInteract(sh){
    обвода, один свет последним. Четыре силуэта опознаются с расстояния, потому
    что различаются формой, а не подписью: капсула, коробка с крыльями панелей,
    ящик, переломленный корпус. Подпись — только пока не осмотрено. */
+/* форма находки в её осях (без живого блика зеркала): 2D рисует её на месте,
+   видеокарта — печёным спрайтом (findSprite) */
+function findShape(k){
+  ctx.fillStyle="rgba(22,25,31,.96)";ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.9;
+  if(k==="sos"){
+    /* спасательная капсула: короткое тело с иллюминатором */
+    ctx.beginPath();ctx.ellipse(0,0,13,7,0,0,TAU);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(60,70,84,.9)";
+    ctx.beginPath();ctx.ellipse(4,0,3.4,3.4,0,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(80,92,108,.8)";
+    ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-19,0);ctx.stroke();
+  }else if(k==="sat"){
+    /* спутник: коробка приборов и две панели — силуэт, который ни с чем
+       не спутать даже точкой */
+    ctx.beginPath();ctx.rect(-6,-5,12,10);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(34,44,60,.95)";
+    ctx.beginPath();ctx.rect(-22,-3.4,14,6.8);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.rect(8,-3.4,14,6.8);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(70,84,104,.7)";ctx.lineWidth=.6;
+    for(let i=1;i<4;i++){
+      ctx.beginPath();ctx.moveTo(-22+i*3.5,-3.4);ctx.lineTo(-22+i*3.5,3.4);
+      ctx.moveTo(8+i*3.5,-3.4);ctx.lineTo(8+i*3.5,3.4);ctx.stroke();
+    }
+    /* тарелка: она и передаёт */
+    ctx.fillStyle="rgba(48,58,72,.95)";
+    ctx.beginPath();ctx.arc(0,-9,4.2,Math.PI,TAU);ctx.fill();
+  }else if(k==="cont"){
+    /* Ящик, а не панель. В первом кадре контейнер был прямоугольником в
+       клетку и путался с крылом спутника: два разных предмета читались одной
+       фигурой. Отличает его толщина и торцы — то, чем ящик и отличается от
+       листа: тяжёлые оковки по краям и одна стяжка поперёк. */
+    ctx.beginPath();ctx.rect(-15,-9,30,18);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(38,42,50,.98)";
+    ctx.fillRect(-17,-10,5,20);ctx.fillRect(12,-10,5,20);
+    ctx.strokeStyle="rgba(0,0,0,.5)";
+    ctx.strokeRect(-17,-10,5,20);ctx.strokeRect(12,-10,5,20);
+    ctx.strokeStyle="rgba(96,110,126,.65)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(-12,-2);ctx.lineTo(12,-2);ctx.stroke();
+  }else if(k==="echo"){
+    /* зеркало (11f): тонкая пластина ребром, почти ничего — поверхность, а не
+       предмет. Блик один, и он не горит, а скользит */
+    ctx.beginPath();ctx.ellipse(0,0,26,3.2,0,0,TAU);ctx.fill();ctx.stroke();
+  }else{
+    /* остов разведчика: тот же язык, что у остова баржи, но мельче и с
+       отломанным крылом */
+    ctx.beginPath();
+    ctx.moveTo(-20,-4);ctx.lineTo(-2,-7);ctx.lineTo(17,-4);ctx.lineTo(19,2);
+    ctx.lineTo(-3,5);ctx.lineTo(-18,4);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(24,3);ctx.lineTo(33,-2);ctx.lineTo(31,6);ctx.closePath();ctx.fill();
+  }
+}
+const FIND_R=36,FIND_SS=4,FIND_SP={};
+function findSprite(k){
+  if(FIND_SP[k])return FIND_SP[k];
+  const cv=document.createElement("canvas");cv.width=cv.height=FIND_R*2*FIND_SS;
+  const prev=ctx;ctx=cv.getContext("2d");
+  try{ctx.scale(FIND_SS,FIND_SS);ctx.translate(FIND_R,FIND_R);findShape(k);}finally{ctx=prev;}
+  return FIND_SP[k]=cv;
+}
 function drawFindsSystem(zx,zy,Z){
   const list=findsHere();
   if(!list.length)return;
+  const pass=gpuScene();
   for(const f of list){
     const x=zx(f.x),y=zy(f.y);
     if(x<-70||x>W+70||y<-70||y>H+70)continue;
     const K=FIND_KINDS[f.k],taken=findSeen(f);
     const s=clamp(Z,.5,1.5);
-    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
     const spin=(f.seed%628)/100+G.t*.002*((f.seed&1)?1:-1);
+    if(pass){const w=FIND_R*2*s;
+      gpuImage(pass,gpuMipTex(findSprite(f.k)),[{x,y,w,h:w,rot:spin}]);
+      if(f.k==="echo"){const gl=((G.t*.01)%1)*52-26,c=Math.cos(spin)*s,q=Math.sin(spin)*s;
+        const P=(u,v)=>[x+u*c-v*q,y+u*q+v*c],[x0,y0]=P(gl-6,-1.2),[x1,y1]=P(gl+6,-1.2);
+        gpuShapes(pass,[[2,x0,y0,x1,y1,.4*s,0,159,183,255,.55]]);}
+    }else{
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
     ctx.rotate(spin);
-    ctx.fillStyle="rgba(22,25,31,.96)";ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.9;
-    if(f.k==="sos"){
-      /* спасательная капсула: короткое тело с иллюминатором */
-      ctx.beginPath();ctx.ellipse(0,0,13,7,0,0,TAU);ctx.fill();ctx.stroke();
-      ctx.fillStyle="rgba(60,70,84,.9)";
-      ctx.beginPath();ctx.ellipse(4,0,3.4,3.4,0,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(80,92,108,.8)";
-      ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-19,0);ctx.stroke();
-    }else if(f.k==="sat"){
-      /* спутник: коробка приборов и две панели — силуэт, который ни с чем
-         не спутать даже точкой */
-      ctx.beginPath();ctx.rect(-6,-5,12,10);ctx.fill();ctx.stroke();
-      ctx.fillStyle="rgba(34,44,60,.95)";
-      ctx.beginPath();ctx.rect(-22,-3.4,14,6.8);ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.rect(8,-3.4,14,6.8);ctx.fill();ctx.stroke();
-      ctx.strokeStyle="rgba(70,84,104,.7)";ctx.lineWidth=.6;
-      for(let i=1;i<4;i++){
-        ctx.beginPath();ctx.moveTo(-22+i*3.5,-3.4);ctx.lineTo(-22+i*3.5,3.4);
-        ctx.moveTo(8+i*3.5,-3.4);ctx.lineTo(8+i*3.5,3.4);ctx.stroke();
-      }
-      /* тарелка: она и передаёт */
-      ctx.fillStyle="rgba(48,58,72,.95)";
-      ctx.beginPath();ctx.arc(0,-9,4.2,Math.PI,TAU);ctx.fill();
-    }else if(f.k==="cont"){
-      /* Ящик, а не панель. В первом кадре контейнер был прямоугольником в
-         клетку и путался с крылом спутника: два разных предмета читались одной
-         фигурой. Отличает его толщина и торцы — то, чем ящик и отличается от
-         листа: тяжёлые оковки по краям и одна стяжка поперёк. */
-      ctx.beginPath();ctx.rect(-15,-9,30,18);ctx.fill();ctx.stroke();
-      ctx.fillStyle="rgba(38,42,50,.98)";
-      ctx.fillRect(-17,-10,5,20);ctx.fillRect(12,-10,5,20);
-      ctx.strokeStyle="rgba(0,0,0,.5)";
-      ctx.strokeRect(-17,-10,5,20);ctx.strokeRect(12,-10,5,20);
-      ctx.strokeStyle="rgba(96,110,126,.65)";ctx.lineWidth=1.4;
-      ctx.beginPath();ctx.moveTo(-12,-2);ctx.lineTo(12,-2);ctx.stroke();
-    }else if(f.k==="echo"){
-      /* зеркало (11f): тонкая пластина ребром, почти ничего — поверхность, а не
-         предмет. Блик один, и он не горит, а скользит */
-      ctx.beginPath();ctx.ellipse(0,0,26,3.2,0,0,TAU);ctx.fill();ctx.stroke();
+    findShape(f.k);
+    if(f.k==="echo"){
       ctx.strokeStyle="rgba(159,183,255,.55)";ctx.lineWidth=.8;
       const gl=((G.t*.01)%1)*52-26;
       ctx.beginPath();ctx.moveTo(gl-6,-1.2);ctx.lineTo(gl+6,-1.2);ctx.stroke();
-    }else{
-      /* остов разведчика: тот же язык, что у остова баржи, но мельче и с
-         отломанным крылом */
-      ctx.beginPath();
-      ctx.moveTo(-20,-4);ctx.lineTo(-2,-7);ctx.lineTo(17,-4);ctx.lineTo(19,2);
-      ctx.lineTo(-3,5);ctx.lineTo(-18,4);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.moveTo(24,3);ctx.lineTo(33,-2);ctx.lineTo(31,6);ctx.closePath();ctx.fill();
     }
-    ctx.restore();
+    ctx.restore();}
     if(taken)continue;
     /* один свет на находку: маяк своего цвета. Спутник ещё и «говорит» —
        кольцо передачи расходится в пустоту, которую никто не слушает */
     const bl=Math.pow(Math.max(0,Math.sin(G.t*.045+f.seed)),8);
+    if(pass){const c=hex2rgb(K.col),L=[];
+      if(bl>.02)L.push([1,x,y-11*s,2.2,0,0,0,c[0],c[1],c[2],.9*bl]);
+      if(f.k==="sat"){const ph=(G.t*.012+f.seed%10)%1;L.push([3,x,y,14+ph*46,0,.5,0,242,178,92,.3*(1-ph)]);}
+      if(L.length)gpuShapes(pass,L);
+    }else{
     if(bl>.02){
       ctx.fillStyle=K.col;
       ctx.globalAlpha=.9*bl;
@@ -254,6 +281,7 @@ function drawFindsSystem(zx,zy,Z){
       const ph=(G.t*.012+f.seed%10)%1;
       ctx.strokeStyle="rgba(242,178,92,"+(.30*(1-ph)).toFixed(3)+")";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,14+ph*46,0,TAU);ctx.stroke();
+    }
     }
     domLabel("fd"+f.seed,x,y+24*s,K.ru.toUpperCase(),"8px ui-monospace,monospace",K.col,"center",.75);
   }

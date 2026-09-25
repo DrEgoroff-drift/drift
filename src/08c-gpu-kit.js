@@ -94,6 +94,26 @@ function gpuMipTex(cv){
 }
 function gpuMipDrop(cv){const e=GPU_MIP.get(cv);if(e){GPU.trash.push(e.tex);GPU_MIP.delete(cv);}}
 function gpuMipSmp(){return GPU.S.mip||(GPU.S.mip=GPU.dev.createSampler({magFilter:"linear",minFilter:"linear",mipmapFilter:"linear"}));}
+/* пустой #c не грузится (ворота ступени 1: в ровном полёте выгрузок холстов 0).
+   cState: 0 — слой вычищен целиком и с тех пор пуст, 1 — на нём что-то есть. Следим за
+   самим контекстом #c: печки рисуют в свои холсты и сюда не попадают */
+function gpuFrontHook(){
+  if(GPU.cHook===MAIN_CTX)return;GPU.cHook=MAIN_CTX;GPU.cState=1;
+  const c=MAIN_CTX,P=CanvasRenderingContext2D.prototype;
+  for(const k of ["fill","stroke","fillRect","strokeRect","drawImage","fillText","strokeText","putImageData"]){
+    const o=P[k];c[k]=function(){GPU.cState=1;return o.apply(this,arguments);};}
+  const cr=P.clearRect;
+  c.clearRect=function(x,y,w,h){const m=this.getTransform(),x0=m.a*x+m.e,y0=m.d*y+m.f;
+    if(!m.b&&!m.c&&x0<=0&&y0<=0&&x0+m.a*w>=this.canvas.width&&y0+m.d*h>=this.canvas.height)GPU.cState=0;
+    return cr.apply(this,arguments);};
+}
+/* true — слой пуст, грузить нечего; текстуру переднего слоя чистим один раз проходом */
+function gpuFrontClean(){
+  gpuFrontHook();
+  if(GPU.cState){GPU.fClear=false;return false;}
+  if(!GPU.fClear){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.T.front.createView(),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.fClear=true;}
+  return true;
+}
 /* общие куски шейдеров слоёв: мерка кадра и покрытие фигур со сглаживанием.
    Покрытие честное, по площади пикселя — так же, как Skia гладит края в 2D */
 const GPU_WGSL_COMMON=`
@@ -140,7 +160,11 @@ function gpuKitU(){
 /* картинка: rects = [{x,y,w,h, a, rot, u0,v0,u1,v1, cubic}] — x,y — центр, w,h — размер в
    пикселях CSS, rot — поворот вокруг центра, u0..v1 — кусок текстуры (по умолчанию
    вся), cubic — бикубика для сильного растяжения. o.blend: over | add | mul.
-   Цвет умножается на a — на сложении это усиление: a>1 даёт свет выше единицы (эмиссия) */
+   Цвет умножается на a — на сложении это усиление: a>1 даёт свет выше единицы (эмиссия).
+   cv — холст или мастер gpuMipTex: мастер берётся трилинейно, уровень вдвое крупнее
+   экрана (GPU_MIP_GS = 2^-1: 2D тянет спрайт с холста в три раза крупнее, мягче
+   нельзя — пара флота 25.09), и зум ничего не грузит */
+const GPU_MIP_GS=.5;
 const GPU_IMG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(1) var<storage,read> iq:array<vec4f>;
 @group(0) @binding(2) var itx:texture_2d<f32>;
@@ -149,7 +173,7 @@ struct IO{@builtin(position) p:vec4f,@location(0) uv:vec2f,@location(1) @interpo
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->IO{
   let a=iq[ii*3u];let b=iq[ii*3u+1u];let c=iq[ii*3u+2u];let cn=kCorn(vi);
   let l=(cn-.5)*a.zw;let cs=cos(b.y);let sn=sin(b.y);
-  var o:IO;o.p=kClip(a.xy+vec2f(l.x*cs-l.y*sn,l.x*sn+l.y*cs));o.uv=mix(c.xy,c.zw,cn);o.k=vec4f(b.x,b.z,0.,0.);return o;}
+  var o:IO;o.p=kClip(a.xy+vec2f(l.x*cs-l.y*sn,l.x*sn+l.y*cs));o.uv=mix(c.xy,c.zw,cn);o.k=vec4f(b.x,b.z,b.w,0.);return o;}
 fn cubicW(v:f32)->vec4f{let n=vec4f(1.,2.,3.,4.)-v;let s=n*n*n;let x=s.x;let y=s.y-4.*s.x;let z=s.z-4.*s.y+6.*s.x;return vec4f(x,y,z,6.-x-y-z)/6.;}
 fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
   let ts=vec2f(textureDimensions(t));var c=uv*ts-.5;let f=fract(c);c=c-f;
@@ -159,19 +183,20 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
   let s2=textureSampleLevel(t,sm,o.xw,0.);let s3=textureSampleLevel(t,sm,o.yw,0.);
   let sx=s.x/(s.x+s.y);let sy=s.z/(s.z+s.w);return mix(mix(s3,s2,sx),mix(s1,s0,sx),sy);}
 @fragment fn fs(i:IO)->@location(0) vec4f{
-  var c:vec4f;if(i.k.y>.5){c=texCubic(itx,ism,i.uv);}else{c=textureSampleLevel(itx,ism,i.uv,0.);}
+  let gx=dpdx(i.uv)*i.k.z;let gy=dpdy(i.uv)*i.k.z;
+  var c:vec4f;if(i.k.y>.5){c=texCubic(itx,ism,i.uv);}else{c=textureSampleGrad(itx,ism,i.uv,gx,gy);}
   return c*i.k.x;}`;
 function gpuImage(pass,cv,rects,o){
   if(!pass||!rects.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
-  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12);
+  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?GPU_MIP_GS:1;
   for(let i=0;i<n;i++){const r=rects[i],k=i*12;
-    f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;
+    f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
-  const t=gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
+  const t=mip?cv:gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
-  pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,GPU.S.lin]));
+  pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,mip?gpuMipSmp():GPU.S.lin]));
   pass.draw(6,n,0,A.off/12);
 }
 /* фигуры: items = [[вид, x0,y0,x1,y1, hw, soft, r,g,b,a]] в пикселях CSS, цвет 0..255 и a 0..1:

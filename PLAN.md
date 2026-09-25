@@ -34,9 +34,13 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     world or a finger (chips, compass, brackets, sticks) as DOM with `transform` or a small canvas;
   - hulls: bake the material (albedo, height → normal, emission, gloss mask) once per hull, bank and scale in the
     shader, from `GST_WGSL`; the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`);
+    gate (Контроль on 85a858c, phone ×1.5 Z 2.2, 2D → GPU: body V>.6 px 2583 → 7887, S .33 → .22, hue 18° → 30°,
+    red rim px 285 → 33; flame orange px 2718 → 450, halo S .38 → .29): at ×1.5 and 760, body S ≥ was, V>.6
+    count within ±25 %, red rim ≥ 80 %; flame orange ≥ 80 %, colour from `makerFlame`; keep 85a858c's sharpness;
   - pirates, missiles and combat effects;
-  - the caches: the hull bake that repeats every frame (its key misses), the station art rebaked on the move
-    with a new texture each time, and whether the 8-slot `gpuCanvasTex` thrashes;
+  - the caches: the station art rebaked on the move (a new 408² canvas about every 15 frames — a mipped master,
+    what lives on top as shapes); the zoom-following bakes (hotel, billboard, neon, Cheburek) as masters, a zoom
+    sweep uploading at most their levels;
   - the instrument pod (416×140, 66 calls a frame): redraw only when a reading changes.
   - Gate: uploads 0 and submits 1 per flight frame; then Контроль's phone run, ≥ 95 % of frames on time over
     30 s and over 5 minutes. A pass makes it a release candidate (Контроль pushes).

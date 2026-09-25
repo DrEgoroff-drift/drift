@@ -30,7 +30,7 @@ function hullGpuBake(h,id,sb){
   b={cv,E:side/(2*sb),sb};M.set(key,b);return b;
 }
 function hullGpuBelly(h,sb){
-  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;
+  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuMipDrop(b.cv);
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
   const cv=document.createElement("canvas");cv.width=cv.height=side;
   const prev=ctx;ctx=cv.getContext("2d");
@@ -144,7 +144,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   }
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
-    gpuImage(pass,gpuCvLevel(Bl.cv,0,Bl.E*2*sc*dk),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
+    gpuImage(pass,gpuMipTex(Bl.cv),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,0,cb,lod);
   if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */
