@@ -49759,30 +49759,46 @@ function abilPadRim(){
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
     b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="ДОЛГОЕ · "+abilOf().ru;}   /* режим входит в ключ: в вагоне подписи нет */
 }
+/* клин прожектора: радиальный градиент в секторе ±.35 — выпечка GPU-холста на размер экрана
+   (L — большая сторона, меняется только с окном); вершина у левого края, ось — вправо */
+const ABIL_CONE=new Map();
+function abilCone(R){
+  const d=DPR*2;   /* вдвое крупнее и уровень 0 (lod .5): повёрнутая кромка клина не мылится билинейной выборкой */
+  return bakeKeep(ABIL_CONE,Math.round(R*d)+"|"+d,2,()=>{
+    const Rd=R*d,w=Math.ceil(Rd)+2,h=2*Math.ceil(Rd*Math.sin(.35))+2;
+    const B=gpuBake(w,h,g=>{g.setTransform(d,0,0,d,1,h/2);
+      const gr=g.createRadialGradient(0,0,0,0,0,R);gr.addColorStop(0,"rgba(200,230,255,.102)");   /* .10 в 2D; проход сцены сводит на 2 % темнее */gr.addColorStop(1,"rgba(200,230,255,0)");
+      g.fillStyle=gr;g.beginPath();g.moveTo(0,0);g.arc(0,0,R,-.35,.35);g.closePath();g.fill();},{mips:true});
+    return B&&{B,w:w/d,h:h/d,ox:(w/2-1)/d,drop(){gpuBakeDrop(B);}};
+  });
+}
 function drawAbil(zx,zy){
-  /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep) */
-  if(abilOn("yacht")){   /* СИРЕНА: два расходящихся кольца */
-    const x=zx(G.ship.x),y=zy(G.ship.y),u=1-(ABIL_ST.on-G.t)/(ABIL.yacht.dur*60);
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    for(const k of [0,.5]){const uu=(u+k)%1;ctx.strokeStyle="rgba(255,190,110,"+(.6*(1-uu)).toFixed(2)+")";ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(x,y,20+uu*260,0,TAU);ctx.stroke();}
-    ctx.restore();
+  /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep).
+     На видеокарте (25.09): фигуры прохода сцены и выпечка клина, 2D-пути нет */
+  const pass=gpuScene();if(!pass)return;
+  if(abilOn("yacht")){   /* СИРЕНА: два расходящихся кольца (штрих 2 px, сложение) */
+    const x=zx(G.ship.x),y=zy(G.ship.y),u=1-(ABIL_ST.on-G.t)/(ABIL.yacht.dur*60),R=[];
+    for(const k of [0,.5]){const uu=(u+k)%1;R.push([3,x,y,20+uu*260,0,1,0,255,190,110,.6*(1-uu)]);}
+    gpuShapes(pass,R,{blend:"add"});
   }
   if(abilOn("courier")&&ABIL_ST.crate){   /* СБРОС: ящик остаётся там, где выброшен */
-    const x=zx(ABIL_ST.crate.x),y=zy(ABIL_ST.crate.y),s=shipZ(G.zoom);
-    ctx.save();ctx.translate(x,y);ctx.rotate(ABIL_ST.crate.a+G.t*.01);ctx.scale(s,s);
-    ctx.fillStyle="#6a5a3c";ctx.fillRect(-6,-5,12,10);ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1;ctx.strokeRect(-6,-5,12,10);
-    ctx.strokeStyle="rgba(255,214,150,.7)";ctx.beginPath();ctx.moveTo(-6,0);ctx.lineTo(6,0);ctx.moveTo(0,-5);ctx.lineTo(0,5);ctx.stroke();
-    ctx.restore();
+    const x=zx(ABIL_ST.crate.x),y=zy(ABIL_ST.crate.y),s=shipZ(G.zoom),an=ABIL_ST.crate.a+G.t*.01,c=Math.cos(an),n=Math.sin(an);
+    /* прямоугольник в осях ящика: центр (ox,oy), полуразмеры (hx,hy) — в масштабе s */
+    const q=(ox,oy,hx,hy,C)=>[4,x+(ox*c-oy*n)*s,y+(ox*n+oy*c)*s,hx*s,hy*s,an,0,C[0],C[1],C[2],C[3]];
+    const O=[0,0,0,.5],X=[255,214,150,.7];
+    gpuShapes(pass,[q(0,0,6,5,[106,90,60,1]),
+      /* обвод 1 px по кромке — четыре полосы без нахлёста (у штриха пути углы не двоятся) */
+      q(0,-5,6.5,.5,O),q(0,5,6.5,.5,O),q(-6,0,.5,4.5,O),q(6,0,.5,4.5,O),
+      /* крест: вертикаль в два куска — в центре не двоится, как у одного пути */
+      q(0,0,6,.5,X),q(0,-2.75,.5,2.25,X),q(0,2.75,.5,2.25,X)]);
   }
-  if(ABIL_ST.k==="miner"&&abilOn("miner")&&ABIL_ST.beam){
-    ctx.save();ctx.globalCompositeOperation="lighter";ctx.strokeStyle="rgba(255,190,110,.85)";ctx.lineWidth=3;
-    ctx.beginPath();ctx.moveTo(zx(G.ship.x),zy(G.ship.y));ctx.lineTo(zx(ABIL_ST.beam.x),zy(ABIL_ST.beam.y));ctx.stroke();ctx.restore();
+  if(ABIL_ST.k==="miner"&&abilOn("miner")&&ABIL_ST.beam){   /* луч резака: 3 px, срез прямой, сложение */
+    const x0=zx(G.ship.x),y0=zy(G.ship.y),x1=zx(ABIL_ST.beam.x),y1=zy(ABIL_ST.beam.y);
+    gpuShapes(pass,[[4,(x0+x1)/2,(y0+y1)/2,Math.hypot(x1-x0,y1-y0)/2,1.5,Math.atan2(y1-y0,x1-x0),0,255,190,110,.85]],{blend:"add"});
   }
-  if(abilOn("survey")){
-    const a=G.ship.a,x=zx(G.ship.x),y=zy(G.ship.y),L=Math.max(W,H);
-    const g=ctx.createRadialGradient(x,y,0,x,y,L*.6);g.addColorStop(0,"rgba(200,230,255,.10)");g.addColorStop(1,"rgba(200,230,255,0)");
-    ctx.save();ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,L*.6,a-.35,a+.35);ctx.closePath();ctx.fill();ctx.restore();
+  if(abilOn("survey")){   /* прожектор: клин выпечки, вершина — на корабле */
+    const a=G.ship.a,x=zx(G.ship.x),y=zy(G.ship.y),K=abilCone(Math.max(W,H)*.6);
+    if(K)gpuImage(pass,K.B,[{x:x+Math.cos(a)*K.ox,y:y+Math.sin(a)*K.ox,w:K.w,h:K.h,rot:a,a:1}],{lod:.5});
   }
 }
 

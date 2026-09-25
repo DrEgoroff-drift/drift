@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 622 · символов верхнего уровня: 6198
+Файлов: 622 · символов верхнего уровня: 6200
 
 ## СИМВОЛЫ
 
@@ -49,9 +49,11 @@ _mapDirty                    src/15-input.js:124
 _suite                       tests/90-harness.js:11
 ABIL                         src/16c-abil.js:15-23
 ABIL_BTN                     src/16c-abil.js:111
+ABIL_CONE                    src/16c-abil.js:126
 ABIL_HOLD                    src/16c-abil.js:24
 ABIL_KEY                     src/16c-abil.js:99
 ABIL_ST                      src/16c-abil.js:25
+abilCone                     src/16c-abil.js:127-136
 abilFire                     src/16c-abil.js:40-83
 abilKind                     src/16c-abil.js:26
 abilMul                      src/16c-abil.js:35-39
@@ -1414,7 +1416,7 @@ draftAll                     src/27jb-kb.js:24
 draftOf                      src/27jb-kb.js:26-42
 draftSave                    src/27jb-kb.js:43-47
 draftTowerAt                 src/27jb-kb.js:49-54
-drawAbil                     src/16c-abil.js:124-149
+drawAbil                     src/16c-abil.js:137-165
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-698
@@ -6895,7 +6897,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · ракеты: боеприпас — это груз:1
   · пять видов боеприпаса (M367, §4):21
 
-## src/16c-abil.js · 10 КБ
+## src/16c-abil.js · 11 КБ
   · особая система корпуса (M484, DESIGN-shipyard):1
 
 ## src/16c-rescue.js · 47 КБ
