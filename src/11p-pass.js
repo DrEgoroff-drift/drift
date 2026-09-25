@@ -74,7 +74,7 @@ function passDraw(tr,camx,camy,p){
   if(sx<-260||sx>W+260)return;
   const y=groundAt(tr,x0)-camy;
   const L=190,Hh=46;
-  const base=p.T.pal[2].map(v=>Math.round(v*.45+24));
+  const base=p.T.pal[2].map(v=>Math.round(v*.55+34));
   const hull=()=>{ctx.moveTo(sx-L/2,y-8);ctx.lineTo(sx-L/2+30,y-Hh);ctx.lineTo(sx+L/2-40,y-Hh-6);ctx.lineTo(sx+L/2,y-Hh*.5);ctx.lineTo(sx+L/2-10,y-6);ctx.closePath();};
   if(typeof sdShadow==="function")sdShadow(sx,y,L*.9,Hh);
   /* киль — за корпусом: он дальше от нас */
@@ -113,7 +113,7 @@ function passDraw(tr,camx,camy,p){
     if(P.lit){
       ctx.fillStyle="rgba(255,226,160,.95)";ctx.beginPath();ctx.arc(wx,wy,3.2,0,TAU);ctx.fill();
       ctx.fillStyle="rgba(255,250,232,.9)";ctx.beginPath();ctx.arc(wx-.8,wy-.8,1.2,0,TAU);ctx.fill();
-      placeLamp(wx,wy,58,[1,.84,.58],.42,-12);
+      placeLamp(wx,wy,86,[1,.84,.58],.7,-12);
     }else{
       /* тёмное стекло, в нём — небо */
       ctx.fillStyle="rgba(10,12,16,.92)";ctx.beginPath();ctx.arc(wx,wy,3.2,0,TAU);ctx.fill();
@@ -128,7 +128,7 @@ function passDraw(tr,camx,camy,p){
   ctx.beginPath();ctx.moveTo(tx+26,y-30);ctx.lineTo(tx-8,y-8);ctx.stroke();
   for(let j=0;j<4;j++){const t=j/3;ctx.beginPath();ctx.moveTo(tx+26-34*t,y-22+22*t);ctx.lineTo(tx+26-34*t,y-30+22*t);ctx.stroke();}
   ctx.fillStyle=P.lit?"rgba(255,214,150,.85)":"rgba(12,14,18,.95)";ctx.fillRect(tx+22,y-30,9,10);   /* люк */
-  if(P.lit)placeLamp(tx+26,y-24,120,[1,.8,.52],.8,20);
+  if(P.lit)placeLamp(tx+26,y-24,150,[1,.8,.52],1,20);
   if(!P.told)for(let i=0;i<3;i++){
     const wx=x0-L/2-14-i*12,ox=wx-camx,oy=groundAt(tr,wx)-camy;
     placeFigure(ox,oy,14.5-(i===1?1.2:0),p);
