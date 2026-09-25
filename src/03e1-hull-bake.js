@@ -28,18 +28,26 @@ function hullBakeScale(){
   const m=ctx.getTransform();
   return Math.hypot(m.a,m.b);
 }
+/* всё, от чего зависит неподвижное тело, кроме крена: общий ключ 2D-печки и видеокарты (17c2) */
+function hullBakeKey(id,sb){
+  return sb+"|"+Math.round(wearOf(id)*64)+"|"+(typeof seamsOf==="function"?seamsOf(id):0)+"|"+(typeof tapesOf==="function"?tapesOf(id):0)+
+    "|"+(typeof cosmOn==="function"?cosmOn("mark"):"")+
+    "|"+((typeof scarsOf==="function")?scarsOf(shipData(id)).join(""):"")+"|"+((typeof regPending==="function"&&regPending(id))?1:0)+"|"+((G.railSeal&&id===G.shipId)?1:0);   /* шрамы, транзитка и пломба — в выпечке (D25/M482, 18.09) */
+}
+/* живые вставки между кусками тела: бегущая строка Компании и венцы — с ними тело не печётся одним слоем */
+function hullLiveInserts(h,id){
+  const ticks=(h.outs||[]).some(o=>o.k==="runline");
+  const crowns=(typeof drawCrowns==="function")&&id===G.shipId&&G.crowns&&NODE_FAMS.some(f=>G.crowns[f.id]);
+  return {ticks,crowns};
+}
 function hullBakeDraw(h,id,bank){
   if(G.opts&&G.opts.gfx&&G.opts.gfx.hullBake===0)return false;
   const s=hullBakeScale();
   if(!(s>0))return false;
   const sb=Math.pow(2,Math.ceil(Math.log2(s)*16)/16);
-  const ticks=(h.outs||[]).some(o=>o.k==="runline");
-  const crowns=(typeof drawCrowns==="function")&&id===G.shipId&&G.crowns&&
-    NODE_FAMS.some(f=>G.crowns[f.id]);
+  const {ticks,crowns}=hullLiveInserts(h,id);
   const bq=Math.round(bank*20);
-  const common=sb+"|"+Math.round(wearOf(id)*64)+"|"+(typeof seamsOf==="function"?seamsOf(id):0)+"|"+(typeof tapesOf==="function"?tapesOf(id):0)+
-    "|"+(typeof cosmOn==="function"?cosmOn("mark"):"")+
-    "|"+((typeof scarsOf==="function")?scarsOf(shipData(id)).join(""):"")+"|"+((typeof regPending==="function"&&regPending(id))?1:0)+"|"+((G.railSeal&&id===G.shipId)?1:0);   /* шрамы, транзитка и пломба — в выпечке (D25/M482, 18.09) */
+  const common=hullBakeKey(id,sb);
   /* слои между живыми вставками: [1] строка [2] венцы [3]; без вставок слои сливаются */
   const layers=[];
   let cur=[1];

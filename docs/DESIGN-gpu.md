@@ -161,6 +161,10 @@ Then hulls (item 2) by the same «explicit emission» path.
   the middle third of a stroke ≥ ~2.4 px, one shared neon bake (17k0) for the hotel and the billboard; the
   billboard leaves `#c` whole (panel bake, neon title, ticker strip); hotel windows are 2700–3000 K lamps with a
   few cold ones, never flat white. Gate: S of the sign's bright pixels (V > .55) ≥ .5 and V ≥ .85 at 760 and ×1.5.
+- Brief of **hulls, 15/n p.2**: the own ship leaves `#c` in flight — the body is the same 03e1 bake at bank 0, one
+  per hull and scale step, lit by the star through `gpuLitSprite` with the bank as a span squash; flames, idle
+  nozzles, belly, brake tongues, nav lights and the engine line are scene-pass shapes. Gate: the pair at 760 and
+  ×1.5 (thrusting, bank .35) not dimmer, gpu errs 0; hulls with a runline or crowns stay on the 2D path.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -368,6 +372,23 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   sign stays the accent by saturation and dark sky. Fix belongs to the object lighting pass (light the façade by
   the star like `gpuLitSprite`, night walls darker), not to the windows. Pairs `pair16n_760.png`, `pair16n_p.png`
   (was bfa9e26 | now), script `sv.py` (S/V of bright pixels), `hot.py`, `dumpbake.py` (the three bake layers).
+  Hulls, 15/n p.2 (17c2 `hullGpuDraw`, wired in 17 at the ship draw; the 2D `drawHull` and `gpuHullLight` stay as
+  the fallback). Body: `hullBakeRender(h,id,0,[1,2,3],sb)` into a square of side 2E·sb (E = the hull's reach),
+  keyed by `hullBakeKey` — the 2D bake's key now lives in one function (03e1) together with `hullLiveInserts`
+  (runline, crowns: those hulls return false and go the old way, since the inserts sit between body layers). Scale
+  steps are the 1/16 octave of the 2D bake, so the maker's sharpness is the same. Bank: `gpuLitSprite` got an
+  optional `sy` (GST `V[3].y`) that divides the sprite's local y — a squash along the span, the relief light still
+  from the star; under it a dark belly silhouette (`h.dark` .85) shifted by sin(bank). Flames: one field shader for
+  all nozzles (`HG_FLAME_WGSL`) with the old drawFlame's shapes (glow disc at −.25f, radius 1.15f; plume with its
+  colour ladder; the core wedge or the lux drop), the length breathing on slow sines instead of `rndFx` per frame,
+  thrust smoothed per id (`HG_THR`, a module Map, not in the save), the plume's edge carrying value noise that
+  flows back. Gains core 2.6 / plume 2 / glow 3.2 and the glow colour (1,.62,.34): the old halo came from `emit()`
+  over `#c`; in the scene bloom starts at 1.4, and at 1.9/1.3/.9 the flame lost its halo (pair 760); a brighter
+  glow at the old colour went white on the tone shoulder, so the colour moved to orange. The player's `gpuExhaust`
+  plume (16ga) is unchanged — it drew under the 2D flame before, and does under this one now. Pairs `cuth1_*.png`
+  (760), `cuthp_was` | `cuthq_now` (×1.5), stand `hcjs.js` + `thr.js` (forces thrust and bank), `gainrun.sh` (gain
+  override without a rebuild). Open: the body reads a touch lighter than the 2D one (relief light vs
+  `gpuHullLight`'s rim) — not dimmer, within the rule; the left wing's shadow is softer.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,
