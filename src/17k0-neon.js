@@ -5,11 +5,11 @@
    яркое), с ореолом уже просвета между буквами; бледное ядро — средняя треть штриха
    и только на штрихе шире ~2.4 px, иначе трубка светится своим цветом целиком.
    Узкий ореол принадлежит букве; в свечение кадра уходит мало. */
-const NEON=new Map();   // место (гостиница, щит) → последняя печь
+const NEON=new Map();   // ключ печи (имя, кегль, цвет, плотность) → печь; bakeKeep держит 12
 function neonBake(slot,name,full,F,col,bl){
   const d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d+"|"+bl;
-  let N=NEON.get(slot);if(N&&N.key===key)return N;
-  const mk=k=>(N&&N[k])||document.createElement("canvas"),al=mk("al"),em=mk("em"),co=mk("co");
+  return bakeKeep(NEON,key,12,()=>{
+  const mk=()=>document.createElement("canvas"),al=mk(),em=mk(),co=mk();
   const Fd=F*d,fb="bold "+Fd+"px ui-monospace,monospace";
   let a=al.getContext("2d");a.font=fb;
   const tw=Math.ceil(a.measureText(full).width),pad=Math.ceil(3*d);
@@ -27,7 +27,8 @@ function neonBake(slot,name,full,F,col,bl){
       g.globalCompositeOperation="destination-out";g.lineWidth=sw*2/3;g.lineJoin="round";g.strokeStyle="#000";g.strokeText(name,pad,base);});
     e.shadowBlur=0;e.drawImage(co,0,0);
   }
-  N={key,al,em,co,ax:pad+tw/2,ay:base,w:(tw+pad*2)/d,h:Hd/d};NEON.set(slot,N);return N;
+  return {key,al,em,co,ax:pad+tw/2,ay:base,w:(tw+pad*2)/d,h:Hd/d};
+  });
 }
 /* вывеска: середина строки по x, базовая линия (bl печи) по y — в пикселях CSS экрана;
    al — плотность стекла, gain — усиление света. Без видеокарты — тем же на ctx */

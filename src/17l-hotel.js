@@ -48,11 +48,16 @@ let HOTEL_BAKE=null;
    (свечение принадлежит окну, шире — дело блума, и его мало); sh — тот же дом под
    тёплым светом вывески сверху, сходит на нет ко второму этажу */
 const HOTEL_EM=1,HOTEL_NEON=1.2,HOTEL_SHEEN=.8;
+/* мастер дома берётся на уровень крупнее (как прежний gpuCvLevel: не мельче экрана) —
+   окна и рамы резкие; .785 общего правила смешивал его со следующим, −10 % резкости */
+const HOTEL_LOD=.5;
 const HOTEL_LAMP=[[255,169,87],[255,178,104],[255,163,80],[255,186,118],[255,172,94],[255,180,110],[180,200,235]];
 function hotelBake(sd,mask,col){
   const ck=col.join();
   if(HOTEL_BAKE&&HOTEL_BAKE.sd===sd&&HOTEL_BAKE.mask===mask&&HOTEL_BAKE.ck===ck)return HOTEL_BAKE;
-  const mk=k=>(HOTEL_BAKE&&HOTEL_BAKE[k])||document.createElement("canvas");
+  /* новая выпечка — новые холсты: слой — мастер с мипами (gpuMipTex), на месте его не перерисовать */
+  if(HOTEL_BAKE)for(const q of [HOTEL_BAKE.cv,HOTEL_BAKE.em,HOTEL_BAKE.sh])gpuMipDrop(q);
+  const mk=()=>document.createElement("canvas");
   const cv=mk("cv"),em=mk("em"),shc=mk("sh");
   for(const q of [cv,em,shc]){q.width=Math.ceil(HR_BW*HR_PX);q.height=Math.ceil(HR_BH*HR_PX);}
   const c=cv.getContext("2d");c.setTransform(HR_PX,0,0,HR_PX,0,0);c.clearRect(0,0,HR_BW,HR_BH);
@@ -224,10 +229,10 @@ function drawHotel(zx,zy,Z){
   const S=fa>0?neonBake("hotel",Ht.name,Ht.name===HOTEL_SIGN.gt?HOTEL_SIGN_FULL.gt:Ht.name,Math.round(8*Math.max(1,k)*UIK),col,"alphabetic"):null;
   const pass=gpuScene();
   if(pass){
-    const v=B.ver,L=q=>gpuCvLevel(q,v,w*DPR),R=a=>[{x:ox+w/2,y:oy+h/2,w,h,a}];
-    gpuImage(pass,L(B.cv),R(1),{ver:v});
-    gpuImage(pass,L(B.em),R(HOTEL_EM),{blend:"add",ver:v});
-    if(S)gpuImage(pass,L(B.sh),R(HOTEL_SHEEN*fa),{blend:"add",ver:v});
+    const L=gpuMipTex,R=a=>[{x:ox+w/2,y:oy+h/2,w,h,a}];
+    gpuImage(pass,L(B.cv),R(1),{lod:HOTEL_LOD});
+    gpuImage(pass,L(B.em),R(HOTEL_EM),{blend:"add",lod:HOTEL_LOD});
+    if(S)gpuImage(pass,L(B.sh),R(HOTEL_SHEEN*fa),{blend:"add",lod:HOTEL_LOD});
   }else{
     ctx.drawImage(B.cv,ox,oy,w,h);
     ctx.save();ctx.globalCompositeOperation="lighter";ctx.drawImage(B.em,ox,oy,w,h);

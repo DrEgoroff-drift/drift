@@ -177,14 +177,19 @@ Then hulls (item 2) by the same «explicit emission» path.
   small spinning masters over the body; the industrial flare and its smoke leave `#c`. Gate: steady uploads 0
   (the `#c`-zero test without the station exemption), pairs of six types at 760 ×1 and ×1.5 not softer, not
   dimmer, gpu errs 0.
+- Brief of **zoom-following bakes** (Контроль: «мастер с мипами; на проезде зума выгрузок ≤ уровней; НИКАКОЙ маски
+  на тексте, неоне, щите, окнах, свечениях»): the hotel and Cheburek bodies become mipped masters (plain
+  trilinear, no mask); text bakes stay pixel-exact per font size but each size keeps its own canvas in a small
+  LRU, so zooming back and forth re-uses them. Gate: pairs of the hotel sign and the billboard at 760 and ×1.5,
+  a zoom series, no dark rings, no ripple, letter sharpness ≥ was; the gate test sweeps the zoom there and back.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
 ## Where I stopped (update on every commit)
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
-  done (17c3, steady uploads 0). Next: the hotel, billboard, neon and Cheburek bakes as masters (no mask), a
-  zoom sweep uploading ≤ their levels; pairs of the sign and the billboard at 760 and ×1.5.
+  done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
+  back 0). Next: the instrument pod 25c (redraw only on change), then item 3 (flame and body colour).
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -482,6 +487,22 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   not a drawn part: it vanishes from the old build with the solar panels off (not with the ring off) — the
   panel's glass glint (`glassG`, 6 px around) leaking across the outline onto the core. Trade core crop ×3:
   no ghost, no line, V > .55 +10 % (×1) / +15 % (×1.5); six-type sheet without swapped layers.
+  **Zoom-following bakes (08c, 17j, 17k, 17k0, 17l).** Every sweep upload came from one-slot caches: a new font
+  size overwrote the only canvas, and the Cheburek board keyed on the continuous scale `k` baked a new canvas
+  every frame — that churn also pushed the neon and the billboard out of the 32-entry texture LRU. Now:
+  `bakeKeep(map,key,cap,make)` (08c) holds a canvas per key (neon 12, board 6, billboard panel and strip 6
+  each); the board's scale is `F/8` (the font's own step); `GPU_CVTEX_CAP` 32 → 64 so the kept bakes keep
+  their textures. The billboard panel is baked at the exact scale when the zoom rests and, while it moves,
+  the last panel is drawn scaled — no bake per frame, and at rest the frame and letters are pixel-exact.
+  The hotel and Cheburek bodies are `gpuMipTex` masters with `{lod:.5}` (new `gpuImage` option): the old
+  `gpuCvLevel` took the next larger level bilinearly, and .785 blended it with the one below, −10 % on the
+  windows. No mask anywhere here. Numbers (stand 1b, 760): steady uploads 0; sweep ZOOM_MIN→MAX board 4,
+  neon 10, billboard 3 (each size once), the way back 0; the hotel re-uploads its three masters (18 levels)
+  when a window flips with the hour — content, not zoom. Pairs 760 ×1/×1.5 at Z 1.0 and 1.37: hotel edge
+  101.2/125.4/84.5/112.7 vs 100.9/117.3/79.2/112.7, billboard and board equal or up, dark-ring count equal
+  around letters; zoom series 1.00–1.28 now/was: hotel 1.004–1.080, billboard 1.000, board 0.999–1.058.
+  The gate test sweeps the zoom there and back: no bake canvas uploaded twice, text bakes within their
+  font-size counts (a board keyed on `k` again fails it: 8 > 6).
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

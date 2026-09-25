@@ -59,11 +59,11 @@ function bbTitle(by){
    толстом штрихе); бегущая строка — полоса текста, окно листает её по u. Ничего светлого
    не ложится на #c, emit() щита не видит */
 const BB_NEON=1.2,BB_TICK=1;
-const BB_BAKE={pan:null,pk:"",str:null,sk:""};
+const BB_BAKE={pan:new Map(),str:new Map(),cur:null,ps:0};   // печи по ключу (bakeKeep); cur — панель последнего кадра
 function bbPanelBake(s,GP){
-  const d=DPR,pw=120*s,ph=40*s,key="bbp|"+s+"|"+d+"|"+(GP?GP.n+"|"+GP.k+"|"+GP.svodka+"|"+GP.price:"");
-  if(BB_BAKE.pk===key)return BB_BAKE.pan;
-  const c=(BB_BAKE.pan&&BB_BAKE.pan.cv)||document.createElement("canvas");
+  const d=DPR,pw=120*s,ph=40*s,gk=GP?GP.n+"|"+GP.k+"|"+GP.svodka+"|"+GP.price:"",key="bbp|"+s+"|"+d+"|"+gk;
+  return bakeKeep(BB_BAKE.pan,key,6,()=>{
+  const c=document.createElement("canvas");
   const cw=Math.ceil((pw+2)*d),ch=Math.ceil((ph*1.6+2)*d);c.width=cw;c.height=ch;
   const g=c.getContext("2d");g.setTransform(d,0,0,d,(pw/2+1)*d,(ph/2+1)*d);   /* начало — середина панели */
   g.strokeStyle="rgba(150,164,180,.6)";g.lineWidth=1;
@@ -85,17 +85,19 @@ function bbPanelBake(s,GP){
     g.fillStyle="rgba(255,230,200,.82)";g.font=Math.round(6.5*s)+"px ui-monospace,monospace";
     g.fillText("ДО СВОДКИ "+GP.svodka+" · ПО "+GP.price+" КР · СДАВАТЬ ЗДЕСЬ",px+qh,py+qh*.72,qw-qh-3);
   }
-  BB_BAKE.pan={cv:c,key,ox:pw/2+1,oy:ph/2+1,w:cw/d,h:ch/d};BB_BAKE.pk=key;return BB_BAKE.pan;
+  return {cv:c,key,s,d,gk,ox:pw/2+1,oy:ph/2+1,w:cw/d,h:ch/d};
+  });
 }
 function bbStripBake(L,Fp,col){
   const d=DPR,key="bbs|"+L+"|"+Fp+"|"+d+"|"+col.join();
-  if(BB_BAKE.sk===key)return BB_BAKE.str;
-  const c=(BB_BAKE.str&&BB_BAKE.str.cv)||document.createElement("canvas"),f=Fp*d+"px ui-monospace,monospace";
+  return bakeKeep(BB_BAKE.str,key,6,()=>{
+  const c=document.createElement("canvas"),f=Fp*d+"px ui-monospace,monospace";
   let g=c.getContext("2d");g.font=f;
   const tw=Math.max(1,Math.ceil(g.measureText(L).width));c.width=tw;c.height=Math.ceil(Fp*1.6*d);
   g=c.getContext("2d");g.font=f;g.textAlign="left";g.textBaseline="middle";
   g.fillStyle=rgba(mixc(col,[255,255,255],.3),.85);g.fillText(L,0,c.height/2);
-  BB_BAKE.str={cv:c,key,P:tw/d,h:c.height/d};BB_BAKE.sk=key;return BB_BAKE.str;
+  return {cv:c,key,P:tw/d,h:c.height/d};
+  });
 }
 function bbDrawGpu(pass,B,x,y,s,col,rd,Z){
   const d=DPR,px=v=>Math.round(v*d)/d;
@@ -105,8 +107,11 @@ function bbDrawGpu(pass,B,x,y,s,col,rd,Z){
     return;
   }
   const pw=120*s,ph=40*s,GP=(typeof gosBbPlan==="function")?gosBbPlan(B.by):null;
-  const Pn=bbPanelBake(s,GP),l=px(x-Pn.ox),t=px(y-Pn.oy);
-  gpuImage(pass,Pn.cv,[{x:l+Pn.w/2,y:t+Pn.h/2,w:Pn.w,h:Pn.h,a:rd}],{ver:Pn.key});
+  /* панель: в покое — печь ровно под масштаб (рамка и буквы пиксель в пиксель); пока зум
+     едет — последняя печь в нужном масштабе: сто печей за проезд не нужны */
+  const gk=GP?GP.n+"|"+GP.k+"|"+GP.svodka+"|"+GP.price:"",still=BB_BAKE.ps===s,c0=BB_BAKE.cur;BB_BAKE.ps=s;
+  const Pn=(!still&&c0&&c0.gk===gk&&c0.d===DPR)?c0:(BB_BAKE.cur=bbPanelBake(s,GP)),q=s/Pn.s,l=px(x-Pn.ox*q),t=px(y-Pn.oy*q);
+  gpuImage(pass,Pn.cv,[{x:l+Pn.w*q/2,y:t+Pn.h*q/2,w:Pn.w*q,h:Pn.h*q,a:rd}],{ver:Pn.key});
   const buzz=B.by==="gt"&&((G.t/60)%60)<.2?.35:1;
   const N=neonBake("bb",bbTitle(B.by),BB_TITLE[B.by]||BB_TITLE.gt,Math.round(11*s),col,"middle");
   neonDraw(pass,N,x,y-ph*.18,rd,BB_NEON*buzz*rd);

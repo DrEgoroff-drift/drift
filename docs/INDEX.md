@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 610 · символов верхнего уровня: 6059
+Файлов: 610 · символов верхнего уровня: 6066
 
 ## СИМВОЛЫ
 
@@ -171,6 +171,7 @@ b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32-41
 bakeIdle                     tests/90-harness.js:387-392
+bakeKeep                     src/08c-gpu-kit.js:69-72
 bankTransform                src/03b-hull-paint.js:59-66
 BANYA_EVERY                  src/21ac1-base-banya.js:19
 banyaLive                    src/21ac1-base-banya.js:37-40
@@ -382,12 +383,12 @@ BB_CACHE                     src/17k-billboard.js:12
 BB_NEON                      src/17k-billboard.js:61
 BB_TITLE                     src/17k-billboard.js:11
 bbDeal                       src/17k-billboard.js:20-30
-bbDrawGpu                    src/17k-billboard.js:100-120
+bbDrawGpu                    src/17k-billboard.js:102-125
 bbHere                       src/17k-billboard.js:13-18
 bbLine                       src/17k-billboard.js:31-50
 bBox                         src/21aa-base-rooms.js:23-28
-bbPanelBake                  src/17k-billboard.js:63-89
-bbStripBake                  src/17k-billboard.js:90-99
+bbPanelBake                  src/17k-billboard.js:63-90
+bbStripBake                  src/17k-billboard.js:91-101
 bbTitle                      src/17k-billboard.js:52-56
 bCalm                        tests/91zzzw-base.js:71-81
 bCrate                       src/21aa-base-rooms.js:270-277
@@ -720,14 +721,15 @@ chAttacked                   src/25n-chess.js:80-111
 chBlack                      src/25n-chess.js:37
 chCheck                      src/25n-chess.js:182
 CHEB_ART                     src/17j-cheburek.js:28
+CHEB_LOD                     src/17j-cheburek.js:29
 CHEB_PRICE                   src/17j-cheburek.js:9
 CHEB_PX                      src/17j-cheburek.js:27
-CHEB_SIGN                    src/17j-cheburek.js:56
-chebBake                     src/17j-cheburek.js:30-54
+CHEB_SIGN                    src/17j-cheburek.js:57
+chebBake                     src/17j-cheburek.js:31-55
 chebHere                     src/17j-cheburek.js:10-17
-chebHullPath                 src/17j-cheburek.js:29
-chebInteract                 src/17j-cheburek.js:111-125
-chebSignBake                 src/17j-cheburek.js:57-68
+chebHullPath                 src/17j-cheburek.js:30
+chebInteract                 src/17j-cheburek.js:114-128
+chebSignBake                 src/17j-cheburek.js:58-71
 chessAll                     src/25n-chess.js:199-203
 chessDraw                    src/25n-chess.js:246-275
 chessGame                    src/25n-chess.js:204
@@ -1116,7 +1118,7 @@ cultSeriesWindow             src/12b3-fx-cult.js:183-186
 CUN                          src/22-mode-cave.js:22-32
 curTok                       src/09-audio.js:96
 CUT_RANGE                    src/24-mode-belt.js:187
-CV_LVL                       src/08c-gpu-kit.js:64
+CV_LVL                       src/08c-gpu-kit.js:65
 cvs                          src/08-state.js:2
 CVS_RECT                     src/08-state.js:92
 cvsRect                      src/08-state.js:107-110
@@ -1399,7 +1401,7 @@ drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:378-718
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRocks                src/17c-system-draw.js:29-70
-drawBillboard                src/17k-billboard.js:121-184
+drawBillboard                src/17k-billboard.js:126-189
 drawBuildMenu                src/21aa-base-rooms.js:504-520
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:32-44
@@ -1414,7 +1416,7 @@ drawCaveSolid                src/22a-cave-deco.js:241-299
 drawCaveWater                src/22a-cave-deco.js:300-324
 drawCaveWorld                src/22-mode-cave.js:648-750
 drawCelest                   src/06a-celest.js:167-218
-drawCheburek                 src/17j-cheburek.js:69-110
+drawCheburek                 src/17j-cheburek.js:72-113
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
@@ -1460,7 +1462,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:214-238
+drawHotel                    src/17l-hotel.js:219-243
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -1984,9 +1986,13 @@ galPlaceName                 src/17z2-galaxy-names.js:29-36
 galTile                      src/17z1-galaxy.js:67-78
 GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
-gatePlace                    tests/91zzzzzzy-gpugate.js:21-25
-gateStand                    tests/91zzzzzzy-gpugate.js:12-20
-gateWho                      tests/91zzzzzzy-gpugate.js:9-11
+GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
+GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
+gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
+gateStand                    tests/91zzzzzzy-gpugate.js:22-30
+gateWho                      tests/91zzzzzzy-gpugate.js:19-21
+gateZoom                     tests/91zzzzzzy-gpugate.js:18
+gateZOwner                   tests/91zzzzzzy-gpugate.js:17
 GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
@@ -2151,18 +2157,18 @@ gplLandMask                  src/17ga-gpu-planets.js:352-368
 gplSun                       src/17ga-gpu-planets.js:314-317
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-25
-GPU_CVTEX_CAP                src/08c-gpu-kit.js:60
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:255
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:171
+GPU_CVTEX_CAP                src/08c-gpu-kit.js:61
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:263
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:179
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
-GPU_KIT_WGSL                 src/08c-gpu-kit.js:150
-GPU_MIP                      src/08c-gpu-kit.js:81
-GPU_MIP_LOD                  src/08c-gpu-kit.js:170
+GPU_KIT_WGSL                 src/08c-gpu-kit.js:158
+GPU_MIP                      src/08c-gpu-kit.js:89
+GPU_MIP_LOD                  src/08c-gpu-kit.js:178
 GPU_PL_WGSL                  src/08b-gpu.js:460
 GPU_POST_WGSL                src/08b-gpu.js:88
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:214
-GPU_WGSL_COMMON              src/08c-gpu-kit.js:119
-gpuArena                     src/08c-gpu-kit.js:139-149
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:222
+GPU_WGSL_COMMON              src/08c-gpu-kit.js:127
+gpuArena                     src/08c-gpu-kit.js:147-157
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:33-39
 gpuBloom                     src/08b-gpu.js:607-614
@@ -2172,29 +2178,29 @@ gpuBursts                    src/13z-gpu-combat.js:266-286
 gpuCanvasTex                 src/08c-gpu-kit.js:42-57
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:419-429
-gpuCvLevel                   src/08c-gpu-kit.js:65-76
+gpuCvLevel                   src/08c-gpu-kit.js:73-84
 gpuDrones                    src/16ga-gpu-trail.js:132-176
 gpuDrop                      src/08b-gpu.js:81-86
 gpuExhaust                   src/16ga-gpu-trail.js:259-292
-gpuField                     src/08c-gpu-kit.js:269-298
+gpuField                     src/08c-gpu-kit.js:277-306
 gpuFrame                     src/08b-gpu.js:509-519
-gpuFrontClean                src/08c-gpu-kit.js:111-116
+gpuFrontClean                src/08c-gpu-kit.js:119-124
 gpuFrontCopy                 src/08b-gpu.js:553-555
-gpuFrontHook                 src/08c-gpu-kit.js:100-109
+gpuFrontHook                 src/08c-gpu-kit.js:108-117
 gpuHaze                      src/08b-gpu.js:442
 gpuHud                       src/08bh-gpu-hud.js:14-17
 gpuHudDpr                    src/08bh-gpu-hud.js:12
 gpuHudFlush                  src/08bh-gpu-hud.js:20-33
 gpuHullLight                 src/16ga-gpu-trail.js:345-364
-gpuImage                     src/08c-gpu-kit.js:197-209
-gpuKitU                      src/08c-gpu-kit.js:155-159
+gpuImage                     src/08c-gpu-kit.js:205-217
+gpuKitU                      src/08c-gpu-kit.js:163-167
 gpuLight                     src/08b-gpu.js:444
 gpuLitSprite                 src/17c-system-draw.js:484-492
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:578-583
-gpuMipDrop                   src/08c-gpu-kit.js:95
-gpuMipSmp                    src/08c-gpu-kit.js:96
-gpuMipTex                    src/08c-gpu-kit.js:82-94
+gpuMipDrop                   src/08c-gpu-kit.js:103
+gpuMipSmp                    src/08c-gpu-kit.js:104
+gpuMipTex                    src/08c-gpu-kit.js:90-102
 gpuMoon                      src/17ga-gpu-planets.js:400-405
 gpuNebulaComp                src/16gb-gpu-nebula.js:617-627
 gpuNebulaGen                 src/16gb-gpu-nebula.js:562-614
@@ -2211,7 +2217,7 @@ gpuResize                    src/08b-gpu.js:382-417
 gpuScene                     src/08b-gpu.js:523-533
 gpuScene3D                   src/08b-gpu.js:537-545
 gpuSeg                       src/28z-fps-probe.js:139-142
-gpuShapes                    src/08c-gpu-kit.js:239-250
+gpuShapes                    src/08c-gpu-kit.js:247-258
 gpuShock                     src/08b-gpu.js:443
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
@@ -2677,14 +2683,15 @@ homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:470-477
 HOTEL_BAKE                   src/17l-hotel.js:42
 HOTEL_EM                     src/17l-hotel.js:50
-HOTEL_LAMP                   src/17l-hotel.js:51
+HOTEL_LAMP                   src/17l-hotel.js:54
+HOTEL_LOD                    src/17l-hotel.js:53
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
-HOTEL_SIGN_FULL              src/17l-hotel.js:213
-hotelBake                    src/17l-hotel.js:52-211
-hotelDesk                    src/17l-hotel.js:247-259
+HOTEL_SIGN_FULL              src/17l-hotel.js:218
+hotelBake                    src/17l-hotel.js:55-216
+hotelDesk                    src/17l-hotel.js:252-264
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:239-246
+hotelInteract                src/17l-hotel.js:244-251
 hotelLitFrac                 src/17l-hotel.js:25-30
 hotelWinLit                  src/17l-hotel.js:33-41
 HOURS_COIN                   src/11h-hours.js:87
@@ -3530,8 +3537,8 @@ needOf                       src/12aa-need.js:26-37
 needsNear                    src/12aa-need.js:52-61
 needWin                      src/12aa-need.js:24
 NEON                         src/17k0-neon.js:8
-neonBake                     src/17k0-neon.js:9-31
-neonDraw                     src/17k0-neon.js:34-39
+neonBake                     src/17k0-neon.js:9-32
+neonDraw                     src/17k0-neon.js:35-40
 NET_FROM                     tests/90-harness.js:428
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
@@ -6203,7 +6210,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 11 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08c-gpu-kit.js · 21 КБ
+## src/08c-gpu-kit.js · 22 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/09-audio.js · 18 КБ
@@ -6812,7 +6819,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17j-cheburek.js · 10 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
-## src/17k-billboard.js · 12 КБ
+## src/17k-billboard.js · 13 КБ
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
 
 ## src/17k0-neon.js · 3 КБ
@@ -8006,7 +8013,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzz-crashlog.js · 3 КБ
   · автотесты: что уезжает в crash.log (0.419):1
 
-## tests/91zzzzzzy-gpugate.js · 5 КБ
+## tests/91zzzzzzy-gpugate.js · 7 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

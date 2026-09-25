@@ -11234,12 +11234,20 @@ function gpuCanvasTex(cv,ver){
   return e;
 }
 /* в кадре живут десятки печёных холстов (дом, вывеска, Чебурек, челноки, по два слоя):
-   восемь мест перегружали их по кругу каждый кадр */
-const GPU_CVTEX_CAP=32;
+   восемь мест перегружали их по кругу каждый кадр. Печи по кеглю (bakeKeep: неон, доски,
+   бегущая строка — до 30 мелких холстов) держатся здесь же, иначе проезд зума их вытеснит */
+const GPU_CVTEX_CAP=64;
 /* уровень детализации печёного холста: gpuImage берёт нулевой уровень, и сильно сжатый
    холст мерцает (окно дома — в пиксель). Уровни — половинки, печёт лениво; берётся тот,
    что не мельче ширины на экране devW (пиксели устройства). ver — как у gpuCanvasTex */
 const CV_LVL=new WeakMap();
+/* печь по ключу (ступень 1, печки за зумом): свой холст на каждый ключ — кегль, плотность;
+   недавние держатся, и зум туда-обратно берёт готовое — gpuCanvasTex грузит каждый размер
+   один раз. Текст так и остаётся пиксель в пиксель, без мипов и без маски */
+function bakeKeep(M,key,cap,make){
+  let v=M.get(key);if(v){M.delete(key);M.set(key,v);return v;}
+  v=make();M.set(key,v);if(M.size>cap)M.delete(M.keys().next().value);return v;
+}
 function gpuCvLevel(cv,ver,devW){
   let L=CV_LVL.get(cv);
   if(!L||L.ver!==ver||L.w!==cv.width||L.h!==cv.height){L={ver,w:cv.width,h:cv.height,lv:[cv],pool:L?L.lv:[]};CV_LVL.set(cv,L);}
@@ -11375,7 +11383,7 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
 function gpuImage(pass,cv,rects,o){
   if(!pass||!rects.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
-  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?(o&&o.sharp?-GPU_MIP_GS:GPU_MIP_LOD):0;   /* <0 — с маской */
+  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?(o&&o.sharp?-GPU_MIP_GS:(o&&o.lod)||GPU_MIP_LOD):0;   /* <0 — с маской; o.lod — свой масштаб уровня */
   for(let i=0;i<n;i++){const r=rects[i],k=i*12;
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
@@ -54890,6 +54898,7 @@ function chebHere(){
    ~18× белого и светили дважды — ушли */
 const CHEB_PX=4,CHEB_X0=-20,CHEB_Y0=-10,CHEB_BW=38,CHEB_BH=20,CHEB_LAMP=1.6;
 let CHEB_ART=null;
+const CHEB_LOD=.5;   /* мастер берётся на уровень крупнее, как прежний gpuCvLevel (см. HOTEL_LOD) */
 function chebHullPath(c){c.beginPath();c.moveTo(16,0);c.lineTo(10,-8);c.lineTo(-14,-8);c.lineTo(-16,0);c.lineTo(-14,8);c.lineTo(10,8);c.closePath();}
 function chebBake(){
   if(CHEB_ART)return CHEB_ART;
@@ -54917,10 +54926,11 @@ function chebBake(){
   return CHEB_ART={cv,em};
 }
 /* доска «ЧЕБУРЕКИ» — в пикселях устройства под размер шрифта, с тенью */
-let CHEB_SIGN=null;
+const CHEB_SIGN=new Map();
 function chebSignBake(F,k){
-  const d=DPR,key=F+"|"+k+"|"+d;if(CHEB_SIGN&&CHEB_SIGN.key===key)return CHEB_SIGN;
-  const cv=(CHEB_SIGN&&CHEB_SIGN.cv)||document.createElement("canvas");let g=cv.getContext("2d");
+  const d=DPR,key=F+"|"+k+"|"+d;
+  return bakeKeep(CHEB_SIGN,key,6,()=>{
+  const cv=document.createElement("canvas");let g=cv.getContext("2d");
   const font="bold "+F+"px ui-monospace,monospace";g.font=font;
   const tw=g.measureText("ЧЕБУРЕКИ").width+12*k,bh=15*k;
   cv.width=Math.ceil((tw+1.5)*d)+1;cv.height=Math.ceil((bh+1.5)*d)+1;
@@ -54928,7 +54938,8 @@ function chebSignBake(F,k){
   g.fillStyle="rgba(0,0,0,.45)";g.fillRect(1.5,1.5,tw,bh);
   g.fillStyle="#efe3c6";g.fillRect(0,0,tw,bh);
   g.font=font;g.textAlign="center";g.textBaseline="middle";g.fillStyle="#b8322a";g.fillText("ЧЕБУРЕКИ",tw/2,bh/2+.5);
-  return CHEB_SIGN={key,cv,tw,bh};
+  return {key,cv,tw,bh};
+  });
 }
 function drawCheburek(zx,zy,Z){
   const C=chebHere();if(!C)return;
@@ -54945,13 +54956,13 @@ function drawCheburek(zx,zy,Z){
   }
   const fl=.6+.4*Math.sin(G.t*.2),[nx,ny]=P(-17,0);
   const noz=[1,nx,ny,(1.2+fl*.5)*s,0,0,.8*s,255,150,70,.55+.3*fl];   /* сопло */
-  const k=Math.max(1,s)*(typeof UIK==="number"?UIK:1),by=y-20*s-8*k,S=chebSignBake(Math.round(8*k),k);
+  const k=Math.max(1,s)*(typeof UIK==="number"?UIK:1),by=y-20*s-8*k,S=chebSignBake(Math.round(8*k),Math.round(8*k)/8);
   const d=DPR,sl=Math.round((x-S.tw/2)*d)/d,st=Math.round((by-7.5*k)*d)/d,sw=S.cv.width/d,sh=S.cv.height/d;
   const pass=gpuScene();
   if(pass){
-    const [cx,cy]=P(CHEB_X0+CHEB_BW/2,CHEB_Y0+CHEB_BH/2),bw=CHEB_BW*s,bh=CHEB_BH*s,L=q=>gpuCvLevel(q,undefined,bw*d);
-    gpuImage(pass,L(A.cv),[{x:cx,y:cy,w:bw,h:bh,rot:C.a}]);
-    gpuImage(pass,L(A.em),[{x:cx,y:cy,w:bw,h:bh,rot:C.a,a:CHEB_LAMP*br}],{blend:"add"});
+    const [cx,cy]=P(CHEB_X0+CHEB_BW/2,CHEB_Y0+CHEB_BH/2),bw=CHEB_BW*s,bh=CHEB_BH*s,L=gpuMipTex;
+    gpuImage(pass,L(A.cv),[{x:cx,y:cy,w:bw,h:bh,rot:C.a}],{lod:CHEB_LOD});
+    gpuImage(pass,L(A.em),[{x:cx,y:cy,w:bw,h:bh,rot:C.a,a:CHEB_LAMP*br}],{blend:"add",lod:CHEB_LOD});
     gpuShapes(pass,steam);
     gpuShapes(pass,warm.concat([noz]),{blend:"add"});
     /* вывеска — в экранных координатах, чтобы читалась при любом курсе лодки; без
@@ -55049,11 +55060,11 @@ function bbTitle(by){
    толстом штрихе); бегущая строка — полоса текста, окно листает её по u. Ничего светлого
    не ложится на #c, emit() щита не видит */
 const BB_NEON=1.2,BB_TICK=1;
-const BB_BAKE={pan:null,pk:"",str:null,sk:""};
+const BB_BAKE={pan:new Map(),str:new Map(),cur:null,ps:0};   // печи по ключу (bakeKeep); cur — панель последнего кадра
 function bbPanelBake(s,GP){
-  const d=DPR,pw=120*s,ph=40*s,key="bbp|"+s+"|"+d+"|"+(GP?GP.n+"|"+GP.k+"|"+GP.svodka+"|"+GP.price:"");
-  if(BB_BAKE.pk===key)return BB_BAKE.pan;
-  const c=(BB_BAKE.pan&&BB_BAKE.pan.cv)||document.createElement("canvas");
+  const d=DPR,pw=120*s,ph=40*s,gk=GP?GP.n+"|"+GP.k+"|"+GP.svodka+"|"+GP.price:"",key="bbp|"+s+"|"+d+"|"+gk;
+  return bakeKeep(BB_BAKE.pan,key,6,()=>{
+  const c=document.createElement("canvas");
   const cw=Math.ceil((pw+2)*d),ch=Math.ceil((ph*1.6+2)*d);c.width=cw;c.height=ch;
   const g=c.getContext("2d");g.setTransform(d,0,0,d,(pw/2+1)*d,(ph/2+1)*d);   /* начало — середина панели */
   g.strokeStyle="rgba(150,164,180,.6)";g.lineWidth=1;
@@ -55075,17 +55086,19 @@ function bbPanelBake(s,GP){
     g.fillStyle="rgba(255,230,200,.82)";g.font=Math.round(6.5*s)+"px ui-monospace,monospace";
     g.fillText("ДО СВОДКИ "+GP.svodka+" · ПО "+GP.price+" КР · СДАВАТЬ ЗДЕСЬ",px+qh,py+qh*.72,qw-qh-3);
   }
-  BB_BAKE.pan={cv:c,key,ox:pw/2+1,oy:ph/2+1,w:cw/d,h:ch/d};BB_BAKE.pk=key;return BB_BAKE.pan;
+  return {cv:c,key,s,d,gk,ox:pw/2+1,oy:ph/2+1,w:cw/d,h:ch/d};
+  });
 }
 function bbStripBake(L,Fp,col){
   const d=DPR,key="bbs|"+L+"|"+Fp+"|"+d+"|"+col.join();
-  if(BB_BAKE.sk===key)return BB_BAKE.str;
-  const c=(BB_BAKE.str&&BB_BAKE.str.cv)||document.createElement("canvas"),f=Fp*d+"px ui-monospace,monospace";
+  return bakeKeep(BB_BAKE.str,key,6,()=>{
+  const c=document.createElement("canvas"),f=Fp*d+"px ui-monospace,monospace";
   let g=c.getContext("2d");g.font=f;
   const tw=Math.max(1,Math.ceil(g.measureText(L).width));c.width=tw;c.height=Math.ceil(Fp*1.6*d);
   g=c.getContext("2d");g.font=f;g.textAlign="left";g.textBaseline="middle";
   g.fillStyle=rgba(mixc(col,[255,255,255],.3),.85);g.fillText(L,0,c.height/2);
-  BB_BAKE.str={cv:c,key,P:tw/d,h:c.height/d};BB_BAKE.sk=key;return BB_BAKE.str;
+  return {cv:c,key,P:tw/d,h:c.height/d};
+  });
 }
 function bbDrawGpu(pass,B,x,y,s,col,rd,Z){
   const d=DPR,px=v=>Math.round(v*d)/d;
@@ -55095,8 +55108,11 @@ function bbDrawGpu(pass,B,x,y,s,col,rd,Z){
     return;
   }
   const pw=120*s,ph=40*s,GP=(typeof gosBbPlan==="function")?gosBbPlan(B.by):null;
-  const Pn=bbPanelBake(s,GP),l=px(x-Pn.ox),t=px(y-Pn.oy);
-  gpuImage(pass,Pn.cv,[{x:l+Pn.w/2,y:t+Pn.h/2,w:Pn.w,h:Pn.h,a:rd}],{ver:Pn.key});
+  /* панель: в покое — печь ровно под масштаб (рамка и буквы пиксель в пиксель); пока зум
+     едет — последняя печь в нужном масштабе: сто печей за проезд не нужны */
+  const gk=GP?GP.n+"|"+GP.k+"|"+GP.svodka+"|"+GP.price:"",still=BB_BAKE.ps===s,c0=BB_BAKE.cur;BB_BAKE.ps=s;
+  const Pn=(!still&&c0&&c0.gk===gk&&c0.d===DPR)?c0:(BB_BAKE.cur=bbPanelBake(s,GP)),q=s/Pn.s,l=px(x-Pn.ox*q),t=px(y-Pn.oy*q);
+  gpuImage(pass,Pn.cv,[{x:l+Pn.w*q/2,y:t+Pn.h*q/2,w:Pn.w*q,h:Pn.h*q,a:rd}],{ver:Pn.key});
   const buzz=B.by==="gt"&&((G.t/60)%60)<.2?.35:1;
   const N=neonBake("bb",bbTitle(B.by),BB_TITLE[B.by]||BB_TITLE.gt,Math.round(11*s),col,"middle");
   neonDraw(pass,N,x,y-ph*.18,rd,BB_NEON*buzz*rd);
@@ -55180,11 +55196,11 @@ function drawBillboard(zx,zy,Z){
    яркое), с ореолом уже просвета между буквами; бледное ядро — средняя треть штриха
    и только на штрихе шире ~2.4 px, иначе трубка светится своим цветом целиком.
    Узкий ореол принадлежит букве; в свечение кадра уходит мало. */
-const NEON=new Map();   // место (гостиница, щит) → последняя печь
+const NEON=new Map();   // ключ печи (имя, кегль, цвет, плотность) → печь; bakeKeep держит 12
 function neonBake(slot,name,full,F,col,bl){
   const d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d+"|"+bl;
-  let N=NEON.get(slot);if(N&&N.key===key)return N;
-  const mk=k=>(N&&N[k])||document.createElement("canvas"),al=mk("al"),em=mk("em"),co=mk("co");
+  return bakeKeep(NEON,key,12,()=>{
+  const mk=()=>document.createElement("canvas"),al=mk(),em=mk(),co=mk();
   const Fd=F*d,fb="bold "+Fd+"px ui-monospace,monospace";
   let a=al.getContext("2d");a.font=fb;
   const tw=Math.ceil(a.measureText(full).width),pad=Math.ceil(3*d);
@@ -55202,7 +55218,8 @@ function neonBake(slot,name,full,F,col,bl){
       g.globalCompositeOperation="destination-out";g.lineWidth=sw*2/3;g.lineJoin="round";g.strokeStyle="#000";g.strokeText(name,pad,base);});
     e.shadowBlur=0;e.drawImage(co,0,0);
   }
-  N={key,al,em,co,ax:pad+tw/2,ay:base,w:(tw+pad*2)/d,h:Hd/d};NEON.set(slot,N);return N;
+  return {key,al,em,co,ax:pad+tw/2,ay:base,w:(tw+pad*2)/d,h:Hd/d};
+  });
 }
 /* вывеска: середина строки по x, базовая линия (bl печи) по y — в пикселях CSS экрана;
    al — плотность стекла, gain — усиление света. Без видеокарты — тем же на ctx */
@@ -55314,11 +55331,16 @@ let HOTEL_BAKE=null;
    (свечение принадлежит окну, шире — дело блума, и его мало); sh — тот же дом под
    тёплым светом вывески сверху, сходит на нет ко второму этажу */
 const HOTEL_EM=1,HOTEL_NEON=1.2,HOTEL_SHEEN=.8;
+/* мастер дома берётся на уровень крупнее (как прежний gpuCvLevel: не мельче экрана) —
+   окна и рамы резкие; .785 общего правила смешивал его со следующим, −10 % резкости */
+const HOTEL_LOD=.5;
 const HOTEL_LAMP=[[255,169,87],[255,178,104],[255,163,80],[255,186,118],[255,172,94],[255,180,110],[180,200,235]];
 function hotelBake(sd,mask,col){
   const ck=col.join();
   if(HOTEL_BAKE&&HOTEL_BAKE.sd===sd&&HOTEL_BAKE.mask===mask&&HOTEL_BAKE.ck===ck)return HOTEL_BAKE;
-  const mk=k=>(HOTEL_BAKE&&HOTEL_BAKE[k])||document.createElement("canvas");
+  /* новая выпечка — новые холсты: слой — мастер с мипами (gpuMipTex), на месте его не перерисовать */
+  if(HOTEL_BAKE)for(const q of [HOTEL_BAKE.cv,HOTEL_BAKE.em,HOTEL_BAKE.sh])gpuMipDrop(q);
+  const mk=()=>document.createElement("canvas");
   const cv=mk("cv"),em=mk("em"),shc=mk("sh");
   for(const q of [cv,em,shc]){q.width=Math.ceil(HR_BW*HR_PX);q.height=Math.ceil(HR_BH*HR_PX);}
   const c=cv.getContext("2d");c.setTransform(HR_PX,0,0,HR_PX,0,0);c.clearRect(0,0,HR_BW,HR_BH);
@@ -55490,10 +55512,10 @@ function drawHotel(zx,zy,Z){
   const S=fa>0?neonBake("hotel",Ht.name,Ht.name===HOTEL_SIGN.gt?HOTEL_SIGN_FULL.gt:Ht.name,Math.round(8*Math.max(1,k)*UIK),col,"alphabetic"):null;
   const pass=gpuScene();
   if(pass){
-    const v=B.ver,L=q=>gpuCvLevel(q,v,w*DPR),R=a=>[{x:ox+w/2,y:oy+h/2,w,h,a}];
-    gpuImage(pass,L(B.cv),R(1),{ver:v});
-    gpuImage(pass,L(B.em),R(HOTEL_EM),{blend:"add",ver:v});
-    if(S)gpuImage(pass,L(B.sh),R(HOTEL_SHEEN*fa),{blend:"add",ver:v});
+    const L=gpuMipTex,R=a=>[{x:ox+w/2,y:oy+h/2,w,h,a}];
+    gpuImage(pass,L(B.cv),R(1),{lod:HOTEL_LOD});
+    gpuImage(pass,L(B.em),R(HOTEL_EM),{blend:"add",lod:HOTEL_LOD});
+    if(S)gpuImage(pass,L(B.sh),R(HOTEL_SHEEN*fa),{blend:"add",lod:HOTEL_LOD});
   }else{
     ctx.drawImage(B.cv,ox,oy,w,h);
     ctx.save();ctx.globalCompositeOperation="lighter";ctx.drawImage(B.em,ox,oy,w,h);

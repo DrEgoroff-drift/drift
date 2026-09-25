@@ -26,6 +26,7 @@ function chebHere(){
    ~18× белого и светили дважды — ушли */
 const CHEB_PX=4,CHEB_X0=-20,CHEB_Y0=-10,CHEB_BW=38,CHEB_BH=20,CHEB_LAMP=1.6;
 let CHEB_ART=null;
+const CHEB_LOD=.5;   /* мастер берётся на уровень крупнее, как прежний gpuCvLevel (см. HOTEL_LOD) */
 function chebHullPath(c){c.beginPath();c.moveTo(16,0);c.lineTo(10,-8);c.lineTo(-14,-8);c.lineTo(-16,0);c.lineTo(-14,8);c.lineTo(10,8);c.closePath();}
 function chebBake(){
   if(CHEB_ART)return CHEB_ART;
@@ -53,10 +54,11 @@ function chebBake(){
   return CHEB_ART={cv,em};
 }
 /* доска «ЧЕБУРЕКИ» — в пикселях устройства под размер шрифта, с тенью */
-let CHEB_SIGN=null;
+const CHEB_SIGN=new Map();
 function chebSignBake(F,k){
-  const d=DPR,key=F+"|"+k+"|"+d;if(CHEB_SIGN&&CHEB_SIGN.key===key)return CHEB_SIGN;
-  const cv=(CHEB_SIGN&&CHEB_SIGN.cv)||document.createElement("canvas");let g=cv.getContext("2d");
+  const d=DPR,key=F+"|"+k+"|"+d;
+  return bakeKeep(CHEB_SIGN,key,6,()=>{
+  const cv=document.createElement("canvas");let g=cv.getContext("2d");
   const font="bold "+F+"px ui-monospace,monospace";g.font=font;
   const tw=g.measureText("ЧЕБУРЕКИ").width+12*k,bh=15*k;
   cv.width=Math.ceil((tw+1.5)*d)+1;cv.height=Math.ceil((bh+1.5)*d)+1;
@@ -64,7 +66,8 @@ function chebSignBake(F,k){
   g.fillStyle="rgba(0,0,0,.45)";g.fillRect(1.5,1.5,tw,bh);
   g.fillStyle="#efe3c6";g.fillRect(0,0,tw,bh);
   g.font=font;g.textAlign="center";g.textBaseline="middle";g.fillStyle="#b8322a";g.fillText("ЧЕБУРЕКИ",tw/2,bh/2+.5);
-  return CHEB_SIGN={key,cv,tw,bh};
+  return {key,cv,tw,bh};
+  });
 }
 function drawCheburek(zx,zy,Z){
   const C=chebHere();if(!C)return;
@@ -81,13 +84,13 @@ function drawCheburek(zx,zy,Z){
   }
   const fl=.6+.4*Math.sin(G.t*.2),[nx,ny]=P(-17,0);
   const noz=[1,nx,ny,(1.2+fl*.5)*s,0,0,.8*s,255,150,70,.55+.3*fl];   /* сопло */
-  const k=Math.max(1,s)*(typeof UIK==="number"?UIK:1),by=y-20*s-8*k,S=chebSignBake(Math.round(8*k),k);
+  const k=Math.max(1,s)*(typeof UIK==="number"?UIK:1),by=y-20*s-8*k,S=chebSignBake(Math.round(8*k),Math.round(8*k)/8);
   const d=DPR,sl=Math.round((x-S.tw/2)*d)/d,st=Math.round((by-7.5*k)*d)/d,sw=S.cv.width/d,sh=S.cv.height/d;
   const pass=gpuScene();
   if(pass){
-    const [cx,cy]=P(CHEB_X0+CHEB_BW/2,CHEB_Y0+CHEB_BH/2),bw=CHEB_BW*s,bh=CHEB_BH*s,L=q=>gpuCvLevel(q,undefined,bw*d);
-    gpuImage(pass,L(A.cv),[{x:cx,y:cy,w:bw,h:bh,rot:C.a}]);
-    gpuImage(pass,L(A.em),[{x:cx,y:cy,w:bw,h:bh,rot:C.a,a:CHEB_LAMP*br}],{blend:"add"});
+    const [cx,cy]=P(CHEB_X0+CHEB_BW/2,CHEB_Y0+CHEB_BH/2),bw=CHEB_BW*s,bh=CHEB_BH*s,L=gpuMipTex;
+    gpuImage(pass,L(A.cv),[{x:cx,y:cy,w:bw,h:bh,rot:C.a}],{lod:CHEB_LOD});
+    gpuImage(pass,L(A.em),[{x:cx,y:cy,w:bw,h:bh,rot:C.a,a:CHEB_LAMP*br}],{blend:"add",lod:CHEB_LOD});
     gpuShapes(pass,steam);
     gpuShapes(pass,warm.concat([noz]),{blend:"add"});
     /* вывеска — в экранных координатах, чтобы читалась при любом курсе лодки; без

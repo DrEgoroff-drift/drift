@@ -5,7 +5,17 @@
    на прогреве и живёт мастером). Кто пачкает пустой #c — называется по стеку:
    иначе следующий шаг тихо вернёт 2D на #c, и ворота закроются молча.
    Исключений нет: станция с 17c3 — мастер с мипами, живое поверх фигурами. */
-const GATE_WARM=40,GATE_N=60,GATE_OK=[];
+const GATE_WARM=40,GATE_N=60,GATE_SW=40,GATE_OK=[];
+/* печки за зумом (гостиница, щит, неон, Чебурек): проезд зума туда и обратно — ни один
+   холст печки не грузится дважды: каждый размер печётся и грузится один раз (зум в игре
+   сглажен, туда и обратно он проходит разные точки — новый кегль на обратном законен).
+   Дом, перепечённый за проезд сменой окон (час суток), — не зум: его выгрузки не судим */
+const GATE_ZB=/drawCheburek|drawBillboard|drawHotel/;
+/* текстовые печи (кегль в пикселях): холстов за проезд — не больше, чем кеглей на всём
+   ходе масштаба (доска 8…12; неон щита 11…17 и дома 8…15 — по два слоя; панель и строка щита) */
+const GATE_ZCAP={neonDraw:30,bbDrawGpu:12,drawCheburek:6};
+function gateZOwner(w){if(!/gpuCanvasTex/.test(w))return null;for(const k in GATE_ZCAP)if(w.includes(k))return k;return null;}
+function gateZoom(j){const t=j<GATE_SW?j/GATE_SW:(2*GATE_SW-1-j)/GATE_SW;return ZOOM_MIN*Math.pow(ZOOM_MAX/ZOOM_MIN,t);}
 function gateWho(){
   return new Error().stack.split("\n").slice(3,8).map(l=>{const m=/at (?:new )?([\w$.]+)/.exec(l);return m?m[1]:"?";}).join("<");
 }
@@ -18,10 +28,10 @@ function gateStand(){
   }
   return false;
 }
-function gatePlace(){
+function gatePlace(z){
   const H=hotelHere(),C=chebHere();if(!H||!C)return;
   G.ship.x=C.x+(H.x-C.x)*.35;G.ship.y=C.y+(H.y-C.y)*.35;G.ship.vx=0;G.ship.vy=0;G.ship.a=-2.2;G.ap=null;
-  G.zoom=2.2;G.zoomT=null;
+  G.zoom=z||2.2;G.zoomT=null;
 }
 TEST_SUITES.push(()=>suite("ворота ступени 1: ровный полёт — #c не грузится, одна отправка на кадр, холсты не грузятся",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
@@ -34,18 +44,21 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: ровный полё
   G.crowns={};NODE_FAMS.slice(0,5).forEach(f=>G.crowns[f.id]=1);
   const Q=GPUQueue.prototype,q0={c:Q.copyExternalImageToTexture,s:Q.submit};
   const hg=hullGpuDraw,run0=G.running,loop0=LOOP_OFF,C=MAIN_CTX;
-  const K={on:false,front:0,sub:0,up:{},bad:0,known:0,dirt:{}};
+  const K={on:false,front:0,sub:0,up:{},bad:0,known:0,dirt:{},zb:false,zup:{},zn:0,zt:0,zc:{},zs:new Set(),hb:null,hre:false};
   const cm={};
   let i=0;
   try{
     hullGpuDraw=function(id,x,y,a,sc,t,b,l,bk,lx,ly){return hg(id,x,y,a,sc,t||id===G.shipId,b,l,id===G.shipId?.35:bk,lx,ly);};
     Q.copyExternalImageToTexture=function(src,dst){
+      if(K.zb&&HOTEL_BAKE!==K.hb)K.hre=true;
+      if(K.zb&&dst.texture!==GPU.T.front){const w=gateWho();
+        if(GATE_ZB.test(w)&&!(K.hre&&/drawHotel/.test(w))){K.zt++;const zo=gateZOwner(w);if(zo)K.zc[zo]=(K.zc[zo]||0)+1;if(K.zs.has(src.source)){K.zn++;K.zup[w]=(K.zup[w]||0)+1;}K.zs.add(src.source);}}
       if(K.on){if(dst.texture===GPU.T.front)K.front++;
         else{const w=gateWho();if(GATE_OK.some(n=>w.includes(n)))K.known++;else{K.bad++;K.up[w]=(K.up[w]||0)+1;}}}
       return q0.c.apply(this,arguments);};
     Q.submit=function(){if(K.on)K.sub++;return q0.s.apply(this,arguments);};
     G.running=true;LOOP_OFF=false;
-    for(i=0;i<GATE_WARM+GATE_N;i++){
+    for(i=0;i<GATE_WARM+GATE_N+2*GATE_SW;i++){
       if(i===GATE_WARM){
         K.on=true;
         /* поверх обёрток 08c: кто рисует на #c, пока он пуст */
@@ -54,12 +67,16 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: ровный полё
           const o=C[k];cm[k]=o;
           C[k]=function(){if(K.on&&GPU.cState===0){const w=k+":"+gateWho();K.dirt[w]=(K.dirt[w]||0)+1;}return o.apply(this,arguments);};}
       }
-      gatePlace();
+      const j=i-GATE_WARM-GATE_N;
+      if(j===0){K.on=false;for(const k in cm)C[k]=cm[k];}
+      if(j===0){K.zb=true;K.hb=HOTEL_BAKE;}
+      gatePlace(j<0?0:gateZoom(j));
       frameBody(wallMs());
+      if(K.zb&&HOTEL_BAKE!==K.hb)K.hre=true;
     }
   }catch(e){ok(false,"кадр "+i+" упал: "+e.message);}
   finally{
-    K.on=false;
+    K.on=false;K.zb=false;
     Q.copyExternalImageToTexture=q0.c;Q.submit=q0.s;hullGpuDraw=hg;
     for(const k in cm)C[k]=cm[k];
     G.running=run0;LOOP_OFF=loop0;
@@ -70,5 +87,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: ровный полё
   eq(Object.keys(K.dirt).length,0,"пустой #c никто не пачкает"+(Object.keys(K.dirt).length?": "+top(K.dirt):""));
   eq(K.sub,GATE_N,"отправок в очередь ровно по одной на кадр");
   eq(K.bad,0,"печёные холсты не грузятся"+(K.bad?": "+top(K.up):"")+" (станция — известное исключение, её выгрузок "+K.known+")");
+  for(const k in GATE_ZCAP)ok((K.zc[k]||0)<=GATE_ZCAP[k],"проезд зума: печей "+k+" "+(K.zc[k]||0)+" ≤ "+GATE_ZCAP[k]+" — кегль, а не каждый кадр");
+  eq(K.zn,0,"проезд зума туда и обратно: ни один холст печки не грузится дважды (выгрузок "+K.zt+")"+(K.zn?": "+top(K.zup):"")+(K.hre?" (дом перепечён сменой окон — его не судим)":""));
   resetWorld();
 }));

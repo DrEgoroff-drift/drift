@@ -56,12 +56,20 @@ function gpuCanvasTex(cv,ver){
   return e;
 }
 /* в кадре живут десятки печёных холстов (дом, вывеска, Чебурек, челноки, по два слоя):
-   восемь мест перегружали их по кругу каждый кадр */
-const GPU_CVTEX_CAP=32;
+   восемь мест перегружали их по кругу каждый кадр. Печи по кеглю (bakeKeep: неон, доски,
+   бегущая строка — до 30 мелких холстов) держатся здесь же, иначе проезд зума их вытеснит */
+const GPU_CVTEX_CAP=64;
 /* уровень детализации печёного холста: gpuImage берёт нулевой уровень, и сильно сжатый
    холст мерцает (окно дома — в пиксель). Уровни — половинки, печёт лениво; берётся тот,
    что не мельче ширины на экране devW (пиксели устройства). ver — как у gpuCanvasTex */
 const CV_LVL=new WeakMap();
+/* печь по ключу (ступень 1, печки за зумом): свой холст на каждый ключ — кегль, плотность;
+   недавние держатся, и зум туда-обратно берёт готовое — gpuCanvasTex грузит каждый размер
+   один раз. Текст так и остаётся пиксель в пиксель, без мипов и без маски */
+function bakeKeep(M,key,cap,make){
+  let v=M.get(key);if(v){M.delete(key);M.set(key,v);return v;}
+  v=make();M.set(key,v);if(M.size>cap)M.delete(M.keys().next().value);return v;
+}
 function gpuCvLevel(cv,ver,devW){
   let L=CV_LVL.get(cv);
   if(!L||L.ver!==ver||L.w!==cv.width||L.h!==cv.height){L={ver,w:cv.width,h:cv.height,lv:[cv],pool:L?L.lv:[]};CV_LVL.set(cv,L);}
@@ -197,7 +205,7 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
 function gpuImage(pass,cv,rects,o){
   if(!pass||!rects.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
-  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?(o&&o.sharp?-GPU_MIP_GS:GPU_MIP_LOD):0;   /* <0 — с маской */
+  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?(o&&o.sharp?-GPU_MIP_GS:(o&&o.lod)||GPU_MIP_LOD):0;   /* <0 — с маской; o.lod — свой масштаб уровня */
   for(let i=0;i<n;i++){const r=rects[i],k=i*12;
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
