@@ -37,6 +37,19 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
    laid light in steps. Test `tests/91sc-scoop-gpu.js`: the corridor built from the shader's
    uniforms equals `scoopCenter` over the screen and along a 512 000-unit path; the star
    gives a unit direction, day in 0..1.
+3. **Hazards, wake and the hull** (`scoop.obs` + kit shapes + `hullGpuDraw`). Vortex cores and
+   plumes are a field over six slots: the core is a funnel with log-spiral arms turning with
+   the pass, dark furrows between them, a dome lit from the star, a hot rim brighter on the
+   star's side and its shadow on the gas away from the star; the plume is a jet whose puffs are
+   torn by noise and carried along it. Hail is cracked ice of six facets, each lit by its own
+   normal (was one «light on top» gradient); the frost trail is additive. The wake is in the
+   field (a torn cut with two curls — the capsule chain beaded at its joints). The hull is the
+   kit's bake (`hullGpuDraw`, 17c2) lit by the same star direction as the sky; heat tongues and
+   the collector's horns are kit shapes. The sky's relief now takes the band's vertical slope
+   analytically per pixel (the 2×2 derivative still stepped on steep fronts); billows got noisy
+   edges and the star's tint. All reversed-edge `smoothstep` in the zone rewritten as
+   `1-smoothstep(lo,hi,x)` — undefined in SPIR-V/Metal when edge0 ≥ edge1; SwiftShader happens
+   to accept it. What still draws on `#c`: the «ПОЛОСА СБОРА» plaque and the heat gauge — text.
 
 ## Pairs (scratchpad, 760×475, before | after)
 
@@ -44,6 +57,9 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
   flat purple smear; bands have crisp fronts and relief from the star's side.
 - `pair2-flow.png` — the edges are soft shadows under lit billows instead of pencil lines, the
   corridor is a teal gas layer with motes, readable against the bands.
+- `pair3-things.png` (a second scene 2150 units into the pass, hazards on screen; its «before»
+  is `before-scoop2.png`) — the vortex is a lit funnel with a hot rim instead of pencil
+  circles, the hull takes the star's light, the whole frame reads as lit layered cloud.
 
 ## Requests outside the zone
 
@@ -53,8 +69,15 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
 ## New render pipelines (for the warm-up table `08b1`)
 
 - `fld.scoop.air` — `gpuField`, blend `over`, field layout (textures: t1 = `gnbNoiseTile()`).
-- `fld.scoop.flow` — `gpuField`, blend `over`, field layout, no textures.
+- `fld.scoop.flow` — `gpuField`, blend `over`, field layout (t1 = `gnbNoiseTile()`).
+- `fld.scoop.obs` — `gpuField`, blend `over`, field layout (t1 = `gnbNoiseTile()`).
+- kit pipelines already in the table: `kit.shp` (over, add), and the hull's own (`hullGpuDraw`).
 
 ## Open problems
 
-- none yet.
+- `src/16gb-gpu-nebula.js` (flight, not this zone) has reversed-edge `smoothstep(1.,.2,r)`,
+  `smoothstep(1.,.4,r)` — undefined by the WGSL→SPIR-V/MSL lowering; fine on SwiftShader and,
+  apparently, on the author's GPU, but worth a look on Metal (iOS/macOS Safari).
+- The second scene's `--js` also lives only in the scratchpad (`scoopjs2.txt`): the first
+  snippet plus `G.scoop.x=1500;G.scoop.obs=[];scoopSpawn();G.scoop.x=2150;scoopSpawn();
+  G.scoop.y=scoopBand()[0]+H*.05;`.
