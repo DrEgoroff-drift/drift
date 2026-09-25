@@ -102,20 +102,48 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: окна гостин
   let up=0,B=null;const masks=new Set();
   try{
     G.running=true;LOOP_OFF=false;
-    HOTEL_BAKE=null;HOTEL_REC=null;   /* дом испечён и загружен здесь же, а не чужим набором */
+    hotelDrop(HOTEL_BAKE);HOTEL_BAKE=null;for(const k of [...PB.keys()])prebakeDrop(k);   /* дом испечён здесь же, а не чужим набором */
     for(let i=0;i<60&&!(HOTEL_BAKE&&HOTEL_BAKE.cv.tex);i++){gatePlace();frameBody(wallMs());}
     B=HOTEL_BAKE;frameBody(wallMs());
     Q.copyExternalImageToTexture=function(){if(/drawHotel/.test(gateWho()))up++;return c0.apply(this,arguments);};
     const d0=Math.floor(G.t/CEL_DAY)*CEL_DAY;
     for(let h=0;h<24;h+=3)for(let f=0;f<3;f++){
       G.t=d0+CEL_DAY*h/24+f*360;gatePlace();
-      masks.add(hotelWinLit(sd,hotelLitFrac(Ht.by,((G.t%CEL_DAY)/CEL_DAY)*24),Math.floor(G.t/60/6)));
+      masks.add(hotelWinLit(B?B.win.length:0,sd,hotelLitFrac(Ht.by,((G.t%CEL_DAY)/CEL_DAY)*24),Math.floor(G.t/60/6)));
       frameBody(wallMs());
     }
   }finally{Q.copyExternalImageToTexture=c0;G.running=run0;LOOP_OFF=loop0;}
   ok(masks.size>=8,"наборов горящих окон за сутки: "+masks.size+" ≥ 8");
   eq(up,0,"выгрузок дома при смене окон");
   if(ok(B,"дом нарисован и загружен"))ok(HOTEL_BAKE===B,"дом не перепечён");
+  resetWorld();
+}));
+/* печь заранее (17a0): гостиница, что за краем экрана, печётся по шагам и выходит на глаза
+   готовой — синхронного допекания на подлёте нет (P1: проявления из пустоты быть не должно);
+   каждый шаг меряется (PB_MAX — порог ×4 проверяет стенд, у набора часов нет) */
+TEST_SUITES.push(()=>suite("ворота гостиниц: дом печётся за краем, на экран выходит готовым",{tier:"browser"},()=>{
+  if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
+  resetWorld();
+  G.mode="system";
+  if(!ok(gateStand(),"нашлась система с гостиницей"))return;
+  const run0=G.running,loop0=LOOP_OFF;   /* дом ходит со станцией по орбите: место — каждый кадр */
+  let s0=0,s1=0,at=-1,drawn=0;
+  const put=dx=>{const Ht=hotelHere();G.ship.x=Ht.x+dx;G.ship.y=Ht.y;G.ship.vx=G.ship.vy=0;G.ship.a=-2.2;G.ap=null;G.zoom=2.2;G.zoomT=null;BODY_CAM.x=BODY_CAM.y=0;};   /* вид не косится на станцию: мерим печь, не камеру */
+  const g0=gpuImage;
+  try{
+    G.running=true;LOOP_OFF=false;
+    hotelDrop(HOTEL_BAKE);HOTEL_BAKE=null;for(const k of [...PB.keys()])prebakeDrop(k);
+    for(const k in PB_MAX)delete PB_MAX[k];
+    s0=PB_SYNC;
+    gpuImage=function(pass,B){if(HOTEL_BAKE&&B===HOTEL_BAKE.cv)drawn++;return g0.apply(this,arguments);};
+    /* подлёт: полтора экрана до дома за 90 кадров — дом въезжает в поле зрения сам */
+    for(let i=0;i<=90;i++){put(-1.6*W/2.2*(1-i/90));frameBody(wallMs());if(HOTEL_BAKE&&at<0)at=i;}
+    s1=PB_SYNC;
+  }finally{gpuImage=g0;G.running=run0;LOOP_OFF=loop0;}
+    ok(at>=0,"дом испёкся, пока был за краем (кадр "+at+")");
+  eq(s1-s0,0,"синхронных допеканий на подлёте");
+  ok(drawn>=3,"на экране дом рисуется из готовой выпечки: "+drawn);
+  ok(Object.keys(PB_MAX).some(k=>/^hotel\|/.test(k)),"шаги выпечки гостиницы измерены (PB_MAX)");
   resetWorld();
 }));
 /* бой (ступень 1): три пирата вокруг корабля, болты в обе стороны, ракеты в обе стороны,

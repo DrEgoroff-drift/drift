@@ -39,15 +39,16 @@ const GATE2D=[
        G.zoom=Z;G.zoomT=null;return {p};}
      return null;},
    probe:["gpuPlanet","gplCities"]},
-  /* гостиница: три выпечки атласа (краска, свет стёкол, отсвет) на GPU-холсте; дом сбрасываем,
-     чтобы выпечка шла под записью; вечер — окна горят */
-  {name:"гостиница (17l): атлас дома, окна, отсвет",
-   painters:["drawHotel","hotelBake","hotelPaint"],
+  /* гостиница «Космос»: пять выпечек GPU-холста (дом, горящие окна, их свет, отсвет вывески) —
+     шаги планировщика 17a0; дом сбрасываем, чтобы выпечка шла под записью (на экране — целиком
+     в кадре); вечер — окна горят */
+  {name:"гостиница «Космос» (17l, 17l1): дом, окна, отсвет, труба с челноком",
+   painters:["drawHotel","hotelGet","hotelJob","prebake","hkPaint","hotelWindows","hotelDock","hotelNeon"],
    place(first){
      for(let r=0;r<=14;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
        if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
-       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const Ht=hotelHere();if(!Ht)continue;
-       if(first){if(HOTEL_BAKE)for(const q of [HOTEL_BAKE.cv,HOTEL_BAKE.em,HOTEL_BAKE.sh])gpuBakeDrop(q);HOTEL_BAKE=null;HOTEL_REC=null;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const Ht=hotelHere();if(!Ht||Ht.by!=="gt")continue;
+       if(first){hotelDrop(HOTEL_BAKE);HOTEL_BAKE=null;for(const k of [...PB.keys()])prebakeDrop(k);
          G.t=Math.floor(G.t/CEL_DAY)*CEL_DAY+CEL_DAY*21/24;}
        G.ship.x=Ht.x;G.ship.y=Ht.y+150/2.2;G.ship.vx=G.ship.vy=0;G.zoom=2.2;G.zoomT=null;return {Ht};}
      return null;},

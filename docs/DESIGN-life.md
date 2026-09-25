@@ -106,12 +106,12 @@ quiet features**. Six faces:
 
 | power | the hotel |
 |---|---|
-| ГЛАВТРАССА | «ГОСТИНИЦА «КОСМОС»» — a slab with a hundred windows, two lit letters dead; «мест нет» on the board (there are) |
-| Компания | «ДЖЕКПОТ-СИТИ™» — a casino-resort ring, valet tugs, a fountain of lights; the dearest bed and the best rumours |
-| Орднунг | «Пансион № 4» — house rules on a plate by the airlock; lights out at 22:00 by the game clock |
-| Коммуна | a café-boat «Ля Люн» with a terrace to the stars; the longest conversations (rumours) |
-| Рассвет | a guesthouse cut into an asteroid, a painted door, a common table |
-| Хай-Фронт | a capsule hotel — a honeycomb of pods, each lit the same, one flickering |
+| ГЛАВТРАССА | «ГОСТИНИЦА «КОСМОС»» — a Soviet crescent slab, a cosmonaut on the plaza, Т dead in the sign; «мест нет» on the board (there are) |
+| Компания | «АЭЛИТА™» — a Stalinist tower on a rock, the first А dead; the dearest bed and the best rumours |
+| Орднунг | «ДОМ ПРИЕЗЖИХ № 4» — khrushchyovkas on a truss, lively balconies, every letter lit; lights out at 22:00 by the game clock |
+| Коммуна | «ЮПИТЕР» — constructivism, red consoles, a glass cylinder, Ю dead; the longest conversations (rumours) |
+| Рассвет | «ТУРБАЗА «ДРУЖБА»» — a ring on legs over an asteroid, a painted sign and a bulb garland instead of neon, a common table |
+| Хай-Фронт | «БУРАН» — modernist slab grid, a saucer on top, a cosmonaut mosaic, Б dead; every room «рассчитан» |
 
 ### 3.4 The food barge — «Чебуречная» (M462)
 A small junk boat cruising the lane (The Fifth Element's flying fast food), hailing: «Чебуреки!

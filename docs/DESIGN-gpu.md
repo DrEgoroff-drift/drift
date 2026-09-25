@@ -1617,4 +1617,31 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   flare phase); >24 differences ≤33 px per crop; GPU errs 0. Gate2d gains the station scene (masters and
   spins dropped first so the bake is under the probe); mutants `station-master-2d`, `station-spin-2d`
   die. The e2e flame check now reads the GPU record: no cold op or lamp above the stack mouth, warm
-  flare shapes present.
+  flare shapes present. The light suite's torch check reads the same shapes (Σ luminance·α·width·length
+  over the stack column per frame) instead of 2D pixels.
+- **Prebake scheduler (17a0).** `prebake(key,make,sync)` steps a generator job ≤4 ms (at least one step)
+  per frame across all keys; jobs untouched for 120 frames are closed with `it.return()` (the job's
+  `finally` drops partial bakes); ≤6 live jobs; a device change restarts the job. `sync` finishes the job
+  now and counts `PB_SYNC` — the draw calls it only when the thing is on screen and not ready (a load, a
+  jump), never on an approach: the gate suite flies 1.6 screens to a hotel over 90 frames and demands
+  PB_SYNC +0 and the house drawn from the finished bake. `PB_MAX[key]` keeps the longest step per key
+  (the ≤16 ms at ×4 threshold is the stand's, the suite has no clock). `pbOnScreen(x,y,w,h,m)` is the
+  margin test. Next on it: the station masters.
+- **Six hotels (17l core, one file per type).** The panel hotel is deleted; `HOTEL_T[by]` registers a
+  type {W,H,PX,ax,ay,sign,sheen,wins,paint}, where `paint(c,e,sd,lit)` is a generator (yields between
+  parts) that paints into two `GcCtx` records: `c` the house, `e` the glow. `hotelJob` records dark and
+  lit, bakes the house `cv`, the lit windows `cl`, the two glows `em`/`el` (ss 2 record → shadowBlur 1.2
+  bake), and the sign's sheen `sh` (house × a radial ramp of the sign colour, destination-in the house);
+  five bakes, one texture each, all prebaked while the house is within one screen of the edge. The frame
+  draws cv, sh (add), the lit rects of cl, em, the lit rects of el, then the 17k0 neon (a space is a dead
+  letter). Which windows burn: `hotelWinLit(N,sd,lit,flick)` over the type's window list — no re-bake.
+  Shared painters: `hotelRim` (one dark outline pass for the whole body), `hotelWindows` (grouped by
+  colour, curtains, a resident silhouette), `hotelDock` (the tube with its window strip and the shuttle,
+  common to all types), `hotelLamp`, `hotelStar`. Gameplay untouched: `hotelHere` place, radius 150,
+  «МЕСТ НЕТ». Names: КОСМОС (gt), АЭЛИТА™ (co), ДОМ ПРИЕЗЖИХ № 4 (or), ЮПИТЕР (km), ТУРБАЗА «ДРУЖБА» (ra,
+  painted sign and bulbs, no neon), БУРАН (hf). Type gt «Космос» (17l1): a crescent slab of 36×14 windows
+  in ribbons (floors read as bands, not a checkerboard), two towers with red bands, a banner with a star,
+  a portico, a cosmonaut on the plaza at 1.5 storeys, a keel with pods; the sheen is 0.4 (0.8 bleached
+  the stone). Gates: gpugate windows suite (masks ≥8 a day, 0 uploads) and the approach suite above;
+  gate2d scene «Космос» (painters incl. `hkPaint`, `hotelDock`); mutants `hotel-bake-2d`
+  (glow record → 2D), `hotel-frame-2d` die. 760/phone/far/z3 GPU errs 0.
