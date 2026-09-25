@@ -31,7 +31,7 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    and gains an optional `part` ("legs"/"top") for the sprites; its other callers (11w, 27e) are
    untouched.
 
-2. **Cantina on the GPU** (`27d-ui-cantina`, `27c-ui-hq`). Same panel renderer. The cantina's
+2. `685ba47` **Cantina on the GPU** (`27d-ui-cantina`, `27c-ui-hq`). Same panel renderer. The cantina's
    animations are spread through every layer (patrons and the barkeep breathe, the fan turns, the
    view blinks, the neon winks, the yard's lamps sway, the barkeep's bubble fades), so the room is
    one GPU-canvas bake re-made every `CANT_EVERY`=3 panel frames (slow motion reads smooth) and at
@@ -44,6 +44,21 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    overhang and at its foot, sparse motes in the cones, a highlight shoulder, grain and dither;
    the kino evening dims the lamps. Without a device the body runs against a null brush
    (`RPG_NULL`, `27f1`) only to get the hits. `cantinaScene` hands the real canvas over.
+3. **«Сорока» on the GPU** (`24c-mode-wanderer-draw`). A world mode, so it uses the frame's kit
+   directly and draws nothing on `#c`. The corridor is three GPU-canvas bakes at device
+   resolution: the shell (walls, deck, back wall), the middle (ribs, the curtain with the magpie
+   and shelves, bar, keeper, the green shade, bales) and the cases (re-made only when the cursor
+   moves or a lot changes). The ceiling slot is a live field (`WAN_SKY_WGSL`): the planet as a
+   lit sphere with a terminator, cloud bands and an air rim, turning slowly, stars drifting, the
+   frame bars in perspective. The five hanging things are sprites that drift by offset, ropes
+   are kit capsules. Light is two fields: `wanlit` (multiply) — the cold strips on the deck where
+   the slot's shafts land, the sails' gold running down the tops of the walls, every visible case
+   bulb as a warm point light on its cloth, the keeper's green lamp, shadow at the wall-deck
+   seams, the vignette; `wanair` (add) — the shafts from the slot to the deck as a volume
+   (integrated over depth along each view ray, so they overlap into beams), haze, dust that
+   sparkles in the beams, halos of the bulbs and the lamp. The match flash is a kit rect. The
+   2D order bug where the curtain covered hanging things in front of it is gone (hanging things
+   draw after the middle).
 
 ## Pairs (scratchpad, never in git)
 
@@ -61,6 +76,12 @@ this branch's build. All 760×475 at DPR 1 on SwiftShader, 0 GPU errors, no page
 - Cantina (`late`): `pair-late.png`. Better: the lamps have cones with edges and warm pools on the
   bar and the floor, the sign's neon lights its wall, the window is a cold counterpoint.
 
+- «Сорока» (`wanbare` — `system` + `openWanderer({force:true,epoch:0})` with the DOM panel
+  `#wanwin` hidden, because in play the panel covers most of the room; `wanderer` is the same
+  frame with the panel): `pair-wanbare.png`, `pair-wanderer.png`. Better: the slot throws real
+  shafts of cold light down the corridor onto the deck, the tops of the walls glow gold from the
+  sails, each case is lit by its own bulb, the bar sits in the green lamp's warm pool.
+
 ## Requests for files outside the zone
 
 - `docs/mkview.ps1` (stand `hq`/`hqfull`): `document.getElementById("hqbtn").click()` throws on
@@ -76,6 +97,9 @@ All created lazily today (they land in `GPU_PIPES.lazy`). Recipes to add in `08b
 |---|---|
 | `pipe:fld.hqlit\|over` | `GPU_FLD["fld.hqlit"]=()=>RPG_WGSL+HQ_LIT_WGSL` |
 | `pipe:fld.cantlit\|over` | `GPU_FLD["fld.cantlit"]=()=>RPG_WGSL+CANT_LIT_WGSL` |
+| `pipe:fld.wansky\|over` | `GPU_FLD["fld.wansky"]=()=>WAN_SKY_WGSL` |
+| `pipe:fld.wanlit\|mul` | `GPU_FLD["fld.wanlit"]=()=>WAN_LIT_WGSL` |
+| `pipe:fld.wanair\|add` | `GPU_FLD["fld.wanair"]=()=>WAN_AIR_WGSL` |
 
 The panel reuses `pipe:kit.img|over`, `pipe:kit.img|add`, `pipe:kit.shp|over`, `pipe:kit.shp|add`
 as they are (same code, same `rgba16float` target).

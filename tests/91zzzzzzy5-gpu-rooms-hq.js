@@ -85,3 +85,26 @@ TEST_SUITES.push(()=>suite("кантина: зал пишется в GPU-хол�
   RPG_NULL.fillStyle="#fff";
   eq(RPG_NULL.fillRect(0,0,1,1),RPG_NOP_R,"вызов пустой кисти отвечает пустым ответом");
 }));
+TEST_SUITES.push(()=>suite("«Сорока»: оболочка, середина и витрины пишутся в GPU-холст; свет знает лампочки",()=>{
+  resetWorld();
+  const w=wanderAt(WANDER_T0+1000);
+  clockSet(WANDER_T0+1000);
+  G.sys=getSystem(w.sx,w.sy);G.sx=w.sx;G.sy=w.sy;G.mode="system";
+  ok(openWanderer(),"на борту");
+  const S=G.wan,g0=wanGeom(),lots=wanLots(),cur=S.cursor;
+  for(const [nm,fn] of [["оболочка",()=>wanShell(g0)],["середина",()=>wanMid(g0,S)],["витрины",()=>wanCases(g0,lots,cur)]]){
+    const r=hqRec(W,H,fn);
+    eq(r.err,"",nm+": GPU-холст умеет всё, что просит кисть");
+    ok(r.g._ops.length>0,nm+": что-то нарисовано");
+  }
+  const u=wanLitUni(g0,S,lots,cur,now());
+  ok(Array.from(u).every(Number.isFinite),"числа света конечны");
+  let n=0;for(let i=0;i<8;i++)if(u[16+i*4+2]>0){n++;ok(u[16+i*4]>=0&&u[16+i*4]<=W,"лампочка "+i+" — в кадре по x");}
+  const vis=lots.filter((l,i)=>!l.empty&&wanCaseAt(i,cur)).length;
+  eq(n,Math.min(8,vis),"лампочек в свете — сколько видно непустых витрин");
+  const Q=wanSlot(g0);
+  ok(Q.A.y<Q.D.y&&Q.A.x<Q.B.x,"щель окна: ближняя кромка выше дальней, лево левее права");
+  let err="";try{drawWanderRoom();}catch(e){err=e.message;}
+  eq(err,"","без устройства комната молчит, а не падает");
+  exitWanderer();
+}));
