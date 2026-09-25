@@ -63,6 +63,12 @@ Branch `claude/gpu-cave`, from the fleet base `claude/optimistic-gates-u46osn`. 
    no longer calls `drawCaveProps`: zero per-frame 2D for them, and they sit under the light pass
    as before. Covered by the tile-painter suite.
 
+6. **stalactites, curtains and lichens bake into the rock tiles** — `drawCaveSolid` (22a) is
+   static (deco is built once at `enterCave`), so `drawCaveRock` draws it before the props, the
+   old order. Live 2D left in the cave frame: the water (it ripples), crystal facets, moss spots,
+   the other lamp's body, the wall hands, watchmen, plants, beasts, the find marker, the
+   astronaut — small, moving or owned by other ships.
+
 ## Pairs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174/scratchpad/`
@@ -86,6 +92,9 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
   Also visible: the warm beam with dust down the shaft, cold ambient, the other lamp on the ledge.
 
 - `pair-cavepool-2.png` (commit 4 frame | commit 5 frame): the same picture — props from the tiles.
+
+- `pair-cave-3.png`, `pair-cavepool-3.png` (commit 5 frame | commit 6 frame): the same picture —
+  stalactites and curtains from the tiles.
 
 ## For the design pass (what to look at, per scene)
 
