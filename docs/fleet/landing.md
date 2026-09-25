@@ -16,6 +16,15 @@ gpuOver #2  →  under the lander (field lg.under, blend mul): the cut's grain a
 2D: pad, the lander's live bits (braking flames, smoke), dust, near weather; shafts (flag), grade
 ```
 
+## Status (end of the session)
+
+Done: far ridges (1), shadow and flame light on the ground (2), the lander lit by the world (3), the
+ground's grain and form (4), one chunk recipe shared with surface (5), flames and dust on the GPU (6).
+Every frame shot with 0 GPU errors and no page errors; `node test-node.js` green (17 272).
+Left, not blocked: the pad on the GPU (so it takes the ship's shadow and sits under the hull); the
+near-ground chunks as GPU textures (needs a third `gpuOver`, see open problems); the «движки»
+highlight sign, which flips together with `litRGB` (request below). Grass stays 2D (it is live).
+
 ## Commits
 
 | # | Commit | What |
