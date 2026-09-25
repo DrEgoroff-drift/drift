@@ -466,6 +466,28 @@ paths (`gpuLitSprite`, the atlases). Record (triangulation, text layout) is now 
 text.
 The next gain would be drawing convex fills without the stencil (one draw instead of two). That is not done here.
 
+**`multiply` on a transparent destination: two draws.** 2D multiplies as
+`Cs·Cb + Cs(1−ab) + Cb(1−as)`, alpha `as + ab − as·ab`. The old single blend (`dst`, `1−as`) is right only on an
+opaque destination; on a transparent one it blackened the source, off by up to 248 of 255. No single blend state
+builds the sum, so a multiply draw is two draws over the same vertices:
+- `mul1`: colour `dst`, `1−as`; alpha `dst-alpha`, `1−as`. It leaves `Cs·Cb + Cb(1−as)` and the alpha `ab`
+  unchanged;
+- `multiply`: colour and alpha `1−ad`, `one`, with `ad` = `ab` still. It adds `Cs(1−ab)` and `as(1−ab)`.
+
+The first draw of a stencilled fill uses `cvk`: the cover test without clearing the stencil, so the second draw
+covers the same samples. Images, text masks and shadow quads write no stencil and draw twice as they are.
+
+The pair `pair_multiply_x2.png` shows fills, a half fill, an arc, images (opaque and half, and at `globalAlpha` .6)
+and a shadowed rect. They sit on destinations of alpha 0, .25, .5, 1 and a 0→1 ramp. Δ against 2D, premultiplied,
+on interiors:
+- flat destinations: ≤ 1 (the arc 1.4 at .25/.5: two 8-bit roundings plus the 2D reference's own);
+- HEAD: up to 248;
+- the ramp column and the shadow row: up to 2.3 and 3. Under source-over they differ by 1.4 and 1.2 (gradient
+  dither, blur kernel), and multiply shows that difference through the source.
+
+The opaque column is as before, and the hotel's `sh` bake (a multiply on white) hashes the same. The suite checks
+the tables against the 2D formula on 48 combinations and that `cvk` writes no stencil. The old tables fail it.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -482,9 +504,9 @@ The next gain would be drawing convex fills without the stencil (one draw instea
 - **gpu3 merged (de67fb7).** Phone twin, hotel appearance: the worst cold frame is 73.6 → 65.7 ms, textures 35 → 9;
   warm JS 17.3 → 12.0 ms.
 - **The profile of a bake is in (§G).** One GPU-canvas call costs 1–3.5 µs at ×1, bit-identical.
+- **`multiply` on a transparent destination is in (§G):** two draws, Δ ≤ 1 on flat destinations (HEAD: 248).
 - **Next, in Контроль's order (25.09):**
-  0. multiply on a transparent destination (two draws, a pair on transparent, half and opaque backgrounds against
-     2D, Δ ≤ 1), then #ovl.
+  0. #ovl (below, item 1).
      Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake;
   1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
      a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;

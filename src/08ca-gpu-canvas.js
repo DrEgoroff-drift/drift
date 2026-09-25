@@ -17,11 +17,13 @@ const GC_OPS={
   "source-atop":{c:["dst-alpha","one-minus-src-alpha"],a:["zero","one"]},
   "destination-over":{c:["one-minus-dst-alpha","one"],a:["one-minus-dst-alpha","one"]},
   "screen":{c:["one","one-minus-src"],a:["one","one-minus-src-alpha"]},
-  /* как mul набора: точно на непрозрачном приёмнике, на прозрачном темнее 2D */
-  "multiply":{c:["dst","one-minus-src-alpha"],a:["one","one-minus-src-alpha"]},
+  /* multiply — два вызова (Cs·Cb + Cs(1−ab) + Cb(1−as) одним смешением не собрать): первый (mul1) даёт
+     Cs·Cb + Cb(1−as) и оставляет альфу ab, второй (вот этот) добавляет Cs(1−ab) и as(1−ab) */
+  "multiply":{c:["one-minus-dst-alpha","one"],a:["one-minus-dst-alpha","one"]},
   "destination-in":{c:["zero","src-alpha"],a:["zero","src-alpha"],u:1},
   "source-in":{c:["dst-alpha","zero"],a:["dst-alpha","zero"],u:1},
   "copy":{c:["one","zero"],a:["one","zero"],u:1}};
+const GC_OPX={mul1:{c:["dst","one-minus-src-alpha"],a:["dst-alpha","one-minus-src-alpha"]}};   /* служебные смешения */
 const GC_MISS=[];   /* что просили и чего нет — тесты и стенд читают, кадр падает */
 function gcNo(what){GC_MISS.push(what);return new Error("GPU-холст: нет «"+what+"»");}
 
@@ -337,6 +339,7 @@ const GC_ST={
   crs:{f:{compare:"always",passOp:"replace"},rm:0xFF,wm:0xFF},
   out:{f:{compare:"equal"},rm:0xFF,wm:0,c:"none"},
   cov:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"paint"},
+  cvk:{f:{compare:"not-equal"},rm:0x7F,wm:0,c:"paint"},
   img:{f:{compare:"equal"},rm:0x80,wm:0,c:"img"},
   imc:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"img"},
   msk:{f:{compare:"equal"},rm:0x80,wm:0,c:"mask"},
@@ -354,7 +357,7 @@ function gcLay(){
 }
 function gcPipe(key){
   const c=GPU.lay["gc."+key];if(c)return c;
-  const [md,op]=key.split("|"),S=GC_ST[md],L=gcLay(),G=GC_OPS[op];
+  const [md,op]=key.split("|"),S=GC_ST[md],L=gcLay(),G=GC_OPS[op]||GC_OPX[op];
   const blend=G?{color:{srcFactor:G.c[0],dstFactor:G.c[1]},alpha:{srcFactor:G.a[0],dstFactor:G.a[1]}}:undefined;
   return GPU.lay["gc."+key]=GPU.dev.createRenderPipeline({layout:L.pl,
     vertex:{module:L.mod,entryPoint:"vs",buffers:[{arrayStride:20,attributes:[{shaderLocation:0,offset:0,format:"float32x2"},
@@ -437,7 +440,9 @@ function gpuBakeRedo(B){
     if(e>V.length){const A=new Float32Array(Math.max(e,V.length*2));A.set(V.subarray(0,vn));V=GC_VA=A;}
     if(img)for(let i=0;i<v.length;i+=4){V[vn]=v[i];V[vn+1]=v[i+1];V[vn+2]=pi;V[vn+3]=v[i+2];V[vn+4]=v[i+3];vn+=5;}
     else for(let i=0;i<v.length;i+=2){V[vn]=v[i];V[vn+1]=v[i+1];V[vn+2]=pi;V[vn+3]=0;V[vn+4]=0;vn+=5;}
-    if(v.length)DL.push({md,ref,f,n:vn/5-f,img});};
+    if(!v.length)return;const n=vn/5-f;
+    if(md.endsWith("|multiply")){const m=md.slice(0,-9);DL.push({md:(m==="cov"?"cvk":m)+"|mul1",ref,f,n,img});}   /* первый не чистит трафарет */
+    DL.push({md,ref,f,n,img});};
   const box=v=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     for(let i=0;i<v.length;i+=2){x0=Math.min(x0,v[i]);x1=Math.max(x1,v[i]);y0=Math.min(y0,v[i+1]);y1=Math.max(y1,v[i+1]);}
     x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(W,x1+1);y1=Math.min(H,y1+1);return [x0,y0,x1,y0,x1,y1,x0,y0,x1,y1,x0,y1];};

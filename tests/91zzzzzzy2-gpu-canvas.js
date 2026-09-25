@@ -53,6 +53,21 @@ suite("GPU-холст: запись, цвет, дыры громко",()=>{
   else{const B=gpuBake(8,8,q=>{q.fillStyle="#fff";q.fillRect(0,0,8,8);});ok(B&&B.view&&B.w===8,"выпечка с видеокартой — текстура");gpuBakeDrop(B);}
 });
 
+/* multiply (08ca) — два вызова: mul1 и «multiply». Счёт смешения по таблицам, как его делает видеокарта
+   (премультиплицированные цвета), против формулы 2D: Cs·Cb + Cs(1−ab) + Cb(1−as), альфа as + ab − as·ab.
+   Одно смешение верно только на непрозрачном приёмнике (на прозрачном чернило до 248 из 255) */
+suite("GPU-холст: multiply на прозрачном — два вызова",()=>{
+  const fv=(f,S,D,i)=>({"zero":0,"one":1,"src":S[i],"dst":D[i],"src-alpha":S[3],"dst-alpha":D[3],"one-minus-src-alpha":1-S[3],"one-minus-dst-alpha":1-D[3],"one-minus-src":1-S[i]})[f];
+  const bl=(G,S,D)=>[0,1,2,3].map(i=>{const t=i<3?G.c:G.a;return S[i]*fv(t[0],S,D,i)+D[i]*fv(t[1],S,D,i);});
+  let mx=0,n=0;
+  for(const as of [0,.3,.8,1])for(const ab of [0,.25,.5,1])for(const [cs,cb] of [[.9,.2],[.4,.7],[1,1]]){
+    const S=[cs*as,cs*.5*as,0,as],D=[cb*ab,0,cb*.8*ab,ab],M=bl(GC_OPS.multiply,S,bl(GC_OPX.mul1,S,D));
+    const W=[0,1,2].map(i=>S[i]*D[i]+S[i]*(1-ab)+D[i]*(1-as)).concat(as+ab-as*ab);
+    for(let i=0;i<4;i++)mx=Math.max(mx,Math.abs(M[i]-W[i]));n++;}
+  ok(mx<1e-9,"mul1 затем multiply — формула 2D на "+n+" сочетаниях, ошибка "+mx);
+  eq(GC_ST.cvk.wm,0,"первый вызов трафарет не чистит (иначе второй не нарисует ничего)");
+});
+
 /* серии тени и пул целей (08ca/08cc): подряд идущие тени без пересечений — один слой, пересечение
    режет серию; повторная выпечка не создаёт ни одной текстуры; пул живёт в GPU.lay и уходит с ним
    (gpuInit после потери устройства заводит GPU.lay заново — и пул, и атлас берутся новые) */

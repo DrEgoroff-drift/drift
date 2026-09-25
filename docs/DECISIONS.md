@@ -11,6 +11,10 @@ a record (what is done: `PATCHNOTES.md` by version, `docs/done/` for the old pla
   baked into textures. No 2D fallback: without WebGPU the game names the browsers that can play.
 - **Graphics only get better.** A ported layer is judged against the old one side by side; the same look is
   the floor, the aim is better within the laws below. The world stays math in JS; only the painting moved.
+- **The GPU canvas (`GcCtx`) is for bakes, not for a frame.** One call costs 1–3.5 µs at ×1 on the desktop
+  (`fillRect` 2.4, arc fill 3.5, `drawImage` 1.0, cached `fillText` 2.9), ×4 on the phone, so a 16k-call frame
+  would take 16–56 ms. Each mode's frame moves to direct paths (`gpuLitSprite`, atlases, instances); `ctx` is never
+  swapped for a `GcCtx` for a whole frame (Контроль, 25.09).
 - **Order:** the engine first, then the plan. Recipe and layer order: `docs/DESIGN-gpu.md`.
 
 ## Cross-cutting rules
