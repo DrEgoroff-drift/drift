@@ -32,7 +32,11 @@ old picture could be seen at all; the port fixes it for real (`baseSurfY`, a wor
 
 ## Commits
 
-1. **Base on the GPU: world bakes, light and air fields** — see below.
+1. `a850203` **Base on the GPU: world bakes, light and air fields** — see §1.
+2. `eed4e3d` **Room machines split into a baked body and a live part; their own lamps become field light** — §2.
+3. `ebb283b` merge of the fleet base (kit Path2D/pattern, tools, surface, landing, places, rooms,
+   scoop, map) — clean, Node tier green, browser tier `-Only база` 58 suites green.
+4. **Bakes freed on leaving the base** — §3.
 
 ### 1. World bakes, light and air
 
@@ -79,6 +83,73 @@ Pairs (scratchpad of this session, never in git):
   textured cold rock, warm/cold rooms apart. Left: the fleet base (with the surfYs patch).
 - `scratchpad/pair-1-left.png` — the left view: gate tunnel, shaft M396 with its cage lamp.
 
+### 2. Machines: body baked, motion live; their lamps are light
+
+Every room painter (`BASE_ROOM[k]`: reactor, solar, drill, storage, habitat, refinery, pad, lab,
+battery, banya, farm; and `drawVan`) now asks which pass it is in: `bS()` — the body (vessel,
+racks, casing, shelves, the sleeper on the bunk), `bL()` — what moves (steam, needles, the auger,
+the ore on the belt, the trolley, the ladle and the pour, the lift platform, bubbles, the flywheel,
+the arc, workers). `drawModuleBody` bakes the body into the rooms layer right after the shell
+(pass 1); `drawModuleLive` draws only the motion every frame (pass 2). Pass 0 is the old
+everything-at-once, for anyone calling a brush outside the base. `bWorker` is always live,
+`bScreen` bakes its glass and lines and runs only the scan bar live.
+
+The rooms key follows what the bodies read besides the cells: the storage shelves' fill step,
+the banya's heat on a bath night, the farm's beast, the van (`baseRoomsKey`).
+
+Pass 3 is light: the painter runs with `ctx` swapped for a sink, and only `bLamp` and the static
+`bGlow` calls land — in the blue channel of the field's mask, as a light map. The light field
+adds it to the room's lamps (`roomLight(…, ex)`), so the reactor's lamp over its console, the
+habitat's desk lamp, the lab's and battery's ceiling lamps, the flasks' glow, the banya stove, the
+van's headlight now **light what is under them** (multiply) and put dust in their cones, instead
+of a flat trapezoid film baked on top. In the bakes there is no `lighter` at all (a test checks).
+
+Numbers (the only thing measurable here): 2D calls in one `drawBase` frame, same scene —
+**7 151 on the fleet base → 1 766** after this item (−75%; the rest is machines in motion,
+people, and the UI: board, note, cursor, names).
+
+Tests: `tests/91zzzw-base5-gpu.js` (Node tier) — for every painter the body pass records the
+same commands at two different `G.t` (so it is legal to bake), the live pass is smaller than the
+old whole paint, the pass is restored; every world bake painter is time-independent; the light
+map carries the machines' lamps and the rooms bake has no `lighter`; a frame with a refinery
+draws to the end (the `surfYs` regression). It caught two slips of this split on first run.
+
+Pairs:
+- `scratchpad/pair-2-base.png` — fleet base | after item 2, whole frame.
+- `scratchpad/pair-2-reactor-x3.png` — item 1 | item 2, ×3 on the reactor and solar rooms: the
+  reactor's own lamp now lights the console and the operator.
+
+### 3. Leaving the base frees its bakes
+
+`exitBase` calls `baseBakeFree()`: the six base bakes (at DPR 2 about 40 MB) are dropped instead
+of sitting in VRAM on the surface. A suite checks the cache is empty after the exit and that the
+base can be entered again.
+
+Checked here, not pairs: DPR 2 window (`scratchpad/after7-dpr2.png`; the game's DPR there is 1.5,
+bakes 1587×1206 and smaller, 0 errors) and the phone layout 390×844 @ 2.625
+(`scratchpad/after-3-phone.png`, 0 errors, the whole column of rooms lit). Browser tier:
+`pwsh ./test.ps1 -Browser -NoBuild -Only база` — 58 suites green; `-Only пересмотренные`
+(91j-art, draws the base through `T.ledger`) green. No golden frame covers the base.
+
+## For the design pass (on a real GPU)
+
+- **Lamp strength and colour.** Pools under lamps are multiplied up to ~×2.2 and ambient is .40 —
+  chosen blind on SwiftShader at 760 px. Check whether cold rooms (solar, reactor, lab: cyan
+  walls) oversaturate under the pools, and whether the ambient .40 makes the corners too dark on
+  a bright laptop screen. Knobs: `roomLight` ambient, `lampI` weights, the warm mix of the lamp
+  table in `baseWgslHead` (now 50 % toward 255,210,150).
+- **Warm into rock.** `spill` (exp falloff 26 px) multiplies the rock and adds a faint warm
+  scatter (`spill²·.10`). On a real screen the old amber halo may be missed — or the new one may
+  be too timid.
+- **Rock grain.** The planet material is sampled 1:1 in world pixels and ×3.7 for large patches;
+  at DPR 2 the 1:1 grain is half as big on screen — maybe sample at `w/DPR`-independent scale.
+- **Dust.** Motes rise 3.2 px/s, 30 % of 7-px cells, fade with a 9 s sine. Check it does not
+  read as noise on a phone, and that it is visible at all on a dim laptop.
+- **Frost and heat haze** were not seen in any pair (the test base has no heat band): look at a
+  base in frost and in heat.
+- **The left view** (gate, tunnel, shaft M396): the tunnel lamps and the shaft cage lamp are
+  analytic lights now; the gate lamp's cone lights the threshold. Seen only once at 760 px.
+
 ## New render pipelines (for the warm-up table `08b1`)
 
 - `fld.baselight|mul` — `gpuField`, the base light field (WGSL from `baseLightWgsl()`).
@@ -95,10 +166,13 @@ Pairs (scratchpad of this session, never in git):
 
 ## Open problems
 
-- The interiors (`BASE_ROOM[k]` painters in 21ab/21ab2, banya, farm, van) are still fully live
-  2D, including their static bodies (reactor casing, shelves, tanks) and their own painted
-  `bLamp` cones and `bGlow` halos on top of the new light. Next: split each painter into a baked
-  body and a live part, and move `bLamp`/`bGlow` into the light field.
+- **Life ship twins.** Astronaut (`drawAstronaut`), hands (`bWorker` is this zone's own brush)
+  and the farm's beast (`drawBeast`) are drawn live in 2D as they were; `claude/gpu-life` is not
+  in the fleet base yet. When it lands, the farm's beast and the astronaut switch to its twins.
+
+- The live `bGlow` calls (reactor core pulse, forge, pour, arc, running lights) are still
+  additive 2D radials on `#c`; they move, so they cannot be baked. They could become point
+  lights in the air field (uniform budget: 12 floats left) — not done.
 - Browser suites for the base (`91j-art` «три пересмотренные сцены рисуются», goldens) could not
   be run here: `test.ps1` finds Chrome only on Windows paths until the tools ship lands.
 - Bakes at DPR 2 on a 1920 window are ~2200×1800 textures (three world layers ≈ 40 MB); the
