@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 624 · символов верхнего уровня: 6230
+Файлов: 624 · символов верхнего уровня: 6227
 
 ## СИМВОЛЫ
 
@@ -2130,8 +2130,6 @@ GEX_WGSL                     src/16ga-gpu-trail.js:203
 gexDraw                      src/16ga-gpu-trail.js:305-314
 gexPush                      src/16ga-gpu-trail.js:269-275
 ghf                          src/17ga-gpu-planets.js:348
-GHL                          src/16ga-gpu-trail.js:324
-GHL_WGSL                     src/16ga-gpu-trail.js:325
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
@@ -2289,7 +2287,6 @@ gpuHaze                      src/08b-gpu.js:440
 gpuHud                       src/08bh-gpu-hud.js:13-16
 gpuHudDpr                    src/08bh-gpu-hud.js:11
 gpuHudFlush                  src/08bh-gpu-hud.js:19-32
-gpuHullLight                 src/16ga-gpu-trail.js:367-386
 gpuImage                     src/08c-gpu-kit.js:209-222
 gpuKitU                      src/08c-gpu-kit.js:167-171
 gpuLight                     src/08b-gpu.js:442
@@ -6936,8 +6933,8 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16g-gpu-space.js · 15 КБ
   · космос на видеокарте (G1, docs/DESIGN-gpu.md):1
 
-## src/16ga-gpu-trail.js · 26 КБ
-  · шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
+## src/16ga-gpu-trail.js · 20 КБ
+  · шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/16gaz-gpu-noise.js · 3 КБ
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1

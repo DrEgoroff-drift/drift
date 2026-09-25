@@ -566,7 +566,8 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
 - **Integration for the phone (25.09):** gpu2-fleetlit up to e699c3c and gpu3 up to 1dc9176 are merged. The
   fleet tests accept a bake (`fleetArtBaked`). M306, M317 and M318 are red in Chrome on gpu2's own code
   (2D pixel reads of a GPU bake, 2D fills of the works now on the scene pass); they are GPU-2's to fix.
-- **The planet's 2D in shards was a leftover material job (§G).** `gpuHullLight` goes next.
+- **The planet's 2D in shards was a leftover material job (§G).**
+- **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
   2. `drawImage` from bake to bake at ss2: nearest when axis-aligned and 1:1, with a pair test;
