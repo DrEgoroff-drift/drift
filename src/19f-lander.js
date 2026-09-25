@@ -23,7 +23,7 @@ function landerGearTick(L,dt){
 }
 /* профиль стойки: бедро → шток → пята, каждая садится на грунт СВОЕЙ
    координаты (та же ошибка и то же лекарство, что у друз в M79) */
-function drawLandGear(h,len,hipY,lx,dgy,gear,sq){
+function drawLandGear(h,len,hipY,lx,dgy,gear,sq,gnd){
   const foot=LAND_GY+dgy-sq*3.4;
   const knee=[lerp(lx*.55,lx*.92,gear),lerp(hipY+len*.05,(hipY+foot)*.5,gear)];
   const fx=lerp(lx*.42,lx,gear), fy=lerp(hipY+len*.08,foot,gear);
@@ -46,6 +46,7 @@ function drawLandGear(h,len,hipY,lx,dgy,gear,sq){
   ctx.fillStyle=rgba(h.dark,1);
   ctx.beginPath();ctx.ellipse(fx,fy-1.5,6.5,2.6,0,0,TAU);ctx.fill();
   ctx.fillStyle=rgba(h.body,1);ctx.fillRect(fx-2,fy-5,4,3.4);
+  if(gnd)return;                        /* тень пяты кладёт поле под кораблём (19g) */
   ctx.fillStyle="rgba(0,0,0,.28)";
   ctx.beginPath();ctx.ellipse(fx,fy+1,10,2.6,0,0,TAU);ctx.fill();
 }
@@ -66,14 +67,15 @@ function drawLander(broken,fire,opt){
   const legs=[[-half*.42,1],[-half*.10,.62],[half*.42,1]];
   /* контактная тень: без неё корабль на земле — марка, приклеенная к грунту,
      а не масса, которая на нём стоит (G8). Растёт с выпуском стоек. */
-  if(gear>.5&&opt.tr){
+  /* opt.gnd — тень и свет на грунте кладёт поле под кораблём (19g, посадка) */
+  if(gear>.5&&opt.tr&&!opt.gnd){
     ctx.save();ctx.globalAlpha=(gear-.5)*2*.85;
     groundShadow(half*.05,LAND_GY+gy(half*.05)+2,half*1.05,Math.max(3.5,len*.055));
     ctx.restore();
   }
   for(const lg of legs){
     ctx.globalAlpha=lg[1];
-    drawLandGear(h,len,bY-bodyH*.12,lg[0],gy(lg[0]),gear,sq);
+    drawLandGear(h,len,bY-bodyH*.12,lg[0],gy(lg[0]),gear,sq,opt.gnd);
   }
   ctx.globalAlpha=1;
   /* ── корпус по схеме планера ──
