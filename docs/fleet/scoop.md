@@ -50,6 +50,15 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
    edges and the star's tint. All reversed-edge `smoothstep` in the zone rewritten as
    `1-smoothstep(lo,hi,x)` — undefined in SPIR-V/Metal when edge0 ≥ edge1; SwiftShader happens
    to accept it. What still draws on `#c`: the «ПОЛОСА СБОРА» plaque and the heat gauge — text.
+4. **Polish: heat, plumes, no pops.** Below the corridor a burning hull cuts the dense gas: a
+   bow shock ahead of the nose and a heat haze, both shimmering with flowing noise, from half
+   the gauge up (`v[14].w`). Plumes read (they were ~0.3 alpha warm on teal — invisible, while
+   they are the hazard that carries you): wider body, hot core line, striations running along
+   the jet show where it carries before it does. Slot phases no longer pop: the core's noise
+   offset moves on a circle of its angle phase, the plume's phase wraps at 1000 (a multiple of
+   its puff period) instead of 1. Checked the star's other positions: dusk comes out warm and
+   side-lit, the night side dim but readable, the corridor glows at night (scratchpad
+   `dusk-night.png`).
 
 ## Pairs (scratchpad, 760×475, before | after)
 
@@ -60,6 +69,9 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
 - `pair3-things.png` (a second scene 2150 units into the pass, hazards on screen; its «before»
   is `before-scoop2.png`) — the vortex is a lit funnel with a hot rim instead of pencil
   circles, the hull takes the star's light, the whole frame reads as lit layered cloud.
+- `pair4-heat.png` (third scene: an unhit core, a plume and hail placed ahead, the ship below
+  the corridor at 90 % heat; snippet `scoopjs3.txt`) — the vortex is a lit funnel with a dark
+  eye, the plume a hot rising jet, the burning hull has a bow shock and haze.
 
 ## Requests outside the zone
 
