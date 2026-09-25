@@ -73,6 +73,38 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
   the corridor at 90 % heat; snippet `scoopjs3.txt`) — the vortex is a lit funnel with a dark
   eye, the plume a hot rising jet, the burning hull has a bow shock and haze.
 
+Also checked: the phone's portrait frame 390×844 (`phone.png`) — the fields scale with `H`,
+hazards, corridor and bow shock read; 0 GPU errors in every shot of this branch.
+
+## State of the zone
+
+Done: nothing of the scoop's world draws on `#c` any more — sky, depth, storm, shear edges,
+billows, streaks, corridor and motes, cores, plumes, hail, wake, heat, collector and the hull
+are on the GPU. `#c` keeps only text: the «ПОЛОСА СБОРА» plaque and the heat gauge (the
+hybrid rule of DESIGN-gpu §0). `giantTex`, `GIANT` and the `scoopdepth` `screenLayer` are gone.
+
+What is left in the zone: nothing to port. The look is one honest pass on SwiftShader, not a
+verdict — it waits for Контроль's design control and the real-GPU design pass.
+
+## For the design pass (real GPU, per scene)
+
+- **Start of a pass** (`scoopjs.txt`, noon): the sky's contrast — bands may be too busy/stripy
+  in the near deck (`cov` threshold .50–.74, alpha .78); the relief gain (22 far, 30 near) on a
+  real GPU at DPR 2+; whether the corridor's teal (.17 + edge glow .22) holds against bright
+  bands; grain of the noise tile at 2560 wide.
+- **Hazards ahead** (`scoopjs2.txt`): a hit core (alpha .55) may vanish into purple bands;
+  billows (lit clumps on the shear edges) may still read as pebbles; the hail's size and facet
+  contrast; the wake's length and brightness.
+- **Burning below the corridor** (`scoopjs3.txt`, heat 90 %): the bow shock's size and
+  brightness against the hull, the heat haze, the plume's readability (it carries the ship).
+- **Dusk and the night side** (`scoopjs-dusk.txt`, `scoopjs-night.txt`): how warm the
+  terminator should go (`L.w`, .85 max), how dark the night (`key` floor .30), the star's glow
+  in the upper haze; whether the hull's light direction matches the sky's.
+- **Motion** (nothing a still can show): jets' shear over a long pass (stretching after
+  a minute), storm twist breathing, lightning fade, streaks and motes speeds — watch for
+  crawl or pops.
+- **Phone** (390×844): the bands scale by `H`, so they are large in portrait.
+
 ## Requests outside the zone
 
 - `docs/mkview.ps1`: a `scoop` scene (`?s=scoop`) would let the shot tools and the stand reach
@@ -86,6 +118,14 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
 - kit pipelines already in the table: `kit.shp` (over, add), and the hull's own (`hullGpuDraw`).
 
 ## Open problems
+
+- Cost is unmeasured (SwiftShader is a CPU): three full-screen fields — `scoop.air` is the
+  heavy one (two decks, ~40 noise-tile gathers a pixel), `scoop.flow` and `scoop.obs` are
+  light. Worth one look on the S23; the cheap cut, if needed, is the near deck's curl
+  (three `fbt` calls) or the air at half resolution.
+- The browser tier (the text-contrast detector of `90b` on the «ПОЛОСА СБОРА» plaque, goldens)
+  was not run here — `test.ps1` does not run in the cloud yet (tools ship, G13). The plaque
+  itself is unchanged; its backdrop is now the lit sky and the corridor instead of 2D.
 
 - `src/16gb-gpu-nebula.js` (flight, not this zone) has reversed-edge `smoothstep(1.,.2,r)`,
   `smoothstep(1.,.4,r)` — undefined by the WGSL→SPIR-V/MSL lowering; fine on SwiftShader and,
