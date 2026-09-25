@@ -12,6 +12,12 @@ plus new files next to them and their tests. Branch `claude/gpu-kit`, from `clau
    the repeat sampler); `08ca`: pattern paint in `_paint`, a `kind 3` branch in the WGSL `paintOf`,
    the tile bound per draw (`put(…,tx)`, `bg` keyed by sampler kind), ramp rows skip patterns,
    `createPattern` dropped from the loud list. New Node suite `tests/91zzzzzzy4-gpu-pattern.js`.
+3. **GPU twins of the 18c caches** — `18c-chunks.js` gains `gpuScreenLayer`, `gpuChunkStore`/`gpuChunkAt`/
+   `gpuDrawChunks`, `gpuTileStore`/`gpuTileAt`/`gpuDrawTiles`, `gpuStoreDrop`. `screenLayer`,
+   `drawChunks`, `drawTiles` are unchanged: their callers draw the returned canvas onto the live 2D `ctx`
+   (`ctx.drawImage(screenLayer(…))` in 19c-light, 19d-weather, 19a-scoop; 29g returns it), and a bake
+   there would break them — so the brief's «screenLayer → gpuBaked only if every caller keeps working»
+   is met by a twin, not a swap. Suite `tests/91zzzzzzy5-gpu-chunks.js` (Node + a browser-tier suite).
 
 ## API for mode ships
 
@@ -52,6 +58,30 @@ Nothing to change in callers either.
   a gradient nor a pattern. **Not yet:** `globalCompositeOperation="overlay"` — `fillMaterial`'s second
   pass uses it, so the material still cannot bake as a whole (see Open problems).
 
+### Chunks, tiles and screen layers on the GPU (commit 3)
+
+Same paint contract as the 2D versions — `paint(g,wx0,wy0)` draws into the global `ctx` (a GcCtx during
+the bake) with `W`,`H` set to the piece's size, at density `DPR·SCK` like `mkCanvas`; so a mode switches
+by renaming, and the painter must only use what GcCtx supports (Path2D and patterns now do; `overlay`
+and `getImageData` do not):
+
+```js
+S.farA=gpuTileStore(S.farA,key);            // was tileStore
+gpuDrawTiles(gpuScene(),S.farA,cx,cy,paint);// was drawTiles(S.farA,cx,cy,paint)
+T.chunks=gpuChunkStore(T.chunks,key,top,ch);gpuDrawChunks(pass,T.chunks,camx,camy,paint);
+gpuImage(pass,gpuScreenLayer(key,paint),[{x:W/2,y:H/2,w:W,h:H}]);   // was ctx.drawImage(screenLayer(…),0,0,W,H)
+```
+
+- Placement reads the current `ctx` matrix (scale and translate — `withScale`, camera shake), as
+  `drawImage` would; rotation is not supported. The pass is whatever the order rule needs
+  (`gpuScene()` for back layers, `gpuOver()` above 2D).
+- Evicted pieces and replaced stores give their textures back (`gpuBakeDrop`). A bake survives a lost
+  device (gpuImage re-bakes it with the same draw, which sets `W`,`H` and the matrix itself).
+- `gpuDrawTiles` has no «occupied rows» span (`tileSpan` reads pixels back; on the GPU an empty tile is
+  one transparent quad, cheaper than a readback).
+- Mind the order rule: in `gpuScene` the tiles sit under **all** 2D of the frame — anything 2D drawn
+  earlier in the mode (e.g. `drawSkyLayer`'s bodies) will now be above them.
+
 ## Proofs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0/scratchpad/`
@@ -72,6 +102,12 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0
 - `pattern-before.png` — fleet base: throws (`clip(Path2D)` first; `createPattern` would be next).
 - `pattern-after.png` — this branch: the same picture as Skia; mean difference 4.6/255, 868 of 64 000 px
   over 48 — the 1-px grain dots, sampled linearly under the bake's 2× supersampling; 0 GPU errors.
+
+- `tiles-before.png` / `tiles-after.png` — whole frame, `surface` scene, 760×475: fleet base vs a
+  scratch build (`route.py do`, never committed) where `21e1`'s far ridges go through
+  `gpuTileStore`/`gpuDrawTiles(gpuScene(),…)`. The ridges (drawGround: paths, gradients) bake through GcCtx
+  and land in the GPU pass; the frame is the same picture (6 tile bakes for farA, `GC_MISS` empty,
+  0 GPU errors, no СБОЙ). Parity, not «better» — the gain belongs to the surface ship.
 
 ## Requests for files outside the zone
 
