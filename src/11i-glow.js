@@ -51,7 +51,7 @@ const GLOW_LAMP=[150/255,235/255,225/255];   /* PEEP_LIT (20c) — объявл�
 function glowDrawPad(S,camx,camy){
   if(!glowDepthHere())return;
   const nite=(typeof surfNight==="function")?surfNight(S.p):0;
-  const a=clamp((nite-.1)*1.6,0,1);
+  const a=clamp((nite-.08)*2.4,0,1);
   for(let i=-3;i<=3;i++){
     if(!i)continue;                                   /* под кораблём лампу не ставят */
     const wx=S.shipX+i*34, x=wx-camx;
@@ -62,7 +62,7 @@ function glowDrawPad(S,camx,camy){
     ctx.fillStyle=a>0?rgba(PEEP_LIT,.55+.4*a):"rgba(96,132,110,.7)";
     ctx.fillRect(x-1.6,y-13,3.2,3.8);
     ctx.fillStyle="rgba(230,240,236,.35)";ctx.fillRect(x-2.4,y-14.6,4.8,.8);  /* крышка */
-    if(a>0)placeLamp(x,y-11.5,70,GLOW_LAMP,.55*a,10);
+    if(a>0)placeLamp(x,y-11.5,120,GLOW_LAMP,Math.min(1,.4+a),12);
   }
 }
 /* светящийся мох — товар: скан растения в уезде кладёт в трюм ксенобиом */
