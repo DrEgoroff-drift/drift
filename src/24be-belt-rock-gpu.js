@@ -78,11 +78,13 @@ fn fbmF(p:vec3f,fw:f32)->f32{var v=0.;var a=.5;var f=1.;
   let lam=max(ndl,0.);
   let dif=mix(lam,1.15*lam/(lam+ndv+.08),.35);
   let sc=ru.sc.rgb;
-  var col=alb*(sc*1.55*dif*mix(1.,ao,.45)+ru.n0.rgb*.14*ao+ru.n1.rgb*.10*max(-ndl,0.)*ao);
+  var col=alb*(sc*1.55*dif*mix(1.,ao,.45)+ru.n0.rgb*.2*ao+ru.n1.rgb*.12*max(-ndl,0.)*ao);
   col+=sc*lam*lam*(.07+vein*.06);
   let Hv=normalize(L+V);
   col+=sc*lam*(pow(max(dot(Nb,Hv),0.),44.)*1.3*vein+pow(max(dot(Nb,Hv),0.),9.)*.035);
   col+=vec3f(.17,.185,.215)*pow(1.-ndv,3.)*(.3+.7*lam)*ao;
+  /* светило за камнем: пыль на кромке горит в его свете (рассеяние вперёд) — силуэт на пелене */
+  col+=sc*pow(1.-ndv,4.)*pow(max(dot(-V,L),0.),6.)*.9;
   let zc=dot(i.wp,ru.f.xyz);let fog=clamp(1.-zc/ru.s.w,.1,1.);
   col=col*fog+ru.n0.rgb*.05*(1.-fog);
   col=mix(col,col*.82+vec3f(26.,52.,50.)/255.,i.or.w);
@@ -130,12 +132,12 @@ function brockPipe(k,ms){
   return BROCK_P[key]=gpuPipeline(key,()=>{const d=brockDesc(code,k==="rock",ms);if(k==="dust")d.primitive={topology:"triangle-list"};return d;},code);
 }
 /* сглаживание краёв камня: 4× MSAA в свой слой и склейка в сцену одним полем — пока
-   кадр не больше BROCK_MS_PX (ПК, 760-е пары); на телефоне с DPR 2.6 ступенька мельче
+   кадр не больше BROCK_MS_PX при DPR < 1.5 (ПК, 760-е пары); на телефоне с DPR 2.6 ступенька мельче
    точки, а четыре выборки 16-битного цвета стоили бы десятки мегабайт — там камни идут
    прямо в gpuScene3D */
-const BROCK_MS_PX=2.4e6;
+const BROCK_MS_PX=2.1e6;
 const BROCK_LAY_WGSL=`fn field(p:vec2f,uv:vec2f)->vec4f{return textureSampleLevel(t0,smp,uv,0.);}`;
-function brockMs(){return GPU.bw*GPU.bh<=BROCK_MS_PX?4:1;}
+function brockMs(){return DPR<1.5&&GPU.bw*GPU.bh<=BROCK_MS_PX?4:1;}
 function brockTex(){
   const B=BROCK,w=GPU.bw,h=GPU.bh;
   if(B.tw===w&&B.th===h&&B.tdev===GPU.dev&&B.ms)return;
