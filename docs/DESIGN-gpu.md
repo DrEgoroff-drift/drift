@@ -1341,3 +1341,19 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   the kernel goes to the worker. New suite `91zzzzzzy3-gate2d` («0 вызовов 2D»): counts every 2D method and
   setter whose stack holds a scene's painter, from the first frame (bakes included), named holes only
   (`fleetArtOf`, `fleetShipAt`); mutants `lane-ship-2d`, `lane-glow-2d` die on it.
+- **Planet strip → a generation shader (`17gb-gpu-planet-strip`).** The strip (07: longitude across, sine
+  of latitude down; `fbm2` height, palette ramp, polar caps, life tint from `planetWetAt`, gas bands, the
+  right-edge crossfade) was baked on the CPU row by row under a frame budget (`planetStripTick`, `STRIP_*`),
+  put into a 2D canvas and uploaded; cities read it back through a 256×128 `getImageData` mask. Now
+  `gpsBake` draws the requested level in one pass (same formula, `hashi` on u32 in WGSL, its own submit),
+  `planetStrip` returns `{tex,view,w,h,lvl}`; the level only rises, a lost device re-bakes. The CPU formula
+  stays once, `planetStripPx`: cities get land lazily per cell (`gplLandAt`: bilinear to the grid, byte
+  rounding, the palette projection as before) — tens of cells instead of 32 768, no 2D, no readback.
+  Probe on 9 planets × 3 levels: shader = formula within 1 LSB (0 bytes off by more than 2); land cells
+  equal to the old canvas path at level 1, 0.1–0.7 % differ at levels 0/2 along coasts (Skia's 8-bit
+  bilinear). Pairs vs 10f8681: planet disk max|Δ| 1–2 at 760, ×1.5 phone, far zoom (Z .42) and gas; ×4
+  crops of limb, terminator side and coasts equal in luminance and edge energy; the only >24 pixels are the
+  DOM button pulse. 2D census «планеты» 0 calls (was the strip's putImageData + the mask's getImageData).
+  Gate `91zzzzzzy3-gate2d` gains the planet scene (strip dropped first, so the bake runs under the hook;
+  buildings give city lights); mutants `planet-land-2d`, `planet-strip-2d` die. The memory suite now
+  counts strip textures (on planets, not in `GPU.cvTex`); `bakeIdle` and the bake suite lose `STRIP_*`.

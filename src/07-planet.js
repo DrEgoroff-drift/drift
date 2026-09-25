@@ -61,135 +61,21 @@ function planetSpinFrame(p){
    синус: так строка развёртки совпадает со строкой экрана и растягивать по
    вертикали ничего не нужно). Света здесь нет: он не вращается.
 
-   Считается она НЕ ЦЕЛИКОМ ЗА РАЗ. Причина простая и неустранимая: `fbm2`
-   стоит около двух микросекунд, у обитаемой планеты к нему добавляется
-   влажность, а подробная развёртка — это сотня тысяч точек. Разом это кадр,
-   застывший на четверть секунды. Раньше беды не было только потому, что
-   текстура была крошечной — 72–144 пикселя на весь диск, отчего планета вблизи
-   и выглядела мылом с рваным краем.
-
-   Поэтому уровней три, и выпечка прерывается ПО ПИКСЕЛЯМ, а не по строкам:
-   одна строка подробной развёртки сама по себе дороже всего кадрового бюджета,
-   так что резать надо мельче. Пока не готов ни один уровень, планета рисуется
-   гладким шаром своего цвета — со светом и ободком, то есть уже телом, а не
-   дыркой; детали проступают за доли секунды. Дальше уровень поднимается по
-   мере приближения, и старая развёртка работает, пока не готова новая. */
+   Уровней три, по экранному радиусу, и уровень только повышается. На процессоре
+   развёртка стоила сотню тысяч вызовов fbm2 и пеклась по кадрам с бюджетом; с 25.09
+   её рисует шейдер (17gb, gpsBake) — сразу нужного уровня, за один проход, без 2D-холста.
+   Формула точки — planetStripPx (17gb): по ней же суша городов и проба шейдера. */
 const PLANET_RES=[64,128,256];
-const STRIP_MS=2.5;          // сколько миллисекунд кадра отдаём фоновой выпечке
-const STRIP_CHUNK=192;       // через сколько точек сверяться с часами
-/* Одна очередь на всех: две планеты, допекающиеся одновременно, съедят вдвое
-   больше кадра, а увидит игрок всё равно только ту, к которой летит. */
-let STRIP_JOB=null;
-/* планеты, которым нужна развёртка получше */
-let STRIP_PEND=[];
-function planetStripStart(p,lvl){
-  const R=PLANET_RES[lvl],SW=R*2,SH=R;
-  const cn=document.createElement("canvas");cn.width=SW;cn.height=SH;
-  const cx=cn.getContext("2d");
-  const pal=p.T.pal,gas=p.type==="gas";
-  const life=!gas&&planetHasLife(p);
-  const bi=life?planetBiome(p):null, hb=bi?bi.hueBias:0;
-  return {p,lvl,cn,cx,img:cx.createImageData(SW,SH),SW,SH,x:0,y:-1,
-    pal,gas,life,np:pal.length-1,sd:p.seed,rough:p.rough,
-    lf0:40+hb*90, lf1:96+hb*70, lf2:46+hb*60,
-    lat:0,polar:0,gasLat:0,gasY1:0,gasY2:0,rockY:0};
-}
-/* строка меняет только то, что зависит от широты */
-function planetStripSeekRow(J,y){
-  const sv=(y+.5)/J.SH*2-1, lat=Math.asin(clamp(sv,-1,1));
-  J.y=y;J.x=0;J.lat=lat;
-  J.polar=Math.pow(Math.abs(lat)/1.5708,3.2)*.55;   // шапки: от широты, не от долготы
-  J.gasLat=lat*9;J.gasY1=lat*7+3;J.gasY2=lat*3;J.rockY=lat*2.4+11;
-}
-/* кусок строки: от J.x и не дальше конца — возвращает, сколько точек посчитал */
-function planetStripChunk(J,n){
-  const d=J.img.data,SW=J.SW,p=J.p,pal=J.pal,np=J.np,gas=J.gas,life=J.life;
-  const sd=J.sd,rough=J.rough,lat=J.lat,polar=J.polar;
-  const BLEND=.14;
-  const end=Math.min(SW,J.x+n);
-  for(let x=J.x;x<end;x++){
-    const f=(x+.5)/SW, o=(J.y*SW+x)*4;
-    /* Шум по долготе не периодичен, поэтому левый и правый край развёртки не
-       сходятся — на шаре это читается вертикальным швом посреди диска. Лечим
-       перекрёстным затуханием: у правого края считаем точку второй раз, взяв
-       поле оборотом раньше, и к самому краю остаётся только оно. */
-    const blend=f>1-BLEND, w=blend?(f-(1-BLEND))/BLEND:0, s=blend?w*w*(3-2*w):0;
-    let cr=0,cg=0,cb=0;
-    for(let pass=0;pass<(blend?2:1);pass++){
-      const lon=(f-pass)*TAU;
-      let v;
-      if(gas){
-        v=fbm2(lon*.7+9,J.gasY1,sd,4);
-        v=clamp(v*.6+.5*(.5+.5*Math.sin(J.gasLat+fbm2(lon*1.6,J.gasY2,sd+5,3)*4)),0,1);
-      }else{
-        v=fbm2(lon*2.4+11,J.rockY,sd,5);
-        v=clamp((v-.5)*(1+rough*.9)+.5,0,1);
-        v=clamp(v+polar,0,1);
-      }
-      const t=clamp(v,0,.9999)*np,i=t|0,ft=t-i;
-      const a=pal[i],b=pal[i<np?i+1:np];
-      let r=a[0]+(b[0]-a[0])*ft, g=a[1]+(b[1]-a[1])*ft, bl=a[2]+(b[2]-a[2])*ft;
-      /* ── биом виден с орбиты ──
-         Планета с жизнью красилась ровно так же, как мёртвая: тот же градиент
-         палитры по высоте. Зелень существовала только под ногами, и глобус о
-         ней не знал. Теперь там, где влажно и не слишком высоко, поверхность
-         уходит в цвет местной листвы, а на гребнях и в сухих поясах остаётся
-         камень. Это то самое пятно, в которое игрок целится при заходе. */
-      if(life){
-        const wet=planetWetAt(p,lon,lat);
-        const lush=clamp((wet-.42)*2.4,0,1)*clamp(1-(v-.55)*2.6,0,1);
-        if(lush>.01){
-          const k=lush*.72;
-          r+=(J.lf0-r)*k; g+=(J.lf1-g)*k; bl+=(J.lf2-bl)*k;
-        }
-      }
-      if(pass===0){cr=r;cg=g;cb=bl;}
-      else{cr+=(r-cr)*s;cg+=(g-cg)*s;cb+=(bl-cb)*s;}
-    }
-    d[o]=cr;d[o+1]=cg;d[o+2]=cb;d[o+3]=255;
-  }
-  const did=end-J.x;J.x=end;
-  return did;
-}
-/* допекаем по кадрам — зовётся из planetDraw, ест не больше STRIP_MS.
-   Очередь честная и с приоритетом «кто отстал сильнее»: сначала ВСЕ планеты
-   получают грубую развёртку, и только потом кто-то — подробную. Без этого
-   правила первая же планета в списке забирала пекарню себе и дорезалась до
-   максимума, пока остальные три висели гладкими шарами. Уровень растёт по
-   одному за раз — планета на глазах делается резче, а не прыгает через ступень. */
-function planetStripTick(){
-  if(!STRIP_JOB){
-    let best=null;
-    for(const q of STRIP_PEND)
-      if(q.stripLvl<(q.stripWant|0)&&(!best||q.stripLvl<best.stripLvl))best=q;
-    if(STRIP_PEND.length)STRIP_PEND=STRIP_PEND.filter(q=>q.stripLvl<(q.stripWant|0));
-    if(!best)return;
-    STRIP_JOB=planetStripStart(best,Math.min(best.stripWant|0,best.stripLvl+1));
-  }
-  const J=STRIP_JOB;
-  const t0=wallMs();
-  for(;;){
-    if(J.y<0||J.x>=J.SW){
-      if(J.y+1>=J.SH)break;
-      planetStripSeekRow(J,J.y+1);
-    }
-    planetStripChunk(J,STRIP_CHUNK);
-    if(wallMs()-t0>STRIP_MS)return;
-  }
-  J.cx.putImageData(J.img,0,0);
-  J.p.strip=J.cn;J.p.stripLvl=J.lvl;
-  STRIP_JOB=null;
-}
-/* Возвращает лучшее из готового — или null, если пока нет ничего: планета в
-   этом случае рисуется гладким шаром, а не пропадает. Заказ на уровень
-   получше просто встаёт в очередь и кадру ничего не стоит. */
+/* Возвращает развёртку {tex,view,w,h,lvl} — или null без видеокарты (тогда планета —
+   гладкий шар своего цвета, как и раньше до готовности развёртки). Устройство
+   потеряно и поднято — печём заново */
 function planetStrip(p,lvl){
+  let S=p.strip;
+  if(S&&S.dev!==GPU.dev){p.strip=S=null;p.stripLvl=-1;}
   if(p.stripLvl==null)p.stripLvl=-1;
-  if(p.stripLvl<lvl){
-    if((p.stripWant|0)<lvl)p.stripWant=lvl;
-    if(STRIP_PEND.indexOf(p)<0)STRIP_PEND.push(p);
-  }
-  return p.strip||null;
+  if(p.stripLvl<lvl){const N=gpsBake(p,lvl);
+    if(N){if(S)planetStripDrop(p);p.strip=S=N;p.stripLvl=lvl;}}
+  return S||null;
 }
 /* угол, под которым свет запечён в накладку (см. planetLight) */
 const PLANET_BAKE_ANG=Math.atan2(-.42,-.52);

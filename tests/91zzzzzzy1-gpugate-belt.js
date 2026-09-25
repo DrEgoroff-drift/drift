@@ -91,7 +91,7 @@ function borcRecorder(){
   const L=BORC.log,S={font:"10px sans-serif"},stack=[];let gn=0;
   const M=BORC.meas||(BORC.meas=document.createElement("canvas").getContext("2d"));
   const P=CanvasRenderingContext2D.prototype;
-  const kind=k=>{const d=typeof k==="string"&&Object.getOwnPropertyDescriptor(P,k);return !d?"x":("value" in d)?(typeof d.value==="function"?"m":"p"):"p";};
+  const kind=k=>{const d=typeof k==="string"&&Object.getOwnPropertyDescriptor(P,k);return !d?"x":("value" in d)?(d.value instanceof Function?"m":"p"):"p";};
   const q=(v,f)=>typeof v==="number"?Math.round(v*f):typeof v==="string"?v:v&&typeof v==="object"?"#"+(v.__g||borcId(v)):String(v);
   const put=s=>{if(!BORC.mute)L.push(s);};
   return new Proxy({},{

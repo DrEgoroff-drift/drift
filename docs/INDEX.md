@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 617 · символов верхнего уровня: 6155
+Файлов: 618 · символов верхнего уровня: 6156
 
 ## СИМВОЛЫ
 
@@ -172,7 +172,7 @@ avrWin                       src/21a6-base-avral.js:103-111
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32-41
-bakeIdle                     tests/90-harness.js:387-392
+bakeIdle                     tests/90-harness.js:387-390
 bakeKeep                     src/08c-gpu-kit.js:71-74
 bankTransform                src/03b-hull-paint.js:59-66
 BANYA_EVERY                  src/21ac1-base-banya.js:19
@@ -986,7 +986,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120-124
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:535-538
+coopStamp                    tests/90-harness.js:533-536
 coopVisitReset               src/12aj-coop.js:62
 CORONA_IN                    src/17-mode-system.js:26
 COSM_CHIME                   src/12va-wander-cosm.js:59-62
@@ -2018,7 +2018,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:10-23
+GATE2D                       tests/91zzzzzzy3-gate2d.js:10-40
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:9
 gateFind                     tests/91zzzzzzy-gpugate.js:242-290
 gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-290
@@ -2094,14 +2094,14 @@ gestPostNo                   src/17h-sys-gesture.js:51
 gestPostSprite               src/17h-sys-gesture.js:175-191
 gestShipFrame                src/17h-sys-gesture.js:81-85
 gestTick                     src/17h-sys-gesture.js:52-79
-getSystem                    src/06-galaxy.js:99-193
+getSystem                    src/06-galaxy.js:95-189
 GEW                          src/17-mode-system.js:48
 GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:202
 GEX_WGSL                     src/16ga-gpu-trail.js:203
 gexDraw                      src/16ga-gpu-trail.js:305-314
 gexPush                      src/16ga-gpu-trail.js:269-275
-ghf                          src/17ga-gpu-planets.js:349
+ghf                          src/17ga-gpu-planets.js:348
 GHL                          src/16ga-gpu-trail.js:324
 GHL_WGSL                     src/16ga-gpu-trail.js:325
 GIANT                        src/19a-mode-scoop.js:192
@@ -2203,15 +2203,21 @@ gotoSector                   src/11a-quests.js:68-88
 gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
 GPL                          src/17ga-gpu-planets.js:24
-GPL_CITY_D                   src/17ga-gpu-planets.js:346
+GPL_CITY_D                   src/17ga-gpu-planets.js:345
 GPL_CLOUD                    src/17ga-gpu-planets.js:28
-GPL_LAND                     src/17ga-gpu-planets.js:347
+GPL_LAND                     src/17ga-gpu-planets.js:346
 GPL_SEA                      src/17ga-gpu-planets.js:26
 GPL_WGSL                     src/17ga-gpu-planets.js:30
 gplBody                      src/17ga-gpu-planets.js:289-312
-gplCities                    src/17ga-gpu-planets.js:369-398
-gplLandMask                  src/17ga-gpu-planets.js:352-368
+gplCities                    src/17ga-gpu-planets.js:375-404
+gplLandAt                    src/17ga-gpu-planets.js:359-374
+gplLandMask                  src/17ga-gpu-planets.js:354-358
 gplSun                       src/17ga-gpu-planets.js:314-317
+GPS                          src/17gb-gpu-planet-strip.js:97
+GPS_BLEND                    src/17gb-gpu-planet-strip.js:10
+GPS_WGSL                     src/17gb-gpu-planet-strip.js:47
+gpsBake                      src/17gb-gpu-planet-strip.js:106-122
+gpsPipe                      src/17gb-gpu-planet-strip.js:98-104
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-27
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:63
@@ -2262,7 +2268,7 @@ gpuManual                    src/08b-gpu.js:576-581
 gpuMipDrop                   src/08c-gpu-kit.js:105
 gpuMipSmp                    src/08c-gpu-kit.js:106
 gpuMipTex                    src/08c-gpu-kit.js:92-104
-gpuMoon                      src/17ga-gpu-planets.js:400-405
+gpuMoon                      src/17ga-gpu-planets.js:406-411
 gpuNebulaComp                src/16gb-gpu-nebula.js:617-627
 gpuNebulaGen                 src/16gb-gpu-nebula.js:562-614
 gpuNoise                     src/08b-gpu.js:374-379
@@ -2273,7 +2279,7 @@ gpuPipe                      src/08c-gpu-kit.js:20-27
 gpuPipes                     src/08b-gpu.js:345-371
 gpuPirateBody                src/12i-pirate-hull.js:432-437
 gpuPirateLive                src/12i-pirate-hull.js:444-488
-gpuPlanet                    src/17ga-gpu-planets.js:320-338
+gpuPlanet                    src/17ga-gpu-planets.js:320-337
 gpuPresent                   src/08b-gpu.js:614-628
 gpuQuad                      src/08c-gpu-kit.js:277-281
 gpuResize                    src/08b-gpu.js:380-415
@@ -2381,7 +2387,7 @@ gspSeed                      src/16g-gpu-space.js:198
 gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
-gss                          src/17ga-gpu-planets.js:348
+gss                          src/17ga-gpu-planets.js:347
 GST_WGSL                     src/17c-system-draw.js:436
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
@@ -2992,7 +2998,7 @@ keepersJumpK                 src/11k-keepers.js:75
 keepersRhymeHere             src/11k-keepers.js:58-63
 keepersSign                  src/11k-keepers.js:114-120
 keepScroll                   src/27i-ui-table.js:39-53
-keplerPos                    src/06-galaxy.js:85-91
+keplerPos                    src/06-galaxy.js:81-87
 KEY_ALL                      tests/91zzzzze-keys.js:33
 KEY_MODES                    tests/91zzzzze-keys.js:20
 keyLabel                     src/15-input.js:147-158
@@ -3409,9 +3415,9 @@ mayakRec                     src/12pa-beacon.js:38-42
 mayakSector                  src/12pa-beacon.js:60-63
 mayakSold                    src/12pa-beacon.js:49-52
 mayakTick                    src/12pa-beacon.js:125-140
-memGpu                       tests/91zzzzy-mem.js:38-55
-memPixels                    tests/91zzzzy-mem.js:15-33
-memTour                      tests/91zzzzy-mem.js:58-74
+memGpu                       tests/91zzzzy-mem.js:40-59
+memPixels                    tests/91zzzzy-mem.js:15-35
+memTour                      tests/91zzzzy-mem.js:62-78
 mercFee                      src/12a-crew.js:218
 mergeKeyMap                  src/15-input.js:126-135
 MGR_CAP                      src/12c-mgr-core.js:8
@@ -3623,7 +3629,7 @@ needWin                      src/12aa-need.js:24
 NEON                         src/17k0-neon.js:8
 neonBake                     src/17k0-neon.js:9-32
 neonDraw                     src/17k0-neon.js:35-40
-NET_FROM                     tests/90-harness.js:428
+NET_FROM                     tests/90-harness.js:426
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
 NEWS_ALL_INC                 tests/91zzzw-news.js:17
@@ -4018,7 +4024,7 @@ physShip                     tests/91zzzzy-phys.js:19-26
 pick                         src/01-core.js:31
 pickKindByBias               src/20-life.js:180-184
 pickShare                    src/20e-species.js:125-130
-pickStType                   src/06-galaxy.js:76-82
+pickStType                   src/06-galaxy.js:72-78
 PICKUPS                      src/24a-mode-raid.js:24-28
 pinch0                       src/15-input.js:396
 PIR_ART                      src/12i-pirate-hull.js:18
@@ -4070,12 +4076,12 @@ planDeliver                  src/11r-plan.js:67-85
 planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
-PLANET_BAKE_ANG              src/07-planet.js:195
+PLANET_BAKE_ANG              src/07-planet.js:81
 PLANET_BARGE                 src/12n-planet.js:17
 PLANET_CAP                   src/12n-planet.js:16
 PLANET_FULL                  src/12n-planet.js:14
 PLANET_RATE                  src/12n-planet.js:15
-PLANET_RES                   src/07-planet.js:77
+PLANET_RES                   src/07-planet.js:68
 PLANET_SPIN                  src/07-planet.js:32
 planetBargeLoad              src/12n-planet.js:108-121
 planetBargeRow               src/12n-planet.js:145-151
@@ -4101,12 +4107,11 @@ planetSpinFrame              src/07-planet.js:56-58
 planetStockOf                src/12n-planet.js:55
 planetStockSum               src/12n-planet.js:56-60
 planetStop                   src/12n-planet.js:92-103
-planetStrip                  src/07-planet.js:186-193
-planetStripChunk             src/07-planet.js:105-153
-planetStripSeekRow           src/07-planet.js:98-103
-planetStripStart             src/07-planet.js:85-96
-planetStripTick              src/07-planet.js:160-182
-planetSunRot                 src/07-planet.js:199-203
+planetStrip                  src/07-planet.js:72-79
+planetStripDrop              src/17gb-gpu-planet-strip.js:123-126
+planetStripParams            src/17gb-gpu-planet-strip.js:12-17
+planetStripPx                src/17gb-gpu-planet-strip.js:19-45
+planetSunRot                 src/07-planet.js:85-89
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
@@ -4946,7 +4951,7 @@ rungPoints                   src/12ad-site.js:45-68
 rungRingSegs                 src/12ae-ladder.js:56
 rungRoman                    src/12ae-ladder.js:47
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:445-529
+runTests                     tests/90-harness.js:443-527
 RUSH_SHIFTS                  src/18j-rail-rush.js:6
 rushAt                       src/18j-rail-rush.js:7
 rushFuelMul                  src/18j-rail-rush.js:12
@@ -5087,7 +5092,7 @@ sellQuote                    src/12ab-hold.js:101-110
 setPair                      src/27z-telemetry.js:108-113
 setPct                       src/27z-telemetry.js:102-107
 setSt                        src/27z-telemetry.js:94
-settle                       tests/90-harness.js:393-404
+settle                       tests/90-harness.js:391-402
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -5341,7 +5346,7 @@ ST_MOD_FILL                  src/17a-station-mod.js:81
 ST_MODULES                   src/17a-station-mod.js:14-29
 ST_REC                       src/17c3-station-live.js:12
 ST_SPIN                      src/17c3-station-live.js:54
-ST_TYPES                     src/06-galaxy.js:54-72
+ST_TYPES                     src/06-galaxy.js:50-68
 stackSmoke                   src/17c-system-draw.js:378-391
 stallWho                     src/28-loop.js:122-130
 STAMP_ORDER                  src/17i-stamp.js:11
@@ -5413,7 +5418,7 @@ stDel                        src/14-save.js:26
 stEmFlush                    src/17c3-station-live.js:82-87
 stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
-steps                        tests/90-harness.js:406
+steps                        tests/90-harness.js:404
 stepWorld                    src/28-loop.js:378-398
 stGet                        src/14-save.js:8
 stGround                     src/17c-system-draw.js:108
@@ -5474,10 +5479,6 @@ stPlatePath                  src/17c-system-draw.js:159-166
 STRATA_K                     src/18a1-glaze.js:119
 stRing                       src/17c-system-draw.js:133-140
 stRingBody                   src/17c-system-draw.js:141-155
-STRIP_CHUNK                  src/07-planet.js:79
-STRIP_JOB                    src/07-planet.js:82
-STRIP_MS                     src/07-planet.js:78
-STRIP_PEND                   src/07-planet.js:84
 STRIPS_MAX                   src/11b-speech.js:191
 stripsAll                    src/11b-speech.js:192
 stripSell                    src/11b-speech.js:231-242
@@ -5494,7 +5495,7 @@ stTabMarket                  src/26e-ui-station-trade.js:148-249
 stTabMods                    src/26b-ui-station-work.js:105-372
 stTabsHere                   src/26-ui-station.js:141
 stTabYard                    src/26e-ui-station-trade.js:250-395
-stTypeOf                     src/06-galaxy.js:73
+stTypeOf                     src/06-galaxy.js:69
 STUN_TIME                    src/13a-guns.js:27
 SUB_FEATS                    src/05b3-sub.js:11
 SUB_UP                       src/05b3-sub.js:10
@@ -5515,7 +5516,7 @@ SUITE_SEQ                    tests/90-harness.js:77
 SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
-suiteOrder                   tests/90-harness.js:413-420
+suiteOrder                   tests/90-harness.js:411-418
 suiteWin                     tests/90-harness.js:94-99
 suitFailure                  src/23-mode-dig.js:135-143
 suitHit                      src/23-mode-dig.js:128-134
@@ -5546,7 +5547,7 @@ SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14-20
 SYS_HOME_KEY                 src/06-galaxy.js:22
-SYS_K_ORBIT                  src/06-galaxy.js:98
+SYS_K_ORBIT                  src/06-galaxy.js:94
 SYS_LRU                      src/06-galaxy.js:21
 sysDanger                    src/01-core.js:190
 sysEdge                      src/17-mode-system.js:34-40
@@ -5558,8 +5559,8 @@ sysMakes                     src/12ad-site.js:134-140
 sysNebComp                   src/16a-space.js:209-234
 sysNebulaTex                 src/16a-space.js:53-101
 sysPirateBase                src/24a-mode-raid.js:98-102
-sysRasterDrop                src/06-galaxy.js:23-35
-sysRasterTick                src/06-galaxy.js:37-49
+sysRasterDrop                src/06-galaxy.js:23-31
+sysRasterTick                src/06-galaxy.js:33-45
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
 T                            tests/90a-tools.js:54-612
@@ -5637,11 +5638,11 @@ TEST_SEED                    tests/90-harness.js:212
 TEST_SHARD                   tests/90-harness.js:30
 TEST_SHUFFLE                 tests/90-harness.js:70
 TEST_SKIP                    tests/90-harness.js:64
-TEST_SUITES                  tests/90-harness.js:530
+TEST_SUITES                  tests/90-harness.js:528
 TEST_T0                      tests/90-harness.js:214
 TEST_TIMES                   tests/99-run.js:18
-testNetHits                  tests/90-harness.js:434-444
-testSource                   tests/90-harness.js:429-433
+testNetHits                  tests/90-harness.js:432-442
+testSource                   tests/90-harness.js:427-431
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:358-375
@@ -6254,7 +6255,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05e-plan.js · 15 КБ
   · чертёж корабля: клетки из корпуса и упаковщик (M476, DESIGN-shipyard §3, review §2.2):1
 
-## src/06-galaxy.js · 14 КБ
+## src/06-galaxy.js · 13 КБ
   · галактика:1
   · испечённое живёт не дольше, чем нужно (M332):4
 
@@ -6276,7 +6277,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/06f-far-props.js · 3 КБ
   · свойства дальних товаров: одно на товар (M468, DESIGN-resources §2, law 4):1
 
-## src/07-planet.js · 14 КБ
+## src/07-planet.js · 7 КБ
   · текстуры планет:1
   · вращение:8
 
@@ -6896,8 +6897,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17g-sys-lane.js · 14 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
-## src/17ga-gpu-planets.js · 26 КБ
+## src/17ga-gpu-planets.js · 27 КБ
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
+
+## src/17gb-gpu-planet-strip.js · 7 КБ
+  · развёртка планеты — шейдером на видеокарте (GPU-3, DESIGN-gpu §G, 25.09):1
 
 ## src/17h-sys-gesture.js · 14 КБ
   · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1
@@ -7405,7 +7409,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27z-telemetry.js · 40 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 65 КБ
+## src/28-loop.js · 64 КБ
   · авария:1
   · звук по кадрам:48
   · цикл:106
@@ -7992,7 +7996,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzn-deco-biomes.js · 4 КБ
   · автотесты: большая вещь на каждый биом (M352):1
 
-## tests/91zzzzy-bake.js · 19 КБ
+## tests/91zzzzy-bake.js · 18 КБ
   · печь: сколько растра игра держит и сколько печёт заново (M358):1
   · и ЧЕМ печь занята за один раз (M419):137
 
@@ -8005,7 +8009,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzy-look.js · 4 КБ
   · картина не портится молча (M336):1
 
-## tests/91zzzzy-mem.js · 10 КБ
+## tests/91zzzzy-mem.js · 11 КБ
   · что копится за вечер (M332):1
 
 ## tests/91zzzzy-names.js · 11 КБ
@@ -8123,7 +8127,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 4 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 5 КБ
+## tests/91zzzzzzy3-gate2d.js · 6 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
