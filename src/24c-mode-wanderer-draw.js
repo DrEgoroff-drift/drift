@@ -114,13 +114,48 @@ function wanKeeper(x,y,h){
   ctx.strokeStyle="#5d666e";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(h*.42,-h*.82);ctx.lineTo(h*.42,-h*.9);ctx.stroke();
   ctx.restore();
 }
+/* ── «Сорока» на видеокарте (G11) ──
+   Коридор стоит из выпечек GPU-холста: оболочка (стены, палуба, задняя стена),
+   середина (рёбра, занавес с сорокой, стойка, хранитель, тюки) и витрины — эти
+   перепекаются, только когда сдвинулся курсор или ушла вещь. Щель окна — живое
+   поле: планета с терминатором и каймой воздуха поворачивается, звёзды ползут.
+   Висящее на леерах — спрайты, дрейф — сдвигом. Свет — два прохода: умножение
+   (холодные полосы из щели на палубе, золото парусов по верху стен, лампочки
+   витрин, зелёная лампа хранителя, тень у стыков) и сложение (лучи из щели до
+   палубы — объёмом, с пылью в них, ореолы ламп). На #c не рисуется ничего. */
+const WAN_BK=new Map();
+function wanBake(slot,key,draw){
+  const e=WAN_BK.get(slot);
+  if(e&&e.key===key&&e.B&&e.B.dev===GPU.dev)return e.B;
+  if(e&&e.B)gpuBakeDrop(e.B);
+  const B=gpuBake(W*DPR,H*DPR,g=>{g.scale(DPR,DPR);draw();},{mips:false});
+  WAN_BK.set(slot,{key,B});return B;
+}
 function drawWanderRoom(){
   const S=wanAll();if(!S)return;
+  const ps=gpuScene();if(!ps)return;
   const g=wanGeom(),P=g.P,vp=g.vp,now=clockNow();
-  const lots=wanLots();
+  const lots=wanLots(),cur=clamp(S.cursor,0,Math.max(0,lots.length-1));
   const sys=G.sys,pl=(sys&&sys.planets&&S.w.planetIx>=0)?sys.planets[S.w.planetIx]:null;
   const pal=(pl&&TYPES[pl.type])?TYPES[pl.type].pal:[[40,60,90],[60,90,120],[90,120,150],[120,150,180]];
-  /* 1. стены, пол, потолок: тёмное основание, свет придёт слоями */
+  const k0=W+"x"+H+"|"+DPR+"|"+uiK()+"|"+S.seed;
+  const full=[{x:W/2,y:H/2,w:W,h:H}];
+  gpuImage(ps,wanBake("shell",k0,()=>wanShell(g)),full);
+  gpuField(ps,"wansky",WAN_SKY_WGSL,wanSkyUni(g,pal,now));
+  gpuImage(ps,wanBake("mid",k0,()=>wanMid(g,S)),full);
+  const lk=lots.map(l=>l.id+(l.empty?"e":"")+(l.gone?"g":"")+(l.pay&&l.pay.m||0)).join(",");
+  gpuImage(ps,wanBake("cases",k0+"|"+cur+"|"+lk,()=>wanCases(g,lots,cur)),full);
+  wanHanging(ps,g,S,now);
+  const U=wanLitUni(g,S,lots,cur,now);
+  gpuField(ps,"wanlit",WAN_LIT_WGSL,U,null,{blend:"mul"});
+  gpuField(ps,"wanair",WAN_AIR_WGSL,U,null,{blend:"add"});
+  /* вспышка спички хранителя — последний час, один раз */
+  if(S.flashT){const u=(now-S.flashT)/1500;
+    if(u<1)gpuShapes(ps,[[0,0,0,W,H,0,0,255,226,170,.5*(1-u)]],{blend:"add"});}
+}
+/* 1. стены, пол, потолок, задняя стена — тёмное основание, свет придёт проходами */
+function wanShell(g){
+  const P=g.P,vp=g.vp;
   ctx.fillStyle=wanCol(WAN_C.ceil);ctx.fillRect(0,0,W,H);
   const fl=ctx.createLinearGradient(0,vp.y,0,g.floorY);
   fl.addColorStop(0,wanCol(WAN_C.floor,.6));fl.addColorStop(1,wanCol(WAN_C.floor,1.6));
@@ -159,119 +194,80 @@ function drawWanderRoom(){
    ctx.strokeStyle="rgba(201,162,74,.28)";ctx.lineWidth=1;ctx.stroke();}
   ctx.restore();
   /* задняя стена — стойка на глубине zc, стена за ней */
-  const zc=g.zc,bl=P(0,g.ceilY,zc),br=P(W,g.ceilY,zc),fl2=P(0,g.floorY,zc),fr=P(W,g.floorY,zc);
+  const zc=g.zc,bl=P(0,g.ceilY,zc),br=P(W,g.ceilY,zc),fl2=P(0,g.floorY,zc);
   ctx.fillStyle=wanCol(WAN_C.wall,.8);ctx.fillRect(bl.x,bl.y,br.x-bl.x,fl2.y-bl.y);
-  /* 2. щель окна в потолке, в перспективе (под приборами её было не видно): край
-     планеты поворачивается — холодный ключ; от просветов — холодные полосы на пол */
-  {
-    const zA=.10,zB=.46,xa=W*.32,xb=W*.68;
-    const A=P(xa,g.ceilY,zA),B=P(xb,g.ceilY,zA),C=P(xb,g.ceilY,zB),D=P(xa,g.ceilY,zB);
-    ctx.save();ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(C.x,C.y);ctx.lineTo(D.x,D.y);ctx.closePath();ctx.clip();
-    ctx.fillStyle="#04060a";ctx.fillRect(0,0,W,H);
-    const ph=now/240000;                                    /* оборот за четыре минуты */
-    const pr=H*.55,px=W*.5+Math.sin(ph)*W*.06,py=A.y-pr*.55;
-    const pg=ctx.createRadialGradient(px-pr*.3,py+pr*.4,pr*.2,px,py,pr);
-    pg.addColorStop(0,wanCol(pal[Math.min(3,pal.length-1)],1.1));pg.addColorStop(.6,wanCol(pal[1]));pg.addColorStop(1,wanCol(pal[0],.6));
-    ctx.fillStyle=pg;ctx.beginPath();ctx.arc(px,py,pr,0,TAU);ctx.fill();
-    const tg=ctx.createLinearGradient(xa,0,xb,0);tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.7)");
-    ctx.fillStyle=tg;ctx.fillRect(0,0,W,H);
-    for(let i=0;i<14;i++){const sx=A.x+((i*173+now/900)%(B.x-A.x)),sy=D.y+((i*97)%Math.max(1,(D.y-A.y)))*.7;ctx.fillStyle="rgba(220,230,240,.5)";ctx.fillRect(sx,sy,1,1);}
-    ctx.restore();
-    /* переплёт: рёбра вдоль и поперёк */
-    ctx.strokeStyle="#0f1114";ctx.lineWidth=2.5;
-    ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(C.x,C.y);ctx.lineTo(D.x,D.y);ctx.closePath();ctx.stroke();
-    for(let i=1;i<6;i++){const z=zA+(zB-zA)*i/6,l=P(xa,g.ceilY,z),r2=P(xb,g.ceilY,z);ctx.beginPath();ctx.moveTo(l.x,l.y);ctx.lineTo(r2.x,r2.y);ctx.stroke();}
-    /* холодные полосы на пол: от каждого просвета — трапеция, светлее у зрителя */
-    for(let i=0;i<6;i++){
-      const z0=zA+(zB-zA)*(i+.15)/6,z1=zA+(zB-zA)*(i+.85)/6;
-      const a0=P(W*.18,g.floorY,z0),b0=P(W*.18,g.floorY,z1),c0=P(W*.82,g.floorY,z1),d0=P(W*.82,g.floorY,z0);
-      ctx.fillStyle=wanRgba(WAN_C.cold,.10+.14*(1-z0));
-      ctx.beginPath();ctx.moveTo(a0.x,a0.y);ctx.lineTo(b0.x,b0.y);ctx.lineTo(c0.x,c0.y);ctx.lineTo(d0.x,d0.y);ctx.closePath();ctx.fill();
-    }
+}
+/* щель окна в потолке: четыре угла на экране (для поля и для света) */
+function wanSlot(g){
+  const zA=.10,zB=.46,xa=W*.32,xb=W*.68,P=g.P;
+  return {zA,zB,xa,xb,A:P(xa,g.ceilY,zA),B:P(xb,g.ceilY,zA),C:P(xb,g.ceilY,zB),D:P(xa,g.ceilY,zB)};
+}
+/* 2. окно: край планеты поворачивается (оборот за четыре минуты) — холодный ключ кадра */
+const WAN_SKY_U=new Float32Array(32);
+function wanSkyUni(g,pal,now){
+  const u=WAN_SKY_U,Q=wanSlot(g),ph=now/240000,pr=H*.55;
+  const c3=pal[Math.min(3,pal.length-1)],c1=pal[1]||c3,c0=pal[0]||c1;
+  u.set([Q.A.x,Q.A.y,Q.B.x,Q.B.y, Q.C.x,Q.C.y,Q.D.x,Q.D.y, W*.5+Math.sin(ph)*W*.06,Q.A.y-pr*.55,pr,now/1000,
+    c0[0]/255,c0[1]/255,c0[2]/255,0, c1[0]/255,c1[1]/255,c1[2]/255,0, c3[0]/255,c3[1]/255,c3[2]/255,0,
+    g.ceilY,g.vp.y,Q.zA,Q.zB]);
+  return u;
+}
+const WAN_SKY_WGSL=`
+fn wEdge(p:vec2f,a:vec2f,b:vec2f)->f32{let e=b-a;return (e.x*(p.y-a.y)-e.y*(p.x-a.x))/max(length(e),1e-3);}
+fn wh1(p:vec2f)->f32{return fract(sin(dot(p,vec2f(127.1,311.7)))*43758.5453);}
+fn wvn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let u=f*f*(3.-2.*f);
+  return mix(mix(wh1(i),wh1(i+vec2f(1.,0.)),u.x),mix(wh1(i+vec2f(0.,1.)),wh1(i+vec2f(1.,1.)),u.x),u.y);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let A=fu.v[0].xy;let B=fu.v[0].zw;let C=fu.v[1].xy;let D=fu.v[1].zw;
+  /* внутри четырёхугольника щели (обход A→B→C→D), кромка — сглажена на пиксель */
+  let e=min(min(wEdge(p,A,B),wEdge(p,B,C)),min(wEdge(p,C,D),wEdge(p,D,A)));
+  let s=sign(wEdge(C,A,B));let inside=clamp(e*s+.5,0.,1.);
+  if(inside<=0.){return vec4f(0.);}
+  let pc=fu.v[2].xy;let pr=fu.v[2].z;let t=fu.v[2].w;
+  var c=vec3f(.016,.024,.04);
+  /* звёзды ползут: ячейки, в ячейке одна, яркость по степени — много слабых, мало ярких */
+  let sp=(p+vec2f(t*1.1,0.))/3.;let sc=floor(sp);let h=wh1(sc);
+  let so=vec2f(wh1(sc+7.3),wh1(sc+3.1));
+  let sd=length(fract(sp)-so);
+  c+=vec3f(.86,.9,.95)*smoothstep(.22,0.,sd)*step(.93,h)*pow(wh1(sc+1.7),3.)*1.4;
+  /* планета: диск со светом снизу-слева, полосы облаков, кайма воздуха, терминатор */
+  let d=(p-pc)/pr;let r2=dot(d,d);
+  if(r2<1.){
+    let n=vec3f(d.x,d.y,sqrt(1.-r2));
+    let l=normalize(vec3f(-.35,.55,.75));
+    let dif=max(dot(n,l),0.);
+    let lat=asin(clamp(d.y,-1.,1.));let lon=atan2(d.x,n.z)+t*.026;
+    let band=wvn(vec2f(lon*3.,lat*9.))*.6+wvn(vec2f(lon*9.,lat*26.))*.4;
+    var sf=mix(fu.v[4].rgb,fu.v[5].rgb*1.1,band);
+    sf=mix(fu.v[3].rgb*.35,sf,smoothstep(0.,.35,dif));
+    c=sf*(.10+.95*dif);
+    let rim=pow(1.-n.z,3.);c+=fu.v[5].rgb*rim*.6*smoothstep(-.2,.4,dif);
+  }else{
+    /* кайма воздуха за краем диска — тонкое свечение со стороны света */
+    let o=sqrt(r2)-1.;let side=clamp(dot(normalize(d),normalize(vec2f(-.35,.55)))*.6+.5,0.,1.);
+    c+=fu.v[5].rgb*.35*exp(-o*o*900.)*side;
   }
-  /* 3. золотая протечка парусов: верх стен тёплый, к полу гаснет */
-  for(const side of [0,W]){
-    const gg=ctx.createLinearGradient(0,g.ceilY,0,H*.5);
-    gg.addColorStop(0,wanRgba(WAN_C.gold,.38));gg.addColorStop(1,wanRgba(WAN_C.gold,0));
-    ctx.fillStyle=gg;ctx.beginPath();ctx.moveTo(side,g.ceilY);ctx.lineTo(side,H*.5);ctx.lineTo(P(side,H*.5,zc).x,P(side,H*.5,zc).y);ctx.lineTo(P(side,g.ceilY,zc).x,P(side,g.ceilY,zc).y);ctx.closePath();ctx.fill();
-  }
+  /* тень переплёта справа (как у 2D) и рёбра поперёк щели */
+  c*=1.-.7*clamp((p.x-A.x)/max(B.x-A.x,1.),0.,1.);
+  let cy=fu.v[6].x;let vy=fu.v[6].y;let zA=fu.v[6].z;let zB=fu.v[6].w;
+  var bar=0.;
+  for(var i=1;i<6;i++){let z=zA+(zB-zA)*f32(i)/6.;let y=cy+(vy-cy)*z;bar=max(bar,clamp(1.75-abs(p.y-y),0.,1.));}
+  bar=max(bar,clamp(1.75-e*s,0.,1.));
+  c=mix(c,vec3f(.059,.067,.078),bar);
+  return vec4f(c*inside,inside);}`;
+/* 4–8a. середина: рёбра, занавес с сорокой и полки, стойка, хранитель, лампа, тюки */
+function wanMid(g,S){
+  const P=g.P,zc=g.zc;
   /* 4. рёбра-кольца: отметки глубины */
   ctx.strokeStyle="rgba(120,128,140,.35)";ctx.lineWidth=1.2;
   for(let z=.08;z<zc;z+=.11){
     const a=P(0,g.ceilY,z),b=P(W,g.ceilY,z),c=P(W,g.floorY,z),d=P(0,g.floorY,z);
     ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.stroke();
   }
-  /* 5. витрины: по стенам, ближняя — текущая */
-  const cur=clamp(S.cursor,0,Math.max(0,lots.length-1));
-  for(let i=lots.length-1;i>=0;i--){
-    const cs=wanCaseAt(i,cur);if(!cs)continue;
-    const lot=lots[i],side=cs.left?0:W;
-    const yTop=H*.24,yBot=H*.70;
-    const a=P(side,yTop,cs.z),b=P(side,yTop,cs.z2),c=P(side,yBot,cs.z2),d=P(side,yBot,cs.z);
-    /* глубина — тоном: ближняя ярче */
-    const lit=1-cs.z*.9;
-    /* корпус витрины: тёмное дерево шире стекла, потом сукно, потом стекло */
-    const ex=(d.y-a.y)*.05;
-    ctx.fillStyle="#1a1612";
-    ctx.beginPath();ctx.moveTo(a.x-ex,a.y-ex);ctx.lineTo(b.x+ex,b.y-ex);ctx.lineTo(c.x+ex,c.y+ex);ctx.lineTo(d.x-ex,d.y+ex);ctx.closePath();ctx.fill();
-    ctx.fillStyle=wanCol(WAN_C.cloth,.75+lit*.7);
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
-    /* полка под вещью */
-    const sy=a.y+(d.y-a.y)*.72,sy2=b.y+(c.y-b.y)*.72;
-    ctx.strokeStyle="rgba(201,162,74,"+(.35+lit*.4).toFixed(2)+")";ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(a.x,sy);ctx.lineTo(b.x,sy2);ctx.stroke();
-    /* стекло: холодный отсвет сверху */
-    const gl=ctx.createLinearGradient(0,a.y,0,d.y);gl.addColorStop(0,wanRgba(WAN_C.glass,.22*lit));gl.addColorStop(.5,wanRgba(WAN_C.glass,.04));gl.addColorStop(1,wanRgba(WAN_C.glass,.10*lit));
-    ctx.fillStyle=gl;ctx.fill();
-    ctx.strokeStyle=wanRgba(WAN_C.brass,.5+lit*.5);ctx.lineWidth=i===cur?2.5:1.2;ctx.stroke();
-    /* латунные уголки */
-    ctx.fillStyle=wanCol(WAN_C.brass,.6+lit*.5);
-    for(const q of [a,b,c,d]){ctx.fillRect(q.x-2,q.y-2,4,4);}
-    /* своя лампочка — ровная, у верхней кромки */
-    const lx=(a.x+b.x)/2,ly=a.y+6;
-    if(!lot.empty){
-      const lg=ctx.createRadialGradient(lx,ly,0,lx,ly,28*lit+6);
-      lg.addColorStop(0,wanRgba(WAN_C.lamp,.55));lg.addColorStop(1,wanRgba(WAN_C.lamp,0));
-      ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,28*lit+6,0,TAU);ctx.fill();
-      ctx.fillStyle="#fff2d6";ctx.beginPath();ctx.arc(lx,ly,1.4,0,TAU);ctx.fill();
-    }
-    const cx=(a.x+b.x+c.x+d.x)/4,cy=a.y+(d.y-a.y)*.52,sz=(d.y-a.y)*.42;
-    if(lot.empty||lot.gone){
-      /* меловая бирка вместо вещи */
-      ctx.save();ctx.translate(cx,cy);ctx.rotate(cs.left?.06:-.06);
-      ctx.fillStyle="rgba(232,220,190,.10)";ctx.fillRect(-sz*.5,-sz*.18,sz,sz*.36);
-      ctx.strokeStyle="rgba(232,220,190,.45)";ctx.lineWidth=1;ctx.strokeRect(-sz*.5,-sz*.18,sz,sz*.36);
-      ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(8*uiK(),sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(lot.gone?"продано":"пусто",0,sz*.05);
-      ctx.restore();
-    }else{
-      wanItemIcon(lot,cx,cy,Math.min(sz*1.15,110));   /* ближняя витрина не во весь рост: вещь размером с вещь */
-      /* меловая цена под полкой: спички — та валюта, ради которой сюда пришли */
-      if(lot.pay&&lot.pay.m){
-        const ty=(sy+sy2)/2+(d.y-a.y)*.12,tx=(a.x+b.x)/2;
-        /* цена — то, ради чего пришли, и читается с любой полки: пол восемь × линейка
-           интерфейса, потолок растёт с ней же. Было 7 px на дальней полке и
-           потолок 13 при любой мерке (M443, детектор кегля) */
-        ctx.fillStyle=wanRgba(WAN_C.chalk,.55+lit*.35);ctx.font=Math.max(8*uiK(),Math.min(13*uiK(),sz*.12))+"px ui-monospace,monospace";ctx.textAlign="center";
-        ctx.fillText(lot.pay.m+" сп.",tx,ty);
-      }
-    }
-  }
-  /* 6. висящее на леерах: дрейф с длинными периодами, никогда не мигает */
-  const rr=rng(hashi(S.seed,3,0x4A9));
-  for(let i=0;i<5;i++){
-    const z=.12+rr()*.5,x0=W*(.3+rr()*.4),len=H*(.05+rr()*.07);
-    const dx=Math.sin(now/(23000+i*4000)+i)*3,pt=P(x0,g.ceilY,z);
-    ctx.strokeStyle="rgba(180,170,150,.35)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(pt.x,pt.y);ctx.lineTo(pt.x+dx,pt.y+len*(1-z));ctx.stroke();
-    const k=rr();ctx.fillStyle=k<.4?"#3a3128":(k<.7?"#4a4a4a":"#6a5221");
-    const s2=(6+rr()*8)*(1-z);
-    if(k<.7){ctx.beginPath();ctx.ellipse(pt.x+dx,pt.y+len*(1-z)+s2*.5,s2*.7,s2,0,0,TAU);ctx.fill();}
-    else{ctx.strokeStyle="#6a5221";ctx.lineWidth=1;ctx.strokeRect(pt.x+dx-s2*.5,pt.y+len*(1-z),s2,s2*1.3);}   /* клетка */
-  }
   /* 6a. за стойкой — тёмно-красный занавес с сорокой и полки с банками: задней
      стене нужно лицо, иначе точка схода — серая дыра */
   {
-    const a=P(W*.22,g.ceilY,zc),b=P(W*.78,g.ceilY,zc),c=P(W*.78,g.floorY,zc),d=P(W*.22,g.floorY,zc);
+    const a=P(W*.22,g.ceilY,zc),b=P(W*.78,g.ceilY,zc),c=P(W*.78,g.floorY,zc);
     const cg=ctx.createLinearGradient(0,a.y,0,c.y);cg.addColorStop(0,"#3a1a1a");cg.addColorStop(.5,"#552323");cg.addColorStop(1,"#2a1212");
     ctx.fillStyle=cg;ctx.fillRect(a.x,a.y,b.x-a.x,c.y-a.y);
     ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
@@ -296,21 +292,17 @@ function drawWanderRoom(){
   }
   /* 7. стойка и хранитель у точки схода */
   {
-    const cl=P(W*.30,g.floorY,zc-.06),cr=P(W*.70,g.floorY,zc-.06),ctop=cl.y-H*.075;
+    const K=wanCounter(g),cl=K.cl,cr=K.cr,ctop=K.ctop,kh=K.kh;
     ctx.fillStyle="#2a2622";ctx.fillRect(cl.x,ctop,cr.x-cl.x,cl.y-ctop);
     ctx.fillStyle="rgba(255,235,200,.10)";ctx.fillRect(cl.x,ctop,cr.x-cl.x,3);
     ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=1;ctx.strokeRect(cl.x,ctop,cr.x-cl.x,cl.y-ctop);
-    const kh=Math.round(H*.07)+55*0;                      /* человек ≈55 px на этой глубине */
     wanKeeper((cl.x+cr.x)/2+kh*.3,ctop+kh*.02,Math.max(48,kh));
     /* гроссбух под лампой */
     ctx.fillStyle="#d9cfae";ctx.fillRect((cl.x+cr.x)/2-kh*.5,ctop-3,kh*.5,kh*.12);
-    /* 8. лампа под зелёным абажуром — единственный тёплый акцент кадра */
-    const lx=(cl.x+cr.x)/2-kh*.2,ly=ctop-kh*.55;
+    /* 8. лампа под зелёным абажуром — единственный тёплый акцент кадра (её свет — в проходах) */
+    const lx=K.lx,ly=K.ly;
     ctx.strokeStyle="#1a1d22";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx,ly-H*.2);ctx.stroke();
     ctx.fillStyle=wanCol(WAN_C.green,.9);ctx.beginPath();ctx.moveTo(lx-kh*.36,ly+kh*.08);ctx.lineTo(lx+kh*.36,ly+kh*.08);ctx.lineTo(lx+kh*.16,ly-kh*.14);ctx.lineTo(lx-kh*.16,ly-kh*.14);ctx.closePath();ctx.fill();
-    const wg=ctx.createRadialGradient(lx,ly+kh*.1,0,lx,ly+kh*.1,kh*1.6);
-    wg.addColorStop(0,"rgba(255,214,150,.55)");wg.addColorStop(.5,"rgba(255,200,130,.16)");wg.addColorStop(1,"rgba(255,180,100,0)");
-    ctx.fillStyle=wg;ctx.beginPath();ctx.arc(lx,ly+kh*.1,kh*1.6,0,TAU);ctx.fill();
     ctx.fillStyle="#fff3d8";ctx.beginPath();ctx.ellipse(lx,ly+kh*.1,kh*.12,kh*.04,0,0,TAU);ctx.fill();
   }
   /* 8a. у стен на полу — тюки и ящики, чтобы пол не был пустым до самой стойки */
@@ -329,13 +321,182 @@ function drawWanderRoom(){
         ctx.strokeStyle="rgba(200,190,160,.3)";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(p0.x-wd*.5,p0.y-ht*.5);ctx.lineTo(p0.x+wd*.5,p0.y-ht*.5);ctx.stroke();}
     }
   }
-  /* 9. пыль в холодных полосах */
-  ctx.fillStyle="rgba(200,220,235,.35)";
-  for(let i=0;i<40;i++){const h=hashi(i,S.seed,0xD057);const x=W*.2+((h&1023)/1023)*W*.6,y=H*.5+(((h>>10)&1023)/1023)*H*.36+Math.sin(now/7000+i)*3;ctx.fillRect(x,y,1,1);}
-  /* 10. вспышка спички хранителя — последний час, один раз */
-  if(S.flashT){const u=(now-S.flashT)/1500;if(u<1){ctx.fillStyle="rgba(255,226,170,"+(.5*(1-u)).toFixed(3)+")";ctx.fillRect(0,0,W,H);}}
-  /* 11. виньетка */
-  const vg=ctx.createRadialGradient(W*.5,H*.5,H*.25,W*.5,H*.5,H*.85);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.5)");
-  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
 }
+/* стойка, хранитель и зелёная лампа: одно место и для кисти, и для света */
+function wanCounter(g){
+  const P=g.P,cl=P(W*.30,g.floorY,g.zc-.06),cr=P(W*.70,g.floorY,g.zc-.06),ctop=cl.y-H*.075;
+  const kh=Math.round(H*.07);                             /* человек ≈55 px на этой глубине */
+  return {cl,cr,ctop,kh,lx:(cl.x+cr.x)/2-kh*.2,ly:ctop-kh*.55};
+}
+/* 5. витрины: по стенам, ближняя — текущая. Свет лампочек — в проходах */
+function wanCases(g,lots,cur){
+  const P=g.P;
+  for(let i=lots.length-1;i>=0;i--){
+    const cs=wanCaseAt(i,cur);if(!cs)continue;
+    const lot=lots[i],side=cs.left?0:W;
+    const yTop=H*.24,yBot=H*.70;
+    const a=P(side,yTop,cs.z),b=P(side,yTop,cs.z2),c=P(side,yBot,cs.z2),d=P(side,yBot,cs.z);
+    /* глубина — тоном: ближняя ярче */
+    const lit=1-cs.z*.9;
+    /* корпус витрины: тёмное дерево шире стекла, потом сукно, потом стекло */
+    const ex=(d.y-a.y)*.05;
+    ctx.fillStyle="#1a1612";
+    ctx.beginPath();ctx.moveTo(a.x-ex,a.y-ex);ctx.lineTo(b.x+ex,b.y-ex);ctx.lineTo(c.x+ex,c.y+ex);ctx.lineTo(d.x-ex,d.y+ex);ctx.closePath();ctx.fill();
+    ctx.fillStyle=wanCol(WAN_C.cloth,.75+lit*.7);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
+    /* полка под вещью */
+    const sy=a.y+(d.y-a.y)*.72,sy2=b.y+(c.y-b.y)*.72;
+    ctx.strokeStyle="rgba(201,162,74,"+(.35+lit*.4).toFixed(2)+")";ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(a.x,sy);ctx.lineTo(b.x,sy2);ctx.stroke();
+    /* стекло: холодный отсвет сверху */
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();
+    const gl=ctx.createLinearGradient(0,a.y,0,d.y);gl.addColorStop(0,wanRgba(WAN_C.glass,.22*lit));gl.addColorStop(.5,wanRgba(WAN_C.glass,.04));gl.addColorStop(1,wanRgba(WAN_C.glass,.10*lit));
+    ctx.fillStyle=gl;ctx.fill();
+    ctx.strokeStyle=wanRgba(WAN_C.brass,.5+lit*.5);ctx.lineWidth=i===cur?2.5:1.2;ctx.stroke();
+    /* латунные уголки */
+    ctx.fillStyle=wanCol(WAN_C.brass,.6+lit*.5);
+    for(const q of [a,b,c,d]){ctx.fillRect(q.x-2,q.y-2,4,4);}
+    /* своя лампочка — ровная, у верхней кромки (ореол и свет на сукне — в проходах) */
+    const lx=(a.x+b.x)/2,ly=a.y+6;
+    if(!lot.empty){ctx.fillStyle="#fff2d6";ctx.beginPath();ctx.arc(lx,ly,1.4,0,TAU);ctx.fill();}
+    const cx=(a.x+b.x+c.x+d.x)/4,cy=a.y+(d.y-a.y)*.52,sz=(d.y-a.y)*.42;
+    if(lot.empty||lot.gone){
+      /* меловая бирка вместо вещи */
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(cs.left?.06:-.06);
+      ctx.fillStyle="rgba(232,220,190,.10)";ctx.fillRect(-sz*.5,-sz*.18,sz,sz*.36);
+      ctx.strokeStyle="rgba(232,220,190,.45)";ctx.lineWidth=1;ctx.strokeRect(-sz*.5,-sz*.18,sz,sz*.36);
+      ctx.fillStyle=wanRgba(WAN_C.chalk,.75);ctx.font=Math.max(8*uiK(),sz*.16)+"px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText(lot.gone?"продано":"пусто",0,sz*.05);
+      ctx.restore();
+    }else{
+      wanItemIcon(lot,cx,cy,Math.min(sz*1.15,110));   /* ближняя витрина не во весь рост: вещь размером с вещь */
+      /* меловая цена под полкой: спички — та валюта, ради которой сюда пришли */
+      if(lot.pay&&lot.pay.m){
+        const ty=(sy+sy2)/2+(d.y-a.y)*.12,tx=(a.x+b.x)/2;
+        /* цена — то, ради чего пришли, и читается с любой полки: пол восемь × линейка
+           интерфейса, потолок растёт с ней же. Было 7 px на дальней полке и
+           потолок 13 при любой мерке (M443, детектор кегля) */
+        ctx.fillStyle=wanRgba(WAN_C.chalk,.55+lit*.35);ctx.font=Math.max(8*uiK(),Math.min(13*uiK(),sz*.12))+"px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText(lot.pay.m+" сп.",tx,ty);
+      }
+    }
+  }
+  ctx.textAlign="left";
+}
+/* 6. висящее на леерах: дрейф с длинными периодами, никогда не мигает.
+   Тело — спрайт своей выпечки (печётся раз), леер — капсула набора до его верха */
+const WAN_HANG=new Map();
+function wanHanging(ps,g,S,now){
+  const rr=rng(hashi(S.seed,3,0x4A9)),P=g.P,ropes=[];
+  for(let i=0;i<5;i++){
+    const z=.12+rr()*.5,x0=W*(.3+rr()*.4),len=H*(.05+rr()*.07);
+    const dx=Math.sin(now/(23000+i*4000)+i)*3,pt=P(x0,g.ceilY,z);
+    const k=rr(),s2=(6+rr()*8)*(1-z),bx=pt.x+dx,by=pt.y+len*(1-z);
+    ropes.push([2,pt.x,pt.y,bx,by,.4,0,180,170,150,.35]);
+    const cage=k>=.7,bw=s2*1.6+4,bh=s2*2+6,oy=s2*.5+3;   /* oy — где в спрайте конец леера */
+    const B=gpuBaked(WAN_HANG,S.seed+"|"+i+"|"+DPR+"|"+s2.toFixed(2),bw*DPR,bh*DPR,gg=>{
+      gg.scale(DPR,DPR);gg.translate(bw/2,oy);
+      if(!cage){ctx.fillStyle=k<.4?"#3a3128":"#4a4a4a";ctx.beginPath();ctx.ellipse(0,s2*.5,s2*.7,s2,0,0,TAU);ctx.fill();
+        ctx.fillStyle="rgba(255,235,200,.10)";ctx.beginPath();ctx.ellipse(-s2*.25,s2*.1,s2*.25,s2*.35,0,0,TAU);ctx.fill();}
+      else{ctx.strokeStyle="#6a5221";ctx.lineWidth=1;ctx.strokeRect(-s2*.5,0,s2,s2*1.3);
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,s2*1.3);ctx.stroke();}   /* клетка */
+    },{mips:false});
+    if(B)gpuImage(ps,B,[{x:bx,y:by-oy+bh/2,w:bw,h:bh}]);
+  }
+  gpuShapes(ps,ropes);
+}
+/* числа света «Сороки»: геометрия коридора, щель, лампочки витрин, зелёная лампа */
+const WAN_LIT_U=new Float32Array(60);
+function wanLitUni(g,S,lots,cur,now){
+  const u=WAN_LIT_U,Q=wanSlot(g),K=wanCounter(g),P=g.P;u.fill(0);
+  u.set([g.vp.x,g.vp.y,g.ceilY,g.floorY, Q.zA,Q.zB,Q.xa,Q.xb, W,H,now/1000,g.zc, K.lx,K.ly+K.kh*.1,K.kh,K.ctop],0);
+  /* до восьми лампочек витрин: x, y, радиус, яркость по глубине */
+  let n=0;
+  for(let i=0;i<lots.length&&n<8;i++){
+    const cs=wanCaseAt(i,cur);if(!cs||lots[i].empty)continue;
+    const side=cs.left?0:W,a=P(side,H*.24,cs.z),b=P(side,H*.24,cs.z2),lit=1-cs.z*.9;
+    u.set([(a.x+b.x)/2,a.y+6,28*lit+6,lit],16+n*4);n++;
+  }
+  return u;
+}
+const WAN_LIT_HEAD=`
+/* мир на экране: точка (x0,y0) на глубине z → x0+(vp-x0)z; обратно — по глубине */
+fn wW(p:vec2f,vp:vec2f,z:f32)->vec2f{return (p-vp*z)/max(1.-z,.02);}
+fn wh(p:vec2f)->f32{return fract(sin(dot(p,vec2f(127.1,311.7)))*43758.5453);}
+fn wvn2(p:vec2f)->f32{let i=floor(p);let f=fract(p);let u=f*f*(3.-2.*f);
+  return mix(mix(wh(i),wh(i+vec2f(1.,0.)),u.x),mix(wh(i+vec2f(0.,1.)),wh(i+vec2f(1.,1.)),u.x),u.y);}
+/* полоса i холодного света из щели: [z0,z1] по глубине */
+fn wSlat(i:i32,zA:f32,zB:f32)->vec2f{return vec2f(zA+(zB-zA)*(f32(i)+.15)/6.,zA+(zB-zA)*(f32(i)+.85)/6.);}`;
+/* умножение: чем освещено то, что нарисовано (1 — как есть) */
+const WAN_LIT_WGSL=WAN_LIT_HEAD+`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let vp=fu.v[0].xy;let cY=fu.v[0].z;let fY=fu.v[0].w;let zA=fu.v[1].x;let zB=fu.v[1].y;
+  let Wd=fu.v[2].x;let Hd=fu.v[2].y;let zc=fu.v[2].w;
+  let cold=vec3f(.62,.80,.96);let gold=vec3f(1.,.72,.34);let lamp=vec3f(1.,.84,.59);
+  /* рассеянный: коридор тёмный, свет — только от источников */
+  var L=vec3f(.66,.64,.66);
+  /* палуба: полосы из щели лежат там, где их лучи упираются в пол */
+  if(p.y>vp.y+1.&&p.y<fY+.5){
+    let z=(fY-p.y)/max(fY-vp.y,1.);let w=wW(p,vp,z);
+    var st=0.;
+    for(var i=0;i<6;i++){let s=wSlat(i,zA,zB);st=max(st,smoothstep(s.x-.012,s.x+.006,z)*smoothstep(s.y+.012,s.y-.006,z));}
+    st*=smoothstep(Wd*.16,Wd*.20,w.x)*smoothstep(Wd*.84,Wd*.80,w.x);
+    L+=cold*st*(.55+.9*(1.-z));
+    /* стык пола со стенами — тень */
+    let edge=min(w.x,Wd-w.x);L*=1.-.35*exp(-edge*edge/(Wd*Wd*.0009));
+  }
+  /* стены: золото парусов течёт сверху и гаснет к середине высоты */
+  if(p.x<vp.x||p.x>vp.x){
+    let lf=p.x<vp.x;let z=select((p.x-Wd)/(vp.x-Wd),p.x/max(vp.x,1.),lf);
+    if(z>0.&&z<zc){
+      let w=wW(p,vp,z);
+      if(w.y>cY&&w.y<fY){L+=gold*.95*smoothstep(Hd*.5,cY,w.y)*(1.-z*.6);}
+    }
+  }
+  /* лампочки витрин: тёплые точки со спадом — свет на сукне и на вещи */
+  for(var i=0;i<8;i++){
+    let q=fu.v[4+i];if(q.z<=0.){continue;}
+    let d=p-q.xy;L+=lamp*1.35*q.w*exp(-dot(d,d)/(q.z*q.z*2.2));
+  }
+  /* зелёная лампа хранителя: самое тёплое пятно кадра, на стойке и на нём */
+  let kh=fu.v[3].z;let dk=(p-fu.v[3].xy)*vec2f(1.,1.35);
+  L+=lamp*.85*exp(-dot(dk,dk)/(kh*kh*2.6));
+  /* виньетка — темнее к краям, как у старой, но по кривой */
+  let vd=clamp((length(p-vec2f(Wd*.5,Hd*.5))-Hd*.25)/(Hd*.6),0.,1.);
+  L*=1.-.45*vd*vd*(3.-2.*vd);
+  return vec4f(L,1.);}`;
+/* сложение: лучи из щели до палубы — объёмом, пыль в них, ореолы ламп */
+const WAN_AIR_WGSL=WAN_LIT_HEAD+`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let vp=fu.v[0].xy;let cY=fu.v[0].z;let fY=fu.v[0].w;let zA=fu.v[1].x;let zB=fu.v[1].y;
+  let xa=fu.v[1].z;let xb=fu.v[1].w;let Wd=fu.v[2].x;let Hd=fu.v[2].y;let t=fu.v[2].z;
+  let cold=vec3f(.62,.80,.96);let lamp=vec3f(1.,.84,.59);
+  /* луч — объём: вдоль взгляда пиксель пересекает плоскости глубины; в каждой
+     полоса занимает [xa..xb] у потолка и [.18W..82W] у пола. Сумма по глубине — плотность */
+  var dens=0.;let j=wh(p)*.8;
+  for(var i=0;i<6;i++){
+    let s=wSlat(i,zA,zB);
+    for(var k=0;k<4;k++){
+      let z=mix(s.x,s.y,(f32(k)+.1+j*.8)/4.);
+      let w=wW(p,vp,z);
+      let h=(w.y-cY)/max(fY-cY,1.);
+      if(h<0.||h>1.){continue;}
+      let xl=mix(xa,Wd*.18,h);let xr=mix(xb,Wd*.82,h);
+      dens+=smoothstep(xl-8.,xl+14.,w.x)*smoothstep(xr+8.,xr-14.,w.x)*(1.-z)*(.35+.65*h)*(s.y-s.x)*.25;
+    }
+  }
+  let haze=.55+.45*wvn2(p/vec2f(90.,60.)+vec2f(t*.05,-t*.03));
+  var c=cold*dens*1.7*haze;
+  /* пыль: крупинки видны в луче */
+  let mp=p/2.6+vec2f(sin(t*.11+p.y*.01)*2.,t*1.3);let mc=floor(mp);
+  let mh=wh(mc);let mo=vec2f(wh(mc+3.7),wh(mc+9.1));
+  let md=length(fract(mp)-mo);
+  c+=cold*smoothstep(.28,0.,md)*step(.965,mh)*(.05+dens*9.)*(.6+.4*sin(t*1.3+mh*40.));
+  /* ореолы: лампочки витрин и зелёная лампа */
+  for(var i=0;i<8;i++){
+    let q=fu.v[4+i];if(q.z<=0.){continue;}
+    let d=length(p-q.xy)/q.z;c+=lamp*.30*exp(-d*d*2.2);
+  }
+  let kh=fu.v[3].z;let dk=length((p-fu.v[3].xy)*vec2f(1.,1.3))/kh;
+  c+=lamp*.18*exp(-dk*dk*.9);
+  return vec4f(c,0.);}`;

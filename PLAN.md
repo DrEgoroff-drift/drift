@@ -119,6 +119,13 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   `mksiteshots` without `--disable-gpu`.
 - [ ] **G14 the rest:** the postcard painter on the GPU if it reads better; the `gfx` options of the 2D era
   (resolution tricks, `draw`) reviewed — keep what still means something.
+- [ ] **Design control and pass over the cloud fleet's ports** (the author, 25.09: «тут в облаке дорабатывать не
+  будем … нужен будет дизайн контроль и проход»). The fleet (`docs/fleet/README.md`, branches `claude/gpu-*`,
+  merged into `claude/optimistic-gates-u46osn`) moves the 2D modes onto the GPU without polishing the look on
+  SwiftShader. After it: Контроль shoots every ported mode as a whole-frame `main | gpu` pair on the laptop and
+  the S23, and a design pass brings each to the bar «графика должна быть лучше после переделки, прям пиздатой»;
+  the ships' notes (`docs/fleet/<ship>.md`) list, per scene, what to look at. First seen: the map's pair is
+  hardly different at 760 px; winter reads clearly better.
 - **Gate:**
   - every mode drawn by WebGPU with zero validation errors on the laptop and the S23;
   - each step closed by a `main | gpu` pair of the WHOLE frame, scaled to 760 px wide, visibly better at first

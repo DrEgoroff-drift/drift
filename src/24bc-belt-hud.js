@@ -133,7 +133,17 @@ function bhudKey(b,fwd,st,bas){
 /* рисунок слоя: входы кадра лежат в BHUD, чтобы не заводить замыкание на кадр */
 function bhudDraw(){
   BHUD.redraw++;BHUD.rec=true;
-  try{drawGlassHUD(BHUD.b,BHUD.proj,BHUD.fwd,BHUD.st);drawCockpit(BHUD.b,BHUD.st);}finally{BHUD.rec=false;}
+  try{
+    /* символика — только на стекле: рама и переплёт теперь под слоем (в сцене), и без
+       клипа лесенка и рамка цели легли бы поверх стоек */
+    const P=cockpitTex(G.shipId).plan;
+    ctx.save();ctx.beginPath();addPath(ctx,P.glass);
+    for(const s of P.strut)addPath(ctx,[[s.xt-s.w,P.brow-2],[s.xt+s.w,P.brow-2],[s.xb+s.w*1.5,P.dashY+2],[s.xb-s.w*1.5,P.dashY+2]]);
+    if(P.beam)ctx.rect(P.pw,P.beam.y-P.beam.h,W-2*P.pw,P.beam.h*2);
+    ctx.clip("evenodd");
+    try{drawGlassHUD(BHUD.b,BHUD.proj,BHUD.fwd,BHUD.st);}finally{ctx.restore();}
+    drawCockpit(BHUD.b,BHUD.st);
+  }finally{BHUD.rec=false;}
 }
 /* стекло и кабина пояса: с видеокартой — на слой приборов по изменению, без неё — на #c */
 function beltHudPush(b,proj,fwd,st,bas){

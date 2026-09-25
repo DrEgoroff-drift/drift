@@ -103,11 +103,21 @@ function lightsSuns(p,sunX,sunY,sunR){
   const d=lightsDepthHere();if(!d)return;
   const C=lightsConj(),k=C.k;
   const n=d===2?2:1;
+  /* G6: спутники — не плоские кружки, а звёзды: ореол в воздухе, край диска
+     темнее середины (потемнение к краю), сердце почти белое — его берёт свечение */
   for(let i=0;i<n;i++){
     const ox=(i?-1:1)*W*(.11+i*.05)*(1-k), oy=H*(.05+i*.03)*(1-k);
     const x=sunX+ox,y=sunY+oy,r=sunR*(.55-i*.12+k*.3);
-    ctx.fillStyle=i?"rgba(255,214,170,.75)":"rgba(226,236,255,.8)";
-    ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
+    const c=i?[255,214,170]:[226,236,255];
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const h=ctx.createRadialGradient(x,y,r*.8,x,y,r*3.4);
+    h.addColorStop(0,rgba(c,.22));h.addColorStop(.35,rgba(c,.07));h.addColorStop(1,rgba(c,0));
+    ctx.fillStyle=h;ctx.beginPath();ctx.arc(x,y,r*3.4,0,TAU);ctx.fill();
+    ctx.restore();
+    const d=ctx.createRadialGradient(x-r*.12,y-r*.12,0,x,y,r);
+    d.addColorStop(0,"rgba(255,254,248,.98)");d.addColorStop(.55,rgba(sdMix(c,[255,255,255],.45),.92));
+    d.addColorStop(1,rgba(sdMix(c,[120,90,70],.25),.85));
+    ctx.fillStyle=d;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
   }
   if(k>0){
     const g=ctx.createRadialGradient(sunX,sunY,sunR,sunX,sunY,sunR*3.2);
@@ -128,6 +138,7 @@ function lightsShutters(ox,oy,ww,hh){
     ctx.beginPath();ctx.moveTo(x,y+h*.5);ctx.lineTo(x+w,y+h*.5);ctx.stroke();
   }else{
     ctx.fillStyle="rgba(255,222,160,.6)";ctx.fillRect(x,y,w,h);
+    placeLamp(x+w*.5,y+h*.5,34,[1,.82,.56],.4,-5);   /* открытое окно светит во двор (11va) */
   }
 }
 /* ── явление ──

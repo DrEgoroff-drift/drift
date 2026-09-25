@@ -245,30 +245,71 @@ const CH_GLYPH={K:"♔",Q:"♕",R:"♖",B:"♗",N:"♘",P:"♙",
 let chSel=-1, chOpen="";
 function chessDraw(cv,ch,flip){
   const g=chessGame(ch);if(!g)return;
-  const P=chPosition(g.mv);
   const c=cv.getContext("2d");
-  const S=cv.width/8;
+  chessPaint(c,cv.width,g,ch,flip);
+}
+/* кисть доски — отдельно от холста: рисует в любой контекст, 2D или GPU-холст (G11).
+   Доска деревянная, и дерево это видно: волокно по каждой клетке своё (хэш
+   клетки, не случай), свет один — слева сверху, у рамки фаска, у фигуры тень
+   на клетку вправо-вниз. Всё это только краска: ходы, клетки и попадание
+   пальцем те же */
+function chessPaint(c,size,g,ch,flip){
+  const P=chPosition(g.mv);
+  const S=size/8;
   const idx=(i)=>flip?63-i:i;
   const legal=(chSel>=0&&chessMyTurn(ch))?chMoves(P.B,P.st,chSel):[];
   for(let i=0;i<64;i++){
-    const j=idx(i), f=i%8, r=(i/8)|0;
-    c.fillStyle=((f+r)%2)?"#8a7050":"#d8c8a8";
+    const f=i%8, r=(i/8)|0, dark=(f+r)%2;
+    c.fillStyle=dark?"#8a7050":"#d8c8a8";
     c.fillRect(f*S,r*S,S,S);
-    if(j===chSel){c.fillStyle="rgba(240,200,110,.55)";c.fillRect(f*S,r*S,S,S);}
+    /* волокно: три-четыре тонкие полосы вдоль клетки, у тёмных — поперёк */
+    for(let k=0;k<4;k++){
+      const h=hashi(i,k,0xC4E5)/4294967296, q=(k+.25+h*.5)/4;
+      c.fillStyle=dark?"rgba(60,40,24,"+(.10+h*.10).toFixed(3)+")":"rgba(150,120,80,"+(.05+h*.07).toFixed(3)+")";
+      if(dark)c.fillRect(f*S,r*S+q*S,S,Math.max(1,S*.018));
+      else c.fillRect(f*S+q*S,r*S,Math.max(1,S*.018),S);
+    }
+  }
+  /* свет слева сверху по всей доске */
+  const lg=c.createLinearGradient(0,0,size,size);
+  lg.addColorStop(0,"rgba(255,244,220,.06)");
+  lg.addColorStop(.55,"rgba(255,244,220,0)");
+  lg.addColorStop(1,"rgba(20,12,6,.16)");
+  c.fillStyle=lg;c.fillRect(0,0,size,size);
+  /* фаска рамки: светлая кромка сверху и слева, тёмная снизу и справа */
+  const b=Math.max(1.5,S*.05);
+  c.fillStyle="rgba(255,248,230,.28)";c.fillRect(0,0,size,b);c.fillRect(0,0,b,size);
+  c.fillStyle="rgba(24,14,6,.36)";c.fillRect(0,size-b,size,b);c.fillRect(size-b,0,b,size);
+  for(let i=0;i<64;i++){
+    const j=idx(i), f=i%8, r=(i/8)|0, x=f*S+S/2, y=r*S+S/2;
+    if(j===chSel){
+      const sg=c.createRadialGradient(x,y,S*.1,x,y,S*.72);
+      sg.addColorStop(0,"rgba(255,214,120,.60)");sg.addColorStop(1,"rgba(255,214,120,0)");
+      c.fillStyle=sg;c.fillRect(f*S,r*S,S,S);
+      c.strokeStyle="rgba(250,210,120,.8)";c.lineWidth=Math.max(1,S*.035);
+      c.strokeRect(f*S+S*.04,r*S+S*.04,S*.92,S*.92);
+    }
     else if(legal.indexOf(j)>=0){
-      c.fillStyle="rgba(120,200,140,.42)";
-      c.beginPath();c.arc(f*S+S/2,r*S+S/2,S*0.17,0,TAU);c.fill();
+      const dg=c.createRadialGradient(x,y,0,x,y,S*.22);
+      dg.addColorStop(0,"rgba(120,200,140,.62)");dg.addColorStop(.7,"rgba(120,200,140,.40)");dg.addColorStop(1,"rgba(120,200,140,0)");
+      c.fillStyle=dg;c.beginPath();c.arc(x,y,S*.22,0,TAU);c.fill();
     }
     const p=P.B[j];
     if(p&&p!=="."){
-      c.fillStyle=chWhite(p)?"#f6f2e8":"#20242a";
       c.font=Math.round(S*0.82)+"px serif";
       c.textAlign="center";c.textBaseline="middle";
+      /* тень на клетку — от того же света, что на доске */
+      c.save();
+      c.shadowColor="rgba(20,12,6,.55)";c.shadowBlur=S*.10;c.shadowOffsetX=S*.05;c.shadowOffsetY=S*.06;
+      c.fillStyle=chWhite(p)?"#f6f2e8":"#20242a";
+      c.fillText(CH_GLYPH[p]||p,x,r*S+S*0.54);
+      c.restore();
       /* обвод: белая фигура на светлой клетке и чёрная на тёмной иначе тонут */
+      c.fillStyle=chWhite(p)?"#f6f2e8":"#20242a";
       c.strokeStyle=chWhite(p)?"rgba(20,22,26,.7)":"rgba(240,236,226,.55)";
       c.lineWidth=Math.max(1,S*0.030);
-      c.strokeText(CH_GLYPH[p]||p,f*S+S/2,r*S+S*0.54);
-      c.fillText(CH_GLYPH[p]||p,f*S+S/2,r*S+S*0.54);
+      c.strokeText(CH_GLYPH[p]||p,x,r*S+S*0.54);
+      c.fillText(CH_GLYPH[p]||p,x,r*S+S*0.54);
     }
   }
   c.textAlign="left";c.textBaseline="alphabetic";
