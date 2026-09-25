@@ -213,7 +213,7 @@ const G11_GPU_KILL=[
   ["nebGen","ngen"],["neb",["gpuNebulaGen"]],["space",["gpuSpaceSys"]],["under",["gpuSysUnder"]],
   ["planets",["gpuPlanet","gpuMoon"]],["cities",["planetLightsOn"]],
   ["trails",["gpuWake","gpuTrail","gpuDrones"]],["combat",["gpuCombatEnergy"]],
-  ["hullLight",["gpuHullLight"]],["points",["gpuLight"]],["refract",["gpuHaze","gpuShock"]],
+  ["points",["gpuLight"]],["refract",["gpuHaze","gpuShock"]],
   /* frontPx — копии #c размером 1×1: растр 2D остаётся, байтов нет; front2D — ни растра, ни копий */
   ["bloom","bloom"],["frontPx","fpx"],["front2D","front"],["final","fin"]];
 /* пара — «база, глушение, база» (P1 8/n): одна база перед глушением путала с выигрышем
