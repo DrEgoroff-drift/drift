@@ -106,3 +106,81 @@ function surfRidgesGpu(tr,p,camx,camy,stpK){
   gpuField(pass,"sridge",GSR_WGSL,U,[HT]);
   return true;
 }
+
+/* ══════════════ ближний грунт: ломти текстурами и порода под светом ══════════════
+   Ломти пекутся тем же рецептом, что у drawGround (19-mode-landing-ground: форма,
+   лессировка, оттенок, валуны), и тем же ключом — кэш общий. Кадр кладёт их
+   gpuImage вторым gpuOver: поверх дымки и дальнего дождя, под всем, что стоит.
+   Сверху — одно поле умножением, лучше плоского ломтя:
+   · мелкий рельеф породы: бугры поля высот освещены с той стороны, где звезда,
+     и гаснут с глубиной разреза — срез читается камнем, а не картинкой;
+   · гребни выпуклые — светлее у кромки, ложбины глубже в тени;
+   · зерно в пиксель, привязанное к миру: едет вместе с землёй. */
+const GSG=new Float32Array(60);
+const GSG_WGSL=`
+fn sgk(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
+fn sgn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let u=f*f*(3.-2.*f);
+  return mix(mix(sgk(i),sgk(i+vec2f(1.,0.)),u.x),mix(sgk(i+vec2f(0.,1.)),sgk(i+vec2f(1.,1.)),u.x),u.y);}
+/* бугры: две октавы, крупная вытянута вдоль пластов */
+fn sgb(w:vec2f)->f32{return sgn(w*vec2f(.045,.08))*.65+sgn(w*.19+vec2f(7.,3.))*.35;}
+fn sgH(i:i32)->f32{
+  let n=i32(fu.v[1].y);let t=textureLoad(t0,vec2i(clamp(i,0,n-1),2),0);
+  return fu.v[1].z+((t.r*255.*256.+t.g*255.)/8.-4096.);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V=fu.v;let st=V[1].x;let n=V[1].y;
+  let wx=p.x+V[0].x;let fi=wx/st;
+  if(fi<0.||fi>n-1.){return vec4f(0.);}
+  let i=i32(floor(fi));let f=fi-floor(fi);
+  let h0=sgH(i);let h1=sgH(i+1);let hm=sgH(i-1);let hp=sgH(i+2);
+  let ey=mix(h0,h1,f)-V[0].y;let s=(h1-h0)/st;
+  let px=fu.res.z/fu.res.x;
+  let dd=p.y-ey;
+  let cov=clamp(dd/(px*sqrt(1.+s*s))+.5,0.,1.);
+  if(cov<=0.){return vec4f(0.);}
+  let w=vec2f(wx,p.y+V[0].y);
+  let sun=V[2].xy;let day=V[2].z;let str=V[2].w;
+  /* нормаль бугров конечными разностями; свет — с неба звезды, чуть на зрителя */
+  let e=1.6;let b0=sgb(w);
+  let gx=(sgb(w+vec2f(e,0.))-b0)/e;let gy=(sgb(w+vec2f(0.,e))-b0)/e;
+  let nr=normalize(vec3f(-gx*9.,-gy*9.,1.));let L=normalize(vec3f(sun.x,sun.y,.75));
+  let sh=dot(nr,L)/L.z-1.;
+  let deep=exp(-max(dd,0.)/190.);
+  var m=1.+clamp(sh,-.6,.6)*.30*str*(.3+.7*day)*deep;
+  /* выпуклость профиля: гребень ловит свет, ложбина держит тень */
+  let cv=mix((hm+h1-2.*h0),(h0+hp-2.*h1),f)/st;
+  m=m*(1.+clamp(cv,-1.,1.)*.20*exp(-max(dd,0.)/36.)*(.4+.6*day));
+  /* зерно в пиксель, в координатах мира */
+  m=m*(1.+(sgk(floor(w/max(px,.5)))-.5)*.07);
+  return vec4f(vec3f(m*cov),cov);
+}`;
+function surfGroundGpu(tr,camx,camy,fill,line,pal){
+  if(!GPU.on||!pal||!tr.mat)return false;
+  const pass=gpuOver();if(!pass)return false;
+  if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
+  const top=Math.floor(tr.hMin-90),ch=Math.ceil(tr.hMax-tr.hMin+H+120);
+  /* ключ и рецепт — ровно drawGround: ломоть, испечённый там, годится здесь и наоборот */
+  tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+
+    "|d"+(tr.p?dayKq(tr.p):0)+"|a"+(tr.p?sunAzQ(tr.p):0),top,ch);
+  const paint=(g,wx0,wy0)=>{
+    GROUND_BAKING=true;
+    try{
+      GLAZE_PASS="form";
+      drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
+      glazeGround(tr,wx0,wy0,pal);
+      GLAZE_PASS="hue";
+      drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
+    }finally{GROUND_BAKING=false;GLAZE_PASS="";}
+  };
+  const K=G.viewK||1,k0=Math.floor(camx/CHUNK_W),k1=Math.floor((camx+W)/CHUNK_W);
+  for(let k=k0;k<=k1;k++){
+    const cn=chunkAt(tr.chunks,k,paint);
+    gpuImage(pass,cn,[{x:(k*CHUNK_W-camx+CHUNK_W/2)*K,y:(top-camy+ch/2)*K,w:CHUNK_W*K,h:ch*K}]);
+  }
+  const HT=surfHeightTex(tr),U=GSG;U.fill(0);
+  U[0]=camx;U[1]=camy;U[4]=tr.step;U[5]=tr.N;U[6]=HT.mid;
+  U[8]=SUN_DIR.x;U[9]=SUN_DIR.y;U[10]=tr.p?dayK(tr.p):.6;U[11]=1;
+  gpuField(pass,"sground",GSG_WGSL,U,[HT],{blend:"mul"});
+  /* трава живая — кланяется ветру, остаётся 2D поверх */
+  drawGroundGrass(tr,camx,camy);
+  return true;
+}

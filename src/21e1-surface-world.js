@@ -117,8 +117,11 @@ function drawSurfaceWorld(){
   hazeBand(p,H*(SURF_HOR-.03),H*.09);
   /* дальние капли — ДО мира: они падают за грядой и за кораблём (M242) */
   drawWeather(p,camx,camy,"far");
-  drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
-    "rgba(200,240,246,.4)",p.T.pal);
+  {
+    const gf="rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",gl="rgba(200,240,246,.4)";
+    /* ломти — текстурами вторым gpuOver, порода под светом звезды (21e2) */
+    if(!surfGroundGpu(tr,camx,camy,gf,gl,p.T.pal))drawGround(tr,camx,camy,gf,gl,p.T.pal);
+  }
   /* нижняя треть уходит в тень неба: ближний грунт темнее дальнего, и по
      этому глаз мерит глубину (хвост G2) */
   {

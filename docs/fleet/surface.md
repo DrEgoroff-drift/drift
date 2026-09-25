@@ -11,7 +11,7 @@ gpuScene   sky (19ca, unchanged)
 2D         stars, sky bodies, clouds (19-mode-landing, frozen air)
 gpuOver #1 far ridges — one field, both layers (21e2 surfRidgesGpu)
 2D         hazeBand, far weather (frozen)
-gpuOver #2 near ground … (next sub-item)
+gpuOver #2 near ground — chunk textures + one multiply field (21e2 surfGroundGpu); live grass stays 2D
 2D         everything that stands on the ground
 ```
 
@@ -26,20 +26,32 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    small crag along the crest, sun-facing facets lit and turned-away ones shaded (fading with depth),
    the foot of each ridge sinks into the air's colour with a slow drifting valley mist, a thin
    sun-side rim on the crest, world-anchored grain.
+2. **near ground chunks as textures** — `surfGroundGpu` in `21e2`: the same chunk store, key and bake
+   recipe as `drawGround` (so a chunk baked by landing is reused here and back), laid by `gpuImage` in
+   the second `gpuOver`; then one multiply field (`fld.sground`) over the ground mask from the height
+   texture: micro-relief of the rock lit from the star's side and fading with depth, convex crests
+   lighter and hollows darker at the edge, pixel grain anchored to the world. Live grass stays 2D above.
 
 ## Pairs (scratchpad, not in git)
 
 - `pair1-noon.png`, `pair1-surface.png` (top before, bottom after) — the far ridges get form: lit and
   shaded facets instead of one flat haze colour, and their feet sink into the air instead of standing as
   a wall.
+- `pair-after2-noon.png`, `pair-after2-surface.png` (+ crops `cb-/ca-after2-*.png`) — the cut face of the
+  ground reads as rock under the star (lit bumps, grain) instead of a flat printed slab.
 
 ## Requests outside the zone
 
-- `08b0-gpu-pipe.js` `GPU_FLD`: add `"fld.sridge":()=>GSR_WGSL` so the warm-up table can compile it.
+- `08b0-gpu-pipe.js` `GPU_FLD`: add `"fld.sridge":()=>GSR_WGSL` and `"fld.sground":()=>GSG_WGSL` so the
+  warm-up table can compile them.
+- `19-mode-landing-ground.js` (landing ship): the chunk bake recipe inside `drawGround` is copied in
+  `surfGroundGpu`; a shared `groundChunkPaint(tr,fill,line,pal)` there would keep the two from drifting.
 
 ## New render pipelines (for the warm-up table 08b1)
 
 - `pipe:fld.sridge|over`
+- `pipe:fld.sground|mul`
+- `pipe:kit.img|over` (already known)
 
 ## Open problems
 
