@@ -1,23 +1,5 @@
 /* ══════════════ ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ ══════════════ */
-function hashi3(x,y,z,s){
-  let h=Math.imul(x|0,374761393)^Math.imul(y|0,668265263)^Math.imul(z|0,1274126177)^Math.imul(s|0,1442695041);
-  h=Math.imul(h^(h>>>13),1274126177);
-  return ((h^(h>>>16))>>>0)/4294967296;
-}
-function noise3(x,y,z,s){
-  const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z);
-  const xf=x-xi,yf=y-yi,zf=z-zi;
-  const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),w=zf*zf*(3-2*zf);
-  const c=(a,b,d)=>hashi3(xi+a,yi+b,zi+d,s);
-  const x00=lerp(c(0,0,0),c(1,0,0),u), x10=lerp(c(0,1,0),c(1,1,0),u);
-  const x01=lerp(c(0,0,1),c(1,0,1),u), x11=lerp(c(0,1,1),c(1,1,1),u);
-  return lerp(lerp(x00,x10,v),lerp(x01,x11,v),w);
-}
-function fbm3(x,y,z,s,oct){
-  let val=0,a=.5,f=1,n=0;oct=oct||4;
-  for(let i=0;i<oct;i++){val+=a*noise3(x*f,y*f,z*f,s+i*167);n+=a;a*=.5;f*=2;}
-  return val/n;
-}
+/* hashi3, noise3, fbm3 — 24ba-belt-gpu.js */
 
 const ICO_V=(function(){
   const t=(1+Math.sqrt(5))/2;
@@ -375,7 +357,7 @@ function updateBelt(dt){
     }
   }
 }
-function drawBelt(){
+function drawBelt(){if(beltGpuDraw())return;
   const b=G.belt,st=stat();
   /* фон не плоский: к плоскости пояса подмешан холодный отсвет туманности */
   {const bg=ctx.createLinearGradient(0,0,0,H);

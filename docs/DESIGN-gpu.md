@@ -1190,3 +1190,22 @@ Back to front. F field, P particles, S shape, T text, C cached bake, 3D mesh. Li
 
 `getImageData` is used only for bounds (hull ink box 03e1:113, tile span 18c:152, staple 26e2:170, road 27l:81)
 and `lookFrame` (28y:49/326) — none in gameplay.
+
+## Session 3 (branch gpu3) — stage 2, the belt
+
+- **Belt world off #c (Контроль 25.09, stage 2 item 1).** `drawBelt` hands the world to `beltGpuDraw` (24ba) when
+  a scene pass exists; the 2D path stays as the fallback. The sky is one field (`belt.sky`): background gradient,
+  four nebula spots, the star disc with its halo or the off-screen glow, and the belt band — the ring around the
+  camera lies in a plane through it, so it projects to a straight line, and the seven width steps are laid with
+  soft edges (the 2D staircase is gone, same integral). Stars, far rocks and dust are kit rects/oboxes; rock faces
+  are kit triangles in the same depth order, an edge towards a visible neighbour hard (adjacency per face set,
+  three sets for the whole game) — no conflation seams across the mesh. Landmarks (24bb) are kit shapes too:
+  polygons fanned from the centre, butt lines as oboxes, the ring's arc as a quad strip, the druse prisms as eight
+  slices of their gradient; the maw's hole is the one bake (circular gradient clipped to the ellipse, as in 2D,
+  uploaded once). Fog darkens colour as in 2D, never alpha. `hashi3/noise3/fbm3` moved to 24ba so 24 does not
+  grow. Numbers (gate suite `91zzzzzzy1`, 60 frames with all five landmarks in view): world calls on #c 0 (was
+  ~70 000 per 60 frames from drawBelt), submits 1/frame, uploads 0; the cockpit and glass are the only #c
+  painters left (259 calls/frame, one #c copy/frame) — the border with the instruments, next step via Контроль.
+  Mutants `belt-gpu-off`, `belt-poi-2d` red. Pairs (2D | GPU, same build via `beltGpuDraw=()=>false`): belt 760
+  max|Δ| 37, mean +0.1/+0.6/+1.3 (band smooth, rock seams gone); phone 411×742 ×1.5 the same; landmarks 760
+  max|Δ| 25 in the maw crop. gpu errs 0.

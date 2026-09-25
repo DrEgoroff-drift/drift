@@ -42,5 +42,13 @@
   {"name":"reset-leaks","file":"tests/90-harness.js",
    "find":"G\\.pirates=\\[\\];G\\.barges=\\[\\];","replace":"G.barges=[];",
    "kill":"resetWorld возвращает мир",
-   "why":"resetWorld оставляет поле предыдущему набору (история M329: половинчатая Вега доехала до чужого набора)"}
+   "why":"resetWorld оставляет поле предыдущему набору (история M329: половинчатая Вега доехала до чужого набора)"},
+  {"name":"belt-gpu-off","file":"src/24-mode-belt.js",
+   "find":"if\\(beltGpuDraw\\(\\)\\)return;","replace":"/*мутант*/",
+   "kill":"ворота ступени 2",
+   "why":"пояс снова рисует мир на #c: ступень 2 видеокарты (24ba) отключена"},
+  {"name":"belt-poi-2d","file":"src/24ba-belt-gpu.js",
+   "find":"beltPoiGpu\\(pass,p\\.spr,","replace":"drawBeltPOISprite(",
+   "kill":"ворота ступени 2",
+   "why":"ориентиры пояса вернулись на #c поверх сцены — и всплывают над камнями, за которыми стоят"}
 ]
