@@ -61,15 +61,16 @@ function gcInv(m){const d=m[0]*m[3]-m[1]*m[2];if(!d||!isFinite(d))return null;
 class GcGrad{
   constructor(k,a){this.k=k;this.a=a;this.s=[];}
   addColorStop(o,c){if(!(o>=0&&o<=1))throw new RangeError("GPU-холст: точка градиента "+o);this.s.push([+o,gcColor(c)]);}
-  /* 256 точек ленты: смесь без премультипликации (так делает 2D в Chrome), потом премультипликация */
-  ramp(){const S=this.s.slice().sort((a,b)=>a[0]-b[0]),o=new Uint8Array(1024);
+  /* 256 точек ленты: смесь без премультипликации (так делает 2D в Chrome), потом премультипликация.
+     Лента в half-float: восьмибитная теряла дробь между уровнями, и дизеру нечего было рассеивать */
+  ramp(){const S=this.s.slice().sort((a,b)=>a[0]-b[0]),o=new Float32Array(1024);
     for(let i=0;i<256;i++){const t=i/255;let c;
       if(!S.length)c=[0,0,0,0];
       else if(t<=S[0][0])c=S[0][1];
       else if(t>=S[S.length-1][0])c=S[S.length-1][1];
       else{let j=0;while(S[j+1][0]<t)j++;const a=S[j],b=S[j+1],u=b[0]>a[0]?(t-a[0])/(b[0]-a[0]):1;
         c=a[1].map((v,q)=>v+(b[1][q]-v)*u);}
-      const al=c[3];o[i*4]=Math.round(c[0]*al*255);o[i*4+1]=Math.round(c[1]*al*255);o[i*4+2]=Math.round(c[2]*al*255);o[i*4+3]=Math.round(al*255);}
+      const al=c[3];o[i*4]=c[0]*al;o[i*4+1]=c[1]*al;o[i*4+2]=c[2]*al;o[i*4+3]=al;}
     return o;}
 }
 const GC_DEF={fillStyle:"#000",strokeStyle:"#000",lineCap:"butt",lineJoin:"miter",globalCompositeOperation:"source-over",
@@ -287,6 +288,8 @@ struct VO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) k:u32,@loca
 @vertex fn vs(@location(0) a:vec2f,@location(1) k:f32,@location(2) uv:vec2f)->VO{
   var o:VO;o.p=vec4f(a.x/gu.sz.x*2.-1.,1.-a.y/gu.sz.y*2.,0.,1.);o.k=u32(k+.5);o.uv=uv;return o;}
 @fragment fn fnone()->@location(0) vec4f{return vec4f(0.);}
+fn bayer8(p:vec2f)->f32{let x=u32(p.x)&7u;let y=u32(p.y)&7u;let v=x^y;
+  let b=((v&1u)<<5u)|((y&1u)<<4u)|((v&2u)<<2u)|((y&2u)<<1u)|((v&4u)>>1u)|((y&4u)>>2u);return (f32(b)+.5)/64.;}
 @fragment fn fimg(i:VO)->@location(0) vec4f{return textureSample(img,ism,i.uv)*gp[i.k*5u].w;}
 @fragment fn fpaint(i:VO)->@location(0) vec4f{
   let b=i.k*5u;let q=gp[b+1u];
@@ -302,7 +305,10 @@ struct VO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) k:u32,@loca
       let hi=max(w1,w2);let lo=min(w1,w2);
       if(r0+hi*dr>=0.){t=hi;}else if(r0+lo*dr>=0.){t=lo;}else{return vec4f(0.);}}}
   t=clamp(t,0.,1.);
-  return textureSampleLevel(ramp,rsm,vec2f((t*255.+.5)/256.,q.y),0.)*q.z;}`;
+  /* дизер Байера ±⅜ ступени: столько же смешанных соседей, сколько у градиента 2D (Skia), 0,38;
+     тёмное свечение без полос; ровный уровень не трогает */
+  let c=textureSampleLevel(ramp,rsm,vec2f((t*255.+.5)/256.,q.y),0.)*q.z;let dd=(bayer8(d)-.5)*.75/255.;
+  let a=clamp(c.a+dd,0.,1.);return vec4f(clamp(c.rgb+vec3f(dd),vec3f(0.),vec3f(a)),a);}`;
 const GC_MIP_WGSL=`
 @group(0) @binding(0) var s:texture_2d<f32>;
 @group(0) @binding(1) var sm:sampler;
@@ -409,8 +415,8 @@ function gpuBakeRedo(B){
   const bu=GPUBufferUsage,mk=(a,us)=>{const b=d.createBuffer({size:Math.max(16,a.byteLength),usage:us|bu.COPY_DST});d.queue.writeBuffer(b,0,a);trash.push(b);return b;};
   const vb=mk(new Float32Array(V.length?V:[0,0,0,0]),bu.VERTEX),pb=mk(new Float32Array(P),bu.STORAGE),ub=mk(new Float32Array([W,H,k,0]),bu.UNIFORM);
   const L=gcLay();let rv=L.dm;
-  if(R.length){const rt=d.createTexture({size:[256,R.length],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST}),bytes=new Uint8Array(R.length*1024);
-    R.forEach((r,i)=>bytes.set(r,i*1024));d.queue.writeTexture({texture:rt},bytes,{bytesPerRow:1024},[256,R.length]);trash.push(rt);rv=rt.createView();}
+  if(R.length){const rt=d.createTexture({size:[256,R.length],format:"rgba16float",usage:U.TEXTURE_BINDING|U.COPY_DST}),h=new Uint16Array(R.length*1024);
+    R.forEach((r,i)=>{for(let j=0;j<1024;j++)h[i*1024+j]=f16(r[j]);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);trash.push(rt);rv=rt.createView();}
   const bgs=new Map(),bg=q=>{const key=q?q.view:null,nr=q&&q.near;let b=bgs.get(key)&&bgs.get(key)[nr?1:0];if(b)return b;
     b=d.createBindGroup({layout:L.bgl,entries:[{binding:0,resource:{buffer:ub}},{binding:1,resource:{buffer:pb}},{binding:2,resource:rv},
       {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:nr?L.near:gpuMipSmp()}]});

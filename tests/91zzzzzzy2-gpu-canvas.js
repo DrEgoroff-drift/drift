@@ -28,7 +28,7 @@ suite("GPU-холст: запись, цвет, дыры громко",()=>{
   eq(g._ops[n0+1].op,"destination-out","clearRect — вычитание");eq(g._ops[n0+1].p.c[3],1,"clearRect не знает globalAlpha");
   const gr=g.createRadialGradient(0,0,0,0,0,10);gr.addColorStop(0,"#fff");gr.addColorStop(1,"rgba(255,255,255,0)");
   g.fillStyle=gr;g.fillRect(-10,-10,20,20);eq(g._ops[n0+2].p.k,2,"радиальный градиент — краска");
-  const rp=gr.ramp();eq(rp[3],255,"лента: начало непрозрачно");eq(rp[1023],0,"лента: конец прозрачен");
+  const rp=gr.ramp();eq(rp[3],1,"лента: начало непрозрачно");eq(rp[1023],0,"лента: конец прозрачен");
   const loud=[["getImageData",()=>g.getImageData(0,0,1,1)],["fillText",()=>g.fillText("а",0,0)],
     ["createPattern",()=>g.createPattern(null,"repeat")],
     ["overlay",()=>{g.globalCompositeOperation="overlay";g.fillRect(0,0,1,1);}],

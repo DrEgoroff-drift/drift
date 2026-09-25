@@ -2014,27 +2014,27 @@ GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
 GC_COL                       src/08ca-gpu-canvas.js:29
-GC_DEF                       src/08ca-gpu-canvas.js:75
-GC_KEYS                      src/08ca-gpu-canvas.js:79
-GC_MIP_WGSL                  src/08ca-gpu-canvas.js:306
+GC_DEF                       src/08ca-gpu-canvas.js:76
+GC_KEYS                      src/08ca-gpu-canvas.js:80
+GC_MIP_WGSL                  src/08ca-gpu-canvas.js:312
 GC_MISS                      src/08ca-gpu-canvas.js:25
 GC_OPS                       src/08ca-gpu-canvas.js:13-56
-GC_ST                        src/08ca-gpu-canvas.js:314-333
+GC_ST                        src/08ca-gpu-canvas.js:320-339
 GC_TOL                       src/08ca-gpu-canvas.js:11
-GC_WGSL                      src/08ca-gpu-canvas.js:278
+GC_WGSL                      src/08ca-gpu-canvas.js:279
 gcColor                      src/08ca-gpu-canvas.js:37-56
-GcCtx                        src/08ca-gpu-canvas.js:83-222
-gcDash                       src/08ca-gpu-canvas.js:232-269
-gcFan                        src/08ca-gpu-canvas.js:228
-GcGrad                       src/08ca-gpu-canvas.js:61-74
-gcImg                        src/08ca-gpu-canvas.js:271-333
+GcCtx                        src/08ca-gpu-canvas.js:84-223
+gcDash                       src/08ca-gpu-canvas.js:233-270
+gcFan                        src/08ca-gpu-canvas.js:229
+GcGrad                       src/08ca-gpu-canvas.js:61-75
+gcImg                        src/08ca-gpu-canvas.js:272-339
 gcInv                        src/08ca-gpu-canvas.js:57
-gcLay                        src/08ca-gpu-canvas.js:324-333
-gcMipPipe                    src/08ca-gpu-canvas.js:346
+gcLay                        src/08ca-gpu-canvas.js:330-339
+gcMipPipe                    src/08ca-gpu-canvas.js:352
 gcNo                         src/08ca-gpu-canvas.js:26
-gcPipe                       src/08ca-gpu-canvas.js:334-345
-gcRectSp                     src/08ca-gpu-canvas.js:226
-gcStrokeLine                 src/08ca-gpu-canvas.js:245-269
+gcPipe                       src/08ca-gpu-canvas.js:340-351
+gcRectSp                     src/08ca-gpu-canvas.js:227
+gcStrokeLine                 src/08ca-gpu-canvas.js:246-270
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:63
 GEN_WGSL                     src/13z-gpu-combat.js:17
@@ -2209,10 +2209,10 @@ GPU_POST_WGSL                src/08b-gpu.js:88
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:229
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:129
 gpuArena                     src/08c-gpu-kit.js:149-159
-gpuBake                      src/08ca-gpu-canvas.js:355-360
-gpuBaked                     src/08ca-gpu-canvas.js:362-365
-gpuBakeDrop                  src/08ca-gpu-canvas.js:366
-gpuBakeRedo                  src/08ca-gpu-canvas.js:367-434
+gpuBake                      src/08ca-gpu-canvas.js:361-366
+gpuBaked                     src/08ca-gpu-canvas.js:368-371
+gpuBakeDrop                  src/08ca-gpu-canvas.js:372
+gpuBakeRedo                  src/08ca-gpu-canvas.js:373-440
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:35-41
 gpuBloom                     src/08b-gpu.js:605-612
@@ -6279,7 +6279,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 25 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 33 КБ
+## src/08ca-gpu-canvas.js · 34 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/09-audio.js · 18 КБ

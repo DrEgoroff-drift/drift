@@ -261,6 +261,20 @@ and the rate limiter on hidden 2D canvases. The cure is not a faster 2D path but
 Antialiasing is MSAA 4× on a stencil8 + colour target, and with `ss` 2 that is 16 samples a pixel, the count of
 Skia's raster. Mips: one GPU pass per level, a 2×2 box, the level count of `gpuMipTex`.
 
+**Quality checks before v2 (Контроль, 25.09).**
+
+- *Gradients.* Chrome's 2D does dither a gradient. The probe is a dark radial gradient, rgb(10,12,18)→rgb(26,30,40)
+  over 512², with a 128×64 blue-channel crop. At the centre row, 2D has 23 levels, 40 reversals and a mean run of
+  4.1 px; 37 % of neighbour pairs differ. The v1 canvas had 0 reversals: bands 11 px wide.
+- *Dither.* The ramp is now `rgba16float`, because an 8-bit ramp had already rounded away the fraction the dither
+  needs. `fpaint` adds an 8×8 Bayer ±⅜ step. The result is 38 % mixed neighbours, 72 reversals and a longest run
+  of 10, the same as 2D. A flat level is left untouched.
+- *Mips.* Box mips are not worse than 2D `drawImage` with «high». At level 3 of the find sprite (36²), the alpha
+  gradient energy is 13.99 for box, 14.01 for 2D «high» and 14.05 for the exact area mean. Error against the area
+  mean is 0.08 for box and 0.03 for 2D, both under 1/255. The far-zoom ×4 pair differs by at most 2.
+- *Blending.* It stays premultiplied `rgba8unorm`. Finds against 2D after the dither: unchanged
+  (mean |Δ| 0.025–0.043).
+
 **What it cannot do — loud.** `getImageData`, `putImageData`, `createImageData`, `createPattern`,
 `createConicGradient`, `isPointInPath/Stroke`, `Path2D` arguments, `filter` ≠ none, a shadow (`shadowBlur` or an
 offset with a visible `shadowColor`), composite ops overlay / saturation / the rest, text (`fillText`,
@@ -284,7 +298,8 @@ figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-�
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
-  `pair_finds_760.png` in the session's scratchpad (identical, 0 uploads). Next: v2 (text atlas, shadow blur), then
+  `pair_finds_760.png` in the session's scratchpad (identical, 0 uploads). The quality checks are done: gradient
+  dither on a half-float ramp, box mips kept (numbers in §G, pair `pair_grad_x4.png`). Next: v2 (text atlas, shadow blur), then
   Контроль's HUD fixes 1–5 + DECISIONS «no 2D», then merge gpu3 to e1eef97.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
