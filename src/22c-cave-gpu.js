@@ -20,12 +20,13 @@
 /* числа в поле: fu.v[0] камера (x,y,K,t) · [1] маска: мир → uv (ox,oy,1/w,1/h) ·
    [2] фонарь: место и направление · [3] фонарь: дальность, cos края, cos ядра, сила ·
    [4] цвет фонаря, число источников · [5] окружающий свет, доля дальней стены ·
-   [6..14] источники: x, y, радиус, цвет×сила (упакован: r·65536+g·256+b, 1.00 = 100).
+   [6..13] источники: x, y, радиус, цвет×сила (упакован: r·65536+g·256+b, 1.00 = 100) ·
+   [14] числа режима (пещера — ближнее озеро: x0, x1, уровень, есть ли).
    Маска: красный — порода, зелёный — открытое небо (шахта). Свои места у режима —
-   четыре функции: ambAt (окружающий), dayAt (свет сверху), skyAt (не освещается —
-   само светит), airAt (где висит воздух: рассеяние и пыль). WGSL не требует
+   пять функций: ambAt (окружающий), dayAt (свет сверху), skyAt (не освещается —
+   само светит), airAt (где висит воздух: рассеяние и пыль), waterAt (вода: блеск). WGSL не требует
    объявлять функцию до вызова, поэтому режим дописывает их после общего поля */
-const CAVE_LIT_MAX=9;
+const CAVE_LIT_MAX=8;                            /* v[14] — свои числа режима: озеро, глубина */
 const CAVE_LIT_WGSL=`
 const SIG=.05;
 fn chs(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
@@ -103,6 +104,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       if(P.z>300.){v=a*a*.10*trans(P.xy,w,10);}   /* дневной свет в устье — столб с тенями */
       sc+=litCol(P.w)*v;}
   }
+  sc+=waterAt(w,t,K);
   return vec4f(sc*air,0.);}
 `;
 /* места пещеры: неба нет (день в устье — источник), окружающий ровный */
@@ -111,6 +113,23 @@ fn ambAt(w:vec2f)->vec3f{return fu.v[5].rgb;}
 fn dayAt(w:vec2f)->vec3f{return vec3f(0.);}
 fn skyAt(w:vec2f)->f32{return 0.;}
 fn airAt(w:vec2f)->f32{return 1.-smoothstep(.3,.7,rockAt(w,0.));}
+/* озеро (22a cavePool): кромка ловит фонарь той же рябью, что рисует 2D, а под ней —
+   столб отражения фонаря, раздробленный рябью: вода читается водой, а не заливкой */
+fn waterAt(w:vec2f,t:f32,K:f32)->vec3f{
+  let P=fu.v[14];
+  if(P.w<.5||w.x<P.x||w.x>P.y){return vec3f(0.);}
+  let d=w.y-P.z-sin(w.x*.06+t*.02)*.9;
+  if(d<-3.){return vec3f(0.);}
+  var c=fu.v[4].rgb*lampAt(vec2f(w.x,P.z-3.))*exp(-d*d*K*K/1.6)*.5;
+  let lp=fu.v[2].xy;let h=P.z-lp.y;
+  if(d>0.&&h>0.){
+    let rx=w.x-lp.x;let sp=5.+d*.4;
+    let col=exp(-rx*rx/(sp*sp))*exp(-d/(h*1.6+24.));
+    let g=cvn(vec2f(w.x*.13+t*.006,d*.7-t*.035));
+    c+=fu.v[4].rgb*col*smoothstep(.42,.78,g)*fu.v[3].w*.8;
+  }
+  /* край зала — не обрез: блеск сходит на нет за 30 px */
+  return c*smoothstep(P.x,P.x+30.,w.x)*smoothstep(P.y,P.y-30.,w.x);}
 `;
 /* маска породы: одна на пещеру, клетка = тексель, мипы — мягкие тени */
 function caveMaskCv(C){
@@ -165,6 +184,18 @@ function caveLights(C,camx,camy){
   if(L.length>CAVE_LIT_MAX)L.length=CAVE_LIT_MAX;
   return L;
 }
+/* ближнее озеро в кадре — одно: в поле для него четыре числа */
+function cavePoolInView(C,camx,camy){
+  let best=null,bd=1e9;
+  const cx=camx+W/2;
+  for(const z of caveZones(C)){
+    const p=cavePool(C,z);if(!p)continue;
+    if(p.x1<camx||p.x0>camx+W||p.y<camy-20||p.y>camy+H+20)continue;
+    const d=Math.max(0,p.x0-cx,cx-p.x1);
+    if(d<bd){bd=d;best=p;}
+  }
+  return best;
+}
 /* тон темноты — от самой породы планеты (M233), холодный (M304) */
 function caveAmbient(){
   const cpl=(G.surf&&G.surf.p)||null;
@@ -190,6 +221,8 @@ function drawCaveLight(C,camx,camy,lamp){
   U[19]=L.length;
   for(let i=0;i<L.length;i++){const s=L[i],o=24+i*4;
     U[o]=s.x;U[o+1]=s.y;U[o+2]=s.r;U[o+3]=caveLitPack(s.c[0],s.c[1],s.c[2],s.I);}
+  const pl=cavePoolInView(C,camx,camy);
+  if(pl){U[56]=pl.x0;U[57]=pl.x1;U[58]=pl.y;U[59]=1;}
   const mt={view:gpuMipTex(caveMaskCv(C)).view},sm=gpuMipSmp();
   gpuField(pass,"cave.mul",CAVE_MUL_WGSL+CAVE_OWN_WGSL,U,[mt],{blend:"mul",smp:sm});
   gpuField(pass,"cave.add",CAVE_ADD_WGSL+CAVE_OWN_WGSL,U,[mt],{blend:"add",smp:sm});

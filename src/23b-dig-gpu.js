@@ -21,6 +21,7 @@ fn ambAt(w:vec2f)->vec3f{
   return mix(vec3f(.30,.32,.36)+vec3f(.62,.63,.64)*day,fu.v[5].rgb,smoothstep(20.,320.,dep));}
 fn skyAt(w:vec2f)->f32{return smoothstep(.3,.7,maskAt(w,0.).g);}
 fn airAt(w:vec2f)->f32{let m=maskAt(w,0.);return (1.-smoothstep(.3,.7,m.r))*(1.-smoothstep(.3,.7,m.g));}
+fn waterAt(w:vec2f,t:f32,K:f32)->vec3f{return vec3f(0.);}
 fn dayAt(w:vec2f)->vec3f{
   let day=fu.v[14].y;if(day<.01){return vec3f(0.);}
   var s=0.;var hit=0.;
@@ -71,7 +72,7 @@ function digLights(D,camx,camy){
     }
   }
   L.sort((a,b)=>a.k-b.k);
-  if(L.length>8)L.length=8;                       /* девятое место — числа шахты (v[14]) */
+  if(L.length>CAVE_LIT_MAX)L.length=CAVE_LIT_MAX;   /* v[14] — числа шахты */
   return L;
 }
 /* свет на всё нарисованное; lamp — фонарь шлема {x,y,f} в мире */
