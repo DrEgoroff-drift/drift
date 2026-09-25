@@ -1,0 +1,57 @@
+/* ══════════════ штаб, кантина, «Сорока», абордаж на видеокарте (G11, флот «hq») ══════════════
+   Кисти комнат теперь рисуют в GPU-холст (08ca) — выпечками, а не в 2D. Запись
+   GPU-холста не требует видеокарты, поэтому здесь, под Node, каждая кисть проходит
+   через GcCtx целиком: попросит то, чего холст не умеет, — «GPU-холст: нет …»,
+   и набор краснеет здесь, а не СБОЕМ в игре. Остальное — то, что обязано жить без
+   устройства: попадания по людям в рубке и кантине, грани абордажа в мире. */
+/* кисть → GcCtx: как в gpuBakeRedo, глобальный ctx на время рисования — этот холст.
+   Текст GPU-холста растрится, а 2D-портрет грузится только с устройством (08cb, 08ca,
+   свои наборы) — здесь они записываются меткой, мерка строки — по числу букв; всё
+   прочее (пути, штрихи, градиенты, клип, смешения, тени) — настоящее */
+function hqRec(w,h,draw){
+  const g=new GcCtx(w,h,1),prev=ctx;let err="";
+  g.fillText=g.strokeText=function(){this._ops.push({t:"txt"});};
+  g.measureText=t=>({width:String(t).length*5.4});
+  /* портрет (2D-холст mgrFace) грузится в текстуру при рисовании — тоже устройство */
+  g.drawImage=function(){this._ops.push({t:"img"});};
+  ctx=g;try{draw(g);}catch(e){err=e.message;}finally{ctx=prev;}
+  return {g,err};
+}
+TEST_SUITES.push(()=>suite("рубка: кисти пишутся в GPU-холст, по людям тыкают без видеокарты",()=>{
+  resetWorld();
+  G.credits=200000;
+  hireMgr(genMgr(1,["cmd"]));hireMgr(genMgr(2,["fact"]));hireMgr(genMgr(3,["keep"]));
+  G.mgrs.forEach(m=>{m.job=m.job||null;});
+  const k=300/HQ_H,W2=760/k,L=hqLay(W2,HQ_H),sel=G.mgrs[0].id;
+  for(const [nm,fn] of [["стена и пульты",g=>{g.scale(k,k);hqBack(g,L);}],
+                        ["голограмма",g=>{g.scale(k,k);hqHolo(g,L);}],
+                        ["стол",g=>{g.scale(k,k);hqTable(g,L.W2,L.H2,L.fy,L.seed);}],
+                        ["подписи",g=>{g.scale(k,k);hqLabels(g,L,sel,null);}]]){
+    const r=hqRec(760,300,fn);
+    eq(r.err,"",nm+": GPU-холст умеет всё, что просит кисть");
+    ok(r.g._ops.length>0,nm+": что-то нарисовано ("+r.g._ops.length+" команд)");
+  }
+  const m=G.mgrs[0],col=hex2rgb(MGR_ROLES[m.role].col);
+  for(const part of ["legs","top"]){
+    const r=hqRec(120,228,g=>{g.scale(2,2);hqFigure(g,30,108,col,0,null,false,m,0,part);});
+    eq(r.err,"","фигура, "+part+": без дыр");
+  }
+  /* ноги не рисуют корпус, корпус — ног: спрайты не двоят тело */
+  const nl=hqRec(120,228,g=>hqFigure(g,30,108,col,0,null,false,m,0,"legs")).g._ops.length;
+  const nt=hqRec(120,228,g=>hqFigure(g,30,108,col,0,null,false,m,0,"top")).g._ops.length;
+  const na=hqRec(120,228,g=>hqFigure(g,30,108,col,0,null,false,null,0)).g._ops.length;
+  eq(nl+nt,na,"ноги + корпус = вся фигура ("+nl+" + "+nt+" = "+na+")");
+  /* живое — фигуры набора: поля по 11–12, цвета в 0..255 */
+  const live=hqLive(L,HQ_ORDER.map((r,i)=>hqMgrAt(i)),sel,null,123);
+  ok(live.wall.length>0&&live.holo.length>0,"живое есть на стене и над столом");
+  ok([...live.wall,...live.halo,...live.job,...live.holo].every(v=>v.length>=11&&v.slice(1,7).every(Number.isFinite)&&v[10]>=0&&v[10]<=1),
+     "у живого все числа конечны, прозрачность в 0..1");
+  /* без видеокарты (Node): попадания считаются, картинки нет, ошибок нет */
+  const cn={width:760,height:300,__dpr:1,getContext(){return null;}};
+  let hits=null,err="";
+  try{hits=drawHqRoom(cn,sel,null);}catch(e){err=e.message;}
+  eq(err,"","рубка без устройства не падает");
+  eq(hits.length,G.mgrs.length,"попадание на каждого, кто стоит у пульта");
+  ok(hits.every(h=>h.x>=0&&h.x+h.w<=760&&h.y>=0&&h.y+h.h<=300),"и все — в пределах канвы");
+  ok(hits.some(h=>h.id===sel),"выбранный — среди них");
+}));
