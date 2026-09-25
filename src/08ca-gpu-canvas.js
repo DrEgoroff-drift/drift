@@ -422,6 +422,7 @@ function gpuBaked(M,key,w,h,draw,o){
   if(B)gpuBakeDrop(B);B=gpuBake(w,h,draw,o);if(B)M.set(key,B);return B;
 }
 function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev)GPU.trash.push(B.tex);B.tex=B.view=null;}}
+let GC_VA=new Float32Array(1<<16);   /* вершины выпечки (x,y,краска,u,v) — общий растущий буфер */
 function gpuBakeRedo(B){
   const t0=wallMs(),{w,h}=B,k=B.o.ss||(w*h<=262144?2:1),g=new GcCtx(w,h,k),prev=ctx;
   ctx=g;try{B.draw(g);}finally{ctx=prev;}
@@ -430,12 +431,13 @@ function gpuBakeRedo(B){
   B.view=B.tex.createView();B.dev=d;
   const [ms,st,rs]=gcPoolSet("bake",W,H),TW=ms.width,TH=ms.height;
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
-  const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],RI=new Map(),D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
+  let V=GC_VA,vn=0;const P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],RI=new Map(),D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
   let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
-  const put=(md,ref,v,pi,img)=>{const f=V.length/5;
-    if(img)for(let i=0;i<v.length;i+=4)V.push(v[i],v[i+1],pi,v[i+2],v[i+3]);
-    else for(let i=0;i<v.length;i+=2)V.push(v[i],v[i+1],pi,0,0);
-    if(v.length)DL.push({md,ref,f,n:V.length/5-f,img});};
+  const put=(md,ref,v,pi,img)=>{const f=vn/5,e=vn+(img?v.length/4:v.length/2)*5;
+    if(e>V.length){const A=new Float32Array(Math.max(e,V.length*2));A.set(V.subarray(0,vn));V=GC_VA=A;}
+    if(img)for(let i=0;i<v.length;i+=4){V[vn]=v[i];V[vn+1]=v[i+1];V[vn+2]=pi;V[vn+3]=v[i+2];V[vn+4]=v[i+3];vn+=5;}
+    else for(let i=0;i<v.length;i+=2){V[vn]=v[i];V[vn+1]=v[i+1];V[vn+2]=pi;V[vn+3]=0;V[vn+4]=0;vn+=5;}
+    if(v.length)DL.push({md,ref,f,n:vn/5-f,img});};
   const box=v=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     for(let i=0;i<v.length;i+=2){x0=Math.min(x0,v[i]);x1=Math.max(x1,v[i]);y0=Math.min(y0,v[i+1]);y1=Math.max(y1,v[i+1]);}
     x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(W,x1+1);y1=Math.min(H,y1+1);return [x0,y0,x1,y0,x1,y1,x0,y0,x1,y1,x0,y1];};
@@ -490,7 +492,7 @@ function gpuBakeRedo(B){
     ser={op:q0.op,clip:q0.clip,b:sh.b,x:sh.x,y:sh.y,c:sh.c,dx,dy,sg,R:Rr,F:[F],S:[bx(q0)],sd:[],x0,y0,x1,y1,img:{view:L0.dm,near:true}};
     DL=ser.sd;emit(q,"source-over");DL=D;
     ser.pi=P.length/20;P.push(...sh.c,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-    ser.vf=V.length/5;put("shw|"+q0.op,0x80,new Array(24).fill(0),ser.pi,ser.img);};
+    ser.vf=vn/5;put("shw|"+q0.op,0x80,new Array(24).fill(0),ser.pi,ser.img);};
   for(const q of g._ops){clip(q.clip);if(q.sh)shade(q);else drew(q);emit(q,q.op);}
   close();
   /* слои тени — рамки одного атласа (08cc) */
@@ -501,7 +503,7 @@ function gpuBakeRedo(B){
   for(let i=20;i<P.length;i+=20)if(P[i+4])P[i+5]=(P[i+5]+.5)/rt.height;
   /* буферы: vb, pb, ub (0 — GU; 256 — доля resolve для нулевого мипа; 512 — единица для остальных) */
   const bu=GPUBufferUsage,u0=new Float32Array(132);u0.set([TW,TH,k,0]);u0.set([W/TW,H/TH,0,0],64);u0.set([1,1,0,0],128);
-  const vb=gcPoolBuf("vb",bu.VERTEX,new Float32Array(V.length?V:[0,0,0,0])),pb=gcPoolBuf("pb",bu.STORAGE,new Float32Array(P)),ub=gcPoolBuf("ub",bu.UNIFORM,u0);
+  const vb=gcPoolBuf("vb",bu.VERTEX,V.subarray(0,Math.max(vn,4))),pb=gcPoolBuf("pb",bu.STORAGE,new Float32Array(P)),ub=gcPoolBuf("ub",bu.UNIFORM,u0);
   const L=gcLay();let rv=L.dm;
   if(rt){const h=new Uint16Array(R.length*1024);
     R.forEach((r,i)=>{if(!r.h16){r.h16=new Uint16Array(1024);for(let j=0;j<1024;j++)r.h16[j]=f16(r[j]);}h.set(r.h16,i*1024);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);rv=rt.createView();}
@@ -511,7 +513,9 @@ function gpuBakeRedo(B){
       {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:nr?L.near:gpuMipSmp()}]});
     const e=M.get(key)||[];e[nr?1:0]=b;M.set(key,e);return b;};
   const enc=d.createCommandEncoder();
-  const run=(p,list,u)=>{p.setVertexBuffer(0,vb);for(const c of list){p.setPipeline(gcPipe(c.md));p.setBindGroup(0,bg(c.img,u));p.setStencilReference(c.ref);p.draw(c.n,1,c.f,0);}};
+  const run=(p,list,u)=>{p.setVertexBuffer(0,vb);let m=null,im=run,r=-1;   /* состояние — только когда меняется */
+    for(const c of list){if(c.md!==m)p.setPipeline(gcPipe(m=c.md));if(c.img!==im)p.setBindGroup(0,bg(im=c.img,u));
+      if(c.ref!==r)p.setStencilReference(r=c.ref);p.draw(c.n,1,c.f,0);}};
   B.shl=SH.length;if(SA)gcShadowPasses(enc,SH,SA,run);
   const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
     loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
@@ -525,5 +529,6 @@ function gpuBakeRedo(B){
   down(rs.createView(),0,256);
   for(let i=1;i<B.n;i++)down(B.tex.createView({baseMipLevel:i-1,mipLevelCount:1}),i,512);
   d.queue.submit([enc.finish()]);
+  if(V.length>1<<22)GC_VA=new Float32Array(1<<16);   /* после огромной выпечки 16 МБ не держим */
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);
 }

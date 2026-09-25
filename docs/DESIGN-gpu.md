@@ -436,6 +436,36 @@ or a different blur → cut), zero creations on a repeat bake, and a new pool af
   set over 16 MB is used once and never pooled. The 5-minute P1 route has no script here, so these scenes stand in
   for it.
 
+**The price of one GPU-canvas call (profile, 25.09).** Temporary stamps in `gpuBakeRedo` split a bake into record
+(the draw callback), emit (ops → draw list), ramps and paint fix-up, buffers and upload, encoding, and submit. The
+probe baked 4000 calls of each kind into 512² at ×1, desktop, median of 5, in µs per call:
+
+| call | before: total (rec / emit / up / enc) | after: total (rec / emit / up / enc) |
+|---|---|---|
+| `fillRect`, 3 colours | 3.5 (0.4 / 1.3 / 0.6 / 1.0) | 2.4 (0.5 / 1.4 / 0.2 / 0.3) |
+| arc `fill`, r 4 | 7.1 (2.2 / 3.4 / 1.0 / 0.5) | 3.5 (1.7 / 1.1 / 0.4 / 0.3) |
+| line `stroke` | 4.3 (0.9 / 1.6 / 1.2 / 0.6) | 2.4 (1.0 / 0.8 / 0.2 / 0.4) |
+| `drawImage` of a bake | 1.7 (0.8 / 0.4 / 0.2 / 0.3) | 1.0 (0.3 / 0.4 / 0.2 / 0.2) |
+| `fillText`, cached glyphs | 4.9 (3.6 / 0.6 / 0.3 / 0.3) | 2.9 (2.0 / 0.6 / 0.2 / 0.2) |
+| gradient `fillRect` | 3.4 (1.0 / 1.3 / 0.7 / 0.4) | 2.1 (0.8 / 0.8 / 0.3 / 0.3) |
+
+Ramps and submit cost under 0.05 µs a call. The hot spots were two:
+- vertices were pushed into a JS array and copied into a `Float32Array`. They now go straight into one growing
+  `Float32Array` (`GC_VA`), shared by bakes, since the emit runs after the draw callback and nested bakes are
+  finished by then. It is dropped back to 256 KB after a bake over 16 MB;
+- encoding set the pipeline, bind group and stencil reference on every draw. It now sets them only when they
+  change.
+
+Seven bakes hash the same before and after: the hotel's three and four mixed scenes (solids, arcs, strokes,
+images, text, gradients, shadows, clip, destination-out). The hotel's paint bake (1931 calls) emits in
+1.4 ms instead of 2.7.
+
+*The answer on a 16k-call frame.* At 1–3.5 µs a call on the desktop, it is 16–56 ms, and ×4 on the phone. The
+GPU canvas is for bakes, not for a whole frame re-recorded every frame. A frame's steady drawing stays on the direct
+paths (`gpuLitSprite`, the atlases). Record (triangulation, text layout) is now the biggest share for paths and
+text.
+The next gain would be drawing convex fills without the stencil (one draw instead of two). That is not done here.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -449,9 +479,12 @@ or a different blur → cut), zero creations on a repeat bake, and a new pool af
 - **Bake target pool and the shadow atlas are in (§G).** Hotel light layer 146 → ~25 ms, bit-identical; the phone
   twin (hotcost) is still to be measured.
 - **Ramp cache, warm-up in `gpuInit`, pool cap 64 MB (peak 30.4 MB) are in (§G).**
+- **gpu3 merged (de67fb7).** Phone twin, hotel appearance: the worst cold frame is 73.6 → 65.7 ms, textures 35 → 9;
+  warm JS 17.3 → 12.0 ms.
+- **The profile of a bake is in (§G).** One GPU-canvas call costs 1–3.5 µs at ×1, bit-identical.
 - **Next, in Контроль's order (25.09):**
-  0. merge gpu3 (ba9d692, the hotel on GPU-canvas bakes) and measure its appearance on the phone twin with GPU-3's
-     hotcost2.py, gpu3 alone against the merge; then multiply on a transparent destination (two draws), then #ovl.
+  0. multiply on a transparent destination (two draws, a pair on transparent, half and opaque backgrounds against
+     2D, Δ ≤ 1), then #ovl.
      Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake;
   1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
      a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;

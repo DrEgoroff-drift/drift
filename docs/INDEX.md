@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 620 · символов верхнего уровня: 6178
+Файлов: 620 · символов верхнего уровня: 6179
 
 ## СИМВОЛЫ
 
@@ -2047,6 +2047,7 @@ GC_ST                        src/08ca-gpu-canvas.js:332-354
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
+GC_VA                        src/08ca-gpu-canvas.js:425
 GC_WGSL                      src/08ca-gpu-canvas.js:284
 gcAtlas                      src/08cb-gpu-text.js:56-70
 gcBlurPipe                   src/08cc-gpu-shadow.js:35-47
@@ -2254,7 +2255,7 @@ gpuArena                     src/08c-gpu-kit.js:151-161
 gpuBake                      src/08ca-gpu-canvas.js:413-418
 gpuBaked                     src/08ca-gpu-canvas.js:420-423
 gpuBakeDrop                  src/08ca-gpu-canvas.js:424
-gpuBakeRedo                  src/08ca-gpu-canvas.js:425-529
+gpuBakeRedo                  src/08ca-gpu-canvas.js:426-534
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:35-41
 gpuBloom                     src/08b-gpu.js:605-612
@@ -6325,7 +6326,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 26 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 43 КБ
+## src/08ca-gpu-canvas.js · 44 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08cb-gpu-text.js · 9 КБ
