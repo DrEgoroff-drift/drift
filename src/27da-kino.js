@@ -78,6 +78,11 @@ function kinoScreen(c,x,y,w,h,K,seed){
   c.fillRect(x,y,w,h);
   c.save();
   c.beginPath();c.rect(x,y,w,h);c.clip();
+  /* плёнка в фильмовом канале гуляет: кадр чуть дрожит целиком, вместе с
+     подписью — её печатают на той же плёнке (G11) */
+  const fq=hashi(seed|0,Math.floor(now()/120),11);
+  const jx=((fq&255)/255-.5)*w*.006, jy=(((fq>>>8)&255)/255-.5)*h*.010;
+  c.save();c.translate(jx,jy);
   const cx=x+w*.5, cy=y+h*.52;
   const ink="rgba(30,34,38,.86)", pale="rgba(120,126,130,.55)";
   if(F&&F.k==="map"){
@@ -156,6 +161,21 @@ function kinoScreen(c,x,y,w,h,K,seed){
   for(let i=0;i<Math.round(w*h/240);i++)c.fillRect(x+rg()*w,y+rg()*h,1,1);
   c.fillStyle="rgba(255,255,255,.10)";
   c.fillRect(x,y+rg()*h,w,1);
+  /* царапины: одна-две тонкие вертикали, каждые 120 мс на новом месте */
+  c.fillStyle="rgba(40,36,30,.16)";
+  for(let i=0,n=1+(fq>>>16&1);i<n;i++)c.fillRect(x+rg()*w,y,Math.max(1,w*.002),h);
+  c.restore();
+  /* свет проектора — не ровная заливка: горячая середина, края и углы
+     проваливаются, и лампа чуть дышит */
+  const fl=.5+.5*Math.sin(now()*.011)*Math.sin(now()*.0037+1.3);
+  const hot=c.createRadialGradient(cx,cy-h*.02,h*.05,cx,cy,Math.hypot(w,h)*.62);
+  hot.addColorStop(0,"rgba(255,248,228,"+(.16+.06*fl).toFixed(3)+")");
+  hot.addColorStop(.35,"rgba(255,246,222,0)");
+  hot.addColorStop(.75,"rgba(40,34,28,.30)");
+  hot.addColorStop(1,"rgba(30,26,22,.62)");
+  c.fillStyle=hot;c.fillRect(x,y,w,h);
+  c.fillStyle="rgba(10,10,12,"+(.02+.05*(1-fl)).toFixed(3)+")";
+  c.fillRect(x,y,w,h);
   /* подпись журнала */
   if(F){
     c.fillStyle="rgba(16,18,22,.80)";
@@ -172,16 +192,37 @@ function kinoScreen(c,x,y,w,h,K,seed){
   }
   c.restore();
 }
-/* луч из будки: конус пыльного света над головами */
+/* луч из будки: конус пыльного света над головами. Край у луча мягкий — семь
+   вложенных клиньев, ярче к оси; в луче плывёт пыль; у окошка будки светится
+   объектив. Светом, а не краской: всё это — сложением (G11) */
 function kinoBeam(c,fromX,fromY,x,y,w,h){
-  const g=c.createLinearGradient(fromX,fromY,x+w*.5,y+h*.5);
-  g.addColorStop(0,"rgba(255,246,220,.20)");
-  g.addColorStop(1,"rgba(255,246,220,.03)");
-  c.fillStyle=g;
-  c.beginPath();
-  c.moveTo(fromX,fromY-2);c.lineTo(fromX,fromY+2);
-  c.lineTo(x,y+h);c.lineTo(x+w,y);
-  c.closePath();c.fill();
+  const tx=x+w*.5, ty=y+h*.5;
+  c.save();c.globalCompositeOperation="lighter";
+  for(let j=0;j<7;j++){const k=1.16-j*.08,a=.022+j*.009;   /* семь клиньев — край без ступеней */
+    const g=c.createLinearGradient(fromX,fromY,tx,ty);
+    g.addColorStop(0,"rgba(255,244,214,"+(a*2.2).toFixed(3)+")");
+    g.addColorStop(1,"rgba(255,244,214,"+(a*.5).toFixed(3)+")");
+    c.fillStyle=g;
+    c.beginPath();
+    c.moveTo(fromX,fromY-2*k);c.lineTo(fromX,fromY+2*k);
+    c.lineTo(tx+(x-tx)*k,ty+(y+h-ty)*k);c.lineTo(tx+(x+w-tx)*k,ty+(y-ty)*k);
+    c.closePath();c.fill();
+  }
+  /* пыль в луче: медленно плывёт вдоль и поперёк, ближе к будке — гуще */
+  const r=rng(0x0C1B),t=now()/1000;
+  for(let i=0;i<30;i++){
+    const u=(r()+t*.012*(.4+r()))%1, v=r(), sp=r();
+    const ex=x+w*v, ey=y+h*(1-v);
+    const px=fromX+(ex-fromX)*(.08+u*.9), py=fromY+(ey-fromY)*(.08+u*.9)+Math.sin(t*.7+i)*h*.01;
+    c.fillStyle="rgba(255,240,210,"+((.10+sp*.16)*(1-u*.55)).toFixed(3)+")";
+    c.beginPath();c.arc(px,py,.6+sp*1.1,0,TAU);c.fill();
+  }
+  const lg=c.createRadialGradient(fromX,fromY,0,fromX,fromY,h*.22);
+  lg.addColorStop(0,"rgba(255,246,224,.85)");
+  lg.addColorStop(.25,"rgba(255,236,200,.16)");
+  lg.addColorStop(1,"rgba(255,236,200,0)");
+  c.fillStyle=lg;c.fillRect(fromX-h*.22,fromY-h*.22,h*.44,h*.44);
+  c.restore();
 }
 
 /* ── зал на один вечер ──
@@ -200,9 +241,10 @@ function kinoOverlay(c,W2,H2,fy,cy,K,seed){
   kinoScreen(c,sx,sy,sw,sh,K,seed);
   /* отсвет полотна на потолке и на затылках */
   const gl=c.createRadialGradient(sx+sw*.5,sy+sh*.5,sh*.2,sx+sw*.5,sy+sh*.5,sw*1.5);
-  gl.addColorStop(0,"rgba(226,222,206,.16)");
+  gl.addColorStop(0,"rgba(226,222,206,.12)");
   gl.addColorStop(1,"rgba(226,222,206,0)");
-  c.fillStyle=gl;c.fillRect(0,0,W2,H2);
+  c.save();c.globalCompositeOperation="lighter";   /* отсвет — свет, а не краска */
+  c.fillStyle=gl;c.fillRect(0,0,W2,H2);c.restore();
   /* ряды: два ряда затылков и спинок, ближний крупнее */
   const r=rng(seed^0x0C1F);
   for(let row=0;row<2;row++){

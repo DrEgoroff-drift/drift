@@ -40,7 +40,7 @@ suite("GPU-холст: запись, цвет, дыры громко",()=>{
   else{let m="";try{g.fillText("а",0,0);}catch(x){m=x.message;}ok(/^GPU-холст: нет/.test(m),"текст без видеокарты — громко ("+(m||"молча")+")");}
   const loud=[["getImageData",()=>g.getImageData(0,0,1,1)],["шрифт без px",()=>{g.font="1em serif";g.measureText("а");}],
     ["createPattern",()=>g.createPattern(null,"repeat")],
-    ["overlay",()=>{g.globalCompositeOperation="overlay";g.fillRect(0,0,1,1);}],
+    ["saturation",()=>{g.globalCompositeOperation="saturation";g.fillRect(0,0,1,1);}],
     ["тень у copy",()=>{g.globalCompositeOperation="copy";g.shadowBlur=4;g.shadowColor="#000";g.fillRect(0,0,1,1);}]];
   for(const [n,f] of loud){let m="";try{f();}catch(x){m=x.message;}ok(/^GPU-холст: нет/.test(m),n+" — громкий сбой ("+(m||"молча")+")");}
   /* тень (v2): цвет тени премультиплицирован, без globalAlpha; невидимая — не пишется */

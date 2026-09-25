@@ -119,3 +119,22 @@ TEST_SUITES.push(()=>suite("галактика: звёзды держат пло
   eq(err,"","карта с уехавшим листом рисуется");
   G.mapView=null;G.mapZoom=1;G.mode="system";
 }));
+/* ── небо карты на видеокарте (G10, 17z3) ──
+   Шейдер галактики печатает постоянные модели из JS: перенастроили galaxyAt —
+   небо обязано пойти следом, иначе звёзды и дороги (galaxyCell) разойдутся со
+   светом. Без видеокарты карта и сеть дорог рисуются молча, сеть при этом
+   достраивается — это логика, а не рисунок. */
+TEST_SUITES.push(()=>suite("галактика: шейдер неба держит модель",()=>{
+  resetWorld();
+  for(const [n,v] of [["GAL_RD",GAL_RD.toFixed(3)],["GAL_PITCH",GAL_PITCH.toFixed(6)],["GAL_BAR_A",GAL_BAR_A.toFixed(6)],
+    ["GAL_BULGE_CAP",GAL_BULGE_CAP.toFixed(3)],["GAL_GLOW_CAP",GAL_GLOW_CAP.toFixed(3)]])
+    ok(GAL_WGSL.indexOf(v)>=0,n+" = "+v+" есть в шейдере");
+  ok(GAL_WGSL.indexOf("array<vec4f,"+GAL_NEBULAE.length+">")>=0,"все туманности по имени в шейдере: "+GAL_NEBULAE.length);
+  eq(typeof galBake,"undefined","процессорной печи тайлов больше нет");
+  RAIL_NET=null;RAIL_PART=null;
+  G.mode="map";let err="";
+  try{for(let i=0;i<40;i++)drawMap();}catch(e){err=e.message;}
+  eq(err,"","карта рисуется без видеокарты");
+  ok(RAIL_NET!==null||(RAIL_PART&&RAIL_PART.i>=40),"сеть дорог достраивается по линии за кадр карты");
+  G.mode="system";
+}));

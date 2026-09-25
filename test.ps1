@@ -23,6 +23,14 @@
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Files "91a-flight|91c-mgr"  # наборы этих файлов
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Full -ShardSec 15   # потолок части (900 с); убитая часть — красный итог
 param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept, [switch]$Mutants, [switch]$Changed, [string]$Files = "", [int]$ShardSec = 900)
+# ── не Windows: облако Claude, раннер CI (G13, 25.09) ──
+# Дома всё ниже — пустые ветки: $onLin ложно, TEMP и NUMBER_OF_PROCESSORS заданы
+# системой, $psh — тот же powershell. На Linux (pwsh 7) нет ни powershell, ни этих
+# двух переменных, ни Win32_Process; Хром — Playwright'овский, WebGPU за флагом.
+$onLin = ($PSVersionTable.PSVersion.Major -ge 6) -and -not $IsWindows
+$psh = if ($onLin) { "pwsh" } else { "powershell" }
+if (-not $env:TEMP) { $env:TEMP = [System.IO.Path]::GetTempPath().TrimEnd('/') }
+if (-not $env:NUMBER_OF_PROCESSORS) { $env:NUMBER_OF_PROCESSORS = [Environment]::ProcessorCount }
 # ── зоопарк мутантов (M445, DESIGN-tests §5) ──
 # Мера тестов одна: долю авторских багов прогон нашёл бы первым. Каждый из
 # пятнадцати багов истории воспроизводится мутантом — правкой в одну строку
@@ -45,12 +53,12 @@ if ($Mutants) {
     # файл целиком, вместе с чужими несохранёнными правками в нём (0.438.0)
     [System.IO.File]::WriteAllText($path, [regex]::Replace($src, $m.find, $m.replace, 1), $utf8)
     try {
-      $b = & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") 2>&1 | Out-String
+      $b = & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") 2>&1 | Out-String
       if ($LASTEXITCODE -ne 0 -or $b -match "закон|нарушен") { $rows += "  ✓  {0,-22} убит сборкой: {1}" -f $m.name, (($b -split "`n") | Where-Object { $_ -match "закон|нарушен|throw" } | Select-Object -First 1); continue }
       $args2 = @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $root0 "test.ps1"), "-NoBuild")
       if ($m.kill) { $args2 += @("-Only", $m.kill) } else { $args2 += "-Browser" }
       if ($m.mobile) { $args2 += "-Mobile" }
-      $out = & powershell @args2 2>&1 | Out-String
+      $out = & $psh @args2 2>&1 | Out-String
       $rc = $LASTEXITCODE
       $who = (($out -split "`n") | Where-Object { $_ -match "^\s+[✗?]\s" } | Select-Object -First 1)
       if ($null -eq $who) { $who = "" }
@@ -63,7 +71,7 @@ if ($Mutants) {
     }
   }
   # чистая сборка после зоопарка: tests.html не должен остаться мутантом
-  & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null
+  & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null
   "зоопарк: мутантов {0}, выжило {1} · {2:N0} с" -f $zoo.Count, $alive, $sw0.Elapsed.TotalSeconds
   $rows | ForEach-Object { $_ }
   if ($alive) { exit 1 } else { exit 0 }
@@ -94,7 +102,7 @@ if ($Changed) {
   $chg = @(& git -C $root0 diff --name-only HEAD -- src tests) + @(& git -C $root0 ls-files -o --exclude-standard -- src tests)
   $chg = @($chg | Where-Object { $_ } | ForEach-Object { $_ -replace '\\', '/' } | Sort-Object -Unique)
   if ($chg.Count) {
-    if (-not $NoBuild) { & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null; $NoBuild = $true }
+    if (-not $NoBuild) { & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null; $NoBuild = $true }
     $map = [System.IO.File]::ReadAllText((Join-Path $root0 "docs\TESTMAP.json"), [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     $pick = New-Object System.Collections.Generic.HashSet[string]
     foreach ($c in $chg) { if ($c -like "tests/*") { [void]$pick.Add([System.IO.Path]::GetFileName($c)) } }
@@ -120,7 +128,7 @@ $nodeTier = -not ($Full -or $Browser -or $Only -or $Mobile -or $Fuzz -or $Size -
 if ($nodeTier -and -not $nodeExe) { "node не найден (C:\Claude\tools\node или PATH) — идём через Хром"; $nodeTier = $false; $Browser = $true }
 if ($nodeTier) {
   [Console]::OutputEncoding = [Text.Encoding]::UTF8   # node пишет UTF-8; консоль 5.1 по умолчанию cp866
-  if (-not $NoBuild) { & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null }
+  if (-not $NoBuild) { & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null }
   $nargs = @((Join-Path $root0 "test-node.js")); if ($Shuffle) { $nargs += "--shuffle=$Shuffle" }
   & $nodeExe @nargs
   $nodeRc = $LASTEXITCODE
@@ -133,7 +141,7 @@ if ($nodeTier) {
 # отсюда. Печатает и не решает исход — исход даёт основной прогон ниже (Node или Хром).
 if ($Times -and -not $nodeTier -and $nodeExe) {
   [Console]::OutputEncoding = [Text.Encoding]::UTF8
-  if (-not $NoBuild) { & powershell -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null; $NoBuild = $true }
+  if (-not $NoBuild) { & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null; $NoBuild = $true }
   $targs = @((Join-Path $root0 "test-node.js"), "--times"); if ($Full) { $targs += "--full" }
   & $nodeExe @targs
 }
@@ -145,9 +153,26 @@ if (-not $NoBuild) { & (Join-Path $root "build.ps1") | Out-Null }
 $chrome = @("C:\Program Files\Google\Chrome\Application\chrome.exe",
             "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe") |
           Where-Object { Test-Path $_ } | Select-Object -First 1
+# Linux: Хром Playwright'а (облако Claude) первым — те же пути, что в docs/shot.py (CHROMES)
+if ($onLin) { $chrome = @("/opt/pw-browsers/chromium", "/usr/bin/chromium", "/usr/bin/google-chrome") | Where-Object { Test-Path $_ } | Select-Object -First 1 }
 if (-not $chrome) { throw "no headless browser found (Chrome/Edge)" }
 
 $url = "file:///" + ((Join-Path $root "tests.html") -replace "\\", "/")
+if ($onLin) { $url = "file://" + (Join-Path $root "tests.html") }   # путь уже с «/» в начале
+# ── WebGPU без видеокарты (облако, CI): SwiftShader, Vulkan на процессоре ──
+# Флаги — ОДИН источник: список SWIFTSHADER в docs/shot.py (почему именно они и
+# почему никогда не --disable-vulkan-surface — там же и в docs/CLOUD.md); здесь он
+# читается, а не переписывается. Включает DRIFT_GPU=swiftshader (крюк облачного
+# сеанса). На Linux WebGPU в Хроме за флагом --enable-unsafe-webgpu — без него
+# GPU.none, и глаза тестов слепы. Дома (Windows, без DRIFT_GPU) не добавляется ничего.
+$gpuArgs = @()
+if ($onLin -or $env:DRIFT_GPU -eq "swiftshader") { $gpuArgs += "--enable-unsafe-webgpu" }
+if ($env:DRIFT_GPU -eq "swiftshader") {
+  $shotPy = [System.IO.File]::ReadAllText((Join-Path $root "docs\shot.py"), [System.Text.Encoding]::UTF8)
+  $swm = [regex]::Match($shotPy, '(?s)\nSWIFTSHADER = \[(.*?)\]')
+  if (-not $swm.Success) { throw "docs/shot.py: no SWIFTSHADER list — the GPU flags live there" }
+  $gpuArgs += @([regex]::Matches($swm.Groups[1].Value, '"([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
+}
 # -Accept (M443): золотые кадры снимаются заново и пишутся в docs/golden/<окно>.json —
 # после нарочной правки картинки или для окна, у которого эталона ещё нет. Гоняется
 # один набор, в одну страницу; страница кладёт снятое в <pre id="golden">.
@@ -249,11 +274,13 @@ for ($k = 0; $k -lt $Jobs; $k++) {
   # печатает «→ имя» перед КАЖДЫМ набором — на зелёном прогоне файл просто
   # никто не читает; висящая часть называется им ниже (тот же приём, что
   # lab/lab.sh делает для сервера через sed в tests-trace.html).
+  $profDir = "$($env:TEMP)\drift-tests-profile-$tag-$k"
+  if ($onLin) { $profDir = Join-Path $env:TEMP "drift-tests-profile-$tag-$k" }
   $argv = @("--headless=new", "--no-sandbox", "--window-size=$win",
-            "--user-data-dir=$($env:TEMP)\drift-tests-profile-$tag-$k",
+            "--user-data-dir=$profDir",
             "--no-first-run", "--no-default-browser-check", "--timeout=900000",
             "--enable-logging=stderr", "--v=1") +
-          $vt + @("--dump-dom", $u)
+          $gpuArgs + $vt + @("--dump-dom", $u)
   $proc = Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -PassThru -RedirectStandardOutput $dom -RedirectStandardError $errf
   $runs += [pscustomobject]@{ proc = $proc; dom = $dom; k = $k; err = $errf }
 }
@@ -288,8 +315,11 @@ foreach ($r in $runs) {
     $hung = Last-Suite $r.err
     if ($hung) { "  ! часть {0}/{1} не кончилась за {2} с — ВИСИТ в наборе «{3}», убиваю Chrome профиля drift-tests-profile-{4}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $hung, $tag }
     else { "  ! часть {0}/{1} не кончилась за {2} с — ВИСИТ (имя набора не поймано), убиваю Chrome профиля drift-tests-profile-{3}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $tag }
+    if ($onLin) { & pkill -9 -f "drift-tests-profile-$tag-$($r.k)( |$)" 2>$null }
+    else {
     Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -match "drift-tests-profile-$tag-$($r.k)\b" } |
       ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    }
     try { $r.proc.Kill() } catch {}
     $killed[$r.k] = $(if ($hung) { $hung } else { "?" })
   }

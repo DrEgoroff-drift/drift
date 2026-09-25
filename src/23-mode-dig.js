@@ -217,7 +217,7 @@ function updateDig(dt){
     (cell.res?" · ЖИЛА: "+RES[cell.res].ru.toUpperCase():"")+
     (st.drill<1.3?"\nБЫСТРЕЕ — МОДУЛЬ «БУРОВАЯ УСТАНОВКА» НА СТАНЦИИ":"");
   if(cell.prog>=cell.hard){
-    cell.dug=true;D.target=null;
+    cell.dug=true;D.target=null;D.maskV=(D.maskV|0)+1;   /* маска света пересоберётся (23b) */
     /* по вертикальному ходу остаётся лесенка: видно, где можно подняться обратно */
     if(dy){cell.ladder=true;digCell(D,D.col,D.row).ladder=true;}
     D.col=tc;D.row=tr2;D.move=11;D.deepest=Math.max(D.deepest,D.row);

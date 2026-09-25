@@ -43,22 +43,27 @@ function glowDressFlora(plants){
   if(!glowDepthHere())return;
   for(const pl of plants)pl.glow=true;
 }
-/* площадка освещена той же флорой: кольцо огоньков вокруг корабля, ночью */
+/* площадка освещена той же флорой: кольцо огоньков вокруг корабля, ночью.
+   G6: огонёк — не пятно на грунте, а лампа: банка со мхом на колышке, и она
+   СВЕТИТ — холодным светом мха на грунт площадки, на опоры и на людей (11va).
+   Днём мох в банке тусклый, зелёный — лампа видна как вещь */
+const GLOW_LAMP=[150/255,235/255,225/255];   /* PEEP_LIT (20c) — объявлен ниже по сборке */
 function glowDrawPad(S,camx,camy){
   if(!glowDepthHere())return;
   const nite=(typeof surfNight==="function")?surfNight(S.p):0;
-  if(nite<.1)return;
-  const a=clamp(nite*1.6,0,1);
-  ctx.save();ctx.globalCompositeOperation="lighter";
+  const a=clamp((nite-.08)*2.4,0,1);
   for(let i=-3;i<=3;i++){
+    if(!i)continue;                                   /* под кораблём лампу не ставят */
     const wx=S.shipX+i*34, x=wx-camx;
     if(x<-20||x>W+20)continue;
-    const y=groundAt(S.tr,wx)-camy-1;
-    const g=ctx.createRadialGradient(x,y,0,x,y,9);
-    g.addColorStop(0,rgba(PEEP_LIT,a*.8));g.addColorStop(1,rgba(PEEP_LIT,0));
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,9,0,TAU);ctx.fill();
+    const y=groundAt(S.tr,wx)-camy;
+    ctx.fillStyle="rgba(58,48,36,.95)";ctx.fillRect(x-.8,y-9,1.6,9);          /* колышек */
+    ctx.fillStyle="rgba(24,30,30,.9)";ctx.fillRect(x-2.4,y-14,4.8,5.5);       /* банка */
+    ctx.fillStyle=a>0?rgba(PEEP_LIT,.55+.4*a):"rgba(96,132,110,.7)";
+    ctx.fillRect(x-1.6,y-13,3.2,3.8);
+    ctx.fillStyle="rgba(230,240,236,.35)";ctx.fillRect(x-2.4,y-14.6,4.8,.8);  /* крышка */
+    if(a>0)placeLamp(x,y-11.5,120,GLOW_LAMP,Math.min(1,.4+a),12);
   }
-  ctx.restore();
 }
 /* светящийся мох — товар: скан растения в уезде кладёт в трюм ксенобиом */
 function glowScan(pl){
@@ -90,6 +95,8 @@ function glowDrawPatches(tr,camx,camy,p){
   for(const q of glowPatches(tr,p)){
     const x=q.x-camx;if(x<-q.w||x>W+q.w)continue;
     const y=groundAt(tr,q.x)-camy;
+    /* пятно светит само: грунт вокруг формы сияет её светом, без точки-лампы (11va) */
+    for(const f of [-.5,0,.5])placeLamp(x+q.w*f,groundAt(tr,q.x+q.w*f)-camy-4,q.w*.7,GLOW_LAMP,a*.45,-6);
     if(q.k==="rut"){
       ctx.setLineDash([6,5]);
       for(const dy of [-2.5,1.5]){ctx.beginPath();for(let wx=q.x-q.w;wx<=q.x+q.w;wx+=8){const sy=groundAt(tr,wx)-camy+dy;wx===q.x-q.w?ctx.moveTo(wx-camx,sy):ctx.lineTo(wx-camx,sy);}ctx.stroke();}
