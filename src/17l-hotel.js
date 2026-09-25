@@ -24,21 +24,25 @@ const hotelType=by=>HOTEL_T[by]||HOTEL_T.gt;
 function hotelLitFrac(by,hr){
   if(by==="co")return .95;
   if(by==="or"&&(hr>=22||hr<6))return .04;
-  const T=[.12,.08,.06,.05,.06,.15,.45,.55,.35,.18,.12,.12,.14,.14,.14,.16,.25,.5,.8,.9,.88,.75,.55,.3];
+  const T=[.12,.08,.06,.05,.06,.15,.36,.42,.3,.18,.12,.12,.14,.14,.14,.16,.24,.38,.48,.52,.5,.44,.34,.22];   /* вечером горит половина: весь дом в огнях — шашка */
   return T[hr|0];
 }
-/* у каждого окна своё зерно-порог; раз в шесть секунд одно-два окна передумывают */
-function hotelWinLit(N,sd,lit,flick){
+/* окно — часть комнаты (W[n][4]): у комнаты одно зерно-порог, её окна горят вместе; комната
+   ≥9000 — зал на весь этаж (ресторан, холл): горит, пока в доме вечер. Раз в шесть секунд
+   одна-две комнаты передумывают */
+function hotelWinLit(W,sd,lit,flick){
   let m="";
-  for(let n=0;n<N;n++){
-    const h=hashi(n,sd,0x407E)>>>0;let on=((h%1000)/1000)<lit;
-    if(((hashi(n,flick,0xF11C)>>>0)%89)===0)on=!on;
+  for(let n=0;n<W.length;n++){
+    const q=W[n][4]!=null?W[n][4]:n;
+    let on=q>=9000?lit>.3:((hashi(q,sd,0x407E)>>>0)%1000)/1000<lit;
+    if(q<9000&&((hashi(q,flick,0xF11C)>>>0)%89)===0)on=!on;
     m+=on?"1":"0";
   }
   return m;
 }
 /* лампы окон: накаливание 2700–3000 K, последняя — холодная (телевизор, дневная лампа) */
-const HOTEL_LAMP=[[255,169,87],[255,178,104],[255,163,80],[255,186,118],[255,172,94],[255,180,110],[180,200,235]];
+const HOTEL_LAMP=[[255,166,84],[255,192,126],[170,196,240]];   /* два тёплых и редкий голубой — не конфетти */
+const hotelLampOf=h=>h%23===0?2:(h>>>5)&1;
 const HOTEL_CURT=["#e8b86a","#f0d49a","#d98d5a","#f4c2a8","#b8c8e8","#e0a0a0"];
 const HOTEL_EM=1,HOTEL_NEON=1.2,HOTEL_SHEEN=.4;   /* отсвет — тронуть камень, не выбелить его */
 /* мастер берётся на уровень крупнее (не мельче экрана): окна и рамы резкие */
@@ -72,7 +76,7 @@ function* hotelJob(T,sd,col,key){
       const gs=g.createRadialGradient(qx,qy,0,qx,qy,qr);gs.addColorStop(0,rgba(col,1));gs.addColorStop(.45,rgba(col.map(v=>v*.35),1));gs.addColorStop(1,"#000");
       g.fillStyle=gs;g.fillRect(0,0,w,h);g.globalCompositeOperation="destination-in";g.drawImage(cv,0,0);},{ss:1});
     /* рамки окон — в целых пикселях мастера (округление монотонно: соседние не наезжают) */
-    B.win=T.wins(sd).map(b=>b.map(v=>Math.round(v*T.PX)));
+    B.win=T.wins(sd).map(b=>[...b.slice(0,4).map(v=>Math.round(v*T.PX)),b[4]]);
     ok[0]=true;return B;
   }finally{if(!ok[0])hotelDrop(B);}
 }
@@ -89,16 +93,17 @@ let HOTEL_LIT=null;
 function hotelLitRects(B,by,sd){
   const hr=((G.t%CEL_DAY)/CEL_DAY)*24,f=hotelLitFrac(by,hr),fl=Math.floor(G.t/60/6),key=B.key+"|"+f+"|"+fl;
   if(HOTEL_LIT&&HOTEL_LIT.key===key&&HOTEL_LIT.B===B)return HOTEL_LIT.R;
-  const m=hotelWinLit(B.win.length,sd,f,fl),R=[];
-  for(let n=0;n<m.length;n++)if(m[n]==="1")R.push(B.win[n]);
-  HOTEL_LIT={key,B,R};return R;
+  const m=hotelWinLit(B.win,sd,f,fl),R=[],L=[],T=hotelType(by),hx=T.halo[0]*T.PX,hy=T.halo[1]*T.PX;
+  for(let n=0;n<m.length;n++)if(m[n]==="1"){const w=B.win[n];R.push(w);
+    L.push([Math.max(0,w[0]-hx),Math.max(0,w[1]-hy),Math.min(B.w,w[2]+hx),Math.min(B.h,w[3]+hy)]);}   /* свет окна с отсветом на стену */
+  HOTEL_LIT={key,B,R:{R,L}};return HOTEL_LIT.R;
 }
 /* ── вывеска: неон 17k0 в мировом кегле (растёт с зумом). Печь — ступенями кегля через √2,
    между ступенями — масштаб ≤ √2: печей мало, буква не мылится ── */
 function hotelNeon(Ht,T,k,col){
   if(!T.sign)return null;
   const F=T.sign[2]*k;if(F<3)return null;
-  const Fb=Math.max(3,Math.round(Math.pow(2,Math.round(Math.log2(F)*2)/2)));
+  const Fb=Math.max(3,Math.round(Math.pow(2,Math.round(Math.log2(F)*4)/4)*2)/2);
   const N=neonBake("hotel",Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic");
   return N?{N,s:F/Fb}:null;
 }
@@ -121,7 +126,7 @@ function drawHotel(zx,zy,Z){
   const pass=gpuScene();if(!pass)return;
   const B=hotelGet(T,Ht.by,sd,col,true);if(!B)return;   /* на экране, а не готов — допекаем сразу (PB_SYNC), не проявляем из пустоты */
   const S=fa>0?hotelNeon(Ht,T,k,col):null;
-  const lit=hotelLitRects(B,Ht.by,sd),sx=w/B.w,sy=h/B.h;
+  const {R:lit,L:lith}=hotelLitRects(B,Ht.by,sd),sx=w/B.w,sy=h/B.h;
   /* кусок мастера [x0,y0,x1,y1] (px) → прямоугольник на экране той же долей дома */
   const R=(Q,a)=>Q.map(q=>({x:ox+(q[0]+q[2])/2*sx,y:oy+(q[1]+q[3])/2*sy,w:(q[2]-q[0])*sx,h:(q[3]-q[1])*sy,a,
     u0:q[0]/B.w,v0:q[1]/B.h,u1:q[2]/B.w,v1:q[3]/B.h})),all=[[0,0,B.w,B.h]];
@@ -131,7 +136,7 @@ function drawHotel(zx,zy,Z){
   /* горящие окна — поверх: стекло непрозрачно, замена точная (отсвет вывески на них не нужен — светят сами) */
   if(lit.length){gpuImage(pass,B.cl,R(lit,1),o);}
   gpuImage(pass,B.em,R(all,HOTEL_EM),ad);
-  if(lit.length)gpuImage(pass,B.el,R(lit,HOTEL_EM),ad);
+  if(lith.length)gpuImage(pass,B.el,R(lith,HOTEL_EM),ad);
   if(S)hotelNeonDraw(pass,S,ox+T.sign[0]*k,oy+T.sign[1]*k,fa,HOTEL_NEON*fa);
 }
 /* ── общие куски кисти ── */
@@ -152,16 +157,18 @@ function hotelLamp(c,e,x,y,r,rgb,a){
 }
 /* окна: рамки [x0,y0,x1,y1]; lit — все горят (половина cl) или все погашены (cv).
    Одна заливка на цвет: сотни окон — десяток команд записи */
-function hotelWindows(c,e,wins,sd,lit,dark){
+function hotelWindows(c,e,wins,sd,lit,dark,halo){
+  halo=halo||[0,0];
   const G0={};const add=(k,f)=>{(G0[k]=G0[k]||[]).push(f);};
-  wins.forEach((b,n)=>{const hh=hashi(n,sd,0x407E)>>>0,[x0,y0,x1,y1]=b,w=x1-x0,h=y1-y0;
-    if(lit){const L=(hh>>>4)%HOTEL_LAMP.length;add("l"+L,[x0,y0,w,h]);
+  wins.forEach((b,n)=>{const hh=hashi(n,sd,0x407E)>>>0,hr=hashi(b[4]!=null?b[4]:n,sd,0x407E)>>>0,[x0,y0,x1,y1]=b,w=x1-x0,h=y1-y0;
+    if(lit){const L=hotelLampOf(hr);add("l"+L,[x0,y0,w,h]);add("h",[x0-halo[0],y0-halo[1],w+2*halo[0],h+2*halo[1]]);
       if(hh%3===0)add("c"+(hh>>>7)%HOTEL_CURT.length,[x0,y0,w*.32,h]);
       if(hh%11===0)add("s",[x0+w*.45,y0+h*.35,w*.3,h*.65]);}   /* силуэт жильца */
     else add("d"+(hh>>>9)%dark.length,[x0,y0,w,h]);});
   for(const k in G0){const R=G0[k];c.beginPath();for(const r of R)c.rect(r[0],r[1],r[2],r[3]);
     if(k[0]==="l"){const lc=HOTEL_LAMP[+k.slice(1)];c.fillStyle=rgba([lc[0]*.8,lc[1]*.58,lc[2]*.34],1);c.fill();   /* янтарь, не сливки: свет — в слое свечения */
-      e.beginPath();for(const r of R)e.rect(r[0],r[1],r[2],r[3]);e.fillStyle=rgba(lc,.3);e.fill();}
+      e.beginPath();for(const r of R)e.rect(r[0],r[1],r[2],r[3]);e.fillStyle=rgba(lc,.22);e.fill();}
+    else if(k==="h"){e.beginPath();for(const r of R)e.rect(r[0],r[1],r[2],r[3]);e.fillStyle="rgba(255,170,90,.07)";e.fill();}
     else if(k[0]==="c"){c.fillStyle=HOTEL_CURT[+k.slice(1)];c.globalAlpha=.75;c.fill();c.globalAlpha=1;}
     else if(k==="s"){c.fillStyle="rgba(50,34,26,.6)";c.fill();}
     else{c.fillStyle=dark[+k.slice(1)];c.fill();}}

@@ -109,7 +109,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: окна гостин
     const d0=Math.floor(G.t/CEL_DAY)*CEL_DAY;
     for(let h=0;h<24;h+=3)for(let f=0;f<3;f++){
       G.t=d0+CEL_DAY*h/24+f*360;gatePlace();
-      masks.add(hotelWinLit(B?B.win.length:0,sd,hotelLitFrac(Ht.by,((G.t%CEL_DAY)/CEL_DAY)*24),Math.floor(G.t/60/6)));
+      masks.add(hotelWinLit(B?B.win:[],sd,hotelLitFrac(Ht.by,((G.t%CEL_DAY)/CEL_DAY)*24),Math.floor(G.t/60/6)));
       frameBody(wallMs());
     }
   }finally{Q.copyExternalImageToTexture=c0;G.running=run0;LOOP_OFF=loop0;}
