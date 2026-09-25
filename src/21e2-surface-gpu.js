@@ -55,6 +55,9 @@ fn srLayer(p:vec2f,row:i32,o:vec4f,col:vec3f,k:f32,det:f32,ink:vec4f)->vec4f{
   let mist=srn2(vec2f(wx*.006-V[7].x*(.35+k),p.y*.02+f32(row)*9.));
   let fog=smoothstep(0.,150.*(1.1-k),dd)*(.26+.16*k)*(.7+.6*mist)*hasAir;
   c=mix(c,air,clamp(fog,0.,.85));
+  /* промоины по линии падения: вытянутые вниз тени, у гребня сильнее */
+  let gul=srn2(vec2f(wx*.09+f32(row)*3.,(p.y+o.y)*.011));
+  c=c*(1.-(gul-.5)*.26*exp(-max(dd,0.)/(110.*(1.2-k)))*(1.-k*.7));
   /* кромка, поймавшая свет: тонкая, со стороны звезды */
   let rim=exp(-max(dd,0.)/(1.3*px+.6))*smoothstep(.35,.9,lit)*(.10+.12*day)*(1.-k*.6);
   c=c+V[6].rgb*rim;
@@ -64,27 +67,29 @@ fn srLayer(p:vec2f,row:i32,o:vec4f,col:vec3f,k:f32,det:f32,ink:vec4f)->vec4f{
 }
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v;
-  /* ближняя гряда (B) поверх дальней (A): сначала B, под ней — A */
+  /* ближняя гряда (B) поверх дальней (A), обе поверх самой дальней (C) */
   let b=srLayer(p,1,V[1],V[3].rgb,V[3].w,1.,vec4f(0.));
   if(b.a>=.999){return b;}
-  let a=srLayer(p,0,V[0],V[2].rgb,V[2].w,.7,vec4f(0.));
+  var a=srLayer(p,0,V[0],V[2].rgb,V[2].w,.7,vec4f(0.));
+  if(a.a<.999&&V[8].z>0.){let c=srLayer(p,3,V[8],V[9].rgb,V[9].w,.45,vec4f(0.));a=a+c*(1.-a.a);}
   return b+a*(1.-b.a);
 }`;
 const SRG_RGB=s=>{const m=String(s).match(/\d+(\.\d+)?/g)||[0,0,0];return [+m[0]/255,+m[1]/255,+m[2]/255];};
-/* текстура высот: строки 0, 1 — дальние гряды, 2 — ближний грунт. Середина — mid ближнего */
+/* текстура высот: строки 0, 1 — дальние гряды, 2 — ближний грунт, 3 — самая дальняя
+   (её нет — строка повторяет A и поле её не кладёт). Середина — mid ближнего */
 function surfHeightTex(tr){
-  const d=GPU.dev,N=tr.N,key=tr.farK+"|"+N;
+  const d=GPU.dev,N=tr.N,key=tr.farK+"|"+N+"|"+tr.farH.length;
   if(tr._gpuH&&tr._gpuH.dev===d&&tr._gpuH.key===key)return tr._gpuH;
   if(tr._gpuH&&tr._gpuH.dev===d)GPU.trash.push(tr._gpuH.tex);
   let s=0;for(let i=0;i<N;i++)s+=tr.h[i];
-  const mid=Math.round(s/N),b=new Uint8Array(N*4*3);
-  const rows=[tr.farH[0],tr.farH[1],tr.h];
-  for(let r=0;r<3;r++)for(let i=0;i<N;i++){
+  const mid=Math.round(s/N),b=new Uint8Array(N*4*4);
+  const rows=[tr.farH[0],tr.farH[1],tr.h,tr.farH[2]||tr.farH[0]];
+  for(let r=0;r<4;r++)for(let i=0;i<N;i++){
     const v=clamp(Math.round((rows[r][i]-mid+4096)*8),0,65535),o=(r*N+i)*4;
     b[o]=v>>8;b[o+1]=v&255;b[o+2]=0;b[o+3]=255;
   }
-  const U=GPUTextureUsage,tex=d.createTexture({size:[N,3],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST});
-  d.queue.writeTexture({texture:tex},b,{bytesPerRow:N*4},[N,3]);
+  const U=GPUTextureUsage,tex=d.createTexture({size:[N,4],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST});
+  d.queue.writeTexture({texture:tex},b,{bytesPerRow:N*4},[N,4]);
   return tr._gpuH={dev:d,key,tex,view:tex.createView(),mid};
 }
 /* обе дальние гряды одним полем; false — видеокарты нет, рисуют тайлы 2D */
@@ -103,6 +108,11 @@ function surfRidgesGpu(tr,p,camx,camy,stpK){
   const sc=starRGB();
   U[24]=sc[0]/255;U[25]=sc[1]/255;U[26]=sc[2]/255;U[27]=p.T.atm==="отсутствует"?0:1;
   U[28]=(G.t||0)*.0012;
+  /* самая дальняя гряда: выше и крупнее, почти в цвет воздуха, параллакс слабее */
+  if(tr.farH[2]){
+    U[32]=camx*.12;U[33]=camy*.34+250;U[34]=tr.step*5.4*stpK;
+    const cC=SRG_RGB(hazeFar(p,.78));U[36]=cC[0];U[37]=cC[1];U[38]=cC[2];U[39]=.78;
+  }
   gpuField(pass,"sridge",GSR_WGSL,U,[HT]);
   return true;
 }
@@ -151,7 +161,15 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   m=m*(1.+clamp(cv,-1.,1.)*.20*exp(-max(dd,0.)/36.)*(.4+.6*day));
   /* зерно в пиксель, в координатах мира */
   m=m*(1.+(sgk(floor(w/max(px,.5)))-.5)*.07);
-  return vec4f(vec3f(m*cov),cov);
+  /* тёплый ключ и холодная тень: верхняя кожа склона, повёрнутого к звезде, берёт
+     цвет звезды; тело разреза с глубиной уходит в холод неба (закон «ключ тёплый,
+     заполнение холодное») */
+  let nl=sqrt(1.+s*s);let lit=clamp(dot(vec2f(-s,-1.)/nl,sun),0.,1.);
+  let band=exp(-max(dd,0.)/26.)*pow(lit,1.2)*day;
+  var mc=vec3f(m)*(vec3f(1.)+V[3].rgb*band*.42);
+  let cold=smoothstep(14.,240.,dd)*.34;
+  mc=mc*mix(vec3f(1.),V[4].rgb,cold);
+  return vec4f(mc*cov,cov);
 }`;
 function surfGroundGpu(tr,camx,camy,fill,line,pal){
   if(!GPU.on||!pal||!tr.mat)return false;
@@ -179,6 +197,11 @@ function surfGroundGpu(tr,camx,camy,fill,line,pal){
   const HT=surfHeightTex(tr),U=GSG;U.fill(0);
   U[0]=camx;U[1]=camy;U[4]=tr.step;U[5]=tr.N;U[6]=HT.mid;
   U[8]=SUN_DIR.x;U[9]=SUN_DIR.y;U[10]=tr.p?dayK(tr.p):.6;U[11]=1;
+  /* цвета света по светлоте единицы: оттенок, а не затемнение */
+  const lu=c=>Math.max(1,.3*c[0]+.59*c[1]+.11*c[2]);
+  const sc=starRGB(),am=tr.p?ambRGB(tr.p):[150,170,200],ls=lu(sc),la=lu(am);
+  U[12]=sc[0]/ls;U[13]=sc[1]/ls;U[14]=sc[2]/ls;
+  U[16]=am[0]/la;U[17]=am[1]/la;U[18]=am[2]/la;
   gpuField(pass,"sground",GSG_WGSL,U,[HT],{blend:"mul"});
   /* трава живая — кланяется ветру, остаётся 2D поверх */
   drawGroundGrass(tr,camx,camy);

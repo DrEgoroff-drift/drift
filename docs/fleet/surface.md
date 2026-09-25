@@ -31,6 +31,11 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    the second `gpuOver`; then one multiply field (`fld.sground`) over the ground mask from the height
    texture: micro-relief of the rock lit from the star's side and fading with depth, convex crests
    lighter and hollows darker at the edge, pixel grain anchored to the world. Live grass stays 2D above.
+3. **merge of the fleet base** (kit `Path2D`, `createPattern`, `gpuDrawChunks`; landing, places, rooms…).
+4. **a third plane and a warm/cold key** — `tr.farH[2]`, a third, farthest ridge (taller, slower
+   parallax, almost the air colour) drawn only by the GPU field (texture row 3); gullies down the fall
+   line on the ridges; on the ground a warm skin of star colour on sun-facing slopes and a cold sky tint
+   deepening with the cut (key warm, fill cold). The 2D path ignores the third ridge.
 
 ## Pairs (scratchpad, not in git)
 
@@ -39,6 +44,9 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
   a wall.
 - `pair-after2-noon.png`, `pair-after2-surface.png` (+ crops `cb-/ca-after2-*.png`) — the cut face of the
   ground reads as rock under the star (lit bumps, grain) instead of a flat printed slab.
+- `pair-a4-noon.png`, `pair-a4-surface.png`, `pair-a3-night.png` — three planes of air behind the walker
+  instead of two, the lit top of the ground glows warm while its body goes cold: the frame gets depth and
+  a second temperature.
 
 ## Requests outside the zone
 
@@ -54,6 +62,10 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pipe:kit.img|over` (already known)
 
 ## Open problems
+
+- `surfGroundGpu` bakes chunks on a 2D canvas and uploads them (one upload per chunk); the kit's
+  `gpuDrawChunks` could bake them on the GPU instead — not switched: the bake runs `drawGround`,
+  `drawRocks`, `glazeGround` (landing's and 18a1's code), whose GcCtx compatibility is not proven here.
 
 - Wave 2: `Path2D` in `GcCtx` is not merged in the base yet (checked at start) — deco, POI skin,
   geology and built wait for it.

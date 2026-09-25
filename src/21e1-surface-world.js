@@ -98,7 +98,10 @@ function drawSurfaceWorld(){
       return a;
     };
     tr.farH=[ridge(rel*1.30*FARK,.045,seed^0x8A11,5),
-             ridge(rel*0.80*FARK,.052,seed^0x33C7,4)];
+             ridge(rel*0.80*FARK,.052,seed^0x33C7,4),
+             /* третья, самая дальняя — только для видеокарты (21e2): в 2D она стоила
+                бы столько же, сколько две, а там она почти даром */
+             ridge(rel*1.9*FARK,.034,seed^0x5E1D,5)];
     tr.farK=FARK;
   }
   const stpK=.55+.45*FARK;
