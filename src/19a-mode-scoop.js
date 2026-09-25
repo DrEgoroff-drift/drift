@@ -184,121 +184,16 @@ function drawScoop(){
   ctx.save();ctx.translate(0,sh);
   /* небо гиганта, глубина и гроза — одно живое поле на видеокарте (19a1) */
   const pass=gpuScene(),LS=scoopGpuAir(pass,S,sh);
-  /* ── кромки сдвига ──
-     Текстура растягивается на полтора экрана и мылится: ни одной чёткой
-     границы, глазу не за что зацепиться, и скорость не читается. У настоящих
-     полос гиганта кромка резкая — там, где два потока идут в разные стороны.
-     Кромки рисуем в экранных координатах: волнистая линия, светлая сверху,
-     тёмная снизу, и каждая едет со своей скоростью — вот это и есть скорость. */
-  /* Семь кромок ровной волной через весь кадр читались змеями: одинаковая
-     амплитуда на равных шагах — это узор, а не течение. Их меньше, они гуще
-     книзу (там плотнее газ) и каждая своей длины волны. */
-  for(let e=0;e<5;e++){
-    const re=rng(hashi(p.seed,e*7717,0x3D9));
-    const v=.22+e*e*.036+e*.09+re()*.04, ey=H*v;
-    const dep=v<.5?1-v*1.2:.4+v*.4;                 // ближние (нижние) едут быстрее
-    const amp=6+re()*16, wl=180+re()*260, spd=(3+re()*7)*dep;
-    ctx.beginPath();
-    for(let x=-20;x<=W+20;x+=14){
-      const yy=ey+Math.sin((x+S.x*spd*11)/wl*TAU)*amp
-                 +Math.sin((x*1.7-S.x*spd*6)/(wl*.43)*TAU)*amp*.32;
-      if(x<0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);
-    }
-    /* Контурная линия поверх мыла — худшее из решений: она читается карандашом
-       по обоям, потому что живёт отдельно от тона. Кромка — это ТЕНЬ под
-       выступающей лентой: широкий мягкий мазок вниз и узкий тёмный по самой
-       границе, без единой светлой обводки. */
-    ctx.save();ctx.lineCap="round";
-    ctx.strokeStyle="rgba(10,6,16,"+(.16+dep*.18).toFixed(2)+")";
-    ctx.lineWidth=14;ctx.globalAlpha=.55;ctx.stroke();
-    ctx.globalAlpha=1;
-    ctx.strokeStyle="rgba(12,8,18,"+(.20+dep*.20).toFixed(2)+")";ctx.lineWidth=2.6;ctx.stroke();
-    ctx.restore();
-    /* ── завитки сдвига (M169) ──
-       Ровная тень вдоль всей кромки читается проведённой линией. На настоящей
-       границе двух потоков растут ВАЛЫ: гребень заворачивается в крючок,
-       крючки идут чередой и едут вместе с лентой. Их и рисуем — светлым по
-       верхней стороне, тенью под ней; это и есть «резкий фронт» из долга G5. */
-    const cw=110+re()*90;
-    const off=(S.x*spd*11)%cw;
-    for(let x=-cw-off;x<W+cw;x+=cw){
-      const yy=ey+Math.sin((x+S.x*spd*11)/wl*TAU)*amp
-                 +Math.sin((x*1.7-S.x*spd*6)/(wl*.43)*TAU)*amp*.32;
-      /* Вал — это ТЕЛО, а не контур: линиями он читался бровками, набросанными
-         карандашом поверх облаков (самокритика M169). Мягкий валик с бликом
-         сверху и тенью снизу, размер и наклон из хеша — чередой, но не под
-         копирку. */
-      const hh=hashi(Math.round(x/cw),e,0x0B11);
-      const cr=9+((hh&7)/7)*13, tilt=(((hh>>>3)&15)/15-.5)*.5;
-      ctx.save();
-      ctx.translate(x,yy);ctx.rotate(tilt);
-      const rg=ctx.createLinearGradient(0,-cr*.8,0,cr*.8);
-      rg.addColorStop(0,"rgba(248,242,255,"+(.11+dep*.07).toFixed(3)+")");
-      rg.addColorStop(.45,"rgba(200,190,220,0)");
-      rg.addColorStop(1,"rgba(8,4,14,"+(.13+dep*.10).toFixed(3)+")");
-      ctx.fillStyle=rg;
-      ctx.beginPath();ctx.ellipse(0,0,cr*1.7,cr*.72,0,0,TAU);ctx.fill();
-      ctx.restore();
-    }
-  }
-  /* набегающий поток: тонкие штрихи по всему кадру, гуще к низу */
-  ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;
-  for(let i=0;i<26;i++){
-    const rr2=rng(hashi(p.seed,i*331,0x51EA));
-    const yy=rr2()*H, len=40+rr2()*180, spd=2+rr2()*5;
-    const xx=(W+220)-((S.x*spd*11+rr2()*3000)%(W+440));
-    ctx.globalAlpha=.03+.09*(yy/H);
-    ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx+len,yy);ctx.stroke();
-  }
-  ctx.globalAlpha=1;
-  /* коридор сбора: не две пунктирные линейки поверх мира, а слой более
-     плотного газа — он светится и в нём висит взвесь, которую и собирают */
-  /* ── дорога, а не полка ──
-     Полоса шла ровной лентой через кадр и держать её было нечем — она сама
-     держала. Теперь это ДОРОГА: она уходит вверх и вниз, её видно вперёд на
-     полтора корпуса пути, и лететь надо по ней. Рисуется по тем же
-     координатам, по каким считается столкновение (scoopCenter), иначе
-     картинка врёт про правила. */
+  /* кромки сдвига с валами, набегающий поток и коридор сбора — второе поле (19a1).
+     Коридор рисуется по тем же координатам, по каким считается столкновение
+     (scoopCenter), иначе картинка врёт про правила */
+  scoopGpuFlow(pass,S,sh,LS);
   const hband=H*(SCOOP_BAND[1]-SCOOP_BAND[0]);
-  const STEP=16,cols=[];
-  for(let X=-STEP;X<=W+STEP;X+=STEP)cols.push([X,scoopCenter(S.x+(X-W*.34)/SCOOP_PX)]);
-  function bandPath(off){
-    ctx.beginPath();
-    for(let i=0;i<cols.length;i++){const c=cols[i];
-      if(i)ctx.lineTo(c[0],c[1]+off);else ctx.moveTo(c[0],c[1]+off);}
-  }
-  ctx.save();
-  ctx.beginPath();
-  for(let i=0;i<cols.length;i++){const c=cols[i];
-    if(i)ctx.lineTo(c[0],c[1]-hband*.5);else ctx.moveTo(c[0],c[1]-hband*.5);}
-  for(let i=cols.length-1;i>=0;i--)ctx.lineTo(cols[i][0],cols[i][1]+hband*.5);
-  ctx.closePath();
-  ctx.fillStyle="rgba(127,224,200,.17)";ctx.fill();
-  ctx.clip();
-  /* взвесь внутри ленты: она едет вместе с дорогой, а не поперёк неё */
-  ctx.fillStyle="rgba(190,255,238,.5)";
-  for(let i=0;i<44;i++){
-    const rr3=rng(hashi(p.seed,i*97,0x9AD));
-    const spd=3+rr3()*4;
-    const xx=(W+60)-((S.x*spd*2.2+rr3()*2600)%(W+120));
-    const yy=scoopCenter(S.x+(xx-W*.34)/SCOOP_PX)+(rr3()-.5)*hband*.86;
-    ctx.globalAlpha=.10+rr3()*.35;
-    ctx.fillRect(xx,yy,2.4,1.4);
-  }
-  ctx.globalAlpha=1;ctx.restore();
-  /* Полоса терялась в лиловой каше: слой газа плотнее, но по краям его не
-     видно, а игрок ищет глазами именно границу. Кромка идёт через весь кадр
-     штрихом — линейка это или газ, спор решается в пользу читаемости. */
-  for(const off of [-hband*.5,hband*.5]){
-    ctx.save();ctx.setLineDash([9,7]);ctx.lineDashOffset=-(S.x*7)%16;
-    ctx.strokeStyle="rgba(150,240,214,.34)";ctx.lineWidth=1;
-    bandPath(off);ctx.stroke();ctx.restore();
-  }
   /* подпись полосы читается поверх газа: плашка под ней, как у фишек, и
      кегль по линейке интерфейса. На .55 без подложки лиловый газ съедал её
      до контраста 2.6 (M443, детектор текста) */
   {
-    const u=uiK(),ly=cols[1][1]-hband*.5-6*u;
+    const u=uiK(),ly=scoopCenter(S.x-W*.34/SCOOP_PX)-hband*.5-6*u;
     ctx.font=uiFont(9);ctx.textAlign="left";
     const lw=ctx.measureText("ПОЛОСА СБОРА").width;
     ctx.fillStyle="rgba(5,7,12,.62)";ctx.fillRect(10,ly-10*u,lw+8*u,13*u);

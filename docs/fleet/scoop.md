@@ -25,11 +25,25 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
    point, drifting over the pass (`scoopSunAt`), cloud tops lit toward it, night side dims,
    warm light at the terminator; lightning fades over frames and lights the cloud undersides.
    Noise is the nebula's tile (`gnbNoiseTile`, `fbt`) — one gather instead of four hashes.
+2. **The flow over the sky** (`scoop.flow`): the five shear edges, their billows, the incoming
+   streaks and the collection corridor leave 2D. Billows are lit bodies whose normal faces the
+   star (they had one fixed «highlight on top» gradient); the edge is a soft shadow falling
+   downward without the pencil core line; streaks (0.6 % alpha before — invisible) are traces
+   with a head and a tail, denser low; the corridor is a glowing gas layer brighter at its
+   inner edges, dashed edge kept for reading, motes ride the gas at three speeds. Every motion
+   is a phase JS takes modulo its own period (a multiple of the cell size), so shader
+   coordinates stay small and nothing jumps when a phase wraps. The relief of the sky takes a
+   smooth band profile and fine derivatives — the sawtooth kink under a 2×2 screen derivative
+   laid light in steps. Test `tests/91sc-scoop-gpu.js`: the corridor built from the shader's
+   uniforms equals `scoopCenter` over the screen and along a 512 000-unit path; the star
+   gives a unit direction, day in 0..1.
 
 ## Pairs (scratchpad, 760×475, before | after)
 
 - `pair1-air.png` — the atmosphere reads as layered, lit cloud decks with depth instead of a
   flat purple smear; bands have crisp fronts and relief from the star's side.
+- `pair2-flow.png` — the edges are soft shadows under lit billows instead of pencil lines, the
+  corridor is a teal gas layer with motes, readable against the bands.
 
 ## Requests outside the zone
 
@@ -39,6 +53,7 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
 ## New render pipelines (for the warm-up table `08b1`)
 
 - `fld.scoop.air` — `gpuField`, blend `over`, field layout (textures: t1 = `gnbNoiseTile()`).
+- `fld.scoop.flow` — `gpuField`, blend `over`, field layout, no textures.
 
 ## Open problems
 
