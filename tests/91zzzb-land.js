@@ -78,8 +78,14 @@ TEST_SUITES.push(()=>suite("сквозной: панели не наслаива
     for(const b of document.querySelectorAll("button")){
       /* кнопки — без порога прозрачности: пэды в покое полупрозрачны, но текст в них виден */
       if(b.offsetParent===null||b.getBoundingClientRect().width<2)continue;checked++;
-      if(b.scrollWidth>b.clientWidth+1||b.scrollHeight>b.clientHeight+3)
-        spill.push(sc.id+": «"+(b.textContent||"").trim().slice(0,22)+"» "+b.scrollWidth+">"+b.clientWidth);
+      /* подпись в ::after, вынесенная наружу нарочно (готовое «долгое» над ДЕЙСТВИЕМ, 16c), — не текст кнопки,
+         но scrollWidth считает и её: у такой кнопки мерим сам текст (Range) плюс поля */
+      const pa=getComputedStyle(b,"::after"),out=pa.content!=="none"&&pa.content!=="normal"&&pa.position==="absolute";
+      let sw=b.scrollWidth,sh=b.scrollHeight;
+      if(out){const r=document.createRange();r.selectNodeContents(b);const cs=getComputedStyle(b),k=b.getBoundingClientRect().width/b.offsetWidth,t=r.getBoundingClientRect();
+        sw=Math.ceil(t.width/k+parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight));sh=Math.ceil(t.height/k+parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom));}
+      if(sw>b.clientWidth+1||sh>b.clientHeight+3)
+        spill.push(sc.id+": «"+(b.textContent||"").trim().slice(0,22)+"» "+sw+">"+b.clientWidth);
     }
   }
   resetWorld();

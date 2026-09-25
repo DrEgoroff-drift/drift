@@ -433,8 +433,8 @@ function gpuPass(view,pipe,bind,ts){
    Источники кадра (лучи, разрывы, болты, свой факел) копятся здесь, заслоны звезды
    (станция) — тоже; в конце кадра шестнадцать сильнейших ложатся в текстуру 16×3:
    строка 0 — отрезок (точка — отрезок нулевой длины), 1 — цвет×сила и радиус,
-   2 — заслоны (центр, радиус). Её читают проходы корпусов (17c gpuLitSprite,
-   16ga gpuHullLight) до отправки кадра — все видят свет своего кадра */
+   2 — заслоны (центр, радиус). Её читают проходы корпусов (17c gpuLitSprite)
+   до отправки кадра — все видят свет своего кадра */
 /* L4: источник преломления для последнего прохода (экран, px CSS). Марево: сопло (x,y), ось
    факела (dx,dy) от сопла назад, длина L, радиус R, сила k (px). Волна: центр, радиус, ширина, сила */
 function gpuHaze(x,y,dx,dy,L,R,k){if(GPU.on&&k>0)GPU.dz.push([x,y,dx,dy,L,R,k,0]);}
@@ -509,7 +509,9 @@ function gpuFrame(){
   if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch||gpuHudDpr()!==GPU.hnd)gpuResize();
   if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
   ctx=MAIN_CTX;
-  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
+  /* невидимый #c чистится, только если на нём рисовали (cState, 08c): безусловная чистка
+     всего холста каждый кадр — ограничитель частоты Chrome на телефоне (Контроль, P1) */
+  ctx.setTransform(1,0,0,1,0,0);if(GPU.cState!==0)ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   if(GPU.hq)GPU.hq.length=0;chipDomSweep();   /* слой приборов и фишки — 08bh */
   GPU.on=true;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
@@ -558,7 +560,7 @@ function gpuOver(){
   if(!GPU.sceneOn)gpuScene();
   if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   if(GPU.kill.front){
-    ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
+    if(GPU.cState!==0){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();}
     return GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});}
   gpuFrontCopy("front1");
   gpuUni();
@@ -568,7 +570,7 @@ function gpuOver(){
   p.setPipeline(GPU.P.comp);p.setBindGroup(0,GPU.sep?gpuCompNeb():GPU.B.comp);p.draw(3);p.end();
   /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
   d.queue.submit([GPU.enc.finish()]);GPU.enc=d.createCommandEncoder();
-  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
+  if(GPU.cState!==0){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();}
   GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
   return GPU.overPass;
 }

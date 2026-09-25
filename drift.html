@@ -10700,8 +10700,8 @@ function gpuPass(view,pipe,bind,ts){
    Источники кадра (лучи, разрывы, болты, свой факел) копятся здесь, заслоны звезды
    (станция) — тоже; в конце кадра шестнадцать сильнейших ложатся в текстуру 16×3:
    строка 0 — отрезок (точка — отрезок нулевой длины), 1 — цвет×сила и радиус,
-   2 — заслоны (центр, радиус). Её читают проходы корпусов (17c gpuLitSprite,
-   16ga gpuHullLight) до отправки кадра — все видят свет своего кадра */
+   2 — заслоны (центр, радиус). Её читают проходы корпусов (17c gpuLitSprite)
+   до отправки кадра — все видят свет своего кадра */
 /* L4: источник преломления для последнего прохода (экран, px CSS). Марево: сопло (x,y), ось
    факела (dx,dy) от сопла назад, длина L, радиус R, сила k (px). Волна: центр, радиус, ширина, сила */
 function gpuHaze(x,y,dx,dy,L,R,k){if(GPU.on&&k>0)GPU.dz.push([x,y,dx,dy,L,R,k,0]);}
@@ -10776,7 +10776,9 @@ function gpuFrame(){
   if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch||gpuHudDpr()!==GPU.hnd)gpuResize();
   if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
   ctx=MAIN_CTX;
-  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
+  /* невидимый #c чистится, только если на нём рисовали (cState, 08c): безусловная чистка
+     всего холста каждый кадр — ограничитель частоты Chrome на телефоне (Контроль, P1) */
+  ctx.setTransform(1,0,0,1,0,0);if(GPU.cState!==0)ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   if(GPU.hq)GPU.hq.length=0;chipDomSweep();   /* слой приборов и фишки — 08bh */
   GPU.on=true;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
@@ -10825,7 +10827,7 @@ function gpuOver(){
   if(!GPU.sceneOn)gpuScene();
   if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   if(GPU.kill.front){
-    ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
+    if(GPU.cState!==0){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();}
     return GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});}
   gpuFrontCopy("front1");
   gpuUni();
@@ -10835,7 +10837,7 @@ function gpuOver(){
   p.setPipeline(GPU.P.comp);p.setBindGroup(0,GPU.sep?gpuCompNeb():GPU.B.comp);p.draw(3);p.end();
   /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
   d.queue.submit([GPU.enc.finish()]);GPU.enc=d.createCommandEncoder();
-  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();
+  if(GPU.cState!==0){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();}
   GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
   return GPU.overPass;
 }
@@ -10904,9 +10906,8 @@ if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);
    · #hud (GPU.ui) — то, что меняется редко или только под пальцем: стики, строка наблюдения,
      стойка. Кто рисует, сдаёт gpuHud(ключ, рисунок); в конце мира (gpuHudFlush) слой
      перерисовывается, только если строка ключей кадра не та, что в прошлый раз.
-   · фишки у кромки ездят за миром каждый кадр — это DOM: место и поворот стрелки двигает
-     композитор (transform), а свой маленький холст фишка перерисовывает, только когда сменилась
-     подпись или цвет. */
+   · фишки у кромки и подписи мира ездят за миром каждый кадр — их рисует видеокарта на свой
+     слой #ovl (08bi), без 2D. */
 function gpuHudDpr(){return Math.min(3,(typeof window!=="undefined"&&window.devicePixelRatio)||1);}
 /* рисунок слоя приборов: без видеокарты — на #c сразу, как раньше */
 function gpuHud(key,fn){
@@ -10927,121 +10928,29 @@ function gpuHudFlush(rack){
     GPU.uiWas=key!=="";GPU.hkey=key;
   }
   q.length=0;
-  domLabelEnd();
-}
-/* ── фишки у кромки ── */
-const CHIPDOM={box:null,m:new Map(),touched:false};
-function chipDomBox(){
-  if(CHIPDOM.box||typeof document==="undefined"||!document.body)return CHIPDOM.box;
-  const b=document.createElement("div");b.id="chips";
-  b.style.cssText="position:fixed;inset:0;pointer-events:none;overflow:hidden";
-  (GPU.ui||GPU.cv||cvs).after(b);return CHIPDOM.box=b;
-}
-/* фишка k в кадре: место (rx,ry) и размер (cw,ch) в мерке U, прозрачность, цвет, подпись,
-   сторона подписи, угол стрелки. Рисунок — как у 2D: плашка, волосяной обвод, стрелка, текст */
-function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
-  /* без видеокарты мира нет, и фишкам не над чем висеть (Node-ярус, Chrome без WebGPU) */
-  if(!GPU.ok)return;
-  const box=chipDomBox();if(!box)return;
-  CHIPDOM.touched=true;
-  let e=CHIPDOM.m.get(k);
-  if(!e){
-    const d=document.createElement("div");d.style.cssText="position:absolute;left:0;top:0;transform-origin:0 0";
-    const cv=document.createElement("canvas");cv.style.cssText="position:absolute;left:0;top:0";
-    const ar=document.createElement("div");ar.style.cssText="position:absolute;clip-path:polygon(100% 50%,0 100%,0 0)";
-    d.appendChild(cv);d.appendChild(ar);box.appendChild(d);
-    e={d,cv,ar,sig:"",pos:"",op:"",rot:"",on:false};CHIPDOM.m.set(k,e);
-  }
-  e.used=true;
-  const nd=gpuHudDpr(),sig=label+"|"+col+"|"+(onRight?1:0)+"|"+Math.round(cw*U*nd)+"|"+Math.round(ch*U*nd)+"|"+U+"|"+nd;
-  if(sig!==e.sig){
-    e.sig=sig;const cv=e.cv,w=cw*U,h=ch*U;
-    cv.width=Math.max(1,Math.round(w*nd));cv.height=Math.max(1,Math.round(h*nd));
-    cv.style.width=cv.width/nd+"px";cv.style.height=cv.height/nd+"px";   /* ровно в пиксели устройства, как у подписей */
-    const g=cv.getContext("2d");g.setTransform(U*nd,0,0,U*nd,0,0);
-    g.fillStyle="rgba(5,7,12,.72)";g.fillRect(0,0,cw,ch);
-    g.strokeStyle=col;g.globalAlpha=.5;g.lineWidth=1;g.strokeRect(.5,.5,cw-1,ch-1);g.globalAlpha=1;
-    g.font="8px ui-monospace,monospace";g.fillStyle=col;g.textAlign=onRight?"right":"left";
-    g.fillText(label,onRight?cw-18:18,12);
-    /* стрелка: треугольник (6,0),(-4,4),(-4,-4) вокруг своей точки — 10×8 в мерке */
-    const a=e.ar.style;a.width=10*U+"px";a.height=8*U+"px";a.background=col;
-    a.left=((onRight?cw-8:8)-4)*U+"px";a.top=(ch/2-4)*U+"px";a.transformOrigin=4*U+"px "+4*U+"px";
-  }
-  const px=Math.round(rx*U*nd)/nd,py=Math.round(ry*U*nd)/nd;
-  const pos="translate("+px.toFixed(3)+"px,"+py.toFixed(3)+"px)";
-  if(pos!==e.pos){e.pos=pos;e.d.style.transform=pos;}
-  const op=A.toFixed(3);if(op!==e.op){e.op=op;e.d.style.opacity=op;}
-  const rot="rotate("+ang.toFixed(3)+"rad)";if(rot!==e.rot){e.rot=rot;e.ar.style.transform=rot;}
-  if(!e.on){e.on=true;e.d.style.display="";}
-  /* то же числами — для снимка кадра (chipDomSnap) */
-  e.x=px;e.y=py;e.w=e.cv.width/nd;e.h=e.cv.height/nd;e.A=A;e.ang=ang;e.col=col;e.U=U;e.ax=(onRight?cw-8:8)*U;e.ay=ch/2*U;
+  ovFlush();domLabelEnd();
 }
 /* снимок кадра (gpuTakeSnap): фишки поверх, как их кладёт композитор, — чтобы look(),
    детекторы и эталоны видели то же, что игрок. Платится только в момент снимка */
 function chipDomSnap(g,sc){
-  /* подписи мира — первыми: на экране они под фишками */
+  /* лампы кабины пояса (#labels, 24bc) — первыми: на экране они под слоем фишек */
   for(const e of LABDOM.m.values())if(e.on){g.globalAlpha=Math.min(1,e.A);g.drawImage(e.cv,e.x*sc,e.y*sc,e.w*sc,e.h*sc);}
-  for(const e of CHIPDOM.m.values()){
-    if(!e.on||!(e.A>0))continue;
-    g.save();g.globalAlpha=Math.min(1,e.A);
-    g.drawImage(e.cv,e.x*sc,e.y*sc,e.w*sc,e.h*sc);
-    g.translate((e.x+e.ax)*sc,(e.y+e.ay)*sc);g.rotate(e.ang);g.scale(e.U*sc,e.U*sc);
-    g.fillStyle=e.col;g.beginPath();g.moveTo(6,0);g.lineTo(-4,4);g.lineTo(-4,-4);g.closePath();g.fill();
-    g.restore();
-  }
   g.globalAlpha=1;
+  if(OVL.on&&OVL.cv)g.drawImage(OVL.cv,0,0,OVL.cv.width/ovNd()*sc,OVL.cv.height/ovNd()*sc);
 }
-/* ── подписи мира (имя станции, планет): ездят за миром, как фишки ──
-   Маленький холст на родном DPR с тем же fillText, что был на #c, — глифы те же;
-   перерисовка — только когда сменились текст, шрифт или цвет, место двигает transform.
-   Базовая линия берётся у ctx на момент вызова: y значит то же, что значил у fillText.
-   Без видеокарты — прямо на ctx, как раньше */
+/* ── слой #labels: свои холсты ламп кабины пояса (24bc) — до её переноса на видеокарту ──
+   Подписи мира (domLabel) — на #ovl (08bi) */
 const LABDOM={m:new Map(),id:new WeakMap(),n:0};
-/* ключ подписи для вещи без своего сида (контейнер): номер живёт рядом, не в самой вещи —
-   поле в объекте мира уехало бы в сейв */
-/* свой слой — сразу ПЕРЕД #chips: подпись мира лежит под интерфейсом, фишки и плитки выше неё
-   (в одном слое с фишками подпись, заведённая позже, ложилась поверх и склеивалась с ними) */
+/* свой слой — сразу за #hud, под #ovl: подпись лежит под фишками */
 function labDomBox(){
-  if(LABDOM.box||typeof document==="undefined"||!document.body)return LABDOM.box;
-  const c=chipDomBox();if(!c)return null;
+  if(LABDOM.box||typeof document==="undefined"||!document.body||!GPU.ok)return LABDOM.box;
   const b=document.createElement("div");b.id="labels";
   b.style.cssText="position:fixed;inset:0;pointer-events:none;overflow:hidden";
-  c.before(b);return LABDOM.box=b;
+  (GPU.ui||GPU.cv||cvs).after(b);return LABDOM.box=b;
 }
+/* ключ подписи для вещи без своего сида (контейнер): номер живёт рядом, не в самой вещи —
+   поле в объекте мира уехало бы в сейв */
 function domLabelId(o){let i=LABDOM.id.get(o);if(!i){i=++LABDOM.n;LABDOM.id.set(o,i);}return i;}
-function domLabel(k,x,y,text,font,col,align,al){
-  if(al==null)al=1;
-  if(!GPU.ok||!GPU.on){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align;ctx.globalAlpha=al;ctx.fillText(text,x,y);ctx.globalAlpha=1;return;}
-  const box=labDomBox();if(!box)return;
-  let e=LABDOM.m.get(k);
-  if(!e){
-    const cv=document.createElement("canvas");cv.style.cssText="position:absolute;left:0;top:0;transform-origin:0 0";
-    box.appendChild(cv);e={cv,sig:"",pos:"",on:false};LABDOM.m.set(k,e);
-  }
-  e.used=true;
-  const nd=gpuHudDpr(),bl=ctx.textBaseline,sig=text+"|"+font+"|"+col+"|"+align+"|"+bl+"|"+nd;
-  if(sig!==e.sig){
-    e.sig=sig;const g=e.cv.getContext("2d");
-    g.setTransform(1,0,0,1,0,0);g.font=font;g.textBaseline=bl;g.textAlign="left";
-    const m=g.measureText(text),tw=m.width;
-    const up=Math.ceil(m.actualBoundingBoxAscent||0)+2,dn=Math.ceil(m.actualBoundingBoxDescent||0)+2;
-    /* холст — целое число пикселей устройства, и CSS-размер ровно тот же: иначе
-       композитор тянет его на долю пикселя, и штрих глифа мылится и тускнеет вдвое */
-    const w=Math.ceil((Math.ceil(tw)+4)*nd)/nd,h=Math.ceil((up+dn)*nd)/nd;
-    e.cv.width=Math.max(1,Math.round(w*nd));e.cv.height=Math.max(1,Math.round(h*nd));
-    e.cv.style.width=e.cv.width/nd+"px";e.cv.style.height=e.cv.height/nd+"px";
-    g.setTransform(nd,0,0,nd,0,0);g.font=font;g.textBaseline=bl;g.textAlign="left";g.fillStyle=col;
-    g.fillText(text,2,up);
-    e.w=w;e.h=h;e.dx=(align==="center"?-tw/2:align==="right"||align==="end"?-tw:0)-2;e.dy=-up;
-  }
-  /* место — на целый пиксель устройства: шаг в пиксель на ходу тексту нормален, дробь — мыло */
-  e.x=Math.round((x+e.dx)*nd)/nd;e.y=Math.round((y+e.dy)*nd)/nd;
-  const pos="translate("+e.x.toFixed(3)+"px,"+e.y.toFixed(3)+"px)";
-  if(pos!==e.pos){e.pos=pos;e.cv.style.transform=pos;}
-  const op=al.toFixed(3);if(op!==e.op){e.op=op;e.cv.style.opacity=op;}
-  e.A=al;
-  if(!e.on){e.on=true;e.cv.style.display="";}
-}
 /* конец мира (gpuHudFlush): подписи, которых в кадре не было, — спрятать */
 function domLabelEnd(){
   for(const [k,e] of LABDOM.m){
@@ -11053,17 +10962,171 @@ function domLabelEnd(){
   }
   LABDOM.fl=true;
 }
-/* после фишек кадра: кого не было — спрятать */
-function chipDomEnd(){
-  for(const e of CHIPDOM.m.values()){if(!e.used&&e.on){e.on=false;e.d.style.display="none";}e.used=false;}
-}
-/* начало кадра: фишек в прошлом кадре не рисовали (другой режим, чистый кадр) — спрятать все */
+/* начало кадра: мир прошлого кадра не доходил до конца (другой режим, чистый кадр) — слой
+   фишек спрятать; очередь, брошенная посреди кадра, — долой */
 function chipDomSweep(){
-  if(!CHIPDOM.touched)for(const e of CHIPDOM.m.values()){if(e.on){e.on=false;e.d.style.display="none";}}
-  CHIPDOM.touched=false;
+  if(!OVL.fl&&OVL.on){OVL.on=false;OVL.cv.style.display="none";}
+  OVL.fl=false;OVL.lq.length=OVL.cq.length=0;
   /* мир прошлого кадра не доходил до конца (другой режим) — подписи тоже спрятать */
   if(!LABDOM.fl)for(const e of LABDOM.m.values()){if(e.on){e.on=false;e.cv.style.display="none";}}
   LABDOM.fl=false;
+}
+
+/* ══════════════ фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels») ══════════════
+   Один WebGPU-холст #ovl на родном DPR (как #hud: текст приборов резкий, правило 15/n), поверх #hud.
+   Кадр с фишками или подписями — один проход в кадровый энкодер: плашка и обвод — прямоугольники с
+   точным покрытием пикселя (то же сглаживание, что у 2D), стрелка — треугольник с аналитическим краем,
+   текст — маски r8 из своего атласа. Подписи ложатся первыми, фишки — поверх (как слои #labels/#chips).
+   Текст без растра в ровном полёте: строка режется на цифры и прочее; прочее («ЦИЦИИН · ») — одна
+   строка атласа, цифры — по глифу с шагом мерки «0» (у моноширинного он точный) и фазой ¼ пикселя
+   устройства; ширина для выравнивания — сумма мерок кусков, все из кэша. Атлас — 4 слоя 1024²,
+   вытесняется слой, которого дольше всех не касались. Нет фишек и подписей — слой спрятан
+   (display:none): композитор его не сводит */
+const OVL={cv:null,cx:null,dev:null,P:null,lq:[],cq:[],on:false,fl:false,fno:0,ras:0,led:null,
+  lab:new Map(),chip:new Map(),f:null,buf:null,bg:null,
+  A:{dev:null,tex:null,view:null,L:4,S:1024,pg:[],map:new Map(),cur:0,ev:0,thr:0}};
+const OVL_N=20;   /* чисел на примитив: рамка, цвет, (вид, слой, тексель), треугольник */
+const OVL_WGSL=`
+struct IO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) b:vec4f,@location(1) @interpolate(flat) c:vec4f,
+  @location(2) @interpolate(flat) m:vec4f,@location(3) @interpolate(flat) t0:vec4f,@location(4) @interpolate(flat) t1:vec4f};
+@group(0) @binding(0) var<storage,read> Q:array<vec4f>;
+@group(0) @binding(1) var<uniform> S:vec4f;
+@group(0) @binding(2) var A:texture_2d_array<f32>;
+@vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->IO{
+  let k=ii*5u;var o:IO;o.b=Q[k];o.c=Q[k+1u];o.m=Q[k+2u];o.t0=Q[k+3u];o.t1=Q[k+4u];
+  /* маска — ровно своя рамка (пиксель в пиксель); прямоугольник и треугольник — с пикселем запаса на край */
+  var r=o.b;if(o.m.x!=1.){r=vec4f(floor(o.b.xy)-1.,ceil(o.b.zw)+1.);}
+  let C=array<vec2f,6>(vec2f(0.,0.),vec2f(1.,0.),vec2f(0.,1.),vec2f(0.,1.),vec2f(1.,0.),vec2f(1.,1.));
+  let q=mix(r.xy,r.zw,C[vi]);o.p=vec4f(q.x/S.x*2.-1.,1.-q.y/S.y*2.,0.,1.);return o;}
+fn ed(a:vec2f,b:vec2f,p:vec2f)->f32{let d=b-a;return (d.x*(p.y-a.y)-d.y*(p.x-a.x))/max(length(d),1e-4);}
+@fragment fn fs(i:IO)->@location(0) vec4f{
+  let p=i.p.xy;var a=0.;
+  if(i.m.x<.5){a=clamp(min(p.x+.5,i.b.z)-max(p.x-.5,i.b.x),0.,1.)*clamp(min(p.y+.5,i.b.w)-max(p.y-.5,i.b.y),0.,1.);}
+  else if(i.m.x<1.5){a=textureLoad(A,vec2i(floor(p-i.b.xy)+i.m.zw),i32(i.m.y),0).r;}
+  else{let s=sign(ed(i.t0.xy,i.t0.zw,i.t1.xy));
+    a=clamp(min(ed(i.t0.xy,i.t0.zw,p),min(ed(i.t0.zw,i.t1.xy,p),ed(i.t1.xy,i.t0.xy,p)))*s+.5,0.,1.);}
+  return i.c*a;}`;
+function ovNd(){return OVL.cv&&W>0?OVL.cv.width/W:gpuHudDpr();}
+/* слой: создаётся при первой фишке, сразу после #hud (подписи кабины пояса, #labels, — между ними) */
+function ovCanvas(){
+  if(!GPU.ok||!GPU.dev||typeof document==="undefined"||!document.body)return null;
+  let c=OVL.cv;
+  if(!c){c=OVL.cv=document.createElement("canvas");c.id="ovl";
+    c.style.cssText="position:fixed;left:0;top:0;pointer-events:none;display:none";
+    ((typeof LABDOM!=="undefined"&&LABDOM.box)||GPU.ui||GPU.cv).after(c);}
+  if(OVL.dev!==GPU.dev){OVL.cx=c.getContext("webgpu");OVL.cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    OVL.dev=GPU.dev;OVL.P=null;OVL.buf=null;OVL.bg=null;}
+  const nd=gpuHudDpr(),w=Math.max(2,Math.round(W*nd)),h=Math.max(2,Math.round(H*nd));
+  /* CSS-размер — ровно пиксели устройства: иначе композитор тянет слой на долю пикселя, и глиф мылится */
+  if(c.width!==w||c.height!==h){c.width=w;c.height=h;c.style.width=w/nd+"px";c.style.height=h/nd+"px";}
+  return c;
+}
+/* атлас масок: texture_2d_array r8, полки через пиксель; слой-жертва — самый давний по касанию,
+   и не тронутый в этом кадре (его маски уже в очереди прохода), пока такой есть */
+function ovAtlas(key,mk){
+  const A=OVL.A,d=GPU.dev;
+  if(A.dev!==d){A.dev=d;A.tex=d.createTexture({size:[A.S,A.S,A.L],format:"r8unorm",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});
+    A.view=A.tex.createView({dimension:"2d-array"});A.pg=[];for(let i=0;i<A.L;i++)A.pg.push({x:0,y:0,rh:0,last:-1,keys:[]});
+    A.map.clear();A.cur=0;OVL.bg=null;}
+  let e=A.map.get(key);if(e){A.pg[e.l].last=OVL.fno;return e;}
+  const r=mk();OVL.ras++;
+  if(r.w>A.S||r.h>A.S)throw gcNo("подпись крупнее "+A.S+" px");
+  const fit=p=>{if(p.x+r.w>A.S){p.x=0;p.y+=p.rh+1;p.rh=0;}return p.y+r.h<=A.S;};
+  let l=A.cur;
+  if(!fit(A.pg[l])){
+    l=A.pg.findIndex(p=>!p.keys.length);
+    if(l<0){let best=-1;for(let i=0;i<A.L;i++){const p=A.pg[i];if(i!==A.cur&&(best<0||p.last<A.pg[best].last))best=i;}
+      l=best;const p=A.pg[l];if(p.last===OVL.fno)A.thr++;
+      for(const k of p.keys)A.map.delete(k);Object.assign(p,{x:0,y:0,rh:0,keys:[]});A.ev++;}
+    A.cur=l;fit(A.pg[l]);}
+  const p=A.pg[l],x=p.x,y=p.y;p.x+=r.w+1;p.rh=Math.max(p.rh,r.h);p.last=OVL.fno;p.keys.push(key);
+  d.queue.writeTexture({texture:A.tex,origin:[x,y,l]},r.a,{bytesPerRow:r.w},[r.w,r.h]);
+  e={l,x,y,w:r.w,h:r.h,ox:r.ox,oy:r.oy};A.map.set(key,e);return e;
+}
+function ovPush(Q,x0,y0,x1,y1,c,m,l,tx,ty,t){
+  Q.push(x0,y0,x1,y1,c[0],c[1],c[2],c[3],m,l,tx,ty);
+  if(t)Q.push(t[0],t[1],t[2],t[3],t[4],t[5],0,0);else Q.push(0,0,0,0,0,0,0,0);
+}
+const OVL_RUN=/[0-9]+|[^0-9]+/g;
+/* строка в очередь Q: (x,y) — якорь в пикселях CSS по align и base, sc — масштаб шрифта (фишка — U).
+   Возвращает рамку в CSS: для проверок наложения */
+function ovText(Q,x,y,text,font,col,align,base,al,sc){
+  const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:"left"}),c=gcColor(col),a=c[3]*al;
+  if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1]*sc,main:true});}
+  const pm=[c[0]*a,c[1]*a,c[2]*a,a];
+  const d0=GC_GLYPHS.measure(st,"0"),adv=d0.width*sc,runs=text.match(OVL_RUN)||[];
+  let tw=0,up=0,dn=0;
+  for(const s of runs){const dg=s.charCodeAt(0)<58&&s.charCodeAt(0)>47,m=dg?d0:GC_GLYPHS.measure(st,s);
+    tw+=dg?adv*s.length:m.width*sc;up=Math.max(up,m.actualBoundingBoxAscent*sc);dn=Math.max(dn,m.actualBoundingBoxDescent*sc);}
+  /* начало строки — на целый пиксель устройства, как у прежних DOM-подписей: на ходу строка шагает
+     пикселем, а фазы цифр внутри неё постоянны — новой маски движение не просит */
+  const x0=Math.round((align==="center"?x-tw/2:(align==="right"||align==="end")?x-tw:x)*nd)/nd,iy=Math.round(y*nd),M=[nd*sc,0,0,nd*sc];
+  const put=(s,cx)=>{const X=cx*nd;let ix=Math.floor(X),ph=Math.round((X-ix)*4)/4;if(ph>=1){ix++;ph=0;}
+    const kb=font+"|"+base+"|"+M[0]+"|"+ph+"|",mk=g=>()=>GC_GLYPHS.raster(st,g,M,ph,0,null,undefined,"#fff");   /* маска — одна альфа, цвет не нужен */
+    /* цифра, которой нет, — все десять сразу: число меняется в полёте, а растр — только в первый раз */
+    if(s.length===1&&s>="0"&&s<="9"&&!OVL.A.map.has(kb+s))for(let g=0;g<10;g++)ovAtlas(kb+g,mk(String(g)));
+    const e=ovAtlas(kb+s,mk(s));
+    ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,pm,1,e.l,e.x,e.y,null);};
+  let cx=x0;
+  for(const s of runs){
+    if(s.charCodeAt(0)<58&&s.charCodeAt(0)>47){for(let i=0;i<s.length;i++)put(s[i],cx+i*adv);cx+=adv*s.length;}
+    else{put(s,cx);cx+=GC_GLYPHS.measure(st,s).width*sc;}}
+  return {x0,x1:x0+tw,y0:y-up,y1:y+dn};
+}
+/* подпись мира k (имя станции, планеты, борта): y — как у fillText при нынешнем ctx.textBaseline.
+   Без видеокарты — прямо на ctx, как раньше */
+function domLabel(k,x,y,text,font,col,align,al){
+  if(al==null)al=1;
+  if(!GPU.ok||!GPU.on){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align;ctx.globalAlpha=al;ctx.fillText(text,x,y);ctx.globalAlpha=1;return;}
+  const r=ovText(OVL.lq,x,y,text,font,col,align,ctx.textBaseline,al,1);
+  let e=OVL.lab.get(k);if(!e)OVL.lab.set(k,e={on:false});
+  Object.assign(e,r,{fr:OVL.fno,A:al,s:text});
+}
+/* фишка k: место (rx,ry) и размер (cw,ch) в мерке U, прозрачность, цвет, подпись, сторона подписи,
+   угол стрелки. Рисунок — как у 2D: плашка, волосяной обвод, подпись, стрелка */
+const OVL_PLATE=[5/255*.72,7/255*.72,12/255*.72,.72];
+function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
+  /* без видеокарты мира нет, и фишкам не над чем висеть (Node-ярус, Chrome без WebGPU) */
+  if(!GPU.ok||!GPU.on)return;
+  const nd=ovNd(),s=U*nd,X=Math.round(rx*s),Y=Math.round(ry*s),X1=X+cw*s,Y1=Y+ch*s,Q=OVL.cq;
+  const c=gcColor(col),ca=c[3]*A,pm=[c[0]*ca,c[1]*ca,c[2]*ca,ca],hb=pm.map(v=>v*.5);
+  ovPush(Q,X,Y,X1,Y1,OVL_PLATE.map(v=>v*A),0,0,0,0,null);
+  ovPush(Q,X,Y,X1,Y+s,hb,0,0,0,0,null);ovPush(Q,X,Y1-s,X1,Y1,hb,0,0,0,0,null);
+  ovPush(Q,X,Y+s,X+s,Y1-s,hb,0,0,0,0,null);ovPush(Q,X1-s,Y+s,X1,Y1-s,hb,0,0,0,0,null);
+  ovText(Q,X/nd+(onRight?cw-18:18)*U,Y/nd+12*U,label,"8px ui-monospace,monospace",col,onRight?"right":"left","alphabetic",A,U);
+  /* стрелка: треугольник (6,0),(−4,4),(−4,−4) вокруг своей точки, повёрнут на ang */
+  const ax=X+(onRight?cw-8:8)*s,ay=Y+ch/2*s,co=Math.cos(ang)*s,si=Math.sin(ang)*s,P=(u,v)=>[ax+u*co-v*si,ay+u*si+v*co];
+  const t=[...P(6,0),...P(-4,4),...P(-4,-4)];
+  ovPush(Q,Math.min(t[0],t[2],t[4]),Math.min(t[1],t[3],t[5]),Math.max(t[0],t[2],t[4]),Math.max(t[1],t[3],t[5]),pm,2,0,0,0,t);
+  let e=OVL.chip.get(k);if(!e)OVL.chip.set(k,e={on:false});
+  Object.assign(e,{fr:OVL.fno,x:X/nd,y:Y/nd,w:cw*U,h:ch*U,A,s:label});
+}
+/* конец мира (gpuHudFlush): всё, что кадр положил, — одним проходом; пусто — слой спрятать */
+function ovFlush(){
+  OVL.fl=true;
+  const n=(OVL.lq.length+OVL.cq.length)/OVL_N;
+  for(const M of [OVL.lab,OVL.chip])for(const [k,e] of M){e.on=e.fr===OVL.fno;if(OVL.fno-e.fr>600)M.delete(k);}
+  OVL.fno++;
+  const cv=n&&GPU.enc?ovCanvas():null;
+  if(!cv){OVL.lq.length=OVL.cq.length=0;if(OVL.on){OVL.on=false;OVL.cv.style.display="none";}return;}
+  const d=GPU.dev,need=n*OVL_N;
+  if(!OVL.f||OVL.f.length<need)OVL.f=new Float32Array(Math.max(need,OVL_N*64)*2);
+  OVL.f.set(OVL.lq,0);OVL.f.set(OVL.cq,OVL.lq.length);OVL.nl=OVL.lq.length/OVL_N;OVL.lq.length=OVL.cq.length=0;   /* подписи — под фишками */
+  if(!OVL.P){const m=d.createShaderModule({code:OVL_WGSL});
+    OVL.P=d.createRenderPipeline({layout:"auto",vertex:{module:m,entryPoint:"vs"},primitive:{topology:"triangle-list"},
+      fragment:{module:m,entryPoint:"fs",targets:[{format:GPU.fmt,blend:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},
+        alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]}});
+    OVL.U=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});OVL.bg=null;}
+  if(!OVL.buf||OVL.buf.size<OVL.f.byteLength){if(OVL.buf)GPU.trash.push(OVL.buf);
+    OVL.buf=d.createBuffer({size:OVL.f.byteLength,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});OVL.bg=null;}
+  if(!OVL.A.tex)ovAtlas("",()=>({w:1,h:1,ox:0,oy:0,a:new Uint8Array(1)}));   /* атлас нужен привязке и без текста */
+  if(!OVL.bg)OVL.bg=d.createBindGroup({layout:OVL.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:OVL.buf}},
+    {binding:1,resource:{buffer:OVL.U}},{binding:2,resource:OVL.A.view}]});
+  d.queue.writeBuffer(OVL.buf,0,OVL.f,0,need);d.queue.writeBuffer(OVL.U,0,new Float32Array([cv.width,cv.height,0,0]));
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:OVL.cx.getCurrentTexture().createView(),loadOp:"clear",storeOp:"store",
+    clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("ovl")});
+  p.setPipeline(OVL.P);p.setBindGroup(0,OVL.bg);p.draw(6,n);p.end();
+  if(!OVL.on){OVL.on=true;cv.style.display="";}
 }
 
 /* ══════════════ набор для слоёв видеокарты (docs/DESIGN-gpu.md §4) ══════════════
@@ -11528,6 +11591,11 @@ class GcCtx{
   _sc(){const m=this._m;return Math.max(Math.hypot(m[0],m[1]),Math.hypot(m[2],m[3]));}
   _last(){const s=this._sp[this._sp.length-1];return s?[s.p[s.p.length-2],s.p[s.p.length-1]]:null;}
   _to(q){const s=this._sp[this._sp.length-1];if(s)s.p.push(q[0],q[1]);else this._sp.push({p:[q[0],q[1]],c:false});}
+  /* доли параметра кривой из n кусков: плюс точка в ε от каждого конца. Стык и конец линии берут направление
+     первого и последнего отрезка; без этих точек у мелкой дуги это хорда, а не касательная, — крюк 03a
+     (lineTo и arc назад) давал поворот 157° вместо 180°, острие в пределах miterLimit и шип наружу там,
+     где 2D кладёт срез. Точки лежат на самой кривой: заливке всё равно */
+  _ts(n){const e=Math.min(1e-3,.25/n),t=[0,e];for(let i=1;i<n;i++)t.push(i/n);t.push(1-e,1);return t;}
   /* путь */
   beginPath(){this._sp=[];}
   moveTo(x,y){if(isFinite(x)&&isFinite(y))this._sp.push({p:this._P(x,y),c:false});}
@@ -11560,8 +11628,8 @@ class GcCtx{
     else{sw=(a1-a0)%T;if(!ccw&&sw<0)sw+=T;if(ccw&&sw>0)sw-=T;}
     const rd=Math.max(rx,ry)*this._sc()*this._k,st=rd>GC_TOL?2*Math.acos(1-GC_TOL/rd):T/4;
     const n=Math.min(1024,Math.max(2,Math.ceil(Math.abs(sw)/st))),cr=Math.cos(rot),sr=Math.sin(rot);
-    for(let i=0;i<=n;i++){const t=a0+sw*i/n,u=Math.cos(t)*rx,v=Math.sin(t)*ry,q=this._P(x+u*cr-v*sr,y+u*sr+v*cr);
-      if(!i&&!this._sp.length)this._sp.push({p:q,c:false});else this._to(q);}}
+    for(const f of this._ts(n)){const t=a0+sw*f,u=Math.cos(t)*rx,v=Math.sin(t)*ry,q=this._P(x+u*cr-v*sr,y+u*sr+v*cr);
+      if(!f&&!this._sp.length)this._sp.push({p:q,c:false});else this._to(q);}}
   arcTo(x1,y1,x2,y2,r){
     if(![x1,y1,x2,y2,r].every(isFinite))return;if(r<0)throw new RangeError("GPU-холст: arcTo r < 0");
     const L=this._last(),iv=gcInv(this._m);if(!L){this.moveTo(x1,y1);return;}
@@ -11577,13 +11645,13 @@ class GcCtx{
     if(![cx,cy,x,y].every(isFinite))return;if(!this._sp.length)this.moveTo(cx,cy);
     const a=this._last(),b=this._P(cx,cy),c=this._P(x,y),k=this._k;
     const M=Math.hypot(a[0]-2*b[0]+c[0],a[1]-2*b[1]+c[1])*k,n=Math.min(256,Math.max(1,Math.ceil(Math.sqrt(.25*M/GC_TOL))));
-    for(let i=1;i<=n;i++){const t=i/n,s=1-t;this._to([s*s*a[0]+2*s*t*b[0]+t*t*c[0],s*s*a[1]+2*s*t*b[1]+t*t*c[1]]);}}
+    for(const t of this._ts(n)){if(!t)continue;const s=1-t;this._to([s*s*a[0]+2*s*t*b[0]+t*t*c[0],s*s*a[1]+2*s*t*b[1]+t*t*c[1]]);}}
   bezierCurveTo(ax,ay,bx,by,x,y){
     if(![ax,ay,bx,by,x,y].every(isFinite))return;if(!this._sp.length)this.moveTo(ax,ay);
     const p=this._last(),a=this._P(ax,ay),b=this._P(bx,by),c=this._P(x,y),k=this._k;
     const M=Math.max(Math.hypot(p[0]-2*a[0]+b[0],p[1]-2*a[1]+b[1]),Math.hypot(a[0]-2*b[0]+c[0],a[1]-2*b[1]+c[1]))*k;
     const n=Math.min(256,Math.max(1,Math.ceil(Math.sqrt(.75*M/GC_TOL))));
-    for(let i=1;i<=n;i++){const t=i/n,s=1-t,A=s*s*s,B=3*s*s*t,C=3*s*t*t,D=t*t*t;
+    for(const t of this._ts(n)){if(!t)continue;const s=1-t,A=s*s*s,B=3*s*s*t,C=3*s*t*t,D=t*t*t;
       this._to([A*p[0]+B*a[0]+C*b[0]+D*c[0],A*p[1]+B*a[1]+C*b[1]+D*c[1]]);}}
   /* штрих-пунктир */
   setLineDash(a){if(!Array.isArray(a)||a.some(v=>!(v>=0)||!isFinite(v)))return;this._dash=a.length%2?a.concat(a):a.slice();}
@@ -22189,14 +22257,8 @@ function drawAllies(zx,zy,Z){
     if(x<-80||x>W+80||y<-80||y>H+80)continue;
     /* корпус на видеокарте, как свой (17c2): тело светом звезды, факел шейдером, огни
        явным светом. Раньше — 2D на #c и gpuHullLight: каждый союзник в кадре стоил
-       копии #c и двух отправок. Не взяла видеокарта — прежний 2D */
-    if(!allyHullGpu(A,x,y,Z,zx(0),zy(0))){
-      ctx.save();ctx.translate(x,y);ctx.scale(shipScaleAt(Z),shipScaleAt(Z));ctx.rotate(A.a);   /* один потолок с кораблём (16c) */
-      drawHull(A.c.shipId,A.thrust,false,0);
-      ctx.restore();
-      /* L3: союзник под тем же светом, что свой корабль: звезда, лучи, разрывы (16ga) */
-      if(GPU.on)gpuHullLight(x,y,zx(0),zy(0),Z,G.sys,A.c.shipId);
-    }
+       копии #c и двух отправок. 2D-пути нет (25.09) */
+    allyHullGpu(A,x,y,Z,zx(0),zy(0));
     /* имя И дело (M299): плейтест 02.09 — «чувак у станции не летает, просто
        вокруг». Это наёмник на перевозке, и он кружит у станции по приказу;
        без слова «перевозка» под именем это читалось сломанным ИИ.
@@ -23919,26 +23981,28 @@ function fleetLabelY(x,y,hh,tw,rows){
   const below=y+hh+12,above=y-hh-4-bh+8;
   return (hit(below)&&!hit(above))?above:below;
 }
+/* ширина подписи (25.09): мера GPU-холста (08cb) — метрики 2D из своего кэша, кадр не трогает
+   ни ctx, ни #c (перепись: ~22 вызова #c за кадр на два борта). Общая: 12ai, 13 */
+function labelW(font,s){return gcMeasure(font,s).width;}
 function drawFleet(zx,zy,Z){
   const F=fleetHere(G.sys);if(!F.length)return;
   for(const f of F){
     const p=fleetPos(f),x=zx(p.x),y=zy(p.y);
-    if(x<-260||x>W+260||y<-260||y>H+260)continue;
-    const s=fleetScale(Z),art=fleetArtOf(f);
-    ctx.save();ctx.translate(x,y);ctx.rotate(p.a);ctx.scale(s,s);
-    drawFleetShip(f);
-    ctx.restore();
+    if(x<-260||x>W+260||y<-260||y>H+260){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);continue;}   /* мастер заранее (17a0) */
+    const s=fleetScale(Z),art=fleetArtOf(f,false);if(!art)continue;
+    /* место, курс и масштаб известны — матрица сразу в fleetShipAt, без 2D-стека на #c (25.09) */
+    const c=Math.cos(p.a)*s,q=Math.sin(p.a)*s;
+    fleetShipAt(f,art,c,q,-q,c,x,y,ctx.globalAlpha);
     if(f.k==="derelict")continue;
     const C=FLEET_CLASSES[f.k];
     const hh=(Math.abs(art.bx*Math.sin(p.a))+Math.abs(art.by*Math.cos(p.a)))*s;
-    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    const FF="8px ui-monospace,monospace";
     const l1=f.k==="node"?"«"+f.name+"» · УЗЕЛ ТРАСС · ГЛАВТРАССА":"«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line;
-    const rows=f.k==="node"?1:2,ly=fleetLabelY(x,y,hh,ctx.measureText(l1).width,rows);
+    const rows=f.k==="node"?1:2,ly=fleetLabelY(x,y,hh,labelW(FF,l1),rows);
     /* подписи — слой подписей (domLabel): на #c текст перекрашивался каждый кадр */
     const fk="fl"+f.k+f.seed;
-    domLabel(fk,x,ly,l1,ctx.font,"rgba(226,214,200,.8)","center");
-    if(rows>1)domLabel(fk+"c",x,ly+10,C.ru.toUpperCase(),ctx.font,"rgba(226,214,200,.5)","center");
-    ctx.textAlign="left";
+    domLabel(fk,x,ly,l1,FF,"rgba(226,214,200,.8)","center");
+    if(rows>1)domLabel(fk+"c",x,ly+10,C.ru.toUpperCase(),FF,"rgba(226,214,200,.5)","center");
   }
 }
 /* ── позывной и заправка по норме (§18.7 п.1, п.3) ── */
@@ -24158,8 +24222,26 @@ function drawFleetMap(vis,cell){
    '-' < '1' < 'a'). Здесь объявлен `FLEET_ART` — кэш спрайтов; его читает
    только `fleetArtOf`, то есть во время кадра, а не на верхнем уровне. */
 /* ── окраска: один конвейер на все классы (§18.5, §1) ── */
-const FLEET_ART={},FLEET_SS=3;
-function fleetArtOf(f){
+const FLEET_ART={},FLEET_SS=3,FLEET_PB={f:-1,k:""};
+/* рецепт облика (кисть cn): облик → (g)=>… в осях выпечки. Кадр его не зовёт — это для проверок
+   тестов (91zzza M317/M318): синхронно читать выпечку с видеокарты нечем, а свойства рецепта
+   (эмблема, медиана тела, тень под баком) — те же на любом растре */
+const FLEET_PAINT=new WeakMap();
+/* мастер борта — задача планировщика 17a0 (25.09): запись тела, потом по выпечке за шаг.
+   ahead — борт ещё за краем (до 1.6 экрана): шаг в кадр и не больше одного мастера флота
+   за кадр, до готовности null. Без ahead — борт уже на экране, а мастера нет (загрузка,
+   прыжок): допекаем целиком, планировщик считает PB_SYNC. На S23 пять мастеров за кадр
+   давали хвост в 100 мс (Контроль, 25.09) */
+function fleetArtOf(f,ahead){
+  const key="fl"+f.k+f.seed+"!"+(f.by||"gt");
+  if(FLEET_ART[key])return FLEET_ART[key];
+  if(!GPU.dev){const it=fleetArtJob(f);let r;do r=it.next();while(!r.done);return r.value;}   /* без устройства: геометрия, cn null; не в кэш */
+  if(ahead){if(FLEET_PB.f===GPU.frameNo&&FLEET_PB.k!==key)return null;FLEET_PB.f=GPU.frameNo;FLEET_PB.k=key;}
+  const art=prebake("fl|"+key,()=>fleetArtJob(f),!ahead);
+  if(art)FLEET_ART[key]=art;
+  return art;
+}
+function* fleetArtJob(f){
   /* ── флот тоже чей-то (M369a, §19.4) ──
      Тринадцать классов остаются классами: они про РАБОТУ — почтовик, танкер,
      буксир. Завод берёт у них измерения 5–7: грунт, огни и подпись тяги, — и
@@ -24167,8 +24249,6 @@ function fleetArtOf(f){
      Пока весь флот её и есть; чужие крылья прилетят с M371, и генератор их
      уже ждёт: достаточно положить `by` в запись. */
   const fby=f.by||"gt";
-  const key="fl"+f.k+f.seed+"!"+fby;
-  if(FLEET_ART[key])return FLEET_ART[key];
   const r=rng(hashi(f.seed,0xF1A7,5));
   const polys=[],lines=[],lights=[];
   const add=(pts,c,e)=>polys.push({p:pts,c,e:e||0});
@@ -24427,52 +24507,56 @@ function fleetArtOf(f){
   const emb=EMB[f.k]||null;
   /* габарит тела в своих осях — подпись под кораблём считается от него (§3) */
   let bx=0,by=0;for(const q of polys)for(const pt of q.p){bx=Math.max(bx,Math.abs(pt[0]));by=Math.max(by,Math.abs(pt[1]));}
-  const rad=L*.75;
-  const cn=document.createElement("canvas");
-  cn.width=cn.height=Math.ceil(rad*2*FLEET_SS);
-  const g=cn.getContext("2d");const prev=ctx;ctx=g;
-  g.setTransform(FLEET_SS,0,0,FLEET_SS,rad*FLEET_SS,rad*FLEET_SS);
-  const poly=q=>{ctx.beginPath();ctx.moveTo(q.p[0][0],q.p[0][1]);for(let i=1;i<q.p.length;i++)ctx.lineTo(q.p[i][0],q.p[i][1]);ctx.closePath();};
-  /* санкирь: тёмная подложка под всем — обвод первым (§13) */
-  for(const q of polys){poly(q);ctx.fillStyle="rgb(40,44,52)";ctx.lineWidth=1.6;ctx.strokeStyle="rgb(40,44,52)";ctx.stroke();}
-  /* серые: тело */
-  for(const q of polys){poly(q);const c=q.col||C[q.c];ctx.fillStyle="rgb("+c.join(",")+")";ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,"+(q.e?.5:.25)+")";ctx.lineWidth=q.e?.6:.35;ctx.stroke();}
-  for(const l of lines){ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.7).toFixed(2)+")";ctx.lineWidth=l[4];ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();}
-  for(const j of joints){ctx.fillStyle="rgb(40,44,52)";ctx.fillRect(j[0]-j[2]/2,j[1]-j[3]/2,j[2],j[3]);
-    ctx.fillStyle="rgba(236,236,240,.8)";ctx.fillRect(j[0]-j[2]/2+.6,j[1]-j[3]/2+.5,j[2]-1.2,Math.max(.6,j[3]*.28));
-    ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(j[0]-j[2]*.35,j[1]-j[3]/2,.7,j[3]);ctx.fillRect(j[0]+j[2]*.35,j[1]-j[3]/2,.7,j[3]);}
-  /* лессировка: красная полоса во всю длину, номер, имя, знак класса */
-  if(band.length){ctx.fillStyle="rgb("+C[3].join(",")+")";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);for(let i=1;i<4;i++)ctx.lineTo(band[i][0],band[i][1]);ctx.closePath();ctx.fill();}
-  if(band.length){
-  ctx.fillStyle="rgba(30,30,34,.9)";ctx.font="bold "+(hw*.9).toFixed(1)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText(f.num?f.num.slice(2):f.name,(band[0][0]+band[1][0])/2,(band[1][1]+band[2][1])/2+hw*.62);
-  ctx.font="bold "+(hw*.62).toFixed(1)+"px ui-monospace,monospace";ctx.fillStyle="rgba(30,30,34,.85)";
-  ctx.fillText(f.name,(band[0][0]+band[1][0])/2,band[0][1]-hw*.34);
-  }
-  /* знак класса (§9, §18.2; альманах III, 0.313.0): одна конструкция на все
-     тринадцать — светлый диск в рост тела, красный обод одной толщины, внутри
-     одна залитая фигура закрытого алфавита на .62 диска; операции — поворот и
-     отражение, больше ничего. Знак, а не силуэт, несёт класс сквозь 8 px;
-     раньше тринадцать разных рисунков в hw*.42 доживали до встречи одним крестом. */
-  if(emb){const [mx,my,R]=emb;
-    ctx.save();ctx.translate(mx,my);
-    ctx.fillStyle="rgb(226,228,232)";ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.fill();
-    ctx.strokeStyle="rgb("+C[3].join(",")+")";ctx.lineWidth=Math.max(.8,R*.16);ctx.beginPath();ctx.arc(0,0,R-ctx.lineWidth/2,0,TAU);ctx.stroke();
-    ctx.fillStyle="rgb("+C[3].join(",")+")";fleetGlyph(f.k,R*.62);
-    ctx.restore();}
-  /* износ — ПОД бликами: заплаты не в тон, копоть от движков веером, полоса выгорела */
+  const rad=L*.75,side=Math.ceil(rad*2*FLEET_SS);
+  /* износ считан заранее: выпечка повторяется при подъёме устройства, а поток r() — один на
+     корабль (порядок вызовов прежний — заплаты те же, что у 2D) */
+  const wear=[];
   for(let i=0;i<3+Math.floor(r()*4);i++){
     const q=polys[Math.floor(r()*polys.length)];if(!q||q.c>2)continue;
     const p=q.p[Math.floor(r()*q.p.length)];
-    ctx.fillStyle="rgba("+(C[q.c][0]-14)+","+(C[q.c][1]-10)+","+(C[q.c][2]-4)+",.9)";
-    ctx.fillRect(p[0]+(r()-.5)*L*.06,p[1]+(r()-.5)*hw*.6,L*.03+r()*L*.03,hw*.25+r()*hw*.3);
+    wear.push("rgba("+(C[q.c][0]-14)+","+(C[q.c][1]-10)+","+(C[q.c][2]-4)+",.9)",
+      p[0]+(r()-.5)*L*.06,p[1]+(r()-.5)*hw*.6,L*.03+r()*L*.03,hw*.25+r()*hw*.3);
   }
-  for(const li of lights){if(li.c!=="eng")continue;
-    const sg=ctx.createLinearGradient(li.x,0,li.x+L*.22,0);sg.addColorStop(0,"rgba(20,16,12,.55)");sg.addColorStop(1,"rgba(20,16,12,0)");
-    ctx.fillStyle=sg;ctx.fillRect(li.x,li.y-li.r*1.6,L*.22,li.r*3.2);
-    ctx.fillStyle="rgba(128,84,56,.7)";ctx.fillRect(li.x-L*.02,li.y-li.r*1.05,L*.03,li.r*2.1);}
-  if(band.length){ctx.fillStyle="rgba(255,190,170,.28)";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);ctx.lineTo(band[1][0],band[1][1]);ctx.lineTo(band[1][0],band[1][1]+hw*.1);ctx.lineTo(band[0][0],band[0][1]+hw*.1);ctx.fill();}
+  /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст, текст — v2.
+     Без видеокарты — null: 2D-пути нет */
+  const body=()=>{
+    const poly=q=>{ctx.beginPath();ctx.moveTo(q.p[0][0],q.p[0][1]);for(let i=1;i<q.p.length;i++)ctx.lineTo(q.p[i][0],q.p[i][1]);ctx.closePath();};
+    /* санкирь: тёмная подложка под всем — обвод первым (§13) */
+    for(const q of polys){poly(q);ctx.fillStyle="rgb(40,44,52)";ctx.lineWidth=1.6;ctx.strokeStyle="rgb(40,44,52)";ctx.stroke();}
+    /* серые: тело */
+    for(const q of polys){poly(q);const c=q.col||C[q.c];ctx.fillStyle="rgb("+c.join(",")+")";ctx.fill();
+      ctx.strokeStyle="rgba(0,0,0,"+(q.e?.5:.25)+")";ctx.lineWidth=q.e?.6:.35;ctx.stroke();}
+    for(const l of lines){ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.7).toFixed(2)+")";ctx.lineWidth=l[4];ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();}
+    for(const j of joints){ctx.fillStyle="rgb(40,44,52)";ctx.fillRect(j[0]-j[2]/2,j[1]-j[3]/2,j[2],j[3]);
+      ctx.fillStyle="rgba(236,236,240,.8)";ctx.fillRect(j[0]-j[2]/2+.6,j[1]-j[3]/2+.5,j[2]-1.2,Math.max(.6,j[3]*.28));
+      ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(j[0]-j[2]*.35,j[1]-j[3]/2,.7,j[3]);ctx.fillRect(j[0]+j[2]*.35,j[1]-j[3]/2,.7,j[3]);}
+    /* лессировка: красная полоса во всю длину, номер, имя, знак класса */
+    if(band.length){ctx.fillStyle="rgb("+C[3].join(",")+")";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);for(let i=1;i<4;i++)ctx.lineTo(band[i][0],band[i][1]);ctx.closePath();ctx.fill();}
+    if(band.length){
+    ctx.fillStyle="rgba(30,30,34,.9)";ctx.font="bold "+(hw*.9).toFixed(1)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(f.num?f.num.slice(2):f.name,(band[0][0]+band[1][0])/2,(band[1][1]+band[2][1])/2+hw*.62);
+    ctx.font="bold "+(hw*.62).toFixed(1)+"px ui-monospace,monospace";ctx.fillStyle="rgba(30,30,34,.85)";
+    ctx.fillText(f.name,(band[0][0]+band[1][0])/2,band[0][1]-hw*.34);
+    }
+    /* знак класса (§9, §18.2; альманах III, 0.313.0): одна конструкция на все
+       тринадцать — светлый диск в рост тела, красный обод одной толщины, внутри
+       одна залитая фигура закрытого алфавита на .62 диска; операции — поворот и
+       отражение, больше ничего. Знак, а не силуэт, несёт класс сквозь 8 px;
+       раньше тринадцать разных рисунков в hw*.42 доживали до встречи одним крестом. */
+    if(emb){const [mx,my,R]=emb;
+      ctx.save();ctx.translate(mx,my);
+      ctx.fillStyle="rgb(226,228,232)";ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.fill();
+      ctx.strokeStyle="rgb("+C[3].join(",")+")";ctx.lineWidth=Math.max(.8,R*.16);ctx.beginPath();ctx.arc(0,0,R-ctx.lineWidth/2,0,TAU);ctx.stroke();
+      ctx.fillStyle="rgb("+C[3].join(",")+")";fleetGlyph(f.k,R*.62);
+      ctx.restore();}
+    /* износ — ПОД бликами: заплаты не в тон, копоть от движков веером, полоса выгорела */
+    for(let i=0;i<wear.length;i+=5){ctx.fillStyle=wear[i];ctx.fillRect(wear[i+1],wear[i+2],wear[i+3],wear[i+4]);}
+    for(const li of lights){if(li.c!=="eng")continue;
+      const sg=ctx.createLinearGradient(li.x,0,li.x+L*.22,0);sg.addColorStop(0,"rgba(20,16,12,.55)");sg.addColorStop(1,"rgba(20,16,12,0)");
+      ctx.fillStyle=sg;ctx.fillRect(li.x,li.y-li.r*1.6,L*.22,li.r*3.2);
+      ctx.fillStyle="rgba(128,84,56,.7)";ctx.fillRect(li.x-L*.02,li.y-li.r*1.05,L*.03,li.r*2.1);}
+    if(band.length){ctx.fillStyle="rgba(255,190,170,.28)";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);ctx.lineTo(band[1][0],band[1][1]);ctx.lineTo(band[1][0],band[1][1]+hw*.1);ctx.lineTo(band[0][0],band[0][1]+hw*.1);ctx.fill();}
+  };
   /* один свет на всю сборку последним слоем; кромка ловит свет. Растяжка
      шла от −3hw до 2hw с нулём на −hw — до самого тела свет не доходил, его
      получали одни панели, а борт оставался плоским тоном (§16, 0.313.0).
@@ -24480,20 +24564,20 @@ function fleetArtOf(f){
   /* на видеокарте сторону света решает звезда (fleetShipGpu): её выпечка берёт этот
      слой мягче — верх светлее (.34), низ темнеет на .3, а не в III–IV: тень кладёт звезда,
      и двойная тень снизу гасила панели */
-  let cnA=null;
-  if(GPU.ok){cnA=document.createElement("canvas");cnA.width=cn.width;cnA.height=cn.height;const ga=cnA.getContext("2d");ga.drawImage(cn,0,0);
-    ga.setTransform(FLEET_SS,0,0,FLEET_SS,rad*FLEET_SS,rad*FLEET_SS);ga.globalCompositeOperation="source-atop";
-    const q=ga.createLinearGradient(0,-hw*1.8,0,hw*1.6);
-    q.addColorStop(0,f.k==="derelict"?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)");q.addColorStop(.5,"rgba(255,224,196,0)");q.addColorStop(1,"rgba(0,0,0,.3)");
-    ga.fillStyle=q;ga.fillRect(-rad,-rad,rad*2,rad*2);}
-  ctx.globalCompositeOperation="source-atop";
-  const lg=ctx.createLinearGradient(0,-hw*1.8,0,hw*1.6);
-  lg.addColorStop(0,f.k==="derelict"?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)");lg.addColorStop(.5,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,.62)");
-  ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);
-  ctx.globalCompositeOperation="source-over";
-  ctx=prev;
-  const art={cn,cnA,rad,L,hw,lights,bx,by,emb};
-  FLEET_ART[key]=art;return art;
+  const paint=(top,dark)=>g=>{
+    g.setTransform(FLEET_SS,0,0,FLEET_SS,rad*FLEET_SS,rad*FLEET_SS);body();
+    ctx.globalCompositeOperation="source-atop";
+    const lg=ctx.createLinearGradient(0,-hw*1.8,0,hw*1.6);
+    lg.addColorStop(0,top);lg.addColorStop(.5,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,"+dark+")");
+    ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);ctx.globalCompositeOperation="source-over";};
+  const bake=(top,dark)=>gpuBake(side,side,paint(top,dark));
+  const dr=f.k==="derelict",topN=dr?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)";
+  let cn=null,cnA=null,ok=false;
+  try{
+    yield;cn=bake(topN,.62);
+    if(cn){yield;cnA=bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3);}
+    ok=true;const art={cn,cnA,rad,L,hw,lights,bx,by,emb,side};FLEET_PAINT.set(art,paint(topN,.62));return art;
+  }finally{if(!ok){gpuBakeDrop(cn);gpuBakeDrop(cnA);}}   /* брошена недопечённой — отдать выпечки */
 }
 /* ── алфавит знаков (§18.2): десять фигур, у каждой одна заливка; повороты
    0/45/90 и отражение — единственные операции; h — полуразмер фигуры ── */
@@ -24534,7 +24618,7 @@ function fleetGlyph(k,h){
    globalAlpha; так все места вызова (полоса, флот, жесты, мирный флот) уходят с #c разом.
    Зев сопла — свет (сложение): над #c его раздувал emit(). Огни — тоже явная эмиссия
    (правило 16/n): точка краской и узкий ореол сложением, в два-три её радиуса */
-const FLEET_ENG=1.3,FLEET_HALO=.45,FLEET_LOD=-1.2;
+const FLEET_ENG=1.3,FLEET_HALO=.45,FLEET_LOD=-1.2;   /* мельче экрана на −1.2 ступени и маска по яркости (sharp, 17c): резкость +0.6…+5.2 % против прежних −1.2 без маски, свет −0.8…+0.1 %, рябь на полупикселе 10.3 против 10.4; −1.0 терял до 2.8 % резкости, −.8 — до 5 % (ворота 25.09) */
 function fleetShipGpu(f,art){
   if(!gpuScene())return false;
   const m=ctx.getTransform(),k=1/DPR;
@@ -24542,21 +24626,21 @@ function fleetShipGpu(f,art){
 }
 /* то же без 2D: матрица (a…f) — в пикселях CSS; её дают те, кто знает место сам (полоса 17g) */
 function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
-  const pass=gpuScene();if(!pass)return false;
+  const pass=gpuScene();if(!pass||!art||!art.cn)return false;
   const s=Math.hypot(ma,mb);
   const T=(lx,ly)=>[ma*lx+mc*ly+me,mb*lx+md*ly+mf],[x,y]=T(0,0),w=art.rad*2*s;
   const rot=Math.atan2(mb,ma);
   /* светом звезды (Ships a): свет корпуса (GST, −1) по своей выпечке — краска как есть,
      дальний борт в тень, кромка цветом звезды; множитель станции (0) белил нос и знак.
-     Уровень мипа на ступень мельче экрана: маски у GST нет, а резкость — не ниже 2D.
+     Уровень мипа на ступень мельче экрана и нерезкая маска между уровнями: резкость — не ниже 2D.
      Гаснущий борт (полоса у дока) — прежней картинкой: у GST нет прозрачности */
-  if(art.cnA&&G.mode==="system"&&al>.99&&G.viewCX!==undefined){
+  if(G.mode==="system"&&al>.99&&G.viewCX!==undefined){
     /* к звезде: звезда в начале координат системы, точка борта — из экрана через камеру */
     const wx=G.viewCX+(x-W/2)/G.zoom,wy=G.viewCY+(y-H/2)/G.zoom,ln=Math.hypot(wx,wy)||1;
-    const cv=art.cnA,lod=Math.max(0,Math.log2(cv.width/(w*GPU.bw/W))+FLEET_LOD);
-    gpuLitSprite(gpuMipTex(cv),x,y,w/2,s,rot,-wx/ln,-wy/ln,-1,0,lod);
+    const cv=art.cnA,lod=Math.max(0,Math.log2(cv.w/(w*GPU.bw/W))+FLEET_LOD);
+    gpuLitSprite(cv,x,y,w/2,s,rot,-wx/ln,-wy/ln,-1,0,lod,null,true);
   }else
-  gpuImage(pass,gpuMipTex(art.cn),[{x,y,w,h:w,rot,a:al}],{sharp:true});
+  gpuImage(pass,art.cn,[{x,y,w,h:w,rot,a:al}],{sharp:true});
   const L=[],A=[],by=f.by||"gt",MF=(typeof makerFlame==="function")?makerFlame(by):null;
   const ec=(MF&&by!=="gt")?mixc(MF.col,[255,255,255],.2):[255,178,110];
   for(const li of art.lights){const [px,py]=T(li.x,li.y);
@@ -24570,33 +24654,8 @@ function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
   if(A.length)gpuShapes(pass,A,{blend:"add"});
   return true;
 }
-function drawFleetShip(f){
-  const art=fleetArtOf(f);
-  if(ctx===MAIN_CTX&&fleetShipGpu(f,art))return;
-  ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
-  for(const li of art.lights){
-    if(li.c==="nav"){
-      const on=Math.sin(G.t*.05+(li.g?1.6:0))>.6?.95:.2;
-      ctx.fillStyle=(li.g?"rgba(120,240,150,":"rgba(255,90,80,")+on+")";
-      ctx.beginPath();ctx.arc(li.x,li.y,1.4,0,TAU);ctx.fill();
-    }else if(li.c==="win"){
-      ctx.fillStyle=(Math.sin(G.t*.03+li.x)>-.4)?"rgba(255,228,170,.9)":"rgba(255,228,170,.4)";
-      ctx.beginPath();ctx.arc(li.x,li.y,1.3,0,TAU);ctx.fill();
-    }else if(li.c==="eng"){
-      /* зев сопла — подпись тяги завода (M369a, измерение 7): у ГЛАВТРАССЫ
-         оранжевый, у Коммуны фиалковый, у Хай-Фронта бирюзовый */
-      const MF=(typeof makerFlame==="function")?makerFlame(f.by||"gt"):null;
-      const fg=ctx.createRadialGradient(li.x,li.y,0,li.x,li.y,li.r*1.3);
-      if(MF&&(f.by||"gt")!=="gt"){
-        fg.addColorStop(0,rgba(mixc(MF.col,[255,255,255],.35),.85));
-        fg.addColorStop(.5,rgba(MF.col,.35));
-        fg.addColorStop(1,rgba(MF.col,0));
-      }else{
-      fg.addColorStop(0,"rgba(255,214,158,.85)");fg.addColorStop(.5,"rgba(255,150,80,.35)");fg.addColorStop(1,"rgba(255,120,60,0)");}
-      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(li.x,li.y,li.r*1.3,0,TAU);ctx.fill();
-    }
-  }
-}
+/* корабль флота в текущей матрице ctx (флот, жесты, мирный флот): только проход сцены (25.09) — 2D-ветки нет */
+function drawFleetShip(f){fleetShipGpu(f,fleetArtOf(f));}
 
 /* ══════════════ кооператив: покупать для себя, и люди, которые делают это с вами (M351) ══════════════
    Лестница автора (2026-09-04): на дядю → лицензия-кооператив → своё
@@ -27799,7 +27858,7 @@ function leftDraw(zx,zy,Z){
       if(!NPC_SHIPS[id])NPC_SHIPS[id]={name:id,seed:row.s>>>0,hcls:"scout",col:"#9fd8ff",
         hull:100,cargo:40,fuel:100,thr:1,cls:"след"};
       if(pass){const z=clamp(Z,.4,1.6)*.8,h=hullOf(id),B=hullGpuBake(h,id,hullGpuSb(h,GPU.bw/W));
-        gpuImage(pass,gpuMipTex(B.cv),[{x,y,w:B.E*2*z,h:B.E*2*z,rot:row.s%628/100,a:.22}]);return;}
+        if(B)gpuImage(pass,B.B,[{x,y,w:B.E*2*z,h:B.E*2*z,rot:row.s%628/100,a:.22}]);return;}
       ctx.save();
       ctx.globalAlpha=.22;
       ctx.translate(x,y);
@@ -32201,7 +32260,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
   /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
-  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"")+(GPU.on?"!g":"");
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"");
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
@@ -32219,11 +32278,11 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      светлоты, и силуэт исчезал вместе с ними */
   const C=[mixc(col,[8,10,14],.80),mixc(col,[12,14,20],.50),
     mixc(col,[255,240,220],.28),mixc(col,[30,34,42],.62)];
-  const rad=B.L*.9;
-  const cn=document.createElement("canvas");
-  cn.width=cn.height=Math.ceil(rad*2*PIR_SS);
-  const g=cn.getContext("2d");
-  const prev=ctx;ctx=g;
+  const rad=B.L*.9,side=Math.ceil(rad*2*PIR_SS);
+  /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст; ГСЧ пробоин
+     заводится внутри — перепечка после потери устройства даёт тот же рваный силуэт.
+     Без видеокарты — null: 2D-пути нет */
+  const cn=gpuBake(side,side,g=>{
   g.setTransform(PIR_SS,0,0,PIR_SS,rad*PIR_SS,rad*PIR_SS);
   /* флагман ренегата — это ВАШ корпус, обвешанный чужим: настоящий полётный
      силуэт ложится под сварку, и корабль узнаётся раньше, чем подпись */
@@ -32360,44 +32419,33 @@ function pirateArtOf(id,rogue,hurt,rank,des){
     ctx.fillRect(-rad,-rad,rad*2,rad*2);
     ctx.globalCompositeOperation="source-over";
   }
-  /* ── один свет на весь корабль ──
-     Пока каждая деталь заливалась своим ровным цветом, корабль оставался кучей
-     равноправных пятен: у сварки не было ни верха, ни низа. Свет кладётся
-     последним по всей выпечке разом (`source-atop` — только по нарисованному),
-     и куски сразу становятся одним телом, освещённым сверху.
-     На видеокарте свет кладёт gpuLitSprite по рельефу, от звезды (G4). */
-  if(!GPU.on){
-  ctx.globalCompositeOperation="source-atop";
-  const lg=ctx.createLinearGradient(0,-B.hw*1.5,0,B.hw*1.6);
-  lg.addColorStop(0,"rgba(255,238,214,.34)");
-  lg.addColorStop(.42,"rgba(255,220,190,0)");
-  lg.addColorStop(1,"rgba(0,0,0,.5)");
-  ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);
-  ctx.globalCompositeOperation="source-over";
-  const bodyTop=B.top;
-  /* верхняя кромка ловит свет — по ней и читается силуэт на тёмном космосе */
-  ctx.strokeStyle="rgba(255,236,214,.5)";ctx.lineWidth=.7;
-  ctx.beginPath();
-  for(let i=0;i<=bodyTop.length-1;i++){
-    const p=bodyTop[i];i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);
-  }
-  ctx.stroke();
-  }
-  ctx=prev;
+  /* один свет на весь корабль кладёт gpuLitSprite по рельефу, от звезды (G4): в выпечке его нет;
+     нерезкая маска — в шейдере (sharp, между уровнями мипов) */
+  });
   const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru};
   PIR_ART[key]=art;return art;
 }
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──
    Повреждения копятся вместе с hp, выхлоп грязный и несинхронный — и то и
    другое меняется каждый кадр, поэтому идёт поверх выпечки. */
-/* корпус пирата светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale */
+/* корпус пирата светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale.
+   Свет станционный (glow 0): корпусный (−1) без подъёма по стороне звезды выжигал бледный
+   металл на телефоне — подъём в GST в очереди после телефонного гейта (Контроль, 25.09) */
+/* мельче экрана на −1.6 ступени и маска «dark» (вниз в полную силу, полоса не уже 5.5 текселя —
+   17c): ворота 25.09 против прежнего pirMaster — резкость −0.6…+3.3 %, свет −0.4…+1.2 %, рябь на
+   полупикселе 11.7–11.8 против 12.2; −1.4 терял 2–3 % резкости, полоса 7 гасила дезертира на 1.8 % */
+const PIR_LOD=-1.6;
 function gpuPirateBody(p,x,y,s){
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
   const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
   let lx=-p.x,ly=-p.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
-  return gpuLitSprite(art.cn,x,y,art.rad*s,s,p.a,lx,ly,0);
+  /* выпечка с мипами: на крупном плане уровень 0, при отдалении — мипы, а не рябь; деталь
+     поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
+  if(!art.cn)return false;
+  const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
+  return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,0,0,lod,null,"dark");
 }
-/* живой слой пирата на видеокарте (бой, ступень 1): то, что drawPirate кладёт поверх
+/* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх
    выпечки, — в проход сцены. over=false — под корпусом: факел шейдером своего корабля
    (GEX, 16ga) штатной лестницей температур и ореол сопла, чад мягкими кругами;
    over=true — над ним: пятна копоти с окалиной, огонь из пробоины (свет — сложением),
@@ -32447,57 +32495,6 @@ function gpuPirateLive(pass,list,over){
   if(PGX.n)gexDraw(pass,PGX,"pgx",x=>x,y=>y);
   if(D.length)gpuShapes(pass,D);
   if(E.length)gpuShapes(pass,E,{blend:"add"});
-}
-function drawPirate(p,lit){
-  const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
-  /* ниже половины берём вторую выпечку — рваный корпус, а не тот же силуэт
-     в пятнах. Обе картинки живут в кэше и считаются по одному разу */
-  /* охотник (12o) печётся флагманской выпечкой, как ренегат: его силуэт должен
-     опознаваться в бою с одного взгляда */
-  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
-  const B=art.B;
-  /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
-     чадит сильнее прочих */
-  for(const e of B.eng){
-    if(p.thrust)drawFlame(e.x,e.y,e.r*.9,.8+Math.sin(G.t*.2+e.ph)*.2);
-    if(e.dirty||hp<.6){
-      const puffs=(e.dirty===2?5:3);
-      for(let i=0;i<puffs;i++){
-        const t=((G.t*.03+i*.7+e.ph)%3);
-        ctx.fillStyle="rgba(60,54,50,"+((e.dirty===2?.38:.28)-t*.09).toFixed(2)+")";
-        ctx.beginPath();ctx.arc(e.x-t*7,e.y+Math.sin(t*2+e.ph)*2,1.6+t*2.4,0,TAU);ctx.fill();
-      }
-    }
-  }
-  if(!lit)ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
-  /* ── повреждения: раньше урон читался только полоской над кораблём ── */
-  if(hp<.85){
-    const r=rng(hashi(p.seed||1,0x0D06,5));
-    /* пятен поверх меньше, когда силуэт уже рваный: иначе копоть удваивается */
-    const n=Math.round((1-hp)*(hp<.5?3:7));
-    for(let i=0;i<n;i++){
-      const x=lerp(B.tail,B.nose*.8,r()), y=(r()*2-1)*B.hw*.7, s=B.hw*(.1+r()*.18);
-      ctx.fillStyle="rgba(18,14,12,.85)";
-      ctx.beginPath();ctx.arc(x,y,s,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(255,120,60,.35)";ctx.lineWidth=.7;ctx.stroke();
-    }
-    /* из пробоины бьёт факел: сама пробоина уже вырезана в выпечке */
-    if(hp<.5){
-      const bx=B.tail+B.L*.35, by=B.hw*.55;
-      const f=B.hw*(.32+Math.sin(G.t*.31)*.1);
-      const fg=ctx.createRadialGradient(bx,by,0,bx,by,f*2.2);
-      fg.addColorStop(0,"rgba(255,220,150,.6)");fg.addColorStop(.4,"rgba(255,130,60,.3)");
-      fg.addColorStop(1,"rgba(255,80,40,0)");
-      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(bx,by,f*1.5,0,TAU);ctx.fill();
-    }
-    if(hp<.3){          // дым тянется за подбитым и виден издалека
-      for(let i=0;i<4;i++){
-        const t=((G.t*.02+i*.8)%4);
-        ctx.fillStyle="rgba(40,36,34,"+(.34-t*.08).toFixed(2)+")";
-        ctx.beginPath();ctx.arc(B.tail-t*9,B.hw*.3+Math.sin(t*1.7+i)*4,2+t*3.4,0,TAU);ctx.fill();
-      }
-    }
-  }
 }
 
 /* ══════════════ дом ══════════════
@@ -34562,7 +34559,7 @@ function drawWrecksSystem(zx,zy,Z){
    последним слоем. Но язык другой — не сварной ком, а длинный работяга:
    вытянутое тело, хребет с контейнерами, большие тихоходные движки, ходовая
    рубка у носа. Оружия нет вовсе. Печётся один раз на seed в офскрин. */
-const BARGE_SS=3;
+const BARGE_SS=3,BARGE_LOD=-2.5;   /* вблизи уровень 0, вдали мип на полтора шага крупнее экрана: резкость как у 2D-растра, без ряби (ворота 25.09) */
 const BARGE_ART={};
 function bargeArtOf(b){
   /* ── у баржи тоже есть завод (M369a, §19.4) ──
@@ -34571,7 +34568,7 @@ function bargeArtOf(b){
      и грунт берутся из той же таблицы, что у корпусов: один слой грамматики на
      всех пятерых генераторов (D24). */
   const by=b.by||(b.by=(typeof makerBySeed==="function")?makerBySeed(b.seed):"gt");
-  const key="bg"+b.seed+"!"+by+(GPU.on?"!g":"");
+  const key="bg"+b.seed+"!"+by;
   if(BARGE_ART[key])return BARGE_ART[key];
   const r=rng(hashi(b.seed,0x5A19,9));
   const L=104+r()*40, hw=L*(.14+r()*.04);
@@ -34584,13 +34581,13 @@ function bargeArtOf(b){
   const C=[mixc(base,[8,10,14],.72),mixc(base,[10,12,18],.42),
     mixc(base,[236,226,206],.30),mixc(base,[24,28,36],.55)];
   /* ── тело: одна длинная масса под всей сборкой ── */
-  const bodyN=12,body=[],top=[];
+  const bodyN=12,body=[];
   /* ширина по закону завода, концы по-баржевому подрезаны */
   const wAt=t=>hw*(typeof makerWidth==="function"?makerWidth(by,t,b.seed):1)*
     (t<.10?t/.10:(t>.88?(1-t)/.12*.7+.3:1));
   for(let i=0;i<=bodyN;i++){
     const t=i/bodyN,x=lerp(tail,nose,t),w=Math.max(hw*.18,wAt(t));
-    top.push([x,-w]);body.push([x,-w]);
+    body.push([x,-w]);
   }
   for(let i=bodyN;i>=0;i--){
     const t=i/bodyN,x=lerp(tail,nose,t),w=Math.max(hw*.18,wAt(t));
@@ -34675,60 +34672,47 @@ function bargeArtOf(b){
   lights.push({x:nose*.4,y:-hw,c:"nav",g:0});
   lights.push({x:nose*.4,y:hw,c:"nav",g:1});
 
-  const rad=L*.75;
-  const cn=document.createElement("canvas");
-  cn.width=cn.height=Math.ceil(rad*2*BARGE_SS);
-  const g=cn.getContext("2d");const prev=ctx;ctx=g;
-  g.setTransform(BARGE_SS,0,0,BARGE_SS,rad*BARGE_SS,rad*BARGE_SS);
-  for(const q of polys){
-    ctx.beginPath();ctx.moveTo(q.p[0][0],q.p[0][1]);
-    for(let i=1;i<q.p.length;i++)ctx.lineTo(q.p[i][0],q.p[i][1]);
-    ctx.closePath();
-    ctx.fillStyle=rgba(C[q.c],1);ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,"+(q.e?.5:.24)+")";ctx.lineWidth=q.e?.8:.4;ctx.stroke();
-  }
-  /* контейнеры поверх корпуса: тело коробки, обвод, светлая верхняя грань */
-  for(const k of cont){
-    ctx.fillStyle="rgb("+(k.c[0]|0)+","+(k.c[1]|0)+","+(k.c[2]|0)+")";
-    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.6;
-    ctx.beginPath();ctx.rect(k.x-k.w,k.y1,k.w*2,k.y0-k.y1);ctx.fill();ctx.stroke();
-    /* люк или перемычки — короб не должен быть пустой заливкой */
-    ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=.4;
-    ctx.beginPath();ctx.moveTo(k.x,k.y1);ctx.lineTo(k.x,k.y0);ctx.stroke();
-    /* шов на стыке короба и корпуса темнее обшивки (дизайнер 12.09): светлая
-       кромка сверху читалась щелью света между блоками, а не сваркой */
-    ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.8;
-    ctx.beginPath();ctx.moveTo(k.x-k.w,k.y0);ctx.lineTo(k.x+k.w,k.y0);ctx.stroke();
-  }
-  for(const l of lines){
-    ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
-    ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();
-  }
-  /* ── один свет на всю сборку последним слоем ──
-     на видеокарте его кладёт gpuLitSprite по рельефу, от звезды (G4) */
-  if(!GPU.on){
-  ctx.globalCompositeOperation="source-atop";
-  const lg=ctx.createLinearGradient(0,-hw*2.4,0,hw*1.4);
-  lg.addColorStop(0,"rgba(255,240,216,.32)");
-  lg.addColorStop(.45,"rgba(255,224,196,0)");
-  lg.addColorStop(1,"rgba(0,0,0,.48)");
-  ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);
-  ctx.globalCompositeOperation="source-over";
-  /* верхняя кромка ловит свет — по ней силуэт читается на тёмном космосе */
-  ctx.strokeStyle="rgba(255,238,216,.5)";ctx.lineWidth=.7;
-  ctx.beginPath();
-  top.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
-  ctx.stroke();
-  }
-  ctx=prev;
+  const rad=L*.75,side=Math.ceil(rad*2*BARGE_SS);
+  /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст; свет кладёт
+     gpuLitSprite по рельефу, от звезды (G4). Без видеокарты — null: 2D-пути нет */
+  const cn=gpuBake(side,side,g=>{
+    g.setTransform(BARGE_SS,0,0,BARGE_SS,rad*BARGE_SS,rad*BARGE_SS);
+    for(const q of polys){
+      ctx.beginPath();ctx.moveTo(q.p[0][0],q.p[0][1]);
+      for(let i=1;i<q.p.length;i++)ctx.lineTo(q.p[i][0],q.p[i][1]);
+      ctx.closePath();
+      ctx.fillStyle=rgba(C[q.c],1);ctx.fill();
+      ctx.strokeStyle="rgba(0,0,0,"+(q.e?.5:.24)+")";ctx.lineWidth=q.e?.8:.4;ctx.stroke();
+    }
+    /* контейнеры поверх корпуса: тело коробки, обвод, светлая верхняя грань */
+    for(const k of cont){
+      ctx.fillStyle="rgb("+(k.c[0]|0)+","+(k.c[1]|0)+","+(k.c[2]|0)+")";
+      ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.6;
+      ctx.beginPath();ctx.rect(k.x-k.w,k.y1,k.w*2,k.y0-k.y1);ctx.fill();ctx.stroke();
+      /* люк или перемычки — короб не должен быть пустой заливкой */
+      ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=.4;
+      ctx.beginPath();ctx.moveTo(k.x,k.y1);ctx.lineTo(k.x,k.y0);ctx.stroke();
+      /* шов на стыке короба и корпуса темнее обшивки (дизайнер 12.09): светлая
+         кромка сверху читалась щелью света между блоками, а не сваркой */
+      ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.8;
+      ctx.beginPath();ctx.moveTo(k.x-k.w,k.y0);ctx.lineTo(k.x+k.w,k.y0);ctx.stroke();
+    }
+    for(const l of lines){
+      ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
+      ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();
+    }
+  });
   const art={cn,rad,L,hw,lights,cols:C};
   BARGE_ART[key]=art;return art;
 }
 /* корпус баржи светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale */
 function gpuBargeBody(b,x,y,s){
   const art=bargeArtOf(b);
+  if(!art.cn)return false;
   let lx=-b.x,ly=-b.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
-  return gpuLitSprite(art.cn,x,y,art.rad*s,s,b.a,lx,ly,0);
+  /* мастер с мипами: вблизи уровень 0, как было, вдали — мипы, а не рябь */
+  const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+BARGE_LOD);
+  return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,0,0,lod);
 }
 /* живой слой баржи с видеокарты (ступень 1): огни и зевы — фигурами в проходе сцены,
    то же, что drawBarge кладёт поверх выпечки; x,y — экран, s — масштаб, a — поворот */
@@ -34745,7 +34729,6 @@ function bargeLiveGpu(pass,b,x,y,s,a){
 }
 function drawBarge(b,lit){
   const art=bargeArtOf(b);
-  if(!lit)ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
   /* живой слой: ходовые огни и рубка мигают — печь их нельзя */
   for(const li of art.lights){
     if(li.c==="nav"){
@@ -43743,14 +43726,13 @@ function killPirate(p){
    LOOT_IC_K радиусов шириной; на экране ложится мипами (кромка 1.4 px при s≈8, как кистью) */
 const LOOT_IC=new Map(),LOOT_IC_R=20,LOOT_IC_K=2.4;
 function lootIcon(col){
-  let c=LOOT_IC.get(col);if(c)return c;
-  c=document.createElement("canvas");c.width=c.height=Math.round(LOOT_IC_R*LOOT_IC_K);
-  const g=c.getContext("2d"),s=LOOT_IC_R;g.translate(c.width/2,c.height/2);
-  g.fillStyle="rgba(20,24,30,.9)";g.strokeStyle=col;g.lineWidth=1.4*s/8;g.lineJoin="miter";
-  g.beginPath();
-  for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
-  g.closePath();g.fill();g.stroke();
-  LOOT_IC.set(col,c);return c;
+  /* выпечка на GPU-холсте (25.09): ни 2D-растра, ни выгрузки мипов */
+  const n=Math.round(LOOT_IC_R*LOOT_IC_K);
+  return gpuBaked(LOOT_IC,col,n,n,g=>{const s=LOOT_IC_R;g.translate(n/2,n/2);
+    g.fillStyle="rgba(20,24,30,.9)";g.strokeStyle=col;g.lineWidth=1.4*s/8;g.lineJoin="miter";
+    g.beginPath();
+    for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+    g.closePath();g.fill();g.stroke();});
 }
 function drawCombat(zx,zy,Z){
   /* лучи (M364) и болты — светящейся энергией на видеокарте (13z) */
@@ -43779,7 +43761,7 @@ function drawCombat(zx,zy,Z){
     }
     if(pass){
       /* коробка печётся раз на цвет (lootIcon) и ложится мипами с поворотом */
-      gpuImage(pass,gpuMipTex(lootIcon(col)),[{x,y,w:s*LOOT_IC_K,h:s*LOOT_IC_K,rot:L.spin}],{sharp:true});
+      gpuImage(pass,lootIcon(col),[{x,y,w:s*LOOT_IC_K,h:s*LOOT_IC_K,rot:L.spin}],{sharp:true});
       const c=hex2rgb(col);SH.push([1,x,y,2.2,0,0,0,c[0],c[1],c[2],pulse]);
       continue;
     }
@@ -43794,22 +43776,14 @@ function drawCombat(zx,zy,Z){
     ctx.beginPath();ctx.arc(x,y,2.2,0,TAU);ctx.fill();ctx.globalAlpha=1;
   }
   /* корпуса: с видеокарты — факелы и чад под корпусами, корпуса, пробоины и дым поверх
-     (gpuPirateLive, 12i); без неё — прежней кистью, живой слой поверх выпечки */
+     (gpuPirateLive, 12i) */
   const PV=[];
   for(const p of G.pirates){const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60)PV.push({p,x,y,s:shipScaleAt(Z)*.82});}   /* один потолок с кораблём (16c, п. 2) */
   if(pass)gpuPirateLive(pass,PV,false);
-  for(const q of PV){
-    const lit=gpuPirateBody(q.p,q.x,q.y,q.s);   /* корпус светом звезды на видеокарте (G4) */
-    if(lit)continue;
-    ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.p.a);
-    ctx.scale(q.s,q.s);
-    /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
-       чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных
-       один раз по seed, и живой слой повреждений поверх */
-    drawPirate(q.p,false);
-    ctx.restore();
-  }
+  /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в чужой раскраске:
+     выпечка по seed, свет звезды на видеокарте (G4), живой слой — gpuPirateLive. 2D-пути нет (25.09) */
+  for(const q of PV)gpuPirateBody(q.p,q.x,q.y,q.s);
   if(pass)gpuPirateLive(pass,PV,true);
   for(const p of G.pirates){
     const x=zx(p.x),y=zy(p.y);
@@ -43844,11 +43818,10 @@ function drawCombat(zx,zy,Z){
       }
       const hot=p.stunT>0;
       const font=(p.rogue?"9px":"8px")+" ui-monospace,monospace",fill=hot?"rgba(255,178,92,.95)":(p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)");
-      ctx.font=font;
       /* имя не ложится на подпись планеты и на фишку у кромки (R6, 12.09):
          пересеклось — уходит над корабль. Фишки в настоящих пикселях (15-input) */
       const lbl=hot?"ПЕРЕГРЕВ":p.name.toUpperCase();let ly=y+26;
-      {const lw=ctx.measureText(lbl).width,bx0=x-lw/2,bx1=x+lw/2,by0=ly-8,by1=ly+2,U2=uiK();
+      {const lw=labelW(font,lbl),bx0=x-lw/2,bx1=x+lw/2,by0=ly-8,by1=ly+2,U2=uiK();
        const hit=BODY_LABELS.some(b=>!(bx1<b.x0||b.x1<bx0||by1<b.y0||b.y1<by0))||
          SYS_CHIPS.some(c=>!(bx1*U2<c.x||c.x+c.w<bx0*U2||by1*U2<c.y||c.y+c.h<by0*U2));
        if(hit)ly=y-22;}
@@ -49805,30 +49778,46 @@ function abilPadRim(){
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
     b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="ДОЛГОЕ · "+abilOf().ru;}   /* режим входит в ключ: в вагоне подписи нет */
 }
+/* клин прожектора: радиальный градиент в секторе ±.35 — выпечка GPU-холста на размер экрана
+   (L — большая сторона, меняется только с окном); вершина у левого края, ось — вправо */
+const ABIL_CONE=new Map();
+function abilCone(R){
+  const d=DPR*2;   /* вдвое крупнее и уровень 0 (lod .5): повёрнутая кромка клина не мылится билинейной выборкой */
+  return bakeKeep(ABIL_CONE,Math.round(R*d)+"|"+d,2,()=>{
+    const Rd=R*d,w=Math.ceil(Rd)+2,h=2*Math.ceil(Rd*Math.sin(.35))+2;
+    const B=gpuBake(w,h,g=>{g.setTransform(d,0,0,d,1,h/2);
+      const gr=g.createRadialGradient(0,0,0,0,0,R);gr.addColorStop(0,"rgba(200,230,255,.102)");   /* .10 в 2D; проход сцены сводит на 2 % темнее */gr.addColorStop(1,"rgba(200,230,255,0)");
+      g.fillStyle=gr;g.beginPath();g.moveTo(0,0);g.arc(0,0,R,-.35,.35);g.closePath();g.fill();},{mips:true});
+    return B&&{B,w:w/d,h:h/d,ox:(w/2-1)/d,drop(){gpuBakeDrop(B);}};
+  });
+}
 function drawAbil(zx,zy){
-  /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep) */
-  if(abilOn("yacht")){   /* СИРЕНА: два расходящихся кольца */
-    const x=zx(G.ship.x),y=zy(G.ship.y),u=1-(ABIL_ST.on-G.t)/(ABIL.yacht.dur*60);
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    for(const k of [0,.5]){const uu=(u+k)%1;ctx.strokeStyle="rgba(255,190,110,"+(.6*(1-uu)).toFixed(2)+")";ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(x,y,20+uu*260,0,TAU);ctx.stroke();}
-    ctx.restore();
+  /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep).
+     На видеокарте (25.09): фигуры прохода сцены и выпечка клина, 2D-пути нет */
+  const pass=gpuScene();if(!pass)return;
+  if(abilOn("yacht")){   /* СИРЕНА: два расходящихся кольца (штрих 2 px, сложение) */
+    const x=zx(G.ship.x),y=zy(G.ship.y),u=1-(ABIL_ST.on-G.t)/(ABIL.yacht.dur*60),R=[];
+    for(const k of [0,.5]){const uu=(u+k)%1;R.push([3,x,y,20+uu*260,0,1,0,255,190,110,.6*(1-uu)]);}
+    gpuShapes(pass,R,{blend:"add"});
   }
   if(abilOn("courier")&&ABIL_ST.crate){   /* СБРОС: ящик остаётся там, где выброшен */
-    const x=zx(ABIL_ST.crate.x),y=zy(ABIL_ST.crate.y),s=shipZ(G.zoom);
-    ctx.save();ctx.translate(x,y);ctx.rotate(ABIL_ST.crate.a+G.t*.01);ctx.scale(s,s);
-    ctx.fillStyle="#6a5a3c";ctx.fillRect(-6,-5,12,10);ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1;ctx.strokeRect(-6,-5,12,10);
-    ctx.strokeStyle="rgba(255,214,150,.7)";ctx.beginPath();ctx.moveTo(-6,0);ctx.lineTo(6,0);ctx.moveTo(0,-5);ctx.lineTo(0,5);ctx.stroke();
-    ctx.restore();
+    const x=zx(ABIL_ST.crate.x),y=zy(ABIL_ST.crate.y),s=shipZ(G.zoom),an=ABIL_ST.crate.a+G.t*.01,c=Math.cos(an),n=Math.sin(an);
+    /* прямоугольник в осях ящика: центр (ox,oy), полуразмеры (hx,hy) — в масштабе s */
+    const q=(ox,oy,hx,hy,C)=>[4,x+(ox*c-oy*n)*s,y+(ox*n+oy*c)*s,hx*s,hy*s,an,0,C[0],C[1],C[2],C[3]];
+    const O=[0,0,0,.5],X=[255,214,150,.7];
+    gpuShapes(pass,[q(0,0,6,5,[106,90,60,1]),
+      /* обвод 1 px по кромке — четыре полосы без нахлёста (у штриха пути углы не двоятся) */
+      q(0,-5,6.5,.5,O),q(0,5,6.5,.5,O),q(-6,0,.5,4.5,O),q(6,0,.5,4.5,O),
+      /* крест: вертикаль в два куска — в центре не двоится, как у одного пути */
+      q(0,0,6,.5,X),q(0,-2.75,.5,2.25,X),q(0,2.75,.5,2.25,X)]);
   }
-  if(ABIL_ST.k==="miner"&&abilOn("miner")&&ABIL_ST.beam){
-    ctx.save();ctx.globalCompositeOperation="lighter";ctx.strokeStyle="rgba(255,190,110,.85)";ctx.lineWidth=3;
-    ctx.beginPath();ctx.moveTo(zx(G.ship.x),zy(G.ship.y));ctx.lineTo(zx(ABIL_ST.beam.x),zy(ABIL_ST.beam.y));ctx.stroke();ctx.restore();
+  if(ABIL_ST.k==="miner"&&abilOn("miner")&&ABIL_ST.beam){   /* луч резака: 3 px, срез прямой, сложение */
+    const x0=zx(G.ship.x),y0=zy(G.ship.y),x1=zx(ABIL_ST.beam.x),y1=zy(ABIL_ST.beam.y);
+    gpuShapes(pass,[[4,(x0+x1)/2,(y0+y1)/2,Math.hypot(x1-x0,y1-y0)/2,1.5,Math.atan2(y1-y0,x1-x0),0,255,190,110,.85]],{blend:"add"});
   }
-  if(abilOn("survey")){
-    const a=G.ship.a,x=zx(G.ship.x),y=zy(G.ship.y),L=Math.max(W,H);
-    const g=ctx.createRadialGradient(x,y,0,x,y,L*.6);g.addColorStop(0,"rgba(200,230,255,.10)");g.addColorStop(1,"rgba(200,230,255,0)");
-    ctx.save();ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,L*.6,a-.35,a+.35);ctx.closePath();ctx.fill();ctx.restore();
+  if(abilOn("survey")){   /* прожектор: клин выпечки, вершина — на корабле */
+    const a=G.ship.a,x=zx(G.ship.x),y=zy(G.ship.y),K=abilCone(Math.max(W,H)*.6);
+    if(K)gpuImage(pass,K.B,[{x:x+Math.cos(a)*K.ox,y:y+Math.sin(a)*K.ox,w:K.w,h:K.h,rot:a,a:1}],{lod:.5});
   }
 }
 
@@ -50021,7 +50010,6 @@ const HAUL_FREE=210;                  /* кадров отцепки: трос �
 const HAUL_BOOM_K=.2;                 /* стрела за соплами, доля длины баржи: трос не из огня (дизайнер 12.09) */
 const HAUL_CAM={x:0,y:0};             /* сдвиг камеры вперёд по тросу — догоняет плавно (вид, не мир) */
 let HAUL_FX=[];
-const haulRim={cv:null};              /* холст-маска кромки: один на сцену, не в G */
 /* масштаб корабля в drawSystem — один на двоих с буксиром. На тросе пол .7:
    пять минут игрок смотрит на СВОЙ корабль, а в .35 он был серым пятном в 12 px
    (дизайн-ревью 11.09, закон «себя находят с одного взгляда») */
@@ -50343,135 +50331,8 @@ function drawHaul(zx,zy,Z){
   const b=haulBarge(),art=bargeArtOf(b);
   const sS=shipScaleAt(Z),sB=sS*HAUL_BARGE_K;
   const x=zx(T.bx),y=zy(T.by),sx=zx(G.ship.x),sy=zy(G.ship.y);
-  const pass=gpuScene();if(pass){haulGpu(pass,T,b,art,sS,sB,x,y,sx,sy,zx,zy);return;}
-  /* отвалившееся и искры — под баржей и тросом */
-  for(const f of HAUL_FX){
-    const fx=zx(f.x),fy=zy(f.y),a=clamp(f.life,0,1);
-    if(f.k==="spark"){
-      ctx.fillStyle="rgba(255,"+(170+Math.round(80*a))+",90,"+a.toFixed(2)+")";
-      ctx.fillRect(fx-1,fy-1,2,2);continue;
-    }
-    ctx.save();ctx.translate(fx,fy);ctx.rotate(f.a);ctx.scale(sS,sS);ctx.globalAlpha=a;
-    ctx.fillStyle="#6d7480";ctx.strokeStyle="#20242b";ctx.lineWidth=1;
-    if(f.k==="plate"){ctx.fillRect(-7,-4,14,8);ctx.strokeRect(-7,-4,14,8);}
-    else if(f.k==="antenna"){ctx.strokeStyle="#9aa3ad";ctx.beginPath();ctx.moveTo(-9,0);ctx.lineTo(9,0);ctx.stroke();
-      ctx.fillStyle="#ff6b57";ctx.fillRect(8,-1.5,3,3);}
-    else{ctx.fillStyle="#b0703a";ctx.fillRect(-4,-6,8,12);ctx.strokeRect(-4,-6,8,12);}
-    ctx.restore();ctx.globalAlpha=1;
-  }
-  ctx.save();ctx.translate(x,y);ctx.rotate(T.ba);ctx.scale(sB,sB);
-  /* маршевые: факел из каждого сопла, дышит; на гашении хода и развороте — молчат */
-  if(T._fire){
-    ctx.globalCompositeOperation="lighter";
-    /* на тросе сопла разведены в стороны: факел в корабль на тросе читался
-       как «баржа толкает», а центральное сопло и вовсе било по тросу — глушим */
-    const haul=T.ph==="haul";
-    for(const li of art.lights){
-      if(li.c!=="eng")continue;
-      if(haul&&Math.abs(li.y)<art.hw*.25)continue;
-      const fl=.8+.2*Math.sin(G.t*.5+li.y)+.1*rndFx(),len=(26+li.r*3)*fl*(haul?.8:1),w=li.r*1.1;
-      ctx.save();ctx.translate(li.x,li.y);if(haul)ctx.rotate(-Math.sign(li.y)*.5);
-      const g=ctx.createLinearGradient(0,0,-len,0);
-      g.addColorStop(0,"rgba(255,236,190,.95)");g.addColorStop(.25,"rgba(255,170,90,.7)");
-      g.addColorStop(1,"rgba(255,90,40,0)");
-      ctx.fillStyle=g;ctx.beginPath();
-      ctx.moveTo(-1,-w);ctx.quadraticCurveTo(-len*.45,-w*1.2,-len,0);
-      ctx.quadraticCurveTo(-len*.45,w*1.2,-1,w);ctx.closePath();ctx.fill();
-      ctx.restore();
-    }
-    ctx.globalCompositeOperation="source-over";
-  }
-  drawBarge(b);
-  /* свет (дизайн-ревью 11.09, §13 «тело-обвод-один свет»): у источника есть
-     освещённое. Звезда кладёт тёплую кромку на свою сторону корпуса, факелы —
-     ореол на кормовые плиты. Один объект, считается на кадр */
-  {
-    /* кромка по самому силуэту: рисунок баржи как маска, тёплый градиент со
-       стороны звезды только по корпусу (обводка эллипсом читалась кольцом) */
-    const sa=Math.atan2(-T.by,-T.bx)-T.ba,cx=Math.cos(sa),cy=Math.sin(sa);
-    const sz=Math.ceil(art.rad*2);
-    const off=haulRim.cv||(haulRim.cv=document.createElement("canvas"));
-    if(off.width!==sz){off.width=sz;off.height=sz;}
-    /* экспозиция (дизайн-ревью 11.09, замер): кромка через «lighter» выжигала
-       кремовые модули в 255 — отражённое ярче факела, и корпус 66 рядом с белыми
-       ящиками читался двумя предметами. Теперь: тело целиком ×.82 умножением
-       (модули уходят с ~220 к ~180), кромка — «screen», он поднимает тёмное
-       сильнее светлого (корпус со стороны звезды ~120–130, модули ≤ ~205),
-       а ядро факела ниже — белое, самое светлое в кадре */
-    const o=off.getContext("2d");
-    const mask=fill=>{o.globalCompositeOperation="source-over";o.clearRect(0,0,sz,sz);
-      o.drawImage(art.cn,0,0,sz,sz);o.globalCompositeOperation="source-in";o.fillStyle=fill;o.fillRect(0,0,sz,sz);};
-    /* второй замер: ×.82 + screen .36 дали серую трубу (медиана 71, p90 116).
-       Цель: солнечная сторона — плиты 150–200, корпус 100–140; теневая — 50–70;
-       ядро факела ≥250. Тон сжат (×.78), тень глушится ещё градиентом, солнце
-       поднимается широким screen — плиты, а не проволока по ребру */
-    const draw=()=>ctx.drawImage(off,-art.rad,-art.rad,art.rad*2,art.rad*2);
-    const ax=sz/2-cx*sz*.4,ay=sz/2-cy*sz*.4,bx2=sz/2+cx*sz*.4,by2=sz/2+cy*sz*.4;
-    mask("rgb(214,212,206)");ctx.globalCompositeOperation="multiply";draw();
-    const sg=o.createLinearGradient(ax,ay,bx2,by2);
-    /* третий замер (12.09, мир автора): солнце 118 / тень 69 = 1.71 — тень
-       светлее цели (50–70 медианой, отношение ≥2). Теневой край глушится
-       глубже и холоднее; солнечная половина не тронута */
-    sg.addColorStop(0,"rgb(122,124,142)");sg.addColorStop(.5,"rgb(255,255,255)");sg.addColorStop(1,"rgb(255,255,255)");
-    mask(sg);draw();
-    const rg=o.createLinearGradient(ax,ay,bx2,by2);
-    rg.addColorStop(0,"rgba(255,205,150,0)");rg.addColorStop(.34,"rgba(255,205,150,0)");
-    rg.addColorStop(1,"rgba(255,208,156,.6)");
-    mask(rg);ctx.globalCompositeOperation="screen";draw();
-    ctx.globalCompositeOperation="lighter";
-    /* бело-горячее ядро у зева каждого сопла — поверх корпуса, иначе его закрывала корма */
-    if(T._fire)for(const li of art.lights){
-      if(li.c!=="eng"||(T.ph==="haul"&&Math.abs(li.y)<art.hw*.25))continue;
-      const cg=ctx.createRadialGradient(li.x-li.r*.5,li.y,0,li.x-li.r*.5,li.y,li.r*.95);
-      cg.addColorStop(0,"rgba(255,252,240,1)");cg.addColorStop(.55,"rgba(255,236,200,.85)");cg.addColorStop(1,"rgba(255,200,140,0)");
-      ctx.fillStyle=cg;ctx.beginPath();ctx.arc(li.x-li.r*.5,li.y,li.r*.95,0,TAU);ctx.fill();
-    }
-    if(T._fire){
-      const tx=-art.L*.48,gr=ctx.createRadialGradient(tx,0,0,tx,0,art.hw*1.6);
-      gr.addColorStop(0,"rgba(255,170,90,.45)");gr.addColorStop(1,"rgba(255,120,60,0)");
-      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(tx,0,art.hw*1.6,0,TAU);ctx.fill();
-    }
-    ctx.globalCompositeOperation="source-over";
-  }
-  /* носовые (гасят ход) и маневровые (разворот): короткие белые выхлопы */
-  if(T._retro||T._turn){
-    ctx.globalCompositeOperation="lighter";
-    const nose=art.L*.52,hw=art.hw;
-    const puff=(px,py,dx,dy)=>{
-      const n=.6+.4*rndFx(),g=ctx.createRadialGradient(px,py,0,px+dx*8*n,py+dy*8*n,10*n);
-      g.addColorStop(0,"rgba(230,240,255,.85)");g.addColorStop(1,"rgba(200,220,255,0)");
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+dx*6*n,py+dy*6*n,10*n,0,TAU);ctx.fill();
-    };
-    if(T._retro){puff(nose,-hw*.5,1,0);puff(nose,hw*.5,1,0);}
-    if(T._turn&&Math.floor(G.t/6)%2===0){puff(nose*.8,-hw,0,-1);puff(-nose*.8,hw,0,1);}
-    ctx.globalCompositeOperation="source-over";
-  }
-  /* стрела — железо (дизайнер 12.09: «огрызок в пару пикселей», трос выходил из
-     огня): брус за соплами, 0.2 длины и 0.25 полуширины корпуса, светлая грань
-     по одной стороне, гак на конце. Рисуется поверх факелов, трос — с гака */
-  if(T.ph!=="come"){
-    const bx0=-art.L*.48,bl=art.L*HAUL_BOOM_K,bh=Math.max(2,art.hw*.25),root=art.L*.06;
-    ctx.fillStyle="#4a4f57";ctx.fillRect(bx0-bl,-bh/2,bl+root,bh);
-    ctx.fillStyle="#aab2bb";ctx.fillRect(bx0-bl,-bh/2,bl+root,Math.max(1,bh*.24));
-    ctx.fillStyle="#2a2d33";ctx.fillRect(bx0-bl-2,-bh*.75,3.5,bh*1.5);
-  }
-  ctx.restore();
-  /* стрела и трос — поверх факелов (R4, дизайнер 12.09: трос выходил из сопла и
-     горел в факеле). Стрела выносит крепление за сопла; трос от носа корабля к
-     её концу, с провисом, рывок выбирает провис. На отцепке трос отдан: висит
-     со стрелы, укорачивается и гаснет, уходя вместе с баржей */
-  {
-    const R=haulRope(T,art,sS,sB,x,y,sx,sy);
-    if(R){
-      const {nx,ny,cx,cy,tx,ty,al}=R;
-      ctx.globalAlpha=al;
-      ctx.strokeStyle="rgba(40,36,30,.9)";ctx.lineWidth=Math.max(1.5,2.6*sS);
-      ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();
-      ctx.strokeStyle="rgba(214,200,168,.75)";ctx.lineWidth=Math.max(.8,1.2*sS);
-      ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();
-      ctx.globalAlpha=1;
-    }
-  }
+  /* только проход сцены (25.09): 2D-ветки нет — без видеокарты игры нет, экран «нет WebGPU» */
+  const pass=gpuScene();if(pass)haulGpu(pass,T,b,art,sS,sB,x,y,sx,sy,zx,zy);
 }
 
 /* взлёт с грунта без топлива: отказ называет причину (порог 91zzzzzl) и
@@ -50848,7 +50709,7 @@ function gpuSpaceTitle(c){
   gspStarsDust(pass,P,ub,0);
 }
 
-/* ══════════════ шлейф, факел и свет на корпусе корабля на видеокарте (G4, docs/DESIGN-gpu.md) ══════════════
+/* ══════════════ шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md) ══════════════
    Те же ленты по соплам из TRAIL, тот же цвет по возрасту (ядро → акцент корпуса) и
    та же толщина; лучше, чем в 2D:
    · лента — одна полоса треугольников с общими нормалями в узлах, а не отрезки
@@ -51161,78 +51022,6 @@ function gexDraw(pass,X,key,zx,zy){
   const eb=gpuBuf(key+".e",X.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(eb,0,X.f,0,X.n*20);
   const P=gpuPipe("gex",GEX_WGSL,"over");   /* over: дым заслоняет, огонь — сложением (альфа 0) */
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind(key,P,[ub,eb]));pass.draw(6,X.n);
-}
-/* ── свет звезды на корпусе (G4) ──
-   Корпус рисуется кистью 2D (сотни штрихов — это вектор), но свет на нём — от
-   звезды, а не запечённый сверху-слева: слой поверх (gpuOver) берёт альфу уже
-   нарисованного кадра как маску корабля. Маска читается как рельеф: у кромки
-   поверхность уходит от глаза (нормаль ложится в плоскость кадра), в середине
-   смотрит на нас. Свет — Ламберт по этой нормали от звезды, почти в плоскости
-   системы: ярче всего узкая скользящая полоса освещённого борта, к лицевым
-   граням спадает; не обводка по всему контуру. Дальний борт и дальняя половина
-   уходят в тень заметно — объём держит перепад, а не линия. */
-const GHL=new Float32Array(16),GHL_M=512;
-const GHL_WGSL=GPU_PL_WGSL+`
-fn plOcc(q:vec2f)->f32{let V=fu.v;let uv=(q*fu.res.x/fu.res.z-V[3].xy)/V[3].z;
-  if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}
-  return textureSampleLevel(t0,smp,uv,0.).a;}
-fn ga(uv:vec2f,d:vec2f)->vec2f{
-  return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),0.).a,
-               textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),0.).a);}
-fn field(p:vec2f,uv0:vec2f)->vec4f{
-  let V=fu.v;let uv=(p*fu.res.x/fu.res.z-V[3].xy)/V[3].z;let c=V[0].xy;let rad=V[0].z;let sd=normalize(V[1].xy);let col=V[2].rgb;let k=V[2].w;
-  let dp=p-c;let rr=length(dp);
-  if(rr>rad||any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(0.);}
-  let u1=vec2f(fu.res.x/fu.res.z/V[3].z);
-  let c4=textureSampleLevel(t0,smp,uv,0.);let a=c4.a;
-  if(a<.02){return vec4f(0.);}
-  /* рельеф маски: узкий шаг даёт кромку, широкий — скат борта к середине */
-  let L=normalize(vec3f(sd,.22));
-  let g=-ga(uv,u1*1.1);let tl=clamp(length(g),0.,.98);
-  let n=vec3f(g/max(length(g),1e-4)*tl,sqrt(1.-tl*tl));
-  let gb=-(ga(uv,u1*3.)*.5+ga(uv,u1*7.)*.5);let tb=clamp(length(gb)*1.2,0.,.9);
-  let nb=vec3f(gb/max(length(gb),1e-4)*tb,sqrt(1.-tb*tb));
-  let side=dot(dp,sd)/rad;
-  let fade=1.-smoothstep(rad*.8,rad,rr);
-  /* кромка: только грани, смотрящие на звезду (cos³), и только у самого края */
-  let rim=pow(max(dot(n,L),0.),3.)*pow(1.-n.z,1.5);
-  /* борт: скат к звезде теплеет, к лицевым граням спадает */
-  let body=max(dot(nb,L),0.)*(1.-nb.z)*.3;
-  /* огни светят сами и в тень не падают: яркое насыщенное (ходовые, маяки) — мимо света и тени */
-  let rgb=c4.rgb/max(a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
-  let own=1.-smoothstep(.3,.55,sat*mx);
-  let lit=col*(rim*1.1+body)*a*fade*k*own;
-  /* тень: перепад через весь корпус, дальний скат — глубже */
-  let away=max(-dot(nb.xy,sd),0.)*(1.-nb.z);
-  let dark=clamp(.66*smoothstep(-.4,.6,-side)+.3*away,0.,.7)*a*fade*k*own;
-  /* L3: точечный свет по альбедо корпуса — и на теневом борту: разрыв светит и туда */
-  let pl=plAt(p,normalize(nb+vec3f(n.xy*.6,0.)),rad*.3,rad*.2)*own*fade;
-  /* металл — жёсткий блик-штрих со стороны звезды; стекло отражает звезду */
-  let Hs=normalize(L+vec3f(0.,0.,1.));
-  let met=(1.-smoothstep(.1,.28,sat))*smoothstep(.12,.35,mx)*own;
-  let gls=glassOf(c4)*own;
-  let spec=(col*met*(1.-gls)*1.3*pow(max(dot(n,Hs),0.),40.)+mix(col,vec3f(1.),.6)*gls*glassSpec(glassG(uv,u1*6.),Hs))*a*fade*k;
-  return vec4f(lit+rgb*a*pl+spec,dark);
-}`;
-function gpuHullLight(x,y,sx,sy,Z,sys,id){
-  if(!sys||!GPU.on)return;
-  const h=hullOf(id||G.shipId),sc=shipScaleAt(Z);   /* id — чужой корпус (союзник, 12a) */
-  const rad=Math.max(h.nose||0,-(h.tail||0),(h.bw||8)*3)*1.25*sc+6;
-  const dx=sx-x,dy=sy-y;if(!dx&&!dy)return;
-  const pass=gpuOver();if(!pass)return;
-  /* маска — копия кусочка слоя 2D вокруг корабля, сделанная СРАЗУ: сам слой
-     до отправки этого прохода ещё раз перезальют (gpuWorld), и проход увидел бы
-     уже слой без корпуса */
-  const S=GHL_M,d=GPU.dev;
-  if(!GPU.T.hm){GPU.T.hm=d.createTexture({size:[S,S],format:"rgba8unorm",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});GPU.V.hm=null;}
-  if(!GPU.V.hm)GPU.V.hm=GPU.T.hm.createView();
-  const ox=Math.max(0,Math.min(GPU.bw-S,Math.round((x-rad)*DPR))),oy=Math.max(0,Math.min(GPU.bh-S,Math.round((y-rad)*DPR)));
-  const cw=Math.min(S,GPU.bw),ch=Math.min(S,GPU.bh),e=d.createCommandEncoder();
-  e.copyTextureToTexture({texture:GPU.T.front,origin:[ox,oy]},{texture:GPU.T.hm},[cw,ch]);d.queue.submit([e.finish()]);
-  const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
-  const U=GHL;U[0]=x;U[1]=y;U[2]=rad;U[4]=dx;U[5]=dy;U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;
-  U[12]=ox;U[13]=oy;U[14]=S;
-  gpuField(pass,"ghl",GHL_WGSL,U,[{view:GPU.V.hm},{view:GPU.V.lt}]);
 }
 
 /* ══════════════ плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md) ══════════════
@@ -52551,10 +52340,9 @@ function drawSystem(){
      крупнее малой луны; ниже .35 он уже не находится глазом */
   ctx.scale(shipScaleAt(Z),shipScaleAt(Z));   /* один масштаб с буксиром (16c) */
   /* корпус на видеокарте (17c2): тело светом звезды, факел и огни — явным светом;
-     не взяла — прежний 2D с gpuHullLight */
+     2D-пути нет (25.09): без видеокарты нет и полёта */
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
-  const hullG=hullGpuDraw(G.shipId,hsx,hsy,sh.a,shipScaleAt(Z),thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
-  if(!hullG)drawHull(G.shipId,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank);
+  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shipScaleAt(Z),thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
   /* стволы на подвесах, повёрнутые по наводке (M363): сборка читается
      силуэтом раньше первого выстрела */
   if(typeof gunBarrelsDraw==="function")gunBarrelsDraw(stat().guns,sh.a);
@@ -52572,7 +52360,6 @@ function drawSystem(){
     }
   }
   ctx.restore();
-  if(!hullG)gpuHullLight(zx(sh.x),zy(sh.y),zx(0),zy(0),Z,sys);   /* свет звезды на 2D-корпусе (16ga) */
   if(typeof drawGestureTop==="function")drawGestureTop(zx,zy,Z);   /* жест поверх корпуса (17h) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
@@ -52597,7 +52384,7 @@ function drawSystem(){
      пиксели — её читает 15-input, который ни про какой zoom не знает. */
   if(!SHOT_CLEAN){                       /* на кадре заглавной приборов нет (M233) */
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-    /* фишки у кромки — DOM (08bh chipDom), каждый кадр: едут за миром */
+    /* фишки у кромки — слой #ovl (08bi chipDom), каждый кадр: едут за миром */
     withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
     /* стики под пальцами — в пикселях касания, не в мерке (M360); слой перерисовывается каждый
        кадр, пока палец на экране или след гаснет, иначе — только когда сменилась точка покоя */
@@ -52879,7 +52666,6 @@ function drawSysHud(zx,zy,sh,sys,U){
     /* плашка, обвод, стрелка и подпись — DOM-фишка (08bh): место двигает композитор */
     chipDom(m.k,rx,ry,cw,ch,AA,m.c,label,onRight,ang,U);
   }
-  chipDomEnd();
   /* цель пропала из кадра (тело за спиной, автопилот снят) — забыть её место,
      иначе через минуту чья-то новая фишка того же типа въедет с чужого края */
   for(const k of CHIP_POS.keys())if(!usedKeys[k])CHIP_POS.delete(k);
@@ -53819,6 +53605,8 @@ function stackSmoke(t,ph,fl){
    смотрит на звезду, тень идёт перепадом через всё тело, огни и окна светят сами.
    Собственный свет станции — гауссово пятно под корпусом, а не кольца градиента. */
 const GPU_LIT_SH=(.6).toFixed(2);
+/* флаг 4: среднее не мельче коробки 5.5 текселя (у pirMaster — 7); мип у нуля — 2, пираты теряли до 11 % */
+const GPU_LIT_DK=Math.log2(5.5).toFixed(3);
 const GST_WGSL=GPU_PL_WGSL+`
 fn plOcc(q:vec2f)->f32{let V=fu.v;let dq=q-V[0].xy;let ro=V[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/V[0].z+1.)*.5;
@@ -53842,11 +53630,16 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let lp=vec2f(dot(dp,ro),dot(dp,vec2f(-ro.y,ro.x)))/vec2f(1.,select(1.,V[3].y,V[3].y>0.));let uv=(lp/R+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(gl,0.);}
   var c4=textureSampleLevel(t0,smp,uv,V[3].z);   /* V[3].z — уровень мипа у мастера (17c2), иначе 0 */
-  /* флаг 2 — нерезкая маска, как у gpuImage {sharp}: деталь уровня против следующего,
-     только в тёмном (1−Y)²: светлое множитель света и так поднимает до ×3, маска его выбеливала */
-  if((u32(V[3].w+.5)&2u)!=0u){let a1=textureSampleLevel(t0,smp,uv,V[3].z+1.);
-    let Y=dot(c4.rgb/max(c4.a,1e-3),vec3f(.2126,.7152,.0722));let e=(c4-a1)*${GPU_LIT_SH}*(1.-min(Y,1.))*(1.-min(Y,1.));
-    c4=clamp(c4+e,vec4f(0.),vec4f(1.));c4=vec4f(min(c4.rgb,vec3f(c4.a)),c4.a);}
+  /* флаг 2 — нерезкая маска (25.09): Y против среднего по покрытию уровнем выше, одним множителем
+     на rgb, канал не выше покрытия. Вверх и вниз — на (1−Y)²: светлое свет и так поднимает до ×3;
+     флаг 4 — вниз в полную силу, полоса GPU_LIT_DK (правило pirMaster, пираты) */
+  if((u32(V[3].w+.5)&2u)!=0u&&c4.a>1e-3){let dk=(u32(V[3].w+.5)&4u)!=0u;
+    let a1=textureSampleLevel(t0,smp,uv,select(V[3].z+1.,max(V[3].z+1.,${GPU_LIT_DK}),dk));
+    let W3=vec3f(.299,.587,.114);let Y=dot(c4.rgb,W3)/c4.a;
+    if(a1.a>1e-4&&Y>.002){let e=${GPU_LIT_SH}*(Y-dot(a1.rgb,W3)/a1.a);let q=1.-min(Y,1.);
+      let dn=select(q*q,1.,dk);
+      let f=clamp((Y+e*select(dn,q*q,e>0.))/Y,0.,c4.a/max(max(c4.r,c4.g),max(c4.b,1e-4)));
+      c4=vec4f(c4.rgb*f,c4.a);}}
   let a=c4.a;
   if(a<.01){return vec4f(gl,0.);}
   let u1=vec2f(.5/R);
@@ -53896,13 +53689,13 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
 /* cv — холст или готовый мастер с мипами (gpuMipTex, 17c2): тогда lod — его уровень */
 /* rel — мастер рельефа (верхний слой станции, 17c3): свет по нему, цвет и покрытие — по cv */
 /* sharp — нерезкая маска между уровнями мастера (только у мастера с мипами): резкость 2D
-   без ряби, как gpuImage {sharp}; lod тогда — обычный, не на ступень мельче */
+   без ряби, как gpuImage {sharp}; lod тогда — обычный, не на ступень мельче; "dark" — флаг 4 */
 function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp){
   const pass=gpuScene();if(!pass)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
   U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;U[13]=sy||0;U[14]=lod||0;
-  const mip=!!cv.view;U[15]=(rel?1:0)+(sharp&&mip?2:0);
+  const mip=!!cv.view;U[15]=(rel?1:0)+(sharp&&mip?2:0)+(sharp==="dark"&&mip?4:0);
   gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||null],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
@@ -54003,15 +53796,18 @@ function stMakerDress(by,V){
    по размаху в самом спрайте, свет звезды кладёт gpuLitSprite по рельефу (как
    пиратам и станциям). Живое — в проходе сцены с явным светом: брюхо крена, факелы
    (поле, длина сглажена, поток шума вместо rndFx), ходовые огни, тормозные языки,
-   полоса уровня двигателя, огни бегущей строки и венцы. Тело — один мастер на корпус
-   с мипами (08c gpuMipTex): зум берёт уровень, а не перепекает и не грузит. */
-const HG_BAKE=new WeakMap();   // h → Map(ключ → {cv,E,sb}) мастер тела при крене 0
-const HG_BELLY=new WeakMap();  // h → {cv,E,sb} тёмный силуэт брюха
+   полоса уровня двигателя, огни бегущей строки и венцы. Тело — одна выпечка на корпус
+   с мипами на холсте видеокарты (08ca gpuBake, 25.09): кисти 03e рисуют в него, как в
+   2D, зум берёт уровень, а не перепекает и не грузит. */
+const HG_BAKE=new WeakMap();   // h → Map(ключ → {B,E,sb}) выпечка тела при крене 0
+const HG_BELLY=new WeakMap();  // h → {B,E,sb} тёмный силуэт брюха
 const HG_THR=new Map();        // id → сглаженная тяга 0..1 (эфемерное, не в сейве)
 const HG_SIDE=1024;
 /* уровень мипа сдвинут к резкому: трилинейка смешивает два уровня, а примета
-   изготовителя (makerRead) держится резкостью мелкого плана */
-const HG_LOD=-.35;
+   изготовителя (makerRead) держится резкостью мелкого плана. HG_LOD — и станциям (17c3);
+   тело корабля — HG_BODY_LOD −.45: его мипы теперь коробка 2×2 выпечки (08ca), а не уменьшение
+   Skia 2D-мастера; на −.35 резкость −1.2 % у одного корпуса, на −.45 все не ниже, рябь та же (25.09) */
+const HG_LOD=-.35,HG_BODY_LOD=-.45;
 function hullGpuE(h){return Math.max(h.nose,-h.tail,h.bw*3)*1.6+8;}
 /* масштаб мастера: вдвое больше самого крупного корабля в полёте (shipScaleCap у
    ZOOM_MAX) в пикселях сцены, шагом в четверть октавы — зум его не меняет вовсе */
@@ -54023,17 +53819,17 @@ function hullGpuBake(h,id,sb){
   let M=HG_BAKE.get(h);if(!M){M=new Map();HG_BAKE.set(h,M);}
   const key=hullBakeKey(id,sb);let b=M.get(key);if(b)return b;
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
-  const cv=hullBakeRender(h,id,0,[1,2,3],sb,-side/(2*sb),-side/(2*sb),side,side);
-  if(M.size>=4){const k=M.keys().next().value;gpuMipDrop(M.get(k).cv);M.delete(k);}
-  b={cv,E:side/(2*sb),sb};M.set(key,b);return b;
+  /* кисти читают только корпус и ключ — выпечка после потери устройства та же */
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1});
+  if(!B)return null;
+  if(M.size>=4){const k=M.keys().next().value;gpuBakeDrop(M.get(k).B);M.delete(k);}
+  b={B,E:side/(2*sb),sb};M.set(key,b);return b;
 }
 function hullGpuBelly(h,sb){
-  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuMipDrop(b.cv);
+  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuBakeDrop(b.B);
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
-  const cv=document.createElement("canvas");cv.width=cv.height=side;
-  const prev=ctx;ctx=cv.getContext("2d");
-  try{ctx.setTransform(sb,0,0,sb,side/2,side/2);tracePoly(h.poly);ctx.fillStyle=rgba(h.dark,.85);ctx.fill();}finally{ctx=prev;}
-  b={cv,E:side/(2*sb),sb};HG_BELLY.set(h,b);return b;
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);tracePoly(h.poly);g.fillStyle=rgba(h.dark,.85);g.fill();},{ss:1});
+  b={B,E:side/(2*sb),sb};HG_BELLY.set(h,b);return b;
 }
 /* факелы: перо, зарево и ядро одной формулой на все сопла. Цвет — подпись
    изготовителя (makerFlame) или люкс (холодная игла); ядро светит выше единицы */
@@ -54123,8 +53919,8 @@ function hullGpuInserts(pass,h,id,S,sc,live){
 function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   const pass=gpuScene();if(!pass||!(sc>0))return false;
   const h=hullOf(id),live=hullLiveInserts(h,id);
-  const dk=GPU.bw/W,sb=hullGpuSb(h,dk),B=hullGpuBake(h,id,sb),T=gpuMipTex(B.cv);
-  const lod=Math.max(0,Math.log2(B.sb/(sc*dk))+HG_LOD);
+  const dk=GPU.bw/W,sb=hullGpuSb(h,dk),B=hullGpuBake(h,id,sb);if(!B)return false;const T=B.B;
+  const lod=Math.max(0,Math.log2(B.sb/(sc*dk))+HG_BODY_LOD);
   bank=bank||0;lvl=lvl||0;
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
@@ -54142,7 +53938,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   }
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
-    gpuImage(pass,gpuMipTex(Bl.cv),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
+    if(Bl.B)gpuImage(pass,Bl.B,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
   /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
   if(GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
@@ -54427,16 +54223,14 @@ function drawMooredBarge(zx,zy,Z){
   b.hullMax=140;b.hp=140;b.capName=bargeName(c);b.distress=0;b.underFire=0;b.escort=0;b.done=0;
   const x=zx(b.x),y=zy(b.y);
   const s=clamp(Z,.5,1.5)*.8;
-  const lit=(typeof gpuBargeBody==="function")&&gpuBargeBody(b,x,y,s);
-  ctx.save();ctx.translate(x,y);ctx.rotate(b.a);ctx.scale(s,s);
-  drawBarge(b,lit);
-  ctx.restore();
-  /* швартов: одна линия к станции, чтобы стоянка читалась стоянкой */
-  ctx.strokeStyle="rgba(242,178,92,.35)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(x-10*s,y-6*s);ctx.lineTo(zx(st.x)+34*clamp(Z,.4,1.5)*1.7,zy(st.y)+22*clamp(Z,.4,1.5)*1.7);ctx.stroke();
-  ctx.fillStyle="rgba(242,178,92,.8)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText("«"+bargeName(c).toUpperCase()+"» · У ПРИЧАЛА",x,y+30);
-  ctx.textAlign="left";
+  /* на видеокарте, как баржи фактора (12l): корпус светом звезды, огни и зевы фигурами,
+     имя — подписью. 2D-пути нет (25.09) */
+  const pass=gpuScene();if(!pass)return;
+  if(gpuBargeBody(b,x,y,s))bargeLiveGpu(pass,b,x,y,s,b.a);
+  /* швартов: одна линия к станции, чтобы стоянка читалась стоянкой (срез прямой, как у штриха) */
+  const x0=x-10*s,y0=y-6*s,x1=zx(st.x)+34*clamp(Z,.4,1.5)*1.7,y1=zy(st.y)+22*clamp(Z,.4,1.5)*1.7;
+  gpuShapes(pass,[[4,(x0+x1)/2,(y0+y1)/2,Math.hypot(x1-x0,y1-y0)/2,.5,Math.atan2(y1-y0,x1-x0),0,242,178,92,.35]]);
+  domLabel("mb"+sys.key,x,y+30,"«"+bargeName(c).toUpperCase()+"» · У ПРИЧАЛА","9px ui-monospace,monospace","rgba(242,178,92,.8)","center");
 }
 /* сколько огней у планеты этой системы: по постройкам и по Поясу огней */
 function planetLightsN(sys){
@@ -54453,6 +54247,14 @@ function planetLightsOn(sys,p,r){
   return first===p?planetLightsN(sys):0;
 }
 
+/* ореол-конус (был радиальный градиент 0→R, альфа линейно до нуля) фигурами прохода сцены, сложением:
+   три мягких круга по трети радиуса — профиль конуса в 3 %, свет 0.99, пик тот же. Одна гладкая
+   ступень давала плоскую вершину — пятно вместо ореола. Мельче 1.5 px устройства — один круг */
+function glowCone(SH,x,y,R,c,a){
+  const dk=GPU.bw/W;
+  if(R*dk<=1.5){SH.push([1,x,y,0,0,0,R+.5/dk,c[0],c[1],c[2],a*(1.1-.35/Math.max(R*dk,.5))]);return;}
+  for(let i=0;i<3;i++)SH.push([1,x,y,i*R/3+.5/dk,0,0,R/3-.5/dk,c[0],c[1],c[2],a/3]);
+}
 /* ── планета меняется тоже (M306, DESIGN-holding §13) ──
    Огни на ночной стороне были, а дневная сторона молчала. Три знака, каждый
    от своей причины и ни один — цифра: ОТВАЛ у шахты — бледное пятно на
@@ -54460,7 +54262,10 @@ function planetLightsOn(sys,p,r){
    промысел); КУПОЛ оранжереи ловит солнце — одна яркая точка у терминатора с
    холодным ореолом (оранжерея, биостанция); ПОЛОСА — прямая линия там, где
    прямых не бывает, с рунга 6 «Полоса» (вы стояли на грунте). Всё в экранных
-   координатах поверх кэшированного диска, как и огни; ничего не хранится. */
+   координатах поверх кэшированного диска, как и огни; ничего не хранится.
+   На видеокарте (25.09): фигуры прохода сцены. Эллипс — веер треугольников с жёсткими
+   внутренними рёбрами; клипа по диску нет — дальше .85r от центра ни один знак не лежит,
+   а клип был по r−1. Ореол купола — glowCone (выше) */
 function drawPlanetWorks(sys,p,x,y,r){
   if(!p||p.type==="gas"||r<12)return;
   const first=(sys.planets||[]).find(q=>q.type!=="gas");
@@ -54475,41 +54280,37 @@ function drawPlanetWorks(sys,p,x,y,r){
   let ux=-(p.x||0),uy=-(p.y||0);const ln=Math.hypot(ux,uy)||1;ux/=ln;uy/=ln;
   const vx=-uy,vy=ux;                       /* вдоль лимба */
   const rr=rng(hashi(p.seed,0x0D0E,7));
-  ctx.save();
-  ctx.beginPath();ctx.arc(x,y,r-1,0,TAU);ctx.clip();
+  const pass=gpuScene();if(!pass)return;
+  const dk=GPU.bw/W,SH=[];
+  /* эллипс (центр, полуоси, поворот) — веер: рёбра к центру жёсткие, пиксель у одного треугольника */
+  const ell=(cx,cy,ea,eb,an,C)=>{const N=clamp(Math.ceil(Math.sqrt(Math.max(ea,eb)*dk)*7),12,64),c=Math.cos(an),n=Math.sin(an);
+    let px=cx+ea*c,py=cy+ea*n;
+    for(let i=1;i<=N;i++){const t=i/N*TAU,ex=ea*Math.cos(t),ey=eb*Math.sin(t),qx=cx+ex*c-ey*n,qy=cy+ex*n+ey*c;
+      SH.push([5,cx,cy,px,py,qx,qy,C[0],C[1],C[2],C[3],5]);px=qx;py=qy;}};
   if(dump){
     const d=r*.52, ox=x+ux*d+vx*r*(rr()-.5)*.5, oy=y+uy*d+vy*r*(rr()-.5)*.5;
     const ang=Math.atan2(vy,vx);
-    ctx.fillStyle="rgba(232,222,200,.30)";
-    ctx.beginPath();ctx.ellipse(ox,oy,r*.13,r*.06,ang,0,TAU);ctx.fill();
-    ctx.fillStyle="rgba(216,204,182,.34)";
-    ctx.beginPath();ctx.ellipse(ox+vx*r*.04,oy+vy*r*.04,r*.07,r*.035,ang+.3,0,TAU);ctx.fill();
+    ell(ox,oy,r*.13,r*.06,ang,[232,222,200,.30]);
+    ell(ox+vx*r*.04,oy+vy*r*.04,r*.07,r*.035,ang+.3,[216,204,182,.34]);
     /* тень отвала со стороны от солнца — пятно стало горкой */
-    ctx.fillStyle="rgba(0,0,0,.22)";
-    ctx.beginPath();ctx.ellipse(ox-ux*r*.035,oy-uy*r*.035,r*.11,r*.03,ang,0,TAU);ctx.fill();
+    ell(ox-ux*r*.035,oy-uy*r*.035,r*.11,r*.03,ang,[0,0,0,.22]);
   }
   if(strip){
     const d=r*.34, sx=x+ux*d+vx*r*(rr()-.5)*.6, sy=y+uy*d+vy*r*(rr()-.5)*.6;
     const a=Math.atan2(uy,ux)+(rr()-.5)*1.2, L=r*.16;
-    ctx.strokeStyle="rgba(236,232,220,.55)";ctx.lineWidth=Math.max(1,r*.012);ctx.lineCap="butt";
-    ctx.beginPath();ctx.moveTo(sx-Math.cos(a)*L,sy-Math.sin(a)*L);ctx.lineTo(sx+Math.cos(a)*L,sy+Math.sin(a)*L);ctx.stroke();
+    SH.push([4,sx,sy,L,Math.max(1,r*.012)/2,a,0,236,232,220,.55]);   /* срез прямой (butt) */
   }
+  gpuShapes(pass,SH);
   if(dome){
     /* у терминатора: там купол ловит низкое солнце */
     const a=Math.atan2(uy,ux)+(rr()<.5?1:-1)*(1.05+rr()*.25), d=r*.78;
     const dx=x+Math.cos(a)*d, dy=y+Math.sin(a)*d;
-    ctx.save();ctx.globalCompositeOperation="lighter";
     /* купол светится грунтом того, кто его ставил (M369a, §19.4 «купола») */
     const dby=(G.sys&&G.sys.station&&G.sys.station.by)||"gt";
     const dc=(typeof makerGround==="function")?mixc(makerGround(dby),[200,255,230],.5):[200,255,230];
-    const g=ctx.createRadialGradient(dx,dy,0,dx,dy,r*.07);
-    g.addColorStop(0,rgba(dc,.55));g.addColorStop(1,rgba(dc,0));
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(dx,dy,r*.07,0,TAU);ctx.fill();
-    ctx.restore();
-    ctx.fillStyle="rgba(255,255,244,.95)";
-    ctx.beginPath();ctx.arc(dx,dy,Math.max(1.2,r*.014),0,TAU);ctx.fill();
+    const GL=[];glowCone(GL,dx,dy,r*.07,dc,.55);gpuShapes(pass,GL,{blend:"add"});
+    gpuShapes(pass,[[1,dx,dy,Math.max(1.2,r*.014),0,0,0,255,255,244,.95]]);
   }
-  ctx.restore();
 }
 
 /* ══════════════ трафик системы: чужие машины, которым тут есть дело (M309) ══════════════ */
@@ -54616,7 +54417,7 @@ function drawShuttleArc(t,zx,zy,Z){
   if(pass){
     /* корпус — выпечка на цвет завода, один раз; поворот и масштаб — в шейдере */
     const sk=s*t.k;
-    gpuImage(pass,shuttleSprite(gr),[{x,y,w:SHUT_SW*sk,h:SHUT_SH*sk,rot:a}]);
+    gpuImage(pass,shuttleSprite(gr),[{x,y,w:SHUT_SW*sk,h:SHUT_SH*sk,rot:a}],{sharp:true});
     return;
   }
   ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.scale(s*t.k,s*t.k);
@@ -54632,12 +54433,10 @@ function shuttleBody(gr){
    челнок ~1.5 px кадра на единицу, так что выборка сжимает вдвое-втрое, без мерцания */
 const SHUT_SW=10,SHUT_SH=6,SHUT_PX=4,SHUT_ART=new Map();
 function shuttleSprite(gr){
-  let cv=SHUT_ART.get(gr);if(cv)return cv;
-  cv=document.createElement("canvas");cv.width=SHUT_SW*SHUT_PX;cv.height=SHUT_SH*SHUT_PX;
-  const g=cv.getContext("2d"),c0=ctx;ctx=g;
-  try{g.setTransform(SHUT_PX,0,0,SHUT_PX,cv.width/2,cv.height/2);shuttleBody(gr);}finally{ctx=c0;}
-  if(SHUT_ART.size>=8)SHUT_ART.delete(SHUT_ART.keys().next().value);
-  SHUT_ART.set(gr,cv);return cv;
+  /* выпечка на GPU-холсте (25.09): shuttleBody рисует в ctx, ctx на время выпечки — GPU-холст */
+  if(!SHUT_ART.has(gr)&&SHUT_ART.size>=8){const k=SHUT_ART.keys().next().value;gpuBakeDrop(SHUT_ART.get(k));SHUT_ART.delete(k);}
+  const w=SHUT_SW*SHUT_PX,h=SHUT_SH*SHUT_PX;
+  return gpuBaked(SHUT_ART,gr,w,h,g=>{g.setTransform(SHUT_PX,0,0,SHUT_PX,w/2,h/2);shuttleBody(gr);});
 }
 
 /* ══════════════ система под планетами на видеокарте (G2, docs/DESIGN-gpu.md) ══════════════
@@ -55168,12 +54967,13 @@ function drawSysLane(zx,zy,Z){
 }
 /* ── очередь у дока и два движения мимо неё ── */
 function laneShip(f,x,y,a,al,Z){
-  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200)return;
+  /* за краем (до 1.6 экрана) или ещё прозрачен — мастер печётся заранее, шагом (17a0) */
+  if(al<=.02||x<-200||x>W+200||y<-200||y>H+200){if(pbOnScreen(x,y,0,0,1.6))fleetArtOf(f,true);return;}
   /* издали очередь сжимается с миром: эллипс ожидания 150×70 на ×0.16 — полсотни пикселей,
      корабли с полом масштаба ложились в нём друг на друга кашей (снимок автора 19.09) */
   const s=Math.min(fleetScale(Z),Z*1.4)*.62,c=Math.cos(a)*s,q=Math.sin(a)*s;
   /* место и курс известны — матрица сразу в fleetShipAt, без 2D-стека (было 7 вызовов на борт) */
-  fleetShipAt(f,fleetArtOf(f),c,q,-q,c,x,y,al);
+  fleetShipAt(f,fleetArtOf(f,false),c,q,-q,c,x,y,al);
 }
 /* ── ажиотаж на подъезде (M504, дизайн-проход 23.09) ──
    После ЖИЛЫ сюда летят все: от входа по оси полосы тянется вереница
@@ -56416,9 +56216,9 @@ function drawBillboard(zx,zy,Z){
 const NEON=new Map();   // ключ печи (имя, кегль, цвет, плотность) → печь; bakeKeep держит 12
 /* выпечки на GPU-холсте (v2: текст и тень, 25.09): стекло, свет с ореолом (shadowBlur),
    бледное ядро — своей выпечкой (destination-out по свету стёр бы ореол) и кладётся в свет */
-function neonBake(slot,name,full,F,col,bl){
+function neonBake(slot,name,full,F,col,bl,opt){
   if(!GPU.dev)return null;
-  const d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d+"|"+bl;
+  const core=!!(opt&&opt.core),d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d+"|"+bl+(core?"|c":"");
   return bakeKeep(NEON,key,12,()=>{
   const Fd=F*d,fb="bold "+Fd+"px ui-monospace,monospace";
   const tw=Math.ceil(gcMeasure(fb,full).width),pad=Math.ceil(3*d);
@@ -56428,7 +56228,10 @@ function neonBake(slot,name,full,F,col,bl){
   const co=sw>=2.4?gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle=rgba(tube.map(v=>v+(255-v)*.6),1);g.fillText(name,pad,base);
       g.globalCompositeOperation="destination-out";g.lineWidth=sw*2/3;g.lineJoin="round";g.strokeStyle="#000";g.strokeText(name,pad,base);}),O):null;
   const al=gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle="rgba(78,64,62,.9)";g.fillText(full,pad,base);}),O);
-  const em=gpuBake(Wd,Hd,g=>{txt(g,g=>{g.shadowColor=rgba(tube,.85);g.shadowBlur=Math.max(1,Fd*.14);g.fillStyle=rgba(tube,1);g.fillText(name,pad,base);});
+  /* opt.core (вывески гостиниц, 25.09): на мелком кегле, где средней трети штриха нет, буква целиком чуть бледнее
+     трубки — ядро читается и после свечения кадра, а не расплывается пятном своего цвета */
+  const lit=core&&!co?tube.map(v=>v+(255-v)*.45):tube;
+  const em=gpuBake(Wd,Hd,g=>{txt(g,g=>{g.shadowColor=rgba(tube,.85);g.shadowBlur=Math.max(1,Fd*.14);g.fillStyle=rgba(lit,1);g.fillText(name,pad,base);});
     if(co){g.shadowBlur=0;g.drawImage(co,0,0);}},O);
   return {key,al,em,co,ax:pad+tw/2,ay:base,w:Wd/d,h:Hd/d,drop(){gpuBakeDrop(al);gpuBakeDrop(em);gpuBakeDrop(co);}};
   });
@@ -56506,7 +56309,7 @@ function gosRow(){
 const HOTEL_SIGN={gt:"ГОС ИНИЦА «КОСМОС»",co:" ЭЛИТА™",or:"ДОМ ПРИЕЗЖИХ № 4",km:" ПИТЕР",ra:"ТУРБАЗА «ДРУЖБА»",hf:" УРАН"};
 const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»",co:"АЭЛИТА™",or:"ДОМ ПРИЕЗЖИХ № 4",km:"ЮПИТЕР",ra:"ТУРБАЗА «ДРУЖБА»",hf:"БУРАН"};
 const HOTEL_NIGHT=12;
-const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,sheen:[x,y,r],wins(sd),paint(c,e,sd,lit)} */
+const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,sheen:[x,y,r],wins(sd),paint(c,e,sd,lit,Lt)} */
 function hotelHere(){
   const sys=G.sys;if(!sys||!sys.station||typeof sysLane!=="function")return null;
   const P=sysLane(sys);if(!P||P.life<.45)return null;
@@ -56518,7 +56321,7 @@ const hotelType=by=>HOTEL_T[by]||HOTEL_T.gt;
 function hotelLitFrac(by,hr){
   if(by==="co")return .95;
   if(by==="or"&&(hr>=22||hr<6))return .04;
-  const T=[.12,.08,.06,.05,.06,.15,.36,.42,.3,.18,.12,.12,.14,.14,.14,.16,.24,.38,.48,.52,.5,.44,.34,.22];   /* вечером горит половина: весь дом в огнях — шашка */
+  const T=[.12,.08,.06,.05,.06,.15,.34,.40,.3,.18,.12,.12,.14,.14,.14,.16,.24,.34,.40,.42,.40,.36,.28,.20];   /* вечером горит треть: стена с окнами, не поле точек */
   return T[hr|0];
 }
 /* окно — часть комнаты (W[n][4]): у комнаты одно зерно-порог, её окна горят вместе; комната
@@ -56538,7 +56341,7 @@ function hotelWinLit(W,sd,lit,flick){
 const HOTEL_LAMP=[[255,166,84],[255,192,126],[170,196,240]];   /* два тёплых и редкий голубой — не конфетти */
 const hotelLampOf=h=>h%23===0?2:(h>>>5)&1;
 const HOTEL_CURT=["#e8b86a","#f0d49a","#d98d5a","#f4c2a8","#b8c8e8","#e0a0a0"];
-const HOTEL_EM=1,HOTEL_NEON=1.2,HOTEL_SHEEN=.4;   /* отсвет — тронуть камень, не выбелить его */
+const HOTEL_EM=1,HOTEL_NEON=1.2,HOTEL_SHEEN=.3;   /* отсвет — тронуть камень, не выбелить его */
 /* мастер берётся на уровень крупнее (не мельче экрана): окна и рамы резкие */
 const HOTEL_LOD=.5;
 const HOTEL_GLOW="rgba(255,176,96,.7)";
@@ -56548,16 +56351,35 @@ const HOTEL_GLOW="rgba(255,176,96,.7)";
    передумало, не печёт ничего; em, el — их свет (ореол — одна тень со всего слоя, пиксель в
    пиксель); sh — отсвет вывески: дом, умноженный на её цвет, круг от вывески гаснет к краю.
    Всё — шагами планировщика (17a0): кисть по кускам, потом по одной выпечке за шаг */
-let HOTEL_BAKE=null;   /* {key,cv,cl,em,el,sh,win,w,h} */
+let HOTEL_BAKE=null;   /* {key,k0,a,cv,cl,em,el,sh,win,w,h} */
 function hotelDrop(B){if(B)for(const q of [B.cv,B.cl,B.em,B.el,B.sh])gpuBakeDrop(q);}
-function* hotelJob(T,sd,col,key){
-  const w=Math.ceil(T.W*T.PX),h=Math.ceil(T.H*T.PX),B={key,w,h},ok=[false];
+/* ── свет дома: один ключ — звезда системы (стоит в (0,0)), направление к ней с экрана;
+   заполняющий — холод неба. Кисть типа получает Lt = {lx,ly — к звезде; K — цвет звезды 0..1;
+   F — цвет тени}. Направление в выпечке — ступенями по 30°: дом ходит по орбите со станцией,
+   ступень сменяется раз в десятки минут; новая печётся по шагам за кадром, кадр до готовности
+   кладёт старую (допекать целиком — только когда дома нет вовсе). Гистерезис: ступень держится,
+   пока звезда не ушла от её середины дальше HOTEL_LTOL (шире полуступени: у кромки не дрожит) ── */
+const HOTEL_FILL=[.30,.35,.54],HOTEL_KEY=.38,HOTEL_AMB=.5,HOTEL_LSTEP=TAU/12,HOTEL_LTOL=.36;
+function hotelLight(Ht){
+  let lx=-Ht.x,ly=-Ht.y;const n=Math.hypot(lx,ly);
+  if(n<1e-6){lx=-.86;ly=-.51;}else{lx/=n;ly/=n;}
+  const a0=Math.atan2(ly,lx),q=Math.round(a0/HOTEL_LSTEP),a=q*HOTEL_LSTEP;
+  const c=hex2rgb((G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a"),m=Math.max(1,c[0],c[1],c[2]);
+  return {lx:Math.cos(a),ly:Math.sin(a),a,a0,q:((q%12)+12)%12,K:[c[0]/m,c[1]/m,c[2]/m],F:HOTEL_FILL};
+}
+/* цвет грани: альбедо base (0..255) под ключом звезды с освещённостью s (0..1) и холодным
+   заполняющим; warm — прибавка снизу (фонари площадки), 0..255 */
+function hotelLit(Lt,base,s,warm){s=Math.max(0,s);
+  return base.map((v,i)=>Math.min(255,v*(Lt.K[i]*HOTEL_KEY*s+Lt.F[i]*HOTEL_AMB)+(warm?warm[i]:0)));}
+const hotelAngD=(a,b)=>{const d=(a-b)%TAU;return Math.abs(d>Math.PI?d-TAU:d<-Math.PI?d+TAU:d);};
+function* hotelJob(T,sd,col,key,Lt){
+  const w=Math.ceil(T.W*T.PX),h=Math.ceil(T.H*T.PX),B={key,k0:key.slice(0,key.lastIndexOf("|")),a:Lt.a,w,h},ok=[false];
   const rec=()=>{const g=new GcCtx(w,h,2),E=new GcCtx(w,h,2);g.scale(T.PX,T.PX);E.scale(T.PX,T.PX);return [g,E];};
   const glow=ops=>{const e0=gpuBake(w,h,g=>{g._ops.push(...ops);},{ss:2,mips:false});
     const r=gpuBake(w,h,g=>{g.shadowColor=HOTEL_GLOW;g.shadowBlur=1.2;g.drawImage(e0,0,0);},{ss:1});gpuBakeDrop(e0);return r;};
   try{
-    const [g0,E0]=rec();yield* T.paint(g0,E0,sd,false);
-    const [g1,E1]=rec();yield* T.paint(g1,E1,sd,true);
+    const [g0,E0]=rec();yield* T.paint(g0,E0,sd,false,Lt);
+    const [g1,E1]=rec();yield* T.paint(g1,E1,sd,true,Lt);
     B.cv=gpuBake(w,h,g=>{g._ops.push(...g0._ops);},{ss:2});yield;
     B.cl=gpuBake(w,h,g=>{g._ops.push(...g1._ops);},{ss:2});yield;
     B.em=glow(E0._ops);yield;
@@ -56576,11 +56398,13 @@ function* hotelJob(T,sd,col,key){
 }
 /* готовые слои или null; пока не готовы — шаг планировщика (за краем экрана — заранее; sync — целиком) */
 function hotelGet(T,by,sd,col,sync){
-  const key=by+"|"+sd+"|"+col.join();
-  if(HOTEL_BAKE&&HOTEL_BAKE.key===key&&HOTEL_BAKE.cv.dev===GPU.dev)return HOTEL_BAKE;
-  const B=prebake("hotel|"+key,()=>hotelJob(T,sd,col,key),sync);
-  if(B){hotelDrop(HOTEL_BAKE);HOTEL_BAKE=B;}
-  return B;
+  const Ht=hotelHere();if(!Ht)return null;
+  const Lt=hotelLight(Ht),k0=by+"|"+sd+"|"+col.join(),B0=HOTEL_BAKE,same=!!(B0&&B0.k0===k0&&B0.cv.dev===GPU.dev);
+  if(same&&hotelAngD(Lt.a0,B0.a)<HOTEL_LTOL)return B0;
+  const key=k0+"|"+Lt.q;
+  const B=prebake("hotel|"+key,()=>hotelJob(T,sd,col,key,Lt),sync&&!same);   /* свет ушёл — печём новую ступень за кадром, старую кладём */
+  if(B){hotelDrop(B0);HOTEL_BAKE=B;return B;}
+  return same?B0:null;
 }
 /* горящие окна: маска и рамки — раз на смену часа и «передумавшее» окно, не каждый кадр */
 let HOTEL_LIT=null;
@@ -56598,7 +56422,7 @@ function hotelNeon(Ht,T,k,col){
   if(!T.sign)return null;
   const F=T.sign[2]*k;if(F<3)return null;
   const Fb=Math.max(3,Math.round(Math.pow(2,Math.round(Math.log2(F)*4)/4)*2)/2);
-  const N=neonBake("hotel",Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic");
+  const N=neonBake("hotel",Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic",{core:true});
   return N?{N,s:F/Fb}:null;
 }
 function hotelNeonDraw(pass,S,x,y,al,gain){
@@ -56668,9 +56492,11 @@ function hotelWindows(c,e,wins,sd,lit,dark,halo){
     else{c.fillStyle=dark[+k.slice(1)];c.fill();}}
 }
 /* ── причальная труба с челноком: общая у всех типов. Труба от борта (x1,y1) к челноку
-   (x0,y0), челнок носом в трубу, хвостом прочь. Свет — сверху слева, как у дома ── */
-function hotelDock(c,e,x1,y1,x0,y0,sd){
-  const dx=x0-x1,dy=y0-y1,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,nx=-uy,ny=ux,r=3.6;
+   (x0,y0), челнок носом в трубу, хвостом прочь. Свет — от звезды (Lt), как у дома: бок трубы
+   и верх челнока к ней светлые ── */
+function hotelDock(c,e,x1,y1,x0,y0,sd,Lt){
+  Lt=Lt||{lx:-.86,ly:-.51,K:[1,.88,.54],F:HOTEL_FILL};
+  const dx=x0-x1,dy=y0-y1,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,nx=-uy,ny=ux,r=3.6,ls=(nx*Lt.lx+ny*Lt.ly)>=0?1:-1;
   const at=(t,s)=>[x1+ux*t+nx*s,y1+uy*t+ny*s];
   const q=(t0,t1,s0,s1)=>{const a=at(t0,s0),b=at(t1,s0),cc=at(t1,s1),d=at(t0,s1);return [a[0],a[1],b[0],b[1],cc[0],cc[1],d[0],d[1]];};
   /* челнок: фюзеляж вдоль оси, крыло-треугольник вниз, киль вверх со звездой, три сопла */
@@ -56680,7 +56506,8 @@ function hotelDock(c,e,x1,y1,x0,y0,sd){
     fin=[sx-B+9,sy-4.5, sx-B+2,sy-4.5, sx-B-3,sy-16, sx-B+.5,sy-16];
   hotelRim(c,[q(-2,L,-r,r),sh,wing,fin],1.2);
   /* труба: тело, кольца, лента иллюминаторов (горят всегда) */
-  const tg=c.createLinearGradient(...at(0,-r),...at(0,r));tg.addColorStop(0,"#b9b2a6");tg.addColorStop(.45,"#8c867c");tg.addColorStop(1,"#4c4843");
+  const tg=c.createLinearGradient(...at(0,r*ls),...at(0,-r*ls)),TB=[214,206,192];
+  tg.addColorStop(0,rgba(hotelLit(Lt,TB,1),1));tg.addColorStop(.45,rgba(hotelLit(Lt,TB,.55),1));tg.addColorStop(1,rgba(hotelLit(Lt,TB,.05),1));
   c.fillStyle=tg;hotelPoly(c,q(-2,L,-r,r));c.fill();
   c.fillStyle="rgba(30,26,22,.55)";c.beginPath();
   for(let t=4;t<L-2;t+=7){const p=q(t,t+1.2,-r,r);c.moveTo(p[0],p[1]);for(let i=2;i<8;i+=2)c.lineTo(p[i],p[i+1]);c.closePath();}
@@ -56694,7 +56521,8 @@ function hotelDock(c,e,x1,y1,x0,y0,sd){
   c.fillStyle="#6a655e";hotelPoly(c,q(-2,2.5,-r-1.6,r+1.6));c.fill();   /* воротник у борта */
   c.fillStyle="#a39c90";hotelPoly(c,q(-2,2.5,-r-1.6,-r+.2));c.fill();
   /* челнок */
-  const bg=c.createLinearGradient(0,sy-4.6,0,sy+4.2);bg.addColorStop(0,"#f0ece4");bg.addColorStop(.55,"#c9c3b8");bg.addColorStop(1,"#6c6760");
+  const bg=Lt.ly>0?c.createLinearGradient(0,sy+4.2,0,sy-4.6):c.createLinearGradient(0,sy-4.6,0,sy+4.2),SB=[236,230,220];
+  bg.addColorStop(0,rgba(hotelLit(Lt,SB,1),1));bg.addColorStop(.55,rgba(hotelLit(Lt,SB,.6),1));bg.addColorStop(1,rgba(hotelLit(Lt,SB,.1),1));
   c.fillStyle="#57534d";hotelPoly(c,wing);c.fill();
   c.fillStyle="#8e887e";hotelPoly(c,[sx-12,sy+2.6,sx-B+6,sy+2.8,sx-B+2,sy+5,sx-14,sy+3.6]);c.fill();
   c.fillStyle=bg;hotelPoly(c,sh);c.fill();
@@ -56738,19 +56566,30 @@ function hotelDesk(Ht){
 
 /* ══════════════ гостиница «Космос» — ГЛАВТРАССА (gt, эталон шести типов) ══════════════
    Полумесяц в четырнадцать этажей между двумя башнями: края ближе и выше, середина глубже —
-   «улыбка» снизу. Белый камень с красными пилонами, в середине — красное знамя со звездой над
-   портиком, на площадке перед входом — космонавт со звездой в поднятой руке. Под домом — тёмное
-   днище с капсулами и красными огнями, от ступицы влево — причальная труба с челноком (общая).
-   Свет — один, сверху слева: левое крыло вогнутого фасада смотрит от него (темнее), правое — на
-   него. Мерило — человек: этаж ~3 м = 5.4 ед., человек на площадке — 3 ед. Вывеска на крыше —
-   неон 17k0, Т погасла. Разброс по системе — от зерна: лампы и шторы окон, люди на площадке */
+   «улыбка» снизу. Бетон в тёплом ключе звезды с холодной тенью, красные пилоны, в середине —
+   красное знамя со звездой над портиком; перед входом на площадке — космонавт с факелом-звездой
+   в поднятой руке (самая яркая точка дома). Под домом — тёмное днище с капсулами и красными
+   огнями, от ступицы влево — причальная труба с челноком (общая). Свет — один, звезда системы
+   (Lt из ядра): крыло, что смотрит на неё, светлое, другое — в холодной тени; у пилонов и башен
+   грань к звезде светлая, от неё — тёмная; башня со стороны звезды кладёт тень на крыло; карниз
+   и козырёк кладут тень вниз, статуя — на площадку. Снизу дом греют фонари площадки, кверху он
+   темнеет. Мерило — человек: этаж 5.7 ед., человек на площадке — 3 ед. Вывеска на крыше — неон
+   17k0, Т погасла. Разброс по системе — от зерна hashi(sd): лампы и шторы окон, люди на площадке */
 const HK_XL=64,HK_XR=212,HK_A=1.0,HK_NC=36,HK_NR=14;
 const hkX=u=>HK_XL+(HK_XR-HK_XL)*(.5+.5*Math.sin((u-.5)*2*HK_A)/Math.sin(HK_A));   /* края сжаты: вогнутый фасад */
 const hkS=u=>1-(2*u-1)*(2*u-1);
 const hkTop=u=>30+12*hkS(u),hkBot=u=>110+8*hkS(u);
 const hkQ=v=>Math.round(v*2)/2;   /* окна — по сетке пикселя мастера (PX 2): рамка кадра = краска */
+/* освещённость грани: нормаль в плане отклонена от зрителя на f (рад, + вправо); звезда стоит
+   над плоскостью экрана на HK_EL, поэтому фронт не чернеет и с тыла, а тень остаётся тенью */
+const HK_EL=.62,HK_CE=Math.cos(HK_EL),HK_SE=Math.sin(HK_EL);
+const hkN=(f,Lt)=>Math.max(0,Math.sin(f)*Lt.lx*HK_CE+Math.cos(f)*HK_SE);
+const hkFace=(u,Lt)=>hkN((.5-u)*2*HK_A,Lt);   /* фасад вогнут, края ближе: нормаль левого крыла смотрит вправо, к середине */
+const hkUp=Lt=>Math.max(.12,-Lt.ly*HK_CE+.25),hkDn=Lt=>Math.max(.06,Lt.ly*HK_CE+.1);   /* верхние и нижние грани */
+const HK_WALL=[178,166,148],HK_RED=[158,42,34],HK_CREAM=[196,188,172],HK_STEEL=[96,90,84],HK_BRONZE=[196,182,158];
+const HK_DARK=["#10141c","#131722","#0e1219","#151a24"];   /* Y≈.08: стекло темнее стены, холод неба */
 let HK_WINS=null;
-const HK_STAIR=[6,29],HK_HALO=[.4,1.1];   /* отсвет окна на стену: меньше половины простенка */
+const HK_STAIR=[6,29],HK_HALO=[.5,.8];   /* отсвет окна на стену: меньше половины простенка */
 /* разбивка на комнаты по столбцам (одна на все этажи — несущие стены): номер комнаты столбца */
 const HK_ROOM=(()=>{const cut=[0,2,5,7,10,12,14,20,22,25,27,30,32,34],R=[];let r=-1;
   for(let i=0;i<HK_NC;i++){if(cut.includes(i))r++;R.push(r);}return R;})();
@@ -56764,18 +56603,26 @@ function hkWins(){
     const um=(i+.5)/HK_NC,t=hkTop(um)+3,b=hkBot(um),fh=(b-t)/HK_NR;
     /* комната — два-три окна по разбивке сетки; этаж 1 — ресторан, 11 — холл: зал целиком */
     const room=j===1?9001:j===11?9011:j*64+HK_ROOM[i];
-    W.push([hkQ(hkX((i+.16)/HK_NC)),hkQ(t+fh*(j+.3)),hkQ(hkX((i+.84)/HK_NC)),hkQ(t+fh*(j+.74)),room]);   /* окна лентой: этаж читается полосой, не шашкой */
+    /* окно — половина простенка (как у концепта: точка в тёмной нише, не шашка) */
+    W.push([hkQ(hkX((i+.22)/HK_NC)),hkQ(t+fh*(j+.3)),hkQ(hkX((i+.78)/HK_NC)),hkQ(t+fh*(j+.7)),room]);
   }
   for(let j=0;j<15;j++){const y=hkQ(24+j*5.6);   /* левая башня: два ряда по бокам полосы */
-    W.push([41.5,y,44.5,y+3,5000+j],[53.5,y,56.5,y+3,5000+j]);}
-  for(let j=0;j<16;j++){const y=hkQ(20+j*5.6);   /* правая: торец к свету и узкие по краям лица */
-    W.push([213.5,y,216.5,y+3,6000+j],[219,y,221,y+3,6000+j],[237,y,239,y+3,6100+j]);}
+    W.push([42,y,44,y+2.5,5000+j],[54,y,56,y+2.5,5000+j]);}
+  for(let j=0;j<16;j++){const y=hkQ(20+j*5.6);   /* правая: торец и узкие по краям лица */
+    W.push([214,y,216,y+2.5,6000+j],[219,y,221,y+2.5,6000+j],[237,y,239,y+2.5,6100+j]);}
   return HK_WINS=W;
 }
-const HK_DARK=["#10141c","#131722","#0e1219","#151a24"];   /* Y≈.08: стекло темнее стены, холод неба */
-function* hkPaint(c,e,sd,lit){
+/* полоса вдоль полумесяца между двумя отступами от парапета (y0,y1 — от hkTop) */
+function hkBand(c,N,y0,y1){c.beginPath();
+  for(let i=0;i<=N;i++){const u=i/N;if(i)c.lineTo(hkX(u),hkTop(u)+y0);else c.moveTo(hkX(u),hkTop(u)+y0);}
+  for(let i=N;i>=0;i--){const u=i/N;c.lineTo(hkX(u),hkTop(u)+y1);}c.closePath();}
+function* hkPaint(c,e,sd,lit,Lt){
   if(lit){hotelWindows(c,e,hkWins(),sd,true,null,HK_HALO);return;}
-  const r=rng((sd^0x6B05)>>>0);
+  Lt=Lt||{lx:-.86,ly:-.51,K:[1,.88,.54],F:HOTEL_FILL};
+  const r=rng((sd^0x6B05)>>>0),lx=Lt.lx,ly=Lt.ly,sg=lx>=0?1:-1;   /* sg: сторона звезды (+ справа) */
+  const C=(base,s,warm)=>rgba(hotelLit(Lt,base,s,warm),1);
+  const sF=hkN(0,Lt),sR=hkN(Math.PI/2,Lt),sL=hkN(-Math.PI/2,Lt),sU=hkUp(Lt),sD=hkDn(Lt);   /* грани: фронт, вправо, влево, верх, низ */
+  const sh=a=>"rgba(4,4,14,"+a.toFixed(2)+")";
   /* ── массы (точки [x,y,…]) ── */
   const slab=[],N=24;
   for(let i=0;i<=N;i++){const u=i/N;slab.push(hkX(u),hkTop(u));}
@@ -56791,120 +56638,136 @@ function* hkPaint(c,e,sd,lit){
   const hub=[112,128,152,128,152,146,...hotelArc(132,146,20,5,0,Math.PI,12)];
   const podR=[216,117,240,117,240,146,234,154,228,160,222,154,216,146],podL=[42,114,58,114,58,132,53,139,50,143,47,139,42,132];
   const podM=[178,134,198,134,198,151,193,156,188,160,183,156,178,151];
-  const plT=hotelArc(132,124,36,7,0,2*Math.PI,40),plR=[...hotelArc(132,124,36,7,0,Math.PI,20),...hotelArc(132,129,36,7,Math.PI,0,20)];
-  const ped=[132,104,144,104,145.5,121,130.5,121];
-  hotelRim(c,[lTf,lTs,rTs,rTf,slab,deck,keel,hub,podR,podL,podM,plR,plT,ped],1.3);
+  const PX0=132,PY0=125,PRX=46,PRY=8.5;   /* площадка: широкий овал перед входом */
+  const plT=hotelArc(PX0,PY0,PRX,PRY,0,2*Math.PI,44),plR=[...hotelArc(PX0,PY0,PRX,PRY,0,Math.PI,22),...hotelArc(PX0,PY0+5.5,PRX,PRY,Math.PI,0,22)];
+  const cx=124,ped=[cx-8,113,cx+8,113,cx+10,121.5,cx-10,121.5],pcol=[cx-5,101,cx+5,101,cx+5.5,113,cx-5.5,113];
+  hotelRim(c,[lTf,lTs,rTs,rTf,slab,deck,keel,hub,podR,podL,podM,plR,plT,ped,pcol],1.3);
   yield;
-  /* ── днище: тёмный металл, панели, иллюминаторы, капсулы с красными огнями ── */
-  {const g=c.createLinearGradient(0,116,0,139);g.addColorStop(0,"#3e3a36");g.addColorStop(1,"#18171a");c.fillStyle=g;hotelPoly(c,keel);c.fill();
-   c.strokeStyle="rgba(24,22,20,.45)";c.lineWidth=.3;c.beginPath();
+  /* ── днище: тёмный металл (свет снизу — только если звезда ниже дома), панели, иллюминаторы,
+     капсулы с красными огнями; бок капсулы к звезде светлее ── */
+  {const g=c.createLinearGradient(0,116,0,139);g.addColorStop(0,C(HK_STEEL,sD+.38));g.addColorStop(1,C([60,58,60],sD+.2));c.fillStyle=g;hotelPoly(c,keel);c.fill();
+   c.strokeStyle="rgba(10,10,14,.5)";c.lineWidth=.3;c.beginPath();
    for(let x=46;x<240;x+=9){c.moveTo(x,118);c.lineTo(x+(x-140)*.04,138);}
    c.moveTo(48,125);c.lineTo(240,126);c.moveTo(70,132);c.lineTo(220,133);c.stroke();
    c.beginPath();e.beginPath();
    for(let x=58;x<232;x+=4.5){if(((hashi(x|0,sd,0x6B06)>>>0)%3)===0)continue;for(const q of [c,e])q.rect(x,122.4,1.6,1.1);}
-   c.fillStyle="#e9b56c";c.fill();e.fillStyle="rgba(255,184,104,.5)";e.fill();}
+   c.fillStyle="#e2ae66";c.fill();e.fillStyle="rgba(255,184,104,.5)";e.fill();}
   for(const [p,x0,x1,yr,n] of [[podL,42,58,122,2],[podM,178,198,140,3],[podR,216,240,130,4]]){
-    const g=c.createLinearGradient(x0,0,x1,0);g.addColorStop(0,"#524c45");g.addColorStop(.45,"#35322f");g.addColorStop(1,"#18171b");
+    const g=c.createLinearGradient(sg>0?x0:x1,0,sg>0?x1:x0,0);g.addColorStop(0,C([52,48,50],sD+.22));g.addColorStop(.5,C([72,68,64],sD+.32));g.addColorStop(1,C(HK_STEEL,sD+.5));
     c.fillStyle=g;hotelPoly(c,p);c.fill();
-    c.fillStyle="rgba(20,18,16,.5)";c.fillRect(x0,yr-2.2,x1-x0,.6);c.fillRect(x0,yr+3.2,x1-x0,.6);
+    c.fillStyle="rgba(10,10,14,.5)";c.fillRect(x0,yr-2.2,x1-x0,.6);c.fillRect(x0,yr+3.2,x1-x0,.6);
     c.beginPath();e.beginPath();const st=(x1-x0)/n;
     for(let i=0;i<n;i++)for(const q of [c,e])q.rect(x0+st*(i+.3),yr-.8,st*.4,2.4);
-    c.fillStyle="#efbd76";c.fill();e.fillStyle="rgba(255,186,108,.55)";e.fill();
+    c.fillStyle="#e8b670";c.fill();e.fillStyle="rgba(255,186,108,.55)";e.fill();
     hotelLamp(c,e,(x0+x1)/2,p[p.length/2+1]+1.2,.55,[255,58,46],.95);}
-  {const g=c.createLinearGradient(112,0,152,0);g.addColorStop(0,"#524c45");g.addColorStop(.4,"#38342f");g.addColorStop(1,"#18171b");
+  {const g=c.createLinearGradient(sg>0?112:152,0,sg>0?152:112,0);g.addColorStop(0,C([52,48,50],sD+.22));g.addColorStop(.5,C([72,68,64],sD+.32));g.addColorStop(1,C(HK_STEEL,sD+.5));
    c.fillStyle=g;hotelPoly(c,hub);c.fill();
    c.beginPath();e.beginPath();for(let i=0;i<9;i++)for(const q of [c,e])q.rect(114.5+i*4.3,134,2,2.8);
-   c.fillStyle="#f3c27c";c.fill();e.fillStyle="rgba(255,190,112,.6)";e.fill();
-   c.fillStyle="rgba(20,18,16,.55)";c.fillRect(112,131.5,40,.7);c.fillRect(112,139,40,.7);
+   c.fillStyle="#ecbb74";c.fill();e.fillStyle="rgba(255,190,112,.6)";e.fill();
+   c.fillStyle="rgba(10,10,14,.55)";c.fillRect(112,131.5,40,.7);c.fillRect(112,139,40,.7);
    hotelLamp(c,e,132,151.6,.6,[255,58,46],.95);}
   yield;
-  /* ── башни: белый камень, красная полоса; правая — звезда и планета с кольцом ── */
-  {let g=c.createLinearGradient(0,16,0,114);g.addColorStop(0,"#5e5346");g.addColorStop(1,"#352f2a");c.fillStyle=g;hotelPoly(c,lTf);c.fill();
-   c.fillStyle="#1d1f29";hotelPoly(c,lTs);c.fill();
-   c.fillStyle="#6a1f1a";hotelPoly(c,[46,108,46,29,...hotelArc(49,29,3,3,Math.PI,2*Math.PI,8),52,108]);c.fill();
-   c.fillStyle="rgba(255,214,170,.12)";c.fillRect(46,30,.8,78);
-   for(const y of [40,62,84]){const cg=c.createLinearGradient(34,0,40,0);cg.addColorStop(0,"#3e3a36");cg.addColorStop(1,"#1a1b22");   /* капсулы на левом боку */
-     c.fillStyle=HOTEL_RIM;c.fillRect(33.6,y-.4,6.8,12.8);c.fillStyle=cg;c.fillRect(34.2,y,6,12);c.fillStyle="rgba(20,18,16,.5)";c.fillRect(34.2,y+3,6,.5);c.fillRect(34.2,y+8,6,.5);}
-   g=c.createLinearGradient(212,0,218,0);g.addColorStop(0,"#76654f");g.addColorStop(1,"#5c4f40");c.fillStyle=g;hotelPoly(c,rTs);c.fill();
-   g=c.createLinearGradient(0,12,0,117);g.addColorStop(0,"#4c433a");g.addColorStop(1,"#2e2a28");c.fillStyle=g;hotelPoly(c,rTf);c.fill();
-   c.fillStyle="#62201a";hotelPoly(c,[222,22,236,22,236,100,229,111,222,100]);c.fill();
-   c.fillStyle="rgba(0,0,0,.18)";c.fillRect(232.5,22,3.5,78);
-   hotelStar(c,229,31,3.4,"#e3be62");
-   {const pg=c.createRadialGradient(227.6,62.6,.5,229,64,4.6);pg.addColorStop(0,"#8a8174");pg.addColorStop(1,"#2a2826");
+  /* ── башни: светлый камень, фронт под ключом, внутренняя грань — к звезде или от неё;
+     красная полоса, звезда; правая — планета с кольцом; машинерия на боках, надстройки, антенны ── */
+  {let g=c.createLinearGradient(0,16,0,114);g.addColorStop(0,C(HK_CREAM,sF*.95+sU*.15));g.addColorStop(1,C(HK_CREAM,sF*.7,[30,14,4]));c.fillStyle=g;hotelPoly(c,lTf);c.fill();
+   c.fillStyle=C(HK_CREAM,sR);hotelPoly(c,lTs);c.fill();
+   c.fillStyle=C(HK_RED,sF);hotelPoly(c,[46,108,46,29,...hotelArc(49,29,3,3,Math.PI,2*Math.PI,8),52,108]);c.fill();
+   c.fillStyle=sh(.3);c.fillRect(sg>0?46:51.2,30,.8,78);   /* полоса — рельеф: грань от звезды тёмная */
+   hotelStar(c,49,23,2.6,C([232,196,110],sF+.4));
+   for(const y of [40,62,84]){const cg=c.createLinearGradient(34,0,40,0);cg.addColorStop(0,C([70,66,62],sL*.6+.1));cg.addColorStop(1,C([40,40,48],.05));   /* капсулы на левом боку */
+     c.fillStyle=HOTEL_RIM;c.fillRect(33.6,y-.4,6.8,12.8);c.fillStyle=cg;c.fillRect(34.2,y,6,12);c.fillStyle="rgba(10,10,14,.5)";c.fillRect(34.2,y+3,6,.5);c.fillRect(34.2,y+8,6,.5);}
+   c.fillStyle=C(HK_CREAM,sL);hotelPoly(c,rTs);c.fill();
+   g=c.createLinearGradient(0,12,0,117);g.addColorStop(0,C(HK_CREAM,sF*.95+sU*.15));g.addColorStop(1,C(HK_CREAM,sF*.7,[30,14,4]));c.fillStyle=g;hotelPoly(c,rTf);c.fill();
+   c.fillStyle=C(HK_RED,sF);hotelPoly(c,[222,22,236,22,236,100,229,111,222,100]);c.fill();
+   c.fillStyle=sh(.28);c.fillRect(sg>0?222:235.2,22,.8,78);
+   hotelStar(c,229,31,3.4,C([232,196,110],sF+.4));
+   {const pg=c.createRadialGradient(229+sg*1.6,62.4,.5,229,64,4.6);pg.addColorStop(0,C([150,142,128],sF+.3));pg.addColorStop(1,C([60,58,60],.05));
     c.fillStyle=pg;c.beginPath();c.arc(229,64,4.4,0,TAU);c.fill();
-    c.strokeStyle="#d7c890";c.lineWidth=.55;c.beginPath();c.ellipse(229,64,9.5,2.8,-.32,0,TAU);c.stroke();}
+    c.strokeStyle=C([228,214,160],sF+.3);c.lineWidth=.55;c.beginPath();c.ellipse(229,64,9.5,2.8,-.32,0,TAU);c.stroke();}
    for(const y of [58,86])   /* машинерия на правом боку */
-     {c.fillStyle=HOTEL_RIM;c.fillRect(239.6,y-.4,6,14.8);c.fillStyle="#2c2a2a";c.fillRect(240,y,5.2,14);c.fillStyle="#4a443d";c.fillRect(240,y,1.4,14);}
-   /* крыши башен: надстройка, антенны, красные огни */
+     {c.fillStyle=HOTEL_RIM;c.fillRect(239.6,y-.4,6,14.8);c.fillStyle=C([60,58,58],sR*.5);c.fillRect(240,y,5.2,14);c.fillStyle=C([90,84,78],sR);c.fillRect(240,y,1.4,14);}
+   /* крыши башен: надстройка (верх, фронт, грань к звезде), антенны, красные огни */
    for(const [x0,x1,y] of [[43,55,16],[221,236,12]]){c.fillStyle=HOTEL_RIM;c.fillRect(x0-.5,y-6.5,x1-x0+1,6.6);
-     c.fillStyle="#3e3934";c.fillRect(x0,y-6,x1-x0,6);c.fillStyle="#62574a";c.fillRect(x0,y-6,(x1-x0)*.35,6);
-     c.fillStyle="#b9a88e";c.fillRect(x0,y-6.2,x1-x0,.35);   /* кромка на небе */
-     c.fillStyle="#4a443d";c.fillRect(x0-1.5,y-.8,x1-x0+3,1);}
+     c.fillStyle=C([110,102,92],sF*.8);c.fillRect(x0,y-6,x1-x0,6);
+     c.fillStyle=C([110,102,92],sg>0?sR:sL);c.fillRect(sg>0?x1-(x1-x0)*.3:x0,y-6,(x1-x0)*.3,6);
+     c.fillStyle=C([200,190,170],sU);c.fillRect(x0,y-6.3,x1-x0,.45);   /* кромка на небе */
+     c.fillStyle=C([90,84,78],sF*.5);c.fillRect(x0-1.5,y-.8,x1-x0+3,1);}
    c.strokeStyle="#2a2724";c.lineWidth=.45;c.beginPath();
    for(const [x,y0,y1] of [[45,10,1],[52,10,4],[223,6,-2],[233,6,2],[227.5,6,0.5]]){c.moveTo(x,y0);c.lineTo(x,y1);c.moveTo(x-1.4,y1+2.2);c.lineTo(x+1.4,y1+2.2);}
    c.stroke();
    for(const [x,y] of [[45,1],[52,4],[223,-2],[233,2]])hotelLamp(c,e,x,y+.6,.5,[255,58,46],.9);}
   yield;
-  /* ── полумесяц: камень (левое крыло в тени), пилоны, пояса этажей, карниз, надстройки ── */
-  {const g=c.createLinearGradient(HK_XL,0,HK_XR,0);g.addColorStop(0,"#1c1f2c");g.addColorStop(.42,"#34303a");g.addColorStop(.62,"#4a3f39");g.addColorStop(1,"#5a4b3d");
+  /* ── полумесяц: камень под ключом звезды по изгибу, тень башни, карниз, пилоны, пояса
+     этажей, стыки панелей, парапет, надстройки ── */
+  {const g=c.createLinearGradient(HK_XL,0,HK_XR,0);
+   for(let i=0;i<=12;i++){const u=i/12;g.addColorStop((hkX(u)-HK_XL)/(HK_XR-HK_XL),C(HK_WALL,hkFace(u,Lt)));}
    c.fillStyle=g;hotelPoly(c,slab);c.fill();
-   {const v=c.createLinearGradient(0,30,0,120);   /* кверху темнее, у подножия — тёплый свет площадки */
-    v.addColorStop(0,"rgba(8,8,18,.4)");v.addColorStop(.35,"rgba(8,8,18,0)");v.addColorStop(.75,"rgba(255,150,70,0)");v.addColorStop(1,"rgba(255,150,70,.2)");
+   {const v=c.createLinearGradient(0,30,0,120);   /* кверху темнее (холод неба), у подножия — тёплый свет площадки */
+    v.addColorStop(0,"rgba(6,8,22,.34)");v.addColorStop(.42,"rgba(6,8,22,0)");v.addColorStop(.78,"rgba(255,150,70,0)");v.addColorStop(1,"rgba(255,150,70,.24)");
     c.fillStyle=v;hotelPoly(c,slab);c.fill();}
-   const col=(i,w,fill)=>{c.beginPath();for(const I of i){const u0=(I-w)/HK_NC,u1=(I+w)/HK_NC;
+   {const tx=sg>0?211.5:64.5,tw=8+7*Math.abs(lx),g2=c.createLinearGradient(tx,0,tx-sg*tw,0);   /* тень башни со стороны звезды ложится на крыло */
+    g2.addColorStop(0,sh(.38));g2.addColorStop(1,sh(0));c.fillStyle=g2;hotelPoly(c,slab);c.fill();}
+   if(ly<0){c.fillStyle=sh(.42*-ly);hkBand(c,N,2.9,4.6);c.fill();}   /* карниз: звезда выше — тень под парапетом */
+   const col=(I,w,fill)=>{c.beginPath();for(const i of I){const u0=(i-w)/HK_NC,u1=(i+w)/HK_NC;
      c.moveTo(hkX(u0),hkTop(u0)+3);c.lineTo(hkX(u1),hkTop(u1)+3);c.lineTo(hkX(u1),hkBot(u1));c.lineTo(hkX(u0),hkBot(u0));c.closePath();}c.fillStyle=fill;c.fill();};
-   col([4,8,12],.16,"#4a1a1c");col([24,28,32],.16,"#76251c");   /* пилоны: в тени — тёмный кармин, на свету — красный */
-   col([3.87,7.87,11.87],.03,"rgba(150,160,210,.12)");col([23.87,27.87,31.87],.03,"rgba(255,196,150,.22)");   /* грань к свету */
-   col([4.13,8.13,12.13,24.13,28.13,32.13],.03,"rgba(4,4,12,.35)");   /* теневая грань */
-   col(HK_STAIR.map(i=>i+.5),.34,"#15161d");   /* лестницы: глухие полосы */
-   c.strokeStyle="rgba(170,146,120,.16)";c.lineWidth=.4;c.beginPath();   /* пояса перекрытий: кромка плиты ловит свет */
-   for(let j=0;j<=HK_NR;j++){for(let i=0;i<=N;i++){const u=i/N,t=hkTop(u)+3,y=t+(hkBot(u)-t)*j/HK_NR;if(i)c.lineTo(hkX(u),y);else c.moveTo(hkX(u),y);}}
-   c.stroke();
-   {const cg=c.createLinearGradient(HK_XL,0,HK_XR,0);cg.addColorStop(0,"#57555a");cg.addColorStop(1,"#dccdb2");   /* парапет: светлая нить силуэта */
-    c.fillStyle=cg;c.beginPath();
-    for(let i=0;i<=N;i++){const u=i/N;if(i)c.lineTo(hkX(u),hkTop(u));else c.moveTo(hkX(u),hkTop(u));}
-    for(let i=N;i>=0;i--){const u=i/N;c.lineTo(hkX(u),hkTop(u)+1.1);}c.closePath();c.fill();
-    c.fillStyle="#2a2624";c.beginPath();
-    for(let i=0;i<=N;i++){const u=i/N;if(i)c.lineTo(hkX(u),hkTop(u)+1.1);else c.moveTo(hkX(u),hkTop(u)+1.1);}
-    for(let i=N;i>=0;i--){const u=i/N;c.lineTo(hkX(u),hkTop(u)+2.2);}c.closePath();c.fill();}
-   c.fillStyle="#7c231c";c.beginPath();
-   for(let i=0;i<=N;i++){const u=i/N;if(i)c.lineTo(hkX(u),hkTop(u)+2.2);else c.moveTo(hkX(u),hkTop(u)+2.2);}
-   for(let i=N;i>=0;i--){const u=i/N;c.lineTo(hkX(u),hkTop(u)+2.9);}c.closePath();c.fill();
-   for(const u of [.14,.3,.7,.86]){const x=hkX(u),y=hkTop(u);   /* машинные на крыше */
-     c.fillStyle=HOTEL_RIM;c.fillRect(x-4.5,y-4.3,9,4.4);c.fillStyle="#3c3834";c.fillRect(x-4,y-3.8,8,3.9);c.fillStyle="#5e554a";c.fillRect(x-4,y-3.8,2.6,3.9);c.fillStyle="#a8987e";c.fillRect(x-4,y-3.9,8,.3);}
+   for(const I of [4,8,12,24,28,32]){const s=hkFace(I/HK_NC,Lt);   /* пилоны: красный камень под тем же ключом, грань к звезде и от неё */
+     col([I],.17,C(HK_RED,s*.9+.1));
+     col([I+sg*.14],.035,C([255,226,196],(sg>0?sR:sL)*.9));
+     col([I-sg*.14],.035,sh(.45));}
+   col(HK_STAIR.map(i=>i+.5),.34,"#12141c");   /* лестницы: глухие полосы стекла */
+   {const sg1=c.createLinearGradient(HK_XL,0,HK_XR,0);   /* пояса перекрытий: кромка плиты ловит свет на светлом крыле */
+    for(let i=0;i<=6;i++){const u=i/6;sg1.addColorStop((hkX(u)-HK_XL)/(HK_XR-HK_XL),rgba(hotelLit(Lt,[230,216,196],hkFace(u,Lt)),.16+.16*hkFace(u,Lt)));}
+    c.strokeStyle=sg1;c.lineWidth=.4;c.beginPath();
+    for(let j=1;j<=HK_NR;j++){for(let i=0;i<=N;i++){const u=i/N,t=hkTop(u)+3,y=t+(hkBot(u)-t)*j/HK_NR-.4;if(i)c.lineTo(hkX(u),y);else c.moveTo(hkX(u),y);}}
+    c.stroke();
+    c.strokeStyle="rgba(4,4,14,.22)";c.lineWidth=.3;c.beginPath();   /* и тень под плитой */
+    for(let j=1;j<HK_NR;j++){for(let i=0;i<=N;i++){const u=i/N,t=hkTop(u)+3,y=t+(hkBot(u)-t)*j/HK_NR+.1;if(i)c.lineTo(hkX(u),y);else c.moveTo(hkX(u),y);}}
+    c.stroke();
+    c.strokeStyle="rgba(4,4,14,.09)";c.lineWidth=.25;c.beginPath();   /* стыки панелей между окнами */
+    for(let i=1;i<HK_NC;i++){const u=i/HK_NC;c.moveTo(hkX(u),hkTop(u)+3);c.lineTo(hkX(u),hkBot(u));}c.stroke();}
+   {const cg=c.createLinearGradient(HK_XL,0,HK_XR,0);   /* парапет: светлая нить силуэта (верх под звездой), тёмная полка, красная лента */
+    for(let i=0;i<=6;i++){const u=i/6;cg.addColorStop((hkX(u)-HK_XL)/(HK_XR-HK_XL),C([232,222,204],sU*.7+hkFace(u,Lt)*.5));}
+    c.fillStyle=cg;hkBand(c,N,0,1.1);c.fill();
+    c.fillStyle=C([60,56,54],sF*.3);hkBand(c,N,1.1,2.2);c.fill();
+    c.fillStyle=C(HK_RED,sF*.8);hkBand(c,N,2.2,2.9);c.fill();}
+   for(const u of [.14,.3,.7,.86]){const x=hkX(u),y=hkTop(u),s=hkFace(u,Lt);   /* машинные на крыше */
+     c.fillStyle=HOTEL_RIM;c.fillRect(x-4.5,y-4.3,9,4.4);c.fillStyle=C([110,102,92],s*.8);c.fillRect(x-4,y-3.8,8,3.9);
+     c.fillStyle=C([110,102,92],sg>0?sR:sL);c.fillRect(sg>0?x+1.4:x-4,y-3.8,2.6,3.9);c.fillStyle=C([200,190,170],sU);c.fillRect(x-4,y-4,8,.35);}
    /* опоры вывески: стойки и рейка под буквами */
    c.strokeStyle="#3b3632";c.lineWidth=.4;c.beginPath();
-   for(let x=104;x<=172;x+=6){c.moveTo(x,34.6);c.lineTo(x,hkTop(.5+(x-138)/300)+.2);}
-   c.moveTo(102,34.8);c.lineTo(174,34.8);c.stroke();}
+   for(let x=96;x<=180;x+=6){c.moveTo(x,34.6);c.lineTo(x,hkTop(.5+(x-138)/300)+.2);}
+   c.moveTo(94,34.8);c.lineTo(182,34.8);c.stroke();}
   yield;
   hotelWindows(c,e,hkWins(),sd,false,HK_DARK);
   yield;
-  /* ── знамя со звездой, лестничные витражи, портик, флаги ── */
+  /* ── знамя со звездой, лестничные витражи, портик с козырьком и его тенью, флаги ── */
   {const x0=hkX(16.1/HK_NC),x1=hkX(19.9/HK_NC),y0=hkTop(.5)+5,y1=hkBot(.5)-13;
-   const g=c.createLinearGradient(x0,0,x1,0);g.addColorStop(0,"#5e1a15");g.addColorStop(.35,"#8c2a22");g.addColorStop(1,"#6a1f19");
+   const g=c.createLinearGradient(sg>0?x0:x1,0,sg>0?x1:x0,0);g.addColorStop(0,C(HK_RED,sF*.5));g.addColorStop(.6,C(HK_RED,sF*.9+.1));g.addColorStop(1,C(HK_RED,sF*1.1+.2));
    c.fillStyle=HOTEL_RIM;c.fillRect(x0-.4,y0-.4,x1-x0+.8,y1-y0+.8);c.fillStyle=g;c.fillRect(x0,y0,x1-x0,y1-y0);
-   hotelStar(c,138,y0+9,4.6,"#e8c56a");
-   c.fillStyle="rgba(232,197,106,.8)";for(const x of [135.4,138,140.6])c.fillRect(x-.18,y0+16,.36,y1-y0-18);
+   hotelStar(c,138,y0+6,4.2,C([236,200,110],sF+.5));
+   c.fillStyle=rgba(hotelLit(Lt,[236,200,110],sF+.4),.8);for(const x of [135.4,138,140.6])c.fillRect(x-.18,y0+12,.36,y1-y0-14);
    const sa=hkX(15.35/HK_NC),sb=hkX(15.8/HK_NC),sc=hkX(20.2/HK_NC),sdd=hkX(20.65/HK_NC);
    c.beginPath();e.beginPath();for(const q of [c,e]){q.rect(sa,y0,sb-sa,y1-y0);q.rect(sc,y0,sdd-sc,y1-y0);}
-   c.fillStyle="#e9b467";c.fill();e.fillStyle="rgba(255,186,108,.45)";e.fill();
+   c.fillStyle="#e2ac60";c.fill();e.fillStyle="rgba(255,186,108,.45)";e.fill();
    c.fillStyle="rgba(60,40,30,.5)";for(let y=y0+5.4;y<y1;y+=5.4){c.fillRect(sa,y,sb-sa,.4);c.fillRect(sc,y,sdd-sc,.4);}}
   {const b=hkBot(.5);   /* портик: козырёк, светлый вестибюль, колонны */
    c.fillStyle=HOTEL_RIM;c.fillRect(115.5,b-14.4,45,14.6);
-   c.fillStyle="#c98f4e";c.fillRect(119,b-11,38,11);
-   const lg=e.createLinearGradient(0,b-11,0,b);lg.addColorStop(0,"rgba(255,180,100,.18)");lg.addColorStop(1,"rgba(255,196,130,.34)");e.fillStyle=lg;e.fillRect(119,b-11,38,11);
-   c.fillStyle="rgba(120,80,40,.35)";c.fillRect(119,b-6,38,.5);
-   c.fillStyle="#6e6152";for(let i=0;i<6;i++)c.fillRect(119.6+i*7,b-11,1.5,11);
-   c.fillStyle="rgba(0,0,0,.25)";for(let i=0;i<6;i++)c.fillRect(120.6+i*7,b-11,.5,11);
-   c.fillStyle="#8a7a64";hotelPoly(c,[116,b-14,160,b-14,161.5,b-11,114.5,b-11]);c.fill();c.fillStyle="#d8c6a6";c.fillRect(116,b-14.2,44,.35);
-   c.fillStyle="#7c231c";c.fillRect(116,b-12,44,.7);
+   c.fillStyle="#4a3220";c.fillRect(119,b-11,38,11);   /* вестибюль за стеклом: тёплая тьма, в ней — светлые двери */
+   c.beginPath();e.beginPath();for(let i=0;i<5;i++)for(const q of [c,e])q.rect(123.4+i*7,b-9.6,2.6,9.6);
+   c.fillStyle="#d89a58";c.fill();e.fillStyle="rgba(255,190,120,.3)";e.fill();
+   c.fillStyle="rgba(255,200,140,.5)";c.fillRect(119,b-.6,38,.6);
+   if(ly<0){c.fillStyle=sh(.4*-ly);c.fillRect(119,b-11,38,Math.min(4,-ly*4.5));}   /* козырёк кладёт тень вниз, на стекло */
+   c.fillStyle=C([180,170,150],sF+.3);for(let i=0;i<6;i++)c.fillRect(119.6+i*7,b-11,1.5,11);
+   c.fillStyle=sh(.3);for(let i=0;i<6;i++)c.fillRect(sg>0?119.6+i*7:120.6+i*7,b-11,.5,11);
+   c.fillStyle=C([170,156,134],sF+.1);hotelPoly(c,[116,b-14,160,b-14,161.5,b-11,114.5,b-11]);c.fill();c.fillStyle=C([230,218,196],sU);c.fillRect(116,b-14.2,44,.35);
+   c.fillStyle=C(HK_RED,sF*.8);c.fillRect(116,b-12,44,.7);
    for(const x of [109.5,163])   /* флаги: красное полотнище со звездой на древке */
      {c.fillStyle="#2c2926";c.fillRect(x+2,b-20,.4,20);c.fillStyle=HOTEL_RIM;c.fillRect(x-.4,b-19.4,4.8,13.8);
-      c.fillStyle="#8a2821";c.fillRect(x,b-19,4,13);hotelStar(c,x+2,b-16,1.1,"#e3be62");}}
+      c.fillStyle=C(HK_RED,sF+.2);c.fillRect(x,b-19,4,13);hotelStar(c,x+2,b-16,1.1,C([232,196,110],sF+.4));}}
   yield;
   /* ── галерея вдоль подножия: плита, перила, фонари ── */
-  {c.fillStyle="#2a2724";hotelPoly(c,deck);c.fill();
-   c.fillStyle="#5e5549";c.beginPath();c.moveTo(34,112);
+  {c.fillStyle=C([80,74,68],sF*.5);hotelPoly(c,deck);c.fill();
+   c.fillStyle=C([140,128,112],sU+.1);c.beginPath();c.moveTo(34,112);
    for(let i=0;i<=N;i++){const u=i/N;c.lineTo(hkX(u),hkBot(u)+.5);}c.lineTo(218,116.5);c.lineTo(246,116.5);c.lineTo(246,117.8);c.lineTo(218,117.8);
    for(let i=N;i>=0;i--){const u=i/N;c.lineTo(hkX(u),hkBot(u)+1.8);}c.lineTo(34,113.3);c.closePath();c.fill();
    c.strokeStyle="rgba(196,188,172,.7)";c.lineWidth=.22;c.beginPath();
@@ -56912,46 +56775,74 @@ function* hkPaint(c,e,sd,lit){
    for(let i=0;i<=N;i++){const u=i/N;if(i)c.lineTo(hkX(u),hkBot(u)-.8);else c.moveTo(hkX(u),hkBot(u)-.8);}c.stroke();
    for(let i=1;i<12;i++){const u=i/12;if(Math.abs(u-.5)<.12)continue;hotelLamp(c,e,hkX(u),hkBot(u)+2.8,.42,[255,196,120],.8);}}
   yield;
-  /* ── площадка: камень, кромка с окнами, перила, фонари, деревья, люди, статуя ── */
-  {const g=c.createLinearGradient(0,129,0,134);g.addColorStop(0,"#3a3632");g.addColorStop(1,"#1c1b1c");
+  /* ── площадка: камень, тёплый свет вестибюля, кромка с окнами, тень статуи, перила, фонари,
+     деревья, люди, постамент, космонавт с факелом ── */
+  {const g=c.createLinearGradient(0,PY0+4,0,PY0+PRY+5.5);g.addColorStop(0,C([70,66,62],sF*.4));g.addColorStop(1,C([40,38,40],.05));
    c.fillStyle=g;hotelPoly(c,plR);c.fill();
-   c.beginPath();e.beginPath();for(let i=0;i<14;i++){const a=Math.PI*(i+.5)/14,x=132+Math.cos(a)*34,y=129.6+Math.sin(a)*6.4;
+   c.beginPath();e.beginPath();for(let i=0;i<18;i++){const a=Math.PI*(i+.5)/18,x=PX0+Math.cos(a)*(PRX-2),y=PY0+4.6+Math.sin(a)*(PRY-1.6);
      for(const q of [c,e])q.rect(x-.8,y,1.6,1.4);}
-   c.fillStyle="#f0bf78";c.fill();e.fillStyle="rgba(255,188,110,.5)";e.fill();
-   const tg=c.createRadialGradient(124,121,2,132,124,38);tg.addColorStop(0,"#7a6c5a");tg.addColorStop(1,"#3e3934");   /* площадь светлее у входа: огни портика */
+   c.fillStyle="#ecbb74";c.fill();e.fillStyle="rgba(255,188,110,.5)";e.fill();
+   const tg=c.createLinearGradient(sg>0?PX0+PRX:PX0-PRX,0,sg>0?PX0-PRX:PX0+PRX,0);tg.addColorStop(0,C([120,108,92],sU+.3));tg.addColorStop(1,C([120,108,92],sU*.4));
    c.fillStyle=tg;hotelPoly(c,plT);c.fill();
-   c.strokeStyle="rgba(90,84,76,.35)";c.lineWidth=.25;c.beginPath();c.ellipse(132,124,24,4.6,0,0,TAU);c.ellipse(132,124,12,2.3,0,0,TAU);c.stroke();
+   {const lg=c.createRadialGradient(138,PY0-6,2,138,PY0-2,34);lg.addColorStop(0,"rgba(255,176,96,.26)");lg.addColorStop(.5,"rgba(255,160,80,.08)");lg.addColorStop(1,"rgba(255,150,70,0)");   /* свет вестибюля на камне */
+    c.fillStyle=lg;hotelPoly(c,plT);c.fill();
+    const eg=e.createRadialGradient(138,PY0-6,2,138,PY0-2,24);eg.addColorStop(0,"rgba(255,176,96,.12)");eg.addColorStop(1,"rgba(255,150,70,0)");e.fillStyle=eg;hotelPoly(e,plT);e.fill();}
+   c.strokeStyle="rgba(90,84,76,.35)";c.lineWidth=.25;c.beginPath();c.ellipse(PX0,PY0,30,5.4,0,0,TAU);c.ellipse(PX0,PY0,15,2.7,0,0,TAU);c.stroke();
+   c.fillStyle=sh(.38);hotelPoly(c,[cx-9,121,cx+9,121,cx+9-sg*30,PY0+3,cx-9-sg*30,PY0+4.5]);c.fill();   /* тень статуи ложится от звезды */
    c.strokeStyle="rgba(196,188,172,.75)";c.lineWidth=.22;c.beginPath();   /* перила по переднему краю */
-   const rl=hotelArc(132,124,35.4,6.6,.05,Math.PI-.05,30);c.moveTo(rl[0],rl[1]-1.2);for(let i=2;i<rl.length;i+=2)c.lineTo(rl[i],rl[i+1]-1.2);
+   const rl=hotelArc(PX0,PY0,PRX-.6,PRY-.4,.05,Math.PI-.05,36);c.moveTo(rl[0],rl[1]-1.2);for(let i=2;i<rl.length;i+=2)c.lineTo(rl[i],rl[i+1]-1.2);
    for(let i=0;i<rl.length;i+=4){c.moveTo(rl[i],rl[i+1]);c.lineTo(rl[i],rl[i+1]-1.2);}c.stroke();
-   for(const x of [100,112,152,164]){const y=121.2;   /* деревья в кадках: олива, не зелень */
+   for(const x of [96,108,156,168]){const y=PY0-3.6;   /* деревья в кадках: олива, не зелень */
      c.fillStyle="#5a4a3a";c.fillRect(x-1,y+.6,2,1.4);c.fillStyle="#3b3226";c.fillRect(x-.2,y-2,.4,2.6);
-     c.fillStyle="#56583a";c.beginPath();c.arc(x,y-3.6,2.3,0,TAU);c.fill();c.fillStyle="#7e7a4c";c.beginPath();c.arc(x-.7,y-4.3,1.2,0,TAU);c.fill();}
+     c.fillStyle=C([100,104,70],sF*.6);c.beginPath();c.arc(x,y-3.6,2.3,0,TAU);c.fill();c.fillStyle=C([140,136,90],sF+.2);c.beginPath();c.arc(x+sg*.7,y-4.3,1.2,0,TAU);c.fill();}
    c.strokeStyle="#2e2a26";c.lineWidth=.3;c.beginPath();
-   for(const a of [.35,.9,2.25,2.8]){const x=132+Math.cos(a)*33,y=124+Math.sin(a)*6;c.moveTo(x,y);c.lineTo(x,y-4.6);}c.stroke();
-   for(const a of [.35,.9,2.25,2.8])hotelLamp(c,e,132+Math.cos(a)*33,124+Math.sin(a)*6-4.9,.45,[255,210,150],.85);
+   for(const a of [.3,.75,1.25,1.9,2.4,2.85]){const x=PX0+Math.cos(a)*(PRX-3),y=PY0+Math.sin(a)*(PRY-1);c.moveTo(x,y);c.lineTo(x,y-4.6);}c.stroke();
+   for(const a of [.3,.75,1.25,1.9,2.4,2.85])hotelLamp(c,e,PX0+Math.cos(a)*(PRX-3),PY0+Math.sin(a)*(PRY-1)-4.9,.45,[255,210,150],.85);
    const PC=["#3a3f52","#5a3a34","#2e2f33","#6a5a44","#3c4a5a","#7a3e36"];
-   for(let i=0;i<13;i++){const a=r()*TAU,d=.35+r()*.6,x=132+Math.cos(a)*34*d,y=124+Math.sin(a)*6*d;
-     if(Math.abs(x-138)<9&&y<122)continue;   /* не на постаменте */
+   for(let i=0;i<16;i++){const a=r()*TAU,d=.3+r()*.65,x=PX0+Math.cos(a)*(PRX-2)*d,y=PY0+Math.sin(a)*(PRY-1)*d;
+     if(Math.abs(x-cx)<11&&y<123)continue;   /* не на постаменте */
      c.fillStyle=PC[i%PC.length];c.fillRect(x-.45,y-2.4,.9,2.4);c.fillStyle="#d8b89a";c.beginPath();c.arc(x,y-2.85,.42,0,TAU);c.fill();}
-   /* постамент и космонавт: плащ до пят, левая рука вдоль тела, правая вверх со звездой */
-   c.fillStyle="#3a3531";hotelPoly(c,ped);c.fill();c.fillStyle="#a89478";c.fillRect(132,104,12,.8);
-   c.fillStyle="#221f1f";hotelPoly(c,[141,105,144,105,145.5,121,142,121]);c.fill();
-   const F=[-3,0,-2.6,-8,-3.2,-13,-3.6,-15.5,-2.2,-16.8,-1.4,-17.2,-1.6,-18.6,-.9,-19.8,.3,-20,1.2,-19.2,1.3,-17.8,.9,-17,
-     2.2,-16.6,3.2,-17.6,4.2,-21,4.8,-25,5.8,-25.2,5.6,-21,4.4,-17,3.4,-14.6,3,-8,3.2,0].map((v,i)=>i%2?104+v*2:137.5+v*2.1);   /* фигура на знамени: читается на телефоне ×1.6 */
-   c.strokeStyle="rgba(255,186,110,.75)";c.lineWidth=.9;hotelPoly(c,F);c.stroke();   /* тёплый контур: подсветка снизу */
-   const sg=c.createLinearGradient(130,0,150,0);sg.addColorStop(0,"#3a332d");sg.addColorStop(.5,"#231f1d");sg.addColorStop(1,"#141318");
-   c.fillStyle=sg;hotelPoly(c,F);c.fill();
-   e.strokeStyle="rgba(255,170,90,.35)";e.lineWidth=.8;hotelPoly(e,F);e.stroke();
-   c.strokeStyle="rgba(0,0,0,.4)";c.lineWidth=.3;c.beginPath();c.moveTo(136.7,75);c.lineTo(135.8,104);c.moveTo(139.4,77);c.lineTo(140.3,104);c.stroke();
-   hotelStar(c,149.7,53.6,3,"#fff0b8");
-   const sgl=e.createRadialGradient(149.7,53.6,0,149.7,53.6,6.5);sgl.addColorStop(0,"rgba(255,236,170,1)");sgl.addColorStop(.3,"rgba(255,206,120,.45)");sgl.addColorStop(1,"rgba(255,190,100,0)");
-   e.fillStyle=sgl;e.fillRect(143.2,47.1,13,13);}
+   /* постамент: широкая ступень и узкая колонна тёмного гранита, грань к звезде светлая; лента надписи */
+   c.fillStyle=C([70,66,72],sU*.5+.2);hotelPoly(c,ped);c.fill();c.fillStyle=C([150,140,128],sU);c.fillRect(cx-8,113,16,.7);
+   c.fillStyle=C([64,60,66],sF*.8);hotelPoly(c,pcol);c.fill();
+   c.fillStyle=C([64,60,66],(sg>0?sR:sL)*1.2+.2);hotelPoly(c,sg>0?[cx+2.5,101,cx+5,101,cx+5.5,113,cx+2.8,113]:[cx-5,101,cx-2.5,101,cx-2.8,113,cx-5.5,113]);c.fill();
+   c.fillStyle=C([190,178,160],sU);c.fillRect(cx-5,101,10,.6);
+   c.fillStyle="rgba(232,200,120,.55)";c.fillRect(cx-3.6,105.2,7.2,1.2);
+   /* космонавт: плечи шире постамента, ноги врозь, левая рука вдоль тела с просветом, правая
+      вверх с факелом, плащ-знамя за спиной в тень. Камень в три тона: тень, фронт, грань к звезде;
+      фонари площадки чуть греют низ. Поза одна на все системы — от звезды зависит лишь свет */
+   const hx=cx+8,figure=[
+     [cx-6.2,99,cx-1,99,cx-.8,101.5,cx-6.4,101.5],[cx+1,99,cx+6.2,99,cx+6.4,101.5,cx+.8,101.5],   /* сапоги */
+     [cx-5.4,88,cx-1,88,cx-1.1,99.2,cx-5.8,99.2],[cx+1,88,cx+5.4,88,cx+5.8,99.2,cx+1.1,99.2],     /* ноги врозь */
+     [cx-6.6,75,cx+6.6,75,cx+5.6,88.4,cx-5.6,88.4],                                            /* торс: плечи шире пояса */
+     [cx-6.8,75.6,cx-9.4,77.2,cx-9.6,90,cx-7.2,90.4],                                          /* левая рука — просвет к торсу */
+     [cx+3.6,77.6,cx+6.6,75,hx+1.4,66.2,hx-1.2,65.8],                                          /* правая — вверх, к факелу */
+     [cx-2.8,72.6,cx+2.8,72.6,cx+3.2,75.2,cx-3.2,75.2]];                                       /* ворот */
+   const cape=[cx-6,75.5,cx+1.5,75.5,cx+.6,101.4,cx-14.5,101.4,cx-12.6,88];
+   c.fillStyle=C([120,110,98],sF*.35);hotelPoly(c,cape);c.fill();
+   c.strokeStyle="rgba(10,8,8,.45)";c.lineWidth=.3;c.beginPath();for(const t of [.3,.62]){c.moveTo(cx-(6+t*7.5),75.5+t*4);c.lineTo(cx-(2+t*10),101.4);}c.stroke();
+   c.beginPath();for(const p of figure){c.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)c.lineTo(p[i],p[i+1]);c.closePath();}
+   c.moveTo(cx+4.1,69.4);c.arc(cx,69.4,4.1,0,TAU);
+   c.save();c.clip();
+   {const bg=c.createLinearGradient(sg>0?cx-9:cx+9,0,sg>0?cx+9:cx-9,0);bg.addColorStop(0,C(HK_BRONZE,.06));bg.addColorStop(.5,C(HK_BRONZE,sF*.75));bg.addColorStop(1,C(HK_BRONZE,sF*1.1+.3));
+    c.fillStyle=bg;c.fillRect(cx-30,50,60,52);
+    const wg=c.createLinearGradient(0,101.5,0,86);wg.addColorStop(0,"rgba(255,150,70,.22)");wg.addColorStop(1,"rgba(255,150,70,0)");c.fillStyle=wg;c.fillRect(cx-30,50,60,52);
+    c.fillStyle=sh(.22);c.fillRect(cx-2.4,78,4.8,5.2);c.fillRect(cx-6.6,74.8,13.2,.6);   /* нагрудная панель, шов ворота */
+    c.fillStyle="#141418";c.beginPath();c.arc(cx+.3,69.8,2.5,0,TAU);c.fill();   /* забрало */
+    c.fillStyle=rgba(hotelLit(Lt,[255,240,220],1.2),.6);c.beginPath();c.arc(cx+.3+sg*.9,69,1.1,0,TAU);c.fill();
+    c.strokeStyle=C([255,236,210],(sg>0?sR:sL)*.9+.1);c.lineWidth=.6;c.beginPath();c.moveTo(cx+sg*6.9,75.6);c.lineTo(cx+sg*5.9,88.2);c.moveTo(cx+sg*5.5,88.6);c.lineTo(cx+sg*6,99);c.stroke();   /* кромка к звезде */
+   }
+   c.restore();
+   c.fillStyle=C([90,74,58],sF);c.fillRect(hx-.4,62,.8,4.2);   /* рукоять факела */
+   const tx=hx,ty=60.4;hotelStar(c,tx,ty,2.2,"#fff4cc");
+   const sgl=e.createRadialGradient(tx,ty,0,tx,ty,5.5);sgl.addColorStop(0,"rgba(255,244,200,1)");sgl.addColorStop(.35,"rgba(255,214,130,.5)");sgl.addColorStop(1,"rgba(255,190,100,0)");
+   e.fillStyle=sgl;e.fillRect(tx-5.5,ty-5.5,11,11);
+   c.fillStyle="rgba(255,220,150,.16)";c.beginPath();c.arc(tx,ty,3.2,0,TAU);c.fill();}   /* факел — точка, самая яркая в доме: свечение делает ореол */
   yield;
   /* ── причальная труба от ступицы влево, челнок носом в неё ── */
-  hotelDock(c,e,113,140,59,147,sd);
+  hotelDock(c,e,113,140,59,147,sd,Lt);
 }
-HOTEL_T.gt={W:250,H:170,PX:2,ax:138,ay:80,sign:[138,34,8],sheen:[138,34,46],halo:HK_HALO,wins:hkWins,paint:hkPaint};
+HOTEL_T.gt={W:250,H:170,PX:2,ax:138,ay:80,sign:[138,34,11],sheen:[138,34,30],halo:HK_HALO,wins:hkWins,paint:hkPaint};
 
 /* ══════════════ мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3) ══════════════
    Каждая держава в мирный день делает своё, и это видно из кабины:
@@ -57180,48 +57071,97 @@ function bazBuy(L){
    Были плоские прямоугольники с треугольными тентами. Теперь остовы — настоящие
    корпуса из таблицы, мёртвые: без огней, притемнённые, под своими углами, как
    их пришвартовали. Между ними провисшие тенты из ткани (дуга, а не треугольник)
-   и гирлянды, которые качает: каждая лампочка на своём проводе. */
+   и гирлянды, которые качает: каждая лампочка на своём проводе.
+   На видеокарте (25.09, «чистый полёт»): остов с плёнкой — выпечка (08ca gpuBake, одна
+   на корпус), тенты, шесты, провода и лампочки — фигурами прохода сцены, вывеска —
+   слоем подписей. Ходовые огни и бегущая строка остову не положены — в выпечке их нет;
+   тлеющее сопло — средней яркостью, без дрожи (под плёнкой её и так не видно) */
 const BAZ_HULLS=["strizh","skat"];
+const BAZ_BAKE=new Map();   // id|масштаб → выпечка остова (эфемерное, не в сейве)
+const BAZ_CUT=[[176,80,60],[60,122,176],[192,160,64],[90,154,90],[154,90,154]];
+function bazHulk(id,dk){
+  /* мастер — на крупнейший остов (s 1.6, sc .58) шагом в четверть октавы; мельче — мипы */
+  const h=hullOf(id),sb=Math.pow(2,Math.ceil(Math.log2(.58*1.6*dk)*4)/4),side=Math.ceil(hullGpuE(h)*2*sb),key=id+"|"+sb;
+  if(!BAZ_BAKE.has(key)&&BAZ_BAKE.size>=12){const k=BAZ_BAKE.keys().next().value;gpuBakeDrop(BAZ_BAKE.get(k));BAZ_BAKE.delete(k);}
+  const B=gpuBaked(BAZ_BAKE,key,side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);
+    for(const e of h.eng){
+      if(h.lux){g.fillStyle="rgba(8,12,18,.9)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);g.fill();
+        g.strokeStyle=rgba(mixc(luxPal(h).trim,[255,244,214],.3),.9);g.lineWidth=.4;g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);g.stroke();
+        g.fillStyle="rgba(170,215,255,.21)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.3,0,TAU);g.fill();}
+      else{g.fillStyle="rgba(255,140,70,.26)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);g.fill();}}
+    hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);
+    /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом. Утоплена на 5 %:
+       полоска корпуса из-под неё — обвод (тело, обвод, один свет). В 2D его давала
+       случайно сглаженная кромка плёнки, на дальнем плане это был весь свет силуэта */
+    g.scale(.95,.95);tracePoly(h.poly);g.fillStyle="rgba(20,18,16,.6)";g.fill();});
+  return B&&{B,E:side/(2*sb)};
+}
+/* вывеска — часть сцены, не подпись: выпечка букв (ss 2, пиксели устройства), блум сцены
+   даёт ей ореол, как 2D-тексту на #c. Ключ — кегль и DPR */
+const BAZ_SIGN=new Map(),BAZ_SIGN_T="БАРАХОЛКА";
+function bazSign(F){
+  const d=DPR;
+  return bakeKeep(BAZ_SIGN,F+"|"+d,4,()=>{
+    const fb="bold "+F*d+"px ui-monospace,monospace",tw=Math.ceil(gcMeasure(fb,BAZ_SIGN_T).width),pad=Math.ceil(2*d);
+    const base=pad+Math.ceil(F*d*.82),Hd=base+Math.ceil(F*d*.28)+pad,Wd=tw+pad*2;
+    const B=gpuBake(Wd,Hd,g=>{g.font=fb;g.textAlign="left";g.textBaseline="alphabetic";g.fillStyle="rgba(240,210,160,.85)";g.fillText(BAZ_SIGN_T,pad,base);},{mips:false});
+    return B&&{B,ax:pad+tw/2,ay:base,w:Wd/d,h:Hd/d,drop(){gpuBakeDrop(B);}};
+  });
+}
 function drawBazaar(zx,zy,Z){
   const B=bazHere();if(!B)return;
   const x=zx(B.x),y=zy(B.y),s=clamp(Z,.5,1.6);
   if(x<-200||x>W+200||y<-200||y>H+200)return;
-  const r=rng(B.seed),ids=Object.keys(SHIPS);
+  const pass=gpuScene();if(!pass)return;
+  const r=rng(B.seed),ids=Object.keys(SHIPS),dk=GPU.bw/W,lod=Math.pow(2,HG_BODY_LOD);
   const hulks=[];
+  /* кривая Безье второго порядка в точке t */
+  const qb=(a,c,b,t)=>(1-t)*(1-t)*a+2*(1-t)*t*c+t*t*b;
   for(let i=0;i<5;i++){
     const hx=x+(r()-.5)*96*s,hy=y+(r()-.5)*64*s,ha=r()*TAU,id=ids[Math.floor(r()*ids.length)]||BAZ_HULLS[0];
-    const hl=hullOf(id),sc=(.42+r()*.16)*s;
+    const hl=hullOf(id),sc=(.42+r()*.16)*s,cs=Math.cos(ha)*sc,sn=Math.sin(ha)*sc,c0=(hl.nose+hl.tail)*.5;
     hulks.push([hx,hy,hl.len*sc,ha]);
-    ctx.save();ctx.translate(hx,hy);ctx.rotate(ha);ctx.scale(sc,sc);
-    ctx.translate(-(hl.nose+hl.tail)*.5,0);
-    drawHull(id,false,false,0);
-    /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом */
-    tracePoly(hl.poly);ctx.fillStyle="rgba(20,18,16,.6)";ctx.fill();
+    /* точка остова (px,py) → экран: сдвиг к середине корпуса, поворот, масштаб */
+    const P=(px,py)=>[hx+(px-c0)*cs-py*sn,hy+(px-c0)*sn+py*cs];
+    const [ox,oy]=P(0,0),K=bazHulk(id,dk);
+    if(K)gpuImage(pass,K.B,[{x:ox,y:oy,w:K.E*2*sc,h:K.E*2*sc,rot:ha}],{lod});
+    if(GPU.sepH.length<8){if(!hl._R){let q=0;for(const p of hl.poly)q=Math.max(q,Math.hypot(p[0],p[1]));hl._R=q*1.3;}
+      GPU.sepH.push([ox,oy,hl._R*sc]);}
     /* тент над остовом: два шеста по бортам и провисшая ткань между ними */
-    const tc=["rgba(176,80,60,.85)","rgba(60,122,176,.85)","rgba(192,160,64,.85)","rgba(90,154,90,.85)","rgba(154,90,154,.85)"][i];
-    const tx0=hl.tail+hl.len*.3,tx1=hl.tail+hl.len*.7,ty=-hl.halfW*1.6,sag=hl.halfW*.5+Math.sin(G.t*.02+i)*1.5;
-    ctx.strokeStyle="rgba(120,110,96,.9)";ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.moveTo(tx0,-hl.halfW*.6);ctx.lineTo(tx0,ty);ctx.moveTo(tx1,-hl.halfW*.6);ctx.lineTo(tx1,ty);ctx.stroke();
-    ctx.fillStyle=tc;ctx.beginPath();ctx.moveTo(tx0,ty);ctx.quadraticCurveTo((tx0+tx1)/2,ty+sag,tx1,ty);
-    ctx.lineTo(tx1,ty-hl.halfW*.35);ctx.quadraticCurveTo((tx0+tx1)/2,ty-hl.halfW*.35+sag*.7,tx0,ty-hl.halfW*.35);ctx.closePath();ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=.6;ctx.stroke();
-    ctx.restore();
+    const tc=BAZ_CUT[i];
+    const tx0=hl.tail+hl.len*.3,tx1=hl.tail+hl.len*.7,tm=(tx0+tx1)/2,ty=-hl.halfW*1.6,ty2=ty-hl.halfW*.35,sag=hl.halfW*.5+Math.sin(G.t*.02+i)*1.5;
+    const SH=[],pw=.6*sc,ow=.3*sc;
+    for(const tx of [tx0,tx1]){const a=P(tx,-hl.halfW*.6),b=P(tx,ty);SH.push([2,a[0],a[1],b[0],b[1],pw,0,120,110,96,.9]);}
+    /* швов — по длине тента на экране (~3 px): у капсул контура круглые концы, частые швы
+       на мелком плане ложатся друг на друга и темнят кромку */
+    const N=clamp(Math.round((tx1-tx0)*sc/3),2,10),A=[],Bt=[];
+    for(let j=0;j<=N;j++){const t=j/N;A.push(P(qb(tx0,tm,tx1,t),qb(ty,ty+sag,ty,t)));Bt.push(P(qb(tx0,tm,tx1,t),qb(ty2,ty2+sag*.7,ty2,t)));}
+    /* полосы ткани: внутренние швы жёсткие — ни щели, ни двойной кромки */
+    for(let j=0;j<N;j++)gpuQuad(SH,A[j],A[j+1],Bt[j+1],Bt[j],[tc[0],tc[1],tc[2],.85],(j<N-1?2:0)|(j>0?8:0));
+    const O=A.concat(Bt.slice().reverse(),[A[0]]);
+    for(let j=0;j<O.length-1;j++)SH.push([2,O[j][0],O[j][1],O[j+1][0],O[j+1][1],ow,0,0,0,0,.35]);
+    gpuShapes(pass,SH);
   }
   /* гирлянды: провод дугой, лампочки на коротких подвесах, качаются не в лад */
-  ctx.strokeStyle="rgba(60,56,50,.9)";ctx.lineWidth=.8;
+  const WR=[],LT=[];
   for(let i=0;i<hulks.length-1;i++){
     const [ax,ay]=hulks[i],[bx,by]=hulks[i+1],mx=(ax+bx)/2,my=(ay+by)/2+12*s;
-    ctx.beginPath();ctx.moveTo(ax,ay-16*s);ctx.quadraticCurveTo(mx,my,bx,by-16*s);ctx.stroke();
-    for(let k=1;k<6;k++){const t=k/6,lx=(1-t)*(1-t)*ax+2*(1-t)*t*mx+t*t*bx,ly=(1-t)*(1-t)*(ay-16*s)+2*(1-t)*t*my+t*t*(by-16*s);
+    let p=[ax,ay-16*s];
+    for(let j=1;j<=16;j++){const t=j/16,q=[qb(ax,mx,bx,t),qb(ay-16*s,my,by-16*s,t)];WR.push([2,p[0],p[1],q[0],q[1],.4,0,60,56,50,.9]);p=q;}
+    for(let k=1;k<6;k++){const t=k/6,lx=qb(ax,mx,bx,t),ly=qb(ay-16*s,my,by-16*s,t);
       const sw=Math.sin(G.t*.045+i*1.3+k*.9)*1.6*s,on=(hashi(i,k,(G.t/40|0))%9)?1:.25;
-      ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+sw,ly+4*s);ctx.stroke();
-      ctx.save();ctx.globalCompositeOperation="lighter";
-      ctx.fillStyle="rgba(255,"+(170+k*12)+",110,"+(.8*on)+")";ctx.beginPath();ctx.arc(lx+sw,ly+4.6*s,.9*s,0,TAU);ctx.fill();
-      const g=ctx.createRadialGradient(lx+sw,ly+4.6*s,0,lx+sw,ly+4.6*s,5*s);g.addColorStop(0,"rgba(255,190,120,"+(.14*on)+")");g.addColorStop(1,"rgba(255,190,120,0)");
-      ctx.fillStyle=g;ctx.fillRect(lx+sw-7*s,ly-3*s,14*s,14*s);ctx.restore();}
+      WR.push([2,lx,ly,lx+sw,ly+4*s,.4,0,60,56,50,.9]);
+      /* лампочка мельче .7 px устройства: covDisc растянул бы её на круг .7 и погасил пик —
+         квадрат той же площади покрытие считает точно, как растр */
+      const br=.9*s,bh=br*.886;
+      LT.push(br*dk<.7?[0,lx+sw-bh,ly+4.6*s-bh,lx+sw+bh,ly+4.6*s+bh,0,0,255,170+k*12,110,.8*on]:[1,lx+sw,ly+4.6*s,br,0,0,0,255,170+k*12,110,.8*on]);
+      glowCone(LT,lx+sw,ly+4.6*s,5*s,[255,190,120],.14*on);}   /* ореол — конус градиента (17e) */
   }
-  ctx.font="bold "+Math.round(8*s)+"px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillStyle="rgba(240,210,160,.85)";ctx.fillText("БАРАХОЛКА",x,y-48*s);
+  gpuShapes(pass,WR);gpuShapes(pass,LT,{blend:"add"});
+  /* середина строки — x, базовая линия — y−48s; место на целый пиксель устройства */
+  const N=bazSign(Math.round(8*s));
+  if(N){const d=DPR,l=Math.round((x-N.ax/d)*d)/d,t=Math.round((y-48*s-N.ay/d)*d)/d;
+    gpuImage(pass,N.B,[{x:l+N.w/2,y:t+N.h/2,w:N.w,h:N.h}]);}
 }
 function bazInteract(sh){
   const B=bazHere();if(!B)return false;
@@ -83865,7 +83805,7 @@ function ckptLampNeed(lamps){
    печётся внутрь холста, чтобы круг лёг туда же, куда 2D */
 function bhudLedDom(){return BHUD.rec;}
 function bhudLed(key,x,y,r,col){
-  const box=chipDomBox();if(!box)return;
+  const box=labDomBox();if(!box)return;
   const nd=gpuHudDpr(),R=r*3.4,s=Math.ceil((2*R+2)*nd)/nd;
   const x0=Math.floor((x-s/2)*nd)/nd,y0=Math.floor((y-s/2)*nd)/nd,fx=x-x0,fy=y-y0;
   const f64x=Math.round(fx*64),f64y=Math.round(fy*64);
@@ -103129,7 +103069,7 @@ const G11_GPU_KILL=[
   ["nebGen","ngen"],["neb",["gpuNebulaGen"]],["space",["gpuSpaceSys"]],["under",["gpuSysUnder"]],
   ["planets",["gpuPlanet","gpuMoon"]],["cities",["planetLightsOn"]],
   ["trails",["gpuWake","gpuTrail","gpuDrones"]],["combat",["gpuCombatEnergy"]],
-  ["hullLight",["gpuHullLight"]],["points",["gpuLight"]],["refract",["gpuHaze","gpuShock"]],
+  ["points",["gpuLight"]],["refract",["gpuHaze","gpuShock"]],
   /* frontPx — копии #c размером 1×1: растр 2D остаётся, байтов нет; front2D — ни растра, ни копий */
   ["bloom","bloom"],["frontPx","fpx"],["front2D","front"],["final","fin"]];
 /* пара — «база, глушение, база» (P1 8/n): одна база перед глушением путала с выигрышем

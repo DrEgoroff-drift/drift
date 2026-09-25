@@ -650,10 +650,9 @@ function drawSystem(){
      крупнее малой луны; ниже .35 он уже не находится глазом */
   ctx.scale(shipScaleAt(Z),shipScaleAt(Z));   /* один масштаб с буксиром (16c) */
   /* корпус на видеокарте (17c2): тело светом звезды, факел и огни — явным светом;
-     не взяла — прежний 2D с gpuHullLight */
+     2D-пути нет (25.09): без видеокарты нет и полёта */
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
-  const hullG=hullGpuDraw(G.shipId,hsx,hsy,sh.a,shipScaleAt(Z),thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
-  if(!hullG)drawHull(G.shipId,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank);
+  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shipScaleAt(Z),thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
   /* стволы на подвесах, повёрнутые по наводке (M363): сборка читается
      силуэтом раньше первого выстрела */
   if(typeof gunBarrelsDraw==="function")gunBarrelsDraw(stat().guns,sh.a);
@@ -671,7 +670,6 @@ function drawSystem(){
     }
   }
   ctx.restore();
-  if(!hullG)gpuHullLight(zx(sh.x),zy(sh.y),zx(0),zy(0),Z,sys);   /* свет звезды на 2D-корпусе (16ga) */
   if(typeof drawGestureTop==="function")drawGestureTop(zx,zy,Z);   /* жест поверх корпуса (17h) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
@@ -696,7 +694,7 @@ function drawSystem(){
      пиксели — её читает 15-input, который ни про какой zoom не знает. */
   if(!SHOT_CLEAN){                       /* на кадре заглавной приборов нет (M233) */
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-    /* фишки у кромки — DOM (08bh chipDom), каждый кадр: едут за миром */
+    /* фишки у кромки — слой #ovl (08bi chipDom), каждый кадр: едут за миром */
     withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
     /* стики под пальцами — в пикселях касания, не в мерке (M360); слой перерисовывается каждый
        кадр, пока палец на экране или след гаснет, иначе — только когда сменилась точка покоя */
@@ -978,7 +976,6 @@ function drawSysHud(zx,zy,sh,sys,U){
     /* плашка, обвод, стрелка и подпись — DOM-фишка (08bh): место двигает композитор */
     chipDom(m.k,rx,ry,cw,ch,AA,m.c,label,onRight,ang,U);
   }
-  chipDomEnd();
   /* цель пропала из кадра (тело за спиной, автопилот снят) — забыть её место,
      иначе через минуту чья-то новая фишка того же типа въедет с чужого края */
   for(const k of CHIP_POS.keys())if(!usedKeys[k])CHIP_POS.delete(k);

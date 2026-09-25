@@ -102,7 +102,7 @@ function drawShuttleArc(t,zx,zy,Z){
   if(pass){
     /* корпус — выпечка на цвет завода, один раз; поворот и масштаб — в шейдере */
     const sk=s*t.k;
-    gpuImage(pass,shuttleSprite(gr),[{x,y,w:SHUT_SW*sk,h:SHUT_SH*sk,rot:a}]);
+    gpuImage(pass,shuttleSprite(gr),[{x,y,w:SHUT_SW*sk,h:SHUT_SH*sk,rot:a}],{sharp:true});
     return;
   }
   ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.scale(s*t.k,s*t.k);
@@ -118,10 +118,8 @@ function shuttleBody(gr){
    челнок ~1.5 px кадра на единицу, так что выборка сжимает вдвое-втрое, без мерцания */
 const SHUT_SW=10,SHUT_SH=6,SHUT_PX=4,SHUT_ART=new Map();
 function shuttleSprite(gr){
-  let cv=SHUT_ART.get(gr);if(cv)return cv;
-  cv=document.createElement("canvas");cv.width=SHUT_SW*SHUT_PX;cv.height=SHUT_SH*SHUT_PX;
-  const g=cv.getContext("2d"),c0=ctx;ctx=g;
-  try{g.setTransform(SHUT_PX,0,0,SHUT_PX,cv.width/2,cv.height/2);shuttleBody(gr);}finally{ctx=c0;}
-  if(SHUT_ART.size>=8)SHUT_ART.delete(SHUT_ART.keys().next().value);
-  SHUT_ART.set(gr,cv);return cv;
+  /* выпечка на GPU-холсте (25.09): shuttleBody рисует в ctx, ctx на время выпечки — GPU-холст */
+  if(!SHUT_ART.has(gr)&&SHUT_ART.size>=8){const k=SHUT_ART.keys().next().value;gpuBakeDrop(SHUT_ART.get(k));SHUT_ART.delete(k);}
+  const w=SHUT_SW*SHUT_PX,h=SHUT_SH*SHUT_PX;
+  return gpuBaked(SHUT_ART,gr,w,h,g=>{g.setTransform(SHUT_PX,0,0,SHUT_PX,w/2,h/2);shuttleBody(gr);});
 }

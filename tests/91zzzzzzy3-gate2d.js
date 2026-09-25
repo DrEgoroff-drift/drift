@@ -8,9 +8,21 @@
    fleetShipAt грузит его мипы 2D-спуском (gpuMipTex). Уйдёт с переносом облика флота */
 /* текст v2 (08cb): маску строки растрит одна 2D-канва на всю игру (GC_GLYPHS.raster/.measure),
    раз на строку — так устроен текст GPU-холста, это его источник глифов, а не 2D печи */
-/* подписи мира (08bh domLabel) — DOM-холст с текстом 2D, перерисовка при смене строки; уйдут
-   шагом «стойка/#hud через #ovl». До того подпись имени станции — не печь станции */
-const GATE2D_DYRY=["fleetArtOf","fleetShipAt","raster","measure","_c","_set","domLabel"];
+/* материал грунта (18a matTick) печётся 2D-канвой по кадрам из gpuPlanet — для посадки и поверхности,
+   которые ещё 2D; в кадре планеты это чужая печь. Уйдёт с переносом поверхности */
+const GATE2D_DYRY=["fleetArtOf","fleetShipAt","matTick","raster","measure","_c","_set"];
+/* …но растр строк — своя колонка ворот: у сцены с warm после разгона строк в растр — 0 */
+const GATE2D_TXT=["raster","measure","_c","_set"];
+/* место, где в кадре и подписи мира (планета), и фишка у кромки (станция за краем) */
+function gate2dChips(){
+  for(let r=0;r<=14;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+    if(Math.max(Math.abs(x),Math.abs(y))!==r||!starAt(x,y))continue;
+    const s=getSystem(x,y);if(!s.station)continue;
+    const p=(s.planets||[]).find(q=>Math.abs(q.orbit-s.station.orbit)>1500);if(!p)continue;
+    G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;
+    G.ship.x=p.x+p.radius*1.6;G.ship.y=p.y;G.ship.vx=G.ship.vy=0;G.zoom=.6;G.zoomT=null;return {p};}
+  return null;
+}
 const GATE2D=[
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
@@ -55,6 +67,11 @@ const GATE2D=[
        G.ship.x=Ht.x;G.ship.y=Ht.y+150/2.2;G.ship.vx=G.ship.vy=0;G.zoom=2.2;G.zoomT=null;return {Ht};}
      return null;},
    probe:["drawHotel"]},
+  /* фишки у кромки и подписи мира (08bi): слой #ovl без 2D; строки растрятся раз, дальше — из атласа */
+  {name:"фишки и подписи мира (08bi): слой #ovl",
+   painters:["chipDom","domLabel","ovText","ovAtlas","ovFlush"],warm:30,
+   place(){return gate2dChips();},
+   probe:["chipDom","domLabel"]},
   /* станция (17c3): мастер тела двумя слоями (торговая: под кольцом и над ним) и вращающееся
      кольцо — выпечки GPU-холста; мастера и кольца сбрасываем, чтобы выпечка шла под записью */
   {name:"станция (17c3): мастер слоями, кольцо, огни",
@@ -106,12 +123,15 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
     resetWorld();G.mode="system";
     const st=S.place(true);
     if(!ok(!!st,S.name+": сцена нашлась"))continue;
-    const own=new Set(S.painters),K={on:false,n:0,by:{}},saved=[],hit={};
-    const who=()=>{const L=(new Error().stack||"").split("\n");let p=null;
+    const own=new Set(S.painters),K={on:false,n:0,by:{},tx:0,late:0,i:0},saved=[],hit={};
+    const who=()=>{const L=(new Error().stack||"").split("\n");let p=null,t=false;
       for(let i=2;i<L.length;i++){const m=/at (?:new )?(?:[\w$]+\.)?([\w$]+) /.exec(L[i]);if(!m)continue;
-        if(GATE2D_DYRY.includes(m[1]))return null;if(!p&&own.has(m[1]))p=m[1];}
-      return p;};
-    const note=k=>{if(!K.on)return;const p=who();if(p){K.n++;const w=p+"."+k;K.by[w]=(K.by[w]||0)+1;}};
+        if(GATE2D_DYRY.includes(m[1])){if(!GATE2D_TXT.includes(m[1]))return null;t=true;continue;}
+        if(!p&&own.has(m[1]))p=m[1];}
+      return p&&{p,t};};
+    const note=k=>{if(!K.on)return;const w=who();if(!w)return;
+      if(w.t){K.tx++;if(S.warm!=null&&K.i>=S.warm)K.late++;return;}
+      K.n++;const q=w.p+"."+k;K.by[q]=(K.by[q]||0)+1;};
     const run0=G.running,loop0=LOOP_OFF,wrap={},lim0=Error.stackTraceLimit;
     Error.stackTraceLimit=40;   /* художник бывает глубже десяти кадров стека — иначе вызов потерян молча */
     for(const f of S.probe){const o=window[f];wrap[f]=o;hit[f]=0;
@@ -125,7 +145,7 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
           Object.defineProperty(P,k,{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){note(k);return s.call(this,v);}});}}
       /* с первого кадра: выпечка — тоже часть ворот */
       K.on=true;G.running=true;LOOP_OFF=false;let t=wallMs();
-      for(let i=0;i<90;i++){S.place();frameBody(t+=16.7);}
+      for(let i=0;i<90;i++){K.i=i;S.place();frameBody(t+=16.7);}
     }catch(e){ok(false,S.name+": кадр упал: "+e.message);}
     finally{
       K.on=false;Error.stackTraceLimit=lim0;
@@ -135,7 +155,8 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
     }
     for(const f of S.probe)ok(hit[f]>=30,S.name+": "+f+" рисовал ("+hit[f]+" из 90 кадров)");
     const top=Object.entries(K.by).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>v+"× "+k).join("; ");
-    eq(K.n,0,S.name+": вызовов 2D"+(K.n?" — "+top:""));
+    eq(K.n,0,S.name+": вызовов 2D"+(K.n?" — "+top:"")+" (растр строк — своя колонка: "+K.tx+")");
+    if(S.warm!=null)eq(K.late,0,S.name+": вызовов 2D на растр строк после "+S.warm+" кадров разгона");
   }
   resetWorld();
 }));

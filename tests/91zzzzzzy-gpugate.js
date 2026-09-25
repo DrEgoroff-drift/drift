@@ -293,7 +293,7 @@ function gateFlyScenes(){
     /* борт ГЛАВТРАССЫ с подписью (тур его не встретил: линия зовётся с рунга 5):
        окно флота кладётся в кэш системы, борт стоит рядом, подпись в кадре */
     ["борт ГЛАВТРАССЫ с подписью",()=>{const X=-900,Y=-600;
-      return {z:1.4,what:"подпись борта — на слое подписей",check:()=>{const e=LABDOM.m.get("flpost7");return !!(e&&e.on&&LABDOM.m.get("flpost7c"));},
+      return {z:1.4,what:"подпись борта — на слое подписей",check:()=>{const e=OVL.lab.get("flpost7"),c=OVL.lab.get("flpost7c");return !!(e&&e.on&&c&&c.on);},
         place(){G.sx=0;G.sy=0;G.sys=getSystem(0,0);
           G.sys.fleetCache={b:Math.floor(now()/FLEET_PERIOD),list:[{k:"post",seed:7,name:"Вега",num:"Л-4417",line:3,x0:X,y0:Y,x1:X,y1:Y,bow:0,ph:0,still:1}]};
           at(X-60,Y-40);}};}],
@@ -304,13 +304,10 @@ function gateFlyScenes(){
       c1.order={kind:"fight",sx:0,sy:0};c2.order={kind:"haul",sx:0,sy:0};
       const A=[{c:c1,cool:0,iff:true},{c:c2,cool:0,iff:true}];
       /* подпись мира — под интерфейсом: на ×1.5 подпись союзника легла на фишку компаса и склеила её цифры.
-         Слой подписей стоит в DOM перед слоем фишек, на одном уровне и без своего z-index — все подписи в нём */
-      const under=()=>{const L=LABDOM.box,C=CHIPDOM.box;if(!L||!C||L.parentNode!==C.parentNode)return false;
-        if(!(L.compareDocumentPosition(C)&Node.DOCUMENT_POSITION_FOLLOWING))return false;
-        const z=e=>getComputedStyle(e).zIndex;if(z(L)!==z(C))return false;
-        return [...LABDOM.m.values()].every(e=>e.cv.parentNode===L);};
+         Подписи и фишки — один проход #ovl (08bi): подписи идут первыми, первый примитив прохода — глиф подписи */
+      const under=()=>!!OVL.on&&OVL.nl>0&&OVL.f[8]===1;
       return {z:2.2,what:"оба борта подписаны на слое подписей, и этот слой под фишками",
-        check:()=>under()&&A.every(a=>{const e=LABDOM.m.get("al"+domLabelId(a.c));return !!(e&&e.on);}),
+        check:()=>under()&&A.every(a=>{const e=OVL.lab.get("al"+domLabelId(a.c));return !!(e&&e.on);}),
         place(){G.sx=0;G.sy=0;G.sys=getSystem(0,0);at(X,Y);
           Object.assign(A[0],{x:X+70,y:Y+45,vx:Math.cos(.5)*3,vy:Math.sin(.5)*3,a:.5,thrust:true});
           Object.assign(A[1],{x:X-65,y:Y+40,vx:Math.cos(2.6)*3,vy:Math.sin(2.6)*3,a:2.6,thrust:true});

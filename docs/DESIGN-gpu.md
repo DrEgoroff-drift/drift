@@ -488,6 +488,62 @@ on interiors:
 The opaque column is as before, and the hotel's `sh` bake (a multiply on white) hashes the same. The suite checks
 the tables against the 2D formula on 48 combinations and that `cvk` writes no stencil. The old tables fail it.
 
+**Chips and world labels on `#ovl` (08bi).** Edge chips and world labels were small 2D canvases in the DOM
+(`#chips`, `#labels`): one canvas per chip or label, redrawn when its key changed, and each one paid style and
+composite cost. They are now one WebGPU canvas `#ovl` at the native DPR, placed after `#hud`. `#labels` stays
+between the two for the belt lamps only. The layer draws one pass inside `gpuHudFlush`, so it adds no queue
+submit of its own.
+- A primitive is 20 floats: a rect with exact coverage, a mask glyph from an atlas, or an analytic triangle (the
+  chip's arrow). Labels are queued before chips, so every chip lies above every label: the ×1.5 bug (an ally's
+  caption over the compass chip's digits) cannot come back. The gate checks the first primitive of the pass is a
+  label glyph, and mutant `labels-over-chips` swaps the order.
+- Text goes into an `r8` atlas of 4 layers of 1024², keyed by font, size, ¼-px phase and string; colour is not in
+  the key (masks are white, the colour is per primitive). A string splits into digit runs and other runs. Digits
+  are drawn glyph by glyph with the advance of «0», so a changing distance reuses ten masks. The first digit a
+  font meets warms all ten, and the string start snaps to a device pixel, so a moving label does not walk
+  through new phases.
+- The atlas evicts the layer that was touched longest ago (LRU by frame). A label or chip not seen for 600 frames
+  is forgotten. An empty layer is `display:none`, so the compositor does not blend it.
+- The cost: GPU pass 1.7 µs at 760 ×1 and 10.5 µs on the phone (390×844 ×2.625) by timestamps; JS 0.21–0.22 ms
+  a frame at 760 and 0.25 ms on the phone. The old DOM path cost 0.15 and 0.21 ms of JS only; its style and
+  composite work per canvas was not counted and is gone. Rasters happen only when new text appears: 11 at the
+  start at 760, 22 when a moon label enters the phone's view, then 0.
+- The pairs `pair_ovl_760.png`, `pair_ovl_phone.png` and `pair_ovl_phone_x3.png` (chips and a label ×3 against
+  HEAD) look the same.
+- Tests: `91zzzzzzy4` checks LRU on its own atlas (one eviction, no thrash) and flies 600 frames. It asserts no
+  string is rastered twice, rasters come only in frames with new text, the layer hides when empty and labels are
+  forgotten. The gate2d scene «фишки и подписи мира» asserts 0 2D calls, and its text raster is a column of its
+  own that must be 0 after 30 warm frames.
+
+**A join takes the curve's tangent, not its first chord.** GPU-2 found a light spike at the stern hook of
+`obod` (`hbake_x2.png`): 2D draws a blunt hook there. The hook is `lineTo` then `arc` back from the same point,
+a 180° turn, and 2D bevels it. The GPU canvas flattens curves when the path is built, so the join saw the
+arc's first chord. On a small arc the step is coarse (radius 1.5 px, five chords of 50°), the chord is off the
+tangent by half a step, the turn reads as about 155°, the miter ratio is about 4.6 and within the limit of 10:
+a tip of 4.6 half-widths outward. `miterLimit` itself was right. The fix: every flattened curve (arc,
+ellipse, quadratic, cubic) gets one more point a parameter ε ≤ 1e-3 from each end. Joins and caps then see the
+tangent. The points lie on the curve, so fills do not change.
+- Node suite «острый стык»: the tip reach at interior angles 5°, 15°, 30°, 90° with `miterLimit` 10 and 2
+  equals the 2D rule (miter `hw/sin(φ/2)` within the limit, bevel `hw·sin(φ/2)` beyond it) to 1e-6. The hook
+  reaches 0.21 px outward, under the half-width (HEAD: 2.24).
+- Pixel probe against 2D (`mitp.js`): the tip's leftmost column above half ink is 2D / GPU −19.5 / −21.3 px
+  (15°, limit 10), −10.3 / −11.0 (30°), −4.1 / −4.1 (90°), bevels within 0.6 px. What remains is edge
+  anti-aliasing on a thin tip; polylines are identical to HEAD.
+- The pair `pair_miter_hook_x3.png`: `obod` and `strizh` sterns, 2D | GPU HEAD | GPU new. The spike is gone,
+  and the hook is blunt as in 2D.
+
+**The planet's 2D calls in shards were a queued material job, not the planet.** Gate2d saw 2×
+`putImageData` and 2× `createPattern` under `gpuPlanet` only in some shards. `planetMat(p)` (18a) queues
+a surface material job; the harness has no frames, so a landing or cold-demand suite leaves it queued. The
+next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the job and pays its 2D.
+- `resetWorld` drops `MAT_JOB`: a queued job belongs to the world it was made in.
+- Gate2d names `matTick` a hole. The surface material is 2D until the surface is ported; in the game the
+  planet frame does step it on the approach to a landing.
+- Proof: «cold demand» then the gate is green with the fix and red with it reverted
+  (`gpuPlanet.putImageData`).
+- The shard 4/6 stall in «сейв: поле мира…» (-Full, killed at 900 s) does not repeat: the shard alone is
+  green, 150 suites and 2123 checks. The runner still printed «ВСЁ ЗЕЛЁНОЕ» over the killed shard.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -505,17 +561,25 @@ the tables against the 2D formula on 48 combinations and that `cvk` writes no st
   warm JS 17.3 → 12.0 ms.
 - **The profile of a bake is in (§G).** One GPU-canvas call costs 1–3.5 µs at ×1, bit-identical.
 - **`multiply` on a transparent destination is in (§G):** two draws, Δ ≤ 1 on flat destinations (HEAD: 248).
+- **Chips and world labels are on `#ovl` (§G):** 0 2D calls, rasters only on new text, GPU pass 1.7/10.5 µs.
+- **Joins take the curve's tangent (§G):** the hook spike on `obod` is gone.
+- **Integration for the phone (25.09):** gpu2-fleetlit up to e699c3c and gpu3 up to 1dc9176 are merged. The
+  fleet tests accept a bake (`fleetArtBaked`). M306, M317 and M318 are red in Chrome on gpu2's own code
+  (2D pixel reads of a GPU bake, 2D fills of the works now on the scene pass); they are GPU-2's to fix.
+- **The planet's 2D in shards was a leftover material job (§G).**
+- **The runner is red on a killed shard:** a shard killed at the ceiling, or one whose report has no
+  finished header, counts as a failure named with its last suite; `-ShardSec` narrows the ceiling (900 s)
+  to test this path. Forced at 15 s: «ПРОВАЛЕНО 2», exit 1.
+- **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
-  0. #ovl (below, item 1).
-     Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake;
-  1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
-     a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;
-  2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
+  1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
+  2. `drawImage` from bake to bake at ss2: nearest when axis-aligned and 1:1, with a pair test;
   3. HUD fixes 1–5, plus:
      - find labels in table case and pushed apart;
      - a chip must not go under КАРТА/МЕНЮ/Фото, with an intersection check;
      - button plates must read over bright neon;
      - DECISIONS «no 2D».
+  Later: Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
@@ -1490,6 +1554,14 @@ and `lookFrame` (28y:49/326) — none in gameplay.
 - **Allies on the GPU** (`12a`): `drawAllies` drew each hired hand's hull in 2D and called `gpuHullLight` inside the open scene pass - one #c copy and two extra submits per ally, and the frame's command buffer broke (a black frame, 12 GPU errors per six frames). Now `allyHullGpu` draws them through `hullGpuDraw` like the player's ship, lit towards the star; the thrust smoothing is kept per ally (a WeakMap) so an ally on the player's hull does not share his flame. 2D + `gpuHullLight` stay for no-GPU. Six frames: #c copies 18 → 0, submits 30 → 6, dirt 0, errs 0. Hull (2D fallback → GPU): light sum −0.1 % / −2.2 % at 760, 0 % at ×1.5; body mean V +12 % / +4 %; sharpness ×2.1 / ×1.7 at 760, ×1.8 at ×1.5; the V>.6 area grows ×2–2.5, all of it the star-coloured rim (S of the bright .21 → .33). Gate scene «союзник и наёмник в кадре», mutant `ally-hull-2d`.
 
 - **World labels under the interface** (`08bh`, with the worker's leave): the label layer shared `#chips` with the edge chips, and a label made later sat on top - at ×1.5 an ally's caption glued itself onto the compass chip's digits. Labels now live in their own `#labels`, placed right before `#chips` with the same style, so chips, tiles, pads and the rack stay above every world label; the frame snapshot draws labels first too. The ally gate scene checks the order (same parent, labels first, same z-index, every label inside), mutant `labels-over-chips`.
+- **Pirates b)** (`12i`, side branch `gpu2-fleetlit`, Контроль's choice b): the station light (glow 0) stays; the hull is a mip master (`gpuMipTex`, level `PIR_LOD` −1.6 past 1:1) with an unsharp mask by luminance, radius = the bake's ss (one screen pixel), k .6, only the dark side lifted (e·(1−Y)²) — the station multiplier whitens anything brightened, so a symmetric mask cost S of the bright. The master is built in parts, one part a frame for all pirates (`pirMaster`: read in 5 row strips with luma, rows 2, columns 2, mask 2, mips 1 — 12 frames), the raw bake drawn meanwhile as before; the GPU bake canvas is `willReadFrequently` (Chrome moved it to memory itself on the second read, 40–55 ms at ×4). At ×4 throttle (loaded CPU): three masters in one frame were 180 ms of JS, the mask 105 of it, the mips 10; now a part is 1–6 ms, the first strip of a master 12–18 ms; the first frame (three bakes) 96–115 vs 68–75 before. Gates: light −0.8…−1.7 %, V>.6 area −2…−5 %, S of the bright not down, sharpness +3.6…+17.6 % (760, ×1.5, two star positions); #c 0, submit 1, uploads 0 after warm-up (was 20), errors 0. The whole thing goes when the pirate bake moves to the GPU canvas (`gpuBake`).
+- **Barge, shuttle, loot on the GPU canvas** (API v1, side branch `gpu2-fleetlit`): the three bakes are `gpuBake`/`gpuBaked` now, drawn by the same brushes into `ctx`; no 2D canvas, no upload. The barge (`12l`) lost its 2D top light and edge (`if(!GPU.on)`) and its `drawImage` fallback; no GPU — `art.cn` is null and nothing is drawn. Its mip level is `BARGE_LOD` −2.5: at −1.2 the near shot was 7–11 % softer (the old path sampled level 0 of a ×3 canvas), at −2 the far zoom still lost 3.8 %; −2.5 is level 0 up close and 1.5 steps finer than the screen far away. The shuttle (`17f`) is drawn with `{sharp:true}` (plain trilinear was −24 % sharpness at 760). The loot box (`13`) keeps `{sharp:true}`. Gates, 17 crops (two barges, four boxes, the shuttle; 760 ×1 and 411×742 ×1.5; zoom 2.2 and .45): light −0.1…+0.6 %, V>.6 area within 1 %, S of the bright ±.002, sharpness −0.3…+13.8 % (shuttle +9.4 % / +13.8 %), ×4 crops equal to the eye. Stand: 0 2D calls in these bakes, `GC_MISS` empty, #c 0, uploads 0, errors 0. `drawHaul` (`16c-rescue`, handed to me by Контроль) lost its no-pass 2D branch (130 lines: debris, flames, the `haulRim` rim mask with `drawImage(art.cn)`, puffs, boom, rope) — with a GPU it never ran, without one there is no game; `haulGpu` draws all of it.
+- **Caption width from a cache** (`labelW`, 12ai, shared with 13; the 2D census of 25.09, rows A3/A9): `drawFleet` set `font`/`textAlign` and called `measureText` on `#c` every frame (~22 calls with two ships), `drawCombat` `font`+`measureText` (~1.5). Now `labelW(font,text)` measures once per text (a module Map, cleared at 256) and the frame calls no text on `#c`; with v2 its source becomes the GPU canvas's measure. Census (411×742 ×1.5, 120 frames): the text calls of both are gone, one miss per caption left on warm-up; frames equal (pirates max Δ 0; fleet Δ 6 only in the DOM action button's CSS pulse).
+- **`#c` is cleared only when drawn on** (08b `gpuFrame`, `gpuOver` ×2; the worker agreed; Контроль's «чистый полёт» step 1): the invisible `#c` was cleared whole every frame and after every `gpuOver`, dirty or not — on the phone that full clear is Chrome's frame-rate limiter. Now each clear runs only when `GPU.cState!==0` (08c's hook: 0 after a full clear, 1 after any draw; unset before the hook — cleared). The −Full census of the same day: 14 modes still draw on `#c` with the GPU on (surface 1.9 M calls, base, map, raid, landing, dig, home, wanderer, spa, belt cockpit, winter, scoop, cave; in flight only the bazaar 17n, `drawPlanetWorks` 17e and `drawAbil` 16c), so `#c` stays a real canvas until they move. P1 census (4 scenes, 411×742 ×1.5): 2D calls a frame −1.2 each, frames max Δ 0 (the DOM button's CSS pulse aside); −Full 18960 and Node 16872 green.
+- **The fleet on the GPU canvas** (12ai1 `fleetArtOf`, `fleetShipAt`; 12ai `drawFleet`, `labelW`): both fleet bakes — `cn` (its own light, for `gpuImage` {sharp}) and `cnA` (the softer one the star lights through `gpuLitSprite`) — are `gpuBake`s of one brush, text on the band through v2; the wear patches are drawn from the ship's `r()` once, before the bake, so a re-bake after a device loss paints the same ones. No `gpuMipTex`, no 2D canvas per ship; `drawFleetShip` lost its 2D branch, and `drawFleet` hands `fleetShipAt` the matrix itself instead of save/translate/rotate/scale on `#c`; caption width is `gcMeasure`. The star-lit path takes the lit-sprite mask (`gpuLitSprite` sharp) at `FLEET_LOD` −1.2. The mask is Контроль's one formula (17c, flag 2): the detail is luminance against the coverage-weighted mean one level up, one multiplier on rgb, capped so no channel passes coverage, alpha untouched (the worker's first cut masked four channels with alpha and made pirates brighter and softer). Up is scaled by (1−Y)² — the light multiplier lifts the bright up to ×3 anyway; for the fleet down is scaled the same, because the full-strength darkening of pirMaster cost it 1–3 % light at −1.0. Probe history: −.8, the worker's pick against a 2D reference, lost 1–5 % sharpness at far zoom against the old −1.2 without a mask; −1.2 with the four-channel mask gained +2…+7 % but shimmered 5–6 % more on the worker's half-pixel probe; −1.0 (interim, cf14de4) lost 1.1 % on a far tanker; with the luminance mask −1.0 lost up to 2.8 % and −1.2 passes: sharpness +0.6…+5.2 %, light −0.8…+0.1 % (the far tanker −1.2 %, its dark seam), V>.6 −1.2…+1.4 %, shimmer 10.3 against the old unmasked 10.4. Gate, 7 classes, 760 and 411×742 ×1.5, near (2.2) and far (.45) zoom plus a 0.9-alpha pass (the `gpuImage` path): light −0.7…+0.4 %, V>.6 area −0.8…+5.9 %, sharpness +1.6…+6.9 % (alpha pass ±0.2 %); the one light dip, the tanker at far zoom −1.3 %, is its dark seam under the band going darker (83→72), not a dimmer surface. GPU errors 0, `#c` uploads 0; 2D calls per fleet bake 142–678 plus 12–14 per mip copy → 36, all in the glyph source's line raster; fleet calls on `#c` ~12 a frame → 0.
+- **Pirates on the GPU canvas** (12i `pirateArtOf`, `gpuPirateBody`; 13 `drawCombat`): the pirate bake is a `gpuBake` of the same brushes (`PIR_SS` 3; the scar RNG is consumed inside the draw, so a re-bake after a device loss is the same ship). `pirMaster`, `pirBox` and the parts-per-frame master are gone, and so are the 2D light block and `drawPirate`; no GPU — `art.cn` is null and nothing is drawn. The body is lit through `gpuLitSprite` with `sharp:"dark"` (flag 4): pirMaster's rule — down at full strength, the seam's shadow by a bright weld is the sharpness — and a band not narrower than a 5.5-texel box (`GPU_LIT_DK`; pirMaster's box was 7 at the ×3 bake): the next mip at level 0 is a 2-texel box, and near zoom and the phone, where the level clamps at 0, lost up to 11 % sharpness with it. A 7 band darkened the deserter 1.8 %, 5 lost 0.9 % sharpness; 5.5 is between. The GPU-canvas bake itself equals a 2D bake of the same draw within 0.1 % light and 0.6 % sharpness (a same-variant calibration run removed a 5–15 % screen-position bias from the first probe). `PIR_LOD` stays −1.6 (−1.4 lost 2–3 % sharpness). Gate against the pirMaster build, six pirates (fast, heavy, flag, deserter, two hurt), 760 and 411×742 ×1.5, zoom 2.2 and .45: light −0.4…+1.2 %, V>.6 −0.8…+8.8 %, sharpness −0.6…+3.3 %, shimmer on the half-pixel probe 11.7–11.8 against pirMaster's 12.2. Pirates have no alpha path (they never fade), so the 0.9-alpha pass does not apply. 2D calls in pirate bakes 0, `#c` uploads 0, GPU errors 0.
+- **Own hull on the GPU canvas** (17c2 `hullGpuBake`, `hullGpuBelly`, `hullGpuDraw`; 17 own ship, 12a allies, 12as ghost; «чистый полёт» row 4): the body is a `gpuBake` of the same brushes (`hullPart1..3` at bank 0, ss 1 — ss 2 came out dimmer and softer), the bank belly too; no 2D canvas, no `gpuMipTex`, eviction by `gpuBakeDrop`. The system mode and allies lost the no-GPU branch (`drawHull` on `#c` + `gpuHullLight`), and with it the `ally-hull-2d` mutant, whose code is gone; `drawHull` and its 2D bake (03e1) stay for the interface, road, scoop, hangar and `makerRead`, which draw on their own canvases. The body's mip level is `HG_BODY_LOD` −.45 (stations keep `HG_LOD` −.35): the bake's mips are the canvas's 2×2 box, the old master's were Skia's downscale, and at −.35 the lit body was 0.3–0.9 % dimmer with one hull 1.2 % softer. Mitchell and Catmull-Rom mip filters (tried locally in 08ca, not kept) were 5–10 % softer than the box; the sharp mask on the hull darkened it 1 %. The GPU bake itself matches the 2D one 1:1 (obod: alpha −0.4 %, colour +2.4 %) except a white miter spike at one tail hook (GcCtx, told to the worker). Gate against the 2D-master build, 8 hulls (`SHIPS`), 760 and 411×742 ×1.5, zoom 2.2 and .45, bank 0 and .5, UI hidden: light −0.9…+0.8 % (mean −0.14), V>.6 −3.8…+7.1 % (tens of pixels far out), sharpness +0.2…+7.8 % (mean +4 %); shimmer on the half-pixel probe (strizh, obod, mamont, vyuk) +1.4…+2.9 % against the 2D master, the same as the bake at −.35 and inside the ±4 % run noise. 2D calls in the hull bake 1140–1833 per hull → 0, `GC_MISS` empty, `#c` uploads 0, GPU errors 0.
+- **Flea market on the GPU canvas** (17n `drawBazaar`, `bazHulk`; «чистый полёт» row 17n): each dead hulk (body + the .6 film) is one `gpuBake` per hull (master at the largest hulk, s 1.6 × sc .58, quarter-octave step; mips below, `HG_BODY_LOD`); poles, sagging tents (strips with hard inner seams, seam count by on-screen length ~3 px), their outline, wires and pendants are `gpuShapes`; bulbs and halos add. The halo was a radial gradient 0→5s: now a soft disc to R+.5 px at alpha ×(1.1−.35/R), which matches the cone's light within 3 % at the same peak; a bulb under .7 device px is an equal-area square (`covDisc` would smear it to .7 px and lose the peak). The sign is part of the scene, not a label: a `gpuBake` of the text (ss 2, device pixels, placed on a whole device pixel) drawn in the scene pass, so bloom gives it the halo the 2D text on `#c` had (a `domLabel` was 4–10 % dimmer with no halo; `#ovl` is the path for the interface). Hulks carry no nav lights or ticker (dead, as D20 says); the idle nozzle glow is baked at its mean. Gate on a stand (4 seeds × s 1.6/1/.7/.5, 760 and 411×742 ×1.5, time frozen): 2D calls 185 k → 0 per run, `#c` uploads 6 → 0, GPU errors 0; cluster at s ≥ 1 light +0.9…+3.2 %, V>.6 +14 %, sharpness +5…+9 %; the film is inset 5 %: in 2D the film edge and the hull edge were antialiased separately, so the rim pixel got half the film and the far plane read by that light rim; now the rim is intended, the outline of the body (body, outline, one light). With it, all cells: light +1.9…+12.9 % (s .5 +1.9 %), V>.6 +17…+51 %, sharpness +0.3…+16.5 %; sign +2…+7 % light, same letters.
 
 ## 9. Session 3 (worktree drift-gpu3, branch gpu3): stage 2, the belt
 
@@ -1674,3 +1746,25 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   11/65. Everything >24 sits on the pulsing DOM chips and buttons; on the boat a trace of the garland bulbs'
   halo, the sign identical. GPU errs 0. Gate2d gains the scene (bakes dropped first); mutants `cheb-bake-2d`,
   `cheb-sign-2d` die.
+
+- **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
+- **Abilities on the GPU canvas** (16c `drawAbil`, `abilCone`; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.
+- **Fleet masters on the prebake scheduler** (12ai1 `fleetArtOf(f,ahead)`, `fleetArtJob`; 17g `laneShip`, 12ai `drawFleet`): the S23 run had a 100 ms tail on the first build of five lane masters in one frame. The master is now a 17a0 job — the geometry, then the `cn` bake, then `cnA`, one per step; `finally` drops a partial bake. Lane and fleet ships within 1.6 screens off the edge (`pbOnScreen`) step ahead, at most one fleet master per frame (`FLEET_PB` by frameNo); a ship already on screen without a master (load, jump) finishes sync and counts `PB_SYNC`. Masters stay fleet-wide and zoom-free (FLEET_SS 3), cached once as before. Without a device the job runs through at once (geometry, `cn` null, not cached) for the Node tier. `FLEET_PAINT` (WeakMap art → paint recipe) lets M317/M318 check the emblem, the body median and the tank shadow on a 2D reference raster of the same recipe — the GPU bake has no sync readback; M306 counts the shapes sent to `gpuShapes` under a stub scene. Approach probe (cache cleared, 2.8 screens to the holding ellipse over 120 frames, 5 masters): 760 — before 2 masters in one frame, lane 15.1 ms, now ≤1 per frame, 4.5 ms; phone 10.4 → 2.7 ms; PB_SYNC 0; masters now land 25–35 frames earlier, off screen. Fleet stand pairs identical (differences only on the pulsing HUD button).
+- **Hotel (17l) → three GPU-canvas bakes, cut across frames.** The atlas (house with all windows dark above
+  the gap, all lit below) was six 2D half-canvases, three uploads and 2D mips. Now `hotelPaint` is a generator
+  (one step = a floor or a part of the house) that records paint and window light at once into two `GcCtx`
+  of the bake's size and ss; `hotelBake` runs its steps until `HOTEL_MS`=3 ms (cap `HOTEL_STEPS`=8 for the
+  clockless harness) and returns null until done; then one bake per call: paint (ss 2, the recorded ops
+  pushed as is), light (ss 2 without shadow, then ONE `shadowBlur` drawImage of the whole layer at ss 1
+  instead of 84 per-window shadows — 08cc's shadow is a full-target pass each), sheen (ss 1, white
+  underlay + multiply + destination-in, as 2D's s·(d+1−α)). Records survive a colour change. Off-screen
+  within a screen of the edge, `drawHotel` bakes ahead one step per frame and the sign's neon one frame
+  after the house, so the frame the hotel enters does ~1 ms of hotel work. Phone twin (411×742 ×1.5, CPU
+  ×4, frames stepped by hand), same machine run: 2D cold worst frame 123 ms (JS 77 + GPU 47), 16
+  textures in that frame; now cold worst 97 ms — the paint bake step (op replay 53 ms, 5 textures); other
+  steps 3–12 ms; 36 textures over 24 frames. Earlier single-frame GPU port measured 1193 ms (per-window
+  shadows), 638 (one shadow), 477 (one paint pass). Open: the paint bake step (op replay) and texture
+  creation — the worker's texture pool and a gradient ramp cache by stops (`GcGrad.ramp` was ~27 % of the
+  recording JS) will cut both. Pictures vs the accepted h3: max|Δ| 5 at 760, 15 on the phone, edge energy
+  7.36→7.38; far zoom equal but for a DOM pulse. Gate2d gains the hotel scene; GC_GLYPHS `raster`/`measure`
+  are named holes (the text source of v2); mutants `hotel-bake-2d`, `hotel-frame-2d` die.

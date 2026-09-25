@@ -40,22 +40,20 @@ TEST_SUITES.push(()=>suite("M306: отвал, купол и полоса на п
   if(!ok(p,"нашлось: p"))return;
   const save=G.hold;
   G.hold={};
-  let n0=0;const f0=ctx.fill;ctx.fill=function(){n0++;return f0.apply(ctx,arguments);};
-  drawPlanetWorks(sys,p,W/2,H/2,80);
-  ctx.fill=f0;
+  /* 17e рисует проходом сцены (25.09): считаем фигуры, ушедшие в gpuShapes, со сценой-заглушкой */
+  const gs0=gpuShapes,gc0=gpuScene;let n=0;
+  gpuScene=()=>({});gpuShapes=(pass,L)=>{n+=L.length;};
+  const works=r=>{n=0;drawPlanetWorks(sys,p,W/2,H/2,r);return n;};
+  const rd=bldReady;let n0,n1,n2;
+  try{
+    n0=works(80);
+    G.hold={[sys.key]:{bld:{regolith:{ok:1},greenhouse:{ok:1}}}};
+    window.bldReady=()=>true;
+    n1=works(80);
+    n2=works(8);   /* малый диск (r<12): те же постройки, но знаки не кладутся */
+  }finally{gpuShapes=gs0;gpuScene=gc0;window.bldReady=rd;}
   eq(n0,0,"без построек и рунга на диске ничего не кладётся");
-  G.hold={[sys.key]:{bld:{regolith:{ok:1},greenhouse:{ok:1}}}};
-  const rd=bldReady;
-  window.bldReady=()=>true;
-  let n1=0;ctx.fill=function(){n1++;return f0.apply(ctx,arguments);};
-  drawPlanetWorks(sys,p,W/2,H/2,80);
-  ctx.fill=f0;
-  /* малый диск (r<12): те же постройки, но знаки не кладутся */
-  let n2=0;ctx.fill=function(){n2++;return f0.apply(ctx,arguments);};
-  drawPlanetWorks(sys,p,W/2,H/2,8);
-  ctx.fill=f0;
-  window.bldReady=rd;
-  ok(n1>=4,"с шахтой и оранжереей на диске лежат отвал и купол ("+n1+" заливок)");
+  ok(n1>=4,"с шахтой и оранжереей на диске лежат отвал и купол ("+n1+" фигур)");
   eq(n2,0,"на малом диске (r<12) знаки не рисуются");
   G.hold=save;
 }));
@@ -125,6 +123,16 @@ TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни од�
   }
 }));
 
+/* облик флота печётся на GPU-холсте (12ai1, gpuBake): выпечка — это {w,h,tex}, а не 2D-канва;
+   без видеокарты (ярус Node) выпечки нет вовсе, и это не провал — облик ждёт устройство */
+/* облик флота растром 2D по его рецепту (FLEET_PAINT, 12ai1): выпечка живёт на видеокарте,
+   синхронного чтения нет — пиксельные проверки M317/M318 идут по тому же рецепту */
+function fleetArtRef(a){
+  const c=document.createElement("canvas");c.width=c.height=a.side;const g=c.getContext("2d"),prev=ctx;
+  ctx=g;try{FLEET_PAINT.get(a)(g);}finally{ctx=prev;}
+  return c;
+}
+function fleetArtBaked(a){return a.cn?a.cn.w>0&&!!a.cn.tex:!GPU.dev;}
 /* ══════════════ M310: флот ГЛАВТРАССЫ ══════════════ */
 TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, три класса нарисованы, позывной и норма",{tier:"browser"},()=>{
   resetWorld();
@@ -144,7 +152,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
   /* положение — функция времени в пределах линии */
   const f={k:"post",seed:3,name:"ЗАРНИЦА",num:"Л-1425",line:4,x0:-3000,y0:0,x1:3000,y1:0,bow:400,ph:.3};
   const p=fleetPos(f);ok(isFinite(p.x)&&isFinite(p.y)&&isFinite(p.a)&&p.u>=0&&p.u<1,"позиция конечна, доля в [0,1)");
-  for(const k of ["post","tanker","tug"]){const a=fleetArtOf(Object.assign({},f,{k,seed:k.length}));ok(a.cn.width>0&&a.lights.length>=3,k+": спрайт запечён, огни есть");}
+  for(const k of ["post","tanker","tug"]){const a=fleetArtOf(Object.assign({},f,{k,seed:k.length}));ok(fleetArtBaked(a)&&a.lights.length>=3,k+": спрайт запечён, огни есть");}
   /* позывной и норма: танкер рядом, баки пусты */
   G.mode="system";
   const b=Math.floor(now()/FLEET_PERIOD);
@@ -165,7 +173,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
 TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы, буксир латает, плавбаза чинит, конвой прячет от пиратов",{tier:"node"},()=>{
   resetWorld();
   ok(Object.values(FLEET_CLASSES).filter(c=>c.art).length>=6,"нарисованы не меньше шести классов");
-  for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": спрайт запечён");}
+  for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(fleetArtBaked(a),k+": спрайт запечён");}
   const sys=G.sys;G.mode="system";
   const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   const st=stat();
@@ -200,7 +208,7 @@ TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы
 TEST_SUITES.push(()=>suite("M312: тринадцать классов запечены, выкуп через госпиталь вдвое, учёба раз в смену, почта только в сети",()=>{
   resetWorld();
   eq(Object.values(FLEET_CLASSES).filter(c=>c.art).length,13,"нарисованы все тринадцать");
-  for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*3+1,name:"X",num:"Л-1",line:1});ok(a.cn.width>0&&a.lights.some(l=>l.c==="eng"),k+": спрайт и сопло");}
+  for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*3+1,name:"X",num:"Л-1",line:1});ok(fleetArtBaked(a)&&a.lights.some(l=>l.c==="eng"),k+": спрайт и сопло");}
   const sys=G.sys;G.mode="system";
   const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
   const put=k=>{sys.fleetCache={b,list:[{k,seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};};
@@ -245,7 +253,7 @@ TEST_SUITES.push(()=>suite("M313: узловая с рунга 25, дерели�
   for(let i=0;i<40;i++){const sx=200+i,sy=200+i*3;if(sysDanger(sx,sy)<.6)continue;tot++;const sd={seed:600+i,sx,sy,station:null,planets:[]};if(fleetHere(sd).some(f=>f.k==="derelict"))n++;}
   ok(tot===0||(n>0&&n<tot),"дерелик есть в части опасных систем ("+n+" из "+tot+")");
   ok(!fleetHere({seed:9,sx:0,sy:0,station:null,planets:[]}).length,"у дома дерелика нет");
-  for(const k of ["node","derelict"]){const a=fleetArtOf({k,seed:2,name:"УЗ-1",num:"",line:0});ok(a.cn.width>0,k+": спрайт запечён");}
+  for(const k of ["node","derelict"]){const a=fleetArtOf({k,seed:2,name:"УЗ-1",num:"",line:0});ok(fleetArtBaked(a),k+": спрайт запечён");}
   /* караван */
   G.mode="system";const sys=G.sys;
   const b=Math.floor(now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
@@ -279,7 +287,7 @@ TEST_SUITES.push(()=>suite("M314: трассы рисуются между си�
   actEdge=true;fleetInteract(G.ship);actEdge=false;
   ok((G.msg||"").indexOf("СПАСАТЕЛЬ")>=0,"на экране курс и расстояние");
   G.barges=[];delete sys.fleetCache;
-  for(const k of ["ferry","hosp"]){const a=fleetArtOf({k,seed:99,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": перерисован без ошибок");}
+  for(const k of ["ferry","hosp"]){const a=fleetArtOf({k,seed:99,name:"X",num:"Л-1",line:1});ok(fleetArtBaked(a),k+": перерисован без ошибок");}
 }));
 
 /* ══════════════ M315: пропорции системы, призрачный клик, оклик на рунге 30 ══════════════ */
@@ -355,13 +363,13 @@ TEST_SUITES.push(()=>suite("M317: подпись от габарита и мим
   /* §9: у каждого из тринадцати есть место эмблемы и в нём красное на светлом диске */
   for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*5+2,name:"X",num:"Л-1",line:1});
     ok(a.emb&&a.emb[2]>=a.hw*.45,k+": эмблема в рост тела (R "+(a.emb?a.emb[2]:0).toFixed(1)+" при hw "+a.hw+")");
-    const [mx,my,R]=a.emb,S=FLEET_SS,g=a.cn.getContext("2d");
+    const [mx,my,R]=a.emb,S=FLEET_SS,g=fleetArtRef(a).getContext("2d");
     const px=g.getImageData(Math.round((a.rad+mx-R)*S),Math.round((a.rad+my-R)*S),Math.max(1,Math.round(R*2*S)),Math.max(1,Math.round(R*2*S))).data;
     let red=0,light=0,tot=0;for(let i=0;i<px.length;i+=4){if(px[i+3]<40)continue;tot++;if(px[i]>90&&px[i]>px[i+1]*1.6)red++;else if(px[i]>170&&px[i+1]>170)light++;}
     ok(red>tot*.12&&light>tot*.15,k+": красная фигура и обод на светлом диске ("+Math.round(red/tot*100)+"% / "+Math.round(light/tot*100)+"%)");}
   /* §11/§16: медиана тела ниже .60 у всех, освещённый борт остаётся в VII (p95 ≥ .68) */
   for(const k in FLEET_CLASSES){const a=fleetArtOf({k,seed:k.length*5+2,name:"X",num:"Л-1",line:1});
-    const px=a.cn.getContext("2d").getImageData(0,0,a.cn.width,a.cn.height).data,v=[];
+    const px=fleetArtRef(a).getContext("2d").getImageData(0,0,a.side,a.side).data,v=[];
     for(let i=0;i<px.length;i+=16){if(px[i+3]<40)continue;v.push((px[i]*.299+px[i+1]*.587+px[i+2]*.114)/255);}
     v.sort((a,b)=>a-b);const p50=v[Math.floor(v.length*.5)],p95=v[Math.floor(v.length*.95)];
     ok(p50<.62,k+": медиана тела "+p50.toFixed(2)+" ниже .62");ok(p95>=.64&&p95<=.88,k+": освещённый борт в VII: p95 "+p95.toFixed(2));}
@@ -370,7 +378,7 @@ TEST_SUITES.push(()=>suite("M317: подпись от габарита и мим
 /* ══════════════ M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка ══════════════ */
 TEST_SUITES.push(()=>suite("M318: под баком тень на теле, рёбра в два тона, трассы к двум ближайшим",{tier:"browser"},()=>{
   resetWorld();
-  const lum=(a,x,y)=>{const S=FLEET_SS,g=a.cn.getContext("2d"),d=g.getImageData(Math.round((a.rad+x)*S),Math.round((a.rad+y)*S),2,2).data;
+  const RF=new Map(),lum=(a,x,y)=>{const S=FLEET_SS;if(!RF.has(a))RF.set(a,fleetArtRef(a).getContext("2d"));const g=RF.get(a),d=g.getImageData(Math.round((a.rad+x)*S),Math.round((a.rad+y)*S),2,2).data;
     let s=0;for(let i=0;i<16;i+=4)s+=(d[i]*.299+d[i+1]*.587+d[i+2]*.114)/255;return s/4;};
   /* §5 танкер: между баком и телом — тёмная полоса; тело рядом светлее на ступень */
   {const a=fleetArtOf({k:"tanker",seed:11,name:"X",num:"Л-1",line:1}),hw=a.hw,L=a.L;
