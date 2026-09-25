@@ -65,14 +65,14 @@ async function gpuInit(){
     GPU.gx=GPU.cv.getContext("webgpu");
     GPU.fmt=navigator.gpu.getPreferredCanvasFormat();
     GPU.gx.configure({device:dev,format:GPU.fmt,alphaMode:"opaque"});
-    /* слой приборов (ступень 1, 24.09): свой DOM-холст над #g — браузер кладёт его сам,
+    /* слой приборов (24.09): свой DOM-холст над #g — браузер кладёт его сам,
        в видеокарту он не копируется и поста не берёт, как приборы 2D-кадра («до приборов», M243) */
     if(!GPU.ui){const u=document.createElement("canvas");u.id="hud";u.style.cssText=GPU.cv.style.cssText;
       GPU.cv.after(u);GPU.ui=u;GPU.uctx=u.getContext("2d",{alpha:true});}
     gpuPipes();
     GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];GPU.ar={};GPU.fL=null;GPU.nView=null;
     GPU.T={};GPU.bw=0;GPU.ok=true;
-    gpuResize();
+    gpuResize();gcPool();
   }catch(e){
     GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}

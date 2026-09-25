@@ -102,8 +102,8 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: окна гостин
   let up=0,B=null;const masks=new Set();
   try{
     G.running=true;LOOP_OFF=false;
-    HOTEL_BAKE=null;   /* дом испечён и загружен здесь же, а не чужим набором */
-    for(let i=0;i<60&&!(HOTEL_BAKE&&GPU_MIP.has(HOTEL_BAKE.cv));i++){gatePlace();frameBody(wallMs());}
+    HOTEL_BAKE=null;HOTEL_REC=null;   /* дом испечён и загружен здесь же, а не чужим набором */
+    for(let i=0;i<60&&!(HOTEL_BAKE&&HOTEL_BAKE.cv.tex);i++){gatePlace();frameBody(wallMs());}
     B=HOTEL_BAKE;frameBody(wallMs());
     Q.copyExternalImageToTexture=function(){if(/drawHotel/.test(gateWho()))up++;return c0.apply(this,arguments);};
     const d0=Math.floor(G.t/CEL_DAY)*CEL_DAY;

@@ -52,3 +52,38 @@ suite("GPU-холст: запись, цвет, дыры громко",()=>{
   if(!GPU.dev)eq(gpuBake(8,8,()=>{}),null,"без видеокарты выпечки нет — null, не 2D");
   else{const B=gpuBake(8,8,q=>{q.fillStyle="#fff";q.fillRect(0,0,8,8);});ok(B&&B.view&&B.w===8,"выпечка с видеокартой — текстура");gpuBakeDrop(B);}
 });
+
+/* multiply (08ca) — два вызова: mul1 и «multiply». Счёт смешения по таблицам, как его делает видеокарта
+   (премультиплицированные цвета), против формулы 2D: Cs·Cb + Cs(1−ab) + Cb(1−as), альфа as + ab − as·ab.
+   Одно смешение верно только на непрозрачном приёмнике (на прозрачном чернило до 248 из 255) */
+suite("GPU-холст: multiply на прозрачном — два вызова",()=>{
+  const fv=(f,S,D,i)=>({"zero":0,"one":1,"src":S[i],"dst":D[i],"src-alpha":S[3],"dst-alpha":D[3],"one-minus-src-alpha":1-S[3],"one-minus-dst-alpha":1-D[3],"one-minus-src":1-S[i]})[f];
+  const bl=(G,S,D)=>[0,1,2,3].map(i=>{const t=i<3?G.c:G.a;return S[i]*fv(t[0],S,D,i)+D[i]*fv(t[1],S,D,i);});
+  let mx=0,n=0;
+  for(const as of [0,.3,.8,1])for(const ab of [0,.25,.5,1])for(const [cs,cb] of [[.9,.2],[.4,.7],[1,1]]){
+    const S=[cs*as,cs*.5*as,0,as],D=[cb*ab,0,cb*.8*ab,ab],M=bl(GC_OPS.multiply,S,bl(GC_OPX.mul1,S,D));
+    const W=[0,1,2].map(i=>S[i]*D[i]+S[i]*(1-ab)+D[i]*(1-as)).concat(as+ab-as*ab);
+    for(let i=0;i<4;i++)mx=Math.max(mx,Math.abs(M[i]-W[i]));n++;}
+  ok(mx<1e-9,"mul1 затем multiply — формула 2D на "+n+" сочетаниях, ошибка "+mx);
+  eq(GC_ST.cvk.wm,0,"первый вызов трафарет не чистит (иначе второй не нарисует ничего)");
+});
+
+/* серии тени и пул целей (08ca/08cc): подряд идущие тени без пересечений — один слой, пересечение
+   режет серию; повторная выпечка не создаёт ни одной текстуры; пул живёт в GPU.lay и уходит с ним
+   (gpuInit после потери устройства заводит GPU.lay заново — и пул, и атлас берутся новые) */
+TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целей, сброс с устройством",{tier:"browser"},()=>{
+  if(!GPU.dev){eq(gpuBake(8,8,()=>{}),null,"без видеокарты выпечки нет");return;}
+  const sq=(g,x,y,b)=>{g.shadowBlur=b;g.shadowColor="rgba(0,0,0,.8)";g.fillStyle="#fff";g.fillRect(x,y,8,8);};
+  const bake=f=>{const B=gpuBake(64,32,f);const n=B.shl;gpuBakeDrop(B);return n;};
+  eq(bake(g=>{sq(g,4,4,2);sq(g,40,4,2);}),1,"две далёкие тени — одна серия");
+  eq(bake(g=>{sq(g,4,4,2);sq(g,8,8,2);}),2,"тень поверх прошлой фигуры — серия режется");
+  eq(bake(g=>{sq(g,4,4,2);g.shadowBlur=0;g.fillStyle="#f00";g.fillRect(36,0,20,20);sq(g,40,4,2);}),2,"нарисованное без тени под следом следующей — режет");
+  eq(bake(g=>{sq(g,4,4,2);sq(g,40,4,3);}),2,"другое размытие — другая серия");
+  const Q=gcPool(),m0=Q.made;bake(g=>{sq(g,4,4,2);sq(g,40,4,2);});
+  eq(Q.made,m0,"повторная выпечка — ни одной новой текстуры и буфера");
+  const lay=GPU.lay;GPU.lay={};let Q2=null;
+  try{bake(g=>{sq(g,4,4,2);});Q2=GPU.lay["gc.pool"];}
+  finally{if(Q2){for(const e of Q2.t)GPU.trash.push(...e.T);for(const b of Object.values(Q2.b))GPU.trash.push(b);}GPU.lay=lay;}
+  ok(Q2&&Q2!==Q&&Q2.made>0,"новый GPU.lay (как после потери устройства) — новый пул, прогретый заново");
+  eq(GPU.lay["gc.pool"],Q,"старый пул на месте, пока жив GPU.lay");
+}));

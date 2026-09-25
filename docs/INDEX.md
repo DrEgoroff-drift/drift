@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 620 · символов верхнего уровня: 6168
+Файлов: 620 · символов верхнего уровня: 6181
 
 ## СИМВОЛЫ
 
@@ -1490,7 +1490,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:257-304
+drawHotel                    src/17l-hotel.js:284-321
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2017,8 +2017,8 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:10-40
-GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:9
+GATE2D                       tests/91zzzzzzy3-gate2d.js:12-55
+GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:11
 gateFind                     tests/91zzzzzzy-gpugate.js:242-290
 gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-290
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
@@ -2030,37 +2030,47 @@ GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
 GC_ATL                       src/08cb-gpu-text.js:55
-GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:18
-GC_COL                       src/08ca-gpu-canvas.js:29
-GC_DEF                       src/08ca-gpu-canvas.js:76
+GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:21
+GC_COL                       src/08ca-gpu-canvas.js:31
+GC_DEF                       src/08ca-gpu-canvas.js:85
 GC_GLYPHS                    src/08cb-gpu-text.js:17-50
-GC_KEYS                      src/08ca-gpu-canvas.js:81
-GC_MIP_WGSL                  src/08ca-gpu-canvas.js:316
-GC_MISS                      src/08ca-gpu-canvas.js:25
-GC_OPS                       src/08ca-gpu-canvas.js:13-56
+GC_KEYS                      src/08ca-gpu-canvas.js:90
+GC_MIP_WGSL                  src/08ca-gpu-canvas.js:325
+GC_MISS                      src/08ca-gpu-canvas.js:27
+GC_OPS                       src/08ca-gpu-canvas.js:13-58
+GC_OPX                       src/08ca-gpu-canvas.js:26
+GC_POOL_CAP                  src/08ca-gpu-canvas.js:382
+GC_POOL_WARM                 src/08ca-gpu-canvas.js:383
+GC_RAMPS                     src/08ca-gpu-canvas.js:65
 GC_SHADOW_INK                src/08cb-gpu-text.js:11
-GC_ST                        src/08ca-gpu-canvas.js:324-346
+GC_ST                        src/08ca-gpu-canvas.js:334-357
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
-GC_WGSL                      src/08ca-gpu-canvas.js:277
+GC_VA                        src/08ca-gpu-canvas.js:428
+GC_WGSL                      src/08ca-gpu-canvas.js:286
 gcAtlas                      src/08cb-gpu-text.js:56-70
-gcBlurPipe                   src/08cc-gpu-shadow.js:32-55
-gcColor                      src/08ca-gpu-canvas.js:37-56
-GcCtx                        src/08ca-gpu-canvas.js:85-221
-gcDash                       src/08ca-gpu-canvas.js:231-268
-gcFan                        src/08ca-gpu-canvas.js:227
-GcGrad                       src/08ca-gpu-canvas.js:61-75
-gcImg                        src/08ca-gpu-canvas.js:270-346
-gcInv                        src/08ca-gpu-canvas.js:57
-gcLay                        src/08ca-gpu-canvas.js:337-346
+gcBlurPipe                   src/08cc-gpu-shadow.js:35-47
+gcColor                      src/08ca-gpu-canvas.js:39-58
+GcCtx                        src/08ca-gpu-canvas.js:94-230
+gcDash                       src/08ca-gpu-canvas.js:240-277
+gcFan                        src/08ca-gpu-canvas.js:236
+GcGrad                       src/08ca-gpu-canvas.js:66-84
+gcImg                        src/08ca-gpu-canvas.js:279-357
+gcInv                        src/08ca-gpu-canvas.js:59
+gcLay                        src/08ca-gpu-canvas.js:348-357
 gcMeasure                    src/08cb-gpu-text.js:73
-gcMipPipe                    src/08ca-gpu-canvas.js:359
-gcNo                         src/08ca-gpu-canvas.js:26
-gcPipe                       src/08ca-gpu-canvas.js:347-358
-gcRectSp                     src/08ca-gpu-canvas.js:225
-gcShadowPasses               src/08cc-gpu-shadow.js:38-55
-gcStrokeLine                 src/08ca-gpu-canvas.js:244-268
+gcMipPipe                    src/08ca-gpu-canvas.js:370
+gcNo                         src/08ca-gpu-canvas.js:28
+gcPipe                       src/08ca-gpu-canvas.js:358-369
+gcPool                       src/08ca-gpu-canvas.js:390-421
+gcPoolBuf                    src/08ca-gpu-canvas.js:406-421
+gcPoolSet                    src/08ca-gpu-canvas.js:396-421
+gcPoolSpec                   src/08ca-gpu-canvas.js:385-421
+gcRectSp                     src/08ca-gpu-canvas.js:234
+gcShadowPack                 src/08cc-gpu-shadow.js:41-47
+gcShadowPasses               src/08cc-gpu-shadow.js:51-64
+gcStrokeLine                 src/08ca-gpu-canvas.js:253-277
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:63
 GEN_WGSL                     src/13z-gpu-combat.js:17
@@ -2243,10 +2253,10 @@ GPU_POST_WGSL                src/08b-gpu.js:88
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:232
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:131
 gpuArena                     src/08c-gpu-kit.js:151-161
-gpuBake                      src/08ca-gpu-canvas.js:368-373
-gpuBaked                     src/08ca-gpu-canvas.js:375-378
-gpuBakeDrop                  src/08ca-gpu-canvas.js:379
-gpuBakeRedo                  src/08ca-gpu-canvas.js:380-462
+gpuBake                      src/08ca-gpu-canvas.js:416-421
+gpuBaked                     src/08ca-gpu-canvas.js:423-426
+gpuBakeDrop                  src/08ca-gpu-canvas.js:427
+gpuBakeRedo                  src/08ca-gpu-canvas.js:429-539
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:35-41
 gpuBloom                     src/08b-gpu.js:607-614
@@ -2764,21 +2774,24 @@ homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:470-477
-HOTEL_BAKE                   src/17l-hotel.js:42
-HOTEL_EM                     src/17l-hotel.js:52
-HOTEL_LAMP                   src/17l-hotel.js:59
-HOTEL_LOD                    src/17l-hotel.js:58
+HOTEL_BAKE                   src/17l-hotel.js:43
+HOTEL_EM                     src/17l-hotel.js:53
+HOTEL_GLOW                   src/17l-hotel.js:131
+HOTEL_LAMP                   src/17l-hotel.js:60
+HOTEL_LOD                    src/17l-hotel.js:59
+HOTEL_MS                     src/17l-hotel.js:42
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
-HOTEL_SIGN_FULL              src/17l-hotel.js:256
-HOTEL_VEIL                   src/17l-hotel.js:55
-hotelBake                    src/17l-hotel.js:82-95
-hotelDesk                    src/17l-hotel.js:313-325
+HOTEL_SIGN_FULL              src/17l-hotel.js:282
+HOTEL_VEIL                   src/17l-hotel.js:56
+hotelBake                    src/17l-hotel.js:86-129
+hotelDesk                    src/17l-hotel.js:330-342
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:305-312
+hotelInteract                src/17l-hotel.js:322-329
 hotelLitFrac                 src/17l-hotel.js:25-30
-hotelPaint                   src/17l-hotel.js:97-254
-hotelWinBox                  src/17l-hotel.js:62-80
+hotelNeon                    src/17l-hotel.js:283
+hotelPaint                   src/17l-hotel.js:132-280
+hotelWinBox                  src/17l-hotel.js:63-81
 hotelWinLit                  src/17l-hotel.js:33-41
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
@@ -2823,7 +2836,7 @@ hqTable                      src/27f-hq-room.js:377-508
 hqWallProps                  src/27f-hq-room.js:170-216
 hqWindowView                 src/27f-hq-room.js:616-640
 HR_COLS                      src/17l-hotel.js:24
-HR_GAP                       src/17l-hotel.js:81
+HR_GAP                       src/17l-hotel.js:82
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
 hud                          src/27z-telemetry.js:155-500
@@ -6315,13 +6328,13 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 26 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 36 КБ
+## src/08ca-gpu-canvas.js · 44 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08cb-gpu-text.js · 9 КБ
   · GPU-холст, v2: текст (docs/DESIGN-gpu.md, «GPU canvas»):1
 
-## src/08cc-gpu-shadow.js · 5 КБ
+## src/08cc-gpu-shadow.js · 6 КБ
   · GPU-холст, v2: тень (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/09-audio.js · 18 КБ
@@ -6942,7 +6955,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 25 КБ
+## src/17l-hotel.js · 28 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17m-peace-fleet.js · 11 КБ
@@ -8142,10 +8155,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy1-gpugate-belt.js · 13 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
-## tests/91zzzzzzy2-gpu-canvas.js · 6 КБ
+## tests/91zzzzzzy2-gpu-canvas.js · 9 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 6 КБ
+## tests/91zzzzzzy3-gate2d.js · 7 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

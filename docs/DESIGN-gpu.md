@@ -362,6 +362,132 @@ A strength of 1.2 is no better (6.20 at .8). The recommended lod for a sprite wi
 level − .8. No dark rings. The pair is `pair_lit_sh.6.png`; the columns are 2D, screen, 1.2 finer, and the mask
 at 0, .5 and .8.
 
+**Shadow series in a bake (for GPU-3's hotel).** Before, every command with a shadow got its own layer. Each
+layer had a full-size MSAA target, its own clear and resolve, and two blur passes. The hotel's light layer has
+92 such commands and baked in about 430 ms. Now a run of commands with the same shadow is one layer, a
+«series». The same shadow means the same blur, colour, offset, composite op and clip. A series gets one blur and
+one composite quad, placed where its first member stood. The order check has two rules:
+- a new member's shadow footprint (its box + 3σ, shifted by the offset) must not touch any earlier footprint in
+  the series. A blur of a sum is the sum of the blurs, but source-over of two overlapping shadows is not a sum;
+- the footprint must not touch anything drawn in the series so far: a member's shape, or a command without a
+  shadow. In 2D, shadow 2 lies over shape 1; in a series it would lie under it.
+
+A command with an unbounded composite op closes the series. Layer targets are now sized to the largest series
+box, not the whole bake. The shape is drawn shifted by the box corner (`GU.o`).
+
+The probe draws the hotel's light layer (`hotelPaint` em, all windows lit, 320×218, ss 2) through the GPU canvas.
+Timings are to `onSubmittedWorkDone`, the median of runs 2–6, with other sessions busy on the machine:
+
+| | layers | bake, ms | mean \|Δ\| to 2D | px with Δ > 24 |
+|---|---|---|---|---|
+| HEAD (a layer per command) | 92 | 431 | 0.296 | 5 |
+| series | 18 | 146 | 0.296 | 5 |
+| no shadow at all (the floor) | 0 | ~80 | — | — |
+
+HEAD and series agree to one level (max Δ 1). The layer count drops to 18, not 1, because the rules do cut
+series: a window whose glass or balcony also casts a shadow overlaps its own footprint. The pairs are
+`pair_hotel_sh.png` (2D | HEAD | series, ×2) and `pair_hotel_sh_x4.png` (windows ×4). The bake records the layer
+count in `B.shl`. Контроль: this is an intermediate step. 2D does the same bake in 74 ms, so the time is to be
+broken down next.
+
+**Bake target pool and the shadow atlas (Контроль's breakdown order).** The 146 ms broke down as follows (desktop,
+GPU timestamps on the bake's own passes, 6 runs):
+
+| | ms |
+|---|---|
+| JS record (`hotelPaint` into `GcCtx`) | 6–15 |
+| the rest of the CPU (emit, ramps, encode, submit) | 4–8 |
+| GPU, all bake passes: shadow MSAA .19, blur .54, main .45, mips .05 | span 3.2–3.8 |
+| the wait to `onSubmittedWorkDone` | ~100 (20–45 with no shadow) |
+
+The wait was texture creation in the GPU process. A side probe: 36 new 40² r8 targets, each cleared, took 45–70 ms;
+the same 36 passes into one pooled texture took 0.4–1 ms. Each creation costs ~1.5 ms, and a bake asked for ~40:
+two r8 per shadow layer, then ms, st and rs for the layers and for the main pass, the ramp, and three buffers.
+
+Now:
+- All shadow layers of a bake are regions of one atlas, packed by shelves (`gcShadowPack`). The layers' shapes are
+  one MSAA pass, and each blur is one pass over the atlas. The blur reads only inside its layer's region (`BU.r`);
+  `fshadow` gets the layer's size and atlas place from the paint record (`gp[b+2].zw`, `gp[b+3].xy`).
+- Targets come from a pool (`gcPoolSet`): a set of same-size textures per role (bake, shadow, ramp). A set fits
+  if it is at least the size needed and at most 2.25× its area (anything up to 256² for small bakes). A new set is
+  rounded up to 64 px. Buffers are pooled by role and grow in powers of two. The main pass draws into a pooled
+  target larger than the bake (`gu.sz` = the target), and the resolve goes to level 0 through the mip pass with a
+  source fraction (`sc`). Only `B.tex` is new per bake.
+- The pool lives in `GPU.lay`, so a device loss drops it with everything else. It warms up on first use with
+  `GC_POOL_WARM`: bake 256², 512², 768²; shadow 256², 512²; ramp 256×128. That is 20 textures, ~31 MB. The cap is
+  96 MB, LRU; a set over 24 MB is used once and never pooled.
+
+The hotel light layer is bit-identical to 0f6e4e3 (0 pixels differ). Bake time after the first run: ~25 ms (record 7–11,
+CPU rest 3–7, the wait ~15, GPU span 1.9). 2D does the whole `hotelPaint` (three canvases) in 14–27 ms on the same
+machine. The GPU canvas suite checks series (disjoint → one; overlap, a shadowless draw under the next footprint,
+or a different blur → cut), zero creations on a repeat bake, and a new pool after `GPU.lay` is replaced (what
+`gpuInit` does after a loss). The phone twin is still to be measured, with GPU-3's hotcost stand.
+
+**The ramp cache, the warm-up in `gpuInit`, the cap by the peak.**
+- *Ramp cache (GPU-3's request).* `GcGrad.ramp()` built a 256-step band for every gradient fill; the hotel makes a
+  gradient per window with nearly the same stops. That was ~27 % of the hotel bake's JS by GPU-3's CDP profile.
+  Bands are now cached by the sorted stops in `GC_RAMPS` (at most 512, then cleared), with their half-float copy on
+  the band. A bake gives one row per distinct band. Hotel light layer, runs 2–6: record 3–4.6 ms (was 7–11), the
+  rest of the CPU 1.5–3 (was 3–7), bit-identical to 0f6e4e3.
+- *Warm-up.* `gpuInit` calls `gcPool()`, so the ~30 ms of GPU-process work happens behind the loading screen, and
+  again after a device loss. `08b` did not grow (a comment got shorter).
+- *Cap.* `Q.peak` records the pool's peak. On the phone twin (411×742 ×1.5), across system with a zoom sweep
+  .25–3, dock and relay, the peak is 30.4 MB, i.e. the warm-up set plus one 320×64 pair. The cap is now 64 MB, so one
+  set over 16 MB is used once and never pooled. The 5-minute P1 route has no script here, so these scenes stand in
+  for it.
+
+**The price of one GPU-canvas call (profile, 25.09).** Temporary stamps in `gpuBakeRedo` split a bake into record
+(the draw callback), emit (ops → draw list), ramps and paint fix-up, buffers and upload, encoding, and submit. The
+probe baked 4000 calls of each kind into 512² at ×1, desktop, median of 5, in µs per call:
+
+| call | before: total (rec / emit / up / enc) | after: total (rec / emit / up / enc) |
+|---|---|---|
+| `fillRect`, 3 colours | 3.5 (0.4 / 1.3 / 0.6 / 1.0) | 2.4 (0.5 / 1.4 / 0.2 / 0.3) |
+| arc `fill`, r 4 | 7.1 (2.2 / 3.4 / 1.0 / 0.5) | 3.5 (1.7 / 1.1 / 0.4 / 0.3) |
+| line `stroke` | 4.3 (0.9 / 1.6 / 1.2 / 0.6) | 2.4 (1.0 / 0.8 / 0.2 / 0.4) |
+| `drawImage` of a bake | 1.7 (0.8 / 0.4 / 0.2 / 0.3) | 1.0 (0.3 / 0.4 / 0.2 / 0.2) |
+| `fillText`, cached glyphs | 4.9 (3.6 / 0.6 / 0.3 / 0.3) | 2.9 (2.0 / 0.6 / 0.2 / 0.2) |
+| gradient `fillRect` | 3.4 (1.0 / 1.3 / 0.7 / 0.4) | 2.1 (0.8 / 0.8 / 0.3 / 0.3) |
+
+Ramps and submit cost under 0.05 µs a call. The hot spots were two:
+- vertices were pushed into a JS array and copied into a `Float32Array`. They now go straight into one growing
+  `Float32Array` (`GC_VA`), shared by bakes, since the emit runs after the draw callback and nested bakes are
+  finished by then. It is dropped back to 256 KB after a bake over 16 MB;
+- encoding set the pipeline, bind group and stencil reference on every draw. It now sets them only when they
+  change.
+
+Seven bakes hash the same before and after: the hotel's three and four mixed scenes (solids, arcs, strokes,
+images, text, gradients, shadows, clip, destination-out). The hotel's paint bake (1931 calls) emits in
+1.4 ms instead of 2.7.
+
+*The answer on a 16k-call frame.* At 1–3.5 µs a call on the desktop, it is 16–56 ms, and ×4 on the phone. The
+GPU canvas is for bakes, not for a whole frame re-recorded every frame. A frame's steady drawing stays on the direct
+paths (`gpuLitSprite`, the atlases). Record (triangulation, text layout) is now the biggest share for paths and
+text.
+The next gain would be drawing convex fills without the stencil (one draw instead of two). That is not done here.
+
+**`multiply` on a transparent destination: two draws.** 2D multiplies as
+`Cs·Cb + Cs(1−ab) + Cb(1−as)`, alpha `as + ab − as·ab`. The old single blend (`dst`, `1−as`) is right only on an
+opaque destination; on a transparent one it blackened the source, off by up to 248 of 255. No single blend state
+builds the sum, so a multiply draw is two draws over the same vertices:
+- `mul1`: colour `dst`, `1−as`; alpha `dst-alpha`, `1−as`. It leaves `Cs·Cb + Cb(1−as)` and the alpha `ab`
+  unchanged;
+- `multiply`: colour and alpha `1−ad`, `one`, with `ad` = `ab` still. It adds `Cs(1−ab)` and `as(1−ab)`.
+
+The first draw of a stencilled fill uses `cvk`: the cover test without clearing the stencil, so the second draw
+covers the same samples. Images, text masks and shadow quads write no stencil and draw twice as they are.
+
+The pair `pair_multiply_x2.png` shows fills, a half fill, an arc, images (opaque and half, and at `globalAlpha` .6)
+and a shadowed rect. They sit on destinations of alpha 0, .25, .5, 1 and a 0→1 ramp. Δ against 2D, premultiplied,
+on interiors:
+- flat destinations: ≤ 1 (the arc 1.4 at .25/.5: two 8-bit roundings plus the 2D reference's own);
+- HEAD: up to 248;
+- the ramp column and the shadow row: up to 2.3 and 3. Under source-over they differ by 1.4 and 1.2 (gradient
+  dither, blur kernel), and multiply shows that difference through the source.
+
+The opaque column is as before, and the hotel's `sh` bake (a multiply on white) hashes the same. The suite checks
+the tables against the 2D formula on 48 combinations and that `cvk` writes no stencil. The old tables fail it.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -371,7 +497,17 @@ at 0, .5 and .8.
   `pair_text_x3.png`, `pair_shadow_x3.png` and `pair_neon_bake_x4.png`; numbers in §G.
 - **gpu3 merged up to 149d5b3 (cc220f3).**
 - **The mask in `gpuLitSprite` is in (§G).** Its last argument is `sharp`, and it is best at the screen's level − .8.
+- **Shadow series in a bake are in (§G).** Hotel light layer: 92 layers → 18, 431 → 146 ms, picture as HEAD.
+- **Bake target pool and the shadow atlas are in (§G).** Hotel light layer 146 → ~25 ms, bit-identical; the phone
+  twin (hotcost) is still to be measured.
+- **Ramp cache, warm-up in `gpuInit`, pool cap 64 MB (peak 30.4 MB) are in (§G).**
+- **gpu3 merged (de67fb7).** Phone twin, hotel appearance: the worst cold frame is 73.6 → 65.7 ms, textures 35 → 9;
+  warm JS 17.3 → 12.0 ms.
+- **The profile of a bake is in (§G).** One GPU-canvas call costs 1–3.5 µs at ×1, bit-identical.
+- **`multiply` on a transparent destination is in (§G):** two draws, Δ ≤ 1 on flat destinations (HEAD: 248).
 - **Next, in Контроль's order (25.09):**
+  0. #ovl (below, item 1).
+     Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake;
   1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
      a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;
   2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
@@ -1457,3 +1593,22 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   Gate `91zzzzzzy3-gate2d` gains the planet scene (strip dropped first, so the bake runs under the hook;
   buildings give city lights); mutants `planet-land-2d`, `planet-strip-2d` die. The memory suite now
   counts strip textures (on planets, not in `GPU.cvTex`); `bakeIdle` and the bake suite lose `STRIP_*`.
+
+- **Hotel (17l) → three GPU-canvas bakes, cut across frames.** The atlas (house with all windows dark above
+  the gap, all lit below) was six 2D half-canvases, three uploads and 2D mips. Now `hotelPaint` is a generator
+  (one step = a floor or a part of the house) that records paint and window light at once into two `GcCtx`
+  of the bake's size and ss; `hotelBake` runs its steps until `HOTEL_MS`=3 ms (cap `HOTEL_STEPS`=8 for the
+  clockless harness) and returns null until done; then one bake per call: paint (ss 2, the recorded ops
+  pushed as is), light (ss 2 without shadow, then ONE `shadowBlur` drawImage of the whole layer at ss 1
+  instead of 84 per-window shadows — 08cc's shadow is a full-target pass each), sheen (ss 1, white
+  underlay + multiply + destination-in, as 2D's s·(d+1−α)). Records survive a colour change. Off-screen
+  within a screen of the edge, `drawHotel` bakes ahead one step per frame and the sign's neon one frame
+  after the house, so the frame the hotel enters does ~1 ms of hotel work. Phone twin (411×742 ×1.5, CPU
+  ×4, frames stepped by hand), same machine run: 2D cold worst frame 123 ms (JS 77 + GPU 47), 16
+  textures in that frame; now cold worst 97 ms — the paint bake step (op replay 53 ms, 5 textures); other
+  steps 3–12 ms; 36 textures over 24 frames. Earlier single-frame GPU port measured 1193 ms (per-window
+  shadows), 638 (one shadow), 477 (one paint pass). Open: the paint bake step (op replay) and texture
+  creation — the worker's texture pool and a gradient ramp cache by stops (`GcGrad.ramp` was ~27 % of the
+  recording JS) will cut both. Pictures vs the accepted h3: max|Δ| 5 at 760, 15 on the phone, edge energy
+  7.36→7.38; far zoom equal but for a DOM pulse. Gate2d gains the hotel scene; GC_GLYPHS `raster`/`measure`
+  are named holes (the text source of v2); mutants `hotel-bake-2d`, `hotel-frame-2d` die.
