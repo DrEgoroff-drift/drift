@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6280
+Файлов: 630 · символов верхнего уровня: 6284
 
 ## СИМВОЛЫ
 
@@ -150,7 +150,9 @@ ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:550-597
+artGet                       src/08ca-gpu-canvas.js:453
 ARTIFACTS                    src/12h-relic.js:48-63
+artPut                       src/08ca-gpu-canvas.js:454-571
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
@@ -1477,7 +1479,7 @@ drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-360
-drawFleetShip                src/12ai1-fleet-art.js:445
+drawFleetShip                src/12ai1-fleet-art.js:447
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
@@ -1884,10 +1886,10 @@ fleaRec                      src/12ua-flea.js:34-39
 fleaRender                   src/12ua-flea.js:186-226
 fleaScrip                    src/12ua-flea.js:122
 FLEET                        src/04b-fleet.js:107
-FLEET_ART                    src/12ai1-fleet-art.js:12
+FLEET_ART                    src/12ai1-fleet-art.js:14
 FLEET_CLASSES                src/12ai-fleet.js:20-40
 FLEET_COOL                   src/13-combat.js:212
-FLEET_ENG                    src/12ai1-fleet-art.js:408
+FLEET_ENG                    src/12ai1-fleet-art.js:410
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1897,7 +1899,7 @@ FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
 FLEET_NORM_SHIFTS            src/12ai-fleet.js:46
 FLEET_NOTE                   src/04b-fleet.js:61-79
-FLEET_PAINT                  src/12ai1-fleet-art.js:16
+FLEET_PAINT                  src/12ai1-fleet-art.js:18
 FLEET_PAL                    src/04b-fleet.js:87-94
 FLEET_PERIOD                 src/12ai-fleet.js:45
 FLEET_PLACES                 src/12ai-fleet.js:44
@@ -1907,14 +1909,14 @@ FLEET_TIER_CLS               src/04b-fleet.js:46-53
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16-29
 fleetArtBaked                tests/91zzza-cave-props.js:135
-fleetArtJob                  src/12ai1-fleet-art.js:31-368
-fleetArtOf                   src/12ai1-fleet-art.js:22-30
+fleetArtJob                  src/12ai1-fleet-art.js:33-370
+fleetArtOf                   src/12ai1-fleet-art.js:24-32
 fleetArtRef                  tests/91zzza-cave-props.js:130-134
 fleetCaravanActive           src/12ai-fleet.js:311-317
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:309
 fleetFire                    src/13-combat.js:213-234
-fleetGlyph                   src/12ai1-fleet-art.js:371-403
+fleetGlyph                   src/12ai1-fleet-art.js:373-405
 fleetHailFirst               src/12ai-fleet.js:165-185
 fleetHere                    src/12ai-fleet.js:50-87
 fleetInteract                src/12ai-fleet.js:186-306
@@ -1926,8 +1928,8 @@ fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipAt                  src/12ai1-fleet-art.js:415-443
-fleetShipGpu                 src/12ai1-fleet-art.js:409-413
+fleetShipAt                  src/12ai1-fleet-art.js:417-445
+fleetShipGpu                 src/12ai1-fleet-art.js:411-415
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
 floraOf                      src/20e-species.js:91-105
@@ -2055,14 +2057,14 @@ GC_OPS                       src/08ca-gpu-canvas.js:13-58
 GC_OPX                       src/08ca-gpu-canvas.js:26
 GC_POOL_CAP                  src/08ca-gpu-canvas.js:393
 GC_POOL_WARM                 src/08ca-gpu-canvas.js:394
-GC_PX                        src/08ca-gpu-canvas.js:445
+GC_PX                        src/08ca-gpu-canvas.js:459
 GC_RAMPS                     src/08ca-gpu-canvas.js:65
 GC_SHADOW_INK                src/08cb-gpu-text.js:11
 GC_ST                        src/08ca-gpu-canvas.js:339-362
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
-GC_VA                        src/08ca-gpu-canvas.js:446
+GC_VA                        src/08ca-gpu-canvas.js:460
 GC_WGSL                      src/08ca-gpu-canvas.js:291
 gcAtlas                      src/08cb-gpu-text.js:56-70
 gcBlurDesc                   src/08cc-gpu-shadow.js:38
@@ -2283,9 +2285,10 @@ GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
 gpuAfterWarm                 src/08b0-gpu-pipe.js:70-74
 gpuArena                     src/08c-gpu-kit.js:154-164
 gpuBake                      src/08ca-gpu-canvas.js:432-437
-gpuBaked                     src/08ca-gpu-canvas.js:439-442
-gpuBakeDrop                  src/08ca-gpu-canvas.js:443
-gpuBakeRedo                  src/08ca-gpu-canvas.js:447-557
+gpuBaked                     src/08ca-gpu-canvas.js:441-446
+gpuBakeDrop                  src/08ca-gpu-canvas.js:447
+gpuBakeLive                  src/08ca-gpu-canvas.js:450
+gpuBakeRedo                  src/08ca-gpu-canvas.js:461-571
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:614-619
@@ -2662,13 +2665,14 @@ hexA                         src/12e-drone-flight.js:285-291
 hexa                         src/12w-survey.js:91-94
 hexRGB                       src/24-mode-belt.js:63-65
 HG_BAKE                      src/17c2-hull-gpu.js:11
-HG_BELLY                     src/17c2-hull-gpu.js:12
-HG_FLAME_WGSL                src/17c2-hull-gpu.js:45
-HG_GAIN                      src/17c2-hull-gpu.js:88
-HG_LOD                       src/17c2-hull-gpu.js:19
-HG_SIDE                      src/17c2-hull-gpu.js:14
-HG_THR                       src/17c2-hull-gpu.js:13
-HG_U                         src/17c2-hull-gpu.js:85
+HG_BELLY                     src/17c2-hull-gpu.js:15
+HG_FLAME_WGSL                src/17c2-hull-gpu.js:52
+HG_GAIN                      src/17c2-hull-gpu.js:95
+HG_LOD                       src/17c2-hull-gpu.js:22
+HG_LRU                       src/17c2-hull-gpu.js:14
+HG_SIDE                      src/17c2-hull-gpu.js:17
+HG_THR                       src/17c2-hull-gpu.js:16
+HG_U                         src/17c2-hull-gpu.js:92
 HIN_DOORW                    src/29c-home-in.js:24
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:21
@@ -2932,13 +2936,13 @@ hullBakeKey                  src/03e1-hull-bake.js:32-36
 hullBakeRender               src/03e1-hull-bake.js:107-117
 hullBakeScale                src/03e1-hull-bake.js:27-30
 hullClassOf                  src/03-ships.js:253-268
-hullGpuBake                  src/17c2-hull-gpu.js:27-36
-hullGpuBelly                 src/17c2-hull-gpu.js:37-42
-hullGpuDraw                  src/17c2-hull-gpu.js:128-172
-hullGpuE                     src/17c2-hull-gpu.js:20
-hullGpuFlames                src/17c2-hull-gpu.js:89-107
-hullGpuInserts               src/17c2-hull-gpu.js:110-125
-hullGpuSb                    src/17c2-hull-gpu.js:23-26
+hullGpuBake                  src/17c2-hull-gpu.js:30-43
+hullGpuBelly                 src/17c2-hull-gpu.js:44-49
+hullGpuDraw                  src/17c2-hull-gpu.js:135-179
+hullGpuE                     src/17c2-hull-gpu.js:23
+hullGpuFlames                src/17c2-hull-gpu.js:96-114
+hullGpuInserts               src/17c2-hull-gpu.js:117-132
+hullGpuSb                    src/17c2-hull-gpu.js:26-29
 hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:120-131
@@ -6439,7 +6443,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 26 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 46 КБ
+## src/08ca-gpu-canvas.js · 47 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08cb-gpu-text.js · 9 КБ
@@ -6764,7 +6768,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12h-relic.js · 8 КБ
   · артефакты и лаборатория:1
 
-## src/12i-pirate-hull.js · 29 КБ
+## src/12i-pirate-hull.js · 30 КБ
   · пиратский корпус:1
 
 ## src/12j-home.js · 16 КБ
@@ -8286,7 +8290,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy4-pipes.js · 7 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
-## tests/91zzzzzzy5-gpu-loss.js · 4 КБ
+## tests/91zzzzzzy5-gpu-loss.js · 6 КБ
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

@@ -11600,7 +11600,7 @@ function gpuImage(pass,cv,rects,o){
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
-  if(mip&&cv.draw&&cv.dev!==GPU.dev)gpuBakeRedo(cv);   /* выпечка GPU-холста пережила потерю устройства — печём заново */
+  if(mip&&cv.draw)gpuBakeLive(cv);   /* выпечка GPU-холста пережила потерю устройства или ушла из кэша — печём заново */
   const t=mip?cv:gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,mip?gpuMipSmp():GPU.S.lin]));
@@ -11723,7 +11723,7 @@ function gpuField(pass,name,code,uni,texs,o){
   /* выпечка из кэша модуля (корпус, флот, пираты, баржа) пережила потерю устройства — печём заново,
      как gpuImage: вид мёртвого устройства делает группу привязок, проход и весь кадр негодными */
   const tv=[0,1,2,3].map(k=>{const t=texs&&texs[k];if(!t)return GPU.nView||(GPU.nView=GPU.N.createView());
-    if(t.draw&&t.dev!==GPU.dev)gpuBakeRedo(t);return t.view||gpuCanvasTex(t).view;});
+    if(t.draw)gpuBakeLive(t);return t.view||gpuCanvasTex(t).view;});
   /* привязка на слот: пересобирается, только если сменился буфер или текстуры */
   const key="fld."+slot;let c=GPU.bgs[key];
   const sm=(o&&o.smp)||GPU.S.lin;   /* o.smp — свой сэмплер (трилинейный у мастеров с мипами) */
@@ -12019,7 +12019,7 @@ function gcStrokeLine(U,q,cl,hw,g,dw){
 }
 /* источник картинки: выпечка GPU-холста; 2D-холст — только переходно (грузится, ворота это видят) */
 function gcImg(img){
-  if(img&&img.view&&img.tex){if(img.draw&&img.dev!==GPU.dev)gpuBakeRedo(img);return {view:img.view,w:img.w,h:img.h};}
+  if(img&&img.draw&&img.o){gpuBakeLive(img);return {view:img.view,w:img.w,h:img.h};}
   if(img instanceof GcCtx)throw gcNo("drawImage(незапечённый GPU-холст)");
   if(img&&img.width&&img.height&&typeof img.getContext==="function"){const t=gpuCanvasTex(img);return {view:t.view,w:img.width,h:img.height};}
   throw gcNo("drawImage("+(img&&img.constructor&&img.constructor.name||typeof img)+")");}
@@ -12172,12 +12172,26 @@ function gpuBake(w,h,draw,o){
   let n=1;if(o.mips!==false)while(n<9&&(w>>n)>=4&&(h>>n)>=4)n++;
   const B={w,h,n,draw,o,tex:null,view:null,dev:null};gpuBakeRedo(B);return B;
 }
-/* кэш выпечек по ключу: устройство потеряно и поднято — печём заново тем же draw */
+/* кэш выпечек по ключу: устройство потеряно и поднято — печём заново тем же draw.
+   Недавние держатся (o.keep, по умолчанию 32), старейшая — долой с текстурой: без потолка
+   кэш рос с каждой новой системой (ревью 25.09 п. 4) */
 function gpuBaked(M,key,w,h,draw,o){
-  let B=M.get(key);if(B&&B.dev===GPU.dev)return B;
-  if(B)gpuBakeDrop(B);B=gpuBake(w,h,draw,o);if(B)M.set(key,B);return B;
+  let B=M.get(key);if(B&&B.dev===GPU.dev){M.delete(key);M.set(key,B);return B;}
+  if(B){gpuBakeDrop(B);M.delete(key);}B=gpuBake(w,h,draw,o);if(!B)return B;M.set(key,B);
+  const cap=(o&&o.keep)||32;while(M.size>cap){const k=M.keys().next().value;gpuBakeDrop(M.get(k));M.delete(k);}
+  return B;
 }
 function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev)GPU.trash.push(B.tex);B.tex=B.view=null;}}
+/* выпечка годна к рисованию: пережила потерю устройства или ушла из кэша, а держатель ещё рисует её —
+   печём заново тем же draw (все места, что берут вид выпечки: gpuImage, gpuField, gcImg) */
+function gpuBakeLive(B){if(B.dev!==GPU.dev||!B.tex)gpuBakeRedo(B);return B;}
+/* кэш арта (флот, пираты, баржи) — объект по ключу; недавние держатся, старейшая вещь уходит
+   со всеми своими выпечками (ревью 25.09 п. 4: посевы меняются каждые 10–15 минут в каждой системе) */
+function artGet(M,key){const v=M[key];if(v){delete M[key];M[key]=v;}return v;}
+function artPut(M,key,v,cap){
+  M[key]=v;const ks=Object.keys(M);
+  for(let i=0;i<ks.length-cap;i++){const o=M[ks[i]];delete M[ks[i]];for(const f in o){const B=o[f];if(B&&B.draw&&B.o)gpuBakeDrop(B);}}
+  return v;}
 /* GC_PX — точек MSAA, выпеченных с загрузки: prebake (17a0) не начинает шаг, если кадр уже испёк PB_PX */
 let GC_PX=0;
 let GC_VA=new Float32Array(1<<16);   /* вершины выпечки (x,y,краска,u,v) — общий растущий буфер */
@@ -24497,7 +24511,9 @@ function drawFleetMap(vis,cell){
    '-' < '1' < 'a'). Здесь объявлен `FLEET_ART` — кэш спрайтов; его читает
    только `fleetArtOf`, то есть во время кадра, а не на верхнем уровне. */
 /* ── окраска: один конвейер на все классы (§18.5, §1) ── */
-const FLEET_ART={},FLEET_SS=3,FLEET_PB={f:-1,k:""};
+/* FLEET_KEEP — кораблей в кэше (по две выпечки, ~0.6 МБ каждая у «поста»): новый посев каждые 10 минут.
+   Обход 15 систем (26.09): до 7 кораблей на систему — 24 держат три системы */
+const FLEET_ART={},FLEET_SS=3,FLEET_PB={f:-1,k:""},FLEET_KEEP=24;
 /* рецепт облика (кисть cn): облик → (g)=>… в осях выпечки. Кадр его не зовёт — это для проверок
    тестов (91zzza M317/M318): синхронно читать выпечку с видеокарты нечем, а свойства рецепта
    (эмблема, медиана тела, тень под баком) — те же на любом растре */
@@ -24509,11 +24525,11 @@ const FLEET_PAINT=new WeakMap();
    давали хвост в 100 мс (Контроль, 25.09) */
 function fleetArtOf(f,ahead){
   const key="fl"+f.k+f.seed+"!"+(f.by||"gt");
-  if(FLEET_ART[key])return FLEET_ART[key];
+  const had=artGet(FLEET_ART,key);if(had)return had;
   if(!GPU.dev){const it=fleetArtJob(f);let r;do r=it.next();while(!r.done);return r.value;}   /* без устройства: геометрия, cn null; не в кэш */
   if(ahead){if(FLEET_PB.f===GPU.frameNo&&FLEET_PB.k!==key)return null;FLEET_PB.f=GPU.frameNo;FLEET_PB.k=key;}
   const art=prebake("fl|"+key,()=>fleetArtJob(f),!ahead);
-  if(art)FLEET_ART[key]=art;
+  if(art)artPut(FLEET_ART,key,art,FLEET_KEEP);
   return art;
 }
 function* fleetArtJob(f){
@@ -32311,7 +32327,7 @@ function relicHint(m){
    дальше рисуется картинкой с поворотом — тот же приём, что кэш неба у гиганта
    и тайл материала. */
 const PIR_SS=3;                        // выпекаем крупнее и рисуем мельче
-const PIR_ART={};
+const PIR_ART={},PIR_KEEP=24;   /* вариантов пирата в кэше: посевы системы меняются каждые 15 минут; в системе их до 3 (обход 26.09) */
 /* четыре класса опознаются с одного взгляда — это и есть смысл затеи */
 const PIR_CLASS={
   fast:{ru:"перехватчик",len:46,bw:.15,eng:2,engL:1.5,cage:0,plate:0,spike:3,ram:0},
@@ -32536,7 +32552,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      оставался прежним, разбитый пират выглядел просто испачканным */
   /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
   const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"");
-  if(PIR_ART[key])return PIR_ART[key];
+  const had=artGet(PIR_ART,key);if(had)return had;
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
   const cls=pirateClass(S.seed,rogue);
@@ -32698,7 +32714,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      нерезкая маска — в шейдере (sharp, между уровнями мипов) */
   });
   const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru};
-  PIR_ART[key]=art;return art;
+  return artPut(PIR_ART,key,art,PIR_KEEP);
 }
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──
    Повреждения копятся вместе с hp, выхлоп грязный и несинхронный — и то и
@@ -34835,7 +34851,7 @@ function drawWrecksSystem(zx,zy,Z){
    вытянутое тело, хребет с контейнерами, большие тихоходные движки, ходовая
    рубка у носа. Оружия нет вовсе. Печётся один раз на seed в офскрин. */
 const BARGE_SS=3,BARGE_LOD=-2.5;   /* вблизи уровень 0, вдали мип на полтора шага крупнее экрана: резкость как у 2D-растра, без ряби (ворота 25.09) */
-const BARGE_ART={};
+const BARGE_ART={},BARGE_KEEP=12;   /* барж в кэше (1.1–2.1 МБ каждая) */
 function bargeArtOf(b){
   /* ── у баржи тоже есть завод (M369a, §19.4) ──
      Баржа Рассвета — это три баржи, сваренные встык; баржа Компании — белая
@@ -34844,7 +34860,7 @@ function bargeArtOf(b){
      всех пятерых генераторов (D24). */
   const by=b.by||(b.by=(typeof makerBySeed==="function")?makerBySeed(b.seed):"gt");
   const key="bg"+b.seed+"!"+by;
-  if(BARGE_ART[key])return BARGE_ART[key];
+  const had=artGet(BARGE_ART,key);if(had)return had;
   const r=rng(hashi(b.seed,0x5A19,9));
   const L=104+r()*40, hw=L*(.14+r()*.04);
   const nose=L*.52, tail=-L*.48;
@@ -34978,7 +34994,7 @@ function bargeArtOf(b){
     }
   });
   const art={cn,rad,L,hw,lights,cols:C};
-  BARGE_ART[key]=art;return art;
+  return artPut(BARGE_ART,key,art,BARGE_KEEP);
 }
 /* корпус баржи светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale */
 function gpuBargeBody(b,x,y,s){
@@ -54095,6 +54111,9 @@ function stMakerDress(by,V){
    с мипами на холсте видеокарты (08ca gpuBake, 25.09): кисти 03e рисуют в него, как в
    2D, зум берёт уровень, а не перепекает и не грузит. */
 const HG_BAKE=new WeakMap();   // h → Map(ключ → {B,E,sb}) выпечка тела при крене 0
+/* корпуса живут в HULL_CACHE вечно — потолок общий на все: HG_KEEP недавних выпечек, старейшая долой
+   (ревью 25.09 п. 4: призраки «оставленного» копили мастера до 1024²) */
+const HG_LRU=new Map(),HG_KEEP=8;   /* обход 15 систем (26.09): в полёте одна выпечка корпуса — свой корабль */
 const HG_BELLY=new WeakMap();  // h → {B,E,sb} тёмный силуэт брюха
 const HG_THR=new Map();        // id → сглаженная тяга 0..1 (эфемерное, не в сейве)
 const HG_SIDE=1024;
@@ -54112,13 +54131,17 @@ function hullGpuSb(h,dk){
 }
 function hullGpuBake(h,id,sb){
   let M=HG_BAKE.get(h);if(!M){M=new Map();HG_BAKE.set(h,M);}
-  const key=hullBakeKey(id,sb);let b=M.get(key);if(b)return b;
+  const key=hullBakeKey(id,sb);let b=M.get(key);
+  if(b){const q=b.q;HG_LRU.delete(q);HG_LRU.set(q,[M,key]);return b;}
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
   /* кисти читают только корпус и ключ — выпечка после потери устройства та же */
   const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1});
   if(!B)return null;
-  if(M.size>=4){const k=M.keys().next().value;gpuBakeDrop(M.get(k).B);M.delete(k);}
-  b={B,E:side/(2*sb),sb};M.set(key,b);return b;
+  if(M.size>=4){const k=M.keys().next().value;HG_LRU.delete(M.get(k).q);gpuBakeDrop(M.get(k).B);M.delete(k);}
+  b={B,E:side/(2*sb),sb,q:{}};M.set(key,b);HG_LRU.set(b.q,[M,key]);
+  while(HG_LRU.size>HG_KEEP){const [q,[M0,k0]]=HG_LRU.entries().next().value;HG_LRU.delete(q);
+    const o=M0.get(k0);if(o){gpuBakeDrop(o.B);M0.delete(k0);}}
+  return b;
 }
 function hullGpuBelly(h,sb){
   let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuBakeDrop(b.B);
