@@ -1877,6 +1877,25 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   0/10; phone without the pulsing buttons — gt 219/40, co 7/54, or 66/44, ra 0/10, hf 30/65, km 0/12. GPU
   errs 0. Gate2d gains the gesture scene (power changes every 15 frames, age inside its gesture; probes
   `drawGesture`, `drawGestureTop`, `drawGestPost`); mutants `gesture-post-2d`, `gesture-frame-2d` die.
+- **«Чебуречная» (17j) off 2D.** The frame was already in the scene pass; the bakes were 2D canvases uploaded
+  through `gpuMipTex`. Now the boat (`chebPaint`) and its light (`chebPaintEm`, shadowBlur through 08cc) are
+  `gpuBaked` records in `CHEB_ART` (device-checked), the «ЧЕБУРЕКИ» sign is a device-pixel bake measured with
+  `gcMeasure` (`chebSignMake`, no mips, `bakeKeep` of 6 with a device check). The 2D frame branch is gone.
+  Pairs vs HEAD, same tick, zoom 2.2/1.3/0.7 (px >24 / max): 760 — 10/27, 0/23, 0/16; phone — 1/25, 2/29,
+  11/65. Everything >24 sits on the pulsing DOM chips and buttons; on the boat a trace of the garland bulbs'
+  halo, the sign identical. GPU errs 0. Gate2d gains the scene (bakes dropped first); mutants `cheb-bake-2d`,
+  `cheb-sign-2d` die.
+- **Billboard (17k) off 2D, baked ahead.** The panel (truss, frame, the ПЛАН banner with its star and two
+  lines) and the running-line strip were 2D canvases uploaded each size; now `bbPanelMake` is a GPU-canvas bake
+  and the strip a device-pixel bake measured with `gcMeasure` (no mips). Both go through `prebake` (17a0) via
+  `bbKeep` (bakeKeep of 6 + device check): off screen but within .6 of a screen `bbAhead` bakes the panel, the
+  strip and — by calling the unchanged `neonBake` inside a prebake job — the title neon; on screen with nothing
+  to show the bake is `sync`. A stale panel (plan changed, zoom settled) stays up while the new one bakes. The
+  2D frame branch is gone. «Чебуречная» got the same approach bake (`chebAhead`: boat, light, sign). Fly-by at
+  760 (billboard from 2.5 screens off to mid-screen, 12 px/frame, same tick): textures created in the frame
+  19 → 3 at ×1.3 and 22 → 3 at ×2.2, none of them 17k/17j (hotel neon 17l, shuttle, find sprite); via
+  prebake 20/24; `PB_SYNC` 0, pipelines 0. Pair vs HEAD: ×1.3 max 13 (2 px >8), ×2.2 max 8 (0 px >8). Gate2d
+  gains the billboard scene; mutants `bb-panel-2d`, `bb-strip-2d` die. No new warm-up keys.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.

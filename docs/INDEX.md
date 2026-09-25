@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6290
+Файлов: 630 · символов верхнего уровня: 6298
 
 ## СИМВОЛЫ
 
@@ -395,13 +395,17 @@ BB_BAKE                      src/17k-billboard.js:62
 BB_CACHE                     src/17k-billboard.js:12
 BB_NEON                      src/17k-billboard.js:61
 BB_TITLE                     src/17k-billboard.js:11
+bbAhead                      src/17k-billboard.js:147-153
 bbDeal                       src/17k-billboard.js:20-30
-bbDrawGpu                    src/17k-billboard.js:102-125
+bbDrawGpu                    src/17k-billboard.js:116-144
 bbHere                       src/17k-billboard.js:13-18
+bbKeep                       src/17k-billboard.js:66-72
 bbLine                       src/17k-billboard.js:31-50
 bBox                         src/21aa-base-rooms.js:23-28
-bbPanelBake                  src/17k-billboard.js:63-90
-bbStripBake                  src/17k-billboard.js:91-101
+bbPanelBake                  src/17k-billboard.js:74-77
+bbPanelKey                   src/17k-billboard.js:73
+bbPanelMake                  src/17k-billboard.js:78-103
+bbStripBake                  src/17k-billboard.js:105-115
 bbTitle                      src/17k-billboard.js:52-56
 bCalm                        tests/91zzzw-base.js:71-81
 bCrate                       src/21aa-base-rooms.js:270-277
@@ -760,12 +764,16 @@ CHEB_ART                     src/17j-cheburek.js:28
 CHEB_LOD                     src/17j-cheburek.js:29
 CHEB_PRICE                   src/17j-cheburek.js:9
 CHEB_PX                      src/17j-cheburek.js:27
-CHEB_SIGN                    src/17j-cheburek.js:57
-chebBake                     src/17j-cheburek.js:31-55
+CHEB_SIGN                    src/17j-cheburek.js:60
+chebAhead                    src/17j-cheburek.js:112-117
+chebBake                     src/17j-cheburek.js:31-36
 chebHere                     src/17j-cheburek.js:10-17
 chebHullPath                 src/17j-cheburek.js:30
-chebInteract                 src/17j-cheburek.js:114-128
-chebSignBake                 src/17j-cheburek.js:58-71
+chebInteract                 src/17j-cheburek.js:118-132
+chebPaint                    src/17j-cheburek.js:37-52
+chebPaintEm                  src/17j-cheburek.js:53-58
+chebSignBake                 src/17j-cheburek.js:61-66
+chebSignMake                 src/17j-cheburek.js:67-77
 chessAll                     src/25n-chess.js:199-203
 chessDraw                    src/25n-chess.js:246-275
 chessGame                    src/25n-chess.js:204
@@ -1438,7 +1446,7 @@ drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:360
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRocks                src/17c-system-draw.js:29-83
-drawBillboard                src/17k-billboard.js:126-189
+drawBillboard                src/17k-billboard.js:154-168
 drawBuildMenu                src/21aa-base-rooms.js:504-520
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:32-44
@@ -1453,7 +1461,7 @@ drawCaveSolid                src/22a-cave-deco.js:241-299
 drawCaveWater                src/22a-cave-deco.js:300-324
 drawCaveWorld                src/22-mode-cave.js:648-750
 drawCelest                   src/06a-celest.js:167-218
-drawCheburek                 src/17j-cheburek.js:72-113
+drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:402-681
@@ -2031,7 +2039,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-109
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-131
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -2275,7 +2283,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:185
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-44
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-46
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -7070,7 +7078,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17j-cheburek.js · 10 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
-## src/17k-billboard.js · 13 КБ
+## src/17k-billboard.js · 11 КБ
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
 
 ## src/17k0-neon.js · 4 КБ
@@ -8287,7 +8295,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 16 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 12 КБ
+## tests/91zzzzzzy3-gate2d.js · 14 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 6 КБ
