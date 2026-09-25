@@ -40,6 +40,14 @@ fn gArmD(r:f32,th:f32,ph:f32,pitch:f32)->f32{
   let s=th-log(max(r,${GAL_R0.toFixed(4)})/${GAL_R0.toFixed(4)})/pitch-ph;
   return (pmod(s+GPI*.5,GPI)-GPI*.5)*r;}
 fn sq(x:f32)->f32{return x*x;}
+/* неразрешённые звёзды: по точке на клетку шага sp (в секторах), если прошёл хэш
+   против плотности; px — пикселей на сектор. Точка мягкая, блеск — степенной */
+fn gMs(w:vec2f,sp:f32,dens:f32,px:f32,sd:i32)->f32{
+  let id=floor(w/sp);let ix=i32(id.x);let iy=i32(id.y);
+  if(gH(ix,iy,sd)>=dens){return 0.;}
+  let q=(id+.2+.6*vec2f(gH(ix,iy,sd+1),gH(ix,iy,sd+2)))*sp;
+  let d=length(w-q)*px;let b=gH(ix,iy,sd+3);
+  return (.35+2.2*b*b*b*b*b*b)*exp(-d*d*1.6);}
 var<private> GNEB:array<vec4f,${GAL_NEBULAE.length}>=array<vec4f,${GAL_NEBULAE.length}>(${GAL_NEBULAE.map((n,i)=>"vec4f("+n.x.toFixed(4)+","+n.y.toFixed(4)+","+(1.3+.5*h01(i,7,0x6C3)).toFixed(3)+","+(i%3)+".)").join(",")});
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v[0];let C=fu.v[1];
@@ -79,6 +87,14 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   var c=col*glow*${GAL_GLOW_CAP.toFixed(3)};
   /* узлы HII светят сами — розовая эмиссия поверх, чуть сверх потолка */
   c+=vec3f(1.,.5,.7)*knot*disk*.10;
+  /* ядро светится, а не упирается в потолок: широкий тёплый ореол балджа за пределом модели */
+  c+=vec3f(1.,.78,.52)*(.075*exp(-r/5.5)+.05*exp(-sq(r/2.2)));
+  /* галактика из звёзд, а не из тумана: неразрешённая звёздная крошка по плотности света,
+     в мире (едет с листом), шаг — степень двойки под ~7 px на экране, два уровня вперемешку */
+  {let lv=log2(7./V.z);let s0=exp2(floor(lv));let t=fract(lv);
+    let dn=clamp(glow*2.4+.03,0.,.92)*(1.-dust*.85);
+    let ms=mix(gMs(w0,s0,dn,V.z,${0x6D1}),gMs(w0,s0*2.,dn,V.z,${0x6D5}),t);
+    c+=mix(col,vec3f(1.),.35)*ms*.30;}
   /* туманности по имени (17z2): облака свечения там, где их зовут водители. Одно
      общее поле шума на пиксель, маска — сумма гауссиан; розовое ядро, бирюзовая
      кромка, тёмные глобулы. Место с именем теперь видно, а не только подписано */
@@ -105,7 +121,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   }
   /* пустое небо — холодное, не чёрное (#03040a); там, где светит, тень не синит тёплое ядро */
   c+=vec3f(3.,4.,10.)/255.*(1.-clamp(glow*4.,0.,1.));
-  return vec4f(c,1.);}`;
+  /* свет листа собран к середине: мягкая виньетка, края кадра уходят в холодную тень */
+  let e=uv-.5;c*=1.-.42*dot(e,e)*2.;
+  /* зерно по пикселю вместо ровной заливки */
+  c+=(gH(i32(p.x*2.),i32(p.y*2.),${0x6D9})-.5)*.014;
+  return vec4f(max(c,vec3f(0.)),1.);}`;
 /* небо галактики: V — центр окна в секторах, cell — пикселей на сектор */
 function galaxyGpu(pass,V,cell){
   const U=MAPGPU.U;
