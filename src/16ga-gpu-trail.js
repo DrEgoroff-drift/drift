@@ -265,12 +265,13 @@ fn lad(T:f32,c0:vec3f,c1:vec3f,c2:vec3f,nat:bool)->vec3f{
   e=e+select(mix(vec3f(1.),v2.rgb,.5),vec3f(.8,.9,1.),nat)*exp(-dn*dn*4.)*1.5*thr;
   return vec4f(sm+e,sa);
 }`;
-function gexPush(px,py,dx,dy,L,R,wk,thr,C0,C1,C2,t,ring){
-  const f=GEX.f,o=GEX.n*20;if(o+20>f.length)return;
+/* X — чей список: свой факел (GEX) или факелы пиратов (13-pirates) */
+function gexPush(px,py,dx,dy,L,R,wk,thr,C0,C1,C2,t,ring,X){
+  X=X||GEX;const f=X.f,o=X.n*20;if(o+20>f.length)return;
   f[o]=px;f[o+1]=py;f[o+2]=dx;f[o+3]=dy;f[o+4]=L;f[o+5]=R;f[o+6]=wk;f[o+7]=thr;
-  f[o+8]=C0[0]/255;f[o+9]=C0[1]/255;f[o+10]=C0[2]/255;f[o+11]=GEX.nat;
+  f[o+8]=C0[0]/255;f[o+9]=C0[1]/255;f[o+10]=C0[2]/255;f[o+11]=X.nat;
   f[o+12]=C1[0]/255;f[o+13]=C1[1]/255;f[o+14]=C1[2]/255;f[o+15]=t;
-  f[o+16]=C2[0]/255;f[o+17]=C2[1]/255;f[o+18]=C2[2]/255;f[o+19]=ring?1:0;GEX.n++;
+  f[o+16]=C2[0]/255;f[o+17]=C2[1]/255;f[o+18]=C2[2]/255;f[o+19]=ring?1:0;X.n++;
 }
 function gpuExhaust(zx,zy,Z,thr){
   if(thr<=0)return;
@@ -297,14 +298,19 @@ function gpuExhaust(zx,zy,Z,thr){
     /* L3: свой факел подсвечивает корму */
     if(shape!=="twin")gpuLight(px-ca*R,py-sa*R,px-ca*R,py-sa*R,C1[0]/255,C1[1]/255,C1[2]/255,R*6,thr*1.4);
   }
-  if(!GEX.n)return;
+  gexDraw(pass,GEX,"gex",zx,zy);
+}
+/* список факелов — одним вызовом; key — свои буферы: две записи в один буфер за кадр
+   легли бы обе последней */
+function gexDraw(pass,X,key,zx,zy){
+  if(!X.n)return;
   const U=GPUBufferUsage,d=GPU.dev,uu=GEX.u;
   const sc=(typeof starRGB==="function")?starRGB():[255,244,214],sm=Math.max(1,sc[0],sc[1],sc[2]);
-  const ub=gpuBuf("gex.u3",48,U.UNIFORM|U.COPY_DST);uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;
+  const ub=gpuBuf(key+".u3",48,U.UNIFORM|U.COPY_DST);uu[0]=GPU.bw;uu[1]=GPU.bh;uu[2]=W;uu[3]=H;uu[4]=DPR;
   uu[5]=zx(0);uu[6]=zy(0);uu[8]=sc[0]/sm;uu[9]=sc[1]/sm;uu[10]=sc[2]/sm;d.queue.writeBuffer(ub,0,uu);
-  const eb=gpuBuf("gex.e",GEX.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(eb,0,GEX.f,0,GEX.n*20);
+  const eb=gpuBuf(key+".e",X.f.byteLength,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(eb,0,X.f,0,X.n*20);
   const P=gpuPipe("gex",GEX_WGSL,"over");   /* over: дым заслоняет, огонь — сложением (альфа 0) */
-  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gex",P,[ub,eb]));pass.draw(6,GEX.n);
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind(key,P,[ub,eb]));pass.draw(6,X.n);
 }
 /* ── свет звезды на корпусе (G4) ──
    Корпус рисуется кистью 2D (сотни штрихов — это вектор), но свет на нём — от

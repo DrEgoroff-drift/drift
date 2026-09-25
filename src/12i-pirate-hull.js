@@ -435,6 +435,57 @@ function gpuPirateBody(p,x,y,s){
   let lx=-p.x,ly=-p.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
   return gpuLitSprite(art.cn,x,y,art.rad*s,s,p.a,lx,ly,0);
 }
+/* живой слой пирата на видеокарте (бой, ступень 1): то, что drawPirate кладёт поверх
+   выпечки, — в проход сцены. over=false — под корпусом: факел шейдером своего корабля
+   (GEX, 16ga) штатной лестницей температур и ореол сопла, чад мягкими кругами;
+   over=true — над ним: пятна копоти с окалиной, огонь из пробоины (свет — сложением),
+   дым за подбитым. list — [{p,x,y,s}]: точка корпуса на экране и масштаб, как у ctx */
+const PGX={f:new Float32Array(20*48),n:0,nat:1},PGX_L=5.5,PGX_C=[[255,246,220],[255,194,112],[255,70,40]];
+function gpuPirateLive(pass,list,over){
+  const D=[],E=[];PGX.n=0;
+  for(const q of list){
+    const p=q.p,s=q.s,ca=Math.cos(p.a),sa=Math.sin(p.a);
+    const T=(lx,ly)=>[q.x+(lx*ca-ly*sa)*s,q.y+(lx*sa+ly*ca)*s];
+    const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
+    const B=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0).B;
+    if(!over){
+      for(const e of B.eng){
+        const [ex,ey]=T(e.x,e.y);
+        if(p.thrust){const pw=.8+Math.sin(G.t*.2+e.ph)*.2,R=Math.max(1.2,e.r*1.3*s);
+          gexPush(ex,ey,ca,sa,R*PGX_L*pw,R,1,pw,PGX_C[0],PGX_C[1],PGX_C[2],G.t*.05+e.ph,false,PGX);
+          /* ореол сопла — тот же, что у кисти (радиальный .34 на 1.15 длины пера) */
+          const f=e.r*.9*s*3.25*pw;E.push([1,ex-ca*f*.25,ey-sa*f*.25,f*.1,0,0,f*1.05,255,180,110,.34]);}
+        if(e.dirty||hp<.6){
+          const puffs=(e.dirty===2?5:3);
+          for(let i=0;i<puffs;i++){
+            const t=((G.t*.03+i*.7+e.ph)%3),a=(e.dirty===2?.38:.28)-t*.09;if(a<=0)continue;
+            const [px,py]=T(e.x-t*7,e.y+Math.sin(t*2+e.ph)*2);D.push([1,px,py,(1.6+t*2.4)*s,0,0,0,60,54,50,a]);
+          }
+        }
+      }
+      continue;
+    }
+    if(hp>=.85)continue;
+    const r=rng(hashi(p.seed||1,0x0D06,5)),n=Math.round((1-hp)*(hp<.5?3:7));
+    for(let i=0;i<n;i++){
+      const [x,y]=T(lerp(B.tail,B.nose*.8,r()),(r()*2-1)*B.hw*.7),rr=B.hw*(.1+r()*.18)*s;
+      D.push([1,x,y,rr,0,0,0,18,14,12,.85]);D.push([3,x,y,rr,0,.35*s,0,255,120,60,.35]);
+    }
+    if(hp<.5){
+      const [bx,by]=T(B.tail+B.L*.35,B.hw*.55),f=B.hw*(.32+Math.sin(G.t*.31)*.1)*s;
+      E.push([1,bx,by,f*.3,0,0,f*1.2,255,170,95,.55]);
+    }
+    if(hp<.3){          // дым тянется за подбитым и виден издалека
+      for(let i=0;i<4;i++){
+        const t=((G.t*.02+i*.8)%4),a=.34-t*.08;if(a<=0)continue;
+        const [x,y]=T(B.tail-t*9,B.hw*.3+Math.sin(t*1.7+i)*4);D.push([1,x,y,(2+t*3.4)*s,0,0,0,40,36,34,a]);
+      }
+    }
+  }
+  if(PGX.n)gexDraw(pass,PGX,"pgx",x=>x,y=>y);
+  if(D.length)gpuShapes(pass,D);
+  if(E.length)gpuShapes(pass,E,{blend:"add"});
+}
 function drawPirate(p,lit){
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
   /* ниже половины берём вторую выпечку — рваный корпус, а не тот же силуэт

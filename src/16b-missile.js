@@ -251,12 +251,17 @@ const MSL_PAINT={
 };
 const MSL_PAINT_FOE={head:"rgba(255,150,120,.9)",tail:"rgba(255,60,50,0)",dot:"#ffb0a2",r:1.9,len:9};
 function mslDraw(zx,zy,Z){
+  /* с видеокарты корпус — кругом в проходе сцены, поверх своего факела */
+  const pass=gpuScene(),SH=[];
   for(const m of G.msl||[]){
     const x=zx(m.x),y=zy(m.y);
     const P=m.foe?MSL_PAINT_FOE:(MSL_PAINT[m.kind]||MSL_PAINT.plain);
     /* факел длиннее самой ракеты: на масштабе системы корпус — три пикселя,
        и видно её именно по следу */
     /* факел — на видеокарте (gpuCombatEnergy, 13z); здесь корпус поверх него */
+    if(pass){const c=hex2rgb(P.dot);SH.push([1,x,y,Math.max(1,P.r*Z),0,0,0,c[0],c[1],c[2],1]);
+      if(m.decoy&&(m.age|0)%20<8)SH.push([3,x,y,Math.max(2,4.5*Z),0,Math.max(1,Z)/2,0,214,214,206,.35]);
+      continue;}
     ctx.fillStyle=P.dot;
     ctx.beginPath();ctx.arc(x,y,Math.max(1,P.r*Z),0,TAU);ctx.fill();
     /* ловушка мигает: она и работает тем, что заметна больше, чем есть */
@@ -265,5 +270,6 @@ function mslDraw(zx,zy,Z){
       ctx.beginPath();ctx.arc(x,y,Math.max(2,4.5*Z),0,TAU);ctx.stroke();
     }
   }
+  if(SH.length)gpuShapes(pass,SH);
   /* разрывы — огненным шаром на видеокарте (gpuBooms, 13z) */
 }

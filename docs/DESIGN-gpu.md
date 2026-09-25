@@ -203,6 +203,11 @@ Then hulls (item 2) by the same «explicit emission» path.
   layer; the frame lays the dark house whole and the lit windows as pieces of the lit half. Gate: uploads 0
   over a day of flips (a test, and the rebake exclusion in the zoom gate removed), the house on screen the
   same as HEAD at 20 h and 3 h on 760 and ×1.5, the 2D branch the same as the old paint.
+- Brief of **combat off #c** (Контроль's order after the candidate): dirt.js on a combat stand (three pirates
+  around the ship, bolts and missiles both ways, a boom, a kill with a container, lock brackets, a radar dot)
+  names who paints #c; each goes into the scene pass with the fleet's method (shapes, a baked mipped master,
+  the ship's own flame shader). Gate: a test on the same stand — #c 0, submits 1 per frame, uploads 0 — and
+  pairs of the pirates, the missile and the boom, HEAD | now, no dimmer, no softer.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -213,8 +218,8 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   back 0); the instrument pod 25c redraws only on change; item 3 done (body V>.6 +12/+13 % over 2D — the
   excess was the final glow on the hull's own paint, not the exhaust); the wake at the stern cooled to 2D's
   peak within 20 hull units of the nozzle, further as before; the hotel's windows are pieces of a two-master
-  atlas (uploads 0 on any flip); the release rehearsal is green. Next: combat — dirt.js on a combat stand, then
-  the move with the fleet's method.
+  atlas (uploads 0 on any flip); the release rehearsal is green (0.458.0 = 90604dc, not pushed); combat is off
+  #c (gate suite green). Next: Контроль's word on combat; left on #c: NPC wrecks and the «left» markers.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -603,6 +608,22 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   start now knows `#chips` (transparent, no events). The memory bound on canvases in textures is
   `GPU_CVTEX_CAP`, not 8. The hotel gate bakes its house before it starts counting. `-Full` 897/897 (quarantine
   aside), Node 673/673, golden frames in 1280×800, 390×844 and 1440×1440 unchanged — nothing re-shot.
+  **Combat off #c.** dirt.js on the combat stand counted every call on #c in 151 frames: the pirates' live layer
+  (`drawPirate`: soot, damage spots, the hole's fire, smoke — 2616 fills, 260 strokes; `drawFlame` 912), the
+  bars (`drawCombat` fillRect 684), missile bodies (`mslDraw` 286), lock brackets (`helmDrawMarks` 130). Hulls,
+  bolts, beams, missile flames, booms and bursts were already on the GPU. Now: the live layer is
+  `gpuPirateLive` (12i) in two calls around the hull sprites — under: the flame through the ship's own shader
+  (`gexDraw`, 16ga, now shared: the pirates' list has its own buffers, two writes to one buffer in a frame
+  would both land as the last) plus the brush's nozzle halo as an added soft disc, soot as soft discs; over:
+  spots with a scale rim, the hole's fire added, smoke. Bars, shield and burn threads, loot beacons, edge dots
+  and brackets are `gpuShapes`; the loot box is baked once per colour (`lootIcon`) and laid mipped with its
+  spin. Without a GPU every painter keeps its 2D branch. dirt.js after: 0 calls on #c. Pairs HEAD | now
+  (760 ×1, 411×742 ×1.5, 760 at ×2.6 and a close-up at ×5): brackets and bars lose the doubled soft edge the
+  #c copy gave them; pirates, the missile and the boom the same — changed boxes mean luma ±1, top 2 % the same
+  or up (the pirate's tail 139 → 135 at ×5 is the bracket's old ghost, not the flame), the launch puff differs
+  in shape only: `drawFlame` no longer draws `rndFx`, so the effect sequence shifts (no game chance involved).
+  Gate suite «бой» (91zzzzzzy-gpugate): 60 frames of combat after a 40-frame warm-up — #c uploads 0, dirt 0,
+  submits 60, uploads 0; with the missile bodies put back on #c it goes red naming `mslDraw`.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

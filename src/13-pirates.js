@@ -347,23 +347,50 @@ function killPirate(p){
     (got?" · трофей "+RES[loot].ru.toLowerCase()+" ×"+got:"")+
     (dropped?" · контейнер с частью":""));
 }
+/* коробка трофея для видеокарты: печётся раз на цвет категории, радиусом LOOT_IC_R в холсте
+   LOOT_IC_K радиусов шириной; на экране ложится мипами (кромка 1.4 px при s≈8, как кистью) */
+const LOOT_IC=new Map(),LOOT_IC_R=20,LOOT_IC_K=2.4;
+function lootIcon(col){
+  let c=LOOT_IC.get(col);if(c)return c;
+  c=document.createElement("canvas");c.width=c.height=Math.round(LOOT_IC_R*LOOT_IC_K);
+  const g=c.getContext("2d"),s=LOOT_IC_R;g.translate(c.width/2,c.height/2);
+  g.fillStyle="rgba(20,24,30,.9)";g.strokeStyle=col;g.lineWidth=1.4*s/8;g.lineJoin="miter";
+  g.beginPath();
+  for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+  g.closePath();g.fill();g.stroke();
+  LOOT_IC.set(col,c);return c;
+}
 function drawCombat(zx,zy,Z){
   /* лучи (M364) и болты — светящейся энергией на видеокарте (13z) */
   gpuCombatEnergy(zx,zy,Z);
   if(typeof mslDraw==="function")mslDraw(zx,zy,Z);
   if(typeof npcWreckDraw==="function")npcWreckDraw(zx,zy,Z);
   if(typeof leftDraw==="function")leftDraw(zx,zy,Z);
+  /* с видеокарты (ступень 1) всё, что ниже, — в проходе сцены: #c в бою пуст.
+     SH — фигуры поверх (полосы, маячки, точки у кромки), одним вызовом в конце */
+  const pass=gpuScene(),SH=[];
   /* контейнеры: гранёная коробка в цвет категории части, мигает маячком */
   for(const L of G.loot){
     const x=zx(L.x),y=zy(L.y);
     if(x<-40||x>W+40||y<-40||y>H+40){
       const ang=Math.atan2(L.y-G.ship.y,L.x-G.ship.x);
       const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-40),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-40);
+      if(pass){const c=hex2rgb(PART_KINDS[L.part.kind].col);SH.push([1,mx,my,2.6,0,0,0,c[0],c[1],c[2],.7]);continue;}
       ctx.fillStyle=PART_KINDS[L.part.kind].col;ctx.globalAlpha=.7;
       ctx.beginPath();ctx.arc(mx,my,2.6,0,TAU);ctx.fill();ctx.globalAlpha=1;
       continue;
     }
     const col=PART_KINDS[L.part.kind].col,s=clamp(Z,.6,1.6)*7;
+    const pulse=.45+.55*Math.abs(Math.sin(G.t*.05+L.spin));
+    if(L.life<900){   // перед исчезновением предупреждаем
+      domLabel("lt"+domLabelId(L),x,y-s-5,Math.ceil(L.life/60)+"с","8px ui-monospace,monospace","rgba(255,157,122,.8)","center");
+    }
+    if(pass){
+      /* коробка печётся раз на цвет (lootIcon) и ложится мипами с поворотом */
+      gpuImage(pass,gpuMipTex(lootIcon(col)),[{x,y,w:s*LOOT_IC_K,h:s*LOOT_IC_K,rot:L.spin}],{sharp:true});
+      const c=hex2rgb(col);SH.push([1,x,y,2.2,0,0,0,c[0],c[1],c[2],pulse]);
+      continue;
+    }
     ctx.save();ctx.translate(x,y);ctx.rotate(L.spin);
     ctx.fillStyle="rgba(20,24,30,.9)";ctx.strokeStyle=col;ctx.lineWidth=1.4;
     ctx.beginPath();
@@ -371,25 +398,30 @@ function drawCombat(zx,zy,Z){
       i?ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
     ctx.closePath();ctx.fill();ctx.stroke();
     ctx.restore();
-    const pulse=.45+.55*Math.abs(Math.sin(G.t*.05+L.spin));
     ctx.fillStyle=col;ctx.globalAlpha=pulse;
     ctx.beginPath();ctx.arc(x,y,2.2,0,TAU);ctx.fill();ctx.globalAlpha=1;
-    if(L.life<900){   // перед исчезновением предупреждаем
-      domLabel("lt"+domLabelId(L),x,y-s-5,Math.ceil(L.life/60)+"с","8px ui-monospace,monospace","rgba(255,157,122,.8)","center");
-    }
   }
+  /* корпуса: с видеокарты — факелы и чад под корпусами, корпуса, пробоины и дым поверх
+     (gpuPirateLive, 12i); без неё — прежней кистью, живой слой поверх выпечки */
+  const PV=[];
+  for(const p of G.pirates){const x=zx(p.x),y=zy(p.y);
+    if(x>-60&&x<W+60&&y>-60&&y<H+60)PV.push({p,x,y,s:shipScaleAt(Z)*.82});}   /* один потолок с кораблём (16c, п. 2) */
+  if(pass)gpuPirateLive(pass,PV,false);
+  for(const q of PV){
+    const lit=gpuPirateBody(q.p,q.x,q.y,q.s);   /* корпус светом звезды на видеокарте (G4) */
+    if(lit)continue;
+    ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.p.a);
+    ctx.scale(q.s,q.s);
+    /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
+       чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных
+       один раз по seed, и живой слой повреждений поверх */
+    drawPirate(q.p,false);
+    ctx.restore();
+  }
+  if(pass)gpuPirateLive(pass,PV,true);
   for(const p of G.pirates){
     const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60){
-      const s=shipScaleAt(Z)*.82;   /* один потолок с кораблём (16c, п. 2) */
-      const lit=gpuPirateBody(p,x,y,s);   /* корпус светом звезды на видеокарте (G4) */
-      ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
-      ctx.scale(s,s);
-      /* пират рисуется своим сварным корпусом (12i), а не вашим кораблём в
-         чужой раскраске: у него шесть-восемь десятков полигонов, выпеченных
-         один раз по seed, и живой слой повреждений поверх */
-      drawPirate(p,lit);
-      ctx.restore();
       /* ренегата видно сразу: полоса шире, имя ярче и подпись, кто это такой —
          игрок должен узнать своего человека раньше, чем получит от него */
       /* полоса и имя — над тем, кто знает о вас или взят в захват (M361):
@@ -399,25 +431,28 @@ function drawCombat(zx,zy,Z){
       const w=p.rogue?54:(marked&&G.marks[0]===p?42:34),hp=clamp(p.hull/p.hullMax,0,1);
       /* полоска встаёт ВЫШЕ скобки захвата (M360a): на 26 px верхняя грань
          скобки ложилась ровно на неё, и корпус цели было не видно */
-      const by=y-Math.max(26,(typeof helmMarkTop==="function"?helmMarkTop(p,Z):0)+18);
-      ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,by,w,p.rogue?4:3);
-      ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,by,w*hp,p.rogue?4:3);
+      const by=y-Math.max(26,(typeof helmMarkTop==="function"?helmMarkTop(p,Z):0)+18),bh=p.rogue?4:3;
       /* поле — своей ниткой над полосой корпуса: видно, что бить пока
          бесполезно, и видно, как оно садится (M362) */
-      if(p.shieldMax>0&&p.shield>0){
-        ctx.fillStyle="rgba(159,216,255,.85)";
-        ctx.fillRect(x-w/2,by-3,w*clamp(p.shield/p.shieldMax,0,1),2);
-      }
+      const shf=(p.shieldMax>0&&p.shield>0)?clamp(p.shield/p.shieldMax,0,1):0;
       /* горит и молчит — это надо ВИДЕТЬ, иначе добивающая роль работает
          втёмную (M364): горящий корпус подписан огнём поверх полосы,
          перегретый вместо имени носит «ПЕРЕГРЕВ» на те секунды, пока молчит */
-      if(p.burnT>0){
-        ctx.fillStyle="rgba(255,150,70,"+(.5+.35*Math.abs(Math.sin(G.t*.35+p.seed))).toFixed(2)+")";
-        ctx.fillRect(x-w/2,by+(p.rogue?4:3),w*clamp(p.burnT/BURN_TIME,0,1),1.6);
+      const brn=p.burnT>0?clamp(p.burnT/BURN_TIME,0,1):0,ba=.5+.35*Math.abs(Math.sin(G.t*.35+p.seed));
+      if(pass){
+        SH.push([0,x-w/2,by,x+w/2,by+bh,0,0,255,255,255,.14]);
+        const hc=p.rogue?[197,138,224]:[255,107,87];SH.push([0,x-w/2,by,x-w/2+w*hp,by+bh,0,0,hc[0],hc[1],hc[2],1]);
+        if(shf)SH.push([0,x-w/2,by-3,x-w/2+w*shf,by-1,0,0,159,216,255,.85]);
+        if(brn)SH.push([0,x-w/2,by+bh,x-w/2+w*brn,by+bh+1.6,0,0,255,150,70,ba]);
+      }else{
+        ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,by,w,bh);
+        ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,by,w*hp,bh);
+        if(shf){ctx.fillStyle="rgba(159,216,255,.85)";ctx.fillRect(x-w/2,by-3,w*shf,2);}
+        if(brn){ctx.fillStyle="rgba(255,150,70,"+ba.toFixed(2)+")";ctx.fillRect(x-w/2,by+bh,w*brn,1.6);}
       }
       const hot=p.stunT>0;
-      ctx.fillStyle=hot?"rgba(255,178,92,.95)":(p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)");
-      ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
+      const font=(p.rogue?"9px":"8px")+" ui-monospace,monospace",fill=hot?"rgba(255,178,92,.95)":(p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)");
+      ctx.font=font;
       /* имя не ложится на подпись планеты и на фишку у кромки (R6, 12.09):
          пересеклось — уходит над корабль. Фишки в настоящих пикселях (15-input) */
       const lbl=hot?"ПЕРЕГРЕВ":p.name.toUpperCase();let ly=y+26;
@@ -425,13 +460,15 @@ function drawCombat(zx,zy,Z){
        const hit=BODY_LABELS.some(b=>!(bx1<b.x0||b.x1<bx0||by1<b.y0||b.y1<by0))||
          SYS_CHIPS.some(c=>!(bx1*U2<c.x||c.x+c.w<bx0*U2||by1*U2<c.y||c.y+c.h<by0*U2));
        if(hit)ly=y-22;}
-      domLabel("pn"+p.seed,x,ly,lbl,ctx.font,ctx.fillStyle,"center");
+      domLabel("pn"+p.seed,x,ly,lbl,font,fill,"center");
       if(p.rogue)domLabel("pr"+p.seed,x,y+37,"БЫВШИЙ УПРАВЛЯЮЩИЙ","8px ui-monospace,monospace","rgba(197,138,224,.6)","center");
     }else if(G.tech.has("radar")){
       const ang=Math.atan2(p.y-G.ship.y,p.x-G.ship.x);
       const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-26),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-26);
+      if(pass){SH.push([1,mx,my,3.4,0,0,0,255,107,87,.8]);continue;}
       ctx.fillStyle="rgba(255,107,87,.8)";
       ctx.beginPath();ctx.arc(mx,my,3.4,0,TAU);ctx.fill();
     }
   }
+  if(pass&&SH.length)gpuShapes(pass,SH);
 }

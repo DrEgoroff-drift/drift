@@ -118,3 +118,70 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: окна гостин
   if(ok(B,"дом нарисован и загружен"))ok(HOTEL_BAKE===B,"дом не перепечён");
   resetWorld();
 }));
+/* бой (ступень 1): три пирата вокруг корабля, болты в обе стороны, ракеты в обе стороны,
+   разрыв, гибель с контейнером, скобки захвата, точка радара у кромки. Всё, что было на
+   #c (корпуса ракет, живой слой пиратов — факелы, чад, пробоины, дым, — полосы, скобки,
+   коробки трофеев, точки у кромки), рисуется в проходе сцены: #c пуст, отправка одна на
+   кадр, выгрузок нет — пираты, трофей и коробка испечены на прогреве */
+TEST_SUITES.push(()=>suite("ворота ступени 1: бой — #c не грузится, одна отправка на кадр, выгрузок нет",{tier:"browser"},()=>{
+  if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
+  resetWorld();
+  G.mode="system";
+  if(!ok(gateStand(),"нашлась система со станцией"))return;
+  gatePlace(1.6);
+  const sh=G.ship,X=sh.x,Y=sh.y,WARM=40,N=60;
+  G.pirates=[];G.shots=[];G.msl=[];G.mslFx=[];G.loot=[];G.tech.add("radar");
+  const foe=(dx,dy,rank,seed,hp,hull)=>{const p={x:X+dx,y:Y+dy,vx:0,vy:0,a:0,hull,hullMax:hp,name:"Ц"+(G.pirates.length+1),
+    rank,seed,shipId:pirateShipId(seed),cool:0,aware:true,thrust:true,bx:X+dx,by:Y+dy,bh:hull};G.pirates.push(p);return p;};
+  /* подбитый (дым и огонь из пробоины), с пятнами, целый обречённый и дальний — точкой радара */
+  const A=foe(90,-40,3,11,400,110),B=foe(60,70,1,18,400,300),C=foe(-70,60,0,25,60,60);foe(2400,0,0,32,60,60);
+  G.marks=[A,B];
+  const Q=GPUQueue.prototype,q0={c:Q.copyExternalImageToTexture,s:Q.submit},run0=G.running,loop0=LOOP_OFF,Cx=MAIN_CTX,cm={};
+  const K={on:false,front:0,sub:0,up:{},bad:0,dirt:{}};
+  let i=0,kind=new Set();
+  try{
+    Q.copyExternalImageToTexture=function(src,dst){
+      if(K.on){if(dst.texture===GPU.T.front)K.front++;else{const w=gateWho();K.bad++;K.up[w]=(K.up[w]||0)+1;}}
+      return q0.c.apply(this,arguments);};
+    Q.submit=function(){if(K.on)K.sub++;return q0.s.apply(this,arguments);};
+    G.running=true;LOOP_OFF=false;
+    for(i=0;i<WARM+N;i++){
+      if(i===WARM){
+        K.on=true;gpuFrontHook();
+        for(const k of ["fill","stroke","fillRect","strokeRect","drawImage","fillText","strokeText","putImageData"]){
+          const o=Cx[k];cm[k]=o;
+          Cx[k]=function(){if(K.on&&GPU.cState===0){const w=k+":"+gateWho();K.dirt[w]=(K.dirt[w]||0)+1;}return o.apply(this,arguments);};}
+      }
+      /* сцена держится: корабль и пираты на местах (их корпуса не перепекаются), корпус свой цел */
+      sh.x=X;sh.y=Y;sh.vx=0;sh.vy=0;G.hull=stat().hullMax;G.shield=stat().shieldMax;G.zoom=1.6;G.zoomT=null;
+      for(const p of G.pirates){p.x=p.bx+Math.cos(i*.02+p.seed)*6;p.y=p.by+Math.sin(i*.02+p.seed)*6;p.vx=0;p.vy=0;
+        p.a=Math.atan2(sh.y-p.y,sh.x-p.x);p.thrust=true;if(p!==C)p.hull=p.bh;}
+      if(i%8===0)for(const p of G.pirates)fireShot(p.x,p.y,Math.atan2(sh.y-p.y,sh.x-p.x),7,1,false);
+      if(i%6===0){const t=G.pirates[(i/6|0)%G.pirates.length];fireShot(sh.x,sh.y,Math.atan2(t.y-sh.y,t.x-sh.x),9,1,true);}
+      if(i%25===0&&G.pirates.includes(A))mslFoeFire(A);
+      if(i%30===5){const a=Math.atan2(A.y-sh.y,A.x-sh.x);
+        G.msl.push({x:sh.x+Math.cos(a)*14,y:sh.y+Math.sin(a)*14,vx:Math.cos(a)*MSL_SPEED,vy:Math.sin(a)*MSL_SPEED,
+          a,tgt:A,dmg:MSL_DMG,turn:MSL_TURN,life:MSL_LIFE,age:0,puff:0,kind:"plain"});}
+      /* гибель с контейнером — на прогреве: коробка трофея печётся раз на цвет */
+      if(i===10){C.hull=0;killPirate(C);G.pirates=G.pirates.filter(q=>q.hull>0);
+        G.loot.push({x:X-40,y:Y+50,vx:0,vy:0,spin:.4,life:600,part:{kind:"gun"}},{x:X-9000,y:Y,vx:0,vy:0,spin:0,life:5400,part:{kind:"shield"}});}
+      if(i===WARM+10)mslBoom({x:X+40,y:Y-50},null);
+      for(const L of G.loot){L.vx=0;L.vy=0;}
+      frameBody(wallMs());
+      if(K.on){if(G.shots.length)kind.add("болты");if((G.msl||[]).some(m=>m.foe))kind.add("чужая ракета");
+        if((G.msl||[]).some(m=>!m.foe))kind.add("своя ракета");if(G.loot.length)kind.add("трофей");}
+    }
+  }catch(e){ok(false,"кадр "+i+" упал: "+e.message);}
+  finally{
+    K.on=false;Q.copyExternalImageToTexture=q0.c;Q.submit=q0.s;
+    for(const k in cm)Cx[k]=cm[k];
+    G.running=run0;LOOP_OFF=loop0;
+  }
+  const top=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>v+"× "+k).join("; ");
+  eq([...kind].sort().join(", "),"болты, своя ракета, трофей, чужая ракета","в окне был бой целиком");
+  eq(K.front,0,"#c за "+N+" кадров боя не грузился"+(K.front?" — пачкают: "+top(K.dirt):""));
+  eq(Object.keys(K.dirt).length,0,"пустой #c в бою никто не пачкает"+(Object.keys(K.dirt).length?": "+top(K.dirt):""));
+  eq(K.sub,N,"отправок в очередь ровно по одной на кадр");
+  eq(K.bad,0,"выгрузок в бою нет"+(K.bad?": "+top(K.up):""));
+  resetWorld();
+}));

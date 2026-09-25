@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 610 · символов верхнего уровня: 6072
+Файлов: 610 · символов верхнего уровня: 6077
 
 ## СИМВОЛЫ
 
@@ -1420,7 +1420,7 @@ drawCheburek                 src/17j-cheburek.js:72-113
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:400-674
-drawCombat                   src/13-pirates.js:350-437
+drawCombat                   src/13-pirates.js:363-474
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:115-141
@@ -1483,7 +1483,7 @@ drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPeaceFleet               src/17m-peace-fleet.js:51-109
-drawPirate                   src/12i-pirate-hull.js:438-488
+drawPirate                   src/12i-pirate-hull.js:489-539
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
@@ -2043,10 +2043,11 @@ GEW                          src/17-mode-system.js:48
 GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:202
 GEX_WGSL                     src/16ga-gpu-trail.js:203
-gexPush                      src/16ga-gpu-trail.js:268-274
+gexDraw                      src/16ga-gpu-trail.js:305-314
+gexPush                      src/16ga-gpu-trail.js:269-275
 ghf                          src/17ga-gpu-planets.js:349
-GHL                          src/16ga-gpu-trail.js:318
-GHL_WGSL                     src/16ga-gpu-trail.js:319
+GHL                          src/16ga-gpu-trail.js:324
+GHL_WGSL                     src/16ga-gpu-trail.js:325
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
@@ -2181,7 +2182,7 @@ gpuCompNeb                   src/08b-gpu.js:417-427
 gpuCvLevel                   src/08c-gpu-kit.js:75-86
 gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b-gpu.js:81-86
-gpuExhaust                   src/16ga-gpu-trail.js:275-308
+gpuExhaust                   src/16ga-gpu-trail.js:276-302
 gpuField                     src/08c-gpu-kit.js:279-308
 gpuFrame                     src/08b-gpu.js:507-517
 gpuFrontClean                src/08c-gpu-kit.js:121-126
@@ -2191,7 +2192,7 @@ gpuHaze                      src/08b-gpu.js:440
 gpuHud                       src/08bh-gpu-hud.js:14-17
 gpuHudDpr                    src/08bh-gpu-hud.js:12
 gpuHudFlush                  src/08bh-gpu-hud.js:20-33
-gpuHullLight                 src/16ga-gpu-trail.js:361-380
+gpuHullLight                 src/16ga-gpu-trail.js:367-386
 gpuImage                     src/08c-gpu-kit.js:207-219
 gpuKitU                      src/08c-gpu-kit.js:165-169
 gpuLight                     src/08b-gpu.js:442
@@ -2211,6 +2212,7 @@ gpuPass                      src/08b-gpu.js:428-431
 gpuPipe                      src/08c-gpu-kit.js:20-27
 gpuPipes                     src/08b-gpu.js:345-371
 gpuPirateBody                src/12i-pirate-hull.js:432-437
+gpuPirateLive                src/12i-pirate-hull.js:444-488
 gpuPlanet                    src/17ga-gpu-planets.js:320-338
 gpuPresent                   src/08b-gpu.js:614-628
 gpuResize                    src/08b-gpu.js:380-415
@@ -2496,21 +2498,21 @@ HELM_THR                     src/15a-helm.js:74
 HELM_TRAIL                   src/15a-helm.js:113
 HELM_TRAIL_MAX               src/15a-helm.js:115
 helmApply                    src/15a-helm.js:450-548
-helmBandPath                 src/15b-helm-draw.js:143-151
-helmCamOff                   src/15b-helm-draw.js:128-141
+helmBandPath                 src/15b-helm-draw.js:150-158
+helmCamOff                   src/15b-helm-draw.js:135-148
 helmCanvasXY                 src/15a-helm.js:153
 helmDrag                     src/15a-helm.js:205-208
-helmDrawMarks                src/15b-helm-draw.js:8-21
-helmDrawSticks               src/15b-helm-draw.js:159-257
-helmDry                      src/15b-helm-draw.js:153
-helmDryLabel                 src/15b-helm-draw.js:154-158
+helmDrawMarks                src/15b-helm-draw.js:8-28
+helmDrawSticks               src/15b-helm-draw.js:166-264
+helmDry                      src/15b-helm-draw.js:160
+helmDryLabel                 src/15b-helm-draw.js:161-165
 helmEdgeInput                src/15a-helm.js:349-361
-helmHome                     src/15b-helm-draw.js:52-65
-helmLift                     src/15b-helm-draw.js:69-114
+helmHome                     src/15b-helm-draw.js:59-72
+helmLift                     src/15b-helm-draw.js:76-121
 helmLock                     src/15a-helm.js:282-290
 helmLockNext                 src/15a-helm.js:292-309
 helmMarksClean               src/15a-helm.js:273-281
-helmMarkTop                  src/15b-helm-draw.js:117-122
+helmMarkTop                  src/15b-helm-draw.js:124-129
 helmPinchBlocked             src/15a-helm.js:260
 helmPirate                   tests/91zzzw-helm.js:17-20
 helmPtrEnd                   src/15a-helm.js:247-252
@@ -2518,8 +2520,8 @@ helmRun                      tests/91zzzw-helm.js:16
 helmScreenOpen               src/15a-helm.js:257
 helmShip                     tests/91zzzw-helm.js:6-15
 helmShotAt                   src/15a-helm.js:325-328
-helmStickFoot                src/15b-helm-draw.js:38-46
-helmStickShape               src/15b-helm-draw.js:29-35
+helmStickFoot                src/15b-helm-draw.js:45-53
+helmStickShape               src/15b-helm-draw.js:36-42
 helmSyncPointer              src/15a-helm.js:179-199
 helmTake                     src/15a-helm.js:222-230
 helmTap                      src/15a-helm.js:311-323
@@ -3160,6 +3162,8 @@ lookVerdict                  src/28y-look.js:114-124
 LOOP_OFF                     src/28-loop.js:364
 LOOP_PHASE                   src/01-core.js:86
 loopReset                    src/28-loop.js:165
+LOOT_IC                      src/13-pirates.js:352
+lootIcon                     src/13-pirates.js:353-362
 LORE                         src/12q-lore.js:67
 LORE_ACT                     src/12q-lore.js:47
 LORE_BY_CHAP                 src/12q-lore.js:69
@@ -3475,7 +3479,7 @@ MSL_TURN                     src/16b-missile.js:15
 MSL_VMAX                     src/16b-missile.js:18
 mslBoom                      src/16b-missile.js:154-167
 mslCheck                     src/16b-missile.js:114-120
-mslDraw                      src/16b-missile.js:253-269
+mslDraw                      src/16b-missile.js:253-275
 mslFire                      src/16b-missile.js:121-153
 mslFoeFire                   src/16b-missile.js:172-181
 mslKindKeyOf                 src/16b-missile.js:50-53
@@ -3932,6 +3936,7 @@ peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
+PGX                          src/12i-pirate-hull.js:443
 PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
 physRun                      tests/91zzzzy-phys.js:29-37
@@ -6535,7 +6540,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12h-relic.js · 8 КБ
   · артефакты и лаборатория:1
 
-## src/12i-pirate-hull.js · 29 КБ
+## src/12i-pirate-hull.js · 32 КБ
   · пиратский корпус:1
 
 ## src/12j-home.js · 16 КБ
@@ -6680,7 +6685,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13-combat.js · 14 КБ
   · бой: выстрелы с владельцем (M361):1
 
-## src/13-pirates.js · 30 КБ
+## src/13-pirates.js · 32 КБ
   · пираты:1
 
 ## src/13a-guns.js · 22 КБ
@@ -6732,7 +6737,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/15a-helm.js · 41 КБ
   · штурвал (M360):1
 
-## src/15b-helm-draw.js · 16 КБ
+## src/15b-helm-draw.js · 17 КБ
   · штурвал: рисунок (M422):1
 
 ## src/15c-rec.js · 6 КБ
@@ -8019,7 +8024,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzz-crashlog.js · 3 КБ
   · автотесты: что уезжает в crash.log (0.419):1
 
-## tests/91zzzzzzy-gpugate.js · 9 КБ
+## tests/91zzzzzzy-gpugate.js · 14 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

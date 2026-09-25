@@ -7,10 +7,16 @@
 /* ── рисунок: скобки захвата в мире, стики в пикселях экрана ── */
 function helmDrawMarks(zx,zy,Z){
   if(!G.marks||!G.marks.length)return;
+  /* с видеокарты уголки — отрезками в проходе сцены (ступень 1: #c в бою пуст) */
+  const pass=gpuScene(),SH=[];
   G.marks.forEach((p,i)=>{
     const x=zx(p.x),y=zy(p.y);
     if(x<-40||x>W+40||y<-40||y>H+40)return;
     const r=clamp(Z,.55,1.6)*(i?16:20),g=r*.45;
+    if(pass){const c=i?[255,157,122,.5]:[255,107,87,.92],hw=(i?1:1.4)/2;
+      for(const k of [[-1,-1],[1,-1],[1,1],[-1,1]]){const cx=x+k[0]*r,cy=y+k[1]*r;
+        SH.push([2,cx,y+k[1]*(r-g),cx,cy,hw,0,c[0],c[1],c[2],c[3]],[2,cx,cy,x+k[0]*(r-g),cy,hw,0,c[0],c[1],c[2],c[3]]);}
+      return;}
     ctx.strokeStyle=i?"rgba(255,157,122,.5)":"rgba(255,107,87,.92)";ctx.lineWidth=i?1:1.4;
     ctx.beginPath();
     for(const c of [[-1,-1],[1,-1],[1,1],[-1,1]]){
@@ -18,6 +24,7 @@ function helmDrawMarks(zx,zy,Z){
     }
     ctx.stroke();
   });
+  if(SH.length)gpuShapes(pass,SH);
 }
 /* ── след стика (M360a) ──
    M360 рисовал два кольца в 82 px с шапкой в 11: на телефоне левое ложилось на
