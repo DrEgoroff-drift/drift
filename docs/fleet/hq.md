@@ -81,7 +81,7 @@ Zone: `27c-ui-hq`, `27f-hq-room`, `27d-ui-cantina`, `27d-ui-cantina-props`, `12v
    into the pass. Still 2D on `#c`: the player (`drawAstronaut`, the life ship's zone — called as
    it is), his floor ellipse, the loot beacons, stencils, health bars, shots, the hurt flash.
 
-5. **Raid light, tuned close up** (`24aa1-raid-gpu`; test for kino and the New Year tree in the
+5. `06dade8` **Raid light, tuned close up** (`24aa1-raid-gpu`; test for kino and the New Year tree in the
    cantina bake). With the camera close (`raidfoe`) the torch burned the far wall and the
    pirate white and the beam in the air became a white block: the torch is weaker (1.35 → 1.05),
    the pool at the feet smaller, the in-air beam saturates softly, sprites take .82 of the light,
