@@ -337,7 +337,10 @@ function gpuField(pass,name,code,uni,texs,o){
   const slot=A.n++,f=new Float32Array(64);
   f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;if(uni)f.set(uni.subarray?uni.subarray(0,60):uni.slice(0,60),4);
   d.queue.writeBuffer(A.buf,slot*256,f);
-  const tv=[0,1,2,3].map(k=>(texs&&texs[k])?(texs[k].view||gpuCanvasTex(texs[k]).view):GPU.nView||(GPU.nView=GPU.N.createView()));
+  /* выпечка из кэша модуля (корпус, флот, пираты, баржа) пережила потерю устройства — печём заново,
+     как gpuImage: вид мёртвого устройства делает группу привязок, проход и весь кадр негодными */
+  const tv=[0,1,2,3].map(k=>{const t=texs&&texs[k];if(!t)return GPU.nView||(GPU.nView=GPU.N.createView());
+    if(t.draw&&t.dev!==GPU.dev)gpuBakeRedo(t);return t.view||gpuCanvasTex(t).view;});
   /* привязка на слот: пересобирается, только если сменился буфер или текстуры */
   const key="fld."+slot;let c=GPU.bgs[key];
   const sm=(o&&o.smp)||GPU.S.lin;   /* o.smp — свой сэмплер (трилинейный у мастеров с мипами) */

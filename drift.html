@@ -10392,15 +10392,6 @@ function gpuTakeSnap(){
   chipDomSnap(g,c.width/Math.max(1,W));
   GPU.snapNo=GPU.frameNo;
 }
-/* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
-function gpuNone(why){
-  GPU.none=true;
-  try{crashShip("gpu","нет WebGPU: "+why,"");}catch(_){}
-  if(typeof document==="undefined"||!document.body||document.getElementById("nogpu"))return;
-  const d=document.createElement("div");d.id="nogpu";
-  d.innerHTML="<b>Этому браузеру не хватает WebGPU</b><s>«Дрейф» рисует мир видеокартой. Подойдут свежие Chrome, Edge, Яндекс Браузер и Opera, Safari 26 и новее.</s>";
-  document.body.appendChild(d);
-}
 async function gpuInit(){
   if(GPU.ok||GPU.busy)return;
   if(typeof navigator==="undefined"||!navigator.gpu){gpuNone("navigator.gpu");return;}
@@ -10443,13 +10434,6 @@ async function gpuInit(){
   }catch(e){
     GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}
-}
-/* устройство потеряно (сон телефона, сброс драйвера): кадр ждёт, ядро поднимается заново */
-function gpuDrop(why,retry){
-  GPU.ok=false;GPU.on=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
-  if(ctx===GPU.uctx)ctx=MAIN_CTX;
-  try{crashShip("gpu",why,"");}catch(_){}
-  if(retry)setTimeout(()=>{GPU.lost=false;GPU.dev=null;gpuInit();},1500);
 }
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
@@ -10984,7 +10968,7 @@ function gpuWorld(k,grain,vig){
       gpuBloom();}
     /* слой приборов — по изменению (08bh); дальше кадр рисует стойку (25d) — туда же */
     gpuHudFlush((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen());ctx=GPU.uctx;
-  }catch(e){gpuDrop("сборка: "+((e&&e.message)||e),true);}
+  }catch(e){gpuFail(e,"сборка");}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */
 function gpuBloom(){
@@ -11005,7 +10989,7 @@ function gpuPresent(){
     if(tsRead)tsRead();
     GPU.frameNo++;
     if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}
-  }catch(e){gpuDrop("кадр: "+((e&&e.message)||e),true);}
+  }catch(e){gpuFail(e,"кадр");}
   GPU.enc=null;GPU.on=false;
   if(ctx===GPU.uctx)ctx=MAIN_CTX;
 }
@@ -11020,7 +11004,10 @@ if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);
    ключ отдаётся готовым, иначе конвейер строится здесь же и ключ пишется
    в GPU_PIPES.lazy — это и видит детектор. Модули шейдеров — по тексту, один раз. */
 /* used — каждый ключ, спрошенный у воронки с загрузки: из него детектор пишет таблицу (08b1) */
-const GPU_PIPES={dev:null,warm:new Map(),mods:new Map(),lazy:[],used:new Set(),done:true,n:0,ms:0};
+/* ворота взведены с загрузки: старт, нажатый до устройства, тоже ждёт; открывает их прогрев своего
+   устройства или gpuNone (видеокарты нет — ждать нечего) */
+const GPU_PIPES={dev:null,warm:new Map(),mods:new Map(),lazy:[],used:new Set(),done:false,n:0,ms:0,open:null};
+GPU_PIPES.gate=new Promise(r=>{GPU_PIPES.open=r;});
 function gpuPipesDev(){
   const d=GPU.dev;
   if(GPU_PIPES.dev!==d){GPU_PIPES.dev=d;GPU_PIPES.warm=new Map();GPU_PIPES.mods=new Map();}
@@ -11073,13 +11060,15 @@ function gpuPipesWarm(keys){
     const w={p:null,code:r.code};GPU_PIPES.warm.set(key,w);
     jobs.push(d.createRenderPipelineAsync(r.desc).then(p=>{if(GPU_PIPES.dev===d){w.p=p;GPU_PIPES.n++;}},()=>{GPU_PIPES.bad.push(key);}));
   }
-  return GPU_PIPES.warmP=Promise.all(jobs).then(()=>{GPU_PIPES.done=true;GPU_PIPES.ms=Math.round(wallMs()-t0);});
+  /* прогрев брошенного устройства ворот не открывает: их откроет прогрев нового */
+  return GPU_PIPES.warmP=Promise.all(jobs).then(()=>{if(GPU_PIPES.dev!==d)return;
+    GPU_PIPES.done=true;GPU_PIPES.ms=Math.round(wallMs()-t0);GPU_PIPES.open();});
 }
 /* старт полёта ждёт прогрева не дольше ms — дальше ленивый путь */
 function gpuAfterWarm(fn,ms){
-  if(GPU_PIPES.done||!GPU_PIPES.warmP){fn();return;}
+  if(GPU_PIPES.done||GPU.none){fn();return;}
   let go=false;const run=()=>{if(!go){go=true;fn();}};
-  GPU_PIPES.warmP.then(run);setTimeout(run,ms||2500);
+  GPU_PIPES.gate.then(run);setTimeout(run,ms||2500);
 }
 
 /* ══════════════ таблица ключей прогрева (08b0) — пишет детектор, руками не править ══════════════
@@ -11126,6 +11115,39 @@ const GPU_PIPE_KEYS=[
   "pipe:kit.shp|over"
 ];
 
+/* ══════════════ отказ видеокарты: потеря, сбой кадра, нет WebGPU (DESIGN-gpu §G) ══════════════
+   Устройство роняет только настоящая беда видеокарты: lost или исключение самого API (DOMException).
+   Ошибка JS в сборке кадра — это сбой кадра, его ловит и называет страж (28-loop «СБОЙ · …»):
+   иначе один бросок художника приборов гасил видеокарту на 1.5 с и бросал устройство целиком. */
+/* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
+function gpuNone(why){
+  GPU.none=true;GPU_PIPES.done=true;GPU_PIPES.open();
+  try{crashShip("gpu","нет WebGPU: "+why,"");}catch(_){}
+  if(typeof document==="undefined"||!document.body||document.getElementById("nogpu"))return;
+  const d=document.createElement("div");d.id="nogpu";
+  if(GPU.frameNo>0){d.innerHTML="<b>Видеокарта перестала отвечать</b><s>Мир рисует видеокарта, и после сбоя она не поднялась. Перезагрузите страницу — запись цела.</s>";document.body.appendChild(d);return;}
+  d.innerHTML="<b>Этому браузеру не хватает WebGPU</b><s>«Дрейф» рисует мир видеокартой. Подойдут свежие Chrome, Edge, Яндекс Браузер и Opera, Safari 26 и новее.</s>";
+  document.body.appendChild(d);
+}
+/* устройство потеряно (сон телефона, сброс драйвера): кадр ждёт, ядро поднимается заново */
+function gpuDrop(why,retry){
+  GPU.ok=false;GPU.on=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
+  if(ctx===GPU.uctx)ctx=MAIN_CTX;
+  /* устройство, брошенное без destroy(), держит кадровые цели и печи до сборщика мусора — сносим сразу
+     (у потерянного это пустой вызов; lost с причиной destroyed обработчик gpuInit пропускает) */
+  try{if(GPU.dev)GPU.dev.destroy();}catch(_){}
+  try{crashShip("gpu",why,"");}catch(_){}
+  if(retry)setTimeout(()=>{GPU.lost=false;GPU.dev=null;gpuInit();},1500);
+}
+/* сборка или показ кадра бросили: беда устройства — ронять и поднимать; иначе кадр бросается
+   без отправки, а исключение уходит стражу кадра */
+function gpuFail(e,where){
+  if(GPU.lost||(typeof DOMException!=="undefined"&&e instanceof DOMException)){gpuDrop(where+": "+((e&&e.message)||e),true);return;}
+  GPU.scenePass=null;GPU.overPass=null;GPU.enc=null;GPU.on=false;
+  if(ctx===GPU.uctx)ctx=MAIN_CTX;
+  throw e;
+}
+
 /* ══════════════ слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S) ══════════════
    Приборы не ходят через видеокарту: браузер сам кладёт их поверх канвы WebGPU. Два правила
    Контроля (15/n): приборы — на родном DPR устройства (мир на телефоне ×1.5, текст — ×2.625,
@@ -11150,7 +11172,8 @@ function gpuHudFlush(rack){
   if(key!==GPU.hkey){
     if(GPU.uiWas){u.setTransform(1,0,0,1,0,0);u.clearRect(0,0,GPU.ui.width,GPU.ui.height);}
     const nd=GPU.ui.width/Math.max(1,W),c0=ctx;ctx=u;
-    try{for(const e of q){u.setTransform(nd,0,0,nd,0,0);u.save();try{e.fn();}finally{u.restore();}}}
+    /* сбой одного художника — строка «СБОЙ» стража кадра, остальные рисуют дальше: видеокарта тут ни при чём */
+    try{for(const e of q){u.setTransform(nd,0,0,nd,0,0);u.save();try{e.fn();}catch(err){crashSay(err,"приборы");}finally{u.restore();}}}
     finally{ctx=c0;}
     u.setTransform(nd,0,0,nd,0,0);
     GPU.uiWas=key!=="";GPU.hkey=key;
@@ -11697,7 +11720,10 @@ function gpuField(pass,name,code,uni,texs,o){
   const slot=A.n++,f=new Float32Array(64);
   f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;if(uni)f.set(uni.subarray?uni.subarray(0,60):uni.slice(0,60),4);
   d.queue.writeBuffer(A.buf,slot*256,f);
-  const tv=[0,1,2,3].map(k=>(texs&&texs[k])?(texs[k].view||gpuCanvasTex(texs[k]).view):GPU.nView||(GPU.nView=GPU.N.createView()));
+  /* выпечка из кэша модуля (корпус, флот, пираты, баржа) пережила потерю устройства — печём заново,
+     как gpuImage: вид мёртвого устройства делает группу привязок, проход и весь кадр негодными */
+  const tv=[0,1,2,3].map(k=>{const t=texs&&texs[k];if(!t)return GPU.nView||(GPU.nView=GPU.N.createView());
+    if(t.draw&&t.dev!==GPU.dev)gpuBakeRedo(t);return t.view||gpuCanvasTex(t).view;});
   /* привязка на слот: пересобирается, только если сменился буфер или текстуры */
   const key="fld."+slot;let c=GPU.bgs[key];
   const sm=(o&&o.smp)||GPU.S.lin;   /* o.smp — свой сэмплер (трилинейный у мастеров с мипами) */

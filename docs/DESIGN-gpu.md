@@ -633,7 +633,18 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   wall scene, the billboard at ×1.5 (neon core → `gc:msk|destination-out`) and «the real first flight»
   (spawn + 1800 frames of Контроль's gate.py route: thrust 1 s on/off, left 0.5 s every 4 s — caught
   `fld.hgflame|add` too); table 39 keys.
-  Next: the review's 5a–5c.
+- **Device loss and frame failures (review 25.09, 5a + findings 8, 11) done.** `08b2-gpu-loss.js` holds
+  `gpuNone`, `gpuDrop` and the new `gpuFail`: only a lost device or a `DOMException` from the API drops the
+  device; a JS throw in `gpuWorld`/`gpuPresent` abandons the frame (passes, encoder, `ctx` back to #c) and
+  rethrows to the frame guard («СБОЙ · …»). `gpuHudFlush` catches per painter (`crashSay(err,"приборы")`).
+  `gpuDrop` now `destroy()`s the old device. `gpuField` rebakes any bake from a dead device (module caches:
+  hull, fleet, pirates, barge, lit sprites). Finding 8: after frames were shown, `gpuNone` says «Видеокарта
+  перестала отвечать» instead of «this browser lacks WebGPU». Finding 11: the warm gate is a promise armed at
+  load (`GPU_PIPES.gate`, `done:false`), opened by the warm-up of the current device or by `gpuNone`; a
+  dropped device's warm-up opens nothing. Suite «видеокарта: сбой кадра не роняет устройство»; the real loss
+  on the stand (shot.py: 30 frames, `gpuDrop(…,true)`, wall clock): new device, 39 keys warm, 0 crashes,
+  0 GPU errors, the world draws.
+  Next: 5b (LRU for art caches), 5c (scout searchlight), 5e (reversed smoothstep edges).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

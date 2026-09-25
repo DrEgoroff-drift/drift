@@ -6,7 +6,10 @@
    ключ отдаётся готовым, иначе конвейер строится здесь же и ключ пишется
    в GPU_PIPES.lazy — это и видит детектор. Модули шейдеров — по тексту, один раз. */
 /* used — каждый ключ, спрошенный у воронки с загрузки: из него детектор пишет таблицу (08b1) */
-const GPU_PIPES={dev:null,warm:new Map(),mods:new Map(),lazy:[],used:new Set(),done:true,n:0,ms:0};
+/* ворота взведены с загрузки: старт, нажатый до устройства, тоже ждёт; открывает их прогрев своего
+   устройства или gpuNone (видеокарты нет — ждать нечего) */
+const GPU_PIPES={dev:null,warm:new Map(),mods:new Map(),lazy:[],used:new Set(),done:false,n:0,ms:0,open:null};
+GPU_PIPES.gate=new Promise(r=>{GPU_PIPES.open=r;});
 function gpuPipesDev(){
   const d=GPU.dev;
   if(GPU_PIPES.dev!==d){GPU_PIPES.dev=d;GPU_PIPES.warm=new Map();GPU_PIPES.mods=new Map();}
@@ -59,11 +62,13 @@ function gpuPipesWarm(keys){
     const w={p:null,code:r.code};GPU_PIPES.warm.set(key,w);
     jobs.push(d.createRenderPipelineAsync(r.desc).then(p=>{if(GPU_PIPES.dev===d){w.p=p;GPU_PIPES.n++;}},()=>{GPU_PIPES.bad.push(key);}));
   }
-  return GPU_PIPES.warmP=Promise.all(jobs).then(()=>{GPU_PIPES.done=true;GPU_PIPES.ms=Math.round(wallMs()-t0);});
+  /* прогрев брошенного устройства ворот не открывает: их откроет прогрев нового */
+  return GPU_PIPES.warmP=Promise.all(jobs).then(()=>{if(GPU_PIPES.dev!==d)return;
+    GPU_PIPES.done=true;GPU_PIPES.ms=Math.round(wallMs()-t0);GPU_PIPES.open();});
 }
 /* старт полёта ждёт прогрева не дольше ms — дальше ленивый путь */
 function gpuAfterWarm(fn,ms){
-  if(GPU_PIPES.done||!GPU_PIPES.warmP){fn();return;}
+  if(GPU_PIPES.done||GPU.none){fn();return;}
   let go=false;const run=()=>{if(!go){go=true;fn();}};
-  GPU_PIPES.warmP.then(run);setTimeout(run,ms||2500);
+  GPU_PIPES.gate.then(run);setTimeout(run,ms||2500);
 }

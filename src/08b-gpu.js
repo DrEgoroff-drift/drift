@@ -32,15 +32,6 @@ function gpuTakeSnap(){
   chipDomSnap(g,c.width/Math.max(1,W));
   GPU.snapNo=GPU.frameNo;
 }
-/* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
-function gpuNone(why){
-  GPU.none=true;
-  try{crashShip("gpu","нет WebGPU: "+why,"");}catch(_){}
-  if(typeof document==="undefined"||!document.body||document.getElementById("nogpu"))return;
-  const d=document.createElement("div");d.id="nogpu";
-  d.innerHTML="<b>Этому браузеру не хватает WebGPU</b><s>«Дрейф» рисует мир видеокартой. Подойдут свежие Chrome, Edge, Яндекс Браузер и Opera, Safari 26 и новее.</s>";
-  document.body.appendChild(d);
-}
 async function gpuInit(){
   if(GPU.ok||GPU.busy)return;
   if(typeof navigator==="undefined"||!navigator.gpu){gpuNone("navigator.gpu");return;}
@@ -83,13 +74,6 @@ async function gpuInit(){
   }catch(e){
     GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}
-}
-/* устройство потеряно (сон телефона, сброс драйвера): кадр ждёт, ядро поднимается заново */
-function gpuDrop(why,retry){
-  GPU.ok=false;GPU.on=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
-  if(ctx===GPU.uctx)ctx=MAIN_CTX;
-  try{crashShip("gpu",why,"");}catch(_){}
-  if(retry)setTimeout(()=>{GPU.lost=false;GPU.dev=null;gpuInit();},1500);
 }
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
@@ -624,7 +608,7 @@ function gpuWorld(k,grain,vig){
       gpuBloom();}
     /* слой приборов — по изменению (08bh); дальше кадр рисует стойку (25d) — туда же */
     gpuHudFlush((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen());ctx=GPU.uctx;
-  }catch(e){gpuDrop("сборка: "+((e&&e.message)||e),true);}
+  }catch(e){gpuFail(e,"сборка");}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */
 function gpuBloom(){
@@ -645,7 +629,7 @@ function gpuPresent(){
     if(tsRead)tsRead();
     GPU.frameNo++;
     if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}
-  }catch(e){gpuDrop("кадр: "+((e&&e.message)||e),true);}
+  }catch(e){gpuFail(e,"кадр");}
   GPU.enc=null;GPU.on=false;
   if(ctx===GPU.uctx)ctx=MAIN_CTX;
 }
