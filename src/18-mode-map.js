@@ -119,7 +119,7 @@ function mapReset(){G.mapView=null;G.mapZoom=1;G.mapMore=false;G.mapClean=false;
 function mapCleanSet(on){G.mapClean=!!on;if(typeof document!=="undefined"&&document.body)document.body.classList.toggle("mapclean",G.mapClean);}
 function drawMap(){
   const st=stat();
-  ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
+  /* заливки листа нет: небо — первый слой кадра на видеокарте, непрозрачное (17z3) */
   const cell=mapCell(),R=mapRange();
   const V=mapViewC(),vx=V.x,vy=V.y;              /* окно карты: обычно вы, по слуху — названный сектор (M298) */
   const px=W/2+(G.sx-vx)*cell,py=H/2+(G.sy-vy)*cell;
@@ -195,20 +195,21 @@ function drawMap(){
   /* области слухов и спички на клетках (M347) — над сеткой, под звёздами; слухи — своим слоем */
   if(typeof mapRumoursDraw==="function"&&!G.mapClean){if(typeof mapLayerOn!=="function"||mapLayerOn("rumours"))mapRumoursDraw(V,cell);mapMarksDraw(V,cell);}
   let sel=null,cur=null;
+  /* значок системы уступает галактике на отъезде (D11, телефон 18.09): на ×5
+     клетка 9 px, а знак — ядро, лучи, кольцо станции — оставался размером
+     с ×1, и тысяча знаков топила спираль в серой каше. Знак ужимается с
+     клеткой (до .35) и бледнеет; кольца станции и пояса ниже 16 px не нужны */
+  const gk=clamp(cell/45,.35,1);
   for(const v of vis){
-    const{gx,gy,s,x,y}=v;
-    const here=gx===G.sx&&gy===G.sy;
     /* глубина тьмой: дальний сектор тусклее, недостижимый — вполовину */
-    const fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
-    /* значок системы уступает галактике на отъезде (D11, телефон 18.09): на ×5
-       клетка 9 px, а знак — ядро, лучи, кольцо станции — оставался размером
-       с ×1, и тысяча знаков топила спираль в серой каше. Знак ужимается с
-       клеткой (до .35) и бледнеет; кольца станции и пояса ниже 16 px не нужны */
-    const gk=clamp(cell/45,.35,1);
-    const rr=(1.8+s.cls.t*2.2)*gk;
-    const col=hex2rgb(s.cls.col);
-    /* ореол, лучи, ядро — в 17z-map-backdrop: тот же рисунок звезды и на сайте */
-    mapStarPaint(ctx,x,y,col,s.cls.t,fade*(.4+.6*gk),{rr});
+    v.fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
+    v.rr=(1.8+v.s.cls.t*2.2)*gk;
+  }
+  /* звёзды систем — свет на видеокарте поверх линий, владений и слухов, под метками (17z3) */
+  {const sp=mapGpuOver();if(sp)mapStarsGpu(sp,vis,gk);}
+  for(const v of vis){
+    const{gx,gy,s,x,y,fade,rr}=v;
+    const here=gx===G.sx&&gy===G.sy;
     ctx.globalAlpha=fade;
     /* ── занятая пиратами система ──
        Кольцо из штрихов вместо ровного круга: занятость должна читаться как
