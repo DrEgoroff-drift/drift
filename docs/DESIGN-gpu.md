@@ -362,6 +362,34 @@ A strength of 1.2 is no better (6.20 at .8). The recommended lod for a sprite wi
 level − .8. No dark rings. The pair is `pair_lit_sh.6.png`; the columns are 2D, screen, 1.2 finer, and the mask
 at 0, .5 and .8.
 
+**Shadow series in a bake (for GPU-3's hotel).** Before, every command with a shadow got its own layer. Each
+layer had a full-size MSAA target, its own clear and resolve, and two blur passes. The hotel's light layer has
+92 such commands and baked in about 430 ms. Now a run of commands with the same shadow is one layer, a
+«series». The same shadow means the same blur, colour, offset, composite op and clip. A series gets one blur and
+one composite quad, placed where its first member stood. The order check has two rules:
+- a new member's shadow footprint (its box + 3σ, shifted by the offset) must not touch any earlier footprint in
+  the series. A blur of a sum is the sum of the blurs, but source-over of two overlapping shadows is not a sum;
+- the footprint must not touch anything drawn in the series so far: a member's shape, or a command without a
+  shadow. In 2D, shadow 2 lies over shape 1; in a series it would lie under it.
+
+A command with an unbounded composite op closes the series. Layer targets are now sized to the largest series
+box, not the whole bake. The shape is drawn shifted by the box corner (`GU.o`).
+
+The probe draws the hotel's light layer (`hotelPaint` em, all windows lit, 320×218, ss 2) through the GPU canvas.
+Timings are to `onSubmittedWorkDone`, the median of runs 2–6, with other sessions busy on the machine:
+
+| | layers | bake, ms | mean \|Δ\| to 2D | px with Δ > 24 |
+|---|---|---|---|---|
+| HEAD (a layer per command) | 92 | 431 | 0.296 | 5 |
+| series | 18 | 146 | 0.296 | 5 |
+| no shadow at all (the floor) | 0 | ~80 | — | — |
+
+HEAD and series agree to one level (max Δ 1). The layer count drops to 18, not 1, because the rules do cut
+series: a window whose glass or balcony also casts a shadow overlaps its own footprint. The pairs are
+`pair_hotel_sh.png` (2D | HEAD | series, ×2) and `pair_hotel_sh_x4.png` (windows ×4). The bake records the layer
+count in `B.shl`. Контроль: this is an intermediate step. 2D does the same bake in 74 ms, so the time is to be
+broken down next.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -371,7 +399,11 @@ at 0, .5 and .8.
   `pair_text_x3.png`, `pair_shadow_x3.png` and `pair_neon_bake_x4.png`; numbers in §G.
 - **gpu3 merged up to 149d5b3 (cc220f3).**
 - **The mask in `gpuLitSprite` is in (§G).** Its last argument is `sharp`, and it is best at the screen's level − .8.
+- **Shadow series in a bake are in (§G).** Hotel light layer: 92 layers → 18, 431 → 146 ms, picture as HEAD.
 - **Next, in Контроль's order (25.09):**
+  0. the hotel shadow is not closed yet (2D 74 ms). First break the 146 ms into JS, GPU, blur and MSAA passes.
+     Then two edits that keep the picture: Gauss weights once per layer on the CPU; and for σ > 4, halve the
+     layer until σ ≤ 4, blur, stretch back (as Skia does). Needs a pair: ×4 of neon and shadow;
   1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
      a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;
   2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

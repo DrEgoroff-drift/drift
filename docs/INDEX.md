@@ -2031,7 +2031,7 @@ GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
 GC_ATL                       src/08cb-gpu-text.js:55
-GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:18
+GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:20
 GC_COL                       src/08ca-gpu-canvas.js:29
 GC_DEF                       src/08ca-gpu-canvas.js:76
 GC_GLYPHS                    src/08cb-gpu-text.js:17-50
@@ -2046,7 +2046,7 @@ GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
 GC_WGSL                      src/08ca-gpu-canvas.js:277
 gcAtlas                      src/08cb-gpu-text.js:56-70
-gcBlurPipe                   src/08cc-gpu-shadow.js:32-55
+gcBlurPipe                   src/08cc-gpu-shadow.js:34-59
 gcColor                      src/08ca-gpu-canvas.js:37-56
 GcCtx                        src/08ca-gpu-canvas.js:85-221
 gcDash                       src/08ca-gpu-canvas.js:231-268
@@ -2060,7 +2060,7 @@ gcMipPipe                    src/08ca-gpu-canvas.js:359
 gcNo                         src/08ca-gpu-canvas.js:26
 gcPipe                       src/08ca-gpu-canvas.js:347-358
 gcRectSp                     src/08ca-gpu-canvas.js:225
-gcShadowPasses               src/08cc-gpu-shadow.js:38-55
+gcShadowPasses               src/08cc-gpu-shadow.js:40-59
 gcStrokeLine                 src/08ca-gpu-canvas.js:244-268
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:63
@@ -2246,7 +2246,7 @@ gpuArena                     src/08c-gpu-kit.js:151-161
 gpuBake                      src/08ca-gpu-canvas.js:368-373
 gpuBaked                     src/08ca-gpu-canvas.js:375-378
 gpuBakeDrop                  src/08ca-gpu-canvas.js:379
-gpuBakeRedo                  src/08ca-gpu-canvas.js:380-462
+gpuBakeRedo                  src/08ca-gpu-canvas.js:380-484
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:35-41
 gpuBloom                     src/08b-gpu.js:605-612
@@ -6314,13 +6314,13 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 26 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 36 КБ
+## src/08ca-gpu-canvas.js · 39 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08cb-gpu-text.js · 9 КБ
   · GPU-холст, v2: текст (docs/DESIGN-gpu.md, «GPU canvas»):1
 
-## src/08cc-gpu-shadow.js · 5 КБ
+## src/08cc-gpu-shadow.js · 6 КБ
   · GPU-холст, v2: тень (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/09-audio.js · 18 КБ

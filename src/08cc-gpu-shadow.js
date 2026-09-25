@@ -4,6 +4,8 @@
    (преобразование на тень не действует — как у 2D), смещается и ложится в основной проход
    цветом тени под клипом и смешением команды, а поверх — сама фигура. Слой считается в рамке
    фигуры + 3σ; все слои готовятся до основного прохода — тень не зависит от того, что на холсте.
+   Подряд идущие команды с одной тенью — один слой, «серия» (условия точности — в 08ca у shade);
+   цель слоя — размером с самую крупную рамку, а не с выпечку: очистка и resolve платятся за рамку.
    Чего нет: тень у «неограниченных» смешений (copy, source-in, destination-in) — громко; часть
    фигуры за краем холста тени не даёт. */
 GcCtx.prototype._sh=function(op){
@@ -33,16 +35,18 @@ function gcBlurPipe(){
   if(GPU.lay["gc.blur"])return GPU.lay["gc.blur"];const m=GPU.dev.createShaderModule({code:GC_BLUR_WGSL});
   return GPU.lay["gc.blur"]=GPU.dev.createRenderPipeline({layout:"auto",vertex:{module:m,entryPoint:"vs"},
     fragment:{module:m,entryPoint:"fs",targets:[{format:"r8unorm"}]},primitive:{topology:"triangle-list"}});}
-/* слои теней выпечки: SH — {sd (вызовы фигуры), x0,y0,w,h (рамка, px выпечки), sg, R, t1, t2 (r8 w×h)};
-   run(pass, вызовы) рисует фигуру теми же конвейерами, что основной проход */
-function gcShadowPasses(enc,SH,W,H,run){
-  const d=GPU.dev,U=GPUTextureUsage,trash=GPU.trash;
-  const ms=d.createTexture({size:[W,H],sampleCount:4,format:"rgba8unorm",usage:U.RENDER_ATTACHMENT});
-  const st=d.createTexture({size:[W,H],sampleCount:4,format:"stencil8",usage:U.RENDER_ATTACHMENT});
-  const rs=d.createTexture({size:[W,H],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});trash.push(ms,st,rs);
-  const BP=gcBlurPipe(),ub=d.createBuffer({size:SH.length*512,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST}),u=new Float32Array(SH.length*128);
+/* слои теней выпечки: SH — {sd (вызовы фигуры), x0,y0,w,h (рамка, px выпечки), sg, R, k, t1, t2 (r8 w×h)};
+   run(pass, вызовы, uniform) рисует фигуру теми же конвейерами, что основной проход, со сдвигом на угол рамки */
+function gcShadowPasses(enc,SH,run){
+  const d=GPU.dev,U=GPUTextureUsage,trash=GPU.trash;let MW=1,MH=1;for(const s of SH){MW=Math.max(MW,s.w);MH=Math.max(MH,s.h);}
+  const ms=d.createTexture({size:[MW,MH],sampleCount:4,format:"rgba8unorm",usage:U.RENDER_ATTACHMENT});
+  const st=d.createTexture({size:[MW,MH],sampleCount:4,format:"stencil8",usage:U.RENDER_ATTACHMENT});
+  const rs=d.createTexture({size:[MW,MH],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});trash.push(ms,st,rs);
+  const BP=gcBlurPipe(),ub=d.createBuffer({size:SH.length*768,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST}),u=new Float32Array(SH.length*192);
   trash.push(ub);
-  SH.forEach((s,i)=>{u.set([s.x0,s.y0,1,0,s.sg,s.R,0,0],i*128);u.set([0,0,0,1,s.sg,s.R,1,0],i*128+64);});
+  /* на слой 768 байт (смещения uniform кратны 256): 0 — размытие по x, 256 — по y, 512 — сдвиг фигуры
+     (размер цели, k, угол рамки) */
+  SH.forEach((s,i)=>{u.set([0,0,1,0,s.sg,s.R,0,0],i*192);u.set([0,0,0,1,s.sg,s.R,1,0],i*192+64);u.set([MW,MH,s.k,0,s.x0,s.y0,0,0],i*192+128);});
   d.queue.writeBuffer(ub,0,u);
   const blur=(dst,src,off)=>{const p=enc.beginRenderPass({colorAttachments:[{view:dst.createView(),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});
     p.setPipeline(BP);p.setBindGroup(0,d.createBindGroup({layout:BP.getBindGroupLayout(0),
@@ -50,6 +54,6 @@ function gcShadowPasses(enc,SH,W,H,run){
   SH.forEach((s,i)=>{
     const p=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
       depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilClearValue:0x80,stencilStoreOp:"discard"}});
-    p.setScissorRect(s.x0,s.y0,s.w,s.h);run(p,s.sd);p.end();
-    blur(s.t1,rs,i*512);blur(s.t2,s.t1,i*512+256);});
+    p.setScissorRect(0,0,s.w,s.h);run(p,s.sd,{buffer:ub,offset:i*768+512,size:32});p.end();
+    blur(s.t1,rs,i*768);blur(s.t2,s.t1,i*768+256);});
 }
