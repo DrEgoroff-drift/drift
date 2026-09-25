@@ -339,6 +339,103 @@ JS, **0 uploads**. The whole-frame pair at 760 is identical to the eye (max Δ 5
 figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-холст: запись, цвет, дыры громко»
 (Node and Chrome) guards the recording and the loud holes.
 
+**The mask in `gpuLitSprite` (for GPU-2's pirates).** A lit sprite drawn from a mip master was soft, so the
+fleet sampled a level 1.2 steps finer than the screen. That was sharp, but it shimmered more than 2D. A new last
+argument, `sharp`, adds the same unsharp mask as `gpuImage {sharp}`: the level minus the next one. It is weighted
+by (1 − Y)², so only the dark side is lifted. Otherwise the station light multiplier (up to ×3) would whiten the
+bright paint. The strength is `GPU_LIT_SH` = .6. The flag is bit 2 of `U[15]`; bit 1 is still `rel`. It works
+only on a master with mips.
+
+The probe is a 256² hull with 2-px panel lines, 2-px rivets, windows and a stripe, drawn at 48 px. The
+reference is the 2D path: the master drawn down to 48 px by 2D, then lit 1:1. There are four rows: glow −1 and
+glow 0, each also shifted by (.5, .3) px.
+
+| variant | mean \|Δ\| to 2D over the four rows | change under the shift (2D: 9.1 / 8.7) |
+|---|---|---|
+| the screen's level | 7.23 | 8.5 / 5.9 (soft) |
+| 1.2 finer, no mask (the fleet today) | 7.23 | 10.2 / 9.9 |
+| mask at the screen's level | 7.35 | 7.5 / 6.9 |
+| mask at a level .5 finer | 7.00 | 9.8 / 8.6 |
+| **mask at a level .8 finer** | **6.05** | 9.9 / 9.6 |
+
+A strength of 1.2 is no better (6.20 at .8). The recommended lod for a sprite with the mask is the screen's
+level − .8. No dark rings. The pair is `pair_lit_sh.6.png`; the columns are 2D, screen, 1.2 finer, and the mask
+at 0, .5 and .8.
+
+**Shadow series in a bake (for GPU-3's hotel).** Before, every command with a shadow got its own layer. Each
+layer had a full-size MSAA target, its own clear and resolve, and two blur passes. The hotel's light layer has
+92 such commands and baked in about 430 ms. Now a run of commands with the same shadow is one layer, a
+«series». The same shadow means the same blur, colour, offset, composite op and clip. A series gets one blur and
+one composite quad, placed where its first member stood. The order check has two rules:
+- a new member's shadow footprint (its box + 3σ, shifted by the offset) must not touch any earlier footprint in
+  the series. A blur of a sum is the sum of the blurs, but source-over of two overlapping shadows is not a sum;
+- the footprint must not touch anything drawn in the series so far: a member's shape, or a command without a
+  shadow. In 2D, shadow 2 lies over shape 1; in a series it would lie under it.
+
+A command with an unbounded composite op closes the series. Layer targets are now sized to the largest series
+box, not the whole bake. The shape is drawn shifted by the box corner (`GU.o`).
+
+The probe draws the hotel's light layer (`hotelPaint` em, all windows lit, 320×218, ss 2) through the GPU canvas.
+Timings are to `onSubmittedWorkDone`, the median of runs 2–6, with other sessions busy on the machine:
+
+| | layers | bake, ms | mean \|Δ\| to 2D | px with Δ > 24 |
+|---|---|---|---|---|
+| HEAD (a layer per command) | 92 | 431 | 0.296 | 5 |
+| series | 18 | 146 | 0.296 | 5 |
+| no shadow at all (the floor) | 0 | ~80 | — | — |
+
+HEAD and series agree to one level (max Δ 1). The layer count drops to 18, not 1, because the rules do cut
+series: a window whose glass or balcony also casts a shadow overlaps its own footprint. The pairs are
+`pair_hotel_sh.png` (2D | HEAD | series, ×2) and `pair_hotel_sh_x4.png` (windows ×4). The bake records the layer
+count in `B.shl`. Контроль: this is an intermediate step. 2D does the same bake in 74 ms, so the time is to be
+broken down next.
+
+**Bake target pool and the shadow atlas (Контроль's breakdown order).** The 146 ms broke down as follows (desktop,
+GPU timestamps on the bake's own passes, 6 runs):
+
+| | ms |
+|---|---|
+| JS record (`hotelPaint` into `GcCtx`) | 6–15 |
+| the rest of the CPU (emit, ramps, encode, submit) | 4–8 |
+| GPU, all bake passes: shadow MSAA .19, blur .54, main .45, mips .05 | span 3.2–3.8 |
+| the wait to `onSubmittedWorkDone` | ~100 (20–45 with no shadow) |
+
+The wait was texture creation in the GPU process. A side probe: 36 new 40² r8 targets, each cleared, took 45–70 ms;
+the same 36 passes into one pooled texture took 0.4–1 ms. Each creation costs ~1.5 ms, and a bake asked for ~40:
+two r8 per shadow layer, then ms, st and rs for the layers and for the main pass, the ramp, and three buffers.
+
+Now:
+- All shadow layers of a bake are regions of one atlas, packed by shelves (`gcShadowPack`). The layers' shapes are
+  one MSAA pass, and each blur is one pass over the atlas. The blur reads only inside its layer's region (`BU.r`);
+  `fshadow` gets the layer's size and atlas place from the paint record (`gp[b+2].zw`, `gp[b+3].xy`).
+- Targets come from a pool (`gcPoolSet`): a set of same-size textures per role (bake, shadow, ramp). A set fits
+  if it is at least the size needed and at most 2.25× its area (anything up to 256² for small bakes). A new set is
+  rounded up to 64 px. Buffers are pooled by role and grow in powers of two. The main pass draws into a pooled
+  target larger than the bake (`gu.sz` = the target), and the resolve goes to level 0 through the mip pass with a
+  source fraction (`sc`). Only `B.tex` is new per bake.
+- The pool lives in `GPU.lay`, so a device loss drops it with everything else. It warms up on first use with
+  `GC_POOL_WARM`: bake 256², 512², 768²; shadow 256², 512²; ramp 256×128. That is 20 textures, ~31 MB. The cap is
+  96 MB, LRU; a set over 24 MB is used once and never pooled.
+
+The hotel light layer is bit-identical to 0f6e4e3 (0 pixels differ). Bake time after the first run: ~25 ms (record 7–11,
+CPU rest 3–7, the wait ~15, GPU span 1.9). 2D does the whole `hotelPaint` (three canvases) in 14–27 ms on the same
+machine. The GPU canvas suite checks series (disjoint → one; overlap, a shadowless draw under the next footprint,
+or a different blur → cut), zero creations on a repeat bake, and a new pool after `GPU.lay` is replaced (what
+`gpuInit` does after a loss). The phone twin is still to be measured, with GPU-3's hotcost stand.
+
+**The ramp cache, the warm-up in `gpuInit`, the cap by the peak.**
+- *Ramp cache (GPU-3's request).* `GcGrad.ramp()` built a 256-step band for every gradient fill; the hotel makes a
+  gradient per window with nearly the same stops. That was ~27 % of the hotel bake's JS by GPU-3's CDP profile.
+  Bands are now cached by the sorted stops in `GC_RAMPS` (at most 512, then cleared), with their half-float copy on
+  the band. A bake gives one row per distinct band. Hotel light layer, runs 2–6: record 3–4.6 ms (was 7–11), the
+  rest of the CPU 1.5–3 (was 3–7), bit-identical to 0f6e4e3.
+- *Warm-up.* `gpuInit` calls `gcPool()`, so the ~30 ms of GPU-process work happens behind the loading screen, and
+  again after a device loss. `08b` did not grow (a comment got shorter).
+- *Cap.* `Q.peak` records the pool's peak. On the phone twin (411×742 ×1.5), across system with a zoom sweep
+  .25–3, dock and relay, the peak is 30.4 MB, i.e. the warm-up set plus one 320×64 pair. The cap is now 64 MB, so one
+  set over 16 MB is used once and never pooled. The 5-minute P1 route has no script here, so these scenes stand in
+  for it.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -346,12 +443,24 @@ figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-�
   dither on a half-float ramp, box mips kept (numbers in §G, pair `pair_grad_x4.png`).
 - **GPU canvas v2 (25.09, `gpu`).** Text (08cb) and shadow (08cc) are in, and neon (17k0) is ported. Pairs are
   `pair_text_x3.png`, `pair_shadow_x3.png` and `pair_neon_bake_x4.png`; numbers in §G.
-- **Next, in Контроль's order:**
-  1. merge gpu3 up to 10f8681;
+- **gpu3 merged up to 149d5b3 (cc220f3).**
+- **The mask in `gpuLitSprite` is in (§G).** Its last argument is `sharp`, and it is best at the screen's level − .8.
+- **Shadow series in a bake are in (§G).** Hotel light layer: 92 layers → 18, 431 → 146 ms, picture as HEAD.
+- **Bake target pool and the shadow atlas are in (§G).** Hotel light layer 146 → ~25 ms, bit-identical; the phone
+  twin (hotcost) is still to be measured.
+- **Ramp cache, warm-up in `gpuInit`, pool cap 64 MB (peak 30.4 MB) are in (§G).**
+- **Next, in Контроль's order (25.09):**
+  0. merge gpu3 (ba9d692, the hotel on GPU-canvas bakes) and measure its appearance on the phone twin with GPU-3's
+     hotcost2.py, gpu3 alone against the merge; then multiply on a transparent destination (two draws), then #ovl.
+     Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake;
+  1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
+     a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;
   2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
-  3. HUD fixes 1–5, find labels in table case and pushed apart, and DECISIONS «no 2D»;
-  4. chipDom and domLabel through the atlas;
-  5. the mask in `gpuLitSprite`, for GPU-2's pirates.
+  3. HUD fixes 1–5, plus:
+     - find labels in table case and pushed apart;
+     - a chip must not go under КАРТА/МЕНЮ/Фото, with an intersection check;
+     - button plates must read over bright neon;
+     - DECISIONS «no 2D».
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way

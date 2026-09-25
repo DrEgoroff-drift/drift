@@ -57,13 +57,20 @@ function gcColor(s){
 function gcInv(m){const d=m[0]*m[3]-m[1]*m[2];if(!d||!isFinite(d))return null;
   return [m[3]/d,-m[1]/d,-m[2]/d,m[0]/d,(m[2]*m[5]-m[3]*m[4])/d,(m[1]*m[4]-m[0]*m[5])/d];}
 
-/* градиент: координаты — в пространстве, что действует при заливке (как у 2D) */
+/* градиент: координаты — в пространстве, что действует при заливке (как у 2D).
+   Лента — по ключу точек в общем кэше GC_RAMPS: у гостиницы свой градиент на каждое окно, а точки
+   почти одни (замер GPU-3: лента съедала ~27 % JS выпечки гостиницы); к ленте цепляется её half-float */
+const GC_RAMPS=new Map();
 class GcGrad{
-  constructor(k,a){this.k=k;this.a=a;this.s=[];}
-  addColorStop(o,c){if(!(o>=0&&o<=1))throw new RangeError("GPU-холст: точка градиента "+o);this.s.push([+o,gcColor(c)]);}
+  constructor(k,a){this.k=k;this.a=a;this.s=[];this._r=null;}
+  addColorStop(o,c){if(!(o>=0&&o<=1))throw new RangeError("GPU-холст: точка градиента "+o);this.s.push([+o,gcColor(c)]);this._r=null;}
+  ramp(){if(this._r)return this._r;
+    const S=this.s.slice().sort((a,b)=>a[0]-b[0]),key=S.map(q=>q[0]+":"+q[1].join(",")).join(";");
+    let r=GC_RAMPS.get(key);if(!r){if(GC_RAMPS.size>512)GC_RAMPS.clear();GC_RAMPS.set(key,r=GcGrad.band(S));}
+    return this._r=r;}
   /* 256 точек ленты: смесь без премультипликации (так делает 2D в Chrome), потом премультипликация.
      Лента в half-float: восьмибитная теряла дробь между уровнями, и дизеру нечего было рассеивать */
-  ramp(){const S=this.s.slice().sort((a,b)=>a[0]-b[0]),o=new Float32Array(1024);
+  static band(S){const o=new Float32Array(1024);
     for(let i=0;i<256;i++){const t=i/255;let c;
       if(!S.length)c=[0,0,0,0];
       else if(t<=S[0][0])c=S[0][1];
@@ -275,7 +282,7 @@ function gcImg(img){
 
 /* ── видеокарта: один модуль, явная раскладка, конвейеры по (режим трафарета | смешение) ── */
 const GC_WGSL=`
-struct GU{sz:vec4f};
+struct GU{sz:vec4f,o:vec4f};   /* o.xy — угол цели в px выпечки (слой тени — цель размером со свою рамку) */
 @group(0) @binding(0) var<uniform> gu:GU;
 @group(0) @binding(1) var<storage,read> gp:array<vec4f>;
 @group(0) @binding(2) var ramp:texture_2d<f32>;
@@ -284,7 +291,7 @@ struct GU{sz:vec4f};
 @group(0) @binding(5) var ism:sampler;
 struct VO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) k:u32,@location(1) uv:vec2f};
 @vertex fn vs(@location(0) a:vec2f,@location(1) k:f32,@location(2) uv:vec2f)->VO{
-  var o:VO;o.p=vec4f(a.x/gu.sz.x*2.-1.,1.-a.y/gu.sz.y*2.,0.,1.);o.k=u32(k+.5);o.uv=uv;return o;}
+  let b=a-gu.o.xy;var o:VO;o.p=vec4f(b.x/gu.sz.x*2.-1.,1.-b.y/gu.sz.y*2.,0.,1.);o.k=u32(k+.5);o.uv=uv;return o;}
 @fragment fn fnone()->@location(0) vec4f{return vec4f(0.);}
 fn bayer8(p:vec2f)->f32{let x=u32(p.x)&7u;let y=u32(p.y)&7u;let v=x^y;
   let b=((v&1u)<<5u)|((y&1u)<<4u)|((v&2u)<<2u)|((y&2u)<<1u)|((v&4u)>>1u)|((y&4u)>>2u);return (f32(b)+.5)/64.;}
@@ -307,19 +314,20 @@ fn paintOf(k:u32,d:vec2f)->vec4f{
      тёмное свечение без полос; ровный уровень не трогает */
   let c=textureSampleLevel(ramp,rsm,vec2f((t*255.+.5)/256.,q.y),0.)*q.z;let dd=(bayer8(d)-.5)*.75/255.;
   let a=clamp(c.a+dd,0.,1.);return vec4f(clamp(c.rgb+vec3f(dd),vec3f(0.),vec3f(a)),a);}
-@fragment fn fpaint(i:VO)->@location(0) vec4f{return paintOf(i.k,i.p.xy);}
+@fragment fn fpaint(i:VO)->@location(0) vec4f{return paintOf(i.k,i.p.xy+gu.o.xy);}
 /* текст: маска из атласа × краска (цвет или градиент) */
-/* тень: размытый слой (r8, свой угол в gp[b+2].xy) × цвет тени */
-@fragment fn fshadow(i:VO)->@location(0) vec4f{let b=i.k*5u;let q=vec2i(floor(i.p.xy-gp[b+2u].xy));let n=vec2i(textureDimensions(img));
-  if(any(q<vec2i(0))||any(q>=n)){return vec4f(0.);}return gp[b]*textureLoad(img,q,0).r;}
-@fragment fn fmask(i:VO)->@location(0) vec4f{let m=textureSample(img,ism,i.uv).r;return paintOf(i.k,i.p.xy)*m;}`;
+/* тень: размытый слой — рамка атласа (r8): угол на холсте gp[b+2].xy, размер .zw, место в атласе gp[b+3].xy */
+@fragment fn fshadow(i:VO)->@location(0) vec4f{let b=i.k*5u;let o=gp[b+2u];let q=vec2i(floor(i.p.xy-o.xy));
+  if(any(q<vec2i(0))||any(q>=vec2i(o.zw))){return vec4f(0.);}return gp[b]*textureLoad(img,q+vec2i(gp[b+3u].xy),0).r;}
+@fragment fn fmask(i:VO)->@location(0) vec4f{let m=textureSample(img,ism,i.uv).r;return paintOf(i.k,i.p.xy+gu.o.xy)*m;}`;
 const GC_MIP_WGSL=`
 @group(0) @binding(0) var s:texture_2d<f32>;
 @group(0) @binding(1) var sm:sampler;
+@group(0) @binding(2) var<uniform> sc:vec4f;   /* доля источника: цель из пула бывает больше выпечки */
 struct O{@builtin(position) p:vec4f,@location(0) uv:vec2f};
 @vertex fn vs(@builtin(vertex_index) i:u32)->O{var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));
   var o:O;o.p=vec4f(P[i],0.,1.);o.uv=vec2f(P[i].x*.5+.5,.5-P[i].y*.5);return o;}
-@fragment fn fs(i:O)->@location(0) vec4f{return textureSampleLevel(s,sm,i.uv,0.);}`;
+@fragment fn fs(i:O)->@location(0) vec4f{return textureSampleLevel(s,sm,i.uv*sc.xy,0.);}`;
 /* трафарет: f — лицевая грань, b — изнаночная (обмотка nonzero), rm/wm — маски, c — пишет ли цвет */
 const GC_ST={
   wnz:{f:{compare:"equal",passOp:"increment-wrap"},b:{compare:"equal",passOp:"decrement-wrap"},rm:0x80,wm:0x7F},
@@ -360,6 +368,43 @@ function gcMipPipe(){return GPU.lay["gc.mip"]||(GPU.lay["gc.mip"]=GPU.dev.create
   vertex:{module:GPU.dev.createShaderModule({code:GC_MIP_WGSL}),entryPoint:"vs"},
   fragment:{module:GPU.dev.createShaderModule({code:GC_MIP_WGSL}),entryPoint:"fs",targets:[{format:"rgba8unorm"}]},primitive:{topology:"triangle-list"}}));}
 
+/* ── пул целей выпечки. Создать текстуру в процессе GPU стоит ~1.5 мс (замер 25.09: 36 слоёв r8 —
+   45–70 мс ожидания очереди, те же проходы в одну текстуру — 1 мс), а выпечка просила их ~40.
+   Набор целей одного размера (MSAA, трафарет, resolve; атласы тени; лента) берётся из пула: годится
+   любой не меньше нужного и не больше 2.25 его площади (мелочи до 256² — любой до 256²), новый — с запасом
+   до 64 px. Буферы — по роли, растут степенью двойки. Пул живёт в GPU.lay и сбрасывается с устройством;
+   gpuInit (за экраном загрузки и после потери устройства) прогревает его ходовыми размерами (GC_POOL_WARM, ~30 МБ): первая встреча с
+   крупной выпечкой создаёт одну текстуру — её саму. Повтор безопасен порядком очереди: запись
+   следующей выпечки встаёт после чтения прошлой ── */
+const GC_POOL_CAP=64<<20;   /* пик на двойнике телефона (system с развёрткой зума, dock, relay) — 30.4 МБ */
+const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["shadow",256,256],["shadow",512,512],["ramp",256,128]];
+/* наборы: [формат, выборок, usage] — все одного размера */
+function gcPoolSpec(role){
+  const U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT,TB=U.TEXTURE_BINDING;
+  return role==="bake"?[["rgba8unorm",4,RA],["stencil8",4,RA],["rgba8unorm",1,TB|RA]]
+    :role==="shadow"?[["rgba8unorm",4,RA],["stencil8",4,RA],["rgba8unorm",1,TB|RA],["r8unorm",1,TB|RA],["r8unorm",1,TB|RA]]
+    :[["rgba16float",1,TB|U.COPY_DST]];}
+function gcPool(){
+  let Q=GPU.lay["gc.pool"];if(Q)return Q;
+  Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0};
+  for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);
+  return Q;}
+/* → текстуры набора role размером w×h или больше */
+function gcPoolSet(role,w,h){
+  const Q=gcPool(),need=Math.max((w*h+4096)*2.25,65536);let e=null;
+  for(const x of Q.t)if(x.role===role&&x.w>=w&&x.h>=h&&x.w*x.h<=need&&(!e||x.w*x.h<e.w*e.h))e=x;
+  if(e){Q.t.splice(Q.t.indexOf(e),1);Q.t.push(e);return e.T;}
+  const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
+  const T=gcPoolSpec(role).map(([f,n,us])=>{by+=W*H*n*(px[f]||4);Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
+  if(by>GC_POOL_CAP/4){GPU.trash.push(...T);return T;}   /* великан — разовый, в пул не идёт */
+  Q.t.push({role,w:W,h:H,T,by});Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
+  while(Q.by>GC_POOL_CAP&&Q.t.length>1){const o=Q.t.shift();Q.by-=o.by;GPU.trash.push(...o.T);}
+  return T;}
+function gcPoolBuf(role,us,a){
+  const Q=gcPool(),n=Math.max(256,a.byteLength);let b=Q.b[role];
+  if(!b||b.size<n){if(b)GPU.trash.push(b);let s=256;while(s<n)s*=2;b=Q.b[role]=GPU.dev.createBuffer({size:s,usage:us|GPUBufferUsage.COPY_DST});Q.made++;}
+  GPU.dev.queue.writeBuffer(b,0,a);return b;}
+
 /* ── выпечка: gpuBake(w,h,draw,o) → B {tex,view,w,h,n,dev}. B годится везде, где мастер
    gpuMipTex (gpuImage, gpuLitSprite). На время draw глобальный ctx — этот холст, так что
    кисти, что рисуют в ctx, переносятся без переписи. o.ss — во сколько крупнее рисовать
@@ -380,15 +425,12 @@ function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev)GPU.trash.push(B.tex);B.
 function gpuBakeRedo(B){
   const t0=wallMs(),{w,h}=B,k=B.o.ss||(w*h<=262144?2:1),g=new GcCtx(w,h,k),prev=ctx;
   ctx=g;try{B.draw(g);}finally{ctx=prev;}
-  const d=GPU.dev,U=GPUTextureUsage,W=w*k,H=h*k,trash=GPU.trash;
+  const d=GPU.dev,U=GPUTextureUsage,W=w*k,H=h*k;
   B.tex=d.createTexture({size:[w,h],mipLevelCount:B.n,format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT|U.COPY_SRC});
   B.view=B.tex.createView();B.dev=d;
-  const ms=d.createTexture({size:[W,H],sampleCount:4,format:"rgba8unorm",usage:U.RENDER_ATTACHMENT});
-  const st=d.createTexture({size:[W,H],sampleCount:4,format:"stencil8",usage:U.RENDER_ATTACHMENT});
-  const rs=k>1?d.createTexture({size:[W,H],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT}):null;
-  trash.push(ms,st);if(rs)trash.push(rs);
+  const [ms,st,rs]=gcPoolSet("bake",W,H),TW=ms.width,TH=ms.height;
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
-  const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
+  const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],RI=new Map(),D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
   let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
   const put=(md,ref,v,pi,img)=>{const f=V.length/5;
     if(img)for(let i=0;i<v.length;i+=4)V.push(v[i],v[i+1],pi,v[i+2],v[i+3]);
@@ -404,7 +446,7 @@ function gpuBakeRedo(B){
     on=cl;};
   const paint=p=>{const i=P.length/20;
     if(!p.k){P.push(...p.c,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);return i;}
-    const r=R.length;R.push(p.ramp);const a=p.g.a,iv=p.iv;
+    let r=RI.get(p.ramp);if(r===undefined){RI.set(p.ramp,r=R.length);R.push(p.ramp);}const a=p.g.a,iv=p.iv;   /* одна лента — одна строка */
     P.push(0,0,0,0,p.k,r,p.a,0,iv[0],iv[1],iv[2],iv[3],iv[4],iv[5],a[0],a[1]);
     if(p.k===1)P.push(a[2],a[3],0,0);else P.push(a[2],a[3],a[4],a[5]);
     return i;};
@@ -419,44 +461,69 @@ function gpuBakeRedo(B){
     put(q.t==="s"?"wst":q.eo?"weo":"wnz",q.t==="s"?0x81:0x80,q.v,0);
     if(u)put("out",0x80,Q,0);
     put("cov|"+op,0,u?Q:box(q.v),paint(q.p));};
-  /* тень команды (08cc): слой фигуры в рамке + 3σ, размытие до основного прохода, здесь — вызов наложения */
-  const shade=q0=>{const q=q0.sv?Object.assign({},q0,{v:q0.sv,view:q0.sview}):q0,sh=q.sh,sg=sh.b/2*k,Rr=Math.ceil(3*sg),dx=sh.x*k,dy=sh.y*k,st4=q.t==="i"||q.t==="x"?4:2;
-    let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
-    for(let i=0;i<q.v.length;i+=st4){bx0=Math.min(bx0,q.v[i]);bx1=Math.max(bx1,q.v[i]);by0=Math.min(by0,q.v[i+1]);by1=Math.max(by1,q.v[i+1]);}
-    const x0=Math.max(0,Math.floor(bx0-Rr-1)),y0=Math.max(0,Math.floor(by0-Rr-1)),x1=Math.min(W,Math.ceil(bx1+Rr+1)),y1=Math.min(H,Math.ceil(by1+Rr+1));
-    const X0=Math.max(0,x0+dx),Y0=Math.max(0,y0+dy),X1=Math.min(W,x1+dx),Y1=Math.min(H,y1+dy);
-    if(x1<=x0||y1<=y0||X1<=X0||Y1<=Y0)return;
-    const sd=[];DL=sd;emit(q,"source-over");DL=D;
-    const w=x1-x0,h=y1-y0,mkT=()=>{const t=d.createTexture({size:[w,h],format:"r8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});trash.push(t);return t;};
-    const s={sd,x0,y0,w,h,sg,R:Rr,t1:mkT(),t2:mkT()};SH.push(s);
-    const pi=P.length/20;P.push(...sh.c,0,0,0,0,x0+dx,y0+dy,0,0,0,0,0,0,0,0,0,0);
-    put("shw|"+q0.op,0x80,[X0,Y0,0,0,X1,Y0,0,0,X1,Y1,0,0,X0,Y0,0,0,X1,Y1,0,0,X0,Y1,0,0],pi,{view:s.t2.createView(),near:true});};
-  for(const q of g._ops){clip(q.clip);if(q.sh)shade(q);emit(q,q.op);}
-  for(let i=20;i<P.length;i+=20)if(P[i+4])P[i+5]=(P[i+5]+.5)/R.length;
-  /* буферы и лента */
-  const bu=GPUBufferUsage,mk=(a,us)=>{const b=d.createBuffer({size:Math.max(16,a.byteLength),usage:us|bu.COPY_DST});d.queue.writeBuffer(b,0,a);trash.push(b);return b;};
-  const vb=mk(new Float32Array(V.length?V:[0,0,0,0]),bu.VERTEX),pb=mk(new Float32Array(P),bu.STORAGE),ub=mk(new Float32Array([W,H,k,0]),bu.UNIFORM);
+  /* тень команды (08cc). Серия — подряд идущие команды с одной тенью (размытие, цвет, смещение,
+     смешение, клип) — это один слой: одно размытие и одно наложение (гостиница: 84 окна — 84 прохода,
+     347 мс против 74 без тени). Точно, пока следы теней серии (рамка + 3σ, со смещением) не
+     пересекаются между собой (размытие суммы = сумма размытий, а source-over двух следов — не сумма)
+     и не ложатся на нарисованное в серии раньше: в 2D тень №2 лежит поверх фигуры №1, а в серии она
+     под ней. Команда без тени серию не рвёт, если её рамка не задевает следующих следов; иначе — рвёт */
+  let ser=null;const L0=gcLay();
+  const bx=q=>{const s=q.t==="i"||q.t==="x"?4:2,v=q.v;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+    for(let i=0;i<v.length;i+=s){x0=Math.min(x0,v[i]);x1=Math.max(x1,v[i]);y0=Math.min(y0,v[i+1]);y1=Math.max(y1,v[i+1]);}
+    return [x0-1,y0-1,x1+1,y1+1];};
+  const hit=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
+  const close=()=>{const s=ser;if(!s)return;ser=null;
+    const X0=Math.max(0,s.x0+s.dx),Y0=Math.max(0,s.y0+s.dy),X1=Math.min(W,s.x1+s.dx),Y1=Math.min(H,s.y1+s.dy),w=s.x1-s.x0,h=s.y1-s.y0;
+    SH.push({sd:s.sd,x0:s.x0,y0:s.y0,w,h,sg:s.sg,R:s.R,k,n:s.F.length,pi:s.pi,img:s.img});
+    P[s.pi*20+8]=s.x0+s.dx;P[s.pi*20+9]=s.y0+s.dy;P[s.pi*20+10]=w;P[s.pi*20+11]=h;
+    const r=[X0,Y0,X1,Y0,X1,Y1,X0,Y0,X1,Y1,X0,Y1];for(let j=0;j<6;j++){V[(s.vf+j)*5]=r[j*2];V[(s.vf+j)*5+1]=r[j*2+1];}};
+  /* команда без тени (или с тенью вне холста) посреди серии: рамку — в «нарисованное» */
+  const drew=q=>{if(!ser)return;if(GC_OPS[q.op].u)close();else ser.S.push(bx(q));};
+  const shade=q0=>{const q=q0.sv?Object.assign({},q0,{v:q0.sv,view:q0.sview}):q0,sh=q.sh,sg=sh.b/2*k,Rr=Math.ceil(3*sg),dx=sh.x*k,dy=sh.y*k,b=bx(q);
+    const x0=Math.max(0,Math.floor(b[0]-Rr)),y0=Math.max(0,Math.floor(b[1]-Rr)),x1=Math.min(W,Math.ceil(b[2]+Rr)),y1=Math.min(H,Math.ceil(b[3]+Rr));
+    if(x1<=x0||y1<=y0||Math.min(W,x1+dx)<=Math.max(0,x0+dx)||Math.min(H,y1+dy)<=Math.max(0,y0+dy)){drew(q0);return;}
+    const F=[x0+dx,y0+dy,x1+dx,y1+dy],s=ser;
+    if(s&&s.op===q0.op&&s.clip===q0.clip&&s.b===sh.b&&s.x===sh.x&&s.y===sh.y&&s.c.every((v,i)=>v===sh.c[i])&&!s.F.some(f=>hit(f,F))&&!s.S.some(a=>hit(a,F))){
+      s.F.push(F);s.x0=Math.min(s.x0,x0);s.y0=Math.min(s.y0,y0);s.x1=Math.max(s.x1,x1);s.y1=Math.max(s.y1,y1);
+      DL=s.sd;emit(q,"source-over");DL=D;s.S.push(bx(q0));return;}
+    close();
+    ser={op:q0.op,clip:q0.clip,b:sh.b,x:sh.x,y:sh.y,c:sh.c,dx,dy,sg,R:Rr,F:[F],S:[bx(q0)],sd:[],x0,y0,x1,y1,img:{view:L0.dm,near:true}};
+    DL=ser.sd;emit(q,"source-over");DL=D;
+    ser.pi=P.length/20;P.push(...sh.c,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+    ser.vf=V.length/5;put("shw|"+q0.op,0x80,new Array(24).fill(0),ser.pi,ser.img);};
+  for(const q of g._ops){clip(q.clip);if(q.sh)shade(q);else drew(q);emit(q,q.op);}
+  close();
+  /* слои тени — рамки одного атласа (08cc) */
+  const SA=SH.length?gcShadowPack(SH):null;
+  if(SA)for(const s of SH){P[s.pi*20+12]=s.ax;P[s.pi*20+13]=s.ay;s.img.view=SA.v2;}
+  /* лента — строки текстуры из пула (строк бывает больше, чем лент) */
+  const rt=R.length?gcPoolSet("ramp",256,R.length)[0]:null;
+  for(let i=20;i<P.length;i+=20)if(P[i+4])P[i+5]=(P[i+5]+.5)/rt.height;
+  /* буферы: vb, pb, ub (0 — GU; 256 — доля resolve для нулевого мипа; 512 — единица для остальных) */
+  const bu=GPUBufferUsage,u0=new Float32Array(132);u0.set([TW,TH,k,0]);u0.set([W/TW,H/TH,0,0],64);u0.set([1,1,0,0],128);
+  const vb=gcPoolBuf("vb",bu.VERTEX,new Float32Array(V.length?V:[0,0,0,0])),pb=gcPoolBuf("pb",bu.STORAGE,new Float32Array(P)),ub=gcPoolBuf("ub",bu.UNIFORM,u0);
   const L=gcLay();let rv=L.dm;
-  if(R.length){const rt=d.createTexture({size:[256,R.length],format:"rgba16float",usage:U.TEXTURE_BINDING|U.COPY_DST}),h=new Uint16Array(R.length*1024);
-    R.forEach((r,i)=>{for(let j=0;j<1024;j++)h[i*1024+j]=f16(r[j]);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);trash.push(rt);rv=rt.createView();}
-  const bgs=new Map(),bg=q=>{const key=q?q.view:null,nr=q&&q.near;let b=bgs.get(key)&&bgs.get(key)[nr?1:0];if(b)return b;
-    b=d.createBindGroup({layout:L.bgl,entries:[{binding:0,resource:{buffer:ub}},{binding:1,resource:{buffer:pb}},{binding:2,resource:rv},
+  if(rt){const h=new Uint16Array(R.length*1024);
+    R.forEach((r,i)=>{if(!r.h16){r.h16=new Uint16Array(1024);for(let j=0;j<1024;j++)r.h16[j]=f16(r[j]);}h.set(r.h16,i*1024);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);rv=rt.createView();}
+  const bgs=new Map(),bg=(q,u)=>{u=u||ub;const key=q?q.view:null,nr=q&&q.near;let M=bgs.get(u);if(!M)bgs.set(u,M=new Map());
+    let b=M.get(key)&&M.get(key)[nr?1:0];if(b)return b;
+    b=d.createBindGroup({layout:L.bgl,entries:[{binding:0,resource:u.buffer?u:{buffer:u,size:32}},{binding:1,resource:{buffer:pb}},{binding:2,resource:rv},
       {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:nr?L.near:gpuMipSmp()}]});
-    const e=bgs.get(key)||[];e[nr?1:0]=b;bgs.set(key,e);return b;};
+    const e=M.get(key)||[];e[nr?1:0]=b;M.set(key,e);return b;};
   const enc=d.createCommandEncoder();
-  const run=(p,list)=>{p.setVertexBuffer(0,vb);for(const c of list){p.setPipeline(gcPipe(c.md));p.setBindGroup(0,bg(c.img));p.setStencilReference(c.ref);p.draw(c.n,1,c.f,0);}};
-  if(SH.length)gcShadowPasses(enc,SH,W,H,run);
-  const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs?rs.createView():B.tex.createView({baseMipLevel:0,mipLevelCount:1}),
+  const run=(p,list,u)=>{p.setVertexBuffer(0,vb);for(const c of list){p.setPipeline(gcPipe(c.md));p.setBindGroup(0,bg(c.img,u));p.setStencilReference(c.ref);p.draw(c.n,1,c.f,0);}};
+  B.shl=SH.length;if(SA)gcShadowPasses(enc,SH,SA,run);
+  const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
     loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
     depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilClearValue:0x80,stencilStoreOp:"discard"}});
   run(ps,D);ps.end();
-  /* мипы на видеокарте: проход на уровень, среднее 2×2 (и сброс двойного размера в нулевой) */
-  const MP=gcMipPipe(),down=(src,lv)=>{
+  /* мипы на видеокарте: проход на уровень, среднее 2×2 (и сброс resolve в нулевой: копия 1:1 или среднее 2×2) */
+  const MP=gcMipPipe(),down=(src,lv,uo)=>{
     const p=enc.beginRenderPass({colorAttachments:[{view:B.tex.createView({baseMipLevel:lv,mipLevelCount:1}),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});
-    p.setPipeline(MP);p.setBindGroup(0,d.createBindGroup({layout:MP.getBindGroupLayout(0),entries:[{binding:0,resource:src},{binding:1,resource:GPU.S.lin}]}));
+    p.setPipeline(MP);p.setBindGroup(0,d.createBindGroup({layout:MP.getBindGroupLayout(0),entries:[{binding:0,resource:src},{binding:1,resource:GPU.S.lin},{binding:2,resource:{buffer:ub,offset:uo,size:16}}]}));
     p.draw(3);p.end();};
-  if(rs)down(rs.createView(),0);
-  for(let i=1;i<B.n;i++)down(B.tex.createView({baseMipLevel:i-1,mipLevelCount:1}),i);
+  down(rs.createView(),0,256);
+  for(let i=1;i<B.n;i++)down(B.tex.createView({baseMipLevel:i-1,mipLevelCount:1}),i,512);
   d.queue.submit([enc.finish()]);
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);
 }
