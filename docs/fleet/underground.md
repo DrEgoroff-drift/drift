@@ -50,6 +50,19 @@ Branch `claude/gpu-cave`, from the fleet base `claude/optimistic-gates-u46osn`. 
    material is ready, so tiles baked without it re-bake once (before, they stayed bare for good).
    Test: the tile painters are called directly in Node (the frame no longer calls them there).
 
+4. **cave water reflects the light** — the add field got a fifth per-mode hook, `waterAt`: the
+   nearest pool in view (`cavePoolInView`, its four numbers take the ninth light slot, so both
+   modes now carry at most eight sources) catches the lamp along its rippled edge (the same
+   ripple the 2D edge line draws), and under it the lamp's mirror image breaks into a glitter
+   column through drifting ripple noise, fading with depth and softly at the zone's ends. The mine
+   has no water (`waterAt` returns 0). Test: pool found in view, not found off view.
+
+5. **cave props bake into the rock tiles** — bones, crates, the camp, tally marks and ropes (22b)
+   are seeded and static, so `drawCaveRock` draws them at its end (`drawCaveProps(C,wx0,wy0)`, the
+   bake's `W`,`H` cull them per tile; a prop across a seam is drawn in both, each clipped). The frame
+   no longer calls `drawCaveProps`: zero per-frame 2D for them, and they sit under the light pass
+   as before. Covered by the tile-painter suite.
+
 ## Pairs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174/scratchpad/`
@@ -67,6 +80,27 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
   bloom cores, the drift is lamp-lit; cold dark rock around instead of an even olive wash.
 - `pair-cave-2.png`, `pair-digdeep-2.png` (commit 2 frame | commit 3 frame): the same picture —
   tiles moved to GPU bakes, 0 GPU errors, no page errors. Parity by design for this sub-item.
+- `pair-cavepool-1.png` (the `cave` stand with `cavepool2.js` as `--js`: hovering over the
+  water-filled shaft of the «подземное озеро» zone): the water was a flat blue column; now the
+  surface line catches the lamp and the lamp's reflection glitters in it — water reads as water.
+  Also visible: the warm beam with dust down the shaft, cold ambient, the other lamp on the ledge.
+
+- `pair-cavepool-2.png` (commit 4 frame | commit 5 frame): the same picture — props from the tiles.
+
+## For the design pass (what to look at, per scene)
+
+- **cave** (stand `cave`): the balance of ambient to lamp (`caveAmbient`, `U[15]` lamp power,
+  `bounceAt`) — the dark is meant to be zone I, holding masses; the far-wall share of the light
+  (`U[23]` .45); the beam's haze strength (`.34` in `CAVE_ADD_WGSL`) and dust density (`h>.93`);
+  whether crystal halos (`caveEmit`) read as ore or as blobs at 1:1; moss/crystal lights on rock
+  (their radius and `I` in `caveLights`). Check the shadow softness (`log2(1.+x*.02)` mip slope,
+  `SIG`) against a column in the beam. Plants and beasts are lit now, not self-lit — check that
+  cave flora meant to glow still reads.
+- **cave water** (`cavepool2.js`): glitter width/speed, the edge line — and see the pool quirk
+  under Open problems: most of the time the lake sits under the gallery floor.
+- **dig** (stand `dig`, and `digdeep.js`): ambient by depth (`ambAt` in `DIG_OWN_WGSL`, the 20→320
+  px ramp and the night factor), the daylight column down the shaft (`dayAt`), the platform
+  lamps' radius/power, ore body glow `.26` and glint intensity, the tunnel fill `.72`.
 
 ## New render pipelines (for the warm-up table `08b1`)
 
@@ -81,6 +115,12 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
 - none yet
 
 ## Open problems
+
+- **The lake usually sits under the gallery floor** (22a `cavePool`, pre-existing): the level is
+  `lerp(min floor, mean floor, .75)`, and the mean is pulled down by the shafts (floors of 165 and
+  680 among floors of 0–5), so the level (59) lies below the gallery floor and water shows only
+  inside the shafts. Not changed: `caveWet` reads the pool and drives movement — game logic.
+  A fix for the author: take the median, or skip floors deeper than the gallery.
 
 - Commit 1's message has `Claude-Session:` after `Co-Authored-By:` (the session's attribution
   order); fleet rule 8 wants `Co-Authored-By:` last — later commits follow rule 8. No amend.

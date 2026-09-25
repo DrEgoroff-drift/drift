@@ -28,6 +28,15 @@ TEST_SUITES.push(()=>suite("пещера G7: источники света в к
   }
   ok(sawDay,"у устья первым идёт дневной свет");
   ok(maxN>=2,"в пещере светит не один фонарь: источников в кадре до "+maxN);
+  /* озеро: в кадре находится ближнее, вне кадра — нет */
+  const Z=caveZones(C).find(z=>cavePool(C,z));
+  ok(!!Z,"в пещере есть озеро");
+  if(Z){
+    const pl=cavePool(C,Z);
+    const inV=cavePoolInView(C,(pl.x0+pl.x1)/2-vw/2,pl.y-vh/2);
+    ok(inV===pl,"озеро посреди кадра найдено");
+    eq(cavePoolInView(C,(pl.x0+pl.x1)/2-vw/2,pl.y+vh*3),null,"озеро далеко над кадром — не найдено");
+  }
   /* темнота холодная: фонарь остаётся единственным тёплым */
   const am=caveAmbient();
   ok(am[2]>am[0]&&am.every(v=>v>0&&v<1),"окружающий свет холодный и меньше единицы ("+am.map(v=>v.toFixed(2)).join(",")+")");
