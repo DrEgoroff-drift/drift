@@ -70,7 +70,9 @@ const CV_LVL=new WeakMap();
    один раз. Текст так и остаётся пиксель в пиксель, без мипов и без маски */
 function bakeKeep(M,key,cap,make){
   let v=M.get(key);if(v){M.delete(key);M.set(key,v);return v;}
-  v=make();M.set(key,v);if(M.size>cap)M.delete(M.keys().next().value);return v;
+  v=make();M.set(key,v);
+  if(M.size>cap){const k=M.keys().next().value,o=M.get(k);M.delete(k);if(o&&o.drop)o.drop();}   /* выпечки GPU-холста — освободить */
+  return v;
 }
 function gpuCvLevel(cv,ver,devW){
   let L=CV_LVL.get(cv);
@@ -212,6 +214,7 @@ function gpuImage(pass,cv,rects,o){
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
+  if(mip&&cv.draw&&cv.dev!==GPU.dev)gpuBakeRedo(cv);   /* выпечка GPU-холста пережила потерю устройства — печём заново */
   const t=mip?cv:gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,mip?gpuMipSmp():GPU.S.lin]));

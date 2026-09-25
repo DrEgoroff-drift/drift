@@ -75,6 +75,7 @@ class GcGrad{
 }
 const GC_DEF={fillStyle:"#000",strokeStyle:"#000",lineCap:"butt",lineJoin:"miter",globalCompositeOperation:"source-over",
   lineDashOffset:0,font:"10px sans-serif",textAlign:"start",textBaseline:"alphabetic",direction:"inherit",
+  letterSpacing:"0px",wordSpacing:"0px",fontKerning:"auto",
   shadowBlur:0,shadowColor:"rgba(0,0,0,0)",shadowOffsetX:0,shadowOffsetY:0,filter:"none",
   imageSmoothingEnabled:true,imageSmoothingQuality:"low",_lw:1,_ga:1,_ml:10};
 const GC_KEYS=Object.keys(GC_DEF);
@@ -181,16 +182,13 @@ class GcCtx{
     if(![sx,sy,sw,sh,dx,dy,dw,dh].every(isFinite)||!sw||!sh||!dw||!dh)return;
     const k=this._k,C=[[dx,dy,sx,sy],[dx+dw,dy,sx+sw,sy],[dx+dw,dy+dh,sx+sw,sy+sh],[dx,dy+dh,sx,sy+sh]],v=[];
     for(const i of [0,1,2,0,2,3]){const q=this._P(C[i][0],C[i][1]);v.push(q[0]*k,q[1]*k,C[i][2]/T.w,C[i][3]/T.h);}
-    this._ops.push({t:"i",v,view:T.view,near:!this.imageSmoothingEnabled,a:this._ga,op:this.globalCompositeOperation,clip:this._clip});}
-  fillText(){throw gcNo("fillText — атлас глифов, следующий шаг");}
-  strokeText(){throw gcNo("strokeText — атлас глифов, следующий шаг");}
-  measureText(){throw gcNo("measureText — атлас глифов, следующий шаг");}
+    this._ops.push({t:"i",v,view:T.view,near:!this.imageSmoothingEnabled,a:this._ga,op:this.globalCompositeOperation,clip:this._clip,sh:this._sh(this.globalCompositeOperation)});}
+  /* fillText/strokeText/measureText — в 08cb (атлас масок) */
   createLinearGradient(x0,y0,x1,y1){return new GcGrad(1,[x0,y0,x1,y1]);}
   createRadialGradient(x0,y0,r0,x1,y1,r1){if(r0<0||r1<0)throw new RangeError("GPU-холст: радиус градиента < 0");return new GcGrad(2,[x0,y0,r0,x1,y1,r1]);}
   _chk(op){
     if(!GC_OPS[op])throw gcNo("globalCompositeOperation "+op);
-    if(this.filter&&this.filter!=="none")throw gcNo("filter "+this.filter);
-    if((this.shadowBlur>0||this.shadowOffsetX||this.shadowOffsetY)&&gcColor(this.shadowColor)[3]>0)throw gcNo("тень (shadowBlur)");}
+    if(this.filter&&this.filter!=="none")throw gcNo("filter "+this.filter);}
   /* краска: сплошная — премультиплицированный цвет; градиент — обратная матрица (px выпечки ×k → пространство градиента) */
   _paint(style,amul){
     const al=amul<0?1:this._ga*amul;
@@ -200,7 +198,7 @@ class GcCtx{
     throw gcNo("краска "+(style&&style.constructor&&style.constructor.name||typeof style));}
   _fill(sp,eo,style,op,amul){
     if(amul>=0)this._chk(op);const v=gcFan(sp,this._k),p=this._paint(style,amul);
-    if(v.length&&p)this._ops.push({t:"f",v,eo,p,op,clip:this._clip});}
+    if(v.length&&p)this._ops.push({t:"f",v,eo,p,op,clip:this._clip,sh:amul>=0?this._sh(op):null});}
   _stroke(sp){
     const op=this.globalCompositeOperation;this._chk(op);
     const m=this._m,iv=gcInv(m);if(!iv)return;
@@ -219,7 +217,7 @@ class GcCtx{
     if(!U.length)return;
     const k=this._k,v=new Array(U.length);
     for(let i=0;i<U.length;i+=2){v[i]=(m[0]*U[i]+m[2]*U[i+1]+m[4])*k;v[i+1]=(m[1]*U[i]+m[3]*U[i+1]+m[5])*k;}
-    this._ops.push({t:"s",v,p,op,clip:this._clip});}
+    this._ops.push({t:"s",v,p,op,clip:this._clip,sh:this._sh(op)});}
 }
 /* чего нет на видеокарте — громко (чтение пикселей, узоры, конический градиент, попадание в путь) */
 for(const k of ["getImageData","putImageData","createImageData","createPattern","createConicGradient","isPointInPath","isPointInStroke","drawFocusIfNeeded"])
@@ -291,10 +289,10 @@ struct VO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) k:u32,@loca
 fn bayer8(p:vec2f)->f32{let x=u32(p.x)&7u;let y=u32(p.y)&7u;let v=x^y;
   let b=((v&1u)<<5u)|((y&1u)<<4u)|((v&2u)<<2u)|((y&2u)<<1u)|((v&4u)>>1u)|((y&4u)>>2u);return (f32(b)+.5)/64.;}
 @fragment fn fimg(i:VO)->@location(0) vec4f{return textureSample(img,ism,i.uv)*gp[i.k*5u].w;}
-@fragment fn fpaint(i:VO)->@location(0) vec4f{
-  let b=i.k*5u;let q=gp[b+1u];
+fn paintOf(k:u32,d:vec2f)->vec4f{
+  let b=k*5u;let q=gp[b+1u];
   if(q.x<.5){return gp[b];}
-  let m=gp[b+2u];let n=gp[b+3u];let g=gp[b+4u];let d=i.p.xy;
+  let m=gp[b+2u];let n=gp[b+3u];let g=gp[b+4u];
   let u=vec2f(m.x*d.x+m.z*d.y+n.x,m.y*d.x+m.w*d.y+n.y);
   var t=0.;
   if(q.x<1.5){let e=g.xy-n.zw;t=dot(u-n.zw,e)/max(dot(e,e),1e-12);}
@@ -308,7 +306,13 @@ fn bayer8(p:vec2f)->f32{let x=u32(p.x)&7u;let y=u32(p.y)&7u;let v=x^y;
   /* дизер Байера ±⅜ ступени: столько же смешанных соседей, сколько у градиента 2D (Skia), 0,38;
      тёмное свечение без полос; ровный уровень не трогает */
   let c=textureSampleLevel(ramp,rsm,vec2f((t*255.+.5)/256.,q.y),0.)*q.z;let dd=(bayer8(d)-.5)*.75/255.;
-  let a=clamp(c.a+dd,0.,1.);return vec4f(clamp(c.rgb+vec3f(dd),vec3f(0.),vec3f(a)),a);}`;
+  let a=clamp(c.a+dd,0.,1.);return vec4f(clamp(c.rgb+vec3f(dd),vec3f(0.),vec3f(a)),a);}
+@fragment fn fpaint(i:VO)->@location(0) vec4f{return paintOf(i.k,i.p.xy);}
+/* текст: маска из атласа × краска (цвет или градиент) */
+/* тень: размытый слой (r8, свой угол в gp[b+2].xy) × цвет тени */
+@fragment fn fshadow(i:VO)->@location(0) vec4f{let b=i.k*5u;let q=vec2i(floor(i.p.xy-gp[b+2u].xy));let n=vec2i(textureDimensions(img));
+  if(any(q<vec2i(0))||any(q>=n)){return vec4f(0.);}return gp[b]*textureLoad(img,q,0).r;}
+@fragment fn fmask(i:VO)->@location(0) vec4f{let m=textureSample(img,ism,i.uv).r;return paintOf(i.k,i.p.xy)*m;}`;
 const GC_MIP_WGSL=`
 @group(0) @binding(0) var s:texture_2d<f32>;
 @group(0) @binding(1) var sm:sampler;
@@ -326,7 +330,10 @@ const GC_ST={
   out:{f:{compare:"equal"},rm:0xFF,wm:0,c:"none"},
   cov:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"paint"},
   img:{f:{compare:"equal"},rm:0x80,wm:0,c:"img"},
-  imc:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"img"}};
+  imc:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"img"},
+  msk:{f:{compare:"equal"},rm:0x80,wm:0,c:"mask"},
+  mkc:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"mask"},
+  shw:{f:{compare:"equal"},rm:0x80,wm:0,c:"shadow"}};
 function gcLay(){
   let L=GPU.lay["gc.L"];if(L)return L;
   const d=GPU.dev,F=GPUShaderStage.FRAGMENT|GPUShaderStage.VERTEX,U=GPUTextureUsage;
@@ -344,7 +351,7 @@ function gcPipe(key){
   return GPU.lay["gc."+key]=GPU.dev.createRenderPipeline({layout:L.pl,
     vertex:{module:L.mod,entryPoint:"vs",buffers:[{arrayStride:20,attributes:[{shaderLocation:0,offset:0,format:"float32x2"},
       {shaderLocation:1,offset:8,format:"float32"},{shaderLocation:2,offset:12,format:"float32x2"}]}]},
-    fragment:{module:L.mod,entryPoint:S.c==="img"?"fimg":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
+    fragment:{module:L.mod,entryPoint:S.c==="img"?"fimg":S.c==="mask"?"fmask":S.c==="shadow"?"fshadow":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
     primitive:{topology:"triangle-list"},
     depthStencil:{format:"stencil8",depthWriteEnabled:false,depthCompare:"always",stencilFront:S.f,stencilBack:S.b||S.f,stencilReadMask:S.rm,stencilWriteMask:S.wm},
     multisample:{count:4}});
@@ -382,10 +389,11 @@ function gpuBakeRedo(B){
   trash.push(ms,st);if(rs)trash.push(rs);
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
   const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
+  let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
   const put=(md,ref,v,pi,img)=>{const f=V.length/5;
     if(img)for(let i=0;i<v.length;i+=4)V.push(v[i],v[i+1],pi,v[i+2],v[i+3]);
     else for(let i=0;i<v.length;i+=2)V.push(v[i],v[i+1],pi,0,0);
-    if(v.length)D.push({md,ref,f,n:V.length/5-f,img});};
+    if(v.length)DL.push({md,ref,f,n:V.length/5-f,img});};
   const box=v=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     for(let i=0;i<v.length;i+=2){x0=Math.min(x0,v[i]);x1=Math.max(x1,v[i]);y0=Math.min(y0,v[i+1]);y1=Math.max(y1,v[i+1]);}
     x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(W,x1+1);y1=Math.min(H,y1+1);return [x0,y0,x1,y0,x1,y1,x0,y0,x1,y1,x0,y1];};
@@ -400,16 +408,30 @@ function gpuBakeRedo(B){
     P.push(0,0,0,0,p.k,r,p.a,0,iv[0],iv[1],iv[2],iv[3],iv[4],iv[5],a[0],a[1]);
     if(p.k===1)P.push(a[2],a[3],0,0);else P.push(a[2],a[3],a[4],a[5]);
     return i;};
-  for(const q of g._ops){
-    clip(q.clip);const u=GC_OPS[q.op].u;
-    if(q.t==="i"){const pi=P.length/20;P.push(0,0,0,q.a,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+  /* вызовы одной команды со смешением op */
+  const emit=(q,op)=>{const u=GC_OPS[op].u;
+    if(q.t==="i"||q.t==="x"){const tx=q.t==="x";let pi;   /* картинка или маска текста — четырёхугольник с uv */
+      if(tx)pi=paint(q.p);else{pi=P.length/20;P.push(0,0,0,q.a,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);}
       if(u){const s=[];for(let i=0;i<q.v.length;i+=4)s.push(q.v[i],q.v[i+1]);put("wst",0x81,s,0);put("out",0x80,Q,0);
-        put("imc|"+q.op,0,q.v,pi,q);}
-      else put("img|"+q.op,0x80,q.v,pi,q);
-      continue;}
+        put((tx?"mkc|":"imc|")+op,0,q.v,pi,q);}
+      else put((tx?"msk|":"img|")+op,0x80,q.v,pi,q);
+      return;}
     put(q.t==="s"?"wst":q.eo?"weo":"wnz",q.t==="s"?0x81:0x80,q.v,0);
     if(u)put("out",0x80,Q,0);
-    put("cov|"+q.op,0,u?Q:box(q.v),paint(q.p));}
+    put("cov|"+op,0,u?Q:box(q.v),paint(q.p));};
+  /* тень команды (08cc): слой фигуры в рамке + 3σ, размытие до основного прохода, здесь — вызов наложения */
+  const shade=q0=>{const q=q0.sv?Object.assign({},q0,{v:q0.sv,view:q0.sview}):q0,sh=q.sh,sg=sh.b/2*k,Rr=Math.ceil(3*sg),dx=sh.x*k,dy=sh.y*k,st4=q.t==="i"||q.t==="x"?4:2;
+    let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
+    for(let i=0;i<q.v.length;i+=st4){bx0=Math.min(bx0,q.v[i]);bx1=Math.max(bx1,q.v[i]);by0=Math.min(by0,q.v[i+1]);by1=Math.max(by1,q.v[i+1]);}
+    const x0=Math.max(0,Math.floor(bx0-Rr-1)),y0=Math.max(0,Math.floor(by0-Rr-1)),x1=Math.min(W,Math.ceil(bx1+Rr+1)),y1=Math.min(H,Math.ceil(by1+Rr+1));
+    const X0=Math.max(0,x0+dx),Y0=Math.max(0,y0+dy),X1=Math.min(W,x1+dx),Y1=Math.min(H,y1+dy);
+    if(x1<=x0||y1<=y0||X1<=X0||Y1<=Y0)return;
+    const sd=[];DL=sd;emit(q,"source-over");DL=D;
+    const w=x1-x0,h=y1-y0,mkT=()=>{const t=d.createTexture({size:[w,h],format:"r8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});trash.push(t);return t;};
+    const s={sd,x0,y0,w,h,sg,R:Rr,t1:mkT(),t2:mkT()};SH.push(s);
+    const pi=P.length/20;P.push(...sh.c,0,0,0,0,x0+dx,y0+dy,0,0,0,0,0,0,0,0,0,0);
+    put("shw|"+q0.op,0x80,[X0,Y0,0,0,X1,Y0,0,0,X1,Y1,0,0,X0,Y0,0,0,X1,Y1,0,0,X0,Y1,0,0],pi,{view:s.t2.createView(),near:true});};
+  for(const q of g._ops){clip(q.clip);if(q.sh)shade(q);emit(q,q.op);}
   for(let i=20;i<P.length;i+=20)if(P[i+4])P[i+5]=(P[i+5]+.5)/R.length;
   /* буферы и лента */
   const bu=GPUBufferUsage,mk=(a,us)=>{const b=d.createBuffer({size:Math.max(16,a.byteLength),usage:us|bu.COPY_DST});d.queue.writeBuffer(b,0,a);trash.push(b);return b;};
@@ -422,12 +444,12 @@ function gpuBakeRedo(B){
       {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:nr?L.near:gpuMipSmp()}]});
     const e=bgs.get(key)||[];e[nr?1:0]=b;bgs.set(key,e);return b;};
   const enc=d.createCommandEncoder();
+  const run=(p,list)=>{p.setVertexBuffer(0,vb);for(const c of list){p.setPipeline(gcPipe(c.md));p.setBindGroup(0,bg(c.img));p.setStencilReference(c.ref);p.draw(c.n,1,c.f,0);}};
+  if(SH.length)gcShadowPasses(enc,SH,W,H,run);
   const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs?rs.createView():B.tex.createView({baseMipLevel:0,mipLevelCount:1}),
     loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
     depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilClearValue:0x80,stencilStoreOp:"discard"}});
-  ps.setVertexBuffer(0,vb);
-  for(const c of D){ps.setPipeline(gcPipe(c.md));ps.setBindGroup(0,bg(c.img));ps.setStencilReference(c.ref);ps.draw(c.n,1,c.f,0);}
-  ps.end();
+  run(ps,D);ps.end();
   /* мипы на видеокарте: проход на уровень, среднее 2×2 (и сброс двойного размера в нулевой) */
   const MP=gcMipPipe(),down=(src,lv)=>{
     const p=enc.beginRenderPass({colorAttachments:[{view:B.tex.createView({baseMipLevel:lv,mipLevelCount:1}),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});

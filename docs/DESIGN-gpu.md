@@ -276,16 +276,60 @@ Skia's raster. Mips: one GPU pass per level, a 2×2 box, the level count of `gpu
   (mean |Δ| 0.025–0.043).
 
 **What it cannot do — loud.** `getImageData`, `putImageData`, `createImageData`, `createPattern`,
-`createConicGradient`, `isPointInPath/Stroke`, `Path2D` arguments, `filter` ≠ none, a shadow (`shadowBlur` or an
-offset with a visible `shadowColor`), composite ops overlay / saturation / the rest, text (`fillText`,
-`strokeText`, `measureText`) until v2. Each throws `Error("GPU-холст: нет «…»")` and lands in `GC_MISS`: in play
-the frame guard names it («СБОЙ · …»), in a suite the suite goes red. No silent skip anywhere.
+`createConicGradient`, `isPointInPath/Stroke`, `Path2D` arguments, `filter` ≠ none, composite ops overlay /
+saturation / the rest, a shadow under copy / source-in / destination-in, a font without `px`, text without a
+device. Each throws `Error("GPU-холст: нет «…»")` and lands in `GC_MISS`: in play the frame guard names it
+(«СБОЙ · …»), in a suite the suite goes red. No silent skip anywhere.
 
-**v2 (next): text and shadow.** A glyph atlas behind one function (the glyph source — a) a 2D canvas once at
-load or b) an in-game font — is the author's pick, the atlas does not care); `measureText` with the same metrics
-as 2D, because signs, neon and the cockpit lay out through it; fonts ui-monospace, sans-serif, bold.
-`shadowBlur/shadowColor` as a real blur pass over the bake's shadow layer (neon's tube glow, hotel windows,
-Чебурек). **v3:** pixels (`getImageData/putImageData` of the planets) go to a generator shader — GPU-3's.
+**v2: text and shadow (this commit).**
+
+| call | what |
+|---|---|
+| `fillText/strokeText(t, x, y, maxWidth)`, `measureText` (08cb) | `font`, `textAlign`, `textBaseline`, `direction`, `letterSpacing`, `wordSpacing`, `fontKerning` as 2D. `measureText` returns 2D's own metrics (a frozen copy, cached). `gcMeasure(font, t)` measures without a bake, for sizing one |
+| `shadowBlur/shadowColor/shadowOffsetX/Y` (08cc) | on fill, stroke, drawImage and text, like 2D: blur and offset ignore the transform; `clearRect` casts none |
+
+- *The glyph source is swappable.* `GC_GLYPHS` implements `measure` and `raster`, and the atlas does not know what
+  is behind it. Today it is the author's option a): one 2D canvas for the whole game, used only to raster whole
+  strings and to measure. Option b), an in-game font, replaces that object and nothing else.
+- *A whole string is rastered at once,* so kerning and ligatures come out as in 2D. It is rastered in final pixels:
+  the transform's linear part (rotation, scale, flips) goes to Skia, as 2D does, and so does the anchor's
+  fraction. The mask lands pixel for pixel. In an `ss`×`ss` bake it lands in `ss`×`ss` blocks, so after the box
+  down it is exactly that raster: the atlas is never stretched and small letters never blur.
+- *The atlas.* Masks go to `r8unorm` pages of 1024², packed on shelves, one per string and paint. A mask is needed
+  only while the bake renders, so an overflow past 6 pages simply resets the atlas. A lost device resets it too.
+- *Three Skia details, found by measuring:*
+  - rastering at ×`ss` made letters 8–22 % lighter, because Skia's small-size contrast exists only at the native
+    size;
+  - Skia sets the mask's contrast by the paint's luminance (for a gradient, the mean of its stops). A white mask
+    made blue text 7–11 % heavier, so strings are rastered in their paint's colour;
+  - a text's shadow comes from a mask with no such contrast. By mass it equals text rastered in `#505050`
+    (±0.5 % at 8, 11 and 18 px).
+- *Shadow.* The shape is drawn alone (no clip, source-over, its own paint; the alpha is the layer) within its
+  bounds + 3σ. The layer is blurred separably and composited in the main pass under the command's clip and op,
+  then the shape follows. All layers are prepared before the main pass, since a shadow does not depend on the
+  canvas. σ = `shadowBlur`/2. Each tap is the Gaussian *integrated over the pixel*: a measured 1-px dot has
+  variance σ² + 1/12 in 2D. The fit, blurs 1–16: the taps are within 1/255, the variance within 0.05 up to blur
+  6. Chrome's own sigma formula (0.2887·blur + 0.5) fitted worse on every sample. A shape's part beyond the
+  canvas edge casts no shadow.
+
+*v2 against 2D* (read back, premultiplied, per channel):
+
+| sample | mean \|Δ\| | max \|Δ\| | pixels off by > 24 | notes |
+|---|---|---|---|---|
+| text: bold mono 11, sans 10 and 9, a 22 px gradient, a stroke, rotated, `maxWidth`, alpha .5; ss 1 and 2 | 0.007–0.010 | 4 | 0 of 51 200 | weight 0.999–1.000 |
+| shadow: a neon tube, a ring, glowing text, a hard offset, a window light, a scaled dot | 0.30–0.38 | 65 | — | the maximum sits on the ring's own stroke edge; hard shadow and window within 3 |
+| the neon bake (17k0, three signs): glass | 0.06–0.08 | 3 | — | |
+| the neon bake (17k0, three signs): light | 0.57–1.37 | 17–30 | 0–2 | light energy +2…+3.5 % |
+
+The remainder is the glyph shadow's shape: under the letters, 2D's shadow is denser. Both canvases composite
+text over its shadow by exact source-over (checked, Δ ≤ 1).
+
+**The second port: neon (17k0).** Glass, light and the pale core are three bakes. The core cannot be erased
+out of the light with destination-out, because that would take the halo too. The code of 779b322 run inline in
+the same page gives the numbers above; the pair is `pair_neon_bake_x4.png`. `neonDraw` without a device draws
+nothing. The kit changed in two places: `gpuImage` re-bakes a bake that outlived its device, and `bakeKeep`
+calls `drop()` on what it evicts. **v3:** pixels (`getImageData/putImageData` of the planets) go to a generator
+shader; that is GPU-3's.
 
 **The first port: finds (17b).** `findSprite(k)` is `gpuBaked` over the unchanged `findShape`. Against a 2D bake
 of the same shape (288², read back): mean |Δ| 0.03 of 255 per channel, 8–27 pixels of 82 944 differ by more
@@ -299,8 +343,15 @@ figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-�
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
   `pair_finds_760.png` in the session's scratchpad (identical, 0 uploads). The quality checks are done: gradient
-  dither on a half-float ramp, box mips kept (numbers in §G, pair `pair_grad_x4.png`). Next: v2 (text atlas, shadow blur), then
-  Контроль's HUD fixes 1–5 + DECISIONS «no 2D», then merge gpu3 to e1eef97.
+  dither on a half-float ramp, box mips kept (numbers in §G, pair `pair_grad_x4.png`).
+- **GPU canvas v2 (25.09, `gpu`).** Text (08cb) and shadow (08cc) are in, and neon (17k0) is ported. Pairs are
+  `pair_text_x3.png`, `pair_shadow_x3.png` and `pair_neon_bake_x4.png`; numbers in §G.
+- **Next, in Контроль's order:**
+  1. merge gpu3 up to 10f8681;
+  2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
+  3. HUD fixes 1–5, find labels in table case and pushed apart, and DECISIONS «no 2D»;
+  4. chipDom and domLabel through the atlas;
+  5. the mask in `gpuLitSprite`, for GPU-2's pirates.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way

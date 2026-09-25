@@ -11256,7 +11256,9 @@ const CV_LVL=new WeakMap();
    один раз. Текст так и остаётся пиксель в пиксель, без мипов и без маски */
 function bakeKeep(M,key,cap,make){
   let v=M.get(key);if(v){M.delete(key);M.set(key,v);return v;}
-  v=make();M.set(key,v);if(M.size>cap)M.delete(M.keys().next().value);return v;
+  v=make();M.set(key,v);
+  if(M.size>cap){const k=M.keys().next().value,o=M.get(k);M.delete(k);if(o&&o.drop)o.drop();}   /* выпечки GPU-холста — освободить */
+  return v;
 }
 function gpuCvLevel(cv,ver,devW){
   let L=CV_LVL.get(cv);
@@ -11398,6 +11400,7 @@ function gpuImage(pass,cv,rects,o){
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
+  if(mip&&cv.draw&&cv.dev!==GPU.dev)gpuBakeRedo(cv);   /* выпечка GPU-холста пережила потерю устройства — печём заново */
   const t=mip?cv:gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,mip?gpuMipSmp():GPU.S.lin]));
@@ -11603,6 +11606,7 @@ class GcGrad{
 }
 const GC_DEF={fillStyle:"#000",strokeStyle:"#000",lineCap:"butt",lineJoin:"miter",globalCompositeOperation:"source-over",
   lineDashOffset:0,font:"10px sans-serif",textAlign:"start",textBaseline:"alphabetic",direction:"inherit",
+  letterSpacing:"0px",wordSpacing:"0px",fontKerning:"auto",
   shadowBlur:0,shadowColor:"rgba(0,0,0,0)",shadowOffsetX:0,shadowOffsetY:0,filter:"none",
   imageSmoothingEnabled:true,imageSmoothingQuality:"low",_lw:1,_ga:1,_ml:10};
 const GC_KEYS=Object.keys(GC_DEF);
@@ -11709,16 +11713,13 @@ class GcCtx{
     if(![sx,sy,sw,sh,dx,dy,dw,dh].every(isFinite)||!sw||!sh||!dw||!dh)return;
     const k=this._k,C=[[dx,dy,sx,sy],[dx+dw,dy,sx+sw,sy],[dx+dw,dy+dh,sx+sw,sy+sh],[dx,dy+dh,sx,sy+sh]],v=[];
     for(const i of [0,1,2,0,2,3]){const q=this._P(C[i][0],C[i][1]);v.push(q[0]*k,q[1]*k,C[i][2]/T.w,C[i][3]/T.h);}
-    this._ops.push({t:"i",v,view:T.view,near:!this.imageSmoothingEnabled,a:this._ga,op:this.globalCompositeOperation,clip:this._clip});}
-  fillText(){throw gcNo("fillText — атлас глифов, следующий шаг");}
-  strokeText(){throw gcNo("strokeText — атлас глифов, следующий шаг");}
-  measureText(){throw gcNo("measureText — атлас глифов, следующий шаг");}
+    this._ops.push({t:"i",v,view:T.view,near:!this.imageSmoothingEnabled,a:this._ga,op:this.globalCompositeOperation,clip:this._clip,sh:this._sh(this.globalCompositeOperation)});}
+  /* fillText/strokeText/measureText — в 08cb (атлас масок) */
   createLinearGradient(x0,y0,x1,y1){return new GcGrad(1,[x0,y0,x1,y1]);}
   createRadialGradient(x0,y0,r0,x1,y1,r1){if(r0<0||r1<0)throw new RangeError("GPU-холст: радиус градиента < 0");return new GcGrad(2,[x0,y0,r0,x1,y1,r1]);}
   _chk(op){
     if(!GC_OPS[op])throw gcNo("globalCompositeOperation "+op);
-    if(this.filter&&this.filter!=="none")throw gcNo("filter "+this.filter);
-    if((this.shadowBlur>0||this.shadowOffsetX||this.shadowOffsetY)&&gcColor(this.shadowColor)[3]>0)throw gcNo("тень (shadowBlur)");}
+    if(this.filter&&this.filter!=="none")throw gcNo("filter "+this.filter);}
   /* краска: сплошная — премультиплицированный цвет; градиент — обратная матрица (px выпечки ×k → пространство градиента) */
   _paint(style,amul){
     const al=amul<0?1:this._ga*amul;
@@ -11728,7 +11729,7 @@ class GcCtx{
     throw gcNo("краска "+(style&&style.constructor&&style.constructor.name||typeof style));}
   _fill(sp,eo,style,op,amul){
     if(amul>=0)this._chk(op);const v=gcFan(sp,this._k),p=this._paint(style,amul);
-    if(v.length&&p)this._ops.push({t:"f",v,eo,p,op,clip:this._clip});}
+    if(v.length&&p)this._ops.push({t:"f",v,eo,p,op,clip:this._clip,sh:amul>=0?this._sh(op):null});}
   _stroke(sp){
     const op=this.globalCompositeOperation;this._chk(op);
     const m=this._m,iv=gcInv(m);if(!iv)return;
@@ -11747,7 +11748,7 @@ class GcCtx{
     if(!U.length)return;
     const k=this._k,v=new Array(U.length);
     for(let i=0;i<U.length;i+=2){v[i]=(m[0]*U[i]+m[2]*U[i+1]+m[4])*k;v[i+1]=(m[1]*U[i]+m[3]*U[i+1]+m[5])*k;}
-    this._ops.push({t:"s",v,p,op,clip:this._clip});}
+    this._ops.push({t:"s",v,p,op,clip:this._clip,sh:this._sh(op)});}
 }
 /* чего нет на видеокарте — громко (чтение пикселей, узоры, конический градиент, попадание в путь) */
 for(const k of ["getImageData","putImageData","createImageData","createPattern","createConicGradient","isPointInPath","isPointInStroke","drawFocusIfNeeded"])
@@ -11819,10 +11820,10 @@ struct VO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) k:u32,@loca
 fn bayer8(p:vec2f)->f32{let x=u32(p.x)&7u;let y=u32(p.y)&7u;let v=x^y;
   let b=((v&1u)<<5u)|((y&1u)<<4u)|((v&2u)<<2u)|((y&2u)<<1u)|((v&4u)>>1u)|((y&4u)>>2u);return (f32(b)+.5)/64.;}
 @fragment fn fimg(i:VO)->@location(0) vec4f{return textureSample(img,ism,i.uv)*gp[i.k*5u].w;}
-@fragment fn fpaint(i:VO)->@location(0) vec4f{
-  let b=i.k*5u;let q=gp[b+1u];
+fn paintOf(k:u32,d:vec2f)->vec4f{
+  let b=k*5u;let q=gp[b+1u];
   if(q.x<.5){return gp[b];}
-  let m=gp[b+2u];let n=gp[b+3u];let g=gp[b+4u];let d=i.p.xy;
+  let m=gp[b+2u];let n=gp[b+3u];let g=gp[b+4u];
   let u=vec2f(m.x*d.x+m.z*d.y+n.x,m.y*d.x+m.w*d.y+n.y);
   var t=0.;
   if(q.x<1.5){let e=g.xy-n.zw;t=dot(u-n.zw,e)/max(dot(e,e),1e-12);}
@@ -11836,7 +11837,13 @@ fn bayer8(p:vec2f)->f32{let x=u32(p.x)&7u;let y=u32(p.y)&7u;let v=x^y;
   /* дизер Байера ±⅜ ступени: столько же смешанных соседей, сколько у градиента 2D (Skia), 0,38;
      тёмное свечение без полос; ровный уровень не трогает */
   let c=textureSampleLevel(ramp,rsm,vec2f((t*255.+.5)/256.,q.y),0.)*q.z;let dd=(bayer8(d)-.5)*.75/255.;
-  let a=clamp(c.a+dd,0.,1.);return vec4f(clamp(c.rgb+vec3f(dd),vec3f(0.),vec3f(a)),a);}`;
+  let a=clamp(c.a+dd,0.,1.);return vec4f(clamp(c.rgb+vec3f(dd),vec3f(0.),vec3f(a)),a);}
+@fragment fn fpaint(i:VO)->@location(0) vec4f{return paintOf(i.k,i.p.xy);}
+/* текст: маска из атласа × краска (цвет или градиент) */
+/* тень: размытый слой (r8, свой угол в gp[b+2].xy) × цвет тени */
+@fragment fn fshadow(i:VO)->@location(0) vec4f{let b=i.k*5u;let q=vec2i(floor(i.p.xy-gp[b+2u].xy));let n=vec2i(textureDimensions(img));
+  if(any(q<vec2i(0))||any(q>=n)){return vec4f(0.);}return gp[b]*textureLoad(img,q,0).r;}
+@fragment fn fmask(i:VO)->@location(0) vec4f{let m=textureSample(img,ism,i.uv).r;return paintOf(i.k,i.p.xy)*m;}`;
 const GC_MIP_WGSL=`
 @group(0) @binding(0) var s:texture_2d<f32>;
 @group(0) @binding(1) var sm:sampler;
@@ -11854,7 +11861,10 @@ const GC_ST={
   out:{f:{compare:"equal"},rm:0xFF,wm:0,c:"none"},
   cov:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"paint"},
   img:{f:{compare:"equal"},rm:0x80,wm:0,c:"img"},
-  imc:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"img"}};
+  imc:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"img"},
+  msk:{f:{compare:"equal"},rm:0x80,wm:0,c:"mask"},
+  mkc:{f:{compare:"not-equal",passOp:"zero"},rm:0x7F,wm:0x7F,c:"mask"},
+  shw:{f:{compare:"equal"},rm:0x80,wm:0,c:"shadow"}};
 function gcLay(){
   let L=GPU.lay["gc.L"];if(L)return L;
   const d=GPU.dev,F=GPUShaderStage.FRAGMENT|GPUShaderStage.VERTEX,U=GPUTextureUsage;
@@ -11872,7 +11882,7 @@ function gcPipe(key){
   return GPU.lay["gc."+key]=GPU.dev.createRenderPipeline({layout:L.pl,
     vertex:{module:L.mod,entryPoint:"vs",buffers:[{arrayStride:20,attributes:[{shaderLocation:0,offset:0,format:"float32x2"},
       {shaderLocation:1,offset:8,format:"float32"},{shaderLocation:2,offset:12,format:"float32x2"}]}]},
-    fragment:{module:L.mod,entryPoint:S.c==="img"?"fimg":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
+    fragment:{module:L.mod,entryPoint:S.c==="img"?"fimg":S.c==="mask"?"fmask":S.c==="shadow"?"fshadow":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
     primitive:{topology:"triangle-list"},
     depthStencil:{format:"stencil8",depthWriteEnabled:false,depthCompare:"always",stencilFront:S.f,stencilBack:S.b||S.f,stencilReadMask:S.rm,stencilWriteMask:S.wm},
     multisample:{count:4}});
@@ -11910,10 +11920,11 @@ function gpuBakeRedo(B){
   trash.push(ms,st);if(rs)trash.push(rs);
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
   const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
+  let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
   const put=(md,ref,v,pi,img)=>{const f=V.length/5;
     if(img)for(let i=0;i<v.length;i+=4)V.push(v[i],v[i+1],pi,v[i+2],v[i+3]);
     else for(let i=0;i<v.length;i+=2)V.push(v[i],v[i+1],pi,0,0);
-    if(v.length)D.push({md,ref,f,n:V.length/5-f,img});};
+    if(v.length)DL.push({md,ref,f,n:V.length/5-f,img});};
   const box=v=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     for(let i=0;i<v.length;i+=2){x0=Math.min(x0,v[i]);x1=Math.max(x1,v[i]);y0=Math.min(y0,v[i+1]);y1=Math.max(y1,v[i+1]);}
     x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(W,x1+1);y1=Math.min(H,y1+1);return [x0,y0,x1,y0,x1,y1,x0,y0,x1,y1,x0,y1];};
@@ -11928,16 +11939,30 @@ function gpuBakeRedo(B){
     P.push(0,0,0,0,p.k,r,p.a,0,iv[0],iv[1],iv[2],iv[3],iv[4],iv[5],a[0],a[1]);
     if(p.k===1)P.push(a[2],a[3],0,0);else P.push(a[2],a[3],a[4],a[5]);
     return i;};
-  for(const q of g._ops){
-    clip(q.clip);const u=GC_OPS[q.op].u;
-    if(q.t==="i"){const pi=P.length/20;P.push(0,0,0,q.a,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+  /* вызовы одной команды со смешением op */
+  const emit=(q,op)=>{const u=GC_OPS[op].u;
+    if(q.t==="i"||q.t==="x"){const tx=q.t==="x";let pi;   /* картинка или маска текста — четырёхугольник с uv */
+      if(tx)pi=paint(q.p);else{pi=P.length/20;P.push(0,0,0,q.a,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);}
       if(u){const s=[];for(let i=0;i<q.v.length;i+=4)s.push(q.v[i],q.v[i+1]);put("wst",0x81,s,0);put("out",0x80,Q,0);
-        put("imc|"+q.op,0,q.v,pi,q);}
-      else put("img|"+q.op,0x80,q.v,pi,q);
-      continue;}
+        put((tx?"mkc|":"imc|")+op,0,q.v,pi,q);}
+      else put((tx?"msk|":"img|")+op,0x80,q.v,pi,q);
+      return;}
     put(q.t==="s"?"wst":q.eo?"weo":"wnz",q.t==="s"?0x81:0x80,q.v,0);
     if(u)put("out",0x80,Q,0);
-    put("cov|"+q.op,0,u?Q:box(q.v),paint(q.p));}
+    put("cov|"+op,0,u?Q:box(q.v),paint(q.p));};
+  /* тень команды (08cc): слой фигуры в рамке + 3σ, размытие до основного прохода, здесь — вызов наложения */
+  const shade=q0=>{const q=q0.sv?Object.assign({},q0,{v:q0.sv,view:q0.sview}):q0,sh=q.sh,sg=sh.b/2*k,Rr=Math.ceil(3*sg),dx=sh.x*k,dy=sh.y*k,st4=q.t==="i"||q.t==="x"?4:2;
+    let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
+    for(let i=0;i<q.v.length;i+=st4){bx0=Math.min(bx0,q.v[i]);bx1=Math.max(bx1,q.v[i]);by0=Math.min(by0,q.v[i+1]);by1=Math.max(by1,q.v[i+1]);}
+    const x0=Math.max(0,Math.floor(bx0-Rr-1)),y0=Math.max(0,Math.floor(by0-Rr-1)),x1=Math.min(W,Math.ceil(bx1+Rr+1)),y1=Math.min(H,Math.ceil(by1+Rr+1));
+    const X0=Math.max(0,x0+dx),Y0=Math.max(0,y0+dy),X1=Math.min(W,x1+dx),Y1=Math.min(H,y1+dy);
+    if(x1<=x0||y1<=y0||X1<=X0||Y1<=Y0)return;
+    const sd=[];DL=sd;emit(q,"source-over");DL=D;
+    const w=x1-x0,h=y1-y0,mkT=()=>{const t=d.createTexture({size:[w,h],format:"r8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});trash.push(t);return t;};
+    const s={sd,x0,y0,w,h,sg,R:Rr,t1:mkT(),t2:mkT()};SH.push(s);
+    const pi=P.length/20;P.push(...sh.c,0,0,0,0,x0+dx,y0+dy,0,0,0,0,0,0,0,0,0,0);
+    put("shw|"+q0.op,0x80,[X0,Y0,0,0,X1,Y0,0,0,X1,Y1,0,0,X0,Y0,0,0,X1,Y1,0,0,X0,Y1,0,0],pi,{view:s.t2.createView(),near:true});};
+  for(const q of g._ops){clip(q.clip);if(q.sh)shade(q);emit(q,q.op);}
   for(let i=20;i<P.length;i+=20)if(P[i+4])P[i+5]=(P[i+5]+.5)/R.length;
   /* буферы и лента */
   const bu=GPUBufferUsage,mk=(a,us)=>{const b=d.createBuffer({size:Math.max(16,a.byteLength),usage:us|bu.COPY_DST});d.queue.writeBuffer(b,0,a);trash.push(b);return b;};
@@ -11950,12 +11975,12 @@ function gpuBakeRedo(B){
       {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:nr?L.near:gpuMipSmp()}]});
     const e=bgs.get(key)||[];e[nr?1:0]=b;bgs.set(key,e);return b;};
   const enc=d.createCommandEncoder();
+  const run=(p,list)=>{p.setVertexBuffer(0,vb);for(const c of list){p.setPipeline(gcPipe(c.md));p.setBindGroup(0,bg(c.img));p.setStencilReference(c.ref);p.draw(c.n,1,c.f,0);}};
+  if(SH.length)gcShadowPasses(enc,SH,W,H,run);
   const ps=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs?rs.createView():B.tex.createView({baseMipLevel:0,mipLevelCount:1}),
     loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
     depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilClearValue:0x80,stencilStoreOp:"discard"}});
-  ps.setVertexBuffer(0,vb);
-  for(const c of D){ps.setPipeline(gcPipe(c.md));ps.setBindGroup(0,bg(c.img));ps.setStencilReference(c.ref);ps.draw(c.n,1,c.f,0);}
-  ps.end();
+  run(ps,D);ps.end();
   /* мипы на видеокарте: проход на уровень, среднее 2×2 (и сброс двойного размера в нулевой) */
   const MP=gcMipPipe(),down=(src,lv)=>{
     const p=enc.beginRenderPass({colorAttachments:[{view:B.tex.createView({baseMipLevel:lv,mipLevelCount:1}),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});
@@ -11965,6 +11990,165 @@ function gpuBakeRedo(B){
   for(let i=1;i<B.n;i++)down(B.tex.createView({baseMipLevel:i-1,mipLevelCount:1}),i);
   d.queue.submit([enc.finish()]);
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);
+}
+
+/* ══════════════ GPU-холст, v2: текст (docs/DESIGN-gpu.md, «GPU canvas») ══════════════
+   fillText/strokeText/measureText с метриками 2D. Источник глифов сменный (GC_GLYPHS) — выбор
+   автора: а) 2D-канва для растра строк (сейчас), б) свой шрифт; атлас не знает, откуда маска.
+   Строка растрится целиком — кернинг и лигатуры как у 2D — в итоговых пикселях: с линейной
+   частью преобразования (поворот, масштаб — их Skia кладёт на контур, как у 2D) и дробью
+   позиции. Маска ложится пиксель в пиксель, в холст ss×ss — блоками ss×ss, и после сжатия
+   это ровно тот растр: ни растяжения атласа, ни мыла. Растр ×ss выходил тоньше (жирность
+   −8…−22 %: контраст мелкого кегля Skia даёт только в родном размере). Растр — в цвете
+   краски: Skia правит контраст маски по яркости цвета (у градиента — по среднему его точек),
+   и маска, снятая белым, у голубого текста была на 7–11 % жирнее. */
+const GC_SHADOW_INK="rgb(80,80,80)";
+const GC_TXT_KEYS=["font","textAlign","textBaseline","direction","letterSpacing","wordSpacing","fontKerning"];
+const GC_TM=["width","actualBoundingBoxLeft","actualBoundingBoxRight","actualBoundingBoxAscent","actualBoundingBoxDescent",
+  "fontBoundingBoxAscent","fontBoundingBoxDescent","emHeightAscent","emHeightDescent","hangingBaseline","alphabeticBaseline","ideographicBaseline"];
+
+/* источник глифов а): одна 2D-канва на всю игру, только растр строк и мерка */
+const GC_GLYPHS={
+  cv:null,x:null,mc:new Map(),n:0,
+  _c(){if(!this.x){if(typeof document==="undefined")throw gcNo("источник глифов (нет document)");
+      this.cv=document.createElement("canvas");this.cv.width=this.cv.height=64;this.x=this.cv.getContext("2d",{willReadFrequently:true});}
+    return this.x;},
+  /* шрифт без px 2D молча пропустил бы — здесь громко */
+  _set(x,st){if(!/\d*\.?\d+px/.test(st.font))throw gcNo("шрифт без px «"+st.font+"»");
+    x.font=st.font;x.textAlign=st.textAlign;x.textBaseline=st.textBaseline;x.direction=st.direction;
+    x.letterSpacing=st.letterSpacing;x.wordSpacing=st.wordSpacing;x.fontKerning=st.fontKerning;},
+  /* метрики как у 2D — это они и есть; в кэше неизменяемая копия */
+  measure(st,t){const key=GC_TXT_KEYS.map(q=>st[q]).join("|")+"|"+t;let r=this.mc.get(key);if(r)return r;
+    const x=this._c();this._set(x,st);const m=x.measureText(t);r={};for(const q of GC_TM)r[q]=m[q];
+    if(this.mc.size>2048)this.mc.clear();this.mc.set(key,Object.freeze(r));return r;},
+  /* маска строки в px итога: M — линейная часть преобразования (px итога на единицу),
+     якорь — в (ox+fx, oy+fy) */
+  raster(st,t,M,fx,fy,sk,mw,col){
+    const x=this._c();this._set(x,st);const m=x.measureText(t);let L=m.actualBoundingBoxLeft,R=m.actualBoundingBoxRight;
+    if(mw!=null&&m.width>mw){const f=mw/m.width;L*=f;R*=f;}
+    const pl=sk?sk.lw/2*(sk.join==="miter"?Math.max(1,sk.ml):1):0,A=m.actualBoundingBoxAscent+pl,Dn=m.actualBoundingBoxDescent+pl;
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+    for(const [u,v] of [[-L-pl,-A],[R+pl,-A],[R+pl,Dn],[-L-pl,Dn]]){const X=M[0]*u+M[2]*v,Y=M[1]*u+M[3]*v;
+      x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y);}
+    const ox=Math.ceil(-x0)+2,oy=Math.ceil(-y0)+2,w=ox+Math.ceil(x1)+3,h=oy+Math.ceil(y1)+3;
+    if(!(w>0&&h>0)||w>8192||h>8192)throw gcNo("строка крупнее 8192 px");
+    if(this.cv.width<w||this.cv.height<h){this.cv.width=Math.max(this.cv.width,w);this.cv.height=Math.max(this.cv.height,h);this._set(x,st);}
+    x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.globalCompositeOperation="source-over";x.clearRect(0,0,w,h);
+    x.setTransform(M[0],M[1],M[2],M[3],ox+fx,oy+fy);x.fillStyle=x.strokeStyle=col;
+    if(sk){x.lineWidth=sk.lw;x.lineJoin=sk.join;x.miterLimit=sk.ml;x.lineCap=sk.cap;x.setLineDash(sk.dash);x.lineDashOffset=sk.off;
+      x.strokeText(t,0,0,mw);x.setLineDash([]);}
+    else x.fillText(t,0,0,mw);
+    x.setTransform(1,0,0,1,0,0);
+    const D=x.getImageData(0,0,w,h).data,a=new Uint8Array(w*h);for(let i=0;i<a.length;i++)a[i]=D[i*4+3];
+    this.n++;return {w,h,ox,oy,a};}
+};
+
+/* атлас масок: страницы r8 1024², полки через пиксель; крупная строка — своя страница.
+   Маски нужны только на время выпечки (готовая выпечка их не держит), так что переполнение —
+   просто сброс; смена устройства — тоже */
+const GC_ATL={dev:null,pages:[],map:new Map(),up:0};
+function gcAtlas(key,mk){
+  const A=GC_ATL,d=GPU.dev,U=GPUTextureUsage;
+  if(A.dev!==d){A.dev=d;A.pages=[];A.map.clear();}
+  let e=A.map.get(key);if(e)return e;
+  const r=mk(),page=(W,H)=>{const p={tex:d.createTexture({size:[W,H],format:"r8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST}),W,H,x:0,y:0,rh:0};
+    p.view=p.tex.createView();return p;};
+  let pg=A.pages[A.pages.length-1];
+  const fit=p=>{if(p.x+r.w>p.W){p.x=0;p.y+=p.rh+1;p.rh=0;}return p.y+r.h<=p.H;};
+  if(r.w>1024||r.h>1024||!pg||pg.big||!fit(pg)){
+    if(A.pages.length>=6){for(const p of A.pages)GPU.trash.push(p.tex);A.pages=[];A.map.clear();}
+    pg=r.w>1024||r.h>1024?Object.assign(page(r.w,r.h),{big:1}):page(1024,1024);A.pages.push(pg);}
+  const x=pg.x,y=pg.y;pg.x+=r.w+1;pg.rh=Math.max(pg.rh,r.h);
+  d.queue.writeTexture({texture:pg.tex,origin:[x,y]},r.a,{bytesPerRow:r.w},[r.w,r.h]);A.up++;
+  e={view:pg.view,W:pg.W,H:pg.H,x,y,w:r.w,h:r.h,ox:r.ox,oy:r.oy};A.map.set(key,e);return e;
+}
+
+/* мерка строки без выпечки — печке нужен размер холста до рисования */
+function gcMeasure(font,t){return GC_GLYPHS.measure(Object.assign({},GC_DEF,{font}),String(t));}
+
+Object.assign(GcCtx.prototype,{
+  measureText(t){return GC_GLYPHS.measure(this,String(t));},
+  fillText(t,x,y,mw){this._text(String(t),x,y,mw,null);},
+  strokeText(t,x,y,mw){this._text(String(t),x,y,mw,{lw:this._lw,join:this.lineJoin,ml:this._ml,cap:this.lineCap,dash:this._dash,off:this.lineDashOffset});},
+  /* строка → четырёхугольник маски в пикселях выпечки; краска — как у заливки (цвет или градиент) */
+  _text(t,x,y,mw,sk){
+    if(!t||!isFinite(x)||!isFinite(y)||mw!==undefined&&!(mw>0))return;   /* как 2D: maxWidth ≤ 0 или NaN — ничего */
+    const op=this.globalCompositeOperation;this._chk(op);
+    if(!GPU.dev)throw gcNo("текст без видеокарты");
+    const p=this._paint(sk?this.strokeStyle:this.fillStyle,1);if(!p)return;
+    const m=this._m,k=this._k,ax=(m[0]*x+m[2]*y+m[4])*k,ay=(m[1]*x+m[3]*y+m[5])*k;
+    if(!(Math.abs(m[0]*m[3]-m[1]*m[2])>1e-12))return;
+    /* якорь — в px итога; растр берёт его дробь (точно: 1/16 давала Δ 62 на моноширинном) и линейную часть преобразования */
+    const fa=ax/k,fb=ay/k,fx=fa-Math.floor(fa),fy=fb-Math.floor(fb),st=this;
+    const M=[m[0],m[1],m[2],m[3]].map(v=>Math.round(v*1e6)/1e6);
+    /* цвет растра — яркость для контраста Skia: сплошная краска — её цвет, градиент — среднее точек */
+    const col=p.k?p.g.s.reduce((a,q)=>a.map((v,i)=>v+q[1][i]/p.g.s.length),[0,0,0]):[0,1,2].map(i=>p.c[3]>0?p.c[i]/p.c[3]:0);
+    const pc="rgb("+col.slice(0,3).map(v=>Math.round(v*255)).join(",")+")";
+    const base=GC_TXT_KEYS.map(q=>st[q]).join("|")+"|"+M+"|"+fx+"|"+fy+"|"+mw+"|"+(sk?[sk.lw,sk.join,sk.ml,sk.cap,sk.dash.join(","),sk.off].join(","):"")+"|"+t;
+    const quad=c=>{const e=gcAtlas(base+"|"+c,()=>GC_GLYPHS.raster(st,t,M,fx,fy,sk,mw,c));
+      const T=[[0,0],[e.w,0],[e.w,e.h],[0,e.h]],X=Math.floor(fa)-e.ox,Y=Math.floor(fb)-e.oy,v=[];
+      for(const i of [0,1,2,0,2,3])v.push((X+T[i][0])*k,(Y+T[i][1])*k,(e.x+T[i][0])/e.W,(e.y+T[i][1])/e.H);return [v,e.view];};
+    const [v,view]=quad(pc),sh=this._sh(op);
+    /* тень текста Skia строит из маски без контраста по цвету: по массе это растр цвета #505050
+       (замер 25.09: 8, 11, 18 px — ±0.5 %); цветная маска давала ореолу неона +5…7 % света */
+    const [sv,sview]=sh?quad(GC_SHADOW_INK):[null,null];
+    this._ops.push({t:"x",v,view,near:true,p,op,clip:this._clip,sh,sv,sview});}
+});
+
+/* ══════════════ GPU-холст, v2: тень (docs/DESIGN-gpu.md, «GPU canvas») ══════════════
+   shadowBlur/shadowColor/shadowOffset как у 2D: фигура рисуется отдельно (без клипа, source-over,
+   своей краской — её альфа и есть слой тени), слой размывается гауссом σ = shadowBlur/2 px холста
+   (преобразование на тень не действует — как у 2D), смещается и ложится в основной проход
+   цветом тени под клипом и смешением команды, а поверх — сама фигура. Слой считается в рамке
+   фигуры + 3σ; все слои готовятся до основного прохода — тень не зависит от того, что на холсте.
+   Чего нет: тень у «неограниченных» смешений (copy, source-in, destination-in) — громко; часть
+   фигуры за краем холста тени не даёт. */
+GcCtx.prototype._sh=function(op){
+  const b=this.shadowBlur>0&&isFinite(this.shadowBlur)?+this.shadowBlur:0,x=+this.shadowOffsetX||0,y=+this.shadowOffsetY||0;
+  if(!b&&!x&&!y)return null;
+  const c=gcColor(this.shadowColor);if(!(c[3]>0))return null;
+  if(GC_OPS[op]&&GC_OPS[op].u)throw gcNo("тень со смешением "+op);
+  return {c:[c[0]*c[3],c[1]*c[3],c[2]*c[3],c[3]],b,x,y};};
+
+/* размытие: проход по оси; o.xy — сдвиг окна в источнике, o.zw — ось; s.x — σ, s.y — радиус,
+   s.z — канал (0 — альфа слоя rgba, 1 — r промежуточного) */
+const GC_BLUR_WGSL=`
+struct BU{o:vec4f,s:vec4f};
+@group(0) @binding(0) var<uniform> bu:BU;
+@group(0) @binding(1) var src:texture_2d<f32>;
+@vertex fn vs(@builtin(vertex_index) i:u32)->@builtin(position) vec4f{var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));return vec4f(P[i],0.,1.);}
+fn erf(x:f32)->f32{let a=abs(x);let t=1./(1.+.3275911*a);
+  return sign(x)*(1.-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-.284496736)*t+.254829592)*t*exp(-a*a));}
+@fragment fn fs(@builtin(position) p:vec4f)->@location(0) vec4f{
+  let c=vec2i(floor(p.xy+bu.o.xy));let n=vec2i(textureDimensions(src));let dr=vec2i(bu.o.zw);let R=i32(bu.s.y);let k=1./max(bu.s.x*1.41421356,1e-4);
+  var t=0.;var w=0.;
+  /* вес — гаусс, проинтегрированный по пикселю (как Skia: у σ ½ дисперсия 2D 0.33 = σ² + 1/12, выборка в центрах давала 0.21) */
+  for(var i=-R;i<=R;i++){let g=erf((f32(i)+.5)*k)-erf((f32(i)-.5)*k);w+=g;let q=c+dr*i;
+    if(all(q>=vec2i(0))&&all(q<n)){let v=textureLoad(src,q,0);t+=g*select(v.a,v.r,bu.s.z>.5);}}
+  return vec4f(t/w,0.,0.,0.);}`;
+function gcBlurPipe(){
+  if(GPU.lay["gc.blur"])return GPU.lay["gc.blur"];const m=GPU.dev.createShaderModule({code:GC_BLUR_WGSL});
+  return GPU.lay["gc.blur"]=GPU.dev.createRenderPipeline({layout:"auto",vertex:{module:m,entryPoint:"vs"},
+    fragment:{module:m,entryPoint:"fs",targets:[{format:"r8unorm"}]},primitive:{topology:"triangle-list"}});}
+/* слои теней выпечки: SH — {sd (вызовы фигуры), x0,y0,w,h (рамка, px выпечки), sg, R, t1, t2 (r8 w×h)};
+   run(pass, вызовы) рисует фигуру теми же конвейерами, что основной проход */
+function gcShadowPasses(enc,SH,W,H,run){
+  const d=GPU.dev,U=GPUTextureUsage,trash=GPU.trash;
+  const ms=d.createTexture({size:[W,H],sampleCount:4,format:"rgba8unorm",usage:U.RENDER_ATTACHMENT});
+  const st=d.createTexture({size:[W,H],sampleCount:4,format:"stencil8",usage:U.RENDER_ATTACHMENT});
+  const rs=d.createTexture({size:[W,H],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});trash.push(ms,st,rs);
+  const BP=gcBlurPipe(),ub=d.createBuffer({size:SH.length*512,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST}),u=new Float32Array(SH.length*128);
+  trash.push(ub);
+  SH.forEach((s,i)=>{u.set([s.x0,s.y0,1,0,s.sg,s.R,0,0],i*128);u.set([0,0,0,1,s.sg,s.R,1,0],i*128+64);});
+  d.queue.writeBuffer(ub,0,u);
+  const blur=(dst,src,off)=>{const p=enc.beginRenderPass({colorAttachments:[{view:dst.createView(),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});
+    p.setPipeline(BP);p.setBindGroup(0,d.createBindGroup({layout:BP.getBindGroupLayout(0),
+      entries:[{binding:0,resource:{buffer:ub,offset:off,size:32}},{binding:1,resource:src.createView()}]}));p.draw(3);p.end();};
+  SH.forEach((s,i)=>{
+    const p=enc.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"discard"}],
+      depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilClearValue:0x80,stencilStoreOp:"discard"}});
+    p.setScissorRect(s.x0,s.y0,s.w,s.h);run(p,s.sd);p.end();
+    blur(s.t1,rs,i*512);blur(s.t2,s.t1,i*512+256);});
 }
 
 /* ══════════════ звук: чистый синтез, ни одного файла ══════════════ */
@@ -56148,37 +56332,31 @@ function drawBillboard(zx,zy,Z){
    и только на штрихе шире ~2.4 px, иначе трубка светится своим цветом целиком.
    Узкий ореол принадлежит букве; в свечение кадра уходит мало. */
 const NEON=new Map();   // ключ печи (имя, кегль, цвет, плотность) → печь; bakeKeep держит 12
+/* выпечки на GPU-холсте (v2: текст и тень, 25.09): стекло, свет с ореолом (shadowBlur),
+   бледное ядро — своей выпечкой (destination-out по свету стёр бы ореол) и кладётся в свет */
 function neonBake(slot,name,full,F,col,bl){
+  if(!GPU.dev)return null;
   const d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d+"|"+bl;
   return bakeKeep(NEON,key,12,()=>{
-  const mk=()=>document.createElement("canvas"),al=mk(),em=mk(),co=mk();
   const Fd=F*d,fb="bold "+Fd+"px ui-monospace,monospace";
-  let a=al.getContext("2d");a.font=fb;
-  const tw=Math.ceil(a.measureText(full).width),pad=Math.ceil(3*d);
-  const mid=bl==="middle",base=pad+Math.ceil(Fd*(mid?.62:.82)),Hd=base+Math.ceil(Fd*(mid?.62:.28))+pad;
-  for(const q of [al,em,co]){q.width=tw+pad*2;q.height=Hd;}
-  const txt=(g,f)=>{g.font=fb;g.textAlign="left";g.textBaseline=bl;f(g);};
-  a=al.getContext("2d");txt(a,g=>{g.fillStyle="rgba(78,64,62,.9)";g.fillText(full,pad,base);});
-  const tube=col.map(v=>Math.max(0,255-(255-v)*1.6));
-  const e=em.getContext("2d");
-  txt(e,g=>{g.shadowColor=rgba(tube,.85);g.shadowBlur=Math.max(1,Fd*.14);g.fillStyle=rgba(tube,1);g.fillText(name,pad,base);});
-  const sw=Fd*.16;
-  if(sw>=2.4){
-    const k=co.getContext("2d");
-    txt(k,g=>{g.fillStyle=rgba(tube.map(v=>v+(255-v)*.6),1);g.fillText(name,pad,base);
-      g.globalCompositeOperation="destination-out";g.lineWidth=sw*2/3;g.lineJoin="round";g.strokeStyle="#000";g.strokeText(name,pad,base);});
-    e.shadowBlur=0;e.drawImage(co,0,0);
-  }
-  return {key,al,em,co,ax:pad+tw/2,ay:base,w:(tw+pad*2)/d,h:Hd/d};
+  const tw=Math.ceil(gcMeasure(fb,full).width),pad=Math.ceil(3*d);
+  const mid=bl==="middle",base=pad+Math.ceil(Fd*(mid?.62:.82)),Hd=base+Math.ceil(Fd*(mid?.62:.28))+pad,Wd=tw+pad*2;
+  const txt=(g,f)=>{g.font=fb;g.textAlign="left";g.textBaseline=bl;f(g);},O={mips:false};
+  const tube=col.map(v=>Math.max(0,255-(255-v)*1.6)),sw=Fd*.16;
+  const co=sw>=2.4?gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle=rgba(tube.map(v=>v+(255-v)*.6),1);g.fillText(name,pad,base);
+      g.globalCompositeOperation="destination-out";g.lineWidth=sw*2/3;g.lineJoin="round";g.strokeStyle="#000";g.strokeText(name,pad,base);}),O):null;
+  const al=gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle="rgba(78,64,62,.9)";g.fillText(full,pad,base);}),O);
+  const em=gpuBake(Wd,Hd,g=>{txt(g,g=>{g.shadowColor=rgba(tube,.85);g.shadowBlur=Math.max(1,Fd*.14);g.fillStyle=rgba(tube,1);g.fillText(name,pad,base);});
+    if(co){g.shadowBlur=0;g.drawImage(co,0,0);}},O);
+  return {key,al,em,co,ax:pad+tw/2,ay:base,w:Wd/d,h:Hd/d,drop(){gpuBakeDrop(al);gpuBakeDrop(em);gpuBakeDrop(co);}};
   });
 }
 /* вывеска: середина строки по x, базовая линия (bl печи) по y — в пикселях CSS экрана;
-   al — плотность стекла, gain — усиление света. Без видеокарты — тем же на ctx */
+   al — плотность стекла, gain — усиление света. Без видеокарты вывески нет (2D-пути нет) */
 function neonDraw(pass,N,x,y,al,gain){
   const d=DPR,l=Math.round((x-N.ax/d)*d)/d,t=Math.round((y-N.ay/d)*d)/d,R=a=>[{x:l+N.w/2,y:t+N.h/2,w:N.w,h:N.h,a}];
-  if(pass){gpuImage(pass,N.al,R(al),{ver:N.key});gpuImage(pass,N.em,R(gain),{blend:"add",ver:N.key});return;}
-  ctx.save();ctx.globalAlpha=al;ctx.drawImage(N.al,l,t,N.w,N.h);
-  ctx.globalCompositeOperation="lighter";ctx.globalAlpha=Math.min(1,gain);ctx.drawImage(N.em,l,t,N.w,N.h);ctx.restore();
+  if(!pass||!N)return;
+  gpuImage(pass,N.al,R(al));gpuImage(pass,N.em,R(gain),{blend:"add"});
 }
 
 /* ══════════════ госзаказ на билборде (M503, PLAN «new mechanics», st. 5) ══════════════

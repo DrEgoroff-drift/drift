@@ -29,11 +29,26 @@ suite("GPU-холст: запись, цвет, дыры громко",()=>{
   const gr=g.createRadialGradient(0,0,0,0,0,10);gr.addColorStop(0,"#fff");gr.addColorStop(1,"rgba(255,255,255,0)");
   g.fillStyle=gr;g.fillRect(-10,-10,20,20);eq(g._ops[n0+2].p.k,2,"радиальный градиент — краска");
   const rp=gr.ramp();eq(rp[3],1,"лента: начало непрозрачно");eq(rp[1023],0,"лента: конец прозрачен");
-  const loud=[["getImageData",()=>g.getImageData(0,0,1,1)],["fillText",()=>g.fillText("а",0,0)],
+  /* текст (v2): маска строки из атласа, метрики — ровно 2D; без видеокарты — громко */
+  g.globalAlpha=1;g.fillStyle="#fff";g.font="bold 12px ui-monospace, monospace";const n1=g._ops.length;
+  if(GPU.dev){g.save();g.rotate(.3);g.fillText("Дрейф",1.3,20.6);g.restore();const q=g._ops[n1];eq(q.t,"x","fillText — маска из атласа");ok(q.near&&q.v[0]===Math.floor(q.v[0]),"под поворотом — тоже пиксель в пиксель: поворот растрит сам источник");
+    g.setTransform(1,0,0,1,0,0);g.fillText("Дрейф",1.3,20.6);const r=g._ops[n1+1];ok(r.near&&r.v[0]===Math.floor(r.v[0]),"прямой масштаб — маска пиксель в пиксель");
+    const c2=document.createElement("canvas").getContext("2d");c2.font=g.font;
+    eq(g.measureText("Дрейф").width,c2.measureText("Дрейф").width,"measureText — ширина 2D");
+    eq(g.measureText("Дрейф").actualBoundingBoxAscent,c2.measureText("Дрейф").actualBoundingBoxAscent,"measureText — подъём 2D");
+    g.fillText("x",0,0,0);eq(g._ops.length,n1+2,"maxWidth 0 — ничего, как 2D");}
+  else{let m="";try{g.fillText("а",0,0);}catch(x){m=x.message;}ok(/^GPU-холст: нет/.test(m),"текст без видеокарты — громко ("+(m||"молча")+")");}
+  const loud=[["getImageData",()=>g.getImageData(0,0,1,1)],["шрифт без px",()=>{g.font="1em serif";g.measureText("а");}],
     ["createPattern",()=>g.createPattern(null,"repeat")],
     ["overlay",()=>{g.globalCompositeOperation="overlay";g.fillRect(0,0,1,1);}],
-    ["тень",()=>{g.globalCompositeOperation="source-over";g.shadowBlur=4;g.shadowColor="#000";g.fillRect(0,0,1,1);}]];
+    ["тень у copy",()=>{g.globalCompositeOperation="copy";g.shadowBlur=4;g.shadowColor="#000";g.fillRect(0,0,1,1);}]];
   for(const [n,f] of loud){let m="";try{f();}catch(x){m=x.message;}ok(/^GPU-холст: нет/.test(m),n+" — громкий сбой ("+(m||"молча")+")");}
+  /* тень (v2): цвет тени премультиплицирован, без globalAlpha; невидимая — не пишется */
+  g.globalCompositeOperation="source-over";g.globalAlpha=.5;g.shadowBlur=6;g.shadowOffsetX=2;g.shadowColor="rgba(255,0,0,.5)";g.fillStyle="#fff";
+  const n2=g._ops.length;g.fillRect(0,0,4,4);const sh=g._ops[n2].sh;
+  ok(sh&&sh.b===6&&sh.x===2&&sh.c.join()==="0.5,0,0,0.5","тень записана: размытие, сдвиг, цвет");
+  g.shadowColor="rgba(0,0,0,0)";g.fillRect(0,0,4,4);eq(g._ops[n2+1].sh,null,"прозрачная тень — нет тени");
+  g.shadowColor="#000";g.clearRect(0,0,4,4);eq(g._ops[n2+2].sh,null,"clearRect без тени, как 2D");
   if(!GPU.dev)eq(gpuBake(8,8,()=>{}),null,"без видеокарты выпечки нет — null, не 2D");
   else{const B=gpuBake(8,8,q=>{q.fillStyle="#fff";q.fillRect(0,0,8,8);});ok(B&&B.view&&B.w===8,"выпечка с видеокартой — текстура");gpuBakeDrop(B);}
 });
