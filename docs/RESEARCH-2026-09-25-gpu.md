@@ -36,9 +36,11 @@ Each: what, why, the cost, where it lands. «Measure» means `prof()` on the S23
 
 **P1. The bloom ladder in half the passes (mobile, first).** The five `fsMipUp` passes go: `fsFinal` samples the
 five mips itself with the same tent weights and the same per-level warmth (five texture reads instead of five
-render passes). Levels stop where a texel is ≥ 8 px on screen (on the phone the ¼-res base is ~146×316, so
-levels 5–6 are 9 and 5 px wide — pure pass overhead). `blurH`/`blurV`/`sigma` deleted. Result: 12 passes → 6 or 7,
-the picture the same up to the chained blur (check in the pair). Lands in PLAN §0 «Heat margin — the post chain».
+render passes). The ladder is one texture with mip levels; no level narrower than 6 texels (the phone's ¼-res
+base ~146×316 gives 5 levels, the laptop 6 — the look needs the same count, texel size in CSS px is alike).
+`blurH`/`blurV`/`sigma` deleted. Result: 12 passes → 6 or 7, the picture the same up to the chained blur
+(check in the pair). **Done 0.459.0**: pair `system` max|d| 2 (laptop) / 5 (S23 emulation), 0.00 % > 8;
+bloom off for the same frame gives max|d| 70 on 22 % of pixels, so the pair does measure the bloom.
 A further step, only if the pair asks for it: `fsDown` merged into level 1 (the knee at ¼ res straight from scene).
 
 **P2. `shader-f16` for the post chain and the nebula.** Request the feature when the adapter has it, `enable f16;`

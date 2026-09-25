@@ -6,6 +6,15 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.459.0 - the bloom ladder in six passes
+
+- **Bloom without the up-passes** (`08b`, research P1): the ladder is one rgba16f texture with mip levels
+  (¼ res down to 6 texels: five levels on a phone, six on a laptop); each level is a 5-tap Kawase of the one
+  above, and the final pass sums the levels itself with the old tent weights and the old warmth per level.
+  The five `fsMipUp` passes and the dead `blurH`/`blurV` pipelines are gone: 12 post passes a frame → 7
+  (laptop) / 6 (phone). The pair on `system` is unchanged (max|d| 2 of 255); with bloom switched off the same
+  frame differs by 70 on a fifth of the pixels, so the pair does see the bloom.
+
 ## 0.458.0 - the whole world on the video card
 
 - **Everything in flight on the GPU** (`08b`, `08bh`, `16ga`, `17l`, `03e`): hulls, the fleet, the lane,
