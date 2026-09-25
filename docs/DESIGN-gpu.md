@@ -654,7 +654,12 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   alpha .102→0 over R = .6·max(W,H) inside ±.35, the side antialiased over one device pixel. It replaces a
   screen-sized MSAA ×4 bake at 2·DPR (a pool giant on a phone). Pairs before|after: 760 max|d| 6, phone
   twin 390×844 ×3 max|d| 4, pixels >8: 0 %. The detector flies it (scene «прожектор разведчика»); table 40.
-  Next: 5e (reversed smoothstep), shadow 512×128 warm set, the dock pad halo.
+- **5e (reversed smoothstep edges) done.** WGSL leaves `smoothstep(e0,e1,x)` with e0 > e1 undefined (Metal,
+  iOS Safari). All 11 literal cases (16gb ×9, 17g ×1, 19ca ×1 — three more than the cloud fleet listed) are
+  `(1.-smoothstep(e1,e0,x))`; the 35 non-literal calls all rise for positive inputs. Pairs system, landing,
+  far system at 760: max|d| 1/0/0. Node suite «шейдеры: у smoothstep нет перевёрнутых рёбер» scans the game
+  script. Desktop golden frames were already red before this segment (49f75cf): черпак 5.4 %, дом 3.8 %.
+  Next: shadow 512×128 warm set, the dock pad halo, the golden scoop pair for Контроль.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

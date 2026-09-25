@@ -37,11 +37,11 @@ fn lcy(d:vec2f,i:vec4f)->f32{let x=max(d.x,0.);return d.y+lbend(i)*(x+.35*x*x);}
 /* окно: вокруг громадины газ отступает, туман гаснет — пустота чёрная, а не серая */
 fn lwin(d:vec2f,h:vec4f,i:vec4f)->f32{
   let t=h.w;var w=0.;
-  if(t<.5){w=smoothstep(1.45,.95,length(d));}
+  if(t<.5){w=(1.-smoothstep(.95,1.45,length(d)));}
   else if(t<1.5){let x=d.x;let yc=lcy(d,i);let wd=.012+.13*max(x,0.);
-    w=exp(-sq(yc/(wd*1.8+.04)))*smoothstep(.95,.35,x)*smoothstep(-.1,0.,x);}
-  else if(t<2.5){w=smoothstep(1.2,.55,length(vec2f(d.x,d.y/i.y)));}
-  else{let x=abs(d.x);w=exp(-sq(d.y/(.04+.2*x)))*smoothstep(1.8,.9,x);}
+    w=exp(-sq(yc/(wd*1.8+.04)))*(1.-smoothstep(.35,.95,x))*smoothstep(-.1,0.,x);}
+  else if(t<2.5){w=(1.-smoothstep(.55,1.2,length(vec2f(d.x,d.y/i.y))));}
+  else{let x=abs(d.x);w=exp(-sq(d.y/(.04+.2*x)))*(1.-smoothstep(.9,1.8,x));}
   return min(w*1.4,1.)*select(0.,1.,i.w>0.);}`;
 const GNB_GEN=`
 struct NU{a:vec4f,b:vec4f,c:vec4f,d:vec4f,e:vec4f,f:vec4f,g:vec4f,h:vec4f,i:vec4f,j:vec4f,k:vec4f,l:vec4f};
@@ -166,7 +166,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     let seam=1.-.7*exp(-sq((r-1.)/.012));
     e=mix(c1,c2,outer)*fil*sh*arc*seam*1.5;
     /* внутри — слабое свечение и клочья */
-    e=e+c1*(.05+.14*pow(rid,3.))*smoothstep(1.,.2,r)*(.4+.6*arc);
+    e=e+c1*(.05+.14*pow(rid,3.))*(1.-smoothstep(.2,1.,r))*(.4+.6*arc);
   } else if(ty<1.5){
     /* голова в начале координат, хвосты — вдоль +x. d в долях H·s: 1 px на 760 ≈ .0024.
        Голова — самая яркая точка громадины: ядро 2–3 px, кома ~12 px, тёплый белый.
@@ -183,7 +183,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
       +vec3f(1.,.95,.86)*(8.*exp(-sq(r/.0035))+.5*exp(-sq(r/.014)));
   } else if(ty<2.5){
     let g=vec2f(d.x,d.y/u.i.y);let r=length(g);let th=atan2(g.y,g.x);
-    let disk=exp(-r/.3)*smoothstep(1.05,.6,r);
+    let disk=exp(-r/.3)*(1.-smoothstep(.6,1.05,r));
     let spi=cos(2.*(th-3.2*log(r+.03))+fbt(g*5.+ls,2)*1.5);
     let arm=pow(.5+.5*spi,3.);
     let knot=smoothstep(.6,.8,fbt(g*18.+ls,3))*arm;
@@ -194,8 +194,8 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
       +vec3f(1.,.4,.65)*knot*disk*1.8;
     /* пыль по внутренней кромке рукава, ближняя половина диска темнее — она гасит и
        саму галактику, иначе та гладкая, как наклейка */
-    let lane=pow(.5+.5*cos(2.*(th-3.2*log(r+.03))-.9),10.)*smoothstep(.02,.12,r)*smoothstep(1.,.4,r);
-    ab=lane*(.5+.8*smoothstep(0.,-.3,g.y))*1.2;
+    let lane=pow(.5+.5*cos(2.*(th-3.2*log(r+.03))-.9),10.)*smoothstep(.02,.12,r)*(1.-smoothstep(.4,1.,r));
+    ab=lane*(.5+.8*(1.-smoothstep(-.3,0.,g.y)))*1.2;
     e=e*exp(-ab*1.6);
   }
   /* 3 — джеты рисует сама дыра (17g), поверх линзы: они у дыры, не за ней, и линза
@@ -368,7 +368,7 @@ fn fineT(p:vec2f,T0:f32)->f32{
   let r=1.-abs(2.*fbt(qf*1.9+vec2f(gnt(qf*.7),gnt(qf*.7+3.3))*1.6,2)-1.);
   /* края полос чуть резче бикубики — но мягко: резкий край пыли автор видит лужей */
   let Ts=clamp((T0-.5)*1.7+.5,0.,1.);
-  return clamp(mix(T0,Ts,.2)*mix(1.12,.86,r*r*smoothstep(.97,.6,T0)),0.,1.);}
+  return clamp(mix(T0,Ts,.2)*mix(1.12,.86,r*r*(1.-smoothstep(.6,.97,T0))),0.,1.);}
 fn fineE(p:vec2f)->f32{
   let H=fu.res.w;
   let qf=((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*9.+fu.v[0].w+vec2f(4.,9.);

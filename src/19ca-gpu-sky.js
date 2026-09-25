@@ -49,7 +49,7 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
       let mu=sqrt(max(1.-r*r,0.));
       let red=mix(sc,vec3f(225.,88.,38.)/255.,min(dlow*1.3,1.));
       let limb=1.-.3*(1.-mu);
-      var dc=min(mix(min(red*1.4,vec3f(1.)),vec3f(1.,.99,.94),smoothstep(.75,0.,r)*(.95-dlow*.85))*limb,vec3f(1.));
+      var dc=min(mix(min(red*1.4,vec3f(1.)),vec3f(1.,.99,.94),(1.-smoothstep(0.,.75,r))*(.95-dlow*.85))*limb,vec3f(1.));
       let ext=1.-.62*dlow*smoothstep(.1,1.,q.y/sr);
       /* диск светит сам: небо за ним прибавляется, а не берётся по каналам через max —
          max брал синий канал неба, и низкое солнце выходило розовым, а не красным */

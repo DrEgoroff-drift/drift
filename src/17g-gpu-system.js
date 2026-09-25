@@ -240,7 +240,7 @@ fn jets(p:vec2f,hv:vec4f,t:f32)->vec3f{
   let lp=vec2f(x-1.35,q.y*1.1);
   let wl=(vec2f(sf(lp*4.+sd+sg),sf(lp*4.+sd+3.+sg))-.5)*.4;
   let lb=sf(lp*9.+sd);
-  let lob=smoothstep(.42,.03,length(lp+wl))*(.3+.7*lb*lb)*.3;
+  let lob=(1.-smoothstep(.03,.42,length(lp+wl)))*(.3+.7*lb*lb)*.3;
   let jc=mix(vec3f(.55,.65,1.),vec3f(.8,.9,1.),exp(-x/.15));
   return (jc*jet*.9+vec3f(.75,.5,1.)*lob)*2.;
 }

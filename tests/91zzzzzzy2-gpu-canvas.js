@@ -116,3 +116,13 @@ TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целе
   eq(steps(500,340),1,"четыре выпечки 1000×680 — одна за кадр (PB_PX)");
   ok(steps(64,64)>1,"мелкие выпечки 128² — несколько за кадр");
 }));
+/* WGSL: smoothstep с edge0 > edge1 не определён (Metal, iOS Safari: ревью облачного флота 26.09) — в Chrome
+   он считает «наоборот», на Metal может дать что угодно. Обратный спад пишется 1.-smoothstep(b,a,x) */
+suite("шейдеры: у smoothstep нет перевёрнутых рёбер",()=>{
+  let src="";try{src=document.scripts[0].textContent.split("TEST_SUITES")[0];}catch(e){}
+  if(!ok(src.length>100000,"исходник игры прочитан"))return;
+  const bad=[],re=/smoothstep\(\s*(-?(?:\d+\.?\d*|\.\d+))\s*,\s*(-?(?:\d+\.?\d*|\.\d+))\s*,/g;let m,n=0;
+  while((m=re.exec(src))){n++;if(+m[1]>+m[2])bad.push(m[0]+" …"+src.slice(Math.max(0,m.index-40),m.index).replace(/\s+/g," "));}
+  ok(n>20,"вызовы с числовыми рёбрами найдены ("+n+")");
+  eq(bad.slice(0,6).join(" | "),"","smoothstep(a,b,x) при a>b — писать 1.-smoothstep(b,a,x)");
+});
