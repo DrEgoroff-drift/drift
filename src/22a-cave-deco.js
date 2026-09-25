@@ -322,61 +322,6 @@ function drawCaveWater(C,camx,camy){
     ctx.stroke();
   }
 }
-/* темнота: всё, что дальше фонаря, гаснет. Это и есть главный эффект пещеры —
-   до него порода читалась как декорация, после него как стены */
-function drawCaveDark(C,px,py){
-  /* темнота — спрайт, а не градиент на кадр: полноэкранный радиальный
-     градиент стоил ~15 мс на ×2 (G0). Круг света кладётся одним drawImage,
-     углы за ним добираются четырьмя плоскими заливками. */
-  const R=Math.max(W,H)*.52*kitStat().lamp,cx=px,cy=py-14;   /* фонарь комплекта (M152) */
-  /* ── темнота тоже из чего-то сделана (M233) ──
-     Гасили холодным (1,4,10) на всё: дальняя порода уходила в мёртвый синий
-     чёрный, и материал, ради которого её пекли, пропадал вместе со светом.
-     Тон темноты берётся от САМОЙ породы, уведённой почти в ноль: за кругом
-     фонаря по-прежнему темно, но темнота этой пещеры, а не любой. */
-  /* планета берётся у поверхности: пещера — её пещера, своего поля `p` у C нет */
-  const cpl=(G.surf&&G.surf.p)||null;
-  const pcv=(cpl&&cpl.T&&cpl.T.pal)?cpl.T.pal[Math.min(cpl.T.pal.length-1,1)]:[26,30,42];
-  /* тьма стала чуть прозрачнее (M246): при .76 и потолке в 14 она хоронила
-     всё, что за кругом фонаря, — дальняя стена, колонны и материал просто не
-     доживали до экрана, и прибор честно мерил 86% пустоты. Пещера обязана
-     быть тёмной, но не пустой: за светом должно угадываться то, куда идёшь. */
-  /* потолок тьмы 22→34 и холодно-синий (M304): при 22 всё за фонарём сидело в
-     зоне 0, и структуру давал один обвод. Дальняя порода теперь зона I —
-     видна как масса, но фонарь по-прежнему единственное тёплое. */
-  const dk=[Math.min(30,Math.round(pcv[0]*.20+6)),Math.min(32,Math.round(pcv[1]*.22+8)),Math.min(38,Math.round(pcv[2]*.28+14))];
-  const dkey=dk.join(",");
-  const SP=glowSprite("cavedark|"+dkey,()=>{
-    const g=ctx.createRadialGradient(0,0,R>0?Math.min(.5,40/R):.06,0,0,1);   // при W=0 (стенд) R=0 — не делить
-    g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(.45,"rgba("+dkey+",.18)");
-    g.addColorStop(1,"rgba("+dkey+",.42)");
-    ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
-  });
-  glowBlit(SP,cx,cy,R);
-  /* ── тёплый воздух у фонаря (прибор 30.08: пещера pair 0%, mass 2%) ──
-     Кадр пещеры не имел ни второй температуры, ни второй ступени света:
-     круг фонаря был нейтральной дырой в темноте. Слабое тёплое зарево внутри
-     круга даёт обе разом — тёплый акцент против холодной флоры и среднюю
-     ступень масс вокруг человека. Спрайт, кадру один drawImage. */
-  {
-    const WP=glowSprite("cavewarm",()=>{
-      const g=ctx.createRadialGradient(0,0,0,0,0,1);
-      for(let i=0;i<=8;i++){const t=i/8;
-        g.addColorStop(t,"rgba(255,200,132,"+(.24*Math.pow(1-t,2.2)).toFixed(3)+")");}
-      ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
-    });
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    glowBlit(WP,cx,cy,R*.72);
-    ctx.restore();
-  }
-  ctx.fillStyle="rgba("+dkey+",.42)";
-  const x0=cx-R,x1=cx+R,y0=cy-R,y1=cy+R;
-  if(x0>0)ctx.fillRect(0,0,x0,H);
-  if(x1<W)ctx.fillRect(x1,0,W-x1,H);
-  if(y0>0)ctx.fillRect(Math.max(0,x0),0,Math.min(W,x1)-Math.max(0,x0),y0);
-  if(y1<H)ctx.fillRect(Math.max(0,x0),y1,Math.min(W,x1)-Math.max(0,x0),H-y1);
-}
 function drawCaveGlow(C,camx,camy,px,py){
   const D=C.deco;if(!D)return;
   ctx.save();
@@ -405,59 +350,9 @@ function drawCaveGlow(C,camx,camy,px,py){
       ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(bx,sy-dir*s.w*.4);ctx.lineTo(tx,ty);ctx.stroke();
     }
-    poiGlow(sx,sy+(c.up?-18:18),c.rad*1.9,col,.19*puls+.07);
   }
-  for(const v of D.veins){
-    const x0=v.pts[0][0]-camx, xn=v.pts[v.pts.length-1][0]-camx;
-    if(xn<-30||x0>W+30)continue;
-    const puls=.6+.4*Math.sin(G.t*.009+v.ph);
-    /* два прохода одной ломаной: широкий тусклый — это свет вокруг жилы,
-       узкий яркий — сама жила. Одним проходом получается царапина по камню */
-    ctx.beginPath();
-    for(let i=0;i<v.pts.length;i++){
-      const wx=v.pts[i][0];
-      const y=(v.up?caveCeilOf(C,wx,v.low)+v.pts[i][1]:caveFloorOf(C,wx,v.low)+v.pts[i][1])-camy;
-      if(i)ctx.lineTo(wx-camx,y);else ctx.moveTo(wx-camx,y);
-    }
-    ctx.lineCap="round";
-    ctx.strokeStyle="rgba("+v.col.join(",")+","+(v.a*puls*.22).toFixed(3)+")";
-    ctx.lineWidth=v.w*5;ctx.stroke();
-    ctx.strokeStyle="rgba("+v.col.join(",")+","+(v.a*puls).toFixed(3)+")";
-    ctx.lineWidth=v.w;ctx.stroke();
-  }
-  /* пыль в воздухе: единственное, что показывает, что фонарь светит сквозь
-     среду, а не по пустоте. Считается от координаты и времени, ничего не
-     хранится, поэтому и не копится */
-  const t=G.t;
-  for(let i=0;i<46;i++){
-    const wx=(camx*.85+i*97.3+Math.sin(t*.004+i)*22)%(CAVE_W+400)-200;
-    const sx=wx-camx*.85;
-    if(sx<-10||sx>W+10)continue;
-    const sy=(i*173.7+t*.09+Math.sin(t*.006+i*2.1)*14)%(H*.9)+H*.06;
-    const d=Math.hypot(sx-px,sy-py);
-    const a=clamp(1-d/240,0,1)*.30;
-    if(a<=.01)continue;
-    ctx.fillStyle="rgba(190,220,240,"+a.toFixed(3)+")";
-    ctx.fillRect(sx,sy,1.2,1.2);
-  }
-  /* фонарь скафандра: конус по направлению взгляда, собранный из трёх слоёв —
-     один слой даёт жёсткую грань, и свет читается как нарисованный треугольник */
-  const f=C.face;
-  for(let i=0;i<3;i++){
-    const k=1-i*.3, sp=1+i*.55;
-    const lg=ctx.createLinearGradient(px,py,px+f*230*k*kitStat().lamp,py-20);
-    lg.addColorStop(0,"rgba(190,215,235,"+(.07*k).toFixed(3)+")");
-    lg.addColorStop(.55,"rgba(170,200,225,"+(.03*k).toFixed(3)+")");
-    lg.addColorStop(1,"rgba(150,190,220,0)");
-    ctx.fillStyle=lg;
-    ctx.beginPath();
-    ctx.moveTo(px,py-16);
-    ctx.lineTo(px+f*250*k,py-70*sp);
-    ctx.lineTo(px+f*250*k,py+56*sp);
-    ctx.closePath();ctx.fill();
-  }
-  /* и пятно под ногами: без него астронавт висит в темноте */
-  poiGlow(px,py+6,90,"170,205,230",.10);
+  /* ореол кристалла, жилы, пыль в воздухе, конус фонаря и пятно под ногами ушли
+     на видеокарту (22c): свет лёг на породу с тенями, руда светит выше единицы */
   /* капли и всплеск */
   for(const d of D.drops){
     const sx=d.x-camx;if(sx<-10||sx>W+10)continue;
@@ -508,10 +403,6 @@ function drawCaveOwnLight(C,camx,camy){
     const x=m.x-camx, y=m.y-camy;
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
     const pu=.62+.38*Math.sin(G.t*.006+m.ph);
-    const g=ctx.createRadialGradient(x,y,0,x,y,m.rr*2.2);
-    g.addColorStop(0,"rgba("+m.col.join(",")+","+(.16*pu).toFixed(3)+")");
-    g.addColorStop(1,"rgba("+m.col.join(",")+",0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,m.rr*2.2,0,TAU);ctx.fill();
     /* сами пятна: несколько мелких, разной величины — не одна клякса */
     for(let i=0;i<m.n;i++){
       const a=m.ph+i*2.1, rx=Math.cos(a)*m.rr*.6, ry=Math.sin(a)*m.rr*.35;
@@ -525,20 +416,8 @@ function drawCaveOwnLight(C,camx,camy){
   const lx=L.x-camx, ly=L.y-camy;
   if(lx>-80&&lx<W+80&&ly>-80&&ly<H+80){
     const pu=.78+.22*Math.sin(G.t*.011+L.ph);
-    /* ── свет не проходит сквозь камень (M258, DESIGN-craft §4) ──
-       Зарево было кругом поверх всего: сквозь колонну, сквозь стену — по ту
-       сторону породы светилось так же. Маска: тот же градиент, из которого
-       destination-out выедает тени — четырёхугольники, спроецированные от
-       лампы за каждое ребро марширующих квадратов в радиусе. O(рёбра), и
-       лампа с породой неподвижны, значит маска печётся ОДИН РАЗ на пещеру;
-       дыхание света — глобальной прозрачностью при кладке. Фонарь игрока
-       остаётся без теней сознательно: он движется каждый кадр, и его маска
-       стоила бы кадру то, чего тени не стоят. */
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    ctx.globalAlpha=pu;
-    ctx.drawImage(caveLampMask(C),L.x-90-camx,L.y-5-90-camy);
-    ctx.globalAlpha=1;
-    ctx.restore();
+    /* свет лампы — в поле видеокарты (22c): тени от породы теперь честные
+       и живые, как у фонаря шлема; маска, печённая раз на пещеру, не нужна */
     /* сама вещь: корпус, дужка и стекло — вещь, а не пятно */
     ctx.fillStyle="rgba(46,52,60,.95)";
     ctx.fillRect(lx-3.4,ly-9,6.8,7.5);
@@ -548,54 +427,6 @@ function drawCaveOwnLight(C,camx,camy){
     ctx.fillRect(lx-2.2,ly-7.6,4.4,4.4);
     groundShadow(lx,ly+1,7,2.2);
   }
-}
-/* ── маска света лампы (M258): зарево минус тени от рёбер породы ──
-   Печётся один раз на пещеру (C.lampMask): и лампа, и порода статичны.
-   Рёбра — те же случаи марширующих квадратов, что в caveContour; каждое
-   даёт четырёхугольник «ребро + его проекция от лампы за край маски». */
-function caveLampMask(C){
-  if(C.lampMask)return C.lampMask;
-  const L=caveLampSpot(C),R=90,S=R*2;
-  const cv=document.createElement("canvas");cv.width=cv.height=S;
-  const c=cv.getContext("2d");
-  const lxw=L.x, lyw=L.y-5;                       /* центр света — чуть над полом */
-  const g=c.createRadialGradient(R,R,0,R,R,86);
-  g.addColorStop(0,"rgba(255,206,138,.24)");
-  g.addColorStop(.5,"rgba(255,190,120,.08)");
-  g.addColorStop(1,"rgba(255,190,120,0)");
-  c.fillStyle=g;c.beginPath();c.arc(R,R,86,0,TAU);c.fill();
-  const CS=CAVE_CS,NX=CAVE_NX,NY=CAVE_NY,gr=C.g;
-  const at=(cx,cy)=>(cx<0||cx>=NX||cy<0||cy>=NY)?1:gr[cy*NX+cx];
-  c.globalCompositeOperation="destination-out";
-  c.fillStyle="#000";
-  const shade=(a,b)=>{
-    const k=4;                                    /* проекция заведомо за край */
-    c.beginPath();
-    c.moveTo(a[0]-lxw+R,a[1]-lyw+R);
-    c.lineTo(b[0]-lxw+R,b[1]-lyw+R);
-    c.lineTo(b[0]+(b[0]-lxw)*k-lxw+R,b[1]+(b[1]-lyw)*k-lyw+R);
-    c.lineTo(a[0]+(a[0]-lxw)*k-lxw+R,a[1]+(a[1]-lyw)*k-lyw+R);
-    c.closePath();c.fill();
-  };
-  const cx0=Math.floor((lxw-R)/CS)-1,cx1=Math.floor((lxw+R)/CS)+1;
-  const cy0=Math.floor((lyw-R-CAVE_Y0)/CS)-1,cy1=Math.floor((lyw+R-CAVE_Y0)/CS)+1;
-  for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){
-    const k=(at(cx,cy)<<3)|(at(cx+1,cy)<<2)|(at(cx+1,cy+1)<<1)|at(cx,cy+1);
-    if(k===0||k===15)continue;
-    const X=(cx+.5)*CS,Y=(cy+.5)*CS+CAVE_Y0,h=CS*.5;
-    const T=[X+h,Y],Rr=[X+CS,Y+h],B=[X+h,Y+CS],Lt=[X,Y+h];
-    switch(k){
-      case 1:case 14:shade(Lt,B);break;
-      case 2:case 13:shade(B,Rr);break;
-      case 3:case 12:shade(Lt,Rr);break;
-      case 4:case 11:shade(T,Rr);break;
-      case 5:shade(T,Lt);shade(B,Rr);break;
-      case 6:case 9:shade(T,B);break;
-      case 7:case 8:shade(T,Lt);break;
-      case 10:shade(T,Rr);shade(Lt,B);break;
-    }
-  }
-  return C.lampMask=cv;
 }
 /* ── дифференциальный рост (M262): inconvergent, differential mesh ──
    Контур из восьми точек; на каждом шаге длинные рёбра делятся, близкие
