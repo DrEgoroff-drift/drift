@@ -339,6 +339,29 @@ JS, **0 uploads**. The whole-frame pair at 760 is identical to the eye (max Δ 5
 figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-холст: запись, цвет, дыры громко»
 (Node and Chrome) guards the recording and the loud holes.
 
+**The mask in `gpuLitSprite` (for GPU-2's pirates).** A lit sprite drawn from a mip master was soft, so the
+fleet sampled a level 1.2 steps finer than the screen. That was sharp, but it shimmered more than 2D. A new last
+argument, `sharp`, adds the same unsharp mask as `gpuImage {sharp}`: the level minus the next one. It is weighted
+by (1 − Y)², so only the dark side is lifted. Otherwise the station light multiplier (up to ×3) would whiten the
+bright paint. The strength is `GPU_LIT_SH` = .6. The flag is bit 2 of `U[15]`; bit 1 is still `rel`. It works
+only on a master with mips.
+
+The probe is a 256² hull with 2-px panel lines, 2-px rivets, windows and a stripe, drawn at 48 px. The
+reference is the 2D path: the master drawn down to 48 px by 2D, then lit 1:1. There are four rows: glow −1 and
+glow 0, each also shifted by (.5, .3) px.
+
+| variant | mean \|Δ\| to 2D over the four rows | change under the shift (2D: 9.1 / 8.7) |
+|---|---|---|
+| the screen's level | 7.23 | 8.5 / 5.9 (soft) |
+| 1.2 finer, no mask (the fleet today) | 7.23 | 10.2 / 9.9 |
+| mask at the screen's level | 7.35 | 7.5 / 6.9 |
+| mask at a level .5 finer | 7.00 | 9.8 / 8.6 |
+| **mask at a level .8 finer** | **6.05** | 9.9 / 9.6 |
+
+A strength of 1.2 is no better (6.20 at .8). The recommended lod for a sprite with the mask is the screen's
+level − .8. No dark rings. The pair is `pair_lit_sh.6.png`; the columns are 2D, screen, 1.2 finer, and the mask
+at 0, .5 and .8.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -346,12 +369,17 @@ figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-�
   dither on a half-float ramp, box mips kept (numbers in §G, pair `pair_grad_x4.png`).
 - **GPU canvas v2 (25.09, `gpu`).** Text (08cb) and shadow (08cc) are in, and neon (17k0) is ported. Pairs are
   `pair_text_x3.png`, `pair_shadow_x3.png` and `pair_neon_bake_x4.png`; numbers in §G.
-- **Next, in Контроль's order:**
-  1. merge gpu3 up to 10f8681;
+- **gpu3 merged up to 149d5b3 (cc220f3).**
+- **The mask in `gpuLitSprite` is in (§G).** Its last argument is `sharp`, and it is best at the screen's level − .8.
+- **Next, in Контроль's order (25.09):**
+  1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
+     a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;
   2. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
-  3. HUD fixes 1–5, find labels in table case and pushed apart, and DECISIONS «no 2D»;
-  4. chipDom and domLabel through the atlas;
-  5. the mask in `gpuLitSprite`, for GPU-2's pirates.
+  3. HUD fixes 1–5, plus:
+     - find labels in table case and pushed apart;
+     - a chip must not go under КАРТА/МЕНЮ/Фото, with an intersection check;
+     - button plates must read over bright neon;
+     - DECISIONS «no 2D».
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way

@@ -433,14 +433,17 @@ function stationArt(key,s,V,S,ty,lx,ly){
    половине: маска выпечки читается рельефом, кромка горит только там, где борт
    смотрит на звезду, тень идёт перепадом через всё тело, огни и окна светят сами.
    Собственный свет станции — гауссово пятно под корпусом, а не кольца градиента. */
+const GPU_LIT_SH=(.6).toFixed(2);
 const GST_WGSL=GPU_PL_WGSL+`
 fn plOcc(q:vec2f)->f32{let V=fu.v;let dq=q-V[0].xy;let ro=V[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/V[0].z+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}
   return textureSampleLevel(t0,smp,uv,0.).a;}
-/* рельеф — по альфе t0, а у верхнего слоя станции (V[3].w>0) — по общему мастеру t2:
+/* V[3].w — флаги: 1 — рельеф по мастеру t2, 2 — нерезкая маска между мипами */
+fn relOn()->bool{return (u32(fu.v[3].w+.5)&1u)!=0u;}
+/* рельеф — по альфе t0, а у верхнего слоя станции (флаг 1) — по общему мастеру t2:
    край ядра внутри тела — не кромка, свет его не обводит */
-fn ra(uv:vec2f,l:f32)->f32{if(fu.v[3].w>.5){return textureSampleLevel(t2,smp,uv,l).a;}return textureSampleLevel(t0,smp,uv,l).a;}
+fn ra(uv:vec2f,l:f32)->f32{if(relOn()){return textureSampleLevel(t2,smp,uv,l).a;}return textureSampleLevel(t0,smp,uv,l).a;}
 fn sa(uv:vec2f,d:vec2f)->vec2f{let l=fu.v[3].z;
   return vec2f(ra(uv+vec2f(d.x,0.),l)-ra(uv-vec2f(d.x,0.),l),ra(uv+vec2f(0.,d.y),l)-ra(uv-vec2f(0.,d.y),l));}
 fn field(p:vec2f,uv0:vec2f)->vec4f{
@@ -453,7 +456,13 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   /* V[3].y — сжатие крена по поперечной оси (корпус корабля, 17c2); 0 — без крена */
   let lp=vec2f(dot(dp,ro),dot(dp,vec2f(-ro.y,ro.x)))/vec2f(1.,select(1.,V[3].y,V[3].y>0.));let uv=(lp/R+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(gl,0.);}
-  let c4=textureSampleLevel(t0,smp,uv,V[3].z);let a=c4.a;   /* V[3].z — уровень мипа у мастера (17c2), иначе 0 */
+  var c4=textureSampleLevel(t0,smp,uv,V[3].z);   /* V[3].z — уровень мипа у мастера (17c2), иначе 0 */
+  /* флаг 2 — нерезкая маска, как у gpuImage {sharp}: деталь уровня против следующего,
+     только в тёмном (1−Y)²: светлое множитель света и так поднимает до ×3, маска его выбеливала */
+  if((u32(V[3].w+.5)&2u)!=0u){let a1=textureSampleLevel(t0,smp,uv,V[3].z+1.);
+    let Y=dot(c4.rgb/max(c4.a,1e-3),vec3f(.2126,.7152,.0722));let e=(c4-a1)*${GPU_LIT_SH}*(1.-min(Y,1.))*(1.-min(Y,1.));
+    c4=clamp(c4+e,vec4f(0.),vec4f(1.));c4=vec4f(min(c4.rgb,vec3f(c4.a)),c4.a);}
+  let a=c4.a;
   if(a<.01){return vec4f(gl,0.);}
   let u1=vec2f(.5/R);
   let L=normalize(vec3f(sd,.3));
@@ -464,7 +473,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let side=dot(dp,sd)/R;
   /* верхний слой станции судит «огонь или металл» по общему мастеру: полоса краски на
      .32 поверх корпуса — не лампа, хотя в своём слое она чистый янтарь */
-  var cu=c4;if(V[3].w>.5){cu=textureSampleLevel(t2,smp,uv,V[3].z);}
+  var cu=c4;if(relOn()){cu=textureSampleLevel(t2,smp,uv,V[3].z);}
   let rgb=cu.rgb/max(cu.a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
   let own=1.-smoothstep(.3,.55,sat*mx);
   let rim=pow(max(dot(n,L),0.),3.)*pow(1.-n.z,1.5);
@@ -501,12 +510,14 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
    (lx,ly) — к звезде; glow — доля своего тёплого света (станция 1, баржа 0) */
 /* cv — холст или готовый мастер с мипами (gpuMipTex, 17c2): тогда lod — его уровень */
 /* rel — мастер рельефа (верхний слой станции, 17c3): свет по нему, цвет и покрытие — по cv */
-function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel){
+/* sharp — нерезкая маска между уровнями мастера (только у мастера с мипами): резкость 2D
+   без ряби, как gpuImage {sharp}; lod тогда — обычный, не на ступень мельче */
+function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp){
   const pass=gpuScene();if(!pass)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
-  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;U[13]=sy||0;U[14]=lod||0;U[15]=rel?1:0;
-  const mip=!!cv.view;
+  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;U[13]=sy||0;U[14]=lod||0;
+  const mip=!!cv.view;U[15]=(rel?1:0)+(sharp&&mip?2:0);
   gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||null],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
