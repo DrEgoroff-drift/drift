@@ -52,6 +52,7 @@ Documents work the same way — in parts, not whole:
 | how the tests are meant to be organised, and why | `docs/DESIGN-tests.md` — the four layers, the five oracles, the lab, the queue M441–M446 |
 | craft laws behind the visual queue | `docs/DESIGN-craft.md` — rules taken from painting traditions, each tied to a module |
 | narrative research + the combined craft plan | `docs/DESIGN-story-craft.md` — deed turns, glyph grammar, pacing clocks; its last section orders all craft work |
+| a session in Claude's cloud — setup, build, fast tier, WebGPU on SwiftShader; the porting fleet | `docs/CLOUD.md`; the fleet's rules and zones in `docs/fleet/README.md` |
 
 Never read whole: `docs/INDEX.md`, `drift.html`, `tests.html`
 (the last two are build artifacts — there is nothing to find in them that is not in
