@@ -32,3 +32,18 @@ TEST_SUITES.push(()=>suite("GPU-ломти: выпечка по договору
   const L=gpuScreenLayer("test|слой",g=>{g.fillStyle="#123";g.fillRect(0,0,W,H);});
   ok(L&&L.view&&L.w===Math.round(W*DPR*SCK),"слой во весь экран — выпечка в плотности кадра");
 }));
+/* поле в текстуру (08c gpuFieldBaked): кэш по ключу, как gpuBaked */
+TEST_SUITES.push(()=>suite("GPU-поле в текстуру: ключ, устройство, размер",{tier:"browser"},()=>{
+  const M=new Map(),code="fn field(p:vec2f,uv:vec2f)->vec4f{return vec4f(uv.x,uv.y,0.,1.);}";
+  if(!GPU.dev){eq(gpuFieldBaked(M,"a","test.uv",code,null,null,64,32),null,"без видеокарты — null");return;}
+  const B=gpuFieldBaked(M,"a","test.uv",code,null,null,64,32);
+  ok(B&&B.view&&B.w===Math.round(64*DPR)&&B.h===Math.round(32*DPR),"поле испечено в плотности DPR");
+  ok(gpuFieldBaked(M,"a","test.uv",code,null,null,64,32)===B,"тот же ключ — та же текстура");
+  const w0=W;const B2=gpuFieldBaked(M,"b","test.uv",code,null,null,16,16,{k:1});
+  ok(B2!==B&&B2.w===16&&W===w0,"другой ключ — новая; W на месте после выпечки");
+  gpuBakeDrop(B);gpuBakeDrop(B2);
+}));
+suite("GPU-поле в текстуру: без видеокарты",()=>{
+  if(!GPU.dev)eq(gpuFieldBaked(new Map(),"a","test.uv","",null,null,8,8),null,"без видеокарты — null, ничего не печётся");
+  else ok(GPU.dev,"видеокарта есть — выпечку проверяет браузерный набор");
+});

@@ -26,6 +26,9 @@ plus new files next to them and their tests. Branch `claude/gpu-kit`, from `clau
    pass never samples what it resolves into), MSAA colour and stencil are stored and loaded by the next
    part; `run` takes a range. `08cc`: no shadow with a backdrop op. Tests: an overlay suite in
    `91zzzzzzy4`, the old «overlay is loud» check now checks `saturation`.
+5. **`gpuFieldBaked`** (the map ship's open problem: «the kit has no GPU-to-texture bake for fields») —
+   `08c`, new function plus a new blend `GPU_BLEND.bake` (source-over that writes alpha; the frame's blends
+   keep the target's alpha, so a baked field came out with alpha 0). Suites in `91zzzzzzy5`.
 
 ## API for mode ships
 
@@ -97,6 +100,18 @@ gpuImage(pass,gpuScreenLayer(key,paint),[{x:W/2,y:H/2,w:W,h:H}]);   // was ctx.d
 - Mind the order rule: in `gpuScene` the tiles sit under **all** 2D of the frame — anything 2D drawn
   earlier in the mode (e.g. `drawSkyLayer`'s bodies) will now be above them.
 
+### A field baked into a texture (commit 5)
+
+```js
+const B=gpuFieldBaked(MAP_FLD,V+"|"+cell+"|"+W+"x"+H,"map.gal",WGSL,uni,texs,W,H);   // M is the owner's Map
+gpuImage(gpuScene(),B,[{x:W/2,y:H/2,w:W,h:H}]);
+```
+
+- Renders `gpuField`'s formula once into an `rgba16float` texture of `w·k × h·k` (`o.k`, default `DPR`);
+  during the bake `W,H` are `w,h` (so `p` in the field spans the texture) and `GPU.bw/bh` the texture size.
+- Cached in the caller's `Map` by key; a new key or a new device re-bakes and drops the old texture.
+- The result `{tex,view,w,h,dev}` is drawable by `gpuImage` and by GcCtx `drawImage` (a bake-like object).
+
 ## Proofs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0/scratchpad/`
@@ -134,6 +149,10 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0
   one, CPU-rastered, was right). A 2D reference canvas must be made with
   `getContext("2d",{willReadFrequently:true})` (CPU raster). Worth a line in `docs/CLOUD.md`.
 
+- `proof-field.js` — bakes a UV field with `gpuFieldBaked`, draws it through GcCtx `drawImage`, reads
+  it back: max error 0.5/255 against the formula, alpha 255, a second call hits the cache; 0 GPU errors.
+  (Before the `bake` blend: RGB right, alpha 0 — the frame's `over` keeps target alpha.)
+
 ## Requests for files outside the zone
 
 - `build.ps1`'s typeof guard knows no `Path2D` in `$HOST_GLOBALS`; `08caa` reads `globalThis.Path2D`
@@ -141,6 +160,8 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0
 
 ## New render pipelines (for the warm-up table `08b1`)
 
+- `pipe:fld.<name>|bake` — one per field a mode bakes with `gpuFieldBaked` (the field's own pipeline with
+  the `bake` blend), made on first use.
 - `gc:cov|overlay` (the `fover` fragment, replace blend) — made on first use by `gcPipe`. `08b1` warms no
   `gc:` keys today; if GcCtx pipelines join the warm-up, add this one. The GcCtx bind-group layout gained
   binding 6 (a float texture), so every `gc:*` pipeline is rebuilt with the new layout — no key changes.
