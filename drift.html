@@ -11339,11 +11339,13 @@ function gpuKitU(){
    пикселях CSS, rot — поворот вокруг центра, u0..v1 — кусок текстуры (по умолчанию
    вся), cubic — бикубика для сильного растяжения. o.blend: over | add | mul.
    Цвет умножается на a — на сложении это усиление: a>1 даёт свет выше единицы (эмиссия).
-   cv — холст или мастер gpuMipTex: мастер берётся трилинейно чуть мельче экрана
-   (GPU_MIP_GS) с нерезкой маской между соседними мипами (GPU_MIP_SH): 2D тянет спрайт
-   с тройного холста простой билинейкой — резко, но с рябью; маска даёт ту же резкость
-   из отфильтрованных уровней (пара флота 25.09). Зум ничего не грузит */
-const GPU_MIP_GS=.6,GPU_MIP_SH=(.9).toFixed(2);
+   cv — холст или мастер gpuMipTex: мастер берётся трилинейно, уровень чуть крупнее
+   экрана (GPU_MIP_LOD, как HG_LOD корпусов), и зум ничего не грузит. o.sharp — ещё и
+   нерезкая маска между соседними мипами (GPU_MIP_GS, GPU_MIP_SH): 2D тянет спрайт с
+   тройного холста простой билинейкой — резко, но с рябью; маска даёт ту же резкость
+   из отфильтрованных уровней (пара флота 25.09). Только для вещей — корабли, находки:
+   на тексте и неоне она обводит светлую букву тёмным кольцом (Контроль на 7083ac5) */
+const GPU_MIP_LOD=.785,GPU_MIP_GS=.6,GPU_MIP_SH=(.9).toFixed(2);
 const GPU_IMG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(1) var<storage,read> iq:array<vec4f>;
 @group(0) @binding(2) var itx:texture_2d<f32>;
@@ -11364,7 +11366,8 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
 @fragment fn fs(i:IO)->@location(0) vec4f{
   let dx=dpdx(i.uv);let dy=dpdy(i.uv);
   var c:vec4f;if(i.k.y>.5){c=texCubic(itx,ism,i.uv);}
-  else if(i.k.z>0.){let gx=dx*i.k.z;let gy=dy*i.k.z;
+  else if(i.k.z>0.){c=textureSampleGrad(itx,ism,i.uv,dx*i.k.z,dy*i.k.z);}
+  else if(i.k.z<0.){let gx=-dx*i.k.z;let gy=-dy*i.k.z;
     let a0=textureSampleGrad(itx,ism,i.uv,gx,gy);let a1=textureSampleGrad(itx,ism,i.uv,gx*2.,gy*2.);
     c=clamp(a0+(a0-a1)*${GPU_MIP_SH},vec4f(0.),vec4f(1.));c=vec4f(min(c.rgb,vec3f(c.a)),c.a);}
   else{c=textureSampleLevel(itx,ism,i.uv,0.);}
@@ -11372,7 +11375,7 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
 function gpuImage(pass,cv,rects,o){
   if(!pass||!rects.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
-  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?GPU_MIP_GS:0;
+  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?(o&&o.sharp?-GPU_MIP_GS:GPU_MIP_LOD):0;   /* <0 — с маской */
   for(let i=0;i<n;i++){const r=rects[i],k=i*12;
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
@@ -23860,7 +23863,7 @@ function fleetShipGpu(f,art){
   const pass=gpuScene();if(!pass)return false;
   const m=ctx.getTransform(),k=1/DPR,al=ctx.globalAlpha,s=Math.hypot(m.a,m.b)*k;
   const T=(lx,ly)=>[(m.a*lx+m.c*ly+m.e)*k,(m.b*lx+m.d*ly+m.f)*k],[x,y]=T(0,0),w=art.rad*2*s;
-  gpuImage(pass,gpuMipTex(art.cn),[{x,y,w,h:w,rot:Math.atan2(m.b,m.a),a:al}]);
+  gpuImage(pass,gpuMipTex(art.cn),[{x,y,w,h:w,rot:Math.atan2(m.b,m.a),a:al}],{sharp:true});
   const L=[],A=[],by=f.by||"gt",MF=(typeof makerFlame==="function")?makerFlame(by):null;
   const ec=(MF&&by!=="gt")?mixc(MF.col,[255,255,255],.2):[255,178,110];
   for(const li of art.lights){const [px,py]=T(li.x,li.y);
@@ -52254,7 +52257,7 @@ function drawFindsSystem(zx,zy,Z){
     const s=clamp(Z,.5,1.5);
     const spin=(f.seed%628)/100+G.t*.002*((f.seed&1)?1:-1);
     if(pass){const w=FIND_R*2*s;
-      gpuImage(pass,gpuMipTex(findSprite(f.k)),[{x,y,w,h:w,rot:spin}]);
+      gpuImage(pass,gpuMipTex(findSprite(f.k)),[{x,y,w,h:w,rot:spin}],{sharp:true});
       if(f.k==="echo"){const gl=((G.t*.01)%1)*52-26,c=Math.cos(spin)*s,q=Math.sin(spin)*s;
         const P=(u,v)=>[x+u*c-v*q,y+u*q+v*c],[x0,y0]=P(gl-6,-1.2),[x1,y1]=P(gl+6,-1.2);
         gpuShapes(pass,[[2,x0,y0,x1,y1,.4*s,0,159,183,255,.55]]);}
@@ -53923,7 +53926,7 @@ function drawSysLane(zx,zy,Z){
       Gl.push({x:lx,y:ly,w:r*2,h:r*2,a:(.35+.65*k)*LANE_GLOW});
       Lp.push([1,lx,ly,Math.max(1,1.3*s),0,0,0,lc[0],lc[1],lc[2],.5+.5*k]);
       Lh.push([1,lx,ly,.7*s,0,0,2.6*s,lc[0],lc[1],lc[2],(.5+.5*k)*LANE_HALO]);}
-    gpuImage(pass,gpuMipTex(sp),B);
+    gpuImage(pass,gpuMipTex(sp),B,{sharp:true});   /* бакен — вещь: маска, как у флота; ореолу — нет */
     gpuImage(pass,gpuMipTex(glow),Gl);
     gpuShapes(pass,Lp);gpuShapes(pass,Lh,{blend:"add"});   /* лампа — явная эмиссия, узкий ореол */
     return;}

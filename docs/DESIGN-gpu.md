@@ -444,6 +444,10 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   series Z 1.00…1.28 (8 shots) against plain trilinear: the ratio stays 1.09–1.16 per ship, ±3 % frame to
   frame — the bumps are geometry, the mask adds no ripple. Lamps: fleet nav/window lights and lane buoy lamps
   are explicit emission, the dot painted plus a narrow added halo (2.2–2.6 of the dot's radius, gain .45).
+  The mask is an option of the call, `gpuImage(…,{sharp:true})` (Контроль on 7083ac5: on text and neon it rings a
+  light letter with a dark rim): on for fleet ships, finds and lane buoys (things); off for glows, the post's
+  sign, the belly and every bake to come (hotel, billboard, neon), which take plain trilinear at `GPU_MIP_LOD`
+  .785. The buoys are windows 1 and 3 of the fleet crop: without the mask −16 %, with it the numbers above.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

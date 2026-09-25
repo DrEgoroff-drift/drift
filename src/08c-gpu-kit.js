@@ -161,11 +161,13 @@ function gpuKitU(){
    пикселях CSS, rot — поворот вокруг центра, u0..v1 — кусок текстуры (по умолчанию
    вся), cubic — бикубика для сильного растяжения. o.blend: over | add | mul.
    Цвет умножается на a — на сложении это усиление: a>1 даёт свет выше единицы (эмиссия).
-   cv — холст или мастер gpuMipTex: мастер берётся трилинейно чуть мельче экрана
-   (GPU_MIP_GS) с нерезкой маской между соседними мипами (GPU_MIP_SH): 2D тянет спрайт
-   с тройного холста простой билинейкой — резко, но с рябью; маска даёт ту же резкость
-   из отфильтрованных уровней (пара флота 25.09). Зум ничего не грузит */
-const GPU_MIP_GS=.6,GPU_MIP_SH=(.9).toFixed(2);
+   cv — холст или мастер gpuMipTex: мастер берётся трилинейно, уровень чуть крупнее
+   экрана (GPU_MIP_LOD, как HG_LOD корпусов), и зум ничего не грузит. o.sharp — ещё и
+   нерезкая маска между соседними мипами (GPU_MIP_GS, GPU_MIP_SH): 2D тянет спрайт с
+   тройного холста простой билинейкой — резко, но с рябью; маска даёт ту же резкость
+   из отфильтрованных уровней (пара флота 25.09). Только для вещей — корабли, находки:
+   на тексте и неоне она обводит светлую букву тёмным кольцом (Контроль на 7083ac5) */
+const GPU_MIP_LOD=.785,GPU_MIP_GS=.6,GPU_MIP_SH=(.9).toFixed(2);
 const GPU_IMG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(1) var<storage,read> iq:array<vec4f>;
 @group(0) @binding(2) var itx:texture_2d<f32>;
@@ -186,7 +188,8 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
 @fragment fn fs(i:IO)->@location(0) vec4f{
   let dx=dpdx(i.uv);let dy=dpdy(i.uv);
   var c:vec4f;if(i.k.y>.5){c=texCubic(itx,ism,i.uv);}
-  else if(i.k.z>0.){let gx=dx*i.k.z;let gy=dy*i.k.z;
+  else if(i.k.z>0.){c=textureSampleGrad(itx,ism,i.uv,dx*i.k.z,dy*i.k.z);}
+  else if(i.k.z<0.){let gx=-dx*i.k.z;let gy=-dy*i.k.z;
     let a0=textureSampleGrad(itx,ism,i.uv,gx,gy);let a1=textureSampleGrad(itx,ism,i.uv,gx*2.,gy*2.);
     c=clamp(a0+(a0-a1)*${GPU_MIP_SH},vec4f(0.),vec4f(1.));c=vec4f(min(c.rgb,vec3f(c.a)),c.a);}
   else{c=textureSampleLevel(itx,ism,i.uv,0.);}
@@ -194,7 +197,7 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
 function gpuImage(pass,cv,rects,o){
   if(!pass||!rects.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
-  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?GPU_MIP_GS:0;
+  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?(o&&o.sharp?-GPU_MIP_GS:GPU_MIP_LOD):0;   /* <0 — с маской */
   for(let i=0;i<n;i++){const r=rects[i],k=i*12;
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}

@@ -2152,15 +2152,15 @@ gplSun                       src/17ga-gpu-planets.js:314-317
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-25
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:60
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:252
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:169
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:255
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:171
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:150
 GPU_MIP                      src/08c-gpu-kit.js:81
-GPU_MIP_GS                   src/08c-gpu-kit.js:168
+GPU_MIP_LOD                  src/08c-gpu-kit.js:170
 GPU_PL_WGSL                  src/08b-gpu.js:460
 GPU_POST_WGSL                src/08b-gpu.js:88
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:211
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:214
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:119
 gpuArena                     src/08c-gpu-kit.js:139-149
 gpuBargeBody                 src/12l-barge.js:559-563
@@ -2176,7 +2176,7 @@ gpuCvLevel                   src/08c-gpu-kit.js:65-76
 gpuDrones                    src/16ga-gpu-trail.js:132-176
 gpuDrop                      src/08b-gpu.js:81-86
 gpuExhaust                   src/16ga-gpu-trail.js:259-292
-gpuField                     src/08c-gpu-kit.js:266-295
+gpuField                     src/08c-gpu-kit.js:269-298
 gpuFrame                     src/08b-gpu.js:509-519
 gpuFrontClean                src/08c-gpu-kit.js:111-116
 gpuFrontCopy                 src/08b-gpu.js:553-555
@@ -2186,7 +2186,7 @@ gpuHud                       src/08bh-gpu-hud.js:14-17
 gpuHudDpr                    src/08bh-gpu-hud.js:12
 gpuHudFlush                  src/08bh-gpu-hud.js:20-33
 gpuHullLight                 src/16ga-gpu-trail.js:345-364
-gpuImage                     src/08c-gpu-kit.js:194-206
+gpuImage                     src/08c-gpu-kit.js:197-209
 gpuKitU                      src/08c-gpu-kit.js:155-159
 gpuLight                     src/08b-gpu.js:444
 gpuLitSprite                 src/17c-system-draw.js:480-488
@@ -2211,7 +2211,7 @@ gpuResize                    src/08b-gpu.js:382-417
 gpuScene                     src/08b-gpu.js:523-533
 gpuScene3D                   src/08b-gpu.js:537-545
 gpuSeg                       src/28z-fps-probe.js:139-142
-gpuShapes                    src/08c-gpu-kit.js:236-247
+gpuShapes                    src/08c-gpu-kit.js:239-250
 gpuShock                     src/08b-gpu.js:443
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26

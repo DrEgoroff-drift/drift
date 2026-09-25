@@ -119,7 +119,7 @@ function drawSysLane(zx,zy,Z){
       Gl.push({x:lx,y:ly,w:r*2,h:r*2,a:(.35+.65*k)*LANE_GLOW});
       Lp.push([1,lx,ly,Math.max(1,1.3*s),0,0,0,lc[0],lc[1],lc[2],.5+.5*k]);
       Lh.push([1,lx,ly,.7*s,0,0,2.6*s,lc[0],lc[1],lc[2],(.5+.5*k)*LANE_HALO]);}
-    gpuImage(pass,gpuMipTex(sp),B);
+    gpuImage(pass,gpuMipTex(sp),B,{sharp:true});   /* бакен — вещь: маска, как у флота; ореолу — нет */
     gpuImage(pass,gpuMipTex(glow),Gl);
     gpuShapes(pass,Lp);gpuShapes(pass,Lh,{blend:"add"});   /* лампа — явная эмиссия, узкий ореол */
     return;}
