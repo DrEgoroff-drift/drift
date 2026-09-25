@@ -237,7 +237,55 @@ Then hulls (item 2) by the same «explicit emission» path.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
+## G. The GPU canvas — every 2D canvas goes (the author, 25.09)
+
+«2D-канвы — их надо все вырезать и заменять на наш новый движок». The 83–183 ms hitch at the hotel and the
+fleet was Skia rastering first-time bakes in the GPU process, `copyExternalImageToTexture` for every mip level,
+and the rate limiter on hidden 2D canvases. The cure is not a faster 2D path but none: a bake draws through
+`src/08ca-gpu-canvas.js`, a CanvasRenderingContext2D subset that records commands and renders them on the GPU.
+
+**API v1 (this commit).**
+
+| call | what |
+|---|---|
+| `gpuBake(w, h, draw, {ss, mips})` → `B` | runs `draw(g)` with the global `ctx` swapped to `g` (brushes that paint into `ctx` port untouched), renders one pass into an `rgba8unorm` texture with mips made on the GPU. `B = {tex, view, w, h, n, dev}` drops into `gpuImage` / `gpuLitSprite` wherever a `gpuMipTex` master went. `ss` = draw that many times larger and box it down (default 2 up to 512², else 1); `mips:false` = one level. No device (Node, `gpuNone`) → `null`: there is no 2D path for bakes any more |
+| `gpuBaked(Map, key, w, h, draw, o)` | the cache: returns the bake, re-bakes with the same `draw` after a device loss |
+| `gpuBakeDrop(B)` | frees the texture (trash, next frame) |
+| `g.canvas.width/height`, `save/restore/reset`, `setTransform(6 or obj)/getTransform/resetTransform/transform/translate/rotate/scale` | as 2D; `getTransform` returns `{a..f}` |
+| `beginPath/moveTo/lineTo/closePath/rect/roundRect/arc/arcTo/ellipse/quadraticCurveTo/bezierCurveTo` | points are transformed at construction (as 2D); curves flattened to 0.2 px |
+| `fill(rule)/stroke()/clip(rule)/fillRect/strokeRect/clearRect` | fill = stencil winding (nonzero/evenodd) + cover; stroke = extruded in user space with the CTM of `stroke()` (non-uniform scale right), joins miter/round/bevel + `miterLimit`, caps butt/round/square, `setLineDash/lineDashOffset`, a stroke under 1 px is drawn 1 px wide at alpha × width (Skia's hairline); `clip` = the stencil's top bit, nested, undone by `restore` |
+| `fillStyle/strokeStyle` | a CSS colour (hex, rgb[a], hsl[a], the common names), `createLinearGradient`, `createRadialGradient` (two-point conical, stops mixed unpremultiplied like Chrome) |
+| `globalAlpha`, `globalCompositeOperation` | source-over, lighter, destination-out, source-atop, destination-over, screen, multiply (exact on an opaque backdrop, like the kit's `mul`), destination-in / source-in / copy (unbounded: cleared outside the shape) |
+| `drawImage(B, 3 / 5 / 9 args)` | from a bake (copy or a cut of the texture), trilinear; `imageSmoothingEnabled=false` = nearest. A 2D canvas is still accepted as a source while the ports run (it uploads, and the gate sees it) |
+
+Antialiasing is MSAA 4× on a stencil8 + colour target, and with `ss` 2 that is 16 samples a pixel, the count of
+Skia's raster. Mips: one GPU pass per level, a 2×2 box, the level count of `gpuMipTex`.
+
+**What it cannot do — loud.** `getImageData`, `putImageData`, `createImageData`, `createPattern`,
+`createConicGradient`, `isPointInPath/Stroke`, `Path2D` arguments, `filter` ≠ none, a shadow (`shadowBlur` or an
+offset with a visible `shadowColor`), composite ops overlay / saturation / the rest, text (`fillText`,
+`strokeText`, `measureText`) until v2. Each throws `Error("GPU-холст: нет «…»")` and lands in `GC_MISS`: in play
+the frame guard names it («СБОЙ · …»), in a suite the suite goes red. No silent skip anywhere.
+
+**v2 (next): text and shadow.** A glyph atlas behind one function (the glyph source — a) a 2D canvas once at
+load or b) an in-game font — is the author's pick, the atlas does not care); `measureText` with the same metrics
+as 2D, because signs, neon and the cockpit lay out through it; fonts ui-monospace, sans-serif, bold.
+`shadowBlur/shadowColor` as a real blur pass over the bake's shadow layer (neon's tube glow, hotel windows,
+Чебурек). **v3:** pixels (`getImageData/putImageData` of the planets) go to a generator shader — GPU-3's.
+
+**The first port: finds (17b).** `findSprite(k)` is `gpuBaked` over the unchanged `findShape`. Against a 2D bake
+of the same shape (288², read back): mean |Δ| 0.03 of 255 per channel, 8–27 pixels of 82 944 differ by more
+than 24 (edge samples), coverage 0.997–1.000. Twenty bakes (4 kinds × 5), each to `onSubmittedWorkDone`, desktop
+headless: 2D + `gpuMipTex` 243–284 ms, 16 ms main-thread JS, **140 uploads**; the GPU canvas 170–188 ms, 7–12 ms
+JS, **0 uploads**. The whole-frame pair at 760 is identical to the eye (max Δ 5, mean 0.01). The ×4 throttled
+figure is for the phone run with the hotel, where the hitch lives. Suite «GPU-холст: запись, цвет, дыры громко»
+(Node and Chrome) guards the recording and the loud holes.
+
 ## Where I stopped (update on every commit)
+
+- **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
+  `pair_finds_760.png` in the session's scratchpad (identical, 0 uploads). Next: v2 (text atlas, shadow blur), then
+  Контроль's HUD fixes 1–5 + DECISIONS «no 2D», then merge gpu3 to e1eef97.
 
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
@@ -1191,7 +1239,29 @@ Back to front. F field, P particles, S shape, T text, C cached bake, 3D mesh. Li
 `getImageData` is used only for bounds (hull ink box 03e1:113, tile span 18c:152, staple 26e2:170, road 27l:81)
 and `lookFrame` (28y:49/326) — none in gameplay.
 
-## Session 3 (branch gpu3) — stage 2, the belt
+## 8. Session 2 (worktree drift-gpu2, branch gpu2): fleet, pirates, combat
+
+- **Fleet captions off #c** (Контроль, for 0.458.0): the tour census never met a ГЛАВТРАССА ship (the line
+  starts at rung 5), and `drawFleet` (12ai) still wrote its two caption rows with `fillText` on `#c` every frame
+  — dirt.js on a fleet stand: 6 `fillText:drawFleet` per shot, everything else 0. Now `domLabel` (keys
+  `fl`+class+seed). Pair 760 ×1 and 411×742 ×1.5: the same caption, a touch cleaner (no `#c` copy); dirt 0,
+  gpu errs 0. The census gate gains the scene «борт ГЛАВТРАССЫ с подписью» (a fleet window put in the system's
+  cache, the label checked on the label layer) and `drawFleet` in its upload net; mutant `fleet-caption-on-c`
+  (the caption back on `#c`) dies on it.
+
+- **Ships a) for the fleet** (side branch `gpu2-fleetlit`, not in 0.458.0): a ГЛАВТРАССА ship in the system is
+  lit by the star through `gpuLitSprite` in hull mode (−1): paint as baked, the far side in shade, the rim in
+  the star's colour; the station multiplier (0) whitened the nose and the emblem. Its bake keeps a softer copy of
+  the 2D top light (.34 on top, .3 dark below instead of .62 — the star lays the shade, a double shade killed the
+  panels); the mip level is `FLEET_LOD` −1.2 (GST has no unsharp mask). A fading lane ship keeps the old picture
+  (GST has no alpha). Three positions at 760 (star lower right, left, upper right) and ×1.5: total light
+  +0.6/+2.0/+1.2 % and +1.3 %, V>.6 area +1…+15 %, S of the bright .28 vs .21, sharpness +4/+8/+6 % and +1.4 %,
+  p95 −2…−5 % (the centre gives up to 7 % to the far-side slope). Gates «ворота ступени» green.
+- **Allies on the GPU** (`12a`): `drawAllies` drew each hired hand's hull in 2D and called `gpuHullLight` inside the open scene pass - one #c copy and two extra submits per ally, and the frame's command buffer broke (a black frame, 12 GPU errors per six frames). Now `allyHullGpu` draws them through `hullGpuDraw` like the player's ship, lit towards the star; the thrust smoothing is kept per ally (a WeakMap) so an ally on the player's hull does not share his flame. 2D + `gpuHullLight` stay for no-GPU. Six frames: #c copies 18 → 0, submits 30 → 6, dirt 0, errs 0. Hull (2D fallback → GPU): light sum −0.1 % / −2.2 % at 760, 0 % at ×1.5; body mean V +12 % / +4 %; sharpness ×2.1 / ×1.7 at 760, ×1.8 at ×1.5; the V>.6 area grows ×2–2.5, all of it the star-coloured rim (S of the bright .21 → .33). Gate scene «союзник и наёмник в кадре», mutant `ally-hull-2d`.
+
+- **World labels under the interface** (`08bh`, with the worker's leave): the label layer shared `#chips` with the edge chips, and a label made later sat on top - at ×1.5 an ally's caption glued itself onto the compass chip's digits. Labels now live in their own `#labels`, placed right before `#chips` with the same style, so chips, tiles, pads and the rack stay above every world label; the frame snapshot draws labels first too. The ally gate scene checks the order (same parent, labels first, same z-index, every label inside), mutant `labels-over-chips`.
+
+## 9. Session 3 (worktree drift-gpu3, branch gpu3): stage 2, the belt
 
 - **Belt world off #c (Контроль 25.09, stage 2 item 1).** `drawBelt` hands the world to `beltGpuDraw` (24ba) when
   a scene pass exists; the 2D path stays as the fallback. The sky is one field (`belt.sky`): background gradient,

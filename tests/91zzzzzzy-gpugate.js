@@ -238,7 +238,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: после боя —
    на кадр, выгрузок после прогрева от этих красильщиков нет; кто пачкает — называется по стеку.
    Выгрузки прочих (Чебурек, корабли на трассе) здесь не судятся: они законно пекутся, когда
    впервые въезжают в кадр, а их ровный полёт сторожит первый набор */
-const GATE_FLY=/drawWanderer|wanderGpu|drawSysRail|railGpu|drawBarges|bargeLiveGpu|drawHaul|haulGpu|drawBeltRocks|drawPeaceFleet|peaceFlag|drawLawRing|lawRingGpu/;
+const GATE_FLY=/drawWanderer|wanderGpu|drawSysRail|railGpu|drawBarges|bargeLiveGpu|drawHaul|haulGpu|drawBeltRocks|drawPeaceFleet|peaceFlag|drawLawRing|lawRingGpu|drawFleet|drawAllies|allyHullGpu/;
 function gateFind(fn,R){for(let r=0;r<=(R||30);r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
   if(Math.max(Math.abs(x),Math.abs(y))!==r||!starAt(x,y))continue;
   G.sx=x;G.sy=y;G.sys=getSystem(x,y);G.ap=null;G.orbit=null;const q=fn(G.sys,x,y);if(q)return q;}return null;}
@@ -261,7 +261,32 @@ function gateFlyScenes(){
     ["«Сорока»",()=>{clockSet(WANDER_T0+5*3600e3);const w=wanderAt();G.sx=w.sx;G.sy=w.sy;G.sys=getSystem(w.sx,w.sy);
       if(!wanderHere(G.sys))return null;return {z:1.4,place(){const p=wanderWorldPos(G.sys,wanderAt().planetIx);at(p.x+p.L*.3,p.y);}};}],
     ["кольцо дороги",()=>{let c=null;for(let t=0;t<200&&!c;t++)c=gateFind(s=>!!railHere()&&[G.sx,G.sy],10);if(!c)return null;
-      return {z:1.4,place(){G.sx=c[0];G.sy=c[1];G.sys=getSystem(c[0],c[1]);const R=railHere();if(R)at(R.x+60,R.y+40);}};}]];
+      return {z:1.4,place(){G.sx=c[0];G.sy=c[1];G.sys=getSystem(c[0],c[1]);const R=railHere();if(R)at(R.x+60,R.y+40);}};}],
+    /* борт ГЛАВТРАССЫ с подписью (тур его не встретил: линия зовётся с рунга 5):
+       окно флота кладётся в кэш системы, борт стоит рядом, подпись в кадре */
+    ["борт ГЛАВТРАССЫ с подписью",()=>{const X=-900,Y=-600;
+      return {z:1.4,what:"подпись борта — на слое подписей",check:()=>{const e=LABDOM.m.get("flpost7");return !!(e&&e.on&&LABDOM.m.get("flpost7c"));},
+        place(){G.sx=0;G.sy=0;G.sys=getSystem(0,0);
+          G.sys.fleetCache={b:Math.floor(now()/FLEET_PERIOD),list:[{k:"post",seed:7,name:"Вега",num:"Л-4417",line:3,x0:X,y0:Y,x1:X,y1:Y,bow:0,ph:0,still:1}]};
+          at(X-60,Y-40);}};}],
+    /* союзник и наёмник в кадре: корпус шёл через 2D и gpuHullLight — копия #c и два submit на борт,
+       а посреди открытого прохода сцены кадр чернел; теперь hullGpuDraw, как свой корабль */
+    ["союзник и наёмник в кадре",()=>{const X=-900,Y=-600;
+      const c1=genMerc(4242,["fight"]),c2=genMerc(4343,["haul"]);c1.shipId="klinok";c2.shipId="strizh";
+      c1.order={kind:"fight",sx:0,sy:0};c2.order={kind:"haul",sx:0,sy:0};
+      const A=[{c:c1,cool:0,iff:true},{c:c2,cool:0,iff:true}];
+      /* подпись мира — под интерфейсом: на ×1.5 подпись союзника легла на фишку компаса и склеила её цифры.
+         Слой подписей стоит в DOM перед слоем фишек, на одном уровне и без своего z-index — все подписи в нём */
+      const under=()=>{const L=LABDOM.box,C=CHIPDOM.box;if(!L||!C||L.parentNode!==C.parentNode)return false;
+        if(!(L.compareDocumentPosition(C)&Node.DOCUMENT_POSITION_FOLLOWING))return false;
+        const z=e=>getComputedStyle(e).zIndex;if(z(L)!==z(C))return false;
+        return [...LABDOM.m.values()].every(e=>e.cv.parentNode===L);};
+      return {z:2.2,what:"оба борта подписаны на слое подписей, и этот слой под фишками",
+        check:()=>under()&&A.every(a=>{const e=LABDOM.m.get("al"+domLabelId(a.c));return !!(e&&e.on);}),
+        place(){G.sx=0;G.sy=0;G.sys=getSystem(0,0);at(X,Y);
+          Object.assign(A[0],{x:X+70,y:Y+45,vx:Math.cos(.5)*3,vy:Math.sin(.5)*3,a:.5,thrust:true});
+          Object.assign(A[1],{x:X-65,y:Y+40,vx:Math.cos(2.6)*3,vy:Math.sin(2.6)*3,a:2.6,thrust:true});
+          G.allies=A;}};}]];
 }
 TEST_SUITES.push(()=>suite("ворота ступени 1: полёт по переписи — пояс, мирный флот, буксир, законы, «Сорока», дорога без #c",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
@@ -290,6 +315,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: полёт по пе�
       eq(Object.keys(K.dirt).length,0,name+": пустой #c никто не пачкает"+(Object.keys(K.dirt).length?": "+top(K.dirt):""));
       eq(K.sub,N,name+": отправок в очередь ровно по одной на кадр");
       eq(K.bad,0,name+": выгрузок после прогрева нет"+(K.bad?": "+top(K.up):""));
+      if(S.check)ok(S.check(),name+": "+S.what);
     }
   }finally{
     K.on=false;Q.copyExternalImageToTexture=q0.c;Q.submit=q0.s;

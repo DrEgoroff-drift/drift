@@ -144,8 +144,10 @@ function drawFleet(zx,zy,Z){
     ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
     const l1=f.k==="node"?"«"+f.name+"» · УЗЕЛ ТРАСС · ГЛАВТРАССА":"«"+f.name+"» · ГЛАВТРАССА · "+f.num+" · ТРАССА "+f.line;
     const rows=f.k==="node"?1:2,ly=fleetLabelY(x,y,hh,ctx.measureText(l1).width,rows);
-    ctx.fillStyle="rgba(226,214,200,.8)";ctx.fillText(l1,x,ly);
-    if(rows>1){ctx.fillStyle="rgba(226,214,200,.5)";ctx.fillText(C.ru.toUpperCase(),x,ly+10);}
+    /* подписи — слой подписей (domLabel): на #c текст перекрашивался каждый кадр */
+    const fk="fl"+f.k+f.seed;
+    domLabel(fk,x,ly,l1,ctx.font,"rgba(226,214,200,.8)","center");
+    if(rows>1)domLabel(fk+"c",x,ly+10,C.ru.toUpperCase(),ctx.font,"rgba(226,214,200,.5)","center");
     ctx.textAlign="left";
   }
 }

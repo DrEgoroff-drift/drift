@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 614 · символов верхнего уровня: 6120
+Файлов: 616 · символов верхнего уровня: 6149
 
 ## СИМВОЛЫ
 
@@ -106,6 +106,8 @@ albumOpen                    src/25g-postcard.js:677
 albumSave                    src/25g1-album-fx.js:105-136
 alCount                      tests/91zzzzzy-alive.js:15-22
 ALL_NAMES                    tests/90-harness.js:93
+ALLY_THR                     src/12a-crew.js:708
+allyHullGpu                  src/12a-crew.js:709-718
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:614-643
 ambK                         src/19c-light.js:115-120
@@ -771,9 +773,9 @@ CHIP_TOUCH                   src/17-mode-system.js:18
 CHIPDOM                      src/08bh-gpu-hud.js:35
 chipDom                      src/08bh-gpu-hud.js:44-80
 chipDomBox                   src/08bh-gpu-hud.js:36-41
-chipDomEnd                   src/08bh-gpu-hud.js:149-151
-chipDomSnap                  src/08bh-gpu-hud.js:83-94
-chipDomSweep                 src/08bh-gpu-hud.js:153-159
+chipDomEnd                   src/08bh-gpu-hud.js:159-161
+chipDomSnap                  src/08bh-gpu-hud.js:83-95
+chipDomSweep                 src/08bh-gpu-hud.js:163-169
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -1380,9 +1382,9 @@ dominoMove                   src/11af-domino.js:25-39
 dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
-domLabel                     src/08bh-gpu-hud.js:104-136
-domLabelEnd                  src/08bh-gpu-hud.js:138-147
-domLabelId                   src/08bh-gpu-hud.js:103
+domLabel                     src/08bh-gpu-hud.js:114-146
+domLabelEnd                  src/08bh-gpu-hud.js:148-157
+domLabelId                   src/08bh-gpu-hud.js:113
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
 DOMR_SAVE                    src/15d-domread.js:18
@@ -1413,7 +1415,7 @@ draftTowerAt                 src/27jb-kb.js:49-54
 drawAbil                     src/16c-abil.js:124-149
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
-drawAllies                   src/12a-crew.js:678-697
+drawAllies                   src/12a-crew.js:678-704
 drawAnomaly                  src/20aa-poi-shapes.js:168-191
 drawAstronaut                src/20-life.js:4-141
 drawBarge                    src/12l-barge.js:577-607
@@ -1464,11 +1466,11 @@ drawElevator                 src/20aa-poi-shapes.js:91-113
 drawExhaust                  src/16a-space.js:323
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
-drawFindsSystem              src/17b-finds.js:240-288
+drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
-drawFleet                    src/12ai-fleet.js:132-151
-drawFleetMap                 src/12ai-fleet.js:321-356
-drawFleetShip                src/12ai1-fleet-art.js:398-424
+drawFleet                    src/12ai-fleet.js:132-153
+drawFleetMap                 src/12ai-fleet.js:323-358
+drawFleetShip                src/12ai1-fleet-art.js:418-444
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
@@ -1821,7 +1823,7 @@ FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19-25
-FIND_R                       src/17b-finds.js:232
+FIND_R                       src/17b-finds.js:234
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:139-175
 findLandingNear              src/17b-finds.js:131-138
@@ -1830,7 +1832,7 @@ findSeen                     src/17b-finds.js:54
 findShape                    src/17b-finds.js:183-231
 findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27-52
-findSprite                   src/17b-finds.js:233-239
+findSprite                   src/17b-finds.js:235-237
 findTake                     src/17b-finds.js:58-128
 findTestSys                  tests/91x-finds.js:3-10
 FIRE_ALONE                   src/21a5-base-dir.js:121
@@ -1878,11 +1880,11 @@ FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai1-fleet-art.js:12
 FLEET_CLASSES                src/12ai-fleet.js:20-40
 FLEET_COOL                   src/13-combat.js:212
-FLEET_ENG                    src/12ai1-fleet-art.js:379
+FLEET_ENG                    src/12ai1-fleet-art.js:388
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
-FLEET_MAP_LEGS               src/12ai-fleet.js:320
+FLEET_MAP_LEGS               src/12ai-fleet.js:322
 FLEET_MARK                   src/04b-fleet.js:56
 FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
@@ -1896,24 +1898,24 @@ FLEET_SEEN                   src/04b-fleet.js:99
 FLEET_TIER_CLS               src/04b-fleet.js:46-53
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16-29
-fleetArtOf                   src/12ai1-fleet-art.js:13-339
-fleetCaravanActive           src/12ai-fleet.js:307-313
+fleetArtOf                   src/12ai1-fleet-art.js:13-348
+fleetCaravanActive           src/12ai-fleet.js:309-315
 fleetColor                   src/04b-fleet.js:95
-fleetEscortActive            src/12ai-fleet.js:305
+fleetEscortActive            src/12ai-fleet.js:307
 fleetFire                    src/13-combat.js:213-234
-fleetGlyph                   src/12ai1-fleet-art.js:342-374
-fleetHailFirst               src/12ai-fleet.js:161-181
+fleetGlyph                   src/12ai1-fleet-art.js:351-383
+fleetHailFirst               src/12ai-fleet.js:163-183
 fleetHere                    src/12ai-fleet.js:50-87
-fleetInteract                src/12ai-fleet.js:182-302
+fleetInteract                src/12ai-fleet.js:184-304
 fleetLabelY                  src/12ai-fleet.js:121-131
-fleetLogKey                  src/12ai-fleet.js:153
-fleetNormKey                 src/12ai-fleet.js:156
-fleetNormTwice               src/12ai-fleet.js:155
+fleetLogKey                  src/12ai-fleet.js:155
+fleetNormKey                 src/12ai-fleet.js:158
+fleetNormTwice               src/12ai-fleet.js:157
 fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipGpu                 src/12ai1-fleet-art.js:380-397
+fleetShipGpu                 src/12ai1-fleet-art.js:389-417
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
 floraOf                      src/20e-species.js:91-105
@@ -2015,8 +2017,8 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-gateFind                     tests/91zzzzzzy-gpugate.js:242-265
-gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-265
+gateFind                     tests/91zzzzzzy-gpugate.js:242-290
+gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-290
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
 gateStand                    tests/91zzzzzzy-gpugate.js:22-30
 gateWho                      tests/91zzzzzzy-gpugate.js:19-21
@@ -2025,6 +2027,28 @@ gateZOwner                   tests/91zzzzzzy-gpugate.js:17
 GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
+GC_COL                       src/08ca-gpu-canvas.js:29
+GC_DEF                       src/08ca-gpu-canvas.js:75
+GC_KEYS                      src/08ca-gpu-canvas.js:79
+GC_MIP_WGSL                  src/08ca-gpu-canvas.js:306
+GC_MISS                      src/08ca-gpu-canvas.js:25
+GC_OPS                       src/08ca-gpu-canvas.js:13-56
+GC_ST                        src/08ca-gpu-canvas.js:314-333
+GC_TOL                       src/08ca-gpu-canvas.js:11
+GC_WGSL                      src/08ca-gpu-canvas.js:278
+gcColor                      src/08ca-gpu-canvas.js:37-56
+GcCtx                        src/08ca-gpu-canvas.js:83-222
+gcDash                       src/08ca-gpu-canvas.js:232-269
+gcFan                        src/08ca-gpu-canvas.js:228
+GcGrad                       src/08ca-gpu-canvas.js:61-74
+gcImg                        src/08ca-gpu-canvas.js:271-333
+gcInv                        src/08ca-gpu-canvas.js:57
+gcLay                        src/08ca-gpu-canvas.js:324-333
+gcMipPipe                    src/08ca-gpu-canvas.js:346
+gcNo                         src/08ca-gpu-canvas.js:26
+gcPipe                       src/08ca-gpu-canvas.js:334-345
+gcRectSp                     src/08ca-gpu-canvas.js:226
+gcStrokeLine                 src/08ca-gpu-canvas.js:245-269
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:63
 GEN_WGSL                     src/13z-gpu-combat.js:17
@@ -2199,6 +2223,10 @@ GPU_POST_WGSL                src/08b-gpu.js:88
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:229
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:129
 gpuArena                     src/08c-gpu-kit.js:149-159
+gpuBake                      src/08ca-gpu-canvas.js:355-360
+gpuBaked                     src/08ca-gpu-canvas.js:362-365
+gpuBakeDrop                  src/08ca-gpu-canvas.js:366
+gpuBakeRedo                  src/08ca-gpu-canvas.js:367-434
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:35-41
 gpuBloom                     src/08b-gpu.js:605-612
@@ -3037,7 +3065,8 @@ kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
 kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
-LABDOM                       src/08bh-gpu-hud.js:100
+LABDOM                       src/08bh-gpu-hud.js:101
+labDomBox                    src/08bh-gpu-hud.js:106-112
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 LAND_ARC                     src/07a-terrain.js:49
@@ -6261,11 +6290,14 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08b-gpu.js · 46 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08bh-gpu-hud.js · 11 КБ
+## src/08bh-gpu-hud.js · 12 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
 ## src/08c-gpu-kit.js · 25 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
+
+## src/08ca-gpu-canvas.js · 33 КБ
+  · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/09-audio.js · 18 КБ
   · звук: чистый синтез, ни одного файла:1
@@ -6431,7 +6463,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · живой рынок:1
   · дроны:139
 
-## src/12a-crew.js · 45 КБ
+## src/12a-crew.js · 47 КБ
   · наёмники: флот, которым не управляешь напрямую:1
   · приказы:148
   · переданные модули:285
@@ -6466,7 +6498,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ai-fleet.js · 28 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
-## src/12ai1-fleet-art.js · 34 КБ
+## src/12ai1-fleet-art.js · 36 КБ
   · ГЛАВТРАССА: как флот выглядит (выделено из 12ai, M415):1
 
 ## src/12aj-coop.js · 19 КБ
@@ -8076,11 +8108,14 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzz-crashlog.js · 3 КБ
   · автотесты: что уезжает в crash.log (0.419):1
 
-## tests/91zzzzzzy-gpugate.js · 23 КБ
+## tests/91zzzzzzy-gpugate.js · 26 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
 ## tests/91zzzzzzy1-gpugate-belt.js · 13 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
+
+## tests/91zzzzzzy2-gpu-canvas.js · 4 КБ
+  · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1

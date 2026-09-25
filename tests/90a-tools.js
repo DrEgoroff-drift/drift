@@ -502,10 +502,10 @@ const T=(()=>{
      Node — главный ctx игры. */
   const LEDGER_OPS=["fillRect","strokeRect","clearRect","fillText","strokeText","drawImage","fill","stroke","putImageData"];
   /* что видит игрок: главная канва; с видеокартой (ступень 1, 08bh) мир на #g, а текст —
-     на слое приборов #hud и в маленьких холстах подписей и фишек (#chips) */
-  const ledgerSeen=c=>c===cvs||(!!GPU.ui&&c===GPU.ui)||!!(c&&c.closest&&c.closest("#chips"));
+     на слое приборов #hud и в маленьких холстах подписей (#labels) и фишек (#chips) */
+  const ledgerSeen=c=>c===cvs||(!!GPU.ui&&c===GPU.ui)||!!(c&&c.closest&&c.closest("#chips,#labels"));
   /* плотность холста: пикселей на пиксель CSS */
-  const ledgerDens=c=>(GPU.ui&&c===GPU.ui)?GPU.ui.width/Math.max(1,W):(c&&c.closest&&c.closest("#chips"))?gpuHudDpr():(DPR||1);
+  const ledgerDens=c=>(GPU.ui&&c===GPU.ui)?GPU.ui.width/Math.max(1,W):(c&&c.closest&&c.closest("#chips,#labels"))?gpuHudDpr():(DPR||1);
   function ledger(fn){
     const L={calls:0,by:{},texts:[]};
     /* слой приборов и подписи перерисовываются только по изменению — для счёта кадр
