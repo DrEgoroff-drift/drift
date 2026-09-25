@@ -6,6 +6,24 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.458.0 - the whole world on the video card
+
+- **Everything in flight on the GPU** (`08b`, `08bh`, `16ga`, `17l`, `03e`): hulls, the fleet, the lane,
+  finds and buoys, stations, the hotel and the Cheburek are drawn by the video card from masters baked
+  once; outside a fight the 2D layer over the sky stays empty. Lamps, windows and the neon sign glow by their own
+  light, not by their paint; the hotel's windows light up and go dark without re-uploading the house.
+- **The interface on its own layer** (`08bh`): the instruments and the rack sit on a sharp layer at the
+  screen's own density, redrawn only when a number changes; world labels and edge chips are small DOM
+  pieces on whole device pixels, as crisp as before.
+- **Planets close up** (G3b): a living gas giant, a terminator with a wedge step, and cities - each
+  holding light is a city of its own. A planet's shadow in the gas is a cone, at most half dark; the shock
+  ring and the haze bend the backdrop, never a hull.
+- **The phone first** (P1): the density cap reads the window's short side (1.5 on a phone), the nebula's
+  fine detail reads a baked noise tile, clear sky skips the fine pass, the dust dims the stars in their own
+  shader; the stick's band no longer covers the course.
+- **The wake** cools to the old 2D brightness at the stern; the player's hull and flame are back to their
+  colour.
+
 ## 0.457.0 - the world on the video card
 
 - **WebGPU** (`08b`, `08c`, `16ga`, `16gb`, `17ga`): the sky is drawn on the video card - the nebula
