@@ -107,7 +107,10 @@ function drawRoad(ts){
      подменой ctx (roadHullHalf) — ДО кадра: внутри кадра ctx принадлежит ему */
   const id=G.shipId,h=hullOf(id),half=roadHullHalf(id);
   const gOn=gpuFrame();let c=MAIN_CTX;
-  roadSky(c,W,H,t,dt,spd,tier,fast,hue,en);
+  roadSky(W,H,t,dt,spd,tier,fast,hue,en);
+  const bd=roadBands(RD.wave);
+  RD.flow=(RD.flow||0)+dt*(.09+bd.bass*.34);   /* время шума: бас гонит течение */
+  roadBloom(gpuScene(),W,H,hue,en,bd);    /* сияние и гашение низа — под корпусом (27lb) */
   /* ── корпус на экране ──
      Поворот машины кренит корпус и уводит его наружу; разгон задирает нос и
      раздувает факел, тормоз бьёт носовыми соплами и клюёт вперёд. */
@@ -313,9 +316,11 @@ function drawRoad(ts){
   }
   /* нижняя кромка гаснет в фон: под ней подвал с кнопкой НАЗАД, и лента любой
      длины не должна её резать (M168g) */
+  /* небо гасит поле 27lb, ленту — стирание: под ней видно то же погашенное небо */
   const mg=c.createLinearGradient(0,H*(1-ROAD_MASK),0,H);
-  mg.addColorStop(0,"rgba(6,10,18,0)");mg.addColorStop(1,"rgba(6,10,18,1)");
-  c.fillStyle=mg;c.fillRect(0,H*(1-ROAD_MASK),W,H*ROAD_MASK);
+  mg.addColorStop(0,"rgba(0,0,0,0)");mg.addColorStop(1,"rgba(0,0,0,1)");
+  c.save();c.globalCompositeOperation="destination-out";
+  c.fillStyle=mg;c.fillRect(0,H*(1-ROAD_MASK),W,H*ROAD_MASK);c.restore();
   /* ── маневровые крупным планом (M168i) ──
      Штатные носовые сопла из drawHull на этом масштабе — три пикселя, и на
      видео тормоза просто не видно. Рисуем свои факелы в экранных координатах,
@@ -403,10 +408,7 @@ function drawRoad(ts){
 
      Тёмной полосы на холсте нет: кнопки держит своё стекло подвала
      (`body.road .scr footer`), а не вырезанный из картинки кусок. */
-  const bd=roadBands(RD.wave);
-  RD.flow=(RD.flow||0)+dt*(.09+bd.bass*.34);   /* время шума: бас гонит течение */
-  /* свет поверх корпуса; дальше числа — на слой приборов, без свечения и зерна */
-  roadBloom(gpuOver(),W,H,hue,en,bd);
+  /* мир собран; числа — на слой приборов, без свечения и зерна */
   if(gOn)gpuHud("road"+GPU.frameNo,()=>{});   /* слой приборов чистится каждый кадр */
   if(gOn)gpuWorld(ROAD_GLOW,true,true);
   c=ctx;c.save();

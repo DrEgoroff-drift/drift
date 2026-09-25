@@ -61,7 +61,10 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let gh=fu.v[2].z;
   var col=vec3f(0.);
   if(v>1.-gh){let k=(v-(1.-gh))/gh;col=rbHsl(fu.v[3].x,.92,.53)*k*fu.v[2].w;}
-  if(v<top){return vec4f(col,0.);}
+  /* гашение низа (ROAD_MASK): небо уходит в фон подвала, свет ложится поверх */
+  let m=clamp((v-(1.-fu.v[3].y))/fu.v[3].y,0.,1.);
+  let bg=vec3f(6.,10.,18.)/255.*m;
+  if(v<top){return vec4f(bg+col,m);}
   let u=uv.x;let fl=fu.v[1].y;
   var vt=(v-top)/(1.-top);vt=vt*vt*(3.-2.*vt);vt=vt*(.34+.66*vt);
   /* спектр по ширине: между соседними полосами — плавно */
@@ -85,9 +88,12 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let ci=fract(q*.85+u*.20+n*.10)*5.;let k=i32(floor(ci));let f=ci-f32(k);
   let h=rbMix(rbHue(k%5),rbHue((k+1)%5),f);
   col=col+rbHsl(h,.96,.54)*a;
-  return vec4f(col,0.);}`;
+  return vec4f(bg+col,m);}`;
 const ROAD_FLD_U=new Float32Array(44);
-/* сияние и нить кромки — одним полем, сложением света поверх всего, что уже в кадре */
+/* сияние, нить кромки и гашение низа — одним полем под корпусом: небо гаснет в
+   фон (премультиплицированное «поверх»: фон × m + свет), ленту шлейфа гасит 2D
+   стиранием. Так кадру дороги не нужен gpuOver: он сделал бы из раскалённой
+   ленты источник (08b emit) и выбелил её свечением */
 function roadBloom(pass,W,H,hue,en,bd){
   if(!pass)return;
   const U=ROAD_FLD_U;
@@ -99,7 +105,7 @@ function roadBloom(pass,W,H,hue,en,bd){
   U[9]=ROAD_FLD_TOP;
   U[10]=.030+en*.030+bd.bass*.025;         /* высота нити кромки, доля экрана */
   U[11]=.07+en*.08+bd.bass*.06+RD.beat*.06;
-  U[12]=hue;U[13]=0;U[14]=W/Math.max(1,H);U[15]=0;
+  U[12]=hue;U[13]=ROAD_MASK;U[14]=W/Math.max(1,H);U[15]=0;
   for(let i=0;i<28;i++)U[16+i]=RD.wave[i]||0;
-  gpuField(pass,"road.bloom",ROAD_FLD_WGSL,U,null,{blend:"add"});
+  gpuField(pass,"road.bloom",ROAD_FLD_WGSL,U,null,{blend:"over"});
 }
