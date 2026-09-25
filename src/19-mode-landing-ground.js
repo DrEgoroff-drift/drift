@@ -19,35 +19,8 @@ function drawGround(tr,camx,camy,fill,line,pal){
      функцией (GROUND_BAKING), а в кадре остаётся drawImage да трава —
      она одна здесь живая, потому что кланяется ветру. */
   if(pal&&tr.mat&&!GROUND_BAKING){
-    if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
-    const top=Math.floor(tr.hMin-90),ch=Math.ceil(tr.hMax-tr.hMin+H+120);
-    /* час суток входит в ключ (M232): свет в ломте дневной или ночной, и
-       ломоть, испечённый утром, не должен пережить полдень. Квантование в
-       шесть ступеней держит перепечку редкой */
-    /* в ключ ломтя входит и СТОРОНА солнца (M242): свет теперь идёт оттуда,
-       где диск, а ломоть печётся один раз — без азимута в ключе земля весь
-       день держала бы утреннюю подсветку склонов */
-    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+
-      "|d"+(tr.p?dayKq(tr.p):0)+"|a"+(tr.p?sunAzQ(tr.p):0),top,ch);
-    drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
-      GROUND_BAKING=true;
-      /* ── три прохода вместо одного (гризайль P4, M422) ──
-         1. ФОРМА в сером: масса, пласты, зерно, штрих, свет склона;
-         2. ЛЕССИРОВКА: серое v → тень + v·(свет − тень), где тень — цвет неба,
-            а свет — цвет звезды. Два композитных залива, ни одного чтения
-            канвы (readback уронил бы ломоть в программный растр);
-         3. ОТТЕНОК: жилы, лишайник, тлеющие швы — то, чего из светлоты не
-            достать. Идёт ПОСЛЕ лессировки, иначе она бы его перекрасила.
-         Валуны неподвижны и сложены из той же породы — им место в ломте, а не
-         в кадре: 6–9 мс на ×2 (G0). */
-      try{
-        GLAZE_PASS="form";
-        drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
-        glazeGround(tr,wx0,wy0,pal);
-        GLAZE_PASS="hue";
-        drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
-      }finally{GROUND_BAKING=false;GLAZE_PASS="";}
-    });
+    tr.chunks=groundChunkStore(tr,fill,line);
+    drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>groundChunkPaint(tr,wx0,wy0,fill,line,pal));
     drawGroundGrass(tr,camx,camy);
     return;
   }
@@ -238,6 +211,42 @@ function drawGround(tr,camx,camy,fill,line,pal){
   }
 }
 let GROUND_BAKING=false;
+/* ── ломоть ближнего грунта: хранилище и рецепт — один на посадку и поверхность ──
+   Поверхность (21e2) кладёт те же ломти на видеокарту; ключ и рецепт живут здесь,
+   чтобы ломоть, испечённый на заходе, годился пешком и наоборот, и чтобы два
+   списка проходов не разошлись. */
+function groundChunkStore(tr,fill,line){
+  if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
+  const top=Math.floor(tr.hMin-90),ch=Math.ceil(tr.hMax-tr.hMin+H+120);
+  /* час суток входит в ключ (M232): свет в ломте дневной или ночной, и
+     ломоть, испечённый утром, не должен пережить полдень. Квантование в
+     шесть ступеней держит перепечку редкой */
+  /* в ключ ломтя входит и СТОРОНА солнца (M242): свет теперь идёт оттуда,
+     где диск, а ломоть печётся один раз — без азимута в ключе земля весь
+     день держала бы утреннюю подсветку склонов */
+  return chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+
+    "|d"+(tr.p?dayKq(tr.p):0)+"|a"+(tr.p?sunAzQ(tr.p):0),top,ch);
+}
+/* рецепт ломтя: рисует в текущий ctx от мировой точки (wx0,wy0) */
+function groundChunkPaint(tr,wx0,wy0,fill,line,pal){
+  GROUND_BAKING=true;
+  /* ── три прохода вместо одного (гризайль P4, M422) ──
+     1. ФОРМА в сером: масса, пласты, зерно, штрих, свет склона;
+     2. ЛЕССИРОВКА: серое v → тень + v·(свет − тень), где тень — цвет неба,
+        а свет — цвет звезды. Два композитных залива, ни одного чтения
+        канвы (readback уронил бы ломоть в программный растр);
+     3. ОТТЕНОК: жилы, лишайник, тлеющие швы — то, чего из светлоты не
+        достать. Идёт ПОСЛЕ лессировки, иначе она бы его перекрасила.
+     Валуны неподвижны и сложены из той же породы — им место в ломте, а не
+     в кадре: 6–9 мс на ×2 (G0). */
+  try{
+    GLAZE_PASS="form";
+    drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
+    glazeGround(tr,wx0,wy0,pal);
+    GLAZE_PASS="hue";
+    drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);
+  }finally{GROUND_BAKING=false;GLAZE_PASS="";}
+}
 /* мелкая крошка на самой кромке — дёшево и оживляет силуэт вблизи */
 function drawGroundCrumbs(tr,camx,camy,i0,i1){
   const dstep=Math.max(1,Math.round(14/tr.step));
