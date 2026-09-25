@@ -1423,3 +1423,22 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   Gate `91zzzzzzy3-gate2d` gains the planet scene (strip dropped first, so the bake runs under the hook;
   buildings give city lights); mutants `planet-land-2d`, `planet-strip-2d` die. The memory suite now
   counts strip textures (on planets, not in `GPU.cvTex`); `bakeIdle` and the bake suite lose `STRIP_*`.
+
+- **Hotel (17l) → three GPU-canvas bakes, cut across frames.** The atlas (house with all windows dark above
+  the gap, all lit below) was six 2D half-canvases, three uploads and 2D mips. Now `hotelPaint` is a generator
+  (one step = a floor or a part of the house) that records paint and window light at once into two `GcCtx`
+  of the bake's size and ss; `hotelBake` runs its steps until `HOTEL_MS`=3 ms (cap `HOTEL_STEPS`=8 for the
+  clockless harness) and returns null until done; then one bake per call: paint (ss 2, the recorded ops
+  pushed as is), light (ss 2 without shadow, then ONE `shadowBlur` drawImage of the whole layer at ss 1
+  instead of 84 per-window shadows — 08cc's shadow is a full-target pass each), sheen (ss 1, white
+  underlay + multiply + destination-in, as 2D's s·(d+1−α)). Records survive a colour change. Off-screen
+  within a screen of the edge, `drawHotel` bakes ahead one step per frame and the sign's neon one frame
+  after the house, so the frame the hotel enters does ~1 ms of hotel work. Phone twin (411×742 ×1.5, CPU
+  ×4, frames stepped by hand), same machine run: 2D cold worst frame 123 ms (JS 77 + GPU 47), 16
+  textures in that frame; now cold worst 97 ms — the paint bake step (op replay 53 ms, 5 textures); other
+  steps 3–12 ms; 36 textures over 24 frames. Earlier single-frame GPU port measured 1193 ms (per-window
+  shadows), 638 (one shadow), 477 (one paint pass). Open: the paint bake step (op replay) and texture
+  creation — the worker's texture pool and a gradient ramp cache by stops (`GcGrad.ramp` was ~27 % of the
+  recording JS) will cut both. Pictures vs the accepted h3: max|Δ| 5 at 760, 15 on the phone, edge energy
+  7.36→7.38; far zoom equal but for a DOM pulse. Gate2d gains the hotel scene; GC_GLYPHS `raster`/`measure`
+  are named holes (the text source of v2); mutants `hotel-bake-2d`, `hotel-frame-2d` die.
