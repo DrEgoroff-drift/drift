@@ -94,6 +94,10 @@ with a beat, 90 extra stepped frames — `shots.sh` there.
 - commit 5: `before-scheme.png | a4-scheme.png` — the sheet reads as a folded paper handout:
   edges darkened, each fold has a lit edge beside its shadow, lines sit in a faint ink bleed.
   The gain is small at 760 px; the fibres show only up close.
+- phone check (after commit 5, 390×844 at DPR 2): `pair-roadphone.png` (`before-roadphone.png |
+  a5-roadphone.png`) — the portrait layout is unchanged, the numbers are crisp on `#hud` at the
+  device DPR, the bloom reads as flowing curtains instead of a flat band; the suite checks pass
+  on it too (lit 4245, hull 960, 0 GPU errors).
 
 ## New render pipelines (for the warm-up table `08b1`)
 
@@ -110,6 +114,18 @@ with a beat, 90 extra stepped frames — `shots.sh` there.
   get a real halo. Not needed for correctness.
 
 ## Open problems
+
+- The zone is done: bloom field, sky, the road frame, the rail ride and the scheme are on the GPU.
+  What stays Canvas 2D on purpose (hybrid rule — complex vector shapes and text): the road's
+  trail ribbon, manoeuvre jets, hyper cocoon, the hull (`drawHull`, flight zone), numbers and
+  coins on `#hud`; the ride's stops, names, the car and the header.
+- `#hud` is redrawn every road frame (`gpuHud("road"+frameNo)`) at the device DPR: the same cost
+  class as the old full-screen `#roadcv` at DPR ≤ 2, but a DPR-3 phone pays more pixels. If the
+  S23 shows it, key the layer by the text content and redraw only the coins every frame.
+- Grain, vignette and frame bloom are gated on `G.running` in `gpuWorld`; the road is opened from
+  the in-game menu, so that holds, but a road opened with the game paused would lose them.
+- `#roadcv` stays in `index.html` as the finger layer (1×1 backing). It could be renamed or turned
+  into a plain div by whoever owns `index.html`; not needed.
 
 - The road's browser suites can't be run with a GPU in this cloud: `tests.html` under
   `--dump-dom` never gets `GPU.ok` (SwiftShader warm-up; G13 is the tools ship's). Without a GPU
