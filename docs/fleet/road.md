@@ -99,6 +99,28 @@ with a beat, 90 extra stepped frames — `shots.sh` there.
   device DPR, the bloom reads as flowing curtains instead of a flat band; the suite checks pass
   on it too (lit 4245, hull 960, 0 GPU errors).
 
+## Left in the zone
+
+Nothing ported is left undone. Not ported, on purpose (hybrid rule): the road's trail ribbon,
+jets, cocoon and the hull; the ride's stops, names, car and header; all text.
+
+## For the design pass (real GPU, Контроль) — per scene
+
+- **Road, 90 km/h** (`shots.sh`, tier 1): the bloom's colour loop against the mood hue — are the
+  curtains too blue/magenta on the S23; the height of the light at the bottom vs the footer
+  glass; the nebula clouds' contrast (they may want more cold key, a warm accent); star halo
+  size on DPR 3; `ROAD_GLOW` .18 against the trail — the trail must stay cream-amber, never white.
+- **Road, 850 km/h** (tier 3): the tunnel streak density and speed (`fract(t*1.6)`) at 60/120 Hz;
+  whether the tunnel should be tinted by the mood or stay pale; the cocoon under the hull.
+- **Road on the phone** (390×844): the cost of redrawing `#hud` every frame at DPR 2.625; text
+  sizes; the bottom fade into the footer.
+- **Rail ride** (`railshots.sh`, ring and bus): the line glow strength near the car and the
+  pulse speed; the transit streaks (lane density, length) — they must read as motion, not rain;
+  the headlight cone is hidden under the flash in the shots — look at it mid-run with no flash;
+  the flash's cyan halo vs the old one. Consider `BLOOM_K.rail` (request above).
+- **Line scheme** (`schemeshots.sh`): the fibres are barely visible at 760 px — check at DPR 2
+  up close; the edge darkening strength; the fold highlight.
+
 ## New render pipelines (for the warm-up table `08b1`)
 
 - `fld.road.bloom|over` — `gpuField` with `ROAD_FLD_WGSL` (27lb).
