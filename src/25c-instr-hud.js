@@ -86,7 +86,7 @@ function instrPodDraw(){
   c.textAlign="right";
   c.fillStyle=col+".70)";
   c.font="8px ui-monospace,monospace";
-  c.fillText(instrMisclose().toFixed(3),w-3,nh*.72);
+  c.fillText(decRu(instrMisclose(),3),w-3,nh*.72);
   /* лента: та же бумага, что и в кабине, только узкая полоска */
   /* бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
      на себя весь верх экрана, а поверх мира висит только нужное сейчас */

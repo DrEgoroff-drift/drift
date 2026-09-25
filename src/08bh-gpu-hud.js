@@ -22,7 +22,8 @@ function gpuHudFlush(rack){
   if(key!==GPU.hkey){
     if(GPU.uiWas){u.setTransform(1,0,0,1,0,0);u.clearRect(0,0,GPU.ui.width,GPU.ui.height);}
     const nd=GPU.ui.width/Math.max(1,W),c0=ctx;ctx=u;
-    try{for(const e of q){u.setTransform(nd,0,0,nd,0,0);u.save();try{e.fn();}finally{u.restore();}}}
+    /* сбой одного художника — строка «СБОЙ» стража кадра, остальные рисуют дальше: видеокарта тут ни при чём */
+    try{for(const e of q){u.setTransform(nd,0,0,nd,0,0);u.save();try{e.fn();}catch(err){crashSay(err,"приборы");}finally{u.restore();}}}
     finally{ctx=c0;}
     u.setTransform(nd,0,0,nd,0,0);
     GPU.uiWas=key!=="";GPU.hkey=key;

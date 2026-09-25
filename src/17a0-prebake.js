@@ -9,12 +9,15 @@
    должно, допекаем в этом кадре целиком и считаем PB_SYNC. Готовое здесь не хранится — держит
    владелец; тут живут только незаконченные. Брошенная задача (ключ сменился, устройство
    потеряно, её не звали PB_STALE кадров, их больше PB_KEEP) закрывается it.return(): finally
-   генератора освобождает недопечённое. PB_MAX — самый долгий шаг по ключу (мс), для ворот */
-const PB_MS=4,PB_CAP=64,PB_KEEP=6,PB_STALE=120,PB=new Map(),PB_MAX={};
-let PB_F=-1,PB_T=0,PB_N=0,PB_SYNC=0;
+   генератора освобождает недопечённое. PB_MAX — самый долгий шаг по ключу (мс), для ворот.
+   PB_PX — второй бюджет, видеокарты: мс JS шага выпечки — это запись команд, а сама выпечка 1024² MSAA
+   идёт на GPU; четыре таких в кадре дали на S23 кадр 67 мс при JS 3–5 мс (26.09). Кадр начинает новый
+   шаг, только пока испёк меньше PB_PX точек (GC_PX, 08ca) — крупная (от полумиллиона точек: гостиница, её свечение) одна на кадр */
+const PB_MS=4,PB_PX=1<<19,PB_CAP=64,PB_KEEP=6,PB_STALE=120,PB=new Map(),PB_MAX={};
+let PB_F=-1,PB_T=0,PB_N=0,PB_SYNC=0,PB_PX0=0;
 function prebakeDrop(key){const J=PB.get(key);if(!J)return;PB.delete(key);try{J.it.return();}catch(e){}}
 function prebake(key,make,sync){
-  if(GPU.frameNo!==PB_F){PB_F=GPU.frameNo;PB_T=0;PB_N=0;
+  if(GPU.frameNo!==PB_F){PB_F=GPU.frameNo;PB_T=0;PB_N=0;PB_PX0=GC_PX;
     for(const [k,J] of [...PB])if(PB_F-J.f>PB_STALE)prebakeDrop(k);}
   let J=PB.get(key);
   if(J&&J.dev!==GPU.dev){prebakeDrop(key);J=null;}
@@ -24,7 +27,7 @@ function prebake(key,make,sync){
     J={it:make(),dev:GPU.dev,f:PB_F};PB.set(key,J);}
   J.f=PB_F;
   if(sync)PB_SYNC++;
-  while(sync||PB_N<PB_CAP&&(PB_N===0||PB_T<PB_MS)){
+  while(sync||PB_N<PB_CAP&&(PB_N===0||PB_T<PB_MS&&GC_PX-PB_PX0<PB_PX)){
     const t0=wallMs();let r;
     try{r=J.it.next();}catch(e){PB.delete(key);throw e;}
     const dt=wallMs()-t0;PB_T+=dt;PB_N++;if(!(PB_MAX[key]>=dt))PB_MAX[key]=dt;

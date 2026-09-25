@@ -151,7 +151,9 @@ $url = "file:///" + ((Join-Path $root "tests.html") -replace "\\", "/")
 # -Accept (M443): золотые кадры снимаются заново и пишутся в docs/golden/<окно>.json —
 # после нарочной правки картинки или для окна, у которого эталона ещё нет. Гоняется
 # один набор, в одну страницу; страница кладёт снятое в <pre id="golden">.
-if ($Accept -and -not $Only) { $Only = "золотые кадры" }
+# Детектор конвейеров (91zzzzzzy4) кладёт ключи полёта в <pre id="pipekeys"> — -Accept пишет
+# из них таблицу прогрева src/08b1-gpu-pipe-keys.js.
+if ($Accept -and -not $Only) { $Only = "золотые кадры|конвейеры" }
 if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
 if ($Accept) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "accept=1" }
 if ($Files) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "files=" + [uri]::EscapeDataString($Files) }
@@ -388,7 +390,19 @@ if ($Accept) {
     "эталон записан: docs/golden/$key.json ($n сцен) — пересобрать (build.ps1), чтобы прогон его увидел"
     $got++
   }
-  if (-not $got) { "страница не отдала золотых кадров: набор «золотые кадры» не шёл или окно не то" }
+  foreach ($r in $runs) {
+    $raw = try { [System.IO.File]::ReadAllText($r.dom, [System.Text.Encoding]::UTF8) } catch { "" }
+    $pm = [regex]::Match($raw, '<pre id="pipekeys"[^>]*data-pipe="1"[^>]*>([\s\S]*?)</pre>')   # метка — чтобы не поймать текст самих наборов
+    if (-not $pm.Success) { continue }
+    $keys = @([regex]::Matches([System.Net.WebUtility]::HtmlDecode($pm.Groups[1].Value), '"([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
+    $body = "/* ══════════════ таблица ключей прогрева (08b0) — пишет детектор, руками не править ══════════════`n" +
+            "   test.ps1 -Accept берёт её из набора «конвейеры: после прогрева полёт не компилирует». */`n" +
+            "const GPU_PIPE_KEYS=[`n" + (($keys | ForEach-Object { '  "' + $_ + '"' }) -join ",`n") + "`n];`n"
+    [System.IO.File]::WriteAllText((Join-Path $root "src\08b1-gpu-pipe-keys.js"), $body, (New-Object System.Text.UTF8Encoding $false))
+    "таблица прогрева записана: src/08b1-gpu-pipe-keys.js ($(@($keys).Count) ключей) — пересобрать (build.ps1)"
+    $got++
+  }
+  if (-not $got) { "страница не отдала ни золотых кадров, ни ключей конвейеров: наборы не шли или окно не то" }
 }
 "{0} · пройдено {1} · наборов {2} из {3}{4}{5} · {6:N1} с" -f $(if ($fail) { "ПРОВАЛЕНО $fail" } else { "ВСЁ ЗЕЛЁНОЕ" }), $pass, $ran, $all, $tail, $(if ($Jobs -gt 1) { " · частей $Jobs" } else { "" }), $sw.Elapsed.TotalSeconds
 if ($stRan) { "карантин (в вердикт не идёт): наборов $stRan, провалов $stFail"; $staged | ForEach-Object { $_ } }

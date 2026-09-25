@@ -98,6 +98,44 @@ Heat haze behind the nozzle (G4b).
 5. Gate: uploads 0, submits 1 → Контроль's phone, 30 s + 5 min → candidate. Further redrawing does not hold the
    candidate.
 
+**The flight HUD pair (15/n, branch `gpu-hud` on top of a178e76, not for release — one strong variant for the
+author's verdict).** Sentence case wherever the player reads (vitals, the place name, the zoom line, the ticker
+label, map/menu, the rail's buttons, the pad words, the ability hint, the chips); hierarchy by size and colour.
+One warm accent — the next action (the ДЕЙСТВИЕ pad and its hint); ЦЕЛЬ, the system name, Фото, the rail and
+the star chip go cold. Fuel and hull lead: a 20 px number (18 on the phone) with a small «/100», and a short
+bar that warms as it empties (cold above 60 %, amber at 20 %, the alarm below); energy and hold are a quieter
+row. The right edge is two 48×48 tiles, icon over word. Plates are one dark glass without a gradient and a
+hairline edge (`--plate`, `--hair`). The ability hint is a caption under the pad — lifting the console by its
+line was tried first and squeezed the band between the console and the rail below one chip's height. Chip
+distance keeps two significant digits in motion («1,4к», «390»), exact within 400 or at rest, so a chip
+re-rasters once per hundred units instead of every frame. Fixed on the way: the right-edge chip stack aligned
+to the first chip's left edge and ran off the screen; chips now dodge the rail too. The code is one CSS block
+at the end of `style.css` plus span-wrapped words (textContent unchanged, so the detector laws and the tests
+still read «98/100», «ЦЕЛЬ»); `#msg` and `#prompt` stay in caps (their strings carry names). New guard:
+«пульт: подсказка системы, ФОТО, лента и ЦЕЛЬ не налезают» in any window, its mutant red.
+
+*Контроль's three fixes (25.09).* (1) No HUD text line closer than 12 px to the window edge plus
+`env(safe-area-inset-*)`: the header moves from 8–10 px to 12 px (+ insets on all three sides), chip plates keep
+a 12 px inset, and the ability hint becomes a second line inside the ДЕЙСТВИЕ pad — under the pad it sat 4.5 px
+from the bottom at 2:1, because an idle pad (`.off`, opacity .38) dimmed it too. An idle pad with a ready system
+is no longer dimmed or deaf: `.off` also set `pointer-events:none`, so on a phone the long press never reached
+the pad and the boost in open space was keyboard-only (V); now only the word «Действие» dims. (2) Names keep
+their table case: the pad, the ticker band and ЦЕЛЬ are cased in JS (`padCase`, `27y-hud-words.js`) — sentence
+case, except words recognised as names of what is near (the system, its station, planets and moons, the six
+powers); declension by stem, so «К ГЛАВТРАССЕ» stays caps and «ДО КОММУНЫ» reads «До Коммуны». The CSS
+lowercase trick is gone. (3) One decimal comma (`decRu`): the zoom line, the misclose on the instrument pod and
+in the table, the map's jump radius, the speed in the docking and landing prompts. Guard «приборы: строки не
+ближе 12 px к кромке, имена как в таблицах, одна запятая» (any window; 390×844 under -Mobile): text-node line
+rects of the HUD roots, the hint and chip plates against the edge, the hint's contrast ≥ 4.5:1 on the pad plate
+over a light sky, the idle pad takes a touch, pad names for four systems and all powers, chip and place names,
+no «1.40». Six mutants red: hint under the pad, hint dimmed, pad deaf, header at 6 px, lowercase names, zoom
+with a dot. The two old -Mobile -Full reds are closed too: «телефон: стик…» was an isolation leak — `CHIP_POS`
+(where each compass chip is drawn, eased towards its slot) outlived `resetWorld`, so a chip started from the
+previous suite's edge (x=4) and one `drawSystem` could not move it off the stick; the harness clears it now.
+«обещание: молчаливых тычков нет» caught the open ОПИСЬ tab on the phone, a tap that re-rendered the same page;
+the open tab takes no pointer now (`.op-tabs button.on`) — `disabled` was tried first and the «порог» net
+rightly called it a grey button without a reason.
+
 **After the candidate — redraw passes.** Each: a 760 pair and one line of what got better.
 
 *Ships.* On the phone at 58 px a ship reads as a body in real light; up close (card, hangar) as a machine made of
@@ -570,6 +608,43 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
 - **The runner is red on a killed shard:** a shard killed at the ceiling, or one whose report has no
   finished header, counts as a failure named with its last suite; `-ShardSec` narrows the ceiling (900 s)
   to test this path. Forced at 15 s: «ПРОВАЛЕНО 2», exit 1.
+- **Pipeline warm-up (P1 from S23, in progress).** Step 1 done: every lazy pipeline goes through one funnel,
+  `gpuPipeline(key, recipe)` in 08b0, and shader modules are cached by text (`gpuShader`). Keys: `pipe:name|blend`,
+  `gc:md|op`, `gc.mip`, `gc.blur`, `gnb.gen|16f`, `gnb.noise`, `gps`, `ovl`; lazy creations go to `GPU_PIPES.lazy`.
+  Step 2 done: every key has a recipe (`gpuPipeRecipe`: `gc:` → `gcPipeDesc`, `pipe:` → `GPU_PIPE_SRC[name]` +
+  `gpuPipeDesc`, single keys → their module's `*Desc`); one descriptor function serves the lazy path and the
+  warm-up. `gpuInit` starts `gpuPipesWarm(GPU_PIPE_KEYS)` (async, the frame does not wait); the start buttons
+  wait for it up to 2.5 s (`gpuAfterWarm`), the test boot polls `GPU_PIPES.done`. A `pipe:` key warmed from
+  a different shader text is a miss, not a swap.
+  Step 3 done: the detector «конвейеры: после прогрева полёт не компилирует» (`tests/91zzzzzzy4-pipes.js`),
+  pinned third after the boot suites, flies orbits, the six gate2d scenes (dock lane, planet, hotel, chips,
+  station, fleet gesture), the billboard and a pirate fight, 60 frames each, and wants zero lazy keys and zero
+  raw `createRenderPipeline`/`createComputePipeline`/`createShaderModule` (named by caller), no dead table keys.
+  The funnel remembers every asked key (`GPU_PIPES.used`); the suite prints them in `<pre id="pipekeys"
+  data-pipe>` and `test.ps1 -Accept` (default `-Only "золотые кадры|конвейеры"`) writes `08b1`: 36 keys, warmed
+  in ~1.7 s on the desktop card. Test boot: compilation runs on real time, so the pipe wait polls 1 ms of
+  virtual time per ~20 ms of busy work, ceiling 600 polls. Before the table: 33 lazy keys in flight; after: 0.
+  Step 4 (а4) done — the cold S23 on 49f75cf (26.09) still had one 67 ms frame, at the hotel approach: six
+  one-shot 1024² MSAA bake sets (~120 MB with zeroing) in three frames, GPU latency 34→106 ms at JS 3–5 ms.
+  The pool now keeps a `bake` 1024² set warm from `gpuInit` (behind #intro; warm total ~54 MB, cap 80 MB,
+  one-shot only above half the cap) and clears every warmed set once there, so the first touch is not in
+  flight. `prebake` has a second, GPU budget: `PB_PX` (2^19 MSAA points, `GC_PX` counted in `gpuBakeRedo`) —
+  a frame starts a new step only below it, so one hotel-sized bake per frame. The detector gained the edge
+  wall scene, the billboard at ×1.5 (neon core → `gc:msk|destination-out`) and «the real first flight»
+  (spawn + 1800 frames of Контроль's gate.py route: thrust 1 s on/off, left 0.5 s every 4 s — caught
+  `fld.hgflame|add` too); table 39 keys.
+- **Device loss and frame failures (review 25.09, 5a + findings 8, 11) done.** `08b2-gpu-loss.js` holds
+  `gpuNone`, `gpuDrop` and the new `gpuFail`: only a lost device or a `DOMException` from the API drops the
+  device; a JS throw in `gpuWorld`/`gpuPresent` abandons the frame (passes, encoder, `ctx` back to #c) and
+  rethrows to the frame guard («СБОЙ · …»). `gpuHudFlush` catches per painter (`crashSay(err,"приборы")`).
+  `gpuDrop` now `destroy()`s the old device. `gpuField` rebakes any bake from a dead device (module caches:
+  hull, fleet, pirates, barge, lit sprites). Finding 8: after frames were shown, `gpuNone` says «Видеокарта
+  перестала отвечать» instead of «this browser lacks WebGPU». Finding 11: the warm gate is a promise armed at
+  load (`GPU_PIPES.gate`, `done:false`), opened by the warm-up of the current device or by `gpuNone`; a
+  dropped device's warm-up opens nothing. Suite «видеокарта: сбой кадра не роняет устройство»; the real loss
+  on the stand (shot.py: 30 frames, `gpuDrop(…,true)`, wall clock): new device, 39 keys warm, 0 crashes,
+  0 GPU errors, the world draws.
+  Next: 5b (LRU for art caches), 5c (scout searchlight), 5e (reversed smoothstep edges).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
@@ -581,6 +656,18 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      - DECISIONS «no 2D».
   Later: Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake.
 
+- **HUD pair, Контроль's three fixes (25.09, `gpu-hud` on eb0e4f3).** 12 px from every edge, the hint inside
+  the pad (≥ 4.5:1, the idle pad takes the long press), names in table case on pads (`27y-hud-words.js`), one
+  decimal comma; six mutants red. The two old -Mobile reds fixed (CHIP_POS leak in `resetWorld`, the open ОПИСЬ
+  tab). Five pairs (km/ney at 390 and 760, the station at 390 with ДЕЙСТВИЕ lit) in the session's scratchpad,
+  `pair_hud_*.png`. `gpu` holds the gpu2 allies merge (044a0f7). Next (Контроль): merge gpu2-fleetlit f9adaae
+  into `gpu`, then gpu3 when GPU-3 hands its tail over. Open question: world labels of planets stay in caps
+  («ЦИЦИИН») while the chip says «Нейэль IV».
+- **The flight HUD pair (25.09, branch `gpu-hud` on a178e76, not for release).** One variant, brief under §L.S;
+  pairs «было | стало» at 390×844 DPR 2 and 760 DPR 1, flight by the Commune and calm NEYEL, in the session's
+  scratchpad (`pair_hud_*.png`). -Full green; -Mobile keeps only the two failures a178e76 has too (the stick
+  vs compass chips, «обещание» on the desk). Waiting for the author's verdict; next: merge gpu2 and gpu3
+  into `gpu` (Контроль, 25.09).
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
   back 0); the instrument pod 25c redraws only on change; item 3 done (body V>.6 +12/+13 % over 2D — the

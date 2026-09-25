@@ -89,7 +89,7 @@ function resize(){
    наблюдатель успевал его сбросить, и штурвал переставал слушать курсор.
    Кэш, который сбрасывается асинхронным наблюдателем, врёт не только в
    тестах — они просто поймали это первыми, потому что там часы заморожены. */
-let CVS_RECT=null,PADS_RECT=null,HUD_RECT=null,LAYOUT_DIRTY=true;
+let CVS_RECT=null,PADS_RECT=null,RAIL_RECT=null,HUD_RECT=null,LAYOUT_DIRTY=true;
 /* Показанные приборами числа (0.6, значения кладёт 27z): строка не склеивается,
    пока число не поменялось. Стоит здесь, а не в 27z, и это не вкус: `resize()`
    зовётся ниже в этом же файле и через rectsDirty() трогает эту таблицу — а
@@ -100,7 +100,7 @@ let CVS_RECT=null,PADS_RECT=null,HUD_RECT=null,LAYOUT_DIRTY=true;
 const HUD_NUM={};
 function hudNumDirty(){for(const k in HUD_NUM)delete HUD_NUM[k];}
 function rectsDirty(){
-  CVS_RECT=null;PADS_RECT=null;HUD_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;
+  CVS_RECT=null;PADS_RECT=null;RAIL_RECT=null;HUD_RECT=null;PROMPT_RECT=null;LAYOUT_DIRTY=true;
   /* узлы приборов могли смениться вместе с вёрсткой — числа переписать заново (0.6) */
   hudNumDirty();   /* узлы приборов могли смениться вместе с вёрсткой (0.6) */
 }
@@ -137,6 +137,14 @@ function padsRect(){
     PADS_RECT=el&&el.getBoundingClientRect?el.getBoundingClientRect():false;
   }
   return PADS_RECT||null;
+}
+/* правый борт (карта, меню, кнопки по поводу): фишки у правой кромки обходят и его */
+function railRect(){
+  if(RAIL_RECT===null){
+    const el=document.querySelector(".rail");
+    RAIL_RECT=el&&el.getBoundingClientRect?el.getBoundingClientRect():false;
+  }
+  return RAIL_RECT||null;
 }
 /* Не кэшируется: querySelector по классу не пересчитывает раскладку и не
    стоит кадра (см. разбор выше). Настоящих чтений вёрстки в src/ нет, кроме

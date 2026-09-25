@@ -6,6 +6,64 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.462.0 - the WebGPU line meets the phone speed-up
+
+- **0.461.0 merged into the WebGPU line** (`gpu`): orbits as a band and fields reading `fu.v[k]` in place
+  come together with the pipeline funnel (`08b0`) — every lazily created pipeline goes through
+  `gpuPipeline(key, recipe)`, and `gpuInit` warms the key table behind the title with
+  `createRenderPipelineAsync`; the start buttons wait for it at most 2.5 s. The station/pirate light's
+  unsharp mask (flag 2/4 in `17c`) keeps its 25.09 form, rewritten to `fu.v[3]`.
+
+## 0.461.0 - `under` on the phone: 3.3 → 2.2 ms, the picture the same
+
+- **Orbits as a band along the ellipse** (`17g`): each orbit was a bounding quad with `atan2` and the ellipse
+  distance per pixel — 1.2 ms on the S23 for lines a few pixels wide. Now the vertex shader lays a band of
+  160 segments along the ellipse (width = line + glow + 4 px) and the fragment does the same maths only where
+  the line is: 1.2 → 0.02 ms, pair `system` max|d| 0.
+- **No copy of the constants array in the field shaders** (`17g`, `16ga`, `16gb`, `17`, `17c`, `17c2`, `19ca`):
+  `let V=fu.v;` materialised the whole `array<vec4f,15>` uniform (60 floats) per fragment, and on Adreno that
+  costs ~1 ms of a full-screen field — the star's field with `star()` returning 0 still took 1.27 ms; without
+  the copy 0.32. Every field now reads `fu.v[k]` in place. S23, DPR 1.5, `?g11=deep`: star 2.25 → 1.57 ms,
+  nebComp 1.29 → 1.17, world 0.68 → 0.62, frame 9.1 → 8.55 ms; pairs `system`/`surface`/`night`
+  max|d| 0/1/2 of 255.
+- **The star's frame constants on the CPU** (`17g`, `gsyStar` → `fu.v[9..11]`): breath, streamer phases,
+  corona rotation, flare strength and cycle, ray lengths — no per-pixel `sin`/`fract` for values that do not
+  vary across the frame; `pow(x,2.)` → `x*x`; the flare block skipped while it is dark. Look-preserving
+  (pair max|d| 2); on its own within the phone's noise (2.34 → 2.25 ms), kept as hygiene.
+- **The probe splits `under`** (`17g`, `28z`): `orbits`, `belt`, `star` are separate segments in `?g11=deep`;
+  `GSY.v = 1..5` strips the star's blocks one by one (corona → prominences → flare/halo/rays → photosphere →
+  all) for attribution on a device. Measured: corona ≈0.65 ms, flare/halo/rays ≈0.22, photosphere ≈0.14.
+- **Tried and reverted**: the corona's noise on the nebula's baked tile — 2.41 → 2.34 ms, inside the noise,
+  and it changed the noise pattern; the cost was never the hash.
+
+## 0.460.0 - the ladder's sum in one pass; the phone measured
+
+- **The bloom's upper levels summed in one pass** (`08b`): 0.459.0 made the final read five mip levels at full
+  resolution, and the S23 answered with +0.34 ms on the final, while the ten tiny ladder passes it had replaced
+  had cost 0.12 ms together — a pass on Adreno 7xx is cheap, full-frame taps are not. Now one pass at ⅛
+  resolution sums levels 1..n (`fsMipUp1` → `bloomU`, 0.02 ms) and the final reads two taps. Post passes a
+  frame: 12 → 8 (laptop) / 7 (phone); the frame on the S23 at DPR 1.5: 9.8 → 9.6 ms (`?g11=deep`, A/B/A);
+  the pair unchanged (max|d| 3 of 255, laptop and S23 emulation).
+- **`shader-f16` measured and left off** (research P2): with the feature requested every pass on the S23 ran
+  ~6 % slower (nebula 2.43 → 2.63 ms, `under` 3.30 → 3.50) and the ladder itself gained nothing — it is bound
+  by texture taps, not ALU. The ladder's functions stay written over `H`/`H3` aliases that compile to f32;
+  `?f16=1` requests the feature for a re-measure on another device.
+- **The probe names the video card** (`28z`, `docs/shot.py`): `?g11=deep` and `shot.py` report `adapter.info`
+  (`qualcomm/adreno-7xx`, `amd/gcn-5`) with the f16 and transient flags; the 3D pass's depth is a transient
+  attachment where Chrome knows the flag (it never leaves the tile).
+- **Measuring rule learned**: a pair is only a pair when the two frames are shot one after the other and at
+  the same geometry — a second headless Chrome beside the first moves the stepped clock, and 412×892 is not
+  390×844. The phone's per-pass numbers drift ±5 % between runs; A/B/A or nothing.
+
+## 0.459.0 - the bloom ladder in six passes
+
+- **Bloom without the up-passes** (`08b`, research P1): the ladder is one rgba16f texture with mip levels
+  (¼ res down to 6 texels: five levels on a phone, six on a laptop); each level is a 5-tap Kawase of the one
+  above, and the final pass sums the levels itself with the old tent weights and the old warmth per level.
+  The five `fsMipUp` passes and the dead `blurH`/`blurV` pipelines are gone: 12 post passes a frame → 7
+  (laptop) / 6 (phone). The pair on `system` is unchanged (max|d| 2 of 255); with bloom switched off the same
+  frame differs by 70 on a fifth of the pixels, so the pair does see the bloom.
+
 ## 0.458.0 - the whole world on the video card
 
 - **Everything in flight on the GPU** (`08b`, `08bh`, `16ga`, `17l`, `03e`): hulls, the fleet, the lane,

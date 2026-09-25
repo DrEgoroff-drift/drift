@@ -363,16 +363,16 @@ const GNB_FINE=GNB_NOISE+GNB_TILE+`
 fn fineT(p:vec2f,T0:f32)->f32{
   /* чистое небо: при T0≥.97 гребни не весят ничего, mix(T0,Ts,.2)·1.12 ≥ 1.09 — ровно 1 после clamp */
   if(T0>=.97){return 1.;}
-  let V=fu.v;let H=fu.res.w;
-  let qf=((p-fu.res.zw*.5)+V[0].xy*.09)/H*7.+V[0].w;
+  let H=fu.res.w;
+  let qf=((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*7.+fu.v[0].w;
   let r=1.-abs(2.*fbt(qf*1.9+vec2f(gnt(qf*.7),gnt(qf*.7+3.3))*1.6,2)-1.);
   /* края полос чуть резче бикубики — но мягко: резкий край пыли автор видит лужей */
   let Ts=clamp((T0-.5)*1.7+.5,0.,1.);
   return clamp(mix(T0,Ts,.2)*mix(1.12,.86,r*r*smoothstep(.97,.6,T0)),0.,1.);}
 fn fineE(p:vec2f)->f32{
-  let V=fu.v;let H=fu.res.w;
-  let qf=((p-fu.res.zw*.5)+V[0].xy*.09)/H*9.+V[0].w+vec2f(4.,9.);
-  let wv=vec2f(gnt(qf*.45+V[0].z),gnt(qf*.45+vec2f(5.,1.)))*2.2;
+  let H=fu.res.w;
+  let qf=((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*9.+fu.v[0].w+vec2f(4.,9.);
+  let wv=vec2f(gnt(qf*.45+fu.v[0].z),gnt(qf*.45+vec2f(5.,1.)))*2.2;
   let r=1.-abs(2.*fbt(qf+wv,2)-1.);
   return .5+.95*r*r;}`;
 /* поглощение — в шейдере звезды (P1 11/n): полноэкранный проход ABS умножал цель сцены, а под
@@ -396,7 +396,7 @@ struct FU{res:vec4f,v:array<vec4f,15>};
   let le=1.-exp(-max(g.r,max(g.g,g.b))*6.)+fu.v[1].w*.6;
   return vec4f(i.col.rgb*al*(pow(vec3f(T),vec3f(.72,1.,1.42))*(1.+2.6*le)),al);}`;
 function gnbStars(pass,ub,sb){
-  const P=gpuPipe("gnb.stars",GPU_WGSL_COMMON+GSP_WGSL_U.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_STARS+GNB_STAR_ABS);
+  const P=gpuPipe("gnb.stars",GPU_PIPE_SRC["gnb.stars"]()[0]);
   const f=GNB.SU||(GNB.SU=new Float32Array(64));
   f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;f.set(GNB.C.subarray(0,60),4);
   const nb=gpuBuf("gnb.su",256,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST);GPU.dev.queue.writeBuffer(nb,0,f);
@@ -407,7 +407,7 @@ function gnbStars(pass,ub,sb){
    V[3]: цвет теней · V[4..10]: планеты x,y,r (CSS px) — их тени */
 const GNB_EMI=GNB_FINE+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
-  let V=fu.v;let H=fu.res.w;
+  let H=fu.res.w;
   /* одна бикубика на пиксель: цвет, туман и цвет космоса читают её (было три — 12 выборок) */
   let g0=texCubic(t0,smp,uv);
   var c=max(g0.rgb,vec3f(0.));
@@ -423,15 +423,15 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let lx=textureSampleLevel(t0,smp,uv+vec2f(ts.x*1.5,0.),0.).rgb-textureSampleLevel(t0,smp,uv-vec2f(ts.x*1.5,0.),0.).rgb;
   let ly=textureSampleLevel(t0,smp,uv+vec2f(0.,ts.y*1.5),0.).rgb-textureSampleLevel(t0,smp,uv-vec2f(0.,ts.y*1.5),0.).rgb;
   let gr=vec2f(max(lx.r,max(lx.g,lx.b)),max(ly.r,max(ly.g,ly.b)));
-  let dir=normalize(p-V[1].xy+vec2f(1e-3));
-  let sd=max(length(p-V[1].xy)/H-V[1].z,0.);let lit=V[1].w/(1.+sq(sd/.2));
+  let dir=normalize(p-fu.v[1].xy+vec2f(1e-3));
+  let sd=max(length(p-fu.v[1].xy)/H-fu.v[1].z,0.);let lit=fu.v[1].w/(1.+sq(sd/.2));
   let fr=max(dot(gr,dir),0.)*lit;
   /* тени планет (L1.6): планета между звездой и газом режет свет — за ней по газу
      тёмный клин от звезды, край мягкий и расходится с расстоянием (у звезды есть
      размер), вдали клин тает — газ освещает и рассеянный свет */
   var shd=0.;var ray=0.;
-  let toS=V[1].xy-p;let Ls=max(length(toS),1.);let ds=toS/Ls;
-  for(var k=0;k<7;k++){let P=V[4+k];if(P.z<=0.){break;}
+  let toS=fu.v[1].xy-p;let Ls=max(length(toS),1.);let ds=toS/Ls;
+  for(var k=0;k<7;k++){let P=fu.v[4+k];if(P.z<=0.){break;}
     let q=P.xy-p;let tq=dot(q,ds);
     /* ни одного порога: клин начинается за диском и кончается у звезды склонами;
        полутень не уже ~40 px на 760 кадра (55 CSS px на полуширину) и расходится вдаль.
@@ -450,17 +450,17 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       let e=(dq-Rz-pen)/(pen+P.z*.6);ray=max(ray,exp(-e*e)*(1.-sh)*fd);}}
   c=c*(1.-shd)*(1.+.3*ray);
   /* тонкая пыль всюду: свет звезды в ней — лучи, тени планет — тёмные клинья */
-  let dl=max(length(p-V[1].xy)/H-V[1].z,0.);
+  let dl=max(length(p-fu.v[1].xy)/H-fu.v[1].z,0.);
   /* освещённая звездой пыль по всей системе, и в пустотах: ровный тёплый туман (L ~10–15
      на кадре), у самой звезды его нет — там царит её корона; клинья режут и его */
-  let wn=lwin(lfr(p,V[14],V[13].x),V[11],V[12])*mix(1.,.3+.7*smoothstep(.02,.22,sd),V[1].w);
+  let wn=lwin(lfr(p,fu.v[14],fu.v[13].x),fu.v[11],fu.v[12])*mix(1.,.3+.7*smoothstep(.02,.22,sd),fu.v[1].w);
   /* густая пыль закрывает и туман за собой: тело пыли темнее пустоты */
-  let fog=V[1].w*(.1+.05/(1.+sq(dl/.4)))*smoothstep(.12,.3,dl)*(1.-body)*(1.-.92*wn)
+  let fog=fu.v[1].w*(.1+.05/(1.+sq(dl/.4)))*smoothstep(.12,.3,dl)*(1.-body)*(1.-.92*wn)
     *mix(.55,1.,clamp(1.-g0.a,0.,1.));
   /* где есть хоть тусклый газ, туман берёт его тон: тёплый туман на бирюзе был серым */
   /* в пустоте туман — цвет звезды, но не бледнее насыщенности .5: бледно-тёплое на
      тёмном читалось серой дымкой */
-  let smx=max(V[2].r,max(V[2].g,V[2].b));let sn=mix(V[2].rgb,vec3f(1.,.92,.8)*smx,.35)/smx;
+  let smx=max(fu.v[2].r,max(fu.v[2].g,fu.v[2].b));let sn=mix(fu.v[2].rgb,vec3f(1.,.92,.8)*smx,.35)/smx;
   let sk=.5/max(1.-min(sn.r,min(sn.g,sn.b)),.08);let fs=clamp(1.-(1.-sn)*max(sk,1.),vec3f(0.),vec3f(1.))*smx;
   let fc=mix(fs,gh0*smx,smoothstep(.0003,.004,l0));
   let hue=c/max(l0,1e-3);
@@ -468,11 +468,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   if(fw>0.){c=c+mix(hue,vec3f(1.),.3)*fw*fineE(p*1.7)*.55;}
   /* тени — третьим цветом: тёмный газ уходит в тон теней, светлый держит свой */
   let lum=max(c.r,max(c.g,c.b));
-  let cn=V[3].rgb/max(max(V[3].r,max(V[3].g,V[3].b)),1e-3);
+  let cn=fu.v[3].rgb/max(max(fu.v[3].r,max(fu.v[3].g,fu.v[3].b)),1e-3);
   /* только в глубокой тени и коротким переходом: широкая смесь тона с тенью по кругу
      давала серо-оливковое по всему тусклому газу. Янтарь со сливой смешиваются через
-     красное, не через серое, — у гиганта переход широкий (V[2].w) */
-  c=mix(c,cn*lum,(1.-smoothstep(V[2].w*.55,V[2].w,lum))*.9);
+     красное, не через серое, — у гиганта переход широкий (fu.v[2].w) */
+  c=mix(c,cn*lum,(1.-smoothstep(fu.v[2].w*.55,fu.v[2].w,lum))*.9);
   /* туман — после тона теней: тёплый свет поверх индиго давал серое */
   c=c+fc*fog*(1.-shd)*(1.+.3*ray);
   let m=max(lum,1e-4);let mm=max(max(c.r,c.g),max(c.b,1e-4));
@@ -490,11 +490,9 @@ function gnbTarget(){
   GNB.tex=GPU.dev.createTexture({size:[w,h],format:"rgba16float",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});
   GNB.view=GNB.tex.createView();GNB.dev=GPU.dev;GNB.w=w;GNB.h=h;GNB.last=-99;
 }
-function gnbPipe(){
-  const k="gnb.gen|16f";if(GPU.lay[k])return GPU.lay[k];
-  const mod=GPU.dev.createShaderModule({code:GNB_GEN});
-  return GPU.lay[k]=GPU.dev.createRenderPipeline({layout:"auto",vertex:{module:mod,entryPoint:"vs"},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"}]},primitive:{topology:"triangle-list"}});
+function gnbPipe(){const k="gnb.gen|16f";return GPU.lay[k]||(GPU.lay[k]=gpuPipeline(k,gnbGenDesc));}
+function gnbGenDesc(){const mod=gpuShader(GNB_GEN);return {layout:"auto",vertex:{module:mod,entryPoint:"vs"},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"}]},primitive:{topology:"triangle-list"}};
 }
 /* палитра туманности системы — своим потоком случайности (0x4E42), сид мира не
    трогает. Два тона по кругу — по областям массы, тень — третьим; у гиганта —

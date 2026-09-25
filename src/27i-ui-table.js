@@ -363,7 +363,7 @@ function renderStrips(box){
     for(let x=0;x<=128;x+=4){const y=40+Math.sin(x/18+r()*.4)*10*(s.mis*6+.4)+(r()-.5)*4;x?c.lineTo(x,y):c.moveTo(x,y);}
     c.stroke();
     const nm=document.createElement("div");nm.className="nm";
-    nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+(+s.mis).toFixed(3)+" · "+s.span+" делений · "+
+    nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+decRu(s.mis,3)+" · "+s.span+" делений · "+
       (typeof stripValue==="function"?stripValue(s)+" кр на стойке":"")+"</s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   });

@@ -134,9 +134,9 @@ fn gf(p0:vec2f)->f32{var p=p0;var s=0.;var a=.5;
   return c*i.k.x;}`;
 
 function gspPipes(){
-  const H=GPU_WGSL_COMMON+GSP_WGSL_U;
-  return {stars:gpuPipe("gsp.stars",H+GSP_STARS),dust:gpuPipe("gsp.dust",H+GSP_DUST),
-          quad:gpuPipe("gsp.quad",H.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_QUAD)};
+  const S=GPU_PIPE_SRC;
+  return {stars:gpuPipe("gsp.stars",S["gsp.stars"]()[0]),dust:gpuPipe("gsp.dust",S["gsp.dust"]()[0]),
+          quad:gpuPipe("gsp.quad",S["gsp.quad"]()[0])};
 }
 /* таблица звёзд — та же, что у 2D (BG_GROUP по цветам, затем BG_BRIGHT), один раз */
 function gspStarBuf(){
