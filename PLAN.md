@@ -37,6 +37,9 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     before the release `-Full`: «инструменты: руки и глаза отвечают тем, что обещают» (91zzzzzzz-hands, canvas
     calls and texts of the system frame) fails in the full run and passes alone, on gpu and on HEAD alike —
     an order leak between suites; find what the suite before it leaves behind;
+    after the phone candidate — the final glow's source is HDR above the knee plus explicit emission only: paint
+    (the `c*c` of fsDown) leaves the first level entirely; the ship was the first case (ee46b87, half inside
+    `u.hl`), stations and the hotel's facade next, each in a pair (rule 16/n);
     lights of fleet ships and lane buoys are explicit emission (rule 16/n): the dot painted, a narrow added halo
     at the thing (2–3 of its radii; `FLEET_HALO`, `LANE_HALO`) — judged with the flame in the same pair;
   - pirates, missiles and combat effects;
