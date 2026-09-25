@@ -45,6 +45,17 @@ Census gap 4 (`roadHullHalf` swaps the global `ctx`): kept, but the measurement 
    scene pass and took over the bottom fade (`over`: background × m + light), `ROAD_GLOW` .30 →
    .18. `roadRgb(h,s,l)` is the one hsl helper left.
 3. (notes only) this file brought up to date with commit 2.
+4. **The rail ride's light on the GPU.** New `18ga-rail-gpu.js`; `drawRail` (18g) order:
+   the background is a rect in the scene pass (the 2D `#03040a` fill on `#c` would have hidden
+   the map ship's GPU galaxy once G10 lands) → `drawGalaxy`/`drawGalaxyStars`/`drawRailMap`
+   (map zone, untouched) → `gpuOver` #1: the own line as light (`railLineGpu`: an additive glow
+   that is denser near the car and carries a travelling current pulse, then casing, colour and
+   centre line with analytic AA; the bus's 10/7 dash as capsules) → 2D stops, names, the car →
+   `gpuOver` #2: `railFx` field (`rail.fx`, `add`) — headlight cone with soft edges and falloff,
+   the hyper flash (small white core, cyan halo, beam), transit streaks around the car while it
+   runs (lanes along the heading, flowing back, strength from the ease-in-out velocity) → 2D
+   header. The old 2D headlight wedge and the ride's `railFlash` call are gone; `railFlash`
+   itself stays 2D for `drawRailArrive`, which is drawn in `G.mode==="system"` (flight zone).
 
 ## Pairs (scratchpad, not in git)
 
@@ -65,15 +76,25 @@ with a beat, 90 extra stepped frames — `shots.sh` there.
   Suite logic checked on the GPU frame (`--eval evalbloom.js`): bottom glow lit 3178, colour
   families r/b, hull pixels 960, 0 GPU errors.
 
+- commit 4: `before-rail.png | a3c-rail.png` (ring line), `before-railbus.png |
+  a3c-railbus.png` (the «маршрутка», dashed) — the own line is a lit rail with a glow that
+  thickens near the car instead of a flat stroke; streaks around the car show the transit (the
+  old frame showed motion only in the flash); the flash has a core and a cyan halo over the car.
+  `a3-*` and `a3b-*` are the tries before (streaks as rain over the whole frame, then a white
+  flash that swallowed the car). Two `gpuOver` a frame in rail mode.
+
 ## New render pipelines (for the warm-up table `08b1`)
 
 - `fld.road.bloom|over` — `gpuField` with `ROAD_FLD_WGSL` (27lb).
 - `fld.road.sky|over` — `gpuField` with `ROAD_SKY_WGSL` (27la).
+- `fld.rail.fx|add` — `gpuField` with `RAIL_FX_WGSL` (18ga).
 - (`kit.shp|add`, `kit.shp|over` — already in the kit.)
 
 ## Requests outside the zone
 
-- none yet.
+- `src/19c-light.js` (frozen, PLAN G5): `BLOOM_K` has no `rail` entry, so the ride gets no frame
+  bloom (`gpuWorld(0,…)` in 28-loop). Proposed: `rail:.22` — the flash and the lit line would
+  get a real halo. Not needed for correctness.
 
 ## Open problems
 
