@@ -39,11 +39,18 @@ five mips itself with the same tent weights and the same per-level warmth (five 
 render passes). The ladder is one texture with mip levels; no level narrower than 6 texels (the phone's ¼-res
 base ~146×316 gives 5 levels, the laptop 6 — the look needs the same count, texel size in CSS px is alike).
 `blurH`/`blurV`/`sigma` deleted. Result: 12 passes → 6 or 7, the picture the same up to the chained blur
-(check in the pair). **Done 0.459.0**: pair `system` max|d| 2 (laptop) / 5 (S23 emulation), 0.00 % > 8;
-bloom off for the same frame gives max|d| 70 on 22 % of pixels, so the pair does measure the bloom.
+(check in the pair). **Done 0.459.0–0.460.0**: pair `system` max|d| 3, 0.00 % > 8 (laptop and S23 emulation);
+bloom off for the same frame gives max|d| 70 on 22 % of pixels, so the pair does measure the bloom. **But the
+premise was wrong on the S23**: the ten tiny ladder passes cost 0.12 ms together (a pass is ~10 µs there),
+and the final reading five levels at full resolution cost +0.34 ms; 0.460.0 sums the upper levels in one pass
+at ⅛ resolution (0.02 ms) and the final reads two taps — frame 9.8 → 9.6 ms, within the run-to-run noise.
+Lesson: on this GPU count taps at full resolution, not passes.
 A further step, only if the pair asks for it: `fsDown` merged into level 1 (the knee at ¼ res straight from scene).
 
-**P2. `shader-f16` for the post chain and the nebula.** Request the feature when the adapter has it, `enable f16;`
+**P2. `shader-f16` for the post chain and the nebula.** **Measured 0.460.0, left off**: requesting the feature
+made every pass on the S23 ~6 % slower (nebula 2.43 → 2.63 ms, `under` 3.30 → 3.50, A/B on the same build with the feature switched off by the URL,
+i.e. the same shaders), and the ladder in f16 gained nothing (texture-bound). The code keeps `H`/`H3` aliases and `?f16=1`
+for a re-measure elsewhere. The original idea: request the feature when the adapter has it, `enable f16;`
 in the WGSL of the ladder, final and the nebula field; positions and uv stay f32. On Adreno that is ~2× ALU
 throughput and half the power for those passes (Qualcomm). Risk: banding in the HDR ladder — bloom in half floats
 is the industry default (the render targets are rgba16f already). Cost: an hour; measure with `prof()`.

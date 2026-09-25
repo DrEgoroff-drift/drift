@@ -50,7 +50,14 @@ async function gpuInit(){
     if(!ad){gpuNone("адаптера нет");return;}
     /* метки времени проходов — для пробы ?g11=deep (28z gpuTs); без пробы не пишутся */
     const tsf=ad.features.has("timestamp-query")?["timestamp-query"]:[];
-    const dev=await ad.requestDevice({requiredFeatures:tsf});GPU.tsOk=tsf.length>0;
+    /* половинная точность (P2 25.09): лестница свечения и первый проход написаны над
+       псевдонимами H/H3/H4 (перед шейдером) и могут собираться в f16. Замер на S23
+       (Adreno 7xx, 0.460.0): один запрос фичи замедлил ВСЕ проходы на ~6 % (туманность
+       2.43→2.63 мс, under 3.30→3.50), лестнице не дал ничего — она упирается в выборки.
+       Поэтому по умолчанию f32; ?f16=1 запрашивает фичу для замера на другом устройстве */
+    GPU.f16=ad.features.has("shader-f16")&&location.search.indexOf("f16=1")>=0;if(GPU.f16)tsf.push("shader-f16");
+    const dev=await ad.requestDevice({requiredFeatures:tsf});GPU.tsOk=tsf.indexOf("timestamp-query")>=0;
+    try{const inf=ad.info||{};GPU.arch=[inf.vendor,inf.architecture,inf.device].filter(Boolean).join("/");}catch(_){GPU.arch="";}
     GPU.dev=dev;GPU.lost=false;
     dev.lost.then(i=>{if(GPU.dev===dev&&!(i&&i.reason==="destroyed"))gpuDrop("устройство потеряно: "+((i&&i.message)||""),true);});
     /* ошибка проверки — наш промах в шейдере или привязке: в журнал сбоев (не
@@ -96,6 +103,7 @@ struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,
 @group(0) @binding(6) var tUi:texture_2d<f32>;
 @group(0) @binding(7) var tNoise:texture_2d<f32>;
 @group(0) @binding(8) var tEmit:texture_2d<f32>;
+@group(0) @binding(9) var tBloomU:texture_2d<f32>;
 struct V{@builtin(position) p:vec4f,@location(0) uv:vec2f};
 @vertex fn vs(@builtin(vertex_index) i:u32)->V{
   var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));
@@ -157,6 +165,14 @@ fn knee(c:vec3f,th:f32)->vec3f{
   let m=max(c.r,max(c.g,c.b));let kn=th*.4;
   let sk=clamp(m-th+kn,0.,2.*kn);let q=max(sk*sk/(4.*kn),m-th);
   return c*q/max(m,1e-4);}
+/* те же плечо и колено в половинной точности (P2) — для лестницы свечения */
+fn toneH(c:H3)->H3{
+  let K=H(.75);let x=max(c-H3(K),H3(0.));
+  return min(c,H3(K))+(H(1.)-K)*(H3(1.)-exp(-x/(H(1.)-K)));}
+fn kneeH(c:H3,th:H)->H3{
+  let m=max(c.r,max(c.g,c.b));let kn=th*H(.4);
+  let sk=clamp(m-th+kn,H(0.),H(2.)*kn);let q=max(sk*sk/(H(4.)*kn),m-th);
+  return c*q/max(m,H(1e-3));}
 /* 2D рисует в тонах экрана, и огонь в нём упирается в единицу. Что почти упёрлось
    и при этом цветное (ходовые огни, сердце факела, луч) — источник: на экране он
    остаётся своего цвета, а свечению отдаёт то, что светил бы сверх единицы, — узкий
@@ -174,41 +190,46 @@ fn frameHdr(uv:vec2f)->vec3f{
 /* свечение (L2): до шести уровней одной текстуры с мипами. Первый — четверть кадра
    ящиком 4×4 (точки не мерцают): квадрат кадра в тонах экрана, как в 2D, и всё, что
    сцена светит выше плеча. Дальше уровень вдвое мельче и строже (колено по уровню);
-   обратно вверх лестницу читает сам финал (bloomAt), проходов подъёма нет: узкое
+   обратно вверх — сумма верхних уровней одним проходом (fsMipUp1), финал читает две выборки: узкое
    свечение — от всего яркого, широкое — от того, что много выше единицы (звезда).
    У факела и газа ореол узкий, у звезды широкий, пелены на полкадра нет */
 @fragment fn fsDown(v:V)->@location(0) vec4f{
   /* frameAt и frameHdr вручную: одна выборка слоя и сцены на точку (P1). Свой грунт
      корабля (маска корпуса в круге u.hl) светит вполовину: белил обшивку (п.3) */
-  let fp=1./u.qres;var c=vec3f(0.);var h=vec3f(0.);
+  let fp=1./u.qres;var c=H3(0.);var h=H3(0.);let sc=H(u.scene);
   for(var j=0;j<4;j++){for(var i=0;i<4;i++){
     let q=v.uv+((vec2f(f32(i),f32(j))+.5)/4.-.5)*fp;
-    let f=textureSampleLevel(tFront,sl,q,0.);let S=textureSampleLevel(tScene,sl,q,0.);let s=max(S.rgb,vec3f(0.))*u.scene;let a=1.-f.a;
-    c+=(tone(s)*a+f.rgb)*(1.-.5*silK(q)*u.scene*(1.-S.a));h+=(knee(s,1.4)+textureSampleLevel(tEmit,sl,q,0.).rgb)*a;}}
-  c=c/16.;return vec4f(c*c+h/16.,1.);}
-fn bs(uv:vec2f)->vec3f{return textureSampleLevel(tBloom,sl,uv,0.).rgb;}
+    let f=H4(textureSampleLevel(tFront,sl,q,0.));let S=H4(textureSampleLevel(tScene,sl,q,0.));let s=max(S.rgb,H3(0.))*sc;let a=H(1.)-f.a;
+    c+=(toneH(s)*a+f.rgb)*(H(1.)-H(.5)*H(silK(q))*sc*(H(1.)-S.a));h+=(kneeH(s,H(1.4))+H3(textureSampleLevel(tEmit,sl,q,0.).rgb))*a;}}
+  c=c/H(16.);return vec4f(vec3f(c*c+h/H(16.)),1.);}
+fn bs(uv:vec2f)->H3{return H3(textureSampleLevel(tBloom,sl,uv,0.).rgb);}
 @fragment fn fsMipDn(v:V)->@location(0) vec4f{
   let h=.5/vec2f(textureDimensions(tBloom));let uv=v.uv;
-  let c=bs(uv)*4.+bs(uv-h)+bs(uv+h)+bs(uv+vec2f(h.x,-h.y))+bs(uv-vec2f(h.x,-h.y));
+  let c=bs(uv)*H(4.)+bs(uv-h)+bs(uv+h)+bs(uv+vec2f(h.x,-h.y))+bs(uv-vec2f(h.x,-h.y));
   let lv=log2(u.qres.x/f32(textureDimensions(tBloom).x));
-  if(lv<1.5){return vec4f(c/8.,1.);}
-  return vec4f(knee(c/8.,.45*(lv-1.)),1.);}
+  if(lv<1.5){return vec4f(vec3f(c/H(8.)),1.);}
+  return vec4f(vec3f(kneeH(c/H(8.),H(.45*(lv-1.)))),1.);}
 /* вверх — читает финал (P1 25.09): на каждом уровне шатёр в восемь выборок, вес — как у
    прежней цепочки подъёма, .72 за уровень и теплота по уровню, накопленные сверху вниз.
    Дальние уровни чуть теплее: широкий ореол звезды тёплый, как рассеяние в оптике, узкий
    у огней — своего цвета; дальний уровень слабее ближнего — ореол сходит на нет, а не
    стоит пеленой. Пять проходов подъёма ушли: на плиточной видеокарте телефона проход —
    это выгрузка и загрузка плитки, а уровни в нём крошечные */
-fn bl(uv:vec2f,l:f32)->vec3f{return textureSampleLevel(tBloom,sl,uv,l).rgb;}
-fn bloomAt(uv:vec2f)->vec3f{
-  var c=bl(uv,0.);var w=vec3f(1.);let n=i32(textureNumLevels(tBloom));
+fn bl(uv:vec2f,l:f32)->H3{return H3(textureSampleLevel(tBloom,sl,uv,l).rgb);}
+fn bloomUp(uv:vec2f)->vec3f{
+  var c=H3(0.);var w=H3(1.);let n=i32(textureNumLevels(tBloom));
   for(var i=1;i<n;i++){
     let lv=f32(i);let h=.5/vec2f(textureDimensions(tBloom,i));
     var t=bl(uv+vec2f(-2.*h.x,0.),lv)+bl(uv+vec2f(2.*h.x,0.),lv)+bl(uv+vec2f(0.,-2.*h.y),lv)+bl(uv+vec2f(0.,2.*h.y),lv);
-    t=t+2.*(bl(uv+vec2f(-h.x,h.y),lv)+bl(uv+h,lv)+bl(uv+vec2f(h.x,-h.y),lv)+bl(uv-h,lv));
-    w=w*mix(vec3f(1.),vec3f(1.,.9,.74),smoothstep(1.5,4.5,lv)*.5)*.72;
-    c=c+t/12.*w;}
-  return c;}
+    t=t+H(2.)*(bl(uv+vec2f(-h.x,h.y),lv)+bl(uv+h,lv)+bl(uv+vec2f(h.x,-h.y),lv)+bl(uv-h,lv));
+    w=w*mix(H3(1.),H3(1.,.9,.74),H(smoothstep(1.5,4.5,lv)*.5))*H(.72);
+    c=c+t/H(12.)*w;}
+  return vec3f(c);}
+/* сумма верхних уровней — одним проходом в размере первого уровня (S23 25.09: финал, читавший
+   пять уровней на полном разрешении, стоил +.34 мс; десять крошечных проходов лестницы —
+   .12 мс: проход на Adreno дёшев, дороги выборки на полном кадре) */
+@fragment fn fsMipUp1(v:V)->@location(0) vec4f{return vec4f(bloomUp(v.uv),1.);}
+fn bloomAt(uv:vec2f)->vec3f{return textureSampleLevel(tBloom,sl,uv,0.).rgb+textureSampleLevel(tBloomU,sl,uv,0.).rgb;}
 /* корпус на ярком газе — силуэтом (L1): только у корпусов (hl — круги, их отмечает
    drawHull), интерфейсу ничего. Сам корпус на ярком газе темнеет, как против света,
    огни остаются; на тёмном газе корпус не трогается. L3 3/n: тёмной каймы вокруг больше
@@ -344,15 +365,15 @@ fn gasT(uv:vec2f)->vec3f{
 
 function gpuPipes(){
   const d=GPU.dev,F=GPUShaderStage.FRAGMENT;
-  const mod=d.createShaderModule({code:GPU_POST_WGSL});
+  const mod=d.createShaderModule({code:(GPU.f16?"enable f16;\nalias H=f16;":"alias H=f32;")+"alias H3=vec3<H>;alias H4=vec4<H>;\n"+GPU_POST_WGSL});
   const ent=[{binding:0,visibility:F,buffer:{type:"uniform"}},
     {binding:1,visibility:F,sampler:{type:"filtering"}},{binding:2,visibility:F,sampler:{type:"filtering"}}];
-  for(const b of [3,4,5,6,7,8])ent.push({binding:b,visibility:F,texture:{sampleType:"float"}});
+  for(const b of [3,4,5,6,7,8,9])ent.push({binding:b,visibility:F,texture:{sampleType:"float"}});
   GPU.L=d.createBindGroupLayout({entries:ent});
   const PL=d.createPipelineLayout({bindGroupLayouts:[GPU.L]});
   const mk=(fs,fmt)=>d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
     fragment:{module:mod,entryPoint:fs,targets:[{format:fmt}]},primitive:{topology:"triangle-list"}});
-  GPU.P={down:mk("fsDown","rgba16float"),fin:mk("fsFinal",GPU.fmt),fin0:mk("fsFinal0",GPU.fmt),mipDn:mk("fsMipDn","rgba16float"),
+  GPU.P={down:mk("fsDown","rgba16float"),fin:mk("fsFinal",GPU.fmt),fin0:mk("fsFinal0",GPU.fmt),mipDn:mk("fsMipDn","rgba16float"),up1:mk("fsMipUp1","rgba16float"),
          comp:d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
            fragment:{module:mod,entryPoint:"fsComp",targets:[{format:"rgba16float",blend:{
              color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one"}}},
@@ -389,27 +410,31 @@ function gpuResize(){
   /* лестница свечения (P1 25.09): одна текстура с мипами от четверти кадра вниз; уровень
      уже шести текселей не заводится (телефон — пять уровней, ноутбук — шесть). Каждый
      уровень — цель своего прохода и вход следующего: разные подресурсы одной текстуры,
-     это разрешено. Финал читает все уровни сам (bloomAt), проходов подъёма нет */
+     это разрешено. Верхние уровни складывает один проход (fsMipUp1 → bloomU), финал
+     читает нулевой уровень и эту сумму */
   let nl=1;for(let w=qw,h=qh;nl<6;nl++){w=w>>1;h=h>>1;if(Math.min(w,h)<6)break;}
   GPU.T.bloom=GPU.dev.createTexture({size:[qw,qh],format:"rgba16float",usage:TB|RA,mipLevelCount:nl});
-  GPU.V={lt:GPU.T.lt.createView(),scene:GPU.T.scene.createView(),emit:GPU.T.emit.createView(),bloom:GPU.T.bloom.createView()};
+  GPU.T.bloomU=GPU.dev.createTexture({size:[Math.max(1,qw>>1),Math.max(1,qh>>1)],format:"rgba16float",usage:TB|RA});
+  GPU.V={lt:GPU.T.lt.createView(),scene:GPU.T.scene.createView(),emit:GPU.T.emit.createView(),bloom:GPU.T.bloom.createView(),bloomU:GPU.T.bloomU.createView()};
   GPU.MV=[];for(let i=0;i<nl;i++)GPU.MV.push(GPU.T.bloom.createView({baseMipLevel:i,mipLevelCount:1}));
   GPU.scene3D=false;
   GPU.bw=bw;GPU.bh=bh;GPU.qw=qw;GPU.qh=qh;GPU.dpr=DPR;GPU.cw=W;GPU.ch=H;
   const S=GPU.S,T=GPU.T,nv=GPU.N.createView();
-  const bind=bv=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
+  const bind=(bv,uv)=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:T.scene.createView()},{binding:4,resource:T.front.createView()},
-    {binding:5,resource:bv},{binding:6,resource:T.ui.createView()},{binding:7,resource:nv},{binding:8,resource:T.emit.createView()}]});
-  /* MB[i] — вход прохода на уровень i+1; первому уровню свечение не нужно — на его месте шум */
+    {binding:5,resource:bv},{binding:6,resource:T.ui.createView()},{binding:7,resource:nv},{binding:8,resource:T.emit.createView()},
+    {binding:9,resource:uv||GPU.V.bloomU}]});
+  /* MB[i] — вход прохода на уровень i+1; первому уровню свечение не нужно — на его месте шум;
+     up — проход суммы верхних уровней пишет bloomU, поэтому у него на её месте шум */
   GPU.MB=GPU.MV.map(v=>bind(v));
-  GPU.B={down:bind(nv),fin:bind(GPU.V.bloom),
+  GPU.B={down:bind(nv),fin:bind(GPU.V.bloom),up:bind(GPU.V.bloom,nv),
     /* сегмент рисует В сцену — значит, в привязках её быть не может: на её месте шум */
     comp:GPU.dev.createBindGroup({layout:GPU.L,entries:[
       {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
       {binding:3,resource:nv},{binding:4,resource:T.front.createView()},
       {binding:5,resource:nv},{binding:6,resource:T.ui.createView()},{binding:7,resource:nv},
-      {binding:8,resource:nv}]})};
+      {binding:8,resource:nv},{binding:9,resource:nv}]})};
 }
 /* склейка сегмента с туманностью на месте сцены — силуэтам корпусов (sil) */
 function gpuCompNeb(){
@@ -421,7 +446,7 @@ function gpuCompNeb(){
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:GNB.view},{binding:4,resource:T.front.createView()},
     {binding:5,resource:GPU.N.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()},
-    {binding:8,resource:GPU.N.createView()}]});
+    {binding:8,resource:GPU.N.createView()},{binding:9,resource:GPU.N.createView()}]});
 }
 function gpuPass(view,pipe,bind,ts){
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}],timestampWrites:ts&&gpuTs(ts)});
@@ -533,7 +558,7 @@ function gpuScene(){
 function gpuScene3D(){
   if(!GPU.on||!GPU.enc)return null;
   if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;}
-  if(!GPU.T.depth){GPU.T.depth=GPU.dev.createTexture({size:[GPU.bw,GPU.bh],format:"depth24plus",usage:GPUTextureUsage.RENDER_ATTACHMENT});GPU.V.depth=GPU.T.depth.createView();}
+  if(!GPU.T.depth){GPU.T.depth=GPU.dev.createTexture({size:[GPU.bw,GPU.bh],format:"depth24plus",usage:GPUTextureUsage.RENDER_ATTACHMENT|(GPUTextureUsage.TRANSIENT_ATTACHMENT||0)});GPU.V.depth=GPU.T.depth.createView();}
   GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}],
     depthStencilAttachment:{view:GPU.V.depth,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});
   GPU.sceneOn=true;GPU.scene3D=true;
@@ -599,11 +624,12 @@ function gpuWorld(k,grain,vig){
     gpuHudFlush((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen());ctx=GPU.uctx;
   }catch(e){gpuDrop("сборка: "+((e&&e.message)||e),true);}
 }
-/* лестница свечения: колено в первый уровень, вниз по уровням; вверх читает финал (bloomAt) */
+/* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */
 function gpuBloom(){
   const V=GPU.MV,B=GPU.MB,n=V.length;
   gpuPass(V[0],GPU.P.down,GPU.B.down,"bloomDown");
   for(let i=1;i<n;i++)gpuPass(V[i],GPU.P.mipDn,B[i-1]);
+  if(n>1)gpuPass(GPU.V.bloomU,GPU.P.up1,GPU.B.up,"bloomUp");
 }
 /* конец кадра: слой интерфейса (если стойка рисовала), общий проход — на экран */
 function gpuPresent(){

@@ -60,9 +60,10 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   - `under` (6.8 ms on the phone): the corona's hash noise on the noise tile with the frame constants on the
     CPU; orbits as a triangle strip along the ellipse instead of a bbox quad with `atan2` per pixel;
   - rare regeneration of the nebula with fields (9/n);
-  - the post chain: after P1 of `docs/RESEARCH-2026-09-25-gpu.md` (0.459.0) 7 of 10.4 passes a frame are
-    bloom and final; next P2 (`shader-f16` on the ladder and the final) and, if the pair allows, `fsDown`
-    folded into level 1; the other picks of that research (particles on compute, cave light by distance
+  - the post chain is done as far as it pays (0.460.0, `docs/RESEARCH-2026-09-25-gpu.md` P1): 8 of 11.4 passes
+    a frame are bloom and final, but on the S23 they cost 1.6 ms of 9.6 — the frame's price is `under`
+    (3.3 ms) and the nebula (2.4 + 1.2 ms), and that is where the items above point; `shader-f16` was measured
+    harmful there (P2, off); the other picks of that research (particles on compute, cave light by distance
     field, the star's limb law) wait in their own items;
     merged where the target is the same;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
