@@ -1442,3 +1442,15 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   recording JS) will cut both. Pictures vs the accepted h3: max|Δ| 5 at 760, 15 on the phone, edge energy
   7.36→7.38; far zoom equal but for a DOM pulse. Gate2d gains the hotel scene; GC_GLYPHS `raster`/`measure`
   are named holes (the text source of v2); mutants `hotel-bake-2d`, `hotel-frame-2d` die.
+- **Station (17c3) off 2D.** The body master is recorded into a `GcCtx` (160·sb square, ss 2 while
+  ≤512², else 1) with `ST_REC.split` cutting the op list at layer boundaries (trade: under and over the
+  ring); each slice is replayed into its own bake, and a >1-layer master gets a union bake `U` (drawImage
+  of the layers at ss 1) for the lit sprite's normal pass. The spinning parts (`stSpinCv`) are bakes
+  keyed by part and scale (16 kept), fed straight to `gpuLitSprite` (bake → mip path, no upload). The
+  `!GPU.on` glow, the `stationArt` 2D master and the 2D flare branch are gone. Pairs vs the HEAD build
+  (8 scenes: trade 760/phone, indust, far, yard, sci, bazaar, outpost): crop edge / luminance / top-2 %
+  equal within noise (trade edge 4.89→4.90, yard 5.83→5.82, a yard ×4 crop −0.8 %, indust +1.6 % from the
+  flare phase); >24 differences ≤33 px per crop; GPU errs 0. Gate2d gains the station scene (masters and
+  spins dropped first so the bake is under the probe); mutants `station-master-2d`, `station-spin-2d`
+  die. The e2e flame check now reads the GPU record: no cold op or lamp above the stack mouth, warm
+  flare shapes present.

@@ -53688,44 +53688,6 @@ function stackSmoke(t,ph,fl){
   }
   return out;
 }
-/* ── один свет на всю станцию (M304) ──
-   Куски рисовались по одному прямо на экран, и света не было ни у кого: плоский
-   золотой чертёж. Теперь сборка печётся в холст, и последним слоем по ней идёт
-   один градиент — светлый борт со стороны звезды, тень с обратной. Кэш мелкий,
-   ключ ловит зум и время: мигающие окна, факел и кран живут дальше. */
-const ST_ART=new Map();
-function stationArt(key,s,V,S,ty,lx,ly){
-  let art=ST_ART.get(key);
-  if(art)return art;
-  const R=Math.max(24,80*s),cn=mkCanvas(R*2,R*2);
-  withCtx(cn,R*2,R*2,0,0,function(g){
-    ctx.save();ctx.translate(R,R);ctx.scale(s,s);
-    drawStationBody(V,S,ty);
-    ctx.restore();
-    /* на видеокарте свет кладёт gpuStation по рельефу — здесь только голый корпус */
-    if(GPU.on)return;
-    ctx.globalCompositeOperation="source-atop";
-    const lg=ctx.createLinearGradient(R+lx*R,R+ly*R,R-lx*R,R-ly*R);
-    lg.addColorStop(0,"rgba(255,236,208,.44)");
-    lg.addColorStop(.42,"rgba(255,230,200,0)");
-    lg.addColorStop(1,"rgba(0,0,0,.62)");
-    ctx.fillStyle=lg;ctx.fillRect(0,0,R*2,R*2);
-    ctx.globalCompositeOperation="source-over";
-    /* кромка со стороны звезды: по ней силуэт отделяется от космоса */
-    ctx.save();ctx.translate(R,R);ctx.scale(s,s);
-    ctx.beginPath();                                   // полуплоскость света
-    const px=-ly*R*4/s,py=lx*R*4/s,qx=lx*R*4/s,qy=ly*R*4/s;
-    ctx.moveTo(px,py);ctx.lineTo(-px,-py);ctx.lineTo(-px+qx,-py+qy);ctx.lineTo(px+qx,py+qy);
-    ctx.closePath();ctx.clip();
-    ctx.strokeStyle="rgba(255,238,216,.45)";ctx.lineWidth=.8/s;
-    stPlatePath(V);ctx.stroke();
-    ctx.restore();
-  });
-  art={cn,R};
-  if(ST_ART.size>=6)ST_ART.delete(ST_ART.keys().next().value);
-  ST_ART.set(key,art);
-  return art;
-}
 /* ── станция на видеокарте (G4) ──
    Корпус тот же (выпечка drawStationBody), но свет на нём — от звезды по рельефу,
    как на корабле (gpuHullLight), а не плоский градиент с обводкой по освещённой
@@ -53819,15 +53781,6 @@ function drawStation(x,y,Z){
      Самая яркая рукотворная вещь в системе не давала вокруг себя ничего:
      ни ореола, ни отблеска. Мягкое пятно её собственного света кладётся ДО
      корпуса — тогда оно читается свечением окон и прожекторов, а не нимбом. */
-  if(!GPU.on){
-    const R=70*s;
-    const gg=ctx.createRadialGradient(x,y,0,x,y,R);
-    gg.addColorStop(0,"rgba(255,214,150,.16)");
-    gg.addColorStop(.45,"rgba(255,200,130,.06)");
-    gg.addColorStop(1,"rgba(255,200,130,0)");
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();ctx.restore();
-  }
   /* сторона света — от станции к светилу: звезда системы стоит в (0,0) */
   let lx=-(S.x||0),ly=-(S.y||0);const ln=Math.hypot(lx,ly);
   if(ln<1e-6){lx=-.86;ly=-.51;}else{lx/=ln;ly/=ln;}   /* пока станция не встала на орбиту — свет слева сверху */
@@ -53837,49 +53790,16 @@ function drawStation(x,y,Z){
     /* мастер: плотность — предел зума на экране, по четверть-октавы (как у корпусов) */
     const dk=GPU.bw/W,sb=Math.pow(2,Math.ceil(Math.log2(1.5*1.7*dk)*4)/4);
     const M=stationMaster((G.sys.key||"?")+"|"+ty+"|"+nb+"|"+SCK+"|"+sb,sb,V,S,ty),R=Math.max(24,80*s);
-    gpuStationDraw(M,x,y,s,lx,ly);
+    if(M)gpuStationDraw(M,x,y,s,lx,ly);
     GPU.oc.push([x,y,R*.5]);   /* L3: заслон звезды для барж у причала */
     /* огни станции — тёплый свет на пришвартованных: борт к станции теплеет */
     gpuLight(x,y,x,y,1,.84,.59,R*.9,.7);
-  }else{
-    const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK+"|c";
-    const art=stationArt(key,s,V,S,ty,lx,ly);
-    ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
   }
   /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
      18 тактов, а факел — единственное на станции, что обязано плясать */
   if(ty==="indust"&&pass){
     const t=G.t*.045+V.ph,fl=6.2+Math.sin(t*1.7)*1.6+Math.sin(t*2.9+1.3)*.9,lean=Math.sin(t*1.1+.7)*1.4+Math.sin(t*2.3)*.6;
     gpuStationFlare(pass,x,y,s,t,fl,lean,V);
-  }else if(ty==="indust"){
-    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
-    /* язык пламени как тело (M326): было два эллипса и кружок, длина прыгала по
-       |sin| — «кусками дёргается». Теперь одна замкнутая форма — язык с устья
-       (−28) вверх, кончик гуляет по сумме двух медленных синусов (гладко, без
-       изломов), изнутри — светлое ядро той же формы, снаружи — мягкое свечение.
-       Марева здесь больше нет: оно резало звёзды на полосы и читалось белым
-       дымом вокруг огня (жалоба автора 03.09) */
-    const t=G.t*.045+V.ph;
-    const fl=6.2+Math.sin(t*1.7)*1.6+Math.sin(t*2.9+1.3)*.9;          /* длина 3.7…8.7 */
-    const lean=Math.sin(t*1.1+.7)*1.4+Math.sin(t*2.3)*.6;              /* наклон кончика */
-    const tongue=(w,h,dx)=>{                                            /* язык: устье шириной w, высота h */
-      ctx.beginPath();ctx.moveTo(-w,-28);
-      ctx.bezierCurveTo(-w,-28-h*.45,dx-w*.35,-28-h*.8,dx,-28-h);
-      ctx.bezierCurveTo(dx+w*.35,-28-h*.8,w,-28-h*.45,w,-28);ctx.closePath();
-    };
-    ctx.globalCompositeOperation="lighter";
-    ctx.fillStyle="rgba(255,110,40,.16)";tongue(4.2,fl*1.35,lean*1.2);ctx.fill();   /* свечение */
-    ctx.globalCompositeOperation="source-over";
-    ctx.fillStyle="rgba(255,150,54,.92)";tongue(2.3,fl,lean);ctx.fill();            /* тело */
-    ctx.fillStyle="rgba(255,226,160,.9)";tongue(1.1,fl*.55,lean*.5);ctx.fill();      /* ядро */
-    /* дым (M326): комментарий у трубы десять версий обещал «дым сносит вбок»,
-       а рисовалось только пламя. Клубы считает stackSmoke — он же под тестом:
-       поднимаются, растут, редеют, сносятся в одну сторону */
-    for(const q of stackSmoke(G.t,V.ph,fl)){
-      ctx.fillStyle="rgba(96,92,100,"+q.a.toFixed(3)+")";
-      ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,TAU);ctx.fill();
-    }
-    ctx.restore();
   }
   /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
      читалось поверх её же переборок (M242) */
@@ -53896,7 +53816,7 @@ function drawStation(x,y,Z){
    рёбра с номерами; Коммуна — длинные дуги и тёплая лента окон; Рассвет —
    лоскуты, каждая сторона своей краской, солнце от руки; Хай-Фронт — белое,
    пусто, одна красная точка и свет из-под обшивки. Рисуется в выпечку станции
-   (stationArt), в кадре не стоит ничего. */
+   (stationMaster), в кадре не стоит ничего. */
 function stMakerDress(by,V){
   const bw=26*(V.a||1),bh=17*(V.b||1),n=10+Math.floor((V.f||0)*89);
   ctx.save();stPlatePath(V);ctx.clip();
@@ -54165,36 +54085,43 @@ function stSpin(key,ext,rot,draw){
   ctx.save();ctx.rotate(rot);draw();ctx.restore();
 }
 const ST_SPIN=new Map(),ST_MASTER=new Map();
+/* вращающаяся часть — своя выпечка GPU-холста (кисть та же: ctx на время выпечки — её холст) */
 function stSpinCv(key,ext,draw,sb){
-  const k=key+"|"+sb;let cv=ST_SPIN.get(k);if(cv)return cv;
-  const side=Math.ceil(ext*2*sb);cv=document.createElement("canvas");cv.width=cv.height=side;
-  const prev=ctx;ctx=cv.getContext("2d");
-  try{ctx.setTransform(sb,0,0,sb,side/2,side/2);draw();}finally{ctx=prev;}
-  if(ST_SPIN.size>=16){const k0=ST_SPIN.keys().next().value;gpuMipDrop(ST_SPIN.get(k0));ST_SPIN.delete(k0);}
-  ST_SPIN.set(k,cv);return cv;
+  const k=key+"|"+sb;let B=ST_SPIN.get(k);if(B&&B.dev===GPU.dev)return B;
+  const side=Math.ceil(ext*2*sb);
+  B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);draw();});if(!B)return null;
+  if(ST_SPIN.size>=16){const k0=ST_SPIN.keys().next().value;gpuBakeDrop(ST_SPIN.get(k0));ST_SPIN.delete(k0);}
+  ST_SPIN.set(k,B);return B;
 }
-/* мастер станции для видеокарты: тело без живого, sb пикселей на единицу станции,
-   живое — список ST_REC; у торговой — два слоя, под кольцом и над ним */
+/* мастер станции: тело без живого, sb пикселей на единицу станции, живое — список ST_REC.
+   Тело пишется одной записью GPU-холста; stSplit отмечает место в ней, и слой — выпечка своего
+   куска записи (в 2D слой копировался и холст чистился — то же самое). У торговой два слоя,
+   под кольцом и над ним; общий мастер U — слои поверх друг друга пиксель в пиксель, по нему свет
+   верхних слоёв (рельеф без ложных кромок) */
+function stMasterDrop(M){for(const q of M.Ly)gpuBakeDrop(q);if(M.U)gpuBakeDrop(M.U);}
 function stationMaster(key,sb,V,S,ty){
-  let M=ST_MASTER.get(key);if(M)return M;
-  const side=Math.ceil(160*sb),mk=()=>{const c=document.createElement("canvas");c.width=c.height=side;return c;};
-  const cv=mk(),g=cv.getContext("2d"),prev=ctx,rec={L:[],z:0,Ly:[],inv:null};
-  rec.split=()=>{const a=mk();a.getContext("2d").drawImage(cv,0,0);rec.Ly.push(a);
-    g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,side,side);g.restore();rec.z++;};
+  let M=ST_MASTER.get(key);if(M&&M.Ly[0].dev===GPU.dev)return M;
+  if(M){stMasterDrop(M);ST_MASTER.delete(key);}
+  if(!GPU.dev)return null;
+  const side=Math.ceil(160*sb),k=side*side<=262144?2:1,g=new GcCtx(side,side,k),prev=ctx,rec={L:[],z:0,cut:[0],inv:null};
+  rec.split=()=>{rec.cut.push(g._ops.length);rec.z++;};
   ctx=g;
-  try{g.setTransform(sb,0,0,sb,side/2,side/2);rec.inv=g.getTransform().inverse();ST_REC=rec;drawStationBody(V,S,ty);}
+  try{g.setTransform(sb,0,0,sb,side/2,side/2);rec.inv=DOMMatrix.fromMatrix(g.getTransform()).inverse();ST_REC=rec;drawStationBody(V,S,ty);}
   finally{ST_REC=null;ctx=prev;}
-  rec.Ly.push(cv);
-  /* общий мастер — все слои вместе, как в 2D: по нему свет верхних слоёв (рельеф без ложных кромок) */
-  let U=null;if(rec.Ly.length>1){U=mk();const u=U.getContext("2d");for(const q of rec.Ly)u.drawImage(q,0,0);}
-  M={Ly:rec.Ly,U,E:side/(2*sb),sb,L:rec.L};
-  if(ST_MASTER.size>=4){const k0=ST_MASTER.keys().next().value,o=ST_MASTER.get(k0);for(const q of o.Ly)gpuMipDrop(q);if(o.U)gpuMipDrop(o.U);
-    for(const cv of ST_SPIN.values())gpuMipDrop(cv);ST_SPIN.clear();ST_MASTER.delete(k0);}
+  rec.cut.push(g._ops.length);
+  const O=g._ops,Ly=[];
+  for(let i=0;i+1<rec.cut.length;i++){const a=rec.cut[i],b=rec.cut[i+1];
+    const B=gpuBake(side,side,q=>{for(let j=a;j<b;j++)q._ops.push(O[j]);},{ss:k});
+    if(!B){for(const q of Ly)gpuBakeDrop(q);return null;}Ly.push(B);}
+  const U=Ly.length>1?gpuBake(side,side,q=>{for(const B of Ly)q.drawImage(B,0,0);},{ss:1}):null;
+  M={Ly,U,E:side/(2*sb),sb,L:rec.L};
+  if(ST_MASTER.size>=4){const k0=ST_MASTER.keys().next().value;stMasterDrop(ST_MASTER.get(k0));
+    for(const q of ST_SPIN.values())gpuBakeDrop(q);ST_SPIN.clear();ST_MASTER.delete(k0);}
   ST_MASTER.set(key,M);return M;
 }
 function stEmFlush(pass,E,sb,lx,ly,dk){
-  for(const q of E.S){const cv=stSpinCv(q.key,q.ext,q.draw,sb),m=q.m,k=Math.hypot(m.a,m.b)*E.s,Ec=cv.width/(2*sb);
-    gpuLitSprite(gpuMipTex(cv),E.x+m.e*E.s,E.y+m.f*E.s,Ec*k,k,Math.atan2(m.b,m.a)+q.rot,lx,ly,0,0,Math.max(0,Math.log2(sb/(k*dk))+HG_LOD));}
+  for(const q of E.S){const B=stSpinCv(q.key,q.ext,q.draw,sb);if(!B)continue;const m=q.m,k=Math.hypot(m.a,m.b)*E.s,Ec=B.w/(2*sb);
+    gpuLitSprite(B,E.x+m.e*E.s,E.y+m.f*E.s,Ec*k,k,Math.atan2(m.b,m.a)+q.rot,lx,ly,0,0,Math.max(0,Math.log2(sb/(k*dk))+HG_LOD));}
   if(E.L.length)gpuShapes(pass,E.L);
   if(E.A.length)gpuShapes(pass,E.A,{blend:"add"});
 }
@@ -54203,7 +54130,7 @@ function gpuStationDraw(M,x,y,s,lx,ly){
   const pass=gpuScene();if(!pass)return false;
   const dk=GPU.bw/W,lod=Math.max(0,Math.log2(M.sb/(s*dk))+HG_LOD),E=M.Ly.map(()=>({L:[],A:[],S:[],x,y,s,m:null}));
   for(const r of M.L){ST_EM=E[r.z];ST_EM.m=r.m;try{r.fn();}finally{ST_EM=null;}}
-  M.Ly.forEach((q,i)=>{gpuLitSprite(gpuMipTex(q),x,y,M.E*s,s,0,lx,ly,i?0:1,0,lod,i?gpuMipTex(M.U):null);stEmFlush(pass,E[i],M.sb,lx,ly,dk);});
+  M.Ly.forEach((q,i)=>{gpuLitSprite(q,x,y,M.E*s,s,0,lx,ly,i?0:1,0,lod,i?M.U:null);stEmFlush(pass,E[i],M.sb,lx,ly,dk);});
   return true;
 }
 /* факел промышленной: язык — цепочка капсул по средней линии (ширина по обводу

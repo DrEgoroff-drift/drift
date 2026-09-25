@@ -52,6 +52,20 @@ const GATE2D=[
        G.ship.x=Ht.x;G.ship.y=Ht.y+150/2.2;G.ship.vx=G.ship.vy=0;G.zoom=2.2;G.zoomT=null;return {Ht};}
      return null;},
    probe:["drawHotel"]},
+  /* станция (17c3): мастер тела двумя слоями (торговая: под кольцом и над ним) и вращающееся
+     кольцо — выпечки GPU-холста; мастера и кольца сбрасываем, чтобы выпечка шла под записью */
+  {name:"станция (17c3): мастер слоями, кольцо, огни",
+   painters:["drawStation","stationMaster","drawStationBody","stSpinCv","gpuStationDraw","stEmFlush","gpuLitSprite"],
+   place(first){
+     for(let r=0;r<=14;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);
+       if(!s.station||(s.station.stype||"trade")!=="trade")continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const S=s.station;
+       if(S.orbit!=null){S.x=Math.cos(S.ang)*S.orbit;S.y=Math.sin(S.ang)*S.orbit;}
+       if(first){for(const M of ST_MASTER.values())stMasterDrop(M);ST_MASTER.clear();for(const q of ST_SPIN.values())gpuBakeDrop(q);ST_SPIN.clear();}
+       G.ship.x=S.x;G.ship.y=S.y+80;G.ship.vx=G.ship.vy=0;G.zoom=1.5;G.zoomT=null;return {S};}
+     return null;},
+   probe:["drawStation","stationMaster"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

@@ -389,44 +389,6 @@ function stackSmoke(t,ph,fl){
   }
   return out;
 }
-/* ── один свет на всю станцию (M304) ──
-   Куски рисовались по одному прямо на экран, и света не было ни у кого: плоский
-   золотой чертёж. Теперь сборка печётся в холст, и последним слоем по ней идёт
-   один градиент — светлый борт со стороны звезды, тень с обратной. Кэш мелкий,
-   ключ ловит зум и время: мигающие окна, факел и кран живут дальше. */
-const ST_ART=new Map();
-function stationArt(key,s,V,S,ty,lx,ly){
-  let art=ST_ART.get(key);
-  if(art)return art;
-  const R=Math.max(24,80*s),cn=mkCanvas(R*2,R*2);
-  withCtx(cn,R*2,R*2,0,0,function(g){
-    ctx.save();ctx.translate(R,R);ctx.scale(s,s);
-    drawStationBody(V,S,ty);
-    ctx.restore();
-    /* на видеокарте свет кладёт gpuStation по рельефу — здесь только голый корпус */
-    if(GPU.on)return;
-    ctx.globalCompositeOperation="source-atop";
-    const lg=ctx.createLinearGradient(R+lx*R,R+ly*R,R-lx*R,R-ly*R);
-    lg.addColorStop(0,"rgba(255,236,208,.44)");
-    lg.addColorStop(.42,"rgba(255,230,200,0)");
-    lg.addColorStop(1,"rgba(0,0,0,.62)");
-    ctx.fillStyle=lg;ctx.fillRect(0,0,R*2,R*2);
-    ctx.globalCompositeOperation="source-over";
-    /* кромка со стороны звезды: по ней силуэт отделяется от космоса */
-    ctx.save();ctx.translate(R,R);ctx.scale(s,s);
-    ctx.beginPath();                                   // полуплоскость света
-    const px=-ly*R*4/s,py=lx*R*4/s,qx=lx*R*4/s,qy=ly*R*4/s;
-    ctx.moveTo(px,py);ctx.lineTo(-px,-py);ctx.lineTo(-px+qx,-py+qy);ctx.lineTo(px+qx,py+qy);
-    ctx.closePath();ctx.clip();
-    ctx.strokeStyle="rgba(255,238,216,.45)";ctx.lineWidth=.8/s;
-    stPlatePath(V);ctx.stroke();
-    ctx.restore();
-  });
-  art={cn,R};
-  if(ST_ART.size>=6)ST_ART.delete(ST_ART.keys().next().value);
-  ST_ART.set(key,art);
-  return art;
-}
 /* ── станция на видеокарте (G4) ──
    Корпус тот же (выпечка drawStationBody), но свет на нём — от звезды по рельефу,
    как на корабле (gpuHullLight), а не плоский градиент с обводкой по освещённой
@@ -520,15 +482,6 @@ function drawStation(x,y,Z){
      Самая яркая рукотворная вещь в системе не давала вокруг себя ничего:
      ни ореола, ни отблеска. Мягкое пятно её собственного света кладётся ДО
      корпуса — тогда оно читается свечением окон и прожекторов, а не нимбом. */
-  if(!GPU.on){
-    const R=70*s;
-    const gg=ctx.createRadialGradient(x,y,0,x,y,R);
-    gg.addColorStop(0,"rgba(255,214,150,.16)");
-    gg.addColorStop(.45,"rgba(255,200,130,.06)");
-    gg.addColorStop(1,"rgba(255,200,130,0)");
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();ctx.restore();
-  }
   /* сторона света — от станции к светилу: звезда системы стоит в (0,0) */
   let lx=-(S.x||0),ly=-(S.y||0);const ln=Math.hypot(lx,ly);
   if(ln<1e-6){lx=-.86;ly=-.51;}else{lx/=ln;ly/=ln;}   /* пока станция не встала на орбиту — свет слева сверху */
@@ -538,49 +491,16 @@ function drawStation(x,y,Z){
     /* мастер: плотность — предел зума на экране, по четверть-октавы (как у корпусов) */
     const dk=GPU.bw/W,sb=Math.pow(2,Math.ceil(Math.log2(1.5*1.7*dk)*4)/4);
     const M=stationMaster((G.sys.key||"?")+"|"+ty+"|"+nb+"|"+SCK+"|"+sb,sb,V,S,ty),R=Math.max(24,80*s);
-    gpuStationDraw(M,x,y,s,lx,ly);
+    if(M)gpuStationDraw(M,x,y,s,lx,ly);
     GPU.oc.push([x,y,R*.5]);   /* L3: заслон звезды для барж у причала */
     /* огни станции — тёплый свет на пришвартованных: борт к станции теплеет */
     gpuLight(x,y,x,y,1,.84,.59,R*.9,.7);
-  }else{
-    const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK+"|c";
-    const art=stationArt(key,s,V,S,ty,lx,ly);
-    ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
   }
   /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
      18 тактов, а факел — единственное на станции, что обязано плясать */
   if(ty==="indust"&&pass){
     const t=G.t*.045+V.ph,fl=6.2+Math.sin(t*1.7)*1.6+Math.sin(t*2.9+1.3)*.9,lean=Math.sin(t*1.1+.7)*1.4+Math.sin(t*2.3)*.6;
     gpuStationFlare(pass,x,y,s,t,fl,lean,V);
-  }else if(ty==="indust"){
-    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
-    /* язык пламени как тело (M326): было два эллипса и кружок, длина прыгала по
-       |sin| — «кусками дёргается». Теперь одна замкнутая форма — язык с устья
-       (−28) вверх, кончик гуляет по сумме двух медленных синусов (гладко, без
-       изломов), изнутри — светлое ядро той же формы, снаружи — мягкое свечение.
-       Марева здесь больше нет: оно резало звёзды на полосы и читалось белым
-       дымом вокруг огня (жалоба автора 03.09) */
-    const t=G.t*.045+V.ph;
-    const fl=6.2+Math.sin(t*1.7)*1.6+Math.sin(t*2.9+1.3)*.9;          /* длина 3.7…8.7 */
-    const lean=Math.sin(t*1.1+.7)*1.4+Math.sin(t*2.3)*.6;              /* наклон кончика */
-    const tongue=(w,h,dx)=>{                                            /* язык: устье шириной w, высота h */
-      ctx.beginPath();ctx.moveTo(-w,-28);
-      ctx.bezierCurveTo(-w,-28-h*.45,dx-w*.35,-28-h*.8,dx,-28-h);
-      ctx.bezierCurveTo(dx+w*.35,-28-h*.8,w,-28-h*.45,w,-28);ctx.closePath();
-    };
-    ctx.globalCompositeOperation="lighter";
-    ctx.fillStyle="rgba(255,110,40,.16)";tongue(4.2,fl*1.35,lean*1.2);ctx.fill();   /* свечение */
-    ctx.globalCompositeOperation="source-over";
-    ctx.fillStyle="rgba(255,150,54,.92)";tongue(2.3,fl,lean);ctx.fill();            /* тело */
-    ctx.fillStyle="rgba(255,226,160,.9)";tongue(1.1,fl*.55,lean*.5);ctx.fill();      /* ядро */
-    /* дым (M326): комментарий у трубы десять версий обещал «дым сносит вбок»,
-       а рисовалось только пламя. Клубы считает stackSmoke — он же под тестом:
-       поднимаются, растут, редеют, сносятся в одну сторону */
-    for(const q of stackSmoke(G.t,V.ph,fl)){
-      ctx.fillStyle="rgba(96,92,100,"+q.a.toFixed(3)+")";
-      ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,TAU);ctx.fill();
-    }
-    ctx.restore();
   }
   /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
      читалось поверх её же переборок (M242) */
