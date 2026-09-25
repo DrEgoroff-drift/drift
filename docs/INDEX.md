@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 610 · символов верхнего уровня: 6095
+Файлов: 610 · символов верхнего уровня: 6097
 
 ## СИМВОЛЫ
 
@@ -1486,7 +1486,7 @@ drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPeaceFleet               src/17m-peace-fleet.js:73-144
-drawPirate                   src/12i-pirate-hull.js:489-539
+drawPirate                   src/12i-pirate-hull.js:522-572
 drawPirateBase               src/24a-mode-raid.js:103-133
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
@@ -2217,8 +2217,8 @@ gpuOver                      src/08b-gpu.js:554-574
 gpuPass                      src/08b-gpu.js:428-431
 gpuPipe                      src/08c-gpu-kit.js:20-27
 gpuPipes                     src/08b-gpu.js:345-371
-gpuPirateBody                src/12i-pirate-hull.js:432-437
-gpuPirateLive                src/12i-pirate-hull.js:444-488
+gpuPirateBody                src/12i-pirate-hull.js:463-470
+gpuPirateLive                src/12i-pirate-hull.js:477-521
 gpuPlanet                    src/17ga-gpu-planets.js:320-338
 gpuPresent                   src/08b-gpu.js:614-628
 gpuQuad                      src/08c-gpu-kit.js:277-281
@@ -3950,7 +3950,7 @@ peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
-PGX                          src/12i-pirate-hull.js:443
+PGX                          src/12i-pirate-hull.js:476
 PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
 physRun                      tests/91zzzzy-phys.js:29-37
@@ -3964,13 +3964,14 @@ pinch0                       src/15-input.js:396
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
+PIR_LOD                      src/12i-pirate-hull.js:462
 PIR_SS                       src/12i-pirate-hull.js:17
 PIRATE_COLS                  src/13-pirates.js:4
 PIRATE_LOADOUT               src/13d-loadout.js:23-28
 PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
 pirateArmTick                src/13d-loadout.js:163-181
-pirateArtOf                  src/12i-pirate-hull.js:238-427
+pirateArtOf                  src/12i-pirate-hull.js:255-456
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
@@ -3979,6 +3980,7 @@ pirateHas                    src/13d-loadout.js:34-37
 pirateLoadout                src/13d-loadout.js:33
 pirateRoleTick               src/13c-roles.js:51-127
 pirateShipId                 src/13-pirates.js:20-27
+pirUnsharp                   src/12i-pirate-hull.js:241-254
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 pl3                          src/01-core.js:109-115
 PLACE_KINDS                  src/11d-place.js:22
@@ -6558,7 +6560,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12h-relic.js · 8 КБ
   · артефакты и лаборатория:1
 
-## src/12i-pirate-hull.js · 32 КБ
+## src/12i-pirate-hull.js · 35 КБ
   · пиратский корпус:1
 
 ## src/12j-home.js · 16 КБ

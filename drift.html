@@ -31377,7 +31377,7 @@ function relicHint(m){
    мира, поэтому каждый пират ОДИН РАЗ выпекается в свою офскрин-канву по seed и
    дальше рисуется картинкой с поворотом — тот же приём, что кэш неба у гиганта
    и тайл материала. */
-const PIR_SS=3;                        // выпекаем крупнее и рисуем мельче
+const PIR_SS=3,PIR_LIFT=.4,PIR_USM=.6;                        // выпекаем крупнее и рисуем мельче
 const PIR_ART={};
 /* четыре класса опознаются с одного взгляда — это и есть смысл затеи */
 const PIR_CLASS={
@@ -31598,6 +31598,23 @@ function pirateBuild(seed,cls,rank){
    ЗАВОДЕ, а не о нём, — но говорит через ограбление: метки закрашены, износ
    вдвое, грунт проступает из-под чужой краски. Дезертир (§7) — тот же корпус,
    только номер закрашен свежо и ровно, как это делают свои. */
+/* нерезкая маска по выпечке (раз на выпечку): корпусный свет на видеокарте не множит
+   контраст, как станционный, и сварка мылилась; деталь в экранный пиксель (r = ss выпечки)
+   поднимается на k. Среднее — по покрытию (альфа): край корпуса не тянет в чёрное */
+function pirUnsharp(cv,r,k){
+  const w=cv.width,h=cv.height,g=cv.getContext("2d"),im=g.getImageData(0,0,w,h),d=im.data,n=w*h;
+  const A=new Float32Array(n*4),Bf=new Float32Array(n*4);
+  for(let i=0;i<n;i++){const a=d[i*4+3]/255;A[i*4]=d[i*4]*a;A[i*4+1]=d[i*4+1]*a;A[i*4+2]=d[i*4+2]*a;A[i*4+3]=a;}
+  const box=(S,T,dx,dy,len,cnt,step)=>{for(let o=0;o<cnt;o++){const b=o*(dx?w:1);
+    for(let c=0;c<4;c++){let acc=0;for(let j=-r;j<=r;j++){const q=Math.min(len-1,Math.max(0,j));acc+=S[(b+q*step)*4+c];}
+      for(let j=0;j<len;j++){T[(b+j*step)*4+c]=acc/(2*r+1);
+        const qa=Math.min(len-1,j+r+1),qb=Math.max(0,j-r);acc+=S[(b+qa*step)*4+c]-S[(b+qb*step)*4+c];}}}};
+  box(A,Bf,1,0,w,h,1);const C=new Float32Array(n*4);box(Bf,C,0,1,h,w,w);
+  for(let i=0;i<n;i++){const a=A[i*4+3];if(a<=0)continue;const ca=C[i*4+3];if(ca<=1e-4)continue;
+    /* вверх — с запасом до белого: светлая деталь не выгорает в бледное */
+    for(let c=0;c<3;c++){const v=A[i*4+c]/a,m=C[i*4+c]/ca,e=k*(v-m);d[i*4+c]=Math.max(0,Math.min(255,v+(e>0?e*(1-v/255):e)));}}
+  g.putImageData(im,0,0);
+}
 function pirateArtOf(id,rogue,hurt,rank,des){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
@@ -31766,8 +31783,20 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      равноправных пятен: у сварки не было ни верха, ни низа. Свет кладётся
      последним по всей выпечке разом (`source-atop` — только по нарисованному),
      и куски сразу становятся одним телом, освещённым сверху.
-     На видеокарте свет кладёт gpuLitSprite по рельефу, от звезды (G4). */
-  if(!GPU.on){
+     На видеокарте свет кладёт gpuLitSprite по рельефу, от звезды (G4), корпусным светом:
+     выпечке остаётся подъём умножением (выпечка сама на себя, lighter, PIR_LIFT) и низ на .28 —
+     сторону тени решает звезда. Не белым налётом: налёт .34 съедал треть местного контраста,
+     и сварка мылилась против станционного множителя */
+  if(GPU.on){
+    const t=document.createElement("canvas");t.width=cn.width;t.height=cn.height;t.getContext("2d").drawImage(cn,0,0);
+    ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation="lighter";ctx.globalAlpha=PIR_LIFT;ctx.drawImage(t,0,0);ctx.restore();
+    pirUnsharp(cn,PIR_SS,PIR_USM);
+    ctx.globalCompositeOperation="source-atop";
+    const q=ctx.createLinearGradient(0,-B.hw*1.5,0,B.hw*1.6);
+    q.addColorStop(0,"rgba(0,0,0,0)");q.addColorStop(.5,"rgba(0,0,0,0)");q.addColorStop(1,"rgba(0,0,0,.28)");
+    ctx.fillStyle=q;ctx.fillRect(-rad,-rad,rad*2,rad*2);
+    ctx.globalCompositeOperation="source-over";
+  }else{
   ctx.globalCompositeOperation="source-atop";
   const lg=ctx.createLinearGradient(0,-B.hw*1.5,0,B.hw*1.6);
   lg.addColorStop(0,"rgba(255,238,214,.34)");
@@ -31791,12 +31820,16 @@ function pirateArtOf(id,rogue,hurt,rank,des){
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──
    Повреждения копятся вместе с hp, выхлоп грязный и несинхронный — и то и
    другое меняется каждый кадр, поэтому идёт поверх выпечки. */
-/* корпус пирата светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale */
+/* корпус пирата светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale.
+   Корпусный свет (glow −1, как свой корабль и флот): станционный множитель выбеливал обшивку */
+const PIR_LOD=-1.6;
 function gpuPirateBody(p,x,y,s){
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
   const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
   let lx=-p.x,ly=-p.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
-  return gpuLitSprite(art.cn,x,y,art.rad*s,s,p.a,lx,ly,0);
+  /* мастер с мипами, уровень чуть резче родного (как у флота, FLEET_LOD): выпечка ×3 */
+  const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.width/(2*R*GPU.bw/W))+PIR_LOD);
+  return gpuLitSprite(gpuMipTex(art.cn),x,y,R,s,p.a,lx,ly,-1,0,lod);
 }
 /* живой слой пирата на видеокарте (бой, ступень 1): то, что drawPirate кладёт поверх
    выпечки, — в проход сцены. over=false — под корпусом: факел шейдером своего корабля
