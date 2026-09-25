@@ -403,7 +403,13 @@ function cockpitPaint(c,P){
   c.closePath();
   c.fillStyle="#0a1017";c.fill();
   c.strokeStyle=rgba(A,.4);c.lineWidth=1.2;c.stroke();
+
+  /* погашенные лампы стоек — часть рамы; горящую кладёт сцена поверх (cockpitLeds) */
+  c.fillStyle="rgba(255,255,255,.05)";
+  for(let s=-1;s<=1;s+=2)for(const L of P.leds){c.beginPath();c.arc(s<0?P.pw*.42:W-P.pw*.42,L.y,L.r,0,TAU);c.fill();}
 }
+/* лампа стойки горит? моргает вразнобой, у каждой свой период (план — cockpitPlan) */
+function ckptLedOn(L,t){return L.on&&Math.sin(t*L.sp+L.ph)>-.35;}
 function drawCockpit(b,st){
   const C=cockpitTex(G.shipId), P=C.plan, K=P.K, A=hex2rgb(P.acc);
   const D=P.dashY, DH=P.dashH, UH=P.UH, x0=P.x0, BW=P.BW;
@@ -428,21 +434,8 @@ function drawCockpit(b,st){
      наблюдения. Подписей на ней нет — толкует игрок */
   if(typeof tapeStrip==="function")tapeStrip(P,FS);
 
-  /* ── лампы на боковых стойках: моргают вразнобой ──
-     на слое приборов здесь только погашенная лампа, горящую кладёт свой холстик над ним
-     (24bc, bhudLeds): мигание не перерисовывает кабину */
-  const ledDom=bhudLedDom();
-  for(let s=-1;s<=1;s+=2)for(let li=0;li<P.leds.length;li++){
-    const L=P.leds[li],x=s<0?P.pw*.42:W-P.pw*.42;
-    const on=L.on&&Math.sin(G.t*L.sp+L.ph)>-.35;
-    if(ledDom){ctx.fillStyle="rgba(255,255,255,.05)";ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();continue;}
-    ctx.fillStyle=on?K.led:"rgba(255,255,255,.05)";
-    ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();
-    if(on){
-      ctx.globalAlpha=.22;ctx.beginPath();ctx.arc(x,L.y,L.r*3.4,0,TAU);ctx.fill();
-      ctx.globalAlpha=1;
-    }
-  }
+  /* лампы на боковых стойках — в сцене (25-cockpit-gpu, cockpitLeds): погашенные запечены в
+     раму, горящие светят сами и моргают без перерисовки этого слоя */
 
   /* ── доска: только то, что отвечает «куда лететь и на чём» ──
      Убраны два боковых экрана, потолочные столбики тяги, показания тангажа и

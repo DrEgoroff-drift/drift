@@ -91,6 +91,16 @@ the backdrop in one pass), then the cockpit part of G12.
    windows and the druse crystals glow on their own (flag `e`), untouched. Also checked: the direct
    no-MSAA path at 411×742 ×1.5 (`scratchpad/pair-phone.png`, halved) — rocks lit, struts lit, 0 errors.
 
+5. **The strut lamps live in the scene** — `25-cockpit` (`ckptLedOn`, dark lamps in `cockpitPaint`),
+   `25-cockpit-gpu` (`cockpitLeds`), `24bc` (−`bhudLed`, `bhudLeds`, `bhudLedDom`, `ledK`), tests.
+   - The lit lamps were small native-DPR DOM canvases above `#hud` (`LABDOM` in 08bh), moved and shown
+     or hidden by style writes as they blinked; the dark ones were redrawn on `#hud`. Now the dark lamps
+     are part of the frame bake, the lit ones are two kit discs after the cockpit field — a core and an
+     additive soft halo that the frame's bloom picks up — blinking every frame for free. `LABDOM` is no
+     longer used by the belt (08bh keeps it; `08bi` only reads `LABDOM.box`).
+   - `ckptLedOn(L,t)` is the one blink formula. Mutant `belt-led-hud` re-aimed at it (lamps that never
+     blink); the new Node suite «лампы стоек кабины» kills it (checked by hand: 1 red).
+
 ## Pairs (760×475 ×1, scratchpad of session 75d5c549, never in git)
 
 - `scratchpad/pair-belt.png` (`before-belt.png` | `after-belt.png`), the scene: `system` + `--js
@@ -115,6 +125,9 @@ the backdrop in one pass), then the cockpit part of G12.
   `scratchpad/c5.png` — the maw ×3.
 - Commit 4: `scratchpad/pair4-poi.png` (`before-poi.png` | `after4-poi.png`, same staging). **Better:** the wreck and
   the rig have a lit end and a shaded end from the star's side instead of one flat grey; `scratchpad/c6.png` ×2.
+- Commit 5: `scratchpad/pair5-belt.png` (`before-belt.png` | `after5-belt.png`); `scratchpad/c78.png` — both pillars ×3,
+  before | after. **Better:** a lit lamp is a small light with a soft glow and bloom, not a flat disc with
+  a .22 halo; the pillars' window edges catch the star.
 - `scratchpad/pair-phone.png`: 411×742 ×1.5, `belt.js`, before | after (the direct gpuScene3D path).
 
 ## Requests for files outside the zone

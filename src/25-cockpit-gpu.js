@@ -62,4 +62,18 @@ function cockpitGpu(pass,b,star,sf,sdx,sdy,scol){
   U[12]=K.tint[0]/255;U[13]=K.tint[1]/255;U[14]=K.tint[2]/255;U[15]=P.dashY;
   U[16]=A[0]/255;U[17]=A[1]/255;U[18]=A[2]/255;
   gpuField(pass,"belt.ckpt",CKGPU_WGSL,U,[B]);
+  cockpitLeds(pass,P);
+}
+/* горящие лампы стоек — в сцене, после рамы: ядро и ореол сложением, свечение кадра даёт им
+   настоящий ореол (в 2D — диск в .22 альфы на своём холстике над слоем приборов) */
+const CKLED=[[],[]];
+function cockpitLeds(pass,P){
+  const C=CKLED[0],A=CKLED[1],c=hex2rgb(P.K.led);C.length=0;A.length=0;
+  for(let s=-1;s<=1;s+=2)for(const L of P.leds){
+    if(!ckptLedOn(L,G.t))continue;
+    const x=s<0?P.pw*.42:W-P.pw*.42;
+    C.push([1,x,L.y,L.r,0,0,0,c[0],c[1],c[2],1]);
+    A.push([1,x,L.y,L.r*1.3,0,0,L.r*3.2,c[0],c[1],c[2],.42]);
+  }
+  if(C.length){gpuShapes(pass,C);gpuShapes(pass,A,{blend:"add"});}
 }
