@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6288
+Файлов: 630 · символов верхнего уровня: 6296
 
 ## СИМВОЛЫ
 
@@ -49,11 +49,11 @@ _mapDirty                    src/15-input.js:124
 _suite                       tests/90-harness.js:11
 ABIL                         src/16c-abil.js:15-23
 ABIL_BTN                     src/16c-abil.js:111
-ABIL_CONE                    src/16c-abil.js:126
+ABIL_CONE                    src/16c-abil.js:128
+ABIL_CONE_WGSL               src/16c-abil.js:129
 ABIL_HOLD                    src/16c-abil.js:24
 ABIL_KEY                     src/16c-abil.js:99
 ABIL_ST                      src/16c-abil.js:25
-abilCone                     src/16c-abil.js:127-136
 abilFire                     src/16c-abil.js:40-83
 abilHintRect                 tests/91zzx-mobile.js:423-431
 abilKind                     src/16c-abil.js:26
@@ -150,7 +150,9 @@ ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:550-597
+artGet                       src/08ca-gpu-canvas.js:454
 ARTIFACTS                    src/12h-relic.js:48-63
+artPut                       src/08ca-gpu-canvas.js:455-572
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
@@ -786,7 +788,7 @@ CHIP_POS                     src/17-mode-system.js:14
 CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
-chipDist                     src/17-mode-system.js:709-715
+chipDist                     src/17-mode-system.js:695-701
 chipDom                      src/08bi-gpu-ovl.js:114-129
 chipDomSnap                  src/08bh-gpu-hud.js:36-41
 chipDomSweep                 src/08bh-gpu-hud.js:68-74
@@ -1427,7 +1429,7 @@ draftAll                     src/27jb-kb.js:24
 draftOf                      src/27jb-kb.js:26-42
 draftSave                    src/27jb-kb.js:43-47
 draftTowerAt                 src/27jb-kb.js:49-54
-drawAbil                     src/16c-abil.js:137-165
+drawAbil                     src/16c-abil.js:140-168
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-698
@@ -1485,7 +1487,7 @@ drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-360
-drawFleetShip                src/12ai1-fleet-art.js:445
+drawFleetShip                src/12ai1-fleet-art.js:447
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
@@ -1568,11 +1570,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:716-1000
+drawSysHud                   src/17-mode-system.js:702-986
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:58-92
-drawSystem                   src/17-mode-system.js:498-704
+drawSystem                   src/17-mode-system.js:498-690
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -1892,10 +1894,10 @@ fleaRec                      src/12ua-flea.js:34-39
 fleaRender                   src/12ua-flea.js:186-226
 fleaScrip                    src/12ua-flea.js:122
 FLEET                        src/04b-fleet.js:107
-FLEET_ART                    src/12ai1-fleet-art.js:12
+FLEET_ART                    src/12ai1-fleet-art.js:14
 FLEET_CLASSES                src/12ai-fleet.js:20-40
 FLEET_COOL                   src/13-combat.js:212
-FLEET_ENG                    src/12ai1-fleet-art.js:408
+FLEET_ENG                    src/12ai1-fleet-art.js:410
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
@@ -1905,7 +1907,7 @@ FLEET_N                      src/04b-fleet.js:106
 FLEET_NAMES                  src/12ai-fleet.js:41
 FLEET_NORM_SHIFTS            src/12ai-fleet.js:46
 FLEET_NOTE                   src/04b-fleet.js:61-79
-FLEET_PAINT                  src/12ai1-fleet-art.js:16
+FLEET_PAINT                  src/12ai1-fleet-art.js:18
 FLEET_PAL                    src/04b-fleet.js:87-94
 FLEET_PERIOD                 src/12ai-fleet.js:45
 FLEET_PLACES                 src/12ai-fleet.js:44
@@ -1915,14 +1917,14 @@ FLEET_TIER_CLS               src/04b-fleet.js:46-53
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16-29
 fleetArtBaked                tests/91zzza-cave-props.js:135
-fleetArtJob                  src/12ai1-fleet-art.js:31-368
-fleetArtOf                   src/12ai1-fleet-art.js:22-30
+fleetArtJob                  src/12ai1-fleet-art.js:33-370
+fleetArtOf                   src/12ai1-fleet-art.js:24-32
 fleetArtRef                  tests/91zzza-cave-props.js:130-134
 fleetCaravanActive           src/12ai-fleet.js:311-317
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:309
 fleetFire                    src/13-combat.js:213-234
-fleetGlyph                   src/12ai1-fleet-art.js:371-403
+fleetGlyph                   src/12ai1-fleet-art.js:373-405
 fleetHailFirst               src/12ai-fleet.js:165-185
 fleetHere                    src/12ai-fleet.js:50-87
 fleetInteract                src/12ai-fleet.js:186-306
@@ -1934,8 +1936,8 @@ fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipAt                  src/12ai1-fleet-art.js:415-443
-fleetShipGpu                 src/12ai1-fleet-art.js:409-413
+fleetShipAt                  src/12ai1-fleet-art.js:417-445
+fleetShipGpu                 src/12ai1-fleet-art.js:411-415
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
 floraOf                      src/20e-species.js:91-105
@@ -2061,16 +2063,16 @@ GC_MIP_WGSL                  src/08ca-gpu-canvas.js:330
 GC_MISS                      src/08ca-gpu-canvas.js:27
 GC_OPS                       src/08ca-gpu-canvas.js:13-58
 GC_OPX                       src/08ca-gpu-canvas.js:26
-GC_POOL_CAP                  src/08ca-gpu-canvas.js:393
-GC_POOL_WARM                 src/08ca-gpu-canvas.js:394
-GC_PX                        src/08ca-gpu-canvas.js:445
+GC_POOL_CAP                  src/08ca-gpu-canvas.js:394
+GC_POOL_WARM                 src/08ca-gpu-canvas.js:395
+GC_PX                        src/08ca-gpu-canvas.js:460
 GC_RAMPS                     src/08ca-gpu-canvas.js:65
 GC_SHADOW_INK                src/08cb-gpu-text.js:11
 GC_ST                        src/08ca-gpu-canvas.js:339-362
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
-GC_VA                        src/08ca-gpu-canvas.js:446
+GC_VA                        src/08ca-gpu-canvas.js:461
 GC_WGSL                      src/08ca-gpu-canvas.js:291
 gcAtlas                      src/08cb-gpu-text.js:56-70
 gcBlurDesc                   src/08cc-gpu-shadow.js:38
@@ -2089,10 +2091,10 @@ gcMipPipe                    src/08ca-gpu-canvas.js:378
 gcNo                         src/08ca-gpu-canvas.js:28
 gcPipe                       src/08ca-gpu-canvas.js:363-366
 gcPipeDesc                   src/08ca-gpu-canvas.js:367-377
-gcPool                       src/08ca-gpu-canvas.js:401-437
-gcPoolBuf                    src/08ca-gpu-canvas.js:422-437
-gcPoolSet                    src/08ca-gpu-canvas.js:412-437
-gcPoolSpec                   src/08ca-gpu-canvas.js:396-437
+gcPool                       src/08ca-gpu-canvas.js:402-438
+gcPoolBuf                    src/08ca-gpu-canvas.js:423-438
+gcPoolSet                    src/08ca-gpu-canvas.js:413-438
+gcPoolSpec                   src/08ca-gpu-canvas.js:397-438
 gcRectSp                     src/08ca-gpu-canvas.js:239
 gcShadowPack                 src/08cc-gpu-shadow.js:42-48
 gcShadowPasses               src/08cc-gpu-shadow.js:52-65
@@ -2280,20 +2282,21 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:185
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-45
-GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:43
-GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:35-53
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-46
+GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
+GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PL_WGSL                  src/08b-gpu.js:465
 GPU_POST_WGSL                src/08b-gpu.js:79
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:235
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
-gpuAfterWarm                 src/08b0-gpu-pipe.js:70-74
+gpuAfterWarm                 src/08b0-gpu-pipe.js:71-75
 gpuArena                     src/08c-gpu-kit.js:154-164
-gpuBake                      src/08ca-gpu-canvas.js:432-437
-gpuBaked                     src/08ca-gpu-canvas.js:439-442
-gpuBakeDrop                  src/08ca-gpu-canvas.js:443
-gpuBakeRedo                  src/08ca-gpu-canvas.js:447-557
+gpuBake                      src/08ca-gpu-canvas.js:433-438
+gpuBaked                     src/08ca-gpu-canvas.js:442-447
+gpuBakeDrop                  src/08ca-gpu-canvas.js:448
+gpuBakeLive                  src/08ca-gpu-canvas.js:451
+gpuBakeRedo                  src/08ca-gpu-canvas.js:462-572
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:614-619
@@ -2337,10 +2340,10 @@ gpuPass                      src/08b-gpu.js:435-438
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
-gpuPipeRecipe                src/08b0-gpu-pipe.js:46-53
+gpuPipeRecipe                src/08b0-gpu-pipe.js:47-54
 gpuPipes                     src/08b-gpu.js:350-371
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
-gpuPipesWarm                 src/08b0-gpu-pipe.js:56-68
+gpuPipesWarm                 src/08b0-gpu-pipe.js:57-69
 gpuPirateBody                src/12i-pirate-hull.js:417-426
 gpuPirateLive                src/12i-pirate-hull.js:433-477
 gpuPlanet                    src/17ga-gpu-planets.js:320-337
@@ -2470,6 +2473,7 @@ gtrDraw                      src/16ga-gpu-trail.js:43-51
 gtrLane                      src/16ga-gpu-trail.js:37-42
 gtrPush                      src/16ga-gpu-trail.js:31-35
 GUEST_EVERY                  src/21a3-base-people.js:30
+GUN_BAKE                     src/05c-arms.js:264
 GUN_CACHE                    src/05c-arms.js:71
 GUN_FACTORY                  src/05b-guns.js:99-106
 GUN_FAM_KEYS                 src/05b-guns.js:93
@@ -2482,7 +2486,8 @@ GUN_NAMED_BY_ID              src/05b-guns.js:163
 GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
 gunAimTick                   src/05c-arms.js:174-188
-gunBarrelsDraw               src/05c-arms.js:260-309
+gunBake                      src/05c-arms.js:301-313
+gunDims                      src/05c-arms.js:265
 gunFactoryOf                 src/05b-guns.js:171
 gunFamilyApply               src/05c-arms.js:108-139
 gunFamilyKeyOf               src/05b-guns.js:170
@@ -2494,13 +2499,14 @@ gunMiss                      src/05c-arms.js:142-146
 gunNamedRoll                 src/05b-guns.js:165-168
 gunNameOf                    src/05b-guns.js:173-176
 gunOnMount                   src/05c-arms.js:193-202
+gunPaint                     src/05c-arms.js:266-300
 GUNS_CACHE                   src/05c-arms.js:206
 gunSeriesOf                  src/05b-guns.js:169
 gunsInGroup                  src/05c-arms.js:230-233
 gunSpec                      src/05c-arms.js:72-76
 gunSpecMake                  src/05c-arms.js:77-102
 gunSpecs                     src/05c-arms.js:207-218
-gunTotals                    src/05c-arms.js:310-324
+gunTotals                    src/05c-arms.js:336-350
 H_SILENT                     tests/91zzzzzzz-hands.js:39-41
 h01                          src/01-core.js:28
 HAIL_HOLD                    src/12ar-hail.js:20
@@ -2670,13 +2676,14 @@ hexA                         src/12e-drone-flight.js:285-291
 hexa                         src/12w-survey.js:91-94
 hexRGB                       src/24-mode-belt.js:63-65
 HG_BAKE                      src/17c2-hull-gpu.js:11
-HG_BELLY                     src/17c2-hull-gpu.js:12
-HG_FLAME_WGSL                src/17c2-hull-gpu.js:45
-HG_GAIN                      src/17c2-hull-gpu.js:88
-HG_LOD                       src/17c2-hull-gpu.js:19
-HG_SIDE                      src/17c2-hull-gpu.js:14
-HG_THR                       src/17c2-hull-gpu.js:13
-HG_U                         src/17c2-hull-gpu.js:85
+HG_BELLY                     src/17c2-hull-gpu.js:15
+HG_FLAME_WGSL                src/17c2-hull-gpu.js:52
+HG_GAIN                      src/17c2-hull-gpu.js:95
+HG_LOD                       src/17c2-hull-gpu.js:22
+HG_LRU                       src/17c2-hull-gpu.js:14
+HG_SIDE                      src/17c2-hull-gpu.js:17
+HG_THR                       src/17c2-hull-gpu.js:16
+HG_U                         src/17c2-hull-gpu.js:92
 HIN_DOORW                    src/29c-home-in.js:24
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:21
@@ -2940,13 +2947,13 @@ hullBakeKey                  src/03e1-hull-bake.js:32-36
 hullBakeRender               src/03e1-hull-bake.js:107-117
 hullBakeScale                src/03e1-hull-bake.js:27-30
 hullClassOf                  src/03-ships.js:253-268
-hullGpuBake                  src/17c2-hull-gpu.js:27-36
-hullGpuBelly                 src/17c2-hull-gpu.js:37-42
-hullGpuDraw                  src/17c2-hull-gpu.js:128-172
-hullGpuE                     src/17c2-hull-gpu.js:20
-hullGpuFlames                src/17c2-hull-gpu.js:89-107
-hullGpuInserts               src/17c2-hull-gpu.js:110-125
-hullGpuSb                    src/17c2-hull-gpu.js:23-26
+hullGpuBake                  src/17c2-hull-gpu.js:30-43
+hullGpuBelly                 src/17c2-hull-gpu.js:44-49
+hullGpuDraw                  src/17c2-hull-gpu.js:135-179
+hullGpuE                     src/17c2-hull-gpu.js:23
+hullGpuFlames                src/17c2-hull-gpu.js:96-114
+hullGpuInserts               src/17c2-hull-gpu.js:117-132
+hullGpuSb                    src/17c2-hull-gpu.js:26-29
 hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:120-131
@@ -4147,9 +4154,9 @@ pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 PICKUPS                      src/24a-mode-raid.js:24-28
 pinch0                       src/15-input.js:396
-PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-45
-PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:53-83
-pipeWho                      tests/91zzzzzzy4-pipes.js:47-52
+PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-48
+PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:56-86
+pipeWho                      tests/91zzzzzzy4-pipes.js:50-55
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
@@ -5287,6 +5294,7 @@ SHIP_GUARD                   src/17-mode-system.js:20
 SHIP_KEYS                    src/03-ships.js:12
 SHIP_SCALE_MIN               src/16c-rescue.js:200
 shipData                     src/03-ships.js:13
+shipGearGpu                  src/05c-arms.js:315-335
 shipRow                      src/26-ui-station.js:430-475
 SHIPS                        src/03-ships.js:2-11
 shipScaleAt                  src/16c-rescue.js:209
@@ -6375,7 +6383,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05b4-recall.js · 4 КБ
   · отзыв партии (M509, PLAN «new mechanics», st. 6):1
 
-## src/05c-arms.js · 21 КБ
+## src/05c-arms.js · 24 КБ
   · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
 
 ## src/05d-mounts.js · 5 КБ
@@ -6447,7 +6455,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 26 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 46 КБ
+## src/08ca-gpu-canvas.js · 48 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08cb-gpu-text.js · 9 КБ
@@ -6772,7 +6780,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12h-relic.js · 8 КБ
   · артефакты и лаборатория:1
 
-## src/12i-pirate-hull.js · 29 КБ
+## src/12i-pirate-hull.js · 30 КБ
   · пиратский корпус:1
 
 ## src/12j-home.js · 16 КБ
@@ -7009,7 +7017,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gaz-gpu-noise.js · 3 КБ
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 50 КБ
+## src/16gb-gpu-nebula.js · 51 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 76 КБ
@@ -7635,7 +7643,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91a2-edge.js · 3 КБ
   · якорь и стик: кромка — стена, а не болото:1
 
-## tests/91b-crew.js · 18 КБ
+## tests/91b-crew.js · 20 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1
 
 ## tests/91c-mgr.js · 16 КБ
@@ -8282,7 +8290,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy1-gpugate-belt.js · 13 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
-## tests/91zzzzzzy2-gpu-canvas.js · 12 КБ
+## tests/91zzzzzzy2-gpu-canvas.js · 14 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzy3-gate2d.js · 14 КБ
@@ -8294,7 +8302,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy4-pipes.js · 7 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
-## tests/91zzzzzzy5-gpu-loss.js · 4 КБ
+## tests/91zzzzzzy5-gpu-loss.js · 6 КБ
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

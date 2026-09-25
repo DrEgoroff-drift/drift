@@ -31,7 +31,8 @@ function gpuPipeline(key,mk,code){
 /* текст шейдера по имени gpuPipe — для прогрева: [код, раскладка]. Поля (fld.*) — тело поля,
    шапку и раскладку добавляет рецепт. Где выражение длиннее константы, место вызова берёт его отсюда */
 const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>GNB_EMI,"fld.gew":()=>GEW_WGSL,
-  "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY};
+  "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
+  "fld.abil.cone":()=>ABIL_CONE_WGSL};
 const GPU_PIPE_SRC={
   "kit.img":()=>[GPU_IMG_WGSL],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
   gtr:()=>[GTR_WGSL],gex:()=>[GEX_WGSL],"gsy.orb":()=>[GSY_ORB_WGSL],gpl:()=>[GPL_WGSL],

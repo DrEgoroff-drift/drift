@@ -19,6 +19,9 @@ const PIPE_SCENES=[
       /* ×1.5: кегль вывески от 15 точек — неон печёт бледное ядро (destination-out), S23 ловил его ленивым 26.09 */
       G.ship.x=B.x;G.ship.y=B.y+60;G.ship.vx=G.ship.vy=0;G.zoom=1.5;G.zoomT=null;return {B};}
     return null;}},
+  {name:"прожектор разведчика (16c, поле клина)",place(){
+    G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.ap=null;G.orbit=null;G.ship.x=0;G.ship.y=-700;G.ship.vx=G.ship.vy=0;
+    G.zoom=1;G.zoomT=null;ABIL_ST.k="survey";ABIL_ST.on=G.t+600;return true;}},
   {name:"стена у края системы (gew)",place(){
     G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.ap=null;G.orbit=null;
     G.ship.x=0;G.ship.y=-(sysEdge(G.sys)-300);G.ship.vx=G.ship.vy=0;G.zoom=1;G.zoomT=null;return true;}},

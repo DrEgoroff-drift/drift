@@ -217,7 +217,7 @@ function gpuImage(pass,cv,rects,o){
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
-  if(mip&&cv.draw&&cv.dev!==GPU.dev)gpuBakeRedo(cv);   /* выпечка GPU-холста пережила потерю устройства — печём заново */
+  if(mip&&cv.draw)gpuBakeLive(cv);   /* выпечка GPU-холста пережила потерю устройства или ушла из кэша — печём заново */
   const t=mip?cv:gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,mip?gpuMipSmp():GPU.S.lin]));
@@ -340,7 +340,7 @@ function gpuField(pass,name,code,uni,texs,o){
   /* выпечка из кэша модуля (корпус, флот, пираты, баржа) пережила потерю устройства — печём заново,
      как gpuImage: вид мёртвого устройства делает группу привязок, проход и весь кадр негодными */
   const tv=[0,1,2,3].map(k=>{const t=texs&&texs[k];if(!t)return GPU.nView||(GPU.nView=GPU.N.createView());
-    if(t.draw&&t.dev!==GPU.dev)gpuBakeRedo(t);return t.view||gpuCanvasTex(t).view;});
+    if(t.draw)gpuBakeLive(t);return t.view||gpuCanvasTex(t).view;});
   /* привязка на слот: пересобирается, только если сменился буфер или текстуры */
   const key="fld."+slot;let c=GPU.bgs[key];
   const sm=(o&&o.smp)||GPU.S.lin;   /* o.smp — свой сэмплер (трилинейный у мастеров с мипами) */

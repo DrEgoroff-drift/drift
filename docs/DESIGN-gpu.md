@@ -644,7 +644,37 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   dropped device's warm-up opens nothing. Suite «видеокарта: сбой кадра не роняет устройство»; the real loss
   on the stand (shot.py: 30 frames, `gpuDrop(…,true)`, wall clock): new device, 39 keys warm, 0 crashes,
   0 GPU errors, the world draws.
-  Next: 5b (LRU for art caches), 5c (scout searchlight), 5e (reversed smoothstep edges).
+- **5b (art cache LRU) done.** `gpuBaked` is an LRU (`o.keep`, default 32); `artGet`/`artPut` (08ca) give
+  FLEET_ART (24), PIR_ART (24), BARGE_ART (12) an LRU that drops the evicted item's bakes; hull bakes share
+  `HG_LRU` (8, 17c2). Caps by numbers: a tour of 15 systems (90 frames each, spawn) used per system at most
+  7 fleet arts, 3 pirate variants, 1 barge, 1 hull bake — the caps hold three systems. `gpuBakeLive(B)`
+  rebakes a bake from a dead device or one dropped while still held (gpuImage, gpuField, gcImg). Suite
+  «видеокарта: кэши выпечек с потолком, выпавшая выпечка допекается».
+- **5c (scout searchlight) done.** The wedge is a field (`fld.abil.cone`, 16c `ABIL_CONE_WGSL`): radial
+  alpha .102→0 over R = .6·max(W,H) inside ±.35, the side antialiased over one device pixel. It replaces a
+  screen-sized MSAA ×4 bake at 2·DPR (a pool giant on a phone). Pairs before|after: 760 max|d| 6, phone
+  twin 390×844 ×3 max|d| 4, pixels >8: 0 %. The detector flies it (scene «прожектор разведчика»); table 40.
+- **5e (reversed smoothstep edges) done.** WGSL leaves `smoothstep(e0,e1,x)` with e0 > e1 undefined (Metal,
+  iOS Safari). All 11 literal cases (16gb ×9, 17g ×1, 19ca ×1 — three more than the cloud fleet listed) are
+  `(1.-smoothstep(e1,e0,x))`; the 35 non-literal calls all rise for positive inputs. Pairs system, landing,
+  far system at 760: max|d| 1/0/0. Node suite «шейдеры: у smoothstep нет перевёрнутых рёбер» scans the game
+  script. Desktop golden frames were already red before this segment (49f75cf): черпак 5.4 %, дом 3.8 %.
+- **Shadow 512×128 warm set done.** cold3 on S23 saw a 448×64 shadow atlas set born mid-flight (neon,
+  billboard); `GC_POOL_WARM` gains `["shadow",512,128]` (~1.7 MB), the canvas suite asks the pool for 448×64
+  and wants no new texture.
+- **Pad halo: no regression.** With «breathe» frozen at its peak, d35eed1 and now match around the pad.
+- **Golden scoop pair sent to Контроль.** stand.py at eb0e4f37 | now: the world is the same pixel for pixel
+  where the suite points; >8 only in the top HUD strip (fuel/hull/hold block ~2 px lower), 0.64 % / 1.17 %.
+- **gpu2-crew (efbe9968) merged:** the crew watch frame without #c, GPU-2's work.
+- **Golden frames: only the red ones re-taken** (Контроль, option a): черпак and дом at 1280×800, черпак at
+  390×844 (дом was green there). -Accept writes the whole window, so the new take was spliced into HEAD's
+  JSON scene by scene; the other scenes kept their old signatures (they drift within tolerance).
+  -Mobile on the merge: one red, the golden черпак, now green. Pipe table unchanged (40 keys).
+- **Candidate 66b51af6** (S23 cold4 PASS, deep 9.00 ms GPU frame). Queue on top of it, Контроль 26.09:
+  (1) the «кольцо дороги» isolation leak — does not reproduce (alone; gates under -Shuffle 1..3), a watch
+  line in PLAN §10; (2) рейсы → посадка: matTick on the GPU; (3) review findings 5–7, 9, 10; (4) the fleet
+  merge scouting.
+  Next: (2) matTick on the GPU.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
@@ -1846,8 +1876,9 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   gains the billboard scene; mutants `bb-panel-2d`, `bb-strip-2d` die. No new warm-up keys.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
-- **Abilities on the GPU canvas** (16c `drawAbil`, `abilCone`; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.
+- **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.
 - **Fleet masters on the prebake scheduler** (12ai1 `fleetArtOf(f,ahead)`, `fleetArtJob`; 17g `laneShip`, 12ai `drawFleet`): the S23 run had a 100 ms tail on the first build of five lane masters in one frame. The master is now a 17a0 job — the geometry, then the `cn` bake, then `cnA`, one per step; `finally` drops a partial bake. Lane and fleet ships within 1.6 screens off the edge (`pbOnScreen`) step ahead, at most one fleet master per frame (`FLEET_PB` by frameNo); a ship already on screen without a master (load, jump) finishes sync and counts `PB_SYNC`. Masters stay fleet-wide and zoom-free (FLEET_SS 3), cached once as before. Without a device the job runs through at once (geometry, `cn` null, not cached) for the Node tier. `FLEET_PAINT` (WeakMap art → paint recipe) lets M317/M318 check the emblem, the body median and the tank shadow on a 2D reference raster of the same recipe — the GPU bake has no sync readback; M306 counts the shapes sent to `gpuShapes` under a stub scene. Approach probe (cache cleared, 2.8 screens to the holding ellipse over 120 frames, 5 masters): 760 — before 2 masters in one frame, lane 15.1 ms, now ≤1 per frame, 4.5 ms; phone 10.4 → 2.7 ms; PB_SYNC 0; masters now land 25–35 frames earlier, off screen. Fleet stand pairs identical (differences only on the pulsing HUD button).
+- **Own ship gear and the crew watch frame without #c** (05c `gunBake`, `shipGearGpu`; 17 `drawSystem`, edge chips; 91b-crew «наёмник виден…»): the ctx save/translate/rotate/scale block around the own hull is gone. Each gun is one GPU-canvas bake per (size, mount, quarter-octave of twice the zoom-cap density) of the same brush (`gunPaint`), `bakeKeep` cap 12, mipped, drawn by `gpuImage` rotated by course + aim with the `sharp` sample; the launcher is kind-4 rects in the hull axes (fill, a 1-unit outline as four bars, the dry blink). The scene tone lifts dark paint that the old #c front layer added untoned (08b `toneH(s)*a+f.rgb`), so the bake is darkened ×.4 (`source-atop`, alpha kept): stand gz on the hull, p5 of the barrel 15…20 vs 2D 10, vs 29 undarkened. The planet, moon and edge-chip widths come from `gcMeasure` (glyph-atlas metrics), not `ctx.measureText`. The watch check now runs one `gpuManual` frame: calls on #c 0 (any method, named by stack), the ally hull drawn (`allyHullGpu`), 4475 GPU draws; without a device only «does not throw». Watch pair: 760 identical, phone 1.5 differs only on the pulsing «Меню» dot. Gun stand vs 2D: light −1…−4 %, sharpness −1…−8 % on the gun cells — a sprite in the scene cannot match an untoned vector raster one to one; the exact fix is a GPU draw into the front layer (08b core, after the release). No new pipeline variant (`kit.img` over; `sharp` is a per-rect uniform). GPU errors 0; 91b-crew green in Chrome and -Mobile, Node tier green.
 - **Hotel (17l) → three GPU-canvas bakes, cut across frames.** The atlas (house with all windows dark above
   the gap, all lit below) was six 2D half-canvases, three uploads and 2D mips. Now `hotelPaint` is a generator
   (one step = a floor or a part of the house) that records paint and window light at once into two `GcCtx`

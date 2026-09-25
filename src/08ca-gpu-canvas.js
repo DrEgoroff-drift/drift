@@ -282,7 +282,7 @@ function gcStrokeLine(U,q,cl,hw,g,dw){
 }
 /* источник картинки: выпечка GPU-холста; 2D-холст — только переходно (грузится, ворота это видят) */
 function gcImg(img){
-  if(img&&img.view&&img.tex){if(img.draw&&img.dev!==GPU.dev)gpuBakeRedo(img);return {view:img.view,w:img.w,h:img.h};}
+  if(img&&img.draw&&img.o){gpuBakeLive(img);return {view:img.view,w:img.w,h:img.h};}
   if(img instanceof GcCtx)throw gcNo("drawImage(незапечённый GPU-холст)");
   if(img&&img.width&&img.height&&typeof img.getContext==="function"){const t=gpuCanvasTex(img);return {view:t.view,w:img.width,h:img.height};}
   throw gcNo("drawImage("+(img&&img.constructor&&img.constructor.name||typeof img)+")");}
@@ -389,9 +389,10 @@ function gcMipDesc(){const m=gpuShader(GC_MIP_WGSL);return {layout:"auto",vertex
    следующей выпечки встаёт после чтения прошлой ── */
 /* великан 1024² (выпечки гостиницы 500×340 и её свечения при ss 2 — 1024×704) живёт в пуле с загрузки: холодный S23
    на 49f75cf (26.09) — подлёт к гостинице создал 6 разовых наборов 1024² разом (~120 МБ с обнулением), кадр 67 мс.
-   Прогрев с ним ~54 МБ; разовым остаётся только набор больше половины потолка */
+   Прогрев с ним ~54 МБ; разовым остаётся только набор больше половины потолка. Тень 512×128 — полоса
+   неона и щита (448×64 рождалась посреди полёта, холодный S23 cold3) */
 const GC_POOL_CAP=80<<20;
-const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["bake",1024,1024],["shadow",256,256],["shadow",512,512],["ramp",256,128]];
+const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["bake",1024,1024],["shadow",256,256],["shadow",512,128],["shadow",512,512],["ramp",256,128]];
 /* наборы: [формат, выборок, usage] — все одного размера */
 function gcPoolSpec(role){
   const U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT,TB=U.TEXTURE_BINDING;
@@ -435,12 +436,26 @@ function gpuBake(w,h,draw,o){
   let n=1;if(o.mips!==false)while(n<9&&(w>>n)>=4&&(h>>n)>=4)n++;
   const B={w,h,n,draw,o,tex:null,view:null,dev:null};gpuBakeRedo(B);return B;
 }
-/* кэш выпечек по ключу: устройство потеряно и поднято — печём заново тем же draw */
+/* кэш выпечек по ключу: устройство потеряно и поднято — печём заново тем же draw.
+   Недавние держатся (o.keep, по умолчанию 32), старейшая — долой с текстурой: без потолка
+   кэш рос с каждой новой системой (ревью 25.09 п. 4) */
 function gpuBaked(M,key,w,h,draw,o){
-  let B=M.get(key);if(B&&B.dev===GPU.dev)return B;
-  if(B)gpuBakeDrop(B);B=gpuBake(w,h,draw,o);if(B)M.set(key,B);return B;
+  let B=M.get(key);if(B&&B.dev===GPU.dev){M.delete(key);M.set(key,B);return B;}
+  if(B){gpuBakeDrop(B);M.delete(key);}B=gpuBake(w,h,draw,o);if(!B)return B;M.set(key,B);
+  const cap=(o&&o.keep)||32;while(M.size>cap){const k=M.keys().next().value;gpuBakeDrop(M.get(k));M.delete(k);}
+  return B;
 }
 function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev)GPU.trash.push(B.tex);B.tex=B.view=null;}}
+/* выпечка годна к рисованию: пережила потерю устройства или ушла из кэша, а держатель ещё рисует её —
+   печём заново тем же draw (все места, что берут вид выпечки: gpuImage, gpuField, gcImg) */
+function gpuBakeLive(B){if(B.dev!==GPU.dev||!B.tex)gpuBakeRedo(B);return B;}
+/* кэш арта (флот, пираты, баржи) — объект по ключу; недавние держатся, старейшая вещь уходит
+   со всеми своими выпечками (ревью 25.09 п. 4: посевы меняются каждые 10–15 минут в каждой системе) */
+function artGet(M,key){const v=M[key];if(v){delete M[key];M[key]=v;}return v;}
+function artPut(M,key,v,cap){
+  M[key]=v;const ks=Object.keys(M);
+  for(let i=0;i<ks.length-cap;i++){const o=M[ks[i]];delete M[ks[i]];for(const f in o){const B=o[f];if(B&&B.draw&&B.o)gpuBakeDrop(B);}}
+  return v;}
 /* GC_PX — точек MSAA, выпеченных с загрузки: prebake (17a0) не начинает шаг, если кадр уже испёк PB_PX */
 let GC_PX=0;
 let GC_VA=new Float32Array(1<<16);   /* вершины выпечки (x,y,краска,u,v) — общий растущий буфер */

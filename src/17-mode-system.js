@@ -594,13 +594,13 @@ function drawSystem(){
       if(G.found.has(m.key)&&mr>2.4){
         ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
         /* имя уступает кораблю (R6): на дальней от него стороне диска */
-        const ly=(m.y>=sh.y)?my+mr+11*uiK():my-mr-5*uiK(),lw=ctx.measureText(m.name).width;
+        const ly=(m.y>=sh.y)?my+mr+11*uiK():my-mr-5*uiK(),lw=gcMeasure(ctx.font,m.name).width;
         domLabel("mo"+(p.idx|0)+"_"+mi,mx,ly,m.name.toUpperCase(),ctx.font,"rgba(154,168,178,.7)","center");BODY_LABELS.push({x0:mx-lw/2,x1:mx+lw/2,y0:ly-8,y1:ly+2});
       }
     }
     if(G.found.has(p.key)){
       ctx.fillStyle="rgba(127,230,216,.55)";ctx.font=uiFont(9);ctx.textAlign="center";
-      const ly=(p.y>=sh.y)?y+r+15*uiK():y-r-7*uiK(),lw=ctx.measureText(p.name).width;   /* имя уступает кораблю (R6) */
+      const ly=(p.y>=sh.y)?y+r+15*uiK():y-r-7*uiK(),lw=gcMeasure(ctx.font,p.name).width;   /* имя уступает кораблю (R6); мерка атласа — без 2D на #c */
       domLabel("pl"+(p.idx|0),x,ly,p.name.toUpperCase(),ctx.font,"rgba(127,230,216,.55)","center");BODY_LABELS.push({x0:x-lw/2,x1:x+lw/2,y0:ly-9,y1:ly+2});
     }
     if(G.ap&&G.ap.kind==="planet"&&G.ap.p===p)reticle(x,y,r+16);
@@ -645,31 +645,17 @@ function drawSystem(){
   if(typeof drawDronesSystem==="function")drawDronesSystem(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
-  ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);
   /* пол масштаба .35, не .55 (M319): на дальнем отъезде корабль в .55 читался
-     крупнее малой луны; ниже .35 он уже не находится глазом */
-  ctx.scale(shipScaleAt(Z),shipScaleAt(Z));   /* один масштаб с буксиром (16c) */
+     крупнее малой луны; ниже .35 он уже не находится глазом. Один масштаб с буксиром (16c) */
+  const shS=shipScaleAt(Z);
   /* корпус на видеокарте (17c2): тело светом звезды, факел и огни — явным светом;
-     2D-пути нет (25.09): без видеокарты нет и полёта */
+     2D-пути нет (25.09): без видеокарты нет и полёта. Стека матриц ctx здесь больше нет —
+     место, курс и масштаб идут числами */
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
-  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shipScaleAt(Z),thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
-  /* стволы на подвесах, повёрнутые по наводке (M363): сборка читается
-     силуэтом раньше первого выстрела */
-  if(typeof gunBarrelsDraw==="function")gunBarrelsDraw(stat().guns,sh.a);
-  /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный
-     сплошной, сухой — только обвод с красной меткой. По нему и без панели
-     ясно, что стрелять нечем */
-  {
-    const stl=stat();
-    if(stl.launcher){
-      const dry=(G.cargo.missile|0)<=0;
-      ctx.fillStyle=dry?"rgba(0,0,0,0)":"rgba(210,220,232,.9)";
-      ctx.strokeStyle=dry?"rgba(255,110,90,.9)":"rgba(40,46,54,.9)";ctx.lineWidth=1;
-      ctx.beginPath();ctx.rect(-5,6.5,9,3);if(!dry)ctx.fill();ctx.stroke();
-      if(dry&&Math.sin(G.t*.2)>0){ctx.fillStyle="rgba(255,110,90,.9)";ctx.fillRect(-1.5,7.3,2,1.6);}
-    }
-  }
-  ctx.restore();
+  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
+  /* стволы на подвесах, повёрнутые по наводке (M363), и пусковая под корпусом (хвост M112):
+     сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c) */
+  {const stl=stat();shipGearGpu(stl.guns,!!stl.launcher,(G.cargo.missile|0)<=0,hsx,hsy,sh.a,shS);}
   if(typeof drawGestureTop==="function")drawGestureTop(zx,zy,Z);   /* жест поверх корпуса (17h) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
@@ -844,7 +830,7 @@ function drawSysHud(zx,zy,sh,sys,U){
     if(dy>1e-6)t=Math.min(t,(inset.y1-H/2)/dy);if(dy<-1e-6)t=Math.min(t,(inset.y0-H/2)/dy);
     const cx=W/2+dx*t,cy=H/2+dy*t;
     const label=m.l+" · "+chipDist(Math.hypot(m.x-sh.x,m.y-sh.y));
-    const tw=ctx.measureText(label).width,cw=tw+26,ch=16;
+    const tw=gcMeasure(ctx.font,label).width,cw=tw+26,ch=16;   /* мерка атласа (08cb): на #c ни одного вызова */
     const onSide=Math.abs(cx-inset.x0)<1||Math.abs(cx-inset.x1)<1;   // боковая кромка → двигаем по y
     cands.push({m,ang,dx,dy,cx,cy,label,cw,ch,onSide,dist:Math.hypot(m.x-sh.x,m.y-sh.y)});
   }
