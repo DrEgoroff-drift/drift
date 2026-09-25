@@ -48,6 +48,11 @@ new module `17z3-map-gpu`.
    five brightest in frame carry tapered spikes with a white-hot middle (L1.7); rails with a stop inside the jump
    reach burn — additive wide glow, a strong ribbon, a white core — while the rest are a pale frame.
 
+## What is left in the zone
+
+Nothing to port: the backdrop, galaxy stars, system stars, rails and the jump circle's light are on the GPU; what
+remains 2D is deliberate (below). `8` `acf42a3` added the design-pass notes; the fleet was called home 25.09.
+
 ## What stays 2D, on purpose
 
 Text everywhere (galaxy and nebula names, the system card, labels, rulers' numbers), and the address/holding
