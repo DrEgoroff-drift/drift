@@ -393,7 +393,7 @@ function drawWrecksSystem(zx,zy,Z){
    последним слоем. Но язык другой — не сварной ком, а длинный работяга:
    вытянутое тело, хребет с контейнерами, большие тихоходные движки, ходовая
    рубка у носа. Оружия нет вовсе. Печётся один раз на seed в офскрин. */
-const BARGE_SS=3;
+const BARGE_SS=3,BARGE_LOD=-2.5;   /* вблизи уровень 0, вдали мип на полтора шага крупнее экрана: резкость как у 2D-растра, без ряби (ворота 25.09) */
 const BARGE_ART={};
 function bargeArtOf(b){
   /* ── у баржи тоже есть завод (M369a, §19.4) ──
@@ -402,7 +402,7 @@ function bargeArtOf(b){
      и грунт берутся из той же таблицы, что у корпусов: один слой грамматики на
      всех пятерых генераторов (D24). */
   const by=b.by||(b.by=(typeof makerBySeed==="function")?makerBySeed(b.seed):"gt");
-  const key="bg"+b.seed+"!"+by+(GPU.on?"!g":"");
+  const key="bg"+b.seed+"!"+by;
   if(BARGE_ART[key])return BARGE_ART[key];
   const r=rng(hashi(b.seed,0x5A19,9));
   const L=104+r()*40, hw=L*(.14+r()*.04);
@@ -415,13 +415,13 @@ function bargeArtOf(b){
   const C=[mixc(base,[8,10,14],.72),mixc(base,[10,12,18],.42),
     mixc(base,[236,226,206],.30),mixc(base,[24,28,36],.55)];
   /* ── тело: одна длинная масса под всей сборкой ── */
-  const bodyN=12,body=[],top=[];
+  const bodyN=12,body=[];
   /* ширина по закону завода, концы по-баржевому подрезаны */
   const wAt=t=>hw*(typeof makerWidth==="function"?makerWidth(by,t,b.seed):1)*
     (t<.10?t/.10:(t>.88?(1-t)/.12*.7+.3:1));
   for(let i=0;i<=bodyN;i++){
     const t=i/bodyN,x=lerp(tail,nose,t),w=Math.max(hw*.18,wAt(t));
-    top.push([x,-w]);body.push([x,-w]);
+    body.push([x,-w]);
   }
   for(let i=bodyN;i>=0;i--){
     const t=i/bodyN,x=lerp(tail,nose,t),w=Math.max(hw*.18,wAt(t));
@@ -506,60 +506,47 @@ function bargeArtOf(b){
   lights.push({x:nose*.4,y:-hw,c:"nav",g:0});
   lights.push({x:nose*.4,y:hw,c:"nav",g:1});
 
-  const rad=L*.75;
-  const cn=document.createElement("canvas");
-  cn.width=cn.height=Math.ceil(rad*2*BARGE_SS);
-  const g=cn.getContext("2d");const prev=ctx;ctx=g;
-  g.setTransform(BARGE_SS,0,0,BARGE_SS,rad*BARGE_SS,rad*BARGE_SS);
-  for(const q of polys){
-    ctx.beginPath();ctx.moveTo(q.p[0][0],q.p[0][1]);
-    for(let i=1;i<q.p.length;i++)ctx.lineTo(q.p[i][0],q.p[i][1]);
-    ctx.closePath();
-    ctx.fillStyle=rgba(C[q.c],1);ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,"+(q.e?.5:.24)+")";ctx.lineWidth=q.e?.8:.4;ctx.stroke();
-  }
-  /* контейнеры поверх корпуса: тело коробки, обвод, светлая верхняя грань */
-  for(const k of cont){
-    ctx.fillStyle="rgb("+(k.c[0]|0)+","+(k.c[1]|0)+","+(k.c[2]|0)+")";
-    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.6;
-    ctx.beginPath();ctx.rect(k.x-k.w,k.y1,k.w*2,k.y0-k.y1);ctx.fill();ctx.stroke();
-    /* люк или перемычки — короб не должен быть пустой заливкой */
-    ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=.4;
-    ctx.beginPath();ctx.moveTo(k.x,k.y1);ctx.lineTo(k.x,k.y0);ctx.stroke();
-    /* шов на стыке короба и корпуса темнее обшивки (дизайнер 12.09): светлая
-       кромка сверху читалась щелью света между блоками, а не сваркой */
-    ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.8;
-    ctx.beginPath();ctx.moveTo(k.x-k.w,k.y0);ctx.lineTo(k.x+k.w,k.y0);ctx.stroke();
-  }
-  for(const l of lines){
-    ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
-    ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();
-  }
-  /* ── один свет на всю сборку последним слоем ──
-     на видеокарте его кладёт gpuLitSprite по рельефу, от звезды (G4) */
-  if(!GPU.on){
-  ctx.globalCompositeOperation="source-atop";
-  const lg=ctx.createLinearGradient(0,-hw*2.4,0,hw*1.4);
-  lg.addColorStop(0,"rgba(255,240,216,.32)");
-  lg.addColorStop(.45,"rgba(255,224,196,0)");
-  lg.addColorStop(1,"rgba(0,0,0,.48)");
-  ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);
-  ctx.globalCompositeOperation="source-over";
-  /* верхняя кромка ловит свет — по ней силуэт читается на тёмном космосе */
-  ctx.strokeStyle="rgba(255,238,216,.5)";ctx.lineWidth=.7;
-  ctx.beginPath();
-  top.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
-  ctx.stroke();
-  }
-  ctx=prev;
+  const rad=L*.75,side=Math.ceil(rad*2*BARGE_SS);
+  /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст; свет кладёт
+     gpuLitSprite по рельефу, от звезды (G4). Без видеокарты — null: 2D-пути нет */
+  const cn=gpuBake(side,side,g=>{
+    g.setTransform(BARGE_SS,0,0,BARGE_SS,rad*BARGE_SS,rad*BARGE_SS);
+    for(const q of polys){
+      ctx.beginPath();ctx.moveTo(q.p[0][0],q.p[0][1]);
+      for(let i=1;i<q.p.length;i++)ctx.lineTo(q.p[i][0],q.p[i][1]);
+      ctx.closePath();
+      ctx.fillStyle=rgba(C[q.c],1);ctx.fill();
+      ctx.strokeStyle="rgba(0,0,0,"+(q.e?.5:.24)+")";ctx.lineWidth=q.e?.8:.4;ctx.stroke();
+    }
+    /* контейнеры поверх корпуса: тело коробки, обвод, светлая верхняя грань */
+    for(const k of cont){
+      ctx.fillStyle="rgb("+(k.c[0]|0)+","+(k.c[1]|0)+","+(k.c[2]|0)+")";
+      ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.6;
+      ctx.beginPath();ctx.rect(k.x-k.w,k.y1,k.w*2,k.y0-k.y1);ctx.fill();ctx.stroke();
+      /* люк или перемычки — короб не должен быть пустой заливкой */
+      ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=.4;
+      ctx.beginPath();ctx.moveTo(k.x,k.y1);ctx.lineTo(k.x,k.y0);ctx.stroke();
+      /* шов на стыке короба и корпуса темнее обшивки (дизайнер 12.09): светлая
+         кромка сверху читалась щелью света между блоками, а не сваркой */
+      ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.8;
+      ctx.beginPath();ctx.moveTo(k.x-k.w,k.y0);ctx.lineTo(k.x+k.w,k.y0);ctx.stroke();
+    }
+    for(const l of lines){
+      ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
+      ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();
+    }
+  });
   const art={cn,rad,L,hw,lights,cols:C};
   BARGE_ART[key]=art;return art;
 }
 /* корпус баржи светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale */
 function gpuBargeBody(b,x,y,s){
   const art=bargeArtOf(b);
+  if(!art.cn)return false;
   let lx=-b.x,ly=-b.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
-  return gpuLitSprite(art.cn,x,y,art.rad*s,s,b.a,lx,ly,0);
+  /* мастер с мипами: вблизи уровень 0, как было, вдали — мипы, а не рябь */
+  const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+BARGE_LOD);
+  return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,0,0,lod);
 }
 /* живой слой баржи с видеокарты (ступень 1): огни и зевы — фигурами в проходе сцены,
    то же, что drawBarge кладёт поверх выпечки; x,y — экран, s — масштаб, a — поворот */
@@ -576,7 +563,6 @@ function bargeLiveGpu(pass,b,x,y,s,a){
 }
 function drawBarge(b,lit){
   const art=bargeArtOf(b);
-  if(!lit)ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
   /* живой слой: ходовые огни и рубка мигают — печь их нельзя */
   for(const li of art.lights){
     if(li.c==="nav"){

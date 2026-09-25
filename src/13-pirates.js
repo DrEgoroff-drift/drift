@@ -351,14 +351,13 @@ function killPirate(p){
    LOOT_IC_K радиусов шириной; на экране ложится мипами (кромка 1.4 px при s≈8, как кистью) */
 const LOOT_IC=new Map(),LOOT_IC_R=20,LOOT_IC_K=2.4;
 function lootIcon(col){
-  let c=LOOT_IC.get(col);if(c)return c;
-  c=document.createElement("canvas");c.width=c.height=Math.round(LOOT_IC_R*LOOT_IC_K);
-  const g=c.getContext("2d"),s=LOOT_IC_R;g.translate(c.width/2,c.height/2);
-  g.fillStyle="rgba(20,24,30,.9)";g.strokeStyle=col;g.lineWidth=1.4*s/8;g.lineJoin="miter";
-  g.beginPath();
-  for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
-  g.closePath();g.fill();g.stroke();
-  LOOT_IC.set(col,c);return c;
+  /* выпечка на GPU-холсте (25.09): ни 2D-растра, ни выгрузки мипов */
+  const n=Math.round(LOOT_IC_R*LOOT_IC_K);
+  return gpuBaked(LOOT_IC,col,n,n,g=>{const s=LOOT_IC_R;g.translate(n/2,n/2);
+    g.fillStyle="rgba(20,24,30,.9)";g.strokeStyle=col;g.lineWidth=1.4*s/8;g.lineJoin="miter";
+    g.beginPath();
+    for(let i=0;i<6;i++){const a=i/6*TAU,rr=s*(i%2?.72:1);i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+    g.closePath();g.fill();g.stroke();});
 }
 function drawCombat(zx,zy,Z){
   /* лучи (M364) и болты — светящейся энергией на видеокарте (13z) */
@@ -387,7 +386,7 @@ function drawCombat(zx,zy,Z){
     }
     if(pass){
       /* коробка печётся раз на цвет (lootIcon) и ложится мипами с поворотом */
-      gpuImage(pass,gpuMipTex(lootIcon(col)),[{x,y,w:s*LOOT_IC_K,h:s*LOOT_IC_K,rot:L.spin}],{sharp:true});
+      gpuImage(pass,lootIcon(col),[{x,y,w:s*LOOT_IC_K,h:s*LOOT_IC_K,rot:L.spin}],{sharp:true});
       const c=hex2rgb(col);SH.push([1,x,y,2.2,0,0,0,c[0],c[1],c[2],pulse]);
       continue;
     }
