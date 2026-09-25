@@ -74,3 +74,29 @@ TEST_SUITES.push(()=>suite("комнаты на видеокарте: шахма
   }
   chSel=-1;
 }));
+TEST_SUITES.push(()=>suite("комнаты на видеокарте: дом печётся кусками без дыр",()=>{
+  resetWorld();
+  G.home=homeInit();G.home.tier=HOME_TIERS.length;G.home.sx=G.sx;G.home.sy=G.sy;
+  G.home.trophies=[{k:"a"}];
+  enterHomeIn();
+  const S=G.hin,P=hinPal();
+  for(const up of [0,1]){
+    S.up=up;
+    const R=hinRooms(),span=R[R.length-1].x+R[R.length-1].w;
+    let nb=0,nf=0;
+    for(let x0=R[0].x-HIN_CH;x0<span+HIN_CH;x0+=HIN_CH){
+      const B=roomsRec(HIN_CH+HIN_CHP*2,200,()=>hinPaintBack(R,x0,HIN_CH+HIN_CHP*2,P,S));
+      eq(B.err,"","задний слой, этаж "+up+", кусок с "+x0+" — без громких дыр");nb+=B.g._ops.length;
+      const F=roomsRec(HIN_CH+HIN_CHP*2,200,()=>hinPaintFront(R,x0,HIN_CH+HIN_CHP*2,P));
+      eq(F.err,"","передний слой, кусок с "+x0+" — без громких дыр");nf+=F.g._ops.length;
+    }
+    ok(nb>500&&nf>20,"этаж "+up+": дом записан (задний "+nb+", передний "+nf+" команд)");
+  }
+  S.up=0;
+  const a=hinSig(S,2),b=(G.home.trophies.push({k:"b"}),hinSig(S,2));
+  ok(a!==b,"новый кубок в витрине — новая подпись: куски перепекутся");
+  ok(hinWinXs(hinRooms()).length>=4,"окна первого этажа — через комнату и в кабинете");
+  const n=GPU.on;GPU.on=false;let e="";try{drawHomeIn();}catch(x){e=x.message;}GPU.on=n;
+  eq(e,"","вне кадра drawHomeIn не падает");
+  G.hin=null;G.mode="system";
+}));
