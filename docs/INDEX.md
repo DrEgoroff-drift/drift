@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 620 · символов верхнего уровня: 6181
+Файлов: 620 · символов верхнего уровня: 6184
 
 ## СИМВОЛЫ
 
@@ -369,16 +369,19 @@ BATT_RANGE                   src/21d-battery.js:12
 battAt                       src/21d-battery.js:17-31
 battTarget                   src/21d-battery.js:33-35
 battTick                     src/21d-battery.js:36-65
-BAZ_HULLS                    src/17n-bazaar.js:67
+BAZ_BAKE                     src/17n-bazaar.js:72
+BAZ_CUT                      src/17n-bazaar.js:73
+BAZ_HULLS                    src/17n-bazaar.js:71
 BAZ_THROWN_MAX               src/17n-bazaar.js:9
 bazBought                    src/17n-bazaar.js:19-23
 bazBucket                    src/17n-bazaar.js:18
 bazBuy                       src/17n-bazaar.js:47-61
-bazClose                     src/17n-bazaar.js:116
+bazClose                     src/17n-bazaar.js:150
 bazHere                      src/17n-bazaar.js:10-17
-bazInteract                  src/17n-bazaar.js:109-115
+bazHulk                      src/17n-bazaar.js:74-88
+bazInteract                  src/17n-bazaar.js:143-149
 bazLots                      src/17n-bazaar.js:33-46
-bazOpen                      src/17n-bazaar.js:117-137
+bazOpen                      src/17n-bazaar.js:151-171
 bazPartBase                  src/17n-bazaar.js:31
 bazThrow                     src/17n-bazaar.js:25-30
 BB_BAKE                      src/17k-billboard.js:62
@@ -1423,7 +1426,7 @@ drawBarges                   src/12l-barge.js:594-629
 drawBargesMap                src/12l-barge.js:631-652
 drawBase                     src/21ac-base-draw.js:43-730
 drawBaseBuilding             src/21c-built.js:105-136
-drawBazaar                   src/17n-bazaar.js:68-108
+drawBazaar                   src/17n-bazaar.js:89-142
 drawBeast                    src/20f-fauna.js:231-339
 drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:360
@@ -6961,7 +6964,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17m-peace-fleet.js · 11 КБ
   · мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3):1
 
-## src/17n-bazaar.js · 9 КБ
+## src/17n-bazaar.js · 12 КБ
   · барахолка, которая помнит (M463, DESIGN-life):1
 
 ## src/17o-giants.js · 18 КБ

@@ -56857,48 +56857,82 @@ function bazBuy(L){
    Были плоские прямоугольники с треугольными тентами. Теперь остовы — настоящие
    корпуса из таблицы, мёртвые: без огней, притемнённые, под своими углами, как
    их пришвартовали. Между ними провисшие тенты из ткани (дуга, а не треугольник)
-   и гирлянды, которые качает: каждая лампочка на своём проводе. */
+   и гирлянды, которые качает: каждая лампочка на своём проводе.
+   На видеокарте (25.09, «чистый полёт»): остов с плёнкой — выпечка (08ca gpuBake, одна
+   на корпус), тенты, шесты, провода и лампочки — фигурами прохода сцены, вывеска —
+   слоем подписей. Ходовые огни и бегущая строка остову не положены — в выпечке их нет;
+   тлеющее сопло — средней яркостью, без дрожи (под плёнкой её и так не видно) */
 const BAZ_HULLS=["strizh","skat"];
+const BAZ_BAKE=new Map();   // id|масштаб → выпечка остова (эфемерное, не в сейве)
+const BAZ_CUT=[[176,80,60],[60,122,176],[192,160,64],[90,154,90],[154,90,154]];
+function bazHulk(id,dk){
+  /* мастер — на крупнейший остов (s 1.6, sc .58) шагом в четверть октавы; мельче — мипы */
+  const h=hullOf(id),sb=Math.pow(2,Math.ceil(Math.log2(.58*1.6*dk)*4)/4),side=Math.ceil(hullGpuE(h)*2*sb),key=id+"|"+sb;
+  if(!BAZ_BAKE.has(key)&&BAZ_BAKE.size>=12){const k=BAZ_BAKE.keys().next().value;gpuBakeDrop(BAZ_BAKE.get(k));BAZ_BAKE.delete(k);}
+  const B=gpuBaked(BAZ_BAKE,key,side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);
+    for(const e of h.eng){
+      if(h.lux){g.fillStyle="rgba(8,12,18,.9)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);g.fill();
+        g.strokeStyle=rgba(mixc(luxPal(h).trim,[255,244,214],.3),.9);g.lineWidth=.4;g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);g.stroke();
+        g.fillStyle="rgba(170,215,255,.21)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.3,0,TAU);g.fill();}
+      else{g.fillStyle="rgba(255,140,70,.26)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);g.fill();}}
+    hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);
+    /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом */
+    tracePoly(h.poly);g.fillStyle="rgba(20,18,16,.6)";g.fill();});
+  return B&&{B,E:side/(2*sb)};
+}
 function drawBazaar(zx,zy,Z){
   const B=bazHere();if(!B)return;
   const x=zx(B.x),y=zy(B.y),s=clamp(Z,.5,1.6);
   if(x<-200||x>W+200||y<-200||y>H+200)return;
-  const r=rng(B.seed),ids=Object.keys(SHIPS);
+  const pass=gpuScene();if(!pass)return;
+  const r=rng(B.seed),ids=Object.keys(SHIPS),dk=GPU.bw/W,lod=Math.pow(2,HG_BODY_LOD);
   const hulks=[];
+  /* кривая Безье второго порядка в точке t */
+  const qb=(a,c,b,t)=>(1-t)*(1-t)*a+2*(1-t)*t*c+t*t*b;
   for(let i=0;i<5;i++){
     const hx=x+(r()-.5)*96*s,hy=y+(r()-.5)*64*s,ha=r()*TAU,id=ids[Math.floor(r()*ids.length)]||BAZ_HULLS[0];
-    const hl=hullOf(id),sc=(.42+r()*.16)*s;
+    const hl=hullOf(id),sc=(.42+r()*.16)*s,cs=Math.cos(ha)*sc,sn=Math.sin(ha)*sc,c0=(hl.nose+hl.tail)*.5;
     hulks.push([hx,hy,hl.len*sc,ha]);
-    ctx.save();ctx.translate(hx,hy);ctx.rotate(ha);ctx.scale(sc,sc);
-    ctx.translate(-(hl.nose+hl.tail)*.5,0);
-    drawHull(id,false,false,0);
-    /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом */
-    tracePoly(hl.poly);ctx.fillStyle="rgba(20,18,16,.6)";ctx.fill();
+    /* точка остова (px,py) → экран: сдвиг к середине корпуса, поворот, масштаб */
+    const P=(px,py)=>[hx+(px-c0)*cs-py*sn,hy+(px-c0)*sn+py*cs];
+    const [ox,oy]=P(0,0),K=bazHulk(id,dk);
+    if(K)gpuImage(pass,K.B,[{x:ox,y:oy,w:K.E*2*sc,h:K.E*2*sc,rot:ha}],{lod});
+    if(GPU.sepH.length<8){if(!hl._R){let q=0;for(const p of hl.poly)q=Math.max(q,Math.hypot(p[0],p[1]));hl._R=q*1.3;}
+      GPU.sepH.push([ox,oy,hl._R*sc]);}
     /* тент над остовом: два шеста по бортам и провисшая ткань между ними */
-    const tc=["rgba(176,80,60,.85)","rgba(60,122,176,.85)","rgba(192,160,64,.85)","rgba(90,154,90,.85)","rgba(154,90,154,.85)"][i];
-    const tx0=hl.tail+hl.len*.3,tx1=hl.tail+hl.len*.7,ty=-hl.halfW*1.6,sag=hl.halfW*.5+Math.sin(G.t*.02+i)*1.5;
-    ctx.strokeStyle="rgba(120,110,96,.9)";ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.moveTo(tx0,-hl.halfW*.6);ctx.lineTo(tx0,ty);ctx.moveTo(tx1,-hl.halfW*.6);ctx.lineTo(tx1,ty);ctx.stroke();
-    ctx.fillStyle=tc;ctx.beginPath();ctx.moveTo(tx0,ty);ctx.quadraticCurveTo((tx0+tx1)/2,ty+sag,tx1,ty);
-    ctx.lineTo(tx1,ty-hl.halfW*.35);ctx.quadraticCurveTo((tx0+tx1)/2,ty-hl.halfW*.35+sag*.7,tx0,ty-hl.halfW*.35);ctx.closePath();ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=.6;ctx.stroke();
-    ctx.restore();
+    const tc=BAZ_CUT[i];
+    const tx0=hl.tail+hl.len*.3,tx1=hl.tail+hl.len*.7,tm=(tx0+tx1)/2,ty=-hl.halfW*1.6,ty2=ty-hl.halfW*.35,sag=hl.halfW*.5+Math.sin(G.t*.02+i)*1.5;
+    const SH=[],pw=.6*sc,ow=.3*sc;
+    for(const tx of [tx0,tx1]){const a=P(tx,-hl.halfW*.6),b=P(tx,ty);SH.push([2,a[0],a[1],b[0],b[1],pw,0,120,110,96,.9]);}
+    /* швов — по длине тента на экране (~3 px): у капсул контура круглые концы, частые швы
+       на мелком плане ложатся друг на друга и темнят кромку */
+    const N=clamp(Math.round((tx1-tx0)*sc/3),2,10),A=[],Bt=[];
+    for(let j=0;j<=N;j++){const t=j/N;A.push(P(qb(tx0,tm,tx1,t),qb(ty,ty+sag,ty,t)));Bt.push(P(qb(tx0,tm,tx1,t),qb(ty2,ty2+sag*.7,ty2,t)));}
+    /* полосы ткани: внутренние швы жёсткие — ни щели, ни двойной кромки */
+    for(let j=0;j<N;j++)gpuQuad(SH,A[j],A[j+1],Bt[j+1],Bt[j],[tc[0],tc[1],tc[2],.85],(j<N-1?2:0)|(j>0?8:0));
+    const O=A.concat(Bt.slice().reverse(),[A[0]]);
+    for(let j=0;j<O.length-1;j++)SH.push([2,O[j][0],O[j][1],O[j+1][0],O[j+1][1],ow,0,0,0,0,.35]);
+    gpuShapes(pass,SH);
   }
   /* гирлянды: провод дугой, лампочки на коротких подвесах, качаются не в лад */
-  ctx.strokeStyle="rgba(60,56,50,.9)";ctx.lineWidth=.8;
+  const WR=[],LT=[],gR=5*s,gK=1.1-.35/(gR*dk);
   for(let i=0;i<hulks.length-1;i++){
     const [ax,ay]=hulks[i],[bx,by]=hulks[i+1],mx=(ax+bx)/2,my=(ay+by)/2+12*s;
-    ctx.beginPath();ctx.moveTo(ax,ay-16*s);ctx.quadraticCurveTo(mx,my,bx,by-16*s);ctx.stroke();
-    for(let k=1;k<6;k++){const t=k/6,lx=(1-t)*(1-t)*ax+2*(1-t)*t*mx+t*t*bx,ly=(1-t)*(1-t)*(ay-16*s)+2*(1-t)*t*my+t*t*(by-16*s);
+    let p=[ax,ay-16*s];
+    for(let j=1;j<=16;j++){const t=j/16,q=[qb(ax,mx,bx,t),qb(ay-16*s,my,by-16*s,t)];WR.push([2,p[0],p[1],q[0],q[1],.4,0,60,56,50,.9]);p=q;}
+    for(let k=1;k<6;k++){const t=k/6,lx=qb(ax,mx,bx,t),ly=qb(ay-16*s,my,by-16*s,t);
       const sw=Math.sin(G.t*.045+i*1.3+k*.9)*1.6*s,on=(hashi(i,k,(G.t/40|0))%9)?1:.25;
-      ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+sw,ly+4*s);ctx.stroke();
-      ctx.save();ctx.globalCompositeOperation="lighter";
-      ctx.fillStyle="rgba(255,"+(170+k*12)+",110,"+(.8*on)+")";ctx.beginPath();ctx.arc(lx+sw,ly+4.6*s,.9*s,0,TAU);ctx.fill();
-      const g=ctx.createRadialGradient(lx+sw,ly+4.6*s,0,lx+sw,ly+4.6*s,5*s);g.addColorStop(0,"rgba(255,190,120,"+(.14*on)+")");g.addColorStop(1,"rgba(255,190,120,0)");
-      ctx.fillStyle=g;ctx.fillRect(lx+sw-7*s,ly-3*s,14*s,14*s);ctx.restore();}
+      WR.push([2,lx,ly,lx+sw,ly+4*s,.4,0,60,56,50,.9]);
+      /* лампочка мельче .7 px устройства: covDisc растянул бы её на круг .7 и погасил пик —
+         квадрат той же площади покрытие считает точно, как растр */
+      const br=.9*s,bh=br*.886;
+      LT.push(br*dk<.7?[0,lx+sw-bh,ly+4.6*s-bh,lx+sw+bh,ly+4.6*s+bh,0,0,255,170+k*12,110,.8*on]:[1,lx+sw,ly+4.6*s,br,0,0,0,255,170+k*12,110,.8*on]);
+      /* ореол: был радиальный градиент 0→5s (конус). Мягкий край — гладкая ступень от −.5 px
+         до R+.5: пик тот же, а свет сходится с конусом в 3 % при поправке 1.1−.35/R (R в px) */
+      LT.push([1,lx+sw,ly+4.6*s,0,0,0,gR+.5/dk,255,190,120,.14*on*gK]);}
   }
-  ctx.font="bold "+Math.round(8*s)+"px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillStyle="rgba(240,210,160,.85)";ctx.fillText("БАРАХОЛКА",x,y-48*s);
+  gpuShapes(pass,WR);gpuShapes(pass,LT,{blend:"add"});
+  domLabel("bz"+B.seed,x,y-48*s,"БАРАХОЛКА","bold "+Math.round(8*s)+"px ui-monospace,monospace","rgba(240,210,160,.9)","center");   /* .9: в 2D её поднимал проход сцены */
 }
 function bazInteract(sh){
   const B=bazHere();if(!B)return false;
