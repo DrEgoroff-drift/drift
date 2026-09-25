@@ -29,7 +29,8 @@ New module `src/11va-places-lit.js`:
 
 | # | Commit | What |
 |---|---|---|
-| 1 | *(this push)* | `11va-places-lit` (lamps + the GPU light pass); `21f-home-out` lights the porch lamp, the two windows and the dock beacon instead of 2D blobs; tests `91zt1-places-lit` (registry, day/night, the home's lamps) |
+| 1 | `1ac408b` | `11va-places-lit` (lamps + the GPU light pass); `21f-home-out` lights the porch lamp, the two windows and the dock beacon instead of 2D blobs; tests `91zt1-places-lit` (registry, day/night, the home's lamps) |
+| 2 | *(this push)* | the pass generalised (`placesLitRun`: with ground on the surface, without ground for the belt — `placesGlow`); `placeSun`/`placeShade`/`placeFigure` in `11va` — one way to stand a thing under the same star as the ground (warm side to the star, shadow side, sky on top, ground occlusion below, grain, a rim only on the star's side); `11p` the pass ship (plating seams, a repair plate in the wrong colour, rust streaks under the portholes, soil drifted to the keel, brass-ringed portholes with sky in the glass, a real gangway; lit portholes and hatch light the ground and the pilgrims); `11v` tower/bowl/stair lit by the star, the tower's shadow across the ground, the bowl's inner wall in shade; `11l` the county door (stone jambs and lintel, a planked leaf with iron bands, depth in the opening, warm spill on the threshold and ground at level 2, lit windows and nursery as lamps); `11i` moss jars on stakes around the pad that light it, glow patches light the ground around them; `11g` the three lights' satellites as stars (halo, limb darkening, white core), open shutters light the yard; `11j` grove growths are light sources in the belt (their own surface and neighbouring rocks catch green, HDR halo blooms) instead of a 2D circle; `21g` beds with a dug ridge, clods, the stalk's shadow from the star, leaves lit on the star's side; `21h` the pennant's velvet folds catch the light and travel with the wave |
 
 ## Pairs (scratchpad of session f4cd0b32…, 760×475 dpr 1)
 
@@ -62,6 +63,15 @@ the porch lamp is gone), so **the request below is what makes this commit visibl
    `placeLamp(x+w*.5,y+h*.55,Math.max(w,h)*3.2,[1,.76,.47],.3,-Math.max(w,h))`, would light every
    settlement's yards at night. (The home's windows light their lamps from `21f` already, so after this
    change `21f`'s two window `placeLamp` calls should be removed to avoid double light.)
+
+3. **Belt ship (`24-mode-belt`)** — nothing to change, a note: `groveDraw(b,proj)` (called after the
+   rocks) now ends with `placesGlow()`, i.e. one `gpuOver()` + submit when grove rocks are on screen
+   (only in grove regions). If the belt frame moves its rocks to a 3D pass, keep `groveDraw` after
+   them so the grove's light reads the rocks.
+4. **`src/11p-pass.js` layout (mine, not changed — it is logic)** — in the pass core, `passShipX` puts
+   the ship at settlement+420, and the cave mouth landed at x 5216 against the ship at 5285: the mouth
+   sits inside the hull. The pairs move the cave aside in the stand's `--js`. Placing the ship (or the
+   cave) apart is a world-layout change for the coordinator/author to approve.
 
 ## New render pipelines (for the warm-up table `08b1`)
 

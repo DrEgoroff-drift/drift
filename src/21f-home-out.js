@@ -54,7 +54,6 @@ function homeSpotX(p,tr){
 }
 const HOME_MAN=17;                                    /* тот же человек, что везде */
 const HOME_LAMP=[1,.76,.47];                          /* лампа накаливания: тот же тёплый, что окно */
-
 /* палитра дома: местный камень и дерево, но теплее — это жильё, а не порода */
 function homeOutPal(p){
   const pal=p.T.pal;
@@ -179,7 +178,6 @@ function drawHomeOut(tr,camx,camy,p){
     sdWindow(sx-w*.34,wy,ww*.8,wh*.9,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
       Math.max(nite,.2),11);
     placeLamp(sx-w*.34+ww*.4,wy+wh*.5,M*3.8,HOME_LAMP,.32,-M*1.2);
-
   }
   /* крыльцо и дверь: сюда и входят */
   const dw=w*.20,dh=wallH*.56,dX=sx+plan.doorSide*-.30*w;
