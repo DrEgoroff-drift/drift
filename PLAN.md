@@ -61,6 +61,9 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     CPU; orbits as a triangle strip along the ellipse instead of a bbox quad with `atan2` per pixel;
   - rare regeneration of the nebula with fields (9/n);
   - the post chain: 12 of 15.4 passes a frame are bloom and final — fewer steps, the first straight to ¼,
+    the recipe in `docs/RESEARCH-2026-09-25-gpu.md` P1 (the five up-passes sampled in the final, levels stop at
+    8 px texels, `blurH`/`blurV`/`sigma` deleted) and P2 (`shader-f16` on the ladder); the other picks of that
+    research (particles on compute, cave light by distance field, the star's limb law) wait in their own items;
     merged where the target is the same;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: the chip-jump gate (per-frame shift ≤ CHIP_SPEED·dt + 1 px, stable draw order by id); max|Δ| of
