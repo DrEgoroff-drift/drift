@@ -575,8 +575,8 @@ tangent. The points lie on the curve, so fills do not change.
 a surface material job; the harness has no frames, so a landing or cold-demand suite leaves it queued. The
 next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the job and pays its 2D.
 - `resetWorld` drops `MAT_JOB`: a queued job belongs to the world it was made in.
-- Gate2d names `matTick` a hole. The surface material is 2D until the surface is ported; in the game the
-  planet frame does step it on the approach to a landing.
+- Gate2d named `matTick` a hole until 26.09; now the planet frame runs only `matRows` (arithmetic) and the
+  hole is gone (see «Where I stopped», item 2).
 - Proof: «cold demand» then the gate is green with the fix and red with it reverted
   (`gpuPlanet.putImageData`).
 - The shard 4/6 stall in «сейв: поле мира…» (-Full, killed at 900 s) does not repeat: the shard alone is
@@ -670,7 +670,20 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   390×844 (дом was green there). -Accept writes the whole window, so the new take was spliced into HEAD's
   JSON scene by scene; the other scenes kept their old signatures (they drift within tolerance).
   -Mobile on the merge: one red, the golden черпак, now green. Pipe table unchanged (40 keys).
-  Next: the candidate hash to Контроль.
+- **Candidate 66b51af6** (S23 cold4 PASS, deep 9.00 ms GPU frame). Queue on top of it, Контроль 26.09:
+  (1) the «кольцо дороги» isolation leak — does not reproduce (alone; gates under -Shuffle 1..3), a watch
+  line in PLAN §10; (2) рейсы → посадка: matTick on the GPU; (3) review findings 5–7, 9, 10; (4) the fleet
+  merge scouting.
+- **(2) The ground material: no 2D in the planet frame, and the landing bakes it again.** Since G3
+  (867f709c) only `gpuPlanet` stepped the job, but the first landing frame queues it: on the landing and the
+  surface the tile sat at row 0 (stand: 57 frames, row 0), and the ground had no grain. The stands hid it:
+  shot.py bakes the tile at once. Now `planetMat` steps its own job once per frame (`J.at=G.t`); the 2D
+  consumers (landing, surface, cave, base, dig) ask every frame. `gpuPlanet` calls `matRows`: rows only,
+  no `putImageData`/`createPattern`; the 2D frame that needs the pattern assembles it. Gate2d drops the
+  `matTick` hole, and its planet scene keeps a job queued. With the old call it goes red (2× putImageData,
+  2× createPattern under gpuPlanet). Stand, material dropped mid-landing: ready after 114 frames on the
+  landing and 148 on the surface (headless). New Node suite «выпечка: посадка допекает материал сама».
+  Next: (3) review findings 5–7, 9, 10.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

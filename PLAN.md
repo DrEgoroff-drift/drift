@@ -320,7 +320,9 @@ Check each against the code before building — some may already hold.
   11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl` into
   hashed state.
 - [ ] **Watch:** the quarantined «рейсы» — Омксиий (±3:∓1): «посадка: заход кончился режимом system»
-  (23.09, Node and `-Mobile`); «прогоны: двенадцать путей» flickered once under load; «свет: звезда — самое
+  (23.09, Node and `-Mobile`); «кольцо дороги: отправок ровно по одной» (gate «полёт по переписи») went red
+  once in a whole run for GPU-3 (25.09), neighbour unknown — does not reproduce at 66b51af6 (alone, and the
+  gate set under `-Shuffle 1..3`); «прогоны: двенадцать путей» flickered once under load; «свет: звезда — самое
   светлое» went red once in the pane (the cumulus, `CLOUDS_OFF`) — one look.
 - [ ] **Nets owed (M443–M446):** `TEST_T0` at local noon; a drawn-vs-undrawn hash detector; the tools'
   self-test before the net; not caught yet — the .55 auto-brake, the money-printing counter, idle drones;

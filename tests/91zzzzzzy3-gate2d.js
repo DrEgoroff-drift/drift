@@ -8,9 +8,10 @@
    fleetShipAt грузит его мипы 2D-спуском (gpuMipTex). Уйдёт с переносом облика флота */
 /* текст v2 (08cb): маску строки растрит одна 2D-канва на всю игру (GC_GLYPHS.raster/.measure),
    раз на строку — так устроен текст GPU-холста, это его источник глифов, а не 2D печи */
-/* материал грунта (18a matTick) печётся 2D-канвой по кадрам из gpuPlanet — для посадки и поверхности,
-   которые ещё 2D; в кадре планеты это чужая печь. Уйдёт с переносом поверхности */
-const GATE2D_DYRY=["fleetArtOf","fleetShipAt","matTick","raster","measure","_c","_set"];
+/* материал грунта (18a) дырой больше не числится (26.09): кадр планеты двигает только строки
+   (matRows — арифметика), сборку тайла в 2D-узор делает кадр посадки или поверхности. Сцена планеты
+   держит заказ материала в очереди — порции идут под записью */
+const GATE2D_DYRY=["fleetArtOf","fleetShipAt","raster","measure","_c","_set"];
 /* …но растр строк — своя колонка ворот: у сцены с warm после разгона строк в растр — 0 */
 const GATE2D_TXT=["raster","measure","_c","_set"];
 /* место, где в кадре и подписи мира (планета), и фишка у кромки (станция за краем) */
@@ -48,6 +49,8 @@ const GATE2D=[
        G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;
        G.hold=G.hold||{};G.hold[s.key]={bld:{a:1,b:1,c:1,d:1}};
        if(first&&p.strip)planetStripDrop(p);
+       /* заказ материала грунта в очереди: кадр планеты двигает его строки без 2D */
+       if(first){delete p.mat;delete p.matHue;delete p.matCn;MAT_JOB=null;planetMat(p);}
        const Z=230/p.radius,l=Math.hypot(p.x,p.y)||1;
        G.ship.x=p.x-p.y/l*126/Z;G.ship.y=p.y+p.x/l*126/Z;G.ship.vx=G.ship.vy=0;
        G.zoom=Z;G.zoomT=null;return {p};}
