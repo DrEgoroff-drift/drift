@@ -561,6 +561,19 @@ function gpuBargeBody(b,x,y,s){
   let lx=-b.x,ly=-b.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
   return gpuLitSprite(art.cn,x,y,art.rad*s,s,b.a,lx,ly,0);
 }
+/* живой слой баржи с видеокарты (ступень 1): огни и зевы — фигурами в проходе сцены,
+   то же, что drawBarge кладёт поверх выпечки; x,y — экран, s — масштаб, a — поворот */
+function bargeLiveGpu(pass,b,x,y,s,a){
+  const art=bargeArtOf(b),c=Math.cos(a),n=Math.sin(a),T=(u,v)=>[x+s*(u*c-v*n),y+s*(u*n+v*c)],SH=[];
+  for(const li of art.lights){const [px,py]=T(li.x,li.y);
+    if(li.c==="nav"){const on=Math.sin(G.t*.08+(li.g?1.6:0))>0?.95:.25;
+      SH.push(li.g?[1,px,py,1.6*s,0,0,0,120,240,150,on]:[1,px,py,1.6*s,0,0,0,255,90,80,on]);}
+    else if(li.c==="win")SH.push([1,px,py,1.5*s,0,0,0,255,228,170,Math.sin(G.t*.05)>-.3?.9:.45]);}
+  for(const li of art.lights){if(li.c!=="eng")continue;const [px,py]=T(li.x-1,li.y),r=li.r*s;
+    SH.push([1,px,py,r,0,0,0,10,12,16,.95],[3,px,py,r,0,.4*s,0,0,0,0,.6],
+      [1,px,py,r*.55,0,0,r*.27,255,150,80,.4],[1,px,py,r*.1,0,0,r*.45,255,214,158,.85]);}
+  if(SH.length)gpuShapes(pass,SH);
+}
 function drawBarge(b,lit){
   const art=bargeArtOf(b);
   if(!lit)ctx.drawImage(art.cn,-art.rad,-art.rad,art.rad*2,art.rad*2);
@@ -593,11 +606,20 @@ function drawBarge(b,lit){
   }
 }
 function drawBarges(zx,zy,Z){
+  const pass=gpuScene(),SH=[];
   for(const b of G.barges){
     const x=zx(b.x),y=zy(b.y);
     if(x>-80&&x<W+80&&y>-80&&y<H+80){
       const s=shipScaleAt(Z)*.8;   /* один потолок с кораблём (16c, п. 2) */
       const lit=gpuBargeBody(b,x,y,s);
+      if(pass&&lit){
+        /* с видеокарты (ступень 1): огни — фигурами, полоса — прямоугольниками, имя — подписью */
+        bargeLiveGpu(pass,b,x,y,s,b.a);
+        const hp=clamp(b.hp/b.hullMax,0,1);
+        if(hp<.999)SH.push([0,x-24,y-30,x+24,y-27,0,0,255,255,255,.14],[0,x-24,y-30,x-24+48*hp,y-27,0,0,143,208,138,1]);
+        ctx.textAlign="center";
+        domLabel("bg"+domLabelId(b),x,y+30,"БАРЖА «"+b.capName.toUpperCase()+"»","8px ui-monospace,monospace","rgba(143,208,138,.8)","center");
+        continue;}
       ctx.save();ctx.translate(x,y);ctx.rotate(b.a);ctx.scale(s,s);
       drawBarge(b,lit);
       ctx.restore();
@@ -612,10 +634,12 @@ function drawBarges(zx,zy,Z){
     }else if(G.tech.has("radar")){
       const ang=Math.atan2(b.y-G.ship.y,b.x-G.ship.x);
       const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-32),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-32);
+      if(pass){SH.push([1,mx,my,3,0,0,0,143,208,138,.8]);continue;}
       ctx.fillStyle="rgba(143,208,138,.8)";
       ctx.beginPath();ctx.arc(mx,my,3,0,TAU);ctx.fill();
     }
   }
+  if(SH.length)gpuShapes(pass,SH);
 }
 /* дот баржи на карте: медленная точка на плече маршрута фактора (18-mode-map) */
 function drawBargesMap(vis){

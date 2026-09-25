@@ -34,8 +34,10 @@ function drawBeltRocks(ox,oy,B,Z,shx,shy){
   const lx=-.56,ly=-.83;
   let drawn=0;
   const cap=Math.round(90*G.opts.gfx.draw);
+  /* с видеокарты (ступень 1): грани — треугольниками в проходе сцены (08c, вид 5), #c не трогается */
+  const pass=gpuScene(),SH=[];
   for(let cx=c0x;cx<=c1x;cx++)for(let cy=c0y;cy<=c1y;cy++){
-    if(drawn>=cap)return;
+    if(drawn>=cap)break;
     const cd=Math.hypot(cx*ROCK_CELL+ROCK_CELL*.5,cy*ROCK_CELL+ROCK_CELL*.5);
     if(Math.abs(cd-B.orbit)>ROCK_BAND+ROCK_CELL)continue;
     const hh=hashi(cx,cy,B.seed);
@@ -54,6 +56,16 @@ function drawBeltRocks(ox,oy,B,Z,shx,shy){
     const g=.42+r()*.6, ore=r()<.2;
     const col=[54+96*g,53+92*g,60+98*g];
     const oreCol=[152+r()*88,112+r()*68,62+r()*38];
+    if(pass){const X=(u,v)=>x+s*(u*cr-v*sr),Y=(u,v)=>y+s*(u*sr+v*cr);
+      for(let i=0;i<P.length;i++){
+        const A=P[i],Bp=P[(i+1)%P.length];
+        const mx=(A[0]+Bp[0])*.5,my=(A[1]+Bp[1])*.5,ml=Math.hypot(mx,my)||1;
+        const nx=(mx/ml)*cr-(my/ml)*sr, ny=(mx/ml)*sr+(my/ml)*cr;
+        const li=clamp(.2+(nx*lx+ny*ly)*.9,.07,1.15);
+        const c=(ore&&i%3===0)?oreCol:col;
+        SH.push([5,x,y,X(A[0],A[1]),Y(A[0],A[1]),X(Bp[0],Bp[1]),Y(Bp[0],Bp[1]),Math.min(255,c[0]*li|0),Math.min(255,c[1]*li|0),Math.min(255,c[2]*li|0),1]);
+      }
+      continue;}
     ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.scale(s,s);
     for(let i=0;i<P.length;i++){
       const A=P[i],Bp=P[(i+1)%P.length];
@@ -67,6 +79,7 @@ function drawBeltRocks(ox,oy,B,Z,shx,shy){
     }
     ctx.restore();
   }
+  if(SH.length)gpuShapes(pass,SH);
 }
 /* Крошка пояса неподвижна: угол и радиус каждого камешка заданы seed-ом пояса
    и не меняются никогда. Пересчитывать их генератором на каждом кадре — то же

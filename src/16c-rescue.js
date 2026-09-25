@@ -411,11 +411,105 @@ function haulTick(dt,sh){
     " · "+Math.floor(s/60)+":"+String(s%60).padStart(2,"0"),CUE_TROUBLE);
   return true;
 }
+/* трос: от носа корабля к гаку стрелы с провисом — {nx,ny,cx,cy,tx,ty,al} или null */
+function haulRope(T,art,sS,sB,x,y,sx,sy){
+  const dx=Math.cos(T.ba),dy=Math.sin(T.ba),bL=art.L*(.48+HAUL_BOOM_K)*sB;
+  const tx=x-dx*bL,ty=y-dy*bL;   /* конец стрелы: гак */
+  let nx=null,ny=null,al=1,tens=0;
+  if(T.ph==="haul"){
+    const na=G.ship.a;nx=sx+Math.cos(na)*HAUL_SHIP_HALF*sS;ny=sy+Math.sin(na)*HAUL_SHIP_HALF*sS;
+    tens=clamp(Math.abs(T._sv||0)*70,0,1);
+  }else if(T.ph==="free"){
+    const q=clamp(T.t/HAUL_FREE,0,1),Lr=HAUL_ROPE*sS*(1-.6*q);
+    nx=tx-dx*Lr;ny=ty-dy*Lr;al=1-q;
+  }
+  if(nx==null)return null;
+  const sag=(1-tens)*(10+3*Math.sin(G.t*.03))*sS*(T.ph==="free"?2:1);
+  const mx=(nx+tx)/2,my=(ny+ty)/2,dl=Math.hypot(tx-nx,ty-ny)||1;
+  return {nx,ny,cx:mx-(ty-ny)/dl*sag,cy:my+(tx-nx)/dl*sag,tx,ty,al};
+}
+/* буксир с видеокарты (ступень 1): обломки и искры — фигурами, факелы — той же каплей,
+   что у кисти (срезы по длине, цвет градиента на срез, сложением — общие рёбра срезов
+   складываются в единицу, шва нет; шейдер факела 16ga тонок для короткого толстого языка), корпус — светом звезды (gpuLitSprite, как у торговых барж:
+   кромка и тень — его свет, маска-холст не нужна), ядра, ореол кормы и выхлопы — мягкими
+   кругами сложением, стрела — повёрнутыми прямоугольниками, трос — ломаной. #c не трогается */
+const HAUL_FL=[[0,255,236,190,.95],[.25,255,170,90,.7],[1,255,90,40,0]];
+function haulFlameTris(E,P,lx,ly,ra,len,w){
+  const c=Math.cos(ra),n=Math.sin(ra),Q=(u,v)=>P(lx+u*c-v*n,ly+u*n+v*c),q=t=>{const a=1-t;
+    return [a*a*-1+2*a*t*-len*.45+t*t*-len,a*a*w+2*a*t*w*1.2];};
+  /* срез не шире ~1.2 px экрана: у градиента кисти крутой перегиб, крупный срез — ступенька */
+  const e0=Q(0,0),e1=Q(-len,0),N=clamp(Math.ceil(Math.hypot(e1[0]-e0[0],e1[1]-e0[1])/1.2),8,64);
+  let prev=q(0);
+  for(let i=1;i<=N;i++){
+    const cur=q(i/N),g=-(prev[0]+cur[0])/2/len;let k=0;while(k<HAUL_FL.length-2&&g>HAUL_FL[k+1][0])k++;
+    const A=HAUL_FL[k],B=HAUL_FL[k+1],f=clamp((g-A[0])/(B[0]-A[0]),0,1),C=j=>A[j]+(B[j]-A[j])*f;
+    const a0=Q(prev[0],-prev[1]),a1=Q(cur[0],-cur[1]),b1=Q(cur[0],cur[1]),b0=Q(prev[0],prev[1]),col=[C(1),C(2),C(3),C(4)];
+    gpuQuad(E,a0,a1,b1,b0,col,(i<N?2:0)|(i>1?8:0));
+    prev=cur;
+  }
+}
+function haulGpu(pass,T,b,art,sS,sB,x,y,sx,sy,zx,zy){
+  const D=[],E=[],ca=Math.cos(T.ba),sa=Math.sin(T.ba),P=(u,v)=>[x+sB*(u*ca-v*sa),y+sB*(u*sa+v*ca)];
+  for(const f of HAUL_FX){
+    const fx=zx(f.x),fy=zy(f.y),a=clamp(f.life,0,1);
+    if(f.k==="spark"){D.push([0,fx-1,fy-1,fx+1,fy+1,0,0,255,170+Math.round(80*a),90,+a.toFixed(2)]);continue;}
+    const c=Math.cos(f.a),n=Math.sin(f.a),Q=(u,v)=>[fx+sS*(u*c-v*n),fy+sS*(u*n+v*c)];
+    const box=(u,v,hx,hy,C)=>{const [qx,qy]=Q(u,v);D.push([4,qx,qy,(hx+.5)*sS,(hy+.5)*sS,f.a,0,32,36,43,a],[4,qx,qy,(hx-.5)*sS,(hy-.5)*sS,f.a,0,C[0],C[1],C[2],a]);};
+    if(f.k==="plate")box(0,0,7,4,[109,116,128]);
+    else if(f.k==="antenna"){const [a0,a1]=Q(-9,0),[b0,b1]=Q(9,0),[r0,r1]=Q(9.5,0);
+      D.push([2,a0,a1,b0,b1,.5*sS,0,154,163,173,a],[4,r0,r1,1.5*sS,1.5*sS,f.a,0,255,107,87,a]);}
+    else box(0,0,4,6,[176,112,58]);
+  }
+  if(D.length)gpuShapes(pass,D);D.length=0;
+  const haul=T.ph==="haul";
+  const F=[];
+  if(T._fire)for(const li of art.lights){
+    if(li.c!=="eng")continue;
+    if(haul&&Math.abs(li.y)<art.hw*.25)continue;
+    const fl=.8+.2*Math.sin(G.t*.5+li.y)+.1*rndFx(),len=(26+li.r*3)*fl*(haul?.8:1),w=li.r*1.1;
+    haulFlameTris(F,P,li.x,li.y,haul?-Math.sign(li.y)*.5:0,len,w);
+  }
+  if(F.length)gpuShapes(pass,F,{blend:"add"});
+  let lx=-T.bx,ly=-T.by;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
+  gpuLitSprite(art.cn,x,y,art.rad*sB,sB,T.ba,lx,ly,0);
+  bargeLiveGpu(pass,b,x,y,sB,T.ba);
+  if(T._fire){
+    for(const li of art.lights){
+      if(li.c!=="eng"||(haul&&Math.abs(li.y)<art.hw*.25))continue;
+      const [cx,cy]=P(li.x-li.r*.5,li.y),R=li.r*.95*sB;
+      E.push([1,cx,cy,R*.15,0,0,R*.85,255,244,220,1]);
+    }
+    const [tx,ty]=P(-art.L*.48,0);E.push([1,tx,ty,0,0,0,art.hw*1.6*sB,255,160,85,.45]);
+  }
+  if(T._retro||T._turn){
+    const nose=art.L*.52,hw=art.hw;
+    const puff=(px,py,dx,dy)=>{const n=.6+.4*rndFx(),[qx,qy]=P(px+dx*6*n,py+dy*6*n);E.push([1,qx,qy,0,0,0,10*n*sB,230,240,255,.85]);};
+    if(T._retro){puff(nose,-hw*.5,1,0);puff(nose,hw*.5,1,0);}
+    if(T._turn&&Math.floor(G.t/6)%2===0){puff(nose*.8,-hw,0,-1);puff(-nose*.8,hw,0,1);}
+  }
+  if(E.length)gpuShapes(pass,E,{blend:"add"});
+  if(T.ph!=="come"){
+    const bx0=-art.L*.48,bl=art.L*HAUL_BOOM_K,bh=Math.max(2,art.hw*.25),root=art.L*.06,h2=Math.max(1,bh*.24);
+    const ob=(u0,v0,w,h,C)=>{const [qx,qy]=P(u0+w/2,v0+h/2);D.push([4,qx,qy,w/2*sB,h/2*sB,T.ba,0,C[0],C[1],C[2],1]);};
+    ob(bx0-bl,-bh/2,bl+root,bh,[74,79,87]);ob(bx0-bl,-bh/2,bl+root,h2,[170,178,187]);ob(bx0-bl-2,-bh*.75,3.5,bh*1.5,[42,45,51]);
+  }
+  const R=haulRope(T,art,sS,sB,x,y,sx,sy);
+  if(R){
+    /* светлая жила — непрозрачной, заранее смешанной с тёмной под ней: у ломаной с
+       прозрачностью на каждом стыке была бы бусина */
+    const N=14,pt=i=>{const t=i/N,u=1-t;return [u*u*R.nx+2*u*t*R.cx+t*t*R.tx,u*u*R.ny+2*u*t*R.cy+t*t*R.ty];};
+    const wd=Math.max(1.5,2.6*sS)/2,wl=Math.max(.8,1.2*sS)/2;
+    for(let i=0;i<N;i++){const [a0,a1]=pt(i),[b0,b1]=pt(i+1);D.push([2,a0,a1,b0,b1,wd,0,40,36,30,.9*R.al]);}
+    for(let i=0;i<N;i++){const [a0,a1]=pt(i),[b0,b1]=pt(i+1);D.push([2,a0,a1,b0,b1,wl,0,170,159,134,R.al]);}
+  }
+  if(D.length)gpuShapes(pass,D);
+}
 function drawHaul(zx,zy,Z){
   const T=G.haul;if(!T||typeof drawBarge!=="function")return;
   const b=haulBarge(),art=bargeArtOf(b);
   const sS=shipScaleAt(Z),sB=sS*HAUL_BARGE_K;
   const x=zx(T.bx),y=zy(T.by),sx=zx(G.ship.x),sy=zy(G.ship.y);
+  const pass=gpuScene();if(pass){haulGpu(pass,T,b,art,sS,sB,x,y,sx,sy,zx,zy);return;}
   /* отвалившееся и искры — под баржей и тросом */
   for(const f of HAUL_FX){
     const fx=zx(f.x),fy=zy(f.y),a=clamp(f.life,0,1);
@@ -533,20 +627,9 @@ function drawHaul(zx,zy,Z){
      её концу, с провисом, рывок выбирает провис. На отцепке трос отдан: висит
      со стрелы, укорачивается и гаснет, уходя вместе с баржей */
   {
-    const dx=Math.cos(T.ba),dy=Math.sin(T.ba),bL=art.L*(.48+HAUL_BOOM_K)*sB;
-    const tx=x-dx*bL,ty=y-dy*bL;   /* конец стрелы: гак */
-    let nx=null,ny=null,al=1,tens=0;
-    if(T.ph==="haul"){
-      const na=G.ship.a;nx=sx+Math.cos(na)*HAUL_SHIP_HALF*sS;ny=sy+Math.sin(na)*HAUL_SHIP_HALF*sS;
-      tens=clamp(Math.abs(T._sv||0)*70,0,1);
-    }else if(T.ph==="free"){
-      const q=clamp(T.t/HAUL_FREE,0,1),Lr=HAUL_ROPE*sS*(1-.6*q);
-      nx=tx-dx*Lr;ny=ty-dy*Lr;al=1-q;
-    }
-    if(nx!=null){
-      const sag=(1-tens)*(10+3*Math.sin(G.t*.03))*sS*(T.ph==="free"?2:1);
-      const mx=(nx+tx)/2,my=(ny+ty)/2,dl=Math.hypot(tx-nx,ty-ny)||1;
-      const cx=mx-(ty-ny)/dl*sag,cy=my+(tx-nx)/dl*sag;
+    const R=haulRope(T,art,sS,sB,x,y,sx,sy);
+    if(R){
+      const {nx,ny,cx,cy,tx,ty,al}=R;
       ctx.globalAlpha=al;
       ctx.strokeStyle="rgba(40,36,30,.9)";ctx.lineWidth=Math.max(1.5,2.6*sS);
       ctx.beginPath();ctx.moveTo(nx,ny);ctx.quadraticCurveTo(cx,cy,tx,ty);ctx.stroke();

@@ -219,7 +219,12 @@ function gpuImage(pass,cv,rects,o){
 }
 /* фигуры: items = [[вид, x0,y0,x1,y1, hw, soft, r,g,b,a]] в пикселях CSS, цвет 0..255 и a 0..1:
    вид 0 — прямоугольник (x0,y0)-(x1,y1); 1 — круг (x0,y0) радиуса x1; 2 — отрезок-капсула
-   (x0,y0)-(x1,y1) полутолщины hw; 3 — кольцо (x0,y0) радиуса x1 толщины hw.
+   (x0,y0)-(x1,y1) полутолщины hw; 3 — кольцо (x0,y0) радиуса x1 толщины hw;
+   4 — повёрнутый прямоугольник: центр (x0,y0), полуразмеры (x1,y1), угол hw;
+   5 — треугольник (x0,y0)-(x1,y1)-(hw,soft), без мягкой кромки (грани скал, полотнища);
+   двенадцатое поле — маска жёстких рёбер (1 — первое-второе, 2 — второе-третье, 4 — третье-первое):
+   внутреннее ребро сетки жёсткое, пиксель достаётся ровно одному треугольнику — ни шва, ни
+   лишнего света у острых углов; наружные гладятся по полуплоскости.
    soft>0 — мягкая кромка такой ширины (свечение, боке); o.blend: over | add */
 const GPU_SHP_WGSL=GPU_KIT_WGSL+GPU_WGSL_COMMON+`
 @group(0) @binding(1) var<storage,read> sq:array<vec4f>;
@@ -227,32 +232,60 @@ struct SO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interp
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->SO{
   let a=sq[ii*3u];let b=sq[ii*3u+1u];let c=sq[ii*3u+2u];let k=a.x;let d=ku.res.z;
   let g=vec4f(a.yzw,b.x);let hw=b.y;let so=b.z;let m=1./d+so;
-  var lo:vec2f;var hi:vec2f;
+  var lo:vec2f;var hi:vec2f;var h=vec4f(k,hw*d,so*d,0.);
   if(k<.5){lo=g.xy-m;hi=g.zw+m;}
+  else if(k>4.5){let t=vec2f(hw,so);lo=min(min(g.xy,g.zw),t)-1./d;hi=max(max(g.xy,g.zw),t)+1./d;h.w=b.w;}
+  else if(k>3.5){let r=length(g.zw);lo=g.xy-r-m;hi=g.xy+r+m;h.y=hw;}
   else if(k<1.5||k>2.5){let r=g.z+hw;lo=g.xy-r-m;hi=g.xy+r+m;}
   else{lo=min(g.xy,g.zw)-hw-m;hi=max(g.xy,g.zw)+hw+m;}
-  var o:SO;o.p=kClip(mix(lo,hi,kCorn(vi)));o.col=c;o.g=g*d;o.h=vec4f(k,hw*d,so*d,0.);return o;}
+  var o:SO;o.p=kClip(mix(lo,hi,kCorn(vi)));o.col=c;o.g=g*d;o.h=h;return o;}
+fn eCov(p:vec2f,a:vec2f,b:vec2f,sg:f32,hard:bool)->f32{
+  let e=b-a;let dd=dot(p-a,vec2f(e.y,-e.x)*sg)/max(length(e),1e-4);
+  return select(clamp(.5-dd,0.,1.),select(0.,1.,dd<=0.),hard);}
+fn sdTri(p:vec2f,a:vec2f,b:vec2f,c:vec2f)->f32{
+  let e0=b-a;let e1=c-b;let e2=a-c;let v0=p-a;let v1=p-b;let v2=p-c;
+  let q0=v0-e0*clamp(dot(v0,e0)/max(dot(e0,e0),1e-6),0.,1.);
+  let q1=v1-e1*clamp(dot(v1,e1)/max(dot(e1,e1),1e-6),0.,1.);
+  let q2=v2-e2*clamp(dot(v2,e2)/max(dot(e2,e2),1e-6),0.,1.);
+  let s=sign(e0.x*e2.y-e0.y*e2.x);
+  let w=min(min(vec2f(dot(q0,q0),s*(v0.x*e0.y-v0.y*e0.x)),vec2f(dot(q1,q1),s*(v1.x*e1.y-v1.y*e1.x))),vec2f(dot(q2,q2),s*(v2.x*e2.y-v2.y*e2.x)));
+  return -sqrt(w.x)*sign(w.y);}
 @fragment fn fs(i:SO)->@location(0) vec4f{
-  let p=i.p.xy;let k=i.h.x;var cov=0.;
+  var p=i.p.xy;let k=i.h.x;var cov=0.;
+  if(k>4.5){let A=i.g.xy;let B=i.g.zw;let C=i.h.yz;let m=u32(i.h.w+.5);var c=0.;
+    if(m==0u){c=clamp(.5-sdTri(p,A,B,C),0.,1.);}
+    else{let sg=sign((B.x-A.x)*(C.y-A.y)-(B.y-A.y)*(C.x-A.x));
+      c=min(min(eCov(p,A,B,sg,(m&1u)!=0u),eCov(p,B,C,sg,(m&2u)!=0u)),eCov(p,C,A,sg,(m&4u)!=0u));}
+    let al=i.col.a*c;return vec4f(i.col.rgb*al,al);}
+  if(k>3.5){let cs=cos(i.h.y);let sn=sin(i.h.y);let v=p-i.g.xy;p=vec2f(v.x*cs+v.y*sn,-v.x*sn+v.y*cs);}
   if(i.h.z>0.){
     var dist=0.;
-    if(k<.5){let q=abs(p-(i.g.xy+i.g.zw)*.5)-(i.g.zw-i.g.xy)*.5;dist=length(max(q,vec2f(0.)))+min(max(q.x,q.y),0.);}
+    if(k>3.5){let q=abs(p)-i.g.zw;dist=length(max(q,vec2f(0.)))+min(max(q.x,q.y),0.);}
+    else if(k<.5){let q=abs(p-(i.g.xy+i.g.zw)*.5)-(i.g.zw-i.g.xy)*.5;dist=length(max(q,vec2f(0.)))+min(max(q.x,q.y),0.);}
     else if(k<1.5){dist=length(p-i.g.xy)-i.g.z;}
     else if(k<2.5){let ab=i.g.zw-i.g.xy;let t=clamp(dot(p-i.g.xy,ab)/max(dot(ab,ab),1e-4),0.,1.);dist=length(p-i.g.xy-ab*t)-i.h.y;}
     else{dist=abs(length(p-i.g.xy)-i.g.z)-i.h.y;}
     cov=1.-smoothstep(-.5,i.h.z,dist);
-  }else if(k<.5){cov=covRect(p,i.g);}
+  }else if(k>3.5){cov=covRect(p,vec4f(-i.g.zw,i.g.zw));}
+  else if(k<.5){cov=covRect(p,i.g);}
   else if(k<1.5){cov=covDisc(p,i.g.xy,i.g.z);}
   else if(k<2.5){cov=covSeg(p,i.g.xy,i.g.zw,i.h.y);}
   else{let dd=abs(length(p-i.g.xy)-i.g.z);cov=clamp(.5-(dd-max(i.h.y,.5)),0.,1.)*min(1.,i.h.y/max(i.h.y,.5));}
   let al=i.col.a*cov;return vec4f(i.col.rgb*al,al);}`;
+/* выпуклый четырёхугольник a-b-c-d (точки [x,y]) цветом [r,g,b,a]: два треугольника с жёсткой
+   общей диагональью. hard — маска жёстких сторон ab,bc,cd,da (1,2,4,8): стыки полос и срезов */
+function gpuQuad(SH,a,b,c,d,C,hard){
+  const h=hard|0,al=C[3]==null?1:C[3];
+  SH.push([5,a[0],a[1],b[0],b[1],c[0],c[1],C[0],C[1],C[2],al,4|(h&1)|(h&2)],
+    [5,a[0],a[1],c[0],c[1],d[0],d[1],C[0],C[1],C[2],al,1|(h&4?2:0)|(h&8?4:0)]);
+}
 function gpuShapes(pass,items,o){
   if(!pass||!items.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.shp",GPU_SHP_WGSL,blend);
   const n=items.length,A=gpuArena("shp",n*12,12),f=new Float32Array(n*12);
   for(let i=0;i<n;i++){const t=items[i],k=i*12;
     f[k]=t[0];f[k+1]=t[1];f[k+2]=t[2];f[k+3]=t[3];f[k+4]=t[4];f[k+5]=t[5]||0;f[k+6]=t[6]||0;
-    f[k+8]=t[7]/255;f[k+9]=t[8]/255;f[k+10]=t[9]/255;f[k+11]=t[10];}
+    f[k+7]=t[11]||0;f[k+8]=t[7]/255;f[k+9]=t[8]/255;f[k+10]=t[9]/255;f[k+11]=t[10];}
   GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("kit.shp|"+blend,P,[gpuKitU(),A.buf]));

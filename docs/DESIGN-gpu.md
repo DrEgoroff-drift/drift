@@ -210,6 +210,19 @@ Then hulls (item 2) by the same «explicit emission» path.
   pairs of the pirates, the missile and the boom, HEAD | now, no dimmer, no softer.
 - Brief of **wrecks and the «left» off #c** (Контроль: a wreck stays after every fight, so flight after a fight
   was back to a full #c copy): the same method; gate — a stand with two wrecks, a hull trace and a marker.
+- Brief of **the tour census** (Контроль: census first, then fix everything met in flight; rocks first; the
+  peace fleet's caption goes to the label layer; belt mode whole is a PLAN line under stage 2): a scripted
+  tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt entry, hotel, planet, dock), 1200 steps each,
+  counts every #c paint by painter. At 5771ce8 flight painted #c in: belt rocks (115/frame at the belt, 32 at
+  Коммуна), «Сорока» (148), the rescue tow and barges (13+10+3), the peace fleet (1); beyond the tour — the
+  law ring and trade barges. The kit gains two shapes: kind 4, an oriented box (centre, half-extents, angle,
+  soft), and kind 5, a triangle with a mask of hard edges (a tessellation's inner edges go to exactly one
+  triangle — no seam, no extra light at sliver tips), and `gpuQuad`. Rocks go as facet triangles; the peace
+  flag as strips and a star of triangles, captions by `domLabel`; the law ring as dash capsules, sign and
+  glow, the numbers by `domLabel`; barges as the star-lit sprite plus nav, window and nozzle discs, the hp bar
+  and the radar dot as rects; the tow as oboxes, a rope of capsules, the barge star-lit like trade barges, the
+  flames as the brush's teardrop cut into ≤ 1.2 px slices with hard inner sides. Gate: the tour at 0 in every
+  flight item, pairs HEAD | now of each painter no dimmer, no softer.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -221,8 +234,11 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   excess was the final glow on the hull's own paint, not the exhaust); the wake at the stern cooled to 2D's
   peak within 20 hull units of the nozzle, further as before; the hotel's windows are pieces of a two-master
   atlas (uploads 0 on any flip); the release rehearsal is green (0.458.0 = 90604dc, not pushed); combat is off
-  #c (gate suite green); wrecks and the «left» off #c. Next: the tour census (dirt.js over a scripted flight
-  tour), then the 0.458.0 notes, -Full and Node on the new HEAD.
+  #c (gate suite green); wrecks and the «left» off #c. The tour census ran (see its brief): belt rocks, the
+  peace fleet, the law ring, trade barges and the rescue tow are off #c (pairs the same; rocks and the tow's
+  barge a touch lighter — the tow's barge now lit by the star like the trade barges). Next: «Сорока» (the
+  last flight painter), the census again to 0, the gate suite for flight scenes, then the 0.458.0 notes,
+  -Full and Node on the new HEAD.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
