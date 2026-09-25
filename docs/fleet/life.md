@@ -66,9 +66,10 @@ therefore have a **control** frame (the same cuts, 2D painters) to isolate what 
 
 | commit | what |
 |---|---|
-| 1 | `20fa-life-gpu.js`: the lit-sprite pipeline `life.spr` (normal from blurred alpha, key/fill hue, rim, projected contact shadow, bend and breath warps) and three twins — walker, beast, plant. `20-life`: `drawAstronaut` `o.bake` (no antenna light — the twin lights it), `PLANT_BAKE` (the plant stands straight in a bake: no gust, eclipse, ridge shadow), `plantUx()` (the star's side, shared). `20f-fauna`: `drawBeast`/`drawBeastAlien` take an optional bake descriptor `k` (static body only). Tests: `91x-life-gpu` — pose keys, light, bake boxes, all 2D painters still draw with and without the bake flags, twins silent without a pass. |
-| 3 | Earthly beasts breathe (breath warp above the body centre, per-animal phase); notes: the API table gains `lifeDim` and `lifePeepGpu`, open problems, the cave and DPR-2 pairs. |
-| 2 | Tuning from the pairs: the fill takes the sky's raw colour (hue only in the light term; the normalised one hazed plants toward white); the key and fill give hue, not paint (an orange star turned the white suit salmon); the rim only on bodies (thin stems were all «edge»); mip sampled a step sharper, like the kit's `GPU_MIP_LOD` (thin stems and outlines faded); a colour multiplier `dim` per instance — plants, beasts and the walker darken in the ridge's cast shadow (2D did it for plants only); figures drawn with the `hull` blend so they mark the scene's figure mask; the core request (shafts and bloom over scene figures). `lifeBake2D`/`LG_2D` — a 2D-canvas bake path through `gpuMipTex`, off by default (kept for comparing bakes). |
+| `fc2735f` | `20fa-life-gpu.js`: the lit-sprite pipeline `life.spr` (normal from blurred alpha, key/fill hue, rim, projected contact shadow, bend and breath warps) and three twins — walker, beast, plant. `20-life`: `drawAstronaut` `o.bake` (no antenna light — the twin lights it), `PLANT_BAKE` (the plant stands straight in a bake: no gust, eclipse, ridge shadow), `plantUx()` (the star's side, shared). `20f-fauna`: `drawBeast`/`drawBeastAlien` take an optional bake descriptor `k` (static body only). Tests: `91x-life-gpu` — pose keys, light, bake boxes, all 2D painters still draw with and without the bake flags, twins silent without a pass. |
+| `0764044` | Tuning from the pairs: the fill takes the sky's raw colour (hue only in the light term; the normalised one hazed plants toward white); the key and fill give hue, not paint (an orange star turned the white suit salmon); the rim only on bodies (thin stems were all «edge»); mip sampled a step sharper, like the kit's `GPU_MIP_LOD` (thin stems and outlines faded); a colour multiplier `dim` per instance — plants, beasts and the walker darken in the ridge's cast shadow (2D did it for plants only); figures drawn with the `hull` blend so they mark the scene's figure mask; the core request (shafts and bloom over scene figures). `lifeBake2D`/`LG_2D` — a 2D-canvas bake path through `gpuMipTex`, off by default (kept for comparing bakes). |
+| `8c4cc67` | Earthly beasts breathe (breath warp above the body centre, per-animal phase); notes: the API table gains `lifeDim` and `lifePeepGpu`, open problems, the cave and DPR-2 pairs. |
+| `36345d3` + this | the fleet base (all fourteen ships) merged in: builds, the fast tier green (17 259), and the scratch route still drops the twins into the ported surface — pair below. |
 
 ## Pairs (scratchpad, never in git)
 
@@ -80,6 +81,7 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e923652c-add4-55c1-b712-4a53dd7ccf16
 |---|---|
 | `before-surface.png` \| `after7-surface.png` (control `ctl-surface.png`; crops `pair7.png`, `cmp8.png`; the core fix applied in the scratch build, `after6-surface.png` is the same without it) | plants have bodies: the umbrella at left a shaded underside and its own shadow on the ground, the bushes on the right read in volume instead of flat cut-outs; the walker keeps the white suit with a lit side toward the star and a shadow of his own; plants in the ridge's cast shadow darken as before. Balloons are a touch glossier than 2D (GcCtx's radial highlight); without the core fix the whole of the twins' layer washes toward white (see requests). |
 | `before-cave.png` \| `after1-cave.png` (control `ctl-cave.png`) | lamp beam and chest glow now additive on the GPU (bloom picks them up); the figure itself is ~12 px at 760 — no visible difference at this size. |
+| `before2-surface.png` \| `after10-surface.png` (on the merged fleet base; crop `pair10.png`) | the twins on top of the ported surface: plants with volume and their own shadows, the umbrella's shaded underside, the walker lit from the star; 0 validation errors. |
 | `ctl-surface-x2.png` \| `after9-surface-x2.png` (DPR 2; crop `walker-x2.png`) | the walker close: two legs with knees and boots where 2D read as one grey block, lit edge on helmet and shoulder toward the star, the antenna light glowing, his shadow on the slope. The mid-distance balloons now fade into the air like every other plant part — the 2D balloon gradient used the raw leaf colour and skipped M233's air perspective. |
 | `before-cave.png` \| `after8-cave.png` (control `ctl2-cave.png`; crop `pair8.png`; core fix in scratch) | the manta over the pool has a body — lit upper edge toward the lamp, shaded belly, the sting a live capsule; the cave's crystal flora keeps its glow; the lamp cone is one clean additive shape. |
 
@@ -107,7 +109,8 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e923652c-add4-55c1-b712-4a53dd7ccf16
 
 ## Render pipelines for the warm-up table (`08b1`)
 
-- `pipe:life.spr|over` — the lit sprite and its shadow (`LG_WGSL`).
+- `pipe:life.spr|hull` — the lit sprite (`LG_WGSL`, the kit's `hull` blend: marks the scene's figure mask).
+- `pipe:life.spr|over` — the same shader for the contact shadow.
 - The twins also use the kit's `kit.shp|over`, `kit.shp|add` (limbs, glows, jet, antenna light) and
   `kit.img|add` (the lamp beam), and the bake pipelines of `08ca`.
 
@@ -126,3 +129,26 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e923652c-add4-55c1-b712-4a53dd7ccf16
 
 - Bakes happen in the frame that first needs a pose (24 walk frames per stride, 16 wing frames
   per manta). Cheap on a real GPU; on SwiftShader the first seconds of a mode are slow.
+
+## What is left in the zone
+
+Nothing is half-done. The twins exist for every shared painter in the zone (walker, beast, plant,
+peep); `20d-jetpack` is logic only and `20e-species` draws only the plant litter, which is baked
+with the plant. What remains is outside the zone: the mode ships switching their calls to the twins
+(requests above) and the core fix to the last pass.
+
+## What the design pass (real GPU, Контроль) should look at
+
+- **Walker** — the rim and the lit side against a low orange star and at night; whether the
+  breath (2.4 % above the waist) reads or twitches; the 24-frame stride at full speed; the contact
+  shadow's length at dawn and dusk.
+- **Plants** — the bend from the root in a strong gust (plantBend), especially the tall stems and
+  ribbons; the air haze on the balloons (they now fade like the rest of the plant); the balloon
+  gloss (GcCtx radial highlight, wider than Skia's); the cast-shadow darkening under ridges.
+- **Beasts** — lit capsule limbs against the baked body (colour match at the joint); the jelly's
+  pulse by sprite scale; the manta's 16 wing frames at speed; the breath on earthly beasts; hover
+  shadows (faint by design).
+- **Peep** — never seen in a pair: the soft halo, the facet torso on additive blend, the trail
+  links; needs an eclipse on a peep meadow.
+- **Everything** — only after the core fix: without it the whole twin layer washes toward white
+  under the sun shafts and bloom.
