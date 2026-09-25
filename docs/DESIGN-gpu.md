@@ -472,6 +472,16 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   now): luma +.2…+1.0, edge 97th pct +3…+8 % everywhere; the lamps are live now (the old bake froze them for
   18 ticks). Steady flight by the station: uploads 0, masters 1–2, spinners 1; the gate test runs with
   `GATE_OK=[]`.
+  **Station layers as in 2D (Контроль on ec377fd).** The trade core showed a ghost, a rust line down its right
+  edge and 2.4× the bright pixels: the «over» layer was lit by the relief of its own alpha, so the core's edge
+  inside the body read as an outline. Now `stSplit` cuts the master wherever a live piece is covered later in
+  2D — the trade ring (under containers and core), the yard crane (under the core), the industrial lamps (under
+  the stripes) and the core's top lamp (under the flue) — into as many layers as needed; each layer is lit
+  with the relief and the lamp/metal/glass verdict of the union master (`U`, all layers; GST reads it from
+  `t2` when `V[3].w` is set), and its live pieces follow it. The chevron at the foot of the old trade core was
+  not a drawn part: it vanishes from the old build with the solar panels off (not with the ring off) — the
+  panel's glass glint (`glassG`, 6 px around) leaking across the outline onto the core. Trade core crop ×3:
+  no ghost, no line, V > .55 +10 % (×1) / +15 % (×1.5); six-type sheet without swapped layers.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

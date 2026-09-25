@@ -204,9 +204,11 @@ function drawStationBody(V,S,ty){
       stLive(()=>stLampRect(sx*14-3,-4,6,7,[255,150,60],(Math.sin(G.t*.04+(sx>0?0:1.7))>0)?.75:.3));
       ctx.fillStyle="#242c36";
     }
+    stSplit();   /* полосы ложатся поверх огней */
     ctx.strokeStyle="rgba(242,178,92,.32)";ctx.lineWidth=1;
     for(let i=-6;i<=6;i+=4){ctx.beginPath();ctx.moveTo(-24*V.a,i+2);ctx.lineTo(24*V.a,i+2);ctx.stroke();}
     stCore(7,15,false);
+    stSplit();   /* труба закрывает верхний огонь ствола */
     /* факельная труба: пламя пляшет, дым сносит вбок */
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#222a35";
     ctx.beginPath();ctx.rect(-3,-28,6,12);ctx.fill();ctx.stroke();
@@ -234,6 +236,7 @@ function drawStationBody(V,S,ty){
     /* кран ползает вдоль эллинга — видно, что верфь работает */
     stLive(()=>{const cy=Math.sin(G.t*.02+V.ph)*15;
       stBar(-22,cy,22,cy,2,[255,210,130],.8);stLamp(6,cy,1.6,[180,255,255],(Math.sin(G.t*.3)>0)?.9:.15);});
+    stSplit();   /* ствол закрывает кран */
     stCore(5,10,false);
   }else if(ty==="sci"){
     /* тонкий силуэт: мачта, тарелки антенн и решётки радиаторов */
@@ -422,9 +425,11 @@ fn plOcc(q:vec2f)->f32{let V=fu.v;let dq=q-V[0].xy;let ro=V[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/V[0].z+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}
   return textureSampleLevel(t0,smp,uv,0.).a;}
+/* рельеф — по альфе t0, а у верхнего слоя станции (V[3].w>0) — по общему мастеру t2:
+   край ядра внутри тела — не кромка, свет его не обводит */
+fn ra(uv:vec2f,l:f32)->f32{if(fu.v[3].w>.5){return textureSampleLevel(t2,smp,uv,l).a;}return textureSampleLevel(t0,smp,uv,l).a;}
 fn sa(uv:vec2f,d:vec2f)->vec2f{let l=fu.v[3].z;
-  return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),l).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),l).a,
-               textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),l).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),l).a);}
+  return vec2f(ra(uv+vec2f(d.x,0.),l)-ra(uv-vec2f(d.x,0.),l),ra(uv+vec2f(0.,d.y),l)-ra(uv-vec2f(0.,d.y),l));}
 fn field(p:vec2f,uv0:vec2f)->vec4f{
   let V=fu.v;let c=V[0].xy;let R=V[0].z;let s=V[0].w;let sd=normalize(V[1].xy);let col=V[2].rgb;let ro=V[1].zw;
   let dp=p-c;let rr=length(dp);
@@ -444,7 +449,10 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   let gb0=-(sa(uv,u1*3.*s)*.5+sa(uv,u1*8.*s)*.5);let gb=vec2f(gb0.x*ro.x-gb0.y*ro.y,gb0.x*ro.y+gb0.y*ro.x);let tb=clamp(length(gb)*1.2,0.,.9);
   let nb=vec3f(gb/max(length(gb),1e-4)*tb,sqrt(1.-tb*tb));
   let side=dot(dp,sd)/R;
-  let rgb=c4.rgb/max(a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
+  /* верхний слой станции судит «огонь или металл» по общему мастеру: полоса краски на
+     .32 поверх корпуса — не лампа, хотя в своём слое она чистый янтарь */
+  var cu=c4;if(V[3].w>.5){cu=textureSampleLevel(t2,smp,uv,V[3].z);}
+  let rgb=cu.rgb/max(cu.a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
   let own=1.-smoothstep(.3,.55,sat*mx);
   let rim=pow(max(dot(n,L),0.),3.)*pow(1.-n.z,1.5);
   /* свет — множитель по грунту (почти белый): тёмное остаётся тёмным, синее — синим;
@@ -462,7 +470,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   /* металл (серое) — жёсткий блик-штрих со стороны звезды; стекло (голубое) — отражает звезду */
   let Hs=normalize(L+vec3f(0.,0.,1.));
   let met=(1.-smoothstep(.1,.28,sat))*smoothstep(.12,.35,mx)*own;
-  let gls=glassOf(c4)*own;
+  let gls=glassOf(cu)*own;
   let gg0=glassG(uv,u1*6.);let gg=vec2f(gg0.x*ro.x-gg0.y*ro.y,gg0.x*ro.y+gg0.y*ro.x);
   let spec=(col*met*(1.-gls)*1.3*pow(max(dot(n,Hs),0.),40.)+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs))*sk*a;
   /* окна и огни светят сами: выше колена — их подхватывает свечение */
@@ -472,13 +480,14 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
    (lx,ly) — к звезде; glow — доля своего тёплого света (станция 1, баржа 0) */
 /* cv — холст или готовый мастер с мипами (gpuMipTex, 17c2): тогда lod — его уровень */
-function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod){
+/* rel — мастер рельефа (верхний слой станции, 17c3): свет по нему, цвет и покрытие — по cv */
+function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel){
   const pass=gpuScene();if(!pass)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
-  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;U[13]=sy||0;U[14]=lod||0;
+  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;U[13]=sy||0;U[14]=lod||0;U[15]=rel?1:0;
   const mip=!!cv.view;
-  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt}],{blend:"hull",smp:mip?gpuMipSmp():null});
+  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||null],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
 function drawStation(x,y,Z){

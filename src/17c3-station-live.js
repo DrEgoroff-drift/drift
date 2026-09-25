@@ -15,8 +15,9 @@ function stLive(fn){
   if(ST_REC){ST_REC.L.push({m:ST_REC.inv.multiply(ctx.getTransform()),fn,z:ST_REC.z});return;}
   fn();
 }
-/* кольцо торговой станции лежит между слоями: мастер делится на «под» и «над» */
-function stSplit(){if(ST_REC&&!ST_REC.z)ST_REC.split();}
+/* живое, которое в 2D закрывает то, что рисуется позже (кольцо торговой, кран верфи,
+   огни домен под полосами), лежит между слоями: мастер делится здесь на «под» и «над» */
+function stSplit(){if(ST_REC)ST_REC.split();}
 function stEmP(x,y){const m=ST_EM.m,s=ST_EM.s;return [ST_EM.x+(m.a*x+m.c*y+m.e)*s,ST_EM.y+(m.b*x+m.d*y+m.f)*s];}
 function stEmK(){return ST_EM.s*Math.hypot(ST_EM.m.a,ST_EM.m.b);}
 function stLamp(x,y,r,c,a){
@@ -64,14 +65,17 @@ function stSpinCv(key,ext,draw,sb){
 function stationMaster(key,sb,V,S,ty){
   let M=ST_MASTER.get(key);if(M)return M;
   const side=Math.ceil(160*sb),mk=()=>{const c=document.createElement("canvas");c.width=c.height=side;return c;};
-  const cv=mk(),g=cv.getContext("2d"),prev=ctx,rec={L:[],z:0,A:null,inv:null};
-  rec.split=()=>{const a=mk();a.getContext("2d").drawImage(cv,0,0);rec.A=a;
-    g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,side,side);g.restore();rec.z=1;};
+  const cv=mk(),g=cv.getContext("2d"),prev=ctx,rec={L:[],z:0,Ly:[],inv:null};
+  rec.split=()=>{const a=mk();a.getContext("2d").drawImage(cv,0,0);rec.Ly.push(a);
+    g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,side,side);g.restore();rec.z++;};
   ctx=g;
   try{g.setTransform(sb,0,0,sb,side/2,side/2);rec.inv=g.getTransform().inverse();ST_REC=rec;drawStationBody(V,S,ty);}
   finally{ST_REC=null;ctx=prev;}
-  M={A:rec.A||cv,B:rec.A?cv:null,E:side/(2*sb),sb,L:rec.L};
-  if(ST_MASTER.size>=4){const k0=ST_MASTER.keys().next().value,o=ST_MASTER.get(k0);gpuMipDrop(o.A);if(o.B)gpuMipDrop(o.B);
+  rec.Ly.push(cv);
+  /* общий мастер — все слои вместе, как в 2D: по нему свет верхних слоёв (рельеф без ложных кромок) */
+  let U=null;if(rec.Ly.length>1){U=mk();const u=U.getContext("2d");for(const q of rec.Ly)u.drawImage(q,0,0);}
+  M={Ly:rec.Ly,U,E:side/(2*sb),sb,L:rec.L};
+  if(ST_MASTER.size>=4){const k0=ST_MASTER.keys().next().value,o=ST_MASTER.get(k0);for(const q of o.Ly)gpuMipDrop(q);if(o.U)gpuMipDrop(o.U);
     for(const cv of ST_SPIN.values())gpuMipDrop(cv);ST_SPIN.clear();ST_MASTER.delete(k0);}
   ST_MASTER.set(key,M);return M;
 }
@@ -81,14 +85,12 @@ function stEmFlush(pass,E,sb,lx,ly,dk){
   if(E.L.length)gpuShapes(pass,E.L);
   if(E.A.length)gpuShapes(pass,E.A,{blend:"add"});
 }
-/* станция кадра: слой под кольцом, живое под ним, слой над кольцом, живое над ним */
+/* станция кадра: слой, его живое, следующий слой, его живое — порядок 2D */
 function gpuStationDraw(M,x,y,s,lx,ly){
   const pass=gpuScene();if(!pass)return false;
-  const dk=GPU.bw/W,lod=Math.max(0,Math.log2(M.sb/(s*dk))+HG_LOD),E=[0,1].map(()=>({L:[],A:[],S:[],x,y,s,m:null}));
+  const dk=GPU.bw/W,lod=Math.max(0,Math.log2(M.sb/(s*dk))+HG_LOD),E=M.Ly.map(()=>({L:[],A:[],S:[],x,y,s,m:null}));
   for(const r of M.L){ST_EM=E[r.z];ST_EM.m=r.m;try{r.fn();}finally{ST_EM=null;}}
-  gpuLitSprite(gpuMipTex(M.A),x,y,M.E*s,s,0,lx,ly,1,0,lod);
-  stEmFlush(pass,E[0],M.sb,lx,ly,dk);
-  if(M.B){gpuLitSprite(gpuMipTex(M.B),x,y,M.E*s,s,0,lx,ly,0,0,lod);stEmFlush(pass,E[1],M.sb,lx,ly,dk);}
+  M.Ly.forEach((q,i)=>{gpuLitSprite(gpuMipTex(q),x,y,M.E*s,s,0,lx,ly,i?0:1,0,lod,i?gpuMipTex(M.U):null);stEmFlush(pass,E[i],M.sb,lx,ly,dk);});
   return true;
 }
 /* факел промышленной: язык — цепочка капсул по средней линии (ширина по обводу
