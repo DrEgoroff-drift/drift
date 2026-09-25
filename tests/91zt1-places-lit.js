@@ -48,3 +48,45 @@ TEST_SUITES.push(()=>suite("фонари мест: дом ночью свети�
   placesLit(p,tr,camx,camy);
   eq(placeLampsN(),0,"проход забирает фонари кадра (без видеокарты — молча)");
 }));
+/* ядро области: встать на его планету в час ph (доля суток) */
+function plCore(theme,cpf,ph){
+  const at=regionOfTheme(theme);const R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
+  G.sx=R.core.sx;G.sy=R.core.sy;G.sys=getSystem(G.sx,G.sy);G.mode="surface";
+  const p=cpf(G.sys);const tr=genTerrain(p);
+  G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();
+  const per=CEL_DAY*(6+((p.seed>>>7)&3));G.t=per*((ph-(p.seed%100)/100+1)%1);
+  return G.surf.p;
+}
+TEST_SUITES.push(()=>suite("фонари мест: корабль перевала, дверь уезда и мох площадки светят, когда должны",{tier:"node"},()=>{
+  resetWorld();
+  /* перевал: без света — ни одного фонаря; со светом — иллюминаторы и люк */
+  let p=plCore("pass",passCorePlanet,.8),tr=G.surf.tr,x=passShipX(tr,p);
+  const cam=(wx)=>[wx-W/2,groundAt(tr,wx)-H*.6];
+  let [cx,cy]=cam(x);
+  passAll().lit=0;G.t+=1;passDraw(tr,cx,cy,p);
+  eq(placeLampsN(),0,"тёмный корабль ничего не зажигает");
+  passAll().lit=1;G.t+=1;passDraw(tr,cx,cy,p);
+  eq(placeLampsN(),7,"свет включён: шесть иллюминаторов и люк");
+  /* уезд: до второго уровня шума свет не горит, на втором — окна и проём */
+  resetWorld();
+  p=plCore("county",countyCorePlanet,.8);tr=G.surf.tr;
+  const S0=settleAt(G.sx,G.sy)||{};ok(countyIsCore(p),"стоим на планете ядра уезда");
+  G.surf.noise=0;G.t+=1;
+  countyDrawTown(S0,tr,-W/2,0,p,W/2,3);
+  eq(placeLampsN(),0,"в тишине город тёмный");
+  G.surf.noise=COUNTY_LVL[1]+5;G.t+=1;
+  countyDrawTown(S0,tr,-W/2,0,p,W/2,3);
+  ok(placeLampsN()>=4,"услышал: три окна и проём двери светят ("+placeLampsN()+")");
+  /* мох: ночью лампы у площадки, днём — только сами банки */
+  resetWorld();
+  p=plCore("glow",glowCorePlanet,.8);
+  const S=G.surf;S.shipX=S.x;
+  G.t+=1;glowDrawPad(S,S.x-W/2,groundAt(S.tr,S.x)-H*.6);
+  ok(surfNight(p)>.2,"на планете ядра ночь ("+surfNight(p).toFixed(2)+")");
+  eq(placeLampsN(),6,"ночью шесть банок со мхом светят");
+  const pd=plCore("glow",glowCorePlanet,.3);
+  G.surf.shipX=G.surf.x;G.t+=1;glowDrawPad(G.surf,G.surf.x-W/2,groundAt(G.surf.tr,G.surf.x)-H*.6);
+  ok(surfNight(pd)<.1,"полдень");
+  eq(placeLampsN(),0,"днём мох в банках не светит");
+
+}));
