@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6284
+Файлов: 630 · символов верхнего уровня: 6288
 
 ## СИМВОЛЫ
 
@@ -780,7 +780,7 @@ CHIP_POS                     src/17-mode-system.js:14
 CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
-chipDist                     src/17-mode-system.js:709-715
+chipDist                     src/17-mode-system.js:695-701
 chipDom                      src/08bi-gpu-ovl.js:114-129
 chipDomSnap                  src/08bh-gpu-hud.js:36-41
 chipDomSweep                 src/08bh-gpu-hud.js:68-74
@@ -1562,11 +1562,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:716-1000
+drawSysHud                   src/17-mode-system.js:702-986
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:58-92
-drawSystem                   src/17-mode-system.js:498-704
+drawSystem                   src/17-mode-system.js:498-690
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -2465,6 +2465,7 @@ gtrDraw                      src/16ga-gpu-trail.js:43-51
 gtrLane                      src/16ga-gpu-trail.js:37-42
 gtrPush                      src/16ga-gpu-trail.js:31-35
 GUEST_EVERY                  src/21a3-base-people.js:30
+GUN_BAKE                     src/05c-arms.js:264
 GUN_CACHE                    src/05c-arms.js:71
 GUN_FACTORY                  src/05b-guns.js:99-106
 GUN_FAM_KEYS                 src/05b-guns.js:93
@@ -2477,7 +2478,8 @@ GUN_NAMED_BY_ID              src/05b-guns.js:163
 GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
 gunAimTick                   src/05c-arms.js:174-188
-gunBarrelsDraw               src/05c-arms.js:260-309
+gunBake                      src/05c-arms.js:301-313
+gunDims                      src/05c-arms.js:265
 gunFactoryOf                 src/05b-guns.js:171
 gunFamilyApply               src/05c-arms.js:108-139
 gunFamilyKeyOf               src/05b-guns.js:170
@@ -2489,13 +2491,14 @@ gunMiss                      src/05c-arms.js:142-146
 gunNamedRoll                 src/05b-guns.js:165-168
 gunNameOf                    src/05b-guns.js:173-176
 gunOnMount                   src/05c-arms.js:193-202
+gunPaint                     src/05c-arms.js:266-300
 GUNS_CACHE                   src/05c-arms.js:206
 gunSeriesOf                  src/05b-guns.js:169
 gunsInGroup                  src/05c-arms.js:230-233
 gunSpec                      src/05c-arms.js:72-76
 gunSpecMake                  src/05c-arms.js:77-102
 gunSpecs                     src/05c-arms.js:207-218
-gunTotals                    src/05c-arms.js:310-324
+gunTotals                    src/05c-arms.js:336-350
 H_SILENT                     tests/91zzzzzzz-hands.js:39-41
 h01                          src/01-core.js:28
 HAIL_HOLD                    src/12ar-hail.js:20
@@ -5283,6 +5286,7 @@ SHIP_GUARD                   src/17-mode-system.js:20
 SHIP_KEYS                    src/03-ships.js:12
 SHIP_SCALE_MIN               src/16c-rescue.js:200
 shipData                     src/03-ships.js:13
+shipGearGpu                  src/05c-arms.js:315-335
 shipRow                      src/26-ui-station.js:430-475
 SHIPS                        src/03-ships.js:2-11
 shipScaleAt                  src/16c-rescue.js:209
@@ -6371,7 +6375,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/05b4-recall.js · 4 КБ
   · отзыв партии (M509, PLAN «new mechanics», st. 6):1
 
-## src/05c-arms.js · 21 КБ
+## src/05c-arms.js · 24 КБ
   · орудие в семи числах, щит в трёх повадках (M362, §2 §4):1
 
 ## src/05d-mounts.js · 5 КБ
@@ -7631,7 +7635,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91a2-edge.js · 3 КБ
   · якорь и стик: кромка — стена, а не болото:1
 
-## tests/91b-crew.js · 18 КБ
+## tests/91b-crew.js · 20 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1
 
 ## tests/91c-mgr.js · 16 КБ
