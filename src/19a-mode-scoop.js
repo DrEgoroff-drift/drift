@@ -179,7 +179,7 @@ function updateScoop(dt){
 /* экранная точка ↔ путь: корабль стоит на W*.34, мир течёт мимо */
 function scoopScrX(S,wx){return W*.34+(wx-S.x)*SCOOP_PX;}
 function drawScoop(){
-  const S=G.scoop,p=S.p,[bt,bb]=scoopBandAt(S.x);
+  const S=G.scoop;
   const sh=(S.shake>0?(rndFx()-.5)*S.shake*7:0);
   ctx.save();ctx.translate(0,sh);
   /* небо гиганта, глубина и гроза — одно живое поле на видеокарте (19a1) */
@@ -200,140 +200,9 @@ function drawScoop(){
     ctx.fillStyle="rgba(127,224,200,.92)";
     ctx.fillText("ПОЛОСА СБОРА",14,ly);
   }
-  /* ── помехи ──
-     Ядро — тело с глазом и завихрением, плюмаж — восходящая струя, град —
-     россыпь колючих кристаллов. Все три рисуются одним светом (§ свод правил):
-     тень снизу, блик сверху, цвет из палитры гиганта. */
-  for(const o of S.obs){
-    const X=scoopScrX(S,o.x);
-    if(X<-160||X>W+160)continue;
-    if(o.k===0){
-      /* ВИХРЬ — тело, а не спираль карандашом: тёмное ядро, горячий обод и
-         рукав, заворачивающийся по ходу. Свет один, сверху-слева, как во всей
-         сцене; поэтому низ у него глухой, а верх задран бликом. */
-      const R=o.r*1.5;
-      const g=ctx.createRadialGradient(X-R*.22,o.y-R*.3,R*.08,X,o.y,R);
-      g.addColorStop(0,"rgba(14,9,20,"+(o.hit?.55:.82)+")");
-      g.addColorStop(.42,"rgba("+p.T.pal[1].join(",")+","+(o.hit?.34:.58)+")");
-      g.addColorStop(.78,"rgba(255,214,168,"+(o.hit?.10:.22)+")");
-      g.addColorStop(1,"rgba(255,214,168,0)");
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(X,o.y,R,0,TAU);ctx.fill();
-      ctx.save();ctx.beginPath();ctx.arc(X,o.y,o.r,0,TAU);ctx.clip();
-      ctx.strokeStyle="rgba(248,236,255,"+(o.hit?.10:.26)+")";ctx.lineWidth=2.4;ctx.lineCap="round";
-      for(const s0 of [0,TAU/2]){
-        ctx.beginPath();
-        for(let a=0;a<TAU*.9;a+=.2){
-          const rr=o.r*(.16+a/(TAU*.9)*.9);
-          const th=a*o.sp+s0+S.x*.02*o.sp;
-          const xx=X+Math.cos(th)*rr,yy=o.y+Math.sin(th)*rr*.82;
-          if(a===0)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy);
-        }
-        ctx.stroke();
-      }
-      ctx.restore();
-      ctx.strokeStyle="rgba(10,6,14,.42)";ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(X,o.y+2,o.r*.98,.15,Math.PI-.15);ctx.stroke();
-    }else if(o.k===1){
-      /* ПЛЮМАЖ — восходящая струя, а не прямоугольник: снизу узкое горло,
-         кверху разваливается клубами, края рвутся. Он не бьёт — он несёт. */
-      const up=o.up,hgt=H*.30;
-      ctx.save();
-      const g=ctx.createLinearGradient(X,o.y+hgt*.5*up,X,o.y-hgt*.5*up);
-      g.addColorStop(0,"rgba(255,206,150,.34)");
-      g.addColorStop(.55,"rgba(255,226,190,.16)");
-      g.addColorStop(1,"rgba(255,236,214,0)");
-      ctx.fillStyle=g;
-      ctx.beginPath();
-      for(const sgn of [-1,1]){
-        const seq=sgn<0?[0,1]:[1,0];
-        for(let t=seq[0];sgn<0?t<=1.001:t>=-.001;t+=sgn<0?.06:-.06){
-          const yy=o.y+(t-.5)*hgt*up;
-          const w=o.r*(.45+t*1.5)+Math.sin(t*7+S.x*.04)*o.r*.3;
-          ctx.lineTo(X+sgn*w,yy);
-        }
-      }
-      ctx.closePath();ctx.fill();
-      /* клубы по стволу: пара витков, чтобы струя жила */
-      ctx.globalAlpha=.5;
-      for(let i2=0;i2<5;i2++){
-        const t=(i2/5+((S.x*.012+o.x*.01)%1))%1;
-        const yy=o.y+(t-.5)*hgt*up, rr=o.r*(.4+t*1.1);
-        const cg2=ctx.createRadialGradient(X,yy,0,X,yy,rr);
-        cg2.addColorStop(0,"rgba(255,232,198,"+(.18*(1-t)).toFixed(3)+")");
-        cg2.addColorStop(1,"rgba(255,232,198,0)");
-        ctx.fillStyle=cg2;ctx.beginPath();ctx.arc(X,yy,rr,0,TAU);ctx.fill();
-      }
-      ctx.globalAlpha=1;ctx.restore();
-    }else{
-      /* ГРАД — колотый лёд: тёмная нижняя грань, холодный блик сверху,
-         короткий морозный след позади. Белым ромбиком он читался наклейкой. */
-      ctx.save();ctx.translate(X,o.y);
-      ctx.strokeStyle="rgba(214,238,255,.22)";ctx.lineWidth=1.2;
-      ctx.beginPath();ctx.moveTo(o.r*.6,0);ctx.lineTo(o.r*.6+16,0);ctx.stroke();
-      ctx.rotate(S.x*.03+o.x);
-      const g=ctx.createLinearGradient(0,-o.r,0,o.r);
-      g.addColorStop(0,"rgba(236,250,255,"+(o.hit?.35:.92)+")");
-      g.addColorStop(.55,"rgba(150,196,224,"+(o.hit?.24:.72)+")");
-      g.addColorStop(1,"rgba(26,40,58,"+(o.hit?.30:.85)+")");
-      ctx.fillStyle=g;
-      ctx.beginPath();
-      for(let a=0;a<TAU;a+=TAU/6)ctx.lineTo(Math.cos(a)*o.r,Math.sin(a)*o.r*.72);
-      ctx.closePath();ctx.fill();
-      ctx.strokeStyle="rgba(8,12,20,.55)";ctx.lineWidth=1;ctx.stroke();
-      ctx.restore();
-    }
-  }
-  /* корабль: летит боком, слева направо, с набегающим потоком */
-  const sx=W*.34,sy=S.y;
-  if(S.y>bb){
-    const k=clamp((S.y-bb)/120,0,1);
-    ctx.strokeStyle="rgba(255,170,90,"+(.25+k*.5).toFixed(2)+")";ctx.lineWidth=2;
-    for(let i=0;i<9;i++){
-      const yy=sy-26+i*6.5, l=30+Math.abs(Math.sin(i*1.7+S.x*.05))*70*k;
-      ctx.beginPath();ctx.moveTo(sx-14,yy);ctx.lineTo(sx-14-l,yy+ (i-4)*1.6);ctx.stroke();
-    }
-  }
-  /* ── след в газе ──
-     Корабль летел поверх обоев: среда его не замечала. Теперь за ним остаётся
-     разрез — светлая полоса, которую он вспорол, и два завитка по краям, где
-     газ сходится обратно. Это же единственное, по чему видно скорость вблизи. */
-  {
-    const tw=190+Math.abs(S.vy)*4;
-    const tg=ctx.createLinearGradient(sx-14,0,sx-14-tw,0);
-    tg.addColorStop(0,"rgba(236,246,255,.20)");
-    tg.addColorStop(1,"rgba(236,246,255,0)");
-    ctx.fillStyle=tg;ctx.fillRect(sx-14-tw,sy-5,tw,10);
-    ctx.strokeStyle="rgba(236,246,255,.14)";ctx.lineWidth=1.2;
-    for(const s of [-1,1]){
-      ctx.beginPath();ctx.moveTo(sx-16,sy+s*4);
-      for(let i=1;i<=7;i++){
-        const t=i/7;
-        ctx.lineTo(sx-16-t*tw,sy+s*(4+t*16)+Math.sin(t*7+S.x*.4+ (s>0?0:1.7))*4*t);
-      }
-      ctx.stroke();
-    }
-  }
-  ctx.save();ctx.translate(sx,sy);ctx.rotate(S.bank*.5);ctx.scale(1.5,1.5);
-  /* четвёртый аргумент — уровень двигателя, а не наклон: сюда долго шёл S.bank,
-     и пламя росло на подъёме и сжималось на снижении. Наклон уже дан поворотом
-     выше; крен корпусу не передаём — это вид сбоку, крен сплющил бы силуэт.
-     Уровень — как в системе: тот же корабль, тот же двигатель, то же пламя. */
-  drawHull(G.shipId,keys.thrust&&G.fuel>0,false,(G.mods&&G.mods.engine)||0,0);
-  ctx.restore();
-  /* сборник: два раструба забирают газ, пока корабль в коридоре */
-  if(sy>=bt&&sy<=bb){
-    ctx.strokeStyle="rgba(127,224,200,.8)";ctx.lineWidth=1.6;
-    for(const s of [-1,1]){
-      ctx.beginPath();
-      ctx.moveTo(sx-6,sy+s*7);ctx.lineTo(sx-30,sy+s*13);ctx.stroke();
-      for(let i=0;i<5;i++){
-        const t=(S.x*4+i*22)%110;
-        ctx.globalAlpha=.5-t/220;
-        ctx.beginPath();ctx.arc(sx-30-t,sy+s*13+Math.sin(t*.1+i)*4,1.8,0,TAU);ctx.stroke();
-      }
-      ctx.globalAlpha=1;
-    }
-  }
+  /* помехи, след, раструбы и сам корабль — на видеокарте, тем же светом звезды (19a1).
+     Ядро — тело с глазом и рукавами, плюмаж несёт, град — колотый лёд */
+  scoopGpuThings(pass,S,sh,LS);
   ctx.restore();
   /* приборы: нагрев — главный, он же и убивает */
   /* ── прибор, а не пустая рамка (M233) ──

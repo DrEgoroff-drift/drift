@@ -153,6 +153,7 @@ function enterBase(p){
 }
 function exitBase(){
   G.base=null;G.mode="surface";
+  baseBakeFree();   /* выпечки разреза не держим на поверхности (21ad) */
   say("Выход на поверхность");
 }
 function cellX(c){return BASE_OX+c*BCELL_W+BCELL_W/2;}

@@ -16,8 +16,9 @@ const SCP={U:new Float32Array(60),s:null,t0:0,fl:{x:0,y:0,k:0}};
 const SCP_AIR=GNB_TILE+`
 fn spal(t:f32)->vec3f{let x=clamp(t,0.,.9999)*4.;let i=u32(x);return mix(fu.v[4u+i].rgb,fu.v[5u+i].rgb,x-f32(i));}
 fn sh1(x:f32)->f32{return fract(sin(x*127.1+311.7)*43758.5453);}
-/* эшелон ленты: u — вдоль (доли тайла), v — высота слоя 0..1. Ответ: тон, светлота, рельеф */
-fn deck(u:f32,v:f32,t:f32,s:vec2f,kind:f32)->vec3f{
+/* эшелон ленты: u — вдоль (доли тайла), v — высота слоя 0..1. Ответ: тон, светлота,
+   гладкая часть рельефа и наклон полосы по высоте d/dv — считанный, а не экранный */
+fn deck(u:f32,v:f32,t:f32,s:vec2f,kind:f32)->vec4f{
   /* струи: у каждой широты своя скорость — сдвиг на кромках полос */
   let u0=u+t*(.020*sin(v*9.+s.x)+.011*sin(v*23.+s.y));
   let fl=vec2f(t*.021,-t*.013);
@@ -55,8 +56,10 @@ fn deck(u:f32,v:f32,t:f32,s:vec2f,kind:f32)->vec3f{
   let lift=1.+(fbt(vec2f(uu*26.,vv*40.)+s*1.3,2)-.5)*.2;
   /* рельеф — от гладкого профиля той же полосы: у пилы излом, а производная экрана
      берётся квадратом 2×2 — на изломе свет ложился ступеньками */
+  let bx=select((fr-.26)/.74,fr/.26,fr<.26);
   let bs=select(1.-smoothstep(.26,1.,fr),smoothstep(0.,.26,fr),fr<.26);
-  return vec3f(tt,lift,bs*.6+w1*.5+grain*.22+bump*.35);
+  let db=6.*bx*(1.-bx)*select(-1./.74,1./.26,fr<.26);
+  return vec4f(tt,lift,w1*.5+grain*.22+bump*.35+bs*.6,db*.6*7.);
 }
 fn field(p0:vec2f,uv:vec2f)->vec4f{
   let W=fu.res.z;let H=fu.res.w;let A=fu.v[0];let L=fu.v[1];let Sn=fu.v[2];
@@ -70,8 +73,10 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
   let N=deck(p.x/(H*1.25)+A.y,(p.y-H*.05)/H,A.z*1.3,s+vec2f(17.3,-9.1),kind);
   /* рельеф: склон к звезде светлее, от неё темнее. Производные — экранные и тонкие (Fine):
      грубые брались по квадрату 2×2 и клали рельеф ступеньками */
-  let gF=vec2f(dpdxFine(F.z),dpdyFine(F.z))*dk;
-  let gN=vec2f(dpdxFine(N.z),dpdyFine(N.z))*dk;
+  /* по x — экранная производная (полосы почти горизонтальны, наклон мал), по y — наклон
+     полосы, считанный на пиксель: квадрат 2×2 клал свет ступеньками по крутым фронтам */
+  let gF=vec2f(dpdxFine(F.z)*dk,F.w/hF);
+  let gN=vec2f(dpdxFine(N.z)*dk,N.w/H);
   let ld=L.xy;
   let key=mix(.30,1.,L.z);
   let sun=fu.v[3].rgb;
@@ -147,7 +152,7 @@ function scoopGpuAir(pass,S,sh){
    (читаемость важнее), взвесь едет с газом. Все движения — фазы, которые считает JS
    по модулю своего периода: экранные координаты в шейдере малы, fp32 не рябит, а
    периоды кратны ячейкам — узор не прыгает, когда фаза замыкается. */
-const SCP_FLOW=`
+const SCP_FLOW=GNB_TILE+`
 fn sh1(x:f32)->f32{return fract(sin(x*127.1+311.7)*43758.5453);}
 const TAU=6.2831853;
 fn edgeY(x:f32,e0:vec4f,e1:vec4f)->f32{
@@ -167,20 +172,22 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
     let yy=edgeY(p.x,e0,e1);let d=p.y-yy;
     /* тень под выступающей лентой: мягко вниз и без линии по самой кромке — она читалась карандашом */
     let sh=(.16+dep*.18)*exp(-max(d,0.)/12.)*smoothstep(-2.5,1.5,d);
-    acc=acc+vec4f(vec3f(10.,6.,16.)/255.,1.)*sh*(1.-acc.a);
+    acc=vec4f(vec3f(10.,6.,16.)/255.,1.)*sh+acc*(1.-sh);
     /* вал: ближайший к пикселю по череде, размер и наклон — из хеша номера */
     let cw=e1.z;let gi=floor((p.x+e1.w)/cw);let xc=(gi+.5)*cw-e1.w;
     let hh=sh1(pmod(gi,1024.)+f32(e)*37.);let cr=9.+hh*13.;let tl=(sh1(pmod(gi,1024.)*1.37+f32(e))-.5)*.5;
     let yc=edgeY(xc,e0,e1);
     let q=p-vec2f(xc,yc);let ct=cos(tl);let st=sin(tl);
-    let r=vec2f((q.x*ct+q.y*st)/(cr*1.7),(-q.x*st+q.y*ct)/(cr*.72));let r2=dot(r,r);
+    let r=vec2f((q.x*ct+q.y*st)/(cr*1.7),(-q.x*st+q.y*ct)/(cr*.72));
+    /* край клуба рвёт шум, привязанный к самому валу, — облако, а не галька */
+    let r2=dot(r,r)*(.75+.6*fbt(r*1.3+vec2f(pmod(gi,1024.)*.71,f32(e)*3.1),2));
     if(r2<1.){
       /* тело с нормалью: к звезде светлее, от неё — тень; край мягкий */
       let n=normalize(vec3f(r.x*.55,r.y,sqrt(1.-r2)*.8));
-      let lam=dot(n,L3);let edge=smoothstep(1.,.55,r2);
-      let lit=max(lam,0.)*(.20+dep*.10)*key;let dk=max(-lam,0.)*(.24+dep*.14)+.04;
-      let c=vec4f(mix(vec3f(8.,4.,14.)/255.*dk,vec3f(.97,.95,1.)*lit,step(0.,lam)),select(dk,lit,lam>=0.))*edge;
-      acc=acc+c*(1.-acc.a);
+      let lam=dot(n,L3);let edge=1.-smoothstep(.3,1.,r2);
+      let lit=max(lam,0.)*(.16+dep*.10)*key;let dk=max(-lam,0.)*(.16+dep*.10);
+      let c=vec4f(mix(vec3f(8.,4.,14.)/255.*dk,fu.v[14].rgb*lit,step(0.,lam)),select(dk,lit,lam>=0.))*edge;
+      acc=c+acc*(1.-c.a);
     }
   }
   /* ── набегающий поток: следы по дорожкам, три скорости ── */
@@ -192,7 +199,7 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
     let s=(x-x0)/len;
     if(s>0.&&s<1.){
       let a=(.04+.12*p.y/H)*(1.-s)*clamp(1.2-abs(p.y-ly),0.,1.);
-      acc=acc+vec4f(vec3f(1.),1.)*a*(1.-acc.a);
+      acc=vec4f(vec3f(1.),1.)*a+acc*(1.-a);
     }
   }
   /* ── коридор сбора ── */
@@ -214,7 +221,7 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
       let q=(p-vec2f(px,py))/vec2f(1.6,1.);let g=exp(-dot(q,q))*(.15+.45*sh1(pmod(ci,1024.)+f32(k)*7.));
       a=a+g*inside*(1.-a);col=mix(col,vec3f(210.,255.,242.)/255.,g*inside);
     }
-    acc=acc+vec4f(col*a,a)*(1.-acc.a);
+    acc=vec4f(col*a,a)+acc*(1.-a);
   }
   return acc;
 }`;
@@ -241,9 +248,181 @@ function scoopFlowU(S,sh,L){
   U[48]=(S.x*6.6)%40960;U[49]=(S.x*11)%40960;U[50]=(S.x*15.4)%40960;U[51]=(S.x*7)%16;
   /* штрихи: три скорости (3, 5, 7 ×11) по ячейкам 720 точек, период 1024 ячейки */
   U[52]=(S.x*33)%737280;U[53]=(S.x*55)%737280;U[54]=(S.x*77)%737280;U[55]=(p.seed%97)*.37;
+  /* v[14] — цвет света на валах: звезда, у терминатора теплее */
+  const sc=gplSun(),w=L[3];U[56]=lerp(1,sc[0],.5);U[57]=lerp(1,sc[1],.5)*(1-w*.3);U[58]=lerp(1,sc[2],.5)*(1-w*.55);
   return U;
 }
 function scoopGpuFlow(pass,S,sh,L){
   if(!pass)return;
-  gpuField(pass,"scoop.flow",SCP_FLOW,scoopFlowU(S,sh,L),[]);
+  gpuField(pass,"scoop.flow",SCP_FLOW,scoopFlowU(S,sh,L),[null,{view:gnbNoiseTile()}]);
+}
+/* ══════════════ помехи, след и корабль ══════════════
+   Ядро и плюмаж — поле по слотам (до шести на экране): ядро — воронка со спиральными
+   рукавами, которые крутятся по ходу, с куполом, освещённым со стороны звезды, и
+   горячим ободом; плюмаж — струя, клубы которой рвёт шум и несёт вверх (или вниз).
+   Град — колотый лёд из шести граней, каждая освещена своей нормалью: светлая к
+   звезде, тёмная от неё, — вместо одного градиента «сверху». Корабль — выпечка корпуса
+   китом (17c2 hullGpuDraw) с тем же светом звезды, что у неба; след, раструбы сборника
+   и языки нагрева — фигурами. */
+const SCP_OBS=GNB_TILE+`
+const TAU=6.2831853;
+fn field(p0:vec2f,uv:vec2f)->vec4f{
+  let A=fu.v[0];let p=vec2f(p0.x,p0.y-A.x);let L3=normalize(vec3f(A.y,A.z,.6));let key=A.w;
+  var acc=vec4f(0.);
+  for(var i=0;i<6;i++){
+    let O=fu.v[1+i*2];let Q=fu.v[2+i*2];
+    if(O.z>0.){
+    let hit=select(1.,.55,Q.x>.5);
+    if(O.w<.5){
+      /* ── ядро: воронка ── */
+      let R=O.z*1.5;let q=p-O.xy;let d=length(q)/R;
+      if(d<1.){
+        let th=atan2(q.y,q.x*1.0);let rr=max(length(q)/O.z,.02);
+        /* два рукава, закрученные логарифмом радиуса; крутятся по ходу (Q.y — фаза) */
+        let arm=.5+.5*sin(2.*th*sign(Q.z)-log(rr)*3.2+Q.y*2.);
+        /* шум ядра ходит по кругу фазы: фаза замыкается на 2π, и сдвиг не прыгает */
+        let nz=fbt(q/O.z*1.6+vec2f(cos(Q.y),sin(Q.y))*.6,3);
+        /* купол: нормаль сферы, свет звезды; глаз в центре — глухой и тёмный */
+        let n=normalize(vec3f(q/R,sqrt(max(1.-d*d,0.))*.9));
+        let lam=max(dot(n,L3),0.);
+        let core=(1.-smoothstep(.0,.30,d));
+        /* тело — цвет газа гиганта под светом звезды; рукава — светлые ленты, обод —
+           горячее кольцо, ярче со стороны звезды; глаз — глухой и тёмный */
+        var c=fu.v[14].rgb*(.5+.7*lam*key)*(.85+.3*nz);
+        let armL=smoothstep(.55,.95,arm)*smoothstep(.1,.35,d)*(1.-smoothstep(.7,1.,d));
+        /* между рукавами — тёмные борозды: спираль читается, а не пузырь */
+        let armD=(1.-smoothstep(.05,.45,arm))*smoothstep(.12,.3,d)*(1.-smoothstep(.75,1.,d));
+        c=mix(c*(1.-armD*.55),vec3f(.97,.93,1.)*(.5+.5*lam),armL*.6);
+        let rd=(d-.74)/.13;let rim=exp(-rd*rd);
+        c=c+vec3f(1.,.84,.66)*rim*(.25+.55*lam)*(.8+.4*nz);
+        c=mix(c,vec3f(14.,9.,20.)/255.,core*.92);
+        let a=mix(.55,1.,1.-Q.x)*((1.-smoothstep(.72,1.,d))*(.72+.2*arm)+core*.2)*(.85+.15*nz);
+        /* тень под ядром — на газе ниже, со стороны от звезды; кладётся первой */
+        let sp=q+vec2f(A.y,A.z)*O.z*.5;let sd=length(sp*vec2f(1.,1.6))/R;
+        let sa=.22*hit*(1.-smoothstep(.6,1.1,sd));
+        acc=vec4f(vec3f(10.,6.,14.)/255.*sa,sa)+acc*(1.-sa);
+        acc=vec4f(c*a,a)+acc*(1.-a);
+      }
+    }else{
+      /* ── плюмаж: струя вдоль Q.z (вверх или вниз), высота .30H ── */
+      let hg=fu.res.w*.30;let up=Q.z;
+      let t=clamp(.5-(p.y-O.y)/(hg*up),0.,1.);   /* 0 — горло, 1 — вершина */
+      let yy=(p.y-O.y)/(hg*up);
+      if(abs(yy)<.56){
+        let nz=fbt(vec2f(p.x/O.z*.7,(p.y/O.z)*.5+Q.y*3.*up),3);
+        let w=O.z*(.6+t*1.8)*(.8+.5*nz);
+        let dx=abs(p.x-O.x)/w;
+        let body=(1.-smoothstep(.3,1.,dx))*(1.-smoothstep(.38,.56,abs(yy)));
+        /* струи внутри ствола бегут по ходу: вытянутый вдоль шум со сдвигом фазы —
+           видно, куда несёт, ещё до того, как понесло */
+        let str=fbt(vec2f((p.x-O.x)/w*3.,(p.y-O.y)/O.z*.35+Q.y*9.*up),2);
+        let puff=.55+.45*sin((t-Q.y)*TAU*2.5+nz*3.)*.6+.5*smoothstep(.45,.8,str);
+        let side=clamp(dot(vec2f(sign(p.x-O.x)*dx,0.),vec2f(A.y,0.))*.6+.55,0.,1.);
+        let core=exp(-dx*dx*9.)*(1.-t)*.6;
+        let c=mix(vec3f(1.,.74,.50),vec3f(1.,.93,.84),t*.7+core)*(.7+.5*side*key);
+        let a=clamp(hit*body*(.42*(1.-t)+.16)*puff*(.8+.4*nz)+core*body*hit,0.,.9);
+        acc=vec4f(c*a,a)+acc*(1.-a);
+      }
+    }
+    }
+  }
+  /* ── след в газе: вспоротая полоса за кормой и два завитка, где газ сходится ── */
+  {
+    let K=fu.v[13];let q=p-K.xy;let tw=K.z;let t=-(q.x+14.)/tw;
+    if(t>0.&&t<1.){
+      let nz=fbt(vec2f(q.x*.06+K.w*1.3,q.y*.2),2);
+      let hw=4.+t*5.;
+      var a=.22*(1.-t)*(1.-smoothstep(hw*.4,hw,abs(q.y)))*(.7+.6*nz);
+      for(var k=0;k<2;k++){
+        let sg=select(-1.,1.,k==1);
+        let ys=sg*(4.+t*16.)+sin(t*7.+K.w+select(1.7,0.,k==1))*4.*t;
+        a=max(a,.16*(1.-t*.6)*clamp(1.2-abs(q.y-ys),0.,1.));
+      }
+      acc=vec4f(vec3f(236.,246.,255.)/255.*a,a)+acc*(1.-a);
+    }
+  }
+  /* ── нагрев: ниже коридора корпус режет плотный газ — ударная волна перед носом и
+     марево вокруг; дрожит течением шума, а не миганием ── */
+  let hk=fu.v[14].w;
+  if(hk>.01){
+    let K=fu.v[13];let q=p-K.xy;
+    let nz=fbt(vec2f(q.x*.08-K.w*4.,q.y*.12),2);
+    let bq=(q-vec2f(10.,0.))*vec2f(1.,.72);let br=abs(length(bq)-28.-nz*4.);
+    let bow=exp(-br*br*.05)*smoothstep(22.,36.,q.x)*hk*.8;
+    let halo=exp(-dot(q*vec2f(.022,.05),q*vec2f(.022,.05)))*hk*(.5+.5*nz);
+    let a=clamp(bow*.8+halo*.45,0.,1.);
+    let c=mix(vec3f(1.,.45,.18),vec3f(1.,.86,.62),clamp(bow*1.4,0.,1.));
+    acc=vec4f(c*a,a)+acc*(1.-a);
+  }
+  return acc;
+}`;
+const SCP_OB=new Float32Array(60);
+const SCP_SH=[],SCP_SHA=[];
+function scoopGpuThings(pass,S,sh,L){
+  if(!pass)return;
+  const U=SCP_OB,p=S.p,pal=p.T.pal;U.fill(0);
+  U[0]=sh;U[1]=L[0];U[2]=L[1];U[3]=.35+.65*L[2];
+  const c1=pal[Math.min(1,pal.length-1)];
+  let n=0;const SH=SCP_SH,SA=SCP_SHA;SH.length=0;SA.length=0;
+  const lx=L[0],ly=L[1],lz=.6,ln=Math.hypot(lx,ly,lz);
+  for(const o of S.obs){
+    const X=scoopScrX(S,o.x),y=o.y+sh;
+    if(X<-160||X>W+160)continue;
+    if(o.k<2){
+      if(n>=6)continue;
+      const k=4+n*8;n++;
+      U[k]=X;U[k+1]=o.y;U[k+2]=o.r;U[k+3]=o.k;
+      U[k+4]=o.hit?1:0;
+      /* фазы: у ядра — угол (шейдер берёт её через sin/cos), у плюмажа — путь по модулю
+         1000: клубы (период .4) и струи сходятся на замыкании, а замыкание раз в минуты */
+      U[k+5]=o.k===0?(S.x*.02*o.sp)%TAU:((S.x*.012+o.x*.01)%1000);
+      U[k+6]=o.k===0?(o.sp||1):o.up;
+    }else{
+      /* град: шесть граней, у каждой своя нормаль к свету */
+      const rot=S.x*.03+o.x,al=o.hit?.4:.95;
+      SA.push([2,X+o.r*.6,y,X+o.r*.6+16,y,.6,.8,214,238,255,o.hit?.08:.22]);
+      for(let f=0;f<6;f++){
+        const a0=rot+f*TAU/6,a1=a0+TAU/6,am=(a0+a1)/2;
+        const P0=[X+Math.cos(a0)*o.r,y+Math.sin(a0)*o.r*.72],P1=[X+Math.cos(a1)*o.r,y+Math.sin(a1)*o.r*.72];
+        const nx=Math.cos(am)*.8,ny=Math.sin(am)*.8,nn=Math.hypot(nx,ny,.9);
+        const lam=(nx*lx+ny*ly+.9*lz)/(nn*ln),b=clamp(lam,0,1);
+        const c=[lerp(26,236,b),lerp(40,250,b),lerp(58,255,b)];
+        SH.push([5,X,y,P0[0],P0[1],P1[0],P1[1],c[0],c[1],c[2],al,5]);
+      }
+    }
+  }
+  /* v[14] — цвет ядра: вторая ступень палитры гиганта */
+  U[56]=c1[0]/255;U[57]=c1[1]/255;U[58]=c1[2]/255;
+  /* v[14].w — нагрев 0..1: с половины шкалы, к пожару — во всю силу */
+  U[59]=clamp((S.heat-30)/70,0,1);
+  /* v[13] — след: корма, длина (растёт со скоростью по высоте), фаза завитков */
+  U[52]=W*.34;U[53]=S.y;U[54]=190+Math.abs(S.vy)*4;U[55]=(S.x*.4)%TAU;
+  gpuField(pass,"scoop.obs",SCP_OBS,U,[null,{view:gnbNoiseTile()}]);
+  if(SA.length)gpuShapes(pass,SA,{blend:"add"});
+  if(SH.length)gpuShapes(pass,SH);
+  /* ── корабль ── */
+  const sx=W*.34,sy=S.y+sh,[bt,bb]=scoopBandAt(S.x),FA=[];
+  if(S.y>bb){
+    /* языки нагрева: корпус режет плотный газ ниже коридора */
+    const k=clamp((S.y-bb)/120,0,1);
+    for(let i=0;i<9;i++){
+      const yy=sy-26+i*6.5,l=30+Math.abs(Math.sin(i*1.7+S.x*.05))*70*k;
+      FA.push([2,sx-14,yy,sx-14-l,yy+(i-4)*1.6,1,1.2,255,170,90,.25+k*.5]);
+    }
+  }
+  if(FA.length)gpuShapes(pass,FA,{blend:"add"});
+  const thr=keys.thrust&&G.fuel>0;
+  hullGpuDraw(G.shipId,sx,sy,S.bank*.5,1.5,thr,false,(G.mods&&G.mods.engine)||0,0,L[0],L[1]);
+  /* сборник: два раструба забирают газ, пока корабль в коридоре */
+  if(S.y>=bt&&S.y<=bb){
+    const C=[];
+    for(const s of [-1,1]){
+      C.push([2,sx-6,sy+s*7,sx-30,sy+s*13,.8,.4,127,224,200,.8]);
+      for(let i=0;i<5;i++){
+        const t=(S.x*4+i*22)%110;
+        C.push([3,sx-30-t,sy+s*13+Math.sin(t*.1+i)*4,1.8,0,.8,.3,127,224,200,.5-t/220]);
+      }
+    }
+    gpuShapes(pass,C,{blend:"add"});
+  }
 }

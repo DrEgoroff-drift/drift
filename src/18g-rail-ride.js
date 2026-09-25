@@ -12,8 +12,9 @@
 let RAIL_RIDE=null,RAIL_ARRIVE=-1e9;
 /* ── вспышка гипера (M473 хвост, 18.09) ──
    Поезд не едет по рельсам — он прыгает: уход и приход — белая вспышка с
-   бирюзовым лучом вдоль линии, 0.6 с, гаснет квадратом. На экране поездки —
-   в точке поезда; в системе после выхода — на корабле. */
+   бирюзовым лучом вдоль линии, 0.6 с, гаснет квадратом. На экране поездки её
+   рисует поле видеокарты (railFx, 18ga); эта 2D-вспышка осталась системе —
+   на корабле после выхода (кадр полёта — не зона поездки). */
 function railFlash(x,y,age,ang,k){
   const u=clamp(1-age/36,0,1);if(u<=0)return;
   const a=u*u*(k||1);
@@ -117,23 +118,21 @@ function railExit(){
 }
 function drawRail(){
   const R=RAIL_RIDE;if(!R)return;
-  ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
+  /* фон — в проходе сцены, под всем 2D (18ga): заливка #c закрыла бы галактику видеокарты */
+  gpuShapes(gpuScene(),[[0,0,0,W,H,0,0,3,4,10,1]]);
   const cell=Math.min(W,H)/14,p=railTrainPos(),V={x:p.x,y:p.y};
   drawGalaxy(V,cell);drawGalaxyStars(V,cell);
   if(typeof drawRailMap==="function")drawRailMap(V,cell,true);
   const X=x=>W/2+(x-V.x)*cell,Y=y=>H/2+(y-V.y)*cell,l=R.l;
-  /* своя линия — толсто, в цвете схемы */
   const c=RAIL_COL[l.kind];
-  ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
-  /* путь — кайма, полотно в цвете схемы и светлая осевая: рельс, а не черта */
-  ctx.beginPath();l.pts.forEach((q,i)=>i?ctx.lineTo(X(q[0]),Y(q[1])):ctx.moveTo(X(q[0]),Y(q[1])));
-  ctx.strokeStyle="rgba(3,4,10,.8)";ctx.lineWidth=8;ctx.stroke();
-  if(R.bus){                                        /* маршрутка идёт трассой, не рельсом: пунктир (M510) */
-    ctx.setLineDash([10,7]);ctx.strokeStyle="rgba(242,178,92,.85)";ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);
-  }else{
-    ctx.strokeStyle=rgba(c,.8);ctx.lineWidth=4;ctx.stroke();
-    ctx.strokeStyle=rgba(mixc(c,[255,255,255],.6),.45);ctx.lineWidth=1;ctx.stroke();
-  }
+  /* поезд: куда смотрит и как быстро идёт (производная разгона-торможения) */
+  const nx=R.seg<R.seq.length-1?l.stops[R.seq[R.seg+1]]:l.stops[R.seq[R.seg]];
+  const a=Math.atan2(nx.sy-p.y,nx.sx-p.x),tx=X(p.x),ty=Y(p.y);
+  const uu=R.phase==="go"?clamp(R.t/R.dur,0,1):0;
+  /* над галактикой — своя линия под током, видеокартой (18ga); маршрутка идёт
+     трассой, не рельсом: пунктир (M510) */
+  railLineGpu(gpuOver(),l.pts.map(q=>[X(q[0]),Y(q[1])]),c,R.bus,tx,ty,cell,G.t/60);
+  ctx.save();
   /* остановки маршрута: засечки с именами; пересадки — двойной круг */
   ctx.font=uiFont(10);ctx.textAlign="left";
   R.seq.forEach((i,m)=>{
@@ -146,12 +145,8 @@ function drawRail(){
     ctx.fillStyle=done?"rgba(200,200,200,.45)":"rgba(245,240,230,.9)";
     ctx.fillText(railStopName(s),x+10,y+4);
   });
-  /* поезд: скруглённая метка с клином фары по ходу */
-  const nx=R.seg<R.seq.length-1?l.stops[R.seq[R.seg+1]]:l.stops[R.seq[R.seg]];
-  const a=Math.atan2(nx.sy-p.y,nx.sx-p.x),tx=X(p.x),ty=Y(p.y);
+  /* поезд: скруглённая метка; клин фары светит полем (18ga) */
   ctx.translate(tx,ty);ctx.rotate(a);
-  const hg=ctx.createLinearGradient(8,0,70,0);hg.addColorStop(0,"rgba(255,244,210,.35)");hg.addColorStop(1,"rgba(255,244,210,0)");
-  ctx.fillStyle=hg;ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(70,-16);ctx.lineTo(70,16);ctx.closePath();ctx.fill();
   if(R.bus){
     /* ПАЗик: кремовый короб с красной полосой, окна по борту, табличка
        маршрута спереди; качается, как маршрутка на выбоинах */
@@ -167,7 +162,8 @@ function drawRail(){
   ctx.beginPath();ctx.moveTo(-12,-6);ctx.lineTo(8,-6);ctx.arc(8,0,6,-Math.PI/2,Math.PI/2);ctx.lineTo(-12,6);ctx.closePath();ctx.fill();ctx.stroke();
   }
   ctx.restore();
-  if(R.flash!==undefined)railFlash(tx,ty,G.t-R.flash,a,1);   /* уход/приход — вспышка гипера */
+  /* фара, вспышка гипера и росчерки перегона — светом ПОВЕРХ вагона, как было у 2D */
+  railFx(gpuOver(),tx,ty,a,R.flash!==undefined?G.t-R.flash:99,R.phase==="go"?Math.pow(6*uu*(1-uu)/1.5,.8):0,c);
   /* строка сверху: линия и следующая */
   const nxt=R.seg<R.seq.length-1?"следующая — «"+railStopName(l.stops[R.seq[R.seg+1]])+"»":"конечная";
   ctx.fillStyle="rgba(242,178,92,.9)";ctx.font=uiFont(11);ctx.textAlign="center";

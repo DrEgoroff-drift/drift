@@ -35,9 +35,7 @@ function roadOpen(){
   roadSenseBtn();
   if(roadAll().mic)roadMicOn();          /* выбор помнится: включали — включаем снова */
   RD.pingIv=setInterval(roadPing,30000);
-  const cv=document.getElementById("roadcv");
-  cv.width=cv.clientWidth*Math.min(2,devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
-  cv.height=cv.clientHeight*Math.min(2,devicePixelRatio||1);
+  roadGpuMount(true);                    /* кадр рисует видеокарта (27lc) */
   RD.raf=requestAnimationFrame(roadFrame);
 }
 function roadClose(){
@@ -50,6 +48,7 @@ function roadClose(){
   if(RD.raf)cancelAnimationFrame(RD.raf);
   if(RD.pingIv)clearInterval(RD.pingIv);
   roadFinish();
+  roadGpuMount(false);
   RD=null;
   if(typeof audioHush==="function")audioHush(false);
   if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
@@ -85,8 +84,7 @@ function roadHullHalf(id){
   return ROAD_HALF[id]=hi<0?h.bw:Math.max(o.width/2-lo,hi-o.width/2)/K;
 }
 function drawRoad(ts){
-  const cv=document.getElementById("roadcv"),c=cv.getContext("2d");
-  const W=cv.width,H=cv.height,t=ts/1000;
+  const t=ts/1000;
   /* настоящий шаг кадра: зашитая шестнадцатая врала вдвое на экране в 120 Гц —
      лента сгущалась, гистерезис яруса и объявление системы вдвое укорачивались */
   const dt=RD.lastFrame?clamp(t-RD.lastFrame,.001,.1):1/60;
@@ -104,13 +102,19 @@ function drawRoad(ts){
   const hue=roadMoodHue(),en=RD.energy;
   /* задник целиком — в 27la-road-sky: туманности, звёзды, попутчики, искры,
      импульсы касания. Здесь остаётся корабль, шлейф, маневровые и числа */
-  roadSky(c,W,H,t,dt,spd,tier,fast,hue,en);
+  /* кадр — видеокартой (G12): небо и свет — её поля, корпус и шлейф — 2D на #c,
+     числа — на слое приборов. Полуразмах корпуса меряется своим 2D-холстом с
+     подменой ctx (roadHullHalf) — ДО кадра: внутри кадра ctx принадлежит ему */
+  const id=G.shipId,h=hullOf(id),half=roadHullHalf(id);
+  const gOn=gpuFrame();let c=MAIN_CTX;
+  roadSky(W,H,t,dt,spd,tier,fast,hue,en);
+  const bd=roadBands(RD.wave);
+  RD.flow=(RD.flow||0)+dt*(.09+bd.bass*.34);   /* время шума: бас гонит течение */
+  roadBloom(gpuScene(),W,H,hue,en,bd);    /* сияние и гашение низа — под корпусом (27lb) */
   /* ── корпус на экране ──
      Поворот машины кренит корпус и уводит его наружу; разгон задирает нос и
      раздувает факел, тормоз бьёт носовыми соплами и клюёт вперёд. */
-  const id=G.shipId,h=hullOf(id);
   /* посадка корпуса: длина одна на всех, ширина — потолок (разбор у констант) */
-  const half=roadHullHalf(id);
   const sc=Math.min(H*ROAD_SHIP_LEN/h.len,W*ROAD_SHIP_WID/(2*half));
   /* доля сопла в общей струе остаётся своя, а сумма приведена к полуширине
      корпуса и зажата упорами — иначе у «Топора» шесть сопел дают стену света */
@@ -312,9 +316,11 @@ function drawRoad(ts){
   }
   /* нижняя кромка гаснет в фон: под ней подвал с кнопкой НАЗАД, и лента любой
      длины не должна её резать (M168g) */
+  /* небо гасит поле 27lb, ленту — стирание: под ней видно то же погашенное небо */
   const mg=c.createLinearGradient(0,H*(1-ROAD_MASK),0,H);
-  mg.addColorStop(0,"rgba(6,10,18,0)");mg.addColorStop(1,"rgba(6,10,18,1)");
-  c.fillStyle=mg;c.fillRect(0,H*(1-ROAD_MASK),W,H*ROAD_MASK);
+  mg.addColorStop(0,"rgba(0,0,0,0)");mg.addColorStop(1,"rgba(0,0,0,1)");
+  c.save();c.globalCompositeOperation="destination-out";
+  c.fillStyle=mg;c.fillRect(0,H*(1-ROAD_MASK),W,H*ROAD_MASK);c.restore();
   /* ── маневровые крупным планом (M168i) ──
      Штатные носовые сопла из drawHull на этом масштабе — три пикселя, и на
      видео тормоза просто не видно. Рисуем свои факелы в экранных координатах,
@@ -397,24 +403,15 @@ function drawRoad(ts){
      вышел горизонт с прожектором и тёмной дорогой в перспективе — «не очень»,
      и справедливо. Вторая собрала кромку из пяти плюмажей. Третья, когда автор
      снял ограничение по батарее («всё равно телефон на зарядке»), считает свет
-     ПОЛЕМ, попиксельно — 27lb-road-bloom. Здесь остаётся только ровная нить по
-     самой кромке: она держит нижний край светящимся даже в полной тишине.
+     ПОЛЕМ, попиксельно — 27lb-road-bloom, с G12 на видеокарте, вместе с нитью
+     по самой кромке.
 
      Тёмной полосы на холсте нет: кнопки держит своё стекло подвала
      (`body.road .scr footer`), а не вырезанный из картинки кусок. */
-  const bd=roadBands(RD.wave);
-  RD.flow=(RD.flow||0)+dt*(.09+bd.bass*.34);   /* время шума: бас гонит течение */
-  {
-    const hs=h2=>((h2%360)+360)%360;
-    const gh=H*(.030+en*.030+bd.bass*.025);
-    c.save();c.globalCompositeOperation="lighter";
-    const eg=c.createLinearGradient(0,H-gh,0,H);
-    eg.addColorStop(0,"hsla("+hs(hue)+",92%,52%,0)");
-    eg.addColorStop(1,"hsla("+hs(hue)+",92%,54%,"+(.07+en*.08+bd.bass*.06+RD.beat*.06).toFixed(3)+")");
-    c.fillStyle=eg;c.fillRect(0,H-gh,W,gh);
-    c.restore();
-  }
-  roadBloom(c,W,H,t,dt,hue,en,bd);
+  /* мир собран; числа — на слой приборов, без свечения и зерна */
+  if(gOn)gpuHud("road"+GPU.frameNo,()=>{});   /* слой приборов чистится каждый кадр */
+  if(gOn)gpuWorld(ROAD_GLOW,true,true);
+  c=ctx;c.save();
   /* числа. Строки складываются курсором: чего нет — того нет, дыр не остаётся.
      На стоянке ни «—», ни «+0 кр» не висят (проход самокритики M168c) */
   const R=roadAll();
@@ -619,6 +616,8 @@ function drawRoad(ts){
       c.fillText(L[i],pad+Math.round(W*.025),by2+fh*(1.4+i*1.55));
     }
   }
+  c.restore();
+  if(gOn)gpuPresent();
 }
 /* полный экран (M168k): обвязка браузера съедала седьмую часть экрана у режима,
    который стоит в держателе весь путь. Жест уже есть — нажатие «РАЗРЕШИТЬ
@@ -646,8 +645,8 @@ function roadFullscreen(){
   const cv=document.getElementById("roadcv");
   if(cv)cv.addEventListener("pointerdown",e=>{
     if(!RD)return;
-    const rc=cv.getBoundingClientRect();
-    RD.pulses.push({x:(e.clientX-rc.left)*(cv.width/rc.width),y:(e.clientY-rc.top)*(cv.height/rc.height),r:8,a:.6});
+    const rc=cv.getBoundingClientRect();   /* в пикселях CSS, как весь кадр (G12) */
+    RD.pulses.push({x:e.clientX-rc.left,y:e.clientY-rc.top,r:8,a:.6});
     RD.hintT=0;                            /* подсказки возвращаются по касанию */
     /* долгое нажатие — окно правды по датчикам: без него нельзя понять, почему
        корпус не сходит с центра, а подкручивать вслепую нечестно (M168k) */
@@ -657,10 +656,4 @@ function roadFullscreen(){
   const drop=()=>{if(RD)clearTimeout(RD.pressT);};
   if(cv){cv.addEventListener("pointerup",drop);cv.addEventListener("pointercancel",drop);
     cv.addEventListener("pointermove",e=>{if(RD&&(Math.abs(e.movementX)>3||Math.abs(e.movementY)>3))drop();});}
-  addEventListener("resize",()=>{
-    if(!RD)return;
-    const cv2=document.getElementById("roadcv");
-    cv2.width=cv2.clientWidth*Math.min(2,devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
-    cv2.height=cv2.clientHeight*Math.min(2,devicePixelRatio||1);
-  });
 })();
