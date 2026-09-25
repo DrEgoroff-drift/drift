@@ -105,10 +105,14 @@ function drawSurfaceWorld(){
   /* час и погода входят в ключ гряд (M232): цвет воздуха в hazeFar теперь
      живой, и тайл, испечённый утром или в ясную погоду, обязан перепечься */
   const dwk="|d"+dayKq(p)+"|w"+Math.round(((typeof weatherPower==="function")?weatherPower(p):0)*5)/5;
-  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
-  drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
-  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
-  drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
+  /* с видеокартой обе гряды — одно поле поверх неба и облаков (21e2); тайлы
+     2D остаются там, где устройства нет (ярус тестов без картинки) */
+  if(!surfRidgesGpu(tr,p,camx,camy,stpK)){
+    S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
+    drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
+    S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
+    drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
+  }
   /* дымка шириной в кисть (M304, §13): была H*.36→.66, стала H*.52→.64 */
   hazeBand(p,H*(SURF_HOR-.03),H*.09);
   /* дальние капли — ДО мира: они падают за грядой и за кораблём (M242) */
