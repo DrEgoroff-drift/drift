@@ -41,7 +41,7 @@ new module `17z3-map-gpu`.
    soft point per cell of a power-of-two step ≈7 px on screen, two levels cross-faded, density by the light, none
    behind dust, power-law brightness); a warm halo around the bulge past the model's cap; a soft vignette so the
    sheet's light gathers to the middle; per-pixel grain instead of flat fill.
-7. **structure you can see at home, a brightness ladder, your rails lit** (coordinator feedback of 25.09) — `17z3`,
+7. `c23b091` **structure you can see at home, a brightness ladder, your rails lit** (coordinator feedback of 25.09) — `17z3`,
    `18e`: the bar gets its two offset dust lanes (straight, on opposite leading edges, torn by noise) and a warm
    ridge, so the home frame shows a warm elongated core cut by a dark lane instead of an even glow; star grain
    follows the light more steeply; system stars climb a ladder by class (glow radius and strength), and only the
@@ -54,6 +54,23 @@ Text everywhere (galaxy and nebula names, the system card, labels, rulers' numbe
 vector layers of `18a`/`18b` (grid, rings, rumour hatch clipped to cells, house patches, chips, the rose): thin
 UI strokes with clips and dashes, where Canvas 2D is the brush (DESIGN-gpu §0) and a GPU copy would be parity,
 not a gain. `17z-map-backdrop` stays 2D for the site (`war.js`).
+
+## For the design pass (Контроль, real GPU — not polished in the cloud, 25.09)
+
+All knobs live in `17z3-map-gpu.js` (`GAL_WGSL`, `mapStarsGpu`) and `drawRailMap` in `18e`.
+- **Galaxy structure at map zoom.** Home (zoom 1) shows only the core: warm bar ridge (`.085`), halo
+  (`.045·e^(-r/5)`), bar dust lanes (offset `.62+.14|u|`, strength `.75`). Check the balance against text on the
+  system card (the core behind its second line is brighter now), and whether arms should read already at zoom 1–2.
+  `GAL_GLOW_CAP` still bounds the model; the extras above sit outside it.
+- **Star grain.** Unresolved stars: step ≈7 px on screen, density `pow(glow,1.25)·3`, strength `.30`. On a
+  real GPU at DPR 2.6 the 7 CSS px step may look different — check the phone.
+- **Star brightness ladder.** System stars: glow radius `rr·(6+5·t/2)`, spikes on the five brightest in frame
+  (`MAP_SPIKE_N`). Map bloom is 0 (`BLOOM_K`, `19c-light`, frozen) — with bloom the halos could be cut back.
+- **Rails.** «Yours» = a stop within jump reach: glow `.07+.06k`, ribbon `.55+.35k`, white core `.35`; others pale
+  `.10–.13`. Check that yours read without shouting over the stars, and the pale ones at zoom 4.
+- **Jump circle.** Light on the field (`MAPGPU.lamp`): inside ×(1+.12), outside ×.7 only zoomed in, a teal rim
+  `.05`; the 2D hairline stays. Check that the reach reads at zoom 1 over the busy address layer.
+- **Named nebulae.** Brightness `.4`, radius `1.3–1.8` sectors; check against names and addresses at zoom 2.
 
 ## Pairs (scratchpad of session a777c21e…, 760×475, before = fleet base e4c3a56)
 
