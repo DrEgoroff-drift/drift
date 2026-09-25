@@ -84,6 +84,17 @@ const GATE2D=[
        return {by};}
      return null;},
    probe:["drawGesture","drawGestureTop","drawGestPost"]},
+  /* «Чебуречная» (17j): лодка и её свет, доска — выпечки GPU-холста; сбрасываем, чтобы выпечка шла под записью */
+  {name:"«Чебуречная» (17j): лодка, свет окна, доска",
+   painters:["drawCheburek","chebBake","chebPaint","chebPaintEm","chebSignBake","chebSignMake"],
+   place(first){
+     if(first){for(const B of CHEB_ART.values())gpuBakeDrop(B);CHEB_ART.clear();for(const v of CHEB_SIGN.values())v.drop();CHEB_SIGN.clear();}
+     for(let r=0;r<=30;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const C=chebHere();if(!C)continue;
+       G.ship.x=C.x-30;G.ship.y=C.y+40;G.ship.vx=G.ship.vy=0;G.zoom=1.5;G.zoomT=null;return {C};}
+     return null;},
+   probe:["drawCheburek"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

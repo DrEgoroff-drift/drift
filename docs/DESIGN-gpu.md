@@ -1666,3 +1666,11 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   0/10; phone without the pulsing buttons — gt 219/40, co 7/54, or 66/44, ra 0/10, hf 30/65, km 0/12. GPU
   errs 0. Gate2d gains the gesture scene (power changes every 15 frames, age inside its gesture; probes
   `drawGesture`, `drawGestureTop`, `drawGestPost`); mutants `gesture-post-2d`, `gesture-frame-2d` die.
+- **«Чебуречная» (17j) off 2D.** The frame was already in the scene pass; the bakes were 2D canvases uploaded
+  through `gpuMipTex`. Now the boat (`chebPaint`) and its light (`chebPaintEm`, shadowBlur through 08cc) are
+  `gpuBaked` records in `CHEB_ART` (device-checked), the «ЧЕБУРЕКИ» sign is a device-pixel bake measured with
+  `gcMeasure` (`chebSignMake`, no mips, `bakeKeep` of 6 with a device check). The 2D frame branch is gone.
+  Pairs vs HEAD, same tick, zoom 2.2/1.3/0.7 (px >24 / max): 760 — 10/27, 0/23, 0/16; phone — 1/25, 2/29,
+  11/65. Everything >24 sits on the pulsing DOM chips and buttons; on the boat a trace of the garland bulbs'
+  halo, the sign identical. GPU errs 0. Gate2d gains the scene (bakes dropped first); mutants `cheb-bake-2d`,
+  `cheb-sign-2d` die.
