@@ -8,9 +8,9 @@
 const NEON=new Map();   // ключ печи (имя, кегль, цвет, плотность) → печь; bakeKeep держит 12
 /* выпечки на GPU-холсте (v2: текст и тень, 25.09): стекло, свет с ореолом (shadowBlur),
    бледное ядро — своей выпечкой (destination-out по свету стёр бы ореол) и кладётся в свет */
-function neonBake(slot,name,full,F,col,bl){
+function neonBake(slot,name,full,F,col,bl,opt){
   if(!GPU.dev)return null;
-  const d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d+"|"+bl;
+  const core=!!(opt&&opt.core),d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d+"|"+bl+(core?"|c":"");
   return bakeKeep(NEON,key,12,()=>{
   const Fd=F*d,fb="bold "+Fd+"px ui-monospace,monospace";
   const tw=Math.ceil(gcMeasure(fb,full).width),pad=Math.ceil(3*d);
@@ -20,7 +20,10 @@ function neonBake(slot,name,full,F,col,bl){
   const co=sw>=2.4?gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle=rgba(tube.map(v=>v+(255-v)*.6),1);g.fillText(name,pad,base);
       g.globalCompositeOperation="destination-out";g.lineWidth=sw*2/3;g.lineJoin="round";g.strokeStyle="#000";g.strokeText(name,pad,base);}),O):null;
   const al=gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle="rgba(78,64,62,.9)";g.fillText(full,pad,base);}),O);
-  const em=gpuBake(Wd,Hd,g=>{txt(g,g=>{g.shadowColor=rgba(tube,.85);g.shadowBlur=Math.max(1,Fd*.14);g.fillStyle=rgba(tube,1);g.fillText(name,pad,base);});
+  /* opt.core (вывески гостиниц, 25.09): на мелком кегле, где средней трети штриха нет, буква целиком чуть бледнее
+     трубки — ядро читается и после свечения кадра, а не расплывается пятном своего цвета */
+  const lit=core&&!co?tube.map(v=>v+(255-v)*.45):tube;
+  const em=gpuBake(Wd,Hd,g=>{txt(g,g=>{g.shadowColor=rgba(tube,.85);g.shadowBlur=Math.max(1,Fd*.14);g.fillStyle=rgba(lit,1);g.fillText(name,pad,base);});
     if(co){g.shadowBlur=0;g.drawImage(co,0,0);}},O);
   return {key,al,em,co,ax:pad+tw/2,ay:base,w:Wd/d,h:Hd/d,drop(){gpuBakeDrop(al);gpuBakeDrop(em);gpuBakeDrop(co);}};
   });

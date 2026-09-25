@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 622 · символов верхнего уровня: 6207
+Файлов: 622 · символов верхнего уровня: 6217
 
 ## СИМВОЛЫ
 
@@ -1490,7 +1490,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:114-141
+drawHotel                    src/17l-hotel.js:135-162
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2674,17 +2674,23 @@ hitCovered                   tests/91zzzzzg-hit.js:41-67
 hitFx                        src/18d-postfx.js:11
 hitLocMul                    src/13-combat.js:32-35
 hitShip                      src/13-combat.js:88-152
-HK_DARK                      src/17l1-hotel-kosmos.js:37
-HK_ROOM                      src/17l1-hotel-kosmos.js:17
-HK_STAIR                     src/17l1-hotel-kosmos.js:15
-HK_WINS                      src/17l1-hotel-kosmos.js:14
-HK_XL                        src/17l1-hotel-kosmos.js:9
-hkPaint                      src/17l1-hotel-kosmos.js:38-215
-hkQ                          src/17l1-hotel-kosmos.js:13
-hkS                          src/17l1-hotel-kosmos.js:11
-hkTop                        src/17l1-hotel-kosmos.js:12
-hkWins                       src/17l1-hotel-kosmos.js:19-36
-hkX                          src/17l1-hotel-kosmos.js:10
+HK_DARK                      src/17l1-hotel-kosmos.js:24
+HK_EL                        src/17l1-hotel-kosmos.js:19
+HK_ROOM                      src/17l1-hotel-kosmos.js:28
+HK_STAIR                     src/17l1-hotel-kosmos.js:26
+HK_WALL                      src/17l1-hotel-kosmos.js:23
+HK_WINS                      src/17l1-hotel-kosmos.js:25
+HK_XL                        src/17l1-hotel-kosmos.js:12
+hkBand                       src/17l1-hotel-kosmos.js:50
+hkFace                       src/17l1-hotel-kosmos.js:21
+hkN                          src/17l1-hotel-kosmos.js:20
+hkPaint                      src/17l1-hotel-kosmos.js:53-278
+hkQ                          src/17l1-hotel-kosmos.js:16
+hkS                          src/17l1-hotel-kosmos.js:14
+hkTop                        src/17l1-hotel-kosmos.js:15
+hkUp                         src/17l1-hotel-kosmos.js:22
+hkWins                       src/17l1-hotel-kosmos.js:30-48
+hkX                          src/17l1-hotel-kosmos.js:13
 hlFoe                        tests/91zzzw-combat.js:628-632
 HOL_BY                       src/11am-holiday.js:26
 HOL_D                        tests/91zzzm-holiday.js:2
@@ -2789,34 +2795,38 @@ homingStep                   src/13a-guns.js:470-477
 HOTEL_BAKE                   src/17l-hotel.js:57
 HOTEL_CURT                   src/17l-hotel.js:46
 HOTEL_EM                     src/17l-hotel.js:47
+HOTEL_FILL                   src/17l-hotel.js:65
 HOTEL_GLOW                   src/17l-hotel.js:50
 HOTEL_LAMP                   src/17l-hotel.js:44
-HOTEL_LIT                    src/17l-hotel.js:92
+HOTEL_LIT                    src/17l-hotel.js:113
 HOTEL_LOD                    src/17l-hotel.js:49
 HOTEL_NIGHT                  src/17l-hotel.js:14
-HOTEL_RIM                    src/17l-hotel.js:149
+HOTEL_RIM                    src/17l-hotel.js:170
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:15
-hotelArc                     src/17l-hotel.js:146
-hotelDesk                    src/17l-hotel.js:231-243
-hotelDock                    src/17l-hotel.js:178-218
+hotelAngD                    src/17l-hotel.js:77
+hotelArc                     src/17l-hotel.js:167
+hotelDesk                    src/17l-hotel.js:256-268
+hotelDock                    src/17l-hotel.js:200-243
 hotelDrop                    src/17l-hotel.js:58
-hotelGet                     src/17l-hotel.js:84-90
+hotelGet                     src/17l-hotel.js:103-111
 hotelHere                    src/17l-hotel.js:16-21
-hotelInteract                src/17l-hotel.js:223-230
-hotelJob                     src/17l-hotel.js:59-82
-hotelLamp                    src/17l-hotel.js:153-157
+hotelInteract                src/17l-hotel.js:248-255
+hotelJob                     src/17l-hotel.js:78-101
+hotelLamp                    src/17l-hotel.js:174-178
 hotelLampOf                  src/17l-hotel.js:45
+hotelLight                   src/17l-hotel.js:66-72
+hotelLit                     src/17l-hotel.js:75
 hotelLitFrac                 src/17l-hotel.js:24-29
-hotelLitRects                src/17l-hotel.js:93-100
-hotelNeon                    src/17l-hotel.js:103-109
-hotelNeonDraw                src/17l-hotel.js:110-113
-hotelPoly                    src/17l-hotel.js:144
-hotelRim                     src/17l-hotel.js:150
-hotelStar                    src/17l-hotel.js:220
+hotelLitRects                src/17l-hotel.js:114-121
+hotelNeon                    src/17l-hotel.js:124-130
+hotelNeonDraw                src/17l-hotel.js:131-134
+hotelPoly                    src/17l-hotel.js:165
+hotelRim                     src/17l-hotel.js:171
+hotelStar                    src/17l-hotel.js:245
 hotelType                    src/17l-hotel.js:22
-hotelWindows                 src/17l-hotel.js:160-175
+hotelWindows                 src/17l-hotel.js:181-196
 hotelWinLit                  src/17l-hotel.js:33-42
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
@@ -3673,8 +3683,8 @@ needOf                       src/12aa-need.js:26-37
 needsNear                    src/12aa-need.js:52-61
 needWin                      src/12aa-need.js:24
 NEON                         src/17k0-neon.js:8
-neonBake                     src/17k0-neon.js:11-27
-neonDraw                     src/17k0-neon.js:30-34
+neonBake                     src/17k0-neon.js:11-30
+neonDraw                     src/17k0-neon.js:33-37
 NET_FROM                     tests/90-harness.js:426
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
@@ -6978,16 +6988,16 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17k-billboard.js · 13 КБ
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
 
-## src/17k0-neon.js · 3 КБ
+## src/17k0-neon.js · 4 КБ
   · неон: буква — трубка (16/n, DESIGN-gpu §L.S «Glow»):1
 
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 20 КБ
+## src/17l-hotel.js · 22 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
-## src/17l1-hotel-kosmos.js · 20 КБ
+## src/17l1-hotel-kosmos.js · 28 КБ
   · гостиница «Космос» — ГЛАВТРАССА (gt, эталон шести типов):1
 
 ## src/17m-peace-fleet.js · 11 КБ
