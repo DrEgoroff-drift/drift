@@ -696,7 +696,16 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   91zzzzzzy5: a fresh atlas, the body writes text into it, the atlas is reset and its pages destroyed
   between the recording and the first layer; `createBindGroup` sees no dead view, the master bakes. With the
   re-record disabled it goes red (1 dead view bound).
-  Next: (4) the fleet merge scouting (optimistic-gates-u46osn into a fresh gpu, nothing committed).
+- **Candidate 0.463.0 = 875dc0f2** (26.09): origin/main 0.462.0 merged (b6ae07b2), gpu3 e52e5213 merged
+  (05be9917: 17k billboard and 17j Cheburek on the GPU canvas, 42 warm keys), VER and the patchnote.
+  Node 16904, -Full 19137, -Mobile 19089 green; the warm table re-taken without a diff; the pipe detector
+  green. Not pushed — the push is Контроль's.
+- **The fleet merge scouting was withdrawn** (Контроль: fleet 2 is rebuilt by the cloud on main 0.462.0 in
+  `claude/fleet2`, acceptance in `claude/fleet-accept`). What was found before the stop: the fleet branch
+  `optimistic-gates-u46osn` is a single root commit (a snapshot) with no shared history; its closest tree
+  in main/gpu is db057213 (128 files differ). Grafted onto db057213 it merges into gpu with only INDEX and
+  TESTMAP conflicting; both sides touch 08c, 08ca, 18a, test.ps1, 90-harness, 91zzzzzzy2, shot.py, PLAN.
+  Next: paused for the limit window; on waking — Контроль's queue.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
