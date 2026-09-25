@@ -961,8 +961,9 @@ function opisRender(box){
     for(const [k,ru] of OPIS_TABS){
       const b=document.createElement("button");b.dataset.tab=k;b.textContent=ru;
       /* открытая вкладка не жмётся: тычок в неё перерисовывал то же самое и
-         молчал («обещание: молчаливых тычков нет», стол/hold · «КОРАБЛЬ») */
-      if(OPIS.tab===k){b.classList.add("on");b.disabled=true;}
+         молчал («обещание: молчаливых тычков нет», стол/hold · «КОРАБЛЬ»); она не
+         серая (disabled — это «чего-то не хватает»), а просто не кнопка: style.css */
+      if(OPIS.tab===k)b.classList.add("on");
       b.onclick=()=>{OPIS.tab=k;OPIS.sel=null;sfx("ui");opisRerender();};
       nav.appendChild(b);
     }

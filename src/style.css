@@ -2125,6 +2125,9 @@ body.table u.addr{color:#7a4a20}
 .pads button.off.abil-ok{opacity:1;pointer-events:auto}
 .pads button.off.abil-ok>span{opacity:.38}
 
+/* открытая вкладка описи не жмётся: тычок в неё молчал (27j-ui-opis) */
+.op-tabs button.on{pointer-events:none}
+
 #rx,#seat,#perch{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
 #rxOut b{font-size:9px;letter-spacing:0}
 #camBtn{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);

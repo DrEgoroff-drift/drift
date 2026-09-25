@@ -129,7 +129,12 @@ in the table, the map's jump radius, the speed in the docking and landing prompt
 rects of the HUD roots, the hint and chip plates against the edge, the hint's contrast ≥ 4.5:1 on the pad plate
 over a light sky, the idle pad takes a touch, pad names for four systems and all powers, chip and place names,
 no «1.40». Six mutants red: hint under the pad, hint dimmed, pad deaf, header at 6 px, lowercase names, zoom
-with a dot.
+with a dot. The two old -Mobile -Full reds are closed too: «телефон: стик…» was an isolation leak — `CHIP_POS`
+(where each compass chip is drawn, eased towards its slot) outlived `resetWorld`, so a chip started from the
+previous suite's edge (x=4) and one `drawSystem` could not move it off the stick; the harness clears it now.
+«обещание: молчаливых тычков нет» caught the open ОПИСЬ tab on the phone, a tap that re-rendered the same page;
+the open tab takes no pointer now (`.op-tabs button.on`) — `disabled` was tried first and the «порог» net
+rightly called it a grey button without a reason.
 
 **After the candidate — redraw passes.** Each: a 760 pair and one line of what got better.
 
@@ -274,9 +279,11 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
 
 - **HUD pair, Контроль's three fixes (25.09, `gpu-hud` on eb0e4f3).** 12 px from every edge, the hint inside
   the pad (≥ 4.5:1, the idle pad takes the long press), names in table case on pads (`27y-hud-words.js`), one
-  decimal comma. Five pairs (km/ney at 390 and 760, the station at 390 with ДЕЙСТВИЕ lit). `gpu` holds the gpu2
-  allies merge (044a0f7). Next (Контроль): the two old -Mobile reds (stick/compass isolation leak, «КОРАБЛЬ» on
-  the desk), then gpu2-fleetlit 1230f04 and gpu3 aef3390 after the release.
+  decimal comma; six mutants red. The two old -Mobile reds fixed (CHIP_POS leak in `resetWorld`, the open ОПИСЬ
+  tab). Five pairs (km/ney at 390 and 760, the station at 390 with ДЕЙСТВИЕ lit) in the session's scratchpad,
+  `pair_hud_*.png`. `gpu` holds the gpu2 allies merge (044a0f7). Next (Контроль): merge gpu2-fleetlit f9adaae
+  into `gpu`, then gpu3 when GPU-3 hands its tail over. Open question: world labels of planets stay in caps
+  («ЦИЦИИН») while the chip says «Нейэль IV».
 - **The flight HUD pair (25.09, branch `gpu-hud` on a178e76, not for release).** One variant, brief under §L.S;
   pairs «было | стало» at 390×844 DPR 2 and 760 DPR 1, flight by the Commune and calm NEYEL, in the session's
   scratchpad (`pair_hud_*.png`). -Full green; -Mobile keeps only the two failures a178e76 has too (the stick

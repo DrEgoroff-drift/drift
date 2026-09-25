@@ -171,7 +171,7 @@ avrWin                       src/21a6-base-avral.js:103-111
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32-41
-bakeIdle                     tests/90-harness.js:387-392
+bakeIdle                     tests/90-harness.js:391-396
 bakeKeep                     src/08c-gpu-kit.js:71-74
 bankTransform                src/03b-hull-paint.js:59-66
 BANYA_EVERY                  src/21ac1-base-banya.js:19
@@ -961,7 +961,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120-124
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:535-538
+coopStamp                    tests/90-harness.js:539-542
 coopVisitReset               src/12aj-coop.js:62
 CORONA_IN                    src/17-mode-system.js:26
 COSM_CHIME                   src/12va-wander-cosm.js:59-62
@@ -3021,7 +3021,7 @@ landerGearTick               src/19f-lander.js:15-23
 landerInk                    tests/91j-art.js:155-169
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344-370
-landOnTestPlanet             tests/90-harness.js:371-377
+landOnTestPlanet             tests/90-harness.js:375-381
 landStartY                   src/19-mode-landing.js:38-43
 LANE_BUOY                    src/17g-sys-lane.js:66
 LANE_CHASE                   src/17g-sys-lane.js:16
@@ -3564,7 +3564,7 @@ needWin                      src/12aa-need.js:24
 NEON                         src/17k0-neon.js:8
 neonBake                     src/17k0-neon.js:9-32
 neonDraw                     src/17k0-neon.js:35-40
-NET_FROM                     tests/90-harness.js:428
+NET_FROM                     tests/90-harness.js:432
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
 NEWS_ALL_INC                 tests/91zzzw-news.js:17
@@ -3752,7 +3752,7 @@ opisHullRedraw               src/27j-ui-opis.js:404-420
 opisHullSlotAt               src/27j-ui-opis.js:421-432
 opisKitCard                  src/27j-ui-opis.js:627-635
 opisKitFuture                src/27j-ui-opis.js:128-135
-opisLeave                    src/27j-ui-opis.js:989-994
+opisLeave                    src/27j-ui-opis.js:992-997
 opisLift                     src/27j-ui-opis.js:278-320
 opisMarkCan                  src/27j-ui-opis.js:326-341
 opisMarkOver                 src/27j-ui-opis.js:342-346
@@ -3765,7 +3765,7 @@ opisPileCard                 src/27j-ui-opis.js:605-626
 opisPlanBlock                src/05e-plan.js:174-188
 opisPlanOnly                 src/05e-plan.js:189-207
 opisPriceCue                 src/27j-ui-opis.js:586-595
-opisRender                   src/27j-ui-opis.js:715-987
+opisRender                   src/27j-ui-opis.js:715-990
 opisRerender                 src/27j-ui-opis.js:74-84
 opisSame                     src/27j-ui-opis.js:85
 opisScarRows                 src/27j-ui-opis.js:167-174
@@ -4655,7 +4655,7 @@ rescueSync                   src/16c-rescue.js:685-698
 rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
 resetArm                     src/26-ui-station.js:694
-resetWorld                   tests/90-harness.js:235-369
+resetWorld                   tests/90-harness.js:235-373
 resize                       src/08-state.js:29-66
 resModeCap                   src/28-loop.js:257-262
 resSay                       src/28-loop.js:243-246
@@ -4893,7 +4893,7 @@ rungPoints                   src/12ad-site.js:45-68
 rungRingSegs                 src/12ae-ladder.js:56
 rungRoman                    src/12ae-ladder.js:47
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:445-529
+runTests                     tests/90-harness.js:449-533
 RUSH_SHIFTS                  src/18j-rail-rush.js:6
 rushAt                       src/18j-rail-rush.js:7
 rushFuelMul                  src/18j-rail-rush.js:12
@@ -5035,7 +5035,7 @@ setBig                       src/27z-telemetry.js:112-118
 setPair                      src/27z-telemetry.js:127-132
 setPct                       src/27z-telemetry.js:102-108
 setSt                        src/27z-telemetry.js:94
-settle                       tests/90-harness.js:393-404
+settle                       tests/90-harness.js:397-408
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -5361,7 +5361,7 @@ stDel                        src/14-save.js:26
 stEmFlush                    src/17c3-station-live.js:82-87
 stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
-steps                        tests/90-harness.js:406
+steps                        tests/90-harness.js:410
 stepWorld                    src/28-loop.js:378-398
 stGet                        src/14-save.js:8
 stGround                     src/17c-system-draw.js:108
@@ -5463,7 +5463,7 @@ SUITE_SEQ                    tests/90-harness.js:77
 SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
-suiteOrder                   tests/90-harness.js:413-420
+suiteOrder                   tests/90-harness.js:417-424
 suiteWin                     tests/90-harness.js:94-99
 suitFailure                  src/23-mode-dig.js:135-143
 suitHit                      src/23-mode-dig.js:128-134
@@ -5585,11 +5585,11 @@ TEST_SEED                    tests/90-harness.js:212
 TEST_SHARD                   tests/90-harness.js:30
 TEST_SHUFFLE                 tests/90-harness.js:70
 TEST_SKIP                    tests/90-harness.js:64
-TEST_SUITES                  tests/90-harness.js:530
+TEST_SUITES                  tests/90-harness.js:534
 TEST_T0                      tests/90-harness.js:214
 TEST_TIMES                   tests/99-run.js:18
-testNetHits                  tests/90-harness.js:434-444
-testSource                   tests/90-harness.js:429-433
+testNetHits                  tests/90-harness.js:438-448
+testSource                   tests/90-harness.js:433-437
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:358-375
@@ -7386,7 +7386,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/29i-spa-draw.js · 25 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 47 КБ
+## tests/90-harness.js · 48 КБ
   · автотесты: каркас:1
 
 ## tests/90a-tools.js · 45 КБ

@@ -2132,12 +2132,15 @@ body.table u.addr{color:#7a4a20}
    пэдом она стояла в 4,5 px от нижней кромки, а погашенный пэд гасил и её — 2:1
    к фону. Внутри она дальше от кромки, чем сам пэд, и лежит на его плашке. */
 .pads button.abil-ok::after{position:static;transform:none;display:block;width:9ch;white-space:normal;text-align:center;
-  font:600 8px/9px ui-monospace,monospace;letter-spacing:0;color:#f2b25c}
+  font:500 8px/9px ui-monospace,monospace;letter-spacing:0;color:#f2b25c}
 /* пэд без действия, но с готовой системой — не погашен: .off снимал с него
    касания (pointer-events:none), и долгое нажатие не доходило — форсаж в
    открытом космосе был только на клавише V. Гаснет лишь слово «Действие». */
 .pads button.off.abil-ok{opacity:1;pointer-events:auto}
 .pads button.off.abil-ok>span{opacity:.38}
+
+/* открытая вкладка описи не жмётся: тычок в неё молчал (27j-ui-opis) */
+.op-tabs button.on{pointer-events:none}
 
 #rx,#seat,#perch{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
 #rxOut b{font-size:9px;letter-spacing:0}
@@ -97720,6 +97723,9 @@ function opisRender(box){
     const nav=document.createElement("nav");nav.className="tabs op-tabs";
     for(const [k,ru] of OPIS_TABS){
       const b=document.createElement("button");b.dataset.tab=k;b.textContent=ru;
+      /* открытая вкладка не жмётся: тычок в неё перерисовывал то же самое и
+         молчал («обещание: молчаливых тычков нет», стол/hold · «КОРАБЛЬ»); она не
+         серая (disabled — это «чего-то не хватает»), а просто не кнопка: style.css */
       if(OPIS.tab===k)b.classList.add("on");
       b.onclick=()=>{OPIS.tab=k;OPIS.sel=null;sfx("ui");opisRerender();};
       nav.appendChild(b);
