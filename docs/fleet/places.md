@@ -55,6 +55,15 @@ The «after» of pair 1 is shot with the one-line call below applied locally (no
 outside the zone). Without the call the lamps are registered and nothing is lit (the old 2D blob of
 the porch lamp is gone), so **the request below is what makes this commit visible**.
 
+## What is left in the zone
+
+- Nothing half-done is uncommitted. Every painter in the zone had its one pass.
+- Not done: the reveal under the third light (`lightsDrawReveal`, `11g`) and the glow patches' dashed
+  outlines stay 2D (the lights core has no night, so lamps do not apply); `glowFlash` (the searchlight
+  column, called from `20c`) is unchanged; no GPU sprite work (`gpuBake`) — the painters stay 2D
+  vector brushes inside the surface frame, and the GPU part is the light pass.
+- No pairs for the grove (belt), the lights' satellites (landing), the bowl and the stair.
+
 ## For the design pass on a real GPU (what to look at, per scene)
 
 The cloud pairs only prove the scenes draw and nothing got worse (coordinator, 25.09). A design pass
