@@ -6,6 +6,20 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.463.0 - the billboard and the Cheburek stall leave 2D
+
+- **The billboard and «Чебуречная» are drawn by the video card** (GPU-3): the ПЛАН panel, its running line
+  and the stall's boat, light and sign are GPU bakes, made ahead while they are still off screen — flying
+  past the billboard creates 3 textures in the frame instead of 19–22, none of them its own. The picture is
+  the same (at most 13/255, 2 pixels over 8).
+- **A station never loses its body.** Its master is baked one layer per frame; if the text atlas was reset
+  in between, the next layer bound a destroyed page and came out transparent. The body is now recorded
+  again when the atlas changes.
+- **Less work for a planet with cities.** The city lights looked for their latitude windows every frame (up
+  to 63 000 tests); the windows are now kept until the light moves on or the star side changes.
+- **A frame-sized texture nobody wrote is gone** (the old interface target): 2.6 MB less video memory on a
+  phone, 32 MB at 4K.
+
 ## 0.462.0 - the WebGPU line meets the phone speed-up
 
 - **0.461.0 merged into the WebGPU line** (`gpu`): orbits as a band and fields reading `fu.v[k]` in place
