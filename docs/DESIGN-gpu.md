@@ -670,7 +670,11 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   390×844 (дом was green there). -Accept writes the whole window, so the new take was spliced into HEAD's
   JSON scene by scene; the other scenes kept their old signatures (they drift within tolerance).
   -Mobile on the merge: one red, the golden черпак, now green. Pipe table unchanged (40 keys).
-  Next: the candidate hash to Контроль.
+- **Candidate 66b51af6** (S23 cold4 PASS, deep 9.00 ms GPU frame). Queue on top of it, Контроль 26.09:
+  (1) the «кольцо дороги» isolation leak — does not reproduce (alone; gates under -Shuffle 1..3), a watch
+  line in PLAN §10; (2) рейсы → посадка: matTick on the GPU; (3) review findings 5–7, 9, 10; (4) the fleet
+  merge scouting.
+  Next: (2) matTick on the GPU.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
