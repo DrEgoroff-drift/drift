@@ -87,6 +87,37 @@ TEST_SUITES.push(()=>suite("дорога: экран, разгон и тормо
   G.road=null;
 }));
 
+TEST_SUITES.push(()=>suite("дорога: кадр ложится в рамку листа, на выходе — снова в окно",{tier:"browser"},()=>{
+  /* От 900 px лист .scr — колонна по центру, и его backdrop-filter делает его держателем
+     для position:fixed: #g в #roadwin показан в рамке листа. Кадр собирался на всё окно
+     и сжимался вбок — на 17 % в окне 1280×800, на 45 % в 1920×1080 (приёмка флота 26.09).
+     Узкое окно прогона листа-колонны само не даст — лист сжимается руками тем же
+     backdrop-filter, что и на мониторе */
+  if(!ok(typeof GPU!=="undefined"&&GPU.ok&&!!GPU.cv,"видеокарта есть"))return;
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.road=null;
+  const win=document.getElementById("roadwin"),st=win.style.cssText;
+  win.style.cssText=st+";inset:30px 60px;backdrop-filter:blur(1px)";
+  try{
+    roadOpen();
+    drawRoad(1000);drawRoad(1033);
+    const r=GPU.cv.getBoundingClientRect();
+    ok(GPU.cv.parentNode===win,"холст видеокарты — в листе дороги");
+    eq(W,Math.round(r.width),"ширина кадра — рамка листа, а не окно");
+    eq(H,Math.round(r.height),"высота кадра — рамка листа");
+    ok(W<innerWidth&&H<innerHeight,"рамка меньше окна: "+W+"×"+H+" в "+innerWidth+"×"+innerHeight);
+    eq(GPU.cv.width,Math.round(W*DPR),"подложка #g — рамка на плотность, без растяжки");
+    roadClose();
+  }finally{win.style.cssText=st;if(RD)roadClose();}
+  ok(GPU.cv.previousElementSibling===cvs,"после дороги #g снова сразу за #c");
+  ok(!GPU.ui||GPU.ui.previousElementSibling===GPU.cv,"и слой приборов — сразу за #g");
+  eq(W,innerWidth,"ширина кадра — снова окно");
+  eq(H,innerHeight,"высота кадра — снова окно");
+  eq(cvs.width,Math.round(W*DPR),"#c — по окну");
+  G.road=null;
+}));
+
 TEST_SUITES.push(()=>suite("дорога: кривой держатель снят автонулём, поворот меряется рысканием",{tier:"node"},()=>{
   resetWorld();
   G.road=null;

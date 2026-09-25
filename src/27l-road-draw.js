@@ -106,6 +106,7 @@ function drawRoad(ts){
      числа — на слое приборов. Полуразмах корпуса меряется своим 2D-холстом с
      подменой ctx (roadHullHalf) — ДО кадра: внутри кадра ctx принадлежит ему */
   const id=G.shipId,h=hullOf(id),half=roadHullHalf(id);
+  roadFit();                              /* W,H — рамка листа, а не окно (27lc) */
   const gOn=gpuFrame();let c=MAIN_CTX;
   roadSky(W,H,t,dt,spd,tier,fast,hue,en);
   const bd=roadBands(RD.wave);
