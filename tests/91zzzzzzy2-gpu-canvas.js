@@ -71,6 +71,26 @@ suite("GPU-холст: multiply на прозрачном — два вызов�
 /* серии тени и пул целей (08ca/08cc): подряд идущие тени без пересечений — один слой, пересечение
    режет серию; повторная выпечка не создаёт ни одной текстуры; пул живёт в GPU.lay и уходит с ним
    (gpuInit после потери устройства заводит GPU.lay заново — и пул, и атлас берутся новые) */
+/* острый стык по правилу 2D: острие, если длина острия / ширина ≤ miterLimit, иначе срез; и направление у дуги —
+   касательная, а не хорда (крюк 03a: lineTo, потом arc назад — у GPU-2 на hbake_x2 был светлый шип наружу) */
+suite("GPU-холст: острый стык — miterLimit как в 2D, у дуги касательная",()=>{
+  resetWorld();
+  /* ломаная с внутренним углом φ, вершина в (0,0), биссектриса наружу — вдоль −x; ширина 2 (hw 1) */
+  const reach=(phi,ml)=>{const g=new GcCtx(64,64,1),h=phi/2;g.lineWidth=2;g.lineJoin="miter";g.miterLimit=ml;
+    g.beginPath();g.moveTo(20*Math.cos(h),-20*Math.sin(h));g.lineTo(0,0);g.lineTo(20*Math.cos(h),20*Math.sin(h));g.stroke();
+    const v=g._ops[0].v;let m=0;for(let i=0;i<v.length;i+=2)m=Math.max(m,-v[i]);return m;};
+  for(const ml of [10,2])for(const deg of [5,15,30,90]){
+    const phi=deg*Math.PI/180,r=1/Math.sin(phi/2),want=r<=ml?r:Math.sin(phi/2);
+    near(reach(phi,ml),want,1e-6,deg+"° при miterLimit "+ml+": "+(r<=ml?"острие "+r.toFixed(2):"срез"));
+  }
+  /* крюк: отрезок влево, дальше дуга радиуса 1.5 px назад — поворот ровно 180°, у 2D срез, наружу ни пикселя */
+  const g=new GcCtx(64,64,1);g.lineWidth=.6;g.lineJoin="miter";
+  g.beginPath();g.moveTo(10,0);g.lineTo(0,0);g.arc(0,1.5,1.5,-Math.PI/2,Math.PI*.9);g.stroke();
+  /* левее x=0 дуга только внизу (y > 1.9); всё, что левее выше y=1, — острие стыка. Штрих тоньше пикселя
+     рисуется шириной 1 px (hw .5) с долей альфы */
+  const v=g._ops[0].v;let mx=0;for(let i=0;i<v.length;i+=2)if(v[i+1]<1)mx=Math.max(mx,-v[i]);
+  ok(mx<=.5+1e-6,"крюк: у начала дуги наружу не дальше полуширины ("+mx.toFixed(3)+" ≤ 0.5)");
+});
 TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целей, сброс с устройством",{tier:"browser"},()=>{
   if(!GPU.dev){eq(gpuBake(8,8,()=>{}),null,"без видеокарты выпечки нет");return;}
   const sq=(g,x,y,b)=>{g.shadowBlur=b;g.shadowColor="rgba(0,0,0,.8)";g.fillStyle="#fff";g.fillRect(x,y,8,8);};

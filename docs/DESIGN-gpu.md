@@ -515,6 +515,23 @@ submit of its own.
   forgotten. The gate2d scene «фишки и подписи мира» asserts 0 2D calls, and its text raster is a column of its
   own that must be 0 after 30 warm frames.
 
+**A join takes the curve's tangent, not its first chord.** GPU-2 found a light spike at the stern hook of
+`obod` (`hbake_x2.png`): 2D draws a blunt hook there. The hook is `lineTo` then `arc` back from the same point,
+a 180° turn, and 2D bevels it. The GPU canvas flattens curves when the path is built, so the join saw the
+arc's first chord. On a small arc the step is coarse (radius 1.5 px, five chords of 50°), the chord is off the
+tangent by half a step, the turn reads as about 155°, the miter ratio is about 4.6 and within the limit of 10:
+a tip of 4.6 half-widths outward. `miterLimit` itself was right. The fix: every flattened curve (arc,
+ellipse, quadratic, cubic) gets one more point a parameter ε ≤ 1e-3 from each end. Joins and caps then see the
+tangent. The points lie on the curve, so fills do not change.
+- Node suite «острый стык»: the tip reach at interior angles 5°, 15°, 30°, 90° with `miterLimit` 10 and 2
+  equals the 2D rule (miter `hw/sin(φ/2)` within the limit, bevel `hw·sin(φ/2)` beyond it) to 1e-6. The hook
+  reaches 0.21 px outward, under the half-width (HEAD: 2.24).
+- Pixel probe against 2D (`mitp.js`): the tip's leftmost column above half ink is 2D / GPU −19.5 / −21.3 px
+  (15°, limit 10), −10.3 / −11.0 (30°), −4.1 / −4.1 (90°), bevels within 0.6 px. What remains is edge
+  anti-aliasing on a thin tip; polylines are identical to HEAD.
+- The pair `pair_miter_hook_x3.png`: `obod` and `strizh` sterns, 2D | GPU HEAD | GPU new. The spike is gone,
+  and the hook is blunt as in 2D.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -533,6 +550,8 @@ submit of its own.
 - **The profile of a bake is in (§G).** One GPU-canvas call costs 1–3.5 µs at ×1, bit-identical.
 - **`multiply` on a transparent destination is in (§G):** two draws, Δ ≤ 1 on flat destinations (HEAD: 248).
 - **Chips and world labels are on `#ovl` (§G):** 0 2D calls, rasters only on new text, GPU pass 1.7/10.5 µs.
+- **Joins take the curve's tangent (§G):** the hook spike on `obod` is gone. `gpuHullLight` (16ga) goes once
+  GPU-2's 2deb253 (its last callers removed) is merged into `gpu`.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
   2. `drawImage` from bake to bake at ss2: nearest when axis-aligned and 1:1, with a pair test;

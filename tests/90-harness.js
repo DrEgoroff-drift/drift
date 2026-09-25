@@ -232,6 +232,9 @@ for(const k of ["fuseSel","crewSel","hqSel","cantSel","optTab","resetArm","actPr
 function uiSelRestore(){for(const k in UI_SEL_BOOT){try{eval(k+"=JSON.parse(UI_SEL_BOOT[k])");}catch(e){}}}
 /* полный сброс мира: то же, что «начать заново», но без перезагрузки страницы */
 let TEST_CHRON=null;
+/* снимок модульного состояния, которое resetWorld возвращает к свежей странице: снят при загрузке обвязки,
+   до первого набора, — новое поле в 16c попадёт в сброс само */
+const RESET_ABIL0=typeof ABIL_ST!=="undefined"?structuredClone(ABIL_ST):null;
 function resetWorld(){
   rndSeed(TEST_SEED);clockSet(TEST_T0);
   for(const k of Object.keys(G))if(!G_BOOT_KEYS.has(k))delete G[k];
@@ -257,7 +260,7 @@ function resetWorld(){
   if(typeof RAIL_DOCK!=="undefined"){RAIL_DOCK=null;RAIL_WAIT=null;RAIL_RIDE=null;RAIL_ARRIVE=-1e9;RAIL_LIFE={pax:null,tea:false,teaDone:false};}
   /* перезарядка «долгого» (16c) — как на свежей странице: G.t сбрасывается, а ABIL_ST.cd оставался от прошлого
      набора, и готовность (кольцо, подпись «ДОЛГОЕ · …» над кнопкой) зависела от того, кто бежал раньше */
-  if(typeof ABIL_ST!=="undefined"){ABIL_ST={k:null,on:0,cd:0,armed:false,fired:false,text:""};ABIL_KEY=false;}
+  if(RESET_ABIL0){ABIL_ST=structuredClone(RESET_ABIL0);ABIL_KEY=false;}
   G.mode="system";G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.zoom=1;
   G.shipId="strizh";G.owned={strizh:true};
   G.ship={x:0,y:-760,vx:0,vy:0,a:0,av:0,bank:0};

@@ -11589,6 +11589,11 @@ class GcCtx{
   _sc(){const m=this._m;return Math.max(Math.hypot(m[0],m[1]),Math.hypot(m[2],m[3]));}
   _last(){const s=this._sp[this._sp.length-1];return s?[s.p[s.p.length-2],s.p[s.p.length-1]]:null;}
   _to(q){const s=this._sp[this._sp.length-1];if(s)s.p.push(q[0],q[1]);else this._sp.push({p:[q[0],q[1]],c:false});}
+  /* доли параметра кривой из n кусков: плюс точка в ε от каждого конца. Стык и конец линии берут направление
+     первого и последнего отрезка; без этих точек у мелкой дуги это хорда, а не касательная, — крюк 03a
+     (lineTo и arc назад) давал поворот 157° вместо 180°, острие в пределах miterLimit и шип наружу там,
+     где 2D кладёт срез. Точки лежат на самой кривой: заливке всё равно */
+  _ts(n){const e=Math.min(1e-3,.25/n),t=[0,e];for(let i=1;i<n;i++)t.push(i/n);t.push(1-e,1);return t;}
   /* путь */
   beginPath(){this._sp=[];}
   moveTo(x,y){if(isFinite(x)&&isFinite(y))this._sp.push({p:this._P(x,y),c:false});}
@@ -11621,8 +11626,8 @@ class GcCtx{
     else{sw=(a1-a0)%T;if(!ccw&&sw<0)sw+=T;if(ccw&&sw>0)sw-=T;}
     const rd=Math.max(rx,ry)*this._sc()*this._k,st=rd>GC_TOL?2*Math.acos(1-GC_TOL/rd):T/4;
     const n=Math.min(1024,Math.max(2,Math.ceil(Math.abs(sw)/st))),cr=Math.cos(rot),sr=Math.sin(rot);
-    for(let i=0;i<=n;i++){const t=a0+sw*i/n,u=Math.cos(t)*rx,v=Math.sin(t)*ry,q=this._P(x+u*cr-v*sr,y+u*sr+v*cr);
-      if(!i&&!this._sp.length)this._sp.push({p:q,c:false});else this._to(q);}}
+    for(const f of this._ts(n)){const t=a0+sw*f,u=Math.cos(t)*rx,v=Math.sin(t)*ry,q=this._P(x+u*cr-v*sr,y+u*sr+v*cr);
+      if(!f&&!this._sp.length)this._sp.push({p:q,c:false});else this._to(q);}}
   arcTo(x1,y1,x2,y2,r){
     if(![x1,y1,x2,y2,r].every(isFinite))return;if(r<0)throw new RangeError("GPU-холст: arcTo r < 0");
     const L=this._last(),iv=gcInv(this._m);if(!L){this.moveTo(x1,y1);return;}
@@ -11638,13 +11643,13 @@ class GcCtx{
     if(![cx,cy,x,y].every(isFinite))return;if(!this._sp.length)this.moveTo(cx,cy);
     const a=this._last(),b=this._P(cx,cy),c=this._P(x,y),k=this._k;
     const M=Math.hypot(a[0]-2*b[0]+c[0],a[1]-2*b[1]+c[1])*k,n=Math.min(256,Math.max(1,Math.ceil(Math.sqrt(.25*M/GC_TOL))));
-    for(let i=1;i<=n;i++){const t=i/n,s=1-t;this._to([s*s*a[0]+2*s*t*b[0]+t*t*c[0],s*s*a[1]+2*s*t*b[1]+t*t*c[1]]);}}
+    for(const t of this._ts(n)){if(!t)continue;const s=1-t;this._to([s*s*a[0]+2*s*t*b[0]+t*t*c[0],s*s*a[1]+2*s*t*b[1]+t*t*c[1]]);}}
   bezierCurveTo(ax,ay,bx,by,x,y){
     if(![ax,ay,bx,by,x,y].every(isFinite))return;if(!this._sp.length)this.moveTo(ax,ay);
     const p=this._last(),a=this._P(ax,ay),b=this._P(bx,by),c=this._P(x,y),k=this._k;
     const M=Math.max(Math.hypot(p[0]-2*a[0]+b[0],p[1]-2*a[1]+b[1]),Math.hypot(a[0]-2*b[0]+c[0],a[1]-2*b[1]+c[1]))*k;
     const n=Math.min(256,Math.max(1,Math.ceil(Math.sqrt(.75*M/GC_TOL))));
-    for(let i=1;i<=n;i++){const t=i/n,s=1-t,A=s*s*s,B=3*s*s*t,C=3*s*t*t,D=t*t*t;
+    for(const t of this._ts(n)){if(!t)continue;const s=1-t,A=s*s*s,B=3*s*s*t,C=3*s*t*t,D=t*t*t;
       this._to([A*p[0]+B*a[0]+C*b[0]+D*c[0],A*p[1]+B*a[1]+C*b[1]+D*c[1]]);}}
   /* штрих-пунктир */
   setLineDash(a){if(!Array.isArray(a)||a.some(v=>!(v>=0)||!isFinite(v)))return;this._dash=a.length%2?a.concat(a):a.slice();}
