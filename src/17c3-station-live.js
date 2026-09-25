@@ -66,22 +66,35 @@ function stSpinCv(key,ext,draw,sb){
    под кольцом и над ним; общий мастер U — слои поверх друг друга пиксель в пиксель, по нему свет
    верхних слоёв (рельеф без ложных кромок) */
 function stMasterDrop(M){for(const q of M.Ly)gpuBakeDrop(q);if(M.U)gpuBakeDrop(M.U);}
-function stationMaster(key,sb,V,S,ty){
-  let M=ST_MASTER.get(key);if(M&&M.Ly[0].dev===GPU.dev)return M;
-  if(M){stMasterDrop(M);ST_MASTER.delete(key);}
-  if(!GPU.dev)return null;
-  const side=Math.ceil(160*sb),k=side*side<=262144?2:1,g=new GcCtx(side,side,k),prev=ctx,rec={L:[],z:0,cut:[0],inv:null};
+/* мастер станции — задача планировщика 17a0: запись тела, потом по выпечке слоя за шаг.
+   Готов — в ST_MASTER. Нет готового этой плотности (зум сменил четверть-октаву) —
+   рисуем прежний мастер той же станции, а новый печётся по шагу за кадр; синхронно —
+   только когда станции нечем показаться вовсе (загрузка), либо она за краем (sync=false) */
+function* stMasterJob(side,sb,V,S,ty){
+  const k=side*side<=262144?2:1,g=new GcCtx(side,side,k),prev=ctx,rec={L:[],z:0,cut:[0],inv:null};
   rec.split=()=>{rec.cut.push(g._ops.length);rec.z++;};
   ctx=g;
   try{g.setTransform(sb,0,0,sb,side/2,side/2);rec.inv=DOMMatrix.fromMatrix(g.getTransform()).inverse();ST_REC=rec;drawStationBody(V,S,ty);}
   finally{ST_REC=null;ctx=prev;}
   rec.cut.push(g._ops.length);
-  const O=g._ops,Ly=[];
-  for(let i=0;i+1<rec.cut.length;i++){const a=rec.cut[i],b=rec.cut[i+1];
-    const B=gpuBake(side,side,q=>{for(let j=a;j<b;j++)q._ops.push(O[j]);},{ss:k});
-    if(!B){for(const q of Ly)gpuBakeDrop(q);return null;}Ly.push(B);}
-  const U=Ly.length>1?gpuBake(side,side,q=>{for(const B of Ly)q.drawImage(B,0,0);},{ss:1}):null;
-  M={Ly,U,E:side/(2*sb),sb,L:rec.L};
+  const O=g._ops,Ly=[];let U=null,ok=false;
+  try{
+    for(let i=0;i+1<rec.cut.length;i++){yield;const a=rec.cut[i],b=rec.cut[i+1];
+      const B=gpuBake(side,side,q=>{for(let j=a;j<b;j++)q._ops.push(O[j]);},{ss:k});
+      if(!B)return null;Ly.push(B);}
+    if(Ly.length>1){yield;U=gpuBake(side,side,q=>{for(const B of Ly)q.drawImage(B,0,0);},{ss:1});}
+    ok=true;return {Ly,U,E:side/(2*sb),sb,L:rec.L};
+  }finally{if(!ok){for(const q of Ly)gpuBakeDrop(q);if(U)gpuBakeDrop(U);}}
+}
+function stationMaster(base,sb,V,S,ty,onScr){
+  const key=base+"|"+sb;
+  let M=ST_MASTER.get(key);if(M&&M.Ly[0].dev===GPU.dev)return M;
+  if(M){stMasterDrop(M);ST_MASTER.delete(key);}
+  if(!GPU.dev)return null;
+  let F=null;   /* прежний мастер той же станции — пока печётся новый */
+  if(onScr)for(const [k,Q] of ST_MASTER)if(k.startsWith(base+"|")&&Q.Ly[0].dev===GPU.dev)F=Q;
+  M=prebake("st|"+key,()=>stMasterJob(Math.ceil(160*sb),sb,V,S,ty),onScr&&!F);
+  if(!M)return F;
   if(ST_MASTER.size>=4){const k0=ST_MASTER.keys().next().value;stMasterDrop(ST_MASTER.get(k0));
     for(const q of ST_SPIN.values())gpuBakeDrop(q);ST_SPIN.clear();ST_MASTER.delete(k0);}
   ST_MASTER.set(key,M);return M;

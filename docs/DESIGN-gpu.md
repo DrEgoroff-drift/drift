@@ -1626,7 +1626,12 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   jump), never on an approach: the gate suite flies 1.6 screens to a hotel over 90 frames and demands
   PB_SYNC +0 and the house drawn from the finished bake. `PB_MAX[key]` keeps the longest step per key
   (the ≤16 ms at ×4 threshold is the stand's, the suite has no clock). `pbOnScreen(x,y,w,h,m)` is the
-  margin test. Next on it: the station masters.
+  margin test. The station masters are on it (`stMasterJob`: record the body, then one layer bake per
+  step, the union last; a partial job drops its bakes). The key lost `sb`'s role as a hard gate: when
+  the zoom crosses a quarter octave the old master of the same station keeps drawing (its own `sb`, `E`)
+  while the new density bakes step by step; a sync finish happens only when the station has no master
+  at all and is on screen (a load). Off screen the job only steps. Frames vs HEAD at 760 and on the phone:
+  identical (max |Δ| 0), PB_SYNC 0.
 - **Six hotels (17l core, one file per type).** The panel hotel is deleted; `HOTEL_T[by]` registers a
   type {W,H,PX,ax,ay,sign,sheen,wins,paint}, where `paint(c,e,sd,lit)` is a generator (yields between
   parts) that paints into two `GcCtx` records: `c` the house, `e` the glow. `hotelJob` records dark and

@@ -501,7 +501,7 @@ function drawStation(x,y,Z){
   if(pass){
     /* мастер: плотность — предел зума на экране, по четверть-октавы (как у корпусов) */
     const dk=GPU.bw/W,sb=Math.pow(2,Math.ceil(Math.log2(1.5*1.7*dk)*4)/4);
-    const M=stationMaster((G.sys.key||"?")+"|"+ty+"|"+nb+"|"+SCK+"|"+sb,sb,V,S,ty),R=Math.max(24,80*s);
+    const M=stationMaster((G.sys.key||"?")+"|"+ty+"|"+nb+"|"+SCK,sb,V,S,ty,pbOnScreen(x-80*s,y-80*s,160*s,160*s,0)),R=Math.max(24,80*s);
     if(M)gpuStationDraw(M,x,y,s,lx,ly);
     GPU.oc.push([x,y,R*.5]);   /* L3: заслон звезды для барж у причала */
     /* огни станции — тёплый свет на пришвартованных: борт к станции теплеет */
