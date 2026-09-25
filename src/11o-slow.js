@@ -117,8 +117,19 @@ function slowDraw(tr,camx,camy,p){
   const S=slowAll(),x0=slowSpotX(tr,p),sx=x0-camx;
   if(sx<-200||sx>W+200)return;
   const y=groundAt(tr,x0)-camy;
-  ctx.fillStyle="rgba(226,236,240,.35)";ctx.fillRect(sx-1,y-14,2,10);   /* колышек: место */
-  const draw=(arr,ox,a)=>{for(let i=0;i<arr.length;i++){ctx.fillStyle=rgba(hex2rgb(RES[arr[i]].col),a);ctx.fillRect(sx+ox+i*9,y-5,6,4);}};
+  /* G6: колышек — вещь, а не черта: дерево, тень от звезды, торец светлее;
+     метки — камешки руды на грунте, каждая со своей тенью и бликом сверху */
+  const L=placeSun(p);
+  ctx.fillStyle="rgba(0,0,0,"+(.2*L.k+.06).toFixed(3)+")";
+  ctx.beginPath();ctx.ellipse(sx-L.sx*7,y,8,1.4,0,0,TAU);ctx.fill();
+  ctx.fillStyle="rgba(110,92,66,.95)";ctx.fillRect(sx-1.2,y-14,2.4,14);   /* колышек: место */
+  ctx.fillStyle="rgba(226,214,186,.6)";ctx.fillRect(sx-1.2,y-14,2.4,1.2);
+  if(L.k>.02){ctx.fillStyle=rgba(L.col,.4*L.k);ctx.fillRect(L.sx>0?sx+.6:sx-1.2,y-13,.8,12);}
+  const draw=(arr,ox,a)=>{for(let i=0;i<arr.length;i++){
+    const c=hex2rgb(RES[arr[i]].col),x=sx+ox+i*9;
+    ctx.fillStyle="rgba(0,0,0,"+(.3*a).toFixed(3)+")";ctx.fillRect(x-L.sx,y-1,6,1.5);
+    ctx.fillStyle=rgba(c,a);ctx.beginPath();ctx.ellipse(x+3,y-2.6,3.2,2.3,0,0,TAU);ctx.fill();
+    ctx.fillStyle=rgba(sdMix(c,[255,255,255],.5),a*.6);ctx.fillRect(x+1.6,y-4.4,2.4,1);}};
   if(S.fig)draw(S.fig,-18,.9);
   if(slowReady())draw(slowReply(),-18,.35);
 }
