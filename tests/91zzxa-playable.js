@@ -146,6 +146,10 @@ TEST_SUITES.push(()=>suite("R2 пустой бак: руль не крутит �
   G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.hail=null;G.pirates=[];G.hailLog={};
   G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;G.marks=[];G.ship.a=0;
   G.fuel=0;G.cargo.ice=0;toggleSos(false);
+  /* окно, оставленное открытым прошлым набором, закрылось сейчас — и пауза
+     «не переспрашивать» (RESCUE_ASK_GAP) легла на этот набор: газ окна не
+     открывал; всплыло, когда новый набор сдвинул раздачу по частям */
+  rescueShutT=-1e9;
   T.wait(2);
   const a0=G.ship.a;
   T.press("left",30);

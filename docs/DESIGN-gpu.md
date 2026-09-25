@@ -98,6 +98,22 @@ Heat haze behind the nozzle (G4b).
 5. Gate: uploads 0, submits 1 → Контроль's phone, 30 s + 5 min → candidate. Further redrawing does not hold the
    candidate.
 
+**The flight HUD pair (15/n, branch `gpu-hud` on top of a178e76, not for release — one strong variant for the
+author's verdict).** Sentence case wherever the player reads (vitals, the place name, the zoom line, the ticker
+label, map/menu, the rail's buttons, the pad words, the ability hint, the chips); hierarchy by size and colour.
+One warm accent — the next action (the ДЕЙСТВИЕ pad and its hint); ЦЕЛЬ, the system name, Фото, the rail and
+the star chip go cold. Fuel and hull lead: a 20 px number (18 on the phone) with a small «/100», and a short
+bar that warms as it empties (cold above 60 %, amber at 20 %, the alarm below); energy and hold are a quieter
+row. The right edge is two 48×48 tiles, icon over word. Plates are one dark glass without a gradient and a
+hairline edge (`--plate`, `--hair`). The ability hint is a caption under the pad — lifting the console by its
+line was tried first and squeezed the band between the console and the rail below one chip's height. Chip
+distance keeps two significant digits in motion («1,4к», «390»), exact within 400 or at rest, so a chip
+re-rasters once per hundred units instead of every frame. Fixed on the way: the right-edge chip stack aligned
+to the first chip's left edge and ran off the screen; chips now dodge the rail too. The code is one CSS block
+at the end of `style.css` plus span-wrapped words (textContent unchanged, so the detector laws and the tests
+still read «98/100», «ЦЕЛЬ»); `#msg` and `#prompt` stay in caps (their strings carry names). New guard:
+«пульт: подсказка системы, ФОТО, лента и ЦЕЛЬ не налезают» in any window, its mutant red.
+
 **After the candidate — redraw passes.** Each: a 760 pair and one line of what got better.
 
 *Ships.* On the phone at 58 px a ship reads as a body in real light; up close (card, hangar) as a machine made of
@@ -239,6 +255,11 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
 
 ## Where I stopped (update on every commit)
 
+- **The flight HUD pair (25.09, branch `gpu-hud` on a178e76, not for release).** One variant, brief under §L.S;
+  pairs «было | стало» at 390×844 DPR 2 and 760 DPR 1, flight by the Commune and calm NEYEL, in the session's
+  scratchpad (`pair_hud_*.png`). -Full green; -Mobile keeps only the two failures a178e76 has too (the stick
+  vs compass chips, «обещание» on the desk). Waiting for the author's verdict; next: merge gpu2 and gpu3
+  into `gpu` (Контроль, 25.09).
 - **Stage 1 caches (25.09, Контроль's order: station → zoom-following bakes → 25c → item 3).** Station master
   done (17c3, steady uploads 0, layers as in 2D); zoom-following bakes done (each size uploaded once, the way
   back 0); the instrument pod 25c redraws only on change; item 3 done (body V>.6 +12/+13 % over 2D — the

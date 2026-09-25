@@ -385,3 +385,39 @@ TEST_SUITES.push(()=>suite("телефон: стик рождается под �
   HELM.S=null;HELM.P=null;HELM.fade=null;HELM.trail=[];
   resetWorld();
 }));
+
+/* Пара HUD 15/n: «Долгое · форсаж» над ДЕЙСТВИЕМ сидела на нижней кромке ФОТО и
+   на полосе ленты — три вещи в одном месте. Теперь она подписью под пэдом.
+   Сторож — в любом окне (390×844 под -Mobile, 760 под
+   -Size 760,760, обычное): подсказка, ФОТО, лента и ЦЕЛЬ попарно не пересекаются,
+   и подсказка целиком в кадре. У подсказки нет своего прямоугольника — это
+   ::after пэда: считаем его из стиля псевдоэлемента и ширины текста, в мерке
+   пэда (масштаб пэдов и --ui — отношением видимой ширины к вёрстке). */
+TEST_SUITES.push(()=>suite("пульт: подсказка системы, ФОТО, лента и ЦЕЛЬ не налезают друг на друга",{tier:"browser"},()=>{
+  resetWorld();G.mode="system";
+  ABIL_ST.cd=0;hud();abilPadRim();camBtnTick();
+  const act=document.querySelector('.pads button[data-k="act"]');
+  const cam=document.getElementById("camBtn"),rx=document.getElementById("rx"),lock=document.getElementById("lockbtn");
+  ok(act.classList.contains("abil-ok"),"подсказка системы горит: «"+act.dataset.abil+"»");
+  ok(cam.getClientRects().length>0&&lock.getClientRects().length>0,"ФОТО и ЦЕЛЬ стоят в системе");
+  const ar=act.getBoundingClientRect(),k=ar.width/act.offsetWidth,cs=getComputedStyle(act,"::after");
+  const g=document.createElement("canvas").getContext("2d");
+  g.font=cs.fontWeight+" "+cs.fontSize+" "+cs.fontFamily;
+  const tw=g.measureText(act.dataset.abil).width*k,fh=parseFloat(cs.fontSize)*1.2*k;
+  const top=ar.top+parseFloat(cs.top)*k,mid=ar.left+ar.width/2;
+  const R={"подсказка":{left:mid-tw/2,right:mid+tw/2,top,bottom:top+fh},
+    "ФОТО":cam.getBoundingClientRect(),"лента":rx.getBoundingClientRect(),"ЦЕЛЬ":lock.getBoundingClientRect()};
+  const f=r=>Math.round(r.left)+","+Math.round(r.top)+"–"+Math.round(r.right)+","+Math.round(r.bottom);
+  const names=Object.keys(R);
+  for(let i=0;i<names.length;i++)for(let j=i+1;j<names.length;j++){
+    const a=R[names[i]],b=R[names[j]];
+    const hit=a.left<b.right-.5&&b.left<a.right-.5&&a.top<b.bottom-.5&&b.top<a.bottom-.5;
+    ok(!hit,names[i]+" ["+f(a)+"] и "+names[j]+" ["+f(b)+"] не пересекаются · окно "+innerWidth+"×"+innerHeight);
+  }
+  const h=R["подсказка"];
+  ok(h.left>=0&&h.right<=innerWidth&&h.top>=0&&h.bottom<=innerHeight,"подсказка целиком в кадре: ["+f(h)+"]");
+  /* подсказку гасим за собой: в кадре её снимает abilTick, в наборах его нет,
+     и сквозная сеть «текст в кнопках помещается» читала бы её как вылет текста */
+  G.mode="dock";abilPadRim();
+  resetWorld();
+}));

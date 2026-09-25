@@ -119,7 +119,7 @@ function abilPadRim(){
   const v=f>=1?"":"conic-gradient(rgba(242,178,92,.75) "+Math.max(0,deg-8)+"deg, #ffd9a0 "+deg+"deg, transparent 0)";
   const ok=f>=1&&G.mode==="system",vk=v+(ok?"|ok":"");
   if(b.dataset.rim!==vk){b.dataset.rim=vk;b.style.setProperty("--abil",v||"none");b.classList.toggle("abil-cd",f<1);
-    b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="ДОЛГОЕ · "+abilOf().ru;}   /* режим входит в ключ: в вагоне подписи нет */
+    b.classList.toggle("abil-ok",ok);if(ok)b.dataset.abil="Долгое · "+abilOf().ru.toLowerCase();}   /* режим входит в ключ: в вагоне подписи нет */
 }
 function drawAbil(zx,zy){
   /* D21: у каждой системы своё видимое (ФОРСАЖ — факел в trailStep) */
