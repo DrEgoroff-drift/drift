@@ -56941,9 +56941,23 @@ function bazHulk(id,dk){
         g.fillStyle="rgba(170,215,255,.21)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.3,0,TAU);g.fill();}
       else{g.fillStyle="rgba(255,140,70,.26)";g.beginPath();g.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);g.fill();}}
     hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);
-    /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом */
-    tracePoly(h.poly);g.fillStyle="rgba(20,18,16,.6)";g.fill();});
+    /* мёртвый: тёмная плёнка по силуэту, чтобы не читался живым бортом. Утоплена на 5 %:
+       полоска корпуса из-под неё — обвод (тело, обвод, один свет). В 2D его давала
+       случайно сглаженная кромка плёнки, на дальнем плане это был весь свет силуэта */
+    g.scale(.95,.95);tracePoly(h.poly);g.fillStyle="rgba(20,18,16,.6)";g.fill();});
   return B&&{B,E:side/(2*sb)};
+}
+/* вывеска — часть сцены, не подпись: выпечка букв (ss 2, пиксели устройства), блум сцены
+   даёт ей ореол, как 2D-тексту на #c. Ключ — кегль и DPR */
+const BAZ_SIGN=new Map(),BAZ_SIGN_T="БАРАХОЛКА";
+function bazSign(F){
+  const d=DPR;
+  return bakeKeep(BAZ_SIGN,F+"|"+d,4,()=>{
+    const fb="bold "+F*d+"px ui-monospace,monospace",tw=Math.ceil(gcMeasure(fb,BAZ_SIGN_T).width),pad=Math.ceil(2*d);
+    const base=pad+Math.ceil(F*d*.82),Hd=base+Math.ceil(F*d*.28)+pad,Wd=tw+pad*2;
+    const B=gpuBake(Wd,Hd,g=>{g.font=fb;g.textAlign="left";g.textBaseline="alphabetic";g.fillStyle="rgba(240,210,160,.85)";g.fillText(BAZ_SIGN_T,pad,base);},{mips:false});
+    return B&&{B,ax:pad+tw/2,ay:base,w:Wd/d,h:Hd/d,drop(){gpuBakeDrop(B);}};
+  });
 }
 function drawBazaar(zx,zy,Z){
   const B=bazHere();if(!B)return;
@@ -56997,7 +57011,10 @@ function drawBazaar(zx,zy,Z){
       LT.push([1,lx+sw,ly+4.6*s,0,0,0,gR+.5/dk,255,190,120,.14*on*gK]);}
   }
   gpuShapes(pass,WR);gpuShapes(pass,LT,{blend:"add"});
-  domLabel("bz"+B.seed,x,y-48*s,"БАРАХОЛКА","bold "+Math.round(8*s)+"px ui-monospace,monospace","rgba(240,210,160,.9)","center");   /* .9: в 2D её поднимал проход сцены */
+  /* середина строки — x, базовая линия — y−48s; место на целый пиксель устройства */
+  const N=bazSign(Math.round(8*s));
+  if(N){const d=DPR,l=Math.round((x-N.ax/d)*d)/d,t=Math.round((y-48*s-N.ay/d)*d)/d;
+    gpuImage(pass,N.B,[{x:l+N.w/2,y:t+N.h/2,w:N.w,h:N.h}]);}
 }
 function bazInteract(sh){
   const B=bazHere();if(!B)return false;
