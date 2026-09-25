@@ -37,10 +37,16 @@ new module `17z3-map-gpu`.
 5. `3a268b6` **test** — `tests/91zzzzk-mapaddr.js`, suite «галактика: шейдер неба держит модель» (Node tier): the WGSL
    carries the model constants and every named nebula, the CPU tile bake is gone, `drawMap` runs 40 frames
    without a GPU and the rail net still grows a line a frame (dies if `railNetPartial` moves behind the pass check).
-6. **the galaxy made of stars** (quality bar of 25.09) — `17z3`: unresolved star grain in world space (one hashed
+6. `83be3f8` **the galaxy made of stars** (quality bar of 25.09) — `17z3`: unresolved star grain in world space (one hashed
    soft point per cell of a power-of-two step ≈7 px on screen, two levels cross-faded, density by the light, none
    behind dust, power-law brightness); a warm halo around the bulge past the model's cap; a soft vignette so the
    sheet's light gathers to the middle; per-pixel grain instead of flat fill.
+7. **structure you can see at home, a brightness ladder, your rails lit** (coordinator feedback of 25.09) — `17z3`,
+   `18e`: the bar gets its two offset dust lanes (straight, on opposite leading edges, torn by noise) and a warm
+   ridge, so the home frame shows a warm elongated core cut by a dark lane instead of an even glow; star grain
+   follows the light more steeply; system stars climb a ladder by class (glow radius and strength), and only the
+   five brightest in frame carry tapered spikes with a white-hot middle (L1.7); rails with a stop inside the jump
+   reach burn — additive wide glow, a strong ribbon, a white core — while the rest are a pale frame.
 
 ## What stays 2D, on purpose
 
@@ -58,6 +64,12 @@ not a gain. `17z-map-backdrop` stays 2D for the site (`war.js`).
 - `scratchpad/pair3-map.png` (`map`) and `scratchpad/pair3-map-z4.png` (zoom 4) — **the honest line:** the home
   sheet now sits in a luminous warm core made of thousands of stars that falls off into cold dark edges, where
   before it was flat near-black murk; zoomed out, the spiral, its dust lanes and the pink nebulae read at a glance.
+- `scratchpad/pair4-map.png` (`map`) and `scratchpad/pair4-map-z4.png` — **honest line:** at home a warm barred core
+  with a dark dust lane and five sparkling stars, where before a flat brown murk with every star alike; zoomed out
+  the spiral with pink nebulae and a starry core. Cost: the core behind the system card's second line is brighter,
+  the text still reads but with less contrast.
+- `scratchpad/after-mine.png` (parked at a ring-line stop) — the lines you can reach burn as lit ribbons through the
+  jump circle; the others stay a pale frame.
 - `scratchpad/pair2-map.png` (`map`) — the reach reads as light in the sky itself: the galaxy is brighter and warm
   inside the jump circle and sinks into the dark beyond it, instead of a flat teal wash over the address layer.
 - `scratchpad/pair-neb.png` (`map`, `--js "var n=GAL_NEBULAE[5];G.mapView={x:n.x+1,y:n.y};G.mapZoom=2;"`) — «Печка»
