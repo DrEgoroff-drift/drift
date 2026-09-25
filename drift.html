@@ -82843,7 +82843,7 @@ function beltGpuDraw(){
   if(AD.length)gpuShapes(pass,AD,{blend:"add"});
   gpuShapes(pass,OV);
   /* стекло и кабина — интерфейс: на слой приборов #hud, растр по изменению (24bc) */
-  beltHudPush(b,proj,fwd,st);
+  beltHudPush(b,proj,fwd,st,bas);
   return true;
 }
 
@@ -82951,49 +82951,18 @@ function beltPoiGpu(pass,q,px,py,sc,fog){
 /* ══════════════ кабина пояса на слое приборов #hud (ступень 2, п.2; docs/DESIGN-gpu.md) ══════════════
    Кабина и символика стекла — интерфейс: их место на #hud поверх #g, как у приборов полёта
    (08bh). Браузер кладёт слой сам, копии #c в Dawn нет, и холст — на родном DPR устройства.
-   Растр — только когда картинка другая. Как это узнать, не перечисляя руками всё, что
-   рисуют drawGlassHUD, drawCockpit, панель, лента и держатель узла: рисунок каждый кадр
-   идёт в протокол — подставной ctx записывает вызовы и свойства (координаты с шагом 1/16 px,
-   углы 1/4096 рад), и слой перерисовывается, только если протокол не тот, что в прошлый раз.
-   Упустить состояние нельзя: чего нет в вызовах, того нет и на картинке. Стрелки, ползущие
-   меньше шестнадцатой пикселя, перерисовки не зовут (как 1/256 шкалы у колодки 25c).
-   Рисунок чист: ни rnd, ни записи в G — второй прогон на настоящем холсте даёт то же */
-const BHUD={log:[],ids:new WeakMap(),n:0,meas:null,kind:new Map(),redraw:0};
-function bhudId(o){let i=BHUD.ids.get(o);if(!i){i=++BHUD.n;BHUD.ids.set(o,i);}return i;}
-/* что это у CanvasRenderingContext2D: метод, свойство или ничего */
-function bhudKind(k){
-  let t=BHUD.kind.get(k);if(t)return t;
-  const d=typeof k==="string"&&Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,k);
-  t=!d?"x":("value" in d)?(typeof d.value==="function"?"m":"p"):"p";
-  BHUD.kind.set(k,t);return t;
-}
-/* подставной ctx: пишет вызовы в BHUD.log. Мерить текст — настоящим холстом (подписи ламп и
-   шкал выбирают слово по ширине); свойства читаются назад, save/restore ведут их стопкой */
-function bhudRecorder(){
-  const L=BHUD.log,S={font:"10px sans-serif"},stack=[];let gn=0;
-  const M=BHUD.meas||(BHUD.meas=document.createElement("canvas").getContext("2d"));
-  const q=(v,f)=>typeof v==="number"?Math.round(v*f):typeof v==="string"?v:v&&typeof v==="object"?"#"+(v.__g||bhudId(v)):String(v);
-  return new Proxy({},{
-    get(_,k){
-      if(k==="measureText")return t=>{M.font=S.font;return M.measureText(t);};
-      if(k==="save")return ()=>{stack.push(Object.assign({},S));L.push("s");};
-      if(k==="restore")return ()=>{const o=stack.pop();if(o){for(const j in S)delete S[j];Object.assign(S,o);}L.push("r");};
-      if(k==="createLinearGradient"||k==="createRadialGradient")return (...a)=>{
-        const g={__g:"g"+(++gn)};L.push(g.__g+k[6]+a.map(x=>q(x,16)).join());
-        g.addColorStop=(o,c)=>{L.push(g.__g+":"+o+","+c);};return g;};
-      const t=bhudKind(k);
-      if(t==="m")return (...a)=>{L.push(k+"("+a.map((x,i)=>q(x,k==="rotate"||(k==="arc"&&i>2)||(k==="ellipse"&&i>3)?4096:16)).join()+")");};
-      if(t==="p")return k in S?S[k]:M[k];
-      return undefined;
-    },
-    set(_,k,v){S[k]=v;L.push(k+"="+q(v,1024));return true;}
-  });
-}
+   Растр — только когда картинка другая. Ключ собран руками по входам рисунка, как подпись
+   колодки 25c: камера (базис), курс, вектор скорости, цель, топливо и корпус, скорость,
+   радар, трюм, лампы, держатель узла, рукоятки. Дёшево: десятки чисел, без прогона рисунка.
+   Что ключ не упустил ничего, стережёт оракул в воротах (91zzzzzzy1): там рисунок идёт в
+   подставной ctx, и любая смена протокола вызовов обязана сменить ключ. Протокол на боевом
+   кадре стоил втрое дороже самого рисунка и ~400 КБ мусора (замер на 4× троттлинге) */
+const BHUD={redraw:0,rec:false};
 /* лампы на стойках моргают сами по себе — это не повод перерисовывать всю кабину. На слое
    приборов остаётся погашенная лампа, горящая — свой маленький холст над ним (подписи мира
    08bh: LABDOM прячет его в кадре, где лампа не горит, и кладёт в снимок кадра). Дробь места
    печётся внутрь холста, чтобы круг лёг туда же, куда 2D */
-function bhudLedDom(){return GPU.on&&!!GPU.uctx&&!!BHUD.rec;}
+function bhudLedDom(){return BHUD.rec;}
 function bhudLed(k,x,y,r,col){
   const box=chipDomBox();if(!box)return;
   const key="bhud:"+k,nd=gpuHudDpr(),R=r*3.4,s=Math.ceil((2*R+2)*nd)/nd;
@@ -83019,14 +82988,56 @@ function bhudLed(k,x,y,r,col){
   if(e.op!=="1"){e.op="1";e.cv.style.opacity="1";}
   if(!e.on){e.on=true;e.cv.style.display="";}
 }
+/* горящие лампы кадра — каждый кадр, мимо ключа (та же формула, что в drawCockpit) */
+function bhudLeds(){
+  const P=cockpitTex(G.shipId).plan,K=P.K;
+  for(const s of [-1,1])P.leds.forEach((L,i)=>{
+    if(L.on&&Math.sin(G.t*L.sp+L.ph)>-.35)bhudLed((s<0?"l":"r")+i,s<0?P.pw*.42:W-P.pw*.42,L.y,L.r,K.led);
+  });
+}
+/* ключ кадра кабины и стекла: всё, от чего зависит рисунок, с шагом ниже заметного —
+   координаты ~1/16 px, углы камеры 1/16384 */
+function bhudKey(b,fwd,st,bas){
+  const q=(v,f)=>Math.round(v*f),A=16384,k=[CKPT.key,W,H,uiK(),G.shipId];
+  for(const v of [bas.fwd,bas.right,bas.up])k.push(q(v[0],A),q(v[1],A),q(v[2],A));
+  k.push(q(b.yaw,A),q(b.pitch,A),q(b.roll,A));
+  const sp=Math.hypot(b.vx,b.vy,b.vz);
+  k.push(sp.toFixed(1),sp>.12?q(b.vx/sp,A)+","+q(b.vy/sp,A)+","+q(b.vz/sp,A):"-");
+  const L=b.lock;
+  if(L)k.push(RES[L.res].ru,L.left,L.r,q(L.x-b.x,16),q(L.y-b.y,16),q(L.z-b.z,16),q(b.prog,256));else k.push("-");
+  k.push(b.hit>0?(b.hit/14*.22).toFixed(2):0);
+  k.push(q(G.fuel/st.fuelMax,1024),q(G.hull/st.hullMax,1024),st.fuelMax,st.hullMax,st.cargoMax,held());
+  for(const r of RES_KEYS)k.push(G.cargo[r]||0);
+  /* панель и лента — подпись колодки 25c (стрелки 1/256 шкалы, голова и откат ленты) */
+  k.push($ipod?instrPodSig(instrRead(),tapeInit()):instrMisclose().toFixed(3));
+  /* радар: точки в пределах дальности — место 1/16 px на шкале, прозрачность, цвет */
+  let h=0;
+  const fx=Math.sin(b.yaw),fz=Math.cos(b.yaw),rx=Math.cos(b.yaw),rz=-Math.sin(b.yaw);
+  for(const a of b.ast){
+    const dx=a.x-b.x,dz=a.z-b.z,dy=a.y-b.y;
+    if(Math.hypot(dx,dy,dz)>2000)continue;
+    h=(h*31+q((dx*rx+dz*rz)/2000,4096))|0;h=(h*31+q((dx*fx+dz*fz)/2000,4096))|0;
+    h=(h*31+q(Math.abs(dy),.25)+(a===L?7:0)+a.r)|0;h=(h*31+RES_KEYS.indexOf(a.res))|0;
+  }
+  k.push(h);
+  /* лампы доски: сближение мигает, подпись чередуется, когда горят две и тесно */
+  const nearOn=b.near<130&&Math.sin(G.t*.25)>-.2,lit=(nearOn?1:0)+(G.fuel/st.fuelMax<.2?1:0)+(held()>=st.cargoMax?1:0);
+  k.push(b.near<130?1:0,nearOn?1:0,lit>1?Math.floor(G.t/150):0);
+  /* держатель узла: качание и мерцание венцов — только когда есть что держать */
+  const N=nodeHolder(),crowns=NODE_FAMS.filter(F=>G.crowns&&G.crowns[F.id]);
+  if(N)k.push(N.id,q(Math.sin(G.t*.045)*.05+clamp(b.roll*.6+b.avYaw*3,-.5,.5)*.5,2048));
+  crowns.forEach((F,i)=>k.push(F.id,q(.6+.4*Math.sin(G.t*.06+i*1.3),64)));
+  /* рукоятки и рычаг тяги */
+  k.push(keys.act?1:0,keys.fire?1:0,keys.thrust?1:0,keys.brake?1:0,q(clamp(b.avYaw*8,-.5,.5),1024),q(clamp(-b.avPitch*7,-.45,.45),1024));
+  return k.join(",");
+}
 /* стекло и кабина пояса: с видеокартой — на слой приборов по изменению, без неё — на #c */
-function beltHudPush(b,proj,fwd,st){
+function beltHudPush(b,proj,fwd,st,bas){
   const fn=()=>{drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);};
   if(!GPU.on||!GPU.uctx){fn();return;}
   const fl=()=>{BHUD.rec=true;try{fn();}finally{BHUD.rec=false;}};
-  const c0=ctx;BHUD.log.length=0;
-  try{ctx=bhudRecorder();fl();}finally{ctx=c0;}
-  gpuHud("belt|"+W+"x"+H+"|"+BHUD.log.join(";"),()=>{BHUD.redraw++;fl();});
+  cockpitTex(G.shipId);bhudLeds();
+  gpuHud("belt|"+bhudKey(b,fwd,st,bas||beltBasis(b)),()=>{BHUD.redraw++;fl();});
 }
 
 /* ══════════════ «Сорока» изнутри: коридор к стойке (M343) ══════════════
@@ -83978,16 +83989,13 @@ function drawCockpit(b,st){
   if(typeof tapeStrip==="function")tapeStrip(P,FS);
 
   /* ── лампы на боковых стойках: моргают вразнобой ──
-     на слое приборов горящая лампа — свой холстик над ним (24bc): мигание не перерисовывает кабину */
+     на слое приборов здесь только погашенная лампа, горящую кладёт свой холстик над ним
+     (24bc, bhudLeds): мигание не перерисовывает кабину */
   const ledDom=bhudLedDom();
   for(const s of [-1,1])for(const L of P.leds){
     const x=s<0?P.pw*.42:W-P.pw*.42;
     const on=L.on&&Math.sin(G.t*L.sp+L.ph)>-.35;
-    if(ledDom){
-      ctx.fillStyle="rgba(255,255,255,.05)";ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();
-      if(on)bhudLed((s<0?"l":"r")+P.leds.indexOf(L),x,L.y,L.r,K.led);
-      continue;
-    }
+    if(ledDom){ctx.fillStyle="rgba(255,255,255,.05)";ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();continue;}
     ctx.fillStyle=on?K.led:"rgba(255,255,255,.05)";
     ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();
     if(on){

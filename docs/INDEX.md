@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 614 · символов верхнего уровня: 6110
+Файлов: 614 · символов верхнего уровня: 6112
 
 ## СИМВОЛЫ
 
@@ -418,7 +418,7 @@ beltDots                     src/17c-system-draw.js:89-94
 beltFwd                      src/24-mode-belt.js:144-147
 beltGpuAdj                   src/24ba-belt-gpu.js:65-73
 beltGpuDraw                  src/24ba-belt-gpu.js:74-270
-beltHudPush                  src/24bc-belt-hud.js:73-80
+beltHudPush                  src/24bc-belt-hud.js:85-91
 beltIcy                      src/24-mode-belt.js:70
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:19-100
 beltPoiMouthTex              src/24bb-belt-poi-gpu.js:8-18
@@ -434,12 +434,11 @@ BGPU_ADJ                     src/24ba-belt-gpu.js:64
 BGPU_SKY                     src/24ba-belt-gpu.js:37
 BGPU_U                       src/24ba-belt-gpu.js:61
 bHazard                      src/21aa-base-rooms.js:289-295
-BHUD                         src/24bc-belt-hud.js:11
-bhudId                       src/24bc-belt-hud.js:12
-bhudKind                     src/24bc-belt-hud.js:14-19
-bhudLed                      src/24bc-belt-hud.js:47-71
-bhudLedDom                   src/24bc-belt-hud.js:46
-bhudRecorder                 src/24bc-belt-hud.js:22-41
+BHUD                         src/24bc-belt-hud.js:10
+bhudKey                      src/24bc-belt-hud.js:50-83
+bhudLed                      src/24bc-belt-hud.js:16-40
+bhudLedDom                   src/24bc-belt-hud.js:15
+bhudLeds                     src/24bc-belt-hud.js:42-47
 bioMark                      src/20e-species.js:310-314
 bioPlanet                    tests/91zzzb-bio.js:10-14
 bioScan                      src/20e-species.js:315-329
@@ -532,6 +531,9 @@ BOOKS                        src/12ub-books.js:23-120
 BOOKS_BY                     src/12ub-books.js:121
 BOOT_SINK                    tests/99-run.js:43
 BOOT_SUITE                   tests/99-run.js:21-35
+BORC                         tests/91zzzzzzy1-gpugate-belt.js:88
+borcId                       tests/91zzzzzzy1-gpugate-belt.js:89
+borcRecorder                 tests/91zzzzzzy1-gpugate-belt.js:90-112
 BOSS_ACC                     src/12av-boss.js:117
 BOSS_EVERY                   src/12av-boss.js:29
 BOSS_HULL                    src/12av-boss.js:25
@@ -1438,7 +1440,7 @@ drawCelest                   src/06a-celest.js:167-218
 drawCheburek                 src/17j-cheburek.js:72-113
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
-drawCockpit                  src/25-cockpit.js:400-681
+drawCockpit                  src/25-cockpit.js:400-678
 drawCombat                   src/13-pirates.js:363-474
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
@@ -7174,7 +7176,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/24bb-belt-poi-gpu.js · 7 КБ
   · ориентиры пояса на видеокарте (GPU, ступень 2):1
 
-## src/24bc-belt-hud.js · 6 КБ
+## src/24bc-belt-hud.js · 7 КБ
   · кабина пояса на слое приборов #hud (ступень 2, п.2; docs/DESIGN-gpu.md):1
 
 ## src/24c-mode-wanderer-draw.js · 29 КБ
@@ -8069,7 +8071,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy-gpugate.js · 23 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
-## tests/91zzzzzzy1-gpugate-belt.js · 6 КБ
+## tests/91zzzzzzy1-gpugate-belt.js · 11 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

@@ -79,3 +79,88 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: пояс — мир �
   eq(K.bad,0,"холсты не грузятся"+(K.bad?": "+top(K.up):""));
   resetWorld();
 }));
+/* ── оракул ключа кабины (24bc) ──
+   Боевой ключ собран руками по входам. Оракул — протокол самого рисунка: подставной ctx
+   пишет вызовы и свойства (координаты 1/4 px, углы 1/1024), и каждая смена протокола между
+   кадрами обязана сменить ключ — иначе вход забыт и кабина застрянет на старой картинке.
+   Панель и лента молчат в протоколе: их стережёт подпись колодки 25c, а стрелки ползут и в
+   покое */
+const BORC={log:[],mute:0,ids:new WeakMap(),n:0,meas:null};
+function borcId(o){let i=BORC.ids.get(o);if(!i){i=++BORC.n;BORC.ids.set(o,i);}return i;}
+function borcRecorder(){
+  const L=BORC.log,S={font:"10px sans-serif"},stack=[];let gn=0;
+  const M=BORC.meas||(BORC.meas=document.createElement("canvas").getContext("2d"));
+  const P=CanvasRenderingContext2D.prototype;
+  const kind=k=>{const d=typeof k==="string"&&Object.getOwnPropertyDescriptor(P,k);return !d?"x":("value" in d)?(typeof d.value==="function"?"m":"p"):"p";};
+  const q=(v,f)=>typeof v==="number"?Math.round(v*f):typeof v==="string"?v:v&&typeof v==="object"?"#"+(v.__g||borcId(v)):String(v);
+  const put=s=>{if(!BORC.mute)L.push(s);};
+  return new Proxy({},{
+    get(_,k){
+      if(k==="measureText")return t=>{M.font=S.font;return M.measureText(t);};
+      if(k==="save")return ()=>{stack.push(Object.assign({},S));put("s");};
+      if(k==="restore")return ()=>{const o=stack.pop();if(o){for(const j in S)delete S[j];Object.assign(S,o);}put("r");};
+      if(k==="createLinearGradient"||k==="createRadialGradient")return (...a)=>{
+        const g={__g:"g"+(++gn)};put(g.__g+k[6]+a.map(x=>q(x,4)).join());
+        g.addColorStop=(o,c)=>{put(g.__g+":"+o+","+c);};return g;};
+      const t=kind(k);
+      if(t==="m")return (...a)=>{put(k+"("+a.map((x,i)=>q(x,k==="rotate"||(k==="arc"&&i>2)||(k==="ellipse"&&i>3)?1024:4)).join()+")");};
+      if(t==="p")return k in S?S[k]:M[k];
+      return undefined;
+    },
+    set(_,k,v){S[k]=v;put(k+"="+q(v,256));return true;}
+  });
+}
+TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины пояса ловит всё, что меняет её рисунок",{tier:"browser"},()=>{
+  if(!ok(GPU.ok,"видеокарта есть — без неё ключ не нужен"))return;
+  resetWorld();
+  if(!ok(bgateStand(),"нашлась система с поясом"))return;
+  const run0=G.running,loop0=LOOP_OFF,hp=beltHudPush,ip=instrPanel,ts=tapeStrip;
+  let cap=null;const bad=[];let changed=0,steps=0;
+  const kz={};for(const k in keys)if(typeof keys[k]==="boolean")kz[k]=keys[k];
+  try{
+    beltHudPush=function(b,p,f,s,bas){cap=[b,p,f,s,bas];return hp.apply(this,arguments);};
+    instrPanel=function(){BORC.mute++;try{return ip.apply(this,arguments);}finally{BORC.mute--;}};
+    tapeStrip=function(){BORC.mute++;try{return ts.apply(this,arguments);}finally{BORC.mute--;}};
+    G.running=true;LOOP_OFF=false;
+    const rest=()=>{const b=G.belt;b.vx=b.vy=b.vz=0;b.avYaw=b.avPitch=0;};
+    const snap=()=>{
+      const [b,p,f,s,bas]=cap,c0=ctx;BORC.log.length=0;
+      try{ctx=borcRecorder();BHUD.rec=true;drawGlassHUD(b,p,f,s);drawCockpit(b,s);}finally{BHUD.rec=false;ctx=c0;}
+      return {log:BORC.log.join(";"),key:bhudKey(b,f,s,bas)};
+    };
+    const front=()=>{const b=G.belt,B=beltBasis(b);let best=null,bd=1e9;
+      for(const a of b.ast){const dx=a.x-b.x,dy=a.y-b.y,dz=a.z-b.z,z=dx*B.fwd[0]+dy*B.fwd[1]+dz*B.fwd[2],d=Math.hypot(dx,dy,dz);
+        if(z>d*.8&&d<bd){bd=d;best=a;}}return best;};
+    const STEPS=[["покой",()=>{}],["рыскание",()=>{G.belt.yaw+=.05;}],["тангаж",()=>{G.belt.pitch+=.05;}],
+      ["крен",()=>{G.belt.roll=(G.belt.roll||0)+.05;}],["ход",()=>{G.belt.vx=.6;}],
+      ["цель",()=>{G.belt.lock=front();}],["добыча",()=>{G.belt.prog=.5;}],
+      ["остаток",()=>{const L=G.belt.lock;if(L)L.left=Math.max(1,L.left-1);}],["без цели",()=>{G.belt.lock=null;G.belt.prog=0;}],
+      ["топливо",()=>{G.fuel*=.8;}],["корпус",()=>{G.hull*=.8;}],["трюм",()=>{G.cargo[RES_KEYS[0]]=(G.cargo[RES_KEYS[0]]||0)+3;}],
+      ["удар",()=>{G.belt.hit=10;}],["тяга",()=>{keys.thrust=true;}],["тормоз",()=>{keys.thrust=false;keys.brake=true;}],
+      ["резак",()=>{keys.brake=false;keys.act=true;}],["огонь",()=>{keys.act=false;keys.fire=true;}],
+      ["рукоять",()=>{keys.fire=false;G.belt.avYaw=.03;G.belt.avPitch=-.02;}]];
+    for(const k in kz)keys[k]=false;
+    for(let i=0;i<20;i++){rest();frameBody(wallMs());}
+    let prev=snap();
+    for(const [name,fn] of STEPS){
+      /* шаг и три кадра покоя после него: и сам шаг, и то, что за ним тянется (удар гаснет) */
+      for(let j=0;j<4;j++){
+        rest();if(j===0)fn();
+        frameBody(wallMs());if(G.mode!=="belt")break;
+        const cur=snap();steps++;
+        if(cur.log!==prev.log){changed++;if(cur.key===prev.key)bad.push(name+(j?" +"+j:""));}
+        prev=cur;
+      }
+      if(G.mode!=="belt")break;
+    }
+  }catch(e){ok(false,"упал: "+e.message);}
+  finally{
+    beltHudPush=hp;instrPanel=ip;tapeStrip=ts;
+    for(const k in kz)keys[k]=kz[k];
+    G.running=run0;LOOP_OFF=loop0;
+  }
+  eq(G.mode,"belt","все шаги прошли в поясе");
+  ok(changed>=15,"оракул живой: протокол рисунка менялся "+changed+" раз из "+steps+" кадров");
+  eq(bad.length,0,"смена рисунка без смены ключа"+(bad.length?": "+bad.join(", "):""));
+  resetWorld();
+}));

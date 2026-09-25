@@ -441,16 +441,13 @@ function drawCockpit(b,st){
   if(typeof tapeStrip==="function")tapeStrip(P,FS);
 
   /* ── лампы на боковых стойках: моргают вразнобой ──
-     на слое приборов горящая лампа — свой холстик над ним (24bc): мигание не перерисовывает кабину */
+     на слое приборов здесь только погашенная лампа, горящую кладёт свой холстик над ним
+     (24bc, bhudLeds): мигание не перерисовывает кабину */
   const ledDom=bhudLedDom();
   for(const s of [-1,1])for(const L of P.leds){
     const x=s<0?P.pw*.42:W-P.pw*.42;
     const on=L.on&&Math.sin(G.t*L.sp+L.ph)>-.35;
-    if(ledDom){
-      ctx.fillStyle="rgba(255,255,255,.05)";ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();
-      if(on)bhudLed((s<0?"l":"r")+P.leds.indexOf(L),x,L.y,L.r,K.led);
-      continue;
-    }
+    if(ledDom){ctx.fillStyle="rgba(255,255,255,.05)";ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();continue;}
     ctx.fillStyle=on?K.led:"rgba(255,255,255,.05)";
     ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();
     if(on){
