@@ -53,6 +53,12 @@ the fleet base (`../base-rooms`), «after» from this branch. Scratchpad of sess
 - `fld.hin.light|mul`, `fld.hin.haze|add`
 - kit pipelines already warmed elsewhere: `kit.img|over`, `kit.shp|over`, `kit.shp|add`
 
+## Left in the zone
+
+- **chess on the GPU**: waits for the kit's «bake into a DOM canvas» (request below); the brush `chessPaint` is ready.
+- **kino as a live field**: waits for the HQ ship to put the cantina canvas on the GPU; the brushes are GcCtx-safe.
+- `29c-home-in`, `29f-winter`, `29h-spa` draw nothing (logic only) — nothing to port.
+
 ## Requests for files outside the zone
 
 - **kit (`08c*`): show a bake in a DOM canvas.** The desk panel's chess board (and, for the HQ ship, the
