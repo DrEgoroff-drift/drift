@@ -57,8 +57,11 @@ function drawAstronaut(o){
   ctx.strokeStyle=rgba(acc,.5);ctx.lineWidth=.9;
   ctx.beginPath();ctx.moveTo(-6.0,-4.6);ctx.lineTo(-6.0,-6.0);ctx.stroke();  // антенна
   /* огонёк антенны дышит, а не мигает (закон 6) */
-  ctx.fillStyle="rgba(127,230,216,"+(.35+.35*Math.sin(G.t*.03)).toFixed(2)+")";
-  ctx.beginPath();ctx.arc(-6.0,-6.5,1,0,TAU);ctx.fill();
+  /* в выпечке двойника (20fa, o.bake) огонька нет: там он живой, своим светом */
+  if(!o.bake){
+    ctx.fillStyle="rgba(127,230,216,"+(.35+.35*Math.sin(G.t*.03)).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(-6.0,-6.5,1,0,TAU);ctx.fill();
+  }
   /* корпус скафандра */
   const bg=ctx.createLinearGradient(-3,-4,3,4);
   bg.addColorStop(0,suit);bg.addColorStop(1,suitD);
@@ -199,7 +202,12 @@ function genPlant(r,p,x,gy,env){
    поле дрожало вразнобой, и ветра не было видно. Теперь по миру бегут два
    гребня порыва разной длины и скорости, по ветру; под гребнем стебель
    ложится, между гребнями — своя мелкая дрожь, тем тише, чем сильнее ветер */
+/* выпечка двойника (20fa): пока она идёт, растение стоит ровно — без порыва, затмения,
+   тени гребня и дымки, а свет звезды берётся из выпечки (ux). Гнёт, тенит и дымит
+   его потом шейдер, каждый кадр */
+let PLANT_BAKE=null;
 function plantBend(pl){
+  if(PLANT_BAKE)return 0;
   const own=Math.sin(G.t*pl.sway+pl.phase);
   const w=(typeof WIND==="number")?WIND:0,aw=Math.min(1,Math.abs(w));
   if(aw<.05)return own;
@@ -214,7 +222,7 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc,ph){
   /* затмение (06a-celest): то, что живёт светом, на свету и складывается —
      флора приседает и жмётся, пока звезда закрыта. Это единственная реакция
      жизни на календарь и единственное, по чему затмение видно не глядя вверх */
-  const DK=typeof celDark==="function"?celDark():0;
+  const DK=PLANT_BAKE?0:(typeof celDark==="function"?celDark():0);
   if(DK>.05)ctx.scale(1-.10*DK,1-.32*DK);
   const lean=(pl.lean+(ph||0)+bend*.22)*pl.h*.2;
   if(pl.kind===7){
@@ -321,7 +329,7 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc,ph){
     }
   }else if(pl.kind===10){
     /* шар на привязи: висит выше, чем стоял бы стебель, и медленно дышит */
-    const lift=pl.h*(.5+.06*Math.sin(G.t*.01+pl.phase));
+    const lift=pl.h*(.5+(PLANT_BAKE?0:.06*Math.sin(G.t*.01+pl.phase)));
     ctx.strokeStyle=stemC;ctx.lineWidth=1;
     for(let i=0;i<pl.balls;i++){
       const bx=(i-(pl.balls-1)/2)*pl.h*.34+lean;
@@ -353,7 +361,7 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc,ph){
       const ph=pl.phase+i*1.3;
       const w=pl.h*(.05+((i*29)%5)/5*.05);
       const hh=pl.h*(.6+((i*41)%6)/6*.6);
-      const sway=Math.sin(G.t*pl.sway*1.6+ph)*pl.h*.22+lean;
+      const sway=(PLANT_BAKE?0:Math.sin(G.t*pl.sway*1.6+ph)*pl.h*.22)+lean;
       ctx.fillStyle=i%2?leafC:stemC;
       ctx.globalAlpha=.9;
       ctx.beginPath();
@@ -406,12 +414,17 @@ function plantGrad(col,h,ux,k0,k1){
 function drawPlant(pl,x,y,haze){
   const near=!pl.scanned&&!(haze>0)&&(pl.h||20)>=12;
   if(near){
-    const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
-    const ux=SP?clamp((SP.x-(W*.5))/(W*.5),-1,1)||.6:.6;
+    const ux=plantUx();
     const d=Math.min(2.4,1.2+(pl.h||20)*.02);
     plantPaint(Object.assign({},pl,{glow:0,litter:0}),x-ux*d,y+d*.6,haze,true);
   }
   plantPaint(pl,x,y,haze,false);
+}
+/* где звезда по горизонтали, −1..1 (M172): свет куста и его тяга к звезде */
+function plantUx(){
+  if(PLANT_BAKE)return PLANT_BAKE.ux;
+  const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
+  return SP?clamp((SP.x-(W*.5))/(W*.5),-1,1)||.6:.6;
 }
 function plantPaint(pl,x,y,haze,dark){
   const sc=pl.scanned;
@@ -428,15 +441,14 @@ function plantPaint(pl,x,y,haze,dark){
   const hz=AIR?clamp(haze,0,.8):0;
   /* куст в падающей тени гребня темнеет вместе со склоном (M434): прямого
      света нет, небо остаётся. Только на поверхности — в пещере солнца нет */
-  const shC=(G.mode==="surface"&&typeof castLive==="function"&&G.surf&&G.surf.tr)
+  const shC=(!PLANT_BAKE&&G.mode==="surface"&&typeof castLive==="function"&&G.surf&&G.surf.tr)
     ?castLive(G.surf.tr,pl.x):0;
   const lit=1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*shC;
   const tone=c=>{
     const v=[c[0]*(1+jt)*lit,c[1]*(1+jt*.8)*lit,c[2]*(1+jt*1.2)*lit];
     return hz?[lerp(v[0],AIR[0],hz),lerp(v[1],AIR[1],hz),lerp(v[2],AIR[2],hz)]:v;
   };
-  const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
-  const ux=SP?clamp((SP.x-(W*.5))/(W*.5),-1,1)||.6:.6;
+  const ux=plantUx();
   const H0=Math.max(8,pl.h||20);
   /* тёмный проход — один плотный тон на стебель и лист: это масса, не краска.
      Стебель темнее кроны (k1 1.0 против 1.22): крона читается над ним */

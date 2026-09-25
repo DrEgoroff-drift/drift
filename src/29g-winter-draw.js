@@ -13,9 +13,10 @@
    по-настоящему. Баланс не пишется цифрой в углу, он виден глазами.
 
    ЧТО КЭШИРУЕТСЯ. Стена, трубы, панель, стол и койка не двигаются: они
-   кладутся в `screenLayer` с ключом по уровням света и тепла, и перерисовка
+   кладутся в `gpuScreenLayer` с ключом по уровням света и тепла, и перерисовка
    идёт только когда игрок дёрнул рычаг (правило «что не движется, красится
-   один раз»). Каждый кадр рисуются лишь люди, стрелки, пыль и окно. */
+   один раз»). Приборы, календарь и зимовщик — выпечка того же рода. Каждый
+   кадр видеокарта рисует лишь живое: окно, огонь, свет, пыль (G11). */
 const WIN_C={
   wall:[38,44,48], wall2:[28,33,37], rib:[52,60,64],
   panel:[30,36,40], panelHi:[74,84,88],
@@ -126,7 +127,7 @@ function winBody(c,g,W0,r,base,opt){
    (стрелки, пыль, метель, человек) кладётся поверх каждый кадр. */
 function winRoomLayer(W0){
   const li=W0.pw.light|0, he=W0.pw.heat|0;
-  return screenLayer("winroom"+li+"_"+he,(c)=>{
+  return gpuScreenLayer("winroom"+li+"_"+he,(c)=>{   /* выпечка GPU-холстом (G11), ключ тот же */
     const g=winGeom();
     /* ── 1. стена: панели с рёбрами, освещённые неровно ── */
     for(let x=0;x<W;x+=W*0.055){
@@ -330,54 +331,196 @@ function winRoomLayer(W0){
     }
   });
 }
-/* ── кадр ── */
+/* ── кадр на видеокарте (G11) ──
+   Комната — слой gpuScreenLayer (стена, трубы, панель, печь, стол, койка; ключ —
+   свет и тепло). Окно — живое поле: небо планеты, гряда, метель в три глубины,
+   иней, что растёт от рамы, и тёплый отблеск лампы на стекле изнутри. Всё, что
+   меняется только рычагом или днём (рама, лампа, стол, приборы, календарь,
+   зимовщик), — одна выпечка. Свет — сложением поверх всего, по пикселю: огонь
+   в печи дрожит и греет левый край, конус лампы висит в воздухе с пылью и
+   ложится пятном на пол, окно проливает холод на пол и стену. Потом темнота
+   по краям — тем гуще, чем меньше света дал игрок. Без устройства не рисуется
+   ничего: 2D-пути у зимовки больше нет. */
 function drawWinter(){
   const W0=winAll();if(!W0)return;
-  const g=winGeom();
+  const pass=gpuScene();if(!pass)return;
+  const g=winGeom(),sz=roomSz();
+  const rl=winRoomLayer(W0);if(rl)gpuImage(pass,rl,[{x:W/2,y:H/2,w:W,h:H}]);
+  winView(pass,g,W0);
+  const F=(W0.faults||[]).map(f=>f.k).join(",");
+  const key=sz+"|"+WIN_USE.map(k=>W0.pw[k]|0).join("")+"|"+W0.day+"|"+F+"|"+W0.sx+","+W0.sy+","+W0.pi;
+  const pr=roomBake("win.props",key,W,H,()=>winProps(g,W0));
+  if(pr)gpuImage(pass,pr,[{x:W/2,y:H/2,w:W,h:H}]);
+  winLight(pass,g,W0);
+  winGlow(pass,g,W0);
+  winDark(pass,g,W0);
+  const tx=roomBake("win.text",sz+"|"+W0.day+"/"+W0.days+"|"+W0.pname+"|"+F,W,H*0.1,()=>winText(W0));
+  if(tx)gpuImage(pass,tx,[{x:W/2,y:H*0.05,w:W,h:H*0.1}]);
+}
+/* окно: небо планеты сверху вниз, дальняя гряда, метель — три слоя штрихов
+   (дальние мелкие и медленные, ближние длинные), иней корой от кромки */
+const WIN_VIEW_WGSL=ROOM_WGSL_NOISE+`
+fn snow(q:vec2f,sc:f32,sp:f32,t:f32,len:f32,sd:f32)->f32{
+  let dir=normalize(vec2f(-.47,.88));
+  let s=q/sc+dir*t*sp;
+  let c=floor(s);let f=fract(s);
+  var a=0.;
+  for(var j=-1;j<=1;j++){for(var i=-1;i<=1;i++){
+    let o=vec2f(f32(i),f32(j));let h=rh(c+o+sd);
+    if(h>.62){continue;}
+    let pc=o+vec2f(rh(c+o+sd+3.1),rh(c+o+sd+7.7));
+    let v=f-pc;let tt=clamp(dot(v,dir),-len,0.);
+    let d=length(v-dir*tt)*sc;
+    a=max(a,(1.-smoothstep(.35,1.1,d))*(1.+tt/len*.7));
+  }}
+  return a;}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let r=fu.v[0];let t=fu.v[1].x;let ph=fu.v[1].y;let lamp=fu.v[1].z;
+  let q=p-r.xy;
+  if(q.x<0.||q.y<0.||q.x>r.z||q.y>r.w){return vec4f(0.);}
+  let v=q.y/r.w;
+  var c=mix(fu.v[2].xyz,fu.v[3].xyz,v);
+  /* дальняя гряда: у окна есть горизонт */
+  let ry=r.w*.66-sin(q.x*.013+ph)*r.w*.09-rn(vec2f(q.x*.05,ph))*r.w*.03;
+  let mk=smoothstep(-.8,.8,q.y-ry);
+  c=mix(c,vec3f(.063,.094,.133)*.9+c*.22,mk*.8);
+  /* метель: дальняя пелена, средний и ближний штрих */
+  let veil=rfbm(vec2f(q.x/r.w*3.+t*.25,q.y/r.w*2.-t*.45));
+  c=c+vec3f(.55,.62,.70)*veil*.10;
+  let s=snow(q,r.w*.035,2.4,t,.6,1.)*.35+snow(q,r.w*.06,1.7,t,1.2,5.)*.45+snow(q,r.w*.11,1.2,t,1.8,9.)*.55;
+  c=mix(c,vec3f(.84,.89,.95),clamp(s,0.,1.)*.55);
+  /* иней: корой от нижней кромки и от углов, края рваные */
+  let e=min(min(q.x,r.z-q.x),r.w-q.y)/r.w;
+  let bot=(r.w-q.y)/r.w;
+  let fr=rfbm(q/r.w*vec2f(9.,11.));
+  let fm=smoothstep(.10,.0,min(bot*1.1,e*1.6)-fr*.10);
+  c=mix(c,vec3f(.80,.87,.93),fm*.55);
+  c=c+vec3f(.88,.93,.97)*smoothstep(.72,.9,fr)*smoothstep(.34,.0,bot)*.22;
+  /* лампа отражается в стекле изнутри: тёплое пятно у левой кромки */
+  c=c+vec3f(1.,.82,.58)*lamp*.10*exp(-q.x/(r.z*.22))*exp(-pow((v-.28)/.35,2.));
+  return vec4f(c,1.);}`;
+const WIN_VIEW_U=new Float32Array(16);
+function winView(pass,g,W0){
+  const w=g.win,u=WIN_VIEW_U;
+  const sys=getSystem(W0.sx,W0.sy);
+  const p=(sys.planets||[])[W0.pi]||(sys.planets||[])[0];
+  const sk=(p&&p.T)?p.T:TYPES.ice;
+  u[0]=w.x;u[1]=w.y;u[2]=w.w;u[3]=w.h;
+  u[4]=(G.t/60)%3600;u[5]=W0.sx;u[6]=Math.min(1,(W0.pw.light|0)/3);u[7]=0;
+  for(let i=0;i<3;i++){u[8+i]=sk.sky[1][i]*0.60/255;u[12+i]=sk.sky[0][i]*0.46/255;}
+  gpuField(pass,"win.view",WIN_VIEW_WGSL,u);
+}
+/* свет сложением: огонь в дверце печи, её тепло по комнате и пятно на полу; конус
+   лампы в воздухе (с пылью, что медленно плывёт в луче) и её пятно на полу;
+   холод из окна трапецией на пол и пятном на стену. Мягкие края — по пикселю */
+const WIN_LIGHT_WGSL=ROOM_WGSL_NOISE+`
+fn trap(p:vec2f,top:f32,bot:f32,cx0:f32,w0:f32,cx1:f32,w1:f32,soft:f32)->f32{
+  let v=(p.y-top)/(bot-top);if(v<0.||v>1.){return 0.;}
+  let cx=mix(cx0,cx1,v);let hw=mix(w0,w1,v);
+  return 1.-smoothstep(hw-soft*(.3+v),hw+soft*(.3+v),abs(p.x-cx));}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let t=fu.v[0].x;let man=fu.v[0].y;let flo=fu.v[0].z;let Ht=fu.res.w;
+  let WARM=vec3f(1.,.659,.345);let LAMP=vec3f(1.,.878,.659);let COLD=vec3f(.502,.659,.8);
+  var c=vec3f(0.);
+  /* печь: огонь за дверцей — языки вверх, и его тепло */
+  let sk=fu.v[1].x;
+  if(sk>0.){
+    let fl=fu.v[1].y;let dr=fu.v[2];
+    let q=(p-dr.xy)/dr.zw;
+    if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.){
+      let n=rfbm(vec2f(q.x*4.,q.y*3.+t*1.6));
+      let tongue=smoothstep(.15,.9,(1.-q.y)*.6+n*.7-.15);
+      let base=smoothstep(.35,1.,q.y);
+      let heat=clamp(tongue*.8+base*.9,0.,1.)*(.55+.45*sk)*fl;
+      c=c+mix(vec3f(.85,.25,.05),vec3f(1.2,.85,.45),heat)*heat*1.1;
+    }
+    let sc=fu.v[1].zw;
+    let d=length((p-sc)/(man*vec2f(1.,1.1)));
+    let wob=.92+.08*rn(vec2f(t*2.,p.y*.02));
+    c=c+WARM*sk*fl*wob*(.30/(1.+d*d*1.4));
+    let fd=length((p-vec2f(sc.x,flo+Ht*.02))/vec2f(dr.z*1.9,Ht*.03));
+    c=c+WARM*sk*fl*.16*(1.-smoothstep(.2,1.,fd));
+  }
+  /* лампа: конус в воздухе и пятно на полу */
+  let lk=fu.v[3].x;
+  if(lk>0.){
+    let lx=fu.v[3].y;let ly=fu.v[3].z;
+    let cone=trap(p,ly,flo,lx,man*.12,lx,man*1.05,man*.07);
+    let v=clamp((p.y-ly)/(flo-ly),0.,1.);
+    let dust=.70+.6*rfbm(vec2f(p.x/(man*.18),p.y/(man*.22)-t*.05));
+    c=c+LAMP*lk*cone*(.30*(1.-v*.8))*dust;
+    let pd=length((p-vec2f(lx,flo+Ht*.012))/vec2f(man*1.0,Ht*.026));
+    c=c+LAMP*lk*.20*(1.-smoothstep(.1,1.,pd));
+    let gd=length((p-vec2f(lx,ly))/man);
+    c=c+LAMP*lk*.06/(1.+gd*gd*4.);
+  }
+  /* окно: холод на полу и на стене вокруг */
+  let w=fu.v[4];
+  let wb=w.y+w.w;
+  let tr=trap(p,wb,flo+Ht*.05,w.x+w.z*.5,w.z*.5,w.x+w.z*.5,w.z*.95,w.z*.06);
+  let tv=clamp((p.y-wb)/(flo+Ht*.05-wb),0.,1.);
+  c=c+COLD*tr*mix(.36,.02,pow(tv,.8))*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
+  let wd=length((p-(w.xy+w.zw*.5))/vec2f(w.z*1.5,w.z*1.5));
+  c=c+COLD*.13*(1.-smoothstep(.12,1.,wd));
+  return vec4f(c,0.);}`;
+const WIN_LIGHT_U=new Float32Array(20);
+function winLight(pass,g,W0){
+  const li=W0.pw.light|0,he=W0.pw.heat|0,u=WIN_LIGHT_U,s=g.stove,t=g.table,w=g.win;
+  u[0]=(G.t/60)%3600;u[1]=g.man;u[2]=g.flo;u[3]=0;
+  u[4]=he>0?Math.min(1,he/3):0;u[5]=0.72+Math.sin(G.t*0.09)*0.16+Math.sin(G.t*0.23)*0.07;
+  u[6]=s.x+s.w*0.5;u[7]=s.y+s.h*0.36;
+  u[8]=s.x+s.w*0.14;u[9]=s.y+s.h*0.16;u[10]=s.w*0.72;u[11]=s.h*0.42;
+  u[12]=li>0?Math.min(1,li/3):0;u[13]=t.x+t.w*0.5;u[14]=g.cei+g.man*0.17;u[15]=0;
+  u[16]=w.x;u[17]=w.y;u[18]=w.w;u[19]=w.h;
+  gpuField(pass,"win.light",WIN_LIGHT_WGSL,u,null,{blend:"add"});
+}
+/* свет, который сам светится: лампочка (ярче единицы — её берёт ореол кадра),
+   лампочки поломок (мигают медленно, без щелчка), пыль в конусе лампы */
+const WIN_GLOW=[];
+function winGlow(pass,g,W0){
+  const S=WIN_GLOW,li=W0.pw.light|0;S.length=0;
+  const t=g.table,lx=t.x+t.w*0.5,ly=g.cei+g.man*0.17,m=g.man;
+  if(li>0){
+    const k=Math.min(1,li/3);
+    S.push([2,lx-m*0.09,ly,lx+m*0.09,ly,m*0.012,m*0.02,255,232,190,0.9+0.9*k]);
+    S.push([1,lx,ly,m*0.10,0,0,m*0.35,255,214,160,0.16*k]);
+    const ft=(G.t/60)%3600;
+    for(let i=0;i<34;i++){
+      const h1=hashi(i,1,0x0D05)/4294967296,h2=hashi(i,2,0x0D05)/4294967296,h3=hashi(i,3,0x0D05)/4294967296;
+      const v=(h2+ft*0.012*(0.3+h3))%1;
+      const hw=m*(0.13+v*0.85)*0.8;
+      const x=lx+(h1-0.5)*2*hw+Math.sin(ft*0.3+i)*m*0.02,y=ly+m*0.05+v*(g.flo-ly-m*0.05);
+      const a=(0.10+0.25*h3)*k*(1-v*0.7)*(0.6+0.4*Math.sin(ft*0.4+i*1.9));
+      S.push([1,x,y,0.5+h3*0.9,0,0,1.0+h3*1.2,255,236,200,a]);
+    }
+  }
+  const p=g.panel,F=(W0.faults||[]);
+  for(let i=0;i<F.length;i++){
+    const x=p.x+p.w+H*0.026+i*H*0.038,y=p.y+p.h*0.14;
+    const bl=0.5+Math.sin(G.t*0.14+i*2)*0.38,rr=Math.max(3.4,H*0.0092);
+    S.push([1,x,y,rr*1.2,0,0,rr*3.2,255,120,84,0.42*bl]);
+    S.push([1,x,y,rr,0,0,0,255,128,92,0.45+bl*0.7]);
+  }
+  gpuShapes(pass,S,{blend:"add"});
+}
+/* темнота по краям: тем гуще, чем меньше света дал игрок (было 2D-виньеткой) */
+const WIN_DARK_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let Wd=fu.res.z;let Ht=fu.res.w;
+  let d=length(p-vec2f(Wd*.5,Ht*.52));
+  let k=smoothstep(min(Wd,Ht)*.26,max(Wd,Ht)*.70,d)*fu.v[0].x;
+  return vec4f(vec3f(1.-k),1.);}`;
+const WIN_DARK_U=new Float32Array(4);
+function winDark(pass,g,W0){
+  WIN_DARK_U[0]=0.44+(3-(W0.pw.light|0))*0.07;
+  gpuField(pass,"win.dark",WIN_DARK_WGSL,WIN_DARK_U,null,{blend:"mul"});
+}
+/* ── всё, что меняется только рычагом или днём (выпечка «win.props») ── */
+function winProps(g,W0){
   const li=W0.pw.light|0, he=W0.pw.heat|0;
-  ctx.fillStyle=wcol(WIN_C.dark,1);ctx.fillRect(0,0,W,H);
-  ctx.drawImage(winRoomLayer(W0),0,0,W,H);
-
-  /* ── окно ── */
+  /* рама окна */
   {
     const w=g.win;
-    const sys=getSystem(W0.sx,W0.sy);
-    const p=(sys.planets||[])[W0.pi]||(sys.planets||[])[0];
-    const sk=(p&&p.T)?p.T:TYPES.ice;
-    const gr=ctx.createLinearGradient(0,w.y,0,w.y+w.h);
-    gr.addColorStop(0,wcol(sk.sky[1],0.60));
-    gr.addColorStop(1,wcol(sk.sky[0],0.46));
-    ctx.fillStyle=gr;ctx.fillRect(w.x,w.y,w.w,w.h);
-    ctx.save();ctx.beginPath();ctx.rect(w.x,w.y,w.w,w.h);ctx.clip();
-    /* дальняя гряда: у окна должен быть горизонт, иначе это лампа, а не окно */
-    ctx.fillStyle="rgba(16,24,34,.78)";
-    ctx.beginPath();ctx.moveTo(w.x,w.y+w.h);
-    for(let x=0;x<=w.w;x+=4)
-      ctx.lineTo(w.x+x,w.y+w.h*0.66-Math.sin(x*0.013+W0.sx)*w.h*0.09);
-    ctx.lineTo(w.x+w.w,w.y+w.h);ctx.closePath();ctx.fill();
-    /* метель: единственное, что за стеклом движется */
-    const rs=rng(hashi(W0.sx,W0.sy,0x5011));
-    ctx.strokeStyle="rgba(214,228,242,.34)";ctx.lineWidth=1;
-    ctx.beginPath();
-    for(let i=0;i<44;i++){
-      const sx=w.x+rs()*w.w, sy=w.y+((rs()*w.h+G.t*(0.5+rs()*1.5))%w.h);
-      ctx.moveTo(sx,sy);ctx.lineTo(sx-w.h*0.07,sy+w.h*0.13);
-    }
-    ctx.stroke();
-    /* иней по нижнему краю стекла */
-    /* иней: не частокол по низу стекла (первый счёт рисовал ровные белые
-       столбики), а мягкая корка от кромки внутрь */
-    const ig=ctx.createLinearGradient(0,w.y+w.h,0,w.y+w.h*0.72);
-    ig.addColorStop(0,"rgba(226,238,248,.26)");
-    ig.addColorStop(1,"rgba(226,238,248,0)");
-    ctx.fillStyle=ig;ctx.fillRect(w.x,w.y+w.h*0.72,w.w,w.h*0.28);
-    ctx.fillStyle="rgba(232,242,250,.20)";
-    for(let i=0;i<40;i++){
-      const fx=w.x+rs()*w.w, fy=w.y+w.h-rs()*rs()*w.h*0.30;
-      ctx.fillRect(fx,fy,w.w*0.012,w.w*0.012);
-    }
-    ctx.restore();
-    /* рама */
     ctx.strokeStyle=wcol(WIN_C.metal,winLit(g,W0,w.x+w.w*0.5,w.y+w.h*0.5));
     ctx.lineWidth=Math.max(4,H*0.010);
     ctx.strokeRect(w.x,w.y,w.w,w.h);
@@ -390,51 +533,9 @@ function drawWinter(){
     ctx.lineWidth=Math.max(1,H*0.002);
     ctx.strokeRect(w.x-Math.max(2,H*0.005),w.y-Math.max(2,H*0.005),
       w.w+Math.max(4,H*0.010),w.h+Math.max(4,H*0.010));
-    /* ── холодный свет ложится на пол трапецией ──
-       Аддитивно и вдвое сильнее прежнего (хвост M197). Полупрозрачная заливка
-       на .13 не читалась светом вовсе: она ПРИТЕНЯЛА пол синим, а свет должен
-       его высветлять. Это единственное холодное пятно в тёплой комнате, и по
-       нему видно, что за стеклом ночь и мороз, — иначе окно просто картинка. */
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const fg=ctx.createLinearGradient(0,w.y+w.h,0,g.flo+H*0.05);
-    fg.addColorStop(0,wrgba(WIN_C.cold,0.26));
-    fg.addColorStop(0.55,wrgba(WIN_C.cold,0.10));
-    fg.addColorStop(1,wrgba(WIN_C.cold,0));
-    ctx.fillStyle=fg;
-    ctx.beginPath();
-    ctx.moveTo(w.x,w.y+w.h);ctx.lineTo(w.x+w.w,w.y+w.h);
-    ctx.lineTo(w.x+w.w*1.45,g.flo+H*0.05);ctx.lineTo(w.x-w.w*0.45,g.flo+H*0.05);
-    ctx.closePath();ctx.fill();
-    /* и на стену под окном: свет из окна не обрывается по подоконнику */
-    const wg=ctx.createRadialGradient(w.x+w.w*0.5,w.y+w.h*0.5,w.h*0.2,
-                                      w.x+w.w*0.5,w.y+w.h*0.5,w.w*1.5);
-    wg.addColorStop(0,wrgba(WIN_C.cold,0.16));
-    wg.addColorStop(1,wrgba(WIN_C.cold,0));
-    ctx.fillStyle=wg;
-    ctx.fillRect(w.x-w.w,w.y-w.h*0.5,w.w*3,w.h*2.4);
-    ctx.restore();
   }
-
-  /* ── печь горит ── */
-  if(he>0){
-    const s=g.stove, k=Math.min(1,he/3);
-    const fl=0.72+Math.sin(G.t*0.09)*0.16+Math.sin(G.t*0.23)*0.07;
-    ctx.fillStyle=wrgba(WIN_C.warm,(0.42+0.45*k)*fl);
-    ctx.fillRect(s.x+s.w*0.14,s.y+s.h*0.16,s.w*0.72,s.h*0.42);
-    const gg=ctx.createRadialGradient(s.x+s.w*0.5,s.y+s.h*0.36,0,
-                                      s.x+s.w*0.5,s.y+s.h*0.36,g.man*2.0);
-    gg.addColorStop(0,wrgba(WIN_C.warm,0.26*k*fl));
-    gg.addColorStop(1,wrgba(WIN_C.warm,0));
-    ctx.fillStyle=gg;
-    ctx.fillRect(0,g.cei,g.man*3.4,H-g.cei);
-    /* пятно на полу под дверцей */
-    ctx.fillStyle=wrgba(WIN_C.warm,0.14*k*fl);
-    ctx.beginPath();
-    ctx.ellipse(s.x+s.w*0.5,g.flo+H*0.02,s.w*1.5,H*0.022,0,0,TAU);ctx.fill();
-  }
-
-  /* ── лампа над столом ── */
-  if(li>0){
+  /* лампа над столом: висит и выключенная — тогда лампочка тёмная */
+  {
     const t=g.table, k=Math.min(1,li/3);
     const lx=t.x+t.w*0.5, ly=g.cei+g.man*0.10;
     ctx.strokeStyle=wcol(WIN_C.metal,0.55);
@@ -446,24 +547,10 @@ function drawWinter(){
     ctx.lineTo(lx+g.man*0.13,ly+g.man*0.07);
     ctx.lineTo(lx+g.man*0.045,ly);ctx.lineTo(lx-g.man*0.045,ly);
     ctx.closePath();ctx.fill();
-    ctx.fillStyle=wrgba(WIN_C.lamp,0.55+0.35*k);
+    ctx.fillStyle=li>0?wrgba(WIN_C.lamp,0.55+0.35*k):wcol(WIN_C.metal,0.35);
     ctx.beginPath();
     ctx.ellipse(lx,ly+g.man*0.07,g.man*0.115,g.man*0.022,0,0,TAU);ctx.fill();
-    /* конус: он и есть весь свет комнаты */
-    const cg=ctx.createLinearGradient(0,ly+g.man*0.07,0,g.flo);
-    cg.addColorStop(0,wrgba(WIN_C.lamp,0.16*k));
-    cg.addColorStop(1,wrgba(WIN_C.lamp,0));
-    ctx.fillStyle=cg;
-    ctx.beginPath();
-    ctx.moveTo(lx-g.man*0.13,ly+g.man*0.07);
-    ctx.lineTo(lx+g.man*0.13,ly+g.man*0.07);
-    ctx.lineTo(lx+g.man*1.05,g.flo);ctx.lineTo(lx-g.man*1.05,g.flo);
-    ctx.closePath();ctx.fill();
-    ctx.fillStyle=wrgba(WIN_C.lamp,0.10*k);
-    ctx.beginPath();
-    ctx.ellipse(lx,g.flo+H*0.012,g.man*0.95,H*0.020,0,0,TAU);ctx.fill();
   }
-
   /* ── что лежит на столе ── */
   {
     const t=g.table, k=winLit(g,W0,t.x+t.w*0.5,t.y);
@@ -602,20 +689,15 @@ function drawWinter(){
     ctx.beginPath();ctx.arc(cl.x+cl.w*0.5,cl.y-H*0.006,Math.max(1.6,H*0.004),0,TAU);ctx.fill();
   }
 
-  /* ── лампочки поломок: их трогают, чтобы починить ── */
+  /* ── лампочки поломок: корпуса; свет их — в winGlow ── */
   {
     const p=g.panel, F=(W0.faults||[]);
     for(let i=0;i<F.length;i++){
       const x=p.x+p.w+H*0.026+i*H*0.038, y=p.y+p.h*0.14;
-      const bl=0.5+Math.sin(G.t*0.14+i*2)*0.38;
       const rr=Math.max(3.4,H*0.0092);
-      const gg=ctx.createRadialGradient(x,y,0,x,y,rr*3.4);
-      gg.addColorStop(0,"rgba(255,120,84,"+(0.34*bl).toFixed(2)+")");
-      gg.addColorStop(1,"rgba(255,120,84,0)");
-      ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,rr*3.4,0,TAU);ctx.fill();
       ctx.fillStyle=wcol(WIN_C.metal,0.5);
       ctx.beginPath();ctx.arc(x,y,rr*1.35,0,TAU);ctx.fill();
-      ctx.fillStyle="rgba(255,128,92,"+(0.45+bl*0.5).toFixed(2)+")";
+      ctx.fillStyle="rgba(120,40,30,.9)";
       ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
     }
   }
@@ -729,26 +811,9 @@ function drawWinter(){
       ctx.closePath();ctx.fill();
     }
   }
-
-  /* ── воздух комнаты ── */
-  {
-    if(li>0){
-      const t=g.table, lx=t.x+t.w*0.5, ly=g.cei+g.man*0.20;
-      const rs=rng(hashi(1,2,0x0D05));
-      ctx.fillStyle="rgba(255,238,206,.20)";
-      for(let i=0;i<30;i++){
-        const px=lx+(rs()-.5)*g.man*1.7;
-        const py=ly+((rs()*g.man*1.3+G.t*(0.04+rs()*0.10))%(g.man*1.3));
-        ctx.fillRect(px,py,1.3,1.3);
-      }
-    }
-    const vg=ctx.createRadialGradient(W*.5,H*.52,Math.min(W,H)*.26,W*.5,H*.52,Math.max(W,H)*.70);
-    vg.addColorStop(0,"rgba(0,0,0,0)");
-    vg.addColorStop(1,"rgba(0,0,0,"+(0.44+(3-li)*0.07).toFixed(2)+")");
-    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
-  }
-
-  /* ── сутки: одна строка, и никакого обратного отсчёта ── */
+}
+/* ── сутки: одна строка, и никакого обратного отсчёта (выпечка «win.text») ── */
+function winText(W0){
   {
     ctx.fillStyle="rgba(196,208,216,.70)";
     ctx.font=Math.max(9,Math.round(H*0.018))+"px ui-monospace,monospace";

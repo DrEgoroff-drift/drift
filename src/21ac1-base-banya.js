@@ -115,7 +115,12 @@ function gribCut(B){
 BASE_ROOM.banya=function(x0,y0,w,h,cx,fy,lit,seed,B,P){
   const n=(typeof baseShift==="function")?baseShift():0;
   const hot=(B&&banyaWarm(B,n))?1:.35;
-  const warm=.35+lit*.5;
+  const warm=.35+lit*.5,S=bS(),L=bL();
+  const sx=x0+12,sw=32,sh=34,sy=fy-sh;
+  const bx=x0+w*.50,bw=w-(bx-x0)-8,vx=x0+w*.42,vy=y0+14;
+  /* тело парной (доска, каменка, полок, лежащий) печётся; жар в топке,
+     сидящий, веник на сквозняке и пар — кадром */
+  if(S){
   /* доска: горизонтальные плахи с тёмным швом и сучками поверх мягкой стены */
   ctx.save();ctx.beginPath();ctx.rect(x0,y0,w,h-8);ctx.clip();
   const R=rng(seed+7);
@@ -128,19 +133,11 @@ BASE_ROOM.banya=function(x0,y0,w,h,cx,fy,lit,seed,B,P){
   }
   ctx.restore();
   /* каменка слева: чугунный короб на ножках, топка с решёткой, камни сверху, труба в потолок */
-  const sx=x0+12,sw=32,sh=34,sy=fy-sh;
   bPipe([[sx+sw/2,sy-8],[sx+sw/2,y0+6]],6,"70,66,64",lit);
   ctx.fillStyle="rgba(0,0,0,.32)";ctx.beginPath();ctx.ellipse(sx+sw/2,fy-1,sw*.62,3,0,0,TAU);ctx.fill();
   ctx.fillStyle="rgba(34,32,34,.98)";ctx.fillRect(sx+3,fy-5,4,5);ctx.fillRect(sx+sw-7,fy-5,4,5);
   bBox(sx,sy,sw,sh-5,"rgba(44,42,44,.98)",lit,"rgba(0,0,0,.45)");
   ctx.fillStyle="rgba(255,255,255,"+(.06+lit*.06).toFixed(3)+")";ctx.fillRect(sx+2,sy+2,sw-4,1);
-  /* топка: дверца, за решёткой жар — единственный низкий свет в отсеке */
-  const fg=.45+.35*hot+Math.sin(G.t*.09)*.08;
-  ctx.fillStyle="rgba(255,120,40,"+(fg*.9).toFixed(2)+")";ctx.fillRect(sx+8,sy+16,16,10);
-  ctx.fillStyle="rgba(255,220,140,"+(fg*.5).toFixed(2)+")";ctx.fillRect(sx+10,sy+18,12,3);
-  ctx.fillStyle="rgba(30,28,30,.95)";
-  for(let i=0;i<3;i++)ctx.fillRect(sx+8,sy+18+i*3.2,16,1.2);
-  ctx.fillRect(sx+12,sy+16,1.2,10);ctx.fillRect(sx+19,sy+16,1.2,10);
   bGlow(sx+16,sy+22,26,"255,140,60",.10+.12*hot);
   ctx.fillStyle="rgba(255,150,70,"+(.08+.10*hot).toFixed(2)+")";
   ctx.beginPath();ctx.ellipse(sx+16,fy-2,22,3,0,0,TAU);ctx.fill();
@@ -162,7 +159,6 @@ BASE_ROOM.banya=function(x0,y0,w,h,cx,fy,lit,seed,B,P){
   ctx.fillStyle="rgba(150,120,80,"+(.6+lit*.3).toFixed(2)+")";
   ctx.beginPath();ctx.ellipse(sx+sw+11,fy-8,3.2,2,0,0,TAU);ctx.fill();
   /* полок справа: две ступени, нижний сидит в шапке, верхний лежит */
-  const bx=x0+w*.50,bw=w-(bx-x0)-8;
   const py1=fy-16,py2=fy-34;
   ctx.fillStyle="rgba(0,0,0,.30)";ctx.fillRect(bx,py1+4,bw,fy-py1-4);
   bBox(bx,py1,bw,5,"rgba(150,110,66,.98)",lit,"rgba(0,0,0,.45)");
@@ -188,6 +184,21 @@ BASE_ROOM.banya=function(x0,y0,w,h,cx,fy,lit,seed,B,P){
     ctx.fillStyle="rgba(120,80,50,"+(.6+lit*.2).toFixed(2)+")";                // волосы
     ctx.beginPath();ctx.arc(lx+5,ly-7.5,3.4,Math.PI*.95,Math.PI*1.95);ctx.fill();
   }
+  ctx.strokeStyle="rgba(120,90,50,"+(.6+lit*.3).toFixed(2)+")";ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(vx,vy);ctx.lineTo(vx,vy+10);ctx.stroke();       // гвоздь и черенок
+  const tx=x0+w*.42+18,ty=y0+12;                                            // градусник
+  bBox(tx,ty,6,20,"rgba(230,226,214,.95)",lit,"rgba(0,0,0,.4)");
+  ctx.fillStyle="rgba(210,50,40,.95)";ctx.fillRect(tx+2.3,ty+20-4-12*hot,1.6,4+12*hot);
+  bLamp(cx+10,y0+4,30,fy,"255,206,150",.28+lit*.38);
+  }
+  if(!L)return;
+  /* топка: дверца, за решёткой жар — единственный низкий свет в отсеке */
+  const fg=.45+.35*hot+Math.sin(G.t*.09)*.08;
+  ctx.fillStyle="rgba(255,120,40,"+(fg*.9).toFixed(2)+")";ctx.fillRect(sx+8,sy+16,16,10);
+  ctx.fillStyle="rgba(255,220,140,"+(fg*.5).toFixed(2)+")";ctx.fillRect(sx+10,sy+18,12,3);
+  ctx.fillStyle="rgba(30,28,30,.95)";
+  for(let i=0;i<3;i++)ctx.fillRect(sx+8,sy+18+i*3.2,16,1.2);
+  ctx.fillRect(sx+12,sy+16,1.2,10);ctx.fillRect(sx+19,sy+16,1.2,10);
   /* сидящий на нижней — войлочная шапка (единственный головной убор бани) */
   bWorker(bx+bw*.16,fy,lit,true,G.t*.03+seed,-1,1);
   {  /* шапка сидит на голове (bWorker: макушка сидящего на fy−21.5), а не над ней */
@@ -198,17 +209,11 @@ BASE_ROOM.banya=function(x0,y0,w,h,cx,fy,lit,seed,B,P){
   }
   /* веник на гвозде и градусник: приметы, по которым баня — баня */
   {
-    const vx=x0+w*.42,vy=y0+14;
-    ctx.strokeStyle="rgba(120,90,50,"+(.6+lit*.3).toFixed(2)+")";ctx.lineWidth=1.6;
-    ctx.beginPath();ctx.moveTo(vx,vy);ctx.lineTo(vx,vy+10);ctx.stroke();
     for(let i=0;i<7;i++){
       const a=Math.PI/2+(i-3)*.22+Math.sin(G.t*.01+i)*.03,len=9+((i*29)%4)*1.8;
       ctx.strokeStyle="rgba("+(i%2?"84,112,58":"102,132,64")+","+(.5+lit*.3).toFixed(2)+")";ctx.lineWidth=2.2;
       ctx.beginPath();ctx.moveTo(vx,vy+10);ctx.lineTo(vx+Math.cos(a)*len,vy+10+Math.sin(a)*len);ctx.stroke();
     }
-    const tx=x0+w*.42+18,ty=y0+12;
-    bBox(tx,ty,6,20,"rgba(230,226,214,.95)",lit,"rgba(0,0,0,.4)");
-    ctx.fillStyle="rgba(210,50,40,.95)";ctx.fillRect(tx+2.3,ty+20-4-12*hot,1.6,4+12*hot);
   }
   /* пар: волны от каменки вверх и к полку, гуще в банный вечер */
   ctx.save();ctx.beginPath();ctx.rect(x0,y0,w,h-8);ctx.clip();
@@ -219,6 +224,5 @@ BASE_ROOM.banya=function(x0,y0,w,h,cx,fy,lit,seed,B,P){
     ctx.beginPath();ctx.ellipse(ex,ey,14+u*26,6+u*9,0,0,TAU);ctx.fill();
   }
   ctx.restore();
-  bLamp(cx+10,y0+4,30,fy,"255,206,150",.28+lit*.38);
 };
 BUILD_KEYS.push("banya");   /* список меню собран в 21a раньше этого файла */

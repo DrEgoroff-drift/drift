@@ -28,20 +28,119 @@ function cantStyle(){
   const S=CANT_STYLE[G.st&&G.st.stype]||CANT_STYLE.trade;
   return S;
 }
-/* ── сцена ── */
+/* ── сцена на видеокарте (G11, 27f1) ──
+   Зал печётся GPU-холстом целиком — люди, бармен, огни за окном, вентилятор и
+   неон живут по G.t во всех слоях сразу, так что выпечка идёт не по ключу, а
+   тактом: раз в CANT_EVERY кадров панели (медленные вдохи и качание ламп
+   читаются плавно) и сразу — когда сменился выбор, список или пузырь бармена.
+   Лампы, их конусы с пылью, пятна на полу и стойке, отсвет неона и окна, тень у
+   стойки, виньетка и зерно — проход света каждый кадр (CANT_LIT_WGSL).
+   Рисуем в СВОИХ единицах: комната высотой 200, ширина — сколько дала панель.
+   Без этого на широком экране зал растягивался в ленту, а люди в нём
+   оставались ростом в пятую часть кадра, то есть игрушками. */
+const CANT_EVERY=3;
 function drawCantinaRoom(cn,list,sel,hover,deals,folk){
-  const c=cn.getContext("2d");
-  /* Рисуем в СВОИХ единицах: комната высотой 200, ширина — сколько дала панель.
-     Без этого на широком экране зал растягивался в ленту, а люди в нём
-     оставались ростом в пятую часть кадра, то есть игрушками. */
-  c.clearRect(0,0,cn.width,cn.height);
-  const k=cn.height/200, H2=200, W2=cn.width/k;
-  c.save();c.scale(k,k);
-  const hits=cantRoomBody(c,W2,H2,list,sel,hover,deals,folk);
-  c.restore();
-  for(const h of hits){h.x*=k;h.y*=k;h.w*=k;h.h*=k;}
-  return hits;
+  const dpr=cn.__dpr||1,cssW=cn.width/dpr,cssH=cn.height/dpr;
+  const k=cssH/200,H2=200,W2=cssW/k;
+  const R=rpgGet(cn),sc=h=>{for(const x of h){x.x*=k;x.y*=k;x.w*=k;x.h*=k;}return h;};
+  /* без видеокарты — только попадания: зал считается пустой кистью */
+  if(!R)return sc(cantRoomBody(RPG_NULL,W2,H2,list,sel,hover,deals,folk));
+  R.dpr=dpr;
+  const pw=cn.width,ph=cn.height,s=k*dpr;
+  const bub=(typeof cantBubble!=="undefined"&&cantBubble&&now()-cantBubble.t<5200)?cantBubble.t:0;
+  const key=pw+"x"+ph+"|"+list.map(m=>m.id).join(",")+"|"+sel+"|"+hover+"|"+(deals||[]).map(d=>d.key).join(",")+"|"+(folk?folk.id:"")+"|"+bub;
+  R.tick=(R.tick||0)+1;
+  const e=R.bk.get("room");
+  if(!e||e.key!==key||R.tick>=CANT_EVERY){
+    R.tick=0;
+    if(e&&e.B)gpuBakeDrop(e.B);
+    let hits=[];
+    const B=gpuBake(pw,ph,g=>{g.scale(s,s);hits=cantRoomBody(g,W2,H2,list,sel,hover,deals,folk);},{mips:false});
+    R.bk.set("room",{key,B});R.bg.clear();R.hits=sc(hits);
+  }
+  const room=R.bk.get("room").B;
+  rpgFrame(R,ps=>rpgImage(R,ps,room,[{x:cssW/2,y:cssH/2,w:cssW,h:cssH}]),
+    (pl,S)=>rpgField(R,pl,"cantlit",RPG_WGSL+CANT_LIT_WGSL,cantLitUni(W2,H2,k),[S]));
+  return R.hits||[];
 }
+/* свет зала: сколько ламп, где (на верфи качаются), какого тона; неон и окно */
+const CANT_LIGHT={
+  trade:  {n:4, tone:[255,226,180], cone:1,   pow:1,   sway:0, amb:.70},
+  indust: {n:2, tone:[255,196,110], cone:1.25,pow:.85, sway:0, amb:.50},
+  yard:   {n:3, tone:[214,238,255], cone:.9,  pow:.8,  sway:1, amb:.62},
+  sci:    {n:5, tone:[228,244,255], cone:.4,  pow:.7,  sway:0, amb:.74},
+  outpost:{n:1, tone:[255,180,120], cone:1.5, pow:.9,  sway:0, amb:.42}
+};
+function cantLamps(W2){
+  const LT=CANT_LIGHT[(G.st&&G.st.stype)||"trade"]||CANT_LIGHT.trade,xs=[];
+  for(let i=0;i<LT.n;i++)xs.push(W2*(i+.5)/LT.n+(LT.sway?Math.sin(G.t*.021+i*2.1)*3:0));
+  return {LT,xs};
+}
+function cantSignW(){return gcMeasure("10px ui-monospace,monospace",cantStyle().sign).width+16;}
+const CANT_LIT_U=new Float32Array(60);
+function cantLitUni(W2,H2,k){
+  const u=CANT_LIT_U,S=cantStyle(),acc=hex2rgb(S.acc),seed=(G.sys.seed^0xCA47)>>>0;
+  const {LT,xs}=cantLamps(W2),lc=mixc(LT.tone,acc,.25);
+  const fy=H2-20,cy=fy-52,K9=(typeof kinoHere==="function")?kinoHere():null;
+  u.fill(0);
+  u.set([k,W2,fy,G.t],0);
+  for(let i=0;i<5;i++)u[4+i]=i<xs.length?xs[i]:-1e4;
+  u.set([LT.n,LT.cone,LT.pow*(K9?.18:1)],9);
+  u.set([lc[0]/255,lc[1]/255,lc[2]/255,S.warm],12);
+  u.set([acc[0]/255,acc[1]/255,acc[2]/255,(Math.sin(G.t*.31+seed%7)>-.92)?1:.35],16);
+  u.set([14,20,cantSignW(),18],20);
+  u.set([W2*.56,26,Math.min(W2*.40,240),64],24);
+  u.set([cy,H2,LT.amb*(K9?.75:1),0],28);
+  return u;
+}
+const CANT_LIT_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let k=fu.v[0].x;let W2=fu.v[0].y;let fy=fu.v[0].z;let t=fu.v[0].w;
+  let q=p/k;let cy=fu.v[7].x;let H2=fu.v[7].y;
+  let base=textureSampleLevel(t0,smp,uv,0.).rgb;
+  let lc=fu.v[3].rgb;let warm=fu.v[3].w;let cone=fu.v[2].y;let pw=fu.v[2].z;
+  /* рассеянный холоднее ламп: тёплое — только там, куда лампа достаёт */
+  var L=vec3f(.80,.85,.95)*fu.v[7].z;
+  var beam=vec3f(0.);var cs=0.;
+  let haze=rfbm(q*vec2f(.045,.03)+vec2f(t*.011,-t*.017));
+  for(var i=0;i<5;i++){
+    let lx=select(fu.v[2].x,fu.v[1][min(i,3)],i<4);
+    if(lx<-1e3){continue;}
+    let d=q-vec2f(lx,38.);
+    let dn=smoothstep(-16.,24.,d.y);
+    L+=lc*pw*(1.05*dn*2200./(2200.+d.x*d.x+d.y*d.y*.6));
+    if(d.y>0.){
+      let hw=10.+(46.*cone-10.)*d.y/max(cy-38.,1.);
+      /* конус с кромкой (как у 2D-трапеции) и ярче у абажура */
+      let cn=smoothstep(1.0,.74,abs(d.x)/max(hw,1.))*(1.1-.8*clamp(d.y/max(cy-38.,1.),0.,1.))*smoothstep(cy+5.,cy-3.,q.y);
+      cs+=cn;
+      beam+=lc*cn*(.060+.090*haze)*warm*pw;
+    }
+    /* пятна: на стойке под лампой и на полу перед ней */
+    let ct=q-vec2f(lx,cy);
+    L+=lc*pw*.60*exp(-(ct.x*ct.x/(2200.*cone*cone)+ct.y*ct.y/50.));
+    let fp=q-vec2f(lx,fy+9.);
+    L+=lc*pw*.70*exp(-(fp.x*fp.x/(2800.*cone*cone)+fp.y*fp.y/60.));
+  }
+  /* неон вывески подсвечивает стену своим цветом, окно — холодом снаружи */
+  let sr=fu.v[5];let sd=max(abs(q-(sr.xy+sr.zw*.5))-sr.zw*.5,vec2f(0.));
+  L+=fu.v[4].rgb*fu.v[4].w*.55*exp(-dot(sd,sd)/260.);
+  let wr=fu.v[6];let wd=max(abs(q-(wr.xy+wr.zw*.5))-wr.zw*.5,vec2f(0.));
+  L+=vec3f(.36,.47,.68)*.32*exp(-dot(wd,wd)/1800.);
+  /* тень у стойки: под свесом столешницы и по стыку с полом */
+  var sh=1.;
+  let a0=(q.y-(cy+4.))/3.5;sh*=1.-.28*exp(-a0*a0)*step(cy,q.y);
+  let a1=(q.y-(fy+1.))/4.;sh*=1.-.35*exp(-a1*a1);
+  var c=base*L*sh+beam;
+  let m=rmotes(q,t,.21,.035)+rmotes(q+vec2f(23.,41.),t*.8,.34,.025)*.7;
+  c+=lc*m*(.004+.40*min(cs,1.2))*pw;
+  let vd=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.35)/(H2*.70),0.,1.);
+  c*=1.-.40*vd*vd*(3.-2.*vd);
+  c=rshoulder(c);
+  let px=floor(p*fu.res.x/max(fu.res.z,1.));
+  let gr=rh1(px+vec2f(fract(t*.37)*91.,fract(t*.53)*57.))-.5;
+  c=c*(1.+.06*gr)+(rh1(px*1.37+vec2f(3.1,7.7))-.5)/255.;
+  return vec4f(max(c,vec3f(0.)),1.);}`;
 function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   const S=cantStyle(),seed=(G.sys.seed^0xCA47)>>>0,R=rng(seed);
   const acc=hex2rgb(S.acc);
@@ -270,43 +369,18 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
      кронштейнах и качаются; на аванпосте лампа одна, и половина зала в темноте.
      `LIGHT` — не украшение, а планировка света: сколько, какого тона, какой
      ширины конус и что творится между лампами. */
-  const LIGHT={
-    trade:  {n:4, tone:[255,226,180], cone:1,   pow:1,   sway:0},
-    indust: {n:2, tone:[255,196,110], cone:1.25,pow:.85, sway:0},
-    yard:   {n:3, tone:[214,238,255], cone:.9,  pow:.8,  sway:1},
-    sci:    {n:5, tone:[228,244,255], cone:.4,  pow:.7,  sway:0},
-    outpost:{n:1, tone:[255,180,120], cone:1.5, pow:.9,  sway:0}
-  };
-  const LT=LIGHT[(G.st&&G.st.stype)||"trade"]||LIGHT.trade;
+  /* LIGHT — не украшение, а планировка света: сколько, какого тона, какой
+     ширины конус и что творится между лампами (CANT_LIGHT). Здесь — только
+     абажуры: конус, пятна и провалы между лампами — в проходе света (CANT_LIT_WGSL) */
+  const {LT,xs:LX}=cantLamps(W2);
   for(let i=0;i<LT.n;i++){
-    const sw=LT.sway?Math.sin(G.t*.021+i*2.1)*3:0;   // на верфи лампы качает
-    const lx=W2*(i+.5)/LT.n+sw;
+    const lx=LX[i];
     c.strokeStyle="rgba(120,132,148,.5)";c.lineWidth=1;
     c.beginPath();c.moveTo(W2*(i+.5)/LT.n,10);c.lineTo(lx,26);c.stroke();
     c.fillStyle="rgba(40,46,56,.95)";
     c.beginPath();c.moveTo(lx-11,38);c.lineTo(lx-4,26);c.lineTo(lx+4,26);c.lineTo(lx+11,38);
     c.closePath();c.fill();
-    c.fillStyle=rgba(mixc(LT.tone,acc,.3),.9);c.fillRect(lx-9,37,18,2.5);
-    c.fillStyle=rgba(mixc(LT.tone,acc,.3),.11*LT.pow);                       // пятно света на полу
-    c.beginPath();c.ellipse(lx,fy+9,52*LT.cone,6,0,0,TAU);c.fill();
-    const g=c.createLinearGradient(0,38,0,cy);
-    g.addColorStop(0,rgba(mixc(LT.tone,acc,.25),.17*S.warm*LT.pow));
-    g.addColorStop(1,"rgba(255,226,180,0)");
-    c.fillStyle=g;c.beginPath();
-    const cw=46*LT.cone;
-    c.moveTo(lx-10,38);c.lineTo(lx+10,38);c.lineTo(lx+cw,cy);c.lineTo(lx-cw,cy);
-    c.closePath();c.fill();
-  }
-  /* провал между лампами: там, где их мало, темнота обязана быть видимой —
-     иначе «две лампы» и «пять ламп» отличаются только числом абажуров */
-  if(LT.n<=2){
-    const dk=c.createLinearGradient(0,38,0,cy);
-    dk.addColorStop(0,"rgba(0,0,0,.42)");dk.addColorStop(1,"rgba(0,0,0,.1)");
-    c.fillStyle=dk;
-    for(let i=0;i<=LT.n;i++){
-      const x0=W2*i/LT.n-W2*.14, x1=W2*i/LT.n+W2*.14;
-      c.fillRect(x0,38,x1-x0,cy-38);
-    }
+    c.fillStyle=rgba(mixc(LT.tone,acc,.3),.95);c.fillRect(lx-9,37,18,2.5);
   }
   /* ── что стоит на самой стойке: без этого столешница — пустая доска ── */
   const tapx=bmx-46;
@@ -346,15 +420,7 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   /* столики с делами — на переднем плане, после стойки: подойти к ним можно,
      только пройдя зал, и порядок рисования говорит ровно это */
   for(const h of cantTables(c,W2,fy,cy,deals,sel,hover,acc,seed))hits.push(h);
-  /* ── воздух: пыль в конусах и виньетка ── */
-  c.save();c.globalCompositeOperation="lighter";
-  for(let i=0;i<26;i++){
-    const RR=rng(seed+i*131),px=RR()*W2;
-    const py=((G.t*.12*(0.4+RR())+i*37)%(cy-40))+30;
-    c.fillStyle="rgba(255,226,180,"+(.05+RR()*.05).toFixed(3)+")";
-    c.beginPath();c.arc(px,py,.8+RR()*1.1,0,TAU);c.fill();
-  }
-  c.restore();
+  /* ── воздух (пыль в конусах) и виньетка — в проходе света ── */
   /* ── кинопередвижка (M205) ──
      Зал на один вечер: свет гаснет, на стене полотно, перед нами ряды затылков.
      Рисуется раньше ёлки — ёлка в углу стоит и на сеансе тоже. */
@@ -384,9 +450,6 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
     c.fillStyle="#e6eef2";lines.forEach((l,i)=>c.fillText(l,bx+9,by+14+i*12));
     c.restore();
   }
-  const vg=c.createRadialGradient(W2/2,H2/2,H2*.35,W2/2,H2/2,H2*1.05);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.36)");   // виньетка в .55 топила зал
-  c.fillStyle=vg;c.fillRect(0,0,W2,H2);
   return hits;
 }
 /* места: раскладываются по ширине, но не ближе 84 px друг к другу */

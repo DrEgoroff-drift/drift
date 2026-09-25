@@ -100,6 +100,10 @@ function suiteWin(w){
 /* строка в отчёт, которая НЕ проверка: стенды печатают ей свои числа. Раньше
    это делал ok(true,…) — зелёная галочка, которая не могла покраснеть */
 function note(msg){TEST.lines.push("  · "+msg);}
+/* причина ухода видеокарты: gpuDrop (08b) шлёт её в crashShip, а тот под тестами молчит */
+let GPU_DROP_WHY="";
+if(typeof gpuDrop==="function"){const gpuDrop0=gpuDrop;
+  gpuDrop=function(why){GPU_DROP_WHY=String(why||"").slice(0,200);return gpuDrop0.apply(this,arguments);};}
 function suite(name,a,b){
   const fn=(typeof a==="function")?a:b;
   const o=((typeof a==="function")?b:a)||{};
@@ -132,11 +136,22 @@ function suite(name,a,b){
   TEST.lines.push("── "+name+(o.stage?"  [карантин: "+o.stage+"]":"")+((TEST_SHUFFLE!==null||TEST_PICK)?"  [#"+seq+"]":""));
   const p0=TEST.pass,f0=TEST.fail,n0=TEST.failed.length;
   const ts=performance.now();
+  const gpu0=typeof GPU==="object"&&!!GPU.ok;GPU_DROP_WHY="";
   try{fn();}
   catch(e){TEST.fail++;TEST.failed.push(name+" · ИСКЛЮЧЕНИЕ: "+(e&&e.message||e));
     TEST.lines.push("  ✗ ИСКЛЮЧЕНИЕ: "+(e&&e.stack||e));}
   /* инструменты (90a) прибирают за собой: окно, сдвиг часов, клавиши */
   try{T._undo();}catch(e){}
+  /* ── видеокарта ушла посреди набора (G13, 25.09) ──
+     Прогон синхронный: gpuDrop зовёт gpuInit через полторы секунды, но до конца
+     прогона очередь не доходит, и КАЖДЫЙ набор после этого смотрит в мёртвое
+     устройство — «кадр пуст», «видеокарты нет», дюжина странных провалов без
+     причины. На SwiftShader (облако) это случилось в части из трёх. Здесь — одна
+     строка с виновником и причиной; остальное в отчёте читать уже после неё. */
+  if(gpu0&&!GPU.ok){TEST.fail++;
+    TEST.failed.push(name+" · видеокарта ушла посреди набора: "+(GPU_DROP_WHY||"причина не поймана")+" — наборы после него видят мёртвое устройство");
+    TEST.lines.push("  ✗ видеокарта ушла посреди набора: "+(GPU_DROP_WHY||"причина не поймана"));
+    if(!TEST_NODE)console.log("✗ видеокарта ушла в наборе «"+name+"»: "+(GPU_DROP_WHY||"?"));}
   uiSelRestore();
   /* ── набор без единой проверки — красный (M442) ──
      Такой набор не может покраснеть ни при какой поломке: он «проходит»
@@ -456,6 +471,11 @@ function runTests(){
      дойти до отчёта (M170) */
   LOOP_OFF=true;
   const t0=performance.now();
+  /* с чем прогон начался: видеокарта и прогрев конвейеров (08b0). Наборы картинки
+     без прогретых конвейеров видят чёрный кадр — строка в отчёте говорит это сразу */
+  const gpuAtStart=(TEST_NODE||typeof GPU!=="object")?"":"видеокарта к старту: "+(GPU.none?"нет WebGPU":GPU.ok?"есть":"не поднялась")+
+    (GPU.ok?", конвейеры "+(GPU_PIPES.done?"прогреты ("+GPU_PIPES.n+", "+GPU_PIPES.ms+" мс)":"ещё греются ("+GPU_PIPES.n+" готово)"):"");
+  if(gpuAtStart)console.log(gpuAtStart);
   for(const fn of suiteOrder(TEST_SUITES)){
     _file=fn.file||"";
     try{fn();}catch(e){TEST.fail++;TEST.failed.push("набор упал: "+(e&&e.message||e));
@@ -529,7 +549,7 @@ function runTests(){
      строкой и в код выхода не складывает */
   const staged=(TEST.staged||[]).length?"КАРАНТИН (в вердикт не идёт):\n"+TEST.staged.map(s=>"  ✗ "+s).join("\n")+"\n\n":"";
   box.textContent=head+"\n\n"+(TEST.failed.length?"ПРОВАЛЫ:\n"+TEST.failed.map(s=>"  ✗ "+s).join("\n")+"\n\n":"")+staged+
-    TEST.lines.join("\n");
+    (gpuAtStart?gpuAtStart+"\n\n":"")+TEST.lines.join("\n");
   document.body.appendChild(box);
   console.log(head);
   if(TEST.failed.length)console.log("ПРОВАЛЫ:\n"+TEST.failed.join("\n"));

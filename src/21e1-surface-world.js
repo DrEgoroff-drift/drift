@@ -98,23 +98,33 @@ function drawSurfaceWorld(){
       return a;
     };
     tr.farH=[ridge(rel*1.30*FARK,.045,seed^0x8A11,5),
-             ridge(rel*0.80*FARK,.052,seed^0x33C7,4)];
+             ridge(rel*0.80*FARK,.052,seed^0x33C7,4),
+             /* третья, самая дальняя — только для видеокарты (21e2): в 2D она стоила
+                бы столько же, сколько две, а там она почти даром */
+             ridge(rel*1.9*FARK,.034,seed^0x5E1D,5)];
     tr.farK=FARK;
   }
   const stpK=.55+.45*FARK;
   /* час и погода входят в ключ гряд (M232): цвет воздуха в hazeFar теперь
      живой, и тайл, испечённый утром или в ясную погоду, обязан перепечься */
   const dwk="|d"+dayKq(p)+"|w"+Math.round(((typeof weatherPower==="function")?weatherPower(p):0)*5)/5;
-  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
-  drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
-  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
-  drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
+  /* с видеокартой обе гряды — одно поле поверх неба и облаков (21e2); тайлы
+     2D остаются там, где устройства нет (ярус тестов без картинки) */
+  if(!surfRidgesGpu(tr,p,camx,camy,stpK)){
+    S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
+    drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
+    S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
+    drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
+  }
   /* дымка шириной в кисть (M304, §13): была H*.36→.66, стала H*.52→.64 */
   hazeBand(p,H*(SURF_HOR-.03),H*.09);
   /* дальние капли — ДО мира: они падают за грядой и за кораблём (M242) */
   drawWeather(p,camx,camy,"far");
-  drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
-    "rgba(200,240,246,.4)",p.T.pal);
+  {
+    const gf="rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",gl="rgba(200,240,246,.4)";
+    /* ломти — текстурами вторым gpuOver, порода под светом звезды (21e2) */
+    if(!surfGroundGpu(tr,camx,camy,gf,gl,p.T.pal))drawGround(tr,camx,camy,gf,gl,p.T.pal);
+  }
   /* нижняя треть уходит в тень неба: ближний грунт темнее дальнего, и по
      этому глаз мерит глубину (хвост G2) */
   {
@@ -610,6 +620,7 @@ function drawSurfaceWorld(){
       ctx.restore();
     }
   }
+  placesLit(p,tr,camx,camy);   /* фонари мест светят ПОСЛЕ ночи (11va) */
   lightShafts(p);
   gradePass(p);
 }

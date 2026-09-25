@@ -15,8 +15,8 @@ the account** (the cgroup says 768 MB; the plan says 500 — the lab is sized fo
 
 - **Processes die with the ssh session.** `nohup` and `setsid` both got killed at
   disconnect. So the lab is not a daemon: somebody holds an ssh session open and the work runs
-  inside it. At night that somebody is `.github/workflows/lab.yml` (up to six hours); by day it
-  is `lab.ps1` from the laptop.
+  inside it. That somebody is `.github/workflows/lab.yml` (up to six hours) or `lab.ps1` from
+  the laptop — both started by hand.
 - **One Chrome at a time.** Six shards in parallel die without a report; a full shard with
   the heavy suites back to back dies at ~95 s; the same heavy suites alone are green
   («печь» 70 s, «память» 31 s, the fuzzer 22 s). So the heavy suites run one per process,
@@ -98,11 +98,12 @@ ssh drift "python3 drift-lab/lab.py publish"                           # rebuild
 ssh drift "cat drift-game.ru/docs/lab/errors.txt"                      # the log
 ```
 
-The scheduled run is `lab.yml`: every six hours (`0 */6 * * *` UTC — four sessions a day,
-the author 11.09: «пусть постоянно что-то гоняет»), budget 330 minutes under a 350-minute job
-limit, `workflow_dispatch` with a budget and a `quick` switch for a manual start; the
-`concurrency` group queues a session behind a running one. It uses the same `DRIFT_SSH_KEY`
-as the deploy and nothing else from it. After fixing a bug the lab found:
+The server run is `lab.yml`, started by hand (`workflow_dispatch` with a budget and a `quick`
+switch): budget 330 minutes under a 350-minute job limit; the `concurrency` group queues a session
+behind a running one. The six-hour schedule (`0 */6 * * *` UTC, the author 11.09: «пусть постоянно
+что-то гоняет») was switched off the same day, after the host's letter about CPU time (57 % against
+the plan's 50 % a day); it comes back only once a session fits the plan. It uses the same
+`DRIFT_SSH_KEY` as the deploy and nothing else from it. After fixing a bug the lab found:
 
 ```bash
 ssh drift "python3 drift-lab/lab.py fix <key> 0.442.0; python3 drift-lab/lab.py publish"
@@ -113,5 +114,5 @@ ssh drift "python3 drift-lab/lab.py fix <key> 0.442.0; python3 drift-lab/lab.py 
 It runs the suites that exist. The nets of PLAN §«tests» — determinism, the test API, the
 five oracles, scenarios, mutants — are the next milestones and will run here when they exist;
 the lab is the place, not the content. Until then its value is three things the laptop never
-does: the phone and tall windows every night, the heavy nets every night, and a fuzz hunt on
-new seeds every night.
+does: the phone and tall windows every session, the heavy nets every session, and a fuzz hunt on
+new seeds every session.

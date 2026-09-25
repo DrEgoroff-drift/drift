@@ -274,7 +274,7 @@ function cantinaScene(list,deals,folk){
   const cssW=Math.max(360,Math.min(($body.clientWidth||640)-4,980));
   const cssH=Math.round(clamp(cssW*.30,190,260));
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  cn.width=Math.round(cssW*dpr);cn.height=Math.round(cssH*dpr);
+  cn.width=Math.round(cssW*dpr);cn.height=Math.round(cssH*dpr);cn.__dpr=dpr;
   cn.style.cssText="width:100%;height:"+cssH+"px;display:block;border-radius:8px;"+
     "border:1px solid rgba(120,150,170,.25);cursor:pointer;touch-action:manipulation";
   wrap.appendChild(cn);
@@ -303,10 +303,7 @@ function cantinaScene(list,deals,folk){
   };
   const frame=()=>{
     if(!cn.isConnected||tab!=="cantina")return;
-    const c=cn.getContext("2d");
-    c.setTransform(dpr,0,0,dpr,0,0);
-    hits=drawCantinaRoom({width:cn.width/dpr,height:cn.height/dpr,getContext:()=>c},
-                          list,cantSel,cantHover,deals,folk);
+    hits=drawCantinaRoom(cn,list,cantSel,cantHover,deals,folk);
     requestAnimationFrame(frame);
   };
   frame();

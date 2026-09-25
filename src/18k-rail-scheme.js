@@ -7,8 +7,12 @@
    другой линией (RAIL_RIDE.next). Выйти на узле можно как на любой остановке.
    СХЕМА: кнопка «СХЕМА ЛИНИЙ» в вестибюле разворачивает бумагу — кремовый
    лист со сгибами, вся сеть в цветах линий, узлы двойным кружком, имена у
-   узлов и колец, красная метка «ВЫ ЗДЕСЬ». Рисуется канвой в DOM один раз на
-   открытие; закрывается касанием. */
+   узлов и колец, красная метка «ВЫ ЗДЕСЬ». Рисуется один раз на открытие;
+   закрывается касанием.
+   G12 (25.09): лист печёт видеокарта (gpuBake, холст 08ca — те же вызовы 2D),
+   готовая текстура копируется в холст схемы, который теперь WebGPU. По пути
+   бумага стала бумагой: волокна, чернила чуть расплываются под линией, у
+   сгиба кроме тени есть светлая грань, края листа потемнели от рук. */
 const RAIL_VIA_K=4;
 function railDestinationsVia(direct){
   const out=[],N=railNet(),have=new Set(direct.map(t=>t.to.sx+","+t.to.sy));
@@ -47,11 +51,21 @@ function railSchemeOpen(){
   if(!d){d=document.createElement("div");d.id="railScheme";d.innerHTML="<canvas></canvas><b>СХЕМА ЛИНИЙ · ГЛАВТРАССА · бесплатно, не выбрасывать</b><s>касание — свернуть</s>";
     d.onclick=railSchemeClose;document.body.appendChild(d);}
   d.classList.add("open");
-  const c=d.querySelector("canvas"),k=Math.min(2,DPR||1);
+  const c=d.querySelector("canvas"),k=Math.min(2,(typeof devicePixelRatio==="number"&&devicePixelRatio)||1);
   const cw=Math.min(W-24,520),ch=Math.min(H-120,cw*1.15);
-  c.width=cw*k;c.height=ch*k;c.style.width=cw+"px";c.style.height=ch+"px";
-  const g=c.getContext("2d");g.setTransform(k,0,0,k,0,0);
-  railSchemeDraw(g,cw,ch);
+  const pw=Math.round(cw*k),ph=Math.round(ch*k);
+  c.style.width=cw+"px";c.style.height=ch+"px";
+  /* без видеокарты листа нет — как и мира (WebGPU only) */
+  const B=gpuBake(pw,ph,g=>{g.setTransform(k,0,0,k,0,0);railSchemeDraw(g,cw,ch);},{mips:false});
+  if(!B)return;
+  if(c.width!==pw||c.height!==ph){c.width=pw;c.height=ph;}
+  const cx=c.getContext("webgpu");
+  cx.configure({device:GPU.dev,format:"rgba8unorm",alphaMode:"premultiplied",
+    usage:GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.COPY_DST});
+  const e=GPU.dev.createCommandEncoder();
+  e.copyTextureToTexture({texture:B.tex},{texture:cx.getCurrentTexture()},[pw,ph]);
+  GPU.dev.queue.submit([e.finish()]);
+  gpuBakeDrop(B);
 }
 function railSchemeClose(){const d=document.getElementById("railScheme");if(d)d.classList.remove("open");}
 function railSchemeDraw(g,cw,ch){
@@ -62,17 +76,31 @@ function railSchemeDraw(g,cw,ch){
   g.fillStyle="#efe6cf";g.fillRect(0,0,cw,ch);
   const grain=g.createLinearGradient(0,0,cw,ch);grain.addColorStop(0,"rgba(255,255,255,.18)");grain.addColorStop(1,"rgba(120,90,50,.10)");
   g.fillStyle=grain;g.fillRect(0,0,cw,ch);
-  for(const fx of [cw/3,cw*2/3]){const fg=g.createLinearGradient(fx-8,0,fx+8,0);fg.addColorStop(0,"rgba(0,0,0,0)");fg.addColorStop(.5,"rgba(90,70,40,.16)");fg.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=fg;g.fillRect(fx-8,0,16,ch);}
-  {const fg=g.createLinearGradient(0,ch/2-8,0,ch/2+8);fg.addColorStop(0,"rgba(0,0,0,0)");fg.addColorStop(.5,"rgba(90,70,40,.12)");fg.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=fg;g.fillRect(0,ch/2-8,cw,16);}
+  /* волокна: короткие штрихи вразброс, светлые и тёмные — рисунок свой у листа,
+     зерно своё (rng), шанс игры не трогается */
+  {const r=rng(0x5C4E),n=Math.round(cw*ch/260);g.lineWidth=.6;g.lineCap="round";
+    /* четыре пучка — четыре обводки на весь лист, а не по штриху */
+    for(const col of ["rgba(120,92,52,.06)","rgba(120,92,52,.11)","rgba(255,252,240,.12)","rgba(255,252,240,.22)"]){
+      g.beginPath();
+      for(let i=0;i<n/4;i++){const x=r()*cw,y=r()*ch,a=r()*TAU,L=2+r()*7;g.moveTo(x,y);g.lineTo(x+Math.cos(a)*L,y+Math.sin(a)*L);}
+      g.strokeStyle=col;g.stroke();}}
+  /* сгиб: тень с одной стороны и светлая грань с другой — лист согнут, а не заштрихован */
+  for(const fx of [cw/3,cw*2/3]){const fg=g.createLinearGradient(fx-8,0,fx+8,0);fg.addColorStop(0,"rgba(0,0,0,0)");fg.addColorStop(.5,"rgba(90,70,40,.16)");fg.addColorStop(.62,"rgba(255,250,236,.22)");fg.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=fg;g.fillRect(fx-8,0,16,ch);}
+  {const fg=g.createLinearGradient(0,ch/2-8,0,ch/2+8);fg.addColorStop(0,"rgba(0,0,0,0)");fg.addColorStop(.5,"rgba(90,70,40,.12)");fg.addColorStop(.62,"rgba(255,250,236,.18)");fg.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=fg;g.fillRect(0,ch/2-8,cw,16);}
+  /* края потемнели от рук — лист ходил по карманам */
+  {const eg=g.createRadialGradient(cw/2,ch/2,Math.min(cw,ch)*.35,cw/2,ch/2,Math.hypot(cw,ch)*.56);
+    eg.addColorStop(0,"rgba(120,90,50,0)");eg.addColorStop(1,"rgba(120,90,50,.20)");g.fillStyle=eg;g.fillRect(0,0,cw,ch);}
   /* круг заселения и метро: лёгкая заливка, как зона тарифа */
   g.fillStyle="rgba(196,110,40,.07)";g.beginPath();g.arc(X(0),Y(0),RAIL_METRO_R*S,0,TAU);g.fill();
   g.strokeStyle="rgba(90,70,40,.25)";g.lineWidth=1;g.setLineDash([3,4]);g.beginPath();g.arc(X(0),Y(0),RAIL_METRO_R*S,0,TAU);g.stroke();g.setLineDash([]);
   /* линии: толстые, в чернилах схемы; радиалы тоньше */
   g.lineCap="round";g.lineJoin="round";
   for(const l of N.lines){
-    const c=SCHEME_INK[l.kind];
-    g.strokeStyle="rgba("+c.join(",")+","+(l.kind==="radial"?.55:.9)+")";g.lineWidth=l.kind==="radial"?1.6:3;
-    g.beginPath();for(let i=0;i<l.pts.length;i++){const p=l.pts[i];i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]));}g.stroke();
+    const c=SCHEME_INK[l.kind],w=l.kind==="radial"?1.6:3;
+    g.beginPath();for(let i=0;i<l.pts.length;i++){const p=l.pts[i];i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]));}
+    /* чернила впитались: под линией бледная кайма шире её самой */
+    g.strokeStyle="rgba("+c.join(",")+",.12)";g.lineWidth=w+2.4;g.stroke();
+    g.strokeStyle="rgba("+c.join(",")+","+(l.kind==="radial"?.55:.9)+")";g.lineWidth=w;g.stroke();
   }
   /* остановки: белый кружок с тёмной каймой; узлы — двойной и с именем */
   g.font="7px ui-monospace,monospace";g.textBaseline="middle";

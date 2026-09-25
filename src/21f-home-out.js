@@ -53,6 +53,7 @@ function homeSpotX(p,tr){
   return x;
 }
 const HOME_MAN=17;                                    /* тот же человек, что везде */
+const HOME_LAMP=[1,.76,.47];                          /* лампа накаливания: тот же тёплый, что окно */
 /* палитра дома: местный камень и дерево, но теплее — это жильё, а не порода */
 function homeOutPal(p){
   const pal=p.T.pal;
@@ -169,11 +170,14 @@ function drawHomeOut(tr,camx,camy,p){
   const ww=w*.26,wh=wallH*.30,wx=sx+w*plan.win,wy=gy-wallH*.70;
   sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
     Math.max(nite,.25),7);
+  /* окно не только светится, но и светит: на крыльцо, на двор (11va) */
+  placeLamp(wx+ww*.5,wy+wh*.55,M*4.2,HOME_LAMP,.4,-M*1.2);
   if(plan.variant===3)                                /* чердачное окно — по плану (M322) */
     sdWindow(sx-w*.07,gy-wallH-roofH*.42,w*.14,roofH*.22,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},Math.max(nite,.2),9);
   if(homeHas("living")){                              /* жилая часть — второе окно */
     sdWindow(sx-w*.34,wy,ww*.8,wh*.9,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
       Math.max(nite,.2),11);
+    placeLamp(sx-w*.34+ww*.4,wy+wh*.5,M*3.8,HOME_LAMP,.32,-M*1.2);
   }
   /* крыльцо и дверь: сюда и входят */
   const dw=w*.20,dh=wallH*.56,dX=sx+plan.doorSide*-.30*w;
@@ -193,13 +197,11 @@ function drawHomeOut(tr,camx,camy,p){
   const lampOn=nite>.12;
   ctx.fillStyle=lampOn?"rgba(255,206,138,.95)":"rgba(120,130,140,.6)";
   ctx.fillRect(lx-1.4,ly-1,2.8,2.4);
-  if(lampOn){
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const g=ctx.createRadialGradient(lx,ly,1,lx,ly,M*2.6);
-    g.addColorStop(0,"rgba(255,206,138,.30)");g.addColorStop(1,"rgba(255,180,110,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly,M*2.6,0,TAU);ctx.fill();
-    ctx.restore();
-  }
+  /* ── фонарь светит, а не светится (G6) ──
+     Был ореол «lighter» в 2D, и ночь клала поверх него свою тень: пятно у
+     двери, а крыльцо, дверь и тропа — тёмные. Теперь это источник: свет
+     ложится на стену, крыльцо и двор тем цветом, какой у них есть (11va) */
+  if(lampOn)placeLamp(lx,ly+1,M*7.5,HOME_LAMP,1,M*1.6);
   /* ── витрина (ступень 4): застеклённый шкаф у стены, видно снаружи ── */
   if(homeHas("case")){
     const cw=M*.9,ch=M*1.2,cx2=sx+w*.52;
@@ -245,15 +247,11 @@ function drawHomeOut(tr,camx,camy,p){
         vDrawRope(g.R,mx,myy-H0,sdRGB(sdMix(pal.metal,[0,0,0],.34)),1.1);
       }
     }
+    /* огонь маяка дышит, а не мигает: синус, не ступенька; ореол — светом (11va) */
     const bl=(Math.sin(G.t*.06)+1)*.5;
     ctx.fillStyle="rgba(255,150,90,"+(.35+bl*.6).toFixed(2)+")";
     ctx.beginPath();ctx.arc(mx,myy-M*4.6,3.2,0,TAU);ctx.fill();
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const g2=ctx.createRadialGradient(mx,myy-M*4.6,1,mx,myy-M*4.6,M*3*(.5+bl));
-    g2.addColorStop(0,"rgba(255,150,90,"+(.25*bl).toFixed(2)+")");
-    g2.addColorStop(1,"rgba(255,120,60,0)");
-    ctx.fillStyle=g2;ctx.beginPath();ctx.arc(mx,myy-M*4.6,M*3,0,TAU);ctx.fill();
-    ctx.restore();
+    placeLamp(mx,myy-M*4.6,M*5,[1,.56,.32],.35+.65*bl,M*.8);
   }
   /* ── двор: поленница, бочка, верёвка — то же, чем живёт посёлок ── */
   if(typeof sdWoodpile==="function")
