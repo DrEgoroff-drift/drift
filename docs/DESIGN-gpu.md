@@ -701,10 +701,11 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   Node 16904, -Full 19137, -Mobile 19089 green; the warm table re-taken without a diff; the pipe detector
   green. Not pushed — the push is Контроль's.
 - **The fleet merge scouting was withdrawn** (Контроль: fleet 2 is rebuilt by the cloud on main 0.462.0 in
-  `claude/fleet2`, acceptance in `claude/fleet-accept`). What was found before the stop: the fleet branch
-  `optimistic-gates-u46osn` is a single root commit (a snapshot) with no shared history; its closest tree
-  in main/gpu is db057213 (128 files differ). Grafted onto db057213 it merges into gpu with only INDEX and
-  TESTMAP conflicting; both sides touch 08c, 08ca, 18a, test.ps1, 90-harness, 91zzzzzzy2, shot.py, PLAN.
+  `claude/fleet2`, acceptance in `claude/fleet-accept`). The local clone is shallow (`.git/shallow`), so the
+  fleet tip da6b1bfa looked like a root commit; on GitHub its merge base with main is db057213. Deepen first
+  (`git fetch --shallow-since=2026-09-24 origin main gpu claude/fleet-accept`). A merge from db057213 into
+  gpu conflicted only in INDEX and TESTMAP; both sides touch 08c, 08ca, 18a, test.ps1, 90-harness,
+  91zzzzzzy2, shot.py, PLAN.
   Next: paused for the limit window; on waking — Контроль's queue.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
