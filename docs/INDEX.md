@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6288
+Файлов: 630 · символов верхнего уровня: 6289
 
 ## СИМВОЛЫ
 
@@ -1827,7 +1827,7 @@ fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
 fbm3                         src/24ba-belt-gpu.js:30-34
 FG_MAN                       src/21b-surface-deco.js:277
-fillMaterial                 src/18a-material.js:372-402
+fillMaterial                 src/18a-material.js:382-412
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
@@ -2031,10 +2031,10 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:26-106
-GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:13
-GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:15
-gate2dChips                  tests/91zzzzzzy3-gate2d.js:17-25
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-109
+GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
+GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
+gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
 gateFind                     tests/91zzzzzzy-gpugate.js:270-315
 gateFlyScenes                tests/91zzzzzzy-gpugate.js:273-315
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
@@ -3497,10 +3497,11 @@ matchesRec                   src/12uc-matches.js:22-25
 matchesRu                    src/12uc-matches.js:36-41
 matchesScrapNote             src/12uc-matches.js:45-50
 matchesSpend                 src/12uc-matches.js:27
-matJobDone                   src/18a-material.js:354-361
-matJobMake                   src/18a-material.js:128-168
-matJobRows                   src/18a-material.js:170-353
-matTick                      src/18a-material.js:108-117
+matJobDone                   src/18a-material.js:364-371
+matJobMake                   src/18a-material.js:138-178
+matJobRows                   src/18a-material.js:180-363
+matRows                      src/18a-material.js:114-123
+matTick                      src/18a-material.js:125-127
 MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
 mayakBlock                   src/12pa-beacon.js:176-184
@@ -4218,9 +4219,9 @@ planEtherLine                src/11r-plan.js:43-46
 planetLightsN                src/17e-station-body.js:38-43
 planetLightsOn               src/17e-station-body.js:46-50
 planetLoadSum                src/12n-planet.js:122-125
-planetMat                    src/18a-material.js:99-106
-planetMatHue                 src/18a-material.js:363-366
-planetMatNow                 src/18a-material.js:120-127
+planetMat                    src/18a-material.js:99-111
+planetMatHue                 src/18a-material.js:373-376
+planetMatNow                 src/18a-material.js:130-137
 planetPeriod                 src/07-planet.js:37-41
 planetReady                  src/12n-planet.js:19-21
 planetRender                 src/12n-planet.js:155-184
@@ -7108,7 +7109,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18a-map-addr.js · 17 КБ
   · карта говорит адресами (M347):1
 
-## src/18a-material.js · 30 КБ
+## src/18a-material.js · 31 КБ
   · материал грунта:1
 
 ## src/18a1-glaze.js · 13 КБ
@@ -8154,7 +8155,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzn-deco-biomes.js · 4 КБ
   · автотесты: большая вещь на каждый биом (M352):1
 
-## tests/91zzzzy-bake.js · 18 КБ
+## tests/91zzzzy-bake.js · 21 КБ
   · печь: сколько растра игра держит и сколько печёт заново (M358):1
   · и ЧЕМ печь занята за один раз (M419):137
 

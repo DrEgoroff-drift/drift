@@ -321,7 +321,7 @@ function gpuPlanet(p,x,y,r,lights){
   const pass=gpuScene();if(!pass)return;
   const lvl=r>150?2:(r>60?1:0);
   const S=planetStrip(p,lvl);
-  if(typeof matTick==="function")matTick();
+  if(typeof matRows==="function")matRows();   /* строки материала — арифметика; сборку в узор делает 2D-кадр, которому он нужен (18a) */
   const gas=p.type==="gas",airless=!gas&&!!(p.T&&p.T.atm==="отсутствует");
   const sk=(p.T&&((gas&&p.T.pal&&p.T.pal[p.T.pal.length-1])||(p.T.sky&&p.T.sky[0])))||[130,180,210];
   const pal=p.T.pal,np=pal.length-1;
