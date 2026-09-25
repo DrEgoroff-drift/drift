@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6304
+Файлов: 630 · символов верхнего уровня: 6316
 
 ## СИМВОЛЫ
 
@@ -152,7 +152,7 @@ arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:550-597
 artGet                       src/08ca-gpu-canvas.js:454
 ARTIFACTS                    src/12h-relic.js:48-63
-artPut                       src/08ca-gpu-canvas.js:455-572
+artPut                       src/08ca-gpu-canvas.js:455-576
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
@@ -790,8 +790,8 @@ CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
 chipDist                     src/17-mode-system.js:695-701
 chipDom                      src/08bi-gpu-ovl.js:144-159
-chipDomSnap                  src/08bh-gpu-hud.js:36-41
-chipDomSweep                 src/08bh-gpu-hud.js:68-74
+chipDomSnap                  src/08bh-gpu-hud.js:35-40
+chipDomSweep                 src/08bh-gpu-hud.js:67-73
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -1400,8 +1400,8 @@ dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
 domLabel                     src/08bi-gpu-ovl.js:134-140
-domLabelEnd                  src/08bh-gpu-hud.js:56-65
-domLabelId                   src/08bh-gpu-hud.js:54
+domLabelEnd                  src/08bh-gpu-hud.js:55-64
+domLabelId                   src/08bh-gpu-hud.js:53
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
 DOMR_SAVE                    src/15d-domread.js:18
@@ -2039,7 +2039,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:26-128
+GATE2D                       tests/91zzzzzzy3-gate2d.js:26-135
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:13
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:15
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:17-25
@@ -2061,6 +2061,7 @@ GC_GLYPHS                    src/08cb-gpu-text.js:17-50
 GC_KEYS                      src/08ca-gpu-canvas.js:90
 GC_MIP_WGSL                  src/08ca-gpu-canvas.js:330
 GC_MISS                      src/08ca-gpu-canvas.js:27
+GC_ONCE                      src/08ca-gpu-canvas.js:464
 GC_OPS                       src/08ca-gpu-canvas.js:13-58
 GC_OPX                       src/08ca-gpu-canvas.js:26
 GC_POOL_CAP                  src/08ca-gpu-canvas.js:394
@@ -2182,7 +2183,8 @@ glazeStops                   src/18a1-glaze.js:71-97
 GLOB                         src/25f-globus.js:44
 GLOB_STEP                    src/25f-globus.js:43
 globusAim                    src/25f-globus.js:49-68
-globusDraw                   src/25f-globus.js:81-140
+globusDraw                   src/25f-globus.js:113-138
+globusPaint                  src/25f-globus.js:81-111
 globusSys                    tests/91zzzg-globus.js:7-11
 globusTick                   src/25f-globus.js:70-77
 GLOW_CACHE                   src/16a0-glow.js:23
@@ -2296,7 +2298,8 @@ gpuBake                      src/08ca-gpu-canvas.js:433-438
 gpuBaked                     src/08ca-gpu-canvas.js:442-447
 gpuBakeDrop                  src/08ca-gpu-canvas.js:448
 gpuBakeLive                  src/08ca-gpu-canvas.js:451
-gpuBakeRedo                  src/08ca-gpu-canvas.js:462-572
+gpuBakeRedo                  src/08ca-gpu-canvas.js:465
+gpuBakeRedo0                 src/08ca-gpu-canvas.js:466-576
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:614-619
@@ -2320,7 +2323,7 @@ gpuFrontHook                 src/08c-gpu-kit.js:115-124
 gpuHaze                      src/08b-gpu.js:447
 gpuHud                       src/08bh-gpu-hud.js:13-16
 gpuHudDpr                    src/08bh-gpu-hud.js:11
-gpuHudFlush                  src/08bh-gpu-hud.js:19-33
+gpuHudFlush                  src/08bh-gpu-hud.js:18-32
 gpuImage                     src/08c-gpu-kit.js:212-225
 gpuKitU                      src/08c-gpu-kit.js:170-174
 gpuLight                     src/08b-gpu.js:449
@@ -3181,8 +3184,8 @@ kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
 kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
-LABDOM                       src/08bh-gpu-hud.js:44
-labDomBox                    src/08bh-gpu-hud.js:46-51
+LABDOM                       src/08bh-gpu-hud.js:43
+labDomBox                    src/08bh-gpu-hud.js:45-50
 labelW                       src/12ai-fleet.js:134
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
@@ -4459,17 +4462,26 @@ r4Haul                       tests/91zzxa-playable.js:331-337
 RACK                         src/25d-instr-rack.js:54
 RACK_CH                      src/25d-instr-rack.js:27-33
 RACK_G                       src/25d-instr-rack.js:36-53
+RACK_LEG_FONT                src/25d-instr-rack.js:356
 RACK_PAD                     src/25d-instr-rack.js:25
+RACK_SH                      src/25d-instr-rack.js:172
 rackDial                     src/25d-instr-rack.js:105-149
-rackDraw                     src/25d-instr-rack.js:323-497
+rackDraw                     src/25d-instr-rack.js:406-508
+rackDrop                     src/25d-instr-rack.js:174
 rackGeo                      src/25d-instr-rack.js:68-80
 rackGlass                    src/25d-instr-rack.js:151-163
 rackGrain                    src/25d-instr-rack.js:94-103
+rackLegend                   src/25d-instr-rack.js:357-368
 rackOpen                     src/25d-instr-rack.js:55
-rackPaperBox                 src/25d-instr-rack.js:284-288
-rackRoller                   src/25d-instr-rack.js:290-319
+rackPaint                    src/25d-instr-rack.js:188-312
+rackPaperBox                 src/25d-instr-rack.js:348-352
+rackR                        src/25d-instr-rack.js:173
+rackRoller                   src/25d-instr-rack.js:372-401
 rackScrew                    src/25d-instr-rack.js:84-92
-rackTex                      src/25d-instr-rack.js:168-282
+rackSpr                      src/25d-instr-rack.js:343-346
+rackSprites                  src/25d-instr-rack.js:315-341
+rackTex                      src/25d-instr-rack.js:175-187
+rackTextW                    src/25d-instr-rack.js:370
 rackToggle                   src/25d-instr-rack.js:56-59
 RADIO                        src/10a-radio.js:119
 RADIO_ARCH                   src/10a-radio.js:24-40
@@ -7422,7 +7434,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25c-instr-hud.js · 9 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
-## src/25d-instr-rack.js · 27 КБ
+## src/25d-instr-rack.js · 31 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
 ## src/25e-receiver.js · 7 КБ
@@ -7779,7 +7791,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zk-tape.js · 8 КБ
 
-## tests/91zl-rack.js · 3 КБ
+## tests/91zl-rack.js · 7 КБ
 
 ## tests/91zm-role.js · 4 КБ
 

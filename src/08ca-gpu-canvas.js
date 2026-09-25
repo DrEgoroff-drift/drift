@@ -416,7 +416,7 @@ function gcPoolSet(role,w,h){
   if(e){Q.t.splice(Q.t.indexOf(e),1);Q.t.push(e);return e.T;}
   const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
   const T=gcPoolSpec(role).map(([f,n,us])=>{by+=W*H*n*(px[f]||4);Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
-  if(by>GC_POOL_CAP/2){GPU.trash.push(...T);return T;}   /* больше полупотолка — разовый, в пул не идёт */
+  if(by>GC_POOL_CAP/2||GC_ONCE){GPU.trash.push(...T);return T;}   /* больше полупотолка или выпечка once — разовый, в пул не идёт */
   Q.t.push({role,w:W,h:H,T,by});Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
   while(Q.by>GC_POOL_CAP&&Q.t.length>1){const o=Q.t.shift();Q.by-=o.by;GPU.trash.push(...o.T);}
   return T;}
@@ -459,7 +459,11 @@ function artPut(M,key,v,cap){
 /* GC_PX — точек MSAA, выпеченных с загрузки: prebake (17a0) не начинает шаг, если кадр уже испёк PB_PX */
 let GC_PX=0;
 let GC_VA=new Float32Array(1<<16);   /* вершины выпечки (x,y,краска,u,v) — общий растущий буфер */
-function gpuBakeRedo(B){
+/* o.once — выпечка редкая и крупная (стойка 25d): наборы пула берутся разово и в пул не ложатся,
+   иначе вытеснили бы прогретые записи, и их родила бы заново первая же выпечка в полёте */
+let GC_ONCE=false;
+function gpuBakeRedo(B){const o0=GC_ONCE;GC_ONCE=!!B.o.once;try{gpuBakeRedo0(B);}finally{GC_ONCE=o0;}}
+function gpuBakeRedo0(B){
   const t0=wallMs(),{w,h}=B,k=B.o.ss||(w*h<=262144?2:1),g=new GcCtx(w,h,k),prev=ctx;
   ctx=g;try{B.draw(g);}finally{ctx=prev;}
   const d=GPU.dev,U=GPUTextureUsage,W=w*k,H=h*k;

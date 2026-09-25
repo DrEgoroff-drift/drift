@@ -125,6 +125,13 @@ const GATE2D=[
        G.ship.x=B.x-30;G.ship.y=B.y+40;G.ship.vx=G.ship.vy=0;G.zoom=1.3;G.zoomT=null;return {B};}
      return null;},
    probe:["drawBillboard"]},
+  {name:"приборная стойка (25d) и «Глобус» (25f): мастер, стрелки, перья",
+   painters:["rackDraw","rackTex","rackPaint","rackSprites","rackSpr","rackDial","rackGlass","rackGrain","rackScrew","rackRoller",
+             "globusDraw","globusPaint"],
+   place(first){
+     if(first){rackDrop();for(let i=0;i<40;i++)tapeSample();}
+     G.rack={on:true};return {};},
+   probe:["rackDraw"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
