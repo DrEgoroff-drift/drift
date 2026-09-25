@@ -34,6 +34,8 @@ function baseBake(name,key,R,k,paint){
   E={key,B,R,k,w:tw/k,h:th/k};BASE_BK.set(name,E);
   return E;
 }
+/* вышли из базы — отдаём видеопамять: на двойной плотности это десятки мегабайт */
+function baseBakeFree(){for(const E of BASE_BK.values())if(E.B)gpuBakeDrop(E.B);BASE_BK.clear();}
 function baseBakeShow(pass,E,dx,dy,cubic){
   if(!E||!E.B)return;
   gpuImage(pass,E.B,[{x:E.R.x0-dx+E.w/2,y:E.R.y0-dy+E.h/2,w:E.w,h:E.h,cubic}]);

@@ -90,3 +90,12 @@ TEST_SUITES.push(()=>suite("база G11: кадр с плавильней ри�
   ok(log.some(s=>s.indexOf("arc(")===0),"кадр дорисован до дыма и дальше: "+log.length+" команд");
   eq(BASE_PASS,0,"проход снят");
 }));
+TEST_SUITES.push(()=>suite("база G11: выход на поверхность отдаёт выпечки",()=>{
+  const {p}=baseAllKinds();
+  BASE_BK.set("probe",{key:"x",B:null});
+  ok(BASE_BK.size>0,"выпечка в кэше есть");
+  exitBase();
+  eq(G.mode,"surface","вышли на поверхность");
+  eq(BASE_BK.size,0,"кэш выпечек базы пуст");
+  enterBase(p);eq(G.mode,"base","и вход обратно работает");
+}));
