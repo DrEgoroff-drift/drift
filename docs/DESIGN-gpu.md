@@ -570,6 +570,11 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
 - **The runner is red on a killed shard:** a shard killed at the ceiling, or one whose report has no
   finished header, counts as a failure named with its last suite; `-ShardSec` narrows the ceiling (900 s)
   to test this path. Forced at 15 s: «ПРОВАЛЕНО 2», exit 1.
+- **Pipeline warm-up (P1 from S23, in progress).** Step 1 done: every lazy pipeline goes through one funnel,
+  `gpuPipeline(key, recipe)` in 08b0, and shader modules are cached by text (`gpuShader`). Keys: `pipe:name|blend`,
+  `gc:md|op`, `gc.mip`, `gc.blur`, `gnb.gen|16f`, `gnb.noise`, `gps`, `ovl`; lazy creations go to `GPU_PIPES.lazy`.
+  Next: recipes by key, `createRenderPipelineAsync` of the key table behind #intro (start waits, with a
+  ceiling), the Chrome detector that writes the table (-Accept), then the pool «giant» (1024² bake kept).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

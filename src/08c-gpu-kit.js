@@ -20,10 +20,10 @@ const GPU_BLEND={
 function gpuPipe(name,code,blend,layout){
   const key=name+"|"+(blend||"over");
   const c=GPU.lay[key];if(c)return c;
-  const mod=GPU.dev.createShaderModule({code});
-  return GPU.lay[key]=GPU.dev.createRenderPipeline({layout:layout||"auto",vertex:{module:mod,entryPoint:"vs"},
+  return GPU.lay[key]=gpuPipeline("pipe:"+key,()=>{const mod=gpuShader(code);
+    return {layout:layout||"auto",vertex:{module:mod,entryPoint:"vs"},
     fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float",blend:GPU_BLEND[blend||"over"]}]},
-    primitive:{topology:"triangle-list"}});
+    primitive:{topology:"triangle-list"}};});
 }
 function gpuBuf(name,bytes,usage){
   const b=GPU.bufs[name];

@@ -33,9 +33,9 @@ fn erf(x:f32)->f32{let a=abs(x);let t=1./(1.+.3275911*a);
     if(all(q>=vec2i(bu.r.xy))&&all(q<vec2i(bu.r.zw))){let v=textureLoad(src,q,0);t+=g*select(v.a,v.r,bu.s.z>.5);}}
   return vec4f(t/w,0.,0.,0.);}`;
 function gcBlurPipe(){
-  if(GPU.lay["gc.blur"])return GPU.lay["gc.blur"];const m=GPU.dev.createShaderModule({code:GC_BLUR_WGSL});
-  return GPU.lay["gc.blur"]=GPU.dev.createRenderPipeline({layout:"auto",vertex:{module:m,entryPoint:"vs"},
-    fragment:{module:m,entryPoint:"fs",targets:[{format:"r8unorm"}]},primitive:{topology:"triangle-list"}});}
+  if(GPU.lay["gc.blur"])return GPU.lay["gc.blur"];
+  return GPU.lay["gc.blur"]=gpuPipeline("gc.blur",()=>{const m=gpuShader(GC_BLUR_WGSL);return {layout:"auto",vertex:{module:m,entryPoint:"vs"},
+    fragment:{module:m,entryPoint:"fs",targets:[{format:"r8unorm"}]},primitive:{topology:"triangle-list"}};});}
 /* слои тени выпечки — полки одного атласа: SH — {sd (вызовы фигуры), x0,y0,w,h (рамка, px выпечки), sg, R, k};
    ставит s.ax, s.ay и берёт из пула набор атласа (MSAA, трафарет, resolve, два r8 размытия) */
 function gcShadowPack(SH){

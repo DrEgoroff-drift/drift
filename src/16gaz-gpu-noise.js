@@ -25,9 +25,8 @@ function gnbNoiseTile(){
   if(GNB.nzv&&GNB.nzDev===GPU.dev)return GNB.nzv;
   const d=GPU.dev,S=2049,U=GPUTextureUsage;
   const t=d.createTexture({size:[S,S],format:"r16float",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});
-  const mod=d.createShaderModule({code:GNB_NOISE+GNB_TILE_BAKE});
-  const P=d.createRenderPipeline({layout:"auto",vertex:{module:mod,entryPoint:"vs"},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"r16float"}]},primitive:{topology:"triangle-list"}});
+  const P=gpuPipeline("gnb.noise",()=>{const mod=gpuShader(GNB_NOISE+GNB_TILE_BAKE);return {layout:"auto",vertex:{module:mod,entryPoint:"vs"},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"r16float"}]},primitive:{topology:"triangle-list"}};});
   const v=t.createView(),e=d.createCommandEncoder();
   const p=e.beginRenderPass({colorAttachments:[{view:v,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]});
   p.setPipeline(P);p.draw(3);p.end();d.queue.submit([e.finish()]);

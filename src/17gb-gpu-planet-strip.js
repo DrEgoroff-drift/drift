@@ -97,9 +97,8 @@ fn fbm2(x:f32,y:f32,s:u32,oct:i32)->f32{
 const GPS={pipe:null,dev:null,U:new ArrayBuffer(192)};
 function gpsPipe(){
   const d=GPU.dev;if(GPS.pipe&&GPS.dev===d)return GPS.pipe;
-  const m=d.createShaderModule({code:GPS_WGSL});
-  GPS.pipe=d.createRenderPipeline({layout:"auto",vertex:{module:m,entryPoint:"vs"},
-    fragment:{module:m,entryPoint:"fs",targets:[{format:"rgba8unorm"}]},primitive:{topology:"triangle-list"}});
+  GPS.pipe=gpuPipeline("gps",()=>{const m=gpuShader(GPS_WGSL);return {layout:"auto",vertex:{module:m,entryPoint:"vs"},
+    fragment:{module:m,entryPoint:"fs",targets:[{format:"rgba8unorm"}]},primitive:{topology:"triangle-list"}};});
   GPS.dev=d;return GPS.pipe;
 }
 /* выпечка уровня: один проход, своя отправка (как gpuBake 08ca) — уровень готов к кадру */

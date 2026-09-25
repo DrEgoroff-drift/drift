@@ -357,24 +357,24 @@ function gcLay(){
     {binding:2,visibility:F,texture:{sampleType:"float"}},{binding:3,visibility:F,sampler:{type:"filtering"}},
     {binding:4,visibility:F,texture:{sampleType:"float"}},{binding:5,visibility:F,sampler:{type:"filtering"}}]});
   const dm=d.createTexture({size:[1,1],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST});
-  return GPU.lay["gc.L"]={bgl,pl:d.createPipelineLayout({bindGroupLayouts:[bgl]}),mod:d.createShaderModule({code:GC_WGSL}),dm:dm.createView(),
+  return GPU.lay["gc.L"]={bgl,pl:d.createPipelineLayout({bindGroupLayouts:[bgl]}),mod:gpuShader(GC_WGSL),dm:dm.createView(),
     near:d.createSampler({magFilter:"nearest",minFilter:"nearest"})};
 }
 function gcPipe(key){
   const c=GPU.lay["gc."+key];if(c)return c;
   const [md,op]=key.split("|"),S=GC_ST[md],L=gcLay(),G=GC_OPS[op]||GC_OPX[op];
   const blend=G?{color:{srcFactor:G.c[0],dstFactor:G.c[1]},alpha:{srcFactor:G.a[0],dstFactor:G.a[1]}}:undefined;
-  return GPU.lay["gc."+key]=GPU.dev.createRenderPipeline({layout:L.pl,
+  return GPU.lay["gc."+key]=gpuPipeline("gc:"+key,()=>({layout:L.pl,
     vertex:{module:L.mod,entryPoint:"vs",buffers:[{arrayStride:20,attributes:[{shaderLocation:0,offset:0,format:"float32x2"},
       {shaderLocation:1,offset:8,format:"float32"},{shaderLocation:2,offset:12,format:"float32x2"}]}]},
     fragment:{module:L.mod,entryPoint:S.c==="img"?"fimg":S.c==="mask"?"fmask":S.c==="shadow"?"fshadow":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
     primitive:{topology:"triangle-list"},
     depthStencil:{format:"stencil8",depthWriteEnabled:false,depthCompare:"always",stencilFront:S.f,stencilBack:S.b||S.f,stencilReadMask:S.rm,stencilWriteMask:S.wm},
-    multisample:{count:4}});
+    multisample:{count:4}}));
 }
-function gcMipPipe(){return GPU.lay["gc.mip"]||(GPU.lay["gc.mip"]=GPU.dev.createRenderPipeline({layout:"auto",
-  vertex:{module:GPU.dev.createShaderModule({code:GC_MIP_WGSL}),entryPoint:"vs"},
-  fragment:{module:GPU.dev.createShaderModule({code:GC_MIP_WGSL}),entryPoint:"fs",targets:[{format:"rgba8unorm"}]},primitive:{topology:"triangle-list"}}));}
+function gcMipPipe(){return GPU.lay["gc.mip"]||(GPU.lay["gc.mip"]=gpuPipeline("gc.mip",()=>({layout:"auto",
+  vertex:{module:gpuShader(GC_MIP_WGSL),entryPoint:"vs"},
+  fragment:{module:gpuShader(GC_MIP_WGSL),entryPoint:"fs",targets:[{format:"rgba8unorm"}]},primitive:{topology:"triangle-list"}})));}
 
 /* ── пул целей выпечки. Создать текстуру в процессе GPU стоит ~1.5 мс (замер 25.09: 36 слоёв r8 —
    45–70 мс ожидания очереди, те же проходы в одну текстуру — 1 мс), а выпечка просила их ~40.

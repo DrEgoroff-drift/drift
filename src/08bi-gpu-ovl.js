@@ -138,10 +138,10 @@ function ovFlush(){
   const d=GPU.dev,need=n*OVL_N;
   if(!OVL.f||OVL.f.length<need)OVL.f=new Float32Array(Math.max(need,OVL_N*64)*2);
   OVL.f.set(OVL.lq,0);OVL.f.set(OVL.cq,OVL.lq.length);OVL.nl=OVL.lq.length/OVL_N;OVL.lq.length=OVL.cq.length=0;   /* подписи — под фишками */
-  if(!OVL.P){const m=d.createShaderModule({code:OVL_WGSL});
-    OVL.P=d.createRenderPipeline({layout:"auto",vertex:{module:m,entryPoint:"vs"},primitive:{topology:"triangle-list"},
+  if(!OVL.P){
+    OVL.P=gpuPipeline("ovl",()=>{const m=gpuShader(OVL_WGSL);return {layout:"auto",vertex:{module:m,entryPoint:"vs"},primitive:{topology:"triangle-list"},
       fragment:{module:m,entryPoint:"fs",targets:[{format:GPU.fmt,blend:{color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},
-        alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]}});
+        alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]}};});
     OVL.U=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});OVL.bg=null;}
   if(!OVL.buf||OVL.buf.size<OVL.f.byteLength){if(OVL.buf)GPU.trash.push(OVL.buf);
     OVL.buf=d.createBuffer({size:OVL.f.byteLength,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});OVL.bg=null;}

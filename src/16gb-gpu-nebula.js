@@ -492,9 +492,8 @@ function gnbTarget(){
 }
 function gnbPipe(){
   const k="gnb.gen|16f";if(GPU.lay[k])return GPU.lay[k];
-  const mod=GPU.dev.createShaderModule({code:GNB_GEN});
-  return GPU.lay[k]=GPU.dev.createRenderPipeline({layout:"auto",vertex:{module:mod,entryPoint:"vs"},
-    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"}]},primitive:{topology:"triangle-list"}});
+  return GPU.lay[k]=gpuPipeline(k,()=>{const mod=gpuShader(GNB_GEN);return {layout:"auto",vertex:{module:mod,entryPoint:"vs"},
+    fragment:{module:mod,entryPoint:"fs",targets:[{format:"rgba16float"}]},primitive:{topology:"triangle-list"}};});
 }
 /* палитра туманности системы — своим потоком случайности (0x4E42), сид мира не
    трогает. Два тона по кругу — по областям массы, тень — третьим; у гиганта —
