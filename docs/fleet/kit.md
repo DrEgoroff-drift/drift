@@ -18,6 +18,14 @@ plus new files next to them and their tests. Branch `claude/gpu-kit`, from `clau
    (`ctx.drawImage(screenLayer(…))` in 19c-light, 19d-weather, 19a-scoop; 29g returns it), and a bake
    there would break them — so the brief's «screenLayer → gpuBaked only if every caller keeps working»
    is met by a twin, not a swap. Suite `tests/91zzzzzzy5-gpu-chunks.js` (Node + a browser-tier suite).
+4. **`overlay` in GcCtx** (found while proving gap 2: `18a-material.fillMaterial`'s second pass, called
+   from 8 files — landing ground, surface deco, base ground, cave, dig rock, poi) — `08ca`: `GC_OPS.overlay`
+   (`bk:1`, replace blend), a `fover` fragment (W3C overlay in premultiplied colour against the backdrop),
+   bind-group layout binding 6 (the backdrop), and the bake's main pass cut before every overlay draw:
+   the part before it resolves into one of two lazily made backdrop textures (`gcBack`, ping-pong, so a
+   pass never samples what it resolves into), MSAA colour and stencil are stored and loaded by the next
+   part; `run` takes a range. `08cc`: no shadow with a backdrop op. Tests: an overlay suite in
+   `91zzzzzzy4`, the old «overlay is loud» check now checks `saturation`.
 
 ## API for mode ships
 
@@ -55,8 +63,15 @@ Nothing to change in callers either.
 - Pattern as fill and as stroke; `globalAlpha` and `imageSmoothingEnabled=false` (nearest) honoured;
   `no-repeat`/`repeat-x`/`repeat-y` are transparent past the tile on the unrepeated axis.
 - Loud: text (`fillText`/`strokeText`) with a pattern paint; a paint object that is neither a colour,
-  a gradient nor a pattern. **Not yet:** `globalCompositeOperation="overlay"` — `fillMaterial`'s second
-  pass uses it, so the material still cannot bake as a whole (see Open problems).
+  a gradient nor a pattern.
+
+### overlay (commit 4)
+
+`globalCompositeOperation="overlay"` works for fills and strokes (any paint: colour, gradient, pattern),
+under clips, with `globalAlpha` — so `fillMaterial` bakes whole. Each overlay draw costs one extra pass
+split and a resolve; bakes without overlay are unchanged (one pass, no backdrop texture). Loud: overlay
+with a shadow, overlay for `drawImage` and text. Other blend modes still missing: `saturation`
+(19c-light, frozen), and the rest of the non-separable/separable set nobody uses.
 
 ### Chunks, tiles and screen layers on the GPU (commit 3)
 
@@ -109,6 +124,16 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0
   and land in the GPU pass; the frame is the same picture (6 tile bakes for farA, `GC_MISS` empty,
   0 GPU errors, no СБОЙ). Parity, not «better» — the gain belongs to the surface ship.
 
+- `proof-overlay.js` — the real `fillMaterial(nat,…)` (clip(Path2D), a native pattern with a transform, the
+  3.7× overlay pass) plus two overlays in a row and an overlay stroke on a gradient.
+  `overlay-before.png` — fleet base throws (`clip(Path2D)`); `overlay-after.png` — same picture as Skia,
+  mean difference 0.92/255, 0 px over 48, 0 GPU errors. `ovl-num.js`/`ovl-num2.js` — the pixel
+  (#a88c6a under #6b5a48 at .6): formula 160,120,78; Skia 160,118–122,77–81; bake 160,120,78 exactly.
+- **Gotcha for everyone shooting references in the cloud:** Chrome's GPU-rastered 2D canvas on
+  SwiftShader silently drops an `overlay` pattern pass (a 320×200 reference drew nothing for it; an 8×8
+  one, CPU-rastered, was right). A 2D reference canvas must be made with
+  `getContext("2d",{willReadFrequently:true})` (CPU raster). Worth a line in `docs/CLOUD.md`.
+
 ## Requests for files outside the zone
 
 - `build.ps1`'s typeof guard knows no `Path2D` in `$HOST_GLOBALS`; `08caa` reads `globalThis.Path2D`
@@ -116,13 +141,12 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/e6da632b-601e-50c8-990d-925008133db0
 
 ## New render pipelines (for the warm-up table `08b1`)
 
-- None so far: Path2D goes through the existing GcCtx pipelines.
+- `gc:cov|overlay` (the `fover` fragment, replace blend) — made on first use by `gcPipe`. `08b1` warms no
+  `gc:` keys today; if GcCtx pipelines join the warm-up, add this one. The GcCtx bind-group layout gained
+  binding 6 (a float texture), so every `gc:*` pipeline is rebuilt with the new layout — no key changes.
 
 ## Open problems
 
-- **`overlay` composite** is missing in GcCtx (`GC_OPS`): `18a-material.fillMaterial` draws its second,
-  large-scale pass with `globalCompositeOperation="overlay"`, so a mode that bakes a material fill through
-  GcCtx still throws there. Overlay needs the backdrop in the shader (not a fixed-function blend): either
-  a read of the resolved target (copy + sample) or dropping that pass on the GPU in favour of a shader
-  material. Left to the underground ship (owns `18a-material`); the kit can add a copy-and-sample
-  path if asked.
+- `getImageData` stays loud on GcCtx: `tileSpan` (18c) and any painter that reads pixels back cannot run
+  inside a bake; `gpuDrawTiles` simply skips the span.
+- Text with a pattern paint and overlay on images/text are loud, not implemented (no caller found).

@@ -27,3 +27,15 @@ suite("GPU-холст: узор — createPattern, матрица, повтор,
   const q=g._ops[4].p;eq(q.rep,1,"2D-узор: повтор");near(map(q.iv,2*(10+2),2*5)[0],0,1e-9,"2D-узор: его матрица");
   e="";try{g.fillStyle={};g.fillRect(0,0,1,1);}catch(x){e=x.message;}ok(/^GPU-холст: нет/.test(e),"непомеченный объект краски — громко");
 });
+/* overlay (08ca): смешением его не собрать — выпечка режет проход и читает фон; запись — обычная команда */
+suite("GPU-холст: overlay — запись и громкие края",()=>{
+  resetWorld();
+  const g=new GcCtx(32,32,1);
+  g.fillStyle="#808080";g.fillRect(0,0,32,32);
+  g.globalCompositeOperation="overlay";g.globalAlpha=.5;g.fillStyle="#fff";g.fillRect(4,4,8,8);
+  eq(g._ops[1].op,"overlay","overlay — команда заливки, а не громкий сбой");
+  ok(GC_OPS.overlay.bk&&!GC_OPS.overlay.u,"overlay читает фон и ограничен фигурой");
+  g.strokeStyle="#000";g.strokeRect(2,2,20,20);eq(g._ops[2].op,"overlay","overlay у штриха");
+  let e="";try{g.shadowBlur=3;g.shadowColor="#000";g.fillRect(0,0,4,4);}catch(x){e=x.message;}
+  ok(/^GPU-холст: нет/.test(e),"тень у overlay — громко ("+(e||"молча")+")");
+});
