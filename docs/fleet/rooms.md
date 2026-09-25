@@ -30,6 +30,22 @@ the fleet base (`../base-rooms`), «after» from this branch. Scratchpad of sess
 | home | `pair-home.png`, `pair-homeup.png` (crop ×2: `crop-home.png`) | each lamp now lights the room: bright under it, falling off into darker corners, a dusty cone hanging in the air and a pool on the floor; the window spills cold onto the dresser; the bulb glows. The camera slides over baked chunks — the house is no longer re-rastered by 2D every frame |
 | spa | `pair-spa.png` | the sea is water now: waves in perspective that move, and the sun path is glitter on the crests from horizon to rail instead of a flat trapezoid; swell lines roll in and fade; the sky has depth and faint cirrus; a sun you can see; people, the table and the chair stand on the deck with soft shadows and long shadows that agree with the rail lattice |
 
+## For the design pass (on a real GPU)
+
+- **spa** — the sea's colour against the sky (the reflection weight `fres*.38`, `SEA2`), how long and how
+  bright the sun path is, whether the swell lines read as swell at 2560 px; the cast shadows' length and
+  softness; the dust in the sun (44 motes) — too few or too many on a phone.
+- **winter** — the lamp cone's strength (`.30`) and edge (`man*.07`) against the room layer's own baked lamp
+  light (`winLit`), which now double-counts a little; fire tongues' speed; the blizzard's three depths and the
+  frost's height; `winterlow` must still read as a cold dark room.
+- **home** — the balance between the multiply light (ambient `.74`, cone `.20`, pool `.30`) and the old baked
+  colours: a figure right under a lamp lifts to ×1.3 and loses its blue; the cone reads softer than the old hard
+  trapezoid (the old one was more graphic — decide which the house wants); the bulbs are kept at 1.1 because a
+  brighter bulb made the frame's bloom wash the room; chunk seams at a phone's DPR while walking.
+- **kino** — the beam's seven wedges (visible steps at ×2?), the screen's corner falloff (`.62`), the
+  flicker speed. Needs the cantina canvas to reach the GPU (HQ ship) to become a live field.
+- **chess** — the grain's strength on light squares; the piece shadow's offset at the panel's 264 px.
+
 ## New render pipelines (for the warm-up table `08b1`)
 
 - `fld.spa.sea|over`, `fld.spa.air|mul` (fields, `gpuFieldLayout`)
