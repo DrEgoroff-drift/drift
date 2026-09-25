@@ -42,5 +42,9 @@
   {"name":"reset-leaks","file":"tests/90-harness.js",
    "find":"G\\.pirates=\\[\\];G\\.barges=\\[\\];","replace":"G.barges=[];",
    "kill":"resetWorld возвращает мир",
-   "why":"resetWorld оставляет поле предыдущему набору (история M329: половинчатая Вега доехала до чужого набора)"}
+   "why":"resetWorld оставляет поле предыдущему набору (история M329: половинчатая Вега доехала до чужого набора)"},
+  {"name":"fleet-caption-on-c","file":"src/12ai-fleet.js",
+   "find":"domLabel\\(fk,x,ly,l1,ctx\\.font,\"rgba\\(226,214,200,\\.8\\)\",\"center\"\\);","replace":"ctx.fillStyle=\"rgba(226,214,200,.8)\";ctx.fillText(l1,x,ly);",
+   "kill":"полёт по переписи",
+   "why":"подпись борта ГЛАВТРАССЫ снова пишется на #c каждый кадр (история: тур-перепись её не встретил, 0.458.0)"}
 ]

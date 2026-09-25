@@ -1190,3 +1190,13 @@ Back to front. F field, P particles, S shape, T text, C cached bake, 3D mesh. Li
 
 `getImageData` is used only for bounds (hull ink box 03e1:113, tile span 18c:152, staple 26e2:170, road 27l:81)
 and `lookFrame` (28y:49/326) — none in gameplay.
+
+## 8. Session 2 (worktree drift-gpu2, branch gpu2): fleet, pirates, combat
+
+- **Fleet captions off #c** (Контроль, for 0.458.0): the tour census never met a ГЛАВТРАССА ship (the line
+  starts at rung 5), and `drawFleet` (12ai) still wrote its two caption rows with `fillText` on `#c` every frame
+  — dirt.js on a fleet stand: 6 `fillText:drawFleet` per shot, everything else 0. Now `domLabel` (keys
+  `fl`+class+seed). Pair 760 ×1 and 411×742 ×1.5: the same caption, a touch cleaner (no `#c` copy); dirt 0,
+  gpu errs 0. The census gate gains the scene «борт ГЛАВТРАССЫ с подписью» (a fleet window put in the system's
+  cache, the label checked on the label layer) and `drawFleet` in its upload net; mutant `fleet-caption-on-c`
+  (the caption back on `#c`) dies on it.
