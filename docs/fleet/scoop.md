@@ -73,6 +73,16 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
   the corridor at 90 % heat; snippet `scoopjs3.txt`) — the vortex is a lit funnel with a dark
   eye, the plume a hot rising jet, the burning hull has a bow shock and haze.
 
+Also checked: the phone's portrait frame 390×844 (`phone.png`) — the fields scale with `H`,
+hazards, corridor and bow shock read; 0 GPU errors in every shot of this branch.
+
+## State of the zone
+
+Done: nothing of the scoop's world draws on `#c` any more — sky, depth, storm, shear edges,
+billows, streaks, corridor and motes, cores, plumes, hail, wake, heat, collector and the hull
+are on the GPU. `#c` keeps only text: the «ПОЛОСА СБОРА» plaque and the heat gauge (the
+hybrid rule of DESIGN-gpu §0). `giantTex`, `GIANT` and the `scoopdepth` `screenLayer` are gone.
+
 ## Requests outside the zone
 
 - `docs/mkview.ps1`: a `scoop` scene (`?s=scoop`) would let the shot tools and the stand reach
@@ -86,6 +96,14 @@ the same search `docs/mkshots.ps1` uses. The snippet is kept in the scratchpad a
 - kit pipelines already in the table: `kit.shp` (over, add), and the hull's own (`hullGpuDraw`).
 
 ## Open problems
+
+- Cost is unmeasured (SwiftShader is a CPU): three full-screen fields — `scoop.air` is the
+  heavy one (two decks, ~40 noise-tile gathers a pixel), `scoop.flow` and `scoop.obs` are
+  light. Worth one look on the S23; the cheap cut, if needed, is the near deck's curl
+  (three `fbt` calls) or the air at half resolution.
+- The browser tier (the text-contrast detector of `90b` on the «ПОЛОСА СБОРА» plaque, goldens)
+  was not run here — `test.ps1` does not run in the cloud yet (tools ship, G13). The plaque
+  itself is unchanged; its backdrop is now the lit sky and the corridor instead of 2D.
 
 - `src/16gb-gpu-nebula.js` (flight, not this zone) has reversed-edge `smoothstep(1.,.2,r)`,
   `smoothstep(1.,.4,r)` — undefined by the WGSL→SPIR-V/MSL lowering; fine on SwiftShader and,
