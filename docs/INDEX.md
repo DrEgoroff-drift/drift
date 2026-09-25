@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 610 · символов верхнего уровня: 6099
+Файлов: 615 · символов верхнего уровня: 6136
 
 ## СИМВОЛЫ
 
@@ -151,7 +151,7 @@ ARTIFACTS                    src/12h-relic.js:48-63
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
-AST_N                        src/24-mode-belt.js:86
+AST_N                        src/24-mode-belt.js:68
 audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
@@ -410,20 +410,30 @@ beastBias                    src/20f-fauna.js:46-54
 beastFormWord                src/20e-species.js:215-223
 beastTake                    src/21ac2-base-farm.js:47-53
 beastTraitWord               src/20e-species.js:224-233
-BELT_AVLIM                   src/24-mode-belt.js:87
-BELT_HALF                    src/24-mode-belt.js:85
+BELT_AVLIM                   src/24-mode-belt.js:69
+BELT_HALF                    src/24-mode-belt.js:67
 BELT_POI                     src/24b-belt-poi.js:13-19
 BELT_RES                     src/02-world.js:143
-BELT_STROKES                 src/24-mode-belt.js:53
-beltBasis                    src/24-mode-belt.js:167-177
+BELT_STROKES                 src/24-mode-belt.js:35
+beltBasis                    src/24-mode-belt.js:149-159
 beltDots                     src/17c-system-draw.js:89-94
-beltFwd                      src/24-mode-belt.js:162-165
-beltIcy                      src/24-mode-belt.js:88
+beltFwd                      src/24-mode-belt.js:144-147
+beltGpuAdj                   src/24ba-belt-gpu.js:65-73
+beltGpuDraw                  src/24ba-belt-gpu.js:74-270
+beltIcy                      src/24-mode-belt.js:70
+beltPoiGpu                   src/24bb-belt-poi-gpu.js:19-100
+beltPoiMouthTex              src/24bb-belt-poi-gpu.js:8-18
 BFX                          src/13z-gpu-combat.js:176
 BG                           src/16-flight.js:3
 BG_BRIGHT                    src/16-flight.js:17
 BG_GROUP                     src/16-flight.js:11
+BGATE_WARM                   tests/91zzzzzzy1-gpugate-belt.js:9
+bgatePoi                     tests/91zzzzzzy1-gpugate-belt.js:18-23
+bgateStand                   tests/91zzzzzzy1-gpugate-belt.js:10-16
 bGlow                        src/21aa-base-rooms.js:298-304
+BGPU_ADJ                     src/24ba-belt-gpu.js:64
+BGPU_SKY                     src/24ba-belt-gpu.js:37
+BGPU_U                       src/24ba-belt-gpu.js:61
 bHazard                      src/21aa-base-rooms.js:289-295
 bioMark                      src/20e-species.js:310-314
 bioPlanet                    tests/91zzzb-bio.js:10-14
@@ -545,6 +555,7 @@ boxFind                      src/12ue-boxes.js:43-58
 boxHas                       src/12ue-boxes.js:40
 boxRoll                      src/12ue-boxes.js:60-64
 BP_KEYS                      src/12c-mgr-core.js:672
+BPG_MOUTH                    src/24bb-belt-poi-gpu.js:7
 bPipe                        src/21aa-base-rooms.js:244-254
 bpMul                        src/12c-mgr-core.js:676-680
 bPool                        tests/91zzzw-base.js:57
@@ -1120,7 +1131,7 @@ cultSeriesWho                src/12b3-fx-cult.js:187-190
 cultSeriesWindow             src/12b3-fx-cult.js:183-186
 CUN                          src/22-mode-cave.js:22-32
 curTok                       src/09-audio.js:96
-CUT_RANGE                    src/24-mode-belt.js:187
+CUT_RANGE                    src/24-mode-belt.js:169
 CV_LVL                       src/08c-gpu-kit.js:67
 cvs                          src/08-state.js:2
 CVS_RECT                     src/08-state.js:92
@@ -1401,7 +1412,7 @@ drawBaseBuilding             src/21c-built.js:105-136
 drawBazaar                   src/17n-bazaar.js:68-108
 drawBeast                    src/20f-fauna.js:231-339
 drawBeastAlien               src/20f-fauna.js:65-229
-drawBelt                     src/24-mode-belt.js:378-718
+drawBelt                     src/24-mode-belt.js:360
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRocks                src/17c-system-draw.js:29-83
 drawBillboard                src/17k-billboard.js:126-189
@@ -1441,7 +1452,7 @@ drawElevator                 src/20aa-poi-shapes.js:91-113
 drawExhaust                  src/16a-space.js:323
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFactRoute                src/13b-occupy.js:285-338
-drawFindsSystem              src/17b-finds.js:240-288
+drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:132-153
 drawFleetMap                 src/12ai-fleet.js:323-358
@@ -1455,7 +1466,7 @@ drawGestPost                 src/17h-sys-gesture.js:192-218
 drawGesture                  src/17h-sys-gesture.js:87-172
 drawGiant                    src/17o-giants.js:162-189
 drawGiantsMap                src/17o-giants.js:49-61
-drawGlassHUD                 src/24-mode-belt.js:720-807
+drawGlassHUD                 src/24-mode-belt.js:702-789
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-239
 drawGroundCrumbs             src/19-mode-landing-ground.js:242-252
@@ -1639,7 +1650,7 @@ energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
 engineLoop                   src/09-audio.js:342-368
 enterBase                    src/21a-mode-base.js:121-153
-enterBelt                    src/24-mode-belt.js:89-137
+enterBelt                    src/24-mode-belt.js:71-119
 enterCave                    src/22-mode-cave.js:175-232
 enterDig                     src/23-mode-dig.js:51-70
 enterHomeIn                  src/29c-home-in.js:65-73
@@ -1682,7 +1693,7 @@ evacFrom                     src/21-mode-surface.js:679
 evacuate                     src/21-mode-surface.js:680-700
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:154-157
-exitBelt                     src/24-mode-belt.js:178-186
+exitBelt                     src/24-mode-belt.js:160-168
 exitCave                     src/22-mode-cave.js:233-237
 exitDig                      src/23-mode-dig.js:71-81
 exitHomeIn                   src/29c-home-in.js:74-78
@@ -1791,14 +1802,14 @@ FAUNA_RES                    src/02-world.js:120
 faunaOf                      src/20e-species.js:268-284
 fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
-fbm3                         src/24-mode-belt.js:16-20
+fbm3                         src/24ba-belt-gpu.js:30-34
 FG_MAN                       src/21b-surface-deco.js:277
 fillMaterial                 src/18a-material.js:372-402
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19-25
-FIND_R                       src/17b-finds.js:232
+FIND_R                       src/17b-finds.js:234
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:139-175
 findLandingNear              src/17b-finds.js:131-138
@@ -1807,7 +1818,7 @@ findSeen                     src/17b-finds.js:54
 findShape                    src/17b-finds.js:183-231
 findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27-52
-findSprite                   src/17b-finds.js:233-239
+findSprite                   src/17b-finds.js:235-237
 findTake                     src/17b-finds.js:58-128
 findTestSys                  tests/91x-finds.js:3-10
 FIRE_ALONE                   src/21a5-base-dir.js:121
@@ -2002,6 +2013,28 @@ gateZOwner                   tests/91zzzzzzy-gpugate.js:17
 GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
+GC_COL                       src/08ca-gpu-canvas.js:29
+GC_DEF                       src/08ca-gpu-canvas.js:75
+GC_KEYS                      src/08ca-gpu-canvas.js:79
+GC_MIP_WGSL                  src/08ca-gpu-canvas.js:306
+GC_MISS                      src/08ca-gpu-canvas.js:25
+GC_OPS                       src/08ca-gpu-canvas.js:13-56
+GC_ST                        src/08ca-gpu-canvas.js:314-333
+GC_TOL                       src/08ca-gpu-canvas.js:11
+GC_WGSL                      src/08ca-gpu-canvas.js:278
+gcColor                      src/08ca-gpu-canvas.js:37-56
+GcCtx                        src/08ca-gpu-canvas.js:83-222
+gcDash                       src/08ca-gpu-canvas.js:232-269
+gcFan                        src/08ca-gpu-canvas.js:228
+GcGrad                       src/08ca-gpu-canvas.js:61-74
+gcImg                        src/08ca-gpu-canvas.js:271-333
+gcInv                        src/08ca-gpu-canvas.js:57
+gcLay                        src/08ca-gpu-canvas.js:324-333
+gcMipPipe                    src/08ca-gpu-canvas.js:346
+gcNo                         src/08ca-gpu-canvas.js:26
+gcPipe                       src/08ca-gpu-canvas.js:334-345
+gcRectSp                     src/08ca-gpu-canvas.js:226
+gcStrokeLine                 src/08ca-gpu-canvas.js:245-269
 GEN                          src/13z-gpu-combat.js:16
 GEN_MINE                     src/13z-gpu-combat.js:63
 GEN_WGSL                     src/13z-gpu-combat.js:17
@@ -2176,6 +2209,10 @@ GPU_POST_WGSL                src/08b-gpu.js:88
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:229
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:129
 gpuArena                     src/08c-gpu-kit.js:149-159
+gpuBake                      src/08ca-gpu-canvas.js:355-360
+gpuBaked                     src/08ca-gpu-canvas.js:362-365
+gpuBakeDrop                  src/08ca-gpu-canvas.js:366
+gpuBakeRedo                  src/08ca-gpu-canvas.js:367-434
 gpuBargeBody                 src/12l-barge.js:559-563
 gpuBind                      src/08c-gpu-kit.js:35-41
 gpuBloom                     src/08b-gpu.js:605-612
@@ -2405,7 +2442,7 @@ handBtnTick                  src/12td-settle-hand.js:123-134
 handTestSettle               tests/91zzzk-hand.js:2-17
 hasEpisode                   src/03-ships.js:139-142
 hashi                        src/01-core.js:23-27
-hashi3                       src/24-mode-belt.js:2-6
+hashi3                       src/24ba-belt-gpu.js:16-20
 hasSave                      src/14a-cloud.js:60
 HAUL_BARGE_K                 src/16c-rescue.js:174
 HAUL_BIT_GAP                 src/16c-rescue.js:177
@@ -2544,7 +2581,7 @@ helmTrailAge                 src/15a-helm.js:216-219
 hex2rgb                      src/01-core.js:221-224
 hexA                         src/12e-drone-flight.js:285-291
 hexa                         src/12w-survey.js:91-94
-hexRGB                       src/24-mode-belt.js:81-83
+hexRGB                       src/24-mode-belt.js:63-65
 HG_BAKE                      src/17c2-hull-gpu.js:10
 HG_BELLY                     src/17c2-hull-gpu.js:11
 HG_FLAME_WGSL                src/17c2-hull-gpu.js:42
@@ -2814,8 +2851,8 @@ huntSpawn                    src/12o-hunter.js:90-105
 huntTierOf                   src/12o-hunter.js:28
 HX                           src/12v-wander.js:184
 HZ_CN                        src/18d-postfx.js:31
-ICO_F                        src/24-mode-belt.js:28
-ICO_V                        src/24-mode-belt.js:22-27
+ICO_F                        src/24-mode-belt.js:10
+ICO_V                        src/24-mode-belt.js:4-9
 importCode                   src/14a-cloud.js:62-64
 IND_FEE                      src/12ac-bld.js:111
 IND_KEYS                     src/02-world.js:123
@@ -2944,7 +2981,7 @@ keyRow                       src/27-ui-ship.js:46-57
 keys                         src/08-state.js:187
 keyStateOK                   tests/91zzzzze-keys.js:23-29
 killPirate                   src/13-pirates.js:308-349
-killRock                     src/24-mode-belt.js:154-161
+killRock                     src/24-mode-belt.js:136-143
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23-30
 KINO_TITLES                  src/27da-kino.js:31-35
@@ -3248,7 +3285,7 @@ makerJoint                   src/03a-hull-maker.js:199-227
 makerLightCol                src/03a-hull-maker.js:454-458
 makerLive                    src/03a-hull-maker.js:237-240
 makerMarks                   src/03a-hull-maker.js:366-414
-makeRock                     src/24-mode-belt.js:54-80
+makeRock                     src/24-mode-belt.js:36-62
 makerOf                      src/03a-hull-maker.js:80-86
 makerOuts                    src/03a-hull-maker.js:176-194
 makerProfile                 src/03a-hull-maker.js:107-172
@@ -3631,7 +3668,7 @@ nodesRender                  src/05a-nodes.js:177-230
 noise                        src/09-audio.js:79-91
 noise1                       src/01-core.js:116
 noise2                       src/01-core.js:119-123
-noise3                       src/24-mode-belt.js:7-15
+noise3                       src/24ba-belt-gpu.js:21-29
 noiseBuf                     src/09-audio.js:78
 normsOf                      src/12ab-hold.js:89-97
 note                         tests/90-harness.js:102
@@ -5081,7 +5118,7 @@ sfx                          src/09-audio.js:334-340
 SH_DX                        src/03b-hull-paint.js:175
 SHARD_H                      tests/90-harness.js:32
 sharpWord                    src/21a9-base-laws.js:41-45
-shatter                      src/24-mode-belt.js:139-153
+shatter                      src/24-mode-belt.js:121-135
 SHIELD_DELAY                 src/05c-arms.js:47
 SHIELD_KEYS                  src/05c-arms.js:46
 SHIELD_OFF                   src/13a-guns.js:33
@@ -5269,8 +5306,8 @@ specimenBeast                src/20e-species.js:285-302
 specimenPlant                src/20e-species.js:134-191
 speechAll                    src/11b-speech.js:117
 speechHere                   src/11b-speech.js:119-154
-SPHERE                       src/24-mode-belt.js:50
-SPHERE2                      src/24-mode-belt.js:51
+SPHERE                       src/24-mode-belt.js:32
+SPHERE2                      src/24-mode-belt.js:33
 SPIRIT_BYE                   src/21a1b-base-food.js:49
 SPIRIT_HOLD                  src/21a1b-base-food.js:15
 SPIRIT_LOW                   src/21a1b-base-food.js:14
@@ -5446,7 +5483,7 @@ subAllowed                   src/05b3-sub.js:16-18
 subBreakEven                 src/05b3-sub.js:20
 subBuy                       src/05b3-sub.js:21-32
 subCharge                    src/05b3-sub.js:35-49
-subdivide                    src/24-mode-belt.js:34-49
+subdivide                    src/24-mode-belt.js:16-31
 subFee                       src/05b3-sub.js:19
 subHereBy                    src/05b3-sub.js:12-15
 subOff                       src/05b3-sub.js:33
@@ -5730,7 +5767,7 @@ unpackPart                   src/05-parts.js:473-479
 updateAllies                 src/12a-crew.js:644-677
 updateBarges                 src/12l-barge.js:165-196
 updateBase                   src/21a-mode-base.js:404-558
-updateBelt                   src/24-mode-belt.js:188-377
+updateBelt                   src/24-mode-belt.js:170-359
 updateCave                   src/22-mode-cave.js:251-434
 updateCaveDeco               src/22a-cave-deco.js:205-228
 updateCombat                 src/13-pirates.js:116-301
@@ -6245,6 +6282,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/08c-gpu-kit.js · 25 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
+
+## src/08ca-gpu-canvas.js · 33 КБ
+  · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/09-audio.js · 18 КБ
   · звук: чистый синтез, ни одного файла:1
@@ -7138,7 +7178,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · шахта: порода:1
   · почвенный профиль: небо кончается не линейкой:449
 
-## src/24-mode-belt.js · 41 КБ
+## src/24-mode-belt.js · 40 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
 ## src/24a-mode-raid.js · 20 КБ
@@ -7156,6 +7196,12 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/24b-belt-poi.js · 9 КБ
   · ориентиры в поясе:1
+
+## src/24ba-belt-gpu.js · 14 КБ
+  · пояс на видеокарте (GPU, ступень 2):1
+
+## src/24bb-belt-poi-gpu.js · 7 КБ
+  · ориентиры пояса на видеокарте (GPU, ступень 2):1
 
 ## src/24c-mode-wanderer-draw.js · 29 КБ
   · «Сорока» изнутри: коридор к стойке (M343):1
@@ -8048,6 +8094,12 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzy-gpugate.js · 26 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
+
+## tests/91zzzzzzy1-gpugate-belt.js · 5 КБ
+  · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
+
+## tests/91zzzzzzy2-gpu-canvas.js · 4 КБ
+  · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1

@@ -229,13 +229,11 @@ function findShape(k){
     ctx.beginPath();ctx.moveTo(24,3);ctx.lineTo(33,-2);ctx.lineTo(31,6);ctx.closePath();ctx.fill();
   }
 }
-const FIND_R=36,FIND_SS=4,FIND_SP={};
+/* выпечка на GPU-холсте (первый перенос, 25.09): findShape рисует в ctx, а ctx на время
+   выпечки — GPU-холст; ни 2D-растра, ни выгрузки мипов */
+const FIND_R=36,FIND_SS=4,FIND_SP=new Map();
 function findSprite(k){
-  if(FIND_SP[k])return FIND_SP[k];
-  const cv=document.createElement("canvas");cv.width=cv.height=FIND_R*2*FIND_SS;
-  const prev=ctx;ctx=cv.getContext("2d");
-  try{ctx.scale(FIND_SS,FIND_SS);ctx.translate(FIND_R,FIND_R);findShape(k);}finally{ctx=prev;}
-  return FIND_SP[k]=cv;
+  return gpuBaked(FIND_SP,k,FIND_R*2*FIND_SS,FIND_R*2*FIND_SS,g=>{g.scale(FIND_SS,FIND_SS);g.translate(FIND_R,FIND_R);findShape(k);});
 }
 function drawFindsSystem(zx,zy,Z){
   const list=findsHere();
@@ -248,7 +246,7 @@ function drawFindsSystem(zx,zy,Z){
     const s=clamp(Z,.5,1.5);
     const spin=(f.seed%628)/100+G.t*.002*((f.seed&1)?1:-1);
     if(pass){const w=FIND_R*2*s;
-      gpuImage(pass,gpuMipTex(findSprite(f.k)),[{x,y,w,h:w,rot:spin}],{sharp:true});
+      gpuImage(pass,findSprite(f.k),[{x,y,w,h:w,rot:spin}],{sharp:true});
       if(f.k==="echo"){const gl=((G.t*.01)%1)*52-26,c=Math.cos(spin)*s,q=Math.sin(spin)*s;
         const P=(u,v)=>[x+u*c-v*q,y+u*q+v*c],[x0,y0]=P(gl-6,-1.2),[x1,y1]=P(gl+6,-1.2);
         gpuShapes(pass,[[2,x0,y0,x1,y1,.4*s,0,159,183,255,.55]]);}
