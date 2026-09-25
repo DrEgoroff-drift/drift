@@ -39,7 +39,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     `u.hl`), stations and the hotel's facade next, each in a pair (rule 16/n);
     lights of fleet ships and lane buoys are explicit emission (rule 16/n): the dot painted, a narrow added halo
     at the thing (2–3 of its radii; `FLEET_HALO`, `LANE_HALO`) — judged with the flame in the same pair;
-  - NPC wrecks (13d `npcWreckDraw`) and the «left» markers (12as `leftDraw`) still paint #c when present;
   - Gate: uploads 0 and submits 1 per flight frame; then Контроль's phone run, ≥ 95 % of frames on time over
     30 s and over 5 minutes. A pass makes it a release candidate (Контроль pushes).
 - [ ] **Redraw passes after the candidate** (§L.S): ships in real light (a–h, pairs toward / away from the star, in

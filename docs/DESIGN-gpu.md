@@ -208,6 +208,8 @@ Then hulls (item 2) by the same «explicit emission» path.
   names who paints #c; each goes into the scene pass with the fleet's method (shapes, a baked mipped master,
   the ship's own flame shader). Gate: a test on the same stand — #c 0, submits 1 per frame, uploads 0 — and
   pairs of the pirates, the missile and the boom, HEAD | now, no dimmer, no softer.
+- Brief of **wrecks and the «left» off #c** (Контроль: a wreck stays after every fight, so flight after a fight
+  was back to a full #c copy): the same method; gate — a stand with two wrecks, a hull trace and a marker.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -219,7 +221,8 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   excess was the final glow on the hull's own paint, not the exhaust); the wake at the stern cooled to 2D's
   peak within 20 hull units of the nozzle, further as before; the hotel's windows are pieces of a two-master
   atlas (uploads 0 on any flip); the release rehearsal is green (0.458.0 = 90604dc, not pushed); combat is off
-  #c (gate suite green). Next: Контроль's word on combat; left on #c: NPC wrecks and the «left» markers.
+  #c (gate suite green); wrecks and the «left» off #c. Next: the tour census (dirt.js over a scripted flight
+  tour), then the 0.458.0 notes, -Full and Node on the new HEAD.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -624,6 +627,14 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   in shape only: `drawFlame` no longer draws `rndFx`, so the effect sequence shifts (no game chance involved).
   Gate suite «бой» (91zzzzzzy-gpugate): 60 frames of combat after a 40-frame warm-up — #c uploads 0, dirt 0,
   submits 60, uploads 0; with the missile bodies put back on #c it goes red naming `mslDraw`.
+  **Wrecks and the «left».** `npcWreckDraw` (13d): a rim ring then the disc (stroke, then fill over its inner
+  half, as the brush did), «КОРПУС» a DOM label. `leftDraw` (12as): the hull trace is the hull's GPU bake
+  (`hullGpuBake`, 17c2) laid mipped at .22 — without the nav lights the brush used to add (the comment always
+  said «без огней»); the marker is a one-pixel rim and a fill, its caption a DOM label. dirt.js on the stand
+  (two wrecks, a trace and a marker 25 units apart): 302 strokes/fills/texts per 151 frames and 604 hull fills →
+  0. Pairs 760 ×2 | 411×742 ×1.5: trace mean 20.2 → 19.8, top 5 % 50.3 → 49.5; the marker 36.2 → 36.3; wrecks the
+  same. Gate suite «после боя»: 40 frames — #c 0, dirt 0, submits 40, uploads 0; red naming `npcWreckDraw`
+  when the wreck goes back to #c.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,

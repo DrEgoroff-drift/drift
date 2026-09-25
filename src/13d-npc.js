@@ -220,9 +220,15 @@ function npcWreckNear(sh){
 }
 function npcWreckDraw(zx,zy,Z){
   if(!G.npcWrecks)return;
+  /* с видеокарты (ступень 1) — кругами в проходе сцены, подпись DOM: обломок лежит после
+     каждой драки, и #c из-за него не должен грузиться весь полёт */
+  const pass=gpuScene(),SH=[];
   for(const w of G.npcWrecks){
     const x=zx(w.x),y=zy(w.y);
     if(x<-40||x>W+40||y<-40||y>H+40)continue;
+    const k=clamp(Z,.5,2);
+    if(pass){SH.push([3,x,y,7*k,0,.5,0,150,160,175,.75],[1,x,y,7*k,0,0,0,40,46,54,.9]);
+      domLabel("wk"+domLabelId(w),x,y-11*k,"КОРПУС","8px ui-monospace,monospace","rgba(200,210,220,.5)","center");continue;}
     ctx.strokeStyle="rgba(150,160,175,.75)";ctx.lineWidth=1;
     ctx.beginPath();ctx.arc(x,y,7*clamp(Z,.5,2),0,TAU);ctx.stroke();
     ctx.fillStyle="rgba(40,46,54,.9)";ctx.fill();
@@ -230,4 +236,5 @@ function npcWreckDraw(zx,zy,Z){
     ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText("КОРПУС",x,y-11*clamp(Z,.5,2));
   }
+  if(SH.length)gpuShapes(pass,SH);
 }

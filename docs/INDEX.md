@@ -3055,18 +3055,18 @@ ledgerNeed                   src/11ai-ledger.js:44-49
 LEFT_CACHE                   src/12as-left.js:19
 LEFT_RU                      src/12as-left.js:18
 leftCall                     src/12as-left.js:21-24
-leftDraw                     src/12as-left.js:126-156
+leftDraw                     src/12as-left.js:126-167
 leftGhost                    src/12as-left.js:120-124
 leftHere                     src/12as-left.js:28-39
-leftInteract                 src/12as-left.js:170-185
+leftInteract                 src/12as-left.js:181-196
 leftKey                      src/12as-left.js:20
 leftLeave                    src/12as-left.js:51-68
-leftNear                     src/12as-left.js:160-169
+leftNear                     src/12as-left.js:171-180
 leftPos                      src/12as-left.js:43-47
 leftRows                     src/12as-left.js:40
 leftTake                     src/12as-left.js:85-109
 leftThank                    src/12as-left.js:111-116
-leftThankNear                src/12as-left.js:186-193
+leftThankNear                src/12as-left.js:197-204
 leftWorn                     src/12as-left.js:72-84
 lerp                         src/01-core.js:22
 letterAddresseeHere          src/12k-letters.js:78-82
@@ -3637,7 +3637,7 @@ npcRescue                    src/13d-npc.js:160-199
 npcShip                      src/13d-npc.js:19-34
 npcSpawn                     src/13d-npc.js:39-103
 npcWreck                     src/13d-npc.js:141-150
-npcWreckDraw                 src/13d-npc.js:221-233
+npcWreckDraw                 src/13d-npc.js:221-240
 npcWreckNear                 src/13d-npc.js:212-220
 npcYalta                     src/13d-npc.js:127-137
 OCC_CALM_MS                  src/13b-occupy.js:250
@@ -6472,7 +6472,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ar-hail.js · 19 КБ
   · четыре правила и позывной (M373, §6.1):1
 
-## src/12as-left.js · 9 КБ
+## src/12as-left.js · 10 КБ
   · оставленное (M377, §11.3):1
 
 ## src/12at-vote.js · 7 КБ
@@ -8024,7 +8024,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzz-crashlog.js · 3 КБ
   · автотесты: что уезжает в crash.log (0.419):1
 
-## tests/91zzzzzzy-gpugate.js · 14 КБ
+## tests/91zzzzzzy-gpugate.js · 17 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

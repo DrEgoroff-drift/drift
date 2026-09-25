@@ -126,33 +126,44 @@ function leftGhost(){
 function leftDraw(zx,zy,Z){
   const rows=leftRows();
   if(!rows.length)return;
+  /* с видеокарты (ступень 1): след — выпечкой корпуса (17c2) на .22, метка — прямоугольниками,
+     подпись DOM; #c не трогается */
+  const pass=gpuScene(),SH=[];
   rows.forEach((row,i)=>{
     const p=leftPos(row,i);
     const x=zx(p.x),y=zy(p.y);
     if(x<-60||x>W+60||y<-60||y>H+60)return;
     if(row.k==="ghost"){
       /* след: тот же генератор корпусов, только полупрозрачный и без огней */
+      const id="gh"+row.s;
+      if(!NPC_SHIPS[id])NPC_SHIPS[id]={name:id,seed:row.s>>>0,hcls:"scout",col:"#9fd8ff",
+        hull:100,cargo:40,fuel:100,thr:1,cls:"след"};
+      if(pass){const z=clamp(Z,.4,1.6)*.8,h=hullOf(id),B=hullGpuBake(h,id,hullGpuSb(h,GPU.bw/W));
+        gpuImage(pass,gpuMipTex(B.cv),[{x,y,w:B.E*2*z,h:B.E*2*z,rot:row.s%628/100,a:.22}]);return;}
       ctx.save();
       ctx.globalAlpha=.22;
       ctx.translate(x,y);
       const z=clamp(Z,.4,1.6)*.8;
       ctx.scale(z,z);ctx.rotate(row.s%628/100);
-      const id="gh"+row.s;
-      if(!NPC_SHIPS[id])NPC_SHIPS[id]={name:id,seed:row.s>>>0,hcls:"scout",col:"#9fd8ff",
-        hull:100,cargo:40,fuel:100,thr:1,cls:"след"};
       try{drawHull(id,false,false,0,0);}catch(e){}
       ctx.restore();
       return;
     }
+    const lbl=(LEFT_RU[row.k]||row.k).toUpperCase()+(row.ty?" · "+row.ty:"");
+    if(pass){const a=4*Z,e=[190,220,255,.75];   /* кромка в пиксель по краю, заливка поверх её внутренней половины — как stroke, потом fill */
+      SH.push([0,x-a-.5,y-a-.5,x+a+.5,y-a+.5,0,0,...e],[0,x-a-.5,y+a-.5,x+a+.5,y+a+.5,0,0,...e],
+        [0,x-a-.5,y-a+.5,x-a+.5,y+a-.5,0,0,...e],[0,x+a-.5,y-a+.5,x+a+.5,y+a-.5,0,0,...e],[0,x-a,y-a,x+a,y+a,0,0,30,44,60,.85]);
+      domLabel("lf"+(row.s|0)+"_"+i,x,y-8*Z,lbl,"8px ui-monospace,monospace","rgba(190,220,255,.65)","center");return;}
     ctx.save();
     ctx.strokeStyle="rgba(190,220,255,.75)";ctx.lineWidth=1;
     ctx.beginPath();ctx.rect(x-4*Z,y-4*Z,8*Z,8*Z);ctx.stroke();
     ctx.fillStyle="rgba(30,44,60,.85)";ctx.fill();
     ctx.fillStyle="rgba(190,220,255,.65)";
     ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText((LEFT_RU[row.k]||row.k).toUpperCase()+(row.ty?" · "+row.ty:""),x,y-8*Z);
+    ctx.fillText(lbl,x,y-8*Z);
     ctx.restore();
   });
+  if(SH.length)gpuShapes(pass,SH);
 }
 /* ── подойти и взять ──
    ДЕЙСТВИЕ берёт копию, ЦЕЛЬ объявляет благодарность. Ни того, ни другого нельзя

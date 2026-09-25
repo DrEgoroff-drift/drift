@@ -185,3 +185,49 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: бой — #c не г
   eq(K.bad,0,"выгрузок в бою нет"+(K.bad?": "+top(K.up):""));
   resetWorld();
 }));
+/* после боя (ступень 1): обломки NPC лежат после каждой драки, оставленное (след корпуса,
+   метка с подписью) — в своей системе; и то и другое — в проходе сцены, подписи DOM:
+   #c пуст, отправка одна на кадр, выгрузок нет (след испечён на прогреве) */
+TEST_SUITES.push(()=>suite("ворота ступени 1: после боя — обломки и оставленное не грузят #c",{tier:"browser"},()=>{
+  if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
+  resetWorld();
+  G.mode="system";G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];G.msl=[];G.loot=[];
+  const r0={k:"ghost",s:4242},P0=leftPos(r0,0);let r1=null,P1=null;
+  for(let s=1;s<20000&&!r1;s++){const r={k:"gun",s,ty:"II"},P=leftPos(r,1);if(Math.hypot(P.x-P0.x,P.y-P0.y)<150){r1=r;P1=P;}}
+  if(!ok(r1,"нашлась метка рядом со следом"))return;
+  const lc0=LEFT_CACHE,sh=G.ship,X=(P0.x+P1.x)/2,Y=(P0.y+P1.y)/2,WARM=20,N=40;
+  G.npcWrecks=[{x:X-60,y:Y+50,seed:77,by:"gt",crew:1},{x:X+50,y:Y+70,seed:78,by:"gt",crew:0}];
+  const Q=GPUQueue.prototype,q0={c:Q.copyExternalImageToTexture,s:Q.submit},run0=G.running,loop0=LOOP_OFF,Cx=MAIN_CTX,cm={};
+  const K={on:false,front:0,sub:0,up:{},bad:0,dirt:{}};
+  let i=0;
+  try{
+    Q.copyExternalImageToTexture=function(src,dst){
+      if(K.on){if(dst.texture===GPU.T.front)K.front++;else{const w=gateWho();K.bad++;K.up[w]=(K.up[w]||0)+1;}}
+      return q0.c.apply(this,arguments);};
+    Q.submit=function(){if(K.on)K.sub++;return q0.s.apply(this,arguments);};
+    G.running=true;LOOP_OFF=false;
+    for(i=0;i<WARM+N;i++){
+      if(i===WARM){
+        K.on=true;gpuFrontHook();
+        for(const k of ["fill","stroke","fillRect","strokeRect","drawImage","fillText","strokeText","putImageData"]){
+          const o=Cx[k];cm[k]=o;
+          Cx[k]=function(){if(K.on&&GPU.cState===0){const w=k+":"+gateWho();K.dirt[w]=(K.dirt[w]||0)+1;}return o.apply(this,arguments);};}
+      }
+      LEFT_CACHE={k:leftKey(),N:(typeof chronNow==="function")?chronNow():0,rows:[r0,r1]};
+      sh.x=X;sh.y=Y;sh.vx=0;sh.vy=0;G.zoom=2;G.zoomT=null;
+      frameBody(wallMs());
+    }
+  }catch(e){ok(false,"кадр "+i+" упал: "+e.message);}
+  finally{
+    K.on=false;Q.copyExternalImageToTexture=q0.c;Q.submit=q0.s;
+    for(const k in cm)Cx[k]=cm[k];
+    G.running=run0;LOOP_OFF=loop0;LEFT_CACHE=lc0;
+  }
+  const top=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>v+"× "+k).join("; ");
+  eq((G.npcWrecks||[]).length,2,"обломки лежат весь замер");
+  eq(K.front,0,"#c за "+N+" кадров не грузился"+(K.front?" — пачкают: "+top(K.dirt):""));
+  eq(Object.keys(K.dirt).length,0,"пустой #c никто не пачкает"+(Object.keys(K.dirt).length?": "+top(K.dirt):""));
+  eq(K.sub,N,"отправок в очередь ровно по одной на кадр");
+  eq(K.bad,0,"выгрузок нет"+(K.bad?": "+top(K.up):""));
+  resetWorld();
+}));
