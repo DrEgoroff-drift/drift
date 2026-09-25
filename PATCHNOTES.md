@@ -23,6 +23,14 @@ could ever save.
   shader; the stick's band no longer covers the course.
 - **The wake** cools to the old 2D brightness at the stern; the player's hull and flame are back to their
   colour.
+- **Fights on the GPU too** (`13`, `12i`, `16b`, `15b`, `13d`, `12as`): the pirates' live layer, hp bars, lock brackets, missile
+  bodies and loot are in the scene pass; after a fight the NPC wrecks and what was left (a hull trace, a
+  marker with its caption) stay there as well - the 2D layer is empty in battle and after it.
+- **The rest of flight** (`17c`, `17m`, `12al2`, `12l`, `16c`, `12v`, `18f`; a scripted tour counted every 2D
+  paint in flight and each was moved): belt rocks as lit facets; the peace fleets with their flag, star and
+  captions; Орднунг's law ring; trade barges lit by the star; the rescue tow with its rope and a flame of the
+  brush's teardrop shape; «Сорока» - the gold foil sails computed per pixel, sharp at every zoom; the rail
+  ring with its lamps and spiral. Captions ride the label layer. Belt mode itself is next.
 
 ## 0.457.0 - the world on the video card
 
