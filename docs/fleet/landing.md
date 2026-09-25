@@ -25,6 +25,21 @@ Left, not blocked: the pad on the GPU (so it takes the ship's shadow and sits un
 near-ground chunks as GPU textures (needs a third `gpuOver`, see open problems); the «движки»
 highlight sign, which flips together with `litRGB` (request below). Grass stays 2D (it is live).
 
+## For the design pass on a real GPU (SwiftShader only proved it draws and got no worse)
+
+- **`landing` (400 m, rain):** do the far ridges read as rock, not noise, at 2560 px? Gully strength
+  (`gl*.30`) and mottling (`g*.34`) were tuned at 760 px on a CPU rasteriser.
+- **approach, noon (`lowday`):** the hull's warmth under an orange star (tint half-desaturated,
+  gain 1.25) — does it sit in the frame or look pink? Thin legs and the fin under a high sun (wrap .3).
+  The dust colour and weight (pale wisps now; the old flat discs were stronger).
+- **approach, night (`lownight`):** is the hull too dark (cold floor `.13,.16,.22`)? The flame's light
+  on the belly and ground, the bloom on the flame cores, the breathing beacon.
+- **dusk (`dusk`):** the rim on the hull toward a low star; the ridges' crest light.
+- **landed (`landed`):** the elliptical shadow under the pad — size and softness; the hatch light at
+  night; the pad plate lying over the feet (drawn after the hull).
+- **everywhere:** the near ground's warm lit top vs the chunk art's mirrored `litRGB` — until that sign
+  is fixed, the two lights may fight on steep slopes.
+
 ## Commits
 
 | # | Commit | What |
