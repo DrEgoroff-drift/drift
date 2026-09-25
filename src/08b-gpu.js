@@ -389,8 +389,10 @@ function gpuResize(){
   for(const k in GPU.T)GPU.T[k].destroy();
   const TB=GPUTextureUsage.TEXTURE_BINDING,RA=GPUTextureUsage.RENDER_ATTACHMENT,CD=GPUTextureUsage.COPY_DST;
   const mk=(w,h,f,us)=>GPU.dev.createTexture({size:[w,h],format:f,usage:us});
-  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),ui:mk(bw,bh,"rgba8unorm",TB|CD|RA),
+  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),
     scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),lt:mk(16,3,"rgba16float",TB|CD)};
+  /* цели приборов нет (26.09, ревью №9): приборы — DOM-холст #hud, u.ui всегда 0. Кадровая rgba8
+     стоила 2.6 МиБ на S23 и 31.6 на 4K; binding 6 (tUi) держит вид шума 64×64 — шейдер его не читает */
   /* лестница свечения (P1 25.09): одна текстура с мипами от четверти кадра вниз; уровень
      уже шести текселей не заводится (телефон — пять уровней, ноутбук — шесть). Каждый
      уровень — цель своего прохода и вход следующего: разные подресурсы одной текстуры,
@@ -407,7 +409,7 @@ function gpuResize(){
   const bind=(bv,uv)=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:T.scene.createView()},{binding:4,resource:T.front.createView()},
-    {binding:5,resource:bv},{binding:6,resource:T.ui.createView()},{binding:7,resource:nv},{binding:8,resource:T.emit.createView()},
+    {binding:5,resource:bv},{binding:6,resource:nv},{binding:7,resource:nv},{binding:8,resource:T.emit.createView()},
     {binding:9,resource:uv||GPU.V.bloomU}]});
   /* MB[i] — вход прохода на уровень i+1; первому уровню свечение не нужно — на его месте шум;
      up — проход суммы верхних уровней пишет bloomU, поэтому у него на её месте шум */
@@ -417,7 +419,7 @@ function gpuResize(){
     comp:GPU.dev.createBindGroup({layout:GPU.L,entries:[
       {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
       {binding:3,resource:nv},{binding:4,resource:T.front.createView()},
-      {binding:5,resource:nv},{binding:6,resource:T.ui.createView()},{binding:7,resource:nv},
+      {binding:5,resource:nv},{binding:6,resource:nv},{binding:7,resource:nv},
       {binding:8,resource:nv},{binding:9,resource:nv}]})};
 }
 /* склейка сегмента с туманностью на месте сцены — силуэтам корпусов (sil) */
@@ -429,7 +431,7 @@ function gpuCompNeb(){
   return B.compN=GPU.dev.createBindGroup({layout:GPU.L,entries:[
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:GNB.view},{binding:4,resource:T.front.createView()},
-    {binding:5,resource:GPU.N.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()},
+    {binding:5,resource:GPU.N.createView()},{binding:6,resource:GPU.N.createView()},{binding:7,resource:GPU.N.createView()},
     {binding:8,resource:GPU.N.createView()},{binding:9,resource:GPU.N.createView()}]});
 }
 function gpuPass(view,pipe,bind,ts){

@@ -683,7 +683,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   `matTick` hole, and its planet scene keeps a job queued. With the old call it goes red (2× putImageData,
   2× createPattern under gpuPlanet). Stand, material dropped mid-landing: ready after 114 frames on the
   landing and 148 on the surface (headless). New Node suite «выпечка: посадка допекает материал сама».
-  Next: (3) review findings 5–7, 9, 10.
+- **(3) Review №9 and №10 done.** №9: `GPU.T.ui` is gone (a frame-sized rgba8 that nothing wrote since the
+  HUD moved to `#hud`: 2.6 MiB on S23, 31.6 on 4K); binding 6 holds the 64×64 noise view, `u.ui` stays 0.
+  №10: `gplCities` keeps each light's latitude windows in `GPL_WIN` by (planet, light, window turn e, star
+  side in 1/1024 turn), at most 16 planets; the search (up to 63 000 `reg()` a frame) runs once per turn.
+  Node suite: on grid sides the lights equal the old per-frame search (40 planets); a second frame in the
+  same cell rescans nothing. Golden frames, gates, gate2d, canvas and pipes green.
+  Next: review №5 (station master vs the text atlas reset), then №6, №7 into PLAN.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

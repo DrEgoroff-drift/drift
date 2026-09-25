@@ -343,6 +343,7 @@ function gpuPlanet(p,x,y,r,lights){
    скоростью, пройдя окно (GPL_CITY_D по долготе) гаснет, и следующим оборотом окна
    зажигается следующий город на новой широте. Видимых — столько, сколько огней */
 const GPL_CITY_D=.8;
+const GPL_WIN=new Map();   /* окна широт огней: сид планеты → {qa, e[j], w[j][tr]} (gplCities) */
 const GPL_LAND=new WeakMap();
 const gss=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
 const ghf=(a,b,c)=>hashi(a,b,c)/4294967296;
@@ -378,24 +379,37 @@ function gplCities(o,a){
   if(wet>0&&!land)return 0;
   /* сторона от звезды на экране: свет шейдера — (sx,sy)·.67 и .74 к смотрящему */
   const l=Math.hypot(o.sx,o.sy)||1,ax=-o.sx/l,ay=-o.sy/l;
-  const reg=(x,y)=>{const rr=Math.hypot(x,y);if(rr<.3||rr>.9)return 0;
-    return gss(.3,.4,rr)*(1-gss(.8,.9,rr))*gss(.2,.45,(x*ax+y*ay)/rr);};
+  const regA=(x,y,ux,uy)=>{const rr=Math.hypot(x,y);if(rr<.3||rr>.9)return 0;
+    return gss(.3,.4,rr)*(1-gss(.8,.9,rr))*gss(.2,.45,(x*ux+y*uy)/rr);};
   const T=o.T||0,sd=(o.seed|0)*131+7;let k=0;
+  /* окна широт — из кэша (ревью №10): поиск — до 32 широт × 41 долгота, до 63 000 reg() за кадр,
+     а окно меняется, только когда меняется оборот e или сторона звезды. Сторона — в 1/1024 оборота:
+     долготы и так идут шагом .07 рад, квант сдвигает лишь миг, когда окно перескакивает */
+  const qa=Math.round(Math.atan2(ay,ax)/TAU*1024),qx=Math.cos(qa*TAU/1024),qy=Math.sin(qa*TAU/1024);
+  let C=GPL_WIN.get(sd);
+  if(!C||C.qa!==qa){C={qa,e:[],w:[]};GPL_WIN.delete(sd);GPL_WIN.set(sd,C);
+    if(GPL_WIN.size>16)GPL_WIN.delete(GPL_WIN.keys().next().value);}
   for(let j=0;j<n;j++){
     const P=ghf(sd,j,77)+T*TAU/GPL_CITY_D,e=Math.floor(P),ph=P-e;
+    if(C.e[j]!==e){C.e[j]=e;C.w[j]=[];}
+    const Wj=C.w[j];
     /* широта этого оборота окна: первая, чья дорожка пересекает пояс и чей город — на суше */
     for(let tr=0;tr<32;tr++){
       const y0=ghf(sd+j*977,e,tr)*1.7-.85,c=Math.sqrt(1-y0*y0);
-      let best=0,r0=null,la=0,lb=0;
-      for(let s=0;s<=40;s++){const L=-1.45+2.9*s/40;
-        if(reg(c*Math.sin(L),y0)>.5){if(r0===null)r0=L;if(L-r0>best){best=L-r0;la=r0;lb=L;}}else r0=null;}
-      if(best<GPL_CITY_D)continue;   /* окно целиком в поясе: город не гаснет на полпути */
-      const lam=(la+lb)/2+(.5-ph)*GPL_CITY_D;
+      let W=Wj[tr];
+      if(W===undefined){
+        let best=0,r0=null,la=0,lb=0;
+        for(let s=0;s<=40;s++){const L=-1.45+2.9*s/40;
+          if(regA(c*Math.sin(L),y0,qx,qy)>.5){if(r0===null)r0=L;if(L-r0>best){best=L-r0;la=r0;lb=L;}}else r0=null;}
+        W=Wj[tr]=best<GPL_CITY_D?null:[la,lb];   /* окно целиком в поясе: город не гаснет на полпути */
+      }
+      if(!W)continue;
+      const lam=(W[0]+W[1])/2+(.5-ph)*GPL_CITY_D;
       if(Math.abs(lam)>1.5)continue;
       /* точка тела под городом: та же долгота, что читает шейдер (u0 = atan2/2π + оборот) */
       if(land){const u=((lam/TAU+T)%1+1)%1,v=(y0+1)/2;
         if(!gplLandAt(land,Math.min(land.w-1,u*land.w|0),Math.min(land.h-1,v*land.h|0)))continue;}
-      const x=c*Math.sin(lam),w=gss(0,.08,ph)*(1-gss(.92,1,ph))*reg(x,y0)*(.8+.2*ghf(sd,j,5));
+      const x=c*Math.sin(lam),w=gss(0,.08,ph)*(1-gss(.92,1,ph))*regA(x,y0,ax,ay)*(.8+.2*ghf(sd,j,5));
       if(w>.02){a[64+k*4]=x;a[65+k*4]=y0;a[66+k*4]=w;k++;}
       break;
     }

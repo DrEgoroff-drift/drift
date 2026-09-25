@@ -128,3 +128,39 @@ suite("шейдеры: у smoothstep нет перевёрнутых рёбер"
   ok(n>20,"вызовы с числовыми рёбрами найдены ("+n+")");
   eq(bad.slice(0,6).join(" | "),"","smoothstep(a,b,x) при a>b — писать 1.-smoothstep(b,a,x)");
 });
+/* огни городов (17ga gplCities, ревью №10): окна широт — из кэша по (планета, огонь, оборот окна,
+   сторона звезды в 1/1024 оборота). На сторонах из этой сетки огни те же, что у прежнего поиска
+   на каждом кадре; второй кадр того же оборота окна не пересчитывает */
+suite("огни городов: окна широт из кэша — те же города, поиск раз на оборот",()=>{
+  const ref=(o,a)=>{const n=Math.min(48,o.lights|0);
+    const l=Math.hypot(o.sx,o.sy)||1,ax=-o.sx/l,ay=-o.sy/l;
+    const reg=(x,y)=>{const rr=Math.hypot(x,y);if(rr<.3||rr>.9)return 0;
+      return gss(.3,.4,rr)*(1-gss(.8,.9,rr))*gss(.2,.45,(x*ax+y*ay)/rr);};
+    const T=o.T||0,sd=(o.seed|0)*131+7;let k=0;
+    for(let j=0;j<n;j++){const P=ghf(sd,j,77)+T*TAU/GPL_CITY_D,e=Math.floor(P),ph=P-e;
+      for(let tr=0;tr<32;tr++){const y0=ghf(sd+j*977,e,tr)*1.7-.85,c=Math.sqrt(1-y0*y0);
+        let best=0,r0=null,la=0,lb=0;
+        for(let s=0;s<=40;s++){const L=-1.45+2.9*s/40;
+          if(reg(c*Math.sin(L),y0)>.5){if(r0===null)r0=L;if(L-r0>best){best=L-r0;la=r0;lb=L;}}else r0=null;}
+        if(best<GPL_CITY_D)continue;
+        const lam=(la+lb)/2+(.5-ph)*GPL_CITY_D;if(Math.abs(lam)>1.5)continue;
+        const x=c*Math.sin(lam),w=gss(0,.08,ph)*(1-gss(.92,1,ph))*reg(x,y0)*(.8+.2*ghf(sd,j,5));
+        if(w>.02){a[64+k*4]=x;a[65+k*4]=y0;a[66+k*4]=w;k++;}
+        break;}}
+    return k;};
+  let same=0,tot=0,lit=0;const diff=[];
+  for(let t=0;t<40;t++){const qa=(t*97+5)%1024,g=qa*TAU/1024;
+    const o={lights:48,wet:0,strip:null,sx:-Math.cos(g),sy:-Math.sin(g),T:t*.37,seed:11+t};
+    const a1=new Float32Array(256),a2=new Float32Array(256),k1=gplCities(o,a1),k2=ref(o,a2);tot++;lit+=k1;
+    if(k1===k2&&a1.every((v,i)=>Math.abs(v-a2[i])<1e-5))same++;else if(diff.length<3)diff.push(qa+":"+k1+"/"+k2);}
+  eq(same,tot,"те же огни, что у поиска на каждом кадре"+(diff.length?": "+diff.join(" "):""));
+  ok(lit>40*4,"огни горят: "+lit+" на 40 планет");
+  /* второй кадр: чуть другая сторона в той же ячейке, тот же оборот — окна те же массивы */
+  const o={lights:48,wet:0,strip:null,sx:-1,sy:0,T:1.234,seed:5},a=new Float32Array(256);
+  gplCities(o,a);const C=GPL_WIN.get(5*131+7),w0=C.w.slice(),n0=C.w.reduce((s,w)=>s+w.length,0);
+  gplCities(Object.assign({},o,{sy:.0005}),a);
+  ok(GPL_WIN.get(5*131+7)===C&&C.w.every((w,j)=>w===w0[j]),"сторона в той же ячейке — окна из кэша");
+  eq(C.w.reduce((s,w)=>s+w.length,0),n0,"и новых поисков нет");
+  let many=0;for(let i=0;i<40;i++)gplCities(Object.assign({},o,{seed:100+i}),a),many=GPL_WIN.size;
+  ok(many<=16,"кэш держит не больше 16 планет: "+many);
+});
