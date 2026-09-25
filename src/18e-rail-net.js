@@ -178,33 +178,45 @@ function railNetPartial(){
   return P.lines.slice(0,P.i);
 }
 const RAIL_COL={radial:[226,214,200],ring:[242,178,92],arm:[127,230,216]};
+/* сеть на карте и за окном вагона — на видеокарте (G10, 17z3): лента четырёхугольников
+   без бусин на изломах; вблизи под линией — тёмная кайма и тёплый отсвет, как у
+   путей, по которым ходят; станции — кружки кита */
 function drawRailMap(V,cell,pale){
-  const L=railNetPartial();
+  const L=railNetPartial();   /* сеть достраивается по кадру и без видеокарты — это логика, не рисунок */
+  const pass=mapGpuPass();if(!pass)return;
   const X=x=>W/2+(x-V.x)*cell,Y=y=>H/2+(y-V.y)*cell;
-  ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
   /* издали сеть — тонкий каркас галактики; вблизи, где по ней прокладывают
      путь, линия набирает плотность и кайму, как на схеме метро (D13) */
   const k=pale?0:clamp((cell-14)/34,0,1);   /* в вагоне прочие линии бледные (M473) */
-  const path=l=>{ctx.beginPath();for(let i=0;i<l.pts.length;i++){const p=l.pts[i];i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]));}};
-  if(k>0){
-    ctx.strokeStyle="rgba(4,6,10,"+(.5*k).toFixed(3)+")";
-    for(const l of L){ctx.lineWidth=(l.kind==="radial"?1:1.4)+k*3.4;path(l);ctx.stroke();}
-  }
-  for(const l of L){
-    const c=RAIL_COL[l.kind],r=l.kind==="radial";
-    ctx.strokeStyle=rgba(c,((r?.13:.18)+k*(r?.32:.42)).toFixed(3));ctx.lineWidth=(r?1:1.4)+k*(r?.6:1);
-    path(l);ctx.stroke();
+  const m=Math.max(W,H)*.1;
+  /* ломаная в пикселях, обрезанная по кадру с запасом: кольцо в тысячу точек не рисуется целиком */
+  const runs=l=>{const out=[],P=l.pts;let cur=null;
+    for(let i=0;i+1<P.length;i++){const ax=X(P[i][0]),ay=Y(P[i][1]),bx=X(P[i+1][0]),by=Y(P[i+1][1]);
+      if(Math.max(ax,bx)>-m&&Math.min(ax,bx)<W+m&&Math.max(ay,by)>-m&&Math.min(ay,by)<H+m){
+        if(!cur){cur=[[ax,ay]];out.push(cur);}cur.push([bx,by]);}
+      else cur=null;}
+    return out;};
+  const SH=[],GL=[],R=L.map(runs);
+  if(k>0)for(let i=0;i<L.length;i++){const hw=((L[i].kind==="radial"?1:1.4)+k*3.4)/2;
+    for(const r of R[i])mapRibbon(SH,r,hw,[4,6,10,.5*k]);}
+  for(let i=0;i<L.length;i++){
+    const l=L[i],c=RAIL_COL[l.kind],r=l.kind==="radial",hw=((r?1:1.4)+k*(r?.6:1))/2;
+    for(const q of R[i]){
+      mapRibbon(SH,q,hw,[c[0],c[1],c[2],(r?.13:.18)+k*(r?.32:.42)]);
+      /* отсвет пути сложением: линия светится в небе, а не лежит на нём */
+      if(!r)mapRibbon(GL,q,hw+2+k*3,[c[0],c[1],c[2],.035+.05*k]);
+    }
   }
   /* станции — только вблизи: белый кружок в чёрной кайме, пересадка — двойной */
   if(cell>=16&&RAIL_NET){
-    for(const k in RAIL_NET.at){
-      const p=k.split(","),x=X(+p[0]),y=Y(+p[1]);
+    for(const key in RAIL_NET.at){
+      const p=key.split(","),x=X(+p[0])+cell*.32,y=Y(+p[1])-cell*.32;
       if(x<-8||x>W+8||y<-8||y>H+8)continue;
-      const j=RAIL_NET.at[k].length>1;
-      ctx.fillStyle="rgba(10,12,16,.8)";ctx.beginPath();ctx.arc(x+cell*.32,y-cell*.32,j?4:3,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(240,236,226,.7)";ctx.lineWidth=1;ctx.beginPath();ctx.arc(x+cell*.32,y-cell*.32,j?3.2:2.2,0,TAU);ctx.stroke();
-      if(j){ctx.beginPath();ctx.arc(x+cell*.32,y-cell*.32,1.4,0,TAU);ctx.stroke();}
+      const j=RAIL_NET.at[key].length>1;
+      SH.push([1,x,y,j?4:3,0,0,0,10,12,16,.8],[3,x,y,j?3.2:2.2,0,.5,0,240,236,226,.7]);
+      if(j)SH.push([3,x,y,1.4,0,.5,0,240,236,226,.7]);
     }
   }
-  ctx.restore();
+  gpuShapes(pass,GL,{blend:"add"});
+  gpuShapes(pass,SH);
 }
