@@ -71,6 +71,13 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    cast their own). Deposits and tracks moved before the snapshot (so they are lit and shadowed, and a
    plant now stands in front of an ore outcrop rather than behind it). The relight uses the `hull`
    blend, so relit things mark the scene's figure mask like the twins do.
+8. **water on the GPU** — the 2D lake mirrored `#c` by `drawImage(cvs…)`, and `#c` no longer holds the
+   sky, the ridges or the ground: the mirror would reflect nothing. `surfWaterGpu` (`fld.swater`, in the
+   ground pass right after the shade) computes it: what stands above the mirrored point — the ground,
+   one of the three ridges (the offsets and colours the ridge field used this frame) or the day's sky
+   gradient with the night — with a slow continuous ripple drifting with the wind, stronger near the
+   waterline, the body's depth gradient, rare glints by the wind and the light waterline. Algae and reeds
+   stay 2D (and so go into the lit snapshot). `drawWater` keeps its 2D path when there is no device.
 
 ## Pairs (scratchpad, not in git)
 
@@ -91,11 +98,14 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pair-c1-fgrass.png`, `pair-c1-noon.png`, `pair-c1-surface.png`, `pair-c1-homeout.png`; crop
   `z-cmp-twins.png` (base e4c3a56 | relight, 2D plants | twins) — the plants have bodies (dark stems,
   lit heads, the umbrella's shaded underside), the walker is lit from the star.
+- `pair-d2-lake.png`, crop `z-lake.png` — no `mkview` scene has water: `lake.js` (scratchpad) forces
+  `tr.wet` on the `surface` scene and swims into the lake, same snippet for before and after. The lake
+  reflects the sky and the mountains, rippling, instead of a flat dark slab.
 
 ## Requests outside the zone
 
 - `08b0-gpu-pipe.js` `GPU_FLD`: add `"fld.sridge":()=>GSR_WGSL` and `"fld.sground":()=>GSG_WGSL` so the
-  warm-up table can compile them; likewise `"fld.sshade":()=>GSS_WGSL`, `"fld.scast":()=>GSC_WGSL`, `"fld.slit":()=>GSL_WGSL`.
+  warm-up table can compile them; likewise `"fld.sshade":()=>GSS_WGSL`, `"fld.scast":()=>GSC_WGSL`, `"fld.slit":()=>GSL_WGSL`, `"fld.swater":()=>GSW_WGSL`.
 - `19-mode-landing-ground.js` (landing ship): the chunk bake recipe inside `drawGround` is copied in
   `surfGroundGpu`; a shared `groundChunkPaint(tr,fill,line,pal)` there would keep the two from drifting.
 
@@ -106,6 +116,7 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pipe:fld.sshade|over`
 - `pipe:fld.scast|mul`
 - `pipe:fld.slit|hull`
+- `pipe:fld.swater|over`
 - `pipe:kit.img|over` (already known)
 
 ## Open problems

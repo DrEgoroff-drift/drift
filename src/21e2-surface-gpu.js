@@ -114,6 +114,7 @@ function surfRidgesGpu(tr,p,camx,camy,stpK){
     const cC=SRG_RGB(hazeFar(p,.85));U[36]=cC[0];U[37]=cC[1];U[38]=cC[2];U[39]=.85;
   }
   gpuField(pass,"sridge",GSR_WGSL,U,[HT]);
+  SURF_RF=GPU.frameNo;
   return true;
 }
 
@@ -356,4 +357,83 @@ function surfRelightGpu(tr,p,camx,camy,pass,HT){
   gpuField(pass,"slit",GSL_WGSL,F,[SURF_SHADOW],{blend:"hull"});
   /* #c отдан видеокарте — чистим: то, что 2D нарисует дальше, ляжет поверх */
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cvs.width,cvs.height);ctx.restore();
+}
+
+/* ══════════════ вода: зеркало на видеокарте ══════════════
+   Отражение 2D брало полосу над урезом drawImage-ом с самого #c; теперь небо,
+   гряды и грунт живут на видеокарте, и в #c над водой пусто — зеркало отражало
+   бы ничего. Здесь оно считается: что стоит над точкой зеркала — грунт, одна из
+   трёх гряд или небо (градиент дня, ночь), — тем же профилем, что рисует их
+   самих. Лучше лент со сдвигом: рябь непрерывная и медленная, у уреза отражение
+   сильнее (угол скользящий), с глубиной уступает толще; блики — редкие штрихи
+   по ветру у самого уреза, урез — светлая нить. Водоросли и камыш — 2D поверх. */
+const GSW_WGSL=`
+fn swH(row:i32,i:i32)->f32{
+  let n=i32(fu.v[0].w);let t=textureLoad(t0,vec2i(clamp(i,0,n-1),row),0);
+  return fu.v[1].x+((t.r*255.*256.+t.g*255.)/8.-4096.);}
+fn swRow(row:i32,x:f32,o:vec4f)->f32{
+  if(o.z<=0.){return 1e9;}
+  let n=fu.v[0].w;let fi=(x+o.x)/o.z;
+  if(fi<0.||fi>n-1.){return 1e9;}
+  let i=i32(floor(fi));let f=fi-floor(fi);
+  return mix(swH(row,i),swH(row,i+1),f)-o.y;}
+fn swSky(y:f32)->vec3f{
+  let V=fu.v;let v=clamp(y/fu.res.w,0.,1.);
+  let k=mix(.55*smoothstep(0.,.62,v),.55+.45*smoothstep(.62,1.,v),step(.62,v));
+  return mix(mix(V[3].rgb,V[4].rgb,k),vec3f(4.,6.,14.)/255.,V[3].w*.9);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V=fu.v;let wy=V[1].y;
+  if(p.x<V[1].z||p.x>V[1].w||p.y<wy-.5){return vec4f(0.);}
+  let g0=vec4f(V[0].x,V[0].y,V[0].z,1.);
+  let ey=swRow(2,p.x,g0);
+  let cov=clamp(ey+1.-p.y+.5,0.,1.)*clamp(p.y-wy+.5,0.,1.);
+  if(cov<=0.){return vec4f(0.);}
+  let dz=max(p.y-wy,0.);let t=V[5].w;let wind=V[12].x;let hh=V[12].y;
+  /* толща: у уреза цвет неба, в глубине — тёмный тон породы */
+  var c=mix(V[2].rgb,V[2].rgb*.5,clamp(dz/46.,0.,1.));
+  if(hh>6.&&dz<hh){
+    let q=dz/hh;
+    /* рябь: медленная, крупнее вглубь; ветер сносит отражение */
+    let dx=sin(t*.11+dz*.45+V[12].z)*(1.+2.*q)+sin(t*.07-dz*.9)*.6+wind*2.*q;
+    let xm=p.x+dx;let ym=wy-dz-sin(t*.09+p.x*.05)*.6*q;
+    var r=swSky(ym);
+    let yC=swRow(3,xm,V[10]);let yA=swRow(0,xm,V[8]);let yB=swRow(1,xm,V[6]);let yG=swRow(2,xm,g0);
+    if(ym>yC){r=V[11].rgb;}
+    if(ym>yA){r=V[9].rgb;}
+    if(ym>yB){r=V[7].rgb;}
+    if(ym>yG){r=V[5].rgb;}
+    c=mix(c,r,.55*(1.-q*.6)*smoothstep(0.,.25,1.-q));
+  }
+  /* блики по ветру: короткие штрихи у уреза, живут медленно */
+  let band=floor(dz/2.3);let cell=floor((p.x+V[0].x-t*.3*wind)/11.);
+  let s=fract(sin(band*91.7+cell*12.9898+V[12].z)*43758.55);
+  let a=.5+.5*sin(t*.07+s*6.283+wind*3.);
+  if(dz>1.5&&dz<13.&&s>.86&&a>.4){c=c+vec3f((a-.4)*.6*.22);}
+  /* урез — тонкая светлая нить */
+  c=mix(c,vec3f(1.),.28*(1.-smoothstep(.2,1.4,dz)));
+  return vec4f(c*cov,cov);
+}`;
+const GSW=new Float32Array(60);
+let SURF_RF=-1;
+function surfWaterGpu(tr,camx,camy,p,Wt,xa,xb,y){
+  const pass=GPU.overPass;
+  if(!GPU.on||!pass||pass!==SURF_P2||SURF_RF!==GPU.frameNo)return false;
+  const HT=surfHeightTex(tr),U=GSW,R=GSR;U.fill(0);
+  U[0]=camx;U[1]=camy;U[2]=tr.step;U[3]=tr.N;
+  U[4]=HT.mid;U[5]=y;U[6]=xa;U[7]=xb;
+  const sky=p.T.sky[1],pal=p.T.pal[Math.min(p.T.pal.length-1,2)];
+  const col=Wt.acid?[120,180,60]:[sky[0]*.78+pal[0]*.12,sky[1]*.82+pal[1]*.12,sky[2]*.9+pal[2]*.1];
+  U[8]=col[0]/255;U[9]=col[1]/255;U[10]=col[2]/255;
+  const D=skyDay(p);
+  U[12]=D.top[0]/255;U[13]=D.top[1]/255;U[14]=D.top[2]/255;U[15]=surfNight(p);
+  U[16]=D.bot[0]/255;U[17]=D.bot[1]/255;U[18]=D.bot[2]/255;
+  /* грунт в зеркале — тоном заливки разреза, в тень */
+  const gc=p.T.pal[3];U[20]=gc[0]/255*.42;U[21]=gc[1]/255*.42;U[22]=gc[2]/255*.42;U[23]=G.t||0;
+  /* гряды — те же смещения и цвета, что положило поле гряд в этом кадре */
+  U[24]=R[4];U[25]=R[5];U[26]=R[6];U[28]=R[12];U[29]=R[13];U[30]=R[14];
+  U[32]=R[0];U[33]=R[1];U[34]=R[2];U[36]=R[8];U[37]=R[9];U[38]=R[10];
+  U[40]=R[32];U[41]=R[33];U[42]=R[34];U[44]=R[36];U[45]=R[37];U[46]=R[38];
+  U[48]=(typeof WIND==="number")?WIND:0;U[49]=Math.min(64,y);U[50]=(Wt.seed|0)%97;
+  gpuField(pass,"swater",GSW_WGSL,U,[HT]);
+  return true;
 }
