@@ -223,6 +223,17 @@ Then hulls (item 2) by the same «explicit emission» path.
   and the radar dot as rects; the tow as oboxes, a rope of capsules, the barge star-lit like trade barges, the
   flames as the brush's teardrop cut into ≤ 1.2 px slices with hard inner sides. Gate: the tour at 0 in every
   flight item, pairs HEAD | now of each painter no dimmer, no softer.
+- Brief of **«Сорока» and the rail ring off #c** (the census's last flight painters; the rail ring was caught
+  at zoom .35 on the «Сорока» stand): the sails get their own shader — the metal across, seven foil stripes,
+  the star's highlight, the keel's shadow and the dark edge are computed per pixel from the ship's own
+  coordinates (u and u·v are linear in the plane, so every zoom is exact, and the polygon's edge is
+  antialiased by its own distance); two passes like the brush, the crinkles between them as capsules. The
+  keel, bales, porch, spar and gondola are kit shapes in ship coordinates (the gondola a fan with hard inner
+  edges and a ring of quads — no beads), the far point and the hop blink soft discs. The rail ring: lamps,
+  ring and lobby as shapes, the spiral a ribbon of quads with hard joints, the caption on the label layer.
+  Gate: the census 0 in every flight item; a flight gate suite (belt and the ГЛАВТРАССА peace fleet, Коммуна,
+  the tow with barges, the law ring, «Сорока», the rail ring) — #c 0, submits 1 per frame, uploads 0 from
+  these painters — with each port's mutant red.
 
 The phone frame budget does not grow: GPU ≤ 12 ms.
 
@@ -236,9 +247,10 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   atlas (uploads 0 on any flip); the release rehearsal is green (0.458.0 = 90604dc, not pushed); combat is off
   #c (gate suite green); wrecks and the «left» off #c. The tour census ran (see its brief): belt rocks, the
   peace fleet, the law ring, trade barges and the rescue tow are off #c (pairs the same; rocks and the tow's
-  barge a touch lighter — the tow's barge now lit by the star like the trade barges). Next: «Сорока» (the
-  last flight painter), the census again to 0, the gate suite for flight scenes, then the 0.458.0 notes,
-  -Full and Node on the new HEAD.
+  barge a touch lighter — the tow's barge now lit by the star like the trade barges). «Сорока» and the rail
+  ring are off #c too: the census is 0 in every flight item (belt mode itself is a PLAN line under stage 2;
+  the hotel's 2 dirty frames are the belt's leftover on the item seam, no call of its own). Flight gate suite
+  green, its seven mutants red. Next: the 0.458.0 notes addendum, -Full and Node on the new HEAD.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is

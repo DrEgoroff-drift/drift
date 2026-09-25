@@ -231,3 +231,70 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: после боя —
   eq(K.bad,0,"выгрузок нет"+(K.bad?": "+top(K.up):""));
   resetWorld();
 }));
+/* полёт по переписи тура (ступень 1): всё, что перепись встретила в полёте, — в проходе сцены.
+   Шесть сцен по двадцать кадров после прогрева: пояс с мирным флотом ГЛАВТРАССЫ (камни пояса),
+   Коммуна (мирный флот с подписями), буксир спасения с баржами (одна битая, одна точкой радара),
+   кольцо законов «Порядка», «Сорока» у планеты, кольцо дороги. В каждой: #c пуст, отправка одна
+   на кадр, выгрузок после прогрева от этих красильщиков нет; кто пачкает — называется по стеку.
+   Выгрузки прочих (Чебурек, корабли на трассе) здесь не судятся: они законно пекутся, когда
+   впервые въезжают в кадр, а их ровный полёт сторожит первый набор */
+const GATE_FLY=/drawWanderer|wanderGpu|drawSysRail|railGpu|drawBarges|bargeLiveGpu|drawHaul|haulGpu|drawBeltRocks|drawPeaceFleet|peaceFlag|drawLawRing|lawRingGpu/;
+function gateFind(fn,R){for(let r=0;r<=(R||30);r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+  if(Math.max(Math.abs(x),Math.abs(y))!==r||!starAt(x,y))continue;
+  G.sx=x;G.sy=y;G.sys=getSystem(x,y);G.ap=null;G.orbit=null;const q=fn(G.sys,x,y);if(q)return q;}return null;}
+function gateFlyScenes(){
+  const sh=()=>G.ship,at=(x,y)=>{const s=sh();s.x=x;s.y=y;s.vx=0;s.vy=0;s.a=.6;};
+  const peace=by=>()=>{const S=gateFind((s,x,y)=>s.station&&stampOwnerAt(x,y)===by&&(by!=="gt"||s.belt)&&peaceHere());
+    if(!S)return null;const c=[G.sx,G.sy];return {z:1.4,place(){G.sx=c[0];G.sy=c[1];G.sys=getSystem(c[0],c[1]);const q=peaceHere()||S;
+      if(by==="gt"){const a=G.t/60*.012+q.seed%7,R=G.sys.belt.orbit*.98;at(Math.cos(a)*R+60,Math.sin(a)*R+40);}else at(q.cx+60,q.cy-40);}};};
+  return [
+    ["пояс и мирный флот ГЛАВТРАССЫ",peace("gt")],
+    ["Коммуна",peace("km")],
+    ["буксир и баржи",()=>{G.sx=0;G.sy=0;G.sys=getSystem(0,0);at(0,-700);haulStart();const T=G.haul;if(!T)return null;T.ph="haul";T.t=0;
+      for(const k of ["_fire","_retro","_turn"])Object.defineProperty(T,k,{get:()=>true,set(){},configurable:true});
+      return {z:1.6,place(){const s=sh();s.vx=0;s.vy=0;
+        G.barges=[{x:s.x+140,y:s.y+90},{x:s.x-150,y:s.y+110},{x:s.x+4000,y:s.y}].map((p,i)=>Object.assign(G.barges&&G.barges[i]||
+          {seed:900+i,capName:["Дуня","Верба","Кама"][i],hullMax:200,hp:i===0?90:200,a:.4+i,good:"ore",qty:1,cap:9,from:"0,0",to:"1,0"},p,{vx:0,vy:0}));}};}],
+    ["кольцо законов",()=>{const c=gateFind(s=>s.station&&lawOwner()==="or"&&[G.sx,G.sy]);if(!c)return null;const a=.2+TAU/4;
+      return {z:1.4,place(){G.sx=c[0];G.sy=c[1];G.sys=getSystem(c[0],c[1]);const S=G.sys.station,s=sh();
+        s.x=S.x+Math.cos(a)*(LAW_RING-120);s.y=S.y+Math.sin(a)*(LAW_RING-120);s.vx=Math.cos(a)*5;s.vy=Math.sin(a)*5;s.a=a;}};}],
+    ["«Сорока»",()=>{clockSet(WANDER_T0+5*3600e3);const w=wanderAt();G.sx=w.sx;G.sy=w.sy;G.sys=getSystem(w.sx,w.sy);
+      if(!wanderHere(G.sys))return null;return {z:1.4,place(){const p=wanderWorldPos(G.sys,wanderAt().planetIx);at(p.x+p.L*.3,p.y);}};}],
+    ["кольцо дороги",()=>{let c=null;for(let t=0;t<200&&!c;t++)c=gateFind(s=>!!railHere()&&[G.sx,G.sy],10);if(!c)return null;
+      return {z:1.4,place(){G.sx=c[0];G.sy=c[1];G.sys=getSystem(c[0],c[1]);const R=railHere();if(R)at(R.x+60,R.y+40);}};}]];
+}
+TEST_SUITES.push(()=>suite("ворота ступени 1: полёт по переписи — пояс, мирный флот, буксир, законы, «Сорока», дорога без #c",{tier:"browser"},()=>{
+  if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
+  const WARM=20,N=20,Q=GPUQueue.prototype,q0={c:Q.copyExternalImageToTexture,s:Q.submit},run0=G.running,loop0=LOOP_OFF,Cx=MAIN_CTX,cm={};
+  const K={on:false,front:0,sub:0,up:{},bad:0,dirt:{}};
+  const top=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>v+"× "+k).join("; ");
+  try{
+    Q.copyExternalImageToTexture=function(src,dst){
+      if(K.on){if(dst.texture===GPU.T.front)K.front++;else{const w=gateWho();if(GATE_FLY.test(w)){K.bad++;K.up[w]=(K.up[w]||0)+1;}}}
+      return q0.c.apply(this,arguments);};
+    Q.submit=function(){if(K.on)K.sub++;return q0.s.apply(this,arguments);};
+    gpuFrontHook();
+    for(const k of ["fill","stroke","fillRect","strokeRect","drawImage","fillText","strokeText","putImageData"]){
+      const o=Cx[k];cm[k]=o;
+      Cx[k]=function(){if(K.on&&GPU.cState===0){const w=k+":"+gateWho();K.dirt[w]=(K.dirt[w]||0)+1;}return o.apply(this,arguments);};}
+    for(const [name,mk] of gateFlyScenes()){
+      resetWorld();G.mode="system";G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];G.msl=[];G.loot=[];
+      G.running=true;LOOP_OFF=false;
+      const S=mk();if(!ok(S,name+": сцена нашлась"))continue;
+      K.front=0;K.sub=0;K.bad=0;K.up={};K.dirt={};
+      let i=0;
+      try{for(i=0;i<WARM+N;i++){if(i===WARM)K.on=true;S.place();G.zoom=S.z;G.zoomT=null;frameBody(wallMs());}}
+      catch(e){ok(false,name+": кадр "+i+" упал: "+e.message);}
+      K.on=false;
+      eq(K.front,0,name+": #c за "+N+" кадров не грузился"+(K.front?" — пачкают: "+top(K.dirt):""));
+      eq(Object.keys(K.dirt).length,0,name+": пустой #c никто не пачкает"+(Object.keys(K.dirt).length?": "+top(K.dirt):""));
+      eq(K.sub,N,name+": отправок в очередь ровно по одной на кадр");
+      eq(K.bad,0,name+": выгрузок после прогрева нет"+(K.bad?": "+top(K.up):""));
+    }
+  }finally{
+    K.on=false;Q.copyExternalImageToTexture=q0.c;Q.submit=q0.s;
+    for(const k in cm)Cx[k]=cm[k];
+    G.running=run0;LOOP_OFF=loop0;
+  }
+  resetWorld();
+}));

@@ -29,12 +29,39 @@ function railHere(){
   return {S,x,y,ux:P.ux,uy:P.uy,name:G.sys.station.name,by:P.by};
 }
 /* ── рисунок: кольцо, глиссада, вестибюль ── */
+/* с видеокарты (ступень 1): лампы, кольцо и вестибюль — фигуры кита, спираль — лента
+   четырёхугольников с жёсткими стыками (без бусин на изломах), табличка — слой подписей */
+function railGpu(pass,R,x,y,s,col,ts,fast,zx,zy){
+  const SH=[];
+  for(let i=0;i<9;i++){
+    const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1),k=Math.max(0,1-Math.abs(ph-.5)*3);
+    for(const sd of [-1,1]){const px=R.x+R.ux*d-R.uy*w*sd,py=R.y+R.uy*d+R.ux*w*sd;
+      SH.push([1,zx(px),zy(py),(1.2+1.2*k)*s,0,0,0,col[0],col[1],col[2],.25+.6*k]);}
+  }
+  SH.push([1,x,y,40*s,0,0,0,40,52,66,.55],[3,x,y,44*s,0,2.5*s,0,170,190,210,.7],[3,x,y,46.5*s,0,.6*s,0,20,24,30,.9]);
+  const sp=[];
+  for(let a=0;a<TAU*2.2;a+=.12){const r=4*s+a*5.5*s,t=a+ts*.4*fast;sp.push([x+Math.cos(t)*r,y+Math.sin(t)*r]);}
+  const n=sp.length,sc=[127,230,216,.10+.08*fast],nr=i=>{const a=sp[Math.max(0,i-1)],b=sp[Math.min(n-1,i+1)];
+    const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return [-dy/l*.5,dx/l*.5];};
+  for(let i=0;i+1<n;i++){const p=sp[i],q=sp[i+1],u=nr(i),v=nr(i+1);
+    gpuQuad(SH,[p[0]-u[0],p[1]-u[1]],[p[0]+u[0],p[1]+u[1]],[q[0]+v[0],q[1]+v[1]],[q[0]-v[0],q[1]-v[1]],sc,(i>0?1:0)|(i+2<n?4:0));}
+  for(let i=0;i<12;i++){const a=i/12*TAU,cx=x+Math.cos(a)*44*s,cy=y+Math.sin(a)*44*s;SH.push([0,cx-1,cy-1,cx+1,cy+1,0,0,col[0],col[1],col[2],.55]);}
+  const vx=zx(R.x-R.uy*70),vy=zy(R.y+R.ux*70),x0=vx-16*s,x1=vx+16*s,y0=vy-9*s,y1=vy+9*s;
+  SH.push([0,x0,y0,x1,y1,0,0,30,37,48,1],
+    [0,x0-.5,y0-.5,x1+.5,y0+.5,0,0,0,0,0,.6],[0,x0-.5,y1-.5,x1+.5,y1+.5,0,0,0,0,0,.6],
+    [0,x0-.5,y0+.5,x0+.5,y1-.5,0,0,0,0,0,.6],[0,x1-.5,y0+.5,x1+.5,y1-.5,0,0,0,0,0,.6]);
+  for(let i=0;i<4;i++)SH.push([0,vx-12*s+i*7*s,vy-3*s,vx-8*s+i*7*s,vy,0,0,255,226,170,.8]);
+  gpuShapes(pass,SH);
+  domLabel("rail",x,y+58*s+10,(R.S.metro?"МЕТРО · ":"")+R.S.lines[0].ru.toUpperCase()+(R.S.lines.length>1?" +"+(R.S.lines.length-1):""),
+    uiFont(9),"rgba(242,178,92,.75)","center");
+}
 function drawSysRail(zx,zy,Z){
   const R=railHere();if(!R)return;
   const x=zx(R.x),y=zy(R.y),s=clamp(Z,.5,1.5);
   if(x<-400||x>W+400||y<-400||y>H+400)return;
   const col=(typeof laneLampCol==="function")?laneLampCol(R.by):[255,190,110];
-  const ts=G.t/60,fast=RAIL_WAIT&&RAIL_WAIT.t<3?3:1;
+  const ts=G.t/60,fast=RAIL_WAIT&&RAIL_WAIT.t<3?3:1,pass=gpuScene();
+  if(pass){railGpu(pass,R,x,y,s,col,ts,fast,zx,zy);return;}
   /* глиссада: две цепочки ламп сходятся к кольцу со стороны станции */
   for(let i=0;i<9;i++){
     const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1);

@@ -47,6 +47,12 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
 - [ ] **Stage 2 — the other modes, by share of play time:** map, landing, surface, cave, mine, belt, raid,
   cockpit, scoop, base; one step per mode, each with a pair and the upload count. G4c, G4d and G6–G12 below
   are how each mode's body is drawn.
+  - Belt mode whole (the tour census of 25.09 — the only #c painter left in the tour): `drawBelt` (375 calls
+    per frame), `drawCockpit` (41), `instrPanel` (19), `drawGlassHUD` (12), `tapePaper` (8), `vbar` (5) and the
+    cockpit's `file` rows (2). The flight around the belt is already clean.
+  - The census stays a tool: after each stage-2 step, the tour (NEYEL, Коммуна, wrecks, rescue, drones,
+    «Сорока», belt, hotel, planet, dock) is rerun, and every flight item must stay at 0; a rare sight the tour
+    does not reach (a new system object, a mode's entry) gets a stand and joins the flight gate suite.
 - [ ] **Heat margin** — before stage 2 if the 5-minute run of stage 1 fails, otherwise interleaved with it:
   - `under` (6.8 ms on the phone): the corona's hash noise on the noise tile with the frame constants on the
     CPU; orbits as a triangle strip along the ellipse instead of a bbox quad with `atan2` per pixel;

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 610 · символов верхнего уровня: 6084
+Файлов: 610 · символов верхнего уровня: 6092
 
 ## СИМВОЛЫ
 
@@ -1529,7 +1529,7 @@ drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:706-984
 drawSysLane                  src/17g-sys-lane.js:96-140
 drawSysLaneShips             src/17g-sys-lane.js:170-198
-drawSysRail                  src/18f-rail-station.js:32-65
+drawSysRail                  src/18f-rail-station.js:58-92
 drawSystem                   src/17-mode-system.js:498-705
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawTapes                    src/12s1-tape.js:37-52
@@ -1542,7 +1542,7 @@ drawTransitPlate             src/03e-hull-draw.js:59-67
 drawVan                      src/21ac3-base-van.js:71-133
 drawVanSmall                 src/21ac3-base-van.js:135-141
 drawWallPaper                src/11ae-concert.js:39-71
-drawWanderer                 src/12v-wander.js:175-318
+drawWanderer                 src/12v-wander.js:300-448
 drawWanderMap                src/12v-wander.js:159-173
 drawWanderRoom               src/24c-mode-wanderer-draw.js:117-341
 drawWater                    src/21e-surface-draw.js:194-275
@@ -1985,10 +1985,13 @@ galaxyCell                   src/17z1-galaxy.js:142-147
 galBake                      src/17z1-galaxy.js:80-95
 galPlaceName                 src/17z2-galaxy-names.js:29-36
 galTile                      src/17z1-galaxy.js:67-78
+GATE_FLY                     tests/91zzzzzzy-gpugate.js:241
 GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
+gateFind                     tests/91zzzzzzy-gpugate.js:242-265
+gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-265
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
 gateStand                    tests/91zzzzzzy-gpugate.js:22-30
 gateWho                      tests/91zzzzzzy-gpugate.js:19-21
@@ -2807,6 +2810,7 @@ huntMark                     src/12o-hunter.js:32-53
 huntQuest                    src/12o-hunter.js:55-63
 huntSpawn                    src/12o-hunter.js:90-105
 huntTierOf                   src/12o-hunter.js:28
+HX                           src/12v-wander.js:184
 HZ_CN                        src/18d-postfx.js:31
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22-27
@@ -4361,24 +4365,25 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:16
-railBuffet                   src/18f-rail-station.js:184-191
+railBuffet                   src/18f-rail-station.js:211-218
 railBuildLines               src/18e-rail-net.js:55-101
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:171-183
+railBuy                      src/18f-rail-station.js:198-210
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-33
-railDestinations             src/18f-rail-station.js:102-117
+railDestinations             src/18f-rail-station.js:129-144
 railDestinationsVia          src/18k-rail-scheme.js:13-35
-railDocked                   src/18f-rail-station.js:86-93
+railDocked                   src/18f-rail-station.js:113-120
 railExit                     src/18g-rail-ride.js:105-117
-railFare                     src/18f-rail-station.js:118-124
+railFare                     src/18f-rail-station.js:145-151
 railFlash                    src/18g-rail-ride.js:17-30
-railFmt                      src/18f-rail-station.js:98
+railFmt                      src/18f-rail-station.js:125
+railGpu                      src/18f-rail-station.js:34-57
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:35-38
-railInteract                 src/18f-rail-station.js:67-85
-railInterval                 src/18f-rail-station.js:95
+railInteract                 src/18f-rail-station.js:94-112
+railInterval                 src/18f-rail-station.js:122
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:73-78
 railLifeBoard                src/18i-rail-life.js:84-90
@@ -4407,16 +4412,16 @@ railSchemeOpen               src/18k-rail-scheme.js:45-55
 railSegDur                   src/18g-rail-ride.js:46-49
 railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
-railStopName                 src/18f-rail-station.js:99
+railStopName                 src/18f-rail-station.js:126
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:193-198
+railTick                     src/18f-rail-station.js:220-225
 railTrainPos                 src/18g-rail-ride.js:51-63
 railUAt                      src/18e-rail-net.js:105-110
-railWaitNow                  src/18f-rail-station.js:97
-railWinClose                 src/18f-rail-station.js:126
-railWinOpen                  src/18f-rail-station.js:125
-railWinRender                src/18f-rail-station.js:132-170
-railWinShow                  src/18f-rail-station.js:127-131
+railWaitNow                  src/18f-rail-station.js:124
+railWinClose                 src/18f-rail-station.js:153
+railWinOpen                  src/18f-rail-station.js:152
+railWinRender                src/18f-rail-station.js:159-197
+railWinShow                  src/18f-rail-station.js:154-158
 RALLY_CACHE                  src/12at-vote.js:69
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
@@ -5889,6 +5894,7 @@ wanAll                       src/24c-mode-wanderer.js:21
 wanCaseAt                    src/24c-mode-wanderer-draw.js:30-36
 wanCol                       src/24c-mode-wanderer-draw.js:21
 wanCur                       src/24c-mode-wanderer.js:50
+WAND_SAIL_WGSL               src/12v-wander.js:181
 WANDER_BY_ID                 src/12v-wander-shop.js:70
 WANDER_CAT                   src/12v-wander-shop.js:27-69
 WANDER_LINES                 src/12v-wander-shop.js:255-262
@@ -5906,6 +5912,7 @@ wanderAt                     src/12v-wander.js:68-80
 wanderBuy                    src/12v-wander-shop.js:154-182
 wanderCant                   src/12v-wander-shop.js:143-151
 wanderDock                   src/12v-wander.js:123-127
+wanderGpu                    src/12v-wander.js:232-298
 wanderHas                    src/12v-wander-shop.js:79
 wanderHeading                src/12v-wander.js:105
 wanderHere                   src/12v-wander.js:90-93
@@ -5923,6 +5930,7 @@ wanderRawLeft                src/12v-wander-shop.js:216-220
 wanderRawQuote               src/12v-wander-shop.js:222-225
 wanderRec                    src/12v-wander.js:31-35
 wanderRumour                 src/12v-wander.js:130-145
+wanderSails                  src/12v-wander.js:225-230
 wanderSellRaw                src/12v-wander-shop.js:226-239
 wanderShowables              src/12v-wander-shop.js:240-243
 wanderShowRare               src/12v-wander-shop.js:244-253
@@ -6668,7 +6676,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12v-wander-shop.js · 20 КБ
   · лавка «Сороки»: три прилавка и полка инструментов (M343):1
 
-## src/12v-wander.js · 22 КБ
+## src/12v-wander.js · 31 КБ
   · «Сорока»: странствующий парусник (M342):1
 
 ## src/12va-wander-cosm.js · 10 КБ
@@ -6898,7 +6906,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/18e-rail-net.js · 12 КБ
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 14 КБ
+## src/18f-rail-station.js · 16 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18g-rail-ride.js · 12 КБ
@@ -8031,7 +8039,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzz-crashlog.js · 3 КБ
   · автотесты: что уезжает в crash.log (0.419):1
 
-## tests/91zzzzzzy-gpugate.js · 17 КБ
+## tests/91zzzzzzy-gpugate.js · 23 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

@@ -171,6 +171,131 @@ function drawWanderMap(vis,cell){
   if(w.phase==="stop")glyph(w.sx,w.sy,1);
   if(typeof relicDeep==="function"&&relicDeep("chart"))glyph(w.next.sx,w.next.sy,.55);
 }
+/* ── «Сорока» с видеокарты (ступень 1) ──
+   Полотнища — свой шейдер: металл поперёк, семь полос фольги, блик от звезды, тень киля и
+   тёмная кромка считаются в точке по координатам борта (u — доля длины, u·v — доля ширины,
+   обе линейны в плоскости, поэтому точны в любом увеличении). Два прохода, как у кисти:
+   первый — металл и полосы, между ними морщины фигурами, второй — блик, тень и кромка.
+   Всё прочее — фигуры кита в координатах борта. Запись на экземпляр: (x,y,угол,масштаб),
+   (dx,dy,трепет,свет), (обращённость, центр блика, проход) */
+const WAND_SAIL_WGSL=GPU_KIT_WGSL+`
+@group(0) @binding(1) var<storage,read> wq:array<vec4f>;
+struct WO{@builtin(position) p:vec4f,@location(0) q:vec2f,@location(1) @interpolate(flat) ii:u32};
+const HX=26.;const LB=168.;const HW=46.;
+@vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->WO{
+  let a=wq[ii*4u];let b=wq[ii*4u+1u];let d=b.xy;let n=vec2f(-d.y,d.x);let m=2./a.w+.5;let c=kCorn(vi);
+  let q=vec2f(HX,0.)+d*mix(.04*LB*b.z-m,LB*b.z+m,c.x)+n*mix(-HW-m,HW+m,c.y);
+  let cs=cos(a.z);let sn=sin(a.z);
+  var o:WO;o.p=kClip(a.xy+vec2f(q.x*cs-q.y*sn,q.x*sn+q.y*cs)*a.w);o.q=q;o.ii=ii;return o;}
+fn wHp(q:vec2f,A:vec2f,B:vec2f,sg:f32)->f32{let e=B-A;return dot(q-A,vec2f(e.y,-e.x)*sg)/max(length(e),1e-4);}
+fn wGrad(t:f32,l:f32)->vec3f{
+  var T=array(0.,.22,.48,.62,.85,1.);
+  var C=array(vec3f(112.,70.,18.),vec3f(198.,146.,44.),vec3f(246.,214.,128.),vec3f(214.,164.,56.),vec3f(168.,116.,32.),vec3f(96.,58.,14.));
+  let x=clamp(t,0.,1.);var j=0;for(var k=1;k<5;k++){if(x>T[k]){j=k;}}
+  let f=clamp((x-T[j])/(T[j+1]-T[j]),0.,1.);
+  return mix(min(round(C[j]*l),vec3f(255.)),min(round(C[j+1]*l),vec3f(255.)),f)/255.;}
+@fragment fn fs(i:WO)->@location(0) vec4f{
+  let a=wq[i.ii*4u];let b=wq[i.ii*4u+1u];let c=wq[i.ii*4u+2u];
+  let d=b.xy;let n=vec2f(-d.y,d.x);let s=a.w;let fl=b.z;let H=vec2f(HX,0.);let q=i.q;
+  let r=q-H;let u=dot(r,d)/(LB*fl);let uv=dot(r,n)/HW;
+  let f=(uv/max(u,1e-3)+1.)*3.5;let w=max(fwidth(f),1e-4);
+  let P0=H+d*LB*.04*fl;let Pm=H+d*LB*.97*fl+n*HW*.97;let Pn=H+d*LB*.97*fl-n*HW*.97;
+  let P1=H+d*LB*fl+n*HW*.85;let P2=H+d*LB*fl-n*HW*.85;
+  let sg=sign((Pm.x-P0.x)*(P1.y-P0.y)-(Pm.y-P0.y)*(P1.x-P0.x));
+  let sd=max(max(max(wHp(q,P0,Pm,sg),wHp(q,Pm,P1,sg)),max(wHp(q,P1,P2,sg),wHp(q,P2,Pn,sg))),wHp(q,Pn,P0,sg));
+  let cov=clamp(.5-sd*s,0.,1.);
+  if(c.w<.5){
+    var col=wGrad(uv/1.2+.5,b.w);
+    let k=clamp(floor(f),0.,6.);let e=f-k;let odd=(u32(k)&1u)==1u;
+    let lt=vec4f(1.,235./255.,190./255.,.07);let dk=vec4f(40./255.,20./255.,0.,.09);
+    let tc=select(dk,lt,odd);let to=select(lt,dk,odd);
+    let kw=min(clamp(e/w+.5,0.,1.),clamp((1.-e)/w+.5,0.,1.));
+    col=kw*mix(col,tc.rgb,tc.a)+(1.-kw)*mix(col,to.rgb,to.a);
+    return vec4f(col*cov,cov);}
+  var pr=vec3f(0.);var pa=0.;
+  if(c.x>.15){let t=length(q-c.yz)/(LB*.32);
+    let hc=mix(vec3f(1.,250./255.,232./255.),vec3f(1.,240./255.,200./255.),clamp(t/.5,0.,1.));
+    let ha=select(mix(.16*c.x,0.,clamp((t-.5)/.5,0.,1.)),mix(.55*c.x,.16*c.x,t/.5),t<.5);
+    pr=hc*ha;pa=ha;}
+  let bq=abs(q)-vec2f(52.,3.4);let sa=.32*clamp(.5-(length(max(bq,vec2f(0.)))+min(max(bq.x,bq.y),0.))*s,0.,1.);
+  pr=pr*(1.-sa);pa=pa+sa-pa*sa;pr*=cov;pa*=cov;
+  let ow=.275*s;let oa=.7*clamp(.5-(abs(sd)*s-max(ow,.5)),0.,1.)*min(1.,ow/.5);
+  pr=pr*(1.-oa)+vec3f(46.,26.,4.)/255.*oa;pa=pa+oa-pa*oa;
+  return vec4f(pr,pa);}`;
+function wanderSails(pass,F,n){
+  const P=gpuPipe("wand.sail",WAND_SAIL_WGSL,"over"),A=gpuArena("wsail",n*16,16);
+  GPU.dev.queue.writeBuffer(A.buf,A.off*4,F,0,n*16);
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("wand.sail",P,[gpuKitU(),A.buf]));
+  pass.draw(6,n,0,A.off/16);
+}
+/* борт целиком: true — издали (точка), челнок тогда не рисуется, как у 2D */
+function wanderGpu(pass,sys,pos,x,y,L,ang,now){
+  if(L<9){gpuShapes(pass,[[1,x,y,0,0,0,5,255,215,145,.95]]);return true;}
+  const s=L/100,cs=Math.cos(ang),sn=Math.sin(ang);
+  const T=(u,v)=>[x+(u*cs-v*sn)*s,y+(u*sn+v*cs)*s];
+  const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16),1];
+  /* линия тоньше пикселя — пиксель с долей альфы, как у 2D */
+  const cap=(E,a,b,w,C)=>{const A=T(a[0],a[1]),B=T(b[0],b[1]);let hw=w*s/2,al=C[3];if(hw<.5){al*=hw/.5;hw=.5;}
+    E.push([2,A[0],A[1],B[0],B[1],hw,0,C[0],C[1],C[2],al]);};
+  const box=(E,bx,by,bw,bh,C)=>{const c=T(bx+bw/2,by+bh/2);E.push([4,c[0],c[1],bw*s/2,bh*s/2,ang,0,C[0],C[1],C[2],C[3]]);};
+  const disc=(E,cx,cy,r,C)=>{const c=T(cx,cy);E.push([1,c[0],c[1],r*s,0,0,0,C[0],C[1],C[2],C[3]]);};
+  const ring=(E,cx,cy,r,w,C)=>{const c=T(cx,cy);E.push([3,c[0],c[1],r*s,0,w*s/2,0,C[0],C[1],C[2],C[3]]);};
+  const r=rng((sys.seed^0x5A1A)>>>0);
+  const HX=26,la=Math.atan2(-pos.y,-pos.x)-ang,LB=168,HW=46,base=Math.PI/4;
+  const rr=rng((sys.seed^0x5A11)>>>0);
+  const crinkles=[];for(let k=0;k<26;k++)crinkles.push([rr(),rr()*2-1,rr()*.12+.03,(rr()-.5)*.5,rr()]);
+  const FA=new Float32Array(64),FB=new Float32Array(64),CR=[],SH=[];
+  for(let i=0;i<4;i++){
+    const th=base+i*Math.PI/2,flut=1+Math.sin(now/37000+i*2.1)*.006;
+    const dx=Math.cos(th),dy=Math.sin(th),nx=-dy,ny=dx;
+    const lit=.55+.6*Math.max(0,Math.cos(th-la))+.15*Math.max(0,Math.cos(th-la+Math.PI/2));
+    const pt=(u,v)=>[HX+dx*LB*u*flut+nx*HW*u*v,dy*LB*u*flut+ny*HW*u*v];
+    const face=Math.max(0,Math.cos(th-la)),c0=pt(.5+face*.15,(Math.sin(la-th)>0?1:-1)*.25);
+    FA.set([x,y,ang,s,dx,dy,flut,lit,face,c0[0],c0[1],0],i*16);FB.set([x,y,ang,s,dx,dy,flut,lit,face,c0[0],c0[1],1],i*16);
+    for(const c of crinkles){const u=.15+c[0]*.8,v=c[1]*.85,len=c[2],sl=c[3];
+      cap(CR,pt(u,v),pt(u+len,v+sl*len*3),.5,[255,244,214,+(.28*lit).toFixed(2)]);
+      cap(CR,pt(u,v+.06),pt(u+len,v+.06+sl*len*3),.5,[50,26,4,.3]);}
+    const sideLit=Math.sin(la-th)>0?1:-1;
+    cap(SH,pt(.04,sideLit),pt(.97,sideLit),.7,[255,242,200,+(.35+.45*face).toFixed(2)]);
+    const m1=pt(1,0);
+    cap(SH,pt(0,0),m1,.9,[20,16,10,.55]);
+    box(SH,m1[0]-1.8,m1[1]-1.8,3.6,3.6,hx("#1c2026"));disc(SH,m1[0],m1[1],.7,[255,226,160,.9]);
+    cap(SH,m1,[dx>0?50:-50,0],.4,[200,190,160,.28]);
+  }
+  /* ступица, киль с рёбрами и тюками, крыльцо, рей, гондола — порядок 2D */
+  disc(SH,HX,0,4.6,hx("#15181d"));ring(SH,HX,0,4.6,.7,[200,210,220,.4]);ring(SH,HX,0,2.6,.5,[227,176,74,.5]);
+  cap(SH,[-50,0],[50,0],4.2,hx("#0f1114"));cap(SH,[-50,0],[50,0],2.6,hx("#242830"));
+  const K=[0,0,0,.55],RP=[200,190,160,.28];
+  for(let i=-6;i<=6;i++){
+    const fx=i*7;
+    cap(SH,[fx,-4.6],[fx,4.6],1.1,hx("#33383f"));
+    if(i<6&&i!==0&&i!==-1){
+      const side=(i&1)?-1:1,wdt=4+r()*2.4,hgt=2.6+r()*2.2,bx=fx+3.5-wdt/2,by=side<0?-1.4-hgt:1.4;
+      box(SH,bx,by,wdt,hgt,hx(r()<.5?"#2a2622":"#25282e"));
+      box(SH,bx,side<0?by:by+hgt-.7,wdt,.7,[255,235,200,.14]);
+      box(SH,bx-.25,by-.25,wdt+.5,.5,K);box(SH,bx-.25,by+hgt-.25,wdt+.5,.5,K);
+      box(SH,bx-.25,by+.25,.5,hgt-.5,K);box(SH,bx+wdt-.25,by+.25,.5,hgt-.5,K);
+      cap(SH,[bx,by],[bx+wdt,by+hgt],.4,RP);cap(SH,[bx+wdt,by],[bx,by+hgt],.4,RP);
+    }
+  }
+  cap(SH,[-50,-2.1],[50,-2.1],.7,[227,176,74,.35]);
+  for(let q=-48;q<=48;q+=3)box(SH,q,-1.6,.6,.6,[255,255,255,.13]);
+  box(SH,-53,-3.2,4,2.2,hx("#1a1d22"));box(SH,-53,1,4,2.2,hx("#1a1d22"));
+  cap(SH,[-15,2],[-15,7.5],1,hx("#2b2f36"));
+  for(let i=0;i<6;i++){const a=i/6*TAU;disc(SH,-15+Math.cos(a)*3.2,8.5+Math.sin(a)*1.6,.55,[200,236,255,.85]);}
+  for(let i=0;i<4;i++)cap(SH,[-16.2,3+i*1.2],[-13.8,3+i*1.2],.5,[180,190,200,.5]);
+  cap(SH,[0,-30],[0,30],2.4,hx("#0f1114"));cap(SH,[0,-30],[0,30],1.2,hx("#3a3630"));
+  /* гондола: веер без внутренних швов и обвод кольцом четырёхугольников */
+  const G0=T(50,0),N=28,gc=hx("#1c2026"),e=(k,dr)=>T(50+Math.cos(k/N*TAU)*(4.6+dr),Math.sin(k/N*TAU)*(3.2+dr));
+  for(let k=0;k<N;k++){const a=e(k,0),b=e(k+1,0);SH.push([5,G0[0],G0[1],a[0],a[1],b[0],b[1],gc[0],gc[1],gc[2],1,5]);}
+  for(let k=0;k<N;k++)gpuQuad(SH,e(k,-.3),e(k,.3),e(k+1,.3),e(k+1,-.3),[150,180,200,.55],1|4);
+  const lc=T(51,0);
+  SH.push([1,lc[0],lc[1],0,0,0,10.5*s,255,180,100,.6],[1,lc[0],lc[1],0,0,0,3*s,255,214,150,.87]);
+  disc(SH,51.4,-.4,1,hx("#fff1d0"));
+  cap(SH,[-50,-2.2],[50,-2.2],.5,[190,205,220,.22]);
+  wanderSails(pass,FA,4);gpuShapes(pass,CR);wanderSails(pass,FB,4);gpuShapes(pass,SH);
+  return false;
+}
 /* ── рисунок в системе ── */
 function drawWanderer(zx,zy,Z){
   const sys=G.sys;if(!sys)return;
@@ -184,6 +309,8 @@ function drawWanderer(zx,zy,Z){
     const x=zx(pos.x+Math.cos(a)*u*9000),y=zy(pos.y+Math.sin(a)*u*9000);
     if(x<-20||x>W+20||y<-20||y>H+20)return;
     const rr=Math.max(1.2,(1-u)*4*clamp(Z,.4,1.5));
+    const pass=gpuScene();
+    if(pass){gpuShapes(pass,[[1,x,y,0,0,0,rr*3,255,215,145,+(.9*(1-u*.6)).toFixed(2)]]);return;}
     const g=ctx.createRadialGradient(x,y,0,x,y,rr*3);
     g.addColorStop(0,"rgba(255,226,160,"+(.9*(1-u*.6)).toFixed(2)+")");g.addColorStop(1,"rgba(255,180,90,0)");
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rr*3,0,TAU);ctx.fill();
@@ -193,7 +320,9 @@ function drawWanderer(zx,zy,Z){
   const pos=wanderWorldPos(sys,w.planetIx);
   const x=zx(pos.x),y=zy(pos.y),L=pos.L*Z;
   if(x<-L*2.2||x>W+L*2.2||y<-L*2.2||y>H+L*2.2)return;   /* полотнища почти в два киля от ступицы */
-  const ang=wanderAngle(pos,w);
+  const ang=wanderAngle(pos,w),pass=gpuScene();
+  if(pass){if(wanderGpu(pass,sys,pos,x,y,L,ang,now))return;}
+  else{
   ctx.save();ctx.translate(x,y);ctx.rotate(ang);
   if(L<9){
     /* издали — только паруса: тёплая точка, которая не мерцает */
@@ -310,6 +439,7 @@ function drawWanderer(zx,zy,Z){
   ctx.strokeStyle="rgba(190,205,220,.22)";ctx.lineWidth=.5;
   ctx.beginPath();ctx.moveTo(-50,-2.2);ctx.lineTo(50,-2.2);ctx.stroke();
   ctx.restore();
+  }
   /* челнок станции к «Сороке» — местные тоже торгуют (17f) */
   if(sys.station&&typeof drawShuttleArc==="function"){
     const st=sys.station;
