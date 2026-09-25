@@ -348,3 +348,21 @@ function gpuField(pass,name,code,uni,texs,o){
   }
   pass.setPipeline(P);pass.setBindGroup(0,c.bg);pass.draw(3);
 }
+/* поле в текстуру по ключу (кит флота): для полей, что меняются реже кадра (галактика карты — пока
+   не сменились сдвиг, клетка и размер). Тот же конвейер, что у gpuField в кадре (цель rgba16float),
+   на время выпечки W,H — размер поля в пикселях CSS, плотность — o.k (по умолчанию DPR).
+   Ответ {tex,view,w,h,dev} кладётся в кадр через gpuImage(pass,B,[{x,y,w,h}]); M — Map хозяина,
+   сменился ключ или устройство — печётся заново, старая текстура сдаётся. Без видеокарты — null */
+/* смешение выпечки поля: source-over, и альфа пишется (кадровые смешения её хранят — у текстуры она своя) */
+GPU_BLEND.bake={color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}};
+function gpuFieldBaked(M,key,name,code,uni,texs,w,h,o){
+  let B=M.get(key);if(B&&B.dev===GPU.dev)return B;
+  if(B){gpuBakeDrop(B);M.delete(key);}
+  if(!GPU.dev)return null;
+  const d=GPU.dev,k=(o&&o.k)||DPR,tw=Math.max(1,Math.round(w*k)),th=Math.max(1,Math.round(h*k)),U=GPUTextureUsage;
+  const tex=d.createTexture({size:[tw,th],format:"rgba16float",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT}),view=tex.createView();
+  const enc=d.createCommandEncoder(),p=enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});
+  const pW=W,pH=H,bw=GPU.bw,bh=GPU.bh;W=w;H=h;GPU.bw=tw;GPU.bh=th;
+  try{gpuField(p,name,code,uni,texs,{blend:"bake",smp:o&&o.smp});}finally{W=pW;H=pH;GPU.bw=bw;GPU.bh=bh;p.end();d.queue.submit([enc.finish()]);}
+  B={tex,view,w:tw,h:th,dev:d};M.set(key,B);return B;
+}

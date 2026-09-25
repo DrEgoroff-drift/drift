@@ -95,17 +95,25 @@ function pennDraw(x,y,w,h){
      ткань закреплена и не ходит, к кромке ход растёт. Медленный цикл, не
      мигание: волна ЕДЕТ по ткани, глаз читает ветер, а не дрожь. */
   const wv=q=>Math.sin(t*1.35-q*4.6)*h*.045*q;
-  ctx.fillStyle="rgba(168,44,40,.95)";
-  ctx.beginPath();
-  ctx.moveTo(x,y);
-  for(let i=1;i<=6;i++){const q=i/6;ctx.lineTo(x+w*q,y+h*0.06*q+wv(q));}
-  for(let i=6;i>=0;i--){const q=i/6;ctx.lineTo(x+w*q,y+h*(0.94-0.08*q)+wv(q)*1.15);}
-  ctx.closePath();ctx.fill();
-  ctx.fillStyle="rgba(255,255,255,.10)";
-  ctx.beginPath();
-  ctx.moveTo(x,y);ctx.lineTo(x+w*0.42,y+h*0.03+wv(.42));
-  ctx.lineTo(x+w*0.42,y+h*0.92+wv(.42)*1.15);ctx.lineTo(x,y+h*0.94);
-  ctx.closePath();ctx.fill();
+  /* G6: складки ловят свет. Было одно красное полотно с белой плашкой поверх
+     левой половины. Бархат так не выглядит: волна — это складки, гребень
+     обращён к лампе отсека и светлеет, впадина уходит в тень, и складка едет
+     вместе с волной. Полотнище — полосами по ходу волны, у каждой свой тон
+     по наклону ткани в этом месте */
+  const N=14,top=q=>y+h*0.06*q+wv(q),bot=q=>y+h*(0.94-0.08*q)+wv(q)*1.15;
+  for(let i=0;i<N;i++){
+    const q0=i/N,q1=(i+1)/N,qm=(q0+q1)*.5;
+    const s=Math.cos(t*1.35-qm*4.6)*Math.min(1,qm*2.2);          /* наклон складки */
+    const k=1+.32*s-.10*qm;
+    ctx.fillStyle="rgba("+(Math.min(255,168*k)|0)+","+(Math.min(255,44*k+6*Math.max(0,s))|0)+","+(Math.min(255,40*k)|0)+",.96)";
+    const xa=x+w*q0,xb=x+w*q1+.6;
+    ctx.beginPath();ctx.moveTo(xa,top(q0));ctx.lineTo(xb,top(q1));ctx.lineTo(xb,bot(q1));ctx.lineTo(xa,bot(q0));ctx.closePath();ctx.fill();
+  }
+  /* ворс: край полотнища темнее середины — бархат глотает свет на кромке */
+  ctx.strokeStyle="rgba(60,10,12,.45)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,y);
+  for(let i=1;i<=N;i++)ctx.lineTo(x+w*i/N,top(i/N));
+  ctx.stroke();
   /* бахрома идёт той же волной, что и кромка, — иначе она отрывается от ткани */
   ctx.fillStyle="rgba(226,190,96,.9)";
   for(let i=0;i<10;i++){

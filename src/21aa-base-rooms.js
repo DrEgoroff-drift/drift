@@ -381,10 +381,17 @@ function bWorker(x,fy,lit,sit,phase,face,bare){
   ctx.restore();ctx.lineCap="butt";
 }
 
-function drawModule(k,x,y,lit,c,r,B){
+/* ── отсек в три слоя (G11) ──
+   Отсек рисовался целиком каждый кадр, хотя двигается в нём только станок и
+   люди. Теперь он в трёх слоях: ОБОЛОЧКА — стена, след смены, лампы, хлам —
+   печётся видеокартой один раз вместе со всей базой (21ad); ЖИВОЕ — станок
+   и смена — рисуется кадром поверх; НАСТИЛ ложится выпечкой переднего плана
+   сверху, как и раньше лёг бы после людей. Конусы ламп ушли в поле света:
+   свет теперь не наклейка трапецией, а освещённость, которая падает от
+   лампы и гаснет к углам. */
+function drawModuleShell(k,x,y,lit,c,r,B){
   const w=BCELL_W-12,h=BCELL_H-12,x0=x+6,y0=y+6;
-  const cx=x0+w/2,fy=y0+h-6,seed=hashi(c+1,r+1,(B&&B.idx|0)+7);
-  const P=basePower(B);
+  const fy=y0+h-6,seed=hashi(c+1,r+1,(B&&B.idx|0)+7);
   ctx.save();
   ctx.beginPath();ctx.rect(x0-2,y0-2,w+4,h+4);ctx.clip();   // ничего не вылезает в породу
   /* задняя стена и пол — общие для всех отсеков: сначала помещение, потом мебель */
@@ -403,25 +410,15 @@ function drawModule(k,x,y,lit,c,r,B){
   }
   /* ── лампы под потолком ──
      Свет в отсеке был разлит ниоткуда: помещение светилось, но источника не
-     имело, и потолок оставался пустой полосой. Лампы на потолке с конусом до
-     пола объясняют освещение и заодно делят комнату на зоны — ровно то, чем у
-     образца читается длина помещения. Число, тон и сила — от отделки: на складе
-     горит половина, в лаборатории лишняя, в жилом и горячем цеху свет тёплый. */
-  {
-    const ln=Math.min(fin.ln,w>120?3:2),dim=fin.dim||1;
-    for(let i=0;i<ln;i++){
-      const px=x0+w*(i+.5)/ln;
-      ctx.fillStyle="rgba(40,48,58,.95)";ctx.fillRect(px-7,y0+2,14,3);
-      ctx.fillStyle="rgba("+fin.lamp+","+Math.min(1,(.30+lit*.5)*dim).toFixed(2)+")";
-      ctx.fillRect(px-6,y0+5,12,1.6);
-      const cg=ctx.createLinearGradient(0,y0+6,0,fy);
-      cg.addColorStop(0,"rgba("+fin.lamp+","+((.09+lit*.11)*dim).toFixed(3)+")");
-      cg.addColorStop(1,"rgba("+fin.lamp+",0)");
-      ctx.fillStyle=cg;
-      ctx.beginPath();
-      ctx.moveTo(px-7,y0+6);ctx.lineTo(px+7,y0+6);
-      ctx.lineTo(px+24,fy);ctx.lineTo(px-24,fy);ctx.closePath();ctx.fill();
-    }
+     имело, и потолок оставался пустой полосой. Лампы на потолке объясняют
+     освещение и заодно делят комнату на зоны — ровно то, чем у образца
+     читается длина помещения. Число, тон и сила — от отделки: на складе горит
+     половина, в лаборатории лишняя, в жилом и горячем цеху свет тёплый. Сам
+     свет — поле видеокарты (`baseLamps`, 21ad): здесь только корпус и полоса */
+  for(const L of baseLamps(k,x0,y0,w,lit)){
+    ctx.fillStyle="rgba(40,48,58,.95)";ctx.fillRect(L.x-7,y0+2,14,3);
+    ctx.fillStyle="rgba("+fin.lamp+","+Math.min(1,(.30+lit*.5)*(fin.dim||1)).toFixed(2)+")";
+    ctx.fillRect(L.x-6,y0+5,12,1.6);
   }
   /* остаток работы по углам: у станка своё место, хлам живёт по краям — и он
      разный, потому что разной была работа. Рисуется ДО оборудования: поверх
@@ -437,6 +434,21 @@ function drawModule(k,x,y,lit,c,r,B){
       bJunk(fin.junk[i],px,fy,lit,Rj);
     }
   }
+  ctx.restore();
+}
+/* лампы отсека: где висят и чем светят — одна таблица на корпус (оболочка) и
+   на свет (поле 21ad), чтобы свет падал ровно из той лампы, что нарисована */
+function baseLamps(k,x0,y0,w,lit){
+  const fin=ROOM_FIN[k]||FIN_DEF,ln=Math.min(fin.ln,w>120?3:2),out=[];
+  for(let i=0;i<ln;i++)out.push({x:x0+w*(i+.5)/ln,y:y0+6,col:fin.lamp,dim:fin.dim||1});
+  return out;
+}
+function drawModuleLive(k,x,y,lit,c,r,B){
+  const w=BCELL_W-12,h=BCELL_H-12,x0=x+6,y0=y+6;
+  const cx=x0+w/2,fy=y0+h-6,seed=hashi(c+1,r+1,(B&&B.idx|0)+7);
+  const P=basePower(B),fin=ROOM_FIN[k]||FIN_DEF;
+  ctx.save();
+  ctx.beginPath();ctx.rect(x0-2,y0-2,w+4,h+4);ctx.clip();   // ничего не вылезает в породу
   const F=BASE_ROOM[k];                                    // само оборудование отсека
   if(F)F(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r);
   /* ── смена в отсеке ──
@@ -467,12 +479,17 @@ function drawModule(k,x,y,lit,c,r,B){
       bWorker(px,fy,lit,sit,G.t*(.028+i*.006)+seed+i*2.1,((hh>>>(i+13))&1)?1:-1,fin.bare);
     }
   }
-  /* ── настил ──
-     Пол был полосой в четыре пикселя: помещение стояло на черте. У образца
-     настил выложен плитой, и по нему читается размер комнаты. Покрытие тоже от
-     работы: в цеху стальная плита с жёлтой разметкой, на складе и в забое —
-     утоптанная порода без всякой отделки, в жилом отсеке тёплое покрытие, в
-     лаборатории светлый наливной пол. */
+  ctx.restore();
+}
+/* ── настил ──
+   Пол был полосой в четыре пикселя: помещение стояло на черте. У образца
+   настил выложен плитой, и по нему читается размер комнаты. Покрытие тоже от
+   работы: в цеху стальная плита с жёлтой разметкой, на складе и в забое —
+   утоптанная порода без всякой отделки, в жилом отсеке тёплое покрытие, в
+   лаборатории светлый наливной пол. */
+function drawModuleFloor(k,x,y,lit,c,r,B){
+  const w=BCELL_W-12,h=BCELL_H-12,x0=x+6,y0=y+6;
+  const fy=y0+h-6,seed=hashi(c+1,r+1,(B&&B.idx|0)+7),fin=ROOM_FIN[k]||FIN_DEF;
   const FL={plate:"120,132,146",dirt:"92,78,60",soft:"104,80,62",clean:"168,186,196"}[fin.floor]
            ||"120,132,146";
   ctx.fillStyle="rgba("+FL+","+(.10+lit*.16).toFixed(2)+")";ctx.fillRect(x0,fy-4,w,4);
@@ -496,9 +513,8 @@ function drawModule(k,x,y,lit,c,r,B){
     ctx.fillRect(x0+3,fy-5.2,w-6,1.1);
   }
   ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x0,fy,w,6);
-  ctx.restore();
 }
-/* Сами восемь помещений — в 21ab-base-interiors: `drawModule` берёт их из
+/* Сами восемь помещений — в 21ab-base-interiors: `drawModuleLive` берёт их из
    `BASE_ROOM` по ключу постройки, и добавить отсек — значит дописать функцию
    туда, а не править этот файл. */
 function drawBuildMenu(S){
