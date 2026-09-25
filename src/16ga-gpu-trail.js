@@ -323,17 +323,17 @@ function gexDraw(pass,X,key,zx,zy){
    уходят в тень заметно — объём держит перепад, а не линия. */
 const GHL=new Float32Array(16),GHL_M=512;
 const GHL_WGSL=GPU_PL_WGSL+`
-fn plOcc(q:vec2f)->f32{let V=fu.v;let uv=(q*fu.res.x/fu.res.z-V[3].xy)/V[3].z;
+fn plOcc(q:vec2f)->f32{let uv=(q*fu.res.x/fu.res.z-fu.v[3].xy)/fu.v[3].z;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}
   return textureSampleLevel(t0,smp,uv,0.).a;}
 fn ga(uv:vec2f,d:vec2f)->vec2f{
   return vec2f(textureSampleLevel(t0,smp,uv+vec2f(d.x,0.),0.).a-textureSampleLevel(t0,smp,uv-vec2f(d.x,0.),0.).a,
                textureSampleLevel(t0,smp,uv+vec2f(0.,d.y),0.).a-textureSampleLevel(t0,smp,uv-vec2f(0.,d.y),0.).a);}
 fn field(p:vec2f,uv0:vec2f)->vec4f{
-  let V=fu.v;let uv=(p*fu.res.x/fu.res.z-V[3].xy)/V[3].z;let c=V[0].xy;let rad=V[0].z;let sd=normalize(V[1].xy);let col=V[2].rgb;let k=V[2].w;
+  let uv=(p*fu.res.x/fu.res.z-fu.v[3].xy)/fu.v[3].z;let c=fu.v[0].xy;let rad=fu.v[0].z;let sd=normalize(fu.v[1].xy);let col=fu.v[2].rgb;let k=fu.v[2].w;
   let dp=p-c;let rr=length(dp);
   if(rr>rad||any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(0.);}
-  let u1=vec2f(fu.res.x/fu.res.z/V[3].z);
+  let u1=vec2f(fu.res.x/fu.res.z/fu.v[3].z);
   let c4=textureSampleLevel(t0,smp,uv,0.);let a=c4.a;
   if(a<.02){return vec4f(0.);}
   /* рельеф маски: узкий шаг даёт кромку, широкий — скат борта к середине */

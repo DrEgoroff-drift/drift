@@ -50,7 +50,7 @@ const GEW_WGSL=`
 fn hexd(p:vec2f)->f32{let s=vec2f(1.,1.7320508);let a=p-s*floor(p/s+.5);let b=p-s*floor((p-s*.5)/s+.5)-s*.5;
   let q=select(b,a,dot(a,a)<dot(b,b));let h=abs(q);return .5-max(dot(h,normalize(vec2f(1.,1.7320508))),h.x);}
 fn field(p:vec2f,uv:vec2f)->vec4f{
-  let V=fu.v;let c=V[0].xy;let r=V[0].z;let k=V[0].w;let cp=V[1].xy;let pk=V[1].z;let t=V[1].w;let Z=V[2].x;let hit=V[2].y;
+  let c=fu.v[0].xy;let r=fu.v[0].z;let k=fu.v[0].w;let cp=fu.v[1].xy;let pk=fu.v[1].z;let t=fu.v[1].w;let Z=fu.v[2].x;let hit=fu.v[2].y;
   let dv=p-c;let dist=length(dv)-r;let w=max(8.,40.*Z);
   if(abs(dist)>w*3.+140.){return vec4f(0.);}
   let cell=26.*Z+10.;let n=max(6.,round(6.2831853*r/cell));
@@ -553,7 +553,7 @@ function drawSystem(){
   ctx.lineWidth=1;
   const R=sys.radius*Z;
   /* орбиты, кольцо станции, пояс, светило и его зарево — на видеокарте (17g) */
-  gpuSeg("under");gpuSysUnder(sys,ox,oy,R,Z);   /* gpuSeg — имя прохода для меток пробы (28z), без пробы ничего не делает */
+  gpuSysUnder(sys,ox,oy,R,Z);   /* метки пробы (orbits/belt/star) ставит сам, 28z gpuSeg */
   if(sys.belt)drawBeltRocks(ox,oy,sys.belt,Z,G.ship.x,G.ship.y);
   BODY_LABELS.length=0;gpuSeg("planets");
   for(const p of sys.planets){

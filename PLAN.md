@@ -57,12 +57,12 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     «Сорока», belt, hotel, planet, dock) is rerun, and every flight item must stay at 0; a rare sight the tour
     does not reach (a new system object, a mode's entry) gets a stand and joins the flight gate suite.
 - [ ] **Heat margin** — before stage 2 if the 5-minute run of stage 1 fails, otherwise interleaved with it:
-  - `under` (6.8 ms on the phone): the corona's hash noise on the noise tile with the frame constants on the
-    CPU; orbits as a triangle strip along the ellipse instead of a bbox quad with `atan2` per pixel;
+  - `under` done 0.461.0 (3.3 → 2.2 ms on the S23: orbits as a band, no uniform-array copy in the field
+    shaders); what is left there is the corona itself (≈0.65 ms) — only if the heat gate asks for it;
   - rare regeneration of the nebula with fields (9/n);
   - the post chain is done as far as it pays (0.460.0, `docs/RESEARCH-2026-09-25-gpu.md` P1): 8 of 11.4 passes
-    a frame are bloom and final, but on the S23 they cost 1.6 ms of 9.6 — the frame's price is `under`
-    (3.3 ms) and the nebula (2.4 + 1.2 ms), and that is where the items above point; `shader-f16` was measured
+    a frame are bloom and final, but on the S23 they cost 1.6 ms of 8.6 — the frame's price is the nebula
+    (2.6 + 1.2 ms) and the star's corona, and that is where the items above point; `shader-f16` was measured
     harmful there (P2, off); the other picks of that research (particles on compute, cave light by distance
     field, the star's limb law) wait in their own items;
     merged where the target is the same;

@@ -2314,7 +2314,7 @@ gpuSpaceSys                  src/16g-gpu-space.js:201-219
 gpuSpaceTitle                src/16g-gpu-space.js:221-232
 gpuStationDraw               src/17c3-station-live.js:89-95
 gpuStationFlare              src/17c3-station-live.js:98-113
-gpuSysUnder                  src/17g-gpu-system.js:386-391
+gpuSysUnder                  src/17g-gpu-system.js:411-417
 gpuTakeSnap                  src/08b-gpu.js:27-34
 gpuTrail                     src/16ga-gpu-trail.js:53-98
 gpuTs                        src/28z-fps-probe.js:128-135
@@ -2411,14 +2411,14 @@ gss                          src/17ga-gpu-planets.js:347
 GST_WGSL                     src/17c-system-draw.js:437
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
-GSY_STAR_WGSL                src/17g-gpu-system.js:45
-gsyBeltDots                  src/17g-gpu-system.js:338-346
-gsyEll                       src/17g-gpu-system.js:305-314
-gsyMean                      src/17g-gpu-system.js:315-318
-gsyOrb                       src/17g-gpu-system.js:297-303
-gsyOrbits                    src/17g-gpu-system.js:319-336
-gsyStar                      src/17g-gpu-system.js:347-384
-gsyUni                       src/17g-gpu-system.js:291-295
+GSY_STAR_WGSL                src/17g-gpu-system.js:56
+gsyBeltDots                  src/17g-gpu-system.js:355-363
+gsyEll                       src/17g-gpu-system.js:322-331
+gsyMean                      src/17g-gpu-system.js:332-335
+gsyOrb                       src/17g-gpu-system.js:314-320
+gsyOrbits                    src/17g-gpu-system.js:336-353
+gsyStar                      src/17g-gpu-system.js:364-409
+gsyUni                       src/17g-gpu-system.js:308-312
 GTR                          src/16ga-gpu-trail.js:9
 GTR_WGSL                     src/16ga-gpu-trail.js:10
 gtrDraw                      src/16ga-gpu-trail.js:43-51
@@ -6935,7 +6935,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17f-sys-traffic.js · 8 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 26 КБ
+## src/17g-gpu-system.js · 29 КБ
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 14 КБ

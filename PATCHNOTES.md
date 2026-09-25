@@ -6,6 +6,28 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.461.0 - `under` on the phone: 3.3 → 2.2 ms, the picture the same
+
+- **Orbits as a band along the ellipse** (`17g`): each orbit was a bounding quad with `atan2` and the ellipse
+  distance per pixel — 1.2 ms on the S23 for lines a few pixels wide. Now the vertex shader lays a band of
+  160 segments along the ellipse (width = line + glow + 4 px) and the fragment does the same maths only where
+  the line is: 1.2 → 0.02 ms, pair `system` max|d| 0.
+- **No copy of the constants array in the field shaders** (`17g`, `16ga`, `16gb`, `17`, `17c`, `17c2`, `19ca`):
+  `let V=fu.v;` materialised the whole `array<vec4f,15>` uniform (60 floats) per fragment, and on Adreno that
+  costs ~1 ms of a full-screen field — the star's field with `star()` returning 0 still took 1.27 ms; without
+  the copy 0.32. Every field now reads `fu.v[k]` in place. S23, DPR 1.5, `?g11=deep`: star 2.25 → 1.57 ms,
+  nebComp 1.29 → 1.17, world 0.68 → 0.62, frame 9.1 → 8.55 ms; pairs `system`/`surface`/`night`
+  max|d| 0/1/2 of 255.
+- **The star's frame constants on the CPU** (`17g`, `gsyStar` → `fu.v[9..11]`): breath, streamer phases,
+  corona rotation, flare strength and cycle, ray lengths — no per-pixel `sin`/`fract` for values that do not
+  vary across the frame; `pow(x,2.)` → `x*x`; the flare block skipped while it is dark. Look-preserving
+  (pair max|d| 2); on its own within the phone's noise (2.34 → 2.25 ms), kept as hygiene.
+- **The probe splits `under`** (`17g`, `28z`): `orbits`, `belt`, `star` are separate segments in `?g11=deep`;
+  `GSY.v = 1..5` strips the star's blocks one by one (corona → prominences → flare/halo/rays → photosphere →
+  all) for attribution on a device. Measured: corona ≈0.65 ms, flare/halo/rays ≈0.22, photosphere ≈0.14.
+- **Tried and reverted**: the corona's noise on the nebula's baked tile — 2.41 → 2.34 ms, inside the noise,
+  and it changed the noise pattern; the cost was never the hash.
+
 ## 0.460.0 - the ladder's sum in one pass; the phone measured
 
 - **The bloom's upper levels summed in one pass** (`08b`): 0.459.0 made the final read five mip levels at full

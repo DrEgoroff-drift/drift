@@ -45,6 +45,12 @@ premise was wrong on the S23**: the ten tiny ladder passes cost 0.12 ms together
 and the final reading five levels at full resolution cost +0.34 ms; 0.460.0 sums the upper levels in one pass
 at ⅛ resolution (0.02 ms) and the final reads two taps — frame 9.8 → 9.6 ms, within the run-to-run noise.
 Lesson: on this GPU count taps at full resolution, not passes.
+
+**Found on the way (0.461.0), worth more than P1 and P2 together:** `let V=fu.v;` in a full-screen field
+shader copies the whole `array<vec4f,15>` uniform into registers per fragment — ~1 ms on the S23 per
+full-screen field (star field with its body returning 0: 1.27 ms; without the copy 0.32). Removed in all
+seven field shaders: frame 9.1 → 8.55 ms. And the orbit quads with `atan2` per pixel: 1.2 → 0.02 ms as a
+band along the ellipse. Rule: no local copies of uniform arrays in WGSL; read `fu.v[k]` in place.
 A further step, only if the pair asks for it: `fsDown` merged into level 1 (the knee at ¼ res straight from scene).
 
 **P2. `shader-f16` for the post chain and the nebula.** **Measured 0.460.0, left off**: requesting the feature
