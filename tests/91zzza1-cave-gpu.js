@@ -67,3 +67,31 @@ TEST_SUITES.push(()=>suite("шахта G7: лампы и резак — исто
   ok(dug,"выкопанная клетка поднимает D.maskV");
   resetWorld();
 }));
+
+/* тайлы пекутся на видеокарте: в Node их кадр не зовёт, поэтому художники тайлов
+   прогоняются здесь напрямую — тем же договором, что у выпечки (W,H = тайл) */
+TEST_SUITES.push(()=>suite("пещера и шахта G7: художники тайлов рисуют без ошибок",()=>{
+  resetWorld();
+  landOnTestPlanet();
+  if(!G.surf.cave)G.surf.cave={x:G.surf.x+80};
+  const cp=G.surf.p;
+  planetMatNow(cp);
+  enterCave();
+  const C=G.cave;
+  const pW=W,pH=H;
+  let lg;
+  try{
+    W=TILE;H=TILE;
+    lg=T.ledger(()=>{for(const [x,y] of [[0,0],[512,0],[1024,512],[1536,-512]])drawCaveRock(C,cp,x,y);});
+  }finally{W=pW;H=pH;}
+  ok(lg.calls>200,"порода пещеры: четыре тайла, вызовов канвы "+lg.calls);
+  exitCave();
+  enterDig();
+  const D=G.dig;
+  try{
+    W=TILE;H=TILE;
+    lg=T.ledger(()=>{for(const [x,y] of [[-256,-256],[-256,256],[256,1024]])digRockPass(D,cp,x,y);});
+  }finally{W=pW;H=pH;}
+  ok(lg.calls>200,"порода шахты: три тайла, вызовов канвы "+lg.calls);
+  resetWorld();
+}));

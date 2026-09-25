@@ -386,8 +386,13 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
      перестаёт читаться, но цвет породы не уезжает */
   ctx.save();
   if(P)ctx.clip(P);   // без пути клипа нет: ctx.clip() по пустому пути вырезал всё (G3)
-  ctx.globalCompositeOperation="overlay";
-  ctx.globalAlpha=a2;
+  /* на холсте видеокарты (GcCtx, тайлы в выпечке) overlay нет: ему нужен фон в
+     шейдере. Тот же крупный слой кладётся обычной краской и втрое тише — он так же
+     рвёт сетку 256 светлыми и тёмными полями, а цвет породы почти не трогает:
+     тайл — та же порода */
+  const gc=(typeof GcCtx==="function")&&(ctx instanceof GcCtx);
+  ctx.globalCompositeOperation=gc?"source-over":"overlay";
+  ctx.globalAlpha=gc?a2*.35:a2;
   const K=3.7, PH=91;
   /* Смещение второго прохода обязано быть таким же, как у первого (делённым на
      масштаб), иначе крупный слой ползёт относительно мелкого при движении

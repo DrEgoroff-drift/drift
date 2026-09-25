@@ -7,7 +7,7 @@
    ранцем (20d). Свет, темнота, натёки, озёра и жилы (22a) держатся за
    верхнюю галерею, как и раньше: caveFloor/caveCeil ищут её пол и свод в
    сетке, поэтому убранство не узнало, что пещера стала объёмной.
-   Порода красится тайлами (18c): в кадре остаётся drawImage. */
+   Порода красится тайлами (18c), печёт и кладёт их видеокарта (G7). */
 const CAVE_W=2200, CAVE_CS=5, CAVE_Y0=-160, CAVE_Y1=1340;
 /* стена расписок (M210): на шаг внутрь от устья, где кончается дневной свет */
 const CAVE_WALL_X0=150, CAVE_WALL_X1=248;
@@ -484,7 +484,9 @@ function drawCaveRock(C,cp,wx0,wy0){
        плоской краской поверх материала, и у каждой стены был нарисованный
        обвод. Тот же тайл кладётся штрихом по контуру, в мировых координатах,
        чтобы не ехал относительно заливки */
-    {
+    /* материал ещё печётся — кромку не кладём: 2D молча пропускал strokeStyle=null и
+       обводил прежней краской, холст видеокарты такую краску не берёт (G7) */
+    if(mat){
       const KW=new Path2D();KW.addPath(K,new DOMMatrix().translate(wx0,wy0));
       ctx.save();ctx.translate(-wx0,-wy0);
       ctx.strokeStyle=mat;ctx.lineWidth=CS;ctx.globalAlpha=.30;ctx.stroke(KW);
@@ -575,8 +577,10 @@ function drawCaveRock(C,cp,wx0,wy0){
    и даёт кадру вторую температуру. */
 function drawCaveFar(C,camx,camy){
   const cp=(G.surf&&G.surf.p)||null;
-  C.farT=tileStore(C.farT,"cavefar|"+(C.seed&0xff)+"|"+(cp?cp.seed:0)+"|"+DPR);
-  drawTiles(C.farT,camx*.38,camy*.38,(g,wx0,wy0)=>{
+  /* тайлы пекутся на видеокарте (G7, 18c gpuTileStore): холст видеокарты рисует
+     те же пути и узор; слой лежит под всем 2D кадра */
+  C.farT=gpuTileStore(C.farT,"cavefar|"+(C.seed&0xff)+"|"+(cp?cp.seed:0)+"|"+DPR+(cp&&cp.mat?"|m":""));
+  gpuDrawTiles(gpuScene(),C.farT,camx*.38,camy*.38,(g,wx0,wy0)=>{
     /* задняя стена — ТЕЛО (M305): при #070b11 пустота между глыбами была
        чёрной, и глыбы висели в ничём. Стена зоны I: темнее ближней породы,
        но с массой и трещинами — пещера стала полостью В камне */
@@ -616,8 +620,9 @@ function drawCaveWorld(){
   const camx=C.x-W/2, camy=C.cy-H*.56;
   drawCaveFar(C,camx,camy);
   const cp=G.surf&&G.surf.p;
-  C.chunks=tileStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+DPR);
-  drawTiles(C.chunks,camx,camy,(g,wx0,wy0)=>drawCaveRock(C,cp,wx0,wy0));
+  /* «|m» — материал планеты допёкся: тайлы без него перепекаются один раз */
+  C.chunks=gpuTileStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+DPR+(cp&&cp.mat?"|m":""));
+  gpuDrawTiles(gpuScene(),C.chunks,camx,camy,(g,wx0,wy0)=>drawCaveRock(C,cp,wx0,wy0));
   /* положение астронавта на экране: камера догоняет, поэтому он не в центре */
   const px=C.x-camx, py=C.y-11-camy;
   /* убранство: строение раньше материала — натёки уже вылеплены породой выше,

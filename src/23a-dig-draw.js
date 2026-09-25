@@ -51,8 +51,9 @@ function drawDigWorld(){
   /* порода ломтями по world-x И world-y (хвост G3, правило G11): пласты, жилы
      и материал пекутся один раз на тайл 512×512, кадр только кладёт картинки.
      digRockPass рисует через W/H, которые withCtx подменяет на размер тайла */
-  D.tiles=tileStore(D.tiles,p.seed+"|"+DPR);
-  drawTiles(D.tiles,camx,camy,(g,wx0,wy0)=>digRockPass(D,p,wx0,wy0));
+  /* печёт и кладёт видеокарта (G7, 18c gpuTileStore): тайл — текстура под всем 2D */
+  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR+(p.mat?"|m":""));   /* «|m»: материал допёкся — перепечь */
+  gpuDrawTiles(gpuScene(),D.tiles,camx,camy,(g,wx0,wy0)=>digRockPass(D,p,wx0,wy0));
   /* свет уходит от человека (M55 #1) — теперь это поле видеокарты (23b): фонарь
      с тенями от породы, лампы, день сверху; виньетка и тёплое пятно ушли */
   /* ── рудное тело ──

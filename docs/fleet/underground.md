@@ -38,6 +38,18 @@ Branch `claude/gpu-cave`, from the fleet base `claude/optimistic-gates-u46osn`. 
    cutter's progress overlay moved after the light (it is a pointer). Test: second suite in
    `tests/91zzza1-cave-gpu.js`.
 
+3. **tiles as textures: cave rock, cave far wall and mine rock bake on the GPU** (after merging
+   the base with the kit's `Path2D`/`createPattern`/`gpuTileStore`): `tileStore`/`drawTiles` →
+   `gpuTileStore`/`gpuDrawTiles(gpuScene(),…)` — the tiles sit under all 2D of the frame, as
+   before. `18a-material.fillMaterial` keeps its signature; on a GcCtx its large second pass is
+   source-over at 0.35 of its alpha instead of `overlay` (GcCtx has no overlay; the tile is the
+   same rock, so it still breaks the 256 grid without moving the colour) — this also unblocks
+   any other ship baking `fillMaterial` through GcCtx (surface, landing, base). Bug fixed on the
+   way: `drawCaveRock` set `strokeStyle=planetMat()` while the material was still baking (null:
+   2D silently kept the old paint, GcCtx refuses). Tile keys now carry `|m` once the planet's
+   material is ready, so tiles baked without it re-bake once (before, they stayed bare for good).
+   Test: the tile painters are called directly in Node (the frame no longer calls them there).
+
 ## Pairs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174/scratchpad/`
@@ -53,6 +65,8 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
   the right, a side drift at row 24): ore bodies glow in their colour and their grains glint
   above 1.0 near the lamp (ice cold-white, iron warm), platform lamps are real lights with
   bloom cores, the drift is lamp-lit; cold dark rock around instead of an even olive wash.
+- `pair-cave-2.png`, `pair-digdeep-2.png` (commit 2 frame | commit 3 frame): the same picture —
+  tiles moved to GPU bakes, 0 GPU errors, no page errors. Parity by design for this sub-item.
 
 ## New render pipelines (for the warm-up table `08b1`)
 
