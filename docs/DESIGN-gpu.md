@@ -423,6 +423,19 @@ machine. The GPU canvas suite checks series (disjoint → one; overlap, a shadow
 or a different blur → cut), zero creations on a repeat bake, and a new pool after `GPU.lay` is replaced (what
 `gpuInit` does after a loss). The phone twin is still to be measured, with GPU-3's hotcost stand.
 
+**The ramp cache, the warm-up in `gpuInit`, the cap by the peak.**
+- *Ramp cache (GPU-3's request).* `GcGrad.ramp()` built a 256-step band for every gradient fill; the hotel makes a
+  gradient per window with nearly the same stops. That was ~27 % of the hotel bake's JS by GPU-3's CDP profile.
+  Bands are now cached by the sorted stops in `GC_RAMPS` (at most 512, then cleared), with their half-float copy on
+  the band. A bake gives one row per distinct band. Hotel light layer, runs 2–6: record 3–4.6 ms (was 7–11), the
+  rest of the CPU 1.5–3 (was 3–7), bit-identical to 0f6e4e3.
+- *Warm-up.* `gpuInit` calls `gcPool()`, so the ~30 ms of GPU-process work happens behind the loading screen, and
+  again after a device loss. `08b` did not grow (a comment got shorter).
+- *Cap.* `Q.peak` records the pool's peak. On the phone twin (411×742 ×1.5), across system with a zoom sweep
+  .25–3, dock and relay, the peak is 30.4 MB, i.e. the warm-up set plus one 320×64 pair. The cap is now 64 MB, so one
+  set over 16 MB is used once and never pooled. The 5-minute P1 route has no script here, so these scenes stand in
+  for it.
+
 ## Where I stopped (update on every commit)
 
 - **GPU canvas v1 (25.09, `gpu`).** `08ca-gpu-canvas.js`, brief in §G; the first port is the finds (17b), the pair
@@ -435,9 +448,10 @@ or a different blur → cut), zero creations on a repeat bake, and a new pool af
 - **Shadow series in a bake are in (§G).** Hotel light layer: 92 layers → 18, 431 → 146 ms, picture as HEAD.
 - **Bake target pool and the shadow atlas are in (§G).** Hotel light layer 146 → ~25 ms, bit-identical; the phone
   twin (hotcost) is still to be measured.
+- **Ramp cache, warm-up in `gpuInit`, pool cap 64 MB (peak 30.4 MB) are in (§G).**
 - **Next, in Контроль's order (25.09):**
-  0. the phone twin for the hotel's appearance (hotcost, 411×742 ×1.5, CPU ×4), before and after the pool; then the
-     ramp cache by stops (GPU-3's request), then multiply on a transparent destination (two draws), then #ovl.
+  0. merge gpu3 (ba9d692, the hotel on GPU-canvas bakes) and measure its appearance on the phone twin with GPU-3's
+     hotcost2.py, gpu3 alone against the merge; then multiply on a transparent destination (two draws), then #ovl.
      Gauss weights on the CPU and σ > 4 downsampling only if blur passes on the phone take > 2 ms per bake;
   1. chipDom and domLabel through the atlas. Numbers are built from cached glyphs; a steady flight rasters 0 strings
      a frame; the atlas evicts (LRU); a 600-frame test; the text raster is a column of its own in gate2d;

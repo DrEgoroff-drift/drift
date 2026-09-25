@@ -57,13 +57,20 @@ function gcColor(s){
 function gcInv(m){const d=m[0]*m[3]-m[1]*m[2];if(!d||!isFinite(d))return null;
   return [m[3]/d,-m[1]/d,-m[2]/d,m[0]/d,(m[2]*m[5]-m[3]*m[4])/d,(m[1]*m[4]-m[0]*m[5])/d];}
 
-/* градиент: координаты — в пространстве, что действует при заливке (как у 2D) */
+/* градиент: координаты — в пространстве, что действует при заливке (как у 2D).
+   Лента — по ключу точек в общем кэше GC_RAMPS: у гостиницы свой градиент на каждое окно, а точки
+   почти одни (замер GPU-3: лента съедала ~27 % JS выпечки гостиницы); к ленте цепляется её half-float */
+const GC_RAMPS=new Map();
 class GcGrad{
-  constructor(k,a){this.k=k;this.a=a;this.s=[];}
-  addColorStop(o,c){if(!(o>=0&&o<=1))throw new RangeError("GPU-холст: точка градиента "+o);this.s.push([+o,gcColor(c)]);}
+  constructor(k,a){this.k=k;this.a=a;this.s=[];this._r=null;}
+  addColorStop(o,c){if(!(o>=0&&o<=1))throw new RangeError("GPU-холст: точка градиента "+o);this.s.push([+o,gcColor(c)]);this._r=null;}
+  ramp(){if(this._r)return this._r;
+    const S=this.s.slice().sort((a,b)=>a[0]-b[0]),key=S.map(q=>q[0]+":"+q[1].join(",")).join(";");
+    let r=GC_RAMPS.get(key);if(!r){if(GC_RAMPS.size>512)GC_RAMPS.clear();GC_RAMPS.set(key,r=GcGrad.band(S));}
+    return this._r=r;}
   /* 256 точек ленты: смесь без премультипликации (так делает 2D в Chrome), потом премультипликация.
      Лента в half-float: восьмибитная теряла дробь между уровнями, и дизеру нечего было рассеивать */
-  ramp(){const S=this.s.slice().sort((a,b)=>a[0]-b[0]),o=new Float32Array(1024);
+  static band(S){const o=new Float32Array(1024);
     for(let i=0;i<256;i++){const t=i/255;let c;
       if(!S.length)c=[0,0,0,0];
       else if(t<=S[0][0])c=S[0][1];
@@ -366,10 +373,10 @@ function gcMipPipe(){return GPU.lay["gc.mip"]||(GPU.lay["gc.mip"]=GPU.dev.create
    Набор целей одного размера (MSAA, трафарет, resolve; атласы тени; лента) берётся из пула: годится
    любой не меньше нужного и не больше 2.25 его площади (мелочи до 256² — любой до 256²), новый — с запасом
    до 64 px. Буферы — по роли, растут степенью двойки. Пул живёт в GPU.lay и сбрасывается с устройством;
-   при создании он прогревается ходовыми размерами (GC_POOL_WARM, ~31 МБ), так что первая встреча с
+   gpuInit (за экраном загрузки и после потери устройства) прогревает его ходовыми размерами (GC_POOL_WARM, ~30 МБ): первая встреча с
    крупной выпечкой создаёт одну текстуру — её саму. Повтор безопасен порядком очереди: запись
    следующей выпечки встаёт после чтения прошлой ── */
-const GC_POOL_CAP=96<<20;
+const GC_POOL_CAP=64<<20;   /* пик на двойнике телефона (system с развёрткой зума, dock, relay) — 30.4 МБ */
 const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["shadow",256,256],["shadow",512,512],["ramp",256,128]];
 /* наборы: [формат, выборок, usage] — все одного размера */
 function gcPoolSpec(role){
@@ -379,7 +386,7 @@ function gcPoolSpec(role){
     :[["rgba16float",1,TB|U.COPY_DST]];}
 function gcPool(){
   let Q=GPU.lay["gc.pool"];if(Q)return Q;
-  Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,made:0};
+  Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0};
   for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);
   return Q;}
 /* → текстуры набора role размером w×h или больше */
@@ -390,7 +397,7 @@ function gcPoolSet(role,w,h){
   const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
   const T=gcPoolSpec(role).map(([f,n,us])=>{by+=W*H*n*(px[f]||4);Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
   if(by>GC_POOL_CAP/4){GPU.trash.push(...T);return T;}   /* великан — разовый, в пул не идёт */
-  Q.t.push({role,w:W,h:H,T,by});Q.by+=by;
+  Q.t.push({role,w:W,h:H,T,by});Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
   while(Q.by>GC_POOL_CAP&&Q.t.length>1){const o=Q.t.shift();Q.by-=o.by;GPU.trash.push(...o.T);}
   return T;}
 function gcPoolBuf(role,us,a){
@@ -423,7 +430,7 @@ function gpuBakeRedo(B){
   B.view=B.tex.createView();B.dev=d;
   const [ms,st,rs]=gcPoolSet("bake",W,H),TW=ms.width,TH=ms.height;
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
-  const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
+  const V=[],P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],RI=new Map(),D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
   let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
   const put=(md,ref,v,pi,img)=>{const f=V.length/5;
     if(img)for(let i=0;i<v.length;i+=4)V.push(v[i],v[i+1],pi,v[i+2],v[i+3]);
@@ -439,7 +446,7 @@ function gpuBakeRedo(B){
     on=cl;};
   const paint=p=>{const i=P.length/20;
     if(!p.k){P.push(...p.c,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);return i;}
-    const r=R.length;R.push(p.ramp);const a=p.g.a,iv=p.iv;
+    let r=RI.get(p.ramp);if(r===undefined){RI.set(p.ramp,r=R.length);R.push(p.ramp);}const a=p.g.a,iv=p.iv;   /* одна лента — одна строка */
     P.push(0,0,0,0,p.k,r,p.a,0,iv[0],iv[1],iv[2],iv[3],iv[4],iv[5],a[0],a[1]);
     if(p.k===1)P.push(a[2],a[3],0,0);else P.push(a[2],a[3],a[4],a[5]);
     return i;};
@@ -497,7 +504,7 @@ function gpuBakeRedo(B){
   const vb=gcPoolBuf("vb",bu.VERTEX,new Float32Array(V.length?V:[0,0,0,0])),pb=gcPoolBuf("pb",bu.STORAGE,new Float32Array(P)),ub=gcPoolBuf("ub",bu.UNIFORM,u0);
   const L=gcLay();let rv=L.dm;
   if(rt){const h=new Uint16Array(R.length*1024);
-    R.forEach((r,i)=>{for(let j=0;j<1024;j++)h[i*1024+j]=f16(r[j]);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);rv=rt.createView();}
+    R.forEach((r,i)=>{if(!r.h16){r.h16=new Uint16Array(1024);for(let j=0;j<1024;j++)r.h16[j]=f16(r[j]);}h.set(r.h16,i*1024);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);rv=rt.createView();}
   const bgs=new Map(),bg=(q,u)=>{u=u||ub;const key=q?q.view:null,nr=q&&q.near;let M=bgs.get(u);if(!M)bgs.set(u,M=new Map());
     let b=M.get(key)&&M.get(key)[nr?1:0];if(b)return b;
     b=d.createBindGroup({layout:L.bgl,entries:[{binding:0,resource:u.buffer?u:{buffer:u,size:32}},{binding:1,resource:{buffer:pb}},{binding:2,resource:rv},
