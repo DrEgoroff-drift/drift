@@ -34,9 +34,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     world or a finger (chips, compass, brackets, sticks) as DOM with `transform` or a small canvas;
   - hulls: bake the material (albedo, height → normal, emission, gloss mask) once per hull, bank and scale in the
     shader, from `GST_WGSL`; the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`);
-    before the release `-Full`: «инструменты: руки и глаза отвечают тем, что обещают» (91zzzzzzz-hands, canvas
-    calls and texts of the system frame) fails in the full run and passes alone, on gpu and on HEAD alike —
-    an order leak between suites; find what the suite before it leaves behind;
     after the phone candidate — the final glow's source is HDR above the knee plus explicit emission only: paint
     (the `c*c` of fsDown) leaves the first level entirely; the ship was the first case (ee46b87, half inside
     `u.hl`), stations and the hotel's facade next, each in a pair (rule 16/n);

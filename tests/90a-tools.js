@@ -501,8 +501,16 @@ const T=(()=>{
      перехватывается прототип (видны и запечённые слои, `main:false`), под
      Node — главный ctx игры. */
   const LEDGER_OPS=["fillRect","strokeRect","clearRect","fillText","strokeText","drawImage","fill","stroke","putImageData"];
+  /* что видит игрок: главная канва; с видеокартой (ступень 1, 08bh) мир на #g, а текст —
+     на слое приборов #hud и в маленьких холстах подписей и фишек (#chips) */
+  const ledgerSeen=c=>c===cvs||(!!GPU.ui&&c===GPU.ui)||!!(c&&c.closest&&c.closest("#chips"));
+  /* плотность холста: пикселей на пиксель CSS */
+  const ledgerDens=c=>(GPU.ui&&c===GPU.ui)?GPU.ui.width/Math.max(1,W):(c&&c.closest&&c.closest("#chips"))?gpuHudDpr():(DPR||1);
   function ledger(fn){
     const L={calls:0,by:{},texts:[]};
+    /* слой приборов и подписи перерисовываются только по изменению — для счёта кадр
+       рисует их заново, как в первый раз */
+    if(GPU.ok){GPU.hkey=null;for(const e of LABDOM.m.values())e.sig="";for(const e of CHIPDOM.m.values())e.sig="";}
     const wrap=(P,keep,ops)=>{
       for(const op of (ops||LEDGER_OPS)){
         const f=P[op];if(keep)keep[op]=f;
@@ -512,7 +520,7 @@ const T=(()=>{
             const m=/(\d+(?:\.\d+)?)px/.exec(this.font||"")||[0,0];
             const t=this.getTransform?this.getTransform():null;
             const k=t?Math.sqrt(Math.abs(t.a*t.d-t.b*t.c)):1;
-            L.texts.push({s:String(arguments[0]),px:+m[1],css:+m[1]*k/(DPR||1),main:this.canvas===cvs});
+            L.texts.push({s:String(arguments[0]),px:+m[1],css:+m[1]*k/ledgerDens(this.canvas),main:ledgerSeen(this.canvas)});
           }
           return f.apply(this,arguments);
         };

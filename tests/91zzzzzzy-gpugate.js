@@ -102,8 +102,9 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: окна гостин
   let up=0,B=null;const masks=new Set();
   try{
     G.running=true;LOOP_OFF=false;
-    for(let i=0;i<4;i++)frameBody(wallMs());   /* дом испечён и загружен */
-    B=HOTEL_BAKE;
+    HOTEL_BAKE=null;   /* дом испечён и загружен здесь же, а не чужим набором */
+    for(let i=0;i<60&&!(HOTEL_BAKE&&GPU_MIP.has(HOTEL_BAKE.cv));i++){gatePlace();frameBody(wallMs());}
+    B=HOTEL_BAKE;frameBody(wallMs());
     Q.copyExternalImageToTexture=function(){if(/drawHotel/.test(gateWho()))up++;return c0.apply(this,arguments);};
     const d0=Math.floor(G.t/CEL_DAY)*CEL_DAY;
     for(let h=0;h<24;h+=3)for(let f=0;f<3;f++){
@@ -114,6 +115,6 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: окна гостин
   }finally{Q.copyExternalImageToTexture=c0;G.running=run0;LOOP_OFF=loop0;}
   ok(masks.size>=8,"наборов горящих окон за сутки: "+masks.size+" ≥ 8");
   eq(up,0,"выгрузок дома при смене окон");
-  ok(B&&HOTEL_BAKE===B,"дом не перепечён");
+  if(ok(B,"дом нарисован и загружен"))ok(HOTEL_BAKE===B,"дом не перепечён");
   resetWorld();
 }));

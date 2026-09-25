@@ -5482,7 +5482,7 @@ sysRasterDrop                src/06-galaxy.js:23-35
 sysRasterTick                src/06-galaxy.js:37-49
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
-T                            tests/90a-tools.js:54-604
+T                            tests/90a-tools.js:54-612
 tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
@@ -7354,7 +7354,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/90-harness.js · 47 КБ
   · автотесты: каркас:1
 
-## tests/90a-tools.js · 44 КБ
+## tests/90a-tools.js · 45 КБ
   · автотесты: инструменты (M442):1
 
 ## tests/90b-detect.js · 27 КБ
@@ -7394,7 +7394,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
   · ключи из кода не показываются игроку:207
   · на чистом старте в кадре нет лишнего:252
-  · M236: колесо крутит мир только над миром:284
+  · M236: колесо крутит мир только над миром:285
 
 ## tests/91g-relic.js · 9 КБ
   · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1

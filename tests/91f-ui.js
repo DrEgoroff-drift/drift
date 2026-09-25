@@ -263,7 +263,8 @@ TEST_SUITES.push(()=>suite("интерфейс: на чистом старте �
   G.mode="system";G.parrot=null;hud();
   /* что имеет право висеть над миром с первой секунды */
   /* g — канва видеокарты (08b gpuInit): это сам мир, а не то, что над ним */
-  const OK=["c","g","slope","hud","msg","prompt","console","rail","pads","menu"];
+  /* chips — слой фишек и подписей ступени 1 (08bh): прозрачный, без событий, заводится с первой подписью */
+  const OK=["c","g","slope","hud","chips","msg","prompt","console","rail","pads","menu"];
   const stray=[];
   for(const e of document.body.children){
     if(e.tagName==="SCRIPT"||e.tagName==="STYLE")continue;

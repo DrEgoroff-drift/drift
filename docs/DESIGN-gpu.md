@@ -213,7 +213,8 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   back 0); the instrument pod 25c redraws only on change; item 3 done (body V>.6 +12/+13 % over 2D — the
   excess was the final glow on the hull's own paint, not the exhaust); the wake at the stern cooled to 2D's
   peak within 20 hull units of the nozzle, further as before; the hotel's windows are pieces of a two-master
-  atlas (uploads 0 on any flip). Next: the phone candidate.
+  atlas (uploads 0 on any flip); the release rehearsal is green. Next: combat — dirt.js on a combat stand, then
+  the move with the fleet's method.
 - **Released 0.457.0 (`2a288f7`, from `rel`; merged back into gpu as `b0c8cac`).** The next candidate goes from
   gpu the same way: the release list plus `cismoke`, its sha to Контроль. Rollback: a commit with the tree of
   `d543aff` on top, no force-push. `C:/Claude/drift-rel` stays — it is Контроль's working directory; nothing is
@@ -595,6 +596,13 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
   20/3/8 h: max 2/255. Uploads on a day of flips (8 hours × 3 flicks, ≥ 8 lit sets): 0, the house not
   re-baked (new suite in 91zzzzzzy-gpugate; the zoom gate no longer excuses the hotel). Three atlases of
   320×452 instead of three 320×218 masters re-uploaded on every flip.
+  **Release rehearsal.** Four suites went red in `-Full`, none an order leak of the old kind — each read the
+  2D frame of before stage 1. The hands (`T.ledger`/`T.text`) counted text only on `#c`, and the text now lives
+  on the `#hud` layer and in the label and chip canvases under `#chips`, redrawn only when their key changes:
+  the ledger now forgets those keys before the frame and counts all three, each at its own density. The clean
+  start now knows `#chips` (transparent, no events). The memory bound on canvases in textures is
+  `GPU_CVTEX_CAP`, not 8. The hotel gate bakes its house before it starts counting. `-Full` 897/897 (quarantine
+  aside), Node 673/673, golden frames in 1280×800, 390×844 and 1440×1440 unchanged — nothing re-shot.
 - Brief of **L4 k/n — the shock ring and the exhaust haze bend the backdrop, never a hull** (Контроль 24.09): no
   hull, own or pirate, sprite or 2D, is cut into bands; an RGB fringe on the backdrop only. Done (08b/08c): the
   scene's alpha became the hull mask — every blend keeps it (`GPU_KEEP_A`), the lit sprite (`gst`: pirates,
