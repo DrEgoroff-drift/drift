@@ -33,6 +33,7 @@ could ever save.
   ring with its lamps and spiral. Captions ride the label layer. Belt mode itself is next.
 - **ГЛАВТРАССА ships' captions** (`12ai`): the name, number and line under a fleet ship ride the label layer
   too - the tour never met a fleet ship, and its caption was the last text written on the 2D layer in flight.
+- **Hired hands drawn on the GPU** (`12a`): an ally's hull went through the 2D layer and its light was copied off the screen mid-pass - every ally in view cost a copy of the whole frame, two more submits, and could turn the frame black. Now allies are drawn like your own ship: lit towards the star, sharper, one submit per frame.
 
 ## 0.457.0 - the world on the video card
 

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 613 · символов верхнего уровня: 6103
+Файлов: 613 · символов верхнего уровня: 6105
 
 ## СИМВОЛЫ
 
@@ -106,6 +106,8 @@ albumOpen                    src/25g-postcard.js:677
 albumSave                    src/25g1-album-fx.js:105-136
 alCount                      tests/91zzzzzy-alive.js:15-22
 ALL_NAMES                    tests/90-harness.js:93
+ALLY_THR                     src/12a-crew.js:708
+allyHullGpu                  src/12a-crew.js:709-718
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:614-643
 ambK                         src/19c-light.js:115-120
@@ -1399,7 +1401,7 @@ draftTowerAt                 src/27jb-kb.js:49-54
 drawAbil                     src/16c-abil.js:124-149
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
-drawAllies                   src/12a-crew.js:678-697
+drawAllies                   src/12a-crew.js:678-704
 drawAnomaly                  src/20aa-poi-shapes.js:168-191
 drawAstronaut                src/20-life.js:4-141
 drawBarge                    src/12l-barge.js:577-607
@@ -2001,8 +2003,8 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-gateFind                     tests/91zzzzzzy-gpugate.js:242-272
-gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-272
+gateFind                     tests/91zzzzzzy-gpugate.js:242-283
+gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-283
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
 gateStand                    tests/91zzzzzzy-gpugate.js:22-30
 gateWho                      tests/91zzzzzzy-gpugate.js:19-21
@@ -6414,7 +6416,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · живой рынок:1
   · дроны:139
 
-## src/12a-crew.js · 45 КБ
+## src/12a-crew.js · 47 КБ
   · наёмники: флот, которым не управляешь напрямую:1
   · приказы:148
   · переданные модули:285
@@ -8056,7 +8058,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzz-crashlog.js · 3 КБ
   · автотесты: что уезжает в crash.log (0.419):1
 
-## tests/91zzzzzzy-gpugate.js · 24 КБ
+## tests/91zzzzzzy-gpugate.js · 25 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
 ## tests/91zzzzzzy1-gpugate-belt.js · 5 КБ

@@ -1201,6 +1201,8 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   cache, the label checked on the label layer) and `drawFleet` in its upload net; mutant `fleet-caption-on-c`
   (the caption back on `#c`) dies on it.
 
+- **Allies on the GPU** (`12a`): `drawAllies` drew each hired hand's hull in 2D and called `gpuHullLight` inside the open scene pass - one #c copy and two extra submits per ally, and the frame's command buffer broke (a black frame, 12 GPU errors per six frames). Now `allyHullGpu` draws them through `hullGpuDraw` like the player's ship, lit towards the star; the thrust smoothing is kept per ally (a WeakMap) so an ally on the player's hull does not share his flame. 2D + `gpuHullLight` stay for no-GPU. Six frames: #c copies 18 → 0, submits 30 → 6, dirt 0, errs 0. Hull (2D fallback → GPU): light sum −0.1 % / −2.2 % at 760, 0 % at ×1.5; body mean V +12 % / +4 %; sharpness ×2.1 / ×1.7 at 760, ×1.8 at ×1.5; the V>.6 area grows ×2–2.5, all of it the star-coloured rim (S of the bright .21 → .33). Gate scene «союзник и наёмник в кадре», mutant `ally-hull-2d`.
+
 ## 9. Session 3 (worktree drift-gpu3, branch gpu3): stage 2, the belt
 
 - **Belt world off #c (Контроль 25.09, stage 2 item 1).** `drawBelt` hands the world to `beltGpuDraw` (24ba) when
