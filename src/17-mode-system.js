@@ -650,10 +650,9 @@ function drawSystem(){
      крупнее малой луны; ниже .35 он уже не находится глазом */
   ctx.scale(shipScaleAt(Z),shipScaleAt(Z));   /* один масштаб с буксиром (16c) */
   /* корпус на видеокарте (17c2): тело светом звезды, факел и огни — явным светом;
-     не взяла — прежний 2D с gpuHullLight */
+     2D-пути нет (25.09): без видеокарты нет и полёта */
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
-  const hullG=hullGpuDraw(G.shipId,hsx,hsy,sh.a,shipScaleAt(Z),thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
-  if(!hullG)drawHull(G.shipId,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank);
+  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shipScaleAt(Z),thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
   /* стволы на подвесах, повёрнутые по наводке (M363): сборка читается
      силуэтом раньше первого выстрела */
   if(typeof gunBarrelsDraw==="function")gunBarrelsDraw(stat().guns,sh.a);
@@ -671,7 +670,6 @@ function drawSystem(){
     }
   }
   ctx.restore();
-  if(!hullG)gpuHullLight(zx(sh.x),zy(sh.y),zx(0),zy(0),Z,sys);   /* свет звезды на 2D-корпусе (16ga) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
   if(wA)gpuHud("watch"+wA.c.name+wA.c.order.kind,()=>{   /* приборы — на свой слой, по изменению (08bh) */

@@ -106,8 +106,8 @@ albumOpen                    src/25g-postcard.js:677
 albumSave                    src/25g1-album-fx.js:105-136
 alCount                      tests/91zzzzzy-alive.js:15-22
 ALL_NAMES                    tests/90-harness.js:93
-ALLY_THR                     src/12a-crew.js:708
-allyHullGpu                  src/12a-crew.js:709-718
+ALLY_THR                     src/12a-crew.js:702
+allyHullGpu                  src/12a-crew.js:703-712
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:614-643
 ambK                         src/19c-light.js:115-120
@@ -1415,7 +1415,7 @@ draftTowerAt                 src/27jb-kb.js:49-54
 drawAbil                     src/16c-abil.js:124-149
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
-drawAllies                   src/12a-crew.js:678-704
+drawAllies                   src/12a-crew.js:678-698
 drawAnomaly                  src/20aa-poi-shapes.js:168-191
 drawAstronaut                src/20-life.js:4-141
 drawBarge                    src/12l-barge.js:564-593
@@ -1552,11 +1552,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:706-984
+drawSysHud                   src/17-mode-system.js:704-982
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:163-191
 drawSysRail                  src/18f-rail-station.js:58-92
-drawSystem                   src/17-mode-system.js:498-705
+drawSystem                   src/17-mode-system.js:498-703
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -2625,14 +2625,14 @@ hex2rgb                      src/01-core.js:221-224
 hexA                         src/12e-drone-flight.js:285-291
 hexa                         src/12w-survey.js:91-94
 hexRGB                       src/24-mode-belt.js:63-65
-HG_BAKE                      src/17c2-hull-gpu.js:10
-HG_BELLY                     src/17c2-hull-gpu.js:11
-HG_FLAME_WGSL                src/17c2-hull-gpu.js:42
-HG_GAIN                      src/17c2-hull-gpu.js:85
-HG_LOD                       src/17c2-hull-gpu.js:16
-HG_SIDE                      src/17c2-hull-gpu.js:13
-HG_THR                       src/17c2-hull-gpu.js:12
-HG_U                         src/17c2-hull-gpu.js:82
+HG_BAKE                      src/17c2-hull-gpu.js:11
+HG_BELLY                     src/17c2-hull-gpu.js:12
+HG_FLAME_WGSL                src/17c2-hull-gpu.js:45
+HG_GAIN                      src/17c2-hull-gpu.js:88
+HG_LOD                       src/17c2-hull-gpu.js:19
+HG_SIDE                      src/17c2-hull-gpu.js:14
+HG_THR                       src/17c2-hull-gpu.js:13
+HG_U                         src/17c2-hull-gpu.js:85
 HIN_DOORW                    src/29c-home-in.js:24
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:21
@@ -2864,13 +2864,13 @@ hullBakeKey                  src/03e1-hull-bake.js:32-36
 hullBakeRender               src/03e1-hull-bake.js:107-117
 hullBakeScale                src/03e1-hull-bake.js:27-30
 hullClassOf                  src/03-ships.js:253-268
-hullGpuBake                  src/17c2-hull-gpu.js:24-31
-hullGpuBelly                 src/17c2-hull-gpu.js:32-39
-hullGpuDraw                  src/17c2-hull-gpu.js:125-169
-hullGpuE                     src/17c2-hull-gpu.js:17
-hullGpuFlames                src/17c2-hull-gpu.js:86-104
-hullGpuInserts               src/17c2-hull-gpu.js:107-122
-hullGpuSb                    src/17c2-hull-gpu.js:20-23
+hullGpuBake                  src/17c2-hull-gpu.js:27-36
+hullGpuBelly                 src/17c2-hull-gpu.js:37-42
+hullGpuDraw                  src/17c2-hull-gpu.js:128-172
+hullGpuE                     src/17c2-hull-gpu.js:20
+hullGpuFlames                src/17c2-hull-gpu.js:89-107
+hullGpuInserts               src/17c2-hull-gpu.js:110-125
+hullGpuSb                    src/17c2-hull-gpu.js:23-26
 hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:120-131
@@ -6501,7 +6501,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · живой рынок:1
   · дроны:139
 
-## src/12a-crew.js · 47 КБ
+## src/12a-crew.js · 46 КБ
   · наёмники: флот, которым не управляешь напрямую:1
   · приказы:148
   · переданные модули:285
@@ -6908,7 +6908,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17c1-station-dress.js · 4 КБ
   · станция по строителю: одевка плиты (M454, DESIGN-borders §2.3):1
 
-## src/17c2-hull-gpu.js · 12 КБ
+## src/17c2-hull-gpu.js · 13 КБ
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
 ## src/17c3-station-live.js · 8 КБ

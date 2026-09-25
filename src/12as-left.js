@@ -139,7 +139,7 @@ function leftDraw(zx,zy,Z){
       if(!NPC_SHIPS[id])NPC_SHIPS[id]={name:id,seed:row.s>>>0,hcls:"scout",col:"#9fd8ff",
         hull:100,cargo:40,fuel:100,thr:1,cls:"след"};
       if(pass){const z=clamp(Z,.4,1.6)*.8,h=hullOf(id),B=hullGpuBake(h,id,hullGpuSb(h,GPU.bw/W));
-        gpuImage(pass,gpuMipTex(B.cv),[{x,y,w:B.E*2*z,h:B.E*2*z,rot:row.s%628/100,a:.22}]);return;}
+        if(B)gpuImage(pass,B.B,[{x,y,w:B.E*2*z,h:B.E*2*z,rot:row.s%628/100,a:.22}]);return;}
       ctx.save();
       ctx.globalAlpha=.22;
       ctx.translate(x,y);

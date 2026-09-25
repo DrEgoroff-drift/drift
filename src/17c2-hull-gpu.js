@@ -5,15 +5,18 @@
    по размаху в самом спрайте, свет звезды кладёт gpuLitSprite по рельефу (как
    пиратам и станциям). Живое — в проходе сцены с явным светом: брюхо крена, факелы
    (поле, длина сглажена, поток шума вместо rndFx), ходовые огни, тормозные языки,
-   полоса уровня двигателя, огни бегущей строки и венцы. Тело — один мастер на корпус
-   с мипами (08c gpuMipTex): зум берёт уровень, а не перепекает и не грузит. */
-const HG_BAKE=new WeakMap();   // h → Map(ключ → {cv,E,sb}) мастер тела при крене 0
-const HG_BELLY=new WeakMap();  // h → {cv,E,sb} тёмный силуэт брюха
+   полоса уровня двигателя, огни бегущей строки и венцы. Тело — одна выпечка на корпус
+   с мипами на холсте видеокарты (08ca gpuBake, 25.09): кисти 03e рисуют в него, как в
+   2D, зум берёт уровень, а не перепекает и не грузит. */
+const HG_BAKE=new WeakMap();   // h → Map(ключ → {B,E,sb}) выпечка тела при крене 0
+const HG_BELLY=new WeakMap();  // h → {B,E,sb} тёмный силуэт брюха
 const HG_THR=new Map();        // id → сглаженная тяга 0..1 (эфемерное, не в сейве)
 const HG_SIDE=1024;
 /* уровень мипа сдвинут к резкому: трилинейка смешивает два уровня, а примета
-   изготовителя (makerRead) держится резкостью мелкого плана */
-const HG_LOD=-.35;
+   изготовителя (makerRead) держится резкостью мелкого плана. HG_LOD — и станциям (17c3);
+   тело корабля — HG_BODY_LOD −.45: его мипы теперь коробка 2×2 выпечки (08ca), а не уменьшение
+   Skia 2D-мастера; на −.35 резкость −1.2 % у одного корпуса, на −.45 все не ниже, рябь та же (25.09) */
+const HG_LOD=-.35,HG_BODY_LOD=-.45;
 function hullGpuE(h){return Math.max(h.nose,-h.tail,h.bw*3)*1.6+8;}
 /* масштаб мастера: вдвое больше самого крупного корабля в полёте (shipScaleCap у
    ZOOM_MAX) в пикселях сцены, шагом в четверть октавы — зум его не меняет вовсе */
@@ -25,17 +28,17 @@ function hullGpuBake(h,id,sb){
   let M=HG_BAKE.get(h);if(!M){M=new Map();HG_BAKE.set(h,M);}
   const key=hullBakeKey(id,sb);let b=M.get(key);if(b)return b;
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
-  const cv=hullBakeRender(h,id,0,[1,2,3],sb,-side/(2*sb),-side/(2*sb),side,side);
-  if(M.size>=4){const k=M.keys().next().value;gpuMipDrop(M.get(k).cv);M.delete(k);}
-  b={cv,E:side/(2*sb),sb};M.set(key,b);return b;
+  /* кисти читают только корпус и ключ — выпечка после потери устройства та же */
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1});
+  if(!B)return null;
+  if(M.size>=4){const k=M.keys().next().value;gpuBakeDrop(M.get(k).B);M.delete(k);}
+  b={B,E:side/(2*sb),sb};M.set(key,b);return b;
 }
 function hullGpuBelly(h,sb){
-  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuMipDrop(b.cv);
+  let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuBakeDrop(b.B);
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
-  const cv=document.createElement("canvas");cv.width=cv.height=side;
-  const prev=ctx;ctx=cv.getContext("2d");
-  try{ctx.setTransform(sb,0,0,sb,side/2,side/2);tracePoly(h.poly);ctx.fillStyle=rgba(h.dark,.85);ctx.fill();}finally{ctx=prev;}
-  b={cv,E:side/(2*sb),sb};HG_BELLY.set(h,b);return b;
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);tracePoly(h.poly);g.fillStyle=rgba(h.dark,.85);g.fill();},{ss:1});
+  b={B,E:side/(2*sb),sb};HG_BELLY.set(h,b);return b;
 }
 /* факелы: перо, зарево и ядро одной формулой на все сопла. Цвет — подпись
    изготовителя (makerFlame) или люкс (холодная игла); ядро светит выше единицы */
@@ -125,8 +128,8 @@ function hullGpuInserts(pass,h,id,S,sc,live){
 function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   const pass=gpuScene();if(!pass||!(sc>0))return false;
   const h=hullOf(id),live=hullLiveInserts(h,id);
-  const dk=GPU.bw/W,sb=hullGpuSb(h,dk),B=hullGpuBake(h,id,sb),T=gpuMipTex(B.cv);
-  const lod=Math.max(0,Math.log2(B.sb/(sc*dk))+HG_LOD);
+  const dk=GPU.bw/W,sb=hullGpuSb(h,dk),B=hullGpuBake(h,id,sb);if(!B)return false;const T=B.B;
+  const lod=Math.max(0,Math.log2(B.sb/(sc*dk))+HG_BODY_LOD);
   bank=bank||0;lvl=lvl||0;
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
@@ -144,7 +147,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   }
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
-    gpuImage(pass,gpuMipTex(Bl.cv),[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
+    if(Bl.B)gpuImage(pass,Bl.B,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
   /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
   if(GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
