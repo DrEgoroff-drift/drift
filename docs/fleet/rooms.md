@@ -15,6 +15,7 @@ the fleet base (`../base-rooms`), «after» from this branch. Scratchpad of sess
 | 1 | **spa** (`29i-spa-draw`): the whole veranda on the GPU, nothing left on `#c`. Sky, cape, sea, swell, surf and haze are one live field (`spa.sea`); the floor and everything standing on it are two bakes (`floor`, `props`: re-baked only when the frame size or the board changes); soft contact shadows and long cast shadows from the low sun between them (`gpuShapes`); light and air on top — a multiply field (`spa.air`: warm from the sun with falloff, the awning's shade, a cool bounce from the sea), and dust and salt hanging in the sun (`gpuShapes`, add). The 2D sky, sea, surf, haze and the spa's own vignette are deleted (the final pass has the vignette). New suite «комнаты на видеокарте: веранда санатория печётся без дыр» |
 | 2 | **winter** (`29g-winter-draw`) + a shared rooms module (`29c0-rooms-gpu`: `roomBake(role,key,w,h,draw)` — one texture per role, dropped when the key changes; `roomSz()`; `ROOM_WGSL_NOISE`). The room layer stays `screenLayer` (called as is; drawn with `gpuImage`, so it works both as today's 2D canvas and as the kit's future bake). The window is a live field (`win.view`): the planet's sky, the ridge, a blizzard in three depths of streaks, frost growing from the frame, the lamp's warm reflection on the glass. Frame, lamp fixture (it now hangs, dark, when the lamp is off), the desk, the instruments, the calendar, the fault-lamp housings and the man are one bake (`win.props`, keyed by the levers, the day and the faults); the day line is its own bake (`win.text`) drawn last. Light is an add field per pixel (`win.light`): fire tongues in the stove door, its flickering warmth and floor spot, the lamp's cone in the air with drifting dust and its pool on the floor, the window's cold on floor and wall; then emissive shapes (the bulb above 1 for the frame's bloom, fault lamps breathing, dust motes in the cone) and a multiply darkness at the edges (`win.dark`, deeper with less light). The 2D window, fire, cone, dust and vignette are gone. Suite «…зимовка печётся без дыр» |
 | 3 | **kino** (`27da-kino`): the brushes the cantina calls (`kinoScreen`, `kinoBeam`, `kinoOverlay`) paint into the cantina's own canvas, which is the HQ ship's to port — so kino improves its brushes and keeps them GPU-canvas-safe (all ops are `GcCtx` ops; a suite records the whole reel through `GcCtx`). The projected picture is light now: a hot centre, corners falling off, the lamp breathing, gate weave (picture and caption shake together) and scratches every 120 ms. The beam is seven nested wedges (a soft edge, brighter at the axis) drawn with `lighter`, with dust drifting along it and a glowing lens at the booth; the screen's spill on the room is `lighter` too. Suite «…кинопередвижка рисуется GPU-холстом без дыр» |
+| 4 | **chess** (`25n-chess`): the board is a DOM canvas in the desk panel, and the kit has no way yet to show a bake in a DOM canvas (request below), so the brush is split from the canvas — `chessPaint(c,size,g,ch,flip)` paints into any context, 2D or `GcCtx` — and improved: wood grain per square (by the square's hash, along on light squares and across on dark ones), one light from the top left over the whole board, a bevelled frame, a soft shadow under every piece toward the bottom right, a glowing ring on the lifted piece and soft move dots. Moves, squares and taps are unchanged. Suite «…шахматная доска рисуется GPU-холстом без дыр» |
 
 ## Pairs
 
@@ -22,6 +23,7 @@ the fleet base (`../base-rooms`), «after» from this branch. Scratchpad of sess
 |---|---|---|
 | winter | `pair-winter.png` (and `after-winterlow.png`: lamp off, one heater) | the room is lit by its three sources for real: fire moves in the stove and warms the left wall, the lamp's cone hangs in the air with dust and pools on the table and floor, the window is a blizzard in depth behind frost with the cold spilling onto the bunk — warm inside against cold outside |
 | kino | `pair-kino.png` (crop ×2: `crop-kino.png`) | the cinema reads as projected light: a beam with a soft edge and dust from a glowing lens, the screen hot in the middle and darker in the corners, the film weaving and scratched |
+| chess (desk panel over `kino`) | `pair-chess.png` (crop ×2: `crop-chess.png`) | the board is wood lit from one side and the pieces stand on it, each with its own shadow; the lifted piece glows instead of a flat yellow square |
 | spa | `pair-spa.png` | the sea is water now: waves in perspective that move, and the sun path is glitter on the crests from horizon to rail instead of a flat trapezoid; swell lines roll in and fade; the sky has depth and faint cirrus; a sun you can see; people, the table and the chair stand on the deck with soft shadows and long shadows that agree with the rail lattice |
 
 ## New render pipelines (for the warm-up table `08b1`)
@@ -32,7 +34,11 @@ the fleet base (`../base-rooms`), «after» from this branch. Scratchpad of sess
 
 ## Requests for files outside the zone
 
-- none yet.
+- **kit (`08c*`): show a bake in a DOM canvas.** The desk panel's chess board (and, for the HQ ship, the
+  cantina and HQ room canvases) are DOM canvases. `gpuBake` gives a texture, and nothing presents a
+  texture into a `<canvas>` of the page. Wanted: `gpuPresent(cv, B)` (or `gpuPanel(cv, w, h, draw)`) —
+  a `webgpu` context on that canvas configured with `GPU.dev`, one blit of `B` (premultiplied), redone
+  after a device loss. With it, `chessDraw` becomes `gpuPanel(cv,352,352,c=>chessPaint(c,352,g,ch,flip))`.
 
 ## Open problems
 

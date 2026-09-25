@@ -62,3 +62,15 @@ TEST_SUITES.push(()=>suite("комнаты на видеокарте: киноп
   }
   eq(Object.keys(seen).length,KINO_REEL.length,"журнал прокручен весь");
 }));
+TEST_SUITES.push(()=>suite("комнаты на видеокарте: шахматная доска рисуется GPU-холстом без дыр",()=>{
+  resetWorld();
+  const g=chessStart("t",true);
+  g.mv=[{f:52,t:36,p:0},{f:12,t:28,p:0},{f:62,t:45,p:0},{f:1,t:18,p:0}];
+  chSel=61;
+  for(const flip of [false,true]){
+    const R=roomsRec(352,352,c=>chessPaint(c,352,g,"t",flip));
+    eq(R.err,"","доска ("+(flip?"чёрными":"белыми")+") — без громких дыр");
+    ok(R.g._ops.length>64*3,"клетки, волокно и свет записаны ("+R.g._ops.length+" команд)");
+  }
+  chSel=-1;
+}));
