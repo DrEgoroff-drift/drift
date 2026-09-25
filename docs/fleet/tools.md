@@ -39,3 +39,11 @@ under `docs/`/`tools/`. Machine: 4 CPUs, Chromium 141 (`/opt/pw-browsers/chromiu
    options go to shot.py for both sides. Measured: `system`, 615 s wall for the pair while three
    test shards shared the 4 CPUs (the frames alone were ~170 s each when the machine was idle, per
    CLOUD.md). Worktrees stay in the temp dir; `git worktree prune` after deleting them.
+4. **Harness: a GPU tripwire and the device state at start** (`tests/90-harness.js`). The run is
+   synchronous: when `gpuDrop` fires mid-run its `gpuInit` retry cannot come back before the
+   report, and every later suite reads a dead device — on SwiftShader one shard of three showed a
+   dozen unrelated-looking failures («кадр пуст», «видеокарта есть — без неё ворота не меряются»).
+   Now `gpuDrop` is wrapped to keep its reason (`crashShip` is silent under TEST), and a suite
+   during which `GPU.ok` went from true to false gets one extra failure naming itself and the
+   reason. The report also gets a line «видеокарта к старту: …, конвейеры …» after the failure
+   and quarantine blocks (not before: `test.ps1` reads failures from line 2). Node: no-op.
