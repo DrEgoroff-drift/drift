@@ -7,7 +7,7 @@ the backdrop in one pass), then the cockpit part of G12.
 
 ## Commits
 
-1. **G8: the asteroids in real 3D** — new `24be-belt-rock-gpu.js`; `24ba` rewritten around it; the 2D
+1. `c48ae85` **G8: the asteroids in real 3D** — new `24be-belt-rock-gpu.js`; `24ba` rewritten around it; the 2D
    `drawBelt` body deleted from `24` (−290 lines; `24` is 22 KB now); test `91zzzzzzy1a-belt3d`.
    - Rocks and debris are the `makeRock` meshes (162 vertices) drawn with depth. The vertices live on
      the GPU in one pool per belt (a slot per mesh; debris take their parent's slot), the SPHERE2 index
@@ -43,7 +43,7 @@ the backdrop in one pass), then the cockpit part of G12.
      empty, ore per vertex carried; dust towards the star brighter and in its colour, behind the
      camera not drawn.
 
-2. **G12 cockpit: the frame is a GPU bake, lit by the star through the glass** — new
+2. `ee8db0c` **G12 cockpit: the frame is a GPU bake, lit by the star through the glass** — new
    `25-cockpit-gpu.js`; `25-cockpit` (`cockpitTex` → plan only, `cockpitBake`, `cockpitPaint`),
    `24bc` (`bhudDraw` clip), `24ba` (one call); the belt's rocks: a limb glow when the star is behind
    a rock, cold ambient .14 → .2; MSAA only at DPR < 1.5.
@@ -65,7 +65,7 @@ the backdrop in one pass), then the cockpit part of G12.
    - Test (Node, in `91zzzzzzy1a`): plan without a 2D canvas, no bake without a device, the
      symbology drawn after the evenodd clip, no `drawImage` of the frame on the HUD layer.
 
-3. **The maw is a rock; the 2D landmark painter goes; veins calmer** — `24be`, `24ba`, `24bb`, `24b`,
+3. `902780f` **The maw is a rock; the 2D landmark painter goes; veins calmer** — `24be`, `24ba`, `24bb`, `24b`,
    the gate `91zzzzzzy1`, `mutants.json`.
    - The «УСТЬЕ» landmark (a giant asteroid with a black mouth) was a flat grey 11-gon with a baked
      ellipse hole among real 3D rocks. Now it is a rock of the same pipeline: a `makeRock` mesh of the
@@ -82,7 +82,7 @@ the backdrop in one pass), then the cockpit part of G12.
      rock (mesh and mouth axis made).
    - Veins: albedo mix .75, glint ×.7 — under a blue star they read as neon lines before.
 
-4. **The flat landmarks are lit by the star** — `24bb` (`bpoiLit`, `BPOI_L`), `24ba` (sets the light).
+4. `da85766` **The flat landmarks are lit by the star** — `24bb` (`bpoiLit`, `BPOI_L`), `24ba` (sets the light).
    Wreck, rig, station ring and druse stay kit silhouettes, but each shape is toned by where it sits in
    the silhouette as a point of a sphere under the star: normal (u, √(1−u²)) against the direction to
    the star in camera axes (z towards the viewer). Star behind you — the landmark is lit in the face;
@@ -91,7 +91,7 @@ the backdrop in one pass), then the cockpit part of G12.
    windows and the druse crystals glow on their own (flag `e`), untouched. Also checked: the direct
    no-MSAA path at 411×742 ×1.5 (`scratchpad/pair-phone.png`, halved) — rocks lit, struts lit, 0 errors.
 
-5. **The strut lamps live in the scene** — `25-cockpit` (`ckptLedOn`, dark lamps in `cockpitPaint`),
+5. `1ab0f00` **The strut lamps live in the scene** — `25-cockpit` (`ckptLedOn`, dark lamps in `cockpitPaint`),
    `25-cockpit-gpu` (`cockpitLeds`), `24bc` (−`bhudLed`, `bhudLeds`, `bhudLedDom`, `ledK`), tests.
    - The lit lamps were small native-DPR DOM canvases above `#hud` (`LABDOM` in 08bh), moved and shown
      or hidden by style writes as they blinked; the dark ones were redrawn on `#hud`. Now the dark lamps
@@ -100,6 +100,53 @@ the backdrop in one pass), then the cockpit part of G12.
      longer used by the belt (08bh keeps it; `08bi` only reads `LABDOM.box`).
    - `ckptLedOn(L,t)` is the one blink formula. Mutant `belt-led-hud` re-aimed at it (lamps that never
      blink); the new Node suite «лампы стоек кабины» kills it (checked by hand: 1 red).
+
+6. `780c54e` merge of the fleet base (da6b1bf) — no conflicts; build clean, Node 17 414 green.
+7. **Warm-up recipe helper; the gate run in the cloud** — `24be` `brockPipeDesc(key)` (the six belt keys,
+   `gpuPipeline(key, mk)` without a code text, so a `GPU_PIPE_ONE` line per key is enough); notes.
+   The two belt gate suites (`91zzzzzzy1`) run in Chrome on SwiftShader after the merge:
+   `test.ps1 -NoBuild -Only "ворота ступени 2"` → **green, 19 passed, 2 suites, 222 s** (world calls on
+   `#c` 0, one submit a frame, no canvas uploads, the HUD key oracle holds with the lamps and the frame
+   moved to the scene). A stand eval after the change: `GPU_PIPES.lazy` holds exactly the belt's new keys
+   (`belt.rock4`, `belt.dust4`, the three fields), 0 GPU errors, the frame identical to commit 5's.
+
+## Zone state
+
+- `24-mode-belt` — logic, `makeRock` (+`vore`), `drawGlassHUD` (glass symbology, a 2D brush on `#hud`);
+  no 2D world path. `24b` — landmark placement only. `24ba` — the frame of the belt. `24bb` — four kit
+  landmarks, lit. `24bc` — the `#hud` key and painter (instruments + symbology). `24be` (new) — rocks,
+  debris, the maw, dust in 3D. `25-cockpit` — plan, frame painter (bake), dashboard painter (`#hud`).
+  `25-cockpit-gpu` (new) — the frame + glass field, lamps.
+- `24d-range` draws nothing (the shooting range is flight + combat): nothing to port.
+- `25f-globus` — `globusDraw(c,…)` is a 2D brush called only by the flight rack (`25d`, the author's):
+  it paints onto whatever the rack gives it; it moves when the rack moves. Left as is.
+- The instruments on the dash and the glass symbology stay Canvas 2D on `#hud` (text, needles —
+  interface, native DPR), as agreed in DESIGN-gpu §9.
+
+## For the design pass (real GPU; SwiftShader only proved the scenes draw and nothing got worse)
+
+- **Belt, rocks** (`belt.js` staging): the balance of key and ambient (`sc*1.55`, `n0*.2`) under a warm
+  star — every pair here was under a blue star (#8fc4ff), so the warm case is unseen; the fog distance
+  (2800 m) against the far rocks; grain scale (`rad*.34`, 2.6 m) and bump (`rad*.075` + .35 m) at 60 fps
+  in motion — shimmer on turning; whether the facet mix (.64) reads chipped or low-poly up close
+  (`after-near.png`); the lock tint (teal, flattens the target's shading — maybe a rim instead).
+- **Veins**: density and glint under a warm star; they read as lines at 760, check at 2560.
+- **Silhouettes**: MSAA only at DPR < 1.5 — look at 1920×1080 ×1 (MSAA) and a laptop ×1.25; on a 2×
+  screen with no MSAA check the rock edges while turning.
+- **Stars**: two layers (96/34 cells, `h^5`); density against the old 340 dots; the brightest at 2560
+  (σ ≤ 1.45 px) — maybe a touch of bloom-worthy peaks.
+- **Dust**: forward-scatter strength (g .4, ×3.2 cap) looking straight at the star; streak widths.
+- **Backlit rocks**: limb glow (`pow(1−ndv,4)·pow(−V·L,6)·.9`) with the star disc in view — I never had
+  a rock right on the star in a pair.
+- **The maw**: crater depth (.34), mouth edge (.8 cos), five lamps' size (2400) — the mouth is random
+  per landmark and tumbles; a landmark that shows its back for a minute may read as a plain big rock.
+- **Flat landmarks**: `.6 + lam` shading on kit shapes is per shape (fan slices) — at 2560 the slices
+  of the rig's pods may step; the wreck/rig are the next candidates for real bakes lit per pixel.
+- **Cockpit**: the window-edge light (`ex²·.55`, 1.5–12 px, CSS px — on a 2.6 DPR phone the lit lip is
+  thicker in device px than at 760); the star's veil on the glass (`.07`/`.05`) and the ghost (`.06`,
+  radius .03 H) — never seen strongly here; the frame now gets grain and bloom — check the brass/yacht
+  cockpits (only the scout's was shot) and the organic «СПЛАВ» outline.
+- **Lamps**: halo .42 alpha, r·3.2 soft — against bloom strength on a real GPU.
 
 ## Pairs (760×475 ×1, scratchpad of session 75d5c549, never in git)
 
@@ -132,17 +179,15 @@ the backdrop in one pass), then the cockpit part of G12.
 
 ## Requests for files outside the zone
 
-- **`08b0-gpu-pipe.js` (warm-up recipes):** the belt pipelines are built by `gpuPipeline` with their own
-  descriptors. Recipes for `GPU_PIPE_ONE`: `"belt.rock": ()=>brockDesc(BROCK_WGSL,true,1)`,
-  `"belt.rockf": ()=>brockDesc(BROCK_WGSL,false,1)`, `"belt.dust"` — `brockDesc(BDUST_WGSL,false,1)`
-  with `primitive:{topology:"triangle-list"}` (no cull), and the ×4 variants `belt.rock4`, `belt.rockf4`,
-  `belt.dust4` (last argument 4). Simplest is one line calling `brockPipeDesc(key)` if you prefer — tell me
-  and I add that helper in `24be`. The field `fld.belt.rocklay` → `GPU_FLD` entry `()=>BROCK_LAY_WGSL`.
+- **`08b0-gpu-pipe.js` (warm-up recipes):** the belt pipelines go through `gpuPipeline(key, mk)` without a
+  code text, so a `GPU_PIPE_ONE` recipe fits: add `"belt.rock"`, `"belt.rockf"`, `"belt.dust"`,
+  `"belt.rock4"`, `"belt.rockf4"`, `"belt.dust4"` each as `()=>brockPipeDesc(<that key>)` (24be). The
+  two fields go into `GPU_FLD`: `"fld.belt.rocklay":()=>BROCK_LAY_WGSL`, `"fld.belt.ckpt":()=>CKGPU_WGSL`.
 - **`08b-gpu.js`:** the MSAA path closes the open scene pass itself
   (`GPU.scenePass.end(); GPU.scenePass=null; GPU.scene3D=false`, as `gpuWorld` does) to begin its own
   pass. A kit call `gpuPassOwn()` (close the scene pass, return the encoder) would make that official.
-- `mutants.json` (tests): nothing changed; `belt-gpu-off`, `belt-poi-2d`, `belt-hud-2d`, `belt-empty`
-  still find their lines.
+- `mutants.json` (tests, in the zone): `belt-poi-2d` and `belt-led-hud` re-aimed (commits 3, 5);
+  `belt-gpu-off`, `belt-hud-2d`, `belt-empty`, `belt-hud-key-*` still find their lines.
 
 ## New render pipelines (for the warm-up table 08b1)
 

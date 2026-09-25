@@ -142,8 +142,14 @@ function brockPipe(k,ms){
   if(BROCK_P.dev!==GPU.dev){for(const j in BROCK_P)delete BROCK_P[j];BROCK_P.dev=GPU.dev;}
   const key="belt."+k+(ms>1?ms:"");
   if(BROCK_P[key])return BROCK_P[key];
-  const code=k==="dust"?BDUST_WGSL:BROCK_WGSL;
-  return BROCK_P[key]=gpuPipeline(key,()=>{const d=brockDesc(code,k==="rock",ms);if(k==="dust")d.primitive={topology:"triangle-list"};return d;},code);
+  return BROCK_P[key]=gpuPipeline(key,()=>brockPipeDesc(key));
+}
+/* рецепт по ключу — для прогрева (08b0, GPU_PIPE_ONE: "belt.rock" … "belt.dust4" → brockPipeDesc) */
+function brockPipeDesc(key){
+  const m=/^belt\.(rock|rockf|dust)(4?)$/.exec(key);if(!m)return null;
+  const k=m[1],d=brockDesc(k==="dust"?BDUST_WGSL:BROCK_WGSL,k==="rock",m[2]?4:1);
+  if(k==="dust")d.primitive={topology:"triangle-list"};
+  return d;
 }
 /* сглаживание краёв камня: 4× MSAA в свой слой и склейка в сцену одним полем — пока
    кадр не больше BROCK_MS_PX при DPR < 1.5 (ПК, 760-е пары); на телефоне с DPR 2.6 ступенька мельче
