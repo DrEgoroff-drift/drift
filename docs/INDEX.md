@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 620 · символов верхнего уровня: 6175
+Файлов: 620 · символов верхнего уровня: 6178
 
 ## СИМВОЛЫ
 
@@ -1490,7 +1490,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:257-304
+drawHotel                    src/17l-hotel.js:284-321
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2018,8 +2018,8 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:10-40
-GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:9
+GATE2D                       tests/91zzzzzzy3-gate2d.js:12-55
+GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:11
 gateFind                     tests/91zzzzzzy-gpugate.js:242-290
 gateFlyScenes                tests/91zzzzzzy-gpugate.js:245-290
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
@@ -2773,21 +2773,24 @@ homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:470-477
-HOTEL_BAKE                   src/17l-hotel.js:42
-HOTEL_EM                     src/17l-hotel.js:52
-HOTEL_LAMP                   src/17l-hotel.js:59
-HOTEL_LOD                    src/17l-hotel.js:58
+HOTEL_BAKE                   src/17l-hotel.js:43
+HOTEL_EM                     src/17l-hotel.js:53
+HOTEL_GLOW                   src/17l-hotel.js:131
+HOTEL_LAMP                   src/17l-hotel.js:60
+HOTEL_LOD                    src/17l-hotel.js:59
+HOTEL_MS                     src/17l-hotel.js:42
 HOTEL_NIGHT                  src/17l-hotel.js:11
 HOTEL_SIGN                   src/17l-hotel.js:10
-HOTEL_SIGN_FULL              src/17l-hotel.js:256
-HOTEL_VEIL                   src/17l-hotel.js:55
-hotelBake                    src/17l-hotel.js:82-95
-hotelDesk                    src/17l-hotel.js:313-325
+HOTEL_SIGN_FULL              src/17l-hotel.js:282
+HOTEL_VEIL                   src/17l-hotel.js:56
+hotelBake                    src/17l-hotel.js:86-129
+hotelDesk                    src/17l-hotel.js:330-342
 hotelHere                    src/17l-hotel.js:12-17
-hotelInteract                src/17l-hotel.js:305-312
+hotelInteract                src/17l-hotel.js:322-329
 hotelLitFrac                 src/17l-hotel.js:25-30
-hotelPaint                   src/17l-hotel.js:97-254
-hotelWinBox                  src/17l-hotel.js:62-80
+hotelNeon                    src/17l-hotel.js:283
+hotelPaint                   src/17l-hotel.js:132-280
+hotelWinBox                  src/17l-hotel.js:63-81
 hotelWinLit                  src/17l-hotel.js:33-41
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
@@ -2832,7 +2835,7 @@ hqTable                      src/27f-hq-room.js:377-508
 hqWallProps                  src/27f-hq-room.js:170-216
 hqWindowView                 src/27f-hq-room.js:616-640
 HR_COLS                      src/17l-hotel.js:24
-HR_GAP                       src/17l-hotel.js:81
+HR_GAP                       src/17l-hotel.js:82
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
 hud                          src/27z-telemetry.js:155-500
@@ -6949,7 +6952,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 25 КБ
+## src/17l-hotel.js · 28 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17m-peace-fleet.js · 11 КБ
@@ -8152,7 +8155,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 8 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 6 КБ
+## tests/91zzzzzzy3-gate2d.js · 7 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ

@@ -6,7 +6,9 @@
    всё, в чьём стеке есть художник сцены и нет дыры. Новый перенос — новая сцена в GATE2D. */
 /* облик флота (12ai1) — 2D-холст с именем борта (fillText), ждёт текст v2: fleetArtOf печёт,
    fleetShipAt грузит его мипы 2D-спуском (gpuMipTex). Уйдёт с переносом облика флота */
-const GATE2D_DYRY=["fleetArtOf","fleetShipAt"];
+/* текст v2 (08cb): маску строки растрит одна 2D-канва на всю игру (GC_GLYPHS.raster/.measure),
+   раз на строку — так устроен текст GPU-холста, это его источник глифов, а не 2D печи */
+const GATE2D_DYRY=["fleetArtOf","fleetShipAt","raster","measure","_c","_set"];
 const GATE2D=[
   {name:"полоса у дока (17g): бакены, ореолы, очередь",
    painters:["drawSysLane","drawSysLaneShips","laneShip","laneBuoySprite","laneBuoyPaint","laneGlowSprite","drawRushTraffic"],
@@ -37,6 +39,19 @@ const GATE2D=[
        G.zoom=Z;G.zoomT=null;return {p};}
      return null;},
    probe:["gpuPlanet","gplCities"]},
+  /* гостиница: три выпечки атласа (краска, свет стёкол, отсвет) на GPU-холсте; дом сбрасываем,
+     чтобы выпечка шла под записью; вечер — окна горят */
+  {name:"гостиница (17l): атлас дома, окна, отсвет",
+   painters:["drawHotel","hotelBake","hotelPaint"],
+   place(first){
+     for(let r=0;r<=14;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const Ht=hotelHere();if(!Ht)continue;
+       if(first){if(HOTEL_BAKE)for(const q of [HOTEL_BAKE.cv,HOTEL_BAKE.em,HOTEL_BAKE.sh])gpuBakeDrop(q);HOTEL_BAKE=null;HOTEL_REC=null;
+         G.t=Math.floor(G.t/CEL_DAY)*CEL_DAY+CEL_DAY*21/24;}
+       G.ship.x=Ht.x;G.ship.y=Ht.y+150/2.2;G.ship.vx=G.ship.vy=0;G.zoom=2.2;G.zoomT=null;return {Ht};}
+     return null;},
+   probe:["drawHotel"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
