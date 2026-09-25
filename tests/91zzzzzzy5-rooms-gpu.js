@@ -34,8 +34,8 @@ TEST_SUITES.push(()=>suite("комнаты на видеокарте: зимов
   const W0=winAll(),g=winGeom();
   for(const pw of [{heat:3,air:2,light:3,ant:1},{heat:0,air:2,light:0,ant:1}]){
     W0.pw=pw;
-    const sl=screenLayer;screenLayer=(k,f)=>f(ctx);   /* кисть слоя — прямо в запись */
-    const R=roomsRec(W,H,()=>winRoomLayer(W0));screenLayer=sl;
+    const sl=gpuScreenLayer;gpuScreenLayer=(k,f)=>f(ctx);   /* кисть слоя — прямо в запись */
+    const R=roomsRec(W,H,()=>winRoomLayer(W0));gpuScreenLayer=sl;
     eq(R.err,"","слой комнаты: без громких дыр (свет "+pw.light+", тепло "+pw.heat+")");
     const P=roomsRec(W,H,()=>winProps(g,W0));
     eq(P.err,"","рама, лампа, стол, приборы, календарь, зимовщик — без громких дыр");
