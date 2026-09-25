@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 610 · символов верхнего уровня: 6096
+Файлов: 611 · символов верхнего уровня: 6105
 
 ## СИМВОЛЫ
 
@@ -53,6 +53,7 @@ ABIL_HOLD                    src/16c-abil.js:24
 ABIL_KEY                     src/16c-abil.js:99
 ABIL_ST                      src/16c-abil.js:25
 abilFire                     src/16c-abil.js:40-83
+abilHintRect                 tests/91zzx-mobile.js:423-431
 abilKind                     src/16c-abil.js:26
 abilMul                      src/16c-abil.js:35-39
 abilOf                       src/16c-abil.js:27
@@ -1172,6 +1173,7 @@ decoStela                    src/21bb-deco-biomes.js:267-282
 decoTruss                    src/21ba-deco-shapes.js:101-143
 decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
+decRu                        src/27y-hud-words.js:43
 deedAdd                      src/11ai-ledger.js:53-64
 DEEDS                        src/11ai-ledger.js:25-35
 depKind                      src/21b-surface-deco.js:396-405
@@ -3512,6 +3514,7 @@ musNote                      src/10-music.js:229-269
 musPerc                      src/10-music.js:301-325
 NAME_MAX                     src/11u-names.js:14
 nameAskSystem                src/11u-names.js:79-87
+nameLike                     src/27y-hud-words.js:25-30
 nameOf                       src/11u-names.js:19-22
 namesAll                     src/11u-names.js:15
 nameSet                      src/11u-names.js:23-30
@@ -3794,6 +3797,9 @@ ownerOf                      src/13-combat.js:13
 packPart                     src/05-parts.js:465-472
 PAD_KEY                      src/15-input.js:19
 PAD_SAFE                     src/18-mode-map.js:2
+padCase                      src/27y-hud-words.js:31-40
+PADNAME_K                    src/27y-hud-words.js:9
+padNames                     src/27y-hud-words.js:10-23
 padsAuto                     src/15-input.js:69
 padsFadeIn                   src/15-input.js:77
 padsFadeOut                  src/15-input.js:76
@@ -4668,6 +4674,7 @@ retEtherLine                 src/11s-returners.js:40-43
 retGroundLine                src/11s-returners.js:44-46
 reticle                      src/17c-system-draw.js:4-12
 rgba                         src/01-core.js:225
+rgbaOf                       tests/91zzx-mobile.js:435
 ridged                       src/18a-material.js:30
 RING_FIRST                   src/11x-ring.js:20
 RING_LEN                     src/11x-ring.js:21
@@ -5988,6 +5995,8 @@ waterAlgae                   src/21e-surface-draw.js:176-182
 waterDeepAt                  src/21e-surface-draw.js:189-193
 waterOf                      src/21e-surface-draw.js:151-171
 waveBlock                    src/12pa-beacon.js:146-175
+wcagK                        tests/91zzx-mobile.js:434
+wcagL                        tests/91zzx-mobile.js:433
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
 wcGauss                      src/16a-space.js:127
@@ -7331,6 +7340,8 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27n-ui-deal.js · 14 КБ
   · ДЕЛО — одно место для всего, что на вас работает:1
 
+## src/27y-hud-words.js · 3 КБ
+
 ## src/27z-telemetry.js · 41 КБ
   · телеметрия: приборы пишут в DOM:1
 
@@ -7655,7 +7666,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzw-holding.js · 6 КБ
   · замер: холдинг против целей §16 (M293, шаг 5):1
 
-## tests/91zzx-mobile.js · 32 КБ
+## tests/91zzx-mobile.js · 40 КБ
   · автотесты: телефонный вид (M167):1
   · телефон: КАЖДЫЙ режим, а не только поверхность (M239):196
   · M360a: след стика и то, что под ним:239

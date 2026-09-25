@@ -28,7 +28,7 @@ const DET_INSTR=[
   {ru:"кошелёк станции",dom:"wCr",re:/^([\d\s  ]+) кр$/,want:()=>[String(G.credits|0)],got:m=>[m[1].replace(/[\s  ]/g,"")]},
   {ru:"данные станции",dom:"wDt",re:/^(\d+) данных$/,want:()=>[String(G.data)],got:m=>[m[1]]},
   /* канва: масштаб камеры и расстояния на фишках у кромки (17-mode-system) */
-  {ru:"масштаб",cv:/^МАСШТАБ ×(\d+\.\d\d)$/,mode:"system",want:()=>[G.zoom.toFixed(2)]},
+  {ru:"масштаб",cv:/^Масштаб ×(\d+,\d\d)$/,mode:"system",want:()=>[decRu(G.zoom,2)]},
   {ru:"до звезды",cv:/^Звезда · (\d+|\d+,\dк|\d+к)$/,mode:"system",want:()=>[chipDist(Math.hypot(G.ship.x,G.ship.y))],tol:2},
   {ru:"до станции",cv:/^(.+) · (\d+|\d+,\dк|\d+к)$/,mode:"system",
     pick:m=>G.sys&&G.sys.station&&m[1]===G.sys.station.name,

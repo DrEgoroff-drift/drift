@@ -243,7 +243,7 @@ function hud(){
     const bc=document.body.classList;
     const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen");
     $zl.style.display=zs?"":"none";
-    if(zs)setTx($zl,"МАСШТАБ ×"+G.zoom.toFixed(2));
+    if(zs)setTx($zl,"Масштаб ×"+decRu(G.zoom,2));
   }
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
@@ -269,7 +269,7 @@ function hud(){
     /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
     if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
   else if(G.mode==="wanderer"){a="На борту «Сороки»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
-  else if(G.mode==="map"){a="Навигация";b="радиус "+st.jump.toFixed(1)+" пк";}
+  else if(G.mode==="map"){a="Навигация";b="радиус "+decRu(st.jump,1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name;
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
   /* ── строка места не повторяет шкалы (A2) ──
@@ -408,7 +408,7 @@ function hud(){
       actLbl=(words||"ДЕЙСТВИЕ")+(nm?" "+nm[1]:"");
     }
   }
-  setTx(padWord($act),actLbl);
+  setTx(padWord($act),padCase(actLbl));
   /* кнопка без действия гаснет, а не исчезает (M181): палец помнит место */
   $act.classList.toggle("off",!hasAct);
   /* Подсвечиваем, когда действие вообще есть. Раньше признаком служила сама
@@ -483,7 +483,7 @@ function hud(){
          надзора 12.09): на оклике — «ПО ДЕЛУ», у обломка — «СНЯТЬ ЭКИПАЖ» */
       const mt=G.mode==="system"?/ЦЕЛЬ\s*—\s*([^·\n]+)/.exec(G.prompt||""):null;
       const lv=mt?mt[1].trim():"";
-      setTx(padWord($lock),(lv&&lv.length<=14)?lv:"ЦЕЛЬ");
+      setTx(padWord($lock),padCase((lv&&lv.length<=14)?lv:"ЦЕЛЬ"));
     }
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");

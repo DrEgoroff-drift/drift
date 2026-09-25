@@ -387,8 +387,8 @@ TEST_SUITES.push(()=>suite("телефон: стик рождается под �
 }));
 
 /* Пара HUD 15/n: «Долгое · форсаж» над ДЕЙСТВИЕМ сидела на нижней кромке ФОТО и
-   на полосе ленты — три вещи в одном месте. Теперь она подписью под пэдом.
-   Сторож — в любом окне (390×844 под -Mobile, 760 под
+   на полосе ленты — три вещи в одном месте. Потом — подписью под пэдом, в 4,5 px
+   от кромки (Контроль: мало). Теперь она строкой внутри пэда. Сторож — в любом окне (390×844 под -Mobile, 760 под
    -Size 760,760, обычное): подсказка, ФОТО, лента и ЦЕЛЬ попарно не пересекаются,
    и подсказка целиком в кадре. У подсказки нет своего прямоугольника — это
    ::after пэда: считаем его из стиля псевдоэлемента и ширины текста, в мерке
@@ -400,12 +400,7 @@ TEST_SUITES.push(()=>suite("пульт: подсказка системы, ФО�
   const cam=document.getElementById("camBtn"),rx=document.getElementById("rx"),lock=document.getElementById("lockbtn");
   ok(act.classList.contains("abil-ok"),"подсказка системы горит: «"+act.dataset.abil+"»");
   ok(cam.getClientRects().length>0&&lock.getClientRects().length>0,"ФОТО и ЦЕЛЬ стоят в системе");
-  const ar=act.getBoundingClientRect(),k=ar.width/act.offsetWidth,cs=getComputedStyle(act,"::after");
-  const g=document.createElement("canvas").getContext("2d");
-  g.font=cs.fontWeight+" "+cs.fontSize+" "+cs.fontFamily;
-  const tw=g.measureText(act.dataset.abil).width*k,fh=parseFloat(cs.fontSize)*1.2*k;
-  const top=ar.top+parseFloat(cs.top)*k,mid=ar.left+ar.width/2;
-  const R={"подсказка":{left:mid-tw/2,right:mid+tw/2,top,bottom:top+fh},
+  const R={"подсказка":abilHintRect(act),
     "ФОТО":cam.getBoundingClientRect(),"лента":rx.getBoundingClientRect(),"ЦЕЛЬ":lock.getBoundingClientRect()};
   const f=r=>Math.round(r.left)+","+Math.round(r.top)+"–"+Math.round(r.right)+","+Math.round(r.bottom);
   const names=Object.keys(R);
@@ -420,4 +415,111 @@ TEST_SUITES.push(()=>suite("пульт: подсказка системы, ФО�
      и сквозная сеть «текст в кнопках помещается» читала бы её как вылет текста */
   G.mode="dock";abilPadRim();
   resetWorld();
+}));
+/* У подсказки системы нет своего прямоугольника — это ::after пэда. Строкой
+   внутри пэда (position:static) она лежит в его рамке; подписью снаружи
+   (absolute) — считаем из стиля псевдоэлемента и ширины текста, в мерке пэда
+   (масштаб пэдов и --ui — отношением видимой ширины к вёрстке). */
+function abilHintRect(act){
+  const ar=act.getBoundingClientRect(),cs=getComputedStyle(act,"::after");
+  if(cs.position==="static")return {left:ar.left,right:ar.right,top:ar.top,bottom:ar.bottom};
+  const k=ar.width/act.offsetWidth,g=document.createElement("canvas").getContext("2d");
+  g.font=cs.fontWeight+" "+cs.fontSize+" "+cs.fontFamily;
+  const tw=g.measureText(act.dataset.abil).width*k,fh=(parseFloat(cs.lineHeight)||parseFloat(cs.fontSize)*1.2)*k;
+  const top=ar.top+parseFloat(cs.top)*k,mid=ar.left+ar.width/2;
+  return {left:mid-tw/2,right:mid+tw/2,top,bottom:top+fh};
+}
+/* относительная яркость и контраст по WCAG: цвета — [r,g,b] 0..255 */
+function wcagL(c){const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2]);}
+function wcagK(a,b){const x=wcagL(a),y=wcagL(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
+function rgbaOf(s){const m=/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?/.exec(s)||[0,0,0,0,0];return [+m[1],+m[2],+m[3],m[4]===undefined?1:+m[4]];}
+
+/* Правка Контроля к паре HUD 15/n: «Долгое · форсаж» стояла в 4,5 px от нижней
+   кромки и в 9 px от правой при контрасте 2:1 (погашенный пэд гасил и её), шапка —
+   в 10 px слева и 8 сверху. Закон: ни одна видимая строка приборов не ближе 12 px
+   к кромке окна плюс вырез (env(safe-area-inset-*)). Строки — текстовые узлы
+   приборов (прямоугольники строк через Range), подсказка системы и плашки фишек
+   компаса. Подсказке — контраст не ниже 4,5:1 к плашке пэда даже над светлым
+   небом. Тут же регистр имён: имя на пэде, на фишке и в названии места — как в
+   таблицах (CSS-строчные делали «К главтрассе»), и одна десятичная запятая:
+   «×1,40» рядом с «1,4к», а не «×1.40». Окно любое: 390×844 под -Mobile. */
+TEST_SUITES.push(()=>suite("приборы: строки не ближе 12 px к кромке, имена как в таблицах, одна запятая",{tier:"browser"},()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.mode="system";
+  /* улететь, чтобы звезда и станция ушли за кадр: фишки лягут на кромку */
+  G.ship.x=9000;G.ship.y=-7000;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
+  ABIL_ST.cd=0;G.prompt="";hud();abilPadRim();camBtnTick();
+  try{drawSystem();}catch(e){}
+  const pr=document.createElement("div");
+  pr.style.cssText="position:fixed;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
+  document.body.appendChild(pr);const pc=getComputedStyle(pr);
+  const E=12,L=E+parseFloat(pc.paddingLeft),Rt=innerWidth-E-parseFloat(pc.paddingRight),
+    Tp=E+parseFloat(pc.paddingTop),Bt=innerHeight-E-parseFloat(pc.paddingBottom);
+  pr.remove();
+  const f=r=>Math.round(r.left)+","+Math.round(r.top)+"–"+Math.round(r.right)+","+Math.round(r.bottom);
+  const bad=[],texts=[];let seen=0;
+  const chk=(what,r)=>{
+    if(!(r.right-r.left>=1&&r.bottom-r.top>=1))return;
+    if(r.right<=0||r.left>=innerWidth||r.bottom<=0||r.top>=innerHeight)return;   // за кадром — не видна
+    seen++;
+    if(r.left<L-.5||r.right>Rt+.5||r.top<Tp-.5||r.bottom>Bt+.5)bad.push("«"+what+"» ["+f(r)+"]");
+  };
+  const rg=document.createRange();
+  const walk=()=>{texts.length=0;
+    for(const sel of [".hud",".pads","#console","#camBtn",".rail","#prompt"]){
+      const root=document.querySelector(sel);if(!root)continue;
+      const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+      for(let n=tw.nextNode();n;n=tw.nextNode()){
+        const t=n.data.trim(),el=n.parentElement;
+        if(!t||!el||!el.checkVisibility({opacityProperty:true,visibilityProperty:true}))continue;
+        texts.push(t);rg.selectNodeContents(n);
+        for(const r of rg.getClientRects())chk(t,r);
+      }
+    }};
+  walk();
+  const act=document.querySelector('.pads button[data-k="act"]');
+  ok(act.classList.contains("abil-ok"),"подсказка системы горит: «"+act.dataset.abil+"»");
+  chk(act.dataset.abil,abilHintRect(act));
+  ok(SYS_CHIPS.length>0,"фишки у кромки есть: "+SYS_CHIPS.length);
+  for(const c of SYS_CHIPS)if(c.pl)chk(c.l,{left:c.pl[0],top:c.pl[1],right:c.pl[0]+c.pl[2],bottom:c.pl[1]+c.pl[3]});
+  ok(seen>=8,"строк приборов в кадре: "+seen);
+  eq(bad.join(", "),"","строки не ближе "+E+" px к кромке окна "+innerWidth+"×"+innerHeight);
+  /* контраст подсказки: её цвет с прозрачностью пэда (без общего затухания ряда
+     .pads.faded — это нарочно) на плашке пэда, положенной на светлое небо #808080 */
+  {
+    const ca=rgbaOf(getComputedStyle(act,"::after").color);
+    let o=ca[3];for(let e=act;e&&!e.classList.contains("pads");e=e.parentElement)o*=+getComputedStyle(e).opacity;
+    const pl=rgbaOf(getComputedStyle(act).backgroundColor),sky=128;
+    const bg=[0,1,2].map(i=>pl[i]*pl[3]+sky*(1-pl[3]));
+    const fg=[0,1,2].map(i=>ca[i]*o+bg[i]*(1-o));
+    const K=wcagK(fg,bg);
+    ok(K>=4.5,"контраст подсказки "+K.toFixed(2)+":1 (не ниже 4,5)");
+  }
+  /* и подсказка не врёт: долгое нажатие доходит до пэда и без действия рядом
+     (.off снимал касания — форсаж в открытом космосе был только на клавише V) */
+  ok(act.classList.contains("off"),"сцена без действия: пэд погашен");
+  ok(getComputedStyle(act).pointerEvents!=="none","погашенный пэд с готовой системой принимает касание");
+  /* одна десятичная запятая: ни одной «1.40» в строках приборов */
+  eq(texts.filter(t=>/\d\.\d/.test(t)).join(" | "),"","числа приборов — с запятой");
+  eq(document.getElementById("zoomlbl").innerText.trim(),"Масштаб ×"+G.zoom.toFixed(2).replace(".",","),"масштаб с запятой");
+  /* имена: пэд, фишка, место — как в таблицах; четыре системы и все державы */
+  const $w=act.querySelector("span")||act,miss=[],sys0=G.sys;
+  const padIs=(prompt,want)=>{G.prompt=prompt;hud();const got=$w.innerText.trim();if(got!==want)miss.push("«"+got+"» вместо «"+want+"»");};
+  for(const p in POWERS)padIs("ДЕЙСТВИЕ — К "+POWERS[p].ru.toUpperCase(),"К "+POWERS[p].ru.split(/\s+/)[0]);
+  padIs("ДЕЙСТВИЕ — К ГЛАВТРАССЕ","К ГЛАВТРАССЕ");
+  padIs("ДЕЙСТВИЕ — ДО КОММУНЫ · 3","До Коммуны");
+  for(const [sx,sy] of [[0,0],[1,0],[0,2],[-3,1]]){
+    const S=getSystem(sx,sy);G.sys=S;
+    const names=[S.name].concat(S.station?[S.station.name]:[],(S.planets||[]).map(p=>p.name));
+    for(const nm of names){const w0=String(nm).split(/\s+/)[0];if(w0)padIs("ДЕЙСТВИЕ — К "+String(nm).toUpperCase(),"К "+w0);}
+  }
+  G.sys=sys0;G.prompt="";hud();
+  eq(miss.join(", "),"","имя на пэде — как в таблицах");
+  /* фишки называют имя как есть; место — имя системы как есть */
+  const known=new Set(["Звезда","Цель"].concat(G.sys.station?[G.sys.station.name]:[],(G.sys.planets||[]).map(p=>p.name)));
+  const odd=SYS_CHIPS.map(c=>String(c.l||"").split(" · ")[0]).filter(n=>n&&!known.has(n));
+  eq(odd.join(", "),"","фишки: имена как в таблицах");
+  ok(document.querySelector(".locus").innerText.includes(G.sys.name),"название места — «"+G.sys.name+"» как есть: "+document.querySelector(".locus").innerText.replace(/\n/g," / "));
+  G.ship.x=0;G.ship.y=0;G.mode="dock";abilPadRim();resetWorld();
 }));

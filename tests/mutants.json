@@ -42,5 +42,11 @@
   {"name":"reset-leaks","file":"tests/90-harness.js",
    "find":"G\\.pirates=\\[\\];G\\.barges=\\[\\];","replace":"G.barges=[];",
    "kill":"resetWorld возвращает мир",
-   "why":"resetWorld оставляет поле предыдущему набору (история M329: половинчатая Вега доехала до чужого набора)"}
+   "why":"resetWorld оставляет поле предыдущему набору (история M329: половинчатая Вега доехала до чужого набора)"},
+  {"name":"hud-hint-under-pad","file":"src/style.css","find":"\\.pads button\\.abil-ok::after\\{position:static;transform:none;","replace":".pads button.abil-ok::after{position:absolute;top:auto;bottom:-13px;transform:translateX(-50%);","kill":"приборы: строки не ближе","mobile":true,"why":"«Долгое · форсаж» снова подписью под пэдом — в 4,5 px от нижней кромки (правка Контроля к паре HUD 15/n)"},
+  {"name":"hud-hint-dim","file":"src/style.css","find":"\\.pads button\\.off\\.abil-ok\\{opacity:1;pointer-events:auto\\}","replace":".pads button.off.abil-ok{pointer-events:auto}","kill":"приборы: строки не ближе","mobile":true,"why":"погашенный пэд гасит и подсказку системы — контраст 2:1 к фону"},
+  {"name":"hud-hint-deaf","file":"src/style.css","find":"\\.pads button\\.off\\.abil-ok\\{opacity:1;pointer-events:auto\\}","replace":".pads button.off.abil-ok{opacity:1}","kill":"приборы: строки не ближе","mobile":true,"why":"подсказка горит на пэде, который не принимает касание: форсаж без действия рядом — только клавишей V"},
+  {"name":"hud-top-8","file":"src/style.css","find":"(\\n  )\\.hud\\{top:calc\\(env\\(safe-area-inset-top\\) \\+ 12px\\);(\\r?\\n)    padding","replace":"$1.hud{top:calc(env(safe-area-inset-top) + 6px);$2    padding","kill":"приборы: строки не ближе","mobile":true,"why":"шапка приборов на телефоне снова в нескольких px от верхней кромки"},
+  {"name":"pad-name-lowercase","file":"src/27z-telemetry.js","find":"setTx\\(padWord\\(\\$act\\),padCase\\(actLbl\\)\\);","replace":"setTx(padWord($act),actLbl.charAt(0)+actLbl.slice(1).toLowerCase());","kill":"приборы: строки не ближе","mobile":true,"why":"пэд пишет имя строчными — «К главтрассе», «К коммуне» (правка Контроля: имя — как в игре)"},
+  {"name":"zoom-dot","file":"src/27z-telemetry.js","find":"\"Масштаб ×\"\\+decRu\\(G\\.zoom,2\\)","replace":"\"Масштаб ×\"+G.zoom.toFixed(2)","kill":"приборы: строки не ближе","mobile":true,"why":"«Масштаб ×1.40» с точкой рядом с «1,4к» на фишках — две десятичные записи на одном экране"}
 ]

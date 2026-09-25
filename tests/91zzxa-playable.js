@@ -64,8 +64,8 @@ TEST_SUITES.push(()=>suite("R0 пэды: на оклике ДЕЙСТВИЕ — 
   const p=npcShip(by,0,1,G.ship.x+500,G.ship.y,1);p.aware=false;G.pirates=[p];
   G.hail={by,t:HAIL_HOLD,warn:0,x:G.ship.x,y:G.ship.y,blk:0};
   hailTick(G.ship,1,false);hud();
-  eq(document.querySelector("[data-k=act]").textContent.trim(),"ПРОХОДОМ","ДЕЙСТВИЕ называет ответ");
-  eq(document.getElementById("lockbtn").textContent.trim(),"ПО ДЕЛУ","ЦЕЛЬ называет второй ответ");
+  eq(document.querySelector("[data-k=act]").textContent.trim(),"Проходом","ДЕЙСТВИЕ называет ответ");
+  eq(document.getElementById("lockbtn").textContent.trim(),"По делу","ЦЕЛЬ называет второй ответ");
   G.hail=null;hailTick(G.ship,1,false);hud();
 }));
 
@@ -258,7 +258,7 @@ TEST_SUITES.push(()=>suite("R3b окно выходов: пад «ВЫХОДЫ»
   G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;G.ship.x=S.station.orbit+3000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
   G.fuel=0;G.cargo.ice=0;G.cargo.iron=3;G.credits=1e6;G.pirates=[];G.hail=null;G.hailLog={};toggleSos(false);
   T.wait(1);hud();
-  eq(document.querySelector("[data-k=act]").textContent.trim(),"ВЫХОДЫ","на пустом баке пад ДЕЙСТВИЕ зовётся «ВЫХОДЫ»");
+  eq(document.querySelector("[data-k=act]").textContent.trim(),"Выходы","на пустом баке пад ДЕЙСТВИЕ зовётся «ВЫХОДЫ»");
   ok(!/БУКСИР ИЛИ СБРОС/.test(G.prompt),"подсказка не пересказывает окно: "+G.prompt.replace(/\n/g," / "));
   const cb=document.getElementById("callbtn");
   ok(cb.textContent.indexOf(rescueHomeCost().toLocaleString("ru"))>=0,"в меню ДОМОЙ со своей ценой: "+cb.textContent);
@@ -422,12 +422,12 @@ TEST_SUITES.push(()=>suite("R5 зонд: цена на паде, покупка 
   G.ship.x=p.x+p.x/u*(p.radius+50);G.ship.y=p.y+p.y/u*(p.radius+50);G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
   T.wait(1,{draw:false});hud();
   const lk=()=>document.getElementById("lockbtn").textContent.trim();
-  eq(lk(),"ЗОНД "+PROBE_COST+" КР","пад ЦЕЛЬ называет цену");
+  eq(lk(),"Зонд "+PROBE_COST+" кр","пад ЦЕЛЬ называет цену");
   const c0=G.credits;
   HELM.lockEdge=true;helmTick(1);
   eq(G.credits,c0,"первый тап не покупает — 300 кр одним касанием не уходят");
   T.wait(1,{draw:false});hud();
-  ok(/ТОЧНО/.test(lk()),"пад переспрашивает: "+lk());
+  ok(/точно/i.test(lk()),"пад переспрашивает: "+lk());
   HELM.lockEdge=true;helmTick(1);
   eq(G.credits,c0-PROBE_COST,"второй тап купил");
   ok(probeHas(S.sx,S.sy,p.idx),"формуляр открыт");

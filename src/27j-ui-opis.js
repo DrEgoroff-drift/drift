@@ -960,7 +960,9 @@ function opisRender(box){
     const nav=document.createElement("nav");nav.className="tabs op-tabs";
     for(const [k,ru] of OPIS_TABS){
       const b=document.createElement("button");b.dataset.tab=k;b.textContent=ru;
-      if(OPIS.tab===k)b.classList.add("on");
+      /* открытая вкладка не жмётся: тычок в неё перерисовывал то же самое и
+         молчал («обещание: молчаливых тычков нет», стол/hold · «КОРАБЛЬ») */
+      if(OPIS.tab===k){b.classList.add("on");b.disabled=true;}
       b.onclick=()=>{OPIS.tab=k;OPIS.sel=null;sfx("ui");opisRerender();};
       nav.appendChild(b);
     }

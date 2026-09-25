@@ -114,6 +114,23 @@ at the end of `style.css` plus span-wrapped words (textContent unchanged, so the
 still read «98/100», «ЦЕЛЬ»); `#msg` and `#prompt` stay in caps (their strings carry names). New guard:
 «пульт: подсказка системы, ФОТО, лента и ЦЕЛЬ не налезают» in any window, its mutant red.
 
+*Контроль's three fixes (25.09).* (1) No HUD text line closer than 12 px to the window edge plus
+`env(safe-area-inset-*)`: the header moves from 8–10 px to 12 px (+ insets on all three sides), chip plates keep
+a 12 px inset, and the ability hint becomes a second line inside the ДЕЙСТВИЕ pad — under the pad it sat 4.5 px
+from the bottom at 2:1, because an idle pad (`.off`, opacity .38) dimmed it too. An idle pad with a ready system
+is no longer dimmed or deaf: `.off` also set `pointer-events:none`, so on a phone the long press never reached
+the pad and the boost in open space was keyboard-only (V); now only the word «Действие» dims. (2) Names keep
+their table case: the pad, the ticker band and ЦЕЛЬ are cased in JS (`padCase`, `27y-hud-words.js`) — sentence
+case, except words recognised as names of what is near (the system, its station, planets and moons, the six
+powers); declension by stem, so «К ГЛАВТРАССЕ» stays caps and «ДО КОММУНЫ» reads «До Коммуны». The CSS
+lowercase trick is gone. (3) One decimal comma (`decRu`): the zoom line, the misclose on the instrument pod and
+in the table, the map's jump radius, the speed in the docking and landing prompts. Guard «приборы: строки не
+ближе 12 px к кромке, имена как в таблицах, одна запятая» (any window; 390×844 under -Mobile): text-node line
+rects of the HUD roots, the hint and chip plates against the edge, the hint's contrast ≥ 4.5:1 on the pad plate
+over a light sky, the idle pad takes a touch, pad names for four systems and all powers, chip and place names,
+no «1.40». Six mutants red: hint under the pad, hint dimmed, pad deaf, header at 6 px, lowercase names, zoom
+with a dot.
+
 **After the candidate — redraw passes.** Each: a 760 pair and one line of what got better.
 
 *Ships.* On the phone at 58 px a ship reads as a body in real light; up close (card, hangar) as a machine made of
@@ -255,6 +272,11 @@ The phone frame budget does not grow: GPU ≤ 12 ms.
 
 ## Where I stopped (update on every commit)
 
+- **HUD pair, Контроль's three fixes (25.09, `gpu-hud` on eb0e4f3).** 12 px from every edge, the hint inside
+  the pad (≥ 4.5:1, the idle pad takes the long press), names in table case on pads (`27y-hud-words.js`), one
+  decimal comma. Five pairs (km/ney at 390 and 760, the station at 390 with ДЕЙСТВИЕ lit). `gpu` holds the gpu2
+  allies merge (044a0f7). Next (Контроль): the two old -Mobile reds (stick/compass isolation leak, «КОРАБЛЬ» on
+  the desk), then gpu2-fleetlit 1230f04 and gpu3 aef3390 after the release.
 - **The flight HUD pair (25.09, branch `gpu-hud` on a178e76, not for release).** One variant, brief under §L.S;
   pairs «было | стало» at 390×844 DPR 2 and 760 DPR 1, flight by the Commune and calm NEYEL, in the session's
   scratchpad (`pair_hud_*.png`). -Full green; -Mobile keeps only the two failures a178e76 has too (the stick

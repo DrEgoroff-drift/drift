@@ -2108,8 +2108,7 @@ body.table u.addr{color:#7a4a20}
 
 .locus u{color:#e3edf1;font-size:14px;font-weight:600;letter-spacing:0}
 .locus em{letter-spacing:0}
-#zoomlbl{letter-spacing:0;text-transform:lowercase}
-#zoomlbl::first-letter{text-transform:uppercase}
+#zoomlbl{letter-spacing:0}
 
 .rail button{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);letter-spacing:0;font-size:11px}
 .rail button.key{flex-direction:column;justify-content:center;gap:3px;width:48px;height:48px;min-width:48px;
@@ -2122,21 +2121,34 @@ body.table u.addr{color:#7a4a20}
 
 .pads button{background:var(--plate);box-shadow:var(--plate-lift)}
 .pads button::before{border-color:var(--hair)}
-.pads button>span{display:block;text-transform:lowercase;letter-spacing:0}
-.pads button>span::first-letter{text-transform:uppercase}
+/* регистр подписи ставит JS (padCase, 27y): CSS-строчные ломали имена — «К главтрассе» */
+.pads button>span{display:block;letter-spacing:0}
 .pads button[data-k=lock]{color:#d3e3e9;font-size:10px;letter-spacing:0}
 .pads button[data-k=lock]::before{border-color:rgba(190,228,236,.24)}
 .pads button[data-k=act]{font-size:9px}
 .pads button[data-k=act]::before{border-color:rgba(242,178,92,.32)}
-.pads button.abil-ok::after{font:500 8px/10px ui-monospace,monospace;letter-spacing:0;top:auto;bottom:-13px;color:rgba(242,178,92,.82)}
+.pads button.abil-ok{align-content:center;row-gap:2px}
+/* подсказка системы — вторая строка ВНУТРИ пэда (правка Контроля): подписью под
+   пэдом она стояла в 4,5 px от нижней кромки, а погашенный пэд гасил и её — 2:1
+   к фону. Внутри она дальше от кромки, чем сам пэд, и лежит на его плашке. */
+.pads button.abil-ok::after{position:static;transform:none;display:block;width:9ch;white-space:normal;text-align:center;
+  font:600 8px/9px ui-monospace,monospace;letter-spacing:0;color:#f2b25c}
+/* пэд без действия, но с готовой системой — не погашен: .off снимал с него
+   касания (pointer-events:none), и долгое нажатие не доходило — форсаж в
+   открытом космосе был только на клавише V. Гаснет лишь слово «Действие». */
+.pads button.off.abil-ok{opacity:1;pointer-events:auto}
+.pads button.off.abil-ok>span{opacity:.38}
 
 #rx,#seat,#perch{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
-#rxOut b{font-size:9px;letter-spacing:0;text-transform:lowercase}
-#rxOut b::first-letter{text-transform:uppercase}
+#rxOut b{font-size:9px;letter-spacing:0}
 #camBtn{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);
   color:#cfe3ea;font-size:10px;letter-spacing:0}
 
+.hud{top:calc(env(safe-area-inset-top) + 12px);
+  padding:0 calc(env(safe-area-inset-right) + 14px) 0 calc(env(safe-area-inset-left) + 14px)}
 @media (max-width:760px){
+  .hud{top:calc(env(safe-area-inset-top) + 12px);
+    padding:0 calc(env(safe-area-inset-right) + 12px) 0 calc(env(safe-area-inset-left) + 12px)}
   .v.big u{font-size:18px}
   .locus u{font-size:12px}
   #camBtn{min-height:44px}
@@ -51652,7 +51664,7 @@ function updateSystem(dt){
     const keyOn=(typeof wanderHas==="function")&&wanderHas("key")&&ds<2600;
     if(ds<300||keyOn){
       if(ds<95||keyOn){
-        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
+        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+decRu(sp,1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
         else if(cue("ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase(),CUE_ACT)&&actEdge)openStation();
         return;
       }
@@ -51664,7 +51676,7 @@ function updateSystem(dt){
     const wn=wanderNear(sh);
     if(wn){
       if(wn.close){
-        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
+        if(sp>2.6)cue("СБРОСЬТЕ СКОРОСТЬ · "+decRu(sp,1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
         else if(cue("ДЕЙСТВИЕ — К ТРАПУ «СОРОКИ»",CUE_ACT)&&actEdge)wanderDock();
         return;
       }
@@ -51747,7 +51759,7 @@ function updateSystem(dt){
         /* сесть по-прежнему некуда, но в верхние слои можно зайти за газами */
         if(cue("ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВИЕ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ",CUE_ACT)&&actEdge){startScoop(near);return;}
       }
-      else if(!G.opts.easyLand&&sp>3.2)cue("СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
+      else if(!G.opts.easyLand&&sp>3.2)cue("СЛИШКОМ БЫСТРО · "+decRu(sp,1)+"\nТОРМОЗ — ГАШЕНИЕ",CUE_ACT);
       else{
         let ln="ДЕЙСТВИЕ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
         if(G.tech.has("deep")&&near.res.length)
@@ -52106,7 +52118,7 @@ function drawSysHud(zx,zy,sh,sys,U){
   inY1=Math.max(inY1,y1base-CHIP_IN);   /* внутрь — не дальше CHIP_IN пикселей */
   /* верхняя кромка — ниже всего блока шкал: фишка в строке ТРЮМ читалась её частью */
   const hr=hudRect(),hudY1=(hr&&hr.height>0)?hr.bottom/U+8:76;
-  const inset={x0:10,x1:W-10,y0:Math.max(76,hudY1),y1:Math.max(140,inY1)};
+  const inset={x0:12,x1:W-12,y0:Math.max(76,hudY1),y1:Math.max(140,inY1)};
   /* занятые места — одной сборкой, а не разрозненными блоками: это одна мысль
      («мимо чего скользит фишка»), а не четыре (Контроль, ревью кода 18.09).
      Следы стиков, живая строка подсказки, нос корабля (щедрый запас вокруг
@@ -52314,7 +52326,7 @@ function drawSysHud(zx,zy,sh,sys,U){
        иначе палец бил бы мимо плашки во время подъезда или затухания. */
     if(m.t&&A===1&&dcA>.5){
       const PAD=Math.max(0,(CHIP_TOUCH-ch)/2);
-      SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
+      SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t,l:label,pl:[rx*U,ry*U,cw*U,ch*U]});
     }
     /* после перескока на соседнюю кромку точка луча и сама фишка расходятся:
        сторона надписи берётся по МЕСТУ фишки (P4) */
@@ -84351,7 +84363,7 @@ function instrPodDraw(){
   c.textAlign="right";
   c.fillStyle=col+".70)";
   c.font="8px ui-monospace,monospace";
-  c.fillText(instrMisclose().toFixed(3),w-3,nh*.72);
+  c.fillText(decRu(instrMisclose(),3),w-3,nh*.72);
   /* лента: та же бумага, что и в кабине, только узкая полоска */
   /* бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
      на себя весь верх экрана, а поверх мира висит только нужное сейчас */
@@ -95678,7 +95690,7 @@ function renderStrips(box){
     for(let x=0;x<=128;x+=4){const y=40+Math.sin(x/18+r()*.4)*10*(s.mis*6+.4)+(r()-.5)*4;x?c.lineTo(x,y):c.moveTo(x,y);}
     c.stroke();
     const nm=document.createElement("div");nm.className="nm";
-    nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+(+s.mis).toFixed(3)+" · "+s.span+" делений · "+
+    nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+decRu(s.mis,3)+" · "+s.span+" делений · "+
       (typeof stripValue==="function"?stripValue(s)+" кр на стойке":"")+"</s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   });
@@ -96204,7 +96216,7 @@ function consoleHeard(text,who){
   const line=document.getElementById("rxLine"),band=document.getElementById("rxBand"),rx=document.getElementById("rx");
   if(!line)return;
   line.textContent=(who?who+": ":"")+text;
-  if(band)band.textContent="ЭФИР · ПРИНЯТО";
+  if(band)band.textContent="Эфир · принято";
   conFresh=8;conLast=text;
   if(rx)rx.classList.add("fresh");
   sfx("ui",{f:1400,to:900,d:.05,v:.18});
@@ -96239,14 +96251,14 @@ function consoleTick(dt){
       if(nb.textContent!==want)nb.textContent=want;
     }
   }
-  if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
+  if(RN&&line){band.textContent=padCase(RN.ru);line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
     if(knob&&document.activeElement!==knob)knob.value=f;
     const R=radioTune(f);
     /* у стойки ловит лучше: слова не выпадают */
     if(G.mode==="dock"&&R.q>0&&R.q<.55)R.text=radioTune(Math.min(1,f+.001)).text;
-    band.textContent=R.ru||"ШУМ";
+    band.textContent=padCase(R.ru||"ШУМ");
     line.textContent=R.text;
     /* задержался на волне — тетрадь запомнит строку, один раз на строку */
     if(R.q>.55&&R.text!==conHeld){conDwell+=1;if(conDwell>=3){conHeld=R.text;conDwell=0;logAdd("ether",R.ru+" · "+R.text);}}
@@ -96316,7 +96328,7 @@ function consoleTick(dt){
       const R=radioTune(+knob.value);
       conFresh=0;conDwell=0;
       const rx=document.getElementById("rx");if(rx)rx.classList.remove("fresh");
-      document.getElementById("rxBand").textContent=R.ru||"ШУМ";
+      document.getElementById("rxBand").textContent=padCase(R.ru||"ШУМ");
       document.getElementById("rxLine").textContent=R.text;
       const con=document.getElementById("console");if(con)con.classList.remove("quiet");
     };
@@ -99844,6 +99856,50 @@ function closeDeal(){$dl.classList.remove("open");}
   if(c)c.addEventListener("click",()=>{closeDeal();saveGame(true);});
 }
 
+/* ── СЛОВА ПРИБОРОВ: регистр имён и десятичная запятая (пара HUD 15/n) ──
+   Подписи пэдов, эфирной полосы и ЦЕЛИ пишутся как предложение: первое слово с
+   большой буквы, дальше строчные. Но строки подсказок идут капсом, и в «К
+   ГЛАВТРАССЕ» имя от глагола уже не отличить — CSS-строчные делали из неё «К
+   главтрассе» (правка Контроля: имя — всегда как в игре). Имена узнаём по
+   словарю того, что рядом: система, станция, планеты и луны, державы. Склонение
+   — по основе: «ГЛАВТРАССЕ» узнаётся по «ГЛАВТРАСС», и слово берёт регистр
+   имени, а окончание остаётся своим. */
+let PADNAME_K=null,PADNAME=null;
+function padNames(){
+  const s=G.sys,k=s?(s.sx+","+s.sy+"|"+(s.name||"")+"|"+((s.station&&s.station.name)||"")):"";
+  if(PADNAME&&PADNAME_K===k)return PADNAME;
+  const m=new Map();
+  const add=n=>{for(const t of String(n||"").split(/[\s«»"·,:()]+/)){
+    /* слово имени — то, что в таблице с заглавной: «посёлок Воркораде» даёт одно */
+    if(t.length<2||!/^[А-ЯЁA-Z]/.test(t))continue;
+    const u=t.toUpperCase(),s0=u.length>4?u.replace(/[АЕЁИОУЫЭЮЯЙЬ]+$/,""):u,st=s0.length>=3?s0:u;
+    if(!m.has(st))m.set(st,t);}};
+  if(typeof POWERS==="object")for(const p in POWERS)add(POWERS[p].ru);
+  if(s){add(s.name);if(s.station)add(s.station.name);
+    for(const p of s.planets||[]){add(p.name);for(const q of p.moons||[])add(q.name);}}
+  PADNAME_K=k;return PADNAME=m;
+}
+/* слово w (капсом) в регистре имени t: заглавные там, где они у имени */
+function nameLike(w,t,at){
+  if(t===t.toUpperCase())return w.toUpperCase();
+  const a=w.toLowerCase().split("");
+  for(let i=0;i<t.length&&at+i<a.length;i++)if(t[i]!==t[i].toLowerCase())a[at+i]=a[at+i].toUpperCase();
+  return a.join("");
+}
+function padCase(s){
+  const m=padNames();
+  return String(s).split(" ").map((w,i)=>{
+    const lead=(/^[«"(]+/.exec(w)||[""])[0].length,core=w.slice(lead).replace(/[»")·,.:!?]+$/,"").toUpperCase();
+    if(/^[IVXLC]+$/.test(core)||/^\d/.test(core))return w;   // номер луны, число
+    /* основа короче трёх букв — только целым словом: «Ио» не ловит «ИОН» */
+    for(let n=core.length;n>=2&&core.length-n<=3;n--){const t=m.get(core.slice(0,n));if(t!==undefined&&(n>=3||n===core.length))return nameLike(w,t,lead);}
+    const l=w.toLowerCase();return i?l:l.charAt(0).toUpperCase()+l.slice(1);
+  }).join(" ");
+}
+/* число, которое читает игрок: одна десятичная запятая на весь экран («1,4к» у
+   фишек, «×1,40» у масштаба, невязка «0,012») */
+function decRu(v,n){return (+v).toFixed(n).replace(".",",");}
+
 /* ══════════════ телеметрия: приборы пишут в DOM ══════════════
    Отрезано от 28-loop 27.08.2026: файл дорос до 47 КБ, и внутри лежали два
    разных дела — кадр (цикл, звук, авторазрешение) и приборы (hud() со всеми
@@ -100089,7 +100145,7 @@ function hud(){
     const bc=document.body.classList;
     const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen");
     $zl.style.display=zs?"":"none";
-    if(zs)setTx($zl,"МАСШТАБ ×"+G.zoom.toFixed(2));
+    if(zs)setTx($zl,"Масштаб ×"+decRu(G.zoom,2));
   }
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
@@ -100115,7 +100171,7 @@ function hud(){
     /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
     if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
   else if(G.mode==="wanderer"){a="На борту «Сороки»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
-  else if(G.mode==="map"){a="Навигация";b="радиус "+st.jump.toFixed(1)+" пк";}
+  else if(G.mode==="map"){a="Навигация";b="радиус "+decRu(st.jump,1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name;
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
   /* ── строка места не повторяет шкалы (A2) ──
@@ -100254,7 +100310,7 @@ function hud(){
       actLbl=(words||"ДЕЙСТВИЕ")+(nm?" "+nm[1]:"");
     }
   }
-  setTx(padWord($act),actLbl);
+  setTx(padWord($act),padCase(actLbl));
   /* кнопка без действия гаснет, а не исчезает (M181): палец помнит место */
   $act.classList.toggle("off",!hasAct);
   /* Подсвечиваем, когда действие вообще есть. Раньше признаком служила сама
@@ -100329,7 +100385,7 @@ function hud(){
          надзора 12.09): на оклике — «ПО ДЕЛУ», у обломка — «СНЯТЬ ЭКИПАЖ» */
       const mt=G.mode==="system"?/ЦЕЛЬ\s*—\s*([^·\n]+)/.exec(G.prompt||""):null;
       const lv=mt?mt[1].trim():"";
-      setTx(padWord($lock),(lv&&lv.length<=14)?lv:"ЦЕЛЬ");
+      setTx(padWord($lock),padCase((lv&&lv.length<=14)?lv:"ЦЕЛЬ"));
     }
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
