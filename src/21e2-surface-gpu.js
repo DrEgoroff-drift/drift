@@ -352,7 +352,8 @@ function surfRelightGpu(tr,p,camx,camy,pass,HT){
   const ls=lu(sc),la=lu(am);
   F[12]=sc[0]/ls;F[13]=sc[1]/ls;F[14]=sc[2]/ls;
   F[16]=am[0]/la*.78;F[17]=am[1]/la*.78;F[18]=am[2]/la*.78;
-  gpuField(pass,"slit",GSL_WGSL,F,[SURF_SHADOW]);
+  /* смешение hull: цвет как у over, а в альфе сцены — маска фигур (её читает сведение, 08b) */
+  gpuField(pass,"slit",GSL_WGSL,F,[SURF_SHADOW],{blend:"hull"});
   /* #c отдан видеокарте — чистим: то, что 2D нарисует дальше, ляжет поверх */
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cvs.width,cvs.height);ctx.restore();
 }

@@ -14,10 +14,12 @@ gpuOver #1 far ridges — one field, both layers (21e2 surfRidgesGpu)
 gpuOver #2 near ground — chunk textures + one multiply field (21e2 surfGroundGpu); live grass stays 2D;
            the lower-third sky shade (surfShadeGpu) in the same pass
 2D         everything that stands on the ground (water, POI, deco, built, home, settlement, rocks,
-           lander, plants, beasts, walkers, deposits, astronaut)
+           lander, cave, mine, deposits, tracks)
 upload     #c → own texture (no composite); into pass #2: cast shadows, then the same snapshot back
-           through the world's light (surfRelightGpu); #c is cleared
-2D         labels (deferred list LBL), foreground, near weather, night, placesLit (11va), shafts, grade
+           through the world's light (surfRelightGpu, blend hull); #c is cleared
+pass #2    plants, beasts, peep walkers, the astronaut — the life ship's GPU twins (20fa), same order
+2D         dust puffs, swim ring, mining beam, labels (deferred list LBL), foreground, near weather,
+           night, placesLit (11va), shafts, grade
 ```
 
 Why not a third `gpuOver` for the shadows: every `gpuOver` composite runs its front layer through the
@@ -61,6 +63,14 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    lander, plants, beasts, walkers and the astronaut all get it at once, without touching a painter.
    A contact-darkening term was tried and dropped: the home and settlements stand on yards over the
    slope, so the terrain line cut their facades diagonally.
+7. **merge of the fleet base** (life, cave, belt, hq, road, scoop, landing…) and **the life twins on the
+   surface** (the life ship's request): the snapshot/shadow/relight moved to just before the plants;
+   plants (`lifePlantGpu`, `o.sway` = the old rotation), beasts (`lifeBeastGpu`), peep walkers
+   (`lifePeepGpu`) and the astronaut (`lifeAstroGpu`; 2D when swimming — the twin cannot be cut at the
+   waterline) draw into the ground pass on top of it, their `groundShadow` calls dropped (the twins
+   cast their own). Deposits and tracks moved before the snapshot (so they are lit and shadowed, and a
+   plant now stands in front of an ore outcrop rather than behind it). The relight uses the `hull`
+   blend, so relit things mark the scene's figure mask like the twins do.
 
 ## Pairs (scratchpad, not in git)
 
@@ -78,6 +88,9 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pair-b4-fgrass.png`, `pair-b4-homeout.png`, `pair-b4-noon.png`, `pair-b4-surface.png`, crop
   `z-fg5.png` — roofs, leaves and walls catch the star on its side and cool on the other; plants throw
   shadows down the slope.
+- `pair-c1-fgrass.png`, `pair-c1-noon.png`, `pair-c1-surface.png`, `pair-c1-homeout.png`; crop
+  `z-cmp-twins.png` (base e4c3a56 | relight, 2D plants | twins) — the plants have bodies (dark stems,
+  lit heads, the umbrella's shaded underside), the walker is lit from the star.
 
 ## Requests outside the zone
 
@@ -92,10 +105,14 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pipe:fld.sground|mul`
 - `pipe:fld.sshade|over`
 - `pipe:fld.scast|mul`
-- `pipe:fld.slit|over`
+- `pipe:fld.slit|hull`
 - `pipe:kit.img|over` (already known)
 
 ## Open problems
+
+- The life ship's core request (`08b` `fsFinal`: sun shafts and bloom should read the scene's figure
+  mask) matters here too: the ground, the relit snapshot and the twins all live in the scene now.
+  Everything standing is drawn with the `hull` blend, so the proposed fix covers it as is.
 
 - The cast shadow reads `#c` at the moment after the astronaut: anything a later ship moves into that
   span (a label, a halo above the alpha threshold) will cast a shadow — keep labels in `LBL`.

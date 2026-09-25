@@ -359,36 +359,6 @@ function drawSurfaceWorld(){
        ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ШАХТА",sx,sy-32);});
     }
   }
-  const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */
-  for(const pl of S.plants){
-    const x=pl.x-camx;if(x<-70||x>W+70)continue;
-    if(WT&&pl.x>WT.x0&&pl.x<WT.x1)continue;
-    groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
-    /* растение кланяется от основания: высокое сильнее низкого, у каждого своя
-       фаза от координаты — иначе куртина качается одним куском */
-    const sw=WIND*.055*(.6+pl.h/90)*(.75+.25*Math.sin(G.t*.028+pl.x*.05));
-    const z=pl.z||0;
-    ctx.save();ctx.translate(x,pl.y-camy);ctx.rotate(sw);
-    /* глубина куртины (автор, 24.08.2026): дальние мельче, ближние крупнее.
-       Одного размера мало — дальнее ещё и выцветает в воздух, поэтому сверху
-       ложится вуаль цвета неба. Без неё заросли остаются плоской аппликацией */
-    /* вуаль воздуха теперь в самом цвете растения (20-life), альфа остаётся
-       лишь лёгкой добавкой: прозрачность на однотонном мире ничего не делит */
-    if(z){ctx.scale(1-z*.22,1-z*.22);ctx.globalAlpha=1-z*.12;}
-    drawPlant(pl,0,0,z*.62);
-    ctx.restore();
-  }
-  for(const b of S.fauna||[]){
-    const x=b.x-camx;if(x<-50||x>W+50)continue;
-    groundShadow(x,b.y-camy+1,b.r*.9,2.6);
-    drawBeast(b,x,b.y-camy,false,0);
-    if(b.scanned)LBL.push(()=>{
-      ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ИЗУЧЕН",x,b.y-camy-b.r*2.6);
-    });
-  }
-  /* идущие — позади астронавта и поверх кустов: они на лугу, а не за ним (20c) */
-  peepGhosts(camx,camy);
   for(const d of S.deposits){
     if(d.left<=0)continue;
     const x=d.x-camx;if(x<-50||x>W+50)continue;
@@ -414,9 +384,6 @@ function drawSurfaceWorld(){
       ctx.fillStyle=col;ctx.fillRect(x-18,y-20,36*clamp(d.prog,0,1),4);
     });
   }
-  /* астронавт рисуется по своей координате, а не в центре экрана: с инерцией
-     и взглядом вперёд центр экрана — уже не он */
-  const x=S.x-camx,y=S.y-camy;
   /* следы гаснут за минуту: пыль оседает, и тропа остаётся только там, где
      ходили только что — так видно, откуда пришёл */
   /* ── след — вдавленность, а не чёрточка поверх кромки (M234) ──
@@ -438,6 +405,54 @@ function drawSurfaceWorld(){
       ctx.fillRect(tx-2.4,ty-.4,4.8,.7);
     }
   }
+  /* ── стоящее: тени и свет мира (21e2) ──
+     Всё, что до сих пор легло на #c (находки, формы, постройки, посёлок, корабль,
+     пещера, шахта, залежи, следы), уходит видеокарте: падающие тени на полосу
+     земли и сам снимок — светом звезды; #c чист. Кусты, звери, идущие и ходок
+     дальше рисуются двойниками (20fa) в тот же проход грунта — поверх снимка, в
+     прежнем порядке. Подписи — в конце кадра: плашка тени не кладёт */
+  if(gpuGround)surfCastGpu(tr,p,camx,camy);
+  const LP=(gpuGround&&GPU.overPass&&GPU.overPass===SURF_P2)?GPU.overPass:null;
+  const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */
+  for(const pl of S.plants){
+    const x=pl.x-camx;if(x<-70||x>W+70)continue;
+    if(WT&&pl.x>WT.x0&&pl.x<WT.x1)continue;
+    /* растение кланяется от основания: высокое сильнее низкого, у каждого своя
+       фаза от координаты — иначе куртина качается одним куском */
+    const sw=WIND*.055*(.6+pl.h/90)*(.75+.25*Math.sin(G.t*.028+pl.x*.05));
+    const z=pl.z||0;
+    /* двойник видеокарты (20fa): светом мира, тенью по склону и изгибом от комля */
+    if(LP){const h=lifeHere(x,pl.y-camy);
+      if(lifePlantGpu(LP,pl,h.x,h.y,z*.62,{s:h.s*(1-z*.22),a:1-z*.12,sway:sw}))continue;}
+    groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
+    ctx.save();ctx.translate(x,pl.y-camy);ctx.rotate(sw);
+    /* глубина куртины (автор, 24.08.2026): дальние мельче, ближние крупнее.
+       Одного размера мало — дальнее ещё и выцветает в воздух, поэтому сверху
+       ложится вуаль цвета неба. Без неё заросли остаются плоской аппликацией */
+    /* вуаль воздуха теперь в самом цвете растения (20-life), альфа остаётся
+       лишь лёгкой добавкой: прозрачность на однотонном мире ничего не делит */
+    if(z){ctx.scale(1-z*.22,1-z*.22);ctx.globalAlpha=1-z*.12;}
+    drawPlant(pl,0,0,z*.62);
+    ctx.restore();
+  }
+  for(const b of S.fauna||[]){
+    const x=b.x-camx;if(x<-50||x>W+50)continue;
+    const hb=LP?lifeHere(x,b.y-camy):null;
+    if(!(LP&&lifeBeastGpu(LP,b,hb.x,hb.y,false,0,{s:hb.s}))){
+      groundShadow(x,b.y-camy+1,b.r*.9,2.6);
+      drawBeast(b,x,b.y-camy,false,0);
+    }
+    if(b.scanned)LBL.push(()=>{
+      ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("ИЗУЧЕН",x,b.y-camy-b.r*2.6);
+    });
+  }
+  /* идущие — позади астронавта и поверх кустов: они на лугу, а не за ним (20c) */
+  {const h0=LP?lifeHere(0,0):null;
+   if(!(LP&&lifePeepGpu(LP,camx,camy,{x0:h0.x,y0:h0.y,s:h0.s})))peepGhosts(camx,camy);}
+  /* астронавт рисуется по своей координате, а не в центре экрана: с инерцией
+     и взглядом вперёд центр экрана — уже не он */
+  const x=S.x-camx,y=S.y-camy;
   /* клубы пыли из-под ног (M232): расходятся и тают за спиной ходока */
   if(S.dust)for(const dp of S.dust){
     const age=(G.t-dp.t)/46;if(age>=1)continue;
@@ -448,6 +463,12 @@ function drawSurfaceWorld(){
     ctx.ellipse(dx2-dp.f*age*5,dy2-1-age*4,1.5+age*4.5,1+age*2.6,0,0,TAU);ctx.fill();
   }
   const swimW=(S.swim>0&&typeof waterOf==="function")?waterOf(tr,p):null;
+  /* ходок — двойником (20fa): светом звезды и своей тенью; в воде — 2D, он режется
+     по урезу, а двойник резать нечем */
+  const hA=LP&&!(swimW&&S.swim>.5)?lifeHere(x,y-1):null;
+  if(!(hA&&lifeAstroGpu(LP,hA.x,hA.y,{face:S.face,amp:S.walkAmp,phase:S.walkPhase,
+      air:!S.on,jet:!!S.jetOn,mining:!!S.mining,suitLow:S.suit<25,s:hA.s,shadow:!swimW,wx:S.x,
+      ground:S.on?null:lifeHere(x,groundAt(tr,S.x)-camy).y}))){
   if(S.on&&!swimW)groundShadow(x,y+1,7,2);
   ctx.save();
   /* в воде (M327): ниже уреза тела не видно — скафандр режется по воде, а не
@@ -460,6 +481,7 @@ function drawSurfaceWorld(){
   drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,sun:rim,
     air:!S.on,jet:!!S.jetOn,mining:!!S.mining,suitLow:S.suit<25});
   ctx.restore();
+  }
   /* спасательный круг (M327): надувается, когда скафандр входит в воду, —
      поэтому и плывёт. Тело с обводом и одним светом: рыжий тор, блик сверху,
      кольца волны от него по зеркалу */
@@ -489,9 +511,6 @@ function drawSurfaceWorld(){
      должны остаться читаемыми, их виньетка касаться не должна */
   /* погода поверх мира, но под лучами и свёрткой: осадки идут перед игроком,
      а свет и цветокоррекция ложатся уже на всё вместе */
-  /* падающие тени всего, что уже стоит на #c: находки, формы, постройки, корабль,
-     кусты, звери, идущие, сам астронавт (21e2). Подписи — после: плашка тени не кладёт */
-  if(gpuGround)surfCastGpu(tr,p,camx,camy);
   for(const f of LBL)f();
   drawForeground(tr,camx,camy,p);
   drawWeather(p,camx,camy,"near");
