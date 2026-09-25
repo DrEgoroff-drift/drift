@@ -18,7 +18,8 @@ gpuOver #2 near ground — chunk textures + one multiply field (21e2 surfGroundG
 upload     #c → own texture (no composite); into pass #2: cast shadows, then the same snapshot back
            through the world's light (surfRelightGpu, blend hull); #c is cleared
 pass #2    plants, beasts, peep walkers, the astronaut — the life ship's GPU twins (20fa), same order
-2D         dust puffs, swim ring, mining beam, labels (deferred list LBL), foreground, near weather,
+upload     the foreground (21b drawForeground) drawn alone on the empty #c → pass #2, blurred (DOF)
+2D         dust puffs, swim ring, mining beam, labels (deferred list LBL), near weather,
            night, placesLit (11va), shafts, grade
 ```
 
@@ -78,6 +79,10 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    gradient with the night — with a slow continuous ripple drifting with the wind, stronger near the
    waterline, the body's depth gradient, rare glints by the wind and the light waterline. Algae and reeds
    stay 2D (and so go into the lit snapshot). `drawWater` keeps its 2D path when there is no device.
+9. **the foreground out of focus** — `surfNearGpu`: right after the astronaut, `drawForeground` paints
+   alone on the empty `#c`, which is uploaded (`surfSnap`, shared with the shadow snapshot) and laid in
+   the ground pass through a 13-tap disc blur (`fld.snear`, hull blend): the boulders and grass at the
+   lens are soft, the walker keeps the focus. Above the walker, below dust, labels and weather.
 
 ## Pairs (scratchpad, not in git)
 
@@ -101,11 +106,13 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pair-d2-lake.png`, crop `z-lake.png` — no `mkview` scene has water: `lake.js` (scratchpad) forces
   `tr.wet` on the `surface` scene and swims into the lake, same snippet for before and after. The lake
   reflects the sky and the mountains, rippling, instead of a flat dark slab.
+- `pair-e1-fgrass.png`, crop `z-near.png` — the foreground grass at the lens is soft instead of a
+  sharp black cut-out fighting the walker for attention.
 
 ## Requests outside the zone
 
 - `08b0-gpu-pipe.js` `GPU_FLD`: add `"fld.sridge":()=>GSR_WGSL` and `"fld.sground":()=>GSG_WGSL` so the
-  warm-up table can compile them; likewise `"fld.sshade":()=>GSS_WGSL`, `"fld.scast":()=>GSC_WGSL`, `"fld.slit":()=>GSL_WGSL`, `"fld.swater":()=>GSW_WGSL`.
+  warm-up table can compile them; likewise `"fld.sshade":()=>GSS_WGSL`, `"fld.scast":()=>GSC_WGSL`, `"fld.slit":()=>GSL_WGSL`, `"fld.swater":()=>GSW_WGSL`, `"fld.snear":()=>GSN_WGSL`.
 - `19-mode-landing-ground.js` (landing ship): the chunk bake recipe inside `drawGround` is copied in
   `surfGroundGpu`; a shared `groundChunkPaint(tr,fill,line,pal)` there would keep the two from drifting.
 
@@ -117,6 +124,7 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pipe:fld.scast|mul`
 - `pipe:fld.slit|hull`
 - `pipe:fld.swater|over`
+- `pipe:fld.snear|hull`
 - `pipe:kit.img|over` (already known)
 
 ## Open problems

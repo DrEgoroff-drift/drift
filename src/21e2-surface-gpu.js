@@ -278,13 +278,7 @@ function surfCastGpu(tr,p,camx,camy){
   if(GPU.cState===0)return false;           /* на #c ничего не стоит — заслонять нечему */
   /* снимок #c — очередью, сейчас: тень рисуется позже, при отправке кадра, а к тому
      времени #c дорисован подписями и погодой */
-  const d=GPU.dev,U=GPUTextureUsage;
-  if(!SURF_SHADOW||SURF_SHADOW.dev!==d||SURF_SHADOW.w!==GPU.bw||SURF_SHADOW.h!==GPU.bh){
-    if(SURF_SHADOW&&SURF_SHADOW.dev===d)GPU.trash.push(SURF_SHADOW.tex);
-    const tex=d.createTexture({size:[GPU.bw,GPU.bh],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
-    SURF_SHADOW={dev:d,w:GPU.bw,h:GPU.bh,tex,view:tex.createView()};
-  }
-  d.queue.copyExternalImageToTexture({source:cvs},{texture:SURF_SHADOW.tex,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+  SURF_SHADOW=surfSnap(SURF_SHADOW);
   const HT=surfHeightTex(tr),F=GSC;F.fill(0);
   F[0]=camx;F[1]=camy;F[4]=tr.step;F[5]=tr.N;F[6]=HT.mid;
   /* звезда низко — тень длинная; сдвиг от звезды, сплющенная полоса земли */
@@ -435,5 +429,48 @@ function surfWaterGpu(tr,camx,camy,p,Wt,xa,xb,y){
   U[40]=R[32];U[41]=R[33];U[42]=R[34];U[44]=R[36];U[45]=R[37];U[46]=R[38];
   U[48]=(typeof WIND==="number")?WIND:0;U[49]=Math.min(64,y);U[50]=(Wt.seed|0)%97;
   gpuField(pass,"swater",GSW_WGSL,U,[HT]);
+  return true;
+}
+
+/* ══════════════ передний план не в фокусе ══════════════
+   Валуны и трава у самого объектива (drawForeground, 21b) ближе камеры на
+   четверть — глаз, смотрящий на ходока, видит их мягкими. 2D клал их резкими,
+   и чёрный силуэт у кромки кадра спорил с фигурой за внимание. Здесь они
+   рисуются на пустой #c, уходят видеокарте и ложатся в проход грунта
+   размытыми по диску (глубина резкости) — поверх ходока, под пылью и подписями. */
+const GSN_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let r=fu.v[0].x/fu.res.zw;
+  var c=textureSampleLevel(t0,smp,uv,0.)*.16;
+  /* диск из двенадцати выборок, два кольца */
+  for(var i=0;i<6;i++){
+    let a=f32(i)*1.0472+.3;let o=vec2f(cos(a),sin(a));
+    c=c+textureSampleLevel(t0,smp,uv+o*r*.5,0.)*.07+textureSampleLevel(t0,smp,uv+vec2f(o.y,-o.x)*r,0.)*.07;
+  }
+  return c;
+}`;
+const GSN=new Float32Array(4);
+let SURF_NEAR=null;
+/* снимок #c в свою текстуру (очередью, сейчас); slot — чей: тени или передний план */
+function surfSnap(old){
+  const d=GPU.dev,U=GPUTextureUsage;
+  if(!old||old.dev!==d||old.w!==GPU.bw||old.h!==GPU.bh){
+    if(old&&old.dev===d)GPU.trash.push(old.tex);
+    const tex=d.createTexture({size:[GPU.bw,GPU.bh],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
+    old={dev:d,w:GPU.bw,h:GPU.bh,tex,view:tex.createView()};
+  }
+  d.queue.copyExternalImageToTexture({source:cvs},{texture:old.tex,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+  return old;
+}
+function surfNearGpu(tr,camx,camy,p){
+  const pass=GPU.overPass;
+  /* #c должен быть пуст: иначе в размытие попадёт чужое */
+  if(!GPU.on||!pass||pass!==SURF_P2||GPU.cState!==0){drawForeground(tr,camx,camy,p);return false;}
+  drawForeground(tr,camx,camy,p);
+  if(GPU.cState===0)return true;              /* в кадре переднего плана нет */
+  SURF_NEAR=surfSnap(SURF_NEAR);
+  GSN[0]=2.4;
+  gpuField(pass,"snear",GSN_WGSL,GSN,[SURF_NEAR],{blend:"hull"});
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cvs.width,cvs.height);ctx.restore();
   return true;
 }

@@ -482,6 +482,9 @@ function drawSurfaceWorld(){
     air:!S.on,jet:!!S.jetOn,mining:!!S.mining,suitLow:S.suit<25});
   ctx.restore();
   }
+  /* передний план — с видеокартой сразу за ходоком, размытым по глубине (21e2);
+     true — он уже нарисован (так или иначе), в конце кадра второй раз не нужен */
+  const nearGpu=LP?(surfNearGpu(tr,camx,camy,p),true):false;
   /* спасательный круг (M327): надувается, когда скафандр входит в воду, —
      поэтому и плывёт. Тело с обводом и одним светом: рыжий тор, блик сверху,
      кольца волны от него по зеркалу */
@@ -512,7 +515,7 @@ function drawSurfaceWorld(){
   /* погода поверх мира, но под лучами и свёрткой: осадки идут перед игроком,
      а свет и цветокоррекция ложатся уже на всё вместе */
   for(const f of LBL)f();
-  drawForeground(tr,camx,camy,p);
+  if(!nearGpu)drawForeground(tr,camx,camy,p);
   drawWeather(p,camx,camy,"near");
   /* ── ночь (хвост G12) ──
      Кадр уходит в тень неба, и единственный свет — фонарь скафандра: спрайт
