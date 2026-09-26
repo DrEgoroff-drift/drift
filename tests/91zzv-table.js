@@ -356,3 +356,23 @@ TEST_SUITES.push(()=>suite("цены: услышанное ложится на �
   eq(mapPriceRows({key:"нет такой"},400).length,0,"без записи — без строк");
   G.cargo.ice=0;
 }));
+TEST_SUITES.push(()=>suite("ОПИСЬ: ни «NaN», ни «undefined» ни в одном тексте",{tier:"browser"},()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  const ks=RES_KEYS.filter(k=>RES[k].price).slice(0,5);
+  for(const fill of [false,true]){
+    for(const k of RES_KEYS)G.cargo[k]=0;
+    if(fill)ks.forEach((k,i)=>G.cargo[k]=2+i*5);
+    tableToggle(true,"hold");
+    for(const [tab] of OPIS_TABS){
+      OPIS.tab=tab;opisRerender();opisBar();
+      const bar=document.getElementById("opisBar");
+      const txt=document.getElementById("loglist").textContent+" "+(bar?bar.textContent:"");
+      const bad=txt.match(/.{0,24}(NaN|undefined).{0,12}/);
+      ok(!bad,"вкладка "+tab+(fill?", трюм полон":", трюм пуст")+": "+(bad?"«"+bad[0]+"»":"чисто"));
+    }
+    tableToggle(false);
+  }
+  const b=document.getElementById("opisBar");if(b)b.remove();
+  for(const k of RES_KEYS)G.cargo[k]=0;
+}));

@@ -6,6 +6,82 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.477.0 - the shipyard showcase, ОПИСЬ and the suit doll on the engine
+
+- **The shipyard showcase is one engine canvas** (GPU-3): every hull on the ВЕРФЬ tab is the same studio hull
+  as in flight, drawn into one canvas over the list. Before, each card baked its own small 2D picture. The
+  hulls are sharper on DPR 2 and 3 and keep their places while the list scrolls.
+- **ОПИСЬ pictures on the GPU**: the hold piles, the kit laid out, the hatch, the matchbox, the cosmetics box
+  and the ship plan keep their brushes and are baked at screen density. They were 1× canvases and looked
+  soft. The layout does not move: a dense canvas once pushed the card grid twice as wide, so the canvas now
+  keeps its logical size for the layout.
+- **The suit doll too**: the body keeps its brush and is baked once per kit and visor tone; the dark outline
+  is the same bake filled with ink. It is sharp on DPR 2 and 3, and its outline is cleaner.
+- **«NaN / 40» over the hold** came from a test scene that left the hold with missing resource keys (a save
+  always fills them). The hold weight now counts a missing key as zero, and the scene keeps every key.
+- **The ВЕРФЬ tab opens without a hitch**: the slipway sheet's glow pipeline is warmed with the others at the
+  title screen, instead of being compiled the first time the tab opens.
+- **Nets**: the «0 вызовов 2D» gate has scenes for the showcase, ОПИСЬ and the doll. A new guard reads every
+  ОПИСЬ tab, with the hold empty and full, for «NaN» and «undefined». The zoo has four new mutants for them
+  (yard-2d, opis-2d, doll-2d, opis-nan); all are killed.
+
+## 0.476.0 - the stapel, the home room and the maker's eye on the engine
+
+- **The stapel draws on the engine** (GPU-f): the sheet is one webgpu canvas, the hull and the sheet are two GPU
+  bakes of the same brushes, made once per sheet by the frame while the station is open. The stapel measures the
+  hull without the running-light halos (стапель меряет корпус без ореолов огней): the box is the body itself, read
+  from the engine's own vertices, so the hull on the sheet comes out 2–3 % larger and the metre labels read the
+  body — against the bake itself the worst of 84 hulls is 0.42 % of length.
+- **Dragging a stapel slider shows a draft**: while the thumb moves, the sheet is an ink drawing drawn in the frame —
+  the clean sheet, rails at the hull's width, a dash-dot axis, the hull in thin ink along its own brushes with body
+  and wings in a bold line, and dimension lines whose metres change live. On release one full sheet is baked on the
+  same canvas, same frame and scale, and fades in over the draft in 120 ms; nothing in the layout jumps. At CPU ×4
+  the drag holds p95 25–31 ms with no sheet baked until release.
+- **The home room is baked by the engine**, the garage ship by the body brushes; the tap zones come from the bake
+  itself, byte-identical to before.
+- **A left ship's trace (12as) has no 2D fallback**: no scene pass means no ghost, instead of a second picture.
+- **The maker's eye looks at the engine's picture**: the gate that checks each maker's hulls read as its own now
+  sees them lit by the studio, as ОПИСЬ shows them (14 per class 91.1 → 91.7 %; ГЛАВТРАССА 86.7 → 84.8 %), and runs
+  twice as fast. If that gate falls, the maker's look is fixed, not the studio light.
+- **The overlay layer grows two tools**: `ovImage` takes a colour matrix and seeded grain (sepia, cold and night
+  as the album computes them), and `ovPaint`/`ovRead` put one overlay pass into a canvas — in the frame or out
+  of it — and read it back in the same task.
+
+## 0.475.0 - the nebula glides in flight
+
+- **The nebula no longer steps while you fly** (GPU-2; the author 26.09: «кажется как будто тормозит, когда туманность
+  начинает появляться рядом с кораблём»). The frames were clean — the gas was not: its volume was regenerated only after
+  the camera had moved 5.6 CSS px, so between 80 and 333 px/s of screen speed it held for 2–5 frames and then jumped
+  (a whole device pixel every 5th frame at 80 px/s; 1.6 px every 3rd–5th frame zoomed out) while the stars and the ship
+  glided at 60. Now it is regenerated every frame whenever the camera moves faster than 20 px/s — the same cost fast
+  flight always paid — and a still camera keeps its once-in-six cross-fade; setting off in the middle of that fade
+  finishes it over three frames instead of cutting it. Guarded by the suite `91zzzzzzy7-gpu-nebmove` (40–400 px/s at
+  zoom 1 and .3) and the mutant `neb-step-move`. On the author's phone, cold, full battery, no heat: the 30-s gate and the
+  four routes (hotel and star, zoom 1 and .3) — 100 % of frames ≤ 18 ms, max 16.8–16.9 ms, none ≥ 33 (0.473.0 had
+  one ≥ 33 on two of them). The goldens' order leak surfaced by the new suite's shard shift is closed by the
+  worker's e4532f66 (resetWorld drops pending prebakes), carried here.
+
+## 0.474.0 - the parrot, the seat and the desk on the engine
+
+- **The parrot flies on the GPU** (GPU-3): its window and its perch icon draw from one atlas baked once, and a
+  pose is a handful of instances. It no longer runs its own animation loop beside the game, and its pipelines
+  are warmed at the title screen, so the first flight has no hitch.
+- **The perch icon shows the whole bird**: in a bow, with the crest up or in a roll the parrot went past
+  the icon's edge and was cut off; now such a pose shrinks a little and stays centred.
+- **The console seat is a portrait, not a repaint**: Vega, a trainee or a passenger is baked once for each
+  mood and shown until that mood changes. Before, it was redrawn once a second for the whole trip. It is
+  sharp on a DPR 2 screen now; the old 56 px image was soft.
+- **The desk draws on the GPU**: the boards, the desk-top items, the strips, the mis figure and the thing
+  icons keep their brushes and are baked once when the desk opens. Thing icons are at screen density now,
+  so they no longer blur on the desk.
+- **The post window and the КБ plan too**: the post window is sharp on DPR 2. «ЗАКРЫТО» now hangs as a
+  plate on the grille; on the shutter the bars used to cut through the word.
+- **Nets**:
+  - The «0 вызовов 2D» gate sees the world canvas again (the 08c hook had hidden its calls). It has scenes
+    for the seat, the desk, and the post window with КБ.
+  - The overlay atlas is guarded: a steady frame of any scene bakes no new glyph rows.
+  - Five zoo mutants are anchored to today's code again, and each is killed.
+
 ## 0.473.0 - the ship in ОПИСЬ on the engine
 
 - **ОПИСЬ shows your ship the way it flies** (the worker): the hull on the table is drawn by the same GPU

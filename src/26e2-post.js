@@ -45,9 +45,13 @@ function kpTake(){
    почты, табличка часов на двери, талон с номером, если извещение ждёт.
    Закрыто — шторка опущена и часы показывают, сколько до открытия. */
 function kpWindow(open,ticket){
-  const w=240,h=96,k=Math.min(2,(typeof DPR==="number"?DPR:1)*((typeof UIK==="number")?UIK:1));
+  const w=240,h=96,k=panelNd();   /* плотность экрана, а не кадра: DPR игры урезан ради мира, окошку это мыло */
   const cv=document.createElement("canvas");cv.width=w*k;cv.height=h*k;cv.style.width=w+"px";cv.style.height=h+"px";cv.className="kp-win";
-  const c=cv.getContext("2d");if(!c)return cv;c.setTransform(k,0,0,k,0,0);
+  /* окошко печётся на видеокарте (27i0): кисть та же, канва WebGPU */
+  panelGpu(cv,w,h,k,c=>kpWindowPaint(c,w,h,open,ticket));
+  return cv;
+}
+function kpWindowPaint(c,w,h,open,ticket){
   /* стена и окно */
   c.fillStyle="#d9cfb4";c.fillRect(0,0,w,h);
   c.fillStyle="rgba(120,100,70,.18)";for(let y=0;y<h;y+=12)c.fillRect(0,y,w,1);
@@ -62,13 +66,18 @@ function kpWindow(open,ticket){
     c.fillStyle="rgba(230,220,200,.9)";c.fillRect(wx+8,wy+wh-14,ww-16,8);           /* прилавок */
   }else{
     c.fillStyle="rgba(0,0,0,.25)";for(let y=wy+4;y<wy+wh;y+=6)c.fillRect(wx,y,ww,2);   /* шторка */
-    c.fillStyle="#2a2418";c.font="bold 9px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
-    c.fillText("ЗАКРЫТО",wx+ww/2,wy+wh/2);
   }
   /* решётка */
   c.strokeStyle="rgba(200,190,170,.85)";c.lineWidth=2;
   for(let i=1;i<5;i++){c.beginPath();c.moveTo(wx+i*ww/5,wy);c.lineTo(wx+i*ww/5,wy+wh);c.stroke();}
   c.beginPath();c.moveTo(wx,wy+wh*.5);c.lineTo(wx+ww,wy+wh*.5);c.stroke();
+  /* «ЗАКРЫТО» — табличкой на решётке: прямо по шторке его резали прутья и не читалось (26.09) */
+  if(!open){
+    c.fillStyle="#f4efe2";c.fillRect(wx+ww/2-26,wy+wh/2-8,52,16);
+    c.strokeStyle="#2a2418";c.lineWidth=1;c.strokeRect(wx+ww/2-25.5,wy+wh/2-7.5,51,15);
+    c.fillStyle="#2a2418";c.font="bold 9px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+    c.fillText("ЗАКРЫТО",wx+ww/2,wy+wh/2+.5);
+  }
   /* часы над окном: почтовое время */
   const hr=kpHour(),mn=Math.floor(((now()%KP_DAY)/KP_DAY)*24*60)%60;
   c.fillStyle="#f4efe2";c.beginPath();c.arc(wx+ww/2,12,9,0,TAU);c.fill();
@@ -88,7 +97,6 @@ function kpWindow(open,ticket){
     c.font="bold 13px ui-monospace,monospace";c.fillText(String(ticket),0,5);
     c.restore();
   }
-  return cv;
 }
 function kpBlock(){
   const o=(typeof stapelAll==="function")?stapelAll().o:null;

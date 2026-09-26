@@ -414,19 +414,7 @@ function boardLanes(from){
     }
   }
 }
-function shipThumb(id,w,h){
-  const cn=document.createElement("canvas");cn.width=w;cn.height=h;
-  const c=cn.getContext("2d");
-  const hl=hullOf(id);
-  const sc=Math.min(w/(hl.len+14),h/(hl.halfW*2+10));
-  const old=ctx;ctx=c;
-  c.save();
-  c.translate(w/2-(hl.nose+hl.tail)*.5*sc,h/2);c.scale(sc,sc);
-  drawHull(id,false,false,0);
-  c.restore();
-  ctx=old;
-  return cn;
-}
+/* shipThumb — место под корпус, рисует витрина (26f) */
 function shipRow(id,S){
   const mine=G.shipId===id,own=!!G.owned[id];
   const r=el("div","row");

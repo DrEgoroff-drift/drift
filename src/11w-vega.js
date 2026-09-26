@@ -147,7 +147,7 @@ function vegaBoard(on){
   if(on&&typeof traineeAboard==="function"&&traineeAboard()){peopleLine("Там мальчишка в кресле. Я дома посижу. Я не ревную. Я дома посижу.","Вега",true);return false;}
   V.aboard=on?1:0;
   if(on){
-    G.seat={name:"ВЕГА",line:"на борту",draw:vegaSeatDraw,act:vegaSeatAct};
+    G.seat={name:"ВЕГА",line:"на борту",draw:vegaSeatDraw,act:vegaSeatAct,key:vegaSeatKey};
     peopleLine("Я с тобой. Чемодан в трюме, не трогай.","Вега",true);
   }else{
     G.seat=null;
@@ -182,6 +182,8 @@ function vegaSeatAct(){
   if(vegaOffended()){say("Вега\n…",120);return;}
   peopleLine(pick(VEGA_ABOARD,rng(hashi(celDay(),++V.said,0xAB0))),"Вега",true);
 }
+/* ключ выпечки кресла (27j): портрет меняется только обидой */
+function vegaSeatKey(){return vegaOffended()?"обида":"";}
 function vegaSeatDraw(c,W,H){
   c.save();c.translate(W/2,H);
   const s=Math.min(W,H)/56;c.scale(s,s);
@@ -199,7 +201,7 @@ function vegaTick(dt){
   vegaDayTick();
   V.ambT=(V.ambT||0)-dt;if(V.ambT<=0){V.ambT=120;vegaAmbientTick();}
   if(V.aboard){
-    if(!G.seat)G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:vegaSeatAct};
+    if(!G.seat)G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:vegaSeatAct,key:vegaSeatKey};
     G.seat.line=vegaSeatLine();
     V.mood=Math.min(1,V.mood+dt*.0002);
     /* пещера: строка раз в минуту и никакой помощи */

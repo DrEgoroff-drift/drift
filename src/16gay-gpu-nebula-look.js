@@ -24,7 +24,7 @@ const GNB_SS=1.6,GNB_S=GNB_SS.toFixed(3);
 const GNB_HTO=`
 fn hto(c:vec3f,ang:f32,k:f32,cs:f32,mx:f32)->vec3f{
   let y=dot(c,vec3f(.299,.587,.114));let i=dot(c,vec3f(.596,-.274,-.322));let q=dot(c,vec3f(.211,-.523,.312));
-  var d=ang-atan2(q,i);d=d-6.2832*floor(d/6.2832+.5);let a=clamp(d,-mx,mx)*k*smoothstep(.0,.04,length(vec2f(i,q)))*smoothstep(2.4,1.2,abs(d));
+  var d=ang-atan2(q,i);d=d-6.2832*floor(d/6.2832+.5);let a=clamp(d,-mx,mx)*k*smoothstep(.0,.04,length(vec2f(i,q)))*(1.-smoothstep(1.2,2.4,abs(d)));
   let i2=(i*cos(a)-q*sin(a))*cs;let q2=(i*sin(a)+q*cos(a))*cs;
   let r=max(vec3f(y+.956*i2+.621*q2,y-.272*i2-.647*q2,y-1.106*i2+1.703*q2),vec3f(0.));
   return r*min(1.,max(c.r,max(c.g,c.b))*1.08/max(max(r.r,max(r.g,r.b)),1e-4));}

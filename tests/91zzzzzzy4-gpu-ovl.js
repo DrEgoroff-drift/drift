@@ -41,6 +41,32 @@ TEST_SUITES.push(()=>suite("слой #ovl: атлас LRU, 600 кадров бе
     ok(OVL.fno>f1&&keys.length>0&&keys.every(k=>!OVL.lab.has(k)),"подпись, которой не было 600 кадров, забыта ("+keys.length+")");
   }finally{window.ovAtlas=at0;G.running=run0;LOOP_OFF=loop0;resetWorld();}
 }));
+/* каждая сцена стенда (рейд, пояс, база…): после разгона атлас масок не растрит ничего, кроме текста,
+   которого на слое ещё не было. Число собирается из глифов цифр (ovText), так что смена числа новой
+   маски не просит; строка, которая растрится каждым кадром, — это число, запечённое целиком. «Новый текст» —
+   по скелету без цифр; подброшенная подпись со счётчиком кадров проверяет саму сборку числа */
+const OV_STEADY=()=>{
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  const run0=G.running,loop0=LOOP_OFF,at0=ovAtlas,fl0=ovFlush,bad=[],sk=s=>s.replace(/[0-9]+/g,"0");let i=0,miss=[],n=0,pr=0;
+  window.ovAtlas=function(k,mk){if(!OVL.A.map.has(k))miss.push(k);return at0(k,mk);};
+  window.ovFlush=function(){domLabel("ovprobe",W/2,H/2,"ПРОБА "+(i*37%1000)+" · "+i,"9px ui-monospace,monospace","#fff","center");return fl0();};
+  G.running=true;LOOP_OFF=false;let t=wallMs();
+  try{
+    for(const sc of lookScenes()){
+      if(!T.go(sc.id))continue;n++;const texts=new Set();
+      for(i=0;i<130;i++){miss=[];frameBody(t+=16.7);
+        let fresh=false;for(const M of [OVL.lab,OVL.chip])for(const e of M.values())if(e.on&&!texts.has(sk(e.s))){texts.add(sk(e.s));fresh=true;}
+        const e=OVL.lab.get("ovprobe");if(e&&e.on)pr++;
+        if(i>=90&&miss.length&&!fresh)bad.push(sc.id+" · кадр "+i+": "+miss[miss.length-1].split("|").pop());}
+    }
+  }finally{window.ovAtlas=at0;window.ovFlush=fl0;G.running=run0;LOOP_OFF=loop0;resetWorld();}
+  ok(n>=12,"сцены стенда поставились ("+n+")");
+  ok(pr>=n*120,"подброшенная подпись со счётчиком горела ("+pr+" кадров из "+n*130+")");
+  eq(bad.slice(0,4).join("; "),"","после 90 кадров разгона — ни одной новой маски без нового текста");
+};
+/* 15 сцен по 130 кадров — ~33 с: сеть перед релизом, не каждая правка */
+TEST_SUITES.push(()=>suite("слой #ovl: устойчивый кадр любой сцены не растрит",{tier:"heavy"},OV_STEADY));
+TEST_SUITES.push(()=>suite("слой #ovl: устойчивый кадр любой сцены не растрит (телефон)",{tier:"heavy",win:"phone"},OV_STEADY));
 /* фишка скользит вдоль кромки дробно: рамка и текст снапятся от одного начала (рамка — X в пикселях устройства,
    текст — X плюс постоянный отступ, одно округление), и текст в рамке не дрожит на полпикселя */
 TEST_SUITES.push(()=>suite("слой #ovl: текст фишки не дрожит в рамке при скольжении по 0.1 px",{tier:"browser"},()=>{

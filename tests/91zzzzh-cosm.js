@@ -34,7 +34,7 @@ TEST_SUITES.push(()=>suite("косметика: каждая вещь меняе
   for(const id in COSM_TRAIL){cosmRec().owned=[id];cosmWear(id);const T=cosmTrail(T0);if(T.edge.join()===T0.edge.join()||T.mid.join()===T0.mid.join())mute.push(id);}
   G.cosm=null;
   /* отделка и забрало: кукла */
-  const doll=()=>{const cv=document.createElement("canvas");cv.width=120;cv.height=200;drawKitFigure(cv.getContext("2d"),120,200,null,0);return cv.getContext("2d").getImageData(0,0,120,200).data;};
+  const doll=()=>{const cv=document.createElement("canvas");cv.width=120;cv.height=200;kitFigureBody(cv.getContext("2d"),0);return cv.getContext("2d").getImageData(0,0,120,200).data;};
   G.kit=null;const d0=doll();
   for(const id in COSM_SUIT){cosmRec().owned=[id];cosmWear(id);if(cosmDiff(doll(),d0)<50)mute.push(id);G.cosm=null;}
   for(const id in COSM_VISOR){cosmRec().owned=[id];cosmWear(id);if(cosmDiff(doll(),d0)<5)mute.push(id);G.cosm=null;}

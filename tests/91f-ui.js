@@ -384,21 +384,55 @@ TEST_SUITES.push(()=>suite("интерфейс: выбранная заклад�
 /* жёрдочка на пульте (05.09.2026, телефон автора: «попугай криво») — птица
    рисовалась углом окна трепла: голова за верхним краем, тело вправо. Иконка
    обязана вмещать птицу целиком, по центру, и ростом не меньше половины поля. */
-TEST_SUITES.push(() => suite("жёрдочка: птица в иконке целиком",{tier:"browser"}, () => {
+/* кресло (27j, G15): портрет печётся по ключу (художник, размер, настроение) и идёт в канву одним
+   проходом; ровные кадры проходов не просят, обида Веги — ровно один новый */
+TEST_SUITES.push(() => suite("кресло: портрет — проход только на смене ключа",{tier:"browser"}, () => {
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  resetWorld();G.mode="system";
+  const p0=ovPass,run0=G.running,loop0=LOOP_OFF,V0=G.vega;let n=0,t=wallMs();
+  window.ovPass=function(T){if(T===SEAT.T)n++;return p0.apply(this,arguments);};
+  try{
+    G.running=true;LOOP_OFF=false;SEAT.k="";   /* соседний набор мог оставить тот же ключ — первый проход не случился бы */
+    G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:()=>{},key:vegaSeatKey};conT=0;
+    for(let i=0;i<120;i++)frameBody(t+=16.7);
+    eq(n,1,"Вега села: один проход за 120 кадров");
+    const cv=document.getElementById("seatcv");
+    eq(cv.width,Math.round(56*Math.min(2,devicePixelRatio||1)),"канва кресла — в плотности экрана");
+    G.vega=Object.assign({},V0||{},{offend:celDay()+1});
+    for(let i=0;i<120;i++)frameBody(t+=16.7);
+    eq(n,2,"обида — ещё ровно один проход");
+    G.seat={name:"ГОСТЬ",line:"",draw:traineeDraw,act:()=>{}};conT=0;   /* не «СТАЖЁР»: без стажёра в мире 11ac снимает такое кресло */
+    for(let i=0;i<120;i++)frameBody(t+=16.7);
+    eq(n,3,"стажёр в кресле — свой портрет, один проход");
+  }finally{window.ovPass=p0;G.running=run0;LOOP_OFF=loop0;G.vega=V0;G.seat=null;SEAT.S=null;resetWorld();}
+}));
+TEST_SUITES.push(() => suite("жёрдочка: птица в иконке целиком",{tier:"node"}, () => {
   resetWorld();
   G.parrot=null;parrotFind(7,"чужого борта");
   conT=0;consoleTick(1);
   const cv=document.getElementById("perchcv");
   ok(cv&&cv.width>=44&&cv.height>=44,"канва жёрдочки есть: "+(cv&&cv.width)+"×"+(cv&&cv.height));
-  const d=cv.getContext("2d").getImageData(0,0,cv.width,cv.height).data;
-  let x0=1e9,y0=1e9,x1=-1,y1=-1;
-  for(let y=0;y<cv.height;y++)for(let x=0;x<cv.width;x++)if(d[(y*cv.width+x)*4+3]>40){
-    if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
-  ok(x1>=0,"птица нарисована");
+  /* с 12y1 иконка — канва WebGPU, пикселей не прочесть: меряем разложенную позу — рамки записей в точках
+     канвы (спрайт — рамкой детали, фигура — с запасом на край), ореолы бусин не в счёт */
+  ok(PARG.pd&&PARG.Sp&&PARG.Sp.q.length>100,"поза для иконки разложена: "+(PARG.Sp?PARG.Sp.q.length/28:0)+" записей");
+  const [x0,y0,x1,y1]=parrotBox(PARG.Sp).map(Math.round);
+  ok(x1>x0&&y1>y0,"птица разложена");
   ok(x0>=1&&y0>=1&&x1<=cv.width-2&&y1<=cv.height-2,"ничего не обрезано краем: "+[x0,y0,x1,y1].join(",")+" в "+cv.width);
   ok(y1-y0>=cv.height*.5,"ростом не меньше половины иконки: "+(y1-y0)+" из "+cv.height);
   const cx=(x0+x1)/2;
   ok(Math.abs(cx-cv.width/2)<=cv.width*.15,"стоит по центру: "+cx.toFixed(0)+" при ширине "+cv.width);
+  /* поклон, хохолок и крен выходят за рамку позы: иконка их ужимает, а не режет (0.474.0 — полный прогон
+     оставлял птицу в поклоне, и край срезал ей низ). Шаг позы заглушён — меряется ровно заданная поза */
+  const st0=parStep,P0=Object.assign({},PAR);
+  window.parStep=()=>{};
+  try{
+    for(const k of ["bow","crest","roll","stretch","footUp"]){
+      for(const j in PAR)if(typeof PAR[j]==="number"&&j!=="t")PAR[j]=0;PAR.blinkAt=1e9;PAR[k]=1;
+      PERCH_AT=G.t+1;conT=0;consoleTick(1);
+      const b=parrotBox(PARG.Sp).map(Math.round);
+      ok(b[0]>=1&&b[1]>=1&&b[2]<=cv.width-2&&b[3]<=cv.height-2,"поза «"+k+"» целиком: "+b.join(",")+" в "+cv.width);
+    }
+  }finally{window.parStep=st0;Object.assign(PAR,P0);}
   resetWorld();
 }));
 

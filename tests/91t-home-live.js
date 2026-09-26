@@ -56,6 +56,33 @@ TEST_SUITES.push(()=>suite("дом: по вещам можно ткнуть",()=
     tMs:now(),paidMs:now()}));
   const cr=G.crew[0];
   ok(!!cr,"наёмник дома есть");
-  const lg=T.ledger(()=>drawHomeRoom(c2));   // поникший рисуется своей позой
-  ok(lg.calls>10,"поникший наёмник рисуется: вызовов канвы "+lg.calls);
+  /* комната печётся кистями на GPU-холсте (27e), 2D-вызовов нет: считаются мазки самого холста */
+  const brush=f=>{let n=0;const P=GcCtx.prototype,o={};
+    for(const k of ["fill","stroke","fillRect","strokeRect","drawImage"]){o[k]=P[k];P[k]=function(){n++;return o[k].apply(this,arguments);};}
+    try{f();}finally{Object.assign(P,o);}return n;};
+  G.crew.length=0;const n0=brush(()=>drawHomeRoom(c2));
+  G.crew.push(cr);const n1=brush(()=>drawHomeRoom(c2));   // поникший рисуется своей позой
+  ok(n1-n0>10,"поникший наёмник рисуется: мазков кистей "+(n1-n0));
+}));
+/* комната дома на движке (26.09): выпечка теми же кистями на холсте webgpu, 2D-корпуса в гараже нет;
+   зоны нажатия — те же, что даёт запись без видеокарты */
+TEST_SUITES.push(()=>suite("дом: комната печётся на движке, 2D-корпуса нет",{tier:"browser"},()=>{
+  resetWorld();
+  G.home=homeInit();G.home.tier=8;G.home.sx=G.sx;G.home.sy=G.sy;
+  const cn=document.createElement("canvas");
+  cn.width=Math.round(homeRoomW()*1.5);cn.height=Math.round(HOME_ROOM_H*1.5);
+  if(!GPU.ok||!GPU.dev){drawHomeRoom(cn);ok(HOME_HIT.length>=4,"без видеокарты зоны есть: "+HOME_HIT.length);return;}
+  const miss=GC_MISS.length,dh=drawHull;let nh=0;
+  window.drawHull=function(){nh++;return dh.apply(this,arguments);};
+  let hit;
+  try{drawHomeRoom(cn);hit=JSON.stringify(HOME_HIT);}finally{window.drawHull=dh;}
+  eq(nh,0,"корабль в гараже — кисти тела в выпечке, drawHull не зовётся");
+  eq(GC_MISS.length,miss,"в кистях комнаты нет того, чего холст движка не умеет");
+  ok(!!HOME_BK,"выпечка комнаты есть");
+  eq(cn.getContext("2d"),null,"у холста комнаты нет 2D-контекста");
+  /* та же комната без видеокарты — запись GcCtx: зоны до числа те же */
+  const W2=homeRoomW(),k=Math.min(cn.width/W2,2.2),pad=Math.max(0,(cn.width-W2*k)/2);
+  HOME_HIT=[];const g=new GcCtx(cn.width,cn.height,1),prev=ctx;ctx=g;
+  try{g.translate(pad,0);g.scale(k,k);homeRoomBody(g,W2,cn.height/k);}finally{ctx=prev;}
+  eq(JSON.stringify(HOME_HIT),hit,"зоны нажатия — те же, что у записи без видеокарты");
 }));

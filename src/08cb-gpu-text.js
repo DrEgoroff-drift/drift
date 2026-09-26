@@ -28,9 +28,9 @@ const GC_GLYPHS={
     const x=this._c();this._set(x,st);const m=x.measureText(t);r={};for(const q of GC_TM)r[q]=m[q];
     if(this.mc.size>2048)this.mc.clear();this.mc.set(key,Object.freeze(r));return r;},
   /* маска строки в px итога: M — линейная часть преобразования (px итога на единицу),
-     якорь — в (ox+fx, oy+fy) */
-  raster(st,t,M,fx,fy,sk,mw,col){
-    const x=this._c();this._set(x,st);const m=x.measureText(t);let L=m.actualBoundingBoxLeft,R=m.actualBoundingBoxRight;
+     якорь — в (ox+fx, oy+fy). dry — только размер и якорь, без рисунка и чтения (рамки, 26e2) */
+  raster(st,t,M,fx,fy,sk,mw,col,dry){
+    const x=dry?null:this._c();if(x)this._set(x,st);const m=dry?this.measure(st,t):x.measureText(t);let L=m.actualBoundingBoxLeft,R=m.actualBoundingBoxRight;
     if(mw!=null&&m.width>mw){const f=mw/m.width;L*=f;R*=f;}
     const pl=sk?sk.lw/2*(sk.join==="miter"?Math.max(1,sk.ml):1):0,A=m.actualBoundingBoxAscent+pl,Dn=m.actualBoundingBoxDescent+pl;
     let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
@@ -38,6 +38,7 @@ const GC_GLYPHS={
       x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y);}
     const ox=Math.ceil(-x0)+2,oy=Math.ceil(-y0)+2,w=ox+Math.ceil(x1)+3,h=oy+Math.ceil(y1)+3;
     if(!(w>0&&h>0)||w>8192||h>8192)throw gcNo("строка крупнее 8192 px");
+    if(dry)return {w,h,ox,oy,x:0,y:0,W:1,H:1,view:null};
     if(this.cv.width<w||this.cv.height<h){this.cv.width=Math.max(this.cv.width,w);this.cv.height=Math.max(this.cv.height,h);this._set(x,st);}
     x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.globalCompositeOperation="source-over";x.clearRect(0,0,w,h);
     x.setTransform(M[0],M[1],M[2],M[3],ox+fx,oy+fy);x.fillStyle=x.strokeStyle=col;
@@ -91,7 +92,8 @@ Object.assign(GcCtx.prototype,{
     const col=p.k?p.g.s.reduce((a,q)=>a.map((v,i)=>v+q[1][i]/p.g.s.length),[0,0,0]):[0,1,2].map(i=>p.c[3]>0?p.c[i]/p.c[3]:0);
     const pc="rgb("+col.slice(0,3).map(v=>Math.round(v*255)).join(",")+")";
     const base=GC_TXT_KEYS.map(q=>st[q]).join("|")+"|"+M+"|"+fx+"|"+fy+"|"+mw+"|"+(sk?[sk.lw,sk.join,sk.ml,sk.cap,sk.dash.join(","),sk.off].join(","):"")+"|"+t;
-    const quad=c=>{const e=gcAtlas(base+"|"+c,()=>GC_GLYPHS.raster(st,t,M,fx,fy,sk,mw,c));
+    /* _dry — запись ради одной геометрии (рамка стапеля): маска не нужна, растра нет */
+    const quad=c=>{const e=this._dry?GC_GLYPHS.raster(st,t,M,fx,fy,sk,mw,c,true):gcAtlas(base+"|"+c,()=>GC_GLYPHS.raster(st,t,M,fx,fy,sk,mw,c));
       const T=[[0,0],[e.w,0],[e.w,e.h],[0,e.h]],X=Math.floor(fa)-e.ox,Y=Math.floor(fb)-e.oy,v=[];
       for(const i of [0,1,2,0,2,3])v.push((X+T[i][0])*k,(Y+T[i][1])*k,(e.x+T[i][0])/e.W,(e.y+T[i][1])/e.H);return [v,e.view];};
     const [v,view]=quad(pc),sh=this._sh(op);

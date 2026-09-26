@@ -99,8 +99,9 @@ function kbRender(){
   const cv=w.querySelector(".kb-cv"),P=d.P;
   const cw=Math.min(340,(typeof innerWidth==="number"?innerWidth:390)-40),s=Math.floor(cw/P.cols),ch=s*P.N;
   const dpr=Math.min(2,window.devicePixelRatio||1);
-  cv.style.width=(s*P.cols)+"px";cv.style.height=ch+"px";cv.width=s*P.cols*dpr;cv.height=ch*dpr;
-  const c=cv.getContext("2d");if(c){c.setTransform(dpr,0,0,dpr,0,0);kbDraw(c,s,d);}
+  cv.style.width=(s*P.cols)+"px";cv.style.height=ch+"px";
+  /* план КБ печётся на видеокарте (27i0): кисть та же, канва WebGPU */
+  panelGpu(cv,s*P.cols,ch,dpr,c=>kbDraw(c,s,d));
   cv.onclick=e=>{
     const r=cv.getBoundingClientRect(),j=Math.floor((e.clientX-r.left)/s),i=Math.floor((e.clientY-r.top)/s);
     kbTap(i,j);

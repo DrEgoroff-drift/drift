@@ -32,6 +32,32 @@ function consoleHeard(text,who){
   if(rx)rx.classList.add("fresh");
   sfx("ui",{f:1400,to:900,d:.05,v:.18});
 }
+/* ── кресло на видеокарте (G15) ──
+   Портрет — несколько фигур 56×56, и 2D перекрашивало его раз в секунду до конца
+   рейса. Теперь это выпечка на (художник, размер, ключ настроения) и один проход
+   в свою канву WebGPU, только когда ключ сменился; между ними канва стоит.
+   Канва — в плотности экрана (как у жёрдочки): 56 px на DPR 2 были мылом */
+const SEAT={S:null,cv:null,cx:null,dev:null,T:null,M:null,k:""};
+function seatGpuTick(){
+  const S=SEAT.S;if(!S||!GPU.on||!GPU.enc||!GPU.dev)return;
+  const cv=SEAT.cv||(SEAT.cv=document.getElementById("seatcv"));if(!cv)return;
+  const nd=Math.min(2,window.devicePixelRatio||1),px=Math.round(56*nd);
+  if(cv.width!==px||cv.height!==px){cv.width=px;cv.height=px;SEAT.k="";}
+  const k=(S.draw.name||"?")+"|"+px+"|"+(S.key?S.key():"");
+  if(k===SEAT.k&&SEAT.dev===GPU.dev)return;
+  if(SEAT.dev!==GPU.dev){SEAT.cx=SEAT.cx||cv.getContext("webgpu");
+    SEAT.cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    SEAT.dev=GPU.dev;SEAT.T=ovTarget();SEAT.M=null;}
+  if(SEAT.M)gpuBakeDrop(SEAT.M.B);
+  ovInto(SEAT.T,nd,()=>{SEAT.M=ckgSpr(0,0,56,56,c=>S.draw(c,56,56),{once:true});ckgPut(SEAT.M);});
+  ovPass(SEAT.T,SEAT.cx.getCurrentTexture().createView(),px,px,[SEAT.T.uq],"seat");
+  SEAT.k=k;
+}
+/* пульт в кадре (hud, 27z): жёрдочка (12y1) и кресло — своими канвами в энкодере кадра */
+function consoleGpuTick(){
+  if(typeof parrotGpuTick==="function")parrotGpuTick();
+  seatGpuTick();
+}
 function consoleTick(dt){
   conT-=dt;
   if(conFresh>0){conFresh-=dt/60;if(conFresh<=0){const rx=document.getElementById("rx");if(rx)rx.classList.remove("fresh");}}
@@ -84,9 +110,9 @@ function consoleTick(dt){
     if(S){
       document.getElementById("seatName").textContent=S.name||"—";
       document.getElementById("seatLine").textContent=S.line||"";
-      const cv=document.getElementById("seatcv");
-      if(cv&&typeof S.draw==="function"){const c=cv.getContext("2d");c.clearRect(0,0,cv.width,cv.height);S.draw(c,cv.width,cv.height);}
     }
+    /* портрет рисует кадр (seatGpuTick): здесь только кто сидит */
+    SEAT.S=S&&typeof S.draw==="function"?S:null;
   }
   /* жёрдочка: птица есть — сидит на пульте */
   const perch=document.getElementById("perch");
@@ -117,12 +143,18 @@ function consoleTick(dt){
            иначе после `resetWorld` иконка осталась бы пустой до пяти секунд */
         if(G.t-PERCH_AT>=PERCH_EVERY||G.t<PERCH_AT){
           PERCH_AT=G.t;
-          const c=cv.getContext("2d");c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,px,px);
+          /* поза раскладывается здесь (12y1), а рисует её кадр — parrotGpuTick в hud() */
           if(typeof parStep==="function")parStep(1.1);
           const m=px*.08,sc=(px-2*m)/260,P=typeof PAR==="object"?PAR:null,hang=P?P.hang:0;
           if(P)P.hang=0;
-          c.setTransform(sc,0,0,sc,px/2-sc*113.5,m-sc*43);
-          try{parrotDraw(c,230,304);}finally{if(P)P.hang=hang;c.setTransform(1,0,0,1,0,0);}
+          try{PARG.Sp=parSink(PARG.Sp,[sc,0,0,sc,px/2-sc*113.5,m-sc*43]);parrotDraw(PARG.Sp,230,304);PARG.pd=true;
+            /* поклон, хохолок, крен выходят за рамку позы — иконка резала птицу краем (0.474.0):
+               такая поза ужимается и встаёт по центру; обычная остаётся как была */
+            const [x0,y0,x1,y1]=parrotBox(PARG.Sp);
+            if(x0<1||y0<1||x1>px-2||y1>px-2){
+              const k=Math.min(1,(px-4)/(x1-x0),(px-4)/(y1-y0)),tx=px/2-k*(x0+x1)/2,ty=px/2-k*(y0+y1)/2;
+              PARG.Sp=parSink(PARG.Sp,[sc*k,0,0,sc*k,k*(px/2-sc*113.5)+tx,k*(m-sc*43)+ty]);parrotDraw(PARG.Sp,230,304);}}
+          finally{if(P)P.hang=hang;}
         }
       }
     }

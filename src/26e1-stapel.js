@@ -120,14 +120,8 @@ function stapelCollect(viaPost){
   logAdd("good","Со стапеля сошёл «"+sh.ru+"» — "+sh.cls+" · в ангаре");
   return id;
 }
-/* ── живой чертёж: временная запись, кэш корпуса сбрасываем на каждый сдвиг ── */
+/* ── живой чертёж: временная запись, кэш корпуса сбрасываем на каждый сдвиг (лист, 26e2) ── */
 const STAPEL_PV="spPreview";
-function stapelPreview(o,w,h){
-  const S=stapelShip(Object.assign({seed:0x57A9,no:0},o));
-  NPC_SHIPS[STAPEL_PV]=S;
-  delete HULL_CACHE[STAPEL_PV+"!"+o.by];
-  return shipThumb(STAPEL_PV,w,h);
-}
 let STAPEL_UI={cls:"scout",size:"medium",l:1,w:1};
 function stapelSheetW(){return Math.max(260,Math.min(520,((typeof $body!=="undefined"&&$body&&$body.clientWidth)||420)-28));}
 function stapelBlock(){
@@ -160,8 +154,10 @@ function stapelBlock(){
   const U=STAPEL_UI,o=()=>({by,cls:U.cls,size:U.size,l:U.l,w:U.w});
   const pv=el("div","stp-pv"),nums=el("div","stp-nums"),buy=el("button","act gold stp-buy","");
   const val={};
-  const redraw=()=>{
-    pv.innerHTML="";pv.appendChild(stapelSheet(o(),sw,sh));
+  /* dr — черновик протяжки (26e2 stapelDraft); холст листа прежний, вёрстка стоит */
+  const redraw=dr=>{
+    const old=pv.firstChild,cv=stapelSheet(o(),sw,sh,{draft:dr===true,cv:old});
+    if(cv!==old){pv.innerHTML="";pv.appendChild(cv);}
     const m=stapelSheet.last||{};
     if(val.l)val.l.textContent=m.l+" м";
     if(val.w)val.w.textContent=m.b+" м";
@@ -187,7 +183,8 @@ function stapelBlock(){
   const slider=(ru,key)=>{
     const d=el("label","stp-sl","<span>"+ru+"</span>");
     const i=document.createElement("input");i.type="range";i.min=STAPEL_L[0];i.max=STAPEL_L[1];i.step=.01;i.value=U[key];
-    i.oninput=()=>{U[key]=+i.value;redraw();};
+    i.oninput=()=>{U[key]=+i.value;stapelLater(()=>redraw(true));};   /* черновик — раз в кадр (26e2) */
+    i.onchange=()=>{U[key]=+i.value;stapelLater(redraw);};           /* отпустили — один полный лист */
     d.appendChild(i);val[key]=el("b","","");d.appendChild(val[key]);return d;
   };
   box.appendChild(slider("длина","l"));
