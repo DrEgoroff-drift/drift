@@ -56,10 +56,16 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     back, or dark paper with only the trace bright (GPU-3).
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
-  - the nebula's regeneration (GPU-2): in full flight at zoom ≥ 1 it regenerates every frame (~10 ms at 1920). Age 6
-    with a cross-fade (or a uv flow) between the last two generations and an invisible step (≤ 0.3 px, no pulse),
-    else age 4; reprojection by the camera × the mean parallax with the uv line in 08b `gpuCompNeb`; measured on the
-    S23 cold, A/B/A;
+  - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
+    step ≤ 0.09 px, no pulse; S23 nebGen 1.81 → 0.93 ms. In flight it still regenerates every frame: nebGen 4.85 of
+    a 10.4 ms GPU frame (S23, v 8). One reprojection uniform fails — the layers slide over each other (local
+    parallax p5/p50/p95 .007/.13/.59; slip at the best single uniform p50 .56, p95 3.5 px a frame at v 8), so any
+    reprojection is accepted by a 16-tile Lucas–Kanade measure (p95 ≤ 0.3 px), never by a global phase
+    correlation. Next: B — the generation made cheaper with the look kept (knock-outs per part; early exit outside
+    the mass, fewer octaves under dense dust; max |Δ| ≤ 2, p99 < .5; target nebGen in flight −40 %); if short of
+    that, A′ — a world-anchored toroidal cache per layer (.02/.044/.045/.097/.12), only the strip that opens is
+    generated, the non-linear mix (dust over gas, the rim by total gb, the star's lit/ion/tint, cvn) moves to the
+    read with the same math, the flow regenerated at age 6 with the cross-fade;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
 - [ ] **G15 everything on the engine, and 3D where it reads (the author, 26.09).** No 2D canvas stays, the interface
