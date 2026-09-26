@@ -447,8 +447,10 @@ function spaBoardText(g,S){
   const b=g.board,f=g.bf,q=spaBoardGrid(g),x=b.x+g.bp,fs=Math.max(9,Math.round(f*0.86));
   ctx.textAlign="left";ctx.textBaseline="alphabetic";
   /* щит стоит в углу, под виньеткой кадра и зерна: чернила гуще, иначе
-     заголовок уходил в контраст 2.8 (M443, детектор текста) */
-  ctx.fillStyle="rgba(62,52,38,.95)";
+     заголовок уходил в контраст 2.8 (M443, детектор текста). Кегль крупнее, чем у main
+     (строки влезли в бумагу), и бумага светлее — чернила на ступень темнее main,
+     иначе контраст чернил выходил 1,67 против 1,74 (Контроль 26.09) */
+  ctx.fillStyle="rgba(46,38,27,.97)";
   ctx.font=f+"px ui-monospace,monospace";
   const hy=b.y+g.bp+f;
   ctx.fillText("РАСПОРЯДОК",x,hy);
@@ -457,12 +459,12 @@ function spaBoardText(g,S){
   ctx.fillRect(x,hy+f*1.65,b.w-2*g.bp,Math.max(1,f*0.11));
   spaBoardRows().forEach((P,i)=>{
     const y=q.top+i*q.p+f,took=spaTookToday(S,P.k);
-    ctx.fillStyle=took?"rgba(120,106,80,.55)":"rgba(66,58,44,.92)";
+    ctx.fillStyle=took?"rgba(120,106,80,.55)":"rgba(50,44,33,.95)";
     ctx.font=f+"px ui-monospace,monospace";
     ctx.fillText(P.ru,x+f*0.3,y);
     /* час процедуры — сведение, а не узор: карандаш, но читаемый (было .55 и
        шесть пикселей снизу — контраст 1.5, M443) */
-    ctx.fillStyle="rgba(78,68,50,.9)";
+    ctx.fillStyle="rgba(46,40,29,.96)";
     ctx.font=fs+"px ui-monospace,monospace";
     ctx.fillText(P.at,x+f*0.3,y+f*1.15);
     if(took){
