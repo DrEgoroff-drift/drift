@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 634 · символов верхнего уровня: 6386
+Файлов: 635 · символов верхнего уровня: 6399
 
 ## СИМВОЛЫ
 
@@ -1535,7 +1535,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:139-166
+drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2626,10 +2626,21 @@ hazeFar                      src/19c-light.js:167-188
 hazeGrab                     src/18d-postfx.js:33-50
 HB_PROBE                     src/03e1-hull-bake.js:23
 HB_STATS                     src/03e1-hull-bake.js:26
+HD_CX                        src/17l2-hotel-druzhba.js:14
+HD_DARK                      src/17l2-hotel-druzhba.js:16
+HD_HALO                      src/17l2-hotel-druzhba.js:17
+HD_WALL                      src/17l2-hotel-druzhba.js:15
+HD_WINS                      src/17l2-hotel-druzhba.js:18
+hdA                          src/17l2-hotel-druzhba.js:19
 hdAgeShifts                  tests/91zzzzy-hold.js:48-59
 hdLay                        tests/91zzzzy-hold.js:41-46
+hdPaint                      src/17l2-hotel-druzhba.js:35-162
 hDraw                        tests/91zzzzzzz-hands.js:36
+hdS                          src/17l2-hotel-druzhba.js:22
 hdSite                       tests/91zzzzy-hold.js:15-37
+hdWins                       src/17l2-hotel-druzhba.js:23-34
+hdX                          src/17l2-hotel-druzhba.js:20
+hdY                          src/17l2-hotel-druzhba.js:21
 HEARD_MAX                    src/12x-parrot.js:23
 heardAdd                     src/12x-parrot.js:42-51
 heardAll                     src/12x-parrot.js:26
@@ -2770,22 +2781,19 @@ hitCovered                   tests/91zzzzzg-hit.js:41-67
 hitFx                        src/18d-postfx.js:11
 hitLocMul                    src/13-combat.js:32-35
 hitShip                      src/13-combat.js:88-152
-HK_DARK                      src/17l1-hotel-kosmos.js:24
-HK_EL                        src/17l1-hotel-kosmos.js:19
-HK_ROOM                      src/17l1-hotel-kosmos.js:28
-HK_STAIR                     src/17l1-hotel-kosmos.js:26
-HK_WALL                      src/17l1-hotel-kosmos.js:23
-HK_WINS                      src/17l1-hotel-kosmos.js:25
+HK_DARK                      src/17l1-hotel-kosmos.js:20
+HK_ROOM                      src/17l1-hotel-kosmos.js:24
+HK_STAIR                     src/17l1-hotel-kosmos.js:22
+HK_WALL                      src/17l1-hotel-kosmos.js:19
+HK_WINS                      src/17l1-hotel-kosmos.js:21
 HK_XL                        src/17l1-hotel-kosmos.js:12
-hkBand                       src/17l1-hotel-kosmos.js:50
-hkFace                       src/17l1-hotel-kosmos.js:21
-hkN                          src/17l1-hotel-kosmos.js:20
-hkPaint                      src/17l1-hotel-kosmos.js:53-278
+hkBand                       src/17l1-hotel-kosmos.js:46
+hkFace                       src/17l1-hotel-kosmos.js:18
+hkPaint                      src/17l1-hotel-kosmos.js:49-274
 hkQ                          src/17l1-hotel-kosmos.js:16
 hkS                          src/17l1-hotel-kosmos.js:14
 hkTop                        src/17l1-hotel-kosmos.js:15
-hkUp                         src/17l1-hotel-kosmos.js:22
-hkWins                       src/17l1-hotel-kosmos.js:30-48
+hkWins                       src/17l1-hotel-kosmos.js:26-44
 hkX                          src/17l1-hotel-kosmos.js:13
 hlFoe                        tests/91zzzw-combat.js:628-632
 HOL_BY                       src/11am-holiday.js:26
@@ -2888,42 +2896,46 @@ homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:470-477
-HOTEL_BAKE                   src/17l-hotel.js:57
-HOTEL_CURT                   src/17l-hotel.js:46
-HOTEL_EM                     src/17l-hotel.js:47
-HOTEL_FILL                   src/17l-hotel.js:65
-HOTEL_GLOW                   src/17l-hotel.js:50
-HOTEL_LAMP                   src/17l-hotel.js:44
-HOTEL_LIT                    src/17l-hotel.js:115
-HOTEL_LOD                    src/17l-hotel.js:49
-HOTEL_NIGHT                  src/17l-hotel.js:14
-HOTEL_RIM                    src/17l-hotel.js:174
+HOTEL_BAKE                   src/17l-hotel.js:59
+HOTEL_CURT                   src/17l-hotel.js:48
+HOTEL_EL                     src/17l-hotel.js:82
+HOTEL_EM                     src/17l-hotel.js:49
+HOTEL_FILL                   src/17l-hotel.js:67
+HOTEL_GLOW                   src/17l-hotel.js:52
+HOTEL_LAMP                   src/17l-hotel.js:46
+HOTEL_LIT                    src/17l-hotel.js:123
+HOTEL_LOD                    src/17l-hotel.js:51
+HOTEL_NIGHT                  src/17l-hotel.js:16
+HOTEL_RIM                    src/17l-hotel.js:182
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
-HOTEL_T                      src/17l-hotel.js:15
-hotelAngD                    src/17l-hotel.js:77
-hotelArc                     src/17l-hotel.js:171
-hotelDesk                    src/17l-hotel.js:260-272
-hotelDock                    src/17l-hotel.js:204-247
-hotelDrop                    src/17l-hotel.js:58
-hotelGet                     src/17l-hotel.js:105-113
-hotelHere                    src/17l-hotel.js:16-21
-hotelInteract                src/17l-hotel.js:252-259
-hotelJob                     src/17l-hotel.js:78-103
-hotelLamp                    src/17l-hotel.js:178-182
-hotelLampOf                  src/17l-hotel.js:45
-hotelLight                   src/17l-hotel.js:66-72
-hotelLit                     src/17l-hotel.js:75
-hotelLitFrac                 src/17l-hotel.js:24-29
-hotelLitRects                src/17l-hotel.js:116-123
-hotelNeon                    src/17l-hotel.js:126-134
-hotelNeonDraw                src/17l-hotel.js:135-138
-hotelPoly                    src/17l-hotel.js:169
-hotelRim                     src/17l-hotel.js:175
-hotelStar                    src/17l-hotel.js:249
-hotelType                    src/17l-hotel.js:22
-hotelWindows                 src/17l-hotel.js:185-200
-hotelWinLit                  src/17l-hotel.js:33-42
+HOTEL_T                      src/17l-hotel.js:17
+hotelAngD                    src/17l-hotel.js:85
+hotelArc                     src/17l-hotel.js:179
+hotelDesk                    src/17l-hotel.js:268-280
+hotelDock                    src/17l-hotel.js:212-255
+hotelDrop                    src/17l-hotel.js:60
+hotelGet                     src/17l-hotel.js:113-121
+hotelHere                    src/17l-hotel.js:18-23
+hotelInteract                src/17l-hotel.js:260-267
+hotelJob                     src/17l-hotel.js:86-111
+hotelLamp                    src/17l-hotel.js:186-190
+hotelLampOf                  src/17l-hotel.js:47
+hotelLight                   src/17l-hotel.js:68-74
+hotelLit                     src/17l-hotel.js:77
+hotelLitFrac                 src/17l-hotel.js:26-31
+hotelLitRects                src/17l-hotel.js:124-131
+hotelN                       src/17l-hotel.js:83
+hotelName                    src/17l-hotel.js:15
+hotelNeon                    src/17l-hotel.js:134-142
+hotelNeonDraw                src/17l-hotel.js:143-146
+hotelPoly                    src/17l-hotel.js:177
+hotelRim                     src/17l-hotel.js:183
+hotelStar                    src/17l-hotel.js:257
+hotelType                    src/17l-hotel.js:24
+hotelUp                      src/17l-hotel.js:84
+hotelWindows                 src/17l-hotel.js:193-208
+hotelWinLit                  src/17l-hotel.js:35-44
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
 hoursAll                     src/11h-hours.js:31
@@ -5822,20 +5834,21 @@ TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
 TAPE_N                       src/25b-tape.js:22
+TAPE_PAL                     src/25b-tape.js:117-122
 TAPE_PENS                    src/25b-tape.js:23
 TAPE_PRICE                   src/12s1-tape.js:8
 tapeBuy                      src/12s1-tape.js:23-28
 tapeCan                      src/12s1-tape.js:11
 tapeInit                     src/25b-tape.js:27-31
 tapePack                     src/25b-tape.js:34-38
-tapePaper                    src/25b-tape.js:114-192
+tapePaper                    src/25b-tape.js:123-201
 tapeRate                     src/25b-tape.js:75-78
 tapeRolls                    src/12s1-tape.js:9
 tapeSample                   src/25b-tape.js:54-73
 tapeScroll                   src/25b-tape.js:97-100
 tapesOf                      src/12s1-tape.js:10
-tapeStrip                    src/25b-tape.js:208-211
-tapeStripBox                 src/25b-tape.js:198-207
+tapeStrip                    src/25b-tape.js:217-220
+tapeStripBox                 src/25b-tape.js:207-216
 tapeTear                     src/11b-speech.js:196-212
 tapeTick                     src/25b-tape.js:79-93
 tapeUnpack                   src/25b-tape.js:39-46
@@ -7180,11 +7193,14 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 23 КБ
+## src/17l-hotel.js · 24 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
-## src/17l1-hotel-kosmos.js · 28 КБ
+## src/17l1-hotel-kosmos.js · 27 КБ
   · гостиница «Космос» — ГЛАВТРАССА (gt, эталон шести типов):1
+
+## src/17l2-hotel-druzhba.js · 17 КБ
+  · турбаза «Дружба» — РАССВЕТ (ra):1
 
 ## src/17m-peace-fleet.js · 11 КБ
   · мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3):1
@@ -7503,7 +7519,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25a-instr.js · 13 КБ
   · приборы: пять стрелок и невязка:1
 
-## src/25b-tape.js · 13 КБ
+## src/25b-tape.js · 14 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
 ## src/25c-instr-hud.js · 13 КБ
@@ -8388,7 +8404,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy1-gpugate-belt.js · 14 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
-## tests/91zzzzzzy2-gpu-canvas.js · 18 КБ
+## tests/91zzzzzzy2-gpu-canvas.js · 19 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzy3-gate2d.js · 18 КБ

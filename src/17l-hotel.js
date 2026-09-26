@@ -11,13 +11,15 @@
 /* вывеска: имя — что горит (пробел — мёртвая буква), полное — стекло трубок целиком */
 const HOTEL_SIGN={gt:"ГОС ИНИЦА «КОСМОС»",co:" ЭЛИТА™",or:"ДОМ ПРИЕЗЖИХ № 4",km:" ПИТЕР",ra:"ТУРБАЗА «ДРУЖБА»",hf:" УРАН"};
 const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»",co:"АЭЛИТА™",or:"ДОМ ПРИЕЗЖИХ № 4",km:"ЮПИТЕР",ra:"ТУРБАЗА «ДРУЖБА»",hf:"БУРАН"};
+/* имя в подписи и журнале — полное: пропуск мёртвой буквы хорош в неоне, а в строке HUD читается опечаткой («ГОС ИНИЦА») */
+const hotelName=by=>HOTEL_SIGN_FULL[by]||(HOTEL_SIGN[by]||HOTEL_SIGN.gt).trim();
 const HOTEL_NIGHT=12;
 const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,sheen:[x,y,r],wins(sd),paint(c,e,sd,lit,Lt)} */
 function hotelHere(){
   const sys=G.sys;if(!sys||!sys.station||typeof sysLane!=="function")return null;
   const P=sysLane(sys);if(!P||P.life<.45)return null;
   const d=LANE_DOCK+LANE_GAP*.4,sg=HOTEL_SIGN[P.by]||HOTEL_SIGN.gt;
-  return {x:P.st.x+P.ux*d+P.uy*280*P.side,y:P.st.y+P.uy*d-P.ux*280*P.side,by:P.by,sign:sg,name:sg.trim()};
+  return {x:P.st.x+P.ux*d+P.uy*280*P.side,y:P.st.y+P.uy*d-P.ux*280*P.side,by:P.by,sign:sg,name:hotelName(P.by)};
 }
 const hotelType=by=>HOTEL_T[by]||HOTEL_T.gt;
 /* доля горящих окон по часу: вечером почти все, к ночи гаснут по одному, к утру редкие */
@@ -74,6 +76,12 @@ function hotelLight(Ht){
    заполняющим; warm — прибавка снизу (фонари площадки), 0..255 */
 function hotelLit(Lt,base,s,warm){s=Math.max(0,s);
   return base.map((v,i)=>Math.min(255,v*(Lt.K[i]*HOTEL_KEY*s+Lt.F[i]*HOTEL_AMB)+(warm?warm[i]:0)));}
+/* освещённость грани (общая для типов): нормаль в плане отклонена от зрителя на f (рад, + вправо);
+   звезда стоит над плоскостью экрана на HOTEL_EL, поэтому фронт не чернеет и с тыла, а тень
+   остаётся тенью. hotelUp/hotelDn — верхние и нижние грани (крыши, днища) */
+const HOTEL_EL=.62,HOTEL_CE=Math.cos(HOTEL_EL),HOTEL_SE=Math.sin(HOTEL_EL);
+const hotelN=(f,Lt)=>Math.max(0,Math.sin(f)*Lt.lx*HOTEL_CE+Math.cos(f)*HOTEL_SE);
+const hotelUp=Lt=>Math.max(.12,-Lt.ly*HOTEL_CE+.25),hotelDn=Lt=>Math.max(.06,Lt.ly*HOTEL_CE+.1);
 const hotelAngD=(a,b)=>{const d=(a-b)%TAU;return Math.abs(d>Math.PI?d-TAU:d<-Math.PI?d+TAU:d);};
 function* hotelJob(T,sd,col,key,Lt){
   const w=Math.ceil(T.W*T.PX),h=Math.ceil(T.H*T.PX),B={key,k0:key.slice(0,key.lastIndexOf("|")),a:Lt.a,w,h},ok=[false];

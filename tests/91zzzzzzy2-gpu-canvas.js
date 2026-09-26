@@ -106,11 +106,16 @@ TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целе
   finally{if(Q2){for(const e of Q2.t)GPU.trash.push(...e.T);for(const b of Object.values(Q2.b))GPU.trash.push(b);}GPU.lay=lay;}
   ok(Q2&&Q2!==Q&&Q2.made>0,"новый GPU.lay (как после потери устройства) — новый пул, прогретый заново");
   eq(GPU.lay["gc.pool"],Q,"старый пул на месте, пока жив GPU.lay");
-  /* а4: выпечка гостиницы 500×340 при ss 2 (1000×680) — набор 1024² из прогрева пула, не разовый великан */
-  const m1=Q.made;gpuBakeDrop(gpuBake(500,340,g=>{g.fillStyle="#fff";g.fillRect(0,0,9,9);},{ss:2,mips:false}));
-  eq(Q.made-m1,0,"выпечка 1000×680 — из прогретого набора 1024², новых целей нет");
-  const m2=Q.made;gcPoolSet("shadow",448,64);
-  eq(Q.made-m2,0,"атлас тени 448×64 (родился посреди полёта на S23 cold3) — из прогретого набора 512×128");
+  /* а4: выпечка гостиницы 500×340 при ss 2 (1000×680) — набор 1024² из прогрева пула, не разовый великан.
+     Меряется на свежем пуле: старый к этому набору прожит соседями по странице, и потолок мог вытеснить прогретое */
+  GPU.lay={};let Q3=null;
+  try{Q3=gcPool();const dot=g=>{g.fillStyle="#fff";g.fillRect(0,0,9,9);};
+    gpuBakeDrop(gpuBake(16,16,dot,{mips:false}));   /* буферы пула (gcPoolBuf) рождаются первой выпечкой — считаем цели, не их */
+    const m1=Q3.made;gpuBakeDrop(gpuBake(500,340,dot,{ss:2,mips:false}));
+    eq(Q3.made-m1,0,"выпечка 1000×680 — из прогретого набора 1024², новых целей нет");
+    const m2=Q3.made;gcPoolSet("shadow",448,64);
+    eq(Q3.made-m2,0,"атлас тени 448×64 (родился посреди полёта на S23 cold3) — из прогретого набора 512×128");}
+  finally{if(Q3){for(const e of Q3.t)GPU.trash.push(...e.T);for(const b of Object.values(Q3.b))GPU.trash.push(b);}GPU.lay=lay;}
   /* бюджет видеокарты prebake: выпечка — одна на кадр, любая (у каждой свой submit, ворота ступени 1, 26.09);
      шаги без выпечки (раскладка, расчёт) идут пачкой */
   const steps=(w,h,bake)=>{let n=0;const key="t|px"+w+bake;prebakeDrop(key);PB_F=-2;

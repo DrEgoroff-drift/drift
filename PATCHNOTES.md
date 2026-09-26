@@ -6,6 +6,23 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.470.0 - «Дружба» gets its own building, a quiet strip chart, full hotel names
+
+- **Турбаза «Дружба» stands in its own body** (the designer; GPU-3 merged it after a pair): Рассвет's
+  hotel is a concrete drum of three loggia floors on three legs grown into an asteroid, with a restaurant
+  ring, a beacon hub and people by the door, instead of a borrowed Космос with its sign. Its rooms light
+  by the hour like the others': at three in the morning one window in fifty.
+- **The turbaza's sign is paint, not neon** (GPU-3): red letters on a cream board, lit from above by the
+  bulb string with a warm fall-off, so the word reads dark on light at any hour. Neon stays ГЛАВТРАССА's.
+- **Hotel names are whole in the HUD and the journal** (GPU-3): «ГОСТИНИЦА «КОСМОС»», not the sign's
+  «ГОС ИНИЦА». The dead letter lives only in the neon.
+- **The strip chart under the gauges is dark paper** (GPU-3): the pod's strip was a light-grey slab, the
+  brightest dead patch at the top of the frame; now the paper sits in the panel's tone and only the pen
+  traces are bright. The belt cockpit keeps its light paper under the lamp.
+- **Phone gate tools in the repo** (GPU-3): `docs/phone/` measures a local copy on a real phone; each
+  session takes its own port. The 0.468.0 gate on the S23, cold: 30 s at 100 % of frames on time, five
+  minutes at 99.98 %, no frame of 50 ms.
+
 ## 0.469.0 - a star with a real edge, gas giants with jets, dust without beads
 
 - **The star's disc darkens toward its edge** (GPU-2): an ordinary star's limb goes red instead of
