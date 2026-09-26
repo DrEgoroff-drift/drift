@@ -6,6 +6,17 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.478.0 - the album on the engine
+
+- **The album draws on the engine** (GPU-3): each card is the same postcard brush, baked once and laid into
+  its own engine canvas. The filters ПЛЁНКА, СЕПИЯ, ХОЛОД and НОЧЬ are the same formulas as before, now a
+  colour matrix with grain on the video card instead of a pass over every pixel. The cards look the same, and
+  the sheet builds six to ten times faster: the lightbox with a filter no longer stalls for a third of a second.
+- **СОХРАНИТЬ СЕБЕ** saves the same picture: the card comes from the video card, the album page around it
+  (paper, corners, caption) is drawn as before.
+- **Nets**: the «0 вызовов 2D» gate has an album scene (sheet, lightbox, all five filters), and the zoo has two
+  new mutants (album-2d, album-grain); both are killed.
+
 ## 0.477.0 - the shipyard showcase, ОПИСЬ and the suit doll on the engine
 
 - **The shipyard showcase is one engine canvas** (GPU-3): every hull on the ВЕРФЬ tab is the same studio hull
