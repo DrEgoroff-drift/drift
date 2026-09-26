@@ -798,6 +798,16 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   +35 % brighter, and the near corona is up to 40 % weaker. Brightness now falls monotonically outward:
   760 zoom 3, G .9 248 → limb 245 → 1.0 225 → 1.05 216 → 1.35 208. Zoom 1.6 and 390 at 3 and 1.6 fall the
   same way. The giant (heat < .7) is untouched (|d| 1.75).
+  The far view, third pass (golden «система» LOOK contrast .88 → .68, 5.8 % blocks at 1280, 6.1 % at 390):
+  that scene is a giant at zoom .7, and its halo holds the top 5 % of the frame that contrast is measured
+  on. The near corona is cut only from zoom 1 up now (`fd`, S[49]: 1 at zoom ≤ .75, 0 at ≥ 1, from the
+  CPU — a disc-size threshold could not tell that giant, 65 px, from the hot star at zoom 3, 85 px). The
+  glare over the disc stays as it was over the middle (`gl` .5 at the centre, .2 at the limb), so the
+  centre is again the brightest point and only the edge darkens. The tight corona at the limb stays cut
+  (bringing it back far away brought back the bright ring). lookFrame: 1280 .76 before G2 / .65 / .75;
+  390 .63 / .63. Golden 1280 green, 390 «система» green («грунт день» there is 807e51ee on gpu, not here).
+  Pairs vs HEAD: star 760 zoom 1/2 light +0.7/+0.9 %, sharpness +0.2/−0.8 %; 390 +0.9 / +0.5 %; hot star
+  zoom 3 and 390 zoom 1.6 0.0 %, −1.2/−1.0 %. GPU errors 0.
 - **G3b gas jets** (26.09, Контроль: «the thin jets along the flow read weak at 1:1»): the gas giant had only
   the vortex field and a .004 edge wave, so up close its bands were smooth. Now a noise that is long in
   longitude and dense in latitude (two octaves: 26 and 70 per unit of sine latitude) runs on the already
