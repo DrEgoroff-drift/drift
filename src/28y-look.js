@@ -178,7 +178,10 @@ function lookScenes(){
     {id:"система",set:()=>{if(!jump(find(q=>q.station&&(q.planets||[]).length>=3)))return false;
       const p1=G.sys.planets[1];
       G.mode="system";G.ship.x=p1.x+380;G.ship.y=p1.y+220;G.zoom=.7;return true;}},
-    {id:"карта",set:()=>{G.mode="map";return true;}},
+    /* сеть дорог — сразу целиком: карта достраивает её по линии за кадр (railNetPartial), а готовая
+       сеть переживает resetWorld. Кадр зависел от соседа: после прогонов ботом — все кольца,
+       на свежей странице — пара линий (золотой «карта», -Mobile -Jobs 4) */
+    {id:"карта",set:()=>{G.mode="map";railNet();return true;}},
     {id:"заход",set:()=>{if(!jump(find(q=>(q.planets||[]).some(p=>p.type!=="gas"))))return false;
       const pl=G.sys.planets.find(p=>p.type!=="gas");startLanding(pl);setHour(pl,true);   /* заход меряется днём (M308) */
       G.land.y=groundAt(G.land.tr,G.land.x)-560;return true;}},

@@ -177,7 +177,7 @@ avrWin                       src/21a6-base-avral.js:103-111
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32-41
-bakeIdle                     tests/90-harness.js:401-408
+bakeIdle                     tests/90-harness.js:407-414
 bakeKeep                     src/08c-gpu-kit.js:74-79
 bankTransform                src/03b-hull-paint.js:59-66
 BANYA_EVERY                  src/21ac1-base-banya.js:19
@@ -1029,7 +1029,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120-124
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:551-554
+coopStamp                    tests/90-harness.js:557-560
 coopVisitReset               src/12aj-coop.js:62
 CORONA_IN                    src/17-mode-system.js:26
 COSM_CHIME                   src/12va-wander-cosm.js:59-62
@@ -3055,12 +3055,12 @@ instrOffers                  src/05b-instr-kit.js:127-143
 instrPanel                   src/25a-instr.js:109-199
 instrPanelGeo                src/25a-instr.js:103-106
 instrPenWidth                src/05b-instr-kit.js:78-80
-instrPodDraw                 src/25c-instr-hud.js:111-136
+instrPodDraw                 src/25c-instr-hud.js:111-138
 instrPodGeo                  src/25c-instr-hud.js:40-43
 instrPodLive                 src/25c-instr-hud.js:83-110
 instrPodPaint                src/25c-instr-hud.js:45-81
 instrPodSig                  src/25c-instr-hud.js:26-30
-instrPodTick                 src/25c-instr-hud.js:149-155
+instrPodTick                 src/25c-instr-hud.js:151-157
 instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
@@ -3078,9 +3078,9 @@ instTick                     src/11ab-institute.js:80-94
 invalidateKeyMap             src/15-input.js:125
 invalidateParts              src/05-parts.js:310
 IPOD                         src/25c-instr-hud.js:38
-IPOD_FLY                     src/25c-instr-hud.js:148
-IPOD_MQ                      src/25c-instr-hud.js:145
-IPOD_NARROW                  src/25c-instr-hud.js:146
+IPOD_FLY                     src/25c-instr-hud.js:150
+IPOD_MQ                      src/25c-instr-hud.js:147
+IPOD_NARROW                  src/25c-instr-hud.js:148
 IPOD_S                       src/25c-instr-hud.js:17
 IPOD_SIG                     src/25c-instr-hud.js:25
 isFitted                     src/05-parts.js:381-384
@@ -3230,7 +3230,7 @@ landerGearTick               src/19f-lander.js:15-23
 landerInk                    tests/91j-art.js:155-169
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344-370
-landOnTestPlanet             tests/90-harness.js:385-391
+landOnTestPlanet             tests/90-harness.js:391-397
 landStartY                   src/19-mode-landing.js:38-43
 LANE_BUOY                    src/17g-sys-lane.js:68
 LANE_CHASE                   src/17g-sys-lane.js:16
@@ -3376,14 +3376,14 @@ logPageOf                    src/11-log.js:13
 logShip                      src/01a-crashlog.js:50-53
 logTime                      src/11-log.js:69-72
 LONG_HOD                     src/12b3-fx-cult.js:32-45
-look                         src/28y-look.js:273-277
+look                         src/28y-look.js:276-280
 LOOK_BASE                    tests/91zzzzy-look.js:21-39
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
-lookAll                      src/28y-look.js:252-271
+lookAll                      src/28y-look.js:255-274
 lookFrame                    src/28y-look.js:46-108
 lookoutSees                  src/12ag-holdfx.js:104-111
-lookScenes                   src/28y-look.js:129-248
+lookScenes                   src/28y-look.js:129-251
 lookVerdict                  src/28y-look.js:114-124
 LOOP_OFF                     src/28-loop.js:364
 LOOP_PHASE                   src/01-core.js:86
@@ -3444,14 +3444,14 @@ MAIN_CTX                     src/08-state.js:6
 makeIR                       src/10-music.js:109-121
 makePhrase                   src/10-music.js:381-404
 MAKER_ASSEMBLY               src/03a-hull-maker.js:463
-MAKER_CV                     src/28y-look.js:311
+MAKER_CV                     src/28y-look.js:314
 MAKER_KEYS                   src/03a-hull-maker.js:73
-MAKER_PX                     src/28y-look.js:310
+MAKER_PX                     src/28y-look.js:313
 makerAssembly                src/03a-hull-maker.js:464
 makerBank                    src/03a-hull-maker.js:417
 makerBySeed                  src/03a-hull-maker.js:89
 makerDraw                    src/03a-hull-maker.js:241-362
-makerFeat                    src/28y-look.js:312-385
+makerFeat                    src/28y-look.js:315-388
 makerFlame                   src/03a-hull-maker.js:416
 makerForms                   src/03a-hull-maker.js:93-101
 makerGround                  src/03a-hull-maker.js:452
@@ -3464,10 +3464,10 @@ makeRock                     src/24-mode-belt.js:36-62
 makerOf                      src/03a-hull-maker.js:80-86
 makerOuts                    src/03a-hull-maker.js:176-194
 makerProfile                 src/03a-hull-maker.js:107-172
-makerRead                    src/28y-look.js:393-457
+makerRead                    src/28y-look.js:396-460
 makerRow                     src/03a-hull-maker.js:87
 makerRu                      src/03a-hull-maker.js:90
-makerStand                   src/28y-look.js:386-392
+makerStand                   src/28y-look.js:389-395
 makerTicks                   src/03a-hull-maker.js:233-236
 makerWear                    src/03a-hull-maker.js:453
 makerWidth                   src/03a-hull-maker.js:423-450
@@ -3780,7 +3780,7 @@ neonBake                     src/17k0-neon.js:12-15
 neonDraw                     src/17k0-neon.js:47-51
 neonJob                      src/17k0-neon.js:20-44
 neonKey                      src/17k0-neon.js:11
-NET_FROM                     tests/90-harness.js:444
+NET_FROM                     tests/90-harness.js:450
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
 NEWS_ALL_INC                 tests/91zzzw-news.js:17
@@ -4922,7 +4922,7 @@ rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
 RESET_ABIL0                  tests/90-harness.js:237
 resetArm                     src/26-ui-station.js:694
-resetWorld                   tests/90-harness.js:238-383
+resetWorld                   tests/90-harness.js:238-389
 resize                       src/08-state.js:29-66
 resModeCap                   src/28-loop.js:257-262
 resSay                       src/28-loop.js:243-246
@@ -5160,7 +5160,7 @@ rungPoints                   src/12ad-site.js:45-68
 rungRingSegs                 src/12ae-ladder.js:56
 rungRoman                    src/12ae-ladder.js:47
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:461-545
+runTests                     tests/90-harness.js:467-551
 RUSH_SHIFTS                  src/18j-rail-rush.js:6
 rushAt                       src/18j-rail-rush.js:7
 rushFuelMul                  src/18j-rail-rush.js:12
@@ -5302,7 +5302,7 @@ setBig                       src/27z-telemetry.js:112-118
 setPair                      src/27z-telemetry.js:127-132
 setPct                       src/27z-telemetry.js:102-108
 setSt                        src/27z-telemetry.js:94
-settle                       tests/90-harness.js:409-420
+settle                       tests/90-harness.js:415-426
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -5627,7 +5627,7 @@ stDel                        src/14-save.js:26
 stEmFlush                    src/17c3-station-live.js:112-117
 stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
-steps                        tests/90-harness.js:422
+steps                        tests/90-harness.js:428
 stepWorld                    src/28-loop.js:378-398
 stGet                        src/14-save.js:8
 stGround                     src/17c-system-draw.js:108
@@ -5727,7 +5727,7 @@ SUITE_SEQ                    tests/90-harness.js:77
 SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
-suiteOrder                   tests/90-harness.js:429-436
+suiteOrder                   tests/90-harness.js:435-442
 suiteWin                     tests/90-harness.js:94-99
 suitFailure                  src/23-mode-dig.js:135-143
 suitHit                      src/23-mode-dig.js:128-134
@@ -5852,11 +5852,11 @@ TEST_SEED                    tests/90-harness.js:212
 TEST_SHARD                   tests/90-harness.js:30
 TEST_SHUFFLE                 tests/90-harness.js:70
 TEST_SKIP                    tests/90-harness.js:64
-TEST_SUITES                  tests/90-harness.js:546
+TEST_SUITES                  tests/90-harness.js:552
 TEST_T0                      tests/90-harness.js:214
 TEST_TIMES                   tests/99-run.js:18
-testNetHits                  tests/90-harness.js:450-460
-testSource                   tests/90-harness.js:445-449
+testNetHits                  tests/90-harness.js:456-466
+testSource                   tests/90-harness.js:451-455
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:358-375
@@ -7494,7 +7494,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25b-tape.js · 13 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 12 КБ
+## src/25c-instr-hud.js · 13 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25d-instr-rack.js · 36 КБ
@@ -7672,7 +7672,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
-  · читается ли изготовитель (M369, §19.4):296
+  · читается ли изготовитель (M369, §19.4):299
 
 ## src/28z-fps-probe.js · 22 КБ
   · пробник G11: ?g11:1
@@ -7699,7 +7699,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/29i-spa-draw.js · 25 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 49 КБ
+## tests/90-harness.js · 50 КБ
   · автотесты: каркас:1
 
 ## tests/90a-tools.js · 45 КБ

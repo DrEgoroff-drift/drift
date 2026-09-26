@@ -125,7 +125,9 @@ function instrPodDraw(){
     const mk=w+"x"+h+"|"+R.map(r=>r.ab).join(",");
     if(IPOD.mk!==mk||!IPOD.M){
       const g=instrPodGeo(w,h,R.length),rw=Math.min(7,g.pw*.08),x1=g.px+g.pw;
-      IPOD.M=ckgSpr(0,0,w,h,c=>instrPodPaint(c,w,h,R));
+      /* мастер печётся разово (набор списка приборов, размер): при IPOD_S 2 и ss 2 цель 836×284 не входит
+         ни в одну прогретую запись пула — без once первая же колодка рожала новую на 6.6 МБ (стойка 91zl) */
+      IPOD.M=ckgSpr(0,0,w,h,c=>instrPodPaint(c,w,h,R),{once:true});
       /* валик — над перьями, своим спрайтом */
       IPOD.Rl=ckgSpr(x1-rw-1,g.py,x1+1,g.py+g.ph,c=>{c.globalAlpha=.72;tapePaper(c,g.px,g.py,g.pw,g.ph,"roll");});
       IPOD.mk=mk;}

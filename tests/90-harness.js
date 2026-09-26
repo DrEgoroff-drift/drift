@@ -377,6 +377,12 @@ function resetWorld(){
      `tableTab` живут вне `G`, и снос полей мира их не касается. */
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
   document.body.classList.remove("screen","table");
+  /* окно оклика и окно бака — тоже страница: «R0 оклик под окном бака» уходил с открытым
+     окном оклика, класс hailopen оставался на body, и «экраны M302» в той же части
+     (-Mobile -Jobs 4) рисовали систему под окном — фишки у края гасли, меток 0.
+     Мир без оклика — hailWinSync закрывает окно тем же путём, что игра */
+  if(typeof hailWinSync==="function")hailWinSync();
+  if(typeof toggleSos==="function"&&document.body.classList.contains("sosopen"))toggleSos(false);
   try{ if("tab" in UI_BOOT)tab=UI_BOOT.tab; if("stGroup" in UI_BOOT)stGroup=UI_BOOT.stGroup;
        if("tableTab" in UI_BOOT)tableTab=UI_BOOT.tableTab; }catch(e){}
   if(OPTS_BOOT){G.opts=JSON.parse(OPTS_BOOT);invalidateKeyMap();}
