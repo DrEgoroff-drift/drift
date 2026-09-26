@@ -120,6 +120,18 @@ could ever save.
   it transfers to the rest of the net like any line, and the journal records the deed once: «ГЛАВТРАССА: проложена
   Ветка … до вашей площадки». The seeded net is untouched; branches lie over it and vanish with the post.
 
+- **M476: the hold is green.** The legend under ЧЕРТЁЖ always said «зелёное — трюм», but the hold was a pale
+  white hatch. It is now a green wash with green hatching, in ОПИСЬ and in КБ alike.
+- **M477: the КБ grows up.** Things keep their shapes: a two-cell thing lies in a line, a four-cell thing is a
+  square, anchored at the cell you tap. Tap the thing you are holding once more to turn a two-cell thing; at an
+  Орднунг yard the answer is «поворот не предусмотрен формуляром». The numbers strip reads ЯЧЕЙКИ · ТРЮМ · БАК ·
+  ЭНЕРГИЯ · РАЗГОН, each green or red with its change since you opened the КБ. Three ПРОЕКТЫ per hull, РЕЙСОВЫЙ,
+  БОЕВОЙ and ПУСТОЙ ТРЮМ, switch with one tap; ТИПОВОЙ no longer wipes them. A foreign yard (not your flag) bills
+  12 кр per cell moved, shown above the plan and paid at ГОТОВО; if you cannot pay, the plan goes back to what it
+  was. Under the tray, «В ТРЮМЕ» lists the spare parts from your inventory: hold a placed part, tap a spare of the
+  same kind, and it is fitted in the same place. The station's ОСНАСТКА row is now «КОРПУС · ОСНАСТКА И ЧЕРТЁЖ»,
+  with a КБ button next to ОПИСЬ.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -160,6 +172,11 @@ could ever save.
 - M475: a branch is a straight two-stop line, not a detour of the existing line; a real rerouting would change the
   seeded net that the chronicle and the tests read. Fares, baggage and the size rule are not yet tuned against the
   oracle's rail line: that is a measuring job for the release run, and it stays in the plan.
+- M477: the packer still lays things as it always did, not in the three shapes, so an old save's plan and its
+  numbers stay exactly as they were; shapes apply from the first move in the КБ. Switching ПРОЕКТЫ is billed by the
+  cells it moves, like any other change, rather than by a separate fee. Projects live inside `G.draft[shipId]`
+  (`pr`, `cur`), which is already saved, so no new save field was added. The foreign-yard bill is 12 кр per cell,
+  a guess for the calibration pass.
 
 ## 0.478.0 - the album on the engine
 

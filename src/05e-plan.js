@@ -154,8 +154,9 @@ function drawPlan(cx,W0,H0,pk){
     if(!has.has(q.i+","+(q.j-1))){cx.moveTo(x,y);cx.lineTo(x,y+s);}
     if(!has.has(q.i+","+(q.j+1))){cx.moveTo(x+s,y);cx.lineTo(x+s,y+s);}}
   cx.stroke();
-  cx.save();cx.strokeStyle="rgba(220,234,255,.35)";cx.lineWidth=1;                  /* трюм — штриховка */
-  for(const q of pk.hold){const x=ox+q.j*s,y=oy+q.i*s;cx.save();cx.beginPath();cx.rect(x,y,s,s);cx.clip();cx.beginPath();
+  cx.save();cx.strokeStyle="rgba(120,226,150,.75)";cx.lineWidth=1.2;                /* трюм — зелёная штриховка по заливке (M476: была не видна) */
+  for(const q of pk.hold){const x=ox+q.j*s,y=oy+q.i*s;cx.fillStyle="rgba(80,190,110,.24)";cx.fillRect(x+1,y+1,s-2,s-2);
+    cx.save();cx.beginPath();cx.rect(x,y,s,s);cx.clip();cx.beginPath();
     for(let d=-s;d<s*2;d+=s/3){cx.moveTo(x+d,y);cx.lineTo(x+d+s,y+s);}cx.stroke();cx.restore();}
   cx.restore();
   for(const it of pk.items){

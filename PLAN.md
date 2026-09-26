@@ -237,10 +237,7 @@ measured on the GPU build first:
 
 ## 5. Stage 4 — the ship
 
-- [ ] **M476 the plan:** unique, fused and NPC hulls in the suite; the hold's green is barely visible.
-- [ ] **M477 the КБ:** footprints 2/4 turning and the Орднунг «поворот не предусмотрен формуляром»; the
-  numbers strip with deltas; ПРОЕКТЫ ×3; the foreign yard's bill per cell moved; ОСНАСТКА's hull section
-  into КБ; the tray showing things from the hold.
+- [ ] **M476 the plan (rest):** unique, fused and NPC hulls in the fixpoint suite (release run).
 - [ ] **M478 numbers from the plan:** fuel from tank cells, energy from reactor cells, hull from armour parts,
   sight from nose-third instruments, module tiers as densities. One mapping table: `hold`/`tank`/
   `weapon`(reactor)/`armor` become densities per cell (per hull size, never shown as a number);

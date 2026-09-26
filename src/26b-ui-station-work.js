@@ -117,14 +117,17 @@ function stTabMods(){
     {
       const slots=slotsOf(G.shipId),fm=G.fit[G.shipId]||{};
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ОСНАСТКА КОРПУСА</b><s>"+
+      r.appendChild(el("div","nm","<b>КОРПУС · ОСНАСТКА И ЧЕРТЁЖ</b><s>"+
         Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
         G.inv.length+" частей</s>"));
       const b=el("button","act sm gold","ОТКРЫТЬ");
       /* ОПИСЬ (M341) ложится ПОВЕРХ терминала, как стол: закрыл — снова на
          станции, а не в открытом космосе без управления */
       b.onclick=()=>{tableToggle(true,"hold");};
-      r.appendChild(b);$body.appendChild(r);
+      r.appendChild(b);
+      /* раздел корпуса ОСНАСТКИ ведёт в КБ (M477): чертёж, проекты, счёт верфи */
+      if(typeof kbOpen==="function"){const k=el("button","act sm","КБ · ЧЕРТЁЖ");k.onclick=kbOpen;r.appendChild(k);}
+      $body.appendChild(r);
     }
 
     /* ── части в продаже: ассортимент детерминирован seed станции и временным бакетом ── */

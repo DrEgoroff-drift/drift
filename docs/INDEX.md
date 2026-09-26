@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6528
+Файлов: 641 · символов верхнего уровня: 6538
 
 ## СИМВОЛЫ
 
@@ -867,6 +867,8 @@ JET_BURN                     src/20d-jetpack.js:17
 JET_KICK                     src/20d-jetpack.js:19
 JOB_ROLE                     src/21a3-base-people.js:21-29
 KB                           src/27jb-kb.js:23
+KB_CELL_FEE                  src/27jb-kb.js:30
+KB_PR                        src/27jb-kb.js:41
 KB_RULE                      src/27jb-kb.js:14-22
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
@@ -1184,7 +1186,7 @@ PLANT_KINDS                  src/20-life.js:160
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:172
+PLAN_F                       src/27jb-kb.js:261
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -2842,10 +2844,10 @@ doorsShut                    src/11ar-doors.js:27-31
 drDoors                      tests/91zzzzzn-doors.js:26-43
 drOut                        tests/91zzzzzn-doors.js:45-50
 drPair                       tests/91zzzzzn-doors.js:19-24
-draftAll                     src/27jb-kb.js:24
-draftOf                      src/27jb-kb.js:26-42
-draftSave                    src/27jb-kb.js:43-47
-draftTowerAt                 src/27jb-kb.js:49-54
+draftAll                     src/27jb-kb.js:51
+draftOf                      src/27jb-kb.js:53-69
+draftSave                    src/27jb-kb.js:70-76
+draftTowerAt                 src/27jb-kb.js:78-83
 drawAbil                     src/16c-abil.js:140-168
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
@@ -2949,7 +2951,7 @@ drawPOI                      src/20a-poi.js:173-234
 drawPeaceFleet               src/17m-peace-fleet.js:73-144
 drawPirateBase               src/24a-mode-raid.js:187-218
 drawPirateSkin               src/03d-hull-marks.js:99-126
-drawPlan                     src/05e-plan.js:137-172
+drawPlan                     src/05e-plan.js:137-173
 drawPlanetWorks              src/17e-station-body.js:71-116
 drawPlant                    src/20-life.js:406-415
 drawPlantAlien               src/20-life.js:210-377
@@ -3281,7 +3283,7 @@ freeVoice                    src/09-audio.js:104-108
 fuelPriceHere                src/12k-rep.js:63-70
 furColor                     src/20f-fauna.js:25-34
 fuseAffordable               src/03-ships.js:38-41
-fuseCard                     src/26b-ui-station-work.js:339-375
+fuseCard                     src/26b-ui-station-work.js:342-378
 fuseCost                     src/03-ships.js:33-37
 fuseGen                      src/03-ships.js:32
 fusePreview                  src/03-ships.js:46-63
@@ -4063,15 +4065,23 @@ jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
 jump                         src/18-mode-map.js:579-587
 jumpToBase                   src/21a-mode-base.js:385-402
-kbClose                      src/27jb-kb.js:83
-kbDone                       src/27jb-kb.js:130-138
-kbDraw                       src/27jb-kb.js:140-164
-kbNumbers                    src/27jb-kb.js:71-75
-kbOpen                       src/27jb-kb.js:77-82
-kbPlace                      src/27jb-kb.js:57-70
-kbRender                     src/27jb-kb.js:84-111
-kbRule                       src/27jb-kb.js:55
-kbTap                        src/27jb-kb.js:112-129
+kbCellMap                    src/27jb-kb.js:32
+kbClose                      src/27jb-kb.js:126
+kbDone                       src/27jb-kb.js:206-226
+kbDraw                       src/27jb-kb.js:228-253
+kbForeign                    src/27jb-kb.js:31
+kbMoved                      src/27jb-kb.js:33-39
+kbNumbers                    src/27jb-kb.js:110-117
+kbNums                       src/27jb-kb.js:105-108
+kbOpen                       src/27jb-kb.js:119-125
+kbPlace                      src/27jb-kb.js:86-104
+kbProjSwitch                 src/27jb-kb.js:42-50
+kbRender                     src/27jb-kb.js:127-180
+kbRule                       src/27jb-kb.js:84
+kbShape                      src/27jb-kb.js:26
+kbTap                        src/27jb-kb.js:181-205
+kbTurnOf                     src/27jb-kb.js:27
+kbYard                       src/27jb-kb.js:28
 keepScroll                   src/27i-ui-table.js:39-53
 keepersAll                   src/11k-keepers.js:49
 keepersBlock                 src/11k-keepers.js:132-156
@@ -4726,8 +4736,8 @@ opisPartCard                 src/27j-ui-opis.js:590-617
 opisPartHtml                 src/27j-ui-opis.js:568-589
 opisPhone                    src/27j-ui-opis.js:71
 opisPileCard                 src/27j-ui-opis.js:638-659
-opisPlanBlock                src/05e-plan.js:174-188
-opisPlanOnly                 src/05e-plan.js:189-207
+opisPlanBlock                src/05e-plan.js:175-189
+opisPlanOnly                 src/05e-plan.js:190-208
 opisPriceCue                 src/27j-ui-opis.js:619-628
 opisRender                   src/27j-ui-opis.js:748-1023
 opisRerender                 src/27j-ui-opis.js:74-84
@@ -4959,7 +4969,7 @@ planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
-planFactors                  src/27jb-kb.js:173-184
+planFactors                  src/27jb-kb.js:262-273
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -5941,11 +5951,11 @@ stSpin                       src/17c3-station-live.js:50-53
 stSpinCv                     src/17c3-station-live.js:56-62
 stSplit                      src/17c3-station-live.js:20
 stTabBoard                   src/26e-ui-station-trade.js:11-147
-stTabFuse                    src/26b-ui-station-work.js:376
-stTabInstr                   src/26b-ui-station-work.js:225-375
-stTabLab                     src/26b-ui-station-work.js:307-375
+stTabFuse                    src/26b-ui-station-work.js:379
+stTabInstr                   src/26b-ui-station-work.js:228-378
+stTabLab                     src/26b-ui-station-work.js:310-378
 stTabMarket                  src/26e-ui-station-trade.js:148-265
-stTabMods                    src/26b-ui-station-work.js:105-375
+stTabMods                    src/26b-ui-station-work.js:105-378
 stTabYard                    src/26e-ui-station-trade.js:266-411
 stTabsHere                   src/26-ui-station.js:143
 stTypeOf                     src/06-galaxy.js:69
@@ -7793,7 +7803,7 @@ zoomTo                       src/15-input.js:350
 ## src/27j-ui-opis.js · 64 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
-## src/27jb-kb.js · 12 КБ
+## src/27jb-kb.js · 18 КБ
   · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
 
 ## src/27jb-ui-got.js · 4 КБ
