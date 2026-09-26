@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 664 · символов верхнего уровня: 6752
+Файлов: 664 · символов верхнего уровня: 6753
 
 ## СИМВОЛЫ
 
@@ -3490,9 +3490,9 @@ lettersBlock                 src/12k-letters.js:99-115
 letterState                  src/12k-letters.js:42
 letterTake                   src/12k-letters.js:70-76
 LG_2D                        src/20fa-life-gpu.js:103
-LG_BAKE                      src/19g-landing-gpu.js:353
+LG_BAKE                      src/19g-landing-gpu.js:362
 LG_DUST                      src/19g-landing-gpu.js:193
-LG_E                         src/19g-landing-gpu.js:354
+LG_E                         src/19g-landing-gpu.js:363
 LG_FIRE                      src/19g-landing-gpu.js:192
 LG_H                         src/19g-landing-gpu.js:24
 LG_ID                        src/20fa-life-gpu.js:90
@@ -3509,12 +3509,13 @@ lgBox                        tests/91zzzzy-light.js:22-39
 lgBrightest                  tests/91zzzzy-light.js:42-50
 lgClean                      tests/91zzzzy-light.js:56-58
 lgDrawRec                    tests/91q1-landing-gpu.js:22-29
+LGF                          src/19g-landing-gpu.js:250
 lgHour                       tests/91zzzzy-light.js:77-86
 lgHTex                       src/19g-landing-gpu.js:25-37
-LGL                          src/19g-landing-gpu.js:355
-lgLander                     src/19g-landing-gpu.js:381-435
-lgLanderBake                 src/19g-landing-gpu.js:358-378
-lgLanderSb                   src/19g-landing-gpu.js:379
+LGL                          src/19g-landing-gpu.js:364
+lgLander                     src/19g-landing-gpu.js:390-448
+lgLanderBake                 src/19g-landing-gpu.js:367-387
+lgLanderSb                   src/19g-landing-gpu.js:388
 LGR                          src/19g-landing-gpu.js:92
 lgRecCtx                     tests/91q1-landing-gpu.js:9-21
 lgRGB                        src/19g-landing-gpu.js:39
@@ -7672,7 +7673,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/19f-lander.js · 22 КБ
   · посадочный корабль:1
 
-## src/19g-landing-gpu.js · 29 КБ
+## src/19g-landing-gpu.js · 31 КБ
   · посадка на видеокарте (G6, флот «landing»):1
 
 ## src/20-life.js · 37 КБ
