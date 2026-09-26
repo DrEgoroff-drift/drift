@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6469
+Файлов: 641 · символов верхнего уровня: 6476
 
 ## СИМВОЛЫ
 
@@ -63,8 +63,9 @@ AFFIX_SPREAD                 src/05-parts.js:76
 AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
-ALBUM_FX                     src/25g1-album-fx.js:11-17
-ALBUM_MAX                    src/25g-postcard.js:627
+ALBUM_FX                     src/25g1-album-fx.js:14-21
+ALBUM_MAX                    src/25g-postcard.js:628
+ALBUM_VIG                    src/25g1-album-fx.js:28
 ALLY_THR                     src/12a-crew.js:702
 ALL_NAMES                    tests/90-harness.js:93
 AMMO_BATCH                   src/16b-missile.js:59
@@ -529,7 +530,7 @@ GAL_STAR_SCREEN              src/17z1-galaxy.js:152
 GAL_TILE                     src/17z1-galaxy.js:63
 GAL_TILES                    src/17z1-galaxy.js:65
 GAL_VER                      src/17z1-galaxy.js:19
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-228
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-243
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GATE_FLY                     tests/91zzzzzzy-gpugate.js:269
@@ -1136,6 +1137,7 @@ PB_F                         src/17a0-prebake.js:19
 PB_K                         src/24a-mode-raid.js:110
 PB_MS                        src/17a0-prebake.js:18
 PC_GRAIN                     src/25g-post-craft.js:7
+PC_GRAIN_B                   src/25g-post-craft.js:21
 PEACE_TUG                    src/17m-peace-fleet.js:146
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
@@ -1788,14 +1790,18 @@ aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
 alCount                      tests/91zzzzzy-alive.js:15-22
-albumAll                     src/25g-postcard.js:628
-albumCanvas                  src/25g1-album-fx.js:41-51
-albumClose                   src/25g1-album-fx.js:53
-albumDpr                     src/25g1-album-fx.js:52
-albumFx                      src/25g1-album-fx.js:18-39
-albumLightbox                src/25g1-album-fx.js:55-101
-albumOpen                    src/25g-postcard.js:677
-albumSave                    src/25g1-album-fx.js:105-136
+albumAll                     src/25g-postcard.js:629
+albumBake                    src/25g1-album-fx.js:36
+albumCanvas                  src/25g1-album-fx.js:48-55
+albumClose                   src/25g1-album-fx.js:57
+albumDpr                     src/25g1-album-fx.js:56
+albumL                       src/25g1-album-fx.js:23
+albumLightbox                src/25g1-album-fx.js:59-104
+albumM                       src/25g1-album-fx.js:25
+albumOpen                    src/25g-postcard.js:678
+albumPut                     src/25g1-album-fx.js:40-46
+albumSave                    src/25g1-album-fx.js:108-144
+albumVig                     src/25g1-album-fx.js:29-34
 allyHullGpu                  src/12a-crew.js:703-712
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:614-643
@@ -2177,7 +2183,7 @@ burstFx                      src/13z-gpu-combat.js:177-180
 buyCargo                     src/12-economy.js:92-105
 buyPriceFor                  src/12-economy.js:87-91
 camBody                      src/17-mode-system.js:82-91
-camBtnTick                   src/25g-postcard.js:666-670
+camBtnTick                   src/25g-postcard.js:667-671
 camOffset                    src/19c-light.js:155-162
 camStep                      src/19c-light.js:141-153
 canPay                       src/21a-mode-base.js:99
@@ -2936,7 +2942,7 @@ drawPlanetWorks              src/17e-station-body.js:71-116
 drawPlant                    src/20-life.js:406-415
 drawPlantAlien               src/20-life.js:210-377
 drawPortal                   src/20aa-poi-shapes.js:464-489
-drawPostcard                 src/25g-postcard.js:170-611
+drawPostcard                 src/25g-postcard.js:171-612
 drawRaid                     src/24aa-raid-draw.js:14-655
 drawRail                     src/18g-rail-ride.js:118-175
 drawRailArrive               src/18g-rail-ride.js:31-34
@@ -4834,28 +4840,29 @@ passportIssue                src/17i1-passport.js:12-19
 passportOn                   src/17i1-passport.js:11
 payCost                      src/21a-mode-base.js:100
 pbOnScreen                   src/17a0-prebake.js:41
-pcA                          src/25g-postcard.js:149
+pcA                          src/25g-postcard.js:150
 pcBelt                       src/25g-post-void.js:58-221
-pcC                          src/25g-postcard.js:146
+pcC                          src/25g-postcard.js:147
 pcCave                       src/25g-post-under.js:129-232
-pcDeform                     src/25g-post-craft.js:27-39
+pcDeform                     src/25g-post-craft.js:34-46
+pcGrainBake                  src/25g-post-craft.js:22-26
 pcGrainTile                  src/25g-post-craft.js:8-19
 pcMan                        src/25g-post-under.js:33-61
 pcMine                       src/25g-post-under.js:249-398
-pcMix                        src/25g-postcard.js:148
-pcNebula                     src/25g-post-craft.js:61-73
+pcMix                        src/25g-postcard.js:149
+pcNebula                     src/25g-post-craft.js:68-80
 pcOre                        src/25g-post-under.js:102-112
-pcPrint                      src/25g-postcard.js:130-144
+pcPrint                      src/25g-postcard.js:130-145
 pcSame                       tests/91zzzi-postcard.js:23-27
 pcScoop                      src/25g-post-void.js:399-526
 pcShip                       src/25g-post-void.js:23-47
-pcStar                       src/25g-postcard.js:151-154
+pcStar                       src/25g-postcard.js:152-155
 pcStrata                     src/25g-post-under.js:68-99
 pcSystem                     src/25g-post-void.js:231-389
 pcTestPixels                 tests/91zzzi-postcard.js:17-22
 pcTestPlanet                 tests/91zzzi-postcard.js:2-9
 pcTestSnap                   tests/91zzzi-postcard.js:12-16
-pcWash                       src/25g-post-craft.js:40-55
+pcWash                       src/25g-post-craft.js:47-62
 peaceFlag                    src/17m-peace-fleet.js:28-72
 peaceHere                    src/17m-peace-fleet.js:12-19
 peaceRepairPos               src/17m-peace-fleet.js:147-150
@@ -4990,7 +4997,7 @@ poiSkin                      src/20a-poi.js:119-144
 postAddrs                    src/11e-post.js:47-71
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113-142
-postCanShoot                 src/25g-postcard.js:632-649
+postCanShoot                 src/25g-postcard.js:633-650
 postCaption                  src/25g-postcard.js:114-124
 postChoose                   src/25i-post-back.js:48-51
 postDock                     src/11e-post.js:80-97
@@ -5008,7 +5015,7 @@ postSetForm                  src/25i-post-back.js:44-47
 postSign                     src/25i-post-back.js:35-41
 postSigned                   src/25i-post-back.js:32
 postSnap                     src/25g-postcard.js:65-108
-postTake                     src/25g-postcard.js:650-664
+postTake                     src/25g-postcard.js:651-665
 postTerrain                  src/25g-postcard.js:41-47
 postWorld                    src/25g-postcard.js:49-54
 powCoupOn                    src/12b0-fx-pow.js:26-29
@@ -5343,7 +5350,7 @@ relicRoll                    src/12h-relic.js:104-110
 relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
-renderAlbum                  src/25g-postcard.js:678-702
+renderAlbum                  src/25g-postcard.js:679-703
 renderBarge                  src/12l-barge.js:692-783
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-331
@@ -7623,9 +7630,9 @@ zoomTo                       src/15-input.js:350
 
 ## src/25g-postcard.js · 43 КБ
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:613
+  · камера и альбом:614
 
-## src/25g1-album-fx.js · 9 КБ
+## src/25g1-album-fx.js · 11 КБ
   · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1
 
 ## src/25h-post-forms.js · 20 КБ
@@ -8484,7 +8491,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91zzzzzzy2-gpu-canvas.js · 19 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 24 КБ
+## tests/91zzzzzzy3-gate2d.js · 25 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ

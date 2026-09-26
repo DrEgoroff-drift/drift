@@ -2479,6 +2479,17 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   the КОМПЛЕКТ zone through `opisGpu`. Pairs vs main at 760 and 390: the same doll, a cleaner outline. The
   cosmetics test reads the brush on a 2D test canvas. Gate2d scene «опись» (the bake is reset on every КОМПЛЕКТ
   pass), mutant doll-2d.
+- **The album on the GPU** (25g1 `albumCanvas`, `albumLightbox`, `albumSave`): the card is `drawPostcard` baked into
+  a GPU-canvas bake (`albumBake`, screen density up to 3) and put into its own webgpu canvas by `ovPaint` as one
+  `ovImage` (`albumPut`). The four filters are the old pixel formulas as the 3×4 colour matrix and seeded grain of
+  08bi (`ALBUM_FX[k].m`, shifts in 0..255, `albumM`); the vignette is one small cached bake per tone
+  (`albumVig`, 128×80, stretched — a radial gradient keeps its shape under uniform scale). The five filter chips
+  share one small bake. СОХРАНИТЬ СЕБЕ reads the card with `ovRead` and puts it into the 2D export page — the page
+  is a PNG file, not a frame, and stays 2D. The print grain in `pcPrint` was a `createPattern` tile: on the GPU
+  canvas it is the same blue-noise tile as a bake (`pcGrainBake`) laid by `drawImage`; 2D callers (mail, smena)
+  keep the pattern. Pairs vs main at 760 and 390/3: card means within 0.4 of 255, grain SD within 0.1, export
+  means within 0.2; JS time to rebuild the sheet 160–330 → 24–27 ms, the lightbox with a filter 310–520 → 23–200
+  ms. Gate2d scene «альбом», mutants album-2d and album-grain.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.
