@@ -37,6 +37,52 @@ function kbMoved(){
   for(const k in b)if(!(k in a))n++;
   return n;
 }
+/* ── плотности от дальних грузов и доводка (M478, §3; M469 хвост) ──
+   Верфь кладёт дальний груз в дело: гелий-3 — котёл плотнее (энергия),
+   палладий — контакты приборов (обзор), осмий — броня, магнитная пыль —
+   щит. По ступени на единицу груза, три ступени на корпус. Нейтронная
+   крошка — доводка вместо узла: модуль вваривают, он работает ступенью выше
+   и больше не двигается; два на корпус. Лежит в G.draft[id] (dens, weld):
+   без них все множители ровно 1 — старый сейв с теми же числами */
+const PLAN_DENS={he3:{k:"en",ru:"КОТЁЛ",step:.12,what:"энергия"},palladium:{k:"see",ru:"ПРИБОРЫ",step:.06,what:"обзор"},
+  osmium:{k:"hull",ru:"БРОНЯ",step:.08,what:"корпус"},magdust:{k:"sh",ru:"ЩИТ",step:.12,what:"щит"}};
+const PLAN_DENS_MAX=3,PLAN_WELD_MAX=2,PLAN_WELD_FEE=800;
+function planDensOf(id){const D=G.draft&&G.draft[id];return (D&&D.dens)||null;}
+function planDens(){
+  const d=planDensOf(G.shipId),o={en:1,see:1,hull:1,sh:1};if(!d)return o;
+  for(const g in PLAN_DENS){const n=d[g]|0;if(n)o[PLAN_DENS[g].k]=1+PLAN_DENS[g].step*n;}
+  return o;
+}
+function planMods(mods){
+  const D=G.draft&&G.draft[G.shipId];if(!D||!D.weld||!D.weld.length)return mods;
+  const o=Object.assign({},mods);
+  for(const key of D.weld)if(key[0]==="m"){const k=key.slice(1);if((o[k]|0)>0)o[k]=(o[k]|0)+1;}
+  return o;
+}
+function kbWelded(it){const D=G.draft&&G.draft[KB.id||G.shipId];return !!(D&&D.weld&&it&&D.weld.indexOf(it.key)>=0);}
+function kbRec(){const A=draftAll();if(!A[KB.id])draftSave(KB.id,KB.d);return A[KB.id];}
+function kbDensUp(g){
+  const P=PLAN_DENS[g];if(!P)return "";
+  const R=kbRec(),d=R.dens||(R.dens={});
+  if((d[g]|0)>=PLAN_DENS_MAX)return P.ru+": предел — "+PLAN_DENS_MAX+" ступени";
+  if(!((G.cargo[g]|0)>0))return "нет в трюме: "+RES[g].ru.toLowerCase();
+  G.cargo[g]--;d[g]=(d[g]|0)+1;
+  logAdd("dim","Верфь: "+RES[g].ru.toLowerCase()+" в дело · "+P.ru.toLowerCase()+" плотнее · ступень "+d[g]+" из "+PLAN_DENS_MAX);
+  return P.ru+" · ступень "+d[g]+" · "+P.what+" +"+Math.round(P.step*d[g]*100)+"%";
+}
+function kbWeld(it){
+  if(!it||it.what!=="mod")return "вваривают модуль, не часть";
+  const R=kbRec(),w=R.weld||(R.weld=[]);
+  if(w.indexOf(it.key)>=0)return "уже вварено";
+  if(w.length>=PLAN_WELD_MAX)return "доводка: не больше "+PLAN_WELD_MAX+" на корпус";
+  if(!((G.cargo.neutron|0)>0))return "нужна нейтронная крошка";
+  if(G.credits<PLAN_WELD_FEE)return "доводка стоит "+PLAN_WELD_FEE+" кр";
+  G.cargo.neutron--;G.credits-=PLAN_WELD_FEE;w.push(it.key);
+  if(typeof afterFitChange==="function")afterFitChange();
+  const nm=MODS[it.kind]?MODS[it.kind].ru:it.kind;
+  logAdd("money","Доводка: «"+nm+"» вварен · ступенью выше · −"+PLAN_WELD_FEE+" кр и крошка");
+  return "вварено: «"+nm+"» — ступенью выше, больше не двигается";
+}
 /* ── ПРОЕКТЫ ×3 (§7): три чертежа на корпус; пустой — упаковщик, «пустой трюм» — без трюма ── */
 const KB_PR=["РЕЙСОВЫЙ","БОЕВОЙ","ПУСТОЙ ТРЮМ"];
 function kbProjSwitch(k){
@@ -45,6 +91,7 @@ function kbProjSwitch(k){
   pr[cur]=D.it?{it:D.it,hold:D.hold}:null;
   const nx=pr[k];
   A[id]=nx?{it:nx.it,hold:nx.hold,pr,cur:k}:(k===2?{hold:[],pr,cur:k}:{pr,cur:k});
+  if(D.dens)A[id].dens=D.dens;if(D.weld)A[id].weld=D.weld;
   if(typeof GUN_LIST!=="undefined")GUN_LIST=null;
   KB.d=draftOf(id);KB.sel=null;KB.msg="проект «"+KB_PR[k].toLowerCase()+"»";
 }
@@ -71,6 +118,7 @@ function draftSave(id,d){
   const it={};for(const x of d.items)it[x.key]=x.cells.map(q=>[q.i,q.j]);
   const o=draftAll()[id],rec={it,hold:d.hold.map(q=>[q.i,q.j])};
   if(o&&o.pr){rec.pr=o.pr;rec.cur=o.cur|0;}   /* ПРОЕКТЫ (M477) лежат рядом */
+  if(o&&o.dens)rec.dens=o.dens;if(o&&o.weld)rec.weld=o.weld;   /* плотности и доводка — корпуса, не проекта (M478) */
   draftAll()[id]=rec;
   if(typeof GUN_LIST!=="undefined")GUN_LIST=null;   /* подвес мог стать башней (M479) */
 }
@@ -84,6 +132,7 @@ function draftTowerAt(id,slot){
 function kbRule(it){return KB_RULE[(it.what==="mod"?"m_":"")+it.kind]||null;}
 /* положить вещь якорем в клетку q: остальные клетки — ближайшие свободные, где правило пускает */
 function kbPlace(d,it,q,turn){
+  if(kbWelded(it))return "вварено — не двигается";
   const R=kbRule(it);
   if(R&&!R.ok(q))return R.no;
   const busy=new Set();for(const x of d.items)if(x!==it)for(const c of x.cells)busy.add(c);
@@ -163,6 +212,19 @@ function kbRender(){
       inv.appendChild(b);
     }
   }
+  {
+    const box=w.querySelector(".kb-inv"),dn=planDensOf(KB.id)||{};
+    box.appendChild(el("div","kb-sec","ДАЛЬНИЕ ГРУЗЫ В ДЕЛО · ПЛОТНОСТЬ"));
+    for(const g in PLAN_DENS){const P0=PLAN_DENS[g],n=dn[g]|0,have=G.cargo[g]|0;
+      const b=document.createElement("button");b.className="act kb-it"+(have>0&&n<PLAN_DENS_MAX?"":" dim");
+      b.innerHTML="<i style='background:"+RES[g].col+"'></i>"+P0.ru+" "+n+"/"+PLAN_DENS_MAX+"<s>"+RES[g].ru.toLowerCase()+" · в трюме "+have+"</s>";
+      b.onclick=()=>{KB.msg=kbDensUp(g);kbRender();};box.appendChild(b);}
+    if(selIt&&selIt.what==="mod"){
+      const b=document.createElement("button");b.className="act kb-it"+((G.cargo.neutron|0)>0&&!kbWelded(selIt)?"":" dim");
+      b.innerHTML="<i style='background:"+RES.neutron.col+"'></i>ДОВОДКА · ВВАРИТЬ<s>крошка + "+PLAN_WELD_FEE+" кр</s>";
+      b.onclick=()=>{KB.msg=kbWeld(selIt);KB.sel=null;kbRender();};box.appendChild(b);
+    }
+  }
   const cv=w.querySelector(".kb-cv"),P=d.P;
   const cw=Math.min(340,(typeof innerWidth==="number"?innerWidth:390)-40),s=Math.floor(cw/P.cols),ch=s*P.N;
   const dpr=Math.min(2,window.devicePixelRatio||1);
@@ -174,7 +236,8 @@ function kbRender(){
     kbTap(i,j);
   };
   w.querySelector(".kb-typ").onclick=()=>{const o=draftAll()[KB.id];
-    if(o&&o.pr)draftAll()[KB.id]={pr:o.pr,cur:o.cur|0};else delete draftAll()[KB.id];   /* проекты не стираем (M477) */
+    if(o&&(o.pr||o.dens||o.weld)){const r={};if(o.pr){r.pr=o.pr;r.cur=o.cur|0;}if(o.dens)r.dens=o.dens;if(o.weld)r.weld=o.weld;draftAll()[KB.id]=r;}
+    else delete draftAll()[KB.id];   /* проекты, плотности и доводку не стираем (M477–M478) */
     KB.d=draftOf(KB.id);KB.sel=null;KB.msg="как у всех";kbRender();};
   w.querySelector(".kb-done").onclick=kbDone;
 }
@@ -245,6 +308,8 @@ function kbDraw(c,s,d){
       c.fillStyle=on?"rgba(255,214,140,.95)":"rgba(214,160,80,.85)";
       c.fillRect(q.j*s+6,q.i*s+6,s-12,s-12);
     }
+    if(kbWelded(it)){c.strokeStyle="rgba(232,240,255,.95)";c.lineWidth=1.5;c.setLineDash([2,2]);
+      for(const q of it.cells)c.strokeRect(q.j*s+4,q.i*s+4,s-8,s-8);c.setLineDash([]);}   /* шов доводки */
     const q=it.cells[0];if(!q)return;
     c.fillStyle="#1a1206";c.font="bold "+Math.max(9,Math.floor(s*.22))+"px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
     const ab={gun:"ОР",shield:"ЩТ",engine:"ДВ",hull:"БР",core:"РК",util:"ПР",missile:"ПУ"}[it.kind]||({engine:"ДВ",tank:"БК",armor:"БР",drill:"БУ",hyper:"ГП",weapon:"РК"}[it.kind]||"?");

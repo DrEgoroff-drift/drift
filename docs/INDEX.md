@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6538
+Файлов: 641 · символов верхнего уровня: 6547
 
 ## СИМВОЛЫ
 
@@ -298,8 +298,8 @@ CREW_YIELD                   src/12a-crew.js:349
 CRYO_RECIPE                  src/21a1a-base-heat.js:33
 CSW                          src/19e-clouds.js:68
 CUE_EPS                      src/27m-scroll-cue.js:25
-CUE_INFO                     src/08-state.js:387
-CUE_LVL                      src/08-state.js:388
+CUE_INFO                     src/08-state.js:388
+CUE_LVL                      src/08-state.js:389
 CULT_EXP_GOAL                src/12b3-fx-cult.js:22
 CULT_PLAY                    src/12b3-fx-cult.js:51-94
 CULT_PLAY_EVERY              src/12b3-fx-cult.js:19
@@ -501,7 +501,7 @@ FOE_KINDS                    src/24a-mode-raid.js:17-22
 FOLK                         src/12u-folk.js:31-80
 FOLK_IDS                     src/12u-folk.js:81
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
-FRAME_IN                     src/08-state.js:377
+FRAME_IN                     src/08-state.js:378
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
 FUEL_PER_ICE                 src/21b1-base-pay.js:100
@@ -868,7 +868,7 @@ JET_KICK                     src/20d-jetpack.js:19
 JOB_ROLE                     src/21a3-base-people.js:21-29
 KB                           src/27jb-kb.js:23
 KB_CELL_FEE                  src/27jb-kb.js:30
-KB_PR                        src/27jb-kb.js:41
+KB_PR                        src/27jb-kb.js:87
 KB_RULE                      src/27jb-kb.js:14-22
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
@@ -1185,8 +1185,10 @@ PLANT_H_K                    src/20e-species.js:24
 PLANT_KINDS                  src/20-life.js:160
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
+PLAN_DENS                    src/27jb-kb.js:47
+PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:261
+PLAN_F                       src/27jb-kb.js:326
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -2624,11 +2626,11 @@ crownReady                   src/05a-nodes.js:158
 ctlHint                      src/15-input.js:171-175
 ctlReset                     src/15a-helm.js:127-132
 ctx                          src/08-state.js:5
-cue                          src/08-state.js:407-412
-cueFold                      src/08-state.js:415-420
-cueLvl                       src/08-state.js:394-397
-cueReset                     src/08-state.js:398
-cueSameOffer                 src/08-state.js:406
+cue                          src/08-state.js:408-413
+cueFold                      src/08-state.js:416-421
+cueLvl                       src/08-state.js:395-398
+cueReset                     src/08-state.js:399
+cueSameOffer                 src/08-state.js:407
 cultBlock                    src/12b3-fx-cult.js:237-290
 cultExpCount                 src/12b3-fx-cult.js:139-156
 cultExpFound                 src/12b3-fx-cult.js:157-160
@@ -2844,10 +2846,10 @@ doorsShut                    src/11ar-doors.js:27-31
 drDoors                      tests/91zzzzzn-doors.js:26-43
 drOut                        tests/91zzzzzn-doors.js:45-50
 drPair                       tests/91zzzzzn-doors.js:19-24
-draftAll                     src/27jb-kb.js:51
-draftOf                      src/27jb-kb.js:53-69
-draftSave                    src/27jb-kb.js:70-76
-draftTowerAt                 src/27jb-kb.js:78-83
+draftAll                     src/27jb-kb.js:98
+draftOf                      src/27jb-kb.js:100-116
+draftSave                    src/27jb-kb.js:117-124
+draftTowerAt                 src/27jb-kb.js:126-131
 drawAbil                     src/16c-abil.js:140-168
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
@@ -3722,7 +3724,7 @@ heatAdd                      src/13a-guns.js:47-52
 heatHaze                     src/18d-postfx.js:70-74
 heatHazeFrom                 src/18d-postfx.js:52-67
 heatTick                     src/13a-guns.js:54-62
-held                         src/08-state.js:366
+held                         src/08-state.js:367
 helmApply                    src/15a-helm.js:450-548
 helmBand                     src/15b-helm-draw.js:150-153
 helmCamOff                   src/15b-helm-draw.js:135-148
@@ -4066,21 +4068,25 @@ jobTick                      src/12e-mgr-jobs.js:287-296
 jump                         src/18-mode-map.js:579-587
 jumpToBase                   src/21a-mode-base.js:385-402
 kbCellMap                    src/27jb-kb.js:32
-kbClose                      src/27jb-kb.js:126
-kbDone                       src/27jb-kb.js:206-226
-kbDraw                       src/27jb-kb.js:228-253
+kbClose                      src/27jb-kb.js:175
+kbDensUp                     src/27jb-kb.js:64-72
+kbDone                       src/27jb-kb.js:269-289
+kbDraw                       src/27jb-kb.js:291-318
 kbForeign                    src/27jb-kb.js:31
 kbMoved                      src/27jb-kb.js:33-39
-kbNumbers                    src/27jb-kb.js:110-117
-kbNums                       src/27jb-kb.js:105-108
-kbOpen                       src/27jb-kb.js:119-125
-kbPlace                      src/27jb-kb.js:86-104
-kbProjSwitch                 src/27jb-kb.js:42-50
-kbRender                     src/27jb-kb.js:127-180
-kbRule                       src/27jb-kb.js:84
+kbNumbers                    src/27jb-kb.js:159-166
+kbNums                       src/27jb-kb.js:154-157
+kbOpen                       src/27jb-kb.js:168-174
+kbPlace                      src/27jb-kb.js:134-153
+kbProjSwitch                 src/27jb-kb.js:88-97
+kbRec                        src/27jb-kb.js:63
+kbRender                     src/27jb-kb.js:176-243
+kbRule                       src/27jb-kb.js:132
 kbShape                      src/27jb-kb.js:26
-kbTap                        src/27jb-kb.js:181-205
+kbTap                        src/27jb-kb.js:244-268
 kbTurnOf                     src/27jb-kb.js:27
+kbWeld                       src/27jb-kb.js:73-85
+kbWelded                     src/27jb-kb.js:62
 kbYard                       src/27jb-kb.js:28
 keepScroll                   src/27i-ui-table.js:39-53
 keepersAll                   src/11k-keepers.js:49
@@ -4525,7 +4531,7 @@ mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mountsOf                     src/05d-mounts.js:29-45
 mouseWalkAt                  src/15-input.js:439-468
-msgHeld                      src/08-state.js:421
+msgHeld                      src/08-state.js:422
 mslBoom                      src/16b-missile.js:154-167
 mslCheck                     src/16b-missile.js:114-120
 mslDraw                      src/16b-missile.js:253-275
@@ -4965,15 +4971,18 @@ placesAll                    src/11v-places.js:19-31
 planAll                      src/11r-plan.js:27
 planCorePlanet               src/11r-plan.js:36-40
 planDeliver                  src/11r-plan.js:67-85
+planDens                     src/27jb-kb.js:51-55
+planDensOf                   src/27jb-kb.js:50
 planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
-planFactors                  src/27jb-kb.js:262-273
+planFactors                  src/27jb-kb.js:327-338
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
+planMods                     src/27jb-kb.js:56-61
 planN                        src/05e-plan.js:21
 planNow                      src/05e-plan.js:125-129
 planOf                       src/05e-plan.js:31-70
@@ -5651,7 +5660,7 @@ saveGame                     src/14a-cloud.js:38-51
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
-say                          src/08-state.js:378
+say                          src/08-state.js:379
 scarBlock                    src/05b2-scars.js:44-58
 scarFactors                  src/05b2-scars.js:23-25
 scarFix                      src/05b2-scars.js:36-42
@@ -5997,7 +6006,7 @@ starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:624-632
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
-stat                         src/08-state.js:297-365
+stat                         src/08-state.js:297-366
 statPreview                  src/05-parts.js:417-425
 stateHash                    src/08a-statehash.js:30-81
 stateHashParts               src/08a-statehash.js:82-90
@@ -6509,7 +6518,7 @@ withScale                    src/18c-chunks.js:41-47
 wldMedian                    tests/91zzzzzzzzz-worlds.js:37
 wldNear                      tests/91zzzzzzzzz-worlds.js:29-36
 wldPct                       tests/91zzzzzzzzz-worlds.js:38
-worldCovered                 src/08-state.js:425
+worldCovered                 src/08-state.js:426
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
@@ -7803,7 +7812,7 @@ zoomTo                       src/15-input.js:350
 ## src/27j-ui-opis.js · 64 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
-## src/27jb-kb.js · 18 КБ
+## src/27jb-kb.js · 23 КБ
   · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
 
 ## src/27jb-ui-got.js · 4 КБ

@@ -132,6 +132,13 @@ could ever save.
   same kind, and it is fitted in the same place. The station's ОСНАСТКА row is now «КОРПУС · ОСНАСТКА И ЧЕРТЁЖ»,
   with a КБ button next to ОПИСЬ.
 
+- **M478: the far goods go into the hull.** The КБ has a new row, «ДАЛЬНИЕ ГРУЗЫ В ДЕЛО · ПЛОТНОСТЬ». One unit
+  from the hold raises a density one step, up to three per hull: гелий-3 → КОТЁЛ (energy +12 % a step), палладий
+  → ПРИБОРЫ (sight +6 %), осмий → БРОНЯ (hull +8 %), магнитная пыль → ЩИТ (shield +12 %). Нейтронная крошка is
+  доводка instead of a node: hold a module in the КБ, press ДОВОДКА · ВВАРИТЬ (крошка + 800 кр), and the module
+  works one level higher and never moves again («вварено — не двигается»); a dashed weld seam rings it on the
+  plan. Two welds per hull. Densities and welds belong to the hull: projects and ТИПОВОЙ keep them.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -177,6 +184,11 @@ could ever save.
   cells it moves, like any other change, rather than by a separate fee. Projects live inside `G.draft[shipId]`
   (`pr`, `cur`), which is already saved, so no new save field was added. The foreign-yard bill is 12 кр per cell,
   a guess for the calibration pass.
+- M478: this is the far-goods half only. Fuel from tank cells, energy from reactor cells and sight from
+  nose-third instruments would move today's numbers for anyone who has already edited a plan; that needs the
+  mapping table and the fixpoint suite in the release run, so it stays in the plan. Densities and welds are kept
+  inside `G.draft[shipId]` (`dens`, `weld`); with neither present every factor is exactly 1. The step sizes are
+  guesses for the calibration pass. A project switch may move a welded module's cells; the weld's effect stays.
 
 ## 0.478.0 - the album on the engine
 
