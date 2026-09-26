@@ -5,41 +5,18 @@
    его рисует ОПИСЬ — и кнопка меню, которая открывает стол. Ниже — настройки. */
 /* корпус лежит горизонтально, как в полёте; якоря слотов — кружки цвета рода
    части: занятый залит, пустой обведён с плюсом, выбранный крупнее и с кольцом.
-   Возвращает список якорей в координатах канвы — для тапа и переноса. */
-function hullSilhouette(c,cw,ch,id,sel,fm){
+   Здесь только мера (G15): масштаб и место корпуса, тень и якоря в координатах
+   канвы — для тапа, переноса и рисунка. Рисует кадр на движке (opisHullTick, 27j) */
+function hullSilhouette(cw,ch,id,sel,fm){
   const h=hullOf(id),anchors=slotAnchors(id);fm=fm||{};
-  c.clearRect(0,0,cw,ch);
   const cx=(h.nose+h.tail)*.5;
   const sc=Math.min(cw/(h.len+14),(ch-16)/(h.halfW*2+14));   /* корпус во всю панель (второй проход ОПИСИ) */
   const px=x=>cw/2+(x-cx)*sc, py=y=>ch/2+y*sc;
+  /* 18 px, выбранный 22 (ревью 11.09: кружки по 14 px на телефоне не
+     читались метками). Зона касания шире рисунка — 30 px от центра (27j) */
+  const hit=anchors.map(a=>({x:px(a.x),y:py(a.y),i:a.i,kind:a.kind,col:PART_KINDS[a.kind].col,on:fm[a.i]!=null,sel:sel===a.i}));
   /* тень под корпусом на сукне: вещь лежит, а не парит */
-  c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(cw/2,ch/2+h.halfW*sc*.9+6,h.len*sc*.42,Math.max(4,h.halfW*sc*.22),0,0,TAU);c.fill();
-  const old=ctx;ctx=c;
-  c.save();
-  c.translate(px(0),py(0));c.scale(sc,sc);
-  drawHull(id,false,false,G.mods.engine);
-  c.restore();
-  ctx=old;
-  const hit=[];
-  anchors.forEach(a=>{
-    const sx=px(a.x), sy=py(a.y);
-    const K=PART_KINDS[a.kind],on=fm[a.i]!=null,isSel=sel===a.i;
-    hit.push({x:sx,y:sy,i:a.i,kind:a.kind});
-    /* 18 px, выбранный 22 (ревью 11.09: кружки по 14 px на телефоне не
-       читались метками). Зона касания шире рисунка — 30 px от центра (27j) */
-    c.beginPath();c.arc(sx,sy,isSel?11:9,0,TAU);
-    c.fillStyle=on?K.col:"rgba(10,14,20,.85)";
-    c.globalAlpha=on?.9:1;c.fill();c.globalAlpha=1;
-    c.lineWidth=isSel?2.4:1.6;
-    c.strokeStyle=isSel?"#fff":K.col;c.stroke();
-    if(!on){c.fillStyle=K.col;c.font="bold 13px ui-monospace,monospace";c.textAlign="center";
-      c.textBaseline="middle";c.fillText("+",sx,sy+.5);c.textBaseline="alphabetic";}
-    if(isSel){
-      c.beginPath();c.arc(sx,sy,16,0,TAU);
-      c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=1;c.stroke();
-    }
-  });
-  return hit;
+  return {hit,sc,x:px(0),y:py(0),sh:[cw/2,ch/2+h.halfW*sc*.9+6,h.len*sc*.42,Math.max(4,h.halfW*sc*.22)]};
 }
 document.getElementById("shipbtn").addEventListener("click",()=>{tableToggle(true,"hold");});
 

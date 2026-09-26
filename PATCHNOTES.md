@@ -6,6 +6,86 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.475.0 - the nebula glides in flight
+
+- **The nebula no longer steps while you fly** (GPU-2; the author 26.09: «кажется как будто тормозит, когда туманность
+  начинает появляться рядом с кораблём»). The frames were clean — the gas was not: its volume was regenerated only after
+  the camera had moved 5.6 CSS px, so between 80 and 333 px/s of screen speed it held for 2–5 frames and then jumped
+  (a whole device pixel every 5th frame at 80 px/s; 1.6 px every 3rd–5th frame zoomed out) while the stars and the ship
+  glided at 60. Now it is regenerated every frame whenever the camera moves faster than 20 px/s — the same cost fast
+  flight always paid — and a still camera keeps its once-in-six cross-fade; setting off in the middle of that fade
+  finishes it over three frames instead of cutting it. Guarded by the suite `91zzzzzzy7-gpu-nebmove` (40–400 px/s at
+  zoom 1 and .3) and the mutant `neb-step-move`. On the author's phone, cold, full battery, no heat: the 30-s gate and the
+  four routes (hotel and star, zoom 1 and .3) — 100 % of frames ≤ 18 ms, max 16.8–16.9 ms, none ≥ 33 (0.473.0 had
+  one ≥ 33 on two of them). The goldens' order leak surfaced by the new suite's shard shift is closed by the
+  worker's e4532f66 (resetWorld drops pending prebakes), carried here.
+
+## 0.474.0 - the parrot, the seat and the desk on the engine
+
+- **The parrot flies on the GPU** (GPU-3): its window and its perch icon draw from one atlas baked once, and a
+  pose is a handful of instances. It no longer runs its own animation loop beside the game, and its pipelines
+  are warmed at the title screen, so the first flight has no hitch.
+- **The perch icon shows the whole bird**: in a bow, with the crest up or in a roll the parrot went past
+  the icon's edge and was cut off; now such a pose shrinks a little and stays centred.
+- **The console seat is a portrait, not a repaint**: Vega, a trainee or a passenger is baked once for each
+  mood and shown until that mood changes. Before, it was redrawn once a second for the whole trip. It is
+  sharp on a DPR 2 screen now; the old 56 px image was soft.
+- **The desk draws on the GPU**: the boards, the desk-top items, the strips, the mis figure and the thing
+  icons keep their brushes and are baked once when the desk opens. Thing icons are at screen density now,
+  so they no longer blur on the desk.
+- **The post window and the КБ plan too**: the post window is sharp on DPR 2. «ЗАКРЫТО» now hangs as a
+  plate on the grille; on the shutter the bars used to cut through the word.
+- **Nets**:
+  - The «0 вызовов 2D» gate sees the world canvas again (the 08c hook had hidden its calls). It has scenes
+    for the seat, the desk, and the post window with КБ.
+  - The overlay atlas is guarded: a steady frame of any scene bakes no new glyph rows.
+  - Five zoo mutants are anchored to today's code again, and each is killed.
+
+## 0.473.0 - the ship in ОПИСЬ on the engine
+
+- **ОПИСЬ shows your ship the way it flies** (the worker): the hull on the table is drawn by the same GPU
+  hull as in flight, in a studio light from the upper left — its edge catches the light, the canopy glints,
+  the lamps glow — instead of the flat 2D drawing. Slots, their colours and taps are exactly where they were.
+- **One studio for every hull on display**: the same function will draw the ship in the station showroom,
+  at home and on the road as they move off the old 2D bake.
+
+## 0.472.0 - a nebula that stops pulsing
+
+- **Standing still, the nebula flows instead of stepping** (GPU-2): the gas was rebuilt every third
+  frame and jumped a little each time; now it is rebuilt every sixth frame into a spare texture and
+  the old picture blends into the new one over those six frames. The frame-to-frame step of the gas
+  fell from 0.05 to 0.017 px with no pulse, and on the S23 the rebuild costs 0.93 ms a frame instead
+  of 1.81. In flight nothing changed yet.
+- **The GPU probe has 64 timestamp slots** (GPU-2): on the phone 32 ran out before the nebula's
+  blend pass, so it went unmeasured.
+
+## 0.471.0 - ships in the system's light
+
+- **Ships are lit by the star, not painted light** (the worker; hull mode on the GPU canvas): every face keeps
+  its paint and stays even; the star shows on the edges — a one-pixel rim toward it, a darker silhouette edge
+  away from it — and bare metal glints only on that rim, so nothing blinks as a ship turns.
+- **A planet's shadow is dark**: in full shadow a hull loses the star entirely and keeps only the dim fill,
+  its windows and its flame — about a quarter of its lit brightness, where it used to be two fifths.
+- **Gas tints the shade**: the fill takes the colour of the cloud a ship flies in — warm in orange gas,
+  cold in blue — one tone per hull, no pattern. Silhouettes are exactly as before.
+
+## 0.470.0 - «Дружба» gets its own building, a quiet strip chart, full hotel names
+
+- **Турбаза «Дружба» stands in its own body** (the designer; GPU-3 merged it after a pair): Рассвет's
+  hotel is a concrete drum of three loggia floors on three legs grown into an asteroid, with a restaurant
+  ring, a beacon hub and people by the door, instead of a borrowed Космос with its sign. Its rooms light
+  by the hour like the others': at three in the morning one window in fifty.
+- **The turbaza's sign is paint, not neon** (GPU-3): red letters on a cream board, lit from above by the
+  bulb string with a warm fall-off, so the word reads dark on light at any hour. Neon stays ГЛАВТРАССА's.
+- **Hotel names are whole in the HUD and the journal** (GPU-3): «ГОСТИНИЦА «КОСМОС»», not the sign's
+  «ГОС ИНИЦА». The dead letter lives only in the neon.
+- **The strip chart under the gauges is dark paper** (GPU-3): the pod's strip was a light-grey slab, the
+  brightest dead patch at the top of the frame; now the paper sits in the panel's tone and only the pen
+  traces are bright. The belt cockpit keeps its light paper under the lamp.
+- **Phone gate tools in the repo** (GPU-3): `docs/phone/` measures a local copy on a real phone; each
+  session takes its own port. The 0.468.0 gate on the S23, cold: 30 s at 100 % of frames on time, five
+  minutes at 99.98 %, no frame of 50 ms.
+
 ## 0.469.0 - a star with a real edge, gas giants with jets, dust without beads
 
 - **The star's disc darkens toward its edge** (GPU-2): an ordinary star's limb goes red instead of

@@ -112,6 +112,10 @@ TEST_SUITES.push(()=>suite("гостиница: ночь за деньги, ни
   G.hull=hm*.2;G.credits=100;hotelDesk(Ht);
   eq(G.credits,100,"корпус ниже трети — даром, «потом заплатите»");
   ok(G.hull>hm*.2,"и за ночь корпус подтянулся");
+  eq(Ht.name,hotelName(Ht.by),"подпись гостиницы — её полное имя");
+  for(const k of Object.keys(HOTEL_SIGN)){const n=hotelName(k);
+    eq(n,HOTEL_SIGN_FULL[k],"имя "+k+" — полное, не вывеска");
+    ok(n===n.trim()&&!/\s\s/.test(n)&&n.replace(/[^А-ЯЁ]/g,"").length>=4,"в имени "+k+" нет пропусков мёртвых букв: «"+n+"»");}
 }));
 TEST_SUITES.push(()=>suite("мирный флот: буксир Рассвета чинит и вас (M455)",()=>{
   resetWorld();

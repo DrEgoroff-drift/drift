@@ -72,11 +72,11 @@ function instrPodPaint(c,w,h,R){
     c.font="7px ui-monospace,monospace";
     c.fillText(R[i].ab,cx,nh+7);
   }
-  /* лента: та же бумага, что и в кабине, только узкая полоска.
-     Бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
-     на себя весь верх экрана, а поверх мира висит только нужное сейчас */
+  /* лента: та же лента, что и в кабине, только узкая полоска и тёмный лист (TAPE_PAL.dark):
+     светлая бумага в строке приборов перетягивала на себя весь верх экрана, а поверх мира
+     висит только нужное сейчас — светится след пера, не пустая полоса */
   c.globalAlpha=.72;
-  tapePaper(c,g.px,g.py,g.pw,g.ph,"base");
+  tapePaper(c,g.px,g.py,g.pw,g.ph,"base","dark");
   c.globalAlpha=1;
 }
 /* живое — примитивами в очередь колодки: мастер, стрелки, невязка, перья, валик, перо */
@@ -101,11 +101,11 @@ function instrPodLive(R,T,w,h){
   if(cols>=1)for(let i=0;i<TAPE_PENS;i++){
     const top=py+th*i+1.2,hh=th-2.4,ys=IPOD.ys[i]||(IPOD.ys[i]=[]);ys.length=cols+1;
     for(let k=0;k<=cols;k++){const idx=(T.head-1-T.back-(cols-k)+TAPE_N*2)%TAPE_N;ys[k]=top+hh*(1-T.col[idx*TAPE_PENS+i]/255);}
-    ovGraph(px,Math.max(py,top-1),x1,Math.min(py+ph,top+hh+1),px,sc,ys,1,"rgba(38,44,40,.80)",.72);
+    ovGraph(px,Math.max(py,top-1),x1,Math.min(py+ph,top+hh+1),px,sc,ys,1,TAPE_PAL.dark.ink,.72);
   }
   ckgPut(IPOD.Rl);
   /* перо: короткая чёрточка у правого края, дрожит на щелчке; смотрим назад — бумага в тени */
-  if(!T.back){const x=x1-1.5+T.tick*1.6;ovRect(x-.6,py+1,x+.6,py+ph-1,"rgba(24,28,26,.85)",.72);}
+  if(!T.back){const x=x1-1.5+T.tick*1.6;ovRect(x-.6,py+1,x+.6,py+ph-1,TAPE_PAL.dark.nib,.72);}
   else ovRect(px,py,x1,py+ph,"rgba(10,14,18,.16)",.72);
 }
 function instrPodDraw(){
@@ -129,7 +129,7 @@ function instrPodDraw(){
          ни в одну прогретую запись пула — без once первая же колодка рожала новую на 6.6 МБ (стойка 91zl) */
       IPOD.M=ckgSpr(0,0,w,h,c=>instrPodPaint(c,w,h,R),{once:true});
       /* валик — над перьями, своим спрайтом */
-      IPOD.Rl=ckgSpr(x1-rw-1,g.py,x1+1,g.py+g.ph,c=>{c.globalAlpha=.72;tapePaper(c,g.px,g.py,g.pw,g.ph,"roll");});
+      IPOD.Rl=ckgSpr(x1-rw-1,g.py,x1+1,g.py+g.ph,c=>{c.globalAlpha=.72;tapePaper(c,g.px,g.py,g.pw,g.ph,"roll","dark");});
       IPOD.mk=mk;}
     instrPodLive(R,T,w,h);});
   }finally{OVL.led=led;}

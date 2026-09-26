@@ -30,7 +30,7 @@ under the planets (17g), planets and moons (17ga), the system view on top — tr
 occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py` on the GPU.
 
 **The order (Контроль 26.09, after the audit: the middle was being built on an unchecked base):**
-1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 (26.09) and closed engine stage 1; it is re-run after
+1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 and on 0.473.0 (26.09) and closed engine stage 1; it is re-run after
    every engine release, and while it fails, speed goes ahead of every picture pass.
 2. What is in flight lands before anything new starts.
 3. G15: what still draws in 2D moves to the engine, then 3D where it reads.
@@ -41,39 +41,60 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
 - [ ] **In flight** — each release deletes its line here:
   - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
     drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
-    lands after its tests, whole-frame pairs and six regressions, with its census of 2D calls after `gpuWorld` at 0
+    lands after its tests, whole-frame pairs and six regressions (the pairs 26.09: the belt, «Сорока», the raid,
+    the spa, the surface by day and winter better; worse and fixed before it lands — the lamps in five scenes
+    going white and losing their cones, the base's strip of sky with the ridge, the map's milky core and glare,
+    the scoop's lilac giant gone brown, the cave's turquoise), with its census of 2D calls after `gpuWorld` at 0
     (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
-  - GPU-3's next release: «турбаза «Дружба»» (ra, the designer's bad2a811, merged after its pair in 3ba532f3) and
-    the phone tools in `docs/phone/` (0b186c5c).
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
-  - ships in real light, a–h (the worker, `gpu-ships`): d and g accepted; f — one more try on the fins with the
-    emission mask, else revert; the barge's three lone white pixels become a soft sheen or go, with a 12-frame
-    motion check;
+  - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0; open: f — one more try
+    on the keels by the emission mask, else revert; h — makerRead on the GPU frame;
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
-  - the instrument strip chart under the gauges reads as an empty light-grey slab, brightest at the top: 0.465.0's
-    back, or dark paper with only the trace bright (GPU-3).
+  - the nebula much better (GPU-2; the author 26.09: «туманность хуже не будет, она должна прям быть лучше на много,
+    потому что сейчас она хорошая»). The look first, the price after: three candidates at any cost on the PC, each a
+    pair of the whole frame against the live release (standing by the star, in flight at v 8; 760 and 390; a ×3
+    crop); the best one goes to the author before it ships; only what reads clearly better at first sight, never «a
+    bit different». The 24.09 rules hold (no threshold contour; dust 10→90 % over ≥ 40 px at 760; a change of tone
+    over ≥ 150 px; field S ≈ .40–.45, no neon). Directions: depth that reads (far layers cooler, dimmer and softer;
+    forward scattering — the gas between us and the star rimmed against the light); fine wisps inside the lit gas
+    with soft mass edges; a slow flow (curl noise, seen over 10–20 s, never a flicker); young stars inside (soft
+    cavities, a blue reflection haze, the brightest knots in HDR with a soft halo); the palette turned round the
+    wheel, each system its own character. Round 1 (26.09): none much better — C1 (far layers turned to lilac) right
+    but timid, the 390 pair reads the same and the lilac is grey; C2 (LIC wisps) creased, dark grooves and a straight
+    fold, which is a threshold contour; C3 (knots) dropped. Round 2: one candidate — C1 bolder and clean (far layers
+    darker and colder, the mass lit from the star's side), C2 as bright strands along the flow, ionisation zones
+    (cold near the star, warm further out, ≥ 150 px) — with a strength knob, the 390 pair telling apart unprompted;
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
-  - the nebula's regeneration (GPU-2): in full flight at zoom ≥ 1 it regenerates every frame (~10 ms at 1920). Age 6
-    with a cross-fade (or a uv flow) between the last two generations and an invisible step (≤ 0.3 px, no pulse),
-    else age 4; reprojection by the camera × the mean parallax with the uv line in 08b `gpuCompNeb`; measured on the
-    S23 cold, A/B/A;
+  - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
+    step ≤ 0.09 px, no pulse; S23 nebGen 1.81 → 0.93 ms. In flight it still regenerates every frame: nebGen 4.85 of
+    a 10.4 ms GPU frame (S23, v 8). One reprojection uniform fails — the layers slide over each other (local
+    parallax p5/p50/p95 .007/.13/.59; slip at the best single uniform p50 .56, p95 3.5 px a frame at v 8), so any
+    reprojection is accepted by a 16-tile Lucas–Kanade measure (p95 ≤ 0.3 px), never by a global phase
+    correlation. Next, once the look is chosen (Redraw passes, «the nebula much better») — its price, never on the
+    generator that is going away: B — knock-outs per part (early exit outside the mass, fewer octaves under dense
+    dust; max |Δ| ≤ 2, p99 < .5), and A′ as far as the new look needs it (gate: in flight no dearer than 0.471.0 on
+    the PC, A/B/A; the S23 when it is back) — a world-anchored toroidal cache per layer (.02/.044/.045/.097/.12), only the strip that opens is
+    generated, the non-linear mix (dust over gas, the rim by total gb, the star's lit/ion/tint, cvn) moves to the
+    read with the same math, the flow regenerated at age 6 with the cross-fade;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
 - [ ] **G15 everything on the engine, and 3D where it reads (the author, 26.09).** No 2D canvas stays, the interface
   too: in main 4778c719, 52 files in `src` still open a 2D context. Onto direct paths (`gpuLitSprite`, atlases,
   instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.
   The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
-  - the interface — GPU-3; its census (26.09): the parrot's window (12y, its own rAF, redrawn every frame while
-    open), the console's seat and perch icons (27j-console, timers on every screen), then the panels by how often
-    they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
+  - the interface — GPU-3; its census (26.09): the panels by how often they open (the desk is on the
+    engine through 27i0 `panelGpu` — the post window and КБ too; next: ОПИСЬ, the station, the album, faces and the suit); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
-    worker's studio function; the ship in ОПИСЬ — the worker (27j0); the raid's `ovAtlas` bakes a new row every
-    frame (a changing number) — glyphs once, numbers built from them;
+    studio (`hullStudio`, 17c2 — the ship in ОПИСЬ already draws through it); the raid
+    comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
-  - the hull bake (03e1) — the worker;
+  - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull, and the last
+    2D `drawHull` callers move by zone — the station (26) GPU-3; the road (27l), the scoop and home outside the fleet
+    after its landing; the shipyard (26e2), the left trace (12as), `look` and home 27e/29d, unless that is home
+    outside, the worker; 03e1 is deleted with its last caller;
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),
@@ -82,7 +103,12 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     home) go onto `#ovl` with the 08bi primitives. Already 0 and 0: cinema, HQ, winter, spa, system, dock, cabin,
     counter, belt, «Сорока». Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
     the first census read 0 on `#c` at 2–5 uploads a frame), is checked against `#c` uploads, and turns red on an
-    injected call;
+    injected call. The base's GPU bake (the fleet's zone, a850203f; main draws the base in 2D) goes in tiles: at
+    2560×1440 its 4078×2092 layer with 4× MSAA and a stencil is 198 MB for a moment, 277 MB with the pool (131 MB on
+    the phone at DPR 2.625), new against main — before the landing an out-of-memory error scope bakes it at
+    sampleCount 1 when refused, with a test on that path; after it, MSAA kept, a tile ≤ 24 MB (1024×512 or
+    768×768) living in the pool's slot, geometry culled per tile, resolved into one layer; bit-exact to the
+    current bake (max |Δ| ≤ 1 on the seams), the bake's time A/B on the PC;
   - the air (19b-sky, 19e-clouds, 19d-weather, 19c haze and grade, 18a1-glaze, 18d-postfx; G5) and the mine's sky
     stars (16-flight `drawStars`, a `fillRect` per star) — GPU-2, after space.
 
@@ -144,7 +170,7 @@ follows the cadence protocol in `docs/DECISIONS.md`.
 The phone (the author 26.09: «тел доступен пусть используют»): the S23 over Wi-Fi adb (`adb mdns services`,
 `_adb-tls-connect`). One session at a time: `C:\Claude\phone.lock` taken with noclobber, held ≤ 10 min, a lock
 older than 15 min may be removed; the CDP forward only under the lock; each session its own port through
-`adb reverse` (the worker 8811, GPU-2 8812, GPU-3 8813, the fleet 8814). Measure cold (a new `*.localhost` host:
+`adb reverse` (the worker 8811, GPU-2 8812, GPU-3 8813, the fleet 8814, Контроль 8815). Measure cold (a new `*.localhost` host:
 Chrome keeps compiled pipelines per site), off the charger and cooled — or on it when full (status FULL, 100 %) with
 thermal 0 logged before, mid-run and after (the author 26.09; a charging phone heats, and Samsung cuts the GPU to
 295 of 719 MHz), A/B/A; never start a run because the screen woke — an incoming call looks the same.
@@ -154,6 +180,11 @@ thermal 0 logged before, mid-run and after (the author 26.09; a charging phone h
   ≥ 50 ms; then 5 minutes at ≥ 95 %; the picture at 760 no worse. Before a run: no other tab working in that Chrome
   (a browser miner, «CryptoTab Pool», was there on 24.09), no stuck touch (`gate.py` checks logcat, getevent and the
   page's counter; `waitquiet.py` waits for quiet).
+  - The phone is back (the author 26.09, «на тел тестируй, он доступен»). P1 on 0.473.0 (Контроль, cold, 617×1113
+    DPR 1.5): 30 s 100 % of 1801 frames, max 16.9 ms; 5 min 99.99 % of 18003 frames at 60.0 fps, two frames of 33 ms,
+    none ≥ 50 ms, battery 27.9 → 29.6 °C. The author's routes (`ROUTE=hotel|star`, `ZOOM=.3`, 1bfbade5), 30 s cold
+    each: the hotel 100 %, max 16.9 ms; past the star 99.89 %, one frame of 33.3; the hotel at .3 99.90 %, one of 33.4;
+    the star at .3 100 %, max 16.9. A nebula or hotel change passes the four routes as well as the plain run.
   - The baseline — passed on 0.468.0 (26.09, GPU-3, on the charger at 100 %, thermal 0 throughout): cold 30 s 100 %
     of 1800 frames, max 16.9 ms; 5 min 99.98 % of 18002 frames at 60.0 fps, none ≥ 50 ms, three frames of 33 ms at
     40, 116 and 202 s — one vsync skipped with no bake, pipeline or new texture in them, the GPU 17–21 ms around
@@ -249,8 +280,14 @@ measured on the GPU build first:
 - [ ] **M492 Космопочта:** a rare part and cooperative goods as parcels; a real queue.
 - [ ] **M460 billboards:** 1–3 signs; the hull tint within R; the сводка, циркуляры and holding lines;
   stale prices as a fork. **M491** through `12p-news` at the сводка. **P12** ЭФИР.
-- [ ] **M461 hotels:** the doors (the sanatorium wants a voucher and an ocean world — how a hotel offers
-  it); cantina rumours at the desk; fatigue (does not exist for the player).
+- [ ] **M461 hotels:** six faces in DESIGN-life §3.3, two built — «Космос» (17l1) and «Дружба» (17l2, 0.470.0).
+  The other four have their sign, window rhythm and hours but stand in «Космос»'s crescent (`hotelType` falls
+  back to `gt`): «АЭЛИТА™» (Компания, a Stalinist tower on a rock), «ДОМ ПРИЕЗЖИХ № 4» (Орднунг, khrushchyovkas on
+  a truss), «ЮПИТЕР» (Коммуна, constructivism, red consoles, a glass cylinder), «БУРАН» (Хай-Фронт, a modernist
+  grid with a saucer and a mosaic) — each its own file 17l3…17l6 on the engine, closed by a pair at 760 and 390,
+  at 19 h and 3 h (the author 26.09: «у нас же 6 типов гостиниц было»; when — «после», after the engine). Then the doors (the sanatorium wants a
+  voucher and an ocean world — how a hotel offers it); cantina rumours at the desk; fatigue (does not exist for
+  the player).
 - [ ] **M455 the peacetime fleet:** субботник, strike and rite driven by the chronicle's days rather than
   always; the belt tugs are far from the station view.
 - [ ] **M456 laws:** «сделаем из ваших» (Рассвет); the fine's ticket in ПОЧТА instead of the journal; the
@@ -321,7 +358,9 @@ Check each against the code before building — some may already hold.
   functions, on touch only; the tools zoo → one way to take a frame; the button family merge; `-Times` for
   the Node tier.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
-  restart.
+  restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
+  the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
+  overnight»; no separate tour on the laptop.
 - [ ] **A server frame-stats beacon** was asked for — it touches `site/api.php`: ask first.
 
 ## 11. Small things seen on the way (23.09)
@@ -401,3 +440,50 @@ money-printing counter») is the gate here. Ranked by weight.
   alone: the counter (ask on buying, pressure after selling, slices, spread), far goods sell-only,
   barges (sell above and buy below the destination, budget-capped), scrip (12 % round trip), the drone
   price 1.6ⁿ, people paid only online, the loan since 0.409.1.
+
+## 13. Outside the game — audience and money (parked; the author 26.09: «запиши куда-нибудь, потом решим»)
+
+Nothing here is started without the author's word; each item is a decision of intent, not a task.
+
+- [ ] **«Один человек и ИИ» on the landing** — the author 26.09: «про ИИ да, можно написать, и мы этим
+  гордимся». A short section before «Что дальше»; the draft: «„Дрейф" делает один человек вместе с ИИ, и мы
+  этим гордимся. Код пишут сразу несколько сеансов Claude: один переносит графику на видеокарту, другой
+  собирает флот, третий обставляет станции. Автор ведёт замысел, играет каждую сборку и решает, что остаётся,
+  а что переделать. Без такой команды игра этого размера одному человеку была бы не под силу. Картинок из
+  нейросети в игре нет: корабли, туманности, планеты и люди рисуются кодом прямо у вас на экране.» Open: the
+  wording, and whether Claude is named or it says just «ИИ». Checked 26.09: `drift.html` carries no raster
+  image at all (only the favicon path) — the last sentence is true; keep it true.
+- [ ] **Build in public** — the lesson of fly.pieter.com (one author with AI, a browser game, $1M a year
+  within weeks in 2025; the author 26.09: «вот это мне нравится»): its accelerator was daily progress posted
+  to a large audience. Ours is ready-made: the daily before/after pairs and the story of one person and a crew
+  of AI sessions. A channel or devlog (Telegram, Habr, DTF) is opened by the author; Контроль prepares the
+  posts and the frames (never into git).
+- [ ] **Money, once there is an audience** — without breaking the landing's promise («нет ежедневных заданий,
+  энергии и таймеров — вас никто не будет удерживать»): a sponsor inside the world in the game's own style
+  (a station, a billboard, a hull livery), paid looks with no advantage in play (liveries, the parrot's
+  outfits). fly.pieter.com lived mostly on brands buying objects in its sky.
+- [ ] **Channels that take one HTML file as it is** (research 26.09): a Telegram Mini App and Yandex Games for the
+  Russian audience; Google Play through a Trusted Web Activity (Lighthouse ≥ 80, Digital Asset Links; a personal
+  developer account needs 12 testers for 14 days; Play Instant is closed since 12.2025). Each is the author's call.
+
+## 14. Technology bets (research 26.09 — proposed, not started; the phone budget is met, the aim is the picture and safety)
+
+- [ ] **Who has no WebGPU — before the last 2D path goes.** Firefox on Android has none, Safari has it since 26
+  (09.2025), old Android GPUs fall out of Chrome's list. Count it from our own telemetry first (share of visits
+  without an adapter, by browser and OS); then decide the no-WebGPU policy (a plain page that says so, or a kept
+  minimal frame) and try Chrome's WebGPU compatibility mode (`featureLevel: "compatibility"`, Chrome 146) for
+  GLES 3.1 phones. Nobody is to get a black screen silently.
+- [ ] **2D global light by radiance cascades** — soft shadows and light that bounces off lamps, crystals and moss:
+  the «real light underground» the fleet postponed. A WGSL implementation exists (MIT; 0.1–0.56 ms at 1080p on a
+  desktop GPU). A spike after the fleet lands: one cave and one room at reduced resolution, the S23 cost measured
+  (A/B/A), pairs 760/390; kept only if the pair is better and the phone gate holds.
+- [ ] **Dither the final pass** against banding on the nebula's dark gradients (hours, no change of colour). AgX
+  tonemapping only as a separate experiment with pairs — it moves the whole palette.
+- [ ] **An edge-aware upscale for the quarter-resolution nebula** (FSR 1 EASU + RCAS, a WGSL port exists) — the
+  «смело» fibres crisper for the same sampling; measured on the moving strip, since sharpening can bring back the
+  shimmer.
+- Checked and not for us now: neural upscalers and frame generation (native Vulkan, need depth and motion
+  vectors), in-browser LLMs (Gemini Nano is not on Android Chrome; WebLLM costs hundreds of MB), WebNN (origin
+  trial), bindless (a proposal). `shader-f16`: our S23 grants it and it costs 6 % — stays off. Transient
+  attachments (Chrome 146) help only attachments not sampled after the pass (MSAA, depth), not our nebula or glow
+  targets.

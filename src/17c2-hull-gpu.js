@@ -111,6 +111,15 @@ function hullGpuFlames(pass,h,id,x,y,a,sc,cb,thr,lvl){
     const k=20+n*4;U[k]=e.x;U[k+1]=e.y;U[k+2]=r;U[k+3]=f;U[36+n*4]=ph*3.1;n++;}
   U[7]=n;
   gpuField(pass,"hgflame",HG_FLAME_WGSL,U,null,{blend:"add"});
+  /* f) огонь светит корму (§L.S): точка у среза сопел (среднее по радиусу); гнездо сопел (разброс + радиус)
+     само не светится (±1 — только ореол блума от светлых килей), свет кольцом за ним, на кили; цвет — ореол пламени.
+     Второй свет корпуса — нарушение «одного света», названное */
+  let sx=0,sy=0,sw=0,rm=0,fm=0;
+  for(let i=0;i<n;i++){const k=20+i*4,r=U[k+2];sx+=U[k]*r;sy+=U[k+1]*r;sw+=r;rm=Math.max(rm,r);fm=Math.max(fm,U[k+3]);}
+  if(!sw)return null;
+  sx/=sw;sy/=sw;let sp=0;for(let i=0;i<n;i++)sp=Math.max(sp,Math.hypot(U[20+i*4]-sx,U[21+i*4]-sy));
+  const r0=sp+rm*1.5,gc=cool?[.588,.804,1]:tint?mixc(tint,[255,255,255],.3).map(v=>v/255):[1,.62,.34];
+  return {x:sx,y:sy,r0,r:r0+Math.max(fm*.3,rm*2.5),k:p,c:gc};
 }
 /* живые вставки поверх тела: огни строки Компании (makerTicks) и венцы (drawCrowns) —
    те же места и цвета в осях корпуса; повёрнутые прямоугольники — капсулами */
@@ -130,17 +139,49 @@ function hullGpuInserts(pass,h,id,S,sc,live){
     A.push([1,gx,gy,sc,0,0,r,c[0],c[1],c[2],.14]);}   /* как радиальный градиент 2D: от .14 в центре к нулю на r */
   if(O.length)gpuShapes(pass,O);if(A.length)gpuShapes(pass,A,{blend:"add"});
 }
+/* ── студия (G15): корабль в своей текстуре, вне сцены полёта — ОПИСЬ (27j), витрина станции.
+   Тот же hullGpuDraw теми же конвейерами (цель rgba16float, как у сцены — новых ключей 08b1 нет):
+   проход свой, свет ровный слева сверху, без ламп, тени и газа (t1 нулевая, 17c), огня нет. Выпечка
+   своя и разовая (once): тёплые выпечки полёта (HG_LRU) и пул 08ca не трогаются. Альфа — как у сцены,
+   «сколько фона осталось» (очистка 1, корпус гасит); на холст её переворачивает ovImage с B.inv (08bi) */
+const HS_LT=[-.6,-.8],HS_COL=[255,244,214];
+function hullStudioSb(h,x){return Math.min(Math.pow(2,Math.ceil(Math.log2(Math.max(x,.25))*4)/4),HG_SIDE/(2*hullGpuE(h)));}
+function hullStudioBake(S,h,id,sb){
+  const key=hullBakeKey(id,sb),b=S.bk;if(b&&b.key===key&&b.h===h)return b;
+  if(b)gpuBakeDrop(b.B);
+  const E=hullGpuE(h),side=Math.ceil(E*2*sb);
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1,mat:sb,once:true});
+  return S.bk=B?{B,E,sb,key,h}:null;
+}
+/* S — студия держателя (объект, живёт у него): рамка w×h пикселей CSS при плотности nd, корабль id
+   с центром (x,y) и масштабом sc в той же рамке. Только из кадра, до gpuPresent: открытый проход сцены
+   закрывается (следующий gpuScene откроет его с загрузкой). Готово — S.tex/S.view/S.dev */
+function hullStudio(S,id,w,h,nd,x,y,sc,lvl){
+  if(!GPU.on||!GPU.enc||!GPU.dev)return false;
+  const d=GPU.dev,U=GPUTextureUsage,bw=Math.max(2,Math.round(w*nd)),bh=Math.max(2,Math.round(h*nd));
+  if(S.dev!==d){S.dev=d;S.tex=S.bk=S.ku=S.lt=null;}
+  if(!S.tex||S.tw!==bw||S.th!==bh){if(S.tex)GPU.trash.push(S.tex);
+    S.tex=d.createTexture({size:[bw,bh],format:"rgba16float",usage:U.RENDER_ATTACHMENT|U.TEXTURE_BINDING});S.view=S.tex.createView();S.tw=bw;S.th=bh;}
+  if(!S.ku)S.ku=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  if(!S.lt)S.lt=d.createTexture({size:[16,3],format:"rgba16float",usage:U.TEXTURE_BINDING}).createView();   /* нули: ни ламп, ни заслонов */
+  const f=GPU_SCR.ku;f[0]=bw;f[1]=bh;f[2]=nd;f[3]=0;d.queue.writeBuffer(S.ku,0,f);
+  if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
+  S.pass=GPU.enc.beginRenderPass({colorAttachments:[{view:S.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
+  S.bw=bw;S.bh=bh;S.w=w;S.h=h;S.nd=nd;S.col=HS_COL;GPU.rt=S;
+  try{hullGpuDraw(id,x,y,0,sc,false,false,lvl,0,HS_LT[0],HS_LT[1]);}finally{GPU.rt=null;S.pass.end();S.pass=null;}
+  return true;
+}
 /* корабль целиком; x,y — экран, a — курс, sc — масштаб корабля, (lx,ly) — к звезде.
    false — прохода сцены нет, рисуй по-старому */
 function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
-  const pass=gpuScene();if(!pass||!(sc>0))return false;
+  const R=GPU.rt,pass=R?R.pass:gpuScene();if(!pass||!(sc>0))return false;   /* R — студия (ниже) */
   const h=hullOf(id),live=hullLiveInserts(h,id);
-  const dk=GPU.bw/W,sb=hullGpuSb(h,dk),B=hullGpuBake(h,id,sb);if(!B)return false;const T=B.B;
+  const dk=R?R.nd:GPU.bw/W,sb=R?hullStudioSb(h,sc*dk):hullGpuSb(h,dk),B=R?hullStudioBake(R,h,id,sb):hullGpuBake(h,id,sb);if(!B)return false;const T=B.B;
   const lod=Math.max(0,Math.log2(B.sb/(sc*dk))+HG_BODY_LOD);
   bank=bank||0;lvl=lvl||0;
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
-  hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);
+  const FL=R?null:hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);   /* в студии огня нет, сглаженная тяга полёта не трогается */
   /* сопла без тяги: у люкса кольцо среза, у прочих тлеющий зев */
   if(!thrusting){
     const sh=[],gl=[];
@@ -155,9 +196,10 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     if(Bl.B)gpuImage(pass,Bl.B,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
-  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
+  const FS=FL?S(FL.x,FL.y):null;
+  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null,undefined,undefined,FL&&{x:FS[0],y:FS[1],r0:FL.r0*sc,r:FL.r*sc,k:FL.k,c:FL.c});   /* -1: свет корпуса, не станции (17c GST) */
   /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
-  if(GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
+  if(!R&&GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
     GPU.sepH.push([x,y,h._R*sc]);}
   if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */

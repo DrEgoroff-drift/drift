@@ -377,8 +377,7 @@ fn fineE(p:vec2f)->f32{
   let r=1.-abs(2.*fbt(qf+wv,2)-1.);
   return .5+.95*r*r;}`;
 /* поглощение — в шейдере звезды (P1 11/n): полноэкранный проход ABS умножал цель сцены, а под
-   туманностью в ней только чёрная очистка и звёзды (пересчёт идёт до открытия сцены, всё
-   прочее — после сведения). Смешение «поверх» линейно по цвету, поэтому множитель на каждом
+   туманностью в ней только чёрная очистка и звёзды. Смешение «поверх» линейно по цвету, поэтому множитель на каждом
    пикселе звезды даёт то же, что множитель на экране, — и платится площадью звёзд.
    Звёзды — поверх газа, под пылью: общее плечо кадра сжимает слабую звезду на светлом
    газе в ноль, поэтому то, что за газом (почти одни звёзды — фон чёрный), поднято на
@@ -590,8 +589,8 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   else{let d=ph-GNB.phP;d-=Math.round(d/(2*Math.PI))*2*Math.PI;GNB.Qc+=kD*(1-wD)*d;GNB.Yc+=kD*(1-wD)*(lD-GNB.lDP);}
   GNB.phP=ph;GNB.lDP=lD;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
-  /* GPU.kill.ngen (проба ?g11=deep): сведение старой текстуры без пересчёта — цена одного пересчёта */
-  if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<3&&GPU.frameNo>=GNB.last))return true;
+  /* GPU.kill.ngen (?g11=deep): без пересчёта; стоя — перетекание (16gc) */
+  if(GNB.sys===sys&&(GPU.kill.ngen||moved<GNB_MOVE&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
   const a=GNB.U;
   a[0]=GNB.w;a[1]=GNB.h;a[2]=W;a[3]=H;
   a[4]=camx;a[5]=camy;a[6]=c[2];a[7]=c[3];
@@ -606,9 +605,9 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   const U=GPUBufferUsage,ub=gpuBuf("gnb.u",192,U.UNIFORM|U.COPY_DST);
   GPU.dev.queue.writeBuffer(ub,0,a);
   const P=gnbPipe();
-  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:gnbGenView(sys,moved),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
   p.setPipeline(P);p.setBindGroup(0,gpuBind("gnb.gen",P,[ub,GPU.S.lin,gnbNoiseTile()]));p.draw(3);p.end();
-  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;
+  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;gnbFade();
   return true;
 }
 /* возвращает проход сцены, в который рисовать дальше: под меткой времени (проба) сведение

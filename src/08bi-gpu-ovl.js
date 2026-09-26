@@ -54,7 +54,11 @@ fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
       a=clamp(min(min(ed(A,B,p)*s,ed(B,C,p)*s),min(ed(C,D,p)*s,ed(D,A,p)*s))+.5,0.,1.);
       let P0=(A+D)*.5;let v=(B+C)*.5-P0;a*=mix(i.m.z,i.m.w,clamp(dot(p-P0,v)/max(dot(v,v),1e-6),0.,1.));}
     else{a=clamp(min(ed(i.t0.xy,i.t0.zw,p)*s,min(ed(i.t0.zw,i.t1.xy,p)*s,ed(i.t1.xy,i.t0.xy,p)*s))+.5,0.,1.);}}
-  else if(i.m.x<3.5){return textureSampleGrad(T,sm,i.uv,dx,dy)*i.c;}
+  else if(i.m.x<3.5){var t=textureSampleGrad(T,sm,i.uv,dx,dy);
+    /* m.z — текстура студии (17c2): альфа сцены (сколько фона осталось) в покрытие, свет выше
+       единицы — тем же плечом, что tone() финала 08b, а не обрезкой: лампы не белеют пятном */
+    if(i.m.z>.5){let x=max(t.rgb-vec3f(.75),vec3f(0.));t=vec4f(min(t.rgb,vec3f(.75))+.25*(vec3f(1.)-exp(-x*4.)),1.-t.a);}
+    return t*i.c;}
   else if(i.m.x<4.5){   /* график: x0=t0.x, шаг t0.y, полутолщина m.y, точки с m.z (от S.z), их m.w */
     let x0=i.t0.x;let st=i.t0.y;let hw=i.m.y;let o=i32(i.m.z);let n=i32(i.m.w);
     let j0=max(0,i32(floor((p.x-x0-hw-1.)/st)));let j1=min(n-2,i32(floor((p.x-x0+hw+1.)/st)));
@@ -235,11 +239,12 @@ function gpuOvFrontView(){const t=GPU.T.front;if(OVL.fv0!==t){OVL.fv0=t;OVL.fv=t
 /* ── вид интерфейса (uq): координаты — пиксели CSS, как у 2D; al — прозрачность; col — цвет строкой ── */
 function ovPm(col,al){const c=gcColor(col),a=c[3]*(al==null?1:al);return [c[0]*a,c[1]*a,c[2]*a,a];}
 function ovRect(x0,y0,x1,y1,col,al){const s=ovNd();ovPush(OVL.uq,x0*s,y0*s,x1*s,y1*s,ovPm(col,al),0,0,0,0,null);}
-/* картинка: мастер B, центр (x,y), размер (w,h), поворот rot, кусок u0..v1, множитель mul (число — прозрачность) */
+/* картинка: мастер B, центр (x,y), размер (w,h), поворот rot, кусок u0..v1, множитель mul (число — прозрачность);
+   B.inv — альфа мастера перевёрнута (текстура студии корпуса, 17c2) */
 function ovImage(B,x,y,w,h,rot,u0,v0,u1,v1,mul){
   if(!B)return;const s=ovNd(),Q=OVL.uq,i=Q.length/OVL_N,m=typeof mul==="number"?[mul,mul,mul,mul]:(mul||[1,1,1,1]);
   const R=OVL.ur;if(!R.length||R[R.length-1][1]!==B)R.push([i,B]);
-  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,0,0,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
+  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,B.inv?1:0,0,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
 }
 /* капсула: отрезок (x0,y0)–(x1,y1) толщиной w с круглыми концами; диск — отрезок нулевой длины */
 function ovCap(x0,y0,x1,y1,w,col,al){

@@ -107,3 +107,31 @@ TEST_SUITES.push(()=>suite("золотые кадры: каждая сцена �
     if(missing.length)note("сцен без эталона в этом окне: "+missing.join(", ")+" — test.ps1 -Accept");
   }
 }));
+
+/* ── сцена не помнит, кто рисовал до неё (утечка порядка, 26.09) ──
+   Эталон судит кадр, а кадр зависел от соседа по части -Full: набор про наблюдение за
+   наёмником бросал печь гостиницы (17a0) недопечённой, bakeIdle() до PB_STALE врал «не
+   осела», и «черпак» с «домом» снимались на сороковом кадре осадки вместо шестого — 18.8 %
+   и 13.1 % блоков, только в той раздаче, где он шёл раньше. Здесь то же нарочно: две сцены
+   утечки вперёд и назад, перед каждой — брошенная чужая печь; кадр обязан сойтись в допуске
+   эталона. Сносит её resetWorld (90-harness) — как брошенный заказ материала грунта */
+TEST_SUITES.push(()=>suite("золотые кадры: сцена не помнит, кто рисовал до неё",{tier:"browser"},()=>{
+  const S=lookScenes().filter(s=>s.id==="черпак"||s.id==="дом");
+  eq(S.map(s=>s.id).join(","),"черпак,дом","сцены утечки на месте");
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  const shot=sc=>{resetWorld();sc.set();detSettle(6,2);return goldSig(detGrab());};
+  const drop=()=>{PB.set("проба · брошенная печь",{it:(function*(){for(;;)yield;})(),dev:GPU.dev,f:PB_F});};
+  const fw={},bw={};
+  try{
+    for(const sc of S)fw[sc.id]=shot(sc);
+    for(const sc of [...S].reverse()){drop();bw[sc.id]=shot(sc);}
+    drop();resetWorld();
+    ok(bakeIdle(),"resetWorld закрывает брошенную чужую печь (в очереди "+PB.size+")");
+  }finally{
+    T.calm();try{applySave(snap);}catch(e){}
+    G.mode="system";G.land=null;G.surf=null;G.dig=null;G.cave=null;G.base=null;G.hin=null;
+    resetWorld();
+  }
+  for(const sc of S){const r=goldCmp(fw[sc.id],bw[sc.id]);
+    ok(r.diff<=GOLD_SHARE,sc.id+": в обратном порядке и после чужой печи разошлось "+(r.diff*100).toFixed(1)+"% блоков"+(r.where.length?" @"+r.where.join(" "):""));}
+}));

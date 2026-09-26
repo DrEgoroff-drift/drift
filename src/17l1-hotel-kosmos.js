@@ -14,12 +14,8 @@ const hkX=u=>HK_XL+(HK_XR-HK_XL)*(.5+.5*Math.sin((u-.5)*2*HK_A)/Math.sin(HK_A));
 const hkS=u=>1-(2*u-1)*(2*u-1);
 const hkTop=u=>30+12*hkS(u),hkBot=u=>110+8*hkS(u);
 const hkQ=v=>Math.round(v*2)/2;   /* окна — по сетке пикселя мастера (PX 2): рамка кадра = краска */
-/* освещённость грани: нормаль в плане отклонена от зрителя на f (рад, + вправо); звезда стоит
-   над плоскостью экрана на HK_EL, поэтому фронт не чернеет и с тыла, а тень остаётся тенью */
-const HK_EL=.62,HK_CE=Math.cos(HK_EL),HK_SE=Math.sin(HK_EL);
-const hkN=(f,Lt)=>Math.max(0,Math.sin(f)*Lt.lx*HK_CE+Math.cos(f)*HK_SE);
-const hkFace=(u,Lt)=>hkN((.5-u)*2*HK_A,Lt);   /* фасад вогнут, края ближе: нормаль левого крыла смотрит вправо, к середине */
-const hkUp=Lt=>Math.max(.12,-Lt.ly*HK_CE+.25),hkDn=Lt=>Math.max(.06,Lt.ly*HK_CE+.1);   /* верхние и нижние грани */
+/* освещённость грани — hotelN/hotelUp/hotelDn из ядра 17l (общие для шести типов) */
+const hkFace=(u,Lt)=>hotelN((.5-u)*2*HK_A,Lt);   /* фасад вогнут, края ближе: нормаль левого крыла смотрит вправо, к середине */
 const HK_WALL=[178,166,148],HK_RED=[158,42,34],HK_CREAM=[196,188,172],HK_STEEL=[96,90,84],HK_BRONZE=[196,182,158];
 const HK_DARK=["#10141c","#131722","#0e1219","#151a24"];   /* Y≈.08: стекло темнее стены, холод неба */
 let HK_WINS=null;
@@ -55,7 +51,7 @@ function* hkPaint(c,e,sd,lit,Lt){
   Lt=Lt||{lx:-.86,ly:-.51,K:[1,.88,.54],F:HOTEL_FILL};
   const r=rng((sd^0x6B05)>>>0),lx=Lt.lx,ly=Lt.ly,sg=lx>=0?1:-1;   /* sg: сторона звезды (+ справа) */
   const C=(base,s,warm)=>rgba(hotelLit(Lt,base,s,warm),1);
-  const sF=hkN(0,Lt),sR=hkN(Math.PI/2,Lt),sL=hkN(-Math.PI/2,Lt),sU=hkUp(Lt),sD=hkDn(Lt);   /* грани: фронт, вправо, влево, верх, низ */
+  const sF=hotelN(0,Lt),sR=hotelN(Math.PI/2,Lt),sL=hotelN(-Math.PI/2,Lt),sU=hotelUp(Lt),sD=hotelDn(Lt);   /* грани: фронт, вправо, влево, верх, низ */
   const sh=a=>"rgba(4,4,14,"+a.toFixed(2)+")";
   /* ── массы (точки [x,y,…]) ── */
   const slab=[],N=24;

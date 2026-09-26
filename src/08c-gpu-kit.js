@@ -172,6 +172,7 @@ fn kCorn(i:u32)->vec2f{var c=array(vec2f(0.,0.),vec2f(1.,0.),vec2f(1.,1.),vec2f(
 const GPU_SCR={ku:new Float32Array(4),fld:new Float32Array(64),img:new Float32Array(1200),shp:new Float32Array(1200)};
 function gpuScr(k,n){let f=GPU_SCR[k];if(f.length<n)f=GPU_SCR[k]=new Float32Array(Math.max(n,f.length*2));return f;}
 function gpuKitU(){
+  if(GPU.rt)return GPU.rt.ku;   /* своя цель (студия 17c2): её размер и плотность */
   const U=GPUBufferUsage,b=gpuBuf("kit.u",16,U.UNIFORM|U.COPY_DST);
   if(GPU.kitUF!==GPU.frameNo){GPU.kitUF=GPU.frameNo;const f=GPU_SCR.ku;f[0]=GPU.bw;f[1]=GPU.bh;f[2]=DPR;f[3]=0;GPU.dev.queue.writeBuffer(b,0,f);}
   return b;
@@ -358,7 +359,7 @@ function gpuField(pass,name,code,uni,texs,o){
     A.buf=d.createBuffer({size:A.cap,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   }
   const slot=A.n++,f=GPU_SCR.fld;f.fill(0,4);
-  f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;if(uni)f.set(uni.subarray?uni.subarray(0,60):uni.slice(0,60),4);
+  const R=GPU.rt;f[0]=R?R.bw:GPU.bw;f[1]=R?R.bh:GPU.bh;f[2]=R?R.w:W;f[3]=R?R.h:H;if(uni)f.set(uni.subarray?uni.subarray(0,60):uni.slice(0,60),4);
   d.queue.writeBuffer(A.buf,slot*256,f);
   /* выпечка из кэша модуля (корпус, флот, пираты, баржа) пережила потерю устройства — печём заново,
      как gpuImage: вид мёртвого устройства делает группу привязок, проход и весь кадр негодными */

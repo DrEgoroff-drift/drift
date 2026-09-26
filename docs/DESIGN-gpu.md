@@ -841,11 +841,37 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   cut-out reads as a body. Cost: one more `dustAt`, taken only near an edge that has a rim or a crust
   (−40…80 px); deep inside and far out the body is thick anyway, so the picture is identical. nebGen,
   headless, l2c ×1.10, regen every frame, A/B/A medians: 760 1.55 → 1.66 ms; 1920 9.8 → ~10.2 ms (the
-  ungated sample was +1.1 ms there). 1920 was over the 2 ms budget before L1b. The ×2.00 «tadpoles» are
-  gas clumps seen through one body's soft ramp (body ≈ .4–.5, ~60 % through), the outline is the clump's
-  own. Gating the cavity glow by gas dimmed the frame 10 %, a haze in narrow windows missed them. Pairs vs HEAD (light / sharpness): l2c
+  ungated sample was +1.1 ms there). 1920 was over the 2 ms budget before L1b. The ×2.00 «tadpoles» (lit gas outside a body whose rim ends over ~16 px on dim gas, 10–90 % in
+  17 px at 760) stay: a fix (the rim's inward side `exp(dpx/22)` over dim gas, faded out over dpx −30…−70) was
+  withdrawn from 0.472.0 — against 0.471.0 it moved dust edges visibly (max |Δ| 120, 2–3 % of pixels > 8; at 390
+  a 70 px tongue of lit gas into the body), and the author's rule of 26.09 is «not worse by a pixel». The fish and
+  the dust edges go into the «nebula much better» pass as part of a new look. Gating the cavity glow by gas dimmed the frame 10 %, a haze in narrow
+  windows missed them. Pairs vs HEAD (light / sharpness): l2c
   760 ×1.10 +0.6 / +0.3 %, ×2.00 +1.1 / +0.6 %; l4a ×2.00 +2.1 / +0.9 %; 390 dpr 1.5 ×1.10 +0.1 / +0.5 %,
   ×2.00 +1.0 / +0.5 %. GPU errors 0. The file is 66 bytes smaller: history went from the header comment.
+- **Nebula regeneration, step 1: age 6 with a cross-fade** (26.09, `16gc-gpu-nebfade`). Standing still (camera moved
+  < .5 × .09) the regeneration goes every 6th frame into a spare texture, and the visible one flows into it: a
+  ¼-res pass blends with constant k = 1/6, 1/5 … 1, an exact line from the old generation to the new, so the gas
+  flow (~1 px per 6 frames) moves 1/6 per frame instead of jumping at each regeneration. In flight, on a new system
+  or target size the regeneration writes the visible texture directly, as before. Readers are unchanged. Inter-frame
+  shift of the gas texture (global Lucas–Kanade over 90 frames, 760): standing still 0.017 px on regeneration
+  frames / 0.016 between (HEAD 0.051 / 0, the jump max 0.24), slow drift 0.090 / 0.085 (HEAD 0.272 / 0, max 0.35);
+  in fast flight both are the same snap (step 2 is reprojection). S23 cold, A/B/A (new *.localhost each), DPR 1.5,
+  standing: nebGen per frame 0.93 / 1.81 / 0.94 ms, GPU frame 8.99 / 9.65 / 9.23 ms, regenerations 17 / 33 / 17 %,
+  60 fps 100 % in all; in flight unchanged (every frame, 4.85 ms). Desktop 1920: nebGen per frame 2.09 → ~1.1 ms,
+  the fade pass 0.28–0.36 ms (headless). New pipe key `gnb.fade` (08b0, GPU-1 agreed; 08b1 via -Accept).
+  The probe's timestamp query set (28z `gpuTs`) grew from 32 slots to 64: on the S23 the 32 ran out before the
+  fade pass and it went unmeasured; desktop 1920 idle, fade 0.17–0.21 ms per frame.
+- **Nebula regeneration, step 2: every frame while the camera moves** (26.09, the author: «кажется как будто
+  тормозит, когда туманность начинает появляться рядом с кораблём»; suite 91zzzzzzy7-gpu-nebmove, mutant
+  `neb-step-move`). With the .5 threshold (5.6 CSS px of camera) the gas held for 2–6 frames and jumped while
+  stars and ship glided at 60. Measured by a 12-frame strip on stepped time (617×1113, DPR 1.5, the nebula alone,
+  global Lucas–Kanade, device px): zoom 1 — 40 px/s smooth (the fade carried it), 80 px/s 0/−1.0 every 5th frame,
+  150 −.40 every 3rd, 250 −.19 every 2nd, 400 every frame; zoom .3 (the ship tops out at 139 px/s there) −1.6/−1.7
+  every 3rd–5th frame. Now `GNB_MOVE` = .03 (20 CSS px/s; .05 = 33 px/s let a frame slip at 40 px/s) — regenerated
+  every frame at 40–400 px/s on both zooms, the shift even (80 px/s at .3: −.38…−.40 every frame). Setting off
+  in the middle of a standing fade no longer cuts it with a direct write: the fade is finished over three fresh
+  frames (k = 1/3, 1/2, 1). The every-frame cost is the fast-flight case P1 already measured.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
@@ -929,6 +955,94 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   gpu2-lit e9fd226c (the near corona cut only from zoom 1) merged in; the 390 «грунт день» and «система» goldens
   are green again. G2 the star disc, G3b the jets, the ring's edge-on aliasing, L1b the dust. `gpu-ships` stays
   out (its own candidate). Node, -Full -Jobs 3, -Mobile, the golden set green.
+- **Ships in real light, pass 1 (26.09, branch `gpu-ships` on 6e775fb9, not in 0.467.0):** hull mode with
+  a material (17c GST, `RL_*`) — a) one light: the body dome is the material's relief three mips coarser
+  (the mip of slopes is the slope of the blurred alpha, one sample, no rebake), so the terminator runs along
+  the spine; b) the dark side is a fill, .46 plus the gas at the ship (the 16gb nebula target as t2, flag 16,
+  five taps around the hull), warm in orange gas; c) a planet's shadow takes the direct light and .45 of the
+  fill; e) lamps (mask) ×2.3 regardless of light, so windows live in shadow. Pirates (12i) and barges (12l)
+  move to hull light (glow −1): the washed-out pirate and the flat barge get one body, one light. Pairs vs
+  6e775fb9 (scratchpad `pair_oc_*_{390,760}`, crops `rl_*`, `px_*`): phone toward the star, hull pixels
+  Y 104 → 91 (the dark half), in a planet's shadow 69 → 85 (lamps and fill); with pirate and barge toward
+  2.1 % > 8, away 0.87 %, shadow 1.0 %. -Browser green, tour GREEN; -Full not run yet.
+  Open: d) glints by count, f) the flame lighting the stern, g) the 1-px rim, the close-up (hangar/card).
+- **Ships pass d, glints by count (26.09, `gpu-ships`):** in hull mode the metal highlight is no longer the
+  old pow 40 over the fine normal (a soft smear) but a hard step of pow 90 over the body dome plus the panel
+  relief, through the bare-metal mask only, lit side only (`key`, `sk`). The panel relief is taken at a mip
+  set by the hull's size (~1/8 of its length, `RL_GN`), not the screen's: at the screen's level every seam
+  of a big barge sparkled (10–25 one-pixel dots). Counted on the 760 pairs vs e561d7c5 (`glints.py`): own
+  ship one short dash on the spine (2–3 dots on the phone), barge 3, the red pirate none — paint is not
+  metal. One more material tap in hull mode only (6). Open: f), g), the close-up; -Full not run yet.
+- **Ships pass f, the flame lights the stern (26.09, `gpu-ships`) — a second light on the hull, a named
+  breach of «one light».** `hullGpuFlames` now returns a point at the nozzles' mouth (mean by radius), a reach
+  of 2.6 nozzle radii + .3 of the tongue, the thrust and the flame's halo colour (warm, cool for luxury,
+  the maker's tint); `gpuLitSprite(…,fl)` carries it in `fu.v[4..5]` (8 floats more, only when thrusting)
+  and hull mode adds a warm pool falling off to the reach, stronger on plates sloped toward the fire, not
+  put out by a planet's shadow (the fire is the ship's own). Own ship in a planet's shadow, stern mean RGB
+  45/35/34 → 49/38/36; the first try at ×3 whitened the nozzles instead of lighting the plates. Only
+  `hullGpuDraw` hulls (own, peace fleet) — pirates and barges have no flame here. Open: g), the close-up.
+- **Ships pass g, the rim (26.09, `gpu-ships`):** hull mode adds the star's colour ×.7 (`RL_RIM`) on a hull
+  pixel whose neighbour one device pixel toward the star is empty (one alpha tap at the master's mip), lit
+  side and outside a planet's shadow only; the dark edge is not lifted, so on bright gas the body stays a
+  dark silhouette (its fill is ~half the gas behind it). `GPU.sep` untouched. The pirate's star-side edge now
+  reads as a crisp line. Shimmer check (`shim.sh`: own ship at heading +0, +.015, +.03 rad): lit edge pixels
+  31/27/35 before, 39/39/37 now — steadier, not worse. Open: the close-up (hangar/card), -Full on the branch.
+- **Ships passes d and f, redone after review (26.09, `gpu-ships`):** d) single white pixels on the barge's flat
+  panels read as dead pixels, so the glint is now a soft sheen: `smoothstep(.15,.9,pow(N·H,12))` over the body
+  dome plus the panel relief, gated by the metal mask read at the same coarse mip (a panel is metal or not,
+  no speckled edge), ×.85 (`RL_GK`). The lobe is this wide because a flat panel turns as one: at pow 30 the
+  barge's plate went out in 3 frames in place (steps .36/.27, the centroid still) and the pirate dipped for one
+  frame (−.20/+.28). Turn test (`turn12.sh`, 12 frames of .055 rad, glint = on − off, `strip.py` share of the
+  hull's peak energy per frame): largest step own .04, pirate .09, barge .11; the barge's sheen fades over 8
+  frames. The wider lobe lights ~3× the pixels at a lower gain, so the own ship's spine is no whiter.
+  f) the flame now lights only the keel plates beside the nozzles: a ring from `r0` (beyond the nest: spread
+  plus 1.5 nozzle radii) to the reach, a cone toward the stern only (`bk`), no light on pixels already brighter
+  than half (the nest and its glow), capped at `RL_FLM` of the flame colour. Keels +23 levels mean over 49 px;
+  nest bright pixels change by at most ±1 (the bloom halo that samples the lit keels), two runs with the light
+  off are byte-identical. -Full -Jobs 3 green on the branch (24f5f824, 19247). Open: the close-up, h) makerRead
+  on the GPU frame.
+- **Ships in real light, pass 1 redone after review (26.09, `gpu-ships`):** a) the body dome (slope of the
+  blurred alpha) laid a soft murk across flat faces and a pink «pipe» along the barge's long side, so it is
+  gone: the faces are lit as painted, each even inside, with only the faint side tilt (`kf`, .88–1). The star
+  reads on the edges: toward it the rim (g), 1 device px, now ×.45 plus ×.35 on bare metal (was .7/.6 — on
+  stepped edges it went to 230–240 luma against a 90 face and broke into dashes), the neighbour alpha read one
+  mip down; away from it a dark silhouette edge (`tv`, −.4 over 1.5 px). d) the soft sheen is removed; the glint
+  is the rim on metal. c) `shAt` bottoms at .4 in full umbra (2D multiplies the whole colour by it); hull mode
+  now takes `smoothstep(.4,1,sk)`, so direct light, rim and glass glint go out entirely and the fill stays at
+  .65 (`RL_SH`). Own ship without thrust, lamps masked: lit 125.2 / shadow 30.1, ratio .24 at L 1.4 (main
+  105.8 / 43.3, .41); L 1.9 .25 (main .41). Direct light `RL_LIT` 1.1→1.2 to hold the barge's luma (74 vs main
+  77; container saturation equal, .21/.14/.15/.21 vs .21/.13/.15/.22). b) the fill is one gas colour per hull
+  (five taps around it): shade half R/B 1.27 in orange gas (main 1.27), .82 in blue (main .86). Turn strip
+  (12 × .055 rad, rim on − off): barge step ≤ .04 of its peak, pirate ≤ .06. Silhouettes: hull colour forced to
+  its alpha, white minus black frames (gas, stars, lamps cancel), inside the ship boxes main = HEAD to 2/255 in
+  three scenes. The glass sheen on the barge's glass containers stays (main has it too). Accepted (e6211278);
+  a, b, c, d, e, g closed. Open: f) one more try with the keels by the emission mask, else roll back;
+  h) makerRead on the GPU frame.
+- **G15, the ship in ОПИСЬ on the engine (26.09, `gpu-opis`):** the hull canvas `.op-hull` has its own webgpu
+  context, like the instrument pod (25c); no 2D context at all. The hull comes from the studio (17c2
+  `hullStudio(S,id,w,h,nd,x,y,sc,lvl)`, the shared function the station showroom will reuse): the same
+  `hullGpuDraw` through a target override `GPU.rt` (08c `gpuField` and `gpuKitU` take its size and density,
+  `gpuLitSprite` its pass, a zero light texture — no lamps, no shadow, no gas — and a neutral light from the
+  upper left), in its own rgba16float pass, so the pipelines are the scene's and the 08b1 warm table needs no new
+  key. Its bake is its own and `once` (the flight bakes in `HG_LRU` and the pool stay untouched); no flame, the
+  flight's smoothed thrust is not touched. The texture keeps the scene's alpha («how much background is left»);
+  `ovImage` with `B.inv` (08bi) turns it into coverage and passes light above one through the same shoulder as
+  the final `tone()`, so lamps do not clip white. Shadow, anchors and pluses are `ov*` primitives; `hullSilhouette`
+  (27) only measures now. The frame draws it (hud → `opisHullTick`, 27j) when the canvas, device or signature
+  changes. Pairs 760 and 390 (dpr 1 and 2) against main: same silhouette and anchors; the hull reads lit
+  (rim toward the light, glass glint), lamps pale gold as in flight instead of flat amber. Guard
+  `91zzzzzzy7-opis-gpu` (back at its own name once the order leak was closed, see below): 40 frames of flight under ОПИСЬ, `#c` untouched and not uploaded, one submit a frame,
+  no 2D context on the canvas, one pass per signature change, warm bakes intact.
+- **The goldens' order leak is closed (26.09).** Bisecting the red part in -Files mode, then the suites of the
+  one file, then the calls of the one frame, found «наёмник виден в системе и за ним можно смотреть»
+  (91b-crew): its watch frame looks at the hotel, whose prebake (17a0) stayed half-baked in `PB` for
+  `PB_STALE` frames. `bakeIdle()` then said «not settled» to every later scene, and `detSettle` ran its
+  40-frame ceiling instead of 2–6, so «черпак» and «дом» were shot on another frame (18.8 % and 13.1 %).
+  `-Only` never showed it: there the suite ran before the GPU was up and took the no-GPU branch. Fix:
+  `resetWorld` closes every pending prebake with `prebakeDrop`, as it already drops `MAT_JOB`. Test: «золотые
+  кадры: сцена не помнит, кто рисовал до неё» shoots the two scenes forwards and backwards, with an abandoned
+  job planted before each. It is red with exactly those numbers without the fix. The ОПИСЬ guard is back at
+  `91zzzzzzy7`.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
@@ -2214,6 +2328,38 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   `gpuBake` submits of the masters. Pairs vs HEAD: 760 — frame 3 px > 24, the pod 72 px > 24 premultiplied (max 79, needle AA);
   390×3 — the pod is hidden, frame identical. Gate2d scene «приборная колодка»: 0 calls. Suites: 91zk «Колодка», the two-targets
   suite in 91zzzzzzy4; mutants `ipod-target-swap`, `ipod-needle-2d`, `ipod-screen-draws`, `ipod-no-reconfig` die.
+- **The parrot on the GPU** (12y1 `parrotDraw(S,W,H)`, `parrotGpuTick`, `parrotSnap`; `PARG`): the window `#parrotcv` and the
+  console's perch icon `#perchcv` are WebGPU DOM canvases drawn in `hud()` into the frame encoder; the bird's own rAF is gone.
+  Every feather, quill, scale and head part is one atlas cell (1024 wide, painted once with the old 12y brushes by
+  `gpuBake`); a pose is ~300 instance records (affine per part, 28 floats): sprites, ellipses, the beaded crest, polylines
+  for toes and the scratch foot; the coat quills and scales are clipped by the body mask, the plumage by the old 230×304
+  layer box (2D cut the tail there, and the perch icon frame rests on that cut). Sprites sample with a −0.8 mip bias.
+  The 2D «light» pass (source-atop over the bird) was dead — 0 of 280k pixels — and is ported as absent; restoring it is a
+  design decision with a pair. Cost: 2D pose 20.8 ms, atlas bake 3.76 ms once, then instances only. Pairs vs HEAD at 760,
+  poses a–d, and at 390: equal to the eye; window px > 24 ≤ 855 of 57k (AA and the glass behind), perch ≤ 26 of 4.6k.
+  `site/parrot.js` is frozen at 0.470.0 (`regen-parrot.sh` refuses): the bird page needs a decision. Pipelines `par`,
+  `par.add` are warm since 42ac2ad5 (08b0 recipes, the pipelines detector opens the window in flight).
+- **Overlay atlas: steady frames bake nothing** (08bi). The raid report (≈1.2 new masks a frame) did not reproduce on
+  gpu3-rack: 15 stand scenes × 130 frames at 760 and 390, raid with movement — 0 masks after warm-up; ovText has built
+  numbers from digit glyphs since beb13da8. Guard: heavy suites «устойчивый кадр любой сцены» (+ phone) plant a label
+  with a frame counter; the mutant `ovl-number-whole` (a line baked whole) dies. The raid's real per-frame cost is the
+  whole `#c` upload — it is still 2D.
+- **Console seat on the GPU** (27j `seatGpuTick`, `consoleGpuTick`; `SEAT`): the portrait (Vega, trainee, passenger) is a
+  `ckgSpr` bake keyed by painter, size and mood (`vegaSeatKey`), drawn by one ovl pass into `#seatcv` (WebGPU) only when
+  the key changes; the 2D repaint once a second is gone. The canvas is at screen density (56 px was soft on DPR 2).
+  Pairs vs HEAD at 760 (both moods) and 390: same figure and text, portrait sharper. Gate2d scene «кресло пульта»;
+  suite «кресло: портрет — проход только на смене ключа» (1 pass per key over 120 frames).
+- **Desk pictures on the GPU** (27i0 `panelGpu`, `panelNd`; 27i `tableBake`/`tablePaint`, `stripPaint`, `thingNd`;
+  27ia `renderDeskTop`): the six 2D contexts of the desk (the board, the desk-top items, the mis figure, the strips,
+  the thing icons) keep their brushes; `panelGpu` bakes the brush once (`ckgSpr`, once) and draws it by one ovl pass
+  into the panel's own WebGPU canvas, on its own encoder submitted at once (panels are built by clicks, not frames);
+  the bake is dropped right after. The board re-bakes on a new size or device. Thing icons are now at 84/80 × screen
+  density (were fixed 128×80 under a 134×84 CSS box — soft). Pairs vs HEAD at 760 and 390 (top, things, strips):
+  same pictures, edges only; icons and strips sharper. Gate2d scene «стол (27i)», mutant `desk-2d`.
+- **Post window and the КБ plan on the GPU** (26e2 `kpWindow`/`kpWindowPaint`, 27jb `kbRender`/`kbDraw`): both through
+  27i0 `panelGpu`. The post window now bakes at screen density (`panelNd`) instead of the frame's capped `DPR` (it was
+  soft on DPR 2), and «ЗАКРЫТО» is a plate on the grille — on the shutter the bars cut it and it did not read. Pairs vs
+  HEAD at 760 (DPR 1) and 390 (DPR 2): КБ identical, post sharper. Gate2d scene «окошко почты и план КБ».
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.
