@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 640 · символов верхнего уровня: 6461
+Файлов: 641 · символов верхнего уровня: 6469
 
 ## СИМВОЛЫ
 
@@ -29,7 +29,7 @@ $menu                        src/15-input.js:243
 $msg                         src/27z-telemetry.js:43
 $msl                         src/27z-telemetry.js:47
 $nav                         src/27z-telemetry.js:45
-$opts                        src/26-ui-station.js:695
+$opts                        src/26-ui-station.js:683
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
@@ -529,7 +529,7 @@ GAL_STAR_SCREEN              src/17z1-galaxy.js:152
 GAL_TILE                     src/17z1-galaxy.js:63
 GAL_TILES                    src/17z1-galaxy.js:65
 GAL_VER                      src/17z1-galaxy.js:19
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-204
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-228
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GATE_FLY                     tests/91zzzzzzy-gpugate.js:269
@@ -634,7 +634,7 @@ GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:190
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-53
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-54
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PL_WGSL                  src/08b-gpu.js:460
@@ -1747,6 +1747,7 @@ WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57-73
 WX_PLANES                    src/19d-weather.js:98-103
 YALTA_R                      src/12al-powers.js:159
+YARD                         src/26f-yard-gpu.js:6
 YARD_CHANCE                  src/04b-fleet.js:162
 ZAP_COOL                     src/23-mode-dig.js:255
 ZOOM_MIN                     src/01-core.js:21
@@ -2910,7 +2911,7 @@ drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
-drawKitFigure                src/12x-suit.js:202-299
+drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-51
 drawLander                   src/19f-lander.js:52-340
 drawLanding                  src/19-mode-landing.js:285-413
@@ -4079,14 +4080,16 @@ kitBrand                     src/12x-suit.js:62-65
 kitBy                        src/12x-suit.js:61
 kitCanMod                    src/12x-suit.js:154-160
 kitColOf                     src/12x-suit.js:180-186
-kitDepotBlock                src/12x-suit.js:334-342
+kitDepotBlock                src/12x-suit.js:341-349
 kitDepotOf                   src/12x-suit.js:110-123
 kitDepotTake                 src/12x-suit.js:124-129
-kitDollHit                   src/12x-suit.js:308
+kitDollHit                   src/12x-suit.js:315
+kitFigureBakes               src/12x-suit.js:277-285
+kitFigureBody                src/12x-suit.js:202-272
 kitFromHulk                  src/12x-suit.js:131-137
 kitGive                      src/12x-suit.js:98-107
 kitHasMod                    src/12x-suit.js:69
-kitHeatMul                   src/12x-suit.js:301-305
+kitHeatMul                   src/12x-suit.js:308-312
 kitLayDraw                   src/27j-ui-kitlay.js:136-149
 kitLayPiece                  src/27j-ui-kitlay.js:74-134
 kitLayShadow                 src/27j-ui-kitlay.js:41-47
@@ -4100,7 +4103,7 @@ kitRepairCost                src/12x-suit.js:146
 kitRoman                     src/12x-suit.js:66
 kitShelf                     src/12x-suit.js:53
 kitShelfMax                  src/12x-suit.js:55
-kitShopBlock                 src/12x-suit.js:310-332
+kitShopBlock                 src/12x-suit.js:317-339
 kitStat                      src/12x-suit.js:70-88
 kitWearMul                   src/12x-suit.js:68
 kitWearPiece                 src/12x-suit.js:139-145
@@ -4673,6 +4676,7 @@ opisFit                      src/27j-ui-opis.js:203-217
 opisFocus                    src/27j-ui-opis.js:86
 opisFold                     src/27j-ui-opis.js:672-676
 opisGhostMove                src/27j-ui-opis.js:321-324
+opisGpu                      src/27i0-panel-gpu.js:29
 opisHead                     src/27j-ui-opis.js:704-708
 opisHullCap                  src/27j-ui-opis.js:680-703
 opisHullRedraw               src/27j-ui-opis.js:404-424
@@ -5363,8 +5367,8 @@ renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
 renderStrips                 src/27i-ui-table.js:330-366
-renderTab                    src/26-ui-station.js:486-498
-renderTabBody                src/26-ui-station.js:499-691
+renderTab                    src/26-ui-station.js:474-486
+renderTabBody                src/26-ui-station.js:487-679
 renderThings                 src/27i-ui-table.js:379-404
 rentAi                       src/12f1-mgr-rent.js:23-35
 rentBaseBurning              src/12f1-mgr-rent.js:43-47
@@ -5410,7 +5414,7 @@ rescueSig                    src/16c-rescue.js:556
 rescueSigNow                 src/16c-rescue.js:555
 rescueSync                   src/16c-rescue.js:557-570
 rescueTake                   src/16c-rescue.js:105-146
-resetArm                     src/26-ui-station.js:694
+resetArm                     src/26-ui-station.js:682
 resetWorld                   tests/90-harness.js:238-395
 resize                       src/08-state.js:29-66
 retAll                       src/11s-returners.js:32
@@ -5725,10 +5729,10 @@ shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
 shipGearGpu                  src/05c-arms.js:315-335
-shipRow                      src/26-ui-station.js:430-475
+shipRow                      src/26-ui-station.js:418-463
 shipScaleAt                  src/16c-rescue.js:209
 shipScaleCap                 src/16c-rescue.js:208
-shipThumb                    src/26-ui-station.js:417-429
+shipThumb                    src/26f-yard-gpu.js:7-11
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:232
 shipZoneR                    src/19f-lander.js:14
@@ -6454,6 +6458,10 @@ yaltaAt                      src/12al-powers.js:160-167
 yaltaHere                    src/12al-powers.js:172
 yaltaIs                      src/12al-powers.js:168-171
 yaltaSealed                  src/12al-powers.js:175-179
+yardCanvas                   src/26f-yard-gpu.js:12-19
+yardDraw                     src/26f-yard-gpu.js:41-54
+yardHide                     src/26f-yard-gpu.js:20
+yardTick                     src/26f-yard-gpu.js:22-39
 zooAll                       src/11ad-zoo.js:15
 zooBlock                     src/11ad-zoo.js:72-82
 zooCargoSlots                src/11ad-zoo.js:31
@@ -7647,7 +7655,7 @@ zoomTo                       src/15-input.js:350
 ## src/26-ui-station.js · 49 КБ
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):303
-  · настройки:693
+  · настройки:681
 
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1
@@ -7672,6 +7680,8 @@ zoomTo                       src/15-input.js:350
 
 ## src/26e2-stapel-draw.js · 25 КБ
   · СТАПЕЛЬ — лист (D16, дизайн-проход):1
+
+## src/26f-yard-gpu.js · 4 КБ
 
 ## src/27-ui-ship.js · 25 КБ
   · силуэт корпуса и вход в ОПИСЬ:1
@@ -7707,7 +7717,7 @@ zoomTo                       src/15-input.js:350
   · стол: одно место для всего, что читают:1
   · страница никогда не теряет прокрутку (P1):24
 
-## src/27i0-panel-gpu.js · 2 КБ
+## src/27i0-panel-gpu.js · 3 КБ
 
 ## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
@@ -8061,7 +8071,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 25 КБ
+## tests/91zzv-table.js · 26 КБ
   · автотесты: пульт и стол (M151a):1
   · огонёк: «пришло» ≠ «не прочитано»:207
 
@@ -8474,7 +8484,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91zzzzzzy2-gpu-canvas.js · 19 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 21 КБ
+## tests/91zzzzzzy3-gate2d.js · 24 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ

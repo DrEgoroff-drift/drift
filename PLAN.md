@@ -86,9 +86,11 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.
   The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
   - the interface — GPU-3; its census (26.09): the panels by how often they open (the desk is on the
-    engine through 27i0 `panelGpu` — the post window and КБ too; next: ОПИСЬ, the station, the album, faces and the suit); a bake at first sight
-    costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
-    studio (`hullStudio`, 17c2 — the ship in ОПИСЬ already draws through it); the raid
+    engine through 27i0 `panelGpu` — the post window and КБ too, and the shipyard showcase (26f, one canvas over
+    `hullStudio`), the ОПИСЬ pictures and the suit doll; to fix on the shipyard: the price on a buy button you
+    cannot afford is dark on dark — it must still read, contrast ≥ 3 (Контроль 26.09); next: the slipway sheet (26e2, needs a hull mask in 08bi),
+    the home garage hull, the album, faces); a bake at first sight
+    costs a hitch on the phone (P1, §1), so rank by that too; the raid
     comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull. Moved off

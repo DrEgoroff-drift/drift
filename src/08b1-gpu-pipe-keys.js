@@ -7,6 +7,7 @@ const GPU_PIPE_KEYS=[
   "gc.mip16",
   "gc:clp",
   "gc:cov|destination-out",
+  "gc:cov|lighter",
   "gc:cov|multiply",
   "gc:cov|source-atop",
   "gc:cov|source-over",
