@@ -63,6 +63,12 @@ Branch `claude/gpu-cave`, from the fleet base `claude/optimistic-gates-u46osn`. 
    no longer calls `drawCaveProps`: zero per-frame 2D for them, and they sit under the light pass
    as before. Covered by the tile-painter suite.
 
+6. **stalactites, curtains and lichens bake into the rock tiles** — `drawCaveSolid` (22a) is
+   static (deco is built once at `enterCave`), so `drawCaveRock` draws it before the props, the
+   old order. Live 2D left in the cave frame: the water (it ripples), crystal facets, moss spots,
+   the other lamp's body, the wall hands, watchmen, plants, beasts, the find marker, the
+   astronaut — small, moving or owned by other ships.
+
 ## Pairs (scratchpad, never in git)
 
 Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174/scratchpad/`
@@ -87,6 +93,9 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
 
 - `pair-cavepool-2.png` (commit 4 frame | commit 5 frame): the same picture — props from the tiles.
 
+- `pair-cave-3.png`, `pair-cavepool-3.png` (commit 5 frame | commit 6 frame): the same picture —
+  stalactites and curtains from the tiles.
+
 ## For the design pass (what to look at, per scene)
 
 - **cave** (stand `cave`): the balance of ambient to lamp (`caveAmbient`, `U[15]` lamp power,
@@ -110,9 +119,27 @@ Scratchpad: `/tmp/claude-0/-home-user-drift/2c699494-ba63-5130-aae0-c5cca68da174
 - `fld.dig.add` — `gpuField`, blend `add`, sampler `gpuMipSmp()`
 - `kit.shp` with blend `add` (probably already warm from other modes)
 
+## What is left in the zone
+
+- **Mine works as a second GPU tile layer** (started, not committed — the fleet was called home):
+  the tunnel fill, edge chips, walls and floor, rails, timbers and ladders in `drawDigWorld` depend
+  only on the dug cells (and ladders, set at the same moment), so they can bake into a
+  `gpuTileStore` keyed on `D.maskV`, with platform lamps registered in world coordinates while
+  baking (`digLampPut` into `D.lampW`) instead of `D._lamps` pushed each frame; the player-relative
+  haze and the chips' near-fade can go (the light field does distance). Ore grains, the sky with
+  stars, the fringe, fauna, the cutter overlay and the astronaut stay live.
+- `digRockMass` (23aa) as a `gpuField` material instead of baked strokes — the census's
+  suggestion; parity work, not needed for G7's look.
+- `18a-material`'s CPU bake (`matJobRows`, ~383 ms in slices) as a shader — a gain in load time,
+  but the pattern is also used by live 2D contexts; needs a plan.
+- `18a1-glaze` is the landing/surface ground's glaze — nothing of it draws in the cave or mine;
+  untouched.
+- Cave water, crystal facets, moss spots, the other lamp's body, watchmen, find marker stay live
+  2D by design (moving or tiny).
+
 ## Requests outside the zone
 
-- none yet
+- none
 
 ## Open problems
 
