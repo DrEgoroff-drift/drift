@@ -735,7 +735,15 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
 - **Candidate 0.464.0** (26.09): gpu3-rack 725037ad merged (57243be0: belt cockpit and glass on #ovl,
   LABDOM gone — the wreck suite reads `OVL.lab` now, key `fld.belt.sky`), the warm table re-taken without a
   diff (43 keys), VER, README and the patchnote.
-  Next: PLAN §0 Stage 1, the first open item.
+- **Final glow source: stations** (26.09): the paint term of fsDown (`c*c`) is weighed by
+  `1-(1-.5·silK)·scene·(1-S.a)`: every lit hull (the `hull` blend leaves scene alpha 0 under it — stations,
+  barges, pirates, wrecks, fleet) gives its paint nothing, the own ship (circle u.hl) keeps half as in
+  ee46b87. Station lights were already explicit emission (stLamp: paint, core by addition, narrow halo)
+  and baked windows go above the knee through GST's `em`, so they keep their glow. Pair against 45966169,
+  station region at 760: mean L .185 → .168, V>.6 4.5 → 3.0 %, V>.85 1.88 → 1.20 %; solar wings and grey
+  panels lose the milky halo, the white lamp and the red beacon keep theirs. Wrecks: >8 on 0.02 % of pixels.
+  08b 49392 → 49333 bytes.
+  Next: the hotel facade (blend `hull` on B.cv, key kit.img|hull).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
