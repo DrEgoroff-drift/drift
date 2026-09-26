@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6584
+Файлов: 641 · символов верхнего уровня: 6587
 
 ## СИМВОЛЫ
 
@@ -1151,7 +1151,7 @@ PB_K                         src/24a-mode-raid.js:110
 PB_MS                        src/17a0-prebake.js:18
 PC_GRAIN                     src/25g-post-craft.js:7
 PC_GRAIN_B                   src/25g-post-craft.js:21
-PEACE_TUG                    src/17m-peace-fleet.js:146
+PEACE_TUG                    src/17m-peace-fleet.js:164
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
 PEEP_PASS                    src/20c-peep.js:25
@@ -2961,7 +2961,7 @@ drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPOI                      src/20a-poi.js:173-234
-drawPeaceFleet               src/17m-peace-fleet.js:73-144
+drawPeaceFleet               src/17m-peace-fleet.js:83-162
 drawPirateBase               src/24a-mode-raid.js:187-218
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-173
@@ -4939,11 +4939,14 @@ pcTestPixels                 tests/91zzzi-postcard.js:17-22
 pcTestPlanet                 tests/91zzzi-postcard.js:2-9
 pcTestSnap                   tests/91zzzi-postcard.js:12-16
 pcWash                       src/25g-post-craft.js:47-62
-peaceFlag                    src/17m-peace-fleet.js:28-72
+peaceDay                     src/17m-peace-fleet.js:24
+peaceFlag                    src/17m-peace-fleet.js:38-82
 peaceHere                    src/17m-peace-fleet.js:12-19
-peaceRepairPos               src/17m-peace-fleet.js:147-150
-peaceShip                    src/17m-peace-fleet.js:20-25
-peaceTick                    src/17m-peace-fleet.js:151-161
+peaceRepairPos               src/17m-peace-fleet.js:165-168
+peaceRite                    src/17m-peace-fleet.js:25-28
+peaceShip                    src/17m-peace-fleet.js:30-35
+peaceSubbot                  src/17m-peace-fleet.js:29
+peaceTick                    src/17m-peace-fleet.js:169-179
 peepDrawMat                  src/20c-peep.js:88-149
 peepFigure                   src/20c-peep.js:155-201
 peepGhosts                   src/20c-peep.js:206-268
@@ -7390,7 +7393,7 @@ zoomTo                       src/15-input.js:350
 ## src/17l2-hotel-druzhba.js · 17 КБ
   · турбаза «Дружба» — РАССВЕТ (ra):1
 
-## src/17m-peace-fleet.js · 11 КБ
+## src/17m-peace-fleet.js · 13 КБ
   · мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3):1
 
 ## src/17n-bazaar.js · 13 КБ

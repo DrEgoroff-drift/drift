@@ -257,8 +257,6 @@ measured on the GPU build first:
   at 19 h and 3 h (the author 26.09: «у нас же 6 типов гостиниц было»; when — «после», after the engine). Then the doors (the sanatorium wants a
   voucher and an ocean world — how a hotel offers it); cantina rumours at the desk; fatigue (does not exist for
   the player).
-- [ ] **M455 the peacetime fleet:** субботник, strike and rite driven by the chronicle's days rather than
-  always; the belt tugs are far from the station view.
 - [ ] **M456 laws:** «сделаем из ваших» (Рассвет); the fine's ticket in ПОЧТА instead of the journal; the
   lunch shown on the trade tab.
 - [ ] **M511 волокита:** the animals the author will invent (his table).

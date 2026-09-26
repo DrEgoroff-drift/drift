@@ -58372,6 +58372,16 @@ function peaceHere(){
   const cx=P.st.x-P.uy*560*P.side,cy=P.st.y+P.ux*560*P.side;
   return {by,P,cx,cy,seed:hashi(G.sx,G.sy,0x9EA5)>>>0};
 }
+/* ── дни летописи (M455): сцена идёт, когда летопись это говорит, а не всегда.
+   Сутки летописи — четыре сводки; суббота — шестой день недели. Субботник
+   ГЛАВТРАССЫ — по субботам и в дни объявленного обряда «субботник»; любой
+   другой обряд державы висит над сценой строкой ── */
+function peaceDay(){return (typeof chronNow==="function")?Math.floor(chronNow()/4):0;}
+function peaceRite(by){
+  if(typeof riteLive!=="function")return null;
+  return riteLive().find(r=>MAKER_KEYS[r.p]===by)||null;
+}
+function peaceSubbot(){const R=peaceRite("gt");return !!(R&&R.key==="subbot")||peaceDay()%7===5;}
 function peaceShip(k,seed,by,x,y,a,Z,al){
   if(x<-200||x>W+200||y<-200||y>H+200)return;
   const s=fleetScale(Z)*.55;
@@ -58432,12 +58442,16 @@ function drawPeaceFleet(zx,zy,Z){
      подписи — слоем подписей (DOM); корабли флота уже там (12ai1 fleetShipGpu) */
   const pass=gpuScene(),SH=pass?[]:null,lab=(k,text,x,y,col)=>{if(pass)domLabel("pf"+k,x,y,text,uiFont(8),col,"center");
     else{ctx.fillStyle=col;ctx.font=uiFont(8);ctx.textAlign="center";ctx.fillText(text,x,y);}};
-  if(by==="gt"&&G.sys.belt){
-    /* субботник: буксиры медленно ведут камни по дуге пояса */
-    const R=G.sys.belt.orbit*.98;
+  if(by==="gt"&&!peaceSubbot()){
+    /* будни: два буксира стоят у причала носом к станции */
+    for(let i=0;i<2;i++)peaceShip("tug",seed+i,"gt",zx(cx+(i?60:-60)),zy(cy+40),Math.atan2(S.P.st.y-cy,S.P.st.x-cx),Z);
+  }else if(by==="gt"){
+    /* субботник (M455): буксиры ведут камни по малой дуге за станцией — в кадре,
+       а не на дальнем поясе, где их не видно от причала */
+    const R=150;
     for(let i=0;i<2;i++){
-      const a=t*.012+i*.5+seed%7,x=Math.cos(a)*R,y=Math.sin(a)*R;
-      const rx=Math.cos(a+.035)*R,ry=Math.sin(a+.035)*R;
+      const a=t*.05+i*Math.PI+seed%7,x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R*.55;
+      const rx=cx+Math.cos(a+.2)*R,ry=cy+Math.sin(a+.2)*R*.55;
       if(SH)SH.push([1,zx(rx),zy(ry),Math.max(2,6*Z),0,0,0,58,52,46,1]);
       else{ctx.fillStyle="#3a342e";ctx.beginPath();ctx.arc(zx(rx),zy(ry),Math.max(2,6*Z),0,TAU);ctx.fill();}
       peaceShip("tug",seed+i,"gt",zx(x),zy(y),a+Math.PI/2,Z);
@@ -58496,6 +58510,10 @@ function drawPeaceFleet(zx,zy,Z){
     lab(4,"ОБНОВЛЕНИЕ УСТАНАВЛИВАЕТСЯ",zx(cx),zy(cy)-18*clamp(Z,.6,1.5),"rgba(130,255,236,.7)");
   }
   if(SH&&SH.length)gpuShapes(pass,SH);
+  /* обряд державы из летописи (M455): строка над сценой, пока он идёт */
+  {const R=peaceRite(by),D=R&&typeof RITES!=="undefined"?RITES[R.key]:null;
+    if(D&&!(by==="gt"&&R.key==="subbot"))lab(9,D.ru.toUpperCase()+" · "+D.ru2,zx(cx),zy(cy)+46*clamp(Z,.6,1.5),"rgba(236,214,160,.85)");
+    else if(by==="gt"&&peaceSubbot())lab(9,"СУББОТНИК · РАСЧИСТИТЬ ПОЯС",zx(cx),zy(cy)+46*clamp(Z,.6,1.5),"rgba(236,214,160,.85)");}
 }
 /* ── ремонтный буксир Рассвета: идёт к вам, если корпус битый ── */
 let PEACE_TUG=null;

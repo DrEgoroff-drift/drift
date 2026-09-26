@@ -192,6 +192,14 @@ could ever save.
   (M491) are now written into the сводка too, so ЧТО РАССКАЗЫВАЮТ in the cantina keeps them, and the billboard
   repeats them. As before, the game never says which of them is true.
 
+- **M455: the peacetime fleet keeps the chronicle's calendar.** ГЛАВТРАССА's субботник no longer runs every day.
+  It happens on the chronicle's Saturday (a chronicle day is four сводки) and on days the Director has declared a
+  «субботник» for ГЛАВТРАССА. On other days the two tugs stand at the dock facing the station. The субботник
+  itself moved into view: the tugs now lead rocks on a small arc behind the station instead of out on the far
+  belt, where nobody at the dock could see them. Any other rite the chronicle has running for the land's owner
+  hangs as a line over the scene («АМНИСТИЯ · …», «ПЕРЕПИСЬ · ответить на вопрос»). The Коммуна strike was already
+  driven by the society incidents and stays so.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -267,6 +275,9 @@ could ever save.
 - M460: prices on the billboard stay live station prices. Whether the billboard should show the player's stale
   knowledge (a fork) is left to the author. The hull tint near a billboard and the second and third signs are
   picture work for the graphics pass.
+- M455: «the chronicle's days» is read as the chronicle's day of the week plus the Director's declared rites.
+  The субботник's rocks near the station are a stand-in drawn with the same dark disc as before, which is draft
+  picture work.
 
 ## 0.478.0 - the album on the engine
 
