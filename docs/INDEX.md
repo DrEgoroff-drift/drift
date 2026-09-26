@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6355
+Файлов: 630 · символов верхнего уровня: 6360
 
 ## СИМВОЛЫ
 
@@ -2302,21 +2302,22 @@ GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-24
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:66
 GPU_FLD                      src/08b0-gpu-pipe.js:33
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:304
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:186
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:327
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:190
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:165
 GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
-GPU_MIP_LOD                  src/08c-gpu-kit.js:185
+GPU_MIP_LOD                  src/08c-gpu-kit.js:189
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-47
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PL_WGSL                  src/08b-gpu.js:460
 GPU_POST_WGSL                src/08b-gpu.js:74
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:235
+GPU_SCR                      src/08c-gpu-kit.js:172
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:258
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
 gpuAfterWarm                 src/08b0-gpu-pipe.js:71-75
 gpuArena                     src/08c-gpu-kit.js:154-164
@@ -2340,16 +2341,18 @@ gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:276-302
 gpuFail                      src/08b2-gpu-loss.js:26-30
-gpuField                     src/08c-gpu-kit.js:326-353
-gpuFieldLayout               src/08c-gpu-kit.js:319-325
+gpuField                     src/08c-gpu-kit.js:349-376
+gpuFieldLayout               src/08c-gpu-kit.js:342-348
 gpuFrame                     src/08b-gpu.js:509-521
 gpuFrontClean                src/08c-gpu-kit.js:126-131
 gpuFrontCopy                 src/08b-gpu.js:555-557
 gpuFrontHook                 src/08c-gpu-kit.js:115-124
 gpuHaze                      src/08b-gpu.js:442
 gpuHudDpr                    src/08bh-gpu-hud.js:7
-gpuImage                     src/08c-gpu-kit.js:212-225
-gpuKitU                      src/08c-gpu-kit.js:170-174
+gpuImage                     src/08c-gpu-kit.js:235-248
+gpuImgBind                   src/08c-gpu-kit.js:228-234
+gpuImgLayout                 src/08c-gpu-kit.js:220-227
+gpuKitU                      src/08c-gpu-kit.js:174-178
 gpuLight                     src/08b-gpu.js:444
 gpuLitSprite                 src/17c-system-draw.js:484-492
 gpuLtWrite                   src/08b-gpu.js:448-455
@@ -2363,7 +2366,7 @@ gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
 gpuNoise                     src/08b-gpu.js:369-374
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:558-578
-gpuOvFrontView               src/08bi-gpu-ovl.js:233
+gpuOvFrontView               src/08bi-gpu-ovl.js:234
 gpuPass                      src/08b-gpu.js:430-433
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
@@ -2376,13 +2379,14 @@ gpuPirateBody                src/12i-pirate-hull.js:417-426
 gpuPirateLive                src/12i-pirate-hull.js:433-477
 gpuPlanet                    src/17ga-gpu-planets.js:320-337
 gpuPresent                   src/08b-gpu.js:619-632
-gpuQuad                      src/08c-gpu-kit.js:283-287
+gpuQuad                      src/08c-gpu-kit.js:306-310
 gpuResize                    src/08b-gpu.js:375-417
 gpuScene                     src/08b-gpu.js:525-535
 gpuScene3D                   src/08b-gpu.js:539-547
+gpuScr                       src/08c-gpu-kit.js:173
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
-gpuShapes                    src/08c-gpu-kit.js:288-299
+gpuShapes                    src/08c-gpu-kit.js:311-322
 gpuShock                     src/08b-gpu.js:443
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
@@ -3995,29 +3999,30 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
-ovArc                        src/08bi-gpu-ovl.js:259-262
+ovArc                        src/08bi-gpu-ovl.js:260-263
 ovAtlas                      src/08bi-gpu-ovl.js:100-119
-ovBind                       src/08bi-gpu-ovl.js:224-232
+ovBind                       src/08bi-gpu-ovl.js:225-233
 ovCanvas                     src/08bi-gpu-ovl.js:85-97
-ovCap                        src/08bi-gpu-ovl.js:244-247
-ovCap3                       src/08bi-gpu-ovl.js:254-257
-ovEll                        src/08bi-gpu-ovl.js:249-252
+ovCap                        src/08bi-gpu-ovl.js:245-248
+ovCap3                       src/08bi-gpu-ovl.js:255-258
+ovEll                        src/08bi-gpu-ovl.js:250-253
 ovFlush                      src/08bi-gpu-ovl.js:182-193
-ovGraph                      src/08bi-gpu-ovl.js:270-274
-ovImage                      src/08bi-gpu-ovl.js:238-242
+ovGraph                      src/08bi-gpu-ovl.js:271-275
+ovImage                      src/08bi-gpu-ovl.js:239-243
 ovInto                       src/08bi-gpu-ovl.js:78-81
 OVL                          src/08bi-gpu-ovl.js:17
 OVL_N                        src/08bi-gpu-ovl.js:20
 OVL_PLATE                    src/08bi-gpu-ovl.js:161
 OVL_RUN                      src/08bi-gpu-ovl.js:124
+OVL_UF                       src/08bi-gpu-ovl.js:196
 OVL_WGSL                     src/08bi-gpu-ovl.js:21
 ovlDesc                      src/08bi-gpu-ovl.js:179
 ovNd                         src/08bi-gpu-ovl.js:76
-ovPass                       src/08bi-gpu-ovl.js:196-222
-ovPm                         src/08bi-gpu-ovl.js:235
+ovPass                       src/08bi-gpu-ovl.js:197-223
+ovPm                         src/08bi-gpu-ovl.js:236
 ovPush                       src/08bi-gpu-ovl.js:120-123
-ovQuad                       src/08bi-gpu-ovl.js:265-268
-ovRect                       src/08bi-gpu-ovl.js:236
+ovQuad                       src/08bi-gpu-ovl.js:266-269
+ovRect                       src/08bi-gpu-ovl.js:237
 ovTarget                     src/08bi-gpu-ovl.js:83
 ovText                       src/08bi-gpu-ovl.js:127-149
 ownerName                    src/12al1-toponym.js:14-18
@@ -6511,7 +6516,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bi-gpu-ovl.js · 23 КБ
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
-## src/08c-gpu-kit.js · 26 КБ
+## src/08c-gpu-kit.js · 29 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/08ca-gpu-canvas.js · 48 КБ
