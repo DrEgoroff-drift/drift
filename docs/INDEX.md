@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 632 · символов верхнего уровня: 6353
+Файлов: 632 · символов верхнего уровня: 6354
 
 ## СИМВОЛЫ
 
@@ -1554,7 +1554,7 @@ drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPeaceFleet               src/17m-peace-fleet.js:73-144
-drawPirateBase               src/24a-mode-raid.js:131-162
+drawPirateBase               src/24a-mode-raid.js:179-210
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
 drawPlanetWorks              src/17e-station-body.js:71-116
@@ -1710,7 +1710,7 @@ enterBelt                    src/24-mode-belt.js:71-119
 enterCave                    src/22-mode-cave.js:175-232
 enterDig                     src/23-mode-dig.js:51-70
 enterHomeIn                  src/29c-home-in.js:65-73
-enterRaid                    src/24a-mode-raid.js:163-218
+enterRaid                    src/24a-mode-raid.js:211-266
 enterSpa                     src/29h-spa.js:51-65
 enterSurface                 src/21-mode-surface.js:7-198
 enterWinter                  src/29f-winter.js:112-119
@@ -4124,6 +4124,7 @@ passTell                     src/11p-pass.js:55-60
 PAX_KEYS                     src/02-world.js:117
 payCost                      src/21a-mode-base.js:100
 PB_F                         src/17a0-prebake.js:17
+PB_K                         src/24a-mode-raid.js:110
 PB_MS                        src/17a0-prebake.js:16
 pbOnScreen                   src/17a0-prebake.js:39
 PC_GRAIN                     src/25g-post-craft.js:7
@@ -4206,7 +4207,7 @@ PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
 pirateArmTick                src/13d-loadout.js:163-181
 pirateArtOf                  src/12i-pirate-hull.js:238-414
-pirateBaseGpu                src/24a-mode-raid.js:107-130
+pirateBaseGpu                src/24a-mode-raid.js:111-178
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
@@ -4587,8 +4588,8 @@ RAID_ROOMS                   src/24a-mode-raid.js:7-13
 raidFloorAt                  src/24a-mode-raid.js:77
 raidFloorH                   src/24a-mode-raid.js:73-76
 raidIdx                      src/24a-mode-raid.js:14
-raidLeave                    src/24a-mode-raid.js:219-242
-raidLineOfSight              src/24a-mode-raid.js:376-383
+raidLeave                    src/24a-mode-raid.js:267-290
+raidLineOfSight              src/24a-mode-raid.js:424-431
 raidSolid                    src/24a-mode-raid.js:78-81
 raidSolidAt                  src/24a-mode-raid.js:82
 raidUp                       src/24aa-raid-draw.js:8-12
@@ -5987,7 +5988,7 @@ updateDig                    src/23-mode-dig.js:144-253
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:523-536
-updateRaid                   src/24a-mode-raid.js:244-374
+updateRaid                   src/24a-mode-raid.js:292-422
 updateRail                   src/18g-rail-ride.js:64-103
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
@@ -7425,11 +7426,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/24-mode-belt.js · 40 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/24a-mode-raid.js · 22 КБ
+## src/24a-mode-raid.js · 27 КБ
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84
-  · обновление:243
+  · обновление:291
 
 ## src/24aa-raid-draw.js · 50 КБ
   · рейд: отрисовка:1

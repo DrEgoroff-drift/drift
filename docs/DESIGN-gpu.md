@@ -752,6 +752,17 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   Stand: one burst at a frozen age (peak .05 s and +150 ms). Pairs vs HEAD, circle 2.6 R / 4.3 R: 760 peak
   +5.8 %/+2.1 % light, +50 %/+23 % sharpness; +150 ms +0.8 %/+0.4 %, +8 %/+5 %; 390 (dpr 1.5) peak
   +5.8 %/+2.5 %, +36 %/+19 %; +150 ms +1.0 %/+0.5 %, +8 %/+5 %. GPU errors 0.
+- **The pirate base has a body** (26.09, Контроль: «a flat red pentagon outline with a dot reads as a UI mark»):
+  the pentagon is now the plan of a building. A low five-sided prism tilted as the old ellipse says (22×16 ≈
+  43°), spinning in its own plane: the walls facing us, a five-facet pyramid roof, a mast, four docking
+  trusses with pods (back ones under the body, front ones over it). Every face has its own normal in 3D and
+  its own star light (the star at the system origin) plus a cold fill from above-front, so the facets stay
+  apart in shadow; ridges catch a bevel highlight, a dark eave seam and panel seams give scale. Lights are
+  emission only, added on top: corner beacons run round, windows and hatches glow warm, eave running lights,
+  the mast beacon blinks. A thread of star colour on silhouette edges that face the star. Shapes in the scene
+  pass, not a sprite, because the vertices slide. The name moved to `y+30s+6`, clear of the front truss.
+  Pairs vs HEAD at zoom 1.4, box r64 (toward / away from the star): 760 +31 %/+5 % light, +12 %/0 %
+  sharpness; 390 dpr 1.5 +25 %/+4 %, +16 %/+6 %. GPU errors 0.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
