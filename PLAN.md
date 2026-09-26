@@ -41,7 +41,10 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
 - [ ] **In flight** — each release deletes its line here:
   - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
     drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
-    lands after its tests, whole-frame pairs and six regressions, with its census of 2D calls after `gpuWorld` at 0
+    lands after its tests, whole-frame pairs and six regressions (the pairs 26.09: the belt, «Сорока», the raid,
+    the spa, the surface by day and winter better; worse and fixed before it lands — the lamps in five scenes
+    going white and losing their cones, the base's strip of sky with the ridge, the map's milky core and glare,
+    the scoop's lilac giant gone brown, the cave's turquoise), with its census of 2D calls after `gpuWorld` at 0
     (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
   - GPU-3's next release: «турбаза «Дружба»» (ra, the designer's bad2a811, merged after its pair in 3ba532f3) and
@@ -88,8 +91,10 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     home) go onto `#ovl` with the 08bi primitives. Already 0 and 0: cinema, HQ, winter, spa, system, dock, cabin,
     counter, belt, «Сорока». Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
     the first census read 0 on `#c` at 2–5 uploads a frame), is checked against `#c` uploads, and turns red on an
-    injected call. The base's bake (`baseBake`, G11) goes in tiles: at 2560×1440 its 4078×2092 layer with 4× MSAA
-    and a stencil is 198 MB for a moment (131 MB on the phone at DPR 2.625); MSAA kept, a tile ≤ 24 MB (1024×512 or
+    injected call. The base's GPU bake (the fleet's zone, a850203f; main draws the base in 2D) goes in tiles: at
+    2560×1440 its 4078×2092 layer with 4× MSAA and a stencil is 198 MB for a moment, 277 MB with the pool (131 MB on
+    the phone at DPR 2.625), new against main — before the landing an out-of-memory error scope bakes it at
+    sampleCount 1 when refused, with a test on that path; after it, MSAA kept, a tile ≤ 24 MB (1024×512 or
     768×768) living in the pool's slot, geometry culled per tile, resolved into one layer; bit-exact to the
     current bake (max |Δ| ≤ 1 on the seams), the bake's time A/B on the PC;
   - the air (19b-sky, 19e-clouds, 19d-weather, 19c haze and grade, 18a1-glaze, 18d-postfx; G5) and the mine's sky
