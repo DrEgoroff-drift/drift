@@ -510,6 +510,7 @@ function gpuFrame(){
   if(!GPU.ok||GPU.lost){GPU.on=false;return false;}
   if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch||gpuHudDpr()!==GPU.hnd)gpuResize();
   if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
+  if(GPU.gMode!==G.mode){GPU.gMode=G.mode;gcPoolLeave();}   /* вышли из сцены — разовые наборы пула уничтожить (08ca) */
   ctx=MAIN_CTX;
   /* невидимый #c чистится, только если на нём рисовали (cState, 08c): безусловная чистка
      всего холста каждый кадр — ограничитель частоты Chrome на телефоне (Контроль, P1) */

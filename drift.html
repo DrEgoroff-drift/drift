@@ -10904,6 +10904,7 @@ function gpuFrame(){
   if(!GPU.ok||GPU.lost){GPU.on=false;return false;}
   if(cvs.width!==GPU.bw||cvs.height!==GPU.bh||DPR!==GPU.dpr||W!==GPU.cw||H!==GPU.ch||gpuHudDpr()!==GPU.hnd)gpuResize();
   if(GPU.trash.length){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
+  if(GPU.gMode!==G.mode){GPU.gMode=G.mode;gcPoolLeave();}   /* вышли из сцены — разовые наборы пула уничтожить (08ca) */
   ctx=MAIN_CTX;
   /* невидимый #c чистится, только если на нём рисовали (cState, 08c): безусловная чистка
      всего холста каждый кадр — ограничитель частоты Chrome на телефоне (Контроль, P1) */
@@ -12290,34 +12291,70 @@ function gcPoolSpec(role){
     :[["rgba16float",1,TB|U.COPY_DST]];}
 function gcPool(){
   let Q=GPU.lay["gc.pool"];if(Q)return Q;
-  Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0};
-  for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);
+  Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0,wb:0,one:{},ob:0,ones:0,busy:[],dead:[],pend:0,peakAll:0};
+  /* прогрев из-под выпечки once (пул после потери устройства рождается лениво) — всё равно в пул */
+  const o0=GC_ONCE;GC_ONCE=false;try{for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);}finally{GC_ONCE=o0;}
   /* прогретое не вытесняется: крупная выпечка (комната во весь кадр на ПК — набор 33 МБ) выбивала по давности
      ходовые наборы, и тень неона снова рождалась посреди полёта (слияние флота, 26.09) */
-  for(const x of Q.t)x.warm=1;
+  for(const x of Q.t)x.warm=1;Q.wb=Q.by;
   /* обнулить прогретое здесь же: WebGPU чистит память текстуры при первом касании — пусть оно будет за заставкой */
   const e=GPU.dev.createCommandEncoder();
   for(const x of Q.t)if(x.role!=="ramp"){const [ms,st,rs]=x.T;e.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
     loadOp:"clear",storeOp:"discard",clearValue:[0,0,0,0]}],depthStencilAttachment:{view:st.createView(),stencilLoadOp:"clear",stencilStoreOp:"discard"}}).end();}
   GPU.dev.queue.submit([e.finish()]);
   return Q;}
+/* ── потолок пула (флот, 26.09): пул — прогретое (~55 МБ) плюс ходовое, живое и ждущее уничтожения вместе не
+   больше GC_POOL_CAP ни на миг. Место освобождается ДО создания: уходит давнее непрогретое, и уничтожается
+   сразу — наборы пула пишутся только в кодировщик самой выпечки (gpuBakeRedo0), он отправлен внутри неё же,
+   а destroy после submit законен. Нельзя только выданное идущей выпечке (busy): её кодировщик ещё не
+   отправлен, destroy до submit — «destroyed texture used in submit» и пустая выпечка. Занятое не вытесняется,
+   разовое занятое ждёт конца выпечки в dead (pend — в счёт пика).
+   Разовый набор — выпечка once или больше, чем оставляет прогретое: в пул не идёт, лежит в слоте своей роли
+   (Q.one) до замены или выхода из сцены (gcPoolLeave из gpuFrame) и уничтожается явно, не сборщиком.
+   Одинаковые разовые выпечки подряд (кабина пояса: четыре 1520×380) берут его же — одно создание на вход ── */
+let GC_BUSY=0;
 /* → текстуры набора role размером w×h или больше */
 function gcPoolSet(role,w,h){
   const Q=gcPool(),need=Math.max((w*h+4096)*2.25,65536);let e=null;
-  for(const x of Q.t)if(x.role===role&&x.w>=w&&x.h>=h&&x.w*x.h<=need&&(!e||x.w*x.h<e.w*e.h))e=x;
-  if(e){Q.t.splice(Q.t.indexOf(e),1);Q.t.push(e);return e.T;}
-  const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
-  const T=gcPoolSpec(role).map(([f,n,us])=>{by+=W*H*n*(px[f]||4);Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
-  if(by>GC_POOL_CAP/2||GC_ONCE){GPU.trash.push(...T);return T;}   /* больше полупотолка или выпечка once — разовый, в пул не идёт */
-  const nw={role,w:W,h:H,T,by};Q.t.push(nw);Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
-  /* сверх потолка уходит самый давний из непрогретых, не новый; прогретых ~54 МБ, набор в пуле — до полупотолка */
-  while(Q.by>GC_POOL_CAP){const i=Q.t.findIndex(o=>!o.warm&&o!==nw);if(i<0)break;
-    const o=Q.t.splice(i,1)[0];Q.by-=o.by;GPU.trash.push(...o.T);}
-  return T;}
-/* фоны для overlay: две resolve-цели размером с MSAA-цель набора, заводятся при первой нужде */
+  const fit=x=>!!x&&x.role===role&&x.w>=w&&x.h>=h&&x.w*x.h<=need;
+  for(const x of Q.t)if(fit(x)&&(!e||x.w*x.h<e.w*e.h))e=x;
+  if(e){Q.t.splice(Q.t.indexOf(e),1);Q.t.push(e);return gcHold(Q,e);}
+  const o=Q.one[role];if(fit(o))return gcHold(Q,o);
+  const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,S=gcPoolSpec(role),px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
+  for(const [f,n] of S)by+=W*H*n*(px[f]||4);
+  const one=GC_ONCE||by>GC_POOL_CAP-Q.wb||!gcRoom(Q,by);
+  const x={role,w:W,h:H,by,T:S.map(([f,n,us])=>{Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});})};
+  if(one){if(o){delete Q.one[role];gcDrop(Q,o,1);}Q.one[role]=x;Q.ob+=by;Q.ones++;Q.onesIn=(Q.onesIn|0)+1;Q.onesMax=Math.max(Q.onesMax|0,Q.onesIn);}
+  else{Q.t.push(x);Q.by+=by;}
+  gcPeak(Q);return gcHold(Q,x);}
+/* место под by байт в пуле: уходит давнее непрогретое и незанятое, сразу. false — не влезает и так */
+function gcRoom(Q,by){
+  for(let i=0;Q.by+by>GC_POOL_CAP&&i<Q.t.length;){const x=Q.t[i];if(x.warm||x.busy){i++;continue;}
+    Q.t.splice(i,1);gcDrop(Q,x,0);}
+  return Q.by+by<=GC_POOL_CAP;}
+function gcPeak(Q){Q.peak=Math.max(Q.peak,Q.by+Q.pend);Q.peakAll=Math.max(Q.peakAll,Q.by+Q.ob+Q.pend);}
+/* выдано идущей выпечке — занято до её отправки */
+function gcHold(Q,x){if(GC_BUSY&&!x.busy){x.busy=1;Q.busy.push(x);}return x.T;}
+function gcKill(x){for(const t of x.T)t.destroy();if(x.back)for(const t of x.back)t.destroy();x.T=x.back=null;}
+/* вынутый набор: занятый — после отправки выпечки, прочий — сразу */
+function gcDrop(Q,x,one){if(one)Q.ob-=x.by;else Q.by-=x.by;
+  if(x.busy){Q.dead.push(x);Q.pend+=x.by;}else gcKill(x);}
+/* выпечка отправлена (или упала до отправки): занятость снята, ждущее уничтожено */
+function gcPoolFlush(){const Q=GPU.lay&&GPU.lay["gc.pool"];if(!Q)return;
+  for(const x of Q.busy)x.busy=0;Q.busy.length=0;
+  for(const x of Q.dead)gcKill(x);Q.dead.length=0;Q.pend=0;}
+/* выход из сцены (gpuFrame): разовые наборы — сразу */
+function gcPoolLeave(){const Q=GPU.lay&&GPU.lay["gc.pool"];if(!Q)return;
+  for(const r in Q.one){const x=Q.one[r];delete Q.one[r];gcDrop(Q,x,1);}Q.onesIn=0;}
+/* фоны для overlay: две resolve-цели размером с MSAA-цель набора, заводятся при первой нужде
+   и идут в счёт своего набора — уходят вместе с ним */
 const GC_BACK=new WeakMap();
 function gcBack(ms){let t=GC_BACK.get(ms);
-  if(!t){const U=GPUTextureUsage;t=[0,1].map(()=>GPU.dev.createTexture({size:[ms.width,ms.height],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT}));GC_BACK.set(ms,t);}
+  if(!t){const U=GPUTextureUsage,Q=gcPool(),by=ms.width*ms.height*8;
+    const x=Q.t.find(v=>v.T[0]===ms)||Object.values(Q.one).find(v=>v.T[0]===ms);
+    if(x&&Q.t.includes(x))gcRoom(Q,by);
+    t=[0,1].map(()=>GPU.dev.createTexture({size:[ms.width,ms.height],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT}));GC_BACK.set(ms,t);
+    if(x){x.back=t;x.by+=by;if(Q.t.includes(x))Q.by+=by;else Q.ob+=by;gcPeak(Q);}}
   return t;}
 function gcPoolBuf(role,us,a){
   const Q=gcPool(),n=Math.max(256,a.byteLength);let b=Q.b[role];
@@ -12361,7 +12398,8 @@ let GC_VA=new Float32Array(1<<16);   /* вершины выпечки (x,y,кр�
 /* o.once — выпечка редкая и крупная (стойка 25d): наборы пула берутся разово и в пул не ложатся,
    иначе вытеснили бы прогретые записи, и их родила бы заново первая же выпечка в полёте */
 let GC_ONCE=false;
-function gpuBakeRedo(B){const o0=GC_ONCE;GC_ONCE=!!B.o.once;try{gpuBakeRedo0(B);}finally{GC_ONCE=o0;}}
+function gpuBakeRedo(B){const o0=GC_ONCE;GC_ONCE=!!B.o.once;GC_BUSY++;
+  try{gpuBakeRedo0(B);}finally{GC_ONCE=o0;if(!--GC_BUSY)gcPoolFlush();}}
 function gpuBakeRedo0(B){
   const t0=wallMs(),{w,h}=B,k=B.o.ss||(w*h<=262144?2:1),g=new GcCtx(w,h,k),prev=ctx;
   ctx=g;try{B.draw(g);}finally{ctx=prev;}

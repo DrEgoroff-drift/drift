@@ -137,6 +137,7 @@ function suite(name,a,b){
   const p0=TEST.pass,f0=TEST.fail,n0=TEST.failed.length;
   const ts=performance.now();
   const gpu0=typeof GPU==="object"&&!!GPU.ok;GPU_DROP_WHY="";
+  const QP=typeof GPU==="object"&&GPU.lay&&GPU.lay["gc.pool"];if(QP){QP.peak=QP.by+QP.pend;QP.peakAll=QP.by+QP.ob+QP.pend;}
   try{fn();}
   catch(e){TEST.fail++;TEST.failed.push(name+" · ИСКЛЮЧЕНИЕ: "+(e&&e.message||e));
     TEST.lines.push("  ✗ ИСКЛЮЧЕНИЕ: "+(e&&e.stack||e));}
@@ -161,6 +162,14 @@ function suite(name,a,b){
   if(TEST.pass===p0&&TEST.fail===f0){TEST.fail++;
     TEST.failed.push(name+" · ни одной проверки: набор не может покраснеть, значит ничего не проверяет");
     TEST.lines.push("  ✗ ни одной проверки");}
+  /* ── потолок пула выпечки (08ca, флот 26.09) ──
+     Живое плюс ждущее уничтожения — не больше GC_POOL_CAP ни на миг внутри набора (пик, не только конец).
+     Разовые наборы (Q.one) в пул не входят: их счёт — peakAll, вход в сцену — не больше одного создания */
+  const QA=typeof GPU==="object"&&GPU.lay&&GPU.lay["gc.pool"];
+  if(QA&&QA.peak>GC_POOL_CAP){TEST.fail++;
+    const s="пул выпечки сверх потолка: пик "+(QA.peak/1048576).toFixed(1)+" МБ (живое плюс ждущее) > "+(GC_POOL_CAP>>20)+" МБ";
+    TEST.failed.push(name+" · "+s);TEST.lines.push("  ✗ "+s);}
+  if(QA&&!TEST_NODE)console.log("·pool "+name.slice(0,60)+" by "+(QA.by/1048576).toFixed(1)+" peak "+(QA.peak/1048576).toFixed(1)+" all "+(QA.peakAll/1048576).toFixed(1)+" ones "+QA.ones+" max "+(QA.onesMax|0));
   /* карантин: провалы уходят в отдельный список, вердикт их не видит */
   if(o.stage){
     TEST.stageRan=(TEST.stageRan|0)+1;
