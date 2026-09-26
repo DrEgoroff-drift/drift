@@ -400,6 +400,10 @@ function landOnTestPlanet(){
    потолка. Возвращает, сколько кадров прошло, — чтобы набор мог это сказать. */
 function bakeIdle(){
   if(typeof MAT_JOB!=="undefined"&&MAT_JOB)return false;
+  /* печь заранее (17a0): задачи в очереди — мастер ещё не готов (кабина пояса печётся 10–11 кадров) */
+  if(typeof PB!=="undefined"&&PB.size)return false;
+  /* мастер кабины готов, но ещё проявляется (24bc, CKG_FADE кадров) — кадр не тот, что увидит игрок */
+  if(typeof CKG!=="undefined"&&G.mode==="belt"&&CKG.M&&CKG.fa<1)return false;
   return true;
 }
 function settle(max,each,floor){

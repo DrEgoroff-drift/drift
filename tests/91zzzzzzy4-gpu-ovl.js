@@ -79,6 +79,33 @@ TEST_SUITES.push(()=>suite("слой #ovl: треугольник обратно
     ok(inn>200,w+" обход: внутри залито (альфа "+inn+")");
     eq(out,0,w+" обход: за гипотенузой, в рамке — пусто");}
 }));
+/* бывший #hud (стики 15b) на #ovl: лента — четырёхугольник с градиентом прозрачности вдоль оси, шеврон — ломаная
+   одним покрытием (стык не двоит альфу, как путь 2D), «СТОП» — дуга с круглыми концами */
+TEST_SUITES.push(()=>suite("слой #ovl: четырёхугольник с градиентом, ломаная без двойного стыка, дуга",{tier:"browser"},()=>{
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  resetWorld();G.mode="system";
+  const run0=G.running,loop0=LOOP_OFF;let v={};
+  try{
+    G.running=true;LOOP_OFF=false;
+    frameBody(wallMs());if(!ok(!!ovCanvas(),"слой #ovl есть"))return;
+    ovQuad(40,40,140,40,140,80,40,80,"#fff",1,1,0);   /* градиент от середины DA (x=40) к середине BC (x=140) */
+    ovCap3(200,40,240,80,280,40,8,"#fff",.5);
+    ovArc(360,70,30,-Math.PI/2,Math.PI,4,"#fff",1);  /* от верха по часовой на пол-оборота: правая половина */
+    frameBody(wallMs());
+    const nd=ovNd(),cv=document.createElement("canvas");cv.width=OVL.cv.width;cv.height=OVL.cv.height;
+    const g=cv.getContext("2d",{willReadFrequently:true});g.drawImage(OVL.cv,0,0);
+    const A=(x,y)=>g.getImageData(Math.round(x*nd),Math.round(y*nd),1,1).data[3];
+    v={q0:A(50,60),qm:A(90,60),q1:A(130,60),qo:A(90,90),joint:A(240,79),mid:A(220,60),seg2:A(260,60),
+       r:A(390,70),l:A(330,70),top:A(360,40),bot:A(360,100),lt:A(360-21,70-21)};
+  }finally{G.running=run0;LOOP_OFF=loop0;resetWorld();}
+  ok(v.q0>200&&v.q1<50,"градиент идёт вдоль оси: у начала "+v.q0+", у конца "+v.q1);
+  ok(v.qm>105&&v.qm<150,"середина — половина прозрачности: "+v.qm);
+  eq(v.qo,0,"за краем четырёхугольника пусто");
+  ok(Math.abs(v.joint-v.mid)<=12,"стык ломаной той же альфы, что звено: "+v.joint+" против "+v.mid+" (двойной стык — ~190)");
+  ok(v.seg2>100,"второе звено ломаной есть: "+v.seg2);
+  ok(v.r>200&&v.top>100&&v.bot>100,"дуга: правая половина и оба круглых конца есть ("+v.r+", "+v.top+", "+v.bot+")");
+  ok(v.l===0&&v.lt===0,"дуга: левой половины нет ("+v.l+", "+v.lt+")");
+}));
 /* вид интерфейса (uq, 08bi): картинка/график/капсула/эллипс — числа очереди в пикселях устройства,
    прогоны по мастеру, точки графиков отдельно; без видеокарты сброс очереди и слой спрятан */
 TEST_SUITES.push(()=>suite("слой #ovl: виды интерфейса — картинка, график, капсула, эллипс",()=>{
@@ -105,4 +132,24 @@ TEST_SUITES.push(()=>suite("слой #ovl: виды интерфейса — к�
     try{ovFlush();}finally{GPU.enc=e0;}
     eq([Q.length,OVL.ur.length,OVL.gd.length,OVL.on].join(),"0,0,0,false","кадр без прохода: очереди сброшены, слой не зажжён");
   }finally{Q.length=OVL.ur.length=OVL.gd.length=0;}
+}));
+/* строка наблюдения (17 sysWatchLabel) встаёт над пэдами, пультом и подсказкой: на телефоне круг «Цель»
+   ложился на её конец, на широком окне она лежала на приёмнике (26.09) */
+for(const win of ["","phone"])TEST_SUITES.push(()=>suite("строка наблюдения не под пэдами, пультом и подсказкой"+(win?" (телефон)":""),
+  Object.assign({tier:"browser"},win?{win}:{}),()=>{
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  resetWorld();G.mode="system";G.credits=100000;G.owned.obod=true;
+  const c=genMerc(999,["mine"]);G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},tMs:now(),paidMs:now()}));
+  const m=G.crew[G.crew.length-1];crewAssignShip(m,"obod");crewOrder(m,"mine");G.watch=m.id;
+  T.wait(2);rectsDirty();
+  const q0=OVL.uq.length,led0=OVL.led;let f=null;OVL.led=()=>{};
+  try{f=sysWatchLabel(allyOf(G.watch));}finally{OVL.led=led0;OVL.uq.length=q0;}
+  const rc=cvsRect(),k=H/Math.max(1,rc.height);let n=0;
+  for(const [nm,r] of [["пэды",padsRect()],["пульт",consoleRect()],["подсказка",promptEl()&&promptEl().textContent?promptRect():null]]){
+    if(!r||!(r.height>0))continue;n++;
+    const top=(r.top-rc.top)*k,x0=(r.left-rc.left)*k,x1=(r.right-rc.left)*k;
+    ok(f.y1<=top||f.x1<=x0||f.x0>=x1,nm+": строка кончается на "+f.y1.toFixed(1)+", "+nm+" начинается на "+top.toFixed(1));}
+  ok(n>0,"хоть один из трёх на экране: "+n);
+  ok(f.y0>H*.5,"строка по-прежнему внизу кадра: "+f.y0.toFixed(0)+" из "+H);
+  resetWorld();
 }));
