@@ -15,8 +15,13 @@ could ever save.
   and the ship plan keep their brushes and are baked at screen density. They were 1× canvases and looked
   soft. The layout does not move: a dense canvas once pushed the card grid twice as wide, so the canvas now
   keeps its logical size for the layout.
-- **Nets**: the «0 вызовов 2D» gate has scenes for the showcase and for ОПИСЬ, and the zoo has two mutants
-  for them (yard-2d, opis-2d); both are killed.
+- **The suit doll too**: the body keeps its brush and is baked once per kit and visor tone; the dark outline
+  is the same bake filled with ink. It is sharp on DPR 2 and 3, and its outline is cleaner.
+- **«NaN / 40» over the hold** came from a test scene that left the hold with missing resource keys (a save
+  always fills them). The hold weight now counts a missing key as zero, and the scene keeps every key.
+- **Nets**: the «0 вызовов 2D» gate has scenes for the showcase, ОПИСЬ and the doll. A new guard reads every
+  ОПИСЬ tab, with the hold empty and full, for «NaN» and «undefined». The zoo has four new mutants for them
+  (yard-2d, opis-2d, doll-2d, opis-nan); all are killed.
 
 ## 0.475.0 - the nebula glides in flight
 

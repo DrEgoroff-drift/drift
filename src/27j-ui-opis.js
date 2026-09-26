@@ -916,8 +916,8 @@ function opisRender(box){
   z2.appendChild(opisHead(2,"КОМПЛЕКТ СКАФАНДРА",kitLine()));
   const kg=document.createElement("div");kg.className="op-kit-grid";
   const lay=document.createElement("div");lay.className="op-kitlay";
-  const dcv=document.createElement("canvas");dcv.className="doll";dcv.width=120;dcv.height=200;
-  kitDollHit=[];drawKitFigure(dcv.getContext("2d"),120,200,kitDollHit,0);
+  const dcv=document.createElement("canvas");dcv.className="doll";
+  kitDollHit=[];opisGpu(dcv,120,200,c=>drawKitFigure(c,120,200,kitDollHit,0));
   lay.appendChild(dcv);
   const lcv=document.createElement("canvas");lcv.className="lay";lcv.width=420;lcv.height=300;
   opisGpu(lcv,420,300,c=>kitLayDraw(c,420,300));

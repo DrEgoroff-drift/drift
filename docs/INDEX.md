@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 640 · символов верхнего уровня: 6453
+Файлов: 640 · символов верхнего уровня: 6455
 
 ## СИМВОЛЫ
 
@@ -1540,7 +1540,7 @@ drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
-drawKitFigure                src/12x-suit.js:202-299
+drawKitFigure                src/12x-suit.js:286-306
 drawLander                   src/19f-lander.js:52-340
 drawLandGear                 src/19f-lander.js:26-51
 drawLanding                  src/19-mode-landing.js:285-413
@@ -3205,14 +3205,16 @@ kitBrand                     src/12x-suit.js:62-65
 kitBy                        src/12x-suit.js:61
 kitCanMod                    src/12x-suit.js:154-160
 kitColOf                     src/12x-suit.js:180-186
-kitDepotBlock                src/12x-suit.js:334-342
+kitDepotBlock                src/12x-suit.js:341-349
 kitDepotOf                   src/12x-suit.js:110-123
 kitDepotTake                 src/12x-suit.js:124-129
-kitDollHit                   src/12x-suit.js:308
+kitDollHit                   src/12x-suit.js:315
+kitFigureBakes               src/12x-suit.js:277-285
+kitFigureBody                src/12x-suit.js:202-272
 kitFromHulk                  src/12x-suit.js:131-137
 kitGive                      src/12x-suit.js:98-107
 kitHasMod                    src/12x-suit.js:69
-kitHeatMul                   src/12x-suit.js:301-305
+kitHeatMul                   src/12x-suit.js:308-312
 KITLAY                       src/27j-ui-kitlay.js:31-38
 kitLayDraw                   src/27j-ui-kitlay.js:136-149
 kitLayPiece                  src/27j-ui-kitlay.js:74-134
@@ -3227,7 +3229,7 @@ kitRepairCost                src/12x-suit.js:146
 kitRoman                     src/12x-suit.js:66
 kitShelf                     src/12x-suit.js:53
 kitShelfMax                  src/12x-suit.js:55
-kitShopBlock                 src/12x-suit.js:310-332
+kitShopBlock                 src/12x-suit.js:317-339
 kitStat                      src/12x-suit.js:70-88
 kitWearMul                   src/12x-suit.js:68
 kitWearPiece                 src/12x-suit.js:139-145
@@ -8055,7 +8057,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 25 КБ
+## tests/91zzv-table.js · 26 КБ
   · автотесты: пульт и стол (M151a):1
   · огонёк: «пришло» ≠ «не прочитано»:207
 

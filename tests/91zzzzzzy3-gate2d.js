@@ -217,13 +217,13 @@ const GATE2D=[
   /* картинки ОПИСИ (27j через 27i0): кучи трюма, раскладка комплекта, люк на полосе, коробок, шкатулка,
      чертёж (05e) — вкладки ТРЮМ, КОМПЛЕКТ и КОРАБЛЬ по кругу, каждая перерисовка — новая выпечка под записью */
   {name:"опись (27j): кучи, раскладка, люк, коробок — выпечкой, без 2D",
-   painters:["opisGpu","holdDrawPile","holdPiece","opisDrawHatch","opisDrawBox","opisDrawMatchbox","kitLayDraw","kitLayPiece","drawPlan"],
+   painters:["opisGpu","holdDrawPile","holdPiece","opisDrawHatch","opisDrawBox","opisDrawMatchbox","kitLayDraw","kitLayPiece","drawKitFigure","kitFigureBody","kitFigureBakes","drawPlan"],
    place(first){
-     if(first){this.i=0;G.cargo={};Object.keys(RES).filter(k=>RES[k].price).slice(0,6).forEach((k,i)=>G.cargo[k]=3+i*7);return {};}
+     if(first){this.i=0;for(const k of RES_KEYS)G.cargo[k]=0;Object.keys(RES).filter(k=>RES[k].price).slice(0,6).forEach((k,i)=>G.cargo[k]=3+i*7);return {};}
      if(this.i===0)tableToggle(true,"hold");
-     if(this.i<40){OPIS.tab=["hold","kit","ship"][this.i%3];opisRerender();opisBar();}
+     if(this.i<40){OPIS.tab=["hold","kit","ship"][this.i%3];if(drawKitFigure._B)drawKitFigure._B.key="";opisRerender();opisBar();}
      this.i++;return {};},
-   done(){tableToggle(false);const b=document.getElementById("opisBar");if(b)b.remove();G.cargo={};},
+   done(){tableToggle(false);const b=document.getElementById("opisBar");if(b)b.remove();for(const k of RES_KEYS)G.cargo[k]=0;},
    probe:["opisGpu"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{

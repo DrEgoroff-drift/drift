@@ -199,14 +199,9 @@ function kitPalette(){
    шлем → фонарь), ОДИН обвод по всему телу, ОДИН свет. Износ читается на
    кукле: потёртости штрихами, мутное забрало. Кукла дышит (t), фонарь чуть
    качается. Рисует и экран, и — теми же цветами — ходока на поверхности. */
-function drawKitFigure(c,W,H,hit,t){
+function kitFigureBody(d,t){
   const K=kitAll(),P=kitPalette();
-  t=t===undefined?G.t*.03:t;
   const br=Math.sin(t)*1.4;                       /* дыхание */
-  const off=drawKitFigure._off||(drawKitFigure._off=document.createElement("canvas"));
-  off.width=120;off.height=200;
-  const d=off.getContext("2d");
-  d.clearRect(0,0,120,200);
   d.save();d.translate(60,104+br*.3);
   const cls=p=>K[p].cls;
   /* слой 1: ранец за спиной — ширина по классу, лямки */
@@ -274,22 +269,34 @@ function drawKitFigure(c,W,H,hit,t){
   light.addColorStop(0,"rgba(255,255,255,.16)");light.addColorStop(.5,"rgba(255,255,255,0)");light.addColorStop(1,"rgba(0,10,20,.22)");
   d.fillStyle=light;d.fillRect(0,0,120,200);
   d.globalCompositeOperation="source-over";
-  /* один обвод: силуэт тёмным, четыре сдвига под куклой */
-  const sil=drawKitFigure._sil||(drawKitFigure._sil=document.createElement("canvas"));
-  sil.width=120;sil.height=200;
-  const s2=sil.getContext("2d");
-  s2.clearRect(0,0,120,200);s2.drawImage(off,0,0);
-  s2.globalCompositeOperation="source-in";s2.fillStyle="#10161e";s2.fillRect(0,0,120,200);
-  s2.globalCompositeOperation="source-over";
-  /* на целевой канве */
+}
+/* кукла на движке (G15): тело (kitFigureBody, кисть прежняя) печётся один раз на набор вещей,
+   палитру и тон забрала; силуэт для обвода — та же выпечка, залитая краской поверх (source-atop по
+   пустому холсту — то же, что прежний source-in). Плотность max(2, экран): на столе кукла ужата
+   до 78 px, на DPR 3 это 234 точки */
+function kitFigureBakes(t){
+  const k=Math.max(2,panelNd()),key=JSON.stringify([kitAll(),kitPalette(),typeof cosmVisor==="function"?cosmVisor():0,t,k]);
+  const F=drawKitFigure._B;if(F&&F.key===key)return F;
+  if(F){gpuBakeDrop(F.off);gpuBakeDrop(F.sil);}
+  const off=gpuBake(120*k,200*k,g=>{g.setTransform(k,0,0,k,0,0);kitFigureBody(g,t);},{once:true});
+  const sil=off&&gpuBake(120*k,200*k,g=>{g.drawImage(off,0,0,120*k,200*k);
+    g.globalCompositeOperation="source-atop";g.fillStyle="#10161e";g.fillRect(0,0,120*k,200*k);},{once:true});
+  return drawKitFigure._B={key,off,sil};
+}
+function drawKitFigure(c,W,H,hit,t){
+  t=t===undefined?G.t*.03:t;
+  const B=kitFigureBakes(t);
+  /* на целевой канве: один обвод — силуэт тёмным, четыре сдвига под куклой */
   c.clearRect(0,0,W,H);
   const k=Math.min(W/132,H/212),ox=(W-120*k)/2,oy=(H-200*k)/2;
-  c.save();c.translate(ox,oy);c.scale(k,k);
-  for(const [dx,dy] of [[-1.5,0],[1.5,0],[0,-1.5],[0,1.5]])c.drawImage(sil,dx,dy);
-  c.drawImage(off,0,0);
-  /* тень-опора */
-  c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(60,196,34,5,0,0,TAU);c.fill();
-  c.restore();
+  if(B.off){
+    c.save();c.translate(ox,oy);c.scale(k,k);
+    for(const [dx,dy] of [[-1.5,0],[1.5,0],[0,-1.5],[0,1.5]])c.drawImage(B.sil,dx,dy,120,200);
+    c.drawImage(B.off,0,0,120,200);
+    /* тень-опора */
+    c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(60,196,34,5,0,0,TAU);c.fill();
+    c.restore();
+  }
   if(hit){
     hit.length=0;
     const zone=(p,x,y,w,h)=>hit.push({p,x:ox+x*k,y:oy+y*k,w:Math.max(44,w*k),h:Math.max(44,h*k)});
