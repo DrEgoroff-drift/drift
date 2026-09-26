@@ -876,6 +876,21 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   than half (the nest and its glow), capped at `RL_FLM` of the flame colour. Keels +23 levels mean over 49 px;
   nest bright pixels change by at most ±1 (the bloom halo that samples the lit keels), two runs with the light
   off are byte-identical. Open: the close-up, -Full on the branch.
+- **Ships in real light, pass 1 redone after review (26.09, `gpu-ships`):** a) the body dome (slope of the
+  blurred alpha) laid a soft murk across flat faces and a pink «pipe» along the barge's long side, so it is
+  gone: the faces are lit as painted, each even inside, with only the faint side tilt (`kf`, .88–1). The star
+  reads on the edges: toward it the rim (g), 1 device px, now ×.45 plus ×.35 on bare metal (was .7/.6 — on
+  stepped edges it went to 230–240 luma against a 90 face and broke into dashes), the neighbour alpha read one
+  mip down; away from it a dark silhouette edge (`tv`, −.4 over 1.5 px). d) the soft sheen is removed; the glint
+  is the rim on metal. c) `shAt` bottoms at .4 in full umbra (2D multiplies the whole colour by it); hull mode
+  now takes `smoothstep(.4,1,sk)`, so direct light, rim and glass glint go out entirely and the fill stays at
+  .65 (`RL_SH`). Own ship without thrust, lamps masked: lit 125.2 / shadow 30.1, ratio .24 at L 1.4 (main
+  105.8 / 43.3, .41); L 1.9 .25 (main .41). Direct light `RL_LIT` 1.1→1.2 to hold the barge's luma (74 vs main
+  77; container saturation equal, .21/.14/.15/.21 vs .21/.13/.15/.22). b) the fill is one gas colour per hull
+  (five taps around it): shade half R/B 1.27 in orange gas (main 1.27), .82 in blue (main .86). Turn strip
+  (12 × .055 rad, rim on − off): barge step ≤ .04 of its peak, pirate ≤ .06. Silhouettes: hull colour forced to
+  its alpha, white minus black frames (gas, stars, lamps cancel), inside the ship boxes main = HEAD to 2/255 in
+  three scenes. The glass sheen on the barge's glass containers stays (main has it too).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
