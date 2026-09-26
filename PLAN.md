@@ -44,8 +44,6 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     lands after its tests, whole-frame pairs and six regressions, with its census of 2D calls after `gpuWorld` at 0
     (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
-  - GPU-3's next release: «турбаза «Дружба»» (ra, the designer's bad2a811, merged after its pair in 3ba532f3) and
-    the phone tools in `docs/phone/` (0b186c5c).
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
   - ships in real light, a–h (the worker, `gpu-ships`): d and g accepted; f — one more try on the fins with the
     emission mask, else revert; the barge's three lone white pixels become a soft sheen or go, with a 12-frame
