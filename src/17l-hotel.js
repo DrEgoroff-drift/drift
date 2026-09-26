@@ -74,6 +74,12 @@ function hotelLight(Ht){
    заполняющим; warm — прибавка снизу (фонари площадки), 0..255 */
 function hotelLit(Lt,base,s,warm){s=Math.max(0,s);
   return base.map((v,i)=>Math.min(255,v*(Lt.K[i]*HOTEL_KEY*s+Lt.F[i]*HOTEL_AMB)+(warm?warm[i]:0)));}
+/* освещённость грани (общая для типов): нормаль в плане отклонена от зрителя на f (рад, + вправо);
+   звезда стоит над плоскостью экрана на HOTEL_EL, поэтому фронт не чернеет и с тыла, а тень
+   остаётся тенью. hotelUp/hotelDn — верхние и нижние грани (крыши, днища) */
+const HOTEL_EL=.62,HOTEL_CE=Math.cos(HOTEL_EL),HOTEL_SE=Math.sin(HOTEL_EL);
+const hotelN=(f,Lt)=>Math.max(0,Math.sin(f)*Lt.lx*HOTEL_CE+Math.cos(f)*HOTEL_SE);
+const hotelUp=Lt=>Math.max(.12,-Lt.ly*HOTEL_CE+.25),hotelDn=Lt=>Math.max(.06,Lt.ly*HOTEL_CE+.1);
 const hotelAngD=(a,b)=>{const d=(a-b)%TAU;return Math.abs(d>Math.PI?d-TAU:d<-Math.PI?d+TAU:d);};
 function* hotelJob(T,sd,col,key,Lt){
   const w=Math.ceil(T.W*T.PX),h=Math.ceil(T.H*T.PX),B={key,k0:key.slice(0,key.lastIndexOf("|")),a:Lt.a,w,h},ok=[false];
