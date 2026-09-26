@@ -838,9 +838,16 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   cut-out reads as a body. Cost: one more `dustAt`, taken only near an edge that has a rim or a crust
   (−40…80 px); deep inside and far out the body is thick anyway, so the picture is identical. nebGen,
   headless, l2c ×1.10, regen every frame, A/B/A medians: 760 1.55 → 1.66 ms; 1920 9.8 → ~10.2 ms (the
-  ungated sample was +1.1 ms there). 1920 was over the 2 ms budget before L1b. The ×2.00 «tadpoles» are
-  gas clumps seen through one body's soft ramp (body ≈ .4–.5, ~60 % through), the outline is the clump's
-  own. Gating the cavity glow by gas dimmed the frame 10 %, a haze in narrow windows missed them. Pairs vs HEAD (light / sharpness): l2c
+  ungated sample was +1.1 ms there). 1920 was over the 2 ms budget before L1b. The ×2.00 «tadpoles»
+  (fixed 26.09): lit gas OUTSIDE a body (dpx > 0, rim glow + cavity light) whose rim ended in the body over
+  ~16 px (`smoothstep(-26,4,dpx)`) onto dim gas — 10–90 % in 17 px at 760 ×2 read as a cut-out outline.
+  Where the gas under the pixel is dim (`gb` < .15, before the dust) the rim's inward side is now
+  `exp(dpx/22)`; on bright gas (gb > .5) it is unchanged. The fish edge goes 10–90 % in 38 px. A longer
+  outward body ramp (variant «Б») changed nothing — the dark side is the body itself. Pairs vs HEAD
+  (light / sharpness): 760 ×2.00 +2.1 / +0.1 %, ×1.10 +1.7 / +0.1 %; 390 dpr 1.5 ×2.00 +1.5 / +0.3 %,
+  ×1.10 +0.8 / −0.8 %; |d| on bright gas .4–.95, the change sits in the dark. nebGen 1920 8.2 / 8.36 /
+  8.37 ms (A/B/A), no new `dustAt`. Gating the cavity glow by gas dimmed the frame 10 %, a haze in narrow
+  windows missed them. Pairs vs HEAD (light / sharpness): l2c
   760 ×1.10 +0.6 / +0.3 %, ×2.00 +1.1 / +0.6 %; l4a ×2.00 +2.1 / +0.9 %; 390 dpr 1.5 ×1.10 +0.1 / +0.5 %,
   ×2.00 +1.0 / +0.5 %. GPU errors 0. The file is 66 bytes smaller: history went from the header comment.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240

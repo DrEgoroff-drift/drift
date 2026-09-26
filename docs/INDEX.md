@@ -2239,7 +2239,7 @@ glyphNodes                   src/12t-settle.js:92-102
 gn5Foe                       tests/91zzzw-guns3.js:10-16
 GNB                          src/16gb-gpu-nebula.js:17
 GNB_EMI                      src/16gb-gpu-nebula.js:409
-GNB_FINE                     src/16gb-gpu-nebula.js:363
+GNB_FINE                     src/16gb-gpu-nebula.js:364
 GNB_GEN                      src/16gb-gpu-nebula.js:44
 GNB_LM_COL                   src/16gb-gpu-nebula.js:521
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
