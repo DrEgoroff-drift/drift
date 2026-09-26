@@ -3046,12 +3046,12 @@ instrOffers                  src/05b-instr-kit.js:127-143
 instrPanel                   src/25a-instr.js:109-199
 instrPanelGeo                src/25a-instr.js:103-106
 instrPenWidth                src/05b-instr-kit.js:78-80
-instrPodDraw                 src/25c-instr-hud.js:111-136
+instrPodDraw                 src/25c-instr-hud.js:111-138
 instrPodGeo                  src/25c-instr-hud.js:40-43
 instrPodLive                 src/25c-instr-hud.js:83-110
 instrPodPaint                src/25c-instr-hud.js:45-81
 instrPodSig                  src/25c-instr-hud.js:26-30
-instrPodTick                 src/25c-instr-hud.js:149-155
+instrPodTick                 src/25c-instr-hud.js:151-157
 instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
@@ -3069,9 +3069,9 @@ instTick                     src/11ab-institute.js:80-94
 invalidateKeyMap             src/15-input.js:125
 invalidateParts              src/05-parts.js:310
 IPOD                         src/25c-instr-hud.js:38
-IPOD_FLY                     src/25c-instr-hud.js:148
-IPOD_MQ                      src/25c-instr-hud.js:145
-IPOD_NARROW                  src/25c-instr-hud.js:146
+IPOD_FLY                     src/25c-instr-hud.js:150
+IPOD_MQ                      src/25c-instr-hud.js:147
+IPOD_NARROW                  src/25c-instr-hud.js:148
 IPOD_S                       src/25c-instr-hud.js:17
 IPOD_SIG                     src/25c-instr-hud.js:25
 isFitted                     src/05-parts.js:381-384
@@ -3367,14 +3367,14 @@ logPageOf                    src/11-log.js:13
 logShip                      src/01a-crashlog.js:50-53
 logTime                      src/11-log.js:69-72
 LONG_HOD                     src/12b3-fx-cult.js:32-45
-look                         src/28y-look.js:273-277
+look                         src/28y-look.js:276-280
 LOOK_BASE                    tests/91zzzzy-look.js:21-39
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
-lookAll                      src/28y-look.js:252-271
+lookAll                      src/28y-look.js:255-274
 lookFrame                    src/28y-look.js:46-108
 lookoutSees                  src/12ag-holdfx.js:104-111
-lookScenes                   src/28y-look.js:129-248
+lookScenes                   src/28y-look.js:129-251
 lookVerdict                  src/28y-look.js:114-124
 LOOP_OFF                     src/28-loop.js:364
 LOOP_PHASE                   src/01-core.js:86
@@ -3435,14 +3435,14 @@ MAIN_CTX                     src/08-state.js:6
 makeIR                       src/10-music.js:109-121
 makePhrase                   src/10-music.js:381-404
 MAKER_ASSEMBLY               src/03a-hull-maker.js:463
-MAKER_CV                     src/28y-look.js:311
+MAKER_CV                     src/28y-look.js:314
 MAKER_KEYS                   src/03a-hull-maker.js:73
-MAKER_PX                     src/28y-look.js:310
+MAKER_PX                     src/28y-look.js:313
 makerAssembly                src/03a-hull-maker.js:464
 makerBank                    src/03a-hull-maker.js:417
 makerBySeed                  src/03a-hull-maker.js:89
 makerDraw                    src/03a-hull-maker.js:241-362
-makerFeat                    src/28y-look.js:312-385
+makerFeat                    src/28y-look.js:315-388
 makerFlame                   src/03a-hull-maker.js:416
 makerForms                   src/03a-hull-maker.js:93-101
 makerGround                  src/03a-hull-maker.js:452
@@ -3455,10 +3455,10 @@ makeRock                     src/24-mode-belt.js:36-62
 makerOf                      src/03a-hull-maker.js:80-86
 makerOuts                    src/03a-hull-maker.js:176-194
 makerProfile                 src/03a-hull-maker.js:107-172
-makerRead                    src/28y-look.js:393-457
+makerRead                    src/28y-look.js:396-460
 makerRow                     src/03a-hull-maker.js:87
 makerRu                      src/03a-hull-maker.js:90
-makerStand                   src/28y-look.js:386-392
+makerStand                   src/28y-look.js:389-395
 makerTicks                   src/03a-hull-maker.js:233-236
 makerWear                    src/03a-hull-maker.js:453
 makerWidth                   src/03a-hull-maker.js:423-450
@@ -7470,7 +7470,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25b-tape.js · 13 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 12 КБ
+## src/25c-instr-hud.js · 13 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25d-instr-rack.js · 36 КБ
@@ -7648,7 +7648,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
-  · читается ли изготовитель (M369, §19.4):296
+  · читается ли изготовитель (M369, §19.4):299
 
 ## src/28z-fps-probe.js · 22 КБ
   · пробник G11: ?g11:1
