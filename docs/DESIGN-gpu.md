@@ -806,6 +806,17 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   once its step on screen drops to 2–4 px, so there is no ripple from afar. Pairs vs HEAD, centred on the
   giant: 760 zoom 1 sharpness +7 %, zoom 2 +15 %, zoom .5 +2 %; 390 dpr 1.5 +15 %; light −0.1…−0.3 %.
   GPU errors 0.
+- **Gas-giant ring without scan lines** (26.09, Контроль: «thin even horizontal lines in the lower band of
+  gs_j2_760_2»): the lines were not in the gas at all. The pink band is the ring's front arc over the disc,
+  seen nearly edge-on, so its bands (≈ .025 r), mid-band gaps (.06 of a band) and the fine sin·sin grooves
+  (period .03 r) shrank to 1–2 px and were point-sampled into rows. On the ansae the same sampling gave a
+  staircase cross-hatch. `ring()` now averages four samples across one pixel of ρ, with the step from the
+  analytic gradient of ρ (front: px·|(x, y/tt²)|/ρ; shadow on the disc: from the neighbouring pixels through
+  the light ray). Anything finer than a pixel fades to its mean: band hash, groove, and a gap that is kept
+  at least a pixel wide, with its depth scaled down. The strip texture and the jets were ruled out by
+  switching each off. Pairs vs HEAD, centred on the giant: 760 zoom 2 sharpness −3.7 %, zoom 1 −8.1 %,
+  zoom .5 −3.9 %; 390 dpr 1.5 zoom 2 −2.8 %, zoom 1 −7.5 %; light 0…−0.1 %. The sharpness that went away
+  is the aliasing (rows on the arc, stairs on the ansae); the grooves on the ansae stay. GPU errors 0.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance

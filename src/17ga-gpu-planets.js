@@ -127,19 +127,26 @@ fn cld(b:vec3f,so:vec3f,cv:f32,af:f32)->f32{
   /* край объедается мелким шумом — рваный и прозрачный, без обреза */
   let e=.2*(fb3(b*vec3f(14.,22.,14.)+wq*3.+so,3)-.5)+.08*af*(fb3(b*52.+so,2)-.5);
   return smoothstep(.6-cv*.3,.8-cv*.3,c+e);}
-/* кольцо в точке P своей плоскости: радиус в долях r → цвет и прозрачность */
-fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
+/* кольцо в точке P своей плоскости: радиус в долях r → цвет и прозрачность; dr — шаг rho на пиксель.
+   Что мельче пикселя (полоса, завиток, щель), гаснет в среднее, а не мелькает строкой */
+fn ring0(rho:f32,v4:vec4f,v5:vec4f,dr:f32)->vec4f{
   let ri=v4.x;let ro=v4.y;let n=max(v5.w,1.);
   if(rho<ri-.02||rho>ro+.02){return vec4f(0.);}
   let f=(rho-ri)/(ro-ri);let b=clamp(floor(f*n),0.,n-1.);
-  let hb=h1(v4.z+b*7.31);
+  let kb=clamp((ro-ri)/n/dr-.7,0.,1.);let hb=mix(.5,h1(v4.z+b*7.31),kb);
   var a=.06+hb*.16;
   /* тонкие щели и завитки внутри полосы — вместо ровной обводки */
-  let fine=.8+.2*sin(rho*211.+hb*6.)*sin(rho*67.+v4.z);
-  let gap=smoothstep(.0,.06,abs(fract(f*n)-.5)*2.-.0);
+  let fine=.8+.2*clamp((.0298/dr-1.)*.7,0.,1.)*sin(rho*211.+hb*6.)*sin(rho*67.+v4.z);
+  let gw=max(.06,.6*n*dr/(ro-ri));
+  let gap=mix(.94,mix(1.,smoothstep(0.,gw,abs(fract(f*n)-.5)*2.),min(1.,.1/gw)),kb);
   a=a*fine*mix(.55,1.,gap)*smoothstep(ri-.02,ri+.03,rho)*(1.-smoothstep(ro-.03,ro+.02,rho));
   let col=vec3f(190.+hb*50.,172.+h1(hb*9.)*46.,146.+h1(hb*3.)*54.)/255.;
   return vec4f(col*a*2.3,min(a*2.3,1.));
+}
+/* пиксель кольца — среднее четырёх отсчётов поперёк: сжатое к ребру кольцо давало ровные строки,
+   как развёртка; что крупнее пикселя, держит контраст */
+fn ring(rho:f32,v4:vec4f,v5:vec4f,dr:f32)->vec4f{
+  return .25*(ring0(rho-.375*dr,v4,v5,dr)+ring0(rho-.125*dr,v4,v5,dr)+ring0(rho+.125*dr,v4,v5,dr)+ring0(rho+.375*dr,v4,v5,dr));
 }
 @fragment fn fs(i:VO)->@location(0) vec4f{
   let v0=pb[0];let v1=pb[1];let v2=pb[2];let v3=pb[3];let v4=pb[4];let v5=pb[5];
@@ -265,7 +272,12 @@ fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
     if(v4.w>0.){
       let tt=v4.w;let N=vec3f(0.,sqrt(1.-tt*tt),-tt);let dq=dot(L,N);
       if(abs(dq)>1e-3){let s=-dot(n,N)/dq;
-        if(s>0.){let P=n+L*s;let rg=ring(length(P),v4,v5,px);col=col*(1.-rg.a*.85);}}
+        /* шаг тени на пикселе — по соседям: проекция лучом сжимает полосы сильнее, чем наклон */
+        let dx=d+vec2f(px,0.);let dy=d+vec2f(0.,px);
+        let nx=vec3f(dx,sqrt(max(0.,1.-dot(dx,dx))));let ny=vec3f(dy,sqrt(max(0.,1.-dot(dy,dy))));
+        let rh=length(n+L*s);
+        let dr=max(abs(length(nx-L*dot(nx,N)/dq)-rh),abs(length(ny-L*dot(ny,N)/dq)-rh));
+        if(s>0.){let rg=ring(rh,v4,v5,max(dr,px));col=col*(1.-rg.a*.85);}}
     }
     let cov=clamp((1.-len)/px+.5,0.,1.);
     sph=vec4f(col*cov,cov);
@@ -283,7 +295,7 @@ fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
   if(v4.w>0.){
     let tt=v4.w;let st=sqrt(1.-tt*tt);
     let rho=length(vec2f(d.x,d.y/tt));let zr=d.y/tt*st;
-    var rg=ring(rho,v4,v5,px);
+    var rg=ring(rho,v4,v5,px*length(vec2f(d.x,d.y/max(tt*tt,.0064)))/max(rho,.01));
     /* тень планеты на кольце: луч от точки кольца к звезде задевает шар */
     let P=vec3f(d.x,d.y,zr);let b=dot(P,L);let cc=dot(P,P)-1.;let disc=b*b-cc;
     if(b<0.&&disc>0.){rg=vec4f(rg.rgb*(1.-smoothstep(0.,.04,disc)*.85),rg.a);}
