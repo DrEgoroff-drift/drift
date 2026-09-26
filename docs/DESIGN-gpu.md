@@ -896,6 +896,9 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   pirate and station panels read in relief, station lamps are crisper, own amber lights glow. New browser
   suite «материал корпуса: пираты, баржи, свои…». Tour GREEN, -Browser green.
   Next: merge origin/main once 0.466.0 is out, then candidate 0.467.0 (+ gpu2-lit).
+- **0.467.0 cut on `rel-0.467`** (26.09) from 15d24597 (gpu up to 6e775fb9 + origin/main 0.466.0), without
+  gpu2-lit: its star disc drops the «система» golden contrast .88 → .69 (a real loss, LOOK_BASE kept) and moves
+  5.5–5.9 % of the blocks; the disc, the ring and gpu3-rack go to 0.468.0. Node, -Full -Jobs 3, -Mobile green.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

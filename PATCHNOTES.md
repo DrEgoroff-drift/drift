@@ -6,6 +6,18 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.467.0 - ships in a planet's shadow, hulls of real material
+
+- **A planet shades ships** (GPU-1): fly behind a planet and your ship and everyone near it go dark,
+  with a soft edge where the shadow begins. A planet just off the screen still casts its shadow in.
+- **Hulls are baked with a material once** (GPU-1): panel seams and plates catch the star's edge instead
+  of only the outline, and cockpit glass glints. Lamps are told from paint by being brighter than the
+  hull around them, so red trim no longer glows while windows and nav lights do. Pirates, barges, the
+  wanderer's sail-ship and the station get the same material; barge containers stop shining like lamps
+  in the dark. The video card now does 5 lookups a pixel for this instead of 20.
+- **No hitch when a bright building comes into view** (GPU-1): the hotel, neon signs and the belt's
+  labels are now baked one piece per frame.
+
 ## 0.466.0 - the pirate base as a building, sparks without a rainbow, the last 2D layer gone
 
 - **The pirate base is a building now** (GPU-2): instead of a red pentagon mark it is a low five-sided
