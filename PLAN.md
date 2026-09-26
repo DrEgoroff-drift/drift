@@ -78,9 +78,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
   bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
-- [ ] G2 star disc (Контроль 24.09, after 40f3276): reads as a flat orange ball — k_l2cB radius profile centre
-  246, 198 at .85 R, a bump 201 at the limb, then glow 193; R 249–255 over the whole disc (clipped). Limb
-  darkening into red with no bump at the edge, R ≤245 on the limb.
 - [ ] G3b gas giant (Контроль 24.09): the thin jets along the flow still read weak at 1:1.
 - [ ] CI with WebGPU (Контроль 24.09): the smoke in `deploy.yml` runs `--disable-gpu`, so it proves only the
   «no WebGPU» notice. Turn WebGPU on in CI through SwiftShader (the flag set proven locally first), then the
