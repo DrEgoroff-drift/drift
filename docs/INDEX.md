@@ -10,10 +10,6 @@
 
 ## СИМВОЛЫ
 
-_file                        tests/90-harness.js:22
-_indPrice                    src/12ac-bld.js:112
-_mapDirty                    src/15-input.js:124
-_suite                       tests/90-harness.js:11
 $actBtn                      src/27z-telemetry.js:35
 $bg                          src/12l-barge.js:655
 $bThr                        src/27z-telemetry.js:44
@@ -47,6 +43,10 @@ $vitals                      src/27z-telemetry.js:32
 $vj                          src/27z-telemetry.js:40
 $vs                          src/27z-telemetry.js:38
 $zoombox                     src/27z-telemetry.js:46
+_file                        tests/90-harness.js:22
+_indPrice                    src/12ac-bld.js:112
+_mapDirty                    src/15-input.js:124
+_suite                       tests/90-harness.js:11
 ABIL                         src/16c-abil.js:15-23
 ABIL_BTN                     src/16c-abil.js:111
 ABIL_CONE                    src/16c-abil.js:128
