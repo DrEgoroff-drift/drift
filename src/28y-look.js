@@ -301,7 +301,7 @@ if(/[?&]look\b/.test(location.search)){
    подписью. «Мне кажется, читается» — не довод: прибор смотрит на ту же
    картинку, что игрок, и считает долю угаданных.
 
-   Как считает. Корпус рисуется в маленькую канву носом вправо; из пикселей
+   Как считает. Корпус рисуется в маленький кадр носом вправо; из пикселей
    берётся вектор примет: восемь замеров полувысоты силуэта (это и есть закон
    профиля), скачки между соседними колонками (ступени и модули против гладкой
    капсулы и веретена), доля чернил ЗА телом (приметы, торчащие из обвода),
@@ -311,22 +311,24 @@ if(/[?&]look\b/.test(location.search)){
    makerRead()        — доля угаданных по ста семенам на класс;
    makerRead(20)      — быстрее и грубее, для правки на ходу. */
 const MAKER_PX=52;
-let MAKER_CV=null;
+/* Корпус рисует движок — та же студия, что у ОПИСИ и витрины (17c2 hullStudio): тело — выпечка
+   кистей 03e на видеокарте, свет — рельефом, как в полёте. Прибор смотрит на кадр движка, а не на
+   2D-двойника (п. h, 26.09); кадр вне цикла собирает и читает ovRead (08bi). Без видеокарты
+   (Node) пикселей нет — null */
+const MAKER_G={S:{},B:null};
+function makerPixels(id,x,y,k){
+  const g=MAKER_G,P=MAKER_PX;
+  return ovRead(P,P,()=>{
+    if(!hullStudio(g.S,id,P,P,1,x,y,k,0))return false;
+    if(!g.B||g.B.tex!==g.S.tex)g.B={tex:g.S.tex,view:g.S.view,dev:GPU.dev,inv:true};
+    ovImage(g.B,P/2,P/2,P,P,0,0,0,1,1,1);
+  });
+}
 function makerFeat(id){
-  if(!MAKER_CV){
-    MAKER_CV=document.createElement("canvas");
-    MAKER_CV.width=MAKER_CV.height=MAKER_PX;
-  }
-  const c=MAKER_CV.getContext("2d");
-  c.setTransform(1,0,0,1,0,0);
-  c.clearRect(0,0,MAKER_PX,MAKER_PX);
   const h=hullOf(id);
   const k=MAKER_PX*.86/Math.max(8,h.len+h.halfW*.9);
-  const old=ctx;ctx=c;
-  c.save();c.translate(MAKER_PX*.5-((h.nose+h.tail)*.5)*k,MAKER_PX*.5);c.scale(k,k);
-  try{drawHull(id,false,false,0,0);}catch(e){}
-  c.restore();ctx=old;
-  const d=c.getImageData(0,0,MAKER_PX,MAKER_PX).data;
+  const d=makerPixels(id,MAKER_PX*.5-((h.nose+h.tail)*.5)*k,MAKER_PX*.5,k);
+  if(!d)return null;
   /* полувысота силуэта по колонкам и средний тон того, что нарисовано */
   const col=new Array(MAKER_PX).fill(0);
   /* лучи: наибольший радиус чернил в двенадцати секторах. Крюк за кормой,

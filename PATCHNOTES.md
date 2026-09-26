@@ -6,7 +6,7 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## 0.476.0 - the shipyard showcase, ОПИСЬ and the suit doll on the engine
+## 0.477.0 - the shipyard showcase, ОПИСЬ and the suit doll on the engine
 
 - **The shipyard showcase is one engine canvas** (GPU-3): every hull on the ВЕРФЬ tab is the same studio hull
   as in flight, drawn into one canvas over the list. Before, each card baked its own small 2D picture. The
@@ -22,6 +22,28 @@ could ever save.
 - **Nets**: the «0 вызовов 2D» gate has scenes for the showcase, ОПИСЬ and the doll. A new guard reads every
   ОПИСЬ tab, with the hold empty and full, for «NaN» and «undefined». The zoo has four new mutants for them
   (yard-2d, opis-2d, doll-2d, opis-nan); all are killed.
+
+## 0.476.0 - the stapel, the home room and the maker's eye on the engine
+
+- **The stapel draws on the engine** (GPU-f): the sheet is one webgpu canvas, the hull and the sheet are two GPU
+  bakes of the same brushes, made once per sheet by the frame while the station is open. The stapel measures the
+  hull without the running-light halos (стапель меряет корпус без ореолов огней): the box is the body itself, read
+  from the engine's own vertices, so the hull on the sheet comes out 2–3 % larger and the metre labels read the
+  body — against the bake itself the worst of 84 hulls is 0.42 % of length.
+- **Dragging a stapel slider shows a draft**: while the thumb moves, the sheet is an ink drawing drawn in the frame —
+  the clean sheet, rails at the hull's width, a dash-dot axis, the hull in thin ink along its own brushes with body
+  and wings in a bold line, and dimension lines whose metres change live. On release one full sheet is baked on the
+  same canvas, same frame and scale, and fades in over the draft in 120 ms; nothing in the layout jumps. At CPU ×4
+  the drag holds p95 25–31 ms with no sheet baked until release.
+- **The home room is baked by the engine**, the garage ship by the body brushes; the tap zones come from the bake
+  itself, byte-identical to before.
+- **A left ship's trace (12as) has no 2D fallback**: no scene pass means no ghost, instead of a second picture.
+- **The maker's eye looks at the engine's picture**: the gate that checks each maker's hulls read as its own now
+  sees them lit by the studio, as ОПИСЬ shows them (14 per class 91.1 → 91.7 %; ГЛАВТРАССА 86.7 → 84.8 %), and runs
+  twice as fast. If that gate falls, the maker's look is fixed, not the studio light.
+- **The overlay layer grows two tools**: `ovImage` takes a colour matrix and seeded grain (sepia, cold and night
+  as the album computes them), and `ovPaint`/`ovRead` put one overlay pass into a canvas — in the frame or out
+  of it — and read it back in the same task.
 
 ## 0.475.0 - the nebula glides in flight
 
