@@ -13,7 +13,7 @@ const HOTEL_SIGN={gt:"ГОС ИНИЦА «КОСМОС»",co:" ЭЛИТА™",or
 const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»",co:"АЭЛИТА™",or:"ДОМ ПРИЕЗЖИХ № 4",km:"ЮПИТЕР",ra:"ТУРБАЗА «ДРУЖБА»",hf:"БУРАН"};
 /* имя в подписи и журнале — полное: пропуск мёртвой буквы хорош в неоне, а в строке HUD читается опечаткой («ГОС ИНИЦА») */
 const hotelName=by=>HOTEL_SIGN_FULL[by]||(HOTEL_SIGN[by]||HOTEL_SIGN.gt).trim();
-const HOTEL_NIGHT=12;
+const HOTEL_NIGHT=12;   /* пол цены ночи; сама ночь — половина доковой цены той же десятой корпуса (§12) */
 const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,sheen:[x,y,r],wins(sd),paint(c,e,sd,lit,Lt)} */
 function hotelHere(){
   const sys=G.sys;if(!sys||!sys.station||typeof sysLane!=="function")return null;
@@ -266,16 +266,27 @@ function hotelInteract(sh){
   if(shown&&actEdge)hotelDesk(Ht);
   return true;
 }
+/* ночь стоит половину того, что док взял бы за ту же десятую корпуса (§12): было 12 кр
+   без счёта ночей, и гостиница чинила дешевле дока вдесятеро — жми сколько хочешь */
+function hotelNightPrice(){
+  const heal=Math.round(stat().hullMax*.1);
+  return Math.max(HOTEL_NIGHT,Math.round(heal*(typeof repairCost==="function"?repairCost():14)*.5));
+}
 function hotelDesk(Ht){
   const hm=stat().hullMax,low=G.hull<hm/3;
   const free=low;                                   /* доброта: ниже трети — даром */
-  if(!free&&G.credits<HOTEL_NIGHT){say((Ht.by==="gt"?"«Мест нет.»":"«Номер — "+HOTEL_NIGHT+" кр.»")+"\nне хватает",110);return;}
-  if(!free)G.credits-=HOTEL_NIGHT;
+  /* одна ночь на смену у станции: метка в её записи холдинга, которая и так в сейве */
+  const H=G.sys&&G.sys.key&&typeof holdOf==="function"?holdOf(G.sys.key):null,sh=typeof holdShift==="function"?holdShift():0;
+  if(H&&H.night===sh){say("«Вы у нас уже ночевали.»\nследующая ночь — в другую смену",110);hotelShop(Ht);return;}
+  const price=hotelNightPrice();
+  if(!free&&G.credits<price){say((Ht.by==="gt"?"«Мест нет.»":"«Номер — "+price+" кр.»")+"\nне хватает",110);return;}
+  if(!free)G.credits-=price;
+  if(H)H.night=sh;
   const heal=Math.round(hm*.1);G.hull=Math.min(hm,G.hull+heal);
   const greet=Ht.by==="gt"?"«Мест нет. …Для вас найдём.»":Ht.by==="co"?"«Номер категории Партнёр™. Завтрак — отдельно.»":
     Ht.by==="or"?"«Отбой в 22:00. Подъём в 6:00.»":Ht.by==="km"?"«Ключ под ковриком, мы на собрании.»":
     Ht.by==="ra"?"«Ложись где свободно, брат.»":"«Ваш номер рассчитан.»";
-  logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+HOTEL_NIGHT+" кр")+" · корпус +"+heal+" за ночь стоянки");
+  logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+price+" кр")+" · корпус +"+heal+" за ночь стоянки");
   say(greet+(free?"\n«…потом заплатите»":""),150);
   hotelShop(Ht);
   if(typeof kinoHere==="function"&&kinoHere())peopleLine("в холле афиша: сегодня кино. Идите, пока не началось.","портье",false);

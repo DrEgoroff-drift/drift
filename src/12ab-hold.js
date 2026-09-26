@@ -61,6 +61,14 @@ function appetiteGotHere(sys,k){
   const a=h&&h.here&&h.here[k];
   return (Array.isArray(a)&&a[1]===holdShift())?(a[0]|0):0;
 }
+/* одна книга «куплено здесь в эту смену» на всех, кто платит за привоз (§12): аппетит,
+   госзаказ, наряд. Купленное у этой же стойки идёт по цене приёмки, а не по надбавке —
+   иначе «купил и тут же сдал» печатает деньги. Отдаёт {m — сколько из n куплено здесь,
+   bid — цена приёмки за единицу} */
+function boughtHereSplit(sys,k,n){
+  const m=sys?Math.min(n|0,appetiteGotHere(sys,k)):0;
+  return {m,bid:m?marketPrice(sys,k):0};
+}
 function appetiteBought(sys,k,qty){
   if(!sys||!(qty>0))return;
   const h=holdOf(sys.key);h.here=h.here||{};

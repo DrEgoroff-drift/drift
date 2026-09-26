@@ -159,11 +159,28 @@ function occKill(sx,sy){
   if(typeof scripOnFreed==="function")scripOnFreed(sx,sy);
   /* тех, кто снял блокаду, на станции помнят долго */
   if(sys.station&&typeof repAdd==="function")repAdd(2,sys);
-  const prize=sys.station?Math.round(2400+sysDanger(sx,sy)*9000):0;
+  /* призовые полностью — только если отбитое удержится (§12): занятый сосед, которого
+     не гасит подавленный очаг, возьмёт систему снова, и три сбитых опять дадут приз —
+     самый жирный кран игры. Пока угроза рядом, станция платит половину: «вернутся» */
+  const back=occThreat(sx,sy);
+  const prize=sys.station?Math.round((2400+sysDanger(sx,sy)*9000)*(back?.5:1)):0;
   if(prize)earn(prize,"free");
-  tell("good","Система «"+sys.name+"» свободна"+(prize?" · +"+prize.toLocaleString("ru")+" кр":""),
+  tell("good","Система «"+sys.name+"» свободна"+(prize?" · +"+prize.toLocaleString("ru")+" кр"+(back?" · половина":""):""),
        "«"+sys.name+"» свободна\n"+(prize?"призовые "+prize.toLocaleString("ru")+" кр\n":"")+
+       (prize&&back?"половина: соседи ещё под ними — вернутся\n":"")+
        "освобождено систем: "+G.freed);
+}
+/* может ли свободную систему снова взять сосед: те же условия, что у occTick —
+   занятый рядом (на шаг), не притихший возле подавленного очага и не под трассой */
+function occThreat(sx,sy){
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){
+    if(!dx&&!dy)continue;
+    const nx=sx+dx,ny=sy+dy;
+    if(!occLvl(nx,ny)||occCalmNear(nx,ny))continue;
+    if(typeof mapUnderTrassa==="function"&&mapUnderTrassa(nx,ny))continue;
+    return true;
+  }
+  return false;
 }
 /* ── что занятость делает с миром ── */
 function occPriceMul(sx,sy){

@@ -26,15 +26,22 @@ function gosBbLine(){
   const P=gosPlan();if(!P||P.done)return null;
   return "ПЛАН: "+P.n+" ЕД. "+RES[P.k].ru.toUpperCase()+" ДО СВОДКИ "+P.svodka+" · ПО "+P.price+" КР · СДАВАТЬ ЗДЕСЬ";
 }
+/* выплата по плану: купленное здесь же в эту смену — по цене приёмки (§12) */
+function gosPay(P){
+  const S=boughtHereSplit(G.sys,P.k,P.n);
+  return {pay:(P.n-S.m)*P.price+S.m*Math.min(P.price,S.bid),m:S.m};
+}
 function gosDeliver(){
   const P=gosPlan();if(!P||P.done)return false;
   if((G.cargo[P.k]|0)<P.n){say("Не хватает до плана\nнужно "+P.n+" ед.",90);return false;}
+  const Y=gosPay(P);
   G.cargo[P.k]-=P.n;
-  earn(P.n*P.price,"plan");
+  earn(Y.pay,"plan");
   if(!G.gosDone)G.gosDone={};G.gosDone[P.key]=1;
   const R=(typeof recordAll==="function")?recordAll():null;if(R)R.udar=(R.udar|0)+1;
   const pct=101+(hashi(G.sx,G.sy,gosBucket())>>>0)%7;
-  logAdd("good","Госзаказ сдан: "+RES[P.k].ru.toLowerCase()+" ×"+P.n+" · +"+(P.n*P.price).toLocaleString("ru")+" кр · КНИЖКА: «УДАРНИК»");
+  logAdd("good","Госзаказ сдан: "+RES[P.k].ru.toLowerCase()+" ×"+P.n+" · +"+Y.pay.toLocaleString("ru")+" кр"+
+    (Y.m?" (из них "+Y.m+" куплено здесь — по цене приёмки)":"")+" · КНИЖКА: «УДАРНИК»");
   logAdd("dim","Сводка "+P.svodka+": план по станции «"+G.st.name+"» выполнен на "+pct+" %");
   return true;
 }
@@ -44,7 +51,7 @@ function gosRow(){
   const r=el("div","row");
   r.appendChild(el("div","nm","<b>ГОСЗАКАЗ · "+RES[P.k].ru+" ×"+P.n+"</b><s>"+(P.done?"план по этой сводке выполнен — спасибо, товарищ":
     "цена твёрдая: "+P.price+" кр за ед. · до сводки "+P.svodka+" · в трюме "+(G.cargo[P.k]|0))+"</s>"));
-  if(!P.done){const b=el("button","act gold","СДАТЬ · "+(P.n*P.price).toLocaleString("ru")+" КР");
+  if(!P.done){const Y=gosPay(P),b=el("button","act gold","СДАТЬ · "+Y.pay.toLocaleString("ru")+" КР");
     b.disabled=(G.cargo[P.k]|0)<P.n;b.onclick=()=>{if(gosDeliver())renderTab();};r.appendChild(b);}
   return r;
 }

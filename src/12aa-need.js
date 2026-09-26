@@ -116,10 +116,14 @@ function orderHere(){
 function orderDeliver(){
   const O=orderHere();if(!O)return false;
   if((G.cargo[O.k]||0)<O.qty)return false;
+  /* купленное у самого получателя в эту смену не везли: за него — цена приёмки,
+     без надбавки и без платы за сектора (§12) */
+  const S=boughtHereSplit(G.sys,O.k,O.qty);
+  const pay=S.m?Math.round(O.pay*(O.qty-S.m)/O.qty+S.m*S.bid):O.pay;
   G.cargo[O.k]-=O.qty;
-  earn(O.pay,"order");
+  earn(pay,"order");
   G.order=null;
-  tell("money","Наряд закрыт: "+O.pay+" кр · "+O.to.name,"НАРЯД ЗАКРЫТ\n+"+O.pay+" кр");
+  tell("money","Наряд закрыт: "+pay+" кр · "+O.to.name+(S.m?" · "+S.m+" куплено здесь":""),"НАРЯД ЗАКРЫТ\n+"+pay+" кр");
   if(typeof repAdd==="function")repAdd(1,G.sys);
   if(typeof peopleLine==="function")peopleLine("наряд принят, "+O.qty+" "+O.ru+". Спасибо, что в срок.",O.to.name);
   if(typeof recordAdd==="function")recordAdd(O.to.name,"благодарность за наряд");

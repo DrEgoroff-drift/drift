@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 642 · символов верхнего уровня: 6634
+Файлов: 642 · символов верхнего уровня: 6640
 
 ## СИМВОЛЫ
 
@@ -29,7 +29,7 @@ $menu                        src/15-input.js:243
 $msg                         src/27z-telemetry.js:43
 $msl                         src/27z-telemetry.js:47
 $nav                         src/27z-telemetry.js:45
-$opts                        src/26-ui-station.js:689
+$opts                        src/26-ui-station.js:720
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
@@ -822,7 +822,7 @@ HOTEL_LIT                    src/17l-hotel.js:123
 HOTEL_LOD                    src/17l-hotel.js:51
 HOTEL_NIGHT                  src/17l-hotel.js:16
 HOTEL_RIM                    src/17l-hotel.js:182
-HOTEL_SHOP_N                 src/17l-hotel.js:286
+HOTEL_SHOP_N                 src/17l-hotel.js:297
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:17
@@ -912,8 +912,8 @@ LANE_GLOW                    src/17g-sys-lane.js:107
 LANE_GLOW_SP                 src/17g-sys-lane.js:93
 LANE_Q_CLS                   src/17g-sys-lane.js:18
 LANE_Q_MAX                   src/17g-sys-lane.js:17
-LANE_RU                      src/26-ui-station.js:395
-LANE_RX                      src/26-ui-station.js:391-394
+LANE_RU                      src/26-ui-station.js:426
+LANE_RX                      src/26-ui-station.js:422-425
 LANE_W                       src/17g-sys-lane.js:14
 LAST_RUN_DAY                 src/12k-letters.js:40
 LATE_CAP                     src/11aq-late.js:30
@@ -1075,7 +1075,7 @@ NOTE_MAX                     src/12ap-notebook.js:32
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_PICKET                   src/13d-npc.js:13
 NPC_SHIPS                    src/03-ships.js:201
-OCC_CALM_MS                  src/13b-occupy.js:250
+OCC_CALM_MS                  src/13b-occupy.js:267
 OCC_FRESH                    src/13b-occupy.js:41
 OCC_LVL                      src/13b-occupy.js:20-25
 OCC_MAX                      src/13b-occupy.js:19
@@ -1468,7 +1468,7 @@ SCRIP_VISIT                  src/12u-scrip.js:31
 SD_KIND                      src/12tb-settle-draw.js:33-37
 SD_MAN                       src/12tb-settle-draw.js:31
 SEAT                         src/27j-console.js:40
-SEC_CAP                      src/26-ui-station.js:365
+SEC_CAP                      src/26-ui-station.js:396
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
 SEC_KING_LIVE                src/12b2-fx-sec.js:22
@@ -1588,7 +1588,7 @@ STRIPS_MAX                   src/11b-speech.js:191
 STUN_TIME                    src/13a-guns.js:27
 ST_BY                        src/17c-system-draw.js:107
 ST_EMIT                      src/17c3-station-live.js:13
-ST_GROUPS                    src/26-ui-station.js:135-142
+ST_GROUPS                    src/26-ui-station.js:165-172
 ST_MODULES                   src/17a-station-mod.js:24-39
 ST_MOD_FILL                  src/17a-station-mod.js:91
 ST_REC                       src/17c3-station-live.js:12
@@ -1847,15 +1847,15 @@ angDiff                      src/01-core.js:180
 angWrap                      src/01-core.js:179
 apVel                        src/16-flight.js:126
 appetiteAte                  src/12ab-hold.js:46-50
-appetiteBlock                src/12ab-hold.js:120-131
-appetiteBought               src/12ab-hold.js:64-68
-appetiteEat                  src/12ab-hold.js:75-82
-appetiteEtherLine            src/12ab-hold.js:133-147
+appetiteBlock                src/12ab-hold.js:128-139
+appetiteBought               src/12ab-hold.js:72-76
+appetiteEat                  src/12ab-hold.js:83-90
+appetiteEtherLine            src/12ab-hold.js:141-155
 appetiteGotHere              src/12ab-hold.js:59-63
-appetiteLeft                 src/12ab-hold.js:69-73
-appetiteLine                 src/12ab-hold.js:112-118
+appetiteLeft                 src/12ab-hold.js:77-81
+appetiteLine                 src/12ab-hold.js:120-126
 appetiteOf                   src/12ab-hold.js:38-44
-appetitePrice                src/12ab-hold.js:84
+appetitePrice                src/12ab-hold.js:92
 applyCrewEvent               src/12b-crew-events.js:225-234
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
@@ -2180,7 +2180,7 @@ bmgrRefuses                  src/21b2-base-mgr.js:86-92
 bmgrSilent                   src/21b2-base-mgr.js:184-187
 bmgrStep                     src/21b2-base-mgr.js:140-178
 bmgrWorkMul                  src/21b2-base-mgr.js:129-132
-boardLanes                   src/26-ui-station.js:396-422
+boardLanes                   src/26-ui-station.js:427-453
 bodyInSystem                 src/16-flight.js:103-112
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
@@ -2200,6 +2200,7 @@ bossPressMul                 src/12av-boss.js:143-148
 bossShieldDown               src/12av-boss.js:100-105
 bossShip                     src/12av-boss.js:109-116
 bossWindow                   src/12av-boss.js:95-98
+boughtHereSplit              src/12ab-hold.js:68-71
 boxAll                       src/12ue-boxes.js:39
 boxCount                     src/12ue-boxes.js:41
 boxFind                      src/12ue-boxes.js:43-58
@@ -2502,7 +2503,7 @@ clockSet                     src/01-core.js:92
 clockWhy                     src/11d-clocks.js:94-100
 closeBarge                   src/12l-barge.js:667-674
 closeDeal                    src/27n-ui-deal.js:204
-closeStation                 src/26-ui-station.js:199-223
+closeStation                 src/26-ui-station.js:229-254
 cloudBoot                    src/14a-cloud.js:172-183
 cloudBusy                    src/14a-cloud.js:79
 cloudCall                    src/14a-cloud.js:72-76
@@ -2925,7 +2926,7 @@ drawDustMotes                src/19-mode-landing.js:271-284
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:91-113
 drawExhaust                  src/16a-space.js:323
-drawFactRoute                src/13b-occupy.js:285-338
+drawFactRoute                src/13b-occupy.js:302-355
 drawFactory                  src/20aa-poi-shapes.js:378-462
 drawFindsSystem              src/17b-finds.js:240-288
 drawFlame                    src/03b-hull-paint.js:10-56
@@ -3088,7 +3089,7 @@ econLine                     src/12ax-fx-econ.js:75-88
 econPriceMul                 src/12ax-fx-econ.js:66-73
 econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38-43
-el                           src/26-ui-station.js:295
+el                           src/26-ui-station.js:326
 endPtr                       src/15-input.js:428-433
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
@@ -3230,7 +3231,7 @@ findShape                    src/17b-finds.js:185-233
 findSprite                   src/17b-finds.js:237-239
 findTake                     src/17b-finds.js:58-130
 findTestSys                  tests/91x-finds.js:3-10
-findsBlock                   src/12aa-need.js:167-194
+findsBlock                   src/12aa-need.js:171-198
 findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27-52
 fireCool                     src/13-pirates.js:118
@@ -3293,7 +3294,7 @@ foeFlak                      src/13a-guns.js:405-429
 foeGun                       src/13d-loadout.js:40-48
 foeMineLay                   src/13d-loadout.js:132-141
 foeTetherTick                src/13d-loadout.js:145-159
-foldBlock                    src/26-ui-station.js:342-357
+foldBlock                    src/26-ui-station.js:373-388
 folkAll                      src/11ah-offer.js:82-85
 folkHere                     src/12u-folk.js:91-97
 folkLeave                    src/12u-folk.js:115
@@ -3485,16 +3486,17 @@ gnbPipe                      src/16gb-gpu-nebula.js:493
 gnbStar                      src/16gb-gpu-nebula.js:552-557
 gnbStars                     src/16gb-gpu-nebula.js:398-405
 gnbTarget                    src/16gb-gpu-nebula.js:485-492
-goalCard                     src/13b-occupy.js:215-244
-goalOwnYacht                 src/13b-occupy.js:208-214
+goalCard                     src/13b-occupy.js:232-261
+goalOwnYacht                 src/13b-occupy.js:225-231
 goldCmp                      tests/91zzzzzzzzz-golden.js:36-46
 goldSig                      tests/91zzzzzzzzz-golden.js:26-35
 gosBbLine                    src/17k1-gosplan.js:25-28
 gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
-gosDeliver                   src/17k1-gosplan.js:29-40
+gosDeliver                   src/17k1-gosplan.js:34-47
+gosPay                       src/17k1-gosplan.js:30-33
 gosPlan                      src/17k1-gosplan.js:9-19
-gosRow                       src/17k1-gosplan.js:42-50
+gosRow                       src/17k1-gosplan.js:49-57
 gotAdd                       src/27jb-ui-got.js:13
 gotCalm                      src/27jb-ui-got.js:15-20
 gotClose                     src/27jb-ui-got.js:27
@@ -3923,7 +3925,7 @@ homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:470-477
 hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:179
-hotelDesk                    src/17l-hotel.js:269-282
+hotelDesk                    src/17l-hotel.js:275-293
 hotelDock                    src/17l-hotel.js:212-255
 hotelDrop                    src/17l-hotel.js:60
 hotelGet                     src/17l-hotel.js:113-121
@@ -3940,9 +3942,10 @@ hotelN                       src/17l-hotel.js:83
 hotelName                    src/17l-hotel.js:15
 hotelNeon                    src/17l-hotel.js:134-142
 hotelNeonDraw                src/17l-hotel.js:143-146
+hotelNightPrice              src/17l-hotel.js:271-274
 hotelPoly                    src/17l-hotel.js:177
 hotelRim                     src/17l-hotel.js:183
-hotelShop                    src/17l-hotel.js:287-293
+hotelShop                    src/17l-hotel.js:298-304
 hotelStar                    src/17l-hotel.js:257
 hotelType                    src/17l-hotel.js:24
 hotelUp                      src/17l-hotel.js:84
@@ -4435,8 +4438,8 @@ mapOverview                  src/18-mode-map.js:129-152
 mapOwnHere                   src/18b-map-hold.js:64-69
 mapParseAddr                 src/18a-map-addr.js:220-223
 mapPeek                      src/18-mode-map.js:103-109
-mapPriceDraw                 src/12aa-need.js:329-340
-mapPriceRows                 src/12aa-need.js:304-328
+mapPriceDraw                 src/12aa-need.js:333-344
+mapPriceRows                 src/12aa-need.js:308-332
 mapRail                      src/18-mode-map.js:18-21
 mapRange                     src/18-mode-map.js:88
 mapReset                     src/18-mode-map.js:122
@@ -4639,7 +4642,7 @@ nearestStation               src/12-economy.js:257-272
 nebMoveFrames                tests/91zzzzzzy7-gpu-nebmove.js:7-10
 nebula                       src/16-flight.js:82-96
 needAll                      src/12aa-need.js:25
-needBlock                    src/12aa-need.js:137-165
+needBlock                    src/12aa-need.js:141-169
 needClose                    src/12aa-need.js:39-50
 needEtherLine                src/12aa-need.js:64-73
 needOf                       src/12aa-need.js:26-37
@@ -4693,7 +4696,7 @@ noise1                       src/01-core.js:116
 noise2                       src/01-core.js:119-123
 noise3                       src/24ba-belt-gpu.js:21-29
 noiseBuf                     src/09-audio.js:78
-normsOf                      src/12ab-hold.js:89-97
+normsOf                      src/12ab-hold.js:97-105
 note                         tests/90-harness.js:102
 noteAll                      src/12ap-notebook.js:35
 noteAsk                      src/12ap-notebook.js:209-229
@@ -4712,25 +4715,26 @@ npcWreckNear                 src/13d-npc.js:213-221
 npcWreckPose                 src/13d-npc.js:225-229
 npcYalta                     src/13d-npc.js:127-137
 occAt                        src/13b-occupy.js:31-34
-occCalmNear                  src/13b-occupy.js:260-269
-occExtraPirates              src/13b-occupy.js:192-195
+occCalmNear                  src/13b-occupy.js:277-286
+occExtraPirates              src/13b-occupy.js:209-212
 occHere                      src/13b-occupy.js:53
 occInfo                      src/13b-occupy.js:54
 occInit                      src/13b-occupy.js:29
 occKey                       src/13b-occupy.js:30
-occKill                      src/13b-occupy.js:140-167
-occLairLevel                 src/13b-occupy.js:274
-occLairName                  src/13b-occupy.js:275-278
+occKill                      src/13b-occupy.js:140-172
+occLairLevel                 src/13b-occupy.js:291
+occLairName                  src/13b-occupy.js:292-295
 occLvl                       src/13b-occupy.js:35
 occNest                      src/13b-occupy.js:60-65
 occPowerAt                   src/13b-occupy.js:42-49
 occPowerHere                 src/13b-occupy.js:50
-occPriceMul                  src/13b-occupy.js:169-180
+occPriceMul                  src/13b-occupy.js:186-197
 occReqMul                    src/13b-occupy.js:52
-occService                   src/13b-occupy.js:182-190
+occService                   src/13b-occupy.js:199-207
 occSet                       src/13b-occupy.js:66-72
-occSummary                   src/13b-occupy.js:199-202
-occSuppress                  src/13b-occupy.js:251-259
+occSummary                   src/13b-occupy.js:216-219
+occSuppress                  src/13b-occupy.js:268-276
+occThreat                    src/13b-occupy.js:175-184
 occTick                      src/13b-occupy.js:77-135
 odo                          src/11d-place.js:24
 odoAdd                       src/11d-place.js:26
@@ -4763,8 +4767,8 @@ openBarge                    src/12l-barge.js:657-666
 openCrewView                 src/27b-ui-crew.js:230-236
 openDeal                     src/27n-ui-deal.js:198-203
 openHq                       src/27c-ui-hq.js:626-631
-openStation                  src/26-ui-station.js:20
-openStationBody              src/26-ui-station.js:21-129
+openStation                  src/26-ui-station.js:47
+openStationBody              src/26-ui-station.js:48-159
 openWanderer                 src/24c-mode-wanderer.js:22-41
 opisActs                     src/27j-ui-opis.js:557-567
 opisArmed                    src/27j-ui-opis.js:197
@@ -4821,11 +4825,11 @@ optGroups                    src/27-ui-ship.js:340-357
 optTab                       src/27-ui-ship.js:339
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 orbPathOf                    src/17-mode-system.js:494-504
-orderDeliver                 src/12aa-need.js:116-127
+orderDeliver                 src/12aa-need.js:116-131
 orderHere                    src/12aa-need.js:112-115
 orderOf                      src/12aa-need.js:78-102
 orderTake                    src/12aa-need.js:103-111
-orderTick                    src/12aa-need.js:129-135
+orderTick                    src/12aa-need.js:133-139
 orderWin                     src/12aa-need.js:77
 oreNode                      src/23-mode-dig.js:13-29
 ovArc                        src/08bi-gpu-ovl.js:315-318
@@ -5157,13 +5161,13 @@ prbStations                  tests/91zzw-eco-probe.js:4
 prebake                      src/17a0-prebake.js:21-39
 prebakeDrop                  src/17a0-prebake.js:20
 prevAct                      src/08-state.js:205
-priceBestOf                  src/12aa-need.js:242-251
-pricesClose                  src/12aa-need.js:294
-pricesCount                  src/12aa-need.js:252
-pricesHeard                  src/12aa-need.js:225-237
-pricesOpen                   src/12aa-need.js:286-293
-pricesSeen                   src/12aa-need.js:196-202
-pricesTrim                   src/12aa-need.js:205-211
+priceBestOf                  src/12aa-need.js:246-255
+pricesClose                  src/12aa-need.js:298
+pricesCount                  src/12aa-need.js:256
+pricesHeard                  src/12aa-need.js:229-241
+pricesOpen                   src/12aa-need.js:290-297
+pricesSeen                   src/12aa-need.js:200-206
+pricesTrim                   src/12aa-need.js:209-215
 prism                        src/21b-surface-deco.js:230-269
 probeAll                     src/25m-probe.js:31-34
 probeBlock                   src/25m-probe.js:125-138
@@ -5499,7 +5503,7 @@ renderLog                    src/11-log.js:94-117
 renderLoreBoard              src/27h-ui-lore.js:26-79
 renderMail                   src/25k-post-mail.js:32-105
 renderOpts                   src/27-ui-ship.js:35-332
-renderPrices                 src/12aa-need.js:258-285
+renderPrices                 src/12aa-need.js:262-289
 renderQsl                    src/11an-qsl.js:160-201
 renderRecord                 src/11aa-record.js:107-144
 renderRelays                 src/11ap-relay.js:253-301
@@ -5507,8 +5511,8 @@ renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
 renderStrips                 src/27i-ui-table.js:330-366
-renderTab                    src/26-ui-station.js:480-492
-renderTabBody                src/26-ui-station.js:493-685
+renderTab                    src/26-ui-station.js:511-523
+renderTabBody                src/26-ui-station.js:524-716
 renderThings                 src/27i-ui-table.js:379-404
 rentAi                       src/12f1-mgr-rent.js:23-35
 rentBaseBurning              src/12f1-mgr-rent.js:43-47
@@ -5526,10 +5530,10 @@ repPartMul                   src/12k-rep.js:73
 repRepairMul                 src/12k-rep.js:53
 repShipMul                   src/12k-rep.js:74
 repWord                      src/12k-rep.js:31-35
-repairBtns                   src/26-ui-station.js:276-292
-repairCost                   src/26-ui-station.js:189-198
-repairDo                     src/26-ui-station.js:258-273
-repairQuote                  src/26-ui-station.js:252-257
+repairBtns                   src/26-ui-station.js:307-323
+repairCost                   src/26-ui-station.js:219-228
+repairDo                     src/26-ui-station.js:289-304
+repairQuote                  src/26-ui-station.js:283-288
 resAuto                      src/28-loop.js:263-299
 resEma                       src/28-loop.js:234
 resModeCap                   src/28-loop.js:257-262
@@ -5555,7 +5559,7 @@ rescueSig                    src/16c-rescue.js:559
 rescueSigNow                 src/16c-rescue.js:558
 rescueSync                   src/16c-rescue.js:560-573
 rescueTake                   src/16c-rescue.js:105-146
-resetArm                     src/26-ui-station.js:688
+resetArm                     src/26-ui-station.js:719
 resetWorld                   tests/90-harness.js:238-395
 resize                       src/08-state.js:29-66
 retAll                       src/11s-returners.js:32
@@ -5800,7 +5804,7 @@ seatGpuTick                  src/27j-console.js:41-55
 secBlock                     src/12b2-fx-sec.js:183-208
 secCouponRite                src/12b2-fx-sec.js:146-150
 secHailRangeMul              src/12b2-fx-sec.js:141
-secHead                      src/26-ui-station.js:314-339
+secHead                      src/26-ui-station.js:345-370
 secKingArea                  src/12b2-fx-sec.js:40-45
 secKingCount                 src/12b2-fx-sec.js:47-64
 secKingHere                  src/12b2-fx-sec.js:65-71
@@ -5819,10 +5823,10 @@ secSmugHot                   src/12b2-fx-sec.js:178-181
 secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
-secTidy                      src/26-ui-station.js:366-385
+secTidy                      src/26-ui-station.js:397-416
 sellCargo                    src/12-economy.js:157-182
 sellDroneYield               src/12-economy.js:183-188
-sellQuote                    src/12ab-hold.js:101-110
+sellQuote                    src/12ab-hold.js:109-118
 setBig                       src/27z-telemetry.js:112-118
 setPair                      src/27z-telemetry.js:127-132
 setPct                       src/27z-telemetry.js:102-108
@@ -5870,7 +5874,7 @@ shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
 shipGearGpu                  src/05c-arms.js:315-335
-shipRow                      src/26-ui-station.js:424-469
+shipRow                      src/26-ui-station.js:455-500
 shipScaleAt                  src/16c-rescue.js:212
 shipScaleCap                 src/16c-rescue.js:211
 shipThumb                    src/26f-yard-gpu.js:7-11
@@ -6020,8 +6024,8 @@ stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
 stGet                        src/14-save.js:8
 stGround                     src/17c-system-draw.js:108
-stGroup                      src/26-ui-station.js:144
-stGroupOf                    src/26-ui-station.js:143
+stGroup                      src/26-ui-station.js:174
+stGroupOf                    src/26-ui-station.js:173
 stLamp                       src/17c3-station-live.js:23-28
 stLampRect                   src/17c3-station-live.js:30-42
 stLive                       src/17c3-station-live.js:14-17
@@ -6045,7 +6049,7 @@ stTabLab                     src/26b-ui-station-work.js:316-384
 stTabMarket                  src/26e-ui-station-trade.js:148-267
 stTabMods                    src/26b-ui-station-work.js:105-384
 stTabYard                    src/26e-ui-station-trade.js:268-413
-stTabsHere                   src/26-ui-station.js:145
+stTabsHere                   src/26-ui-station.js:175
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:379-392
 stallWho                     src/28-loop.js:122-130
@@ -6174,7 +6178,7 @@ surveyLegs                   src/12w-survey.js:48-56
 surveyList                   src/12w-survey.js:37-45
 surveyPoint                  src/12w-survey.js:20-34
 swimTestLand                 tests/91zzzc-swim.js:8-27
-syncTabs                     src/26-ui-station.js:146-188
+syncTabs                     src/26-ui-station.js:176-218
 sysDanger                    src/01-core.js:190
 sysEdge                      src/17-mode-system.js:34-40
 sysEntry                     src/17g-sys-lane.js:20-23
@@ -6412,8 +6416,10 @@ vegaTestBazaar               tests/91zzh-vega.js:7-13
 vegaTestHome                 tests/91zzh-vega.js:2-6
 vegaTick                     src/11w-vega.js:199-210
 vegaWish                     src/11w-vega.js:52-64
+visitClose                   src/26-ui-station.js:39-46
 visitHere                    src/11b-speech.js:87-90
 visitMark                    src/11b-speech.js:91-95
+visitOpen                    src/26-ui-station.js:26-38
 visitsAll                    src/11b-speech.js:86
 voice                        src/09-audio.js:97-103
 voiceCan                     src/12pa-beacon.js:208
@@ -7275,7 +7281,7 @@ zoomTo                       src/15-input.js:350
 ## src/13a-guns.js · 22 КБ
   · повадки семейств (M364, §2.1):1
 
-## src/13b-occupy.js · 21 КБ
+## src/13b-occupy.js · 22 КБ
   · пираты берут системы:1
 
 ## src/13b1-blockade.js · 2 КБ
@@ -7431,7 +7437,7 @@ zoomTo                       src/15-input.js:350
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 25 КБ
+## src/17l-hotel.js · 26 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17l1-hotel-kosmos.js · 27 КБ
@@ -7820,10 +7826,10 @@ zoomTo                       src/15-input.js:350
 ## src/25n-chess.js · 15 КБ
   · шахматы по почте:1
 
-## src/26-ui-station.js · 50 КБ
+## src/26-ui-station.js · 51 КБ
   · станция:1
-  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):309
-  · настройки:687
+  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):340
+  · настройки:718
 
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1
@@ -8506,7 +8512,7 @@ zoomTo                       src/15-input.js:350
 
 ## tests/91zzzzk3-far.js · 7 КБ
 
-## tests/91zzzzk4-rail.js · 12 КБ
+## tests/91zzzzk4-rail.js · 13 КБ
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
