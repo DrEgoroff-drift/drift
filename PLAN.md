@@ -61,7 +61,11 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     forward scattering — the gas between us and the star rimmed against the light); fine wisps inside the lit gas
     with soft mass edges; a slow flow (curl noise, seen over 10–20 s, never a flicker); young stars inside (soft
     cavities, a blue reflection haze, the brightest knots in HDR with a soft halo); the palette turned round the
-    wheel, each system its own character;
+    wheel, each system its own character. Round 1 (26.09): none much better — C1 (far layers turned to lilac) right
+    but timid, the 390 pair reads the same and the lilac is grey; C2 (LIC wisps) creased, dark grooves and a straight
+    fold, which is a threshold contour; C3 (knots) dropped. Round 2: one candidate — C1 bolder and clean (far layers
+    darker and colder, the mass lit from the star's side), C2 as bright strands along the flow, ionisation zones
+    (cold near the star, warm further out, ≥ 150 px) — with a strength knob, the 390 pair telling apart unprompted;
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
   - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
@@ -88,8 +92,10 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     studio (`hullStudio`, 17c2 — the ship in ОПИСЬ already draws through it); the raid's `ovAtlas` bakes a new row every
     frame (a changing number) — glyphs once, numbers built from them;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
-  - the 2D hull bake (03e1) goes with the last 2D `drawHull` caller (station 26, the stapel 26e2, the road 27l,
-    home 27e/29d, the scoop, the left trace 12as, `look`); each moves to `hullStudio` or `hullGpuDraw` — the worker;
+  - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull, and the last
+    2D `drawHull` callers move by zone — the station (26) GPU-3; the road (27l), the scoop and home outside the fleet
+    after its landing; the shipyard (26e2), the left trace (12as), `look` and home 27e/29d, unless that is home
+    outside, the worker; 03e1 is deleted with its last caller;
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),
