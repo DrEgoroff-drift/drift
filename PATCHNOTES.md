@@ -106,6 +106,14 @@ could ever save.
   announcement, and at a front station the office itself is closed, «ФРОНТ · ОСТАНОВКА ЗАКРЫТА», with no маршрутка
   offered.
 
+- **M508: the pirates respect a sealed hold.** Ordnung's seal no longer comes off when you step off the train. It
+  stays on the hatch until you dock at a station, where an inspector takes it off («претензий нет»). While it is on,
+  selling is still refused, and the pirates weigh the protocol: half the usual raid turns up, and the screen says
+  «Пломба Орднунга на люке · часть пиратов отвернула». Riding Ordnung with a full hold is now also an escort home.
+- **M510: the front cuts the line.** A stretch whose both ends are front stops is cut: the war runs along the rails.
+  The ticket office sells nothing through it (transfers included), and a train already on its way stops short at the
+  last whole stop, «дальше путь перерезан · поезд дальше не идёт». The scheme draws a red break across the stretch.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -139,6 +147,10 @@ could ever save.
 - M474: the net past r 60 stays unbuilt. A lazy per-region build touches the net's shape everywhere (junctions,
   loops, the scheme's bounds), and the whole build to r 60 already costs 146 ms; it stays in the plan. A маршрутка
   drop lands you at the star's edge like a hyperjump arrival, not at a platform.
+- M508: the seal halves the raid rather than stopping it. A seal that kept every pirate away would make Ordnung's
+  line a free shield for any cargo; a baron still comes. The halving is rounded down, so a lone jackal turns away.
+- M510: the line is cut only where both ends of a stretch are on the front. A single front stop is closed and
+  passed (M474); cutting at every front stop would sever most lines near a busy front.
 
 ## 0.478.0 - the album on the engine
 

@@ -80,6 +80,9 @@ function updateRail(dt){
       }
       /* EXPRESS™ проходит мимо: остановки нет, только конечная (M474) */
       if(R.express&&!last){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*.92;return;}
+      /* путь дальше перерезан (M510): фронт встал на линию за время поездки — конечная здесь */
+      if(!last&&typeof railCut==="function"&&!R.next&&railCut(s,R.l.stops[R.seq[R.seg+1]])){R.seq=R.seq.slice(0,R.seg+1);
+        say("«"+railStopName(s)+"» — дальше путь перерезан\nфронт · поезд дальше не идёт",170);R.hold=2;R.flash=G.t;return;}
       /* закрытая остановка фронта (M474): проходим без остановки, объявляют */
       if(!last&&typeof railFrontShut==="function"&&railFrontShut(s)){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
         say("«"+railStopName(s)+"» — остановка закрыта\nфронт · проследуем без остановки",110);return;}

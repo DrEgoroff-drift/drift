@@ -22072,7 +22072,7 @@ function buyCargo(sys,k,qty){
 function sellCargo(sys,k,qty){
   /* обед Коммуны (M456): приёмка закрыта час, топливо — всегда */
   if(typeof lawLunch==="function"&&lawLunch()&&sys===G.sys){say("Обед. Приёмка с 14:00",90);return 0;}
-  if(G.railSeal){say("Трюм опломбирован\nОрднунг: до места назначения",90);return 0;}   /* пломба (M508) */
+  if(G.railSeal){say("Трюм опломбирован\nОрднунг: снимут при стыковке",90);return 0;}   /* пломба (M508) */
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
   /* аппетит станции (M290): первые N в смену — с надбавкой, остальное по обычной.
@@ -44140,6 +44140,7 @@ function spawnPirates(){
   if(typeof socPirateMul==="function")n=Math.floor(n*socPirateMul(G.sx,G.sy));
   /* пиратский король (M387): бароны сговорились, и в его области их вдвое */
   if(typeof secPirateMul==="function")n=Math.floor(n*secPirateMul(G.sx,G.sy));
+  if(typeof railSealPirates==="function")n=railSealPirates(n);   /* пломба Орднунга (M508) */
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
@@ -61920,6 +61921,7 @@ function railDestinations(){
       let i=i0+dir*k;
       if(l.loop)i=((i%n)+n)%n;else if(i<0||i>=n)break;
       if(i===i0)break;
+      if(typeof railCut==="function"&&railCut(l.stops[railNextIdx(l,i,-dir)],l.stops[i]))break;   /* путь перерезан (M510) */
       let dist=0;for(let m=0;m<k;m++){const a=l.stops[l.loop?((i0+dir*m)%n+n)%n:i0+dir*m],b=l.stops[l.loop?((i0+dir*(m+1))%n+n)%n:i0+dir*(m+1)];dist+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
       if(typeof railFrontShut==="function"&&railFrontShut(l.stops[i]))continue;   /* фронт — касса не продаёт (M474) */
       out.push({l,i0,i1:i,dir,k,dist,to:l.stops[i]});
@@ -62101,6 +62103,9 @@ function updateRail(dt){
       }
       /* EXPRESS™ проходит мимо: остановки нет, только конечная (M474) */
       if(R.express&&!last){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*.92;return;}
+      /* путь дальше перерезан (M510): фронт встал на линию за время поездки — конечная здесь */
+      if(!last&&typeof railCut==="function"&&!R.next&&railCut(s,R.l.stops[R.seq[R.seg+1]])){R.seq=R.seq.slice(0,R.seg+1);
+        say("«"+railStopName(s)+"» — дальше путь перерезан\nфронт · поезд дальше не идёт",170);R.hold=2;R.flash=G.t;return;}
       /* закрытая остановка фронта (M474): проходим без остановки, объявляют */
       if(!last&&typeof railFrontShut==="function"&&railFrontShut(s)){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
         say("«"+railStopName(s)+"» — остановка закрыта\nфронт · проследуем без остановки",110);return;}
@@ -62221,6 +62226,11 @@ function railOwner(){return (typeof stampOwnerAt==="function")?stampOwnerAt(G.sx
 /* остановка на фронте закрыта (M474, §6): поезд проходит без остановки, касса
    её не продаёт; если фронт — здесь, закрыт весь вестибюль */
 function railFrontShut(st){return typeof chronFront==="function"&&!!chronFront(st.sx,st.sy);}
+/* перегон перерезан (M510, §6): оба его конца на фронте — война идёт вдоль
+   самой линии, рельс нет. Касса не продаёт сквозь него, поезд до него не
+   доходит, на схеме — красный разрыв */
+function railCut(a,b){return railFrontShut(a)&&railFrontShut(b);}
+function railNextIdx(l,i,dir){const n=l.stops.length;return l.loop?(((i+dir)%n)+n)%n:i+dir;}
 /* Коммуна: касса закрыта — почему; null — открыта */
 function railClosedWhy(){
   if(railFrontShut({sx:G.sx,sy:G.sy}))return "ФРОНТ · ОСТАНОВКА ЗАКРЫТА";
@@ -62292,7 +62302,9 @@ function railExpressDraw(g,X,Y){
    M502 ПРОВОДНИК — на электричке в 3+ остановки единственный человек дороги
         приносит чай в подстаканнике: слух и тепло;
    M508 ПЛОМБА — у Орднунга задекларированный трюм пломбируют при посадке:
-        до выхода из него ничего не продать (G.railSeal). */
+        до стыковки ничего не продать (G.railSeal); пломба держится и после
+        выхода, до первой станции, где её снимает инспектор, — а пираты
+        с Орднунгом связываться не любят: вполовину меньше налёт. */
 const RAIL_PASS_RIDES=12,RAIL_PASS_LIFE=10;   /* поездок до окупаемости; смен действует */
 let RAIL_LIFE={pax:null,tea:false,teaDone:false};
 function railBucket(){return Math.floor(now()/HOLD_SHIFT);}
@@ -62387,7 +62399,22 @@ function railLifeExit(s){
     logAdd("money","Посылка сдана в «"+P.to+"» · +"+P.pay+" кр"+(L.length?" · на почте говорят: "+L[0].short:""));
   }
   if(RAIL_LIFE.pax){logAdd("dim",RAIL_LIFE.pax.who+" сходит: «Спасибо. Если что — я тут рядом.»");RAIL_LIFE.pax=null;}
-  if(G.railSeal){G.railSeal=0;logAdd("dim","Пломба снята по прибытии · Орднунг");}
+  if(G.railSeal)logAdd("dim","Пломба Орднунга держится до первой стыковки · пираты её уважают");
+}
+/* ── пломба у причала: инспектор снимает (M508) ── */
+function railSealDock(){
+  if(!G.railSeal)return;
+  G.railSeal=0;
+  logAdd("dim","Инспектор снял пломбу Орднунга · трюм открыт · «претензий нет»");
+}
+/* ── пломба в системе: пираты считают, стоит ли (M508) ──
+   Задекларированный груз под пломбой Орднунга — это протокол, розыск и
+   зачистка сектора. Мелочь такой груз не трогает: налёт вполовину */
+function railSealPirates(n){
+  if(!G.railSeal||n<=0)return n;
+  const m=Math.floor(n/2);
+  if(m<n)say("Пломба Орднунга на люке\nчасть пиратов отвернула",110);
+  return m;
 }
 
 /* ══════════════ ажиотаж (M504, PLAN «new mechanics», st. 3) ══════════════
@@ -62450,6 +62477,8 @@ function railDestinationsVia(direct){
         let j=j0+dir*k;
         if(l2.loop)j=((j%n)+n)%n;else if(j<0||j>=n)break;
         const s2=l2.stops[j],k2=s2.sx+","+s2.sy;
+        if(typeof railCut==="function"&&railCut(l2.stops[railNextIdx(l2,j,-dir)],s2))break;   /* перерезано (M510) */
+        if(typeof railFrontShut==="function"&&railFrontShut(s2))continue;
         if(have.has(k2))continue;
         have.add(k2);
         let d2=0;for(let m=0;m<k;m++){const a=l2.stops[l2.loop?((j0+dir*m)%n+n)%n:j0+dir*m],b=l2.stops[l2.loop?((j0+dir*(m+1))%n+n)%n:j0+dir*(m+1)];d2+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
@@ -62575,6 +62604,11 @@ function railSchemeDraw(g,cw,ch){
     g.fillStyle="#3a2e1e";g.fillText(nm,bx,n.y-4);
   }
   if(typeof railExpressDraw==="function")railExpressDraw(g,X,Y);   /* EXPRESS™ пунктиром (M474) */
+  /* перерезанные перегоны (M510): красный разрыв поперёк середины */
+  if(typeof railCut==="function"){g.strokeStyle="#c8281e";g.lineWidth=2;
+    for(const l of N.lines)for(let i=0;i+1<l.stops.length;i++){const a=l.stops[i],b=l.stops[i+1];if(!railCut(a,b))continue;
+      const mx=(X(a.sx)+X(b.sx))/2,my=(Y(a.sy)+Y(b.sy))/2,dx=X(b.sx)-X(a.sx),dy=Y(b.sy)-Y(a.sy),L=Math.hypot(dx,dy)||1,nx=-dy/L*5,ny=dx/L*5,tx=dx/L*1.6,ty=dy/L*1.6;
+      g.beginPath();g.moveTo(mx-tx+nx,my-ty+ny);g.lineTo(mx-tx-nx,my-ty-ny);g.moveTo(mx+tx+nx,my+ty+ny);g.lineTo(mx+tx-nx,my+ty-ny);g.stroke();}}
   /* закрытые фронтом остановки — красный крест */
   if(typeof railFrontShut==="function"){g.strokeStyle="#c8281e";g.lineWidth=1.3;
     for(const k in N.at){const p=k.split(",").map(Number);if(!railFrontShut({sx:p[0],sy:p[1]}))continue;
@@ -62606,7 +62640,7 @@ function railSchemeDraw(g,cw,ch){
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
   g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
   g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
-  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто",cw-10,ch-30);
+  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",cw-10,ch-30);
 }
 
 /* ══════════════ посадка: разрез грунта ══════════════
@@ -92023,6 +92057,7 @@ function openStationBody(){
   toggleSos(false);rescueDockCool();   /* окно выходов не висит устаревшим за станцией; причал остужает (16c) */
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
+  if(typeof railSealDock==="function")railSealDock();   /* пломбу снимает инспектор (M508) */
   if(typeof lawDock==="function")lawDock();   /* закон земли: норма, пошлина (M456) */
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)

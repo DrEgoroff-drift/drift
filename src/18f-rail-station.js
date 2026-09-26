@@ -171,6 +171,7 @@ function railDestinations(){
       let i=i0+dir*k;
       if(l.loop)i=((i%n)+n)%n;else if(i<0||i>=n)break;
       if(i===i0)break;
+      if(typeof railCut==="function"&&railCut(l.stops[railNextIdx(l,i,-dir)],l.stops[i]))break;   /* путь перерезан (M510) */
       let dist=0;for(let m=0;m<k;m++){const a=l.stops[l.loop?((i0+dir*m)%n+n)%n:i0+dir*m],b=l.stops[l.loop?((i0+dir*(m+1))%n+n)%n:i0+dir*(m+1)];dist+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
       if(typeof railFrontShut==="function"&&railFrontShut(l.stops[i]))continue;   /* фронт — касса не продаёт (M474) */
       out.push({l,i0,i1:i,dir,k,dist,to:l.stops[i]});

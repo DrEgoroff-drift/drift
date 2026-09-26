@@ -233,8 +233,6 @@ measured on the GPU build first:
   Орднунг, the suite needs the double press.
 - [ ] **M475 economy and growth:** fares, baggage and the size rule tuned against the oracle's rail line; a
   holding-built station, «продление линии», a late holding deed named by the generator.
-- [ ] **M508:** the pirates' respect for a sealed hold. **M510:** shut stretches of the front — the line
-  itself cut.
 - **Gate:** from home to a rim полустанок and back with a hold of deep goods in under 4 minutes of play,
   paying its ticket on an average roll; the ride never shows a loading screen.
 

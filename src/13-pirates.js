@@ -46,6 +46,7 @@ function spawnPirates(){
   if(typeof socPirateMul==="function")n=Math.floor(n*socPirateMul(G.sx,G.sy));
   /* пиратский король (M387): бароны сговорились, и в его области их вдвое */
   if(typeof secPirateMul==="function")n=Math.floor(n*secPirateMul(G.sx,G.sy));
+  if(typeof railSealPirates==="function")n=railSealPirates(n);   /* пломба Орднунга (M508) */
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;

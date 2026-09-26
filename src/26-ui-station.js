@@ -23,6 +23,7 @@ function openStationBody(){
   toggleSos(false);rescueDockCool();   /* окно выходов не висит устаревшим за станцией; причал остужает (16c) */
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
+  if(typeof railSealDock==="function")railSealDock();   /* пломбу снимает инспектор (M508) */
   if(typeof lawDock==="function")lawDock();   /* закон земли: норма, пошлина (M456) */
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)

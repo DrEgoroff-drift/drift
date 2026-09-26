@@ -16,6 +16,11 @@ function railOwner(){return (typeof stampOwnerAt==="function")?stampOwnerAt(G.sx
 /* остановка на фронте закрыта (M474, §6): поезд проходит без остановки, касса
    её не продаёт; если фронт — здесь, закрыт весь вестибюль */
 function railFrontShut(st){return typeof chronFront==="function"&&!!chronFront(st.sx,st.sy);}
+/* перегон перерезан (M510, §6): оба его конца на фронте — война идёт вдоль
+   самой линии, рельс нет. Касса не продаёт сквозь него, поезд до него не
+   доходит, на схеме — красный разрыв */
+function railCut(a,b){return railFrontShut(a)&&railFrontShut(b);}
+function railNextIdx(l,i,dir){const n=l.stops.length;return l.loop?(((i+dir)%n)+n)%n:i+dir;}
 /* Коммуна: касса закрыта — почему; null — открыта */
 function railClosedWhy(){
   if(railFrontShut({sx:G.sx,sy:G.sy}))return "ФРОНТ · ОСТАНОВКА ЗАКРЫТА";

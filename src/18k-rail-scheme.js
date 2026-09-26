@@ -23,6 +23,8 @@ function railDestinationsVia(direct){
         let j=j0+dir*k;
         if(l2.loop)j=((j%n)+n)%n;else if(j<0||j>=n)break;
         const s2=l2.stops[j],k2=s2.sx+","+s2.sy;
+        if(typeof railCut==="function"&&railCut(l2.stops[railNextIdx(l2,j,-dir)],s2))break;   /* перерезано (M510) */
+        if(typeof railFrontShut==="function"&&railFrontShut(s2))continue;
         if(have.has(k2))continue;
         have.add(k2);
         let d2=0;for(let m=0;m<k;m++){const a=l2.stops[l2.loop?((j0+dir*m)%n+n)%n:j0+dir*m],b=l2.stops[l2.loop?((j0+dir*(m+1))%n+n)%n:j0+dir*(m+1)];d2+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
@@ -148,6 +150,11 @@ function railSchemeDraw(g,cw,ch){
     g.fillStyle="#3a2e1e";g.fillText(nm,bx,n.y-4);
   }
   if(typeof railExpressDraw==="function")railExpressDraw(g,X,Y);   /* EXPRESS™ пунктиром (M474) */
+  /* перерезанные перегоны (M510): красный разрыв поперёк середины */
+  if(typeof railCut==="function"){g.strokeStyle="#c8281e";g.lineWidth=2;
+    for(const l of N.lines)for(let i=0;i+1<l.stops.length;i++){const a=l.stops[i],b=l.stops[i+1];if(!railCut(a,b))continue;
+      const mx=(X(a.sx)+X(b.sx))/2,my=(Y(a.sy)+Y(b.sy))/2,dx=X(b.sx)-X(a.sx),dy=Y(b.sy)-Y(a.sy),L=Math.hypot(dx,dy)||1,nx=-dy/L*5,ny=dx/L*5,tx=dx/L*1.6,ty=dy/L*1.6;
+      g.beginPath();g.moveTo(mx-tx+nx,my-ty+ny);g.lineTo(mx-tx-nx,my-ty-ny);g.moveTo(mx+tx+nx,my+ty+ny);g.lineTo(mx+tx-nx,my+ty-ny);g.stroke();}}
   /* закрытые фронтом остановки — красный крест */
   if(typeof railFrontShut==="function"){g.strokeStyle="#c8281e";g.lineWidth=1.3;
     for(const k in N.at){const p=k.split(",").map(Number);if(!railFrontShut({sx:p[0],sy:p[1]}))continue;
@@ -179,5 +186,5 @@ function railSchemeDraw(g,cw,ch){
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
   g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
   g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
-  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто",cw-10,ch-30);
+  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",cw-10,ch-30);
 }

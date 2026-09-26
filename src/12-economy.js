@@ -157,7 +157,7 @@ function buyCargo(sys,k,qty){
 function sellCargo(sys,k,qty){
   /* обед Коммуны (M456): приёмка закрыта час, топливо — всегда */
   if(typeof lawLunch==="function"&&lawLunch()&&sys===G.sys){say("Обед. Приёмка с 14:00",90);return 0;}
-  if(G.railSeal){say("Трюм опломбирован\nОрднунг: до места назначения",90);return 0;}   /* пломба (M508) */
+  if(G.railSeal){say("Трюм опломбирован\nОрднунг: снимут при стыковке",90);return 0;}   /* пломба (M508) */
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
   /* аппетит станции (M290): первые N в смену — с надбавкой, остальное по обычной.
