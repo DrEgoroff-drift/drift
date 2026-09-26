@@ -41,7 +41,10 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
 - [ ] **In flight** — each release deletes its line here:
   - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
     drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
-    lands after its tests, whole-frame pairs and six regressions, with its census of 2D calls after `gpuWorld` at 0
+    lands after its tests, whole-frame pairs and six regressions (the pairs 26.09: the belt, «Сорока», the raid,
+    the spa, the surface by day and winter better; worse and fixed before it lands — the lamps in five scenes
+    going white and losing their cones, the base's strip of sky with the ridge, the map's milky core and glare,
+    the scoop's lilac giant gone brown, the cave's turquoise), with its census of 2D calls after `gpuWorld` at 0
     (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
@@ -52,10 +55,16 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     other screen;
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
-  - the nebula's regeneration (GPU-2): in full flight at zoom ≥ 1 it regenerates every frame (~10 ms at 1920). Age 6
-    with a cross-fade (or a uv flow) between the last two generations and an invisible step (≤ 0.3 px, no pulse),
-    else age 4; reprojection by the camera × the mean parallax with the uv line in 08b `gpuCompNeb`; measured on the
-    S23 cold, A/B/A;
+  - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
+    step ≤ 0.09 px, no pulse; S23 nebGen 1.81 → 0.93 ms. In flight it still regenerates every frame: nebGen 4.85 of
+    a 10.4 ms GPU frame (S23, v 8). One reprojection uniform fails — the layers slide over each other (local
+    parallax p5/p50/p95 .007/.13/.59; slip at the best single uniform p50 .56, p95 3.5 px a frame at v 8), so any
+    reprojection is accepted by a 16-tile Lucas–Kanade measure (p95 ≤ 0.3 px), never by a global phase
+    correlation. Next: B — the generation made cheaper with the look kept (knock-outs per part; early exit outside
+    the mass, fewer octaves under dense dust; max |Δ| ≤ 2, p99 < .5; target nebGen in flight −40 %); if short of
+    that, A′ — a world-anchored toroidal cache per layer (.02/.044/.045/.097/.12), only the strip that opens is
+    generated, the non-linear mix (dust over gas, the rim by total gb, the star's lit/ion/tint, cvn) moves to the
+    read with the same math, the flow regenerated at age 6 with the cross-fade;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
 - [ ] **G15 everything on the engine, and 3D where it reads (the author, 26.09).** No 2D canvas stays, the interface
@@ -78,7 +87,12 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     home) go onto `#ovl` with the 08bi primitives. Already 0 and 0: cinema, HQ, winter, spa, system, dock, cabin,
     counter, belt, «Сорока». Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
     the first census read 0 on `#c` at 2–5 uploads a frame), is checked against `#c` uploads, and turns red on an
-    injected call;
+    injected call. The base's GPU bake (the fleet's zone, a850203f; main draws the base in 2D) goes in tiles: at
+    2560×1440 its 4078×2092 layer with 4× MSAA and a stencil is 198 MB for a moment, 277 MB with the pool (131 MB on
+    the phone at DPR 2.625), new against main — before the landing an out-of-memory error scope bakes it at
+    sampleCount 1 when refused, with a test on that path; after it, MSAA kept, a tile ≤ 24 MB (1024×512 or
+    768×768) living in the pool's slot, geometry culled per tile, resolved into one layer; bit-exact to the
+    current bake (max |Δ| ≤ 1 on the seams), the bake's time A/B on the PC;
   - the air (19b-sky, 19e-clouds, 19d-weather, 19c haze and grade, 18a1-glaze, 18d-postfx; G5) and the mine's sky
     stars (16-flight `drawStars`, a `fillRect` per star) — GPU-2, after space.
 
@@ -143,6 +157,8 @@ thermal 0 logged before, mid-run and after (the author 26.09; a charging phone h
   ≥ 50 ms; then 5 minutes at ≥ 95 %; the picture at 760 no worse. Before a run: no other tab working in that Chrome
   (a browser miner, «CryptoTab Pool», was there on 24.09), no stuck touch (`gate.py` checks logcat, getevent and the
   page's counter; `waitquiet.py` waits for quiet).
+  - The phone is away (the author 26.09, «работаем без телефона»): releases go without P1, costs are measured on
+    the PC (A/B/A at 1920 and at 617×1113, DPR 1.5, marked «PC»); when it is back, P1 runs on the latest release.
   - The baseline — passed on 0.468.0 (26.09, GPU-3, on the charger at 100 %, thermal 0 throughout): cold 30 s 100 %
     of 1800 frames, max 16.9 ms; 5 min 99.98 % of 18002 frames at 60.0 fps, none ≥ 50 ms, three frames of 33 ms at
     40, 116 and 202 s — one vsync skipped with no bake, pipeline or new texture in them, the GPU 17–21 ms around
