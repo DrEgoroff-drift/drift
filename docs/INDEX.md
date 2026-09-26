@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 672 · символов верхнего уровня: 6879
+Файлов: 672 · символов верхнего уровня: 6882
 
 ## СИМВОЛЫ
 
@@ -197,9 +197,11 @@ BURN_TIME                    src/13a-guns.js:25
 BUY_SPREAD                   src/12-economy.js:86
 CAM_LAG_PX                   src/16a-space.js:280
 CANT_EVERY                   src/27d-ui-cantina.js:41
-CANT_LIGHT                   src/27d-ui-cantina.js:67-73
-CANT_LIT_U                   src/27d-ui-cantina.js:80
-CANT_LIT_WGSL                src/27d-ui-cantina.js:97
+CANT_LET_WGSL                src/27d-ui-cantina.js:194
+CANT_LIGHT                   src/27d-ui-cantina.js:80-86
+CANT_LIT_U                   src/27d-ui-cantina.js:93
+CANT_LIT_WGSL                src/27d-ui-cantina.js:110
+CANT_PARTS                   src/27d-ui-cantina.js:77
 CANT_STYLE                   src/27d-ui-cantina.js:15-26
 CAP_RING                     src/28-loop.js:308
 CAST                         src/12k-stories-a.js:22-43
@@ -2415,17 +2417,18 @@ cantBarkeep                  src/27d-ui-cantina-props.js:15-80
 cantBubble                   src/27c-ui-hq.js:264
 cantCounter                  src/27d-ui-cantina-props.js:306-385
 cantDealRow                  src/27c-ui-hq.js:167-196
-cantFigure                   src/27d-ui-cantina.js:476-523
+cantFigure                   src/27d-ui-cantina.js:530-577
 cantFolkRow                  src/27c-ui-hq.js:198-206
 cantHireRow                  src/27c-ui-hq.js:133-165
-cantLamps                    src/27d-ui-cantina.js:74-78
-cantLitUni                   src/27d-ui-cantina.js:81-96
+cantLamps                    src/27d-ui-cantina.js:87-91
+cantLetters                  src/27d-ui-cantina.js:78
+cantLitUni                   src/27d-ui-cantina.js:94-109
 cantProps                    src/27d-ui-cantina-props.js:153-234
-cantRoomBody                 src/27d-ui-cantina.js:154-464
+cantRoomBody                 src/27d-ui-cantina.js:200-518
 cantSay                      src/27c-ui-hq.js:265
-cantSeats                    src/27d-ui-cantina.js:468-472
+cantSeats                    src/27d-ui-cantina.js:522-526
 cantSel                      src/27c-ui-hq.js:269
-cantSignW                    src/27d-ui-cantina.js:79
+cantSignW                    src/27d-ui-cantina.js:92
 cantStyle                    src/27d-ui-cantina.js:27-30
 cantTables                   src/27d-ui-cantina-props.js:241-296
 cantView                     src/27d-ui-cantina-props.js:82-151
@@ -3094,7 +3097,7 @@ drawBeltRocks                src/17c-system-draw.js:29-83
 drawBillboard                src/17k-billboard.js:154-168
 drawBuildMenu                src/21aa-base-rooms.js:576-592
 drawBuilt                    src/21c-built.js:64-101
-drawCantinaRoom              src/27d-ui-cantina.js:42-65
+drawCantinaRoom              src/27d-ui-cantina.js:42-75
 drawCave                     src/22-mode-cave.js:720-730
 drawCaveFar                  src/22-mode-cave.js:608-644
 drawCaveGlow                 src/22a-cave-deco.js:325-339
@@ -8154,7 +8157,7 @@ zoomTo                       src/15-input.js:350
 ## src/27d-ui-cantina-props.js · 22 КБ
   · кантина: бармен, виды, реквизит, столики, стойка:1
 
-## src/27d-ui-cantina.js · 33 КБ
+## src/27d-ui-cantina.js · 37 КБ
   · кантина: помещение, а не список:1
 
 ## src/27da-kino.js · 15 КБ
