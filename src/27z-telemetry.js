@@ -361,6 +361,7 @@ function hud(){
   if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
   if(typeof instrPodTick==="function")instrPodTick();
+  if(typeof opisHullTick==="function")opisHullTick();   /* силуэт ОПИСИ (27j) — тем же кадром */
   setTx($place,a);setTx($sub,b);
   /* Полосу меряем по самому DOM, а не пересчитываем правила CSS в JS: состав
      строк задан таблицей стилей (body.afoot прячет топливо и корпус, узкий

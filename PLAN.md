@@ -74,10 +74,11 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     open), the console's seat and perch icons (27j-console, timers on every screen), then the panels by how often
     they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
-    worker's studio function; the ship in ОПИСЬ — the worker (27j0); the raid's `ovAtlas` bakes a new row every
+    studio (`hullStudio`, 17c2 — the ship in ОПИСЬ already draws through it); the raid's `ovAtlas` bakes a new row every
     frame (a changing number) — glyphs once, numbers built from them;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
-  - the hull bake (03e1) — the worker;
+  - the 2D hull bake (03e1) goes with the last 2D `drawHull` caller (station 26, the stapel 26e2, the road 27l,
+    home 27e/29d, the scoop, the left trace 12as, `look`); each moves to `hullStudio` or `hullGpuDraw` — the worker;
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),

@@ -992,6 +992,21 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   three scenes. The glass sheen on the barge's glass containers stays (main has it too). Accepted (e6211278);
   a, b, c, d, e, g closed. Open: f) one more try with the keels by the emission mask, else roll back;
   h) makerRead on the GPU frame.
+- **G15, the ship in ОПИСЬ on the engine (26.09, `gpu-opis`):** the hull canvas `.op-hull` has its own webgpu
+  context, like the instrument pod (25c); no 2D context at all. The hull comes from the studio (17c2
+  `hullStudio(S,id,w,h,nd,x,y,sc,lvl)`, the shared function the station showroom will reuse): the same
+  `hullGpuDraw` through a target override `GPU.rt` (08c `gpuField` and `gpuKitU` take its size and density,
+  `gpuLitSprite` its pass, a zero light texture — no lamps, no shadow, no gas — and a neutral light from the
+  upper left), in its own rgba16float pass, so the pipelines are the scene's and the 08b1 warm table needs no new
+  key. Its bake is its own and `once` (the flight bakes in `HG_LRU` and the pool stay untouched); no flame, the
+  flight's smoothed thrust is not touched. The texture keeps the scene's alpha («how much background is left»);
+  `ovImage` with `B.inv` (08bi) turns it into coverage and passes light above one through the same shoulder as
+  the final `tone()`, so lamps do not clip white. Shadow, anchors and pluses are `ov*` primitives; `hullSilhouette`
+  (27) only measures now. The frame draws it (hud → `opisHullTick`, 27j) when the canvas, device or signature
+  changes. Pairs 760 and 390 (dpr 1 and 2) against main: same silhouette and anchors; the hull reads lit
+  (rim toward the light, glass glint), lamps pale gold as in flight instead of flat amber. Guard
+  `91zzzzzzy7-opis-gpu`: 40 frames of flight under ОПИСЬ, `#c` untouched and not uploaded, one submit a frame,
+  no 2D context on the canvas, one pass per signature change, warm bakes intact.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
