@@ -19,6 +19,8 @@ could ever save.
   is the same bake filled with ink. It is sharp on DPR 2 and 3, and its outline is cleaner.
 - **«NaN / 40» over the hold** came from a test scene that left the hold with missing resource keys (a save
   always fills them). The hold weight now counts a missing key as zero, and the scene keeps every key.
+- **The ВЕРФЬ tab opens without a hitch**: the slipway sheet's glow pipeline is warmed with the others at the
+  title screen, instead of being compiled the first time the tab opens.
 - **Nets**: the «0 вызовов 2D» gate has scenes for the showcase, ОПИСЬ and the doll. A new guard reads every
   ОПИСЬ tab, with the hold empty and full, for «NaN» and «undefined». The zoo has four new mutants for them
   (yard-2d, opis-2d, doll-2d, opis-nan); all are killed.
