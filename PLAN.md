@@ -351,7 +351,9 @@ Check each against the code before building — some may already hold.
   functions, on touch only; the tools zoo → one way to take a frame; the button family merge; `-Times` for
   the Node tier.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
-  restart.
+  restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
+  the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
+  overnight»; no separate tour on the laptop.
 - [ ] **A server frame-stats beacon** was asked for — it touches `site/api.php`: ask first.
 
 ## 11. Small things seen on the way (23.09)
@@ -431,3 +433,25 @@ money-printing counter») is the gate here. Ranked by weight.
   alone: the counter (ask on buying, pressure after selling, slices, spread), far goods sell-only,
   barges (sell above and buy below the destination, budget-capped), scrip (12 % round trip), the drone
   price 1.6ⁿ, people paid only online, the loan since 0.409.1.
+
+## 13. Outside the game — audience and money (parked; the author 26.09: «запиши куда-нибудь, потом решим»)
+
+Nothing here is started without the author's word; each item is a decision of intent, not a task.
+
+- [ ] **«Один человек и ИИ» on the landing** — the author 26.09: «про ИИ да, можно написать, и мы этим
+  гордимся». A short section before «Что дальше»; the draft: «„Дрейф" делает один человек вместе с ИИ, и мы
+  этим гордимся. Код пишут сразу несколько сеансов Claude: один переносит графику на видеокарту, другой
+  собирает флот, третий обставляет станции. Автор ведёт замысел, играет каждую сборку и решает, что остаётся,
+  а что переделать. Без такой команды игра этого размера одному человеку была бы не под силу. Картинок из
+  нейросети в игре нет: корабли, туманности, планеты и люди рисуются кодом прямо у вас на экране.» Open: the
+  wording, and whether Claude is named or it says just «ИИ». Checked 26.09: `drift.html` carries no raster
+  image at all (only the favicon path) — the last sentence is true; keep it true.
+- [ ] **Build in public** — the lesson of fly.pieter.com (one author with AI, a browser game, $1M a year
+  within weeks in 2025; the author 26.09: «вот это мне нравится»): its accelerator was daily progress posted
+  to a large audience. Ours is ready-made: the daily before/after pairs and the story of one person and a crew
+  of AI sessions. A channel or devlog (Telegram, Habr, DTF) is opened by the author; Контроль prepares the
+  posts and the frames (never into git).
+- [ ] **Money, once there is an audience** — without breaking the landing's promise («нет ежедневных заданий,
+  энергии и таймеров — вас никто не будет удерживать»): a sponsor inside the world in the game's own style
+  (a station, a billboard, a hull livery), paid looks with no advantage in play (liveries, the parrot's
+  outfits). fly.pieter.com lived mostly on brands buying objects in its sky.
