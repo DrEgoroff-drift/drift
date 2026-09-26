@@ -214,6 +214,17 @@ const GATE2D=[
      YARD.sig="";return {};},
    done(){$st.classList.remove("open");$body.innerHTML="";G.mode="system";},
    probe:["yardDraw"]},
+  /* картинки ОПИСИ (27j через 27i0): кучи трюма, раскладка комплекта, люк на полосе, коробок, шкатулка —
+     вкладки ТРЮМ и КОМПЛЕКТ по кругу, каждая перерисовка — новая выпечка под записью */
+  {name:"опись (27j): кучи, раскладка, люк, коробок — выпечкой, без 2D",
+   painters:["opisGpu","holdDrawPile","holdPiece","opisDrawHatch","opisDrawBox","opisDrawMatchbox","kitLayDraw","kitLayPiece"],
+   place(first){
+     if(first){this.i=0;G.cargo={};Object.keys(RES).filter(k=>RES[k].price).slice(0,6).forEach((k,i)=>G.cargo[k]=3+i*7);return {};}
+     if(this.i===0)tableToggle(true,"hold");
+     if(this.i<40){OPIS.tab=this.i%2?"kit":"hold";opisRerender();opisBar();}
+     this.i++;return {};},
+   done(){tableToggle(false);const b=document.getElementById("opisBar");if(b)b.remove();G.cargo={};},
+   probe:["opisGpu"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

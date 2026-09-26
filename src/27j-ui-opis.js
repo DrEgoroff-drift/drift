@@ -642,7 +642,7 @@ function opisPileCard(k,n){
     (R0.price?"рынок ~"+R0.price+" кр":(R0.rare||R0.ammo||R0.pax||""))+"</s>");
   card.dataset.k=k;
   const cv=document.createElement("canvas");cv.width=250;cv.height=120;
-  holdDrawPile(cv.getContext("2d"),k,n,250,120);
+  opisGpu(cv,250,120,c=>holdDrawPile(c,k,n,250,120));
   card.insertBefore(cv,card.firstChild);
   const cue=opisPriceCue(k);
   if(cue){
@@ -736,7 +736,7 @@ function opisBar(){
   }
   bar.textContent="";
   const cv=document.createElement("canvas");cv.width=64;cv.height=64;
-  opisDrawHatch(cv.getContext("2d"),64,64,false);
+  opisGpu(cv,64,64,c=>opisDrawHatch(c,64,64,false));
   bar.appendChild(cv);
   /* полоса называет себя словами (ревью 11.09: «полоски внизу» не читались) */
   const t=document.createElement("s");t.innerHTML="<b>ЛЮК · ЗА БОРТ</b>отпустите вещь здесь, чтобы выбросить";bar.appendChild(t);
@@ -795,7 +795,7 @@ function opisRender(box){
   const bx=document.createElement("div");bx.className="op-box";
   const CO=(typeof cosmRec==="function")?cosmRec():{owned:[]};
   const bcv=document.createElement("canvas");bcv.width=160;bcv.height=96;
-  opisDrawBox(bcv.getContext("2d"),160,96,CO.owned.length>0);
+  opisGpu(bcv,160,96,c=>opisDrawBox(c,160,96,CO.owned.length>0));
   bx.appendChild(bcv);
   if(!CO.owned.length)bx.insertAdjacentHTML("beforeend","<h4>КОСМЕТИКА · шкатулка</h4><s>заперта: откроется с первой покупкой</s>");
   else{
@@ -840,13 +840,13 @@ function opisRender(box){
     z1.appendChild(line);
   }
   /* коробок: в трюме, когда справа стоит ящик конторы; вне станции — своей зоной
-     на месте ящика, чтобы правый столбец сукна не пустовал (второй проход, 2026-09-05) */
+     на месте ящика, чтобы правый столбец сукна не пустовал */
   const mb=document.createElement("div");mb.className="op-matchbox";
   const atLocker=(typeof lockerHere==="function"&&lockerHere());
   const mW=atLocker?140:220,mH=atLocker?70:110;
   const mcv=document.createElement("canvas");mcv.width=mW;mcv.height=mH;
   const mN=(typeof matchesRec==="function")?matchesRec():0;
-  opisDrawMatchbox(mcv.getContext("2d"),mW,mH,mN);
+  opisGpu(mcv,mW,mH,c=>opisDrawMatchbox(c,mW,mH,mN));
   mb.appendChild(mcv);
   mb.insertAdjacentHTML("beforeend","<b>спичек: "+mN+"</b><s>из-под кожухов разобранных частей</s>");
   if(atLocker)z1.appendChild(mb);
@@ -920,7 +920,7 @@ function opisRender(box){
   kitDollHit=[];drawKitFigure(dcv.getContext("2d"),120,200,kitDollHit,0);
   lay.appendChild(dcv);
   const lcv=document.createElement("canvas");lcv.className="lay";lcv.width=420;lcv.height=300;
-  kitLayDraw(lcv.getContext("2d"),420,300);
+  opisGpu(lcv,420,300,c=>kitLayDraw(c,420,300));
   lay.appendChild(lcv);
   kg.appendChild(lay);
   const kc=document.createElement("div");kc.className="op-kitslots";
@@ -948,7 +948,7 @@ function opisRender(box){
   /* ── зона 4: люк ── */
   const z4=document.createElement("div");z4.className="op-hatch";z4.dataset.drop="hatch";
   const hcv4=document.createElement("canvas");hcv4.width=120;hcv4.height=120;
-  opisDrawHatch(hcv4.getContext("2d"),120,120,false);
+  opisGpu(hcv4,120,120,c=>opisDrawHatch(c,120,120,false));
   z4.appendChild(hcv4);
   z4.insertAdjacentHTML("beforeend","<h4><i>4</i>ЛЮК ЗА БОРТ</h4><s>перетащи, чтобы выбросить</s>");
   if(!phone){const ask=opisAskForm();if(ask)z4.appendChild(ask);}

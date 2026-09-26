@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 639 · символов верхнего уровня: 6451
+Файлов: 639 · символов верхнего уровня: 6452
 
 ## СИМВОЛЫ
 
@@ -2067,7 +2067,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-217
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-228
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -3991,6 +3991,7 @@ opisFit                      src/27j-ui-opis.js:203-217
 opisFocus                    src/27j-ui-opis.js:86
 opisFold                     src/27j-ui-opis.js:672-676
 opisGhostMove                src/27j-ui-opis.js:321-324
+opisGpu                      src/27i0-panel-gpu.js:29
 opisHead                     src/27j-ui-opis.js:704-708
 opisHullCap                  src/27j-ui-opis.js:680-703
 opisHullRedraw               src/27j-ui-opis.js:404-424
@@ -7699,7 +7700,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · стол: одно место для всего, что читают:1
   · страница никогда не теряет прокрутку (P1):24
 
-## src/27i0-panel-gpu.js · 2 КБ
+## src/27i0-panel-gpu.js · 3 КБ
 
 ## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
@@ -8466,7 +8467,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 19 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 22 КБ
+## tests/91zzzzzzy3-gate2d.js · 23 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ
