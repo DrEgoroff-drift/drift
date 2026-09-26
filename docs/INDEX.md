@@ -1500,8 +1500,8 @@ drawDeposit                  src/21b-surface-deco.js:406-560
 drawDig                      src/23a-dig-draw.js:655-659
 drawDigFauna                 src/23-mode-dig.js:332-341
 drawDigWorld                 src/23a-dig-draw.js:45-607
-drawDronesMap                src/12e-drone-flight.js:295-313
-drawDronesSystem             src/12e-drone-flight.js:252-282
+drawDronesMap                src/12e-drone-flight.js:296-314
+drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:271-284
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:91-113
@@ -2702,7 +2702,7 @@ helmTick                     src/15a-helm.js:363-447
 helmTrail                    src/15a-helm.js:209-215
 helmTrailAge                 src/15a-helm.js:216-219
 hex2rgb                      src/01-core.js:221-224
-hexA                         src/12e-drone-flight.js:285-291
+hexA                         src/12e-drone-flight.js:286-292
 hexa                         src/12w-survey.js:91-94
 hexRGB                       src/24-mode-belt.js:63-65
 HG_BAKE                      src/17c2-hull-gpu.js:11
@@ -6815,7 +6815,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12e-drone-flight.js · 21 КБ
   · дроны летают:1
   · дрон в кадре:227
-  · куда делась вкладка РЕЙСЫ:315
+  · куда делась вкладка РЕЙСЫ:316
 
 ## src/12e-mgr-jobs.js · 19 КБ
   · поручения управляющих:1
