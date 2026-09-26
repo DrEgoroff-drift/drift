@@ -111,6 +111,13 @@ function hullGpuFlames(pass,h,id,x,y,a,sc,cb,thr,lvl){
     const k=20+n*4;U[k]=e.x;U[k+1]=e.y;U[k+2]=r;U[k+3]=f;U[36+n*4]=ph*3.1;n++;}
   U[7]=n;
   gpuField(pass,"hgflame",HG_FLAME_WGSL,U,null,{blend:"add"});
+  /* f) огонь светит корму (§L.S): точка у среза сопел (среднее по радиусу), досягаемость — сопло и ~.3
+     языка; цвет — ореол пламени. Второй свет корпуса — нарушение «одного света», названное */
+  let sx=0,sy=0,sw=0,rc=0;
+  for(let i=0;i<n;i++){const k=20+i*4,r=U[k+2],f=U[k+3];sx+=(U[k]-f*.1)*r;sy+=U[k+1]*r;sw+=r;rc=Math.max(rc,r*2.6+f*.3);}
+  if(!sw)return null;
+  const gc=cool?[.588,.804,1]:tint?mixc(tint,[255,255,255],.3).map(v=>v/255):[1,.62,.34];
+  return {x:sx/sw,y:sy/sw,r:rc,k:p,c:gc};
 }
 /* живые вставки поверх тела: огни строки Компании (makerTicks) и венцы (drawCrowns) —
    те же места и цвета в осях корпуса; повёрнутые прямоугольники — капсулами */
@@ -140,7 +147,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   bank=bank||0;lvl=lvl||0;
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
-  hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);
+  const FL=hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);
   /* сопла без тяги: у люкса кольцо среза, у прочих тлеющий зев */
   if(!thrusting){
     const sh=[],gl=[];
@@ -155,7 +162,8 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     if(Bl.B)gpuImage(pass,Bl.B,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
-  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
+  const FS=FL?S(FL.x,FL.y):null;
+  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null,undefined,undefined,FL&&{x:FS[0],y:FS[1],r:FL.r*sc,k:FL.k,c:FL.c});   /* -1: свет корпуса, не станции (17c GST) */
   /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
   if(GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
     GPU.sepH.push([x,y,h._R*sc]);}

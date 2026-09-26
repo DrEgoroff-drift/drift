@@ -849,6 +849,14 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   of a big barge sparkled (10–25 one-pixel dots). Counted on the 760 pairs vs e561d7c5 (`glints.py`): own
   ship one short dash on the spine (2–3 dots on the phone), barge 3, the red pirate none — paint is not
   metal. One more material tap in hull mode only (6). Open: f), g), the close-up; -Full not run yet.
+- **Ships pass f, the flame lights the stern (26.09, `gpu-ships`) — a second light on the hull, a named
+  breach of «one light».** `hullGpuFlames` now returns a point at the nozzles' mouth (mean by radius), a reach
+  of 2.6 nozzle radii + .3 of the tongue, the thrust and the flame's halo colour (warm, cool for luxury,
+  the maker's tint); `gpuLitSprite(…,fl)` carries it in `fu.v[4..5]` (8 floats more, only when thrusting)
+  and hull mode adds a warm pool falling off to the reach, stronger on plates sloped toward the fire, not
+  put out by a planet's shadow (the fire is the ship's own). Own ship in a planet's shadow, stern mean RGB
+  45/35/34 → 49/38/36; the first try at ×3 whitened the nozzles instead of lighting the plates. Only
+  `hullGpuDraw` hulls (own, peace fleet) — pirates and barges have no flame here. Open: g), the close-up.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

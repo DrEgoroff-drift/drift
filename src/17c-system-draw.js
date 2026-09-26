@@ -400,7 +400,7 @@ const GPU_LIT_SH=(.6).toFixed(2);
 const GPU_LIT_DK=Math.log2(5.5).toFixed(3);
 /* корабль в настоящем свете (§L.S): уровней мипа до купола тела, его вес, доля градиента «к звезде»
    по всему корпусу, заливка без газа, доля газа, свет, огни (выше колена — свечение подхватывает) */
-const RL_DL="3.",RL_KD="6.",RL_SIDE=".5",RL_AMB=".46",RL_GAS=".9",RL_LIT="1.1",RL_EM="2.3",RL_GD="4.",RL_GF="1.5",RL_GL="1.5",RL_GN="8.",RL_GP="90.",RL_GK="1.6";
+const RL_DL="3.",RL_KD="6.",RL_SIDE=".5",RL_AMB=".46",RL_GAS=".9",RL_LIT="1.1",RL_EM="2.3",RL_GD="4.",RL_GF="1.5",RL_GL="1.5",RL_GN="8.",RL_GP="90.",RL_FL="1.8",RL_GK="1.6";
 const GST_WGSL=GPU_PL_WGSL+`
 fn plOcc(q:vec2f)->f32{let dq=q-fu.v[0].xy;let ro=fu.v[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/fu.v[0].z+1.)*.5;
@@ -514,7 +514,13 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
     let nm=normalize(vec3f(gd*${RL_GD}+gp*${RL_GF},1.));
     let gs=smoothstep(.3,.65,pow(max(dot(nm,Hs),0.),${RL_GP}))*smoothstep(.35,.7,mk.y)*(1.-mk.z)*own*key*sk*a;
     let sp=mix(col,vec3f(1.),.5)*gs*${RL_GK}+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs)*sk*a;
-    return vec4f(c4.rgb*((fl+dir)*own*mix(vec3f(1.),col,.08*key)+pl+e*${RL_EM})+lit*sk+sp+gl*(1.-a),a);}
+    /* f) огонь светит корму — второй свет, нарушение «одного света», названное: тёплое пятно у сопел,
+       спадает к досягаемости; обшивка, скатом к огню, берёт больше; скала его не гасит — огонь свой */
+    var fs=vec3f(0.);
+    if(fu.v[4].w>0.){let fv=fu.v[4].xy-p;let fd=length(fv)/fu.v[4].z;
+      let fa=smoothstep(-.35,.35,dot(gd,fv/max(length(fv),1e-3))*${RL_KD});
+      fs=fu.v[5].rgb*fu.v[4].w*${RL_FL}*(1.-smoothstep(0.,1.,fd))*(.45+.55*fa)*own;}
+    return vec4f(c4.rgb*((fl+dir)*own*mix(vec3f(1.),col,.08*key)+pl+fs+e*${RL_EM})+lit*sk+sp+gl*(1.-a),a);}
   return vec4f(c4.rgb*(shade*sk*em+pl)*mix(vec3f(1.),col,.08)+lit*sk+spec+gl*(1.-a),a);
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
@@ -524,11 +530,13 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
 /* sharp — нерезкая маска между уровнями мастера (только у мастера с мипами): резкость 2D
    без ряби, как gpuImage {sharp}; lod тогда — обычный, не на ступень мельче; "dark" — флаг 4 */
 /* al — прозрачность всего спрайта (0…1, по умолчанию 1): гаснущий борт светится тем же светом */
-function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al){
+function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al,fl){
   const pass=gpuScene();if(!pass)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
-  const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
+  const U=new Float32Array(fl?24:16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
   U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=al==null?1:clamp(al,0,1);U[12]=glow;U[13]=sy||0;U[14]=lod||0;
+  /* fu.v[4..5] — свет пламени у кормы (17c2): место на экране, досягаемость, сила, цвет */
+  if(fl){U[16]=fl.x;U[17]=fl.y;U[18]=Math.max(fl.r,1);U[19]=fl.k;U[20]=fl.c[0];U[21]=fl.c[1];U[22]=fl.c[2];}
   const mip=!!cv.view;if(mip&&cv.draw)gpuBakeLive(cv);   /* материал (08cd) — после возможной перепечки */
   const mt=mip&&!rel&&cv.mat;
   /* заливка газом — корпусу корабля с материалом, пока туманность 16gb этой системы жива */
