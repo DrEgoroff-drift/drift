@@ -99093,7 +99093,13 @@ function consoleTick(dt){
           if(typeof parStep==="function")parStep(1.1);
           const m=px*.08,sc=(px-2*m)/260,P=typeof PAR==="object"?PAR:null,hang=P?P.hang:0;
           if(P)P.hang=0;
-          try{PARG.Sp=parSink(PARG.Sp,[sc,0,0,sc,px/2-sc*113.5,m-sc*43]);parrotDraw(PARG.Sp,230,304);PARG.pd=true;}
+          try{PARG.Sp=parSink(PARG.Sp,[sc,0,0,sc,px/2-sc*113.5,m-sc*43]);parrotDraw(PARG.Sp,230,304);PARG.pd=true;
+            /* поклон, хохолок, крен выходят за рамку позы — иконка резала птицу краем (0.474.0):
+               такая поза ужимается и встаёт по центру; обычная остаётся как была */
+            const [x0,y0,x1,y1]=parrotBox(PARG.Sp);
+            if(x0<1||y0<1||x1>px-2||y1>px-2){
+              const k=Math.min(1,(px-4)/(x1-x0),(px-4)/(y1-y0)),tx=px/2-k*(x0+x1)/2,ty=px/2-k*(y0+y1)/2;
+              PARG.Sp=parSink(PARG.Sp,[sc*k,0,0,sc*k,k*(px/2-sc*113.5)+tx,k*(m-sc*43)+ty]);parrotDraw(PARG.Sp,230,304);}}
           finally{if(P)P.hang=hang;}
         }
       }

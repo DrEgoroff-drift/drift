@@ -996,7 +996,7 @@ concertSend                  src/11ae-concert.js:87-104
 consoleGpuTick               src/27j-console.js:57-60
 consoleHeard                 src/27j-console.js:26-34
 consoleRect                  src/08-state.js:142-148
-consoleTick                  src/27j-console.js:61-156
+consoleTick                  src/27j-console.js:61-162
 conT                         src/27j-console.js:19
 COOP_ASK_BY                  src/12aj-coop.js:135
 COOP_ASKS                    src/12aj-coop.js:126-134
@@ -7697,7 +7697,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
 
-## src/27j-console.js · 13 КБ
+## src/27j-console.js · 14 КБ
   · пульт: приёмник, подсказка, кресло:1
 
 ## src/27j-ui-hold.js · 14 КБ
@@ -7818,7 +7818,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91e-rogue.js · 6 КБ
   · автотесты: ушедший управляющий: ультиматум, ренегат, изгнанник:1
 
-## tests/91f-ui.js · 32 КБ
+## tests/91f-ui.js · 33 КБ
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
   · ключи из кода не показываются игроку:209
   · на чистом старте в кадре нет лишнего:254

@@ -421,6 +421,18 @@ TEST_SUITES.push(() => suite("жёрдочка: птица в иконке це�
   ok(y1-y0>=cv.height*.5,"ростом не меньше половины иконки: "+(y1-y0)+" из "+cv.height);
   const cx=(x0+x1)/2;
   ok(Math.abs(cx-cv.width/2)<=cv.width*.15,"стоит по центру: "+cx.toFixed(0)+" при ширине "+cv.width);
+  /* поклон, хохолок и крен выходят за рамку позы: иконка их ужимает, а не режет (0.474.0 — полный прогон
+     оставлял птицу в поклоне, и край срезал ей низ). Шаг позы заглушён — меряется ровно заданная поза */
+  const st0=parStep,P0=Object.assign({},PAR);
+  window.parStep=()=>{};
+  try{
+    for(const k of ["bow","crest","roll","stretch","footUp"]){
+      for(const j in PAR)if(typeof PAR[j]==="number"&&j!=="t")PAR[j]=0;PAR.blinkAt=1e9;PAR[k]=1;
+      PERCH_AT=G.t+1;conT=0;consoleTick(1);
+      const b=parrotBox(PARG.Sp).map(Math.round);
+      ok(b[0]>=1&&b[1]>=1&&b[2]<=cv.width-2&&b[3]<=cv.height-2,"поза «"+k+"» целиком: "+b.join(",")+" в "+cv.width);
+    }
+  }finally{window.parStep=st0;Object.assign(PAR,P0);}
   resetWorld();
 }));
 

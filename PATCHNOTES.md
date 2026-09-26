@@ -11,6 +11,8 @@ could ever save.
 - **The parrot flies on the GPU** (GPU-3): its window and its perch icon draw from one atlas baked once, and a
   pose is a handful of instances. It no longer runs its own animation loop beside the game, and its pipelines
   are warmed at the title screen, so the first flight has no hitch.
+- **The perch icon shows the whole bird**: in a bow, with the crest up or in a roll the parrot went past
+  the icon's edge and was cut off; now such a pose shrinks a little and stays centred.
 - **The console seat is a portrait, not a repaint**: Vega, a trainee or a passenger is baked once for each
   mood and shown until that mood changes. Before, it was redrawn once a second for the whole trip. It is
   sharp on a DPR 2 screen now; the old 56 px image was soft.
