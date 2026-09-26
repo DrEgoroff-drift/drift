@@ -88,7 +88,10 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     home) go onto `#ovl` with the 08bi primitives. Already 0 and 0: cinema, HQ, winter, spa, system, dock, cabin,
     counter, belt, «Сорока». Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
     the first census read 0 on `#c` at 2–5 uploads a frame), is checked against `#c` uploads, and turns red on an
-    injected call;
+    injected call. The base's bake (`baseBake`, G11) goes in tiles: at 2560×1440 its 4078×2092 layer with 4× MSAA
+    and a stencil is 198 MB for a moment (131 MB on the phone at DPR 2.625); MSAA kept, a tile ≤ 24 MB (1024×512 or
+    768×768) living in the pool's slot, geometry culled per tile, resolved into one layer; bit-exact to the
+    current bake (max |Δ| ≤ 1 on the seams), the bake's time A/B on the PC;
   - the air (19b-sky, 19e-clouds, 19d-weather, 19c haze and grade, 18a1-glaze, 18d-postfx; G5) and the mine's sky
     stars (16-flight `drawStars`, a `fillRect` per star) — GPU-2, after space.
 
