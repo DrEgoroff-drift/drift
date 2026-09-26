@@ -9,6 +9,9 @@
    с мипами на холсте видеокарты (08ca gpuBake, 25.09): кисти 03e рисуют в него, как в
    2D, зум берёт уровень, а не перепекает и не грузит. */
 const HG_BAKE=new WeakMap();   // h → Map(ключ → {B,E,sb}) выпечка тела при крене 0
+/* корпуса живут в HULL_CACHE вечно — потолок общий на все: HG_KEEP недавних выпечек, старейшая долой
+   (ревью 25.09 п. 4: призраки «оставленного» копили мастера до 1024²) */
+const HG_LRU=new Map(),HG_KEEP=8;   /* обход 15 систем (26.09): в полёте одна выпечка корпуса — свой корабль */
 const HG_BELLY=new WeakMap();  // h → {B,E,sb} тёмный силуэт брюха
 const HG_THR=new Map();        // id → сглаженная тяга 0..1 (эфемерное, не в сейве)
 const HG_SIDE=1024;
@@ -26,13 +29,17 @@ function hullGpuSb(h,dk){
 }
 function hullGpuBake(h,id,sb){
   let M=HG_BAKE.get(h);if(!M){M=new Map();HG_BAKE.set(h,M);}
-  const key=hullBakeKey(id,sb);let b=M.get(key);if(b)return b;
+  const key=hullBakeKey(id,sb);let b=M.get(key);
+  if(b){const q=b.q;HG_LRU.delete(q);HG_LRU.set(q,[M,key]);return b;}
   const E=hullGpuE(h),side=Math.ceil(E*2*sb);
   /* кисти читают только корпус и ключ — выпечка после потери устройства та же */
-  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1});
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1,mat:sb});   /* mat — материал раз на корпус (08cd) */
   if(!B)return null;
-  if(M.size>=4){const k=M.keys().next().value;gpuBakeDrop(M.get(k).B);M.delete(k);}
-  b={B,E:side/(2*sb),sb};M.set(key,b);return b;
+  if(M.size>=4){const k=M.keys().next().value;HG_LRU.delete(M.get(k).q);gpuBakeDrop(M.get(k).B);M.delete(k);}
+  b={B,E:side/(2*sb),sb,q:{}};M.set(key,b);HG_LRU.set(b.q,[M,key]);
+  while(HG_LRU.size>HG_KEEP){const [q,[M0,k0]]=HG_LRU.entries().next().value;HG_LRU.delete(q);
+    const o=M0.get(k0);if(o){gpuBakeDrop(o.B);M0.delete(k0);}}
+  return b;
 }
 function hullGpuBelly(h,sb){
   let b=HG_BELLY.get(h);if(b&&b.sb===sb)return b;if(b)gpuBakeDrop(b.B);
@@ -49,22 +56,22 @@ fn fn2(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
 fn st4(t:f32,a:f32,b:f32,c0:vec4f,c1:vec4f,c2:vec4f,c3:vec4f)->vec4f{
   if(t<a){return mix(c0,c1,t/a);} if(t<b){return mix(c1,c2,(t-a)/(b-a));} return mix(c2,c3,(t-b)/(1.-b));}
 fn field(p:vec2f,uv0:vec2f)->vec4f{
-  let V=fu.v;let dp=p-V[0].xy;let ro=V[0].zw;let sc=V[1].x;let cb=max(V[1].y,.05);let tm=V[1].z;let n=i32(V[1].w);
+  let dp=p-fu.v[0].xy;let ro=fu.v[0].zw;let sc=fu.v[1].x;let cb=max(fu.v[1].y,.05);let tm=fu.v[1].z;let n=i32(fu.v[1].w);
   var l=vec2f(dot(dp,ro),dot(dp,vec2f(-ro.y,ro.x)))/sc;l.y=l.y/cb;
-  let px=1./sc;let md=V[3].x;let tn=V[4].rgb;let W=vec3f(1.);
+  let px=1./sc;let md=fu.v[3].x;let tn=fu.v[4].rgb;let W=vec3f(1.);
   var gc=vec3f(1.,.62,.34);var ga=.34;
   if(md>1.5){gc=mix(tn,W,.3);}else if(md>.5){gc=vec3f(.588,.804,1.);ga=.2;}
   var acc=vec3f(0.);
   for(var i=0;i<4;i++){
     if(i>=n){break;}
-    let e=V[5+i];let r=e.z;let f=e.w;if(f<=0.){continue;}
+    let e=fu.v[5+i];let r=e.z;let f=e.w;if(f<=0.){continue;}
     let u=e.x-l.x;let v=l.y-e.y;
     let gd=length(vec2f(u-.25*f,v))/(1.15*f);
     if(gd>1.&&(u<-px||u>f||abs(v)>r)){continue;}
     let ag=max(1.-gd,0.)*ga;
     /* перо: ширина спадает к хвосту, край несёт поток шума — к хвосту сильнее */
     let tt=clamp(u/f,0.,1.);
-    let nz=fn2(vec2f(u/r*1.2-tm*.55,v/r*1.6+V[9+i].x))-.5;
+    let nz=fn2(vec2f(u/r*1.2-tm*.55,v/r*1.6+fu.v[9+i].x))-.5;
     let hw=r*(1.-tt)*(1.-.35*tt)*(1.+.5*nz*tt);
     let ap=smoothstep(-px,px,hw-abs(v))*step(-px,u)*step(u,f);
     var cp:vec4f;
@@ -78,7 +85,7 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
     let hc=select(.46*r*(1.-tc),.3*r*(1.-tc)*(1.-.6*tc),cool);
     let ac=smoothstep(-px,px,hc-abs(v))*step(-px,u)*step(u,cf)*select(.8,.85*(1.-tc),cool);
     let cc=select(vec3f(1.,1.,.949),mix(W,vec3f(.824,.922,1.),tc),cool);
-    acc=acc+cc*ac*V[3].y+(1.-ac)*(cp.rgb*apa*V[3].z+(1.-apa)*gc*ag*V[3].w);
+    acc=acc+cc*ac*fu.v[3].y+(1.-ac)*(cp.rgb*apa*fu.v[3].z+(1.-apa)*gc*ag*fu.v[3].w);
   }
   return vec4f(acc,0.);
 }`;

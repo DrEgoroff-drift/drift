@@ -4,12 +4,12 @@
    кадр текстурой. Старого 2D-кадра больше нет: без WebGPU игра честно говорит,
    какой нужен браузер. #c невидим (opacity 0) и по-прежнему ловит палец.
    Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
-   хроматика, дизеринг одним проходом. Приборы и стойка — свой DOM-холст #hud над канвой. */
+   хроматика, дизеринг одним проходом. Всё, что над миром, — слой #ovl над канвой (08bi). */
 const GPU={ok:false,on:false,lost:false,busy:false,none:false,
   dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(132),shaft:null,lens:null,lt:[],oc:[],sepH:[],dz:[],
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
-  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
+  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
   lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[],errs:0,frameNo:0,snapNo:-1,wantSnap:false,overPass:null,
   ar:{},fL:null,
   /* выключатели для замера (?g11=deep, 28z): bloom, front — вклейка #c, fin — голый финал */
@@ -28,18 +28,8 @@ function gpuTakeSnap(){
   const c=GPU.snap||(GPU.snap=document.createElement("canvas"));
   if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
   const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(GPU.cv,0,0);
-  if(GPU.uiWas&&GPU.ui)g.drawImage(GPU.ui,0,0,c.width,c.height);   /* приборы — поверх, как на экране */
   chipDomSnap(g,c.width/Math.max(1,W));
   GPU.snapNo=GPU.frameNo;
-}
-/* нет WebGPU — говорим прямо, какой браузер нужен (игрок видит это вместо мира) */
-function gpuNone(why){
-  GPU.none=true;
-  try{crashShip("gpu","нет WebGPU: "+why,"");}catch(_){}
-  if(typeof document==="undefined"||!document.body||document.getElementById("nogpu"))return;
-  const d=document.createElement("div");d.id="nogpu";
-  d.innerHTML="<b>Этому браузеру не хватает WebGPU</b><s>«Дрейф» рисует мир видеокартой. Подойдут свежие Chrome, Edge, Яндекс Браузер и Opera, Safari 26 и новее.</s>";
-  document.body.appendChild(d);
 }
 async function gpuInit(){
   if(GPU.ok||GPU.busy)return;
@@ -50,7 +40,14 @@ async function gpuInit(){
     if(!ad){gpuNone("адаптера нет");return;}
     /* метки времени проходов — для пробы ?g11=deep (28z gpuTs); без пробы не пишутся */
     const tsf=ad.features.has("timestamp-query")?["timestamp-query"]:[];
-    const dev=await ad.requestDevice({requiredFeatures:tsf});GPU.tsOk=tsf.length>0;
+    /* половинная точность (P2 25.09): лестница свечения и первый проход написаны над
+       псевдонимами H/H3/H4 (перед шейдером) и могут собираться в f16. Замер на S23
+       (Adreno 7xx, 0.460.0): один запрос фичи замедлил ВСЕ проходы на ~6 % (туманность
+       2.43→2.63 мс, under 3.30→3.50), лестнице не дал ничего — она упирается в выборки.
+       Поэтому по умолчанию f32; ?f16=1 запрашивает фичу для замера на другом устройстве */
+    GPU.f16=ad.features.has("shader-f16")&&location.search.indexOf("f16=1")>=0;if(GPU.f16)tsf.push("shader-f16");
+    const dev=await ad.requestDevice({requiredFeatures:tsf});GPU.tsOk=tsf.indexOf("timestamp-query")>=0;
+    try{const inf=ad.info||{};GPU.arch=[inf.vendor,inf.architecture,inf.device].filter(Boolean).join("/");}catch(_){GPU.arch="";}
     GPU.dev=dev;GPU.lost=false;
     dev.lost.then(i=>{if(GPU.dev===dev&&!(i&&i.reason==="destroyed"))gpuDrop("устройство потеряно: "+((i&&i.message)||""),true);});
     /* ошибка проверки — наш промах в шейдере или привязке: в журнал сбоев (не
@@ -65,10 +62,6 @@ async function gpuInit(){
     GPU.gx=GPU.cv.getContext("webgpu");
     GPU.fmt=navigator.gpu.getPreferredCanvasFormat();
     GPU.gx.configure({device:dev,format:GPU.fmt,alphaMode:"opaque"});
-    /* слой приборов (24.09): свой DOM-холст над #g — браузер кладёт его сам,
-       в видеокарту он не копируется и поста не берёт, как приборы 2D-кадра («до приборов», M243) */
-    if(!GPU.ui){const u=document.createElement("canvas");u.id="hud";u.style.cssText=GPU.cv.style.cssText;
-      GPU.cv.after(u);GPU.ui=u;GPU.uctx=u.getContext("2d",{alpha:true});}
     gpuPipes();
     GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];GPU.ar={};GPU.fL=null;GPU.nView=null;
     GPU.T={};GPU.bw=0;GPU.ok=true;
@@ -76,13 +69,6 @@ async function gpuInit(){
   }catch(e){
     GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}
-}
-/* устройство потеряно (сон телефона, сброс драйвера): кадр ждёт, ядро поднимается заново */
-function gpuDrop(why,retry){
-  GPU.ok=false;GPU.on=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
-  if(ctx===GPU.uctx)ctx=MAIN_CTX;
-  try{crashShip("gpu",why,"");}catch(_){}
-  if(retry)setTimeout(()=>{GPU.lost=false;GPU.dev=null;gpuInit();},1500);
 }
 /* ── проходы поста: общий треугольник на весь экран, одна раскладка привязок ── */
 const GPU_POST_WGSL=`
@@ -96,6 +82,7 @@ struct U{res:vec2f,css:vec2f,dpr:f32,k:f32,grain:f32,vig:f32,hitK:f32,hitDx:f32,
 @group(0) @binding(6) var tUi:texture_2d<f32>;
 @group(0) @binding(7) var tNoise:texture_2d<f32>;
 @group(0) @binding(8) var tEmit:texture_2d<f32>;
+@group(0) @binding(9) var tBloomU:texture_2d<f32>;
 struct V{@builtin(position) p:vec4f,@location(0) uv:vec2f};
 @vertex fn vs(@builtin(vertex_index) i:u32)->V{
   var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));
@@ -157,6 +144,14 @@ fn knee(c:vec3f,th:f32)->vec3f{
   let m=max(c.r,max(c.g,c.b));let kn=th*.4;
   let sk=clamp(m-th+kn,0.,2.*kn);let q=max(sk*sk/(4.*kn),m-th);
   return c*q/max(m,1e-4);}
+/* те же плечо и колено в половинной точности (P2) — для лестницы свечения */
+fn toneH(c:H3)->H3{
+  let K=H(.75);let x=max(c-H3(K),H3(0.));
+  return min(c,H3(K))+(H(1.)-K)*(H3(1.)-exp(-x/(H(1.)-K)));}
+fn kneeH(c:H3,th:H)->H3{
+  let m=max(c.r,max(c.g,c.b));let kn=th*H(.4);
+  let sk=clamp(m-th+kn,H(0.),H(2.)*kn);let q=max(sk*sk/(H(4.)*kn),m-th);
+  return c*q/max(m,H(1e-3));}
 /* 2D рисует в тонах экрана, и огонь в нём упирается в единицу. Что почти упёрлось
    и при этом цветное (ходовые огни, сердце факела, луч) — источник: на экране он
    остаётся своего цвета, а свечению отдаёт то, что светил бы сверх единицы, — узкий
@@ -171,44 +166,49 @@ fn frameHdr(uv:vec2f)->vec3f{
   let f=textureSampleLevel(tFront,sl,uv,0.);
   let e=textureSampleLevel(tEmit,sl,uv,0.).rgb;
   return (knee(sceneAt(uv),1.4)+e)*(1.-f.a);}
-/* свечение (L2): шесть уровней. Первый — четверть кадра ящиком 4×4 (точки не мерцают):
-   квадрат кадра в тонах экрана, как в 2D, и всё, что сцена светит выше плеча. Дальше
-   уровень вдвое мельче и строже (колено по уровню), обратно вверх шатром: узкое
+/* свечение (L2): до шести уровней одной текстуры с мипами. Первый — четверть кадра
+   ящиком 4×4 (точки не мерцают): квадрат кадра в тонах экрана, как в 2D, и всё, что
+   сцена светит выше плеча. Дальше уровень вдвое мельче и строже (колено по уровню);
+   обратно вверх — сумма верхних уровней одним проходом (fsMipUp1), финал читает две выборки: узкое
    свечение — от всего яркого, широкое — от того, что много выше единицы (звезда).
    У факела и газа ореол узкий, у звезды широкий, пелены на полкадра нет */
 @fragment fn fsDown(v:V)->@location(0) vec4f{
-  /* frameAt и frameHdr вручную: одна выборка слоя и сцены на точку (P1). Свой грунт
-     корабля (маска корпуса в круге u.hl) светит вполовину: белил обшивку (п.3) */
-  let fp=1./u.qres;var c=vec3f(0.);var h=vec3f(0.);
+  /* frameAt и frameHdr вручную (P1). Краска корпусов (альфа сцены 0) не светит,
+     свой корабль (круг u.hl) — вполовину (п.3) */
+  let fp=1./u.qres;var c=H3(0.);var h=H3(0.);let sc=H(u.scene);
   for(var j=0;j<4;j++){for(var i=0;i<4;i++){
     let q=v.uv+((vec2f(f32(i),f32(j))+.5)/4.-.5)*fp;
-    let f=textureSampleLevel(tFront,sl,q,0.);let S=textureSampleLevel(tScene,sl,q,0.);let s=max(S.rgb,vec3f(0.))*u.scene;let a=1.-f.a;
-    c+=(tone(s)*a+f.rgb)*(1.-.5*silK(q)*u.scene*(1.-S.a));h+=(knee(s,1.4)+textureSampleLevel(tEmit,sl,q,0.).rgb)*a;}}
-  c=c/16.;return vec4f(c*c+h/16.,1.);}
-fn bs(uv:vec2f)->vec3f{return textureSampleLevel(tBloom,sl,uv,0.).rgb;}
+    let f=H4(textureSampleLevel(tFront,sl,q,0.));let S=H4(textureSampleLevel(tScene,sl,q,0.));let s=max(S.rgb,H3(0.))*sc;let a=H(1.)-f.a;
+    c+=(toneH(s)*a+f.rgb)*(H(1.)-(H(1.)-H(.5)*H(silK(q)))*sc*(H(1.)-S.a));h+=(kneeH(s,H(1.4))+H3(textureSampleLevel(tEmit,sl,q,0.).rgb))*a;}}
+  c=c/H(16.);return vec4f(vec3f(c*c+h/H(16.)),1.);}
+fn bs(uv:vec2f)->H3{return H3(textureSampleLevel(tBloom,sl,uv,0.).rgb);}
 @fragment fn fsMipDn(v:V)->@location(0) vec4f{
   let h=.5/vec2f(textureDimensions(tBloom));let uv=v.uv;
-  let c=bs(uv)*4.+bs(uv-h)+bs(uv+h)+bs(uv+vec2f(h.x,-h.y))+bs(uv-vec2f(h.x,-h.y));
+  let c=bs(uv)*H(4.)+bs(uv-h)+bs(uv+h)+bs(uv+vec2f(h.x,-h.y))+bs(uv-vec2f(h.x,-h.y));
   let lv=log2(u.qres.x/f32(textureDimensions(tBloom).x));
-  if(lv<1.5){return vec4f(c/8.,1.);}
-  return vec4f(knee(c/8.,.45*(lv-1.)),1.);}
-/* вверх — шатром в восемь выборок; дальние уровни чуть теплее: широкий ореол звезды
-   тёплый, как рассеяние в оптике, узкий у огней — своего цвета */
-@fragment fn fsMipUp(v:V)->@location(0) vec4f{
-  let h=.5/vec2f(textureDimensions(tBloom));let uv=v.uv;
-  var c=bs(uv+vec2f(-2.*h.x,0.))+bs(uv+vec2f(2.*h.x,0.))+bs(uv+vec2f(0.,-2.*h.y))+bs(uv+vec2f(0.,2.*h.y));
-  c=c+2.*(bs(uv+vec2f(-h.x,h.y))+bs(uv+h)+bs(uv+vec2f(h.x,-h.y))+bs(uv-h));
-  let lv=log2(u.qres.x/f32(textureDimensions(tBloom).x));
-  let warm=mix(vec3f(1.),vec3f(1.,.9,.74),smoothstep(1.5,4.5,lv)*.5);
-  /* дальний уровень слабее ближнего: ореол сходит на нет, а не стоит пеленой */
-  return vec4f(c/12.*warm*.72,1.);}
-fn blur(uv:vec2f,d:vec2f)->vec4f{
-  let s=max(u.sigma,.3);let r=ceil(3.*s);var acc=vec3f(0.);var w=0.;
-  for(var i=-6;i<=6;i++){let x=f32(i);if(abs(x)>r){continue;}
-    let g=exp(-x*x/(2.*s*s));acc+=textureSampleLevel(tBloom,sl,uv+d*x,0.).rgb*g;w+=g;}
-  return vec4f(acc/w,1.);}
-@fragment fn fsBlurH(v:V)->@location(0) vec4f{return blur(v.uv,vec2f(1./u.qres.x,0.));}
-@fragment fn fsBlurV(v:V)->@location(0) vec4f{return blur(v.uv,vec2f(0.,1./u.qres.y));}
+  if(lv<1.5){return vec4f(vec3f(c/H(8.)),1.);}
+  return vec4f(vec3f(kneeH(c/H(8.),H(.45*(lv-1.)))),1.);}
+/* вверх — читает финал (P1 25.09): на каждом уровне шатёр в восемь выборок, вес — как у
+   прежней цепочки подъёма, .72 за уровень и теплота по уровню, накопленные сверху вниз.
+   Дальние уровни чуть теплее: широкий ореол звезды тёплый, как рассеяние в оптике, узкий
+   у огней — своего цвета; дальний уровень слабее ближнего — ореол сходит на нет, а не
+   стоит пеленой. Пять проходов подъёма ушли: на плиточной видеокарте телефона проход —
+   это выгрузка и загрузка плитки, а уровни в нём крошечные */
+fn bl(uv:vec2f,l:f32)->H3{return H3(textureSampleLevel(tBloom,sl,uv,l).rgb);}
+fn bloomUp(uv:vec2f)->vec3f{
+  var c=H3(0.);var w=H3(1.);let n=i32(textureNumLevels(tBloom));
+  for(var i=1;i<n;i++){
+    let lv=f32(i);let h=.5/vec2f(textureDimensions(tBloom,i));
+    var t=bl(uv+vec2f(-2.*h.x,0.),lv)+bl(uv+vec2f(2.*h.x,0.),lv)+bl(uv+vec2f(0.,-2.*h.y),lv)+bl(uv+vec2f(0.,2.*h.y),lv);
+    t=t+H(2.)*(bl(uv+vec2f(-h.x,h.y),lv)+bl(uv+h,lv)+bl(uv+vec2f(h.x,-h.y),lv)+bl(uv-h,lv));
+    w=w*mix(H3(1.),H3(1.,.9,.74),H(smoothstep(1.5,4.5,lv)*.5))*H(.72);
+    c=c+t/H(12.)*w;}
+  return vec3f(c);}
+/* сумма верхних уровней — одним проходом в размере первого уровня (S23 25.09: финал, читавший
+   пять уровней на полном разрешении, стоил +.34 мс; десять крошечных проходов лестницы —
+   .12 мс: проход на Adreno дёшев, дороги выборки на полном кадре) */
+@fragment fn fsMipUp1(v:V)->@location(0) vec4f{return vec4f(bloomUp(v.uv),1.);}
+fn bloomAt(uv:vec2f)->vec3f{return textureSampleLevel(tBloom,sl,uv,0.).rgb+textureSampleLevel(tBloomU,sl,uv,0.).rgb;}
 /* корпус на ярком газе — силуэтом (L1): только у корпусов (hl — круги, их отмечает
    drawHull), интерфейсу ничего. Сам корпус на ярком газе темнеет, как против света,
    огни остаются; на тёмном газе корпус не трогается. L3 3/n: тёмной каймы вокруг больше
@@ -240,17 +240,17 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
      сложением, как в 2D, — и только потом одно плечо на всё. Яркий газ под
      свечением уходит в золото и к белому плавно, без плато на единице */
   var hs=sceneAt(v.uv);var f=textureSampleLevel(tFront,sl,v.uv,0.);
-  /* преломление: сдвиг по каналам чуть разный — у кромок волны тонкая радуга, как у линзы */
-  /* корпуса не гнутся (L4 k/n): пиксель корпуса стоит на месте, и фон рядом не берёт корпус
-     источником — сдвиг гаснет к кромке, радуга остаётся только на фоне */
+  /* преломление: сдвиг по каналам чуть разный — радуга у кромок волны, как у линзы, но не на
+     тонком (сдвиги разошлись — искра цела). Корпуса не гнутся (L4 k/n): сдвиг гаснет к кромке */
   if(u.dn.x>0.){var o=distort(v.uv*u.css)/u.css;
     if(dot(o,o)*dot(u.css,u.css)>.0004){
       o=o*(1.-hullSoft(v.uv));o=o*(1.-hullM(v.uv+o*.5))*(1.-max(hullM(v.uv+o*.92),hullM(v.uv+o*1.08)));
-      hs=vec3f(sceneAt(v.uv+o*1.08).r,sceneAt(v.uv+o).g,sceneAt(v.uv+o*.92).b);}}
+      let a=sceneAt(v.uv+o*1.08);let g=sceneAt(v.uv+o);let b=sceneAt(v.uv+o*.92);
+      let d=abs(a.rgb-b.rgb);hs=mix(vec3f(a.r,g.g,b.b),g,smoothstep(.03,.15,max(d.r,max(d.g,d.b))));}}
   if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
   var h=hs*(1.-f.a)+f.rgb;
-  if(u.k>0.){h=h+u.k*.8*textureSampleLevel(tBloom,sl,v.uv,0.).rgb*(1.-.6*f.a);}
+  if(u.k>0.){h=h+u.k*.8*bloomAt(v.uv)*(1.-.6*f.a);}
   /* засветка ядра: мелочь перед ядром звезды тонет в его свете, как в камере, — тёмная
      точка в центре читалась зрачком. max, не сумма: открытая звезда не меняется, крупный
      корпус держит силуэт за пределами ядра */
@@ -344,20 +344,15 @@ fn gasT(uv:vec2f)->vec3f{
 
 function gpuPipes(){
   const d=GPU.dev,F=GPUShaderStage.FRAGMENT;
-  const mod=d.createShaderModule({code:GPU_POST_WGSL});
+  const mod=d.createShaderModule({code:(GPU.f16?"enable f16;\nalias H=f16;":"alias H=f32;")+"alias H3=vec3<H>;alias H4=vec4<H>;\n"+GPU_POST_WGSL});
   const ent=[{binding:0,visibility:F,buffer:{type:"uniform"}},
     {binding:1,visibility:F,sampler:{type:"filtering"}},{binding:2,visibility:F,sampler:{type:"filtering"}}];
-  for(const b of [3,4,5,6,7,8])ent.push({binding:b,visibility:F,texture:{sampleType:"float"}});
+  for(const b of [3,4,5,6,7,8,9])ent.push({binding:b,visibility:F,texture:{sampleType:"float"}});
   GPU.L=d.createBindGroupLayout({entries:ent});
   const PL=d.createPipelineLayout({bindGroupLayouts:[GPU.L]});
   const mk=(fs,fmt)=>d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
     fragment:{module:mod,entryPoint:fs,targets:[{format:fmt}]},primitive:{topology:"triangle-list"}});
-  GPU.P={down:mk("fsDown","rgba16float"),blurH:mk("fsBlurH","rgba16float"),
-         blurV:mk("fsBlurV","rgba16float"),fin:mk("fsFinal",GPU.fmt),fin0:mk("fsFinal0",GPU.fmt),mipDn:mk("fsMipDn","rgba16float"),
-         mipUp:d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
-           fragment:{module:mod,entryPoint:"fsMipUp",targets:[{format:"rgba16float",blend:{
-             color:{srcFactor:"one",dstFactor:"one"},alpha:{srcFactor:"one",dstFactor:"one"}}}]},
-           primitive:{topology:"triangle-list"}}),
+  GPU.P={down:mk("fsDown","rgba16float"),fin:mk("fsFinal",GPU.fmt),fin0:mk("fsFinal0",GPU.fmt),mipDn:mk("fsMipDn","rgba16float"),up1:mk("fsMipUp1","rgba16float"),
          comp:d.createRenderPipeline({layout:PL,vertex:{module:mod,entryPoint:"vs"},
            fragment:{module:mod,entryPoint:"fsComp",targets:[{format:"rgba16float",blend:{
              color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"zero",dstFactor:"one"}}},
@@ -381,37 +376,44 @@ function gpuResize(){
   if(!GPU.ok)return;
   const bw=cvs.width,bh=cvs.height;if(bw<2||bh<2)return;
   /* #c меряет resize() (08-state); смена ширины холста сбрасывает и преобразование */
-  /* слой приборов — на родном DPR устройства (08bh) */
-  const nd=gpuHudDpr();GPU.ui.width=Math.max(2,Math.round(W*nd));GPU.ui.height=Math.max(2,Math.round(H*nd));
-  GPU.uctx.setTransform(nd,0,0,nd,0,0);GPU.uiWas=false;GPU.hkey=null;GPU.hnd=nd;
+  GPU.hnd=gpuHudDpr();   /* слой #ovl — на родном DPR устройства (08bi): его смена тоже пересобирает кадр */
   GPU.cv.width=bw;GPU.cv.height=bh;
   const qw=Math.max(2,Math.round(W/4)),qh=Math.max(2,Math.round(H/4));
   for(const k in GPU.T)GPU.T[k].destroy();
   const TB=GPUTextureUsage.TEXTURE_BINDING,RA=GPUTextureUsage.RENDER_ATTACHMENT,CD=GPUTextureUsage.COPY_DST;
   const mk=(w,h,f,us)=>GPU.dev.createTexture({size:[w,h],format:f,usage:us});
-  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),ui:mk(bw,bh,"rgba8unorm",TB|CD|RA),
-    scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),lt:mk(16,3,"rgba16float",TB|CD),bloomA:mk(qw,qh,"rgba16float",TB|RA),bloomB:mk(qw,qh,"rgba16float",TB|RA)};
-  /* лестница свечения: bloomA — первый уровень, дальше каждый вдвое мельче */
-  GPU.M=[GPU.T.bloomA];
-  for(let i=1,w=qw,h=qh;i<6;i++){w=Math.max(1,Math.ceil(w/2));h=Math.max(1,Math.ceil(h/2));GPU.T["mip"+i]=mk(w,h,"rgba16float",TB|RA);GPU.M.push(GPU.T["mip"+i]);}
-  GPU.V={lt:GPU.T.lt.createView(),scene:GPU.T.scene.createView(),emit:GPU.T.emit.createView(),bloomA:GPU.T.bloomA.createView(),bloomB:GPU.T.bloomB.createView()};
-  GPU.MV=GPU.M.map(t=>t.createView());
+  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),
+    scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),lt:mk(16,3,"rgba16float",TB|CD)};
+  /* цели приборов нет (26.09, ревью №9): приборы — DOM-холст #hud, u.ui всегда 0. Кадровая rgba8
+     стоила 2.6 МиБ на S23 и 31.6 на 4K; binding 6 (tUi) держит вид шума 64×64 — шейдер его не читает */
+  /* лестница свечения (P1 25.09): одна текстура с мипами от четверти кадра вниз; уровень
+     уже шести текселей не заводится (телефон — пять уровней, ноутбук — шесть). Каждый
+     уровень — цель своего прохода и вход следующего: разные подресурсы одной текстуры,
+     это разрешено. Верхние уровни складывает один проход (fsMipUp1 → bloomU), финал
+     читает нулевой уровень и эту сумму */
+  let nl=1;for(let w=qw,h=qh;nl<6;nl++){w=w>>1;h=h>>1;if(Math.min(w,h)<6)break;}
+  GPU.T.bloom=GPU.dev.createTexture({size:[qw,qh],format:"rgba16float",usage:TB|RA,mipLevelCount:nl});
+  GPU.T.bloomU=GPU.dev.createTexture({size:[Math.max(1,qw>>1),Math.max(1,qh>>1)],format:"rgba16float",usage:TB|RA});
+  GPU.V={lt:GPU.T.lt.createView(),scene:GPU.T.scene.createView(),emit:GPU.T.emit.createView(),bloom:GPU.T.bloom.createView(),bloomU:GPU.T.bloomU.createView()};
+  GPU.MV=[];for(let i=0;i<nl;i++)GPU.MV.push(GPU.T.bloom.createView({baseMipLevel:i,mipLevelCount:1}));
   GPU.scene3D=false;
   GPU.bw=bw;GPU.bh=bh;GPU.qw=qw;GPU.qh=qh;GPU.dpr=DPR;GPU.cw=W;GPU.ch=H;
-  const S=GPU.S,T=GPU.T;
-  const bind=bloom=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
+  const S=GPU.S,T=GPU.T,nv=GPU.N.createView();
+  const bind=(bv,uv)=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:T.scene.createView()},{binding:4,resource:T.front.createView()},
-    {binding:5,resource:bloom.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()},{binding:8,resource:T.emit.createView()}]});
-  /* текстура не может быть и целью прохода, и его входом: свечение ходит между A и B */
-  GPU.MB=GPU.M.map(t=>bind(t));
-  GPU.B={down:bind(T.bloomB),blurH:bind(T.bloomA),blurV:bind(T.bloomB),fin:bind(T.bloomA),
+    {binding:5,resource:bv},{binding:6,resource:nv},{binding:7,resource:nv},{binding:8,resource:T.emit.createView()},
+    {binding:9,resource:uv||GPU.V.bloomU}]});
+  /* MB[i] — вход прохода на уровень i+1; первому уровню свечение не нужно — на его месте шум;
+     up — проход суммы верхних уровней пишет bloomU, поэтому у него на её месте шум */
+  GPU.MB=GPU.MV.map(v=>bind(v));
+  GPU.B={down:bind(nv),fin:bind(GPU.V.bloom),up:bind(GPU.V.bloom,nv),
     /* сегмент рисует В сцену — значит, в привязках её быть не может: на её месте шум */
     comp:GPU.dev.createBindGroup({layout:GPU.L,entries:[
       {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
-      {binding:3,resource:GPU.N.createView()},{binding:4,resource:T.front.createView()},
-      {binding:5,resource:T.bloomB.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()},
-      {binding:8,resource:GPU.N.createView()}]})};
+      {binding:3,resource:nv},{binding:4,resource:T.front.createView()},
+      {binding:5,resource:nv},{binding:6,resource:nv},{binding:7,resource:nv},
+      {binding:8,resource:nv},{binding:9,resource:nv}]})};
 }
 /* склейка сегмента с туманностью на месте сцены — силуэтам корпусов (sil) */
 function gpuCompNeb(){
@@ -422,8 +424,8 @@ function gpuCompNeb(){
   return B.compN=GPU.dev.createBindGroup({layout:GPU.L,entries:[
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:GNB.view},{binding:4,resource:T.front.createView()},
-    {binding:5,resource:T.bloomB.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()},
-    {binding:8,resource:GPU.N.createView()}]});
+    {binding:5,resource:GPU.N.createView()},{binding:6,resource:GPU.N.createView()},{binding:7,resource:GPU.N.createView()},
+    {binding:8,resource:GPU.N.createView()},{binding:9,resource:GPU.N.createView()}]});
 }
 function gpuPass(view,pipe,bind,ts){
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}],timestampWrites:ts&&gpuTs(ts)});
@@ -512,8 +514,8 @@ function gpuFrame(){
   /* невидимый #c чистится, только если на нём рисовали (cState, 08c): безусловная чистка
      всего холста каждый кадр — ограничитель частоты Chrome на телефоне (Контроль, P1) */
   ctx.setTransform(1,0,0,1,0,0);if(GPU.cState!==0)ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
-  if(GPU.hq)GPU.hq.length=0;chipDomSweep();   /* слой приборов и фишки — 08bh */
-  GPU.on=true;
+  chipDomSweep();   /* слой #ovl — 08bh */
+  GPU.on=true;GPU.wDone=false;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
 }
@@ -537,7 +539,7 @@ function gpuScene(){
 function gpuScene3D(){
   if(!GPU.on||!GPU.enc)return null;
   if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;}
-  if(!GPU.T.depth){GPU.T.depth=GPU.dev.createTexture({size:[GPU.bw,GPU.bh],format:"depth24plus",usage:GPUTextureUsage.RENDER_ATTACHMENT});GPU.V.depth=GPU.T.depth.createView();}
+  if(!GPU.T.depth){GPU.T.depth=GPU.dev.createTexture({size:[GPU.bw,GPU.bh],format:"depth24plus",usage:GPUTextureUsage.RENDER_ATTACHMENT|(GPUTextureUsage.TRANSIENT_ATTACHMENT||0)});GPU.V.depth=GPU.T.depth.createView();}
   GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:GPU.sceneOn?"load":"clear",storeOp:"store",clearValue:GPU.sceneBg}],
     depthStencilAttachment:{view:GPU.V.depth,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});
   GPU.sceneOn=true;GPU.scene3D=true;
@@ -574,16 +576,19 @@ function gpuOver(){
   GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
   return GPU.overPass;
 }
-/* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей */
+/* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей. Мир, не собранный
+   рисунком, собирается здесь; признак — GPU.wDone, не ctx: 2D-слоя приборов нет, ctx всегда #c
+   (прежде по ctx===#c второй gpuWorld без свечения гасил кадр на 10 % — золотые кадры, 26.09) */
 function gpuManual(draw){
   if(!gpuFrame())return false;
   GPU.wantSnap=true;
-  try{draw();}finally{if(GPU.on){if(GPU.enc&&ctx===MAIN_CTX)gpuWorld(0,false,false);gpuPresent();}}
+  try{draw();}finally{if(GPU.on){if(GPU.enc&&!GPU.wDone)gpuWorld(0,false,false);gpuPresent();}}
   return true;
 }
 /* мир дорисован: передний слой — в текстуру, свечение — в четверть кадра.
    Дальше кадр рисует интерфейс — на свой слой, без свечения и зерна */
 function gpuWorld(k,grain,vig){
+  GPU.wDone=true;
   try{
     if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
     if(GPU.overPass){GPU.overPass.end();GPU.overPass=null;}
@@ -599,24 +604,22 @@ function gpuWorld(k,grain,vig){
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
-    /* слой приборов — по изменению (08bh); дальше кадр рисует стойку (25d) — туда же */
-    gpuHudFlush((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen());ctx=GPU.uctx;
-  }catch(e){gpuDrop("сборка: "+((e&&e.message)||e),true);}
+    /* всё, что над миром, — одним проходом слоя #ovl (08bi): 2D-слоя приборов нет, ctx остаётся на #c */
+    ovFlush();
+  }catch(e){gpuFail(e,"сборка");}
 }
-/* лестница свечения: колено в первый уровень, вниз по уровням, вверх — сложением */
+/* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */
 function gpuBloom(){
   const V=GPU.MV,B=GPU.MB,n=V.length;
   gpuPass(V[0],GPU.P.down,GPU.B.down,"bloomDown");
   for(let i=1;i<n;i++)gpuPass(V[i],GPU.P.mipDn,B[i-1]);
-  for(let i=n-1;i>0;i--){
-    const p=GPU.enc.beginRenderPass({colorAttachments:[{view:V[i-1],loadOp:"load",storeOp:"store"}]});
-    p.setPipeline(GPU.P.mipUp);p.setBindGroup(0,B[i]);p.draw(3);p.end();}
+  if(n>1)gpuPass(GPU.V.bloomU,GPU.P.up1,GPU.B.up,"bloomUp");
 }
 /* конец кадра: слой интерфейса (если стойка рисовала), общий проход — на экран */
 function gpuPresent(){
   if(!GPU.on||!GPU.enc){GPU.on=false;return;}
   try{
-    GPU.uiOn=false;   /* слой приборов — DOM-холст (#hud), не текстура */
+    GPU.uiOn=false;   /* слой приборов — #ovl над #g, не текстура */
     gpuUni();gpuLtWrite();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin,"final");
     const tsRead=gpuTsResolve();
@@ -624,9 +627,8 @@ function gpuPresent(){
     if(tsRead)tsRead();
     GPU.frameNo++;
     if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}
-  }catch(e){gpuDrop("кадр: "+((e&&e.message)||e),true);}
+  }catch(e){gpuFail(e,"кадр");}
   GPU.enc=null;GPU.on=false;
-  if(ctx===GPU.uctx)ctx=MAIN_CTX;
 }
 /* поднимается после всего скрипта: в сборке тестов TEST объявлен ниже игры */
 if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);

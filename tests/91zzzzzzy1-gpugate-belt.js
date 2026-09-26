@@ -2,10 +2,10 @@
    Шестьдесят настоящих кадров (frameBody) в поясе: камни рядом и вдали, пыль на ходу и все
    пять ориентиров перед носом. Мир пояса рисуется в проходе сцены (24ba, 24bb): #c
    мира не видит ни одного вызова, отправка в очередь одна на кадр, печёные холсты не
-   грузятся. Кабина и стекло
-   (drawGlassHUD, drawCockpit) — на слое приборов #hud (24bc): на #c ни вызова, копий #c
-   нет; на ходу слой перерисовывается, а в покое (корабль встал, рук на органах нет) — ни
-   разу, лампы стоек моргают в сцене (25-cockpit-gpu). Кто рисует на #c — называется по стеку */
+   грузятся (зев устья печётся и грузится раз, на прогреве). Кабина и стекло (24bc) —
+   мастер полосами (gpuBake, печь по кадрам) и очередь #ovl: на #c ни вызова, копий #c нет;
+   кадр кабины собирается каждый кадр, а выпечек кабины после прогрева нет ни на ходу, ни
+   в покое. Кто рисует на #c — называется по стеку */
 const BGATE_WARM=30,BGATE_N=60,BGATE_HUD=/drawGlassHUD|drawCockpit/;
 function bgateStand(){
   for(let r=0;r<=10;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
@@ -28,11 +28,13 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: пояс — мир �
   if(!ok(G.mode==="belt"&&G.belt,"вошли в пояс"))return;
   bgatePoi();
   const b=G.belt,Q=GPUQueue.prototype,q0={c:Q.copyExternalImageToTexture,s:Q.submit},run0=G.running,loop0=LOOP_OFF,C=MAIN_CTX,cm={};
-  const K={on:false,front:0,sub:0,up:{},bad:0,world:{},hud:0,poiDrawn:0,rd:0,rest:0,restN:0};
-  const pd=beltPoiGpu;
+  const K={on:false,front:0,sub:0,up:{},bad:0,world:{},hud:0,poiDrawn:0,fr:0,bk:0,rest:0,restN:0,rbk:0,rst:false};
+  const pd=beltPoiGpu,gb=gpuBake;
   let i=0;
   try{
     beltPoiGpu=function(){K.poiDrawn++;return pd.apply(this,arguments);};
+    /* выпечки кабины — по стеку (мастер, атласы, ленивые спрайты узла) */
+    gpuBake=function(){if((K.on||K.rst)&&/ckg\w+|cockpitPaint/.test(new Error().stack||"")){if(K.on)K.bk++;else K.rbk++;}return gb.apply(this,arguments);};
     Q.copyExternalImageToTexture=function(src,dst){
       if(K.on){if(dst.texture===GPU.T.front)K.front++;else{const w=gateWho();K.bad++;K.up[w]=(K.up[w]||0)+1;}}
       return q0.c.apply(this,arguments);};
@@ -43,25 +45,24 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: пояс — мир �
       C[k]=function(){if(K.on){const s=new Error().stack;if(BGATE_HUD.test(s))K.hud++;else{const w=k+":"+gateWho();K.world[w]=(K.world[w]||0)+1;}}return o.apply(this,arguments);};}
     G.running=true;LOOP_OFF=false;
     for(i=0;i<BGATE_WARM+BGATE_N;i++){
-      if(i===BGATE_WARM)K.on=true;
+      if(i===BGATE_WARM){K.on=true;K.fr=CKG.frames;}
       /* на малом ходу: пыль тянется штрихом, камера почти на месте */
       if(G.belt){G.belt.vx=0;G.belt.vy=0;G.belt.vz=.9;}
       frameBody(wallMs());
       if(G.mode!=="belt")break;
     }
-    /* покой: корабль встал, рук на органах нет — кабина не перерисовывается */
-    K.rd=BHUD.redraw;K.on=false;
+    /* покой: корабль встал, рук на органах нет — кабина собирается, но не печётся */
+    K.fr=CKG.frames-K.fr;K.on=false;K.rst=true;K.rest=CKG.frames;
     const kz={};for(const k in keys)if(typeof keys[k]==="boolean"){kz[k]=keys[k];keys[k]=false;}
     for(let j=0;j<BGATE_WARM+BGATE_N&&G.mode==="belt";j++){
       const bb=G.belt;bb.vx=bb.vy=bb.vz=0;bb.avYaw=bb.avPitch=0;if("avRoll" in bb)bb.avRoll=0;
-      if(j===BGATE_WARM)K.rest=BHUD.redraw;
       frameBody(wallMs());K.restN++;
     }
-    K.rest=BHUD.redraw-K.rest;
+    K.rest=CKG.frames-K.rest;K.rst=false;
     for(const k in kz)keys[k]=kz[k];
   }catch(e){ok(false,"кадр "+i+" упал: "+e.message);}
   finally{
-    K.on=false;beltPoiGpu=pd;
+    K.on=K.rst=false;beltPoiGpu=pd;gpuBake=gb;
     Q.copyExternalImageToTexture=q0.c;Q.submit=q0.s;
     for(const k in cm)C[k]=cm[k];
     G.running=run0;LOOP_OFF=loop0;
@@ -72,21 +73,23 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: пояс — мир �
   ok(K.poiDrawn>=BGATE_N*4,"ориентиры в кадре: "+K.poiDrawn+" отрисовок за "+BGATE_N+" кадров (≥ четырёх на кадр; устье — камнем)");
   ok(G.belt.poi.some(q=>q.k==="maw"&&q.mesh&&q.mouth),"устье стоит камнем: сетка и ось зева заведены");
   eq(Object.keys(K.world).length,0,"мир пояса не рисует на #c"+(Object.keys(K.world).length?": "+top(K.world):""));
-  eq(K.hud,0,"кабина и стекло не рисуют на #c — они на слое приборов #hud");
+  eq(K.hud,0,"кабина и стекло не рисуют на #c — они мастер и очередь #ovl");
   eq(K.front,0,"#c в видеокарту не копируется: копий "+K.front+" за "+BGATE_N);
-  ok(K.rd>0,"на ходу кабина перерисовывается (слой живой): "+K.rd+" за "+BGATE_N);
+  eq(K.fr,BGATE_N,"на ходу кадр кабины собирается каждый кадр");
+  eq(K.bk,0,"на ходу после прогрева кабина не печётся");
   eq(K.restN,BGATE_WARM+BGATE_N,"покой прошёл в поясе");
-  eq(K.rest,0,"в покое кабина не перерисовывается: "+K.rest+" за "+BGATE_N+" кадров");
+  eq(K.rest,K.restN,"в покое кадр кабины собирается каждый кадр");
+  eq(K.rbk,0,"в покое кабина не печётся");
   eq(K.sub,BGATE_N,"отправок в очередь ровно по одной на кадр");
   eq(K.bad,0,"холсты не грузятся"+(K.bad?": "+top(K.up):""));
   resetWorld();
 }));
-/* ── оракул ключа кабины (24bc) ──
-   Боевой ключ собран руками по входам. Оракул — протокол самого рисунка: подставной ctx
-   пишет вызовы и свойства (координаты 1/4 px, углы 1/1024), и каждая смена протокола между
-   кадрами обязана сменить ключ — иначе вход забыт и кабина застрянет на старой картинке.
-   Панель и лента молчат в протоколе: их стережёт подпись колодки 25c, а стрелки ползут и в
-   покое */
+/* ── оракул живости кабины (24bc) ──
+   Кадр кабины на видеокарте — мастер (статика) и очередь #ovl (всё, что живёт). Оракул —
+   протокол 2D-рисунка той же кабины: подставной ctx пишет вызовы и свойства (координаты
+   1/4 px, углы 1/1024), и каждая смена протокола между шагами обязана сменить очередь #ovl
+   сухого кадра — иначе вход забыт и кусок кабины застыл в мастере. Панель и лента молчат в
+   обоих: стрелки и перья ползут и в покое */
 const BORC={log:[],mute:0,ids:new WeakMap(),n:0,meas:null};
 function borcId(o){let i=BORC.ids.get(o);if(!i){i=++BORC.n;BORC.ids.set(o,i);}return i;}
 function borcRecorder(){
@@ -112,22 +115,20 @@ function borcRecorder(){
     set(_,k,v){S[k]=v;put(k+"="+q(v,256));return true;}
   });
 }
-TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины пояса ловит всё, что меняет её рисунок",{tier:"browser"},()=>{
-  if(!ok(GPU.ok,"видеокарта есть — без неё ключ не нужен"))return;
+TEST_SUITES.push(()=>suite("ворота ступени 2: кадр кабины пояса на #ovl ловит всё, что меняет её рисунок",{tier:"browser"},()=>{
+  if(!ok(GPU.ok,"видеокарта есть — без неё #ovl нет"))return;
   resetWorld();
   if(!ok(bgateStand(),"нашлась система с поясом"))return;
-  const run0=G.running,loop0=LOOP_OFF,ip=instrPanel,ts=tapeStrip,ps=instrPodSig;
+  const run0=G.running,loop0=LOOP_OFF,ip=instrPanel,ts=tapeStrip;
   const bad=[],seen=[];let changed=0,steps=0;
   const kz={};for(const k in keys)if(typeof keys[k]==="boolean")kz[k]=keys[k];
   try{
     instrPanel=function(){BORC.mute++;try{return ip.apply(this,arguments);}finally{BORC.mute--;}};
     tapeStrip=function(){BORC.mute++;try{return ts.apply(this,arguments);}finally{BORC.mute--;}};
-    /* панель и лента молчат в протоколе — пусть молчат и в ключе: их подпись ползёт с лентой
-       и прятала бы забытый вход (смена ключа «за компанию») */
-    instrPodSig=()=>"pod";BHUD.pod="";
     G.running=true;LOOP_OFF=false;
     for(const k in kz)keys[k]=false;
-    for(let i=0;i<20;i++){const b=G.belt;b.vx=b.vy=b.vz=0;b.avYaw=b.avPitch=0;frameBody(wallMs());}
+    for(let i=0;i<30;i++){const b=G.belt;b.vx=b.vy=b.vz=0;b.avYaw=b.avPitch=0;frameBody(wallMs());}
+    if(!ok(!!CKG.M,"мастер кабины испечён за 30 кадров"))return;
     /* захват пояс ставит сам; до шага «цель» его нет — иначе место цели в ключе меняется от
        любого сдвига и прячет забытый радар */
     G.belt.lock=null;G.belt.prog=0;
@@ -138,18 +139,24 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины
       const proj=(px,py,pz)=>{const vx=px-b.x,vy=py-b.y,vz=pz-b.z,zc=vx*fwd[0]+vy*fwd[1]+vz*fwd[2];if(zc<2)return null;
         return {x:W/2+(vx*right[0]+vy*right[1]+vz*right[2])*F/zc,y:H/2-(vx*up[0]+vy*up[1]+vz*up[2])*F/zc,z:zc};};
       const c0=ctx;BORC.log.length=0;
-      try{ctx=borcRecorder();BHUD.rec=true;drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);}finally{BHUD.rec=false;ctx=c0;}
-      /* подпись панели прибита целиком: без колодки это невязка, а она зависит от места
-         корабля — шаг «сдвиг» менял бы ключ «за компанию» и прятал забытый радар */
-      BHUD.pod="pod";BHUD.podF=GPU.frameNo;
-      return {log:BORC.log.join(";"),key:bhudKey(b,fwd,st,bas)};
+      try{ctx=borcRecorder();drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);}finally{ctx=c0;}
+      /* сухой кадр без панели и ленты (маска 13): что легло в очереди — и есть рисунок */
+      const Qs=[OVL.uq,OVL.lq,OVL.cq,OVL.gd],n=Qs.map(q=>q.length),nr=OVL.ur.length,P=ckgPlan();let ov="";
+      try{ckgFrame(CKG,P,ckgFS(P),b,proj,st,13);
+        ov=Qs.map((q,i)=>q.slice(n[i]).map(v=>Math.round(v*256)).join()).join("|")+"|"+(OVL.ur.length-nr);}
+      finally{Qs.forEach((q,i)=>q.length=n[i]);OVL.ur.length=nr;}
+      return {log:BORC.log.join(";"),key:ov};
     };
     const front=()=>{const b=G.belt,B=beltBasis(b);let best=null,bd=1e9;
       for(const a of b.ast){const dx=a.x-b.x,dy=a.y-b.y,dz=a.z-b.z,z=dx*B.fwd[0]+dy*B.fwd[1]+dz*B.fwd[2],d=Math.hypot(dx,dy,dz);
         if(z>d*.8&&d<bd){bd=d;best=a;}}return best;};
     const B=()=>G.belt;
     const STEPS=[["покой",()=>{}],["рыскание",()=>{B().yaw+=.05;}],["тангаж",()=>{B().pitch+=.05;}],
-      ["крен",()=>{B().roll=(B().roll||0)+.05;}],["ход",()=>{B().vx=.6;}],["сдвиг",()=>{B().x+=40;}],
+      ["крен",()=>{B().roll=(B().roll||0)+.05;}],["ход",()=>{B().vx=.6;}],
+      /* сдвиг — такой, чтобы ни один камень не пересёк дальность радара (2000): иначе смена
+         числа точек сменит #ovl «за компанию» и спрячет радар, забывший место корабля */
+      ["сдвиг",()=>{const b=B(),inr=x=>b.ast.map(a=>(a.x-x)**2+(a.y-b.y)**2+(a.z-b.z)**2<=4e6?1:0).join("");
+        const s0=inr(b.x);b.x+=[40,-40,36,-36,44,-44,32,-32].find(d=>inr(b.x+d)===s0)||40;}],
       ["цель",()=>{B().lock=front();}],["добыча",()=>{B().prog=.5;}],
       ["остаток",()=>{const L=B().lock;if(L)L.left=Math.max(1,L.left-1);}],["без цели",()=>{B().lock=null;B().prog=0;}],
       ["топливо",()=>{G.fuel*=.8;}],["корпус",()=>{G.hull*=.8;}],["трюм",()=>{G.cargo[RES_KEYS[0]]=(G.cargo[RES_KEYS[0]]||0)+3;}],
@@ -163,17 +170,17 @@ TEST_SUITES.push(()=>suite("ворота ступени 2: ключ кабины
     for(const [name,fn] of STEPS){
       fn();const cur=snap();steps++;
       if(cur.log!==prev.log){changed++;seen.push(name);if(cur.key===prev.key)bad.push(name);}
-      else if(cur.key!==prev.key&&name==="покой")bad.push("ключ сменился без смены рисунка");
+      else if(cur.key!==prev.key&&name==="покой")bad.push("#ovl сменился без смены рисунка");
       prev=cur;
     }
   }catch(e){ok(false,"упал: "+e.message);}
   finally{
-    instrPanel=ip;tapeStrip=ts;instrPodSig=ps;BHUD.pod="";
+    instrPanel=ip;tapeStrip=ts;
     for(const k in kz)keys[k]=kz[k];
     G.running=run0;LOOP_OFF=loop0;
   }
   eq(G.mode,"belt","все шаги прошли в поясе");
   ok(changed>=15,"оракул живой: протокол рисунка менялся на "+changed+" шагах из "+steps+" ("+seen.join(", ")+")");
-  eq(bad.length,0,"смена рисунка без смены ключа"+(bad.length?": "+bad.join(", "):""));
+  eq(bad.length,0,"смена рисунка без смены #ovl"+(bad.length?": "+bad.join(", "):""));
   resetWorld();
 }));

@@ -257,55 +257,81 @@ function gunGroupPick(list,sh,mk){
    По этому и читается сборка раньше первого выстрела (кодекс §13: сперва
    увидеть, потом узнать). У пиратов стволов пока нет — их сборки приходят
    в M368, и тогда эта же функция нарисует и их. */
-function gunBarrelsDraw(guns,shipA){
-  if(!guns||!guns.length)return;
-  ctx.save();
-  for(const A of guns){
-    const m=A.m;if(!m)continue;
-    const aim=(G.aim&&isFinite(G.aim[A.slot]))?G.aim[A.slot]:shipA;
-    const la=angWrap(aim-shipA);
-    const sz=sizeIdx(partSize(A.part));
-    /* длина мерена по корпусу: 2.6 читалось только на стенде, в игре ствола
-       было не видно вовсе. 4.5–9 единиц — это десятая-пятая часть корпуса,
-       столько и должен занимать ствол, чтобы сборка читалась силуэтом. */
-    const len=4.5+sz*2.2, w=1.05+sz*.3;
-    ctx.save();ctx.translate(m.x,m.y);ctx.rotate(la);
-    /* ствол — тело в тени, а не проволока: конусная трубка тёмной заливкой,
-       один светлый блик по верхней грани и дульный срез. Первая версия рисовала
-       светлую линию поверх корпуса, и на близком плане она читалась усиком
-       антенны, а не орудием (самокритика M363). */
-    ctx.fillStyle="rgba(20,24,30,.95)";
-    ctx.beginPath();
-    ctx.moveTo(0,-w);ctx.lineTo(len,-w*.62);ctx.lineTo(len,w*.62);ctx.lineTo(0,w);
-    ctx.closePath();ctx.fill();
-    /* обвод, как у пластин корпуса: тёмное тело на тёмном корпусе без него
-       не читается вовсе — на кадре ствол пропадал в силуэте */
-    ctx.strokeStyle="rgba(186,198,212,.5)";ctx.lineWidth=.4;ctx.stroke();
-    ctx.strokeStyle="rgba(214,224,236,.4)";ctx.lineWidth=.3;
-    ctx.beginPath();ctx.moveTo(.5,-w*.62);ctx.lineTo(len-.4,-w*.42);ctx.stroke();
-    /* жёсткая сидит в набор приливом, турель стоит на тумбе */
-    ctx.fillStyle=m.mount==="fix"?"rgba(20,24,30,.95)":"rgba(52,60,70,.95)";
-    ctx.beginPath();ctx.arc(0,0,m.mount==="fix"?w*.9:(m.mount==="tower"?w*2.1:w*1.35),0,TAU);ctx.fill();
-    /* башня (M479): круглый погон на спине с крестом — снаряжение читается силуэтом */
-    /* башня (M479, D14 18.09): крест читался прицелом, а не орудием. Теперь —
-       погон с болтами, купол со светом с одного бока, маска ствола и ствол
-       поверх купола: из тумбы торчит пушка, а не значок */
-    if(m.mount==="tower"){
-      ctx.strokeStyle="rgba(214,224,236,.55)";ctx.lineWidth=.45;ctx.stroke();
-      ctx.fillStyle="rgba(200,212,224,.7)";
-      for(let i=0;i<6;i++){const a=i*Math.PI/3+.3;ctx.beginPath();ctx.arc(Math.cos(a)*w*1.8,Math.sin(a)*w*1.8,.32,0,TAU);ctx.fill();}
-      const dg=ctx.createRadialGradient(-w*.5,-w*.5,0,0,0,w*1.5);
-      dg.addColorStop(0,"rgba(120,132,146,.98)");dg.addColorStop(1,"rgba(34,40,48,.98)");
-      ctx.fillStyle=dg;ctx.beginPath();ctx.arc(0,0,w*1.45,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(10,12,16,.6)";ctx.lineWidth=.35;ctx.stroke();
-      ctx.fillStyle="rgba(28,32,40,.98)";ctx.fillRect(w*.6,-w*.95,w*1.2,w*1.9);                 /* маска */
-      ctx.fillStyle="rgba(20,24,30,.98)";
-      ctx.beginPath();ctx.moveTo(w*1.2,-w*.8);ctx.lineTo(len,-w*.62);ctx.lineTo(len,w*.62);ctx.lineTo(w*1.2,w*.8);ctx.closePath();ctx.fill();
-      ctx.strokeStyle="rgba(186,198,212,.5)";ctx.lineWidth=.4;ctx.stroke();
-    }
-    ctx.restore();
+/* На видеокарте (25.09): ствол целиком — выпечка GPU-холста в его осях (рецепт кисти тот же),
+   ключ — размер, подвес и плотность экрана (dk); кадр кладёт её gpuImage с поворотом
+   курс+наводка и мипом корпуса (HG_BODY_LOD). Пусковая — повёрнутые прямоугольники в осях
+   корпуса. 2D-пути и стека матриц ctx нет */
+const GUN_BAKE=new Map();
+function gunDims(A){const sz=sizeIdx(partSize(A.part));return {sz,len:4.5+sz*2.2,w:1.05+sz*.3};}
+function gunPaint(g,len,w,m){
+  /* ствол — тело в тени, а не проволока: конусная трубка тёмной заливкой,
+     один светлый блик по верхней грани и дульный срез. Первая версия рисовала
+     светлую линию поверх корпуса, и на близком плане она читалась усиком
+     антенны, а не орудием (самокритика M363). */
+  g.fillStyle="rgba(20,24,30,.95)";
+  g.beginPath();
+  g.moveTo(0,-w);g.lineTo(len,-w*.62);g.lineTo(len,w*.62);g.lineTo(0,w);
+  g.closePath();g.fill();
+  /* обвод, как у пластин корпуса: тёмное тело на тёмном корпусе без него
+     не читается вовсе — на кадре ствол пропадал в силуэте */
+  g.strokeStyle="rgba(186,198,212,.5)";g.lineWidth=.4;g.stroke();
+  g.strokeStyle="rgba(214,224,236,.4)";g.lineWidth=.3;
+  g.beginPath();g.moveTo(.5,-w*.62);g.lineTo(len-.4,-w*.42);g.stroke();
+  /* жёсткая сидит в набор приливом, турель стоит на тумбе */
+  g.fillStyle=m.mount==="fix"?"rgba(20,24,30,.95)":"rgba(52,60,70,.95)";
+  g.beginPath();g.arc(0,0,m.mount==="fix"?w*.9:(m.mount==="tower"?w*2.1:w*1.35),0,TAU);g.fill();
+  /* башня (M479): круглый погон на спине с крестом — снаряжение читается силуэтом */
+  /* башня (M479, D14 18.09): крест читался прицелом, а не орудием. Теперь —
+     погон с болтами, купол со светом с одного бока, маска ствола и ствол
+     поверх купола: из тумбы торчит пушка, а не значок */
+  if(m.mount==="tower"){
+    g.strokeStyle="rgba(214,224,236,.55)";g.lineWidth=.45;g.stroke();
+    g.fillStyle="rgba(200,212,224,.7)";
+    for(let i=0;i<6;i++){const a=i*Math.PI/3+.3;g.beginPath();g.arc(Math.cos(a)*w*1.8,Math.sin(a)*w*1.8,.32,0,TAU);g.fill();}
+    const dg=g.createRadialGradient(-w*.5,-w*.5,0,0,0,w*1.5);
+    dg.addColorStop(0,"rgba(120,132,146,.98)");dg.addColorStop(1,"rgba(34,40,48,.98)");
+    g.fillStyle=dg;g.beginPath();g.arc(0,0,w*1.45,0,TAU);g.fill();
+    g.strokeStyle="rgba(10,12,16,.6)";g.lineWidth=.35;g.stroke();
+    g.fillStyle="rgba(28,32,40,.98)";g.fillRect(w*.6,-w*.95,w*1.2,w*1.9);                 /* маска */
+    g.fillStyle="rgba(20,24,30,.98)";
+    g.beginPath();g.moveTo(w*1.2,-w*.8);g.lineTo(len,-w*.62);g.lineTo(len,w*.62);g.lineTo(w*1.2,w*.8);g.closePath();g.fill();
+    g.strokeStyle="rgba(186,198,212,.5)";g.lineWidth=.4;g.stroke();
   }
-  ctx.restore();
+}
+function gunBake(A,dk){
+  /* мастер один на размер и подвес — вдвое плотнее потолка зума, как у корпуса (hullGpuSb):
+     мельче экрана уровень мипа выбирает выборка; печь в плотность экрана мылила ствол в 1 px */
+  const {sz,len,w}=gunDims(A),mt=A.m.mount||"",E=Math.max(len+.5,w*2.1+.6);
+  const sb=Math.pow(2,Math.ceil(Math.log2(2*shipScaleCap(ZOOM_MAX)*dk)*4)/4),side=Math.ceil(2*E*sb)+2;
+  return bakeKeep(GUN_BAKE,sz+"|"+mt+"|"+sb,12,()=>{
+    const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);gunPaint(g,len,w,A.m);
+      /* тень тела глубже кисти (×.4): сцена поднимает тёмное тоном, а 2D-ствол лежал поверх неё
+         чёрным — по эталону на корпусе (стенд gz: p5 10 против 29 без затемнения). Альфа та же */
+      g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation="source-atop";g.fillStyle="rgba(0,0,0,.6)";g.fillRect(0,0,side,side);},{mips:true});
+    return B&&{B,k:side/sb,sb,drop(){gpuBakeDrop(B);}};
+  });
+}
+/* стволы и пусковая на корпусе: (x,y) — центр корпуса в CSS, a — курс, s — масштаб корпуса */
+function shipGearGpu(guns,launcher,dry,x,y,a,s){
+  const pass=gpuScene();if(!pass)return;
+  const c=Math.cos(a),n=Math.sin(a),dk=GPU.bw/W,P=(lx,ly)=>[x+s*(lx*c-ly*n),y+s*(lx*n+ly*c)];
+  if(guns)for(const A of guns){const m=A.m;if(!m)continue;   /* наведён — куда метка; нет наводки — по носу */
+    const aim=(G.aim&&isFinite(G.aim[A.slot]))?G.aim[A.slot]:a,K=gunBake(A,dk);if(!K)continue;
+    const [gx,gy]=P(m.x,m.y),wd=K.k*s;
+    /* своим цветом, как рисовала кисть: ствол в тени читается тёмной чертой по светлому корпусу;
+       свет звезды (gpuLitSprite) разбеливал его в тон корпуса. Мипы с подточкой (sharp) — черта не мылится */
+    gpuImage(pass,K.B,[{x:gx,y:gy,w:wd,h:wd,rot:a+angWrap(aim-a),a:1}],{sharp:true});}
+  /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный сплошной,
+     сухой — только обвод с красной меткой. Прямоугольник (−5,6.5)–(4,9.5) в осях корпуса;
+     обвод 1 ед. по кромке — четыре полосы без нахлёста, поверх заливки, как штрих 2D */
+  if(launcher){
+    const q=(lx,ly,hx,hy,C)=>{const [px,py]=P(lx,ly);return [4,px,py,hx*s,hy*s,a,0,C[0],C[1],C[2],C[3]];};
+    const O=dry?[255,110,90,.9]:[40,46,54,.9],L=[];
+    if(!dry)L.push(q(-.5,8,4.5,1.5,[210,220,232,.9]));
+    L.push(q(-.5,6.5,5,.5,O),q(-.5,9.5,5,.5,O),q(-5,8,.5,1,O),q(4,8,.5,1,O));
+    if(dry&&Math.sin(G.t*.2)>0)L.push(q(-.5,8.1,1,.8,[255,110,90,.9]));
+    gpuShapes(pass,L);
+  }
 }
 function gunTotals(guns){
   const out={hull:0,shield:0,perEnergy:0};

@@ -32,48 +32,36 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
 - [ ] **Stage 1 — flight (system)** (amended by 15/n, `docs/DESIGN-gpu.md` §L.S):
   - the HUD on the overlay (done: 9e8877a), then at the native DPR and rastered only on change; what follows the
     world or a finger (chips, compass, brackets, sticks) as DOM with `transform` or a small canvas;
-  - hulls: bake the material (albedo, height → normal, emission, gloss mask) once per hull, bank and scale in the
-    shader, from `GST_WGSL`; the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`);
-    after the phone candidate — the final glow's source is HDR above the knee plus explicit emission only: paint
-    (the `c*c` of fsDown) leaves the first level entirely; the ship was the first case (ee46b87, half inside
-    `u.hl`), stations and the hotel's facade next, each in a pair (rule 16/n);
-    lights of fleet ships and lane buoys are explicit emission (rule 16/n): the dot painted, a narrow added halo
-    at the thing (2–3 of its radii; `FLEET_HALO`, `LANE_HALO`) — judged with the flame in the same pair;
-  - Gate: uploads 0 and submits 1 per flight frame; then Контроль's phone run, ≥ 95 % of frames on time over
-    30 s and over 5 minutes. A pass makes it a release candidate (Контроль pushes).
+  - hulls: the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`) — the material
+    is in (26.09, `08cd`);
+  - Gate: uploads 0 and submits 1 per flight frame — passed with a caveat (26.09, `docs/tour.py`): 1 submit a frame; a frame with a `gpuBake` adds +1 submit per bake, never more than one bake a frame, and bake frames are ≤ 1 % of the tour's frames;
+    ~~Контроль's phone run~~ — phone run waived by the author 26.09, redo when the phone is back. Stage 1 closes
+    with the HUD (Контроль pushes); the hull material is in.
 - [ ] **Redraw passes after the candidate** (§L.S): ships in real light (a–h, pairs toward / away from the star, in
   a planet's shadow, a pirate, a close-up); then the flight HUD as a quiet instrument (a–g), one pair at 390×844
   and 760 to the author for a verdict before any other screen.
 - [ ] **Stage 2 — the other modes, by share of play time:** map, landing, surface, cave, mine, belt, raid,
-  cockpit, scoop, base; one step per mode, each with a pair and the upload count. G4c, G4d and G6–G12 below
+  cockpit, scoop, base; one step per mode, each with a pair and the upload count. G6–G12 below
   are how each mode's body is drawn.
   - A mode's frame goes onto direct paths (`gpuLitSprite`, atlases, instances), not onto a `GcCtx` in place of
     `ctx` (DECISIONS, «The renderer»). A reserve for the GPU canvas, not now: convex fills without the stencil,
     one draw instead of two.
-  - Belt mode whole (the tour census of 25.09 — the only #c painter left in the tour): `drawBelt` (375 calls
-    per frame), `drawCockpit` (41), `instrPanel` (19), `drawGlassHUD` (12), `tapePaper` (8), `vbar` (5) and the
-    cockpit's `file` rows (2). The flight around the belt is already clean.
   - The census stays a tool: after each stage-2 step, the tour (NEYEL, Коммуна, wrecks, rescue, drones,
     «Сорока», belt, hotel, planet, dock) is rerun, and every flight item must stay at 0; a rare sight the tour
     does not reach (a new system object, a mode's entry) gets a stand and joins the flight gate suite.
 - [ ] **Heat margin** — before stage 2 if the 5-minute run of stage 1 fails, otherwise interleaved with it:
-  - `under` (6.8 ms on the phone): the corona's hash noise on the noise tile with the frame constants on the
-    CPU; orbits as a triangle strip along the ellipse instead of a bbox quad with `atan2` per pixel;
+  - `under` done 0.461.0 (3.3 → 2.2 ms on the S23: orbits as a band, no uniform-array copy in the field
+    shaders); what is left there is the corona itself (≈0.65 ms) — only if the heat gate asks for it;
   - rare regeneration of the nebula with fields (9/n);
-  - the post chain: 12 of 15.4 passes a frame are bloom and final — fewer steps, the first straight to ¼,
-    the recipe in `docs/RESEARCH-2026-09-25-gpu.md` P1 (the five up-passes sampled in the final, levels stop at
-    8 px texels, `blurH`/`blurV`/`sigma` deleted) and P2 (`shader-f16` on the ladder); the other picks of that
-    research (particles on compute, cave light by distance field, the star's limb law) wait in their own items;
+  - the post chain is done as far as it pays (0.460.0, `docs/RESEARCH-2026-09-25-gpu.md` P1): 8 of 11.4 passes
+    a frame are bloom and final, but on the S23 they cost 1.6 ms of 8.6 — the frame's price is the nebula
+    (2.6 + 1.2 ms) and the star's corona, and that is where the items above point; `shader-f16` was measured
+    harmful there (P2, off); the other picks of that research (particles on compute, cave light by distance
+    field, the star's limb law) wait in their own items;
     merged where the target is the same;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
-- [ ] Debts: the chip-jump gate (per-frame shift ≤ CHIP_SPEED·dt + 1 px, stable draw order by id); max|Δ| of
-  7d10c66^ against 7d10c66.
+- [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
 
-- [ ] **G4d the other ships lit:** the peace fleet, the ГЛАВТРАССА fleet, allies, the pirate base and «Сорока» are
-  still flat 2D bakes with a top-lit gradient; give them `gpuLitSprite` (17c) as barges and pirates have.
-- [ ] **G4c wrecks as hulls:** a wreck (`npcWreckDraw`, 13d-npc) is a flat dark disc labelled «КОРПУС». Draw it
-  as the NPC hull by `w.seed` through `hullOf`, broken, with smouldering edges, a slow spin and the star's light; the
-  label becomes a chip. After G4.
 - [ ] **L1 the space backdrop as a volume (before G5…G14):** a domain-warped FBM nebula, emission plus absorption,
   three parallax layers, dark dust lanes that hide stars, a slow flow; lit by the system's star — brighter and
   warmer toward it, and the star's glow is scattering in the nebula and dust (it went dark in gpu: x 0–300 of
@@ -91,8 +79,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
   bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
-- [ ] L4 sparks (Контроль 24.09, after 92679b3): at the burst peak they read as a drawn star-burst — uneven
-  lengths and angles, 3–4 long streaks, the rest short.
 - [ ] G2 star disc (Контроль 24.09, after 40f3276): reads as a flat orange ball — k_l2cB radius profile centre
   246, 198 at .85 R, a bump 201 at the limb, then glow 193; R 249–255 over the whole disc (clipped). Limb
   darkening into red with no bump at the edge, R ≤245 on the limb.
@@ -104,6 +90,18 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
   mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut
   rays; clouds on the GPU first).
+- [ ] Review 25.09 №6 (phone speed): while a finger is on the stick, the stick key holds `GPU.frameNo`
+  (17-mode-system:701), so `gpuHudFlush` clears and re-rasters the whole native-DPR `#hud` every frame (S23
+  8 MiB); the same while the rack is open. Draw the live sticks on the GPU (`#ovl`: rings and capsules), or a
+  small canvas that follows the finger; measure with `?g11=deep`, finger held down. After GPU-3's `#ovl`
+  image primitive and the rack move.
+- [ ] Review 25.09 №7 (phone speed): `gpuImage` rebinds on every texture change (one `gpuBind` slot per
+  name, 08c:223) — a dozen `createBindGroup` a frame; per-call `Float32Array`s in `gpuImage`, `gpuShapes`,
+  `gpuField`, `gpuLitSprite`, `gpuKitU`, `ovFlush`. Split the group (uniform + arena in 0, texture + sampler
+  in 1, cached per view and blend in a `WeakMap`), scratch arrays sized to the largest count. Changes the kit
+  layouts: re-accept the warm table.
+- [ ] Debt: a frame encoder for bakes (its own buffer pool) instead of one submit per `gpuBake` — take only if a
+  profile shows hitches on bake frames.
 - [ ] **G6 landing and surface, the bodies:** ground chunks and far ridges as textures; deco, flora and fauna as
   sprites where order needs it; the plants' wind on the GPU.
 - [ ] **G7 cave and mine:** tiles as textures, darkness and lamp light per pixel, ore glows, dust.
@@ -326,7 +324,9 @@ Check each against the code before building — some may already hold.
   11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl` into
   hashed state.
 - [ ] **Watch:** the quarantined «рейсы» — Омксиий (±3:∓1): «посадка: заход кончился режимом system»
-  (23.09, Node and `-Mobile`); «прогоны: двенадцать путей» flickered once under load; «свет: звезда — самое
+  (23.09, Node and `-Mobile`); «кольцо дороги: отправок ровно по одной» (gate «полёт по переписи») went red
+  once in a whole run for GPU-3 (25.09), neighbour unknown — does not reproduce at 66b51af6 (alone, and the
+  gate set under `-Shuffle 1..3`); «прогоны: двенадцать путей» flickered once under load; «свет: звезда — самое
   светлое» went red once in the pane (the cumulus, `CLOUDS_OFF`) — one look.
 - [ ] **Nets owed (M443–M446):** `TEST_T0` at local noon; a drawn-vs-undrawn hash detector; the tools'
   self-test before the net; not caught yet — the .55 auto-brake, the money-printing counter, idle drones;
@@ -335,7 +335,7 @@ Check each against the code before building — some may already hold.
   previous-version diff and `look()` telemetry; a per-suite dirty-page check after `fn()`.
 - [ ] **Refactor queue, each a commit:** `detStuck`'s key law (fires only on a diff of exactly 0 — soften
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
-  names its suite); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
+  names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
   functions, on touch only; the tools zoo → one way to take a frame; the button family merge; `-Times` for
   the Node tier.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any

@@ -8,9 +8,10 @@
    fleetShipAt грузит его мипы 2D-спуском (gpuMipTex). Уйдёт с переносом облика флота */
 /* текст v2 (08cb): маску строки растрит одна 2D-канва на всю игру (GC_GLYPHS.raster/.measure),
    раз на строку — так устроен текст GPU-холста, это его источник глифов, а не 2D печи */
-/* материал грунта (18a matTick) печётся 2D-канвой по кадрам из gpuPlanet — для посадки и поверхности,
-   которые ещё 2D; в кадре планеты это чужая печь. Уйдёт с переносом поверхности */
-const GATE2D_DYRY=["fleetArtOf","fleetShipAt","matTick","raster","measure","_c","_set"];
+/* материал грунта (18a) дырой больше не числится (26.09): кадр планеты двигает только строки
+   (matRows — арифметика), сборку тайла в 2D-узор делает кадр посадки или поверхности. Сцена планеты
+   держит заказ материала в очереди — порции идут под записью */
+const GATE2D_DYRY=["fleetArtOf","fleetShipAt","raster","measure","_c","_set"];
 /* …но растр строк — своя колонка ворот: у сцены с warm после разгона строк в растр — 0 */
 const GATE2D_TXT=["raster","measure","_c","_set"];
 /* место, где в кадре и подписи мира (планета), и фишка у кромки (станция за краем) */
@@ -48,6 +49,8 @@ const GATE2D=[
        G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;
        G.hold=G.hold||{};G.hold[s.key]={bld:{a:1,b:1,c:1,d:1}};
        if(first&&p.strip)planetStripDrop(p);
+       /* заказ материала грунта в очереди: кадр планеты двигает его строки без 2D */
+       if(first){delete p.mat;delete p.matHue;delete p.matCn;MAT_JOB=null;planetMat(p);}
        const Z=230/p.radius,l=Math.hypot(p.x,p.y)||1;
        G.ship.x=p.x-p.y/l*126/Z;G.ship.y=p.y+p.x/l*126/Z;G.ship.vx=G.ship.vy=0;
        G.zoom=Z;G.zoomT=null;return {p};}
@@ -103,6 +106,71 @@ const GATE2D=[
        return {by};}
      return null;},
    probe:["drawGesture","drawGestureTop","drawGestPost"]},
+  /* «Чебуречная» (17j): лодка и её свет, доска — выпечки GPU-холста; сбрасываем, чтобы выпечка шла под записью */
+  {name:"«Чебуречная» (17j): лодка, свет окна, доска",
+   painters:["drawCheburek","chebBake","chebPaint","chebPaintEm","chebSignBake","chebSignMake"],
+   place(first){
+     if(first){for(const B of CHEB_ART.values())gpuBakeDrop(B);CHEB_ART.clear();for(const v of CHEB_SIGN.values())v.drop();CHEB_SIGN.clear();}
+     for(let r=0;r<=30;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const C=chebHere();if(!C)continue;
+       G.ship.x=C.x-30;G.ship.y=C.y+40;G.ship.vx=G.ship.vy=0;G.zoom=1.5;G.zoomT=null;return {C};}
+     return null;},
+   probe:["drawCheburek"]},
+  /* щит (17k): панель и бегущая строка — выпечки GPU-холста через prebake; сбрасываем печи */
+  {name:"щит у полосы (17k): панель, бегущая строка",
+   painters:["drawBillboard","bbDrawGpu","bbAhead","bbKeep","bbPanelBake","bbPanelMake","bbStripBake"],
+   place(first){
+     if(first){for(const M of [BB_BAKE.pan,BB_BAKE.str]){for(const v of M.values())v.drop();M.clear();}BB_BAKE.cur=null;}
+     for(let r=0;r<=30;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
+       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;const B=bbHere();if(!B||gosBbPlan(B.by))continue;
+       G.ship.x=B.x-30;G.ship.y=B.y+40;G.ship.vx=G.ship.vy=0;G.zoom=1.3;G.zoomT=null;return {B};}
+     return null;},
+   probe:["drawBillboard"]},
+  {name:"приборная стойка (25d) и «Глобус» (25f): мастер, стрелки, перья",
+   painters:["rackDraw","rackFrame","rackWarm","rackBakeJob","rackTex","rackPaint","rackSprites","rackSpr","rackDial","rackGlass","rackGrain","rackScrew","rackRoller",
+             "globusDraw","globusPaint"],
+   place(first){
+     if(first){rackDrop();for(let i=0;i<40;i++)tapeSample();}
+     G.rack={on:true};return {};},
+   probe:["rackDraw"]},
+  {name:"кабина пояса (24bc, 25-cockpit, 25a, 25b): мастер полосами, стекло, приборы, лента",
+   painters:["beltHudPush","drawGlassHUD","drawCockpit","ckgTex","ckgJob","prebake","ckgPaint","ckgSprites","ckgAtlas","ckgLazy","ckgWarm",
+             "ckgFrame","ckgGlass","ckgGlint","ckgPanel","ckgLamps","ckgNode","ckgPut","ckgPutRot","ckT","ckLine",
+             "cockpitPaint","instrPanel","tapeStrip","tapePaper","drawNodeIcon"],
+   place(first){
+     if(first){ckgDrop();for(const k of [...PB.keys()])prebakeDrop(k);}
+     if(G.mode==="belt"&&G.belt)return {};
+     for(let r=0;r<=10;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){const s=getSystem(x,y);if(!s.belt)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;G.mode="system";enterBelt();G.cargo.ice=3;return {};}
+     return null;},
+   probe:["beltHudPush"]},
+  /* стики (15b) и строка наблюдения (17) — бывший слой #hud: по кругу живой, торможение, «СТОП» с дугой,
+     пустой бак, угасание, точка покоя; строки растрятся за первые 30 кадров, дальше — только атлас */
+  {name:"стики и строка наблюдения (15b, 17): бывший #hud на #ovl",
+   painters:["helmDrawSticks","helmBand","helmDryLabel","sysWatchLabel"],warm:30,
+   place(first){
+     const S=this;
+     if(first){S.n=0;G.credits=100000;G.owned.obod=true;const c=genMerc(999,["mine"]);
+       G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},tMs:now(),paidMs:now()}));
+       const m=G.crew[G.crew.length-1];crewAssignShip(m,"obod");crewOrder(m,"mine");G.watch=m.id;
+       S.mob=document.body.classList.contains("mobile");document.body.classList.add("mobile");return {};}
+     const ph=S.n++%6,y=H-160;G.fuel=ph===3?0:50;HELM.fade=null;
+     HELM.S=ph===0?{x0:120,y0:y,x:200,y:y-55,f:1}:ph===1?{x0:120,y0:y,x:60,y:y-20,f:1}:ph===2?{x0:120,y0:y,x:126,y:y-3,f:1}:
+            ph===3?{x0:120,y0:y,x:190,y:y,f:1}:null;
+     if(ph===4)HELM.fade={x0:120,y0:y,x:200,y:y-55,f:.7};
+     if(ph===0)HELM.trail=[{x:150,y:y-10},{x:170,y:y-30},{x:200,y:y-55}];
+     if(G.ctl){G.ctl.vk=.62;G.ctl.slow=ph===1;}
+     return {};},
+   done(){if(!this.mob)document.body.classList.remove("mobile");HELM.S=HELM.fade=null;},
+   probe:["helmDrawSticks","sysWatchLabel"]},
+  /* колодка — DOM-холст с контекстом WebGPU: мастер и валик — выпечки, живое — очередь #ovl своей цели.
+     Лента пишет столбец каждый кадр — каждый кадр проход. На узком экране колодки нет — и мерить нечего */
+  {name:"приборная колодка (25c): мастер, стрелки, перья — проходом видеокарты",
+   painters:["instrPodTick","instrPodDraw","instrPodLive","instrPodPaint","ckgSpr","tapePaper"],warm:30,
+   place(first){if(first){for(let i=0;i<40;i++)tapeSample();return {};}tapeSample();return {};},
+   get probe(){return IPOD_NARROW?[]:["instrPodDraw","instrPodLive"];}},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
@@ -141,6 +209,7 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
       for(const [P,k,d] of saved)Object.defineProperty(P,k,d);
       for(const f in wrap)window[f]=wrap[f];
       G.running=run0;LOOP_OFF=loop0;
+      if(S.done)S.done();
     }
     for(const f of S.probe)ok(hit[f]>=30,S.name+": "+f+" рисовал ("+hit[f]+" из 90 кадров)");
     const top=Object.entries(K.by).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>v+"× "+k).join("; ");

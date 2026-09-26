@@ -14,10 +14,10 @@ const GSK_WGSL=`
 fn kh(p:vec2f)->f32{var q=fract(vec3f(p.xyx)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 fn field(p0:vec2f,uv:vec2f)->vec4f{
   /* поле зовут внутри withScale: и p, и res.zw — уже в виртуальных W,H */
-  let V=fu.v;let H=fu.res.w;let Wd=fu.res.z;let p=p0;
-  let top=V[0].rgb;let bot=V[1].rgb;let dlow=V[0].w;let disc=V[1].w;let sc=V[2].rgb;let air=V[2].w;
-  let sun=V[3].xy;let sr=V[3].z;let up=V[3].w;
-  let day=V[4].x;let low=V[4].y;let nite=V[4].z;let az=V[4].w;
+  let H=fu.res.w;let Wd=fu.res.z;let p=p0;
+  let top=fu.v[0].rgb;let bot=fu.v[1].rgb;let dlow=fu.v[0].w;let disc=fu.v[1].w;let sc=fu.v[2].rgb;let air=fu.v[2].w;
+  let sun=fu.v[3].xy;let sr=fu.v[3].z;let up=fu.v[3].w;
+  let day=fu.v[4].x;let low=fu.v[4].y;let nite=fu.v[4].z;let az=fu.v[4].w;
   let v=clamp(p.y/H,0.,1.);
   /* зенит → горизонт: у горизонта воздух светлеет быстрее (плотнее слой) */
   let k=mix(.55*smoothstep(0.,.62,v),.55+.45*smoothstep(.62,1.,v),step(.62,v));
@@ -49,7 +49,7 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
       let mu=sqrt(max(1.-r*r,0.));
       let red=mix(sc,vec3f(225.,88.,38.)/255.,min(dlow*1.3,1.));
       let limb=1.-.3*(1.-mu);
-      var dc=min(mix(min(red*1.4,vec3f(1.)),vec3f(1.,.99,.94),smoothstep(.75,0.,r)*(.95-dlow*.85))*limb,vec3f(1.));
+      var dc=min(mix(min(red*1.4,vec3f(1.)),vec3f(1.,.99,.94),(1.-smoothstep(0.,.75,r))*(.95-dlow*.85))*limb,vec3f(1.));
       let ext=1.-.62*dlow*smoothstep(.1,1.,q.y/sr);
       /* диск светит сам: небо за ним прибавляется, а не берётся по каналам через max —
          max брал синий канал неба, и низкое солнце выходило розовым, а не красным */

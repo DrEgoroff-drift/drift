@@ -237,8 +237,31 @@ TEST_SUITES.push(()=>suite("наёмник виден в системе и за 
   const d1=Math.hypot(A.x-allyWork(A).x,A.y-allyWork(A).y);
   ok(d1<d0,"за 400 кадров он приблизился к месту работы ("+Math.round(d0)+" → "+Math.round(d1)+")");
   G.watch=m.id;
-  const lg=T.ledger(drawSystem);
-  ok(lg.calls>20,"кадр с наблюдением рисуется: вызовов канвы "+lg.calls);
+  /* кадр наблюдения — кадром видеокарты, как в цикле (28-loop): мир в проходе сцены, союзник —
+     своим корпусом (allyHullGpu), а на #c ни одного вызова — ни рисунка, ни матрицы, ни мерки
+     (Контроль 26.09: 2D-пути нет). Кто тронул #c — называется по стеку. Без видеокарты
+     (Node-ярус) кадр не рисуется вовсе — там только «не падает» */
+  if(GPU.ok&&!GPU.on){
+    const C=MAIN_CTX,P=CanvasRenderingContext2D.prototype,RP=GPURenderPassEncoder.prototype,d0=RP.draw,ah=allyHullGpu;
+    const K={on:false,c:{},dr:0,ally:0},keep=[];
+    const who=()=>new Error().stack.split("\n").slice(3,6).map(l=>{const q=/at (?:new )?([\w$.]+)/.exec(l);return q?q[1]:"?";}).join("<");
+    const tap=(o,k)=>{const f=o[k],own=Object.prototype.hasOwnProperty.call(o,k);
+      o[k]=function(){if(K.on&&this===C){const w=k+":"+who();K.c[w]=(K.c[w]|0)+1;}return f.apply(this,arguments);};
+      keep.push(()=>{if(own)o[k]=f;else delete o[k];});};
+    for(const k of Object.getOwnPropertyNames(P))if(k!=="constructor"&&Object.getOwnPropertyDescriptor(P,k).value instanceof Function)tap(P,k);
+    for(const k of Object.getOwnPropertyNames(C))if(C[k] instanceof Function)tap(C,k);
+    RP.draw=function(){if(K.on)K.dr++;return d0.apply(this,arguments);};
+    allyHullGpu=function(){const r=ah.apply(this,arguments);if(K.on&&r)K.ally++;return r;};
+    try{gpuManual(()=>{K.on=true;try{drawSystem();}finally{K.on=false;}});}
+    finally{RP.draw=d0;allyHullGpu=ah;for(const u of keep.reverse())u();}
+    const bad=Object.entries(K.c).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>v+"× "+k).join("; ");
+    eq(Object.keys(K.c).length,0,"кадр с наблюдением не трогает #c"+(bad?": "+bad:""));
+    ok(K.ally>=1,"союзник нарисован корпусом на видеокарте ("+K.ally+")");
+    ok(K.dr>20,"кадр с наблюдением рисуется: проходов видеокарты "+K.dr);
+  }else{
+    let err="";try{drawSystem();}catch(e){err=e.message;}
+    eq(err,"","кадр с наблюдением без видеокарты не падает");
+  }
   G.watch=null;
 }));
 

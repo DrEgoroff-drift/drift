@@ -40,8 +40,9 @@ const EYES_SUITE=() => suite("глаза тестов: видеокарта ес
   ok(GPU.ok,"глаза тестов слепы: видеокарты нет"+(GPU.none?" (браузер без WebGPU)":" (не поднялась за 14 с)"));
 });
 BOOT_SUITE.pin="first";
-let BOOT_SINK=0;
-if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NODE)){TEST_SUITES.unshift(EYES_SUITE);TEST_SUITES.unshift(BOOT_SUITE);}
+let BOOT_SINK=0,BOOT_PIPE_POLL=0;
+/* детектор конвейеров (91zzzzzzy4) — сразу за ними: до него никто не должен был создать конвейер полёта */
+if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NODE)){TEST_SUITES.unshift(BOOT_SUITE,EYES_SUITE,PIPE_SUITE);}
 (function boot(t0){
   /* под Node кадров нет: цикл выключается сразу, набор про запуск — дело Хрома */
   if(typeof TEST_NODE!=="undefined"&&TEST_NODE&&frameN<1){LOOP_OFF=true;runTests();return;}
@@ -53,8 +54,11 @@ if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NOD
      проматывает бюджет за миллисекунды, и прогон шёл без мира вовсе (0.456:
      «пусто 99%», выхлоп молчит, растр 0). Каждый опрос отдаёт ~10 мс
      настоящего времени счётом, между опросами промис адаптера успевает */
-  /* и прогрева конвейеров (08b0): наборы видят кадры без компиляции, детектор — честные промахи */
-  if((!GPU.ok||!GPU_PIPES.done)&&!GPU.none&&performance.now()-t0<14000){let s=0;for(let k=0;k<2e6;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),50);return;}
+  if(!GPU.ok&&!GPU.none&&performance.now()-t0<14000){let s=0;for(let k=0;k<2e6;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),50);return;}
+  /* и прогрева конвейеров (08b0): наборы видят кадры без компиляции, детектор — честные промахи.
+     Компиляция идёт по настоящим часам (~2 с), а шаг в 50 мс виртуальных съедал потолок за полсекунды
+     настоящих — прогрев ждём шагом в 1 мс, потолок — 600 шагов по ~20 мс счёта */
+  if(GPU.ok&&!GPU_PIPES.done&&BOOT_PIPE_POLL++<600){let s=0;for(let k=0;k<2e7;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),1);return;}
   const ready=frameN>=1||crashN>0;
   if(!ready&&performance.now()-t0<17000){setTimeout(()=>boot(t0),50);return;}
   G.running=false;

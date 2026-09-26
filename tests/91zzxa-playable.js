@@ -64,8 +64,8 @@ TEST_SUITES.push(()=>suite("R0 пэды: на оклике ДЕЙСТВИЕ — 
   const p=npcShip(by,0,1,G.ship.x+500,G.ship.y,1);p.aware=false;G.pirates=[p];
   G.hail={by,t:HAIL_HOLD,warn:0,x:G.ship.x,y:G.ship.y,blk:0};
   hailTick(G.ship,1,false);hud();
-  eq(document.querySelector("[data-k=act]").textContent.trim(),"ПРОХОДОМ","ДЕЙСТВИЕ называет ответ");
-  eq(document.getElementById("lockbtn").textContent.trim(),"ПО ДЕЛУ","ЦЕЛЬ называет второй ответ");
+  eq(document.querySelector("[data-k=act]").textContent.trim(),"Проходом","ДЕЙСТВИЕ называет ответ");
+  eq(document.getElementById("lockbtn").textContent.trim(),"По делу","ЦЕЛЬ называет второй ответ");
   G.hail=null;hailTick(G.ship,1,false);hud();
 }));
 
@@ -146,6 +146,10 @@ TEST_SUITES.push(()=>suite("R2 пустой бак: руль не крутит �
   G.mode="system";G.sx=5;G.sy=5;G.sys=getSystem(5,5);G.hail=null;G.pirates=[];G.hailLog={};
   G.ship.x=4000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;G.marks=[];G.ship.a=0;
   G.fuel=0;G.cargo.ice=0;toggleSos(false);
+  /* окно, оставленное открытым прошлым набором, закрылось сейчас — и пауза
+     «не переспрашивать» (RESCUE_ASK_GAP) легла на этот набор: газ окна не
+     открывал; всплыло, когда новый набор сдвинул раздачу по частям */
+  rescueShutT=-1e9;
   T.wait(2);
   const a0=G.ship.a;
   T.press("left",30);
@@ -156,9 +160,9 @@ TEST_SUITES.push(()=>suite("R2 пустой бак: руль не крутит �
   ok(+getComputedStyle(th).opacity<.5,"пад газа погас: "+getComputedStyle(th).opacity);
   /* стик под пальцем: тусклый, и над ним сказано почему */
   HELM.S={x0:80,y0:H-120,x:140,y:H-120,f:1};
-  const said=[],f0=ctx.fillText;
-  ctx.fillText=function(s,...r){said.push(String(s));return f0.call(this,s,...r);};
-  try{helmDrawSticks();}finally{ctx.fillText=f0;HELM.S=null;}
+  const said=[],led0=OVL.led,q0=OVL.uq.length;   /* стики — на слое #ovl (08bi): строки сдаёт сам слой */
+  OVL.led=t=>said.push(t.s);
+  try{helmDrawSticks();}finally{OVL.led=led0;OVL.uq.length=q0;HELM.S=null;}
   ok(said.indexOf("БАК ПУСТ")>=0,"над стиком «БАК ПУСТ»: "+said.join(" | "));
   /* топливо есть — всё как было */
   G.fuel=50;T.wait(1);hud();
@@ -254,7 +258,7 @@ TEST_SUITES.push(()=>suite("R3b окно выходов: пад «ВЫХОДЫ»
   G.mode="system";G.sx=S.sx;G.sy=S.sy;G.sys=S;G.ship.x=S.station.orbit+3000;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
   G.fuel=0;G.cargo.ice=0;G.cargo.iron=3;G.credits=1e6;G.pirates=[];G.hail=null;G.hailLog={};toggleSos(false);
   T.wait(1);hud();
-  eq(document.querySelector("[data-k=act]").textContent.trim(),"ВЫХОДЫ","на пустом баке пад ДЕЙСТВИЕ зовётся «ВЫХОДЫ»");
+  eq(document.querySelector("[data-k=act]").textContent.trim(),"Выходы","на пустом баке пад ДЕЙСТВИЕ зовётся «ВЫХОДЫ»");
   ok(!/БУКСИР ИЛИ СБРОС/.test(G.prompt),"подсказка не пересказывает окно: "+G.prompt.replace(/\n/g," / "));
   const cb=document.getElementById("callbtn");
   ok(cb.textContent.indexOf(rescueHomeCost().toLocaleString("ru"))>=0,"в меню ДОМОЙ со своей ценой: "+cb.textContent);
@@ -418,12 +422,12 @@ TEST_SUITES.push(()=>suite("R5 зонд: цена на паде, покупка 
   G.ship.x=p.x+p.x/u*(p.radius+50);G.ship.y=p.y+p.y/u*(p.radius+50);G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
   T.wait(1,{draw:false});hud();
   const lk=()=>document.getElementById("lockbtn").textContent.trim();
-  eq(lk(),"ЗОНД "+PROBE_COST+" КР","пад ЦЕЛЬ называет цену");
+  eq(lk(),"Зонд "+PROBE_COST+" кр","пад ЦЕЛЬ называет цену");
   const c0=G.credits;
   HELM.lockEdge=true;helmTick(1);
   eq(G.credits,c0,"первый тап не покупает — 300 кр одним касанием не уходят");
   T.wait(1,{draw:false});hud();
-  ok(/ТОЧНО/.test(lk()),"пад переспрашивает: "+lk());
+  ok(/точно/i.test(lk()),"пад переспрашивает: "+lk());
   HELM.lockEdge=true;helmTick(1);
   eq(G.credits,c0-PROBE_COST,"второй тап купил");
   ok(probeHas(S.sx,S.sy,p.idx),"формуляр открыт");

@@ -14,7 +14,6 @@
    прячется совсем — там на неё смотрят по-настоящему, подняв глаза на блок. */
 
 const $ipod=document.getElementById("ipod");
-const ipctx=$ipod?$ipod.getContext("2d"):null;
 const IPOD_S=2;                        // полотно вдвое крупнее: стрелки тонкие
 /* Перерисовка — только когда кадр колодки другой (GPU-этап 1): прежде 66 вызовов
    полотна каждый кадр ради стрелок, которые стоят. Подпись собирает всё, что
@@ -29,15 +28,21 @@ function instrPodSig(R,T){
   for(const r of R)s+="|"+r.ab+Math.round(instrTrack(r)*256);
   return s;
 }
-function instrPodDraw(){
-  if(!ipctx)return;
-  const R=instrRead(),T=tapeInit(),sig=instrPodSig(R,T);
-  if(sig===IPOD_SIG&&T===IPOD_T)return;
-  IPOD_SIG=sig;IPOD_T=T;
-  const w=$ipod.width/IPOD_S, h=$ipod.height/IPOD_S;
-  const c=ipctx;
-  c.setTransform(IPOD_S,0,0,IPOD_S,0,0);
-  c.clearRect(0,0,w,h);
+/* ── колодку рисует видеокарта (26.09, Контроль (A)) ──
+   Колодка остаётся DOM-холстом в строке приборов, но контекст у неё WebGPU: всё неподвижное
+   (тёмные поля, дуги шкал, крайние деления, коды, бумага с нулями дорожек) — один мастер,
+   валик — второй; стрелки, ступица, невязка, перья, перо у края — примитивы слоя #ovl (08bi)
+   в своей очереди (ovInto). Проход колодки кодируется в тот же кадровый энкодер и уходит
+   тем же submit: hud() идёт до gpuPresent. Кадр без перемен прохода не просит — холст
+   WebGPU держит последнее показанное. IPOD.n — сколько проходов было (наборы 91zk). */
+const IPOD={cx:null,dev:null,T:null,M:null,Rl:null,mk:"",n:0};
+/* мерки колодки в пикселях CSS полотна: верх — стрелки, низ — бумага */
+function instrPodGeo(w,h,nR){
+  const nh=h*.44,cw=(w-40)/nR;          // справа оставлено место под невязку
+  return {nh,cw,px:1,py:nh+10,pw:w-2,ph:h-nh-14};
+}
+/* неподвижное — в мастер: тот же порядок, что у прежнего 2D-полотна */
+function instrPodPaint(c,w,h,R){
   /* ── колодку должно быть ВИДНО (M233) ──
      Тон был один на всё (150,176,190) при альфе .28 на дуге: над дневным небом
      посадки и над чёрным космосом колодка одинаково пропадала, а пять
@@ -45,11 +50,9 @@ function instrPodDraw(){
      жалоба, которую кабина закрыла кодами из трёх букв (M213), — здесь их
      не было вовсе. Правило «ни цвета, ни тревоги» остаётся: меняются только
      светлота и подпись. */
-  const col="rgba(178,202,216,";
-  const nh=h*.44;                      // верхняя часть — стрелки
-  const cw=(w-40)/R.length;            // справа оставлено место под невязку
+  const col="rgba(178,202,216,",g=instrPodGeo(w,h,R.length),nh=g.nh;
   for(let i=0;i<R.length;i++){
-    const cx=cw*(i+.5), cy=nh*.84, r=Math.min(cw*.42,nh*.62);
+    const cx=g.cw*(i+.5), cy=nh*.84, r=Math.min(g.cw*.42,nh*.62);
     /* тёмное поле под шкалой: по нему стрелка читается и на светлом небе */
     c.fillStyle="rgba(8,12,18,.42)";
     c.beginPath();c.arc(cx,cy,r+2,Math.PI*1.06,Math.PI*1.94);c.closePath();c.fill();
@@ -63,41 +66,78 @@ function instrPodDraw(){
       c.moveTo(cx+c1*r,cy+s1*r);c.lineTo(cx+c1*r*.62,cy+s1*r*.62);
       c.stroke();
     }
-    const a=Math.PI*1.12+Math.PI*.76*instrTrack(R[i]);
-    /* тень стрелки — тот же приём, что на панели кабины: стрелка над шкалой */
-    c.strokeStyle="rgba(0,0,0,.45)";c.lineWidth=1.6;
-    c.beginPath();
-    c.moveTo(cx+.6,cy+1.1);c.lineTo(cx+.6+Math.cos(a)*r*.88,cy+1.1+Math.sin(a)*r*.88);
-    c.stroke();
-    c.strokeStyle=col+".95)";c.lineWidth=1.3;
-    c.beginPath();
-    c.moveTo(cx,cy);c.lineTo(cx+Math.cos(a)*r*.9,cy+Math.sin(a)*r*.9);
-    c.stroke();
-    c.fillStyle=col+".95)";
-    c.beginPath();c.arc(cx,cy,1.2,0,TAU);c.fill();
-    /* код прибора: три буквы под шкалой — тот же ответ, что в кабине */
+    /* код прибора: три буквы под шкалой — тот же ответ, что в кабине (стрелка над ним не ходит) */
     c.textAlign="center";
     c.fillStyle=col+".62)";
     c.font="7px ui-monospace,monospace";
     c.fillText(R[i].ab,cx,nh+7);
   }
-  /* невязка: цифры с краю, тем же тоном, что и всё остальное. Ни рамки, ни
-     подписи «внимание» — число, на которое игрок либо смотрит, либо нет */
-  c.textAlign="right";
-  c.fillStyle=col+".70)";
-  c.font="8px ui-monospace,monospace";
-  c.fillText(instrMisclose().toFixed(3),w-3,nh*.72);
-  /* лента: та же бумага, что и в кабине, только узкая полоска */
-  /* бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
+  /* лента: та же бумага, что и в кабине, только узкая полоска.
+     Бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
      на себя весь верх экрана, а поверх мира висит только нужное сейчас */
   c.globalAlpha=.72;
-  tapePaper(c,1,nh+10,w-2,h-nh-14);
+  tapePaper(c,g.px,g.py,g.pw,g.ph,"base");
   c.globalAlpha=1;
+}
+/* живое — примитивами в очередь колодки: мастер, стрелки, невязка, перья, валик, перо */
+function instrPodLive(R,T,w,h){
+  const col="rgba(178,202,216,",g=instrPodGeo(w,h,R.length),nh=g.nh;
+  ckgPut(IPOD.M);
+  for(let i=0;i<R.length;i++){
+    const cx=g.cw*(i+.5), cy=nh*.84, r=Math.min(g.cw*.42,nh*.62);
+    const a=Math.PI*1.12+Math.PI*.76*instrTrack(R[i]),c=Math.cos(a),s=Math.sin(a);
+    /* тень стрелки — тот же приём, что на панели кабины: стрелка над шкалой */
+    ckLine(cx+.6,cy+1.1,cx+.6+c*r*.88,cy+1.1+s*r*.88,1.6,"rgba(0,0,0,.45)");
+    ckLine(cx,cy,cx+c*r*.9,cy+s*r*.9,1.3,col+".95)");
+    ovEll(cx,cy,1.2,1.2,0,col+".95)");
+  }
+  /* невязка: цифры с краю, тем же тоном, что и всё остальное. Ни рамки, ни
+     подписи «внимание» — число, на которое игрок либо смотрит, либо нет */
+  ovText(OVL.uq,w-3,nh*.72,decRu(instrMisclose(),3),"8px ui-monospace,monospace",col+".70)","right","alphabetic",1,1);
+  const {px,py,pw,ph}=g;
+  if(pw<24||ph<8)return;
+  /* перья по бумаге — тем же ходом, что в tapePaper; бумага колодки под альфой .72 */
+  const x1=px+pw,cols=Math.min(T.n-1,Math.floor(pw)),sc=pw/Math.max(1,cols),th=ph/TAPE_PENS;
+  if(cols>=1)for(let i=0;i<TAPE_PENS;i++){
+    const top=py+th*i+1.2,hh=th-2.4,ys=IPOD.ys[i]||(IPOD.ys[i]=[]);ys.length=cols+1;
+    for(let k=0;k<=cols;k++){const idx=(T.head-1-T.back-(cols-k)+TAPE_N*2)%TAPE_N;ys[k]=top+hh*(1-T.col[idx*TAPE_PENS+i]/255);}
+    ovGraph(px,Math.max(py,top-1),x1,Math.min(py+ph,top+hh+1),px,sc,ys,1,"rgba(38,44,40,.80)",.72);
+  }
+  ckgPut(IPOD.Rl);
+  /* перо: короткая чёрточка у правого края, дрожит на щелчке; смотрим назад — бумага в тени */
+  if(!T.back){const x=x1-1.5+T.tick*1.6;ovRect(x-.6,py+1,x+.6,py+ph-1,"rgba(24,28,26,.85)",.72);}
+  else ovRect(px,py,x1,py+ph,"rgba(10,14,18,.16)",.72);
+}
+function instrPodDraw(){
+  if(!$ipod||!GPU.on||!GPU.enc||!GPU.dev)return;
+  const R=instrRead(),T=tapeInit(),sig=instrPodSig(R,T);
+  if(sig===IPOD_SIG&&T===IPOD_T&&IPOD.dev===GPU.dev)return;
+  /* новое устройство (первый кадр, подъём после gpuDrop): контекст переконфигурировать, очередь и мастера — заново */
+  if(IPOD.dev!==GPU.dev){
+    IPOD.cx=IPOD.cx||$ipod.getContext("webgpu");
+    IPOD.cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    IPOD.dev=GPU.dev;IPOD.T=ovTarget();IPOD.M=IPOD.Rl=null;IPOD.mk="";IPOD.ys=[];}
+  IPOD_SIG=sig;IPOD_T=T;
+  const w=$ipod.width/IPOD_S,h=$ipod.height/IPOD_S,led=OVL.led;
+  /* строки колодки в журнал текста не идут — как и прежде, когда она была своим 2D-полотном */
+  OVL.led=null;
+  try{ovInto(IPOD.T,IPOD_S,()=>{
+    const mk=w+"x"+h+"|"+R.map(r=>r.ab).join(",");
+    if(IPOD.mk!==mk||!IPOD.M){
+      const g=instrPodGeo(w,h,R.length),rw=Math.min(7,g.pw*.08),x1=g.px+g.pw;
+      IPOD.M=ckgSpr(0,0,w,h,c=>instrPodPaint(c,w,h,R));
+      /* валик — над перьями, своим спрайтом */
+      IPOD.Rl=ckgSpr(x1-rw-1,g.py,x1+1,g.py+g.ph,c=>{c.globalAlpha=.72;tapePaper(c,g.px,g.py,g.pw,g.ph,"roll");});
+      IPOD.mk=mk;}
+    instrPodLive(R,T,w,h);});
+  }finally{OVL.led=led;}
+  ovPass(IPOD.T,IPOD.cx.getCurrentTexture().createView(),$ipod.width,$ipod.height,[IPOD.T.uq],"ipod");
+  IPOD.n++;
 }
 /* Показывается везде, кроме пояса: там есть настоящий потолочный блок, и две
    панели разом читались бы как брак. */
-/* Колодку прячет и CSS: узкий экран (@media max-width:720px, style.css) и режимы вне
-   полёта (body:not(.inflight), 27z). Невидимое полотно не рисуем: на телефоне оно
+/* Колодку прячет и CSS: узкий экран (@media max-width:720px, style.css), режимы вне
+   полёта (body:not(.inflight), 27z) и открытый экран (body.screen .hud). Невидимое полотно не рисуем: на телефоне оно
    перерисовывалось ~10 раз в секунду при display:none, а холст вне композитора на каждом
    рисовании ждёт весь хвост GPU-процесса. Узость — один matchMedia и его событие, без
    чтения стилей в кадре; список режимов — тот же, что у класса inflight в 27z. Подпись
@@ -110,7 +150,8 @@ function instrPodTick(){
   if(!$ipod)return;
   const on=G.running&&G.mode!=="belt"&&G.mode!=="dock";
   $ipod.style.display=on?"":"none";
-  if(on&&!IPOD_NARROW&&IPOD_FLY[G.mode])instrPodDraw();
+  /* открытый экран (body.screen, 27z — класс ставится раньше в том же hud()) колодку гасит: ни прохода, ни текстуры */
+  if(on&&!IPOD_NARROW&&IPOD_FLY[G.mode]&&!document.body.classList.contains("screen"))instrPodDraw();
 }
 /* Колодка — не только показание, но и ручка: по ней открывается стойка (25d),
    где те же приборы стоят в полный рост. Единственный элемент строки приборов,

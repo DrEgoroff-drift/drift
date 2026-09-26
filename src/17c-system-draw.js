@@ -399,33 +399,36 @@ const GPU_LIT_SH=(.6).toFixed(2);
 /* флаг 4: среднее не мельче коробки 5.5 текселя (у pirMaster — 7); мип у нуля — 2, пираты теряли до 11 % */
 const GPU_LIT_DK=Math.log2(5.5).toFixed(3);
 const GST_WGSL=GPU_PL_WGSL+`
-fn plOcc(q:vec2f)->f32{let V=fu.v;let dq=q-V[0].xy;let ro=V[1].zw;
-  let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/V[0].z+1.)*.5;
+fn plOcc(q:vec2f)->f32{let dq=q-fu.v[0].xy;let ro=fu.v[1].zw;
+  let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/fu.v[0].z+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}
   return textureSampleLevel(t0,smp,uv,0.).a;}
-/* V[3].w — флаги: 1 — рельеф по мастеру t2, 2 — нерезкая маска между мипами */
+/* fu.v[3].w — флаги: 1 — рельеф по мастеру t2, 2 — нерезкая маска между мипами, 8 — материал t3 (08cd):
+   левая половина — рельеф, правая — маски свечения, металла, стекла */
 fn relOn()->bool{return (u32(fu.v[3].w+.5)&1u)!=0u;}
 /* рельеф — по альфе t0, а у верхнего слоя станции (флаг 1) — по общему мастеру t2:
    край ядра внутри тела — не кромка, свет его не обводит */
 fn ra(uv:vec2f,l:f32)->f32{if(relOn()){return textureSampleLevel(t2,smp,uv,l).a;}return textureSampleLevel(t0,smp,uv,l).a;}
 fn sa(uv:vec2f,d:vec2f)->vec2f{let l=fu.v[3].z;
   return vec2f(ra(uv+vec2f(d.x,0.),l)-ra(uv-vec2f(d.x,0.),l),ra(uv+vec2f(0.,d.y),l)-ra(uv-vec2f(0.,d.y),l));}
-fn field(p:vec2f,uv0:vec2f)->vec4f{
-  let V=fu.v;let c=V[0].xy;let R=V[0].z;let s=V[0].w;let sd=normalize(V[1].xy);let col=V[2].rgb;let ro=V[1].zw;
+/* fu.v[2].w — прозрачность всего спрайта (борт у дока гаснет): премультиплицированный выход целиком */
+fn field(p:vec2f,uv0:vec2f)->vec4f{return fieldL(p,uv0)*fu.v[2].w;}
+fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
+  let c=fu.v[0].xy;let R=fu.v[0].z;let s=fu.v[0].w;let sd=normalize(fu.v[1].xy);let col=fu.v[2].rgb;let ro=fu.v[1].zw;
   let dp=p-c;let rr=length(dp);
   /* свой свет станции: тёплое гауссово пятно, окна и прожекторы */
-  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07)*max(V[3].x,0.);
+  let gl=vec3f(1.,.84,.59)*(exp(-(rr*rr)/(R*R*.12))*.22+exp(-rr/(R*.5))*.07)*max(fu.v[3].x,0.);
   if(rr>R*1.2){return vec4f(gl,0.);}
   /* спрайт повёрнут на ro=(cos,sin): место — в его осях, нормали — обратно в экран */
-  /* V[3].y — сжатие крена по поперечной оси (корпус корабля, 17c2); 0 — без крена */
-  let lp=vec2f(dot(dp,ro),dot(dp,vec2f(-ro.y,ro.x)))/vec2f(1.,select(1.,V[3].y,V[3].y>0.));let uv=(lp/R+1.)*.5;
+  /* fu.v[3].y — сжатие крена по поперечной оси (корпус корабля, 17c2); 0 — без крена */
+  let lp=vec2f(dot(dp,ro),dot(dp,vec2f(-ro.y,ro.x)))/vec2f(1.,select(1.,fu.v[3].y,fu.v[3].y>0.));let uv=(lp/R+1.)*.5;
   if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return vec4f(gl,0.);}
-  var c4=textureSampleLevel(t0,smp,uv,V[3].z);   /* V[3].z — уровень мипа у мастера (17c2), иначе 0 */
+  var c4=textureSampleLevel(t0,smp,uv,fu.v[3].z);   /* fu.v[3].z — уровень мипа у мастера (17c2), иначе 0 */
   /* флаг 2 — нерезкая маска (25.09): Y против среднего по покрытию уровнем выше, одним множителем
      на rgb, канал не выше покрытия. Вверх и вниз — на (1−Y)²: светлое свет и так поднимает до ×3;
      флаг 4 — вниз в полную силу, полоса GPU_LIT_DK (правило pirMaster, пираты) */
-  if((u32(V[3].w+.5)&2u)!=0u&&c4.a>1e-3){let dk=(u32(V[3].w+.5)&4u)!=0u;
-    let a1=textureSampleLevel(t0,smp,uv,select(V[3].z+1.,max(V[3].z+1.,${GPU_LIT_DK}),dk));
+  if((u32(fu.v[3].w+.5)&2u)!=0u&&c4.a>1e-3){let dk=(u32(fu.v[3].w+.5)&4u)!=0u;
+    let a1=textureSampleLevel(t0,smp,uv,select(fu.v[3].z+1.,max(fu.v[3].z+1.,${GPU_LIT_DK}),dk));
     let W3=vec3f(.299,.587,.114);let Y=dot(c4.rgb,W3)/c4.a;
     if(a1.a>1e-4&&Y>.002){let e=${GPU_LIT_SH}*(Y-dot(a1.rgb,W3)/a1.a);let q=1.-min(Y,1.);
       let dn=select(q*q,1.,dk);
@@ -435,16 +438,23 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   if(a<.01){return vec4f(gl,0.);}
   let u1=vec2f(.5/R);
   let L=normalize(vec3f(sd,.3));
-  let g0=-sa(uv,u1*1.1);let g=vec2f(g0.x*ro.x-g0.y*ro.y,g0.x*ro.y+g0.y*ro.x);let tl=clamp(length(g),0.,.98);
+  /* широкая нормаль и мелкий рельеф (краска, купол стекла) — из материала (раз на корпус, 08cd), иначе по
+     альфе здесь; мелкий рельеф ложится и в тонкую нормаль — швы и панели ловят кромку звезды */
+  let mo=(u32(fu.v[3].w+.5)&8u)!=0u;var gb0:vec2f;var gg0:vec2f;
+  let lm=max(fu.v[3].z-1.,0.);var mk=vec3f(0.);
+  if(mo){let m=textureSampleLevel(t3,smp,vec2f(uv.x*.5,uv.y),lm);gb0=m.xy;gg0=m.zw;
+    let q=textureSampleLevel(t3,smp,vec2f(.5+uv.x*.5,uv.y),lm);mk=q.xyz/max(q.w,1e-3);}
+  else{gb0=-(sa(uv,u1*3.*s)*.5+sa(uv,u1*8.*s)*.5);gg0=glassG(uv,u1*6.);}
+  let g0=-sa(uv,u1*1.1)+select(vec2f(0.),gg0,mo);let g=vec2f(g0.x*ro.x-g0.y*ro.y,g0.x*ro.y+g0.y*ro.x);let tl=clamp(length(g),0.,.98);
   let n=vec3f(g/max(length(g),1e-4)*tl,sqrt(1.-tl*tl));
-  let gb0=-(sa(uv,u1*3.*s)*.5+sa(uv,u1*8.*s)*.5);let gb=vec2f(gb0.x*ro.x-gb0.y*ro.y,gb0.x*ro.y+gb0.y*ro.x);let tb=clamp(length(gb)*1.2,0.,.9);
+  let gb=vec2f(gb0.x*ro.x-gb0.y*ro.y,gb0.x*ro.y+gb0.y*ro.x);let tb=clamp(length(gb)*1.2,0.,.9);
   let nb=vec3f(gb/max(length(gb),1e-4)*tb,sqrt(1.-tb*tb));
   let side=dot(dp,sd)/R;
   /* верхний слой станции судит «огонь или металл» по общему мастеру: полоса краски на
      .32 поверх корпуса — не лампа, хотя в своём слое она чистый янтарь */
-  var cu=c4;if(relOn()){cu=textureSampleLevel(t2,smp,uv,V[3].z);}
+  var cu=c4;if(relOn()){cu=textureSampleLevel(t2,smp,uv,fu.v[3].z);}
   let rgb=cu.rgb/max(cu.a,1e-3);let mx=max(rgb.r,max(rgb.g,rgb.b));let sat=(mx-min(rgb.r,min(rgb.g,rgb.b)))/max(mx,1e-3);
-  let own=1.-smoothstep(.3,.55,sat*mx);
+  let own=select(1.-smoothstep(.3,.55,sat*mx),1.-mk.x,mo);
   let rim=pow(max(dot(n,L),0.),3.)*pow(1.-n.z,1.5);
   /* свет — множитель по грунту (почти белый): тёмное остаётся тёмным, синее — синим;
      тёплый цвет звезды — только кромке cos³ */
@@ -457,22 +467,23 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
      как есть, тень перепадом, звезда только кромкой и скатом к ней. Множитель станции
      (до ×3 на светлом борту) выбеливал обшивку, а насыщенная краска (красный кант)
      шла в огни ×2.3 и за коленом свечения уходила в розовое */
-  let hm=V[3].x<-.5;
+  let hm=fu.v[3].x<-.5;
   if(hm){shade=1.-clamp(.2*smoothstep(-.4,.6,-side)+.1*away,0.,.3)*own;
     lit=col*(rim*1.1+max(dot(nb,L),0.)*(1.-nb.z)*.3)*own*a;}
   /* L3: заслон звезды — станция тенит баржу у причала (у самой станции, glow>0, — нет);
      огни в тень не падают */
-  let sk=mix(1.,select(shAt(p,sd),1.,V[3].x>0.),own);
+  let sk=mix(1.,select(shAt(p,sd),1.,fu.v[3].x>0.),own);
   /* L3: точечный свет — лучи, разрывы, болты, факелы: ближний борт берёт их цвет */
   let pl=plAt(p,normalize(nb+vec3f(n.xy*.6,0.)),R*.3,R*.22)*own*select(1.,.2,hm);
   /* металл (серое) — жёсткий блик-штрих со стороны звезды; стекло (голубое) — отражает звезду */
   let Hs=normalize(L+vec3f(0.,0.,1.));
-  let met=(1.-smoothstep(.1,.28,sat))*smoothstep(.12,.35,mx)*own;
-  let gls=glassOf(cu)*own;
-  let gg0=glassG(uv,u1*6.);let gg=vec2f(gg0.x*ro.x-gg0.y*ro.y,gg0.x*ro.y+gg0.y*ro.x);
+  let met=select((1.-smoothstep(.1,.28,sat))*smoothstep(.12,.35,mx),mk.y,mo)*own;
+  let gls=select(glassOf(cu),mk.z,mo)*own;
+  let gg=vec2f(gg0.x*ro.x-gg0.y*ro.y,gg0.x*ro.y+gg0.y*ro.x);
   let spec=(col*met*(1.-gls)*1.3*pow(max(dot(n,Hs),0.),40.)+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs))*sk*a;
-  /* окна и огни светят сами: выше колена — их подхватывает свечение */
-  let em=select(1.+1.3*(1.-own),1.,hm);
+  /* окна и огни светят сами: выше колена — их подхватывает свечение; у корпуса корабля — только
+     по маске материала (огонь ярче округи), без неё насыщенный кант шёл в огни */
+  let em=select(1.+1.3*(1.-own),1.,hm&&!mo);
   return vec4f(c4.rgb*(shade*sk*em+pl)*mix(vec3f(1.),col,.08)+lit*sk+spec+gl*(1.-a),a);
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
@@ -481,13 +492,15 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
 /* rel — мастер рельефа (верхний слой станции, 17c3): свет по нему, цвет и покрытие — по cv */
 /* sharp — нерезкая маска между уровнями мастера (только у мастера с мипами): резкость 2D
    без ряби, как gpuImage {sharp}; lod тогда — обычный, не на ступень мельче; "dark" — флаг 4 */
-function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp){
+/* al — прозрачность всего спрайта (0…1, по умолчанию 1): гаснущий борт светится тем же светом */
+function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al){
   const pass=gpuScene();if(!pass)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
-  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=1;U[12]=glow;U[13]=sy||0;U[14]=lod||0;
-  const mip=!!cv.view;U[15]=(rel?1:0)+(sharp&&mip?2:0)+(sharp==="dark"&&mip?4:0);
-  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||null],{blend:"hull",smp:mip?gpuMipSmp():null});
+  U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=al==null?1:clamp(al,0,1);U[12]=glow;U[13]=sy||0;U[14]=lod||0;
+  const mip=!!cv.view;if(mip&&cv.draw)gpuBakeLive(cv);   /* материал (08cd) — после возможной перепечки */
+  const mt=mip&&!rel&&cv.mat;U[15]=(rel?1:0)+(sharp&&mip?2:0)+(sharp==="dark"&&mip?4:0)+(mt?8:0);
+  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||null,mt||null],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
 function drawStation(x,y,Z){

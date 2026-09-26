@@ -268,7 +268,7 @@ async function g11RunDeepHere(){
   if(fx){RES_AUTO=fx;PHONE_DPR=fx;}
   resFresh=1e9;resize();g11CpuHook(true);
   const out={dpr:devicePixelRatio,DPR,canvas:cvs.width+"×"+cvs.height,res:G.opts.gfx.res,RES_AUTO,resEma:+resEma.toFixed(1),
-    ua:navigator.userAgent.slice(0,80)};
+    ua:navigator.userAgent.slice(0,80),arch:GPU.arch||"",f16:!!GPU.f16,transient:!!GPUTextureUsage.TRANSIENT_ATTACHMENT};
   put("DPR "+DPR+" · "+out.canvas+" · gfx.res "+out.res+" · RES_AUTO "+RES_AUTO+" (стоит)");
   const err=[];
   try{

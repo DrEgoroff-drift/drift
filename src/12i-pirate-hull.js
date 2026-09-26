@@ -15,7 +15,7 @@
    дальше рисуется картинкой с поворотом — тот же приём, что кэш неба у гиганта
    и тайл материала. */
 const PIR_SS=3;                        // выпекаем крупнее и рисуем мельче
-const PIR_ART={};
+const PIR_ART={},PIR_KEEP=24;   /* вариантов пирата в кэше: посевы системы меняются каждые 15 минут; в системе их до 3 (обход 26.09) */
 /* четыре класса опознаются с одного взгляда — это и есть смысл затеи */
 const PIR_CLASS={
   fast:{ru:"перехватчик",len:46,bw:.15,eng:2,engL:1.5,cage:0,plate:0,spike:3,ram:0},
@@ -239,8 +239,9 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
      оставался прежним, разбитый пират выглядел просто испачканным */
   /* ранг входит в ключ: у него своё снаряжение, а значит и свои стволы (M368) */
-  const key=id+(rogue?"!r":"")+(hurt?"!h":"")+"!"+(rank|0)+(des?"!d":"");
-  if(PIR_ART[key])return PIR_ART[key];
+  /* hurt===2 — обломок (13d, G4c): своя выпечка, обугленная, с крупными редкими пробоинами */
+  const wk=hurt===2,key=id+(rogue?"!r":"")+(hurt?(wk?"!w":"!h"):"")+"!"+(rank|0)+(des?"!d":"");
+  const had=artGet(PIR_ART,key);if(had)return had;
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
   const cls=pirateClass(S.seed,rogue);
@@ -261,6 +262,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст; ГСЧ пробоин
      заводится внутри — перепечка после потери устройства даёт тот же рваный силуэт.
      Без видеокарты — null: 2D-пути нет */
+  const HO=[];
   const cn=gpuBake(side,side,g=>{
   g.setTransform(PIR_SS,0,0,PIR_SS,rad*PIR_SS,rad*PIR_SS);
   /* флагман ренегата — это ВАШ корпус, обвешанный чужим: настоящий полётный
@@ -277,7 +279,8 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      и подбитого видно по форме, а не только по полоске */
   const hr=rng(hashi(S.seed,0x8B17,7));
   const drop=[];
-  if(hurt)for(let i=0;i<B.polys.length;i++)drop.push(i>=B.coreN?hr()<.55:false);
+  /* у обломка навесного отрывает меньше: силуэт борта должен узнаваться, а не сыпаться решёткой */
+  if(hurt)for(let i=0;i<B.polys.length;i++)drop.push(i>=B.coreN?hr()<(wk?.25:.55):false);
   for(let qi=0;qi<B.polys.length;qi++){
     const q=B.polys[qi];
     if(hurt&&drop[qi])continue;
@@ -307,7 +310,8 @@ function pirateArtOf(id,rogue,hurt,rank,des){
     ctx.lineTo(t.x+Math.cos(t.a)*t.r*2.6,t.y+Math.sin(t.a)*t.r*2.6);ctx.stroke();
   }
   /* ── стволы: то, чем он вооружён, до первого выстрела (M368) ── */
-  for(const gn of (B.guns||[])){
+  /* у обломка стволов нет: оторваны, а светлый ствол на мёртвом корпусе читался царапиной */
+  for(const gn of (wk?[]:(B.guns||[]))){
     const u=B.hw;
     /* длина ствола мерится корпусом, а не полушириной: у длинного корабля
        рельса длиннее автопушки, но ни та ни другая не вылезает за выпечку —
@@ -372,20 +376,24 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      раньше, чем копоть на нём */
   if(hurt){
     ctx.globalCompositeOperation="destination-out";
-    for(let i=0;i<3;i++){
+    HO.length=0;
+    /* у обломка пробоин две, но крупнее: три мелких на 760 рассыпали силуэт */
+    const HN=wk?2:3,HK=wk?1.45:1;
+    for(let i=0;i<HN;i++){
       const bx=lerp(B.tail,B.nose*.4,hr()), by=(hr()<.5?-1:1)*B.hw*(.5+hr()*.6);
+      HO.push([bx,by,HK]);   /* где пробоина и её мерка — знает и обломок (13d): по её кромке тлеет */
       /* пробоина из трёх наложенных кругов: один ровный круг читается дыркой
          дырокола, а не вырванным металлом */
       for(let j=0;j<3;j++){
         ctx.beginPath();
         ctx.arc(bx+(hr()-.5)*B.hw*.7,by+(hr()-.5)*B.hw*.7,
-          B.hw*(.16+hr()*.3),0,TAU);
+          B.hw*(.16+hr()*.3)*HK,0,TAU);
         ctx.fill();
       }
       /* рваная кромка: несколько треугольных выкусов по краю пробоины, иначе
          дыра остаётся ровной окружностью дырокола */
-      for(let j=0;j<5;j++){
-        const a=hr()*TAU, rr=B.hw*(.3+hr()*.3);
+      for(let j=0;j<(wk?3:5);j++){
+        const a=hr()*TAU, rr=B.hw*(.3+hr()*.3)*HK;
         ctx.beginPath();
         ctx.moveTo(bx+Math.cos(a)*rr,by+Math.sin(a)*rr);
         ctx.lineTo(bx+Math.cos(a+.5)*rr*1.5,by+Math.sin(a+.5)*rr*1.5);
@@ -394,15 +402,15 @@ function pirateArtOf(id,rogue,hurt,rank,des){
       }
     }
     ctx.globalCompositeOperation="source-atop";
-    ctx.fillStyle="rgba(18,14,12,.3)";
+    ctx.fillStyle=wk?"rgba(14,11,9,.62)":"rgba(18,14,12,.3)";   /* обломок обуглен: темнее живого борта */
     ctx.fillRect(-rad,-rad,rad*2,rad*2);
     ctx.globalCompositeOperation="source-over";
   }
   /* один свет на весь корабль кладёт gpuLitSprite по рельефу, от звезды (G4): в выпечке его нет;
      нерезкая маска — в шейдере (sharp, между уровнями мипов) */
-  });
-  const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru};
-  PIR_ART[key]=art;return art;
+  },{mat:PIR_SS});   /* mat — материал корпуса (08cd) */
+  const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru,holes:HO};
+  return artPut(PIR_ART,key,art,PIR_KEEP);
 }
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──
    Повреждения копятся вместе с hp, выхлоп грязный и несинхронный — и то и
@@ -416,7 +424,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
 const PIR_LOD=-1.6;
 function gpuPirateBody(p,x,y,s){
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
-  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0);
+  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,p.wreck?2:hp<.5,p.rank|0,p.deserter?1:0);
   let lx=-p.x,ly=-p.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
   /* выпечка с мипами: на крупном плане уровень 0, при отдалении — мипы, а не рябь; деталь
      поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */

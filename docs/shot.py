@@ -239,7 +239,7 @@ def main():
             t0 = time.time()
             while time.time() - t0 < max(a.budget, a.delay + 10000) / 1000 and ev(ws, "document.title") != "SHOT_DONE": time.sleep(.3)
             time.sleep(.5)
-            st = ev(ws, "({shot:window.__shot||null,gpu:{ok:GPU.ok,none:GPU.none,errs:GPU.errs},"
+            st = ev(ws, "({shot:window.__shot||null,gpu:{ok:GPU.ok,none:GPU.none,errs:GPU.errs,f16:!!GPU.f16,arch:GPU.arch||null},"
                         "crash:document.body.innerText.indexOf('СБОЙ')>=0,errors:(window.__errs||[]).slice(0,6)})")
             png = ws.call("Page.captureScreenshot", format="png")
             open(out, "wb").write(base64.b64decode(png["data"]))

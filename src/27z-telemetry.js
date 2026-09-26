@@ -104,6 +104,25 @@ function setPct(el,key,v){
   if(HUD_NUM[key]===q)return;
   HUD_NUM[key]=q;
   setSt(el,"width",(q/10).toFixed(1)+"%");
+  if(el)el.style.setProperty("--p",q/10);
+}
+/* крупный прибор (пара HUD 15/n): число крупно, «/100» мелко рядом — узлы
+   заводятся один раз, дальше меняются только их тексты. textContent тот же,
+   «98/100», его читают законы детектора и «почему». */
+function setBig(el,key,a,b){
+  const ka=key+"|a",kb=key+"|b";
+  if(HUD_NUM[ka]===a&&HUD_NUM[kb]===b)return;
+  HUD_NUM[ka]=a;HUD_NUM[kb]=b;
+  if(!el.__big){el.textContent="";el.__big=[document.createTextNode(""),document.createElement("small")];el.append(el.__big[0],el.__big[1]);}
+  el.__big[0].data=String(a);el.__big[1].textContent="/"+b;
+}
+/* слово кнопки живёт в своём <span>: у пэда регистр как в предложении ставит
+   CSS (у кнопки-решётки нет ::first-letter), у карты рядом живёт значок;
+   textContent кнопки прежний */
+function padWord(b){
+  if(!b)return null;
+  if(!b.__w){b.__w=b.querySelector("span");if(!b.__w){b.__w=document.createElement("span");b.textContent="";b.appendChild(b.__w);}}
+  return b.__w;
 }
 function setPair(el,key,a,b){
   const ka=key+"|a",kb=key+"|b";
@@ -158,8 +177,8 @@ function hud(){
   setPct($f,"f",fr*100);
   setPct($h,"h",hr*100);
   setPct($cg,"cg",cr*100);
-  setPair($fn,"fn",Math.round(G.fuel),Math.round(st.fuelMax));
-  setPair($hn,"hn",Math.round(G.hull),Math.round(st.hullMax));
+  setBig($fn,"fn",Math.round(G.fuel),Math.round(st.fuelMax));
+  setBig($hn,"hn",Math.round(G.hull),Math.round(st.hullMax));
   setPair($cn,"cn",held(),st.cargoMax);
   setSt($sg,"display",st.shieldMax>0?"":"none");
   /* энергия (M362): шкала есть у всех — она кормит и маневровые, — но в
@@ -224,7 +243,7 @@ function hud(){
     const bc=document.body.classList;
     const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen");
     $zl.style.display=zs?"":"none";
-    if(zs)setTx($zl,"МАСШТАБ ×"+G.zoom.toFixed(2));
+    if(zs)setTx($zl,"Масштаб ×"+decRu(G.zoom,2));
   }
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
@@ -246,48 +265,48 @@ function hud(){
   rescueSync();   /* открытое окно выходов сверяет себя с миром (16c) */
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
-  if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
+  if(G.mode==="system"){a=(typeof nameOf==="function")?nameOf(G.sys):G.sys.name;b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
     /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
     if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
-  else if(G.mode==="wanderer"){a="НА БОРТУ «СОРОКИ»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
-  else if(G.mode==="map"){a="НАВИГАЦИЯ";b="радиус "+st.jump.toFixed(1)+" пк";}
-  else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
+  else if(G.mode==="wanderer"){a="На борту «Сороки»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
+  else if(G.mode==="map"){a="Навигация";b="радиус "+decRu(st.jump,1)+" пк";}
+  else if(G.mode==="landing"){a=G.land.p.name;
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
   /* ── строка места не повторяет шкалы (A2) ──
      Пока приборы висели наверху, а «где мы» — рядом с ними, сводка дублировала
      трюм и скафандр текстом: два раза одно и то же в одном углу кадра. Теперь
      шкалы стоят слева от пульта, и строка говорит только то, чего в них нет. */
-  else if(G.mode==="surface"){a=G.surf.p.name.toUpperCase();
+  else if(G.mode==="surface"){a=G.surf.p.name;
     b=G.surf.p.T.ru;
     /* погода в сводке: игрок должен понимать, почему вокруг потемнело, и
        что это пройдёт — она ходит циклом (19d-weather) */
     const wn=weatherName(G.surf.p);
     if(wn)b+=" · "+wn;}
-  else if(G.mode==="dig"){a="ШАХТА · "+(G.dig?G.dig.p.name.toUpperCase():"");
+  else if(G.mode==="dig"){a="Шахта · "+(G.dig?G.dig.p.name:"");
     b=(G.dig?(G.dig.row*3)+" м · "+geoAt(G.dig.p,G.dig.row*DIG_CELL*DIG_GEO_K).ru:"");}
-  else if(G.mode==="cave"){a="ПЕЩЕРА · "+G.surf.p.name.toUpperCase();
+  else if(G.mode==="cave"){a="Пещера · "+G.surf.p.name;
     b=(G.cave?caveZoneAt(G.cave,G.cave.x).Z.ru+" · глубина "+Math.max(0,Math.round(G.cave.y)):G.surf.p.T.ru);}
-  else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
+  else if(G.mode==="belt"){a=G.belt?G.belt.B.name:"Пояс";
     b=(G.belt&&G.belt.B&&G.belt.B.res&&G.belt.B.res.length)
       ?("руда: "+G.belt.B.res.map(k=>(RES[k]&&RES[k].ru)||k).join(", "))
       :"пояс астероидов";}
-  else if(G.mode==="scoop"){a=(G.scoop?G.scoop.p.name:"АТМОСФЕРА").toUpperCase();
+  else if(G.mode==="scoop"){a=G.scoop?G.scoop.p.name:"Атмосфера";
     b="сбор летучих газов";}
-  else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
+  else if(G.mode==="base"){a="База · "+(G.base?G.base.p.name:"");
     b="разрез грунта";}
-  else if(G.mode==="spa"&&G.spa){a="САНАТОРИЙ";
+  else if(G.mode==="spa"&&G.spa){a="Санаторий";
     b=(G.spa.pname||"")+" · день "+G.spa.day+" из "+G.spa.days;}
-  else if(G.mode==="winter"&&G.win){a=G.win.pname.toUpperCase();
+  else if(G.mode==="winter"&&G.win){a=G.win.pname;
     b="зимовка · сутки "+G.win.day+" из "+G.win.days;}
-  else if(G.mode==="homein"){a="ДОМ";
+  else if(G.mode==="homein"){a="Дом";
     b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
       ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
   /* Заряды, броня и счёт живых ушли отсюда к рукам, в подсказку: они там
      крупнее, и главное — это расход текущего действия, а не «где я». Сводка
      места говорит место. */
-  else if(G.mode==="raid"){a=(G.raid?G.raid.PB.name:"АБОРДАЖ").toUpperCase();
+  else if(G.mode==="raid"){a=G.raid?G.raid.PB.name:"Абордаж";
     b="пиратская база";}
-  else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
+  else if(G.mode==="dock"){a=G.st.name;b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   /* небо говорит само за себя, но событие обязано быть НАЗВАНО: без имени
      затмение читается как «что-то с картинкой» (06a-celest) */
@@ -322,7 +341,7 @@ function hud(){
     setSt(rbtn,"display",(ss&&ss.station)||inR?"":"none");
     /* плечо ставится по виденным ценам (R1): кнопка говорит это до нажатия */
     const seen=typeof routeNoteFor==="function"&&!!routeNoteFor(G.sel.x,G.sel.y);
-    setTx(rbtn,inR?"ИЗ МАРШРУТА":(seen?"В МАРШРУТ":"ЦЕН НЕ ВИДЕЛИ"));
+    setTx(rbtn,inR?"Из маршрута":(seen?"В маршрут":"Цен не видели"));
   }else setSt(rbtn,"display","none");
   /* «К СЕБЕ» — когда лист уехал от вас; «НАЗВАТЬ» — на раскрытой карточке (M299) */
   const mb=document.getElementById("mebtn"),nb=document.getElementById("namebtn");
@@ -389,7 +408,7 @@ function hud(){
       actLbl=(words||"ДЕЙСТВИЕ")+(nm?" "+nm[1]:"");
     }
   }
-  setTx($act,actLbl);
+  setTx(padWord($act),padCase(actLbl));
   /* кнопка без действия гаснет, а не исчезает (M181): палец помнит место */
   $act.classList.toggle("off",!hasAct);
   /* Подсвечиваем, когда действие вообще есть. Раньше признаком служила сама
@@ -418,7 +437,8 @@ function hud(){
     setTx($bBrk,"ТОРМОЗ");
     setSt($bBrk,"opacity","");
   }
-  setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
+  /* слово — в своём span: setTx по кнопке целиком стирал и значок */
+  setTx(padWord($nav),(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"Выход":(G.mode==="map"?"Назад":"Карта"));
   /* коробка «+ −» — только там, где масштаб есть (M437). На грунте, в пещере
      и в шахте она стояла на борту всю игру и не делала ничего: кнопка, на
      которую нельзя ответить кадром, — это обещание, которого нет. */
@@ -463,7 +483,7 @@ function hud(){
          надзора 12.09): на оклике — «ПО ДЕЛУ», у обломка — «СНЯТЬ ЭКИПАЖ» */
       const mt=G.mode==="system"?/ЦЕЛЬ\s*—\s*([^·\n]+)/.exec(G.prompt||""):null;
       const lv=mt?mt[1].trim():"";
-      setTx($lock,(lv&&lv.length<=14)?lv:"ЦЕЛЬ");
+      setTx(padWord($lock),padCase((lv&&lv.length<=14)?lv:"ЦЕЛЬ"));
     }
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");

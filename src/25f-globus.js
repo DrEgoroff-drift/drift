@@ -78,8 +78,7 @@ function globusTick(){
 /* ── рисование ──
    Материал тот же, что у стойки: латунь, стекло, тонкая гравировка. Ни одной
    заливки ярче ободка — прибор не привлекает внимания, он стоит. */
-function globusDraw(c,cx,cy,r){
-  const aim=globusTick();
+function globusPaint(c,cx,cy,r){
   c.save();
   /* корпус */
   c.beginPath();c.arc(cx,cy,r,0,TAU);
@@ -97,22 +96,27 @@ function globusDraw(c,cx,cy,r){
     c.lineTo(cx+Math.cos(a)*(r*.88-l),cy+Math.sin(a)*(r*.88-l));
     c.stroke();
   }
-  /* шар: два эллипса и меридиан, повёрнутые на GLOB.turn */
+  /* шар: два эллипса и меридиан; поворотный меридиан — живой, в globusDraw */
   const gr=r*.54;
   c.beginPath();c.arc(cx,cy,gr,0,TAU);
   c.fillStyle="#2b3a40";c.fill();
   c.strokeStyle="rgba(150,190,200,.35)";c.lineWidth=1;
   c.beginPath();c.ellipse(cx,cy,gr,gr*.34,0,0,TAU);c.stroke();
   c.beginPath();c.ellipse(cx,cy,gr,gr*.72,0,0,TAU);c.stroke();
-  const mw=Math.abs(Math.cos(GLOB.turn))*gr;
-  c.beginPath();c.ellipse(cx,cy,Math.max(1,mw),gr,0,0,TAU);c.stroke();
   c.beginPath();c.moveTo(cx,cy-gr);c.lineTo(cx,cy+gr);c.stroke();
+  c.textAlign="center";c.textBaseline="top";c.font=Math.round(Math.max(8,r*.15))+"px ui-monospace,monospace";
+  c.fillStyle="rgba(190,168,110,.75)";
+  c.fillText("ГЛОБУС",cx,cy+r+Math.max(11,r*.20));
+  c.restore();
+}
+/* живое — примитивами слоя #ovl (08bi), поверх корпуса из мастера стойки (25d) */
+function globusDraw(cx,cy,r){
+  const aim=globusTick(),gr=r*.54;
+  const mw=Math.abs(Math.cos(GLOB.turn))*gr;
+  ovEll(cx,cy,Math.max(1,mw),gr,1,"rgba(150,190,200,.35)");
   /* стрелка курса */
   const ha=Math.atan2(G.ship?(G.ship.vy||0):0,G.ship?(G.ship.vx||0):0);
-  c.strokeStyle="rgba(226,214,186,.92)";c.lineWidth=Math.max(1.6,r*.05);
-  c.lineCap="round";
-  c.beginPath();c.moveTo(cx,cy);
-  c.lineTo(cx+Math.cos(ha)*r*.74,cy+Math.sin(ha)*r*.74);c.stroke();
+  ovCap(cx,cy,cx+Math.cos(ha)*r*.74,cy+Math.sin(ha)*r*.74,Math.max(1.6,r*.05),"rgba(226,214,186,.92)");
   /* ── расчётная точка ──
      Сперва я сделал её второй стрелкой — и это была ошибка замысла: луч летит
      прямо, значит угол на цель РАВЕН курсу, и вторая стрелка всегда ложилась
@@ -122,19 +126,13 @@ function globusDraw(c,cx,cy,r){
   if(aim){
     const t=clamp(aim.d/GLOB_FAR,0,1);
     const mx=cx+Math.cos(ha)*r*(.14+t*.60), my=cy+Math.sin(ha)*r*(.14+t*.60);
-    c.beginPath();c.arc(mx,my,Math.max(2.2,r*.055),0,TAU);
-    c.fillStyle="rgba(196,105,74,.95)";c.fill();
-    c.beginPath();c.arc(mx,my,Math.max(4,r*.10),0,TAU);
-    c.strokeStyle="rgba(196,105,74,.45)";c.lineWidth=1;c.stroke();
+    const r1=Math.max(2.2,r*.055),r2=Math.max(4,r*.10);
+    ovEll(mx,my,r1,r1,0,"rgba(196,105,74,.95)");
+    ovEll(mx,my,r2,r2,1,"rgba(196,105,74,.45)");
   }
   /* ось */
-  c.beginPath();c.arc(cx,cy,Math.max(1.6,r*.05),0,TAU);
-  c.fillStyle="#c8b98a";c.fill();
+  const ra=Math.max(1.6,r*.05);ovEll(cx,cy,ra,ra,0,"#c8b98a");
   /* подпись: только имя того, во что упрёшься, и ничего больше */
-  c.textAlign="center";c.font=Math.round(Math.max(8,r*.15))+"px ui-monospace,monospace";
-  c.fillStyle="rgba(190,168,110,.75)";
-  c.fillText("ГЛОБУС",cx,cy+r+Math.max(11,r*.20));
-  c.fillStyle=aim?"rgba(214,166,89,.95)":"rgba(120,110,92,.7)";
-  c.fillText(aim?aim.ru.toUpperCase():"— — —",cx,cy+r+Math.max(23,r*.38));
-  c.restore();
+  ovText(OVL.uq,cx,cy+r+Math.max(23,r*.38),aim?aim.ru.toUpperCase():"— — —",Math.round(Math.max(8,r*.15))+"px ui-monospace,monospace",
+    aim?"rgba(214,166,89,.95)":"rgba(120,110,92,.7)","center","top",1,1);
 }

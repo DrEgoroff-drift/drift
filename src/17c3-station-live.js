@@ -56,7 +56,7 @@ const ST_SPIN=new Map(),ST_MASTER=new Map();
 function stSpinCv(key,ext,draw,sb){
   const k=key+"|"+sb;let B=ST_SPIN.get(k);if(B&&B.dev===GPU.dev)return B;
   const side=Math.ceil(ext*2*sb);
-  B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);draw();});if(!B)return null;
+  B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);draw();},{mat:sb});if(!B)return null;
   if(ST_SPIN.size>=16){const k0=ST_SPIN.keys().next().value;gpuBakeDrop(ST_SPIN.get(k0));ST_SPIN.delete(k0);}
   ST_SPIN.set(k,B);return B;
 }
@@ -70,17 +70,27 @@ function stMasterDrop(M){for(const q of M.Ly)gpuBakeDrop(q);if(M.U)gpuBakeDrop(M
    Готов — в ST_MASTER. Нет готового этой плотности (зум сменил четверть-октаву) —
    рисуем прежний мастер той же станции, а новый печётся по шагу за кадр; синхронно —
    только когда станции нечем показаться вовсе (загрузка), либо она за краем (sync=false) */
+/* Текст тела («СТ-nn», «★», номера рёбер) записан ссылками на страницы атласа масок GC_ATL.
+   Атлас, дойдя до шести страниц, отдаёт их все в мусор, и слой, выпеченный кадром позже по
+   прежней записи, связывал уничтоженную текстуру: выпечка падала целиком, слой выходил
+   прозрачным, а мастер числился готовым (ревью №5). Поэтому запись помнит поколение атласа;
+   сменилось — тело пишется заново (та же станция — те же разрезы), и слои идут дальше */
 function* stMasterJob(side,sb,V,S,ty){
-  const k=side*side<=262144?2:1,g=new GcCtx(side,side,k),prev=ctx,rec={L:[],z:0,cut:[0],inv:null};
-  rec.split=()=>{rec.cut.push(g._ops.length);rec.z++;};
-  ctx=g;
-  try{g.setTransform(sb,0,0,sb,side/2,side/2);rec.inv=DOMMatrix.fromMatrix(g.getTransform()).inverse();ST_REC=rec;drawStationBody(V,S,ty);}
-  finally{ST_REC=null;ctx=prev;}
-  rec.cut.push(g._ops.length);
-  const O=g._ops,Ly=[];let U=null,ok=false;
+  const k=side*side<=262144?2:1;
+  const record=()=>{const g=new GcCtx(side,side,k),prev=ctx,rec={L:[],z:0,cut:[0],inv:null};
+    rec.split=()=>{rec.cut.push(g._ops.length);rec.z++;};
+    ctx=g;
+    try{g.setTransform(sb,0,0,sb,side/2,side/2);rec.inv=DOMMatrix.fromMatrix(g.getTransform()).inverse();ST_REC=rec;drawStationBody(V,S,ty);}
+    finally{ST_REC=null;ctx=prev;}
+    rec.cut.push(g._ops.length);rec.O=g._ops;rec.gen=GC_ATL.gen;return rec;};
+  /* сброс мог случиться и посреди самой записи — тогда её начало уже ссылается на мусор */
+  let rec=record();for(let t=0;t<2&&rec.gen!==GC_ATL.gen;t++)rec=record();
+  const n=rec.cut.length,Ly=[];let U=null,ok=false;
   try{
-    for(let i=0;i+1<rec.cut.length;i++){yield;const a=rec.cut[i],b=rec.cut[i+1];
-      const B=gpuBake(side,side,q=>{for(let j=a;j<b;j++)q._ops.push(O[j]);},{ss:k});
+    for(let i=0;i+1<n;i++){yield;
+      if(rec.gen!==GC_ATL.gen){rec=record();if(rec.cut.length!==n)return null;}
+      const O=rec.O,a=rec.cut[i],b=rec.cut[i+1];
+      const B=gpuBake(side,side,q=>{for(let j=a;j<b;j++)q._ops.push(O[j]);},i?{ss:k}:{ss:k,mat:sb});   /* материал (08cd) — нижнему слою: верхние светятся по общему мастеру */
       if(!B)return null;Ly.push(B);}
     if(Ly.length>1){yield;U=gpuBake(side,side,q=>{for(const B of Ly)q.drawImage(B,0,0);},{ss:1});}
     ok=true;return {Ly,U,E:side/(2*sb),sb,L:rec.L};

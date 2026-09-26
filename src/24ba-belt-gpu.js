@@ -227,9 +227,7 @@ function beltGpuDraw(){
   const p2=gpuScene();
   if(AD.length)gpuShapes(p2,AD,{blend:"add"});
   gpuShapes(p2,OV);
-  /* рама кабины и стекло — в сцене, одним полем (25-cockpit-gpu): рама горит кромками к светилу */
-  cockpitGpu(p2,b,{x:U[24],y:U[25],k:U[27]},SUN[0]*fwd[0]+SUN[1]*fwd[1]+SUN[2]*fwd[2],sdx,sdy,scol);
-  /* приборы и символика стекла — интерфейс: на слой приборов #hud, растр по изменению (24bc) */
+  /* стекло и кабина — интерфейс: мастер и очередь слоя #ovl (24bc) */
   beltHudPush(b,proj,fwd,st,bas);
   return true;
 }

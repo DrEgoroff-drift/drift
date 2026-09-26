@@ -394,7 +394,7 @@ function drawWrecksSystem(zx,zy,Z){
    вытянутое тело, хребет с контейнерами, большие тихоходные движки, ходовая
    рубка у носа. Оружия нет вовсе. Печётся один раз на seed в офскрин. */
 const BARGE_SS=3,BARGE_LOD=-2.5;   /* вблизи уровень 0, вдали мип на полтора шага крупнее экрана: резкость как у 2D-растра, без ряби (ворота 25.09) */
-const BARGE_ART={};
+const BARGE_ART={},BARGE_KEEP=12;   /* барж в кэше (1.1–2.1 МБ каждая) */
 function bargeArtOf(b){
   /* ── у баржи тоже есть завод (M369a, §19.4) ──
      Баржа Рассвета — это три баржи, сваренные встык; баржа Компании — белая
@@ -403,7 +403,7 @@ function bargeArtOf(b){
      всех пятерых генераторов (D24). */
   const by=b.by||(b.by=(typeof makerBySeed==="function")?makerBySeed(b.seed):"gt");
   const key="bg"+b.seed+"!"+by;
-  if(BARGE_ART[key])return BARGE_ART[key];
+  const had=artGet(BARGE_ART,key);if(had)return had;
   const r=rng(hashi(b.seed,0x5A19,9));
   const L=104+r()*40, hw=L*(.14+r()*.04);
   const nose=L*.52, tail=-L*.48;
@@ -535,9 +535,9 @@ function bargeArtOf(b){
       ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
       ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();
     }
-  });
+  },{mat:BARGE_SS});   /* mat — материал корпуса (08cd) */
   const art={cn,rad,L,hw,lights,cols:C};
-  BARGE_ART[key]=art;return art;
+  return artPut(BARGE_ART,key,art,BARGE_KEEP);
 }
 /* корпус баржи светом звезды на видеокарте; x,y — экран, s — масштаб, как у ctx.scale */
 function gpuBargeBody(b,x,y,s){

@@ -101,19 +101,29 @@ function planetMat(p){
   /* спрашивают про ДРУГУЮ планету — печём её: игрок стоит на ней, а не на
      той, что осталась в задании. Иначе первая незаконченная выпечка держала бы
      все следующие, и материал не приходил бы вовсе (поймано набором) */
-  if(!MAT_JOB||MAT_JOB.p!==p)MAT_JOB=matJobMake(p);
-  return null;
+  if(!MAT_JOB||MAT_JOB.p!==p){MAT_JOB=matJobMake(p);MAT_JOB.at=G.t;return null;}
+  /* допекает тот, кому материал нужен: кадр посадки, поверхности, пещеры —
+     раз в кадр, сколько бы раз кадр ни спросил. До 26.09 порции давал только
+     кадр планеты в системе, а заказ ставит первый кадр посадки: на посадке
+     и поверхности тайл стоял на нулевой строке, и грунт шёл без зерна */
+  if(MAT_JOB.at!==G.t){MAT_JOB.at=G.t;matTick();}
+  return p.mat||null;
 }
-/* допекаем по кадрам — зовётся из gpuPlanet рядом с развёрткой */
-function matTick(){
-  const J=MAT_JOB;if(!J)return;
+/* порция строк — одна арифметика, без 2D: её зовёт и кадр планеты на GPU
+   (gpuPlanet), где чужой 2D быть не должно. Возвращает, готовы ли все строки */
+function matRows(){
+  const J=MAT_JOB;if(!J)return false;
   const t0=wallMs();
   let rows=0;
   while(J.y<J.S){
     matJobRows(J,MAT_ROWS);rows+=MAT_ROWS;
-    if(rows>=MAT_CAP||wallMs()-t0>MAT_MS)return;
+    if(rows>=MAT_CAP||wallMs()-t0>MAT_MS)break;
   }
-  matJobDone(J);MAT_JOB=null;
+  return J.y>=J.S;
+}
+/* порция и, когда строки кончились, сборка тайла в 2D-узор — для 2D-кадра */
+function matTick(){
+  if(matRows()){matJobDone(MAT_JOB);MAT_JOB=null;}
 }
 /* когда материал нужен ПРЯМО СЕЙЧАС и кадра нет — из набора, из стенда, из
    снимка: печём целиком и платим те самые 383 мс, потому что платить некому */
