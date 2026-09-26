@@ -78,16 +78,21 @@ function drawHqRoom(cn,sel,hover){
     rpgImage(R,ps,back,[box()]);
     rpgShapes(R,ps,live.wall.map(v=>hqPx(v,k)));
     rpgShapes(R,ps,live.halo.map(v=>hqPx(v,k)),"add");
+    /* люди и подписи кладутся смесью «hull»: альфа сцены под ними гаснет, и последний проход
+       обходит их — лампы, конусы и пыль ложатся на комнату, а не пеленой на лица (Контроль,
+       26.09: торс был 160 против 56 у main). Стол переднего плана — «opaque»: над ступнями
+       маска возвращается, и стол освещён, как вся комната. Ступни — на fy-4, как у main
+       (спрайт стоял на 8 единиц выше пола) */
     for(const f of figs){
-      const x=L.st[f.i]*k,y=(L.fy-6-FH/2)*k,bob=Math.sin(t*.026+f.i*1.9)*1.0*k;
-      rpgImage(R,ps,f.legs,[{x,y,w:FW*k,h:FH*k}]);
-      rpgImage(R,ps,f.top,[{x,y:y+bob,w:FW*k,h:FH*k}]);
+      const x=L.st[f.i]*k,y=(L.fy+2-FH/2)*k,bob=Math.sin(t*.026+f.i*1.9)*1.0*k;
+      rpgImage(R,ps,f.legs,[{x,y,w:FW*k,h:FH*k}],"hull");
+      rpgImage(R,ps,f.top,[{x,y:y+bob,w:FW*k,h:FH*k}],"hull");
     }
     rpgShapes(R,ps,live.job.map(v=>hqPx(v,k)));
     rpgImage(R,ps,holo,[box()],"add");
     rpgShapes(R,ps,live.holo.map(v=>hqPx(v,k)),"add");
-    rpgImage(R,ps,table,[box()]);
-    if(lab)rpgImage(R,ps,lab,[box()]);
+    rpgImage(R,ps,table,[box()],"opaque");
+    if(lab)rpgImage(R,ps,lab,[box()],"hull");
   },(pl,S)=>rpgField(R,pl,"hqlit",RPG_WGSL+HQ_LIT_WGSL,hqLitUni(L,mg,k,t),[S]));
   return hits;
 }
@@ -119,7 +124,7 @@ const HQ_LIT_WGSL=`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let k=fu.v[0].x;let W2=fu.v[0].y;let fy=fu.v[0].z;let t=fu.v[0].w;
   let q=p/k;let tb=fu.v[7];let H2=tb.w;
-  let base=textureSampleLevel(t0,smp,uv,0.).rgb;
+  let s0=textureSampleLevel(t0,smp,uv,0.);let base=s0.rgb;
   let cold=vec3f(.80,.89,1.);
   /* рассеянный — холодный и низкий: углы и простенки уходят в сумрак */
   var L=vec3f(.38,.42,.50);
@@ -179,6 +184,10 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let vq=(q-vec2f(W2*.5,H2*.46))/vec2f(W2*.56,H2*.62);
   let vd=clamp((length(vq)-.62)/.70,0.,1.);
   c*=1.-.62*vd*vd*(3.-2.*vd);
+  /* люди и подписи (альфа сцены — их маска): своя краска и виньетка main — круг .34→1.05
+     высоты, до .58, — без ламп, конусов и пыли */
+  let vr=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.34)/(H2*.71),0.,1.);
+  c=mix(base*(1.-.58*vr),c,clamp(s0.a,0.,1.));
   /* зерно по яркости и дизеринг: тёмный градиент без ступенек */
   c=rshoulder(c);
   let px=floor(p*fu.res.x/max(fu.res.z,1.));

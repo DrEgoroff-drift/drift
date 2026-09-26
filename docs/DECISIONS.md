@@ -16,6 +16,14 @@ a record (what is done: `PATCHNOTES.md` by version, `docs/done/` for the old pla
   would take 16–56 ms. Each mode's frame moves to direct paths (`gpuLitSprite`, atlases, instances); `ctx` is never
   swapped for a `GcCtx` for a whole frame (Контроль, 25.09).
 - **Order:** the engine first, then the plan. Recipe and layer order: `docs/DESIGN-gpu.md`.
+- **People and lettering in a scene are drawn AFTER the scene's light, not under its veil** (Контроль,
+  26.09). A room's light pass (lamps, cones, dust, a warm multiplier near the sun) is for the room; laid over
+  figures it greyed the HQ torsos to 160 against 56 in the old frame, and over the spa board it thinned the
+  ink from 1.74 to 1.44. So figures and text get their own bake drawn after the light (spa: `spa.text`,
+  `spa.folk` after `spaAir`), or, where one light pass is the last pass of the room (HQ), they are laid with
+  the `hull` blend so the pass reads their mask from the scene alpha and gives them only the frame vignette;
+  anything in front of them that must be lit again (the HQ table) is laid `opaque`, which restores the mask.
+  The measure is the old frame: torso luma ≤ old +5 %, saturation ≥ old −8 %, ink contrast ≥ the old one.
 
 ## Cross-cutting rules
 

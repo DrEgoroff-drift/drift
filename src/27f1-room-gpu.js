@@ -12,6 +12,9 @@
    Без устройства (Node, gpuNone) всё молчит — комната остаётся без картинки,
    но попадания по людям считаются в JS и работают. */
 const RPG_CAP=1<<15;   /* чисел в буфере фигур и картинок на кадр панели (по 12 на штуку) */
+/* «поверх» и для альфы сцены: где картинка непрозрачна, маска фигур (hull, 08c) возвращается
+   в единицу — стол рубки перед ступнями снова комната, и свет ложится на него (27f) */
+GPU_BLEND.opaque={color:{srcFactor:"one",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}};
 function rpgGet(cn){
   if(!GPU.ok||!GPU.dev||!cn||typeof cn.getContext!=="function")return null;
   let R=cn.__rpg;

@@ -46,9 +46,35 @@ Worker session «Флот: облако → main»; Контроль is «Опт
 - [x] 5j. origin/main b8191a35 (0.476.0) merged — 485ba8a7; conflicts only in build artifacts.
 - [x] 5k. Base craters, winter levers under the lamp, labels not below 9 px (see below).
 - [x] 6. Sheets 390 / 760 of all zones at 485ba8a7 with a line per scene → Контроль (pairs35).
-- [ ] 6b. The night surface at 390: the fleet frame came out black after 93 s (budget 90 s).
+- [x] 6b. The night surface is not black: the 93 s was the machine's load. Its cost, alternating
+  fleet/main runs at 390 taken BEFORE 21:00 (not accepted — GPU-3's tiers loaded the CPU): fleet
+  mean 5.6–7.0 ms, main 5.5–7.2; single fleet peaks 18–20 ms (main ≤ 12, once 17). No pipeline
+  compile and no bake in the measured frames; the peaks land in random functions (weather,
+  relight, front copy) — GC or contention suspected. An accepted A/B/A on a quiet machine is owed.
 - [ ] 7. `-Mobile`, `docs/tour.py`, cadence on the PC (390×844 and 760, marked «ПК» — no S23
   until the author says so); drop the PLAN.md «In flight» fleet line; hand over the hash.
+- [ ] 8. **Stopped 26.09 ~21:00** by the author's word (one worker does everything next; the
+  graphics pass happens with the author before the release). The WIP commit on 72f7039d holds:
+  HQ figures and labels laid `hull` (the light pass reads their mask from the scene alpha and
+  gives them main's vignette only), the table laid `opaque`, feet on `fy-4`; the spa board text
+  and people in their own bakes after `spaAir`, the board sized to its lines (font ≥ 9 px),
+  `spaBoardGrid` shared by drawing and `spaHit`, a browser test «санаторий: строки щита…»; the
+  rule «people and lettering after the light» in `docs/DECISIONS.md`. None of it was test-run.
+  Open, with what is known:
+  - HQ figures on a shared figure mask at 760 vs main 0d1e8255: L +17.5 % (left) / +6.6 %
+    (right), S −5.3 / −3.8 % (gate L ≤ +5 %, S ≥ −8 %). Cause: the table bake laid `opaque`
+    covers the figures with its faint glow, scene alpha ≈ .08 there, so ~8 % of the lamp-lit
+    colour comes back. Lay only the solid table `opaque` (its glow `add`), or harden the alpha.
+  - Spa board: fits the paper at 390 now, but at 9 px (main 14 px, overflowing) it reads small and
+    faint on the sun-lit paper; ink contrast not measured. A 26-character header cannot pass
+    ~10 px at 390 — split the header into two lines rather than shrink.
+  - Home figure (≤ main +5 %) not measured: home's people come in through the 2D front copy and
+    take the `hin.light` multiplier and haze, so they need the same mask treatment. Cantina
+    people not checked.
+  - Not started: the road glow (L .82–.85 against main), winter 760 S (.84 → ≥ .92), the
+    descent / cold-start / black-room tests, `-Mobile`, the tour, the full run, the cadence.
+  - Pairs against 0d1e8255 (spa, hq, hqfull, home, kino, cantina at 760; spa, hq, hqfull at
+    390): `%TEMP%\claude\C--Claude\253595ac-…\scratchpad\pairs36\{760,390}`.
 
 ## Decisions
 

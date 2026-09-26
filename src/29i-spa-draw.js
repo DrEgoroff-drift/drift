@@ -5,7 +5,8 @@
    местом, где он работает, и местом, где ему разрешили не работать.
 
    ПОРЯДОК СЛОЁВ: небо — море — дальний мыс — прибой — перила — пол веранды —
-   мебель — люди — навес сверху — воздух. Свет один, солнечный, идёт слева
+   мебель — навес сверху — воздух; строки щита и люди — после воздуха, поверх
+   света (правило DECISIONS: люди и надписи не под вуалью). Свет один, солнечный, идёт слева
    сверху; всё, что стоит на веранде, получает тёплый верх и холодную тень от
    моря снизу.
 
@@ -25,9 +26,15 @@ function spaGeom(){
   const hor=H*0.375;                 /* горизонт моря */
   const deck=H*0.685;                /* пол веранды */
   const man=H*0.30;
-  return {hor,deck,man,
+  /* щит под свои строки (Контроль, 26.09): кегль от меньшего из W и H и не мельче 9 px —
+     у main на 760 он шёл 7–8 px, а на 390 строка вылезала за бумагу вдвое. Ширина — под
+     самую длинную строку («РАСПОРЯДОК · ДЕНЬ 99 ИЗ 99», моноширинный с запасом .62 em),
+     высота — под шапку и пять строк по две; меньше прежнего щита не бывает */
+  const bf=Math.max(9,Math.round(Math.min(H*0.016,W*0.0125))),bp=Math.max(4,bf*0.6);
+  const bw=Math.min(W*0.46,Math.max(W*0.215,26*0.62*bf+2*bp)),bh=Math.max(man*0.72,14.6*bf+2*bp);
+  return {hor,deck,man,bf,bp,
     rail :{x:0,y:deck-man*0.62,w:W,h:man*0.62},
-    board:{x:W*0.055,y:H*0.10,w:W*0.215,h:man*0.72},     /* щит с распорядком */
+    board:{x:W*0.055,y:H*0.10,w:bw,h:bh},                 /* щит с распорядком */
     table:{x:W*0.40,y:deck-man*0.30,w:W*0.20,h:man*0.30},/* шахматный стол */
     chair:{x:W*0.72,y:deck-man*0.46,w:W*0.16,h:man*0.46},/* шезлонг */
     glass:{x:W*0.30,y:deck-man*0.30,w:W*0.06,h:man*0.16},/* стакан на перилах */
@@ -36,6 +43,11 @@ function spaGeom(){
 }
 /* строки распорядка: те же, что в модели, и ничего сверх */
 function spaBoardRows(){return SPA_PLAN;}
+/* сетка строк щита: верх первой строки и шаг — одна на рисование и на попадание пальцем */
+function spaBoardGrid(g){
+  const b=g.board,top=b.y+g.bp+g.bf*2.4;
+  return {top,p:(b.y+b.h-g.bp-top)/SPA_PLAN.length};
+}
 function spaTookToday(S,k){return !!(S&&S.took&&S.took[S.day+":"+k]);}
 
 /* ── кадр на видеокарте (G11) ──
@@ -58,6 +70,12 @@ function drawSpa(){
   const pr=roomBake("spa.props",sz+"|"+S.day+"/"+S.days+"|"+took+"|"+S.seed,W,H,()=>spaProps(g,S));
   if(pr)gpuImage(pass,pr,[{x:W/2,y:H/2,w:W,h:H}]);
   spaAir(pass,g,ft);
+  /* люди и надписи — после света сцены, не под ним (Контроль, 26.09): тёплый множитель у
+     солнца и пыль гасили чернила щита до 1,44 против 1,74 у main */
+  const tx=roomBake("spa.text",sz+"|"+S.day+"/"+S.days+"|"+took,W,H,()=>spaBoardText(g,S));
+  if(tx)gpuImage(pass,tx,[{x:W/2,y:H/2,w:W,h:H}]);
+  const fo=roomBake("spa.folk",sz,W,H,()=>spaFolk(g));
+  if(fo)gpuImage(pass,fo,[{x:W/2,y:H/2,w:W,h:H}]);
 }
 /* небо, мыс, море, накат, прибой, дымка — одно поле. Мир моря — в долях высоты
    кадра: z=1 у борта веранды, к горизонту z растёт как 1/d. Солнце то же, что
@@ -242,8 +260,9 @@ function spaFloor(g){
     ctx.restore();
   }
 }
-/* ── всё, что стоит на веранде (выпечка «props»): перила, щит, стол, шезлонг,
-   стакан, люди, навес. Тени под ними кладёт spaFeet, свет — spaAir ── */
+/* ── всё, что стоит на веранде (выпечка «props»): перила, бумага щита, стол, шезлонг,
+   стакан, навес. Тени под ними кладёт spaFeet, свет — spaAir; строки щита и люди —
+   свои выпечки после света (spaBoardText, spaFolk) ── */
 function spaProps(g,S){
   /* ── 5. перила: стойки и два поручня ── */
   {
@@ -267,9 +286,7 @@ function spaProps(g,S){
     }
   }
 
-  /* ── 6. щит с распорядком ──
-     Обыкновенный щит. Сделанное вычеркнуто карандашом — тем же жестом, что и
-     на бланке открытки, и по той же причине: так делают на бумаге. */
+  /* ── 6. щит с распорядком: бумага. Строки на ней — spaBoardText, после света ── */
   {
     const b=g.board;
     ctx.fillStyle="rgba(0,0,0,.18)";
@@ -279,37 +296,6 @@ function spaProps(g,S){
     ctx.strokeStyle=sprgba(SPA_C.wood2,0.55);
     ctx.lineWidth=Math.max(2,H*0.004);
     ctx.strokeRect(b.x+1,b.y+1,b.w-2,b.h-2);
-    /* щит стоит в углу, под виньеткой кадра и зерна: чернила гуще, иначе
-       заголовок уходил в контраст 2.8 (M443, детектор текста) */
-    ctx.fillStyle="rgba(62,52,38,.95)";
-    ctx.font=Math.max(8,Math.round(H*0.016))+"px ui-monospace,monospace";
-    ctx.textAlign="left";
-    ctx.fillText("РАСПОРЯДОК · ДЕНЬ "+S.day+" ИЗ "+S.days,b.x+b.w*0.06,b.y+b.h*0.13);
-    ctx.fillStyle="rgba(90,78,58,.35)";
-    ctx.fillRect(b.x+b.w*0.06,b.y+b.h*0.17,b.w*0.88,Math.max(1,H*0.0018));
-    const rows=spaBoardRows();
-    rows.forEach((P,i)=>{
-      const y=b.y+b.h*(0.30+i*0.155);
-      const took=spaTookToday(S,P.k);
-      ctx.fillStyle=took?"rgba(120,106,80,.55)":"rgba(66,58,44,.92)";
-      ctx.font=Math.max(7,Math.round(H*0.0135))+"px ui-monospace,monospace";
-      ctx.fillText(P.ru,b.x+b.w*0.08,y);
-      /* час процедуры — сведение, а не узор: карандаш, но читаемый (было .55 и
-         шесть пикселей снизу — контраст 1.5, M443) */
-      ctx.fillStyle="rgba(78,68,50,.9)";
-      ctx.font=Math.max(8,Math.round(H*0.0115))+"px ui-monospace,monospace";
-      ctx.fillText(P.at,b.x+b.w*0.08,y+H*0.016);
-      if(took){
-        /* черта идёт ПО СЛОВУ, а не над ним: над словом она читалась
-           подчёркиванием предыдущей строки */
-        ctx.strokeStyle="rgba(70,60,44,.62)";
-        ctx.lineWidth=Math.max(1,H*0.0024);
-        ctx.beginPath();
-        ctx.moveTo(b.x+b.w*0.06,y-H*0.005);
-        ctx.lineTo(b.x+b.w*0.94,y-H*0.0035);ctx.stroke();
-      }
-    });
-    ctx.textAlign="left";
   }
 
   /* ── 7. шахматный стол ── */
@@ -422,9 +408,76 @@ function spaProps(g,S){
     ctx.fillRect(q.x+q.w*0.06,q.y,Math.max(1,q.w*0.06),q.h);
   }
 
-  /* ── 10. люди ──
-     Игрок у перил, сосед в шезлонге. Оба ничего не делают, и это единственное,
-     что они на веранде делают. */
+  /* ── 11. навес ──
+     Один кусок ткани с фестончатым низом, и полосы ВНУТРИ него по отсечению.
+     Первый счёт красил полосы отдельными прямоугольниками поверх, и они
+     торчали за провисающий край: сверху шла не маркиза, а полосатая плашка
+     интерфейса. Ткань — это тело; полосы живут внутри тела. */
+  {
+    const hy=H*0.050, sag=H*0.016, n=12;
+    const edge=(c)=>{
+      c.beginPath();
+      c.moveTo(0,0);c.lineTo(W,0);c.lineTo(W,hy);
+      for(let i=n;i>=0;i--){
+        const x0=W*i/n, x1=W*(i-0.5)/n;
+        c.quadraticCurveTo(x1,hy+sag,W*(i-1)/n,hy);
+      }
+      c.closePath();
+    };
+    ctx.save();
+    edge(ctx);ctx.clip();
+    ctx.fillStyle=spcol([238,228,208],1);
+    ctx.fillRect(0,0,W,hy+sag+2);
+    ctx.fillStyle="rgba(198,118,90,.62)";
+    for(let i=0;i<n;i+=2)ctx.fillRect(W*i/n,0,W/n,hy+sag+2);
+    /* ткань провисает — низ темнее, верх у крепления светлее */
+    const tg=ctx.createLinearGradient(0,0,0,hy+sag);
+    tg.addColorStop(0,"rgba(255,255,255,.16)");
+    tg.addColorStop(1,"rgba(40,50,60,.22)");
+    ctx.fillStyle=tg;ctx.fillRect(0,0,W,hy+sag+2);
+    ctx.restore();
+  }
+}
+/* ── 6б. строки щита (выпечка «text», после света) ──
+   Обыкновенный щит. Сделанное вычеркнуто карандашом — тем же жестом, что и
+   на бланке открытки, и по той же причине: так делают на бумаге. Один кегль на
+   всё (g.bf, не мельче 9 px), час — на ступень мельче, но не мельче 9 */
+function spaBoardText(g,S){
+  const b=g.board,f=g.bf,q=spaBoardGrid(g),x=b.x+g.bp,fs=Math.max(9,Math.round(f*0.86));
+  ctx.textAlign="left";ctx.textBaseline="alphabetic";
+  /* щит стоит в углу, под виньеткой кадра и зерна: чернила гуще, иначе
+     заголовок уходил в контраст 2.8 (M443, детектор текста) */
+  ctx.fillStyle="rgba(62,52,38,.95)";
+  ctx.font=f+"px ui-monospace,monospace";
+  const hy=b.y+g.bp+f;
+  ctx.fillText("РАСПОРЯДОК · ДЕНЬ "+S.day+" ИЗ "+S.days,x,hy);
+  ctx.fillStyle="rgba(90,78,58,.35)";
+  ctx.fillRect(x,hy+f*0.45,b.w-2*g.bp,Math.max(1,f*0.11));
+  spaBoardRows().forEach((P,i)=>{
+    const y=q.top+i*q.p+f,took=spaTookToday(S,P.k);
+    ctx.fillStyle=took?"rgba(120,106,80,.55)":"rgba(66,58,44,.92)";
+    ctx.font=f+"px ui-monospace,monospace";
+    ctx.fillText(P.ru,x+f*0.3,y);
+    /* час процедуры — сведение, а не узор: карандаш, но читаемый (было .55 и
+       шесть пикселей снизу — контраст 1.5, M443) */
+    ctx.fillStyle="rgba(78,68,50,.9)";
+    ctx.font=fs+"px ui-monospace,monospace";
+    ctx.fillText(P.at,x+f*0.3,y+f*1.15);
+    if(took){
+      /* черта идёт ПО СЛОВУ, а не над ним: над словом она читалась
+         подчёркиванием предыдущей строки */
+      ctx.strokeStyle="rgba(70,60,44,.62)";
+      ctx.lineWidth=Math.max(1,f*0.16);
+      ctx.beginPath();
+      ctx.moveTo(x,y-f*0.34);
+      ctx.lineTo(b.x+b.w-g.bp,y-f*0.25);ctx.stroke();
+    }
+  });
+}
+/* ── 10. люди (выпечка «folk», после света) ──
+   Игрок у перил, сосед в шезлонге. Оба ничего не делают, и это единственное,
+   что они на веранде делают. */
+function spaFolk(g){
   {
     const m=g.man*0.86, x=g.manx, y=g.deck;
     const rl=g.rail.y+g.rail.h*0.42;
@@ -514,36 +567,6 @@ function spaProps(g,S){
     ctx.save();ctx.translate(c.x+c.w*0.50,c.y+c.h*0.20);ctx.rotate(-0.5);
     ctx.fillRect(0,0,c.w*0.22,c.h*0.16);ctx.restore();
   }
-
-  /* ── 11. навес ──
-     Один кусок ткани с фестончатым низом, и полосы ВНУТРИ него по отсечению.
-     Первый счёт красил полосы отдельными прямоугольниками поверх, и они
-     торчали за провисающий край: сверху шла не маркиза, а полосатая плашка
-     интерфейса. Ткань — это тело; полосы живут внутри тела. */
-  {
-    const hy=H*0.050, sag=H*0.016, n=12;
-    const edge=(c)=>{
-      c.beginPath();
-      c.moveTo(0,0);c.lineTo(W,0);c.lineTo(W,hy);
-      for(let i=n;i>=0;i--){
-        const x0=W*i/n, x1=W*(i-0.5)/n;
-        c.quadraticCurveTo(x1,hy+sag,W*(i-1)/n,hy);
-      }
-      c.closePath();
-    };
-    ctx.save();
-    edge(ctx);ctx.clip();
-    ctx.fillStyle=spcol([238,228,208],1);
-    ctx.fillRect(0,0,W,hy+sag+2);
-    ctx.fillStyle="rgba(198,118,90,.62)";
-    for(let i=0;i<n;i+=2)ctx.fillRect(W*i/n,0,W/n,hy+sag+2);
-    /* ткань провисает — низ темнее, верх у крепления светлее */
-    const tg=ctx.createLinearGradient(0,0,0,hy+sag);
-    tg.addColorStop(0,"rgba(255,255,255,.16)");
-    tg.addColorStop(1,"rgba(40,50,60,.22)");
-    ctx.fillStyle=tg;ctx.fillRect(0,0,W,hy+sag+2);
-    ctx.restore();
-  }
 }
 /* ── руки ── */
 function spaHit(mx,my){
@@ -552,11 +575,8 @@ function spaHit(mx,my){
   const inR=(r)=>mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h;
   if(inR(g.board)){
     /* по строке щита: попадание считается по той же сетке, что и рисование */
-    const rows=spaBoardRows();
-    for(let i=0;i<rows.length;i++){
-      const y=g.board.y+g.board.h*(0.30+i*0.155);
-      if(my>y-H*0.020&&my<y+H*0.022)return {k:"take",id:rows[i].k};
-    }
+    const rows=spaBoardRows(),q=spaBoardGrid(g),i=Math.floor((my-q.top)/q.p);
+    if(i>=0&&i<rows.length)return {k:"take",id:rows[i].k};
     return {k:"board"};
   }
   if(inR(g.glass))return {k:"take",id:"cock"};

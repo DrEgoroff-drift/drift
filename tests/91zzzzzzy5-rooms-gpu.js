@@ -19,12 +19,45 @@ TEST_SUITES.push(()=>suite("комнаты на видеокарте: веран
   eq(F.err,"","пол веранды — без громких дыр");
   ok(F.g._ops.length>20,"пол записан ("+F.g._ops.length+" команд)");
   const P=roomsRec(W,H,()=>spaProps(g,S));
-  eq(P.err,"","перила, щит, мебель, люди, навес — без громких дыр");
+  eq(P.err,"","перила, бумага щита, мебель, навес — без громких дыр");
   ok(P.g._ops.length>80,"вещи веранды записаны ("+P.g._ops.length+" команд)");
+  /* строки щита и люди — свои выпечки после света (правило DECISIONS) */
+  const X=roomsRec(W,H,()=>spaBoardText(g,S)),Y=roomsRec(W,H,()=>spaFolk(g));
+  eq(X.err+Y.err,"","строки щита и люди — без громких дыр");
+  ok(Y.g._ops.length>12,"люди веранды записаны ("+Y.g._ops.length+" команд)");
   ok(/fn field\(/.test(SPA_SEA_WGSL)&&/fn field\(/.test(SPA_AIR_WGSL),"море и воздух — поля видеокарты");
   /* без кадра видеокарты веранда молчит, а не рисует 2D */
   const n=GPU.on;GPU.on=false;let e="";try{drawSpa();}catch(x){e=x.message;}GPU.on=n;
   eq(e,"","вне кадра drawSpa не падает");
+  G.spa=null;
+}));
+/* щит санатория на узком экране: у main строка вылезала за бумагу вдвое, а кегль шёл
+   7–8 px (Контроль, 26.09). Строки меряются настоящим шрифтом Chrome, поэтому ярус — браузер */
+TEST_SUITES.push(()=>suite("санаторий: строки щита на бумаге и не мельче 9 px",{tier:"browser"},()=>{
+  resetWorld();
+  G.spa={day:12,days:14,slot:0,done:0,took:{"12:bath":1},talked:0,pname:"Тиун III",home:{sx:0,sy:0},seed:1234567};
+  const S=spaAll(),real=document.createElement("canvas").getContext("2d");
+  for(const [w,h] of [[390,844],[760,475],[1920,1080]]){
+    T.window(w,h);
+    const g=spaGeom(),b=g.board,out=[],prev=ctx;
+    const rec={font:"10px monospace",fillStyle:"",strokeStyle:"",lineWidth:1,textAlign:"left",textBaseline:"alphabetic",
+      fillText(s,x,y){real.font=this.font;out.push({s,x,y,px:parseFloat(this.font),w:real.measureText(s).width});},
+      fillRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){}};
+    ctx=rec;try{spaBoardText(g,S);}finally{ctx=prev;}
+    const tag=w+"×"+h;
+    eq(out.length,1+2*SPA_PLAN.length,tag+": шапка и по две строки на процедуру");
+    const small=out.filter(o=>o.px<9).map(o=>o.s+" "+o.px);
+    eq(small.join(", "),"",tag+": кегль не мельче 9 px (до "+Math.min(...out.map(o=>o.px))+")");
+    const wide=out.filter(o=>o.x<b.x||o.x+o.w>b.x+b.w-1).map(o=>o.s+" +"+(o.x+o.w-b.x-b.w).toFixed(0));
+    eq(wide.join(", "),"",tag+": строки не вылезают за бумагу по ширине ("+b.w.toFixed(0)+" px)");
+    const tall=out.filter(o=>o.y-o.px*0.8<b.y||o.y+o.px*0.25>b.y+b.h).map(o=>o.s);
+    eq(tall.join(", "),"",tag+": и по высоте");
+    /* палец попадает в ту строку, что нарисована: сетка одна */
+    const q=spaBoardGrid(g),miss=[];
+    SPA_PLAN.forEach((P,i)=>{const r=spaHit(b.x+b.w/2,q.top+(i+0.5)*q.p);if(!r||r.id!==P.k)miss.push(P.k);});
+    eq(miss.join(","),"",tag+": тычок по строке берёт её процедуру");
+  }
+  T.window();
   G.spa=null;
 }));
 TEST_SUITES.push(()=>suite("комнаты на видеокарте: зимовка печётся без дыр",()=>{
