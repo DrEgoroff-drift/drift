@@ -230,6 +230,8 @@ could ever save.
 
 - The special system (M484): every ship card in the yard names its ability — «особое · СБРОС — груз за борт приманкой… · долгое ДЕЙСТВИЕ или V · раз в 25 с». СИРЕНА is answered only by the ships actually in the frame, each in its own voice: a pirate threatens, a power's patrol answers with its `air` line, a ГЛАВТРАССА liner asks to turn the music down, the black derelict never answers; an empty frame — «эфир молчит».
 
+- Scars on captured pirate hulls (M482): a crewman's «пригнал трофейный корпус» no longer hands over a clean catalogue hull — it is a build of its own (a maker by seed, «трофейный корпус», «Отбит у пиратов…») with 1–3 scars, repaired at a yard like the towed and the bazaar hulls. The trophy shelf and the thing card name it.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -314,6 +316,7 @@ could ever save.
 - M512: the дачники society waits for M493 (дачники traffic, deferred with the base-side birchpunk). The perks
   that save no money (ДОСО's norm, the tug, tape, readings) count only times on the desk, not кр. A chronicle
   week is seven chronicle days, which is one real week, so the union duty is slow by design.
+- M482 доводка stays paid with нейтронная крошка + 800 кр (M478), not with a node as DESIGN-shipyard §6 says: spending a node would break a set the player is collecting. Two welds per hull, +1 tier — already so.
 
 ## 0.478.0 - the album on the engine
 

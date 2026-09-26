@@ -207,12 +207,18 @@ const CREW_EVENTS=[
     return {tone:"tech",ru:"снял с чужого борта: "+p.name};
   }},
   {id:"capture",cat:"jack",when:()=>Object.keys(SHIPS).some(id=>!G.owned[id]),run:(c,r,gross)=>{
-    const free=Object.keys(SHIPS).filter(id=>!G.owned[id]);
-    const id=pick(free,r);G.owned[id]=true;
+    /* пиратский корпус — чужой и битый (M482, shipyard §6): своя сборка с 1–3 шрамами,
+       а не чистый корпус из каталога. Стапель — того, у кого пираты его взяли */
+    const seed=hashi(c.seed,(c.trips|0)*131+9,0xC4A7)>>>0,sh=genUniqueShip(seed);
+    sh.by=MAKER_KEYS[seed%MAKER_KEYS.length];sh.cls="трофейный корпус";
+    sh.scars=scarsRoll(hashi(seed,0x5CA2,6),1+hashi(seed,0x5CA2,7)%3);
+    sh.note="Отбит у пиратов. Чей был до них — не сказали ни они, ни он. "+
+      "Шрамы: "+sh.scars.map(k=>SCAR_KIND[k].ru).join(", ")+" — чинит верфь.";
+    const id="c"+seed;G.uniqueShips[id]=sh;G.owned[id]=true;
     /* хвост — на витрину (M152e): ставка видна, а не строка dim */
     if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:now()});}
-    if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+SHIPS[id].ru+"»","трофей с рейса · корпус в ангаре · витрина дома помнит");
-    return {tone:"tech",ru:"пригнал трофейный корпус «"+SHIPS[id].ru+"» — он в ангаре"};
+    if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+sh.ru+"»","трофей с рейса · пиратский, со шрамами · корпус в ангаре · витрина дома помнит");
+    return {tone:"tech",ru:"пригнал трофейный корпус «"+sh.ru+"» — пиратский, шрамов "+sh.scars.length+" · он в ангаре"};
   }}
 ];
 /* ── применение ── */

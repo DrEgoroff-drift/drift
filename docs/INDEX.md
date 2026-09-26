@@ -287,7 +287,7 @@ COUNTY_LVL                   src/11l-county.js:20
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
-CREW_EVENTS                  src/12b-crew-events.js:98-217
+CREW_EVENTS                  src/12b-crew-events.js:98-223
 CREW_EV_BASE                 src/12b-crew-events.js:69
 CREW_MODS                    src/12a-crew.js:289-293
 CREW_OFFLINE_CAP             src/12a-crew.js:11
@@ -1849,7 +1849,7 @@ appetiteLeft                 src/12ab-hold.js:69-73
 appetiteLine                 src/12ab-hold.js:112-118
 appetiteOf                   src/12ab-hold.js:38-44
 appetitePrice                src/12ab-hold.js:84
-applyCrewEvent               src/12b-crew-events.js:219-228
+applyCrewEvent               src/12b-crew-events.js:225-234
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-625
@@ -2602,12 +2602,12 @@ crewDamage                   src/12a-crew.js:530-543
 crewDeliver                  src/12a-crew.js:578-582
 crewEff                      src/12a-crew.js:356-362
 crewFill                     src/12a-crew.js:563-577
-crewFreeHostage              src/12b-crew-events.js:242-254
-crewFreeHostagesAt           src/12b-crew-events.js:257-262
+crewFreeHostage              src/12b-crew-events.js:248-260
+crewFreeHostagesAt           src/12b-crew-events.js:263-268
 crewGift                     src/12a-crew.js:205-217
 crewGiveMod                  src/12a-crew.js:300-312
 crewHas                      src/12a-crew.js:49
-crewHistory                  src/12b-crew-events.js:229-233
+crewHistory                  src/12b-crew-events.js:235-239
 crewHold                     src/12a-crew.js:331
 crewHullPay                  src/12a-crew.js:55
 crewLuck                     src/12a-crew.js:35-43
@@ -5379,7 +5379,7 @@ rangeShot                    src/24d-range.js:46
 rangeStart                   src/24d-range.js:24-40
 rangeTarget                  src/24d-range.js:16-23
 rangeTick                    src/24d-range.js:47-56
-ransomPay                    src/12b-crew-events.js:235-241
+ransomPay                    src/12b-crew-events.js:241-247
 rareAtPlace                  src/12m-rare.js:109-113
 rareCount                    src/12m-rare.js:105
 rareHas                      src/12m-rare.js:104
@@ -7054,7 +7054,7 @@ zoomTo                       src/15-input.js:350
 ## src/12az-fx-nat.js · 5 КБ
   · семья механик: ПРИРОДА (M384, §15.1):1
 
-## src/12b-crew-events.js · 17 КБ
+## src/12b-crew-events.js · 18 КБ
   · наёмники: рейс как раздача карт:1
 
 ## src/12b0-fx-pow.js · 5 КБ
