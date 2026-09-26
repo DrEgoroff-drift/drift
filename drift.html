@@ -10915,8 +10915,9 @@ function gpuHueFor(m){return GPU_TONE_FILM.has(m)||GPU_FRONT_LIKE.has(m)?0:1;}
 /* шахта и пещера у main — передний 2D-слой: пелена свечения на них есть, а свечение ложится
    с весом переднего слоя (1−.6·f.a при f.a = 1). Флот рисует их в сцене; без пелены кадр
    выходил на 4 % темнее main целиком, вместе с небом над устьем (Контроль 26.09: «экспозиция
-   как в main»), а с весом сцены свечение серило бы чёрное хода */
-const GPU_FRONT_LIKE=new Set(["dig","cave"]);
+   как в main»), а с весом сцены свечение серило бы чёрное хода. Дом у main — тоже передний
+   слой: с весом сцены свечение клало на хозяина +25 вместо +11 (торс +9 %, Контроль 26.09) */
+const GPU_FRONT_LIKE=new Set(["dig","cave","homein"]);
 function gpuUni(){
   const a=GPU.UA,P=GPU.post;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
@@ -101048,7 +101049,8 @@ function drawHqRoom(cn,sel,hover){
   const pw=cn.width,ph=cn.height,s=k*dpr,sz=pw+"x"+ph;
   const mg=HQ_ORDER.map((r,i)=>hqMgrAt(i));
   const back=rpgBake(R,"back",sz+"|"+HQ_ORDER.map((r,i)=>hqScreenKey(r,mg[i])).join(","),pw,ph,g=>{g.scale(s,s);hqBack(g,L);});
-  const holo=rpgBake(R,"holo",sz+"|"+((G.sys&&G.sys.key)||""),pw,ph,g=>{g.scale(s,s);hqHolo(g,L);});
+  const glow=rpgBake(R,"glow",sz,pw,ph,g=>{g.scale(s,s);hqHolo(g,L,"glow");});
+  const holo=rpgBake(R,"holo",sz+"|"+((G.sys&&G.sys.key)||""),pw,ph,g=>{g.scale(s,s);hqHolo(g,L,"light");});
   const table=rpgBake(R,"table",sz+"|"+mg.map(m=>m?1:0).join(""),pw,ph,g=>{g.scale(s,s);hqTable(g,L.W2,L.H2,L.fy,L.seed);});
   const lab=(sel||hover)?rpgBake(R,"lab",sz+"|"+sel+"|"+hover,pw,ph,g=>{g.scale(s,s);hqLabels(g,L,sel,hover);}):null;
   /* фигуры: спрайт ног и спрайт корпуса (корпус печётся без вдоха — вдох даёт сдвиг) */
@@ -101065,7 +101067,6 @@ function drawHqRoom(cn,sel,hover){
   rpgFrame(R,ps=>{
     rpgImage(R,ps,back,[box()]);
     rpgShapes(R,ps,live.wall.map(v=>hqPx(v,k)));
-    rpgShapes(R,ps,live.halo.map(v=>hqPx(v,k)),"add");
     /* люди и подписи кладутся смесью «hull»: альфа сцены под ними гаснет, и последний проход
        обходит их — лампы, конусы и пыль ложатся на комнату, а не пеленой на лица (Контроль,
        26.09: торс был 160 против 56 у main). Стол переднего плана — «opaque»: над ступнями
@@ -101077,11 +101078,12 @@ function drawHqRoom(cn,sel,hover){
       rpgImage(R,ps,f.top,[{x,y:y+bob,w:FW*k,h:FH*k}],"hull");
     }
     rpgShapes(R,ps,live.job.map(v=>hqPx(v,k)));
+    rpgImage(R,ps,glow,[box()]);
     rpgImage(R,ps,holo,[box()],"add");
     rpgShapes(R,ps,live.holo.map(v=>hqPx(v,k)),"add");
     rpgImage(R,ps,table,[box()],"opaque");
     if(lab)rpgImage(R,ps,lab,[box()],"hull");
-  },(pl,S)=>rpgField(R,pl,"hqlit",RPG_WGSL+HQ_LIT_WGSL,hqLitUni(L,mg,k,t),[S]));
+  },(pl,S)=>rpgField(R,pl,"hqlit",RPG_WGSL+HQ_LIT_WGSL,hqLitUni(L,mg,k,t,live.halo),[S]));
   return hits;
 }
 /* фигура в единицах комнаты → в пиксели CSS панели */
@@ -101094,8 +101096,11 @@ function hqPx(v,k){
 }
 /* числа света: лампы, кто на месте, цвет экранов, стол, окно */
 const HQ_LIT_U=new Float32Array(60);
-function hqLitUni(L,mg,k,t){
+function hqLitUni(L,mg,k,t,halo){
   const u=HQ_LIT_U;u.fill(0);
+  /* нимб выбранного и того, над кем палец (hqLive): центр, плотность, цвет */
+  for(let j=0;j<2;j++){const h=halo&&halo[j];if(!h)continue;
+    u.set([h[1],h[2],h[10],0],40+j*4);u.set([h[7]/255,h[8]/255,h[9]/255,0],48+j*4);}
   u.set([k,L.W2,L.fy,t],0);
   for(let i=0;i<4;i++){
     u[4+i]=L.st[i];u[8+i]=mg[i]?1:0;
@@ -101160,6 +101165,13 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let jn=(q.y-(fy-4.))/7.;
   sh*=1.-.25*exp(-jn*jn);
   var c=base*L*sh+beam;
+  /* нимб за выбранным — как у main: краска поверх освещённой комнаты (2 → 46 единиц), под
+     человеком. Сложением до света он ложился ярче и под свет ламп (+3 к кромке фигуры) */
+  for(var j=0;j<2;j++){
+    let nh=fu.v[10+j];if(nh.z<=0.){continue;}
+    let na=nh.z*(1.-clamp((length(q-nh.xy)-2.)/44.,0.,1.));
+    c=c*(1.-na)+fu.v[12+j].rgb*na;
+  }
   /* голограмма светится в воздухе над столом — цветом вашей звезды */
   let hs=q-vec2f(tb.x,tb.y-26.);
   c+=fu.v[9].rgb*(.20*exp(-dot(hs,hs)/260.)+.06*exp(-dot(hs,hs)/2600.));
@@ -101173,9 +101185,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let vd=clamp((length(vq)-.62)/.70,0.,1.);
   c*=1.-.62*vd*vd*(3.-2.*vd);
   /* люди и подписи (альфа сцены — их маска): своя краска и виньетка main — круг .34→1.05
-     высоты, до .58, — без ламп, конусов и пыли */
+     высоты, до .58, — без ламп, конусов и пыли. Маска жёсткая: краска фигуры кроется на
+     .85 и выше, а мягкая маска возвращала лицам 6 % света ламп (+17 % к main по торсу) */
   let vr=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.34)/(H2*.71),0.,1.);
-  c=mix(base*(1.-.58*vr),c,clamp(s0.a,0.,1.));
+  let fa=1.-clamp((1.-s0.a)/.85,0.,1.);
+  c=mix(base*(1.-.58*vr),c,fa);
   /* зерно по яркости и дизеринг: тёмный градиент без ступенек */
   c=rshoulder(c);
   let px=floor(p*fu.res.x/max(fu.res.z,1.));
@@ -101340,12 +101354,17 @@ function hqBack(c,L){
 }
 /* ── голограмма над столом: неподвижная часть (звезда, зерно, орбиты, столб) ──
    печётся на прозрачном и ложится сложением, как «lighter» у 2D */
-function hqHolo(c,L){
+function hqHolo(c,L,part){
   const {cx,ty,rx}=L;
-  /* свечение снизу вверх — источник света в кадре */
-  const g=c.createRadialGradient(cx,ty,4,cx,ty,120);
-  g.addColorStop(0,"rgba(120,190,230,.18)");g.addColorStop(1,"rgba(120,190,230,0)");
-  c.fillStyle=g;c.beginPath();c.ellipse(cx,ty-30,rx*1.1,64,0,0,TAU);c.fill();
+  /* свечение снизу вверх — источник света в кадре. У main — краска поверх людей (тонирует,
+     а не только прибавляет), поэтому своя выпечка со смесью «over» (part "glow"); остальное
+     (part "light") — сложением. Всё свечение сложением клало правому +6 % (390, 26.09) */
+  if(part!=="light"){
+    const g=c.createRadialGradient(cx,ty,4,cx,ty,120);
+    g.addColorStop(0,"rgba(120,190,230,.18)");g.addColorStop(1,"rgba(120,190,230,0)");
+    c.fillStyle=g;c.beginPath();c.ellipse(cx,ty-30,rx*1.1,64,0,0,TAU);c.fill();
+    if(part==="glow")return;
+  }
   /* Проекция — единственная достопримечательность рубки, и она должна быть
      видна, а не угадываться: планета в разрезе орбит, звёзды сектора вокруг
      и метка вашей системы. Бледная проекция превращала стол в серую плиту. */
@@ -109496,7 +109515,15 @@ function drawHomeIn(){
   const camx=Math.round(S.cam*k*DPR)/(k*DPR);
   const fy=0, ceil=-HIN_ROOM_H;
   const sig=hinSig(S,k);
-  hinChunks(gpuScene(),"back",sig,k,camx,(x0,x1)=>hinPaintBack(R,x0,x1-x0,P,S));
+  const sp=gpuScene();
+  hinChunks(sp,"back",sig,k,camx,(x0,x1)=>hinPaintBack(R,x0,x1-x0,P,S));
+  /* свет — на задний слой, ДО людей: люди в сцене рисуются после её света, не под
+     пеленой (DECISIONS; Контроль 26.09 — хозяин выходил на 8 % светлее main и серее) */
+  const lu=hinLightU(R,k,camx);
+  if(sp){
+    gpuField(sp,"hin.light",HIN_LIGHT_WGSL,lu,null,{blend:"mul"});
+    gpuField(sp,"hin.haze",HIN_HAZE_WGSL,lu,null,{blend:"add"});
+  }
   ctx.save();ctx.scale(k,k);
   ctx.translate(-camx,H/k-HIN_MAN*.9);
   /* ── жильцы и хозяин ── */
@@ -109524,8 +109551,22 @@ function drawHomeIn(){
   ctx.restore();
   const op=gpuOver();
   if(op){
-    hinChunks(op,"front",sig,k,camx,(x0,x1)=>hinPaintFront(R,x0,x1-x0,P));
-    hinLight(op,R,k,camx,S);
+    /* люди — краска, не огонь: склейка 2D кладёт почти упёршееся тёплое в слой огней, и
+       лицо под лампой светило ореолом (торс +11 % к main только от свечения кадра, 26.09).
+       У main дом шёл без этого слоя — чистим его после склейки */
+    const ec=GPU.dev.createCommandEncoder();
+    ec.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();
+    GPU.dev.queue.submit([ec.finish()]);
+    /* на людей — только воздух комнаты, как у main: мягкий тёплый отсвет вокруг лампы
+       (маска — альфа слоя 2D, где сейчас одни люди); вещи ближе людей — под тем же
+       светом, что и комната, своим полем; лампочки и пыль — поверх всего */
+    const fv=hinFrontTex();
+    if(fv)gpuField(op,"hin.air",HIN_AIR_WGSL,lu,[fv],{blend:"add"});
+    hinChunks(op,"front",sig,k,camx,(x0,x1)=>hinPaintFront(R,x0,x1-x0,P),lu);
+    hinGlow(op,R,k,camx,lu);
+    /* воздух читал передний слой: отправляем сразу, как фонари (11va), — следующая
+       выгрузка #c (сборка кадра) не должна обогнать это чтение */
+    if(fv){GPU.overPass.end();GPU.overPass=null;GPU.dev.queue.submit([GPU.enc.finish()]);GPU.enc=GPU.dev.createCommandEncoder();}
   }
   /* ── строка внимания и имя комнаты: по линейке борта (M443) ── */
   withScale(uiK(),()=>{
@@ -109561,7 +109602,7 @@ function hinSig(S,k){
    него: край куска не видит соседнего края, и шва нет. Держим только
    видимые и соседние; сменилась подпись — все вон */
 const HIN_CH=160, HIN_CHP=6, HIN_CHUNKS={};
-function hinChunks(pass,layer,sig,k,camx,paint){
+function hinChunks(pass,layer,sig,k,camx,paint,lu){
   let T=HIN_CHUNKS[layer];
   if(!T||T.sig!==sig){if(T)for(const B of T.m.values())gpuBakeDrop(B);T=HIN_CHUNKS[layer]={sig,m:new Map()};}
   if(!pass)return;
@@ -109578,7 +109619,12 @@ function hinChunks(pass,layer,sig,k,camx,paint){
     const u=HIN_CHP/cw;
     R.push({B,r:{x:(i*HIN_CH+HIN_CH*.5-camx)*k,y:H/2,w:HIN_CH*k,h:H,u0:u,u1:1-u}});
   }
-  for(const q of R)gpuImage(pass,q.B,[q.r]);
+  /* передние куски — через поле света (lu): свет дома лёг на задний слой до людей */
+  if(lu)for(const q of R){
+    const r=q.r;lu[28]=r.x-r.w/2;lu[29]=r.x+r.w/2;lu[30]=r.u0;lu[31]=r.u1;
+    gpuField(pass,"hin.flit",HIN_FLIT_WGSL,lu,[q.B]);
+  }
+  else for(const q of R)gpuImage(pass,q.B,[q.r]);
   /* ушедшие далеко куски — в корзину */
   for(const [i,B] of T.m)if(i<i0-2||i>i1+2){gpuBakeDrop(B);T.m.delete(i);}
 }
@@ -109649,8 +109695,38 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     c=c+vec3f(1.,.84,.62)*cone*(1.-v*.9)*.085*dust;
   }
   return vec4f(c,0.);}`;
-const HIN_LIGHT_U=new Float32Array(28),HIN_GLOW=[];
-function hinLight(pass,R,k,camx,S){
+/* передний кусок под светом дома: тот же множитель, что у комнаты, но только по своей
+   краске (v[7] — где кусок на экране и какая часть текстуры видна) */
+const HIN_FLIT_WGSL=HIN_LIGHT_WGSL.replace("fn field(","fn hinL(")+`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let r=fu.v[7];
+  if(p.x<r.x||p.x>r.y){return vec4f(0.);}
+  let s=textureSampleLevel(t0,smp,vec2f(r.z+(p.x-r.x)/max(r.y-r.x,1.)*(r.w-r.z),uv.y),0.);
+  if(s.a<.004){return vec4f(0.);}
+  return vec4f(s.rgb*hinL(p,uv).rgb,s.a);}`;
+/* воздух комнаты на людях — как у main: мягкий тёплый отсвет вокруг лампы (.13 у лампы,
+   к нулю на .7 высоты комнаты), сложением, только там, где слой 2D (люди) непрозрачен */
+const HIN_AIR_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let a=textureSampleLevel(t0,smp,uv,0.).a;
+  if(a<.004){return vec4f(0.);}
+  let fy=fu.v[0].x;let ce=fu.v[0].y;let m=fu.v[0].z;let R=max((fy-ce)*.7,1.);
+  var c=vec3f(0.);
+  for(var i=0;i<8;i++){
+    let lx=fu.v[1+i/4][i%4];if(lx<-9e3){continue;}
+    let t=clamp(length(p-vec2f(lx,ce+m*.6))/R,0.,1.);
+    c=c+mix(vec3f(1.,.808,.541),vec3f(1.,.706,.431),t)*.13*(1.-t);
+  }
+  return vec4f(c*a,0.);}`;
+let HIN_FV=null;
+function hinFrontTex(){
+  const t=GPU.T&&GPU.T.front;if(!t)return null;
+  if(!HIN_FV||HIN_FV.t!==t)HIN_FV={t,view:t.createView()};
+  return HIN_FV;
+}
+const HIN_LIGHT_U=new Float32Array(32),HIN_GLOW=[],HIN_STRIP=[];
+/* числа света дома: пол и потолок на экране, лампы, окна, проёмы (в пикселях CSS) */
+function hinLightU(R,k,camx){
   const u=HIN_LIGHT_U,M=HIN_MAN,oy=H-M*.9*k,sx=x=>(x-camx)*k;
   u.fill(-1e4);
   u[0]=oy;u[1]=oy-HIN_ROOM_H*k;u[2]=M*k;u[3]=(G.t/60)%3600;
@@ -109660,16 +109736,19 @@ function hinLight(pass,R,k,camx,S){
   for(const wx of hinWinXs(R)){const x=sx(wx);if(x<-M*3*k||x>W+M*3*k||n>7)continue;u[12+n++]=x;}
   n=0;
   for(let i=1;i<R.length;i++){const x=sx(R[i].x);if(x<-M*3*k||x>W+M*3*k||n>7)continue;u[20+n++]=x;}
-  gpuField(pass,"hin.light",HIN_LIGHT_WGSL,u,null,{blend:"mul"});
-  gpuField(pass,"hin.haze",HIN_HAZE_WGSL,u,null,{blend:"add"});
-  /* лампочки: полоса под абажуром чуть ярче единицы — ореол кадра даёт ей узкий
-     венчик (ярче — и ореол мыл бы всю комнату белёсым);
-     пыль, что плывёт в конусе; огонёк причала мигает */
-  const G2=HIN_GLOW;G2.length=0;
+  return u;
+}
+function hinGlow(pass,R,k,camx,u){
+  const M=HIN_MAN,oy=u[0],sx=x=>(x-camx)*k;
+  /* лампочки: полоса под абажуром и мягкий венчик у неё; пыль, что плывёт
+     в конусе; огонёк причала мигает */
+  const G2=HIN_GLOW,GS=HIN_STRIP;G2.length=0;GS.length=0;
   const ly=oy+(-HIN_ROOM_H+M*.61)*k,ft=u[3];
   for(let j=4;j<12;j++){
     const lx=u[j];if(lx<-9e3)continue;
-    G2.push([2,lx-M*.14*k,ly,lx+M*.14*k,ly,1.1*k,1.2*k,255,226,176,1.1]);
+    /* полоса — краской поверх, как у main (255,214,150 на .9): сложением она упиралась
+       в единицу по всем каналам и горела белым пятном (S .007 против .29, 26.09) */
+    GS.push([2,lx-M*.14*k,ly,lx+M*.14*k,ly,1.1*k,1.2*k,255,214,150,.9]);
     G2.push([1,lx,ly+M*.1*k,M*.3*k,0,0,M*.6*k,255,200,140,.06]);
     for(let i=0;i<14;i++){
       const h1=hashi(i,j,0x40FD)/4294967296,h2=hashi(i,j+9,0x40FD)/4294967296,h3=hashi(i,j+19,0x40FD)/4294967296;
@@ -109682,6 +109761,7 @@ function hinLight(pass,R,k,camx,S){
     const x=sx(r.x+r.w*.40+M*.3),y=oy-M*.98*k,b=.4+.5*Math.abs(Math.sin(G.t*.05));
     G2.push([1,x,y,3*k,0,0,6*k,255,150,90,.35*b]);
   }
+  gpuShapes(pass,GS,{blend:"over"});
   gpuShapes(pass,G2,{blend:"add"});
 }
 /* ── задний слой дома (кусок hinChunks): всё, что стоит за людьми ── */
@@ -112164,12 +112244,13 @@ function spaGeom(){
   const hor=H*0.375;                 /* горизонт моря */
   const deck=H*0.685;                /* пол веранды */
   const man=H*0.30;
-  /* щит под свои строки (Контроль, 26.09): кегль от меньшего из W и H и не мельче 9 px —
-     у main на 760 он шёл 7–8 px, а на 390 строка вылезала за бумагу вдвое. Ширина — под
-     самую длинную строку («РАСПОРЯДОК · ДЕНЬ 99 ИЗ 99», моноширинный с запасом .62 em),
-     высота — под шапку и пять строк по две; меньше прежнего щита не бывает */
-  const bf=Math.max(9,Math.round(Math.min(H*0.016,W*0.0125))),bp=Math.max(4,bf*0.6);
-  const bw=Math.min(W*0.46,Math.max(W*0.215,26*0.62*bf+2*bp)),bh=Math.max(man*0.72,14.6*bf+2*bp);
+  /* щит под свои строки (Контроль, 26.09): у main на 760 кегль шёл 7–8 px, а на 390 строка
+     вылезала за бумагу вдвое. Шапка — в две строки («РАСПОРЯДОК» / «ДЕНЬ 2 ИЗ 3»), и тогда
+     самая длинная строка — «КИСЛОРОДНЫЙ КОКТЕЙЛЬ» с отступом: 20,3 знака моноширинного с
+     запасом .62 em. Кегль не мельче 10 px (на 390 выходит 12); высота — шапка и пять строк
+     по две; меньше прежнего щита не бывает */
+  const bf=Math.max(10,Math.round(Math.min(H*0.016,W*0.03))),bp=Math.max(4,bf*0.6);
+  const bw=Math.min(W*0.46,Math.max(W*0.215,20.3*0.62*bf+2*bp)),bh=Math.max(man*0.72,15.3*bf+2*bp);
   return {hor,deck,man,bf,bp,
     rail :{x:0,y:deck-man*0.62,w:W,h:man*0.62},
     board:{x:W*0.055,y:H*0.10,w:bw,h:bh},                 /* щит с распорядком */
@@ -112183,7 +112264,7 @@ function spaGeom(){
 function spaBoardRows(){return SPA_PLAN;}
 /* сетка строк щита: верх первой строки и шаг — одна на рисование и на попадание пальцем */
 function spaBoardGrid(g){
-  const b=g.board,top=b.y+g.bp+g.bf*2.4;
+  const b=g.board,top=b.y+g.bp+g.bf*3.3;
   return {top,p:(b.y+b.h-g.bp-top)/SPA_PLAN.length};
 }
 function spaTookToday(S,k){return !!(S&&S.took&&S.took[S.day+":"+k]);}
@@ -112588,9 +112669,10 @@ function spaBoardText(g,S){
   ctx.fillStyle="rgba(62,52,38,.95)";
   ctx.font=f+"px ui-monospace,monospace";
   const hy=b.y+g.bp+f;
-  ctx.fillText("РАСПОРЯДОК · ДЕНЬ "+S.day+" ИЗ "+S.days,x,hy);
+  ctx.fillText("РАСПОРЯДОК",x,hy);
+  ctx.fillText("ДЕНЬ "+S.day+" ИЗ "+S.days,x,hy+f*1.2);
   ctx.fillStyle="rgba(90,78,58,.35)";
-  ctx.fillRect(x,hy+f*0.45,b.w-2*g.bp,Math.max(1,f*0.11));
+  ctx.fillRect(x,hy+f*1.65,b.w-2*g.bp,Math.max(1,f*0.11));
   spaBoardRows().forEach((P,i)=>{
     const y=q.top+i*q.p+f,took=spaTookToday(S,P.k);
     ctx.fillStyle=took?"rgba(120,106,80,.55)":"rgba(66,58,44,.92)";

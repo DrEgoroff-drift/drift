@@ -45,7 +45,7 @@ TEST_SUITES.push(()=>suite("санаторий: строки щита на бу�
       fillRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){}};
     ctx=rec;try{spaBoardText(g,S);}finally{ctx=prev;}
     const tag=w+"×"+h;
-    eq(out.length,1+2*SPA_PLAN.length,tag+": шапка и по две строки на процедуру");
+    eq(out.length,2+2*SPA_PLAN.length,tag+": шапка в две строки и по две строки на процедуру");
     const small=out.filter(o=>o.px<9).map(o=>o.s+" "+o.px);
     eq(small.join(", "),"",tag+": кегль не мельче 9 px (до "+Math.min(...out.map(o=>o.px))+")");
     const wide=out.filter(o=>o.x<b.x||o.x+o.w>b.x+b.w-1).map(o=>o.s+" +"+(o.x+o.w-b.x-b.w).toFixed(0));

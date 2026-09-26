@@ -60,7 +60,8 @@ function drawHqRoom(cn,sel,hover){
   const pw=cn.width,ph=cn.height,s=k*dpr,sz=pw+"x"+ph;
   const mg=HQ_ORDER.map((r,i)=>hqMgrAt(i));
   const back=rpgBake(R,"back",sz+"|"+HQ_ORDER.map((r,i)=>hqScreenKey(r,mg[i])).join(","),pw,ph,g=>{g.scale(s,s);hqBack(g,L);});
-  const holo=rpgBake(R,"holo",sz+"|"+((G.sys&&G.sys.key)||""),pw,ph,g=>{g.scale(s,s);hqHolo(g,L);});
+  const glow=rpgBake(R,"glow",sz,pw,ph,g=>{g.scale(s,s);hqHolo(g,L,"glow");});
+  const holo=rpgBake(R,"holo",sz+"|"+((G.sys&&G.sys.key)||""),pw,ph,g=>{g.scale(s,s);hqHolo(g,L,"light");});
   const table=rpgBake(R,"table",sz+"|"+mg.map(m=>m?1:0).join(""),pw,ph,g=>{g.scale(s,s);hqTable(g,L.W2,L.H2,L.fy,L.seed);});
   const lab=(sel||hover)?rpgBake(R,"lab",sz+"|"+sel+"|"+hover,pw,ph,g=>{g.scale(s,s);hqLabels(g,L,sel,hover);}):null;
   /* фигуры: спрайт ног и спрайт корпуса (корпус печётся без вдоха — вдох даёт сдвиг) */
@@ -77,7 +78,6 @@ function drawHqRoom(cn,sel,hover){
   rpgFrame(R,ps=>{
     rpgImage(R,ps,back,[box()]);
     rpgShapes(R,ps,live.wall.map(v=>hqPx(v,k)));
-    rpgShapes(R,ps,live.halo.map(v=>hqPx(v,k)),"add");
     /* люди и подписи кладутся смесью «hull»: альфа сцены под ними гаснет, и последний проход
        обходит их — лампы, конусы и пыль ложатся на комнату, а не пеленой на лица (Контроль,
        26.09: торс был 160 против 56 у main). Стол переднего плана — «opaque»: над ступнями
@@ -89,11 +89,12 @@ function drawHqRoom(cn,sel,hover){
       rpgImage(R,ps,f.top,[{x,y:y+bob,w:FW*k,h:FH*k}],"hull");
     }
     rpgShapes(R,ps,live.job.map(v=>hqPx(v,k)));
+    rpgImage(R,ps,glow,[box()]);
     rpgImage(R,ps,holo,[box()],"add");
     rpgShapes(R,ps,live.holo.map(v=>hqPx(v,k)),"add");
     rpgImage(R,ps,table,[box()],"opaque");
     if(lab)rpgImage(R,ps,lab,[box()],"hull");
-  },(pl,S)=>rpgField(R,pl,"hqlit",RPG_WGSL+HQ_LIT_WGSL,hqLitUni(L,mg,k,t),[S]));
+  },(pl,S)=>rpgField(R,pl,"hqlit",RPG_WGSL+HQ_LIT_WGSL,hqLitUni(L,mg,k,t,live.halo),[S]));
   return hits;
 }
 /* фигура в единицах комнаты → в пиксели CSS панели */
@@ -106,8 +107,11 @@ function hqPx(v,k){
 }
 /* числа света: лампы, кто на месте, цвет экранов, стол, окно */
 const HQ_LIT_U=new Float32Array(60);
-function hqLitUni(L,mg,k,t){
+function hqLitUni(L,mg,k,t,halo){
   const u=HQ_LIT_U;u.fill(0);
+  /* нимб выбранного и того, над кем палец (hqLive): центр, плотность, цвет */
+  for(let j=0;j<2;j++){const h=halo&&halo[j];if(!h)continue;
+    u.set([h[1],h[2],h[10],0],40+j*4);u.set([h[7]/255,h[8]/255,h[9]/255,0],48+j*4);}
   u.set([k,L.W2,L.fy,t],0);
   for(let i=0;i<4;i++){
     u[4+i]=L.st[i];u[8+i]=mg[i]?1:0;
@@ -172,6 +176,13 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let jn=(q.y-(fy-4.))/7.;
   sh*=1.-.25*exp(-jn*jn);
   var c=base*L*sh+beam;
+  /* нимб за выбранным — как у main: краска поверх освещённой комнаты (2 → 46 единиц), под
+     человеком. Сложением до света он ложился ярче и под свет ламп (+3 к кромке фигуры) */
+  for(var j=0;j<2;j++){
+    let nh=fu.v[10+j];if(nh.z<=0.){continue;}
+    let na=nh.z*(1.-clamp((length(q-nh.xy)-2.)/44.,0.,1.));
+    c=c*(1.-na)+fu.v[12+j].rgb*na;
+  }
   /* голограмма светится в воздухе над столом — цветом вашей звезды */
   let hs=q-vec2f(tb.x,tb.y-26.);
   c+=fu.v[9].rgb*(.20*exp(-dot(hs,hs)/260.)+.06*exp(-dot(hs,hs)/2600.));
@@ -185,9 +196,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let vd=clamp((length(vq)-.62)/.70,0.,1.);
   c*=1.-.62*vd*vd*(3.-2.*vd);
   /* люди и подписи (альфа сцены — их маска): своя краска и виньетка main — круг .34→1.05
-     высоты, до .58, — без ламп, конусов и пыли */
+     высоты, до .58, — без ламп, конусов и пыли. Маска жёсткая: краска фигуры кроется на
+     .85 и выше, а мягкая маска возвращала лицам 6 % света ламп (+17 % к main по торсу) */
   let vr=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.34)/(H2*.71),0.,1.);
-  c=mix(base*(1.-.58*vr),c,clamp(s0.a,0.,1.));
+  let fa=1.-clamp((1.-s0.a)/.85,0.,1.);
+  c=mix(base*(1.-.58*vr),c,fa);
   /* зерно по яркости и дизеринг: тёмный градиент без ступенек */
   c=rshoulder(c);
   let px=floor(p*fu.res.x/max(fu.res.z,1.));
@@ -352,12 +365,17 @@ function hqBack(c,L){
 }
 /* ── голограмма над столом: неподвижная часть (звезда, зерно, орбиты, столб) ──
    печётся на прозрачном и ложится сложением, как «lighter» у 2D */
-function hqHolo(c,L){
+function hqHolo(c,L,part){
   const {cx,ty,rx}=L;
-  /* свечение снизу вверх — источник света в кадре */
-  const g=c.createRadialGradient(cx,ty,4,cx,ty,120);
-  g.addColorStop(0,"rgba(120,190,230,.18)");g.addColorStop(1,"rgba(120,190,230,0)");
-  c.fillStyle=g;c.beginPath();c.ellipse(cx,ty-30,rx*1.1,64,0,0,TAU);c.fill();
+  /* свечение снизу вверх — источник света в кадре. У main — краска поверх людей (тонирует,
+     а не только прибавляет), поэтому своя выпечка со смесью «over» (part "glow"); остальное
+     (part "light") — сложением. Всё свечение сложением клало правому +6 % (390, 26.09) */
+  if(part!=="light"){
+    const g=c.createRadialGradient(cx,ty,4,cx,ty,120);
+    g.addColorStop(0,"rgba(120,190,230,.18)");g.addColorStop(1,"rgba(120,190,230,0)");
+    c.fillStyle=g;c.beginPath();c.ellipse(cx,ty-30,rx*1.1,64,0,0,TAU);c.fill();
+    if(part==="glow")return;
+  }
   /* Проекция — единственная достопримечательность рубки, и она должна быть
      видна, а не угадываться: планета в разрезе орбит, звёзды сектора вокруг
      и метка вашей системы. Бледная проекция превращала стол в серую плиту. */

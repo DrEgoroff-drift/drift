@@ -26,12 +26,13 @@ function spaGeom(){
   const hor=H*0.375;                 /* горизонт моря */
   const deck=H*0.685;                /* пол веранды */
   const man=H*0.30;
-  /* щит под свои строки (Контроль, 26.09): кегль от меньшего из W и H и не мельче 9 px —
-     у main на 760 он шёл 7–8 px, а на 390 строка вылезала за бумагу вдвое. Ширина — под
-     самую длинную строку («РАСПОРЯДОК · ДЕНЬ 99 ИЗ 99», моноширинный с запасом .62 em),
-     высота — под шапку и пять строк по две; меньше прежнего щита не бывает */
-  const bf=Math.max(9,Math.round(Math.min(H*0.016,W*0.0125))),bp=Math.max(4,bf*0.6);
-  const bw=Math.min(W*0.46,Math.max(W*0.215,26*0.62*bf+2*bp)),bh=Math.max(man*0.72,14.6*bf+2*bp);
+  /* щит под свои строки (Контроль, 26.09): у main на 760 кегль шёл 7–8 px, а на 390 строка
+     вылезала за бумагу вдвое. Шапка — в две строки («РАСПОРЯДОК» / «ДЕНЬ 2 ИЗ 3»), и тогда
+     самая длинная строка — «КИСЛОРОДНЫЙ КОКТЕЙЛЬ» с отступом: 20,3 знака моноширинного с
+     запасом .62 em. Кегль не мельче 10 px (на 390 выходит 12); высота — шапка и пять строк
+     по две; меньше прежнего щита не бывает */
+  const bf=Math.max(10,Math.round(Math.min(H*0.016,W*0.03))),bp=Math.max(4,bf*0.6);
+  const bw=Math.min(W*0.46,Math.max(W*0.215,20.3*0.62*bf+2*bp)),bh=Math.max(man*0.72,15.3*bf+2*bp);
   return {hor,deck,man,bf,bp,
     rail :{x:0,y:deck-man*0.62,w:W,h:man*0.62},
     board:{x:W*0.055,y:H*0.10,w:bw,h:bh},                 /* щит с распорядком */
@@ -45,7 +46,7 @@ function spaGeom(){
 function spaBoardRows(){return SPA_PLAN;}
 /* сетка строк щита: верх первой строки и шаг — одна на рисование и на попадание пальцем */
 function spaBoardGrid(g){
-  const b=g.board,top=b.y+g.bp+g.bf*2.4;
+  const b=g.board,top=b.y+g.bp+g.bf*3.3;
   return {top,p:(b.y+b.h-g.bp-top)/SPA_PLAN.length};
 }
 function spaTookToday(S,k){return !!(S&&S.took&&S.took[S.day+":"+k]);}
@@ -450,9 +451,10 @@ function spaBoardText(g,S){
   ctx.fillStyle="rgba(62,52,38,.95)";
   ctx.font=f+"px ui-monospace,monospace";
   const hy=b.y+g.bp+f;
-  ctx.fillText("РАСПОРЯДОК · ДЕНЬ "+S.day+" ИЗ "+S.days,x,hy);
+  ctx.fillText("РАСПОРЯДОК",x,hy);
+  ctx.fillText("ДЕНЬ "+S.day+" ИЗ "+S.days,x,hy+f*1.2);
   ctx.fillStyle="rgba(90,78,58,.35)";
-  ctx.fillRect(x,hy+f*0.45,b.w-2*g.bp,Math.max(1,f*0.11));
+  ctx.fillRect(x,hy+f*1.65,b.w-2*g.bp,Math.max(1,f*0.11));
   spaBoardRows().forEach((P,i)=>{
     const y=q.top+i*q.p+f,took=spaTookToday(S,P.k);
     ctx.fillStyle=took?"rgba(120,106,80,.55)":"rgba(66,58,44,.92)";
