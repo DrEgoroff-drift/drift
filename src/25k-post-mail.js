@@ -20,12 +20,8 @@ function mailCard(box,s,w,ro,onTap){
   const cell=document.createElement("div");
   cell.className="card"+(ro?" theirs":"");
   const h=Math.round(w*.625);
-  const cv=document.createElement("canvas");
-  cv.width=Math.round(w*2);cv.height=Math.round(h*2);
-  cv.style.width=w+"px";cv.style.height=h+"px";
-  const cc=cv.getContext("2d");cc.scale(2,2);
-  if(!drawPostcard(cc,s,w,h)){cc.fillStyle="#12161d";cc.fillRect(0,0,w,h);}
-  cell.appendChild(cv);
+  /* та же карточка, что в альбоме (25g1): выпечка в свою канву, плотность экрана; фильтр не едет */
+  cell.appendChild(albumCanvas(Object.assign({},s,{fx:"none"}),w,h,albumDpr()));
   const cap=document.createElement("s");
   cap.textContent=(ro?"":"ваша · ")+postCaption(s);
   cell.appendChild(cap);

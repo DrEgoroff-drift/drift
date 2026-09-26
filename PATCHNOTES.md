@@ -6,7 +6,7 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## Unreleased - stage 2, whose land
+## 0.480.0 - stages 2 and 3: whose land, and far and back with a hold
 
 - **M453: the stamp page can be filled.** Ялта now gives its own round stamp (six signatures in a ring, weapons
   sealed). That also makes the diplomatic passport reachable: it wanted all six powers and Ялта, and Ялта never
@@ -160,6 +160,13 @@ could ever save.
 - M475: a branch is a straight two-stop line, not a detour of the existing line; a real rerouting would change the
   seeded net that the chronicle and the tests read. Fares, baggage and the size rule are not yet tuned against the
   oracle's rail line: that is a measuring job for the release run, and it stays in the plan.
+
+## 0.479.0 - mail cards and the smena plate on the engine
+
+- **Postcards in the mail and the picture of a «Смена» chapter** are the same card as in the album now: baked
+  once and laid into an engine canvas. They look the same and are sharper on DPR 3 screens.
+- **Nets**: the album scene of the «0 вызовов 2D» gate also draws a mail card and a chapter picture; a new
+  mutant (mail-2d) is killed.
 
 ## 0.478.0 - the album on the engine
 
