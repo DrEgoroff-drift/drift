@@ -771,7 +771,8 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   is dark raven metal, albedo near neutral; the key light takes only 20 % of the star's chroma (a red star
   turned any warmth pink), the fill stays cold, and a small star-coloured specular reads it as metal. Red is
   accent only: corner and mast beacons, a thin red stripe along the eave, eave running lights, the pod lights.
-  The label is grey (the lair keeps violet). Pods halved (r 2.3→1.15), lit as the body, one small blinking red
+  The label keeps red at ~70 % of the old saturation (the lair keeps violet): on a metal hull it says «enemy»
+  without making the body red. Pods halved (r 2.3→1.15), lit as the body, one small blinking red
   light each instead of a big glowing ball. Windows lost the grid: wall windows at hashed irregular steps with
   about a third dark and a few dim, roof hatches 0–3 per facet anywhere, some barely lit. Ridge bevels and roof
   seams got more contrast so the shadow side keeps its edges once the red balls are gone.
