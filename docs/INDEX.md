@@ -2150,7 +2150,7 @@ GAL_RD                       src/17z1-galaxy.js:19
 GAL_STAR_BUF                 src/17z1-galaxy.js:85
 GAL_STAR_CAND                src/17z1-galaxy.js:83
 GAL_STAR_COL                 src/17z1-galaxy.js:84
-GAL_STAR_RED                 src/17z3-map-gpu.js:162
+GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
@@ -2159,9 +2159,9 @@ galArmPt                     src/17z2-galaxy-names.js:14
 galArmTh                     src/17z2-galaxy-names.js:13
 galaxyAt                     src/17z1-galaxy.js:30-60
 galaxyCell                   src/17z1-galaxy.js:72-77
-galaxyGpu                    src/17z3-map-gpu.js:137-157
+galaxyGpu                    src/17z3-map-gpu.js:139-159
 galPlaceName                 src/17z2-galaxy-names.js:29-36
-galStarsGpu                  src/17z3-map-gpu.js:163-176
+galStarsGpu                  src/17z3-map-gpu.js:165-178
 GATE_FLY                     tests/91zzzzzzy-gpugate.js:269
 GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
@@ -3701,7 +3701,7 @@ makeWorld                    src/02a-worldmix.js:47-64
 MAP_BOX                      src/18-mode-map.js:28
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
-MAP_SPIKE_N                  src/17z3-map-gpu.js:199
+MAP_SPIKE_N                  src/17z3-map-gpu.js:201
 mapAddrBox                   src/18a-map-addr.js:224-240
 mapBack                      src/18-mode-map.js:105-116
 mapBandPaint                 src/17z-map-backdrop.js:36-77
@@ -3715,7 +3715,7 @@ mapFit                       src/18-mode-map.js:87-92
 mapFont                      src/18-mode-map.js:42
 mapGoAddr                    src/18a-map-addr.js:212-219
 MAPGPU                       src/17z3-map-gpu.js:17
-mapGpuOver                   src/17z3-map-gpu.js:189-192
+mapGpuOver                   src/17z3-map-gpu.js:191-194
 mapGpuPass                   src/17z3-map-gpu.js:20-24
 mapGridDraw                  src/18a-map-addr.js:55-60
 mapGridPaint                 src/17z-map-backdrop.js:108-120
@@ -3741,14 +3741,14 @@ mapRail                      src/18-mode-map.js:18-21
 mapRange                     src/18-mode-map.js:83
 mapReset                     src/18-mode-map.js:117
 mapRhumbPaint                src/17z-map-backdrop.js:82-101
-mapRibbon                    src/17z3-map-gpu.js:179-187
+mapRibbon                    src/17z3-map-gpu.js:181-189
 mapRingsDraw                 src/18a-map-addr.js:62-74
 mapRoseDraw                  src/18a-map-addr.js:187-210
 mapRulersDraw                src/18a-map-addr.js:112-185
 mapRulerTop                  src/18a-map-addr.js:53
 mapRumoursDraw               src/18a-map-addr.js:76-93
 mapStarPaint                 src/17z-map-backdrop.js:126-146
-mapStarsGpu                  src/17z3-map-gpu.js:200-226
+mapStarsGpu                  src/17z3-map-gpu.js:202-230
 mapTagAt                     src/18b-map-hold.js:71-78
 mapTrassaPairs               src/18b-map-hold.js:47-59
 mapU                         src/18-mode-map.js:41
@@ -7567,7 +7567,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17z2-galaxy-names.js · 4 КБ
   · имена мест галактики (M449, DESIGN-galaxy §M449):1
 
-## src/17z3-map-gpu.js · 16 КБ
+## src/17z3-map-gpu.js · 17 КБ
   · небо карты на видеокарте (G10, docs/DESIGN-gpu.md §5):1
 
 ## src/18-mode-map.js · 44 КБ
