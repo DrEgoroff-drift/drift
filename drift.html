@@ -32918,7 +32918,7 @@ function gpuPirateBody(p,x,y,s){
      поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
   if(!art.cn)return false;
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
-  return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,0,0,lod,null,"dark");
+  return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,-1,0,lod,null,"dark");   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх
    выпечки, — в проход сцены. over=false — под корпусом: факел шейдером своего корабля
@@ -35187,7 +35187,7 @@ function gpuBargeBody(b,x,y,s){
   let lx=-b.x,ly=-b.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
   /* мастер с мипами: вблизи уровень 0, как было, вдали — мипы, а не рябь */
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+BARGE_LOD);
-  return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,0,0,lod);
+  return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,-1,0,lod);   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой баржи с видеокарты (ступень 1): огни и зевы — фигурами в проходе сцены,
    то же, что drawBarge кладёт поверх выпечки; x,y — экран, s — масштаб, a — поворот */
@@ -54147,6 +54147,9 @@ function stackSmoke(t,ph,fl){
 const GPU_LIT_SH=(.6).toFixed(2);
 /* флаг 4: среднее не мельче коробки 5.5 текселя (у pirMaster — 7); мип у нуля — 2, пираты теряли до 11 % */
 const GPU_LIT_DK=Math.log2(5.5).toFixed(3);
+/* корабль в настоящем свете (§L.S): уровней мипа до купола тела, его вес, доля градиента «к звезде»
+   по всему корпусу, заливка без газа, доля газа, свет, огни (выше колена — свечение подхватывает) */
+const RL_DL="3.",RL_KD="6.",RL_SIDE=".5",RL_AMB=".46",RL_GAS=".9",RL_LIT="1.1",RL_EM="2.3";
 const GST_WGSL=GPU_PL_WGSL+`
 fn plOcc(q:vec2f)->f32{let dq=q-fu.v[0].xy;let ro=fu.v[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/fu.v[0].z+1.)*.5;
@@ -54191,7 +54194,10 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
      альфе здесь; мелкий рельеф ложится и в тонкую нормаль — швы и панели ловят кромку звезды */
   let mo=(u32(fu.v[3].w+.5)&8u)!=0u;var gb0:vec2f;var gg0:vec2f;
   let lm=max(fu.v[3].z-1.,0.);var mk=vec3f(0.);
+  var gd0=vec2f(0.);
   if(mo){let m=textureSampleLevel(t3,smp,vec2f(uv.x*.5,uv.y),lm);gb0=m.xy;gg0=m.zw;
+    /* купол тела: мип склонов — склон размытой альфы, от хребта к бортам (свет в один терминатор) */
+    gd0=textureSampleLevel(t3,smp,vec2f(uv.x*.5,uv.y),lm+${RL_DL}).xy;
     let q=textureSampleLevel(t3,smp,vec2f(.5+uv.x*.5,uv.y),lm);mk=q.xyz/max(q.w,1e-3);}
   else{gb0=-(sa(uv,u1*3.*s)*.5+sa(uv,u1*8.*s)*.5);gg0=glassG(uv,u1*6.);}
   let g0=-sa(uv,u1*1.1)+select(vec2f(0.),gg0,mo);let g=vec2f(g0.x*ro.x-g0.y*ro.y,g0.x*ro.y+g0.y*ro.x);let tl=clamp(length(g),0.,.98);
@@ -54233,6 +54239,21 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
   /* окна и огни светят сами: выше колена — их подхватывает свечение; у корпуса корабля — только
      по маске материала (огонь ярче округи), без неё насыщенный кант шёл в огни */
   let em=select(1.+1.3*(1.-own),1.,hm&&!mo);
+  if(hm&&mo){
+    /* корабль в настоящем свете (§L.S a–c, e): один свет — звезда, терминатор по куполу тела через весь
+       корпус; тень не чёрная — заливка газом у корабля (t2 — туманность 16gb, флаг 16), тёплая в
+       рыжем газе, холодная в синем; скала гасит прямой свет (sk), но не заливку; огни живут и в тени */
+    let gd=vec2f(gd0.x*ro.x-gd0.y*ro.y,gd0.x*ro.y+gd0.y*ro.x);
+    let key=smoothstep(-.35,.35,dot(gd,sd)*${RL_KD}+side*${RL_SIDE});
+    var fl=vec3f(${RL_AMB});
+    if((u32(fu.v[3].w+.5)&16u)!=0u){let rq=fu.res.zw;var gz=vec3f(0.);
+      for(var k=0;k<5;k++){let o=select(vec2f(0.),vec2f(cos(f32(k)*1.571),sin(f32(k)*1.571))*R*1.3,k>0);
+        gz+=max(textureSampleLevel(t2,smp,(c+o)/rq,0.).rgb,vec3f(0.));}
+      gz*=.2;let gm=max(max(gz.r,gz.g),max(gz.b,1e-4));let gc=gz*(1.-exp(-gm*1.25))/(gm*1.25)*1.12;
+      fl=fl*(1.-smoothstep(.0,.25,gm)*.35)+gc*${RL_GAS};}
+    fl*=.55+.45*sk;let dir=vec3f(${RL_LIT}-${RL_AMB})*key*sk;
+    let e=1.-own;
+    return vec4f(c4.rgb*((fl+dir)*own*mix(vec3f(1.),col,.08*key)+pl+e*${RL_EM})+lit*sk+spec+gl*(1.-a),a);}
   return vec4f(c4.rgb*(shade*sk*em+pl)*mix(vec3f(1.),col,.08)+lit*sk+spec+gl*(1.-a),a);
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
@@ -54248,8 +54269,11 @@ function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al){
   const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
   U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=al==null?1:clamp(al,0,1);U[12]=glow;U[13]=sy||0;U[14]=lod||0;
   const mip=!!cv.view;if(mip&&cv.draw)gpuBakeLive(cv);   /* материал (08cd) — после возможной перепечки */
-  const mt=mip&&!rel&&cv.mat;U[15]=(rel?1:0)+(sharp&&mip?2:0)+(sharp==="dark"&&mip?4:0)+(mt?8:0);
-  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||null,mt||null],{blend:"hull",smp:mip?gpuMipSmp():null});
+  const mt=mip&&!rel&&cv.mat;
+  /* заливка газом — корпусу корабля с материалом, пока туманность 16gb этой системы жива */
+  const gz=mt&&glow<0&&typeof GNB!=="undefined"&&GNB.view&&GNB.dev===GPU.dev&&G.sys&&GNB.sys===G.sys;
+  U[15]=(rel?1:0)+(sharp&&mip?2:0)+(sharp==="dark"&&mip?4:0)+(mt?8:0)+(gz?16:0);
+  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||(gz?{view:GNB.view}:null),mt||null],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
 function drawStation(x,y,Z){

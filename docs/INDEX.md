@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 633 · символов верхнего уровня: 6372
+Файлов: 633 · символов верхнего уровня: 6373
 
 ## СИМВОЛЫ
 
@@ -1585,7 +1585,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:506-541
+drawStation                  src/17c-system-draw.js:530-565
 drawStationBody              src/17c-system-draw.js:167-370
 drawStationMods              src/17a-station-mod.js:207-210
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -2360,7 +2360,7 @@ gpuHudDpr                    src/08bh-gpu-hud.js:7
 gpuImage                     src/08c-gpu-kit.js:212-225
 gpuKitU                      src/08c-gpu-kit.js:170-174
 gpuLight                     src/08b-gpu.js:444
-gpuLitSprite                 src/17c-system-draw.js:496-505
+gpuLitSprite                 src/17c-system-draw.js:517-529
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:582-587
 gpuMipDrop                   src/08c-gpu-kit.js:110
@@ -2493,7 +2493,7 @@ gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:348
-GST_WGSL                     src/17c-system-draw.js:401
+GST_WGSL                     src/17c-system-draw.js:404
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:56
@@ -4975,6 +4975,7 @@ rivalOf                      src/12p-news.js:44
 rivalSpawn                   src/12p-news.js:74-83
 rivalYield                   src/12p-news.js:47-60
 rivetLine                    src/25-cockpit.js:179-186
+RL_DL                        src/17c-system-draw.js:403
 rnd                          src/01-core.js:74
 RND_SEED                     src/01-core.js:73
 rndFx                        src/01-core.js:76
@@ -7111,7 +7112,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17b-finds.js · 18 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 36 КБ
+## src/17c-system-draw.js · 39 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17c1-station-dress.js · 4 КБ

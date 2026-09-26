@@ -831,6 +831,17 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   pirate and station panels read in relief, station lamps are crisper, own amber lights glow. New browser
   suite «материал корпуса: пираты, баржи, свои…». Tour GREEN, -Browser green.
   Next: merge origin/main once 0.466.0 is out, then candidate 0.467.0 (+ gpu2-lit).
+- **Ships in real light, pass 1 (26.09, branch `gpu-ships` on 6e775fb9, not in 0.467.0):** hull mode with
+  a material (17c GST, `RL_*`) — a) one light: the body dome is the material's relief three mips coarser
+  (the mip of slopes is the slope of the blurred alpha, one sample, no rebake), so the terminator runs along
+  the spine; b) the dark side is a fill, .46 plus the gas at the ship (the 16gb nebula target as t2, flag 16,
+  five taps around the hull), warm in orange gas; c) a planet's shadow takes the direct light and .45 of the
+  fill; e) lamps (mask) ×2.3 regardless of light, so windows live in shadow. Pirates (12i) and barges (12l)
+  move to hull light (glow −1): the washed-out pirate and the flat barge get one body, one light. Pairs vs
+  6e775fb9 (scratchpad `pair_oc_*_{390,760}`, crops `rl_*`, `px_*`): phone toward the star, hull pixels
+  Y 104 → 91 (the dark half), in a planet's shadow 69 → 85 (lamps and fill); with pirate and barge toward
+  2.1 % > 8, away 0.87 %, shadow 1.0 %. -Browser green, tour GREEN; -Full not run yet.
+  Open: d) glints by count, f) the flame lighting the stern, g) the 1-px rim, the close-up (hangar/card).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

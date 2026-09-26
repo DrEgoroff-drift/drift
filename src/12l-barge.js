@@ -546,7 +546,7 @@ function gpuBargeBody(b,x,y,s){
   let lx=-b.x,ly=-b.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
   /* мастер с мипами: вблизи уровень 0, как было, вдали — мипы, а не рябь */
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+BARGE_LOD);
-  return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,0,0,lod);
+  return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,-1,0,lod);   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой баржи с видеокарты (ступень 1): огни и зевы — фигурами в проходе сцены,
    то же, что drawBarge кладёт поверх выпечки; x,y — экран, s — масштаб, a — поворот */
