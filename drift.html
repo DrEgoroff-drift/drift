@@ -12315,7 +12315,7 @@ function gcPoolSpec(role){
     :[["rgba16float",1,TB|U.COPY_DST]];}
 function gcPool(){
   let Q=GPU.lay["gc.pool"];if(Q)return Q;
-  Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0,wb:0,one:{},ob:0,ones:0,busy:[],dead:[],pend:0,peakAll:0,onceB:0,onceN:0};
+  Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0,wb:0,one:{},ob:0,ones:0,busy:[],dead:[],pend:0,peakAll:0,onceB:0,onceN:0,bigN:0};
   /* прогрев из-под выпечки once (пул после потери устройства рождается лениво) — всё равно в пул */
   const o0=GC_ONCE;GC_ONCE=false;try{for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);}finally{GC_ONCE=o0;}
   /* прогретое не вытесняется: крупная выпечка (комната во весь кадр на ПК — набор 33 МБ) выбивала по давности
@@ -12335,9 +12335,10 @@ function gcPool(){
    разовое занятое ждёт конца выпечки в dead (pend — в счёт пика).
    Набор выпечки once (мастер стойки 2508×1008 — 60 МБ и тень 65 МБ, кабина пояса, прибор) живёт одну свою
    выпечку: уничтожается сразу после её отправки (dead → gcPoolFlush), не кадром позже, как прежний GPU.trash.
-   Разовый набор не-once — больше, чем оставляет прогретое (комната во весь кадр): в пул не идёт, лежит в слоте
-   своей роли (Q.one) до замены или выхода из сцены (gcPoolLeave из gpuFrame) и уничтожается явно, не сборщиком;
-   перепечка той же комнаты берёт его же — одно создание на вход (Q.onesMax) ── */
+   Так же живёт набор больше места над прогретым (~24 МБ; слои базы во всю дальность камеры — до 198 МБ при
+   2560×1440): держать его всю сцену — 131 МБ на телефоне ни за что, перепечка создаст заново, как в main
+   (решение Контроля 26.09; плитки базы — пункт G15). В слоте роли (Q.one) остаётся только влезающее в потолок,
+   которому сейчас не нашлось места (занятое не вытесняется): до замены или выхода из сцены (gcPoolLeave) ── */
 let GC_BUSY=0;
 /* → текстуры набора role размером w×h или больше */
 function gcPoolSet(role,w,h){
@@ -12348,9 +12349,9 @@ function gcPoolSet(role,w,h){
   const o=Q.one[role];if(fit(o))return gcHold(Q,o);
   const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,S=gcPoolSpec(role),px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
   for(const [f,n] of S)by+=W*H*n*(px[f]||4);
-  const one=!GC_ONCE&&(by>GC_POOL_CAP-Q.wb||!gcRoom(Q,by));
+  const big=by>GC_POOL_CAP-Q.wb,one=!GC_ONCE&&!big&&!gcRoom(Q,by);
   const x={role,w:W,h:H,by,T:S.map(([f,n,us])=>{Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});})};
-  if(GC_ONCE){x.once=1;Q.dead.push(x);Q.onceB+=by;Q.onceN++;}
+  if(GC_ONCE||big){x.once=1;Q.dead.push(x);Q.onceB+=by;if(GC_ONCE)Q.onceN++;else Q.bigN++;}
   else if(one){if(o){delete Q.one[role];gcDrop(Q,o,1);}Q.one[role]=x;Q.ob+=by;Q.ones++;Q.onesIn=(Q.onesIn|0)+1;Q.onesMax=Math.max(Q.onesMax|0,Q.onesIn);}
   else{Q.t.push(x);Q.by+=by;}
   gcPeak(Q);return gcHold(Q,x);}

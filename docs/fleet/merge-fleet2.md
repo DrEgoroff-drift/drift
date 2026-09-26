@@ -66,29 +66,33 @@ held all of them at once. Here:
 - A `once` bake's set lives for that one bake and dies right after its submit: the rack master
   2508×1008 (60 MB) and its shadow (65 MB), the belt cockpit, the instrument. Same number of
   creations as main, a frame less of life.
-- A non-`once` set bigger than the ceiling leaves above the warm sets (a full-frame room) sits in a
-  per-role slot until it is replaced or the scene changes (`gcPoolLeave` from `gpuFrame`); a
-  re-bake of the same room reuses it.
+- A set bigger than the room the ceiling leaves above the warm sets (~24 MB: a full-frame room,
+  the base's world-size layers) lives the same way — one bake, destroyed after its submit. A
+  re-bake creates it again, as main's pool does with sets above half its ceiling (Контроль, 26.09:
+  holding 131 MB for the whole base visit on a phone is a regression).
+- The per-role slot (`Q.one`) keeps only a set that fits under the ceiling but found no room
+  because the sets in its way are busy; it goes when replaced or when the scene changes
+  (`gcPoolLeave` from `gpuFrame`).
 - The guard in `tests/90-harness.js`: a suite whose pool peak passes the ceiling is red.
 
-`-Full` after the change: pool peak ≤ 79.8 MB in every suite. 31 slot creations, at most one per
-scene entry, except the gesture suite: up to five in one entry, because its window resizes re-key the
-base. 61 `once` creations: rack, pipelines, the 2D gates, cockpit, the after-world guard,
-gestures.
+`-Full` with once sets dying after their bake (d8ec2fac): pool peak ≤ 79.8 MB in every suite;
+61 `once` creations (rack, pipelines, the 2D gates, cockpit, the after-world guard, gestures).
 
-The largest moment is 272 MB: the base at 2560×1440 — pool 74 MB plus the slot set of one
+The largest moment is 272 MB: the base at 2560×1440 — pool 74 MB plus the set of one
 base layer, 4096×2112 at 4× MSAA with stencil = 198 MB. Measured on the base stand
 (`baseBake`, all four world-size layers):
 
-| window | layers above the free room | slot now | peak, all |
-|---|---|---|---|
-| 390×844, DPR 2.625 | 1587×1350 | 51.6 MB | 131 MB |
-| 1280×800 | 1536×832 | 29.3 MB | 108 MB |
-| 2560×1440 | 3021×944, 3474×944, 4078×2092, 2039×1046 | 51.0 MB | 277 MB |
+| window | layers above the free room | peak, all |
+|---|---|---|
+| 390×844, DPR 2.625 | 1587×1350 | 131 MB |
+| 1280×800 | 1536×832 | 108 MB |
+| 2560×1440 | 3021×944, 3474×944, 4078×2092, 2039×1046 | 277 MB |
 
-Main creates each of these per bake and trashes it a frame later; here the last one is held for
-the visit, and at 2560×1440 the entry replaces the slot four times. This is main's G11 base, not a
-fleet zone — Контроль's call. The cheap fix is baking the base layers without MSAA or in tiles.
+Where the peak stays and why: the instant peak (277 MB at 2560×1440, 131 MB at 390×844) is the
+base's own bake. The base on the GPU is the fleet's (a850203f, 25.09); main draws the base in 2D
+and has no such bake, so this peak is new against main (first reported as main's — corrected
+the same day). After Контроль's decision nothing of it is held past the bake's submit. Tiles
+(MSAA kept, a tile ≤ 24 MB living in the pool) are a G15 item unless Контроль moves them up.
 
 ### The guard: no 2D on `#c` after `gpuWorld`
 `tests/91zzzzzzy6-after-world.js` hooks `#c` the way 08c does (`gpuFrontHook`, then `MAIN_CTX`'s
