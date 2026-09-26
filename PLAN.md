@@ -184,20 +184,6 @@ thermal 0 logged before, mid-run and after (the author 26.09; a charging phone h
     them: the margin is thin, and the heat margin of §0 stands. The bake at ≈ 15 s that cost 83 ms on 25.09
     (9206be7: 2D bakes at first sight rastered by Skia in the GPU process, and `#c` cleared at opacity 0 every
     frame) passed without a hitch.
-- [ ] **The nebula steps in flight** (GPU-2, first — before «смело»; the author 26.09: «кадры нормас, движок тянет,
-  кажется как будто тормозит, когда туманность … рядом с кораблём … по кадрам появляется, и кажется, что просадка
-  кадров»). The frames are clean (P1 above); the gas is not. The volume is regenerated only when
-  `|cam − GNB.cx|·.09 ≥ .5` (the camera moved ≥ 5.6 CSS px) or, standing, every `GNB_AGE` = 6 frames with a fade
-  (16gb:591–593, 16gc); in between, the composite does not shift it, and in motion the fresh one is written straight
-  into the visible texture. So at screen speeds of ~56–333 CSS px/s the nebula holds for 2–6 frames, then jumps
-  (~.5–.7 px of parallax plus the flow gathered meanwhile) at 10–30 Hz while the stars and the ship glide at 60;
-  zoomed out, the same flight is slower on screen and steps more; above 333 px/s it regenerates every frame, which is
-  why P1 does not see it. Confirm on the PC (617×1113, DPR 1.5, zoom 1 and .3, 40/80/150/250/400 px/s: `nGen` per
-  frame and a 12-frame strip by the ship, the nebula's shift frame to frame); regenerate every frame while the camera
-  moves (a threshold near .05), keep the fade for a still camera, and no pop where standing turns into motion. Gate:
-  a test that `nGen` grows every frame at 40–400 px/s, an even shift on the strip, and P1 plus the four routes cold,
-  none worse than 0.473.0 above (the every-frame case already passes in fast flight). «Смело» is also checked moving:
-  its fibres at the quarter resolution must not shimmer (the same strip at 390, 150 px/s).
 - [ ] **Then cut by its numbers** — each old item measured again on the GPU build first, dropped if it no longer
   shows: the hull bake on vs off (`G.opts.gfx.hullBake=0`); the baked star core and hull (the star's breathing, a
   step at the baked picture's edge); tails at ×2.40 (the author's «куцые хвосты», filmed); P8 under the finger, P9
