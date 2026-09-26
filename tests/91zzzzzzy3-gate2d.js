@@ -199,7 +199,7 @@ const GATE2D=[
      if(first){this.i=0;return {};}
      if(this.i<40){kpWindow(this.i%2===0,this.i%2?0:7);if(this.i===0)kbOpen();else kbRender();}
      this.i++;return {};},
-   done(){kbClose();},
+   done(){kbClose();const w=document.getElementById("kbWin");if(w)w.remove();},
    probe:["panelGpu"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{

@@ -11,7 +11,7 @@ const PIPE_SCENES=[
   {name:"орбиты системы издали",place(){
     G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.ap=null;G.orbit=null;
     G.ship.x=0;G.ship.y=-900;G.ship.vx=G.ship.vy=0;G.zoom=.25;G.zoomT=null;return true;}},
-  ...GATE2D.map(S=>({name:S.name,place:S.place.bind(S)})),
+  ...GATE2D.map(S=>({name:S.name,place:S.place.bind(S),done:S.done&&S.done.bind(S)})),   /* и уборка: стол и КБ не остаются открытыми соседям */
   {name:"щит у полосы (17k)",place(){
     for(let r=0;r<=30;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
       if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(!s.station)continue;
@@ -72,7 +72,7 @@ const PIPE_SUITE=()=>suite("конвейеры: после прогрева по
       if(!ok(!!S.place(true),S.name+": сцена нашлась"))continue;
       try{for(let i=0;i<(S.frames||60);i++){S.place(false,i);frameBody(t+=16.7);}}
       catch(e){ok(false,S.name+": кадр упал: "+e.message);}
-      finally{keys.thrust=keys.left=false;}
+      finally{keys.thrust=keys.left=false;if(S.done)S.done();}
     }
   }finally{
     for(const k of kinds)delete d[k];

@@ -8465,7 +8465,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
-## tests/91zzzzzzy4-pipes.js · 7 КБ
+## tests/91zzzzzzy4-pipes.js · 8 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy5-gpu-loss.js · 9 КБ

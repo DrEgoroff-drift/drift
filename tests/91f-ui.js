@@ -392,7 +392,7 @@ TEST_SUITES.push(() => suite("кресло: портрет — проход то
   const p0=ovPass,run0=G.running,loop0=LOOP_OFF,V0=G.vega;let n=0,t=wallMs();
   window.ovPass=function(T){if(T===SEAT.T)n++;return p0.apply(this,arguments);};
   try{
-    G.running=true;LOOP_OFF=false;
+    G.running=true;LOOP_OFF=false;SEAT.k="";   /* соседний набор мог оставить тот же ключ — первый проход не случился бы */
     G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:()=>{},key:vegaSeatKey};conT=0;
     for(let i=0;i<120;i++)frameBody(t+=16.7);
     eq(n,1,"Вега села: один проход за 120 кадров");
@@ -401,7 +401,7 @@ TEST_SUITES.push(() => suite("кресло: портрет — проход то
     G.vega=Object.assign({},V0||{},{offend:celDay()+1});
     for(let i=0;i<120;i++)frameBody(t+=16.7);
     eq(n,2,"обида — ещё ровно один проход");
-    G.seat={name:"СТАЖЁР",line:"",draw:traineeDraw,act:()=>{}};conT=0;
+    G.seat={name:"ГОСТЬ",line:"",draw:traineeDraw,act:()=>{}};conT=0;   /* не «СТАЖЁР»: без стажёра в мире 11ac снимает такое кресло */
     for(let i=0;i<120;i++)frameBody(t+=16.7);
     eq(n,3,"стажёр в кресле — свой портрет, один проход");
   }finally{window.ovPass=p0;G.running=run0;LOOP_OFF=loop0;G.vega=V0;G.seat=null;SEAT.S=null;resetWorld();}
