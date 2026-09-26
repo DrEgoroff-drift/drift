@@ -6,6 +6,25 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.474.0 - the parrot, the seat and the desk on the engine
+
+- **The parrot flies on the GPU** (GPU-3): its window and its perch icon draw from one atlas baked once, and a
+  pose is a handful of instances. It no longer runs its own animation loop beside the game, and its pipelines
+  are warmed at the title screen, so the first flight has no hitch.
+- **The console seat is a portrait, not a repaint**: Vega, a trainee or a passenger is baked once for each
+  mood and shown until that mood changes. Before, it was redrawn once a second for the whole trip. It is
+  sharp on a DPR 2 screen now; the old 56 px image was soft.
+- **The desk draws on the GPU**: the boards, the desk-top items, the strips, the mis figure and the thing
+  icons keep their brushes and are baked once when the desk opens. Thing icons are at screen density now,
+  so they no longer blur on the desk.
+- **The post window and the КБ plan too**: the post window is sharp on DPR 2. «ЗАКРЫТО» now hangs as a
+  plate on the grille; on the shutter the bars used to cut through the word.
+- **Nets**:
+  - The «0 вызовов 2D» gate sees the world canvas again (the 08c hook had hidden its calls). It has scenes
+    for the seat, the desk, and the post window with КБ.
+  - The overlay atlas is guarded: a steady frame of any scene bakes no new glyph rows.
+  - Five zoo mutants are anchored to today's code again, and each is killed.
+
 ## 0.473.0 - the ship in ОПИСЬ on the engine
 
 - **ОПИСЬ shows your ship the way it flies** (the worker): the hull on the table is drawn by the same GPU
