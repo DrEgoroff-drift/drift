@@ -749,7 +749,11 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   `pipe:kit.img|hull` (44). Pair against 96d0506e, hotel region: 760 L .162 → .147, V>.6 4.9 → 4.2 %;
   390 L .125 → .117, V>.6 3.1 → 2.7 %; the pink haze on the towers is gone, windows, sign and pier lamps
   glow as before.
-  Next: PLAN §0 Stage 1 — fleet and lane-buoy lights as explicit emission, judged with the flame.
+- **Fleet lights with the flame** (26.09): pair 760/390 against 45966169, three fleet ships (patrol,
+  ferry, tug) around the own ship on thrust. The flame stays the brightest thing, fleet lights read as
+  narrow dots with their halo (explicit emission since 7083ac58), fleet hulls lost the paint haze like
+  the stations. Line closed in PLAN.
+  Next: the Stage 1 gate in numbers on the tour (uploads and submits per flight frame).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
