@@ -1844,6 +1844,8 @@ body.table u.addr{color:#7a4a20}
   box-shadow:0 12px 40px rgba(0,0,0,.6)}
 #railWin.open{display:block}
 /* ── шесть отделок вестибюля по хозяину земли (M471, 18.09) — держава читается с порога ── */
+#railWin[data-by=halt]{background:#15171a;color:#cfc6b4;border-color:#3a3530;border-radius:4px}
+#railWin[data-by=halt] .rw-head b{color:#ffe7c0}#railWin[data-by=halt] .rw-board{background:#0e0f11;border-color:#2a2622}
 #railWin[data-by=co]{background:linear-gradient(180deg,#f4f6fa,#e6ebf2);color:#1b2a3a;border-color:#2f6fd0;border-radius:16px}
 #railWin[data-by=co] .rw-head b{color:#2f6fd0}#railWin[data-by=co] .rw-head s,#railWin[data-by=co] .rw-sec{color:#5a6a7c}
 #railWin[data-by=co] .rw-board{background:#fff;border-color:#c9d4e2;color:#1b2a3a}#railWin[data-by=co] .rw-board em{color:#2f6fd0}
@@ -61773,12 +61775,31 @@ function railHere(){
   const x=P.st.x-P.ux*RAIL_RING_OFF,y=P.st.y-P.uy*RAIL_RING_OFF;
   return {S,x,y,ux:P.ux,uy:P.uy,name:G.sys.station.name,by:P.by};
 }
+/* ── полустанок (M471, DESIGN-metro §2): за кромкой вместо вестибюля — голая
+   платформа: доска, скамья и один фонарь на столбе. Свет у фонаря свой,
+   тёплый, и больше на много секторов вокруг ничего не горит ── */
+function railHaltShapes(SH,vx,vy,s,col){
+  SH.push([0,vx-22*s,vy+2*s,vx+22*s,vy+5*s,0,0,58,52,46,1],        /* доска платформы */
+    [0,vx-6*s,vy-1*s,vx+4*s,vy+1*s,0,0,70,60,48,1],                 /* скамья */
+    [0,vx-5*s,vy+1*s,vx-4*s,vy+2*s,0,0,70,60,48,1],[0,vx+2*s,vy+1*s,vx+3*s,vy+2*s,0,0,70,60,48,1],
+    [0,vx+13*s,vy-14*s,vx+14.2*s,vy+2*s,0,0,40,40,44,1],            /* столб */
+    [1,vx+13.6*s,vy-15*s,11*s,0,0,0,col[0],col[1],col[2],.16],      /* круг света */
+    [1,vx+13.6*s,vy-15*s,2.2*s,0,0,0,255,236,200,.95]);             /* лампа */
+}
+function railHaltCtx(vx,vy,s,col){
+  ctx.fillStyle="#3a342e";ctx.fillRect(vx-22*s,vy+2*s,44*s,3*s);
+  ctx.fillStyle="#463c30";ctx.fillRect(vx-6*s,vy-1*s,10*s,2*s);ctx.fillRect(vx-5*s,vy+1*s,1*s,1*s);ctx.fillRect(vx+2*s,vy+1*s,1*s,1*s);
+  ctx.fillStyle="#28282c";ctx.fillRect(vx+13*s,vy-14*s,1.2*s,16*s);
+  ctx.fillStyle=rgba(col,.16);ctx.beginPath();ctx.arc(vx+13.6*s,vy-15*s,11*s,0,TAU);ctx.fill();
+  ctx.fillStyle="rgba(255,236,200,.95)";ctx.beginPath();ctx.arc(vx+13.6*s,vy-15*s,2.2*s,0,TAU);ctx.fill();
+}
 /* ── рисунок: кольцо, глиссада, вестибюль ── */
 /* с видеокарты (ступень 1): лампы, кольцо и вестибюль — фигуры кита, спираль — лента
    четырёхугольников с жёсткими стыками (без бусин на изломах), табличка — слой подписей */
 function railGpu(pass,R,x,y,s,col,ts,fast,zx,zy){
   const SH=[];
-  for(let i=0;i<9;i++){
+  const nL=R.S.halt?3:9;   /* полустанок (M471): глиссада в три лампы */
+  for(let i=0;i<nL;i++){
     const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1),k=Math.max(0,1-Math.abs(ph-.5)*3);
     for(const sd of [-1,1]){const px=R.x+R.ux*d-R.uy*w*sd,py=R.y+R.uy*d+R.ux*w*sd;
       SH.push([1,zx(px),zy(py),(1.2+1.2*k)*s,0,0,0,col[0],col[1],col[2],.25+.6*k]);}
@@ -61792,6 +61813,8 @@ function railGpu(pass,R,x,y,s,col,ts,fast,zx,zy){
     gpuQuad(SH,[p[0]-u[0],p[1]-u[1]],[p[0]+u[0],p[1]+u[1]],[q[0]+v[0],q[1]+v[1]],[q[0]-v[0],q[1]-v[1]],sc,(i>0?1:0)|(i+2<n?4:0));}
   for(let i=0;i<12;i++){const a=i/12*TAU,cx=x+Math.cos(a)*44*s,cy=y+Math.sin(a)*44*s;SH.push([0,cx-1,cy-1,cx+1,cy+1,0,0,col[0],col[1],col[2],.55]);}
   const vx=zx(R.x-R.uy*70),vy=zy(R.y+R.ux*70),x0=vx-16*s,x1=vx+16*s,y0=vy-9*s,y1=vy+9*s;
+  if(R.S.halt){railHaltShapes(SH,vx,vy,s,col);gpuShapes(pass,SH);
+    domLabel("rail",x,y+58*s+10,"ПОЛУСТАНОК · "+R.S.lines[0].ru.toUpperCase(),uiFont(9),"rgba(242,178,92,.6)","center");return;}
   SH.push([0,x0,y0,x1,y1,0,0,30,37,48,1],
     [0,x0-.5,y0-.5,x1+.5,y0+.5,0,0,0,0,0,.6],[0,x0-.5,y1-.5,x1+.5,y1+.5,0,0,0,0,0,.6],
     [0,x0-.5,y0+.5,x0+.5,y1-.5,0,0,0,0,0,.6],[0,x1-.5,y0+.5,x1+.5,y1-.5,0,0,0,0,0,.6]);
@@ -61808,7 +61831,7 @@ function drawSysRail(zx,zy,Z){
   const ts=G.t/60,fast=RAIL_WAIT&&RAIL_WAIT.t<3?3:1,pass=gpuScene();
   if(pass){railGpu(pass,R,x,y,s,col,ts,fast,zx,zy);return;}
   /* глиссада: две цепочки ламп сходятся к кольцу со стороны станции */
-  for(let i=0;i<9;i++){
+  for(let i=0;i<(R.S.halt?3:9);i++){
     const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1);
     const k=Math.max(0,1-Math.abs(ph-.5)*3);
     for(const sd of [-1,1]){
@@ -61829,6 +61852,8 @@ function drawSysRail(zx,zy,Z){
   ctx.restore();
   /* вестибюль сбоку и табличка с линией */
   const vx=zx(R.x-R.uy*70),vy=zy(R.y+R.ux*70);
+  if(R.S.halt){railHaltCtx(vx,vy,s,col);ctx.fillStyle="rgba(242,178,92,.6)";ctx.font=uiFont(9);ctx.textAlign="center";
+    ctx.fillText("ПОЛУСТАНОК · "+R.S.lines[0].ru.toUpperCase(),x,y+58*s+10);return;}
   ctx.fillStyle="#1e2530";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=1;
   ctx.fillRect(vx-16*s,vy-9*s,32*s,18*s);ctx.strokeRect(vx-16*s,vy-9*s,32*s,18*s);
   ctx.fillStyle="rgba(255,226,170,.8)";for(let i=0;i<4;i++)ctx.fillRect(vx-12*s+i*7*s,vy-3*s,4*s,3*s);
@@ -61848,7 +61873,11 @@ function railInteract(sh){
     return true;
   }
   const D=RAIL_DOCK;D.t++;
-  const sp=Math.hypot(sh.vx,sh.vy),inCone=d<RAIL_CONE_R;
+  const coneR=RAIL_CONE_R*(W<=760?1.4:1);   /* на телефоне конус шире (§3) */
+  let sp=Math.hypot(sh.vx,sh.vy);const inCone=d<coneR;
+  /* подруливание (M471): в конусе руль гасит лишнее, как автопилот, — не
+     тормоз в ноль, а мягко к метке; снаружи конуса борт ваш */
+  if(inCone&&sp>=RAIL_SLOW*.8){const k=.965;sh.vx*=k;sh.vy*=k;sp*=k;}
   if(sp<RAIL_SLOW&&inCone)D.hold++;else D.hold=0;
   if(D.hold>=120){railDocked(false);return true;}
   if(D.t>=300){railDocked(true);return true;}
@@ -61930,13 +61959,14 @@ function railWinRender(){
   }
   if(typeof railLifeHtml==="function")h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
   h+="<button class='act rw-map'>СХЕМА ЛИНИЙ · КУДА ВАМ<s>развернуть бумагу и выбрать остановку</s></button>";
-  h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
+  if(S.halt)h+="<div class='rw-sec'>ПЛАТФОРМА</div><div class='rw-row'><span>скамья и фонарь · буфета нет</span><em>кипяток — свой</em></div>";   /* полустанок (M471) */
+  else h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
-  w.innerHTML=h;w.dataset.by=by||"gt";   /* отделка вестибюля по хозяину (M471, CSS) */
+  w.innerHTML=h;w.dataset.by=S.halt?"halt":(by||"gt");   /* отделка вестибюля по хозяину (M471, CSS) */
   if(typeof railLifeBind==="function")railLifeBind(w);
   const D=railDestinations();
   w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x,!!b.dataset.b));
-  w.querySelector(".rw-buf").onclick=railBuffet;
+  {const bb=w.querySelector(".rw-buf");if(bb)bb.onclick=railBuffet;}
   const bm=w.querySelector(".rw-map");if(bm)bm.onclick=()=>{if(typeof railSchemeOpen==="function")railSchemeOpen();};
   w.querySelector(".rw-out").onclick=railWinClose;
 }

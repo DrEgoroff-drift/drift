@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6513
+Файлов: 641 · символов верхнего уровня: 6515
 
 ## СИМВОЛЫ
 
@@ -2988,7 +2988,7 @@ drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:724-1050
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
-drawSysRail                  src/18f-rail-station.js:58-92
+drawSysRail                  src/18f-rail-station.js:79-115
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:528-712
 drawTapes                    src/12s1-tape.js:37-52
@@ -5221,25 +5221,27 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:16
-railBuffet                   src/18f-rail-station.js:211-218
+railBuffet                   src/18f-rail-station.js:239-246
 railBuildLines               src/18e-rail-net.js:55-101
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:198-210
+railBuy                      src/18f-rail-station.js:226-238
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:16-21
 railDeclare                  src/18h-rail-powers.js:23-33
-railDestinations             src/18f-rail-station.js:129-144
+railDestinations             src/18f-rail-station.js:156-171
 railDestinationsVia          src/18k-rail-scheme.js:13-35
-railDocked                   src/18f-rail-station.js:113-120
+railDocked                   src/18f-rail-station.js:140-147
 railExit                     src/18g-rail-ride.js:105-117
-railFare                     src/18f-rail-station.js:145-151
+railFare                     src/18f-rail-station.js:172-178
 railFlash                    src/18g-rail-ride.js:17-30
-railFmt                      src/18f-rail-station.js:125
-railGpu                      src/18f-rail-station.js:34-57
+railFmt                      src/18f-rail-station.js:152
+railGpu                      src/18f-rail-station.js:52-78
+railHaltCtx                  src/18f-rail-station.js:42-48
+railHaltShapes               src/18f-rail-station.js:34-41
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:35-38
-railInteract                 src/18f-rail-station.js:94-112
-railInterval                 src/18f-rail-station.js:122
+railInteract                 src/18f-rail-station.js:117-139
+railInterval                 src/18f-rail-station.js:149
 railKrai                     src/18k-rail-scheme.js:70-75
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:73-78
@@ -5271,17 +5273,17 @@ railSchemePick               src/18k-rail-scheme.js:77-94
 railSegDur                   src/18g-rail-ride.js:46-49
 railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
-railStopName                 src/18f-rail-station.js:126
+railStopName                 src/18f-rail-station.js:153
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:220-225
+railTick                     src/18f-rail-station.js:248-253
 railTrainPos                 src/18g-rail-ride.js:51-63
 railUAt                      src/18e-rail-net.js:105-110
 railVisited                  src/18k-rail-scheme.js:65-69
-railWaitNow                  src/18f-rail-station.js:124
-railWinClose                 src/18f-rail-station.js:153
-railWinOpen                  src/18f-rail-station.js:152
-railWinRender                src/18f-rail-station.js:159-197
-railWinShow                  src/18f-rail-station.js:154-158
+railWaitNow                  src/18f-rail-station.js:151
+railWinClose                 src/18f-rail-station.js:180
+railWinOpen                  src/18f-rail-station.js:179
+railWinRender                src/18f-rail-station.js:186-225
+railWinShow                  src/18f-rail-station.js:181-185
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -7368,7 +7370,7 @@ zoomTo                       src/15-input.js:350
 ## src/18e-rail-net.js · 12 КБ
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 16 КБ
+## src/18f-rail-station.js · 19 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18g-rail-ride.js · 12 КБ

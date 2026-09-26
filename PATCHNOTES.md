@@ -80,6 +80,14 @@ could ever save.
   further. What counts as stood at is the station visit count that already persists, so the save is untouched.
   Stop names by the land owner (M489) were already in place.
 
+- **M471: the bare rim platform; the helm helps in the cone.** Past r 40 a stop is a полустанок. There is no
+  vestibule block: a plank platform, a bench and one lamp on a post with its own warm circle of light. The glide
+  path has three lamps a side instead of nine, and the plate reads «ПОЛУСТАНОК · ЛИНИЯ …». Its screen is bare
+  and dark, «скамья и фонарь · буфета нет», and has no buffet. When docking, inside the cone of lights the helm
+  damps speed above the mark (×0.965 a frame, the way the autopilot eases), so holding under the mark is a
+  matter of aim, not of fighting the throttle. On a phone the cone is 1.4× wider. The picture is a draft; the
+  plate label sits over the platform when the vestibule side faces down, which it always did.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
