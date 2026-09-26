@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 635 · символов верхнего уровня: 6423
+Файлов: 636 · символов верхнего уровня: 6429
 
 ## СИМВОЛЫ
 
@@ -1585,7 +1585,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:506-541
+drawStation                  src/17c-system-draw.js:568-603
 drawStationBody              src/17c-system-draw.js:167-370
 drawStationMods              src/17a-station-mod.js:207-210
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -2246,25 +2246,30 @@ glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gn5Foe                       tests/91zzzw-guns3.js:10-16
 GNB                          src/16gb-gpu-nebula.js:17
-GNB_EMI                      src/16gb-gpu-nebula.js:409
+GNB_AGE                      src/16gc-gpu-nebfade.js:7
+GNB_EMI                      src/16gb-gpu-nebula.js:408
+GNB_FADE                     src/16gc-gpu-nebfade.js:8
 GNB_FINE                     src/16gb-gpu-nebula.js:363
 GNB_GEN                      src/16gb-gpu-nebula.js:44
-GNB_LM_COL                   src/16gb-gpu-nebula.js:521
+GNB_LM_COL                   src/16gb-gpu-nebula.js:520
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gb-gpu-nebula.js:504-519
-GNB_STAR_ABS                 src/16gb-gpu-nebula.js:386
+GNB_PAL                      src/16gb-gpu-nebula.js:503-518
+GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
-gnbGenDesc                   src/16gb-gpu-nebula.js:495
-gnbLandmark                  src/16gb-gpu-nebula.js:522-535
-gnbLfr                       src/16gb-gpu-nebula.js:538-551
+gnbFade                      src/16gc-gpu-nebfade.js:30-35
+gnbFadeDesc                  src/16gc-gpu-nebfade.js:13-17
+gnbGenDesc                   src/16gb-gpu-nebula.js:494
+gnbGenView                   src/16gc-gpu-nebfade.js:19-28
+gnbLandmark                  src/16gb-gpu-nebula.js:521-534
+gnbLfr                       src/16gb-gpu-nebula.js:537-550
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:511-519
-gnbPipe                      src/16gb-gpu-nebula.js:494
-gnbStar                      src/16gb-gpu-nebula.js:553-558
-gnbStars                     src/16gb-gpu-nebula.js:399-406
-gnbTarget                    src/16gb-gpu-nebula.js:486-493
+gnbPalette                   src/16gb-gpu-nebula.js:510-518
+gnbPipe                      src/16gb-gpu-nebula.js:493
+gnbStar                      src/16gb-gpu-nebula.js:552-557
+gnbStars                     src/16gb-gpu-nebula.js:398-405
+gnbTarget                    src/16gb-gpu-nebula.js:485-492
 gnFoe                        tests/91zzzw-guns2.js:17-23
 gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
@@ -2319,7 +2324,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:189
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-52
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-53
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -2363,15 +2368,15 @@ gpuImgBind                   src/08c-gpu-kit.js:228-234
 gpuImgLayout                 src/08c-gpu-kit.js:220-227
 gpuKitU                      src/08c-gpu-kit.js:174-178
 gpuLight                     src/08b-gpu.js:444
-gpuLitSprite                 src/17c-system-draw.js:496-505
+gpuLitSprite                 src/17c-system-draw.js:553-567
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:582-587
 gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
 gpuMoon                      src/17ga-gpu-planets.js:440-445
-gpuNebulaComp                src/16gb-gpu-nebula.js:616-626
-gpuNebulaGen                 src/16gb-gpu-nebula.js:561-613
+gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
+gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
 gpuNoise                     src/08b-gpu.js:369-374
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:558-578
@@ -2497,7 +2502,7 @@ gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:368
-GST_WGSL                     src/17c-system-draw.js:401
+GST_WGSL                     src/17c-system-draw.js:404
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:56
@@ -3002,10 +3007,10 @@ hullBakeScale                src/03e1-hull-bake.js:27-30
 hullClassOf                  src/03-ships.js:253-268
 hullGpuBake                  src/17c2-hull-gpu.js:30-43
 hullGpuBelly                 src/17c2-hull-gpu.js:44-49
-hullGpuDraw                  src/17c2-hull-gpu.js:135-179
+hullGpuDraw                  src/17c2-hull-gpu.js:144-189
 hullGpuE                     src/17c2-hull-gpu.js:23
-hullGpuFlames                src/17c2-hull-gpu.js:96-114
-hullGpuInserts               src/17c2-hull-gpu.js:117-132
+hullGpuFlames                src/17c2-hull-gpu.js:96-123
+hullGpuInserts               src/17c2-hull-gpu.js:126-141
 hullGpuSb                    src/17c2-hull-gpu.js:26-29
 hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
@@ -5025,6 +5030,7 @@ rivalOf                      src/12p-news.js:44
 rivalSpawn                   src/12p-news.js:74-83
 rivalYield                   src/12p-news.js:47-60
 rivetLine                    src/25-cockpit.js:179-186
+RL_DL                        src/17c-system-draw.js:403
 rnd                          src/01-core.js:74
 RND_SEED                     src/01-core.js:73
 rndFx                        src/01-core.js:76
@@ -7150,8 +7156,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gaz-gpu-noise.js · 3 КБ
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 51 КБ
+## src/16gb-gpu-nebula.js · 50 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
+
+## src/16gc-gpu-nebfade.js · 3 КБ
 
 ## src/17-mode-system.js · 81 КБ
   · режим: система:1
@@ -7165,13 +7173,13 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17b-finds.js · 18 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 36 КБ
+## src/17c-system-draw.js · 43 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17c1-station-dress.js · 4 КБ
   · станция по строителю: одевка плиты (M454, DESIGN-borders §2.3):1
 
-## src/17c2-hull-gpu.js · 13 КБ
+## src/17c2-hull-gpu.js · 14 КБ
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
 ## src/17c3-station-live.js · 11 КБ

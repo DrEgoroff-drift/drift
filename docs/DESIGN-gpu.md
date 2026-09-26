@@ -841,11 +841,27 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   cut-out reads as a body. Cost: one more `dustAt`, taken only near an edge that has a rim or a crust
   (−40…80 px); deep inside and far out the body is thick anyway, so the picture is identical. nebGen,
   headless, l2c ×1.10, regen every frame, A/B/A medians: 760 1.55 → 1.66 ms; 1920 9.8 → ~10.2 ms (the
-  ungated sample was +1.1 ms there). 1920 was over the 2 ms budget before L1b. The ×2.00 «tadpoles» are
-  gas clumps seen through one body's soft ramp (body ≈ .4–.5, ~60 % through), the outline is the clump's
-  own. Gating the cavity glow by gas dimmed the frame 10 %, a haze in narrow windows missed them. Pairs vs HEAD (light / sharpness): l2c
+  ungated sample was +1.1 ms there). 1920 was over the 2 ms budget before L1b. The ×2.00 «tadpoles» (lit gas outside a body whose rim ends over ~16 px on dim gas, 10–90 % in
+  17 px at 760) stay: a fix (the rim's inward side `exp(dpx/22)` over dim gas, faded out over dpx −30…−70) was
+  withdrawn from 0.472.0 — against 0.471.0 it moved dust edges visibly (max |Δ| 120, 2–3 % of pixels > 8; at 390
+  a 70 px tongue of lit gas into the body), and the author's rule of 26.09 is «not worse by a pixel». The fish and
+  the dust edges go into the «nebula much better» pass as part of a new look. Gating the cavity glow by gas dimmed the frame 10 %, a haze in narrow
+  windows missed them. Pairs vs HEAD (light / sharpness): l2c
   760 ×1.10 +0.6 / +0.3 %, ×2.00 +1.1 / +0.6 %; l4a ×2.00 +2.1 / +0.9 %; 390 dpr 1.5 ×1.10 +0.1 / +0.5 %,
   ×2.00 +1.0 / +0.5 %. GPU errors 0. The file is 66 bytes smaller: history went from the header comment.
+- **Nebula regeneration, step 1: age 6 with a cross-fade** (26.09, `16gc-gpu-nebfade`). Standing still (camera moved
+  < .5 × .09) the regeneration goes every 6th frame into a spare texture, and the visible one flows into it: a
+  ¼-res pass blends with constant k = 1/6, 1/5 … 1, an exact line from the old generation to the new, so the gas
+  flow (~1 px per 6 frames) moves 1/6 per frame instead of jumping at each regeneration. In flight, on a new system
+  or target size the regeneration writes the visible texture directly, as before. Readers are unchanged. Inter-frame
+  shift of the gas texture (global Lucas–Kanade over 90 frames, 760): standing still 0.017 px on regeneration
+  frames / 0.016 between (HEAD 0.051 / 0, the jump max 0.24), slow drift 0.090 / 0.085 (HEAD 0.272 / 0, max 0.35);
+  in fast flight both are the same snap (step 2 is reprojection). S23 cold, A/B/A (new *.localhost each), DPR 1.5,
+  standing: nebGen per frame 0.93 / 1.81 / 0.94 ms, GPU frame 8.99 / 9.65 / 9.23 ms, regenerations 17 / 33 / 17 %,
+  60 fps 100 % in all; in flight unchanged (every frame, 4.85 ms). Desktop 1920: nebGen per frame 2.09 → ~1.1 ms,
+  the fade pass 0.28–0.36 ms (headless). New pipe key `gnb.fade` (08b0, GPU-1 agreed; 08b1 via -Accept).
+  The probe's timestamp query set (28z `gpuTs`) grew from 32 slots to 64: on the S23 the 32 ran out before the
+  fade pass and it went unmeasured; desktop 1920 idle, fade 0.17–0.21 ms per frame.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
@@ -929,6 +945,69 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   gpu2-lit e9fd226c (the near corona cut only from zoom 1) merged in; the 390 «грунт день» and «система» goldens
   are green again. G2 the star disc, G3b the jets, the ring's edge-on aliasing, L1b the dust. `gpu-ships` stays
   out (its own candidate). Node, -Full -Jobs 3, -Mobile, the golden set green.
+- **Ships in real light, pass 1 (26.09, branch `gpu-ships` on 6e775fb9, not in 0.467.0):** hull mode with
+  a material (17c GST, `RL_*`) — a) one light: the body dome is the material's relief three mips coarser
+  (the mip of slopes is the slope of the blurred alpha, one sample, no rebake), so the terminator runs along
+  the spine; b) the dark side is a fill, .46 plus the gas at the ship (the 16gb nebula target as t2, flag 16,
+  five taps around the hull), warm in orange gas; c) a planet's shadow takes the direct light and .45 of the
+  fill; e) lamps (mask) ×2.3 regardless of light, so windows live in shadow. Pirates (12i) and barges (12l)
+  move to hull light (glow −1): the washed-out pirate and the flat barge get one body, one light. Pairs vs
+  6e775fb9 (scratchpad `pair_oc_*_{390,760}`, crops `rl_*`, `px_*`): phone toward the star, hull pixels
+  Y 104 → 91 (the dark half), in a planet's shadow 69 → 85 (lamps and fill); with pirate and barge toward
+  2.1 % > 8, away 0.87 %, shadow 1.0 %. -Browser green, tour GREEN; -Full not run yet.
+  Open: d) glints by count, f) the flame lighting the stern, g) the 1-px rim, the close-up (hangar/card).
+- **Ships pass d, glints by count (26.09, `gpu-ships`):** in hull mode the metal highlight is no longer the
+  old pow 40 over the fine normal (a soft smear) but a hard step of pow 90 over the body dome plus the panel
+  relief, through the bare-metal mask only, lit side only (`key`, `sk`). The panel relief is taken at a mip
+  set by the hull's size (~1/8 of its length, `RL_GN`), not the screen's: at the screen's level every seam
+  of a big barge sparkled (10–25 one-pixel dots). Counted on the 760 pairs vs e561d7c5 (`glints.py`): own
+  ship one short dash on the spine (2–3 dots on the phone), barge 3, the red pirate none — paint is not
+  metal. One more material tap in hull mode only (6). Open: f), g), the close-up; -Full not run yet.
+- **Ships pass f, the flame lights the stern (26.09, `gpu-ships`) — a second light on the hull, a named
+  breach of «one light».** `hullGpuFlames` now returns a point at the nozzles' mouth (mean by radius), a reach
+  of 2.6 nozzle radii + .3 of the tongue, the thrust and the flame's halo colour (warm, cool for luxury,
+  the maker's tint); `gpuLitSprite(…,fl)` carries it in `fu.v[4..5]` (8 floats more, only when thrusting)
+  and hull mode adds a warm pool falling off to the reach, stronger on plates sloped toward the fire, not
+  put out by a planet's shadow (the fire is the ship's own). Own ship in a planet's shadow, stern mean RGB
+  45/35/34 → 49/38/36; the first try at ×3 whitened the nozzles instead of lighting the plates. Only
+  `hullGpuDraw` hulls (own, peace fleet) — pirates and barges have no flame here. Open: g), the close-up.
+- **Ships pass g, the rim (26.09, `gpu-ships`):** hull mode adds the star's colour ×.7 (`RL_RIM`) on a hull
+  pixel whose neighbour one device pixel toward the star is empty (one alpha tap at the master's mip), lit
+  side and outside a planet's shadow only; the dark edge is not lifted, so on bright gas the body stays a
+  dark silhouette (its fill is ~half the gas behind it). `GPU.sep` untouched. The pirate's star-side edge now
+  reads as a crisp line. Shimmer check (`shim.sh`: own ship at heading +0, +.015, +.03 rad): lit edge pixels
+  31/27/35 before, 39/39/37 now — steadier, not worse. Open: the close-up (hangar/card), -Full on the branch.
+- **Ships passes d and f, redone after review (26.09, `gpu-ships`):** d) single white pixels on the barge's flat
+  panels read as dead pixels, so the glint is now a soft sheen: `smoothstep(.15,.9,pow(N·H,12))` over the body
+  dome plus the panel relief, gated by the metal mask read at the same coarse mip (a panel is metal or not,
+  no speckled edge), ×.85 (`RL_GK`). The lobe is this wide because a flat panel turns as one: at pow 30 the
+  barge's plate went out in 3 frames in place (steps .36/.27, the centroid still) and the pirate dipped for one
+  frame (−.20/+.28). Turn test (`turn12.sh`, 12 frames of .055 rad, glint = on − off, `strip.py` share of the
+  hull's peak energy per frame): largest step own .04, pirate .09, barge .11; the barge's sheen fades over 8
+  frames. The wider lobe lights ~3× the pixels at a lower gain, so the own ship's spine is no whiter.
+  f) the flame now lights only the keel plates beside the nozzles: a ring from `r0` (beyond the nest: spread
+  plus 1.5 nozzle radii) to the reach, a cone toward the stern only (`bk`), no light on pixels already brighter
+  than half (the nest and its glow), capped at `RL_FLM` of the flame colour. Keels +23 levels mean over 49 px;
+  nest bright pixels change by at most ±1 (the bloom halo that samples the lit keels), two runs with the light
+  off are byte-identical. -Full -Jobs 3 green on the branch (24f5f824, 19247). Open: the close-up, h) makerRead
+  on the GPU frame.
+- **Ships in real light, pass 1 redone after review (26.09, `gpu-ships`):** a) the body dome (slope of the
+  blurred alpha) laid a soft murk across flat faces and a pink «pipe» along the barge's long side, so it is
+  gone: the faces are lit as painted, each even inside, with only the faint side tilt (`kf`, .88–1). The star
+  reads on the edges: toward it the rim (g), 1 device px, now ×.45 plus ×.35 on bare metal (was .7/.6 — on
+  stepped edges it went to 230–240 luma against a 90 face and broke into dashes), the neighbour alpha read one
+  mip down; away from it a dark silhouette edge (`tv`, −.4 over 1.5 px). d) the soft sheen is removed; the glint
+  is the rim on metal. c) `shAt` bottoms at .4 in full umbra (2D multiplies the whole colour by it); hull mode
+  now takes `smoothstep(.4,1,sk)`, so direct light, rim and glass glint go out entirely and the fill stays at
+  .65 (`RL_SH`). Own ship without thrust, lamps masked: lit 125.2 / shadow 30.1, ratio .24 at L 1.4 (main
+  105.8 / 43.3, .41); L 1.9 .25 (main .41). Direct light `RL_LIT` 1.1→1.2 to hold the barge's luma (74 vs main
+  77; container saturation equal, .21/.14/.15/.21 vs .21/.13/.15/.22). b) the fill is one gas colour per hull
+  (five taps around it): shade half R/B 1.27 in orange gas (main 1.27), .82 in blue (main .86). Turn strip
+  (12 × .055 rad, rim on − off): barge step ≤ .04 of its peak, pirate ≤ .06. Silhouettes: hull colour forced to
+  its alpha, white minus black frames (gas, stars, lamps cancel), inside the ship boxes main = HEAD to 2/255 in
+  three scenes. The glass sheen on the barge's glass containers stays (main has it too). Accepted (e6211278);
+  a, b, c, d, e, g closed. Open: f) one more try with the keels by the emission mask, else roll back;
+  h) makerRead on the GPU frame.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

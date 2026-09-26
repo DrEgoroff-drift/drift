@@ -430,7 +430,7 @@ function gpuPirateBody(p,x,y,s){
      поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
   if(!art.cn)return false;
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
-  return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,0,0,lod,null,"dark");
+  return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,-1,0,lod,null,"dark");   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх
    выпечки, — в проход сцены. over=false — под корпусом: факел шейдером своего корабля

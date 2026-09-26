@@ -2452,7 +2452,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.470.0";
+const VER="0.472.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11070,7 +11070,7 @@ const GPU_PIPE_SRC={
   "gnb.stars":()=>[GPU_WGSL_COMMON+GSP_WGSL_U.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_STARS+GNB_STAR_ABS]};
 for(const n in GPU_FLD)GPU_PIPE_SRC[n]=()=>[GPU_WGSL_COMMON+GPU_FLD_HEAD+GPU_FLD[n](),gpuFieldLayout()];
 /* одиночные ключи — функция дескриптора в своём модуле */
-const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),
+const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),"gnb.fade":()=>gnbFadeDesc(),
   "gnb.noise":()=>gnbNoiseDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc(),par:()=>parDesc(false),"par.add":()=>parDesc(true)};
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
 function gpuPipeRecipe(key){
@@ -11126,6 +11126,7 @@ const GPU_PIPE_KEYS=[
   "gc:weo",
   "gc:wnz",
   "gc:wst",
+  "gnb.fade",
   "gnb.gen|16f",
   "gnb.noise",
   "gps",
@@ -32944,7 +32945,7 @@ function gpuPirateBody(p,x,y,s){
      поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
   if(!art.cn)return false;
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
-  return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,0,0,lod,null,"dark");
+  return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,-1,0,lod,null,"dark");   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх
    выпечки, — в проход сцены. over=false — под корпусом: факел шейдером своего корабля
@@ -35213,7 +35214,7 @@ function gpuBargeBody(b,x,y,s){
   let lx=-b.x,ly=-b.y;const ln=Math.hypot(lx,ly)||1;lx/=ln;ly/=ln;
   /* мастер с мипами: вблизи уровень 0, как было, вдали — мипы, а не рябь */
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+BARGE_LOD);
-  return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,0,0,lod);
+  return gpuLitSprite(art.cn,x,y,R,s,b.a,lx,ly,-1,0,lod);   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой баржи с видеокарты (ступень 1): огни и зевы — фигурами в проходе сцены,
    то же, что drawBarge кладёт поверх выпечки; x,y — экран, s — масштаб, a — поворот */
@@ -51914,8 +51915,7 @@ fn fineE(p:vec2f)->f32{
   let r=1.-abs(2.*fbt(qf+wv,2)-1.);
   return .5+.95*r*r;}`;
 /* поглощение — в шейдере звезды (P1 11/n): полноэкранный проход ABS умножал цель сцены, а под
-   туманностью в ней только чёрная очистка и звёзды (пересчёт идёт до открытия сцены, всё
-   прочее — после сведения). Смешение «поверх» линейно по цвету, поэтому множитель на каждом
+   туманностью в ней только чёрная очистка и звёзды. Смешение «поверх» линейно по цвету, поэтому множитель на каждом
    пикселе звезды даёт то же, что множитель на экране, — и платится площадью звёзд.
    Звёзды — поверх газа, под пылью: общее плечо кадра сжимает слабую звезду на светлом
    газе в ноль, поэтому то, что за газом (почти одни звёзды — фон чёрный), поднято на
@@ -52127,8 +52127,8 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   else{let d=ph-GNB.phP;d-=Math.round(d/(2*Math.PI))*2*Math.PI;GNB.Qc+=kD*(1-wD)*d;GNB.Yc+=kD*(1-wD)*(lD-GNB.lDP);}
   GNB.phP=ph;GNB.lDP=lD;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
-  /* GPU.kill.ngen (проба ?g11=deep): сведение старой текстуры без пересчёта — цена одного пересчёта */
-  if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<3&&GPU.frameNo>=GNB.last))return true;
+  /* GPU.kill.ngen (?g11=deep): без пересчёта; стоя — перетекание (16gc) */
+  if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
   const a=GNB.U;
   a[0]=GNB.w;a[1]=GNB.h;a[2]=W;a[3]=H;
   a[4]=camx;a[5]=camy;a[6]=c[2];a[7]=c[3];
@@ -52143,9 +52143,9 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   const U=GPUBufferUsage,ub=gpuBuf("gnb.u",192,U.UNIFORM|U.COPY_DST);
   GPU.dev.queue.writeBuffer(ub,0,a);
   const P=gnbPipe();
-  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:gnbGenView(sys,moved),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
   p.setPipeline(P);p.setBindGroup(0,gpuBind("gnb.gen",P,[ub,GPU.S.lin,gnbNoiseTile()]));p.draw(3);p.end();
-  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;
+  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;gnbFade();
   return true;
 }
 /* возвращает проход сцены, в который рисовать дальше: под меткой времени (проба) сведение
@@ -52160,6 +52160,42 @@ function gpuNebulaComp(pass){
   GPU.sep=.7;
   if(ts){p.end();return gpuScene();}
   return pass;
+}
+
+/* ── туманность: плавный пересчёт ──
+   Стоя (сдвиг камеры < .5) пересчёт идёт раз в GNB_AGE кадров в запасную текстуру, а видимая
+   за GNB_AGE кадров линейно перетекает в неё: смешение с постоянной k = 1/6, 1/5 … 1 даёт
+   ровную линию от старой к свежей. Течение газа (~1 px за 6 кадров) идёт по 1/6 за кадр, а не
+   скачком раз в пересчёт; пересчёт стоя — вдвое реже прежнего (был раз в 3 кадра). На ходу,
+   при смене системы и размера цели — пишет прямо в видимую, без перетекания */
+const GNB_AGE=6;
+const GNB_FADE=`
+@group(0) @binding(0) var t:texture_2d<f32>;
+@vertex fn vs(@builtin(vertex_index) i:u32)->@builtin(position) vec4f{
+  var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));return vec4f(P[i],0.,1.);}
+@fragment fn fs(@builtin(position) p:vec4f)->@location(0) vec4f{return textureLoad(t,vec2i(p.xy),0);}`;
+function gnbFadeDesc(){
+  const m=gpuShader(GNB_FADE),b={srcFactor:"constant",dstFactor:"one-minus-constant"};
+  return {layout:"auto",vertex:{module:m,entryPoint:"vs"},
+    fragment:{module:m,entryPoint:"fs",targets:[{format:"rgba16float",blend:{color:b,alpha:b}}]},primitive:{topology:"triangle-list"}};
+}
+/* куда писать пересчёт: стоя в той же системе — в запасную (перетекание), иначе в видимую */
+function gnbGenView(sys,moved){
+  if(!(GNB.sys===sys&&moved<.5&&GNB.last>=0)){GNB.fi=GNB_AGE;return GNB.view;}
+  if(!(GNB.t2&&GNB.t2d===GNB.tex)){
+    if(GNB.t2)GPU.trash.push(GNB.t2);
+    const U=GPUTextureUsage;
+    GNB.t2=GPU.dev.createTexture({size:[GNB.w,GNB.h],format:"rgba16float",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});
+    GNB.t2v=GNB.t2.createView();GNB.t2d=GNB.tex;
+  }
+  GNB.fi=0;return GNB.t2v;
+}
+/* шаг перетекания: k=1/(AGE−i) — через AGE шагов видимая равна свежей */
+function gnbFade(){
+  if(!(GNB.fi<GNB_AGE)||GNB.t2d!==GNB.tex)return;
+  const k=1/(GNB_AGE-GNB.fi),K="gnb.fade",P=GPU.lay[K]||(GPU.lay[K]=gpuPipeline(K,gnbFadeDesc));GNB.fi++;
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("nebFade")});
+  p.setPipeline(P);p.setBlendConstant([k,k,k,k]);p.setBindGroup(0,gpuBind(K,P,[GNB.t2v]));p.draw(3);p.end();
 }
 
 /* ══════════════ режим: система ══════════════ */
@@ -54150,6 +54186,9 @@ function stackSmoke(t,ph,fl){
 const GPU_LIT_SH=(.6).toFixed(2);
 /* флаг 4: среднее не мельче коробки 5.5 текселя (у pirMaster — 7); мип у нуля — 2, пираты теряли до 11 % */
 const GPU_LIT_DK=Math.log2(5.5).toFixed(3);
+/* корабль в настоящем свете (§L.S): уровней мипа до купола тела, его вес, доля градиента «к звезде»
+   по всему корпусу, заливка без газа, доля газа, свет, огни (выше колена — свечение подхватывает) */
+const RL_DL="3.",RL_KD="6.",RL_AMB=".46",RL_GAS=".9",RL_LIT="1.2",RL_EM="2.3",RL_GL="1.5",RL_GN="8.",RL_FL="4.",RL_FLM=".1",RL_RIM=".45",RL_GK=".35",RL_SH=".65",RL_TD=".4";
 const GST_WGSL=GPU_PL_WGSL+`
 fn plOcc(q:vec2f)->f32{let dq=q-fu.v[0].xy;let ro=fu.v[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/fu.v[0].z+1.)*.5;
@@ -54194,7 +54233,10 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
      альфе здесь; мелкий рельеф ложится и в тонкую нормаль — швы и панели ловят кромку звезды */
   let mo=(u32(fu.v[3].w+.5)&8u)!=0u;var gb0:vec2f;var gg0:vec2f;
   let lm=max(fu.v[3].z-1.,0.);var mk=vec3f(0.);
+  var gd0=vec2f(0.);
   if(mo){let m=textureSampleLevel(t3,smp,vec2f(uv.x*.5,uv.y),lm);gb0=m.xy;gg0=m.zw;
+    /* купол тела: мип склонов — склон размытой альфы, от хребта к бортам (свет в один терминатор) */
+    gd0=textureSampleLevel(t3,smp,vec2f(uv.x*.5,uv.y),lm+${RL_DL}).xy;
     let q=textureSampleLevel(t3,smp,vec2f(.5+uv.x*.5,uv.y),lm);mk=q.xyz/max(q.w,1e-3);}
   else{gb0=-(sa(uv,u1*3.*s)*.5+sa(uv,u1*8.*s)*.5);gg0=glassG(uv,u1*6.);}
   let g0=-sa(uv,u1*1.1)+select(vec2f(0.),gg0,mo);let g=vec2f(g0.x*ro.x-g0.y*ro.y,g0.x*ro.y+g0.y*ro.x);let tl=clamp(length(g),0.,.98);
@@ -54236,6 +54278,57 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
   /* окна и огни светят сами: выше колена — их подхватывает свечение; у корпуса корабля — только
      по маске материала (огонь ярче округи), без неё насыщенный кант шёл в огни */
   let em=select(1.+1.3*(1.-own),1.,hm&&!mo);
+  if(hm&&mo){
+    /* корабль в настоящем свете (§L.S a–c, e): один свет — звезда, терминатор по куполу тела через весь
+       корпус; тень не чёрная — заливка газом у корабля (t2 — туманность 16gb, флаг 16), тёплая в
+       рыжем газе, холодная в синем; скала гасит прямой свет (sk), но не заливку; огни живут и в тени */
+    let gd=vec2f(gd0.x*ro.x-gd0.y*ro.y,gd0.x*ro.y+gd0.y*ro.x);
+    /* a) свет по граням (ревью 26.09, проход 2): грани — как нарисованы, каждая ровная внутри; купол по
+       размытой альфе клал муть поперёк граней — его нет. Звезда читается кромками: к ней — обвод (g),
+       от неё — тёмная кромка силуэта (tv); по телу лишь едва заметный наклон */
+    /* c) глубина тени скалы: shAt в полной тени — .4 (у 2D-корпуса это множитель всего цвета), здесь 0 —
+       прямой свет, блик и обвод гаснут целиком, живут заливка, окна и факел */
+    let sq=smoothstep(.4,1.,sk);
+    let kf=.88+.12*smoothstep(-1.,1.,side);
+    let key=kf;
+    var fl=vec3f(${RL_AMB});
+    if((u32(fu.v[3].w+.5)&16u)!=0u){let rq=fu.res.zw;var gz=vec3f(0.);
+      for(var k=0;k<5;k++){let o=select(vec2f(0.),vec2f(cos(f32(k)*1.571),sin(f32(k)*1.571))*R*1.3,k>0);
+        gz+=max(textureSampleLevel(t2,smp,(c+o)/rq,0.).rgb,vec3f(0.));}
+      gz*=.2;let gm=max(max(gz.r,gz.g),max(gz.b,1e-4));let gc=gz*(1.-exp(-gm*1.25))/(gm*1.25)*1.12;
+      /* b) газ красит тень, а не светлит её: оттенок газа той же светлоты, что и заливка */
+      let gh=gc/max(dot(gc,vec3f(.299,.587,.114)),1e-3);fl=fl*mix(vec3f(1.),gh,smoothstep(.02,.2,gm)*${RL_GAS});}
+    /* c) в тени скалы прямой свет гаснет весь, заливка — на треть (газ в конусе тени темнее, но не вдвое) */
+    fl*=${RL_SH}+(1.-${RL_SH})*sq;let lv=mix(fl,vec3f(${RL_LIT}),key*sq);
+    let e=1.-own;
+    /* маска голого металла для блика на кромке (d) — на мипе ~1/8 длины корпуса: панель металл или нет,
+       без крапа по заклёпкам; на барже столько же, сколько на истребителе */
+    let td=vec2f(textureDimensions(t3));
+    let glv=max(lm+${RL_GL},log2(max(td.x*.5,td.y)/${RL_GN}));
+    let mq=textureSampleLevel(t3,smp,vec2f(.5+uv.x*.5,uv.y),glv);let mg=mq.y/max(mq.w,1e-3);
+    let sp=mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs)*sq*a;
+    /* f) огонь светит корму — второй свет, нарушение «одного света», названное: тёплое пятно у сопел,
+       спадает к досягаемости; обшивка, скатом к огню, берёт больше; скала его не гасит — огонь свой */
+    var fs=vec3f(0.);
+    if(fu.v[4].w>0.){let fv=fu.v[4].xy-p;let fd=length(fv);let r0=fu.v[5].w;let rr=fu.v[4].z;
+      let fa=smoothstep(-.35,.35,dot(gd,fv/max(fd,1e-3))*${RL_KD});
+      let rg=step(r0,fd)*smoothstep(r0,r0+(rr-r0)*.3,fd)*(1.-smoothstep(r0,rr,fd));
+      /* огонь бьёт назад и вбок: конус от оси — чем дальше от оси, тем дальше вперёд достаёт; кили по
+         бокам языка светятся, фюзеляж перед гнездом (на оси) — нет */
+      let ax=dot(-fv,ro);let lat=abs(dot(-fv,vec2f(-ro.y,ro.x)));
+      let bk=1.-smoothstep(-r0*.2,r0*.3,ax-lat*.9);
+      /* гнездо сопел и его свечение светлы сами — их огонь не трогает вовсе (сам шейдер — байт в байт; ±1 даёт только блум) */
+      let yc=dot(c4.rgb/max(a,1e-3),vec3f(.299,.587,.114));
+      fs=fu.v[5].rgb*fu.v[4].w*${RL_FL}*rg*bk*(.45+.55*fa)*own*step(yc,.5);}
+    /* g) обвод: пиксель устройства по кромке к звезде — сосед на пиксель к ней пуст; тёмная сторона кромки
+       не светлеет, на светлом газе тело остаётся тёмным силуэтом; мип мастера — поворот не мерцает */
+    let sdu=vec2f(dot(sd,ro),dot(sd,vec2f(-ro.y,ro.x)));
+    let an=textureSampleLevel(t0,smp,uv+sdu*u1,fu.v[3].z+1.).a;
+    let af=textureSampleLevel(t0,smp,uv-sdu*u1*1.5,fu.v[3].z+1.).a;let tv=1.-${RL_TD}*clamp(a-af,0.,1.)*sq;
+    /* d) блик — на кромке к звезде по голому металлу: пиксель обвода белеет (мягкий отлив по грани на
+       телефоне читался грязью); едет с поворотом вместе с кромкой */
+    let rv=mix(col,vec3f(1.),.5*mg)*clamp(a-an,0.,1.)*key*sq*own*(${RL_RIM}+${RL_GK}*smoothstep(.35,.7,mg));
+    return vec4f(c4.rgb*(lv*tv*own*mix(vec3f(1.),col,.08*key)+pl+e*${RL_EM})+min(c4.rgb*fs,fu.v[5].rgb*${RL_FLM})+sp+rv+gl*(1.-a),a);}
   return vec4f(c4.rgb*(shade*sk*em+pl)*mix(vec3f(1.),col,.08)+lit*sk+spec+gl*(1.-a),a);
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
@@ -54245,14 +54338,19 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
 /* sharp — нерезкая маска между уровнями мастера (только у мастера с мипами): резкость 2D
    без ряби, как gpuImage {sharp}; lod тогда — обычный, не на ступень мельче; "dark" — флаг 4 */
 /* al — прозрачность всего спрайта (0…1, по умолчанию 1): гаснущий борт светится тем же светом */
-function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al){
+function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al,fl){
   const pass=gpuScene();if(!pass)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
-  const U=new Float32Array(16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
+  const U=new Float32Array(fl?24:16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
   U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=al==null?1:clamp(al,0,1);U[12]=glow;U[13]=sy||0;U[14]=lod||0;
+  /* fu.v[4..5] — свет пламени у кормы (17c2): место на экране, досягаемость, сила, цвет */
+  if(fl){U[16]=fl.x;U[17]=fl.y;U[18]=Math.max(fl.r,1);U[19]=fl.k;U[20]=fl.c[0];U[21]=fl.c[1];U[22]=fl.c[2];U[23]=fl.r0||0;}
   const mip=!!cv.view;if(mip&&cv.draw)gpuBakeLive(cv);   /* материал (08cd) — после возможной перепечки */
-  const mt=mip&&!rel&&cv.mat;U[15]=(rel?1:0)+(sharp&&mip?2:0)+(sharp==="dark"&&mip?4:0)+(mt?8:0);
-  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||null,mt||null],{blend:"hull",smp:mip?gpuMipSmp():null});
+  const mt=mip&&!rel&&cv.mat;
+  /* заливка газом — корпусу корабля с материалом, пока туманность 16gb этой системы жива */
+  const gz=mt&&glow<0&&typeof GNB!=="undefined"&&GNB.view&&GNB.dev===GPU.dev&&G.sys&&GNB.sys===G.sys;
+  U[15]=(rel?1:0)+(sharp&&mip?2:0)+(sharp==="dark"&&mip?4:0)+(mt?8:0)+(gz?16:0);
+  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||(gz?{view:GNB.view}:null),mt||null],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
 function drawStation(x,y,Z){
@@ -54458,6 +54556,15 @@ function hullGpuFlames(pass,h,id,x,y,a,sc,cb,thr,lvl){
     const k=20+n*4;U[k]=e.x;U[k+1]=e.y;U[k+2]=r;U[k+3]=f;U[36+n*4]=ph*3.1;n++;}
   U[7]=n;
   gpuField(pass,"hgflame",HG_FLAME_WGSL,U,null,{blend:"add"});
+  /* f) огонь светит корму (§L.S): точка у среза сопел (среднее по радиусу); гнездо сопел (разброс + радиус)
+     само не светится (±1 — только ореол блума от светлых килей), свет кольцом за ним, на кили; цвет — ореол пламени.
+     Второй свет корпуса — нарушение «одного света», названное */
+  let sx=0,sy=0,sw=0,rm=0,fm=0;
+  for(let i=0;i<n;i++){const k=20+i*4,r=U[k+2];sx+=U[k]*r;sy+=U[k+1]*r;sw+=r;rm=Math.max(rm,r);fm=Math.max(fm,U[k+3]);}
+  if(!sw)return null;
+  sx/=sw;sy/=sw;let sp=0;for(let i=0;i<n;i++)sp=Math.max(sp,Math.hypot(U[20+i*4]-sx,U[21+i*4]-sy));
+  const r0=sp+rm*1.5,gc=cool?[.588,.804,1]:tint?mixc(tint,[255,255,255],.3).map(v=>v/255):[1,.62,.34];
+  return {x:sx,y:sy,r0,r:r0+Math.max(fm*.3,rm*2.5),k:p,c:gc};
 }
 /* живые вставки поверх тела: огни строки Компании (makerTicks) и венцы (drawCrowns) —
    те же места и цвета в осях корпуса; повёрнутые прямоугольники — капсулами */
@@ -54487,7 +54594,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   bank=bank||0;lvl=lvl||0;
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
-  hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);
+  const FL=hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);
   /* сопла без тяги: у люкса кольцо среза, у прочих тлеющий зев */
   if(!thrusting){
     const sh=[],gl=[];
@@ -54502,7 +54609,8 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   /* брюхо: тёмный силуэт со стороны крена, под телом */
   if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     if(Bl.B)gpuImage(pass,Bl.B,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
-  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod);   /* -1: свет корпуса, не станции (17c GST) */
+  const FS=FL?S(FL.x,FL.y):null;
+  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null,undefined,undefined,FL&&{x:FS[0],y:FS[1],r0:FL.r0*sc,r:FL.r*sc,k:FL.k,c:FL.c});   /* -1: свет корпуса, не станции (17c GST) */
   /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
   if(GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
     GPU.sepH.push([x,y,h._R*sc]);}
@@ -104410,9 +104518,9 @@ async function g11Deep(list){
    округляет метки до 0.1 мс — для проходов в миллисекунды хватает */
 function gpuTs(name){
   if(!GPU.tsOn||!GPU.tsOk)return undefined;
-  const T=GPU.tsQ||(GPU.tsQ={qs:GPU.dev.createQuerySet({type:"timestamp",count:32}),
-    res:GPU.dev.createBuffer({size:256,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC}),rb:[],names:[],n:0});
-  if(T.n+2>32)return undefined;
+  const T=GPU.tsQ||(GPU.tsQ={qs:GPU.dev.createQuerySet({type:"timestamp",count:64}),
+    res:GPU.dev.createBuffer({size:512,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC}),rb:[],names:[],n:0});
+  if(T.n+2>64)return undefined;
   const i=T.n;T.n+=2;T.names.push([name,i]);
   return {querySet:T.qs,beginningOfPassWriteIndex:i,endOfPassWriteIndex:i+1};
 }
@@ -104436,7 +104544,7 @@ function gpuTsResolve(){
   const names=T.names,n=T.n;T.n=0;T.names=[];
   let rb=T.rb.find(b=>b.mapState==="unmapped");
   if(!rb){if(T.rb.length>=4)return null;
-    rb=GPU.dev.createBuffer({size:256,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});T.rb.push(rb);}
+    rb=GPU.dev.createBuffer({size:512,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});T.rb.push(rb);}
   GPU.enc.resolveQuerySet(T.qs,0,n,T.res,0);GPU.enc.copyBufferToBuffer(T.res,0,rb,0,n*8);
   return ()=>rb.mapAsync(GPUMapMode.READ).then(()=>{
     const a=new BigInt64Array(rb.getMappedRange(0,n*8)),acc=GPU.tsAcc||(GPU.tsAcc={});let lo=null,hi=null;
