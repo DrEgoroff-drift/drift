@@ -2459,7 +2459,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.476.0";
+const VER="0.477.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -8739,9 +8739,9 @@ function opisPlanOnly(){
   const n=k=>P.cells.filter(q=>q.kind===k).length;
   box.innerHTML="<h4>ЧЕРТЁЖ<s>"+P.cells.length+" клеток · трюм "+pk.hold.length+" · нос вверх</s></h4>";
   const cv=document.createElement("canvas");
-  const w=200,h=Math.min(380,Math.round(w*P.N/P.cols)),dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
-  cv.style.width=w+"px";cv.style.height=h+"px";cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
-  const c=cv.getContext("2d");if(c){c.setTransform(dpr,0,0,dpr,0,0);drawPlan(c,w,h,pk);}
+  const w=200,h=Math.min(380,Math.round(w*P.N/P.cols));
+  cv.style.width=w+"px";cv.style.height=h+"px";
+  panelGpu(cv,w,h,panelNd(),c=>drawPlan(c,w,h,pk));   /* чертёж — выпечкой (27i0), 2D у холста нет */
   box.appendChild(cv);
   const lg=document.createElement("s");lg.className="chalk";
   lg.textContent="обшивка "+(n("nose")+n("side"))+" · хребет "+n("spine")+" · корма "+n("stern")+" · палуба "+n("deck")+" · зелёное — трюм";
@@ -10247,7 +10247,7 @@ function stat(){
     bountyMul:(1+techLv("bounty")*.3)*(1+rs("bounty"))
   };
 }
-const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k]*((typeof resW==="function")?resW(k):1),0);   /* тяжёлые места берут больше (M468) */
+const held=()=>RES_KEYS.reduce((a,k)=>a+(G.cargo[k]||0)*((typeof resW==="function")?resW(k):1),0);   /* тяжёлые места берут больше (M468) */
 /* тост из кадра — голос мира (полёт, оклики, «Полёт восстановлен»); тост из
    нажатия — отклик экрана («Не хватает»). Поверх открытого экрана первый ждёт:
    не рисуется и не тикает, и показывает остаток срока, когда экран закрыт
@@ -11155,6 +11155,7 @@ const GPU_PIPE_KEYS=[
   "gc.mip16",
   "gc:clp",
   "gc:cov|destination-out",
+  "gc:cov|lighter",
   "gc:cov|multiply",
   "gc:cov|source-atop",
   "gc:cov|source-over",
@@ -43191,14 +43192,9 @@ function kitPalette(){
    шлем → фонарь), ОДИН обвод по всему телу, ОДИН свет. Износ читается на
    кукле: потёртости штрихами, мутное забрало. Кукла дышит (t), фонарь чуть
    качается. Рисует и экран, и — теми же цветами — ходока на поверхности. */
-function drawKitFigure(c,W,H,hit,t){
+function kitFigureBody(d,t){
   const K=kitAll(),P=kitPalette();
-  t=t===undefined?G.t*.03:t;
   const br=Math.sin(t)*1.4;                       /* дыхание */
-  const off=drawKitFigure._off||(drawKitFigure._off=document.createElement("canvas"));
-  off.width=120;off.height=200;
-  const d=off.getContext("2d");
-  d.clearRect(0,0,120,200);
   d.save();d.translate(60,104+br*.3);
   const cls=p=>K[p].cls;
   /* слой 1: ранец за спиной — ширина по классу, лямки */
@@ -43266,22 +43262,34 @@ function drawKitFigure(c,W,H,hit,t){
   light.addColorStop(0,"rgba(255,255,255,.16)");light.addColorStop(.5,"rgba(255,255,255,0)");light.addColorStop(1,"rgba(0,10,20,.22)");
   d.fillStyle=light;d.fillRect(0,0,120,200);
   d.globalCompositeOperation="source-over";
-  /* один обвод: силуэт тёмным, четыре сдвига под куклой */
-  const sil=drawKitFigure._sil||(drawKitFigure._sil=document.createElement("canvas"));
-  sil.width=120;sil.height=200;
-  const s2=sil.getContext("2d");
-  s2.clearRect(0,0,120,200);s2.drawImage(off,0,0);
-  s2.globalCompositeOperation="source-in";s2.fillStyle="#10161e";s2.fillRect(0,0,120,200);
-  s2.globalCompositeOperation="source-over";
-  /* на целевой канве */
+}
+/* кукла на движке (G15): тело (kitFigureBody, кисть прежняя) печётся один раз на набор вещей,
+   палитру и тон забрала; силуэт для обвода — та же выпечка, залитая краской поверх (source-atop по
+   пустому холсту — то же, что прежний source-in). Плотность max(2, экран): на столе кукла ужата
+   до 78 px, на DPR 3 это 234 точки */
+function kitFigureBakes(t){
+  const k=Math.max(2,panelNd()),key=JSON.stringify([kitAll(),kitPalette(),typeof cosmVisor==="function"?cosmVisor():0,t,k]);
+  const F=drawKitFigure._B;if(F&&F.key===key)return F;
+  if(F){gpuBakeDrop(F.off);gpuBakeDrop(F.sil);}
+  const off=gpuBake(120*k,200*k,g=>{g.setTransform(k,0,0,k,0,0);kitFigureBody(g,t);},{once:true});
+  const sil=off&&gpuBake(120*k,200*k,g=>{g.drawImage(off,0,0,120*k,200*k);
+    g.globalCompositeOperation="source-atop";g.fillStyle="#10161e";g.fillRect(0,0,120*k,200*k);},{once:true});
+  return drawKitFigure._B={key,off,sil};
+}
+function drawKitFigure(c,W,H,hit,t){
+  t=t===undefined?G.t*.03:t;
+  const B=kitFigureBakes(t);
+  /* на целевой канве: один обвод — силуэт тёмным, четыре сдвига под куклой */
   c.clearRect(0,0,W,H);
   const k=Math.min(W/132,H/212),ox=(W-120*k)/2,oy=(H-200*k)/2;
-  c.save();c.translate(ox,oy);c.scale(k,k);
-  for(const [dx,dy] of [[-1.5,0],[1.5,0],[0,-1.5],[0,1.5]])c.drawImage(sil,dx,dy);
-  c.drawImage(off,0,0);
-  /* тень-опора */
-  c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(60,196,34,5,0,0,TAU);c.fill();
-  c.restore();
+  if(B.off){
+    c.save();c.translate(ox,oy);c.scale(k,k);
+    for(const [dx,dy] of [[-1.5,0],[1.5,0],[0,-1.5],[0,1.5]])c.drawImage(B.sil,dx,dy,120,200);
+    c.drawImage(B.off,0,0,120,200);
+    /* тень-опора */
+    c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(60,196,34,5,0,0,TAU);c.fill();
+    c.restore();
+  }
   if(hit){
     hit.length=0;
     const zone=(p,x,y,w,h)=>hit.push({p,x:ox+x*k,y:oy+y*k,w:Math.max(44,w*k),h:Math.max(44,h*k)});
@@ -95386,19 +95394,7 @@ function boardLanes(from){
     }
   }
 }
-function shipThumb(id,w,h){
-  const cn=document.createElement("canvas");cn.width=w;cn.height=h;
-  const c=cn.getContext("2d");
-  const hl=hullOf(id);
-  const sc=Math.min(w/(hl.len+14),h/(hl.halfW*2+10));
-  const old=ctx;ctx=c;
-  c.save();
-  c.translate(w/2-(hl.nose+hl.tail)*.5*sc,h/2);c.scale(sc,sc);
-  drawHull(id,false,false,0);
-  c.restore();
-  ctx=old;
-  return cn;
-}
+/* shipThumb — место под корпус, рисует витрина (26f) */
 function shipRow(id,S){
   const mine=G.shipId===id,own=!!G.owned[id];
   const r=el("div","row");
@@ -97699,6 +97695,61 @@ function stapelFx(by,name){
   d.innerHTML="<div class='l0'>ГОТОВ</div><div class='l1'>«"+name+"»</div><div class='l2'>сошёл со стапеля "+makerRu(by)+"</div>";
   document.body.appendChild(d);
   setTimeout(()=>{if(d.parentNode)d.remove();},1300);
+}
+
+/* ── витрина верфи на движке (G15): строки верфи, ангара и сплава держат пустое место
+   (shipThumb), а корпуса рисует ОДНА канва #yardCv поверх колонки мест — студия 17c2
+   (hullStudio) на каждый корабль, сборка кадром через ov* (08bi), как силуэт ОПИСИ. Холст
+   стоит у экрана станции, не в прокрутке: прокрутка, смена вкладки и размер меняют подпись,
+   кадр перекладывает готовые студии. 2D у витрины нет. YARD.n — сколько сборок было */
+const YARD={cv:null,cx:null,dev:null,T:null,S:new Map(),sig:"",n:0};
+function shipThumb(id,w,h){
+  const d=document.createElement("div");d.className="yth";d.dataset.ship=id;
+  d.style.cssText="flex:0 0 auto;width:"+w+"px;height:"+h+"px";
+  return d;
+}
+function yardCanvas(){
+  let cv=YARD.cv;
+  if(!cv||!cv.isConnected){cv=document.getElementById("yardCv");
+    if(!cv){cv=document.createElement("canvas");cv.id="yardCv";
+      cv.style.cssText="position:absolute;pointer-events:none;display:none";$st.appendChild(cv);}
+    YARD.cv=cv;YARD.cx=null;YARD.sig="";}
+  return cv;
+}
+function yardHide(){const cv=YARD.cv;if(cv&&cv.style.display!=="none")cv.style.display="none";YARD.sig="";}
+/* кадр (hud): мест нет или экран закрыт — холст спрятан */
+function yardTick(){
+  if(!$st.classList.contains("open")||!GPU.on||!GPU.enc||!GPU.dev)return yardHide();
+  const L=$body.getElementsByClassName("yth");if(!L.length)return yardHide();
+  const cv=yardCanvas(),br=$body.getBoundingClientRect(),k=br.height/($body.offsetHeight||1)||1,nd=panelNd();
+  const R=[];let x0=1e9,x1=-1e9;
+  for(const e of L){const r=e.getBoundingClientRect(),x=(r.left-br.left)/k,y=(r.top-br.top)/k,w=r.width/k,h=r.height/k;
+    x0=Math.min(x0,x);x1=Math.max(x1,x+w);R.push([e.dataset.ship,x,y,w,h]);}
+  const bh=$body.clientHeight,cw=Math.max(1,Math.ceil(x1-x0)),vis=R.filter(q=>q[2]+q[4]>0&&q[2]<bh);
+  const sig=[GPU.dev===YARD.dev,nd,x0,cw,bh,$body.offsetLeft,$body.offsetTop,vis.map(q=>q[0]+"@"+q[1].toFixed(1)+","+q[2].toFixed(1)+"~"+hullBakeKey(q[0],1)).join(";")].join("|");
+  if(sig===YARD.sig)return;
+  const s=cv.style;s.display="";s.left=($body.offsetLeft+x0)+"px";s.top=$body.offsetTop+"px";s.width=cw+"px";s.height=bh+"px";
+  const pw=Math.max(1,Math.round(cw*nd)),ph=Math.max(1,Math.round(bh*nd));
+  if(cv.width!==pw)cv.width=pw;if(cv.height!==ph)cv.height=ph;
+  if(!YARD.cx||YARD.dev!==GPU.dev){const cx=cv.getContext("webgpu");if(!cx)return;
+    cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    if(YARD.dev!==GPU.dev){YARD.S.clear();YARD.T=ovTarget();}YARD.cx=cx;YARD.dev=GPU.dev;}
+  yardDraw(vis,x0,nd,pw,ph);YARD.sig=sig;
+}
+/* студия — одна на корабль и размер места; готовая текстура перекладывается без прохода */
+function yardDraw(vis,x0,nd,pw,ph){
+  const put=[];
+  if(YARD.S.size>48){for(const S of YARD.S.values()){if(S.tex)GPU.trash.push(S.tex);if(S.bk)gpuBakeDrop(S.bk.B);}YARD.S.clear();}   /* ангар без края: студии не копятся */
+  for(const [id,x,y,w,h] of vis){
+    const key=id+"|"+w+"x"+h+"|"+nd+"|"+hullBakeKey(id,1);let S=YARD.S.get(id+"|"+w+"x"+h);
+    if(!S){S={};YARD.S.set(id+"|"+w+"x"+h,S);}
+    if(S.key!==key){const hl=hullOf(id),sc=Math.min(w/(hl.len+14),h/(hl.halfW*2+10));
+      if(!hullStudio(S,id,w,h,nd,w/2-(hl.nose+hl.tail)*.5*sc,h/2,sc,0))continue;S.key=key;}
+    put.push([S,x-x0,y,w,h]);}
+  const T=YARD.T;
+  ovInto(T,nd,()=>{for(const [S,x,y,w,h] of put)ovImage({tex:S.tex,view:S.view,dev:S.dev,inv:true},x+w/2,y+h/2,w,h,0,0,0,1,1,1);});
+  ovPass(T,YARD.cx.getCurrentTexture().createView(),pw,ph,[T.uq],"yard");
+  YARD.n++;
 }
 
 /* ══════════════ силуэт корпуса и вход в ОПИСЬ ══════════════
@@ -102749,6 +102800,13 @@ function panelGpu(cv,lw,lh,nd,paint){
   finally{GPU.enc=e0;if(M)gpuBakeDrop(M.B);}
   PANEL.n++;return true;
 }
+/* картинки ОПИСИ (27j): кучи, люк, шкатулка, коробок, раскладка — та же дверь, плотность экрана.
+   Раньше они стояли холстом 1× и мылились на DPR 2. Вёрстка ОПИСИ меряет холст по его собственному
+   размеру (сетка карточек, колонки сукна): плотный холст раздвигал их вдвое — размер для вёрстки
+   остаётся логическим (contain-intrinsic-size), стороны — по рисунку */
+function opisGpu(cv,w,h,paint){
+  const s=cv.style;s.contain="size";s.containIntrinsicSize=w+"px "+h+"px";s.aspectRatio=w+"/"+h;
+  panelGpu(cv,w,h,panelNd(),paint);}
 
 /* ══════════════ стол как стол: предметы, а не тринадцать закладок ══════════════
    Замысел M151a называл стол столом: «деревянная столешница, лампа, окно того
@@ -104362,7 +104420,7 @@ function opisPileCard(k,n){
     (R0.price?"рынок ~"+R0.price+" кр":(R0.rare||R0.ammo||R0.pax||""))+"</s>");
   card.dataset.k=k;
   const cv=document.createElement("canvas");cv.width=250;cv.height=120;
-  holdDrawPile(cv.getContext("2d"),k,n,250,120);
+  opisGpu(cv,250,120,c=>holdDrawPile(c,k,n,250,120));
   card.insertBefore(cv,card.firstChild);
   const cue=opisPriceCue(k);
   if(cue){
@@ -104456,7 +104514,7 @@ function opisBar(){
   }
   bar.textContent="";
   const cv=document.createElement("canvas");cv.width=64;cv.height=64;
-  opisDrawHatch(cv.getContext("2d"),64,64,false);
+  opisGpu(cv,64,64,c=>opisDrawHatch(c,64,64,false));
   bar.appendChild(cv);
   /* полоса называет себя словами (ревью 11.09: «полоски внизу» не читались) */
   const t=document.createElement("s");t.innerHTML="<b>ЛЮК · ЗА БОРТ</b>отпустите вещь здесь, чтобы выбросить";bar.appendChild(t);
@@ -104515,7 +104573,7 @@ function opisRender(box){
   const bx=document.createElement("div");bx.className="op-box";
   const CO=(typeof cosmRec==="function")?cosmRec():{owned:[]};
   const bcv=document.createElement("canvas");bcv.width=160;bcv.height=96;
-  opisDrawBox(bcv.getContext("2d"),160,96,CO.owned.length>0);
+  opisGpu(bcv,160,96,c=>opisDrawBox(c,160,96,CO.owned.length>0));
   bx.appendChild(bcv);
   if(!CO.owned.length)bx.insertAdjacentHTML("beforeend","<h4>КОСМЕТИКА · шкатулка</h4><s>заперта: откроется с первой покупкой</s>");
   else{
@@ -104560,13 +104618,13 @@ function opisRender(box){
     z1.appendChild(line);
   }
   /* коробок: в трюме, когда справа стоит ящик конторы; вне станции — своей зоной
-     на месте ящика, чтобы правый столбец сукна не пустовал (второй проход, 2026-09-05) */
+     на месте ящика, чтобы правый столбец сукна не пустовал */
   const mb=document.createElement("div");mb.className="op-matchbox";
   const atLocker=(typeof lockerHere==="function"&&lockerHere());
   const mW=atLocker?140:220,mH=atLocker?70:110;
   const mcv=document.createElement("canvas");mcv.width=mW;mcv.height=mH;
   const mN=(typeof matchesRec==="function")?matchesRec():0;
-  opisDrawMatchbox(mcv.getContext("2d"),mW,mH,mN);
+  opisGpu(mcv,mW,mH,c=>opisDrawMatchbox(c,mW,mH,mN));
   mb.appendChild(mcv);
   mb.insertAdjacentHTML("beforeend","<b>спичек: "+mN+"</b><s>из-под кожухов разобранных частей</s>");
   if(atLocker)z1.appendChild(mb);
@@ -104636,11 +104694,11 @@ function opisRender(box){
   z2.appendChild(opisHead(2,"КОМПЛЕКТ СКАФАНДРА",kitLine()));
   const kg=document.createElement("div");kg.className="op-kit-grid";
   const lay=document.createElement("div");lay.className="op-kitlay";
-  const dcv=document.createElement("canvas");dcv.className="doll";dcv.width=120;dcv.height=200;
-  kitDollHit=[];drawKitFigure(dcv.getContext("2d"),120,200,kitDollHit,0);
+  const dcv=document.createElement("canvas");dcv.className="doll";
+  kitDollHit=[];opisGpu(dcv,120,200,c=>drawKitFigure(c,120,200,kitDollHit,0));
   lay.appendChild(dcv);
   const lcv=document.createElement("canvas");lcv.className="lay";lcv.width=420;lcv.height=300;
-  kitLayDraw(lcv.getContext("2d"),420,300);
+  opisGpu(lcv,420,300,c=>kitLayDraw(c,420,300));
   lay.appendChild(lcv);
   kg.appendChild(lay);
   const kc=document.createElement("div");kc.className="op-kitslots";
@@ -104668,7 +104726,7 @@ function opisRender(box){
   /* ── зона 4: люк ── */
   const z4=document.createElement("div");z4.className="op-hatch";z4.dataset.drop="hatch";
   const hcv4=document.createElement("canvas");hcv4.width=120;hcv4.height=120;
-  opisDrawHatch(hcv4.getContext("2d"),120,120,false);
+  opisGpu(hcv4,120,120,c=>opisDrawHatch(c,120,120,false));
   z4.appendChild(hcv4);
   z4.insertAdjacentHTML("beforeend","<h4><i>4</i>ЛЮК ЗА БОРТ</h4><s>перетащи, чтобы выбросить</s>");
   if(!phone){const ask=opisAskForm();if(ask)z4.appendChild(ask);}
@@ -107340,7 +107398,7 @@ function hud(){
   if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
   /* приборная колодка (25c) и пульт (27j: трепло, кресло): свои канвы в кадре */
   if(typeof instrPodTick==="function")instrPodTick();
-  consoleGpuTick();if(typeof opisHullTick==="function")opisHullTick();   /* и силуэт ОПИСИ (27j) — тем же кадром */
+  consoleGpuTick();if(typeof opisHullTick==="function")opisHullTick();yardTick();   /* ОПИСЬ (27j), витрина (26f) */
   if(typeof stapelHullTick==="function")stapelHullTick();   /* корпус на листе стапеля (26e2) */
   setTx($place,a);setTx($sub,b);
   /* Полосу меряем по самому DOM, а не пересчитываем правила CSS в JS: состав

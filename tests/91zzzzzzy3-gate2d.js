@@ -201,6 +201,30 @@ const GATE2D=[
      this.i++;return {};},
    done(){kbClose();const w=document.getElementById("kbWin");if(w)w.remove();},
    probe:["panelGpu"]},
+  /* витрина верфи (26f): одна канва на колонку мест, корпус — студия 17c2. Подпись сбивается каждый кадр
+     (сборка под записью), студии — на первом кадре (проход и выпечка под записью) */
+  {name:"витрина верфи (26f): корпуса студией, одна канва",
+   painters:["yardTick","yardDraw","shipThumb","hullStudio","hullStudioBake"],
+   place(first){
+     if(first){let at=null;
+       for(let r=0;r<=14&&!at;r++)for(let x=-r;x<=r&&!at;x++)for(let y=-r;y<=r&&!at;y++){
+         if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(s.station&&s.station.stype==="yard")at=[x,y,s];}
+       if(!at)return null;
+       G.sx=at[0];G.sy=at[1];G.sys=at[2];openStation();tab="yard";renderTab();YARD.S.clear();return {};}
+     YARD.sig="";return {};},
+   done(){$st.classList.remove("open");$body.innerHTML="";G.mode="system";},
+   probe:["yardDraw"]},
+  /* картинки ОПИСИ (27j через 27i0): кучи трюма, раскладка комплекта, люк на полосе, коробок, шкатулка,
+     чертёж (05e) — вкладки ТРЮМ, КОМПЛЕКТ и КОРАБЛЬ по кругу, каждая перерисовка — новая выпечка под записью */
+  {name:"опись (27j): кучи, раскладка, люк, коробок — выпечкой, без 2D",
+   painters:["opisGpu","holdDrawPile","holdPiece","opisDrawHatch","opisDrawBox","opisDrawMatchbox","kitLayDraw","kitLayPiece","drawKitFigure","kitFigureBody","kitFigureBakes","drawPlan"],
+   place(first){
+     if(first){this.i=0;for(const k of RES_KEYS)G.cargo[k]=0;Object.keys(RES).filter(k=>RES[k].price).slice(0,6).forEach((k,i)=>G.cargo[k]=3+i*7);return {};}
+     if(this.i===0)tableToggle(true,"hold");
+     if(this.i<40){OPIS.tab=["hold","kit","ship"][this.i%3];if(drawKitFigure._B)drawKitFigure._B.key="";opisRerender();opisBar();}
+     this.i++;return {};},
+   done(){tableToggle(false);const b=document.getElementById("opisBar");if(b)b.remove();for(const k of RES_KEYS)G.cargo[k]=0;},
+   probe:["opisGpu"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

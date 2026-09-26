@@ -149,6 +149,21 @@ if ($Times -and -not $nodeTier -and $nodeExe) {
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $NoBuild) { & (Join-Path $root "build.ps1") | Out-Null }
+# две оболочки — одна сборка (26.09): под powershell 5.1 и pwsh 7 Sort-Object сортирует по-разному, и INDEX
+# у сеансов расходился (_file, _suite то первыми, то после букв). -Full пересобирает второй оболочкой и сверяет
+# всё, что пишет build.ps1, байт в байт; расхождение — провал прогона. Второй оболочки нет — строка, не провал
+$shellDiff = @()
+if ($Full -and -not $NoBuild) {
+  $other = if ($PSVersionTable.PSVersion.Major -ge 6) { "powershell" } else { "pwsh" }
+  if (Get-Command $other -ErrorAction SilentlyContinue) {
+    $gen = @("drift.html", "tests.html", "docs\INDEX.md", "docs\TESTMAP.json", "site\war.js", "site\treplo.html") |
+           ForEach-Object { Join-Path $root $_ } | Where-Object { Test-Path $_ }
+    $h0 = @{}; foreach ($f in $gen) { $h0[$f] = (Get-FileHash $f -Algorithm MD5).Hash }
+    & $other -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "build.ps1") | Out-Null
+    foreach ($f in $gen) { if ((Get-FileHash $f -Algorithm MD5).Hash -ne $h0[$f]) { $shellDiff += $f.Substring($root.Length + 1) } }
+    if ($shellDiff.Count) { & (Join-Path $root "build.ps1") | Out-Null }   # прогон идёт на сборке своей оболочки
+  } else { "  · второй оболочки ($other) нет — сверка сборки двумя оболочками пропущена" }
+}
 
 $chrome = @("C:\Program Files\Google\Chrome\Application\chrome.exe",
             "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe") |
@@ -354,6 +369,7 @@ function Read-Dump($dom) {
 $pass = 0; $fail = 0; $ran = 0; $all = 0; $tail = ""; $fails = @(); $slowest = @()
 # карантин (опция stage у набора, M442): провалы печатаются своей строкой и не решают вердикт
 $stRan = 0; $stFail = 0; $staged = @(); $offWin = 0
+if ($shellDiff.Count) { $fail++; $fails += ("  ✗ сборка зависит от оболочки: powershell 5.1 и pwsh 7 пишут разное — " + ($shellDiff -join ", ")) }
 foreach ($r in $runs) {
   # убитая часть — провал, что бы ни лежало в её DOM: 25.09 шард 4/6 убили на 900 с
   # в «сейв: поле мира…», а итог вышел «ВСЁ ЗЕЛЁНОЕ» — отчёт той части не считали провалом

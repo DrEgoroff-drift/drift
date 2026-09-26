@@ -22,3 +22,10 @@ function panelGpu(cv,lw,lh,nd,paint){
   finally{GPU.enc=e0;if(M)gpuBakeDrop(M.B);}
   PANEL.n++;return true;
 }
+/* картинки ОПИСИ (27j): кучи, люк, шкатулка, коробок, раскладка — та же дверь, плотность экрана.
+   Раньше они стояли холстом 1× и мылились на DPR 2. Вёрстка ОПИСИ меряет холст по его собственному
+   размеру (сетка карточек, колонки сукна): плотный холст раздвигал их вдвое — размер для вёрстки
+   остаётся логическим (contain-intrinsic-size), стороны — по рисунку */
+function opisGpu(cv,w,h,paint){
+  const s=cv.style;s.contain="size";s.containIntrinsicSize=w+"px "+h+"px";s.aspectRatio=w+"/"+h;
+  panelGpu(cv,w,h,panelNd(),paint);}

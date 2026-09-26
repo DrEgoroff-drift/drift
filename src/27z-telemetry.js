@@ -361,7 +361,7 @@ function hud(){
   if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
   /* приборная колодка (25c) и пульт (27j: трепло, кресло): свои канвы в кадре */
   if(typeof instrPodTick==="function")instrPodTick();
-  consoleGpuTick();if(typeof opisHullTick==="function")opisHullTick();   /* и силуэт ОПИСИ (27j) — тем же кадром */
+  consoleGpuTick();if(typeof opisHullTick==="function")opisHullTick();yardTick();   /* ОПИСЬ (27j), витрина (26f) */
   if(typeof stapelHullTick==="function")stapelHullTick();   /* корпус на листе стапеля (26e2) */
   setTx($place,a);setTx($sub,b);
   /* Полосу меряем по самому DOM, а не пересчитываем правила CSS в JS: состав

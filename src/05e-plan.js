@@ -192,9 +192,9 @@ function opisPlanOnly(){
   const n=k=>P.cells.filter(q=>q.kind===k).length;
   box.innerHTML="<h4>ЧЕРТЁЖ<s>"+P.cells.length+" клеток · трюм "+pk.hold.length+" · нос вверх</s></h4>";
   const cv=document.createElement("canvas");
-  const w=200,h=Math.min(380,Math.round(w*P.N/P.cols)),dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
-  cv.style.width=w+"px";cv.style.height=h+"px";cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
-  const c=cv.getContext("2d");if(c){c.setTransform(dpr,0,0,dpr,0,0);drawPlan(c,w,h,pk);}
+  const w=200,h=Math.min(380,Math.round(w*P.N/P.cols));
+  cv.style.width=w+"px";cv.style.height=h+"px";
+  panelGpu(cv,w,h,panelNd(),c=>drawPlan(c,w,h,pk));   /* чертёж — выпечкой (27i0), 2D у холста нет */
   box.appendChild(cv);
   const lg=document.createElement("s");lg.className="chalk";
   lg.textContent="обшивка "+(n("nose")+n("side"))+" · хребет "+n("spine")+" · корма "+n("stern")+" · палуба "+n("deck")+" · зелёное — трюм";

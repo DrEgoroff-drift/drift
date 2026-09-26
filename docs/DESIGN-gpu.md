@@ -1078,6 +1078,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      0 sheet bakes while dragging, release 47–58 ms with exactly one. Pair `pair_draft.png` (scratchpad,
      390 px, dpr 2: draft left, full sheet right, three classes). Guard «стапель: протяжка — черновик без
      выпечки, по отпусканию ровно один лист».
+     Why some sheets grew in length (Контроль, 0.476.0 pair: РАССВЕТ yacht 78 → 80 m, КОМПАНИЯ courier
+     71 → 72): no light enters the box. The ends of the box are hull outline strokes (alpha ≥ .45) and the fitting shadows
+     (`drawHullMarks`), checked over 180 hulls. On a needle nose the outline's miter point (width .5, a 13° nose, ratio
+     8.8 under the limit 10) reaches 2.2 units past the vertex. The old box read 2D pixels at 2 px a unit, where
+     Skia draws a 1-px stroke as a hairline with no joins, so the point was not there. At the sheet's own scale
+     (~8 device px a unit) the same `drawHull` draws the point to 40.5 (alpha 24), and the new box reads 40.56.
+     The old sheet drew the point past its own dimension line; the new one measures what it draws.
   3. Look 28y / item h — done: `makerRead` looks at the engine's picture. `makerFeat` draws the hull with the
      studio (17c2 `hullStudio`, the ОПИСЬ one: GPU bake of the same brushes, lit by relief as in flight) into a
      52 px `webgpu` canvas and reads it back in the same task (`drawImage` into a 2D canvas, as `gpuTakeSnap`).
@@ -1103,6 +1110,22 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      calls `drawHomeRoom`. Pair `pair_home.png` (scratchpad, tiers 8 and 6, 2D over engine): identical to
      the eye; tiers 1–8 mean 0.21–0.99 per channel, zones byte-identical, 0 GC_MISS, 0 `drawHull`; the
      bake 21–163 ms per tab draw. Guard «дом: комната печётся на движке, 2D-корпуса нет».
+- **The harness waits for the adapter in real time (26.09):** under `--virtual-time-budget` the boot (tests/99-run.js)
+  polls for the adapter every 50 virtual ms and burns real time by counting between polls, since the adapter answers on real
+  clocks. The count was 2e6, which a warm JIT runs in 2 ms, not the 10 ms the comment claimed. So the 14 virtual seconds
+  gave the adapter ~0.6 s of real time, and at `-Full -Jobs 3` three Chromes raising it at once left one shard blind
+  (33 red suites, all downstream of «глаза тестов»). Now it counts 2e7 every 25 virtual ms: ~560 polls of ~20 ms,
+  up to ~11 s of real time, with the same virtual ceiling of 14 s out of the budget of 20. The eyes suite names the number
+  of polls and the state (adapter silent / device lost). The mutant `eyes-gpu-hang` (an adapter that never answers)
+  proves a real «видеокарта не поднялась» still turns it red: 560 polls, ~11 s, then red.
+  Proof after merging 0.477.0: three `-Full -Jobs 3` runs in a row, all green, 19409 checks and 943 suites each
+  (373, 382 and 706 s; the third ran under a neighbour's load).
+- **One build under both shells (26.09):** `docs/INDEX.md` sorted its symbols with `Sort-Object`, which orders
+  `_file`, `_indPrice`, `_mapDirty` and `_suite` first under pwsh 7 and after the letters under powershell 5.1, so
+  sessions committed different indexes. The sort is now ordinal, as the bundle order has been since 0.359.0.
+  `test.ps1 -Full` rebuilds with the other shell and compares everything build.ps1 writes (drift.html, tests.html,
+  INDEX, TESTMAP, war.js, treplo.html) byte for byte. Any difference fails the run. Proven red with the old sort
+  («docs\INDEX.md») and green with the new one.
 - **08bi for the album (26.09, for GPU-3's 25g1):** `ovImage(..., mul, M)` takes `M={m:[12], grain, seed}` —
   a 3×4 matrix over the straight colour (rows R, G, B: r, g, b, offset, in units of 1) and a grain of span
   `grain` (±grain/2, one number per device pixel into all three channels, hashed from the pixel and `seed`),
@@ -2429,6 +2452,24 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   27i0 `panelGpu`. The post window now bakes at screen density (`panelNd`) instead of the frame's capped `DPR` (it was
   soft on DPR 2), and «ЗАКРЫТО» is a plate on the grille — on the shutter the bars cut it and it did not read. Pairs vs
   HEAD at 760 (DPR 1) and 390 (DPR 2): КБ identical, post sharper. Gate2d scene «окошко почты и план КБ».
+- **The shipyard showcase on the GPU** (26f `shipThumb`/`yardTick`/`yardDraw`): a row keeps an empty slot, and ONE canvas
+  `#yardCv` on the station screen (outside the scroll) covers the slot column. Each ship has its own `hullStudio` (17c2)
+  kept between frames. The frame (27z, next to ОПИСЬ) re-lays the studios only when the signature changes (scroll,
+  tab, size, bake key); 2D is gone. Pairs vs main at 760 (DPR 2) and 390 (DPR 3, scrolled): the same hulls in the same
+  places, sharper. The old 52×42 canvas was stretched at DPR>1, and the hull now takes the studio's even light. Gate2d
+  scene «витрина верфи», mutant yard-2d.
+- **ОПИСЬ pictures on the GPU** (27j through 27i0 `opisGpu`): the hold piles, the kit layout, the hatch, the matchbox and
+  the cosmetics box. They are sharp now (they were 1× canvases). The ОПИСЬ layout sizes by the canvas's own size (card
+  grid, cloth columns): a dense canvas pushed the grid twice as wide. So the layout size stays logical, through
+  `contain-intrinsic-size` + `aspect-ratio`. Pairs vs main at 760 (DPR 2) and 390 (DPR 3, top and scrolled): the same
+  layout, sharper. Gate2d
+  scene «опись», mutant opis-2d. The ОПИСЬ plan (05e `opisPlanOnly` → `drawPlan`) goes through the same `panelGpu`.
+- **The suit doll on the GPU** (12x `drawKitFigure`, ОПИСЬ КОМПЛЕКТ): the body brush is `kitFigureBody`, unchanged. The
+  body is baked once per kit, palette and visor tone, at max(2, screen) density; the outline silhouette is the
+  same bake filled with ink by `source-atop` (on an empty canvas that equals the old `source-in`). The doll sits in
+  the КОМПЛЕКТ zone through `opisGpu`. Pairs vs main at 760 and 390: the same doll, a cleaner outline. The
+  cosmetics test reads the brush on a 2D test canvas. Gate2d scene «опись» (the bake is reset on every КОМПЛЕКТ
+  pass), mutant doll-2d.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.

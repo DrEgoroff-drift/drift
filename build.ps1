@@ -386,7 +386,10 @@ function Index($files, $tfiles) {
     ""
   )
   $body = @("", "## ФАЙЛЫ И РАЗДЕЛЫ")
-  $doc = ($head + ($sym | Sort-Object) + $body + $lines) -join "`n"
+  # символы — по байтам, как склейка (0.359.0): Sort-Object под powershell 5.1 и pwsh 7 ставил «_file»
+  # и «_suite» в разные места, и INDEX у сеансов расходился (26.09)
+  $sa = @($sym); [Array]::Sort($sa, [System.StringComparer]::Ordinal)
+  $doc = ($head + $sa + $body + $lines) -join "`n"
   $dir = Join-Path $root "docs"
   if (-not (Test-Path $dir)) { [void](New-Item -ItemType Directory $dir) }
   [System.IO.File]::WriteAllText((Join-Path $dir "INDEX.md"), $doc, $enc)
