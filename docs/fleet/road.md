@@ -94,6 +94,32 @@ with a beat, 90 extra stepped frames — `shots.sh` there.
 - commit 5: `before-scheme.png | a4-scheme.png` — the sheet reads as a folded paper handout:
   edges darkened, each fold has a lit edge beside its shadow, lines sit in a faint ink bleed.
   The gain is small at 760 px; the fibres show only up close.
+- phone check (after commit 5, 390×844 at DPR 2): `pair-roadphone.png` (`before-roadphone.png |
+  a5-roadphone.png`) — the portrait layout is unchanged, the numbers are crisp on `#hud` at the
+  device DPR, the bloom reads as flowing curtains instead of a flat band; the suite checks pass
+  on it too (lit 4245, hull 960, 0 GPU errors).
+
+## Left in the zone
+
+Nothing ported is left undone. Not ported, on purpose (hybrid rule): the road's trail ribbon,
+jets, cocoon and the hull; the ride's stops, names, car and header; all text.
+
+## For the design pass (real GPU, Контроль) — per scene
+
+- **Road, 90 km/h** (`shots.sh`, tier 1): the bloom's colour loop against the mood hue — are the
+  curtains too blue/magenta on the S23; the height of the light at the bottom vs the footer
+  glass; the nebula clouds' contrast (they may want more cold key, a warm accent); star halo
+  size on DPR 3; `ROAD_GLOW` .18 against the trail — the trail must stay cream-amber, never white.
+- **Road, 850 km/h** (tier 3): the tunnel streak density and speed (`fract(t*1.6)`) at 60/120 Hz;
+  whether the tunnel should be tinted by the mood or stay pale; the cocoon under the hull.
+- **Road on the phone** (390×844): the cost of redrawing `#hud` every frame at DPR 2.625; text
+  sizes; the bottom fade into the footer.
+- **Rail ride** (`railshots.sh`, ring and bus): the line glow strength near the car and the
+  pulse speed; the transit streaks (lane density, length) — they must read as motion, not rain;
+  the headlight cone is hidden under the flash in the shots — look at it mid-run with no flash;
+  the flash's cyan halo vs the old one. Consider `BLOOM_K.rail` (request above).
+- **Line scheme** (`schemeshots.sh`): the fibres are barely visible at 760 px — check at DPR 2
+  up close; the edge darkening strength; the fold highlight.
 
 ## New render pipelines (for the warm-up table `08b1`)
 
@@ -110,6 +136,18 @@ with a beat, 90 extra stepped frames — `shots.sh` there.
   get a real halo. Not needed for correctness.
 
 ## Open problems
+
+- The zone is done: bloom field, sky, the road frame, the rail ride and the scheme are on the GPU.
+  What stays Canvas 2D on purpose (hybrid rule — complex vector shapes and text): the road's
+  trail ribbon, manoeuvre jets, hyper cocoon, the hull (`drawHull`, flight zone), numbers and
+  coins on `#hud`; the ride's stops, names, the car and the header.
+- `#hud` is redrawn every road frame (`gpuHud("road"+frameNo)`) at the device DPR: the same cost
+  class as the old full-screen `#roadcv` at DPR ≤ 2, but a DPR-3 phone pays more pixels. If the
+  S23 shows it, key the layer by the text content and redraw only the coins every frame.
+- Grain, vignette and frame bloom are gated on `G.running` in `gpuWorld`; the road is opened from
+  the in-game menu, so that holds, but a road opened with the game paused would lose them.
+- `#roadcv` stays in `index.html` as the finger layer (1×1 backing). It could be renamed or turned
+  into a plain div by whoever owns `index.html`; not needed.
 
 - The road's browser suites can't be run with a GPU in this cloud: `tests.html` under
   `--dump-dom` never gets `GPU.ok` (SwiftShader warm-up; G13 is the tools ship's). Without a GPU
