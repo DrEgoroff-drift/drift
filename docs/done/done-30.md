@@ -242,3 +242,13 @@ not part of this queue.
 queue, all fixed, pinned by the «разбор …» suites in `tests/91zzzw-base4.js`. The list, the two
 rules that outlive it are in §51.2 of `docs/DESIGN-base.md`. The six scene notes from the same
 review are closed too (**M413**, 0.410.0) — §51.3 there has the three frame rules they produced.
+
+## Engine stage 1 — flight (system) on WebGPU, closed 26.09 (0.468.0)
+
+The flight frame is the engine's: the HUD and the sticks on `#ovl` (08bi; `#hud` gone in 0.466.0), the flame plume
+(L4), the hull material (08cd, 0.467.0), the tour gate (`docs/tour.py`: 0 uploads, 1 submit a frame, a `gpuBake`
+frame +1, bake frames 0.29 % of the tour). It closed with the phone gate P1 on 0.468.0 (GPU-3, S23, on the charger
+at 100 %, thermal 0 throughout): cold 30 s 100 % of 1800 frames within 18 ms, max 16.9 ms; 5 min 99.98 % of 18002
+frames at 60.0 fps, none at 50 ms, three single 33 ms frames (one vsync skipped, no bake in them). On 25.09 the same
+gate failed on 9206be7 (an 83 ms hitch from 2D bakes at first sight, 85 % over 5 min); the phone had been waived
+on 26.09 while it was away and was run as soon as it was back, after the plan audit.
