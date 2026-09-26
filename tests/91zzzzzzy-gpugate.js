@@ -304,8 +304,8 @@ function gateFlyScenes(){
       c1.order={kind:"fight",sx:0,sy:0};c2.order={kind:"haul",sx:0,sy:0};
       const A=[{c:c1,cool:0,iff:true},{c:c2,cool:0,iff:true}];
       /* подпись мира — под интерфейсом: на ×1.5 подпись союзника легла на фишку компаса и склеила её цифры.
-         Подписи и фишки — один проход #ovl (08bi): подписи идут первыми, первый примитив прохода — глиф подписи */
-      const under=()=>!!OVL.on&&OVL.nl>0&&OVL.f[8]===1;
+         Подписи и фишки — один проход #ovl (08bi): интерфейс (стики — на телефоне), за ним подписи, первый примитив подписей — глиф */
+      const under=()=>!!OVL.on&&OVL.nl>0&&OVL.f[(OVL.nu||0)*OVL_N+8]===1;
       return {z:2.2,what:"оба борта подписаны на слое подписей, и этот слой под фишками",
         check:()=>under()&&A.every(a=>{const e=OVL.lab.get("al"+domLabelId(a.c));return !!(e&&e.on);}),
         place(){G.sx=0;G.sy=0;G.sys=getSystem(0,0);at(X,Y);

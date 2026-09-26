@@ -15,7 +15,6 @@ function gpuNone(why){
 /* устройство потеряно (сон телефона, сброс драйвера): кадр ждёт, ядро поднимается заново */
 function gpuDrop(why,retry){
   GPU.ok=false;GPU.on=false;GPU.lost=true;GPU.enc=null;GPU.scenePass=null;
-  if(ctx===GPU.uctx)ctx=MAIN_CTX;
   /* устройство, брошенное без destroy(), держит кадровые цели и печи до сборщика мусора — сносим сразу
      (у потерянного это пустой вызов; lost с причиной destroyed обработчик gpuInit пропускает) */
   try{if(GPU.dev)GPU.dev.destroy();}catch(_){}
@@ -27,6 +26,5 @@ function gpuDrop(why,retry){
 function gpuFail(e,where){
   if(GPU.lost||(typeof DOMException!=="undefined"&&e instanceof DOMException)){gpuDrop(where+": "+((e&&e.message)||e),true);return;}
   GPU.scenePass=null;GPU.overPass=null;GPU.enc=null;GPU.on=false;
-  if(ctx===GPU.uctx)ctx=MAIN_CTX;
   throw e;
 }

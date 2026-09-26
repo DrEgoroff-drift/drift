@@ -146,25 +146,21 @@ function helmCamOff(Z){
   c.x+=(wx-c.x)*.07;c.y+=(wy-c.y)*.07;
   return c;
 }
-/* лента: четырёхугольник от центра стика к голове, с расширением */
-function helmBandPath(x0,y0,x1,y1,w0,w1){
+/* лента: четырёхугольник от центра стика к голове, с расширением; прозрачность — от g0 у центра к g1 у головы */
+function helmBand(x0,y0,x1,y1,w0,w1,col,al,g0,g1){
   const dx=x1-x0,dy=y1-y0,d=Math.hypot(dx,dy)||1,nx=-dy/d,ny=dx/d;
-  ctx.beginPath();
-  ctx.moveTo(x0+nx*w0*.5,y0+ny*w0*.5);
-  ctx.lineTo(x1+nx*w1*.5,y1+ny*w1*.5);
-  ctx.lineTo(x1-nx*w1*.5,y1-ny*w1*.5);
-  ctx.lineTo(x0-nx*w0*.5,y0-ny*w0*.5);
-  ctx.closePath();
+  ovQuad(x0+nx*w0*.5,y0+ny*w0*.5,x1+nx*w1*.5,y1+ny*w1*.5,x1-nx*w1*.5,y1-ny*w1*.5,x0-nx*w0*.5,y0-ny*w0*.5,col,al,g0,g1);
 }
 /* пустой бак (R2): стик гаснет и говорит почему — руль без топлива не работает */
 function helmDry(){return G.mode==="system"&&typeof rescueEmpty==="function"&&rescueEmpty();}
 function helmDryLabel(x,y,a){
-  ctx.globalAlpha=.9*a;ctx.fillStyle="rgb(255,178,122)";
-  ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText("БАК ПУСТ",x,y-HELM_ARC0-8);ctx.textAlign="left";
+  ovText(OVL.uq,x,y-HELM_ARC0-8,"БАК ПУСТ","10px ui-monospace,monospace","rgb(255,178,122)","center","alphabetic",.9*a,1);
 }
+/* стики — на слое #ovl (08bi) каждый кадр, без 2D: лента — четырёхугольник с градиентом, края,
+   шеврон и след — капсулы, «СТОП» — кольцо и дуга, слова — маски атласа. Круглые концы и стыки —
+   как lineCap/lineJoin round прежнего пути */
 function helmDrawSticks(){
-  const dry=helmDry();
+  const dry=helmDry(),Q=OVL.uq;
   /* окно выходов открыто — оно и есть ответ; подпись под ним лишняя */
   const sosUp=typeof document!=="undefined"&&!!document.body&&!!document.body.classList&&document.body.classList.contains("sosopen");
   const one=(s,fade)=>{
@@ -172,8 +168,7 @@ function helmDrawSticks(){
     const slow=!!(c&&c.slow)&&!fade;
     /* бирюза приборов на ходу, янтарь на торможении — те же два тона, что у
        фишек компаса и у скобок захвата: лента не заводит третьего цвета */
-    const col=slow?"255,178,122":"127,230,216";
-    ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+    const col=slow?"rgb(255,178,122)":"rgb(127,230,216)";
     if(q.live){
       const L=q.r;
       const hx=q.x0+Math.cos(q.ang)*L,hy=q.y0+Math.sin(q.ang)*L;
@@ -181,71 +176,45 @@ function helmDrawSticks(){
       /* тело — ЗАДАННЫЙ ход: заливка не больше 15 % и тает к голове, край — линией.
          Две заливки (заданный .18–.30 и фактический .32) складывались в сплошной клин,
          на телефоне он закрывал курс перед носом (Контроль, 24.09) */
-      const gr=ctx.createLinearGradient(q.x0,q.y0,hx,hy);
-      gr.addColorStop(0,"rgba("+col+",.15)");gr.addColorStop(1,"rgba("+col+",.03)");
-      ctx.globalAlpha=a;ctx.fillStyle=gr;
-      helmBandPath(q.x0,q.y0,hx,hy,HELM_BAND0,w1);ctx.fill();
+      helmBand(q.x0,q.y0,hx,hy,HELM_BAND0,w1,col,a,.15,.03);
       /* края: тёмный кант под цветной линией — лента не тонет в светлой туманности */
       const dx=Math.cos(q.ang),dy=Math.sin(q.ang),nx=-dy,ny=dx;
       const edges=(t,al,lw)=>{
         const ex=q.x0+(hx-q.x0)*t,ey=q.y0+(hy-q.y0)*t,we=(HELM_BAND0+(w1-HELM_BAND0)*t)*.5,w0=HELM_BAND0*.5;
-        ctx.beginPath();
-        for(const sg of [-1,1]){ctx.moveTo(q.x0+nx*w0*sg,q.y0+ny*w0*sg);ctx.lineTo(ex+nx*we*sg,ey+ny*we*sg);}
-        ctx.globalAlpha=al*.5*a;ctx.strokeStyle="rgba(6,10,14,.9)";ctx.lineWidth=lw+1.4;ctx.stroke();
-        ctx.globalAlpha=al*a;ctx.strokeStyle="rgb("+col+")";ctx.lineWidth=lw;ctx.stroke();};
+        for(const sg of [-1,1])ovCap(q.x0+nx*w0*sg,q.y0+ny*w0*sg,ex+nx*we*sg,ey+ny*we*sg,lw+1.4,"rgba(6,10,14,.9)",al*.5*a);
+        for(const sg of [-1,1])ovCap(q.x0+nx*w0*sg,q.y0+ny*w0*sg,ex+nx*we*sg,ey+ny*we*sg,lw,col,al*a);};
       edges(1,.4,1.1);
       /* ФАКТИЧЕСКИЙ ход — край ярче и толще докуда корабль уже разогнался вдоль ленты */
       const f=c?clamp(c.vp/Math.max(q.k,.08),0,1):0;
       if(f>.02)edges(f,.8,1.6);
-      /* голова — шеврон, а не кружок под подушечкой */
-      ctx.globalAlpha=.62*a;ctx.strokeStyle="rgb("+col+")";ctx.lineWidth=1.8;
-      ctx.beginPath();
-      for(const sg of [-1,1]){
-        const ax=q.ang+sg*.7;
-        ctx.moveTo(hx+Math.cos(ax)*(w1*.5+5),hy+Math.sin(ax)*(w1*.5+5));
-        ctx.lineTo(hx+Math.cos(q.ang)*6,hy+Math.sin(q.ang)*6);
-      }
-      ctx.stroke();
+      /* голова — шеврон, а не кружок под подушечкой: одна ломаная, стык не двоится */
+      const tx=hx+Math.cos(q.ang)*6,ty=hy+Math.sin(q.ang)*6,A=q.ang-.7,B=q.ang+.7,o=w1*.5+5;
+      ovCap3(hx+Math.cos(A)*o,hy+Math.sin(A)*o,tx,ty,hx+Math.cos(B)*o,hy+Math.sin(B)*o,1.8,col,.62*a);
     }else{
       /* мёртвая зона — «СТОП»: кольцо и слово, и кольцо тает вместе с ходом */
-      ctx.globalAlpha=.26*a;ctx.strokeStyle="rgb(255,178,122)";ctx.lineWidth=1.4;
-      ctx.beginPath();ctx.arc(q.x0,q.y0,HELM_ARC0,0,TAU);ctx.stroke();
+      ovEll(q.x0,q.y0,HELM_ARC0,HELM_ARC0,1.4,"rgb(255,178,122)",.26*a);
       const vk=G.ctl?clamp(G.ctl.vk,0,1):0;
       if(vk>.02){
-        ctx.globalAlpha=.4*a;ctx.beginPath();
-        ctx.arc(q.x0,q.y0,HELM_ARC0,-Math.PI/2,-Math.PI/2+TAU*vk);ctx.stroke();
+        if(vk<1)ovArc(q.x0,q.y0,HELM_ARC0,-Math.PI/2,TAU*vk,1.4,"rgb(255,178,122)",.4*a);
+        else ovEll(q.x0,q.y0,HELM_ARC0,HELM_ARC0,1.4,"rgb(255,178,122)",.4*a);
       }
-      ctx.globalAlpha=.5*a;ctx.fillStyle="rgb(255,178,122)";
-      ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-      if(!dry)ctx.fillText("СТОП",q.x0,q.y0-HELM_ARC0-6);
-      ctx.textAlign="left";
+      if(!dry)ovText(Q,q.x0,q.y0-HELM_ARC0-6,"СТОП","9px ui-monospace,monospace","rgb(255,178,122)","center","alphabetic",.5*a,1);
     }
     /* тот же вектор — у самого корабля (M422): связь «палец → корабль» должна
        быть видна там, куда игрок смотрит, а не только под большим пальцем */
     if(q.live&&c&&G.viewCX!==undefined&&G.mode==="system"){
       const sx=W/2+(G.ship.x-G.viewCX)*G.zoom,sy=H/2+(G.ship.y-G.viewCY)*G.zoom;
       const L2=18+30*q.k,am=Math.hypot(c.ax,c.ay)||1;
-      ctx.globalAlpha=.22*a;ctx.strokeStyle="rgb("+col+")";ctx.lineWidth=1.4;
-      ctx.beginPath();ctx.moveTo(sx,sy);
-      ctx.lineTo(sx+c.ax/am*L2,sy+c.ay/am*L2);ctx.stroke();
+      ovCap(sx,sy,sx+c.ax/am*L2,sy+c.ay/am*L2,1.4,col,.22*a);
     }
     /* хвост за пальцем: полоска не появляется из ниоткуда, она пришла оттуда */
     if(!fade)helmTrailAge(HELM.trail);  /* палец замер — след догоняет его и гаснет */
-    if(!fade&&HELM.trail.length>1){
-      ctx.strokeStyle="rgb("+col+")";
-      for(let i=1;i<HELM.trail.length;i++){
-        ctx.globalAlpha=.05+.10*(i/HELM.trail.length)*a;
-        ctx.lineWidth=1+3*(i/HELM.trail.length);
-        ctx.beginPath();ctx.moveTo(HELM.trail[i-1].x,HELM.trail[i-1].y);
-        ctx.lineTo(HELM.trail[i].x,HELM.trail[i].y);ctx.stroke();
-      }
-    }
-    ctx.globalAlpha=.13*a;ctx.fillStyle="rgb("+col+")";
-    ctx.beginPath();ctx.arc(q.x0,q.y0,1.8,0,TAU);ctx.fill();
-    ctx.globalAlpha=.28*a;
-    ctx.beginPath();ctx.arc(s.x,s.y,3.2,0,TAU);ctx.fill();
+    const T=HELM.trail;
+    if(!fade&&T.length>1)
+      for(let i=1;i<T.length;i++)ovCap(T[i-1].x,T[i-1].y,T[i].x,T[i].y,1+3*(i/T.length),col,.05+.10*(i/T.length)*a);
+    ovEll(q.x0,q.y0,1.8,1.8,0,col,.13*a);
+    ovEll(s.x,s.y,3.2,3.2,0,col,.28*a);
     if(dry&&!sosUp)helmDryLabel(q.x0,q.y0,fade?s.f:1);
-    ctx.restore();
   };
   const live=HELM.S,fade=HELM.fade;
   if(live)one(live,false);
@@ -255,10 +224,8 @@ function helmDrawSticks(){
     /* точка покоя: бледное кольцо мёртвой зоны и точка. Сказать «стик здесь»
        и не спорить с миром за глаз — те же .1…2, что у самого следа */
     const h=helmHome();
-    ctx.save();ctx.strokeStyle="#cfe6ea";ctx.fillStyle="#cfe6ea";ctx.lineWidth=1;
-    ctx.globalAlpha=.16;ctx.beginPath();ctx.arc(h.x,h.y,HELM_ARC0,0,TAU);ctx.stroke();
-    ctx.globalAlpha=.3;ctx.beginPath();ctx.arc(h.x,h.y,2.2,0,TAU);ctx.fill();
+    ovEll(h.x,h.y,HELM_ARC0,HELM_ARC0,1,"#cfe6ea",.16);
+    ovEll(h.x,h.y,2.2,2.2,0,"#cfe6ea",.3);
     if(dry&&!sosUp)helmDryLabel(h.x,h.y,1);
-    ctx.restore();
   }
 }

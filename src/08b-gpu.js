@@ -4,12 +4,12 @@
    кадр текстурой. Старого 2D-кадра больше нет: без WebGPU игра честно говорит,
    какой нужен браузер. #c невидим (opacity 0) и по-прежнему ловит палец.
    Кадр: сцена видеокарты (gpuScene) → #c поверх → свечение, зерно, виньетка,
-   хроматика, дизеринг одним проходом. Приборы и стойка — свой DOM-холст #hud над канвой. */
+   хроматика, дизеринг одним проходом. Всё, что над миром, — слой #ovl над канвой (08bi). */
 const GPU={ok:false,on:false,lost:false,busy:false,none:false,
   dev:null,cv:null,gx:null,fmt:"",L:null,P:{},B:{},S:null,U:null,UA:new Float32Array(132),shaft:null,lens:null,lt:[],oc:[],sepH:[],dz:[],
   T:{},V:{},N:null,noiseOk:false,ui:null,uctx:null,snap:null,
   bw:0,bh:0,qw:2,qh:2,dpr:0,cw:0,ch:0,enc:null,scenePass:null,sceneOn:false,
-  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,uiWas:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
+  sceneBg:{r:0,g:0,b:0,a:1},uiOn:false,hitK:0,hitDx:0,post:{k:0,grain:0,vig:0},
   lay:{},bufs:{},bgs:{},cvTex:new Map(),trash:[],errs:0,frameNo:0,snapNo:-1,wantSnap:false,overPass:null,
   ar:{},fL:null,
   /* выключатели для замера (?g11=deep, 28z): bloom, front — вклейка #c, fin — голый финал */
@@ -28,7 +28,6 @@ function gpuTakeSnap(){
   const c=GPU.snap||(GPU.snap=document.createElement("canvas"));
   if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
   const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(GPU.cv,0,0);
-  if(GPU.uiWas&&GPU.ui)g.drawImage(GPU.ui,0,0,c.width,c.height);   /* приборы — поверх, как на экране */
   chipDomSnap(g,c.width/Math.max(1,W));
   GPU.snapNo=GPU.frameNo;
 }
@@ -63,10 +62,6 @@ async function gpuInit(){
     GPU.gx=GPU.cv.getContext("webgpu");
     GPU.fmt=navigator.gpu.getPreferredCanvasFormat();
     GPU.gx.configure({device:dev,format:GPU.fmt,alphaMode:"opaque"});
-    /* слой приборов (24.09): свой DOM-холст над #g — браузер кладёт его сам,
-       в видеокарту он не копируется и поста не берёт, как приборы 2D-кадра («до приборов», M243) */
-    if(!GPU.ui){const u=document.createElement("canvas");u.id="hud";u.style.cssText=GPU.cv.style.cssText;
-      GPU.cv.after(u);GPU.ui=u;GPU.uctx=u.getContext("2d",{alpha:true});}
     gpuPipes();
     GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];GPU.ar={};GPU.fL=null;GPU.nView=null;
     GPU.T={};GPU.bw=0;GPU.ok=true;
@@ -381,15 +376,15 @@ function gpuResize(){
   if(!GPU.ok)return;
   const bw=cvs.width,bh=cvs.height;if(bw<2||bh<2)return;
   /* #c меряет resize() (08-state); смена ширины холста сбрасывает и преобразование */
-  /* слой приборов — на родном DPR устройства (08bh) */
-  const nd=gpuHudDpr();GPU.ui.width=Math.max(2,Math.round(W*nd));GPU.ui.height=Math.max(2,Math.round(H*nd));
-  GPU.uctx.setTransform(nd,0,0,nd,0,0);GPU.uiWas=false;GPU.hkey=null;GPU.hnd=nd;
+  GPU.hnd=gpuHudDpr();   /* слой #ovl — на родном DPR устройства (08bi): его смена тоже пересобирает кадр */
   GPU.cv.width=bw;GPU.cv.height=bh;
   const qw=Math.max(2,Math.round(W/4)),qh=Math.max(2,Math.round(H/4));
   for(const k in GPU.T)GPU.T[k].destroy();
   const TB=GPUTextureUsage.TEXTURE_BINDING,RA=GPUTextureUsage.RENDER_ATTACHMENT,CD=GPUTextureUsage.COPY_DST;
   const mk=(w,h,f,us)=>GPU.dev.createTexture({size:[w,h],format:f,usage:us});
-  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),ui:mk(bw,bh,"rgba8unorm",TB|CD|RA),
+  /* ui — пустышка 1×1: слой интерфейса в текстуре кончился (стойка, кабина, стики — на #ovl), а привязку 6
+     финал ещё держит (u.ui всегда 0). Был полный кадр RGBA — ~12 МБ на S23 ни за что (26.09) */
+  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),ui:mk(1,1,"rgba8unorm",TB),
     scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),lt:mk(16,3,"rgba16float",TB|CD)};
   /* лестница свечения (P1 25.09): одна текстура с мипами от четверти кадра вниз; уровень
      уже шести текселей не заводится (телефон — пять уровней, ноутбук — шесть). Каждый
@@ -519,8 +514,8 @@ function gpuFrame(){
   /* невидимый #c чистится, только если на нём рисовали (cState, 08c): безусловная чистка
      всего холста каждый кадр — ограничитель частоты Chrome на телефоне (Контроль, P1) */
   ctx.setTransform(1,0,0,1,0,0);if(GPU.cState!==0)ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
-  if(GPU.hq)GPU.hq.length=0;chipDomSweep();   /* слой приборов и фишки — 08bh */
-  GPU.on=true;
+  chipDomSweep();   /* слой #ovl — 08bh */
+  GPU.on=true;GPU.wDone=false;
   GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
 }
@@ -581,16 +576,19 @@ function gpuOver(){
   GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
   return GPU.overPass;
 }
-/* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей */
+/* кадр вне цикла (тест, стенд, look): собрать, показать, снять — одной задачей. Мир, не собранный
+   рисунком, собирается здесь; признак — GPU.wDone, не ctx: 2D-слоя приборов нет, ctx всегда #c
+   (прежде по ctx===#c второй gpuWorld без свечения гасил кадр на 10 % — золотые кадры, 26.09) */
 function gpuManual(draw){
   if(!gpuFrame())return false;
   GPU.wantSnap=true;
-  try{draw();}finally{if(GPU.on){if(GPU.enc&&ctx===MAIN_CTX)gpuWorld(0,false,false);gpuPresent();}}
+  try{draw();}finally{if(GPU.on){if(GPU.enc&&!GPU.wDone)gpuWorld(0,false,false);gpuPresent();}}
   return true;
 }
 /* мир дорисован: передний слой — в текстуру, свечение — в четверть кадра.
    Дальше кадр рисует интерфейс — на свой слой, без свечения и зерна */
 function gpuWorld(k,grain,vig){
+  GPU.wDone=true;
   try{
     if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
     if(GPU.overPass){GPU.overPass.end();GPU.overPass=null;}
@@ -606,8 +604,8 @@ function gpuWorld(k,grain,vig){
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
-    /* слой приборов — по изменению (08bh); стойка (25d) — на слое #ovl, перерисовки #hud не просит */
-    gpuHudFlush();ctx=GPU.uctx;
+    /* всё, что над миром, — одним проходом слоя #ovl (08bi): 2D-слоя приборов нет, ctx остаётся на #c */
+    ovFlush();
   }catch(e){gpuFail(e,"сборка");}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */
@@ -621,7 +619,7 @@ function gpuBloom(){
 function gpuPresent(){
   if(!GPU.on||!GPU.enc){GPU.on=false;return;}
   try{
-    GPU.uiOn=false;   /* слой приборов — DOM-холст (#hud), не текстура */
+    GPU.uiOn=false;   /* слой приборов — #ovl над #g, не текстура */
     gpuUni();gpuLtWrite();
     gpuPass(GPU.gx.getCurrentTexture().createView(),GPU.kill.fin?GPU.P.fin0:GPU.P.fin,GPU.B.fin,"final");
     const tsRead=gpuTsResolve();
@@ -631,7 +629,6 @@ function gpuPresent(){
     if(GPU.wantSnap){GPU.wantSnap=false;gpuTakeSnap();}
   }catch(e){gpuFail(e,"кадр");}
   GPU.enc=null;GPU.on=false;
-  if(ctx===GPU.uctx)ctx=MAIN_CTX;
 }
 /* поднимается после всего скрипта: в сборке тестов TEST объявлен ниже игры */
 if(typeof document!=="undefined"&&document.body)setTimeout(gpuInit,0);

@@ -143,6 +143,25 @@ const GATE2D=[
        G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;G.mode="system";enterBelt();G.cargo.ice=3;return {};}
      return null;},
    probe:["beltHudPush"]},
+  /* стики (15b) и строка наблюдения (17) — бывший слой #hud: по кругу живой, торможение, «СТОП» с дугой,
+     пустой бак, угасание, точка покоя; строки растрятся за первые 30 кадров, дальше — только атлас */
+  {name:"стики и строка наблюдения (15b, 17): бывший #hud на #ovl",
+   painters:["helmDrawSticks","helmBand","helmDryLabel","sysWatchLabel"],warm:30,
+   place(first){
+     const S=this;
+     if(first){S.n=0;G.credits=100000;G.owned.obod=true;const c=genMerc(999,["mine"]);
+       G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},tMs:now(),paidMs:now()}));
+       const m=G.crew[G.crew.length-1];crewAssignShip(m,"obod");crewOrder(m,"mine");G.watch=m.id;
+       S.mob=document.body.classList.contains("mobile");document.body.classList.add("mobile");return {};}
+     const ph=S.n++%6,y=H-160;G.fuel=ph===3?0:50;HELM.fade=null;
+     HELM.S=ph===0?{x0:120,y0:y,x:200,y:y-55,f:1}:ph===1?{x0:120,y0:y,x:60,y:y-20,f:1}:ph===2?{x0:120,y0:y,x:126,y:y-3,f:1}:
+            ph===3?{x0:120,y0:y,x:190,y:y,f:1}:null;
+     if(ph===4)HELM.fade={x0:120,y0:y,x:200,y:y-55,f:.7};
+     if(ph===0)HELM.trail=[{x:150,y:y-10},{x:170,y:y-30},{x:200,y:y-55}];
+     if(G.ctl){G.ctl.vk=.62;G.ctl.slow=ph===1;}
+     return {};},
+   done(){if(!this.mob)document.body.classList.remove("mobile");HELM.S=HELM.fade=null;},
+   probe:["helmDrawSticks","sysWatchLabel"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
@@ -181,6 +200,7 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
       for(const [P,k,d] of saved)Object.defineProperty(P,k,d);
       for(const f in wrap)window[f]=wrap[f];
       G.running=run0;LOOP_OFF=loop0;
+      if(S.done)S.done();
     }
     for(const f of S.probe)ok(hit[f]>=30,S.name+": "+f+" рисовал ("+hit[f]+" из 90 кадров)");
     const top=Object.entries(K.by).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>v+"× "+k).join("; ");

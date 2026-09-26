@@ -501,17 +501,13 @@ const T=(()=>{
      перехватывается прототип (видны и запечённые слои, `main:false`), под
      Node — главный ctx игры. */
   const LEDGER_OPS=["fillRect","strokeRect","clearRect","fillText","strokeText","drawImage","fill","stroke","putImageData"];
-  /* что видит игрок: главная канва; с видеокартой (ступень 1, 08bh) мир на #g, а текст —
-     на слое приборов #hud и в маленьких холстах ламп (#labels); подписи мира и фишки — на #ovl
-     (08bi) без 2D, их строки сдаёт сам слой (OVL.led) */
-  const ledgerSeen=c=>c===cvs||(!!GPU.ui&&c===GPU.ui)||!!(c&&c.closest&&c.closest("#labels"));
+  /* что видит игрок: главная канва; с видеокартой (ступень 1, 08bh) мир на #g, а текст — в маленьких
+     холстах ламп (#labels) и на слое #ovl (08bi) без 2D: его строки сдаёт сам слой (OVL.led) */
+  const ledgerSeen=c=>c===cvs||!!(c&&c.closest&&c.closest("#labels"));
   /* плотность холста: пикселей на пиксель CSS */
-  const ledgerDens=c=>(GPU.ui&&c===GPU.ui)?GPU.ui.width/Math.max(1,W):(c&&c.closest&&c.closest("#labels"))?gpuHudDpr():(DPR||1);
+  const ledgerDens=c=>(c&&c.closest&&c.closest("#labels"))?gpuHudDpr():(DPR||1);
   function ledger(fn){
     const L={calls:0,by:{},texts:[]};
-    /* слой приборов и подписи перерисовываются только по изменению — для счёта кадр
-       рисует их заново, как в первый раз */
-    if(GPU.ok)GPU.hkey=null;
     const wrap=(P,keep,ops)=>{
       for(const op of (ops||LEDGER_OPS)){
         const f=P[op];if(keep)keep[op]=f;
