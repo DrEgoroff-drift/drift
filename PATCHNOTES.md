@@ -6,6 +6,18 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.475.0 - the shipyard showcase and ОПИСЬ on the engine
+
+- **The shipyard showcase is one engine canvas** (GPU-3): every hull on the ВЕРФЬ tab is the same studio hull
+  as in flight, drawn into one canvas over the list. Before, each card baked its own small 2D picture. The
+  hulls are sharper on DPR 2 and 3 and keep their places while the list scrolls.
+- **ОПИСЬ pictures on the GPU**: the hold piles, the kit laid out, the hatch, the matchbox, the cosmetics box
+  and the ship plan keep their brushes and are baked at screen density. They were 1× canvases and looked
+  soft. The layout does not move: a dense canvas once pushed the card grid twice as wide, so the canvas now
+  keeps its logical size for the layout.
+- **Nets**: the «0 вызовов 2D» gate has scenes for the showcase and for ОПИСЬ, and the zoo has two mutants
+  for them (yard-2d, opis-2d); both are killed.
+
 ## 0.474.0 - the parrot, the seat and the desk on the engine
 
 - **The parrot flies on the GPU** (GPU-3): its window and its perch icon draw from one atlas baked once, and a
