@@ -6,6 +6,30 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.469.0 - a star with a real edge, gas giants with jets, dust without beads
+
+- **The star's disc darkens toward its edge** (GPU-2): an ordinary star's limb goes red instead of
+  ending in a bright ring, the corona sits behind the disc, and the disc is the brightest thing in the
+  sky. A hot star stays white-blue to the edge instead of reading as a grey bubble.
+- **The corona is cut only up close** (GPU-2): from afar a giant star keeps its halo, as before.
+- **Gas giants get thin jets along the flow** (GPU-2): streaks follow the curls around the storms and
+  carry the neighbouring band's colour; they fade out from afar, so nothing ripples.
+- **No scan lines on a ring seen edge-on** (GPU-2): the ring's front arc over the planet is smoothed
+  across a pixel instead of breaking into rows.
+- **Dust pillars have blunt heads and no beads** (GPU-2): thin crests no longer sparkle with a bright
+  rim, gas-less globules stop glowing, and a dim warm light reaches in from the rim.
+
+## 0.468.0 - the instrument pod no longer eats video memory, lighter frames
+
+- **The instrument pod stops taking 6.6 MB of video memory for good** (GPU-3): since 0.466.0 its first
+  frame claimed a new slot in the bake pool that stayed there; the pod's face is now baked once, like
+  the rack's, and the warmed-up pool stays as it was.
+- **Frames make less garbage** (GPU-3): pictures drawn on the GPU no longer rebuild their bindings when
+  the texture changes (8 a frame in a system, now none), and the per-call arrays are gone (30 a frame, now 4).
+  The picture is the same to the pixel.
+- **Tests**: a fresh page in the map scene lays the whole rail net before the shot, and the hail and
+  fuel windows close between suites - the phone run in four parts is green again.
+
 ## 0.467.0 - ships in a planet's shadow, hulls of real material
 
 - **A planet shades ships** (GPU-1): fly behind a planet and your ship and everyone near it go dark,

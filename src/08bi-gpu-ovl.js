@@ -193,6 +193,7 @@ function ovFlush(){
 }
 /* проход цели T в кадровый энкодер (тот же submit): очереди qs снизу вверх, прогоны T.ur, точки графиков T.gd —
    после примитивов, с границы vec4. Очереди опустошаются. #ovl — сам OVL, колодка (25c) — своя цель */
+const OVL_UF=new Float32Array(4);   /* форма прохода — черновик: writeBuffer копирует сразу (ревью №7) */
 function ovPass(T,view,w,h,qs,ts){
   const d=GPU.dev;let np=0;for(const q of qs)np+=q.length;
   const n=np/OVL_N,g0=np,need=np+Math.ceil(T.gd.length/4)*4;
@@ -206,7 +207,7 @@ function ovPass(T,view,w,h,qs,ts){
   if(!OVL.A.tex)ovAtlas("",()=>({w:1,h:1,ox:0,oy:0,a:new Uint8Array(1)}));   /* атлас нужен привязке и без текста */
   /* кэш привязок живёт, пока те же буфер, атлас и конвейер */
   if(T.k0!==T.buf||T.k1!==OVL.A.view||T.k2!==OVL.P){T.k0=T.buf;T.k1=OVL.A.view;T.k2=OVL.P;T.bgs.clear();}
-  d.queue.writeBuffer(T.buf,0,T.f,0,need);d.queue.writeBuffer(T.U,0,new Float32Array([w,h,g0/4,0]));
+  d.queue.writeBuffer(T.buf,0,T.f,0,need);const u=OVL_UF;u[0]=w;u[1]=h;u[2]=g0/4;u[3]=0;d.queue.writeBuffer(T.U,0,u);
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",
     clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs(ts)});
   p.setPipeline(OVL.P);
