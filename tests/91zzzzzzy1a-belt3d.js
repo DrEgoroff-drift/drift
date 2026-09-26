@@ -74,3 +74,19 @@ TEST_SUITES.push(()=>suite("кабина пояса: план без 2D-холс
   ok(L.indexOf("drawImage")<0,"рамы на слое приборов нет — она в сцене");
   resetWorld();
 }));
+TEST_SUITES.push(()=>suite("лампы стоек кабины: моргают вразнобой, погашенные не загораются",()=>{
+  resetWorld();
+  const P=cockpitTex(G.shipId).plan;
+  ok(P.leds.length>=4,"ламп на стойке: "+P.leds.length);
+  let blink=0,dead=0,lit=0;const ph=new Set();
+  for(const L of P.leds){
+    let a=0,z=0;for(let t=0;t<2400;t+=3){if(ckptLedOn(L,t))a++;else z++;}
+    if(L.on){if(a>0&&z>0)blink++;ph.add(Math.round(L.ph*100));}
+    else if(a===0)dead++;
+    if(ckptLedOn(L,0))lit++;
+  }
+  eq(blink,P.leds.filter(L=>L.on).length,"каждая живая лампа и горит, и гаснет");
+  eq(dead,P.leds.filter(L=>!L.on).length,"мёртвая лампа не загорается никогда");
+  ok(ph.size===P.leds.filter(L=>L.on).length,"фазы у ламп свои — моргают вразнобой");
+  resetWorld();
+}));

@@ -1,20 +1,26 @@
 /* ══════════════ ориентиры пояса на видеокарте (GPU, ступень 2) ══════════════
-   Тот же силуэт, что drawBeltPOISprite (24b), фигурами набора: многоугольники —
+   Силуэт ориентира (2D-художника больше нет, 24b — только расстановка) фигурами набора: многоугольники —
    веером от центра с жёсткими внутренними рёбрами, линии — повёрнутыми
    прямоугольниками (концы срезаны, как у 2D), дуга кольца — лентой четырёхугольников,
-   огни — дисками. Печь одна на всю игру — пятно зева устья (радиальный градиент).
-   Ничего не грузится при подлёте и не мылится вблизи: фигуры считаются в пикселях. */
-let BPG_MOUTH=null;
-function beltPoiMouthTex(){
-  if(BPG_MOUTH)return BPG_MOUTH;
-  /* как у 2D: градиент круглый (радиус .42), а залит эллипс .42×.3 — по малой оси край
-     резкий, по большой уходит в ноль. Холст — рамка эллипса, в долях S */
-  const c=document.createElement("canvas"),k=256/.42;c.width=512;c.height=Math.ceil(.6*k);
-  const g=c.getContext("2d");g.setTransform(k,0,0,k,256,c.height/2);
-  const gr=g.createRadialGradient(0,0,0,0,0,.42);
-  gr.addColorStop(0,"rgba(0,0,0,.98)");gr.addColorStop(.7,"rgba(0,0,0,.86)");gr.addColorStop(1,"rgba(0,0,0,0)");
-  g.fillStyle=gr;g.beginPath();g.ellipse(0,0,.42,.3,0,0,TAU);g.fill();
-  return BPG_MOUTH=c;
+   огни — дисками. Устья здесь нет: оно камень и рисуется сеткой с глубиной (24be, beltMaw).
+   Ничего не печётся и не грузится, не мылится вблизи: фигуры считаются в пикселях.
+   Свет (G8): силуэт — тело. Каждая фигура тонируется по своему месту в силуэте, как точка
+   шара под светилом: нормаль (u, √(1−u²)) против направления на звезду в осях камеры
+   (BPOI_L, ставит 24ba). Звезда за спиной — ориентир освещён в лицо, впереди — горит
+   только край к ней, остальное в тени и в холодном отсвете. Огни, окна и кристаллы
+   друзы светят сами — их свет не трогает (флаг e) */
+const BPOI_L={x:0,y:0,z:1,r:255,g:255,b:255};
+function bpoiLit(SH,px,py,S){
+  const L=BPOI_L,R=S*1.1;
+  for(let i=0;i<SH.length;i++){const t=SH[i];if(t.e)continue;
+    let cx,cy;
+    if(t[0]===5){cx=(t[1]+t[3]+t[5])/3;cy=(t[2]+t[4]+t[6])/3;}
+    else if(t[0]===2){cx=(t[1]+t[3])/2;cy=(t[2]+t[4])/2;}
+    else{cx=t[1];cy=t[2];}
+    let ux=(cx-px)/R,uy=(cy-py)/R;const l=Math.hypot(ux,uy);if(l>.98){ux*=.98/l;uy*=.98/l;}
+    const lam=Math.max(0,ux*L.x+uy*L.y+Math.sqrt(Math.max(0,1-ux*ux-uy*uy))*L.z),f=.6+1.0*lam;
+    t[7]=Math.min(255,t[7]*f+L.r*.1*lam)|0;t[8]=Math.min(255,t[8]*f+L.g*.1*lam)|0;t[9]=Math.min(255,t[9]*f+L.b*.1*lam)|0;
+  }
 }
 function beltPoiGpu(pass,q,px,py,sc,fog){
   const S=q.size*sc;
@@ -47,6 +53,7 @@ function beltPoiGpu(pass,q,px,py,sc,fog){
       for(let i=0;i<7;i++){
         const on=((q.seed>>>(i%13))&7)===0;
         rect(-L*.22+i*L*.075,-bw*.18,Math.max(1,S*.022),Math.max(1,S*.016),on?[255,206,140,+(.85*fog).toFixed(2)]:dim(.10));
+        if(on)SH[SH.length-1].e=1;
       }
       M=M0;
     }
@@ -63,7 +70,7 @@ function beltPoiGpu(pass,q,px,py,sc,fog){
       SH.push([5,o[0],o[1],b[0],b[1],c[0],c[1],C[0],C[1],C[2],1,0]);}
     M=M0;
     const bl=Math.pow(Math.max(0,Math.sin(G.t*.05+q.ph)),8);
-    if(bl>.03)disc(-S*.9,-S*.1,Math.max(1.4,S*.03),[120,230,255,+(.9*bl*fog).toFixed(2)]);
+    if(bl>.03){disc(-S*.9,-S*.1,Math.max(1.4,S*.03),[120,230,255,+(.9*bl*fog).toFixed(2)]);SH[SH.length-1].e=1;}
   }else if(q.k==="ring"){
     /* дуга: лента четырёхугольников, общие стороны жёсткие; концы срезаны, как butt */
     const R=S*.82,hw=Math.max(1.5,S*.11)/2,a0=.5,a1=.5+Math.PI*1.35,N=48,C=dim(.3);
@@ -76,7 +83,7 @@ function beltPoiGpu(pass,q,px,py,sc,fog){
       disc(Math.cos(a)*rr,Math.sin(a)*rr,Math.max(1,S*(.02+((i*17)%3)/3*.03)),dim(.22));}
   }else if(q.k==="drusa"){
     /* призма — градиент от устья к острию: ломтики поперёк оси, у каждого свой тон */
-    const n=6+Math.floor(r()*5),K=8;
+    const n=6+Math.floor(r()*5),K=8,e0=SH.length;
     for(let i=0;i<n;i++){
       const a=i/n*TAU+r()*.3,len=S*(.5+r()*.6),w=S*(.07+r()*.08);
       const tw=.55+.45*Math.pow(Math.max(0,Math.sin(G.t*.02+i*1.7)),4);
@@ -87,14 +94,8 @@ function beltPoiGpu(pass,q,px,py,sc,fog){
         if(k<K-1)gpuQuad(SH,pt(s1,-hw(s1)),pt(s2,-hw(s2)),pt(s2,hw(s2)),pt(s1,hw(s1)),C,2|(k>0?8:0));
         else{const A=pt(s1,-hw(s1)),B=pt(len,0),Cc=pt(s1,hw(s1));SH.push([5,A[0],A[1],B[0],B[1],Cc[0],Cc[1],C[0],C[1],C[2],C[3],4]);}}
     }
-  }else{
-    const nv=11,E=[];
-    for(let i=0;i<nv;i++){const a=i/nv*TAU,rr=S*(.72+((q.seed>>>(i%9))&7)/7*.34);E.push([Math.cos(a)*rr,Math.sin(a)*rr]);}
-    poly(E,dim(.26));ring(E,1,dim(.10));
-    gpuShapes(pass,SH);SH.length=0;
-    const c=P(0,0);gpuImage(pass,gpuMipTex(beltPoiMouthTex()),[{x:c[0],y:c[1],w:S*.84,h:S*.6,rot:ang+.3}]);
-    for(let i=0;i<5;i++){const a=i/5*TAU+.4,bl=.4+.6*Math.pow(Math.max(0,Math.sin(G.t*.03+i)),4);
-      disc(Math.cos(a)*S*.44,Math.sin(a)*S*.31,Math.max(1,S*.022),[255,170,110,+(.7*bl*fog).toFixed(2)]);}
+    for(let i=e0;i<SH.length;i++)SH[i].e=1;
   }
+  bpoiLit(SH,px,py,S);
   gpuShapes(pass,SH);
 }
