@@ -204,6 +204,21 @@ function stTabMarket(st){
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }else if(!empty)$body.appendChild(el("div","sec","НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"));   /* редкое — тоже груз (хвост R6) */
+    /* «ИЗ ДАЛИ» (M467): в сердце изредка продают далёкое — втридорога */
+    {const S=(typeof farStall==="function")?farStall(G.sys):null;
+      if(S&&S.left){
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>ИЗ ДАЛИ · <span style='color:"+RES[S.k].col+"'>"+RES[S.k].ru+"</span> ×"+S.left+
+          "</b><s>"+S.ask.toLocaleString("ru")+" кр/ед · привезли с кромки, партия до конца трёх суток · «дорого, зато не лететь»</s>"));
+        r.appendChild(el("div","qt",S.ask.toLocaleString("ru")+"<s>кр</s>"));
+        const b=el("button","act","КУПИТЬ 1");
+        b.disabled=G.credits<S.ask;
+        b.onclick=()=>{const got=farStallBuy(G.sys,1);
+          if(got)tell("money","Куплено из дали: "+RES[S.k].ru.toLowerCase()+" · −"+S.ask.toLocaleString("ru")+" кр",
+                      "Из дали\n"+RES[S.k].ru+"\n−"+S.ask.toLocaleString("ru")+" кр");
+          renderTab();};
+        r.appendChild(b);$body.appendChild(r);
+      }}
     /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
     if(typeof coopCounterBlock==="function")coopCounterBlock();
     /* редкое лежит в том же трюме, но купить его никто не возьмётся:

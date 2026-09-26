@@ -58,6 +58,12 @@ could ever save.
   one or two extra hulls. No new save field: a struck vein is a grade-3 deposit in `G.farTaken`, and the
   strike time is the rush's (`G.rush`).
 
+- **M467: far goods on sale in the heart, rarely and dear.** Inside r 10, about one station in four puts out an
+  «ИЗ ДАЛИ» stall for three days: two to six units of one far good at three times what the same counter pays
+  for it. The lot is rolled from the station and the three-day window; what was bought is kept in the station's
+  market record, so no save field is new. A player who never goes out can still buy one piece of osmium for the
+  shipyard, and selling it straight back loses two thirds.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -74,6 +80,8 @@ could ever save.
   approach» is one or two extra pirates, not prospectors: there is no neutral traffic to borrow yet. The vein
   rumour never lies (the ordinary 15 % do); the vein is real. A vein struck before the latest rush is told at
   once, since only the latest strike has a time.
+- M467: «dear» is ×3 of the counter's own buying price, one unit per tap. The stall shows any far good but the
+  amber chips, antimatter and neutron included; a price list might want the deepest two kept out of the heart.
 
 ## 0.478.0 - the album on the engine
 
