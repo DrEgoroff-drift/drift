@@ -52,6 +52,16 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     on the keels by the emission mask, else revert; h — makerRead on the GPU frame;
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
+  - the nebula much better (GPU-2; the author 26.09: «туманность хуже не будет, она должна прям быть лучше на много,
+    потому что сейчас она хорошая»). The look first, the price after: three candidates at any cost on the PC, each a
+    pair of the whole frame against the live release (standing by the star, in flight at v 8; 760 and 390; a ×3
+    crop); the best one goes to the author before it ships; only what reads clearly better at first sight, never «a
+    bit different». The 24.09 rules hold (no threshold contour; dust 10→90 % over ≥ 40 px at 760; a change of tone
+    over ≥ 150 px; field S ≈ .40–.45, no neon). Directions: depth that reads (far layers cooler, dimmer and softer;
+    forward scattering — the gas between us and the star rimmed against the light); fine wisps inside the lit gas
+    with soft mass edges; a slow flow (curl noise, seen over 10–20 s, never a flicker); young stars inside (soft
+    cavities, a blue reflection haze, the brightest knots in HDR with a soft halo); the palette turned round the
+    wheel, each system its own character;
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
   - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
@@ -59,9 +69,10 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     a 10.4 ms GPU frame (S23, v 8). One reprojection uniform fails — the layers slide over each other (local
     parallax p5/p50/p95 .007/.13/.59; slip at the best single uniform p50 .56, p95 3.5 px a frame at v 8), so any
     reprojection is accepted by a 16-tile Lucas–Kanade measure (p95 ≤ 0.3 px), never by a global phase
-    correlation. Next: B — the generation made cheaper with the look kept (knock-outs per part; early exit outside
-    the mass, fewer octaves under dense dust; max |Δ| ≤ 2, p99 < .5; target nebGen in flight −40 %); if short of
-    that, A′ — a world-anchored toroidal cache per layer (.02/.044/.045/.097/.12), only the strip that opens is
+    correlation. Next, once the look is chosen (Redraw passes, «the nebula much better») — its price, never on the
+    generator that is going away: B — knock-outs per part (early exit outside the mass, fewer octaves under dense
+    dust; max |Δ| ≤ 2, p99 < .5), and A′ as far as the new look needs it (gate: in flight no dearer than 0.471.0 on
+    the PC, A/B/A; the S23 when it is back) — a world-anchored toroidal cache per layer (.02/.044/.045/.097/.12), only the strip that opens is
     generated, the non-linear mix (dust over gas, the rim by total gb, the star's lit/ion/tint, cvn) moves to the
     read with the same math, the flow regenerated at age 6 with the cross-fade;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
