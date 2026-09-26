@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 637 · символов верхнего уровня: 6439
+Файлов: 637 · символов верхнего уровня: 6440
 
 ## СИМВОЛЫ
 
@@ -2067,7 +2067,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-195
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-204
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -3141,14 +3141,14 @@ jumpToBase                   src/21a-mode-base.js:385-402
 KB                           src/27jb-kb.js:23
 KB_RULE                      src/27jb-kb.js:14-22
 kbClose                      src/27jb-kb.js:83
-kbDone                       src/27jb-kb.js:129-137
-kbDraw                       src/27jb-kb.js:139-163
+kbDone                       src/27jb-kb.js:130-138
+kbDraw                       src/27jb-kb.js:140-164
 kbNumbers                    src/27jb-kb.js:71-75
 kbOpen                       src/27jb-kb.js:77-82
 kbPlace                      src/27jb-kb.js:57-70
-kbRender                     src/27jb-kb.js:84-110
+kbRender                     src/27jb-kb.js:84-111
 kbRule                       src/27jb-kb.js:55
-kbTap                        src/27jb-kb.js:111-128
+kbTap                        src/27jb-kb.js:112-129
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
 KEEP_LAST                    src/11k-keepers.js:84
@@ -3230,7 +3230,7 @@ kitWearPiece                 src/12x-suit.js:139-145
 KMAP                         src/15-input.js:112
 KMAP_BELT                    src/15-input.js:116
 KP_DAY                       src/26e2-post.js:11
-kpBlock                      src/26e2-post.js:93-117
+kpBlock                      src/26e2-post.js:101-125
 kpDoor                       src/26e2-post.js:25
 kpDue                        src/26e2-post.js:27
 kpHolds                      src/26e2-post.js:29
@@ -3241,7 +3241,8 @@ kpOpen                       src/26e2-post.js:18
 kpOpenAt                     src/26e2-post.js:14-17
 kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
-kpWindow                     src/26e2-post.js:47-92
+kpWindow                     src/26e2-post.js:47-53
+kpWindowPaint                src/26e2-post.js:54-100
 labCount                     src/12h-relic.js:16-24
 labelW                       src/12ai-fleet.js:134
 labStaffed                   src/12h-relic.js:27-31
@@ -4311,7 +4312,7 @@ placeX                       src/11v-places.js:38
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:171
+PLAN_F                       src/27jb-kb.js:172
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -4360,7 +4361,7 @@ planetSunRot                 src/07-planet.js:85-89
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
-planFactors                  src/27jb-kb.js:172-183
+planFactors                  src/27jb-kb.js:173-184
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41

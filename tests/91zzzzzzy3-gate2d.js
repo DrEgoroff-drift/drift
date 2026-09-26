@@ -192,6 +192,15 @@ const GATE2D=[
      this.i++;return {};},
    done(){tableToggle(false);G.things=[];G.strips=[];},
    probe:["panelGpu"]},
+  /* окошко почты (26e2) и план КБ (27jb) — та же дверь 27i0: открытое окошко с талоном и закрытое, план по кругу */
+  {name:"окошко почты и план КБ: выпечкой, без 2D",
+   painters:["panelGpu","kpWindowPaint","kbDraw","kbRender"],
+   place(first){
+     if(first){this.i=0;return {};}
+     if(this.i<40){kpWindow(this.i%2===0,this.i%2?0:7);if(this.i===0)kbOpen();else kbRender();}
+     this.i++;return {};},
+   done(){kbClose();},
+   probe:["panelGpu"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
