@@ -227,18 +227,20 @@ const GATE2D=[
    probe:["opisGpu"]},
   /* альбом (25g1): лист карточек и большая карточка с пятью фильтрами — кисть открытки выпечкой, фильтр
      матрицей ovImage; виньетка и зерно печати — свои выпечки, сброшены, чтобы печься под записью.
-     Снимок себе (albumSave) — страница PNG в 2D намеренно: это файл, не кадр, — в сцене его нет */
+     Снимок себе (albumSave) — страница PNG в 2D намеренно: это файл, не кадр, — в сцене его нет.
+     Почтовая карточка (25k) и картинка главы «Смены» (12ud1) — та же карточка альбома */
   {name:"альбом (25g1): карточки и фильтры выпечкой, без 2D",
-   painters:["albumCanvas","albumBake","albumPut","albumVig","albumLightbox","drawPostcard","pcPrint","pcGrainBake"],
+   painters:["albumCanvas","albumBake","albumPut","albumVig","albumLightbox","drawPostcard","pcPrint","pcGrainBake","mailCard","smenaPlate"],
    place(first){
      if(first){const F=pcTestPlanet();if(!F)return null;this.i=0;
        G.album=["none","film","sepia","night"].map((fx,i)=>pcTestSnap(F,{fx,t:CEL_DAY*7+123+i*977}));
        PC_GRAIN_B=null;for(const B of ALBUM_VIG.values())gpuBakeDrop(B);ALBUM_VIG.clear();return {};}
      if(this.i<12){const K=Object.keys(ALBUM_FX);albumOpen=this.i%2?0:-1;albumBack=false;
        if(albumOpen===0)G.album[0].fx=K[(this.i>>1)%K.length];
-       if(this.i===0)tableToggle(true,"album");else tableRender();}
+       if(this.i===0)tableToggle(true,"album");else tableRender();
+       if(this.i%4===1){mailCard(document.createElement("div"),G.album[1],150,true,null);G.smenaAt={1:{snap:G.album[2]}};smenaPlate(1);}}
      this.i++;return {};},
-   done(){albumOpen=-1;albumBack=false;albumClose();tableToggle(false);G.album=[];},
+   done(){albumOpen=-1;albumBack=false;albumClose();tableToggle(false);G.album=[];G.smenaAt={};},
    probe:["albumPut"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
