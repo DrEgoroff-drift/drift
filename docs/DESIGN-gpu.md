@@ -1078,6 +1078,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      0 sheet bakes while dragging, release 47–58 ms with exactly one. Pair `pair_draft.png` (scratchpad,
      390 px, dpr 2: draft left, full sheet right, three classes). Guard «стапель: протяжка — черновик без
      выпечки, по отпусканию ровно один лист».
+     Why some sheets grew in length (Контроль, 0.476.0 pair: РАССВЕТ yacht 78 → 80 m, КОМПАНИЯ courier
+     71 → 72): no light enters the box. The ends of the box are hull outline strokes (alpha ≥ .45) and the fitting shadows
+     (`drawHullMarks`), checked over 180 hulls. On a needle nose the outline's miter point (width .5, a 13° nose, ratio
+     8.8 under the limit 10) reaches 2.2 units past the vertex. The old box read 2D pixels at 2 px a unit, where
+     Skia draws a 1-px stroke as a hairline with no joins, so the point was not there. At the sheet's own scale
+     (~8 device px a unit) the same `drawHull` draws the point to 40.5 (alpha 24), and the new box reads 40.56.
+     The old sheet drew the point past its own dimension line; the new one measures what it draws.
   3. Look 28y / item h — done: `makerRead` looks at the engine's picture. `makerFeat` draws the hull with the
      studio (17c2 `hullStudio`, the ОПИСЬ one: GPU bake of the same brushes, lit by relief as in flight) into a
      52 px `webgpu` canvas and reads it back in the same task (`drawImage` into a 2D canvas, as `gpuTakeSnap`).
@@ -1103,6 +1110,20 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      calls `drawHomeRoom`. Pair `pair_home.png` (scratchpad, tiers 8 and 6, 2D over engine): identical to
      the eye; tiers 1–8 mean 0.21–0.99 per channel, zones byte-identical, 0 GC_MISS, 0 `drawHull`; the
      bake 21–163 ms per tab draw. Guard «дом: комната печётся на движке, 2D-корпуса нет».
+- **The harness waits for the adapter in real time (26.09):** under `--virtual-time-budget` the boot (tests/99-run.js)
+  polls for the adapter every 50 virtual ms and burns real time by counting between polls, since the adapter answers on real
+  clocks. The count was 2e6, which a warm JIT runs in 2 ms, not the 10 ms the comment claimed. So the 14 virtual seconds
+  gave the adapter ~0.6 s of real time, and at `-Full -Jobs 3` three Chromes raising it at once left one shard blind
+  (33 red suites, all downstream of «глаза тестов»). Now it counts 2e7 every 25 virtual ms: ~560 polls of ~20 ms,
+  up to ~11 s of real time, with the same virtual ceiling of 14 s out of the budget of 20. The eyes suite names the number
+  of polls and the state (adapter silent / device lost). The mutant `eyes-gpu-hang` (an adapter that never answers)
+  proves a real «видеокарта не поднялась» still turns it red: 560 polls, ~11 s, then red.
+- **One build under both shells (26.09):** `docs/INDEX.md` sorted its symbols with `Sort-Object`, which orders
+  `_file`, `_indPrice`, `_mapDirty` and `_suite` first under pwsh 7 and after the letters under powershell 5.1, so
+  sessions committed different indexes. The sort is now ordinal, as the bundle order has been since 0.359.0.
+  `test.ps1 -Full` rebuilds with the other shell and compares everything build.ps1 writes (drift.html, tests.html,
+  INDEX, TESTMAP, war.js, treplo.html) byte for byte. Any difference fails the run. Proven red with the old sort
+  («docs\INDEX.md») and green with the new one.
 - **08bi for the album (26.09, for GPU-3's 25g1):** `ovImage(..., mul, M)` takes `M={m:[12], grain, seed}` —
   a 3×4 matrix over the straight colour (rows R, G, B: r, g, b, offset, in units of 1) and a grain of span
   `grain` (±grain/2, one number per device pixel into all three channels, hashed from the pixel and `seed`),
