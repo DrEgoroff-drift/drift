@@ -2336,6 +2336,38 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   `gpuBake` submits of the masters. Pairs vs HEAD: 760 — frame 3 px > 24, the pod 72 px > 24 premultiplied (max 79, needle AA);
   390×3 — the pod is hidden, frame identical. Gate2d scene «приборная колодка»: 0 calls. Suites: 91zk «Колодка», the two-targets
   suite in 91zzzzzzy4; mutants `ipod-target-swap`, `ipod-needle-2d`, `ipod-screen-draws`, `ipod-no-reconfig` die.
+- **The parrot on the GPU** (12y1 `parrotDraw(S,W,H)`, `parrotGpuTick`, `parrotSnap`; `PARG`): the window `#parrotcv` and the
+  console's perch icon `#perchcv` are WebGPU DOM canvases drawn in `hud()` into the frame encoder; the bird's own rAF is gone.
+  Every feather, quill, scale and head part is one atlas cell (1024 wide, painted once with the old 12y brushes by
+  `gpuBake`); a pose is ~300 instance records (affine per part, 28 floats): sprites, ellipses, the beaded crest, polylines
+  for toes and the scratch foot; the coat quills and scales are clipped by the body mask, the plumage by the old 230×304
+  layer box (2D cut the tail there, and the perch icon frame rests on that cut). Sprites sample with a −0.8 mip bias.
+  The 2D «light» pass (source-atop over the bird) was dead — 0 of 280k pixels — and is ported as absent; restoring it is a
+  design decision with a pair. Cost: 2D pose 20.8 ms, atlas bake 3.76 ms once, then instances only. Pairs vs HEAD at 760,
+  poses a–d, and at 390: equal to the eye; window px > 24 ≤ 855 of 57k (AA and the glass behind), perch ≤ 26 of 4.6k.
+  `site/parrot.js` is frozen at 0.470.0 (`regen-parrot.sh` refuses): the bird page needs a decision. Pipelines `par`,
+  `par.add` are warm since 42ac2ad5 (08b0 recipes, the pipelines detector opens the window in flight).
+- **Overlay atlas: steady frames bake nothing** (08bi). The raid report (≈1.2 new masks a frame) did not reproduce on
+  gpu3-rack: 15 stand scenes × 130 frames at 760 and 390, raid with movement — 0 masks after warm-up; ovText has built
+  numbers from digit glyphs since beb13da8. Guard: heavy suites «устойчивый кадр любой сцены» (+ phone) plant a label
+  with a frame counter; the mutant `ovl-number-whole` (a line baked whole) dies. The raid's real per-frame cost is the
+  whole `#c` upload — it is still 2D.
+- **Console seat on the GPU** (27j `seatGpuTick`, `consoleGpuTick`; `SEAT`): the portrait (Vega, trainee, passenger) is a
+  `ckgSpr` bake keyed by painter, size and mood (`vegaSeatKey`), drawn by one ovl pass into `#seatcv` (WebGPU) only when
+  the key changes; the 2D repaint once a second is gone. The canvas is at screen density (56 px was soft on DPR 2).
+  Pairs vs HEAD at 760 (both moods) and 390: same figure and text, portrait sharper. Gate2d scene «кресло пульта»;
+  suite «кресло: портрет — проход только на смене ключа» (1 pass per key over 120 frames).
+- **Desk pictures on the GPU** (27i0 `panelGpu`, `panelNd`; 27i `tableBake`/`tablePaint`, `stripPaint`, `thingNd`;
+  27ia `renderDeskTop`): the six 2D contexts of the desk (the board, the desk-top items, the mis figure, the strips,
+  the thing icons) keep their brushes; `panelGpu` bakes the brush once (`ckgSpr`, once) and draws it by one ovl pass
+  into the panel's own WebGPU canvas, on its own encoder submitted at once (panels are built by clicks, not frames);
+  the bake is dropped right after. The board re-bakes on a new size or device. Thing icons are now at 84/80 × screen
+  density (were fixed 128×80 under a 134×84 CSS box — soft). Pairs vs HEAD at 760 and 390 (top, things, strips):
+  same pictures, edges only; icons and strips sharper. Gate2d scene «стол (27i)», mutant `desk-2d`.
+- **Post window and the КБ plan on the GPU** (26e2 `kpWindow`/`kpWindowPaint`, 27jb `kbRender`/`kbDraw`): both through
+  27i0 `panelGpu`. The post window now bakes at screen density (`panelNd`) instead of the frame's capped `DPR` (it was
+  soft on DPR 2), and «ЗАКРЫТО» is a plate on the grille — on the shutter the bars cut it and it did not read. Pairs vs
+  HEAD at 760 (DPR 1) and 390 (DPR 2): КБ identical, post sharper. Gate2d scene «окошко почты и план КБ».
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.

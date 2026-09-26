@@ -171,11 +171,47 @@ const GATE2D=[
    painters:["instrPodTick","instrPodDraw","instrPodLive","instrPodPaint","ckgSpr","tapePaper"],warm:30,
    place(first){if(first){for(let i=0;i<40;i++)tapeSample();return {};}tapeSample();return {};},
    get probe(){return IPOD_NARROW?[]:["instrPodDraw","instrPodLive"];}},
+  /* кресло пульта (27j): портрет — выпечка по ключу, проход в свою канву WebGPU; обида Веги сменит ключ */
+  {name:"кресло пульта (27j): портрет Веги — выпечкой, без 2D",
+   painters:["seatGpuTick","consoleGpuTick","vegaSeatDraw","traineeDraw","expPaxDraw"],
+   place(first){if(first){G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:()=>{},key:vegaSeatKey};conT=0;}return {};},
+   done(){G.seat=null;SEAT.S=null;},
+   probe:["seatGpuTick"]},
+  /* стол (27i, 27ia, 27i0): столешница, вещи стола, значки вещей, ленты — выпечка и проход в свои канвы.
+     Стол строится кликом, не кадром: сцена листает вкладки по разу, художники — под воротами */
+  {name:"стол (27i): доски, вещи, ленты — выпечкой, без 2D",
+   painters:["panelGpu","tableBake","tablePaint","stripPaint","drawThingIcon","drawMisFigure","drawRingTape","renderDeskTop"],
+   place(first){
+     if(first){this.i=0;G.things=[];
+       for(const k of ["letter","subletter","news","clip","cut","paper","recall","record","soccard","voucher"])thingAdd(k,"вещь "+k,"");
+       thingAdd("tape","фигура","",{full:1});
+       G.strips=[{sx:3,sy:-2,span:30,mis:.012},{sx:4,sy:1,span:44,mis:.05},{sx:-7,sy:5,span:26,mis:.002}];
+       return {};}
+     if(this.i===0){tableBaked=null;tableToggle(true,"top");}
+     else if(this.i<5)tableSetTab(["things","strips","top","things"][this.i-1]);
+     this.i++;return {};},
+   done(){tableToggle(false);G.things=[];G.strips=[];},
+   probe:["panelGpu"]},
+  /* окошко почты (26e2) и план КБ (27jb) — та же дверь 27i0: открытое окошко с талоном и закрытое, план по кругу */
+  {name:"окошко почты и план КБ: выпечкой, без 2D",
+   painters:["panelGpu","kpWindowPaint","kbDraw","kbRender"],
+   place(first){
+     if(first){this.i=0;return {};}
+     if(this.i<40){kpWindow(this.i%2===0,this.i%2?0:7);if(this.i===0)kbOpen();else kbRender();}
+     this.i++;return {};},
+   done(){kbClose();const w=document.getElementById("kbWin");if(w)w.remove();},
+   probe:["panelGpu"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
   const PR=[window.CanvasRenderingContext2D&&CanvasRenderingContext2D.prototype,
             window.OffscreenCanvasRenderingContext2D&&OffscreenCanvasRenderingContext2D.prototype].filter(Boolean);
+  /* #c: крючок 08c (gpuFrontHook) вешает fill/drawImage/fillText… собственными свойствами MAIN_CTX с оригиналом
+     прототипа внутри — обёртки прототипа их не видят, и ворота на #c ловили только сеттеры. Крючок ставим ДО
+     обёрток (иначе он схватит нашу обёртку и вызов посчитается дважды), а его свойства оборачиваем сами */
+  gpuFrontHook();
+  const C=MAIN_CTX,CO=Object.getOwnPropertyNames(C).filter(k=>C[k] instanceof Function);
+  ok(CO.includes("fillRect")&&CO.includes("drawImage"),"крючок #c на месте: "+CO.join(","));
   for(const S of GATE2D){
     resetWorld();G.mode="system";
     const st=S.place(true);
@@ -193,6 +229,11 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
     Error.stackTraceLimit=40;   /* художник бывает глубже десяти кадров стека — иначе вызов потерян молча */
     for(const f of S.probe){const o=window[f];wrap[f]=o;hit[f]=0;
       window[f]=function(){hit[f]++;return o.apply(this,arguments);};}
+    /* мир на #c ещё рисует 2D сам — стек (дорогой) снимаем только с вызовов #c внутри художника сцены:
+       глубина считается обёрткой художника, иначе ворота шли 204 с вместо 11 */
+    const dep={n:0};
+    for(const f of S.painters)if(window[f] instanceof Function){const o=window[f];if(!(f in wrap))wrap[f]=o;
+      window[f]=function(){dep.n++;try{return o.apply(this,arguments);}finally{dep.n--;}};}
     try{
       for(const P of PR)for(const k of Object.getOwnPropertyNames(P)){
         if(k==="constructor")continue;const d=Object.getOwnPropertyDescriptor(P,k);
@@ -200,6 +241,8 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
           P[k]=function(){note(k);return o.apply(this,arguments);};}
         else if(d.set){const s=d.set;saved.push([P,k,d]);
           Object.defineProperty(P,k,{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){note(k);return s.call(this,v);}});}}
+      for(const k of CO){const o=C[k];saved.push([C,k,{value:o,writable:true,configurable:true,enumerable:true}]);
+        C[k]=function(){if(dep.n)note(k);return o.apply(this,arguments);};}
       /* с первого кадра: выпечка — тоже часть ворот */
       K.on=true;G.running=true;LOOP_OFF=false;let t=wallMs();
       for(let i=0;i<90;i++){K.i=i;S.place();frameBody(t+=16.7);}

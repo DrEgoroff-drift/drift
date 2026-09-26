@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 636 · символов верхнего уровня: 6407
+Файлов: 638 · символов верхнего уровня: 6447
 
 ## СИМВОЛЫ
 
@@ -993,9 +993,10 @@ combatShots                  src/13-combat.js:154-207
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82-86
 concertSend                  src/11ae-concert.js:87-104
+consoleGpuTick               src/27j-console.js:57-60
 consoleHeard                 src/27j-console.js:26-34
 consoleRect                  src/08-state.js:142-148
-consoleTick                  src/27j-console.js:35-130
+consoleTick                  src/27j-console.js:61-162
 conT                         src/27j-console.js:19
 COOP_ASK_BY                  src/12aj-coop.js:135
 COOP_ASKS                    src/12aj-coop.js:126-134
@@ -1605,7 +1606,7 @@ drawSystem                   src/17-mode-system.js:524-708
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
-drawThingIcon                src/27i-ui-table.js:400-478
+drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:159-170
 drawTrail                    src/16-flight.js:457-460
@@ -2066,7 +2067,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-174
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-204
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -2324,7 +2325,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:190
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-51
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-53
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -3144,14 +3145,14 @@ jumpToBase                   src/21a-mode-base.js:385-402
 KB                           src/27jb-kb.js:23
 KB_RULE                      src/27jb-kb.js:14-22
 kbClose                      src/27jb-kb.js:83
-kbDone                       src/27jb-kb.js:129-137
-kbDraw                       src/27jb-kb.js:139-163
+kbDone                       src/27jb-kb.js:130-138
+kbDraw                       src/27jb-kb.js:140-164
 kbNumbers                    src/27jb-kb.js:71-75
 kbOpen                       src/27jb-kb.js:77-82
 kbPlace                      src/27jb-kb.js:57-70
-kbRender                     src/27jb-kb.js:84-110
+kbRender                     src/27jb-kb.js:84-111
 kbRule                       src/27jb-kb.js:55
-kbTap                        src/27jb-kb.js:111-128
+kbTap                        src/27jb-kb.js:112-129
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
 KEEP_LAST                    src/11k-keepers.js:84
@@ -3233,7 +3234,7 @@ kitWearPiece                 src/12x-suit.js:139-145
 KMAP                         src/15-input.js:112
 KMAP_BELT                    src/15-input.js:116
 KP_DAY                       src/26e2-post.js:11
-kpBlock                      src/26e2-post.js:93-117
+kpBlock                      src/26e2-post.js:101-125
 kpDoor                       src/26e2-post.js:25
 kpDue                        src/26e2-post.js:27
 kpHolds                      src/26e2-post.js:29
@@ -3244,7 +3245,8 @@ kpOpen                       src/26e2-post.js:18
 kpOpenAt                     src/26e2-post.js:14-17
 kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
-kpWindow                     src/26e2-post.js:47-92
+kpWindow                     src/26e2-post.js:47-53
+kpWindowPaint                src/26e2-post.js:54-100
 labCount                     src/12h-relic.js:16-24
 labelW                       src/12ai-fleet.js:134
 labStaffed                   src/12h-relic.js:27-31
@@ -4036,6 +4038,7 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
+OV_STEADY                    tests/91zzzzzzy4-gpu-ovl.js:48-66
 ovArc                        src/08bi-gpu-ovl.js:265-268
 ovAtlas                      src/08bi-gpu-ovl.js:104-123
 ovBind                       src/08bi-gpu-ovl.js:229-237
@@ -4100,40 +4103,65 @@ palPay                       src/21b5-base-palata.js:156-165
 palRegistered                src/21b5-base-palata.js:74
 palSetMode                   src/21b5-base-palata.js:166-179
 palStep                      src/21b5-base-palata.js:98-154
+PANEL                        src/27i0-panel-gpu.js:8
+panelGpu                     src/27i0-panel-gpu.js:11-24
+panelNd                      src/27i0-panel-gpu.js:10
 PAR                          src/12y-parrot-face.js:50
 PAR_ACT                      src/12z-parrot-acts.js:58-196
 PAR_C                        src/12y-parrot-face.js:37-47
-PAR_DPR                      src/12y-parrot-face.js:692
-PAR_IDLE                     src/12y-parrot-face.js:649
-PAR_L                        src/12y-parrot-face.js:575
+PAR_CC                       src/12y1-parrot-gpu.js:118
+PAR_CELLS                    src/12y1-parrot-gpu.js:17
+PAR_DPR                      src/12y-parrot-face.js:248
+PAR_IDLE                     src/12y-parrot-face.js:205
+PAR_K                        src/12y1-parrot-gpu.js:16
 PAR_LAST                     src/12z-parrot-acts.js:202
+PAR_WGSL                     src/12y1-parrot-gpu.js:327
+PAR_Z                        src/12y1-parrot-gpu.js:130
 parActs                      src/12z-parrot-acts.js:233-264
-parBead                      src/12y-parrot-face.js:131-139
+parAtlas                     src/12y1-parrot-gpu.js:375-380
+parBeadG                     src/12y1-parrot-gpu.js:143
 parBell                      src/12z-parrot-acts.js:34
-parBodyPath                  src/12y-parrot-face.js:155-165
-parCoat                      src/12y-parrot-face.js:170-225
-parFoot                      src/12y-parrot-face.js:227-262
+parBodyPath                  src/12y-parrot-face.js:133-143
+parCellDefs                  src/12y1-parrot-gpu.js:30-89
+parCells                     src/12y1-parrot-gpu.js:91-102
+parCoatG                     src/12y1-parrot-gpu.js:168-191
+parCol                       src/12y1-parrot-gpu.js:119-150
+parDesc                      src/12y1-parrot-gpu.js:368-380
+parEll                       src/12y1-parrot-gpu.js:134
+parFootG                     src/12y1-parrot-gpu.js:152-166
+PARG                         src/12y1-parrot-gpu.js:372
 parHold                      src/12z-parrot-acts.js:36-41
-parLayer                     src/12y-parrot-face.js:576-586
+parInv                       src/12y1-parrot-gpu.js:111
+parLine                      src/12y1-parrot-gpu.js:136
 parMood                      src/12z-parrot-acts.js:203-207
+parPad                       src/12y1-parrot-gpu.js:132
+parPass                      src/12y1-parrot-gpu.js:382-403
 parPickAct                   src/12z-parrot-acts.js:208-229
 parPlume                     src/12y-parrot-face.js:76-105
+parPlumeBox                  src/12y1-parrot-gpu.js:23-89
+parPut                       src/12y1-parrot-gpu.js:128
+parQuad                      src/12y1-parrot-gpu.js:140
 parQuill                     src/12y-parrot-face.js:61-73
+parQuillBox                  src/12y1-parrot-gpu.js:19-89
 PARROT_NAMES                 src/12x-parrot.js:24
-parrotBtnTick                src/12y-parrot-face.js:686-691
+parrotBox                    src/12y1-parrot-gpu.js:313-324
+parrotBtnTick                src/12y-parrot-face.js:242-247
 parrotDock                   src/12x-parrot.js:141-147
-parrotDraw                   src/12y-parrot-face.js:264-573
+parrotDraw                   src/12y1-parrot-gpu.js:194-311
 parrotFind                   src/12x-parrot.js:30-39
-parrotFrame                  src/12y-parrot-face.js:693-705
+parrotGpuTick                src/12y1-parrot-gpu.js:406-423
 parrotHas                    src/12x-parrot.js:25
 parrotHeardKill              src/13-pirates.js:304-307
-parrotLine                   src/12y-parrot-face.js:650-663
-parrotPoke                   src/12y-parrot-face.js:666-683
-parRow                       src/12y-parrot-face.js:141-151
+parrotLine                   src/12y-parrot-face.js:206-219
+parrotPoke                   src/12y-parrot-face.js:222-239
+parrotSnap                   src/12y1-parrot-gpu.js:425-431
+parRowG                      src/12y1-parrot-gpu.js:145-150
 parSay                       src/12z-parrot-acts.js:43-48
 parScale                     src/12y-parrot-face.js:107-129
-parSpring                    src/12y-parrot-face.js:591-594
-parStep                      src/12y-parrot-face.js:595-643
+parSink                      src/12y1-parrot-gpu.js:114-150
+parSpr                       src/12y1-parrot-gpu.js:133
+parSpring                    src/12y-parrot-face.js:147-150
+parStep                      src/12y-parrot-face.js:151-199
 PART_BONUS                   src/05-parts.js:309
 PART_GEN                     src/05-parts.js:9
 PART_KEYS                    src/05-parts.js:30
@@ -4143,6 +4171,7 @@ PART_MAKER_NAME              src/05-parts.js:130-138
 PART_MAX                     src/05-parts.js:363
 PART_PRE                     src/05-parts.js:83
 PART_SUF                     src/05-parts.js:85
+parTarget                    src/12y1-parrot-gpu.js:373
 partBonus                    src/05-parts.js:349-356
 partById                     src/05-parts.js:335-338
 partClearance                src/05e-clearance.js:75-79
@@ -4229,6 +4258,11 @@ peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
+pgRest                       src/12y1-parrot-gpu.js:106
+pgRot                        src/12y1-parrot-gpu.js:108
+pgSave                       src/12y1-parrot-gpu.js:105
+pgScl                        src/12y1-parrot-gpu.js:110
+pgTr                         src/12y1-parrot-gpu.js:107
 PGX                          src/12i-pirate-hull.js:440
 PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
@@ -4240,9 +4274,9 @@ pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 PICKUPS                      src/24a-mode-raid.js:24-28
 pinch0                       src/15-input.js:396
-PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-48
-PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:56-86
-pipeWho                      tests/91zzzzzzy4-pipes.js:50-55
+PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-53
+PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:61-91
+pipeWho                      tests/91zzzzzzy4-pipes.js:55-60
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
@@ -4284,7 +4318,7 @@ placeX                       src/11v-places.js:38
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:171
+PLAN_F                       src/27jb-kb.js:172
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -4333,7 +4367,7 @@ planetSunRot                 src/07-planet.js:85-89
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
-planFactors                  src/27jb-kb.js:172-183
+planFactors                  src/27jb-kb.js:173-184
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -4876,7 +4910,7 @@ renderCantina                src/27c-ui-hq.js:68-131
 renderCardBack               src/25i-post-back.js:88-178
 renderChess                  src/25n-chess.js:279-326
 renderDeeds                  src/11-log.js:119-149
-renderDeskTop                src/27ia-desk-top.js:343-366
+renderDeskTop                src/27ia-desk-top.js:343-364
 renderDiary                  src/29f-winter.js:221-249
 renderHold                   src/27j-ui-hold.js:252
 renderLog                    src/11-log.js:94-117
@@ -4890,10 +4924,10 @@ renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
-renderStrips                 src/27i-ui-table.js:328-370
+renderStrips                 src/27i-ui-table.js:330-366
 renderTab                    src/26-ui-station.js:486-498
 renderTabBody                src/26-ui-station.js:499-691
-renderThings                 src/27i-ui-table.js:371-395
+renderThings                 src/27i-ui-table.js:379-404
 RENT_ADS                     src/12f1-mgr-rent.js:18
 RENT_OPIN                    src/12f1-mgr-rent.js:20
 RENT_TIERS                   src/12f1-mgr-rent.js:13-17
@@ -5291,6 +5325,8 @@ sealedWhy                    src/05e-clearance.js:85-95
 seamAdd                      src/12s-wear.js:182
 seamsAll                     src/12s-wear.js:181
 seamsOf                      src/12s-wear.js:183
+SEAT                         src/27j-console.js:40
+seatGpuTick                  src/27j-console.js:41-55
 SEC_CAP                      src/26-ui-station.js:359
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
@@ -5720,6 +5756,7 @@ stPlatePath                  src/17c-system-draw.js:159-166
 STRATA_K                     src/18a1-glaze.js:119
 stRing                       src/17c-system-draw.js:133-140
 stRingBody                   src/17c-system-draw.js:141-155
+stripPaint                   src/27i-ui-table.js:370-378
 STRIPS_MAX                   src/11b-speech.js:191
 stripsAll                    src/11b-speech.js:192
 stripSell                    src/11b-speech.js:231-242
@@ -5812,17 +5849,18 @@ TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158-187
-tableBake                    src/27i-ui-table.js:145-182
+tableBake                    src/27i-ui-table.js:145-155
 tableBlock                   src/27c-ui-hq.js:646-734
-tableHead                    src/27i-ui-table.js:191-198
+tableHead                    src/27i-ui-table.js:193-200
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:111-118
 tableNewThings               src/27i-ui-table.js:108
 tableNoticeAll               src/27i-ui-table.js:103-107
-tableRender                  src/27i-ui-table.js:199-203
-tableRenderBody              src/27i-ui-table.js:204-319
-tableRow                     src/27i-ui-table.js:320-325
-tableSetTab                  src/27i-ui-table.js:141-182
+tablePaint                   src/27i-ui-table.js:156-184
+tableRender                  src/27i-ui-table.js:201-205
+tableRenderBody              src/27i-ui-table.js:206-321
+tableRow                     src/27i-ui-table.js:322-327
+tableSetTab                  src/27i-ui-table.js:141-155
 tableShowsLog                src/27i-ui-table.js:57
 tableShowsRecord             src/27i-ui-table.js:58
 tableTab                     src/27i-ui-table.js:22
@@ -5895,6 +5933,7 @@ tfbm                         src/18a-material.js:23-27
 theOne                       src/21b3-base-hunt.js:46
 theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
+thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
 tickDrones                   src/12-economy.js:260-350
 tickLaunchHold               src/21-mode-surface.js:659-672
@@ -5943,7 +5982,7 @@ tnoise                       src/18a-material.js:16-22
 toggleLog                    src/11-log.js:152-156
 toggleLoreBoard              src/27h-ui-lore.js:81-84
 toggleMenu                   src/15-input.js:244-251
-toggleParrotWin              src/12y-parrot-face.js:706-721
+toggleParrotWin              src/12y-parrot-face.js:249-265
 toggleSos                    src/16c-rescue.js:624-633
 TOLD_LAG                     src/11aj-told.js:32
 toldAll                      src/11aj-told.js:34
@@ -6081,35 +6120,36 @@ VEGA_RELAY                   src/12k-vega.js:22-26
 VEGA_SICK                    src/12k-vega.js:41
 VEGA_WISHES                  src/12k-vega.js:5-9
 vegaAboard                   src/11w-vega.js:22
-vegaAmbientTick              src/11w-vega.js:290-303
+vegaAmbientTick              src/11w-vega.js:292-305
 vegaAtHome                   src/11w-vega.js:23
-vegaBeastShout               src/11w-vega.js:217-221
+vegaBeastShout               src/11w-vega.js:219-223
 vegaBoard                    src/11w-vega.js:145-157
-vegaBroken                   src/11w-vega.js:314
-vegaCantinaBlock             src/11w-vega.js:281-287
+vegaBroken                   src/11w-vega.js:316
+vegaCantinaBlock             src/11w-vega.js:283-289
 vegaDayTick                  src/11w-vega.js:66-119
 vegaDeviceBuy                src/11w-vega.js:32-39
 vegaDeviceOffered            src/11w-vega.js:26-31
 vegaEvict                    src/11w-vega.js:121-128
-vegaFleaBlock                src/11w-vega.js:253-265
+vegaFleaBlock                src/11w-vega.js:255-267
 vegaHas                      src/11w-vega.js:21
-vegaHomeArrive               src/11w-vega.js:235-242
-vegaHomeBlock                src/11w-vega.js:267-279
-vegaHomeFigure               src/11w-vega.js:305-313
+vegaHomeArrive               src/11w-vega.js:237-244
+vegaHomeBlock                src/11w-vega.js:269-281
+vegaHomeFigure               src/11w-vega.js:307-315
 vegaHullName                 src/11w-vega.js:24
-vegaJump                     src/11w-vega.js:210-214
-vegaLanded                   src/11w-vega.js:215
-vegaLaunchHold               src/11w-vega.js:244-251
+vegaJump                     src/11w-vega.js:212-216
+vegaLanded                   src/11w-vega.js:217
+vegaLaunchHold               src/11w-vega.js:246-253
 vegaMoraleMul                src/11w-vega.js:130-134
 vegaOffend                   src/11w-vega.js:136-143
 vegaOffended                 src/11w-vega.js:135
-vegaOuting                   src/11w-vega.js:223-233
+vegaOuting                   src/11w-vega.js:225-235
 vegaSeatAct                  src/11w-vega.js:164-184
-vegaSeatDraw                 src/11w-vega.js:185-195
+vegaSeatDraw                 src/11w-vega.js:187-197
+vegaSeatKey                  src/11w-vega.js:186
 vegaSeatLine                 src/11w-vega.js:158-163
 vegaTestBazaar               tests/91zzh-vega.js:7-13
 vegaTestHome                 tests/91zzh-vega.js:2-6
-vegaTick                     src/11w-vega.js:197-208
+vegaTick                     src/11w-vega.js:199-210
 vegaWish                     src/11w-vega.js:52-64
 VER                          src/01-core.js:4
 VER_ITER                     src/18d-verlet.js:23
@@ -7030,8 +7070,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12x-suit.js · 21 КБ
   · скафандр как комплект:1
 
-## src/12y-parrot-face.js · 44 КБ
+## src/12y-parrot-face.js · 17 КБ
   · трепло: жёрдочка:1
+
+## src/12y1-parrot-gpu.js · 31 КБ
+  · трепло на движке: атлас перьев и экземпляры (G15, DESIGN-gpu «Where I stopped»):1
 
 ## src/12z-parrot-acts.js · 17 КБ
   · трепло: репертуар:1
@@ -7650,10 +7693,12 @@ zooTick                      src/11ad-zoo.js:41-54
   · стол: одно место для всего, что читают:1
   · страница никогда не теряет прокрутку (P1):24
 
+## src/27i0-panel-gpu.js · 2 КБ
+
 ## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
 
-## src/27j-console.js · 11 КБ
+## src/27j-console.js · 14 КБ
   · пульт: приёмник, подсказка, кресло:1
 
 ## src/27j-ui-hold.js · 14 КБ
@@ -7774,7 +7819,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91e-rogue.js · 6 КБ
   · автотесты: ушедший управляющий: ультиматум, ренегат, изгнанник:1
 
-## tests/91f-ui.js · 30 КБ
+## tests/91f-ui.js · 33 КБ
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
   · ключи из кода не показываются игроку:209
   · на чистом старте в кадре нет лишнего:254
@@ -8415,13 +8460,13 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 19 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 18 КБ
+## tests/91zzzzzzy3-gate2d.js · 21 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-gpu-ovl.js · 17 КБ
+## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
-## tests/91zzzzzzy4-pipes.js · 7 КБ
+## tests/91zzzzzzy4-pipes.js · 8 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy5-gpu-loss.js · 9 КБ

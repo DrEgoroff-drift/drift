@@ -30,7 +30,7 @@ under the planets (17g), planets and moons (17ga), the system view on top — tr
 occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py` on the GPU.
 
 **The order (Контроль 26.09, after the audit: the middle was being built on an unchecked base):**
-1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 (26.09) and closed engine stage 1; it is re-run after
+1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 and on 0.473.0 (26.09) and closed engine stage 1; it is re-run after
    every engine release, and while it fails, speed goes ahead of every picture pass.
 2. What is in flight lands before anything new starts.
 3. G15: what still draws in 2D moves to the engine, then 3D where it reads.
@@ -85,12 +85,11 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   too: in main 4778c719, 52 files in `src` still open a 2D context. Onto direct paths (`gpuLitSprite`, atlases,
   instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.
   The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
-  - the interface — GPU-3; its census (26.09): the parrot's window (12y, its own rAF, redrawn every frame while
-    open), the console's seat and perch icons (27j-console, timers on every screen), then the panels by how often
-    they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
+  - the interface — GPU-3; its census (26.09): the panels by how often they open (the desk is on the
+    engine through 27i0 `panelGpu` — the post window and КБ too; next: ОПИСЬ, the station, the album, faces and the suit); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
-    studio (`hullStudio`, 17c2 — the ship in ОПИСЬ already draws through it); the raid's `ovAtlas` bakes a new row every
-    frame (a changing number) — glyphs once, numbers built from them;
+    studio (`hullStudio`, 17c2 — the ship in ОПИСЬ already draws through it); the raid
+    comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull, and the last
     2D `drawHull` callers move by zone — the station (26) GPU-3; the road (27l), the scoop and home outside the fleet
@@ -164,7 +163,7 @@ follows the cadence protocol in `docs/DECISIONS.md`.
 The phone (the author 26.09: «тел доступен пусть используют»): the S23 over Wi-Fi adb (`adb mdns services`,
 `_adb-tls-connect`). One session at a time: `C:\Claude\phone.lock` taken with noclobber, held ≤ 10 min, a lock
 older than 15 min may be removed; the CDP forward only under the lock; each session its own port through
-`adb reverse` (the worker 8811, GPU-2 8812, GPU-3 8813, the fleet 8814). Measure cold (a new `*.localhost` host:
+`adb reverse` (the worker 8811, GPU-2 8812, GPU-3 8813, the fleet 8814, Контроль 8815). Measure cold (a new `*.localhost` host:
 Chrome keeps compiled pipelines per site), off the charger and cooled — or on it when full (status FULL, 100 %) with
 thermal 0 logged before, mid-run and after (the author 26.09; a charging phone heats, and Samsung cuts the GPU to
 295 of 719 MHz), A/B/A; never start a run because the screen woke — an incoming call looks the same.
@@ -174,14 +173,31 @@ thermal 0 logged before, mid-run and after (the author 26.09; a charging phone h
   ≥ 50 ms; then 5 minutes at ≥ 95 %; the picture at 760 no worse. Before a run: no other tab working in that Chrome
   (a browser miner, «CryptoTab Pool», was there on 24.09), no stuck touch (`gate.py` checks logcat, getevent and the
   page's counter; `waitquiet.py` waits for quiet).
-  - The phone is away (the author 26.09, «работаем без телефона»): releases go without P1, costs are measured on
-    the PC (A/B/A at 1920 and at 617×1113, DPR 1.5, marked «PC»); when it is back, P1 runs on the latest release.
+  - The phone is back (the author 26.09, «на тел тестируй, он доступен»). P1 on 0.473.0 (Контроль, cold, 617×1113
+    DPR 1.5): 30 s 100 % of 1801 frames, max 16.9 ms; 5 min 99.99 % of 18003 frames at 60.0 fps, two frames of 33 ms,
+    none ≥ 50 ms, battery 27.9 → 29.6 °C. The author's routes (`ROUTE=hotel|star`, `ZOOM=.3`, 1bfbade5), 30 s cold
+    each: the hotel 100 %, max 16.9 ms; past the star 99.89 %, one frame of 33.3; the hotel at .3 99.90 %, one of 33.4;
+    the star at .3 100 %, max 16.9. A nebula or hotel change passes the four routes as well as the plain run.
   - The baseline — passed on 0.468.0 (26.09, GPU-3, on the charger at 100 %, thermal 0 throughout): cold 30 s 100 %
     of 1800 frames, max 16.9 ms; 5 min 99.98 % of 18002 frames at 60.0 fps, none ≥ 50 ms, three frames of 33 ms at
     40, 116 and 202 s — one vsync skipped with no bake, pipeline or new texture in them, the GPU 17–21 ms around
     them: the margin is thin, and the heat margin of §0 stands. The bake at ≈ 15 s that cost 83 ms on 25.09
     (9206be7: 2D bakes at first sight rastered by Skia in the GPU process, and `#c` cleared at opacity 0 every
     frame) passed without a hitch.
+- [ ] **The nebula steps in flight** (GPU-2, first — before «смело»; the author 26.09: «кадры нормас, движок тянет,
+  кажется как будто тормозит, когда туманность … рядом с кораблём … по кадрам появляется, и кажется, что просадка
+  кадров»). The frames are clean (P1 above); the gas is not. The volume is regenerated only when
+  `|cam − GNB.cx|·.09 ≥ .5` (the camera moved ≥ 5.6 CSS px) or, standing, every `GNB_AGE` = 6 frames with a fade
+  (16gb:591–593, 16gc); in between, the composite does not shift it, and in motion the fresh one is written straight
+  into the visible texture. So at screen speeds of ~56–333 CSS px/s the nebula holds for 2–6 frames, then jumps
+  (~.5–.7 px of parallax plus the flow gathered meanwhile) at 10–30 Hz while the stars and the ship glide at 60;
+  zoomed out, the same flight is slower on screen and steps more; above 333 px/s it regenerates every frame, which is
+  why P1 does not see it. Confirm on the PC (617×1113, DPR 1.5, zoom 1 and .3, 40/80/150/250/400 px/s: `nGen` per
+  frame and a 12-frame strip by the ship, the nebula's shift frame to frame); regenerate every frame while the camera
+  moves (a threshold near .05), keep the fade for a still camera, and no pop where standing turns into motion. Gate:
+  a test that `nGen` grows every frame at 40–400 px/s, an even shift on the strip, and P1 plus the four routes cold,
+  none worse than 0.473.0 above (the every-frame case already passes in fast flight). «Смело» is also checked moving:
+  its fibres at the quarter resolution must not shimmer (the same strip at 390, 150 px/s).
 - [ ] **Then cut by its numbers** — each old item measured again on the GPU build first, dropped if it no longer
   shows: the hull bake on vs off (`G.opts.gfx.hullBake=0`); the baked star core and hull (the star's breathing, a
   step at the baked picture's edge); tails at ×2.40 (the author's «куцые хвосты», filmed); P8 under the finger, P9

@@ -147,10 +147,13 @@ function tableBake(){
   const W=cv.clientWidth||innerWidth,H=cv.clientHeight||innerHeight;
   /* панель увеличена zoom-ом (M221), значит и печь её надо во столько же раз
      плотнее: иначе доски стола расплываются ровно на большом мониторе */
-  const dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
-  if(tableBaked&&tableBaked.W===W&&tableBaked.H===H)return;
-  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
+  const dev=typeof GPU==="object"?GPU.dev:null;
+  if(tableBaked&&tableBaked.W===W&&tableBaked.H===H&&tableBaked.dev===dev)return;
+  /* печь — видеокарта (27i0): кисть та же, канва WebGPU; новое устройство — печём заново */
+  panelGpu(cv,W,H,panelNd(),c=>tablePaint(c,W,H));
+  tableBaked={W,H,dev};
+}
+function tablePaint(c,W,H){
   /* доски: четыре полосы с лёгкой разницей тона и стыками */
   const base=c.createLinearGradient(0,0,0,H);
   base.addColorStop(0,"#150f09");base.addColorStop(.5,"#1e140d");base.addColorStop(1,"#100b06");
@@ -178,7 +181,6 @@ function tableBake(){
   g.addColorStop(.62,"rgba(20,12,6,.28)");
   g.addColorStop(1,"rgba(0,0,0,.72)");
   c.fillStyle=g;c.fillRect(0,0,W,H);
-  tableBaked={W,H};
 }
 /* Всё, что перестраивает стол, идёт через одну дверь — и дверь держит прокрутку (P1).
    Оба списка сразу: обычный и лорный, — потому что заметно именно то, что
@@ -346,27 +348,33 @@ function renderStrips(box){
   const F=(typeof misFigureStrips==="function")?misFigureStrips():[];
   if(F.length>=3&&typeof drawMisFigure==="function"){
     const row=document.createElement("div");row.className="thing";
-    const cv=document.createElement("canvas");cv.width=520;cv.height=180;cv.style.cssText="width:260px;height:90px";
-    drawMisFigure(cv.getContext("2d"),520,180);
+    const cv=document.createElement("canvas");cv.style.cssText="width:260px;height:90px";
+    /* поле кисти 520×180 на 260×90 CSS: не реже прежних двух пикселей на точку */
+    panelGpu(cv,520,180,Math.max(1,panelNd()/2),c=>drawMisFigure(c,520,180));
     const nm=document.createElement("div");nm.className="nm";nm.innerHTML="<b>"+F.length+" ленты легли рядом</b><s></s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   }
   L.forEach((s,k)=>{
     const row=document.createElement("div");row.className="thing";
-    const cv=document.createElement("canvas");cv.width=128;cv.height=80;
-    const c=cv.getContext("2d");
-    c.fillStyle="#e9e2cc";c.fillRect(0,0,128,80);
-    c.strokeStyle="rgba(120,90,60,.35)";c.lineWidth=1;
-    for(let x=8;x<128;x+=12){c.beginPath();c.moveTo(x,0);c.lineTo(x,80);c.stroke();}
-    const r=rng(hashi(s.sx,s.sy,s.span|0));
-    c.strokeStyle="#2b3a8a";c.lineWidth=2;c.beginPath();
-    for(let x=0;x<=128;x+=4){const y=40+Math.sin(x/18+r()*.4)*10*(s.mis*6+.4)+(r()-.5)*4;x?c.lineTo(x,y):c.moveTo(x,y);}
-    c.stroke();
+    const cv=document.createElement("canvas");
+    panelGpu(cv,128,80,thingNd(),c=>stripPaint(c,s));
     const nm=document.createElement("div");nm.className="nm";
     nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+decRu(s.mis,3)+" · "+s.span+" делений · "+
       (typeof stripValue==="function"?stripValue(s)+" кр на стойке":"")+"</s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   });
+}
+/* значок вещи 128×80: на столе он 84 px ростом, в списке 40 — плотность по большему, не реже прежней */
+function thingNd(){return Math.max(1,84/80*panelNd());}
+/* лента: бумага в клетку и синяя кривая невязки */
+function stripPaint(c,s){
+  c.fillStyle="#e9e2cc";c.fillRect(0,0,128,80);
+  c.strokeStyle="rgba(120,90,60,.35)";c.lineWidth=1;
+  for(let x=8;x<128;x+=12){c.beginPath();c.moveTo(x,0);c.lineTo(x,80);c.stroke();}
+  const r=rng(hashi(s.sx,s.sy,s.span|0));
+  c.strokeStyle="#2b3a8a";c.lineWidth=2;c.beginPath();
+  for(let x=0;x<=128;x+=4){const y=40+Math.sin(x/18+r()*.4)*10*(s.mis*6+.4)+(r()-.5)*4;x?c.lineTo(x,y):c.moveTo(x,y);}
+  c.stroke();
 }
 function renderThings(box){
   box.textContent="";
@@ -374,10 +382,11 @@ function renderThings(box){
   if(!L.length){tableRow(box,"dim","","на столе пусто: письма, находки и бумаги лягут сюда");return;}
   L.forEach(t=>{
     const row=document.createElement("div");row.className="thing"+(t.seen?"":" new");
-    const cv=document.createElement("canvas");cv.width=128;cv.height=80;
-    if(t.k==="tape"&&t.full&&typeof drawMisFigure==="function")drawMisFigure(cv.getContext("2d"),128,80);
-    else if(t.k==="tape"&&t.ring&&typeof drawRingTape==="function")drawRingTape(cv.getContext("2d"),t,128,80);
-    else drawThingIcon(cv.getContext("2d"),t.k,128,80,t);
+    const cv=document.createElement("canvas");
+    panelGpu(cv,128,80,thingNd(),c=>{
+      if(t.k==="tape"&&t.full&&typeof drawMisFigure==="function")drawMisFigure(c,128,80);
+      else if(t.k==="tape"&&t.ring&&typeof drawRingTape==="function")drawRingTape(c,t,128,80);
+      else drawThingIcon(c,t.k,128,80,t);});
     const nm=document.createElement("div");nm.className="nm";
     nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+
       (t.sx!=null?(t.note?" · ":"")+"сектор "+t.sx+":"+t.sy:"")+"</s>";

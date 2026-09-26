@@ -26,6 +26,8 @@ const GPU_PIPE_KEYS=[
   "gnb.noise",
   "gps",
   "ovl",
+  "par",
+  "par.add",
   "pipe:fld.abil.cone|over",
   "pipe:fld.belt.sky|over",
   "pipe:fld.gbm|add",

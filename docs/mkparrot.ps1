@@ -36,8 +36,8 @@ setTimeout(function(){
     bg.addColorStop(0,"rgba(255,214,150,.07)");bg.addColorStop(1,"rgba(4,7,12,.9)");
     c.fillStyle=bg;c.fillRect(0,0,CW,CH);
     c.strokeStyle="rgba(127,230,216,.16)";c.strokeRect(.5,.5,CW-1,CH-1);
-    PAR_L=null;
-    parrotDraw(c,CW,CH);
+    /* птица рисуется видеокартой (12y1): своя канва WebGPU этой позы — в клетку листа */
+    var pc=parrotSnap(CW,CH,dpr);if(pc)c.drawImage(pc,0,0,CW,CH);
     c.restore();
     c.font="10px ui-monospace,monospace";c.textAlign="center";
     c.fillStyle="#7fe6d8";c.fillText(P[0],n*CW+CW/2,CH+16);
@@ -66,8 +66,7 @@ setTimeout(function(){
   q.fillText("ТКНИ — ОТЗОВЁТСЯ ТЕМ, ЧТО СЛЫШАЛО",12,PH-14);
   Object.keys(PAR).forEach(function(k){if(typeof PAR[k]==="number")PAR[k]=0;});
   PAR.t=2.6;PAR.blinkAt=1e9;PAR.crest=.25;
-  PAR_L=null;
-  q.save();q.translate(0,34);parrotDraw(q,PW,PH-86);q.restore();
+  var p2=parrotSnap(PW,PH-86,dpr);if(p2)q.drawImage(p2,0,34,PW,PH-86);
   fetch("/parrotwin.png",{method:"POST",body:w2.toDataURL("image/png")});
 },1400);
 </script>

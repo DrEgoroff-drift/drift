@@ -2452,7 +2452,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.473.0";
+const VER="0.474.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11071,7 +11071,7 @@ const GPU_PIPE_SRC={
 for(const n in GPU_FLD)GPU_PIPE_SRC[n]=()=>[GPU_WGSL_COMMON+GPU_FLD_HEAD+GPU_FLD[n](),gpuFieldLayout()];
 /* одиночные ключи — функция дескриптора в своём модуле */
 const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),"gnb.fade":()=>gnbFadeDesc(),
-  "gnb.noise":()=>gnbNoiseDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc()};
+  "gnb.noise":()=>gnbNoiseDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc(),par:()=>parDesc(false),"par.add":()=>parDesc(true)};
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
 function gpuPipeRecipe(key){
   if(key.startsWith("gc:"))return {desc:gcPipeDesc(key.slice(3))};
@@ -11131,6 +11131,8 @@ const GPU_PIPE_KEYS=[
   "gnb.noise",
   "gps",
   "ovl",
+  "par",
+  "par.add",
   "pipe:fld.abil.cone|over",
   "pipe:fld.belt.sky|over",
   "pipe:fld.gbm|add",
@@ -21028,7 +21030,7 @@ function vegaBoard(on){
   if(on&&typeof traineeAboard==="function"&&traineeAboard()){peopleLine("Там мальчишка в кресле. Я дома посижу. Я не ревную. Я дома посижу.","Вега",true);return false;}
   V.aboard=on?1:0;
   if(on){
-    G.seat={name:"ВЕГА",line:"на борту",draw:vegaSeatDraw,act:vegaSeatAct};
+    G.seat={name:"ВЕГА",line:"на борту",draw:vegaSeatDraw,act:vegaSeatAct,key:vegaSeatKey};
     peopleLine("Я с тобой. Чемодан в трюме, не трогай.","Вега",true);
   }else{
     G.seat=null;
@@ -21063,6 +21065,8 @@ function vegaSeatAct(){
   if(vegaOffended()){say("Вега\n…",120);return;}
   peopleLine(pick(VEGA_ABOARD,rng(hashi(celDay(),++V.said,0xAB0))),"Вега",true);
 }
+/* ключ выпечки кресла (27j): портрет меняется только обидой */
+function vegaSeatKey(){return vegaOffended()?"обида":"";}
 function vegaSeatDraw(c,W,H){
   c.save();c.translate(W/2,H);
   const s=Math.min(W,H)/56;c.scale(s,s);
@@ -21080,7 +21084,7 @@ function vegaTick(dt){
   vegaDayTick();
   V.ambT=(V.ambT||0)-dt;if(V.ambT<=0){V.ambT=120;vegaAmbientTick();}
   if(V.aboard){
-    if(!G.seat)G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:vegaSeatAct};
+    if(!G.seat)G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:vegaSeatAct,key:vegaSeatKey};
     G.seat.line=vegaSeatLine();
     V.mood=Math.min(1,V.mood+dt*.0002);
     /* пещера: строка раз в минуту и никакой помощи */
@@ -42667,7 +42671,7 @@ const PAR_C={
   glow:"#6ff0ff",
   eye:"#120b16"
 };
-let parWin=false,parRAF=0,parT0=0;
+let parWin=false,parT0=0;
 /* состояние живёт между кадрами: пружины, а не «текущий кадр анимации» */
 const PAR={t:0,flap:0,flapV:0,crest:0,crestV:0,ruff:0,ruffV:0,lean:0,leanV:0,
   hop:0,hopV:0,blink:0,blinkAt:2,say:"",sayT:-9,peck:0,look:0,mad:0,beak:0,
@@ -42749,28 +42753,6 @@ function parScale(c,x,y,w,h,c1,c2){
   c.stroke();
   c.restore();
 }
-/* ── бусина ── холодный огонёк на конце пера: ядро, ореол, блик */
-function parBead(c,x,y,r,k){
-  const g=c.createRadialGradient(x,y,0,x,y,r*3.4);
-  g.addColorStop(0,"rgba(190,252,255,"+(.85*k)+")");
-  g.addColorStop(.24,"rgba(111,240,255,"+(.34*k)+")");
-  g.addColorStop(1,"rgba(111,240,255,0)");
-  c.fillStyle=g;c.beginPath();c.arc(x,y,r*3.4,0,7);c.fill();
-  c.fillStyle="rgba(228,255,255,"+(.95*k)+")";
-  c.beginPath();c.arc(x,y,r,0,7);c.fill();
-}
-/* ряд перьев по дуге: ax,ay — центр, r1/r2 — радиусы, a0..a1 — сектор */
-function parRow(c,ax,ay,r1,r2,a0,a1,n,len,wid,ph,amp,cTip,cBase,spread){
-  for(let i=0;i<n;i++){
-    const k=n>1?i/(n-1):.5, a=a0+(a1-a0)*k;
-    const x=ax+Math.cos(a)*r1, y=ay+Math.sin(a)*r2;
-    const w=Math.sin(PAR.t*2.1+ph+i*.55)*amp;
-    const t=1-Math.abs(k-.5)*(1-spread)*2*.55;
-    c.save();c.translate(x,y);c.rotate(a+w);
-    parQuill(c,len*t,wid*t,.3,cTip,cBase);
-    c.restore();
-  }
-}
 /* ── тело одной массой ──
    Вытянутая вертикальная фигура: птица должна быть явно выше, чем шире, иначе
    читается кляксой без направления. Первая версия была шаром — и была шаром. */
@@ -42785,428 +42767,6 @@ function parBodyPath(c){
   c.bezierCurveTo(10,-28,0,-28,-8,-30);
   c.closePath();
 }
-/* ── оперение корпуса ──
-   Черепица внутри обвода: грудь кремовая, спина кобальтовая, на плече янтарь.
-   Ряды плотнее собственной длины пера — щель между перьями видна сильнее,
-   чем само перо, и именно из-за неё корпус шёл полосами. */
-function parCoat(g,T){
-  g.save();parBodyPath(g);g.clip();
-  const bg=g.createLinearGradient(-40,0,42,0);
-  bg.addColorStop(0,PAR_C.blueD);
-  bg.addColorStop(.52,"#42566c");bg.addColorStop(1,PAR_C.creamD);
-  g.fillStyle=bg;g.fillRect(-60,-190,120,170);
-  /* грудь — не перья остриём вниз, а мягкая чешуя: округлые пластинки внахлёст
-     снизу вверх. Остроконечные перья в лоб дали плетёнку-вафлю: две встречные
-     штриховки на одном пятне читаются тканью, а не птицей. */
-  for(let r=0;r<22;r++){
-    const y=-32-r*6;
-    for(let i=0;i<6;i++){
-      /* сетка без сбоя читается сотами: размер и место каждой пластинки
-         сдвинуты своим числом, а не общим шагом */
-      const j=Math.sin(r*12.9898+i*78.233)*43758.5453;
-      const jx=(j-Math.floor(j)-.5)*3.4, jy=(Math.sin(j)*.5)*2.2;
-      const x=-6+i*10+((r&1)?5:0)+jx;
-      const w=Math.sin(T*1.7+r*.6+i*.5)*.9;
-      parScale(g,x+w,y+jy,11.5+jx*.5,9.5+jy*.4,PAR_C.cream,PAR_C.creamD);
-    }
-  }
-  /* грудь не плоская: слева на неё падает тень от крыла, справа по кромке
-     идёт свет. Без этого чешуя лежит ковриком, как бы мелко её ни клали. */
-  /* холодная кромка по спине: единственная линия, которая привязывает птицу
-     к свету кабины. Она внутри обвода, поэтому не превращается в контур. */
-  g.strokeStyle="rgba(150,225,255,.34)";g.lineWidth=3.2;
-  g.beginPath();
-  g.moveTo(-30,-52);g.bezierCurveTo(-36,-104,-34,-146,-12,-170);g.stroke();
-
-  const cg=g.createLinearGradient(-14,0,42,0);
-  cg.addColorStop(0,"rgba(20,34,60,.55)");
-  cg.addColorStop(.45,"rgba(20,34,60,0)");
-  cg.addColorStop(1,"rgba(255,240,210,.28)");
-  g.fillStyle=cg;g.fillRect(-14,-190,60,170);
-  /* спина — крупное синее перо остриём вниз, крупнее груди: два разных
-     оперения на одном теле, а не один узор на всю птицу */
-  for(let r=0;r<9;r++){
-    const y=-48-r*13;
-    for(let i=0;i<3;i++){
-      const x=-46+i*14+((r&1)?7:0);
-      const w=Math.sin(T*2.0+r*.7+i*.55)*.05;
-      const near=x>-22;
-      g.save();g.translate(x,y);g.rotate(1.34+w);
-      parQuill(g,30,15,.26,near?PAR_C.blueL:PAR_C.blue,near?PAR_C.blue:PAR_C.blueD);
-      g.restore();
-    }
-  }
-  /* янтарь на плече: единственное тёплое пятно на корпусе, оно же метка
-     породы. Без него синее с кремовым — форменная рубашка, а не животное. */
-  for(let i=0;i<5;i++){
-    g.save();g.translate(-27+i*5,-140+i*6);g.rotate(1.25);
-    parQuill(g,22,12,.26,PAR_C.amber,PAR_C.amberD);
-    g.restore();
-  }
-  g.restore();
-}
-/* ── лапа ── чешуйчатая цевка и три пальца в обхват: птица стоит, а не висит */
-function parFoot(c,x,dir,grip,up){
-  /* Поджатая лапа — не спрятанная: птица подтягивает её к брюху и остаётся
-     стоять на второй. Прятать её насовсем нельзя, иначе на поджатии тело
-     теряет опору и повисает. */
-  const U=up||0, Sc=up?(PAR.scratch||0):0;
-  /* чесание: лапа идёт вдоль бока вверх, к щеке; верх цевки прячется под
-     корпусом, как бедро под пером, — видны только пальцы у головы */
-  c.save();c.translate(x-U*6+Sc*6,-U*26-Sc*84);c.scale(dir,1);c.rotate(-U*.5-Sc*2.3);
-  c.lineCap="round";
-  c.strokeStyle=PAR_C.footD;c.lineWidth=6.4;
-  /* при чесании цевка длиннее: видна вся нога от бока до щеки, корень уходит под крыло */
-  const tl=38+Sc*26;
-  c.beginPath();c.moveTo(1,-tl);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
-  c.strokeStyle=PAR_C.foot;c.lineWidth=4.4;
-  c.beginPath();c.moveTo(1,2-tl);c.quadraticCurveTo(0,-20,0,-5);c.stroke();
-  /* чешуя цевки: восемь колечек. Гладкая палка выдаёт рисунок сразу — у птицы
-     нога покрыта щитками, и это видно даже в четверть размера */
-  c.strokeStyle="rgba(70,42,18,.45)";c.lineWidth=1;
-  for(let i=0;i<7+Sc*6;i++){
-    const y=-33-Sc*26+i*4.4;
-    c.beginPath();c.moveTo(-2.4,y);c.quadraticCurveTo(0,y+1.6,2.4,y);c.stroke();
-  }
-  for(let i=0;i<3;i++){
-    const a=(-.85+i*.72)+grip*.14;
-    c.strokeStyle=PAR_C.foot;c.lineWidth=4.6;
-    c.beginPath();c.moveTo(0,-5);
-    c.quadraticCurveTo(Math.cos(a)*10,-3,Math.cos(a)*15,4+Math.sin(a)*2);
-    c.stroke();
-    c.strokeStyle=PAR_C.footD;c.lineWidth=1.8;
-    c.beginPath();c.moveTo(Math.cos(a)*15,4+Math.sin(a)*2);
-    c.lineTo(Math.cos(a)*18,7+Math.sin(a)*2);c.stroke();
-  }
-  c.strokeStyle=PAR_C.footD;c.lineWidth=4;
-  c.beginPath();c.moveTo(0,-5);c.quadraticCurveTo(-9,-3,-12,4);c.stroke();
-  c.restore();
-}
-/* ══ сама птица ══ (0,0) — жёрдочка под лапами */
-function parrotDraw(c,W,H){
-  if(!(W>0&&H>0))return;   /* канва нулевого размера (окно скрыто) — drawImage падает */
-  const T=PAR.t;
-  const breathe=Math.sin(T*1.35)*1.6, sway=Math.sin(T*.62)*2.0;
-  const flap=PAR.flap, lift=PAR.hop;
-  c.save();
-  c.translate(W/2+4,H-16-PAR.hang*150);
-  const s=Math.min(W/230,H/304);
-  c.scale(s,s);
-
-  /* ── жёрдочка и тень ── без опоры и тени птица висит в пустоте */
-  c.fillStyle="rgba(0,0,0,.45)";
-  c.beginPath();c.ellipse(-2,1,44-lift*.18,6-lift*.03,0,0,7);c.fill();
-  /* жёрдочка — не труба из каталога, а обрезок ветки: два сучка, волокно
-     вдоль и светлая верхняя кромка. Ровный цилиндр под живой птицей сразу
-     выдаёт, что это интерфейс, а не место, где она живёт. */
-  const pg=c.createLinearGradient(0,-4,0,10);
-  pg.addColorStop(0,"#6b5334");pg.addColorStop(.42,"#3d2e1c");pg.addColorStop(1,"#1c1510");
-  c.fillStyle=pg;
-  c.beginPath();c.roundRect(-92,-3,184,11,5);c.fill();
-  c.strokeStyle="rgba(140,110,70,.35)";c.lineWidth=.8;
-  for(let i=0;i<5;i++){
-    const y=-1+i*1.9;
-    c.beginPath();c.moveTo(-88,y);
-    c.bezierCurveTo(-30,y+(i&1?.9:-.7),30,y+(i&1?-.8:.8),88,y);c.stroke();
-  }
-  for(const kx of [-46,28]){
-    c.fillStyle="rgba(28,20,12,.55)";
-    c.beginPath();c.ellipse(kx,2.6,5,2.6,.2,0,7);c.fill();
-  }
-  c.strokeStyle="rgba(190,240,235,.22)";c.lineWidth=1;
-  c.beginPath();c.moveTo(-90,-2.4);c.lineTo(90,-2.4);c.stroke();
-
-  c.save();
-
-  c.translate(sway+PAR.lean*10+PAR.step,-lift);
-  /* вис вниз головой: птица перехватывается лапами и разворачивается вокруг
-     самой жёрдочки. Единственная повадка, которая трогает общий поворот, —
-     потому и редкая: если её видно часто, она перестаёт быть трюком. */
-  /* поворот идёт вокруг ТОЧКИ ХВАТА (низ корпуса, куда входят цевки), а не
-     вокруг жёрдочки: иначе тело уезжает от собственных лап и висит рядом
-     с ними, а не на них */
-  if(PAR.hang>.001){c.translate(0,-44);c.rotate(PAR.hang*2.85);c.translate(0,44);}
-  c.rotate(PAR.lean*.05+PAR.bow*.20+Math.sin(T*.62+1)*.012);
-  /* лапы держат жёрдочку и НЕ разворачиваются вместе с телом */
-  c.save();c.translate(0,-44);c.rotate(-PAR.hang*2.85);c.translate(0,44);
-  parFoot(c,-15,-1,lift*.06,0);
-  /* чешущая лапа идёт к щеке ПОВЕРХ оперения — её рисуем после слоя */
-  if(!(PAR.scratch>.02))parFoot(c,15,1,lift*.06,PAR.footUp);
-  c.restore();
-  /* разворот боком: тело сжимается по ширине и проходит через ребро. Настоящий
-     поворот кругом стоил бы второго набора рисунков; сжатие даёт то же самое
-     за одну строку и читается верно, потому что хвост и клюв меняют сторону. */
-  /* Ширина в развороте не падает ниже трети: птица, сжатая в ноль, не
-     «стоит боком», а исчезает. Настоящий вид со спины стоил бы второго
-     набора рисунков, а треть ширины читается разворотом и стоит строки. */
-  /* плотность растра слоя — по фактическому масштабу канвы: иначе оперение
-     считается в одну точку на единицу и в большом окне расплывается в мыло */
-  const mt=c.getTransform();
-  const kpx=Math.min(6,Math.max(1,Math.hypot(mt.a,mt.b)));
-  const tc=Math.cos((PAR.turn||0)*Math.PI);
-  c.scale(tc<0?-Math.max(.34,-tc):Math.max(.34,tc),1);
-
-  /* оперение — на своей канве: один свет кладётся на всё разом */
-  /* слой — по коробке птицы (230×304 единиц вокруг жёрдочки), а не по канве
-     окна: в маленьком окне (M151a: 138×104) слой резал голову и крылья, и
-     птица выходила «обрезанной» (плейтест 02.09) */
-  const L=parLayer(230,304,kpx);
-  const g=L.g;
-  const beads=[];                      /* огни собираем и зажигаем после света */
-  g.save();g.translate(L.ox,L.oy);
-  g.scale(1,1+breathe*.006);
-
-  /* 1. ХВОСТ — первым, он за телом: длинные слоёные перья вниз-назад.
-     Он длиннее корпуса: это половина силуэта и главный признак направления. */
-  g.save();g.translate(-24,-98);g.rotate(Math.sin(T*.7)*.05+flap*.24);
-  for(let i=0;i<7;i++){
-    const k=i/6;
-    const a=1.82+k*(.52+PAR.fan*.72);          /* вниз-назад, узким веером */
-    const len=(152-k*54)*(1+flap*.06);
-    /* каждое перо со своей фазой и своим запаздыванием — хвост качается
-       волной от корня к концам, а не доской */
-    const w=Math.sin(T*1.15+i*.62)*.045;
-    const amb=i===2||i===5;
-    g.save();g.rotate(w);
-    const P=parPlume(g,len,a,.34,9-k*3.4,
-      amb?PAR_C.amber:(i&1?PAR_C.blueL:PAR_C.blue),
-      amb?PAR_C.amberD:PAR_C.blueD,5,1.7);
-    g.restore();
-    /* огни на двух крайних перьях — тот же язык, что в хохле, и не чаще:
-       фонарь на каждом пере превращает птицу в гирлянду */
-    if(i===0||i===4){
-      const ca=Math.cos(w),sa=Math.sin(w);
-      beads.push([-24+P[0]*ca-P[1]*sa,-98+P[0]*sa+P[1]*ca,2.4,.62]);
-    }
-  }
-  g.restore();
-
-  /* подхвостье: короткие кремовые перья у корня хвоста — стык корпуса с
-     хвостом, без которого хвост выглядит вставленным в тело */
-  parRow(g,-18,-70,10,10,1.55,2.30,5,34,13,2.2,.05,PAR_C.cream,PAR_C.creamD,.8);
-
-  /* 2. корпус: масса и черепица одним куском, внутри обвода */
-  parCoat(g,T);
-
-  /* 3. КРЫЛО: три ряда на одном шарнире у плеча — машет плечо, а не перо.
-     Ось у крыла своя, поэтому оно не сливается с хвостом в общую метёлку. */
-  g.save();g.translate(-20,-150);
-  g.rotate(-flap*1.35-PAR.stretch*.62+Math.sin(T*.9)*.03);
-  /* потягивание: крыло не машет, а вытягивается — длина перьев растёт, взмаха
-     нет. Это разные движения, и путать их нельзя */
-  if(PAR.stretch>.001)g.scale(1+PAR.stretch*.34,1+PAR.stretch*.16);
-  /* тёмная подложка крыла: без неё ряды тонут в спине и крыла не видно */
-  g.fillStyle="rgba(10,26,58,.85)";
-  g.beginPath();g.moveTo(4,6);g.quadraticCurveTo(-16,34,-6,86);
-  g.quadraticCurveTo(14,44,18,2);g.closePath();g.fill();
-  /* маховые: длинные гнутые перья вдоль бока, как в референсе, — не веер
-     лопаток, а слоёная кисть с укорочением к плечу */
-  for(let i=0;i<6;i++){
-    const k=i/5;
-    const a=1.42+k*.46;
-    const w=Math.sin(T*1.25+i*.7)*.04;
-    g.save();g.rotate(w);
-    parPlume(g,104-k*38,a,.30,11-k*3.6,i&1?PAR_C.blue:PAR_C.blueL,PAR_C.blueD,5,1.5);
-    g.restore();
-  }
-  /* кроющие второго порядка: мелкое синее перо поверх голых оснований маховых.
-     Без них у крыла видно, где перья «воткнуты», и вся кисть теряет корень. */
-  parRow(g,2,-6,9,10,1.30,1.94,7,30,12,1.4,.05,PAR_C.blueL,PAR_C.blueD,.9);
-  /* кроющие плеча: короткие янтарные, они же стык крыла с телом */
-  parRow(g,4,-10,8,9,1.30,1.90,5,28,11,3.6,.05,PAR_C.amber,PAR_C.amberD,.9);
-  g.restore();
-
-  const pr=PAR.preen, sc=PAR.scratch||0;
-  const hx=12-pr*16-PAR.tuck*5+sc*4, hy=-168+pr*26+PAR.tuck*13+sc*20;
-  /* воротничок: мелкое перо там, где голова садится на грудь. Идёт за
-     головой на две трети: осталась бы на месте — при втянутой голове торчал
-     бы над ней брыжами. Стык двух
-     оперений — самое заметное место сборки, и он должен быть заткан. */
-  const rf2=Math.abs(PAR.ruff)+PAR.tuck*.85;
-  parRow(g,10+(hx-12)*.85,-150+(hy+168)*.9,16,13,-2.5,.45,11,16+rf2*6,10,1.2,.10+rf2*.12,
-    PAR_C.cream,PAR_C.blue,.92);
-
-  /* 4. ГОЛОВА со всем, что на ней: качается на шее одним куском.
-     Чистка перьев (`preen`) — единственное, что птица делает сама: голова
-     ныряет к плечу и возвращается. Без такого «дела» она просто качается. */
-  /* шея: пятно в цвет головы между корпусом и черепом, идёт за головой на
-     полпути. Голова — не диск, положенный на грудь; при наклоне и чистке
-     между ними иначе открывается тёмный зазор */
-  g.save();g.translate(12+(hx-12)*.5,-158+(hy+168)*.5);
-  const ng=g.createLinearGradient(-18,0,18,0);
-  ng.addColorStop(0,PAR_C.blue);ng.addColorStop(.5,"#a9c4de");ng.addColorStop(1,PAR_C.cream);
-  g.fillStyle=ng;g.beginPath();g.ellipse(-6,0,24,17,-.15,0,7);g.fill();
-  g.restore();
-  g.save();
-  /* втягивание в плечи (`tuck`) — не сдвиг головы вниз, а посадка её на тело:
-     вместе с ней поднимается воротник, иначе видно голую шею. */
-  g.translate(hx,hy);
-  const hr=PAR.look*.12+Math.sin(T*.5)*.022+PAR.mad*.05+pr*1.05
-    +PAR.roll*.62+PAR.bow*.5+sc*.4;
-  g.rotate(hr);
-
-  /* 4а. хохол: восемь перьев назад-вверх, у каждого своя фаза и бусина.
-     Бусина отстаёт от пера — оттого хохол читается инерцией, а не веером. */
-  const cr=PAR.crest;
-  for(let i=0;i<9;i++){
-    const k=i/8;
-    const a=-2.62+k*1.22-cr*.34;
-    const len=(46+Math.sin(k*3.1)*30+Math.sin(i*2.3)*5)*(1+cr*.30);
-    const w=Math.sin(T*1.6+i*.8)*.075;
-    const col=i%3===0?PAR_C.amber:(i%3===1?PAR_C.blue:PAR_C.viol);
-    const colD=i%3===0?PAR_C.amberD:(i%3===1?PAR_C.blueD:"#4a2f9c");
-    g.save();g.rotate(w);
-    const P=parPlume(g,len,a,.86,6.2-k*1.6,col,colD,4,1.1);
-    /* голый стебель за опушкой: бусина висит НА нём, а не приклеена к перу —
-       это и даёт антенну, а не блёстку на кончике */
-    const st=6+Math.sin(i*1.7)*2;
-    const sx=P[0]+Math.cos(a+.30)*st, sy=P[1]+Math.sin(a+.30)*st;
-    g.strokeStyle="rgba(150,200,235,.6)";g.lineWidth=1.6;
-    g.beginPath();g.moveTo(P[0],P[1]);g.lineTo(sx,sy);g.stroke();
-    P[0]=sx;P[1]=sy;
-    g.restore();
-    /* положение бусины считаем в координатах головы и отдаём наружу вместе
-       с поворотом: огни рисуются последними, поверх света */
-    const ca=Math.cos(hr),sa=Math.sin(hr);
-    const bx=P[0]*ca-P[1]*sa, by=P[0]*sa+P[1]*ca;
-    const lag=Math.sin(T*1.6+i*.8-.9)*3.5;
-    beads.push([hx+bx+lag*.6,hy+by+lag,1.8+k*.4,
-      .72+.28*Math.sin(T*2.2+i*1.1)]);
-  }
-  /* 4б. череп: кремовая маска, синий затылок */
-  const sg=g.createLinearGradient(-20,0,22,0);
-  sg.addColorStop(0,PAR_C.blue);sg.addColorStop(.42,"#a9c4de");sg.addColorStop(.7,PAR_C.cream);
-  g.fillStyle=sg;
-  g.beginPath();g.ellipse(0,0,22,20,-.08,0,7);g.fill();
-  /* мелкое перо на щеке: голова не должна быть гладким яйцом */
-  for(let i=0;i<7;i++){
-    const a=-1.5+i*.42;
-    g.save();g.translate(Math.cos(a)*13,Math.sin(a)*11);g.rotate(a+1.4);
-    parQuill(g,9,6,.2,i<3?PAR_C.blueL:PAR_C.cream,i<3?PAR_C.blue:PAR_C.creamD);
-    g.restore();
-  }
-  /* 4в. клюв: крупный, загнутый, с раскрывом — половина характера здесь */
-  g.save();g.translate(15,-1);g.rotate(PAR.peck*.16);g.scale(1.34,1.34);
-  const bg2=g.createLinearGradient(0,-12,0,14);
-  bg2.addColorStop(0,PAR_C.beak);bg2.addColorStop(1,PAR_C.beakD);
-  g.fillStyle=bg2;
-  /* Клюв попугая — не клин, а высокая горбатая надклювная дуга, круто
-     заворачивающая вниз и НАЗАД, под себя. Прежний вариант был длинным и
-     острым: у птицы получался вороний клюв, а порода в референсе тупая и
-     мясистая, и держится она именно на этом изгибе. */
-  g.beginPath();
-  g.moveTo(-9,-13);                        /* восковица у самого лба */
-  g.bezierCurveTo(6,-15,18,-10,22,-2);     /* горб надклювья */
-  g.bezierCurveTo(25,4,23,11,20,15);       /* спуск к острию */
-  g.lineTo(17,17);                         /* само остриё — тупое, но остриё */
-  g.bezierCurveTo(15,12,12,9,9,7);         /* крючок подобран назад, с подрезом */
-  g.bezierCurveTo(4,5,-2,4.5,-9,4.5);
-  g.closePath();g.fill();
-  /* подрез под крючком: тонкая тень, от которой остриё читается остриём,
-     а не округлым наплывом. Без неё клюв превращается в шишку. */
-  g.strokeStyle="rgba(90,54,16,.45)";g.lineWidth=1.1;
-  g.beginPath();g.moveTo(19,14.5);
-  g.bezierCurveTo(15,11,12,8.5,9,7);g.stroke();
-  /* блик по горбу: без него клюв — плоское пятно, а он гладкий и твёрдый */
-  g.fillStyle="rgba(255,246,226,.5)";
-  g.beginPath();g.moveTo(-4,-10);
-  g.quadraticCurveTo(8,-11,15,-3);
-  g.quadraticCurveTo(7,-6,-4,-6);g.closePath();g.fill();
-  /* подклювье: короткая широкая чаша, отъезжает, когда птица говорит */
-  /* раскрытый клюв — это не «нижняя половина отъехала», а видимый зев: без
-     тёмного проёма между створками зевок читается сломанной челюстью */
-  if(PAR.yawn>.02||PAR.beak>.3){
-    g.fillStyle="rgba(58,20,26,.92)";
-    g.beginPath();g.moveTo(-6,2);
-    g.quadraticCurveTo(9,3,17,7+PAR.yawn*10);
-    g.quadraticCurveTo(4,10+PAR.yawn*16,-6,9+PAR.yawn*12);
-    g.closePath();g.fill();
-  }
-  g.save();g.translate(0,PAR.beak*5+PAR.yawn*17);g.rotate(PAR.yawn*.42);
-  const lg2=g.createLinearGradient(0,4,0,15);
-  lg2.addColorStop(0,PAR_C.beakD);lg2.addColorStop(1,"#a06a2e");
-  g.fillStyle=lg2;
-  g.beginPath();g.moveTo(-9,4);
-  g.bezierCurveTo(2,5,9,7,10,11);
-  g.bezierCurveTo(6,14,-3,14,-9,13);
-  g.closePath();g.fill();
-  g.restore();
-  g.fillStyle="rgba(60,30,10,.55)";
-  g.beginPath();g.arc(-2,-8,1.6,0,7);g.fill();   /* ноздря */
-  g.restore();
-  /* 4г. глаз: крупный, круглый, с двумя бликами — от него всё обаяние */
-  const bl=1-PAR.blink;
-  g.save();g.translate(4,-4);
-  /* перьевое кольцо вокруг глаза: тёмная кайма, из-за которой глаз сидит в
-     голове, а не лежит на ней наклейкой */
-  /* кольцо смыкается вместе с глазом: при закрытом глазе полное кольцо
-     оставляло на морде тёмное пятно во весь глаз */
-  g.fillStyle="rgba(28,44,74,.42)";
-  g.beginPath();g.ellipse(0,0,11.2,10.8*Math.max(.24,bl),0,0,7);g.fill();
-  g.fillStyle="#e9dcc6";
-  g.beginPath();g.ellipse(0,0,9.5,9.5*Math.max(.08,bl),0,0,7);g.fill();
-  if(bl>.2){
-    g.fillStyle=PAR_C.eye;
-    g.beginPath();g.ellipse(.6,0,7.4,7.4*bl,0,0,7);g.fill();
-    g.fillStyle="rgba(120,190,240,.5)";
-    g.beginPath();g.ellipse(.6,1.6,5.6,5.6*bl,0,0,7);g.fill();
-    g.fillStyle="rgba(255,255,255,.95)";
-    g.beginPath();g.ellipse(2.6,-3,2.5,2.5*bl,0,0,7);g.fill();
-    g.beginPath();g.ellipse(-2.6,2.4,1.2,1.2*bl,0,0,7);g.fill();
-  }
-  g.strokeStyle="rgba(20,14,26,.75)";g.lineWidth=1.6;
-  g.beginPath();g.ellipse(0,0,9.5,9.5*Math.max(.08,bl),0,0,7);g.stroke();
-  /* сомкнутое веко — кремовая дуга в цвет щеки, а не щель */
-  if(bl<.3){
-    g.strokeStyle="rgba(210,190,158,"+(1-bl/.3)+")";g.lineWidth=2.2;
-    g.beginPath();g.moveTo(-9,0);g.quadraticCurveTo(0,2.4,9,0);g.stroke();
-  }
-  g.restore();
-  g.restore();
-
-  /* 5. ОДИН СВЕТ на всю выпечку */
-  g.globalCompositeOperation="source-atop";
-  const lg=g.createLinearGradient(0,L.oy-230,0,L.oy+10);
-  lg.addColorStop(0,"rgba(255,236,196,.26)");   /* лампа над жёрдочкой */
-  lg.addColorStop(.45,"rgba(255,255,255,0)");
-  lg.addColorStop(1,"rgba(4,10,16,.55)");       /* низ уходит в тень */
-  g.fillStyle=lg;g.fillRect(0,0,L.w,L.h);
-  const kg=g.createLinearGradient(L.ox-80,0,L.ox+60,0);
-  kg.addColorStop(0,"rgba(127,230,216,.22)");   /* холодный подбой от приборов */
-  kg.addColorStop(.5,"rgba(127,230,216,0)");
-  kg.addColorStop(1,"rgba(255,206,140,.14)");
-  g.fillStyle=kg;g.fillRect(0,0,L.w,L.h);
-  g.globalCompositeOperation="source-over";
-  g.restore();
-
-  /* 6. огни — ПОСЛЕ света и аддитивно: свет не имеет права их гасить */
-  g.save();g.translate(L.ox,L.oy);g.globalCompositeOperation="lighter";
-  for(const b of beads)parBead(g,b[0],b[1],b[2],b[3]);
-  g.restore();
-
-  c.drawImage(L.cv,-L.ox,-L.oy,L.w,L.h);
-  if(PAR.scratch>.02){
-    c.save();c.translate(0,-44);c.rotate(-PAR.hang*2.85);c.translate(0,44);
-    parFoot(c,15,1,lift*.06,PAR.footUp);
-    c.restore();
-  }
-  c.restore();
-  c.restore();
-}
-/* канва оперения кэшируется на модуле: дорогое считается один раз */
-let PAR_L=null;
-function parLayer(W,H,k){
-  k=k||1;
-  if(!PAR_L||PAR_L.w!==W||PAR_L.h!==H||PAR_L.k!==k){
-    const cv=document.createElement("canvas");
-    cv.width=Math.ceil(W*k);cv.height=Math.ceil(H*k);
-    PAR_L={cv,g:cv.getContext("2d"),w:W,h:H,k,ox:W*.5,oy:H*.94};
-  }
-  PAR_L.g.setTransform(k,0,0,k,0,0);
-  PAR_L.g.clearRect(0,0,PAR_L.w,PAR_L.h);
-  return PAR_L;
-}
-
 /* ── пружины ──
    Всё движение — затухающие пружины к нулю: реакция на тычок сама переходит
    в покой и никогда не застревает «на кадре». */
@@ -43312,19 +42872,6 @@ function parrotBtnTick(){
   if(!has&&parWin)toggleParrotWin(false);
 }
 const PAR_DPR=Math.min(2,window.devicePixelRatio||1);
-function parrotFrame(ts){
-  if(!parWin)return;
-  const dt=Math.min(.05,(ts-parT0)/1000||.016);parT0=ts;
-  parStep(dt);
-  const cv=document.getElementById("parrotcv");
-  if(cv){
-    const c=cv.getContext("2d");
-    c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cv.width,cv.height);
-    c.setTransform(PAR_DPR,0,0,PAR_DPR,0,0);
-    parrotDraw(c,cv.width/PAR_DPR,cv.height/PAR_DPR);
-  }
-  parRAF=requestAnimationFrame(parrotFrame);
-}
 function toggleParrotWin(open){
   parWin=open===undefined?!parWin:open;
   const w=document.getElementById("parrotwin");if(!w)return;
@@ -43333,13 +42880,14 @@ function toggleParrotWin(open){
     const t=document.getElementById("parrotname");
     if(t&&G.parrot)t.textContent="ТРЕПЛО «"+G.parrot.name.toUpperCase()+"»";
     const cv=document.getElementById("parrotcv");
-    if(cv){cv.width=cv.clientWidth*PAR_DPR;cv.height=cv.clientHeight*PAR_DPR;PAR_L=null;
+    if(cv){cv.width=cv.clientWidth*PAR_DPR;cv.height=cv.clientHeight*PAR_DPR;
       /* окно спрятано правилом экрана (body.screen) — размера нет, открывать нечего */
       if(!cv.width||!cv.height){parWin=false;w.classList.remove("open");return;}}
     const el=document.getElementById("parrotsay");
     if(el)el.textContent=G.parrot?("из вещей "+G.parrot.who):"";
-    parT0=wallMs();parRAF=requestAnimationFrame(parrotFrame);
-  }else if(parRAF){cancelAnimationFrame(parRAF);parRAF=0;}
+    /* шаг и кадр окна — в кадре игры (parrotGpuTick, 12y1): своего rAF у птицы больше нет */
+    parT0=wallMs();
+  }
 }
 (function parrotWire(){
   const b=document.getElementById("parrotbtn"),
@@ -43354,6 +42902,438 @@ function toggleParrotWin(open){
     parrotPoke((e.clientX-R.left-W/2-4)/s,(e.clientY-R.top-(H-16-PAR.hang*150))/s);
   });
 })();
+
+/* ══════════════ трепло на движке: атлас перьев и экземпляры (G15, DESIGN-gpu «Where I stopped») ══════════════
+   Птица рисовалась в 2D: своё rAF, каждый кадр полторы сотни перьев с градиентами в слой и слой в окно —
+   21 мс на кадр в стенде без видеокарты (26.09), и каждые пять секунд то же ради иконки на пульте. Теперь:
+   • АТЛАС. Каждая деталь, что не меняет формы, печётся один раз (gpuBake) теми же кистями 12y — перо,
+     опахало, чешуйка, масса тела, клюв, жёрдочка. Перья сделаны при угле 0: опахало от угла не зависит
+     (parPlume поворачивает все точки на ang), поэтому угол и длина — это поворот и растяжение экземпляра.
+   • ЭКЗЕМПЛЯРЫ. parrotDraw больше не рисует, а раскладывает: та же последовательность, что была у 2D,
+     с тем же стеком преобразований (pg*), только вместо кисти — запись «деталь, матрица». Раскладка —
+     чистый JS: в Node её зовёт пульт, и сторож «птицу не рисуют каждую секунду» считает вызовы как прежде.
+   • ШЕЙДЕР. Спрайт из атласа под любой аффинной матрицей (разворот боком — сжатие с поворотом, это сдвиг),
+     эллипс заливкой и обводом, ломаная до четырёх точек, бусина (ореол и ядро — «lighter», вторым проходом
+     со сложением). Черепица корпуса режется массой тела в шейдере: маска — альфа детали «body».
+   Свет (source-atop, правило 3 в шапке 12y) в 2D-версии ложился мимо птицы: прямоугольник заливки уже стоял
+   в переносе (L.ox, L.oy) и накрывал только правый низ под жёрдочкой — замер 26.09: 0 пикселей из 280 тыс.
+   Перенесено как было — без света; вернуть его — решение с парой, не побочный эффект переноса. */
+const PAR_K=2;   /* точек атласа на единицу птицы: окно даёт ≤1.4, стенд mkparrot — 2.2 */
+let PAR_CELLS=null;
+/* рамки деталей — по их же геометрии (контрольные точки кривых охватывают кривую) */
+function parQuillBox(len,wid,curl){
+  const P=[0,0,len*.45,-wid,len,-wid*.14+curl*len*.14,len*.5,wid*.12+curl*len*.12,0,wid*.36,len*.5,-wid*.26,len*.94,-wid*.08+curl*len*.13];
+  let x0=0,y0=0,x1=0,y1=0;for(let i=0;i<P.length;i+=2){x0=Math.min(x0,P[i]);x1=Math.max(x1,P[i]);y0=Math.min(y0,P[i+1]);y1=Math.max(y1,P[i+1]);}
+  const m=1+Math.max(.6,wid*.08)/2;return [x0-m,y0-m,x1+m,y1+m];}
+function parPlumeBox(len,bend,wid,fw){
+  const cx=Math.cos(-bend)*len*.55,cy=Math.sin(-bend)*len*.55,W=fw===undefined?1:fw;let x0=0,y0=0,x1=0,y1=0;
+  for(let i=0;i<=14;i++){const t=i/14,px=2*(1-t)*t*cx+t*t*len,py=2*(1-t)*t*cy,dx=2*(1-t)*cx+2*t*(len-cx),dy=2*(1-t)*cy-2*t*cy,
+    L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,w=Math.sin(Math.pow(t,.62)*Math.PI)*wid*W;
+    for(const [x,y] of [[px+nx*w,py+ny*w],[px-nx*w*.6,py-ny*w*.6]]){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}}
+  const m=1.5+Math.max(.7,wid*.17)/2;return [x0-m,y0-m,x1+m,y1+m];}
+/* ── детали: имя, рамка в единицах птицы, кисть ── */
+function parCellDefs(){
+  const C=PAR_C,L=[];
+  const q=(nm,len,wid,curl,t,b)=>L.push([nm,parQuillBox(len,wid,curl),g=>parQuill(g,len,wid,curl,t,b)]);
+  const pl=(nm,len,bend,wid,c1,c2,fr,fw)=>L.push([nm,parPlumeBox(len,bend,wid,fw),g=>{parPlume(g,len,0,bend,wid,c1,c2,fr,fw);}]);
+  /* жёрдочка — не труба из каталога, а обрезок ветки: два сучка, волокно вдоль и светлая верхняя кромка */
+  L.push(["perch",[-94,-5,94,10],g=>{
+    const pg=g.createLinearGradient(0,-4,0,10);
+    pg.addColorStop(0,"#6b5334");pg.addColorStop(.42,"#3d2e1c");pg.addColorStop(1,"#1c1510");
+    g.fillStyle=pg;g.beginPath();g.roundRect(-92,-3,184,11,5);g.fill();
+    g.strokeStyle="rgba(140,110,70,.35)";g.lineWidth=.8;
+    for(let i=0;i<5;i++){const y=-1+i*1.9;g.beginPath();g.moveTo(-88,y);
+      g.bezierCurveTo(-30,y+(i&1?.9:-.7),30,y+(i&1?-.8:.8),88,y);g.stroke();}
+    for(const kx of [-46,28]){g.fillStyle="rgba(28,20,12,.55)";g.beginPath();g.ellipse(kx,2.6,5,2.6,.2,0,7);g.fill();}
+    g.strokeStyle="rgba(190,240,235,.22)";g.lineWidth=1;g.beginPath();g.moveTo(-90,-2.4);g.lineTo(90,-2.4);g.stroke();}]);
+  for(let i=0;i<7;i++){const k=i/6,amb=i===2||i===5;
+    pl("tail"+i,152-k*54,.34,9-k*3.4,amb?C.amber:(i&1?C.blueL:C.blue),amb?C.amberD:C.blueD,5,1.7);}
+  for(let i=0;i<6;i++){const k=i/5;pl("wing"+i,104-k*38,.30,11-k*3.6,i&1?C.blue:C.blueL,C.blueD,5,1.5);}
+  for(let i=0;i<9;i++){const k=i/8;
+    pl("crest"+i,46+Math.sin(k*3.1)*30+Math.sin(i*2.3)*5,.86,6.2-k*1.6,i%3===0?C.amber:(i%3===1?C.blue:C.viol),
+      i%3===0?C.amberD:(i%3===1?C.blueD:"#4a2f9c"),4,1.1);}
+  q("qUT",34,13,.3,C.cream,C.creamD);q("qWC",30,12,.3,C.blueL,C.blueD);q("qSh",28,11,.3,C.amber,C.amberD);
+  q("qCol",16,10,.3,C.cream,C.blue);q("qChB",9,6,.2,C.blueL,C.blue);q("qChC",9,6,.2,C.cream,C.creamD);
+  q("qBN",30,15,.26,C.blueL,C.blue);q("qBF",30,15,.26,C.blue,C.blueD);q("qAm",22,12,.26,C.amber,C.amberD);
+  L.push(["scale",[-7.5,-7,7.5,6.5],g=>parScale(g,0,0,11.5,9.5,C.cream,C.creamD)]);
+  /* масса корпуса — она же маска черепицы (альфа 1 внутри обвода) */
+  L.push(["body",[-38,-182,40,-26],g=>{const bg=g.createLinearGradient(-40,0,42,0);
+    bg.addColorStop(0,C.blueD);bg.addColorStop(.52,"#42566c");bg.addColorStop(1,C.creamD);
+    g.fillStyle=bg;parBodyPath(g);g.fill();}]);
+  /* неподвижное поверх чешуи: холодная кромка по спине и тень крыла на груди — уже обрезаны телом */
+  L.push(["coatTop",[-38,-182,40,-26],g=>{parBodyPath(g);g.clip();
+    g.strokeStyle="rgba(150,225,255,.34)";g.lineWidth=3.2;
+    g.beginPath();g.moveTo(-30,-52);g.bezierCurveTo(-36,-104,-34,-146,-12,-170);g.stroke();
+    const cg=g.createLinearGradient(-14,0,42,0);
+    cg.addColorStop(0,"rgba(20,34,60,.55)");cg.addColorStop(.45,"rgba(20,34,60,0)");cg.addColorStop(1,"rgba(255,240,210,.28)");
+    g.fillStyle=cg;g.fillRect(-14,-190,60,170);}]);
+  L.push(["wingBack",[-17,0,19,88],g=>{g.fillStyle="rgba(10,26,58,.85)";
+    g.beginPath();g.moveTo(4,6);g.quadraticCurveTo(-16,34,-6,86);g.quadraticCurveTo(14,44,18,2);g.closePath();g.fill();}]);
+  L.push(["neck",[-32,-19,20,19],g=>{const ng=g.createLinearGradient(-18,0,18,0);
+    ng.addColorStop(0,C.blue);ng.addColorStop(.5,"#a9c4de");ng.addColorStop(1,C.cream);
+    g.fillStyle=ng;g.beginPath();g.ellipse(-6,0,24,17,-.15,0,7);g.fill();}]);
+  L.push(["skull",[-24,-22,24,22],g=>{const sg=g.createLinearGradient(-20,0,22,0);
+    sg.addColorStop(0,C.blue);sg.addColorStop(.42,"#a9c4de");sg.addColorStop(.7,C.cream);
+    g.fillStyle=sg;g.beginPath();g.ellipse(0,0,22,20,-.08,0,7);g.fill();}]);
+  /* надклювье с подрезом, бликом и ноздрёй: ноздря в 2D шла после подклювья, но с ним не пересекается */
+  L.push(["beakU",[-10,-16,25,18],g=>{const bg2=g.createLinearGradient(0,-12,0,14);
+    bg2.addColorStop(0,C.beak);bg2.addColorStop(1,C.beakD);g.fillStyle=bg2;
+    g.beginPath();g.moveTo(-9,-13);g.bezierCurveTo(6,-15,18,-10,22,-2);g.bezierCurveTo(25,4,23,11,20,15);
+    g.lineTo(17,17);g.bezierCurveTo(15,12,12,9,9,7);g.bezierCurveTo(4,5,-2,4.5,-9,4.5);g.closePath();g.fill();
+    g.strokeStyle="rgba(90,54,16,.45)";g.lineWidth=1.1;g.beginPath();g.moveTo(19,14.5);g.bezierCurveTo(15,11,12,8.5,9,7);g.stroke();
+    g.fillStyle="rgba(255,246,226,.5)";g.beginPath();g.moveTo(-4,-10);g.quadraticCurveTo(8,-11,15,-3);
+    g.quadraticCurveTo(7,-6,-4,-6);g.closePath();g.fill();
+    g.fillStyle="rgba(60,30,10,.55)";g.beginPath();g.arc(-2,-8,1.6,0,7);g.fill();}]);
+  /* зев при закрытом клюве; раскрытие — растяжение вниз от верхней кромки (y 2) */
+  L.push(["mouth",[-8,0,19,12],g=>{g.fillStyle="rgba(58,20,26,.92)";
+    g.beginPath();g.moveTo(-6,2);g.quadraticCurveTo(9,3,17,7);g.quadraticCurveTo(4,10,-6,9);g.closePath();g.fill();}]);
+  L.push(["beakL",[-10,3,11,15],g=>{const lg2=g.createLinearGradient(0,4,0,15);
+    lg2.addColorStop(0,C.beakD);lg2.addColorStop(1,"#a06a2e");g.fillStyle=lg2;
+    g.beginPath();g.moveTo(-9,4);g.bezierCurveTo(2,5,9,7,10,11);g.bezierCurveTo(6,14,-3,14,-9,13);g.closePath();g.fill();}]);
+  return L;
+}
+/* раскладка атласа полками, выше — раньше; поле PAD — запас мипам */
+function parCells(){
+  if(PAR_CELLS)return PAR_CELLS;
+  const L=parCellDefs(),K=PAR_K,PAD=6,AW=1024,C={};let x=0,y=0,rh=0;
+  L.sort((a,b)=>(b[1][3]-b[1][1])-(a[1][3]-a[1][1]));
+  for(const [nm,b,paint] of L){
+    const w=Math.ceil((b[2]-b[0])*K)+2*PAD,h=Math.ceil((b[3]-b[1])*K)+2*PAD;
+    if(x+w>AW){x=0;y+=rh;rh=0;}
+    C[nm]={b,px:x+PAD,py:y+PAD,paint};x+=w;rh=Math.max(rh,h);}
+  const AH=y+rh;
+  for(const nm in C){const c=C[nm],b=c.b;c.u=[c.px/AW,c.py/AH,(c.px+(b[2]-b[0])*K)/AW,(c.py+(b[3]-b[1])*K)/AH];}
+  return PAR_CELLS={C,AW,AH};
+}
+
+/* ── стек преобразований раскладки: те же save/restore/translate/rotate/scale, что у 2D ── */
+function pgSave(S){S.st.push(S.m.slice());}
+function pgRest(S){S.m=S.st.pop();}
+function pgTr(S,x,y){const m=S.m;m[4]+=m[0]*x+m[2]*y;m[5]+=m[1]*x+m[3]*y;}
+function pgRot(S,a){const m=S.m,c=Math.cos(a),s=Math.sin(a),a0=m[0],b0=m[1],c0=m[2],d0=m[3];
+  m[0]=a0*c+c0*s;m[1]=b0*c+d0*s;m[2]=c0*c-a0*s;m[3]=d0*c-b0*s;}
+function pgScl(S,x,y){const m=S.m;m[0]*=x;m[1]*=x;m[2]*=y;m[3]*=y;}
+function parInv(m){const D=m[0]*m[3]-m[1]*m[2]||1e-9;
+  return [m[3]/D,-m[1]/D,-m[2]/D,m[0]/D,(m[2]*m[5]-m[3]*m[4])/D,(m[1]*m[4]-m[0]*m[5])/D];}
+/* сток: q — обычный проход, qa — сложение (бусины); u — форма прохода (размер, маска тела) */
+function parSink(S,m){
+  S=S||{q:[],qa:[],st:[],u:new Float32Array(28)};
+  S.q.length=S.qa.length=S.st.length=0;S.m=m.slice();S.fl=0;S.mb=null;return S;}
+/* цвет CSS → премультиплицированный [r,g,b,a]; k — множитель прозрачности */
+const PAR_CC=new Map();
+function parCol(s,k){
+  let c=PAR_CC.get(s);
+  if(!c){let r=0,g=0,b=0,a=1;
+    if(s[0]==="#"){const v=parseInt(s.slice(1),16);r=(v>>16&255)/255;g=(v>>8&255)/255;b=(v&255)/255;}
+    else{const n=s.match(/[\d.]+/g);r=n[0]/255;g=n[1]/255;b=n[2]/255;a=n[3]===undefined?1:+n[3];}
+    PAR_CC.set(s,c=[r,g,b,a]);}
+  const a=c[3]*(k===undefined?1:k);return [c[0]*a,c[1]*a,c[2]*a,a];}
+/* запись: матрица, вид (0 спрайт, 1 эллипс, 2 обвод эллипса, 3 бусина, 4 ломаная), флаги (2 — обрез телом, 4 — рамкой слоя),
+   рамка в своих единицах, uv или точки 0–1, цвет, точки 2–3 или эллипс, полутолщина и число точек */
+function parPut(S,ty,fl,r,u,col,e,h){const m=S.m;(ty===3?S.qa:S.q).push(m[0],m[1],m[2],m[3],m[4],m[5],ty,fl|S.fl,
+  r[0],r[1],r[2],r[3],u[0],u[1],u[2],u[3],col[0],col[1],col[2],col[3],e[0],e[1],e[2],e[3],h[0],h[1],h[2],h[3]);}
+const PAR_Z=[0,0,0,0],PAR_W=[1,1,1,1],PAR_LAY=[-115,-285.76,115,18.24];
+/* запас рамки аналитической фигуры — два пикселя в своих единицах */
+function parPad(S){const m=S.m;return 2/Math.max(1e-3,Math.min(Math.hypot(m[0],m[1]),Math.hypot(m[2],m[3])));}
+function parSpr(S,nm,fl){const c=parCells().C[nm];parPut(S,0,fl||0,c.b,c.u,PAR_W,PAR_Z,PAR_Z);}
+function parEll(S,cx,cy,rx,ry,col,hw){const p=parPad(S)+(hw||0);
+  parPut(S,hw?2:1,0,[cx-rx-p,cy-ry-p,cx+rx+p,cy+ry+p],PAR_Z,col,[cx,cy,rx,ry],[hw||0,0,0,0]);}
+function parLine(S,P,hw,col){const p=parPad(S)+hw;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(let i=0;i<P.length;i+=2){x0=Math.min(x0,P[i]);x1=Math.max(x1,P[i]);y0=Math.min(y0,P[i+1]);y1=Math.max(y1,P[i+1]);}
+  parPut(S,4,0,[x0-p,y0-p,x1+p,y1+p],[P[0],P[1],P[2],P[3]],col,[P[4]||0,P[5]||0,P[6]||0,P[7]||0],[hw,P.length/2,0,0]);}
+/* квадратичная кривая ломаной в n звеньев (3 — четыре точки, потолок шейдера) */
+function parQuad(S,x0,y0,cx,cy,x1,y1,hw,col,n){n=n||3;const P=[];
+  for(let i=0;i<=n;i++){const t=i/n,u=1-t;P.push(u*u*x0+2*u*t*cx+t*t*x1,u*u*y0+2*u*t*cy+t*t*y1);}
+  parLine(S,P,hw,col);}
+function parBeadG(S,x,y,r,k){const R=r*3.4+parPad(S);parPut(S,3,0,[x-R,y-R,x+R,y+R],PAR_Z,PAR_Z,[x,y,r,k],PAR_Z);}
+/* ряд перьев по дуге (parRow 2D): перо ряда — одна деталь, t — её масштаб, sx — вытяжка вдоль (воротник) */
+function parRowG(S,ax,ay,r1,r2,a0,a1,n,cell,ph,amp,spread,sx,fl){
+  for(let i=0;i<n;i++){
+    const k=n>1?i/(n-1):.5,a=a0+(a1-a0)*k,x=ax+Math.cos(a)*r1,y=ay+Math.sin(a)*r2;
+    const w=Math.sin(PAR.t*2.1+ph+i*.55)*amp,t=1-Math.abs(k-.5)*(1-spread)*2*.55;
+    pgSave(S);pgTr(S,x,y);pgRot(S,a+w);pgScl(S,t*(sx||1),t);parSpr(S,cell,fl);pgRest(S);}
+}
+/* ── лапа (parFoot 2D): цевка, восемь колечек, три пальца с когтями и задний — ломаными ── */
+function parFootG(S,x,dir,grip,up){
+  const U=up||0,Sc=up?(PAR.scratch||0):0,F=parCol(PAR_C.foot),D=parCol(PAR_C.footD);
+  pgSave(S);pgTr(S,x-U*6+Sc*6,-U*26-Sc*84);pgScl(S,dir,1);pgRot(S,-U*.5-Sc*2.3);
+  const tl=38+Sc*26;
+  parQuad(S,1,-tl,0,-20,0,-4,3.2,D);
+  parQuad(S,1,2-tl,0,-20,0,-5,2.2,F);
+  const rc=parCol("rgba(70,42,18,.45)");
+  for(let i=0;i<7+Sc*6;i++){const y=-33-Sc*26+i*4.4;parQuad(S,-2.4,y,0,y+1.6,2.4,y,.5,rc,2);}
+  for(let i=0;i<3;i++){
+    const a=(-.85+i*.72)+grip*.14,ex=Math.cos(a)*15,ey=4+Math.sin(a)*2;
+    parQuad(S,0,-5,Math.cos(a)*10,-3,ex,ey,2.3,F);
+    parLine(S,[ex,ey,Math.cos(a)*18,7+Math.sin(a)*2],.9,D);}
+  parQuad(S,0,-5,-9,-3,-12,4,2,D);
+  pgRest(S);
+}
+/* ── корпус (parCoat 2D): масса, чешуя, кромка и тень, спина, янтарь — всё внутри обвода ── */
+function parCoatG(S,T){
+  /* форма прохода: обратная матрица корпуса (точка канвы → его единицы), рамка и uv маски */
+  const c=parCells().C.body,iv=parInv(S.m);
+  S.u.set(iv.slice(0,4),4);S.u[8]=iv[4];S.u[9]=iv[5];S.u.set(c.b,12);S.u.set(c.u,16);
+  parSpr(S,"body");
+  for(let r=0;r<22;r++){
+    const y=-32-r*6;
+    for(let i=0;i<6;i++){
+      const j=Math.sin(r*12.9898+i*78.233)*43758.5453;
+      const jx=(j-Math.floor(j)-.5)*3.4,jy=(Math.sin(j)*.5)*2.2;
+      const x=-6+i*10+((r&1)?5:0)+jx,w=Math.sin(T*1.7+r*.6+i*.5)*.9;
+      pgSave(S);pgTr(S,x+w,y+jy);pgScl(S,(11.5+jx*.5)/11.5,(9.5+jy*.4)/9.5);parSpr(S,"scale",2);pgRest(S);
+    }
+  }
+  parSpr(S,"coatTop");
+  for(let r=0;r<9;r++){
+    const y=-48-r*13;
+    for(let i=0;i<3;i++){
+      const x=-46+i*14+((r&1)?7:0),w=Math.sin(T*2.0+r*.7+i*.55)*.05;
+      pgSave(S);pgTr(S,x,y);pgRot(S,1.34+w);parSpr(S,x>-22?"qBN":"qBF",2);pgRest(S);
+    }
+  }
+  for(let i=0;i<5;i++){pgSave(S);pgTr(S,-27+i*5,-140+i*6);pgRot(S,1.25);parSpr(S,"qAm",2);pgRest(S);}
+}
+/* ══ сама птица ══ (0,0) — жёрдочка под лапами. S — сток (parSink) с корневой матрицей в точках канвы;
+   порядок и числа — строка в строку из 2D-версии (0.470.0), пояснения к позам там же, в истории 12y */
+function parrotDraw(S,W,H){
+  if(!(W>0&&H>0))return;   /* канва нулевого размера (окно скрыто) */
+  const T=PAR.t;
+  const breathe=Math.sin(T*1.35)*1.6,sway=Math.sin(T*.62)*2.0;
+  const flap=PAR.flap,lift=PAR.hop;
+  pgSave(S);
+  pgTr(S,W/2+4,H-16-PAR.hang*150);
+  const s=Math.min(W/230,H/304);
+  pgScl(S,s,s);
+  /* жёрдочка и тень: без опоры и тени птица висит в пустоте */
+  parEll(S,-2,1,44-lift*.18,6-lift*.03,parCol("rgba(0,0,0,.45)"));
+  parSpr(S,"perch");
+  pgSave(S);
+  pgTr(S,sway+PAR.lean*10+PAR.step,-lift);
+  /* вис вниз головой — вокруг точки хвата (низ корпуса), не вокруг жёрдочки */
+  if(PAR.hang>.001){pgTr(S,0,-44);pgRot(S,PAR.hang*2.85);pgTr(S,0,44);}
+  pgRot(S,PAR.lean*.05+PAR.bow*.20+Math.sin(T*.62+1)*.012);
+  /* лапы держат жёрдочку и НЕ разворачиваются вместе с телом */
+  pgSave(S);pgTr(S,0,-44);pgRot(S,-PAR.hang*2.85);pgTr(S,0,44);
+  parFootG(S,-15,-1,lift*.06,0);
+  if(!(PAR.scratch>.02))parFootG(S,15,1,lift*.06,PAR.footUp);
+  pgRest(S);
+  /* разворот боком — сжатие по ширине, не ниже трети */
+  const tc=Math.cos((PAR.turn||0)*Math.PI);
+  pgScl(S,tc<0?-Math.max(.34,-tc):Math.max(.34,tc),1);
+  const MB=S.m.slice(),beads=[];   /* кадр слоя птицы: огни зажигаются в нём, без дыхания */
+  /* 2D рисовала оперение в слой 230×304 вокруг точки (115, 285.76): что ниже жёрдочки на 18 единиц или шире 115 —
+     срезалось краем слоя (хвост). Рамка иконки на пульте [19..208]×[43..303] стоит на этом срезе — он переносится */
+  {const iv=parInv(MB);S.u.set(iv.slice(0,4),20);S.u[10]=iv[4];S.u[11]=iv[5];S.u.set(PAR_LAY,24);S.mb=MB;S.fl=4;}
+  pgSave(S);
+  pgScl(S,1,1+breathe*.006);
+  /* 1. хвост — первым, он за телом */
+  pgSave(S);pgTr(S,-24,-98);pgRot(S,Math.sin(T*.7)*.05+flap*.24);
+  for(let i=0;i<7;i++){
+    const k=i/6,a=1.82+k*(.52+PAR.fan*.72),len=(152-k*54)*(1+flap*.06),w=Math.sin(T*1.15+i*.62)*.045;
+    pgSave(S);pgRot(S,w);pgRot(S,a);pgScl(S,1+flap*.06,1);parSpr(S,"tail"+i);pgRest(S);
+    /* огни на двух перьях; место — как считала 2D-версия (поворот хвоста в него не входил) */
+    if(i===0||i===4){const ca=Math.cos(w),sa=Math.sin(w),px=Math.cos(a)*len,py=Math.sin(a)*len;
+      beads.push([-24+px*ca-py*sa,-98+px*sa+py*ca,2.4,.62]);}
+  }
+  pgRest(S);
+  /* подхвостье: стык корпуса с хвостом */
+  parRowG(S,-18,-70,10,10,1.55,2.30,5,"qUT",2.2,.05,.8);
+  /* 2. корпус */
+  parCoatG(S,T);
+  /* 3. крыло: три ряда на одном шарнире у плеча */
+  pgSave(S);pgTr(S,-20,-150);
+  pgRot(S,-flap*1.35-PAR.stretch*.62+Math.sin(T*.9)*.03);
+  if(PAR.stretch>.001)pgScl(S,1+PAR.stretch*.34,1+PAR.stretch*.16);
+  parSpr(S,"wingBack");
+  for(let i=0;i<6;i++){const k=i/5,a=1.42+k*.46,w=Math.sin(T*1.25+i*.7)*.04;
+    pgSave(S);pgRot(S,w);pgRot(S,a);parSpr(S,"wing"+i);pgRest(S);}
+  parRowG(S,2,-6,9,10,1.30,1.94,7,"qWC",1.4,.05,.9);
+  parRowG(S,4,-10,8,9,1.30,1.90,5,"qSh",3.6,.05,.9);
+  pgRest(S);
+  const pr=PAR.preen,sc=PAR.scratch||0;
+  const hx=12-pr*16-PAR.tuck*5+sc*4,hy=-168+pr*26+PAR.tuck*13+sc*20;
+  /* воротничок идёт за головой на две трети */
+  const rf2=Math.abs(PAR.ruff)+PAR.tuck*.85;
+  parRowG(S,10+(hx-12)*.85,-150+(hy+168)*.9,16,13,-2.5,.45,11,"qCol",1.2,.10+rf2*.12,.92,(16+rf2*6)/16);
+  /* 4. голова: шея на полпути, потом череп со всем, что на нём */
+  pgSave(S);pgTr(S,12+(hx-12)*.5,-158+(hy+168)*.5);parSpr(S,"neck");pgRest(S);
+  pgSave(S);
+  pgTr(S,hx,hy);
+  const hr=PAR.look*.12+Math.sin(T*.5)*.022+PAR.mad*.05+pr*1.05+PAR.roll*.62+PAR.bow*.5+sc*.4;
+  pgRot(S,hr);
+  /* 4а. хохол: бусина висит на голом стебле и отстаёт от пера */
+  const cr=PAR.crest,stem=parCol("rgba(150,200,235,.6)");
+  for(let i=0;i<9;i++){
+    const k=i/8,a=-2.62+k*1.22-cr*.34;
+    const len=(46+Math.sin(k*3.1)*30+Math.sin(i*2.3)*5)*(1+cr*.30);
+    const w=Math.sin(T*1.6+i*.8)*.075;
+    pgSave(S);pgRot(S,w);
+    pgSave(S);pgRot(S,a);pgScl(S,1+cr*.30,1);parSpr(S,"crest"+i);pgRest(S);
+    const px=Math.cos(a)*len,py=Math.sin(a)*len,st=6+Math.sin(i*1.7)*2;
+    const sx=px+Math.cos(a+.30)*st,sy=py+Math.sin(a+.30)*st;
+    parLine(S,[px,py,sx,sy],.8,stem);
+    pgRest(S);
+    const ca=Math.cos(hr),sa=Math.sin(hr),bx=sx*ca-sy*sa,by=sx*sa+sy*ca,lag=Math.sin(T*1.6+i*.8-.9)*3.5;
+    beads.push([hx+bx+lag*.6,hy+by+lag,1.8+k*.4,.72+.28*Math.sin(T*2.2+i*1.1)]);
+  }
+  /* 4б. череп и мелкое перо на щеке */
+  parSpr(S,"skull");
+  for(let i=0;i<7;i++){const a=-1.5+i*.42;
+    pgSave(S);pgTr(S,Math.cos(a)*13,Math.sin(a)*11);pgRot(S,a+1.4);parSpr(S,i<3?"qChB":"qChC");pgRest(S);}
+  /* 4в. клюв: надклювье, зев при раскрытии, подклювье */
+  pgSave(S);pgTr(S,15,-1);pgRot(S,PAR.peck*.16);pgScl(S,1.34,1.34);
+  parSpr(S,"beakU");
+  if(PAR.yawn>.02||PAR.beak>.3){pgSave(S);pgTr(S,0,2);pgScl(S,1,1+2*PAR.yawn);pgTr(S,0,-2);parSpr(S,"mouth");pgRest(S);}
+  pgSave(S);pgTr(S,0,PAR.beak*5+PAR.yawn*17);pgRot(S,PAR.yawn*.42);parSpr(S,"beakL");pgRest(S);
+  pgRest(S);
+  /* 4г. глаз: кольцо смыкается вместе с глазом, веко — кремовая дуга */
+  const bl=1-PAR.blink;
+  pgSave(S);pgTr(S,4,-4);
+  parEll(S,0,0,11.2,10.8*Math.max(.24,bl),parCol("rgba(28,44,74,.42)"));
+  parEll(S,0,0,9.5,9.5*Math.max(.08,bl),parCol("#e9dcc6"));
+  if(bl>.2){
+    parEll(S,.6,0,7.4,7.4*bl,parCol(PAR_C.eye));
+    parEll(S,.6,1.6,5.6,5.6*bl,parCol("rgba(120,190,240,.5)"));
+    const hi=parCol("rgba(255,255,255,.95)");
+    parEll(S,2.6,-3,2.5,2.5*bl,hi);parEll(S,-2.6,2.4,1.2,1.2*bl,hi);
+  }
+  parEll(S,0,0,9.5,9.5*Math.max(.08,bl),parCol("rgba(20,14,26,.75)"),.8);
+  if(bl<.3)parQuad(S,-9,0,0,2.4,9,0,1.1,parCol("rgba(210,190,158,1)",1-bl/.3));
+  pgRest(S);
+  pgRest(S);
+  pgRest(S);
+  /* 5. огни — после всего и сложением */
+  const M0=S.m;S.m=MB;for(const b of beads)parBeadG(S,b[0],b[1],b[2],b[3]);S.m=M0;
+  S.fl=0;
+  if(PAR.scratch>.02){
+    pgSave(S);pgTr(S,0,-44);pgRot(S,-PAR.hang*2.85);pgTr(S,0,44);
+    parFootG(S,15,1,lift*.06,PAR.footUp);
+    pgRest(S);
+  }
+  pgRest(S);
+  pgRest(S);
+}
+/* рамка разложенной птицы в точках канвы (без ореолов бусин) — сторож иконки на пульте */
+function parrotBox(S){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,L=null;const f=S.q;
+  if(S.mb){const m=S.mb,c=[];for(const [X,Y] of [[PAR_LAY[0],PAR_LAY[1]],[PAR_LAY[2],PAR_LAY[1]],[PAR_LAY[0],PAR_LAY[3]],[PAR_LAY[2],PAR_LAY[3]]])
+    c.push(m[0]*X+m[2]*Y+m[4],m[1]*X+m[3]*Y+m[5]);
+    L=[Math.min(c[0],c[2],c[4],c[6]),Math.min(c[1],c[3],c[5],c[7]),Math.max(c[0],c[2],c[4],c[6]),Math.max(c[1],c[3],c[5],c[7])];}
+  for(let i=0;i<f.length;i+=28){let a=1e9,b=1e9,c=-1e9,d=-1e9;
+    for(const [X,Y] of [[f[i+8],f[i+9]],[f[i+10],f[i+9]],[f[i+8],f[i+11]],[f[i+10],f[i+11]]]){
+      const x=f[i]*X+f[i+2]*Y+f[i+4],y=f[i+1]*X+f[i+3]*Y+f[i+5];a=Math.min(a,x);c=Math.max(c,x);b=Math.min(b,y);d=Math.max(d,y);}
+    if(L&&(f[i+7]&4)){a=Math.max(a,L[0]);b=Math.max(b,L[1]);c=Math.min(c,L[2]);d=Math.min(d,L[3]);}
+    if(c>a&&d>b){x0=Math.min(x0,a);x1=Math.max(x1,c);y0=Math.min(y0,b);y1=Math.max(y1,d);}}
+  return [x0,y0,x1,y1];
+}
+
+/* ── видеокарта: шейдер, конвейеры (обычный и сложение), проход в канву ── */
+const PAR_WGSL=`
+struct IO{@builtin(position) p:vec4f,@location(0) l:vec2f,@location(1) uv:vec2f,@location(2) @interpolate(flat) k:vec2f,
+  @location(3) @interpolate(flat) u:vec4f,@location(4) @interpolate(flat) c:vec4f,@location(5) @interpolate(flat) e:vec4f,
+  @location(6) @interpolate(flat) h:vec4f};
+@group(0) @binding(0) var<storage,read> Q:array<vec4f>;
+@group(0) @binding(1) var<uniform> U:array<vec4f,7>;
+@group(0) @binding(2) var T:texture_2d<f32>;
+@group(0) @binding(3) var sm:sampler;
+@vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->IO{
+  let k=ii*7u;let m=Q[k];let t=Q[k+1u];let r=Q[k+2u];var o:IO;
+  o.k=t.zw;o.u=Q[k+3u];o.c=Q[k+4u];o.e=Q[k+5u];o.h=Q[k+6u];
+  let C=array<vec2f,6>(vec2f(0.,0.),vec2f(1.,0.),vec2f(0.,1.),vec2f(0.,1.),vec2f(1.,0.),vec2f(1.,1.));let cn=C[vi];
+  o.l=mix(r.xy,r.zw,cn);o.uv=mix(o.u.xy,o.u.zw,cn);
+  let q=vec2f(m.x*o.l.x+m.z*o.l.y+t.x,m.y*o.l.x+m.w*o.l.y+t.y);
+  o.p=vec4f(q.x/U[0].x*2.-1.,1.-q.y/U[0].y*2.,0.,1.);return o;}
+fn sd(p:vec2f,a:vec2f,b:vec2f)->f32{let d=b-a;let h=clamp(dot(p-a,d)/max(dot(d,d),1e-6),0.,1.);return length(p-a-d*h);}
+@fragment fn fs(i:IO)->@location(0) vec4f{
+  let dx=dpdx(i.uv);let dy=dpdy(i.uv);let px=max(length(fwidth(i.l))*.7071,1e-4);   /* единиц на точку — до ветвлений */
+  var o=vec4f(0.);let ty=i.k.x;
+  if(ty<.5){o=textureSampleGrad(T,sm,i.uv,dx*.574,dy*.574)*i.c;}   /* уровень мипа −0.8: чешуя и перо не мылятся (как у gpuLitSprite) */
+  else if(ty<2.5){   /* эллипс: расстояние ≈ f/|∇f|; 2 — обвод полутолщиной h.x */
+    let q=(i.l-i.e.xy)/i.e.zw;let L=max(length(q),1e-5);let g=max(length(q/i.e.zw),1e-6);let d=(L-1.)*L/g;
+    var a=clamp(.5-d/px,0.,1.);if(ty>1.5){a=clamp((i.h.x-abs(d))/px+.5,0.,1.);}o=i.c*a;}
+  else if(ty<3.5){   /* бусина (parBead): ореол до 3.4r, стопы 0/.24/1 без премультипликации, и ядро r */
+    let r=length(i.l-i.e.xy);let t=r/(i.e.z*3.4);var c=vec3f(111.,240.,255.)/255.;var a=0.;
+    if(t<.24){let f=t/.24;c=mix(vec3f(190.,252.,255.)/255.,c,f);a=mix(.85,.34,f)*i.e.w;}
+    else if(t<1.){a=mix(.34,0.,(t-.24)/.76)*i.e.w;}
+    let ca=clamp((i.e.z-r)/px+.5,0.,1.)*.95*i.e.w;
+    o=vec4f(c*a,a)+vec4f(vec3f(228.,255.,255.)/255.*ca,ca);}
+  else{var d=sd(i.l,i.u.xy,i.u.zw);if(i.h.y>2.5){d=min(d,sd(i.l,i.u.zw,i.e.xy));}if(i.h.y>3.5){d=min(d,sd(i.l,i.e.xy,i.e.zw));}
+    o=i.c*clamp((i.h.x-d)/px+.5,0.,1.);}
+  let fl=u32(i.k.y+.5);
+  if((fl&4u)!=0u){   /* рамка слоя 2D (U[5], U[2].zw — обратная кадра слоя; U[6] — рамка): срез жёсткий, как у края канвы */
+    let p=i.p.xy;let b=vec2f(U[5].x*p.x+U[5].z*p.y+U[2].z,U[5].y*p.x+U[5].w*p.y+U[2].w);
+    if(any(b<U[6].xy)||any(b>U[6].zw)){o=vec4f(0.);}}
+  if((fl&2u)!=0u){   /* обрез массой тела: точка канвы → единицы корпуса → альфа детали body */
+    let p=i.p.xy;let b=vec2f(U[1].x*p.x+U[1].z*p.y+U[2].x,U[1].y*p.x+U[1].w*p.y+U[2].y);
+    let s=(b-U[3].xy)/(U[3].zw-U[3].xy);var mk=0.;
+    if(all(s>=vec2f(0.))&&all(s<=vec2f(1.))){mk=textureSampleLevel(T,sm,mix(U[4].xy,U[4].zw,s),0.).a;}
+    o*=mk;}
+  return o;}`;
+function parDesc(add){
+  const m=gpuShader(PAR_WGSL),f=add?["one","one"]:["one","one-minus-src-alpha"];
+  return {layout:"auto",vertex:{module:m,entryPoint:"vs"},primitive:{topology:"triangle-list"},
+    fragment:{module:m,entryPoint:"fs",targets:[{format:GPU.fmt,blend:{color:{srcFactor:f[0],dstFactor:f[1]},alpha:{srcFactor:f[0],dstFactor:f[1]}}}]}};}
+const PARG={A:null,P:null,Pa:null,Pd:null,S:null,Sp:null,pd:false,win:null,perch:null,cv:null,pcv:null};
+function parTarget(){return {cx:null,dev:null,buf:null,U:null,f:null,bg:null,bga:null,k0:null,k1:null,k2:null};}
+/* атлас печётся один раз на устройство; после потери — заново тем же draw (gpuBakeLive) */
+function parAtlas(){
+  const P=parCells();
+  if(!PARG.A)PARG.A=gpuBake(P.AW,P.AH,g=>{for(const nm in P.C){const c=P.C[nm];
+    g.save();g.translate(c.px-c.b[0]*PAR_K,c.py-c.b[1]*PAR_K);g.scale(PAR_K,PAR_K);c.paint(g);g.restore();}});
+  return PARG.A?gpuBakeLive(PARG.A):null;
+}
+/* проход стока S в канву cv через цель T и энкодер enc: обычные записи, потом бусины сложением */
+function parPass(T,cv,S,enc){
+  const d=GPU.dev,A=parAtlas();if(!A||!A.view)return;
+  if(T.dev!==d){T.cx=T.cx||cv.getContext("webgpu");T.cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});
+    T.dev=d;T.buf=null;T.U=d.createBuffer({size:112,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});T.k0=null;}
+  if(PARG.Pd!==d){PARG.P=gpuPipeline("par",()=>parDesc(false));PARG.Pa=gpuPipeline("par.add",()=>parDesc(true));PARG.Pd=d;}
+  const n=S.q.length/28,na=S.qa.length/28,need=S.q.length+S.qa.length;
+  if(!T.f||T.f.length<need)T.f=new Float32Array(Math.max(need,28*512));
+  T.f.set(S.q,0);T.f.set(S.qa,S.q.length);
+  if(!T.buf||T.buf.size<T.f.byteLength){if(T.buf)GPU.trash.push(T.buf);
+    T.buf=d.createBuffer({size:T.f.byteLength,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});}
+  if(T.k0!==T.buf||T.k1!==A.view||T.k2!==PARG.P){T.k0=T.buf;T.k1=A.view;T.k2=PARG.P;
+    const E=[{binding:0,resource:{buffer:T.buf}},{binding:1,resource:{buffer:T.U}},{binding:2,resource:A.view},{binding:3,resource:gpuMipSmp()}];
+    T.bg=d.createBindGroup({layout:PARG.P.getBindGroupLayout(0),entries:E});
+    T.bga=d.createBindGroup({layout:PARG.Pa.getBindGroupLayout(0),entries:E});}
+  if(need)d.queue.writeBuffer(T.buf,0,T.f,0,need);
+  S.u[0]=cv.width;S.u[1]=cv.height;d.queue.writeBuffer(T.U,0,S.u);
+  const p=enc.beginRenderPass({colorAttachments:[{view:T.cx.getCurrentTexture().createView(),loadOp:"clear",storeOp:"store",
+    clearValue:{r:0,g:0,b:0,a:0}}]});
+  if(n){p.setPipeline(PARG.P);p.setBindGroup(0,T.bg);p.draw(6,n,0,0);}
+  if(na){p.setPipeline(PARG.Pa);p.setBindGroup(0,T.bga);p.draw(6,na,0,n);}
+  p.end();
+}
+/* кадр (hud, 27z — рядом с колодкой 25c): окно трепла шагает и рисуется, иконка пульта — когда пульт
+   разложил новую позу (27j, раз в PERCH_EVERY). Открытый экран (body.screen) окно прячет — не рисуем */
+function parrotGpuTick(){
+  if(!GPU.on||!GPU.enc||!GPU.dev)return;
+  if(parWin&&!document.body.classList.contains("screen")){
+    const cv=PARG.cv||(PARG.cv=document.getElementById("parrotcv"));
+    const t=wallMs(),dt=Math.min(.05,(t-parT0)/1000||.016);parT0=t;
+    parStep(dt);
+    if(cv&&cv.width&&cv.height){
+      const S=PARG.S=parSink(PARG.S,[PAR_DPR,0,0,PAR_DPR,0,0]);
+      parrotDraw(S,cv.width/PAR_DPR,cv.height/PAR_DPR);
+      parPass(PARG.win||(PARG.win=parTarget()),cv,S,GPU.enc);
+    }
+  }
+  if(PARG.pd&&PARG.Sp){
+    const cv=PARG.pcv||(PARG.pcv=document.getElementById("perchcv"));
+    if(cv&&cv.width)parPass(PARG.perch||(PARG.perch=parTarget()),cv,PARG.Sp,GPU.enc);
+    PARG.pd=false;
+  }
+}
+/* стенд (docs/mkparrot.ps1): птица текущей позы на своей канве WebGPU — её кладут drawImage в 2D-лист */
+function parrotSnap(W,H,dpr){
+  if(!GPU.dev)return null;
+  const cv=document.createElement("canvas");cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  const S=parSink(null,[dpr,0,0,dpr,0,0]);parrotDraw(S,W,H);
+  const e=GPU.dev.createCommandEncoder();parPass(parTarget(),cv,S,e);GPU.dev.queue.submit([e.finish()]);
+  return cv;
+}
 
 /* ══════════════ трепло: репертуар ══════════════
    Птица живёт в своём окне: открыл — она там, закрыл — её нет. Значит, всё,
@@ -93652,9 +93632,13 @@ function kpTake(){
    почты, табличка часов на двери, талон с номером, если извещение ждёт.
    Закрыто — шторка опущена и часы показывают, сколько до открытия. */
 function kpWindow(open,ticket){
-  const w=240,h=96,k=Math.min(2,(typeof DPR==="number"?DPR:1)*((typeof UIK==="number")?UIK:1));
+  const w=240,h=96,k=panelNd();   /* плотность экрана, а не кадра: DPR игры урезан ради мира, окошку это мыло */
   const cv=document.createElement("canvas");cv.width=w*k;cv.height=h*k;cv.style.width=w+"px";cv.style.height=h+"px";cv.className="kp-win";
-  const c=cv.getContext("2d");if(!c)return cv;c.setTransform(k,0,0,k,0,0);
+  /* окошко печётся на видеокарте (27i0): кисть та же, канва WebGPU */
+  panelGpu(cv,w,h,k,c=>kpWindowPaint(c,w,h,open,ticket));
+  return cv;
+}
+function kpWindowPaint(c,w,h,open,ticket){
   /* стена и окно */
   c.fillStyle="#d9cfb4";c.fillRect(0,0,w,h);
   c.fillStyle="rgba(120,100,70,.18)";for(let y=0;y<h;y+=12)c.fillRect(0,y,w,1);
@@ -93669,13 +93653,18 @@ function kpWindow(open,ticket){
     c.fillStyle="rgba(230,220,200,.9)";c.fillRect(wx+8,wy+wh-14,ww-16,8);           /* прилавок */
   }else{
     c.fillStyle="rgba(0,0,0,.25)";for(let y=wy+4;y<wy+wh;y+=6)c.fillRect(wx,y,ww,2);   /* шторка */
-    c.fillStyle="#2a2418";c.font="bold 9px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
-    c.fillText("ЗАКРЫТО",wx+ww/2,wy+wh/2);
   }
   /* решётка */
   c.strokeStyle="rgba(200,190,170,.85)";c.lineWidth=2;
   for(let i=1;i<5;i++){c.beginPath();c.moveTo(wx+i*ww/5,wy);c.lineTo(wx+i*ww/5,wy+wh);c.stroke();}
   c.beginPath();c.moveTo(wx,wy+wh*.5);c.lineTo(wx+ww,wy+wh*.5);c.stroke();
+  /* «ЗАКРЫТО» — табличкой на решётке: прямо по шторке его резали прутья и не читалось (26.09) */
+  if(!open){
+    c.fillStyle="#f4efe2";c.fillRect(wx+ww/2-26,wy+wh/2-8,52,16);
+    c.strokeStyle="#2a2418";c.lineWidth=1;c.strokeRect(wx+ww/2-25.5,wy+wh/2-7.5,51,15);
+    c.fillStyle="#2a2418";c.font="bold 9px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+    c.fillText("ЗАКРЫТО",wx+ww/2,wy+wh/2+.5);
+  }
   /* часы над окном: почтовое время */
   const hr=kpHour(),mn=Math.floor(((now()%KP_DAY)/KP_DAY)*24*60)%60;
   c.fillStyle="#f4efe2";c.beginPath();c.arc(wx+ww/2,12,9,0,TAU);c.fill();
@@ -93695,7 +93684,6 @@ function kpWindow(open,ticket){
     c.font="bold 13px ui-monospace,monospace";c.fillText(String(ticket),0,5);
     c.restore();
   }
-  return cv;
 }
 function kpBlock(){
   const o=(typeof stapelAll==="function")?stapelAll().o:null;
@@ -98229,10 +98217,13 @@ function tableBake(){
   const W=cv.clientWidth||innerWidth,H=cv.clientHeight||innerHeight;
   /* панель увеличена zoom-ом (M221), значит и печь её надо во столько же раз
      плотнее: иначе доски стола расплываются ровно на большом мониторе */
-  const dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
-  if(tableBaked&&tableBaked.W===W&&tableBaked.H===H)return;
-  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
-  const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
+  const dev=typeof GPU==="object"?GPU.dev:null;
+  if(tableBaked&&tableBaked.W===W&&tableBaked.H===H&&tableBaked.dev===dev)return;
+  /* печь — видеокарта (27i0): кисть та же, канва WebGPU; новое устройство — печём заново */
+  panelGpu(cv,W,H,panelNd(),c=>tablePaint(c,W,H));
+  tableBaked={W,H,dev};
+}
+function tablePaint(c,W,H){
   /* доски: четыре полосы с лёгкой разницей тона и стыками */
   const base=c.createLinearGradient(0,0,0,H);
   base.addColorStop(0,"#150f09");base.addColorStop(.5,"#1e140d");base.addColorStop(1,"#100b06");
@@ -98260,7 +98251,6 @@ function tableBake(){
   g.addColorStop(.62,"rgba(20,12,6,.28)");
   g.addColorStop(1,"rgba(0,0,0,.72)");
   c.fillStyle=g;c.fillRect(0,0,W,H);
-  tableBaked={W,H};
 }
 /* Всё, что перестраивает стол, идёт через одну дверь — и дверь держит прокрутку (P1).
    Оба списка сразу: обычный и лорный, — потому что заметно именно то, что
@@ -98428,27 +98418,33 @@ function renderStrips(box){
   const F=(typeof misFigureStrips==="function")?misFigureStrips():[];
   if(F.length>=3&&typeof drawMisFigure==="function"){
     const row=document.createElement("div");row.className="thing";
-    const cv=document.createElement("canvas");cv.width=520;cv.height=180;cv.style.cssText="width:260px;height:90px";
-    drawMisFigure(cv.getContext("2d"),520,180);
+    const cv=document.createElement("canvas");cv.style.cssText="width:260px;height:90px";
+    /* поле кисти 520×180 на 260×90 CSS: не реже прежних двух пикселей на точку */
+    panelGpu(cv,520,180,Math.max(1,panelNd()/2),c=>drawMisFigure(c,520,180));
     const nm=document.createElement("div");nm.className="nm";nm.innerHTML="<b>"+F.length+" ленты легли рядом</b><s></s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   }
   L.forEach((s,k)=>{
     const row=document.createElement("div");row.className="thing";
-    const cv=document.createElement("canvas");cv.width=128;cv.height=80;
-    const c=cv.getContext("2d");
-    c.fillStyle="#e9e2cc";c.fillRect(0,0,128,80);
-    c.strokeStyle="rgba(120,90,60,.35)";c.lineWidth=1;
-    for(let x=8;x<128;x+=12){c.beginPath();c.moveTo(x,0);c.lineTo(x,80);c.stroke();}
-    const r=rng(hashi(s.sx,s.sy,s.span|0));
-    c.strokeStyle="#2b3a8a";c.lineWidth=2;c.beginPath();
-    for(let x=0;x<=128;x+=4){const y=40+Math.sin(x/18+r()*.4)*10*(s.mis*6+.4)+(r()-.5)*4;x?c.lineTo(x,y):c.moveTo(x,y);}
-    c.stroke();
+    const cv=document.createElement("canvas");
+    panelGpu(cv,128,80,thingNd(),c=>stripPaint(c,s));
     const nm=document.createElement("div");nm.className="nm";
     nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+decRu(s.mis,3)+" · "+s.span+" делений · "+
       (typeof stripValue==="function"?stripValue(s)+" кр на стойке":"")+"</s>";
     row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
   });
+}
+/* значок вещи 128×80: на столе он 84 px ростом, в списке 40 — плотность по большему, не реже прежней */
+function thingNd(){return Math.max(1,84/80*panelNd());}
+/* лента: бумага в клетку и синяя кривая невязки */
+function stripPaint(c,s){
+  c.fillStyle="#e9e2cc";c.fillRect(0,0,128,80);
+  c.strokeStyle="rgba(120,90,60,.35)";c.lineWidth=1;
+  for(let x=8;x<128;x+=12){c.beginPath();c.moveTo(x,0);c.lineTo(x,80);c.stroke();}
+  const r=rng(hashi(s.sx,s.sy,s.span|0));
+  c.strokeStyle="#2b3a8a";c.lineWidth=2;c.beginPath();
+  for(let x=0;x<=128;x+=4){const y=40+Math.sin(x/18+r()*.4)*10*(s.mis*6+.4)+(r()-.5)*4;x?c.lineTo(x,y):c.moveTo(x,y);}
+  c.stroke();
 }
 function renderThings(box){
   box.textContent="";
@@ -98456,10 +98452,11 @@ function renderThings(box){
   if(!L.length){tableRow(box,"dim","","на столе пусто: письма, находки и бумаги лягут сюда");return;}
   L.forEach(t=>{
     const row=document.createElement("div");row.className="thing"+(t.seen?"":" new");
-    const cv=document.createElement("canvas");cv.width=128;cv.height=80;
-    if(t.k==="tape"&&t.full&&typeof drawMisFigure==="function")drawMisFigure(cv.getContext("2d"),128,80);
-    else if(t.k==="tape"&&t.ring&&typeof drawRingTape==="function")drawRingTape(cv.getContext("2d"),t,128,80);
-    else drawThingIcon(cv.getContext("2d"),t.k,128,80,t);
+    const cv=document.createElement("canvas");
+    panelGpu(cv,128,80,thingNd(),c=>{
+      if(t.k==="tape"&&t.full&&typeof drawMisFigure==="function")drawMisFigure(c,128,80);
+      else if(t.k==="tape"&&t.ring&&typeof drawRingTape==="function")drawRingTape(c,t,128,80);
+      else drawThingIcon(c,t.k,128,80,t);});
     const nm=document.createElement("div");nm.className="nm";
     nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+
       (t.sx!=null?(t.note?" · ":"")+"сектор "+t.sx+":"+t.sy:"")+"</s>";
@@ -98574,6 +98571,31 @@ function drawThingIcon(c,k,W,H,t){
     }
   });
 })();
+
+/* ══ 27i0 · картинки панелей на видеокарте (G15) ══
+   Стол (27i, 27ia) рисовал 2D: столешницу, ленты, значки вещей — в свежую канву при
+   каждой перестройке. Теперь та же кисть печётся разово (gpuBake через ckgSpr) и одним
+   проходом ложится в свою канву WebGPU; канва держит картинку до следующей перестройки,
+   выпечка сразу в мусор. Проход — своим энкодером и сразу в очередь: панель строят
+   клик и таймер, а не кадр.
+   lw×lh — поле кисти (то, в чём она рисовала в 2D), nd — пикселей канвы на единицу поля. */
+const PANEL={T:null,dev:null,n:0};
+/* плотность панели: экран и zoom интерфейса (M221) — как у прежней 2D-печи стола */
+function panelNd(){return Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);}
+function panelGpu(cv,lw,lh,nd,paint){
+  const pw=Math.max(1,Math.round(lw*nd)),ph=Math.max(1,Math.round(lh*nd));
+  if(cv.width!==pw)cv.width=pw;if(cv.height!==ph)cv.height=ph;
+  if(!GPU.ok||!GPU.dev)return false;
+  const d=GPU.dev,cx=cv.getContext("webgpu");if(!cx)return false;
+  if(cv._pdev!==d){cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});cv._pdev=d;}
+  if(PANEL.dev!==d){PANEL.T=ovTarget();PANEL.dev=d;}
+  const T=PANEL.T;let M=null;
+  ovInto(T,pw/lw,()=>{M=ckgSpr(0,0,lw,lh,paint,{once:true});ckgPut(M);});
+  const e0=GPU.enc;GPU.enc=d.createCommandEncoder();
+  try{ovPass(T,cx.getCurrentTexture().createView(),pw,ph,[T.uq],"panel");d.queue.submit([GPU.enc.finish()]);}
+  finally{GPU.enc=e0;if(M)gpuBakeDrop(M.B);}
+  PANEL.n++;return true;
+}
 
 /* ══════════════ стол как стол: предметы, а не тринадцать закладок ══════════════
    Замысел M151a называл стол столом: «деревянная столешница, лампа, окно того
@@ -98919,7 +98941,7 @@ function deskItemNew(it){
 /* ── сам стол ── */
 function renderDeskTop(box){
   box.textContent="";
-  const dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
+  const dpr=panelNd();
   for(const it of DESK_ITEMS){
     let live=false;try{live=!!it.live();}catch(e){live=false;}
     if(!live)continue;
@@ -98928,11 +98950,9 @@ function renderDeskTop(box){
     cell.className="item"+(n?" new":"")+(it.wide?" wide":"");
     const cv=document.createElement("canvas");
     const w=it.wide?300:150,h=it.wide?150:96;
-    cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
     cv.style.width="100%";cv.style.height=h+"px";
-    const c=cv.getContext("2d");
-    c.setTransform(cv.width/w,0,0,cv.width/w,0,0);
-    try{DESK_DRAW[it.id](c,w,h);}catch(e){crashShip("desk",it.id+": "+e.message,"");}   /* сломанная вещь на столе — в журнал сбоев, а не в тишину (0.438.0) */
+    /* кисть вещи печётся на видеокарте (27i0) */
+    panelGpu(cv,w,h,dpr,c=>{try{DESK_DRAW[it.id](c,w,h);}catch(e){crashShip("desk",it.id+": "+e.message,"");}});   /* сломанная вещь на столе — в журнал сбоев, а не в тишину (0.438.0) */
     cell.appendChild(cv);
     const tx=document.createElement("em");tx.textContent=it.ru;
     const nt=document.createElement("s");nt.textContent=it.note;
@@ -98975,6 +98995,32 @@ function consoleHeard(text,who){
   conFresh=8;conLast=text;
   if(rx)rx.classList.add("fresh");
   sfx("ui",{f:1400,to:900,d:.05,v:.18});
+}
+/* ── кресло на видеокарте (G15) ──
+   Портрет — несколько фигур 56×56, и 2D перекрашивало его раз в секунду до конца
+   рейса. Теперь это выпечка на (художник, размер, ключ настроения) и один проход
+   в свою канву WebGPU, только когда ключ сменился; между ними канва стоит.
+   Канва — в плотности экрана (как у жёрдочки): 56 px на DPR 2 были мылом */
+const SEAT={S:null,cv:null,cx:null,dev:null,T:null,M:null,k:""};
+function seatGpuTick(){
+  const S=SEAT.S;if(!S||!GPU.on||!GPU.enc||!GPU.dev)return;
+  const cv=SEAT.cv||(SEAT.cv=document.getElementById("seatcv"));if(!cv)return;
+  const nd=Math.min(2,window.devicePixelRatio||1),px=Math.round(56*nd);
+  if(cv.width!==px||cv.height!==px){cv.width=px;cv.height=px;SEAT.k="";}
+  const k=(S.draw.name||"?")+"|"+px+"|"+(S.key?S.key():"");
+  if(k===SEAT.k&&SEAT.dev===GPU.dev)return;
+  if(SEAT.dev!==GPU.dev){SEAT.cx=SEAT.cx||cv.getContext("webgpu");
+    SEAT.cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    SEAT.dev=GPU.dev;SEAT.T=ovTarget();SEAT.M=null;}
+  if(SEAT.M)gpuBakeDrop(SEAT.M.B);
+  ovInto(SEAT.T,nd,()=>{SEAT.M=ckgSpr(0,0,56,56,c=>S.draw(c,56,56),{once:true});ckgPut(SEAT.M);});
+  ovPass(SEAT.T,SEAT.cx.getCurrentTexture().createView(),px,px,[SEAT.T.uq],"seat");
+  SEAT.k=k;
+}
+/* пульт в кадре (hud, 27z): жёрдочка (12y1) и кресло — своими канвами в энкодере кадра */
+function consoleGpuTick(){
+  if(typeof parrotGpuTick==="function")parrotGpuTick();
+  seatGpuTick();
 }
 function consoleTick(dt){
   conT-=dt;
@@ -99028,9 +99074,9 @@ function consoleTick(dt){
     if(S){
       document.getElementById("seatName").textContent=S.name||"—";
       document.getElementById("seatLine").textContent=S.line||"";
-      const cv=document.getElementById("seatcv");
-      if(cv&&typeof S.draw==="function"){const c=cv.getContext("2d");c.clearRect(0,0,cv.width,cv.height);S.draw(c,cv.width,cv.height);}
     }
+    /* портрет рисует кадр (seatGpuTick): здесь только кто сидит */
+    SEAT.S=S&&typeof S.draw==="function"?S:null;
   }
   /* жёрдочка: птица есть — сидит на пульте */
   const perch=document.getElementById("perch");
@@ -99061,12 +99107,18 @@ function consoleTick(dt){
            иначе после `resetWorld` иконка осталась бы пустой до пяти секунд */
         if(G.t-PERCH_AT>=PERCH_EVERY||G.t<PERCH_AT){
           PERCH_AT=G.t;
-          const c=cv.getContext("2d");c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,px,px);
+          /* поза раскладывается здесь (12y1), а рисует её кадр — parrotGpuTick в hud() */
           if(typeof parStep==="function")parStep(1.1);
           const m=px*.08,sc=(px-2*m)/260,P=typeof PAR==="object"?PAR:null,hang=P?P.hang:0;
           if(P)P.hang=0;
-          c.setTransform(sc,0,0,sc,px/2-sc*113.5,m-sc*43);
-          try{parrotDraw(c,230,304);}finally{if(P)P.hang=hang;c.setTransform(1,0,0,1,0,0);}
+          try{PARG.Sp=parSink(PARG.Sp,[sc,0,0,sc,px/2-sc*113.5,m-sc*43]);parrotDraw(PARG.Sp,230,304);PARG.pd=true;
+            /* поклон, хохолок, крен выходят за рамку позы — иконка резала птицу краем (0.474.0):
+               такая поза ужимается и встаёт по центру; обычная остаётся как была */
+            const [x0,y0,x1,y1]=parrotBox(PARG.Sp);
+            if(x0<1||y0<1||x1>px-2||y1>px-2){
+              const k=Math.min(1,(px-4)/(x1-x0),(px-4)/(y1-y0)),tx=px/2-k*(x0+x1)/2,ty=px/2-k*(y0+y1)/2;
+              PARG.Sp=parSink(PARG.Sp,[sc*k,0,0,sc*k,k*(px/2-sc*113.5)+tx,k*(m-sc*43)+ty]);parrotDraw(PARG.Sp,230,304);}}
+          finally{if(P)P.hang=hang;}
         }
       }
     }
@@ -100645,8 +100697,9 @@ function kbRender(){
   const cv=w.querySelector(".kb-cv"),P=d.P;
   const cw=Math.min(340,(typeof innerWidth==="number"?innerWidth:390)-40),s=Math.floor(cw/P.cols),ch=s*P.N;
   const dpr=Math.min(2,window.devicePixelRatio||1);
-  cv.style.width=(s*P.cols)+"px";cv.style.height=ch+"px";cv.width=s*P.cols*dpr;cv.height=ch*dpr;
-  const c=cv.getContext("2d");if(c){c.setTransform(dpr,0,0,dpr,0,0);kbDraw(c,s,d);}
+  cv.style.width=(s*P.cols)+"px";cv.style.height=ch+"px";
+  /* план КБ печётся на видеокарте (27i0): кисть та же, канва WebGPU */
+  panelGpu(cv,s*P.cols,ch,dpr,c=>kbDraw(c,s,d));
   cv.onclick=e=>{
     const r=cv.getBoundingClientRect(),j=Math.floor((e.clientX-r.left)/s),i=Math.floor((e.clientY-r.top)/s);
     kbTap(i,j);
@@ -103052,9 +103105,9 @@ function hud(){
   if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");
   if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
-  /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
+  /* приборная колодка (25c) и пульт (27j: трепло, кресло): свои канвы в кадре */
   if(typeof instrPodTick==="function")instrPodTick();
-  if(typeof opisHullTick==="function")opisHullTick();   /* силуэт ОПИСИ (27j) — тем же кадром */
+  consoleGpuTick();if(typeof opisHullTick==="function")opisHullTick();   /* и силуэт ОПИСИ (27j) — тем же кадром */
   if(typeof stapelHullTick==="function")stapelHullTick();   /* корпус на листе стапеля (26e2) */
   setTx($place,a);setTx($sub,b);
   /* Полосу меряем по самому DOM, а не пересчитываем правила CSS в JS: состав
