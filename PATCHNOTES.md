@@ -114,6 +114,12 @@ could ever save.
   The ticket office sells nothing through it (transfers included), and a train already on its way stops short at the
   last whole stop, «дальше путь перерезан · поезд дальше не идёт». The scheme draws a red break across the stretch.
 
+- **M475: the holding extends the line.** A new holding building, «Путевой пост» (family E, 3200 кр + сплав 10 +
+  арматура 6): when it stands, ГЛАВТРАССА lays a two-stop branch from the nearest line station (up to 8 sectors) to
+  your site, and the site becomes your полустанок. The branch has a name from the name generator («Ветка «Кваора»»),
+  it transfers to the rest of the net like any line, and the journal records the deed once: «ГЛАВТРАССА: проложена
+  Ветка … до вашей площадки». The seeded net is untouched; branches lie over it and vanish with the post.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -151,6 +157,9 @@ could ever save.
   line a free shield for any cargo; a baron still comes. The halving is rounded down, so a lone jackal turns away.
 - M510: the line is cut only where both ends of a stretch are on the front. A single front stop is closed and
   passed (M474); cutting at every front stop would sever most lines near a busy front.
+- M475: a branch is a straight two-stop line, not a detour of the existing line; a real rerouting would change the
+  seeded net that the chronicle and the tests read. Fares, baggage and the size rule are not yet tuned against the
+  oracle's rail line: that is a measuring job for the release run, and it stays in the plan.
 
 ## 0.478.0 - the album on the engine
 

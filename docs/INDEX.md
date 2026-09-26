@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6524
+Файлов: 641 · символов верхнего уровня: 6528
 
 ## СИМВОЛЫ
 
@@ -138,7 +138,7 @@ BHUD                         src/24bc-belt-hud.js:13
 BLD                          src/12ac-bld.js:29
 BLD_FAM                      src/12ac-bld.js:16-26
 BLD_FAM_KEYS                 src/12ac-bld.js:28
-BLD_KEYS                     src/12ac-bld.js:144
+BLD_KEYS                     src/12ac-bld.js:145
 BLD_SHIFTS                   src/12ac-bld.js:27
 BLOCK_GOODS                  src/13b1-blockade.js:7
 BLOCK_LINES                  src/13b1-blockade.js:8
@@ -1265,7 +1265,7 @@ RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7-13
 RAIL_ARM_RU                  src/18e-rail-net.js:25
 RAIL_BUFFET                  src/18f-rail-station.js:20
-RAIL_COL                     src/18e-rail-net.js:180
+RAIL_COL                     src/18e-rail-net.js:219
 RAIL_DECL                    src/18h-rail-powers.js:14
 RAIL_DOCK                    src/18f-rail-station.js:22
 RAIL_EXPRESS_MUL             src/18h-rail-powers.js:13
@@ -1275,7 +1275,7 @@ RAIL_HAIL_R                  src/18f-rail-station.js:19
 RAIL_LIFE                    src/18i-rail-life.js:17
 RAIL_METRO_R                 src/18e-rail-net.js:26
 RAIL_NET                     src/18e-rail-net.js:29
-RAIL_PART                    src/18e-rail-net.js:167
+RAIL_PART                    src/18e-rail-net.js:206
 RAIL_PASS_RIDES              src/18i-rail-life.js:16
 RAIL_PAX                     src/18i-rail-life.js:49
 RAIL_PAX_TALK                src/18i-rail-life.js:50
@@ -1287,6 +1287,7 @@ RAIL_RING_OFF                src/18f-rail-station.js:18
 RAIL_RING_RU                 src/18e-rail-net.js:24
 RAIL_SALT                    src/18e-rail-net.js:28
 RAIL_SCHEME_MAP              src/18k-rail-scheme.js:78
+RAIL_SPUR_MAX                src/18e-rail-net.js:152
 RAIL_VIA_K                   src/18k-rail-scheme.js:12
 RALLY_CACHE                  src/12at-vote.js:69
 RAM_K                        src/13a-guns.js:44
@@ -2108,23 +2109,23 @@ bldBuySrc                    src/12ad-site.js:298-308
 bldC                         src/12ac-bld.js:80
 bldCanPay                    src/12ad-site.js:164-168
 bldCollect                   src/12ad-site.js:281-292
-bldCostTxt                   src/12ac-bld.js:170-175
+bldCostTxt                   src/12ac-bld.js:171-176
 bldCredits                   src/12ac-bld.js:50-54
 bldD                         src/12ac-bld.js:100
 bldEntry                     src/12ad-site.js:206
 bldFeed                      src/12ad-site.js:255-269
 bldFreeSites                 src/12ad-site.js:156
 bldHas                       src/12ag-holdfx.js:13-17
-bldIoTxt                     src/12ac-bld.js:176-181
-bldIsShop                    src/12ac-bld.js:182
+bldIoTxt                     src/12ac-bld.js:177-182
+bldIsShop                    src/12ac-bld.js:183
 bldLack                      src/12ad-site.js:169-174
 bldLay                       src/12ad-site.js:180-192
-bldOut                       src/12ac-bld.js:150
+bldOut                       src/12ac-bld.js:151
 bldPay                       src/12ad-site.js:175-178
-bldQuota                     src/12ac-bld.js:149
+bldQuota                     src/12ac-bld.js:150
 bldReady                     src/12ad-site.js:207
 bldRuleWhy                   src/12ad-site.js:141-146
-bldScale                     src/12ac-bld.js:148
+bldScale                     src/12ac-bld.js:149
 bldSellInd                   src/12ad-site.js:271-279
 bldSites                     src/12ad-site.js:98
 bldSitesAt                   src/12ad-site.js:100-103
@@ -2132,7 +2133,7 @@ bldTick                      src/12ad-site.js:210-241
 bldTierOpenAt                src/12ad-site.js:104-108
 bldTierPlanTxt               src/12ad-site.js:109-112
 bldUpgrade                   src/12ad-site.js:193-205
-bldUpgradeCost               src/12ac-bld.js:152-159
+bldUpgradeCost               src/12ac-bld.js:153-160
 bldWant                      src/12ad-site.js:243-253
 bldWhy                       src/12ad-site.js:147-154
 blockArrive                  src/13b1-blockade.js:13-23
@@ -2957,7 +2958,7 @@ drawPostcard                 src/25g-postcard.js:171-612
 drawRaid                     src/24aa-raid-draw.js:14-655
 drawRail                     src/18g-rail-ride.js:126-186
 drawRailArrive               src/18g-rail-ride.js:31-34
-drawRailMap                  src/18e-rail-net.js:181-210
+drawRailMap                  src/18e-rail-net.js:220-249
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:87-622
 drawRocks                    src/19-mode-landing-ground.js:294-386
@@ -3987,7 +3988,7 @@ huntQuest                    src/12o-hunter.js:55-63
 huntSpawn                    src/12o-hunter.js:90-105
 huntTierOf                   src/12o-hunter.js:28
 importCode                   src/14a-cloud.js:62-64
-indPrice                     src/12ac-bld.js:160-169
+indPrice                     src/12ac-bld.js:161-170
 initAudio                    src/09-audio.js:19-39
 instAll                      src/11ab-institute.js:25
 instBlock                    src/11ab-institute.js:116-133
@@ -5256,8 +5257,8 @@ railLifeExit                 src/18i-rail-life.js:103-111
 railLifeHtml                 src/18i-rail-life.js:58-74
 railLifeStop                 src/18i-rail-life.js:94-101
 railNearest                  src/18e-rail-net.js:32-42
-railNet                      src/18e-rail-net.js:147-156
-railNetPartial               src/18e-rail-net.js:168-179
+railNet                      src/18e-rail-net.js:186-195
+railNetPartial               src/18e-rail-net.js:207-218
 railNextIdx                  src/18h-rail-powers.js:23
 railNextLeg                  src/18k-rail-scheme.js:39-44
 railOwner                    src/18h-rail-powers.js:15
@@ -5280,7 +5281,10 @@ railSchemePick               src/18k-rail-scheme.js:79-96
 railSealDock                 src/18i-rail-life.js:113-117
 railSealPirates              src/18i-rail-life.js:121-126
 railSegDur                   src/18g-rail-ride.js:46-49
-railStation                  src/18e-rail-net.js:158-163
+railSpurApply                src/18e-rail-net.js:170-185
+railSpurLine                 src/18e-rail-net.js:160-169
+railSpurSig                  src/18e-rail-net.js:153-159
+railStation                  src/18e-rail-net.js:197-202
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:163
 railStopsOf                  src/18e-rail-net.js:122-146
@@ -7376,7 +7380,7 @@ zoomTo                       src/15-input.js:350
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18e-rail-net.js · 12 КБ
+## src/18e-rail-net.js · 15 КБ
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
 ## src/18f-rail-station.js · 21 КБ
@@ -7968,7 +7972,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91x-hold-barge.js · 5 КБ
   · автотесты: холдинг · своя баржа (M294):1
 
-## tests/91x-hold-fx.js · 8 КБ
+## tests/91x-hold-fx.js · 9 КБ
   · автотесты: холдинг · семьи E–I, каждый крючок спрошен (M295):1
 
 ## tests/91x-hold-ladder.js · 3 КБ
