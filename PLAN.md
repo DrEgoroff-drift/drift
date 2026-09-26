@@ -66,7 +66,7 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     then the panels by how often they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
     worker's studio function; the ship in ОПИСЬ — the worker (27j0); the raid
-    is still 2D on `#c`, uploaded whole every frame (1140×1350 at 760);
+    comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull bake (03e1) — the worker;
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
