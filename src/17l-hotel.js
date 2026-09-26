@@ -14,7 +14,7 @@ const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»",co:"АЭЛИТА
 /* имя в подписи и журнале — полное: пропуск мёртвой буквы хорош в неоне, а в строке HUD читается опечаткой («ГОС ИНИЦА») */
 const hotelName=by=>HOTEL_SIGN_FULL[by]||(HOTEL_SIGN[by]||HOTEL_SIGN.gt).trim();
 const HOTEL_NIGHT=12;
-const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,sheen:[x,y,r],wins(sd),paint(c,e,sd,lit,Lt)} */
+const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,neon:[r,g,b]? (свой цвет трубок, иначе лампа хозяина),sheen:[x,y,r],wins(sd),paint(c,e,sd,lit,Lt)} */
 function hotelHere(){
   const sys=G.sys;if(!sys||!sys.station||typeof sysLane!=="function")return null;
   const P=sysLane(sys);if(!P||P.life<.45)return null;
@@ -135,7 +135,7 @@ function hotelNeon(Ht,T,k,col,ahead){
   if(!T.sign)return null;
   const F=T.sign[2]*k;if(F<3)return null;
   const Fb=Math.max(3,Math.round(Math.pow(2,Math.round(Math.log2(F)*4)/4)*2)/2);
-  const a=[Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic",{core:true}];
+  const a=[Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,T.neon||col,"alphabetic",{core:true}];
   if(ahead){neonAhead(...a);return null;}
   const N=neonBake("hotel",...a);
   return N?{N,s:F/Fb}:null;

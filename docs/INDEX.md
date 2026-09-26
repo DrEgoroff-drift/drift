@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 634 · символов верхнего уровня: 6394
+Файлов: 634 · символов верхнего уровня: 6395
 
 ## СИМВОЛЫ
 
@@ -2621,21 +2621,22 @@ hazeFar                      src/19c-light.js:167-188
 hazeGrab                     src/18d-postfx.js:33-50
 HB_PROBE                     src/03e1-hull-bake.js:23
 HB_STATS                     src/03e1-hull-bake.js:26
-HD_CX                        src/17l2-hotel-druzhba.js:11
-HD_DARK                      src/17l2-hotel-druzhba.js:13
-HD_HALO                      src/17l2-hotel-druzhba.js:14
-HD_WALL                      src/17l2-hotel-druzhba.js:12
-HD_WINS                      src/17l2-hotel-druzhba.js:15
-hdA                          src/17l2-hotel-druzhba.js:16
+HD_CX                        src/17l2-hotel-druzhba.js:12
+HD_DARK                      src/17l2-hotel-druzhba.js:14
+HD_HALO                      src/17l2-hotel-druzhba.js:15
+HD_NEON                      src/17l2-hotel-druzhba.js:16
+HD_WALL                      src/17l2-hotel-druzhba.js:13
+HD_WINS                      src/17l2-hotel-druzhba.js:17
+hdA                          src/17l2-hotel-druzhba.js:18
 hdAgeShifts                  tests/91zzzzy-hold.js:48-59
 hdLay                        tests/91zzzzy-hold.js:41-46
-hdPaint                      src/17l2-hotel-druzhba.js:32-152
+hdPaint                      src/17l2-hotel-druzhba.js:34-152
 hDraw                        tests/91zzzzzzz-hands.js:36
-hdS                          src/17l2-hotel-druzhba.js:19
+hdS                          src/17l2-hotel-druzhba.js:21
 hdSite                       tests/91zzzzy-hold.js:15-37
-hdWins                       src/17l2-hotel-druzhba.js:20-31
-hdX                          src/17l2-hotel-druzhba.js:17
-hdY                          src/17l2-hotel-druzhba.js:18
+hdWins                       src/17l2-hotel-druzhba.js:22-33
+hdX                          src/17l2-hotel-druzhba.js:19
+hdY                          src/17l2-hotel-druzhba.js:20
 HEARD_MAX                    src/12x-parrot.js:23
 heardAdd                     src/12x-parrot.js:42-51
 heardAll                     src/12x-parrot.js:26
