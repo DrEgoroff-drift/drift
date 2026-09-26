@@ -131,14 +131,17 @@ function baseGroundPaint(B,pl,R){
   rock.addColorStop(.55,rgba(rc(3),1));
   rock.addColorStop(1,rgba(rc(4),1));
   ctx.fillStyle=rock;GP();ctx.fill();
-  /* пласты: границы гуляют, поэтому это порода, а не полосатый матрас */
+  /* пласты: границы гуляют, поэтому это порода, а не полосатый матрас.
+     У main их гасила плёнка материала поверх (.34 и overlay .26) — здесь материал
+     множителем в поле света, и пласты рисуются слабее: ступень между пластами
+     в кадре ~1.3, как у main (замер 26.09) */
   ctx.save();GP();ctx.clip();
   for(let r=0;r<baseRows(B)+2;r++){
     const y0=150+r*BCELL_H*1.15;
     ctx.beginPath();ctx.moveTo(R.x0,y0);
     for(let x=R.x0;x<=R.x1+10;x+=10)ctx.lineTo(x,y0+(fbm2(x*.004,r*2.7,B.idx*31+5,3)-.5)*26);
     ctx.lineTo(R.x1+10,y0+BCELL_H*1.15);ctx.lineTo(R.x0,y0+BCELL_H*1.15);ctx.closePath();
-    ctx.fillStyle=r%2?"rgba(0,0,0,.30)":"rgba(255,255,255,.055)";ctx.fill();
+    ctx.fillStyle=r%2?"rgba(0,0,0,.10)":"rgba(255,255,255,.025)";ctx.fill();
   }
   /* Материал планеты — это её ПОВЕРХНОСТЬ: во всю силу под землёй он читается
      мхом и травой. Умножением уводим всё в бурое: фактура остаётся, зелень

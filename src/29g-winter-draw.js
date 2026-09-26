@@ -21,7 +21,10 @@ const WIN_C={
   wall:[38,44,48], wall2:[28,33,37], rib:[52,60,64],
   panel:[30,36,40], panelHi:[74,84,88],
   warm:[255,168,88], lamp:[255,224,168], cold:[128,168,204],
-  metal:[96,104,108], dark:[14,17,20]
+  metal:[96,104,108], dark:[14,17,20],
+  /* сталь рычагов: холоднее прочего железа — тёплая дымка кадра над светлой комнатой
+     съедала синеву, и стержень серел на бежевой стене (Контроль 26.09) */
+  steel:[86,102,114]
 };
 function wcol(a,k){const m=k==null?1:k;
   return "rgb("+Math.round(a[0]*m)+","+Math.round(a[1]*m)+","+Math.round(a[2]*m)+")";}
@@ -60,20 +63,23 @@ function winLevers(g){
             w:w,h:g.panel.h*0.76});
   return L;
 }
-/* подписи рычагов — одна раскладка на кадр и на проверку (91zzzw-winter-labels): на узком кадре
+/* подписи рычагов — одна раскладка на кадр и на проверку (91zzzj-winter): на узком кадре
    рычаг в двадцать пикселей, а «АНТЕННА» кеглем от высоты кадра — сорок шесть, и подписи
-   налезали друг на друга. Не влезает в рычаг — строки через одну в два ряда, кегль вниз, пока
-   подпись не ляжет в два рычага, но не мельче 7 px. measure(текст, кегль) — ширина в px */
+   налезали друг на друга. Не влезает в рычаг — строки через одну в два ряда, кегль вниз, но
+   не мельче 9 px: мельче на телефоне не читается (Контроль 26.09). Не хватило и этого —
+   сокращения, и снова от кегля кадра. measure(текст, кегль) — ширина в px */
+const WIN_RU_SHORT={heat:"ТЕПЛ",air:"ВОЗД",light:"СВЕТ",ant:"АНТ"};
 function winLeverLabels(g,measure){
-  const L=winLevers(g),lw=L[0].w;
-  let f=Math.max(7,Math.round(H*0.0135)),two=false;
-  const wid=()=>L.map(lv=>measure(WIN_RU[lv.k],f));
-  let ws=wid();
-  if(Math.max(...ws)>lw*0.94){
-    two=true;
-    while(f>7&&Math.max(...ws)>lw*2-4){f--;ws=wid();}
+  const L=winLevers(g),lw=L[0].w,f0=Math.max(9,Math.round(H*0.0135));
+  const lay=(names,f,two)=>L.map((lv,i)=>({k:lv.k,tx:names[lv.k],f,w:measure(names[lv.k],f),
+    x:lv.x+lv.w*0.5,y:lv.y+lv.h*(two?(i%2?0.49:0.39):0.44)}));
+  const fit=(B,lim)=>B.every(b=>b.w<=lim);
+  for(const names of [WIN_RU,WIN_RU_SHORT]){
+    const one=lay(names,f0,false);
+    if(fit(one,lw*0.94))return one;
+    for(let f=f0;f>=9;f--){const B=lay(names,f,true);if(fit(B,lw*2-4))return B;}
   }
-  return L.map((lv,i)=>({k:lv.k,f,w:ws[i],x:lv.x+lv.w*0.5,y:lv.y+lv.h*(two?(i%2?0.49:0.39):0.44)}));
+  return lay(WIN_RU_SHORT,9,true);
 }
 /* ── свет ──
    Три источника, и все три игрок сам и включает: лампа над столом, печь слева,
@@ -367,6 +373,9 @@ function drawWinter(){
   const pr=roomBake("win.props",key,W,H,()=>winProps(g,W0));
   if(pr)gpuImage(pass,pr,[{x:W/2,y:H/2,w:W,h:H}]);
   winLight(pass,g,W0);
+  const pb=winPanelBox(g);
+  const pn=roomBake("win.panel",key+"|"+pb.x+","+pb.y,pb.w,pb.h,()=>{ctx.translate(-pb.x,-pb.y);winPanel(g,W0);});
+  if(pn)gpuImage(pass,pn,[{x:pb.x+pb.w/2,y:pb.y+pb.h/2,w:pb.w,h:pb.h}]);
   const fb=winFigBox(g);
   const fg=roomBake("win.fig",key+"|"+fb.x+","+fb.y,fb.w,fb.h,()=>{ctx.translate(-fb.x,-fb.y);winFigure(g,W0);});
   if(fg)gpuImage(pass,fg,[{x:fb.x+fb.w/2,y:fb.y+fb.h/2,w:fb.w,h:fb.h}]);
@@ -603,73 +612,6 @@ function winProps(g,W0){
     ctx.fillRect(mx,my-t.h*0.14,Math.max(1,t.w*0.012),t.h*0.14);
   }
 
-  /* ── приборы на панели ── */
-  {
-    const p=g.panel, L=winLevers(g), cap=winCap(W0), dr=winDraw_(W0);
-    const pk=winLit(g,W0,p.x+p.w*0.5,p.y+p.h*0.5);
-    const LB=winLeverLabels(g,(tx,f)=>{ctx.font=f+"px ui-monospace,monospace";return ctx.measureText(tx).width;});
-    for(const [li2,lv] of L.entries()){
-      const val=W0.pw[lv.k]|0, low=val<WIN_MIN[lv.k];
-      const cx=lv.x+lv.w*0.5;
-      /* циферблат */
-      const cy=lv.y+lv.h*0.20, rr=Math.min(lv.w*0.33,lv.h*0.17);
-      ctx.fillStyle=wcol(WIN_C.dark,1);
-      ctx.beginPath();ctx.arc(cx,cy,rr,0,TAU);ctx.fill();
-      ctx.strokeStyle=wrgba(WIN_C.panelHi,0.35+pk*0.3);
-      ctx.lineWidth=Math.max(1,H*0.0016);
-      ctx.beginPath();ctx.arc(cx,cy,rr,0,TAU);ctx.stroke();
-      for(let i=0;i<=3;i++){
-        const ta=-Math.PI*0.75+(i/3)*Math.PI*1.5;
-        ctx.strokeStyle=wrgba([190,204,212],0.35);
-        ctx.beginPath();
-        ctx.moveTo(cx+Math.cos(ta)*rr*0.72,cy+Math.sin(ta)*rr*0.72);
-        ctx.lineTo(cx+Math.cos(ta)*rr*0.92,cy+Math.sin(ta)*rr*0.92);ctx.stroke();
-      }
-      const a=-Math.PI*0.75+(val/3)*Math.PI*1.5;
-      ctx.strokeStyle=low?"rgba(255,120,96,.95)":wrgba(WIN_C.lamp,0.92);
-      ctx.lineWidth=Math.max(1.4,H*0.0026);
-      ctx.beginPath();ctx.moveTo(cx,cy);
-      ctx.lineTo(cx+Math.cos(a)*rr*0.76,cy+Math.sin(a)*rr*0.76);ctx.stroke();
-      ctx.fillStyle=wrgba(WIN_C.panelHi,0.8);
-      ctx.beginPath();ctx.arc(cx,cy,Math.max(1.2,rr*0.12),0,TAU);ctx.fill();
-      /* рычаг под циферблатом: положение видно наклоном, а не числом */
-      const by=lv.y+lv.h*0.86, bh=lv.h*0.34;
-      ctx.fillStyle=wrgba(WIN_C.dark,0.55);
-      ctx.fillRect(cx-lv.w*0.24,by-Math.max(2,H*0.004),lv.w*0.48,Math.max(3,H*0.007));
-      const ta2=(val/3-0.5)*1.15;
-      const hx=cx+Math.sin(ta2)*bh*0.92, hy=by-Math.cos(ta2)*bh*0.92;
-      ctx.strokeStyle=wcol(WIN_C.metal,0.4+pk*0.7);
-      ctx.lineWidth=Math.max(2.4,H*0.0055);
-      ctx.beginPath();ctx.moveTo(cx,by);ctx.lineTo(hx,hy);ctx.stroke();
-      ctx.fillStyle=low?"rgb(206,98,80)":wcol(WIN_C.panelHi,0.5+pk*0.7);
-      ctx.beginPath();ctx.arc(hx,hy,Math.max(2.6,H*0.0068),0,TAU);ctx.fill();
-      ctx.fillStyle=wrgba([255,255,255],0.22);
-      ctx.beginPath();ctx.arc(hx-1,hy-1,Math.max(1,H*0.0022),0,TAU);ctx.fill();
-      /* подпись */
-      ctx.fillStyle=wrgba([196,208,216],0.55+pk*0.35);
-      const lb=LB[li2];
-      ctx.font=lb.f+"px ui-monospace,monospace";
-      ctx.textAlign="center";
-      ctx.fillText(WIN_RU[lv.k],lb.x,lb.y);
-    }
-    /* реактор: полоса на всю ширину панели, делений ровно cap */
-    const bx=p.x+p.w*0.07, by=p.y+p.h*0.055, bw=p.w*0.86, bh=p.h*0.075;
-    ctx.fillStyle=wcol(WIN_C.dark,1);ctx.fillRect(bx,by,bw,bh);
-    ctx.strokeStyle=wrgba(WIN_C.panelHi,0.3);
-    ctx.lineWidth=1;ctx.strokeRect(bx+.5,by+.5,bw-1,bh-1);
-    const cw=bw/Math.max(1,cap);
-    for(let i=0;i<cap;i++){
-      ctx.fillStyle=i<dr?(dr>cap?"rgb(224,112,88)":wrgba(WIN_C.lamp,0.88))
-                        :wrgba([120,140,150],0.30);
-      ctx.fillRect(bx+cw*i+1.5,by+1.5,cw-3,bh-3);
-    }
-    ctx.fillStyle=wrgba([196,208,216],0.55+pk*0.3);
-    ctx.font=Math.max(7,Math.round(H*0.0125))+"px ui-monospace,monospace";
-    ctx.textAlign="left";
-    ctx.fillText(dr>cap?"РЕАКТОР · ПЕРЕГРУЗКА":"РЕАКТОР",bx,by-H*0.006);
-    ctx.textAlign="left";
-  }
-
   /* ── календарь на стене ──
      Единственная вещь, которая на зимовке обязана быть. Дни зачёркнуты рукой,
      а не отпечатаны: интерфейс обратного отсчёта не ведёт (правило файла), а
@@ -710,6 +652,85 @@ function winProps(g,W0){
     ctx.fillStyle=wcol(WIN_C.metal,k);
     ctx.beginPath();ctx.arc(cl.x+cl.w*0.5,cl.y-H*0.006,Math.max(1.6,H*0.004),0,TAU);ctx.fill();
   }
+}
+/* рамка выпечки приборов: панель, подпись реактора над ней, три лампочки поломок справа */
+function winPanelBox(g){
+  const p=g.panel,x0=Math.floor((p.x-H*0.01)*DPR),y0=Math.floor((p.y-H*0.035)*DPR);
+  const x1=Math.ceil((p.x+p.w+H*0.13+6)*DPR),y1=Math.ceil((p.y+p.h+H*0.01)*DPR);
+  return {x:x0/DPR,y:y0/DPR,w:(x1-x0)/DPR,h:(y1-y0)/DPR};
+}
+/* приборы на панели и корпуса лампочек поломок — своя выпечка «win.panel», поверх света
+   комнаты, как в main: печь светит на плиту панели под ними, а рычаги, головки и циферблаты
+   остаются своей краской (Контроль 26.09: под пеленой света они бледнели до цвета стены) */
+function winPanel(g,W0){
+  /* ── приборы на панели ── */
+  {
+    const p=g.panel, L=winLevers(g), cap=winCap(W0), dr=winDraw_(W0);
+    const pk=winLit(g,W0,p.x+p.w*0.5,p.y+p.h*0.5);
+    const LB=winLeverLabels(g,(tx,f)=>{ctx.font=f+"px ui-monospace,monospace";return ctx.measureText(tx).width;});
+    for(const [li2,lv] of L.entries()){
+      const val=W0.pw[lv.k]|0, low=val<WIN_MIN[lv.k];
+      const cx=lv.x+lv.w*0.5;
+      /* циферблат */
+      const cy=lv.y+lv.h*0.20, rr=Math.min(lv.w*0.33,lv.h*0.17);
+      ctx.fillStyle=wcol(WIN_C.dark,1);
+      ctx.beginPath();ctx.arc(cx,cy,rr,0,TAU);ctx.fill();
+      ctx.strokeStyle=wrgba(WIN_C.panelHi,0.35+pk*0.3);
+      ctx.lineWidth=Math.max(1,H*0.0016);
+      ctx.beginPath();ctx.arc(cx,cy,rr,0,TAU);ctx.stroke();
+      for(let i=0;i<=3;i++){
+        const ta=-Math.PI*0.75+(i/3)*Math.PI*1.5;
+        ctx.strokeStyle=wrgba([190,204,212],0.35);
+        ctx.beginPath();
+        ctx.moveTo(cx+Math.cos(ta)*rr*0.72,cy+Math.sin(ta)*rr*0.72);
+        ctx.lineTo(cx+Math.cos(ta)*rr*0.92,cy+Math.sin(ta)*rr*0.92);ctx.stroke();
+      }
+      const a=-Math.PI*0.75+(val/3)*Math.PI*1.5;
+      ctx.strokeStyle=low?"rgba(255,120,96,.95)":wrgba(WIN_C.lamp,0.92);
+      ctx.lineWidth=Math.max(1.4,H*0.0026);
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(a)*rr*0.76,cy+Math.sin(a)*rr*0.76);ctx.stroke();
+      ctx.fillStyle=wrgba(WIN_C.panelHi,0.8);
+      ctx.beginPath();ctx.arc(cx,cy,Math.max(1.2,rr*0.12),0,TAU);ctx.fill();
+      /* рычаг под циферблатом: положение видно наклоном, а не числом */
+      const by=lv.y+lv.h*0.86, bh=lv.h*0.34;
+      ctx.fillStyle=wrgba(WIN_C.dark,0.55);
+      ctx.fillRect(cx-lv.w*0.24,by-Math.max(2,H*0.004),lv.w*0.48,Math.max(3,H*0.007));
+      const ta2=(val/3-0.5)*1.15;
+      const hx=cx+Math.sin(ta2)*bh*0.92, hy=by-Math.cos(ta2)*bh*0.92;
+      /* сталь и головки темнее, чем в 2D: стена под тёплым светом (winLight) посветлела,
+         а рычаг печётся после света — ступень «рычаг/стена» держим не ниже main (Контроль 26.09) */
+      ctx.strokeStyle=wcol(WIN_C.steel,0.32+pk*0.56);
+      ctx.lineWidth=Math.max(2.4,H*0.0055);
+      ctx.beginPath();ctx.moveTo(cx,by);ctx.lineTo(hx,hy);ctx.stroke();
+      ctx.fillStyle=low?"rgb(206,98,80)":wcol(WIN_C.panelHi,0.39+pk*0.55);
+      ctx.beginPath();ctx.arc(hx,hy,Math.max(2.6,H*0.0068),0,TAU);ctx.fill();
+      ctx.fillStyle=wrgba([255,255,255],0.22);
+      ctx.beginPath();ctx.arc(hx-1,hy-1,Math.max(1,H*0.0022),0,TAU);ctx.fill();
+      /* подпись */
+      ctx.fillStyle=wrgba([196,208,216],0.55+pk*0.35);
+      const lb=LB[li2];
+      ctx.font=lb.f+"px ui-monospace,monospace";
+      ctx.textAlign="center";
+      ctx.fillText(lb.tx,lb.x,lb.y);
+    }
+    /* реактор: полоса на всю ширину панели, делений ровно cap */
+    const bx=p.x+p.w*0.07, by=p.y+p.h*0.055, bw=p.w*0.86, bh=p.h*0.075;
+    ctx.fillStyle=wcol(WIN_C.dark,1);ctx.fillRect(bx,by,bw,bh);
+    ctx.strokeStyle=wrgba(WIN_C.panelHi,0.3);
+    ctx.lineWidth=1;ctx.strokeRect(bx+.5,by+.5,bw-1,bh-1);
+    const cw=bw/Math.max(1,cap);
+    for(let i=0;i<cap;i++){
+      ctx.fillStyle=i<dr?(dr>cap?"rgb(224,112,88)":wrgba(WIN_C.lamp,0.88))
+                        :wrgba([120,140,150],0.30);
+      ctx.fillRect(bx+cw*i+1.5,by+1.5,cw-3,bh-3);
+    }
+    ctx.fillStyle=wrgba([196,208,216],0.55+pk*0.3);
+    ctx.font=Math.max(7,Math.round(H*0.0125))+"px ui-monospace,monospace";
+    ctx.textAlign="left";
+    ctx.fillText(dr>cap?"РЕАКТОР · ПЕРЕГРУЗКА":"РЕАКТОР",bx,by-H*0.006);
+    ctx.textAlign="left";
+  }
 
   /* ── лампочки поломок: корпуса; свет их — в winGlow ── */
   {
@@ -723,7 +744,6 @@ function winProps(g,W0){
       ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
     }
   }
-
 }
 /* рамка выпечки зимовщика — в целых пикселях устройства, чтобы текстура легла пиксель в пиксель */
 function winFigBox(g){

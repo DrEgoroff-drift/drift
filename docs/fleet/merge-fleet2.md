@@ -43,7 +43,10 @@ Worker session «Флот: облако → main»; Контроль is «Опт
   `tr.mat`), the base draws it live every frame; the race was underground only. Base, home and
   winter differ from main by the fleet's light, not the material (base +4…+28 % luma, home
   −18…+11 %) — Контроль's call.
-- [ ] 6. Sheets 390 / 760 of all zones at the head with a line per scene → Контроль.
+- [x] 5j. origin/main b8191a35 (0.476.0) merged — 485ba8a7; conflicts only in build artifacts.
+- [x] 5k. Base craters, winter levers under the lamp, labels not below 9 px (see below).
+- [x] 6. Sheets 390 / 760 of all zones at 485ba8a7 with a line per scene → Контроль (pairs35).
+- [ ] 6b. The night surface at 390: the fleet frame came out black after 93 s (budget 90 s).
 - [ ] 7. `-Mobile`, `docs/tour.py`, cadence on the PC (390×844 and 760, marked «ПК» — no S23
   until the author says so); drop the PLAN.md «In flight» fleet line; hand over the hash.
 
@@ -223,5 +226,29 @@ levels of warm light over her from the brighter room, so her paint is denser by 
 At 390 a lever is 19 px wide and «АНТЕННА» at the frame-height size is 46 px: the four labels
 ran into one word (main too). `winLeverLabels()` is one layout for the frame and the check: a
 label wider than its lever puts them in two rows, every other one, and the size goes down until
-a label fits two levers, never below 7 px. The check (91zzzj) walks 390, 360, 760, 1280, 1920:
-no two label boxes meet, none below 7 px, all inside the frame.
+a label fits two levers, never below 9 px (Контроль: 7 px does not read on a phone); when the
+full names do not fit even so, the short ones go in — ТЕПЛ / ВОЗД / СВЕТ / АНТ — not a smaller
+size. The check (91zzzj) walks 390, 360, 760, 1280, 1920: no two label boxes meet, none below
+9 px, all inside the frame.
+
+### The levers under the lamp
+In 85f58892 the panel instruments were part of the props bake, under the room's warm light: the
+steel went pale beige on a beige wall. The instruments and the fault lamps are now their own
+bake (`win.panel`) laid after `winLight`, as in main. The wall under the light is brighter than
+main's (760: luma 79 against 61), so the steel is painted darker than in 2D and the shafts take a
+colder steel (`WIN_C.steel`): the frame's warm halo ate their blue. Contrast to the wall, 760
+(main): luma step heads 18.8 (7.3), shafts 14.6 (11.3); RGB distance heads 41.0 (32.4), shafts
+38.5 (35.1). At 390 the wall is lighter still: steps 58 / 52 (main 6.7 / 1.3).
+
+### Base craters
+Контроль saw main's two craters nearly gone. They are the painter's boulders («валуны и
+прожилки», `21ab1`); main draws them in screen space (`BR()*W`), so they stay on the glass while
+the rock pans, and the fleet bakes them into the rock: main's bottom crater is the same boulder
+(#23, r 20.4) 27 px to the right, the left one by the pad is off screen. What drowned them was
+the air field (add): it laid the material as a film over the painted rock, 22 of 37 levels, and
+the grain, veins and boulders under it lost their shadow. Main's order is material first, grain
+and boulders over it — and `21ab1` already said the light field lays the material by
+multiplication. Now it does: the film is gone, the material colour and grain are a multiplier in
+the light field, and the strata are painted weaker (main's film dimmed them). Boulder #23 at 390:
+shadow ring/pit 1.245, rim cap/pit 1.324 (main 1.182 / 1.167); rock luma 36.8 (was 37.0, main
+30.3); step between strata 1.35 (was 1.33, main 1.27).

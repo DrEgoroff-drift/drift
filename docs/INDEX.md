@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 671 · символов верхнего уровня: 6852
+Файлов: 671 · символов верхнего уровня: 6855
 
 ## СИМВОЛЫ
 
@@ -256,7 +256,7 @@ baseAdjLine                  src/21a4-base-adj.js:111-120
 baseAdjMine                  src/21a4-base-adj.js:108
 baseAdjPairs                 src/21a4-base-adj.js:34-54
 baseAdjSpirit                src/21a4-base-adj.js:102-104
-baseAirWgsl                  src/21ad-base-gpu.js:251-297
+baseAirWgsl                  src/21ad-base-gpu.js:259-303
 baseAllKinds                 tests/91zzzw-base5-gpu.js:30-40
 baseAssignHere               src/21a3-base-people.js:61-66
 baseAt                       src/21a-mode-base.js:85
@@ -304,8 +304,8 @@ baseFrozen                   src/21a1a-base-heat.js:95
 baseGaugeLine                src/21a9-base-laws.js:47-54
 baseGpuOver                  src/21ad-base-gpu.js:93-131
 baseGpuUnder                 src/21ad-base-gpu.js:74-90
-baseGroundLive               src/21ab1-base-ground.js:401-414
-baseGroundPaint              src/21ab1-base-ground.js:101-394
+baseGroundLive               src/21ab1-base-ground.js:404-417
+baseGroundPaint              src/21ab1-base-ground.js:101-397
 baseGroundPath               src/21ab1-base-ground.js:48-52
 baseGrowCheck                src/21a-mode-base.js:14-22
 baseGuestDrop                src/21a3-base-people.js:117-123
@@ -338,7 +338,7 @@ baseLifeMakers               src/21a1-base-life.js:303-310
 baseLifeNeed                 src/21a1-base-life.js:297-301
 baseLifeStep                 src/21a1-base-life.js:335-401
 baseLightPass                src/21aa-base-rooms.js:39-42
-baseLightWgsl                src/21ad-base-gpu.js:229-249
+baseLightWgsl                src/21ad-base-gpu.js:229-257
 baseLinkCan                  src/21a2-base-link.js:114
 baseLinkPark                 src/21a2-base-link.js:115-123
 baseList                     src/21a-mode-base.js:376-380
@@ -350,7 +350,7 @@ baseMine                     src/21a1-base-life.js:212-261
 baseNeighbors                src/21a-mode-base.js:176-185
 baseOneWord                  src/21a2-base-link.js:76-83
 basePads                     src/21a-mode-base.js:381
-basePadUp                    src/21ab1-base-ground.js:396-399
+basePadUp                    src/21ab1-base-ground.js:399-402
 basePark                     src/21a1-base-life.js:316-323
 baseParked                   src/21a1-base-life.js:293
 baseParRect                  src/21ad-base-gpu.js:51-54
@@ -1735,7 +1735,7 @@ drawWanderRoom               src/24c-mode-wanderer-draw.js:134-155
 drawWater                    src/21e-surface-draw.js:194-282
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:104-234
-drawWinter                   src/29g-winter-draw.js:359-377
+drawWinter                   src/29g-winter-draw.js:365-386
 drawWorld                    src/28-loop.js:401-404
 drawWorldIn                  src/28-loop.js:405-428
 drawWreck                    src/20aa-poi-shapes.js:8-48
@@ -6455,7 +6455,7 @@ updateSpa                    src/29i-spa-draw.js:575-580
 updateSurface                src/21-mode-surface.js:200-657
 updateSystem                 src/17-mode-system.js:92-483
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
-updateWinter                 src/29g-winter-draw.js:910-919
+updateWinter                 src/29g-winter-draw.js:930-939
 useBeacon                    src/23-mode-dig.js:88-113
 VAN_HOW                      src/21ac3-base-van.js:27
 VAN_NAMES                    src/21ac3-base-van.js:14
@@ -6731,7 +6731,7 @@ wcagL                        tests/91zzx-mobile.js:433
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
 wcGauss                      src/16a-space.js:127
-wcol                         src/29g-winter-draw.js:26
+wcol                         src/29g-winter-draw.js:29
 WEAR_BASE                    src/21a9-base-laws.js:72
 WEAR_FULL                    src/12s-wear.js:16
 WEAR_RATE                    src/12s-wear.js:18
@@ -6758,56 +6758,59 @@ whyDial                      tests/91zzzzzj-why.js:39
 whyScene                     tests/91zzzzzj-why.js:29-37
 whyTight                     tests/91zzzzzj-why.js:22-25
 WIN_BAD                      src/29f-winter.js:32
-WIN_C                        src/29g-winter-draw.js:20-25
-WIN_DARK_U                   src/29g-winter-draw.js:533
-WIN_DARK_WGSL                src/29g-winter-draw.js:527
+WIN_C                        src/29g-winter-draw.js:20-28
+WIN_DARK_U                   src/29g-winter-draw.js:542
+WIN_DARK_WGSL                src/29g-winter-draw.js:536
 WIN_DAYS                     src/29f-winter.js:27
 WIN_FAULT                    src/29f-winter.js:34-40
 WIN_FAULT_BY                 src/29f-winter.js:41
-WIN_GLOW                     src/29g-winter-draw.js:499
-WIN_LIGHT_U                  src/29g-winter-draw.js:486
-WIN_LIGHT_WGSL               src/29g-winter-draw.js:434
+WIN_GLOW                     src/29g-winter-draw.js:508
+WIN_LIGHT_U                  src/29g-winter-draw.js:495
+WIN_LIGHT_WGSL               src/29g-winter-draw.js:443
 WIN_MIN                      src/29f-winter.js:31
 WIN_PAY                      src/29f-winter.js:28
 WIN_RU                       src/29f-winter.js:30
+WIN_RU_SHORT                 src/29g-winter-draw.js:71
 WIN_USE                      src/29f-winter.js:29
-WIN_VIEW_U                   src/29g-winter-draw.js:420
-WIN_VIEW_WGSL                src/29g-winter-draw.js:380
+WIN_VIEW_U                   src/29g-winter-draw.js:429
+WIN_VIEW_WGSL                src/29g-winter-draw.js:389
 WIN_WALL_EARLY               src/29f-winter.js:46-53
 WIN_WALL_LATE                src/29f-winter.js:54-61
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
 winBlock                     src/29f-winter.js:253-270
-winBody                      src/29g-winter-draw.js:113-139
+winBody                      src/29g-winter-draw.js:119-145
 winCap                       src/29f-winter.js:65-68
 WIND                         src/19c-light.js:41
-winDark                      src/29g-winter-draw.js:534-537
+winDark                      src/29g-winter-draw.js:543-546
 winDiaryToday                src/29f-winter.js:176-191
 windOf                       src/19c-light.js:42-48
 winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:193-209
-winFigBox                    src/29g-winter-draw.js:729-733
-winFigure                    src/29g-winter-draw.js:737-851
+winFigBox                    src/29g-winter-draw.js:749-753
+winFigure                    src/29g-winter-draw.js:757-871
 winFix                       src/29f-winter.js:149-160
-winGeom                      src/29g-winter-draw.js:35-54
-winGlow                      src/29g-winter-draw.js:500-525
-winHit                       src/29g-winter-draw.js:870-888
-winLeverLabels               src/29g-winter-draw.js:67-77
-winLevers                    src/29g-winter-draw.js:55-62
-winLight                     src/29g-winter-draw.js:487-496
-winLit                       src/29g-winter-draw.js:83-102
+winGeom                      src/29g-winter-draw.js:38-57
+winGlow                      src/29g-winter-draw.js:509-534
+winHit                       src/29g-winter-draw.js:890-908
+winLeverLabels               src/29g-winter-draw.js:72-83
+winLevers                    src/29g-winter-draw.js:58-65
+winLight                     src/29g-winter-draw.js:496-505
+winLit                       src/29g-winter-draw.js:89-108
 winOfferHere                 src/29f-winter.js:76-94
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
-winProps                     src/29g-winter-draw.js:539-727
-winRoomLayer                 src/29g-winter-draw.js:143-348
+winPanel                     src/29g-winter-draw.js:665-747
+winPanelBox                  src/29g-winter-draw.js:657-661
+winProps                     src/29g-winter-draw.js:548-655
+winRoomLayer                 src/29g-winter-draw.js:149-354
 winShift                     src/29f-winter.js:123-148
 winTake                      src/29f-winter.js:95-111
-winTap                       src/29g-winter-draw.js:889-909
+winTap                       src/29g-winter-draw.js:909-929
 winTestStart                 tests/91zzzj-winter.js:2-18
-winText                      src/29g-winter-draw.js:853-867
-winTone                      src/29g-winter-draw.js:105-110
-winView                      src/29g-winter-draw.js:421-430
+winText                      src/29g-winter-draw.js:873-887
+winTone                      src/29g-winter-draw.js:111-116
+winView                      src/29g-winter-draw.js:430-439
 winWall                      src/29f-winter.js:162-172
 withCtx                      src/18c-chunks.js:58-65
 withScale                    src/18c-chunks.js:41-47
@@ -6829,7 +6832,7 @@ wrapLeft                     src/18-mode-map.js:43-52
 wreck                        src/28-loop.js:16-44
 wreckInteract                src/12l-barge.js:335-361
 wrecksHere                   src/12l-barge.js:332
-wrgba                        src/29g-winter-draw.js:28
+wrgba                        src/29g-winter-draw.js:31
 wtab                         src/02a-worldmix.js:85
 WX_PLANES                    src/19d-weather.js:98-103
 xpWorth                      tests/91zzzzzm-exploit.js:26-49
@@ -7871,7 +7874,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/21ab-base-interiors2.js · 25 КБ
   · отсеки базы: вторая половина:1
 
-## src/21ab1-base-ground.js · 27 КБ
+## src/21ab1-base-ground.js · 28 КБ
   · база: небо, гора и порода (выделено из 21ac, M413):1
 
 ## src/21ac-base-draw.js · 44 КБ
@@ -7886,7 +7889,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/21ac3-base-van.js · 10 КБ
   · «Буханка» — машина базы с именем (M498 хвост, M485):1
 
-## src/21ad-base-gpu.js · 19 КБ
+## src/21ad-base-gpu.js · 20 КБ
   · база на видеокарте (G11):1
 
 ## src/21b-surface-deco.js · 34 КБ
@@ -8234,7 +8237,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/29f-winter.js · 15 КБ
   · зимовка: месяц одному:1
 
-## src/29g-winter-draw.js · 48 КБ
+## src/29g-winter-draw.js · 50 КБ
   · зимовка: кадр:1
 
 ## src/29h-spa.js · 8 КБ
