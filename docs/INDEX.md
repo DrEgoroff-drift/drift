@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6600
+Файлов: 641 · символов верхнего уровня: 6604
 
 ## СИМВОЛЫ
 
@@ -1521,6 +1521,7 @@ SMENA_CH                     src/12ud-smena.js:30-103
 SMENA_PARTS                  src/12ud-smena.js:18-23
 SMENA_TEXT                   src/12ud-smena-text.js:2
 SMENA_TITLE                  src/12ud-smena-text.js:3
+SMENA_WALK                   src/12ud1-smena-quest.js:21
 SMOKE_N                      src/17c-system-draw.js:378
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 SND                          src/09-audio.js:4
@@ -3112,9 +3113,9 @@ ethTick                      src/25l-post-ether.js:59-104
 etherLine                    src/11-log.js:42-53
 etherTick                    src/11b-speech.js:39-82
 etherWho                     src/11-log.js:38-41
-evacCost                     src/21-mode-surface.js:678
-evacFrom                     src/21-mode-surface.js:679
-evacuate                     src/21-mode-surface.js:680-700
+evacCost                     src/21-mode-surface.js:679
+evacFrom                     src/21-mode-surface.js:680
+evacuate                     src/21-mode-surface.js:681-701
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:154-157
 exitBelt                     src/24-mode-belt.js:160-168
@@ -4219,8 +4220,8 @@ lateAll                      src/11aq-late.js:52-55
 lateBlock                    src/11aq-late.js:118-138
 lateLeft                     src/11aq-late.js:57-61
 lateSit                      src/11aq-late.js:65-113
-launch                       src/21-mode-surface.js:723-738
-launchHold                   src/21-mode-surface.js:658
+launch                       src/21-mode-surface.js:724-739
+launchHold                   src/21-mode-surface.js:659
 lawDock                      src/12al2-laws.js:19-31
 lawLunch                     src/12al2-laws.js:40-44
 lawLunchRow                  src/12al2-laws.js:46-49
@@ -5914,15 +5915,18 @@ smArr                        src/12ud-smena.js:26
 smK                          src/12ud-smena.js:24
 smL                          src/12ud-smena.js:25
 smP                          src/12ud-smena.js:28
-smenaAct                     src/12ud1-smena-quest.js:34-41
+smenaAct                     src/12ud1-smena-quest.js:57-64
 smenaAtAll                   src/12ud1-smena-quest.js:12
 smenaCount                   src/12ud-smena.js:120
+smenaDeedTick                src/12ud1-smena-quest.js:38-42
+smenaHereFree                src/12ud1-smena-quest.js:22-27
 smenaIsOpen                  src/12ud-smena.js:105
-smenaLand                    src/12ud1-smena-quest.js:19-32
+smenaLand                    src/12ud1-smena-quest.js:29-36
 smenaNext                    src/12ud1-smena-quest.js:17
 smenaOpenCh                  src/12ud-smena.js:122
+smenaOpenHere                src/12ud1-smena-quest.js:44-55
 smenaPlaceKey                src/12ud1-smena-quest.js:13-16
-smenaPlate                   src/12ud1-smena-quest.js:43-50
+smenaPlate                   src/12ud1-smena-quest.js:66-73
 smenaRec                     src/12ud-smena.js:104
 smenaSync                    src/12ud-smena.js:107-119
 smenaWhere                   src/12ud-smena.js:121
@@ -6217,7 +6221,7 @@ thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
 tickDrones                   src/12-economy.js:311-401
-tickLaunchHold               src/21-mode-surface.js:659-672
+tickLaunchHold               src/21-mode-surface.js:660-673
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
 tierOf                       src/04b-fleet.js:157
@@ -6262,7 +6266,7 @@ toldOf                       src/11aj-told.js:36-39
 toldOffBlock                 src/11ar-doors.js:53-67
 toldWorked                   src/11aj-told.js:41-45
 toldWorth                    src/11aj-told.js:49-54
-totalLoss                    src/21-mode-surface.js:701-722
+totalLoss                    src/21-mode-surface.js:702-723
 towShare                     src/03f-hull-role.js:87-89
 traceAll                     src/11ag-trace.js:48
 traceAsk                     src/11ag-trace.js:88-103
@@ -6329,7 +6333,7 @@ updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:64-111
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
-updateSurface                src/21-mode-surface.js:200-657
+updateSurface                src/21-mode-surface.js:200-658
 updateSystem                 src/17-mode-system.js:92-488
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
@@ -7196,7 +7200,7 @@ zoomTo                       src/15-input.js:350
 ## src/12ud-smena.js · 14 КБ
   · «Смена»: роман, который читается, когда прожит (M353):1
 
-## src/12ud1-smena-quest.js · 4 КБ
+## src/12ud1-smena-quest.js · 5 КБ
   · «Смена» — главный квест (P15, PLAYTEST-2026-09-13 §5):1
 
 ## src/12ue-boxes.js · 6 КБ
@@ -7538,7 +7542,7 @@ zoomTo                       src/15-input.js:350
 
 ## src/21-mode-surface.js · 51 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:739
+  · навигатор и подсказки сверху:740
 
 ## src/21a-mode-base.js · 39 КБ
   · база на планете: вид в разрезе:1

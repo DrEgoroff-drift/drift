@@ -41345,12 +41345,35 @@ function smenaPlaceKey(p){
   return (p.type||"?")+"|"+(p.mix||"")+"|"+(G.sys.cls?G.sys.cls.ru:"");
 }
 function smenaNext(){for(let n=1;n<=72;n++)if(!smenaIsOpen(n))return n;return 0;}
-/* зовёт посадка (21-mode-surface): здесь ли открывается следующая глава */
-function smenaLand(p){
-  const key=smenaPlaceKey(p);if(!key)return 0;
+/* ── дело главы на месте (P15): посадка только ВЗВОДИТ главу, открывает её шаг
+   наружу — отойти от корабля на SMENA_WALK, увидеть место, а не трап. Взвод
+   живёт в G.surf и не сохраняется: улетели, не выйдя, — глава ждёт ── */
+const SMENA_WALK=480;
+function smenaHereFree(p){
+  const key=smenaPlaceKey(p);if(!key)return "";
   const A=smenaAtAll();
-  for(const k in A)if(A[k]&&A[k].k===key)return 0;      /* здесь уже открывалась — нужно новое место */
+  for(const k in A)if(A[k]&&A[k].k===key)return "";     /* здесь уже открывалась — нужно новое место */
+  return key;
+}
+/* зовёт посадка (21-mode-surface): взвести главу, если место новое; вернёт её номер */
+function smenaLand(p){
+  if(!smenaHereFree(p))return 0;
   if(!smenaIsOpen(1))smenaRec().push(1);                /* «Док» — всегда первым, до любой посадки */
+  const n=smenaNext();if(!n)return 0;
+  if(G.surf){G.surf.smena={n,p};
+    logAdd("dim","«Смена»: глава "+n+" — где-то здесь. Отойдите от корабля, посмотрите место");}
+  return n;
+}
+/* зовёт кадр поверхности: отошли от трапа — глава прожита */
+function smenaDeedTick(S){
+  const M=S&&S.smena;if(!M||Math.abs(S.x-S.shipX)<SMENA_WALK)return 0;
+  S.smena=null;
+  return smenaOpenHere(M.p);
+}
+/* открыть главу здесь: место и снимок — в летопись главы */
+function smenaOpenHere(p){
+  const key=smenaHereFree(p);if(!key)return 0;
+  const A=smenaAtAll();
   const n=smenaNext();if(!n)return 0;
   smenaRec().push(n);
   let snap=null;try{snap=(typeof postSnap==="function")?postSnap():null;}catch(e){snap=null;}
@@ -69392,6 +69415,7 @@ function updateSurface(dt){
   S.x=clamp(S.x,30,tr.W-30);
   /* амплитуда шага плавно нарастает/спадает, а не переключается щелчком —
      фаза копится только пока реально идём, поэтому ноги не дёргаются на кочках */
+  if(S.smena)smenaDeedTick(S);          /* «Смена»: глава — шагом наружу, не посадкой (P15) */
   peepUpdate(dt);                       /* луг помнит свет только пока темно (20c) */
   if(typeof countyNoiseTick==="function")countyNoiseTick(S,dt);   /* город слушает (11l) */
   /* посёлок слышно раньше, чем видно (хвост M109): редкий стук и голос,

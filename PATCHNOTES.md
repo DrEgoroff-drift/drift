@@ -223,6 +223,8 @@ could ever save.
 - Tape button at the repair row keeps its width: the label is fixed, the roll count is a corner badge (99+); buying many rolls no longer pushes the neighbours.
 - Tests: the GPU-loss atlas suite picks a station whose dress writes text (ГЛАВТРАССА, Компания, Орднунг — M454); the button sweeps close the KB window they may open; LOOK_BASE «карта» empty 61 → 41 (M458 borders).
 
+- «Смена» (P15): a landing in a new kind of place only arms the next chapter («где-то здесь. Отойдите от корабля»); walking 480 px from the ship lives it. The arming stays in the surface state, not in the save: leave without stepping out and the chapter waits. The 72-kinds-of-place check was already a suite (r ≤ 20).
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are

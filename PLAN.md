@@ -263,8 +263,6 @@ measured on the GPU build first:
 
 ## 7. Stage 6 — the story and the rest
 
-- [ ] **P15 «Смена»:** a chapter's deed in the place, not just a landing; check that 72 distinct kinds of
-  place exist within reach.
 - [ ] **M457 sound:** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a release
   run); the receiver speaks the owner's `air` line once at entry.
 - [ ] **M480/M481 yards:** the free cells (need the plan, M477); Хай-Фронт firmware moving a part per
