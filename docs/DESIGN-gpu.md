@@ -706,7 +706,10 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   (`git fetch --shallow-since=2026-09-24 origin main gpu claude/fleet-accept`). A merge from db057213 into
   gpu conflicted only in INDEX and TESTMAP; both sides touch 08c, 08ca, 18a, test.ps1, 90-harness,
   91zzzzzzy2, shot.py, PLAN.
-  Next: paused for the limit window; on waking — Контроль's queue.
+- **Rack merged** (26.09): origin/main ac55db27 (79f8379a), gpu3-rack bf8d96d2 (d714ef8b: rack 25d and
+  globus 25f on #ovl, the master baked in parts). No 08b1 key came with it; the warm table re-taken
+  without a diff (42). Node 16914, -Full 19172, -Mobile 19124 green.
+  Next: G4c (the wreck as an NPC hull), then the chip-jump gate.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
