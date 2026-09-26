@@ -857,6 +857,12 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   put out by a planet's shadow (the fire is the ship's own). Own ship in a planet's shadow, stern mean RGB
   45/35/34 → 49/38/36; the first try at ×3 whitened the nozzles instead of lighting the plates. Only
   `hullGpuDraw` hulls (own, peace fleet) — pirates and barges have no flame here. Open: g), the close-up.
+- **Ships pass g, the rim (26.09, `gpu-ships`):** hull mode adds the star's colour ×.7 (`RL_RIM`) on a hull
+  pixel whose neighbour one device pixel toward the star is empty (one alpha tap at the master's mip), lit
+  side and outside a planet's shadow only; the dark edge is not lifted, so on bright gas the body stays a
+  dark silhouette (its fill is ~half the gas behind it). `GPU.sep` untouched. The pirate's star-side edge now
+  reads as a crisp line. Shimmer check (`shim.sh`: own ship at heading +0, +.015, +.03 rad): lit edge pixels
+  31/27/35 before, 39/39/37 now — steadier, not worse. Open: the close-up (hangar/card), -Full on the branch.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
