@@ -53350,12 +53350,14 @@ function drawStationMods(sys,skipRod){
    генератора освобождает недопечённое. PB_MAX — самый долгий шаг по ключу (мс), для ворот.
    PB_PX — второй бюджет, видеокарты: мс JS шага выпечки — это запись команд, а сама выпечка 1024² MSAA
    идёт на GPU; четыре таких в кадре дали на S23 кадр 67 мс при JS 3–5 мс (26.09). Кадр начинает новый
-   шаг, только пока испёк меньше PB_PX точек (GC_PX, 08ca) — крупная (от полумиллиона точек: гостиница, её свечение) одна на кадр */
+   шаг, только пока испёк меньше PB_PX точек (GC_PX, 08ca) — крупная (от полумиллиона точек: гостиница, её свечение) одна на кадр.
+   И не больше одной выпечки за кадр вообще (GPU.bakeN, ворота ступени 1, 26.09): у каждой свой submit, тур
+   docs/tour.py краснеет на двух в одном кадре — мелкие проходили по две–четыре */
 const PB_MS=4,PB_PX=1<<19,PB_CAP=64,PB_KEEP=6,PB_STALE=120,PB=new Map(),PB_MAX={};
-let PB_F=-1,PB_T=0,PB_N=0,PB_SYNC=0,PB_PX0=0;
+let PB_F=-1,PB_T=0,PB_N=0,PB_SYNC=0,PB_PX0=0,PB_B0=0;
 function prebakeDrop(key){const J=PB.get(key);if(!J)return;PB.delete(key);try{J.it.return();}catch(e){}}
 function prebake(key,make,sync){
-  if(GPU.frameNo!==PB_F){PB_F=GPU.frameNo;PB_T=0;PB_N=0;PB_PX0=GC_PX;
+  if(GPU.frameNo!==PB_F){PB_F=GPU.frameNo;PB_T=0;PB_N=0;PB_PX0=GC_PX;PB_B0=GPU.bakeN|0;
     for(const [k,J] of [...PB])if(PB_F-J.f>PB_STALE)prebakeDrop(k);}
   let J=PB.get(key);
   if(J&&J.dev!==GPU.dev){prebakeDrop(key);J=null;}
@@ -53365,7 +53367,7 @@ function prebake(key,make,sync){
     J={it:make(),dev:GPU.dev,f:PB_F};PB.set(key,J);}
   J.f=PB_F;
   if(sync)PB_SYNC++;
-  while(sync||PB_N<PB_CAP&&(PB_N===0||PB_T<PB_MS&&GC_PX-PB_PX0<PB_PX)){
+  while(sync||PB_N<PB_CAP&&(PB_N===0||PB_T<PB_MS&&GC_PX-PB_PX0<PB_PX&&(GPU.bakeN|0)===PB_B0)){
     const t0=wallMs();let r;
     try{r=J.it.next();}catch(e){PB.delete(key);throw e;}
     const dt=wallMs()-t0;PB_T+=dt;PB_N++;if(!(PB_MAX[key]>=dt))PB_MAX[key]=dt;
@@ -56691,7 +56693,7 @@ function bbAhead(B,s,col){
   const GP=(typeof gosBbPlan==="function")?gosBbPlan(B.by):null;
   if(!bbPanelBake(s,GP,false))return;
   const F=Math.round(11*s),T=bbTitle(B.by),full=BB_TITLE[B.by]||BB_TITLE.gt;
-  prebake("bbn|"+T+"|"+F+"|"+col.join()+"|"+DPR,function*(){return neonBake("bb",T,full,F,col,"middle");},false);
+  neonAhead(T,full,F,col,"middle");
   if(!GP)bbStripBake(bbLine(B.by)+"   ·   ",Math.round(8*s),col,false);
 }
 function drawBillboard(zx,zy,Z){
@@ -56720,25 +56722,39 @@ function drawBillboard(zx,zy,Z){
 const NEON=new Map();   // ключ печи (имя, кегль, цвет, плотность) → печь; bakeKeep держит 12
 /* выпечки на GPU-холсте (v2: текст и тень, 25.09): стекло, свет с ореолом (shadowBlur),
    бледное ядро — своей выпечкой (destination-out по свету стёр бы ореол) и кладётся в свет */
+const neonKey=(name,full,F,col,bl,opt)=>name+"|"+full+"|"+F+"|"+col.join()+"|"+DPR+"|"+bl+(opt&&opt.core?"|c":"");
 function neonBake(slot,name,full,F,col,bl,opt){
   if(!GPU.dev)return null;
-  const core=!!(opt&&opt.core),d=DPR,key=name+"|"+full+"|"+F+"|"+col.join()+"|"+d+"|"+bl+(core?"|c":"");
-  return bakeKeep(NEON,key,12,()=>{
+  const it=neonJob(name,full,F,col,bl,opt);let r;while(!(r=it.next()).done);return r.value;
+}
+/* заранее, пока вывеска за краем: по выпечке на шаг печи — три в одном кадре были бы тремя submit */
+function neonAhead(name,full,F,col,bl,opt){
+  if(GPU.dev&&!NEON.has(neonKey(name,full,F,col,bl,opt)))prebake("neon|"+neonKey(name,full,F,col,bl,opt),()=>neonJob(name,full,F,col,bl,opt),false);
+}
+function* neonJob(name,full,F,col,bl,opt){
+  const core=!!(opt&&opt.core),d=DPR,key=neonKey(name,full,F,col,bl,opt);
+  if(NEON.has(key))return bakeKeep(NEON,key,12,null);
+  let co=null,al=null,ok=false;
+  try{
   const Fd=F*d,fb="bold "+Fd+"px ui-monospace,monospace";
   const tw=Math.ceil(gcMeasure(fb,full).width),pad=Math.ceil(3*d);
   const mid=bl==="middle",base=pad+Math.ceil(Fd*(mid?.62:.82)),Hd=base+Math.ceil(Fd*(mid?.62:.28))+pad,Wd=tw+pad*2;
   const txt=(g,f)=>{g.font=fb;g.textAlign="left";g.textBaseline=bl;f(g);},O={mips:false};
   const tube=col.map(v=>Math.max(0,255-(255-v)*1.6)),sw=Fd*.16;
-  const co=sw>=2.4?gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle=rgba(tube.map(v=>v+(255-v)*.6),1);g.fillText(name,pad,base);
+  co=sw>=2.4?gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle=rgba(tube.map(v=>v+(255-v)*.6),1);g.fillText(name,pad,base);
       g.globalCompositeOperation="destination-out";g.lineWidth=sw*2/3;g.lineJoin="round";g.strokeStyle="#000";g.strokeText(name,pad,base);}),O):null;
-  const al=gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle="rgba(78,64,62,.9)";g.fillText(full,pad,base);}),O);
+  if(co)yield;
+  al=gpuBake(Wd,Hd,g=>txt(g,g=>{g.fillStyle="rgba(78,64,62,.9)";g.fillText(full,pad,base);}),O);
+  yield;
   /* opt.core (вывески гостиниц, 25.09): на мелком кегле, где средней трети штриха нет, буква целиком чуть бледнее
      трубки — ядро читается и после свечения кадра, а не расплывается пятном своего цвета */
   const lit=core&&!co?tube.map(v=>v+(255-v)*.45):tube;
   const em=gpuBake(Wd,Hd,g=>{txt(g,g=>{g.shadowColor=rgba(tube,.85);g.shadowBlur=Math.max(1,Fd*.14);g.fillStyle=rgba(lit,1);g.fillText(name,pad,base);});
     if(co){g.shadowBlur=0;g.drawImage(co,0,0);}},O);
-  return {key,al,em,co,ax:pad+tw/2,ay:base,w:Wd/d,h:Hd/d,drop(){gpuBakeDrop(al);gpuBakeDrop(em);gpuBakeDrop(co);}};
-  });
+  const v={key,al,em,co,ax:pad+tw/2,ay:base,w:Wd/d,h:Hd/d,drop(){gpuBakeDrop(al);gpuBakeDrop(em);gpuBakeDrop(co);}};
+  if(NEON.has(key))v.drop();   /* пока пеклась шагами, её допекли сразу (neonBake) */
+  ok=true;return bakeKeep(NEON,key,12,()=>v);
+  }finally{if(!ok){gpuBakeDrop(co);gpuBakeDrop(al);}}
 }
 /* вывеска: середина строки по x, базовая линия (bl печи) по y — в пикселях CSS экрана;
    al — плотность стекла, gain — усиление света. Без видеокарты вывески нет (2D-пути нет) */
@@ -56856,7 +56872,7 @@ const HOTEL_GLOW="rgba(255,176,96,.7)";
    пиксель); sh — отсвет вывески: дом, умноженный на её цвет, круг от вывески гаснет к краю.
    Всё — шагами планировщика (17a0): кисть по кускам, потом по одной выпечке за шаг */
 let HOTEL_BAKE=null;   /* {key,k0,a,cv,cl,em,el,sh,win,w,h} */
-function hotelDrop(B){if(B)for(const q of [B.cv,B.cl,B.em,B.el,B.sh])gpuBakeDrop(q);}
+function hotelDrop(B){if(B)for(const q of [B.cv,B.cl,B.em,B.el,B.sh,B.e0])gpuBakeDrop(q);}
 /* ── свет дома: один ключ — звезда системы (стоит в (0,0)), направление к ней с экрана;
    заполняющий — холод неба. Кисть типа получает Lt = {lx,ly — к звезде; K — цвет звезды 0..1;
    F — цвет тени}. Направление в выпечке — ступенями по 30°: дом ходит по орбите со станцией,
@@ -56879,15 +56895,17 @@ const hotelAngD=(a,b)=>{const d=(a-b)%TAU;return Math.abs(d>Math.PI?d-TAU:d<-Mat
 function* hotelJob(T,sd,col,key,Lt){
   const w=Math.ceil(T.W*T.PX),h=Math.ceil(T.H*T.PX),B={key,k0:key.slice(0,key.lastIndexOf("|")),a:Lt.a,w,h},ok=[false];
   const rec=()=>{const g=new GcCtx(w,h,2),E=new GcCtx(w,h,2);g.scale(T.PX,T.PX);E.scale(T.PX,T.PX);return [g,E];};
-  const glow=ops=>{const e0=gpuBake(w,h,g=>{g._ops.push(...ops);},{ss:2,mips:false});
-    const r=gpuBake(w,h,g=>{g.shadowColor=HOTEL_GLOW;g.shadowBlur=1.2;g.drawImage(e0,0,0);},{ss:1});gpuBakeDrop(e0);return r;};
+  /* свечение — две выпечки, шагом каждая (одна выпечка за кадр, 17a0); e0 живёт в B, пока шаг не кончился */
+  const glow0=ops=>{B.e0=gpuBake(w,h,g=>{g._ops.push(...ops);},{ss:2,mips:false});};
+  const glow1=()=>{const e0=B.e0,r=gpuBake(w,h,g=>{g.shadowColor=HOTEL_GLOW;g.shadowBlur=1.2;g.drawImage(e0,0,0);},{ss:1});
+    gpuBakeDrop(e0);B.e0=null;return r;};
   try{
     const [g0,E0]=rec();yield* T.paint(g0,E0,sd,false,Lt);
     const [g1,E1]=rec();yield* T.paint(g1,E1,sd,true,Lt);
     B.cv=gpuBake(w,h,g=>{g._ops.push(...g0._ops);},{ss:2});yield;
     B.cl=gpuBake(w,h,g=>{g._ops.push(...g1._ops);},{ss:2});yield;
-    B.em=glow(E0._ops);yield;
-    B.el=glow(E1._ops);yield;
+    glow0(E0._ops);yield;B.em=glow1();yield;
+    glow0(E1._ops);yield;B.el=glow1();yield;
     /* multiply 2D на полупрозрачном прибавляет цвет градиента с весом 1−α дома, у GPU-холста
        этой части нет: дом на белом даёт её точно — s·(d+1−α); destination-in домом — тот же α.
        Пиксель в пиксель (ss 1): при ss 2 drawImage дома сводится — мыло */
@@ -56922,11 +56940,13 @@ function hotelLitRects(B,by,sd){
 }
 /* ── вывеска: неон 17k0 в мировом кегле (растёт с зумом). Печь — ступенями кегля через √2,
    между ступенями — масштаб ≤ √2: печей мало, буква не мылится ── */
-function hotelNeon(Ht,T,k,col){
+function hotelNeon(Ht,T,k,col,ahead){
   if(!T.sign)return null;
   const F=T.sign[2]*k;if(F<3)return null;
   const Fb=Math.max(3,Math.round(Math.pow(2,Math.round(Math.log2(F)*4)/4)*2)/2);
-  const N=neonBake("hotel",Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic",{core:true});
+  const a=[Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic",{core:true}];
+  if(ahead){neonAhead(...a);return null;}
+  const N=neonBake("hotel",...a);
   return N?{N,s:F/Fb}:null;
 }
 function hotelNeonDraw(pass,S,x,y,al,gain){
@@ -56943,7 +56963,7 @@ function drawHotel(zx,zy,Z){
   const fa=clamp((Z-.3)/.2,0,1);
   /* за краем, но в экране от него — печём заранее по шагу за кадр: на глаза дом выходит готовым */
   if(!pbOnScreen(ox,oy,w,h,0)){const B0=HOTEL_BAKE,B=hotelGet(T,Ht.by,sd,col);
-    if(B&&B===B0&&fa>0)hotelNeon(Ht,T,k,col);   /* вывеска — кадром позже дома, не в одном с ним */
+    if(B&&B===B0&&fa>0)hotelNeon(Ht,T,k,col,true);   /* вывеска — после дома, шагами печи */
     return;}
   const pass=gpuScene();if(!pass)return;
   const B=hotelGet(T,Ht.by,sd,col,true);if(!B)return;   /* на экране, а не готов — допекаем сразу (PB_SYNC), не проявляем из пустоты */
@@ -84483,13 +84503,15 @@ function ckgSprites(P,FS){
     c.beginPath();c.moveTo(hx-18,hy-4);c.lineTo(hx-18,hy+10);c.lineTo(hx-8,hy+.5);c.closePath();c.fill();
     c.strokeStyle=rgba(A,.35);c.lineWidth=1;c.strokeRect(hx-18.5,hy-4.5,31,5.5);
     c.fillStyle="rgba(255,255,255,.06)";c.fillRect(hx-18,hy-4,30,1.2);}});
-  const S=ckgAtlas(it,false);if(!S)return null;
-  const f=uiFont(8),ax=-62*u,ay=3*u,m0=GC_GLYPHS.measure(ckgSt(f),"+60"),lt=[];
+  return ckgAtlas(it,false);
+}
+/* подписи шкал — вторым атласом, своим шагом печи (одна выпечка за кадр, 17a0) */
+function ckgLab(S){
+  const u=uiK(),f=uiFont(8),ax=-62*u,ay=3*u,m0=GC_GLYPHS.measure(ckgSt(f),"+60"),lt=[];
   const up=m0.actualBoundingBoxAscent+2,dn=m0.actualBoundingBoxDescent+2;
   for(const d of [-60,-40,-20,20,40,60]){const t=d>0?"+"+d:""+d,tw=ckgW(f,t);
     lt.push({k:d,x0:ax-tw-2,y0:ay-up,x1:ax+2,y1:ay+dn,paint:c=>{c.fillStyle="rgba(127,230,216,.4)";c.font=f;c.textAlign="right";c.fillText(t,ax,ay);}});}
   S.lab=ckgAtlas(lt,true);
-  return S;
 }
 /* задача печи: спрайты, полосы мастера (крупная — одна на кадр, PB_PX), кадр вхолостую. Брошенная
    задача (сменились корабль или окно) отдаёт испечённое */
@@ -84509,7 +84531,9 @@ function* ckgJob(P,FS,nd){
       if(!B)return null;
       M.push({B,Y0,Y1});yield;
     }
-    S=ckgSprites(P,FS);if(!S||!S.lab)return null;
+    S=ckgSprites(P,FS);if(!S)return null;
+    yield;
+    ckgLab(S);if(!S.lab)return null;
     yield;
     const I=CKG.in;
     /* прогрев — по шагу на кусок кадра (на 390×3 разом это 25 мс глифов); тяжёлые — первыми в своих

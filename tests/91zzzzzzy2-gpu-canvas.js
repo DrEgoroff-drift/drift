@@ -111,12 +111,14 @@ TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целе
   eq(Q.made-m1,0,"выпечка 1000×680 — из прогретого набора 1024², новых целей нет");
   const m2=Q.made;gcPoolSet("shadow",448,64);
   eq(Q.made-m2,0,"атлас тени 448×64 (родился посреди полёта на S23 cold3) — из прогретого набора 512×128");
-  /* бюджет видеокарты prebake: крупные шаги — по одному на кадр, мелкие идут пачкой */
-  const steps=(w,h)=>{let n=0;const key="t|px"+w;prebakeDrop(key);PB_F=-2;
-    prebake(key,function*(){for(let i=0;i<4;i++){gpuBakeDrop(gpuBake(w,h,g=>{g.fillRect(0,0,4,4);},{ss:2,mips:false}));n++;yield;}},false);
+  /* бюджет видеокарты prebake: выпечка — одна на кадр, любая (у каждой свой submit, ворота ступени 1, 26.09);
+     шаги без выпечки (раскладка, расчёт) идут пачкой */
+  const steps=(w,h,bake)=>{let n=0;const key="t|px"+w+bake;prebakeDrop(key);PB_F=-2;
+    prebake(key,function*(){for(let i=0;i<4;i++){if(bake)gpuBakeDrop(gpuBake(w,h,g=>{g.fillRect(0,0,4,4);},{ss:2,mips:false}));n++;yield;}},false);
     prebakeDrop(key);return n;};
-  eq(steps(500,340),1,"четыре выпечки 1000×680 — одна за кадр (PB_PX)");
-  ok(steps(64,64)>1,"мелкие выпечки 128² — несколько за кадр");
+  eq(steps(500,340,true),1,"четыре выпечки 1000×680 — одна за кадр (PB_PX)");
+  eq(steps(64,64,true),1,"четыре мелкие выпечки 128² — тоже одна за кадр (GPU.bakeN)");
+  ok(steps(64,64,false)>1,"шаги без выпечки — несколько за кадр");
 }));
 /* WGSL: smoothstep с edge0 > edge1 не определён (Metal, iOS Safari: ревью облачного флота 26.09) — в Chrome
    он считает «наоборот», на Metal может дать что угодно. Обратный спад пишется 1.-smoothstep(b,a,x) */

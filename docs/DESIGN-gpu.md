@@ -97,6 +97,9 @@ Heat haze behind the nozzle (G4b).
    `gpuCanvasTex` cache and the 416×140 pod as in the plan.
 5. Gate: uploads 0, submits 1 → Контроль's phone, 30 s + 5 min → candidate. Further redrawing does not hold the
    candidate.
+   *Passed with a caveat (Контроль, 26.09):* 1 submit a frame; a frame with a `gpuBake` adds +1 submit per bake, never more than one bake a frame, and bake frames are ≤ 1 % of the tour's frames. `docs/tour.py` counts bake submits apart from the
+   frame's own and goes red on two bakes in a frame or a share over 1 % (`17a0` holds one bake a frame since then).
+   ~~Контроль's phone run~~ — phone run waived by the author 26.09, redo when the phone is back.
 
 **The flight HUD pair (15/n, branch `gpu-hud` on top of a178e76, not for release — one strong variant for the
 author's verdict).** Sentence case wherever the player reads (vitals, the place name, the zoom line, the ticker
@@ -790,6 +793,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   G4d merged (5bed781b).
 - **Candidate 0.465.0** (26.09): the glow source (stations, facade), fleet+flame closed, drone captions, G4d.
   Next: the Stage 1 gate in numbers — extra submits on some run frames (planet, rescue, dock: 5 of 1080).
+- **Stage 1 gate on the tour** (26.09): `docs/tour.py` (+ `tour.js`) — ten flight items, uploads 0, own submits
+  1, crashes 0; bake submits counted apart. Two to four bakes shared a frame: the scheduler let small bakes
+  through by pixels, the hotel's glow was two bakes a step, neon three (`neonBake`), the belt atlas two. Now
+  `17a0` starts no step once a bake went this frame (`PB_B0`/`GPU.bakeN`), glow is two steps (`B.e0`), neon
+  bakes ahead in steps (`neonJob`/`neonAhead`, hotel and billboard), `ckgLab` is its own step. Tour: bake
+  frames 29 of 10 000 (0.29 %), at most one a frame; dock alone 7 of 680 (a hotel relight is seven bakes).
+  Next: hull material + planet occluders.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

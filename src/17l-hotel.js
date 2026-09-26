@@ -55,7 +55,7 @@ const HOTEL_GLOW="rgba(255,176,96,.7)";
    пиксель); sh — отсвет вывески: дом, умноженный на её цвет, круг от вывески гаснет к краю.
    Всё — шагами планировщика (17a0): кисть по кускам, потом по одной выпечке за шаг */
 let HOTEL_BAKE=null;   /* {key,k0,a,cv,cl,em,el,sh,win,w,h} */
-function hotelDrop(B){if(B)for(const q of [B.cv,B.cl,B.em,B.el,B.sh])gpuBakeDrop(q);}
+function hotelDrop(B){if(B)for(const q of [B.cv,B.cl,B.em,B.el,B.sh,B.e0])gpuBakeDrop(q);}
 /* ── свет дома: один ключ — звезда системы (стоит в (0,0)), направление к ней с экрана;
    заполняющий — холод неба. Кисть типа получает Lt = {lx,ly — к звезде; K — цвет звезды 0..1;
    F — цвет тени}. Направление в выпечке — ступенями по 30°: дом ходит по орбите со станцией,
@@ -78,15 +78,17 @@ const hotelAngD=(a,b)=>{const d=(a-b)%TAU;return Math.abs(d>Math.PI?d-TAU:d<-Mat
 function* hotelJob(T,sd,col,key,Lt){
   const w=Math.ceil(T.W*T.PX),h=Math.ceil(T.H*T.PX),B={key,k0:key.slice(0,key.lastIndexOf("|")),a:Lt.a,w,h},ok=[false];
   const rec=()=>{const g=new GcCtx(w,h,2),E=new GcCtx(w,h,2);g.scale(T.PX,T.PX);E.scale(T.PX,T.PX);return [g,E];};
-  const glow=ops=>{const e0=gpuBake(w,h,g=>{g._ops.push(...ops);},{ss:2,mips:false});
-    const r=gpuBake(w,h,g=>{g.shadowColor=HOTEL_GLOW;g.shadowBlur=1.2;g.drawImage(e0,0,0);},{ss:1});gpuBakeDrop(e0);return r;};
+  /* свечение — две выпечки, шагом каждая (одна выпечка за кадр, 17a0); e0 живёт в B, пока шаг не кончился */
+  const glow0=ops=>{B.e0=gpuBake(w,h,g=>{g._ops.push(...ops);},{ss:2,mips:false});};
+  const glow1=()=>{const e0=B.e0,r=gpuBake(w,h,g=>{g.shadowColor=HOTEL_GLOW;g.shadowBlur=1.2;g.drawImage(e0,0,0);},{ss:1});
+    gpuBakeDrop(e0);B.e0=null;return r;};
   try{
     const [g0,E0]=rec();yield* T.paint(g0,E0,sd,false,Lt);
     const [g1,E1]=rec();yield* T.paint(g1,E1,sd,true,Lt);
     B.cv=gpuBake(w,h,g=>{g._ops.push(...g0._ops);},{ss:2});yield;
     B.cl=gpuBake(w,h,g=>{g._ops.push(...g1._ops);},{ss:2});yield;
-    B.em=glow(E0._ops);yield;
-    B.el=glow(E1._ops);yield;
+    glow0(E0._ops);yield;B.em=glow1();yield;
+    glow0(E1._ops);yield;B.el=glow1();yield;
     /* multiply 2D на полупрозрачном прибавляет цвет градиента с весом 1−α дома, у GPU-холста
        этой части нет: дом на белом даёт её точно — s·(d+1−α); destination-in домом — тот же α.
        Пиксель в пиксель (ss 1): при ss 2 drawImage дома сводится — мыло */
@@ -121,11 +123,13 @@ function hotelLitRects(B,by,sd){
 }
 /* ── вывеска: неон 17k0 в мировом кегле (растёт с зумом). Печь — ступенями кегля через √2,
    между ступенями — масштаб ≤ √2: печей мало, буква не мылится ── */
-function hotelNeon(Ht,T,k,col){
+function hotelNeon(Ht,T,k,col,ahead){
   if(!T.sign)return null;
   const F=T.sign[2]*k;if(F<3)return null;
   const Fb=Math.max(3,Math.round(Math.pow(2,Math.round(Math.log2(F)*4)/4)*2)/2);
-  const N=neonBake("hotel",Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic",{core:true});
+  const a=[Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic",{core:true}];
+  if(ahead){neonAhead(...a);return null;}
+  const N=neonBake("hotel",...a);
   return N?{N,s:F/Fb}:null;
 }
 function hotelNeonDraw(pass,S,x,y,al,gain){
@@ -142,7 +146,7 @@ function drawHotel(zx,zy,Z){
   const fa=clamp((Z-.3)/.2,0,1);
   /* за краем, но в экране от него — печём заранее по шагу за кадр: на глаза дом выходит готовым */
   if(!pbOnScreen(ox,oy,w,h,0)){const B0=HOTEL_BAKE,B=hotelGet(T,Ht.by,sd,col);
-    if(B&&B===B0&&fa>0)hotelNeon(Ht,T,k,col);   /* вывеска — кадром позже дома, не в одном с ним */
+    if(B&&B===B0&&fa>0)hotelNeon(Ht,T,k,col,true);   /* вывеска — после дома, шагами печи */
     return;}
   const pass=gpuScene();if(!pass)return;
   const B=hotelGet(T,Ht.by,sd,col,true);if(!B)return;   /* на экране, а не готов — допекаем сразу (PB_SYNC), не проявляем из пустоты */

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 632 · символов верхнего уровня: 6359
+Файлов: 632 · символов верхнего уровня: 6363
 
 ## СИМВОЛЫ
 
@@ -434,7 +434,7 @@ beltDots                     src/17c-system-draw.js:89-94
 beltFwd                      src/24-mode-belt.js:144-147
 beltGpuAdj                   src/24ba-belt-gpu.js:65-73
 beltGpuDraw                  src/24ba-belt-gpu.js:74-270
-beltHudPush                  src/24bc-belt-hud.js:433-446
+beltHudPush                  src/24bc-belt-hud.js:437-450
 beltIcy                      src/24-mode-belt.js:70
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:19-100
 beltPoiMouthTex              src/24bb-belt-poi-gpu.js:8-18
@@ -897,29 +897,30 @@ CKG_FADE                     src/24bc-belt-hud.js:25
 CKG_LAMPS                    src/24bc-belt-hud.js:26
 ckgAtlas                     src/24bc-belt-hud.js:64-88
 ckgDrop                      src/24bc-belt-hud.js:93-98
-ckgFrame                     src/24bc-belt-hud.js:284-346
+ckgFrame                     src/24bc-belt-hud.js:288-350
 ckgFree                      src/24bc-belt-hud.js:92
 ckgFS                        src/24bc-belt-hud.js:32
 ckgGeo                       src/24bc-belt-hud.js:100-106
-ckgGlass                     src/24bc-belt-hud.js:220-275
-ckgGlint                     src/24bc-belt-hud.js:277-281
-ckgJob                       src/24bc-belt-hud.js:176-200
-ckgLamps                     src/24bc-belt-hud.js:377-395
+ckgGlass                     src/24bc-belt-hud.js:224-279
+ckgGlint                     src/24bc-belt-hud.js:281-285
+ckgJob                       src/24bc-belt-hud.js:178-204
+ckgLab                       src/24bc-belt-hud.js:169-175
+ckgLamps                     src/24bc-belt-hud.js:381-399
 ckgLazy                      src/24bc-belt-hud.js:90
-ckgNode                      src/24bc-belt-hud.js:397-424
+ckgNode                      src/24bc-belt-hud.js:401-428
 ckgPaint                     src/24bc-belt-hud.js:108-149
-ckgPanel                     src/24bc-belt-hud.js:348-375
+ckgPanel                     src/24bc-belt-hud.js:352-379
 ckgPlan                      src/24bc-belt-hud.js:28-31
 ckgPut                       src/24bc-belt-hud.js:49
 ckgPutRot                    src/24bc-belt-hud.js:56-59
 ckgRot                       src/24bc-belt-hud.js:51-55
 ckgSpr                       src/24bc-belt-hud.js:44-48
-ckgSprites                   src/24bc-belt-hud.js:152-173
+ckgSprites                   src/24bc-belt-hud.js:152-167
 ckgSt                        src/24bc-belt-hud.js:34
-ckgTex                       src/24bc-belt-hud.js:207-218
-ckgUnder                     src/24bc-belt-hud.js:426-431
+ckgTex                       src/24bc-belt-hud.js:211-222
+ckgUnder                     src/24bc-belt-hud.js:430-435
 ckgW                         src/24bc-belt-hud.js:35
-ckgWarm                      src/24bc-belt-hud.js:202-205
+ckgWarm                      src/24bc-belt-hud.js:206-209
 ckLine                       src/24bc-belt-hud.js:38-41
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19-44
@@ -1534,7 +1535,7 @@ drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:42-62
-drawHotel                    src/17l-hotel.js:135-162
+drawHotel                    src/17l-hotel.js:139-166
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
 drawHullMarks                src/03b-hull-paint.js:184-491
@@ -2877,35 +2878,35 @@ HOTEL_EM                     src/17l-hotel.js:47
 HOTEL_FILL                   src/17l-hotel.js:65
 HOTEL_GLOW                   src/17l-hotel.js:50
 HOTEL_LAMP                   src/17l-hotel.js:44
-HOTEL_LIT                    src/17l-hotel.js:113
+HOTEL_LIT                    src/17l-hotel.js:115
 HOTEL_LOD                    src/17l-hotel.js:49
 HOTEL_NIGHT                  src/17l-hotel.js:14
-HOTEL_RIM                    src/17l-hotel.js:170
+HOTEL_RIM                    src/17l-hotel.js:174
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:15
 hotelAngD                    src/17l-hotel.js:77
-hotelArc                     src/17l-hotel.js:167
-hotelDesk                    src/17l-hotel.js:256-268
-hotelDock                    src/17l-hotel.js:200-243
+hotelArc                     src/17l-hotel.js:171
+hotelDesk                    src/17l-hotel.js:260-272
+hotelDock                    src/17l-hotel.js:204-247
 hotelDrop                    src/17l-hotel.js:58
-hotelGet                     src/17l-hotel.js:103-111
+hotelGet                     src/17l-hotel.js:105-113
 hotelHere                    src/17l-hotel.js:16-21
-hotelInteract                src/17l-hotel.js:248-255
-hotelJob                     src/17l-hotel.js:78-101
-hotelLamp                    src/17l-hotel.js:174-178
+hotelInteract                src/17l-hotel.js:252-259
+hotelJob                     src/17l-hotel.js:78-103
+hotelLamp                    src/17l-hotel.js:178-182
 hotelLampOf                  src/17l-hotel.js:45
 hotelLight                   src/17l-hotel.js:66-72
 hotelLit                     src/17l-hotel.js:75
 hotelLitFrac                 src/17l-hotel.js:24-29
-hotelLitRects                src/17l-hotel.js:114-121
-hotelNeon                    src/17l-hotel.js:124-130
-hotelNeonDraw                src/17l-hotel.js:131-134
-hotelPoly                    src/17l-hotel.js:165
-hotelRim                     src/17l-hotel.js:171
-hotelStar                    src/17l-hotel.js:245
+hotelLitRects                src/17l-hotel.js:116-123
+hotelNeon                    src/17l-hotel.js:126-134
+hotelNeonDraw                src/17l-hotel.js:135-138
+hotelPoly                    src/17l-hotel.js:169
+hotelRim                     src/17l-hotel.js:175
+hotelStar                    src/17l-hotel.js:249
 hotelType                    src/17l-hotel.js:22
-hotelWindows                 src/17l-hotel.js:181-196
+hotelWindows                 src/17l-hotel.js:185-200
 hotelWinLit                  src/17l-hotel.js:33-42
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
@@ -3764,8 +3765,11 @@ needOf                       src/12aa-need.js:26-37
 needsNear                    src/12aa-need.js:52-61
 needWin                      src/12aa-need.js:24
 NEON                         src/17k0-neon.js:8
-neonBake                     src/17k0-neon.js:11-30
-neonDraw                     src/17k0-neon.js:33-37
+neonAhead                    src/17k0-neon.js:17-19
+neonBake                     src/17k0-neon.js:12-15
+neonDraw                     src/17k0-neon.js:47-51
+neonJob                      src/17k0-neon.js:20-44
+neonKey                      src/17k0-neon.js:11
 NET_FROM                     tests/90-harness.js:444
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
@@ -4128,9 +4132,9 @@ passShipX                    src/11p-pass.js:34-37
 passTell                     src/11p-pass.js:55-60
 PAX_KEYS                     src/02-world.js:117
 payCost                      src/21a-mode-base.js:100
-PB_F                         src/17a0-prebake.js:17
-PB_MS                        src/17a0-prebake.js:16
-pbOnScreen                   src/17a0-prebake.js:39
+PB_F                         src/17a0-prebake.js:19
+PB_MS                        src/17a0-prebake.js:18
+pbOnScreen                   src/17a0-prebake.js:41
 PC_GRAIN                     src/25g-post-craft.js:7
 pcA                          src/25g-postcard.js:149
 pcBelt                       src/25g-post-void.js:58-221
@@ -4394,8 +4398,8 @@ prbLeg                       tests/91zzw-eco-probe.js:5-23
 prbStations                  tests/91zzw-eco-probe.js:4
 prButtons                    tests/91zzzzzi-promise.js:53
 prDelta                      tests/91zzzzzi-promise.js:26-30
-prebake                      src/17a0-prebake.js:19-37
-prebakeDrop                  src/17a0-prebake.js:18
+prebake                      src/17a0-prebake.js:21-39
+prebakeDrop                  src/17a0-prebake.js:20
 prevAct                      src/08-state.js:205
 priceBestOf                  src/12aa-need.js:242-251
 pricesClose                  src/12aa-need.js:294
@@ -7148,7 +7152,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 22 КБ
+## src/17l-hotel.js · 23 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17l1-hotel-kosmos.js · 28 КБ
@@ -8356,7 +8360,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy1-gpugate-belt.js · 14 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
-## tests/91zzzzzzy2-gpu-canvas.js · 16 КБ
+## tests/91zzzzzzy2-gpu-canvas.js · 17 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzy3-gate2d.js · 17 КБ

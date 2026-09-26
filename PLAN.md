@@ -34,8 +34,9 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     world or a finger (chips, compass, brackets, sticks) as DOM with `transform` or a small canvas;
   - hulls: bake the material (albedo, height → normal, emission, gloss mask) once per hull, bank and scale in the
     shader, from `GST_WGSL`; the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`);
-  - Gate: uploads 0 and submits 1 per flight frame; then Контроль's phone run, ≥ 95 % of frames on time over
-    30 s and over 5 minutes. A pass makes it a release candidate (Контроль pushes).
+  - Gate: uploads 0 and submits 1 per flight frame — passed with a caveat (26.09, `docs/tour.py`): 1 submit a frame; a frame with a `gpuBake` adds +1 submit per bake, never more than one bake a frame, and bake frames are ≤ 1 % of the tour's frames;
+    ~~Контроль's phone run~~ — phone run waived by the author 26.09, redo when the phone is back. Stage 1 closes
+    with the hull material and the HUD (Контроль pushes).
 - [ ] **Redraw passes after the candidate** (§L.S): ships in real light (a–h, pairs toward / away from the star, in
   a planet's shadow, a pirate, a close-up); then the flight HUD as a quiet instrument (a–g), one pair at 390×844
   and 760 to the author for a verdict before any other screen.
@@ -99,6 +100,8 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   `gpuField`, `gpuLitSprite`, `gpuKitU`, `ovFlush`. Split the group (uniform + arena in 0, texture + sampler
   in 1, cached per view and blend in a `WeakMap`), scratch arrays sized to the largest count. Changes the kit
   layouts: re-accept the warm table.
+- [ ] Debt: a frame encoder for bakes (its own buffer pool) instead of one submit per `gpuBake` — take only if a
+  profile shows hitches on bake frames.
 - [ ] **G6 landing and surface, the bodies:** ground chunks and far ridges as textures; deco, flora and fauna as
   sprites where order needs it; the plants' wind on the GPU.
 - [ ] **G7 cave and mine:** tiles as textures, darkness and lamp light per pixel, ore glows, dust.
@@ -325,7 +328,7 @@ Check each against the code before building — some may already hold.
   previous-version diff and `look()` telemetry; a per-suite dirty-page check after `fn()`.
 - [ ] **Refactor queue, each a commit:** `detStuck`'s key law (fires only on a diff of exactly 0 — soften
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
-  names its suite); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
+  names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
   functions, on touch only; the tools zoo → one way to take a frame; the button family merge; `-Times` for
   the Node tier.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
