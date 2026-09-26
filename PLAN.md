@@ -248,7 +248,6 @@ measured on the GPU build first:
 
 ## 6. Stage 5 — the voice and the joke
 
-- [ ] **M485 machines with names:** the base crawler, the tug, the barge's autopilot.
 - [ ] **M486 изолента:** the кулибин trait; tape on a part, not only the hull; the first hour's ДО 50 %
   button anywhere.
 - [ ] **M495 the triangle:** parts do not break — the Компания/Хай-Фронт part failures need a part-failure

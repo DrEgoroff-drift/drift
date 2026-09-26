@@ -23,6 +23,13 @@ function bargeHullOk(c){
   return !!(S&&S.hcls==="hauler");
 }
 function bargeName(c){return (c.barge&&c.barge.name)||BARGE_NAMES[Math.abs(c.seed|0)%BARGE_NAMES.length];}
+/* автопилот баржи — машина с именем (M485): имя и причуда от зерна наёмника, как у
+   дронов (таблицы 12e). Причуда — одно число в обе стороны: brk — как часто
+   встаёт на плече («встал · чинится сам»), rate сверх 1 — как часто проскакивает
+   лишнее плечо за ту же смену. Сейв не меняется: всё выводится из зерна и курсора */
+function bargePilotQ(c){return DRONE_QUIRKS[hashi(c.seed|0,0xBA46,3)%DRONE_QUIRKS.length];}
+function bargePilot(c){return DRONE_NAMES[hashi(c.seed|0,0xBA46,1)%DRONE_NAMES.length];}
+function bargePilotTag(c){const q=bargePilotQ(c);return "автопилот "+bargePilot(c)+(q.ru!=="норма"?" · "+q.ru:"");}
 /* что едят ваши цеха на плечах баржи */
 function bargeWants(c){
   const out={};
@@ -53,12 +60,16 @@ function bargeTick(c,now){
   if(s<=0)return 0;
   s=Math.min(s,72);
   c.cargo=c.cargo||{};
-  let fed=0;
+  let fed=0,stood=0,extra=0;
+  const Q=bargePilotQ(c),roll=k=>(hashi(c.seed|0,B.cursor,k)>>>0)/4294967296;
   for(let i=0;i<s;i++){
     const key=B.legs[B.cursor%B.legs.length];
     const[sx,sy]=key.split(",").map(Number);
     const sys=getSystem(sx,sy);
+    const stand=roll(0xB4A1)<.07*Q.brk,skip=extra<3&&roll(0xB4A2)<Q.rate-1;
     B.cursor++;
+    if(stand){stood++;continue;}   /* автопилот встал на этом плече (M485) */
+    if(skip){extra++;i--;}          /* торопыга: ещё одно плечо в ту же смену */
     if(!sys||!sys.station)continue;
     if(typeof occLvl==="function"&&occLvl(sx,sy)>=2){
       if(!B.stopped){B.stopped=1;logAdd("warn","Баржа «"+bargeName(c)+"» обошла «"+sys.station.name+"»: система под пиратами");}
@@ -74,6 +85,7 @@ function bargeTick(c,now){
   }
   B.t0=(B.t0||now)+s*HOLD_SHIFT;
   B.fed=(B.fed|0)+fed;
+  if(stood>0)logAdd("dim","Баржа «"+bargeName(c)+"»: "+bargePilot(c)+" встал"+(stood>1?" "+stood+" раза":"")+". "+Q.say);
   if(fed>0)logAdd("money","Баржа «"+bargeName(c)+"» ссыпала "+fed+" ед в бункеры · пай растёт");
   const hold=crewHold(c);
   if(hold<=0&&!B.empty){B.empty=1;logAdd("warn","Баржа «"+bargeName(c)+"» идёт пустой — погрузите её у стойки");}
@@ -115,7 +127,7 @@ function bargeNextName(c){
 function bargeLine(c){
   const B=c.barge;if(!B)return"";
   const hold=crewHold(c);
-  return"«"+bargeName(c)+"» · на борту "+hold+"/"+crewCargoMax(c)+" · следующее плечо «"+bargeNextName(c)+"» · скормлено "+(B.fed|0);
+  return"«"+bargeName(c)+"» · "+bargePilotTag(c)+" · на борту "+hold+"/"+crewCargoMax(c)+" · следующее плечо «"+bargeNextName(c)+"» · скормлено "+(B.fed|0);
 }
 /* строки для ДЕЛО — рядом с постройками, а не с наёмниками: это часть холдинга */
 function bargeDealList(){

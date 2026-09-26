@@ -156,7 +156,9 @@ function haulStart(){
   G.haul.by=sh.y-Math.sin(hd0)*2200+Math.cos(hd0)*sd*haulReach()*1.1;
   G.haul.ba=hd0;
   G.ap=null;G.orbit=null;G.pirates=[];G.shots=[];HAUL_FX=[];
-  logAdd("warn","Буксир вызван к "+evacFrom()+" · баржа идёт");
+  /* у буксира за штурвалом тоже машина с именем (M485): имя и причуда от зерна вызова */
+  const hq=DRONE_QUIRKS[hashi(G.haul.seed|0,0x70C,3)%DRONE_QUIRKS.length],hn=DRONE_NAMES[hashi(G.haul.seed|0,0x70C,1)%DRONE_NAMES.length];
+  logAdd("warn","Буксир вызван к "+evacFrom()+" · "+haulName()+", автопилот "+hn+(hq.ru!=="норма"?" ("+hq.ru+")":"")+" · баржа идёт");
   /* тоста нет: подсказка и так говорит «баржа подходит» (дизайн-ревью 11.09) */
   haulSay("вижу вас, идём. стойте где стоите — всё равно больше негде");
 }

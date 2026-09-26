@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6551
+Файлов: 641 · символов верхнего уровня: 6554
 
 ## СИМВОЛЫ
 
@@ -34,7 +34,7 @@ $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
 $sn                          src/27z-telemetry.js:13
-$sos                         src/16c-rescue.js:522
+$sos                         src/16c-rescue.js:524
 $st                          src/26-ui-station.js:2
 $un                          src/27z-telemetry.js:39
 $vc                          src/27z-telemetry.js:37
@@ -699,20 +699,20 @@ HALL_POWER                   src/21a4-base-adj.js:29
 HAND_LINE                    src/12td-settle-hand.js:31-34
 HAND_STEP                    src/12td-settle-hand.js:27
 HAND_STOCK                   src/12td-settle-hand.js:28
-HAUL_BARGE_K                 src/16c-rescue.js:174
-HAUL_BIT_GAP                 src/16c-rescue.js:177
-HAUL_BIT_TALK                src/16c-rescue.js:184
-HAUL_BOOM_K                  src/16c-rescue.js:187
-HAUL_CAM                     src/16c-rescue.js:188
+HAUL_BARGE_K                 src/16c-rescue.js:176
+HAUL_BIT_GAP                 src/16c-rescue.js:179
+HAUL_BIT_TALK                src/16c-rescue.js:186
+HAUL_BOOM_K                  src/16c-rescue.js:189
+HAUL_CAM                     src/16c-rescue.js:190
 HAUL_COME                    src/16c-rescue.js:23
-HAUL_FL                      src/16c-rescue.js:435
-HAUL_FREE                    src/16c-rescue.js:186
-HAUL_FX                      src/16c-rescue.js:189
-HAUL_NAMES                   src/16c-rescue.js:179
-HAUL_ROPE                    src/16c-rescue.js:175
-HAUL_SHIP_HALF               src/16c-rescue.js:176
-HAUL_TALK                    src/16c-rescue.js:180
-HAUL_TALK_GAP                src/16c-rescue.js:178
+HAUL_FL                      src/16c-rescue.js:437
+HAUL_FREE                    src/16c-rescue.js:188
+HAUL_FX                      src/16c-rescue.js:191
+HAUL_NAMES                   src/16c-rescue.js:181
+HAUL_ROPE                    src/16c-rescue.js:177
+HAUL_SHIP_HALF               src/16c-rescue.js:178
+HAUL_TALK                    src/16c-rescue.js:182
+HAUL_TALK_GAP                src/16c-rescue.js:180
 HAUL_TIME                    src/16c-rescue.js:24
 HB_PROBE                     src/03e1-hull-bake.js:23
 HB_STATS                     src/03e1-hull-bake.js:26
@@ -1351,7 +1351,7 @@ REP_WORDS                    src/12k-rep.js:17-25
 RES                          src/02-world.js:2-88
 RESCUE_ASK_GAP               src/16c-rescue.js:25
 RESCUE_FUEL                  src/16c-rescue.js:22
-RESCUE_ICON                  src/16c-rescue.js:573-577
+RESCUE_ICON                  src/16c-rescue.js:575-579
 RESET_ABIL0                  tests/90-harness.js:237
 RES_AUTO                     src/08-state.js:193
 RES_DOWN_K                   src/28-loop.js:226
@@ -1488,7 +1488,7 @@ SHIFT_TALK                   src/03f-hull-role.js:63-72
 SHIPS                        src/03-ships.js:2-11
 SHIP_GUARD                   src/17-mode-system.js:20
 SHIP_KEYS                    src/03-ships.js:12
-SHIP_SCALE_MIN               src/16c-rescue.js:200
+SHIP_SCALE_MIN               src/16c-rescue.js:202
 SHOT_CLEAN                   src/28-loop.js:370
 SHOVE_V                      src/13a-guns.js:36
 SHUT_LINES                   src/11ah-offer.js:302-307
@@ -1898,9 +1898,9 @@ bargeArtOf                   src/12l-barge.js:398-541
 bargeAttackers               src/12l-barge.js:162-164
 bargeAutoLoad                src/12ag-holdfx.js:35-55
 bargeBuyPrice                src/12l-barge.js:102-104
-bargeCrewRow                 src/12af-barge.js:136-157
+bargeCrewRow                 src/12af-barge.js:148-169
 bargeCur                     src/12l-barge.js:656
-bargeDealList                src/12af-barge.js:121-134
+bargeDealList                src/12af-barge.js:133-146
 bargeDestPrice               src/12l-barge.js:82-91
 bargeElRow                   src/12l-barge.js:682-691
 bargeEscortAccept            src/12l-barge.js:299-313
@@ -1909,24 +1909,27 @@ bargeEscortEnd               src/12l-barge.js:314-325
 bargeHullOk                  src/12af-barge.js:21-24
 bargeInteract                src/12l-barge.js:271-292
 bargeLegs                    src/12l-barge.js:43-67
-bargeLine                    src/12af-barge.js:115-119
+bargeLine                    src/12af-barge.js:127-131
 bargeLiveGpu                 src/12l-barge.js:553-563
-bargeLoad                    src/12af-barge.js:84-97
+bargeLoad                    src/12af-barge.js:96-109
 bargeMarkup                  src/12l-barge.js:95-98
 bargeMineHit                 src/12l-barge.js:198-208
 bargeName                    src/12af-barge.js:25
 bargeNearOther               src/12l-barge.js:70-79
-bargeNextName                src/12af-barge.js:108-114
+bargeNextName                src/12af-barge.js:120-126
 bargePaxDeliver              src/12l-barge.js:259-269
+bargePilot                   src/12af-barge.js:31
+bargePilotQ                  src/12af-barge.js:30
+bargePilotTag                src/12af-barge.js:32
 bargeRepNudge                src/12l-barge.js:678-681
 bargeRescued                 src/12l-barge.js:212-230
 bargeSellPrice               src/12l-barge.js:99-101
-bargeStart                   src/12af-barge.js:37-47
+bargeStart                   src/12af-barge.js:44-54
 bargeSunk                    src/12l-barge.js:235-257
 bargeSysAt                   src/12l-barge.js:25-36
-bargeTick                    src/12af-barge.js:49-82
-bargeUnload                  src/12af-barge.js:99-107
-bargeWants                   src/12af-barge.js:27-35
+bargeTick                    src/12af-barge.js:56-94
+bargeUnload                  src/12af-barge.js:111-119
+bargeWants                   src/12af-barge.js:34-42
 baseAdjAir                   src/21a4-base-adj.js:105
 baseAdjCount                 src/21a4-base-adj.js:55-59
 baseAdjFix                   src/21a4-base-adj.js:109
@@ -2926,7 +2929,7 @@ drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-239
 drawGroundCrumbs             src/19-mode-landing-ground.js:242-252
 drawGroundGrass              src/19-mode-landing-ground.js:255-292
-drawHaul                     src/16c-rescue.js:506-513
+drawHaul                     src/16c-rescue.js:508-515
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
@@ -3677,26 +3680,26 @@ hasEpisode                   src/03-ships.js:139-142
 hasSave                      src/14a-cloud.js:60
 hashi                        src/01-core.js:23-27
 hashi3                       src/24ba-belt-gpu.js:16-20
-haulAim                      src/16c-rescue.js:236-241
-haulBarge                    src/16c-rescue.js:210
-haulBit                      src/16c-rescue.js:254-264
-haulDeal                     src/16c-rescue.js:223-231
-haulFlameTris                src/16c-rescue.js:436-449
-haulFree                     src/16c-rescue.js:285-292
-haulFxTick                   src/16c-rescue.js:265-269
-haulGap                      src/16c-rescue.js:220
-haulGpu                      src/16c-rescue.js:450-505
-haulLeft                     src/16c-rescue.js:280-283
-haulName                     src/16c-rescue.js:211
-haulPickWaypoint             src/16c-rescue.js:244-252
-haulR                        src/16c-rescue.js:219
-haulReach                    src/16c-rescue.js:214
-haulRestore                  src/16c-rescue.js:273-279
-haulRope                     src/16c-rescue.js:414-429
-haulSay                      src/16c-rescue.js:212
-haulSide                     src/16c-rescue.js:233
-haulStart                    src/16c-rescue.js:149-162
-haulTick                     src/16c-rescue.js:294-412
+haulAim                      src/16c-rescue.js:238-243
+haulBarge                    src/16c-rescue.js:212
+haulBit                      src/16c-rescue.js:256-266
+haulDeal                     src/16c-rescue.js:225-233
+haulFlameTris                src/16c-rescue.js:438-451
+haulFree                     src/16c-rescue.js:287-294
+haulFxTick                   src/16c-rescue.js:267-271
+haulGap                      src/16c-rescue.js:222
+haulGpu                      src/16c-rescue.js:452-507
+haulLeft                     src/16c-rescue.js:282-285
+haulName                     src/16c-rescue.js:213
+haulPickWaypoint             src/16c-rescue.js:246-254
+haulR                        src/16c-rescue.js:221
+haulReach                    src/16c-rescue.js:216
+haulRestore                  src/16c-rescue.js:275-281
+haulRope                     src/16c-rescue.js:416-431
+haulSay                      src/16c-rescue.js:214
+haulSide                     src/16c-rescue.js:235
+haulStart                    src/16c-rescue.js:149-164
+haulTick                     src/16c-rescue.js:296-414
 hazardBand                   src/25-cockpit.js:166-177
 hazeBand                     src/19c-light.js:191-198
 hazeDone                     src/18d-postfx.js:68
@@ -5474,21 +5477,21 @@ resTarget                    src/28-loop.js:239-242
 resW                         src/06f-far-props.js:12
 resWait                      src/28-loop.js:235
 rescueActivityBeat           src/16c-rescue.js:69-76
-rescueAsk                    src/16c-rescue.js:524-531
+rescueAsk                    src/16c-rescue.js:526-533
 rescueDockCool               src/16c-rescue.js:60-65
 rescueEmpty                  src/16c-rescue.js:27-30
-rescueHead                   src/16c-rescue.js:533-551
+rescueHead                   src/16c-rescue.js:535-553
 rescueHomeAt                 src/16c-rescue.js:32-35
 rescueHomeCost               src/16c-rescue.js:48-51
 rescueInputT                 src/16c-rescue.js:68
-rescueNoLaunch               src/16c-rescue.js:517-520
+rescueNoLaunch               src/16c-rescue.js:519-522
 rescueOffers                 src/16c-rescue.js:77-94
 rescuePark                   src/16c-rescue.js:96-104
-rescueRender                 src/16c-rescue.js:578-623
-rescueShutT                  src/16c-rescue.js:523
-rescueSig                    src/16c-rescue.js:556
-rescueSigNow                 src/16c-rescue.js:555
-rescueSync                   src/16c-rescue.js:557-570
+rescueRender                 src/16c-rescue.js:580-625
+rescueShutT                  src/16c-rescue.js:525
+rescueSig                    src/16c-rescue.js:558
+rescueSigNow                 src/16c-rescue.js:557
+rescueSync                   src/16c-rescue.js:559-572
 rescueTake                   src/16c-rescue.js:105-146
 resetArm                     src/26-ui-station.js:684
 resetWorld                   tests/90-harness.js:238-395
@@ -5806,8 +5809,8 @@ shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
 shipGearGpu                  src/05c-arms.js:315-335
 shipRow                      src/26-ui-station.js:420-465
-shipScaleAt                  src/16c-rescue.js:209
-shipScaleCap                 src/16c-rescue.js:208
+shipScaleAt                  src/16c-rescue.js:211
+shipScaleCap                 src/16c-rescue.js:210
 shipThumb                    src/26f-yard-gpu.js:7-11
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:232
@@ -6204,7 +6207,7 @@ toggleLog                    src/11-log.js:152-156
 toggleLoreBoard              src/27h-ui-lore.js:81-84
 toggleMenu                   src/15-input.js:244-251
 toggleParrotWin              src/12y-parrot-face.js:249-265
-toggleSos                    src/16c-rescue.js:624-633
+toggleSos                    src/16c-rescue.js:626-635
 toldAll                      src/11aj-told.js:34
 toldDo                       src/11aj-told.js:58-74
 toldEther                    src/11aj-told.js:78-89
@@ -6909,7 +6912,7 @@ zoomTo                       src/15-input.js:350
 ## src/12ae-ladder.js · 10 КБ
   · холдинг · лестница видимая:1
 
-## src/12af-barge.js · 8 КБ
+## src/12af-barge.js · 10 КБ
   · холдинг · своя баржа:1
 
 ## src/12ag-holdfx.js · 9 КБ
@@ -7266,7 +7269,7 @@ zoomTo                       src/15-input.js:350
 ## src/16c-abil.js · 11 КБ
   · особая система корпуса (M484, DESIGN-shipyard):1
 
-## src/16c-rescue.js · 47 КБ
+## src/16c-rescue.js · 48 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
 ## src/16g-gpu-space.js · 15 КБ

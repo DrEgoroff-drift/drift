@@ -151,6 +151,12 @@ could ever save.
   plan. Tap such a part with nothing held, and the КБ picks up what stands in that slot and shows the place; tap
   the part again to fit it. Into a free slot it goes straight away.
 
+- **M485: the barge and the tug have machines at the wheel.** Your barge's autopilot now has a name and a quirk
+  from the drones' table: «Шаланда» · автопилот Кузя · торопыга. The quirk works both ways. A торопыга sometimes
+  makes an extra leg in the same shift and stands more often («Кузя встал. Спешил.»); an осторожный one rarely
+  stands and never hurries. The rescue tug's call line names its autopilot as well («буксир «…», автопилот Глаша
+  (ленивый, но живучий)»).
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -206,6 +212,9 @@ could ever save.
   side hits. Guns on a hit side are not affected yet.
 - M483: NPC and pirate ships are not yet built by the packer. Their plan would show only in their silhouette,
   which is picture work for the graphics pass, so it stays in the plan.
+- M485: the tug's quirk is words only. Its tow is five minutes by the author's word, and its flight is physics,
+  so no number moves there. The barge's quirk is rolled per leg from the hired hand's seed and the route cursor,
+  both already saved, so the save's barge whitelist is untouched.
 
 ## 0.478.0 - the album on the engine
 
