@@ -218,8 +218,6 @@ measured on the GPU build first:
 
 ## 3. Stage 2 — whose land, in five seconds
 
-- [ ] **M454 the station by its builder:** the maker's grammar on the modules and the core (profile law,
-  seams, joints), not the common kit with a dressed plate; the Орднунг ribs hide under the modules.
 - [ ] **M447/M448 the galaxy:** M450 the overview and M451 the flight sky from the same model; verify the
   drag detector's thresholds («deep < 8 %, sheet ≥ 25 %» were set before measuring).
 - [ ] **M458 map borders:** territory edges as lines in the owner's pattern (dotted stars, ring marks,

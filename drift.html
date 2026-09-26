@@ -53364,6 +53364,16 @@ function drawSysHud(zx,zy,sh,sys,U){
 
    Модули ничего не открывают и не закрывают: услуги по-прежнему живут в типе.
    Иначе получилось бы, что снаружи станция обещает больше, чем внутри есть. */
+/* кто строил станцию (M454): хозяин земли — «чья земля» должна читаться по
+   самой крупной рукотворной вещи в системе. Каждая пятая — чужой постройки
+   (по зерну), дикий космос строит кто придётся. Строитель считается раз за
+   сеанс, по хозяину на момент первого взгляда */
+function stationBuilder(sys){
+  const seed=(typeof makerBySeed==="function")?makerBySeed(sys.seed):"gt";
+  const o=(typeof chronOwnerKey==="function")?chronOwnerKey(sys.sx,sys.sy):null;
+  if(!o||!HULL_MAKER[o])return seed;
+  return (hashi(sys.seed|0,0xB1D,5)>>>0)%5===0?seed:o;
+}
 const ST_MODULES=[
   {id:"cargo",  ru:"грузовой терминал", sh:"rack",  w:1.2, on:["trade","indust"]},
   {id:"habit",  ru:"жилой сектор",      sh:"drum",  w:1.4},
@@ -53386,7 +53396,7 @@ function stationMods(sys){
   const r=rng(hashi(sys.seed,0x50DD,17));
   /* чей это завод: пока от зерна системы — кто её строил. С M372 сюда придёт
      держава, которая систему держит, и строка станет её строкой */
-  const by=S.by||(S.by=(typeof makerBySeed==="function")?makerBySeed(sys.seed):"gt");
+  const by=S.by||(S.by=stationBuilder(sys));
   const ty=S.stype||"trade";
   const danger=sysDanger(sys.sx,sys.sy);
   const pool=ST_MODULES.filter(m=>!m.on||m.on.indexOf(ty)>=0);
@@ -53458,7 +53468,8 @@ function drawStModule(q,S,skipRod){
      вещью. Теперь у каждой формы свой тон корпуса, а золото опущено до шва;
      светят только окна и лампы — свет у станции один, свой. */
   ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.7;   /* обвод тёмный, как у баржи */
-  const F=ST_MOD_FILL[q.sh]||"#1b2230";
+  /* корпус модуля в грунте строителя (M454): тот же тон, что у плиты и ствола */
+  const F0=ST_MOD_FILL[q.sh]||"#1b2230",F=stGround([parseInt(F0.slice(1,3),16),parseInt(F0.slice(3,5),16),parseInt(F0.slice(5,7),16)],.28);
   ctx.fillStyle=F;
   if(q.sh==="drum"){
     ctx.beginPath();ctx.rect(-5*s,-7*s,10*s,14*s);ctx.fill();ctx.stroke();
@@ -53552,7 +53563,9 @@ function drawStModule(q,S,skipRod){
     stLive(()=>{const bl=Math.pow(Math.max(0,Math.sin(G.t*.06+q.ph)),8);
       stLamp(0,-13*s,1.4*s,[120,230,255],+(.25+.7*bl).toFixed(2));});
   }
+  if(typeof stModMaker==="function")stModMaker(q,s);   /* почерк строителя (M454, 17c1) */
   ctx.restore();
+  if(typeof stModJoint==="function")stModJoint(q);
 }
 /* два прохода: сперва все штанги, потом все корпуса — иначе распорка соседа
    ложится поверх модуля и сборка снова рассыпается на линии */
@@ -54019,6 +54032,7 @@ function stCore(w,h,seams){        /* центральный ствол с пр�
     for(let i=-h+4;i<h;i+=6){ctx.beginPath();ctx.moveTo(-w,i);ctx.lineTo(w,i);ctx.stroke();}
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
   }
+  if(typeof stCoreMaker==="function")stCoreMaker(w,h);   /* торцы и шов строителя (M454, 17c1) */
   ctx.beginPath();ctx.moveTo(-w+2,-h);ctx.lineTo(-w-1,-h-6);ctx.lineTo(w+1,-h-6);ctx.lineTo(w-2,-h);ctx.stroke();
   stLive(()=>{const on=Math.sin(G.t*.09)>0;
     stLamp(0,-h-8,2.4,[127,230,216],on?1:.2);stLamp(0,h+2,1.8,[255,107,87],on?.9:.2);});
@@ -54545,6 +54559,73 @@ function stMakerDress(by,V){
     ctx.fillStyle="rgba(206,216,224,.34)";stPlatePath(V);ctx.fill();
     ctx.fillStyle="rgba(130,255,236,.55)";ctx.fillRect(-bw*.8,bh-1.6,bw*1.6,1);
     ctx.fillStyle="rgba(230,40,40,.95)";ctx.beginPath();ctx.arc(bw*.55,-bh*.45,1.6,0,TAU);ctx.fill();
+  }
+  ctx.restore();
+}
+/* ── почерк строителя на модулях и ядре (M454, второй проход) ──
+   Одетая плита оставляла модули и ядро общим набором: плита одна, а видно
+   больше всего как раз модули. Теперь завод доходит до каждого корпуса —
+   закон профиля (Компания, Коммуна и Хай-Фронт скругляют торцы; ГЛАВТРАССА и
+   Орднунг — прямой угол), шов (Орднунг — чёрное ребро поверх модуля, а не
+   под ним; ГЛАВТРАССА — трафаретная полоса; Рассвет — заплата другой краской)
+   и стык модуля со штангой той же грамматикой, что у корпусов (makerJoint:
+   хомут, заподлицо, фланец, галтель, сварка, зазор). Рисуется в выпечку. */
+function stModMaker(q,s){
+  const by=ST_BY||"gt",u=6*s;
+  ctx.save();
+  if(by==="gt"){
+    ctx.fillStyle="rgba(168,52,44,.8)";ctx.fillRect(-u,u*.62,u*2,1.1*s);
+    ctx.fillStyle="rgba(230,222,200,.6)";ctx.font="bold "+(2.6*s).toFixed(2)+"px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText(String(1+((q.ph*97)|0)%9),u*.62,-u*.55);
+  }else if(by==="co"){
+    ctx.fillStyle="rgba(246,247,249,.22)";ctx.beginPath();ctx.ellipse(0,0,u*1.05,u*1.05,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,70,160,.8)";ctx.fillRect(-u*.9,-u*.2,u*1.8,.9*s);
+  }else if(by==="or"){
+    ctx.fillStyle="rgba(0,0,0,.8)";ctx.fillRect(-.7*s,-u*1.1,1.4*s,u*2.2);
+    ctx.fillStyle="rgba(235,235,230,.7)";ctx.font="bold "+(2.3*s).toFixed(2)+"px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText("№"+(10+((q.ph*89)|0)%89),1.2*s,-u*.7);
+  }else if(by==="km"){
+    ctx.strokeStyle="rgba(176,204,234,.5)";ctx.lineWidth=.7*s;
+    ctx.beginPath();ctx.arc(0,u*1.4,u*1.3,Math.PI*1.2,Math.PI*1.8);ctx.stroke();
+    ctx.fillStyle="rgba(255,214,150,.75)";
+    for(let i=0;i<4;i++){const a=Math.PI*(1.25+i*.17);ctx.fillRect(Math.cos(a)*u*1.3-.5*s,u*1.4+Math.sin(a)*u*1.3+.8*s,1*s,.8*s);}
+  }else if(by==="ra"){
+    const P=[[196,120,50],[150,70,40],[210,160,70],[90,120,70]];
+    ctx.fillStyle=rgba(P[((q.ph*7)|0)%4],.55);ctx.fillRect(-u*.2,-u*.3,u*.9,u*.7);
+    ctx.strokeStyle="rgba(230,190,120,.4)";ctx.lineWidth=.4*s;ctx.strokeRect(-u*.2,-u*.3,u*.9,u*.7);
+  }else if(by==="hf"){
+    ctx.fillStyle="rgba(206,216,224,.28)";ctx.beginPath();ctx.ellipse(0,0,u*1.05,u*1.05,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(130,255,236,.5)";ctx.fillRect(-u*.7,u*.95,u*1.4,.6*s);
+    if(((q.ph*13)|0)%3===0){ctx.fillStyle="rgba(230,40,40,.95)";ctx.beginPath();ctx.arc(u*.5,-u*.5,.9*s,0,TAU);ctx.fill();}
+  }
+  ctx.restore();
+}
+/* стык модуля со штангой: на торце штанги, в её собственном повороте */
+function stModJoint(q){
+  if(typeof makerJoint!=="function")return;
+  const by=ST_BY||"gt",g=(typeof makerGround==="function")?makerGround(by):[60,70,80];
+  const h={by,bw:q.s*9,iron:mixc([22,26,32],g,.3),lite:mixc([200,210,220],g,.3)};
+  ctx.save();ctx.rotate(q.ang);ctx.translate(q.d-4*q.s,0);ctx.rotate(Math.PI/2);
+  makerJoint(h,0,0,1);
+  ctx.restore();
+}
+/* ядро: торцы по закону профиля и шов по заводу */
+function stCoreMaker(w,h){
+  const by=ST_BY||"gt";
+  ctx.save();
+  if(by==="co"||by==="hf"||by==="km"){
+    ctx.fillStyle=stGround([36,48,62],.35);ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
+    for(const sg of [-1,1]){ctx.beginPath();ctx.ellipse(0,sg*h,w,w*.8,0,sg>0?0:Math.PI,sg>0?Math.PI:TAU);ctx.fill();ctx.stroke();}
+    if(by==="hf"){ctx.fillStyle="rgba(130,255,236,.45)";ctx.fillRect(-w*.8,h-1,w*1.6,.8);}
+    if(by==="co"){ctx.fillStyle="rgba(255,70,160,.75)";ctx.fillRect(-w,-h*.1,w*2,1.2);}
+    if(by==="km"){ctx.fillStyle="rgba(255,214,150,.7)";for(let i=-h+3;i<h-2;i+=4)ctx.fillRect(-w*.5,i,w,1);}
+  }else if(by==="or"){
+    ctx.fillStyle="rgba(0,0,0,.8)";for(let i=-h+3;i<h;i+=5)ctx.fillRect(-w-.6,i,w*2+1.2,1.1);
+  }else if(by==="gt"){
+    ctx.fillStyle="rgba(168,52,44,.8)";ctx.fillRect(-w,h*.35,w*2,1.4);
+  }else if(by==="ra"){
+    ctx.fillStyle="rgba(196,120,50,.5)";ctx.fillRect(-w,-h*.6,w*1.1,h*.5);
+    ctx.fillStyle="rgba(90,120,70,.5)";ctx.fillRect(-w*.1,h*.1,w*1.1,h*.45);
   }
   ctx.restore();
 }
@@ -56768,7 +56849,7 @@ function stampPage(box){
     }else{
       c.className="stp-cell stp-none";
       c.innerHTML="<div class='l0'>"+STAMP_RU[k]+"</div><div class='l1'>"+
-        (k==="yalta"?"все шесть — в одном месте":k==="pirate"?"царапина, не печать":"пересечь границу")+"</div>";
+        (k==="yalta"?"все шесть в одном месте · сектор "+yaltaAt().sx+","+yaltaAt().sy:k==="pirate"?"царапина у пиратской базы":"пересечь границу")+"</div>";
     }
     g.appendChild(c);
   }

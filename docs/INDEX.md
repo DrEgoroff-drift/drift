@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6483
+Файлов: 641 · символов верхнего уровня: 6487
 
 ## СИМВОЛЫ
 
@@ -630,8 +630,8 @@ GPU_FLD_HEAD                 src/08c-gpu-kit.js:328
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:191
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:165
-GPU_LIT_DK                   src/17c-system-draw.js:400
-GPU_LIT_SH                   src/17c-system-draw.js:398
+GPU_LIT_DK                   src/17c-system-draw.js:401
+GPU_LIT_SH                   src/17c-system-draw.js:399
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:190
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -664,7 +664,7 @@ GSP_DUST_L                   src/16g-gpu-space.js:19
 GSP_QUAD                     src/16g-gpu-space.js:105
 GSP_STARS                    src/16g-gpu-space.js:39
 GSP_WGSL_U                   src/16g-gpu-space.js:20
-GST_WGSL                     src/17c-system-draw.js:404
+GST_WGSL                     src/17c-system-draw.js:405
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:56
@@ -1352,7 +1352,7 @@ RING_SRC                     src/11x-ring.js:19
 RITES                        src/12au-rites.js:13-34
 RITE_KEYS                    src/12au-rites.js:35
 RITE_WINDOW                  src/12au-rites.js:36
-RL_DL                        src/17c-system-draw.js:403
+RL_DL                        src/17c-system-draw.js:404
 RND_SEED                     src/01-core.js:73
 ROAD_BACK_FAR                src/27k-road.js:104
 ROAD_BAND                    src/27k-road.js:586
@@ -1501,7 +1501,7 @@ SMENA_CH                     src/12ud-smena.js:30-103
 SMENA_PARTS                  src/12ud-smena.js:18-23
 SMENA_TEXT                   src/12ud-smena-text.js:2
 SMENA_TITLE                  src/12ud-smena-text.js:3
-SMOKE_N                      src/17c-system-draw.js:377
+SMOKE_N                      src/17c-system-draw.js:378
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 SND                          src/09-audio.js:4
 SOC                          src/12al4-soc.js:17-29
@@ -1561,8 +1561,8 @@ STUN_TIME                    src/13a-guns.js:27
 ST_BY                        src/17c-system-draw.js:107
 ST_EMIT                      src/17c3-station-live.js:13
 ST_GROUPS                    src/26-ui-station.js:131-138
-ST_MODULES                   src/17a-station-mod.js:14-29
-ST_MOD_FILL                  src/17a-station-mod.js:81
+ST_MODULES                   src/17a-station-mod.js:24-39
+ST_MOD_FILL                  src/17a-station-mod.js:91
 ST_REC                       src/17c3-station-live.js:12
 ST_SPIN                      src/17c3-station-live.js:54
 ST_TYPES                     src/06-galaxy.js:50-68
@@ -2964,13 +2964,13 @@ drawSkyBase                  src/19c-light.js:298-332
 drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
-drawStModule                 src/17a-station-mod.js:95-203
-drawStRod                    src/17a-station-mod.js:87-94
-drawStRods                   src/17a-station-mod.js:206
+drawStModule                 src/17a-station-mod.js:105-216
+drawStRod                    src/17a-station-mod.js:97-104
+drawStRods                   src/17a-station-mod.js:219
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:569-604
-drawStationBody              src/17c-system-draw.js:167-370
-drawStationMods              src/17a-station-mod.js:207-210
+drawStation                  src/17c-system-draw.js:570-605
+drawStationBody              src/17c-system-draw.js:168-371
+drawStationMods              src/17a-station-mod.js:220-223
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:277-291
@@ -3486,7 +3486,7 @@ gpuImgBind                   src/08c-gpu-kit.js:229-235
 gpuImgLayout                 src/08c-gpu-kit.js:221-228
 gpuKitU                      src/08c-gpu-kit.js:174-179
 gpuLight                     src/08b-gpu.js:444
-gpuLitSprite                 src/17c-system-draw.js:553-568
+gpuLitSprite                 src/17c-system-draw.js:554-569
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:582-587
 gpuMipDrop                   src/08c-gpu-kit.js:110
@@ -5873,7 +5873,8 @@ speechHere                   src/11b-speech.js:119-154
 sprgba                       src/29i-spa-draw.js:22
 srcPrice                     src/12ad-site.js:294-297
 stBar                        src/17c3-station-live.js:44-47
-stCore                       src/17c-system-draw.js:119-132
+stCore                       src/17c-system-draw.js:119-133
+stCoreMaker                  src/17c1-station-dress.js:101-119
 stDel                        src/14-save.js:26
 stEmFlush                    src/17c3-station-live.js:112-117
 stEmK                        src/17c3-station-live.js:22
@@ -5888,10 +5889,12 @@ stLive                       src/17c3-station-live.js:14-17
 stMakerDress                 src/17c1-station-dress.js:10-52
 stMasterDrop                 src/17c3-station-live.js:68
 stMasterJob                  src/17c3-station-live.js:78-98
+stModJoint                   src/17c1-station-dress.js:92-99
+stModMaker                   src/17c1-station-dress.js:61-90
 stPanels                     src/17c-system-draw.js:109-118
-stPlatePath                  src/17c-system-draw.js:159-166
-stRing                       src/17c-system-draw.js:133-140
-stRingBody                   src/17c-system-draw.js:141-155
+stPlatePath                  src/17c-system-draw.js:160-167
+stRing                       src/17c-system-draw.js:134-141
+stRingBody                   src/17c-system-draw.js:142-156
 stSet                        src/14-save.js:14-25
 stSpin                       src/17c3-station-live.js:50-53
 stSpinCv                     src/17c3-station-live.js:56-62
@@ -5905,7 +5908,7 @@ stTabMods                    src/26b-ui-station-work.js:105-372
 stTabYard                    src/26e-ui-station-trade.js:250-395
 stTabsHere                   src/26-ui-station.js:141
 stTypeOf                     src/06-galaxy.js:69
-stackSmoke                   src/17c-system-draw.js:378-391
+stackSmoke                   src/17c-system-draw.js:379-392
 stallWho                     src/28-loop.js:122-130
 stampArrive                  src/17i-stamp.js:42-56
 stampBook                    src/17i-stamp.js:25
@@ -5947,13 +5950,14 @@ stat                         src/08-state.js:297-365
 statPreview                  src/05-parts.js:417-425
 stateHash                    src/08a-statehash.js:30-81
 stateHashParts               src/08a-statehash.js:82-90
+stationBuilder               src/17a-station-mod.js:18-23
 stationDeals                 src/27g-deals.js:141-158
 stationFleet                 src/04b-fleet.js:163-191
 stationMaster                src/17c3-station-live.js:99-111
 stationMercs                 src/12a-crew.js:95-147
 stationMgrs                  src/12c-mgr-core.js:267-299
-stationMods                  src/17a-station-mod.js:30-72
-stationModsLine              src/17a-station-mod.js:74-77
+stationMods                  src/17a-station-mod.js:40-82
+stationModsLine              src/17a-station-mod.js:84-87
 stationNewsLines             src/26-ui-station.js:11-19
 stationParts                 src/03-ships.js:159-198
 stationUniqueOffer           src/03-ships.js:143-156
@@ -7218,7 +7222,7 @@ zoomTo                       src/15-input.js:350
 ## src/17-mode-system.js · 81 КБ
   · режим: система:1
 
-## src/17a-station-mod.js · 13 КБ
+## src/17a-station-mod.js · 14 КБ
   · модули станции:1
 
 ## src/17a0-prebake.js · 4 КБ
@@ -7230,7 +7234,7 @@ zoomTo                       src/15-input.js:350
 ## src/17c-system-draw.js · 43 КБ
   · система: кольца, пояс и станция в кадре:1
 
-## src/17c1-station-dress.js · 4 КБ
+## src/17c1-station-dress.js · 8 КБ
   · станция по строителю: одевка плиты (M454, DESIGN-borders §2.3):1
 
 ## src/17c2-hull-gpu.js · 18 КБ

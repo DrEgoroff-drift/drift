@@ -21,10 +21,24 @@ could ever save.
   page says how many years remain to the board, or shows the board's conclusion. Institutions' entries carry a
   round «м.п.» seal, people's a hand signature.
 
+- **M454: the station is built by the land's owner, in the builder's hand.** A station's builder used to be
+  picked from the system's seed, so a station said nothing about whose land it stood on. Now it is the owner
+  of the land; one station in five is foreign-built, and the wild builds whatever it gets. The builder's
+  grammar reaches past the plate to every module and the core. The module hulls take the builder's ground. The
+  profile law rounds the core's ends for Компания, Коммуна and Хай-Фронт and keeps the right angle for
+  ГЛАВТРАССА and Орднунг. Each builder marks its seams: Орднунг's black numbered ribs now run over the modules,
+  not hidden under them; ГЛАВТРАССА a stencil stripe and number; Компания a logo band; Коммуна an arc of warm
+  windows; Рассвет a patch of other paint; Хай-Фронт white, light from under, the odd red dot. The joint where
+  a module meets its rod is drawn in the hull grammar (clamp, flush, flange, fillet, weld, gap). The picture is
+  a draft for the graphics pass.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
   told apart by initials plus a short list (Вега, попугай, замполит, неизвестные).
+- M454: the builder is the owner at the first look of the session. A station keeps no memory of who built it,
+  so after a conquest it redraws as the new owner's on the next session. The other reading, a station
+  that stays the loser's until rebuilt, needs a saved field.
 
 ## 0.478.0 - the album on the engine
 

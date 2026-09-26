@@ -126,6 +126,7 @@ function stCore(w,h,seams){        /* центральный ствол с пр�
     for(let i=-h+4;i<h;i+=6){ctx.beginPath();ctx.moveTo(-w,i);ctx.lineTo(w,i);ctx.stroke();}
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
   }
+  if(typeof stCoreMaker==="function")stCoreMaker(w,h);   /* торцы и шов строителя (M454, 17c1) */
   ctx.beginPath();ctx.moveTo(-w+2,-h);ctx.lineTo(-w-1,-h-6);ctx.lineTo(w+1,-h-6);ctx.lineTo(w-2,-h);ctx.stroke();
   stLive(()=>{const on=Math.sin(G.t*.09)>0;
     stLamp(0,-h-8,2.4,[127,230,216],on?1:.2);stLamp(0,h+2,1.8,[255,107,87],on?.9:.2);});
