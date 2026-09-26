@@ -798,6 +798,14 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   +35 % brighter, and the near corona is up to 40 % weaker. Brightness now falls monotonically outward:
   760 zoom 3, G .9 248 → limb 245 → 1.0 225 → 1.05 216 → 1.35 208. Zoom 1.6 and 390 at 3 and 1.6 fall the
   same way. The giant (heat < .7) is untouched (|d| 1.75).
+- **G3b gas jets** (26.09, Контроль: «the thin jets along the flow read weak at 1:1»): the gas giant had only
+  the vortex field and a .004 edge wave, so up close its bands were smooth. Now a noise that is long in
+  longitude and dense in latitude (two octaves: 26 and 70 per unit of sine latitude) runs on the already
+  warped coordinates, so it follows the curls. It shifts the strip sample across the bands (±7 texels),
+  so a jet carries the neighbouring band's colour, and it modulates brightness ±20 %. Each octave fades
+  once its step on screen drops to 2–4 px, so there is no ripple from afar. Pairs vs HEAD, centred on the
+  giant: 760 zoom 1 sharpness +7 %, zoom 2 +15 %, zoom .5 +2 %; 390 dpr 1.5 +15 %; light −0.1…−0.3 %.
+  GPU errors 0.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance

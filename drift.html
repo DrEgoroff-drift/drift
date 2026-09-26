@@ -55697,9 +55697,17 @@ fn ring(rho:f32,v4:vec4f,v5:vec4f,px:f32)->vec4f{
       let te=vec2f(1.,2.)/max(v9.y,1.);
       let wp=(vec2f(fb3(B*18.+so,3),fb3(B*18.+so+vec3f(4.,7.,1.),3))-.5)*te*2.4*am;
       var uu=u0+wp.x;var yy=n.y;var gz=0.;
-      if(kind>1.5){let g=gasUV(u0,n.y,so,t,am);uu=g.x;yy=g.y;gz=g.z;}
-      let uv=vec2f(fract(uu),clamp((yy+1.)*.5+wp.y,.002,.998));
-      base=textureSampleLevel(tx,smp,uv,0.).rgb*(1.+.18*gz);
+      var jt=0.;
+      if(kind>1.5){let g=gasUV(u0,n.y,so,t,am);uu=g.x;yy=g.y;gz=g.z;
+        /* G3b: тонкие струи вдоль потока — шум длинный по долготе и частый по широте, на уже
+           закрученных координатах (идёт за вихрем); сдвигает выборку поперёк полос — струя несёт
+           цвет соседней полосы. Каждая октава гаснет, когда её шаг уже 2.5 px: издали не рябит */
+        let rp=r*u.b.x;let cu=6.2831853*uu;let cs=sqrt(max(1.-yy*yy,0.));
+        let j1=fb3(vec3f(cs*sin(cu)*3.,yy*26.,cs*cos(cu)*3.)+so*3.,2)-.5;
+        let j2=fb3(vec3f(cs*sin(cu)*7.,yy*70.,cs*cos(cu)*7.)+so*5.,2)-.5;
+        jt=j1*smoothstep(2.,4.,rp/26.)+.8*j2*smoothstep(2.,4.,rp/70.);}
+      let uv=vec2f(fract(uu),clamp((yy+1.)*.5+wp.y+jt*14./max(v9.y,1.),.002,.998));
+      base=textureSampleLevel(tx,smp,uv,0.).rgb*(1.+.18*gz)*(1.+.45*jt);
     }
     let dl=dot(n,L);
     /* терминатор: с воздухом — мягкий, рассеянный; без — резкий */

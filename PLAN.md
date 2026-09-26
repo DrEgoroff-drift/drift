@@ -78,7 +78,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
   bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
-- [ ] G3b gas giant (Контроль 24.09): the thin jets along the flow still read weak at 1:1.
 - [ ] CI with WebGPU (Контроль 24.09): the smoke in `deploy.yml` runs `--disable-gpu`, so it proves only the
   «no WebGPU» notice. Turn WebGPU on in CI through SwiftShader (the flag set proven locally first), then the
   smoke and the picture suites see the real frame.
