@@ -359,8 +359,9 @@ function hud(){
   if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");
   if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
-  /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
+  /* приборная колодка (25c) и трепло (12y1): свои канвы каждым кадром */
   if(typeof instrPodTick==="function")instrPodTick();
+  if(typeof parrotGpuTick==="function")parrotGpuTick();
   setTx($place,a);setTx($sub,b);
   /* Полосу меряем по самому DOM, а не пересчитываем правила CSS в JS: состав
      строк задан таблицей стилей (body.afoot прячет топливо и корпус, узкий

@@ -62,8 +62,8 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   too: in main 4778c719, 52 files in `src` still open a 2D context. Onto direct paths (`gpuLitSprite`, atlases,
   instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.
   The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
-  - the interface — GPU-3; its census (26.09): the parrot's window (12y, its own rAF, redrawn every frame while
-    open), the console's seat and perch icons (27j-console, timers on every screen), then the panels by how often
+  - the interface — GPU-3; its census (26.09): the console's seat icon (27j-console, timers on every screen),
+    then the panels by how often
     they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
     worker's studio function; the ship in ОПИСЬ — the worker (27j0); the raid's `ovAtlas` bakes a new row every

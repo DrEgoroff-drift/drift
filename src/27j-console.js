@@ -117,12 +117,12 @@ function consoleTick(dt){
            иначе после `resetWorld` иконка осталась бы пустой до пяти секунд */
         if(G.t-PERCH_AT>=PERCH_EVERY||G.t<PERCH_AT){
           PERCH_AT=G.t;
-          const c=cv.getContext("2d");c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,px,px);
+          /* поза раскладывается здесь (12y1), а рисует её кадр — parrotGpuTick в hud() */
           if(typeof parStep==="function")parStep(1.1);
           const m=px*.08,sc=(px-2*m)/260,P=typeof PAR==="object"?PAR:null,hang=P?P.hang:0;
           if(P)P.hang=0;
-          c.setTransform(sc,0,0,sc,px/2-sc*113.5,m-sc*43);
-          try{parrotDraw(c,230,304);}finally{if(P)P.hang=hang;c.setTransform(1,0,0,1,0,0);}
+          try{PARG.Sp=parSink(PARG.Sp,[sc,0,0,sc,px/2-sc*113.5,m-sc*43]);parrotDraw(PARG.Sp,230,304);PARG.pd=true;}
+          finally{if(P)P.hang=hang;}
         }
       }
     }
