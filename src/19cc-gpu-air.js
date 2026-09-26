@@ -11,21 +11,37 @@
    полос; ближняя остаётся за миром (19d). */
 const GCL=new Float32Array(60);
 const GCL_WGSL=SKY_NOISE_WGSL+`
-/* эшелон кучевых: (плотность, светлота, каёмка) */
+/* эшелон кучевых: (плотность, светлота, каёмка). Облако — куча круглых клубов,
+   слитых мягким объединением: купол круглый, низ срезан линией конденсации.
+   Клетка на облако; есть ли облако и какой величины — от медленного шума по
+   клеткам, поэтому они ходят кучами с пустотой между */
+fn smax(a:f32,b:f32,k:f32)->f32{let h=clamp(.5+.5*(b-a)/k,0.,1.);return mix(a,b,h)+k*h*(1.-h);}
 fn cuTier(p:vec2f,base:f32,S:f32,X0:f32,cover:f32,sd:f32,wind:f32)->vec3f{
   let d=base-p.y;
-  if(d<-S*.3||d>S*2.4||cover<=0.){return vec3f(0.);}
+  if(d<-S*.2||d>S*1.5||cover<=0.){return vec3f(0.);}
   let X=p.x+X0+d*wind*.22;
-  let u=X/(S*2.2);
-  let env=smoothstep(1.-cover,1.-cover+.24,vn(vec2f(u*.55,sd)));
-  if(env<.002){return vec3f(0.);}
-  let hgt=S*env*(.50+.70*vn(vec2f(u*1.25,sd+3.))+.42*bil(vec2f(u*3.6,sd+5.))+.20*bil(vec2f(u*8.5,sd+7.)));
-  let e=fbm(vec2f(X/(S*.40),d/(S*.40))+vec2f(sd,0.),3)*.8+.2*vn(vec2f(X/(S*.09),d/(S*.09))+vec2f(sd*1.7,2.));
-  let top=hgt-d+(e-.5)*S*.42;
-  let dens=smoothstep(-S*.05,S*.08,top)*smoothstep(-S*.06,S*.05,d+(e-.5)*S*.10);
-  let h01=clamp(d/max(hgt,1.),0.,1.);
-  let lt=clamp(.30+h01*.62+(e-.5)*.7,0.,1.);
-  let rim=(1.-smoothstep(0.,S*.24,top))*dens;
+  let cw=S*1.6;let ci=floor(X/cw);
+  var best=-1e4;
+  for(var k=-1;k<=1;k=k+1){
+    let id=ci+f32(k);
+    let env=smoothstep(1.-cover,1.-cover+.22,vn(vec2f(id*.45,sd+1.)));
+    if(env<.03){continue;}
+    for(var j=0;j<4;j=j+1){
+      let h=kh2(vec2f(id*3.1+f32(j)*1.7,sd+9.));
+      let mid=select(.55,1.,j==1||j==2);
+      let r=S*(.20+.26*h.y)*mid*(.45+.55*env);
+      let cx=(id+.12+.76*(f32(j)+h.x)/4.)*cw;
+      let cy=r*(.35+.25*h.y);
+      let q=vec2f(X-cx,d-cy);
+      best=smax(best,r-length(q*vec2f(.82,1.)),S*.10);
+    }
+  }
+  if(best<-S*.2){return vec3f(0.);}
+  let e=fbm(vec2f(X/(S*.30),d/(S*.30))+vec2f(sd,0.),3);
+  let top=best+(e-.5)*S*.16;
+  let dens=smoothstep(-S*.03,S*.06,top)*smoothstep(-S*.03,S*.03,d+(e-.5)*S*.06);
+  let lt=clamp(.34+clamp(d/(S*.75),0.,1.)*.62+(e-.5)*.5,0.,1.);
+  let rim=(1.-smoothstep(0.,S*.12,top))*dens;
   return vec3f(dens,lt,rim);
 }
 fn field(p:vec2f,uv:vec2f)->vec4f{
@@ -77,6 +93,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       col=cc*ca+col*(1.-ca);a=ca+a*(1.-ca);
     }
   }
+  /* ночь: облако — тёмный силуэт в тон ночного неба, а не дневная вата */
+  col=mix(col,col*fu.v[13].rgb,fu.v[13].w);
   /* дымка у горизонта облачного слоя: гаснет в обе стороны, рисунок от зерна */
   let ht=(p.y-(yH-H*.18))/(H*.30);
   if(ht>0.&&ht<1.){
@@ -128,6 +146,7 @@ function gpuClouds(p,camx,camy){
   }
   const amb=capLum((typeof ambRGB==="function")?ambRGB(p):p.T.sky[1],[C.sunL,C.sunL,C.sunL],1);
   set3(44,amb);U[47]=.34*R.haze[0];U[48]=camx*.05+tw*.05;U[49]=R.haze[1];
+  const nt=surfNight(p);U[52]=.30;U[53]=.33;U[54]=.46;U[55]=clamp(nt*1.35,0,.86);
   if(!skyClip(pass,0,0,W,yH+H*.14))return true;
   gpuField(pass,"gcloud",GCL_WGSL,U,[]);
   pass.setScissorRect(0,0,GPU.bw,GPU.bh);
@@ -135,7 +154,7 @@ function gpuClouds(p,camx,camy){
 }
 /* ── дымка шириной в кисть (M304, §13) — поле над грядами ──
    Тон — сегодняшний воздух (ambRGB); рисунок медленных прядей — от зерна. */
-const GHZ=new Float32Array(12);
+const GHZ=new Float32Array(16);
 const GHZ_WGSL=SKY_NOISE_WGSL+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let y0=fu.v[1].x;let h=fu.v[1].y;
@@ -143,14 +162,22 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   if(t<=0.||t>=1.){return vec4f(0.);}
   let w=.72+.56*fbm(vec2f((p.x+fu.v[1].z)/430.,p.y/28.)+vec2f(fu.v[1].w,0.),3);
   let k=select((1.-t)/.45,t/.55,t<.55);
-  let ha=fu.v[0].w*clamp(k,0.,1.)*w;
-  return vec4f(fu.v[0].rgb*ha,ha);
+  var ha=fu.v[0].w*clamp(k,0.,1.)*w;
+  let sd=length((p-fu.v[2].xy)*vec2f(.55,1.))/fu.res.w;
+  let g=fu.v[2].z*exp(-sd*5.)*clamp(k*1.4,0.,1.);
+  let hc=mix(fu.v[0].rgb,fu.v[3].rgb,clamp(g*1.6,0.,1.));
+  ha=clamp(ha+g*.62,0.,1.);
+  return vec4f(hc*ha,ha);
 }`;
 function hazeBand(p,y0,h){
   const pass=gpuNext();if(!pass)return;
   const R=skyRoll(p),c=ambRGB(p),U=GHZ;
   U[0]=c[0]/255;U[1]=c[1]/255;U[2]=c[2]/255;U[3]=(p.T.atm==="отсутствует"?.10:.34)*R.haze[0];
   U[4]=y0;U[5]=h;U[6]=(G.viewX||0)*.08+(G.t%100000)*.03;U[7]=R.haze[1];
+  /* низкая звезда за грядой: сила — только у горизонта и в воздухе */
+  const SS=sunSpot(p),sc=starRGB(),sa=SS.alt;
+  U[8]=SS.x;U[9]=SS.y;U[10]=p.T.atm==="отсутствует"?0:clamp(1-Math.abs(sa-.06)*4.5,0,1)*.9;
+  U[12]=sc[0]/255;U[13]=sc[1]/255;U[14]=sc[2]/255;
   if(!skyClip(pass,0,y0-h,W,y0+h*.36))return;
   gpuField(pass,"ghaze",GHZ_WGSL,U,[]);
   pass.setScissorRect(0,0,GPU.bw,GPU.bh);
