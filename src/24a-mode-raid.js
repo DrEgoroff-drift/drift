@@ -110,15 +110,18 @@ function sysPirateBase(){
 const PB_K=16/22,PB_M=Math.sqrt(1-PB_K*PB_K);
 function pirateBaseGpu(pass,PB,x,y,s){
   const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
-  const alb=HL?[.36,.29,.38]:[.38,.31,.30],lamp=HL?[197,138,224]:[255,70,52];
+  /* корпус — вороной металл, красное только огнями; у логова металл с лиловым отливом */
+  const alb=HL?[.25,.22,.29]:[.23,.24,.235],lamp=HL?[197,138,224]:[255,70,52];
   const sc0=(typeof starRGB==="function")?starRGB():[255,244,214],sm=Math.max(1,sc0[0],sc0[1],sc0[2]),sc=[sc0[0]/sm,sc0[1]/sm,sc0[2]/sm];
   const ln=Math.hypot(PB.x,PB.y)||1,L0=[-PB.x/ln*.9,-PB.y/ln*.9,.42],Ll=Math.hypot(L0[0],L0[1],L0[2]),L=[L0[0]/Ll,L0[1]/Ll,L0[2]/Ll];
   /* план (u,v,z) → экран: наклон вокруг оси x; z — вверх от плоскости базы */
   const P=(u,v,z)=>[x+u*s,y+(v*PB_K-z*PB_M)*s];
   const N=(nu,nv,nz)=>{const a=[nu,nv*PB_K-nz*PB_M,nv*PB_M+nz*PB_K],l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];};
-  /* отсвет сверху-спереди, холодный: в тени скаты всё равно различимы */
-  const lit=(n,k)=>{const d=Math.max(0,n[0]*L[0]+n[1]*L[1]+n[2]*L[2]),f=Math.max(0,-n[1]*.6+n[2]*.8),m=k||1;
-    return [0,1,2].map(i=>Math.min(255,255*alb[i]*m*(sc[i]*d*1.15+[.16,.17,.22][i]+f*[.2,.22,.3][i])));};
+  /* отсвет сверху-спереди, холодный: в тени скаты всё равно различимы; блик металла — цвета звезды */
+  const Hh=[L[0],L[1],L[2]+1],Hl=Math.hypot(Hh[0],Hh[1],Hh[2]),sg=(sc[0]+sc[1]+sc[2])/3,sw=sc.map(c=>.2*c+.8*sg);
+  const lit=(n,k)=>{const d=Math.max(0,n[0]*L[0]+n[1]*L[1]+n[2]*L[2]),f=Math.max(0,-n[1]*.6+n[2]*.8),m=k||1,
+    sp=Math.pow(Math.max(0,(n[0]*Hh[0]+n[1]*Hh[1]+n[2]*Hh[2])/Hl),16)*.3;
+    return [0,1,2].map(i=>Math.min(255,255*(alb[i]*m*(sw[i]*d*1.7+[.22,.24,.29][i]+f*[.27,.31,.42][i])+sw[i]*sp*m)));};
   const R=22,HW=5,HC=7,ph=G.t*.002,V=[];
   for(let i=0;i<5;i++){const a=i*TAU/5+ph;V.push([Math.cos(a)*R,Math.sin(a)*R]);}
   const SH=[],E=[],BK=[],FR=[];
@@ -126,8 +129,9 @@ function pirateBaseGpu(pass,PB,x,y,s){
   for(let i=0;i<4;i++){const a=i*TAU/4-G.t*.004,cu=Math.cos(a),sv=Math.sin(a),to=sv>0?FR:BK;
     const A=P(cu*19,sv*19,-1.5),B=P(cu*33,sv*33,-1.5),nr=N(cu*.3,sv*.3,1),c=lit(nr,.8);
     to.push([2,A[0],A[1],B[0],B[1],.9*s,0,c[0],c[1],c[2],1]);
-    const cc=lit(N(cu,sv,.6),.9);to.push([1,B[0],B[1],2.3*s,0,0,0,cc[0],cc[1],cc[2],1]);
-    E.push([1,B[0],B[1],.6*s,0,0,2.4*s,lamp[0],lamp[1],lamp[2],(Math.sin(G.t*.09+i*1.7)>.3)?.85:.12]);}
+    const cc=lit(N(cu,sv,.6),.9);to.push([1,B[0],B[1],1.15*s,0,0,0,cc[0],cc[1],cc[2],1]);
+    /* один малый огонь на макушке капсулы */
+    const w=P(cu*33,sv*33,-.5);E.push([1,w[0],w[1],.3*s,0,0,.8*s,lamp[0],lamp[1],lamp[2],(Math.sin(G.t*.09+i*1.7)>.3)?.9:.25]);}
   SH.push(...BK);
   const sil=[];
   for(let i=0;i<5;i++){const a=V[i],b=V[(i+1)%5],mu=(a[0]+b[0])/2,mv=(a[1]+b[1])/2,ml=Math.hypot(mu,mv);
@@ -135,9 +139,13 @@ function pirateBaseGpu(pass,PB,x,y,s){
     if(n[2]>0){   /* стена к нам */
       const c=lit(n,.85);
       gpuQuad(SH,P(a[0],a[1],0),P(b[0],b[1],0),P(b[0],b[1],-HW),P(a[0],a[1],-HW),[c[0],c[1],c[2],1],0);
-      /* окна: тлеющий ряд вдоль стены; по карнизу — ходовые огни, тусклые и ровные */
-      for(let k=1;k<=5;k++){const t=k/6,w=P(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,-HW*.5);
-        E.push([1,w[0],w[1],.4*s,0,0,.9*s,255,190,120,.7]);}
+      /* окна: шаг сбит, часть тёмные — жилой ряд, а не схема; по карнизу — красная полоса и ходовые огни */
+      for(let k=0,t=.06;k<7;k++){const h=hashi(PB.seed>>>0,i*8+k,0x3B1);t+=.07+.16*((h&255)/255);if(t>.94)break;
+        if(((h>>8)&255)<90)continue;
+        const w=P(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,-HW*(.35+.3*(((h>>16)&255)/255)));
+        E.push([1,w[0],w[1],.4*s,0,0,.9*s,255,190,120,((h>>24)&255)<60?.3:.7]);}
+      const e0=P(a[0],a[1],-.35),e1=P(b[0],b[1],-.35);
+      E.push([2,e0[0],e0[1],e1[0],e1[1],.14*s,.4*s,lamp[0],lamp[1],lamp[2],.3]);
       for(let k=1;k<5;k++){const t=(k+.5)/6,u=a[0]+(b[0]-a[0])*t,v=a[1]+(b[1]-a[1])*t,q0=P(u,v,-.5),q1=P(u,v,-HW+.3);
         SH.push([2,q0[0],q0[1],q1[0],q1[1],.22*s,0,c[0]*.55,c[1]*.55,c[2]*.55,.9]);}
       for(let k=0;k<3;k++){const t=(k+.5)/3,w=P(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,-.4);
@@ -153,14 +161,14 @@ function pirateBaseGpu(pass,PB,x,y,s){
     const A=P(a[0],a[1],0),B=P(b[0],b[1],0);SH.push([5,C[0],C[1],A[0],A[1],B[0],B[1],c[0],c[1],c[2],1,5]);}
   /* рёбра скатов — фаска ловит свет ярче обоих соседних скатов; по кромке крыши — тёмный шов карниза */
   for(let i=0;i<5;i++){const A=P(V[i][0],V[i][1],0),c0=RC[i],c1=RC[(i+4)%5],m=Math.max(c0[0]+c0[1],c1[0]+c1[1])===c0[0]+c0[1]?c0:c1;
-    SH.push([2,C[0],C[1],A[0],A[1],.3*s,0,Math.min(255,m[0]*1.4+22),Math.min(255,m[1]*1.4+19),Math.min(255,m[2]*1.4+24),.9]);
-    const B=P(V[(i+1)%5][0],V[(i+1)%5][1],0);SH.push([2,A[0],A[1],B[0],B[1],.3*s,0,16,12,14,.7]);
+    SH.push([2,C[0],C[1],A[0],A[1],.3*s,0,Math.min(255,m[0]*1.5+26),Math.min(255,m[1]*1.5+26),Math.min(255,m[2]*1.5+30),.9]);
+    const B=P(V[(i+1)%5][0],V[(i+1)%5][1],0);SH.push([2,A[0],A[1],B[0],B[1],.3*s,0,11,12,16,.7]);
     /* шов панелей поперёк ската, на середине высоты */
     const a=V[i],b=V[(i+1)%5],h0=P(a[0]*.55,a[1]*.55,HC*.45),h1=P(b[0]*.55,b[1]*.55,HC*.45);
-    SH.push([2,h0[0],h0[1],h1[0],h1[1],.22*s,0,RC[i][0]*.45,RC[i][1]*.45,RC[i][2]*.45,.9]);
-    /* люки на скате — тёплые точки */
-    for(let j=0;j<2;j++){const h=hashi(PB.seed>>>0,i*2+j,0x7A7),t=.2+.6*((h&255)/255),rr=.3+.35*(((h>>8)&255)/255),w=P((a[0]+(b[0]-a[0])*t)*rr,(a[1]+(b[1]-a[1])*t)*rr,HC*(1-rr));
-      E.push([1,w[0],w[1],.35*s,0,0,.8*s,255,200,140,.6]);}}
+    SH.push([2,h0[0],h0[1],h1[0],h1[1],.24*s,0,RC[i][0]*.36,RC[i][1]*.36,RC[i][2]*.36,.95]);
+    /* люки на скате — от нуля до трёх, где попало, часть едва тлеет */
+    for(let j=0,nj=hashi(PB.seed>>>0,i,0x7A8)%4;j<nj;j++){const h=hashi(PB.seed>>>0,i*4+j,0x7A7),t=.12+.76*((h&255)/255),rr=.25+.5*(((h>>8)&255)/255),w=P((a[0]+(b[0]-a[0])*t)*rr,(a[1]+(b[1]-a[1])*t)*rr,HC*(1-rr));
+      E.push([1,w[0],w[1],.35*s,0,0,.8*s,255,200,140,((h>>16)&255)<80?.2:.6]);}}
   SH.push(...FR);
   /* мачта и ядро на ней */
   const M=P(0,0,HC+6),mc=lit(N(1,0,.2),.8);SH.push([2,C[0],C[1],M[0],M[1],.55*s,0,mc[0],mc[1],mc[2],1]);
@@ -174,7 +182,7 @@ function pirateBaseGpu(pass,PB,x,y,s){
     SH.push([2,A[0],A[1],B[0],B[1],.6*s,0,255*sc[0],255*sc[1],255*sc[2],+(.7*Math.pow(Math.min(f,1),1.5)).toFixed(3)]);}
   gpuShapes(pass,SH);gpuShapes(pass,E,{blend:"add"});
   domLabel("pbase",x,y+30*s+6,((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),"9px ui-monospace,monospace",
-    HL?"rgba(197,138,224,.8)":"rgba(220,90,70,.65)","center");
+    HL?"rgba(197,138,224,.8)":"rgba(196,196,204,.6)","center");
 }
 function drawPirateBase(zx,zy,Z){
   const PB=sysPirateBase();if(!PB)return;

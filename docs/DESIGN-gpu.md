@@ -767,6 +767,17 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   pass, not a sprite, because the vertices slide. The name moved to `y+30s+6`, clear of the front truss.
   Pairs vs HEAD at zoom 1.4, box r64 (toward / away from the star): 760 +31 %/+5 % light, +12 %/0 %
   sharpness; 390 dpr 1.5 +25 %/+4 %, +16 %/+6 %. GPU errors 0.
+  Second pass (Контроль on c4f3b2e0: «toward the star the whole body is salmon — a plastic lampshade»): the hull
+  is dark raven metal, albedo near neutral; the key light takes only 20 % of the star's chroma (a red star
+  turned any warmth pink), the fill stays cold, and a small star-coloured specular reads it as metal. Red is
+  accent only: corner and mast beacons, a thin red stripe along the eave, eave running lights, the pod lights.
+  The label is grey (the lair keeps violet). Pods halved (r 2.3→1.15), lit as the body, one small blinking red
+  light each instead of a big glowing ball. Windows lost the grid: wall windows at hashed irregular steps with
+  about a third dark and a few dim, roof hatches 0–3 per facet anywhere, some barely lit. Ridge bevels and roof
+  seams got more contrast so the shadow side keeps its edges once the red balls are gone.
+  Pairs vs c4f3b2e0, toward / away from the star: zoom 1.4 — 760 +8.1 %/+0.6 % light, +7.2 %/+1.0 %
+  sharpness; 390 +6.7 %/+0.2 %, +9.6 %/+4.3 %; zoom 1 — 760 +9.5 %/+3.3 %, +10.6 %/+5.2 %; 390
+  +7.6 %/+2.0 %, +11.6 %/+7.6 %. GPU errors 0.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
