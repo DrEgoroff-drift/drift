@@ -11,10 +11,19 @@ Worker session «Флот: облако → main»; Контроль is «Опт
 - [x] 2. origin/main 4778c719 (0.467.0) merged — `a860d9ce`.
 - [x] 2b. Interface drawn after `gpuWorld` (the cloud's zones still expect `#hud`) → `#ovl`:
   only the road did it (see below).
-- [ ] 3. Checks: Node tier, `-Full -Jobs 3`, `-Mobile`, `docs/tour.py`.
-- [ ] 4. Pairs 760 / 390 against origin/main.
+- [x] 3. Checks at 39fe6de3: Node tier green; `-Full` and `-Mobile` red only on golden frames
+  (Контроль's call); `docs/tour.py` green. The pipeline table (`08b1`) was re-accepted with
+  `-Accept -Only конвейеры` by the author's word in chat; golden frames were not touched.
+- [x] 3b. The hq / hqfull stands open HQ with `openHq()` (`#hqbtn` is gone) — f1f868d6.
+- [x] 3c. The 2D census over 25 scenes, the bake pool's ceiling, the guard for 2D after
+  `gpuWorld` — a5e849e3 (see below).
+- [x] 3d. origin/main 43155172 (0.469.0) merged — deab3172; conflicts only in build artifacts.
+- [x] 3e. `-Full -Jobs 3`: red only on golden frames (the same 13 scenes, the same numbers);
+  pool numbers per suite taken, the `·pool` log line dropped; `once` sets die after their bake.
+- [ ] 4. Pairs 760 / 390 against origin/main: the look scenes red in golden + the belt cockpit
+  «cloud vs main» (`a860d9ce^1`).
 - [ ] 5. The six regressions + base lamps + HQ manager.
-- [ ] Last origin/main (0.468.0) merged before handing over.
+- [ ] S23 cadence main vs fleet (flight, landing), cold, A/B/A; `-Mobile`, tour; hand over.
 
 ## Decisions
 
@@ -42,6 +51,52 @@ frame in the scene under `#ovl` would let the pitch ladder and target frame cros
 What is lost against the cloud: the star light on the frame's edges and the star's veil/ghost on
 the glass. If Контроль wants it back, the way is a lit-master kind in `#ovl` (the image kind
 sampling the master's alpha towards the star), not a second frame.
+
+### The bake pool: a ceiling, a guard, `once` sets
+Main's pool (0.469.0) evicted by age into `GPU.trash` and sent `once` sets and sets above half the
+ceiling to the trash too — each lived until the next `gpuFrame`, so a burst of bakes in one frame
+held all of them at once. Here:
+
+- `GC_POOL_CAP` (80 MB) bounds the pool's live sets plus those waiting to be destroyed, at every
+  moment. Room is made *before* a creation: the oldest cold set no bake holds is destroyed at once.
+  That is legal because pool textures are written only in the bake's own encoder, which is
+  submitted inside the bake. The warm sets (`GC_POOL_WARM`, ~54 MB) are never evicted.
+- A set handed to the bake being encoded is never destroyed before that submit: it waits in
+  `dead` for `gcPoolFlush` (the end of the outermost `gpuBakeRedo`).
+- A `once` bake's set lives for that one bake and dies right after its submit: the rack master
+  2508×1008 (60 MB) and its shadow (65 MB), the belt cockpit, the instrument. Same number of
+  creations as main, a frame less of life.
+- A non-`once` set bigger than the ceiling leaves above the warm sets (a full-frame room) sits in a
+  per-role slot until it is replaced or the scene changes (`gcPoolLeave` from `gpuFrame`); a
+  re-bake of the same room reuses it.
+- The guard in `tests/90-harness.js`: a suite whose pool peak passes the ceiling is red.
+
+`-Full` after the change: pool peak ≤ 79.8 MB in every suite. 31 slot creations, at most one per
+scene entry, except the gesture suite: up to five in one entry, because its window resizes re-key the
+base. 61 `once` creations: rack, pipelines, the 2D gates, cockpit, the after-world guard,
+gestures.
+
+The largest moment is 272 MB: the base at 2560×1440 — pool 74 MB plus the slot set of one
+base layer, 4096×2112 at 4× MSAA with stencil = 198 MB. Measured on the base stand
+(`baseBake`, all four world-size layers):
+
+| window | layers above the free room | slot now | peak, all |
+|---|---|---|---|
+| 390×844, DPR 2.625 | 1587×1350 | 51.6 MB | 131 MB |
+| 1280×800 | 1536×832 | 29.3 MB | 108 MB |
+| 2560×1440 | 3021×944, 3474×944, 4078×2092, 2039×1046 | 51.0 MB | 277 MB |
+
+Main creates each of these per bake and trashes it a frame later; here the last one is held for
+the visit, and at 2560×1440 the entry replaces the slot four times. This is main's G11 base, not a
+fleet zone — Контроль's call. The cheap fix is baking the base layers without MSAA or in tiles.
+
+### The guard: no 2D on `#c` after `gpuWorld`
+`tests/91zzzzzzy6-after-world.js` hooks `#c` the way 08c does (`gpuFrontHook`, then `MAIN_CTX`'s
+own methods — prototype wrappers are blind to them) and runs every `lookScenes()` scene and the
+road for 12 frames. After `gpuWorld` the count must be zero, and a scene that uploads `#c` must
+also show a 2D call (the hook's truth check). A self-test injects one `fillRect` after
+`gpuWorld` and expects exactly one. GPU-3's `91zzzzzzy3-gate2d` wraps prototypes only, so on `#c`
+it sees setters but not method calls.
 
 ### Ground grain on the landing
 Main's 9ee4edff (`planetMat` steps its own job, `matRows` for the planet frame) and the cloud's

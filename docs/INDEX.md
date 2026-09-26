@@ -150,9 +150,9 @@ ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:556-603
-artGet                       src/08ca-gpu-canvas.js:522
+artGet                       src/08ca-gpu-canvas.js:525
 ARTIFACTS                    src/12h-relic.js:48-63
-artPut                       src/08ca-gpu-canvas.js:523-662
+artPut                       src/08ca-gpu-canvas.js:526-665
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
@@ -180,7 +180,7 @@ AW_KS                        tests/91zzzzzzy6-after-world.js:12
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32-41
-bakeIdle                     tests/90-harness.js:431-438
+bakeIdle                     tests/90-harness.js:430-437
 bakeKeep                     src/08c-gpu-kit.js:74-79
 bankTransform                src/03b-hull-paint.js:59-66
 BANYA_EVERY                  src/21ac1-base-banya.js:19
@@ -1121,7 +1121,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120-124
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:586-589
+coopStamp                    tests/90-harness.js:585-588
 coopVisitReset               src/12aj-coop.js:62
 CORONA_IN                    src/17-mode-system.js:26
 COSM_CHIME                   src/12va-wander-cosm.js:59-62
@@ -1835,7 +1835,7 @@ epiPerson                    src/12ap-notebook.js:50-54
 epiReached                   src/12ap-notebook.js:85-89
 episodeWith                  src/12ap-notebook.js:113-116
 epiWitness                   src/12ap-notebook.js:39-47
-eq                           tests/90-harness.js:195
+eq                           tests/90-harness.js:194
 ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
@@ -2133,7 +2133,7 @@ fwdStep                      src/21b6-base-forward.js:99-116
 fxInc                        tests/91zzzw-fx.js:18-22
 fxWorld                      tests/91zzzw-fx.js:6-16
 G                            src/08-state.js:207-293
-G_BOOT_KEYS                  tests/90-harness.js:210
+G_BOOT_KEYS                  tests/90-harness.js:209
 G11_CPU                      src/28z-fps-probe.js:185
 G11_GPU_KILL                 src/28z-fps-probe.js:210-241
 g11CpuHook                   src/28z-fps-probe.js:186-191
@@ -2182,9 +2182,9 @@ GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
 GC_ATL                       src/08cb-gpu-text.js:55
-GC_BACK                      src/08ca-gpu-canvas.js:483
+GC_BACK                      src/08ca-gpu-canvas.js:486
 GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:21
-GC_BUSY                      src/08ca-gpu-canvas.js:447
+GC_BUSY                      src/08ca-gpu-canvas.js:449
 GC_COL                       src/08ca-gpu-canvas.js:34
 GC_DEF                       src/08ca-gpu-canvas.js:88
 GC_GLYPHS                    src/08cb-gpu-text.js:17-50
@@ -2193,14 +2193,14 @@ GC_MAT_K                     src/08cd-gpu-mat.js:18
 GC_MAT_WGSL                  src/08cd-gpu-mat.js:19
 GC_MIP_WGSL                  src/08ca-gpu-canvas.js:351
 GC_MISS                      src/08ca-gpu-canvas.js:30
-GC_ONCE                      src/08ca-gpu-canvas.js:532
+GC_ONCE                      src/08ca-gpu-canvas.js:535
 GC_OPS                       src/08ca-gpu-canvas.js:13-61
 GC_OPX                       src/08ca-gpu-canvas.js:29
 GC_P2D                       src/08caa-gpu-path.js:11
 GC_PCMD                      src/08caa-gpu-path.js:13
 GC_POOL_CAP                  src/08ca-gpu-canvas.js:416
 GC_POOL_WARM                 src/08ca-gpu-canvas.js:417
-GC_PX                        src/08ca-gpu-canvas.js:528
+GC_PX                        src/08ca-gpu-canvas.js:531
 GC_RAMPS                     src/08ca-gpu-canvas.js:68
 GC_REP                       src/08cab-gpu-pattern.js:10
 GC_SHADOW_INK                src/08cb-gpu-text.js:11
@@ -2208,22 +2208,22 @@ GC_ST                        src/08ca-gpu-canvas.js:360-384
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
-GC_VA                        src/08ca-gpu-canvas.js:529
+GC_VA                        src/08ca-gpu-canvas.js:532
 GC_WGSL                      src/08ca-gpu-canvas.js:300
 gcAtlas                      src/08cb-gpu-text.js:56-70
-gcBack                       src/08ca-gpu-canvas.js:484
+gcBack                       src/08ca-gpu-canvas.js:487
 gcBlurDesc                   src/08cc-gpu-shadow.js:38
 gcBlurPipe                   src/08cc-gpu-shadow.js:35-48
 gcColor                      src/08ca-gpu-canvas.js:42-61
 GcCtx                        src/08ca-gpu-canvas.js:97-244
 gcDash                       src/08ca-gpu-canvas.js:254-291
-gcDrop                       src/08ca-gpu-canvas.js:472
+gcDrop                       src/08ca-gpu-canvas.js:475
 gcFan                        src/08ca-gpu-canvas.js:250
 GcGrad                       src/08ca-gpu-canvas.js:69-87
-gcHold                       src/08ca-gpu-canvas.js:469
+gcHold                       src/08ca-gpu-canvas.js:472
 gcImg                        src/08ca-gpu-canvas.js:293-384
 gcInv                        src/08ca-gpu-canvas.js:62
-gcKill                       src/08ca-gpu-canvas.js:470
+gcKill                       src/08ca-gpu-canvas.js:473
 gcLay                        src/08ca-gpu-canvas.js:374-384
 gcMat                        src/08cd-gpu-mat.js:53-64
 gcMatDesc                    src/08cd-gpu-mat.js:47
@@ -2239,20 +2239,20 @@ GcPath2D                     src/08caa-gpu-path.js:15-27
 gcPathSp                     src/08caa-gpu-path.js:51
 gcPatM                       src/08cab-gpu-pattern.js:15
 gcPatOf                      src/08cab-gpu-pattern.js:23-36
-gcPeak                       src/08ca-gpu-canvas.js:467
+gcPeak                       src/08ca-gpu-canvas.js:470
 gcPipe                       src/08ca-gpu-canvas.js:385-388
 gcPipeDesc                   src/08ca-gpu-canvas.js:389-399
-gcPool                       src/08ca-gpu-canvas.js:424-506
-gcPoolBuf                    src/08ca-gpu-canvas.js:491-506
-gcPoolFlush                  src/08ca-gpu-canvas.js:475
-gcPoolLeave                  src/08ca-gpu-canvas.js:479
-gcPoolSet                    src/08ca-gpu-canvas.js:449-506
-gcPoolSpec                   src/08ca-gpu-canvas.js:419-506
+gcPool                       src/08ca-gpu-canvas.js:424-509
+gcPoolBuf                    src/08ca-gpu-canvas.js:494-509
+gcPoolFlush                  src/08ca-gpu-canvas.js:478
+gcPoolLeave                  src/08ca-gpu-canvas.js:482
+gcPoolSet                    src/08ca-gpu-canvas.js:451-509
+gcPoolSpec                   src/08ca-gpu-canvas.js:419-509
 gcRectSp                     src/08ca-gpu-canvas.js:248
 gcRep                        src/08cab-gpu-pattern.js:17
 gcReplay                     src/08caa-gpu-path.js:35
 gcRepSmp                     src/08cab-gpu-pattern.js:38
-gcRoom                       src/08ca-gpu-canvas.js:463-506
+gcRoom                       src/08ca-gpu-canvas.js:466-509
 gcShadowPack                 src/08cc-gpu-shadow.js:42-48
 gcShadowPasses               src/08cc-gpu-shadow.js:52-65
 gcStrokeLine                 src/08ca-gpu-canvas.js:267-291
@@ -2454,12 +2454,12 @@ GPU_SHP_WGSL                 src/08c-gpu-kit.js:258
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
 gpuAfterWarm                 src/08b0-gpu-pipe.js:73-77
 gpuArena                     src/08c-gpu-kit.js:154-164
-gpuBake                      src/08ca-gpu-canvas.js:501-506
-gpuBaked                     src/08ca-gpu-canvas.js:510-515
-gpuBakeDrop                  src/08ca-gpu-canvas.js:516
-gpuBakeLive                  src/08ca-gpu-canvas.js:519
-gpuBakeRedo                  src/08ca-gpu-canvas.js:533
-gpuBakeRedo0                 src/08ca-gpu-canvas.js:535-662
+gpuBake                      src/08ca-gpu-canvas.js:504-509
+gpuBaked                     src/08ca-gpu-canvas.js:513-518
+gpuBakeDrop                  src/08ca-gpu-canvas.js:519
+gpuBakeLive                  src/08ca-gpu-canvas.js:522
+gpuBakeRedo                  src/08ca-gpu-canvas.js:536
+gpuBakeRedo0                 src/08ca-gpu-canvas.js:538-665
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:613-618
@@ -3410,7 +3410,7 @@ LAND_GY                      src/19f-lander.js:10
 landerGearTick               src/19f-lander.js:15-23
 landerInk                    tests/91j-art.js:155-169
 landerLen                    src/19f-lander.js:11
-landOnTestPlanet             tests/90-harness.js:415-421
+landOnTestPlanet             tests/90-harness.js:414-420
 landStartY                   src/19-mode-landing.js:38-43
 LANE_BUOY                    src/17g-sys-lane.js:68
 LANE_CHASE                   src/17g-sys-lane.js:16
@@ -3989,7 +3989,7 @@ natSwarmTick                 src/12az-fx-nat.js:40-51
 navAction                    src/15-input.js:278-295
 nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
-near                         tests/90-harness.js:196
+near                         tests/90-harness.js:195
 nearestPOI                   src/20a-poi.js:236-241
 nearestStation               src/12-economy.js:206-221
 NEB_COMP                     src/16a-space.js:119
@@ -4012,7 +4012,7 @@ neonBake                     src/17k0-neon.js:12-15
 neonDraw                     src/17k0-neon.js:47-51
 neonJob                      src/17k0-neon.js:20-44
 neonKey                      src/17k0-neon.js:11
-NET_FROM                     tests/90-harness.js:474
+NET_FROM                     tests/90-harness.js:473
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
 NEWS_ALL_INC                 tests/91zzzw-news.js:17
@@ -4158,7 +4158,7 @@ offerTake                    src/11ah-offer.js:239-255
 offerTick                    src/11ah-offer.js:189-208
 offerTtl                     src/11ah-offer.js:70
 offerVisit                   src/11ah-offer.js:134-163
-ok                           tests/90-harness.js:189-193
+ok                           tests/90-harness.js:188-192
 ONE_BEAR_ERR                 src/21b3-base-hunt.js:26
 ONE_ID                       src/21b3-base-hunt.js:34
 ONE_JOB                      src/21b3-base-hunt.js:25
@@ -4226,7 +4226,7 @@ opisUnfit                    src/27j-ui-opis.js:218
 opisWear                     src/27j-ui-opis.js:247-251
 OPT_TABS                     src/27-ui-ship.js:360
 optGroups                    src/27-ui-ship.js:363-380
-OPTS_BOOT                    tests/90-harness.js:227
+OPTS_BOOT                    tests/90-harness.js:226
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 optTab                       src/27-ui-ship.js:362
 orbPathOf                    src/17-mode-system.js:487-497
@@ -5191,9 +5191,9 @@ rescueSigNow                 src/16c-rescue.js:555
 rescueSync                   src/16c-rescue.js:557-570
 rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
-RESET_ABIL0                  tests/90-harness.js:261
+RESET_ABIL0                  tests/90-harness.js:260
 resetArm                     src/26-ui-station.js:694
-resetWorld                   tests/90-harness.js:262-413
+resetWorld                   tests/90-harness.js:261-412
 resize                       src/08-state.js:29-66
 resModeCap                   src/28-loop.js:257-262
 resSay                       src/28-loop.js:243-246
@@ -5457,7 +5457,7 @@ rungPoints                   src/12ad-site.js:45-68
 rungRingSegs                 src/12ae-ladder.js:56
 rungRoman                    src/12ae-ladder.js:47
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:491-580
+runTests                     tests/90-harness.js:490-579
 RUSH_SHIFTS                  src/18j-rail-rush.js:6
 rushAt                       src/18j-rail-rush.js:7
 rushFuelMul                  src/18j-rail-rush.js:12
@@ -5612,7 +5612,7 @@ setBig                       src/27z-telemetry.js:112-118
 setPair                      src/27z-telemetry.js:127-132
 setPct                       src/27z-telemetry.js:102-108
 setSt                        src/27z-telemetry.js:94
-settle                       tests/90-harness.js:439-450
+settle                       tests/90-harness.js:438-449
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -5949,7 +5949,7 @@ stDel                        src/14-save.js:26
 stEmFlush                    src/17c3-station-live.js:112-117
 stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
-steps                        tests/90-harness.js:452
+steps                        tests/90-harness.js:451
 stepWorld                    src/28-loop.js:378-398
 stGet                        src/14-save.js:8
 stGround                     src/17c-system-draw.js:108
@@ -6042,14 +6042,14 @@ subHereBy                    src/05b3-sub.js:12-15
 subOff                       src/05b3-sub.js:33
 subRush                      src/05b3-sub.js:64-70
 subTick                      src/05b3-sub.js:50-62
-suite                        tests/90-harness.js:107-188
+suite                        tests/90-harness.js:107-187
 SUITE_KEYS                   tests/90-harness.js:90
 SUITE_OPTS                   tests/90-harness.js:92
 SUITE_SEQ                    tests/90-harness.js:77
 SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
-suiteOrder                   tests/90-harness.js:459-466
+suiteOrder                   tests/90-harness.js:458-465
 suiteWin                     tests/90-harness.js:94-99
 suitFailure                  src/23-mode-dig.js:135-143
 suitHit                      src/23-mode-dig.js:128-134
@@ -6175,24 +6175,24 @@ techLv                       src/04-mods.js:48
 tell                         src/11-log.js:64-68
 TELL_SFX                     src/11-log.js:62
 TEST                         tests/90-harness.js:10
-TEST_CHRON                   tests/90-harness.js:258
+TEST_CHRON                   tests/90-harness.js:257
 TEST_FILES                   tests/90-harness.js:20
 TEST_FULL                    tests/90-harness.js:60
-TEST_HOUR                    tests/90-harness.js:237
+TEST_HOUR                    tests/90-harness.js:236
 TEST_NODE                    tests/90-harness.js:86
 TEST_ONLY                    tests/90-harness.js:14
 TEST_ONLY_ANY                tests/90-harness.js:16
 TEST_PICK                    tests/90-harness.js:76
 TEST_PROBE                   tests/90-harness.js:58
-TEST_SEED                    tests/90-harness.js:236
+TEST_SEED                    tests/90-harness.js:235
 TEST_SHARD                   tests/90-harness.js:30
 TEST_SHUFFLE                 tests/90-harness.js:70
 TEST_SKIP                    tests/90-harness.js:64
-TEST_SUITES                  tests/90-harness.js:581
-TEST_T0                      tests/90-harness.js:238
+TEST_SUITES                  tests/90-harness.js:580
+TEST_T0                      tests/90-harness.js:237
 TEST_TIMES                   tests/99-run.js:18
-testNetHits                  tests/90-harness.js:480-490
-testSource                   tests/90-harness.js:475-479
+testNetHits                  tests/90-harness.js:479-489
+testSource                   tests/90-harness.js:474-478
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:358-375
@@ -6319,14 +6319,14 @@ tvHop                        tests/91zzzzzw-travel.js:36-48
 tvKeys                       tests/91zzzzzw-travel.js:15
 tvSizes                      tests/91zzzzzw-travel.js:17-34
 TYPES                        src/02-world.js:151-174
-UI_BOOT                      tests/90-harness.js:219
-UI_SEL_BOOT                  tests/90-harness.js:254
+UI_BOOT                      tests/90-harness.js:218
+UI_SEL_BOOT                  tests/90-harness.js:253
 uidRand                      src/01-core.js:97-100
 uiFont                       src/18c-chunks.js:54
 UIK                          src/08-state.js:20
 uiK                          src/18c-chunks.js:53
 uiScale                      src/08-state.js:28
-uiSelRestore                 tests/90-harness.js:256
+uiSelRestore                 tests/90-harness.js:255
 unfitPart                    src/05-parts.js:385-388
 UNIQ                         src/21b1-base-pay.js:35-44
 UNIQ_EVERY                   src/21b1-base-pay.js:45
@@ -6901,7 +6901,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 30 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 56 КБ
+## src/08ca-gpu-canvas.js · 57 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08caa-gpu-path.js · 5 КБ
@@ -8123,7 +8123,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/29i-spa-draw.js · 29 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 54 КБ
+## tests/90-harness.js · 53 КБ
   · автотесты: каркас:1
 
 ## tests/90a-tools.js · 45 КБ
