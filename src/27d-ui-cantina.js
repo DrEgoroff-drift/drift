@@ -112,7 +112,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(d.y>0.){
       let hw=10.+(46.*cone-10.)*d.y/max(cy-38.,1.);
       /* конус с кромкой (как у 2D-трапеции) и ярче у абажура */
-      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/max(hw,1.)))*(1.1-.8*clamp(d.y/max(cy-38.,1.),0.,1.))*smoothstep(cy+5.,cy-3.,q.y);
+      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/max(hw,1.)))*(1.1-.8*clamp(d.y/max(cy-38.,1.),0.,1.))*(1.-smoothstep(cy-3.,cy+5.,q.y));
       cs+=cn;
       beam+=lc*cn*(.060+.090*haze)*warm*pw;
     }

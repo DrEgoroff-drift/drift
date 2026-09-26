@@ -134,7 +134,7 @@ fn rmotes(q:vec2f,t:f32,s:f32,dens:f32)->f32{
     if(rh1(cc+vec2f(3.7,9.1))>dens){continue;}
     let m=vec2f(f32(i),f32(j))+.5+.38*sin(vec2f(t*.21,t*.17)+h*6.28);
     let r=length(f-m)/s;let sz=.55+h.x*.7;
-    a+=smoothstep(sz,sz*.25,r)*(.55+.45*sin(t*.9+h.y*20.));
+    a+=(1.-smoothstep(sz*.25,sz,r))*(.55+.45*sin(t*.9+h.y*20.));
   }}
   return a;}`;
 /* пустая кисть: без видеокарты (Node) комната «рисуется» ею ради попаданий — где

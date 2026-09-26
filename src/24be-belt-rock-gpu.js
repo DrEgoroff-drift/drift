@@ -142,6 +142,9 @@ function brockPipe(k,ms){
   if(BROCK_P.dev!==GPU.dev){for(const j in BROCK_P)delete BROCK_P[j];BROCK_P.dev=GPU.dev;}
   const key="belt."+k+(ms>1?ms:"");
   if(BROCK_P[key])return BROCK_P[key];
+  /* в таблицу прогрева — все шесть: какой вид возьмёт кадр, решает устройство (brockMs),
+     а детектор ходит одним окном; иначе телефон строил бы ×1 на входе в пояс */
+  for(const j of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPES.used.add("belt."+j+m);
   return BROCK_P[key]=gpuPipeline(key,()=>brockPipeDesc(key));
 }
 /* рецепт по ключу — для прогрева (08b0, GPU_PIPE_ONE: "belt.rock" … "belt.dust4" → brockPipeDesc) */

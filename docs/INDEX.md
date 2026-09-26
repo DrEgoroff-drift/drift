@@ -150,9 +150,9 @@ ARMED_CAP                    src/13-combat.js:12
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:556-603
-artGet                       src/08ca-gpu-canvas.js:481
+artGet                       src/08ca-gpu-canvas.js:486
 ARTIFACTS                    src/12h-relic.js:48-63
-artPut                       src/08ca-gpu-canvas.js:482-620
+artPut                       src/08ca-gpu-canvas.js:487-625
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
@@ -458,7 +458,7 @@ bCrate                       src/21aa-base-rooms.js:297-304
 bCrew                        tests/91zzzw-base.js:199-205
 bDress                       src/21aa-base-rooms.js:146-207
 BDUST_WGSL                   src/24be-belt-rock-gpu.js:109
-bdustDraw                    src/24be-belt-rock-gpu.js:281-288
+bdustDraw                    src/24be-belt-rock-gpu.js:284-291
 BEACON_COOL                  src/23-mode-dig.js:86
 beaconCool                   src/23-mode-dig.js:87
 beaconTick                   src/23-mode-dig.js:114-125
@@ -483,7 +483,7 @@ beltFwd                      src/24-mode-belt.js:144-147
 beltGpuDraw                  src/24ba-belt-gpu.js:91-233
 beltHudPush                  src/24bc-belt-hud.js:437-450
 beltIcy                      src/24-mode-belt.js:70
-beltMaw                      src/24be-belt-rock-gpu.js:275-280
+beltMaw                      src/24be-belt-rock-gpu.js:278-283
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:25-101
 BFX                          src/13z-gpu-combat.js:176
 BG                           src/16-flight.js:3
@@ -629,27 +629,27 @@ bPool                        tests/91zzzw-base.js:57
 bpRecheck                    src/12c-mgr-core.js:743-756
 bpState                      src/12c-mgr-core.js:673
 brLaws                       tests/91zzzzzc-broke.js:21-38
-BROCK                        src/24be-belt-rock-gpu.js:188
+BROCK                        src/24be-belt-rock-gpu.js:191
 BROCK_BLEND                  src/24be-belt-rock-gpu.js:130
-BROCK_LAY_WGSL               src/24be-belt-rock-gpu.js:159
-BROCK_MS_PX                  src/24be-belt-rock-gpu.js:158
+BROCK_LAY_WGSL               src/24be-belt-rock-gpu.js:162
+BROCK_MS_PX                  src/24be-belt-rock-gpu.js:161
 BROCK_NV                     src/24be-belt-rock-gpu.js:18
 BROCK_P                      src/24be-belt-rock-gpu.js:140
 BROCK_VIS                    src/24ba-belt-gpu.js:234
 BROCK_WGSL                   src/24be-belt-rock-gpu.js:19
-brockBegin                   src/24be-belt-rock-gpu.js:173-181
-brockCam                     src/24be-belt-rock-gpu.js:238-247
+brockBegin                   src/24be-belt-rock-gpu.js:176-184
+brockCam                     src/24be-belt-rock-gpu.js:241-250
 brockDesc                    src/24be-belt-rock-gpu.js:131-137
-brockDraw                    src/24be-belt-rock-gpu.js:265-272
-brockEnd                     src/24be-belt-rock-gpu.js:182-186
-brockMeshData                src/24be-belt-rock-gpu.js:191-209
-brockMs                      src/24be-belt-rock-gpu.js:160
-brockPipe                    src/24be-belt-rock-gpu.js:141-146
-brockPipeDesc                src/24be-belt-rock-gpu.js:148-153
-brockPut                     src/24be-belt-rock-gpu.js:251-264
-brockReset                   src/24be-belt-rock-gpu.js:227-236
-brockSlot                    src/24be-belt-rock-gpu.js:210-226
-brockTex                     src/24be-belt-rock-gpu.js:161-171
+brockDraw                    src/24be-belt-rock-gpu.js:268-275
+brockEnd                     src/24be-belt-rock-gpu.js:185-189
+brockMeshData                src/24be-belt-rock-gpu.js:194-212
+brockMs                      src/24be-belt-rock-gpu.js:163
+brockPipe                    src/24be-belt-rock-gpu.js:141-149
+brockPipeDesc                src/24be-belt-rock-gpu.js:151-156
+brockPut                     src/24be-belt-rock-gpu.js:254-267
+brockReset                   src/24be-belt-rock-gpu.js:230-239
+brockSlot                    src/24be-belt-rock-gpu.js:213-229
+brockTex                     src/24be-belt-rock-gpu.js:164-174
 brownBuf                     src/10-music.js:125
 brownNoise                   src/10-music.js:126-141
 brSweep                      tests/91zzzzzc-broke.js:41-72
@@ -2181,7 +2181,7 @@ GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
 GC_ATL                       src/08cb-gpu-text.js:55
-GC_BACK                      src/08ca-gpu-canvas.js:446
+GC_BACK                      src/08ca-gpu-canvas.js:451
 GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:21
 GC_COL                       src/08ca-gpu-canvas.js:34
 GC_DEF                       src/08ca-gpu-canvas.js:88
@@ -2191,14 +2191,14 @@ GC_MAT_K                     src/08cd-gpu-mat.js:18
 GC_MAT_WGSL                  src/08cd-gpu-mat.js:19
 GC_MIP_WGSL                  src/08ca-gpu-canvas.js:351
 GC_MISS                      src/08ca-gpu-canvas.js:30
-GC_ONCE                      src/08ca-gpu-canvas.js:491
+GC_ONCE                      src/08ca-gpu-canvas.js:496
 GC_OPS                       src/08ca-gpu-canvas.js:13-61
 GC_OPX                       src/08ca-gpu-canvas.js:29
 GC_P2D                       src/08caa-gpu-path.js:11
 GC_PCMD                      src/08caa-gpu-path.js:13
 GC_POOL_CAP                  src/08ca-gpu-canvas.js:416
 GC_POOL_WARM                 src/08ca-gpu-canvas.js:417
-GC_PX                        src/08ca-gpu-canvas.js:487
+GC_PX                        src/08ca-gpu-canvas.js:492
 GC_RAMPS                     src/08ca-gpu-canvas.js:68
 GC_REP                       src/08cab-gpu-pattern.js:10
 GC_SHADOW_INK                src/08cb-gpu-text.js:11
@@ -2206,10 +2206,10 @@ GC_ST                        src/08ca-gpu-canvas.js:360-384
 GC_TM                        src/08cb-gpu-text.js:13
 GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
-GC_VA                        src/08ca-gpu-canvas.js:488
+GC_VA                        src/08ca-gpu-canvas.js:493
 GC_WGSL                      src/08ca-gpu-canvas.js:300
 gcAtlas                      src/08cb-gpu-text.js:56-70
-gcBack                       src/08ca-gpu-canvas.js:447
+gcBack                       src/08ca-gpu-canvas.js:452
 gcBlurDesc                   src/08cc-gpu-shadow.js:38
 gcBlurPipe                   src/08cc-gpu-shadow.js:35-48
 gcColor                      src/08ca-gpu-canvas.js:42-61
@@ -2236,10 +2236,10 @@ gcPatM                       src/08cab-gpu-pattern.js:15
 gcPatOf                      src/08cab-gpu-pattern.js:23-36
 gcPipe                       src/08ca-gpu-canvas.js:385-388
 gcPipeDesc                   src/08ca-gpu-canvas.js:389-399
-gcPool                       src/08ca-gpu-canvas.js:424-465
-gcPoolBuf                    src/08ca-gpu-canvas.js:450-465
-gcPoolSet                    src/08ca-gpu-canvas.js:435-465
-gcPoolSpec                   src/08ca-gpu-canvas.js:419-465
+gcPool                       src/08ca-gpu-canvas.js:424-470
+gcPoolBuf                    src/08ca-gpu-canvas.js:455-470
+gcPoolSet                    src/08ca-gpu-canvas.js:438-470
+gcPoolSpec                   src/08ca-gpu-canvas.js:419-470
 gcRectSp                     src/08ca-gpu-canvas.js:248
 gcRep                        src/08cab-gpu-pattern.js:17
 gcReplay                     src/08caa-gpu-path.js:35
@@ -2435,21 +2435,21 @@ GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:185
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-50
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
-GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
+GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-56
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PL_WGSL                  src/08b-gpu.js:460
 GPU_POST_WGSL                src/08b-gpu.js:74
 GPU_SCREEN_LAYERS            src/18c-chunks.js:193
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:235
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
-gpuAfterWarm                 src/08b0-gpu-pipe.js:71-75
+gpuAfterWarm                 src/08b0-gpu-pipe.js:73-77
 gpuArena                     src/08c-gpu-kit.js:154-164
-gpuBake                      src/08ca-gpu-canvas.js:460-465
-gpuBaked                     src/08ca-gpu-canvas.js:469-474
-gpuBakeDrop                  src/08ca-gpu-canvas.js:475
-gpuBakeLive                  src/08ca-gpu-canvas.js:478
-gpuBakeRedo                  src/08ca-gpu-canvas.js:492
-gpuBakeRedo0                 src/08ca-gpu-canvas.js:493-620
+gpuBake                      src/08ca-gpu-canvas.js:465-470
+gpuBaked                     src/08ca-gpu-canvas.js:474-479
+gpuBakeDrop                  src/08ca-gpu-canvas.js:480
+gpuBakeLive                  src/08ca-gpu-canvas.js:483
+gpuBakeRedo                  src/08ca-gpu-canvas.js:497
+gpuBakeRedo0                 src/08ca-gpu-canvas.js:498-625
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:612-617
@@ -2499,10 +2499,10 @@ gpuPass                      src/08b-gpu.js:430-433
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
-gpuPipeRecipe                src/08b0-gpu-pipe.js:47-54
+gpuPipeRecipe                src/08b0-gpu-pipe.js:49-56
 gpuPipes                     src/08b-gpu.js:345-366
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
-gpuPipesWarm                 src/08b0-gpu-pipe.js:57-69
+gpuPipesWarm                 src/08b0-gpu-pipe.js:59-71
 gpuPirateBody                src/12i-pirate-hull.js:425-434
 gpuPirateLive                src/12i-pirate-hull.js:441-485
 gpuPlanet                    src/17ga-gpu-planets.js:320-337
@@ -6887,7 +6887,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08c-gpu-kit.js · 28 КБ
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
-## src/08ca-gpu-canvas.js · 52 КБ
+## src/08ca-gpu-canvas.js · 53 КБ
   · GPU-холст: 2D-контекст, что рисует видеокартой (docs/DESIGN-gpu.md, «GPU canvas»):1
 
 ## src/08caa-gpu-path.js · 5 КБ
@@ -7874,7 +7874,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/24bc-belt-hud.js · 29 КБ
   · кабина пояса на слое #ovl (GPU-3; docs/DESIGN-gpu.md):1
 
-## src/24be-belt-rock-gpu.js · 18 КБ
+## src/24be-belt-rock-gpu.js · 19 КБ
   · камни пояса в настоящем 3D (G8):1
 
 ## src/24c-mode-wanderer-draw.js · 38 КБ

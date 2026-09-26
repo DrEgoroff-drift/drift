@@ -439,8 +439,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   if(p.y>vp.y+1.&&p.y<fY+.5){
     let z=(fY-p.y)/max(fY-vp.y,1.);let w=wW(p,vp,z);
     var st=0.;
-    for(var i=0;i<6;i++){let s=wSlat(i,zA,zB);st=max(st,smoothstep(s.x-.012,s.x+.006,z)*smoothstep(s.y+.012,s.y-.006,z));}
-    st*=smoothstep(Wd*.16,Wd*.20,w.x)*smoothstep(Wd*.84,Wd*.80,w.x);
+    for(var i=0;i<6;i++){let s=wSlat(i,zA,zB);st=max(st,smoothstep(s.x-.012,s.x+.006,z)*(1.-smoothstep(s.y-.006,s.y+.012,z)));}
+    st*=smoothstep(Wd*.16,Wd*.20,w.x)*(1.-smoothstep(Wd*.80,Wd*.84,w.x));
     L+=cold*st*(.55+.9*(1.-z));
     /* стык пола со стенами — тень */
     let edge=min(w.x,Wd-w.x);L*=1.-.35*exp(-edge*edge/(Wd*Wd*.0009));
@@ -450,7 +450,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let lf=p.x<vp.x;let z=select((p.x-Wd)/(vp.x-Wd),p.x/max(vp.x,1.),lf);
     if(z>0.&&z<zc){
       let w=wW(p,vp,z);
-      if(w.y>cY&&w.y<fY){L+=gold*.95*smoothstep(Hd*.5,cY,w.y)*(1.-z*.6);}
+      if(w.y>cY&&w.y<fY){L+=gold*.95*(1.-smoothstep(cY,Hd*.5,w.y))*(1.-z*.6);}
     }
   }
   /* лампочки витрин: тёплые точки со спадом — свет на сукне и на вещи */
@@ -482,7 +482,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       let h=(w.y-cY)/max(fY-cY,1.);
       if(h<0.||h>1.){continue;}
       let xl=mix(xa,Wd*.18,h);let xr=mix(xb,Wd*.82,h);
-      dens+=smoothstep(xl-8.,xl+14.,w.x)*smoothstep(xr+8.,xr-14.,w.x)*(1.-z)*(.35+.65*h)*(s.y-s.x)*.25;
+      dens+=smoothstep(xl-8.,xl+14.,w.x)*(1.-smoothstep(xr-14.,xr+8.,w.x))*(1.-z)*(.35+.65*h)*(s.y-s.x)*.25;
     }
   }
   let haze=.55+.45*wvn2(p/vec2f(90.,60.)+vec2f(t*.05,-t*.03));

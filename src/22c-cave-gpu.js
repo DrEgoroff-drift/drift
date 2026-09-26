@@ -92,7 +92,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(h>.93){
       let o=vec2f(chs(c+17.1),chs(c+3.3))*.4+.3+.14*vec2f(sin(t*.011+h*40.),cos(t*.008+h*23.));
       let r=.35+.6*chs(c+9.9);let dd=length((fract(g)-o)*9.*K);
-      sc+=fu.v[4].rgb*beam*smoothstep(r+.7,r-.5,dd)*(.35+1.1*chs(c+5.5));
+      sc+=fu.v[4].rgb*beam*(1.-smoothstep(r-.5,r+.7,dd))*(.35+1.1*chs(c+5.5));
     }
   }
   let n=i32(fu.v[4].w);
@@ -129,7 +129,7 @@ fn waterAt(w:vec2f,t:f32,K:f32)->vec3f{
     c+=fu.v[4].rgb*col*smoothstep(.42,.78,g)*fu.v[3].w*.8;
   }
   /* край зала — не обрез: блеск сходит на нет за 30 px */
-  return c*smoothstep(P.x,P.x+30.,w.x)*smoothstep(P.y,P.y-30.,w.x);}
+  return c*smoothstep(P.x,P.x+30.,w.x)*(1.-smoothstep(P.y-30.,P.y,w.x));}
 `;
 /* маска породы: одна на пещеру, клетка = тексель, мипы — мягкие тени */
 function caveMaskCv(C){

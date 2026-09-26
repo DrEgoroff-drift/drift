@@ -120,7 +120,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let rl=max(dot(r,L),0.);
     c=c+SUN*(pow(rl,mix(900.,70.,far))*mix(4.5,1.4,far)+pow(rl,14.)*.22);
     /* мыс отражается тёмной полосой, разбитой волнами */
-    if(ch>0.){let m=smoothstep(ch*.75,0.,(p.y-hor)+gr.y*Ht*.02);c=mix(c,vec3f(.24,.33,.39),.30*m);}
+    if(ch>0.){let m=(1.-smoothstep(0.,ch*.75,(p.y-hor)+gr.y*Ht*.02));c=mix(c,vec3f(.24,.33,.39),.30*m);}
     /* валы наката: идут к борту, гаснут и рождаются вдали */
     for(var j=0;j<3;j++){
       let fj=f32(j);

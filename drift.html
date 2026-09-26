@@ -11061,7 +11061,7 @@ function gpuPipeline(key,mk,code){
    шапку и раскладку добавляет рецепт. Где выражение длиннее константы, место вызова берёт его отсюда */
 const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>GNB_EMI,"fld.gew":()=>GEW_WGSL,
   "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
-  "fld.abil.cone":()=>ABIL_CONE_WGSL};
+  "fld.abil.cone":()=>ABIL_CONE_WGSL,"fld.belt.rocklay":()=>BROCK_LAY_WGSL};
 const GPU_PIPE_SRC={
   "kit.img":()=>[GPU_IMG_WGSL],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
   gtr:()=>[GTR_WGSL],gex:()=>[GEX_WGSL],"gsy.orb":()=>[GSY_ORB_WGSL],gpl:()=>[GPL_WGSL],
@@ -11072,6 +11072,8 @@ for(const n in GPU_FLD)GPU_PIPE_SRC[n]=()=>[GPU_WGSL_COMMON+GPU_FLD_HEAD+GPU_FLD
 /* одиночные ключи — функция дескриптора в своём модуле */
 const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),
   "gnb.noise":()=>gnbNoiseDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc()};
+/* камни и пыль пояса (24be): три конвейера, каждый в двух видах — ×4 (ПК) и ×1 (телефон) */
+for(const k of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPE_ONE["belt."+k+m]=()=>brockPipeDesc("belt."+k+m);
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
 function gpuPipeRecipe(key){
   if(key.startsWith("gc:"))return {desc:gcPipeDesc(key.slice(3))};
@@ -12283,6 +12285,9 @@ function gcPool(){
   let Q=GPU.lay["gc.pool"];if(Q)return Q;
   Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0};
   for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);
+  /* прогретое не вытесняется: крупная выпечка (комната во весь кадр на ПК — набор 33 МБ) выбивала по давности
+     ходовые наборы, и тень неона снова рождалась посреди полёта (слияние флота, 26.09) */
+  for(const x of Q.t)x.warm=1;
   /* обнулить прогретое здесь же: WebGPU чистит память текстуры при первом касании — пусть оно будет за заставкой */
   const e=GPU.dev.createCommandEncoder();
   for(const x of Q.t)if(x.role!=="ramp"){const [ms,st,rs]=x.T;e.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
@@ -12297,8 +12302,10 @@ function gcPoolSet(role,w,h){
   const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
   const T=gcPoolSpec(role).map(([f,n,us])=>{by+=W*H*n*(px[f]||4);Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
   if(by>GC_POOL_CAP/2||GC_ONCE){GPU.trash.push(...T);return T;}   /* больше полупотолка или выпечка once — разовый, в пул не идёт */
-  Q.t.push({role,w:W,h:H,T,by});Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
-  while(Q.by>GC_POOL_CAP&&Q.t.length>1){const o=Q.t.shift();Q.by-=o.by;GPU.trash.push(...o.T);}
+  const nw={role,w:W,h:H,T,by};Q.t.push(nw);Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
+  /* сверх потолка уходит самый давний из непрогретых, не новый; прогретых ~54 МБ, набор в пуле — до полупотолка */
+  while(Q.by>GC_POOL_CAP){const i=Q.t.findIndex(o=>!o.warm&&o!==nw);if(i<0)break;
+    const o=Q.t.splice(i,1)[0];Q.by-=o.by;GPU.trash.push(...o.T);}
   return T;}
 /* фоны для overlay: две resolve-цели размером с MSAA-цель набора, заводятся при первой нужде */
 const GC_BACK=new WeakMap();
@@ -83019,7 +83026,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(h>.93){
       let o=vec2f(chs(c+17.1),chs(c+3.3))*.4+.3+.14*vec2f(sin(t*.011+h*40.),cos(t*.008+h*23.));
       let r=.35+.6*chs(c+9.9);let dd=length((fract(g)-o)*9.*K);
-      sc+=fu.v[4].rgb*beam*smoothstep(r+.7,r-.5,dd)*(.35+1.1*chs(c+5.5));
+      sc+=fu.v[4].rgb*beam*(1.-smoothstep(r-.5,r+.7,dd))*(.35+1.1*chs(c+5.5));
     }
   }
   let n=i32(fu.v[4].w);
@@ -83056,7 +83063,7 @@ fn waterAt(w:vec2f,t:f32,K:f32)->vec3f{
     c+=fu.v[4].rgb*col*smoothstep(.42,.78,g)*fu.v[3].w*.8;
   }
   /* край зала — не обрез: блеск сходит на нет за 30 px */
-  return c*smoothstep(P.x,P.x+30.,w.x)*smoothstep(P.y,P.y-30.,w.x);}
+  return c*smoothstep(P.x,P.x+30.,w.x)*(1.-smoothstep(P.y-30.,P.y,w.x));}
 `;
 /* маска породы: одна на пещеру, клетка = тексель, мипы — мягкие тени */
 function caveMaskCv(C){
@@ -87790,6 +87797,9 @@ function brockPipe(k,ms){
   if(BROCK_P.dev!==GPU.dev){for(const j in BROCK_P)delete BROCK_P[j];BROCK_P.dev=GPU.dev;}
   const key="belt."+k+(ms>1?ms:"");
   if(BROCK_P[key])return BROCK_P[key];
+  /* в таблицу прогрева — все шесть: какой вид возьмёт кадр, решает устройство (brockMs),
+     а детектор ходит одним окном; иначе телефон строил бы ×1 на входе в пояс */
+  for(const j of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPES.used.add("belt."+j+m);
   return BROCK_P[key]=gpuPipeline(key,()=>brockPipeDesc(key));
 }
 /* рецепт по ключу — для прогрева (08b0, GPU_PIPE_ONE: "belt.rock" … "belt.dust4" → brockPipeDesc) */
@@ -88376,8 +88386,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   if(p.y>vp.y+1.&&p.y<fY+.5){
     let z=(fY-p.y)/max(fY-vp.y,1.);let w=wW(p,vp,z);
     var st=0.;
-    for(var i=0;i<6;i++){let s=wSlat(i,zA,zB);st=max(st,smoothstep(s.x-.012,s.x+.006,z)*smoothstep(s.y+.012,s.y-.006,z));}
-    st*=smoothstep(Wd*.16,Wd*.20,w.x)*smoothstep(Wd*.84,Wd*.80,w.x);
+    for(var i=0;i<6;i++){let s=wSlat(i,zA,zB);st=max(st,smoothstep(s.x-.012,s.x+.006,z)*(1.-smoothstep(s.y-.006,s.y+.012,z)));}
+    st*=smoothstep(Wd*.16,Wd*.20,w.x)*(1.-smoothstep(Wd*.80,Wd*.84,w.x));
     L+=cold*st*(.55+.9*(1.-z));
     /* стык пола со стенами — тень */
     let edge=min(w.x,Wd-w.x);L*=1.-.35*exp(-edge*edge/(Wd*Wd*.0009));
@@ -88387,7 +88397,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let lf=p.x<vp.x;let z=select((p.x-Wd)/(vp.x-Wd),p.x/max(vp.x,1.),lf);
     if(z>0.&&z<zc){
       let w=wW(p,vp,z);
-      if(w.y>cY&&w.y<fY){L+=gold*.95*smoothstep(Hd*.5,cY,w.y)*(1.-z*.6);}
+      if(w.y>cY&&w.y<fY){L+=gold*.95*(1.-smoothstep(cY,Hd*.5,w.y))*(1.-z*.6);}
     }
   }
   /* лампочки витрин: тёплые точки со спадом — свет на сукне и на вещи */
@@ -88419,7 +88429,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       let h=(w.y-cY)/max(fY-cY,1.);
       if(h<0.||h>1.){continue;}
       let xl=mix(xa,Wd*.18,h);let xr=mix(xb,Wd*.82,h);
-      dens+=smoothstep(xl-8.,xl+14.,w.x)*smoothstep(xr+8.,xr-14.,w.x)*(1.-z)*(.35+.65*h)*(s.y-s.x)*.25;
+      dens+=smoothstep(xl-8.,xl+14.,w.x)*(1.-smoothstep(xr-14.,xr+8.,w.x))*(1.-z)*(.35+.65*h)*(s.y-s.x)*.25;
     }
   }
   let haze=.55+.45*wvn2(p/vec2f(90.,60.)+vec2f(t*.05,-t*.03));
@@ -98633,7 +98643,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(d.y>0.){
       let hw=10.+(46.*cone-10.)*d.y/max(cy-38.,1.);
       /* конус с кромкой (как у 2D-трапеции) и ярче у абажура */
-      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/max(hw,1.)))*(1.1-.8*clamp(d.y/max(cy-38.,1.),0.,1.))*smoothstep(cy+5.,cy-3.,q.y);
+      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/max(hw,1.)))*(1.1-.8*clamp(d.y/max(cy-38.,1.),0.,1.))*(1.-smoothstep(cy-3.,cy+5.,q.y));
       cs+=cn;
       beam+=lc*cn*(.060+.090*haze)*warm*pw;
     }
@@ -100150,7 +100160,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(d.y>0.){
       let hw=10.+50.*d.y/max(fy-35.,1.);
       /* конус с кромкой (как у 2D-трапеции) и ярче у лампы */
-      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/hw))*(1.1-.75*clamp(d.y/max(fy-35.,1.),0.,1.))*smoothstep(fy+8.,fy-2.,q.y);
+      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/hw))*(1.1-.75*clamp(d.y/max(fy-35.,1.),0.,1.))*(1.-smoothstep(fy-2.,fy+8.,q.y));
       cone+=cn;
       beam+=cold*cn*(.050+.135*haze);
     }
@@ -100973,7 +100983,7 @@ fn rmotes(q:vec2f,t:f32,s:f32,dens:f32)->f32{
     if(rh1(cc+vec2f(3.7,9.1))>dens){continue;}
     let m=vec2f(f32(i),f32(j))+.5+.38*sin(vec2f(t*.21,t*.17)+h*6.28);
     let r=length(f-m)/s;let sz=.55+h.x*.7;
-    a+=smoothstep(sz,sz*.25,r)*(.55+.45*sin(t*.9+h.y*20.));
+    a+=(1.-smoothstep(sz*.25,sz,r))*(.55+.45*sin(t*.9+h.y*20.));
   }}
   return a;}`;
 /* пустая кисть: без видеокарты (Node) комната «рисуется» ею ради попаданий — где
@@ -111064,7 +111074,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let rl=max(dot(r,L),0.);
     c=c+SUN*(pow(rl,mix(900.,70.,far))*mix(4.5,1.4,far)+pow(rl,14.)*.22);
     /* мыс отражается тёмной полосой, разбитой волнами */
-    if(ch>0.){let m=smoothstep(ch*.75,0.,(p.y-hor)+gr.y*Ht*.02);c=mix(c,vec3f(.24,.33,.39),.30*m);}
+    if(ch>0.){let m=(1.-smoothstep(0.,ch*.75,(p.y-hor)+gr.y*Ht*.02));c=mix(c,vec3f(.24,.33,.39),.30*m);}
     /* валы наката: идут к борту, гаснут и рождаются вдали */
     for(var j=0;j<3;j++){
       let fj=f32(j);

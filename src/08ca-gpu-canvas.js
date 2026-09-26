@@ -425,6 +425,9 @@ function gcPool(){
   let Q=GPU.lay["gc.pool"];if(Q)return Q;
   Q=GPU.lay["gc.pool"]={t:[],b:{},by:0,peak:0,made:0};
   for(const [r,w,h] of GC_POOL_WARM)gcPoolSet(r,w,h);
+  /* прогретое не вытесняется: крупная выпечка (комната во весь кадр на ПК — набор 33 МБ) выбивала по давности
+     ходовые наборы, и тень неона снова рождалась посреди полёта (слияние флота, 26.09) */
+  for(const x of Q.t)x.warm=1;
   /* обнулить прогретое здесь же: WebGPU чистит память текстуры при первом касании — пусть оно будет за заставкой */
   const e=GPU.dev.createCommandEncoder();
   for(const x of Q.t)if(x.role!=="ramp"){const [ms,st,rs]=x.T;e.beginRenderPass({colorAttachments:[{view:ms.createView(),resolveTarget:rs.createView(),
@@ -439,8 +442,10 @@ function gcPoolSet(role,w,h){
   const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
   const T=gcPoolSpec(role).map(([f,n,us])=>{by+=W*H*n*(px[f]||4);Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
   if(by>GC_POOL_CAP/2||GC_ONCE){GPU.trash.push(...T);return T;}   /* больше полупотолка или выпечка once — разовый, в пул не идёт */
-  Q.t.push({role,w:W,h:H,T,by});Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
-  while(Q.by>GC_POOL_CAP&&Q.t.length>1){const o=Q.t.shift();Q.by-=o.by;GPU.trash.push(...o.T);}
+  const nw={role,w:W,h:H,T,by};Q.t.push(nw);Q.by+=by;Q.peak=Math.max(Q.peak,Q.by);
+  /* сверх потолка уходит самый давний из непрогретых, не новый; прогретых ~54 МБ, набор в пуле — до полупотолка */
+  while(Q.by>GC_POOL_CAP){const i=Q.t.findIndex(o=>!o.warm&&o!==nw);if(i<0)break;
+    const o=Q.t.splice(i,1)[0];Q.by-=o.by;GPU.trash.push(...o.T);}
   return T;}
 /* фоны для overlay: две resolve-цели размером с MSAA-цель набора, заводятся при первой нужде */
 const GC_BACK=new WeakMap();

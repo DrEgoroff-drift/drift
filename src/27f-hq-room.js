@@ -133,7 +133,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(d.y>0.){
       let hw=10.+50.*d.y/max(fy-35.,1.);
       /* конус с кромкой (как у 2D-трапеции) и ярче у лампы */
-      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/hw))*(1.1-.75*clamp(d.y/max(fy-35.,1.),0.,1.))*smoothstep(fy+8.,fy-2.,q.y);
+      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/hw))*(1.1-.75*clamp(d.y/max(fy-35.,1.),0.,1.))*(1.-smoothstep(fy-2.,fy+8.,q.y));
       cone+=cn;
       beam+=cold*cn*(.050+.135*haze);
     }
