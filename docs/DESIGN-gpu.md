@@ -1049,7 +1049,18 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      costs 10–25 ms once per slider step, in the menu. Guard «стапель: лист печётся на движке, 2D-корпуса
      нет» (one bake per two frames, two bakes, 0 `drawHull`, no GC_MISS, no 2D context). Dead
      `stapelPreview` (2D `shipThumb`) is gone.
-  3. Next: look 28y:327 (it is item h, makerRead) and 27e:296 / 29d:482 if not «home outside».
+  3. Look 28y / item h — done: `makerRead` looks at the engine's picture. `makerFeat` draws the hull with the
+     studio (17c2 `hullStudio`, the ОПИСЬ one: GPU bake of the same brushes, lit by relief as in flight) into a
+     52 px `webgpu` canvas and reads it back in the same task (`drawImage` into a 2D canvas, as `gpuTakeSnap`).
+     Out of the frame the instrument opens its own encoder (`GPU.enc`, `GPU.on` for the call) and empties
+     `GPU.trash` itself, since no frame follows. Same seeds, 2D → engine: 14 per class 91.1 → 91.7 %,
+     100 per class 91.3 → 90.3 % (ГЛАВТРАССА 86.7 → 84.8, Компания 86.7, the rest ±2); the point lost at 100
+     is the studio's key light on the tone features. Time 36.7 → 16.7 s and 46 → 14 s. Pair
+     `pair_maker.png` (scratchpad): 7 classes × 6 makers, 2D row over engine row, same silhouettes, lit.
+     A 760/390 pair does not apply: the instrument draws off screen. Guard in 91j-art: 0 `drawHull` over
+     `makerRead(14)`.
+  4. 29d:482 stays the last 03e1 holder until the homein frame moves to the engine (Контроль, variant c).
+     27e:296 (home room panel) — next, after the hash.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

@@ -301,7 +301,7 @@ if(/[?&]look\b/.test(location.search)){
    подписью. «Мне кажется, читается» — не довод: прибор смотрит на ту же
    картинку, что игрок, и считает долю угаданных.
 
-   Как считает. Корпус рисуется в маленькую канву носом вправо; из пикселей
+   Как считает. Корпус рисуется в маленький кадр носом вправо; из пикселей
    берётся вектор примет: восемь замеров полувысоты силуэта (это и есть закон
    профиля), скачки между соседними колонками (ступени и модули против гладкой
    капсулы и веретена), доля чернил ЗА телом (приметы, торчащие из обвода),
@@ -311,22 +311,40 @@ if(/[?&]look\b/.test(location.search)){
    makerRead()        — доля угаданных по ста семенам на класс;
    makerRead(20)      — быстрее и грубее, для правки на ходу. */
 const MAKER_PX=52;
-let MAKER_CV=null;
-function makerFeat(id){
-  if(!MAKER_CV){
-    MAKER_CV=document.createElement("canvas");
-    MAKER_CV.width=MAKER_CV.height=MAKER_PX;
+/* Корпус рисует движок — та же студия, что у ОПИСИ и витрины (17c2 hullStudio): тело — выпечка
+   кистей 03e на видеокарте, свет — рельефом, как в полёте. Прибор смотрит на кадр движка, а не на
+   2D-двойника (п. h, 26.09). Студия пишет только в кадровый энкодер, поэтому вне кадра прибор
+   заводит свой и сам его отправляет; холст webgpu читается до конца задачи тем же drawImage, что
+   снимок кадра (gpuTakeSnap). Без видеокарты (Node) пикселей нет — null */
+const MAKER_G={S:{},T:null,B:null,cv:null,rd:null,dev:null};
+function makerPixels(id,x,y,k){
+  const g=MAKER_G,d=GPU.dev,P=MAKER_PX;
+  if(!GPU.ok||GPU.lost||!d||GPU.enc)return null;   /* из кадра не зовётся: его энкодер ещё не отправлен */
+  if(g.dev!==d){
+    g.cv=document.createElement("canvas");g.cv.width=g.cv.height=P;
+    g.cx=g.cv.getContext("webgpu");g.cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});
+    g.T=ovTarget();g.S={};g.B=null;g.dev=d;
   }
-  const c=MAKER_CV.getContext("2d");
-  c.setTransform(1,0,0,1,0,0);
-  c.clearRect(0,0,MAKER_PX,MAKER_PX);
+  if(!g.rd){g.rd=document.createElement("canvas");g.rd.width=g.rd.height=P;}
+  const on0=GPU.on;GPU.enc=d.createCommandEncoder();GPU.on=true;   /* свой маленький кадр: студия спрашивает «кадр идёт?» */
+  try{
+    if(!hullStudio(g.S,id,P,P,1,x,y,k,0))return null;
+    if(!g.B||g.B.tex!==g.S.tex)g.B={tex:g.S.tex,view:g.S.view,dev:d,inv:true};
+    ovInto(g.T,1,()=>ovImage(g.B,P/2,P/2,P,P,0,0,0,1,1,1));
+    ovPass(g.T,g.cx.getCurrentTexture().createView(),P,P,[g.T.uq],"maker");
+    d.queue.submit([GPU.enc.finish()]);
+  }finally{GPU.enc=null;GPU.on=on0;}
+  /* разовые выпечки студии уходят в корзину, а кадра, что её опорожнит, в прогоне прибора нет */
+  for(const t of GPU.trash)t.destroy();GPU.trash.length=0;
+  const c=g.rd.getContext("2d",{willReadFrequently:true});
+  c.clearRect(0,0,P,P);c.drawImage(g.cv,0,0);
+  return c.getImageData(0,0,P,P).data;
+}
+function makerFeat(id){
   const h=hullOf(id);
   const k=MAKER_PX*.86/Math.max(8,h.len+h.halfW*.9);
-  const old=ctx;ctx=c;
-  c.save();c.translate(MAKER_PX*.5-((h.nose+h.tail)*.5)*k,MAKER_PX*.5);c.scale(k,k);
-  try{drawHull(id,false,false,0,0);}catch(e){}
-  c.restore();ctx=old;
-  const d=c.getImageData(0,0,MAKER_PX,MAKER_PX).data;
+  const d=makerPixels(id,MAKER_PX*.5-((h.nose+h.tail)*.5)*k,MAKER_PX*.5,k);
+  if(!d)return null;
   /* полувысота силуэта по колонкам и средний тон того, что нарисовано */
   const col=new Array(MAKER_PX).fill(0);
   /* лучи: наибольший радиус чернил в двенадцати секторах. Крюк за кормой,

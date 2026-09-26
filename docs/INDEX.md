@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 638 · символов верхнего уровня: 6447
+Файлов: 638 · символов верхнего уровня: 6448
 
 ## СИМВОЛЫ
 
@@ -3471,14 +3471,14 @@ MAIN_CTX                     src/08-state.js:6
 makeIR                       src/10-music.js:109-121
 makePhrase                   src/10-music.js:381-404
 MAKER_ASSEMBLY               src/03a-hull-maker.js:463
-MAKER_CV                     src/28y-look.js:314
+MAKER_G                      src/28y-look.js:319
 MAKER_KEYS                   src/03a-hull-maker.js:73
 MAKER_PX                     src/28y-look.js:313
 makerAssembly                src/03a-hull-maker.js:464
 makerBank                    src/03a-hull-maker.js:417
 makerBySeed                  src/03a-hull-maker.js:89
 makerDraw                    src/03a-hull-maker.js:241-362
-makerFeat                    src/28y-look.js:315-388
+makerFeat                    src/28y-look.js:343-406
 makerFlame                   src/03a-hull-maker.js:416
 makerForms                   src/03a-hull-maker.js:93-101
 makerGround                  src/03a-hull-maker.js:452
@@ -3490,11 +3490,12 @@ makerMarks                   src/03a-hull-maker.js:366-414
 makeRock                     src/24-mode-belt.js:36-62
 makerOf                      src/03a-hull-maker.js:80-86
 makerOuts                    src/03a-hull-maker.js:176-194
+makerPixels                  src/28y-look.js:320-342
 makerProfile                 src/03a-hull-maker.js:107-172
-makerRead                    src/28y-look.js:396-460
+makerRead                    src/28y-look.js:414-478
 makerRow                     src/03a-hull-maker.js:87
 makerRu                      src/03a-hull-maker.js:90
-makerStand                   src/28y-look.js:389-395
+makerStand                   src/28y-look.js:407-413
 makerTicks                   src/03a-hull-maker.js:233-236
 makerWear                    src/03a-hull-maker.js:453
 makerWidth                   src/03a-hull-maker.js:423-450
@@ -7751,7 +7752,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · prof() — на что уходит кадр:682
   · dbg() — что держит корабль:723
 
-## src/28y-look.js · 30 КБ
+## src/28y-look.js · 32 КБ
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
 
