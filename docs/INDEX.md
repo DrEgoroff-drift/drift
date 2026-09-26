@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 636 · символов верхнего уровня: 6406
+Файлов: 637 · символов верхнего уровня: 6413
 
 ## СИМВОЛЫ
 
@@ -2249,14 +2249,21 @@ GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:7
 GNB_EMI                      src/16gb-gpu-nebula.js:408
 GNB_FADE                     src/16gc-gpu-nebfade.js:8
+GNB_FIL                      src/16gay-gpu-nebula-look.js:36
+GNB_FILC                     src/16gay-gpu-nebula-look.js:51
 GNB_FINE                     src/16gb-gpu-nebula.js:363
 GNB_GEN                      src/16gb-gpu-nebula.js:44
+GNB_HTO                      src/16gay-gpu-nebula-look.js:16
 GNB_LM_COL                   src/16gb-gpu-nebula.js:520
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
 GNB_PAL                      src/16gb-gpu-nebula.js:503-518
+GNB_SS                       src/16gay-gpu-nebula-look.js:12
 GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
+GNB_TONE                     src/16gay-gpu-nebula-look.js:24
+GNB_VOL                      src/16gay-gpu-nebula-look.js:55
+GNB_WC                       src/16gay-gpu-nebula-look.js:32
 gnbFade                      src/16gc-gpu-nebfade.js:30-35
 gnbFadeDesc                  src/16gc-gpu-nebfade.js:13-17
 gnbGenDesc                   src/16gb-gpu-nebula.js:494
@@ -7126,6 +7133,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/16ga-gpu-trail.js · 20 КБ
   · шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
+
+## src/16gay-gpu-nebula-look.js · 6 КБ
+  · облик туманности «смело» (26.09, docs/DESIGN-gpu.md):1
 
 ## src/16gaz-gpu-noise.js · 3 КБ
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1

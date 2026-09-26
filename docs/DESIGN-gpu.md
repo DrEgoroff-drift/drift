@@ -1876,6 +1876,22 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   dust only dims stars. Field (L median / black < 12): l4a ×2.00 8.2 / 88%, nnormal 10.6 / 61% (was 17.6 /
   38%), l2c 24.2 / 22%. What is left at ×2.00: gas clumps in the windows between bodies, one rim where gas
   meets an edge. Parallax (x 480 → 560): the pattern slides, shapes kept.
+  Done (L1b look, «смело»; the author 26.09: «мне смело нравится, круто»): four moves under one strength
+  knob `GNB_SS` = 1.6 (soft .5, medium 1 were the other two), WGSL pieces in `16gay` because 16gb is at its
+  size cap. Depth: a layer's tone turns round the hue circle in YIQ (`hto`, positive way only — through
+  magenta, never green) toward blue-violet, the far layer darker, the near one warmer; a linear mix of
+  complements would be grey. Ionisation zones: near the star gas and the wide glow turn azure (3.0 rad; cyan
+  3.5 read sage under the warm layer), paler and less saturated, the middle of the change brighter, not duller;
+  farther out toward orange-red; the knob widens the zone instead of stopping the turn half way (magenta).
+  Volume: density toward the star vs here (3 taps, 22/60/130 px, a ratio so dim and bright gas act alike),
+  exp(−.5·ss·rel) — the star side of a mass lighter; brightening fades near the star and near white (hot
+  pixels rose 1.13 → 1.29 % before that gate). Strands: bright only, LIC along the structure-tensor
+  orientation (a luminance tangent flips on ridges — that was round 1's dark cracks), a coherence gate, the
+  noise domain rotated so its lattice never lies along the flow as a straight fold. Peak channel capped at
+  1.08× the input so blue at the same luma does not blow to white. Pair vs 0.473.0, l2c DPR 1.5: 390 flying
+  light +3.6 %, sharp +2.8 %, S .499 → .422, >250 px .387 → .388 %; 760 standing light +3.3 %, sharp +5.1 %.
+  Deferred by Контроль to after the release: the cold zone hangs as a spot mid-mass; the purple on the right
+  is at the edge of sweet.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
