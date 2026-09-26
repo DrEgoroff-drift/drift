@@ -2331,7 +2331,7 @@ gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:616-621
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:31-36
-gpuBursts                    src/13z-gpu-combat.js:266-286
+gpuBursts                    src/13z-gpu-combat.js:277-297
 gpuCanvasTex                 src/08c-gpu-kit.js:47-62
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:426-436
@@ -7003,7 +7003,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13d-npc.js · 15 КБ
   · война, которую видно (M372, §7.4):1
 
-## src/13z-gpu-combat.js · 18 КБ
+## src/13z-gpu-combat.js · 20 КБ
   · болты и лучи боя на видеокарте (G4, docs/DESIGN-gpu.md):1
 
 ## src/14-save.js · 48 КБ

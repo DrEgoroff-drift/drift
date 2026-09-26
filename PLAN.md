@@ -78,8 +78,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
   bursts, station lamps): a beam or a burst lights hulls nearby, metal gets a glint.
-- [ ] L4 sparks (Контроль 24.09, after 92679b3): at the burst peak they read as a drawn star-burst — uneven
-  lengths and angles, 3–4 long streaks, the rest short.
 - [ ] G2 star disc (Контроль 24.09, after 40f3276): reads as a flat orange ball — k_l2cB radius profile centre
   246, 198 at .85 R, a bump 201 at the limb, then glow 193; R 249–255 over the whole disc (clipped). Limb
   darkening into red with no bump at the edge, R ≤245 on the limb.

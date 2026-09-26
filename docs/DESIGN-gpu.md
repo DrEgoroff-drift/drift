@@ -743,6 +743,15 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   identical (|d| 0); a fading tug against the old flat one −2…−4 % light, −7…−12 % sharpness (= the lit ship
   at α 1). Ships get no planet shadow at all (`GPU.oc` holds the station only), so the shadow pair is the
   same frame.
+- **L4 sparks** (26.09, Контроль after 92679b3: «at the peak they read as a drawn star-burst»): 22 equal
+  streaks from one point, the same shutter and drag, spread evenly — a star. Now 26 drops in `GBX_WGSL`: 3–4 long
+  heavy streaks (speed 9–18 R, low drag, shutter .03–.06 s, live ~1 s) at their own uneven angles, torn off
+  the fireball's edge rather than its centre; the rest short, lighter, dragged harder, born over the first
+  .08 s from scattered points, half of them in two jets. Every drop bends a little, the streak brightens
+  toward its head and a hot point sits on the head, so it reads as a flying spark and not a drawn line.
+  Stand: one burst at a frozen age (peak .05 s and +150 ms). Pairs vs HEAD, circle 2.6 R / 4.3 R: 760 peak
+  +5.8 %/+2.1 % light, +50 %/+23 % sharpness; +150 ms +0.8 %/+0.4 %, +8 %/+5 %; 390 (dpr 1.5) peak
+  +5.8 %/+2.5 %, +36 %/+19 %; +150 ms +1.0 %/+0.5 %, +8 %/+5 %. GPU errors 0.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
