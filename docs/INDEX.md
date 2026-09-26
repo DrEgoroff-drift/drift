@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 638 · символов верхнего уровня: 6448
+Файлов: 639 · символов верхнего уровня: 6452
 
 ## СИМВОЛЫ
 
@@ -782,7 +782,7 @@ CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
 chipDist                     src/17-mode-system.js:713-719
-chipDom                      src/08bi-gpu-ovl.js:166-181
+chipDom                      src/08bi-gpu-ovl.js:173-188
 chipDomSnap                  src/08bh-gpu-hud.js:10-12
 chipDomSweep                 src/08bh-gpu-hud.js:20-23
 chKing                       src/25n-chess.js:112-116
@@ -1428,7 +1428,7 @@ dominoMove                   src/11af-domino.js:25-39
 dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
-domLabel                     src/08bi-gpu-ovl.js:156-162
+domLabel                     src/08bi-gpu-ovl.js:163-169
 domLabelId                   src/08bh-gpu-hud.js:17
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
@@ -2381,7 +2381,7 @@ gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
 gpuNoise                     src/08b-gpu.js:369-374
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:558-578
-gpuOvFrontView               src/08bi-gpu-ovl.js:238
+gpuOvFrontView               src/08bi-gpu-ovl.js:245
 gpuPass                      src/08b-gpu.js:430-433
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
@@ -3471,14 +3471,14 @@ MAIN_CTX                     src/08-state.js:6
 makeIR                       src/10-music.js:109-121
 makePhrase                   src/10-music.js:381-404
 MAKER_ASSEMBLY               src/03a-hull-maker.js:463
-MAKER_G                      src/28y-look.js:319
+MAKER_G                      src/28y-look.js:318
 MAKER_KEYS                   src/03a-hull-maker.js:73
 MAKER_PX                     src/28y-look.js:313
 makerAssembly                src/03a-hull-maker.js:464
 makerBank                    src/03a-hull-maker.js:417
 makerBySeed                  src/03a-hull-maker.js:89
 makerDraw                    src/03a-hull-maker.js:241-362
-makerFeat                    src/28y-look.js:343-406
+makerFeat                    src/28y-look.js:327-390
 makerFlame                   src/03a-hull-maker.js:416
 makerForms                   src/03a-hull-maker.js:93-101
 makerGround                  src/03a-hull-maker.js:452
@@ -3490,12 +3490,12 @@ makerMarks                   src/03a-hull-maker.js:366-414
 makeRock                     src/24-mode-belt.js:36-62
 makerOf                      src/03a-hull-maker.js:80-86
 makerOuts                    src/03a-hull-maker.js:176-194
-makerPixels                  src/28y-look.js:320-342
+makerPixels                  src/28y-look.js:319-326
 makerProfile                 src/03a-hull-maker.js:107-172
-makerRead                    src/28y-look.js:414-478
+makerRead                    src/28y-look.js:398-462
 makerRow                     src/03a-hull-maker.js:87
 makerRu                      src/03a-hull-maker.js:90
-makerStand                   src/28y-look.js:407-413
+makerStand                   src/28y-look.js:391-397
 makerTicks                   src/03a-hull-maker.js:233-236
 makerWear                    src/03a-hull-maker.js:453
 makerWidth                   src/03a-hull-maker.js:423-450
@@ -4039,33 +4039,37 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
+OV_EYE                       src/08bi-gpu-ovl.js:261
 OV_STEADY                    tests/91zzzzzzy4-gpu-ovl.js:48-66
-ovArc                        src/08bi-gpu-ovl.js:265-268
-ovAtlas                      src/08bi-gpu-ovl.js:104-123
-ovBind                       src/08bi-gpu-ovl.js:229-237
-ovCanvas                     src/08bi-gpu-ovl.js:89-101
-ovCap                        src/08bi-gpu-ovl.js:250-253
-ovCap3                       src/08bi-gpu-ovl.js:260-263
-ovEll                        src/08bi-gpu-ovl.js:255-258
-ovFlush                      src/08bi-gpu-ovl.js:186-197
-ovGraph                      src/08bi-gpu-ovl.js:276-280
-ovImage                      src/08bi-gpu-ovl.js:244-248
-ovInto                       src/08bi-gpu-ovl.js:82-85
+ovArc                        src/08bi-gpu-ovl.js:303-306
+ovAtlas                      src/08bi-gpu-ovl.js:111-130
+ovBind                       src/08bi-gpu-ovl.js:236-244
+ovCanvas                     src/08bi-gpu-ovl.js:96-108
+ovCap                        src/08bi-gpu-ovl.js:288-291
+ovCap3                       src/08bi-gpu-ovl.js:298-301
+ovEll                        src/08bi-gpu-ovl.js:293-296
+ovFlush                      src/08bi-gpu-ovl.js:193-204
+ovGraph                      src/08bi-gpu-ovl.js:314-318
+ovImage                      src/08bi-gpu-ovl.js:251-257
+ovInto                       src/08bi-gpu-ovl.js:89-92
 OVL                          src/08bi-gpu-ovl.js:17
 OVL_N                        src/08bi-gpu-ovl.js:20
-OVL_PLATE                    src/08bi-gpu-ovl.js:165
-OVL_RUN                      src/08bi-gpu-ovl.js:128
-OVL_UF                       src/08bi-gpu-ovl.js:200
+OVL_PLATE                    src/08bi-gpu-ovl.js:172
+OVL_RUN                      src/08bi-gpu-ovl.js:135
+OVL_UF                       src/08bi-gpu-ovl.js:207
 OVL_WGSL                     src/08bi-gpu-ovl.js:21
-ovlDesc                      src/08bi-gpu-ovl.js:183
-ovNd                         src/08bi-gpu-ovl.js:80
-ovPass                       src/08bi-gpu-ovl.js:201-227
-ovPm                         src/08bi-gpu-ovl.js:240
-ovPush                       src/08bi-gpu-ovl.js:124-127
-ovQuad                       src/08bi-gpu-ovl.js:271-274
-ovRect                       src/08bi-gpu-ovl.js:241
-ovTarget                     src/08bi-gpu-ovl.js:87
-ovText                       src/08bi-gpu-ovl.js:131-153
+ovlDesc                      src/08bi-gpu-ovl.js:190
+ovmStrip                     tests/91zzzzzzy4-ovm.js:6-11
+ovNd                         src/08bi-gpu-ovl.js:87
+ovPass                       src/08bi-gpu-ovl.js:208-234
+ovPm                         src/08bi-gpu-ovl.js:247
+ovPush                       src/08bi-gpu-ovl.js:131-134
+ovQuad                       src/08bi-gpu-ovl.js:309-312
+OVR                          src/08bi-gpu-ovl.js:265
+ovRead                       src/08bi-gpu-ovl.js:266-286
+ovRect                       src/08bi-gpu-ovl.js:248
+ovTarget                     src/08bi-gpu-ovl.js:94
+ovText                       src/08bi-gpu-ovl.js:138-160
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
 packPart                     src/05-parts.js:465-472
@@ -6601,7 +6605,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 2 КБ
   · слой приборов: фишки у кромки и подписи мира (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08bi-gpu-ovl.js · 23 КБ
+## src/08bi-gpu-ovl.js · 26 КБ
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
 ## src/08c-gpu-kit.js · 29 КБ
@@ -7752,7 +7756,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · prof() — на что уходит кадр:682
   · dbg() — что держит корабль:723
 
-## src/28y-look.js · 32 КБ
+## src/28y-look.js · 30 КБ
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
 
@@ -8466,6 +8470,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
+
+## tests/91zzzzzzy4-ovm.js · 4 КБ
+  · цвет картинки по матрице и зерно (08bi ovImage, 26.09):1
 
 ## tests/91zzzzzzy4-pipes.js · 8 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1

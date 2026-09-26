@@ -313,32 +313,16 @@ if(/[?&]look\b/.test(location.search)){
 const MAKER_PX=52;
 /* Корпус рисует движок — та же студия, что у ОПИСИ и витрины (17c2 hullStudio): тело — выпечка
    кистей 03e на видеокарте, свет — рельефом, как в полёте. Прибор смотрит на кадр движка, а не на
-   2D-двойника (п. h, 26.09). Студия пишет только в кадровый энкодер, поэтому вне кадра прибор
-   заводит свой и сам его отправляет; холст webgpu читается до конца задачи тем же drawImage, что
-   снимок кадра (gpuTakeSnap). Без видеокарты (Node) пикселей нет — null */
-const MAKER_G={S:{},T:null,B:null,cv:null,rd:null,dev:null};
+   2D-двойника (п. h, 26.09); кадр вне цикла собирает и читает ovRead (08bi). Без видеокарты
+   (Node) пикселей нет — null */
+const MAKER_G={S:{},B:null};
 function makerPixels(id,x,y,k){
-  const g=MAKER_G,d=GPU.dev,P=MAKER_PX;
-  if(!GPU.ok||GPU.lost||!d||GPU.enc)return null;   /* из кадра не зовётся: его энкодер ещё не отправлен */
-  if(g.dev!==d){
-    g.cv=document.createElement("canvas");g.cv.width=g.cv.height=P;
-    g.cx=g.cv.getContext("webgpu");g.cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});
-    g.T=ovTarget();g.S={};g.B=null;g.dev=d;
-  }
-  if(!g.rd){g.rd=document.createElement("canvas");g.rd.width=g.rd.height=P;}
-  const on0=GPU.on;GPU.enc=d.createCommandEncoder();GPU.on=true;   /* свой маленький кадр: студия спрашивает «кадр идёт?» */
-  try{
-    if(!hullStudio(g.S,id,P,P,1,x,y,k,0))return null;
-    if(!g.B||g.B.tex!==g.S.tex)g.B={tex:g.S.tex,view:g.S.view,dev:d,inv:true};
-    ovInto(g.T,1,()=>ovImage(g.B,P/2,P/2,P,P,0,0,0,1,1,1));
-    ovPass(g.T,g.cx.getCurrentTexture().createView(),P,P,[g.T.uq],"maker");
-    d.queue.submit([GPU.enc.finish()]);
-  }finally{GPU.enc=null;GPU.on=on0;}
-  /* разовые выпечки студии уходят в корзину, а кадра, что её опорожнит, в прогоне прибора нет */
-  for(const t of GPU.trash)t.destroy();GPU.trash.length=0;
-  const c=g.rd.getContext("2d",{willReadFrequently:true});
-  c.clearRect(0,0,P,P);c.drawImage(g.cv,0,0);
-  return c.getImageData(0,0,P,P).data;
+  const g=MAKER_G,P=MAKER_PX;
+  return ovRead(P,P,()=>{
+    if(!hullStudio(g.S,id,P,P,1,x,y,k,0))return false;
+    if(!g.B||g.B.tex!==g.S.tex)g.B={tex:g.S.tex,view:g.S.view,dev:GPU.dev,inv:true};
+    ovImage(g.B,P/2,P/2,P,P,0,0,0,1,1,1);
+  });
 }
 function makerFeat(id){
   const h=hullOf(id);

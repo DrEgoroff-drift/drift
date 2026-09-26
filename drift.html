@@ -11257,6 +11257,7 @@ struct IO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) b:vec4f,@lo
 fn ed(a:vec2f,b:vec2f,p:vec2f)->f32{let d=b-a;return (d.x*(p.y-a.y)-d.y*(p.x-a.x))/max(length(d),1e-4);}
 fn sd(p:vec2f,a:vec2f,b:vec2f)->f32{let d=b-a;let h=clamp(dot(p-a,d)/max(dot(d,d),1e-6),0.,1.);return length(p-a-d*h);}
 fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
+fn gh(p:vec2f,s:f32)->f32{var q=fract(vec3f(p.x,p.y,s)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 @fragment fn fs(i:IO)->@location(0) vec4f{
   let p=i.p.xy;var a=0.;
   let dx=dpdx(i.uv);let dy=dpdy(i.uv);   /* производные — до ветвлений (однородный поток) */
@@ -11272,6 +11273,12 @@ fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
     /* m.z — текстура студии (17c2): альфа сцены (сколько фона осталось) в покрытие, свет выше
        единицы — тем же плечом, что tone() финала 08b, а не обрезкой: лампы не белеют пятном */
     if(i.m.z>.5){let x=max(t.rgb-vec3f(.75),vec3f(0.));t=vec4f(min(t.rgb,vec3f(.75))+.25*(vec3f(1.)-exp(-x*4.)),1.-t.a);}
+    /* m.w — цвет по матрице (1 + её место в vec4 от S.z): строки R, G, B — множители и сдвиг по чистому цвету,
+       четвёртая — зерно (амплитуда, посев): одно число на пиксель устройства во все три канала; обрез после зерна */
+    if(i.m.w>.5){let k=u32(S.z)+u32(i.m.w)-1u;let al=max(t.a,1e-5);var c=t.rgb/al;
+      c=vec3f(dot(Q[k].xyz,c)+Q[k].w,dot(Q[k+1u].xyz,c)+Q[k+1u].w,dot(Q[k+2u].xyz,c)+Q[k+2u].w);
+      let gn=Q[k+3u];if(gn.x>0.){c=c+vec3f((gh(floor(p),gn.y)-.5)*gn.x);}
+      t=vec4f(clamp(c,vec3f(0.),vec3f(1.))*t.a,t.a);}
     return t*i.c;}
   else if(i.m.x<4.5){   /* график: x0=t0.x, шаг t0.y, полутолщина m.y, точки с m.z (от S.z), их m.w */
     let x0=i.t0.x;let st=i.t0.y;let hw=i.m.y;let o=i32(i.m.z);let n=i32(i.m.w);
@@ -11455,10 +11462,41 @@ function ovPm(col,al){const c=gcColor(col),a=c[3]*(al==null?1:al);return [c[0]*a
 function ovRect(x0,y0,x1,y1,col,al){const s=ovNd();ovPush(OVL.uq,x0*s,y0*s,x1*s,y1*s,ovPm(col,al),0,0,0,0,null);}
 /* картинка: мастер B, центр (x,y), размер (w,h), поворот rot, кусок u0..v1, множитель mul (число — прозрачность);
    B.inv — альфа мастера перевёрнута (текстура студии корпуса, 17c2) */
-function ovImage(B,x,y,w,h,rot,u0,v0,u1,v1,mul){
+function ovImage(B,x,y,w,h,rot,u0,v0,u1,v1,mul,M){
   if(!B)return;const s=ovNd(),Q=OVL.uq,i=Q.length/OVL_N,m=typeof mul==="number"?[mul,mul,mul,mul]:(mul||[1,1,1,1]);
   const R=OVL.ur;if(!R.length||R[R.length-1][1]!==B)R.push([i,B]);
-  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,B.inv?1:0,0,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
+  let mo=0;if(M){const G=OVL.gd,c=M.m||OV_EYE;while(G.length%4)G.push(0);mo=G.length/4+1;
+    G.push(c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],M.grain||0,(M.seed||0)%65536,0,0);}
+  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,B.inv?1:0,mo,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
+}
+/* M у ovImage: {m:[12] — строки R, G, B по (r, g, b, сдвиг) в долях единицы, grain — размах зерна (±grain/2),
+   seed — посев}; без m — цвет как есть. Фильтры альбома (25g1): сепия и ночь — яркость во все каналы,
+   холод — контраст со сдвигом; смешениями такое не выражается */
+const OV_EYE=[1,0,0,0, 0,1,0,0, 0,0,1,0];
+/* вне кадра: свой энкодер и свой холст w×h; fn кладёт ov* (и может звать студию 17c2), кадр отправляется
+   и читается в той же задаче — как снимок кадра (gpuTakeSnap). Для приборов и тестов, не для кадра:
+   из кадра (энкодер открыт) — null. fn вернул false — null */
+const OVR={cv:null,cx:null,rd:null,T:null,dev:null};
+function ovRead(w,h,fn){
+  const d=GPU.dev,R=OVR;
+  if(!GPU.ok||GPU.lost||!d||GPU.enc||typeof document==="undefined")return null;
+  if(R.dev!==d){R.cv=document.createElement("canvas");R.cx=R.cv.getContext("webgpu");
+    R.cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});R.T=ovTarget();R.dev=d;}
+  if(R.cv.width!==w||R.cv.height!==h){R.cv.width=w;R.cv.height=h;}
+  if(!R.rd)R.rd=document.createElement("canvas");
+  const on0=GPU.on;let ok;GPU.enc=d.createCommandEncoder();GPU.on=true;   /* свой маленький кадр: студия спрашивает «кадр идёт?» */
+  try{
+    ovInto(R.T,1,()=>{ok=fn();});
+    if(ok===false){R.T.uq.length=R.T.ur.length=R.T.gd.length=0;return null;}
+    ovPass(R.T,R.cx.getCurrentTexture().createView(),w,h,[R.T.uq],"ovread");
+    d.queue.submit([GPU.enc.finish()]);
+  }finally{GPU.enc=null;GPU.on=on0;}
+  /* разовые выпечки уходят в корзину, а кадра, что её опорожнит, у прибора нет */
+  for(const t of GPU.trash)t.destroy();GPU.trash.length=0;
+  if(R.rd.width!==w||R.rd.height!==h){R.rd.width=w;R.rd.height=h;}
+  const c=R.rd.getContext("2d",{willReadFrequently:true});
+  c.clearRect(0,0,w,h);c.drawImage(R.cv,0,0);
+  return c.getImageData(0,0,w,h).data;
 }
 /* капсула: отрезок (x0,y0)–(x1,y1) толщиной w с круглыми концами; диск — отрезок нулевой длины */
 function ovCap(x0,y0,x1,y1,w,col,al){
@@ -104386,32 +104424,16 @@ if(/[?&]look\b/.test(location.search)){
 const MAKER_PX=52;
 /* Корпус рисует движок — та же студия, что у ОПИСИ и витрины (17c2 hullStudio): тело — выпечка
    кистей 03e на видеокарте, свет — рельефом, как в полёте. Прибор смотрит на кадр движка, а не на
-   2D-двойника (п. h, 26.09). Студия пишет только в кадровый энкодер, поэтому вне кадра прибор
-   заводит свой и сам его отправляет; холст webgpu читается до конца задачи тем же drawImage, что
-   снимок кадра (gpuTakeSnap). Без видеокарты (Node) пикселей нет — null */
-const MAKER_G={S:{},T:null,B:null,cv:null,rd:null,dev:null};
+   2D-двойника (п. h, 26.09); кадр вне цикла собирает и читает ovRead (08bi). Без видеокарты
+   (Node) пикселей нет — null */
+const MAKER_G={S:{},B:null};
 function makerPixels(id,x,y,k){
-  const g=MAKER_G,d=GPU.dev,P=MAKER_PX;
-  if(!GPU.ok||GPU.lost||!d||GPU.enc)return null;   /* из кадра не зовётся: его энкодер ещё не отправлен */
-  if(g.dev!==d){
-    g.cv=document.createElement("canvas");g.cv.width=g.cv.height=P;
-    g.cx=g.cv.getContext("webgpu");g.cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});
-    g.T=ovTarget();g.S={};g.B=null;g.dev=d;
-  }
-  if(!g.rd){g.rd=document.createElement("canvas");g.rd.width=g.rd.height=P;}
-  const on0=GPU.on;GPU.enc=d.createCommandEncoder();GPU.on=true;   /* свой маленький кадр: студия спрашивает «кадр идёт?» */
-  try{
-    if(!hullStudio(g.S,id,P,P,1,x,y,k,0))return null;
-    if(!g.B||g.B.tex!==g.S.tex)g.B={tex:g.S.tex,view:g.S.view,dev:d,inv:true};
-    ovInto(g.T,1,()=>ovImage(g.B,P/2,P/2,P,P,0,0,0,1,1,1));
-    ovPass(g.T,g.cx.getCurrentTexture().createView(),P,P,[g.T.uq],"maker");
-    d.queue.submit([GPU.enc.finish()]);
-  }finally{GPU.enc=null;GPU.on=on0;}
-  /* разовые выпечки студии уходят в корзину, а кадра, что её опорожнит, в прогоне прибора нет */
-  for(const t of GPU.trash)t.destroy();GPU.trash.length=0;
-  const c=g.rd.getContext("2d",{willReadFrequently:true});
-  c.clearRect(0,0,P,P);c.drawImage(g.cv,0,0);
-  return c.getImageData(0,0,P,P).data;
+  const g=MAKER_G,P=MAKER_PX;
+  return ovRead(P,P,()=>{
+    if(!hullStudio(g.S,id,P,P,1,x,y,k,0))return false;
+    if(!g.B||g.B.tex!==g.S.tex)g.B={tex:g.S.tex,view:g.S.view,dev:GPU.dev,inv:true};
+    ovImage(g.B,P/2,P/2,P,P,0,0,0,1,1,1);
+  });
 }
 function makerFeat(id){
   const h=hullOf(id);

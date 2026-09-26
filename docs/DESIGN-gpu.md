@@ -1061,6 +1061,14 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      `makerRead(14)`.
   4. 29d:482 stays the last 03e1 holder until the homein frame moves to the engine (Контроль, variant c).
      27e:296 (home room panel) — next, after the hash.
+- **08bi for the album (26.09, for GPU-3's 25g1):** `ovImage(..., mul, M)` takes `M={m:[12], grain, seed}` —
+  a 3×4 matrix over the straight colour (rows R, G, B: r, g, b, offset, in units of 1) and a grain of span
+  `grain` (±grain/2, one number per device pixel into all three channels, hashed from the pixel and `seed`),
+  clamped after the grain, as `albumFx` did. The data sit after the primitives, like graph points; the image
+  primitive's free `m.w` holds 1 + its vec4 index. Checked to the unit against the album's formulas: sepia and
+  cold on four solid stripes ±1; grain ±13 → sd 7.48 (uniform: 7.5), same seed same frame, span 0 no grain.
+  `ovRead(w,h,fn)` builds a frame out of the loop (own encoder, own canvas) and reads it in the same task —
+  the tool of `makerRead` and of the tests; from inside the frame it returns null. Suite `91zzzzzzy4-ovm`.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
