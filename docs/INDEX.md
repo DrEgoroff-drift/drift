@@ -725,31 +725,31 @@ castMapFor                   src/19c1-cast.js:103-108
 castOccH                     src/19c1-cast.js:53-62
 castShadeAt                  src/19c1-cast.js:64-76
 CAVE_ADD_WGSL                src/22c-cave-gpu.js:78
-CAVE_EMIT                    src/22c-cave-gpu.js:255
-CAVE_LIT_MAX                 src/22c-cave-gpu.js:29
-CAVE_LIT_U                   src/22c-cave-gpu.js:166
-CAVE_LIT_WGSL                src/22c-cave-gpu.js:30
-CAVE_MUL_WGSL                src/22c-cave-gpu.js:60
+CAVE_EMIT                    src/22c-cave-gpu.js:270
+CAVE_LIT_MAX                 src/22c-cave-gpu.js:30
+CAVE_LIT_U                   src/22c-cave-gpu.js:181
+CAVE_LIT_WGSL                src/22c-cave-gpu.js:31
+CAVE_MUL_WGSL                src/22c-cave-gpu.js:61
 CAVE_NX                      src/22-mode-cave.js:14
 CAVE_OWN_WGSL                src/22c-cave-gpu.js:111
 CAVE_W                       src/22-mode-cave.js:11
 CAVE_WALL_X0                 src/22-mode-cave.js:13
 CAVE_ZONE                    src/22a-cave-deco.js:17-23
 CAVE_ZONE_MIX                src/22a-cave-deco.js:26
-caveAmbient                  src/22c-cave-gpu.js:217-223
 caveBoxFree                  src/22-mode-cave.js:239-243
 caveBuild                    src/22-mode-cave.js:105-174
 caveCeil                     src/22-mode-cave.js:67-72
 caveCeilLow                  src/22-mode-cave.js:82-88
 caveCeilOf                   src/22-mode-cave.js:90
 caveContour                  src/22-mode-cave.js:438-467
+caveDarkTone                 src/22c-cave-gpu.js:232-236
 caveDeco                     src/22a-cave-deco.js:94-200
 caveDrawBones                src/22b-cave-props.js:141-166
 caveDrawCamp                 src/22b-cave-props.js:175-197
 caveDrawCrate                src/22b-cave-props.js:167-174
 caveDrawRope                 src/22b-cave-props.js:210-231
 caveDrawTally                src/22b-cave-props.js:198-209
-caveEmit                     src/22c-cave-gpu.js:256-291
+caveEmit                     src/22c-cave-gpu.js:271-306
 caveFloor                    src/22-mode-cave.js:61-66
 caveFloorLow                 src/22-mode-cave.js:75-81
 caveFloorOf                  src/22-mode-cave.js:89
@@ -757,14 +757,14 @@ caveFloraOf                  src/20e-species.js:111-124
 caveGalR                     src/22-mode-cave.js:40
 caveGalY                     src/22-mode-cave.js:35
 caveLampSpot                 src/22a-cave-deco.js:393-398
-caveLights                   src/22c-cave-gpu.js:168-203
-caveLitPack                  src/22c-cave-gpu.js:162-165
+caveLights                   src/22c-cave-gpu.js:183-218
+caveLitPack                  src/22c-cave-gpu.js:177-180
 caveLowY                     src/22-mode-cave.js:42
-caveMaskCv                   src/22c-cave-gpu.js:135-143
+caveMaskCv                   src/22c-cave-gpu.js:145-153
 caveMossSpots                src/22a-cave-deco.js:380-392
 caveMoveX                    src/22-mode-cave.js:245-250
 cavePool                     src/22a-cave-deco.js:76-86
-cavePoolInView               src/22c-cave-gpu.js:205-215
+cavePoolInView               src/22c-cave-gpu.js:220-230
 caveProps                    src/22b-cave-props.js:105-139
 caveScanDown                 src/22-mode-cave.js:49-54
 caveScanUp                   src/22-mode-cave.js:55-60
@@ -1443,20 +1443,20 @@ dialQuake                    src/21a8-base-world.js:155
 dialWind                     src/21a8-base-world.js:154
 dialWords                    src/21a8-base-world.js:125-130
 DIG_CELL                     src/23-mode-dig.js:3
-DIG_EMIT                     src/23b-dig-gpu.js:110
+DIG_EMIT                     src/23b-dig-gpu.js:124
 DIG_GEO_K                    src/23-mode-dig.js:9
-DIG_LIT_C                    src/23b-dig-gpu.js:55
+DIG_LIT_C                    src/23b-dig-gpu.js:68
 DIG_MSK                      src/23b-dig-gpu.js:16
-DIG_OWN_WGSL                 src/23b-dig-gpu.js:18
+DIG_OWN_WGSL                 src/23b-dig-gpu.js:22
 DIG_TURF                     src/23aa-dig-rock.js:463
 digBedding                   src/23aa-dig-rock.js:118-145
 digCell                      src/23-mode-dig.js:30-50
 digCun                       src/23aa-dig-rock.js:158-182
-digEmit                      src/23b-dig-gpu.js:111-158
+digEmit                      src/23b-dig-gpu.js:125-172
 digFauna                     src/23-mode-dig.js:256-331
-digHexRgb                    src/23b-dig-gpu.js:160-164
-digLights                    src/23b-dig-gpu.js:57-77
-digMask                      src/23b-dig-gpu.js:36-54
+digHexRgb                    src/23b-dig-gpu.js:174-178
+digLights                    src/23b-dig-gpu.js:70-90
+digMask                      src/23b-dig-gpu.js:49-67
 digRGB                       src/23aa-dig-rock.js:465
 digRockMass                  src/23aa-dig-rock.js:183-446
 digRockPass                  src/23aa-dig-rock.js:26-101
@@ -1576,16 +1576,16 @@ drawBillboard                src/17k-billboard.js:154-168
 drawBuildMenu                src/21aa-base-rooms.js:576-592
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:42-65
-drawCave                     src/22-mode-cave.js:697-707
-drawCaveFar                  src/22-mode-cave.js:584-622
+drawCave                     src/22-mode-cave.js:734-744
+drawCaveFar                  src/22-mode-cave.js:621-659
 drawCaveGlow                 src/22a-cave-deco.js:325-370
-drawCaveLight                src/22c-cave-gpu.js:225-252
+drawCaveLight                src/22c-cave-gpu.js:238-267
 drawCaveOwnLight             src/22a-cave-deco.js:399-430
 drawCaveProps                src/22b-cave-props.js:233-249
-drawCaveRock                 src/22-mode-cave.js:468-574
+drawCaveRock                 src/22-mode-cave.js:468-611
 drawCaveSolid                src/22a-cave-deco.js:241-299
 drawCaveWater                src/22a-cave-deco.js:300-324
-drawCaveWorld                src/22-mode-cave.js:623-691
+drawCaveWorld                src/22-mode-cave.js:660-728
 drawCelest                   src/06a-celest.js:167-218
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
@@ -1600,7 +1600,7 @@ drawDeco                     src/21b-surface-deco.js:166-225
 drawDeposit                  src/21b-surface-deco.js:406-560
 drawDig                      src/23a-dig-draw.js:549-553
 drawDigFauna                 src/23-mode-dig.js:332-341
-drawDigLight                 src/23b-dig-gpu.js:79-108
+drawDigLight                 src/23b-dig-gpu.js:92-122
 drawDigWorld                 src/23a-dig-draw.js:46-501
 drawDronesMap                src/12e-drone-flight.js:296-314
 drawDronesSystem             src/12e-drone-flight.js:252-283
@@ -5696,7 +5696,7 @@ SHUT_SW                      src/17f-sys-traffic.js:119
 shuttleAt                    src/17f-sys-traffic.js:45-64
 shuttleBody                  src/17f-sys-traffic.js:112-116
 shuttleSprite                src/17f-sys-traffic.js:120-125
-SIG                          src/22c-cave-gpu.js:31
+SIG                          src/22c-cave-gpu.js:32
 SIGN_HOLD                    src/21-mode-surface.js:199
 siteTestOpen                 tests/91x-hold-site.js:11-18
 siteTestStation              tests/91x-hold-site.js:2-9
@@ -6601,9 +6601,9 @@ warLed                       src/14b-war-net.js:46-50
 warLedger                    src/14b-war-net.js:51-54
 warLedLast                   src/14b-war-net.js:81-86
 warLedPut                    src/14b-war-net.js:67-79
-WARM_GLOW_U                  src/22c-cave-gpu.js:156
-WARM_GLOW_WGSL               src/22c-cave-gpu.js:148
-warmGlow                     src/22c-cave-gpu.js:157-160
+WARM_GLOW_U                  src/22c-cave-gpu.js:171
+WARM_GLOW_WGSL               src/22c-cave-gpu.js:160
+warmGlow                     src/22c-cave-gpu.js:172-175
 warPressure                  src/14b-war-net.js:166-183
 warProv                      src/14b-war-net.js:63-66
 warPull                      src/14b-war-net.js:106-151
@@ -7836,7 +7836,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/21h-pennant.js · 8 КБ
   · переходящий вымпел:1
 
-## src/22-mode-cave.js · 43 КБ
+## src/22-mode-cave.js · 45 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/22a-cave-deco.js · 24 КБ
@@ -7846,7 +7846,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/22b-cave-props.js · 13 КБ
   · пещера: гладкий обвод и то, что в ней лежит (M305):1
 
-## src/22c-cave-gpu.js · 16 КБ
+## src/22c-cave-gpu.js · 18 КБ
   · пещера на видеокарте: темнота, фонарь, тени, пыль (G7):1
 
 ## src/23-mode-dig.js · 19 КБ
@@ -7859,7 +7859,7 @@ zooTick                      src/11ad-zoo.js:41-54
   · шахта: порода:1
   · почвенный профиль: небо кончается не линейкой:449
 
-## src/23b-dig-gpu.js · 10 КБ
+## src/23b-dig-gpu.js · 11 КБ
   · шахта на видеокарте: свет, день в стволе, руда, пыль (G7):1
 
 ## src/24-mode-belt.js · 22 КБ

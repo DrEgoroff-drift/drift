@@ -14,11 +14,24 @@
    · пыль висит в луче и плывёт, искры из-под резака — выше единицы.
    Небо над устьем не освещается — оно само свет. */
 const DIG_MSK=5;                                  /* мира на тексель маски */
-/* места шахты: окружающий свет от глубины под кромкой земли, день сверху */
+/* места шахты: окружающий свет от фонаря, день сверху.
+   Окружающий — как у main (M55): виньетка от фонаря 1 → .59 на .55 → .29 у R0=.62·max(W,H),
+   ровная, без сдвига тона, и темнота .28 → .72 по кругу .52·max(W,H), пока камера под землёй
+   (fu.v[14].z). Синий окружающий уводил грунт в синий, у main он оливковый (Контроль 26.09).
+   fu.v[5] — общий уровень: порода флота светлее, чем в кадре main. День у кромки — свой */
 const DIG_OWN_WGSL=`
+fn vigA(w:vec2f)->vec3f{
+  let R0=max(fu.res.z,fu.res.w)*.62;
+  let s=clamp((length(w-fu.v[2].xy)-R0*.16)/(R0*.84),0.,1.);
+  let m=vec3f(.588,.596,.627);
+  return select(mix(m,vec3f(.290,.298,.337),(s-.55)/.45),mix(vec3f(1.),m,s/.55),s<.55);}
+fn darkM(w:vec2f)->f32{
+  let R=max(fu.res.z,fu.res.w)*.52;
+  let s=clamp((length(w-fu.v[2].xy)-30.)/max(R-30.,1.),0.,1.);
+  return 1.-fu.v[14].z*select(.28+.44*(s-.45)/.55,.28*s/.45,s<.45);}
 fn ambAt(w:vec2f)->vec3f{
   let dep=w.y-fu.v[14].x;let day=fu.v[14].y;
-  return mix(vec3f(.30,.32,.36)+vec3f(.62,.63,.64)*day,fu.v[5].rgb,smoothstep(20.,320.,dep));}
+  return vigA(w)*darkM(w)*fu.v[5].rgb+vec3f(.62,.63,.64)*day*(1.-smoothstep(20.,320.,dep));}
 fn skyAt(w:vec2f)->f32{return smoothstep(.3,.7,maskAt(w,0.).g);}
 fn airAt(w:vec2f)->f32{let m=maskAt(w,0.);return (1.-smoothstep(.3,.7,m.r))*(1.-smoothstep(.3,.7,m.g));}
 fn waterAt(w:vec2f,t:f32,K:f32)->vec3f{return vec3f(0.);}
@@ -85,16 +98,17 @@ function drawDigLight(D,p,camx,camy,lamp){
   U[4]=M.x0;U[5]=M.y0;U[6]=1/M.w;U[7]=1/M.h;
   const a=.12;
   U[8]=lamp.x;U[9]=lamp.y;U[10]=lamp.f*Math.cos(a);U[11]=Math.sin(a);
-  U[12]=250*lk;U[13]=Math.cos(.55);U[14]=Math.cos(.18);U[15]=1.55;
-  U[16]=1;U[17]=.78;U[18]=.54;
-  const am=caveAmbient();
-  U[20]=am[0];U[21]=am[1];U[22]=am[2];U[23]=.6;
+  /* луч — как у main: холодный (190,215,235) и слабый; тёплое у налобника — зарево ниже */
+  U[12]=250*lk;U[13]=Math.cos(.55);U[14]=Math.cos(.18);U[15]=.6;
+  U[16]=.745;U[17]=.843;U[18]=.922;
+  U[20]=.78;U[21]=.78;U[22]=.78;U[23]=.6;
   const L=digLights(D,camx,camy);
   U[19]=L.length;
   for(let i=0;i<L.length;i++){const s=L[i],o=24+i*4;
     U[o]=s.x;U[o+1]=s.y;U[o+2]=s.r;U[o+3]=caveLitPack(s.c[0],s.c[1],s.c[2],s.I);}
   const nite=(typeof surfNight==="function")?surfNight(p):0;
   U[56]=digSurfY(p,camx+W/2);U[57]=clamp(1-nite,0,1);
+  U[58]=camy>-H*.3?1:0;                        /* темнота main — пока камера под землёй */
   const mt={view:gpuMipTex(M.cv).view},sm=gpuMipSmp();
   gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,U,[mt],{blend:"mul",smp:sm});
   gpuField(pass,"dig.add",CAVE_ADD_WGSL+DIG_OWN_WGSL,U,[mt],{blend:"add",smp:sm});

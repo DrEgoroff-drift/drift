@@ -21,7 +21,8 @@
    [2] фонарь: место и направление · [3] фонарь: дальность, cos края, cos ядра, сила ·
    [4] цвет фонаря, число источников · [5] окружающий свет, доля дальней стены ·
    [6..13] источники: x, y, радиус, цвет×сила (упакован: r·65536+g·256+b, 1.00 = 100) ·
-   [14] числа режима (пещера — ближнее озеро: x0, x1, уровень, есть ли).
+   [14] числа режима (пещера — ближнее озеро: x0, x1, уровень, есть ли; шахта — кромка земли,
+   день, камера под землёй).
    Маска: красный — порода, зелёный — открытое небо (шахта). Свои места у режима —
    пять функций: ambAt (окружающий), dayAt (свет сверху), skyAt (не освещается —
    само светит), airAt (где висит воздух: рассеяние и пыль), waterAt (вода: блеск). WGSL не требует
@@ -50,10 +51,10 @@ fn lampAt(w:vec2f)->f32{
   let c=dot(d/max(L,1e-3),fu.v[2].zw);
   let cone=smoothstep(fu.v[3].y,fu.v[3].z,c);
   let fall=pow(1.-L/R,1.4);
-  let fill=exp(-L*L/(2.*48.*48.))*.42;
-  return (cone*fall+fill)*fu.v[3].w;}
-/* отражённый: фонарь, упёршийся в стены, подсвечивает всё вокруг без теней */
-fn bounceAt(w:vec2f)->f32{let d=w-fu.v[2].xy;return exp(-dot(d,d)/(2.*130.*130.))*.30*fu.v[3].w;}
+  /* ни ближней заливки, ни отражённого: у main у самого фонаря только тёплое зарево сложением
+     (warmGlow), а пятно σ48 и отражённый σ130 выжигали ядро — шахта 146 против 115 у main,
+     пещера белела у фонаря (Контроль 26.09) */
+  return cone*fall*fu.v[3].w;}
 fn litCol(pk:f32)->vec3f{return vec3f(floor(pk/65536.),pmod(floor(pk/256.),256.),pmod(pk,256.))*.01;}
 `;
 /* свет: сцена × (окружающий + источники с тенями) */
@@ -65,7 +66,6 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   if(sk>.995){return vec4f(1.,1.,1.,1.);}
   var li=fu.v[4].rgb*lampAt(w)+dayAt(w);
   if(li.x+li.y+li.z>.003){li=li*trans(fu.v[2].xy,w,20);}
-  li+=fu.v[4].rgb*bounceAt(w);
   let n=i32(fu.v[4].w);
   for(var k=0;k<${CAVE_LIT_MAX};k++){
     if(k>=n){break;}
@@ -109,7 +109,17 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
 `;
 /* места пещеры: неба нет (день в устье — источник), окружающий ровный */
 const CAVE_OWN_WGSL=`
-fn ambAt(w:vec2f)->vec3f{return fu.v[5].rgb;}
+/* темнота — как у main (drawCaveDark): в круге фонаря R=.52·max(W,H) порода гаснет от нуля
+   через .18 на .45 круга до .42 у края и дальше, и гаснет ровно — тон камня, воды и мха
+   остаётся своим. Синий множитель (.2,.3,.64) уводил бирюзу хода в синий (Контроль 26.09);
+   холод темноты теперь сложением — тоном самой планеты (warmGlow, профиль 2). fu.v[5] —
+   общий уровень: порода флота с допечённым материалом светлее, чем в кадре main */
+fn darkA(w:vec2f)->f32{
+  let R=max(fu.res.z,fu.res.w)*.52*(fu.v[3].x/300.);
+  let r0=min(.5,40./max(R,1.));
+  let s=clamp((length(w-fu.v[2].xy)/max(R,1.)-r0)/(1.-r0),0.,1.);
+  return select(.18+.24*(s-.45)/.55,.18*s/.45,s<.45);}
+fn ambAt(w:vec2f)->vec3f{return fu.v[5].rgb*(1.-darkA(w));}
 fn dayAt(w:vec2f)->vec3f{return vec3f(0.);}
 fn skyAt(w:vec2f)->f32{return 0.;}
 fn airAt(w:vec2f)->f32{return 1.-smoothstep(.3,.7,rockAt(w,0.));}
@@ -144,18 +154,23 @@ function caveMaskCv(C){
 /* тёплое зарево сложением — то, что у main было спрайтом «lighter» поверх темноты: у фонаря
    пещеры и шахты, пятно на полу перед ходоком. Множитель поля на тёмной породе их не давал —
    тёплое пятно исчезало (Контроль 26.09). Центр и радиусы — пиксели кадра; профиль 0 —
-   (1−t)^2.2, как у спрайтов, 1 — три ступени градиента пятна (a, .556a на .45, ноль) */
+   (1−t)^2.2, как у спрайтов, 1 — три ступени градиента пятна (a, .556a на .45, ноль) по кругу rx,
+   обрезанные эллипсом rx×ry: у main пятно — радиальный градиент в эллипсе, край сверху и снизу чёткий,
+   2 — холод темноты пещеры: от r0 через .18 на .45 до .42 у края и так же за кругом */
 const WARM_GLOW_WGSL=`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let A=fu.v[0];let B=fu.v[1];
   let t=length((p-A.xy)/max(A.zw,vec2f(1.)));
+  if(fu.v[2].x>1.5){let s=clamp((t-fu.v[2].y)/(1.-fu.v[2].y),0.,1.);
+    return vec4f(B.rgb*B.w*select(.18+.24*(s-.45)/.55,.18*s/.45,s<.45),0.);}
   if(t>=1.){return vec4f(0.);}
   var a=B.w*pow(1.-t,2.2);
-  if(fu.v[2].x>.5){a=select(mix(B.w*.556,0.,(t-.45)/.55),mix(B.w,B.w*.556,t/.45),t<.45);}
+  if(fu.v[2].x>.5){let c=length(p-A.xy)/max(A.z,1.);
+    a=select(mix(B.w*.556,0.,(c-.45)/.55),mix(B.w,B.w*.556,c/.45),c<.45)*clamp((1.-t)*A.w,0.,1.);}
   return vec4f(B.rgb*a,0.);}`;
 const WARM_GLOW_U=new Float32Array(12);
-function warmGlow(pass,x,y,rx,ry,col,a,prof){
-  const U=WARM_GLOW_U;U[0]=x;U[1]=y;U[2]=rx;U[3]=ry;U[4]=col[0];U[5]=col[1];U[6]=col[2];U[7]=a;U[8]=prof|0;
+function warmGlow(pass,x,y,rx,ry,col,a,prof,r0){
+  const U=WARM_GLOW_U;U[0]=x;U[1]=y;U[2]=rx;U[3]=ry;U[4]=col[0];U[5]=col[1];U[6]=col[2];U[7]=a;U[8]=prof|0;U[9]=r0||0;
   gpuField(pass,"warm.glow",WARM_GLOW_WGSL,U,null,{blend:"add"});
 }
 /* источник в поле: x, y, радиус и упакованный цвет×сила */
@@ -213,13 +228,11 @@ function cavePoolInView(C,camx,camy){
   }
   return best;
 }
-/* тон темноты — от самой породы планеты (M233), холодный (M304) */
-function caveAmbient(){
+/* тон темноты пещеры — как у main: порода планеты, уведённая почти в ноль (M233, M304) */
+function caveDarkTone(){
   const cpl=(G.surf&&G.surf.p)||null;
   const pcv=(cpl&&cpl.T&&cpl.T.pal)?cpl.T.pal[Math.min(cpl.T.pal.length-1,1)]:[26,30,42];
-  const dk=[pcv[0]*.20+6,pcv[1]*.22+8,pcv[2]*.28+14];
-  const m=Math.max(dk[0],dk[1],dk[2],1);
-  return [dk[0]/m*.46,dk[1]/m*.52,dk[2]/m*.64];
+  return [Math.min(30,Math.round(pcv[0]*.20+6))/255,Math.min(32,Math.round(pcv[1]*.22+8))/255,Math.min(38,Math.round(pcv[2]*.28+14))/255];
 }
 /* свет на всё, что нарисовано до этого места. lamp — {x,y,f} фонарь в мире */
 function drawCaveLight(C,camx,camy,lamp){
@@ -230,10 +243,11 @@ function drawCaveLight(C,camx,camy,lamp){
   U[4]=0;U[5]=CAVE_Y0;U[6]=1/(CAVE_NX*CAVE_CS);U[7]=1/(CAVE_NY*CAVE_CS);
   const a=.2;                                   /* луч чуть вниз — на пол перед ходоком */
   U[8]=lamp.x;U[9]=lamp.y;U[10]=lamp.f*Math.cos(a);U[11]=Math.sin(a);
-  U[12]=300*lk;U[13]=Math.cos(.52);U[14]=Math.cos(.16);U[15]=2.5;
-  U[16]=1;U[17]=.76;U[18]=.50;
-  const am=caveAmbient();
-  U[20]=am[0];U[21]=am[1];U[22]=am[2];U[23]=.45;
+  /* луч — как фонарь скафандра у main: холодный (190,215,235) и слабый; тёплое у фонаря —
+     зарево и пятно ниже. Сила 2.5 тёплого выжигала ближнее поле в белое (Контроль 26.09) */
+  U[12]=300*lk;U[13]=Math.cos(.52);U[14]=Math.cos(.16);U[15]=.6;
+  U[16]=.745;U[17]=.843;U[18]=.922;
+  U[20]=.68;U[21]=.72;U[22]=.75;U[23]=.45;
   const L=caveLights(C,camx,camy);
   U[19]=L.length;
   for(let i=0;i<L.length;i++){const s=L[i],o=24+i*4;
@@ -246,6 +260,7 @@ function drawCaveLight(C,camx,camy,lamp){
   /* тёплое у фонаря, как у main: зарево .24 на .72 круга фонаря (R=.52·max(W,H)) и пятно
      на полу перед ходоком — эллипс 120×44, .18/.10/0 */
   const R=Math.max(W,H)*.52*lk,f=lamp.f||1;
+  warmGlow(pass,(lamp.x-camx)*K,(lamp.y-camy)*K,R*K,R*K,caveDarkTone(),1,2,Math.min(.5,40/Math.max(R,1)));
   warmGlow(pass,(C.x-camx)*K,(C.y-25-camy)*K,R*.72*K,R*.72*K,[1,.784,.518],.24,0);
   warmGlow(pass,(C.x+f*46-camx)*K,(C.y-3-camy)*K,120*lk*K,44*lk*K,[1,.839,.588],.18,1);
   caveEmit(C,camx,camy,pass,K);

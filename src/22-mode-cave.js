@@ -538,6 +538,43 @@ function drawCaveRock(C,cp,wx0,wy0){
   dg.addColorStop(0,"rgba(0,1,5,0)");dg.addColorStop(.5,"rgba(0,1,5,.10)");
   dg.addColorStop(1,"rgba(0,1,5,.26)");
   ctx.fillStyle=dg;ctx.fill(P);ctx.strokeStyle=dg;ctx.lineWidth=CS;ctx.stroke(K);
+  /* ── холодные лессировки (M304, DESIGN-craft §16): свет мха лежит НА КАМНЕ ──
+     Мох, кристаллы и жилы светились точками в пустоту: ореол lighter поверх
+     всего, а порода рядом оставалась чёрной — свет без освещённого. Свет
+     каждого источника кладётся в сам тайл, source-atop: тайл прозрачен, где
+     пустота, и краска ложится только на тело породы и её кромку. Радиус
+     втрое больше пятна, альфа .10–.14 — лессировка, не второй фонарь; тон
+     холодный, чтобы фонарь остался единственным тёплым. Печётся в тайл. */
+  {
+    const src=[];
+    if(typeof caveMossSpots==="function")
+      for(const m of caveMossSpots(C))src.push({x:m.x,y:m.y,r:m.rr*5,col:m.col,a:.44});
+    const D=C.deco;
+    if(D){
+      for(const c of D.crystals){
+        const y=c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low);
+        src.push({x:c.x,y:y+(c.up?-10:10),r:Math.max(80,c.rad*4),col:c.col,a:.40});
+      }
+      for(const v of D.veins){
+        const p=v.pts[Math.floor(v.pts.length/2)];
+        const y=(v.up?caveCeilOf(C,p[0],v.low):caveFloorOf(C,p[0],v.low))+p[1];
+        src.push({x:p[0],y,r:100,col:v.col,a:.28});
+      }
+    }
+    ctx.save();ctx.globalCompositeOperation="source-atop";
+    for(const s of src){
+      const x=s.x-wx0,y=s.y-wy0;
+      if(x<-s.r||x>TILE+s.r||y<-s.r||y>TILE+s.r)continue;
+      const g=ctx.createRadialGradient(x,y,0,x,y,s.r);
+      g.addColorStop(0,"rgba("+s.col.join(",")+","+s.a+")");
+      g.addColorStop(.5,"rgba("+s.col.join(",")+","+(s.a*.5).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+s.col.join(",")+",0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,s.r,0,TAU);ctx.fill();
+    }
+    ctx.restore();
+  }
+  /* лессировка — краска на камне, не свет: поле пещеры (22c) умножает её вместе с породой,
+     а без неё ходы теряли бирюзу main и уходили в серо-синий (Контроль 26.09) */
   /* влажный блик по кромке — единственный источник формы в темноте */
   ctx.strokeStyle="rgba(150,200,230,.15)";ctx.lineWidth=1.6;ctx.stroke(K);
   /* ── капли ловят свет (M257, движки — DESIGN-craft §1) ──
