@@ -67,9 +67,9 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   k_g4m main (156,72,52) → gpu (67,37,36)). Near-camera dust with parallax and stretch in flight. Budget: nebula
   at ¼ resolution, not every frame, ≤2 ms on the laptop (`prof()`).
   - [ ] L1b dust «tadpoles» at ×2.00 (Контроль 24.09, again 26.09): in l2c ×2 top right the two orange fish
-    are gas seen through windows between bodies (the gas-only pass shows it there broad and dim; the dust
-    hides its surroundings), not globules — globules no longer glow without gas since 26.09. Fix wants a
-    call from Контроль: fewer narrow windows, or a softer ramp where two bodies meet.
+    are gas clumps seen through ONE body's soft ramp (body mask ≈ .4–.5, ~60 % through), the outline is
+    the clump's own — not windows between bodies, so a haze in narrow windows missed them (tried, 26.09).
+    Direction wanted from Контроль: soften the gas clump's contrast behind a half-body, or fade the ramp.
 - [ ] **L2 HDR light:** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,

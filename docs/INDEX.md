@@ -2238,25 +2238,25 @@ glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gn5Foe                       tests/91zzzw-guns3.js:10-16
 GNB                          src/16gb-gpu-nebula.js:17
-GNB_EMI                      src/16gb-gpu-nebula.js:408
-GNB_FINE                     src/16gb-gpu-nebula.js:362
+GNB_EMI                      src/16gb-gpu-nebula.js:409
+GNB_FINE                     src/16gb-gpu-nebula.js:363
 GNB_GEN                      src/16gb-gpu-nebula.js:44
-GNB_LM_COL                   src/16gb-gpu-nebula.js:520
+GNB_LM_COL                   src/16gb-gpu-nebula.js:521
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gb-gpu-nebula.js:503-518
-GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
+GNB_PAL                      src/16gb-gpu-nebula.js:504-519
+GNB_STAR_ABS                 src/16gb-gpu-nebula.js:386
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
-gnbGenDesc                   src/16gb-gpu-nebula.js:494
-gnbLandmark                  src/16gb-gpu-nebula.js:521-534
-gnbLfr                       src/16gb-gpu-nebula.js:537-550
+gnbGenDesc                   src/16gb-gpu-nebula.js:495
+gnbLandmark                  src/16gb-gpu-nebula.js:522-535
+gnbLfr                       src/16gb-gpu-nebula.js:538-551
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:510-518
-gnbPipe                      src/16gb-gpu-nebula.js:493
-gnbStar                      src/16gb-gpu-nebula.js:552-557
-gnbStars                     src/16gb-gpu-nebula.js:398-405
-gnbTarget                    src/16gb-gpu-nebula.js:485-492
+gnbPalette                   src/16gb-gpu-nebula.js:511-519
+gnbPipe                      src/16gb-gpu-nebula.js:494
+gnbStar                      src/16gb-gpu-nebula.js:553-558
+gnbStars                     src/16gb-gpu-nebula.js:399-406
+gnbTarget                    src/16gb-gpu-nebula.js:486-493
 gnFoe                        tests/91zzzw-guns2.js:17-23
 gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
@@ -2359,8 +2359,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
 gpuMoon                      src/17ga-gpu-planets.js:440-445
-gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
-gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
+gpuNebulaComp                src/16gb-gpu-nebula.js:616-626
+gpuNebulaGen                 src/16gb-gpu-nebula.js:561-613
 gpuNoise                     src/08b-gpu.js:369-374
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:558-578
@@ -7081,7 +7081,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gaz-gpu-noise.js · 3 КБ
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 50 КБ
+## src/16gb-gpu-nebula.js · 51 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 79 КБ
