@@ -11143,6 +11143,7 @@ const GPU_PIPE_KEYS=[
   "pipe:gsy.orb|over",
   "pipe:gtr|add",
   "pipe:kit.img|add",
+  "pipe:kit.img|hull",
   "pipe:kit.img|over",
   "pipe:kit.shp|add",
   "pipe:kit.shp|over"
@@ -56955,7 +56956,7 @@ function drawHotel(zx,zy,Z){
   const R=(Q,a)=>Q.map(q=>({x:ox+(q[0]+q[2])/2*sx,y:oy+(q[1]+q[3])/2*sy,w:(q[2]-q[0])*sx,h:(q[3]-q[1])*sy,a,
     u0:q[0]/B.w,v0:q[1]/B.h,u1:q[2]/B.w,v1:q[3]/B.h})),all=[[0,0,B.w,B.h]];
   const o={lod:HOTEL_LOD},ad={blend:"add",lod:HOTEL_LOD};
-  gpuImage(pass,B.cv,R(all,1),o);
+  gpuImage(pass,B.cv,R(all,1),{blend:"hull",lod:HOTEL_LOD});   /* краска дома в свечение не идёт (fsDown): светят окна и вывеска */
   if(S)gpuImage(pass,B.sh,R(all,HOTEL_SHEEN*fa),ad);
   /* горящие окна — поверх: стекло непрозрачно, замена точная (отсвет вывески на них не нужен — светят сами) */
   if(lit.length){gpuImage(pass,B.cl,R(lit,1),o);}

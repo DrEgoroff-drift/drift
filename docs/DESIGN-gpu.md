@@ -743,7 +743,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   station region at 760: mean L .185 → .168, V>.6 4.5 → 3.0 %, V>.85 1.88 → 1.20 %; solar wings and grey
   panels lose the milky halo, the white lamp and the red beacon keep theirs. Wrecks: >8 on 0.02 % of pixels.
   08b 49392 → 49333 bytes.
-  Next: the hotel facade (blend `hull` on B.cv, key kit.img|hull).
+- **Final glow source: the hotel facade** (26.09): B.cv is laid with the `hull` blend (colour as `over`,
+  scene alpha to 0), so fsDown takes nothing from the facade paint; the lit windows (B.cl), their light
+  (B.em, B.el by addition) and the neon stay as they were and keep their glow. New warm key
+  `pipe:kit.img|hull` (44). Pair against 96d0506e, hotel region: 760 L .162 → .147, V>.6 4.9 → 4.2 %;
+  390 L .125 → .117, V>.6 3.1 → 2.7 %; the pink haze on the towers is gone, windows, sign and pier lamps
+  glow as before.
+  Next: PLAN §0 Stage 1 — fleet and lane-buoy lights as explicit emission, judged with the flame.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
