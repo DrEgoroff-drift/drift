@@ -46,6 +46,18 @@ could ever save.
   thin line in the owner's colour. The emblem chip grows at near zoom to a readable 14–18 px. The station's
   compass chip and the station header carry the land owner's glyph (★ ◎ ▦ ∿ ☼ ●). The picture is a draft.
 
+- **M466: янтарь in the cave, жемчуг on the hunt, the reading everywhere, the vein told.** A cave on a planet
+  with an янтарь deposit now has warm resin knots on its walls, at the branch ends and along both galleries;
+  walking up to one takes it. How many knots there are follows what is left in the deposit, so a worked cave is
+  poorer next time. A stunned beast's sample on a planet with a жемчуг deposit carries a few grains, until the
+  deposit runs out; a beast taken alive for the farm gives none. The planet's approach line reads «ЗАЛЕЖЬ:
+  осмий 40–160» from orbit, and the dig entry shows the instrument plate the belt already had. A new science,
+  «Линза тёмного стекла», halves every reading's spread; it costs data and one piece of тёмное стекло from the
+  hold. A struck жила is told: after one сводка (a shift) stations within twelve sectors carry the rumour
+  «жила — космический янтарь, говорят, на двадцать трюмов», and from then on the approach to that system has
+  one or two extra hulls. No new save field: a struck vein is a grade-3 deposit in `G.farTaken`, and the
+  strike time is the rush's (`G.rush`).
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -57,6 +69,11 @@ could ever save.
   times in five. The glyphs are Unicode text (★ ◎ ▦ ∿ ☼ ●), so their look depends on the device font; the
   canvas emblem stays the map's own. Орднунг's «numbered» dashes are ticks, not digits: digits at 9 px on an
   edge were noise in the draft.
+- M466: «тёмное стекло in the instruments» is a science bought with data plus one piece of glass, not a
+  shipyard tier-8 part; the shipyard is stage 4, and this keeps the save untouched. The «company on the
+  approach» is one or two extra pirates, not prospectors: there is no neutral traffic to borrow yet. The vein
+  rumour never lies (the ordinary 15 % do); the vein is real. A vein struck before the latest rush is told at
+  once, since only the latest strike has a time.
 
 ## 0.478.0 - the album on the engine
 

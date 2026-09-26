@@ -228,9 +228,6 @@ measured on the GPU build first:
 
 - [ ] **Oracle lines** (`91zzzzzzzzz-worlds`): the best rail round trip ≤ ×1.3 of the best jumps in credits
   per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for M478).
-- [ ] **M466 reading and ЖИЛА:** the cave (янтарь) and the hunt (жемчуг) give nothing yet; the rumour a
-  сводка later and company on the approach; the reading on the planet card and at the dig entry; тёмное
-  стекло in the instruments narrowing every reading by half.
 - [ ] **M467:** far goods for sale in the heart, rarely and dear.
 - [ ] **M469 eaters:** the goods actually consumed by the yards' densities and доводка, the luxury counter,
   the hotel shop.

@@ -33,6 +33,8 @@ function spawnPirates(){
   const r=rng(hashi(G.sx,G.sy,Math.floor(now()/900000)));
   /* под пиратами система держит патруль сверх обычного случайного налёта */
   let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
+  /* жила прогремела — на подходе компания (M466); свой поток, чтобы старые налёты не ехали */
+  if(typeof farVeinCompany==="function")n+=farVeinCompany(G.sx,G.sy,rng(hashi(G.sx,G.sy,0xFA15)));
   if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
   /* «Ялта» (M369, D12): туда не приходят ни пираты, ни фронт — это её первое
      и главное свойство, и оно работает раньше всего остального */

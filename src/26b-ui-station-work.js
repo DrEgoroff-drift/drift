@@ -318,9 +318,12 @@ function stTabLab(){
       r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+T.note+
         "</s>"+(dots?"<div class='dots'>"+dots+"</div>":"")));
       const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" дан");
-      b.disabled=done||G.data<cost;
+      const noFar=!!(T.far&&!done&&!((G.cargo[T.far]|0)>0));   /* вещь из глубины (M466) */
+      if(noFar)b.textContent="нет: "+RES[T.far].ru.toLowerCase();
+      b.disabled=done||G.data<cost||noFar;
       b.onclick=()=>{
         G.data-=cost;
+        if(T.far)G.cargo[T.far]=Math.max(0,(G.cargo[T.far]|0)-1);
         if(T.max)G.techLvl[k]=(G.techLvl[k]|0)+1; else G.tech.add(k);
         /* керамика даёт +30 корпуса, но не сверх предела: у изношенного корпуса (12s-wear)
            потолок ниже расчётного, и подарок вылезал за него — «корпус 280 из 250»
