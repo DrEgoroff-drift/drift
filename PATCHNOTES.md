@@ -6,6 +6,26 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## Unreleased - stage 2, whose land
+
+- **M453: the stamp page can be filled.** Ялта now gives its own round stamp (six signatures in a ring, weapons
+  sealed). That also makes the diplomatic passport reachable: it wanted all six powers and Ялта, and Ялта never
+  stamped. The pirates' scratch «ГОНИ ГРУЗ» lands on entering a system with a pirate base. The land under a base
+  stays whose it was, so the scratch comes 1.3 s after the power's stamp, never instead of it. The empty cells
+  say where to go (Ялта's sector, «царапина у пиратской базы»). Stamps have an uneven ink grain; the receipt has
+  none. `stampOwnerAt` still answers «whose land» for the laws and names; the stamp asks `stampKeyAt`.
+- **P14: the record book is a document.** A series and number, one line on what it is for (records are made by
+  others; three from a station put you on its board of honour; after 12 years of sky, the medical board). Stations
+  one or two records short of the board are named. Leave: 28 days per year of service, the sanatorium takes its
+  three, and at the medical board the unused days are paid out (40 кр a day) with a line from «бухгалтерия». The
+  page says how many years remain to the board, or shows the board's conclusion. Institutions' entries carry a
+  round «м.п.» seal, people's a hand signature.
+
+### Disputed (cautious variants taken; the author may overturn)
+- M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
+  survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
+  told apart by initials plus a short list (Вега, попугай, замполит, неизвестные).
+
 ## 0.478.0 - the album on the engine
 
 - **The album draws on the engine** (GPU-3): each card is the same postcard brush, baked once and laid into

@@ -549,7 +549,7 @@ function jump(cost){
    станции, а не у входа) и что об этом сказано. */
 function arriveSystem(sx,sy,o){
   o=o||{};
-  const fromBy=(typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,G.sy):null;   /* чья земля остаётся за кормой (M453) */
+  const fromBy=(typeof stampKeyAt==="function")?stampKeyAt(G.sx,G.sy):null;   /* чья земля остаётся за кормой (M453) */
   G.sx=sx;G.sy=sy;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   if(G.course&&G.course.sx===G.sx&&G.course.sy===G.sy)G.course=null;   /* прибыли — курса больше нет (M321) */
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)

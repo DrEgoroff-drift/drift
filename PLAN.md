@@ -218,7 +218,6 @@ measured on the GPU build first:
 
 ## 3. Stage 2 — whose land, in five seconds
 
-- [ ] **M453 the stamp + P14 КНИЖКА:** Ялта's stamp and the pirates' scratch cannot be earned yet; the rest of P14 — seals, vacation savings, the grounding ending on the page.
 - [ ] **M454 the station by its builder:** the maker's grammar on the modules and the core (profile law,
   seams, joints), not the common kit with a dressed plate; the Орднунг ribs hide under the modules.
 - [ ] **M447/M448 the galaxy:** M450 the overview and M451 the flight sky from the same model; verify the

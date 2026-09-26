@@ -786,6 +786,9 @@ body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
 #loglist .li.quest span{color:var(--text)}
 #loglist .li.quest span i{font-style:normal;color:var(--dim);font-size:10px}
 #loglist .li.quest em{color:var(--amber)}
+/* книжка: круглая печать учреждения и росчерк человека (P14) */
+#loglist .li .rec-seal{display:inline-block;margin-left:8px;padding:1px 5px;border:1px solid rgba(154,124,240,.55);border-radius:50%;color:rgba(154,124,240,.8);font:italic 9px/1.2 ui-monospace,monospace;transform:rotate(-8deg)}
+#loglist .li .rec-sign{margin-left:8px;color:rgba(111,156,242,.75);font:italic 12px/1 cursive}
 #loglist .li.quest.go:active{background:rgba(242,178,92,.14)}
 #loglist .li.quest.go span b:first-child::after{content:" →";color:var(--amber)}
 
@@ -1757,6 +1760,13 @@ body.table u.addr{color:#7a4a20}
 .stp-km{color:#6f9cf2;font-style:italic}
 .stp-ra{color:#e0a64e}
 .stp-hf{color:#b9c4cc;font-family:"Courier New",monospace;letter-spacing:.14em}
+/* Ялта — круглая, шесть подписей по кругу; пираты — не печать, а царапина */
+.stp-yalta{color:#d9c27a;border-radius:50%!important;padding:14px 20px}
+.stp-pirate{color:#c9c2b4;border-style:dashed!important;border-width:1px!important;font-style:italic;letter-spacing:.2em}
+.stp-pirate .l0{text-decoration:line-through wavy rgba(201,194,180,.5)}
+/* зерно краски: штемпель ложится неровно */
+.stp-fx:not(.stp-co),.stp-cell:not(.stp-none):not(.stp-co){-webkit-mask-image:repeating-radial-gradient(circle at 37% 61%,#000 0 1.6px,rgba(0,0,0,.62) 1.9px 2.4px,#000 2.8px 4.1px);
+  mask-image:repeating-radial-gradient(circle at 37% 61%,#000 0 1.6px,rgba(0,0,0,.62) 1.9px 2.4px,#000 2.8px 4.1px)}
 .stp-fx.stp-co{top:auto;bottom:0;border-radius:0;border-width:0;background:#efe8da;color:#2b2622;
   mix-blend-mode:normal;font-weight:400;animation:stpSlip 1.2s ease-out forwards;
   transform:translate(-50%,100%)}

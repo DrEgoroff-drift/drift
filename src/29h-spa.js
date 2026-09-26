@@ -52,6 +52,7 @@ function enterSpa(){
   const I=(typeof instAll==="function")?instAll():null;
   if(!I||I.vouch<=0||!spaCanHere())return false;
   I.vouch--;I.used=(I.used|0)+1;
+  if(typeof recordVacUse==="function")recordVacUse(SPA_DAYS);   /* три дня отпуска — из книжки (P14) */
   const th=(typeof thingsAll==="function")?thingsAll().find(t=>t.k==="voucher"):null;
   if(th)thingsAll().splice(thingsAll().indexOf(th),1);
   for(const k in keys)keys[k]=false;

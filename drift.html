@@ -800,6 +800,9 @@ body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
 #loglist .li.quest span{color:var(--text)}
 #loglist .li.quest span i{font-style:normal;color:var(--dim);font-size:10px}
 #loglist .li.quest em{color:var(--amber)}
+/* книжка: круглая печать учреждения и росчерк человека (P14) */
+#loglist .li .rec-seal{display:inline-block;margin-left:8px;padding:1px 5px;border:1px solid rgba(154,124,240,.55);border-radius:50%;color:rgba(154,124,240,.8);font:italic 9px/1.2 ui-monospace,monospace;transform:rotate(-8deg)}
+#loglist .li .rec-sign{margin-left:8px;color:rgba(111,156,242,.75);font:italic 12px/1 cursive}
 #loglist .li.quest.go:active{background:rgba(242,178,92,.14)}
 #loglist .li.quest.go span b:first-child::after{content:" →";color:var(--amber)}
 
@@ -1771,6 +1774,13 @@ body.table u.addr{color:#7a4a20}
 .stp-km{color:#6f9cf2;font-style:italic}
 .stp-ra{color:#e0a64e}
 .stp-hf{color:#b9c4cc;font-family:"Courier New",monospace;letter-spacing:.14em}
+/* Ялта — круглая, шесть подписей по кругу; пираты — не печать, а царапина */
+.stp-yalta{color:#d9c27a;border-radius:50%!important;padding:14px 20px}
+.stp-pirate{color:#c9c2b4;border-style:dashed!important;border-width:1px!important;font-style:italic;letter-spacing:.2em}
+.stp-pirate .l0{text-decoration:line-through wavy rgba(201,194,180,.5)}
+/* зерно краски: штемпель ложится неровно */
+.stp-fx:not(.stp-co),.stp-cell:not(.stp-none):not(.stp-co){-webkit-mask-image:repeating-radial-gradient(circle at 37% 61%,#000 0 1.6px,rgba(0,0,0,.62) 1.9px 2.4px,#000 2.8px 4.1px);
+  mask-image:repeating-radial-gradient(circle at 37% 61%,#000 0 1.6px,rgba(0,0,0,.62) 1.9px 2.4px,#000 2.8px 4.1px)}
 .stp-fx.stp-co{top:auto;bottom:0;border-radius:0;border-width:0;background:#efe8da;color:#2b2622;
   mix-blend-mode:normal;font-weight:400;animation:stpSlip 1.2s ease-out forwards;
   transform:translate(-50%,100%)}
@@ -14976,6 +14986,20 @@ function recordAdd(author,text){
   return e;
 }
 function recordYears(){const R=recordAll();return Math.floor((celDay()-R.t0)/365);}
+/* ── отпускные (P14): 28 дней за год неба, копятся со стажем. Санаторий
+   списывает свои три дня (29h); что не отгулял до комиссии — бухгалтерия
+   выплачивает при уходе на пенсию. R.vac — сколько дней уже отгулял ── */
+const RECORD_VAC_YEAR=28,RECORD_VAC_PAY=40;
+function recordVac(){
+  const R=recordAll();
+  const got=Math.floor(Math.max(0,celDay()-R.t0)*RECORD_VAC_YEAR/365),used=R.vac|0;
+  return {got,used,left:got-used};
+}
+function recordVacUse(days){const R=recordAll();R.vac=(R.vac|0)+(days|0);}
+/* печать или подпись: учреждение ставит круглую печать, человек расписывается.
+   Люди в книжке — те, у кого инициалы, и домашние */
+const RECORD_PEOPLE=["Вега","попугай","замполит","неизвестные"];
+function recordSeal(a){return /\s[А-ЯЁ]\.\s?[А-ЯЁ]?\.?$/.test(a)||RECORD_PEOPLE.includes(a)?"sign":"seal";}
 function recordByAuthor(a){return recordAll().e.filter(x=>x.a===a);}
 /* доска почёта: станции с тремя и больше записями */
 function recordHonour(){
@@ -15007,6 +15031,13 @@ function recordGround(){
   const R=recordAll();if(R.grounded)return false;
   R.grounded=1;
   recordAdd("медкомиссия","к полётам не допущен. Стаж "+recordYears()+" лет. Пенсия.");
+  /* неотгулянный отпуск — деньгами, строкой бухгалтерии (P14) */
+  const V=recordVac();
+  if(V.left>0){
+    const pay=earn(V.left*RECORD_VAC_PAY,"отпуск");
+    recordVacUse(V.left);
+    recordAdd("бухгалтерия","компенсация за неиспользованный отпуск: "+V.left+" дн. · "+pay+" кр.");
+  }
   thingAdd("record","Заключение комиссии","«к полётам не допущен» · стаж "+recordYears()+" лет · флот летает без вас · вы дома"+(G.vega&&G.vega.stage===4?" · с Вегой и двумя попугаями":""));
   logAdd("warn","Медкомиссия: к полётам не допущен. Пенсия.");
   say("МЕДКОМИССИЯ\nк полётам не допущен\n\nпенсия",400);
@@ -15031,8 +15062,21 @@ function renderRecord(box){
   box.textContent="";
   const R=recordAll();
   tableRow(box,"head","","ТРУДОВАЯ КНИЖКА · "+recordPilot().toUpperCase()+" · СТАЖ "+recordYears()+" "+pl3(recordYears(),"ГОД","ГОДА","ЛЕТ")+(R.grounded?" · ПЕНСИЯ":""));
+  /* обложка документа: серия и номер от зерна, и зачем он вообще (P14) */
+  const hn=hashi(R.t0|0,0xB00C,1)>>>0,ser="АТ-"+"IVX"[hn%3]+" № "+String(hn%9000000+1000000);
+  tableRow(box,"dim","","серия "+ser+" · записи делают другие: станция, институт, люди. Три записи от станции — ваше имя на её доске почёта. Через "+RECORD_YEARS+" лет неба — медкомиссия");
   const H=recordHonour();
   if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
+  /* кому осталось чуть-чуть: одна-две записи до доски */
+  const by={};for(const x of R.e)by[x.a]=(by[x.a]|0)+1;
+  const near=Object.keys(by).filter(a=>by[a]<3&&recordSeal(a)==="seal").sort((a,b)=>by[b]-by[a]).slice(0,3);
+  if(near.length)tableRow(box,"dim","","до доски почёта: "+near.map(a=>a+" — ещё "+(3-by[a])).join(" · "));
+  /* отпуск и концовка — на странице, а не только в голове (P14) */
+  const V=recordVac();
+  tableRow(box,"sec","","ОТПУСК · НАКОПЛЕНО "+V.got+" ДН. · ОТГУЛЯНО "+V.used+" · ОСТАТОК "+V.left);
+  if(R.grounded)tableRow(box,"sec","","ЗАКЛЮЧЕНИЕ КОМИССИИ · К ПОЛЁТАМ НЕ ДОПУЩЕН · ФЛОТ ЛЕТАЕТ БЕЗ ВАС");
+  else{const y=RECORD_YEARS-recordYears();
+    tableRow(box,"dim","",y>0?"до медкомиссии: "+y+" "+pl3(y,"год","года","лет")+" неба":"медкомиссия ждёт на стойке ядра дома");}
   if(typeof stampPage==="function")stampPage(box);   /* первая настоящая страница документа (M453) */
   if(R.udar)tableRow(box,"sec","","ОТМЕТКИ «УДАРНИК»: "+R.udar+" · госзаказы сданы по твёрдой цене");   /* M503 */
   if(typeof socPage==="function")socPage(box);   /* общества и льготы (M512) */
@@ -15047,7 +15091,8 @@ function renderRecord(box){
        Через время суток растут (скачки часов — 11ab-institute и другие), и
        «день 11» уже не помещался; голое число помещается всегда */
     const em=document.createElement("em");em.textContent=String(x.d);
-    const sp=document.createElement("span");sp.innerHTML="<b>"+x.a+"</b> — "+x.s;
+    const sp=document.createElement("span");sp.innerHTML="<b>"+x.a+"</b> — "+x.s+
+      (recordSeal(x.a)==="seal"?"<i class='rec-seal'>м.п.</i>":"<i class='rec-sign'>"+x.a.slice(0,3)+"~</i>");
     row.appendChild(em);row.appendChild(sp);box.appendChild(row);
   }
 }
@@ -56642,6 +56687,9 @@ function stampOwnerAt(sx,sy){
   const sys=getSystem(sx,sy),st=sys&&sys.station;
   return (st&&st.by&&STAMP_RU[st.by])?st.by:null;
 }
+/* ключ штампа: держава, а Ялта — ничья и всехняя, своя клетка на странице.
+   stampOwnerAt остаётся «чья земля» для законов и топонимов */
+function stampKeyAt(sx,sy){return yaltaIs(sx,sy)?"yalta":stampOwnerAt(sx,sy);}
 function stampBook(){const R=recordAll();if(!R.st||typeof R.st!=="object")R.st={};return R;}
 /* текст отметки: одна и та же для штампа на экране и для клетки на странице */
 function stampText(by,e){
@@ -56654,13 +56702,16 @@ function stampText(by,e){
   if(by==="km")return ["Коммуна · въезд",STAMP_POEM[n%STAMP_POEM.length],"день "+(e.d+1+n%3)+", кажется"];
   if(by==="ra")return ["☀ ЗАХОДИ, БРАТ","был у нас "+e.d+"-го","— мастер"];
   if(by==="hf")return ["HF-GATE v4.1","ДОВЕРИЕ "+(40+n%57),"ID "+((n*7919)%100000)];
+  if(by==="yalta")return ["ЯЛТА · ОТДЫХ","гт · ко · ор · км · ра · хф","оружие опечатано"];
+  if(by==="pirate")return ["ГОНИ ГРУЗ","нацарапано на обшивке","без подписи"];
   return [STAMP_RU[by]||by];
 }
 /* зовёт gestArrive (17h) при каждом прибытии: from — хозяин покинутой системы */
 function stampArrive(fromBy){
-  const by=stampOwnerAt(G.sx,G.sy),R=stampBook();
+  const by=stampKeyAt(G.sx,G.sy),R=stampBook();
   const last=R.last===undefined?fromBy:R.last;
   R.last=by;
+  stampPirate(R,!!by&&by!==last);
   if(!by||by===last)return null;
   const had=R.st[by];
   const e=had||(R.st[by]={d:celDay(),t:G.t,sx:G.sx,sy:G.sy,v:0});
@@ -56670,6 +56721,23 @@ function stampArrive(fromBy){
   if(!had&&typeof passportIssue==="function")passportIssue();   /* седьмая отметка — паспорт (M505) */
   if(typeof volBorder==="function")volBorder(by);   /* животное без бумаг — пикет (M511) */
   return by;
+}
+/* пираты печатей не ставят: их «пост» — обломок с нацарапанным «Гони груз».
+   Царапина — за въезд в систему с пиратской базой из системы без неё
+   (R.lp — была ли база в прошлом прибытии). Земля под базой остаётся чьей
+   была, поэтому царапина живёт рядом со штампом, а не вместо него: если в
+   это прибытие упал и штамп державы, царапина проступает следом */
+function stampPirate(R,after){
+  const pb=!!(G.sys&&typeof pirateBaseOf==="function"&&pirateBaseOf(G.sys));
+  const was=!!R.lp;R.lp=pb?1:0;
+  if(!pb||was)return false;
+  const had=R.st.pirate;
+  const e=had||(R.st.pirate={d:celDay(),t:G.t,sx:G.sx,sy:G.sy,v:0});
+  e.v=(e.v|0)+1;
+  const show=()=>stampShow("pirate",had?{d:celDay(),t:G.t,sx:G.sx,sy:G.sy}:e);
+  if(after)setTimeout(show,1300);else show();
+  if(!had&&typeof recordAdd==="function")recordAdd("неизвестные","на обшивке нацарапано: «Гони груз». Без подписи.");
+  return true;
 }
 /* ── штамп через экран: DOM на бумаге, 1.2 с ── */
 function stampShow(by,e){
@@ -59364,7 +59432,7 @@ function jump(cost){
    станции, а не у входа) и что об этом сказано. */
 function arriveSystem(sx,sy,o){
   o=o||{};
-  const fromBy=(typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,G.sy):null;   /* чья земля остаётся за кормой (M453) */
+  const fromBy=(typeof stampKeyAt==="function")?stampKeyAt(G.sx,G.sy):null;   /* чья земля остаётся за кормой (M453) */
   G.sx=sx;G.sy=sy;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   if(G.course&&G.course.sx===G.sx&&G.course.sy===G.sy)G.course=null;   /* прибыли — курса больше нет (M321) */
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
@@ -107749,6 +107817,7 @@ function enterSpa(){
   const I=(typeof instAll==="function")?instAll():null;
   if(!I||I.vouch<=0||!spaCanHere())return false;
   I.vouch--;I.used=(I.used|0)+1;
+  if(typeof recordVacUse==="function")recordVacUse(SPA_DAYS);   /* три дня отпуска — из книжки (P14) */
   const th=(typeof thingsAll==="function")?thingsAll().find(t=>t.k==="voucher"):null;
   if(th)thingsAll().splice(thingsAll().indexOf(th),1);
   for(const k in keys)keys[k]=false;

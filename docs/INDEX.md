@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6476
+Файлов: 641 · символов верхнего уровня: 6483
 
 ## СИМВОЛЫ
 
@@ -1302,6 +1302,8 @@ RAY_R                        src/13a-guns.js:29
 RD                           src/27k-road.js:183
 REC                          src/15c-rec.js:18
 RECALL_WEEK                  src/05b4-recall.js:8
+RECORD_PEOPLE                src/11aa-record.js:47
+RECORD_VAC_YEAR              src/11aa-record.js:38
 RECORD_YEARS                 src/11aa-record.js:17
 REC_KEYS                     src/15c-rec.js:19
 REC_SEG                      src/15c-rec.js:17
@@ -3060,7 +3062,7 @@ enterCave                    src/22-mode-cave.js:175-232
 enterDig                     src/23-mode-dig.js:51-70
 enterHomeIn                  src/29c-home-in.js:65-73
 enterRaid                    src/24a-mode-raid.js:219-274
-enterSpa                     src/29h-spa.js:51-65
+enterSpa                     src/29h-spa.js:51-66
 enterSurface                 src/21-mode-surface.js:7-198
 enterWinter                  src/29f-winter.js:112-119
 env                          src/09-audio.js:72-77
@@ -3094,7 +3096,7 @@ exitCave                     src/22-mode-cave.js:233-237
 exitDig                      src/23-mode-dig.js:71-81
 exitHomeIn                   src/29c-home-in.js:74-78
 exitScoop                    src/19a-mode-scoop.js:62-74
-exitSpa                      src/29h-spa.js:119-125
+exitSpa                      src/29h-spa.js:120-126
 exitWanderer                 src/24c-mode-wanderer.js:42-48
 exitWinter                   src/29f-winter.js:210-216
 expAll                       src/11x-expedition.js:21
@@ -5296,13 +5298,16 @@ recallTick                   src/05b4-recall.js:12-27
 recalled                     src/05b4-recall.js:10
 recordAdd                    src/11aa-record.js:22-33
 recordAll                    src/11aa-record.js:18-21
-recordBlock                  src/11aa-record.js:72-84
-recordBoardHere              src/11aa-record.js:53-61
-recordByAuthor               src/11aa-record.js:35
-recordGround                 src/11aa-record.js:62-71
-recordHonour                 src/11aa-record.js:37-40
-recordPilot                  src/11aa-record.js:41
-recordTick                   src/11aa-record.js:43-51
+recordBlock                  src/11aa-record.js:93-105
+recordBoardHere              src/11aa-record.js:67-75
+recordByAuthor               src/11aa-record.js:49
+recordGround                 src/11aa-record.js:76-92
+recordHonour                 src/11aa-record.js:51-54
+recordPilot                  src/11aa-record.js:55
+recordSeal                   src/11aa-record.js:48
+recordTick                   src/11aa-record.js:57-65
+recordVac                    src/11aa-record.js:39-43
+recordVacUse                 src/11aa-record.js:44
 recordYears                  src/11aa-record.js:34
 rectsDirty                   src/08-state.js:102-106
 refineBank                   src/11-log.js:170
@@ -5368,7 +5373,7 @@ renderMail                   src/25k-post-mail.js:36-109
 renderOpts                   src/27-ui-ship.js:35-332
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
-renderRecord                 src/11aa-record.js:86-109
+renderRecord                 src/11aa-record.js:107-144
 renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
@@ -5844,13 +5849,13 @@ socWageMul                   src/12ay-fx-soc.js:35
 spaAll                       src/29h-spa.js:45
 spaBoardRows                 src/29i-spa-draw.js:38
 spaCanHere                   src/29h-spa.js:47-50
-spaEnd                       src/29h-spa.js:103-118
+spaEnd                       src/29h-spa.js:104-119
 spaGeom                      src/29i-spa-draw.js:24-36
 spaHit                       src/29i-spa-draw.js:488-506
 spaOn                        src/29h-spa.js:46
-spaSleep                     src/29h-spa.js:95-102
-spaTake                      src/29h-spa.js:67-83
-spaTalk                      src/29h-spa.js:85-93
+spaSleep                     src/29h-spa.js:96-103
+spaTake                      src/29h-spa.js:68-84
+spaTalk                      src/29h-spa.js:86-94
 spaTap                       src/29i-spa-draw.js:507-513
 spaTestStart                 tests/91zzzl-spa.js:2-10
 spaTookToday                 src/29i-spa-draw.js:39
@@ -5902,12 +5907,14 @@ stTabsHere                   src/26-ui-station.js:141
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:378-391
 stallWho                     src/28-loop.js:122-130
-stampArrive                  src/17i-stamp.js:37-50
-stampBook                    src/17i-stamp.js:22
+stampArrive                  src/17i-stamp.js:42-56
+stampBook                    src/17i-stamp.js:25
+stampKeyAt                   src/17i-stamp.js:24
 stampOwnerAt                 src/17i-stamp.js:16-21
-stampPage                    src/17i-stamp.js:64-91
-stampShow                    src/17i-stamp.js:52-62
-stampText                    src/17i-stamp.js:24-35
+stampPage                    src/17i-stamp.js:87-114
+stampPirate                  src/17i-stamp.js:62-73
+stampShow                    src/17i-stamp.js:75-85
+stampText                    src/17i-stamp.js:27-40
 stapelAll                    src/26e1-stapel.js:27-32
 stapelBlock                  src/26e1-stapel.js:127-197
 stapelClosedWhy              src/26e1-stapel.js:96-101
@@ -6665,7 +6672,7 @@ zoomTo                       src/15-input.js:350
 ## src/11a-quests.js · 9 КБ
   · журнал дел:1
 
-## src/11aa-record.js · 8 КБ
+## src/11aa-record.js · 11 КБ
   · трудовая книжка: биография, написанная другими:1
 
 ## src/11ab-institute.js · 9 КБ
@@ -7255,7 +7262,7 @@ zoomTo                       src/15-input.js:350
 ## src/17h-sys-gesture.js · 14 КБ
   · чья земля — за пять секунд: жест первого корабля и пост (M452, DESIGN-review §2.1):1
 
-## src/17i-stamp.js · 6 КБ
+## src/17i-stamp.js · 8 КБ
   · отметка о проезде: штамп на границе (M453, DESIGN-borders §2.2):1
 
 ## src/17i1-passport.js · 2 КБ

@@ -19,6 +19,9 @@ function stampOwnerAt(sx,sy){
   const sys=getSystem(sx,sy),st=sys&&sys.station;
   return (st&&st.by&&STAMP_RU[st.by])?st.by:null;
 }
+/* ключ штампа: держава, а Ялта — ничья и всехняя, своя клетка на странице.
+   stampOwnerAt остаётся «чья земля» для законов и топонимов */
+function stampKeyAt(sx,sy){return yaltaIs(sx,sy)?"yalta":stampOwnerAt(sx,sy);}
 function stampBook(){const R=recordAll();if(!R.st||typeof R.st!=="object")R.st={};return R;}
 /* текст отметки: одна и та же для штампа на экране и для клетки на странице */
 function stampText(by,e){
@@ -31,13 +34,16 @@ function stampText(by,e){
   if(by==="km")return ["Коммуна · въезд",STAMP_POEM[n%STAMP_POEM.length],"день "+(e.d+1+n%3)+", кажется"];
   if(by==="ra")return ["☀ ЗАХОДИ, БРАТ","был у нас "+e.d+"-го","— мастер"];
   if(by==="hf")return ["HF-GATE v4.1","ДОВЕРИЕ "+(40+n%57),"ID "+((n*7919)%100000)];
+  if(by==="yalta")return ["ЯЛТА · ОТДЫХ","гт · ко · ор · км · ра · хф","оружие опечатано"];
+  if(by==="pirate")return ["ГОНИ ГРУЗ","нацарапано на обшивке","без подписи"];
   return [STAMP_RU[by]||by];
 }
 /* зовёт gestArrive (17h) при каждом прибытии: from — хозяин покинутой системы */
 function stampArrive(fromBy){
-  const by=stampOwnerAt(G.sx,G.sy),R=stampBook();
+  const by=stampKeyAt(G.sx,G.sy),R=stampBook();
   const last=R.last===undefined?fromBy:R.last;
   R.last=by;
+  stampPirate(R,!!by&&by!==last);
   if(!by||by===last)return null;
   const had=R.st[by];
   const e=had||(R.st[by]={d:celDay(),t:G.t,sx:G.sx,sy:G.sy,v:0});
@@ -47,6 +53,23 @@ function stampArrive(fromBy){
   if(!had&&typeof passportIssue==="function")passportIssue();   /* седьмая отметка — паспорт (M505) */
   if(typeof volBorder==="function")volBorder(by);   /* животное без бумаг — пикет (M511) */
   return by;
+}
+/* пираты печатей не ставят: их «пост» — обломок с нацарапанным «Гони груз».
+   Царапина — за въезд в систему с пиратской базой из системы без неё
+   (R.lp — была ли база в прошлом прибытии). Земля под базой остаётся чьей
+   была, поэтому царапина живёт рядом со штампом, а не вместо него: если в
+   это прибытие упал и штамп державы, царапина проступает следом */
+function stampPirate(R,after){
+  const pb=!!(G.sys&&typeof pirateBaseOf==="function"&&pirateBaseOf(G.sys));
+  const was=!!R.lp;R.lp=pb?1:0;
+  if(!pb||was)return false;
+  const had=R.st.pirate;
+  const e=had||(R.st.pirate={d:celDay(),t:G.t,sx:G.sx,sy:G.sy,v:0});
+  e.v=(e.v|0)+1;
+  const show=()=>stampShow("pirate",had?{d:celDay(),t:G.t,sx:G.sx,sy:G.sy}:e);
+  if(after)setTimeout(show,1300);else show();
+  if(!had&&typeof recordAdd==="function")recordAdd("неизвестные","на обшивке нацарапано: «Гони груз». Без подписи.");
+  return true;
 }
 /* ── штамп через экран: DOM на бумаге, 1.2 с ── */
 function stampShow(by,e){
@@ -77,7 +100,7 @@ function stampPage(box){
     }else{
       c.className="stp-cell stp-none";
       c.innerHTML="<div class='l0'>"+STAMP_RU[k]+"</div><div class='l1'>"+
-        (k==="yalta"?"все шесть — в одном месте":k==="pirate"?"царапина, не печать":"пересечь границу")+"</div>";
+        (k==="yalta"?"все шесть в одном месте · сектор "+yaltaAt().sx+","+yaltaAt().sy:k==="pirate"?"царапина у пиратской базы":"пересечь границу")+"</div>";
     }
     g.appendChild(c);
   }
