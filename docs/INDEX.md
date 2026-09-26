@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 637 · символов верхнего уровня: 6413
+Файлов: 638 · символов верхнего уровня: 6414
 
 ## СИМВОЛЫ
 
@@ -2246,9 +2246,9 @@ glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gn5Foe                       tests/91zzzw-guns3.js:10-16
 GNB                          src/16gb-gpu-nebula.js:17
-GNB_AGE                      src/16gc-gpu-nebfade.js:7
+GNB_AGE                      src/16gc-gpu-nebfade.js:10
 GNB_EMI                      src/16gb-gpu-nebula.js:408
-GNB_FADE                     src/16gc-gpu-nebfade.js:8
+GNB_FADE                     src/16gc-gpu-nebfade.js:11
 GNB_FIL                      src/16gay-gpu-nebula-look.js:36
 GNB_FILC                     src/16gay-gpu-nebula-look.js:51
 GNB_FINE                     src/16gb-gpu-nebula.js:363
@@ -2264,10 +2264,10 @@ GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
 GNB_TONE                     src/16gay-gpu-nebula-look.js:24
 GNB_VOL                      src/16gay-gpu-nebula-look.js:55
 GNB_WC                       src/16gay-gpu-nebula-look.js:32
-gnbFade                      src/16gc-gpu-nebfade.js:30-35
-gnbFadeDesc                  src/16gc-gpu-nebfade.js:13-17
+gnbFade                      src/16gc-gpu-nebfade.js:37-42
+gnbFadeDesc                  src/16gc-gpu-nebfade.js:16-20
 gnbGenDesc                   src/16gb-gpu-nebula.js:494
-gnbGenView                   src/16gc-gpu-nebfade.js:19-28
+gnbGenView                   src/16gc-gpu-nebfade.js:22-35
 gnbLandmark                  src/16gb-gpu-nebula.js:521-534
 gnbLfr                       src/16gb-gpu-nebula.js:537-550
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
@@ -3795,6 +3795,7 @@ nearestStation               src/12-economy.js:206-221
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
+nebMoveFrames                tests/91zzzzzzy7-gpu-nebmove.js:7-10
 NEBULA                       src/16-flight.js:81
 nebula                       src/16-flight.js:82-96
 NEED_WIN                     src/12aa-need.js:23
@@ -8438,6 +8439,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzy6-chipjump.js · 4 КБ
   · ворота прыжков фишек (долг §0):1
+
+## tests/91zzzzzzy7-gpu-nebmove.js · 3 КБ
+  · туманность на ходу — без ступеней (26.09, PLAN §1):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1

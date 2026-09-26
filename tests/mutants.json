@@ -1,4 +1,8 @@
 [
+  {"name":"neb-step-move","file":"src/16gc-gpu-nebfade.js",
+   "find":"GNB_MOVE=\\.03;","replace":"GNB_MOVE=.5;",
+   "kill":"туманность на ходу",
+   "why":"на ходу туманность стоит 2–6 кадров и прыгает на полпикселя (история: автор 26.09 — «кажется как будто тормозит»)"},
   {"name":"zoom-noop","file":"src/15-input.js",
    "find":"  setZoom\\(G\\.zoom\\*k\\);","replace":"  /*мутант*/",
    "kill":"сквозной: сцены|инструменты: руки",

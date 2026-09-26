@@ -590,7 +590,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   GNB.phP=ph;GNB.lDP=lD;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
   /* GPU.kill.ngen (?g11=deep): без пересчёта; стоя — перетекание (16gc) */
-  if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
+  if(GNB.sys===sys&&(GPU.kill.ngen||moved<GNB_MOVE&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
   const a=GNB.U;
   a[0]=GNB.w;a[1]=GNB.h;a[2]=W;a[3]=H;
   a[4]=camx;a[5]=camy;a[6]=c[2];a[7]=c[3];
