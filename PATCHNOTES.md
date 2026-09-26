@@ -157,6 +157,12 @@ could ever save.
   stands and never hurries. The rescue tug's call line names its autopilot as well («буксир «…», автопилот Глаша
   (ленивый, но живучий)»).
 
+- **M486: the кулибин and tape on a part.** About one hired hand or manager in seven is a кулибин (it shows on the
+  crew card). While one is on staff, he tapes the hull over the radio without a roll, and it holds at 60 %. A
+  knocked instrument socket can now be taped too: ЗАМОТАТЬ ГНЕЗДО in the ОПИСЬ brings it back at half strength
+  and adds a strip to the hull. The ИЗОЛЕНТА block shows whenever the hull is below half, so a new player learns
+  in the first hour that tape works anywhere and where to buy it.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -215,6 +221,9 @@ could ever save.
 - M485: the tug's quirk is words only. Its tow is five minutes by the author's word, and its flight is physics,
   so no number moves there. The barge's quirk is rolled per leg from the hired hand's seed and the route cursor,
   both already saved, so the save's barge whitelist is untouched.
+- M486: the кулибин is derived from the hand's seed (one in seven), not added to the trait table, so seeded hiring
+  and the save stay as they were. There is no free first-hour roll: the block only shows early with a pointer to
+  the station repair shop.
 
 ## 0.478.0 - the album on the engine
 

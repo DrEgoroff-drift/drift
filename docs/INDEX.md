@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6554
+Файлов: 641 · символов верхнего уровня: 6560
 
 ## СИМВОЛЫ
 
@@ -424,7 +424,7 @@ ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
 ETH_LO                       src/25l-post-ether.js:26
-EXPO_REAR_WEAR               src/05e-plan.js:215
+EXPO_REAR_WEAR               src/05e-plan.js:221
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
@@ -3002,7 +3002,7 @@ drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:79-115
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:528-712
-drawTapes                    src/12s1-tape.js:37-52
+drawTapes                    src/12s1-tape.js:50-65
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:73-166
@@ -4170,6 +4170,8 @@ kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
 kpWindow                     src/26e2-post.js:47-53
 kpWindowPaint                src/26e2-post.js:54-100
+kulibAny                     src/12s1-tape.js:15-19
+kulibOf                      src/12s1-tape.js:14
 labCount                     src/12h-relic.js:16-24
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
@@ -4748,8 +4750,8 @@ opisPartCard                 src/27j-ui-opis.js:590-617
 opisPartHtml                 src/27j-ui-opis.js:568-589
 opisPhone                    src/27j-ui-opis.js:71
 opisPileCard                 src/27j-ui-opis.js:638-659
-opisPlanBlock                src/05e-plan.js:175-189
-opisPlanOnly                 src/05e-plan.js:190-208
+opisPlanBlock                src/05e-plan.js:175-195
+opisPlanOnly                 src/05e-plan.js:196-214
 opisPriceCue                 src/27j-ui-opis.js:619-628
 opisRender                   src/27j-ui-opis.js:748-1023
 opisRerender                 src/27j-ui-opis.js:74-84
@@ -4983,7 +4985,7 @@ planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
-planExposure                 src/05e-plan.js:216-229
+planExposure                 src/05e-plan.js:222-235
 planFactors                  src/27jb-kb.js:352-363
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
@@ -6140,9 +6142,13 @@ tactHz                       src/28-loop.js:336
 tactTick                     src/28-loop.js:346-359
 tactWork                     src/28-loop.js:339
 tap                          src/15-input.js:470-595
-tapeBuy                      src/12s1-tape.js:23-28
-tapeCan                      src/12s1-tape.js:11
+tapeBuy                      src/12s1-tape.js:36-41
+tapeCan                      src/12s1-tape.js:22
+tapeFree                     src/12s1-tape.js:20
+tapeHold                     src/12s1-tape.js:21
 tapeInit                     src/25b-tape.js:27-31
+tapeInstr                    src/12s1-tape.js:72-84
+tapeInstrIds                 src/12s1-tape.js:68-71
 tapePack                     src/25b-tape.js:34-38
 tapePaper                    src/25b-tape.js:123-201
 tapeRate                     src/25b-tape.js:75-78
@@ -6154,8 +6160,8 @@ tapeStripBox                 src/25b-tape.js:207-216
 tapeTear                     src/11b-speech.js:196-212
 tapeTick                     src/25b-tape.js:79-93
 tapeUnpack                   src/25b-tape.js:39-46
-tapeUse                      src/12s1-tape.js:12-22
-tapeYardRepaired             src/12s1-tape.js:30-35
+tapeUse                      src/12s1-tape.js:23-35
+tapeYardRepaired             src/12s1-tape.js:43-48
 tapesOf                      src/12s1-tape.js:10
 targetPos                    src/16-flight.js:115-123
 techCost                     src/04-mods.js:52-55
@@ -7105,7 +7111,7 @@ zoomTo                       src/15-input.js:350
 ## src/12s-wear.js · 14 КБ
   · корабль стареет:1
 
-## src/12s1-tape.js · 3 КБ
+## src/12s1-tape.js · 5 КБ
   · изолента (M486, DESIGN-birchpunk §2):1
 
 ## src/12t-settle.js · 28 КБ

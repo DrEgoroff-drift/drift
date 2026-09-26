@@ -175,11 +175,17 @@ function drawPlan(cx,W0,H0,pk){
 function opisPlanBlock(){
   const wrap=document.createElement("div");
   /* изолента (M486): замотать можно где угодно — корпус до половины */
-  if(typeof tapeRolls==="function"&&(tapeRolls()>0||tapesOf()>0)){
-    const t=document.createElement("div");t.className="op-tape";
-    t.innerHTML="<h4>ИЗОЛЕНТА<s>рулонов "+tapeRolls()+" · полос на корпусе "+tapesOf()+"</s></h4>";
-    if(tapeCan()){const b=document.createElement("button");b.className="act";b.textContent="ЗАМОТАТЬ · КОРПУС ДО 50 %";
+  /* блок виден и без рулонов, когда корпус ниже половины: так первый час узнаёт, что мотать можно где угодно */
+  if(typeof tapeRolls==="function"&&(tapeRolls()>0||tapesOf()>0||tapeFree()||G.hull<stat().hullMax*.5)){
+    const t=document.createElement("div"),kul=kulibAny();t.className="op-tape";
+    t.innerHTML="<h4>ИЗОЛЕНТА<s>рулонов "+tapeRolls()+" · полос на корпусе "+tapesOf()+(kul?" · кулибин "+kul.name+" на связи":"")+"</s></h4>";
+    if(tapeCan()){const b=document.createElement("button");b.className="act";b.textContent="ЗАМОТАТЬ · КОРПУС ДО "+Math.round(tapeHold()*100)+" %";
       b.onclick=()=>{tapeUse();if(typeof opisRerender==="function")opisRerender();};t.appendChild(b);}
+    /* выбитые гнёзда — тоже под изоленту (M486) */
+    if(tapeRolls()>0||tapeFree())for(const id of tapeInstrIds()){
+      const I=(typeof INSTR_BY_ID!=="undefined"&&INSTR_BY_ID[id])?INSTR_BY_ID[id].ru:id;
+      const b=document.createElement("button");b.className="act";b.textContent="ЗАМОТАТЬ ГНЕЗДО · "+I.toUpperCase();
+      b.onclick=()=>{tapeInstr(id);if(typeof opisRerender==="function")opisRerender();};t.appendChild(b);}
     else{const e=document.createElement("s");e.className="chalk";e.textContent=tapeRolls()?"корпус выше половины — мотать рано":"рулонов нет · продаётся у ремонта на станции";t.appendChild(e);}
     wrap.appendChild(t);
   }

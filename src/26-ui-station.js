@@ -557,7 +557,7 @@ function renderTabBody(){
       /* <b> внутри .nm — блок; внутри строки цифр цвет даёт span, иначе строка ломается */
       r.appendChild(el("div","nm","<b>"+c.name+"</b><s>"+CREW_SPEC[c.spec].ru+" · "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
         " · "+(S?"на «"+S.ru+"»":"корабль не выдан")+" · "+mood+st8+
-        "<br>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+"</s>"+
+        "<br>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+(kulibOf(c)?" · кулибин":"")+"</s>"+
         "<s class='fig'>итог <span style='color:"+(net>=0?"#8fd08a":"#ff6b57")+"'>"+net.toLocaleString("ru")+" кр</span>"+
         " · заработал "+(c.earned||0).toLocaleString("ru")+" · съел "+(c.spent||0).toLocaleString("ru")+
         (c.debt>0?" · <span style='color:#ff6b57'>долг "+Math.round(c.debt)+"</span>":"")+
@@ -646,7 +646,7 @@ function renderTabBody(){
         CREW_SPEC[m.spec].ru+"</span>"+(m.pax?" <span style='color:var(--phos)'>· спасён с баржи</span>":"")+"<s>"+
         (m.pax&&m.story?"<i style='color:var(--phos)'>"+m.story+"</i><br>":"")+
         CREW_SPEC[m.spec].note+
-        "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+
+        "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+(kulibOf(m)?"<br>кулибин — изолентой и ломом по рации, рулон не нужен":"")+
         "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+
         /* цена расставания называется ДО найма: «РАСЧЁТ 298» при найме за 176
            читался ловушкой, когда открывался уже на карточке (плейтест 30.08.2026) */

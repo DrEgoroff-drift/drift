@@ -8,11 +8,24 @@
 const TAPE_PRICE=5,TAPE_MAX=6;
 function tapeRolls(){return G.tapeRoll|0;}
 function tapesOf(id){return (G.tapes&&G.tapes[id||G.shipId])|0;}
-function tapeCan(){return tapeRolls()>0&&G.hull<stat().hullMax*.5-.5;}
+/* ── кулибин (M486): у наёмника или управляющего — черта от зерна, без записи в
+   сейв (каждый седьмой). Пока такой в штате, он по рации мотает изолентой и
+   ломом: рулон не нужен, держится на 60 % ── */
+function kulibOf(x){return !!x&&x.seed!=null&&(hashi(x.seed|0,0x4B1B,1)%7)===0;}
+function kulibAny(){
+  for(const c of (G.crew||[]))if(kulibOf(c))return c;
+  if(typeof mgrOf==="function")for(const r of ["cmd","keep","trade"]){const m=mgrOf(r);if(m&&kulibOf(m))return m;}
+  return null;
+}
+function tapeFree(){return !!kulibAny();}
+function tapeHold(){return (tapeFree()||(typeof socIn==="function"&&socIn("kulib")))?.6:.5;}
+function tapeCan(){return (tapeRolls()>0||tapeFree())&&G.hull<stat().hullMax*.5-.5;}
 function tapeUse(){
   if(!tapeCan())return false;
-  G.tapeRoll=tapeRolls()-1;
-  G.hull=Math.ceil(stat().hullMax*((typeof socIn==="function"&&socIn("kulib"))?.6:.5));   /* кулибины мотают крепче (M512) */
+  const K=kulibAny();
+  if(!K)G.tapeRoll=tapeRolls()-1;
+  G.hull=Math.ceil(stat().hullMax*tapeHold());   /* кулибины мотают крепче (M512, M486) */
+  if(K)logAdd("tech","Кулибин "+K.name+" по рации: «Изолентой и ломом. Держаться будет.» · рулон не нужен");
   if(typeof socCount==="function")socCount("tapes");
   G.tapes=G.tapes||{};G.tapes[G.shipId]=Math.min(TAPE_MAX,tapesOf()+1);
   logAdd("tech","Корпус замотан изолентой · до половины · рулонов осталось "+tapeRolls());
@@ -49,4 +62,23 @@ function drawTapes(h,n){
     ctx.fillStyle="rgba(120,126,134,.5)";ctx.fillRect(ln/2-w*.35,-w/2,w*.35,w);       /* загнутый кончик */
     ctx.restore();
   }
+}
+/* ── изолента на прибор (M486): выбитое гнездо мотают — прибор работает вполсилы,
+   на корпусе ещё одна полоса. Настоящий ремонт — на верфи ── */
+function tapeInstrIds(){
+  if(typeof instrKit!=="function")return [];
+  const K=instrKit();return Object.keys(K).filter(id=>(K[id].wear||0)>=.85);
+}
+function tapeInstr(id){
+  const K=(typeof instrKit==="function")?instrKit():null;
+  if(!K||!K[id]||(K[id].wear||0)<.85)return false;
+  if(!(tapeRolls()>0||tapeFree()))return false;
+  const kul=kulibAny();
+  if(!kul)G.tapeRoll=tapeRolls()-1;
+  K[id].wear=kul?.4:.5;
+  G.tapes=G.tapes||{};G.tapes[G.shipId]=Math.min(TAPE_MAX,tapesOf()+1);
+  const I=(typeof INSTR_BY_ID!=="undefined"&&INSTR_BY_ID[id])?INSTR_BY_ID[id].ru:id;
+  logAdd("tech","Гнездо «"+I+"» замотано изолентой · работает вполсилы"+(kul?" · кулибин "+kul.name:" · рулонов "+tapeRolls()));
+  say("Замотано\n"+I+" · вполсилы",100);
+  return true;
 }
