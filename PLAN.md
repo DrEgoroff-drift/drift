@@ -57,10 +57,9 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     back, or dark paper with only the trace bright (GPU-3).
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
-  - the nebula's regeneration (GPU-2): in full flight at zoom ≥ 1 it regenerates every frame (~10 ms at 1920). Age 6
-    with a cross-fade (or a uv flow) between the last two generations and an invisible step (≤ 0.3 px, no pulse),
-    else age 4; reprojection by the camera × the mean parallax with the uv line in 08b `gpuCompNeb`; measured on the
-    S23 cold, A/B/A;
+  - the nebula's regeneration (GPU-2): standing still it is done (age 6 with a cross-fade, 16gc). In flight it still
+    regenerates every frame (S23 4.85 ms of 10.4 at v 8). Next: reprojection by the camera × the mean parallax in
+    every reader (EMI, ABS stars, the 17g lens, 08b `gpuCompNeb`), regeneration by error; S23 cold, A/B/A;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
 - [ ] **G15 everything on the engine, and 3D where it reads (the author, 26.09).** No 2D canvas stays, the interface

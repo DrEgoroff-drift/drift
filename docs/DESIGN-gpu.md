@@ -853,6 +853,17 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   windows missed them. Pairs vs HEAD (light / sharpness): l2c
   760 ×1.10 +0.6 / +0.3 %, ×2.00 +1.1 / +0.6 %; l4a ×2.00 +2.1 / +0.9 %; 390 dpr 1.5 ×1.10 +0.1 / +0.5 %,
   ×2.00 +1.0 / +0.5 %. GPU errors 0. The file is 66 bytes smaller: history went from the header comment.
+- **Nebula regeneration, step 1: age 6 with a cross-fade** (26.09, `16gc-gpu-nebfade`). Standing still (camera moved
+  < .5 × .09) the regeneration goes every 6th frame into a spare texture, and the visible one flows into it: a
+  ¼-res pass blends with constant k = 1/6, 1/5 … 1, an exact line from the old generation to the new, so the gas
+  flow (~1 px per 6 frames) moves 1/6 per frame instead of jumping at each regeneration. In flight, on a new system
+  or target size the regeneration writes the visible texture directly, as before. Readers are unchanged. Inter-frame
+  shift of the gas texture (global Lucas–Kanade over 90 frames, 760): standing still 0.017 px on regeneration
+  frames / 0.016 between (HEAD 0.051 / 0, the jump max 0.24), slow drift 0.090 / 0.085 (HEAD 0.272 / 0, max 0.35);
+  in fast flight both are the same snap (step 2 is reprojection). S23 cold, A/B/A (new *.localhost each), DPR 1.5,
+  standing: nebGen per frame 0.93 / 1.81 / 0.94 ms, GPU frame 8.99 / 9.65 / 9.23 ms, regenerations 17 / 33 / 17 %,
+  60 fps 100 % in all; in flight unchanged (every frame, 4.85 ms). Desktop 1920: nebGen per frame 2.09 → ~1.1 ms,
+  the fade pass 0.28–0.36 ms (headless). New pipe key `gnb.fade` (08b0, GPU-1 agreed; 08b1 via -Accept).
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
