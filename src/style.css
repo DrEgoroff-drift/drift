@@ -1897,6 +1897,8 @@ body.table u.addr{color:#7a4a20}
 #kbWin .kb-strip b{font-weight:600}
 #kbWin .kb-strip b.up{color:#8fd08a}
 #kbWin .kb-strip b.dn{color:#ff9d7a}
+#kbWin .kb-it s b.up{color:#8fd08a;font-weight:600}
+#kbWin .kb-it s b.dn{color:#ff9d7a;font-weight:600}
 #kbWin .kb-pr{display:flex;gap:6px;margin-top:8px}
 #kbWin .kb-pr button{flex:1;min-height:36px}
 #kbWin .kb-pr button.on{outline:2px solid #f3dfb4}

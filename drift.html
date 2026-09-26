@@ -1911,6 +1911,8 @@ body.table u.addr{color:#7a4a20}
 #kbWin .kb-strip b{font-weight:600}
 #kbWin .kb-strip b.up{color:#8fd08a}
 #kbWin .kb-strip b.dn{color:#ff9d7a}
+#kbWin .kb-it s b.up{color:#8fd08a;font-weight:600}
+#kbWin .kb-it s b.dn{color:#ff9d7a;font-weight:600}
 #kbWin .kb-pr{display:flex;gap:6px;margin-top:8px}
 #kbWin .kb-pr button{flex:1;min-height:36px}
 #kbWin .kb-pr button.on{outline:2px solid #f3dfb4}
@@ -101647,6 +101649,21 @@ function kbWeld(it){
   logAdd("money","Доводка: «"+nm+"» вварен · ступенью выше · −"+PLAN_WELD_FEE+" кр и крошка");
   return "вварено: «"+nm+"» — ступенью выше, больше не двигается";
 }
+/* ── метка новой части (M483, §7): запасная часть из трюма — куда встанет и что
+   даст. Слот ищет ОПИСЬ (opisTarget), число — предпросмотр сборки (statPreview);
+   показываем самое заметное изменение одной строкой ── */
+const KB_DELTA=[["hullMax","КОРПУС",0],["cargoMax","ТРЮМ",0],["fuelMax","БАК",0],["energyMax","ЭНЕРГИЯ",0],
+  ["shieldMax","ЩИТ",0],["dmg","УРОН",1],["see","ОБЗОР",0],["thr","ТЯГА",2]];
+function kbPartFuture(p){
+  if(typeof opisShipFuture!=="function")return null;
+  const f=opisShipFuture({t:"part",id:p.id});if(!f||f.slot<0||!f.st)return f?{slot:-1,txt:f.why}:null;
+  const s0=stat();let best=null,bv=0;
+  const pick=(o,k)=>k==="dps"?((o.gunTot&&o.gunTot.hull)||0):(+o[k]||0);   /* огонь в секунду по корпусу — у стволов */
+  for(const [k,ru,dig] of KB_DELTA.concat([["dps","ОГОНЬ/С",1]])){const a=pick(s0,k),b=pick(f.st,k),rel=(b-a)/Math.max(1e-6,Math.abs(a)||1);
+    if(Math.abs(rel)>Math.abs(bv)+1e-9){bv=rel;best=[ru,b-a,dig];}}
+  const txt=best?best[0]+" "+(best[1]>0?"+":"−")+Math.abs(best[1]).toFixed(best[2]):"без разницы";
+  return {slot:f.slot,up:bv>0,txt:txt+(f.cap?" · не хватит места "+f.cap:"")};
+}
 /* ── ПРОЕКТЫ ×3 (§7): три чертежа на корпус; пустой — упаковщик, «пустой трюм» — без трюма ── */
 const KB_PR=["РЕЙСОВЫЙ","БОЕВОЙ","ПУСТОЙ ТРЮМ"];
 function kbProjSwitch(k){
@@ -101762,11 +101779,19 @@ function kbRender(){
   const spare=(G.inv||[]).filter(p=>!isFitted(p.id)).slice(0,12);
   if(spare.length){
     inv.appendChild(el("div","kb-sec","В ТРЮМЕ · "+(selIt&&selIt.what==="part"?"тап — поставить вместо взятой":"возьмите поставленную вещь, чтобы заменить")));
+    KB.mark=[];
     for(const p of spare){
-      const fits=!!(selIt&&selIt.what==="part"&&selIt.kind===p.kind);
-      const b=document.createElement("button");b.className="act kb-it"+(fits?"":" dim");
-      b.innerHTML="<i style='background:"+(PLAN_ITEM_COL[p.kind]||"#fff")+"'></i>"+p.name+"<s>"+(PART_KINDS[p.kind]?PART_KINDS[p.kind].ru.toLowerCase():p.kind)+"</s>";
+      const fits=!!(selIt&&selIt.what==="part"&&selIt.kind===p.kind),F=kbPartFuture(p);
+      if(F&&F.up&&F.slot>=0)KB.mark.push(F.slot);   /* метка на чертеже: сюда встанет лучше */
+      const b=document.createElement("button");b.className="act kb-it"+(fits||(!selIt&&F&&F.up)?"":" dim");
+      b.innerHTML="<i style='background:"+(PLAN_ITEM_COL[p.kind]||"#fff")+"'></i>"+p.name+"<s>"+(PART_KINDS[p.kind]?PART_KINDS[p.kind].ru.toLowerCase():p.kind)+
+        (F?" · <b class='"+(F.up?"up":"dn")+"'>"+F.txt+"</b>":"")+"</s>";
       b.onclick=()=>{
+        /* ничего не взято — берём то, что стоит в её слоте, и показываем место */
+        if(!selIt&&F&&F.slot>=0){const k=d.items.findIndex(x=>x.what==="part"&&x.slot===F.slot);
+          if(k>=0){KB.sel=k;KB.msg="сюда: "+F.txt+" · тап по части ещё раз — поставить";kbRender();return;}
+          const ok=fitPart(F.slot,p.id);KB.msg=ok?"поставлено в свободный слот: "+p.name:"не встаёт: оснастка полна";
+          if(ok)KB.d=draftOf(KB.id);kbRender();return;}
         if(!fits){KB.msg=selIt?"не тот род: нужна «"+(PART_KINDS[selIt.kind]?PART_KINDS[selIt.kind].ru.toLowerCase():selIt.kind)+"»":"сперва возьмите поставленную вещь";kbRender();return;}
         const ok=fitPart(selIt.slot,p.id);
         KB.msg=ok?"поставлено: "+p.name:"не встаёт: подвес мал или оснастка полна";
@@ -101872,6 +101897,8 @@ function kbDraw(c,s,d){
       c.fillStyle=on?"rgba(255,214,140,.95)":"rgba(214,160,80,.85)";
       c.fillRect(q.j*s+6,q.i*s+6,s-12,s-12);
     }
+    if(KB.mark&&it.what==="part"&&KB.mark.indexOf(it.slot)>=0){c.strokeStyle="rgba(143,208,138,.95)";c.lineWidth=2;c.setLineDash([4,3]);
+      for(const q of it.cells)c.strokeRect(q.j*s+1.5,q.i*s+1.5,s-3,s-3);c.setLineDash([]);}   /* метка новой части (M483) */
     if(kbWelded(it)){c.strokeStyle="rgba(232,240,255,.95)";c.lineWidth=1.5;c.setLineDash([2,2]);
       for(const q of it.cells)c.strokeRect(q.j*s+4,q.i*s+4,s-8,s-8);c.setLineDash([]);}   /* шов доводки */
     const q=it.cells[0];if(!q)return;

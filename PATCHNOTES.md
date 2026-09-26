@@ -145,6 +145,12 @@ could ever save.
   «корпус» part or the armour module on that side's rim) loses 15 % to the armour. Hits on the nose are as
   before. Where you lay the armour in the КБ now matters.
 
+- **M483: the new-part mark.** In the КБ's «В ТРЮМЕ» row every spare part now says where it would go and what it
+  would give, as its biggest change in one coloured figure: «Резонансный реактор Р-12 · ЭНЕРГИЯ +28», «ТП-82
+  «Веретено» · ОГОНЬ/С +7.9». Parts that would improve the ship are lit and their slot is ringed in green on the
+  plan. Tap such a part with nothing held, and the КБ picks up what stands in that slot and shows the place; tap
+  the part again to fit it. Into a free slot it goes straight away.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -198,6 +204,8 @@ could ever save.
 - M479: parts have no wear of their own, and giving them one would be a new save field. So «the rim part takes
   its side's wear» became: the ship's single wear number takes the rear hits (engines), and side armour soaks
   side hits. Guns on a hit side are not affected yet.
+- M483: NPC and pirate ships are not yet built by the packer. Their plan would show only in their silhouette,
+  which is picture work for the graphics pass, so it stays in the plan.
 
 ## 0.478.0 - the album on the engine
 
