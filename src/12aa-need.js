@@ -103,6 +103,9 @@ function orderOf(sys){
 function orderTake(sys){
   if(G.order)return false;
   const O=orderOf(sys);if(!O)return false;
+  /* срок — от взятия, а не от конца окна (§12): взятый под конец окна наряд
+     оставлял две игровые минуты на 2–8 секторов */
+  O.due=Math.max(O.due,celDay()+ORDER_WIN);
   G.order=O;
   tell("tech","Наряд взят: "+O.qty+" "+O.ru+" → "+O.to.name+" до "+O.due+"-го · "+O.pay+" кр",
        "НАРЯД\n"+O.qty+" "+O.ru+" → "+O.to.name);

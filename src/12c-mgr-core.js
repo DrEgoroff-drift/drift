@@ -640,7 +640,11 @@ function mgrWorkFact(m,min){
   if(mgrHas(m,"pirate"))add-=.10;
   vol*=Math.max(.2,1+add);
   const cap=vol*min;                 // прокручено кредитов
-  let gross=Math.round(cap*rel);
+  /* пол маржи — «мелочь и подряды», и он не растёт с уровнем и перками (§12): иначе
+     вкачанный фактор на сошедшихся ценах печатал ~200 кр/мин при любом рынке.
+     Перки множат настоящую маржу; пол — это плечи, и только они */
+  const real=leg?leg.margin/Math.max(1,leg.buy):0;
+  let gross=real>=.05?Math.round(cap*rel):Math.round(Math.max(cap*Math.max(0,real),260*legs*min*.05));
   m.legNote=leg?(RES[leg.k].ru.toLowerCase()+": «"+leg.from.station.name+"» "+leg.buy+
             " → «"+leg.to.station.name+"» "+leg.sell+" кр"):"";
   /* Он давит собственную маржу: сдаёт туда же, куда возит, и цена там оседает.

@@ -116,13 +116,31 @@ function marketCtx(sys,m){
    M290): складывается с давлением, а не множится поверх нужды и монополии,
    и потолок 1.8 остаётся потолком. Занятая система: скупщик один, и он знает,
    что деваться некуда */
+/* множители-события (§12): нужда, монополия, экспедиция, занятость, шпион — каждый
+   по отдельности честен, но они перемножались, и вместе с блокадой еда в нужде шла
+   ×3.1. Теперь нужда отдельно (с ней блокада берётся по большему, а не поверх),
+   остальное — отдельно, и всё вместе не выше PRICE_EV_CAP */
+const PRICE_EV_CAP=2.2;
+function priceParts(sys,C,k){
+  return {need:(C.N&&C.N.k===k?NEED_MUL:1),
+    rest:C.boost*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
+      /* шпион (M387): цены на этой станции врут по каждому
+         товару в свою сторону — и врут обеим сторонам прилавка */
+      (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)};
+}
 function marketPriceCtx(sys,C,k,add){
-  const base=sys.station.prices;
-  return Math.max(1,Math.round(base[k]*C.mul*C.boost*(C.N&&C.N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
-                               /* шпион (M387): цены на этой станции врут по каждому
-                                  товару в свою сторону — и врут обеим сторонам прилавка */
-                               (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)*
+  const base=sys.station.prices,P=priceParts(sys,C,k);
+  return Math.max(1,Math.round(base[k]*C.mul*Math.min(PRICE_EV_CAP,P.need*P.rest)*
                                clamp(1+(C.m.pressure[k]||0)+(add||0),.4,1.8)));
+}
+/* блокада (M498) платит вдвое за еду, воду, топливо — но не поверх нужды: берётся
+   большее из двух, и под тем же потолком. Отдаёт множитель к уже посчитанной выручке */
+function blockEff(sys,k){
+  const bm=typeof blockMul==="function"?blockMul(sys,k):1;if(bm<=1)return 1;
+  marketFor(sys);
+  const P=priceParts(sys,marketCtx(sys,G.market[sys.key]),k);
+  const was=Math.min(PRICE_EV_CAP,P.need*P.rest);
+  return was>0?Math.min(PRICE_EV_CAP,Math.max(P.need,bm)*P.rest)/was:1;
 }
 function marketPrice(sys,k,add){
   marketFor(sys);   /* давление досчитано, запись есть */
@@ -167,7 +185,7 @@ function sellCargo(sys,k,qty){
   /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
      двигает только то, чего никто не съел */
   Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
-  if(typeof blockMul==="function")Q.revenue*=blockMul(sys,k);   /* блокада платит вдвое за еду, воду, топливо (M498) */
+  Q.revenue=Math.round(Q.revenue*blockEff(sys,k));   /* блокада платит вдвое за еду, воду, топливо (M498) — не поверх нужды (§12) */
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
@@ -184,6 +202,9 @@ function sellDroneYield(sys,k,qty){
   const price=marketFor(sys)[k],revenue=qty*price;
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
+  /* привоз дрона — тоже привоз: нужда ×2 закрывается им, как и вашим (§12) — иначе
+     дрон в системе с нуждой сдавал вдвое всё окно */
+  if(qty>0&&typeof needClose==="function")needClose(sys,k);
   return revenue;
 }
 

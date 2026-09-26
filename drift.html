@@ -22161,13 +22161,31 @@ function marketCtx(sys,m){
    M290): складывается с давлением, а не множится поверх нужды и монополии,
    и потолок 1.8 остаётся потолком. Занятая система: скупщик один, и он знает,
    что деваться некуда */
+/* множители-события (§12): нужда, монополия, экспедиция, занятость, шпион — каждый
+   по отдельности честен, но они перемножались, и вместе с блокадой еда в нужде шла
+   ×3.1. Теперь нужда отдельно (с ней блокада берётся по большему, а не поверх),
+   остальное — отдельно, и всё вместе не выше PRICE_EV_CAP */
+const PRICE_EV_CAP=2.2;
+function priceParts(sys,C,k){
+  return {need:(C.N&&C.N.k===k?NEED_MUL:1),
+    rest:C.boost*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
+      /* шпион (M387): цены на этой станции врут по каждому
+         товару в свою сторону — и врут обеим сторонам прилавка */
+      (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)};
+}
 function marketPriceCtx(sys,C,k,add){
-  const base=sys.station.prices;
-  return Math.max(1,Math.round(base[k]*C.mul*C.boost*(C.N&&C.N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
-                               /* шпион (M387): цены на этой станции врут по каждому
-                                  товару в свою сторону — и врут обеим сторонам прилавка */
-                               (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)*
+  const base=sys.station.prices,P=priceParts(sys,C,k);
+  return Math.max(1,Math.round(base[k]*C.mul*Math.min(PRICE_EV_CAP,P.need*P.rest)*
                                clamp(1+(C.m.pressure[k]||0)+(add||0),.4,1.8)));
+}
+/* блокада (M498) платит вдвое за еду, воду, топливо — но не поверх нужды: берётся
+   большее из двух, и под тем же потолком. Отдаёт множитель к уже посчитанной выручке */
+function blockEff(sys,k){
+  const bm=typeof blockMul==="function"?blockMul(sys,k):1;if(bm<=1)return 1;
+  marketFor(sys);
+  const P=priceParts(sys,marketCtx(sys,G.market[sys.key]),k);
+  const was=Math.min(PRICE_EV_CAP,P.need*P.rest);
+  return was>0?Math.min(PRICE_EV_CAP,Math.max(P.need,bm)*P.rest)/was:1;
 }
 function marketPrice(sys,k,add){
   marketFor(sys);   /* давление досчитано, запись есть */
@@ -22212,7 +22230,7 @@ function sellCargo(sys,k,qty){
   /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
      двигает только то, чего никто не съел */
   Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
-  if(typeof blockMul==="function")Q.revenue*=blockMul(sys,k);   /* блокада платит вдвое за еду, воду, топливо (M498) */
+  Q.revenue=Math.round(Q.revenue*blockEff(sys,k));   /* блокада платит вдвое за еду, воду, топливо (M498) — не поверх нужды (§12) */
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
@@ -22229,6 +22247,9 @@ function sellDroneYield(sys,k,qty){
   const price=marketFor(sys)[k],revenue=qty*price;
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
+  /* привоз дрона — тоже привоз: нужда ×2 закрывается им, как и вашим (§12) — иначе
+     дрон в системе с нуждой сдавал вдвое всё окно */
+  if(qty>0&&typeof needClose==="function")needClose(sys,k);
   return revenue;
 }
 
@@ -23263,6 +23284,9 @@ function orderOf(sys){
 function orderTake(sys){
   if(G.order)return false;
   const O=orderOf(sys);if(!O)return false;
+  /* срок — от взятия, а не от конца окна (§12): взятый под конец окна наряд
+     оставлял две игровые минуты на 2–8 секторов */
+  O.due=Math.max(O.due,celDay()+ORDER_WIN);
   G.order=O;
   tell("tech","Наряд взят: "+O.qty+" "+O.ru+" → "+O.to.name+" до "+O.due+"-го · "+O.pay+" кр",
        "НАРЯД\n"+O.qty+" "+O.ru+" → "+O.to.name);
@@ -29960,9 +29984,11 @@ const CREW_EVENTS=[
     return {tone:"warn",ru:"ушёл вместе с грузом и «"+(S?S.ru:"кораблём")+"»"};
   }},
   {id:"seized",cat:"cat",run:(c,r,gross)=>{
-    const fine=Math.round(gross*1.4+400);
-    G.credits-=fine;c.spent=(c.spent||0)+fine;c.cargo={};
-    return {tone:"warn",ru:"груз арестован как контрабанда · штраф "+fine.toLocaleString("ru")+" кр"};
+    /* штраф и долг берут со счёта, но не ниже нуля (§12): минус на счёте загрузка
+       обнуляла (14a1), и долг пропадал с перезапуском — пол, как у пошлины lawDock */
+    const want=Math.round(gross*1.4+400),fine=crewTake(want);
+    c.spent=(c.spent||0)+fine;c.cargo={};
+    return {tone:"warn",ru:"груз арестован как контрабанда · штраф "+fine.toLocaleString("ru")+" кр"+(fine<want?" — всё, что было на счёте":"")};
   }},
 
   /* ── плохое ── */
@@ -29987,10 +30013,10 @@ const CREW_EVENTS=[
     return {tone:"dim",ru:"встал на ремонт: сдох маршевый узел"};
   }},
   {id:"barvdebt",cat:"bad",run:(c,r,gross)=>{
-    const sum=Math.round(120+gross*.6);
-    G.credits-=sum;c.spent=(c.spent||0)+sum;
+    const want=Math.round(120+gross*.6),sum=crewTake(want);
+    c.spent=(c.spent||0)+sum;
     crewPayload(c,gross*.7,r);
-    return {tone:"money",ru:"оставил долг на станции — "+sum.toLocaleString("ru")+" кр с вас: "+crewTale(c)};
+    return {tone:"money",ru:"оставил долг на станции — "+sum.toLocaleString("ru")+" кр с вас"+(sum<want?" (больше на счёте не было)":"")+": "+crewTale(c)};
   }},
   {id:"hungover",cat:"bad",run:(c,r,gross)=>{
     crewPayload(c,gross*.6,r);c.hangover=1;
@@ -30079,6 +30105,11 @@ function crewHistory(c,ev,ru){
   c.hist=c.hist||[];
   c.hist.unshift({cat:ev.cat,id:ev.id,ru,t:now()});
   if(c.hist.length>12)c.hist.length=12;
+}
+/* снять со счёта сколько есть, не больше: отдаёт снятое */
+function crewTake(want){
+  const n=Math.max(0,Math.min(want|0,Math.floor(G.credits)));
+  G.credits-=n;return n;
 }
 /* ── выкуп и освобождение ── */
 function ransomPay(c){
@@ -31571,7 +31602,11 @@ function mgrWorkFact(m,min){
   if(mgrHas(m,"pirate"))add-=.10;
   vol*=Math.max(.2,1+add);
   const cap=vol*min;                 // прокручено кредитов
-  let gross=Math.round(cap*rel);
+  /* пол маржи — «мелочь и подряды», и он не растёт с уровнем и перками (§12): иначе
+     вкачанный фактор на сошедшихся ценах печатал ~200 кр/мин при любом рынке.
+     Перки множат настоящую маржу; пол — это плечи, и только они */
+  const real=leg?leg.margin/Math.max(1,leg.buy):0;
+  let gross=real>=.05?Math.round(cap*rel):Math.round(Math.max(cap*Math.max(0,real),260*legs*min*.05));
   m.legNote=leg?(RES[leg.k].ru.toLowerCase()+": «"+leg.from.station.name+"» "+leg.buy+
             " → «"+leg.to.station.name+"» "+leg.sell+" кр"):"";
   /* Он давит собственную маржу: сдаёт туда же, куда возит, и цена там оседает.
@@ -35294,6 +35329,11 @@ function bargeBuyPrice(b,good){           // баржа покупает у ва
    станции, медленно, без оружия. Присутствие и состав детерминированы от
    seed сектора и окна времени. */
 function spawnBarges(){
+  /* ушли из системы с рейсом — рейс сорван (§12): вход в новую систему и есть уход */
+  for(const b of G.barges||[])if(b.escort)bargeEscortEnd(b,false,"ушли из системы — рейс сорван");
+  /* и рейс, чья баржа не пережила загрузку (баржи — мир, в сейв не идут) */
+  if(typeof questAll==="function"&&typeof questFail==="function")
+    for(const q of questAll().slice())if(q.state==="active"&&String(q.key).indexOf("escort:")===0)questFail(q.key,"рейс сорван");
   G.barges=[];
   const legs=bargeLegs();
   if(!legs.length)return;
@@ -35352,6 +35392,8 @@ function updateBarges(dt){
   for(let i=G.barges.length-1;i>=0;i--){
     const b=G.barges[i];
     b.x+=b.vx*dt;b.y+=b.vy*dt;
+    /* рейс под охраной дошёл: баржа прожила свою хорду рядом с вами */
+    if(b.escort&&!b.distress){b.escT=(b.escT||0)+dt;if(b.escT>=BARGE_ESCORT_T)bargeEscortEnd(b,true);}
     /* ── баржа в беде: пираты выгрызают корпус, пока их не отгонят ── */
     if(b.distress){
       const atk=bargeAttackers(b);
@@ -35480,30 +35522,40 @@ function bargeInteract(sh){
 /* ══════════════ контракт охраны ══════════════
    Наняться проводить баржу: плата вперёд, маршрут известен заранее (адрес — в
    журнале). Провал НЕ отнимает кредиты — он отнимает репутацию. Стабильного
-   плюса тут нет, как и у наёмника: аванс мал, а риск ваш. */
+   плюса тут нет, как и у наёмника: аванс мал, а риск ваш.
+   §12: весь аванс сразу и «ушёл из системы — засчитано» делали рейс краном —
+   взял, улетел, вернулся к новой барже. Теперь половина вперёд, половина — когда
+   рейс дошёл (баржа прожила рядом с вами BARGE_ESCORT_T или вы её отбили); уйти
+   из системы с рейсом — сорвать его. Одну баржу (seed) нанимают один раз */
+const BARGE_ESCORT_T=5400;   /* полторы минуты игры: баржа проходит свою хорду */
 function bargeEscortAdvance(b){return 200+Math.floor((b.cap||100)*3);}
+function bargeEscortHalf(b){return Math.round(bargeEscortAdvance(b)/2);}
 function bargeEscortAccept(b){
   if(b.escort||b.distress)return false;
-  b.escort=1;
-  const adv=bargeEscortAdvance(b);
+  if(typeof questAll==="function"&&questAll().some(q=>q.key==="escort:"+b.seed)){say("Этот рейс вы уже брали",90);return false;}
+  b.escort=1;b.escT=0;
+  const adv=bargeEscortHalf(b);
   earn(adv,"escort");
   const dst=bargeSysAt(b.to);
   if(typeof questAdd==="function")questAdd("escort:"+b.seed,{
     ru:"Проводить баржу «"+b.capName+"»",kind:"job",from:"баржа",
     note:"довести до «"+((dst&&dst.station&&dst.station.name)||"назначения")+
-      "» живой. Аванс уже выплачен; провал бьёт по репутации, не по кошельку",
+      "» живой. Половина выплачена, вторая — когда рейс дойдёт; уйдёте из системы — сорван",
     sx:dst?dst.sx:null,sy:dst?dst.sy:null,reward:"репутация у назначения"});
-  say("Аванс охраны +"+adv+" кр\nдоведите баржу живой");
+  say("Аванс охраны +"+adv+" кр\nдоведите баржу — вторая половина у назначения");
   logAdd("money","Наняты охраной баржи «"+b.capName+"» · аванс +"+adv+" кр");
   return true;
 }
-function bargeEscortEnd(b,ok){
+function bargeEscortEnd(b,ok,why){
   if(!b.escort)return;b.escort=0;
   const key="escort:"+b.seed;
   if(ok){
+    const rest=bargeEscortAdvance(b)-bargeEscortHalf(b);
+    earn(rest,"escort");
+    logAdd("money","Рейс баржи «"+b.capName+"» дошёл · охране +"+rest+" кр");
     if(typeof questDone==="function")questDone(key,"баржа дошла");
   }else{
-    if(typeof questFail==="function")questFail(key,"баржу потеряли");
+    if(typeof questFail==="function")questFail(key,why||"баржу потеряли");
     /* провал: репутация вниз, но кредиты (аванс) не отбираются */
     const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
     if(dst&&typeof repAdd==="function")repAdd(-2,dst);
@@ -35885,9 +35937,9 @@ function renderBarge(){
     " ×"+b.qty+" · назначение «"+((bargeSysAt(b.to)||{station:{name:"?"}}).station.name)+"»"));
   /* наняться охраной: аванс вперёд, довести живой (12l — контракт охраны) */
   if(!b.escort){
-    const adv=bargeEscortAdvance(b);
+    const adv=bargeEscortHalf(b),rest=bargeEscortAdvance(b)-adv;
     $bgBody.appendChild(bargeElRow("НАНЯТЬСЯ ОХРАНОЙ",
-      "аванс +"+adv+" кр вперёд · довести до назначения живой · провал бьёт по репутации, не по кошельку",
+      "аванс +"+adv+" кр вперёд, ещё +"+rest+" когда рейс дойдёт · уйдёте из системы — сорван · провал бьёт по репутации",
       [{txt:"ВЗЯТЬ РЕЙС",gold:1,dis:false,on:()=>{bargeEscortAccept(b);renderBarge();}}]));
   }else{
     $bgBody.appendChild(el("div","sec","ВЫ ОХРАНА ЭТОГО РЕЙСА · ведите баржу до назначения"));
@@ -56343,7 +56395,11 @@ function sysLane(sys){
     const d=LANE_DOCK+i*LANE_GAP;if(d>L-80)break;
     for(const s of [-1,1])buoys.push({x:st.x+ux*d-uy*LANE_W*s,y:st.y+uy*d+ux*LANE_W*s,i});
   }
-  const r=rng((sys.seed^0x1A4E)>>>0),by=st.by||(typeof makerBySeed==="function"?makerBySeed(sys.seed):"gt");   /* как stationMods: полоса могла спросить раньше станции */
+  /* чей голос на подлёте (автор, 27.09): полосу — щит, гостиницу, флот на стоянке, очередь —
+     одевает хозяин земли (stampOwnerAt), как законы и печати; строитель виден только в
+     корпусе самой станции (M454). Ничьей земли нет — тогда строитель */
+  const builder=st.by||(typeof makerBySeed==="function"?makerBySeed(sys.seed):"gt");   /* как stationMods: полоса могла спросить раньше станции */
+  const r=rng((sys.seed^0x1A4E)>>>0),by=(typeof stampOwnerAt==="function"&&stampOwnerAt(sys.sx,sys.sy))||builder;
   /* очередь — только у людной станции; сбоку от полосы, чтобы не стоять на ней */
   const qn=life<.45?0:Math.min(LANE_Q_MAX,Math.round(2+(life-.45)/.55*4));
   const side=r()<.5?-1:1;
@@ -70123,27 +70179,7 @@ function tickLaunchHold(dt){
    было НИ ОДНОГО хода (17-mode-system зовёт эту же функцию). */
 function evacCost(){return Math.min(4000,Math.round(800+220*Math.hypot(G.sx,G.sy)));}
 function evacFrom(){return (G.surf&&G.surf.p&&G.surf.p.name)||(G.sys&&G.sys.name)||"пустоты";}
-function evacuate(){
-  const from=evacFrom();
-  const cost=evacCost();
-  /* нечем платить — не потеря корабля, а расплата натурой: обшивка, потом
-     трюм (16c-rescue, плейтест 11.09: «игра должна ебать игрока, но выход
-     есть всегда»). totalLoss остался для гибели в бою, не для пустого бака */
-  let paid;
-  if(G.credits>=cost){G.credits-=cost;paid="−"+cost.toLocaleString("ru")+" кр";}
-  else paid="без денег · даром";
-  const dest=nearestStation(G.sx,G.sy);
-  G.sx=dest.sx;G.sy=dest.sy;G.sys=dest;
-  G.fuel=Math.max(G.fuel,Math.min(stat().fuelMax,RESCUE_FUEL));
-  G.ship.x=Math.cos(0)*(dest.station?dest.station.orbit+120:900);
-  G.ship.y=Math.sin(0)*(dest.station?dest.station.orbit+120:900);
-  G.ship.vx=0;G.ship.vy=0;
-  G.mode="system";G.land=null;G.surf=null;
-  saveGame(true);
-  G.ap=null;
-  logAdd("warn","Эвакуация с "+from+" · "+paid+" · переброшены к "+dest.name);
-  say("Буксир\n"+paid+"\nвы в системе "+dest.name+" · станция рядом",180);
-}
+/* evacuate() — эвакуация с грунта — снят (§12): звать было некому, живой путь — 16c-rescue */
 function totalLoss(){
   const pname=evacFrom();
   /* если дом уже есть — возвращаемся туда: смерть перестаёт быть обнулением и

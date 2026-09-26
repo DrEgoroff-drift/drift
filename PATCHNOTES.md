@@ -17,11 +17,29 @@ could ever save.
 - **§11 small things.** The belt entry note folds the icy ring into the ore line («руда: … · и кристаллы льда»), so on the phone's three-line message «тяните по стеклу — обзор» is no longer pushed out. A good's name in lists and prices takes its own text shade (`resTxt`): the same hue mixed towards light until it reads at 4.5:1 on the panel. Тёмное стекло, углеволокно, графит and чернозём change; the rest keep their colour.
 - Closed as already done on this branch: station shuttles draw (`t.mk`, came with main), and chips avoid each other while gliding to their slots (the `chipDrawn` pass, 24.09).
 
+- **§12 economy audit: the faucets closed.**
+  - **Liberation prize:** paid in full only when the freed system will hold. While an occupied neighbour (not calmed by a suppressed nest, not under the трасса) can take it back, the station pays half: «вернутся».
+  - **Hotel night:** costs half of what the dock charges for the same tenth of hull (was a flat 12 кр), one night per station per shift. The mark lives in the station's holding record; the free night below a third of hull stays.
+  - **Plan and order:** one ledger, «bought here this shift» (the appetite's `here`), read by the state plan and the order. Units bought at the same counter pay the bid, not the premium; for the order they also get no per-sector fee.
+  - **A visit is (station, shift), not a docking.** Undocking and docking again in the same shift continues the visit: the ГЛАВТРАССА fuel norm, the Company fee, the scrip cap and the cooperative cap carry over from the station's holding record.
+  - **Escort:** half at accept, half when the run arrives (the barge lives its chord beside you, 90 s, or you drive off its attackers). Leaving the system with the contract fails it, and a barge is hired once.
+  - **Hired hands' fines and debts** take what is on the account and never go below zero.
+  - **Sale multipliers:** need, monopoly, expedition, occupation and spy are capped together at ×2.2. The blockade takes the larger of itself and need, not both.
+  - **Smaller seams:** a drone's delivery closes a need window; an order's deadline counts from the taking; the factor's margin floor no longer grows with level and perks; the dead `evacuate()` is gone.
+  - **Gate:** three nets in `91zzzzy2-money`: freeing twice pays at most half the second time; buy-and-hand-in for the plan or the order never nets positive; the balance is never below zero after any row of the hired hands' event table.
+- **Whose voice on the approach (the author, 27.09):** the lane (billboard, hotel, parked fleet, queue) now dresses by the land's owner, `stampOwnerAt`; the builder shows only in the station's own body. Rule in docs/DECISIONS.md.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M464: only the Дом водителя sells a service (the night); the other six give a paragraph, a rumour and a keepsake. Trade or jobs inside a giant were left for a later pass.
 - M464: the giant's length for the ruler is one fixed number (GIANT_LEN 1300) for all seven, not per body.
 - M464: the six arm giants left their old ring positions (only the moon stayed); a save that already found one keeps `giantsSeen`, but its landmark is somewhere else on the map now.
 - §11 «planet angles follow the frame rate»: closed with no code change. Since the fixed quanta, `dt` is `steps × QUANT_DT` taken from real time, so `ang` already follows game time as `G.t` does. The only difference from `ang0 + w·G.t` is that orbits stand still on the surface, in the map and in the other off-system modes. A pure function would make the planet jump away from a ship taking off, and the clamp depends on the hull's thrust. `ang` is not in the save.
+- §12 liberation prize: chose «half while it can be retaken» over «full once per system, then fading». The latter needs a per-system memory, and there is no save field for it. A first liberation next to a live front also pays half.
+- §12 debts: chose a floor, as `lawDock` has, over a real debt like ПАЛАТА's `P.debt`. A broke player gets off a fine lighter than before.
+- §12 escort: the «destination» is 90 s of the barge's chord in this system, since barges are not simulated across systems. Rescue also completes the run.
+- §12 multipliers: the ×2.2 cap is my number, a little above need alone (×2).
+- §12 per visit: the norm, scrip and co-op leftovers are stored on undock in `G.hold[station].vis`, an existing saved structure.
+- Lane owner: the lane is cached in the system, so a land that changes hands re-dresses the lane only when the system is regenerated.
 
 ## Unreleased
 

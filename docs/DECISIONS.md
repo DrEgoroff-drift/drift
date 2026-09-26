@@ -109,6 +109,8 @@ first draft — mechanics, timing, placement — and it is NOT the picture. Ever
 art direction memory, a frame on the phone, self-critique in passes. Nothing marked so counts as
 done for the author. The marker is removed only by the Designer's pass, never by Control.
 
+**Whose voice on the approach (the author, 27.09):** the land's owner (`stampOwnerAt`) dresses the whole lane — billboard, hotel, parked fleet, queue — as it does laws and stamps; the builder shows only in the station's own body (M454); no owner — the builder.
+
 **Task names (18.09, the author: «почему по-русски — переименуй вехи по-английски, одинаково во всей
 игре»).** The stage items had Cyrillic family codes; they are now M-numbers like every other
 milestone, one contiguous block per family, so an old reference maps by arithmetic:
