@@ -1031,8 +1031,18 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   (27) only measures now. The frame draws it (hud → `opisHullTick`, 27j) when the canvas, device or signature
   changes. Pairs 760 and 390 (dpr 1 and 2) against main: same silhouette and anchors; the hull reads lit
   (rim toward the light, glass glint), lamps pale gold as in flight instead of flat amber. Guard
-  `91zzzzzzzzzz-opis-gpu` (last in order, see 0.473.0): 40 frames of flight under ОПИСЬ, `#c` untouched and not uploaded, one submit a frame,
+  `91zzzzzzy7-opis-gpu` (back at its own name once the order leak was closed, see below): 40 frames of flight under ОПИСЬ, `#c` untouched and not uploaded, one submit a frame,
   no 2D context on the canvas, one pass per signature change, warm bakes intact.
+- **The goldens' order leak is closed (26.09).** Bisecting the red part in -Files mode, then the suites of the
+  one file, then the calls of the one frame, found «наёмник виден в системе и за ним можно смотреть»
+  (91b-crew): its watch frame looks at the hotel, whose prebake (17a0) stayed half-baked in `PB` for
+  `PB_STALE` frames. `bakeIdle()` then said «not settled» to every later scene, and `detSettle` ran its
+  40-frame ceiling instead of 2–6, so «черпак» and «дом» were shot on another frame (18.8 % and 13.1 %).
+  `-Only` never showed it: there the suite ran before the GPU was up and took the no-GPU branch. Fix:
+  `resetWorld` closes every pending prebake with `prebakeDrop`, as it already drops `MAT_JOB`. Test: «золотые
+  кадры: сцена не помнит, кто рисовал до неё» shoots the two scenes forwards and backwards, with an abandoned
+  job planted before each. It is red with exactly those numbers without the fix. The ОПИСЬ guard is back at
+  `91zzzzzzy7`.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

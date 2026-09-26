@@ -177,7 +177,7 @@ avrWin                       src/21a6-base-avral.js:103-111
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bakeCount                    tests/91zzzzy-bake.js:32-41
-bakeIdle                     tests/90-harness.js:407-414
+bakeIdle                     tests/90-harness.js:413-420
 bakeKeep                     src/08c-gpu-kit.js:74-79
 bankTransform                src/03b-hull-paint.js:59-66
 BANYA_EVERY                  src/21ac1-base-banya.js:19
@@ -1030,7 +1030,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120-124
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:557-560
+coopStamp                    tests/90-harness.js:563-566
 coopVisitReset               src/12aj-coop.js:62
 CORONA_IN                    src/17-mode-system.js:26
 COSM_CHIME                   src/12va-wander-cosm.js:59-62
@@ -3257,7 +3257,7 @@ landerGearTick               src/19f-lander.js:15-23
 landerInk                    tests/91j-art.js:155-169
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344-370
-landOnTestPlanet             tests/90-harness.js:391-397
+landOnTestPlanet             tests/90-harness.js:397-403
 landStartY                   src/19-mode-landing.js:38-43
 LANE_BUOY                    src/17g-sys-lane.js:68
 LANE_CHASE                   src/17g-sys-lane.js:16
@@ -3808,7 +3808,7 @@ neonBake                     src/17k0-neon.js:12-15
 neonDraw                     src/17k0-neon.js:47-51
 neonJob                      src/17k0-neon.js:20-44
 neonKey                      src/17k0-neon.js:11
-NET_FROM                     tests/90-harness.js:450
+NET_FROM                     tests/90-harness.js:456
 NET_TEST                     src/01-core.js:10
 netBody                      src/01-core.js:12
 NEWS_ALL_INC                 tests/91zzzw-news.js:17
@@ -4985,7 +4985,7 @@ rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
 RESET_ABIL0                  tests/90-harness.js:237
 resetArm                     src/26-ui-station.js:694
-resetWorld                   tests/90-harness.js:238-389
+resetWorld                   tests/90-harness.js:238-395
 resize                       src/08-state.js:29-66
 resModeCap                   src/28-loop.js:257-262
 resSay                       src/28-loop.js:243-246
@@ -5224,7 +5224,7 @@ rungPoints                   src/12ad-site.js:45-68
 rungRingSegs                 src/12ae-ladder.js:56
 rungRoman                    src/12ae-ladder.js:47
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:467-551
+runTests                     tests/90-harness.js:473-557
 RUSH_SHIFTS                  src/18j-rail-rush.js:6
 rushAt                       src/18j-rail-rush.js:7
 rushFuelMul                  src/18j-rail-rush.js:12
@@ -5368,7 +5368,7 @@ setBig                       src/27z-telemetry.js:112-118
 setPair                      src/27z-telemetry.js:127-132
 setPct                       src/27z-telemetry.js:102-108
 setSt                        src/27z-telemetry.js:94
-settle                       tests/90-harness.js:415-426
+settle                       tests/90-harness.js:421-432
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -5693,7 +5693,7 @@ stDel                        src/14-save.js:26
 stEmFlush                    src/17c3-station-live.js:112-117
 stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
-steps                        tests/90-harness.js:428
+steps                        tests/90-harness.js:434
 stepWorld                    src/28-loop.js:378-398
 stGet                        src/14-save.js:8
 stGround                     src/17c-system-draw.js:108
@@ -5794,7 +5794,7 @@ SUITE_SEQ                    tests/90-harness.js:77
 SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 suiteGroup                   tests/90-harness.js:79-83
-suiteOrder                   tests/90-harness.js:435-442
+suiteOrder                   tests/90-harness.js:441-448
 suiteWin                     tests/90-harness.js:94-99
 suitFailure                  src/23-mode-dig.js:135-143
 suitHit                      src/23-mode-dig.js:128-134
@@ -5921,11 +5921,11 @@ TEST_SEED                    tests/90-harness.js:212
 TEST_SHARD                   tests/90-harness.js:30
 TEST_SHUFFLE                 tests/90-harness.js:70
 TEST_SKIP                    tests/90-harness.js:64
-TEST_SUITES                  tests/90-harness.js:552
+TEST_SUITES                  tests/90-harness.js:558
 TEST_T0                      tests/90-harness.js:214
 TEST_TIMES                   tests/99-run.js:18
-testNetHits                  tests/90-harness.js:456-466
-testSource                   tests/90-harness.js:451-455
+testNetHits                  tests/90-harness.js:462-472
+testSource                   tests/90-harness.js:457-461
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
 tetherTick                   src/13a-guns.js:358-375
@@ -7780,7 +7780,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/29i-spa-draw.js · 25 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 50 КБ
+## tests/90-harness.js · 51 КБ
   · автотесты: каркас:1
 
 ## tests/90a-tools.js · 45 КБ
@@ -8478,6 +8478,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy7-gpu-nebmove.js · 3 КБ
   · туманность на ходу — без ступеней (26.09, PLAN §1):1
 
+## tests/91zzzzzzy7-opis-gpu.js · 4 КБ
+  · ОПИСЬ на движке (G15): корабль без 2D-холста:1
+
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1
 
@@ -8493,7 +8496,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzzzc-trips.js · 5 КБ
   · рейсы по мирам: один сценарий на дюжине систем (M446, §3.2 «дисбаланс»):1
 
-## tests/91zzzzzzzzz-golden.js · 8 КБ
+## tests/91zzzzzzzzz-golden.js · 11 КБ
   · золотые кадры: пятый оракул (M443, DESIGN-tests §3.2):1
 
 ## tests/91zzzzzzzzz-savenet.js · 4 КБ
@@ -8501,8 +8504,5 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzzzz-worlds.js · 7 КБ
   · дисбаланс по мирам: четвёртый оракул (M443, DESIGN-tests §3.2):1
-
-## tests/91zzzzzzzzzz-opis-gpu.js · 4 КБ
-  · ОПИСЬ на движке (G15): корабль без 2D-холста:1
 
 ## tests/99-run.js · 7 КБ
