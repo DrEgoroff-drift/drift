@@ -732,7 +732,10 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   a neighbour (a plate-sized step) is hidden like an edge change (`st.jf`: out at the old place, in at the
   new; a chip lighting up after a yield may yield again and hides again). Green at 760 and 390; the gate
   was red on the old code. Node 16923, -Full 19196, -Mobile 19148.
-  Next: Контроль's queue is done; waiting.
+- **Candidate 0.464.0** (26.09): gpu3-rack 725037ad merged (57243be0: belt cockpit and glass on #ovl,
+  LABDOM gone — the wreck suite reads `OVL.lab` now, key `fld.belt.sky`), the warm table re-taken without a
+  diff (43 keys), VER, README and the patchnote.
+  Next: PLAN §0 Stage 1, the first open item.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
