@@ -794,7 +794,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   ferry, tug) around the own ship on thrust. The flame stays the brightest thing, fleet lights read as
   narrow dots with their halo (explicit emission since 7083ac58), fleet hulls lost the paint haze like
   the stations. Line closed in PLAN.
-  Next: the Stage 1 gate in numbers on the tour (uploads and submits per flight frame).
+- **Drone captions off #c** (26.09, 09c9ea77): the Stage 1 gate on the tour (scratch counter over
+  copyExternalImageToTexture / writeTexture / submit per step) found drones uploading #c on 1080 of 1080
+  flight frames — `drawDronesSystem` wrote captions with fillText; now `domLabel`, the shadow a second label.
+  The tour stand's drones had `res:"ore"` (no such resource): the earlier census crashed the frame there.
+  G4d merged (5bed781b).
+- **Candidate 0.465.0** (26.09): the glow source (stations, facade), fleet+flame closed, drone captions, G4d.
+  Next: the Stage 1 gate in numbers — extra submits on some run frames (planet, rescue, dock: 5 of 1080).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
@@ -2048,6 +2054,26 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   and glyph AA only (760: 266 px >24, max 48). Gate2d gains the belt scene; 91zzzzzzy1 checks 0 cockpit
   bakes after warm-up, both moving and at rest; the key oracle became a liveness oracle on the #ovl queue. The
   mutants `belt-ckg-master-2d`, `-leds-still`, `-fuel` and `-radar` die.
+- **#hud is gone: sticks (15b) and the watch line (17) on #ovl.** The census over 48 scenes at 760
+  found 0 calls on #hud everywhere except these two painters, so the 2D layer, `gpuHud`/`gpuHudFlush`,
+  its key string and the snapshot copy are deleted. `T.ui` shrinks to 1×1 (~12 MB of texture on the
+  S23). `helmDrawSticks` is all `ov*`: the band is a convex quad with an alpha gradient, the edges are
+  capsules, the chevron is one two-segment polyline, «СТОП» is an arc. `sysWatchLabel` is two
+  `ovText` lines placed above the pads, the console and a non-empty prompt. Before, the round «Цель»
+  pad covered its end on the phone, and on desktop it sat on the receiver strip. 08bi gains three
+  primitives and one refactor. Kind 2 with `m.y=1` is a quad A-B-C-D with alpha from `m.z` to `m.w`,
+  mid-DA to mid-BC. Kind 5 with `t1.y=1` is a polyline a→b→c, so the joint is not counted twice.
+  Kind 6 with `t1.w>0` is an arc of `t1.w` from `t1.z` with round caps. `ovFlush` is split into
+  queue → target: `ovPass(T,view,…)` encodes into the frame encoder, `ovTarget`/`ovInto` hand another
+  canvas its own queues, and the pipeline and glyph atlas are shared. Stick pairs at 390×3 vs HEAD
+  show AA only (max 54). Gate2d gains the sticks-and-watch scene over six phases; 91zzzzzzy4 gains the
+  three primitives and the watch line (desktop and phone). The mutants `stk-dot-2d`, `watch-label-2d`,
+  `watch-label-under-pads`, `ovl-quad-flat`, `ovl-cap3-double`, `-seg2` and `ovl-arc-full` die.
+  `gpuManual` used to take `ctx===#c` to mean the world was not assembled yet. With no 2D layer, ctx is
+  always #c, so every test frame ran a second `gpuWorld` without bloom and came out 10 % darker. It now reads
+  `GPU.wDone`. The golden «пояс» had been red since 725037ad: `detSettle` stopped at frame 6, while the cockpit
+  master is ready and faded in only by about frame 22. `bakeIdle` now also waits for the 17a0 oven and the CKG fade,
+  and `detSettle` keeps going while it is busy, up to 40 frames.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.

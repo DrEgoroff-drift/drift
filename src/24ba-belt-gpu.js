@@ -264,7 +264,7 @@ function beltGpuDraw(){
   }
   if(AD.length)gpuShapes(pass,AD,{blend:"add"});
   gpuShapes(pass,OV);
-  /* стекло и кабина — интерфейс: на слой приборов #hud, растр по изменению (24bc) */
+  /* стекло и кабина — интерфейс: мастер и очередь слоя #ovl (24bc) */
   beltHudPush(b,proj,fwd,st,bas);
   return true;
 }

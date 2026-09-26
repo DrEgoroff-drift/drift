@@ -252,7 +252,8 @@ function droneGuestPos(d,now){
 function drawDronesSystem(zx,zy,Z){
   const list=G.drones||[];
   if(!list.length)return;
-  /* хвосты, огни и аварийные лампы — на видеокарте (gpuDrones, 16ga); здесь подписи */
+  /* хвосты, огни и аварийные лампы — на видеокарте (gpuDrones, 16ga); здесь подписи — слоем
+     подписей (domLabel, #ovl): 2D на #c грузил его каждый кадр (ворота ступени 1, тур 26.09) */
   gpuDrones(zx,zy,Z);
   if(Z<=1.15)return;
   const now=clockNow();
@@ -260,7 +261,7 @@ function drawDronesSystem(zx,zy,Z){
     if((d.sx!==G.sx||d.sy!==G.sy)&&d.mkt&&d.mkt.sx===G.sx&&d.mkt.sy===G.sy&&!d.down){
       const g=droneGuestPos(d,now);if(!g)continue;
       const gx=zx(g.x),gy=zy(g.y),col=(RES[d.res]&&RES[d.res].col)||"#cfe3ea";
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";ctx.fillStyle=hexA(col,.85);ctx.fillText(droneName(d)+" · ИЗ "+d.sx+":"+d.sy,gx,gy-9);
+      domLabel("dr"+domLabelId(d),gx,gy-9,droneName(d)+" · ИЗ "+d.sx+":"+d.sy,"8px ui-monospace,monospace",hexA(col,.85),"center");
       continue;
     }
     if(d.sx!==G.sx||d.sy!==G.sy)continue;
@@ -275,9 +276,9 @@ function drawDronesSystem(zx,zy,Z){
        про кромку — та же мысль, только для шрифта) */
     const t=droneName(d)+" · "+RES[d.res].ru.toUpperCase()+(droneFar(d)?" → "+d.mkt.name.toUpperCase():"");
     const ly=y-9-5*(k-1);
-    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillStyle="rgba(4,6,10,.8)";ctx.fillText(t,x+1,ly+1);
-    ctx.fillStyle=hexA(col,.92);ctx.fillText(t,x,ly);
+    const f="8px ui-monospace,monospace",i=domLabelId(d);
+    domLabel("drs"+i,x+1,ly+1,t,f,"rgba(4,6,10,.8)","center");
+    domLabel("dr"+i,x,ly,t,f,hexA(col,.92),"center");
   }
 }
 /* цвет ресурса задан строкой «#rrggbb»; прозрачность к нему добавляем здесь,

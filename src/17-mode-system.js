@@ -495,6 +495,19 @@ function orbPathOf(p){
   }
   return O;
 }
+/* строка наблюдения: за кем смотрим и куда нажать, чтобы вернуться — две строки масками атласа #ovl.
+   Ниже приборов: сверху слева датчики, справа сводка — там текст не читался. Но и над пэдами:
+   на телефоне круг «Цель» ложился на конец строки (26.09), а приёмник и подсказка стоят прямо
+   над пэдами — строка встаёт над всеми тремя; прямоугольники из кэша (08-state), не чтение вёрстки */
+function sysWatchLabel(wA){
+  let yb=H-52;const rc=cvsRect();
+  for(const r of [padsRect(),consoleRect(),promptEl()&&promptEl().textContent?promptRect():null])
+    if(r&&r.height>0&&rc.height>0)yb=Math.min(yb,(r.top-rc.top)*H/rc.height-24);
+  const a=ovText(OVL.uq,W/2,yb,"НАБЛЮДЕНИЕ · "+wA.c.name.toUpperCase()+" · "+ORDERS[wA.c.order.kind].ru.toUpperCase(),
+         "10px ui-monospace,monospace","rgba(127,230,216,.9)","center","alphabetic",1,1);
+  const b=ovText(OVL.uq,W/2,yb+14,"ЭКИПАЖ — ВЕРНУТЬ КАМЕРУ","8px ui-monospace,monospace","rgba(93,115,130,.85)","center","alphabetic",1,1);
+  return {x0:Math.min(a.x0,b.x0),x1:Math.max(a.x1,b.x1),y0:a.y0,y1:b.y1};   /* рамка обеих строк — для проверок наложения */
+}
 function drawSystem(){
   const sh=G.ship,sys=G.sys,Z=G.zoom;
   /* режим наблюдения за наёмником: двигается только камера, корабль игрока
@@ -659,14 +672,7 @@ function drawSystem(){
   if(typeof drawGestureTop==="function")drawGestureTop(zx,zy,Z);   /* жест поверх корпуса (17h) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
-  if(wA)gpuHud("watch"+wA.c.name+wA.c.order.kind,()=>{   /* приборы — на свой слой, по изменению (08bh) */
-    ctx.fillStyle="rgba(127,230,216,.9)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
-    /* ниже приборов: сверху слева датчики, справа сводка — там текст не читался */
-    ctx.fillText("НАБЛЮДЕНИЕ · "+wA.c.name.toUpperCase()+" · "+
-                 ORDERS[wA.c.order.kind].ru.toUpperCase(),W/2,H-52);
-    ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";
-    ctx.fillText("ЭКИПАЖ — ВЕРНУТЬ КАМЕРУ",W/2,H-38);
-  });
+  if(wA&&GPU.on)sysWatchLabel(wA);   /* слой #ovl (08bi), без 2D */
   /* кольца-метки вокруг корабля больше нет. Она появилась, когда при отдалении
      от корабля оставался голый силуэт: факел и шлейф считались по мировому
      масштабу и пропадали, глазу не за что было зацепиться. Теперь эффекты идут
@@ -682,10 +688,8 @@ function drawSystem(){
     const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
     /* фишки у кромки — слой #ovl (08bi chipDom), каждый кадр: едут за миром */
     withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
-    /* стики под пальцами — в пикселях касания, не в мерке (M360); слой перерисовывается каждый
-       кадр, пока палец на экране или след гаснет, иначе — только когда сменилась точка покоя */
-    const hh=(HELM.S||HELM.fade)?"stk"+GPU.frameNo:"stk"+(()=>{const h=helmHome();return Math.round(h.x)+","+Math.round(h.y);})()+helmDry()+document.body.className;
-    gpuHud(hh,helmDrawSticks);
+    /* стики под пальцами — в пикселях касания, не в мерке (M360); слой #ovl, каждый кадр (15b) */
+    if(GPU.on)helmDrawSticks();
   }
 }
 /* дистанция на фишке (пара HUD 15/n): на ходу — две значащие цифры, «3,2к»,

@@ -160,9 +160,9 @@ TEST_SUITES.push(()=>suite("R2 пустой бак: руль не крутит �
   ok(+getComputedStyle(th).opacity<.5,"пад газа погас: "+getComputedStyle(th).opacity);
   /* стик под пальцем: тусклый, и над ним сказано почему */
   HELM.S={x0:80,y0:H-120,x:140,y:H-120,f:1};
-  const said=[],f0=ctx.fillText;
-  ctx.fillText=function(s,...r){said.push(String(s));return f0.call(this,s,...r);};
-  try{helmDrawSticks();}finally{ctx.fillText=f0;HELM.S=null;}
+  const said=[],led0=OVL.led,q0=OVL.uq.length;   /* стики — на слое #ovl (08bi): строки сдаёт сам слой */
+  OVL.led=t=>said.push(t.s);
+  try{helmDrawSticks();}finally{OVL.led=led0;OVL.uq.length=q0;HELM.S=null;}
   ok(said.indexOf("БАК ПУСТ")>=0,"над стиком «БАК ПУСТ»: "+said.join(" | "));
   /* топливо есть — всё как было */
   G.fuel=50;T.wait(1);hud();

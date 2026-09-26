@@ -431,7 +431,7 @@ function ckgUnder(i0,r0){
 }
 /* стекло и кабина пояса: с видеокартой — мастер и очередь #ovl, без неё — на #c */
 function beltHudPush(b,proj,fwd,st,bas){
-  if(!GPU.on||!GPU.uctx||!GPU.ok){drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);return;}
+  if(!GPU.on||!GPU.ok){drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);return;}
   if(!OVL.cv&&!ovCanvas())return;   /* мерка слоя (ovNd) — от его холста с первого кадра: иначе ключ мастера сменится на втором */
   const P=ckgPlan(),FS=ckgFS(P),I=CKG.in;
   I.b=b;I.proj=proj;I.st=st;
