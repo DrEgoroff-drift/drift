@@ -42,8 +42,7 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
     drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
     lands after its tests, whole-frame pairs and six regressions, with its census of 2D calls after `gpuWorld` at 0
-    (the road's own `#c` layer — hull, trail, glows, jets, coins, one upload a frame before `gpuWorld` — is its
-    first G15 item after landing). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
+    (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
   - GPU-3's next release: «турбаза «Дружба»» (ra, the designer's bad2a811, merged after its pair in 3ba532f3) and
     the phone tools in `docs/phone/` (0b186c5c).
@@ -71,11 +70,21 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     open), the console's seat and perch icons (27j-console, timers on every screen), then the panels by how often
     they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
-    worker's studio function; the ship in ОПИСЬ — the worker (27j0);
+    worker's studio function; the ship in ОПИСЬ — the worker (27j0); the raid's `ovAtlas` bakes a new row every
+    frame (a changing number) — glyphs once, numbers built from them;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull bake (03e1) — the worker;
-  - the fleet's leftovers (its census «2D after `gpuWorld`») and the map backdrop (17z) — the fleet session;
-  - the air (19b-sky, 19e-clouds, 18a1-glaze, 18d-postfx; G5) — whoever frees first.
+  - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
+    the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
+    (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),
+    home outside (779 / 5), the base (104 / 2), the cave (58 / 2); then the road's own layer (hull, trail, glows,
+    jets, coins), the scoop, the raid. Labels drawn into the world layer (the surface HUD, the scoop, the base, the
+    home) go onto `#ovl` with the 08bi primitives. Already 0 and 0: cinema, HQ, winter, spa, system, dock, cabin,
+    counter, belt, «Сорока». Its guard wraps `MAIN_CTX`'s own methods (08c's hook hides a prototype wrapper —
+    the first census read 0 on `#c` at 2–5 uploads a frame), is checked against `#c` uploads, and turns red on an
+    injected call;
+  - the air (19b-sky, 19e-clouds, 19d-weather, 19c haze and grade, 18a1-glaze, 18d-postfx; G5) and the mine's sky
+    stars (16-flight `drawStars`, a `fillRect` per star) — GPU-2, after space.
 
   3D, one object per spike, each closed by a pair of the WHOLE frame at 760 and 390 and the S23 cadence, cold,
   A/B/A; rolled out only when it reads better at first glance and is not slower:
