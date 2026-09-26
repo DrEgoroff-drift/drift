@@ -2452,7 +2452,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.471.0";
+const VER="0.472.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11070,7 +11070,7 @@ const GPU_PIPE_SRC={
   "gnb.stars":()=>[GPU_WGSL_COMMON+GSP_WGSL_U.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_STARS+GNB_STAR_ABS]};
 for(const n in GPU_FLD)GPU_PIPE_SRC[n]=()=>[GPU_WGSL_COMMON+GPU_FLD_HEAD+GPU_FLD[n](),gpuFieldLayout()];
 /* одиночные ключи — функция дескриптора в своём модуле */
-const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),
+const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),"gnb.fade":()=>gnbFadeDesc(),
   "gnb.noise":()=>gnbNoiseDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc()};
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
 function gpuPipeRecipe(key){
@@ -11126,6 +11126,7 @@ const GPU_PIPE_KEYS=[
   "gc:weo",
   "gc:wnz",
   "gc:wst",
+  "gnb.fade",
   "gnb.gen|16f",
   "gnb.noise",
   "gps",
@@ -51942,8 +51943,7 @@ fn fineE(p:vec2f)->f32{
   let r=1.-abs(2.*fbt(qf+wv,2)-1.);
   return .5+.95*r*r;}`;
 /* поглощение — в шейдере звезды (P1 11/n): полноэкранный проход ABS умножал цель сцены, а под
-   туманностью в ней только чёрная очистка и звёзды (пересчёт идёт до открытия сцены, всё
-   прочее — после сведения). Смешение «поверх» линейно по цвету, поэтому множитель на каждом
+   туманностью в ней только чёрная очистка и звёзды. Смешение «поверх» линейно по цвету, поэтому множитель на каждом
    пикселе звезды даёт то же, что множитель на экране, — и платится площадью звёзд.
    Звёзды — поверх газа, под пылью: общее плечо кадра сжимает слабую звезду на светлом
    газе в ноль, поэтому то, что за газом (почти одни звёзды — фон чёрный), поднято на
@@ -52155,8 +52155,8 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   else{let d=ph-GNB.phP;d-=Math.round(d/(2*Math.PI))*2*Math.PI;GNB.Qc+=kD*(1-wD)*d;GNB.Yc+=kD*(1-wD)*(lD-GNB.lDP);}
   GNB.phP=ph;GNB.lDP=lD;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
-  /* GPU.kill.ngen (проба ?g11=deep): сведение старой текстуры без пересчёта — цена одного пересчёта */
-  if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<3&&GPU.frameNo>=GNB.last))return true;
+  /* GPU.kill.ngen (?g11=deep): без пересчёта; стоя — перетекание (16gc) */
+  if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
   const a=GNB.U;
   a[0]=GNB.w;a[1]=GNB.h;a[2]=W;a[3]=H;
   a[4]=camx;a[5]=camy;a[6]=c[2];a[7]=c[3];
@@ -52171,9 +52171,9 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   const U=GPUBufferUsage,ub=gpuBuf("gnb.u",192,U.UNIFORM|U.COPY_DST);
   GPU.dev.queue.writeBuffer(ub,0,a);
   const P=gnbPipe();
-  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:gnbGenView(sys,moved),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs("nebGen")});
   p.setPipeline(P);p.setBindGroup(0,gpuBind("gnb.gen",P,[ub,GPU.S.lin,gnbNoiseTile()]));p.draw(3);p.end();
-  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;
+  GNB.sys=sys;GNB.cx=camx;GNB.cy=camy;GNB.last=GPU.frameNo;GNB.nGen=(GNB.nGen|0)+1;gnbFade();
   return true;
 }
 /* возвращает проход сцены, в который рисовать дальше: под меткой времени (проба) сведение
@@ -52188,6 +52188,42 @@ function gpuNebulaComp(pass){
   GPU.sep=.7;
   if(ts){p.end();return gpuScene();}
   return pass;
+}
+
+/* ── туманность: плавный пересчёт ──
+   Стоя (сдвиг камеры < .5) пересчёт идёт раз в GNB_AGE кадров в запасную текстуру, а видимая
+   за GNB_AGE кадров линейно перетекает в неё: смешение с постоянной k = 1/6, 1/5 … 1 даёт
+   ровную линию от старой к свежей. Течение газа (~1 px за 6 кадров) идёт по 1/6 за кадр, а не
+   скачком раз в пересчёт; пересчёт стоя — вдвое реже прежнего (был раз в 3 кадра). На ходу,
+   при смене системы и размера цели — пишет прямо в видимую, без перетекания */
+const GNB_AGE=6;
+const GNB_FADE=`
+@group(0) @binding(0) var t:texture_2d<f32>;
+@vertex fn vs(@builtin(vertex_index) i:u32)->@builtin(position) vec4f{
+  var P=array(vec2f(-1.,-1.),vec2f(3.,-1.),vec2f(-1.,3.));return vec4f(P[i],0.,1.);}
+@fragment fn fs(@builtin(position) p:vec4f)->@location(0) vec4f{return textureLoad(t,vec2i(p.xy),0);}`;
+function gnbFadeDesc(){
+  const m=gpuShader(GNB_FADE),b={srcFactor:"constant",dstFactor:"one-minus-constant"};
+  return {layout:"auto",vertex:{module:m,entryPoint:"vs"},
+    fragment:{module:m,entryPoint:"fs",targets:[{format:"rgba16float",blend:{color:b,alpha:b}}]},primitive:{topology:"triangle-list"}};
+}
+/* куда писать пересчёт: стоя в той же системе — в запасную (перетекание), иначе в видимую */
+function gnbGenView(sys,moved){
+  if(!(GNB.sys===sys&&moved<.5&&GNB.last>=0)){GNB.fi=GNB_AGE;return GNB.view;}
+  if(!(GNB.t2&&GNB.t2d===GNB.tex)){
+    if(GNB.t2)GPU.trash.push(GNB.t2);
+    const U=GPUTextureUsage;
+    GNB.t2=GPU.dev.createTexture({size:[GNB.w,GNB.h],format:"rgba16float",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT});
+    GNB.t2v=GNB.t2.createView();GNB.t2d=GNB.tex;
+  }
+  GNB.fi=0;return GNB.t2v;
+}
+/* шаг перетекания: k=1/(AGE−i) — через AGE шагов видимая равна свежей */
+function gnbFade(){
+  if(!(GNB.fi<GNB_AGE)||GNB.t2d!==GNB.tex)return;
+  const k=1/(GNB_AGE-GNB.fi),K="gnb.fade",P=GPU.lay[K]||(GPU.lay[K]=gpuPipeline(K,gnbFadeDesc));GNB.fi++;
+  const p=GPU.enc.beginRenderPass({colorAttachments:[{view:GNB.view,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("nebFade")});
+  p.setPipeline(P);p.setBlendConstant([k,k,k,k]);p.setBindGroup(0,gpuBind(K,P,[GNB.t2v]));p.draw(3);p.end();
 }
 
 /* ══════════════ режим: система ══════════════ */
@@ -104551,9 +104587,9 @@ async function g11Deep(list){
    округляет метки до 0.1 мс — для проходов в миллисекунды хватает */
 function gpuTs(name){
   if(!GPU.tsOn||!GPU.tsOk)return undefined;
-  const T=GPU.tsQ||(GPU.tsQ={qs:GPU.dev.createQuerySet({type:"timestamp",count:32}),
-    res:GPU.dev.createBuffer({size:256,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC}),rb:[],names:[],n:0});
-  if(T.n+2>32)return undefined;
+  const T=GPU.tsQ||(GPU.tsQ={qs:GPU.dev.createQuerySet({type:"timestamp",count:64}),
+    res:GPU.dev.createBuffer({size:512,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC}),rb:[],names:[],n:0});
+  if(T.n+2>64)return undefined;
   const i=T.n;T.n+=2;T.names.push([name,i]);
   return {querySet:T.qs,beginningOfPassWriteIndex:i,endOfPassWriteIndex:i+1};
 }
@@ -104577,7 +104613,7 @@ function gpuTsResolve(){
   const names=T.names,n=T.n;T.n=0;T.names=[];
   let rb=T.rb.find(b=>b.mapState==="unmapped");
   if(!rb){if(T.rb.length>=4)return null;
-    rb=GPU.dev.createBuffer({size:256,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});T.rb.push(rb);}
+    rb=GPU.dev.createBuffer({size:512,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});T.rb.push(rb);}
   GPU.enc.resolveQuerySet(T.qs,0,n,T.res,0);GPU.enc.copyBufferToBuffer(T.res,0,rb,0,n*8);
   return ()=>rb.mapAsync(GPUMapMode.READ).then(()=>{
     const a=new BigInt64Array(rb.getMappedRange(0,n*8)),acc=GPU.tsAcc||(GPU.tsAcc={});let lo=null,hi=null;

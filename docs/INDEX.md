@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 635 · символов верхнего уровня: 6401
+Файлов: 636 · символов верхнего уровня: 6406
 
 ## СИМВОЛЫ
 
@@ -2246,25 +2246,30 @@ glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gn5Foe                       tests/91zzzw-guns3.js:10-16
 GNB                          src/16gb-gpu-nebula.js:17
-GNB_EMI                      src/16gb-gpu-nebula.js:409
+GNB_AGE                      src/16gc-gpu-nebfade.js:7
+GNB_EMI                      src/16gb-gpu-nebula.js:408
+GNB_FADE                     src/16gc-gpu-nebfade.js:8
 GNB_FINE                     src/16gb-gpu-nebula.js:363
 GNB_GEN                      src/16gb-gpu-nebula.js:44
-GNB_LM_COL                   src/16gb-gpu-nebula.js:521
+GNB_LM_COL                   src/16gb-gpu-nebula.js:520
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gb-gpu-nebula.js:504-519
-GNB_STAR_ABS                 src/16gb-gpu-nebula.js:386
+GNB_PAL                      src/16gb-gpu-nebula.js:503-518
+GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
-gnbGenDesc                   src/16gb-gpu-nebula.js:495
-gnbLandmark                  src/16gb-gpu-nebula.js:522-535
-gnbLfr                       src/16gb-gpu-nebula.js:538-551
+gnbFade                      src/16gc-gpu-nebfade.js:30-35
+gnbFadeDesc                  src/16gc-gpu-nebfade.js:13-17
+gnbGenDesc                   src/16gb-gpu-nebula.js:494
+gnbGenView                   src/16gc-gpu-nebfade.js:19-28
+gnbLandmark                  src/16gb-gpu-nebula.js:521-534
+gnbLfr                       src/16gb-gpu-nebula.js:537-550
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:511-519
-gnbPipe                      src/16gb-gpu-nebula.js:494
-gnbStar                      src/16gb-gpu-nebula.js:553-558
-gnbStars                     src/16gb-gpu-nebula.js:399-406
-gnbTarget                    src/16gb-gpu-nebula.js:486-493
+gnbPalette                   src/16gb-gpu-nebula.js:510-518
+gnbPipe                      src/16gb-gpu-nebula.js:493
+gnbStar                      src/16gb-gpu-nebula.js:552-557
+gnbStars                     src/16gb-gpu-nebula.js:398-405
+gnbTarget                    src/16gb-gpu-nebula.js:485-492
 gnFoe                        tests/91zzzw-guns2.js:17-23
 gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
@@ -2319,7 +2324,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:190
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-50
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-51
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -2370,8 +2375,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
 gpuMoon                      src/17ga-gpu-planets.js:440-445
-gpuNebulaComp                src/16gb-gpu-nebula.js:616-626
-gpuNebulaGen                 src/16gb-gpu-nebula.js:561-613
+gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
+gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
 gpuNoise                     src/08b-gpu.js:369-374
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:558-578
@@ -7125,8 +7130,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gaz-gpu-noise.js · 3 КБ
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 51 КБ
+## src/16gb-gpu-nebula.js · 50 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
+
+## src/16gc-gpu-nebfade.js · 3 КБ
 
 ## src/17-mode-system.js · 81 КБ
   · режим: система:1

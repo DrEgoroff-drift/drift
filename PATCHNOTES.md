@@ -6,6 +6,16 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.472.0 - a nebula that stops pulsing
+
+- **Standing still, the nebula flows instead of stepping** (GPU-2): the gas was rebuilt every third
+  frame and jumped a little each time; now it is rebuilt every sixth frame into a spare texture and
+  the old picture blends into the new one over those six frames. The frame-to-frame step of the gas
+  fell from 0.05 to 0.017 px with no pulse, and on the S23 the rebuild costs 0.93 ms a frame instead
+  of 1.81. In flight nothing changed yet.
+- **The GPU probe has 64 timestamp slots** (GPU-2): on the phone 32 ran out before the nebula's
+  blend pass, so it went unmeasured.
+
 ## 0.471.0 - ships in the system's light
 
 - **Ships are lit by the star, not painted light** (the worker; hull mode on the GPU canvas): every face keeps
