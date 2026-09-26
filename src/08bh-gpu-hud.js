@@ -28,46 +28,21 @@ function gpuHudFlush(){
     GPU.uiWas=key!=="";GPU.hkey=key;
   }
   q.length=0;
-  ovFlush();domLabelEnd();
+  ovFlush();
 }
 /* снимок кадра (gpuTakeSnap): фишки поверх, как их кладёт композитор, — чтобы look(),
    детекторы и эталоны видели то же, что игрок. Платится только в момент снимка */
 function chipDomSnap(g,sc){
-  /* лампы кабины пояса (#labels, 24bc) — первыми: на экране они под слоем фишек */
-  for(const e of LABDOM.m.values())if(e.on){g.globalAlpha=Math.min(1,e.A);g.drawImage(e.cv,e.x*sc,e.y*sc,e.w*sc,e.h*sc);}
-  g.globalAlpha=1;
   if(OVL.on&&OVL.cv)g.drawImage(OVL.cv,0,0,OVL.cv.width/ovNd()*sc,OVL.cv.height/ovNd()*sc);
 }
-/* ── слой #labels: свои холсты ламп кабины пояса (24bc) — до её переноса на видеокарту ──
-   Подписи мира (domLabel) — на #ovl (08bi) */
-const LABDOM={m:new Map(),id:new WeakMap(),n:0};
-/* свой слой — сразу за #hud, под #ovl: подпись лежит под фишками */
-function labDomBox(){
-  if(LABDOM.box||typeof document==="undefined"||!document.body||!GPU.ok)return LABDOM.box;
-  const b=document.createElement("div");b.id="labels";
-  b.style.cssText="position:fixed;inset:0;pointer-events:none;overflow:hidden";
-  (GPU.ui||GPU.cv||cvs).after(b);return LABDOM.box=b;
-}
+/* подписи мира (domLabel) — на #ovl (08bi) */
+const DLID={id:new WeakMap(),n:0};
 /* ключ подписи для вещи без своего сида (контейнер): номер живёт рядом, не в самой вещи —
    поле в объекте мира уехало бы в сейв */
-function domLabelId(o){let i=LABDOM.id.get(o);if(!i){i=++LABDOM.n;LABDOM.id.set(o,i);}return i;}
-/* конец мира (gpuHudFlush): подписи, которых в кадре не было, — спрятать */
-function domLabelEnd(){
-  for(const [k,e] of LABDOM.m){
-    if(e.used)e.last=GPU.frameNo;
-    else{if(e.on){e.on=false;e.cv.style.display="none";}
-      /* давно не нужна (пират ушёл, планета другой системы) — долой из DOM */
-      if(GPU.frameNo-(e.last||0)>600){e.cv.remove();LABDOM.m.delete(k);}}
-    e.used=false;
-  }
-  LABDOM.fl=true;
-}
+function domLabelId(o){let i=DLID.id.get(o);if(!i){i=++DLID.n;DLID.id.set(o,i);}return i;}
 /* начало кадра: мир прошлого кадра не доходил до конца (другой режим, чистый кадр) — слой
    фишек спрятать; очередь, брошенная посреди кадра, — долой */
 function chipDomSweep(){
   if(!OVL.fl&&OVL.on){OVL.on=false;OVL.cv.style.display="none";}
   OVL.fl=false;OVL.lq.length=OVL.cq.length=0;
-  /* мир прошлого кадра не доходил до конца (другой режим) — подписи тоже спрятать */
-  if(!LABDOM.fl)for(const e of LABDOM.m.values()){if(e.on){e.on=false;e.cv.style.display="none";}}
-  LABDOM.fl=false;
 }

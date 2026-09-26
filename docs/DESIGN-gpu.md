@@ -1965,6 +1965,27 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   the first form that leaves the paper 60 % of the box; else the channel number tight beside the dot (the
   phone: the globe takes 210 of 367 px), while the paper keeps 45 %; dots only past that — no label runs
   under the feed roller at 390, 760 or 1180 (91zl; mutants `rack-legend-under-roller`, `rack-bake-pooled`).
+- **Belt cockpit and glass (24bc, 25-cockpit, 25a, 25b) off 2D: a master in four bands + the #ovl `uq` queue.**
+  `ckgPaint` bakes everything static in 2D paint order (glass tint and sheen, frame via `cockpitPaint`, the
+  instrument panel and tape bases via their new `part="base"`, dim LEDs, bar, radar and cargo beds, grips,
+  throttle track). The 17a0 oven job (`ckgJob`) runs it step by step: two 1×1 pre-bakes that pay the one-time
+  glyph raster (frame, then the panel: 12 ms at 390×3), four horizontal bands, two `once` sprite atlases (glint
+  ramp, feed roller, heading mark, node bracket; the ±20…60 ladder labels ×2 with mips), then four dry
+  `ckgFrame` warm-ups by mask. The entry frame starts nothing. The live frame (`ckgFrame`) only queues: ladder,
+  velocity marker, lock brackets, reticle, heading tape, hit flash, glint, needles, НЕВЯЗКА, tape pens
+  (`ovGraph`), LEDs, bars, speed, radar, lock and cargo, lamps, the node with crowns, grips and the handle.
+  `ckgUnder` moves the rack's primitives above the cockpit. A new master fades in over 10 frames, because the
+  -Mobile bot caught it popping in whole. The cockpit no longer draws on #hud; the LED canvases and 08bh `LABDOM` are gone.
+  08bi: the triangle kind now puts the winding sign inside each edge before the min. The reverse winding
+  used to fill its whole rect, and chip arrows hid it (suite «треугольник обратного обхода», mutant
+  `ovl-tri-winding`). 08b1 gains `fld.belt.sky|over`: the pipe detector now enters the belt through the
+  gate2d scene, and the sky had been compiling on the entry frame. Warm-up at load stays in noise, 2613–3290 ms
+  (42 keys) vs 2683–3088 ms (43). Belt entry, same tick under load: 760 55.2/58.5 → 24.4/25.5 ms; 390×3
+  75.0 → 21.3 ms; unloaded 390×3 max 17.8/18.4 ms. The master is ready 10–11 frames after entry, a re-entry
+  bakes nothing (≤8.2 ms), and the pool is unchanged. Pairs vs HEAD at 760 and 390×3 show sub-pixel edges
+  and glyph AA only (760: 266 px >24, max 48). Gate2d gains the belt scene; 91zzzzzzy1 checks 0 cockpit
+  bakes after warm-up, both moving and at rest; the key oracle became a liveness oracle on the #ovl queue. The
+  mutants `belt-ckg-master-2d`, `-leds-still`, `-fuel` and `-radar` die.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.

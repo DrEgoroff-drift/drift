@@ -36,7 +36,7 @@ TEST_SUITES.push(()=>suite("обломок G4c: подпись — фишка у
   eq(bodies,1,"в кадре один обломок — один корпус светом звезды");
   const art=pirateArtOf(npcWreckPose(near).shipId,false,2,1,0);
   eq((art.holes||[]).length,2,"у выпечки обломка две крупные пробоины — по ним тлеет кромка");
-  const lab=[...LABDOM.m.keys()].filter(k=>String(k).startsWith("wk"));
+  const lab=[...OVL.lab.keys()].filter(k=>String(k).startsWith("wk"));
   eq(lab.length,0,"подписи «КОРПУС» над обломком больше нет");
   const wc=SYS_CHIPS.filter(c=>c.t&&c.t.kind==="wreck");
   eq(wc.length,1,"одна фишка обломка — ближнего из тех, что за кадром");

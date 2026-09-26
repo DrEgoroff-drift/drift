@@ -57,6 +57,28 @@ TEST_SUITES.push(()=>suite("слой #ovl: текст фишки не дрожи
   eq(n,126,"126 положений фишки с текстом");
   eq(dx.size+"/"+dy.size,"6/6","по каждому масштабу и стороне — один сдвиг текста от рамки (x/y)");
 }));
+/* треугольник (вид 2) обоими обходами: шейдер кладёт знак обхода внутрь каждого ребра — обратный
+   обход прежде заливал всю рамку (радар кабины пояса, 26.09) */
+TEST_SUITES.push(()=>suite("слой #ovl: треугольник обратного обхода — треугольник, а не рамка",{tier:"browser"},()=>{
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  resetWorld();G.mode="system";
+  const run0=G.running,loop0=LOOP_OFF,Y=60,L=80,xs=[40,200],px={};
+  try{
+    G.running=true;LOOP_OFF=false;
+    frameBody(wallMs());if(!ok(!!ovCanvas(),"слой #ovl есть"))return;
+    /* прямой угол слева сверху: (x,Y),(x+L,Y),(x,Y+L) — второй тот же, вершины в обратном порядке */
+    for(const [i,x] of xs.entries()){const a=[x,Y],b=[x+L,Y],c=[x,Y+L],t=i?[...a,...c,...b]:[...a,...b,...c];
+      ovPush(OVL.uq,x,Y,x+L,Y+L,[1,1,1,1],2,0,0,0,t);}
+    frameBody(wallMs());
+    const cv=document.createElement("canvas");cv.width=OVL.cv.width;cv.height=OVL.cv.height;
+    const g=cv.getContext("2d",{willReadFrequently:true});g.drawImage(OVL.cv,0,0);
+    const A=(x,y)=>g.getImageData(x,y,1,1).data[3];
+    for(const x of xs)px[x]=[A(x+15,Y+15),A(x+L-12,Y+L-12)];
+  }finally{G.running=run0;LOOP_OFF=loop0;resetWorld();}
+  for(const [i,x] of xs.entries()){const [inn,out]=px[x],w=i?"обратный":"прямой";
+    ok(inn>200,w+" обход: внутри залито (альфа "+inn+")");
+    eq(out,0,w+" обход: за гипотенузой, в рамке — пусто");}
+}));
 /* вид интерфейса (uq, 08bi): картинка/график/капсула/эллипс — числа очереди в пикселях устройства,
    прогоны по мастеру, точки графиков отдельно; без видеокарты сброс очереди и слой спрятан */
 TEST_SUITES.push(()=>suite("слой #ovl: виды интерфейса — картинка, график, капсула, эллипс",()=>{

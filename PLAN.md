@@ -50,9 +50,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   - A mode's frame goes onto direct paths (`gpuLitSprite`, atlases, instances), not onto a `GcCtx` in place of
     `ctx` (DECISIONS, «The renderer»). A reserve for the GPU canvas, not now: convex fills without the stencil,
     one draw instead of two.
-  - Belt mode whole (the tour census of 25.09 — the only #c painter left in the tour): `drawBelt` (375 calls
-    per frame), `drawCockpit` (41), `instrPanel` (19), `drawGlassHUD` (12), `tapePaper` (8), `vbar` (5) and the
-    cockpit's `file` rows (2). The flight around the belt is already clean.
   - The census stays a tool: after each stage-2 step, the tour (NEYEL, Коммуна, wrecks, rescue, drones,
     «Сорока», belt, hotel, planet, dock) is rerun, and every flight item must stay at 0; a rare sight the tour
     does not reach (a new system object, a mode's entry) gets a stand and joins the flight gate suite.
