@@ -36,6 +36,30 @@ function farEaterMul(sys,k,own){
   if(k==="antimatter"&&own&&own!=="yalta"&&own!=="pirate")m*=1.3;   /* флот любой державы */
   return m;
 }
+/* у каждого едока свой голос на прилавке (M469, review §2.5): не «×1,5», а кто
+   берёт и зачем. Реплика — за что платят сверху; без едока — пусто */
+const FAR_VOICE={
+  own:{amber:["ювелирная артель","«берём. В каждом — своя муха, и у каждой мухи своя история»"],
+       pearl:["стойка роскоши™","«клиент платит не за жемчуг, а за то, что это было далеко»"],
+       darkglass:["оптический цех","«наконец стекло, а не донышко от бутылки»"]},
+  yard:{he3:["реакторный цех","«солнечный газ — котёл плотнее, корпус тот же»"],
+        palladium:["приборный цех","«белая руда — на контакты, что не гниют»"],
+        osmium:["броневой участок","«тяжело — значит, надёжно»"],
+        neutron:["доводчики","«крошку — в дело, узел можно не ставить»"]},
+  land:{osmium:["броневой участок ГЛАВТРАССЫ","«по ГОСТу: тяжелее — лучше»"],
+        magdust:["путейцы Орднунга","«пыль — на рельсы, согласно ведомости № 12»"],
+        chernozem:["дачный кооператив","«такой земли и дома не было. Берём всё»"]},
+  navy:["флотский приёмщик","«без вопросов. Распишитесь вот тут»"]
+};
+function farEaterVoice(sys,k){
+  if(!RES[k]||!RES[k].far||!sys)return null;
+  const own=(typeof stampOwnerAt==="function")?stampOwnerAt(sys.sx,sys.sy):null;
+  if(FAR_EATER[k]&&FAR_EATER[k]===own)return FAR_VOICE.own[k];
+  if(FAR_EAT_YARD[k]&&sys.station&&sys.station.stype==="yard")return FAR_VOICE.yard[k];
+  const L=FAR_EAT_LAND[k];if(L&&L[0]===own)return FAR_VOICE.land[k];
+  if(k==="antimatter"&&own&&own!=="yalta"&&own!=="pirate")return FAR_VOICE.navy;
+  return null;
+}
 function farCurve(r,band){
   if(r<6)return 1.3;
   if(r<10)return 1.3-.3*(r-6)/4;
@@ -48,6 +72,33 @@ function farBasePrice(sys,k){
 }
 function farPriceCtx(sys,C,k){
   return Math.max(1,Math.round(farBasePrice(sys,k)*C.mul*C.occ*clamp(1+(C.m.pressure[k]||0),.4,1.8)));
+}
+/* ── прилавок «ИЗ ДАЛИ» (M467, DESIGN-resources §4) ──
+   Кто не летит сам, может купить далёкое для верфи — в сердце (r < 10), редко
+   и дорого: примерно одна станция из четырёх раз в трое суток выставляет партию
+   одного товара, втрое дороже своей же приёмки. Партия — от зерна станции и
+   трёх суток; купленное помнит запись рынка станции (m.farSold), новых полей
+   в сейве нет. Сдать обратно тут же — втрое дешевле: денег это не печатает */
+const FAR_STALL_R=10,FAR_STALL_MUL=3;
+function farStall(sys){
+  if(!sys||!sys.station||Math.hypot(sys.sx,sys.sy)>=FAR_STALL_R)return null;
+  const day=Math.floor(celDay()/3),r=rng(hashi(sys.sx*131+sys.sy*7,day,0xFA16));
+  if(r()>=.25)return null;
+  const k=FAR_KEYS.filter(q=>!RES[q].far.chip)[Math.floor(r()*FAR_KEYS.filter(q=>!RES[q].far.chip).length)];
+  const n0=2+Math.floor(r()*5),m=G.market[sys.key];
+  const sold=(m&&m.farSold&&m.farSold.day===day&&m.farSold.k===k)?m.farSold.n|0:0;
+  return {k,day,left:Math.max(0,n0-sold),ask:Math.round(marketFor(sys)[k]*FAR_STALL_MUL)};
+}
+function farStallBuy(sys,n){
+  const S=farStall(sys);if(!S||!S.left)return 0;
+  const free=stat().cargoMax-held(),w=(typeof resW==="function")?resW(S.k):1;
+  n=Math.max(0,Math.min(n|0,S.left,Math.floor(free/w),Math.floor(G.credits/S.ask)));
+  if(!n)return 0;
+  G.credits-=n*S.ask;G.cargo[S.k]=(G.cargo[S.k]|0)+n;
+  const m=G.market[sys.key];
+  if(!m.farSold||m.farSold.day!==S.day||m.farSold.k!==S.k)m.farSold={day:S.day,k:S.k,n:0};
+  m.farSold.n+=n;
+  return n;
 }
 /* множители станции, общие для всех товаров — считаются один раз на котировку */
 function marketCtx(sys,m){
@@ -106,7 +157,7 @@ function buyCargo(sys,k,qty){
 function sellCargo(sys,k,qty){
   /* обед Коммуны (M456): приёмка закрыта час, топливо — всегда */
   if(typeof lawLunch==="function"&&lawLunch()&&sys===G.sys){say("Обед. Приёмка с 14:00",90);return 0;}
-  if(G.railSeal){say("Трюм опломбирован\nОрднунг: до места назначения",90);return 0;}   /* пломба (M508) */
+  if(G.railSeal){say("Трюм опломбирован\nОрднунг: снимут при стыковке",90);return 0;}   /* пломба (M508) */
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
   /* аппетит станции (M290): первые N в смену — с надбавкой, остальное по обычной.

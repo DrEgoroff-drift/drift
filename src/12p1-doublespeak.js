@@ -36,4 +36,7 @@ function dsTick(){
   const others=MAKER_KEYS.filter(k=>k!==d.by&&T[k]);
   const o=others[hashi(G.t|0,d.by.length,0xD5)%others.length];
   for(const k of [d.by,o]){const s=T[k];if(!s)continue;const i=s.indexOf(": ");etherLine(s.slice(i+2),s.slice(0,i));}
+  /* и в сводку (M491, P12): два голоса одной строкой, как было — знаете только вы */
+  if(typeof newsAll==="function"){newsAll().push({id:"ds",ru:[T[d.by],T[o]].filter(Boolean).join(" — "),sx:G.sx,sy:G.sy,t:now()});
+    const keep=(typeof newsKeepLimit==="function")?newsKeepLimit():NEWS_KEEP;while(newsAll().length>keep)G.news.shift();}
 }

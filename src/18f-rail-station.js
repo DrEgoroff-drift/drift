@@ -28,12 +28,31 @@ function railHere(){
   const x=P.st.x-P.ux*RAIL_RING_OFF,y=P.st.y-P.uy*RAIL_RING_OFF;
   return {S,x,y,ux:P.ux,uy:P.uy,name:G.sys.station.name,by:P.by};
 }
+/* ── полустанок (M471, DESIGN-metro §2): за кромкой вместо вестибюля — голая
+   платформа: доска, скамья и один фонарь на столбе. Свет у фонаря свой,
+   тёплый, и больше на много секторов вокруг ничего не горит ── */
+function railHaltShapes(SH,vx,vy,s,col){
+  SH.push([0,vx-22*s,vy+2*s,vx+22*s,vy+5*s,0,0,58,52,46,1],        /* доска платформы */
+    [0,vx-6*s,vy-1*s,vx+4*s,vy+1*s,0,0,70,60,48,1],                 /* скамья */
+    [0,vx-5*s,vy+1*s,vx-4*s,vy+2*s,0,0,70,60,48,1],[0,vx+2*s,vy+1*s,vx+3*s,vy+2*s,0,0,70,60,48,1],
+    [0,vx+13*s,vy-14*s,vx+14.2*s,vy+2*s,0,0,40,40,44,1],            /* столб */
+    [1,vx+13.6*s,vy-15*s,11*s,0,0,0,col[0],col[1],col[2],.16],      /* круг света */
+    [1,vx+13.6*s,vy-15*s,2.2*s,0,0,0,255,236,200,.95]);             /* лампа */
+}
+function railHaltCtx(vx,vy,s,col){
+  ctx.fillStyle="#3a342e";ctx.fillRect(vx-22*s,vy+2*s,44*s,3*s);
+  ctx.fillStyle="#463c30";ctx.fillRect(vx-6*s,vy-1*s,10*s,2*s);ctx.fillRect(vx-5*s,vy+1*s,1*s,1*s);ctx.fillRect(vx+2*s,vy+1*s,1*s,1*s);
+  ctx.fillStyle="#28282c";ctx.fillRect(vx+13*s,vy-14*s,1.2*s,16*s);
+  ctx.fillStyle=rgba(col,.16);ctx.beginPath();ctx.arc(vx+13.6*s,vy-15*s,11*s,0,TAU);ctx.fill();
+  ctx.fillStyle="rgba(255,236,200,.95)";ctx.beginPath();ctx.arc(vx+13.6*s,vy-15*s,2.2*s,0,TAU);ctx.fill();
+}
 /* ── рисунок: кольцо, глиссада, вестибюль ── */
 /* с видеокарты (ступень 1): лампы, кольцо и вестибюль — фигуры кита, спираль — лента
    четырёхугольников с жёсткими стыками (без бусин на изломах), табличка — слой подписей */
 function railGpu(pass,R,x,y,s,col,ts,fast,zx,zy){
   const SH=[];
-  for(let i=0;i<9;i++){
+  const nL=R.S.halt?3:9;   /* полустанок (M471): глиссада в три лампы */
+  for(let i=0;i<nL;i++){
     const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1),k=Math.max(0,1-Math.abs(ph-.5)*3);
     for(const sd of [-1,1]){const px=R.x+R.ux*d-R.uy*w*sd,py=R.y+R.uy*d+R.ux*w*sd;
       SH.push([1,zx(px),zy(py),(1.2+1.2*k)*s,0,0,0,col[0],col[1],col[2],.25+.6*k]);}
@@ -47,6 +66,8 @@ function railGpu(pass,R,x,y,s,col,ts,fast,zx,zy){
     gpuQuad(SH,[p[0]-u[0],p[1]-u[1]],[p[0]+u[0],p[1]+u[1]],[q[0]+v[0],q[1]+v[1]],[q[0]-v[0],q[1]-v[1]],sc,(i>0?1:0)|(i+2<n?4:0));}
   for(let i=0;i<12;i++){const a=i/12*TAU,cx=x+Math.cos(a)*44*s,cy=y+Math.sin(a)*44*s;SH.push([0,cx-1,cy-1,cx+1,cy+1,0,0,col[0],col[1],col[2],.55]);}
   const vx=zx(R.x-R.uy*70),vy=zy(R.y+R.ux*70),x0=vx-16*s,x1=vx+16*s,y0=vy-9*s,y1=vy+9*s;
+  if(R.S.halt){railHaltShapes(SH,vx,vy,s,col);gpuShapes(pass,SH);
+    domLabel("rail",x,y+58*s+10,"ПОЛУСТАНОК · "+R.S.lines[0].ru.toUpperCase(),uiFont(9),"rgba(242,178,92,.6)","center");return;}
   SH.push([0,x0,y0,x1,y1,0,0,30,37,48,1],
     [0,x0-.5,y0-.5,x1+.5,y0+.5,0,0,0,0,0,.6],[0,x0-.5,y1-.5,x1+.5,y1+.5,0,0,0,0,0,.6],
     [0,x0-.5,y0+.5,x0+.5,y1-.5,0,0,0,0,0,.6],[0,x1-.5,y0+.5,x1+.5,y1-.5,0,0,0,0,0,.6]);
@@ -63,7 +84,7 @@ function drawSysRail(zx,zy,Z){
   const ts=G.t/60,fast=RAIL_WAIT&&RAIL_WAIT.t<3?3:1,pass=gpuScene();
   if(pass){railGpu(pass,R,x,y,s,col,ts,fast,zx,zy);return;}
   /* глиссада: две цепочки ламп сходятся к кольцу со стороны станции */
-  for(let i=0;i<9;i++){
+  for(let i=0;i<(R.S.halt?3:9);i++){
     const d=70+i*28,w=10+i*4.5,ph=((ts*2.2*fast+i*.37)%1);
     const k=Math.max(0,1-Math.abs(ph-.5)*3);
     for(const sd of [-1,1]){
@@ -84,6 +105,8 @@ function drawSysRail(zx,zy,Z){
   ctx.restore();
   /* вестибюль сбоку и табличка с линией */
   const vx=zx(R.x-R.uy*70),vy=zy(R.y+R.ux*70);
+  if(R.S.halt){railHaltCtx(vx,vy,s,col);ctx.fillStyle="rgba(242,178,92,.6)";ctx.font=uiFont(9);ctx.textAlign="center";
+    ctx.fillText("ПОЛУСТАНОК · "+R.S.lines[0].ru.toUpperCase(),x,y+58*s+10);return;}
   ctx.fillStyle="#1e2530";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=1;
   ctx.fillRect(vx-16*s,vy-9*s,32*s,18*s);ctx.strokeRect(vx-16*s,vy-9*s,32*s,18*s);
   ctx.fillStyle="rgba(255,226,170,.8)";for(let i=0;i<4;i++)ctx.fillRect(vx-12*s+i*7*s,vy-3*s,4*s,3*s);
@@ -103,7 +126,11 @@ function railInteract(sh){
     return true;
   }
   const D=RAIL_DOCK;D.t++;
-  const sp=Math.hypot(sh.vx,sh.vy),inCone=d<RAIL_CONE_R;
+  const coneR=RAIL_CONE_R*(W<=760?1.4:1);   /* на телефоне конус шире (§3) */
+  let sp=Math.hypot(sh.vx,sh.vy);const inCone=d<coneR;
+  /* подруливание (M471): в конусе руль гасит лишнее, как автопилот, — не
+     тормоз в ноль, а мягко к метке; снаружи конуса борт ваш */
+  if(inCone&&sp>=RAIL_SLOW*.8){const k=.965;sh.vx*=k;sh.vy*=k;sp*=k;}
   if(sp<RAIL_SLOW&&inCone)D.hold++;else D.hold=0;
   if(D.hold>=120){railDocked(false);return true;}
   if(D.t>=300){railDocked(true);return true;}
@@ -117,6 +144,16 @@ function railDocked(auto){
     if(typeof recordAdd==="function")recordAdd("станция «"+R.name+"»","стыковка выполнена автоматикой.");}
   else say("ПРИНЯТО",60);
   railWinShow();
+}
+/* ── табло листается (M472): буква, что сменилась с прошлой перерисовки,
+   переворачивается пластинкой — как на вокзале; прочие стоят. Помнится только
+   прошлый текст строки, в памяти страницы ── */
+const RAIL_FLAP_PREV={};
+function railFlap(i,txt){
+  const was=RAIL_FLAP_PREV[i]||"";RAIL_FLAP_PREV[i]=txt;
+  let o="";
+  for(let k=0;k<txt.length;k++){const c=txt[k];o+=c!==was[k]&&c!==" "?"<i class='fl'>"+c+"</i>":c;}
+  return o;
 }
 /* ── вестибюль: одна страница ── */
 function railInterval(sx,sy){const r=Math.hypot(sx,sy);const I=r<=RAIL_METRO_R?10:Math.round(30+60*clamp((r-12)/28,0,1));
@@ -134,7 +171,9 @@ function railDestinations(){
       let i=i0+dir*k;
       if(l.loop)i=((i%n)+n)%n;else if(i<0||i>=n)break;
       if(i===i0)break;
+      if(typeof railCut==="function"&&railCut(l.stops[railNextIdx(l,i,-dir)],l.stops[i]))break;   /* путь перерезан (M510) */
       let dist=0;for(let m=0;m<k;m++){const a=l.stops[l.loop?((i0+dir*m)%n+n)%n:i0+dir*m],b=l.stops[l.loop?((i0+dir*(m+1))%n+n)%n:i0+dir*(m+1)];dist+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
+      if(typeof railFrontShut==="function"&&railFrontShut(l.stops[i]))continue;   /* фронт — касса не продаёт (M474) */
       out.push({l,i0,i1:i,dir,k,dist,to:l.stops[i]});
     }
   }
@@ -145,8 +184,10 @@ function railDestinations(){
 function railFare(t){
   const metro=Math.hypot(G.sx,G.sy)<=RAIL_METRO_R&&Math.hypot(t.to.sx,t.to.sy)<=RAIL_METRO_R;
   const fare=metro?5:Math.max(4,Math.round(2*t.dist));
-  const bag=metro?0:Math.ceil(held()/5);
-  const F={fare,bag,sum:fare+bag,metro};
+  /* крупногабаритный (M472, §3): тяжёлое в трюме (осмий, крошка) — багаж ×3 */
+  const big=!metro&&typeof resW==="function"&&Object.keys(G.cargo).some(k=>(G.cargo[k]|0)>0&&resW(k)>1);
+  const bag=metro?0:Math.ceil(held()/5)*(big?3:1);
+  const F={fare,bag,sum:fare+bag,metro,big};
   return (typeof railPassFare==="function")?railPassFare(F):F;   /* проездной (M500) */
 }
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
@@ -162,7 +203,8 @@ function railWinRender(){
   const by=R.by,S=R.S;
   let h="<div class='rw-head'><b>СТАНЦИЯ «"+R.name.toUpperCase()+"»</b><s>"+S.lines.map(l=>l.ru).join(" · ")+(S.junction?" · ПЕРЕСАДКА":"")+"</s></div>";
   h+="<div class='rw-sec'>ТАБЛО</div><div class='rw-board'>";
-  for(const l of S.lines)h+="<div><span>"+(S.metro?"МЕТРО":"ЭЛЕКТРИЧКА")+" · "+l.ru+"</span><em>"+(RAIL_WAIT&&RAIL_WAIT.l===l?"ваш · через "+railFmt(Math.ceil(RAIL_WAIT.t)):"через "+railFmt(railWaitNow(G.sx,G.sy)))+"</em></div>";
+  S.lines.forEach((l,li)=>{h+="<div><span>"+(S.metro?"МЕТРО":"ЭЛЕКТРИЧКА")+" · "+l.ru+"</span><em>"+
+    railFlap(li,RAIL_WAIT&&RAIL_WAIT.l===l?"ваш · через "+railFmt(Math.ceil(RAIL_WAIT.t)):"через "+railFmt(railWaitNow(G.sx,G.sy)))+"</em></div>";});
   h+="</div>";
   if(RAIL_WAIT){
     h+="<div class='rw-sec'>ВАШ ПОЕЗД</div><div class='rw-row'><span>до «"+railStopName(RAIL_WAIT.to)+"» · "+RAIL_WAIT.k+" "+pl3(RAIL_WAIT.k,"остановка","остановки","остановок")+"</span><em>поезд прибывает через "+Math.ceil(RAIL_WAIT.t)+" с</em></div>";
@@ -171,27 +213,32 @@ function railWinRender(){
     const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
     if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
       /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
+      if(!why.startsWith("ФРОНТ")){   /* на фронт маршрутка не едет (M474) */
       h+="<div class='rw-sec'>КОМПЕНСАЦИОННАЯ МАРШРУТКА · РАССВЕТ</div>";
       railDestinations().slice(0,6).forEach((t,i)=>{const F=railFare(t);
-        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА ДО «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>медленнее · водитель в курсе</s></button>";});
+        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА ДО «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>медленнее · водитель в курсе · ДЕЙСТВИЕ — «остановите здесь»</s></button>";});}
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
-      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + БАГАЖ "+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
+      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
+      /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
+      if(typeof railOwner==="function"&&railOwner()==="ra")
+        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА «ДО КУДА?» · ПО ЛИНИИ К «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>остановит где скажете, хоть у звезды без станции</s></button>";
       if(typeof railOwner==="function"&&railOwner()==="co"&&t.k>=2)
         h+="<button class='act rw-go' data-i='"+i+"' data-x='1'>EXPRESS™ ДО «"+railStopName(t.to).toUpperCase()+"» · "+(F.fare*RAIL_EXPRESS_MUL)+" КР<s>на три секунды быстрее!</s></button>";
     });
   }
   if(typeof railLifeHtml==="function")h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
-  h+="<button class='act rw-map'>СХЕМА ЛИНИЙ<s>развернуть бумагу</s></button>";
-  h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
+  h+="<button class='act rw-map'>СХЕМА ЛИНИЙ · КУДА ВАМ<s>развернуть бумагу и выбрать остановку</s></button>";
+  if(S.halt)h+="<div class='rw-sec'>ПЛАТФОРМА</div><div class='rw-row'><span>скамья и фонарь · буфета нет</span><em>кипяток — свой</em></div>";   /* полустанок (M471) */
+  else h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
-  w.innerHTML=h;w.dataset.by=by||"gt";   /* отделка вестибюля по хозяину (M471, CSS) */
+  w.innerHTML=h;w.dataset.by=S.halt?"halt":(by||"gt");   /* отделка вестибюля по хозяину (M471, CSS) */
   if(typeof railLifeBind==="function")railLifeBind(w);
   const D=railDestinations();
   w.querySelectorAll(".rw-go").forEach(b=>b.onclick=()=>railBuy(D[+b.dataset.i],!!b.dataset.x,!!b.dataset.b));
-  w.querySelector(".rw-buf").onclick=railBuffet;
+  {const bb=w.querySelector(".rw-buf");if(bb)bb.onclick=railBuffet;}
   const bm=w.querySelector(".rw-map");if(bm)bm.onclick=()=>{if(typeof railSchemeOpen==="function")railSchemeOpen();};
   w.querySelector(".rw-out").onclick=railWinClose;
 }
@@ -211,7 +258,7 @@ function railBuy(t,express,bus){
 function railBuffet(){
   const free=typeof socIn==="function"&&socIn("know");   /* «Знающим» чай даром (M512) */
   if(!free&&G.credits<3){say("Буфет: «мелочи нет? и у нас нет»",90);return;}
-  if(!free)G.credits-=3;
+  if(!free)G.credits-=3;else socGot("know",3,1);
   const L=(typeof rumoursHere==="function")?rumoursHere():[];
   const line=L.length?"говорят, есть "+L[Math.floor(rnd()*L.length)].short:"сегодня ничего не говорят, пейте молча";
   peopleLine(line,"буфетчица",true);

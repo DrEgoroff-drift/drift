@@ -5,18 +5,23 @@ Only what we want next. What is done is not kept here: the story of each version
 M-number), and the rules and decisions that stand are in `docs/DECISIONS.md`. A finished item is
 deleted from this file in the commit that finishes it; its story goes to the patchnote.
 
-**How it is worked.** Start the session here; open the design section an item names; measure before
-touching; commit locally; the whole run (`test.ps1`, `-Full`, `-Mobile`, `-Mutants`) only before a
-push. Stages 2–6 go on the author's word. Where an item and a design document differ,
-`docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules bind every item: a screen never
-loses its scroll, every screen answers «чтобы что?» before it is redesigned, optimise without losing
-quality, the ship stays under the finger.
+**How it is worked (the author, 26.09 ~20:55).** «Одного рабочего, пусть всё делает, хочу уже дальше игрового
+накинуть, а не только переход на движок»; «пусть делает без тестов, быстро накидывает, потом с графикой пройдёмся
+перед релизом». So:
+- **One worker** on his own branch from `main`, commits in batches locally; Контроль pushes.
+- **The game first.** Stages 2 → 7 (§3–§8) in plan order; inside a stage the mechanic and the play first, the
+  picture as a draft. The seams of §9 bind every item. The engine (§0) goes on, but not first.
+- **No tests along the way.** Before each release: a graphics pass with the author, then the whole run
+  (`test.ps1`, `-Full`, `-Mobile`, `-Mutants`).
+- **A release point after each stage.**
+- **A fork in the design:** take the cautious variant and list it under «Disputed» in the stage's patchnote, so
+  the author can overturn it.
 
-**Release checkpoints** — a push after the whole run: after the phone tests, after stage 2 («чья
-земля»), after stage 3 («дорога»), then per stage. The engine (§0) ships as each piece is accepted; Контроль pushes after
-the whole run.
+Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
+bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
+optimise without losing quality, the ship stays under the finger.
 
-## 0. The engine — everything on WebGPU, first (the author, 23.09)
+## 0. The engine — everything on WebGPU (the author, 23.09; since 26.09 it goes on after the game stages)
 
 «Первое — на новый движок, потом по плану.» WebGPU only and no 2D canvas anywhere, the interface too (the author
 25.09: «2D-канвы — их надо все вырезать и заменять на наш новый движок»; 26.09: «надо все переносить на движок, и 3D
@@ -220,14 +225,9 @@ measured on the GPU build first:
 
 ## 3. Stage 2 — whose land, in five seconds
 
-- [ ] **M453 the stamp + P14 КНИЖКА:** Ялта's stamp and the pirates' scratch cannot be earned yet; the rest of P14 — seals, vacation savings, the grounding ending on the page.
-- [ ] **M454 the station by its builder:** the maker's grammar on the modules and the core (profile law,
-  seams, joints), not the common kit with a dressed plate; the Орднунг ribs hide under the modules.
-- [ ] **M447/M448 the galaxy:** M450 the overview and M451 the flight sky from the same model; verify the
-  drag detector's thresholds («deep < 8 %, sheet ≥ 25 %» were set before measuring).
-- [ ] **M458 map borders:** territory edges as lines in the owner's pattern (dotted stars, ring marks,
-  numbered dashes, a wave, uneven dashes with suns, dots), 1:1 with the sheet; the emblem chip readable
-  (14–18 px) at near zoom; the glyph on the compass label and the header. Not started.
+- [ ] **M447/M448 the galaxy:** M451 the flight sky from the same model — after GPU-2's soft nebula lands in
+  `main` (it lives in `16gb`, which that branch rewrites); verify the drag detector's thresholds («deep < 8 %,
+  sheet ≥ 25 %» were set before measuring) at the release run.
 - **Gate:** on any jump in the settled circle a tester names the owner within 5 s without reading a label
   (three testers, six powers); the stamp lands once per crossing.
 
@@ -235,55 +235,27 @@ measured on the GPU build first:
 
 - [ ] **Oracle lines** (`91zzzzzzzzz-worlds`): the best rail round trip ≤ ×1.3 of the best jumps in credits
   per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for M478).
-- [ ] **M466 reading and ЖИЛА:** the cave (янтарь) and the hunt (жемчуг) give nothing yet; the rumour a
-  сводка later and company on the approach; the reading on the planet card and at the dig entry; тёмное
-  стекло in the instruments narrowing every reading by half.
-- [ ] **M467:** far goods for sale in the heart, rarely and dear.
-- [ ] **M469 eaters:** the goods actually consumed by the yards' densities and доводка, the luxury counter,
-  the hotel shop.
-- [ ] **M470 the net:** stop names by owner (the M489 rule) and «Край»; lines beyond r 60; the scheme as its
-  own screen (КУДА ВАМ).
-- [ ] **M471:** the bare rim platform; helm assist in the ring's cone.
-- [ ] **M472:** split-flap turning; крупногабаритный ×3.
-- [ ] **M473:** the held pad ×2; a save mid-ride wakes at the origin today.
-- [ ] **M474 six railways:** Рассвет's маршрутка (stop anywhere on the line), the dashed Express line on the
-  scheme, closed front stops. Test fragility: the ride suite picks the first heart metro station — if its
-  land ever turns Орднунг, the suite needs the double press.
-- [ ] **M475 economy and growth:** fares, baggage and the size rule tuned against the oracle's rail line; a
-  holding-built station, «продление линии», a late holding deed named by the generator.
-- [ ] **M508:** the pirates' respect for a sealed hold. **M510:** shut stretches of the front — the line
-  itself cut.
+- [ ] **M474 six railways (rest):** the net past r 60, built lazily per region (M470 rest; whole build is 146 ms
+  to r 60). Test fragility: the ride suite picks the first heart metro station — if its land ever turns
+  Орднунг, the suite needs the double press.
+- [ ] **M475 economy (rest):** fares, baggage and the size rule tuned against the oracle's rail line (release run).
 - **Gate:** from home to a rim полустанок and back with a hold of deep goods in under 4 minutes of play,
   paying its ticket on an average roll; the ride never shows a loading screen.
 
 ## 5. Stage 4 — the ship
 
-- [ ] **M476 the plan:** unique, fused and NPC hulls in the suite; the hold's green is barely visible.
-- [ ] **M477 the КБ:** footprints 2/4 turning and the Орднунг «поворот не предусмотрен формуляром»; the
-  numbers strip with deltas; ПРОЕКТЫ ×3; the foreign yard's bill per cell moved; ОСНАСТКА's hull section
-  into КБ; the tray showing things from the hold.
+- [ ] **M476 the plan (rest):** unique, fused and NPC hulls in the fixpoint suite (release run).
 - [ ] **M478 numbers from the plan:** fuel from tank cells, energy from reactor cells, hull from armour parts,
   sight from nose-third instruments, module tiers as densities. One mapping table: `hold`/`tank`/
   `weapon`(reactor)/`armor` become densities per cell (per hull size, never shown as a number);
   `engine`/`hyper`/`drill` stay station upgrades; the fixpoint suite covers both halves.
-- [ ] **M479 exposure:** rim parts take their side's wear when hit from that side; «engines take it» from
-  behind.
-- [ ] **M483 the fast path everywhere:** NPC and pirate ships built by the packer; the new-part mark
-  (ПРОЕКТЫ is under M477). Not started — `docs/DESIGN-shipyard.md` §10.
+- [ ] **M483 the fast path (rest):** NPC and pirate ships built by the packer, their plan read in the silhouette.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a warship
   stripped of hold both fly under the finger the same (the P8 meter); the blueprint gets its almanac issue.
 
 ## 6. Stage 5 — the voice and the joke
 
-- [ ] **M485 machines with names:** the base crawler, the tug, the barge's autopilot.
-- [ ] **M486 изолента:** the кулибин trait; tape on a part, not only the hull; the first hour's ДО 50 %
-  button anywhere.
-- [ ] **M495 the triangle:** parts do not break — the Компания/Хай-Фронт part failures need a part-failure
-  mechanic first; the bar of hold music; the old master's free seam.
-- [ ] **M489 names by owner:** settlements, holdings, the station header; firms where they appear.
-- [ ] **M492 Космопочта:** a rare part and cooperative goods as parcels; a real queue.
-- [ ] **M460 billboards:** 1–3 signs; the hull tint within R; the сводка, циркуляры and holding lines;
-  stale prices as a fork. **M491** through `12p-news` at the сводка. **P12** ЭФИР.
+- [ ] **M460 billboards (rest):** 1–3 signs; the hull tint within R (graphics pass); stale prices as a fork (the author).
 - [ ] **M461 hotels:** six faces in DESIGN-life §3.3, two built — «Космос» (17l1) and «Дружба» (17l2, 0.470.0).
   The other four have their sign, window rhythm and hours but stand in «Космос»'s crescent (`hotelType` falls
   back to `gt`): «АЭЛИТА™» (Компания, a Stalinist tower on a rock), «ДОМ ПРИЕЗЖИХ № 4» (Орднунг, khrushchyovkas on
@@ -292,13 +264,7 @@ measured on the GPU build first:
   at 19 h and 3 h (the author 26.09: «у нас же 6 типов гостиниц было»; when — «после», after the engine). Then the doors (the sanatorium wants a
   voucher and an ocean world — how a hotel offers it); cantina rumours at the desk; fatigue (does not exist for
   the player).
-- [ ] **M455 the peacetime fleet:** субботник, strike and rite driven by the chronicle's days rather than
-  always; the belt tugs are far from the station view.
-- [ ] **M456 laws:** «сделаем из ваших» (Рассвет); the fine's ticket in ПОЧТА instead of the journal; the
-  lunch shown on the trade tab.
 - [ ] **M511 волокита:** the animals the author will invent (his table).
-- [ ] **M512 societies:** duties (субботник, the week's parcel), ДОСО, спасатели, дачники, читатели; the
-  arithmetic on the desk.
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say
   afterwards which institution the joke was on — never a person.
 

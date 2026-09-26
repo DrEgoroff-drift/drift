@@ -154,8 +154,9 @@ function drawPlan(cx,W0,H0,pk){
     if(!has.has(q.i+","+(q.j-1))){cx.moveTo(x,y);cx.lineTo(x,y+s);}
     if(!has.has(q.i+","+(q.j+1))){cx.moveTo(x+s,y);cx.lineTo(x+s,y+s);}}
   cx.stroke();
-  cx.save();cx.strokeStyle="rgba(220,234,255,.35)";cx.lineWidth=1;                  /* трюм — штриховка */
-  for(const q of pk.hold){const x=ox+q.j*s,y=oy+q.i*s;cx.save();cx.beginPath();cx.rect(x,y,s,s);cx.clip();cx.beginPath();
+  cx.save();cx.strokeStyle="rgba(120,226,150,.75)";cx.lineWidth=1.2;                /* трюм — зелёная штриховка по заливке (M476: была не видна) */
+  for(const q of pk.hold){const x=ox+q.j*s,y=oy+q.i*s;cx.fillStyle="rgba(80,190,110,.24)";cx.fillRect(x+1,y+1,s-2,s-2);
+    cx.save();cx.beginPath();cx.rect(x,y,s,s);cx.clip();cx.beginPath();
     for(let d=-s;d<s*2;d+=s/3){cx.moveTo(x+d,y);cx.lineTo(x+d+s,y+s);}cx.stroke();cx.restore();}
   cx.restore();
   for(const it of pk.items){
@@ -174,10 +175,11 @@ function drawPlan(cx,W0,H0,pk){
 function opisPlanBlock(){
   const wrap=document.createElement("div");
   /* изолента (M486): замотать можно где угодно — корпус до половины */
-  if(typeof tapeRolls==="function"&&(tapeRolls()>0||tapesOf()>0)){
-    const t=document.createElement("div");t.className="op-tape";
-    t.innerHTML="<h4>ИЗОЛЕНТА<s>рулонов "+tapeRolls()+" · полос на корпусе "+tapesOf()+"</s></h4>";
-    if(tapeCan()){const b=document.createElement("button");b.className="act";b.textContent="ЗАМОТАТЬ · КОРПУС ДО 50 %";
+  /* блок виден и без рулонов, когда корпус ниже половины: так первый час узнаёт, что мотать можно где угодно */
+  if(typeof tapeRolls==="function"&&(tapeRolls()>0||tapesOf()>0||tapeFree()||G.hull<stat().hullMax*.5)){
+    const t=document.createElement("div"),kul=kulibAny();t.className="op-tape";
+    t.innerHTML="<h4>ИЗОЛЕНТА<s>рулонов "+tapeRolls()+" · полос на корпусе "+tapesOf()+(kul?" · кулибин "+kul.name+" на связи":"")+"</s></h4>";
+    if(tapeCan()){const b=document.createElement("button");b.className="act";b.textContent="ЗАМОТАТЬ · КОРПУС ДО "+Math.round(tapeHold()*100)+" %";
       b.onclick=()=>{tapeUse();if(typeof opisRerender==="function")opisRerender();};t.appendChild(b);}
     else{const e=document.createElement("s");e.className="chalk";e.textContent=tapeRolls()?"корпус выше половины — мотать рано":"рулонов нет · продаётся у ремонта на станции";t.appendChild(e);}
     wrap.appendChild(t);
@@ -204,4 +206,25 @@ function opisPlanOnly(){
     const b=document.createElement("button");b.className="act";b.textContent="КБ · ПРАВИТЬ ЧЕРТЁЖ";b.onclick=kbOpen;box.appendChild(b);
   }else{const e=document.createElement("s");e.className="chalk";e.textContent=" · правка чертежа — в КБ у причала";lg.appendChild(e);}
   return box;
+}
+/* ── открытость (M479, DESIGN-shipyard §3): борт принимает то, что по нему пришло ──
+   В корму — «двигатели принимают»: попадание добавляет износ корабля
+   (12s-wear), а износ — единственное, чем машина слушается хуже. В борт —
+   если по обшивке этого борта стоит броня (часть «корпус» или модуль брони),
+   она берёт на себя часть удара. В лоб — как было. Износ уже в сейве;
+   своего поля нет */
+const EXPO_REAR_WEAR=.002,EXPO_SIDE_ARMOR=.85;
+function planExposure(s,d){
+  if(!(d>0)||!G.ship)return d;
+  const dir=Math.atan2(s.vy,s.vx),ad=Math.abs(angDiff(dir,G.ship.a));
+  if(ad<Math.PI/3){
+    if(typeof wearAll==="function"){const W=wearAll(),id=G.shipId;W[id]=Math.min(1,(W[id]||0)+d*EXPO_REAR_WEAR);}
+    if(!planExposure.t||G.t-planExposure.t>300){planExposure.t=G.t;say("Попадание в корму\nдвигатели принимают · износ растёт",90);}
+    return d;
+  }
+  if(ad>Math.PI*2/3||typeof draftOf!=="function")return d;
+  const side=Math.sign(angDiff(dir+Math.PI,G.ship.a))||1,pk=draftOf(G.shipId),mid=(pk.P.cols-1)/2;
+  const arm=pk.items.some(it=>((it.what==="part"&&it.kind==="hull")||(it.what==="mod"&&it.kind==="armor"))&&
+    it.cells.some(q=>(q.kind==="side"||q.kind==="nose")&&Math.sign(q.j-mid)===side));
+  return arm?d*EXPO_SIDE_ARMOR:d;
 }

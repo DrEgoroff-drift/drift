@@ -11,6 +11,16 @@
 
    Модули ничего не открывают и не закрывают: услуги по-прежнему живут в типе.
    Иначе получилось бы, что снаружи станция обещает больше, чем внутри есть. */
+/* кто строил станцию (M454): хозяин земли — «чья земля» должна читаться по
+   самой крупной рукотворной вещи в системе. Каждая пятая — чужой постройки
+   (по зерну), дикий космос строит кто придётся. Строитель считается раз за
+   сеанс, по хозяину на момент первого взгляда */
+function stationBuilder(sys){
+  const seed=(typeof makerBySeed==="function")?makerBySeed(sys.seed):"gt";
+  const o=(typeof chronOwnerKey==="function")?chronOwnerKey(sys.sx,sys.sy):null;
+  if(!o||!HULL_MAKER[o])return seed;
+  return (hashi(sys.seed|0,0xB1D,5)>>>0)%5===0?seed:o;
+}
 const ST_MODULES=[
   {id:"cargo",  ru:"грузовой терминал", sh:"rack",  w:1.2, on:["trade","indust"]},
   {id:"habit",  ru:"жилой сектор",      sh:"drum",  w:1.4},
@@ -33,7 +43,7 @@ function stationMods(sys){
   const r=rng(hashi(sys.seed,0x50DD,17));
   /* чей это завод: пока от зерна системы — кто её строил. С M372 сюда придёт
      держава, которая систему держит, и строка станет её строкой */
-  const by=S.by||(S.by=(typeof makerBySeed==="function")?makerBySeed(sys.seed):"gt");
+  const by=S.by||(S.by=stationBuilder(sys));
   const ty=S.stype||"trade";
   const danger=sysDanger(sys.sx,sys.sy);
   const pool=ST_MODULES.filter(m=>!m.on||m.on.indexOf(ty)>=0);
@@ -105,7 +115,8 @@ function drawStModule(q,S,skipRod){
      вещью. Теперь у каждой формы свой тон корпуса, а золото опущено до шва;
      светят только окна и лампы — свет у станции один, свой. */
   ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.7;   /* обвод тёмный, как у баржи */
-  const F=ST_MOD_FILL[q.sh]||"#1b2230";
+  /* корпус модуля в грунте строителя (M454): тот же тон, что у плиты и ствола */
+  const F0=ST_MOD_FILL[q.sh]||"#1b2230",F=stGround([parseInt(F0.slice(1,3),16),parseInt(F0.slice(3,5),16),parseInt(F0.slice(5,7),16)],.28);
   ctx.fillStyle=F;
   if(q.sh==="drum"){
     ctx.beginPath();ctx.rect(-5*s,-7*s,10*s,14*s);ctx.fill();ctx.stroke();
@@ -199,7 +210,9 @@ function drawStModule(q,S,skipRod){
     stLive(()=>{const bl=Math.pow(Math.max(0,Math.sin(G.t*.06+q.ph)),8);
       stLamp(0,-13*s,1.4*s,[120,230,255],+(.25+.7*bl).toFixed(2));});
   }
+  if(typeof stModMaker==="function")stModMaker(q,s);   /* почерк строителя (M454, 17c1) */
   ctx.restore();
+  if(typeof stModJoint==="function")stModJoint(q);
 }
 /* два прохода: сперва все штанги, потом все корпуса — иначе распорка соседа
    ложится поверх модуля и сборка снова рассыпается на линии */

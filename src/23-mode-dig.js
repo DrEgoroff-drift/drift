@@ -67,6 +67,9 @@ function enterDig(){
      тестировщик увидел одну и ту же строку дважды на одном экране. Остаётся
      только то, чего нет больше нигде. */
   say("на поверхности W — выход · ОГОНЬ — импульс");
+  /* залежь под этим стволом — табличкой прибора на входе, как в поясе (M466) */
+  if(typeof farReadShow==="function"){const pi=farPlanetIdx(S.p);
+    if(pi>=0)farReadShow(farHere(pi).filter(d=>{const v=RES[d.k].far.verb;return v==="mine"||v==="drill";}));}
 }
 function exitDig(){
   /* кнопка ВЫХОД живёт в режиме, а режим и шахта — две разные вещи: кадр и
@@ -323,10 +326,11 @@ function digFauna(dt,st){
     const r=rng(hashi(Math.round(near.x),Math.round(near.y),0x5A99));
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.35+ti*.12?addRes("xeno",1+Math.floor(r()*2)):0;
+    const pl=(typeof farHunt==="function")?farHunt(D.p,near.x,near.y):0;   /* жемчуг пустоты (M466) */
     D.bugs.splice(D.bugs.indexOf(near),1);
     const d=bioMark(near.name,6);G.data+=d;
-    tell("tech","Образец: "+near.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:""),
-      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+"\n+"+d+" данных");
+    tell(pl?"good":"tech","Образец: "+near.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:"")+(pl?" · жемчуг ×"+pl:""),
+      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+(pl?"\nЖЕМЧУГ ПУСТОТЫ ×"+pl:"")+"\n+"+d+" данных");
   }
 }
 function drawDigFauna(camx,camy){

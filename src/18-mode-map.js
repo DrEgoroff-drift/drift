@@ -78,10 +78,15 @@ function mapViewC(){return G.mapView||{x:G.sx,y:G.sy};}
    Один счёт клетки на всех: рисование, тап и протяжка считали её каждый сам,
    и любое расхождение уводило тап мимо звезды. Зум карты — отдельный от зума
    системы: 1 — как раньше, больше — дальше видно, меньше — крупнее. */
-function mapZoomK(){return clamp(G.mapZoom||1,.6,5);}
+/* обзор (M450): дальше зума 5 лист систем гаснет — его покадровый цикл не
+   обойдёт пятнадцать тысяч секторов, — и остаётся весь диск галактики. Щипком
+   до ~14; назад — и лист проявляется снова */
+const MAP_OVER=5,MAP_ZMAX=14;
+function mapZoomK(){return clamp(G.mapZoom||1,.6,MAP_ZMAX);}
+function mapOverOn(){return mapZoomK()>MAP_OVER;}
 function mapCell(){return Math.min(W,H)/9.2/mapZoomK();}
-function mapRange(){return Math.ceil(5*mapZoomK())+1;}
-function mapZoomSet(z){G.mapZoom=clamp(z,.6,5);}
+function mapRange(){return Math.min(26,Math.ceil(5*mapZoomK())+1);}
+function mapZoomSet(z){G.mapZoom=clamp(z,.6,MAP_ZMAX);}
 /* окно так, чтобы в кадре были И вы, И названный сектор: по слуху карта
    раньше уезжала к сектору, а игрок оставался за краем и не понимал, откуда лететь */
 function mapFit(sx,sy){
@@ -117,6 +122,39 @@ function mapBack(){
 function mapReset(){G.mapView=null;G.mapZoom=1;G.mapMore=false;G.mapClean=false;G.mapSearch=null;
   if(typeof document!=="undefined"&&document.body)document.body.classList.remove("mapclean");}
 function mapCleanSet(on){G.mapClean=!!on;if(typeof document!=="undefined"&&document.body)document.body.classList.toggle("mapclean",G.mapClean);}
+/* ── обзор галактики (M450, DESIGN-galaxy §7) ──
+   Единственные значки на весь диск: вы здесь, ядро, обжитый круг летописи,
+   кромка опасности на r=40, Ялта, ваши спички и области слухов. Тап по диску —
+   туда, на обычный зум: обзор — чтобы найти, куда смотреть, а не чтобы лететь */
+function mapOverview(V,cell,px,py){
+  const at=(sx,sy)=>({x:W/2+(sx-V.x)*cell,y:H/2+(sy-V.y)*cell});
+  const c0=at(0,0);
+  ctx.save();
+  ctx.lineWidth=1;
+  ctx.strokeStyle="rgba(242,178,92,.35)";ctx.setLineDash([3,5]);
+  ctx.beginPath();ctx.arc(c0.x,c0.y,(typeof CHRON_R==="number"?CHRON_R:10)*cell,0,TAU);ctx.stroke();
+  ctx.strokeStyle="rgba(255,107,87,.35)";ctx.setLineDash([2,7]);
+  ctx.beginPath();ctx.arc(c0.x,c0.y,40*cell,0,TAU);ctx.stroke();ctx.setLineDash([]);
+  mapFont(9);ctx.textAlign="center";
+  ctx.fillStyle="rgba(242,178,92,.7)";ctx.fillText("ОБЖИТЫЙ КРУГ",c0.x,c0.y-(typeof CHRON_R==="number"?CHRON_R:10)*cell-5);
+  ctx.fillStyle="rgba(255,107,87,.65)";ctx.fillText("КРОМКА · ДАЛЬШЕ ОПАСНО",c0.x,c0.y+40*cell+14);
+  ctx.fillStyle="rgba(207,227,234,.6)";ctx.fillText("ЯДРО",c0.x,c0.y+14);
+  if(typeof yaltaAt==="function"){const y=yaltaAt(),q=at(y.sx,y.sy);
+    ctx.strokeStyle="rgba(217,194,122,.8)";ctx.beginPath();ctx.arc(q.x,q.y,4,0,TAU);ctx.stroke();
+    ctx.fillStyle="rgba(217,194,122,.8)";ctx.fillText("ЯЛТА",q.x,q.y-8);}
+  if(typeof mapRumoursDraw==="function"){if(typeof mapLayerOn!=="function"||mapLayerOn("rumours"))mapRumoursDraw(V,cell);}
+  if(typeof mapMarksDraw==="function")mapMarksDraw(V,cell);
+  /* вы здесь — крупно, иначе на диске в полторы сотни секторов себя не найти */
+  ctx.fillStyle="rgba(127,230,216,.95)";ctx.beginPath();ctx.arc(px,py,4,0,TAU);ctx.fill();
+  ctx.strokeStyle="rgba(127,230,216,.5)";ctx.beginPath();ctx.arc(px,py,10,0,TAU);ctx.stroke();
+  mapFont(10);ctx.fillStyle="rgba(127,230,216,.95)";ctx.fillText("ВЫ ЗДЕСЬ · "+G.sx+":"+G.sy,px,py-16);
+  ctx.restore();
+}
+function mapOverTap(x,y){
+  const cell=mapCell(),V=mapViewC();
+  G.mapView={x:Math.round(V.x+(x-W/2)/cell),y:Math.round(V.y+(y-H/2)/cell)};
+  G.mapZoom=3;sfx("ui");
+}
 function drawMap(){
   const st=stat();
   /* заливки листа нет: небо — первый слой кадра на видеокарте, непрозрачное (17z3) */
@@ -132,6 +170,10 @@ function drawMap(){
   MAPGPU.lamp={x:px,y:py,r:jr};   /* круг прыжка светит в самом небе (17z3) */
   drawGalaxy(V,cell);
   mapRhumbPaint(ctx,W,H,px,py);
+  if(mapOverOn()){   /* обзор: весь диск, лист погашен (M450) */
+    if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);
+    mapOverview(V,cell,px,py);return;
+  }
   drawGalaxyStars(V,cell);   /* звёзды галактики — предметы мира, не мерцают (M448) */
   if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);   /* рукава и туманности по имени (M449) */
   if(typeof drawRailMap==="function")drawRailMap(V,cell);   /* железная дорога бледно, 1:1 с листом (M470) */
@@ -528,7 +570,7 @@ function mapJump(){
 }
 function updateMap(dt){
   if(!G.sel)return;
-  G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
+  G.prompt=G.mapClean?"":mapOverOn()?"ОБЗОР ГАЛАКТИКИ · ТАП — ТУДА · ЩИПОК — БЛИЖЕ":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
     const {dsel,cost,bad}=mapJump();
     if(G.mapPeek)say("Сначала отстыкуйтесь");
@@ -555,7 +597,7 @@ function jump(cost){
    станции, а не у входа) и что об этом сказано. */
 function arriveSystem(sx,sy,o){
   o=o||{};
-  const fromBy=(typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,G.sy):null;   /* чья земля остаётся за кормой (M453) */
+  const fromBy=(typeof stampKeyAt==="function")?stampKeyAt(G.sx,G.sy):null;   /* чья земля остаётся за кормой (M453) */
   G.sx=sx;G.sy=sy;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   if(G.course&&G.course.sx===G.sx&&G.course.sy===G.sy)G.course=null;   /* прибыли — курса больше нет (M321) */
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)

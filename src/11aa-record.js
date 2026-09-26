@@ -32,6 +32,20 @@ function recordAdd(author,text){
   return e;
 }
 function recordYears(){const R=recordAll();return Math.floor((celDay()-R.t0)/365);}
+/* ── отпускные (P14): 28 дней за год неба, копятся со стажем. Санаторий
+   списывает свои три дня (29h); что не отгулял до комиссии — бухгалтерия
+   выплачивает при уходе на пенсию. R.vac — сколько дней уже отгулял ── */
+const RECORD_VAC_YEAR=28,RECORD_VAC_PAY=40;
+function recordVac(){
+  const R=recordAll();
+  const got=Math.floor(Math.max(0,celDay()-R.t0)*RECORD_VAC_YEAR/365),used=R.vac|0;
+  return {got,used,left:got-used};
+}
+function recordVacUse(days){const R=recordAll();R.vac=(R.vac|0)+(days|0);}
+/* печать или подпись: учреждение ставит круглую печать, человек расписывается.
+   Люди в книжке — те, у кого инициалы, и домашние */
+const RECORD_PEOPLE=["Вега","попугай","замполит","неизвестные"];
+function recordSeal(a){return /\s[А-ЯЁ]\.\s?[А-ЯЁ]?\.?$/.test(a)||RECORD_PEOPLE.includes(a)?"sign":"seal";}
 function recordByAuthor(a){return recordAll().e.filter(x=>x.a===a);}
 /* доска почёта: станции с тремя и больше записями */
 function recordHonour(){
@@ -63,6 +77,13 @@ function recordGround(){
   const R=recordAll();if(R.grounded)return false;
   R.grounded=1;
   recordAdd("медкомиссия","к полётам не допущен. Стаж "+recordYears()+" лет. Пенсия.");
+  /* неотгулянный отпуск — деньгами, строкой бухгалтерии (P14) */
+  const V=recordVac();
+  if(V.left>0){
+    const pay=earn(V.left*RECORD_VAC_PAY,"отпуск");
+    recordVacUse(V.left);
+    recordAdd("бухгалтерия","компенсация за неиспользованный отпуск: "+V.left+" дн. · "+pay+" кр.");
+  }
   thingAdd("record","Заключение комиссии","«к полётам не допущен» · стаж "+recordYears()+" лет · флот летает без вас · вы дома"+(G.vega&&G.vega.stage===4?" · с Вегой и двумя попугаями":""));
   logAdd("warn","Медкомиссия: к полётам не допущен. Пенсия.");
   say("МЕДКОМИССИЯ\nк полётам не допущен\n\nпенсия",400);
@@ -87,8 +108,21 @@ function renderRecord(box){
   box.textContent="";
   const R=recordAll();
   tableRow(box,"head","","ТРУДОВАЯ КНИЖКА · "+recordPilot().toUpperCase()+" · СТАЖ "+recordYears()+" "+pl3(recordYears(),"ГОД","ГОДА","ЛЕТ")+(R.grounded?" · ПЕНСИЯ":""));
+  /* обложка документа: серия и номер от зерна, и зачем он вообще (P14) */
+  const hn=hashi(R.t0|0,0xB00C,1)>>>0,ser="АТ-"+"IVX"[hn%3]+" № "+String(hn%9000000+1000000);
+  tableRow(box,"dim","","серия "+ser+" · записи делают другие: станция, институт, люди. Три записи от станции — ваше имя на её доске почёта. Через "+RECORD_YEARS+" лет неба — медкомиссия");
   const H=recordHonour();
   if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
+  /* кому осталось чуть-чуть: одна-две записи до доски */
+  const by={};for(const x of R.e)by[x.a]=(by[x.a]|0)+1;
+  const near=Object.keys(by).filter(a=>by[a]<3&&recordSeal(a)==="seal").sort((a,b)=>by[b]-by[a]).slice(0,3);
+  if(near.length)tableRow(box,"dim","","до доски почёта: "+near.map(a=>a+" — ещё "+(3-by[a])).join(" · "));
+  /* отпуск и концовка — на странице, а не только в голове (P14) */
+  const V=recordVac();
+  tableRow(box,"sec","","ОТПУСК · НАКОПЛЕНО "+V.got+" ДН. · ОТГУЛЯНО "+V.used+" · ОСТАТОК "+V.left);
+  if(R.grounded)tableRow(box,"sec","","ЗАКЛЮЧЕНИЕ КОМИССИИ · К ПОЛЁТАМ НЕ ДОПУЩЕН · ФЛОТ ЛЕТАЕТ БЕЗ ВАС");
+  else{const y=RECORD_YEARS-recordYears();
+    tableRow(box,"dim","",y>0?"до медкомиссии: "+y+" "+pl3(y,"год","года","лет")+" неба":"медкомиссия ждёт на стойке ядра дома");}
   if(typeof stampPage==="function")stampPage(box);   /* первая настоящая страница документа (M453) */
   if(R.udar)tableRow(box,"sec","","ОТМЕТКИ «УДАРНИК»: "+R.udar+" · госзаказы сданы по твёрдой цене");   /* M503 */
   if(typeof socPage==="function")socPage(box);   /* общества и льготы (M512) */
@@ -103,7 +137,8 @@ function renderRecord(box){
        Через время суток растут (скачки часов — 11ab-institute и другие), и
        «день 11» уже не помещался; голое число помещается всегда */
     const em=document.createElement("em");em.textContent=String(x.d);
-    const sp=document.createElement("span");sp.innerHTML="<b>"+x.a+"</b> — "+x.s;
+    const sp=document.createElement("span");sp.innerHTML="<b>"+x.a+"</b> — "+x.s+
+      (recordSeal(x.a)==="seal"?"<i class='rec-seal'>м.п.</i>":"<i class='rec-sign'>"+x.a.slice(0,3)+"~</i>");
     row.appendChild(em);row.appendChild(sp);box.appendChild(row);
   }
 }

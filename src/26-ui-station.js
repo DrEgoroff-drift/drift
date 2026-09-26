@@ -23,7 +23,9 @@ function openStationBody(){
   toggleSos(false);rescueDockCool();   /* окно выходов не висит устаревшим за станцией; причал остужает (16c) */
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
-  if(typeof lawDock==="function")lawDock();   /* закон земли: норма, пошлина (M456) */
+  if(typeof railSealDock==="function")railSealDock();   /* пломбу снимает инспектор (M508) */
+  if(typeof lawDock==="function")lawDock();
+  if(typeof socDock==="function")socDock();   /* обязанности и льготы обществ (M512) */   /* закон земли: норма, пошлина (M456) */
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
   if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
@@ -70,7 +72,8 @@ function openStationBody(){
   if(typeof expPaxDock==="function")expPaxDock();   /* попутчик сошёл (M156) */
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
-  document.getElementById("stName").textContent=G.st.name.toUpperCase();
+  /* вывеска — по хозяину земли (M489): сменился флаг — перекрасили */
+  document.getElementById("stName").textContent=((typeof ownerSign==="function"&&!G.st.settle)?ownerSign(G.st.name,G.sx,G.sy):G.st.name).toUpperCase();
   /* модули названы прямо в шапке: снаружи игрок видит их силуэты, внутри —
      читает списком. Услуги при этом по-прежнему от типа станции, модули
      ничего не открывают (17a-station-mod) */
@@ -99,7 +102,8 @@ function openStationBody(){
   {
     const k=document.getElementById("stKind");
     const flag=(typeof occPowerHere==="function"&&occPowerHere())?" · ФЛАГ СМЕНИЛСЯ":"";
-    const short=G.st.kind+" · система "+G.sys.name+flag;
+    const gl=powerGlyph(chronOwnerKey(G.sx,G.sy));   /* знак хозяина земли у имени системы (M458) */
+    const short=G.st.kind+" · система "+(gl?gl+" ":"")+G.sys.name+flag;
     k.dataset.short=short;k.dataset.full=short+"\n"+stMore;
     k.classList.remove("more");
     /* раскрытие — чип, а не слово: «ещё ▾» тусклым 9 px читалось частью
@@ -282,7 +286,9 @@ function repairBtns(){
     bt=document.createElement("button");bt.id="bTape";bt.className=bf.className;
     bt.addEventListener("click",()=>{tapeBuy();repairBtns();});bf.parentNode.insertBefore(bt,bf.nextSibling);
   }
-  if(bt)bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE+(tapeRolls()?" · В ЗАПАСЕ "+tapeRolls():"");
+  /* подпись постоянная, запас — фишкой в углу: иначе кнопка росла с каждым рулоном и толкала соседей */
+  if(bt){const n=tapeRolls();bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE;bt.title=n?"в запасе рулонов: "+n:"";
+    if(n){const i=document.createElement("i");i.textContent=n>99?"99+":n;bt.appendChild(i);}}
 }
 document.getElementById("bRepairHalf").addEventListener("click",()=>repairDo(.5));
 document.getElementById("bRepair").addEventListener("click",()=>repairDo(1));
@@ -555,7 +561,7 @@ function renderTabBody(){
       /* <b> внутри .nm — блок; внутри строки цифр цвет даёт span, иначе строка ломается */
       r.appendChild(el("div","nm","<b>"+c.name+"</b><s>"+CREW_SPEC[c.spec].ru+" · "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
         " · "+(S?"на «"+S.ru+"»":"корабль не выдан")+" · "+mood+st8+
-        "<br>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+"</s>"+
+        "<br>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+(kulibOf(c)?" · кулибин":"")+"</s>"+
         "<s class='fig'>итог <span style='color:"+(net>=0?"#8fd08a":"#ff6b57")+"'>"+net.toLocaleString("ru")+" кр</span>"+
         " · заработал "+(c.earned||0).toLocaleString("ru")+" · съел "+(c.spent||0).toLocaleString("ru")+
         (c.debt>0?" · <span style='color:#ff6b57'>долг "+Math.round(c.debt)+"</span>":"")+
@@ -644,7 +650,7 @@ function renderTabBody(){
         CREW_SPEC[m.spec].ru+"</span>"+(m.pax?" <span style='color:var(--phos)'>· спасён с баржи</span>":"")+"<s>"+
         (m.pax&&m.story?"<i style='color:var(--phos)'>"+m.story+"</i><br>":"")+
         CREW_SPEC[m.spec].note+
-        "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+
+        "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+(kulibOf(m)?"<br>кулибин — изолентой и ломом по рации, рулон не нужен":"")+
         "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+
         /* цена расставания называется ДО найма: «РАСЧЁТ 298» при найме за 176
            читался ловушкой, когда открывался уже на карточке (плейтест 30.08.2026) */

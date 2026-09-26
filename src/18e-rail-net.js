@@ -144,15 +144,54 @@ function railStopsOf(line){
   out.sort((a,b)=>a.u-b.u);
   return out;
 }
+/* ── ветка к площадке (M475, «продление линии») ──
+   Путевой пост холдинга (E, 12ac): ГЛАВТРАССА тянет от ближайшей станции
+   линии, не дальше RAIL_SPUR_MAX, прямую ветку в две остановки к вашей
+   площадке. Сеть из сида не меняется: ветки ложатся поверх отдельными
+   линиями и снимаются, когда поста нет. Имя ветке даёт генератор имён */
+const RAIL_SPUR_MAX=8;
+function railSpurSig(){
+  const t=Math.floor(((typeof G==="object"&&G&&G.t)||0)/60);
+  if(railSpurSig.t===t&&railSpurSig.hold===(G&&G.hold))return railSpurSig.v;
+  railSpurSig.t=t;railSpurSig.hold=G&&G.hold;let v="";
+  if(G&&G.hold&&typeof bldHas==="function")for(const k in G.hold){const p=k.split(",").map(Number);if(bldHas(p[0],p[1],"railpost"))v+=k+";";}
+  return railSpurSig.v=v;
+}
+function railSpurLine(N,key){
+  if(N.at[key])return null;   /* площадка и так на линии */
+  const [sx,sy]=key.split(",").map(Number);
+  let best=null,bd=RAIL_SPUR_MAX+1e-9;
+  for(const k in N.at){const p=k.split(",").map(Number),d=Math.hypot(p[0]-sx,p[1]-sy);if(d<bd){bd=d;best=p;}}
+  if(!best)return null;
+  const a={sx:best[0],sy:best[1]},nm=genName(rng(hashi(sx,sy,0x5B0B)));
+  return {id:"s:"+key,kind:"radial",spur:true,num:0,pts:[[a.sx,a.sy],[sx,sy]],anchors:[],ru:"Ветка «"+nm+"»",
+    stops:[{sx:a.sx,sy:a.sy,u:0,anchor:true,halt:Math.hypot(a.sx,a.sy)>RAIL_RIM},{sx,sy,u:1,anchor:true,halt:true}]};
+}
+function railSpurApply(N){
+  const sig=railSpurSig();if(N.spurSig===sig)return N;
+  for(let i=N.lines.length-1;i>=0;i--){const l=N.lines[i];if(!l.spur)continue;
+    for(const s of l.stops){const k=s.sx+","+s.sy,A=N.at[k];if(!A)continue;const j=A.indexOf(l.id);if(j>=0)A.splice(j,1);if(!A.length)delete N.at[k];}
+    delete N.byId[l.id];N.lines.splice(i,1);}
+  N.spurSig=sig;
+  for(const key of sig.split(";")){if(!key)continue;
+    const l=railSpurLine(N,key);if(!l)continue;
+    N.lines.push(l);N.byId[l.id]=l;
+    for(const s of l.stops){const k=s.sx+","+s.sy;(N.at[k]||(N.at[k]=[])).push(l.id);}
+    /* дело холдинга в журнал — один раз на пост */
+    const B=(typeof bldEntry==="function")?bldEntry(key,"railpost"):null;
+    if(B&&!B.said){B.said=1;if(typeof logAdd==="function")logAdd("dim","ГЛАВТРАССА: проложена "+l.ru+" · от «"+getSystem(l.stops[0].sx,l.stops[0].sy).name+"» до вашей площадки · полустанок ваш");}
+  }
+  return N;
+}
 function railNet(){
-  if(RAIL_NET)return RAIL_NET;
+  if(RAIL_NET)return railSpurApply(RAIL_NET);
   const lines=railBuildLines(),at={};
   for(const l of lines){
     l.stops=railStopsOf(l);
     for(const s of l.stops){const k=s.sx+","+s.sy;(at[k]||(at[k]=[])).push(l.id);}
   }
   const byId={};for(const l of lines)byId[l.id]=l;
-  return RAIL_NET={lines,at,byId};
+  return railSpurApply(RAIL_NET={lines,at,byId});
 }
 /* что за станция в этой системе: линии через неё; пересадка — две и больше */
 function railStation(sx,sy){
@@ -173,7 +212,7 @@ function railNetPartial(){
   if(P.i>=P.lines.length){
     const at={},byId={};
     for(const l of P.lines){byId[l.id]=l;for(const s of l.stops){const k=s.sx+","+s.sy;(at[k]||(at[k]=[])).push(l.id);}}
-    RAIL_NET={lines:P.lines,at,byId};RAIL_PART=null;return RAIL_NET.lines;
+    RAIL_NET={lines:P.lines,at,byId};RAIL_PART=null;railSpurApply(RAIL_NET);return RAIL_NET.lines;
   }
   return P.lines.slice(0,P.i);
 }

@@ -258,7 +258,9 @@ TEST_SUITES.push(()=>suite("жизнь дороги: посылка, проез�
   /* пломба: продать нельзя до выхода */
   G.railSeal=1;G.cargo.iron=5;
   eq(sellCargo(G.sys,"iron",1)|0,0,"опломбированный трюм не продаётся");
-  railLifeExit({sx:9999,sy:9999});eq(G.railSeal,0,"пломба снята на выходе");
+  railLifeExit({sx:9999,sy:9999});eq(G.railSeal,1,"пломба держится после выхода (M508)");
+  eq(railSealPirates(4),2,"под пломбой налёт вполовину");
+  railSealDock();eq(G.railSeal,0,"инспектор снял пломбу у причала");
   clockSet(base);RAIL_LIFE={pax:null,tea:false,teaDone:false};
 }));
 TEST_SUITES.push(()=>suite("госзаказ на щите: план, твёрдая цена, УДАРНИК (M503)",()=>{

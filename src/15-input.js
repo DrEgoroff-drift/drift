@@ -481,6 +481,7 @@ function tap(sxp,syp){
     const rc=cvsRect();
     if(spaTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
   }
+  if(G.mode==="map"&&typeof mapOverOn==="function"&&mapOverOn()){mapOverTap(sxp,syp);return;}   /* обзор: тап — туда (M450) */
   if(G.mode==="map"){
     const cell=mapCell(),R=mapRange();
     const V=(typeof mapViewC==="function")?mapViewC():{x:G.sx,y:G.sy};

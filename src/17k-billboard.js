@@ -28,13 +28,41 @@ function bbDeal(){
   }
   return best;
 }
+/* строка сводки голосом хозяина (M460): последнее, что рассказывают, не старше смены */
+const BB_NEWS={gt:"СВОДКА: ",co:"НОВОСТИ ПАРТНЁРА™: ",or:"ЦИРКУЛЯР № ",km:"ГАЗЕТА «КОММУНА»: ",ra:"ГОВОРЯТ: ",hf:"FEED // "};
+function bbNews(by){
+  const L=G.news;if(!L||!L.length)return null;
+  const n=L[L.length-1];if(!n||!n.ru||now()-n.t>HOLD_SHIFT)return null;
+  let t=String(n.ru).toUpperCase();if(t.length>160)t=t.slice(0,158)+"…";
+  const pre=BB_NEWS[by]||BB_NEWS.gt;
+  return by==="or"?pre+(1+(hashi(n.t|0,7,0x0C)>>>0)%400)+": "+t:pre+t;
+}
+/* строка владения: ваша станция рядом сама себя рекламирует */
+function bbHold(by){
+  if(typeof rungOfCached!=="function")return null;
+  let best=null;
+  for(let dx=-3;dx<=3;dx++)for(let dy=-3;dy<=3;dy++){
+    const sx=G.sx+dx,sy=G.sy+dy;if(!starAt(sx,sy))continue;
+    const s=getSystem(sx,sy);if(!s||!s.station||rungOfCached(sx,sy)<1)continue;
+    const d=Math.max(Math.abs(dx),Math.abs(dy));if(!best||d<best.d)best={d,s};
+  }
+  if(!best)return null;
+  const nm=((G.names&&G.names[best.s.key])||best.s.station.name).toUpperCase();
+  return by==="co"?"«"+nm+"» — ТОПЛИВО ЕСТЬ™ · ОДОБРЕНО ПАРТНЁРОМ":
+    by==="hf"?nm+" // FUEL:OK":
+    "СТАНЦИЯ «"+nm+"» — ТОПЛИВО ЕСТЬ"+(best.d?" · "+best.d+" "+pl3(best.d,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"):" · ВЫ ЗДЕСЬ");
+}
 function bbLine(by){
   const key=G.sx+","+G.sy+","+Math.floor(G.t/600);
   if(BB_CACHE.key===key)return BB_CACHE.line;
   const D=bbDeal();let L;
   /* ГЛАВТРАССА через раз вешает план (M503) */
   const gp=(by==="gt"&&(Math.floor(G.t/600)&1)&&typeof gosBbLine==="function")?gosBbLine():null;
+  /* три строки по очереди (M460): цена, сводка, ваше владение — пустая уступает цене */
+  const slot=Math.floor(G.t/600)%3,N=slot===1?bbNews(by):null,H=slot===2?bbHold(by):null;
   if(gp)L=gp;
+  else if(N)L=N;
+  else if(H)L=H;
   else if(!D)L="СВОБОДНОЕ МЕСТО ДЛЯ ВАШЕЙ РЕКЛАМЫ";
   else{
     const g=RES[D.k].ru.toUpperCase(),n=D.d+" "+pl3(D.d,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ");

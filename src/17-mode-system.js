@@ -314,6 +314,7 @@ function updateSystem(dt){
   if(typeof peaceTick==="function")peaceTick(sh,dt);   /* ремонтный буксир Рассвета (M455) */
   if(typeof supportTick==="function"&&(G.t|0)%60===0)supportTick();
   if(typeof stapelTick==="function"&&(G.t|0)%60===0)stapelTick();
+  if(typeof kpTick==="function"&&(G.t|0)%60===30)kpTick();   /* посылки: доля кооператива, возвраты (M492) */
   if(typeof scarTick==="function"&&(G.t|0)%3600===0)scarTick();
   if(typeof subTick==="function"&&(G.t|0)%60===0)subTick();
   if(typeof recallTick==="function"&&(G.t|0)%60===0)recallTick();   /* отзыв партии Хай-Фронта (M509) */   /* подписка: взнос на границе смены (M487) */   /* течёт бак: −1 % в минуту (M482) */   /* стапель: заказ готов — строка в почте (M481) */   /* техподдержка решает заявки (M495) */   /* ловушки антивещества: питание или процент в минуту (M468) */
@@ -425,6 +426,10 @@ function updateSystem(dt){
         let ln="ДЕЙСТВИЕ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
         if(G.tech.has("deep")&&near.res.length)
           ln+="\nНЕДРА: "+near.res.map(k=>RES[k].ru).join(", ");
+        /* дальняя залежь с орбиты — диапазоном прибора (M466): удача решается
+           до посадки, по показанию, и хороший прибор там — настоящее преимущество */
+        if(typeof farReadLine==="function"){const pi=farPlanetIdx(near),fl=pi>=0?farReadLine(farHere(pi)):"";
+          if(fl)ln+="\nЗАЛЕЖЬ: "+fl;}
         /* формуляр планеты (M400, §21.3): с орбиты — три слова и ни одного
            числа; зонд за 300 кр показывает пять ручек из восьми. Заложить
            базу вслепую по-прежнему можно, и это самая дорогая экономия в игре */
@@ -739,7 +744,7 @@ function drawSysHud(zx,zy,sh,sys,U){
      следующее действие; имена — как написаны, регистр как в предложении */
   const marks=[{x:0,y:0,c:"#c3d0d8",l:"Звезда",t:{kind:"star"},k:"star"}];
   if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
-    l:sys.station.name,t:{kind:"station"},k:"station"});
+    l:sys.station.name+((g=>g?" · "+g:"")(powerGlyph(chronOwnerKey(G.sx,G.sy)))),t:{kind:"station"},k:"station"});   /* знак хозяина земли — после имени: имя фишки как в таблицах (M458) */
   {
     let np=null,nd=1e18;
     for(const p of sys.planets){

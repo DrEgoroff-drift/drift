@@ -261,7 +261,8 @@ function hotelInteract(sh){
   const Ht=hotelHere();if(!Ht)return false;
   if(Math.hypot(sh.x-Ht.x,sh.y-Ht.y)>150)return false;
   const board=Ht.by==="gt"?" · МЕСТ НЕТ":"";
-  const shown=cue(Ht.name+board+"\nДЕЙСТВИЕ — К СТОЙКЕ",CUE_ACT);
+  const shop=(G.cargo.pearl|0)>0?" · ЛАВКА БЕРЁТ ЖЕМЧУГ":"";   /* лавка гостиницы — едок жемчуга (M469) */
+  const shown=cue(Ht.name+board+"\nДЕЙСТВИЕ — К СТОЙКЕ"+shop,CUE_ACT);
   if(shown&&actEdge)hotelDesk(Ht);
   return true;
 }
@@ -276,5 +277,17 @@ function hotelDesk(Ht){
     Ht.by==="ra"?"«Ложись где свободно, брат.»":"«Ваш номер рассчитан.»";
   logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+HOTEL_NIGHT+" кр")+" · корпус +"+heal+" за ночь стоянки");
   say(greet+(free?"\n«…потом заплатите»":""),150);
+  hotelShop(Ht);
   if(typeof kinoHere==="function"&&kinoHere())peopleLine("в холле афиша: сегодня кино. Идите, пока не началось.","портье",false);
+}
+/* лавка гостиницы (M469, DESIGN-resources §2): берёт жемчуг пустоты на сувениры
+   для постояльцев — до трёх зёрен за визит, в полторы цены местной приёмки.
+   Съеденное лавкой рынок не видит: это не сдача, а потребление */
+const HOTEL_SHOP_N=3,HOTEL_SHOP_MUL=1.5;
+function hotelShop(Ht){
+  const q=Math.min(HOTEL_SHOP_N,G.cargo.pearl|0);if(q<=0||!G.sys||!G.sys.station)return 0;
+  const p=Math.round(marketFor(G.sys).pearl*HOTEL_SHOP_MUL),sum=q*p;
+  G.cargo.pearl-=q;earn(sum,"лавка гостиницы");
+  logAdd("good",Ht.name+", лавка: жемчуг ×"+q+" · +"+sum.toLocaleString("ru")+" кр · «на брелоки постояльцам»");
+  return q;
 }

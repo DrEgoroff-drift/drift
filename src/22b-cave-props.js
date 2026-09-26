@@ -135,7 +135,24 @@ function caveProps(C){
     if(roll<.45)out.push({k:"bones",x:e.x,y,s:.7+r()*.5,face:r()<.5?1:-1,seed:(r()*1e9)|0});
     else if(roll<.75)out.push({k:"crate",x:e.x,y,seed:(r()*1e9)|0});
   }
+  /* натёки янтаря там, где он есть в залежи системы (M466) */
+  if(typeof farCaveAmber==="function"&&G.surf&&G.surf.p)for(const q of farCaveAmber(C,G.surf.p))out.push(q);
   return C.props=out;
+}
+/* натёк янтаря: тёплая капля на стене, светится изнутри — единственное
+   тёплое пятно в холодной пещере, его видно из соседнего хода */
+function caveDrawAmber(p,sx,sy){
+  if(p.took)return;
+  const t=now()/1000,g=.55+.15*Math.sin(t*1.3+p.seed%7);
+  const R=ctx.createRadialGradient(sx,sy-6,0,sx,sy-6,26);
+  R.addColorStop(0,"rgba(240,169,60,"+(.35*g).toFixed(3)+")");R.addColorStop(1,"rgba(240,169,60,0)");
+  ctx.fillStyle=R;ctx.fillRect(sx-26,sy-32,52,52);
+  ctx.fillStyle="#b86a1c";
+  ctx.beginPath();ctx.ellipse(sx,sy-4,7,5,0,0,TAU);ctx.fill();
+  ctx.fillStyle="#f0a93c";
+  ctx.beginPath();ctx.ellipse(sx-1,sy-6,4.5,3.5,-.3,0,TAU);ctx.fill();
+  ctx.fillStyle="rgba(255,236,190,.8)";
+  ctx.beginPath();ctx.arc(sx-2.5,sy-7.5,1.2,0,TAU);ctx.fill();
 }
 
 function caveDrawBones(p,sx,sy){
@@ -245,5 +262,6 @@ function drawCaveProps(C,camx,camy){
     else if(p.k==="crate")caveDrawCrate(p,sx,sy);
     else if(p.k==="camp")caveDrawCamp(p,sx,sy);
     else if(p.k==="tally")caveDrawTally(p,sx,sy);
+    else if(p.k==="amber")caveDrawAmber(p,sx,sy);
   }
 }

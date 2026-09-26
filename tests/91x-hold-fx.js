@@ -2,15 +2,15 @@
 TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одна вещь каждая, и её кто-то спрашивает",()=>{
   resetWorld();
   const FX=BLD_KEYS.filter(id=>"EFGHI".indexOf(BLD[id].fam)>=0);
-  ok(FX.length===26,"семей E–I — 26 строк ("+FX.length+")");
+  ok(FX.length===27,"семей E–I — 27 строк ("+FX.length+")");
   ok(FX.every(id=>BLD[id].fx===id&&BLD[id].note&&BLD[id].cost&&!Object.keys(BLD[id].makes).length),"у каждой свой fx, слово о нём, цена и ничего в выпуске");
-  ok(BLD_KEYS.length===82,"всего построек — 82 ("+BLD_KEYS.length+")");
+  ok(BLD_KEYS.length===83,"всего построек — 83 ("+BLD_KEYS.length+")");
   const rus=BLD_KEYS.map(id=>BLD[id].ru);
-  ok(new Set(rus).size===82,"имена построек не повторяются");
+  ok(new Set(rus).size===83,"имена построек не повторяются");
   const s=siteTestStation();
   if(!ok(s,"станция с площадкой нашлась"))return;
   siteTestOpen(s);
-  const H=holdOf(s.key);H.bld={};
+  const H=holdOf(s.key);H.bld={};railSpurSig.t=-1;
   const stand=id=>{H.bld[id]={lvl:1,t0:now(),ready:now()-1,my:{},got:{}};};
   G.sys=s;G.sx=s.sx;G.sy=s.sy;G.st=s.station;G.mode="dock";
   bldHas.asked={};
@@ -80,10 +80,14 @@ TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одн
   stand("radiomast");const R=holdRelay(s.sx,s.sy);ok(!!R&&/МАЧТА-/.test(R.call)&&relayOf(s.sx,s.sy)&&relayOf(s.sx,s.sy).own===1,"радиомачта: своя мачта слышна как ретранслятор "+(R?R.call:""));
   /* I6 метеостанция */
   stand("meteo");const ML=holdMeteoLines(s);ok(ML.length===(s.planets||[]).filter(p=>p.type!=="gas").length,"метеостанция: погода на "+ML.length+" телах известна с доски");
+  /* E6 путевой пост (M475): ветка от ближайшей станции линии к площадке */
+  RAIL_NET=null;stand("railpost");railSpurSig.t=-1;{const RN=railNet(),sp=RN.lines.find(l=>l.spur);
+    ok(!!RN.at[s.key]&&(!sp||(/^Ветка «/.test(sp.ru)&&sp.stops.length===2&&Math.hypot(sp.stops[0].sx-s.sx,sp.stops[0].sy-s.sy)<=RAIL_SPUR_MAX)),"путевой пост: площадка на линии");
+    delete H.bld.railpost;railSpurSig.t=-1;railNet();ok(!railNet().lines.some(l=>l.spur),"поста нет — ветки нет");}
   /* каждую спросили */
   const asked=Object.keys(bldHas.asked);
   const missing=FX.filter(id=>asked.indexOf(id)<0);
-  ok(!missing.length,"все 26 эффектов спрошены через bldHas"+(missing.length?" · не спрошены: "+missing.join(", "):""));
+  ok(!missing.length,"все 27 эффектов спрошены через bldHas"+(missing.length?" · не спрошены: "+missing.join(", "):""));
   /* стройка показывает их словом, а не бункером */
   ok(BLD_FAM_KEYS.length===9&&!bldIsShop(BLD.nakop)&&bldIoTxt(BLD.nakop)===BLD.nakop.note,"в стройке строка E–I говорит, что делает");
   ok(/нужна станция/.test(bldAtWhy(getSystem(s.sx,s.sy),BLD.branch))||s.station.stype==="sci","филиал — только на научной станции");

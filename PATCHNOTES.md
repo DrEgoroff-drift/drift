@@ -6,6 +6,315 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.480.0 - stages 2 to 5: whose land, the road, the ship, the voice and the joke
+
+- **M453: the stamp page can be filled.** Ялта now gives its own round stamp (six signatures in a ring, weapons
+  sealed). That also makes the diplomatic passport reachable: it wanted all six powers and Ялта, and Ялта never
+  stamped. The pirates' scratch «ГОНИ ГРУЗ» lands on entering a system with a pirate base. The land under a base
+  stays whose it was, so the scratch comes 1.3 s after the power's stamp, never instead of it. The empty cells
+  say where to go (Ялта's sector, «царапина у пиратской базы»). Stamps have an uneven ink grain; the receipt has
+  none. `stampOwnerAt` still answers «whose land» for the laws and names; the stamp asks `stampKeyAt`.
+- **P14: the record book is a document.** A series and number, one line on what it is for (records are made by
+  others; three from a station put you on its board of honour; after 12 years of sky, the medical board). Stations
+  one or two records short of the board are named. Leave: 28 days per year of service, the sanatorium takes its
+  three, and at the medical board the unused days are paid out (40 кр a day) with a line from «бухгалтерия». The
+  page says how many years remain to the board, or shows the board's conclusion. Institutions' entries carry a
+  round «м.п.» seal, people's a hand signature.
+
+- **M454: the station is built by the land's owner, in the builder's hand.** A station's builder used to be
+  picked from the system's seed, so a station said nothing about whose land it stood on. Now it is the owner
+  of the land; one station in five is foreign-built, and the wild builds whatever it gets. The builder's
+  grammar reaches past the plate to every module and the core. The module hulls take the builder's ground. The
+  profile law rounds the core's ends for Компания, Коммуна and Хай-Фронт and keeps the right angle for
+  ГЛАВТРАССА and Орднунг. Each builder marks its seams: Орднунг's black numbered ribs now run over the modules,
+  not hidden under them; ГЛАВТРАССА a stencil stripe and number; Компания a logo band; Коммуна an arc of warm
+  windows; Рассвет a patch of other paint; Хай-Фронт white, light from under, the odd red dot. The joint where
+  a module meets its rod is drawn in the hull grammar (clamp, flush, flange, fillet, weld, gap). The picture is
+  a draft for the graphics pass.
+
+- **M450: the galaxy overview.** The map pinches past zoom 5, up to 14. There the sheet of systems goes out:
+  its per-frame loop cannot walk fifteen thousand sectors. What remains is the whole disk with its arm and nebula
+  names, and the only glyphs on it: «ВЫ ЗДЕСЬ» with your address, the core, the settled circle, the danger rim
+  at r = 40, Ялта (where its stamp is), your matches and rumour areas. A tap on the disk takes the map there at
+  zoom 3; the prompt line says so. The overview finds where to look; it does not jump.
+
+- **M458: borders on the map in the owner's pattern.** Where a sector's owner differs from its neighbour's, each
+  side draws its half of the edge just inside its own cell, in its own pattern: ГЛАВТРАССА a chain of tiny stars,
+  Компания a thin line with rings, Орднунг a precise dash with ticks (every third one long), Коммуна a wave,
+  Рассвет uneven dashes with small suns, Хай-Фронт dots. Two powers meeting read as two patterns side by side;
+  against the wild, one. Where they are at war the red front stays instead. Far out, where no pattern fits, a
+  thin line in the owner's colour. The emblem chip grows at near zoom to a readable 14–18 px. The station's
+  compass chip and the station header carry the land owner's glyph (★ ◎ ▦ ∿ ☼ ●). The picture is a draft.
+
+- **M466: янтарь in the cave, жемчуг on the hunt, the reading everywhere, the vein told.** A cave on a planet
+  with an янтарь deposit now has warm resin knots on its walls, at the branch ends and along both galleries;
+  walking up to one takes it. How many knots there are follows what is left in the deposit, so a worked cave is
+  poorer next time. A stunned beast's sample on a planet with a жемчуг deposit carries a few grains, until the
+  deposit runs out; a beast taken alive for the farm gives none. The planet's approach line reads «ЗАЛЕЖЬ:
+  осмий 40–160» from orbit, and the dig entry shows the instrument plate the belt already had. A new science,
+  «Линза тёмного стекла», halves every reading's spread; it costs data and one piece of тёмное стекло from the
+  hold. A struck жила is told: after one сводка (a shift) stations within twelve sectors carry the rumour
+  «жила — космический янтарь, говорят, на двадцать трюмов», and from then on the approach to that system has
+  one or two extra hulls. No new save field: a struck vein is a grade-3 deposit in `G.farTaken`, and the
+  strike time is the rush's (`G.rush`).
+
+- **M467: far goods on sale in the heart, rarely and dear.** Inside r 10, about one station in four puts out an
+  «ИЗ ДАЛИ» stall for three days: two to six units of one far good at three times what the same counter pays
+  for it. The lot is rolled from the station and the three-day window; what was bought is kept in the station's
+  market record, so no save field is new. A player who never goes out can still buy one piece of osmium for the
+  shipyard, and selling it straight back loses two thirds.
+
+- **M469: the eaters speak, and the hotel shop eats.** A far good's sell row no longer says «×1,5»; the eater
+  says who takes it and why: the Коммуна's jewellers' artel for янтарь, the Компания's «стойка роскоши™» for
+  жемчуг, Хай-Фронт's optics shop for тёмное стекло. At a yard the reactor shop takes солнечный газ, the
+  instrument shop белая руда, the armour shop осмий, the finishers нейтронная крошка. By land it is
+  ГЛАВТРАССА's armour shop for осмий, Орднунг's rail gangs for магнитная пыль and the дачный кооператив for
+  чернозём; any power's navy takes the traps. Without an eater the weigher keeps his line about the scales. The
+  hotel's shop buys up to three жемчуг per visit, at one and a half times the local counter; the desk prompt says
+  so before the tap, and the market never sees those grains.
+
+- **M470: «Край» and КУДА ВАМ on the scheme.** The paper scheme is now where the trip is chosen: a tap on a stop
+  opens one ticket button under the paper, «ДО «ЛУТИАЛ» · 3 ОСТ. · 20 КР», and a tap past the paper folds it. The
+  stops the ticket office sells from here wear a thin red ring. On every line that runs outward, the furthest
+  stop you have stood at is marked «КРАЙ» in red, and the line past it is drawn dashed, «не езжено», until you ride
+  further. What counts as stood at is the station visit count that already persists, so the save is untouched.
+  Stop names by the land owner (M489) were already in place.
+
+- **M471: the bare rim platform; the helm helps in the cone.** Past r 40 a stop is a полустанок. There is no
+  vestibule block: a plank platform, a bench and one lamp on a post with its own warm circle of light. The glide
+  path has three lamps a side instead of nine, and the plate reads «ПОЛУСТАНОК · ЛИНИЯ …». Its screen is bare
+  and dark, «скамья и фонарь · буфета нет», and has no buffet. When docking, inside the cone of lights the helm
+  damps speed above the mark (×0.965 a frame, the way the autopilot eases), so holding under the mark is a
+  matter of aim, not of fighting the throttle. On a phone the cone is 1.4× wider. The picture is a draft; the
+  plate label sits over the platform when the vestibule side faces down, which it always did.
+
+- **M472: the board flips; крупногабаритный ×3.** The ТАБЛО is a split-flap board now: every redraw, a letter that
+  changed since the last one turns over like a plate (a quarter-second squash), and the rest stand still. «через
+  0:14» → «через 0:13» flips only the last digit. The ticket office charges baggage ×3 as «крупногабарит» when the
+  hold carries anything heavy (осмий, нейтронная крошка), and the ticket button says so.
+
+- **M473: the held pad ×2.** On a run between stops, holding ДЕЙСТВИЕ makes the train go twice as fast. It never
+  skips a stop, and a stop still takes its two seconds. Under the top line of the ride a quiet hint says
+  «ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ»; while held it reads «×2 · ПЭД ЗАЖАТ» in turquoise.
+
+- **M474: Рассвет's маршрутка, EXPRESS™ on the scheme, the front shuts stops.** At a Рассвет station every ticket
+  has a twin, «МАРШРУТКА «ДО КУДА?»»: the same line, slower, and on a run a tap of ДЕЙСТВИЕ («водитель, остановите
+  здесь») drops you at the nearest star by the road, station or not (never the one you just left). Holding the pad
+  does not speed a маршрутка up. The Коммуна compensation маршрутка stops on request too. The scheme draws a blue
+  dashed line beside every stretch whose both ends are Компания land (that is where EXPRESS™ runs) and a red cross
+  on every stop at the front. A front stop is shut: the ticket office does not sell it, trains pass it with an
+  announcement, and at a front station the office itself is closed, «ФРОНТ · ОСТАНОВКА ЗАКРЫТА», with no маршрутка
+  offered.
+
+- **M508: the pirates respect a sealed hold.** Ordnung's seal no longer comes off when you step off the train. It
+  stays on the hatch until you dock at a station, where an inspector takes it off («претензий нет»). While it is on,
+  selling is still refused, and the pirates weigh the protocol: half the usual raid turns up, and the screen says
+  «Пломба Орднунга на люке · часть пиратов отвернула». Riding Ordnung with a full hold is now also an escort home.
+- **M510: the front cuts the line.** A stretch whose both ends are front stops is cut: the war runs along the rails.
+  The ticket office sells nothing through it (transfers included), and a train already on its way stops short at the
+  last whole stop, «дальше путь перерезан · поезд дальше не идёт». The scheme draws a red break across the stretch.
+
+- **M475: the holding extends the line.** A new holding building, «Путевой пост» (family E, 3200 кр + сплав 10 +
+  арматура 6): when it stands, ГЛАВТРАССА lays a two-stop branch from the nearest line station (up to 8 sectors) to
+  your site, and the site becomes your полустанок. The branch has a name from the name generator («Ветка «Кваора»»),
+  it transfers to the rest of the net like any line, and the journal records the deed once: «ГЛАВТРАССА: проложена
+  Ветка … до вашей площадки». The seeded net is untouched; branches lie over it and vanish with the post.
+
+- **M476: the hold is green.** The legend under ЧЕРТЁЖ always said «зелёное — трюм», but the hold was a pale
+  white hatch. It is now a green wash with green hatching, in ОПИСЬ and in КБ alike.
+- **M477: the КБ grows up.** Things keep their shapes: a two-cell thing lies in a line, a four-cell thing is a
+  square, anchored at the cell you tap. Tap the thing you are holding once more to turn a two-cell thing; at an
+  Орднунг yard the answer is «поворот не предусмотрен формуляром». The numbers strip reads ЯЧЕЙКИ · ТРЮМ · БАК ·
+  ЭНЕРГИЯ · РАЗГОН, each green or red with its change since you opened the КБ. Three ПРОЕКТЫ per hull, РЕЙСОВЫЙ,
+  БОЕВОЙ and ПУСТОЙ ТРЮМ, switch with one tap; ТИПОВОЙ no longer wipes them. A foreign yard (not your flag) bills
+  12 кр per cell moved, shown above the plan and paid at ГОТОВО; if you cannot pay, the plan goes back to what it
+  was. Under the tray, «В ТРЮМЕ» lists the spare parts from your inventory: hold a placed part, tap a spare of the
+  same kind, and it is fitted in the same place. The station's ОСНАСТКА row is now «КОРПУС · ОСНАСТКА И ЧЕРТЁЖ»,
+  with a КБ button next to ОПИСЬ.
+
+- **M478: the far goods go into the hull.** The КБ has a new row, «ДАЛЬНИЕ ГРУЗЫ В ДЕЛО · ПЛОТНОСТЬ». One unit
+  from the hold raises a density one step, up to three per hull: гелий-3 → КОТЁЛ (energy +12 % a step), палладий
+  → ПРИБОРЫ (sight +6 %), осмий → БРОНЯ (hull +8 %), магнитная пыль → ЩИТ (shield +12 %). Нейтронная крошка is
+  доводка instead of a node: hold a module in the КБ, press ДОВОДКА · ВВАРИТЬ (крошка + 800 кр), and the module
+  works one level higher and never moves again («вварено — не двигается»); a dashed weld seam rings it on the
+  plan. Two welds per hull. Densities and welds belong to the hull: projects and ТИПОВОЙ keep them.
+
+- **M479: the plan decides which side takes it.** A hit from behind is now «двигатели принимают»: on top of
+  the damage it adds to the ship's wear, the one number that makes a worn machine answer the stick worse, and
+  the screen says so (at most every five seconds). A hit on a side where the plan has armour on the skin (a
+  «корпус» part or the armour module on that side's rim) loses 15 % to the armour. Hits on the nose are as
+  before. Where you lay the armour in the КБ now matters.
+
+- **M483: the new-part mark.** In the КБ's «В ТРЮМЕ» row every spare part now says where it would go and what it
+  would give, as its biggest change in one coloured figure: «Резонансный реактор Р-12 · ЭНЕРГИЯ +28», «ТП-82
+  «Веретено» · ОГОНЬ/С +7.9». Parts that would improve the ship are lit and their slot is ringed in green on the
+  plan. Tap such a part with nothing held, and the КБ picks up what stands in that slot and shows the place; tap
+  the part again to fit it. Into a free slot it goes straight away.
+
+- **M485: the barge and the tug have machines at the wheel.** Your barge's autopilot now has a name and a quirk
+  from the drones' table: «Шаланда» · автопилот Кузя · торопыга. The quirk works both ways. A торопыга sometimes
+  makes an extra leg in the same shift and stands more often («Кузя встал. Спешил.»); an осторожный one rarely
+  stands and never hurries. The rescue tug's call line names its autopilot as well («буксир «…», автопилот Глаша
+  (ленивый, но живучий)»).
+
+- **M486: the кулибин and tape on a part.** About one hired hand or manager in seven is a кулибин (it shows on the
+  crew card). While one is on staff, he tapes the hull over the radio without a roll, and it holds at 60 %. A
+  broken instrument taped by a кулибин keeps its гарантия («так замотаю, что не видно»), and every taped
+  instrument adds a strip to the hull. The ИЗОЛЕНТА block shows whenever the hull is below half, so a new player learns
+  in the first hour that tape works anywhere and where to buy it.
+
+- **M495: the triangle closes.** Firm instruments («Сирин», «Веха») now fail on their own: once a shift each
+  one draws from its seed, rarely while under гарантия (8 %) and often in the two shifts after it runs out (35 %,
+  «гарантия кончилась вчера, прибор — сегодня»). The ТЕХПОДДЕРЖКА call plays one bar of hold music, eight
+  square notes through a phone-line filter, the last one a quarter tone flat. At some Рассвет and Коммуна
+  stations an old master sits by the repair counter: СТАРЫЙ МАСТЕР · ДАРОМ re-sews a taped instrument to near new
+  («изоленту вашу я оставлю, она тут уже несущая»), once a shift per instrument, without bringing back the
+  гарантия.
+
+- **M489: the sign says whose it is.** The station header now reads by the owner of the land, as the metro stops
+  already did: «ПГТ УРНЕЙУР», «САРИС-СИТИ», «БЕЦИРК КСИДРАЭШ № 6», «СЕН-КОРЭШ», «КООПЕРАТИВ «КАЗЕОРН»»,
+  «ПИВЕКСИН-4 V5.9». When the flag changes the sign is repainted. Your own settlement takes the owner's form too
+  and stays «посёлок X» on land nobody holds. A holding without a name you gave it is announced by its sign. A
+  subscription names the firm behind it («Вязьма Аэроспейс»), one invented firm per station.
+
+- **M492: Космопочта carries more than hulls, and it has a queue.** A good part a hired hand takes off a foreign
+  hull now travels by post: «снял с чужого борта: ТО-41 «Оса» · выслал Космопочтой», and a notice waits in
+  ПОЧТА. A registered co-operative sometimes sends its members a share by post once a shift, more often and
+  bigger when its spirit is high («посылка кооператива «Ласточка»: лёд ×8»). At the window you take a ticket
+  first. The number of people ahead depends on the post hour, with a rush at opening and after lunch, and each
+  one takes a third of a post hour. Leave the station and the ticket is gone. The kind clerk still keeps a late
+  parcel a day longer, once. A parcel past that goes back to the sender.
+
+- **M460, M491, P12: the billboard and the сводка talk about you.** The crawling line on a station's billboard
+  now takes turns: the best price nearby, then the latest сводка in the owner's voice («ЦИРКУЛЯР № 17: …»,
+  «FEED // …», «ГАЗЕТА «КОММУНА»: …»), then your own holding within three jumps advertising itself («СТАНЦИЯ
+  «КВАИТЭЛЬ» — ТОПЛИВО ЕСТЬ · 1 ПРЫЖОК»). An empty turn yields to the price. The two voices that retell your deed
+  (M491) are now written into the сводка too, so ЧТО РАССКАЗЫВАЮТ in the cantina keeps them, and the billboard
+  repeats them. As before, the game never says which of them is true.
+
+- **M455: the peacetime fleet keeps the chronicle's calendar.** ГЛАВТРАССА's субботник no longer runs every day.
+  It happens on the chronicle's Saturday (a chronicle day is four сводки) and on days the Director has declared a
+  «субботник» for ГЛАВТРАССА. On other days the two tugs stand at the dock facing the station. The субботник
+  itself moved into view: the tugs now lead rocks on a small arc behind the station instead of out on the far
+  belt, where nobody at the dock could see them. Any other rite the chronicle has running for the land's owner
+  hangs as a line over the scene («АМНИСТИЯ · …», «ПЕРЕПИСЬ · ответить на вопрос»). The Коммуна strike was already
+  driven by the society incidents and stays so.
+
+- **M456: the last three laws are heard.** Рассвет has its rule now, «сделаем из ваших». Its stations sell no
+  parts; instead the workshop takes two of your spare parts of one kind and builds one a step better, with the
+  Рассвет stamp, for 60 кр a step («из «…» и «…» собрали «Силовое поле, собран из трёх»»). Fitted parts are
+  never taken. An Орднунг speeding fine is no longer a journal line: it comes as a paper in ВЕЩИ, «Квитанция
+  Орднунга № 4171», with the paragraph, the speed, and «экз. 2 и 3 вам не выдаются». The Коммуна lunch hour now
+  shows on the market tab itself («ОБЕД · 13:00–14:00 · топливо продаём — топливо не обед»), not only as a
+  refusal when you try to sell.
+
+- **M512: societies have duties, three more of them, and the desk does the sums.** Three new societies, each
+  with a deed, a perk wired to code and a joke. ДОСО (30 jumps, 1 % dues) adds 10 units to ГЛАВТРАССА's fuel
+  norm. Спасатели (you were towed three times) makes Рассвет's repair tug pull your hull to 70 % instead of 60 %.
+  The Общество читателей (5 books on the shelf) reads aloud in the cantina, which gives a free rumour on some
+  dockings. Two duties arrive with them. The Профсоюз водителей expects you at a ГЛАВТРАССА station on a
+  субботник day once a chronicle week, and a member who misses two is expelled («ничего личного, товарищ»). The
+  Партнёрская программа™ sends a weekly parcel to ПОЧТА, and 100 points that convert to points. Leave it
+  uncollected and participation is suspended, «баллы сгорели™». On the КНИЖКА page each membership now shows its
+  arithmetic: dues paid, what the perk gave in кр, how many times it worked, and the total.
+
+- Station chip: the owner glyph goes after the name, so the chip reads like the tables (M458 fix).
+- Far stall «КУПИТЬ 1»: a refused purchase says why (no credits / hold full) instead of staying silent.
+- Tape button at the repair row keeps its width: the label is fixed, the roll count is a corner badge (99+); buying many rolls no longer pushes the neighbours.
+- Tests: the GPU-loss atlas suite picks a station whose dress writes text (ГЛАВТРАССА, Компания, Орднунг — M454); the button sweeps close the KB window they may open; LOOK_BASE «карта» empty 61 → 41 (M458 borders).
+
+### Disputed (cautious variants taken; the author may overturn)
+- M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
+  survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
+  told apart by initials plus a short list (Вега, попугай, замполит, неизвестные).
+- M454: the builder is the owner at the first look of the session. A station keeps no memory of who built it,
+  so after a conquest it redraws as the new owner's on the next session. The other reading, a station
+  that stays the loser's until rebuilt, needs a saved field.
+- M458: the glyph beside the station name is the land owner's, not the builder's; after M454 they agree four
+  times in five. The glyphs are Unicode text (★ ◎ ▦ ∿ ☼ ●), so their look depends on the device font; the
+  canvas emblem stays the map's own. Орднунг's «numbered» dashes are ticks, not digits: digits at 9 px on an
+  edge were noise in the draft.
+- M466: «тёмное стекло in the instruments» is a science bought with data plus one piece of glass, not a
+  shipyard tier-8 part; the shipyard is stage 4, and this keeps the save untouched. The «company on the
+  approach» is one or two extra pirates, not prospectors: there is no neutral traffic to borrow yet. The vein
+  rumour never lies (the ordinary 15 % do); the vein is real. A vein struck before the latest rush is told at
+  once, since only the latest strike has a time.
+- M467: «dear» is ×3 of the counter's own buying price, one unit per tap. The stall shows any far good but the
+  amber chips, antimatter and neutron included; a price list might want the deepest two kept out of the heart.
+- M469: the yard densities (reactor, armour, shields, instruments) and доводка by крошка are left to stage 4.
+  They are the shipyard's own mechanics, and the resources design queues M469 «with the shipyard». The
+  greenhouse does not eat чернозём: its header forbids «удобрить за 200 кр», so the дачники's voice at the
+  counter is the only greenhouse eater for now. The hotel shop stacks on the land's eater (жемчуг in Компания
+  land pays about ×2.2 of the heart base there); it is capped at three grains a visit.
+- M470: lines beyond r 60 are not built. The net is computed whole and synchronously (146 ms to r 60 on this
+  machine); to r 120 it would be about four times that, seconds on a phone. It needs the lazy per-region build
+  of the design, and that goes with M474's «infinite» net. «Край» is personal (your own visits), not
+  «anyone's»: there is no shared ride record, and online stays a postcard.
+- M473: a save mid-ride still wakes at the origin. Waking at the destination means `snapshot()` writing the
+  ride's end instead of `G.sx`/`G.sy`, which is the save, and the save is not to be touched. The ticket is lost
+  with the ride; it is a few кредитов.
+- M474: the net past r 60 stays unbuilt. A lazy per-region build touches the net's shape everywhere (junctions,
+  loops, the scheme's bounds), and the whole build to r 60 already costs 146 ms; it stays in the plan. A маршрутка
+  drop lands you at the star's edge like a hyperjump arrival, not at a platform.
+- M508: the seal halves the raid rather than stopping it. A seal that kept every pirate away would make Ordnung's
+  line a free shield for any cargo; a baron still comes. The halving is rounded down, so a lone jackal turns away.
+- M510: the line is cut only where both ends of a stretch are on the front. A single front stop is closed and
+  passed (M474); cutting at every front stop would sever most lines near a busy front.
+- M475: a branch is a straight two-stop line, not a detour of the existing line; a real rerouting would change the
+  seeded net that the chronicle and the tests read. Fares, baggage and the size rule are not yet tuned against the
+  oracle's rail line: that is a measuring job for the release run, and it stays in the plan.
+- M477: the packer still lays things as it always did, not in the three shapes, so an old save's plan and its
+  numbers stay exactly as they were; shapes apply from the first move in the КБ. Switching ПРОЕКТЫ is billed by the
+  cells it moves, like any other change, rather than by a separate fee. Projects live inside `G.draft[shipId]`
+  (`pr`, `cur`), which is already saved, so no new save field was added. The foreign-yard bill is 12 кр per cell,
+  a guess for the calibration pass.
+- M478: this is the far-goods half only. Fuel from tank cells, energy from reactor cells and sight from
+  nose-third instruments would move today's numbers for anyone who has already edited a plan; that needs the
+  mapping table and the fixpoint suite in the release run, so it stays in the plan. Densities and welds are kept
+  inside `G.draft[shipId]` (`dens`, `weld`); with neither present every factor is exactly 1. The step sizes are
+  guesses for the calibration pass. A project switch may move a welded module's cells; the weld's effect stays.
+- M479: parts have no wear of their own, and giving them one would be a new save field. So «the rim part takes
+  its side's wear» became: the ship's single wear number takes the rear hits (engines), and side armour soaks
+  side hits. Guns on a hit side are not affected yet.
+- M483: NPC and pirate ships are not yet built by the packer. Their plan would show only in their silhouette,
+  which is picture work for the graphics pass, so it stays in the plan.
+- M485: the tug's quirk is words only. Its tow is five minutes by the author's word, and its flight is physics,
+  so no number moves there. The barge's quirk is rolled per leg from the hired hand's seed and the route cursor,
+  both already saved, so the save's barge whitelist is untouched.
+- M486: the кулибин is derived from the hand's seed (one in seven), not added to the trait table, so seeded hiring
+  and the save stay as they were. There is no free first-hour roll: the block only shows early with a pointer to
+  the station repair shop.
+- M495: «part failures» are built on the firm instruments, the only firm parts that carry a гарантия; hull
+  parts and modules still break only from hits. The old master sits at one Рассвет/Коммуна station in three,
+  chosen by the station's seed. His free seam needs tape on the instrument first, so it rewards the cheap road
+  rather than replacing the yard.
+- M489: the sign changes only the header, the holding announcements, the settlement and the metro. Ether lines,
+  the journal and records keep the bare toponym, the way people say a place's name aloud. Names the player gave
+  (G.names) are never overwritten.
+- M492: parcels live inside the already-saved stapel record (G.stapel.pk, the ticket in G.stapel.q), not in a
+  new save field. Only the high-tier part event goes by post; the low-tier one still lands in the hold. If the
+  post has six parcels waiting, the part falls back to the hold. The queue does not refresh the window by itself.
+  The hull from the stapel now needs a ticket too.
+- M460: prices on the billboard stay live station prices. Whether the billboard should show the player's stale
+  knowledge (a fork) is left to the author. The hull tint near a billboard and the second and third signs are
+  picture work for the graphics pass.
+- M455: «the chronicle's days» is read as the chronicle's day of the week plus the Director's declared rites.
+  The субботник's rocks near the station are a stand-in drawn with the same dark disc as before, which is draft
+  picture work.
+- M456: the fine's ticket goes to ВЕЩИ (the desk's papers), because ПОЧТА on the desk holds postcards and has no
+  place for official paper. «Two of yours → one better» takes your two best spares of a kind. The new part is one
+  tier above the better of the two, capped at 5. Рассвет's «no deadlines» for jobs taken there is not done yet.
+- M512: the дачники society waits for M493 (дачники traffic, deferred with the base-side birchpunk). The perks
+  that save no money (ДОСО's norm, the tug, tape, readings) count only times on the desk, not кр. A chronicle
+  week is seven chronicle days, which is one real week, so the union duty is slow by design.
+
+## 0.479.0 - mail cards and the smena plate on the engine
+
+- **Postcards in the mail and the picture of a «Смена» chapter** are the same card as in the album now: baked
+  once and laid into an engine canvas. They look the same and are sharper on DPR 3 screens.
+- **Nets**: the album scene of the «0 вызовов 2D» gate also draws a mail card and a chapter picture; a new
+  mutant (mail-2d) is killed.
+
 ## 0.478.0 - the album on the engine
 
 - **The album draws on the engine** (GPU-3): each card is the same postcard brush, baked once and laid into

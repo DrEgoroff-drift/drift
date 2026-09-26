@@ -295,7 +295,7 @@ for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);
 
 function stat(){
-  const S=shipData(G.shipId),m=G.mods,T=G.tech,B=G.barter,P=partBonus();
+  const S=shipData(G.shipId),m=(typeof planMods==="function")?planMods(G.mods):G.mods,T=G.tech,B=G.barter,P=partBonus();
   const drillBonus=G.shipId==="obod"?1.6:1;
   const mul=k=>Math.max(.25,1+(P[k]||0));   // штрафы не должны обнулять стат
   /* венцы наборов: собранная сотня узлов читается здесь же, где модули и части,
@@ -309,6 +309,7 @@ function stat(){
   /* чертёж (M478, 27jb): без правки оба множителя — ровно 1 */
   const PF=(typeof planFactors==="function")?planFactors():{cargo:1,mass:1};
   const SC=(typeof scarFactors==="function")?scarFactors(S):{cargo:1,turn:1};   /* шрамы корпуса (M482) */
+  const PD=(typeof planDens==="function")?planDens():{en:1,see:1,hull:1,sh:1};   /* плотности от дальних грузов (M478) */
   /* орудие, поле и реактор как ВЕЩИ, а не как два числа (M362, 05c-arms):
      семь чисел ствола, повадка щита и ёмкость энергии считаются от того,
      что стоит в гнёздах, — поэтому их части нужны здесь по отдельности */
@@ -330,7 +331,7 @@ function stat(){
     turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul()*WT.turn*PF.mass*SC.turn*(typeof abilMul==="function"?abilMul("turn"):1),
     fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel")+WT.fuel)),
     cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*PF.cargo*SC.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
-    hullMax:Math.max(20,Math.round((gunList.some(a=>a.g&&a.g.fx==="ram")?1.35:1)*(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0)))),
+    hullMax:Math.max(20,Math.round(PD.hull*(gunList.some(a=>a.g&&a.g.fx==="ram")?1.35:1)*(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0)))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
     jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")+WT.jump),
@@ -344,7 +345,7 @@ function stat(){
     /* таран (M366) — не орудие: он утраивает лоб корпуса. Это единственное
        семейство, которое живёт в числах корабля, а не в числах выстрела. */
     ram:gunList.some(a=>a.g&&a.g.fx==="ram"),
-    energyMax:energyCap(m.weapon,coreT,P.enCapAdd||0),
+    energyMax:(e=>PD.en===1?e:Math.round(e*PD.en))(energyCap(m.weapon,coreT,P.enCapAdd||0)),
     energyRegen:energyRegen(m.weapon,coreT,P.enRegenAdd||0),
     /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
        и без ракет в трюме её числа ничего не значат */
@@ -352,10 +353,10 @@ function stat(){
     mslDmg:MSL_DMG*mul("mslDmgMul"),
     mslTurn:MSL_TURN*mul("mslLockMul"),
     mslCool:Math.max(24,Math.round(MSL_COOL/mul("mslLockMul"))),
-    shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))),
+    shieldMax:Math.max(0,Math.round(((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))*PD.sh)),
     shieldRegen:Math.max(0,P.regenAdd||0),
     shieldType:shieldTypeOf(shldP),
-    see:(((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"),
+    see:((((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"))*PD.see,
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55)*(typeof kitStat==="function"?kitStat().wear:1),   /* комплект (M152) */
     refine:1+techLv("refine")*.18,

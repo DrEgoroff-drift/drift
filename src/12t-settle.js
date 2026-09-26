@@ -444,6 +444,6 @@ function settleStop(S){
   const prices={};
   for(const k of TRADE_KEYS)prices[k]=Math.max(1,RES[k].price);
   return {key:sys.key,sx:sys.sx,sy:sys.sy,planets:sys.planets,name:sys.name,settle:1,
-    station:{name:"посёлок "+(S.name||sys.name),stype:"trade",kind:"посёлок",
+    station:{name:(typeof ownerSign==="function")?ownerSign(S.name||sys.name,S.sx,S.sy,"посёлок "+(S.name||sys.name)):"посёлок "+(S.name||sys.name),settle:1,stype:"trade",kind:"посёлок",
       orbit:0,ang:0,spd:0,prices,fuelPrice:11,x:0,y:0,vx:0,vy:0}};
 }

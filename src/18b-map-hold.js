@@ -77,6 +77,36 @@ function mapTagAt(gx,gy,now){
   return {ru:"сменился хозяин · "+(dn?dn+" "+pl3(dn,"день","дня","дней")+" назад":"сегодня"),a:clamp(1-days/3,.15,1)};
 }
 /* ── под звёздами: пятна, полоса трассы, штрих пиратов, своё ── */
+/* соседи клетки для границы: [dx,dy, начало и конец кромки в долях клетки] */
+const MAP_BORDER_NB=[[1,0,1,0,1,1],[-1,0,0,0,0,1],[0,1,0,1,1,1],[0,-1,0,0,1,0]];
+/* кромка владения одним узором на державу (DESIGN-borders §2.7): ГЛАВТРАССА —
+   цепочка звёздочек, Компания — тонкая линия с кольцами, Орднунг — точный
+   штрих с засечками, Коммуна — волна, Рассвет — неровный штрих с солнцами,
+   Хай-Фронт — точки. Мелко на узор не хватает места — тогда просто тонкая линия */
+function mapBorderEdge(key,ax,ay,bx,by,a,cell,nx,ny){   /* nx,ny — внутрь своей клетки */
+  const P=powerOf(key),col=rgba(hex2rgb(P.col),a.toFixed(3));
+  const L=Math.hypot(bx-ax,by-ay);if(L<1)return;
+  const ux=(bx-ax)/L,uy=(by-ay)/L;
+  ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1;
+  const line=()=>{ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();};
+  const along=(step,fn)=>{const n=Math.max(1,Math.round(L/step));for(let i=0;i<n;i++){const t=(i+.5)/n*L;fn(ax+ux*t,ay+uy*t,i);}};
+  if(cell<24){ctx.globalAlpha=.7;line();ctx.restore();return;}
+  const e=P.emblem;
+  if(e==="star")along(7,(x,y)=>{   /* звёздочка — четыре луча, заливка на 3 px стала бы кляксой */
+    ctx.beginPath();ctx.moveTo(x-1.8,y);ctx.lineTo(x+1.8,y);ctx.moveTo(x,y-1.8);ctx.lineTo(x,y+1.8);ctx.stroke();});
+  else if(e==="ring"){ctx.lineWidth=.8;line();ctx.lineWidth=1;
+    along(14,(x,y)=>{ctx.beginPath();ctx.arc(x,y,1.9,0,TAU);ctx.stroke();});}
+  else if(e==="grid"){ctx.setLineDash([5,2]);line();ctx.setLineDash([]);
+    along(9,(x,y,i)=>{const h=i%3===0?3:1.6;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+nx*h,y+ny*h);ctx.stroke();});}
+  else if(e==="wave"){ctx.beginPath();
+    for(let t=0;t<=L;t+=1.5){const w=Math.sin(t/L*TAU*Math.max(1,Math.round(L/9)))*1.4;
+      const x=ax+ux*t+nx*w,y=ay+uy*t+ny*w;if(t)ctx.lineTo(x,y);else ctx.moveTo(x,y);}
+    ctx.stroke();}
+  else if(e==="sun"){ctx.setLineDash([7,3,3,3,10,3]);line();ctx.setLineDash([]);
+    along(16,(x,y)=>{ctx.beginPath();ctx.arc(x+nx*2.5,y+ny*2.5,1.3,0,TAU);ctx.fill();});}
+  else along(4,(x,y)=>{ctx.beginPath();ctx.arc(x,y,.9,0,TAU);ctx.fill();});
+  ctx.restore();
+}
 function mapHoldingsDraw(vis,cell,V,st){
   if(!mapLayerOn("own"))return;
   const P=mapHousePatch(vis,st);
@@ -94,7 +124,8 @@ function mapHoldingsDraw(vis,cell,V,st){
     if(typeof powerEmblem==="function"&&cell>=18){
       /* чип растёт с клеткой: на трёх пикселях эмблема — точка, а точек на
          карте и так хватает */
-      const cr=clamp(cell*.075,3.2,7.5);
+      /* M458: вблизи чип дорастает до читаемых 14–18 px (радиус 7–9) */
+      const cr=clamp(cell*.12,3.2,9);
       ctx.globalAlpha=.8*fade;
       powerEmblem(key,x0+cell-cr*1.7,y0+cr*1.7,cr);
       ctx.globalAlpha=1;
@@ -122,6 +153,17 @@ function mapHoldingsDraw(vis,cell,V,st){
        Не заливка и не рамка вокруг клетки, а ЛИНИЯ между двумя владениями,
        которые сейчас воюют: по ней видно, где именно проходит война, а не
        «в этом районе неспокойно». */
+    /* ── граница владения узором хозяина (M458, DESIGN-borders §2.7) ──
+       Каждая сторона рисует свою половину кромки, чуть внутрь своей клетки:
+       на стыке двух держав читаются два узора рядом, у дикой земли — один.
+       Где воюют — не узор, а красный фронт ниже. */
+    for(const q of MAP_BORDER_NB){
+      const o2=chronOwner(v.gx+q[0],v.gy+q[1]);
+      if(o2===o||(o2>=0&&typeof chronWarBetween==="function"&&chronWarBetween(o,o2)))continue;
+      const ins=Math.max(1.5,cell*.05);
+      const ax=x0+q[2]*cell-q[0]*ins,ay=y0+q[3]*cell-q[1]*ins,bx=x0+q[4]*cell-q[0]*ins,by=y0+q[5]*cell-q[1]*ins;
+      mapBorderEdge(key,ax,ay,bx,by,.55*fade,cell,-q[0],-q[1]);
+    }
     if(typeof chronWarBetween==="function"){
       ctx.save();ctx.setLineDash([3,3]);
       ctx.strokeStyle="rgba(255,120,90,"+(.85*fade).toFixed(2)+")";ctx.lineWidth=1.6;

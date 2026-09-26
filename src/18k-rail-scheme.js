@@ -27,6 +27,8 @@ function railDestinationsVia(direct){
         let j=j0+dir*k;
         if(l2.loop)j=((j%n)+n)%n;else if(j<0||j>=n)break;
         const s2=l2.stops[j],k2=s2.sx+","+s2.sy;
+        if(typeof railCut==="function"&&railCut(l2.stops[railNextIdx(l2,j,-dir)],s2))break;   /* перерезано (M510) */
+        if(typeof railFrontShut==="function"&&railFrontShut(s2))continue;
         if(have.has(k2))continue;
         have.add(k2);
         let d2=0;for(let m=0;m<k;m++){const a=l2.stops[l2.loop?((j0+dir*m)%n+n)%n:j0+dir*m],b=l2.stops[l2.loop?((j0+dir*(m+1))%n+n)%n:j0+dir*(m+1)];d2+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
@@ -49,8 +51,12 @@ const SCHEME_INK={radial:[150,120,90],ring:[196,110,40],arm:[40,130,120]};
 function railSchemeOpen(){
   let d=document.getElementById("railScheme");
   if(!d){d=document.createElement("div");d.id="railScheme";d.innerHTML="<canvas></canvas><b>СХЕМА ЛИНИЙ · ГЛАВТРАССА · бесплатно, не выбрасывать</b><s>касание — свернуть</s>";
-    d.onclick=railSchemeClose;document.body.appendChild(d);}
+    d.onclick=e=>{if(e.target===d)railSchemeClose();};document.body.appendChild(d);
+    /* КУДА ВАМ (M470): тап по остановке на бумаге — выбрать, куда ехать */
+    d.querySelector("canvas").onclick=railSchemePick;
+    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · мимо бумаги — свернуть";}
   d.classList.add("open");
+  {const p=d.querySelector(".rs-pick");if(p)p.remove();}
   const c=d.querySelector("canvas"),k=Math.min(2,(typeof devicePixelRatio==="number"&&devicePixelRatio)||1);
   const cw=Math.min(W-24,520),ch=Math.min(H-120,cw*1.15);
   const pw=Math.round(cw*k),ph=Math.round(ch*k);
@@ -68,10 +74,45 @@ function railSchemeOpen(){
   gpuBakeDrop(B);
 }
 function railSchemeClose(){const d=document.getElementById("railScheme");if(d)d.classList.remove("open");}
+/* «Край» (M470, DESIGN-metro §2): на каждой линии, что уходит наружу, самая
+   дальняя остановка, где вы стояли, пока за ней ещё что-то есть. Дальше линия
+   на бумаге пунктиром — «не езжено». Стоянки — счётчик визитов станций (11b),
+   нового поля нет */
+function railVisited(s){
+  if(s.sx===G.sx&&s.sy===G.sy)return true;
+  const V=G.visits||{},k=getSystem(s.sx,s.sy).key;
+  return (V[k]|0)>0;
+}
+function railKrai(l){
+  if(l.loop||l.kind==="ring"||!l.stops||!l.stops.length)return null;
+  let best=null,br=-1,far=0;
+  for(const s of l.stops){const r=Math.hypot(s.sx,s.sy);far=Math.max(far,r);if(r>br&&railVisited(s)){best=s;br=r;}}
+  return best&&far>br+.5?{s:best,r:br}:null;
+}
+let RAIL_SCHEME_MAP=null;
+function railSchemePick(e){
+  e.stopPropagation();
+  const M=RAIL_SCHEME_MAP;if(!M||typeof railDestinations!=="function"||!railStation(G.sx,G.sy))return;
+  const c=e.currentTarget,b=c.getBoundingClientRect();
+  /* бумага повёрнута на 1.2° — на касании пальцем это меньше пикселя, не считаем */
+  const x=(e.clientX-b.left)*M.cw/b.width,y=(e.clientY-b.top)*M.ch/b.height;
+  const D=railDestinations();let t=null,bd=14;
+  for(const q of D){const d=Math.hypot(M.X(q.to.sx)-x,M.Y(q.to.sy)-y);if(d<bd||(t&&d===bd&&q.k<t.k)){bd=d;t=q;}}
+  const host=document.getElementById("railScheme");
+  {const p=host.querySelector(".rs-pick");if(p)p.remove();}
+  const p=document.createElement("div");p.className="rs-pick";
+  if(!t){p.innerHTML="<s>отсюда туда без пересадок не доехать — выберите остановку поближе</s>";host.appendChild(p);return;}
+  const F=railFare(t);
+  p.innerHTML="<button class='act gold'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + БАГАЖ "+F.bag:"")+
+    "<s>"+(t.via?"пересадка на «"+railStopName(t.via)+"»":"без пересадок")+"</s></button>";
+  p.querySelector("button").onclick=ev=>{ev.stopPropagation();railSchemeClose();railBuy(t);};
+  host.appendChild(p);
+}
 function railSchemeDraw(g,cw,ch){
   const N=railNet(),R=RAIL_R;
   const pad=28,S=Math.min((cw-pad*2)/(2*R),(ch-pad*2-24)/(2*R));
   const X=x=>cw/2+x*S,Y=y=>ch/2+12+y*S;
+  RAIL_SCHEME_MAP={X,Y,cw,ch};
   /* бумага: кремовая, сгибы вдоль и поперёк, тень у сгиба */
   g.fillStyle="#efe6cf";g.fillRect(0,0,cw,ch);
   const grain=g.createLinearGradient(0,0,cw,ch);grain.addColorStop(0,"rgba(255,255,255,.18)");grain.addColorStop(1,"rgba(120,90,50,.10)");
@@ -102,6 +143,16 @@ function railSchemeDraw(g,cw,ch){
     g.strokeStyle="rgba("+c.join(",")+",.12)";g.lineWidth=w+2.4;g.stroke();
     g.strokeStyle="rgba("+c.join(",")+","+(l.kind==="radial"?.55:.9)+")";g.lineWidth=w;g.stroke();
   }
+  /* за «Краем» — пунктиром: бумага поверх линии штрихами */
+  const krai=[];
+  for(const l of N.lines){
+    const K=railKrai(l);if(!K)continue;krai.push(K);
+    g.strokeStyle="#efe6cf";g.lineWidth=(l.kind==="radial"?1.6:3)+.6;g.setLineDash([3,3]);
+    g.beginPath();let on=false;
+    for(const p of l.pts){const r=Math.hypot(p[0],p[1]);if(r<K.r){on=false;continue;}
+      if(on)g.lineTo(X(p[0]),Y(p[1]));else{g.moveTo(X(p[0]),Y(p[1]));on=true;}}
+    g.stroke();g.setLineDash([]);
+  }
   /* остановки: белый кружок с тёмной каймой; узлы — двойной и с именем */
   g.font="7px ui-monospace,monospace";g.textBaseline="middle";
   const named=[];
@@ -126,6 +177,25 @@ function railSchemeDraw(g,cw,ch){
     g.fillStyle="rgba(239,230,207,.75)";g.fillRect(bx-1,by,w+2,bh);
     g.fillStyle="#3a2e1e";g.fillText(nm,bx,n.y-4);
   }
+  if(typeof railExpressDraw==="function")railExpressDraw(g,X,Y);   /* EXPRESS™ пунктиром (M474) */
+  /* перерезанные перегоны (M510): красный разрыв поперёк середины */
+  if(typeof railCut==="function"){g.strokeStyle="#c8281e";g.lineWidth=2;
+    for(const l of N.lines)for(let i=0;i+1<l.stops.length;i++){const a=l.stops[i],b=l.stops[i+1];if(!railCut(a,b))continue;
+      const mx=(X(a.sx)+X(b.sx))/2,my=(Y(a.sy)+Y(b.sy))/2,dx=X(b.sx)-X(a.sx),dy=Y(b.sy)-Y(a.sy),L=Math.hypot(dx,dy)||1,nx=-dy/L*5,ny=dx/L*5,tx=dx/L*1.6,ty=dy/L*1.6;
+      g.beginPath();g.moveTo(mx-tx+nx,my-ty+ny);g.lineTo(mx-tx-nx,my-ty-ny);g.moveTo(mx+tx+nx,my+ty+ny);g.lineTo(mx+tx-nx,my+ty-ny);g.stroke();}}
+  /* закрытые фронтом остановки — красный крест */
+  if(typeof railFrontShut==="function"){g.strokeStyle="#c8281e";g.lineWidth=1.3;
+    for(const k in N.at){const p=k.split(",").map(Number);if(!railFrontShut({sx:p[0],sy:p[1]}))continue;
+      const x=X(p[0]),y=Y(p[1]);g.beginPath();g.moveTo(x-3.5,y-3.5);g.lineTo(x+3.5,y+3.5);g.moveTo(x+3.5,y-3.5);g.lineTo(x-3.5,y+3.5);g.stroke();}}
+  /* «КРАЙ» у самой дальней стоянки линии */
+  g.font="bold 7px ui-monospace,monospace";g.fillStyle="#c8281e";g.textAlign="left";
+  {const done=new Set();for(const K of krai){const k=K.s.sx+","+K.s.sy;if(done.has(k))continue;done.add(k);
+    g.fillText("КРАЙ",X(K.s.sx)+5,Y(K.s.sy)+7);}}
+  /* куда можно отсюда (КУДА ВАМ): тонкое красное кольцо — эти берёт касса */
+  if(typeof railDestinations==="function"&&railStation(G.sx,G.sy)){
+    g.strokeStyle="rgba(200,40,30,.7)";g.lineWidth=1;
+    for(const q of railDestinations()){g.beginPath();g.arc(X(q.to.sx),Y(q.to.sy),5.2,0,TAU);g.stroke();}
+  }
   /* имена колец — на своём кольце, сверху */
   g.textAlign="center";g.fillStyle="rgba(120,60,20,.85)";g.font="bold 8px ui-monospace,monospace";
   RAIL_RINGS.forEach((rr,i)=>{if(rr<R)g.fillText(RAIL_RING_RU[i].toUpperCase(),X(0),Y(-rr)-6);});
@@ -143,4 +213,6 @@ function railSchemeDraw(g,cw,ch){
   const L=[["ring","кольца"],["arm","рукава"],["radial","радиалы"]];
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
   g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
+  g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
+  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",cw-10,ch-30);
 }

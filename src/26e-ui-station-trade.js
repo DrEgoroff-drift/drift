@@ -147,6 +147,7 @@ function stTabBoard(){
 }
 function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
+    if(typeof lawLunchRow==="function"){const lr=lawLunchRow();if(lr)$body.appendChild(lr);}   /* обед Коммуны (M456) */
     if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}
     if(typeof recallRows==="function"){const rr=recallRows();if(rr)$body.appendChild(rr);}   /* отзыв партии (M509) */   /* госзаказ со щита (M503) */
     /* пустой трюм говорит об этом в той же строке (D4, телефон 18.09): четыре
@@ -178,8 +179,9 @@ function stTabMarket(st){
       if(Q.nA)tg="берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:"");
       if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
       /* дальний товар: приёмщик говорит своё (review §3) — весы наши */
-      if(RES[k].far)tg+=(FAR_EATER[k]&&typeof stampOwnerAt==="function"&&FAR_EATER[k]===stampOwnerAt(G.sx,G.sy)
-        ?" · здесь его едят — ×1,5":"")+(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
+      /* едок говорит сам (M469): кто берёт и зачем; без едока — приёмщик про весы */
+      const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
+      if(RES[k].far)tg+=fv?" · "+fv[0]+": "+fv[1]:(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
@@ -204,6 +206,22 @@ function stTabMarket(st){
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }else if(!empty)$body.appendChild(el("div","sec","НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"));   /* редкое — тоже груз (хвост R6) */
+    /* «ИЗ ДАЛИ» (M467): в сердце изредка продают далёкое — втридорога */
+    {const S=(typeof farStall==="function")?farStall(G.sys):null;
+      if(S&&S.left){
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>ИЗ ДАЛИ · <span style='color:"+RES[S.k].col+"'>"+RES[S.k].ru+"</span> ×"+S.left+
+          "</b><s>"+S.ask.toLocaleString("ru")+" кр/ед · привезли с кромки, партия до конца трёх суток · «дорого, зато не лететь»</s>"));
+        r.appendChild(el("div","qt",S.ask.toLocaleString("ru")+"<s>кр</s>"));
+        const b=el("button","act","КУПИТЬ 1");
+        b.disabled=G.credits<S.ask;
+        b.onclick=()=>{const got=farStallBuy(G.sys,1);
+          if(!got){say(G.credits<S.ask?"Не хватает кредитов":"Не влезет\nтрюм полон",90);return;}   /* отказ вслух, а не тишина */
+          tell("money","Куплено из дали: "+RES[S.k].ru.toLowerCase()+" · −"+S.ask.toLocaleString("ru")+" кр",
+                      "Из дали\n"+RES[S.k].ru+"\n−"+S.ask.toLocaleString("ru")+" кр");
+          renderTab();};
+        r.appendChild(b);$body.appendChild(r);
+      }}
     /* прилавок ВЗЯТЬ — кооперативу, запись — на станции дома (12aj, M351) */
     if(typeof coopCounterBlock==="function")coopCounterBlock();
     /* редкое лежит в том же трюме, но купить его никто не возьмётся:

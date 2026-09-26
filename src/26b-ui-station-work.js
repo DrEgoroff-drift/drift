@@ -117,18 +117,23 @@ function stTabMods(){
     {
       const slots=slotsOf(G.shipId),fm=G.fit[G.shipId]||{};
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ОСНАСТКА КОРПУСА</b><s>"+
+      r.appendChild(el("div","nm","<b>КОРПУС · ОСНАСТКА И ЧЕРТЁЖ</b><s>"+
         Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
         G.inv.length+" частей</s>"));
       const b=el("button","act sm gold","ОТКРЫТЬ");
       /* ОПИСЬ (M341) ложится ПОВЕРХ терминала, как стол: закрыл — снова на
          станции, а не в открытом космосе без управления */
       b.onclick=()=>{tableToggle(true,"hold");};
-      r.appendChild(b);$body.appendChild(r);
+      r.appendChild(b);
+      /* раздел корпуса ОСНАСТКИ ведёт в КБ (M477): чертёж, проекты, счёт верфи */
+      if(typeof kbOpen==="function"){const k=el("button","act sm","КБ · ЧЕРТЁЖ");k.onclick=kbOpen;r.appendChild(k);}
+      $body.appendChild(r);
     }
 
     /* ── части в продаже: ассортимент детерминирован seed станции и временным бакетом ── */
-    const offers=stationParts(G.sys);
+    /* у Рассвета прилавка нет — «сделаем из ваших» (M456) */
+    const mk=(typeof lawMakeBlock==="function")?lawMakeBlock():null;if(mk)$body.appendChild(mk);
+    const offers=mk?[]:stationParts(G.sys);
     if(offers.length){
       $body.appendChild(el("div","sec","ЧАСТИ В ПРОДАЖЕ · АССОРТИМЕНТ СМЕНИТСЯ"));
       for(const o of offers){
@@ -256,6 +261,10 @@ function stTabInstr(){
         b.onclick=()=>{if(instrFix(id))renderTab();};
         r.appendChild(b);
       }else r.appendChild(el("div","nm","<s>выверен</s>"));
+      if(typeof oldMasterCan==="function"&&oldMasterCan(u)){   /* шов старого мастера (M495) */
+        const mb=el("button","act sm","СТАРЫЙ МАСТЕР · ДАРОМ");mb.title="перешьёт замотанное; гарантию не вернёт";
+        mb.onclick=()=>{if(oldMasterSeam(id))renderTab();};r.appendChild(mb);
+      }
       if(typeof subOff==="function"&&subOff(instrUnit(id))){   /* заблокирован подпиской (M487) */
         const fee=subFee(instrUnit(id))*3,xb=el("button","act gold","ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 · "+fee+" КР");
         xb.disabled=G.credits<fee;xb.onclick=()=>{if(subRush(id))renderTab();};r.appendChild(xb);
@@ -286,7 +295,7 @@ function stTabInstr(){
         sb.disabled=G.credits<up;
         sb.onclick=()=>{if(subBuy(off))renderTab();};
         r.appendChild(sb);
-        r.appendChild(el("div","nm","<s>подписка: владеть выгоднее после "+subBreakEven()+" смен — мы честно пишем</s>"));
+        r.appendChild(el("div","nm","<s>подписка от «"+firmHere()+"»: владеть выгоднее после "+subBreakEven()+" смен — мы честно пишем</s>"));
       }
       $body.appendChild(r);
     }
@@ -318,9 +327,12 @@ function stTabLab(){
       r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+T.note+
         "</s>"+(dots?"<div class='dots'>"+dots+"</div>":"")));
       const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" дан");
-      b.disabled=done||G.data<cost;
+      const noFar=!!(T.far&&!done&&!((G.cargo[T.far]|0)>0));   /* вещь из глубины (M466) */
+      if(noFar)b.textContent="нет: "+RES[T.far].ru.toLowerCase();
+      b.disabled=done||G.data<cost||noFar;
       b.onclick=()=>{
         G.data-=cost;
+        if(T.far)G.cargo[T.far]=Math.max(0,(G.cargo[T.far]|0)-1);
         if(T.max)G.techLvl[k]=(G.techLvl[k]|0)+1; else G.tech.add(k);
         /* керамика даёт +30 корпуса, но не сверх предела: у изношенного корпуса (12s-wear)
            потолок ниже расчётного, и подарок вылезал за него — «корпус 280 из 250»
