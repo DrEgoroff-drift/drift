@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 634 · символов верхнего уровня: 6392
+Файлов: 634 · символов верхнего уровня: 6393
 
 ## СИМВОЛЫ
 
@@ -5828,20 +5828,21 @@ TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
 TAPE_N                       src/25b-tape.js:22
+TAPE_PAL                     src/25b-tape.js:117-122
 TAPE_PENS                    src/25b-tape.js:23
 TAPE_PRICE                   src/12s1-tape.js:8
 tapeBuy                      src/12s1-tape.js:23-28
 tapeCan                      src/12s1-tape.js:11
 tapeInit                     src/25b-tape.js:27-31
 tapePack                     src/25b-tape.js:34-38
-tapePaper                    src/25b-tape.js:114-192
+tapePaper                    src/25b-tape.js:123-201
 tapeRate                     src/25b-tape.js:75-78
 tapeRolls                    src/12s1-tape.js:9
 tapeSample                   src/25b-tape.js:54-73
 tapeScroll                   src/25b-tape.js:97-100
 tapesOf                      src/12s1-tape.js:10
-tapeStrip                    src/25b-tape.js:208-211
-tapeStripBox                 src/25b-tape.js:198-207
+tapeStrip                    src/25b-tape.js:217-220
+tapeStripBox                 src/25b-tape.js:207-216
 tapeTear                     src/11b-speech.js:196-212
 tapeTick                     src/25b-tape.js:79-93
 tapeUnpack                   src/25b-tape.js:39-46
@@ -7510,7 +7511,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25a-instr.js · 13 КБ
   · приборы: пять стрелок и невязка:1
 
-## src/25b-tape.js · 13 КБ
+## src/25b-tape.js · 14 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
 ## src/25c-instr-hud.js · 13 КБ

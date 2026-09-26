@@ -86617,8 +86617,17 @@ addEventListener("keydown",e=>{
    колодке это свой маленький canvas.
    part — для мастера кабины 24bc: "base" — бумага, края, щель, деления и нули дорожек (под перьями),
    "roll" — валик (над перьями); перья, перо у края и тень взгляда назад он кладёт сам */
-function tapePaper(c,x0,y0,w,h,part){
-  const T=tapeInit();
+/* два листа одной ленты: светлая бумага кабины пояса (её видно под лампой) и тёмная — колодки над
+   миром. Светлая полоса в строке приборов была самым ярким и самым мёртвым пятном верха кадра:
+   пустая лента не должна светиться, ярким там бывает только след пера */
+const TAPE_PAL={
+  light:{paper:"rgba(188,182,164,.62)",edge:"rgba(0,0,0,.10)",grid:"rgba(60,66,60,.18)",zero:"rgba(60,66,60,.20)",
+         ink:"rgba(38,44,40,.80)",rollHi:"rgba(150,176,190,.20)",rollLn:"rgba(150,176,190,.24)",nib:"rgba(24,28,26,.85)"},
+  dark:{paper:"rgba(16,22,28,.78)",edge:"rgba(178,202,216,.10)",grid:"rgba(178,202,216,.06)",zero:"rgba(178,202,216,.09)",
+        ink:"rgba(190,212,224,.74)",rollHi:"rgba(150,176,190,.12)",rollLn:"rgba(150,176,190,.14)",nib:"rgba(200,222,234,.80)"}
+};
+function tapePaper(c,x0,y0,w,h,part,pal){
+  const T=tapeInit(),P=TAPE_PAL[pal]||TAPE_PAL.light;
   /* бумага — вещь, она видна и до первых двух отсчётов: прежде полоса пустовала
      первые три секунды сеанса (первый столбец пишется через 1.6 с), и колодка
      на свежем кадре выглядела сломанной. Кривые — только когда есть что вести */
@@ -86627,9 +86636,9 @@ function tapePaper(c,x0,y0,w,h,part){
   c.save();
   if(part!=="roll"){
   /* бумага: слегка тёплая, с продольными краями и следом протяжки */
-  c.fillStyle="rgba(188,182,164,.62)";
+  c.fillStyle=P.paper;
   c.fillRect(x0,y0,w,h);
-  c.fillStyle="rgba(0,0,0,.10)";
+  c.fillStyle=P.edge;
   c.fillRect(x0,y0,w,1.2);c.fillRect(x0,y0+h-1.2,w,1.2);
   /* слева бумага уходит в щель подачи: без этой тени полоса начинается ниоткуда */
   const lw=Math.min(9,w*.1);
@@ -86640,7 +86649,7 @@ function tapePaper(c,x0,y0,w,h,part){
   /* поперечные деления: время, без единой цифры */
   const cols=Math.min(T.n-1,Math.floor(w));
   const sc=w/Math.max(1,cols);
-  c.strokeStyle="rgba(60,66,60,.18)";c.lineWidth=1;
+  c.strokeStyle=P.grid;c.lineWidth=1;
   for(let g=0;g<=6;g++){
     const gx=Math.round(x0+w*g/6)+.5;
     c.beginPath();c.moveTo(gx,y0+1);c.lineTo(gx,y0+h-1);c.stroke();
@@ -86653,12 +86662,12 @@ function tapePaper(c,x0,y0,w,h,part){
     const top=y0+th*i+1.2, hh=th-2.4;
     /* нуль дорожки: печатная линия на бумаге. На ней перо стоит там, где
        ничего не менялось, — и это само по себе показание */
-    c.strokeStyle="rgba(60,66,60,.20)";
+    c.strokeStyle=P.zero;
     c.beginPath();
     c.moveTo(x0,Math.round(top+hh*.5)+.5);c.lineTo(x1,Math.round(top+hh*.5)+.5);
     c.stroke();
     if(cols<1||part)continue;
-    c.strokeStyle="rgba(38,44,40,.80)";
+    c.strokeStyle=P.ink;
     c.beginPath();
     for(let k=0;k<=cols;k++){
       /* столбцы идут слева направо: слева старое, справа то, что пишется */
@@ -86677,16 +86686,16 @@ function tapePaper(c,x0,y0,w,h,part){
   const rg=c.createLinearGradient(x1-rw,0,x1,0);
   rg.addColorStop(0,"rgba(20,26,32,0)");
   rg.addColorStop(.55,"rgba(20,26,32,.30)");
-  rg.addColorStop(1,"rgba(150,176,190,.20)");
+  rg.addColorStop(1,P.rollHi);
   c.fillStyle=rg;c.fillRect(x1-rw,y0,rw,h);
-  c.strokeStyle="rgba(150,176,190,.24)";c.lineWidth=1;
+  c.strokeStyle=P.rollLn;c.lineWidth=1;
   c.beginPath();c.moveTo(x1-rw+.5,y0);c.lineTo(x1-rw+.5,y0+h);c.stroke();
   if(part){c.restore();return;}
   /* перо: короткая чёрточка у правого края, дрожит на щелчке. Ничего не
      подсвечивает — просто стоит там, где сейчас пишет */
   if(!T.back){
     const jitter=T.tick*1.6;
-    c.strokeStyle="rgba(24,28,26,.85)";c.lineWidth=1.2;
+    c.strokeStyle=P.nib;c.lineWidth=1.2;
     c.beginPath();
     c.moveTo(x1-1.5+jitter,y0+1);c.lineTo(x1-1.5+jitter,y0+h-1);
     c.stroke();
@@ -86790,11 +86799,11 @@ function instrPodPaint(c,w,h,R){
     c.font="7px ui-monospace,monospace";
     c.fillText(R[i].ab,cx,nh+7);
   }
-  /* лента: та же бумага, что и в кабине, только узкая полоска.
-     Бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
-     на себя весь верх экрана, а поверх мира висит только нужное сейчас */
+  /* лента: та же лента, что и в кабине, только узкая полоска и тёмный лист (TAPE_PAL.dark):
+     светлая бумага в строке приборов перетягивала на себя весь верх экрана, а поверх мира
+     висит только нужное сейчас — светится след пера, не пустая полоса */
   c.globalAlpha=.72;
-  tapePaper(c,g.px,g.py,g.pw,g.ph,"base");
+  tapePaper(c,g.px,g.py,g.pw,g.ph,"base","dark");
   c.globalAlpha=1;
 }
 /* живое — примитивами в очередь колодки: мастер, стрелки, невязка, перья, валик, перо */
@@ -86819,11 +86828,11 @@ function instrPodLive(R,T,w,h){
   if(cols>=1)for(let i=0;i<TAPE_PENS;i++){
     const top=py+th*i+1.2,hh=th-2.4,ys=IPOD.ys[i]||(IPOD.ys[i]=[]);ys.length=cols+1;
     for(let k=0;k<=cols;k++){const idx=(T.head-1-T.back-(cols-k)+TAPE_N*2)%TAPE_N;ys[k]=top+hh*(1-T.col[idx*TAPE_PENS+i]/255);}
-    ovGraph(px,Math.max(py,top-1),x1,Math.min(py+ph,top+hh+1),px,sc,ys,1,"rgba(38,44,40,.80)",.72);
+    ovGraph(px,Math.max(py,top-1),x1,Math.min(py+ph,top+hh+1),px,sc,ys,1,TAPE_PAL.dark.ink,.72);
   }
   ckgPut(IPOD.Rl);
   /* перо: короткая чёрточка у правого края, дрожит на щелчке; смотрим назад — бумага в тени */
-  if(!T.back){const x=x1-1.5+T.tick*1.6;ovRect(x-.6,py+1,x+.6,py+ph-1,"rgba(24,28,26,.85)",.72);}
+  if(!T.back){const x=x1-1.5+T.tick*1.6;ovRect(x-.6,py+1,x+.6,py+ph-1,TAPE_PAL.dark.nib,.72);}
   else ovRect(px,py,x1,py+ph,"rgba(10,14,18,.16)",.72);
 }
 function instrPodDraw(){
@@ -86847,7 +86856,7 @@ function instrPodDraw(){
          ни в одну прогретую запись пула — без once первая же колодка рожала новую на 6.6 МБ (стойка 91zl) */
       IPOD.M=ckgSpr(0,0,w,h,c=>instrPodPaint(c,w,h,R),{once:true});
       /* валик — над перьями, своим спрайтом */
-      IPOD.Rl=ckgSpr(x1-rw-1,g.py,x1+1,g.py+g.ph,c=>{c.globalAlpha=.72;tapePaper(c,g.px,g.py,g.pw,g.ph,"roll");});
+      IPOD.Rl=ckgSpr(x1-rw-1,g.py,x1+1,g.py+g.ph,c=>{c.globalAlpha=.72;tapePaper(c,g.px,g.py,g.pw,g.ph,"roll","dark");});
       IPOD.mk=mk;}
     instrPodLive(R,T,w,h);});
   }finally{OVL.led=led;}

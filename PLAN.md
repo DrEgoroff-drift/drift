@@ -57,8 +57,6 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     motion check;
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
-  - the instrument strip chart under the gauges reads as an empty light-grey slab, brightest at the top: 0.465.0's
-    back, or dark paper with only the trace bright (GPU-3).
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
   - the nebula's regeneration (GPU-2): in full flight at zoom ≥ 1 it regenerates every frame (~10 ms at 1920). Age 6
