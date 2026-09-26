@@ -145,6 +145,16 @@ function railDocked(auto){
   else say("ПРИНЯТО",60);
   railWinShow();
 }
+/* ── табло листается (M472): буква, что сменилась с прошлой перерисовки,
+   переворачивается пластинкой — как на вокзале; прочие стоят. Помнится только
+   прошлый текст строки, в памяти страницы ── */
+const RAIL_FLAP_PREV={};
+function railFlap(i,txt){
+  const was=RAIL_FLAP_PREV[i]||"";RAIL_FLAP_PREV[i]=txt;
+  let o="";
+  for(let k=0;k<txt.length;k++){const c=txt[k];o+=c!==was[k]&&c!==" "?"<i class='fl'>"+c+"</i>":c;}
+  return o;
+}
 /* ── вестибюль: одна страница ── */
 function railInterval(sx,sy){const r=Math.hypot(sx,sy);const I=r<=RAIL_METRO_R?10:Math.round(30+60*clamp((r-12)/28,0,1));
   return (typeof rushAt==="function"&&rushAt(sx,sy))?Math.max(5,Math.round(I/2)):I;}   /* ажиотаж: дополнительный поезд (M504) */
@@ -172,8 +182,10 @@ function railDestinations(){
 function railFare(t){
   const metro=Math.hypot(G.sx,G.sy)<=RAIL_METRO_R&&Math.hypot(t.to.sx,t.to.sy)<=RAIL_METRO_R;
   const fare=metro?5:Math.max(4,Math.round(2*t.dist));
-  const bag=metro?0:Math.ceil(held()/5);
-  const F={fare,bag,sum:fare+bag,metro};
+  /* крупногабаритный (M472, §3): тяжёлое в трюме (осмий, крошка) — багаж ×3 */
+  const big=!metro&&typeof resW==="function"&&Object.keys(G.cargo).some(k=>(G.cargo[k]|0)>0&&resW(k)>1);
+  const bag=metro?0:Math.ceil(held()/5)*(big?3:1);
+  const F={fare,bag,sum:fare+bag,metro,big};
   return (typeof railPassFare==="function")?railPassFare(F):F;   /* проездной (M500) */
 }
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
@@ -189,7 +201,8 @@ function railWinRender(){
   const by=R.by,S=R.S;
   let h="<div class='rw-head'><b>СТАНЦИЯ «"+R.name.toUpperCase()+"»</b><s>"+S.lines.map(l=>l.ru).join(" · ")+(S.junction?" · ПЕРЕСАДКА":"")+"</s></div>";
   h+="<div class='rw-sec'>ТАБЛО</div><div class='rw-board'>";
-  for(const l of S.lines)h+="<div><span>"+(S.metro?"МЕТРО":"ЭЛЕКТРИЧКА")+" · "+l.ru+"</span><em>"+(RAIL_WAIT&&RAIL_WAIT.l===l?"ваш · через "+railFmt(Math.ceil(RAIL_WAIT.t)):"через "+railFmt(railWaitNow(G.sx,G.sy)))+"</em></div>";
+  S.lines.forEach((l,li)=>{h+="<div><span>"+(S.metro?"МЕТРО":"ЭЛЕКТРИЧКА")+" · "+l.ru+"</span><em>"+
+    railFlap(li,RAIL_WAIT&&RAIL_WAIT.l===l?"ваш · через "+railFmt(Math.ceil(RAIL_WAIT.t)):"через "+railFmt(railWaitNow(G.sx,G.sy)))+"</em></div>";});
   h+="</div>";
   if(RAIL_WAIT){
     h+="<div class='rw-sec'>ВАШ ПОЕЗД</div><div class='rw-row'><span>до «"+railStopName(RAIL_WAIT.to)+"» · "+RAIL_WAIT.k+" "+pl3(RAIL_WAIT.k,"остановка","остановки","остановок")+"</span><em>поезд прибывает через "+Math.ceil(RAIL_WAIT.t)+" с</em></div>";
@@ -204,7 +217,7 @@ function railWinRender(){
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
-      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + БАГАЖ "+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
+      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
       if(typeof railOwner==="function"&&railOwner()==="co"&&t.k>=2)
         h+="<button class='act rw-go' data-i='"+i+"' data-x='1'>EXPRESS™ ДО «"+railStopName(t.to).toUpperCase()+"» · "+(F.fare*RAIL_EXPRESS_MUL)+" КР<s>на три секунды быстрее!</s></button>";

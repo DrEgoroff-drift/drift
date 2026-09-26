@@ -88,6 +88,11 @@ could ever save.
   matter of aim, not of fighting the throttle. On a phone the cone is 1.4× wider. The picture is a draft; the
   plate label sits over the platform when the vestibule side faces down, which it always did.
 
+- **M472: the board flips; крупногабаритный ×3.** The ТАБЛО is a split-flap board now: every redraw, a letter that
+  changed since the last one turns over like a plate (a quarter-second squash), and the rest stand still. «через
+  0:14» → «через 0:13» flips only the last digit. The ticket office charges baggage ×3 as «крупногабарит» when the
+  hold carries anything heavy (осмий, нейтронная крошка), and the ticket button says so.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are

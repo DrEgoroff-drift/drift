@@ -1829,6 +1829,8 @@ body.table u.addr{color:#7a4a20}
   background:#101419;border:1px solid rgba(242,178,92,.35);border-radius:10px;color:var(--text);
   box-shadow:0 12px 40px rgba(0,0,0,.6)}
 #railWin.open{display:block}
+#railWin .rw-board em i.fl{display:inline-block;font-style:normal;animation:rwFlap .32s steps(4) both}
+@keyframes rwFlap{0%{transform:scaleY(1)}45%{transform:scaleY(.05)}55%{transform:scaleY(.05);filter:brightness(.6)}100%{transform:scaleY(1)}}
 /* ── шесть отделок вестибюля по хозяину земли (M471, 18.09) — держава читается с порога ── */
 #railWin[data-by=halt]{background:#15171a;color:#cfc6b4;border-color:#3a3530;border-radius:4px}
 #railWin[data-by=halt] .rw-head b{color:#ffe7c0}#railWin[data-by=halt] .rw-board{background:#0e0f11;border-color:#2a2622}
