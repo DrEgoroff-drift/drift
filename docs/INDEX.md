@@ -462,7 +462,7 @@ FG_MAN                       src/21b-surface-deco.js:277
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19-25
-FIND_R                       src/17b-finds.js:234
+FIND_R                       src/17b-finds.js:236
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIRE_ALONE                   src/21a5-base-dir.js:121
 FIRM_TOWN                    src/12al1-toponym.js:26
@@ -2923,7 +2923,7 @@ drawElevator                 src/20aa-poi-shapes.js:91-113
 drawExhaust                  src/16a-space.js:323
 drawFactRoute                src/13b-occupy.js:285-338
 drawFactory                  src/20aa-poi-shapes.js:378-462
-drawFindsSystem              src/17b-finds.js:238-286
+drawFindsSystem              src/17b-finds.js:240-288
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-360
@@ -3219,12 +3219,12 @@ fbm2                         src/01-core.js:124
 fbm3                         src/24ba-belt-gpu.js:30-34
 fillMaterial                 src/18a-material.js:382-412
 findBucket                   src/17b-finds.js:18
-findInteract                 src/17b-finds.js:139-175
-findLandingNear              src/17b-finds.js:131-138
+findInteract                 src/17b-finds.js:141-177
+findLandingNear              src/17b-finds.js:133-140
 findSeen                     src/17b-finds.js:54
-findShape                    src/17b-finds.js:183-231
-findSprite                   src/17b-finds.js:235-237
-findTake                     src/17b-finds.js:58-128
+findShape                    src/17b-finds.js:185-233
+findSprite                   src/17b-finds.js:237-239
+findTake                     src/17b-finds.js:58-130
 findTestSys                  tests/91x-finds.js:3-10
 findsBlock                   src/12aa-need.js:167-194
 findsHere                    src/17b-finds.js:53
@@ -7364,7 +7364,7 @@ zoomTo                       src/15-input.js:350
 ## src/17a0-prebake.js · 4 КБ
   · печь заранее: общий планировщик (GPU-3, 25.09, DESIGN-gpu):1
 
-## src/17b-finds.js · 18 КБ
+## src/17b-finds.js · 19 КБ
   · находки в полёте:1
 
 ## src/17c-system-draw.js · 43 КБ

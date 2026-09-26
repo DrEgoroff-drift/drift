@@ -240,6 +240,8 @@ could ever save.
 
 - **M480 the free cells.** An ordered hull from Хай-Фронт or Орднунг now carries its yard's built-in on the blueprint: a pale dashed stamp in the frontmost free nose cell nearest the axis — «дальний захват» (ПР, an instrument in the nose third, sight one palladium step up, no cargo spent) or «лобовой щит» (ЩТ, on the nose plating; its number stays the +8 % nose armour of the yard). It needs no part, is not in the hold, cannot be taken or covered («встроено верфью · не снимается»), shows in the tray and counts in ЯЧЕЙКИ. Catalogue hulls and old saves are untouched; nothing new is saved — the cell is chosen by the yard from the packer's layout each time.
 
+- **Dead rarity calls removed.** Void containers and hulks called `rareTake("cont")` / `rareTake("hulk")`, places that `RARE_WHERE` never had — they never gave anything. Removed rather than populated: the hundred live in six places, each named on the showcase, and a new place would reshuffle every rarity's address (`i % places`). A hulk's finds stay the parrot, the foreign kit piece, the book and the matchbox.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
