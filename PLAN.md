@@ -66,14 +66,10 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   warmer toward it, and the star's glow is scattering in the nebula and dust (it went dark in gpu: x 0–300 of
   k_g4m main (156,72,52) → gpu (67,37,36)). Near-camera dust with parallax and stretch in flight. Budget: nebula
   at ¼ resolution, not every frame, ≤2 ms on the laptop (`prof()`).
-  - [ ] L1b dust, after e0e933f (Контроль 24.09): in l2c the top-right pillars at 760 read as shards or claws —
-    heads sharper than they should be; rounder, blunter heads. Parked mid-way for the phone: near-star shards
-    fixed (heads ≥ .38 H from the star, width from the full length, finer erosion), but the ionisation rim
-    then reads as beads along thin crests in l2c — it toggles per ¼-res texel (not the erosion, not the
-    gradient floor, a wider gradient step makes it worse); the patch waits in the session scratchpad.
-  - [ ] L1b dust: try a dim warm light 10–20 px inward from the rim, so the cut-out becomes a body.
-  - [ ] L1b dust, after 7658f17 (Контроль 24.09): at ×2.00 top right two small orange «tadpoles» — globules
-    with a tail and no gas around read as fish at 760. A globule with no gas dims stars like the rest of the dust.
+  - [ ] L1b dust «tadpoles» at ×2.00 (Контроль 24.09, again 26.09): in l2c ×2 top right the two orange fish
+    are gas seen through windows between bodies (the gas-only pass shows it there broad and dim; the dust
+    hides its surroundings), not globules — globules no longer glow without gas since 26.09. Fix wants a
+    call from Контроль: fewer narrow windows, or a softer ramp where two bodies meet.
 - [ ] **L2 HDR light:** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,

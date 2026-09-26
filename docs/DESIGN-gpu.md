@@ -817,6 +817,19 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   switching each off. Pairs vs HEAD, centred on the giant: 760 zoom 2 sharpness −3.7 %, zoom 1 −8.1 %,
   zoom .5 −3.9 %; 390 dpr 1.5 zoom 2 −2.8 %, zoom 1 −7.5 %; light 0…−0.1 %. The sharpness that went away
   is the aliasing (rows on the arc, stairs on the ansae); the grooves on the ansae stay. GPU errors 0.
+- **L1b dust: blunt heads, no beads, a lit body** (26.09, Контроль, PLAN §0). With the 115–135 px soft ramp a
+  narrow head never got deep enough to go dark, so the darkness faded toward it and the pillar read as a
+  claw. The neck now tapers to .7 of the base width (was .55), and the head is 1.4× the neck (was 1.25) and
+  blunt: an ellipse 1.35× shorter along the axis. The ionisation rim needs a body at least 12 px thick,
+  measured by one more field sample 12 px inward along the gradient. On a thin crest it broke into beads at
+  ¼ resolution, and on a protrusion the rims of both sides merged into a hot spot. The same gate takes the
+  reflected-light crust off thin bodies, so a globule with no gas only dims stars. A dim warm light now
+  reaches 10–20 px into the lit side of a body (a second falloff of 18 px next to the 6 px one), so the
+  cut-out reads as a body. Cost: one more `dustAt` per ¼-res pixel (6 instead of 5), not yet timed on the
+  phone. The ×2.00 «tadpoles» turned out to be gas through windows between bodies (see PLAN). Gating the
+  cavity glow by gas only dimmed the frame by 10 % and left them. Pairs vs HEAD (light / sharpness): l2c
+  760 ×1.10 +0.6 / +0.3 %, ×2.00 +1.1 / +0.6 %; l4a ×2.00 +2.1 / +0.9 %; 390 dpr 1.5 ×1.10 +0.1 / +0.5 %,
+  ×2.00 +1.0 / +0.5 %. GPU errors 0. The file is 66 bytes smaller: history went from the header comment.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance

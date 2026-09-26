@@ -2237,12 +2237,12 @@ glyphEl                      src/12t-settle.js:79-90
 glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gn5Foe                       tests/91zzzw-guns3.js:10-16
-GNB                          src/16gb-gpu-nebula.js:19
+GNB                          src/16gb-gpu-nebula.js:17
 GNB_EMI                      src/16gb-gpu-nebula.js:408
 GNB_FINE                     src/16gb-gpu-nebula.js:362
-GNB_GEN                      src/16gb-gpu-nebula.js:46
+GNB_GEN                      src/16gb-gpu-nebula.js:44
 GNB_LM_COL                   src/16gb-gpu-nebula.js:520
-GNB_NOISE                    src/16gb-gpu-nebula.js:20
+GNB_NOISE                    src/16gb-gpu-nebula.js:18
 GNB_PAL                      src/16gb-gpu-nebula.js:503-518
 GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
 GNB_TILE                     src/16gaz-gpu-noise.js:10
@@ -4759,7 +4759,7 @@ recStart                     src/15c-rec.js:28
 recStop                      src/15c-rec.js:29
 recTick                      src/15c-rec.js:39-51
 rectsDirty                   src/08-state.js:102-106
-RED                          src/16gb-gpu-nebula.js:58
+RED                          src/16gb-gpu-nebula.js:56
 refineBank                   src/11-log.js:170
 REG_TRANSIT                  src/12al3-reg.js:12
 regAll                       src/12al3-reg.js:13
@@ -7081,7 +7081,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gaz-gpu-noise.js · 3 КБ
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 51 КБ
+## src/16gb-gpu-nebula.js · 50 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 79 КБ
