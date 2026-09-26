@@ -171,6 +171,12 @@ could ever save.
   («изоленту вашу я оставлю, она тут уже несущая»), once a shift per instrument, without bringing back the
   гарантия.
 
+- **M489: the sign says whose it is.** The station header now reads by the owner of the land, as the metro stops
+  already did: «ПГТ УРНЕЙУР», «САРИС-СИТИ», «БЕЦИРК КСИДРАЭШ № 6», «СЕН-КОРЭШ», «КООПЕРАТИВ «КАЗЕОРН»»,
+  «ПИВЕКСИН-4 V5.9». When the flag changes the sign is repainted. Your own settlement takes the owner's form too
+  and stays «посёлок X» on land nobody holds. A holding without a name you gave it is announced by its sign. A
+  subscription names the firm behind it («Вязьма Аэроспейс»), one invented firm per station.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -236,6 +242,9 @@ could ever save.
   parts and modules still break only from hits. The old master sits at one Рассвет/Коммуна station in three,
   chosen by the station's seed. His free seam needs tape on the instrument first, so it rewards the cheap road
   rather than replacing the yard.
+- M489: the sign changes only the header, the holding announcements, the settlement and the metro. Ether lines,
+  the journal and records keep the bare toponym, the way people say a place's name aloud. Names the player gave
+  (G.names) are never overwritten.
 
 ## 0.478.0 - the album on the engine
 

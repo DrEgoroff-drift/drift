@@ -28,6 +28,7 @@ function subBuy(off){
   u.sub={p:price,by:subHereBy(),next:now()+HOLD_SHIFT,paid:0,warn:0,off:0,feat:0};
   tell("money",INSTR_BY_ID[off.id].ru+" по подписке · −"+up.toLocaleString("ru")+" кр · дальше "+subFee(u)+" кр/смену",
        INSTR_BY_ID[off.id].ru+"\nпо подписке");
+  logAdd("dim","Договор подписки: «"+firmHere()+"» · "+(u.sub.by==="hf"?"Хай-Фронт":"Компания"));   /* фирма по имени (M489) */
   return true;
 }
 function subOff(u){return !!(u&&u.sub&&u.sub.off);}

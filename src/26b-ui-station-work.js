@@ -293,7 +293,7 @@ function stTabInstr(){
         sb.disabled=G.credits<up;
         sb.onclick=()=>{if(subBuy(off))renderTab();};
         r.appendChild(sb);
-        r.appendChild(el("div","nm","<s>подписка: владеть выгоднее после "+subBreakEven()+" смен — мы честно пишем</s>"));
+        r.appendChild(el("div","nm","<s>подписка от «"+firmHere()+"»: владеть выгоднее после "+subBreakEven()+" смен — мы честно пишем</s>"));
       }
       $body.appendChild(r);
     }

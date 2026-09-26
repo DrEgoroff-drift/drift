@@ -16,6 +16,13 @@ function ownerName(base,sx,sy){
   const f=by&&TOPO_FMT[by];
   return f?f(base,hashi(sx,sy,0x70F0)>>>0):base;
 }
+/* вывеска станции: у земли без хозяина — голое имя (или запасное, как «посёлок X») */
+function ownerSign(base,sx,sy,bare){
+  const by=(typeof stampOwnerAt==="function")?stampOwnerAt(sx,sy):null;
+  return by&&TOPO_FMT[by]?ownerName(base,sx,sy):(bare||base);
+}
+/* фирма, что продаёт здесь по подписке: одна на станцию, от её места */
+function firmHere(){return firmName(hashi(G.sx|0,G.sy|0,0xF1A4));}
 const FIRM_TOWN=["Кострома","Урюпинск","Кинешма","Сызрань","Торжок","Котлас","Шуя","Вязьма","Ирбит","Кунгур"];
 const FIRM_WORD=["Роботикс","Орбитал","Дайнемикс","Системс","Аэроспейс","Фьюжн","Логистикс","Индастриз"];
 function firmName(seed){const r=rng(hashi(seed|0,0xF1A3,2));return FIRM_TOWN[Math.floor(r()*FIRM_TOWN.length)]+" "+FIRM_WORD[Math.floor(r()*FIRM_WORD.length)];}

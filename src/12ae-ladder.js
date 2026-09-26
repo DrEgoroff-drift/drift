@@ -92,7 +92,7 @@ function rungMoments(sys){
   if(!sys||!sys.station)return 0;
   const H=holdOf(sys.key),r=rungOf(sys.sx,sys.sy),seen=H.rung|0;
   if(r<=seen){H.rung=Math.min(seen,r);return 0;}
-  const nm=(G.names&&G.names[sys.key])||sys.station.name;
+  const nm=(G.names&&G.names[sys.key])||((typeof ownerSign==="function")?ownerSign(sys.station.name,sys.sx,sys.sy):sys.station.name);   /* M489 */
   let n=0;
   for(let i=seen+1;i<=r;i++){
     const d=RUNGS[i];if(!d)continue;

@@ -71,7 +71,8 @@ function openStationBody(){
   if(typeof expPaxDock==="function")expPaxDock();   /* попутчик сошёл (M156) */
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
-  document.getElementById("stName").textContent=G.st.name.toUpperCase();
+  /* вывеска — по хозяину земли (M489): сменился флаг — перекрасили */
+  document.getElementById("stName").textContent=((typeof ownerSign==="function"&&!G.st.settle)?ownerSign(G.st.name,G.sx,G.sy):G.st.name).toUpperCase();
   /* модули названы прямо в шапке: снаружи игрок видит их силуэты, внутри —
      читает списком. Услуги при этом по-прежнему от типа станции, модули
      ничего не открывают (17a-station-mod) */

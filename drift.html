@@ -7995,6 +7995,7 @@ function subBuy(off){
   u.sub={p:price,by:subHereBy(),next:now()+HOLD_SHIFT,paid:0,warn:0,off:0,feat:0};
   tell("money",INSTR_BY_ID[off.id].ru+" по подписке · −"+up.toLocaleString("ru")+" кр · дальше "+subFee(u)+" кр/смену",
        INSTR_BY_ID[off.id].ru+"\nпо подписке");
+  logAdd("dim","Договор подписки: «"+firmHere()+"» · "+(u.sub.by==="hf"?"Хай-Фронт":"Компания"));   /* фирма по имени (M489) */
   return true;
 }
 function subOff(u){return !!(u&&u.sub&&u.sub.off);}
@@ -24258,7 +24259,7 @@ function rungMoments(sys){
   if(!sys||!sys.station)return 0;
   const H=holdOf(sys.key),r=rungOf(sys.sx,sys.sy),seen=H.rung|0;
   if(r<=seen){H.rung=Math.min(seen,r);return 0;}
-  const nm=(G.names&&G.names[sys.key])||sys.station.name;
+  const nm=(G.names&&G.names[sys.key])||((typeof ownerSign==="function")?ownerSign(sys.station.name,sys.sx,sys.sy):sys.station.name);   /* M489 */
   let n=0;
   for(let i=seen+1;i<=r;i++){
     const d=RUNGS[i];if(!d)continue;
@@ -26100,6 +26101,13 @@ function ownerName(base,sx,sy){
   const f=by&&TOPO_FMT[by];
   return f?f(base,hashi(sx,sy,0x70F0)>>>0):base;
 }
+/* вывеска станции: у земли без хозяина — голое имя (или запасное, как «посёлок X») */
+function ownerSign(base,sx,sy,bare){
+  const by=(typeof stampOwnerAt==="function")?stampOwnerAt(sx,sy):null;
+  return by&&TOPO_FMT[by]?ownerName(base,sx,sy):(bare||base);
+}
+/* фирма, что продаёт здесь по подписке: одна на станцию, от её места */
+function firmHere(){return firmName(hashi(G.sx|0,G.sy|0,0xF1A4));}
 const FIRM_TOWN=["Кострома","Урюпинск","Кинешма","Сызрань","Торжок","Котлас","Шуя","Вязьма","Ирбит","Кунгур"];
 const FIRM_WORD=["Роботикс","Орбитал","Дайнемикс","Системс","Аэроспейс","Фьюжн","Логистикс","Индастриз"];
 function firmName(seed){const r=rng(hashi(seed|0,0xF1A3,2));return FIRM_TOWN[Math.floor(r()*FIRM_TOWN.length)]+" "+FIRM_WORD[Math.floor(r()*FIRM_WORD.length)];}
@@ -38226,7 +38234,7 @@ function settleStop(S){
   const prices={};
   for(const k of TRADE_KEYS)prices[k]=Math.max(1,RES[k].price);
   return {key:sys.key,sx:sys.sx,sy:sys.sy,planets:sys.planets,name:sys.name,settle:1,
-    station:{name:"посёлок "+(S.name||sys.name),stype:"trade",kind:"посёлок",
+    station:{name:(typeof ownerSign==="function")?ownerSign(S.name||sys.name,S.sx,S.sy,"посёлок "+(S.name||sys.name)):"посёлок "+(S.name||sys.name),settle:1,stype:"trade",kind:"посёлок",
       orbit:0,ang:0,spd:0,prices,fuelPrice:11,x:0,y:0,vx:0,vy:0}};
 }
 
@@ -92274,7 +92282,8 @@ function openStationBody(){
   if(typeof expPaxDock==="function")expPaxDock();   /* попутчик сошёл (M156) */
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
-  document.getElementById("stName").textContent=G.st.name.toUpperCase();
+  /* вывеска — по хозяину земли (M489): сменился флаг — перекрасили */
+  document.getElementById("stName").textContent=((typeof ownerSign==="function"&&!G.st.settle)?ownerSign(G.st.name,G.sx,G.sy):G.st.name).toUpperCase();
   /* модули названы прямо в шапке: снаружи игрок видит их силуэты, внутри —
      читает списком. Услуги при этом по-прежнему от типа станции, модули
      ничего не открывают (17a-station-mod) */
@@ -93521,7 +93530,7 @@ function stTabInstr(){
         sb.disabled=G.credits<up;
         sb.onclick=()=>{if(subBuy(off))renderTab();};
         r.appendChild(sb);
-        r.appendChild(el("div","nm","<s>подписка: владеть выгоднее после "+subBreakEven()+" смен — мы честно пишем</s>"));
+        r.appendChild(el("div","nm","<s>подписка от «"+firmHere()+"»: владеть выгоднее после "+subBreakEven()+" смен — мы честно пишем</s>"));
       }
       $body.appendChild(r);
     }
