@@ -530,7 +530,7 @@ GAL_STAR_SCREEN              src/17z1-galaxy.js:152
 GAL_TILE                     src/17z1-galaxy.js:63
 GAL_TILES                    src/17z1-galaxy.js:65
 GAL_VER                      src/17z1-galaxy.js:19
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-243
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-245
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GATE_FLY                     tests/91zzzzzzy-gpugate.js:269
@@ -4262,7 +4262,7 @@ luxPal                       src/03c-hull-luxe.js:16-26
 mailAll                      src/25j-post-wire.js:31-35
 mailBusy                     src/25j-post-wire.js:46
 mailCall                     src/25j-post-wire.js:47-52
-mailCard                     src/25k-post-mail.js:19-35
+mailCard                     src/25k-post-mail.js:19-31
 mailDock                     src/25j-post-wire.js:124-141
 mailEve                      src/25l-post-ether.js:41-45
 mailFresh                    src/25j-post-wire.js:151
@@ -5364,7 +5364,7 @@ renderDiary                  src/29f-winter.js:221-249
 renderHold                   src/27j-ui-hold.js:252
 renderLog                    src/11-log.js:94-117
 renderLoreBoard              src/27h-ui-lore.js:26-79
-renderMail                   src/25k-post-mail.js:36-109
+renderMail                   src/25k-post-mail.js:32-105
 renderOpts                   src/27-ui-ship.js:35-332
 renderPrices                 src/12aa-need.js:258-285
 renderQsl                    src/11an-qsl.js:160-201
@@ -5812,7 +5812,7 @@ smenaLand                    src/12ud1-smena-quest.js:19-32
 smenaNext                    src/12ud1-smena-quest.js:17
 smenaOpenCh                  src/12ud-smena.js:122
 smenaPlaceKey                src/12ud1-smena-quest.js:13-16
-smenaPlate                   src/12ud1-smena-quest.js:43-50
+smenaPlate                   src/12ud1-smena-quest.js:43-48
 smenaRec                     src/12ud-smena.js:104
 smenaSync                    src/12ud-smena.js:107-119
 smenaWhere                   src/12ud-smena.js:121
@@ -7072,7 +7072,7 @@ zoomTo                       src/15-input.js:350
 ## src/12ud-smena.js · 14 КБ
   · «Смена»: роман, который читается, когда прожит (M353):1
 
-## src/12ud1-smena-quest.js · 4 КБ
+## src/12ud1-smena-quest.js · 3 КБ
   · «Смена» — главный квест (P15, PLAYTEST-2026-09-13 §5):1
 
 ## src/12ue-boxes.js · 6 КБ

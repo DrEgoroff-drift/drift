@@ -6,6 +6,13 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.479.0 - mail cards and the smena plate on the engine
+
+- **Postcards in the mail and the picture of a «Смена» chapter** are the same card as in the album now: baked
+  once and laid into an engine canvas. They look the same and are sharper on DPR 3 screens.
+- **Nets**: the album scene of the «0 вызовов 2D» gate also draws a mail card and a chapter picture; a new
+  mutant (mail-2d) is killed.
+
 ## 0.478.0 - the album on the engine
 
 - **The album draws on the engine** (GPU-3): each card is the same postcard brush, baked once and laid into
