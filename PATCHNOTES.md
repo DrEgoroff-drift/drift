@@ -234,6 +234,8 @@ could ever save.
 
 - Утильсбор, the rest (M513): once the transit runs out the paper plate hangs from one corner, crooked; while the hull is on transit plates, the КБ at a yard of your own flag refuses to re-plan it («сначала номера, потом чертёж»), and the instruments' warranty is void — the broken-instruments list says «гарантия аннулирована: корпус не на учёте» and ТЕХПОДДЕРЖКА is not offered.
 
+- **M463 the bazaar: odd lots and a rumour at the stalls.** Beside the random part, РАЗНОЕ now carries a plate off a hull broken up here («Табличка с остова «…»», 40–90 кр, goes to ВЕЩИ, changes nothing — memory, not gain). Every other shift a separate counter sells one rarity from the barge-hold table (6–12 k кр), only one nobody holds yet; bought, it counts toward the hundred like a find and stays on the counter as ПРОДАНО. Under the awnings a junk-dealer tells one rumour per shift — seeded by the bazaar and the shift, so it never repeats the station of the same system — logged to ЛЮДИ, remembered on the map, with a НА КАРТУ button. `rumoursHere(seed)` takes an optional seed.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -319,6 +321,7 @@ could ever save.
   that save no money (ДОСО's norm, the tug, tape, readings) count only times on the desk, not кр. A chronicle
   week is seven chronicle days, which is one real week, so the union duty is slow by design.
 - M482 доводка stays paid with нейтронная крошка + 800 кр (M478), not with a node as DESIGN-shipyard §6 says: spending a node would break a set the player is collecting. Two welds per hull, +1 tier — already so.
+- M463: the rarity counter draws from the barge-hold pool, because the «hulk» and «cont» places named by `17b-finds` have no pool in `RARE_WHERE` (those finds never yield a rarity today). A bought rarity pre-empts that one barge find; the cautious take is one every other shift at 6–12 k.
 
 ## 0.478.0 - the album on the engine
 

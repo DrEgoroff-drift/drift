@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6612
+Файлов: 641 · символов верхнего уровня: 6613
 
 ## СИМВОЛЫ
 
@@ -107,11 +107,11 @@ BASE_WALKED                  src/21a-mode-base.js:119
 BATT_COOL                    src/21d-battery.js:13
 BATT_DMG                     src/21d-battery.js:14
 BATT_RANGE                   src/21d-battery.js:12
-BAZ_BAKE                     src/17n-bazaar.js:72
-BAZ_CUT                      src/17n-bazaar.js:73
-BAZ_HULLS                    src/17n-bazaar.js:71
-BAZ_SIGN                     src/17n-bazaar.js:93
-BAZ_THROWN_MAX               src/17n-bazaar.js:9
+BAZ_BAKE                     src/17n-bazaar.js:87
+BAZ_CUT                      src/17n-bazaar.js:88
+BAZ_HULLS                    src/17n-bazaar.js:86
+BAZ_SIGN                     src/17n-bazaar.js:108
+BAZ_THROWN_MAX               src/17n-bazaar.js:12
 BB_BAKE                      src/17k-billboard.js:90
 BB_CACHE                     src/17k-billboard.js:12
 BB_NEON                      src/17k-billboard.js:89
@@ -2071,18 +2071,19 @@ baseWorth                    src/21a5-base-dir.js:77-84
 battAt                       src/21d-battery.js:17-31
 battTarget                   src/21d-battery.js:33-35
 battTick                     src/21d-battery.js:36-65
-bazBought                    src/17n-bazaar.js:19-23
-bazBucket                    src/17n-bazaar.js:18
-bazBuy                       src/17n-bazaar.js:47-61
-bazClose                     src/17n-bazaar.js:165
-bazHere                      src/17n-bazaar.js:10-17
-bazHulk                      src/17n-bazaar.js:74-90
-bazInteract                  src/17n-bazaar.js:158-164
-bazLots                      src/17n-bazaar.js:33-46
-bazOpen                      src/17n-bazaar.js:166-186
-bazPartBase                  src/17n-bazaar.js:31
-bazSign                      src/17n-bazaar.js:94-102
-bazThrow                     src/17n-bazaar.js:25-30
+bazBought                    src/17n-bazaar.js:22-26
+bazBucket                    src/17n-bazaar.js:21
+bazBuy                       src/17n-bazaar.js:58-76
+bazClose                     src/17n-bazaar.js:191
+bazHere                      src/17n-bazaar.js:13-20
+bazHulk                      src/17n-bazaar.js:89-105
+bazInteract                  src/17n-bazaar.js:173-179
+bazLots                      src/17n-bazaar.js:36-57
+bazOpen                      src/17n-bazaar.js:192-217
+bazPartBase                  src/17n-bazaar.js:34
+bazRumour                    src/17n-bazaar.js:182-190
+bazSign                      src/17n-bazaar.js:109-117
+bazThrow                     src/17n-bazaar.js:28-33
 bbAhead                      src/17k-billboard.js:175-181
 bbDeal                       src/17k-billboard.js:20-30
 bbDrawGpu                    src/17k-billboard.js:144-172
@@ -2876,7 +2877,7 @@ drawBarges                   src/12l-barge.js:594-629
 drawBargesMap                src/12l-barge.js:631-652
 drawBase                     src/21ac-base-draw.js:43-730
 drawBaseBuilding             src/21c-built.js:105-136
-drawBazaar                   src/17n-bazaar.js:103-157
+drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:231-339
 drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:360
@@ -7421,7 +7422,7 @@ zoomTo                       src/15-input.js:350
 ## src/17m-peace-fleet.js · 13 КБ
   · мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3):1
 
-## src/17n-bazaar.js · 13 КБ
+## src/17n-bazaar.js · 16 КБ
   · барахолка, которая помнит (M463, DESIGN-life):1
 
 ## src/17o-giants.js · 18 КБ

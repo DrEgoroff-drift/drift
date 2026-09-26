@@ -2080,6 +2080,8 @@ body.table u.addr{color:#7a4a20}
 #bazWin .bz-row:nth-child(2n+1){background:rgba(0,0,0,.18)}
 #bazWin .bz-row b{grid-area:nm;font-size:12px}#bazWin .bz-row s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7}#bazWin .bz-row button{grid-area:pr}
 #bazWin .bz-row.sold b{text-decoration:line-through;opacity:.5}
+#bazWin .bz-rum{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border:1px dashed rgba(240,210,160,.25);border-radius:3px}
+#bazWin .bz-rum b{grid-area:nm;font-size:12px}#bazWin .bz-rum s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7;line-height:1.6}#bazWin .bz-rum button{grid-area:pr}
 
 /* окошко Космопочты (D17) и печать подписки (D19) */
 .post .kp-win{display:block;margin:6px auto 2px;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
