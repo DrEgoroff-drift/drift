@@ -48,8 +48,8 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
-  - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0; open: f — one more try
-    on the keels by the emission mask, else revert; h — makerRead on the GPU frame;
+  - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0; open: h — makerRead on the
+    GPU frame (f's last try, the keels by the emission mask, gave no visible gain; the 0.471.0 keels stay);
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
   - the nebula much better (GPU-2; the author 26.09: «туманность хуже не будет, она должна прям быть лучше на много,
