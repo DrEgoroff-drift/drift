@@ -178,8 +178,9 @@ function stTabMarket(st){
       if(Q.nA)tg="берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:"");
       if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
       /* дальний товар: приёмщик говорит своё (review §3) — весы наши */
-      if(RES[k].far)tg+=(FAR_EATER[k]&&typeof stampOwnerAt==="function"&&FAR_EATER[k]===stampOwnerAt(G.sx,G.sy)
-        ?" · здесь его едят — ×1,5":"")+(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
+      /* едок говорит сам (M469): кто берёт и зачем; без едока — приёмщик про весы */
+      const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
+      if(RES[k].far)tg+=fv?" · "+fv[0]+": "+fv[1]:(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));

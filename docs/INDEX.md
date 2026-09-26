@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6505
+Файлов: 641 · символов верхнего уровня: 6509
 
 ## СИМВОЛЫ
 
@@ -178,7 +178,7 @@ BUILD                        src/21a-mode-base.js:23-82
 BUILD_KEYS                   src/21a-mode-base.js:83
 BURN_DPS                     src/13a-guns.js:26
 BURN_TIME                    src/13a-guns.js:25
-BUY_SPREAD                   src/12-economy.js:113
+BUY_SPREAD                   src/12-economy.js:137
 CAM_LAG_PX                   src/16a-space.js:280
 CANT_STYLE                   src/27d-ui-cantina.js:15-26
 CAP_RING                     src/28-loop.js:308
@@ -447,10 +447,11 @@ FAR_KEYS                     src/02-world.js:124
 FAR_RES                      src/02-world.js:96-109
 FAR_ROLL                     src/02-world.js:125
 FAR_SALT                     src/06d-far.js:20
-FAR_STALL_R                  src/12-economy.js:58
+FAR_STALL_R                  src/12-economy.js:82
 FAR_TAKE_SALT                src/06e-far-take.js:14
 FAR_TRAP_BANK                src/06f-far-props.js:33
 FAR_UNITS                    src/06d-far.js:23
+FAR_VOICE                    src/12-economy.js:41-53
 FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 FAUNA_RES                    src/02-world.js:120
@@ -812,6 +813,7 @@ HOTEL_LIT                    src/17l-hotel.js:123
 HOTEL_LOD                    src/17l-hotel.js:51
 HOTEL_NIGHT                  src/17l-hotel.js:16
 HOTEL_RIM                    src/17l-hotel.js:182
+HOTEL_SHOP_N                 src/17l-hotel.js:286
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:17
@@ -2186,8 +2188,8 @@ builtHere                    src/21c-built.js:18-39
 builtSpot                    src/21c-built.js:42-63
 buoyEtherLine                src/12ae-ladder.js:124-138
 burstFx                      src/13z-gpu-combat.js:177-180
-buyCargo                     src/12-economy.js:119-132
-buyPriceFor                  src/12-economy.js:114-118
+buyCargo                     src/12-economy.js:143-156
+buyPriceFor                  src/12-economy.js:138-142
 camBody                      src/17-mode-system.js:82-91
 camBtnTick                   src/25g-postcard.js:667-671
 camOffset                    src/19c-light.js:155-162
@@ -2694,7 +2696,7 @@ decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 depKind                      src/21b-surface-deco.js:396-405
-deployDrone                  src/12-economy.js:261-278
+deployDrone                  src/12-economy.js:285-302
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 detBgShift                   tests/90b-detect.js:150-164
@@ -3012,30 +3014,30 @@ drawWrecksSystem             src/12l-barge.js:362-388
 drawYardMark                 src/03e-hull-draw.js:71-114
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
-droneCapacity                src/12-economy.js:256-259
+droneCapacity                src/12-economy.js:280-283
 droneFar                     src/12e-drone-flight.js:102
 droneFixMs                   src/12e-drone-flight.js:177-186
 droneGuestPos                src/12e-drone-flight.js:239-251
 droneHome                    src/12e-drone-flight.js:103-115
-droneMarket                  src/12-economy.js:210-232
+droneMarket                  src/12-economy.js:234-256
 droneName                    src/12e-drone-flight.js:54
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNick                    src/12e-drone-flight.js:53
 droneNormalize               src/12e-drone-flight.js:70-86
-dronePaybackH                src/12-economy.js:187
+dronePaybackH                src/12-economy.js:211
 dronePhase                   src/12e-drone-flight.js:130-139
 dronePoint                   src/12e-drone-flight.js:94-101
 dronePos                     src/12e-drone-flight.js:142-158
-dronePrice                   src/12-economy.js:182-185
+dronePrice                   src/12-economy.js:206-209
 droneQuirk                   src/12e-drone-flight.js:52
-droneRecall                  src/12-economy.js:168-176
+droneRecall                  src/12-economy.js:192-200
 droneRoutes                  src/12e-drone-flight.js:203-225
-droneShopHas                 src/12-economy.js:189-195
-droneShopTake                src/12-economy.js:196-200
+droneShopHas                 src/12-economy.js:213-219
+droneShopTake                src/12-economy.js:220-224
 droneStateRu                 src/12e-drone-flight.js:188-198
 droneSys                     src/12e-drone-flight.js:91-93
 droneTag                     src/12e-drone-flight.js:58-64
-droneTarget                  src/12-economy.js:260
+droneTarget                  src/12-economy.js:284
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
 dsTick                       src/12p1-doublespeak.js:33-39
@@ -3136,15 +3138,16 @@ faceRnd                      src/12d-mgr-face.js:16
 factPrices                   src/27c-ui-hq.js:587-604
 fameOf                       src/21b3-base-hunt.js:98-102
 fameWhere                    src/21b3-base-hunt.js:103-115
-farBasePrice                 src/12-economy.js:44-48
+farBasePrice                 src/12-economy.js:68-72
 farBeltDress                 src/06e-far-take.js:85-98
 farCargoHit                  src/06f-far-props.js:14-31
 farCaveAmber                 src/06e-far-take.js:136-152
 farCaveAmberTake             src/06e-far-take.js:153-162
-farCurve                     src/12-economy.js:39-43
+farCurve                     src/12-economy.js:63-67
 farDeposits                  src/06d-far.js:59-79
 farDigNode                   src/06e-far-take.js:100-110
 farEaterMul                  src/12-economy.js:32-38
+farEaterVoice                src/12-economy.js:54-62
 farGradeOf                   src/06d-far.js:57
 farGradeRu                   src/06d-far.js:80
 farHere                      src/06e-far-take.js:19-23
@@ -3155,15 +3158,15 @@ farNormal                    src/06d-far.js:53-56
 farPlaces                    src/06d-far.js:33-51
 farPlanetIdx                 src/06e-far-take.js:24
 farPresence                  src/06d-far.js:28-31
-farPriceCtx                  src/12-economy.js:49-51
+farPriceCtx                  src/12-economy.js:73-75
 farR                         src/06d-far.js:25
 farReadLine                  src/06e-far-take.js:47-52
 farReadShow                  src/06e-far-take.js:55-72
 farReading                   src/06e-far-take.js:41-46
 farScoopPick                 src/06e-far-take.js:112-118
 farSpread                    src/06e-far-take.js:36-40
-farStall                     src/12-economy.js:59-67
-farStallBuy                  src/12-economy.js:68-78
+farStall                     src/12-economy.js:83-91
+farStallBuy                  src/12-economy.js:92-102
 farTake                      src/06e-far-take.js:26-34
 farTakenAll                  src/06e-far-take.js:15
 farTrapTick                  src/06f-far-props.js:34-44
@@ -3875,12 +3878,12 @@ homeUpWorld                  tests/91zzzc-home-up.js:5-9
 homingStep                   src/13a-guns.js:470-477
 hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:179
-hotelDesk                    src/17l-hotel.js:268-280
+hotelDesk                    src/17l-hotel.js:269-282
 hotelDock                    src/17l-hotel.js:212-255
 hotelDrop                    src/17l-hotel.js:60
 hotelGet                     src/17l-hotel.js:113-121
 hotelHere                    src/17l-hotel.js:18-23
-hotelInteract                src/17l-hotel.js:260-267
+hotelInteract                src/17l-hotel.js:260-268
 hotelJob                     src/17l-hotel.js:86-111
 hotelLamp                    src/17l-hotel.js:186-190
 hotelLampOf                  src/17l-hotel.js:47
@@ -3894,6 +3897,7 @@ hotelNeon                    src/17l-hotel.js:134-142
 hotelNeonDraw                src/17l-hotel.js:143-146
 hotelPoly                    src/17l-hotel.js:177
 hotelRim                     src/17l-hotel.js:183
+hotelShop                    src/17l-hotel.js:287-293
 hotelStar                    src/17l-hotel.js:257
 hotelType                    src/17l-hotel.js:24
 hotelUp                      src/17l-hotel.js:84
@@ -4372,10 +4376,10 @@ mapUnderTrassa               src/18b-map-hold.js:60-63
 mapViewC                     src/18-mode-map.js:76
 mapZoomK                     src/18-mode-map.js:85
 mapZoomSet                   src/18-mode-map.js:89
-marketCtx                    src/12-economy.js:80-90
+marketCtx                    src/12-economy.js:104-114
 marketFor                    src/12-economy.js:2-18
-marketPrice                  src/12-economy.js:103-106
-marketPriceCtx               src/12-economy.js:95-102
+marketPrice                  src/12-economy.js:127-130
+marketPriceCtx               src/12-economy.js:119-126
 matCell                      src/18a-material.js:53-62
 matJobDone                   src/18a-material.js:364-371
 matJobMake                   src/18a-material.js:138-178
@@ -4553,7 +4557,7 @@ nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
 near                         tests/90-harness.js:172
 nearestPOI                   src/20a-poi.js:236-241
-nearestStation               src/12-economy.js:233-248
+nearestStation               src/12-economy.js:257-272
 nebMoveFrames                tests/91zzzzzzy7-gpu-nebmove.js:7-10
 nebula                       src/16-flight.js:82-96
 needAll                      src/12aa-need.js:25
@@ -5709,8 +5713,8 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:361-380
-sellCargo                    src/12-economy.js:133-158
-sellDroneYield               src/12-economy.js:159-164
+sellCargo                    src/12-economy.js:157-182
+sellDroneYield               src/12-economy.js:183-188
 sellQuote                    src/12ab-hold.js:101-110
 setBig                       src/27z-telemetry.js:112-118
 setPair                      src/27z-telemetry.js:127-132
@@ -5921,9 +5925,9 @@ stTabBoard                   src/26e-ui-station-trade.js:11-147
 stTabFuse                    src/26b-ui-station-work.js:376
 stTabInstr                   src/26b-ui-station-work.js:225-375
 stTabLab                     src/26b-ui-station-work.js:307-375
-stTabMarket                  src/26e-ui-station-trade.js:148-264
+stTabMarket                  src/26e-ui-station-trade.js:148-265
 stTabMods                    src/26b-ui-station-work.js:105-375
-stTabYard                    src/26e-ui-station-trade.js:265-410
+stTabYard                    src/26e-ui-station-trade.js:266-411
 stTabsHere                   src/26-ui-station.js:142
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:379-392
@@ -6121,7 +6125,7 @@ theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:287-377
+tickDrones                   src/12-economy.js:311-401
 tickLaunchHold               src/21-mode-surface.js:659-672
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
@@ -6836,9 +6840,9 @@ zoomTo                       src/15-input.js:350
 ## src/11z-misclosure.js · 6 КБ
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12-economy.js · 25 КБ
+## src/12-economy.js · 28 КБ
   · живой рынок:1
-  · дроны:166
+  · дроны:190
 
 ## src/12a-crew.js · 46 КБ
   · наёмники: флот, которым не управляешь напрямую:1
@@ -7302,7 +7306,7 @@ zoomTo                       src/15-input.js:350
 ## src/17k1-gosplan.js · 4 КБ
   · госзаказ на билборде (M503, PLAN «new mechanics», st. 5):1
 
-## src/17l-hotel.js · 24 КБ
+## src/17l-hotel.js · 25 КБ
   · гостиницы (M461, DESIGN-life §3.3):1
 
 ## src/17l1-hotel-kosmos.js · 27 КБ

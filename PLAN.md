@@ -228,8 +228,6 @@ measured on the GPU build first:
 
 - [ ] **Oracle lines** (`91zzzzzzzzz-worlds`): the best rail round trip ≤ ×1.3 of the best jumps in credits
   per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for M478).
-- [ ] **M469 eaters:** the goods actually consumed by the yards' densities and доводка, the luxury counter,
-  the hotel shop.
 - [ ] **M470 the net:** stop names by owner (the M489 rule) and «Край»; lines beyond r 60; the scheme as its
   own screen (КУДА ВАМ).
 - [ ] **M471:** the bare rim platform; helm assist in the ring's cone.
@@ -254,7 +252,8 @@ measured on the GPU build first:
 - [ ] **M478 numbers from the plan:** fuel from tank cells, energy from reactor cells, hull from armour parts,
   sight from nose-third instruments, module tiers as densities. One mapping table: `hold`/`tank`/
   `weapon`(reactor)/`armor` become densities per cell (per hull size, never shown as a number);
-  `engine`/`hyper`/`drill` stay station upgrades; the fixpoint suite covers both halves.
+  `engine`/`hyper`/`drill` stay station upgrades; the fixpoint suite covers both halves. The far goods eat
+  here (M469 rest): he3, palladium, osmium and magdust raise their densities; доводка by нейтронная крошка.
 - [ ] **M479 exposure:** rim parts take their side's wear when hit from that side; «engines take it» from
   behind.
 - [ ] **M483 the fast path everywhere:** NPC and pirate ships built by the packer; the new-part mark

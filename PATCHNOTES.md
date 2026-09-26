@@ -64,6 +64,15 @@ could ever save.
   market record, so no save field is new. A player who never goes out can still buy one piece of osmium for the
   shipyard, and selling it straight back loses two thirds.
 
+- **M469: the eaters speak, and the hotel shop eats.** A far good's sell row no longer says «×1,5»; the eater
+  says who takes it and why: the Коммуна's jewellers' artel for янтарь, the Компания's «стойка роскоши™» for
+  жемчуг, Хай-Фронт's optics shop for тёмное стекло. At a yard the reactor shop takes солнечный газ, the
+  instrument shop белая руда, the armour shop осмий, the finishers нейтронная крошка. By land it is
+  ГЛАВТРАССА's armour shop for осмий, Орднунг's rail gangs for магнитная пыль and the дачный кооператив for
+  чернозём; any power's navy takes the traps. Without an eater the weigher keeps his line about the scales. The
+  hotel's shop buys up to three жемчуг per visit, at one and a half times the local counter; the desk prompt says
+  so before the tap, and the market never sees those grains.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -82,6 +91,11 @@ could ever save.
   once, since only the latest strike has a time.
 - M467: «dear» is ×3 of the counter's own buying price, one unit per tap. The stall shows any far good but the
   amber chips, antimatter and neutron included; a price list might want the deepest two kept out of the heart.
+- M469: the yard densities (reactor, armour, shields, instruments) and доводка by крошка are left to stage 4.
+  They are the shipyard's own mechanics, and the resources design queues M469 «with the shipyard». The
+  greenhouse does not eat чернозём: its header forbids «удобрить за 200 кр», so the дачники's voice at the
+  counter is the only greenhouse eater for now. The hotel shop stacks on the land's eater (жемчуг in Компания
+  land pays about ×2.2 of the heart base there); it is capped at three grains a visit.
 
 ## 0.478.0 - the album on the engine
 

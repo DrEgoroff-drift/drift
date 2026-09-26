@@ -36,6 +36,30 @@ function farEaterMul(sys,k,own){
   if(k==="antimatter"&&own&&own!=="yalta"&&own!=="pirate")m*=1.3;   /* флот любой державы */
   return m;
 }
+/* у каждого едока свой голос на прилавке (M469, review §2.5): не «×1,5», а кто
+   берёт и зачем. Реплика — за что платят сверху; без едока — пусто */
+const FAR_VOICE={
+  own:{amber:["ювелирная артель","«берём. В каждом — своя муха, и у каждой мухи своя история»"],
+       pearl:["стойка роскоши™","«клиент платит не за жемчуг, а за то, что это было далеко»"],
+       darkglass:["оптический цех","«наконец стекло, а не донышко от бутылки»"]},
+  yard:{he3:["реакторный цех","«солнечный газ — котёл плотнее, корпус тот же»"],
+        palladium:["приборный цех","«белая руда — на контакты, что не гниют»"],
+        osmium:["броневой участок","«тяжело — значит, надёжно»"],
+        neutron:["доводчики","«крошку — в дело, узел можно не ставить»"]},
+  land:{osmium:["броневой участок ГЛАВТРАССЫ","«по ГОСТу: тяжелее — лучше»"],
+        magdust:["путейцы Орднунга","«пыль — на рельсы, согласно ведомости № 12»"],
+        chernozem:["дачный кооператив","«такой земли и дома не было. Берём всё»"]},
+  navy:["флотский приёмщик","«без вопросов. Распишитесь вот тут»"]
+};
+function farEaterVoice(sys,k){
+  if(!RES[k]||!RES[k].far||!sys)return null;
+  const own=(typeof stampOwnerAt==="function")?stampOwnerAt(sys.sx,sys.sy):null;
+  if(FAR_EATER[k]&&FAR_EATER[k]===own)return FAR_VOICE.own[k];
+  if(FAR_EAT_YARD[k]&&sys.station&&sys.station.stype==="yard")return FAR_VOICE.yard[k];
+  const L=FAR_EAT_LAND[k];if(L&&L[0]===own)return FAR_VOICE.land[k];
+  if(k==="antimatter"&&own&&own!=="yalta"&&own!=="pirate")return FAR_VOICE.navy;
+  return null;
+}
 function farCurve(r,band){
   if(r<6)return 1.3;
   if(r<10)return 1.3-.3*(r-6)/4;

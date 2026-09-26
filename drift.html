@@ -21945,6 +21945,30 @@ function farEaterMul(sys,k,own){
   if(k==="antimatter"&&own&&own!=="yalta"&&own!=="pirate")m*=1.3;   /* флот любой державы */
   return m;
 }
+/* у каждого едока свой голос на прилавке (M469, review §2.5): не «×1,5», а кто
+   берёт и зачем. Реплика — за что платят сверху; без едока — пусто */
+const FAR_VOICE={
+  own:{amber:["ювелирная артель","«берём. В каждом — своя муха, и у каждой мухи своя история»"],
+       pearl:["стойка роскоши™","«клиент платит не за жемчуг, а за то, что это было далеко»"],
+       darkglass:["оптический цех","«наконец стекло, а не донышко от бутылки»"]},
+  yard:{he3:["реакторный цех","«солнечный газ — котёл плотнее, корпус тот же»"],
+        palladium:["приборный цех","«белая руда — на контакты, что не гниют»"],
+        osmium:["броневой участок","«тяжело — значит, надёжно»"],
+        neutron:["доводчики","«крошку — в дело, узел можно не ставить»"]},
+  land:{osmium:["броневой участок ГЛАВТРАССЫ","«по ГОСТу: тяжелее — лучше»"],
+        magdust:["путейцы Орднунга","«пыль — на рельсы, согласно ведомости № 12»"],
+        chernozem:["дачный кооператив","«такой земли и дома не было. Берём всё»"]},
+  navy:["флотский приёмщик","«без вопросов. Распишитесь вот тут»"]
+};
+function farEaterVoice(sys,k){
+  if(!RES[k]||!RES[k].far||!sys)return null;
+  const own=(typeof stampOwnerAt==="function")?stampOwnerAt(sys.sx,sys.sy):null;
+  if(FAR_EATER[k]&&FAR_EATER[k]===own)return FAR_VOICE.own[k];
+  if(FAR_EAT_YARD[k]&&sys.station&&sys.station.stype==="yard")return FAR_VOICE.yard[k];
+  const L=FAR_EAT_LAND[k];if(L&&L[0]===own)return FAR_VOICE.land[k];
+  if(k==="antimatter"&&own&&own!=="yalta"&&own!=="pirate")return FAR_VOICE.navy;
+  return null;
+}
 function farCurve(r,band){
   if(r<6)return 1.3;
   if(r<10)return 1.3-.3*(r-6)/4;
@@ -57677,7 +57701,8 @@ function hotelInteract(sh){
   const Ht=hotelHere();if(!Ht)return false;
   if(Math.hypot(sh.x-Ht.x,sh.y-Ht.y)>150)return false;
   const board=Ht.by==="gt"?" · МЕСТ НЕТ":"";
-  const shown=cue(Ht.name+board+"\nДЕЙСТВИЕ — К СТОЙКЕ",CUE_ACT);
+  const shop=(G.cargo.pearl|0)>0?" · ЛАВКА БЕРЁТ ЖЕМЧУГ":"";   /* лавка гостиницы — едок жемчуга (M469) */
+  const shown=cue(Ht.name+board+"\nДЕЙСТВИЕ — К СТОЙКЕ"+shop,CUE_ACT);
   if(shown&&actEdge)hotelDesk(Ht);
   return true;
 }
@@ -57692,7 +57717,19 @@ function hotelDesk(Ht){
     Ht.by==="ra"?"«Ложись где свободно, брат.»":"«Ваш номер рассчитан.»";
   logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+HOTEL_NIGHT+" кр")+" · корпус +"+heal+" за ночь стоянки");
   say(greet+(free?"\n«…потом заплатите»":""),150);
+  hotelShop(Ht);
   if(typeof kinoHere==="function"&&kinoHere())peopleLine("в холле афиша: сегодня кино. Идите, пока не началось.","портье",false);
+}
+/* лавка гостиницы (M469, DESIGN-resources §2): берёт жемчуг пустоты на сувениры
+   для постояльцев — до трёх зёрен за визит, в полторы цены местной приёмки.
+   Съеденное лавкой рынок не видит: это не сдача, а потребление */
+const HOTEL_SHOP_N=3,HOTEL_SHOP_MUL=1.5;
+function hotelShop(Ht){
+  const q=Math.min(HOTEL_SHOP_N,G.cargo.pearl|0);if(q<=0||!G.sys||!G.sys.station)return 0;
+  const p=Math.round(marketFor(G.sys).pearl*HOTEL_SHOP_MUL),sum=q*p;
+  G.cargo.pearl-=q;earn(sum,"лавка гостиницы");
+  logAdd("good",Ht.name+", лавка: жемчуг ×"+q+" · +"+sum.toLocaleString("ru")+" кр · «на брелоки постояльцам»");
+  return q;
 }
 
 /* ══════════════ гостиница «Космос» — ГЛАВТРАССА (gt, эталон шести типов) ══════════════
@@ -93633,8 +93670,9 @@ function stTabMarket(st){
       if(Q.nA)tg="берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:"");
       if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
       /* дальний товар: приёмщик говорит своё (review §3) — весы наши */
-      if(RES[k].far)tg+=(FAR_EATER[k]&&typeof stampOwnerAt==="function"&&FAR_EATER[k]===stampOwnerAt(G.sx,G.sy)
-        ?" · здесь его едят — ×1,5":"")+(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
+      /* едок говорит сам (M469): кто берёт и зачем; без едока — приёмщик про весы */
+      const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
+      if(RES[k].far)tg+=fv?" · "+fv[0]+": "+fv[1]:(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
