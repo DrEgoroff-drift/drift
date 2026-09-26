@@ -2452,7 +2452,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.467.0";
+const VER="0.468.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11063,7 +11063,7 @@ const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>G
   "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
   "fld.abil.cone":()=>ABIL_CONE_WGSL};
 const GPU_PIPE_SRC={
-  "kit.img":()=>[GPU_IMG_WGSL],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
+  "kit.img":()=>[GPU_IMG_WGSL,gpuImgLayout()],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
   gtr:()=>[GTR_WGSL],gex:()=>[GEX_WGSL],"gsy.orb":()=>[GSY_ORB_WGSL],gpl:()=>[GPL_WGSL],
   "gsp.stars":()=>[GPU_WGSL_COMMON+GSP_WGSL_U+GSP_STARS],"gsp.dust":()=>[GPU_WGSL_COMMON+GSP_WGSL_U+GSP_DUST],
   "gsp.quad":()=>[(GPU_WGSL_COMMON+GSP_WGSL_U).replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_QUAD],
@@ -11404,6 +11404,7 @@ function ovFlush(){
 }
 /* проход цели T в кадровый энкодер (тот же submit): очереди qs снизу вверх, прогоны T.ur, точки графиков T.gd —
    после примитивов, с границы vec4. Очереди опустошаются. #ovl — сам OVL, колодка (25c) — своя цель */
+const OVL_UF=new Float32Array(4);   /* форма прохода — черновик: writeBuffer копирует сразу (ревью №7) */
 function ovPass(T,view,w,h,qs,ts){
   const d=GPU.dev;let np=0;for(const q of qs)np+=q.length;
   const n=np/OVL_N,g0=np,need=np+Math.ceil(T.gd.length/4)*4;
@@ -11417,7 +11418,7 @@ function ovPass(T,view,w,h,qs,ts){
   if(!OVL.A.tex)ovAtlas("",()=>({w:1,h:1,ox:0,oy:0,a:new Uint8Array(1)}));   /* атлас нужен привязке и без текста */
   /* кэш привязок живёт, пока те же буфер, атлас и конвейер */
   if(T.k0!==T.buf||T.k1!==OVL.A.view||T.k2!==OVL.P){T.k0=T.buf;T.k1=OVL.A.view;T.k2=OVL.P;T.bgs.clear();}
-  d.queue.writeBuffer(T.buf,0,T.f,0,need);d.queue.writeBuffer(T.U,0,new Float32Array([w,h,g0/4,0]));
+  d.queue.writeBuffer(T.buf,0,T.f,0,need);const u=OVL_UF;u[0]=w;u[1]=h;u[2]=g0/4;u[3]=0;d.queue.writeBuffer(T.U,0,u);
   const p=GPU.enc.beginRenderPass({colorAttachments:[{view,loadOp:"clear",storeOp:"store",
     clearValue:{r:0,g:0,b:0,a:0}}],timestampWrites:gpuTs(ts)});
   p.setPipeline(OVL.P);
@@ -11653,9 +11654,13 @@ struct KU{res:vec4f};
 @group(0) @binding(0) var<uniform> ku:KU;
 fn kClip(p:vec2f)->vec4f{let q=p*ku.res.z;return vec4f(q.x/ku.res.x*2.-1.,1.-q.y/ku.res.y*2.,0.,1.);}
 fn kCorn(i:u32)->vec2f{var c=array(vec2f(0.,0.),vec2f(1.,0.),vec2f(1.,1.),vec2f(0.,0.),vec2f(1.,1.),vec2f(0.,1.));return c[i];}`;
+/* черновики записи в буферы — растут до самого длинного вызова и живут дальше: writeBuffer копирует
+   данные сразу, так что один массив годится на все вызовы кадра (ревью 25.09 №7: массив на вызов) */
+const GPU_SCR={ku:new Float32Array(4),fld:new Float32Array(64),img:new Float32Array(1200),shp:new Float32Array(1200)};
+function gpuScr(k,n){let f=GPU_SCR[k];if(f.length<n)f=GPU_SCR[k]=new Float32Array(Math.max(n,f.length*2));return f;}
 function gpuKitU(){
   const U=GPUBufferUsage,b=gpuBuf("kit.u",16,U.UNIFORM|U.COPY_DST);
-  if(GPU.kitUF!==GPU.frameNo){GPU.kitUF=GPU.frameNo;GPU.dev.queue.writeBuffer(b,0,new Float32Array([GPU.bw,GPU.bh,DPR,0]));}
+  if(GPU.kitUF!==GPU.frameNo){GPU.kitUF=GPU.frameNo;const f=GPU_SCR.ku;f[0]=GPU.bw;f[1]=GPU.bh;f[2]=DPR;f[3]=0;GPU.dev.queue.writeBuffer(b,0,f);}
   return b;
 }
 /* картинка: rects = [{x,y,w,h, a, rot, u0,v0,u1,v1, cubic}] — x,y — центр, w,h — размер в
@@ -11671,8 +11676,8 @@ function gpuKitU(){
 const GPU_MIP_LOD=.785,GPU_MIP_GS=.6,GPU_MIP_SH=(.9).toFixed(2);
 const GPU_IMG_WGSL=GPU_KIT_WGSL+`
 @group(0) @binding(1) var<storage,read> iq:array<vec4f>;
-@group(0) @binding(2) var itx:texture_2d<f32>;
-@group(0) @binding(3) var ism:sampler;
+@group(1) @binding(0) var itx:texture_2d<f32>;
+@group(1) @binding(1) var ism:sampler;
 struct IO{@builtin(position) p:vec4f,@location(0) uv:vec2f,@location(1) @interpolate(flat) k:vec4f};
 @vertex fn vs(@builtin(vertex_index) vi:u32,@builtin(instance_index) ii:u32)->IO{
   let a=iq[ii*3u];let b=iq[ii*3u+1u];let c=iq[ii*3u+2u];let cn=kCorn(vi);
@@ -11695,18 +11700,37 @@ fn texCubic(t:texture_2d<f32>,sm:sampler,uv:vec2f)->vec4f{
     c=clamp(a0+(a0-a1)*${GPU_MIP_SH},vec4f(0.),vec4f(1.));c=vec4f(min(c.rgb,vec3f(c.a)),c.a);}
   else{c=textureSampleLevel(itx,ism,i.uv,0.);}
   return c*i.k.x;}`;
+/* раскладка картинки — своя, одна на устройство (живёт в GPU.lay): группа 0 — форма и арена, общая
+   на кадр; группа 1 — текстура и сэмплер. Раскладка явная, поэтому группы годятся обоим смешениям,
+   и группа текстуры кэшируется по виду (WeakMap): вид и есть текстура, умерла — ушла и группа.
+   Раньше одна группа на всё и один слот на смешение — смена текстуры пересобирала её (~8 за кадр в системе) */
+function gpuImgLayout(){
+  const c=GPU.lay["kit.imgL"];if(c)return c.PL;
+  const d=GPU.dev,S=GPUShaderStage,VF=S.VERTEX|S.FRAGMENT;
+  const L0=d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:S.VERTEX,buffer:{type:"read-only-storage"}}]});
+  const L1=d.createBindGroupLayout({entries:[{binding:0,visibility:S.FRAGMENT,texture:{sampleType:"float"}},{binding:1,visibility:S.FRAGMENT,sampler:{type:"filtering"}}]});
+  const PL=d.createPipelineLayout({bindGroupLayouts:[L0,L1]});
+  GPU.lay["kit.imgL"]={L0,L1,PL,g0:null,u:null,a:null,g1:new WeakMap()};return PL;
+}
+function gpuImgBind(pass,A,view,smp){
+  const c=GPU.lay["kit.imgL"],u=gpuKitU(),d=GPU.dev;
+  if(c.u!==u||c.a!==A.buf){c.u=u;c.a=A.buf;c.g0=d.createBindGroup({layout:c.L0,entries:[{binding:0,resource:{buffer:u}},{binding:1,resource:{buffer:A.buf}}]});}
+  let m=c.g1.get(view);if(!m)c.g1.set(view,m=new Map());
+  let g=m.get(smp);if(!g)m.set(smp,g=d.createBindGroup({layout:c.L1,entries:[{binding:0,resource:view},{binding:1,resource:smp}]}));
+  pass.setBindGroup(0,c.g0);pass.setBindGroup(1,g);
+}
 function gpuImage(pass,cv,rects,o){
   if(!pass||!rects.length)return;
-  const blend=(o&&o.blend)||"over",P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
-  const n=rects.length,A=gpuArena("img",n*12,12),f=new Float32Array(n*12),mip=!!cv.view,gs=mip?(o&&o.sharp?-GPU_MIP_GS:(o&&o.lod)||GPU_MIP_LOD):0;   /* <0 — с маской; o.lod — свой масштаб уровня */
+  const blend=(o&&o.blend)||"over",P=gpuPipe("kit.img",GPU_IMG_WGSL,blend,gpuImgLayout());
+  const n=rects.length,A=gpuArena("img",n*12,12),f=gpuScr("img",n*12),mip=!!cv.view,gs=mip?(o&&o.sharp?-GPU_MIP_GS:(o&&o.lod)||GPU_MIP_LOD):0;   /* <0 — с маской; o.lod — свой масштаб уровня */
   for(let i=0;i<n;i++){const r=rects[i],k=i*12;
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=r.cubic?1:0;f[k+7]=gs;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
-  GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
+  GPU.dev.queue.writeBuffer(A.buf,A.off*4,f,0,n*12);
   if(mip&&cv.draw)gpuBakeLive(cv);   /* выпечка GPU-холста пережила потерю устройства или ушла из кэша — печём заново */
   const t=mip?cv:gpuCanvasTex(cv,o&&o.ver);   /* o.ver — печка перерисовала тот же холст на месте */
   pass.setPipeline(P);
-  pass.setBindGroup(0,gpuBind("kit.img|"+blend,P,[gpuKitU(),A.buf,t.view,mip?gpuMipSmp():GPU.S.lin]));
+  gpuImgBind(pass,A,t.view,mip?gpuMipSmp():GPU.S.lin);
   pass.draw(6,n,0,A.off/12);
 }
 /* фигуры: items = [[вид, x0,y0,x1,y1, hw, soft, r,g,b,a]] в пикселях CSS, цвет 0..255 и a 0..1:
@@ -11774,11 +11798,11 @@ function gpuQuad(SH,a,b,c,d,C,hard){
 function gpuShapes(pass,items,o){
   if(!pass||!items.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.shp",GPU_SHP_WGSL,blend);
-  const n=items.length,A=gpuArena("shp",n*12,12),f=new Float32Array(n*12);
+  const n=items.length,A=gpuArena("shp",n*12,12),f=gpuScr("shp",n*12);
   for(let i=0;i<n;i++){const t=items[i],k=i*12;
     f[k]=t[0];f[k+1]=t[1];f[k+2]=t[2];f[k+3]=t[3];f[k+4]=t[4];f[k+5]=t[5]||0;f[k+6]=t[6]||0;
     f[k+7]=t[11]||0;f[k+8]=t[7]/255;f[k+9]=t[8]/255;f[k+10]=t[9]/255;f[k+11]=t[10];}
-  GPU.dev.queue.writeBuffer(A.buf,A.off*4,f);
+  GPU.dev.queue.writeBuffer(A.buf,A.off*4,f,0,n*12);
   pass.setPipeline(P);
   pass.setBindGroup(0,gpuBind("kit.shp|"+blend,P,[gpuKitU(),A.buf]));
   pass.draw(6,n,0,A.off/12);
@@ -11820,7 +11844,7 @@ function gpuField(pass,name,code,uni,texs,o){
     A.cap=Math.max(256*64,(A.n+1)*512);A.n=0;
     A.buf=d.createBuffer({size:A.cap,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   }
-  const slot=A.n++,f=new Float32Array(64);
+  const slot=A.n++,f=GPU_SCR.fld;f.fill(0,4);
   f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;if(uni)f.set(uni.subarray?uni.subarray(0,60):uni.slice(0,60),4);
   d.queue.writeBuffer(A.buf,slot*256,f);
   /* выпечка из кэша модуля (корпус, флот, пираты, баржа) пережила потерю устройства — печём заново,

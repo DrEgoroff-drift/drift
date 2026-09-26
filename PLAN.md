@@ -13,68 +13,87 @@ loses its scroll, every screen answers «чтобы что?» before it is redes
 quality, the ship stays under the finger.
 
 **Release checkpoints** — a push after the whole run: after the phone tests, after stage 2 («чья
-земля»), after stage 3 («дорога»), then per stage.
+земля»), after stage 3 («дорога»), then per stage. The engine (§0) ships as each piece is accepted; Контроль pushes after
+the whole run.
 
 ## 0. The engine — everything on WebGPU, first (the author, 23.09)
 
-«Первое — на новый движок, потом по плану.» WebGPU only, Canvas 2D only for the interface on its own overlay
-(24.09), no fallback, and every ported layer better than before, not the same. The recipe — the frame, the one rule of
-layer order, the kit, the porting checklist — is `docs/DESIGN-gpu.md`; the decision is in `docs/DECISIONS.md`.
-Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system under the planets (17g), planets and moons (17ga), the system view on top — trail, wake, exhaust, hull light, drones (16ga), combat (13z), lit station/barge/pirate sprites (17c), shuttles (17f), `docs/shot.py` on the GPU.
+«Первое — на новый движок, потом по плану.» WebGPU only and no 2D canvas anywhere, the interface too (the author
+25.09: «2D-канвы — их надо все вырезать и заменять на наш новый движок»; 26.09: «надо все переносить на движок, и 3D
+уже добавлять где можно»); no fallback; every ported layer better than before, not the same. Every step: a pair with
+max|Δ|, uploads and submits per frame as numbers; physics, seeds, the save and QUANT stay untouched. The recipe — the
+frame, the one rule of layer order, the kit, the porting checklist — is `docs/DESIGN-gpu.md`; the decision is in
+`docs/DECISIONS.md`. Built: the core and post pass (08b), the layer kit (08c), the space backdrop (16g), the system
+under the planets (17g), planets and moons (17ga), the system view on top — trail, wake, exhaust, hull light, drones
+(16ga), combat (13z), lit station/barge/pirate sprites (17c), shuttles (17f), the interface overlay `#ovl` (08bi;
+`#hud` gone in 0.466.0, the sticks and the watch line on `#ovl`, the iPod on its own WebGPU canvas), planet
+occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py` on the GPU.
 
-**The order from 24.09 ~18:10 (the author: «нахрен 2D, всё переноси»).** The S23 profile showed the frame
-waits on the seams between the 2D canvas `#c` and Dawn. Two uploads a frame, the raster itself is small, and
-switching off `front2D` alone took the phone from 29 to 59 fps. So the world moves to the GPU entirely, and the
-interface goes to its own DOM canvas over the WebGPU canvas. The browser composes that canvas; it is never
-copied into Dawn and gets no post. Target: `#c` is never uploaded, one submit a frame (the hull-mask submit of
-`gpuHullLight` goes with the hulls). Every step: a 760 pair with max|Δ|, uploads and submits per frame as
-numbers; the picture only no worse. Physics, seeds, the save and QUANT stay untouched.
-- [ ] **Stage 1 — flight (system)** (amended by 15/n, `docs/DESIGN-gpu.md` §L.S):
-  - the HUD on the overlay (done: 9e8877a), then at the native DPR and rastered only on change; what follows the
-    world or a finger (chips, compass, brackets, sticks) as DOM with `transform` or a small canvas;
-  - hulls: the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`) — the material
-    is in (26.09, `08cd`);
-  - Gate: uploads 0 and submits 1 per flight frame — passed with a caveat (26.09, `docs/tour.py`): 1 submit a frame; a frame with a `gpuBake` adds +1 submit per bake, never more than one bake a frame, and bake frames are ≤ 1 % of the tour's frames;
-    ~~Контроль's phone run~~ — phone run waived by the author 26.09, redo when the phone is back. Stage 1 closes
-    with the HUD (Контроль pushes); the hull material is in.
-- [ ] **Redraw passes after the candidate** (§L.S): ships in real light (a–h, pairs toward / away from the star, in
-  a planet's shadow, a pirate, a close-up); then the flight HUD as a quiet instrument (a–g), one pair at 390×844
-  and 760 to the author for a verdict before any other screen.
-- [ ] **Stage 2 — the other modes, by share of play time:** map, landing, surface, cave, mine, belt, raid,
-  cockpit, scoop, base; one step per mode, each with a pair and the upload count. G6–G12 below
-  are how each mode's body is drawn.
-  - A mode's frame goes onto direct paths (`gpuLitSprite`, atlases, instances), not onto a `GcCtx` in place of
-    `ctx` (DECISIONS, «The renderer»). A reserve for the GPU canvas, not now: convex fills without the stencil,
-    one draw instead of two.
-  - The census stays a tool: after each stage-2 step, the tour (NEYEL, Коммуна, wrecks, rescue, drones,
-    «Сорока», belt, hotel, planet, dock) is rerun, and every flight item must stay at 0; a rare sight the tour
-    does not reach (a new system object, a mode's entry) gets a stand and joins the flight gate suite.
-- [ ] **Heat margin** — before stage 2 if the 5-minute run of stage 1 fails, otherwise interleaved with it:
-  - `under` done 0.461.0 (3.3 → 2.2 ms on the S23: orbits as a band, no uniform-array copy in the field
-    shaders); what is left there is the corona itself (≈0.65 ms) — only if the heat gate asks for it;
-  - rare regeneration of the nebula with fields (9/n);
-  - the post chain is done as far as it pays (0.460.0, `docs/RESEARCH-2026-09-25-gpu.md` P1): 8 of 11.4 passes
-    a frame are bloom and final, but on the S23 they cost 1.6 ms of 8.6 — the frame's price is the nebula
-    (2.6 + 1.2 ms) and the star's corona, and that is where the items above point; `shader-f16` was measured
-    harmful there (P2, off); the other picks of that research (particles on compute, cave light by distance
-    field, the star's limb law) wait in their own items;
-    merged where the target is the same;
+**The order (Контроль 26.09, after the audit: the middle was being built on an unchecked base):**
+1. The base: the phone gate P1 (§1) on the current build. Engine stage 1 closes only with it; while it fails, speed
+   goes ahead of every picture pass.
+2. What is in flight lands before anything new starts.
+3. G15: what still draws in 2D moves to the engine, then 3D where it reads.
+4. Picture passes (the redraws, L1–L3, G5) only in the gaps, each closed by its pair.
+
+The game's stages (§3–§8) wait for the author's word; Контроль asks once P1 passes and the fleet has landed.
+
+- [ ] **In flight** — each release deletes its line here:
+  - 0.469.0, the worker: `gpu` + `gpu2-lit` — G2 the star disc (limb darkening into red, no bump; the near corona cut
+    from zoom 1, e9fd226c), G3b the gas jets, the ring's edge-on aliasing, L1b the dust (round heads, no beads on the
+    crests, a warm light inward from the rim);
+  - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
+    drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
+    lands after its tests, whole-frame pairs and six regressions, with its census of 2D calls after `gpuWorld` at 0
+    (`#c` gets nothing). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
+    dock) is rerun and every flight item stays at 0;
+  - «турбаза «Дружба»» (ra, bad2a811, the designer, waiting since 25.09): a pair against main, then the merge (GPU-3).
+- [ ] **Engine stage 1 — flight (system)** closes with the phone gate P1 (§1); nothing else is left in it: the HUD and
+  the sticks on `#ovl`, the flame plume (L4), the hull material, the tour gate (1 submit a frame; a `gpuBake` frame
+  +1, bake frames ≤ 1 % of the tour).
+- [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
+  - ships in real light, a–h (the worker, `gpu-ships`): d and g accepted; f — one more try on the fins with the
+    emission mask, else revert; the barge's three lone white pixels become a soft sheen or go, with a 12-frame
+    motion check;
+  - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
+    other screen;
+  - the instrument strip chart under the gauges reads as an empty light-grey slab, brightest at the top: 0.465.0's
+    back, or dark paper with only the trace bright (GPU-3).
+- [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
+  (≈ 0.65 ms, only if the heat gate asks for it):
+  - the nebula's regeneration (GPU-2): in full flight at zoom ≥ 1 it regenerates every frame (~10 ms at 1920). Age 6
+    with a cross-fade (or a uv flow) between the last two generations and an invisible step (≤ 0.3 px, no pulse),
+    else age 4; reprojection by the camera × the mean parallax with the uv line in 08b `gpuCompNeb`; measured on the
+    S23 cold, A/B/A;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
+- [ ] **G15 everything on the engine, and 3D where it reads (the author, 26.09).** No 2D canvas stays, the interface
+  too: in main 4778c719, 52 files in `src` still open a 2D context. Onto direct paths (`gpuLitSprite`, atlases,
+  instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.
+  The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
+  - the interface — GPU-3; its census (26.09): the parrot's window (12y, its own rAF, redrawn every frame while
+    open), the console's seat and perch icons (27j-console, timers on every screen), then the panels by how often
+    they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
+    costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
+    worker's studio function; the ship in ОПИСЬ — the worker (27j0);
+  - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
+  - the hull bake (03e1) — the worker;
+  - the fleet's leftovers (its census «2D after `gpuWorld`») and the map backdrop (17z) — the fleet session;
+  - the air (19b-sky, 19e-clouds, 18a1-glaze, 18d-postfx; G5) — whoever frees first.
 
+  3D, one object per spike, each closed by a pair of the WHOLE frame at 760 and 390 and the S23 cadence, cold,
+  A/B/A; rolled out only when it reads better at first glance and is not slower:
+  - ships: the hull pieces as meshes under the 08cd material — the worker;
+  - space: a station, then asteroids and wrecks in flight, then turning planets — GPU-2;
+  - landing and surface: the relief of the ground chunks as a height mesh — the fleet session;
+  - the air: clouds as volumes, haze in depth — with G5.
 - [ ] **L1 the space backdrop as a volume (before G5…G14):** a domain-warped FBM nebula, emission plus absorption,
   three parallax layers, dark dust lanes that hide stars, a slow flow; lit by the system's star — brighter and
   warmer toward it, and the star's glow is scattering in the nebula and dust (it went dark in gpu: x 0–300 of
   k_g4m main (156,72,52) → gpu (67,37,36)). Near-camera dust with parallax and stretch in flight. Budget: nebula
   at ¼ resolution, not every frame, ≤2 ms on the laptop (`prof()`).
-  - [ ] L1b dust, after e0e933f (Контроль 24.09): in l2c the top-right pillars at 760 read as shards or claws —
-    heads sharper than they should be; rounder, blunter heads. Parked mid-way for the phone: near-star shards
-    fixed (heads ≥ .38 H from the star, width from the full length, finer erosion), but the ionisation rim
-    then reads as beads along thin crests in l2c — it toggles per ¼-res texel (not the erosion, not the
-    gradient floor, a wider gradient step makes it worse); the patch waits in the session scratchpad.
-  - [ ] L1b dust: try a dim warm light 10–20 px inward from the rim, so the cut-out becomes a body.
-  - [ ] L1b dust, after 7658f17 (Контроль 24.09): at ×2.00 top right two small orange «tadpoles» — globules
-    with a tail and no gas around read as fish at 760. A globule with no gas dims stars like the rest of the dust.
+  - [ ] L1b the dust's tadpoles (GPU-2): gas clumps behind a half-body read as fish at 760 — option B, a longer
+    outward ramp over the void, no new `dustAt`.
 - [ ] **L2 HDR light:** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
@@ -86,31 +105,8 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   live clouds (`drawClouds` 19e), haze bands (`hazeBand`/`hazeFar` 19c), weather in depth, night lamps, the water
   mirror, the grade; shafts must be shown to read — a sun behind cloud gaps (the 2D clouds are too thin to cut
   rays; clouds on the GPU first).
-- [ ] Review 25.09 №6 (phone speed): while a finger is on the stick, the stick key holds `GPU.frameNo`
-  (17-mode-system:701), so `gpuHudFlush` clears and re-rasters the whole native-DPR `#hud` every frame (S23
-  8 MiB); the same while the rack is open. Draw the live sticks on the GPU (`#ovl`: rings and capsules), or a
-  small canvas that follows the finger; measure with `?g11=deep`, finger held down. After GPU-3's `#ovl`
-  image primitive and the rack move.
-- [ ] Review 25.09 №7 (phone speed): `gpuImage` rebinds on every texture change (one `gpuBind` slot per
-  name, 08c:223) — a dozen `createBindGroup` a frame; per-call `Float32Array`s in `gpuImage`, `gpuShapes`,
-  `gpuField`, `gpuLitSprite`, `gpuKitU`, `ovFlush`. Split the group (uniform + arena in 0, texture + sampler
-  in 1, cached per view and blend in a `WeakMap`), scratch arrays sized to the largest count. Changes the kit
-  layouts: re-accept the warm table.
 - [ ] Debt: a frame encoder for bakes (its own buffer pool) instead of one submit per `gpuBake` — take only if a
   profile shows hitches on bake frames.
-- [ ] **G6 landing and surface, the bodies:** ground chunks and far ridges as textures; deco, flora and fauna as
-  sprites where order needs it; the plants' wind on the GPU.
-- [ ] **G7 cave and mine:** tiles as textures, darkness and lamp light per pixel, ore glows, dust.
-- [ ] **G8 the belt:** the asteroids in real 3D (`gpuScene3D`, depth, per-pixel light), the backdrop in one pass.
-- [ ] **G9 the scoop:** the gas giant as a live flowing field.
-- [ ] **G10 the map:** the galaxy backdrop, stars as points, the rails; the text stays 2D.
-- [ ] **G11 rooms:** base, home, winter, spa, raid, HQ, cantina, wanderer — still parts baked, light and air on
-  the GPU.
-- [ ] **G12 road, rail ride, cockpit:** the road's CPU bloom field (26 Hz `putImageData`) becomes a shader.
-- [ ] **G13 tests and tools:** the harness waits for the device; pixel suites and detectors read
-  `gpuSnapshot()`; goldens re-accepted; GPU flags in `test.ps1` and CI; `shot.ps1`, `pageshot.ps1` and the
-  stand server removed — the `mk*.ps1` sheets, `g11` and `lookrun` go through `docs/shot.py`; `mkshots` and
-  `mksiteshots` without `--disable-gpu`.
 - [ ] **G14 the rest:** the postcard painter on the GPU if it reads better; the `gfx` options of the 2D era
   (resolution tricks, `draw`) reviewed — keep what still means something.
 - **Gate:**
@@ -124,69 +120,55 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   - the GitHub runner has no GPU: the same flag set on the software adapter (SwiftShader) proven locally
     first, then in CI;
   - callers of `docs/shot.py` (`vetshot.py`, `lab`) run;
-  - the phone cadence of §1 at least as good as before; the whole run green.
+  - the phone gate P1 (§1) passed; the whole run green.
 
 ## 1. Phone tests — smooth flight on the S23
 
-The renderer is moving to WebGPU (§0, the author 23.09) — the raster numbers of §1 and §2 are measured
-again on the GPU build before anything is cut.
+The base of §0: no picture pass counts until the S23 flies smoothly (the author 18.09: «на тел дергается все
+прогоны … плавный полет нужен»). The numbers of the 2D era (18–24.09: raster, `lighter`, DPR, the stick at 26 Hz)
+are history — every old item is measured again on the current build, then cut by its numbers. Every measurement
+follows the cadence protocol in `docs/DECISIONS.md`.
 
-The author 18.09: «на тел дергается все прогоны … плавный полет нужен»; «потом пройдемся все
-померяем, отдельно веха тесты на тел». Known: with the stick under the finger 80–83 % of frames make
-16.7 ms, without it 99–100 %; our JS is 6–8 ms — the deadline is lost in the raster. Every
-measurement here follows the cadence protocol in `docs/DECISIONS.md`. The author allowed testing any
-time; the S23 shows in `adb mdns services` only with «Беспроводная отладка» on (on 18.09 only
-`192.168.1.52:5555` answered, unauthorized until «Разрешить» on its screen). Tools:
-`docs/night-2026-09-13/raw/phone-tools`.
+The phone (the author 26.09: «тел доступен пусть используют»): the S23 over Wi-Fi adb (`adb mdns services`,
+`_adb-tls-connect`). One session at a time: `C:\Claude\phone.lock` taken with noclobber, held ≤ 10 min, a lock
+older than 15 min may be removed; the CDP forward only under the lock; each session its own port through
+`adb reverse` (the worker 8811, GPU-2 8812, GPU-3 8813, the fleet 8814). Measure cold (a new `*.localhost` host:
+Chrome keeps compiled pipelines per site), off the charger and cooled (on the charger Samsung cuts the GPU to 295 of
+719 MHz), A/B/A; never start a run because the screen woke — an incoming call looks the same.
 
-- [ ] **First, above all the picture work (Контроль 24.09): 0.457.0 on the author's S23 runs at 24.9 fps**
-  (median 33.4 ms, p90 50, frames alternate 2 and 3 vsyncs — the eye reads a 50 ms frame as a step back;
-  pauses of 100–150 ms every 20–60 s, worst by Коммуна in someone else's fight; both canvases 822×1484).
-  Gate: S23, 30 s of flight in НЕЙЭЛЬ by the stations — ≥ 95 % of frames at 16.7 ms, none at 50 ms; the
-  picture at 760 no worse (a was | now pair). Done so far: the phone's DPR cap 1.5 and `?g11=deep` (in place,
-  per GPU pass, DPR steps) — cut the rest by its numbers. Then:
-- [ ] **Before the runs:** ask the author to close the two «CryptoTab Pool» tabs (`web.ctpool.net`, a
-  browser miner) in the same Chrome; fly with the real finger — the S23 reports touch at 240 Hz, a CDP
-  stick at 26 Hz; suspect the long save (160 log lines, 21 drones, 493 DOM nodes) only if those two do
-  not clear the stutter.
-
-- [ ] **The hull bake, on vs off** (`G.opts.gfx.hullBake=0`) — the only number that says whether baking
-  helps. If it helps: bake the other modes' still bodies (station, landing, belt) by the rule «bake what
-  fills its box, never slivers», checked with the caller breakdown (`layers.js`). If not: stop baking.
-- [ ] **Acceptance of the baked star core and hull** on the phone: the star's breathing, a step at the
-  baked picture's edge.
-- [ ] **Tails at ×2.40** (the author's «куцые хвосты»), filmed on the phone.
-- [ ] **P8 under the finger, P9 zoom, M484's long press** — the phone check for each.
-- [ ] **Two bills, fixed separately.** A real reference first: the same scene, the stick confirmed born,
-  no windows open, 10 s of continuous steering. Then the steady ~14 % of late frames from live steering,
-  and the spikes on events — a window opening or closing, a hint appearing, the compass chips re-laying
-  out. Measure the cost of an EVENT, not the average frame; every skip names what was on screen.
-- [ ] **Four milliseconds of JS off `frameBody`** at the same look, one function per commit: draw only the
-  wake and trail points that are visible and merge sub-pixel segments; `hud`/`drawSysHud` touch only what
-  changed; the hull's outline cached per scale. Meter: `FRAME_JS` EMA before/after, then the phone.
-- [ ] **GC (0.6):** three sources hoisted out of the frame, unmeasured — `performance.memory` is frozen in
-  this build; the phone trace's allocation sampler decides.
-- [ ] **Heat (0.7):** 75 min gave thermal MODERATE and 37 fps at ×1 — a 30-min run with
-  `dumpsys thermalservice` logged every minute.
-- [ ] **The flat-60 cap of 0.453.0:** the author flies the phone again and says whether «откидывает
-  назад» is gone. The four white parked ships by the lane still keep their size floor.
-- [ ] **The «каша» by the star at ×0.16:** ask the author whether the fleet/billboard label and the hotel
-  prompt over the lane still read as clutter.
-- **Gate:** cadence ≥ 95 %, no frame > 24 ms in 60 s of steering, `RES_AUTO ≥ 2` (under the phone's cap of
-  1.5, 08-state `PHONE_DPR`), `g11` ≥ 55 fps in every
-  mode on the laptop (landing and surface fail it on a big canvas — paint area, `gfx.res` auto should step
-  down there). The gate is re-run after every stage; a stage that breaks it is not closed.
+- [ ] **P1, the gate, on the current build (0.468.0) — first, above all the picture work (GPU-3):**
+  S23, a local copy, 30 s of flight in НЕЙЭЛЬ by the stations: ≥ 95 % of frames in 16.7 ms (≤ 18 ms with the
+  vsync jitter), none ≥ 50 ms; then 5 minutes at ≥ 95 %; the picture at 760 no worse. The last run (25.09,
+  9206be7) failed: cold 30 s 99.6 %, but one 83 ms hitch at the same place and time every run (≈ −1265, −1125,
+  t ≈ 16.9 s); 5 min 85 %. Its trace named the cause: 2D bakes at first sight (the hotel's 6 canvases and ~2000
+  calls, the fleet, «Чебурек», the signs, the gesture post) rastered by Skia in the GPU process, 12–22 ms each,
+  then a copy per mip level; and `#c` cleared at opacity 0 every frame, which Chrome does not composite, so
+  `SharedContextRateLimiter::Tick` waited for the whole GPU tail, up to 180 ms. So G15 is the cure, not a side road.
+  - first the tools into the repo: `gate.py`, `waitquiet.py`, `deep.py`, `census.py`, `phtrace.py` and its readers
+    (`phtran.py`, `phgap.py`, `tickhist.py`) live in Контроль's session scratchpad with its paths and port 8812
+    baked in → `docs/phone/`, the port and the output folder as arguments;
+  - before a run: no other tab working in that Chrome (a browser miner, «CryptoTab Pool», was there on 24.09), no
+    stuck touch (`gate.py` checks logcat, getevent and the page's counter; `waitquiet.py` waits for quiet).
+- [ ] **Then cut by its numbers** — each old item measured again on the GPU build first, dropped if it no longer
+  shows: the hull bake on vs off (`G.opts.gfx.hullBake=0`); the baked star core and hull (the star's breathing, a
+  step at the baked picture's edge); tails at ×2.40 (the author's «куцые хвосты», filmed); P8 under the finger, P9
+  zoom, M484's long press; the two bills — the steady late frames of live steering and the spikes on events (a
+  window opening or closing, a hint, the compass chips re-laying out), measured as the cost of an EVENT; JS off
+  `frameBody` (`FRAME_JS` EMA before/after); GC (the phone trace's allocation sampler); heat (a 30-min run with
+  `dumpsys thermalservice` every minute); the flat-60 cap (the author says whether «откидывает назад» is gone); the
+  «каша» by the star at ×0.16 (ask the author).
+- **Gate:** cadence ≥ 95 %, no frame > 24 ms in 60 s of steering, `RES_AUTO ≥ 2` (under the phone's cap of 1.5,
+  08-state `PHONE_DPR`), `g11` ≥ 55 fps in every mode on the laptop. The gate is re-run after every stage and every
+  engine release; a stage that breaks it is not closed.
 
 ## 2. The frame on a laptop GPU — levers measured, not cut
 
 Cut only at the same look, or when the picture gets better (the author 23.09: «можно что-то делать
-только если графика лучше будет смотреться»). Method in `docs/DECISIONS.md`.
-- [ ] The vignette (~1–2 ms, one full-screen blit); the star's body, corona and bleed (full-screen
-  `lighter` sprites); the station rebaked every 18 ticks (`Math.floor(G.t/18)` in the `stationArt` key);
-  backdrop blur on 12 HUD buttons (~2 ms).
-- [ ] The surface at ×2 runs ~30 fps (3.8 k canvas ops, plants 1.3 k): plant poses can now be baked —
-  between gust crests they are nearly still — but their glow uses `lighter`, which blends differently in
-  a sprite. A look change: ask first.
+только если графика лучше будет смотреться»). Method in `docs/DECISIONS.md`. The 2D-era levers — the vignette
+blit, the star's `lighter` sprites, the station rebaked every 18 ticks — went with the 2D frame; what is left is
+measured on the GPU build first:
+- [ ] backdrop blur on the DOM buttons (`backdrop-filter` in `style.css`; ~2 ms in the 2D era) — while they are DOM.
+- [ ] the surface at ×2 (~30 fps in the 2D era, plants 1.3 k canvas ops) — after the fleet lands, by `prof()`.
 - [ ] One look at the scoop frame: its flame follows `lvl=G.mods.engine` since 18.09 (it grew on the
   climb before), never looked at since.
 

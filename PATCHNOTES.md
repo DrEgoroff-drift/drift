@@ -6,6 +6,17 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.468.0 - the instrument pod no longer eats video memory, lighter frames
+
+- **The instrument pod stops taking 6.6 MB of video memory for good** (GPU-3): since 0.466.0 its first
+  frame claimed a new slot in the bake pool that stayed there; the pod's face is now baked once, like
+  the rack's, and the warmed-up pool stays as it was.
+- **Frames make less garbage** (GPU-3): pictures drawn on the GPU no longer rebuild their bindings when
+  the texture changes (8 a frame in a system, now none), and the per-call arrays are gone (30 a frame, now 4).
+  The picture is the same to the pixel.
+- **Tests**: a fresh page in the map scene lays the whole rail net before the shot, and the hail and
+  fuel windows close between suites - the phone run in four parts is green again.
+
 ## 0.467.0 - ships in a planet's shadow, hulls of real material
 
 - **A planet shades ships** (GPU-1): fly behind a planet and your ship and everyone near it go dark,
