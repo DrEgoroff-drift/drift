@@ -45,6 +45,11 @@ const PIPE_SCENES=[
     }
     sh.x=0;sh.y=-700;sh.vx=sh.vy=0;G.hull=stat().hullMax;G.zoom=1.6;G.zoomT=null;
     return G.pirates.length>0;}},
+  /* трепло (12y1): окно и иконка жёрдочки — свои канвы; окно закрывается на последнем кадре, чтобы не утечь в чужие наборы */
+  {name:"трепло в полёте: окно и жёрдочка",place(first,i){
+    if(first){G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.ap=null;G.orbit=null;G.ship.x=0;G.ship.y=-700;G.ship.vx=G.ship.vy=0;
+      parrotFind(7,"пробы");toggleParrotWin(true);return parWin;}
+    if(i===59)toggleParrotWin(false);return true;}},
 ];
 /* кто создал: первое имя в стеке мимо самой воронки и обёртки набора */
 function pipeWho(){

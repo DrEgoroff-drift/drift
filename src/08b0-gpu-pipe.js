@@ -42,7 +42,7 @@ const GPU_PIPE_SRC={
 for(const n in GPU_FLD)GPU_PIPE_SRC[n]=()=>[GPU_WGSL_COMMON+GPU_FLD_HEAD+GPU_FLD[n](),gpuFieldLayout()];
 /* одиночные ключи — функция дескриптора в своём модуле */
 const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),
-  "gnb.noise":()=>gnbNoiseDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc()};
+  "gnb.noise":()=>gnbNoiseDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc(),par:()=>parDesc(false),"par.add":()=>parDesc(true)};
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
 function gpuPipeRecipe(key){
   if(key.startsWith("gc:"))return {desc:gcPipeDesc(key.slice(3))};

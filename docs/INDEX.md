@@ -2319,7 +2319,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:189
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-50
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-52
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -4257,9 +4257,9 @@ pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 PICKUPS                      src/24a-mode-raid.js:24-28
 pinch0                       src/15-input.js:396
-PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-48
-PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:56-86
-pipeWho                      tests/91zzzzzzy4-pipes.js:50-55
+PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-53
+PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:61-91
+pipeWho                      tests/91zzzzzzy4-pipes.js:55-60
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
