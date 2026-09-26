@@ -430,7 +430,7 @@ function shipRow(id,S){
   r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"» <span style='color:var(--dim)'>"+
     S.cls+"</span></b><s>"+(T?"<b style='color:"+T.col+"'>"+T.ru.toUpperCase()+"</b> — "+T.note+"<br>":"")+
     S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
-    " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"</s>"));
+    " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"<br>"+abilCardLine(id,S)+"</s>"));
   if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
   else{
     /* цена корпуса с поправкой на то, как к вам тут относятся (12k-rep) */

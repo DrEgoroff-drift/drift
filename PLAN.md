@@ -267,8 +267,6 @@ measured on the GPU build first:
   release run).
 - [ ] **M480/M481 yards (rest):** the free cells (Хай-Фронт's nose instrument, Орднунг's front shield — cells
   that need no part); calibration by the worlds oracle and the стрельбище (release run).
-- [ ] **M484 the special system:** the ability named on the ship card; СИРЕНА answered by the ships actually
-  in view.
 - [ ] **M482 scars:** scars on captured pirate hulls; доводка — a weld with a node, +1 tier, two per hull.
 - [ ] **M513 утильсбор:** the plate crooked when expired; the home yard refusing to re-plan the hull; the
   foreign warranty void.

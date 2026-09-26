@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6609
+Файлов: 641 · символов верхнего уровня: 6611
 
 ## СИМВОЛЫ
 
@@ -44,12 +44,12 @@ $vj                          src/27z-telemetry.js:40
 $vs                          src/27z-telemetry.js:38
 $zoombox                     src/27z-telemetry.js:46
 ABIL                         src/16c-abil.js:15-23
-ABIL_BTN                     src/16c-abil.js:111
-ABIL_CONE                    src/16c-abil.js:128
-ABIL_CONE_WGSL               src/16c-abil.js:129
-ABIL_HOLD                    src/16c-abil.js:24
-ABIL_KEY                     src/16c-abil.js:99
-ABIL_ST                      src/16c-abil.js:25
+ABIL_BTN                     src/16c-abil.js:138
+ABIL_CONE                    src/16c-abil.js:155
+ABIL_CONE_WGSL               src/16c-abil.js:156
+ABIL_HOLD                    src/16c-abil.js:29
+ABIL_KEY                     src/16c-abil.js:126
+ABIL_ST                      src/16c-abil.js:30
 ACTION_RU                    src/15-input.js:144
 ACT_WEEK_MS                  src/05e-clearance.js:36
 ADJ                          src/21a4-base-adj.js:17-27
@@ -1783,16 +1783,17 @@ _file                        tests/90-harness.js:22
 _indPrice                    src/12ac-bld.js:112
 _mapDirty                    src/15-input.js:124
 _suite                       tests/90-harness.js:11
-abilFire                     src/16c-abil.js:40-83
+abilCardLine                 src/16c-abil.js:25-28
+abilFire                     src/16c-abil.js:65-110
 abilHintRect                 tests/91zzx-mobile.js:423-431
-abilKind                     src/16c-abil.js:26
-abilMul                      src/16c-abil.js:35-39
-abilOf                       src/16c-abil.js:27
-abilOn                       src/16c-abil.js:28
-abilPadRim                   src/16c-abil.js:112-123
-abilReady01                  src/16c-abil.js:30-33
-abilStale                    src/16c-abil.js:91-97
-abilTick                     src/16c-abil.js:100-109
+abilKind                     src/16c-abil.js:31
+abilMul                      src/16c-abil.js:40-44
+abilOf                       src/16c-abil.js:32
+abilOn                       src/16c-abil.js:33
+abilPadRim                   src/16c-abil.js:139-150
+abilReady01                  src/16c-abil.js:35-38
+abilStale                    src/16c-abil.js:118-124
+abilTick                     src/16c-abil.js:127-136
 actCouponUse                 src/05e-clearance.js:38
 actCoupons                   src/05e-clearance.js:37
 actPressT                    src/15-input.js:94
@@ -2864,7 +2865,7 @@ draftAll                     src/27jb-kb.js:113
 draftOf                      src/27jb-kb.js:115-131
 draftSave                    src/27jb-kb.js:132-139
 draftTowerAt                 src/27jb-kb.js:141-146
-drawAbil                     src/16c-abil.js:140-168
+drawAbil                     src/16c-abil.js:167-195
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
 drawAllies                   src/12a-crew.js:678-698
@@ -5858,6 +5859,7 @@ shipZoneR                    src/19f-lander.js:14
 shuttleAt                    src/17f-sys-traffic.js:45-64
 shuttleBody                  src/17f-sys-traffic.js:112-116
 shuttleSprite                src/17f-sys-traffic.js:120-125
+sirenHeard                   src/16c-abil.js:47-64
 siteTestOpen                 tests/91x-hold-site.js:11-18
 siteTestStation              tests/91x-hold-site.js:2-9
 sixthGone                    src/12k-stories-d.js:77
@@ -7321,7 +7323,7 @@ zoomTo                       src/15-input.js:350
   · ракеты: боеприпас — это груз:1
   · пять видов боеприпаса (M367, §4):21
 
-## src/16c-abil.js · 11 КБ
+## src/16c-abil.js · 13 КБ
   · особая система корпуса (M484, DESIGN-shipyard):1
 
 ## src/16c-rescue.js · 48 КБ

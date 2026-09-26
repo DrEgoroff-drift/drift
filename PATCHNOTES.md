@@ -228,6 +228,8 @@ could ever save.
 - Receiver at the border (M457): entering a power's land, the ether log speaks its `air` line once per crossing («Приёмник · ГЛАВТРАССА: «На трассе спокойно»»). The ear pass on the six motifs stays for the release run.
 - Yards at work (M480), on ordered hulls only: a Рассвет hull patches itself from a pirate downed within 600 px (+6 % hull, «на соплях, но держит»); a Хай-Фронт hull's firmware moves one unwelded thing of the plan to another free deck cell once per сводка («обновление установлено… так удобнее»). The сводка mark lives in the order itself.
 
+- The special system (M484): every ship card in the yard names its ability — «особое · СБРОС — груз за борт приманкой… · долгое ДЕЙСТВИЕ или V · раз в 25 с». СИРЕНА is answered only by the ships actually in the frame, each in its own voice: a pirate threatens, a power's patrol answers with its `air` line, a ГЛАВТРАССА liner asks to turn the music down, the black derelict never answers; an empty frame — «эфир молчит».
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
