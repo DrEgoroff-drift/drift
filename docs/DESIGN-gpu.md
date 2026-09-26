@@ -1063,8 +1063,16 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      `pair_maker.png` (scratchpad): 7 classes × 6 makers, 2D row over engine row, same silhouettes, lit.
      A 760/390 pair does not apply: the instrument draws off screen. Guard in 91j-art: 0 `drawHull` over
      `makerRead(14)`.
-  4. 29d:482 stays the last 03e1 holder until the homein frame moves to the engine (Контроль, variant c).
-     27e:296 (home room panel) — next, after the hash.
+  4. 29d:482 stays the last 03e1 holder of my zone until the homein frame moves to the engine (Контроль,
+     variant c).
+  5. Home room 27e — done: `drawHomeRoom` bakes the room with the same brushes (08ca) when the tab is drawn
+     and puts it on the canvas as `webgpu` (08bi `ovPaint`, new: one ov pass into a canvas, in the frame or
+     out of it with its own encoder). The hit zones `HOME_HIT` come from the bake itself, synchronously, as
+     before; without a GPU (Node) the brushes run into a GcCtx record for the zones only. The garage ship is
+     `hullPart1..3` in the bake, no `drawHull`. 26a (GPU-3's) is untouched: it still makes the canvas and
+     calls `drawHomeRoom`. Pair `pair_home.png` (scratchpad, tiers 8 and 6, 2D over engine): identical to
+     the eye; tiers 1–8 mean 0.21–0.99 per channel, zones byte-identical, 0 GC_MISS, 0 `drawHull`; the
+     bake 21–163 ms per tab draw. Guard «дом: комната печётся на движке, 2D-корпуса нет».
 - **08bi for the album (26.09, for GPU-3's 25g1):** `ovImage(..., mul, M)` takes `M={m:[12], grain, seed}` —
   a 3×4 matrix over the straight colour (rows R, G, B: r, g, b, offset, in units of 1) and a grain of span
   `grain` (±grain/2, one number per device pixel into all three channels, hashed from the pixel and `seed`),

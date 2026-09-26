@@ -259,26 +259,34 @@ function ovImage(B,x,y,w,h,rot,u0,v0,u1,v1,mul,M){
    seed — посев}; без m — цвет как есть. Фильтры альбома (25g1): сепия и ночь — яркость во все каналы,
    холод — контраст со сдвигом; смешениями такое не выражается */
 const OV_EYE=[1,0,0,0, 0,1,0,0, 0,0,1,0];
-/* вне кадра: свой энкодер и свой холст w×h; fn кладёт ov* (и может звать студию 17c2), кадр отправляется
-   и читается в той же задаче — как снимок кадра (gpuTakeSnap). Для приборов и тестов, не для кадра:
-   из кадра (энкодер открыт) — null. fn вернул false — null */
-const OVR={cv:null,cx:null,rd:null,T:null,dev:null};
-function ovRead(w,h,fn){
-  const d=GPU.dev,R=OVR;
-  if(!GPU.ok||GPU.lost||!d||GPU.enc||typeof document==="undefined")return null;
-  if(R.dev!==d){R.cv=document.createElement("canvas");R.cx=R.cv.getContext("webgpu");
-    R.cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});R.T=ovTarget();R.dev=d;}
-  if(R.cv.width!==w||R.cv.height!==h){R.cv.width=w;R.cv.height=h;}
-  if(!R.rd)R.rd=document.createElement("canvas");
-  const on0=GPU.on;let ok;GPU.enc=d.createCommandEncoder();GPU.on=true;   /* свой маленький кадр: студия спрашивает «кадр идёт?» */
+/* холст cv (webgpu) — картинка ov* одним проходом, в кадре (кадровый энкодер) или вне его: тогда свой
+   энкодер, отправка сразу и корзина опорожняется здесь же, кадра за ней нет. Холст держит картинку, пока
+   его не нарисуют снова. fn вернул false — ничего; false — и без видеокарты */
+const OV_CV=new WeakMap();
+function ovPaint(cv,nd,fn){
+  const d=GPU.dev;if(!GPU.ok||GPU.lost||!d)return false;
+  let o=OV_CV.get(cv);
+  if(!o||o.dev!==d){const cx=cv.getContext("webgpu");if(!cx)return false;
+    cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});OV_CV.set(cv,o={cx,T:ovTarget(),dev:d});}
+  const own=!GPU.enc,on0=GPU.on;let ok;
+  if(own){GPU.enc=d.createCommandEncoder();GPU.on=true;}   /* свой маленький кадр: студия спрашивает «кадр идёт?» */
   try{
-    ovInto(R.T,1,()=>{ok=fn();});
-    if(ok===false){R.T.uq.length=R.T.ur.length=R.T.gd.length=0;return null;}
-    ovPass(R.T,R.cx.getCurrentTexture().createView(),w,h,[R.T.uq],"ovread");
-    d.queue.submit([GPU.enc.finish()]);
-  }finally{GPU.enc=null;GPU.on=on0;}
-  /* разовые выпечки уходят в корзину, а кадра, что её опорожнит, у прибора нет */
-  for(const t of GPU.trash)t.destroy();GPU.trash.length=0;
+    ovInto(o.T,nd,()=>{ok=fn();});
+    if(ok===false){o.T.uq.length=o.T.ur.length=o.T.gd.length=0;return false;}
+    ovPass(o.T,o.cx.getCurrentTexture().createView(),cv.width,cv.height,[o.T.uq],"ovpaint");
+    if(own)d.queue.submit([GPU.enc.finish()]);
+  }finally{if(own){GPU.enc=null;GPU.on=on0;}}
+  if(own){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
+  return true;
+}
+/* вне кадра: ovPaint в свой холст w×h и чтение в той же задаче — как снимок кадра (gpuTakeSnap).
+   Для приборов и тестов, не для кадра: из кадра (энкодер открыт) — null */
+const OVR={cv:null,rd:null};
+function ovRead(w,h,fn){
+  if(GPU.enc||typeof document==="undefined")return null;
+  const R=OVR;if(!R.cv){R.cv=document.createElement("canvas");R.rd=document.createElement("canvas");}
+  if(R.cv.width!==w||R.cv.height!==h){R.cv.width=w;R.cv.height=h;}
+  if(!ovPaint(R.cv,1,fn))return null;
   if(R.rd.width!==w||R.rd.height!==h){R.rd.width=w;R.rd.height=h;}
   const c=R.rd.getContext("2d",{willReadFrequently:true});
   c.clearRect(0,0,w,h);c.drawImage(R.cv,0,0);

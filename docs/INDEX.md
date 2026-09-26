@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 639 · символов верхнего уровня: 6453
+Файлов: 639 · символов верхнего уровня: 6456
 
 ## СИМВОЛЫ
 
@@ -1535,7 +1535,7 @@ drawHaul                     src/16c-rescue.js:506-513
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
-drawHomeRoom                 src/27e-ui-home.js:42-62
+drawHomeRoom                 src/27e-ui-home.js:47-68
 drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
@@ -2849,6 +2849,7 @@ holMap                       src/11am-holiday.js:59
 holNow                       src/11am-holiday.js:61-73
 holTree                      src/11am-holiday.js:126-184
 holTreeUp                    src/11am-holiday.js:74
+HOME_BK                      src/27e-ui-home.js:46
 HOME_COOL_MS                 src/16c-rescue.js:45
 HOME_DOCK_COOL               src/16c-rescue.js:47
 HOME_HIT                     src/27e-ui-home.js:33
@@ -2865,9 +2866,9 @@ homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:153
 homeCool                     src/16c-rescue.js:55
-homeCrewFigure               src/27e-ui-home.js:680-693
+homeCrewFigure               src/27e-ui-home.js:684-697
 homeDoorX                    src/21f-home-out.js:314-318
-homeFigure                   src/27e-ui-home.js:613-622
+homeFigure                   src/27e-ui-home.js:617-626
 homeHas                      src/12j-home.js:24-28
 homeHereP                    src/21f-home-out.js:26-32
 homeHitAt                    src/27e-ui-home.js:35-41
@@ -2885,10 +2886,10 @@ homePlanet                   src/21f-home-out.js:18-24
 homeProgress                 src/12j-home.js:139-147
 homeRebuild                  src/12j-home.js:227-241
 homeRevive                   src/12j-home.js:154-174
-homeRoomBody                 src/27e-ui-home.js:63-607
+homeRoomBody                 src/27e-ui-home.js:69-611
 homeRoomW                    src/27e-ui-home.js:21-26
-homeSceneClick               src/27e-ui-home.js:628-676
-homeShade                    src/27e-ui-home.js:696-699
+homeSceneClick               src/27e-ui-home.js:632-680
+homeShade                    src/27e-ui-home.js:700-703
 homeShow                     src/12j-home.js:196-203
 homeShowBonus                src/12j-home.js:217-222
 homeSigns                    src/21f-home-out.js:335-368
@@ -4039,17 +4040,18 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
+OV_CV                        src/08bi-gpu-ovl.js:265
 OV_EYE                       src/08bi-gpu-ovl.js:261
 OV_STEADY                    tests/91zzzzzzy4-gpu-ovl.js:48-66
-ovArc                        src/08bi-gpu-ovl.js:303-306
+ovArc                        src/08bi-gpu-ovl.js:311-314
 ovAtlas                      src/08bi-gpu-ovl.js:111-130
 ovBind                       src/08bi-gpu-ovl.js:236-244
 ovCanvas                     src/08bi-gpu-ovl.js:96-108
-ovCap                        src/08bi-gpu-ovl.js:288-291
-ovCap3                       src/08bi-gpu-ovl.js:298-301
-ovEll                        src/08bi-gpu-ovl.js:293-296
+ovCap                        src/08bi-gpu-ovl.js:296-299
+ovCap3                       src/08bi-gpu-ovl.js:306-309
+ovEll                        src/08bi-gpu-ovl.js:301-304
 ovFlush                      src/08bi-gpu-ovl.js:193-204
-ovGraph                      src/08bi-gpu-ovl.js:314-318
+ovGraph                      src/08bi-gpu-ovl.js:322-326
 ovImage                      src/08bi-gpu-ovl.js:251-257
 ovInto                       src/08bi-gpu-ovl.js:89-92
 OVL                          src/08bi-gpu-ovl.js:17
@@ -4061,12 +4063,13 @@ OVL_WGSL                     src/08bi-gpu-ovl.js:21
 ovlDesc                      src/08bi-gpu-ovl.js:190
 ovmStrip                     tests/91zzzzzzy4-ovm.js:6-11
 ovNd                         src/08bi-gpu-ovl.js:87
+ovPaint                      src/08bi-gpu-ovl.js:266-281
 ovPass                       src/08bi-gpu-ovl.js:208-234
 ovPm                         src/08bi-gpu-ovl.js:247
 ovPush                       src/08bi-gpu-ovl.js:131-134
-ovQuad                       src/08bi-gpu-ovl.js:309-312
-OVR                          src/08bi-gpu-ovl.js:265
-ovRead                       src/08bi-gpu-ovl.js:266-286
+ovQuad                       src/08bi-gpu-ovl.js:317-320
+OVR                          src/08bi-gpu-ovl.js:284
+ovRead                       src/08bi-gpu-ovl.js:285-294
 ovRect                       src/08bi-gpu-ovl.js:248
 ovTarget                     src/08bi-gpu-ovl.js:94
 ovText                       src/08bi-gpu-ovl.js:138-160
@@ -6606,7 +6609,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 2 КБ
   · слой приборов: фишки у кромки и подписи мира (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08bi-gpu-ovl.js · 26 КБ
+## src/08bi-gpu-ovl.js · 27 КБ
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
 ## src/08c-gpu-kit.js · 29 КБ
@@ -7683,7 +7686,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27da-kino.js · 12 КБ
   · кинопередвижка:1
 
-## src/27e-ui-home.js · 44 КБ
+## src/27e-ui-home.js · 45 КБ
   · дом: помещение, а не список:1
 
 ## src/27f-hq-room.js · 42 КБ
@@ -7874,7 +7877,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91s-news.js · 4 КБ
   · пересказ: за слухом стоит перемена:1
 
-## tests/91t-home-live.js · 4 КБ
+## tests/91t-home-live.js · 6 КБ
   · обжитой дом:1
 
 ## tests/91u-route.js · 12 КБ
