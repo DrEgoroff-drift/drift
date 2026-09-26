@@ -89,8 +89,6 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   warmer toward it, and the star's glow is scattering in the nebula and dust (it went dark in gpu: x 0–300 of
   k_g4m main (156,72,52) → gpu (67,37,36)). Near-camera dust with parallax and stretch in flight. Budget: nebula
   at ¼ resolution, not every frame, ≤2 ms on the laptop (`prof()`).
-  - [ ] L1b the dust's tadpoles (GPU-2): gas clumps behind a half-body read as fish at 760 — option B, a longer
-    outward ramp over the void, no new `dustAt`.
 - [ ] **L2 HDR light:** everything emissive into rgba16f at real brightness (star ≫ flames ≫ lamps); bloom as a mip
   ladder instead of the ¼-frame 4×4; AgX/ACES tone map; a grade per star class — one shot tells where you are.
 - [ ] **L3 light touches the world:** normals from baked sprites' relief, a list of point lights (flames, beams,
