@@ -409,10 +409,10 @@ function drawRoad(ts){
 
      Тёмной полосы на холсте нет: кнопки держит своё стекло подвала
      (`body.road .scr footer`), а не вырезанный из картинки кусок. */
-  /* мир собран; числа — на слой приборов, без свечения и зерна */
-  if(gOn)gpuHud("road"+GPU.frameNo,()=>{});   /* слой приборов чистится каждый кадр */
-  if(gOn)gpuWorld(ROAD_GLOW,true,true);
-  c=ctx;c.save();
+  /* числа — интерфейс: слой #ovl (08bi), без свечения и зерна. Очередь слоя сводится
+     внутри gpuWorld, поэтому числа кладутся ДО него, а мир собирается в конце кадра.
+     Монеты — свет: они летят в мире (#c) и светятся вместе с ним */
+  c=gOn?roadOvl():ctx;c.save();
   /* числа. Строки складываются курсором: чего нет — того нет, дыр не остаётся.
      На стоянке ни «—», ни «+0 кр» не висят (проход самокритики M168c) */
   const R=roadAll();
@@ -569,7 +569,7 @@ function drawRoad(ts){
     c.restore();c.textAlign="left";
   }
   /* ── монеты: кредит летит от корпуса в счётчик ── */
-  const tgt=RD.crXY||[W*.1,H*.2];
+  const tgt=RD.crXY||[W*.1,H*.2],m=ctx;
   for(let i=RD.coins.length-1;i>=0;i--){
     const k=RD.coins[i];
     k.p+=dt/1.05;
@@ -578,15 +578,15 @@ function drawRoad(ts){
     const u=k.p*k.p*(3-2*k.p);
     const x=k.x+(tgt[0]-k.x)*u, y=k.y+(tgt[1]-k.y)*u-Math.sin(Math.PI*k.p)*H*.07;
     const rr3=Math.max(1.6,W*.007);
-    c.globalAlpha=Math.sin(Math.PI*Math.min(1,k.p*1.25))*.95;
-    c.save();c.globalCompositeOperation="lighter";
-    const cg2=c.createRadialGradient(x,y,0,x,y,rr3*4);
+    m.globalAlpha=Math.sin(Math.PI*Math.min(1,k.p*1.25))*.95;
+    m.save();m.globalCompositeOperation="lighter";
+    const cg2=m.createRadialGradient(x,y,0,x,y,rr3*4);
     cg2.addColorStop(0,"rgba(242,178,92,.55)");cg2.addColorStop(1,"rgba(242,178,92,0)");
-    c.fillStyle=cg2;c.beginPath();c.arc(x,y,rr3*4,0,TAU);c.fill();
-    c.restore();
-    c.fillStyle="rgba(255,214,150,1)";
-    c.beginPath();c.arc(x,y,rr3,0,TAU);c.fill();
-    c.globalAlpha=1;
+    m.fillStyle=cg2;m.beginPath();m.arc(x,y,rr3*4,0,TAU);m.fill();
+    m.restore();
+    m.fillStyle="rgba(255,214,150,1)";
+    m.beginPath();m.arc(x,y,rr3,0,TAU);m.fill();
+    m.globalAlpha=1;
   }
   /* Окно правды по датчикам (M168k) — долгое нажатие или `?road=diag`. Мера
      поворота тонкая, но на настоящей поездке корпус не сошёл с центра ни разу
@@ -618,7 +618,7 @@ function drawRoad(ts){
     }
   }
   c.restore();
-  if(gOn)gpuPresent();
+  if(gOn){gpuWorld(ROAD_GLOW,true,true);gpuPresent();}
 }
 /* полный экран (M168k): обвязка браузера съедала седьмую часть экрана у режима,
    который стоит в держателе весь путь. Жест уже есть — нажатие «РАЗРЕШИТЬ

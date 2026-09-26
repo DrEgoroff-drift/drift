@@ -104998,10 +104998,10 @@ function drawRoad(ts){
 
      Тёмной полосы на холсте нет: кнопки держит своё стекло подвала
      (`body.road .scr footer`), а не вырезанный из картинки кусок. */
-  /* мир собран; числа — на слой приборов, без свечения и зерна */
-  if(gOn)gpuHud("road"+GPU.frameNo,()=>{});   /* слой приборов чистится каждый кадр */
-  if(gOn)gpuWorld(ROAD_GLOW,true,true);
-  c=ctx;c.save();
+  /* числа — интерфейс: слой #ovl (08bi), без свечения и зерна. Очередь слоя сводится
+     внутри gpuWorld, поэтому числа кладутся ДО него, а мир собирается в конце кадра.
+     Монеты — свет: они летят в мире (#c) и светятся вместе с ним */
+  c=gOn?roadOvl():ctx;c.save();
   /* числа. Строки складываются курсором: чего нет — того нет, дыр не остаётся.
      На стоянке ни «—», ни «+0 кр» не висят (проход самокритики M168c) */
   const R=roadAll();
@@ -105158,7 +105158,7 @@ function drawRoad(ts){
     c.restore();c.textAlign="left";
   }
   /* ── монеты: кредит летит от корпуса в счётчик ── */
-  const tgt=RD.crXY||[W*.1,H*.2];
+  const tgt=RD.crXY||[W*.1,H*.2],m=ctx;
   for(let i=RD.coins.length-1;i>=0;i--){
     const k=RD.coins[i];
     k.p+=dt/1.05;
@@ -105167,15 +105167,15 @@ function drawRoad(ts){
     const u=k.p*k.p*(3-2*k.p);
     const x=k.x+(tgt[0]-k.x)*u, y=k.y+(tgt[1]-k.y)*u-Math.sin(Math.PI*k.p)*H*.07;
     const rr3=Math.max(1.6,W*.007);
-    c.globalAlpha=Math.sin(Math.PI*Math.min(1,k.p*1.25))*.95;
-    c.save();c.globalCompositeOperation="lighter";
-    const cg2=c.createRadialGradient(x,y,0,x,y,rr3*4);
+    m.globalAlpha=Math.sin(Math.PI*Math.min(1,k.p*1.25))*.95;
+    m.save();m.globalCompositeOperation="lighter";
+    const cg2=m.createRadialGradient(x,y,0,x,y,rr3*4);
     cg2.addColorStop(0,"rgba(242,178,92,.55)");cg2.addColorStop(1,"rgba(242,178,92,0)");
-    c.fillStyle=cg2;c.beginPath();c.arc(x,y,rr3*4,0,TAU);c.fill();
-    c.restore();
-    c.fillStyle="rgba(255,214,150,1)";
-    c.beginPath();c.arc(x,y,rr3,0,TAU);c.fill();
-    c.globalAlpha=1;
+    m.fillStyle=cg2;m.beginPath();m.arc(x,y,rr3*4,0,TAU);m.fill();
+    m.restore();
+    m.fillStyle="rgba(255,214,150,1)";
+    m.beginPath();m.arc(x,y,rr3,0,TAU);m.fill();
+    m.globalAlpha=1;
   }
   /* Окно правды по датчикам (M168k) — долгое нажатие или `?road=diag`. Мера
      поворота тонкая, но на настоящей поездке корпус не сошёл с центра ни разу
@@ -105207,7 +105207,7 @@ function drawRoad(ts){
     }
   }
   c.restore();
-  if(gOn)gpuPresent();
+  if(gOn){gpuWorld(ROAD_GLOW,true,true);gpuPresent();}
 }
 /* полный экран (M168k): обвязка браузера съедала седьмую часть экрана у режима,
    который стоит в держателе весь путь. Жест уже есть — нажатие «РАЗРЕШИТЬ
@@ -105555,28 +105555,55 @@ function roadBloom(pass,W,H,hue,en,bd){
    Прежде у дороги был свой 2D-холст #roadcv и свой кадр на процессоре: небо
    градиентами, сияние — циклом по пикселям (27lb), всё без свечения и зерна.
    Теперь кадр дороги — обычный кадр видеокарты (08b): gpuFrame → под всем 2D
-   небо (27la) и поле света с гашением низа (27lb) → корпус и шлейф 2D на #c →
-   gpuWorld (свечение, зерно, виньетка) → числа на слой приборов → gpuPresent.
-   gpuOver не нужен ни разу: одна загрузка #c на кадр.
+   небо (27la) и поле света с гашением низа (27lb) → корпус, шлейф и монеты 2D
+   на #c → числа в очередь слоя #ovl (roadOvl) → gpuWorld (свечение, зерно,
+   виньетка; слой #ovl сводится в нём же) → gpuPresent. gpuOver не нужен ни
+   разу: одна загрузка #c на кадр.
 
    Экран дороги занимает всё: `body.road > *:not(#roadwin){display:none}`
    (style.css) гасит всё, что лежит прямо в body, — и холст видеокарты #g, и
-   слой приборов #hud тоже. Поэтому на время дороги они ПЕРЕЕЗЖАЮТ внутрь
+   слой интерфейса #ovl тоже. Поэтому на время дороги они ПЕРЕЕЗЖАЮТ внутрь
    #roadwin, под прозрачный #roadcv: тот остаётся ловить пальцы (касание —
    вспышка, долгое нажатие — окно датчиков), а рисовать в него больше нечего.
-   На выходе оба возвращаются на свои места, сразу за #c. */
+   На выходе оба возвращаются на свои места, сразу за #c. Слой, заведённый уже
+   на дороге, ovCanvas ставит сразу за #g — то есть тоже внутрь #roadwin */
 const ROAD_GLOW=.18;                      /* сила свечения кадра дороги (как BLOOM_K у режимов) */
 function roadGpuMount(on){
   if(typeof GPU==="undefined"||!GPU.cv)return;
-  const win=document.getElementById("roadwin"),g=GPU.cv,u=GPU.ui;
+  const win=document.getElementById("roadwin"),g=GPU.cv,o=typeof OVL!=="undefined"?OVL.cv:null;
   if(!win)return;
   if(on){
-    if(g.parentNode!==win){win.prepend(g);if(u)g.after(u);}
+    if(g.parentNode!==win)win.prepend(g);
+    if(o&&o.previousSibling!==g)g.after(o);
     /* #roadcv больше не рисуется: пустой и крошечный, он только ловит пальцы */
     const cv=document.getElementById("roadcv");
     if(cv&&(cv.width!==1||cv.height!==1)){cv.width=1;cv.height=1;}
     ROAD_BOX=null;
-  }else if(g.parentNode===win){cvs.after(g);if(u)g.after(u);ROAD_BOX=null;resize();}
+  }else if(g.parentNode===win){cvs.after(g);if(o)g.after(o);ROAD_BOX=null;resize();}
+}
+/* ── числа дороги на слое #ovl ──
+   Рисунок чисел (27l) остался прежним — строки, подписи, окно датчиков, — а пишет
+   он теперь не в 2D-холст, а в этот ctx: горсть вызовов 2D, переложенных в примитивы
+   слоя (ovText, ovRect). 2D-слоя приборов #hud больше нет (08bi), а #c после сборки
+   мира уже никто не показывает. Мерка строки — та же, что у маски текста (GC_GLYPHS) */
+let RD_OVL=null;
+function roadOvl(){
+  ovCanvas();   /* мерка слоя (ovNd) — от его холста, уже по рамке листа (roadFit) */
+  const O=RD_OVL||(RD_OVL={st:new Map(),S:[],
+    save(){this.S.push([this.fillStyle,this.strokeStyle,this.font,this.textAlign,this.textBaseline,this.globalAlpha,this.lineWidth]);},
+    restore(){const s=this.S.pop();if(s)[this.fillStyle,this.strokeStyle,this.font,this.textAlign,this.textBaseline,this.globalAlpha,this.lineWidth]=s;},
+    sty(){let s=this.st.get(this.font);
+      if(!s){if(this.st.size>32)this.st.clear();this.st.set(this.font,s=Object.assign({},GC_DEF,{font:this.font,textAlign:"left",textBaseline:"alphabetic"}));}
+      return s;},
+    measureText(t){return GC_GLYPHS.measure(this.sty(),String(t));},
+    fillText(t,x,y){ovText(OVL.uq,x,y,String(t),this.font,this.fillStyle,this.textAlign,this.textBaseline,this.globalAlpha,1);},
+    fillRect(x,y,w,h){ovRect(x,y,x+w,y+h,this.fillStyle,this.globalAlpha);},
+    strokeRect(x,y,w,h){const d=this.lineWidth/2,col=this.strokeStyle,a=this.globalAlpha;
+      ovRect(x-d,y-d,x+w+d,y+d,col,a);ovRect(x-d,y+h-d,x+w+d,y+h+d,col,a);
+      ovRect(x-d,y+d,x+d,y+h-d,col,a);ovRect(x+w-d,y+d,x+w+d,y+h-d,col,a);}});
+  O.S.length=0;O.fillStyle=O.strokeStyle="#000";O.font="10px sans-serif";O.textAlign="left";O.textBaseline="alphabetic";
+  O.globalAlpha=1;O.lineWidth=1;
+  return O;
 }
 /* ── рамка кадра дороги — лист, а не окно (приёмка флота, 26.09) ──
    От 900 px лист .scr — колонна по центру, и его backdrop-filter с zoom делают

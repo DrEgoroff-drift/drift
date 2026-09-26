@@ -108,10 +108,14 @@ TEST_SUITES.push(()=>suite("дорога: кадр ложится в рамку 
     eq(H,Math.round(r.height),"высота кадра — рамка листа");
     ok(W<innerWidth&&H<innerHeight,"рамка меньше окна: "+W+"×"+H+" в "+innerWidth+"×"+innerHeight);
     eq(GPU.cv.width,Math.round(W*DPR),"подложка #g — рамка на плотность, без растяжки");
+    /* числа — очередью слоя #ovl: 2D-слоя приборов нет, а #c после сборки мира никто не показывает */
+    ok(OVL.cv&&OVL.cv.parentNode===win&&OVL.cv.previousElementSibling===GPU.cv,"слой #ovl — в листе, сразу за #g");
+    ok(OVL.nu>0,"числа дороги легли в слой #ovl: примитивов "+OVL.nu);
+    eq(OVL.cv.width,Math.round(W*gpuHudDpr()),"слой #ovl — по рамке листа");
     roadClose();
   }finally{win.style.cssText=st;if(RD)roadClose();}
   ok(GPU.cv.previousElementSibling===cvs,"после дороги #g снова сразу за #c");
-  ok(!GPU.ui||GPU.ui.previousElementSibling===GPU.cv,"и слой приборов — сразу за #g");
+  ok(!OVL.cv||OVL.cv.previousElementSibling===GPU.cv,"и слой #ovl — сразу за #g");
   eq(W,innerWidth,"ширина кадра — снова окно");
   eq(H,innerHeight,"высота кадра — снова окно");
   eq(cvs.width,Math.round(W*DPR),"#c — по окну");

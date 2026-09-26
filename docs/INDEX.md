@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 663 · символов верхнего уровня: 6726
+Файлов: 663 · символов верхнего уровня: 6728
 
 ## СИМВОЛЫ
 
@@ -4998,6 +4998,7 @@ RAY_R                        src/13a-guns.js:29
 rayDamage                    src/13a-guns.js:93-96
 rayHits                      src/13a-guns.js:66-78
 RD                           src/27k-road.js:183
+RD_OVL                       src/27lc-road-gpu.js:36
 rebinding                    src/15-input.js:176
 REC                          src/15c-rec.js:18
 REC_KEYS                     src/15c-rec.js:19
@@ -5245,7 +5246,7 @@ rng                          src/01-core.js:29
 ROAD_BACK_FAR                src/27k-road.js:104
 ROAD_BAND                    src/27k-road.js:586
 ROAD_BLOOM_H                 src/27k-road.js:181
-ROAD_BOX                     src/27lc-road-gpu.js:38
+ROAD_BOX                     src/27lc-road-gpu.js:65
 ROAD_BURN_LO                 src/27k-road.js:163
 ROAD_C                       src/27k-road.js:33
 ROAD_CR_KM                   src/27k-road.js:50
@@ -5256,7 +5257,7 @@ ROAD_FLD_U                   src/27lb-road-bloom.js:92
 ROAD_FLD_WGSL                src/27lb-road-bloom.js:35
 ROAD_FOOT                    src/27k-road.js:182
 ROAD_G                       src/27k-road.js:121
-ROAD_GLOW                    src/27lc-road-gpu.js:15
+ROAD_GLOW                    src/27lc-road-gpu.js:17
 ROAD_HALF                    src/27l-road-draw.js:70
 ROAD_LAT_DEAD                src/27k-road.js:124
 ROAD_LAT_FULL                src/27k-road.js:122
@@ -5298,10 +5299,10 @@ roadDayReset                 src/27k-road.js:198-208
 roadEarnKm                   src/27k-road.js:237-255
 roadFast                     src/27k-road.js:223
 roadFinish                   src/27k-road.js:256-271
-roadFit                      src/27lc-road-gpu.js:39-45
+roadFit                      src/27lc-road-gpu.js:66-72
 roadFrame                    src/27l-road-draw.js:60-64
 roadFullscreen               src/27l-road-draw.js:626-632
-roadGpuMount                 src/27lc-road-gpu.js:16-27
+roadGpuMount                 src/27lc-road-gpu.js:18-30
 roadHav                      src/27k-road.js:108-114
 roadHomeward                 src/27k-road.js:116
 roadHueMix                   src/27k-road.js:597
@@ -5315,6 +5316,7 @@ roadMoodPath                 src/27k-road.js:606-610
 roadOnPos                    src/27k-road.js:475-521
 roadOnShake                  src/27k-road.js:391-444
 roadOpen                     src/27l-road-draw.js:17-40
+roadOvl                      src/27lc-road-gpu.js:37-54
 roadPilotRu                  src/27k-road.js:474
 roadPing                     src/27k-road.js:458-473
 roadRank                     src/27k-road.js:95-102
@@ -8049,7 +8051,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27lb-road-bloom.js · 8 КБ
   · дорожный спутник: поле света:1
 
-## src/27lc-road-gpu.js · 4 КБ
+## src/27lc-road-gpu.js · 6 КБ
   · дорожный спутник: кадр видеокартой (G12):1
 
 ## src/27m-scroll-cue.js · 4 КБ
@@ -8412,9 +8414,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzy-fx.js · 5 КБ
   · автотесты: эффекты M325 — вода, марево, хроматика, факел:1
 
-## tests/91zzy-road.js · 33 КБ
+## tests/91zzy-road.js · 34 КБ
   · автотесты: дорожный спутник (M168, M168b):1
-  · девятый проход (M168k):285
+  · девятый проход (M168k):289
 
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
