@@ -171,6 +171,12 @@ const GATE2D=[
    painters:["instrPodTick","instrPodDraw","instrPodLive","instrPodPaint","ckgSpr","tapePaper"],warm:30,
    place(first){if(first){for(let i=0;i<40;i++)tapeSample();return {};}tapeSample();return {};},
    get probe(){return IPOD_NARROW?[]:["instrPodDraw","instrPodLive"];}},
+  /* кресло пульта (27j): портрет — выпечка по ключу, проход в свою канву WebGPU; обида Веги сменит ключ */
+  {name:"кресло пульта (27j): портрет Веги — выпечкой, без 2D",
+   painters:["seatGpuTick","consoleGpuTick","vegaSeatDraw","traineeDraw","expPaxDraw"],
+   place(first){if(first){G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:()=>{},key:vegaSeatKey};conT=0;}return {};},
+   done(){G.seat=null;SEAT.S=null;},
+   probe:["seatGpuTick"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

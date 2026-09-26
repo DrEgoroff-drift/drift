@@ -384,6 +384,28 @@ TEST_SUITES.push(()=>suite("интерфейс: выбранная заклад�
 /* жёрдочка на пульте (05.09.2026, телефон автора: «попугай криво») — птица
    рисовалась углом окна трепла: голова за верхним краем, тело вправо. Иконка
    обязана вмещать птицу целиком, по центру, и ростом не меньше половины поля. */
+/* кресло (27j, G15): портрет печётся по ключу (художник, размер, настроение) и идёт в канву одним
+   проходом; ровные кадры проходов не просят, обида Веги — ровно один новый */
+TEST_SUITES.push(() => suite("кресло: портрет — проход только на смене ключа",{tier:"browser"}, () => {
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  resetWorld();G.mode="system";
+  const p0=ovPass,run0=G.running,loop0=LOOP_OFF,V0=G.vega;let n=0,t=wallMs();
+  window.ovPass=function(T){if(T===SEAT.T)n++;return p0.apply(this,arguments);};
+  try{
+    G.running=true;LOOP_OFF=false;
+    G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:()=>{},key:vegaSeatKey};conT=0;
+    for(let i=0;i<120;i++)frameBody(t+=16.7);
+    eq(n,1,"Вега села: один проход за 120 кадров");
+    const cv=document.getElementById("seatcv");
+    eq(cv.width,Math.round(56*Math.min(2,devicePixelRatio||1)),"канва кресла — в плотности экрана");
+    G.vega=Object.assign({},V0||{},{offend:celDay()+1});
+    for(let i=0;i<120;i++)frameBody(t+=16.7);
+    eq(n,2,"обида — ещё ровно один проход");
+    G.seat={name:"СТАЖЁР",line:"",draw:traineeDraw,act:()=>{}};conT=0;
+    for(let i=0;i<120;i++)frameBody(t+=16.7);
+    eq(n,3,"стажёр в кресле — свой портрет, один проход");
+  }finally{window.ovPass=p0;G.running=run0;LOOP_OFF=loop0;G.vega=V0;G.seat=null;SEAT.S=null;resetWorld();}
+}));
 TEST_SUITES.push(() => suite("жёрдочка: птица в иконке целиком",{tier:"node"}, () => {
   resetWorld();
   G.parrot=null;parrotFind(7,"чужого борта");

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 636 · символов верхнего уровня: 6429
+Файлов: 636 · символов верхнего уровня: 6433
 
 ## СИМВОЛЫ
 
@@ -993,9 +993,10 @@ combatShots                  src/13-combat.js:154-207
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82-86
 concertSend                  src/11ae-concert.js:87-104
+consoleGpuTick               src/27j-console.js:57-60
 consoleHeard                 src/27j-console.js:26-34
 consoleRect                  src/08-state.js:142-148
-consoleTick                  src/27j-console.js:35-130
+consoleTick                  src/27j-console.js:61-156
 conT                         src/27j-console.js:19
 COOP_ASK_BY                  src/12aj-coop.js:135
 COOP_ASKS                    src/12aj-coop.js:126-134
@@ -2066,7 +2067,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-174
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-180
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -5314,6 +5315,8 @@ sealedWhy                    src/05e-clearance.js:85-95
 seamAdd                      src/12s-wear.js:182
 seamsAll                     src/12s-wear.js:181
 seamsOf                      src/12s-wear.js:183
+SEAT                         src/27j-console.js:40
+seatGpuTick                  src/27j-console.js:41-55
 SEC_CAP                      src/26-ui-station.js:359
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
@@ -6103,35 +6106,36 @@ VEGA_RELAY                   src/12k-vega.js:22-26
 VEGA_SICK                    src/12k-vega.js:41
 VEGA_WISHES                  src/12k-vega.js:5-9
 vegaAboard                   src/11w-vega.js:22
-vegaAmbientTick              src/11w-vega.js:290-303
+vegaAmbientTick              src/11w-vega.js:292-305
 vegaAtHome                   src/11w-vega.js:23
-vegaBeastShout               src/11w-vega.js:217-221
+vegaBeastShout               src/11w-vega.js:219-223
 vegaBoard                    src/11w-vega.js:145-157
-vegaBroken                   src/11w-vega.js:314
-vegaCantinaBlock             src/11w-vega.js:281-287
+vegaBroken                   src/11w-vega.js:316
+vegaCantinaBlock             src/11w-vega.js:283-289
 vegaDayTick                  src/11w-vega.js:66-119
 vegaDeviceBuy                src/11w-vega.js:32-39
 vegaDeviceOffered            src/11w-vega.js:26-31
 vegaEvict                    src/11w-vega.js:121-128
-vegaFleaBlock                src/11w-vega.js:253-265
+vegaFleaBlock                src/11w-vega.js:255-267
 vegaHas                      src/11w-vega.js:21
-vegaHomeArrive               src/11w-vega.js:235-242
-vegaHomeBlock                src/11w-vega.js:267-279
-vegaHomeFigure               src/11w-vega.js:305-313
+vegaHomeArrive               src/11w-vega.js:237-244
+vegaHomeBlock                src/11w-vega.js:269-281
+vegaHomeFigure               src/11w-vega.js:307-315
 vegaHullName                 src/11w-vega.js:24
-vegaJump                     src/11w-vega.js:210-214
-vegaLanded                   src/11w-vega.js:215
-vegaLaunchHold               src/11w-vega.js:244-251
+vegaJump                     src/11w-vega.js:212-216
+vegaLanded                   src/11w-vega.js:217
+vegaLaunchHold               src/11w-vega.js:246-253
 vegaMoraleMul                src/11w-vega.js:130-134
 vegaOffend                   src/11w-vega.js:136-143
 vegaOffended                 src/11w-vega.js:135
-vegaOuting                   src/11w-vega.js:223-233
+vegaOuting                   src/11w-vega.js:225-235
 vegaSeatAct                  src/11w-vega.js:164-184
-vegaSeatDraw                 src/11w-vega.js:185-195
+vegaSeatDraw                 src/11w-vega.js:187-197
+vegaSeatKey                  src/11w-vega.js:186
 vegaSeatLine                 src/11w-vega.js:158-163
 vegaTestBazaar               tests/91zzh-vega.js:7-13
 vegaTestHome                 tests/91zzh-vega.js:2-6
-vegaTick                     src/11w-vega.js:197-208
+vegaTick                     src/11w-vega.js:199-210
 vegaWish                     src/11w-vega.js:52-64
 VER                          src/01-core.js:4
 VER_ITER                     src/18d-verlet.js:23
@@ -7678,7 +7682,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
 
-## src/27j-console.js · 11 КБ
+## src/27j-console.js · 13 КБ
   · пульт: приёмник, подсказка, кресло:1
 
 ## src/27j-ui-hold.js · 14 КБ
@@ -7799,7 +7803,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91e-rogue.js · 6 КБ
   · автотесты: ушедший управляющий: ультиматум, ренегат, изгнанник:1
 
-## tests/91f-ui.js · 31 КБ
+## tests/91f-ui.js · 32 КБ
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
   · ключи из кода не показываются игроку:209
   · на чистом старте в кадре нет лишнего:254
@@ -8440,7 +8444,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 19 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 19 КБ
+## tests/91zzzzzzy3-gate2d.js · 20 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ
