@@ -238,6 +238,8 @@ could ever save.
 
 - **M487 подписка: the cold store and the rush in a fight.** New base module «Иней» (`21ac4-base-fridge`), sold two ways in the build menu: bought outright (3 400 кр + 4 alloy, +4 good харч every shift for ever) or «по подписке» — 10 % up front and 136 кр per shift, only where Компания or Хай-Фронт own the base's system; the card says «к 23-й смене вы заплатите полную цену». When the fee does not go through, the door is locked: no харч that shift, and what it already gave stays («перестаёт давать, а не отнимает»). The journal warns a shift ahead (balance below the next fee), every 25th shift the tariff is «обновлён» with one trifle turned into an add-on. In the cut the owned fridge shows a green panel, the unpaid one a red panel and padlocks. In a fight, a subscribed instrument that is locked is offered on the prompt: «ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3» — one ДЕЙСТВИЕ, triple fee, unlocked now.
 
+- **M480 the free cells.** An ordered hull from Хай-Фронт or Орднунг now carries its yard's built-in on the blueprint: a pale dashed stamp in the frontmost free nose cell nearest the axis — «дальний захват» (ПР, an instrument in the nose third, sight one palladium step up, no cargo spent) or «лобовой щит» (ЩТ, on the nose plating; its number stays the +8 % nose armour of the yard). It needs no part, is not in the hold, cannot be taken or covered («встроено верфью · не снимается»), shows in the tray and counts in ЯЧЕЙКИ. Catalogue hulls and old saves are untouched; nothing new is saved — the cell is chosen by the yard from the packer's layout each time.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -325,6 +327,7 @@ could ever save.
 - M482 доводка stays paid with нейтронная крошка + 800 кр (M478), not with a node as DESIGN-shipyard §6 says: spending a node would break a set the player is collecting. Two welds per hull, +1 tier — already so.
 - M463: the rarity counter draws from the barge-hold pool, because the «hulk» and «cont» places named by `17b-finds` have no pool in `RARE_WHERE` (those finds never yield a rarity today). A bought rarity pre-empts that one barge find; the cautious take is one every other shift at 6–12 k.
 - M487: no subscription state is saved — base cells persist as `{k,hp}` only, so the subscribed fridge is its own kind (`fridgesub`) and whether it is locked is read from the balance each shift. Other base modules are not offered by subscription yet: each needs its own «stops giving» hook. In a long absence (bulk catch-up) the fridge, like the garden and the vat, neither feeds nor charges.
+- M480: Орднунг's front shield cell adds no number of its own — the yard's +8 % hull already is «носовая броня даром», and a second bonus would pay twice; the calibration pass may move it to the shield.
 
 ## 0.478.0 - the album on the engine
 

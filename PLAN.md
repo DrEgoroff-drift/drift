@@ -265,8 +265,7 @@ measured on the GPU build first:
 
 - [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
   release run).
-- [ ] **M480/M481 yards (rest):** the free cells (Хай-Фронт's nose instrument, Орднунг's front shield — cells
-  that need no part); calibration by the worlds oracle and the стрельбище (release run).
+- [ ] **M480/M481 yards (rest):** calibration by the worlds oracle and the стрельбище (release run).
 
 ## 8. Stage 7 — the giants
 

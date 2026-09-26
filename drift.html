@@ -102225,10 +102225,30 @@ function kbMoved(){
 const PLAN_DENS={he3:{k:"en",ru:"КОТЁЛ",step:.12,what:"энергия"},palladium:{k:"see",ru:"ПРИБОРЫ",step:.06,what:"обзор"},
   osmium:{k:"hull",ru:"БРОНЯ",step:.08,what:"корпус"},magdust:{k:"sh",ru:"ЩИТ",step:.12,what:"щит"}};
 const PLAN_DENS_MAX=3,PLAN_WELD_MAX=2,PLAN_WELD_FEE=800;
+/* ── встроенное верфью (M480, shipyard §4): клетка, которой не нужна вещь ──
+   Только на заказанных корпусах (стапель, "sp…"), как и весь характер верфей:
+   Хай-Фронт — «дальний захват», прибор в носовой трети, обзор на ступень;
+   Орднунг — «лобовой щит в комплекте» на носовой обшивке (его число — та же
+   носовая броня +8 % в STAPEL_YARD, клетка её показывает). Встроенное не снимают
+   и не двигают; клетку выбирает верфь — самую носовую из тех, что упаковщик не занял */
+const KB_FREE={
+  hf:{ru:"дальний захват",ab:"ПР",ok:q=>q.nose3,note:"прибор в носу даром · обзор на ступень"},
+  or:{ru:"лобовой щит",ab:"ЩТ",ok:q=>q.kind==="nose",note:"щит в комплекте · носовая броня"}
+};
+function kbFreeBy(id){
+  if(!/^sp\d/.test(String(id)))return null;
+  const sh=G.uniqueShips&&G.uniqueShips[id];
+  return sh&&KB_FREE[sh.by]?sh.by:null;
+}
 function planDensOf(id){const D=G.draft&&G.draft[id];return (D&&D.dens)||null;}
 function planDens(){
-  const d=planDensOf(G.shipId),o={en:1,see:1,hull:1,sh:1};if(!d)return o;
+  const d=planDensOf(G.shipId),o={en:1,see:1,hull:1,sh:1};if(!d)return planDensFree(o);
   for(const g in PLAN_DENS){const n=d[g]|0;if(n)o[PLAN_DENS[g].k]=1+PLAN_DENS[g].step*n;}
+  return planDensFree(o);
+}
+/* обзор с «дальним захватом» Хай-Фронта — ступень палладия сверху, без груза */
+function planDensFree(o){
+  if(kbFreeBy(G.shipId)==="hf")o.see*=1+PLAN_DENS.palladium.step;
   return o;
 }
 function planMods(mods){
@@ -102294,18 +102314,27 @@ function draftOf(id){
   const P=planOf(id),pk=planPack(id,G.fit[id]||{},G.mods||{});
   const D=draftAll()[id],items=[];
   const cellAt=(i,j)=>P.cells.find(q=>q.i===i&&q.j===j)||null;
+  /* встроенное верфью (M480): самая носовая подходящая клетка вне упаковщика, ближе к оси */
+  let free=null;const fb=kbFreeBy(id);
+  if(fb){
+    const pu=new Set();for(const it of pk.items)for(const q of it.cells)pu.add(q.i+","+q.j);
+    const mid=(P.cols-1)/2,c=P.cells.filter(q=>!pu.has(q.i+","+q.j)&&KB_FREE[fb].ok(q))
+      .sort((a,b)=>a.i-b.i||Math.abs(a.j-mid)-Math.abs(b.j-mid));
+    if(c.length)free={by:fb,q:c[0]};
+  }
   for(const it of pk.items){
     const key=(it.what==="mod"?"m":"p")+(it.what==="mod"?it.kind:it.slot);
     const saved=D&&D.it&&D.it[key];
     let cells=it.cells;
-    if(saved&&saved.length===it.need){const c=saved.map(x=>cellAt(x[0],x[1]));if(c.every(Boolean))cells=c;}
+    if(saved&&saved.length===it.need){const c=saved.map(x=>cellAt(x[0],x[1]));if(c.every(Boolean)&&!(free&&c.indexOf(free.q)>=0))cells=c;}
     items.push({...it,key,cells});
   }
   const used=new Set();for(const it of items)for(const q of it.cells)used.add(q);
+  if(free)used.add(free.q);
   let hold;
   if(D&&D.hold)hold=D.hold.map(x=>cellAt(x[0],x[1])).filter(q=>q&&!used.has(q));
   else hold=P.cells.filter(q=>!used.has(q)&&(q.kind==="deck"||q.kind==="spine"));
-  return {P,items,hold};
+  return {P,items,hold,free};
 }
 function draftSave(id,d){
   const it={};for(const x of d.items)it[x.key]=x.cells.map(q=>[q.i,q.j]);
@@ -102329,6 +102358,7 @@ function kbPlace(d,it,q,turn){
   const R=kbRule(it);
   if(R&&!R.ok(q))return R.no;
   const busy=new Set();for(const x of d.items)if(x!==it)for(const c of x.cells)busy.add(c);
+  if(d.free)busy.add(d.free.q);   /* встроенное верфью не уступает клетку */
   if(busy.has(q))return "клетка занята";
   /* форма вещи от клетки-якоря (M477): 2 — в линию, как повёрнута; 4 — квадрат */
   const cells=[];
@@ -102346,7 +102376,7 @@ function kbPlace(d,it,q,turn){
 }
 function kbNums(d){
   const used=d.items.reduce((a,x)=>a+x.cells.length,0),st=stat(),F=planFactors();
-  return {cells:used+d.hold.length,cargo:st.cargoMax,fuel:st.fuelMax,energy:st.energyMax,mass:F.mass};
+  return {cells:used+d.hold.length+(d.free?1:0),cargo:st.cargoMax,fuel:st.fuelMax,energy:st.energyMax,mass:F.mass};
 }
 /* полоска чисел (§8): каждое — цветом разницы с чертежом, каким он был на входе в КБ */
 function kbNumbers(d){
@@ -102385,6 +102415,9 @@ function kbRender(){
     b.onclick=()=>{KB.sel=KB.sel===k?null:k;KB.msg="";kbRender();};
     tray.appendChild(b);
   });
+  if(d.free){const F=KB_FREE[d.free.by],b=document.createElement("button");b.className="act kb-it dim";
+    b.innerHTML="<i style='background:#dce8f4'></i>"+capRu(F.ru)+"<s>встроено верфью</s>";
+    b.onclick=()=>{KB.msg="«"+F.ru+"» — "+F.note+" · не снимается";kbRender();};tray.appendChild(b);}
   w.querySelectorAll(".kb-p").forEach(b=>b.onclick=()=>{kbProjSwitch(+b.dataset.k);kbRender();});
   /* лоток из трюма (§8): части, что лежат в инвентаре; тап при взятой вещи того же рода — замена на том же месте */
   const inv=w.querySelector(".kb-inv"),selIt=KB.sel!=null?d.items[KB.sel]:null;
@@ -102447,6 +102480,7 @@ function kbTap(i,j){
   if(typeof regPending==="function"&&regPending(KB.id)&&kbYard()===playerFlag()){
     KB.msg="своя верфь не перечерчивает: корпус не на учёте · «сначала номера, потом чертёж»";kbRender();return;}
   const d=KB.d,q=d.P.cells.find(c=>c.i===i&&c.j===j);if(!q)return;
+  if(d.free&&q===d.free.q){const F=KB_FREE[d.free.by];KB.msg="встроено верфью · «"+F.ru+"» — "+F.note+" · не снимается";kbRender();return;}
   const owner=d.items.findIndex(x=>x.cells.indexOf(q)>=0);
   if(KB.sel!=null){
     const it=d.items[KB.sel];
@@ -102506,6 +102540,12 @@ function kbDraw(c,s,d){
   for(const q of d.hold){c.fillStyle="rgba(80,190,110,.24)";c.fillRect(q.j*s+3,q.i*s+3,s-6,s-6);
     c.save();c.beginPath();c.rect(q.j*s+3,q.i*s+3,s-6,s-6);c.clip();
     for(let k=-s;k<s;k+=6){c.beginPath();c.moveTo(q.j*s+k,q.i*s);c.lineTo(q.j*s+k+s,q.i*s+s);c.stroke();}c.restore();}
+  /* встроенное верфью: белёсый оттиск с пунктиром — не охра вещей, её не берут в руки */
+  if(d.free){const q=d.free.q;
+    c.fillStyle="rgba(214,228,242,.80)";c.fillRect(q.j*s+6,q.i*s+6,s-12,s-12);
+    c.strokeStyle="rgba(232,240,255,.95)";c.lineWidth=1.2;c.setLineDash([3,2]);c.strokeRect(q.j*s+3.5,q.i*s+3.5,s-7,s-7);c.setLineDash([]);
+    c.fillStyle="#0f2d52";c.font="bold "+Math.max(9,Math.floor(s*.22))+"px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+    c.fillText(KB_FREE[d.free.by].ab,q.j*s+s/2,q.i*s+s/2);}
   d.items.forEach((it,k)=>{
     const on=KB.sel===k;
     for(const q of it.cells){

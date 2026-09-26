@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 642 · символов верхнего уровня: 6620
+Файлов: 642 · символов верхнего уровня: 6623
 
 ## СИМВОЛЫ
 
@@ -874,8 +874,9 @@ JET_KICK                     src/20d-jetpack.js:19
 JOB_ROLE                     src/21a3-base-people.js:21-29
 KB                           src/27jb-kb.js:23
 KB_CELL_FEE                  src/27jb-kb.js:30
-KB_DELTA                     src/27jb-kb.js:89
-KB_PR                        src/27jb-kb.js:102
+KB_DELTA                     src/27jb-kb.js:109
+KB_FREE                      src/27jb-kb.js:56-59
+KB_PR                        src/27jb-kb.js:122
 KB_RULE                      src/27jb-kb.js:14-22
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35-45
@@ -1197,7 +1198,7 @@ PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:354
+PLAN_F                       src/27jb-kb.js:394
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -2864,10 +2865,10 @@ doorsShut                    src/11ar-doors.js:27-31
 drDoors                      tests/91zzzzzn-doors.js:26-43
 drOut                        tests/91zzzzzn-doors.js:45-50
 drPair                       tests/91zzzzzn-doors.js:19-24
-draftAll                     src/27jb-kb.js:113
-draftOf                      src/27jb-kb.js:115-131
-draftSave                    src/27jb-kb.js:132-139
-draftTowerAt                 src/27jb-kb.js:141-146
+draftAll                     src/27jb-kb.js:133
+draftOf                      src/27jb-kb.js:135-160
+draftSave                    src/27jb-kb.js:161-168
+draftTowerAt                 src/27jb-kb.js:170-175
 drawAbil                     src/16c-abil.js:167-195
 drawAccel                    src/20aa-poi-shapes.js:143-166
 drawAccountShelf             src/12w-survey.js:99-115
@@ -4096,26 +4097,27 @@ jobTick                      src/12e-mgr-jobs.js:287-296
 jump                         src/18-mode-map.js:579-587
 jumpToBase                   src/21a-mode-base.js:385-402
 kbCellMap                    src/27jb-kb.js:32
-kbClose                      src/27jb-kb.js:190
-kbDensUp                     src/27jb-kb.js:64-72
-kbDone                       src/27jb-kb.js:295-315
-kbDraw                       src/27jb-kb.js:317-346
+kbClose                      src/27jb-kb.js:220
+kbDensUp                     src/27jb-kb.js:84-92
+kbDone                       src/27jb-kb.js:329-349
+kbDraw                       src/27jb-kb.js:351-386
 kbForeign                    src/27jb-kb.js:31
+kbFreeBy                     src/27jb-kb.js:60-64
 kbMoved                      src/27jb-kb.js:33-39
-kbNumbers                    src/27jb-kb.js:174-181
-kbNums                       src/27jb-kb.js:169-172
-kbOpen                       src/27jb-kb.js:183-189
-kbPartFuture                 src/27jb-kb.js:91-100
-kbPlace                      src/27jb-kb.js:149-168
-kbProjSwitch                 src/27jb-kb.js:103-112
-kbRec                        src/27jb-kb.js:63
-kbRender                     src/27jb-kb.js:191-266
-kbRule                       src/27jb-kb.js:147
+kbNumbers                    src/27jb-kb.js:204-211
+kbNums                       src/27jb-kb.js:199-202
+kbOpen                       src/27jb-kb.js:213-219
+kbPartFuture                 src/27jb-kb.js:111-120
+kbPlace                      src/27jb-kb.js:178-198
+kbProjSwitch                 src/27jb-kb.js:123-132
+kbRec                        src/27jb-kb.js:83
+kbRender                     src/27jb-kb.js:221-299
+kbRule                       src/27jb-kb.js:176
 kbShape                      src/27jb-kb.js:26
-kbTap                        src/27jb-kb.js:267-294
+kbTap                        src/27jb-kb.js:300-328
 kbTurnOf                     src/27jb-kb.js:27
-kbWeld                       src/27jb-kb.js:73-85
-kbWelded                     src/27jb-kb.js:62
+kbWeld                       src/27jb-kb.js:93-105
+kbWelded                     src/27jb-kb.js:82
 kbYard                       src/27jb-kb.js:28
 keepScroll                   src/27i-ui-table.js:39-53
 keepersAll                   src/11k-keepers.js:49
@@ -5025,19 +5027,20 @@ placesAll                    src/11v-places.js:19-31
 planAll                      src/11r-plan.js:27
 planCorePlanet               src/11r-plan.js:36-40
 planDeliver                  src/11r-plan.js:67-85
-planDens                     src/27jb-kb.js:51-55
-planDensOf                   src/27jb-kb.js:50
+planDens                     src/27jb-kb.js:66-70
+planDensFree                 src/27jb-kb.js:72-75
+planDensOf                   src/27jb-kb.js:65
 planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
 planExposure                 src/05e-plan.js:217-230
-planFactors                  src/27jb-kb.js:355-366
+planFactors                  src/27jb-kb.js:395-406
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
-planMods                     src/27jb-kb.js:56-61
+planMods                     src/27jb-kb.js:76-81
 planN                        src/05e-plan.js:21
 planNow                      src/05e-plan.js:125-129
 planOf                       src/05e-plan.js:31-70
@@ -7888,7 +7891,7 @@ zoomTo                       src/15-input.js:350
 ## src/27j-ui-opis.js · 64 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
-## src/27jb-kb.js · 26 КБ
+## src/27jb-kb.js · 29 КБ
   · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
 
 ## src/27jb-ui-got.js · 4 КБ
