@@ -187,7 +187,6 @@ fn lad(T:f32)->vec3f{
   var c=mix(vec3f(.12,.02,.01),vec3f(.42,.06,.025),smoothstep(.08,.25,T));
   c=mix(c,vec3f(1.,.45,.12),smoothstep(.25,.45,T));c=mix(c,vec3f(1.,.8,.34),smoothstep(.45,.66,T));
   return mix(c,vec3f(.74,.86,1.),smoothstep(.72,.95,T));}
-fn seg(p:vec2f,a:vec2f,b:vec2f)->f32{let ab=b-a;let t=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-4),0.,1.);return length(p-a-ab*t);}
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let n=i32(fu.v[0].z);let sp=fu.v[0].xy;let sc=fu.v[1].rgb;
   var col=vec3f(0.);var al=0.;var em=vec3f(0.);
@@ -246,18 +245,30 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       let T=clamp(heat*pow(max(1.-rr,0.),.55)*(.78+.45*bl),0.,1.);
       em=em+lad(T)*(.06+2.6*T*T*T)*(1.-smoothstep(.75,1.,rr));
     }
-    /* искры: раскалённые капли, штрих — путь за 1/20 с (размытие движения) */
+    /* искры: раскалённые капли, штрих — путь за окно выдержки (размытие движения). Не звезда из
+       равных лучей (L4): 3–4 длинных тяжёлых штриха под своими углами, остальные — короткая
+       мелочь, вылетающая с задержкой из разных точек шара, половина — двумя струями; каждая
+       капля чуть загибает, штрих ярче у головы и гаснет к хвосту */
     if(a<1.3){
-      for(var i=0;i<22;i++){
-        let fi=f32(i);let h1=xh(vec2f(fi,sd));let h2=xh(vec2f(sd,fi+3.1));let h3=xh(vec2f(fi+7.,sd+1.));
-        let life=.35+.9*h3;if(a>life){continue;}
-        let an=h1*6.2832;let dr=vec2f(cos(an),sin(an));let spd=R*(4.+11.*h2*h2);
-        let a0=max(a-.033,0.);let c0=c+vec2f(h3-.5,h2-.5)*R*.7;
-        let P1=c0+dr*spd*(1.-exp(-a*2.2))/2.2+vel*a;let P0=c0+dr*spd*(1.-exp(-a0*2.2))/2.2+vel*a0;
-        let ds=seg(p,P0,P1);
+      let nl=3+i32(step(.5,xh(vec2f(sd,.7))));
+      let j0=xh(vec2f(sd,2.9))*6.2832;let j1=j0+2.+xh(vec2f(4.4,sd))*2.2;
+      for(var i=0;i<26;i++){
+        let fi=f32(i);let h1=xh(vec2f(fi,sd));let h2=xh(vec2f(sd,fi+3.1));let h3=xh(vec2f(fi+7.,sd+1.));let h4=xh(vec2f(sd+2.3,fi*1.3));
+        let lg=i<nl;
+        var an=h1*6.2832;var spd=R*(3.5+7.5*h2*h2);var k=2.+2.*h4;var win=.024+.03*h3;var life=.35+.55*h3;var dl=.08*h4*h4;
+        if(lg){an=(fi+.55*h1)*6.2832/f32(nl)+j0*.37;spd=R*(9.+9.*h2);k=1.1+.5*h4;win=.028+.034*h3;life=.75+.45*h3;dl=0.;}
+        else if(h4>.45){an=select(j0,j1,h1>.5)+(h2-.5)*1.7;}
+        let ae=a-dl;if(ae<=0.||ae>life){continue;}
+        let dr=vec2f(cos(an),sin(an));let pr=vec2f(-dr.y,dr.x)*(h3-.5)*R*select(3.,1.2,lg);
+        let a0=max(ae-win,0.);let c0=c+vec2f(h3-.5,h2-.5)*R*select(.9,.25,lg)+dr*R*select(.15,.5,lg);   /* длинные рвутся с кромки шара, а не из точки */
+        let P1=c0+dr*spd*(1.-exp(-ae*k))/k+pr*ae*ae+vel*a;let P0=c0+dr*spd*(1.-exp(-a0*k))/k+pr*a0*a0+vel*(a-(ae-a0));
+        let ab=P1-P0;let q=clamp(dot(p-P0,ab)/max(dot(ab,ab),1e-4),0.,1.);let ds=length(p-P0-ab*q);
         if(ds>3.){continue;}
-        let tt=1.-a/life;let ln=length(P1-P0);
-        em=em+lad(.3+.45*tt)*(.4+3.*tt*tt)*(.35+.9*h3)*exp(-ds*ds/.3)*clamp(3./max(ln,1.),.35,1.);
+        let tt=1.-ae/life;let ln=length(ab);
+        let wd=select(.22,.42,lg);let tail=mix(.2,1.,q*q);
+        em=em+lad(.3+.45*tt)*(.4+3.*tt*tt)*select(.85+1.7*h3,1.5,lg)*tail*exp(-ds*ds/wd)*clamp(3./max(ln,1.),select(.35,.6,lg),1.);
+        /* голова капли — раскалённая точка: штрих читается летящей искрой, а не проведённой чертой */
+        let dh=p-P1;em=em+lad(.45+.5*tt)*exp(-dot(dh,dh)/select(.5,.9,lg))*tt*select(1.,1.6,lg);
       }
     }
   }
