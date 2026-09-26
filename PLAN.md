@@ -30,8 +30,8 @@ under the planets (17g), planets and moons (17ga), the system view on top — tr
 occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py` on the GPU.
 
 **The order (Контроль 26.09, after the audit: the middle was being built on an unchecked base):**
-1. The base: the phone gate P1 (§1) on the current build. Engine stage 1 closes only with it; while it fails, speed
-   goes ahead of every picture pass.
+1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 (26.09) and closed engine stage 1; it is re-run after
+   every engine release, and while it fails, speed goes ahead of every picture pass.
 2. What is in flight lands before anything new starts.
 3. G15: what still draws in 2D moves to the engine, then 3D where it reads.
 4. Picture passes (the redraws, L1–L3, G5) only in the gaps, each closed by its pair.
@@ -42,12 +42,11 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
     drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
     lands after its tests, whole-frame pairs and six regressions, with its census of 2D calls after `gpuWorld` at 0
-    (`#c` gets nothing). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
+    (the road's own `#c` layer — hull, trail, glows, jets, coins, one upload a frame before `gpuWorld` — is its
+    first G15 item after landing). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
-  - «турбаза «Дружба»» (ra, bad2a811, the designer, waiting since 25.09): a pair against main, then the merge (GPU-3).
-- [ ] **Engine stage 1 — flight (system)** closes with the phone gate P1 (§1); nothing else is left in it: the HUD and
-  the sticks on `#ovl`, the flame plume (L4), the hull material, the tour gate (1 submit a frame; a `gpuBake` frame
-  +1, bake frames ≤ 1 % of the tour).
+  - GPU-3's next release: «турбаза «Дружба»» (ra, the designer's bad2a811, merged after its pair in 3ba532f3) and
+    the phone tools in `docs/phone/` (0b186c5c).
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
   - ships in real light, a–h (the worker, `gpu-ships`): d and g accepted; f — one more try on the fins with the
     emission mask, else revert; the barge's three lone white pixels become a soft sheen or go, with a 12-frame
@@ -130,22 +129,21 @@ The phone (the author 26.09: «тел доступен пусть использ
 `_adb-tls-connect`). One session at a time: `C:\Claude\phone.lock` taken with noclobber, held ≤ 10 min, a lock
 older than 15 min may be removed; the CDP forward only under the lock; each session its own port through
 `adb reverse` (the worker 8811, GPU-2 8812, GPU-3 8813, the fleet 8814). Measure cold (a new `*.localhost` host:
-Chrome keeps compiled pipelines per site), off the charger and cooled (on the charger Samsung cuts the GPU to 295 of
-719 MHz), A/B/A; never start a run because the screen woke — an incoming call looks the same.
+Chrome keeps compiled pipelines per site), off the charger and cooled — or on it when full (status FULL, 100 %) with
+thermal 0 logged before, mid-run and after (the author 26.09; a charging phone heats, and Samsung cuts the GPU to
+295 of 719 MHz), A/B/A; never start a run because the screen woke — an incoming call looks the same.
 
-- [ ] **P1, the gate, on the current build (0.468.0) — first, above all the picture work (GPU-3):**
-  S23, a local copy, 30 s of flight in НЕЙЭЛЬ by the stations: ≥ 95 % of frames in 16.7 ms (≤ 18 ms with the
-  vsync jitter), none ≥ 50 ms; then 5 minutes at ≥ 95 %; the picture at 760 no worse. The last run (25.09,
-  9206be7) failed: cold 30 s 99.6 %, but one 83 ms hitch at the same place and time every run (≈ −1265, −1125,
-  t ≈ 16.9 s); 5 min 85 %. Its trace named the cause: 2D bakes at first sight (the hotel's 6 canvases and ~2000
-  calls, the fleet, «Чебурек», the signs, the gesture post) rastered by Skia in the GPU process, 12–22 ms each,
-  then a copy per mip level; and `#c` cleared at opacity 0 every frame, which Chrome does not composite, so
-  `SharedContextRateLimiter::Tick` waited for the whole GPU tail, up to 180 ms. So G15 is the cure, not a side road.
-  - first the tools into the repo: `gate.py`, `waitquiet.py`, `deep.py`, `census.py`, `phtrace.py` and its readers
-    (`phtran.py`, `phgap.py`, `tickhist.py`) live in Контроль's session scratchpad with its paths and port 8812
-    baked in → `docs/phone/`, the port and the output folder as arguments;
-  - before a run: no other tab working in that Chrome (a browser miner, «CryptoTab Pool», was there on 24.09), no
-    stuck touch (`gate.py` checks logcat, getevent and the page's counter; `waitquiet.py` waits for quiet).
+- **P1, the gate after every engine release** (`docs/phone/gate.py --port N`, GPU-3's 0b186c5c): S23, a local copy,
+  30 s of flight in НЕЙЭЛЬ by the stations: ≥ 95 % of frames in 16.7 ms (≤ 18 ms with the vsync jitter), none
+  ≥ 50 ms; then 5 minutes at ≥ 95 %; the picture at 760 no worse. Before a run: no other tab working in that Chrome
+  (a browser miner, «CryptoTab Pool», was there on 24.09), no stuck touch (`gate.py` checks logcat, getevent and the
+  page's counter; `waitquiet.py` waits for quiet).
+  - The baseline — passed on 0.468.0 (26.09, GPU-3, on the charger at 100 %, thermal 0 throughout): cold 30 s 100 %
+    of 1800 frames, max 16.9 ms; 5 min 99.98 % of 18002 frames at 60.0 fps, none ≥ 50 ms, three frames of 33 ms at
+    40, 116 and 202 s — one vsync skipped with no bake, pipeline or new texture in them, the GPU 17–21 ms around
+    them: the margin is thin, and the heat margin of §0 stands. The bake at ≈ 15 s that cost 83 ms on 25.09
+    (9206be7: 2D bakes at first sight rastered by Skia in the GPU process, and `#c` cleared at opacity 0 every
+    frame) passed without a hitch.
 - [ ] **Then cut by its numbers** — each old item measured again on the GPU build first, dropped if it no longer
   shows: the hull bake on vs off (`G.opts.gfx.hullBake=0`); the baked star core and hull (the star's breathing, a
   step at the baked picture's edge); tails at ×2.40 (the author's «куцые хвосты», filmed); P8 under the finger, P9
