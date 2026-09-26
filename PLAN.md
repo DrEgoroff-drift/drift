@@ -228,12 +228,10 @@ measured on the GPU build first:
 
 - [ ] **Oracle lines** (`91zzzzzzzzz-worlds`): the best rail round trip ≤ ×1.3 of the best jumps in credits
   per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for M478).
-- [ ] **M470 the net:** stop names by owner (the M489 rule) and «Край»; lines beyond r 60; the scheme as its
-  own screen (КУДА ВАМ).
 - [ ] **M471:** the bare rim platform; helm assist in the ring's cone.
 - [ ] **M472:** split-flap turning; крупногабаритный ×3.
 - [ ] **M473:** the held pad ×2; a save mid-ride wakes at the origin today.
-- [ ] **M474 six railways:** Рассвет's маршрутка (stop anywhere on the line), the dashed Express line on the
+- [ ] **M474 six railways:** the net past r 60, built lazily per region (M470 rest; whole build is 146 ms to r 60); Рассвет's маршрутка (stop anywhere on the line), the dashed Express line on the
   scheme, closed front stops. Test fragility: the ride suite picks the first heart metro station — if its
   land ever turns Орднунг, the suite needs the double press.
 - [ ] **M475 economy and growth:** fares, baggage and the size rule tuned against the oracle's rail line; a

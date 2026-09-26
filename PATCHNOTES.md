@@ -73,6 +73,13 @@ could ever save.
   hotel's shop buys up to three жемчуг per visit, at one and a half times the local counter; the desk prompt says
   so before the tap, and the market never sees those grains.
 
+- **M470: «Край» and КУДА ВАМ on the scheme.** The paper scheme is now where the trip is chosen: a tap on a stop
+  opens one ticket button under the paper, «ДО «ЛУТИАЛ» · 3 ОСТ. · 20 КР», and a tap past the paper folds it. The
+  stops the ticket office sells from here wear a thin red ring. On every line that runs outward, the furthest
+  stop you have stood at is marked «КРАЙ» in red, and the line past it is drawn dashed, «не езжено», until you ride
+  further. What counts as stood at is the station visit count that already persists, so the save is untouched.
+  Stop names by the land owner (M489) were already in place.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -96,6 +103,10 @@ could ever save.
   greenhouse does not eat чернозём: its header forbids «удобрить за 200 кр», so the дачники's voice at the
   counter is the only greenhouse eater for now. The hotel shop stacks on the land's eater (жемчуг in Компания
   land pays about ×2.2 of the heart base there); it is capped at three grains a visit.
+- M470: lines beyond r 60 are not built. The net is computed whole and synchronously (146 ms to r 60 on this
+  machine); to r 120 it would be about four times that, seconds on a phone. It needs the lazy per-region build
+  of the design, and that goes with M474's «infinite» net. «Край» is personal (your own visits), not
+  «anyone's»: there is no shared ride record, and online stays a postcard.
 
 ## 0.478.0 - the album on the engine
 

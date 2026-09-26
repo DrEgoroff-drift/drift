@@ -184,7 +184,7 @@ function railWinRender(){
     });
   }
   if(typeof railLifeHtml==="function")h+=railLifeHtml();   /* посылка, проездной, попутчик, пломба (M499–M508) */
-  h+="<button class='act rw-map'>СХЕМА ЛИНИЙ<s>развернуть бумагу</s></button>";
+  h+="<button class='act rw-map'>СХЕМА ЛИНИЙ · КУДА ВАМ<s>развернуть бумагу и выбрать остановку</s></button>";
   h+="<div class='rw-sec'>БУФЕТ</div><button class='act rw-buf'>"+(RAIL_BUFFET[by]||RAIL_BUFFET.gt).toUpperCase()+" · 3 КР</button>";
   h+="<button class='act rw-out'>ВЫЙТИ НА ПЕРРОН</button>";
   w.innerHTML=h;w.dataset.by=by||"gt";   /* отделка вестибюля по хозяину (M471, CSS) */

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6509
+Файлов: 641 · символов верхнего уровня: 6513
 
 ## СИМВОЛЫ
 
@@ -1285,6 +1285,7 @@ RAIL_RINGS                   src/18e-rail-net.js:23
 RAIL_RING_OFF                src/18f-rail-station.js:18
 RAIL_RING_RU                 src/18e-rail-net.js:24
 RAIL_SALT                    src/18e-rail-net.js:28
+RAIL_SCHEME_MAP              src/18k-rail-scheme.js:76
 RAIL_VIA_K                   src/18k-rail-scheme.js:12
 RALLY_CACHE                  src/12at-vote.js:69
 RAM_K                        src/13a-guns.js:44
@@ -5239,6 +5240,7 @@ railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:35-38
 railInteract                 src/18f-rail-station.js:94-112
 railInterval                 src/18f-rail-station.js:122
+railKrai                     src/18k-rail-scheme.js:70-75
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:73-78
 railLifeBoard                src/18i-rail-life.js:84-90
@@ -5262,9 +5264,10 @@ railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
 railRideStart                src/18g-rail-ride.js:35-45
-railSchemeClose              src/18k-rail-scheme.js:56
-railSchemeDraw               src/18k-rail-scheme.js:57-118
-railSchemeOpen               src/18k-rail-scheme.js:45-55
+railSchemeClose              src/18k-rail-scheme.js:60
+railSchemeDraw               src/18k-rail-scheme.js:95-177
+railSchemeOpen               src/18k-rail-scheme.js:45-59
+railSchemePick               src/18k-rail-scheme.js:77-94
 railSegDur                   src/18g-rail-ride.js:46-49
 railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
@@ -5273,6 +5276,7 @@ railStopsOf                  src/18e-rail-net.js:122-146
 railTick                     src/18f-rail-station.js:220-225
 railTrainPos                 src/18g-rail-ride.js:51-63
 railUAt                      src/18e-rail-net.js:105-110
+railVisited                  src/18k-rail-scheme.js:65-69
 railWaitNow                  src/18f-rail-station.js:124
 railWinClose                 src/18f-rail-station.js:153
 railWinOpen                  src/18f-rail-station.js:152
@@ -7381,7 +7385,7 @@ zoomTo                       src/15-input.js:350
   · «успеваете скорым» (M507):13
   · компенсационная маршрутка (M510):26
 
-## src/18k-rail-scheme.js · 8 КБ
+## src/18k-rail-scheme.js · 12 КБ
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
 ## src/19-mode-landing-ground.js · 25 КБ
