@@ -31,6 +31,13 @@ could ever save.
 
 - **§12, the last seams.** A drone now picks its market by the price you saw there and is paid that price (it used to choose by the seen price and be paid the live one). A seen price counts for 30 world days; after that the drone goes by the live counter. Selling pressure on a counter now decays by the world clock (`now()`), so it also eases while you are out of the game. The half-life is still three hours. The economy probe gained «маршруты по кругу»: the player skips a leg whose quote has gone negative, moves to the next route, and waits ten minutes when every leg is down. The numbers are in `docs/ECONOMY-AUDIT.md` (27.09).
 
+- **§9 seams, checked against the code and closed.**
+  - **Drones and far goods:** a drone no longer mines band-2/3 far goods (osmium and beyond). Neither the belt nor the surface offers the ДРОН button for them. A band-1 far good (he3, palladium, amber) is sold by the drone at half its price (`droneMayMine`, `DRONE_FAR_MUL`).
+  - **The stamp and the metro:** the stamp already landed only on a jump or on ВЫЙТИ. The ring's «Стыковка?» hail now fires only for a ship heading into the ring: by its motion, or by its nose when stopped. A ship just let out of the train no longer gets hailed as it leaves (`railHeadingIn`).
+  - **The first hour:** at the first docking in the heart, the замполит hands over one жетон («первый — за счёт трассы») and says where the ring is. The first metro ride is free, and the ticket button reads ЖЕТОН ЗАМПОЛИТА. The token does not work for the express or the маршрутка. It is kept in `G.first`, so no new save field.
+  - **Rescue and rails:** a dry ship in a system with a rail stop gets a third exit, НА МЕТРО. It is a ticket, at the ticket's price, to the stop the cashier sells that lies nearest home; the ring takes the ship on board.
+  - **The scheme's scope:** the paper opens on your stretch: you and everything the cashier sells, with a margin. The wheel or a pinch widens it to the whole net. «Край» was already per player (your own visits).
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M464: only the Дом водителя sells a service (the night); the other six give a paragraph, a rumour and a keepsake. Trade or jobs inside a giant were left for a later pass.
 - M464: the giant's length for the ruler is one fixed number (GIANT_LEN 1300) for all seven, not per body.
@@ -44,6 +51,8 @@ could ever save.
 - Lane owner: the lane is cached in the system, so a land that changes hands re-dresses the lane only when the system is regenerated.
 - **Drone paid at the seen price for 30 days** (§12): the cautious reading of «продаёт по ним». The other option was min(seen, live), which never lets a stale ×2 need pay out, but then a drone could never be sent to a better market it had seen. Counters saved before this change carry a frame-clock stamp; the first read resets it to now, which loses at most one decay step.
 - **Half-life kept at 3 h on the world clock**, not the 6 h A4 suggested: the probe numbers did not ask for a slower recovery.
+- **The token is also handed to old saves** (§9) at their next docking in the heart, since a save carries no reliable age. It is worth one 5-credit ride.
+- **The scheme's scope is the cashier's reach** (§9): the stops `railDestinations` sells, rather than a graph of «rings met and their neighbours». Those rings cross that window anyway, and the rule needs no second walk of the net.
 
 ## Unreleased
 

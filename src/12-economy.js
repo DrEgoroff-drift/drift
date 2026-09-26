@@ -290,9 +290,14 @@ function droneMarket(d){
 const DRONE_SEEN_DAYS=30;
 function droneSellPrice(sys,k){
   const S=G.seenPrices&&G.seenPrices[sys.key];
-  if(S&&S.p&&S.p[k]!=null&&celDay()-(S.day|0)<=DRONE_SEEN_DAYS)return Math.max(1,S.p[k]|0);
-  return marketFor(sys)[k]|0;
+  const p=(S&&S.p&&S.p[k]!=null&&celDay()-(S.day|0)<=DRONE_SEEN_DAYS)?Math.max(1,S.p[k]|0):marketFor(sys)[k]|0;
+  return RES[k]&&RES[k].far?Math.max(1,Math.round(p*DRONE_FAR_MUL)):p;
 }
+/* дальнее сырьё и дроны (§9, M465): точка у дрона бездонная, поэтому дальние товары
+   второго и третьего пояса (band ≥ 25) дрон не берёт вовсе, а первого — сдаёт за
+   полцены пояса: иначе дрон на жиле у края печатал бы деньги, пока игрок спит */
+const DRONE_FAR_MUL=.5;
+function droneMayMine(k){const F=RES[k]&&RES[k].far;return !!RES[k]&&(!F||F.band<=10);}
 function nearestStation(sx,sy){
   for(let rad=0;rad<=24;rad++){
     let best=null,bd=1e9;
@@ -322,7 +327,7 @@ function droneCapacity(k){
 }
 let droneTarget=null;
 function deployDrone(){
-  if(G.droneInventory<=0||!droneTarget)return;
+  if(G.droneInventory<=0||!droneTarget||!droneMayMine(droneTarget))return;
   G.droneInventory--;
   /* адрес точки, а не только системы (M237): дрону теперь есть откуда лететь.
      На грунте это планета, в поясе — кольцо (pi=-1). Без адреса рейса нет. */

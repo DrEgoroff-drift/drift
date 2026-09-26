@@ -321,8 +321,9 @@ function updateBelt(dt){
   if(best!==b.lock)b.prog=0;
   b.lock=best;b.beam=0;
   const dbtn=document.getElementById("dronebtn");
-  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить */
-  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
+  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить; на дальнее
+     второго-третьего пояса — тоже (§9, droneMayMine) */
+  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0&&droneMayMine(best.res)){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
 
   /* контакт с камнем перекрывает разговоры о прицеле: пока борт скребёт

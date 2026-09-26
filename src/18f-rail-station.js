@@ -113,6 +113,12 @@ function drawSysRail(zx,zy,Z){
   ctx.fillStyle="rgba(242,178,92,.75)";ctx.font=uiFont(9);ctx.textAlign="center";
   ctx.fillText((R.S.metro?"МЕТРО · ":"")+R.S.lines[0].ru.toUpperCase()+(R.S.lines.length>1?" +"+(R.S.lines.length-1):""),x,y+58*s+10);
 }
+/* идёт ли борт в кольцо: по ходу, а стоящий — по носу */
+function railHeadingIn(sh,R){
+  const dx=R.x-sh.x,dy=R.y-sh.y,sp=Math.hypot(sh.vx,sh.vy);
+  if(Math.hypot(dx,dy)<RAIL_CONE_R*.5)return true;
+  return sp>.3?dx*sh.vx+dy*sh.vy>0:dx*Math.cos(sh.a)+dy*Math.sin(sh.a)>0;
+}
 /* ── стыковка: оклик, конус, две секунды ── */
 function railInteract(sh){
   const R=railHere();
@@ -120,6 +126,9 @@ function railInteract(sh){
   if(railWinOpen())return true;
   const d=Math.hypot(sh.x-R.x,sh.y-R.y);
   if(d>RAIL_HAIL_R){RAIL_DOCK=null;return false;}
+  /* оклик — только тому, кто идёт В кольцо (§9): вышедший из поезда стоит в
+     шестидесяти от кольца носом к станции, и «Стыковка?» ему вслед — ошибка */
+  if(!RAIL_DOCK&&!railHeadingIn(sh,R))return false;
   if(!RAIL_DOCK){
     const shown=cue("СТАНЦИЯ «"+R.name.toUpperCase()+"» · "+(R.S.metro?"МЕТРО":"ЖЕЛЕЗНАЯ ДОРОГА")+"\nДЕЙСТВИЕ — СТЫКОВКА",CUE_ACT);
     if(shown&&actEdge)RAIL_DOCK={hold:0,t:0};
@@ -187,8 +196,11 @@ function railFare(t){
   /* крупногабаритный (M472, §3): тяжёлое в трюме (осмий, крошка) — багаж ×3 */
   const big=!metro&&typeof resW==="function"&&Object.keys(G.cargo).some(k=>(G.cargo[k]|0)>0&&resW(k)>1);
   const bag=metro?0:Math.ceil(held()/5)*(big?3:1);
-  const F={fare,bag,sum:fare+bag,metro,big};
-  return (typeof railPassFare==="function")?railPassFare(F):F;   /* проездной (M500) */
+  let F={fare,bag,sum:fare+bag,metro,big};
+  if(typeof railPassFare==="function")F=railPassFare(F);   /* проездной (M500) */
+  /* жетон замполита (§9, 11ao): первый проезд в метро — за счёт трассы */
+  if(metro&&typeof firstSaid==="function"&&firstSaid("tok")&&!firstSaid("tokUsed")){F.fare=0;F.sum=F.bag;F.tok=1;}
+  return F;
 }
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
 function railWinClose(){const w=document.getElementById("railWin");if(w)w.classList.remove("open");RAIL_WAIT=null;}
@@ -220,7 +232,7 @@ function railWinRender(){
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
-      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
+      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+(F.tok?"ЖЕТОН ЗАМПОЛИТА":F.fare+" КР")+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
       /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
       if(typeof railOwner==="function"&&railOwner()==="ra")
@@ -247,11 +259,13 @@ function railBuy(t,express,bus){
   if(!bus&&typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
   if(typeof volRail==="function"&&!volRail())return;   /* животное без бумаг — проводник не пускает (M511) */
   const F=railFare(t);
+  if(F.tok&&(express||bus)){F.fare=5;F.sum=F.fare+F.bag;F.tok=0;}   /* жетон — на поезд, не на экспресс и маршрутку */
   if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}
   G.credits-=F.sum;
+  if(F.tok)firstAll().push("tokUsed");
   if(typeof railLifeBoard==="function")railLifeBoard(t,F);
-  logAdd("money",(F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
+  logAdd("money",(F.tok?"Жетон замполита":F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
   RAIL_WAIT={...t,express:!!express,bus:!!bus,t:bus?3:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }

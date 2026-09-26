@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 643 · символов верхнего уровня: 6648
+Файлов: 644 · символов верхнего уровня: 6657
 
 ## СИМВОЛЫ
 
@@ -34,7 +34,7 @@ $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
 $sn                          src/27z-telemetry.js:13
-$sos                         src/16c-rescue.js:525
+$sos                         src/16c-rescue.js:547
 $st                          src/26-ui-station.js:2
 $un                          src/27z-telemetry.js:39
 $vc                          src/27z-telemetry.js:37
@@ -393,6 +393,7 @@ DRILL_EAT                    src/13a-guns.js:37
 DRONES                       src/04-mods.js:63-69
 DRONE_BREAKS                 tests/91zzzy-drones.js:7
 DRONE_BREAK_P                src/12e-drone-flight.js:21
+DRONE_FAR_MUL                src/12-economy.js:299
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
 DRONE_NAMES                  src/12e-drone-flight.js:43
@@ -708,20 +709,20 @@ HALL_POWER                   src/21a4-base-adj.js:29
 HAND_LINE                    src/12td-settle-hand.js:31-34
 HAND_STEP                    src/12td-settle-hand.js:27
 HAND_STOCK                   src/12td-settle-hand.js:28
-HAUL_BARGE_K                 src/16c-rescue.js:177
-HAUL_BIT_GAP                 src/16c-rescue.js:180
-HAUL_BIT_TALK                src/16c-rescue.js:187
-HAUL_BOOM_K                  src/16c-rescue.js:190
-HAUL_CAM                     src/16c-rescue.js:191
+HAUL_BARGE_K                 src/16c-rescue.js:199
+HAUL_BIT_GAP                 src/16c-rescue.js:202
+HAUL_BIT_TALK                src/16c-rescue.js:209
+HAUL_BOOM_K                  src/16c-rescue.js:212
+HAUL_CAM                     src/16c-rescue.js:213
 HAUL_COME                    src/16c-rescue.js:23
-HAUL_FL                      src/16c-rescue.js:438
-HAUL_FREE                    src/16c-rescue.js:189
-HAUL_FX                      src/16c-rescue.js:192
-HAUL_NAMES                   src/16c-rescue.js:182
-HAUL_ROPE                    src/16c-rescue.js:178
-HAUL_SHIP_HALF               src/16c-rescue.js:179
-HAUL_TALK                    src/16c-rescue.js:183
-HAUL_TALK_GAP                src/16c-rescue.js:181
+HAUL_FL                      src/16c-rescue.js:460
+HAUL_FREE                    src/16c-rescue.js:211
+HAUL_FX                      src/16c-rescue.js:214
+HAUL_NAMES                   src/16c-rescue.js:204
+HAUL_ROPE                    src/16c-rescue.js:200
+HAUL_SHIP_HALF               src/16c-rescue.js:201
+HAUL_TALK                    src/16c-rescue.js:205
+HAUL_TALK_GAP                src/16c-rescue.js:203
 HAUL_TIME                    src/16c-rescue.js:24
 HB_PROBE                     src/03e1-hull-bake.js:23
 HB_STATS                     src/03e1-hull-bake.js:26
@@ -1289,7 +1290,7 @@ RAIL_COL                     src/18e-rail-net.js:219
 RAIL_DECL                    src/18h-rail-powers.js:14
 RAIL_DOCK                    src/18f-rail-station.js:22
 RAIL_EXPRESS_MUL             src/18h-rail-powers.js:13
-RAIL_FLAP_PREV               src/18f-rail-station.js:151
+RAIL_FLAP_PREV               src/18f-rail-station.js:160
 RAIL_FORK                    src/18e-rail-net.js:22
 RAIL_HAIL_R                  src/18f-rail-station.js:19
 RAIL_LIFE                    src/18i-rail-life.js:17
@@ -1306,7 +1307,8 @@ RAIL_RINGS                   src/18e-rail-net.js:23
 RAIL_RING_OFF                src/18f-rail-station.js:18
 RAIL_RING_RU                 src/18e-rail-net.js:24
 RAIL_SALT                    src/18e-rail-net.js:28
-RAIL_SCHEME_MAP              src/18k-rail-scheme.js:78
+RAIL_SCHEME_MAP              src/18k-rail-scheme.js:104
+RAIL_SCHEME_Z                src/18k-rail-scheme.js:68
 RAIL_SPUR_MAX                src/18e-rail-net.js:152
 RAIL_VIA_K                   src/18k-rail-scheme.js:12
 RALLY_CACHE                  src/12at-vote.js:69
@@ -1365,7 +1367,7 @@ REP_WORDS                    src/12k-rep.js:17-25
 RES                          src/02-world.js:2-88
 RESCUE_ASK_GAP               src/16c-rescue.js:25
 RESCUE_FUEL                  src/16c-rescue.js:22
-RESCUE_ICON                  src/16c-rescue.js:576-580
+RESCUE_ICON                  src/16c-rescue.js:598-602
 RESET_ABIL0                  tests/90-harness.js:237
 RES_AUTO                     src/08-state.js:193
 RES_DOWN_K                   src/28-loop.js:226
@@ -1503,7 +1505,7 @@ SHIFT_TALK                   src/03f-hull-role.js:63-72
 SHIPS                        src/03-ships.js:2-11
 SHIP_GUARD                   src/17-mode-system.js:20
 SHIP_KEYS                    src/03-ships.js:12
-SHIP_SCALE_MIN               src/16c-rescue.js:203
+SHIP_SCALE_MIN               src/16c-rescue.js:225
 SHOT_CLEAN                   src/28-loop.js:370
 SHOVE_V                      src/13a-guns.js:36
 SHUT_LINES                   src/11ah-offer.js:302-307
@@ -2733,7 +2735,7 @@ decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 depKind                      src/21b-surface-deco.js:396-405
-deployDrone                  src/12-economy.js:324-341
+deployDrone                  src/12-economy.js:329-346
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 detBgShift                   tests/90b-detect.js:150-164
@@ -2894,7 +2896,7 @@ drawBaseBuilding             src/21c-built.js:105-136
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:231-339
 drawBeastAlien               src/20f-fauna.js:65-229
-drawBelt                     src/24-mode-belt.js:360
+drawBelt                     src/24-mode-belt.js:361
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRocks                src/17c-system-draw.js:29-83
 drawBillboard                src/17k-billboard.js:182-196
@@ -2949,12 +2951,12 @@ drawGesture                  src/17h-sys-gesture.js:92-144
 drawGestureTop               src/17h-sys-gesture.js:148-177
 drawGiant                    src/17o-giants.js:182-211
 drawGiantsMap                src/17o-giants.js:69-81
-drawGlassHUD                 src/24-mode-belt.js:702-789
+drawGlassHUD                 src/24-mode-belt.js:703-790
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-239
 drawGroundCrumbs             src/19-mode-landing-ground.js:242-252
 drawGroundGrass              src/19-mode-landing-ground.js:255-292
-drawHaul                     src/16c-rescue.js:509-516
+drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
@@ -3051,12 +3053,13 @@ drawWrecksSystem             src/12l-barge.js:379-405
 drawYardMark                 src/03e-hull-draw.js:73-116
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
-droneCapacity                src/12-economy.js:319-322
+droneCapacity                src/12-economy.js:324-327
 droneFar                     src/12e-drone-flight.js:102
 droneFixMs                   src/12e-drone-flight.js:177-186
 droneGuestPos                src/12e-drone-flight.js:239-251
 droneHome                    src/12e-drone-flight.js:103-115
 droneMarket                  src/12-economy.js:261-285
+droneMayMine                 src/12-economy.js:300
 droneName                    src/12e-drone-flight.js:54
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNick                    src/12e-drone-flight.js:53
@@ -3075,7 +3078,7 @@ droneShopTake                src/12-economy.js:247-251
 droneStateRu                 src/12e-drone-flight.js:188-198
 droneSys                     src/12e-drone-flight.js:91-93
 droneTag                     src/12e-drone-flight.js:58-64
-droneTarget                  src/12-economy.js:323
+droneTarget                  src/12-economy.js:328
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
 dsTick                       src/12p1-doublespeak.js:33-42
@@ -3250,7 +3253,8 @@ firstAll                     src/11ao-firsthour.js:36
 firstHour                    src/05e-clearance.js:40
 firstSaid                    src/11ao-firsthour.js:37
 firstSay                     src/11ao-firsthour.js:39-46
-firstTick                    src/11ao-firsthour.js:50-69
+firstTick                    src/11ao-firsthour.js:62-82
+firstToken                   src/11ao-firsthour.js:54-61
 fitMap                       src/05-parts.js:339-343
 fitPart                      src/05-parts.js:389-406
 fittedGuns                   src/05-parts.js:323-334
@@ -3720,26 +3724,26 @@ hasEpisode                   src/03-ships.js:139-142
 hasSave                      src/14a-cloud.js:60
 hashi                        src/01-core.js:23-27
 hashi3                       src/24ba-belt-gpu.js:16-20
-haulAim                      src/16c-rescue.js:239-244
-haulBarge                    src/16c-rescue.js:213
-haulBit                      src/16c-rescue.js:257-267
-haulDeal                     src/16c-rescue.js:226-234
-haulFlameTris                src/16c-rescue.js:439-452
-haulFree                     src/16c-rescue.js:288-295
-haulFxTick                   src/16c-rescue.js:268-272
-haulGap                      src/16c-rescue.js:223
-haulGpu                      src/16c-rescue.js:453-508
-haulLeft                     src/16c-rescue.js:283-286
-haulName                     src/16c-rescue.js:214
-haulPickWaypoint             src/16c-rescue.js:247-255
-haulR                        src/16c-rescue.js:222
-haulReach                    src/16c-rescue.js:217
-haulRestore                  src/16c-rescue.js:276-282
-haulRope                     src/16c-rescue.js:417-432
-haulSay                      src/16c-rescue.js:215
-haulSide                     src/16c-rescue.js:236
-haulStart                    src/16c-rescue.js:149-165
-haulTick                     src/16c-rescue.js:297-415
+haulAim                      src/16c-rescue.js:261-266
+haulBarge                    src/16c-rescue.js:235
+haulBit                      src/16c-rescue.js:279-289
+haulDeal                     src/16c-rescue.js:248-256
+haulFlameTris                src/16c-rescue.js:461-474
+haulFree                     src/16c-rescue.js:310-317
+haulFxTick                   src/16c-rescue.js:290-294
+haulGap                      src/16c-rescue.js:245
+haulGpu                      src/16c-rescue.js:475-530
+haulLeft                     src/16c-rescue.js:305-308
+haulName                     src/16c-rescue.js:236
+haulPickWaypoint             src/16c-rescue.js:269-277
+haulR                        src/16c-rescue.js:244
+haulReach                    src/16c-rescue.js:239
+haulRestore                  src/16c-rescue.js:298-304
+haulRope                     src/16c-rescue.js:439-454
+haulSay                      src/16c-rescue.js:237
+haulSide                     src/16c-rescue.js:258
+haulStart                    src/16c-rescue.js:171-187
+haulTick                     src/16c-rescue.js:319-437
 hazardBand                   src/25-cockpit.js:166-177
 hazeBand                     src/19c-light.js:191-198
 hazeDone                     src/18d-postfx.js:68
@@ -4644,7 +4648,7 @@ nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
 near                         tests/90-harness.js:172
 nearestPOI                   src/20a-poi.js:236-241
-nearestStation               src/12-economy.js:296-311
+nearestStation               src/12-economy.js:301-316
 nebMoveFrames                tests/91zzzzzzy7-gpu-nebmove.js:7-10
 nebula                       src/16-flight.js:82-96
 needAll                      src/12aa-need.js:25
@@ -5322,33 +5326,34 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:258-265
+railBuffet                   src/18f-rail-station.js:272-279
 railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:245-257
+railBuy                      src/18f-rail-station.js:257-271
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:25-31
 railCut                      src/18h-rail-powers.js:22
 railDeclare                  src/18h-rail-powers.js:33-43
-railDestinations             src/18f-rail-station.js:166-183
+railDestinations             src/18f-rail-station.js:175-192
 railDestinationsVia          src/18k-rail-scheme.js:13-37
-railDocked                   src/18f-rail-station.js:140-147
+railDocked                   src/18f-rail-station.js:149-156
 railExit                     src/18g-rail-ride.js:113-125
 railExpressDraw              src/18h-rail-powers.js:72-81
-railFare                     src/18f-rail-station.js:184-192
-railFlap                     src/18f-rail-station.js:152-157
+railFare                     src/18f-rail-station.js:193-204
+railFlap                     src/18f-rail-station.js:161-166
 railFlash                    src/18g-rail-ride.js:17-30
-railFmt                      src/18f-rail-station.js:162
+railFmt                      src/18f-rail-station.js:171
 railFrontShut                src/18h-rail-powers.js:18
 railGpu                      src/18f-rail-station.js:52-78
 railHaltCtx                  src/18f-rail-station.js:42-48
 railHaltShapes               src/18f-rail-station.js:34-41
+railHeadingIn                src/18f-rail-station.js:117-121
 railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:45-48
-railInteract                 src/18f-rail-station.js:117-139
-railInterval                 src/18f-rail-station.js:159
-railKrai                     src/18k-rail-scheme.js:72-77
+railInteract                 src/18f-rail-station.js:123-148
+railInterval                 src/18f-rail-station.js:168
+railKrai                     src/18k-rail-scheme.js:98-103
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:76-81
 railLifeBoard                src/18i-rail-life.js:87-93
@@ -5373,10 +5378,13 @@ railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
 railRideStart                src/18g-rail-ride.js:35-45
-railSchemeClose              src/18k-rail-scheme.js:62
-railSchemeDraw               src/18k-rail-scheme.js:97-190
-railSchemeOpen               src/18k-rail-scheme.js:47-61
-railSchemePick               src/18k-rail-scheme.js:79-96
+railSchemeClose              src/18k-rail-scheme.js:88
+railSchemeDraw               src/18k-rail-scheme.js:123-216
+railSchemeOpen               src/18k-rail-scheme.js:47-64
+railSchemePick               src/18k-rail-scheme.js:105-122
+railSchemeRedraw             src/18k-rail-scheme.js:80-87
+railSchemeScope              src/18k-rail-scheme.js:69-75
+railSchemeZoom               src/18k-rail-scheme.js:76-79
 railSealDock                 src/18i-rail-life.js:114-118
 railSealPirates              src/18i-rail-life.js:122-127
 railSegDur                   src/18g-rail-ride.js:46-49
@@ -5385,17 +5393,17 @@ railSpurLine                 src/18e-rail-net.js:160-169
 railSpurSig                  src/18e-rail-net.js:153-159
 railStation                  src/18e-rail-net.js:197-202
 railStep                     src/18e-rail-net.js:43
-railStopName                 src/18f-rail-station.js:163
+railStopName                 src/18f-rail-station.js:172
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:267-272
+railTick                     src/18f-rail-station.js:281-286
 railTrainPos                 src/18g-rail-ride.js:51-63
 railUAt                      src/18e-rail-net.js:105-110
-railVisited                  src/18k-rail-scheme.js:67-71
-railWaitNow                  src/18f-rail-station.js:161
-railWinClose                 src/18f-rail-station.js:194
-railWinOpen                  src/18f-rail-station.js:193
-railWinRender                src/18f-rail-station.js:200-244
-railWinShow                  src/18f-rail-station.js:195-199
+railVisited                  src/18k-rail-scheme.js:93-97
+railWaitNow                  src/18f-rail-station.js:170
+railWinClose                 src/18f-rail-station.js:206
+railWinOpen                  src/18f-rail-station.js:205
+railWinRender                src/18f-rail-station.js:212-256
+railWinShow                  src/18f-rail-station.js:207-211
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -5551,22 +5559,23 @@ resTxt                       src/02-world.js:94-105
 resW                         src/06f-far-props.js:12
 resWait                      src/28-loop.js:235
 rescueActivityBeat           src/16c-rescue.js:69-76
-rescueAsk                    src/16c-rescue.js:527-534
+rescueAsk                    src/16c-rescue.js:549-556
 rescueDockCool               src/16c-rescue.js:60-65
 rescueEmpty                  src/16c-rescue.js:27-30
-rescueHead                   src/16c-rescue.js:536-554
+rescueHead                   src/16c-rescue.js:558-576
 rescueHomeAt                 src/16c-rescue.js:32-35
 rescueHomeCost               src/16c-rescue.js:48-51
 rescueInputT                 src/16c-rescue.js:68
-rescueNoLaunch               src/16c-rescue.js:520-523
-rescueOffers                 src/16c-rescue.js:77-94
-rescuePark                   src/16c-rescue.js:96-104
-rescueRender                 src/16c-rescue.js:581-626
-rescueShutT                  src/16c-rescue.js:526
-rescueSig                    src/16c-rescue.js:559
-rescueSigNow                 src/16c-rescue.js:558
-rescueSync                   src/16c-rescue.js:560-573
-rescueTake                   src/16c-rescue.js:105-146
+rescueNoLaunch               src/16c-rescue.js:542-545
+rescueOffers                 src/16c-rescue.js:77-98
+rescuePark                   src/16c-rescue.js:112-120
+rescueRail                   src/16c-rescue.js:102-110
+rescueRender                 src/16c-rescue.js:603-648
+rescueShutT                  src/16c-rescue.js:548
+rescueSig                    src/16c-rescue.js:581
+rescueSigNow                 src/16c-rescue.js:580
+rescueSync                   src/16c-rescue.js:582-595
+rescueTake                   src/16c-rescue.js:121-168
 resetArm                     src/26-ui-station.js:719
 resetWorld                   tests/90-harness.js:238-395
 resize                       src/08-state.js:29-66
@@ -5883,8 +5892,8 @@ shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
 shipGearGpu                  src/05c-arms.js:315-335
 shipRow                      src/26-ui-station.js:455-500
-shipScaleAt                  src/16c-rescue.js:212
-shipScaleCap                 src/16c-rescue.js:211
+shipScaleAt                  src/16c-rescue.js:234
+shipScaleCap                 src/16c-rescue.js:233
 shipThumb                    src/26f-yard-gpu.js:7-11
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:232
@@ -6259,7 +6268,7 @@ theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:350-440
+tickDrones                   src/12-economy.js:355-445
 tickLaunchHold               src/21-mode-surface.js:660-673
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
@@ -6296,7 +6305,7 @@ toggleLog                    src/11-log.js:152-156
 toggleLoreBoard              src/27h-ui-lore.js:81-84
 toggleMenu                   src/15-input.js:244-251
 toggleParrotWin              src/12y-parrot-face.js:249-265
-toggleSos                    src/16c-rescue.js:627-636
+toggleSos                    src/16c-rescue.js:649-658
 toldAll                      src/11aj-told.js:34
 toldDo                       src/11aj-told.js:58-74
 toldEther                    src/11aj-told.js:78-89
@@ -6360,7 +6369,7 @@ unpackPart                   src/05-parts.js:473-479
 updateAllies                 src/12a-crew.js:644-677
 updateBarges                 src/12l-barge.js:170-203
 updateBase                   src/21a-mode-base.js:404-562
-updateBelt                   src/24-mode-belt.js:170-359
+updateBelt                   src/24-mode-belt.js:170-360
 updateCave                   src/22-mode-cave.js:251-436
 updateCaveDeco               src/22a-cave-deco.js:205-228
 updateCombat                 src/13-pirates.js:119-304
@@ -6880,7 +6889,7 @@ zoomTo                       src/15-input.js:350
 ## src/11an-qsl.js · 12 КБ
   · QSL: стена карточек:1
 
-## src/11ao-firsthour.js · 5 КБ
+## src/11ao-firsthour.js · 6 КБ
   · первый час: сменщик в эфире:1
 
 ## src/11ap-relay.js · 31 КБ
@@ -7363,7 +7372,7 @@ zoomTo                       src/15-input.js:350
 ## src/16c-abil.js · 13 КБ
   · особая система корпуса (M484, DESIGN-shipyard):1
 
-## src/16c-rescue.js · 48 КБ
+## src/16c-rescue.js · 49 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
 ## src/16g-gpu-space.js · 15 КБ
@@ -7503,7 +7512,7 @@ zoomTo                       src/15-input.js:350
 ## src/18e-rail-net.js · 15 КБ
   · железная дорога: сеть (M470, docs/DESIGN-metro.md §2):1
 
-## src/18f-rail-station.js · 21 КБ
+## src/18f-rail-station.js · 22 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
 ## src/18g-rail-ride.js · 14 КБ
@@ -7520,7 +7529,7 @@ zoomTo                       src/15-input.js:350
   · «успеваете скорым» (M507):13
   · компенсационная маршрутка (M510):26
 
-## src/18k-rail-scheme.js · 14 КБ
+## src/18k-rail-scheme.js · 15 КБ
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
 ## src/19-mode-landing-ground.js · 25 КБ
@@ -8567,6 +8576,9 @@ zoomTo                       src/15-input.js:350
   · чужие часы (M334):1
 
 ## tests/91zzzzy2-money.js · 4 КБ
+
+## tests/91zzzzy3-seams.js · 6 КБ
+  · швы §9: где сходятся построенные вещи:1
 
 ## tests/91zzzzz-e2e-life.js · 36 КБ
   · сквозной прогон II: сейв, числа, текст, долгий полёт (M329):1

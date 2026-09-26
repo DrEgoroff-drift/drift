@@ -49,10 +49,36 @@ function railSchemeOpen(){
   if(!d){d=document.createElement("div");d.id="railScheme";d.innerHTML="<canvas></canvas><b>СХЕМА ЛИНИЙ · ГЛАВТРАССА · бесплатно, не выбрасывать</b><s>касание — свернуть</s>";
     d.onclick=e=>{if(e.target===d)railSchemeClose();};document.body.appendChild(d);
     /* КУДА ВАМ (M470): тап по остановке на бумаге — выбрать, куда ехать */
-    d.querySelector("canvas").onclick=railSchemePick;
-    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · мимо бумаги — свернуть";}
+    const cv=d.querySelector("canvas");cv.onclick=railSchemePick;
+    /* шире — колесом или щипком (§9, M470): от своего участка до всей сети */
+    cv.onwheel=e=>{e.preventDefault();e.stopPropagation();railSchemeZoom(e.deltaY>0?.25:-.25);};
+    let pin=0;
+    cv.addEventListener("touchmove",e=>{if(e.touches.length!==2)return;e.preventDefault();
+      const a=e.touches[0],b=e.touches[1],dd=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+      if(pin)railSchemeZoom((pin-dd)/300);pin=dd;},{passive:false});
+    cv.addEventListener("touchend",()=>{pin=0;});
+    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · колесо, щипок — шире · мимо бумаги — свернуть";}
   d.classList.add("open");
   {const p=d.querySelector(".rs-pick");if(p)p.remove();}
+  RAIL_SCHEME_Z=0;railSchemeRedraw();
+}
+/* охват (§9, M470): не вся сеть, а ваш участок — вы, всё, что продаёт касса
+   (своя линия и пересадки, а с ними и кольца, что их режут), с полем вокруг;
+   RAIL_SCHEME_Z тянет рамку от участка (0) до всей сети (1) */
+let RAIL_SCHEME_Z=0;
+function railSchemeScope(){
+  let x0=G.sx,x1=G.sx,y0=G.sy,y1=G.sy;
+  if(typeof railDestinations==="function"&&railStation(G.sx,G.sy))
+    for(const q of railDestinations()){x0=Math.min(x0,q.to.sx);x1=Math.max(x1,q.to.sx);y0=Math.min(y0,q.to.sy);y1=Math.max(y1,q.to.sy);}
+  const half=clamp(Math.max(x1-x0,y1-y0)/2*1.2+3,8,RAIL_R),z=RAIL_SCHEME_Z;
+  return {cx:(x0+x1)/2*(1-z),cy:(y0+y1)/2*(1-z),half:half+(RAIL_R-half)*z};
+}
+function railSchemeZoom(dz){
+  const z=clamp(RAIL_SCHEME_Z+dz,0,1);if(z===RAIL_SCHEME_Z)return;
+  RAIL_SCHEME_Z=z;railSchemeRedraw();
+}
+function railSchemeRedraw(){
+  const d=document.getElementById("railScheme");if(!d)return;
   const c=d.querySelector("canvas"),k=Math.min(2,DPR||1);
   const cw=Math.min(W-24,520),ch=Math.min(H-120,cw*1.15);
   c.width=cw*k;c.height=ch*k;c.style.width=cw+"px";c.style.height=ch+"px";
@@ -95,9 +121,9 @@ function railSchemePick(e){
   host.appendChild(p);
 }
 function railSchemeDraw(g,cw,ch){
-  const N=railNet(),R=RAIL_R;
-  const pad=28,S=Math.min((cw-pad*2)/(2*R),(ch-pad*2-24)/(2*R));
-  const X=x=>cw/2+x*S,Y=y=>ch/2+12+y*S;
+  const N=railNet(),R=RAIL_R,V=railSchemeScope();
+  const pad=28,S=Math.min((cw-pad*2)/(2*V.half),(ch-pad*2-24)/(2*V.half));
+  const X=x=>cw/2+(x-V.cx)*S,Y=y=>ch/2+12+(y-V.cy)*S;
   RAIL_SCHEME_MAP={X,Y,cw,ch};
   /* бумага: кремовая, сгибы вдоль и поперёк, тень у сгиба */
   g.fillStyle="#efe6cf";g.fillRect(0,0,cw,ch);

@@ -17599,10 +17599,23 @@ function firstSay(k){
 /* ── поводы ──
    Зовётся из кадра. Дёшево: четыре сравнения, и после того как всё сказано,
    первая же проверка выходит по длине списка. */
+/* ── жетон (§9, M452/M472): метро новичок встречает в первый час, а не находит.
+   При первой стыковке в сердце (там, где ходит метро) замполит отдаёт один
+   жетон — «первый — за счёт трассы»; первый проезд в метро им и оплачен
+   (railFare). Хранится тем же списком сказанного: "tok" выдан, "tokUsed" сдан ── */
+function firstToken(){
+  if(firstSaid("tok")||G.mode!=="dock"||typeof RAIL_METRO_R==="undefined"||Math.hypot(G.sx,G.sy)>RAIL_METRO_R)return;
+  firstAll().push("tok");
+  const t="…вам жетон. Первый — за счёт трассы. Метро — кольцо за станцией, по огням: подходите носом, медленно.";
+  if(typeof consoleHeard==="function")consoleHeard(t,"замполит");
+  if(typeof logAdd==="function")logAdd("ether","замполит: "+t);
+  if(typeof recordAdd==="function")recordAdd("замполит","выдан жетон метро — первый за счёт трассы");
+}
 function firstTick(){
   if(!G.running)return;
+  firstToken();
   const F=firstAll();
-  if(F.length>=FIRST_LINES.length)return;
+  if(FIRST_LINES.every(l=>F.indexOf(l.k)>=0))return;
   /* про воздух — когда впервые вышел на грунт и отошёл от корабля */
   if(G.mode==="surface"&&G.surf&&!firstSaid("air")){
     const d=Math.abs((G.surf.x||0)-(G.surf.shipX||0));
@@ -22335,9 +22348,14 @@ function droneMarket(d){
 const DRONE_SEEN_DAYS=30;
 function droneSellPrice(sys,k){
   const S=G.seenPrices&&G.seenPrices[sys.key];
-  if(S&&S.p&&S.p[k]!=null&&celDay()-(S.day|0)<=DRONE_SEEN_DAYS)return Math.max(1,S.p[k]|0);
-  return marketFor(sys)[k]|0;
+  const p=(S&&S.p&&S.p[k]!=null&&celDay()-(S.day|0)<=DRONE_SEEN_DAYS)?Math.max(1,S.p[k]|0):marketFor(sys)[k]|0;
+  return RES[k]&&RES[k].far?Math.max(1,Math.round(p*DRONE_FAR_MUL)):p;
 }
+/* дальнее сырьё и дроны (§9, M465): точка у дрона бездонная, поэтому дальние товары
+   второго и третьего пояса (band ≥ 25) дрон не берёт вовсе, а первого — сдаёт за
+   полцены пояса: иначе дрон на жиле у края печатал бы деньги, пока игрок спит */
+const DRONE_FAR_MUL=.5;
+function droneMayMine(k){const F=RES[k]&&RES[k].far;return !!RES[k]&&(!F||F.band<=10);}
 function nearestStation(sx,sy){
   for(let rad=0;rad<=24;rad++){
     let best=null,bd=1e9;
@@ -22367,7 +22385,7 @@ function droneCapacity(k){
 }
 let droneTarget=null;
 function deployDrone(){
-  if(G.droneInventory<=0||!droneTarget)return;
+  if(G.droneInventory<=0||!droneTarget||!droneMayMine(droneTarget))return;
   G.droneInventory--;
   /* адрес точки, а не только системы (M237): дрону теперь есть откуда лететь.
      На грунте это планета, в поясе — кольцо (pi=-1). Без адреса рейса нет. */
@@ -51070,10 +51088,26 @@ function rescueOffers(){
       Object.keys(G.fit[G.shipId]||{}).length>0||RES_KEYS.some(k=>G.cargo[k]>0);
     out.push({id:"tow",ru:"БУКСИР",cost:0,
       sub:"баржа придёт и дотащит · 5 минут без руля"});   /* куда — сказано в шапке окна */
+    /* третий выход у остановки (§9): НА МЕТРО — билет к дому по цене билета */
+    const T=rescueRail(H);
+    if(T)out.push({id:"rail",ru:"НА МЕТРО",cost:T.F.sum,
+      sub:"поезд до «"+railStopName(T.t.to)+"» · ближе к дому · кольцо тащит борт само"});
     if(lose)out.push({id:"reset",ru:"СБРОС",cost:0,
       sub:"корабль, всё, что на нём стоит, и груз потеряны · «Стриж» у станции"});
   }
   return out;
+}
+/* билет к дому (§9): в системе есть остановка, корабль в пространстве системы —
+   из того, что продаёт касса, берётся остановка со станцией, ближайшая к дому,
+   если она ближе к нему, чем мы. Кольцо само берёт сухой борт (как автостыковка) */
+function rescueRail(H){
+  if(G.mode!=="system"||typeof railHere!=="function"||!railHere())return null;
+  const d0=Math.hypot(G.sx-H.sx,G.sy-H.sy);let best=null,bd=d0-.5;
+  for(const t of railDestinations()){
+    if(t.to.halt||!getSystem(t.to.sx,t.to.sy).station)continue;
+    const d=Math.hypot(t.to.sx-H.sx,t.to.sy-H.sy);if(d<bd){bd=d;best=t;}
+  }
+  return best?{t:best,F:railFare(best)}:null;
 }
 /* поставить корабль у станции системы (как буксир M331) */
 function rescuePark(dest){
@@ -51106,6 +51140,12 @@ function rescueTake(id){
       G.ship.vx=0;G.ship.vy=0;G.mode="system";G.surf=null;G.land=null;
     }
     haulStart();
+  }else if(id==="rail"){
+    const T=rescueRail(rescueHomeAt());if(!T)return false;
+    G.credits-=o.cost;
+    if(T.F.tok&&typeof firstAll==="function")firstAll().push("tokUsed");
+    logAdd("warn","Метро из "+from+" до «"+railStopName(T.t.to)+"» · −"+o.cost+" кр");
+    railRideStart(T.t);
   }else if(id==="reset"){
     const was=(shipData(G.shipId)||{}).ru||"корабль";
     if(G.shipId!=="strizh")delete G.owned[G.shipId];
@@ -51124,7 +51164,7 @@ function rescueTake(id){
     logAdd("warn","Сброс у "+from+": «"+was+"» потерян с грузом · выдан «Стриж»");
     say("Сброс\n«"+was+"» потерян · вы на «Стриже»",180);
   }
-  if(typeof saveGame==="function")saveGame(true);
+  if(id!=="rail"&&typeof saveGame==="function")saveGame(true);   /* в вагоне не пишем: поездка кончится выходом в систему */
   return true;
 }
 
@@ -62543,6 +62583,12 @@ function drawSysRail(zx,zy,Z){
   ctx.fillStyle="rgba(242,178,92,.75)";ctx.font=uiFont(9);ctx.textAlign="center";
   ctx.fillText((R.S.metro?"МЕТРО · ":"")+R.S.lines[0].ru.toUpperCase()+(R.S.lines.length>1?" +"+(R.S.lines.length-1):""),x,y+58*s+10);
 }
+/* идёт ли борт в кольцо: по ходу, а стоящий — по носу */
+function railHeadingIn(sh,R){
+  const dx=R.x-sh.x,dy=R.y-sh.y,sp=Math.hypot(sh.vx,sh.vy);
+  if(Math.hypot(dx,dy)<RAIL_CONE_R*.5)return true;
+  return sp>.3?dx*sh.vx+dy*sh.vy>0:dx*Math.cos(sh.a)+dy*Math.sin(sh.a)>0;
+}
 /* ── стыковка: оклик, конус, две секунды ── */
 function railInteract(sh){
   const R=railHere();
@@ -62550,6 +62596,9 @@ function railInteract(sh){
   if(railWinOpen())return true;
   const d=Math.hypot(sh.x-R.x,sh.y-R.y);
   if(d>RAIL_HAIL_R){RAIL_DOCK=null;return false;}
+  /* оклик — только тому, кто идёт В кольцо (§9): вышедший из поезда стоит в
+     шестидесяти от кольца носом к станции, и «Стыковка?» ему вслед — ошибка */
+  if(!RAIL_DOCK&&!railHeadingIn(sh,R))return false;
   if(!RAIL_DOCK){
     const shown=cue("СТАНЦИЯ «"+R.name.toUpperCase()+"» · "+(R.S.metro?"МЕТРО":"ЖЕЛЕЗНАЯ ДОРОГА")+"\nДЕЙСТВИЕ — СТЫКОВКА",CUE_ACT);
     if(shown&&actEdge)RAIL_DOCK={hold:0,t:0};
@@ -62617,8 +62666,11 @@ function railFare(t){
   /* крупногабаритный (M472, §3): тяжёлое в трюме (осмий, крошка) — багаж ×3 */
   const big=!metro&&typeof resW==="function"&&Object.keys(G.cargo).some(k=>(G.cargo[k]|0)>0&&resW(k)>1);
   const bag=metro?0:Math.ceil(held()/5)*(big?3:1);
-  const F={fare,bag,sum:fare+bag,metro,big};
-  return (typeof railPassFare==="function")?railPassFare(F):F;   /* проездной (M500) */
+  let F={fare,bag,sum:fare+bag,metro,big};
+  if(typeof railPassFare==="function")F=railPassFare(F);   /* проездной (M500) */
+  /* жетон замполита (§9, 11ao): первый проезд в метро — за счёт трассы */
+  if(metro&&typeof firstSaid==="function"&&firstSaid("tok")&&!firstSaid("tokUsed")){F.fare=0;F.sum=F.bag;F.tok=1;}
+  return F;
 }
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
 function railWinClose(){const w=document.getElementById("railWin");if(w)w.classList.remove("open");RAIL_WAIT=null;}
@@ -62650,7 +62702,7 @@ function railWinRender(){
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
-      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
+      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+(F.tok?"ЖЕТОН ЗАМПОЛИТА":F.fare+" КР")+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
       /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
       if(typeof railOwner==="function"&&railOwner()==="ra")
@@ -62677,11 +62729,13 @@ function railBuy(t,express,bus){
   if(!bus&&typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
   if(typeof volRail==="function"&&!volRail())return;   /* животное без бумаг — проводник не пускает (M511) */
   const F=railFare(t);
+  if(F.tok&&(express||bus)){F.fare=5;F.sum=F.fare+F.bag;F.tok=0;}   /* жетон — на поезд, не на экспресс и маршрутку */
   if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}
   G.credits-=F.sum;
+  if(F.tok)firstAll().push("tokUsed");
   if(typeof railLifeBoard==="function")railLifeBoard(t,F);
-  logAdd("money",(F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
+  logAdd("money",(F.tok?"Жетон замполита":F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
   RAIL_WAIT={...t,express:!!express,bus:!!bus,t:bus?3:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }
@@ -63184,10 +63238,36 @@ function railSchemeOpen(){
   if(!d){d=document.createElement("div");d.id="railScheme";d.innerHTML="<canvas></canvas><b>СХЕМА ЛИНИЙ · ГЛАВТРАССА · бесплатно, не выбрасывать</b><s>касание — свернуть</s>";
     d.onclick=e=>{if(e.target===d)railSchemeClose();};document.body.appendChild(d);
     /* КУДА ВАМ (M470): тап по остановке на бумаге — выбрать, куда ехать */
-    d.querySelector("canvas").onclick=railSchemePick;
-    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · мимо бумаги — свернуть";}
+    const cv=d.querySelector("canvas");cv.onclick=railSchemePick;
+    /* шире — колесом или щипком (§9, M470): от своего участка до всей сети */
+    cv.onwheel=e=>{e.preventDefault();e.stopPropagation();railSchemeZoom(e.deltaY>0?.25:-.25);};
+    let pin=0;
+    cv.addEventListener("touchmove",e=>{if(e.touches.length!==2)return;e.preventDefault();
+      const a=e.touches[0],b=e.touches[1],dd=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+      if(pin)railSchemeZoom((pin-dd)/300);pin=dd;},{passive:false});
+    cv.addEventListener("touchend",()=>{pin=0;});
+    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · колесо, щипок — шире · мимо бумаги — свернуть";}
   d.classList.add("open");
   {const p=d.querySelector(".rs-pick");if(p)p.remove();}
+  RAIL_SCHEME_Z=0;railSchemeRedraw();
+}
+/* охват (§9, M470): не вся сеть, а ваш участок — вы, всё, что продаёт касса
+   (своя линия и пересадки, а с ними и кольца, что их режут), с полем вокруг;
+   RAIL_SCHEME_Z тянет рамку от участка (0) до всей сети (1) */
+let RAIL_SCHEME_Z=0;
+function railSchemeScope(){
+  let x0=G.sx,x1=G.sx,y0=G.sy,y1=G.sy;
+  if(typeof railDestinations==="function"&&railStation(G.sx,G.sy))
+    for(const q of railDestinations()){x0=Math.min(x0,q.to.sx);x1=Math.max(x1,q.to.sx);y0=Math.min(y0,q.to.sy);y1=Math.max(y1,q.to.sy);}
+  const half=clamp(Math.max(x1-x0,y1-y0)/2*1.2+3,8,RAIL_R),z=RAIL_SCHEME_Z;
+  return {cx:(x0+x1)/2*(1-z),cy:(y0+y1)/2*(1-z),half:half+(RAIL_R-half)*z};
+}
+function railSchemeZoom(dz){
+  const z=clamp(RAIL_SCHEME_Z+dz,0,1);if(z===RAIL_SCHEME_Z)return;
+  RAIL_SCHEME_Z=z;railSchemeRedraw();
+}
+function railSchemeRedraw(){
+  const d=document.getElementById("railScheme");if(!d)return;
   const c=d.querySelector("canvas"),k=Math.min(2,DPR||1);
   const cw=Math.min(W-24,520),ch=Math.min(H-120,cw*1.15);
   c.width=cw*k;c.height=ch*k;c.style.width=cw+"px";c.style.height=ch+"px";
@@ -63230,9 +63310,9 @@ function railSchemePick(e){
   host.appendChild(p);
 }
 function railSchemeDraw(g,cw,ch){
-  const N=railNet(),R=RAIL_R;
-  const pad=28,S=Math.min((cw-pad*2)/(2*R),(ch-pad*2-24)/(2*R));
-  const X=x=>cw/2+x*S,Y=y=>ch/2+12+y*S;
+  const N=railNet(),R=RAIL_R,V=railSchemeScope();
+  const pad=28,S=Math.min((cw-pad*2)/(2*V.half),(ch-pad*2-24)/(2*V.half));
+  const X=x=>cw/2+(x-V.cx)*S,Y=y=>ch/2+12+(y-V.cy)*S;
   RAIL_SCHEME_MAP={X,Y,cw,ch};
   /* бумага: кремовая, сгибы вдоль и поперёк, тень у сгиба */
   g.fillStyle="#efe6cf";g.fillRect(0,0,cw,ch);
@@ -69843,7 +69923,7 @@ function updateSurface(dt){
   for(const b of S.fauna||[])if(!b.scanned&&Math.abs(b.x-S.x)<34*kitStat().scan)beast=b;
   S.mining=null;
   const dbtn=document.getElementById("dronebtn");
-  if(dep&&G.droneInventory>0){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
+  if(dep&&G.droneInventory>0&&droneMayMine(dep.res)){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
   /* у корабля скафандр перезаряжается — сюда и возвращаются между заходами;
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
@@ -84011,8 +84091,9 @@ function updateBelt(dt){
   if(best!==b.lock)b.prog=0;
   b.lock=best;b.beam=0;
   const dbtn=document.getElementById("dronebtn");
-  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить */
-  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
+  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить; на дальнее
+     второго-третьего пояса — тоже (§9, droneMayMine) */
+  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0&&droneMayMine(best.res)){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
 
   /* контакт с камнем перекрывает разговоры о прицеле: пока борт скребёт

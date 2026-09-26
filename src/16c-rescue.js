@@ -87,10 +87,26 @@ function rescueOffers(){
       Object.keys(G.fit[G.shipId]||{}).length>0||RES_KEYS.some(k=>G.cargo[k]>0);
     out.push({id:"tow",ru:"БУКСИР",cost:0,
       sub:"баржа придёт и дотащит · 5 минут без руля"});   /* куда — сказано в шапке окна */
+    /* третий выход у остановки (§9): НА МЕТРО — билет к дому по цене билета */
+    const T=rescueRail(H);
+    if(T)out.push({id:"rail",ru:"НА МЕТРО",cost:T.F.sum,
+      sub:"поезд до «"+railStopName(T.t.to)+"» · ближе к дому · кольцо тащит борт само"});
     if(lose)out.push({id:"reset",ru:"СБРОС",cost:0,
       sub:"корабль, всё, что на нём стоит, и груз потеряны · «Стриж» у станции"});
   }
   return out;
+}
+/* билет к дому (§9): в системе есть остановка, корабль в пространстве системы —
+   из того, что продаёт касса, берётся остановка со станцией, ближайшая к дому,
+   если она ближе к нему, чем мы. Кольцо само берёт сухой борт (как автостыковка) */
+function rescueRail(H){
+  if(G.mode!=="system"||typeof railHere!=="function"||!railHere())return null;
+  const d0=Math.hypot(G.sx-H.sx,G.sy-H.sy);let best=null,bd=d0-.5;
+  for(const t of railDestinations()){
+    if(t.to.halt||!getSystem(t.to.sx,t.to.sy).station)continue;
+    const d=Math.hypot(t.to.sx-H.sx,t.to.sy-H.sy);if(d<bd){bd=d;best=t;}
+  }
+  return best?{t:best,F:railFare(best)}:null;
 }
 /* поставить корабль у станции системы (как буксир M331) */
 function rescuePark(dest){
@@ -123,6 +139,12 @@ function rescueTake(id){
       G.ship.vx=0;G.ship.vy=0;G.mode="system";G.surf=null;G.land=null;
     }
     haulStart();
+  }else if(id==="rail"){
+    const T=rescueRail(rescueHomeAt());if(!T)return false;
+    G.credits-=o.cost;
+    if(T.F.tok&&typeof firstAll==="function")firstAll().push("tokUsed");
+    logAdd("warn","Метро из "+from+" до «"+railStopName(T.t.to)+"» · −"+o.cost+" кр");
+    railRideStart(T.t);
   }else if(id==="reset"){
     const was=(shipData(G.shipId)||{}).ru||"корабль";
     if(G.shipId!=="strizh")delete G.owned[G.shipId];
@@ -141,7 +163,7 @@ function rescueTake(id){
     logAdd("warn","Сброс у "+from+": «"+was+"» потерян с грузом · выдан «Стриж»");
     say("Сброс\n«"+was+"» потерян · вы на «Стриже»",180);
   }
-  if(typeof saveGame==="function")saveGame(true);
+  if(id!=="rail"&&typeof saveGame==="function")saveGame(true);   /* в вагоне не пишем: поездка кончится выходом в систему */
   return true;
 }
 

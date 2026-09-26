@@ -273,16 +273,6 @@ measured on the GPU build first:
 ## 9. Seams to honour when the items above are built
 
 Check each against the code before building — some may already hold.
-- **Drones and the far goods (M465):** drones never mine band-2/3 goods and sell band-1 goods at the band
-  price (½) — otherwise a drone on a rim жила prints money offline.
-- **The stamp and the metro (M453, M473):** a stamp lands only on arrival by jump or on ВЫЙТИ, never on a
-  stop passed through; the ring's «Стыковка?» hail fires only when heading into the ring.
-- **The first hour (M452, M472):** the замполит hands the newcomer one жетон («первый — за счёт трассы») —
-  the metro is met in the first hour, not found.
-- **Rescue and rails (`16c-rescue`):** a dry ship at a rail stop gets a third exit beside ДОМОЙ / БУКСИР —
-  НА МЕТРО, a ticket home for its fare.
-- **The scheme's scope (M470):** your line, the rings it meets and their neighbours; pinch/scroll for more —
-  never the whole infinite net. «Край» is per player.
 - **Replays (0.1, P9):** the fixed step and the seeded entry angle each move every recording and same-hash
   suite once — one `-Accept` per change, named in the patchnote, `91zzzzzzzzb-replay` re-based.
 
