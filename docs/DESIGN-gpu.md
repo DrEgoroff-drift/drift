@@ -774,7 +774,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   ferry, tug) around the own ship on thrust. The flame stays the brightest thing, fleet lights read as
   narrow dots with their halo (explicit emission since 7083ac58), fleet hulls lost the paint haze like
   the stations. Line closed in PLAN.
-  Next: the Stage 1 gate in numbers on the tour (uploads and submits per flight frame).
+- **Drone captions off #c** (26.09, 09c9ea77): the Stage 1 gate on the tour (scratch counter over
+  copyExternalImageToTexture / writeTexture / submit per step) found drones uploading #c on 1080 of 1080
+  flight frames — `drawDronesSystem` wrote captions with fillText; now `domLabel`, the shadow a second label.
+  The tour stand's drones had `res:"ore"` (no such resource): the earlier census crashed the frame there.
+  G4d merged (5bed781b).
+- **Candidate 0.465.0** (26.09): the glow source (stations, facade), fleet+flame closed, drone captions, G4d.
+  Next: the Stage 1 gate in numbers — extra submits on some run frames (planet, rescue, dock: 5 of 1080).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

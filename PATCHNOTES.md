@@ -6,6 +6,21 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.465.0 - the pirate base is back, hulls stop glowing from their paint
+
+- **The pirate base is visible again** (GPU-2): on 0.464.0 it was still drawn in 2D under the video card's
+  frame and could not be seen at all. It is drawn in the scene now, with a thread of star colour on the
+  edges that face the star and its name on the label layer; the flight gate has a «пиратская база» scene.
+- **The other ships are lit by the star** (GPU-2): a fleet ship that fades (the lane rush, docking) stays
+  the same lit ship instead of dropping to a flat picture; «Сорока»'s hull is one baked, lit body instead of
+  about 150 flat shapes, its gondola lamp on top.
+- **Hulls no longer glow from their paint.** The glow around stations, barges, pirates, fleet ships and
+  the hotel's facade came from their grey and white paint, a milky haze over the metal; now only what is
+  lit glows — lamps, windows, the sign, the flame. Your own ship keeps half, as before. A station reads
+  about 9 % darker and crisper, the hotel's towers lose their pink haze.
+- **Drone captions** are drawn on the label layer: in a system with drones the old 2D captions made the
+  frame upload a whole layer every frame.
+
 ## 0.464.0 - the rack and the belt cockpit on the video card, wrecks as hulls
 
 - **The instrument rack and «Глобус» are drawn by the video card** (GPU-3): the still parts are one bake,
