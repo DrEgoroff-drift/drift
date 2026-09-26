@@ -30,7 +30,7 @@ under the planets (17g), planets and moons (17ga), the system view on top — tr
 occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py` on the GPU.
 
 **The order (Контроль 26.09, after the audit: the middle was being built on an unchecked base):**
-1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 (26.09) and closed engine stage 1; it is re-run after
+1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 and on 0.473.0 (26.09) and closed engine stage 1; it is re-run after
    every engine release, and while it fails, speed goes ahead of every picture pass.
 2. What is in flight lands before anything new starts.
 3. G15: what still draws in 2D moves to the engine, then 3D where it reads.
@@ -169,7 +169,7 @@ follows the cadence protocol in `docs/DECISIONS.md`.
 The phone (the author 26.09: «тел доступен пусть используют»): the S23 over Wi-Fi adb (`adb mdns services`,
 `_adb-tls-connect`). One session at a time: `C:\Claude\phone.lock` taken with noclobber, held ≤ 10 min, a lock
 older than 15 min may be removed; the CDP forward only under the lock; each session its own port through
-`adb reverse` (the worker 8811, GPU-2 8812, GPU-3 8813, the fleet 8814). Measure cold (a new `*.localhost` host:
+`adb reverse` (the worker 8811, GPU-2 8812, GPU-3 8813, the fleet 8814, Контроль 8815). Measure cold (a new `*.localhost` host:
 Chrome keeps compiled pipelines per site), off the charger and cooled — or on it when full (status FULL, 100 %) with
 thermal 0 logged before, mid-run and after (the author 26.09; a charging phone heats, and Samsung cuts the GPU to
 295 of 719 MHz), A/B/A; never start a run because the screen woke — an incoming call looks the same.
@@ -179,8 +179,11 @@ thermal 0 logged before, mid-run and after (the author 26.09; a charging phone h
   ≥ 50 ms; then 5 minutes at ≥ 95 %; the picture at 760 no worse. Before a run: no other tab working in that Chrome
   (a browser miner, «CryptoTab Pool», was there on 24.09), no stuck touch (`gate.py` checks logcat, getevent and the
   page's counter; `waitquiet.py` waits for quiet).
-  - The phone is away (the author 26.09, «работаем без телефона»): releases go without P1, costs are measured on
-    the PC (A/B/A at 1920 and at 617×1113, DPR 1.5, marked «PC»); when it is back, P1 runs on the latest release.
+  - The phone is back (the author 26.09, «на тел тестируй, он доступен»). P1 on 0.473.0 (Контроль, cold, 617×1113
+    DPR 1.5): 30 s 100 % of 1801 frames, max 16.9 ms; 5 min 99.99 % of 18003 frames at 60.0 fps, two frames of 33 ms,
+    none ≥ 50 ms, battery 27.9 → 29.6 °C. The author's routes (`ROUTE=hotel|star`, `ZOOM=.3`, 1bfbade5), 30 s cold
+    each: the hotel 100 %, max 16.9 ms; past the star 99.89 %, one frame of 33.3; the hotel at .3 99.90 %, one of 33.4;
+    the star at .3 100 %, max 16.9. A nebula or hotel change passes the four routes as well as the plain run.
   - The baseline — passed on 0.468.0 (26.09, GPU-3, on the charger at 100 %, thermal 0 throughout): cold 30 s 100 %
     of 1800 frames, max 16.9 ms; 5 min 99.98 % of 18002 frames at 60.0 fps, none ≥ 50 ms, three frames of 33 ms at
     40, 116 and 202 s — one vsync skipped with no bake, pipeline or new texture in them, the GPU 17–21 ms around
