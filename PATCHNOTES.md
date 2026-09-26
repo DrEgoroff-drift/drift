@@ -6,7 +6,7 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## Unreleased - stage 2, whose land
+## 0.482.0 - stage 7: the giants, small things and the economy seams
 
 - **M464 — one giant per arm (§8).** The six giants now stand on the galaxy model's real arms: two arms, two branches each, one giant per branch at 19–22 sectors and two more nearer the core at 14–15; the hollow moon stays at the core. Where the arms cross, the placement walks along its own branch in half-sector steps until the model names the spot as that arm (or a nebula of that arm) and it is at least 8 sectors from the others. The discovery log line names the arm.
 - **The ruler in the frame.** Under the giant's name in the system: «≈ N ваших корпусов в длину», counted from the hull you fly.
@@ -41,7 +41,7 @@ could ever save.
 - §12 per visit: the norm, scrip and co-op leftovers are stored on undock in `G.hold[station].vis`, an existing saved structure.
 - Lane owner: the lane is cached in the system, so a land that changes hands re-dresses the lane only when the system is regenerated.
 
-## Unreleased
+## 0.481.0 - stage 6: the story and the rest
 
 - «Смена» (P15): a landing in a new kind of place only arms the next chapter («где-то здесь. Отойдите от корабля»); walking 480 px from the ship lives it. The arming stays in the surface state, not in the save: leave without stepping out and the chapter waits. The 72-kinds-of-place check was already a suite (r ≤ 20).
 
