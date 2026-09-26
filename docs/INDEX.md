@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6611
+Файлов: 641 · символов верхнего уровня: 6612
 
 ## СИМВОЛЫ
 
@@ -435,7 +435,7 @@ FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
 FACE_SKIN                    src/12d-mgr-face.js:10
-FAIL_IN                      src/05b1-warranty.js:99
+FAIL_IN                      src/05b1-warranty.js:101
 FAME_N                       src/21b3-base-hunt.js:27
 FARM_HOME                    src/21ac2-base-farm.js:22
 FARM_NAMES                   src/21ac2-base-farm.js:21
@@ -784,7 +784,7 @@ HK_STAIR                     src/17l1-hotel-kosmos.js:22
 HK_WALL                      src/17l1-hotel-kosmos.js:19
 HK_WINS                      src/17l1-hotel-kosmos.js:21
 HK_XL                        src/17l1-hotel-kosmos.js:12
-HOLD_BAR                     src/05b1-warranty.js:80
+HOLD_BAR                     src/05b1-warranty.js:82
 HOLD_CAP_SHIFTS              src/12ad-site.js:21
 HOLD_SHIFT                   src/12ab-hold.js:23
 HOLD_SRC_LINES               src/12ah-holdnews.js:39-48
@@ -1195,7 +1195,7 @@ PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:351
+PLAN_F                       src/27jb-kb.js:354
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -2946,7 +2946,7 @@ drawHomeOut                  src/21f-home-out.js:73-312
 drawHomeRoom                 src/27e-ui-home.js:47-69
 drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:22-31
-drawHull                     src/03e-hull-draw.js:115-194
+drawHull                     src/03e-hull-draw.js:117-196
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-51
@@ -3018,7 +3018,7 @@ drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:159-170
 drawTrail                    src/16-flight.js:457-460
-drawTransitPlate             src/03e-hull-draw.js:59-67
+drawTransitPlate             src/03e-hull-draw.js:59-69
 drawVan                      src/21ac3-base-van.js:71-133
 drawVanSmall                 src/21ac3-base-van.js:135-141
 drawWallPaper                src/11ae-concert.js:39-71
@@ -3033,7 +3033,7 @@ drawWorld                    src/28-loop.js:401-404
 drawWorldIn                  src/28-loop.js:405-428
 drawWreck                    src/20aa-poi-shapes.js:8-48
 drawWrecksSystem             src/12l-barge.js:362-388
-drawYardMark                 src/03e-hull-draw.js:71-114
+drawYardMark                 src/03e-hull-draw.js:73-116
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
 droneCapacity                src/12-economy.js:280-283
@@ -3158,9 +3158,9 @@ faceEl                       src/27c-ui-hq.js:6-12
 facePath                     src/12d-mgr-face.js:19-28
 faceRnd                      src/12d-mgr-face.js:16
 factPrices                   src/27c-ui-hq.js:587-604
-failRoll                     src/05b1-warranty.js:101
-failShift                    src/05b1-warranty.js:100
-failTick                     src/05b1-warranty.js:102-117
+failRoll                     src/05b1-warranty.js:103
+failShift                    src/05b1-warranty.js:102
+failTick                     src/05b1-warranty.js:104-119
 fameOf                       src/21b3-base-hunt.js:98-102
 fameWhere                    src/21b3-base-hunt.js:103-115
 farBasePrice                 src/12-economy.js:68-72
@@ -3832,7 +3832,7 @@ holdAll                      src/12ab-hold.js:35
 holdAmbushMul                src/12ag-holdfx.js:115
 holdArchiveLines             src/12ag-holdfx.js:121-126
 holdArtel                    src/12ag-holdfx.js:94
-holdBar                      src/05b1-warranty.js:81-94
+holdBar                      src/05b1-warranty.js:83-96
 holdCapMul                   src/12ad-site.js:208
 holdDealList                 src/12ad-site.js:324-346
 holdDeed                     src/12ad-site.js:25-29
@@ -3992,9 +3992,9 @@ hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:120-131
 hullLiveInserts              src/03e1-hull-bake.js:38-42
 hullOf                       src/03a-hull-gen.js:1-532
-hullPart1                    src/03e-hull-draw.js:199-677
-hullPart2                    src/03e-hull-draw.js:679-682
-hullPart3                    src/03e-hull-draw.js:685-762
+hullPart1                    src/03e-hull-draw.js:201-679
+hullPart2                    src/03e-hull-draw.js:681-684
+hullPart3                    src/03e-hull-draw.js:687-764
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
 hullSilhouette               src/27-ui-ship.js:10-20
@@ -4027,7 +4027,7 @@ instTake                     src/11ab-institute.js:34-41
 instTestSci                  tests/91zzq-institute.js:2-5
 instTick                     src/11ab-institute.js:80-94
 instrAgeTick                 src/05b-instr-kit.js:86-96
-instrBroken                  src/05b1-warranty.js:16
+instrBroken                  src/05b1-warranty.js:18
 instrBuy                     src/05b-instr-kit.js:158-168
 instrFix                     src/05b-instr-kit.js:169-177
 instrFixCost                 src/05b-instr-kit.js:119-122
@@ -4052,8 +4052,8 @@ instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
 instrShelf                   src/05b-instr-kit.js:43-46
-instrTape                    src/05b1-warranty.js:46-57
-instrTapeCan                 src/05b1-warranty.js:45
+instrTape                    src/05b1-warranty.js:48-59
+instrTapeCan                 src/05b1-warranty.js:47
 instrTrack                   src/25a-instr.js:86-88
 instrTraits                  src/05b-instr-kit.js:56-61
 instrUnit                    src/05b-instr-kit.js:47-51
@@ -4091,8 +4091,8 @@ jumpToBase                   src/21a-mode-base.js:385-402
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:190
 kbDensUp                     src/27jb-kb.js:64-72
-kbDone                       src/27jb-kb.js:292-312
-kbDraw                       src/27jb-kb.js:314-343
+kbDone                       src/27jb-kb.js:295-315
+kbDraw                       src/27jb-kb.js:317-346
 kbForeign                    src/27jb-kb.js:31
 kbMoved                      src/27jb-kb.js:33-39
 kbNumbers                    src/27jb-kb.js:174-181
@@ -4105,7 +4105,7 @@ kbRec                        src/27jb-kb.js:63
 kbRender                     src/27jb-kb.js:191-266
 kbRule                       src/27jb-kb.js:147
 kbShape                      src/27jb-kb.js:26
-kbTap                        src/27jb-kb.js:267-291
+kbTap                        src/27jb-kb.js:267-294
 kbTurnOf                     src/27jb-kb.js:27
 kbWeld                       src/27jb-kb.js:73-85
 kbWelded                     src/27jb-kb.js:62
@@ -4736,9 +4736,9 @@ offerTtl                     src/11ah-offer.js:70
 offerVisit                   src/11ah-offer.js:134-163
 offersAll                    src/11ah-offer.js:75-78
 ok                           tests/90-harness.js:165-169
-oldMasterCan                 src/05b1-warranty.js:128
-oldMasterHere                src/05b1-warranty.js:121-127
-oldMasterSeam                src/05b1-warranty.js:129-134
+oldMasterCan                 src/05b1-warranty.js:130
+oldMasterHere                src/05b1-warranty.js:123-129
+oldMasterSeam                src/05b1-warranty.js:131-136
 opCensus                     tests/91zzzzzt-opis.js:15-21
 openBarge                    src/12l-barge.js:657-666
 openCrewView                 src/27b-ui-crew.js:230-236
@@ -5025,7 +5025,7 @@ planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
 planExposure                 src/05e-plan.js:217-230
-planFactors                  src/27jb-kb.js:352-363
+planFactors                  src/27jb-kb.js:355-366
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -6141,9 +6141,9 @@ suiteWin                     tests/90-harness.js:94-99
 sunAzQ                       src/19c-light.js:26-29
 sunDirSet                    src/19c-light.js:30-37
 sunSpot                      src/19c-light.js:213-218
-supportCall                  src/05b1-warranty.js:18-25
-supportQueue                 src/05b1-warranty.js:27-32
-supportTick                  src/05b1-warranty.js:33-42
+supportCall                  src/05b1-warranty.js:20-27
+supportQueue                 src/05b1-warranty.js:29-34
+supportTick                  src/05b1-warranty.js:35-44
 surfNight                    src/06a-celest.js:43-50
 surfScale                    src/21e-surface-draw.js:276
 surfaceHint                  src/21e-surface-draw.js:4-20
@@ -6517,9 +6517,10 @@ warPut                       src/14b-war-net.js:156-161
 warStore                     src/14b-war-net.js:24-29
 warStoreSet                  src/14b-war-net.js:30-36
 warTok                       src/14b-war-net.js:23
-warrantyBlock                src/05b1-warranty.js:59-77
-warrantyGive                 src/05b1-warranty.js:15
+warrantyBlock                src/05b1-warranty.js:61-79
+warrantyGive                 src/05b1-warranty.js:17
 warrantyOn                   src/05b1-warranty.js:14
+warrantyRegVoid              src/05b1-warranty.js:16
 warrantyShift                src/05b1-warranty.js:13
 wasBlurred                   src/15-input.js:207
 watchCrew                    src/27b-ui-crew.js:34-44
@@ -7876,7 +7877,7 @@ zoomTo                       src/15-input.js:350
 ## src/27j-ui-opis.js · 64 КБ
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
-## src/27jb-kb.js · 25 КБ
+## src/27jb-kb.js · 26 КБ
   · КБ: редактор чертежа, синька (M477, DESIGN-shipyard §3, review §2.2):1
 
 ## src/27jb-ui-got.js · 4 КБ

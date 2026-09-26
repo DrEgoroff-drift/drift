@@ -267,8 +267,6 @@ measured on the GPU build first:
   release run).
 - [ ] **M480/M481 yards (rest):** the free cells (Хай-Фронт's nose instrument, Орднунг's front shield — cells
   that need no part); calibration by the worlds oracle and the стрельбище (release run).
-- [ ] **M513 утильсбор:** the plate crooked when expired; the home yard refusing to re-plan the hull; the
-  foreign warranty void.
 - [ ] **M463 the bazaar:** odd lots beyond parts; rumours at the stalls.
 - [ ] **M487 подписка:** base modules by subscription, and the cold store that stops giving; ×3 offered in
   a fight.

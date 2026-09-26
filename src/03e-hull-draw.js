@@ -60,6 +60,8 @@ function drawTransitPlate(h,id){
   if(typeof regPending!=="function"||!regPending(id))return;
   const x=h.tail+h.len*.12,w=Math.max(4,h.bw*.5),hh=w*.42;
   ctx.save();ctx.translate(x,0);
+  /* транзит просрочен — бумажка держится на одном углу и висит криво */
+  const r=regOf(id);if(r&&now()>r.until){ctx.translate(-w/2,-hh/2);ctx.rotate(.32);ctx.translate(w/2,hh/2);}
   ctx.fillStyle="#e8c53a";ctx.fillRect(-w/2,-hh/2,w,hh);
   ctx.strokeStyle="#1a1408";ctx.lineWidth=.4;ctx.strokeRect(-w/2,-hh/2,w,hh);
   ctx.fillStyle="#1a1408";ctx.fillRect(-w*.38,-hh*.18,w*.76,hh*.14);ctx.fillRect(-w*.3,hh*.08,w*.6,hh*.14);

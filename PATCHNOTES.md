@@ -232,6 +232,8 @@ could ever save.
 
 - Scars on captured pirate hulls (M482): a crewman's «пригнал трофейный корпус» no longer hands over a clean catalogue hull — it is a build of its own (a maker by seed, «трофейный корпус», «Отбит у пиратов…») with 1–3 scars, repaired at a yard like the towed and the bazaar hulls. The trophy shelf and the thing card name it.
 
+- Утильсбор, the rest (M513): once the transit runs out the paper plate hangs from one corner, crooked; while the hull is on transit plates, the КБ at a yard of your own flag refuses to re-plan it («сначала номера, потом чертёж»), and the instruments' warranty is void — the broken-instruments list says «гарантия аннулирована: корпус не на учёте» and ТЕХПОДДЕРЖКА is not offered.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are

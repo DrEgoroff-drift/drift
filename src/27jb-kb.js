@@ -265,6 +265,9 @@ function kbRender(){
   w.querySelector(".kb-done").onclick=kbDone;
 }
 function kbTap(i,j){
+  /* утильсбор (M513): своя верфь не перечерчивает корпус на транзитных номерах */
+  if(typeof regPending==="function"&&regPending(KB.id)&&kbYard()===playerFlag()){
+    KB.msg="своя верфь не перечерчивает: корпус не на учёте · «сначала номера, потом чертёж»";kbRender();return;}
   const d=KB.d,q=d.P.cells.find(c=>c.i===i&&c.j===j);if(!q)return;
   const owner=d.items.findIndex(x=>x.cells.indexOf(q)>=0);
   if(KB.sel!=null){
