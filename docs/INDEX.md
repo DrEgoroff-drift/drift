@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6321
+Файлов: 630 · символов верхнего уровня: 6346
 
 ## СИМВОЛЫ
 
@@ -434,7 +434,7 @@ beltDots                     src/17c-system-draw.js:89-94
 beltFwd                      src/24-mode-belt.js:144-147
 beltGpuAdj                   src/24ba-belt-gpu.js:65-73
 beltGpuDraw                  src/24ba-belt-gpu.js:74-270
-beltHudPush                  src/24bc-belt-hud.js:139-144
+beltHudPush                  src/24bc-belt-hud.js:433-446
 beltIcy                      src/24-mode-belt.js:70
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:19-100
 beltPoiMouthTex              src/24bb-belt-poi-gpu.js:8-18
@@ -450,18 +450,11 @@ BGPU_ADJ                     src/24ba-belt-gpu.js:64
 BGPU_SKY                     src/24ba-belt-gpu.js:37
 BGPU_U                       src/24ba-belt-gpu.js:61
 bHazard                      src/21aa-base-rooms.js:289-295
-BHUD                         src/24bc-belt-hud.js:14
-bhudDraw                     src/24bc-belt-hud.js:134-137
-bhudKey                      src/24bc-belt-hud.js:73-132
-bhudLed                      src/24bc-belt-hud.js:30-53
-bhudLedDom                   src/24bc-belt-hud.js:29
-bhudLeds                     src/24bc-belt-hud.js:56-64
+BHUD                         src/24bc-belt-hud.js:13
 bioMark                      src/20e-species.js:310-314
 bioPlanet                    tests/91zzzb-bio.js:10-14
 bioScan                      src/20e-species.js:315-329
 bJunk                        src/21aa-base-rooms.js:62-118
-bkN                          src/24bc-belt-hud.js:66
-bkR                          src/24bc-belt-hud.js:67
 bLamp                        src/21aa-base-rooms.js:279-287
 BLD                          src/12ac-bld.js:29
 BLD_FAM                      src/12ac-bld.js:16-26
@@ -550,9 +543,9 @@ BOOKS                        src/12ub-books.js:23-120
 BOOKS_BY                     src/12ub-books.js:121
 BOOT_SINK                    tests/99-run.js:43
 BOOT_SUITE                   tests/99-run.js:21-35
-BORC                         tests/91zzzzzzy1-gpugate-belt.js:88
-borcId                       tests/91zzzzzzy1-gpugate-belt.js:89
-borcRecorder                 tests/91zzzzzzy1-gpugate-belt.js:90-112
+BORC                         tests/91zzzzzzy1-gpugate-belt.js:91
+borcId                       tests/91zzzzzzy1-gpugate-belt.js:92
+borcRecorder                 tests/91zzzzzzy1-gpugate-belt.js:93-115
 BOSS_ACC                     src/12av-boss.js:117
 BOSS_EVERY                   src/12av-boss.js:29
 BOSS_HULL                    src/12av-boss.js:25
@@ -790,8 +783,8 @@ CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
 chipDist                     src/17-mode-system.js:695-701
 chipDom                      src/08bi-gpu-ovl.js:144-159
-chipDomSnap                  src/08bh-gpu-hud.js:35-40
-chipDomSweep                 src/08bh-gpu-hud.js:67-73
+chipDomSnap                  src/08bh-gpu-hud.js:35-37
+chipDomSweep                 src/08bh-gpu-hud.js:45-48
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -898,10 +891,41 @@ circPut                      src/12aw-circ.js:26-30
 circSay                      src/12aw-circ.js:134-138
 circValid                    src/12aw-circ.js:34-80
 cirrusSprite                 src/19e-clouds.js:226-248
+CKG                          src/24bc-belt-hud.js:22
+CKG_BANDS                    src/24bc-belt-hud.js:21
+CKG_FADE                     src/24bc-belt-hud.js:25
+CKG_LAMPS                    src/24bc-belt-hud.js:26
+ckgAtlas                     src/24bc-belt-hud.js:64-88
+ckgDrop                      src/24bc-belt-hud.js:93-98
+ckgFrame                     src/24bc-belt-hud.js:284-346
+ckgFree                      src/24bc-belt-hud.js:92
+ckgFS                        src/24bc-belt-hud.js:32
+ckgGeo                       src/24bc-belt-hud.js:100-106
+ckgGlass                     src/24bc-belt-hud.js:220-275
+ckgGlint                     src/24bc-belt-hud.js:277-281
+ckgJob                       src/24bc-belt-hud.js:176-200
+ckgLamps                     src/24bc-belt-hud.js:377-395
+ckgLazy                      src/24bc-belt-hud.js:90
+ckgNode                      src/24bc-belt-hud.js:397-424
+ckgPaint                     src/24bc-belt-hud.js:108-149
+ckgPanel                     src/24bc-belt-hud.js:348-375
+ckgPlan                      src/24bc-belt-hud.js:28-31
+ckgPut                       src/24bc-belt-hud.js:49
+ckgPutRot                    src/24bc-belt-hud.js:56-59
+ckgRot                       src/24bc-belt-hud.js:51-55
+ckgSpr                       src/24bc-belt-hud.js:44-48
+ckgSprites                   src/24bc-belt-hud.js:152-173
+ckgSt                        src/24bc-belt-hud.js:34
+ckgTex                       src/24bc-belt-hud.js:207-218
+ckgUnder                     src/24bc-belt-hud.js:426-431
+ckgW                         src/24bc-belt-hud.js:35
+ckgWarm                      src/24bc-belt-hud.js:202-205
+ckLine                       src/24bc-belt-hud.js:38-41
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19-44
-ckptFont                     src/24bc-belt-hud.js:18
-ckptLampNeed                 src/24bc-belt-hud.js:20-24
+ckptFont                     src/24bc-belt-hud.js:14
+ckptLampNeed                 src/24bc-belt-hud.js:16-20
+ckT                          src/24bc-belt-hud.js:36
 clamp                        src/01-core.js:15
 clampi                       src/12am-chron.js:152
 CLEARANCE                    src/05e-clearance.js:22-27
@@ -960,9 +984,10 @@ clrHours                     src/05e-clearance.js:30
 clrTick                      src/05e-clearance.js:97-106
 clSave                       tests/91zzzzzr-cloud.js:14-18
 clWith                       tests/91zzzzzr-cloud.js:30-43
+cockpitPaint                 src/25-cockpit.js:202-404
 cockpitPlan                  src/25-cockpit.js:92-152
 cockpitStyleKey              src/25-cockpit.js:46-50
-cockpitTex                   src/25-cockpit.js:187-401
+cockpitTex                   src/25-cockpit.js:187-200
 combatShots                  src/13-combat.js:154-207
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82-86
@@ -1387,6 +1412,7 @@ dispatchEtherLine            src/12ag-holdfx.js:57-76
 dkPaper                      src/27ia-desk-top.js:37-45
 dkRule                       src/27ia-desk-top.js:46-52
 dkShadow                     src/27ia-desk-top.js:30-35
+DLID                         src/08bh-gpu-hud.js:39
 DMG_KEYS                     src/05c-arms.js:35
 DMG_TYPES                    src/05c-arms.js:24-34
 dmgMul                       src/05c-arms.js:36-39
@@ -1400,8 +1426,7 @@ dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
 domLabel                     src/08bi-gpu-ovl.js:134-140
-domLabelEnd                  src/08bh-gpu-hud.js:55-64
-domLabelId                   src/08bh-gpu-hud.js:53
+domLabelId                   src/08bh-gpu-hud.js:42
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
 DOMR_SAVE                    src/15d-domread.js:18
@@ -1464,7 +1489,7 @@ drawCelest                   src/06a-celest.js:167-218
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
-drawCockpit                  src/25-cockpit.js:402-681
+drawCockpit                  src/25-cockpit.js:405-680
 drawCombat                   src/13-pirates.js:362-464
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
@@ -2039,7 +2064,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:26-135
+GATE2D                       tests/91zzzzzzy3-gate2d.js:26-146
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:13
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:15
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:17-25
@@ -2284,7 +2309,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:185
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-46
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-47
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -3019,7 +3044,8 @@ instrKitInit                 src/05b-instr-kit.js:34-38
 instrKnock                   src/05b-instr-kit.js:102-111
 instrMisclose                src/25a-instr.js:92-94
 instrOffers                  src/05b-instr-kit.js:127-143
-instrPanel                   src/25a-instr.js:100-190
+instrPanel                   src/25a-instr.js:109-199
+instrPanelGeo                src/25a-instr.js:103-106
 instrPenWidth                src/05b-instr-kit.js:78-80
 instrPodDraw                 src/25c-instr-hud.js:32-96
 instrPodSig                  src/25c-instr-hud.js:27-31
@@ -3184,8 +3210,6 @@ kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
 kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
-LABDOM                       src/08bh-gpu-hud.js:43
-labDomBox                    src/08bh-gpu-hud.js:45-50
 labelW                       src/12ai-fleet.js:134
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
@@ -5768,13 +5792,14 @@ tapeBuy                      src/12s1-tape.js:23-28
 tapeCan                      src/12s1-tape.js:11
 tapeInit                     src/25b-tape.js:27-31
 tapePack                     src/25b-tape.js:34-38
-tapePaper                    src/25b-tape.js:112-186
+tapePaper                    src/25b-tape.js:114-192
 tapeRate                     src/25b-tape.js:75-78
 tapeRolls                    src/12s1-tape.js:9
 tapeSample                   src/25b-tape.js:54-73
 tapeScroll                   src/25b-tape.js:97-100
 tapesOf                      src/12s1-tape.js:10
-tapeStrip                    src/25b-tape.js:191-200
+tapeStrip                    src/25b-tape.js:208-211
+tapeStripBox                 src/25b-tape.js:198-207
 tapeTear                     src/11b-speech.js:196-212
 tapeTick                     src/25b-tape.js:79-93
 tapeUnpack                   src/25b-tape.js:39-46
@@ -6471,7 +6496,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08b2-gpu-loss.js · 3 КБ
   · отказ видеокарты: потеря, сбой кадра, нет WebGPU (DESIGN-gpu §G):1
 
-## src/08bh-gpu-hud.js · 5 КБ
+## src/08bh-gpu-hud.js · 4 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
 ## src/08bi-gpu-ovl.js · 19 КБ
@@ -7415,8 +7440,8 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/24bb-belt-poi-gpu.js · 7 КБ
   · ориентиры пояса на видеокарте (GPU, ступень 2):1
 
-## src/24bc-belt-hud.js · 11 КБ
-  · кабина пояса на слое приборов #hud (ступень 2, п.2; docs/DESIGN-gpu.md):1
+## src/24bc-belt-hud.js · 29 КБ
+  · кабина пояса на слое #ovl (GPU-3; docs/DESIGN-gpu.md):1
 
 ## src/24c-mode-wanderer-draw.js · 29 КБ
   · «Сорока» изнутри: коридор к стойке (M343):1
@@ -7427,13 +7452,13 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/24d-range.js · 4 КБ
   · стрельбище (M363, §3.2):1
 
-## src/25-cockpit.js · 37 КБ
+## src/25-cockpit.js · 36 КБ
   · кабина: процедурная, статика в offscreen:1
 
 ## src/25a-instr.js · 13 КБ
   · приборы: пять стрелок и невязка:1
 
-## src/25b-tape.js · 12 КБ
+## src/25b-tape.js · 13 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
 ## src/25c-instr-hud.js · 9 КБ
@@ -8312,16 +8337,16 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy-gpugate.js · 28 КБ
   · ворота ступени 1: ровный полёт без #c (docs/DESIGN-gpu.md, Stage 1):1
 
-## tests/91zzzzzzy1-gpugate-belt.js · 13 КБ
+## tests/91zzzzzzy1-gpugate-belt.js · 14 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
 ## tests/91zzzzzzy2-gpu-canvas.js · 14 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 14 КБ
+## tests/91zzzzzzy3-gate2d.js · 15 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-gpu-ovl.js · 9 КБ
+## tests/91zzzzzzy4-gpu-ovl.js · 10 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 7 КБ

@@ -108,8 +108,10 @@ addEventListener("keydown",e=>{
    Рисование вынесено из потолочного блока в отдельную функцию: та же бумага
    висит и в кабине, и узкой полоской в приборной колодке (25c-instr-hud), а
    двух самописцев в игре быть не может. Контекст передаётся, потому что в
-   колодке это свой маленький canvas. */
-function tapePaper(c,x0,y0,w,h){
+   колодке это свой маленький canvas.
+   part — для мастера кабины 24bc: "base" — бумага, края, щель, деления и нули дорожек (под перьями),
+   "roll" — валик (над перьями); перья, перо у края и тень взгляда назад он кладёт сам */
+function tapePaper(c,x0,y0,w,h,part){
   const T=tapeInit();
   /* бумага — вещь, она видна и до первых двух отсчётов: прежде полоса пустовала
      первые три секунды сеанса (первый столбец пишется через 1.6 с), и колодка
@@ -117,6 +119,7 @@ function tapePaper(c,x0,y0,w,h){
   if(w<24||h<8)return;
   const x1=x0+w;
   c.save();
+  if(part!=="roll"){
   /* бумага: слегка тёплая, с продольными краями и следом протяжки */
   c.fillStyle="rgba(188,182,164,.62)";
   c.fillRect(x0,y0,w,h);
@@ -148,7 +151,7 @@ function tapePaper(c,x0,y0,w,h){
     c.beginPath();
     c.moveTo(x0,Math.round(top+hh*.5)+.5);c.lineTo(x1,Math.round(top+hh*.5)+.5);
     c.stroke();
-    if(cols<1)continue;
+    if(cols<1||part)continue;
     c.strokeStyle="rgba(38,44,40,.80)";
     c.beginPath();
     for(let k=0;k<=cols;k++){
@@ -160,6 +163,8 @@ function tapePaper(c,x0,y0,w,h){
     }
     c.stroke();
   }
+  }
+  if(part==="base"){c.restore();return;}
   /* валик протяжки у правого края: без него бумага читается плитой, а не
      полосой, которую тянут с рулона */
   const rw=Math.min(7,w*.08);
@@ -170,6 +175,7 @@ function tapePaper(c,x0,y0,w,h){
   c.fillStyle=rg;c.fillRect(x1-rw,y0,rw,h);
   c.strokeStyle="rgba(150,176,190,.24)";c.lineWidth=1;
   c.beginPath();c.moveTo(x1-rw+.5,y0);c.lineTo(x1-rw+.5,y0+h);c.stroke();
+  if(part){c.restore();return;}
   /* перо: короткая чёрточка у правого края, дрожит на щелчке. Ничего не
      подсвечивает — просто стоит там, где сейчас пишет */
   if(!T.back){
@@ -188,13 +194,18 @@ function tapePaper(c,x0,y0,w,h){
    Лента лежит на том же потолочном блоке, что и панель, левее её. Бумага
    светлее металла — это единственное светлое пятно в рубке, и его видно
    боковым зрением, когда перо частит. */
-function tapeStrip(P,FS){
+/* место ленты на блоке — одно на 2D и на мастер кабины (24bc); null — ленте нет места */
+function tapeStripBox(P){
   const brow=P.brow;
-  if(brow<26)return;
+  if(brow<26)return null;
   const pw=Math.min(P.BW*.52,420), px0=(W-pw)/2;
   /* левый край держится за стойку: свесившись за неё, лента вылезала бы на
      угол остекления, где потолочного блока уже нет */
   const x0=Math.max(P.pw*.5,px0*.16), w=px0-14-x0;
-  if(w<70)return;                          // на узком блоке ленты нет места
-  tapePaper(ctx,x0,5,w,clamp(brow-12,12,38));
+  if(w<70)return null;                     // на узком блоке ленты нет места
+  return {x:x0,y:5,w,h:clamp(brow-12,12,38)};
+}
+function tapeStrip(P,FS,part){
+  const B=tapeStripBox(P);
+  if(B)tapePaper(ctx,B.x,B.y,B.w,B.h,part);
 }

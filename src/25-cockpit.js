@@ -189,12 +189,18 @@ function cockpitTex(id){
   if(CKPT.id===id&&CKPT.w===W&&CKPT.h===H&&CKPT.dpr===DPR&&CKPT.plan)return CKPT;
   const key=id+"|"+Math.round(W)+"x"+Math.round(H)+"|"+DPR.toFixed(2);
   if(CKPT.key===key){CKPT.id=id;CKPT.w=W;CKPT.h=H;CKPT.dpr=DPR;return CKPT;}
-  const P=cockpitPlan(id), K=P.K;
+  const P=cockpitPlan(id);
   const cn=document.createElement("canvas");
   cn.width=Math.max(1,Math.round(W*DPR));cn.height=Math.max(1,Math.round(H*DPR));
   const c=cn.getContext("2d");
   c.setTransform(DPR,0,0,DPR,0,0);
-  const A=hex2rgb(P.acc);
+  cockpitPaint(c,P);
+  CKPT.key=key;CKPT.plan=P;CKPT.tex=cn;CKPT.id=id;CKPT.w=W;CKPT.h=H;CKPT.dpr=DPR;
+  return CKPT;
+}
+/* рама в любой ctx: 2D-холст (cockpitTex, путь без видеокарты) или выпечка GPU-холста (мастер 24bc) */
+function cockpitPaint(c,P){
+  const K=P.K, A=hex2rgb(P.acc);
 
   /* ── корпус кабины: всё, кроме остекления ── */
   c.save();
@@ -395,9 +401,6 @@ function cockpitTex(id){
   const vg=c.createRadialGradient(W/2,H*.42,Math.min(W,H)*.34,W/2,H*.42,Math.max(W,H)*.72);
   vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.34)");
   c.fillStyle=vg;c.fillRect(0,0,W,H);
-
-  CKPT.key=key;CKPT.plan=P;CKPT.tex=cn;CKPT.id=id;CKPT.w=W;CKPT.h=H;CKPT.dpr=DPR;
-  return CKPT;
 }
 function drawCockpit(b,st){
   const C=cockpitTex(G.shipId), P=C.plan, K=P.K, A=hex2rgb(P.acc);
@@ -442,14 +445,10 @@ function drawCockpit(b,st){
      наблюдения. Подписей на ней нет — толкует игрок */
   if(typeof tapeStrip==="function")tapeStrip(P,FS);
 
-  /* ── лампы на боковых стойках: моргают вразнобой ──
-     на слое приборов здесь только погашенная лампа, горящую кладёт свой холстик над ним
-     (24bc, bhudLeds): мигание не перерисовывает кабину */
-  const ledDom=bhudLedDom();
+  /* ── лампы на боковых стойках: моргают вразнобой ── */
   for(let s=-1;s<=1;s+=2)for(let li=0;li<P.leds.length;li++){
     const L=P.leds[li],x=s<0?P.pw*.42:W-P.pw*.42;
     const on=L.on&&Math.sin(G.t*L.sp+L.ph)>-.35;
-    if(ledDom){ctx.fillStyle="rgba(255,255,255,.05)";ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();continue;}
     ctx.fillStyle=on?K.led:"rgba(255,255,255,.05)";
     ctx.beginPath();ctx.arc(x,L.y,L.r,0,TAU);ctx.fill();
     if(on){

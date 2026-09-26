@@ -24,6 +24,7 @@ const GPU_PIPE_KEYS=[
   "gps",
   "ovl",
   "pipe:fld.abil.cone|over",
+  "pipe:fld.belt.sky|over",
   "pipe:fld.gbm|add",
   "pipe:fld.gew|over",
   "pipe:fld.gnb.emi|add",

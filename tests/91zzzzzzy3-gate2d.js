@@ -132,6 +132,17 @@ const GATE2D=[
      if(first){rackDrop();for(let i=0;i<40;i++)tapeSample();}
      G.rack={on:true};return {};},
    probe:["rackDraw"]},
+  {name:"кабина пояса (24bc, 25-cockpit, 25a, 25b): мастер полосами, стекло, приборы, лента",
+   painters:["beltHudPush","drawGlassHUD","drawCockpit","ckgTex","ckgJob","prebake","ckgPaint","ckgSprites","ckgAtlas","ckgLazy","ckgWarm",
+             "ckgFrame","ckgGlass","ckgGlint","ckgPanel","ckgLamps","ckgNode","ckgPut","ckgPutRot","ckT","ckLine",
+             "cockpitPaint","instrPanel","tapeStrip","tapePaper","drawNodeIcon"],
+   place(first){
+     if(first){ckgDrop();for(const k of [...PB.keys()])prebakeDrop(k);}
+     if(G.mode==="belt"&&G.belt)return {};
+     for(let r=0;r<=10;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){const s=getSystem(x,y);if(!s.belt)continue;
+       G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;G.mode="system";enterBelt();G.cargo.ice=3;return {};}
+     return null;},
+   probe:["beltHudPush"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

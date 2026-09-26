@@ -48,8 +48,8 @@ fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
   let dx=dpdx(i.uv);let dy=dpdy(i.uv);   /* производные — до ветвлений (однородный поток) */
   if(i.m.x<.5){a=clamp(min(p.x+.5,i.b.z)-max(p.x-.5,i.b.x),0.,1.)*clamp(min(p.y+.5,i.b.w)-max(p.y-.5,i.b.y),0.,1.);}
   else if(i.m.x<1.5){a=textureLoad(A,vec2i(floor(p-i.b.xy)+i.m.zw),i32(i.m.y),0).r;}
-  else if(i.m.x<2.5){let s=sign(ed(i.t0.xy,i.t0.zw,i.t1.xy));
-    a=clamp(min(ed(i.t0.xy,i.t0.zw,p),min(ed(i.t0.zw,i.t1.xy,p),ed(i.t1.xy,i.t0.xy,p)))*s+.5,0.,1.);}
+  else if(i.m.x<2.5){let s=sign(ed(i.t0.xy,i.t0.zw,i.t1.xy));   /* знак обхода — внутрь каждого ребра, потом min */
+    a=clamp(min(ed(i.t0.xy,i.t0.zw,p)*s,min(ed(i.t0.zw,i.t1.xy,p)*s,ed(i.t1.xy,i.t0.xy,p)*s))+.5,0.,1.);}
   else if(i.m.x<3.5){return textureSampleGrad(T,sm,i.uv,dx,dy)*i.c;}
   else if(i.m.x<4.5){   /* график: x0=t0.x, шаг t0.y, полутолщина m.y, точки с m.z (от S.z), их m.w */
     let x0=i.t0.x;let st=i.t0.y;let hw=i.m.y;let o=i32(i.m.z);let n=i32(i.m.w);
@@ -63,13 +63,13 @@ fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
     if(i.t1.y>.5){a=clamp(.5-d,0.,1.);}else{a=clamp(i.t1.x-abs(d)+.5,0.,1.);}}
   return i.c*a;}`;
 function ovNd(){return OVL.cv&&W>0?OVL.cv.width/W:gpuHudDpr();}
-/* слой: создаётся при первой фишке, сразу после #hud (подписи кабины пояса, #labels, — между ними) */
+/* слой: создаётся при первой фишке, сразу после #hud */
 function ovCanvas(){
   if(!GPU.ok||!GPU.dev||typeof document==="undefined"||!document.body)return null;
   let c=OVL.cv;
   if(!c){c=OVL.cv=document.createElement("canvas");c.id="ovl";
     c.style.cssText="position:fixed;left:0;top:0;pointer-events:none;display:none";
-    ((typeof LABDOM!=="undefined"&&LABDOM.box)||GPU.ui||GPU.cv).after(c);}
+    (GPU.ui||GPU.cv).after(c);}
   if(OVL.dev!==GPU.dev){OVL.cx=c.getContext("webgpu");OVL.cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
     OVL.dev=GPU.dev;OVL.P=null;OVL.buf=null;OVL.bg=null;}
   const nd=gpuHudDpr(),w=Math.max(2,Math.round(W*nd)),h=Math.max(2,Math.round(H*nd));
