@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 642 · символов верхнего уровня: 6632
+Файлов: 642 · символов верхнего уровня: 6634
 
 ## СИМВОЛЫ
 
@@ -70,7 +70,7 @@ ALLY_THR                     src/12a-crew.js:702
 ALL_NAMES                    tests/90-harness.js:93
 AMMO_BATCH                   src/16b-missile.js:59
 AMMO_COST                    src/16b-missile.js:58
-AMMO_KEYS                    src/02-world.js:114
+AMMO_KEYS                    src/02-world.js:131
 ANCHOR_CACHE                 src/05-parts.js:253
 APPETITE                     src/12ab-hold.js:26-33
 APPETITE_ADD                 src/12ab-hold.js:24
@@ -125,7 +125,7 @@ BEAST_SHAPES                 src/20f-fauna.js:37
 BELT_AVLIM                   src/24-mode-belt.js:69
 BELT_HALF                    src/24-mode-belt.js:67
 BELT_POI                     src/24b-belt-poi.js:13-19
-BELT_RES                     src/02-world.js:143
+BELT_RES                     src/02-world.js:160
 BELT_STROKES                 src/24-mode-belt.js:35
 BFX                          src/13z-gpu-combat.js:176
 BG                           src/16-flight.js:3
@@ -446,9 +446,9 @@ FAR_EAT_LAND                 src/12-economy.js:31
 FAR_EAT_YARD                 src/12-economy.js:30
 FAR_FP_BEFORE                tests/91zzzzk3-far.js:5
 FAR_GRADE                    src/06d-far.js:22
-FAR_KEYS                     src/02-world.js:124
-FAR_RES                      src/02-world.js:96-109
-FAR_ROLL                     src/02-world.js:125
+FAR_KEYS                     src/02-world.js:141
+FAR_RES                      src/02-world.js:113-126
+FAR_ROLL                     src/02-world.js:142
 FAR_SALT                     src/06d-far.js:20
 FAR_STALL_R                  src/12-economy.js:82
 FAR_TAKE_SALT                src/06e-far-take.js:14
@@ -457,7 +457,7 @@ FAR_UNITS                    src/06d-far.js:23
 FAR_VOICE                    src/12-economy.js:41-53
 FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
-FAUNA_RES                    src/02-world.js:120
+FAUNA_RES                    src/02-world.js:137
 FG_MAN                       src/21b-surface-deco.js:277
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
@@ -855,7 +855,7 @@ H_SILENT                     tests/91zzzzzzz-hands.js:39-41
 ICO_F                        src/24-mode-belt.js:10
 ICO_V                        src/24-mode-belt.js:4-9
 IND_FEE                      src/12ac-bld.js:111
-IND_KEYS                     src/02-world.js:123
+IND_KEYS                     src/02-world.js:140
 INSTR                        src/25a-instr.js:19-53
 INSTR_BY_ID                  src/25a-instr.js:55
 INSTR_KEYS                   src/25a-instr.js:54
@@ -1099,7 +1099,7 @@ OPTS_BOOT                    tests/90-harness.js:203
 OPT_TABS                     src/27-ui-ship.js:337
 ORDERS                       src/12a-crew.js:149-155
 ORDER_WIN                    src/12aa-need.js:76
-ORE_KEYS                     src/02-world.js:128
+ORE_KEYS                     src/02-world.js:145
 ORE_NODE_W                   src/23-mode-dig.js:12
 OVL                          src/08bi-gpu-ovl.js:17
 OVL_N                        src/08bi-gpu-ovl.js:20
@@ -1152,7 +1152,7 @@ PAR_LAST                     src/12z-parrot-acts.js:202
 PAR_WGSL                     src/12y1-parrot-gpu.js:327
 PAR_Z                        src/12y1-parrot-gpu.js:130
 PASSPORT_KEYS                src/17i1-passport.js:6
-PAX_KEYS                     src/02-world.js:117
+PAX_KEYS                     src/02-world.js:134
 PB_F                         src/17a0-prebake.js:19
 PB_K                         src/24a-mode-raid.js:110
 PB_MS                        src/17a0-prebake.js:18
@@ -1240,7 +1240,7 @@ PROBE_MAX                    src/25m-probe.js:30
 PROBE_SHOW                   src/21a8-base-world.js:29
 PROBE_SPREAD                 src/25m-probe.js:29
 PROBE_WAIT                   src/25m-probe.js:28
-PROFILE                      src/02-world.js:129-142
+PROFILE                      src/02-world.js:146-159
 PROMPT_RECT                  src/08-state.js:114
 PR_VERBS                     tests/91zzzzzi-promise.js:34-44
 PU_CELLS                     tests/91zzzzzd-pure.js:28
@@ -1319,7 +1319,7 @@ RARE_BY_WHERE                src/12m-rare.js:76
 RARE_FX                      src/12m-rare.js:38-51
 RARE_GRADES                  src/12m-rare.js:52-58
 RARE_NOTE                    src/12m-rare.js:68
-RARE_RES                     src/02-world.js:121
+RARE_RES                     src/02-world.js:138
 RARE_SALT                    src/12m-rare.js:77
 RARE_WHERE                   src/12m-rare.js:26-33
 RARE_WHERE_IX                src/12m-rare.js:34
@@ -1368,7 +1368,8 @@ RES_AUTO                     src/08-state.js:193
 RES_DOWN_K                   src/28-loop.js:226
 RES_DOWN_WIN                 src/28-loop.js:227
 RES_HOLD_MS                  src/28-loop.js:228
-RES_KEYS                     src/02-world.js:111
+RES_KEYS                     src/02-world.js:128
+RES_TXT                      src/02-world.js:93
 RES_WAIT0                    src/28-loop.js:229
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19-23
@@ -1560,7 +1561,7 @@ STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
 STAPEL_UI                    src/26e1-stapel.js:162
 STAPEL_YARD                  src/26e1-stapel.js:17-24
-STAR_CLASS                   src/02-world.js:175-181
+STAR_CLASS                   src/02-world.js:192-198
 STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 STAR_MV                      src/16-flight.js:29
@@ -1668,7 +1669,7 @@ TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32-45
 TRACE_SC                     src/11ag-trace.js:191
 TRACK_LIFE                   src/21-mode-surface.js:6
-TRADE_KEYS                   src/02-world.js:126
+TRADE_KEYS                   src/02-world.js:143
 TRAIL                        src/16-flight.js:233
 TRAIL_AMAX                   src/16-flight.js:355
 TRAIL_CHAR                   src/16-flight.js:241-248
@@ -1678,7 +1679,7 @@ TRAIL_TINT                   src/16-flight.js:256
 TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
 TRIP_N                       tests/91zzzzzzzzc-trips.js:11
-TYPES                        src/02-world.js:151-174
+TYPES                        src/02-world.js:168-191
 UIK                          src/08-state.js:20
 UI_BOOT                      tests/90-harness.js:195
 UI_SEL_BOOT                  tests/90-harness.js:230
@@ -5534,6 +5535,7 @@ resEma                       src/28-loop.js:234
 resModeCap                   src/28-loop.js:257-262
 resSay                       src/28-loop.js:243-246
 resTarget                    src/28-loop.js:239-242
+resTxt                       src/02-world.js:94-105
 resW                         src/06f-far-props.js:12
 resWait                      src/28-loop.js:235
 rescueActivityBeat           src/16c-rescue.js:69-76
@@ -6653,9 +6655,9 @@ zoomTo                       src/15-input.js:350
 
 ## src/01a-crashlog.js · 7 КБ
 
-## src/02-world.js · 18 КБ
+## src/02-world.js · 19 КБ
   · ресурсы:1
-  · миры:145
+  · миры:162
 
 ## src/02a-worldmix.js · 8 КБ
   · смешанные миры:1

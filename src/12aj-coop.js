@@ -219,7 +219,7 @@ function coopCounterBlock(){
     const maxN=Math.min(left,free);
     const q0=coopBuyQuote(G.sys,k,10);
     const r=el("div","row");
-    r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за первый десяток, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
+    r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за первый десяток, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
     const box=el("div","modbtns");
     for(const n of [10,50]){
       const nn=Math.min(n,maxN);

@@ -14,10 +14,14 @@ could ever save.
 
 - **Stage-6 picture pass.** The shipyard's built-in cell in the КБ drawing is now a pale blueprint stamp (fill at .15, dashed edge, letters in the same pale #dce8f4), quieter than the ochre frames of the things. The «Иней» cabinets in the base cross-section drop a step from pure white towards the wall tone and fall off under the lamp: lit at the top, about 28 % darker at the floor. The display and the padlock are unchanged.
 
+- **§11 small things.** The belt entry note folds the icy ring into the ore line («руда: … · и кристаллы льда»), so on the phone's three-line message «тяните по стеклу — обзор» is no longer pushed out. A good's name in lists and prices takes its own text shade (`resTxt`): the same hue mixed towards light until it reads at 4.5:1 on the panel. Тёмное стекло, углеволокно, графит and чернозём change; the rest keep their colour.
+- Closed as already done on this branch: station shuttles draw (`t.mk`, came with main), and chips avoid each other while gliding to their slots (the `chipDrawn` pass, 24.09).
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M464: only the Дом водителя sells a service (the night); the other six give a paragraph, a rumour and a keepsake. Trade or jobs inside a giant were left for a later pass.
 - M464: the giant's length for the ruler is one fixed number (GIANT_LEN 1300) for all seven, not per body.
 - M464: the six arm giants left their old ring positions (only the moon stayed); a save that already found one keeps `giantsSeen`, but its landmark is somewhere else on the map now.
+- §11 «planet angles follow the frame rate»: closed with no code change. Since the fixed quanta, `dt` is `steps × QUANT_DT` taken from real time, so `ang` already follows game time as `G.t` does. The only difference from `ang0 + w·G.t` is that orbits stand still on the surface, in the map and in the other off-system modes. A pure function would make the planet jump away from a ship taking off, and the clamp depends on the hull's thrust. `ang` is not in the save.
 
 ## Unreleased
 

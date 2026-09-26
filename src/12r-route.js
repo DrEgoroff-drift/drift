@@ -370,7 +370,7 @@ function renderRoute(){
     if(inLeg&&inLeg.k&&G.cargo[inLeg.k]>0){
       const k=inLeg.k,q=G.cargo[k],price=marketFor(G.sys)[k];
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · сдать <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+
+      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · сдать <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+
         "</span> ×"+q+"</b><s>здесь "+price+" кр/ед · по записи ждали "+routeForkTxt(inLeg.sell,inLeg.forkB)+
         (inLeg.forkB?" · записи "+Math.max(0,celDay()-inLeg.dayB)+" дн.":"")+"</s>"));
       r.appendChild(el("div","qt",(q*price).toLocaleString("ru")+"<s>кр</s>"));
@@ -386,7 +386,7 @@ function renderRoute(){
       const free=Math.max(0,stat().cargoMax-held()),want=Math.min(stat().cargoMax,free);
       const afford=Math.floor(G.credits/Math.max(1,ask)),can=Math.max(0,Math.min(want,afford));
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · взять <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+
+      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · взять <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+
         "</span> ×"+want+"</b><s>"+ask+" кр/ед · на «"+outLeg.to.station.name+"» ждут "+routeForkTxt(outLeg.sell,outLeg.forkB)+
         " · трюм "+held()+"/"+stat().cargoMax+
         (can<want?(can?" · денег хватит на "+can+" из "+want:(free?" · денег нет":" · трюм полон")):"")+"</s>"));
@@ -405,7 +405,7 @@ function renderRoute(){
     const head="<b>"+(i+1)+". «"+l.from.station.name+"» → «"+l.to.station.name+"»</b>";
     const age=Math.max(0,celDay()-Math.min(l.dayA,l.dayB));
     r.appendChild(el("div","nm",head+"<s>"+(l.k
-      ?"<span style='color:"+RES[l.k].col+"'>"+RES[l.k].ru+"</span> "+routeForkTxt(l.buy,l.forkA)+" → "+routeForkTxt(l.sell,l.forkB)+
+      ?"<span style='color:"+resTxt(l.k)+"'>"+RES[l.k].ru+"</span> "+routeForkTxt(l.buy,l.forkA)+" → "+routeForkTxt(l.sell,l.forkB)+
        " кр · "+Math.round(l.rel*100)+"% · "+l.fuel+" топлива"+(age?" · записи "+age+" дн.":"")
       :"цены сошлись — везти нечего · "+l.fuel+" топлива")+"</s>"));
     r.appendChild(el("div","qt",(l.net>0?"+"+l.net.toLocaleString("ru"):"—")+

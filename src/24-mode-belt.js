@@ -113,7 +113,7 @@ function enterBelt(){
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   if(typeof farReadShow==="function")farReadShow(farHere("belt"));   /* залежь — табличкой прибора, шкалой (D12) */
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
-    (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
+    (beltIcy(B)?" · и кристаллы льда":"")+   /* в строку руды: на телефоне #msg — три строки, четвёртая выталкивала «обзор» */
     (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
       :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
 }

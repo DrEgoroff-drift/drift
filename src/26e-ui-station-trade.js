@@ -183,7 +183,7 @@ function stTabMarket(st){
       const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
       if(RES[k].far)tg+=fv?" · "+fv[0]+": "+fv[1]:(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
+      r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
       r.appendChild(el("div","qt",q+"<s>"+Math.round(Q.revenue).toLocaleString("ru")+" кр</s>"));
       const b=el("button","act"+(Q.nA?" gold":""),"ПРОДАТЬ");
@@ -210,7 +210,7 @@ function stTabMarket(st){
     {const S=(typeof farStall==="function")?farStall(G.sys):null;
       if(S&&S.left){
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b>ИЗ ДАЛИ · <span style='color:"+RES[S.k].col+"'>"+RES[S.k].ru+"</span> ×"+S.left+
+        r.appendChild(el("div","nm","<b>ИЗ ДАЛИ · <span style='color:"+resTxt(S.k)+"'>"+RES[S.k].ru+"</span> ×"+S.left+
           "</b><s>"+S.ask.toLocaleString("ru")+" кр/ед · привезли с кромки, партия до конца трёх суток · «дорого, зато не лететь»</s>"));
         r.appendChild(el("div","qt",S.ask.toLocaleString("ru")+"<s>кр</s>"));
         const b=el("button","act","КУПИТЬ 1");
@@ -232,7 +232,7 @@ function stTabMarket(st){
         const q=G.cargo[k];if(!q)continue;
         const r=el("div","row");
         /* сперва «зачем», потом «откуда»: игрок и так знает, где это взял */
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+        r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
           (RES[k].use?RES[k].use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
@@ -245,7 +245,7 @@ function stTabMarket(st){
         const q=G.cargo[k];if(!q)continue;
         const e=(typeof holdNearestEater==="function")?holdNearestEater(k):null;
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+        r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
           (e?(e.d?"едят на «"+e.name+"» · "+e.d+" "+pl3(e.d,"прыжок","прыжка","прыжков"):"едят здесь — вкладка СТРОЙКА"):"едока пока нет — поставьте цех, который это ест")+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
@@ -254,7 +254,7 @@ function stTabMarket(st){
     $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
     for(const k of TRADE_KEYS){
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b>"));
+      r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b>"));
       r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
       $body.appendChild(r);
     }

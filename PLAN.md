@@ -315,25 +315,10 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
-- [ ] **Chips on the way to their slot avoid each other:** `CHIP_POS` glides a chip to its logical slot without a
-  collision check, so two chips crossing lie on each other mid-way (seen 23.09 after a teleport). The law «chips never
-  lie on each other or on the HUD» holds in motion too (main, not the gpu branch).
-- [ ] **Station shuttles never drawn (main):** `sysTraffic` (17f) set `by` twice — the arc end's y and then the
-  maker key — so every shuttle sat at NaN and M309 traffic has been invisible since M454. Fixed on the gpu branch
-  (maker is `t.mk`); port the one-line fix to main.
-- [ ] **Planet angles follow the frame rate, not the game clock:** `updateSystem` does `p.ang+=angRate(…)*dt`
-  (moons and the station alike), so where a planet stands depends on how many frames ran — two devices see
-  different worlds. Make the angle a pure function of game time (`ang0+spd*G.t`, same clamp). Check the save
-  first: if `ang` is written there, the save format does not move — derive around it. Not on the gpu branch.
-- [ ] **The belt entry on the phone:** `#msg` is clamped to 3 lines (`-webkit-line-clamp:3`), and an icy
-  ring's fourth line pushes out «тяните по стеклу — обзор», the only hint of how to look around. Fold the
-  ice note into the ore line.
 - [ ] **Whose voice on the approach:** the lane — billboard, hotel, parked fleet — dresses by the station's
   builder (`st.by` in `sysLane`), while laws and stamps go by the land's owner (`stampOwnerAt`); in Итлуора
   a ГЛАВТРАССА billboard stood in Орднунг land. Decide which one speaks (M454 gives the body to the
   builder, M460 gives the sign to the owner).
-- [ ] **A good's colour is also a text colour:** `RES[k].col` colours words in lists; тёмное стекло
-  `#3c4a66` reads at about 2:1 on the dark UI, осмий is borderline — a text shade per good.
 - [ ] **`03e-hull-draw.js` grew to 49 KB** with the yard marks: move the hull's marks (scars, transit plate,
   seal, yard mark) to their own module along that seam.
 - [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,

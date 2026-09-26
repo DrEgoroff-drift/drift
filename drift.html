@@ -2880,6 +2880,23 @@ const RES={
   /* срез чайного гриба с базы (M497): в конце таблицы, чтобы старый мир не сдвинулся */
   grib:     {ru:"Чайный гриб",col:"#c8a060",price:90,made:1}   /* made: делается на базе, станции его не генерируют */
 };
+/* цвет товара в тексте (§11): RES[k].col — цвет самого товара, и тёмные (тёмное стекло,
+   углеволокно, графит) на тёмной панели читались едва ли 2:1. Для слов — тот же тон,
+   подмешанный к светлому до контраста 4.5 с фоном панели; светлые остаются как были.
+   Считается один раз на товар */
+const RES_TXT={};
+function resTxt(k){
+  if(RES_TXT[k])return RES_TXT[k];
+  const R=RES[k];if(!R)return "#cfd6dd";
+  const lum=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2]);};
+  const bg=lum([16,21,27]),c0=hex2rgb(R.col),W=[238,242,246];
+  let out=R.col;
+  for(let t=0;t<=1.0001;t+=.1){
+    const c=c0.map((v,i)=>Math.round(v+(W[i]-v)*t));
+    if((lum(c)+.05)/(bg+.05)>=4.5){out=t?"#"+c.map(v=>v.toString(16).padStart(2,"0")).join(""):R.col;break;}
+  }
+  return RES_TXT[k]=out;
+}
 /* ── десять дальних товаров (M465, DESIGN-resources §2) ──
    Чем дальше от ядра, тем дороже — в сердце: ценность делает обратная дорога.
    У каждого — полоса (от ядра, в секторах), глагол добычи, одно свойство и
@@ -23608,7 +23625,7 @@ function appetiteBlock(){
   $body.appendChild(el("div","sec","БЕРЁТ · ПЕРВЫЕ ЕДИНИЦЫ В СМЕНУ — С НАДБАВКОЙ"));
   for(const k in A){
     const ate=appetiteAte(G.sys,k),left=A[k]-ate,have=G.cargo[k]|0;
-    $body.appendChild(el("div","row","<div class='nm'><b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+    $body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
       (left>0?"ещё "+left+" из "+A[k]+" по "+appetitePrice(G.sys,k)+" кр":"на эту смену взяли всё · через смену снова")+
       " · обычная "+marketFor(G.sys)[k]+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
   }
@@ -23803,7 +23820,7 @@ function indPrice(k){
 function bldCostTxt(cost){
   const L=[];
   if(cost.credits)L.push(cost.credits.toLocaleString("ru")+" кр");
-  for(const k in cost)if(k!=="credits"&&RES[k])L.push("<span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+" "+cost[k]+"</span>");
+  for(const k in cost)if(k!=="credits"&&RES[k])L.push("<span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+" "+cost[k]+"</span>");
   return L.join(" · ");
 }
 function bldIoTxt(def){
@@ -25749,7 +25766,7 @@ function coopCounterBlock(){
     const maxN=Math.min(left,free);
     const q0=coopBuyQuote(G.sys,k,10);
     const r=el("div","row");
-    r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за первый десяток, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
+    r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за первый десяток, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
     const box=el("div","modbtns");
     for(const n of [10,50]){
       const nn=Math.min(n,maxN);
@@ -37574,7 +37591,7 @@ function renderRoute(){
     if(inLeg&&inLeg.k&&G.cargo[inLeg.k]>0){
       const k=inLeg.k,q=G.cargo[k],price=marketFor(G.sys)[k];
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · сдать <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+
+      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · сдать <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+
         "</span> ×"+q+"</b><s>здесь "+price+" кр/ед · по записи ждали "+routeForkTxt(inLeg.sell,inLeg.forkB)+
         (inLeg.forkB?" · записи "+Math.max(0,celDay()-inLeg.dayB)+" дн.":"")+"</s>"));
       r.appendChild(el("div","qt",(q*price).toLocaleString("ru")+"<s>кр</s>"));
@@ -37590,7 +37607,7 @@ function renderRoute(){
       const free=Math.max(0,stat().cargoMax-held()),want=Math.min(stat().cargoMax,free);
       const afford=Math.floor(G.credits/Math.max(1,ask)),can=Math.max(0,Math.min(want,afford));
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · взять <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+
+      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · взять <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+
         "</span> ×"+want+"</b><s>"+ask+" кр/ед · на «"+outLeg.to.station.name+"» ждут "+routeForkTxt(outLeg.sell,outLeg.forkB)+
         " · трюм "+held()+"/"+stat().cargoMax+
         (can<want?(can?" · денег хватит на "+can+" из "+want:(free?" · денег нет":" · трюм полон")):"")+"</s>"));
@@ -37609,7 +37626,7 @@ function renderRoute(){
     const head="<b>"+(i+1)+". «"+l.from.station.name+"» → «"+l.to.station.name+"»</b>";
     const age=Math.max(0,celDay()-Math.min(l.dayA,l.dayB));
     r.appendChild(el("div","nm",head+"<s>"+(l.k
-      ?"<span style='color:"+RES[l.k].col+"'>"+RES[l.k].ru+"</span> "+routeForkTxt(l.buy,l.forkA)+" → "+routeForkTxt(l.sell,l.forkB)+
+      ?"<span style='color:"+resTxt(l.k)+"'>"+RES[l.k].ru+"</span> "+routeForkTxt(l.buy,l.forkA)+" → "+routeForkTxt(l.sell,l.forkB)+
        " кр · "+Math.round(l.rel*100)+"% · "+l.fuel+" топлива"+(age?" · записи "+age+" дн.":"")
       :"цены сошлись — везти нечего · "+l.fuel+" топлива")+"</s>"));
     r.appendChild(el("div","qt",(l.net>0?"+"+l.net.toLocaleString("ru"):"—")+
@@ -83685,7 +83702,7 @@ function enterBelt(){
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   if(typeof farReadShow==="function")farReadShow(farHere("belt"));   /* залежь — табличкой прибора, шкалой (D12) */
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
-    (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
+    (beltIcy(B)?" · и кристаллы льда":"")+   /* в строку руды: на телефоне #msg — три строки, четвёртая выталкивала «обзор» */
     (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
       :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
 }
@@ -86475,7 +86492,7 @@ function ckgFrame(T,P,FS,b,proj,st,m){
   const tx=g.tx,pad=g.pad;
   if(b.lock){
     const dd=Math.hypot(b.lock.x-b.x,b.lock.y-b.y,b.lock.z-b.z)-b.lock.r,far=dd>CUT_RANGE;
-    ckT(tx,pad+12*FS,RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,fnt(12),RES[b.lock.res].col);
+    ckT(tx,pad+12*FS,RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,fnt(12),resTxt(b.lock.res));
     ckT(tx,pad+24*FS,Math.round(dd)+" М"+(far?"   ДАЛЕКО":""),fnt(8),far?"rgba(255,107,87,.9)":"rgba(93,115,130,.9)");
     ovRect(tx,pad+30*FS,tx+104,pad+30*FS+4,"rgba(255,255,255,.08)");
     ovRect(tx,pad+30*FS,tx+104*clamp(b.prog,0,1),pad+30*FS+4,"#f2b25c");
@@ -93345,7 +93362,7 @@ function renderTabBody(){
     $body.appendChild(el("div","sec","ОБМЕН НА РЕСУРСЫ — БЕЗ ДЕНЕГ, ТОЛЬКО ГРУЗ ИЗ ТРЮМА"));
     for(const k in BARTER){
       const item=BARTER[k],done=G.barter.has(k);
-      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+RES[rk].col+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
+      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+resTxt(rk)+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
       const have=Object.keys(item.cost).every(rk=>G.cargo[rk]>=item.cost[rk]);
       const r=el("div","row");
       r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+item.ru+"</b><s>"+item.note+"<br>"+costTxt+"</s>"));
@@ -94188,7 +94205,7 @@ function renderSiteTab(){
       for(const k in def.makes){
         const have=Math.floor(B.got[k]||0),price=srcPrice(sys,k);
         const rr=el("div","row");
-        rr.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+" в запасе: "+have+"</b><s>по "+price+" кр — 0.7 цены · копится до "+
+        rr.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+" в запасе: "+have+"</b><s>по "+price+" кр — 0.7 цены · копится до "+
           def.makes[k]*B.lvl*HOLD_CAP_SHIFTS*holdCapMul(sys.key)+"</s>"));
         const free=Math.max(0,stat().cargoMax-held()),can=Math.min(have,free,Math.floor(G.credits/price));
         const b=el("button","act"+(can?" gold":""),can?"ВЗЯТЬ ×"+can:"НЕЧЕГО");
@@ -94205,7 +94222,7 @@ function renderSiteTab(){
         const want=Math.min(have,bldWant(sys,k));
         const price=RES[k].ind?indPrice(k):marketFor(sys)[k];
         const rr=el("div","row");
-        rr.appendChild(el("div","nm","<b>Сдать в цех: <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+"</span> ×"+have+"</b><s>"+
+        rr.appendChild(el("div","nm","<b>Сдать в цех: <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+"</span> ×"+have+"</b><s>"+
           (want?"возьмёт "+want+" по "+price+" кр · за вами запишут "+Object.keys(def.makes).map(kk=>RES[kk].ru.toLowerCase()).join(", "):"бункер полон — приходите через смену")+"</s></div>"));
         const b=el("button","act"+(want?" gold":""),"СДАТЬ");
         b.disabled=!want;
@@ -94220,7 +94237,7 @@ function renderSiteTab(){
       const got=Object.keys(B.got).filter(k=>Math.floor(B.got[k])>0);
       const cap=Object.keys(def.makes).map(k=>RES[k].ru.toLowerCase()+" до "+def.makes[k]*B.lvl*HOLD_CAP_SHIFTS*holdCapMul(sys.key)).join(", ");
       const rr=el("div","row");
-      rr.appendChild(el("div","nm","<b>Ваш пай: "+(got.length?got.map(k=>"<span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k])+"</span>").join(", "):"пока ничего")+
+      rr.appendChild(el("div","nm","<b>Ваш пай: "+(got.length?got.map(k=>"<span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k])+"</span>").join(", "):"пока ничего")+
         "</b><s>лежит здесь под вашим именем · "+cap+" · дальше — ничьё</s></div>"));
       const b=el("button","act"+(got.length?" gold":""),"ЗАБРАТЬ");
       b.disabled=!got.length;
@@ -94530,7 +94547,7 @@ function stTabMarket(st){
       const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
       if(RES[k].far)tg+=fv?" · "+fv[0]+": "+fv[1]:(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
+      r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
       r.appendChild(el("div","qt",q+"<s>"+Math.round(Q.revenue).toLocaleString("ru")+" кр</s>"));
       const b=el("button","act"+(Q.nA?" gold":""),"ПРОДАТЬ");
@@ -94557,7 +94574,7 @@ function stTabMarket(st){
     {const S=(typeof farStall==="function")?farStall(G.sys):null;
       if(S&&S.left){
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b>ИЗ ДАЛИ · <span style='color:"+RES[S.k].col+"'>"+RES[S.k].ru+"</span> ×"+S.left+
+        r.appendChild(el("div","nm","<b>ИЗ ДАЛИ · <span style='color:"+resTxt(S.k)+"'>"+RES[S.k].ru+"</span> ×"+S.left+
           "</b><s>"+S.ask.toLocaleString("ru")+" кр/ед · привезли с кромки, партия до конца трёх суток · «дорого, зато не лететь»</s>"));
         r.appendChild(el("div","qt",S.ask.toLocaleString("ru")+"<s>кр</s>"));
         const b=el("button","act","КУПИТЬ 1");
@@ -94579,7 +94596,7 @@ function stTabMarket(st){
         const q=G.cargo[k];if(!q)continue;
         const r=el("div","row");
         /* сперва «зачем», потом «откуда»: игрок и так знает, где это взял */
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+        r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
           (RES[k].use?RES[k].use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
@@ -94592,7 +94609,7 @@ function stTabMarket(st){
         const q=G.cargo[k];if(!q)continue;
         const e=(typeof holdNearestEater==="function")?holdNearestEater(k):null;
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+        r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
           (e?(e.d?"едят на «"+e.name+"» · "+e.d+" "+pl3(e.d,"прыжок","прыжка","прыжков"):"едят здесь — вкладка СТРОЙКА"):"едока пока нет — поставьте цех, который это ест")+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
@@ -94601,7 +94618,7 @@ function stTabMarket(st){
     $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
     for(const k of TRADE_KEYS){
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b>"));
+      r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b>"));
       r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
       $body.appendChild(r);
     }

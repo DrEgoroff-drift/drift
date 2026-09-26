@@ -666,7 +666,7 @@ function renderTabBody(){
     $body.appendChild(el("div","sec","ОБМЕН НА РЕСУРСЫ — БЕЗ ДЕНЕГ, ТОЛЬКО ГРУЗ ИЗ ТРЮМА"));
     for(const k in BARTER){
       const item=BARTER[k],done=G.barter.has(k);
-      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+RES[rk].col+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
+      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+resTxt(rk)+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
       const have=Object.keys(item.cost).every(rk=>G.cargo[rk]>=item.cost[rk]);
       const r=el("div","row");
       r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+item.ru+"</b><s>"+item.note+"<br>"+costTxt+"</s>"));

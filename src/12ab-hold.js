@@ -124,7 +124,7 @@ function appetiteBlock(){
   $body.appendChild(el("div","sec","БЕРЁТ · ПЕРВЫЕ ЕДИНИЦЫ В СМЕНУ — С НАДБАВКОЙ"));
   for(const k in A){
     const ate=appetiteAte(G.sys,k),left=A[k]-ate,have=G.cargo[k]|0;
-    $body.appendChild(el("div","row","<div class='nm'><b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+    $body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
       (left>0?"ещё "+left+" из "+A[k]+" по "+appetitePrice(G.sys,k)+" кр":"на эту смену взяли всё · через смену снова")+
       " · обычная "+marketFor(G.sys)[k]+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
   }

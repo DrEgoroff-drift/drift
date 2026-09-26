@@ -322,7 +322,7 @@ function ckgFrame(T,P,FS,b,proj,st,m){
   const tx=g.tx,pad=g.pad;
   if(b.lock){
     const dd=Math.hypot(b.lock.x-b.x,b.lock.y-b.y,b.lock.z-b.z)-b.lock.r,far=dd>CUT_RANGE;
-    ckT(tx,pad+12*FS,RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,fnt(12),RES[b.lock.res].col);
+    ckT(tx,pad+12*FS,RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,fnt(12),resTxt(b.lock.res));
     ckT(tx,pad+24*FS,Math.round(dd)+" М"+(far?"   ДАЛЕКО":""),fnt(8),far?"rgba(255,107,87,.9)":"rgba(93,115,130,.9)");
     ovRect(tx,pad+30*FS,tx+104,pad+30*FS+4,"rgba(255,255,255,.08)");
     ovRect(tx,pad+30*FS,tx+104*clamp(b.prog,0,1),pad+30*FS+4,"#f2b25c");
