@@ -817,7 +817,20 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   K=4 speckles like tin. Pairs at 760 vs 71561077 (scratchpad `pair_oc_*_760.png`, crops `mat_*`): toward
   the star max|Δ| 182, 0.07 % > 8 — panel seams and the canopy glint; away 140 / 0.04 %, in a planet's shadow
   149 / 0.04 % — nothing lights where no light is. Tour GREEN, -Browser green.
-  Next: merge origin/main, then the candidate.
+- **Hull material: emission and gloss masks, every lit master** (26.09): the material texture is twice as
+  wide — left half the relief as above, right half masks × coverage (a = coverage, GST divides): r emission,
+  g metal, b glass, from master level 0 (4 subsamples a texel), mipped as averages, so far off a lamp does
+  not drown in the paint around it. Emission = a saturated or white spot BRIGHTER than its ~3-unit
+  surround (master level l+3): a paint stripe is darker than the grey plating, so it is not a lamp — the
+  0.465.0 pink-stripe case — while windows and nav lights are, now on own hulls too (hull mode glows by
+  the mask only). Carriers: own hulls, fleet `cnA`, pirates (12i), barges (12l), «Сорока» (12v), the
+  station's bottom layer and spinning parts (17c3; upper layers light by the shared master t2, no
+  material). Memory: +1× the master (4 B/px). Pairs at 760 vs 58ffd4ca: ships + pirate + barge toward the
+  star 191 / 0.16 %, away 129 / 0.11 %, in a planet's shadow 173 / 0.10 %; station toward 200 / 0.44 %,
+  away 198 / 0.42 %. Barge containers stop glowing as lamps in the dark and take the star's rim when lit;
+  pirate and station panels read in relief, station lamps are crisper, own amber lights glow. New browser
+  suite «материал корпуса: пираты, баржи, свои…». Tour GREEN, -Browser green.
+  Next: merge origin/main once 0.466.0 is out, then candidate 0.467.0 (+ gpu2-lit).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

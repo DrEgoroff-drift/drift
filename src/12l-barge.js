@@ -535,7 +535,7 @@ function bargeArtOf(b){
       ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
       ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();
     }
-  });
+  },{mat:BARGE_SS});   /* mat — материал корпуса (08cd) */
   const art={cn,rad,L,hw,lights,cols:C};
   return artPut(BARGE_ART,key,art,BARGE_KEEP);
 }

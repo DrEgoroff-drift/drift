@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 633 · символов верхнего уровня: 6371
+Файлов: 633 · символов верхнего уровня: 6372
 
 ## СИМВОЛЫ
 
@@ -1585,7 +1585,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:502-537
+drawStation                  src/17c-system-draw.js:506-541
 drawStationBody              src/17c-system-draw.js:167-370
 drawStationMods              src/17a-station-mod.js:207-210
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -2086,8 +2086,8 @@ GC_COL                       src/08ca-gpu-canvas.js:31
 GC_DEF                       src/08ca-gpu-canvas.js:85
 GC_GLYPHS                    src/08cb-gpu-text.js:17-50
 GC_KEYS                      src/08ca-gpu-canvas.js:90
-GC_MAT_K                     src/08cd-gpu-mat.js:11
-GC_MAT_WGSL                  src/08cd-gpu-mat.js:12
+GC_MAT_K                     src/08cd-gpu-mat.js:18
+GC_MAT_WGSL                  src/08cd-gpu-mat.js:19
 GC_MIP_WGSL                  src/08ca-gpu-canvas.js:330
 GC_MISS                      src/08ca-gpu-canvas.js:27
 GC_ONCE                      src/08ca-gpu-canvas.js:464
@@ -2115,12 +2115,12 @@ GcGrad                       src/08ca-gpu-canvas.js:66-84
 gcImg                        src/08ca-gpu-canvas.js:284-362
 gcInv                        src/08ca-gpu-canvas.js:59
 gcLay                        src/08ca-gpu-canvas.js:353-362
-gcMat                        src/08cd-gpu-mat.js:35-46
-gcMatDesc                    src/08cd-gpu-mat.js:29
-gcMatPipe                    src/08cd-gpu-mat.js:28
+gcMat                        src/08cd-gpu-mat.js:53-64
+gcMatDesc                    src/08cd-gpu-mat.js:47
+gcMatPipe                    src/08cd-gpu-mat.js:46
 gcMeasure                    src/08cb-gpu-text.js:73
-gcMip16Desc                  src/08cd-gpu-mat.js:32
-gcMip16Pipe                  src/08cd-gpu-mat.js:31
+gcMip16Desc                  src/08cd-gpu-mat.js:50
+gcMip16Pipe                  src/08cd-gpu-mat.js:49
 gcMipDesc                    src/08ca-gpu-canvas.js:379
 gcMipPipe                    src/08ca-gpu-canvas.js:378
 gcNo                         src/08ca-gpu-canvas.js:28
@@ -2360,7 +2360,7 @@ gpuHudDpr                    src/08bh-gpu-hud.js:7
 gpuImage                     src/08c-gpu-kit.js:212-225
 gpuKitU                      src/08c-gpu-kit.js:170-174
 gpuLight                     src/08b-gpu.js:444
-gpuLitSprite                 src/17c-system-draw.js:492-501
+gpuLitSprite                 src/17c-system-draw.js:496-505
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:582-587
 gpuMipDrop                   src/08c-gpu-kit.js:110
@@ -6125,6 +6125,7 @@ vRope                        src/18d-verlet.js:27-37
 vRopeAt                      src/18d-verlet.js:125-131
 vStep                        src/18d-verlet.js:53-77
 W                            src/08-state.js:7
+W3                           src/08cd-gpu-mat.js:33
 WAKE                         src/16-flight.js:292
 WAKE_LIFE                    src/16-flight.js:294
 wakeBurst                    src/16-flight.js:297
@@ -6539,7 +6540,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08cc-gpu-shadow.js · 6 КБ
   · GPU-холст, v2: тень (docs/DESIGN-gpu.md, «GPU canvas»):1
 
-## src/08cd-gpu-mat.js · 5 КБ
+## src/08cd-gpu-mat.js · 7 КБ
   · материал корпуса: раз на корпус, в той же выпечке (ступень 1, DESIGN-gpu §L.S):1
 
 ## src/09-audio.js · 18 КБ
@@ -8371,7 +8372,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy1-gpugate-belt.js · 14 КБ
   · ворота ступени 2: пояс без #c (docs/DESIGN-gpu.md, Stage 2):1
 
-## tests/91zzzzzzy2-gpu-canvas.js · 17 КБ
+## tests/91zzzzzzy2-gpu-canvas.js · 18 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzy3-gate2d.js · 17 КБ

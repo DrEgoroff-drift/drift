@@ -32,9 +32,8 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
 - [ ] **Stage 1 — flight (system)** (amended by 15/n, `docs/DESIGN-gpu.md` §L.S):
   - the HUD on the overlay (done: 9e8877a), then at the native DPR and rastered only on change; what follows the
     world or a finger (chips, compass, brackets, sticks) as DOM with `transform` or a small canvas;
-  - hulls: the material is baked (26.09, `08cd`: normal and fine relief, own hulls and fleet); left — emission
-    and a gloss mask in it, the other masters (pirates, barges, station); the flame as a shader (HDR core,
-    plume on the noise tile, no per-frame `rndFx`);
+  - hulls: the flame as a shader (HDR core, plume on the noise tile, no per-frame `rndFx`) — the material
+    is in (26.09, `08cd`);
   - Gate: uploads 0 and submits 1 per flight frame — passed with a caveat (26.09, `docs/tour.py`): 1 submit a frame; a frame with a `gpuBake` adds +1 submit per bake, never more than one bake a frame, and bake frames are ≤ 1 % of the tour's frames;
     ~~Контроль's phone run~~ — phone run waived by the author 26.09, redo when the phone is back. Stage 1 closes
     with the HUD (Контроль pushes); the hull material is in.

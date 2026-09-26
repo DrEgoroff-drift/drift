@@ -120,6 +120,20 @@ TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целе
   eq(steps(64,64,true),1,"четыре мелкие выпечки 128² — тоже одна за кадр (GPU.bakeN)");
   ok(steps(64,64,false)>1,"шаги без выпечки — несколько за кадр");
 }));
+/* материал корпуса (08cd): у всех, кого освещает звезда, — рельеф и маски в одной текстуре вдвое шире;
+   сброс выпечки уносит и его (иначе видеопамять течёт по полтекстуры на корпус) */
+TEST_SUITES.push(()=>suite("материал корпуса: пираты, баржи, свои — рельеф и маски, сброс вместе",{tier:"browser"},()=>{
+  if(!GPU.dev){eq(gpuBake(8,8,()=>{},{mat:2}),null,"без видеокарты выпечки нет");return;}
+  const pa=pirateArtOf(pirateShipId(4242),false,false,2,0),ba=bargeArtOf({seed:991,by:"gt"});
+  for(const [n,B] of [["пират",pa.cn],["баржа",ba.cn]]){
+    ok(B&&B.mat&&B.mat.tex,n+": материал запечён");
+    eq(B.mat.tex.width,2*Math.max(1,B.w>>1),n+": две половины — рельеф и маски");
+    eq(B.mat.tex.format,"rgba16float",n+": материал в половинной точности");}
+  const B=gpuBake(64,64,g=>{g.fillStyle="#888";g.fillRect(8,8,48,48);g.fillStyle="#fb4";g.fillRect(30,30,4,4);},{mat:2});
+  const T=B.mat.tex,t0=GPU.trash.length;gpuBakeDrop(B);
+  ok(B.mat===null&&GPU.trash.slice(t0).includes(T),"сброс выпечки отдаёт в мусор и материал");
+  const B2=gpuBake(64,64,()=>{});eq(B2.mat,undefined,"без o.mat материала нет");gpuBakeDrop(B2);
+}));
 /* WGSL: smoothstep с edge0 > edge1 не определён (Metal, iOS Safari: ревью облачного флота 26.09) — в Chrome
    он считает «наоборот», на Metal может дать что угодно. Обратный спад пишется 1.-smoothstep(b,a,x) */
 suite("шейдеры: у smoothstep нет перевёрнутых рёбер",()=>{
