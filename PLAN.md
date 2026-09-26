@@ -5,18 +5,23 @@ Only what we want next. What is done is not kept here: the story of each version
 M-number), and the rules and decisions that stand are in `docs/DECISIONS.md`. A finished item is
 deleted from this file in the commit that finishes it; its story goes to the patchnote.
 
-**How it is worked.** Start the session here; open the design section an item names; measure before
-touching; commit locally; the whole run (`test.ps1`, `-Full`, `-Mobile`, `-Mutants`) only before a
-push. Stages 2–6 go on the author's word. Where an item and a design document differ,
-`docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules bind every item: a screen never
-loses its scroll, every screen answers «чтобы что?» before it is redesigned, optimise without losing
-quality, the ship stays under the finger.
+**How it is worked (the author, 26.09 ~20:55).** «Одного рабочего, пусть всё делает, хочу уже дальше игрового
+накинуть, а не только переход на движок»; «пусть делает без тестов, быстро накидывает, потом с графикой пройдёмся
+перед релизом». So:
+- **One worker** on his own branch from `main`, commits in batches locally; Контроль pushes.
+- **The game first.** Stages 2 → 7 (§3–§8) in plan order; inside a stage the mechanic and the play first, the
+  picture as a draft. The seams of §9 bind every item. The engine (§0) goes on, but not first.
+- **No tests along the way.** Before each release: a graphics pass with the author, then the whole run
+  (`test.ps1`, `-Full`, `-Mobile`, `-Mutants`).
+- **A release point after each stage.**
+- **A fork in the design:** take the cautious variant and list it under «Disputed» in the stage's patchnote, so
+  the author can overturn it.
 
-**Release checkpoints** — a push after the whole run: after the phone tests, after stage 2 («чья
-земля»), after stage 3 («дорога»), then per stage. The engine (§0) ships as each piece is accepted; Контроль pushes after
-the whole run.
+Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
+bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
+optimise without losing quality, the ship stays under the finger.
 
-## 0. The engine — everything on WebGPU, first (the author, 23.09)
+## 0. The engine — everything on WebGPU (the author, 23.09; since 26.09 it goes on after the game stages)
 
 «Первое — на новый движок, потом по плану.» WebGPU only and no 2D canvas anywhere, the interface too (the author
 25.09: «2D-канвы — их надо все вырезать и заменять на наш новый движок»; 26.09: «надо все переносить на движок, и 3D
