@@ -184,20 +184,6 @@ thermal 0 logged before, mid-run and after (the author 26.09; a charging phone h
     them: the margin is thin, and the heat margin of §0 stands. The bake at ≈ 15 s that cost 83 ms on 25.09
     (9206be7: 2D bakes at first sight rastered by Skia in the GPU process, and `#c` cleared at opacity 0 every
     frame) passed without a hitch.
-- [ ] **The nebula steps in flight** (GPU-2, first — before «смело»; the author 26.09: «кадры нормас, движок тянет,
-  кажется как будто тормозит, когда туманность … рядом с кораблём … по кадрам появляется, и кажется, что просадка
-  кадров»). The frames are clean (P1 above); the gas is not. The volume is regenerated only when
-  `|cam − GNB.cx|·.09 ≥ .5` (the camera moved ≥ 5.6 CSS px) or, standing, every `GNB_AGE` = 6 frames with a fade
-  (16gb:591–593, 16gc); in between, the composite does not shift it, and in motion the fresh one is written straight
-  into the visible texture. So at screen speeds of ~56–333 CSS px/s the nebula holds for 2–6 frames, then jumps
-  (~.5–.7 px of parallax plus the flow gathered meanwhile) at 10–30 Hz while the stars and the ship glide at 60;
-  zoomed out, the same flight is slower on screen and steps more; above 333 px/s it regenerates every frame, which is
-  why P1 does not see it. Confirm on the PC (617×1113, DPR 1.5, zoom 1 and .3, 40/80/150/250/400 px/s: `nGen` per
-  frame and a 12-frame strip by the ship, the nebula's shift frame to frame); regenerate every frame while the camera
-  moves (a threshold near .05), keep the fade for a still camera, and no pop where standing turns into motion. Gate:
-  a test that `nGen` grows every frame at 40–400 px/s, an even shift on the strip, and P1 plus the four routes cold,
-  none worse than 0.473.0 above (the every-frame case already passes in fast flight). «Смело» is also checked moving:
-  its fibres at the quarter resolution must not shimmer (the same strip at 390, 150 px/s).
 - [ ] **Then cut by its numbers** — each old item measured again on the GPU build first, dropped if it no longer
   shows: the hull bake on vs off (`G.opts.gfx.hullBake=0`); the baked star core and hull (the star's breathing, a
   step at the baked picture's edge); tails at ×2.40 (the author's «куцые хвосты», filmed); P8 under the finger, P9
@@ -365,7 +351,9 @@ Check each against the code before building — some may already hold.
   functions, on touch only; the tools zoo → one way to take a frame; the button family merge; `-Times` for
   the Node tier.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
-  restart.
+  restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
+  the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
+  overnight»; no separate tour on the laptop.
 - [ ] **A server frame-stats beacon** was asked for — it touches `site/api.php`: ask first.
 
 ## 11. Small things seen on the way (23.09)
@@ -445,3 +433,25 @@ money-printing counter») is the gate here. Ranked by weight.
   alone: the counter (ask on buying, pressure after selling, slices, spread), far goods sell-only,
   barges (sell above and buy below the destination, budget-capped), scrip (12 % round trip), the drone
   price 1.6ⁿ, people paid only online, the loan since 0.409.1.
+
+## 13. Outside the game — audience and money (parked; the author 26.09: «запиши куда-нибудь, потом решим»)
+
+Nothing here is started without the author's word; each item is a decision of intent, not a task.
+
+- [ ] **«Один человек и ИИ» on the landing** — the author 26.09: «про ИИ да, можно написать, и мы этим
+  гордимся». A short section before «Что дальше»; the draft: «„Дрейф" делает один человек вместе с ИИ, и мы
+  этим гордимся. Код пишут сразу несколько сеансов Claude: один переносит графику на видеокарту, другой
+  собирает флот, третий обставляет станции. Автор ведёт замысел, играет каждую сборку и решает, что остаётся,
+  а что переделать. Без такой команды игра этого размера одному человеку была бы не под силу. Картинок из
+  нейросети в игре нет: корабли, туманности, планеты и люди рисуются кодом прямо у вас на экране.» Open: the
+  wording, and whether Claude is named or it says just «ИИ». Checked 26.09: `drift.html` carries no raster
+  image at all (only the favicon path) — the last sentence is true; keep it true.
+- [ ] **Build in public** — the lesson of fly.pieter.com (one author with AI, a browser game, $1M a year
+  within weeks in 2025; the author 26.09: «вот это мне нравится»): its accelerator was daily progress posted
+  to a large audience. Ours is ready-made: the daily before/after pairs and the story of one person and a crew
+  of AI sessions. A channel or devlog (Telegram, Habr, DTF) is opened by the author; Контроль prepares the
+  posts and the frames (never into git).
+- [ ] **Money, once there is an audience** — without breaking the landing's promise («нет ежедневных заданий,
+  энергии и таймеров — вас никто не будет удерживать»): a sponsor inside the world in the game's own style
+  (a station, a billboard, a hull livery), paid looks with no advantage in play (liveries, the parrot's
+  outfits). fly.pieter.com lived mostly on brands buying objects in its sky.
