@@ -263,10 +263,10 @@ measured on the GPU build first:
 
 ## 7. Stage 6 — the story and the rest
 
-- [ ] **M457 sound:** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a release
-  run); the receiver speaks the owner's `air` line once at entry.
-- [ ] **M480/M481 yards:** the free cells (need the plan, M477); Хай-Фронт firmware moving a part per
-  сводка; Рассвет hull points back from debris; calibration by the worlds oracle and the стрельбище.
+- [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
+  release run).
+- [ ] **M480/M481 yards (rest):** the free cells (Хай-Фронт's nose instrument, Орднунг's front shield — cells
+  that need no part); calibration by the worlds oracle and the стрельбище (release run).
 - [ ] **M484 the special system:** the ability named on the ship card; СИРЕНА answered by the ships actually
   in view.
 - [ ] **M482 scars:** scars on captured pirate hulls; доводка — a weld with a node, +1 tier, two per hull.

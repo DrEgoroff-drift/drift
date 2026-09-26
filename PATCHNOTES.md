@@ -225,6 +225,9 @@ could ever save.
 
 - «Смена» (P15): a landing in a new kind of place only arms the next chapter («где-то здесь. Отойдите от корабля»); walking 480 px from the ship lives it. The arming stays in the surface state, not in the save: leave without stepping out and the chapter waits. The 72-kinds-of-place check was already a suite (r ≤ 20).
 
+- Receiver at the border (M457): entering a power's land, the ether log speaks its `air` line once per crossing («Приёмник · ГЛАВТРАССА: «На трассе спокойно»»). The ear pass on the six motifs stays for the release run.
+- Yards at work (M480), on ordered hulls only: a Рассвет hull patches itself from a pirate downed within 600 px (+6 % hull, «на соплях, но держит»); a Хай-Фронт hull's firmware moves one unwelded thing of the plan to another free deck cell once per сводка («обновление установлено… так удобнее»). The сводка mark lives in the order itself.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are

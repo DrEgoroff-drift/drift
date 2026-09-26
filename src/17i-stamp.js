@@ -49,10 +49,17 @@ function stampArrive(fromBy){
   const e=had||(R.st[by]={d:celDay(),t:G.t,sx:G.sx,sy:G.sy,v:0});
   e.v=(e.v|0)+1;
   stampShow(by,had?{d:celDay(),t:G.t,sx:G.sx,sy:G.sy}:e);
+  stampAir(by);
   if(!had&&typeof recordAdd==="function")recordAdd(STAMP_RU[by],"отметка о проезде — "+stampText(by,e).join(" · "));
   if(!had&&typeof passportIssue==="function")passportIssue();   /* седьмая отметка — паспорт (M505) */
   if(typeof volBorder==="function")volBorder(by);   /* животное без бумаг — пикет (M511) */
   return by;
+}
+/* приёмник на въезде (M457): эфир державы — её строка «air», один раз за пересечение */
+function stampAir(by){
+  const P=(typeof POWERS!=="undefined")?POWERS[by]:null;if(!P||!P.air)return false;
+  logAdd("ether","Приёмник · "+P.ru+": «"+P.air+"»");
+  return true;
 }
 /* пираты печатей не ставят: их «пост» — обломок с нацарапанным «Гони груз».
    Царапина — за въезд в систему с пиратской базой из системы без неё

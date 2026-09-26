@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6604
+Файлов: 641 · символов верхнего уровня: 6609
 
 ## СИМВОЛЫ
 
@@ -951,7 +951,7 @@ LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
 LOOP_OFF                     src/28-loop.js:364
 LOOP_PHASE                   src/01-core.js:86
-LOOT_IC                      src/13-pirates.js:355
+LOOT_IC                      src/13-pirates.js:356
 LORE                         src/12q-lore.js:67
 LORE_ACT                     src/12q-lore.js:47
 LORE_BY_CHAP                 src/12q-lore.js:69
@@ -1549,10 +1549,10 @@ STAMP_ORDER                  src/17i-stamp.js:11
 STAMP_POEM                   src/17i-stamp.js:14
 STAMP_RU                     src/17i-stamp.js:12
 STAPEL_KEYS                  src/26e2-stapel-draw.js:327
-STAPEL_PV                    src/26e1-stapel.js:124
+STAPEL_PV                    src/26e1-stapel.js:161
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
-STAPEL_UI                    src/26e1-stapel.js:125
+STAPEL_UI                    src/26e1-stapel.js:162
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 STAR_CLASS                   src/02-world.js:175-181
 STAR_COLS                    src/16-flight.js:2
@@ -1774,6 +1774,7 @@ WX_PLANES                    src/19d-weather.js:98-103
 YALTA_R                      src/12al-powers.js:163
 YARD                         src/26f-yard-gpu.js:6
 YARD_CHANCE                  src/04b-fleet.js:162
+YARD_DEBRIS                  src/26e1-stapel.js:118
 ZAP_COOL                     src/23-mode-dig.js:258
 ZOOM_MIN                     src/01-core.js:21
 ZOOM_RATE                    src/15-input.js:349
@@ -2899,7 +2900,7 @@ drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
 drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:405-680
-drawCombat                   src/13-pirates.js:365-467
+drawCombat                   src/13-pirates.js:366-468
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:115-141
@@ -4127,7 +4128,7 @@ keyMap                       src/15-input.js:136-143
 keyRow                       src/27-ui-ship.js:23-34
 keyStateOK                   tests/91zzzzze-keys.js:23-29
 keys                         src/08-state.js:203
-killPirate                   src/13-pirates.js:311-352
+killPirate                   src/13-pirates.js:311-353
 killRock                     src/24-mode-belt.js:136-143
 kinoAt                       src/27da-kino.js:39-45
 kinoBeam                     src/27da-kino.js:176-185
@@ -4316,7 +4317,7 @@ lookScenes                   src/28y-look.js:129-251
 lookVerdict                  src/28y-look.js:114-124
 lookoutSees                  src/12ag-holdfx.js:104-111
 loopReset                    src/28-loop.js:165
-lootIcon                     src/13-pirates.js:356-364
+lootIcon                     src/13-pirates.js:357-365
 loreAddr                     src/12q-lore.js:146-162
 loreAtPlace                  src/12q-lore.js:130-142
 loreBtnTick                  src/27h-ui-lore.js:18-25
@@ -6025,18 +6026,19 @@ stTabsHere                   src/26-ui-station.js:145
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:379-392
 stallWho                     src/28-loop.js:122-130
-stampArrive                  src/17i-stamp.js:42-56
+stampAir                     src/17i-stamp.js:59-63
+stampArrive                  src/17i-stamp.js:42-57
 stampBook                    src/17i-stamp.js:25
 stampKeyAt                   src/17i-stamp.js:24
 stampOwnerAt                 src/17i-stamp.js:16-21
-stampPage                    src/17i-stamp.js:87-114
-stampPirate                  src/17i-stamp.js:62-73
-stampShow                    src/17i-stamp.js:75-85
+stampPage                    src/17i-stamp.js:94-121
+stampPirate                  src/17i-stamp.js:69-80
+stampShow                    src/17i-stamp.js:82-92
 stampText                    src/17i-stamp.js:27-40
 stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:127-197
+stapelBlock                  src/26e1-stapel.js:164-234
 stapelClosedWhy              src/26e1-stapel.js:96-101
-stapelCollect                src/26e1-stapel.js:111-122
+stapelCollect                src/26e1-stapel.js:148-159
 stapelDelta                  src/26e2-stapel-draw.js:328-338
 stapelDraft                  src/26e2-stapel-draw.js:187-219
 stapelFx                     src/26e2-stapel-draw.js:340-348
@@ -6044,15 +6046,16 @@ stapelHullBox                src/26e2-stapel-draw.js:230-279
 stapelHullTick               src/26e2-stapel-draw.js:290-324
 stapelId                     src/26e1-stapel.js:68
 stapelLater                  src/26e2-stapel-draw.js:289
+stapelMine                   src/26e1-stapel.js:113-116
 stapelOrder                  src/26e1-stapel.js:80-94
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
 stapelSheet                  src/26e2-stapel-draw.js:11-181
-stapelSheetW                 src/26e1-stapel.js:126
+stapelSheetW                 src/26e1-stapel.js:163
 stapelShip                   src/26e1-stapel.js:59-67
 stapelStats                  src/26e1-stapel.js:42-57
 stapelStrip                  src/26e1-stapel.js:70-74
-stapelTick                   src/26e1-stapel.js:104-109
+stapelTick                   src/26e1-stapel.js:104-110
 stapelYard                   src/26e1-stapel.js:25
 stapelYardBy                 src/26e1-stapel.js:34-38
 starAt                       src/06-galaxy.js:2
@@ -6594,7 +6597,9 @@ yaltaHere                    src/12al-powers.js:176
 yaltaIs                      src/12al-powers.js:172-175
 yaltaSealed                  src/12al-powers.js:179-183
 yardCanvas                   src/26f-yard-gpu.js:12-19
+yardDebris                   src/26e1-stapel.js:119-126
 yardDraw                     src/26f-yard-gpu.js:41-54
+yardFirmware                 src/26e1-stapel.js:129-146
 yardHide                     src/26f-yard-gpu.js:20
 yardTick                     src/26f-yard-gpu.js:22-39
 zooAll                       src/11ad-zoo.js:15
@@ -7807,7 +7812,7 @@ zoomTo                       src/15-input.js:350
 ## src/26e-ui-station-trade.js · 31 КБ
   · станция: доска, рынок и док (выделено из 26, M415):1
 
-## src/26e1-stapel.js · 12 КБ
+## src/26e1-stapel.js · 15 КБ
   · СТАПЕЛЬ — заказ корпуса у державы (M481, DESIGN-shipyard §5):1
 
 ## src/26e2-post.js · 14 КБ
