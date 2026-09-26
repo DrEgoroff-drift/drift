@@ -178,13 +178,13 @@ fn frameHdr(uv:vec2f)->vec3f{
    свечение — от всего яркого, широкое — от того, что много выше единицы (звезда).
    У факела и газа ореол узкий, у звезды широкий, пелены на полкадра нет */
 @fragment fn fsDown(v:V)->@location(0) vec4f{
-  /* frameAt и frameHdr вручную: одна выборка слоя и сцены на точку (P1). Свой грунт
-     корабля (маска корпуса в круге u.hl) светит вполовину: белил обшивку (п.3) */
+  /* frameAt и frameHdr вручную (P1). Краска корпусов (альфа сцены 0) не светит,
+     свой корабль (круг u.hl) — вполовину (п.3) */
   let fp=1./u.qres;var c=H3(0.);var h=H3(0.);let sc=H(u.scene);
   for(var j=0;j<4;j++){for(var i=0;i<4;i++){
     let q=v.uv+((vec2f(f32(i),f32(j))+.5)/4.-.5)*fp;
     let f=H4(textureSampleLevel(tFront,sl,q,0.));let S=H4(textureSampleLevel(tScene,sl,q,0.));let s=max(S.rgb,H3(0.))*sc;let a=H(1.)-f.a;
-    c+=(toneH(s)*a+f.rgb)*(H(1.)-H(.5)*H(silK(q))*sc*(H(1.)-S.a));h+=(kneeH(s,H(1.4))+H3(textureSampleLevel(tEmit,sl,q,0.).rgb))*a;}}
+    c+=(toneH(s)*a+f.rgb)*(H(1.)-(H(1.)-H(.5)*H(silK(q)))*sc*(H(1.)-S.a));h+=(kneeH(s,H(1.4))+H3(textureSampleLevel(tEmit,sl,q,0.).rgb))*a;}}
   c=c/H(16.);return vec4f(vec3f(c*c+h/H(16.)),1.);}
 fn bs(uv:vec2f)->H3{return H3(textureSampleLevel(tBloom,sl,uv,0.).rgb);}
 @fragment fn fsMipDn(v:V)->@location(0) vec4f{

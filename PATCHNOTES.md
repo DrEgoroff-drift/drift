@@ -6,6 +6,26 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.464.0 - the rack and the belt cockpit on the video card, wrecks as hulls
+
+- **The instrument rack and «Глобус» are drawn by the video card** (GPU-3): the still parts are one bake,
+  the needles, carriages, pens and glyphs a queue on the interface layer — 2D on the HUD canvas went from
+  1887 calls a frame to 0. The bake is split into parts over the opening frames: the worst first-open
+  frame is 12.5–18.8 ms at 760 and 18.2–19.3 ms on a 390 phone (was 48 / 56.5 ms); opening it again bakes
+  nothing (4 ms). On the phone every channel keeps its number next to the dot.
+- **The belt cockpit and its glass are drawn by the video card** (GPU-3): frame, panel, tape and glass HUD
+  are baked in four bands by the oven, one step a frame, and fade in over 10 frames; the live parts are
+  interface-layer primitives. The belt sky no longer compiles on the entry frame (key 43 in the warm
+  table): the worst entry frame is 20.6 ms at 760 and 17.8–18.4 ms at 390 (was 26.5 / 25.7 ms), and under
+  load 24–26 ms instead of 55–75.
+- **A wreck after a battle is the ship that died**, not a dark disc: its own broken hull, charred darker
+  than a live ship, two torn breaches whose rims smoulder, a thin haze of smoke, lit by the star and slowly
+  tumbling. The «КОРПУС» label became an edge chip for the nearest wreck off screen; a tap sends the
+  autopilot there.
+- **Edge chips no longer jump.** A visible chip never moves faster than its glide speed: chips are laid
+  and nudged in a fixed order, a chip that changed edges glides after its slot, and a chip that has to
+  hop past a neighbour fades out and back in instead of teleporting.
+
 ## 0.463.0 - the billboard and the Cheburek stall leave 2D
 
 - **The billboard and «Чебуречная» are drawn by the video card** (GPU-3): the ПЛАН panel, its running line

@@ -753,7 +753,28 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   a neighbour (a plate-sized step) is hidden like an edge change (`st.jf`: out at the old place, in at the
   new; a chip lighting up after a yield may yield again and hides again). Green at 760 and 390; the gate
   was red on the old code. Node 16923, -Full 19196, -Mobile 19148.
-  Next: Контроль's queue is done; waiting.
+- **Candidate 0.464.0** (26.09): gpu3-rack 725037ad merged (57243be0: belt cockpit and glass on #ovl,
+  LABDOM gone — the wreck suite reads `OVL.lab` now, key `fld.belt.sky`), the warm table re-taken without a
+  diff (43 keys), VER, README and the patchnote.
+- **Final glow source: stations** (26.09): the paint term of fsDown (`c*c`) is weighed by
+  `1-(1-.5·silK)·scene·(1-S.a)`: every lit hull (the `hull` blend leaves scene alpha 0 under it — stations,
+  barges, pirates, wrecks, fleet) gives its paint nothing, the own ship (circle u.hl) keeps half as in
+  ee46b87. Station lights were already explicit emission (stLamp: paint, core by addition, narrow halo)
+  and baked windows go above the knee through GST's `em`, so they keep their glow. Pair against 45966169,
+  station region at 760: mean L .185 → .168, V>.6 4.5 → 3.0 %, V>.85 1.88 → 1.20 %; solar wings and grey
+  panels lose the milky halo, the white lamp and the red beacon keep theirs. Wrecks: >8 on 0.02 % of pixels.
+  08b 49392 → 49333 bytes.
+- **Final glow source: the hotel facade** (26.09): B.cv is laid with the `hull` blend (colour as `over`,
+  scene alpha to 0), so fsDown takes nothing from the facade paint; the lit windows (B.cl), their light
+  (B.em, B.el by addition) and the neon stay as they were and keep their glow. New warm key
+  `pipe:kit.img|hull` (44). Pair against 96d0506e, hotel region: 760 L .162 → .147, V>.6 4.9 → 4.2 %;
+  390 L .125 → .117, V>.6 3.1 → 2.7 %; the pink haze on the towers is gone, windows, sign and pier lamps
+  glow as before.
+- **Fleet lights with the flame** (26.09): pair 760/390 against 45966169, three fleet ships (patrol,
+  ferry, tug) around the own ship on thrust. The flame stays the brightest thing, fleet lights read as
+  narrow dots with their halo (explicit emission since 7083ac58), fleet hulls lost the paint haze like
+  the stations. Line closed in PLAN.
+  Next: the Stage 1 gate in numbers on the tour (uploads and submits per flight frame).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
