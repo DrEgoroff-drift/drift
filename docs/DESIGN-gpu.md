@@ -1048,7 +1048,11 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      `pair_stapel_b.png` (scratchpad, four sheets): mean 0.9–9 per channel, all of it that scale. The bake
      costs 10–25 ms once per slider step, in the menu. Guard «стапель: лист печётся на движке, 2D-корпуса
      нет» (one bake per two frames, two bakes, 0 `drawHull`, no GC_MISS, no 2D context). Dead
-     `stapelPreview` (2D `shipThumb`) is gone.
+     `stapelPreview` (2D `shipThumb`) is gone. Drag (Контроль's condition): the slider leaves the redraw to
+     the frame (`stapelLater`), at most one sheet and one bake per frame, the last value wins (guard). Drag
+     frame at CPU ×4 (own headless Chrome, AMD, warm): p50 57 ms, p95 83–117 ms — over 33. Half density was
+     tried and dropped (p50 82, p95 168–343: the bake is CPU-bound on tessellation, and a sheet under 512 px
+     goes to ss 2). Open: what to show while dragging — Контроль's call.
   3. Look 28y / item h — done: `makerRead` looks at the engine's picture. `makerFeat` draws the hull with the
      studio (17c2 `hullStudio`, the ОПИСЬ one: GPU bake of the same brushes, lit by relief as in flight) into a
      52 px `webgpu` canvas and reads it back in the same task (`drawImage` into a 2D canvas, as `gpuTakeSnap`).
