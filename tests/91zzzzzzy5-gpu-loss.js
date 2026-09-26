@@ -25,6 +25,17 @@ TEST_SUITES.push(()=>suite("видеокарта: сбой кадра не ро�
     ok(gpuManual(()=>{gpuField(gpuScene(),"gew",GEW_WGSL,GEW,[B]);}),"кадр с полем собран");
     ok(B.dev===GPU.dev,"выпечка чужого устройства в gpuField перепечена на текущем");
     gpuBakeDrop(B);
+    /* колодка (25c) — свой WebGPU-контекст: после подъёма устройства он переконфигурируется,
+       мастер перепекается, и первый же кадр — проход, даже если показания те же */
+    if(!IPOD_NARROW){
+      const run0=G.running,m0=G.mode;G.running=true;G.mode="system";
+      try{gpuManual(()=>instrPodDraw());
+        const old={},n0=IPOD.n,M0=IPOD.M;IPOD.dev=old;
+        ok(gpuManual(()=>instrPodDraw()),"кадр колодки после смены устройства собран");
+        ok(IPOD.dev===GPU.dev&&IPOD.n===n0+1,"колодка: контекст на текущем устройстве, проход есть");
+        ok(!!IPOD.M&&IPOD.M!==M0&&IPOD.M.B.dev===GPU.dev,"колодка: мастер перепечён на текущем устройстве");
+      }finally{G.running=run0;G.mode=m0;}
+    }
   }finally{crashSay=was;}
   eq(said.length,0,"строк стража в обход исключения нет: "+said.join(" | "));
   resetWorld();

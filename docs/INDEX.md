@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 632 · символов верхнего уровня: 6360
+Файлов: 632 · символов верхнего уровня: 6363
 
 ## СИМВОЛЫ
 
@@ -2065,7 +2065,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-168
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-174
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -3047,9 +3047,12 @@ instrOffers                  src/05b-instr-kit.js:127-143
 instrPanel                   src/25a-instr.js:109-199
 instrPanelGeo                src/25a-instr.js:103-106
 instrPenWidth                src/05b-instr-kit.js:78-80
-instrPodDraw                 src/25c-instr-hud.js:32-96
-instrPodSig                  src/25c-instr-hud.js:27-31
-instrPodTick                 src/25c-instr-hud.js:109-114
+instrPodDraw                 src/25c-instr-hud.js:111-136
+instrPodGeo                  src/25c-instr-hud.js:40-43
+instrPodLive                 src/25c-instr-hud.js:83-110
+instrPodPaint                src/25c-instr-hud.js:45-81
+instrPodSig                  src/25c-instr-hud.js:26-30
+instrPodTick                 src/25c-instr-hud.js:149-155
 instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
@@ -3066,12 +3069,12 @@ instTestSci                  tests/91zzq-institute.js:2-5
 instTick                     src/11ab-institute.js:80-94
 invalidateKeyMap             src/15-input.js:125
 invalidateParts              src/05-parts.js:310
-ipctx                        src/25c-instr-hud.js:17
-IPOD_FLY                     src/25c-instr-hud.js:108
-IPOD_MQ                      src/25c-instr-hud.js:105
-IPOD_NARROW                  src/25c-instr-hud.js:106
-IPOD_S                       src/25c-instr-hud.js:18
-IPOD_SIG                     src/25c-instr-hud.js:26
+IPOD                         src/25c-instr-hud.js:38
+IPOD_FLY                     src/25c-instr-hud.js:148
+IPOD_MQ                      src/25c-instr-hud.js:145
+IPOD_NARROW                  src/25c-instr-hud.js:146
+IPOD_S                       src/25c-instr-hud.js:17
+IPOD_SIG                     src/25c-instr-hud.js:25
 isFitted                     src/05-parts.js:381-384
 ISLAND_LETTERS               src/11y-island.js:15-22
 islandAll                    src/11y-island.js:23
@@ -7475,7 +7478,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25b-tape.js · 13 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 9 КБ
+## src/25c-instr-hud.js · 12 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25d-instr-rack.js · 36 КБ
@@ -8360,16 +8363,16 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 16 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 17 КБ
+## tests/91zzzzzzy3-gate2d.js · 18 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-gpu-ovl.js · 14 КБ
+## tests/91zzzzzzy4-gpu-ovl.js · 17 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 7 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
-## tests/91zzzzzzy5-gpu-loss.js · 8 КБ
+## tests/91zzzzzzy5-gpu-loss.js · 9 КБ
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
 
 ## tests/91zzzzzzy6-chipjump.js · 4 КБ
