@@ -176,6 +176,12 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
   const PR=[window.CanvasRenderingContext2D&&CanvasRenderingContext2D.prototype,
             window.OffscreenCanvasRenderingContext2D&&OffscreenCanvasRenderingContext2D.prototype].filter(Boolean);
+  /* #c: крючок 08c (gpuFrontHook) вешает fill/drawImage/fillText… собственными свойствами MAIN_CTX с оригиналом
+     прототипа внутри — обёртки прототипа их не видят, и ворота на #c ловили только сеттеры. Крючок ставим ДО
+     обёрток (иначе он схватит нашу обёртку и вызов посчитается дважды), а его свойства оборачиваем сами */
+  gpuFrontHook();
+  const C=MAIN_CTX,CO=Object.getOwnPropertyNames(C).filter(k=>C[k] instanceof Function);
+  ok(CO.includes("fillRect")&&CO.includes("drawImage"),"крючок #c на месте: "+CO.join(","));
   for(const S of GATE2D){
     resetWorld();G.mode="system";
     const st=S.place(true);
@@ -193,6 +199,11 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
     Error.stackTraceLimit=40;   /* художник бывает глубже десяти кадров стека — иначе вызов потерян молча */
     for(const f of S.probe){const o=window[f];wrap[f]=o;hit[f]=0;
       window[f]=function(){hit[f]++;return o.apply(this,arguments);};}
+    /* мир на #c ещё рисует 2D сам — стек (дорогой) снимаем только с вызовов #c внутри художника сцены:
+       глубина считается обёрткой художника, иначе ворота шли 204 с вместо 11 */
+    const dep={n:0};
+    for(const f of S.painters)if(window[f] instanceof Function){const o=window[f];if(!(f in wrap))wrap[f]=o;
+      window[f]=function(){dep.n++;try{return o.apply(this,arguments);}finally{dep.n--;}};}
     try{
       for(const P of PR)for(const k of Object.getOwnPropertyNames(P)){
         if(k==="constructor")continue;const d=Object.getOwnPropertyDescriptor(P,k);
@@ -200,6 +211,8 @@ TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенес
           P[k]=function(){note(k);return o.apply(this,arguments);};}
         else if(d.set){const s=d.set;saved.push([P,k,d]);
           Object.defineProperty(P,k,{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){note(k);return s.call(this,v);}});}}
+      for(const k of CO){const o=C[k];saved.push([C,k,{value:o,writable:true,configurable:true,enumerable:true}]);
+        C[k]=function(){if(dep.n)note(k);return o.apply(this,arguments);};}
       /* с первого кадра: выпечка — тоже часть ворот */
       K.on=true;G.running=true;LOOP_OFF=false;let t=wallMs();
       for(let i=0;i<90;i++){K.i=i;S.place();frameBody(t+=16.7);}
