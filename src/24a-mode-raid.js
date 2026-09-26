@@ -100,10 +100,39 @@ function sysPirateBase(){
   if(sys.pbase===undefined)sys.pbase=pirateBaseOf(sys);
   return sys.pbase;
 }
+/* база в проходе сцены (G4d): тот же рисунок фигурами — веер пятиугольника, обвод, спицы, ядро,
+   имя — слоем подписей. Вершины скользят по эллипсу 22×16 (база вертится в наклоне), поэтому
+   не выпечка-спрайт: поворот спрайта этого не повторит. Свет звезды — как у корпусов (GST, −1):
+   тёмное тело не белится, звезда только кромкой — ребро к звезде ловит нить её цвета */
+function pirateBaseGpu(pass,PB,x,y,s){
+  const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
+  const body=HL?[27,15,22,1]:[23,16,19,1],ed=HL?[197,138,224,.9]:[220,90,70,.85];
+  const SH=[],V=[],sc=(typeof starRGB==="function")?starRGB():[255,244,214];
+  for(let i=0;i<5;i++){const a=i*TAU/5+G.t*.002;V.push([x+Math.cos(a)*22*s,y+Math.sin(a)*16*s]);}
+  for(let i=0;i<5;i++){const A=V[i],B=V[(i+1)%5];SH.push([5,x,y,A[0],A[1],B[0],B[1],body[0],body[1],body[2],1,5]);}
+  /* к звезде: звезда в начале координат системы */
+  const ln=Math.hypot(PB.x,PB.y)||1,dx=-PB.x/ln,dy=-PB.y/ln;
+  for(let i=0;i<5;i++){const A=V[i],B=V[(i+1)%5];
+    SH.push([2,A[0],A[1],B[0],B[1],s,0,ed[0],ed[1],ed[2],ed[3]]);
+    /* кромка к звезде: внутрь обвода на полторы его толщины, концы не доходят до углов */
+    let nx=B[1]-A[1],ny=A[0]-B[0];const nl=Math.hypot(nx,ny)||1;nx/=nl;ny/=nl;
+    if(nx*((A[0]+B[0])/2-x)+ny*((A[1]+B[1])/2-y)<0){nx=-nx;ny=-ny;}   /* нормаль — наружу */
+    const f=nx*dx+ny*dy;if(f<=.05)continue;
+    const o=1.7*s,k=.12;
+    SH.push([2,A[0]+(B[0]-A[0])*k-nx*o,A[1]+(B[1]-A[1])*k-ny*o,B[0]-(B[0]-A[0])*k-nx*o,B[1]-(B[1]-A[1])*k-ny*o,.45*s,0,
+      sc[0],sc[1],sc[2],+(.55*Math.pow(f,1.5)).toFixed(3)]);}
+  for(let i=0;i<4;i++){const a=i*TAU/4-G.t*.004;
+    SH.push([2,x+Math.cos(a)*20*s,y+Math.sin(a)*14*s,x+Math.cos(a)*33*s,y+Math.sin(a)*24*s,.7*s,0,220,90,70,.5]);}
+  SH.push([1,x,y,4*s,0,0,0,255,60,50,(Math.sin(G.t*.18)>0)?.95:.15]);
+  gpuShapes(pass,SH);
+  domLabel("pbase",x,y+34,((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),"9px ui-monospace,monospace",
+    HL?"rgba(197,138,224,.8)":"rgba(220,90,70,.65)","center");
+}
 function drawPirateBase(zx,zy,Z){
   const PB=sysPirateBase();if(!PB)return;
   const x=zx(PB.x),y=zy(PB.y),s=clamp(Z,.3,1.4);
   if(x<-60||x>W+60||y<-60||y>H+60)return;
+  const pass=gpuScene();if(pass){pirateBaseGpu(pass,PB,x,y,s);return;}
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
   /* угловатая, тёмная, с красными огнями — читается как чужая с первого взгляда */
   /* у базы с хозяином (12o) свой обвод и своё имя: логово наконец отличается

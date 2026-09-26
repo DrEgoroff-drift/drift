@@ -228,6 +228,69 @@ function wanderSails(pass,F,n){
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind("wand.sail",P,[gpuKitU(),A.buf]));
   pass.draw(6,n,0,A.off/16);
 }
+/* тело «Сороки» без парусов и огня гондолы: ступица, киль, рёбра с тюками, крыльцо, рей, гондола и
+   обвод — в осях борта (киль = 100 единиц). Одна кисть на 2D и на выпечку видеокарты (G4d);
+   r — ГСЧ тюков (sys.seed^0x5A1A), его расход тот же, что был у 2D */
+function wanderHullPaint(c,r){
+  const HX=26;
+  /* ступица у носа: кольцо, из которого выходят четыре лонжерона */
+  c.fillStyle="#15181d";c.beginPath();c.arc(HX,0,4.6,0,TAU);c.fill();
+  c.strokeStyle="rgba(200,210,220,.4)";c.lineWidth=.7;c.beginPath();c.arc(HX,0,4.6,0,TAU);c.stroke();
+  c.strokeStyle="rgba(227,176,74,.5)";c.lineWidth=.5;c.beginPath();c.arc(HX,0,2.6,0,TAU);c.stroke();
+  /* 1. тень парусов на киле и тюках — тёмное основание, потом тело */
+  c.lineCap="round";
+  /* киль: тёмная балка с фаской */
+  c.strokeStyle="#0f1114";c.lineWidth=4.2;c.beginPath();c.moveTo(-50,0);c.lineTo(50,0);c.stroke();
+  c.strokeStyle="#242830";c.lineWidth=2.6;c.beginPath();c.moveTo(-50,0);c.lineTo(50,0);c.stroke();
+  /* рёбра-кольца каждые семь единиц, между ними тюки и ящики, через один сверху/снизу */
+  for(let i=-6;i<=6;i++){
+    const fx=i*7;
+    c.strokeStyle="#33383f";c.lineWidth=1.1;c.beginPath();c.moveTo(fx,-4.6);c.lineTo(fx,4.6);c.stroke();
+    if(i<6&&i!==0&&i!==-1){
+      const side=(i&1)?-1:1,wdt=4+r()*2.4,hgt=2.6+r()*2.2,bx=fx+3.5-wdt/2,by=side<0?-1.4-hgt:1.4;
+      c.fillStyle=r()<.5?"#2a2622":"#25282e";c.fillRect(bx,by,wdt,hgt);
+      c.fillStyle="rgba(255,235,200,.14)";c.fillRect(bx,side<0?by:by+hgt-.7,wdt,.7);   /* свет сверху: одна кромка */
+      c.strokeStyle="rgba(0,0,0,.55)";c.lineWidth=.5;c.strokeRect(bx,by,wdt,hgt);
+      /* верёвка крест-накрест */
+      c.strokeStyle="rgba(200,190,160,.28)";c.lineWidth=.4;
+      c.beginPath();c.moveTo(bx,by);c.lineTo(bx+wdt,by+hgt);c.moveTo(bx+wdt,by);c.lineTo(bx,by+hgt);c.stroke();
+    }
+  }
+  /* киль ловит золото парусов: тёплая кромка сверху */
+  c.strokeStyle="rgba(227,176,74,.35)";c.lineWidth=.7;c.beginPath();c.moveTo(-50,-2.1);c.lineTo(50,-2.1);c.stroke();
+  /* ряды заклёпок вдоль киля */
+  c.fillStyle="rgba(255,255,255,.13)";
+  for(let q=-48;q<=48;q+=3)c.fillRect(q,-1.6,.6,.6);
+  /* корма: два тёмных сопла, холодные, без огня — стоит */
+  c.fillStyle="#1a1d22";c.fillRect(-53,-3.2,4,2.2);c.fillRect(-53,1,4,2.2);
+  /* крыльцо под килем позади рея: кольцо ровных огней и трап */
+  c.strokeStyle="#2b2f36";c.lineWidth=1;c.beginPath();c.moveTo(-15,2);c.lineTo(-15,7.5);c.stroke();
+  for(let i=0;i<6;i++){const a=i/6*TAU;c.fillStyle="rgba(200,236,255,.85)";
+    c.beginPath();c.arc(-15+Math.cos(a)*3.2,8.5+Math.sin(a)*1.6,.55,0,TAU);c.fill();}
+  c.strokeStyle="rgba(180,190,200,.5)";c.lineWidth=.5;
+  for(let i=0;i<4;i++){c.beginPath();c.moveTo(-16.2,3+i*1.2);c.lineTo(-13.8,3+i*1.2);c.stroke();}
+  /* 2. рей — крест посреди, тёмный, с фаской света */
+  c.strokeStyle="#0f1114";c.lineWidth=2.4;c.beginPath();c.moveTo(0,-30);c.lineTo(0,30);c.stroke();
+  c.strokeStyle="#3a3630";c.lineWidth=1.2;c.beginPath();c.moveTo(0,-30);c.lineTo(0,30);c.stroke();
+  /* 4. гондола на носу: стекло, и внутри — единственный тёплый свет */
+  c.fillStyle="#1c2026";c.beginPath();c.ellipse(50,0,4.6,3.2,0,0,TAU);c.fill();
+  c.strokeStyle="rgba(150,180,200,.55)";c.lineWidth=.6;c.stroke();
+  /* 5. один обвод всему телу — тонкий, холодный сверху */
+  c.strokeStyle="rgba(190,205,220,.22)";c.lineWidth=.5;
+  c.beginPath();c.moveTo(-50,-2.2);c.lineTo(50,-2.2);c.stroke();
+}
+/* на видеокарте тело — выпечка той же кисти с мипами, светом звезды, как корпуса (GST, −1): тёмный
+   киль в тени, кромка к звезде, заслон станции. Плотность — степень двойки не реже вдвое экрана
+   (до 16 на единицу, 1824² px); смена октавы зума — одна перепечка, держатся три */
+const WAND_BAKE=new Map(),WAND_E=57;
+function wanderHullGpu(sys,pos,x,y,s,ang){
+  const dk=GPU.bw/W,sb=Math.min(16,Math.pow(2,Math.ceil(Math.log2(Math.max(.5,2*s*dk))))),side=Math.ceil(2*WAND_E*sb);
+  const B=gpuBaked(WAND_BAKE,(sys.seed>>>0)+"|"+sb,side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);
+    wanderHullPaint(g,rng((sys.seed^0x5A1A)>>>0));},{keep:3});
+  if(!B)return false;
+  const ln=Math.hypot(pos.x,pos.y)||1;
+  return gpuLitSprite(B,x,y,WAND_E*s,s,ang,-pos.x/ln,-pos.y/ln,-1,0,Math.max(0,Math.log2(sb/(s*dk))+HG_BODY_LOD),null,true);
+}
 /* борт целиком: true — издали (точка), челнок тогда не рисуется, как у 2D */
 function wanderGpu(pass,sys,pos,x,y,L,ang,now){
   if(L<9){gpuShapes(pass,[[1,x,y,0,0,0,5,255,215,145,.95]]);return true;}
@@ -240,7 +303,6 @@ function wanderGpu(pass,sys,pos,x,y,L,ang,now){
   const box=(E,bx,by,bw,bh,C)=>{const c=T(bx+bw/2,by+bh/2);E.push([4,c[0],c[1],bw*s/2,bh*s/2,ang,0,C[0],C[1],C[2],C[3]]);};
   const disc=(E,cx,cy,r,C)=>{const c=T(cx,cy);E.push([1,c[0],c[1],r*s,0,0,0,C[0],C[1],C[2],C[3]]);};
   const ring=(E,cx,cy,r,w,C)=>{const c=T(cx,cy);E.push([3,c[0],c[1],r*s,0,w*s/2,0,C[0],C[1],C[2],C[3]]);};
-  const r=rng((sys.seed^0x5A1A)>>>0);
   const HX=26,la=Math.atan2(-pos.y,-pos.x)-ang,LB=168,HW=46,base=Math.PI/4;
   const rr=rng((sys.seed^0x5A11)>>>0);
   const crinkles=[];for(let k=0;k<26;k++)crinkles.push([rr(),rr()*2-1,rr()*.12+.03,(rr()-.5)*.5,rr()]);
@@ -262,38 +324,13 @@ function wanderGpu(pass,sys,pos,x,y,L,ang,now){
     box(SH,m1[0]-1.8,m1[1]-1.8,3.6,3.6,hx("#1c2026"));disc(SH,m1[0],m1[1],.7,[255,226,160,.9]);
     cap(SH,m1,[dx>0?50:-50,0],.4,[200,190,160,.28]);
   }
-  /* ступица, киль с рёбрами и тюками, крыльцо, рей, гондола — порядок 2D */
-  disc(SH,HX,0,4.6,hx("#15181d"));ring(SH,HX,0,4.6,.7,[200,210,220,.4]);ring(SH,HX,0,2.6,.5,[227,176,74,.5]);
-  cap(SH,[-50,0],[50,0],4.2,hx("#0f1114"));cap(SH,[-50,0],[50,0],2.6,hx("#242830"));
-  const K=[0,0,0,.55],RP=[200,190,160,.28];
-  for(let i=-6;i<=6;i++){
-    const fx=i*7;
-    cap(SH,[fx,-4.6],[fx,4.6],1.1,hx("#33383f"));
-    if(i<6&&i!==0&&i!==-1){
-      const side=(i&1)?-1:1,wdt=4+r()*2.4,hgt=2.6+r()*2.2,bx=fx+3.5-wdt/2,by=side<0?-1.4-hgt:1.4;
-      box(SH,bx,by,wdt,hgt,hx(r()<.5?"#2a2622":"#25282e"));
-      box(SH,bx,side<0?by:by+hgt-.7,wdt,.7,[255,235,200,.14]);
-      box(SH,bx-.25,by-.25,wdt+.5,.5,K);box(SH,bx-.25,by+hgt-.25,wdt+.5,.5,K);
-      box(SH,bx-.25,by+.25,.5,hgt-.5,K);box(SH,bx+wdt-.25,by+.25,.5,hgt-.5,K);
-      cap(SH,[bx,by],[bx+wdt,by+hgt],.4,RP);cap(SH,[bx+wdt,by],[bx,by+hgt],.4,RP);
-    }
-  }
-  cap(SH,[-50,-2.1],[50,-2.1],.7,[227,176,74,.35]);
-  for(let q=-48;q<=48;q+=3)box(SH,q,-1.6,.6,.6,[255,255,255,.13]);
-  box(SH,-53,-3.2,4,2.2,hx("#1a1d22"));box(SH,-53,1,4,2.2,hx("#1a1d22"));
-  cap(SH,[-15,2],[-15,7.5],1,hx("#2b2f36"));
-  for(let i=0;i<6;i++){const a=i/6*TAU;disc(SH,-15+Math.cos(a)*3.2,8.5+Math.sin(a)*1.6,.55,[200,236,255,.85]);}
-  for(let i=0;i<4;i++)cap(SH,[-16.2,3+i*1.2],[-13.8,3+i*1.2],.5,[180,190,200,.5]);
-  cap(SH,[0,-30],[0,30],2.4,hx("#0f1114"));cap(SH,[0,-30],[0,30],1.2,hx("#3a3630"));
-  /* гондола: веер без внутренних швов и обвод кольцом четырёхугольников */
-  const G0=T(50,0),N=28,gc=hx("#1c2026"),e=(k,dr)=>T(50+Math.cos(k/N*TAU)*(4.6+dr),Math.sin(k/N*TAU)*(3.2+dr));
-  for(let k=0;k<N;k++){const a=e(k,0),b=e(k+1,0);SH.push([5,G0[0],G0[1],a[0],a[1],b[0],b[1],gc[0],gc[1],gc[2],1,5]);}
-  for(let k=0;k<N;k++)gpuQuad(SH,e(k,-.3),e(k,.3),e(k+1,.3),e(k+1,-.3),[150,180,200,.55],1|4);
+  /* тело — выпечкой со светом (wanderHullGpu), поверх — только огонь гондолы */
+  const LM=[];
   const lc=T(51,0);
-  SH.push([1,lc[0],lc[1],0,0,0,10.5*s,255,180,100,.6],[1,lc[0],lc[1],0,0,0,3*s,255,214,150,.87]);
-  disc(SH,51.4,-.4,1,hx("#fff1d0"));
-  cap(SH,[-50,-2.2],[50,-2.2],.5,[190,205,220,.22]);
+  LM.push([1,lc[0],lc[1],0,0,0,10.5*s,255,180,100,.6],[1,lc[0],lc[1],0,0,0,3*s,255,214,150,.87]);
+  disc(LM,51.4,-.4,1,hx("#fff1d0"));
   wanderSails(pass,FA,4);gpuShapes(pass,CR);wanderSails(pass,FB,4);gpuShapes(pass,SH);
+  wanderHullGpu(sys,pos,x,y,s,ang);gpuShapes(pass,LM);
   return false;
 }
 /* ── рисунок в системе ── */
@@ -388,56 +425,12 @@ function drawWanderer(zx,zy,Z){
       /* ванты: от конца полотнища к концам киля */
       ctx.strokeStyle="rgba(200,190,160,.28)";ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(m1[0],m1[1]);ctx.lineTo(dx>0?50:-50,0);ctx.stroke();
     }
-    /* ступица у носа: кольцо, из которого выходят четыре лонжерона */
-    ctx.fillStyle="#15181d";ctx.beginPath();ctx.arc(HX,0,4.6,0,TAU);ctx.fill();
-    ctx.strokeStyle="rgba(200,210,220,.4)";ctx.lineWidth=.7;ctx.beginPath();ctx.arc(HX,0,4.6,0,TAU);ctx.stroke();
-    ctx.strokeStyle="rgba(227,176,74,.5)";ctx.lineWidth=.5;ctx.beginPath();ctx.arc(HX,0,2.6,0,TAU);ctx.stroke();
   }
-  /* 1. тень парусов на киле и тюках — тёмное основание, потом тело */
-  ctx.lineCap="round";
-  /* киль: тёмная балка с фаской */
-  ctx.strokeStyle="#0f1114";ctx.lineWidth=4.2;ctx.beginPath();ctx.moveTo(-50,0);ctx.lineTo(50,0);ctx.stroke();
-  ctx.strokeStyle="#242830";ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(-50,0);ctx.lineTo(50,0);ctx.stroke();
-  /* рёбра-кольца каждые семь единиц, между ними тюки и ящики, через один сверху/снизу */
-  for(let i=-6;i<=6;i++){
-    const fx=i*7;
-    ctx.strokeStyle="#33383f";ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(fx,-4.6);ctx.lineTo(fx,4.6);ctx.stroke();
-    if(i<6&&i!==0&&i!==-1){
-      const side=(i&1)?-1:1,wdt=4+r()*2.4,hgt=2.6+r()*2.2,bx=fx+3.5-wdt/2,by=side<0?-1.4-hgt:1.4;
-      ctx.fillStyle=r()<.5?"#2a2622":"#25282e";ctx.fillRect(bx,by,wdt,hgt);
-      ctx.fillStyle="rgba(255,235,200,.14)";ctx.fillRect(bx,side<0?by:by+hgt-.7,wdt,.7);   /* свет сверху: одна кромка */
-      ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.5;ctx.strokeRect(bx,by,wdt,hgt);
-      /* верёвка крест-накрест */
-      ctx.strokeStyle="rgba(200,190,160,.28)";ctx.lineWidth=.4;
-      ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+wdt,by+hgt);ctx.moveTo(bx+wdt,by);ctx.lineTo(bx,by+hgt);ctx.stroke();
-    }
-  }
-  /* киль ловит золото парусов: тёплая кромка сверху */
-  ctx.strokeStyle="rgba(227,176,74,.35)";ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(-50,-2.1);ctx.lineTo(50,-2.1);ctx.stroke();
-  /* ряды заклёпок вдоль киля */
-  ctx.fillStyle="rgba(255,255,255,.13)";
-  for(let q=-48;q<=48;q+=3)ctx.fillRect(q,-1.6,.6,.6);
-  /* корма: два тёмных сопла, холодные, без огня — стоит */
-  ctx.fillStyle="#1a1d22";ctx.fillRect(-53,-3.2,4,2.2);ctx.fillRect(-53,1,4,2.2);
-  /* крыльцо под килем позади рея: кольцо ровных огней и трап */
-  ctx.strokeStyle="#2b2f36";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-15,2);ctx.lineTo(-15,7.5);ctx.stroke();
-  for(let i=0;i<6;i++){const a=i/6*TAU;ctx.fillStyle="rgba(200,236,255,.85)";
-    ctx.beginPath();ctx.arc(-15+Math.cos(a)*3.2,8.5+Math.sin(a)*1.6,.55,0,TAU);ctx.fill();}
-  ctx.strokeStyle="rgba(180,190,200,.5)";ctx.lineWidth=.5;
-  for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(-16.2,3+i*1.2);ctx.lineTo(-13.8,3+i*1.2);ctx.stroke();}
-  /* 2. рей — крест посреди, тёмный, с фаской света */
-  ctx.strokeStyle="#0f1114";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,30);ctx.stroke();
-  ctx.strokeStyle="#3a3630";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,30);ctx.stroke();
-  /* 4. гондола на носу: стекло, и внутри — единственный тёплый свет */
-  ctx.fillStyle="#1c2026";ctx.beginPath();ctx.ellipse(50,0,4.6,3.2,0,0,TAU);ctx.fill();
-  ctx.strokeStyle="rgba(150,180,200,.55)";ctx.lineWidth=.6;ctx.stroke();
+  wanderHullPaint(ctx,r);
   const lg=ctx.createRadialGradient(51,0,0,51,0,9);
   lg.addColorStop(0,"rgba(255,214,150,.95)");lg.addColorStop(.3,"rgba(255,190,110,.55)");lg.addColorStop(1,"rgba(255,160,80,0)");
   ctx.fillStyle=lg;ctx.beginPath();ctx.arc(51,0,9,0,TAU);ctx.fill();
   ctx.fillStyle="#fff1d0";ctx.beginPath();ctx.arc(51.4,-.4,1,0,TAU);ctx.fill();
-  /* 5. один обвод всему телу — тонкий, холодный сверху */
-  ctx.strokeStyle="rgba(190,205,220,.22)";ctx.lineWidth=.5;
-  ctx.beginPath();ctx.moveTo(-50,-2.2);ctx.lineTo(50,-2.2);ctx.stroke();
   ctx.restore();
   }
   /* челнок станции к «Сороке» — местные тоже торгуют (17f) */

@@ -45,7 +45,7 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   a planet's shadow, a pirate, a close-up); then the flight HUD as a quiet instrument (a–g), one pair at 390×844
   and 760 to the author for a verdict before any other screen.
 - [ ] **Stage 2 — the other modes, by share of play time:** map, landing, surface, cave, mine, belt, raid,
-  cockpit, scoop, base; one step per mode, each with a pair and the upload count. G4d and G6–G12 below
+  cockpit, scoop, base; one step per mode, each with a pair and the upload count. G6–G12 below
   are how each mode's body is drawn.
   - A mode's frame goes onto direct paths (`gpuLitSprite`, atlases, instances), not onto a `GcCtx` in place of
     `ctx` (DECISIONS, «The renderer»). A reserve for the GPU canvas, not now: convex fills without the stencil,
@@ -66,8 +66,6 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
 
-- [ ] **G4d the other ships lit:** the peace fleet, the ГЛАВТРАССА fleet, allies, the pirate base and «Сорока» are
-  still flat 2D bakes with a top-lit gradient; give them `gpuLitSprite` (17c) as barges and pirates have.
 - [ ] **L1 the space backdrop as a volume (before G5…G14):** a domain-warped FBM nebula, emission plus absorption,
   three parallax layers, dark dust lanes that hide stars, a slow flow; lit by the system's star — brighter and
   warmer toward it, and the star's glow is scattering in the nebula and dust (it went dark in gpu: x 0–300 of

@@ -722,6 +722,27 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   larger breaches instead of three (×1.45) and fewer torn-off parts (.25 vs .55) so the silhouette reads,
   no gun barrels (a lit barrel read as a white scratch). Embers only on the metal side of a breach rim;
   the smoke is a soft grey-brown haze with no core. The pirate bakes (`!h`) are untouched.
+- **G4d the other ships lit** (26.09): a census of one system frame per stand (who calls `gpuLitSprite`,
+  `gpuImage`, #c) found the peace fleet, the ГЛАВТРАССА fleet, the lane, the post boat and allies already lit by
+  17c GST in system mode. Three things were not. (1) Fleet ships with alpha < 1 (the lane rush at .9, docking
+  fades) fell back to the flat bake — a jump at α .99; GST now takes an opacity (`fu.v[2].w`,
+  `gpuLitSprite(…,al)`), so a fading ship is the same lit ship. (2) «Сорока»'s hull (hub, keel, ribs, bales,
+  porch, yard, gondola) was ~150 flat kit shapes; now one mipped bake of the 2D recipe (`wanderHullPaint`,
+  shared with the 2D branch) lit as a hull (−1), density a power of two ≥ 2× the screen (≤ 16/unit), the
+  gondola lamp on top. (3) The pirate base was 2D on #c — invisible in the GPU frame; now kit shapes in the
+  scene pass (its vertices slide on a 22×16 ellipse, so no sprite), a thread of star colour on the edges that
+  face the star, the name on the label layer; flight gate scene «пиратская база» (the 2D path turns it red).
+  The barrel (Контроль: «whitening in gpuLitSprite»): on stand gz5 (8 cells — `GPU.sepH` holds 8 hulls, a 9th
+  lifts the scene around it, a stand artifact) GST over the ×.4 bake is closer to 2D than the game's gpuImage
+  (barrel 11.2/12.6 vs 11.9/13.8, 2D 10.3/11.0; |d| 4.8/4.4 vs 7.7/11.9). The lift against 2D is the scene's —
+  bloom off the hull edges, which the #c front layer used to shield — not GST's. An albedo-weighted rim was
+  tried and dropped: the barrel moved 0.2, the ГЛАВТРАССА tug lost its copper rim on dark panels (−8 %
+  sharpness). Guns stay on gpuImage (lit: −5 % light, −7 % sharpness against now).
+  Pairs vs 57243be0: the base at 760/390 on both sides of the star +4…+33 % light, +58…+132 % sharpness (it
+  appears); «Сорока» at zoom .5/1.4, 760/390: −0.1…−0.7 % light, +0.7…+1.8 % sharpness; fleet scenes
+  identical (|d| 0); a fading tug against the old flat one −2…−4 % light, −7…−12 % sharpness (= the lit ship
+  at α 1). Ships get no planet shadow at all (`GPU.oc` holds the station only), so the shadow pair is the
+  same frame.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
