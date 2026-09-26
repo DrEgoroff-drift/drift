@@ -1906,6 +1906,39 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   19 → 3 at ×1.3 and 22 → 3 at ×2.2, none of them 17k/17j (hotel neon 17l, shuttle, find sprite); via
   prebake 20/24; `PB_SYNC` 0, pipelines 0. Pair vs HEAD: ×1.3 max 13 (2 px >8), ×2.2 max 8 (0 px >8). Gate2d
   gains the billboard scene; mutants `bb-panel-2d`, `bb-strip-2d` die. No new warm-up keys.
+- **Instrument rack (25d) and «Глобус» (25f) on the #ovl layer.** #ovl (08bi) gains an interface queue
+  `uq`, drawn under labels and chips, with four kinds: image (kind 3 — a gpuBake master, rotated quad,
+  `textureSampleGrad`; one bind group per master, cached by texture; without an image the frame's front texture,
+  so no new texture), graph (kind 4 — a polyline of uniform x step, points in the tail of the same buffer,
+  round joins by segment distance, its rect is the clip), capsule (kind 5) and ellipse (kind 6, fill or stroke).
+  Pushers `ovRect/ovImage/ovCap/ovEll/ovGraph` take CSS px. `rackTex` bakes the whole static rack at #ovl
+  density with the body shadow in device-px margins (40/30/50), plus the static globe and the НЕВЯЗКА label,
+  scale bed and lamp (ss 2 below density 1.5, else 1); `rackSprites` bakes needle, needle shadow, hub and
+  carriage at ×4 density with mips, so the rotated needle is trilinear. `rackDraw` only queues: dim rect,
+  master (origin snapped to a device px), 24 sprites, five pen graphs clipped to their lanes, carriages, pen
+  tips, perforation, texts through `ovText`; `globusDraw` queues meridian, course, aim and axis. The loop calls
+  `rackDraw` before `drawWorld` (the queue flushes at the end of the world); `gpuHudFlush` lost its `rack` argument
+  and no longer redraws #hud every frame. Rack open, 90 frames at 760: 2D calls on #hud 1 887/frame → 0; textures and
+  pipelines after the opening frame 0 (opening: master, sprites and bake pools); the 4 calls/frame left on #c
+  are world state sets (gpuFrame, drawSystem, drawSysHud), present with the rack closed. Pairs vs HEAD: 800
+  (integer origin) max 50, 130 px >24 (sub-pixel number snap, carriage edges); 760 the whole rack moves .2 px
+  onto the pixel grid; phone ×3 dials and paper grid sharp where the 2D canvas was stretched soft. Gate2d
+  gains the rack scene; mutants `rack-dim-2d`, `globus-axis-2d`, `rack-master-2d` die.
+  Both rack bakes pass `once` (08ca: `gpuBakeRedo` sets `GC_ONCE`, `gcPoolSet` then trashes the set instead of
+  pooling it), so opening the rack never evicts the warm pool (448×64, 512×128, 1024² — the -Mobile «серии тени»
+  failure); the master alone is over half the cap anyway, the sprites were the ones that evicted. The master
+  survives a close, so a reopen bakes nothing: frame 3.1 ms at 760, 3.3 ms at 390×3; pool 57.3 → 57.3 MB at
+  760, 59.0 → 59.0 MB at 390. One master bake made the first open a 48 / 56.5 ms frame, so the master is now
+  layers in paint order (`rackParts`: body with shadow, four dial pairs, recorder box, right corner — each its
+  own bake on its own device-px rect, origin on a whole pixel), baked as steps of the 17a0 oven (`rackBakeJob`:
+  sprites, parts, then two warm-up steps that run `rackFrame` dry and cut the #ovl queues back — the live
+  texts' glyphs were 18 ms of the first visible frame at 390). The dim fades in over four frames meanwhile;
+  the rack stands up whole on frame 7–8. Worst first-open frame over five runs: 12.5–18.8 ms at 760,
+  18.2–19.3 ms at 390×3; parts vs the single master max 6–7/255, 0 px >24 (no seams).
+  The channel legend is measured with real glyphs (`rackLegend`): «CH1 · ХРОНОМЕТР», else the name, else «CH1»,
+  the first form that leaves the paper 60 % of the box; else the channel number tight beside the dot (the
+  phone: the globe takes 210 of 367 px), while the paper keeps 45 %; dots only past that — no label runs
+  under the feed roller at 390, 760 or 1180 (91zl; mutants `rack-legend-under-roller`, `rack-bake-pooled`).
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.

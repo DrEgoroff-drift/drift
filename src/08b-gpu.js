@@ -608,8 +608,8 @@ function gpuWorld(k,grain,vig){
     if(P.k>0){
       if(!GPU.emitOn){GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();GPU.emitOn=true;}
       gpuBloom();}
-    /* слой приборов — по изменению (08bh); дальше кадр рисует стойку (25d) — туда же */
-    gpuHudFlush((typeof rackOpen==="function")&&rackOpen()&&G.running&&!scrOpen());ctx=GPU.uctx;
+    /* слой приборов — по изменению (08bh); стойка (25d) — на слое #ovl, перерисовки #hud не просит */
+    gpuHudFlush();ctx=GPU.uctx;
   }catch(e){gpuFail(e,"сборка");}
 }
 /* лестница свечения: колено в первый уровень, вниз по уровням, сумма верхних — одним проходом */

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6298
+Файлов: 630 · символов верхнего уровня: 6323
 
 ## СИМВОЛЫ
 
@@ -152,7 +152,7 @@ arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:550-597
 artGet                       src/08ca-gpu-canvas.js:454
 ARTIFACTS                    src/12h-relic.js:48-63
-artPut                       src/08ca-gpu-canvas.js:455-572
+artPut                       src/08ca-gpu-canvas.js:455-576
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
@@ -789,9 +789,9 @@ CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
 chipDist                     src/17-mode-system.js:695-701
-chipDom                      src/08bi-gpu-ovl.js:114-129
-chipDomSnap                  src/08bh-gpu-hud.js:36-41
-chipDomSweep                 src/08bh-gpu-hud.js:68-74
+chipDom                      src/08bi-gpu-ovl.js:144-159
+chipDomSnap                  src/08bh-gpu-hud.js:35-40
+chipDomSweep                 src/08bh-gpu-hud.js:67-73
 chKing                       src/25n-chess.js:112-116
 chLegal                      src/25n-chess.js:191-195
 chMine                       src/25n-chess.js:38
@@ -1399,9 +1399,9 @@ dominoMove                   src/11af-domino.js:25-39
 dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
-domLabel                     src/08bi-gpu-ovl.js:104-110
-domLabelEnd                  src/08bh-gpu-hud.js:56-65
-domLabelId                   src/08bh-gpu-hud.js:54
+domLabel                     src/08bi-gpu-ovl.js:134-140
+domLabelEnd                  src/08bh-gpu-hud.js:55-64
+domLabelId                   src/08bh-gpu-hud.js:53
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
 DOMR_SAVE                    src/15d-domread.js:18
@@ -2039,7 +2039,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-131
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-138
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -2061,6 +2061,7 @@ GC_GLYPHS                    src/08cb-gpu-text.js:17-50
 GC_KEYS                      src/08ca-gpu-canvas.js:90
 GC_MIP_WGSL                  src/08ca-gpu-canvas.js:330
 GC_MISS                      src/08ca-gpu-canvas.js:27
+GC_ONCE                      src/08ca-gpu-canvas.js:464
 GC_OPS                       src/08ca-gpu-canvas.js:13-58
 GC_OPX                       src/08ca-gpu-canvas.js:26
 GC_POOL_CAP                  src/08ca-gpu-canvas.js:394
@@ -2182,7 +2183,8 @@ glazeStops                   src/18a1-glaze.js:71-97
 GLOB                         src/25f-globus.js:44
 GLOB_STEP                    src/25f-globus.js:43
 globusAim                    src/25f-globus.js:49-68
-globusDraw                   src/25f-globus.js:81-140
+globusDraw                   src/25f-globus.js:113-138
+globusPaint                  src/25f-globus.js:81-111
 globusSys                    tests/91zzzg-globus.js:7-11
 globusTick                   src/25f-globus.js:70-77
 GLOW_CACHE                   src/16a0-glow.js:23
@@ -2297,7 +2299,8 @@ gpuBake                      src/08ca-gpu-canvas.js:433-438
 gpuBaked                     src/08ca-gpu-canvas.js:442-447
 gpuBakeDrop                  src/08ca-gpu-canvas.js:448
 gpuBakeLive                  src/08ca-gpu-canvas.js:451
-gpuBakeRedo                  src/08ca-gpu-canvas.js:462-572
+gpuBakeRedo                  src/08ca-gpu-canvas.js:465
+gpuBakeRedo0                 src/08ca-gpu-canvas.js:466-576
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:616-621
@@ -2321,7 +2324,7 @@ gpuFrontHook                 src/08c-gpu-kit.js:115-124
 gpuHaze                      src/08b-gpu.js:449
 gpuHud                       src/08bh-gpu-hud.js:13-16
 gpuHudDpr                    src/08bh-gpu-hud.js:11
-gpuHudFlush                  src/08bh-gpu-hud.js:19-33
+gpuHudFlush                  src/08bh-gpu-hud.js:18-32
 gpuImage                     src/08c-gpu-kit.js:212-225
 gpuKitU                      src/08c-gpu-kit.js:170-174
 gpuLight                     src/08b-gpu.js:451
@@ -2337,6 +2340,7 @@ gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
 gpuNoise                     src/08b-gpu.js:374-379
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:565-585
+gpuOvFrontView               src/08bi-gpu-ovl.js:208
 gpuPass                      src/08b-gpu.js:437-440
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
@@ -3181,8 +3185,8 @@ kpTake                       src/26e2-post.js:32-42
 kpTicket                     src/26e2-post.js:30
 kpWindow                     src/26e2-post.js:47-92
 labCount                     src/12h-relic.js:16-24
-LABDOM                       src/08bh-gpu-hud.js:44
-labDomBox                    src/08bh-gpu-hud.js:46-51
+LABDOM                       src/08bh-gpu-hud.js:43
+labDomBox                    src/08bh-gpu-hud.js:45-50
 labelW                       src/12ai-fleet.js:134
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
@@ -3967,18 +3971,25 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
-ovAtlas                      src/08bi-gpu-ovl.js:52-71
-ovCanvas                     src/08bi-gpu-ovl.js:37-49
-ovFlush                      src/08bi-gpu-ovl.js:134-157
-OVL                          src/08bi-gpu-ovl.js:11
-OVL_N                        src/08bi-gpu-ovl.js:14
-OVL_PLATE                    src/08bi-gpu-ovl.js:113
-OVL_RUN                      src/08bi-gpu-ovl.js:76
-OVL_WGSL                     src/08bi-gpu-ovl.js:15
-ovlDesc                      src/08bi-gpu-ovl.js:131
-ovNd                         src/08bi-gpu-ovl.js:35
-ovPush                       src/08bi-gpu-ovl.js:72-75
-ovText                       src/08bi-gpu-ovl.js:79-101
+ovAtlas                      src/08bi-gpu-ovl.js:82-101
+ovBind                       src/08bi-gpu-ovl.js:199-207
+ovCanvas                     src/08bi-gpu-ovl.js:67-79
+ovCap                        src/08bi-gpu-ovl.js:219-222
+ovEll                        src/08bi-gpu-ovl.js:224-227
+ovFlush                      src/08bi-gpu-ovl.js:164-197
+ovGraph                      src/08bi-gpu-ovl.js:229-233
+ovImage                      src/08bi-gpu-ovl.js:213-217
+OVL                          src/08bi-gpu-ovl.js:17
+OVL_N                        src/08bi-gpu-ovl.js:20
+OVL_PLATE                    src/08bi-gpu-ovl.js:143
+OVL_RUN                      src/08bi-gpu-ovl.js:106
+OVL_WGSL                     src/08bi-gpu-ovl.js:21
+ovlDesc                      src/08bi-gpu-ovl.js:161
+ovNd                         src/08bi-gpu-ovl.js:65
+ovPm                         src/08bi-gpu-ovl.js:210
+ovPush                       src/08bi-gpu-ovl.js:102-105
+ovRect                       src/08bi-gpu-ovl.js:211
+ovText                       src/08bi-gpu-ovl.js:109-131
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
 packPart                     src/05-parts.js:465-472
@@ -4452,19 +4463,33 @@ r3Sys                        tests/91zzxa-playable.js:177-183
 r4Haul                       tests/91zzxa-playable.js:331-337
 RACK                         src/25d-instr-rack.js:54
 RACK_CH                      src/25d-instr-rack.js:27-33
+RACK_DQ                      src/25d-instr-rack.js:176
 RACK_G                       src/25d-instr-rack.js:36-53
+RACK_LEG_FONT                src/25d-instr-rack.js:403
 RACK_PAD                     src/25d-instr-rack.js:25
+RACK_SH                      src/25d-instr-rack.js:175
+rackBakeJob                  src/25d-instr-rack.js:198-214
 rackDial                     src/25d-instr-rack.js:105-149
-rackDraw                     src/25d-instr-rack.js:323-497
+rackDraw                     src/25d-instr-rack.js:455-463
+rackDrop                     src/25d-instr-rack.js:178-194
+rackFrame                    src/25d-instr-rack.js:470-569
 rackGeo                      src/25d-instr-rack.js:68-80
 rackGlass                    src/25d-instr-rack.js:151-163
 rackGrain                    src/25d-instr-rack.js:94-103
+rackLegend                   src/25d-instr-rack.js:404-417
 rackOpen                     src/25d-instr-rack.js:55
-rackPaperBox                 src/25d-instr-rack.js:284-288
-rackRoller                   src/25d-instr-rack.js:290-319
+rackPaint                    src/25d-instr-rack.js:227-358
+rackPaperBox                 src/25d-instr-rack.js:394-398
+rackParts                    src/25d-instr-rack.js:183-194
+rackR                        src/25d-instr-rack.js:177
+rackRoller                   src/25d-instr-rack.js:421-450
 rackScrew                    src/25d-instr-rack.js:84-92
-rackTex                      src/25d-instr-rack.js:168-282
+rackSpr                      src/25d-instr-rack.js:389-392
+rackSprites                  src/25d-instr-rack.js:361-387
+rackTex                      src/25d-instr-rack.js:215-225
+rackTextW                    src/25d-instr-rack.js:419
 rackToggle                   src/25d-instr-rack.js:56-59
+rackWarm                     src/25d-instr-rack.js:466-469
 RADIO                        src/10a-radio.js:119
 RADIO_ARCH                   src/10a-radio.js:24-40
 RADIO_BANDS                  src/25e-receiver.js:13-18
@@ -6451,7 +6476,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 5 КБ
   · слой приборов: #hud и фишки у кромки (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08bi-gpu-ovl.js · 13 КБ
+## src/08bi-gpu-ovl.js · 19 КБ
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
 ## src/08c-gpu-kit.js · 26 КБ
@@ -7416,7 +7441,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25c-instr-hud.js · 9 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
-## src/25d-instr-rack.js · 27 КБ
+## src/25d-instr-rack.js · 36 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
 ## src/25e-receiver.js · 7 КБ
@@ -7773,7 +7798,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zk-tape.js · 8 КБ
 
-## tests/91zl-rack.js · 3 КБ
+## tests/91zl-rack.js · 8 КБ
 
 ## tests/91zm-role.js · 4 КБ
 
@@ -8295,10 +8320,10 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 16 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 14 КБ
+## tests/91zzzzzzy3-gate2d.js · 15 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-gpu-ovl.js · 6 КБ
+## tests/91zzzzzzy4-gpu-ovl.js · 9 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 7 КБ

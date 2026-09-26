@@ -548,11 +548,11 @@ function frameBody(now){
     audioTick(dt);
     /* кадр рисует видеокарта (08b); пока устройства нет — мир шагает без картинки */
     const drew=gpuFrame();
-    if(drew){drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}   /* хроматика после попадания (M325) */
+    /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой игрок повернулся.
+       Она — очередь слоя #ovl, а слой сливается в конце мира: потому зовётся ДО него */
+    if(drew){if(typeof rackDraw==="function")rackDraw();drawWorld();if(typeof drawHitFx==="function")drawHitFx(dt);}   /* хроматика после попадания (M325) */
     hud();
-    /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
-       игрок повернулся. Рисуется последней, но до DOM-строки приборов */
-    if(drew){if(typeof rackDraw==="function")rackDraw();gpuPresent();}
+    if(drew)gpuPresent();
   }else{
     G.t=tReal*.06;
     if(gpuFrame()){gpuSpaceTitle(tReal*.004);gpuWorld(0,false,false);gpuPresent();}

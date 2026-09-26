@@ -14,11 +14,10 @@ function gpuHud(key,fn){
   if(!GPU.on||!GPU.uctx){fn();return;}
   (GPU.hq||(GPU.hq=[])).push({key,fn});
 }
-/* конец мира: слой перерисовывается, только если ключи сменились; дальше кадр рисует стойку
-   (25d) — тоже сюда, её ключ меняется каждый кадр */
-function gpuHudFlush(rack){
+/* конец мира: слой перерисовывается, только если ключи сменились (стойка 25d — на слое #ovl, сюда не ходит) */
+function gpuHudFlush(){
   const q=GPU.hq||[],u=GPU.uctx;
-  let key=q.map(e=>e.key).join("|");if(rack)key+="|rack"+GPU.frameNo;
+  const key=q.map(e=>e.key).join("|");
   if(key!==GPU.hkey){
     if(GPU.uiWas){u.setTransform(1,0,0,1,0,0);u.clearRect(0,0,GPU.ui.width,GPU.ui.height);}
     const nd=GPU.ui.width/Math.max(1,W),c0=ctx;ctx=u;
