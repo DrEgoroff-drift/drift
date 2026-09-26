@@ -1118,6 +1118,8 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   up to ~11 s of real time, with the same virtual ceiling of 14 s out of the budget of 20. The eyes suite names the number
   of polls and the state (adapter silent / device lost). The mutant `eyes-gpu-hang` (an adapter that never answers)
   proves a real «видеокарта не поднялась» still turns it red: 560 polls, ~11 s, then red.
+  Proof after merging 0.477.0: three `-Full -Jobs 3` runs in a row, all green, 19409 checks and 943 suites each
+  (373, 382 and 706 s; the third ran under a neighbour's load).
 - **One build under both shells (26.09):** `docs/INDEX.md` sorted its symbols with `Sort-Object`, which orders
   `_file`, `_indPrice`, `_mapDirty` and `_suite` first under pwsh 7 and after the letters under powershell 5.1, so
   sessions committed different indexes. The sort is now ordinal, as the bundle order has been since 0.359.0.
