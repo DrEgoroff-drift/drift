@@ -62,7 +62,8 @@ function drawHomeRoom(cn){
   const draw=c=>{c.save();c.translate(Math.max(0,pad),0);c.scale(k,k);homeRoomBody(c,W2,H2);c.restore();};
   if(HOME_BK){gpuBakeDrop(HOME_BK);HOME_BK=null;}
   const B=gpuBake(cn.width,cn.height,draw,{mips:false,once:true});
-  if(!B){const g=new GcCtx(cn.width,cn.height,1),prev=ctx;ctx=g;try{draw(g);}finally{ctx=prev;}return;}
+  if(!B){   /* без видеокарты — запись ради зон; текст без неё не меряется, а зонам он и не нужен */
+    const g=new GcCtx(cn.width,cn.height,1),prev=ctx;g.fillText=g.strokeText=()=>{};ctx=g;try{draw(g);}finally{ctx=prev;}return;}
   HOME_BK=B;
   ovPaint(cn,1,()=>ovImage(B,cn.width/2,cn.height/2,cn.width,cn.height,0,0,0,1,1,1));
 }

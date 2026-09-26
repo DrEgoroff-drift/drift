@@ -56,8 +56,13 @@ TEST_SUITES.push(()=>suite("дом: по вещам можно ткнуть",()=
     tMs:now(),paidMs:now()}));
   const cr=G.crew[0];
   ok(!!cr,"наёмник дома есть");
-  const lg=T.ledger(()=>drawHomeRoom(c2));   // поникший рисуется своей позой
-  ok(lg.calls>10,"поникший наёмник рисуется: вызовов канвы "+lg.calls);
+  /* комната печётся кистями на GPU-холсте (27e), 2D-вызовов нет: считаются мазки самого холста */
+  const brush=f=>{let n=0;const P=GcCtx.prototype,o={};
+    for(const k of ["fill","stroke","fillRect","strokeRect","drawImage"]){o[k]=P[k];P[k]=function(){n++;return o[k].apply(this,arguments);};}
+    try{f();}finally{Object.assign(P,o);}return n;};
+  G.crew.length=0;const n0=brush(()=>drawHomeRoom(c2));
+  G.crew.push(cr);const n1=brush(()=>drawHomeRoom(c2));   // поникший рисуется своей позой
+  ok(n1-n0>10,"поникший наёмник рисуется: мазков кистей "+(n1-n0));
 }));
 /* комната дома на движке (26.09): выпечка теми же кистями на холсте webgpu, 2D-корпуса в гараже нет;
    зоны нажатия — те же, что даёт запись без видеокарты */

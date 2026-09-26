@@ -1535,7 +1535,7 @@ drawHaul                     src/16c-rescue.js:506-513
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-332
 drawHomeOut                  src/21f-home-out.js:73-312
-drawHomeRoom                 src/27e-ui-home.js:47-68
+drawHomeRoom                 src/27e-ui-home.js:47-69
 drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:22-31
 drawHull                     src/03e-hull-draw.js:115-194
@@ -2866,9 +2866,9 @@ homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:153
 homeCool                     src/16c-rescue.js:55
-homeCrewFigure               src/27e-ui-home.js:684-697
+homeCrewFigure               src/27e-ui-home.js:685-698
 homeDoorX                    src/21f-home-out.js:314-318
-homeFigure                   src/27e-ui-home.js:617-626
+homeFigure                   src/27e-ui-home.js:618-627
 homeHas                      src/12j-home.js:24-28
 homeHereP                    src/21f-home-out.js:26-32
 homeHitAt                    src/27e-ui-home.js:35-41
@@ -2886,10 +2886,10 @@ homePlanet                   src/21f-home-out.js:18-24
 homeProgress                 src/12j-home.js:139-147
 homeRebuild                  src/12j-home.js:227-241
 homeRevive                   src/12j-home.js:154-174
-homeRoomBody                 src/27e-ui-home.js:69-611
+homeRoomBody                 src/27e-ui-home.js:70-612
 homeRoomW                    src/27e-ui-home.js:21-26
-homeSceneClick               src/27e-ui-home.js:632-680
-homeShade                    src/27e-ui-home.js:700-703
+homeSceneClick               src/27e-ui-home.js:633-681
+homeShade                    src/27e-ui-home.js:701-704
 homeShow                     src/12j-home.js:196-203
 homeShowBonus                src/12j-home.js:217-222
 homeSigns                    src/21f-home-out.js:335-368

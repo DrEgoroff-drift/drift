@@ -2452,7 +2452,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.475.0";
+const VER="0.476.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -96610,7 +96610,8 @@ function drawHomeRoom(cn){
   const draw=c=>{c.save();c.translate(Math.max(0,pad),0);c.scale(k,k);homeRoomBody(c,W2,H2);c.restore();};
   if(HOME_BK){gpuBakeDrop(HOME_BK);HOME_BK=null;}
   const B=gpuBake(cn.width,cn.height,draw,{mips:false,once:true});
-  if(!B){const g=new GcCtx(cn.width,cn.height,1),prev=ctx;ctx=g;try{draw(g);}finally{ctx=prev;}return;}
+  if(!B){   /* без видеокарты — запись ради зон; текст без неё не меряется, а зонам он и не нужен */
+    const g=new GcCtx(cn.width,cn.height,1),prev=ctx;g.fillText=g.strokeText=()=>{};ctx=g;try{draw(g);}finally{ctx=prev;}return;}
   HOME_BK=B;
   ovPaint(cn,1,()=>ovImage(B,cn.width/2,cn.height/2,cn.width,cn.height,0,0,0,1,1,1));
 }

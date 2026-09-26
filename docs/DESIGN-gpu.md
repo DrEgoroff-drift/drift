@@ -1095,7 +1095,10 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   5. Home room 27e — done: `drawHomeRoom` bakes the room with the same brushes (08ca) when the tab is drawn
      and puts it on the canvas as `webgpu` (08bi `ovPaint`, new: one ov pass into a canvas, in the frame or
      out of it with its own encoder). The hit zones `HOME_HIT` come from the bake itself, synchronously, as
-     before; without a GPU (Node) the brushes run into a GcCtx record for the zones only. The garage ship is
+     before; without a GPU (Node) the brushes run into a GcCtx record for the zones only, with text muted
+     (text cannot be sized without a GPU, and zones do not need it — the first cut threw there once a
+     mercenary's name was drawn). «дом: по вещам можно ткнуть» counts the brushes' own strokes (GcCtx
+     prototype), with and without the drooping mercenary, instead of 2D calls, which are 0 now. The garage ship is
      `hullPart1..3` in the bake, no `drawHull`. 26a (GPU-3's) is untouched: it still makes the canvas and
      calls `drawHomeRoom`. Pair `pair_home.png` (scratchpad, tiers 8 and 6, 2D over engine): identical to
      the eye; tiers 1–8 mean 0.21–0.99 per channel, zones byte-identical, 0 GC_MISS, 0 `drawHull`; the
