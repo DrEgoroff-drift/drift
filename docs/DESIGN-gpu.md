@@ -1021,7 +1021,7 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   (27) only measures now. The frame draws it (hud → `opisHullTick`, 27j) when the canvas, device or signature
   changes. Pairs 760 and 390 (dpr 1 and 2) against main: same silhouette and anchors; the hull reads lit
   (rim toward the light, glass glint), lamps pale gold as in flight instead of flat amber. Guard
-  `91zzzzzzy7-opis-gpu`: 40 frames of flight under ОПИСЬ, `#c` untouched and not uploaded, one submit a frame,
+  `91zzzzzzzzzz-opis-gpu` (last in order, see 0.473.0): 40 frames of flight under ОПИСЬ, `#c` untouched and not uploaded, one submit a frame,
   no 2D context on the canvas, one pass per signature change, warm bakes intact.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**

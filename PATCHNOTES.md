@@ -6,6 +6,14 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.473.0 - the ship in ОПИСЬ on the engine
+
+- **ОПИСЬ shows your ship the way it flies** (the worker): the hull on the table is drawn by the same GPU
+  hull as in flight, in a studio light from the upper left — its edge catches the light, the canopy glints,
+  the lamps glow — instead of the flat 2D drawing. Slots, their colours and taps are exactly where they were.
+- **One studio for every hull on display**: the same function will draw the ship in the station showroom,
+  at home and on the road as they move off the old 2D bake.
+
 ## 0.472.0 - a nebula that stops pulsing
 
 - **Standing still, the nebula flows instead of stepping** (GPU-2): the gas was rebuilt every third

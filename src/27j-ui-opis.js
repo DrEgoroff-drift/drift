@@ -428,7 +428,9 @@ function opisHullRedraw(){
 const OPIS_G={cv:null,cx:null,dev:null,T:null,S:{},sig:"",n:0};
 function opisHullTick(){
   const D=OPIS.gd,cv=D&&D.cv,g=OPIS_G;
-  if(!cv||!cv.isConnected||!OPIS.box||!GPU.on||!GPU.enc||!GPU.dev)return;
+  /* только открытый стол на ОПИСИ: набор, что рисует ОПИСЬ в свой ящик и не закрывает, не должен
+     рисовать силуэт в кадрах чужих сцен (золотые кадры в -Full) */
+  if(!cv||!cv.isConnected||!OPIS.box||!tableOpenNow||tableTab!=="hold"||!GPU.on||!GPU.enc||!GPU.dev)return;
   if(g.cv!==cv||g.dev!==GPU.dev){
     const cx=cv.getContext("webgpu");if(!cx)return;
     cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
@@ -1022,7 +1024,7 @@ function opisRender(box){
 /* закрытие стола забирает с собой всё временное: подхват, выбор, полосу люка */
 function opisLeave(){
   opisDropEnd();
-  OPIS.sel=null;OPIS.hover=null;OPIS.ask=null;OPIS.arm=null;OPIS.box=null;
+  OPIS.sel=null;OPIS.hover=null;OPIS.ask=null;OPIS.arm=null;OPIS.box=null;OPIS.gd=null;
   document.body.classList.remove("op-ask");
   const bar=document.getElementById("opisBar");if(bar)bar.classList.remove("ask");
 }
