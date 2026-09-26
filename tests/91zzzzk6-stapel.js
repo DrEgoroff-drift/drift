@@ -61,6 +61,28 @@ TEST_SUITES.push(()=>suite("стапель: шесть верфей — шест
   eq(set.size,MAKER_KEYS.length,"у каждой из шести верфей свой корпус из одного заказа");
   for(const b of MAKER_KEYS)ok(!!stapelYard(b).note,"у верфи "+b+" есть строка характера");
 }));
+/* лист стапеля на движке (26.09): кисти те же, холст — GPU (08ca); кадр печёт его раз на лист, 2D-корпуса
+   и 2D-холста у листа нет, рамка корпуса — по вершинам, без чтения пикселей */
+TEST_SUITES.push(()=>suite("стапель: лист печётся на движке, 2D-корпуса нет",{tier:"browser"},()=>{
+  resetWorld();
+  if(!GPU.ok||!GPU.dev){ok(stapelSheet({by:"co",cls:"courier",size:"light",l:1,w:1},420,193,{prog:.25}).className==="stp-sheet","без видеокарты лист — пустой холст");return;}
+  const miss=GC_MISS.length,n0=STP_G.n,dh=drawHull;
+  let nh=0;
+  window.drawHull=function(){nh++;return dh.apply(this,arguments);};
+  let cv;
+  try{
+    cv=stapelSheet({by:"co",cls:"courier",size:"light",l:1,w:1,no:7},420,193,{prog:.25});
+    document.body.appendChild(cv);$st.classList.add("open");
+    gpuManual(()=>{drawSystem();stapelHullTick();});
+    gpuManual(()=>{drawSystem();stapelHullTick();});
+  }finally{window.drawHull=dh;$st.classList.remove("open");if(cv)cv.remove();}
+  eq(STP_G.n-n0,1,"два кадра — одна печь: лист печётся раз");
+  eq(STP_G.bk.length,2,"две выпечки: корпус с набором и лист");
+  eq(nh,0,"2D-корпус не рисуется ни разу — ни на листе, ни для рамки (прежняя мерила его растр)");
+  eq(GC_MISS.length-miss,0,"GPU-холсту хватило всего, что просит лист: "+GC_MISS.slice(miss).join(", "));
+  ok(cv.getContext("2d")===null,"у холста листа контекст webgpu, 2D к нему не взять");
+  const L=stapelSheet.last;ok(L.l>60&&L.l<80&&L.b>18&&L.b<30,"размеры на листе — по нарисованному: "+L.l+" × "+L.b+" м");
+}));
 TEST_SUITES.push(()=>suite("Космопочта: часы на двери, извещение, 30 суток, добрый клерк",()=>{
   resetWorld();
   let at=null;

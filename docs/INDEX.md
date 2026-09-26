@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 636 · символов верхнего уровня: 6406
+Файлов: 636 · символов верхнего уровня: 6407
 
 ## СИМВОЛЫ
 
@@ -2981,7 +2981,7 @@ hqWindowView                 src/27f-hq-room.js:616-640
 HS_LT                        src/17c2-hull-gpu.js:147
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:174-521
+hud                          src/27z-telemetry.js:174-522
 HUD_BAND                     src/27z-telemetry.js:21
 HUD_FLOOR                    src/27z-telemetry.js:31
 HUD_NUM                      src/08-state.js:100
@@ -5597,26 +5597,26 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:64-91
 stampShow                    src/17i-stamp.js:52-62
 stampText                    src/17i-stamp.js:24-35
-STAPEL_KEYS                  src/26e2-stapel-draw.js:178
+STAPEL_KEYS                  src/26e2-stapel-draw.js:217
 STAPEL_PV                    src/26e1-stapel.js:124
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
-STAPEL_UI                    src/26e1-stapel.js:131
+STAPEL_UI                    src/26e1-stapel.js:125
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:133-200
+stapelBlock                  src/26e1-stapel.js:127-194
 stapelClosedWhy              src/26e1-stapel.js:96-101
 stapelCollect                src/26e1-stapel.js:111-122
-stapelDelta                  src/26e2-stapel-draw.js:179-189
-stapelFx                     src/26e2-stapel-draw.js:191-199
-stapelHullBox                src/26e2-stapel-draw.js:164-175
+stapelDelta                  src/26e2-stapel-draw.js:218-228
+stapelFx                     src/26e2-stapel-draw.js:230-238
+stapelHullBox                src/26e2-stapel-draw.js:172-190
+stapelHullTick               src/26e2-stapel-draw.js:195-214
 stapelId                     src/26e1-stapel.js:68
 stapelOrder                  src/26e1-stapel.js:80-94
-stapelPreview                src/26e1-stapel.js:125-130
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
-stapelSheet                  src/26e2-stapel-draw.js:8-161
-stapelSheetW                 src/26e1-stapel.js:132
+stapelSheet                  src/26e2-stapel-draw.js:9-166
+stapelSheetW                 src/26e1-stapel.js:126
 stapelShip                   src/26e1-stapel.js:59-67
 stapelStats                  src/26e1-stapel.js:42-57
 stapelStrip                  src/26e1-stapel.js:70-74
@@ -5714,6 +5714,7 @@ storyTableLine               src/11c-stories.js:281-287
 storyTraces                  src/11c-stories.js:219-236
 storyTurns                   src/11c-stories.js:121-142
 storyWhen                    src/11c-stories.js:205-209
+STP_G                        src/26e2-stapel-draw.js:194
 stPanels                     src/17c-system-draw.js:109-118
 stPlatePath                  src/17c-system-draw.js:159-166
 STRATA_K                     src/18a1-glaze.js:119
@@ -7612,7 +7613,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26e2-post.js · 8 КБ
   · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
 
-## src/26e2-stapel-draw.js · 13 КБ
+## src/26e2-stapel-draw.js · 16 КБ
   · СТАПЕЛЬ — лист (D16, дизайн-проход):1
 
 ## src/27-ui-ship.js · 25 КБ
@@ -7690,7 +7691,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/27y-hud-words.js · 3 КБ
 
-## src/27z-telemetry.js · 41 КБ
+## src/27z-telemetry.js · 42 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 65 КБ
@@ -8272,7 +8273,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 28 КБ
+## tests/91zzzzk6-stapel.js · 30 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

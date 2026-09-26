@@ -120,14 +120,8 @@ function stapelCollect(viaPost){
   logAdd("good","Со стапеля сошёл «"+sh.ru+"» — "+sh.cls+" · в ангаре");
   return id;
 }
-/* ── живой чертёж: временная запись, кэш корпуса сбрасываем на каждый сдвиг ── */
+/* ── живой чертёж: временная запись, кэш корпуса сбрасываем на каждый сдвиг (лист, 26e2) ── */
 const STAPEL_PV="spPreview";
-function stapelPreview(o,w,h){
-  const S=stapelShip(Object.assign({seed:0x57A9,no:0},o));
-  NPC_SHIPS[STAPEL_PV]=S;
-  delete HULL_CACHE[STAPEL_PV+"!"+o.by];
-  return shipThumb(STAPEL_PV,w,h);
-}
 let STAPEL_UI={cls:"scout",size:"medium",l:1,w:1};
 function stapelSheetW(){return Math.max(260,Math.min(520,((typeof $body!=="undefined"&&$body&&$body.clientWidth)||420)-28));}
 function stapelBlock(){

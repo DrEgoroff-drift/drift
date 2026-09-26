@@ -1037,8 +1037,19 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   1. 12as `leftDraw` — done: the 2D fallback (ghost `drawHull`, label box) is gone, no pass means no trace.
      The GPU branch is unchanged, so the pair is identical by construction; in the pane a ghost and a note
      draw with one `hullGpuBake`, one `domLabel`, 0 `drawHull`.
-  2. Stapel 26e2 next: `stapelSheet` draws the hull 2D into its sheet (:85), `stapelHullBox` measures it by
-     readback (:169). Then look 28y:327 (it is item h, makerRead) and 27e:296 / 29d:482 if not «home outside».
+  2. Stapel 26e2 — done: the sheet is one `webgpu` canvas. The same brushes paint into GPU-canvas bakes
+     (08ca), baked once per sheet by the frame (`stapelHullTick`, next to `opisHullTick` in 27z, only while
+     the station is open): first the hull (`hullPart1..3`, the unplated part `source-atop` with its red-lead
+     frames over the whole silhouette), then the sheet with it (`drawImage` with the shadow). No studio: the
+     2D sheet had no star light, so the bake keeps its look. `stapelHullBox` reads the GcCtx vertices at ×8
+     instead of reading pixels (clip narrows, paint under 24/255 ignored): against the GPU bake itself the
+     worst of 84 hulls is 0.42 % of length. The box is now the body without the running-light halos, so the
+     hull comes out 2–3 % larger and the «м» labels read the body (26 → 23 m on the courier). Pair
+     `pair_stapel_b.png` (scratchpad, four sheets): mean 0.9–9 per channel, all of it that scale. The bake
+     costs 10–25 ms once per slider step, in the menu. Guard «стапель: лист печётся на движке, 2D-корпуса
+     нет» (one bake per two frames, two bakes, 0 `drawHull`, no GC_MISS, no 2D context). Dead
+     `stapelPreview` (2D `shipThumb`) is gone.
+  3. Next: look 28y:327 (it is item h, makerRead) and 27e:296 / 29d:482 if not «home outside».
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
@@ -2011,7 +2022,8 @@ Back to front. F field, P particles, S shape, T text, C cached bake, 3D mesh. Li
 | frame | heat haze (18d:12–79, copies strips) ; hit chromatics → **core**; bloom, grain, vignette → **core**; grade (surface/landing, 19c:258) | 18d-postfx, 19c-light |
 | postcard | own canvas, 8 painters, seeded, no G | 25g-postcard:170–294, 25g-post-*, 25h-post-forms* (G14) |
 
-`getImageData` is used only for bounds (hull ink box 03e1:113, tile span 18c:152, staple 26e2:170, road 27l:81)
+`getImageData` is used only for bounds (hull ink box 03e1:113, tile span 18c:152, road 27l:81; the stapel box
+reads GcCtx vertices since 26.09)
 and `lookFrame` (28y:49/326) — none in gameplay.
 
 ## 8. Session 2 (worktree drift-gpu2, branch gpu2): fleet, pirates, combat
