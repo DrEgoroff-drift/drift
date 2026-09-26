@@ -39,11 +39,14 @@ function homeHitAt(px,py){
     if(rx>=z.x&&rx<=z.x+z.w&&ry>=z.y&&ry<=z.y+z.h)return z;
   return null;
 }
+/* рисунок — выпечка движка (08ca) теми же кистями, на холсте webgpu (08bi ovPaint), сразу, как вкладку
+   рисуют: зоны нажатия HOME_HIT считает сама выпечка, синхронно. Выпечка живёт до следующего рисунка
+   (вкладку могут нарисовать и из кадра — его энкодер ещё не отправлен). Без видеокарты (Node) те же
+   кисти идут в запись GcCtx — ради одних зон */
+let HOME_BK=null;
 function drawHomeRoom(cn){
   const H=G.home;if(!H||!H.tier)return;
   HOME_HIT=[];
-  const c=cn.getContext("2d");
-  c.clearRect(0,0,cn.width,cn.height);
   /* масштаб берём по ШИРИНЕ содержимого, а не по высоте канвы: иначе
      двухкомнатный дом растягивается на весь экран и теряет масштаб */
   /* Масштаб ОГРАНИЧЕН сверху: без потолка дом из двух ступеней растягивался на
@@ -56,9 +59,13 @@ function drawHomeRoom(cn){
   const pad=(cn.width-W2*k)/2;
   /* тот же перевод, что у рисунка, — им же и попадают пальцем */
   HOME_VIEW={k,pad:Math.max(0,pad)};
-  c.save();c.translate(Math.max(0,pad),0);c.scale(k,k);
-  homeRoomBody(c,W2,H2);
-  c.restore();
+  const draw=c=>{c.save();c.translate(Math.max(0,pad),0);c.scale(k,k);homeRoomBody(c,W2,H2);c.restore();};
+  if(HOME_BK){gpuBakeDrop(HOME_BK);HOME_BK=null;}
+  const B=gpuBake(cn.width,cn.height,draw,{mips:false,once:true});
+  if(!B){   /* без видеокарты — запись ради зон; текст без неё не меряется, а зонам он и не нужен */
+    const g=new GcCtx(cn.width,cn.height,1),prev=ctx;g.fillText=g.strokeText=()=>{};ctx=g;try{draw(g);}finally{ctx=prev;}return;}
+  HOME_BK=B;
+  ovPaint(cn,1,()=>ovImage(B,cn.width/2,cn.height/2,cn.width,cn.height,0,0,0,1,1,1));
 }
 function homeRoomBody(c,W2,H2){
   const H=G.home;
@@ -292,9 +299,7 @@ function homeRoomBody(c,W2,H2){
     c.translate(x0+42,fy-31);
     const hl=hullOf(gid),s=Math.min(70/hl.len,26/Math.max(6,hl.halfW*2));
     c.scale(s,s);
-    const prev=ctx;ctx=c;
-    drawHull(gid,0,0,0,0);
-    ctx=prev;
+    hullPart1(hl,gid,0,false);hullPart2(hl);hullPart3(hl,gid);   /* кисти тела в ctx — он и есть c (выпечка) */
     c.restore();
     /* кабель питания с потолка ниши к корме */
     c.strokeStyle="rgba(242,178,92,.35)";c.lineWidth=1;

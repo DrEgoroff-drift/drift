@@ -1043,6 +1043,74 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   кадры: сцена не помнит, кто рисовал до неё» shoots the two scenes forwards and backwards, with an abandoned
   job planted before each. It is red with exactly those numbers without the fix. The ОПИСЬ guard is back at
   `91zzzzzzy7`.
+- **03e1 callers, my zone (26.09; zones: station 26 — GPU-3; road 27l, scoop, home outside — fleet):**
+  1. 12as `leftDraw` — done: the 2D fallback (ghost `drawHull`, label box) is gone, no pass means no trace.
+     The GPU branch is unchanged, so the pair is identical by construction; in the pane a ghost and a note
+     draw with one `hullGpuBake`, one `domLabel`, 0 `drawHull`.
+  2. Stapel 26e2 — done: the sheet is one `webgpu` canvas. The same brushes paint into GPU-canvas bakes
+     (08ca), baked once per sheet by the frame (`stapelHullTick`, next to `opisHullTick` in 27z, only while
+     the station is open): first the hull (`hullPart1..3`, the unplated part `source-atop` with its red-lead
+     frames over the whole silhouette), then the sheet with it (`drawImage` with the shadow). No studio: the
+     2D sheet had no star light, so the bake keeps its look. `stapelHullBox` reads the GcCtx vertices at ×8
+     instead of reading pixels (clip narrows, paint under 24/255 ignored): against the GPU bake itself the
+     worst of 84 hulls is 0.42 % of length. The box is now the body without the running-light halos, so the
+     hull comes out 2–3 % larger and the «м» labels read the body (26 → 23 m on the courier). Pair
+     `pair_stapel_b.png` (scratchpad, four sheets): mean 0.9–9 per channel, all of it that scale. The bake
+     costs 10–25 ms once per slider step, in the menu. Guard «стапель: лист печётся на движке, 2D-корпуса
+     нет» (one bake per two frames, two bakes, 0 `drawHull`, no GC_MISS, no 2D context). Dead
+     `stapelPreview` (2D `shipThumb`) is gone. Drag (Контроль's condition): the slider leaves the redraw to
+     the frame (`stapelLater`), at most one sheet and one bake per frame, the last value wins (guard). Drag
+     frame at CPU ×4 (own headless Chrome, AMD, warm): p50 57 ms, p95 83–117 ms — over 33. Half density was
+     tried and dropped (p50 82, p95 168–343: the bake is CPU-bound on tessellation, and a sheet under 512 px
+     goes to ss 2). Контроль chose (а), a draft while dragging — done: `oninput` asks for a draft
+     (`stapelDraft`), `onchange` for one full sheet. The draft is a drawing, not a placeholder: a clean sheet
+     (floor, lamp, emblem — hull-independent, baked once with the full sheet, `STP_G.C`), then ov primitives
+     in the frame, no bake: rails at the hull's width, a dash-dot axis, the hull in thin ink along the paths
+     of its own brushes (`stapelHullBox(hl,true)` keeps the opaque fill and stroke paths from the record),
+     body and wings in a bold line on top, dimension lines with live metres (the width label upright, as on
+     the sheet: `ovText(..., vert)` rasters the glyphs turned −90°). The box is the exact one every draft
+     frame, so the release lands on the same frame, scale and metres (guard checks X0, Y0, sc, xn, xt, hw),
+     on the same canvas (no layout change), and fades in over the draft in 120 ms. To afford the exact box
+     per frame, `stapelHullBox` no longer cuts what cannot grow it: a fill or stroke whose points (plus half
+     width with miter room) lie inside the box so far goes uncut — 216 hulls byte-identical to the full
+     record, 3.2 → 2.0 ms in the pane; text in the box record is sized without a mask raster (08cb
+     `raster(..., dry)`). Drag at CPU ×4 (own headless, AMD, warm reps): p50 18–20 ms, p95 25.5–30.7 ms,
+     0 sheet bakes while dragging, release 47–58 ms with exactly one. Pair `pair_draft.png` (scratchpad,
+     390 px, dpr 2: draft left, full sheet right, three classes). Guard «стапель: протяжка — черновик без
+     выпечки, по отпусканию ровно один лист».
+  3. Look 28y / item h — done: `makerRead` looks at the engine's picture. `makerFeat` draws the hull with the
+     studio (17c2 `hullStudio`, the ОПИСЬ one: GPU bake of the same brushes, lit by relief as in flight) into a
+     52 px `webgpu` canvas and reads it back in the same task (`drawImage` into a 2D canvas, as `gpuTakeSnap`).
+     Out of the frame the instrument opens its own encoder (`GPU.enc`, `GPU.on` for the call) and empties
+     `GPU.trash` itself, since no frame follows. Same seeds, 2D → engine: 14 per class 91.1 → 91.7 %,
+     100 per class 91.3 → 90.3 % (ГЛАВТРАССА 86.7 → 84.8, Компания 86.7, the rest ±2); the point lost at 100
+     is the studio's key light on the tone features. Time 36.7 → 16.7 s and 46 → 14 s. Pair
+     `pair_maker.png` (scratchpad): 7 classes × 6 makers, 2D row over engine row, same silhouettes, lit.
+     A 760/390 pair does not apply: the instrument draws off screen. Guard in 91j-art: 0 `drawHull` over
+     `makerRead(14)`. Rule (Контроль, 26.09): if the maker gate falls, fix the maker's look, not the
+     instrument's light — ГЛАВТРАССА (84.8 %) falls first, and its mark must read under light; the studio
+     light is never flattened for `makerRead`.
+  4. 29d:482 stays the last 03e1 holder of my zone until the homein frame moves to the engine (Контроль,
+     variant c).
+  5. Home room 27e — done: `drawHomeRoom` bakes the room with the same brushes (08ca) when the tab is drawn
+     and puts it on the canvas as `webgpu` (08bi `ovPaint`, new: one ov pass into a canvas, in the frame or
+     out of it with its own encoder). The hit zones `HOME_HIT` come from the bake itself, synchronously, as
+     before; without a GPU (Node) the brushes run into a GcCtx record for the zones only, with text muted
+     (text cannot be sized without a GPU, and zones do not need it — the first cut threw there once a
+     mercenary's name was drawn). «дом: по вещам можно ткнуть» counts the brushes' own strokes (GcCtx
+     prototype), with and without the drooping mercenary, instead of 2D calls, which are 0 now. The garage ship is
+     `hullPart1..3` in the bake, no `drawHull`. 26a (GPU-3's) is untouched: it still makes the canvas and
+     calls `drawHomeRoom`. Pair `pair_home.png` (scratchpad, tiers 8 and 6, 2D over engine): identical to
+     the eye; tiers 1–8 mean 0.21–0.99 per channel, zones byte-identical, 0 GC_MISS, 0 `drawHull`; the
+     bake 21–163 ms per tab draw. Guard «дом: комната печётся на движке, 2D-корпуса нет».
+- **08bi for the album (26.09, for GPU-3's 25g1):** `ovImage(..., mul, M)` takes `M={m:[12], grain, seed}` —
+  a 3×4 matrix over the straight colour (rows R, G, B: r, g, b, offset, in units of 1) and a grain of span
+  `grain` (±grain/2, one number per device pixel into all three channels, hashed from the pixel and `seed`),
+  clamped after the grain, as `albumFx` did. The data sit after the primitives, like graph points; the image
+  primitive's free `m.w` holds 1 + its vec4 index. Checked to the unit against the album's formulas: sepia and
+  cold on four solid stripes ±1; grain ±13 → sd 7.48 (uniform: 7.5), same seed same frame, span 0 no grain.
+  `ovRead(w,h,fn)` builds a frame out of the loop (own encoder, own canvas) and reads it in the same task —
+  the tool of `makerRead` and of the tests; from inside the frame it returns null. Suite `91zzzzzzy4-ovm`.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
@@ -2015,7 +2083,8 @@ Back to front. F field, P particles, S shape, T text, C cached bake, 3D mesh. Li
 | frame | heat haze (18d:12–79, copies strips) ; hit chromatics → **core**; bloom, grain, vignette → **core**; grade (surface/landing, 19c:258) | 18d-postfx, 19c-light |
 | postcard | own canvas, 8 painters, seeded, no G | 25g-postcard:170–294, 25g-post-*, 25h-post-forms* (G14) |
 
-`getImageData` is used only for bounds (hull ink box 03e1:113, tile span 18c:152, staple 26e2:170, road 27l:81)
+`getImageData` is used only for bounds (hull ink box 03e1:113, tile span 18c:152, road 27l:81; the stapel box
+reads GcCtx vertices since 26.09)
 and `lookFrame` (28y:49/326) — none in gameplay.
 
 ## 8. Session 2 (worktree drift-gpu2, branch gpu2): fleet, pirates, combat

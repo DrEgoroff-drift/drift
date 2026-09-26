@@ -48,8 +48,8 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
-  - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0; open: f — one more try
-    on the keels by the emission mask, else revert; h — makerRead on the GPU frame;
+  - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0, h (makerRead on the
+    engine's picture) on gpu-f (f's last try, the keels by the emission mask, gave no visible gain; the 0.471.0 keels stay);
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
   - the nebula much better (GPU-2; the author 26.09: «туманность хуже не будет, она должна прям быть лучше на много,
@@ -91,10 +91,12 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     studio (`hullStudio`, 17c2 — the ship in ОПИСЬ already draws through it); the raid
     comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
-  - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull, and the last
-    2D `drawHull` callers move by zone — the station (26) GPU-3; the road (27l), the scoop and home outside the fleet
-    after its landing; the shipyard (26e2), the left trace (12as), `look` and home 27e/29d, unless that is home
-    outside, the worker; 03e1 is deleted with its last caller;
+  - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull. Moved off
+    `drawHull` (0.476.0): the shipyard 26e2, the left trace 12as, `look`/h (28y `makerRead`) and the home room 27e.
+    Left: the station 26:425 — GPU-3; the road 27l (two calls) and the scoop 19a — the fleet, after its landing;
+    29d — the worker, when homein moves (below). 03e1 is deleted with its last caller;
+  - the homein frame onto the engine — the worker, after the fleet's landing, on the fleet's room kit (light,
+    vignette, `kit.img`); pairs at 760 and 390 by the room rules; it takes 29d's `drawHull` with it;
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),

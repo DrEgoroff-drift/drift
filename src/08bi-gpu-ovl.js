@@ -43,6 +43,7 @@ struct IO{@builtin(position) p:vec4f,@location(0) @interpolate(flat) b:vec4f,@lo
 fn ed(a:vec2f,b:vec2f,p:vec2f)->f32{let d=b-a;return (d.x*(p.y-a.y)-d.y*(p.x-a.x))/max(length(d),1e-4);}
 fn sd(p:vec2f,a:vec2f,b:vec2f)->f32{let d=b-a;let h=clamp(dot(p-a,d)/max(dot(d,d),1e-6),0.,1.);return length(p-a-d*h);}
 fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
+fn gh(p:vec2f,s:f32)->f32{var q=fract(vec3f(p.x,p.y,s)*.1031);q=q+dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 @fragment fn fs(i:IO)->@location(0) vec4f{
   let p=i.p.xy;var a=0.;
   let dx=dpdx(i.uv);let dy=dpdy(i.uv);   /* производные — до ветвлений (однородный поток) */
@@ -58,6 +59,12 @@ fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
     /* m.z — текстура студии (17c2): альфа сцены (сколько фона осталось) в покрытие, свет выше
        единицы — тем же плечом, что tone() финала 08b, а не обрезкой: лампы не белеют пятном */
     if(i.m.z>.5){let x=max(t.rgb-vec3f(.75),vec3f(0.));t=vec4f(min(t.rgb,vec3f(.75))+.25*(vec3f(1.)-exp(-x*4.)),1.-t.a);}
+    /* m.w — цвет по матрице (1 + её место в vec4 от S.z): строки R, G, B — множители и сдвиг по чистому цвету,
+       четвёртая — зерно (амплитуда, посев): одно число на пиксель устройства во все три канала; обрез после зерна */
+    if(i.m.w>.5){let k=u32(S.z)+u32(i.m.w)-1u;let al=max(t.a,1e-5);var c=t.rgb/al;
+      c=vec3f(dot(Q[k].xyz,c)+Q[k].w,dot(Q[k+1u].xyz,c)+Q[k+1u].w,dot(Q[k+2u].xyz,c)+Q[k+2u].w);
+      let gn=Q[k+3u];if(gn.x>0.){c=c+vec3f((gh(floor(p),gn.y)-.5)*gn.x);}
+      t=vec4f(clamp(c,vec3f(0.),vec3f(1.))*t.a,t.a);}
     return t*i.c;}
   else if(i.m.x<4.5){   /* график: x0=t0.x, шаг t0.y, полутолщина m.y, точки с m.z (от S.z), их m.w */
     let x0=i.t0.x;let st=i.t0.y;let hw=i.m.y;let o=i32(i.m.z);let n=i32(i.m.w);
@@ -128,7 +135,7 @@ function ovPush(Q,x0,y0,x1,y1,c,m,l,tx,ty,t){
 const OVL_RUN=/[0-9]+|[^0-9]+/g;
 /* строка в очередь Q: (x,y) — якорь в пикселях CSS по align и base, sc — масштаб шрифта (фишка — U).
    Возвращает рамку в CSS: для проверок наложения */
-function ovText(Q,x,y,text,font,col,align,base,al,sc){
+function ovText(Q,x,y,text,font,col,align,base,al,sc,vert){
   const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:"left"}),c=gcColor(col),a=c[3]*al;
   if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1]*sc,main:true});}
   const pm=[c[0]*a,c[1]*a,c[2]*a,a];
@@ -137,18 +144,22 @@ function ovText(Q,x,y,text,font,col,align,base,al,sc){
   for(const s of runs){const dg=s.charCodeAt(0)<58&&s.charCodeAt(0)>47,m=dg?d0:GC_GLYPHS.measure(st,s);
     tw+=dg?adv*s.length:m.width*sc;up=Math.max(up,m.actualBoundingBoxAscent*sc);dn=Math.max(dn,m.actualBoundingBoxDescent*sc);}
   /* начало строки — на целый пиксель устройства, как у прежних DOM-подписей: на ходу строка шагает
-     пикселем, а фазы цифр внутри неё постоянны — новой маски движение не просит */
-  const x0=Math.round((align==="center"?x-tw/2:(align==="right"||align==="end")?x-tw:x)*nd)/nd,iy=Math.round(y*nd),M=[nd*sc,0,0,nd*sc];
-  const put=(s,cx)=>{const X=cx*nd;let ix=Math.floor(X),ph=Math.round((X-ix)*4)/4;if(ph>=1){ix++;ph=0;}
-    const kb=font+"|"+base+"|"+M[0]+"|"+ph+"|",mk=g=>()=>GC_GLYPHS.raster(st,g,M,ph,0,null,undefined,"#fff");   /* маска — одна альфа, цвет не нужен */
+     пикселем, а фазы цифр внутри неё постоянны — новой маски движение не просит.
+     vert — строка снизу вверх, как 2D под rotate(-π/2) с центром в (x,y): перо идёт вверх, фаза — по y */
+  const t0=align==="center"?tw/2:(align==="right"||align==="end")?tw:0,k=nd*sc,M=vert?[0,-k,k,0]:[k,0,0,k];
+  const x0=Math.round((vert?y+t0:x-t0)*nd)/nd,iy=Math.round((vert?x:y)*nd);
+  const put=(s,cx)=>{const X=(vert?2*x0-cx:cx)*nd;let ix=Math.floor(X),ph=Math.round((X-ix)*4)/4;if(ph>=1){ix++;ph=0;}
+    const kb=font+"|"+base+"|"+M[0]+"|"+M[1]+"|"+ph+"|",mk=g=>()=>GC_GLYPHS.raster(st,g,M,vert?0:ph,vert?ph:0,null,undefined,"#fff");   /* маска — одна альфа, цвет не нужен */
     /* цифра, которой нет, — все десять сразу: число меняется в полёте, а растр — только в первый раз */
     if(s.length===1&&s>="0"&&s<="9"&&!OVL.A.map.has(kb+s))for(let g=0;g<10;g++)ovAtlas(kb+g,mk(String(g)));
     const e=ovAtlas(kb+s,mk(s));
-    ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,pm,1,e.l,e.x,e.y,null);};
+    if(vert)ovPush(Q,iy-e.ox,ix-e.oy,iy-e.ox+e.w,ix-e.oy+e.h,pm,1,e.l,e.x,e.y,null);
+    else ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,pm,1,e.l,e.x,e.y,null);};
   let cx=x0;
   for(const s of runs){
     if(s.charCodeAt(0)<58&&s.charCodeAt(0)>47){for(let i=0;i<s.length;i++)put(s[i],cx+i*adv);cx+=adv*s.length;}
     else{put(s,cx);cx+=GC_GLYPHS.measure(st,s).width*sc;}}
+  if(vert)return {x0:x-up,x1:x+dn,y0:x0-tw,y1:x0};
   return {x0,x1:x0+tw,y0:y-up,y1:y+dn};
 }
 /* подпись мира k (имя станции, планеты, борта): y — как у fillText при нынешнем ctx.textBaseline.
@@ -241,10 +252,49 @@ function ovPm(col,al){const c=gcColor(col),a=c[3]*(al==null?1:al);return [c[0]*a
 function ovRect(x0,y0,x1,y1,col,al){const s=ovNd();ovPush(OVL.uq,x0*s,y0*s,x1*s,y1*s,ovPm(col,al),0,0,0,0,null);}
 /* картинка: мастер B, центр (x,y), размер (w,h), поворот rot, кусок u0..v1, множитель mul (число — прозрачность);
    B.inv — альфа мастера перевёрнута (текстура студии корпуса, 17c2) */
-function ovImage(B,x,y,w,h,rot,u0,v0,u1,v1,mul){
+function ovImage(B,x,y,w,h,rot,u0,v0,u1,v1,mul,M){
   if(!B)return;const s=ovNd(),Q=OVL.uq,i=Q.length/OVL_N,m=typeof mul==="number"?[mul,mul,mul,mul]:(mul||[1,1,1,1]);
   const R=OVL.ur;if(!R.length||R[R.length-1][1]!==B)R.push([i,B]);
-  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,B.inv?1:0,0,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
+  let mo=0;if(M){const G=OVL.gd,c=M.m||OV_EYE;while(G.length%4)G.push(0);mo=G.length/4+1;
+    G.push(c[0],c[1],c[2],c[3],c[4],c[5],c[6],c[7],c[8],c[9],c[10],c[11],M.grain||0,(M.seed||0)%65536,0,0);}
+  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,B.inv?1:0,mo,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
+}
+/* M у ovImage: {m:[12] — строки R, G, B по (r, g, b, сдвиг) в долях единицы, grain — размах зерна (±grain/2),
+   seed — посев}; без m — цвет как есть. Фильтры альбома (25g1): сепия и ночь — яркость во все каналы,
+   холод — контраст со сдвигом; смешениями такое не выражается */
+const OV_EYE=[1,0,0,0, 0,1,0,0, 0,0,1,0];
+/* холст cv (webgpu) — картинка ov* одним проходом, в кадре (кадровый энкодер) или вне его: тогда свой
+   энкодер, отправка сразу и корзина опорожняется здесь же, кадра за ней нет. Холст держит картинку, пока
+   его не нарисуют снова. fn вернул false — ничего; false — и без видеокарты */
+const OV_CV=new WeakMap();
+function ovPaint(cv,nd,fn){
+  const d=GPU.dev;if(!GPU.ok||GPU.lost||!d)return false;
+  let o=OV_CV.get(cv);
+  if(!o||o.dev!==d){const cx=cv.getContext("webgpu");if(!cx)return false;
+    cx.configure({device:d,format:GPU.fmt,alphaMode:"premultiplied"});OV_CV.set(cv,o={cx,T:ovTarget(),dev:d});}
+  const own=!GPU.enc,on0=GPU.on;let ok;
+  if(own){GPU.enc=d.createCommandEncoder();GPU.on=true;}   /* свой маленький кадр: студия спрашивает «кадр идёт?» */
+  try{
+    ovInto(o.T,nd,()=>{ok=fn();});
+    if(ok===false){o.T.uq.length=o.T.ur.length=o.T.gd.length=0;return false;}
+    ovPass(o.T,o.cx.getCurrentTexture().createView(),cv.width,cv.height,[o.T.uq],"ovpaint");
+    if(own)d.queue.submit([GPU.enc.finish()]);
+  }finally{if(own){GPU.enc=null;GPU.on=on0;}}
+  if(own){for(const t of GPU.trash)t.destroy();GPU.trash.length=0;}
+  return true;
+}
+/* вне кадра: ovPaint в свой холст w×h и чтение в той же задаче — как снимок кадра (gpuTakeSnap).
+   Для приборов и тестов, не для кадра: из кадра (энкодер открыт) — null */
+const OVR={cv:null,rd:null};
+function ovRead(w,h,fn){
+  if(GPU.enc||typeof document==="undefined")return null;
+  const R=OVR;if(!R.cv){R.cv=document.createElement("canvas");R.rd=document.createElement("canvas");}
+  if(R.cv.width!==w||R.cv.height!==h){R.cv.width=w;R.cv.height=h;}
+  if(!ovPaint(R.cv,1,fn))return null;
+  if(R.rd.width!==w||R.rd.height!==h){R.rd.width=w;R.rd.height=h;}
+  const c=R.rd.getContext("2d",{willReadFrequently:true});
+  c.clearRect(0,0,w,h);c.drawImage(R.cv,0,0);
+  return c.getImageData(0,0,w,h).data;
 }
 /* капсула: отрезок (x0,y0)–(x1,y1) толщиной w с круглыми концами; диск — отрезок нулевой длины */
 function ovCap(x0,y0,x1,y1,w,col,al){

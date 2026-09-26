@@ -362,6 +362,7 @@ function hud(){
   /* приборная колодка (25c) и пульт (27j: трепло, кресло): свои канвы в кадре */
   if(typeof instrPodTick==="function")instrPodTick();
   consoleGpuTick();if(typeof opisHullTick==="function")opisHullTick();   /* и силуэт ОПИСИ (27j) — тем же кадром */
+  if(typeof stapelHullTick==="function")stapelHullTick();   /* корпус на листе стапеля (26e2) */
   setTx($place,a);setTx($sub,b);
   /* Полосу меряем по самому DOM, а не пересчитываем правила CSS в JS: состав
      строк задан таблицей стилей (body.afoot прячет топливо и корпус, узкий

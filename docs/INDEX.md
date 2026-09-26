@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 670 · символов верхнего уровня: 6839
+Файлов: 671 · символов верхнего уровня: 6852
 
 ## СИМВОЛЫ
 
@@ -882,7 +882,7 @@ CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
 chipDist                     src/17-mode-system.js:713-719
-chipDom                      src/08bi-gpu-ovl.js:166-181
+chipDom                      src/08bi-gpu-ovl.js:177-192
 chipDomSnap                  src/08bh-gpu-hud.js:10-12
 chipDomSweep                 src/08bh-gpu-hud.js:20-23
 chKing                       src/25n-chess.js:112-116
@@ -1540,7 +1540,7 @@ dominoMove                   src/11af-domino.js:25-39
 dominoSettle                 src/11af-domino.js:40-56
 dominoStart                  src/11af-domino.js:14-21
 dominoTile                   src/11af-domino.js:13
-domLabel                     src/08bi-gpu-ovl.js:156-162
+domLabel                     src/08bi-gpu-ovl.js:167-173
 domLabelId                   src/08bh-gpu-hud.js:17
 DOMR                         src/15d-domread.js:17
 DOMR_ON                      src/15d-domread.js:16
@@ -1647,7 +1647,7 @@ drawHaul                     src/16c-rescue.js:506-513
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-88
 drawHomeOut                  src/21f-home-out.js:74-310
-drawHomeRoom                 src/27e-ui-home.js:42-62
+drawHomeRoom                 src/27e-ui-home.js:47-69
 drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:51-93
 drawHull                     src/03e-hull-draw.js:115-194
@@ -2194,14 +2194,14 @@ gateZOwner                   tests/91zzzzzzy-gpugate.js:17
 GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
-GC_ATL                       src/08cb-gpu-text.js:55
+GC_ATL                       src/08cb-gpu-text.js:56
 GC_BACK                      src/08ca-gpu-canvas.js:511
 GC_BIG1                      src/08ca-gpu-canvas.js:460
 GC_BLUR_WGSL                 src/08cc-gpu-shadow.js:21
 GC_BUSY                      src/08ca-gpu-canvas.js:453
 GC_COL                       src/08ca-gpu-canvas.js:34
 GC_DEF                       src/08ca-gpu-canvas.js:88
-GC_GLYPHS                    src/08cb-gpu-text.js:17-50
+GC_GLYPHS                    src/08cb-gpu-text.js:17-51
 GC_KEYS                      src/08ca-gpu-canvas.js:93
 GC_MAT_K                     src/08cd-gpu-mat.js:18
 GC_MAT_WGSL                  src/08cd-gpu-mat.js:19
@@ -2225,7 +2225,7 @@ GC_TOL                       src/08ca-gpu-canvas.js:11
 GC_TXT_KEYS                  src/08cb-gpu-text.js:12
 GC_VA                        src/08ca-gpu-canvas.js:557
 GC_WGSL                      src/08ca-gpu-canvas.js:300
-gcAtlas                      src/08cb-gpu-text.js:56-70
+gcAtlas                      src/08cb-gpu-text.js:57-71
 gcBack                       src/08ca-gpu-canvas.js:512
 gcBlurDesc                   src/08cc-gpu-shadow.js:38
 gcBlurPipe                   src/08cc-gpu-shadow.js:35-48
@@ -2243,7 +2243,7 @@ gcLay                        src/08ca-gpu-canvas.js:374-384
 gcMat                        src/08cd-gpu-mat.js:53-64
 gcMatDesc                    src/08cd-gpu-mat.js:47
 gcMatPipe                    src/08cd-gpu-mat.js:46
-gcMeasure                    src/08cb-gpu-text.js:73
+gcMeasure                    src/08cb-gpu-text.js:74
 gcMip16Desc                  src/08cd-gpu-mat.js:50
 gcMip16Pipe                  src/08cd-gpu-mat.js:49
 gcMipDesc                    src/08ca-gpu-canvas.js:402
@@ -2530,7 +2530,7 @@ gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
 gpuNoise                     src/08b-gpu.js:383-388
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:585-605
-gpuOvFrontView               src/08bi-gpu-ovl.js:238
+gpuOvFrontView               src/08bi-gpu-ovl.js:249
 gpuPass                      src/08b-gpu.js:444-447
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
@@ -3032,6 +3032,7 @@ holMap                       src/11am-holiday.js:59
 holNow                       src/11am-holiday.js:61-73
 holTree                      src/11am-holiday.js:126-184
 holTreeUp                    src/11am-holiday.js:74
+HOME_BK                      src/27e-ui-home.js:46
 HOME_COOL_MS                 src/16c-rescue.js:45
 HOME_DOCK_COOL               src/16c-rescue.js:47
 HOME_HIT                     src/27e-ui-home.js:33
@@ -3049,9 +3050,9 @@ homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:153
 homeCool                     src/16c-rescue.js:55
-homeCrewFigure               src/27e-ui-home.js:680-693
+homeCrewFigure               src/27e-ui-home.js:685-698
 homeDoorX                    src/21f-home-out.js:312-316
-homeFigure                   src/27e-ui-home.js:613-622
+homeFigure                   src/27e-ui-home.js:618-627
 homeHas                      src/12j-home.js:24-28
 homeHereP                    src/21f-home-out.js:26-32
 homeHitAt                    src/27e-ui-home.js:35-41
@@ -3069,10 +3070,10 @@ homePlanet                   src/21f-home-out.js:18-24
 homeProgress                 src/12j-home.js:139-147
 homeRebuild                  src/12j-home.js:227-241
 homeRevive                   src/12j-home.js:154-174
-homeRoomBody                 src/27e-ui-home.js:63-607
+homeRoomBody                 src/27e-ui-home.js:70-612
 homeRoomW                    src/27e-ui-home.js:21-26
-homeSceneClick               src/27e-ui-home.js:628-676
-homeShade                    src/27e-ui-home.js:696-699
+homeSceneClick               src/27e-ui-home.js:633-681
+homeShade                    src/27e-ui-home.js:701-704
 homeShow                     src/12j-home.js:196-203
 homeShowBonus                src/12j-home.js:217-222
 homeSigns                    src/21f-home-out.js:333-366
@@ -3179,7 +3180,7 @@ hqWindowView                 src/27f-hq-room.js:756-779
 HS_LT                        src/17c2-hull-gpu.js:147
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:174-523
+hud                          src/27z-telemetry.js:174-524
 HUD_BAND                     src/27z-telemetry.js:21
 HUD_FLOOR                    src/27z-telemetry.js:31
 HUD_NUM                      src/08-state.js:100
@@ -3507,18 +3508,18 @@ ledgerNeed                   src/11ai-ledger.js:44-49
 LEFT_CACHE                   src/12as-left.js:19
 LEFT_RU                      src/12as-left.js:18
 leftCall                     src/12as-left.js:21-24
-leftDraw                     src/12as-left.js:126-167
+leftDraw                     src/12as-left.js:126-152
 leftGhost                    src/12as-left.js:120-124
 leftHere                     src/12as-left.js:28-39
-leftInteract                 src/12as-left.js:181-196
+leftInteract                 src/12as-left.js:166-181
 leftKey                      src/12as-left.js:20
 leftLeave                    src/12as-left.js:51-68
-leftNear                     src/12as-left.js:171-180
+leftNear                     src/12as-left.js:156-165
 leftPos                      src/12as-left.js:43-47
 leftRows                     src/12as-left.js:40
 leftTake                     src/12as-left.js:85-109
 leftThank                    src/12as-left.js:111-116
-leftThankNear                src/12as-left.js:197-204
+leftThankNear                src/12as-left.js:182-189
 leftWorn                     src/12as-left.js:72-84
 lerp                         src/01-core.js:22
 letterAddresseeHere          src/12k-letters.js:78-82
@@ -3717,14 +3718,14 @@ MAIN_CTX                     src/08-state.js:6
 makeIR                       src/10-music.js:109-121
 makePhrase                   src/10-music.js:381-404
 MAKER_ASSEMBLY               src/03a-hull-maker.js:463
-MAKER_CV                     src/28y-look.js:314
+MAKER_G                      src/28y-look.js:318
 MAKER_KEYS                   src/03a-hull-maker.js:73
 MAKER_PX                     src/28y-look.js:313
 makerAssembly                src/03a-hull-maker.js:464
 makerBank                    src/03a-hull-maker.js:417
 makerBySeed                  src/03a-hull-maker.js:89
 makerDraw                    src/03a-hull-maker.js:241-362
-makerFeat                    src/28y-look.js:315-388
+makerFeat                    src/28y-look.js:327-390
 makerFlame                   src/03a-hull-maker.js:416
 makerForms                   src/03a-hull-maker.js:93-101
 makerGround                  src/03a-hull-maker.js:452
@@ -3736,11 +3737,12 @@ makerMarks                   src/03a-hull-maker.js:366-414
 makeRock                     src/24-mode-belt.js:35-62
 makerOf                      src/03a-hull-maker.js:80-86
 makerOuts                    src/03a-hull-maker.js:176-194
+makerPixels                  src/28y-look.js:319-326
 makerProfile                 src/03a-hull-maker.js:107-172
-makerRead                    src/28y-look.js:396-460
+makerRead                    src/28y-look.js:398-462
 makerRow                     src/03a-hull-maker.js:87
 makerRu                      src/03a-hull-maker.js:90
-makerStand                   src/28y-look.js:389-395
+makerStand                   src/28y-look.js:391-397
 makerTicks                   src/03a-hull-maker.js:233-236
 makerWear                    src/03a-hull-maker.js:453
 makerWidth                   src/03a-hull-maker.js:423-450
@@ -4291,33 +4293,39 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
+OV_CV                        src/08bi-gpu-ovl.js:269
+OV_EYE                       src/08bi-gpu-ovl.js:265
 OV_STEADY                    tests/91zzzzzzy4-gpu-ovl.js:48-66
-ovArc                        src/08bi-gpu-ovl.js:265-268
-ovAtlas                      src/08bi-gpu-ovl.js:104-123
-ovBind                       src/08bi-gpu-ovl.js:229-237
-ovCanvas                     src/08bi-gpu-ovl.js:89-101
-ovCap                        src/08bi-gpu-ovl.js:250-253
-ovCap3                       src/08bi-gpu-ovl.js:260-263
-ovEll                        src/08bi-gpu-ovl.js:255-258
-ovFlush                      src/08bi-gpu-ovl.js:186-197
-ovGraph                      src/08bi-gpu-ovl.js:276-280
-ovImage                      src/08bi-gpu-ovl.js:244-248
-ovInto                       src/08bi-gpu-ovl.js:82-85
+ovArc                        src/08bi-gpu-ovl.js:315-318
+ovAtlas                      src/08bi-gpu-ovl.js:111-130
+ovBind                       src/08bi-gpu-ovl.js:240-248
+ovCanvas                     src/08bi-gpu-ovl.js:96-108
+ovCap                        src/08bi-gpu-ovl.js:300-303
+ovCap3                       src/08bi-gpu-ovl.js:310-313
+ovEll                        src/08bi-gpu-ovl.js:305-308
+ovFlush                      src/08bi-gpu-ovl.js:197-208
+ovGraph                      src/08bi-gpu-ovl.js:326-330
+ovImage                      src/08bi-gpu-ovl.js:255-261
+ovInto                       src/08bi-gpu-ovl.js:89-92
 OVL                          src/08bi-gpu-ovl.js:17
 OVL_N                        src/08bi-gpu-ovl.js:20
-OVL_PLATE                    src/08bi-gpu-ovl.js:165
-OVL_RUN                      src/08bi-gpu-ovl.js:128
-OVL_UF                       src/08bi-gpu-ovl.js:200
+OVL_PLATE                    src/08bi-gpu-ovl.js:176
+OVL_RUN                      src/08bi-gpu-ovl.js:135
+OVL_UF                       src/08bi-gpu-ovl.js:211
 OVL_WGSL                     src/08bi-gpu-ovl.js:21
-ovlDesc                      src/08bi-gpu-ovl.js:183
-ovNd                         src/08bi-gpu-ovl.js:80
-ovPass                       src/08bi-gpu-ovl.js:201-227
-ovPm                         src/08bi-gpu-ovl.js:240
-ovPush                       src/08bi-gpu-ovl.js:124-127
-ovQuad                       src/08bi-gpu-ovl.js:271-274
-ovRect                       src/08bi-gpu-ovl.js:241
-ovTarget                     src/08bi-gpu-ovl.js:87
-ovText                       src/08bi-gpu-ovl.js:131-153
+ovlDesc                      src/08bi-gpu-ovl.js:194
+ovmStrip                     tests/91zzzzzzy4-ovm.js:6-11
+ovNd                         src/08bi-gpu-ovl.js:87
+ovPaint                      src/08bi-gpu-ovl.js:270-285
+ovPass                       src/08bi-gpu-ovl.js:212-238
+ovPm                         src/08bi-gpu-ovl.js:251
+ovPush                       src/08bi-gpu-ovl.js:131-134
+ovQuad                       src/08bi-gpu-ovl.js:321-324
+OVR                          src/08bi-gpu-ovl.js:288
+ovRead                       src/08bi-gpu-ovl.js:289-298
+ovRect                       src/08bi-gpu-ovl.js:252
+ovTarget                     src/08bi-gpu-ovl.js:94
+ovText                       src/08bi-gpu-ovl.js:138-164
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
 OX                           src/21ad-base-gpu.js:149
@@ -5976,26 +5984,28 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:64-91
 stampShow                    src/17i-stamp.js:52-62
 stampText                    src/17i-stamp.js:24-35
-STAPEL_KEYS                  src/26e2-stapel-draw.js:178
+STAPEL_KEYS                  src/26e2-stapel-draw.js:327
 STAPEL_PV                    src/26e1-stapel.js:124
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
-STAPEL_UI                    src/26e1-stapel.js:131
+STAPEL_UI                    src/26e1-stapel.js:125
 STAPEL_YARD                  src/26e1-stapel.js:17-24
 stapelAll                    src/26e1-stapel.js:27-32
-stapelBlock                  src/26e1-stapel.js:133-200
+stapelBlock                  src/26e1-stapel.js:127-197
 stapelClosedWhy              src/26e1-stapel.js:96-101
 stapelCollect                src/26e1-stapel.js:111-122
-stapelDelta                  src/26e2-stapel-draw.js:179-189
-stapelFx                     src/26e2-stapel-draw.js:191-199
-stapelHullBox                src/26e2-stapel-draw.js:164-175
+stapelDelta                  src/26e2-stapel-draw.js:328-338
+stapelDraft                  src/26e2-stapel-draw.js:187-219
+stapelFx                     src/26e2-stapel-draw.js:340-348
+stapelHullBox                src/26e2-stapel-draw.js:230-279
+stapelHullTick               src/26e2-stapel-draw.js:290-324
 stapelId                     src/26e1-stapel.js:68
+stapelLater                  src/26e2-stapel-draw.js:289
 stapelOrder                  src/26e1-stapel.js:80-94
-stapelPreview                src/26e1-stapel.js:125-130
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
-stapelSheet                  src/26e2-stapel-draw.js:8-161
-stapelSheetW                 src/26e1-stapel.js:132
+stapelSheet                  src/26e2-stapel-draw.js:11-181
+stapelSheetW                 src/26e1-stapel.js:126
 stapelShip                   src/26e1-stapel.js:59-67
 stapelStats                  src/26e1-stapel.js:42-57
 stapelStrip                  src/26e1-stapel.js:70-74
@@ -6093,6 +6103,9 @@ storyTableLine               src/11c-stories.js:281-287
 storyTraces                  src/11c-stories.js:219-236
 storyTurns                   src/11c-stories.js:121-142
 storyWhen                    src/11c-stories.js:205-209
+STP_FADE                     src/26e2-stapel-draw.js:284
+STP_G                        src/26e2-stapel-draw.js:283
+STP_INK                      src/26e2-stapel-draw.js:182
 stPanels                     src/17c-system-draw.js:109-118
 stPlatePath                  src/17c-system-draw.js:159-166
 STRATA_K                     src/18a1-glaze.js:119
@@ -6992,7 +7005,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08bh-gpu-hud.js · 2 КБ
   · слой приборов: фишки у кромки и подписи мира (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08bi-gpu-ovl.js · 23 КБ
+## src/08bi-gpu-ovl.js · 27 КБ
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
 ## src/08c-gpu-kit.js · 31 КБ
@@ -8097,7 +8110,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26e2-post.js · 8 КБ
   · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
 
-## src/26e2-stapel-draw.js · 13 КБ
+## src/26e2-stapel-draw.js · 25 КБ
   · СТАПЕЛЬ — лист (D16, дизайн-проход):1
 
 ## src/27-ui-ship.js · 25 КБ
@@ -8118,7 +8131,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27da-kino.js · 15 КБ
   · кинопередвижка:1
 
-## src/27e-ui-home.js · 44 КБ
+## src/27e-ui-home.js · 45 КБ
   · дом: помещение, а не список:1
 
 ## src/27f-hq-room.js · 51 КБ
@@ -8324,7 +8337,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91sc-scoop-gpu.js · 3 КБ
   · черпак на видеокарте (G9, 19a1):1
 
-## tests/91t-home-live.js · 4 КБ
+## tests/91t-home-live.js · 6 КБ
   · обжитой дом:1
 
 ## tests/91u-route.js · 12 КБ
@@ -8787,7 +8800,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 28 КБ
+## tests/91zzzzk6-stapel.js · 33 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1
@@ -8943,6 +8956,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzy4-gpu-pattern.js · 4 КБ
   · Узор на GPU-холсте: createPattern (08cab, census §2 дыра 2):1
+
+## tests/91zzzzzzy4-ovm.js · 4 КБ
+  · цвет картинки по матрице и зерно (08bi ovImage, 26.09):1
 
 ## tests/91zzzzzzy4-pipes.js · 8 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
