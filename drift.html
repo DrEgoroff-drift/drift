@@ -26132,7 +26132,9 @@ function lawOwner(){return (typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,
 /* стыковка: норма заново, пошлина у Компании */
 function lawDock(){
   const by=lawOwner();
-  LAW_NORM_LEFT=by==="gt"?LAW_NORM:0;
+  const doso=by==="gt"&&typeof socIn==="function"&&socIn("doso");   /* ДОСО: норма +10 (M512) */
+  LAW_NORM_LEFT=by==="gt"?LAW_NORM+(doso?10:0):0;
+  if(doso)socGot("doso",0,1);
   if(by==="co"){
     const sponsor=!!(typeof expAll==="function"&&expAll().pax);   /* попутчик экспедиции (11x) — спонсор */
     if(sponsor){logAdd("money","Компания: пошлина за стыковку — 0 кр (спонсор на борту™)");return;}
@@ -26353,10 +26355,21 @@ const SOC={
     deed:()=>typeof stampBook==="function"&&Object.keys(stampBook().st).length>=4,
     perk:"собрания в гостинице",joke:"пиратская отметка — предмет зависти"},
   partner:{ru:"Партнёрская программа™",by:"co",dues:0,deedRu:"вступить может каждый",deed:()=>true,
-    perk:"баллы, которые конвертируются в баллы",joke:"кассир шепчет: «не вступайте»"}
+    perk:"баллы, которые конвертируются в баллы",joke:"кассир шепчет: «не вступайте»"},
+  /* второй проход (M512): у каждого общества дело, одна льгота с кодом и одна шутка */
+  doso:{ru:"ДОСО",by:"gt",dues:.01,deedRu:"30 прыжков",deed:()=>socC().jumps>=30,
+    perk:"норма топлива ГЛАВТРАССЫ +10 ед",joke:"«добровольное» — так и написано, в кавычках"},
+  rescue:{ru:"Спасатели",by:"ra",dues:0,deedRu:"3 раза вас тянули на тросе",deed:()=>socC().hauls>=3,
+    perk:"ремонтный буксир Рассвета тянет корпус до 70 %",joke:"вступают те, кого спасали, — других не бывает"},
+  read:{ru:"Общество читателей",dues:0,deedRu:"5 книг на полке",deed:()=>typeof bookCount==="function"&&bookCount()>=5,
+    perk:"в кантине читают вслух — слух даром при стыковке",joke:"книгу вернуть в срок; срока нет"}
 };
+/* неделя летописи: семь суток по четыре сводки — обязанности считаются ей */
+function socWeek(){return Math.floor(((typeof chronNow==="function")?chronNow():0)/28);}
+/* арифметика на столе: что льгота дала (кр) и сколько раз сработала */
+function socGot(id,kr,n){const m=socAll().m[id];if(!m)return;m.got=(m.got|0)+(kr|0);m.n=(m.n|0)+(n===undefined?1:n);}
 function socAll(){const S=G.soc||(G.soc={});S.m=S.m||{};S.left=S.left||{};S.c=S.c||{};return S;}
-function socC(){const c=socAll().c;c.jumps=c.jumps|0;c.tapes=c.tapes|0;c.rides=c.rides|0;return c;}
+function socC(){const c=socAll().c;c.jumps=c.jumps|0;c.tapes=c.tapes|0;c.rides=c.rides|0;c.hauls=c.hauls|0;return c;}
 function socCount(k){socC()[k]++;}
 function socIn(id){return !!socAll().m[id];}
 function socCanJoin(id){const D=SOC[id];return !!(D&&!socIn(id)&&D.deed());}
@@ -26364,7 +26377,7 @@ function socJoin(id){
   if(!socCanJoin(id))return false;
   const S=socAll();
   if(S.left[id]){if(G.credits<SOC_REJOIN){say("Восстановление — "+SOC_REJOIN+" кр",90);return false;}G.credits-=SOC_REJOIN;}
-  S.m[id]={at:celDay(),dues:0};
+  S.m[id]={at:celDay(),dues:0,w:socWeek()};
   if(typeof thingAdd==="function")thingAdd("soccard","Членский билет · "+SOC[id].ru,"вступили делом: "+SOC[id].deedRu+" · льгота: "+SOC[id].perk,{soc:id});
   logAdd("good","Вы вступили: "+SOC[id].ru+" · льгота — "+SOC[id].perk+(SOC[id].dues?" · взнос "+Math.round(SOC[id].dues*100)+" % с заработка":""));
   return true;
@@ -26381,6 +26394,45 @@ function socDues(sum){
   for(const id in S.m){const D=SOC[id];if(!D||!D.dues)continue;const x=Math.floor(sum*D.dues);if(x>0){S.m[id].dues=(S.m[id].dues|0)+x;d+=x;}}
   return d;
 }
+/* ── обязанности (M512) ──
+   Профсоюз — субботник: раз в неделю летописи постоять у станции ГЛАВТРАССЫ в
+   день субботника; две пропущенные недели — исключение. Партнёрская программа™
+   — посылка недели в ПОЧТУ: не забрали, вернулась — участие приостановлено. */
+function socDutyRu(id){
+  const m=socAll().m[id];if(!m)return "";
+  if(id==="union"){const w=socWeek(),last=m.dw!=null?m.dw:m.w;
+    return m.dw===w?"субботник на этой неделе отработан":"субботник на этой неделе — ещё нет"+(w-last>=1?" · одна неделя уже пропущена, вторая — исключение":"");}
+  if(id==="partner")return "баллов "+(m.pts|0)+" · в кредитах 0 · посылка недели — в ПОЧТЕ";
+  return "";
+}
+function socDock(){
+  const S=socAll(),w=socWeek(),by=(typeof lawOwner==="function")?lawOwner():null;
+  const U=S.m.union;
+  if(U){
+    if(by==="gt"&&typeof peaceSubbot==="function"&&peaceSubbot()&&U.dw!==w){U.dw=w;socGot("union",0,0);
+      logAdd("good","Профсоюз: субботник отработан · отметка в билете");}
+    const last=U.dw!=null?U.dw:U.w;
+    if(w-last>=2){socLeave("union");logAdd("bad","Профсоюз водителей: исключены — два субботника пропущено · «ничего личного, товарищ»");}
+  }
+  /* читатели: в кантине читают вслух — через раз слух даром */
+  if(S.m.read&&(hashi(G.sx,G.sy,Math.floor(now()/HOLD_SHIFT))&1)){
+    const L=(typeof rumoursHere==="function")?rumoursHere():[];
+    if(L.length&&typeof peopleLine==="function"){peopleLine("читали вслух — между главами сказали: есть "+L[0].short,"общество читателей",true);socGot("read",0,1);}
+  }
+}
+/* посылка недели от Партнёрской программы™: раз в неделю летописи, в ПОЧТУ */
+function socWeekTick(){
+  const P=socAll().m.partner;if(!P||typeof kpSend!=="function")return;
+  const w=socWeek();if(P.pw===w)return;P.pw=w;P.pts=(P.pts|0)+100;
+  const keys=(typeof TRADE_KEYS!=="undefined")?TRADE_KEYS:Object.keys(RES);
+  let k=keys[0];for(const x of keys)if(RES[x].price<RES[k].price)k=x;
+  kpSend({t:"coop",k,q:1,from:"Партнёрская программа™",soc:"partner"});
+}
+/* посылка программы вернулась отправителю */
+function socParcelBack(o){
+  if(o&&o.soc==="partner"&&socIn("partner")){socLeave("partner");
+    logAdd("dim","Партнёрская программа™: посылка не востребована — участие приостановлено. Баллы сгорели™. Спасибо, что были с нами");}
+}
 /* страница КНИЖКИ: общества — где вы, куда можно, чего не хватает */
 function socPage(box){
   const S=socAll();
@@ -26389,7 +26441,10 @@ function socPage(box){
     const D=SOC[id],row=document.createElement("div");row.className="li";
     const em=document.createElement("em");em.textContent=socIn(id)?"член":D.deed()?"можно":"—";
     const sp=document.createElement("span");
-    sp.innerHTML="<b>"+D.ru+"</b> · "+D.perk+"<br><i>"+(socIn(id)?(D.dues?"взносы "+Math.round(D.dues*100)+" % · уплачено "+(S.m[id].dues|0)+" кр · ":"")+D.joke:"вступить: "+D.deedRu)+"</i>";
+    const M=S.m[id],ar=M?"уплачено "+(M.dues|0)+" кр · льгота дала "+(M.got|0)+" кр · сработала "+(M.n|0)+" "+pl3(M.n|0,"раз","раза","раз")+" · итог "+((M.got|0)-(M.dues|0)>=0?"+":"")+((M.got|0)-(M.dues|0))+" кр":"";
+    const du=M?socDutyRu(id):"";
+    sp.innerHTML="<b>"+D.ru+"</b> · "+D.perk+"<br><i>"+(socIn(id)?(D.dues?"взносы "+Math.round(D.dues*100)+" % · ":"")+D.joke:"вступить: "+D.deedRu)+"</i>"+
+      (M?"<br><i class='soc-ar'>"+ar+(du?"<br>"+du:"")+"</i>":"");
     const b=document.createElement("button");b.className="act sm";
     if(socIn(id)){b.textContent="ВЫЙТИ";b.onclick=e=>{e.stopPropagation();socLeave(id);tableRender();};}
     else{b.textContent=S.left[id]?"ВЕРНУТЬСЯ · "+SOC_REJOIN+" КР":"ВСТУПИТЬ";b.disabled=!D.deed();b.onclick=e=>{e.stopPropagation();if(socJoin(id))tableRender();};}
@@ -37806,6 +37861,7 @@ function tapeUse(){
   const K=kulibAny();
   if(!K)G.tapeRoll=tapeRolls()-1;
   G.hull=Math.ceil(stat().hullMax*tapeHold());   /* кулибины мотают крепче (M512, M486) */
+  if(typeof socIn==="function"&&socIn("kulib"))socGot("kulib",0,1);
   if(K)logAdd("tech","Кулибин "+K.name+" по рации: «Изолентой и ломом. Держаться будет.» · рулон не нужен");
   if(typeof socCount==="function")socCount("tapes");
   G.tapes=G.tapes||{};G.tapes[G.shipId]=Math.min(TAPE_MAX,tapesOf()+1);
@@ -50891,6 +50947,7 @@ function rescueTake(id){
 
 /* ── буксир: баржа настоящая, путь настоящий ── */
 function haulStart(){
+  if(typeof socCount==="function")socCount("hauls");   /* «Спасатели» считают тросы (M512) */
   const sh=G.ship,dest=nearestStation(G.sx,G.sy);
   G.haul={ph:"come",t:0,seed:hashi(G.sx*977+G.sy,clockNow()|0,31)>>>0,
     bx:sh.x,by:sh.y,ba:0,x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};
@@ -58573,13 +58630,13 @@ function peaceRepairPos(S){
 }
 function peaceTick(sh,dt){
   const S=peaceHere();if(!S||S.by!=="ra")return;
-  const T=peaceRepairPos(S),hm=stat().hullMax,need=G.hull<hm*.6;
+  const T=peaceRepairPos(S),hm=stat().hullMax,cap=(typeof socIn==="function"&&socIn("rescue"))?.7:.6,need=G.hull<hm*cap;   /* «Спасатели» — до 70 % (M512) */
   const tx=need?sh.x-Math.cos(sh.a)*60:S.cx,ty=need?sh.y-Math.sin(sh.a)*60:S.cy;
   const dx=tx-T.x,dy=ty-T.y,d=Math.hypot(dx,dy);
   if(d>2){const v=Math.min(d,2.2*dt);T.x+=dx/d*v;T.y+=dy/d*v;T.a=Math.atan2(dy,dx);}
   if(need&&Math.hypot(sh.x-T.x,sh.y-T.y)<90){
     if(!T.said){T.said=true;etherLine("…буксир. Стой ровно, брат, подварим.","Рассвет");}
-    G.hull=Math.min(hm*.6,G.hull+.03*dt);
+    G.hull=Math.min(hm*cap,G.hull+.03*dt);
   }else if(!need)T.said=false;
 }
 
@@ -62289,7 +62346,7 @@ function railBuy(t,express,bus){
 function railBuffet(){
   const free=typeof socIn==="function"&&socIn("know");   /* «Знающим» чай даром (M512) */
   if(!free&&G.credits<3){say("Буфет: «мелочи нет? и у нас нет»",90);return;}
-  if(!free)G.credits-=3;
+  if(!free)G.credits-=3;else socGot("know",3,1);
   const L=(typeof rumoursHere==="function")?rumoursHere():[];
   const line=L.length?"говорят, есть "+L[Math.floor(rnd()*L.length)].short:"сегодня ничего не говорят, пейте молча";
   peopleLine(line,"буфетчица",true);
@@ -62598,6 +62655,7 @@ function railPassPrice(){
 }
 function railPassBuy(){
   const p=railPassPrice();if(!p||railPassOn())return false;
+  if(typeof socIn==="function"&&socIn("union"))socGot("union",p,1);   /* вполцены: сберегли столько же (M512) */
   if(G.credits<p){say("Не хватает на проездной\nнужно "+p+" кр",90);return false;}
   G.credits-=p;G.railPass={until:now()+RAIL_PASS_LIFE*HOLD_SHIFT,rides:0,price:p};
   logAdd("money","Проездной ГЛАВТРАССЫ · −"+p+" кр · на "+RAIL_PASS_LIFE+" смен · окупается за "+RAIL_PASS_RIDES+" поездок");
@@ -92339,7 +92397,8 @@ function openStationBody(){
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   if(typeof railSealDock==="function")railSealDock();   /* пломбу снимает инспектор (M508) */
-  if(typeof lawDock==="function")lawDock();   /* закон земли: норма, пошлина (M456) */
+  if(typeof lawDock==="function")lawDock();
+  if(typeof socDock==="function")socDock();   /* обязанности и льготы обществ (M512) */   /* закон земли: норма, пошлина (M456) */
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
   if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
@@ -94700,7 +94759,7 @@ function kpSend(o){
   logAdd("tech","Извещение в ПОЧТУ: "+kpWhat(o)+" · получать в окне Космопочты");
   return true;
 }
-function kpWhat(o){return o.t==="part"?"деталь «"+o.nm+"» от "+o.from:"посылка кооператива «"+o.from+"»: "+RES[o.k].ru.toLowerCase()+" ×"+o.q;}
+function kpWhat(o){return o.t==="part"?"деталь «"+o.nm+"» от "+o.from:(o.soc?"посылка «":"посылка кооператива «")+o.from+"»: "+RES[o.k].ru.toLowerCase()+" ×"+o.q;}
 /* наёмник снял хорошую деталь — шлёт посылкой, а не в карман */
 function kpSendPart(seed,tier,kind,from){
   const p=genPart(seed,tier,kind);
@@ -94711,11 +94770,13 @@ function kpTick(){
   const S=stapelAll(),L=kpParcels();
   /* срок вышел и денёк сверху прошёл — назад отправителю */
   for(let i=L.length-1;i>=0;i--){const o=L[i];
-    if(now()>kpDue(o)+KP_DAY){L.splice(i,1);logAdd("dim","Почта: "+kpWhat(o)+" — срок хранения истёк, возвращено отправителю");}}
+    if(now()>kpDue(o)+KP_DAY){L.splice(i,1);logAdd("dim","Почта: "+kpWhat(o)+" — срок хранения истёк, возвращено отправителю");
+      if(typeof socParcelBack==="function")socParcelBack(o);}}
+  if(typeof socWeekTick==="function")socWeekTick();   /* посылка недели от Партнёрской программы™ (M512) */
   if(typeof coopHas!=="function"||!coopHas())return;
   const k=Math.floor(now()/HOLD_SHIFT);
   if(S.cs===k)return;S.cs=k;
-  if(L.some(o=>o.t==="coop"))return;
+  if(L.some(o=>o.t==="coop"&&!o.soc))return;
   const sp=(typeof coopSpirit==="function")?coopSpirit():0;
   if((hashi(k,0xC0,0x9057)>>>0)%6>=1+sp)return;
   const keys=(typeof TRADE_KEYS!=="undefined")?TRADE_KEYS:Object.keys(RES);

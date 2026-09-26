@@ -109,7 +109,7 @@ function kpSend(o){
   logAdd("tech","Извещение в ПОЧТУ: "+kpWhat(o)+" · получать в окне Космопочты");
   return true;
 }
-function kpWhat(o){return o.t==="part"?"деталь «"+o.nm+"» от "+o.from:"посылка кооператива «"+o.from+"»: "+RES[o.k].ru.toLowerCase()+" ×"+o.q;}
+function kpWhat(o){return o.t==="part"?"деталь «"+o.nm+"» от "+o.from:(o.soc?"посылка «":"посылка кооператива «")+o.from+"»: "+RES[o.k].ru.toLowerCase()+" ×"+o.q;}
 /* наёмник снял хорошую деталь — шлёт посылкой, а не в карман */
 function kpSendPart(seed,tier,kind,from){
   const p=genPart(seed,tier,kind);
@@ -120,11 +120,13 @@ function kpTick(){
   const S=stapelAll(),L=kpParcels();
   /* срок вышел и денёк сверху прошёл — назад отправителю */
   for(let i=L.length-1;i>=0;i--){const o=L[i];
-    if(now()>kpDue(o)+KP_DAY){L.splice(i,1);logAdd("dim","Почта: "+kpWhat(o)+" — срок хранения истёк, возвращено отправителю");}}
+    if(now()>kpDue(o)+KP_DAY){L.splice(i,1);logAdd("dim","Почта: "+kpWhat(o)+" — срок хранения истёк, возвращено отправителю");
+      if(typeof socParcelBack==="function")socParcelBack(o);}}
+  if(typeof socWeekTick==="function")socWeekTick();   /* посылка недели от Партнёрской программы™ (M512) */
   if(typeof coopHas!=="function"||!coopHas())return;
   const k=Math.floor(now()/HOLD_SHIFT);
   if(S.cs===k)return;S.cs=k;
-  if(L.some(o=>o.t==="coop"))return;
+  if(L.some(o=>o.t==="coop"&&!o.soc))return;
   const sp=(typeof coopSpirit==="function")?coopSpirit():0;
   if((hashi(k,0xC0,0x9057)>>>0)%6>=1+sp)return;
   const keys=(typeof TRADE_KEYS!=="undefined")?TRADE_KEYS:Object.keys(RES);

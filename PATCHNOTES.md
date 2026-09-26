@@ -208,6 +208,16 @@ could ever save.
   shows on the market tab itself («ОБЕД · 13:00–14:00 · топливо продаём — топливо не обед»), not only as a
   refusal when you try to sell.
 
+- **M512: societies have duties, three more of them, and the desk does the sums.** Three new societies, each
+  with a deed, a perk wired to code and a joke. ДОСО (30 jumps, 1 % dues) adds 10 units to ГЛАВТРАССА's fuel
+  norm. Спасатели (you were towed three times) makes Рассвет's repair tug pull your hull to 70 % instead of 60 %.
+  The Общество читателей (5 books on the shelf) reads aloud in the cantina, which gives a free rumour on some
+  dockings. Two duties arrive with them. The Профсоюз водителей expects you at a ГЛАВТРАССА station on a
+  субботник day once a chronicle week, and a member who misses two is expelled («ничего личного, товарищ»). The
+  Партнёрская программа™ sends a weekly parcel to ПОЧТА, and 100 points that convert to points. Leave it
+  uncollected and participation is suspended, «баллы сгорели™». On the КНИЖКА page each membership now shows its
+  arithmetic: dues paid, what the perk gave in кр, how many times it worked, and the total.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -289,6 +299,9 @@ could ever save.
 - M456: the fine's ticket goes to ВЕЩИ (the desk's papers), because ПОЧТА on the desk holds postcards and has no
   place for official paper. «Two of yours → one better» takes your two best spares of a kind. The new part is one
   tier above the better of the two, capped at 5. Рассвет's «no deadlines» for jobs taken there is not done yet.
+- M512: the дачники society waits for M493 (дачники traffic, deferred with the base-side birchpunk). The perks
+  that save no money (ДОСО's norm, the tug, tape, readings) count only times on the desk, not кр. A chronicle
+  week is seven chronicle days, which is one real week, so the union duty is slow by design.
 
 ## 0.478.0 - the album on the engine
 

@@ -147,6 +147,7 @@ function rescueTake(id){
 
 /* ── буксир: баржа настоящая, путь настоящий ── */
 function haulStart(){
+  if(typeof socCount==="function")socCount("hauls");   /* «Спасатели» считают тросы (M512) */
   const sh=G.ship,dest=nearestStation(G.sx,G.sy);
   G.haul={ph:"come",t:0,seed:hashi(G.sx*977+G.sy,clockNow()|0,31)>>>0,
     bx:sh.x,by:sh.y,ba:0,x0:0,y0:0,dsx:dest.sx,dsy:dest.sy,dname:dest.name};

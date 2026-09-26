@@ -24,7 +24,8 @@ function openStationBody(){
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   if(typeof railSealDock==="function")railSealDock();   /* пломбу снимает инспектор (M508) */
-  if(typeof lawDock==="function")lawDock();   /* закон земли: норма, пошлина (M456) */
+  if(typeof lawDock==="function")lawDock();
+  if(typeof socDock==="function")socDock();   /* обязанности и льготы обществ (M512) */   /* закон земли: норма, пошлина (M456) */
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
   if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */

@@ -258,8 +258,6 @@ measured on the GPU build first:
   voucher and an ocean world — how a hotel offers it); cantina rumours at the desk; fatigue (does not exist for
   the player).
 - [ ] **M511 волокита:** the animals the author will invent (his table).
-- [ ] **M512 societies:** duties (субботник, the week's parcel), ДОСО, спасатели, дачники, читатели; the
-  arithmetic on the desk.
 - **Gate:** a tester laughs once in the first ten minutes at something inside the world, and can say
   afterwards which institution the joke was on — never a person.
 

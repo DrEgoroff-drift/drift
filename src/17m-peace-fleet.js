@@ -168,12 +168,12 @@ function peaceRepairPos(S){
 }
 function peaceTick(sh,dt){
   const S=peaceHere();if(!S||S.by!=="ra")return;
-  const T=peaceRepairPos(S),hm=stat().hullMax,need=G.hull<hm*.6;
+  const T=peaceRepairPos(S),hm=stat().hullMax,cap=(typeof socIn==="function"&&socIn("rescue"))?.7:.6,need=G.hull<hm*cap;   /* «Спасатели» — до 70 % (M512) */
   const tx=need?sh.x-Math.cos(sh.a)*60:S.cx,ty=need?sh.y-Math.sin(sh.a)*60:S.cy;
   const dx=tx-T.x,dy=ty-T.y,d=Math.hypot(dx,dy);
   if(d>2){const v=Math.min(d,2.2*dt);T.x+=dx/d*v;T.y+=dy/d*v;T.a=Math.atan2(dy,dx);}
   if(need&&Math.hypot(sh.x-T.x,sh.y-T.y)<90){
     if(!T.said){T.said=true;etherLine("…буксир. Стой ровно, брат, подварим.","Рассвет");}
-    G.hull=Math.min(hm*.6,G.hull+.03*dt);
+    G.hull=Math.min(hm*cap,G.hull+.03*dt);
   }else if(!need)T.said=false;
 }

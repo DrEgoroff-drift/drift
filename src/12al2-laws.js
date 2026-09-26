@@ -18,7 +18,9 @@ function lawOwner(){return (typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,
 /* стыковка: норма заново, пошлина у Компании */
 function lawDock(){
   const by=lawOwner();
-  LAW_NORM_LEFT=by==="gt"?LAW_NORM:0;
+  const doso=by==="gt"&&typeof socIn==="function"&&socIn("doso");   /* ДОСО: норма +10 (M512) */
+  LAW_NORM_LEFT=by==="gt"?LAW_NORM+(doso?10:0):0;
+  if(doso)socGot("doso",0,1);
   if(by==="co"){
     const sponsor=!!(typeof expAll==="function"&&expAll().pax);   /* попутчик экспедиции (11x) — спонсор */
     if(sponsor){logAdd("money","Компания: пошлина за стыковку — 0 кр (спонсор на борту™)");return;}

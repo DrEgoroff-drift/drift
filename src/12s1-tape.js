@@ -25,6 +25,7 @@ function tapeUse(){
   const K=kulibAny();
   if(!K)G.tapeRoll=tapeRolls()-1;
   G.hull=Math.ceil(stat().hullMax*tapeHold());   /* кулибины мотают крепче (M512, M486) */
+  if(typeof socIn==="function"&&socIn("kulib"))socGot("kulib",0,1);
   if(K)logAdd("tech","Кулибин "+K.name+" по рации: «Изолентой и ломом. Держаться будет.» · рулон не нужен");
   if(typeof socCount==="function")socCount("tapes");
   G.tapes=G.tapes||{};G.tapes[G.shipId]=Math.min(TAPE_MAX,tapesOf()+1);

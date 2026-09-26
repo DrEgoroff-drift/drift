@@ -25,6 +25,7 @@ function railPassPrice(){
 }
 function railPassBuy(){
   const p=railPassPrice();if(!p||railPassOn())return false;
+  if(typeof socIn==="function"&&socIn("union"))socGot("union",p,1);   /* вполцены: сберегли столько же (M512) */
   if(G.credits<p){say("Не хватает на проездной\nнужно "+p+" кр",90);return false;}
   G.credits-=p;G.railPass={until:now()+RAIL_PASS_LIFE*HOLD_SHIFT,rides:0,price:p};
   logAdd("money","Проездной ГЛАВТРАССЫ · −"+p+" кр · на "+RAIL_PASS_LIFE+" смен · окупается за "+RAIL_PASS_RIDES+" поездок");
