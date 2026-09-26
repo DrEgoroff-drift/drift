@@ -8775,6 +8775,27 @@ function opisPlanOnly(){
   }else{const e=document.createElement("s");e.className="chalk";e.textContent=" · правка чертежа — в КБ у причала";lg.appendChild(e);}
   return box;
 }
+/* ── открытость (M479, DESIGN-shipyard §3): борт принимает то, что по нему пришло ──
+   В корму — «двигатели принимают»: попадание добавляет износ корабля
+   (12s-wear), а износ — единственное, чем машина слушается хуже. В борт —
+   если по обшивке этого борта стоит броня (часть «корпус» или модуль брони),
+   она берёт на себя часть удара. В лоб — как было. Износ уже в сейве;
+   своего поля нет */
+const EXPO_REAR_WEAR=.002,EXPO_SIDE_ARMOR=.85;
+function planExposure(s,d){
+  if(!(d>0)||!G.ship)return d;
+  const dir=Math.atan2(s.vy,s.vx),ad=Math.abs(angDiff(dir,G.ship.a));
+  if(ad<Math.PI/3){
+    if(typeof wearAll==="function"){const W=wearAll(),id=G.shipId;W[id]=Math.min(1,(W[id]||0)+d*EXPO_REAR_WEAR);}
+    if(!planExposure.t||G.t-planExposure.t>300){planExposure.t=G.t;say("Попадание в корму\nдвигатели принимают · износ растёт",90);}
+    return d;
+  }
+  if(ad>Math.PI*2/3||typeof draftOf!=="function")return d;
+  const side=Math.sign(angDiff(dir+Math.PI,G.ship.a))||1,pk=draftOf(G.shipId),mid=(pk.P.cols-1)/2;
+  const arm=pk.items.some(it=>((it.what==="part"&&it.kind==="hull")||(it.what==="mod"&&it.kind==="armor"))&&
+    it.cells.some(q=>(q.kind==="side"||q.kind==="nose")&&Math.sign(q.j-mid)===side));
+  return arm?d*EXPO_SIDE_ARMOR:d;
+}
 
 /* ══════════════ галактика ══════════════ */
 function starAt(sx,sy){return (sx===0&&sy===0)||h01(sx,sy,4242)<.52;}
@@ -43924,6 +43945,7 @@ function playerHit(s){
     }
   }
   d*=dmgMul(s.type,false);
+  if(typeof planExposure==="function")d=planExposure(s,d);   /* корма и борт по чертежу (M479) */
   /* система старта: огонь державы не опускает корпус ниже половины — на полу
      пикет замолкает и велит уходить (12ar, блокер надзора 12.09) */
   if(d>0&&hailStartSys()&&s.owner&&MAKER_KEYS.indexOf(s.owner)>=0){

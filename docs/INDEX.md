@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6547
+Файлов: 641 · символов верхнего уровня: 6549
 
 ## СИМВОЛЫ
 
@@ -424,6 +424,7 @@ ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
 ETH_LO                       src/25l-post-ether.js:26
+EXPO_REAR_WEAR               src/05e-plan.js:215
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
@@ -476,7 +477,7 @@ FLEA_WHY                     src/12ua-flea.js:31
 FLEET                        src/04b-fleet.js:107
 FLEET_ART                    src/12ai1-fleet-art.js:14
 FLEET_CLASSES                src/12ai-fleet.js:20-40
-FLEET_COOL                   src/13-combat.js:212
+FLEET_COOL                   src/13-combat.js:213
 FLEET_ENG                    src/12ai1-fleet-art.js:410
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
@@ -1846,7 +1847,7 @@ applySave                    src/14-save.js:216-625
 applySaveRest                src/14a1-save-rest.js:15-392
 applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
-armedCount                   src/13-combat.js:236
+armedCount                   src/13-combat.js:237
 arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:592-639
 artGet                       src/08ca-gpu-canvas.js:454
@@ -2501,7 +2502,7 @@ cockpitPaint                 src/25-cockpit.js:202-404
 cockpitPlan                  src/25-cockpit.js:92-152
 cockpitStyleKey              src/25-cockpit.js:46-50
 cockpitTex                   src/25-cockpit.js:187-200
-combatShots                  src/13-combat.js:154-207
+combatShots                  src/13-combat.js:155-208
 conT                         src/27j-console.js:19
 concertAll                   src/11ae-concert.js:22
 concertNotes                 src/11ae-concert.js:82-86
@@ -3243,7 +3244,7 @@ fleetArtRef                  tests/91zzza-cave-props.js:130-134
 fleetCaravanActive           src/12ai-fleet.js:311-317
 fleetColor                   src/04b-fleet.js:95
 fleetEscortActive            src/12ai-fleet.js:309
-fleetFire                    src/13-combat.js:213-234
+fleetFire                    src/13-combat.js:214-235
 fleetGlyph                   src/12ai1-fleet-art.js:373-405
 fleetHailFirst               src/12ai-fleet.js:165-185
 fleetHere                    src/12ai-fleet.js:50-87
@@ -3793,7 +3794,7 @@ hitCandidates                tests/91zzzzzg-hit.js:19-38
 hitCovered                   tests/91zzzzzg-hit.js:41-67
 hitFx                        src/18d-postfx.js:11
 hitLocMul                    src/13-combat.js:32-35
-hitShip                      src/13-combat.js:88-152
+hitShip                      src/13-combat.js:89-153
 hkBand                       src/17l1-hotel-kosmos.js:46
 hkFace                       src/17l1-hotel-kosmos.js:18
 hkPaint                      src/17l1-hotel-kosmos.js:49-274
@@ -4947,7 +4948,7 @@ pirateBaseGpu                src/24a-mode-raid.js:111-186
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
-pirateFellTo                 src/13-combat.js:75-83
+pirateFellTo                 src/13-combat.js:76-84
 pirateHas                    src/13d-loadout.js:34-37
 pirateLoadout                src/13d-loadout.js:33
 pirateRoleTick               src/13c-roles.js:51-127
@@ -4977,6 +4978,7 @@ planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
+planExposure                 src/05e-plan.js:216-229
 planFactors                  src/27jb-kb.js:327-338
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
@@ -5029,7 +5031,7 @@ plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29-37
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
-playerHit                    src/13-combat.js:37-72
+playerHit                    src/13-combat.js:37-73
 poiBody                      src/20a-poi.js:168-172
 poiDrift                     src/20a-poi.js:147-165
 poiGlow                      src/20a-poi.js:78-84
@@ -6643,7 +6645,7 @@ zoomTo                       src/15-input.js:350
 ## src/05e-clearance.js · 7 КБ
   · допуск вместо уровней (M363, §11.4):1
 
-## src/05e-plan.js · 15 КБ
+## src/05e-plan.js · 17 КБ
   · чертёж корабля: клетки из корпуса и упаковщик (M476, DESIGN-shipyard §3, review §2.2):1
 
 ## src/06-galaxy.js · 13 КБ

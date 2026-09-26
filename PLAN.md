@@ -241,10 +241,7 @@ measured on the GPU build first:
 - [ ] **M478 numbers from the plan:** fuel from tank cells, energy from reactor cells, hull from armour parts,
   sight from nose-third instruments, module tiers as densities. One mapping table: `hold`/`tank`/
   `weapon`(reactor)/`armor` become densities per cell (per hull size, never shown as a number);
-  `engine`/`hyper`/`drill` stay station upgrades; the fixpoint suite covers both halves. (Far-goods densities and доводка
-  done in M478 part 1.)
-- [ ] **M479 exposure:** rim parts take their side's wear when hit from that side; «engines take it» from
-  behind.
+  `engine`/`hyper`/`drill` stay station upgrades; the fixpoint suite covers both halves.
 - [ ] **M483 the fast path everywhere:** NPC and pirate ships built by the packer; the new-part mark
   (ПРОЕКТЫ is under M477). Not started — `docs/DESIGN-shipyard.md` §10.
 - **Gate:** an old save loads with every number unchanged; a hauler stripped to the hold and a warship

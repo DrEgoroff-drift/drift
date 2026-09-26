@@ -139,6 +139,12 @@ could ever save.
   works one level higher and never moves again («вварено — не двигается»); a dashed weld seam rings it on the
   plan. Two welds per hull. Densities and welds belong to the hull: projects and ТИПОВОЙ keep them.
 
+- **M479: the plan decides which side takes it.** A hit from behind is now «двигатели принимают»: on top of
+  the damage it adds to the ship's wear, the one number that makes a worn machine answer the stick worse, and
+  the screen says so (at most every five seconds). A hit on a side where the plan has armour on the skin (a
+  «корпус» part or the armour module on that side's rim) loses 15 % to the armour. Hits on the nose are as
+  before. Where you lay the armour in the КБ now matters.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -189,6 +195,9 @@ could ever save.
   mapping table and the fixpoint suite in the release run, so it stays in the plan. Densities and welds are kept
   inside `G.draft[shipId]` (`dens`, `weld`); with neither present every factor is exactly 1. The step sizes are
   guesses for the calibration pass. A project switch may move a welded module's cells; the weld's effect stays.
+- M479: parts have no wear of their own, and giving them one would be a new save field. So «the rim part takes
+  its side's wear» became: the ship's single wear number takes the rear hits (engines), and side armour soaks
+  side hits. Guns on a hit side are not affected yet.
 
 ## 0.478.0 - the album on the engine
 

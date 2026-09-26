@@ -54,6 +54,7 @@ function playerHit(s){
     }
   }
   d*=dmgMul(s.type,false);
+  if(typeof planExposure==="function")d=planExposure(s,d);   /* корма и борт по чертежу (M479) */
   /* система старта: огонь державы не опускает корпус ниже половины — на полу
      пикет замолкает и велит уходить (12ar, блокер надзора 12.09) */
   if(d>0&&hailStartSys()&&s.owner&&MAKER_KEYS.indexOf(s.owner)>=0){
