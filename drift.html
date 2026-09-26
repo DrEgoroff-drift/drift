@@ -54149,7 +54149,7 @@ const GPU_LIT_SH=(.6).toFixed(2);
 const GPU_LIT_DK=Math.log2(5.5).toFixed(3);
 /* корабль в настоящем свете (§L.S): уровней мипа до купола тела, его вес, доля градиента «к звезде»
    по всему корпусу, заливка без газа, доля газа, свет, огни (выше колена — свечение подхватывает) */
-const RL_DL="3.",RL_KD="6.",RL_SIDE=".5",RL_AMB=".46",RL_GAS=".9",RL_LIT="1.1",RL_EM="2.3",RL_GD="4.",RL_GF="1.5",RL_GL="1.5",RL_GN="8.",RL_GP="30.",RL_FL="4.",RL_FLM=".1",RL_RIM=".7",RL_GK="1.2";
+const RL_DL="3.",RL_KD="6.",RL_SIDE=".5",RL_AMB=".46",RL_GAS=".9",RL_LIT="1.1",RL_EM="2.3",RL_GD="4.",RL_GF="1.5",RL_GL="1.5",RL_GN="8.",RL_GP="12.",RL_FL="4.",RL_FLM=".1",RL_RIM=".7",RL_GK=".85";
 const GST_WGSL=GPU_PL_WGSL+`
 fn plOcc(q:vec2f)->f32{let dq=q-fu.v[0].xy;let ro=fu.v[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/fu.v[0].z+1.)*.5;
@@ -54266,7 +54266,7 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
        заклёпке (на плоской панели баржи одиночные точки читались битыми пикселями); мягкий лепесток —
        на развороте блик разгорается и гаснет за несколько кадров, а не мигает */
     let mq=textureSampleLevel(t3,smp,vec2f(.5+uv.x*.5,uv.y),glv);let mg=mq.y/max(mq.w,1e-3);
-    let gs=smoothstep(.25,.85,pow(max(dot(nm,Hs),0.),${RL_GP}))*smoothstep(.35,.7,mg)*(1.-mk.z)*own*key*sk*a;
+    let gs=smoothstep(.15,.9,pow(max(dot(nm,Hs),0.),${RL_GP}))*smoothstep(.35,.7,mg)*(1.-mk.z)*own*key*sk*a;
     let sp=mix(col,vec3f(1.),.35)*gs*${RL_GK}+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs)*sk*a;
     /* f) огонь светит корму — второй свет, нарушение «одного света», названное: тёплое пятно у сопел,
        спадает к досягаемости; обшивка, скатом к огню, берёт больше; скала его не гасит — огонь свой */
