@@ -87,9 +87,9 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
   - the interface — GPU-3; its census (26.09): the panels by how often they open (the desk is on the
     engine through 27i0 `panelGpu` — the post window and КБ too, and the shipyard showcase (26f, one canvas over
-    `hullStudio`), the ОПИСЬ pictures and the suit doll; to fix on the shipyard: the price on a buy button you
+    `hullStudio`), the ОПИСЬ pictures, the suit doll and the album; to fix on the shipyard: the price on a buy button you
     cannot afford is dark on dark — it must still read, contrast ≥ 3 (Контроль 26.09); next: the slipway sheet (26e2, needs a hull mask in 08bi),
-    the home garage hull, the album, faces); a bake at first sight
+    the home garage hull, faces); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too; the raid
     comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;

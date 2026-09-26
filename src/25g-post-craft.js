@@ -17,6 +17,13 @@ function pcGrainTile(){
   g.putImageData(im,0,0);
   return PC_GRAIN=cv;
 }
+/* та же плитка выпечкой — для GPU-холста (альбом, 25g1); потерю устройства переживает сама (gcImg) */
+let PC_GRAIN_B=null;
+function pcGrainBake(){
+  if(PC_GRAIN_B)return PC_GRAIN_B;
+  const t=blueNoise();
+  return PC_GRAIN_B=gpuBake(64,64,g=>{g.fillStyle="#fff";for(let i=0;i<4096;i++)if(t[i]<.012)g.fillRect(i&63,i>>6,1,1);},{mips:false,ss:1});
+}
 /* ── акварель: пятно из полупрозрачных слоёв (M250, DESIGN-craft §6) ──
    Форма не заливается — она складывается из стопки слоёв по 4–6% плотности,
    каждый — своя деформация ОДНОГО базового многоугольника: середина ребра

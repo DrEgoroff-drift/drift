@@ -138,8 +138,9 @@ function pcPrint(c,s,w,h,p){
      НАМЕРЕННО одинаковая (см. шапку), и прежняя россыпь от p.seed этому
      правилу, строго говоря, противоречила. */
   c.globalAlpha=.05;
-  c.fillStyle=c.createPattern(pcGrainTile(),"repeat");
-  c.fillRect(0,0,w,h);
+  if(c instanceof GcCtx){const T=pcGrainBake();   /* GPU-холст: узора нет — плитка выпечкой */
+    for(let y=0;y<h;y+=64)for(let x=0;x<w;x+=64)c.drawImage(T,x,y,64,64);}
+  else{c.fillStyle=c.createPattern(pcGrainTile(),"repeat");c.fillRect(0,0,w,h);}
   c.globalAlpha=1;
 }
 /* ── цвет ── */
