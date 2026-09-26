@@ -39,9 +39,6 @@ occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py
 The game's stages (§3–§8) wait for the author's word; Контроль asks once P1 passes and the fleet has landed.
 
 - [ ] **In flight** — each release deletes its line here:
-  - 0.469.0, the worker: `gpu` + `gpu2-lit` — G2 the star disc (limb darkening into red, no bump; the near corona cut
-    from zoom 1, e9fd226c), G3b the gas jets, the ring's edge-on aliasing, L1b the dust (round heads, no beads on the
-    crests, a warm light inward from the rim);
   - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
     drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
     lands after its tests, whole-frame pairs and six regressions, with its census of 2D calls after `gpuWorld` at 0

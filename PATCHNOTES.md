@@ -6,6 +6,19 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.469.0 - a star with a real edge, gas giants with jets, dust without beads
+
+- **The star's disc darkens toward its edge** (GPU-1): an ordinary star's limb goes red instead of
+  ending in a bright ring, the corona sits behind the disc, and the disc is the brightest thing in the
+  sky. A hot star stays white-blue to the edge instead of reading as a grey bubble.
+- **The corona is cut only up close** (GPU-2): from afar a giant star keeps its halo, as before.
+- **Gas giants get thin jets along the flow** (GPU-1): streaks follow the curls around the storms and
+  carry the neighbouring band's colour; they fade out from afar, so nothing ripples.
+- **No scan lines on a ring seen edge-on** (GPU-1): the ring's front arc over the planet is smoothed
+  across a pixel instead of breaking into rows.
+- **Dust pillars have blunt heads and no beads** (GPU-2): thin crests no longer sparkle with a bright
+  rim, gas-less globules stop glowing, and a dim warm light reaches in from the rim.
+
 ## 0.468.0 - the instrument pod no longer eats video memory, lighter frames
 
 - **The instrument pod stops taking 6.6 MB of video memory for good** (GPU-3): since 0.466.0 its first

@@ -925,6 +925,10 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
 - **0.467.0 cut on `rel-0.467`** (26.09) from 15d24597 (gpu up to 6e775fb9 + origin/main 0.466.0), without
   gpu2-lit: its star disc drops the «система» golden contrast .88 → .69 (a real loss, LOOK_BASE kept) and moves
   5.5–5.9 % of the blocks; the disc, the ring and gpu3-rack go to 0.468.0. Node, -Full -Jobs 3, -Mobile green.
+- **0.469.0 cut on `gpu`** (26.09): origin/main 48f71a60 (0.468.0 and the new PLAN, PLAN.md taken as main's) and
+  gpu2-lit e9fd226c (the near corona cut only from zoom 1) merged in; the 390 «грунт день» and «система» goldens
+  are green again. G2 the star disc, G3b the jets, the ring's edge-on aliasing, L1b the dust. `gpu-ships` stays
+  out (its own candidate). Node, -Full -Jobs 3, -Mobile, the golden set green.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
