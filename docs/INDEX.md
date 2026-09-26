@@ -29,7 +29,7 @@ $menu                        src/15-input.js:243
 $msg                         src/27z-telemetry.js:43
 $msl                         src/27z-telemetry.js:47
 $nav                         src/27z-telemetry.js:45
-$opts                        src/26-ui-station.js:687
+$opts                        src/26-ui-station.js:689
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
@@ -906,8 +906,8 @@ LANE_GLOW                    src/17g-sys-lane.js:107
 LANE_GLOW_SP                 src/17g-sys-lane.js:93
 LANE_Q_CLS                   src/17g-sys-lane.js:18
 LANE_Q_MAX                   src/17g-sys-lane.js:17
-LANE_RU                      src/26-ui-station.js:393
-LANE_RX                      src/26-ui-station.js:389-392
+LANE_RU                      src/26-ui-station.js:395
+LANE_RX                      src/26-ui-station.js:391-394
 LANE_W                       src/17g-sys-lane.js:14
 LAST_RUN_DAY                 src/12k-letters.js:40
 LATE_CAP                     src/11aq-late.js:30
@@ -946,7 +946,7 @@ LOCKER_SLOTS                 src/12ak-locker.js:23
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
 LONG_HOD                     src/12b3-fx-cult.js:32-45
-LOOK_BASE                    tests/91zzzzy-look.js:21-39
+LOOK_BASE                    tests/91zzzzy-look.js:21-41
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
 LOOP_OFF                     src/28-loop.js:364
@@ -1461,7 +1461,7 @@ SCRIP_VISIT                  src/12u-scrip.js:31
 SD_KIND                      src/12tb-settle-draw.js:33-37
 SD_MAN                       src/12tb-settle-draw.js:31
 SEAT                         src/27j-console.js:40
-SEC_CAP                      src/26-ui-station.js:363
+SEC_CAP                      src/26-ui-station.js:365
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
 SEC_KING_LIVE                src/12b2-fx-sec.js:22
@@ -2169,7 +2169,7 @@ bmgrRefuses                  src/21b2-base-mgr.js:86-92
 bmgrSilent                   src/21b2-base-mgr.js:184-187
 bmgrStep                     src/21b2-base-mgr.js:140-178
 bmgrWorkMul                  src/21b2-base-mgr.js:129-132
-boardLanes                   src/26-ui-station.js:394-420
+boardLanes                   src/26-ui-station.js:396-422
 bodyInSystem                 src/16-flight.js:103-112
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
@@ -2199,7 +2199,7 @@ bpMul                        src/12c-mgr-core.js:676-680
 bpRecheck                    src/12c-mgr-core.js:743-756
 bpState                      src/12c-mgr-core.js:673
 brLaws                       tests/91zzzzzc-broke.js:21-38
-brSweep                      tests/91zzzzzc-broke.js:41-72
+brSweep                      tests/91zzzzzc-broke.js:41-73
 brownBuf                     src/10-music.js:125
 brownNoise                   src/10-music.js:126-141
 buildAi                      src/12f-mgr-ai.js:29-48
@@ -3077,7 +3077,7 @@ econLine                     src/12ax-fx-econ.js:75-88
 econPriceMul                 src/12ax-fx-econ.js:66-73
 econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38-43
-el                           src/26-ui-station.js:293
+el                           src/26-ui-station.js:295
 endPtr                       src/15-input.js:428-433
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
@@ -3282,7 +3282,7 @@ foeFlak                      src/13a-guns.js:405-429
 foeGun                       src/13d-loadout.js:40-48
 foeMineLay                   src/13d-loadout.js:132-141
 foeTetherTick                src/13d-loadout.js:145-159
-foldBlock                    src/26-ui-station.js:340-355
+foldBlock                    src/26-ui-station.js:342-357
 folkAll                      src/11ah-offer.js:82-85
 folkHere                     src/12u-folk.js:91-97
 folkLeave                    src/12u-folk.js:115
@@ -5484,8 +5484,8 @@ renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
 renderStrips                 src/27i-ui-table.js:330-366
-renderTab                    src/26-ui-station.js:478-490
-renderTabBody                src/26-ui-station.js:491-683
+renderTab                    src/26-ui-station.js:480-492
+renderTabBody                src/26-ui-station.js:493-685
 renderThings                 src/27i-ui-table.js:379-404
 rentAi                       src/12f1-mgr-rent.js:23-35
 rentBaseBurning              src/12f1-mgr-rent.js:43-47
@@ -5503,7 +5503,7 @@ repPartMul                   src/12k-rep.js:73
 repRepairMul                 src/12k-rep.js:53
 repShipMul                   src/12k-rep.js:74
 repWord                      src/12k-rep.js:31-35
-repairBtns                   src/26-ui-station.js:276-290
+repairBtns                   src/26-ui-station.js:276-292
 repairCost                   src/26-ui-station.js:189-198
 repairDo                     src/26-ui-station.js:258-273
 repairQuote                  src/26-ui-station.js:252-257
@@ -5531,7 +5531,7 @@ rescueSig                    src/16c-rescue.js:559
 rescueSigNow                 src/16c-rescue.js:558
 rescueSync                   src/16c-rescue.js:560-573
 rescueTake                   src/16c-rescue.js:105-146
-resetArm                     src/26-ui-station.js:686
+resetArm                     src/26-ui-station.js:688
 resetWorld                   tests/90-harness.js:238-395
 resize                       src/08-state.js:29-66
 retAll                       src/11s-returners.js:32
@@ -5776,7 +5776,7 @@ seatGpuTick                  src/27j-console.js:41-55
 secBlock                     src/12b2-fx-sec.js:183-208
 secCouponRite                src/12b2-fx-sec.js:146-150
 secHailRangeMul              src/12b2-fx-sec.js:141
-secHead                      src/26-ui-station.js:312-337
+secHead                      src/26-ui-station.js:314-339
 secKingArea                  src/12b2-fx-sec.js:40-45
 secKingCount                 src/12b2-fx-sec.js:47-64
 secKingHere                  src/12b2-fx-sec.js:65-71
@@ -5795,7 +5795,7 @@ secSmugHot                   src/12b2-fx-sec.js:178-181
 secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
-secTidy                      src/26-ui-station.js:364-383
+secTidy                      src/26-ui-station.js:366-385
 sellCargo                    src/12-economy.js:157-182
 sellDroneYield               src/12-economy.js:183-188
 sellQuote                    src/12ab-hold.js:101-110
@@ -5846,7 +5846,7 @@ shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
 shipGearGpu                  src/05c-arms.js:315-335
-shipRow                      src/26-ui-station.js:422-467
+shipRow                      src/26-ui-station.js:424-469
 shipScaleAt                  src/16c-rescue.js:212
 shipScaleCap                 src/16c-rescue.js:211
 shipThumb                    src/26f-yard-gpu.js:7-11
@@ -6014,9 +6014,9 @@ stTabBoard                   src/26e-ui-station-trade.js:11-147
 stTabFuse                    src/26b-ui-station-work.js:385
 stTabInstr                   src/26b-ui-station-work.js:230-384
 stTabLab                     src/26b-ui-station-work.js:316-384
-stTabMarket                  src/26e-ui-station-trade.js:148-266
+stTabMarket                  src/26e-ui-station-trade.js:148-267
 stTabMods                    src/26b-ui-station-work.js:105-384
-stTabYard                    src/26e-ui-station-trade.js:267-412
+stTabYard                    src/26e-ui-station-trade.js:268-413
 stTabsHere                   src/26-ui-station.js:145
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:379-392
@@ -7783,10 +7783,10 @@ zoomTo                       src/15-input.js:350
 ## src/25n-chess.js · 15 КБ
   · шахматы по почте:1
 
-## src/26-ui-station.js · 49 КБ
+## src/26-ui-station.js · 50 КБ
   · станция:1
-  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):307
-  · настройки:685
+  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):309
+  · настройки:687
 
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1
@@ -8530,7 +8530,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91zzzzzbb-samehash.js · 9 КБ
   · детерминизм: тест Factorio (M441, DESIGN-tests §3.5):1
 
-## tests/91zzzzzc-broke.js · 14 КБ
+## tests/91zzzzzc-broke.js · 15 КБ
   · нищий и двойной тычок (M354):1
 
 ## tests/91zzzzzd-pure.js · 6 КБ
@@ -8627,7 +8627,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91zzzzzzy4-pipes.js · 8 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
-## tests/91zzzzzzy5-gpu-loss.js · 9 КБ
+## tests/91zzzzzzy5-gpu-loss.js · 10 КБ
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
 
 ## tests/91zzzzzzy6-chipjump.js · 4 КБ

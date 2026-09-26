@@ -80,6 +80,8 @@ TEST_SUITES.push(()=>suite("мастер станции: сброс атласа
   for(let r=0;r<=14&&!S;r++)for(let x=-r;x<=r&&!S;x++)for(let y=-r;y<=r&&!S;y++){
     if(Math.max(Math.abs(x),Math.abs(y))!==r||!starAt(x,y))continue;
     const s=getSystem(x,y);if(!s.station)continue;
+    /* одевка плиты — по строителю (M454): текст пишут только ГЛАВТРАССА, Компания и Орднунг */
+    if(["gt","co","or"].indexOf(stationBuilder(s))<0)continue;
     G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;S=s.station;}
   if(!ok(S,"станция нашлась"))return;
   G.ship.x=S.x+140;G.ship.y=S.y+90;G.ship.vx=G.ship.vy=0;G.zoom=1.2;G.zoomT=null;

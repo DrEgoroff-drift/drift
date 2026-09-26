@@ -218,6 +218,11 @@ could ever save.
   uncollected and participation is suspended, «баллы сгорели™». On the КНИЖКА page each membership now shows its
   arithmetic: dues paid, what the perk gave in кр, how many times it worked, and the total.
 
+- Station chip: the owner glyph goes after the name, so the chip reads like the tables (M458 fix).
+- Far stall «КУПИТЬ 1»: a refused purchase says why (no credits / hold full) instead of staying silent.
+- Tape button at the repair row keeps its width: the label is fixed, the roll count is a corner badge (99+); buying many rolls no longer pushes the neighbours.
+- Tests: the GPU-loss atlas suite picks a station whose dress writes text (ГЛАВТРАССА, Компания, Орднунг — M454); the button sweeps close the KB window they may open; LOOK_BASE «карта» empty 61 → 41 (M458 borders).
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are

@@ -68,6 +68,7 @@ function brSweep(limit){
     tab="market";G.mode="system";G.st=null;
   }
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  kbClose();   /* КБ — своё окно, не .scr: обходчик мог его открыть кнопкой «КБ · ЧЕРТЁЖ» */
   return {clicks,bad,rich};
 }
 
@@ -170,6 +171,7 @@ TEST_SUITES.push(() => suite("устаревшая кнопка: ушедшая 
     tab="market";G.mode="system";G.st=null;
   }
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  kbClose();   /* КБ — своё окно, не .scr: обходчик мог его открыть кнопкой «КБ · ЧЕРТЁЖ» */
   ok(stale>0,"кнопок, ушедших с экрана после нажатия: "+stale);
   eq(bad.slice(0,5).join(" ;; "),"","ни одна ушедшая кнопка не сработала повторно"+
     (bad.length?" (всего "+bad.length+")":""));
@@ -210,6 +212,7 @@ TEST_SUITES.push(() => suite("новичок: экраны первого час
     tab="market";G.mode="system";G.st=null;
   }
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  kbClose();   /* КБ — своё окно, не .scr: обходчик мог его открыть кнопкой «КБ · ЧЕРТЁЖ» */
   ok(drawn>20,"экранов пустого мира нарисовано: "+drawn);
   ok(clicks>10,"тычков на пустом мире: "+clicks);
   eq(bad.slice(0,5).join(" ;; "),"","первый час не ломается и не молчит"+(bad.length?" (всего "+bad.length+")":""));

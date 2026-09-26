@@ -365,6 +365,10 @@ body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],
    это «сколько тут нового», а не «внимание» */
 #tableTabs button i{font-style:normal;color:var(--void);background:var(--phos);
   margin-left:6px;padding:1px 5px;border-radius:8px;font-size:9px;vertical-align:1px}
+/* запас изоленты — та же фишка, но в углу кнопки: ширина кнопки от числа не зависит */
+#bTape{position:relative}
+#bTape i{position:absolute;top:-7px;right:-5px;font-style:normal;color:var(--void);background:var(--phos);
+  padding:1px 5px;border-radius:8px;font-size:9px;line-height:12px;font-variant-numeric:tabular-nums;pointer-events:none}
 
 /* ── ящик бортовых систем ── */
 /* Терминал, а не диалог: стекло, световой волосок по верхней кромке,
@@ -53455,7 +53459,7 @@ function drawSysHud(zx,zy,sh,sys,U){
      следующее действие; имена — как написаны, регистр как в предложении */
   const marks=[{x:0,y:0,c:"#c3d0d8",l:"Звезда",t:{kind:"star"},k:"star"}];
   if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
-    l:(powerGlyph(chronOwnerKey(G.sx,G.sy))+" "+sys.station.name).trim(),t:{kind:"station"},k:"station"});   /* знак хозяина земли (M458) */
+    l:sys.station.name+((g=>g?" · "+g:"")(powerGlyph(chronOwnerKey(G.sx,G.sy)))),t:{kind:"station"},k:"station"});   /* знак хозяина земли — после имени: имя фишки как в таблицах (M458) */
   {
     let np=null,nd=1e18;
     for(const p of sys.planets){
@@ -92659,7 +92663,9 @@ function repairBtns(){
     bt=document.createElement("button");bt.id="bTape";bt.className=bf.className;
     bt.addEventListener("click",()=>{tapeBuy();repairBtns();});bf.parentNode.insertBefore(bt,bf.nextSibling);
   }
-  if(bt)bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE+(tapeRolls()?" · В ЗАПАСЕ "+tapeRolls():"");
+  /* подпись постоянная, запас — фишкой в углу: иначе кнопка росла с каждым рулоном и толкала соседей */
+  if(bt){const n=tapeRolls();bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE;bt.title=n?"в запасе рулонов: "+n:"";
+    if(n){const i=document.createElement("i");i.textContent=n>99?"99+":n;bt.appendChild(i);}}
 }
 document.getElementById("bRepairHalf").addEventListener("click",()=>repairDo(.5));
 document.getElementById("bRepair").addEventListener("click",()=>repairDo(1));
@@ -94255,7 +94261,8 @@ function stTabMarket(st){
         const b=el("button","act","КУПИТЬ 1");
         b.disabled=G.credits<S.ask;
         b.onclick=()=>{const got=farStallBuy(G.sys,1);
-          if(got)tell("money","Куплено из дали: "+RES[S.k].ru.toLowerCase()+" · −"+S.ask.toLocaleString("ru")+" кр",
+          if(!got){say(G.credits<S.ask?"Не хватает кредитов":"Не влезет\nтрюм полон",90);return;}   /* отказ вслух, а не тишина */
+          tell("money","Куплено из дали: "+RES[S.k].ru.toLowerCase()+" · −"+S.ask.toLocaleString("ru")+" кр",
                       "Из дали\n"+RES[S.k].ru+"\n−"+S.ask.toLocaleString("ru")+" кр");
           renderTab();};
         r.appendChild(b);$body.appendChild(r);

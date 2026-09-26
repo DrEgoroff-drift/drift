@@ -216,7 +216,8 @@ function stTabMarket(st){
         const b=el("button","act","КУПИТЬ 1");
         b.disabled=G.credits<S.ask;
         b.onclick=()=>{const got=farStallBuy(G.sys,1);
-          if(got)tell("money","Куплено из дали: "+RES[S.k].ru.toLowerCase()+" · −"+S.ask.toLocaleString("ru")+" кр",
+          if(!got){say(G.credits<S.ask?"Не хватает кредитов":"Не влезет\nтрюм полон",90);return;}   /* отказ вслух, а не тишина */
+          tell("money","Куплено из дали: "+RES[S.k].ru.toLowerCase()+" · −"+S.ask.toLocaleString("ru")+" кр",
                       "Из дали\n"+RES[S.k].ru+"\n−"+S.ask.toLocaleString("ru")+" кр");
           renderTab();};
         r.appendChild(b);$body.appendChild(r);

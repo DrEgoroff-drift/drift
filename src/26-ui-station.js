@@ -286,7 +286,9 @@ function repairBtns(){
     bt=document.createElement("button");bt.id="bTape";bt.className=bf.className;
     bt.addEventListener("click",()=>{tapeBuy();repairBtns();});bf.parentNode.insertBefore(bt,bf.nextSibling);
   }
-  if(bt)bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE+(tapeRolls()?" · В ЗАПАСЕ "+tapeRolls():"");
+  /* подпись постоянная, запас — фишкой в углу: иначе кнопка росла с каждым рулоном и толкала соседей */
+  if(bt){const n=tapeRolls();bt.textContent="ИЗОЛЕНТА · "+TAPE_PRICE;bt.title=n?"в запасе рулонов: "+n:"";
+    if(n){const i=document.createElement("i");i.textContent=n>99?"99+":n;bt.appendChild(i);}}
 }
 document.getElementById("bRepairHalf").addEventListener("click",()=>repairDo(.5));
 document.getElementById("bRepair").addEventListener("click",()=>repairDo(1));
