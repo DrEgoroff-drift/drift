@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6570
+Файлов: 641 · символов верхнего уровня: 6581
 
 ## СИМВОЛЫ
 
@@ -286,7 +286,7 @@ COUNTY_LVL                   src/11l-county.js:20
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
-CREW_EVENTS                  src/12b-crew-events.js:98-213
+CREW_EVENTS                  src/12b-crew-events.js:98-217
 CREW_EV_BASE                 src/12b-crew-events.js:69
 CREW_MODS                    src/12a-crew.js:289-293
 CREW_OFFLINE_CAP             src/12a-crew.js:11
@@ -894,6 +894,7 @@ KIT_WEAR                     src/12x-suit.js:32
 KMAP                         src/15-input.js:112
 KMAP_BELT                    src/15-input.js:116
 KP_DAY                       src/26e2-post.js:11
+KP_PK_MAX                    src/26e2-post.js:103
 LAND_ARC                     src/07a-terrain.js:49
 LAND_GY                      src/19f-lander.js:10
 LANE_BUOY                    src/17g-sys-lane.js:68
@@ -1843,7 +1844,7 @@ appetiteLeft                 src/12ab-hold.js:69-73
 appetiteLine                 src/12ab-hold.js:112-118
 appetiteOf                   src/12ab-hold.js:38-44
 appetitePrice                src/12ab-hold.js:84
-applyCrewEvent               src/12b-crew-events.js:215-224
+applyCrewEvent               src/12b-crew-events.js:219-228
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:216-625
@@ -2361,7 +2362,7 @@ chessMove                    src/25n-chess.js:217-226
 chessMyTurn                  src/25n-chess.js:212-216
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
-chipDist                     src/17-mode-system.js:717-723
+chipDist                     src/17-mode-system.js:718-724
 chipDom                      src/08bi-gpu-ovl.js:177-192
 chipDomSnap                  src/08bh-gpu-hud.js:10-12
 chipDomSweep                 src/08bh-gpu-hud.js:20-23
@@ -2594,12 +2595,12 @@ crewDamage                   src/12a-crew.js:530-543
 crewDeliver                  src/12a-crew.js:578-582
 crewEff                      src/12a-crew.js:356-362
 crewFill                     src/12a-crew.js:563-577
-crewFreeHostage              src/12b-crew-events.js:238-250
-crewFreeHostagesAt           src/12b-crew-events.js:253-258
+crewFreeHostage              src/12b-crew-events.js:242-254
+crewFreeHostagesAt           src/12b-crew-events.js:257-262
 crewGift                     src/12a-crew.js:205-217
 crewGiveMod                  src/12a-crew.js:300-312
 crewHas                      src/12a-crew.js:49
-crewHistory                  src/12b-crew-events.js:225-229
+crewHistory                  src/12b-crew-events.js:229-233
 crewHold                     src/12a-crew.js:331
 crewHullPay                  src/12a-crew.js:55
 crewLuck                     src/12a-crew.js:35-43
@@ -2998,12 +2999,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:724-1050
+drawSysHud                   src/17-mode-system.js:725-1051
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:79-115
 drawSysTraffic               src/17f-sys-traffic.js:39-43
-drawSystem                   src/17-mode-system.js:528-712
+drawSystem                   src/17-mode-system.js:529-713
 drawTapes                    src/12s1-tape.js:50-65
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:409-487
@@ -4165,7 +4166,9 @@ kitShopBlock                 src/12x-suit.js:317-339
 kitStat                      src/12x-suit.js:70-88
 kitWearMul                   src/12x-suit.js:68
 kitWearPiece                 src/12x-suit.js:139-145
-kpBlock                      src/26e2-post.js:101-125
+kpAhead                      src/26e2-post.js:164-169
+kpBlock                      src/26e2-post.js:171-215
+kpCrowd                      src/26e2-post.js:155-158
 kpDoor                       src/26e2-post.js:25
 kpDue                        src/26e2-post.js:27
 kpHolds                      src/26e2-post.js:29
@@ -4174,8 +4177,16 @@ kpHours                      src/26e2-post.js:13
 kpMinsToOpen                 src/26e2-post.js:20-24
 kpOpen                       src/26e2-post.js:18
 kpOpenAt                     src/26e2-post.js:14-17
+kpParcels                    src/26e2-post.js:104
+kpQueueDone                  src/26e2-post.js:170
+kpSend                       src/26e2-post.js:105-111
+kpSendPart                   src/26e2-post.js:114-117
 kpTake                       src/26e2-post.js:32-42
+kpTakePk                     src/26e2-post.js:133-151
+kpTick                       src/26e2-post.js:119-132
 kpTicket                     src/26e2-post.js:30
+kpTicketTake                 src/26e2-post.js:159-163
+kpWhat                       src/26e2-post.js:112
 kpWindow                     src/26e2-post.js:47-53
 kpWindowPaint                src/26e2-post.js:54-100
 kulibAny                     src/12s1-tape.js:15-19
@@ -4777,7 +4788,7 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:340-357
 optTab                       src/27-ui-ship.js:339
 optsNumify                   src/14a2-save-ephemeral.js:23-28
-orbPathOf                    src/17-mode-system.js:491-501
+orbPathOf                    src/17-mode-system.js:492-502
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
 orderOf                      src/12aa-need.js:78-102
@@ -5352,7 +5363,7 @@ rangeShot                    src/24d-range.js:46
 rangeStart                   src/24d-range.js:24-40
 rangeTarget                  src/24d-range.js:16-23
 rangeTick                    src/24d-range.js:47-56
-ransomPay                    src/12b-crew-events.js:231-237
+ransomPay                    src/12b-crew-events.js:235-241
 rareAtPlace                  src/12m-rare.js:109-113
 rareCount                    src/12m-rare.js:105
 rareHas                      src/12m-rare.js:104
@@ -6123,13 +6134,13 @@ sysLane                      src/17g-sys-lane.js:32-63
 sysMakes                     src/12ad-site.js:134-140
 sysNebComp                   src/16a-space.js:209-234
 sysNebulaTex                 src/16a-space.js:53-101
-sysOcPush                    src/17-mode-system.js:519-527
+sysOcPush                    src/17-mode-system.js:520-528
 sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-31
 sysRasterTick                src/06-galaxy.js:33-45
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
-sysWatchLabel                src/17-mode-system.js:506-514
+sysWatchLabel                src/17-mode-system.js:507-515
 tab                          src/26-ui-station.js:3
 tabLive                      src/14a-cloud.js:36
 tableBake                    src/27i-ui-table.js:145-155
@@ -6300,7 +6311,7 @@ updateRail                   src/18g-rail-ride.js:64-111
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
-updateSystem                 src/17-mode-system.js:92-487
+updateSystem                 src/17-mode-system.js:92-488
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:91-116
@@ -7776,7 +7787,7 @@ zoomTo                       src/15-input.js:350
 ## src/26e1-stapel.js · 12 КБ
   · СТАПЕЛЬ — заказ корпуса у державы (M481, DESIGN-shipyard §5):1
 
-## src/26e2-post.js · 8 КБ
+## src/26e2-post.js · 14 КБ
   · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
 
 ## src/26e2-stapel-draw.js · 25 КБ

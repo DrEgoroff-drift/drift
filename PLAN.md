@@ -248,7 +248,6 @@ measured on the GPU build first:
 
 ## 6. Stage 5 — the voice and the joke
 
-- [ ] **M492 Космопочта:** a rare part and cooperative goods as parcels; a real queue.
 - [ ] **M460 billboards:** 1–3 signs; the hull tint within R; the сводка, циркуляры and holding lines;
   stale prices as a fork. **M491** through `12p-news` at the сводка. **P12** ЭФИР.
 - [ ] **M461 hotels:** six faces in DESIGN-life §3.3, two built — «Космос» (17l1) and «Дружба» (17l2, 0.470.0).

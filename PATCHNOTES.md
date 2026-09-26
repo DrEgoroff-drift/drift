@@ -177,6 +177,14 @@ could ever save.
   and stays «посёлок X» on land nobody holds. A holding without a name you gave it is announced by its sign. A
   subscription names the firm behind it («Вязьма Аэроспейс»), one invented firm per station.
 
+- **M492: Космопочта carries more than hulls, and it has a queue.** A good part a hired hand takes off a foreign
+  hull now travels by post: «снял с чужого борта: ТО-41 «Оса» · выслал Космопочтой», and a notice waits in
+  ПОЧТА. A registered co-operative sometimes sends its members a share by post once a shift, more often and
+  bigger when its spirit is high («посылка кооператива «Ласточка»: лёд ×8»). At the window you take a ticket
+  first. The number of people ahead depends on the post hour, with a rush at opening and after lunch, and each
+  one takes a third of a post hour. Leave the station and the ticket is gone. The kind clerk still keeps a late
+  parcel a day longer, once. A parcel past that goes back to the sender.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -245,6 +253,10 @@ could ever save.
 - M489: the sign changes only the header, the holding announcements, the settlement and the metro. Ether lines,
   the journal and records keep the bare toponym, the way people say a place's name aloud. Names the player gave
   (G.names) are never overwritten.
+- M492: parcels live inside the already-saved stapel record (G.stapel.pk, the ticket in G.stapel.q), not in a
+  new save field. Only the high-tier part event goes by post; the low-tier one still lands in the hold. If the
+  post has six parcels waiting, the part falls back to the hold. The queue does not refresh the window by itself.
+  The hull from the stapel now needs a ticket too.
 
 ## 0.478.0 - the album on the engine
 

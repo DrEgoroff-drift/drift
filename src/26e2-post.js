@@ -98,28 +98,118 @@ function kpWindowPaint(c,w,h,open,ticket){
     c.restore();
   }
 }
+/* ── посылки, кроме корпуса (M492): деталь с рейса наёмника и доля кооператива.
+   Живут в G.stapel.pk (почта и стапель — одно окно), корпус — отдельно в S.o ── */
+const KP_PK_MAX=6;
+function kpParcels(){const S=stapelAll();if(!Array.isArray(S.pk))S.pk=[];return S.pk;}
+function kpSend(o){
+  const L=kpParcels();if(L.length>=KP_PK_MAX)return false;
+  const S=stapelAll();S.n=(S.n|0)+1;
+  o.no=S.n;o.ready=o.ready||now()+KP_DAY;L.push(o);
+  logAdd("tech","Извещение в ПОЧТУ: "+kpWhat(o)+" · получать в окне Космопочты");
+  return true;
+}
+function kpWhat(o){return o.t==="part"?"деталь «"+o.nm+"» от "+o.from:"посылка кооператива «"+o.from+"»: "+RES[o.k].ru.toLowerCase()+" ×"+o.q;}
+/* наёмник снял хорошую деталь — шлёт посылкой, а не в карман */
+function kpSendPart(seed,tier,kind,from){
+  const p=genPart(seed,tier,kind);
+  return kpSend({t:"part",g:[seed,tier,kind],nm:p.name,from})?p:null;
+}
+/* кооператив раз в смену может выслать долю — чем бодрее дух, тем чаще и больше */
+function kpTick(){
+  const S=stapelAll(),L=kpParcels();
+  /* срок вышел и денёк сверху прошёл — назад отправителю */
+  for(let i=L.length-1;i>=0;i--){const o=L[i];
+    if(now()>kpDue(o)+KP_DAY){L.splice(i,1);logAdd("dim","Почта: "+kpWhat(o)+" — срок хранения истёк, возвращено отправителю");}}
+  if(typeof coopHas!=="function"||!coopHas())return;
+  const k=Math.floor(now()/HOLD_SHIFT);
+  if(S.cs===k)return;S.cs=k;
+  if(L.some(o=>o.t==="coop"))return;
+  const sp=(typeof coopSpirit==="function")?coopSpirit():0;
+  if((hashi(k,0xC0,0x9057)>>>0)%6>=1+sp)return;
+  const keys=(typeof TRADE_KEYS!=="undefined")?TRADE_KEYS:Object.keys(RES);
+  kpSend({t:"coop",k:keys[(hashi(k,0xC1,7)>>>0)%keys.length],q:3+sp,from:G.coop.name});
+}
+function kpTakePk(no){
+  const L=kpParcels(),i=L.findIndex(o=>o.no===no),o=L[i];
+  if(!o||!kpOpen()||now()<o.ready||kpAhead()>0)return false;
+  if(!kpHolds(o)){
+    if(!o.kind&&now()<kpDue(o)+KP_DAY){o.kind=1;
+      logAdd("good","Почта: «Вообще-то вернули бы. Полежит ещё денёк — не по правилам»");}
+    else return false;
+  }
+  if(o.t==="part"){
+    if(G.inv.length>=PART_MAX){say("Не влезет\nв трюме деталей полно",120);return false;}
+    addPart(genPart(o.g[0],o.g[1],o.g[2]));
+  }else{
+    const got=addRes(o.k,o.q);
+    if(!got){say("Не влезет\nтрюм полон",120);return false;}
+  }
+  L.splice(i,1);kpQueueDone();
+  logAdd("good","Получено на почте: "+kpWhat(o));
+  return true;
+}
+/* ── очередь (M492): талон берут в окне; впереди столько, сколько набежало к
+   этому почтовому часу (у открытия и после обеда — больше), и каждый
+   занимает треть почтового часа. Ушли со станции — талон пропал. ── */
+function kpCrowd(){
+  const h=kpHour(),H=kpHours(G.sx,G.sy),rush=(h===H[0]||h===14)?3:0;
+  return rush+(hashi(G.sx*31+G.sy,Math.floor(now()/KP_DAY),h)>>>0)%4;
+}
+function kpTicketTake(){
+  if(!kpOpen())return false;
+  const S=stapelAll();S.q={key:G.sys?G.sys.key:"",t0:now(),n:kpCrowd()};
+  return true;
+}
+function kpAhead(){
+  const S=stapelAll(),q=S.q;
+  if(!q||!G.sys||q.key!==G.sys.key)return -1;
+  const per=KP_DAY/72;
+  return Math.max(0,q.n-Math.floor((now()-q.t0)/per));
+}
+function kpQueueDone(){const S=stapelAll();if(S.q)S.q.n=0;}
 function kpBlock(){
   const o=(typeof stapelAll==="function")?stapelAll().o:null;
   const box=document.createElement("div");box.className="post";
   box.appendChild(el("div","sec","КОСМОПОЧТА · "+kpDoor()));
-  const open=kpOpen();
-  box.appendChild(kpWindow(open,o&&now()>=o.ready?kpTicket(o):0));
-  if(!o||now()<o.ready){
+  const open=kpOpen(),pk=kpParcels().filter(p=>now()>=p.ready),hull=!!(o&&now()>=o.ready);
+  box.appendChild(kpWindow(open,(hull||pk.length)?kpTicket(hull?o:pk[0]):0));
+  if(!hull&&!pk.length){
     box.appendChild(el("div","row","<div class='nm'><s>"+(open?"окно открыто · извещений на ваше имя нет":
       "ЗАКРЫТО · откроется через "+kpMinsToOpen()+" мин")+"</s></div>"));
     return box;
   }
-  const r=el("div","row"),back=!kpHolds(o)&&!(!o.kind&&now()<kpDue(o)+KP_DAY);
-  const left=Math.max(0,Math.ceil((kpDue(o)-now())/KP_DAY));
-  r.appendChild(el("div","nm","<b>Извещение: корпус со стапеля «"+o.st+"»</b><s>"+
-    (back?"срок хранения истёк · возвращено отправителю — забирать на стапеле, сектор "+o.sx+":"+o.sy:
-     "хранится ещё "+left+" сут. · талон № "+kpTicket(o)+(open?" · перед вами никого":""))+"</s></div>"));
-  if(!back){
-    if(open){const b=el("button","act gold","ПОЛУЧИТЬ");
-      b.onclick=()=>{const id=kpTake();if(id){say("Распишитесь здесь\n«"+shipData(id).ru+"» ваш",160);renderTab();saveGame(true);}};
-      r.appendChild(b);}
-    else r.appendChild(el("div","qt","ЗАКРЫТО · "+kpMinsToOpen()+" МИН"));
+  /* очередь: без талона — взять; с талоном — сколько перед вами */
+  const ah=kpAhead();
+  if(open){
+    const qr=el("div","row");
+    if(ah<0){qr.appendChild(el("div","nm","<b>Очередь</b><s>в окне человек "+kpCrowd()+" · талон бесплатно</s>"));
+      const b=el("button","act","ВЗЯТЬ ТАЛОН");b.onclick=()=>{kpTicketTake();renderTab();};qr.appendChild(b);}
+    else qr.appendChild(el("div","nm","<b>Очередь</b><s>"+(ah>0?"перед вами "+ah+" · обновите окно, когда подойдёт":"ваша очередь · подходите к окну")+"</s>"));
+    box.appendChild(qr);
   }
-  box.appendChild(r);
+  const turn=open&&ah===0;
+  if(hull){
+    const r=el("div","row"),back=!kpHolds(o)&&!(!o.kind&&now()<kpDue(o)+KP_DAY);
+    const left=Math.max(0,Math.ceil((kpDue(o)-now())/KP_DAY));
+    r.appendChild(el("div","nm","<b>Извещение: корпус со стапеля «"+o.st+"»</b><s>"+
+      (back?"срок хранения истёк · возвращено отправителю — забирать на стапеле, сектор "+o.sx+":"+o.sy:
+       "хранится ещё "+left+" сут. · талон № "+kpTicket(o))+"</s></div>"));
+    if(!back){
+      if(turn){const b=el("button","act gold","ПОЛУЧИТЬ");
+        b.onclick=()=>{const id=kpTake();if(id){kpQueueDone();say("Распишитесь здесь\n«"+shipData(id).ru+"» ваш",160);renderTab();saveGame(true);}};
+        r.appendChild(b);}
+      else if(!open)r.appendChild(el("div","qt","ЗАКРЫТО · "+kpMinsToOpen()+" МИН"));
+    }
+    box.appendChild(r);
+  }
+  for(const p of pk){
+    const r=el("div","row"),left=Math.max(0,Math.ceil((kpDue(p)-now())/KP_DAY));
+    r.appendChild(el("div","nm","<b>Извещение: "+kpWhat(p)+"</b><s>хранится ещё "+left+" сут. · талон № "+kpTicket(p)+"</s></div>"));
+    if(turn){const b=el("button","act gold","ПОЛУЧИТЬ");
+      b.onclick=()=>{if(kpTakePk(p.no)){say("Распишитесь здесь",120);renderTab();saveGame(true);}};r.appendChild(b);}
+    else if(!open)r.appendChild(el("div","qt","ЗАКРЫТО · "+kpMinsToOpen()+" МИН"));
+    box.appendChild(r);
+  }
   return box;
 }
