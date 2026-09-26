@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 638 · символов верхнего уровня: 6446
+Файлов: 639 · символов верхнего уровня: 6451
 
 ## СИМВОЛЫ
 
@@ -29,7 +29,7 @@ $menu                        src/15-input.js:243
 $msg                         src/27z-telemetry.js:43
 $msl                         src/27z-telemetry.js:47
 $nav                         src/27z-telemetry.js:45
-$opts                        src/26-ui-station.js:695
+$opts                        src/26-ui-station.js:683
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
@@ -2067,7 +2067,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-204
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-217
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -4925,8 +4925,8 @@ renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
 renderStrips                 src/27i-ui-table.js:330-366
-renderTab                    src/26-ui-station.js:486-498
-renderTabBody                src/26-ui-station.js:499-691
+renderTab                    src/26-ui-station.js:474-486
+renderTabBody                src/26-ui-station.js:487-679
 renderThings                 src/27i-ui-table.js:379-404
 RENT_ADS                     src/12f1-mgr-rent.js:18
 RENT_OPIN                    src/12f1-mgr-rent.js:20
@@ -4983,7 +4983,7 @@ rescueSync                   src/16c-rescue.js:557-570
 rescueTake                   src/16c-rescue.js:105-146
 resEma                       src/28-loop.js:234
 RESET_ABIL0                  tests/90-harness.js:237
-resetArm                     src/26-ui-station.js:694
+resetArm                     src/26-ui-station.js:682
 resetWorld                   tests/90-harness.js:238-389
 resize                       src/08-state.js:29-66
 resModeCap                   src/28-loop.js:257-262
@@ -5433,11 +5433,11 @@ SHIP_KEYS                    src/03-ships.js:12
 SHIP_SCALE_MIN               src/16c-rescue.js:200
 shipData                     src/03-ships.js:13
 shipGearGpu                  src/05c-arms.js:315-335
-shipRow                      src/26-ui-station.js:430-475
+shipRow                      src/26-ui-station.js:418-463
 SHIPS                        src/03-ships.js:2-11
 shipScaleAt                  src/16c-rescue.js:209
 shipScaleCap                 src/16c-rescue.js:208
-shipThumb                    src/26-ui-station.js:417-429
+shipThumb                    src/26f-yard-gpu.js:7-11
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:232
 shipZoneR                    src/19f-lander.js:14
@@ -6434,7 +6434,12 @@ yaltaAt                      src/12al-powers.js:160-167
 yaltaHere                    src/12al-powers.js:172
 yaltaIs                      src/12al-powers.js:168-171
 yaltaSealed                  src/12al-powers.js:175-179
+YARD                         src/26f-yard-gpu.js:6
 YARD_CHANCE                  src/04b-fleet.js:162
+yardCanvas                   src/26f-yard-gpu.js:12-19
+yardDraw                     src/26f-yard-gpu.js:41-54
+yardHide                     src/26f-yard-gpu.js:20
+yardTick                     src/26f-yard-gpu.js:22-39
 ZAP_COOL                     src/23-mode-dig.js:255
 ZOO_PEN_CAP                  src/11ad-zoo.js:14
 zooAll                       src/11ad-zoo.js:15
@@ -7632,7 +7637,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26-ui-station.js · 49 КБ
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):303
-  · настройки:693
+  · настройки:681
 
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1
@@ -7657,6 +7662,8 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## src/26e2-stapel-draw.js · 13 КБ
   · СТАПЕЛЬ — лист (D16, дизайн-проход):1
+
+## src/26f-yard-gpu.js · 4 КБ
 
 ## src/27-ui-ship.js · 25 КБ
   · силуэт корпуса и вход в ОПИСЬ:1
@@ -8459,7 +8466,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 19 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 21 КБ
+## tests/91zzzzzzy3-gate2d.js · 22 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ

@@ -201,6 +201,19 @@ const GATE2D=[
      this.i++;return {};},
    done(){kbClose();const w=document.getElementById("kbWin");if(w)w.remove();},
    probe:["panelGpu"]},
+  /* витрина верфи (26f): одна канва на колонку мест, корпус — студия 17c2. Подпись сбивается каждый кадр
+     (сборка под записью), студии — на первом кадре (проход и выпечка под записью) */
+  {name:"витрина верфи (26f): корпуса студией, одна канва",
+   painters:["yardTick","yardDraw","shipThumb","hullStudio","hullStudioBake"],
+   place(first){
+     if(first){let at=null;
+       for(let r=0;r<=14&&!at;r++)for(let x=-r;x<=r&&!at;x++)for(let y=-r;y<=r&&!at;y++){
+         if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);if(s.station&&s.station.stype==="yard")at=[x,y,s];}
+       if(!at)return null;
+       G.sx=at[0];G.sy=at[1];G.sys=at[2];openStation();tab="yard";renderTab();YARD.S.clear();return {};}
+     YARD.sig="";return {};},
+   done(){$st.classList.remove("open");$body.innerHTML="";G.mode="system";},
+   probe:["yardDraw"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;
