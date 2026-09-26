@@ -298,7 +298,7 @@ CLOUDS_OFF                   src/19e-clouds.js:68
 CLOUD_BASE                   src/19e-clouds.js:64
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:8-24
-CLOUD_LOW                    src/19cc-gpu-air.js:163
+CLOUD_LOW                    src/19cc-gpu-air.js:166
 CLOUD_ST                     src/14a-cloud.js:91
 CLOUD_TIER                   src/19e-clouds.js:49-62
 CLR_HOURS                    src/05e-clearance.js:29
@@ -633,8 +633,8 @@ GEW                          src/17-mode-system.js:48
 GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:202
 GEX_WGSL                     src/16ga-gpu-trail.js:203
-GHZ                          src/19cc-gpu-air.js:182
-GHZ_WGSL                     src/19cc-gpu-air.js:183
+GHZ                          src/19cc-gpu-air.js:185
+GHZ_WGSL                     src/19cc-gpu-air.js:186
 GIANTS                       src/17o-giants.js:18
 GIANTS_DEF                   src/17o-giants.js:9-17
 GIANT_CV                     src/17o-giants.js:68
@@ -762,8 +762,8 @@ GUN_NAMED                    src/05b-guns.js:121-162
 GUN_NAMED_BY_ID              src/05b-guns.js:163
 GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
-GWX                          src/19cc-gpu-air.js:212
-GWX_WGSL                     src/19cc-gpu-air.js:213
+GWX                          src/19cc-gpu-air.js:215
+GWX_WGSL                     src/19cc-gpu-air.js:216
 G_BOOT_KEYS                  tests/90-harness.js:209
 GcCtx                        src/08ca-gpu-canvas.js:97-244
 GcGrad                       src/08ca-gpu-canvas.js:69-87
@@ -2745,7 +2745,7 @@ cloudCall                    src/14a-cloud.js:72-76
 cloudForget                  src/14a-cloud.js:77
 cloudHere                    src/14a-cloud.js:70
 cloudLine                    src/14a-cloud.js:107-116
-cloudLow                     src/19cc-gpu-air.js:166-179
+cloudLow                     src/19cc-gpu-air.js:169-182
 cloudMark                    src/14a-cloud.js:92-105
 cloudName                    src/14a-cloud.js:69
 cloudOn                      src/14a-cloud.js:71
@@ -3776,7 +3776,7 @@ gpuChunkAt                   src/18c-chunks.js:209-215
 gpuChunkBake                 src/18c-chunks.js:179-183
 gpuChunkPut                  src/18c-chunks.js:186-190
 gpuChunkStore                src/18c-chunks.js:204-208
-gpuClouds                    src/19cc-gpu-air.js:118-162
+gpuClouds                    src/19cc-gpu-air.js:118-165
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:436-446
 gpuCvLevel                   src/08c-gpu-kit.js:80-91
@@ -3855,7 +3855,7 @@ gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
 gpuUni                       src/08b-gpu.js:526-540
 gpuWake                      src/16ga-gpu-trail.js:107-139
-gpuWeatherFar                src/19cc-gpu-air.js:262-290
+gpuWeatherFar                src/19cc-gpu-air.js:265-293
 gpuWorld                     src/08b-gpu.js:643-664
 gradePass                    src/19c-light.js:250-286
 greenAll                     src/21g-greenhouse.js:26-30
@@ -3997,7 +3997,7 @@ haulSide                     src/16c-rescue.js:236
 haulStart                    src/16c-rescue.js:149-165
 haulTick                     src/16c-rescue.js:297-415
 hazardBand                   src/25-cockpit.js:166-177
-hazeBand                     src/19cc-gpu-air.js:197-209
+hazeBand                     src/19cc-gpu-air.js:200-212
 hazeDone                     src/18d-postfx.js:68
 hazeFar                      src/19c-light.js:167-188
 hazeGrab                     src/18d-postfx.js:33-50
@@ -7934,7 +7934,7 @@ zoomTo                       src/15-input.js:350
 ## src/19cb-gpu-sky-bodies.js · 19 КБ
   · тела неба на движке (27.09.2026):1
 
-## src/19cc-gpu-air.js · 15 КБ
+## src/19cc-gpu-air.js · 16 КБ
   · облака, дымка и дальняя погода на движке (27.09.2026):1
 
 ## src/19d-weather.js · 14 КБ

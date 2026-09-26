@@ -150,14 +150,17 @@ function gpuClouds(p,camx,camy){
   const y1=Math.min(H,yH+H*.14);
   /* мягкому полю полная плотность не нужна: где на пиксель CSS больше точки (телефон),
      оно считается в своей текстуре по .7 точки на пиксель CSS и ложится в кадр растянутым
-     (S23 в полдень: 1.06 мс по точке). На ПК (точка на пиксель) — прямо в проход */
-  if(W/GPU.bw>.85){
+     (S23 в полдень: 1.06 мс по точке). На ПК (точка на пиксель) — прямо в проход.
+     Мерка — DPR, не W/bw: небо рисуется и внутри withScale, там W меньше холста */
+  if(DPR<1.2){
     if(!skyClip(pass,0,0,W,y1))return true;
     gpuField(pass,"gcloud",GCL_WGSL,U,[]);
     pass.setScissorRect(0,0,GPU.bw,GPU.bh);
     return true;
   }
-  const B=cloudLow(.7*W/GPU.bw,U,y1);if(B)gpuImage(pass,B,[{x:W/2,y:H/2,w:W,h:H}]);   /* x,y — центр */
+  /* поле — во всю цель; кит меряет в пикселях CSS холста (не в W), x,y — центр */
+  const B=cloudLow(.7/DPR,U,y1),cw=GPU.bw/DPR,ch=GPU.bh/DPR;
+  if(B)gpuImage(pass,B,[{x:cw/2,y:ch/2,w:cw,h:ch}]);
   return true;
 }
 let CLOUD_LOW=null;
