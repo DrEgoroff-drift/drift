@@ -862,6 +862,16 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   the fade pass 0.28–0.36 ms (headless). New pipe key `gnb.fade` (08b0, GPU-1 agreed; 08b1 via -Accept).
   The probe's timestamp query set (28z `gpuTs`) grew from 32 slots to 64: on the S23 the 32 ran out before the
   fade pass and it went unmeasured; desktop 1920 idle, fade 0.17–0.21 ms per frame.
+- **Nebula regeneration, step 2: every frame while the camera moves** (26.09, the author: «кажется как будто
+  тормозит, когда туманность начинает появляться рядом с кораблём»; suite 91zzzzzzy7-gpu-nebmove, mutant
+  `neb-step-move`). With the .5 threshold (5.6 CSS px of camera) the gas held for 2–6 frames and jumped while
+  stars and ship glided at 60. Measured by a 12-frame strip on stepped time (617×1113, DPR 1.5, the nebula alone,
+  global Lucas–Kanade, device px): zoom 1 — 40 px/s smooth (the fade carried it), 80 px/s 0/−1.0 every 5th frame,
+  150 −.40 every 3rd, 250 −.19 every 2nd, 400 every frame; zoom .3 (the ship tops out at 139 px/s there) −1.6/−1.7
+  every 3rd–5th frame. Now `GNB_MOVE` = .03 (20 CSS px/s; .05 = 33 px/s let a frame slip at 40 px/s) — regenerated
+  every frame at 40–400 px/s on both zooms, the shift even (80 px/s at .3: −.38…−.40 every frame). Setting off
+  in the middle of a standing fade no longer cuts it with a direct write: the fade is finished over three fresh
+  frames (k = 1/3, 1/2, 1). The every-frame cost is the fast-flight case P1 already measured.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
@@ -1021,8 +1031,18 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   (27) only measures now. The frame draws it (hud → `opisHullTick`, 27j) when the canvas, device or signature
   changes. Pairs 760 and 390 (dpr 1 and 2) against main: same silhouette and anchors; the hull reads lit
   (rim toward the light, glass glint), lamps pale gold as in flight instead of flat amber. Guard
-  `91zzzzzzzzzz-opis-gpu` (last in order, see 0.473.0): 40 frames of flight under ОПИСЬ, `#c` untouched and not uploaded, one submit a frame,
+  `91zzzzzzy7-opis-gpu` (back at its own name once the order leak was closed, see below): 40 frames of flight under ОПИСЬ, `#c` untouched and not uploaded, one submit a frame,
   no 2D context on the canvas, one pass per signature change, warm bakes intact.
+- **The goldens' order leak is closed (26.09).** Bisecting the red part in -Files mode, then the suites of the
+  one file, then the calls of the one frame, found «наёмник виден в системе и за ним можно смотреть»
+  (91b-crew): its watch frame looks at the hotel, whose prebake (17a0) stayed half-baked in `PB` for
+  `PB_STALE` frames. `bakeIdle()` then said «not settled» to every later scene, and `detSettle` ran its
+  40-frame ceiling instead of 2–6, so «черпак» and «дом» were shot on another frame (18.8 % and 13.1 %).
+  `-Only` never showed it: there the suite ran before the GPU was up and took the no-GPU branch. Fix:
+  `resetWorld` closes every pending prebake with `prebakeDrop`, as it already drops `MAT_JOB`. Test: «золотые
+  кадры: сцена не помнит, кто рисовал до неё» shoots the two scenes forwards and backwards, with an abandoned
+  job planted before each. It is red with exactly those numbers without the fix. The ОПИСЬ guard is back at
+  `91zzzzzzy7`.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

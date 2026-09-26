@@ -2452,7 +2452,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.475.0";
+const VER="0.476.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -52136,7 +52136,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   GNB.phP=ph;GNB.lDP=lD;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
   /* GPU.kill.ngen (?g11=deep): без пересчёта; стоя — перетекание (16gc) */
-  if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
+  if(GNB.sys===sys&&(GPU.kill.ngen||moved<GNB_MOVE&&GPU.frameNo-GNB.last<GNB_AGE&&GPU.frameNo>=GNB.last))return gnbFade(),true;
   const a=GNB.U;
   a[0]=GNB.w;a[1]=GNB.h;a[2]=W;a[3]=H;
   a[4]=camx;a[5]=camy;a[6]=c[2];a[7]=c[3];
@@ -52171,12 +52171,15 @@ function gpuNebulaComp(pass){
 }
 
 /* ── туманность: плавный пересчёт ──
-   Стоя (сдвиг камеры < .5) пересчёт идёт раз в GNB_AGE кадров в запасную текстуру, а видимая
+   Стоя (сдвиг камеры < GNB_MOVE) пересчёт идёт раз в GNB_AGE кадров в запасную текстуру, а видимая
    за GNB_AGE кадров линейно перетекает в неё: смешение с постоянной k = 1/6, 1/5 … 1 даёт
    ровную линию от старой к свежей. Течение газа (~1 px за 6 кадров) идёт по 1/6 за кадр, а не
    скачком раз в пересчёт; пересчёт стоя — вдвое реже прежнего (был раз в 3 кадра). На ходу,
-   при смене системы и размера цели — пишет прямо в видимую, без перетекания */
-const GNB_AGE=6;
+   при смене системы и размера цели — пишет прямо в видимую, без перетекания.
+   На ходу — каждый кадр (26.09): с порогом .5 (5.6 CSS px камеры) туманность стояла 2–6 кадров
+   и прыгала на ~.55 px, 10–30 Гц, пока звёзды и корабль ехали на 60 — автор видел это как
+   «просадку». Порог .03 — это 20 CSS px/с (у .05 кадр на 40 px/с проскакивал): медленнее камера — стоящая */
+const GNB_AGE=6,GNB_MOVE=.03;
 const GNB_FADE=`
 @group(0) @binding(0) var t:texture_2d<f32>;
 @vertex fn vs(@builtin(vertex_index) i:u32)->@builtin(position) vec4f{
@@ -52189,7 +52192,11 @@ function gnbFadeDesc(){
 }
 /* куда писать пересчёт: стоя в той же системе — в запасную (перетекание), иначе в видимую */
 function gnbGenView(sys,moved){
-  if(!(GNB.sys===sys&&moved<.5&&GNB.last>=0)){GNB.fi=GNB_AGE;return GNB.view;}
+  const same=GNB.sys===sys&&GNB.last>=0;
+  /* тронулись посреди перетекания: оно доводится за три кадра свежими, а не обрывается прямой
+     записью (видимая была на полпути — хлопок в полшага течения) */
+  if(same&&moved>=GNB_MOVE&&GNB.fi<GNB_AGE&&GNB.t2d===GNB.tex){GNB.fi=Math.max(GNB.fi,GNB_AGE-3);return GNB.t2v;}
+  if(!(same&&moved<GNB_MOVE)){GNB.fi=GNB_AGE;return GNB.view;}
   if(!(GNB.t2&&GNB.t2d===GNB.tex)){
     if(GNB.t2)GPU.trash.push(GNB.t2);
     const U=GPUTextureUsage;

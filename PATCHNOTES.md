@@ -6,7 +6,7 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## 0.475.0 - the shipyard showcase and ОПИСЬ on the engine
+## 0.476.0 - the shipyard showcase, ОПИСЬ and the suit doll on the engine
 
 - **The shipyard showcase is one engine canvas** (GPU-3): every hull on the ВЕРФЬ tab is the same studio hull
   as in flight, drawn into one canvas over the list. Before, each card baked its own small 2D picture. The
@@ -17,6 +17,20 @@ could ever save.
   keeps its logical size for the layout.
 - **Nets**: the «0 вызовов 2D» gate has scenes for the showcase and for ОПИСЬ, and the zoo has two mutants
   for them (yard-2d, opis-2d); both are killed.
+
+## 0.475.0 - the nebula glides in flight
+
+- **The nebula no longer steps while you fly** (GPU-2; the author 26.09: «кажется как будто тормозит, когда туманность
+  начинает появляться рядом с кораблём»). The frames were clean — the gas was not: its volume was regenerated only after
+  the camera had moved 5.6 CSS px, so between 80 and 333 px/s of screen speed it held for 2–5 frames and then jumped
+  (a whole device pixel every 5th frame at 80 px/s; 1.6 px every 3rd–5th frame zoomed out) while the stars and the ship
+  glided at 60. Now it is regenerated every frame whenever the camera moves faster than 20 px/s — the same cost fast
+  flight always paid — and a still camera keeps its once-in-six cross-fade; setting off in the middle of that fade
+  finishes it over three frames instead of cutting it. Guarded by the suite `91zzzzzzy7-gpu-nebmove` (40–400 px/s at
+  zoom 1 and .3) and the mutant `neb-step-move`. On the author's phone, cold, full battery, no heat: the 30-s gate and the
+  four routes (hotel and star, zoom 1 and .3) — 100 % of frames ≤ 18 ms, max 16.8–16.9 ms, none ≥ 33 (0.473.0 had
+  one ≥ 33 on two of them). The goldens' order leak surfaced by the new suite's shard shift is closed by the
+  worker's e4532f66 (resetWorld drops pending prebakes), carried here.
 
 ## 0.474.0 - the parrot, the seat and the desk on the engine
 
