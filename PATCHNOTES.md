@@ -6,6 +6,23 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.466.0 - the pirate base as a building, sparks without a rainbow, the last 2D layer gone
+
+- **The pirate base is a building now** (GPU-2): instead of a red pentagon mark it is a low five-sided
+  hall of dark metal with a pyramid roof, a mast and four docking trusses with pods. Each face catches the
+  star on its own, so the facets stay apart even in shadow. Red is kept for the lights: corner beacons,
+  a thin stripe under the eaves, the pod lamps. The windows are scattered, some dark. The name below it
+  is red again, only quieter.
+- **Explosion sparks fly unevenly** (GPU-2): a few long heavy streaks at their own angles and many short
+  ones, instead of an even star. Each streak thins and fades toward its tail like a small comet. The
+  cyan-and-crimson fringe that thin sparks got from the shock wave is gone.
+- **The last 2D interface layer is gone** (GPU-3): the thumb sticks and the «НАБЛЮДЕНИЕ» watch line are
+  drawn by the video card. The watch line now sits above the pads and the console; before, the round
+  «Цель» pad covered its end on the phone. On the phone this frees about 12 MB of video memory.
+- **The instrument pod is drawn by the video card** (GPU-3): the gauges and the paper tape in the
+  instrument row go out with the frame instead of as a separate 2D canvas. The pod is still redrawn only
+  when a needle or the tape moves, and never while a screen is open.
+
 ## 0.465.0 - the pirate base is back, hulls stop glowing from their paint
 
 - **The pirate base is visible again** (GPU-2): on 0.464.0 it was still drawn in 2D under the video card's

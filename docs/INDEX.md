@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 633 · символов верхнего уровня: 6372
+Файлов: 633 · символов верхнего уровня: 6376
 
 ## СИМВОЛЫ
 
@@ -1556,7 +1556,7 @@ drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPeaceFleet               src/17m-peace-fleet.js:73-144
-drawPirateBase               src/24a-mode-raid.js:131-162
+drawPirateBase               src/24a-mode-raid.js:187-218
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
 drawPlanetWorks              src/17e-station-body.js:71-116
@@ -1712,7 +1712,7 @@ enterBelt                    src/24-mode-belt.js:71-119
 enterCave                    src/22-mode-cave.js:175-232
 enterDig                     src/23-mode-dig.js:51-70
 enterHomeIn                  src/29c-home-in.js:65-73
-enterRaid                    src/24a-mode-raid.js:163-218
+enterRaid                    src/24a-mode-raid.js:219-274
 enterSpa                     src/29h-spa.js:51-65
 enterSurface                 src/21-mode-surface.js:7-198
 enterWinter                  src/29f-winter.js:112-119
@@ -2066,7 +2066,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-168
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-174
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -3055,9 +3055,12 @@ instrOffers                  src/05b-instr-kit.js:127-143
 instrPanel                   src/25a-instr.js:109-199
 instrPanelGeo                src/25a-instr.js:103-106
 instrPenWidth                src/05b-instr-kit.js:78-80
-instrPodDraw                 src/25c-instr-hud.js:32-96
-instrPodSig                  src/25c-instr-hud.js:27-31
-instrPodTick                 src/25c-instr-hud.js:109-114
+instrPodDraw                 src/25c-instr-hud.js:111-136
+instrPodGeo                  src/25c-instr-hud.js:40-43
+instrPodLive                 src/25c-instr-hud.js:83-110
+instrPodPaint                src/25c-instr-hud.js:45-81
+instrPodSig                  src/25c-instr-hud.js:26-30
+instrPodTick                 src/25c-instr-hud.js:149-155
 instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
@@ -3074,12 +3077,12 @@ instTestSci                  tests/91zzq-institute.js:2-5
 instTick                     src/11ab-institute.js:80-94
 invalidateKeyMap             src/15-input.js:125
 invalidateParts              src/05-parts.js:310
-ipctx                        src/25c-instr-hud.js:17
-IPOD_FLY                     src/25c-instr-hud.js:108
-IPOD_MQ                      src/25c-instr-hud.js:105
-IPOD_NARROW                  src/25c-instr-hud.js:106
-IPOD_S                       src/25c-instr-hud.js:18
-IPOD_SIG                     src/25c-instr-hud.js:26
+IPOD                         src/25c-instr-hud.js:38
+IPOD_FLY                     src/25c-instr-hud.js:148
+IPOD_MQ                      src/25c-instr-hud.js:145
+IPOD_NARROW                  src/25c-instr-hud.js:146
+IPOD_S                       src/25c-instr-hud.js:17
+IPOD_SIG                     src/25c-instr-hud.js:25
 isFitted                     src/05-parts.js:381-384
 ISLAND_LETTERS               src/11y-island.js:15-22
 islandAll                    src/11y-island.js:23
@@ -4140,6 +4143,7 @@ passTell                     src/11p-pass.js:55-60
 PAX_KEYS                     src/02-world.js:117
 payCost                      src/21a-mode-base.js:100
 PB_F                         src/17a0-prebake.js:19
+PB_K                         src/24a-mode-raid.js:110
 PB_MS                        src/17a0-prebake.js:18
 pbOnScreen                   src/17a0-prebake.js:41
 PC_GRAIN                     src/25g-post-craft.js:7
@@ -4222,7 +4226,7 @@ PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
 pirateArmTick                src/13d-loadout.js:163-181
 pirateArtOf                  src/12i-pirate-hull.js:238-414
-pirateBaseGpu                src/24a-mode-raid.js:107-130
+pirateBaseGpu                src/24a-mode-raid.js:111-186
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
@@ -4603,8 +4607,8 @@ RAID_ROOMS                   src/24a-mode-raid.js:7-13
 raidFloorAt                  src/24a-mode-raid.js:77
 raidFloorH                   src/24a-mode-raid.js:73-76
 raidIdx                      src/24a-mode-raid.js:14
-raidLeave                    src/24a-mode-raid.js:219-242
-raidLineOfSight              src/24a-mode-raid.js:376-383
+raidLeave                    src/24a-mode-raid.js:275-298
+raidLineOfSight              src/24a-mode-raid.js:432-439
 raidSolid                    src/24a-mode-raid.js:78-81
 raidSolidAt                  src/24a-mode-raid.js:82
 raidUp                       src/24aa-raid-draw.js:8-12
@@ -6005,7 +6009,7 @@ updateDig                    src/23-mode-dig.js:144-253
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:523-536
-updateRaid                   src/24a-mode-raid.js:244-374
+updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:64-103
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
@@ -7447,11 +7451,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/24-mode-belt.js · 40 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/24a-mode-raid.js · 22 КБ
+## src/24a-mode-raid.js · 27 КБ
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84
-  · обновление:243
+  · обновление:299
 
 ## src/24aa-raid-draw.js · 50 КБ
   · рейд: отрисовка:1
@@ -7490,7 +7494,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/25b-tape.js · 13 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 9 КБ
+## src/25c-instr-hud.js · 12 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25d-instr-rack.js · 36 КБ
@@ -8375,16 +8379,16 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 18 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 17 КБ
+## tests/91zzzzzzy3-gate2d.js · 18 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-gpu-ovl.js · 14 КБ
+## tests/91zzzzzzy4-gpu-ovl.js · 17 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 7 КБ
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
 
-## tests/91zzzzzzy5-gpu-loss.js · 8 КБ
+## tests/91zzzzzzy5-gpu-loss.js · 9 КБ
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
 
 ## tests/91zzzzzzy6-chipjump.js · 4 КБ

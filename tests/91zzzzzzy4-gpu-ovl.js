@@ -57,6 +57,42 @@ TEST_SUITES.push(()=>suite("слой #ovl: текст фишки не дрожи
   eq(n,126,"126 положений фишки с текстом");
   eq(dx.size+"/"+dy.size,"6/6","по каждому масштабу и стороне — один сдвиг текста от рамки (x/y)");
 }));
+/* две цели в одном кадре (25c, Контроль (A) п. 4): проход #ovl и проход колодки — в одном кадровом
+   энкодере, каждая очередь в свою текстуру. Порядок как в игре: мир (ovFlush) → hud() → колодка.
+   Перепутанная цель стёрла бы #ovl колодкой, а сама колодка осталась бы прежней */
+TEST_SUITES.push(()=>suite("слой #ovl и колодка: две цели в одном кадре, каждая своё",{tier:"browser",win:"wide"},()=>{
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  resetWorld();G.mode="system";
+  const run0=G.running,loop0=LOOP_OFF,pod=document.getElementById("ipod");
+  const grab=(cv,x,y,w,h)=>{const c=document.createElement("canvas");c.width=cv.width;c.height=cv.height;
+    const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(cv,0,0);return g.getImageData(x,y,w,h).data;};
+  const inkOf=d=>{let n=0;for(let i=3;i<d.length;i+=4)if(d[i]>8)n++;return n;};
+  let subs=0;const sub0=GPUQueue.prototype.submit;
+  try{
+    G.running=true;LOOP_OFF=false;
+    for(let i=0;i<30;i++)tapeSample();
+    frameBody(wallMs());frameBody(wallMs());
+    if(!ok(!!ovCanvas()&&IPOD.dev===GPU.dev,"оба холста живы: #ovl и колодка"))return;
+    const nd=ovNd(),pw=pod.width,ph=pod.height,before=grab(pod,0,0,pw,ph);
+    /* по ленте — новые столбцы: перья колодки обязаны сдвинуться */
+    const Tp=tapeInit();
+    for(let i=0;i<6;i++){tapeSample();const c=(Tp.head-1+TAPE_N)%TAPE_N;for(let k=0;k<TAPE_PENS;k++)Tp.col[c*TAPE_PENS+k]=(i+k)%2?250:5;}
+    const n0=IPOD.n;
+    GPUQueue.prototype.submit=function(){subs++;return sub0.apply(this,arguments);};
+    ok(gpuManual(()=>{ovRect(20,20,60,60,"#fff");gpuWorld(0,false,false);instrPodDraw();}),"кадр с двумя целями собран");
+    GPUQueue.prototype.submit=sub0;
+    eq(IPOD.n,n0+1,"колодка — один проход в этом кадре");
+    const sq=grab(OVL.cv,Math.round(40*nd),Math.round(40*nd),1,1)[3];
+    ok(sq>200,"#ovl: свой квадрат на месте (альфа "+sq+")");
+    /* где колодка рисовала бы, окажись её проход в текстуре #ovl: бумага и стрелки у левого верха */
+    const leak=inkOf(grab(OVL.cv,0,Math.round(70*nd),Math.round(200*nd),Math.round(20*nd)));
+    eq(leak,0,"#ovl: следов колодки нет");
+    const after=grab(pod,0,0,pw,ph);let df=0;for(let i=0;i<after.length;i+=4)if(Math.abs(after[i+3]-before[i+3])>8)df++;
+    ok(df>50,"колодка: перья сдвинулись в своей текстуре ("+df+" точек)");
+    ok(inkOf(after)>pw*ph*.1,"колодка: мастер и перья на месте");
+  }finally{GPUQueue.prototype.submit=sub0;G.running=run0;LOOP_OFF=loop0;resetWorld();}
+  ok(subs>=1,"кадр отправлен ("+subs+" submit)");
+}));
 /* треугольник (вид 2) обоими обходами: шейдер кладёт знак обхода внутрь каждого ребра — обратный
    обход прежде заливал всю рамку (радар кабины пояса, 26.09) */
 TEST_SUITES.push(()=>suite("слой #ovl: треугольник обратного обхода — треугольник, а не рамка",{tier:"browser"},()=>{

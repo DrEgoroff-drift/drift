@@ -240,13 +240,13 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
      сложением, как в 2D, — и только потом одно плечо на всё. Яркий газ под
      свечением уходит в золото и к белому плавно, без плато на единице */
   var hs=sceneAt(v.uv);var f=textureSampleLevel(tFront,sl,v.uv,0.);
-  /* преломление: сдвиг по каналам чуть разный — у кромок волны тонкая радуга, как у линзы */
-  /* корпуса не гнутся (L4 k/n): пиксель корпуса стоит на месте, и фон рядом не берёт корпус
-     источником — сдвиг гаснет к кромке, радуга остаётся только на фоне */
+  /* преломление: сдвиг по каналам чуть разный — радуга у кромок волны, как у линзы, но не на
+     тонком (сдвиги разошлись — искра цела). Корпуса не гнутся (L4 k/n): сдвиг гаснет к кромке */
   if(u.dn.x>0.){var o=distort(v.uv*u.css)/u.css;
     if(dot(o,o)*dot(u.css,u.css)>.0004){
       o=o*(1.-hullSoft(v.uv));o=o*(1.-hullM(v.uv+o*.5))*(1.-max(hullM(v.uv+o*.92),hullM(v.uv+o*1.08)));
-      hs=vec3f(sceneAt(v.uv+o*1.08).r,sceneAt(v.uv+o).g,sceneAt(v.uv+o*.92).b);}}
+      let a=sceneAt(v.uv+o*1.08);let g=sceneAt(v.uv+o);let b=sceneAt(v.uv+o*.92);
+      let d=abs(a.rgb-b.rgb);hs=mix(vec3f(a.r,g.g,b.b),g,smoothstep(.03,.15,max(d.r,max(d.g,d.b))));}}
   if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
   var h=hs*(1.-f.a)+f.rgb;

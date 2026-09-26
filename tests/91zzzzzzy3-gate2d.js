@@ -165,6 +165,12 @@ const GATE2D=[
      return {};},
    done(){if(!this.mob)document.body.classList.remove("mobile");HELM.S=HELM.fade=null;},
    probe:["helmDrawSticks","sysWatchLabel"]},
+  /* колодка — DOM-холст с контекстом WebGPU: мастер и валик — выпечки, живое — очередь #ovl своей цели.
+     Лента пишет столбец каждый кадр — каждый кадр проход. На узком экране колодки нет — и мерить нечего */
+  {name:"приборная колодка (25c): мастер, стрелки, перья — проходом видеокарты",
+   painters:["instrPodTick","instrPodDraw","instrPodLive","instrPodPaint","ckgSpr","tapePaper"],warm:30,
+   place(first){if(first){for(let i=0;i<40;i++)tapeSample();return {};}tapeSample();return {};},
+   get probe(){return IPOD_NARROW?[]:["instrPodDraw","instrPodLive"];}},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

@@ -2452,7 +2452,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.465.0";
+const VER="0.466.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -10634,13 +10634,13 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
      сложением, как в 2D, — и только потом одно плечо на всё. Яркий газ под
      свечением уходит в золото и к белому плавно, без плато на единице */
   var hs=sceneAt(v.uv);var f=textureSampleLevel(tFront,sl,v.uv,0.);
-  /* преломление: сдвиг по каналам чуть разный — у кромок волны тонкая радуга, как у линзы */
-  /* корпуса не гнутся (L4 k/n): пиксель корпуса стоит на месте, и фон рядом не берёт корпус
-     источником — сдвиг гаснет к кромке, радуга остаётся только на фоне */
+  /* преломление: сдвиг по каналам чуть разный — радуга у кромок волны, как у линзы, но не на
+     тонком (сдвиги разошлись — искра цела). Корпуса не гнутся (L4 k/n): сдвиг гаснет к кромке */
   if(u.dn.x>0.){var o=distort(v.uv*u.css)/u.css;
     if(dot(o,o)*dot(u.css,u.css)>.0004){
       o=o*(1.-hullSoft(v.uv));o=o*(1.-hullM(v.uv+o*.5))*(1.-max(hullM(v.uv+o*.92),hullM(v.uv+o*1.08)));
-      hs=vec3f(sceneAt(v.uv+o*1.08).r,sceneAt(v.uv+o).g,sceneAt(v.uv+o*.92).b);}}
+      let a=sceneAt(v.uv+o*1.08);let g=sceneAt(v.uv+o);let b=sceneAt(v.uv+o*.92);
+      let d=abs(a.rgb-b.rgb);hs=mix(vec3f(a.r,g.g,b.b),g,smoothstep(.03,.15,max(d.r,max(d.g,d.b))));}}
   if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
   var h=hs*(1.-f.a)+f.rgb;
@@ -45988,8 +45988,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
         let ab=P1-P0;let q=clamp(dot(p-P0,ab)/max(dot(ab,ab),1e-4),0.,1.);let ds=length(p-P0-ab*q);
         if(ds>3.){continue;}
         let tt=1.-ae/life;let ln=length(ab);
-        let wd=select(.22,.42,lg);let tail=mix(.2,1.,q*q);
-        em=em+lad(.3+.45*tt)*(.4+3.*tt*tt)*select(.85+1.7*h3,1.5,lg)*tail*exp(-ds*ds/wd)*clamp(3./max(ln,1.),select(.35,.6,lg),1.);
+        let wd=select(.3,.65,lg)*mix(.12,1.,q);let tail=q*q;   /* хвост сходит в ноль и по ширине, и по яркости */
+        em=em+lad(.3+.45*tt)*(.4+3.*tt*tt)*select(1.1+2.2*h3,2.2,lg)*tail*exp(-ds*ds/wd)*clamp(3./max(ln,1.),select(.35,.6,lg),1.);
         /* голова капли — раскалённая точка: штрих читается летящей искрой, а не проведённой чертой */
         let dh=p-P1;em=em+lad(.45+.5*tt)*exp(-dot(dh,dh)/select(.5,.9,lg))*tt*select(1.,1.6,lg);
       }
@@ -82796,33 +82796,89 @@ function sysPirateBase(){
   if(sys.pbase===undefined)sys.pbase=pirateBaseOf(sys);
   return sys.pbase;
 }
-/* база в проходе сцены (G4d): тот же рисунок фигурами — веер пятиугольника, обвод, спицы, ядро,
-   имя — слоем подписей. Вершины скользят по эллипсу 22×16 (база вертится в наклоне), поэтому
-   не выпечка-спрайт: поворот спрайта этого не повторит. Свет звезды — как у корпусов (GST, −1):
-   тёмное тело не белится, звезда только кромкой — ребро к звезде ловит нить её цвета */
+/* база в проходе сцены (G4d, тело — L-база 26.09): пятиугольник — план постройки, а не обводка.
+   Станция — невысокая пятигранная призма в наклоне (эллипс 22×16 = наклон ~43°), вертится в своей
+   плоскости: стены, что к нам, крыша-пирамида пятью скатами, мачта с проблесковым огнём, четыре
+   стыковочные фермы с капсулами. Каждая грань — своя нормаль в объёме и свой свет звезды
+   (звезда — в начале координат системы), тень не в ноль — отсвет. Огни — только эмиссией,
+   сложением поверх: угловые маяки бегут по кругу, окна тлеют, ядро мигает. Нить цвета звезды —
+   по силуэту, на рёбрах к звезде. Вершины скользят (вращение), поэтому фигуры, не спрайт */
+const PB_K=16/22,PB_M=Math.sqrt(1-PB_K*PB_K);
 function pirateBaseGpu(pass,PB,x,y,s){
   const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
-  const body=HL?[27,15,22,1]:[23,16,19,1],ed=HL?[197,138,224,.9]:[220,90,70,.85];
-  const SH=[],V=[],sc=(typeof starRGB==="function")?starRGB():[255,244,214];
-  for(let i=0;i<5;i++){const a=i*TAU/5+G.t*.002;V.push([x+Math.cos(a)*22*s,y+Math.sin(a)*16*s]);}
-  for(let i=0;i<5;i++){const A=V[i],B=V[(i+1)%5];SH.push([5,x,y,A[0],A[1],B[0],B[1],body[0],body[1],body[2],1,5]);}
-  /* к звезде: звезда в начале координат системы */
-  const ln=Math.hypot(PB.x,PB.y)||1,dx=-PB.x/ln,dy=-PB.y/ln;
-  for(let i=0;i<5;i++){const A=V[i],B=V[(i+1)%5];
-    SH.push([2,A[0],A[1],B[0],B[1],s,0,ed[0],ed[1],ed[2],ed[3]]);
-    /* кромка к звезде: внутрь обвода на полторы его толщины, концы не доходят до углов */
-    let nx=B[1]-A[1],ny=A[0]-B[0];const nl=Math.hypot(nx,ny)||1;nx/=nl;ny/=nl;
-    if(nx*((A[0]+B[0])/2-x)+ny*((A[1]+B[1])/2-y)<0){nx=-nx;ny=-ny;}   /* нормаль — наружу */
-    const f=nx*dx+ny*dy;if(f<=.05)continue;
-    const o=1.7*s,k=.12;
-    SH.push([2,A[0]+(B[0]-A[0])*k-nx*o,A[1]+(B[1]-A[1])*k-ny*o,B[0]-(B[0]-A[0])*k-nx*o,B[1]-(B[1]-A[1])*k-ny*o,.45*s,0,
-      sc[0],sc[1],sc[2],+(.55*Math.pow(f,1.5)).toFixed(3)]);}
-  for(let i=0;i<4;i++){const a=i*TAU/4-G.t*.004;
-    SH.push([2,x+Math.cos(a)*20*s,y+Math.sin(a)*14*s,x+Math.cos(a)*33*s,y+Math.sin(a)*24*s,.7*s,0,220,90,70,.5]);}
-  SH.push([1,x,y,4*s,0,0,0,255,60,50,(Math.sin(G.t*.18)>0)?.95:.15]);
-  gpuShapes(pass,SH);
-  domLabel("pbase",x,y+34,((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),"9px ui-monospace,monospace",
-    HL?"rgba(197,138,224,.8)":"rgba(220,90,70,.65)","center");
+  /* корпус — вороной металл, красное только огнями; у логова металл с лиловым отливом */
+  const alb=HL?[.25,.22,.29]:[.23,.24,.235],lamp=HL?[197,138,224]:[255,70,52];
+  const sc0=(typeof starRGB==="function")?starRGB():[255,244,214],sm=Math.max(1,sc0[0],sc0[1],sc0[2]),sc=[sc0[0]/sm,sc0[1]/sm,sc0[2]/sm];
+  const ln=Math.hypot(PB.x,PB.y)||1,L0=[-PB.x/ln*.9,-PB.y/ln*.9,.42],Ll=Math.hypot(L0[0],L0[1],L0[2]),L=[L0[0]/Ll,L0[1]/Ll,L0[2]/Ll];
+  /* план (u,v,z) → экран: наклон вокруг оси x; z — вверх от плоскости базы */
+  const P=(u,v,z)=>[x+u*s,y+(v*PB_K-z*PB_M)*s];
+  const N=(nu,nv,nz)=>{const a=[nu,nv*PB_K-nz*PB_M,nv*PB_M+nz*PB_K],l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];};
+  /* отсвет сверху-спереди, холодный: в тени скаты всё равно различимы; блик металла — цвета звезды */
+  const Hh=[L[0],L[1],L[2]+1],Hl=Math.hypot(Hh[0],Hh[1],Hh[2]),sg=(sc[0]+sc[1]+sc[2])/3,sw=sc.map(c=>.2*c+.8*sg);
+  const lit=(n,k)=>{const d=Math.max(0,n[0]*L[0]+n[1]*L[1]+n[2]*L[2]),f=Math.max(0,-n[1]*.6+n[2]*.8),m=k||1,
+    sp=Math.pow(Math.max(0,(n[0]*Hh[0]+n[1]*Hh[1]+n[2]*Hh[2])/Hl),16)*.3;
+    return [0,1,2].map(i=>Math.min(255,255*(alb[i]*m*(sw[i]*d*1.7+[.22,.24,.29][i]+f*[.27,.31,.42][i])+sw[i]*sp*m)));};
+  const R=22,HW=5,HC=7,ph=G.t*.002,V=[];
+  for(let i=0;i<5;i++){const a=i*TAU/5+ph;V.push([Math.cos(a)*R,Math.sin(a)*R]);}
+  const SH=[],E=[],BK=[],FR=[];
+  /* фермы: от стены наружу, капсула на конце; задние — до тела, передние — после */
+  for(let i=0;i<4;i++){const a=i*TAU/4-G.t*.004,cu=Math.cos(a),sv=Math.sin(a),to=sv>0?FR:BK;
+    const A=P(cu*19,sv*19,-1.5),B=P(cu*33,sv*33,-1.5),nr=N(cu*.3,sv*.3,1),c=lit(nr,.8);
+    to.push([2,A[0],A[1],B[0],B[1],.9*s,0,c[0],c[1],c[2],1]);
+    const cc=lit(N(cu,sv,.6),.9);to.push([1,B[0],B[1],1.15*s,0,0,0,cc[0],cc[1],cc[2],1]);
+    /* один малый огонь на макушке капсулы */
+    const w=P(cu*33,sv*33,-.5);E.push([1,w[0],w[1],.3*s,0,0,.8*s,lamp[0],lamp[1],lamp[2],(Math.sin(G.t*.09+i*1.7)>.3)?.9:.25]);}
+  SH.push(...BK);
+  const sil=[];
+  for(let i=0;i<5;i++){const a=V[i],b=V[(i+1)%5],mu=(a[0]+b[0])/2,mv=(a[1]+b[1])/2,ml=Math.hypot(mu,mv);
+    const n=N(mu/ml,mv/ml,0);
+    if(n[2]>0){   /* стена к нам */
+      const c=lit(n,.85);
+      gpuQuad(SH,P(a[0],a[1],0),P(b[0],b[1],0),P(b[0],b[1],-HW),P(a[0],a[1],-HW),[c[0],c[1],c[2],1],0);
+      /* окна: шаг сбит, часть тёмные — жилой ряд, а не схема; по карнизу — красная полоса и ходовые огни */
+      for(let k=0,t=.06;k<7;k++){const h=hashi(PB.seed>>>0,i*8+k,0x3B1);t+=.07+.16*((h&255)/255);if(t>.94)break;
+        if(((h>>8)&255)<90)continue;
+        const w=P(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,-HW*(.35+.3*(((h>>16)&255)/255)));
+        E.push([1,w[0],w[1],.4*s,0,0,.9*s,255,190,120,((h>>24)&255)<60?.3:.7]);}
+      const e0=P(a[0],a[1],-.35),e1=P(b[0],b[1],-.35);
+      E.push([2,e0[0],e0[1],e1[0],e1[1],.14*s,.4*s,lamp[0],lamp[1],lamp[2],.3]);
+      for(let k=1;k<5;k++){const t=(k+.5)/6,u=a[0]+(b[0]-a[0])*t,v=a[1]+(b[1]-a[1])*t,q0=P(u,v,-.5),q1=P(u,v,-HW+.3);
+        SH.push([2,q0[0],q0[1],q1[0],q1[1],.22*s,0,c[0]*.55,c[1]*.55,c[2]*.55,.9]);}
+      for(let k=0;k<3;k++){const t=(k+.5)/3,w=P(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,-.4);
+        E.push([1,w[0],w[1],.3*s,0,0,1.1*s,lamp[0],lamp[1],lamp[2],.4]);}
+      sil.push([P(a[0],a[1],-HW),P(b[0],b[1],-HW),n]);
+    }else sil.push([P(a[0],a[1],0),P(b[0],b[1],0),N(mu/ml,mv/ml,.8)]);
+  }
+  /* крыша: пять скатов к макушке */
+  const C=P(0,0,HC),RC=[];
+  for(let i=0;i<5;i++){const a=V[i],b=V[(i+1)%5];
+    const e1=[a[0],a[1],-HC],e2=[b[0],b[1],-HC],nu=e1[1]*e2[2]-e1[2]*e2[1],nv=e1[2]*e2[0]-e1[0]*e2[2],nz=e1[0]*e2[1]-e1[1]*e2[0];
+    const n=N(nu*Math.sign(nz),nv*Math.sign(nz),Math.abs(nz)),c=lit(n);RC.push(c);
+    const A=P(a[0],a[1],0),B=P(b[0],b[1],0);SH.push([5,C[0],C[1],A[0],A[1],B[0],B[1],c[0],c[1],c[2],1,5]);}
+  /* рёбра скатов — фаска ловит свет ярче обоих соседних скатов; по кромке крыши — тёмный шов карниза */
+  for(let i=0;i<5;i++){const A=P(V[i][0],V[i][1],0),c0=RC[i],c1=RC[(i+4)%5],m=Math.max(c0[0]+c0[1],c1[0]+c1[1])===c0[0]+c0[1]?c0:c1;
+    SH.push([2,C[0],C[1],A[0],A[1],.3*s,0,Math.min(255,m[0]*1.5+26),Math.min(255,m[1]*1.5+26),Math.min(255,m[2]*1.5+30),.9]);
+    const B=P(V[(i+1)%5][0],V[(i+1)%5][1],0);SH.push([2,A[0],A[1],B[0],B[1],.3*s,0,11,12,16,.7]);
+    /* шов панелей поперёк ската, на середине высоты */
+    const a=V[i],b=V[(i+1)%5],h0=P(a[0]*.55,a[1]*.55,HC*.45),h1=P(b[0]*.55,b[1]*.55,HC*.45);
+    SH.push([2,h0[0],h0[1],h1[0],h1[1],.24*s,0,RC[i][0]*.36,RC[i][1]*.36,RC[i][2]*.36,.95]);
+    /* люки на скате — от нуля до трёх, где попало, часть едва тлеет */
+    for(let j=0,nj=hashi(PB.seed>>>0,i,0x7A8)%4;j<nj;j++){const h=hashi(PB.seed>>>0,i*4+j,0x7A7),t=.12+.76*((h&255)/255),rr=.25+.5*(((h>>8)&255)/255),w=P((a[0]+(b[0]-a[0])*t)*rr,(a[1]+(b[1]-a[1])*t)*rr,HC*(1-rr));
+      E.push([1,w[0],w[1],.35*s,0,0,.8*s,255,200,140,((h>>16)&255)<80?.2:.6]);}}
+  SH.push(...FR);
+  /* мачта и ядро на ней */
+  const M=P(0,0,HC+6),mc=lit(N(1,0,.2),.8);SH.push([2,C[0],C[1],M[0],M[1],.55*s,0,mc[0],mc[1],mc[2],1]);
+  const on=Math.sin(G.t*.18)>0;
+  E.push([1,M[0],M[1],1.1*s,0,0,(on?5:2)*s,lamp[0],lamp[1],lamp[2],on?.95:.15]);
+  /* угловые маяки бегут по кругу */
+  for(let i=0;i<5;i++){const w=P(V[i][0],V[i][1],0),q=((G.t*.05-i)%5+5)%5;
+    E.push([1,w[0],w[1],.5*s,0,0,1.8*s,lamp[0],lamp[1],lamp[2],q<1?.3+.65*(1-q):.3]);}
+  /* нить звезды по силуэту: ребро, чья нормаль смотрит на звезду */
+  for(const [A,B,n] of sil){const f=(n[0]*L[0]+n[1]*L[1])/Math.max(.2,Math.hypot(L[0],L[1]));if(f<=.05)continue;
+    SH.push([2,A[0],A[1],B[0],B[1],.6*s,0,255*sc[0],255*sc[1],255*sc[2],+(.7*Math.pow(Math.min(f,1),1.5)).toFixed(3)]);}
+  gpuShapes(pass,SH);gpuShapes(pass,E,{blend:"add"});
+  domLabel("pbase",x,y+30*s+6,((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),"9px ui-monospace,monospace",
+    HL?"rgba(197,138,224,.8)":"rgba(192,101,87,.65)","center");
 }
 function drawPirateBase(zx,zy,Z){
   const PB=sysPirateBase();if(!PB)return;
@@ -86496,7 +86552,6 @@ function tapeStrip(P,FS,part){
    прячется совсем — там на неё смотрят по-настоящему, подняв глаза на блок. */
 
 const $ipod=document.getElementById("ipod");
-const ipctx=$ipod?$ipod.getContext("2d"):null;
 const IPOD_S=2;                        // полотно вдвое крупнее: стрелки тонкие
 /* Перерисовка — только когда кадр колодки другой (GPU-этап 1): прежде 66 вызовов
    полотна каждый кадр ради стрелок, которые стоят. Подпись собирает всё, что
@@ -86511,15 +86566,21 @@ function instrPodSig(R,T){
   for(const r of R)s+="|"+r.ab+Math.round(instrTrack(r)*256);
   return s;
 }
-function instrPodDraw(){
-  if(!ipctx)return;
-  const R=instrRead(),T=tapeInit(),sig=instrPodSig(R,T);
-  if(sig===IPOD_SIG&&T===IPOD_T)return;
-  IPOD_SIG=sig;IPOD_T=T;
-  const w=$ipod.width/IPOD_S, h=$ipod.height/IPOD_S;
-  const c=ipctx;
-  c.setTransform(IPOD_S,0,0,IPOD_S,0,0);
-  c.clearRect(0,0,w,h);
+/* ── колодку рисует видеокарта (26.09, Контроль (A)) ──
+   Колодка остаётся DOM-холстом в строке приборов, но контекст у неё WebGPU: всё неподвижное
+   (тёмные поля, дуги шкал, крайние деления, коды, бумага с нулями дорожек) — один мастер,
+   валик — второй; стрелки, ступица, невязка, перья, перо у края — примитивы слоя #ovl (08bi)
+   в своей очереди (ovInto). Проход колодки кодируется в тот же кадровый энкодер и уходит
+   тем же submit: hud() идёт до gpuPresent. Кадр без перемен прохода не просит — холст
+   WebGPU держит последнее показанное. IPOD.n — сколько проходов было (наборы 91zk). */
+const IPOD={cx:null,dev:null,T:null,M:null,Rl:null,mk:"",n:0};
+/* мерки колодки в пикселях CSS полотна: верх — стрелки, низ — бумага */
+function instrPodGeo(w,h,nR){
+  const nh=h*.44,cw=(w-40)/nR;          // справа оставлено место под невязку
+  return {nh,cw,px:1,py:nh+10,pw:w-2,ph:h-nh-14};
+}
+/* неподвижное — в мастер: тот же порядок, что у прежнего 2D-полотна */
+function instrPodPaint(c,w,h,R){
   /* ── колодку должно быть ВИДНО (M233) ──
      Тон был один на всё (150,176,190) при альфе .28 на дуге: над дневным небом
      посадки и над чёрным космосом колодка одинаково пропадала, а пять
@@ -86527,11 +86588,9 @@ function instrPodDraw(){
      жалоба, которую кабина закрыла кодами из трёх букв (M213), — здесь их
      не было вовсе. Правило «ни цвета, ни тревоги» остаётся: меняются только
      светлота и подпись. */
-  const col="rgba(178,202,216,";
-  const nh=h*.44;                      // верхняя часть — стрелки
-  const cw=(w-40)/R.length;            // справа оставлено место под невязку
+  const col="rgba(178,202,216,",g=instrPodGeo(w,h,R.length),nh=g.nh;
   for(let i=0;i<R.length;i++){
-    const cx=cw*(i+.5), cy=nh*.84, r=Math.min(cw*.42,nh*.62);
+    const cx=g.cw*(i+.5), cy=nh*.84, r=Math.min(g.cw*.42,nh*.62);
     /* тёмное поле под шкалой: по нему стрелка читается и на светлом небе */
     c.fillStyle="rgba(8,12,18,.42)";
     c.beginPath();c.arc(cx,cy,r+2,Math.PI*1.06,Math.PI*1.94);c.closePath();c.fill();
@@ -86545,41 +86604,78 @@ function instrPodDraw(){
       c.moveTo(cx+c1*r,cy+s1*r);c.lineTo(cx+c1*r*.62,cy+s1*r*.62);
       c.stroke();
     }
-    const a=Math.PI*1.12+Math.PI*.76*instrTrack(R[i]);
-    /* тень стрелки — тот же приём, что на панели кабины: стрелка над шкалой */
-    c.strokeStyle="rgba(0,0,0,.45)";c.lineWidth=1.6;
-    c.beginPath();
-    c.moveTo(cx+.6,cy+1.1);c.lineTo(cx+.6+Math.cos(a)*r*.88,cy+1.1+Math.sin(a)*r*.88);
-    c.stroke();
-    c.strokeStyle=col+".95)";c.lineWidth=1.3;
-    c.beginPath();
-    c.moveTo(cx,cy);c.lineTo(cx+Math.cos(a)*r*.9,cy+Math.sin(a)*r*.9);
-    c.stroke();
-    c.fillStyle=col+".95)";
-    c.beginPath();c.arc(cx,cy,1.2,0,TAU);c.fill();
-    /* код прибора: три буквы под шкалой — тот же ответ, что в кабине */
+    /* код прибора: три буквы под шкалой — тот же ответ, что в кабине (стрелка над ним не ходит) */
     c.textAlign="center";
     c.fillStyle=col+".62)";
     c.font="7px ui-monospace,monospace";
     c.fillText(R[i].ab,cx,nh+7);
   }
-  /* невязка: цифры с краю, тем же тоном, что и всё остальное. Ни рамки, ни
-     подписи «внимание» — число, на которое игрок либо смотрит, либо нет */
-  c.textAlign="right";
-  c.fillStyle=col+".70)";
-  c.font="8px ui-monospace,monospace";
-  c.fillText(decRu(instrMisclose(),3),w-3,nh*.72);
-  /* лента: та же бумага, что и в кабине, только узкая полоска */
-  /* бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
+  /* лента: та же бумага, что и в кабине, только узкая полоска.
+     Бумага здесь тише, чем в кабине: в строке приборов она иначе перетягивает
      на себя весь верх экрана, а поверх мира висит только нужное сейчас */
   c.globalAlpha=.72;
-  tapePaper(c,1,nh+10,w-2,h-nh-14);
+  tapePaper(c,g.px,g.py,g.pw,g.ph,"base");
   c.globalAlpha=1;
+}
+/* живое — примитивами в очередь колодки: мастер, стрелки, невязка, перья, валик, перо */
+function instrPodLive(R,T,w,h){
+  const col="rgba(178,202,216,",g=instrPodGeo(w,h,R.length),nh=g.nh;
+  ckgPut(IPOD.M);
+  for(let i=0;i<R.length;i++){
+    const cx=g.cw*(i+.5), cy=nh*.84, r=Math.min(g.cw*.42,nh*.62);
+    const a=Math.PI*1.12+Math.PI*.76*instrTrack(R[i]),c=Math.cos(a),s=Math.sin(a);
+    /* тень стрелки — тот же приём, что на панели кабины: стрелка над шкалой */
+    ckLine(cx+.6,cy+1.1,cx+.6+c*r*.88,cy+1.1+s*r*.88,1.6,"rgba(0,0,0,.45)");
+    ckLine(cx,cy,cx+c*r*.9,cy+s*r*.9,1.3,col+".95)");
+    ovEll(cx,cy,1.2,1.2,0,col+".95)");
+  }
+  /* невязка: цифры с краю, тем же тоном, что и всё остальное. Ни рамки, ни
+     подписи «внимание» — число, на которое игрок либо смотрит, либо нет */
+  ovText(OVL.uq,w-3,nh*.72,decRu(instrMisclose(),3),"8px ui-monospace,monospace",col+".70)","right","alphabetic",1,1);
+  const {px,py,pw,ph}=g;
+  if(pw<24||ph<8)return;
+  /* перья по бумаге — тем же ходом, что в tapePaper; бумага колодки под альфой .72 */
+  const x1=px+pw,cols=Math.min(T.n-1,Math.floor(pw)),sc=pw/Math.max(1,cols),th=ph/TAPE_PENS;
+  if(cols>=1)for(let i=0;i<TAPE_PENS;i++){
+    const top=py+th*i+1.2,hh=th-2.4,ys=IPOD.ys[i]||(IPOD.ys[i]=[]);ys.length=cols+1;
+    for(let k=0;k<=cols;k++){const idx=(T.head-1-T.back-(cols-k)+TAPE_N*2)%TAPE_N;ys[k]=top+hh*(1-T.col[idx*TAPE_PENS+i]/255);}
+    ovGraph(px,Math.max(py,top-1),x1,Math.min(py+ph,top+hh+1),px,sc,ys,1,"rgba(38,44,40,.80)",.72);
+  }
+  ckgPut(IPOD.Rl);
+  /* перо: короткая чёрточка у правого края, дрожит на щелчке; смотрим назад — бумага в тени */
+  if(!T.back){const x=x1-1.5+T.tick*1.6;ovRect(x-.6,py+1,x+.6,py+ph-1,"rgba(24,28,26,.85)",.72);}
+  else ovRect(px,py,x1,py+ph,"rgba(10,14,18,.16)",.72);
+}
+function instrPodDraw(){
+  if(!$ipod||!GPU.on||!GPU.enc||!GPU.dev)return;
+  const R=instrRead(),T=tapeInit(),sig=instrPodSig(R,T);
+  if(sig===IPOD_SIG&&T===IPOD_T&&IPOD.dev===GPU.dev)return;
+  /* новое устройство (первый кадр, подъём после gpuDrop): контекст переконфигурировать, очередь и мастера — заново */
+  if(IPOD.dev!==GPU.dev){
+    IPOD.cx=IPOD.cx||$ipod.getContext("webgpu");
+    IPOD.cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    IPOD.dev=GPU.dev;IPOD.T=ovTarget();IPOD.M=IPOD.Rl=null;IPOD.mk="";IPOD.ys=[];}
+  IPOD_SIG=sig;IPOD_T=T;
+  const w=$ipod.width/IPOD_S,h=$ipod.height/IPOD_S,led=OVL.led;
+  /* строки колодки в журнал текста не идут — как и прежде, когда она была своим 2D-полотном */
+  OVL.led=null;
+  try{ovInto(IPOD.T,IPOD_S,()=>{
+    const mk=w+"x"+h+"|"+R.map(r=>r.ab).join(",");
+    if(IPOD.mk!==mk||!IPOD.M){
+      const g=instrPodGeo(w,h,R.length),rw=Math.min(7,g.pw*.08),x1=g.px+g.pw;
+      IPOD.M=ckgSpr(0,0,w,h,c=>instrPodPaint(c,w,h,R));
+      /* валик — над перьями, своим спрайтом */
+      IPOD.Rl=ckgSpr(x1-rw-1,g.py,x1+1,g.py+g.ph,c=>{c.globalAlpha=.72;tapePaper(c,g.px,g.py,g.pw,g.ph,"roll");});
+      IPOD.mk=mk;}
+    instrPodLive(R,T,w,h);});
+  }finally{OVL.led=led;}
+  ovPass(IPOD.T,IPOD.cx.getCurrentTexture().createView(),$ipod.width,$ipod.height,[IPOD.T.uq],"ipod");
+  IPOD.n++;
 }
 /* Показывается везде, кроме пояса: там есть настоящий потолочный блок, и две
    панели разом читались бы как брак. */
-/* Колодку прячет и CSS: узкий экран (@media max-width:720px, style.css) и режимы вне
-   полёта (body:not(.inflight), 27z). Невидимое полотно не рисуем: на телефоне оно
+/* Колодку прячет и CSS: узкий экран (@media max-width:720px, style.css), режимы вне
+   полёта (body:not(.inflight), 27z) и открытый экран (body.screen .hud). Невидимое полотно не рисуем: на телефоне оно
    перерисовывалось ~10 раз в секунду при display:none, а холст вне композитора на каждом
    рисовании ждёт весь хвост GPU-процесса. Узость — один matchMedia и его событие, без
    чтения стилей в кадре; список режимов — тот же, что у класса inflight в 27z. Подпись
@@ -86592,7 +86688,8 @@ function instrPodTick(){
   if(!$ipod)return;
   const on=G.running&&G.mode!=="belt"&&G.mode!=="dock";
   $ipod.style.display=on?"":"none";
-  if(on&&!IPOD_NARROW&&IPOD_FLY[G.mode])instrPodDraw();
+  /* открытый экран (body.screen, 27z — класс ставится раньше в том же hud()) колодку гасит: ни прохода, ни текстуры */
+  if(on&&!IPOD_NARROW&&IPOD_FLY[G.mode]&&!document.body.classList.contains("screen"))instrPodDraw();
 }
 /* Колодка — не только показание, но и ручка: по ней открывается стойка (25d),
    где те же приборы стоят в полный рост. Единственный элемент строки приборов,

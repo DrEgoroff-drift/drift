@@ -755,6 +755,33 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   Stand: one burst at a frozen age (peak .05 s and +150 ms). Pairs vs HEAD, circle 2.6 R / 4.3 R: 760 peak
   +5.8 %/+2.1 % light, +50 %/+23 % sharpness; +150 ms +0.8 %/+0.4 %, +8 %/+5 %; 390 (dpr 1.5) peak
   +5.8 %/+2.5 %, +36 %/+19 %; +150 ms +1.0 %/+0.5 %, +8 %/+5 %. GPU errors 0.
+  The rainbow on thin streaks (cyan and crimson, Контроль) was the shock-wave refraction splitting channels
+  (r at 1.08·o, b at 0.92·o), not the hit chroma. The split now falls back to the plain sample where the two
+  shifted samples disagree (|a−b| .03….15): a thin feature lands in one and not the other, a smooth gradient
+  keeps its lens fringe. A gate on brightness missed it (the tail is dim). Light ±0.04 %, sharpness +0.3 %.
+- **The pirate base has a body** (26.09, Контроль: «a flat red pentagon outline with a dot reads as a UI mark»):
+  the pentagon is now the plan of a building. A low five-sided prism tilted as the old ellipse says (22×16 ≈
+  43°), spinning in its own plane: the walls facing us, a five-facet pyramid roof, a mast, four docking
+  trusses with pods (back ones under the body, front ones over it). Every face has its own normal in 3D and
+  its own star light (the star at the system origin) plus a cold fill from above-front, so the facets stay
+  apart in shadow; ridges catch a bevel highlight, a dark eave seam and panel seams give scale. Lights are
+  emission only, added on top: corner beacons run round, windows and hatches glow warm, eave running lights,
+  the mast beacon blinks. A thread of star colour on silhouette edges that face the star. Shapes in the scene
+  pass, not a sprite, because the vertices slide. The name moved to `y+30s+6`, clear of the front truss.
+  Pairs vs HEAD at zoom 1.4, box r64 (toward / away from the star): 760 +31 %/+5 % light, +12 %/0 %
+  sharpness; 390 dpr 1.5 +25 %/+4 %, +16 %/+6 %. GPU errors 0.
+  Second pass (Контроль on c4f3b2e0: «toward the star the whole body is salmon — a plastic lampshade»): the hull
+  is dark raven metal, albedo near neutral; the key light takes only 20 % of the star's chroma (a red star
+  turned any warmth pink), the fill stays cold, and a small star-coloured specular reads it as metal. Red is
+  accent only: corner and mast beacons, a thin red stripe along the eave, eave running lights, the pod lights.
+  The label keeps red at ~70 % of the old saturation (the lair keeps violet): on a metal hull it says «enemy»
+  without making the body red. Pods halved (r 2.3→1.15), lit as the body, one small blinking red
+  light each instead of a big glowing ball. Windows lost the grid: wall windows at hashed irregular steps with
+  about a third dark and a few dim, roof hatches 0–3 per facet anywhere, some barely lit. Ridge bevels and roof
+  seams got more contrast so the shadow side keeps its edges once the red balls are gone.
+  Pairs vs c4f3b2e0, toward / away from the star: zoom 1.4 — 760 +8.1 %/+0.6 % light, +7.2 %/+1.0 %
+  sharpness; 390 +6.7 %/+0.2 %, +9.6 %/+4.3 %; zoom 1 — 760 +9.5 %/+3.3 %, +10.6 %/+5.2 %; 390
+  +7.6 %/+2.0 %, +11.6 %/+7.6 %. GPU errors 0.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
@@ -2104,6 +2131,18 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   `GPU.wDone`. The golden «пояс» had been red since 725037ad: `detSettle` stopped at frame 6, while the cockpit
   master is ready and faded in only by about frame 22. `bakeIdle` now also waits for the 17a0 oven and the CKG fade,
   and `detSettle` keeps going while it is busy, up to 40 frames.
+- **Instrument pod on the GPU** (25c `instrPodDraw`, `instrPodPaint`, `instrPodLive`; `IPOD`): `#ipod` stays a DOM canvas in the
+  instrument row, but its context is WebGPU (`alphaMode:"premultiplied"`, the frame device). The static parts (dark fields, arcs,
+  end ticks, codes, the paper with pen zeros) are one `ckgSpr` master; the roll is a second. Needles, hubs, the misclose, the pens
+  (`ovGraph`) and the pen tick are `#ovl` primitives in the pod's own target (`ovInto`), encoded by `ovPass` into the frame encoder
+  after `ovFlush` and sent with the same submit. A frame with an unchanged signature asks for no pass: the canvas keeps its last
+  presented image. With the screen open (`body.screen`), off flight or on a narrow screen there is no pass and no `getCurrentTexture`.
+  After a device change the context is reconfigured and the masters rebaked (loss suite 91zzzzzzy5). At 760: submits a frame 1 with
+  the pod open (60/60 over 60 frames with a tape column each frame, as at HEAD) and 1 under an open screen; `writeTexture` per frame
+  is the same as HEAD (the light table), `copyExternalImageToTexture` 0. The bake frame (once per size or device) has the two
+  `gpuBake` submits of the masters. Pairs vs HEAD: 760 — frame 3 px > 24, the pod 72 px > 24 premultiplied (max 79, needle AA);
+  390×3 — the pod is hidden, frame identical. Gate2d scene «приборная колодка»: 0 calls. Suites: 91zk «Колодка», the two-targets
+  suite in 91zzzzzzy4; mutants `ipod-target-swap`, `ipod-needle-2d`, `ipod-screen-draws`, `ipod-no-reconfig` die.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.
