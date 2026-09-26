@@ -65,9 +65,7 @@ function smenaAct(n,title){
 /* картинка главы: открытка из снимка, если он есть */
 function smenaPlate(n){
   const A=smenaAtAll()[n];if(!A||!A.snap||typeof drawPostcard!=="function")return null;
-  const w=300,h=180,cv=document.createElement("canvas");cv.className="smena-plate";
-  const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+"px";cv.style.height=h+"px";
-  const c=cv.getContext("2d");
-  if(c){c.setTransform(dpr,0,0,dpr,0,0);try{drawPostcard(c,A.snap,w,h);}catch(e){return null;}}
-  return cv;
+  /* карточка альбома (25g1): выпечка в свою канву webgpu, без фильтра */
+  let cv;try{cv=albumCanvas(Object.assign({},A.snap,{fx:"none"}),300,180,Math.min(2,window.devicePixelRatio||1));}catch(e){return null;}
+  cv.className="smena-plate";return cv;
 }

@@ -6,7 +6,35 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## Unreleased - stage 2, whose land
+## Unreleased
+
+- «Смена» (P15): a landing in a new kind of place only arms the next chapter («где-то здесь. Отойдите от корабля»); walking 480 px from the ship lives it. The arming stays in the surface state, not in the save: leave without stepping out and the chapter waits. The 72-kinds-of-place check was already a suite (r ≤ 20).
+
+- Receiver at the border (M457): entering a power's land, the ether log speaks its `air` line once per crossing («Приёмник · ГЛАВТРАССА: «На трассе спокойно»»). The ear pass on the six motifs stays for the release run.
+- Yards at work (M480), on ordered hulls only: a Рассвет hull patches itself from a pirate downed within 600 px (+6 % hull, «на соплях, но держит»); a Хай-Фронт hull's firmware moves one unwelded thing of the plan to another free deck cell once per сводка («обновление установлено… так удобнее»). The сводка mark lives in the order itself.
+
+- The special system (M484): every ship card in the yard names its ability — «особое · СБРОС — груз за борт приманкой… · долгое ДЕЙСТВИЕ или V · раз в 25 с». СИРЕНА is answered only by the ships actually in the frame, each in its own voice: a pirate threatens, a power's patrol answers with its `air` line, a ГЛАВТРАССА liner asks to turn the music down, the black derelict never answers; an empty frame — «эфир молчит».
+
+- Scars on captured pirate hulls (M482): a crewman's «пригнал трофейный корпус» no longer hands over a clean catalogue hull — it is a build of its own (a maker by seed, «трофейный корпус», «Отбит у пиратов…») with 1–3 scars, repaired at a yard like the towed and the bazaar hulls. The trophy shelf and the thing card name it.
+
+- Утильсбор, the rest (M513): once the transit runs out the paper plate hangs from one corner, crooked; while the hull is on transit plates, the КБ at a yard of your own flag refuses to re-plan it («сначала номера, потом чертёж»), and the instruments' warranty is void — the broken-instruments list says «гарантия аннулирована: корпус не на учёте» and ТЕХПОДДЕРЖКА is not offered.
+
+- **M463 the bazaar: odd lots and a rumour at the stalls.** Beside the random part, РАЗНОЕ now carries a plate off a hull broken up here («Табличка с остова «…»», 40–90 кр, goes to ВЕЩИ, changes nothing — memory, not gain). Every other shift a separate counter sells one rarity from the barge-hold table (6–12 k кр), only one nobody holds yet; bought, it counts toward the hundred like a find and stays on the counter as ПРОДАНО. Under the awnings a junk-dealer tells one rumour per shift — seeded by the bazaar and the shift, so it never repeats the station of the same system — logged to ЛЮДИ, remembered on the map, with a НА КАРТУ button. `rumoursHere(seed)` takes an optional seed.
+
+- **M487 подписка: the cold store and the rush in a fight.** New base module «Иней» (`21ac4-base-fridge`), sold two ways in the build menu: bought outright (3 400 кр + 4 alloy, +4 good харч every shift for ever) or «по подписке» — 10 % up front and 136 кр per shift, only where Компания or Хай-Фронт own the base's system; the card says «к 23-й смене вы заплатите полную цену». When the fee does not go through, the door is locked: no харч that shift, and what it already gave stays («перестаёт давать, а не отнимает»). The journal warns a shift ahead (balance below the next fee), every 25th shift the tariff is «обновлён» with one trifle turned into an add-on. In the cut the owned fridge shows a green panel, the unpaid one a red panel and padlocks. In a fight, a subscribed instrument that is locked is offered on the prompt: «ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3» — one ДЕЙСТВИЕ, triple fee, unlocked now.
+
+- **M480 the free cells.** An ordered hull from Хай-Фронт or Орднунг now carries its yard's built-in on the blueprint: a pale dashed stamp in the frontmost free nose cell nearest the axis — «дальний захват» (ПР, an instrument in the nose third, sight one palladium step up, no cargo spent) or «лобовой щит» (ЩТ, on the nose plating; its number stays the +8 % nose armour of the yard). It needs no part, is not in the hold, cannot be taken or covered («встроено верфью · не снимается»), shows in the tray and counts in ЯЧЕЙКИ. Catalogue hulls and old saves are untouched; nothing new is saved — the cell is chosen by the yard from the packer's layout each time.
+
+- **Dead rarity calls removed.** Void containers and hulks called `rareTake("cont")` / `rareTake("hulk")`, places that `RARE_WHERE` never had — they never gave anything. Removed rather than populated: the hundred live in six places, each named on the showcase, and a new place would reshuffle every rarity's address (`i % places`). A hulk's finds stay the parrot, the foreign kit piece, the book and the matchbox.
+
+### Disputed (cautious variants taken; the author may overturn)
+
+- M482 доводка stays paid with нейтронная крошка + 800 кр (M478), not with a node as DESIGN-shipyard §6 says: spending a node would break a set the player is collecting. Two welds per hull, +1 tier — already so.
+- M463: the rarity counter draws from the barge-hold pool, because the six places of `RARE_WHERE` are the only pools (the dead «hulk»/«cont» calls in `17b-finds` are removed). A bought rarity pre-empts that one barge find; the cautious take is one every other shift at 6–12 k.
+- M487: no subscription state is saved — base cells persist as `{k,hp}` only, so the subscribed fridge is its own kind (`fridgesub`) and whether it is locked is read from the balance each shift. Other base modules are not offered by subscription yet: each needs its own «stops giving» hook. In a long absence (bulk catch-up) the fridge, like the garden and the vat, neither feeds nor charges.
+- M480: Орднунг's front shield cell adds no number of its own — the yard's +8 % hull already is «носовая броня даром», and a second bonus would pay twice; the calibration pass may move it to the shield.
+
+## 0.480.0 - stages 2 to 5: whose land, the road, the ship, the voice and the joke
 
 - **M453: the stamp page can be filled.** Ялта now gives its own round stamp (six signatures in a ring, weapons
   sealed). That also makes the diplomatic passport reachable: it wanted all six powers and Ялта, and Ялта never
@@ -223,25 +251,6 @@ could ever save.
 - Tape button at the repair row keeps its width: the label is fixed, the roll count is a corner badge (99+); buying many rolls no longer pushes the neighbours.
 - Tests: the GPU-loss atlas suite picks a station whose dress writes text (ГЛАВТРАССА, Компания, Орднунг — M454); the button sweeps close the KB window they may open; LOOK_BASE «карта» empty 61 → 41 (M458 borders).
 
-- «Смена» (P15): a landing in a new kind of place only arms the next chapter («где-то здесь. Отойдите от корабля»); walking 480 px from the ship lives it. The arming stays in the surface state, not in the save: leave without stepping out and the chapter waits. The 72-kinds-of-place check was already a suite (r ≤ 20).
-
-- Receiver at the border (M457): entering a power's land, the ether log speaks its `air` line once per crossing («Приёмник · ГЛАВТРАССА: «На трассе спокойно»»). The ear pass on the six motifs stays for the release run.
-- Yards at work (M480), on ordered hulls only: a Рассвет hull patches itself from a pirate downed within 600 px (+6 % hull, «на соплях, но держит»); a Хай-Фронт hull's firmware moves one unwelded thing of the plan to another free deck cell once per сводка («обновление установлено… так удобнее»). The сводка mark lives in the order itself.
-
-- The special system (M484): every ship card in the yard names its ability — «особое · СБРОС — груз за борт приманкой… · долгое ДЕЙСТВИЕ или V · раз в 25 с». СИРЕНА is answered only by the ships actually in the frame, each in its own voice: a pirate threatens, a power's patrol answers with its `air` line, a ГЛАВТРАССА liner asks to turn the music down, the black derelict never answers; an empty frame — «эфир молчит».
-
-- Scars on captured pirate hulls (M482): a crewman's «пригнал трофейный корпус» no longer hands over a clean catalogue hull — it is a build of its own (a maker by seed, «трофейный корпус», «Отбит у пиратов…») with 1–3 scars, repaired at a yard like the towed and the bazaar hulls. The trophy shelf and the thing card name it.
-
-- Утильсбор, the rest (M513): once the transit runs out the paper plate hangs from one corner, crooked; while the hull is on transit plates, the КБ at a yard of your own flag refuses to re-plan it («сначала номера, потом чертёж»), and the instruments' warranty is void — the broken-instruments list says «гарантия аннулирована: корпус не на учёте» and ТЕХПОДДЕРЖКА is not offered.
-
-- **M463 the bazaar: odd lots and a rumour at the stalls.** Beside the random part, РАЗНОЕ now carries a plate off a hull broken up here («Табличка с остова «…»», 40–90 кр, goes to ВЕЩИ, changes nothing — memory, not gain). Every other shift a separate counter sells one rarity from the barge-hold table (6–12 k кр), only one nobody holds yet; bought, it counts toward the hundred like a find and stays on the counter as ПРОДАНО. Under the awnings a junk-dealer tells one rumour per shift — seeded by the bazaar and the shift, so it never repeats the station of the same system — logged to ЛЮДИ, remembered on the map, with a НА КАРТУ button. `rumoursHere(seed)` takes an optional seed.
-
-- **M487 подписка: the cold store and the rush in a fight.** New base module «Иней» (`21ac4-base-fridge`), sold two ways in the build menu: bought outright (3 400 кр + 4 alloy, +4 good харч every shift for ever) or «по подписке» — 10 % up front and 136 кр per shift, only where Компания or Хай-Фронт own the base's system; the card says «к 23-й смене вы заплатите полную цену». When the fee does not go through, the door is locked: no харч that shift, and what it already gave stays («перестаёт давать, а не отнимает»). The journal warns a shift ahead (balance below the next fee), every 25th shift the tariff is «обновлён» with one trifle turned into an add-on. In the cut the owned fridge shows a green panel, the unpaid one a red panel and padlocks. In a fight, a subscribed instrument that is locked is offered on the prompt: «ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3» — one ДЕЙСТВИЕ, triple fee, unlocked now.
-
-- **M480 the free cells.** An ordered hull from Хай-Фронт or Орднунг now carries its yard's built-in on the blueprint: a pale dashed stamp in the frontmost free nose cell nearest the axis — «дальний захват» (ПР, an instrument in the nose third, sight one palladium step up, no cargo spent) or «лобовой щит» (ЩТ, on the nose plating; its number stays the +8 % nose armour of the yard). It needs no part, is not in the hold, cannot be taken or covered («встроено верфью · не снимается»), shows in the tray and counts in ЯЧЕЙКИ. Catalogue hulls and old saves are untouched; nothing new is saved — the cell is chosen by the yard from the packer's layout each time.
-
-- **Dead rarity calls removed.** Void containers and hulks called `rareTake("cont")` / `rareTake("hulk")`, places that `RARE_WHERE` never had — they never gave anything. Removed rather than populated: the hundred live in six places, each named on the showcase, and a new place would reshuffle every rarity's address (`i % places`). A hulk's finds stay the parrot, the foreign kit piece, the book and the matchbox.
-
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -326,10 +335,13 @@ could ever save.
 - M512: the дачники society waits for M493 (дачники traffic, deferred with the base-side birchpunk). The perks
   that save no money (ДОСО's norm, the tug, tape, readings) count only times on the desk, not кр. A chronicle
   week is seven chronicle days, which is one real week, so the union duty is slow by design.
-- M482 доводка stays paid with нейтронная крошка + 800 кр (M478), not with a node as DESIGN-shipyard §6 says: spending a node would break a set the player is collecting. Two welds per hull, +1 tier — already so.
-- M463: the rarity counter draws from the barge-hold pool, because the «hulk» and «cont» places named by `17b-finds` have no pool in `RARE_WHERE` (those finds never yield a rarity today). A bought rarity pre-empts that one barge find; the cautious take is one every other shift at 6–12 k.
-- M487: no subscription state is saved — base cells persist as `{k,hp}` only, so the subscribed fridge is its own kind (`fridgesub`) and whether it is locked is read from the balance each shift. Other base modules are not offered by subscription yet: each needs its own «stops giving» hook. In a long absence (bulk catch-up) the fridge, like the garden and the vat, neither feeds nor charges.
-- M480: Орднунг's front shield cell adds no number of its own — the yard's +8 % hull already is «носовая броня даром», and a second bonus would pay twice; the calibration pass may move it to the shield.
+
+## 0.479.0 - mail cards and the smena plate on the engine
+
+- **Postcards in the mail and the picture of a «Смена» chapter** are the same card as in the album now: baked
+  once and laid into an engine canvas. They look the same and are sharper on DPR 3 screens.
+- **Nets**: the album scene of the «0 вызовов 2D» gate also draws a mail card and a chapter picture; a new
+  mutant (mail-2d) is killed.
 
 ## 0.478.0 - the album on the engine
 
