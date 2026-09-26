@@ -6,6 +6,16 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.471.0 - ships in the system's light
+
+- **Ships are lit by the star, not painted light** (the worker; hull mode on the GPU canvas): every face keeps
+  its paint and stays even; the star shows on the edges — a one-pixel rim toward it, a darker silhouette edge
+  away from it — and bare metal glints only on that rim, so nothing blinks as a ship turns.
+- **A planet's shadow is dark**: in full shadow a hull loses the star entirely and keeps only the dim fill,
+  its windows and its flame — about a quarter of its lit brightness, where it used to be two fifths.
+- **Gas tints the shade**: the fill takes the colour of the cloud a ship flies in — warm in orange gas,
+  cold in blue — one tone per hull, no pattern. Silhouettes are exactly as before.
+
 ## 0.470.0 - «Дружба» gets its own building, a quiet strip chart, full hotel names
 
 - **Турбаза «Дружба» stands in its own body** (the designer; GPU-3 merged it after a pair): Рассвет's

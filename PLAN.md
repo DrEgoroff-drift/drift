@@ -48,9 +48,8 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
-  - ships in real light, a–h (the worker, `gpu-ships`): d and g accepted; f — one more try on the fins with the
-    emission mask, else revert; the barge's three lone white pixels become a soft sheen or go, with a 12-frame
-    motion check;
+  - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0; open: f — one more try
+    on the keels by the emission mask, else revert; h — makerRead on the GPU frame;
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
