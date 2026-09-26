@@ -782,6 +782,44 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   Pairs vs c4f3b2e0, toward / away from the star: zoom 1.4 — 760 +8.1 %/+0.6 % light, +7.2 %/+1.0 %
   sharpness; 390 +6.7 %/+0.2 %, +9.6 %/+4.3 %; zoom 1 — 760 +9.5 %/+3.3 %, +10.6 %/+5.2 %; 390
   +7.6 %/+2.0 %, +11.6 %/+7.6 %. GPU errors 0.
+- **G2 star disc** (26.09, Контроль: «a flat orange ball, R 249–255 over the whole disc, a bump at the limb»):
+  the bump was the corona. It lay over the disc and was hidden only over the middle (`gl` fell with `mu`), so
+  at the limb it added to the photosphere. Now the corona sits behind the disc (`gl=1-.8·cov²`) and does not
+  outshine the limb: the near term .5 → .42 for an ordinary star and .22 for a giant, which drowns in its gas
+  anyway, and it is red near the limb, like a chromosphere. Limb darkening is steeper, and the channels go
+  as limb^.65 / ^.8 / ^1.2, so the edge turns red and R never hits the ceiling. Stand: the census scene
+  `star`, a radial profile. The giant at (0,0), 760 zoom 1 (R/G/B): centre 255/255/252, .6 254/180/121,
+  .9 242/140/83, limb 240/132/90, then down; before it was 255 everywhere with a 214 G bump at the limb.
+  Zoom 2: the limb is 248 against 244 in the gas outside, and going lower would leave a dark rim. The hot
+  star at zoom 3 had no disc at all (a white blob); now it has a soft edge, falling monotonically. Light
+  −16…−19 % around the giant and −3…−5 % around a hot star: the glare over the disc and the gas beside it
+  is gone, which is the point. GPU errors 0.
+  The hot star, second pass (Контроль on 287f64f4: «a grey translucent bubble, the corona outside is bluer and
+  brighter»): its disc mixed 35 % of warm orange into blue, which made grey, and the reddening limb took
+  the blue away first. Now the whiteness `wh` scales everything. Darkening is weaker by up to 45 %, the
+  channel powers go to .9/.85/.8 (the limb turns slightly blue), there is no warm mix, the disc is up to
+  +35 % brighter, and the near corona is up to 40 % weaker. Brightness now falls monotonically outward:
+  760 zoom 3, G .9 248 → limb 245 → 1.0 225 → 1.05 216 → 1.35 208. Zoom 1.6 and 390 at 3 and 1.6 fall the
+  same way. The giant (heat < .7) is untouched (|d| 1.75).
+- **G3b gas jets** (26.09, Контроль: «the thin jets along the flow read weak at 1:1»): the gas giant had only
+  the vortex field and a .004 edge wave, so up close its bands were smooth. Now a noise that is long in
+  longitude and dense in latitude (two octaves: 26 and 70 per unit of sine latitude) runs on the already
+  warped coordinates, so it follows the curls. It shifts the strip sample across the bands (±7 texels),
+  so a jet carries the neighbouring band's colour, and it modulates brightness ±20 %. Each octave fades
+  once its step on screen drops to 2–4 px, so there is no ripple from afar. Pairs vs HEAD, centred on the
+  giant: 760 zoom 1 sharpness +7 %, zoom 2 +15 %, zoom .5 +2 %; 390 dpr 1.5 +15 %; light −0.1…−0.3 %.
+  GPU errors 0.
+- **Gas-giant ring without scan lines** (26.09, Контроль: «thin even horizontal lines in the lower band of
+  gs_j2_760_2»): the lines were not in the gas at all. The pink band is the ring's front arc over the disc,
+  seen nearly edge-on, so its bands (≈ .025 r), mid-band gaps (.06 of a band) and the fine sin·sin grooves
+  (period .03 r) shrank to 1–2 px and were point-sampled into rows. On the ansae the same sampling gave a
+  staircase cross-hatch. `ring()` now averages four samples across one pixel of ρ, with the step from the
+  analytic gradient of ρ (front: px·|(x, y/tt²)|/ρ; shadow on the disc: from the neighbouring pixels through
+  the light ray). Anything finer than a pixel fades to its mean: band hash, groove, and a gap that is kept
+  at least a pixel wide, with its depth scaled down. The strip texture and the jets were ruled out by
+  switching each off. Pairs vs HEAD, centred on the giant: 760 zoom 2 sharpness −3.7 %, zoom 1 −8.1 %,
+  zoom .5 −3.9 %; 390 dpr 1.5 zoom 2 −2.8 %, zoom 1 −7.5 %; light 0…−0.1 %. The sharpness that went away
+  is the aliasing (rows on the arc, stairs on the ansae); the grooves on the ansae stay. GPU errors 0.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance

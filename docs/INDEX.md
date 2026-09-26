@@ -2186,7 +2186,7 @@ GEX                          src/16ga-gpu-trail.js:202
 GEX_WGSL                     src/16ga-gpu-trail.js:203
 gexDraw                      src/16ga-gpu-trail.js:305-314
 gexPush                      src/16ga-gpu-trail.js:269-275
-ghf                          src/17ga-gpu-planets.js:349
+ghf                          src/17ga-gpu-planets.js:369
 GIANT                        src/19a-mode-scoop.js:192
 GIANT_CV                     src/17o-giants.js:68
 GIANT_KEEP                   src/19a-mode-scoop.js:193
@@ -2290,17 +2290,17 @@ gotoSector                   src/11a-quests.js:68-88
 gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
 GPL                          src/17ga-gpu-planets.js:24
-GPL_CITY_D                   src/17ga-gpu-planets.js:345
+GPL_CITY_D                   src/17ga-gpu-planets.js:365
 GPL_CLOUD                    src/17ga-gpu-planets.js:28
-GPL_LAND                     src/17ga-gpu-planets.js:347
+GPL_LAND                     src/17ga-gpu-planets.js:367
 GPL_SEA                      src/17ga-gpu-planets.js:26
 GPL_WGSL                     src/17ga-gpu-planets.js:30
-GPL_WIN                      src/17ga-gpu-planets.js:346
-gplBody                      src/17ga-gpu-planets.js:289-312
-gplCities                    src/17ga-gpu-planets.js:376-418
-gplLandAt                    src/17ga-gpu-planets.js:360-375
-gplLandMask                  src/17ga-gpu-planets.js:355-359
-gplSun                       src/17ga-gpu-planets.js:314-317
+GPL_WIN                      src/17ga-gpu-planets.js:366
+gplBody                      src/17ga-gpu-planets.js:309-332
+gplCities                    src/17ga-gpu-planets.js:396-438
+gplLandAt                    src/17ga-gpu-planets.js:380-395
+gplLandMask                  src/17ga-gpu-planets.js:375-379
+gplSun                       src/17ga-gpu-planets.js:334-337
 GPS                          src/17gb-gpu-planet-strip.js:97
 GPS_BLEND                    src/17gb-gpu-planet-strip.js:10
 GPS_WGSL                     src/17gb-gpu-planet-strip.js:47
@@ -2366,7 +2366,7 @@ gpuManual                    src/08b-gpu.js:582-587
 gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
-gpuMoon                      src/17ga-gpu-planets.js:420-425
+gpuMoon                      src/17ga-gpu-planets.js:440-445
 gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
 gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
 gpuNoise                     src/08b-gpu.js:369-374
@@ -2383,7 +2383,7 @@ gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesWarm                 src/08b0-gpu-pipe.js:57-69
 gpuPirateBody                src/12i-pirate-hull.js:425-434
 gpuPirateLive                src/12i-pirate-hull.js:441-485
-gpuPlanet                    src/17ga-gpu-planets.js:320-337
+gpuPlanet                    src/17ga-gpu-planets.js:340-357
 gpuPresent                   src/08b-gpu.js:619-632
 gpuQuad                      src/08c-gpu-kit.js:283-287
 gpuResize                    src/08b-gpu.js:375-417
@@ -2399,7 +2399,7 @@ gpuSpaceSys                  src/16g-gpu-space.js:201-219
 gpuSpaceTitle                src/16g-gpu-space.js:221-232
 gpuStationDraw               src/17c3-station-live.js:119-125
 gpuStationFlare              src/17c3-station-live.js:128-143
-gpuSysUnder                  src/17g-gpu-system.js:411-417
+gpuSysUnder                  src/17g-gpu-system.js:412-418
 gpuTakeSnap                  src/08b-gpu.js:27-33
 gpuTrail                     src/16ga-gpu-trail.js:53-98
 gpuTs                        src/28z-fps-probe.js:128-135
@@ -2492,18 +2492,18 @@ gspSeed                      src/16g-gpu-space.js:198
 gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
-gss                          src/17ga-gpu-planets.js:348
+gss                          src/17ga-gpu-planets.js:368
 GST_WGSL                     src/17c-system-draw.js:401
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:56
-gsyBeltDots                  src/17g-gpu-system.js:355-363
-gsyEll                       src/17g-gpu-system.js:322-331
-gsyMean                      src/17g-gpu-system.js:332-335
-gsyOrb                       src/17g-gpu-system.js:314-320
-gsyOrbits                    src/17g-gpu-system.js:336-353
-gsyStar                      src/17g-gpu-system.js:364-409
-gsyUni                       src/17g-gpu-system.js:308-312
+gsyBeltDots                  src/17g-gpu-system.js:356-364
+gsyEll                       src/17g-gpu-system.js:323-332
+gsyMean                      src/17g-gpu-system.js:333-336
+gsyOrb                       src/17g-gpu-system.js:315-321
+gsyOrbits                    src/17g-gpu-system.js:337-354
+gsyStar                      src/17g-gpu-system.js:365-410
+gsyUni                       src/17g-gpu-system.js:309-313
 GTR                          src/16ga-gpu-trail.js:9
 GTR_WGSL                     src/16ga-gpu-trail.js:10
 gtrDraw                      src/16ga-gpu-trail.js:43-51
@@ -7141,7 +7141,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17g-sys-lane.js · 14 КБ
   · подъезд: полоса от входа в систему к доку (M459, DESIGN-life §2–3.1):1
 
-## src/17ga-gpu-planets.js · 28 КБ
+## src/17ga-gpu-planets.js · 30 КБ
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
 ## src/17gb-gpu-planet-strip.js · 7 КБ
