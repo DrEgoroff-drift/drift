@@ -266,7 +266,7 @@ TEST_SUITES.push(()=>suite("ворота ступени 1: после боя —
    на кадр, выгрузок после прогрева от этих красильщиков нет; кто пачкает — называется по стеку.
    Выгрузки прочих (Чебурек, корабли на трассе) здесь не судятся: они законно пекутся, когда
    впервые въезжают в кадр, а их ровный полёт сторожит первый набор */
-const GATE_FLY=/drawWanderer|wanderGpu|drawSysRail|railGpu|drawBarges|bargeLiveGpu|drawHaul|haulGpu|drawBeltRocks|drawPeaceFleet|peaceFlag|drawLawRing|lawRingGpu|drawFleet|drawAllies|allyHullGpu/;
+const GATE_FLY=/drawWanderer|wanderGpu|drawSysRail|railGpu|drawBarges|bargeLiveGpu|drawHaul|haulGpu|drawBeltRocks|drawPeaceFleet|peaceFlag|drawLawRing|lawRingGpu|drawFleet|drawAllies|allyHullGpu|drawPirateBase|pirateBaseGpu/;
 function gateFind(fn,R){for(let r=0;r<=(R||30);r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
   if(Math.max(Math.abs(x),Math.abs(y))!==r||!starAt(x,y))continue;
   G.sx=x;G.sy=y;G.sys=getSystem(x,y);G.ap=null;G.orbit=null;const q=fn(G.sys,x,y);if(q)return q;}return null;}
@@ -288,6 +288,9 @@ function gateFlyScenes(){
         s.x=S.x+Math.cos(a)*(LAW_RING-120);s.y=S.y+Math.sin(a)*(LAW_RING-120);s.vx=Math.cos(a)*5;s.vy=Math.sin(a)*5;s.a=a;}};}],
     ["«Сорока»",()=>{clockSet(WANDER_T0+5*3600e3);const w=wanderAt();G.sx=w.sx;G.sy=w.sy;G.sys=getSystem(w.sx,w.sy);
       if(!wanderHere(G.sys))return null;return {z:1.4,place(){const p=wanderWorldPos(G.sys,wanderAt().planetIx);at(p.x+p.L*.3,p.y);}};}],
+    /* пиратская база (G4d): 2D-рисунок на #c в кадре видеокарты не показывался вовсе — базы не было видно */
+    ["пиратская база",()=>{const c=gateFind(s=>sysPirateBase()&&[G.sx,G.sy],40);if(!c)return null;
+      return {z:1.4,place(){G.sx=c[0];G.sy=c[1];G.sys=getSystem(c[0],c[1]);const P=sysPirateBase();at(P.x+50,P.y+30);}};}],
     ["кольцо дороги",()=>{let c=null;for(let t=0;t<200&&!c;t++)c=gateFind(s=>!!railHere()&&[G.sx,G.sy],10);if(!c)return null;
       return {z:1.4,place(){G.sx=c[0];G.sy=c[1];G.sys=getSystem(c[0],c[1]);const R=railHere();if(R)at(R.x+60,R.y+40);}};}],
     /* борт ГЛАВТРАССЫ с подписью (тур его не встретил: линия зовётся с рунга 5):

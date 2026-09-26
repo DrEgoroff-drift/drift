@@ -535,7 +535,7 @@ function tap(sxp,syp){
     if(ch){
       G.ap=Object.assign({},ch.t);G.ap.phase="fly";
       const nm=ch.t.kind==="planet"?ch.t.p.name
-            :(ch.t.kind==="station"?(G.sys.station?G.sys.station.name:"станция"):"звезда");
+            :(ch.t.kind==="station"?(G.sys.station?G.sys.station.name:"станция"):(ch.t.nm||"звезда"));
       say("Автопилот → "+nm,90);
       return;
     }

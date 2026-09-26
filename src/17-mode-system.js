@@ -508,6 +508,19 @@ function sysWatchLabel(wA){
   const b=ovText(OVL.uq,W/2,yb+14,"ЭКИПАЖ — ВЕРНУТЬ КАМЕРУ","8px ui-monospace,monospace","rgba(93,115,130,.85)","center","alphabetic",1,1);
   return {x0:Math.min(a.x0,b.x0),x1:Math.max(a.x1,b.x1),y0:a.y0,y1:b.y1};   /* рамка обеих строк — для проверок наложения */
 }
+/* заслон тела для кораблей (GPU.oc, shAt 08b): тень — луч от звезды (ox,oy) через тело радиуса r. Кладём,
+   только если луч, раздутый на 2r, задевает экран, — тень планеты за краем тоже; далёкое тело сдвигаем по лучу
+   к краю раздутого экрана: f16 заслона держит до 65504, а диск заслона (в нём тени нет) в экран не заходит.
+   Последний из шестнадцати — станции (17c) */
+function sysOcPush(x,y,r,ox,oy){
+  if(r<2||GPU.oc.length>=15)return;
+  const d=Math.hypot(x-ox,y-oy);if(d<1)return;
+  const dx=(x-ox)/d,dy=(y-oy)/d,m=2*r,sl=(p,v,lo,hi)=>{   /* отрезок луча внутри полосы [lo,hi] */
+    if(Math.abs(v)<1e-9)return p<lo||p>hi?[1,0]:[0,Infinity];const a=(lo-p)/v,b=(hi-p)/v;return a<b?[a,b]:[b,a];};
+  const X=sl(x,dx,-m,W+m),Y=sl(y,dy,-m,H+m),t0=Math.max(0,X[0],Y[0]);
+  if(t0>Math.min(X[1],Y[1]))return;
+  GPU.oc.push([x+dx*t0,y+dy*t0,r]);
+}
 function drawSystem(){
   const sh=G.ship,sys=G.sys,Z=G.zoom;
   /* режим наблюдения за наёмником: двигается только камера, корабль игрока
@@ -571,6 +584,7 @@ function drawSystem(){
   BODY_LABELS.length=0;gpuSeg("planets");
   for(const p of sys.planets){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;   /* диск — физический (16c, п. 2): зум делает планету большой, не корабль */
+    sysOcPush(x,y,r,ox,oy);   /* тень на корабли — и от планеты за краем экрана */
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
     if(p.ring===undefined){
       const rr=rng(p.seed^0x21A9);
@@ -602,7 +616,7 @@ function drawSystem(){
     for(let mi=0;mi<p.moons.length;mi++){
       const m=p.moons[mi];
       const mx=zx(m.x),my=zy(m.y),mr=Math.max(1,m.radius*Z);
-      gpuMoon(m,(p.idx|0)+"_"+mi,mx,my,mr);
+      gpuMoon(m,(p.idx|0)+"_"+mi,mx,my,mr);sysOcPush(mx,my,mr,ox,oy);
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);
       if(G.found.has(m.key)&&mr>2.4){
         ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
@@ -635,7 +649,7 @@ function drawSystem(){
     drawStation(x,y,Z);
     if(G.ap&&G.ap.kind==="station")reticle(x,y,34);
   }
-  if(G.ap&&G.ap.kind==="belt")reticle(zx(G.ap.ax),zy(G.ap.ay),26);
+  if(G.ap&&(G.ap.kind==="belt"||G.ap.kind==="wreck"))reticle(zx(G.ap.ax),zy(G.ap.ay),26);
   drawTrail(zx,zy,Z);
   /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
   drawExhaust(zx,zy,Z,thrusting?1:0);
@@ -735,6 +749,16 @@ function drawSysHud(zx,zy,sh,sys,U){
     if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name,t:{kind:"planet",p:np},k:"planet:"+np.name});
   }
   if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#e6eef2",l:"Цель",t:null,k:"target"});}
+  /* корпус после боя (G4c): подпись над ним стала фишкой — ближний из тех, что за кадром
+     (видимый читается сам), по тычку автопилот к нему */
+  if(G.npcWrecks&&G.npcWrecks.length){
+    let nw=null,nd=1e18;
+    for(const w of G.npcWrecks){
+      const x=zx(w.x),y=zy(w.y);if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
+      const d=Math.hypot(w.x-sh.x,w.y-sh.y);if(d<nd){nd=d;nw=w;}
+    }
+    if(nw)marks.push({x:nw.x,y:nw.y,c:"#b8c2cc",l:"Корпус",t:{kind:"wreck",ax:nw.x,ay:nw.y,nm:"корпус"},k:"wreck:"+nw.seed});
+  }
   /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
   if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp.name||"Оклик",t:null,hail:1,k:"hail"});}
   SYS_CHIPS.length=0;
@@ -866,6 +890,7 @@ function drawSysHud(zx,zy,sh,sys,U){
   };
   let firstAnchor=null,stack=null;   // якорь и растущий фронт текущей стопки на кромке
   const chipDrawn=[];                // где фишки нарисованы в этом кадре (сглаженные места)
+  const CL=[];                       // фишки после хода к слоту — к раскладке по ключу
   for(const c of cands){
     const m=c.m,ang=c.ang,dx=c.dx,dy=c.dy,cx=c.cx,cy=c.cy,label=c.label,cw=c.cw,ch=c.ch,onSide=c.onSide;
     const A=m.hail?1:CA;   /* окликнувший не гаснет */
@@ -923,6 +948,12 @@ function drawSysHud(zx,zy,sh,sys,U){
     {
       let st=CHIP_POS.get(m.k);
       const targetEdge=chipEdge(rx,ry,cw,ch);
+      const glide=()=>{
+        const dist=Math.hypot(rx-st.x,ry-st.y);
+        const maxStep=CHIP_SPEED*chipDt;
+        if(dist<=maxStep||dist<.01){st.x=rx;st.y=ry;}
+        else{st.x+=(rx-st.x)/dist*maxStep;st.y+=(ry-st.y)/dist*maxStep;}
+      };
       /* не только «нет записи», но и «запись сломана» — испорченный кадр
        (NaN от чужого кода) иначе застревает в NaN навсегда: расстояние до
        NaN само NaN, а любое сравнение с NaN ложно, так что ни один из веток
@@ -931,21 +962,29 @@ function drawSysHud(zx,zy,sh,sys,U){
       else if(st.fading){
         st.fadeT+=chipDt;
         const half=CHIP_FADE/2;
-        if(st.fadeT>=CHIP_FADE){st.fading=false;st.x=rx;st.y=ry;st.edge=targetEdge;dcx=rx;dcy=ry;dcA=1;}
-        else if(st.fadeT<half){dcx=st.fx;dcy=st.fy;dcA=1-st.fadeT/half;}
-        else{dcx=rx;dcy=ry;dcA=(st.fadeT-half)/half;}
+        if(st.fadeT<half){dcx=st.fx;dcy=st.fy;dcA=1-st.fadeT/half;}
+        else{
+          /* загоревшись у нового слота, плашка дальше ЕДЕТ за ним, а не стоит на нём: слот
+             стопки на ходу сдвигается, и почти яркая плашка прыгала за ним (ворота прыжков) */
+          if(!st.lit){st.lit=true;st.x=rx;st.y=ry;}else glide();
+          dcx=st.x;dcy=st.y;dcA=Math.min(1,(st.fadeT-half)/half);
+          if(st.fadeT>=CHIP_FADE){st.fading=false;st.lit=false;st.edge=targetEdge;dcA=1;}
+        }
       }else if(st.edge!==targetEdge){
         st.fading=true;st.fadeT=0;st.fx=st.x;st.fy=st.y;
         dcx=st.fx;dcy=st.fy;dcA=1;
-      }else{
-        const dist=Math.hypot(rx-st.x,ry-st.y);
-        const maxStep=CHIP_SPEED*chipDt;
-        if(dist<=maxStep||dist<.01){st.x=rx;st.y=ry;}
-        else{st.x+=(rx-st.x)/dist*maxStep;st.y+=(ry-st.y)/dist*maxStep;}
-        dcx=st.x;dcy=st.y;dcA=1;
-      }
+      }else{glide();dcx=st.x;dcy=st.y;dcA=1;}
     }
-    rx=dcx;ry=dcy;
+    CL.push({m,A,st:CHIP_POS.get(m.k),rx:dcx,ry:dcy,dcA,cw,ch,label,ang});
+  }
+  /* Ворота прыжков (долг §0): фишка кладётся и отодвигается в порядке КЛЮЧА, а не
+     дальности — дальности двух целей пересекаются на ходу, и соседки менялись ролями
+     «кто стоит, кто уступает»: уступавшая прыгала на полторы плашки за кадр */
+  CL.sort((a,b)=>a.m.k<b.m.k?-1:a.m.k>b.m.k?1:0);
+  for(const q of CL){
+    const m=q.m,A=q.A,st=q.st,cw=q.cw,ch=q.ch,label=q.label,ang=q.ang;
+    let rx=q.rx,ry=q.ry,dcA=q.dcA;
+    const gap=4;
     /* нарисованные фишки не пересекаются (P1 6/n, Контроль 24.09, hb_pair): слоты
        разведены, но плашка едет к своему со скоростью CHIP_SPEED, и в пути ложилась
        на соседнюю — «ЦИЦИИН · 2092» поверх «ЗВЕЗДА · 846». Подошла к уже нарисованной
@@ -968,6 +1007,23 @@ function drawSysHud(zx,zy,sh,sys,U){
         if(!hit)break;
       }
       chipDrawn.push({x:rx,y:ry,w:cw,h:ch});
+    }
+    /* уступка на другую сторону соседки (или у края кадра) — это скачок на плашку: его
+       не везут, а прячут, как смену кромки, — тухнет на старом месте, загорается на
+       новом. Всё остальное фишка и так проходит не быстрее CHIP_SPEED */
+    if(st){
+      const lim=CHIP_SPEED*chipDt+1,half=CHIP_FADE/2,a0=dcA;
+      if(st.jf){
+        st.jf.t+=chipDt;
+        if(st.jf.t>=CHIP_FADE)st.jf=null;
+        else if(st.jf.t<half){rx=st.jf.x;ry=st.jf.y;dcA*=1-st.jf.t/half;}
+        else dcA*=(st.jf.t-half)/half;
+      }
+      /* и загораясь после уступки, фишка может уступить снова — тогда прячется заново */
+      if((!st.jf||st.jf.t>=half)&&st.px!=null&&dcA>=.5&&Math.hypot(rx-st.px,ry-st.py)>lim){
+        st.jf={x:st.px,y:st.py,t:0};rx=st.px;ry=st.py;dcA=a0;
+      }
+      st.px=rx;st.py=ry;
     }
     const AA=A*dcA;
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а

@@ -173,13 +173,13 @@ fn frameHdr(uv:vec2f)->vec3f{
    свечение — от всего яркого, широкое — от того, что много выше единицы (звезда).
    У факела и газа ореол узкий, у звезды широкий, пелены на полкадра нет */
 @fragment fn fsDown(v:V)->@location(0) vec4f{
-  /* frameAt и frameHdr вручную: одна выборка слоя и сцены на точку (P1). Свой грунт
-     корабля (маска корпуса в круге u.hl) светит вполовину: белил обшивку (п.3) */
+  /* frameAt и frameHdr вручную (P1). Краска корпусов (альфа сцены 0) не светит,
+     свой корабль (круг u.hl) — вполовину (п.3) */
   let fp=1./u.qres;var c=H3(0.);var h=H3(0.);let sc=H(u.scene);
   for(var j=0;j<4;j++){for(var i=0;i<4;i++){
     let q=v.uv+((vec2f(f32(i),f32(j))+.5)/4.-.5)*fp;
     let f=H4(textureSampleLevel(tFront,sl,q,0.));let S=H4(textureSampleLevel(tScene,sl,q,0.));let s=max(S.rgb,H3(0.))*sc;let a=H(1.)-f.a;
-    c+=(toneH(s)*a+f.rgb)*(H(1.)-H(.5)*H(silK(q))*sc*(H(1.)-S.a));h+=(kneeH(s,H(1.4))+H3(textureSampleLevel(tEmit,sl,q,0.).rgb))*a;}}
+    c+=(toneH(s)*a+f.rgb)*(H(1.)-(H(1.)-H(.5)*H(silK(q)))*sc*(H(1.)-S.a));h+=(kneeH(s,H(1.4))+H3(textureSampleLevel(tEmit,sl,q,0.).rgb))*a;}}
   c=c/H(16.);return vec4f(vec3f(c*c+h/H(16.)),1.);}
 fn bs(uv:vec2f)->H3{return H3(textureSampleLevel(tBloom,sl,uv,0.).rgb);}
 @fragment fn fsMipDn(v:V)->@location(0) vec4f{
@@ -240,13 +240,13 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
      сложением, как в 2D, — и только потом одно плечо на всё. Яркий газ под
      свечением уходит в золото и к белому плавно, без плато на единице */
   var hs=sceneAt(v.uv);var f=textureSampleLevel(tFront,sl,v.uv,0.);
-  /* преломление: сдвиг по каналам чуть разный — у кромок волны тонкая радуга, как у линзы */
-  /* корпуса не гнутся (L4 k/n): пиксель корпуса стоит на месте, и фон рядом не берёт корпус
-     источником — сдвиг гаснет к кромке, радуга остаётся только на фоне */
+  /* преломление: сдвиг по каналам чуть разный — радуга у кромок волны, как у линзы, но не на
+     тонком (сдвиги разошлись — искра цела). Корпуса не гнутся (L4 k/n): сдвиг гаснет к кромке */
   if(u.dn.x>0.){var o=distort(v.uv*u.css)/u.css;
     if(dot(o,o)*dot(u.css,u.css)>.0004){
       o=o*(1.-hullSoft(v.uv));o=o*(1.-hullM(v.uv+o*.5))*(1.-max(hullM(v.uv+o*.92),hullM(v.uv+o*1.08)));
-      hs=vec3f(sceneAt(v.uv+o*1.08).r,sceneAt(v.uv+o).g,sceneAt(v.uv+o*.92).b);}}
+      let a=sceneAt(v.uv+o*1.08);let g=sceneAt(v.uv+o);let b=sceneAt(v.uv+o*.92);
+      let d=abs(a.rgb-b.rgb);hs=mix(vec3f(a.r,g.g,b.b),g,smoothstep(.03,.15,max(d.r,max(d.g,d.b))));}}
   if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
   var h=hs*(1.-f.a)+f.rgb;
@@ -382,10 +382,10 @@ function gpuResize(){
   for(const k in GPU.T)GPU.T[k].destroy();
   const TB=GPUTextureUsage.TEXTURE_BINDING,RA=GPUTextureUsage.RENDER_ATTACHMENT,CD=GPUTextureUsage.COPY_DST;
   const mk=(w,h,f,us)=>GPU.dev.createTexture({size:[w,h],format:f,usage:us});
-  /* ui — пустышка 1×1: слой интерфейса в текстуре кончился (стойка, кабина, стики — на #ovl), а привязку 6
-     финал ещё держит (u.ui всегда 0). Был полный кадр RGBA — ~12 МБ на S23 ни за что (26.09) */
-  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),ui:mk(1,1,"rgba8unorm",TB),
+  GPU.T={front:mk(bw,bh,"rgba8unorm",TB|CD|RA|GPUTextureUsage.COPY_SRC),
     scene:mk(bw,bh,"rgba16float",TB|RA),emit:mk(bw,bh,"rgba16float",TB|RA),lt:mk(16,3,"rgba16float",TB|CD)};
+  /* цели приборов нет (26.09, ревью №9): приборы — DOM-холст #hud, u.ui всегда 0. Кадровая rgba8
+     стоила 2.6 МиБ на S23 и 31.6 на 4K; binding 6 (tUi) держит вид шума 64×64 — шейдер его не читает */
   /* лестница свечения (P1 25.09): одна текстура с мипами от четверти кадра вниз; уровень
      уже шести текселей не заводится (телефон — пять уровней, ноутбук — шесть). Каждый
      уровень — цель своего прохода и вход следующего: разные подресурсы одной текстуры,
@@ -402,7 +402,7 @@ function gpuResize(){
   const bind=(bv,uv)=>GPU.dev.createBindGroup({layout:GPU.L,entries:[
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:T.scene.createView()},{binding:4,resource:T.front.createView()},
-    {binding:5,resource:bv},{binding:6,resource:T.ui.createView()},{binding:7,resource:nv},{binding:8,resource:T.emit.createView()},
+    {binding:5,resource:bv},{binding:6,resource:nv},{binding:7,resource:nv},{binding:8,resource:T.emit.createView()},
     {binding:9,resource:uv||GPU.V.bloomU}]});
   /* MB[i] — вход прохода на уровень i+1; первому уровню свечение не нужно — на его месте шум;
      up — проход суммы верхних уровней пишет bloomU, поэтому у него на её месте шум */
@@ -412,7 +412,7 @@ function gpuResize(){
     comp:GPU.dev.createBindGroup({layout:GPU.L,entries:[
       {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
       {binding:3,resource:nv},{binding:4,resource:T.front.createView()},
-      {binding:5,resource:nv},{binding:6,resource:T.ui.createView()},{binding:7,resource:nv},
+      {binding:5,resource:nv},{binding:6,resource:nv},{binding:7,resource:nv},
       {binding:8,resource:nv},{binding:9,resource:nv}]})};
 }
 /* склейка сегмента с туманностью на месте сцены — силуэтам корпусов (sil) */
@@ -424,7 +424,7 @@ function gpuCompNeb(){
   return B.compN=GPU.dev.createBindGroup({layout:GPU.L,entries:[
     {binding:0,resource:{buffer:GPU.U}},{binding:1,resource:S.lin},{binding:2,resource:S.rep},
     {binding:3,resource:GNB.view},{binding:4,resource:T.front.createView()},
-    {binding:5,resource:GPU.N.createView()},{binding:6,resource:T.ui.createView()},{binding:7,resource:GPU.N.createView()},
+    {binding:5,resource:GPU.N.createView()},{binding:6,resource:GPU.N.createView()},{binding:7,resource:GPU.N.createView()},
     {binding:8,resource:GPU.N.createView()},{binding:9,resource:GPU.N.createView()}]});
 }
 function gpuPass(view,pipe,bind,ts){

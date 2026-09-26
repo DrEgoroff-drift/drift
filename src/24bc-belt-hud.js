@@ -163,13 +163,15 @@ function ckgSprites(P,FS){
     c.beginPath();c.moveTo(hx-18,hy-4);c.lineTo(hx-18,hy+10);c.lineTo(hx-8,hy+.5);c.closePath();c.fill();
     c.strokeStyle=rgba(A,.35);c.lineWidth=1;c.strokeRect(hx-18.5,hy-4.5,31,5.5);
     c.fillStyle="rgba(255,255,255,.06)";c.fillRect(hx-18,hy-4,30,1.2);}});
-  const S=ckgAtlas(it,false);if(!S)return null;
-  const f=uiFont(8),ax=-62*u,ay=3*u,m0=GC_GLYPHS.measure(ckgSt(f),"+60"),lt=[];
+  return ckgAtlas(it,false);
+}
+/* подписи шкал — вторым атласом, своим шагом печи (одна выпечка за кадр, 17a0) */
+function ckgLab(S){
+  const u=uiK(),f=uiFont(8),ax=-62*u,ay=3*u,m0=GC_GLYPHS.measure(ckgSt(f),"+60"),lt=[];
   const up=m0.actualBoundingBoxAscent+2,dn=m0.actualBoundingBoxDescent+2;
   for(const d of [-60,-40,-20,20,40,60]){const t=d>0?"+"+d:""+d,tw=ckgW(f,t);
     lt.push({k:d,x0:ax-tw-2,y0:ay-up,x1:ax+2,y1:ay+dn,paint:c=>{c.fillStyle="rgba(127,230,216,.4)";c.font=f;c.textAlign="right";c.fillText(t,ax,ay);}});}
   S.lab=ckgAtlas(lt,true);
-  return S;
 }
 /* задача печи: спрайты, полосы мастера (крупная — одна на кадр, PB_PX), кадр вхолостую. Брошенная
    задача (сменились корабль или окно) отдаёт испечённое */
@@ -189,7 +191,9 @@ function* ckgJob(P,FS,nd){
       if(!B)return null;
       M.push({B,Y0,Y1});yield;
     }
-    S=ckgSprites(P,FS);if(!S||!S.lab)return null;
+    S=ckgSprites(P,FS);if(!S)return null;
+    yield;
+    ckgLab(S);if(!S.lab)return null;
     yield;
     const I=CKG.in;
     /* прогрев — по шагу на кусок кадра (на 390×3 разом это 25 мс глифов); тяжёлые — первыми в своих

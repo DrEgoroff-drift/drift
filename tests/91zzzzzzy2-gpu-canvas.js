@@ -111,12 +111,28 @@ TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целе
   eq(Q.made-m1,0,"выпечка 1000×680 — из прогретого набора 1024², новых целей нет");
   const m2=Q.made;gcPoolSet("shadow",448,64);
   eq(Q.made-m2,0,"атлас тени 448×64 (родился посреди полёта на S23 cold3) — из прогретого набора 512×128");
-  /* бюджет видеокарты prebake: крупные шаги — по одному на кадр, мелкие идут пачкой */
-  const steps=(w,h)=>{let n=0;const key="t|px"+w;prebakeDrop(key);PB_F=-2;
-    prebake(key,function*(){for(let i=0;i<4;i++){gpuBakeDrop(gpuBake(w,h,g=>{g.fillRect(0,0,4,4);},{ss:2,mips:false}));n++;yield;}},false);
+  /* бюджет видеокарты prebake: выпечка — одна на кадр, любая (у каждой свой submit, ворота ступени 1, 26.09);
+     шаги без выпечки (раскладка, расчёт) идут пачкой */
+  const steps=(w,h,bake)=>{let n=0;const key="t|px"+w+bake;prebakeDrop(key);PB_F=-2;
+    prebake(key,function*(){for(let i=0;i<4;i++){if(bake)gpuBakeDrop(gpuBake(w,h,g=>{g.fillRect(0,0,4,4);},{ss:2,mips:false}));n++;yield;}},false);
     prebakeDrop(key);return n;};
-  eq(steps(500,340),1,"четыре выпечки 1000×680 — одна за кадр (PB_PX)");
-  ok(steps(64,64)>1,"мелкие выпечки 128² — несколько за кадр");
+  eq(steps(500,340,true),1,"четыре выпечки 1000×680 — одна за кадр (PB_PX)");
+  eq(steps(64,64,true),1,"четыре мелкие выпечки 128² — тоже одна за кадр (GPU.bakeN)");
+  ok(steps(64,64,false)>1,"шаги без выпечки — несколько за кадр");
+}));
+/* материал корпуса (08cd): у всех, кого освещает звезда, — рельеф и маски в одной текстуре вдвое шире;
+   сброс выпечки уносит и его (иначе видеопамять течёт по полтекстуры на корпус) */
+TEST_SUITES.push(()=>suite("материал корпуса: пираты, баржи, свои — рельеф и маски, сброс вместе",{tier:"browser"},()=>{
+  if(!GPU.dev){eq(gpuBake(8,8,()=>{},{mat:2}),null,"без видеокарты выпечки нет");return;}
+  const pa=pirateArtOf(pirateShipId(4242),false,false,2,0),ba=bargeArtOf({seed:991,by:"gt"});
+  for(const [n,B] of [["пират",pa.cn],["баржа",ba.cn]]){
+    ok(B&&B.mat&&B.mat.tex,n+": материал запечён");
+    eq(B.mat.tex.width,2*Math.max(1,B.w>>1),n+": две половины — рельеф и маски");
+    eq(B.mat.tex.format,"rgba16float",n+": материал в половинной точности");}
+  const B=gpuBake(64,64,g=>{g.fillStyle="#888";g.fillRect(8,8,48,48);g.fillStyle="#fb4";g.fillRect(30,30,4,4);},{mat:2});
+  const T=B.mat.tex,t0=GPU.trash.length;gpuBakeDrop(B);
+  ok(B.mat===null&&GPU.trash.slice(t0).includes(T),"сброс выпечки отдаёт в мусор и материал");
+  const B2=gpuBake(64,64,()=>{});eq(B2.mat,undefined,"без o.mat материала нет");gpuBakeDrop(B2);
 }));
 /* WGSL: smoothstep с edge0 > edge1 не определён (Metal, iOS Safari: ревью облачного флота 26.09) — в Chrome
    он считает «наоборот», на Metal может дать что угодно. Обратный спад пишется 1.-smoothstep(b,a,x) */
@@ -127,4 +143,40 @@ suite("шейдеры: у smoothstep нет перевёрнутых рёбер"
   while((m=re.exec(src))){n++;if(+m[1]>+m[2])bad.push(m[0]+" …"+src.slice(Math.max(0,m.index-40),m.index).replace(/\s+/g," "));}
   ok(n>20,"вызовы с числовыми рёбрами найдены ("+n+")");
   eq(bad.slice(0,6).join(" | "),"","smoothstep(a,b,x) при a>b — писать 1.-smoothstep(b,a,x)");
+});
+/* огни городов (17ga gplCities, ревью №10): окна широт — из кэша по (планета, огонь, оборот окна,
+   сторона звезды в 1/1024 оборота). На сторонах из этой сетки огни те же, что у прежнего поиска
+   на каждом кадре; второй кадр того же оборота окна не пересчитывает */
+suite("огни городов: окна широт из кэша — те же города, поиск раз на оборот",()=>{
+  const ref=(o,a)=>{const n=Math.min(48,o.lights|0);
+    const l=Math.hypot(o.sx,o.sy)||1,ax=-o.sx/l,ay=-o.sy/l;
+    const reg=(x,y)=>{const rr=Math.hypot(x,y);if(rr<.3||rr>.9)return 0;
+      return gss(.3,.4,rr)*(1-gss(.8,.9,rr))*gss(.2,.45,(x*ax+y*ay)/rr);};
+    const T=o.T||0,sd=(o.seed|0)*131+7;let k=0;
+    for(let j=0;j<n;j++){const P=ghf(sd,j,77)+T*TAU/GPL_CITY_D,e=Math.floor(P),ph=P-e;
+      for(let tr=0;tr<32;tr++){const y0=ghf(sd+j*977,e,tr)*1.7-.85,c=Math.sqrt(1-y0*y0);
+        let best=0,r0=null,la=0,lb=0;
+        for(let s=0;s<=40;s++){const L=-1.45+2.9*s/40;
+          if(reg(c*Math.sin(L),y0)>.5){if(r0===null)r0=L;if(L-r0>best){best=L-r0;la=r0;lb=L;}}else r0=null;}
+        if(best<GPL_CITY_D)continue;
+        const lam=(la+lb)/2+(.5-ph)*GPL_CITY_D;if(Math.abs(lam)>1.5)continue;
+        const x=c*Math.sin(lam),w=gss(0,.08,ph)*(1-gss(.92,1,ph))*reg(x,y0)*(.8+.2*ghf(sd,j,5));
+        if(w>.02){a[64+k*4]=x;a[65+k*4]=y0;a[66+k*4]=w;k++;}
+        break;}}
+    return k;};
+  let same=0,tot=0,lit=0;const diff=[];
+  for(let t=0;t<40;t++){const qa=(t*97+5)%1024,g=qa*TAU/1024;
+    const o={lights:48,wet:0,strip:null,sx:-Math.cos(g),sy:-Math.sin(g),T:t*.37,seed:11+t};
+    const a1=new Float32Array(256),a2=new Float32Array(256),k1=gplCities(o,a1),k2=ref(o,a2);tot++;lit+=k1;
+    if(k1===k2&&a1.every((v,i)=>Math.abs(v-a2[i])<1e-5))same++;else if(diff.length<3)diff.push(qa+":"+k1+"/"+k2);}
+  eq(same,tot,"те же огни, что у поиска на каждом кадре"+(diff.length?": "+diff.join(" "):""));
+  ok(lit>40*4,"огни горят: "+lit+" на 40 планет");
+  /* второй кадр: чуть другая сторона в той же ячейке, тот же оборот — окна те же массивы */
+  const o={lights:48,wet:0,strip:null,sx:-1,sy:0,T:1.234,seed:5},a=new Float32Array(256);
+  gplCities(o,a);const C=GPL_WIN.get(5*131+7),w0=C.w.slice(),n0=C.w.reduce((s,w)=>s+w.length,0);
+  gplCities(Object.assign({},o,{sy:.0005}),a);
+  ok(GPL_WIN.get(5*131+7)===C&&C.w.every((w,j)=>w===w0[j]),"сторона в той же ячейке — окна из кэша");
+  eq(C.w.reduce((s,w)=>s+w.length,0),n0,"и новых поисков нет");
+  let many=0;for(let i=0;i<40;i++)gplCities(Object.assign({},o,{seed:100+i}),a),many=GPL_WIN.size;
+  ok(many<=16,"кэш держит не больше 16 планет: "+many);
 });

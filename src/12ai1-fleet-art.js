@@ -359,12 +359,12 @@ function* fleetArtJob(f){
     const lg=ctx.createLinearGradient(0,-hw*1.8,0,hw*1.6);
     lg.addColorStop(0,top);lg.addColorStop(.5,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,"+dark+")");
     ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);ctx.globalCompositeOperation="source-over";};
-  const bake=(top,dark)=>gpuBake(side,side,paint(top,dark));
+  const bake=(top,dark,mat)=>gpuBake(side,side,paint(top,dark),mat?{mat:FLEET_SS}:undefined);   /* mat — материал корпуса (08cd), слою светом звезды */
   const dr=f.k==="derelict",topN=dr?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)";
   let cn=null,cnA=null,ok=false;
   try{
     yield;cn=bake(topN,.62);
-    if(cn){yield;cnA=bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3);}
+    if(cn){yield;cnA=bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3,true);}
     ok=true;const art={cn,cnA,rad,L,hw,lights,bx,by,emb,side};FLEET_PAINT.set(art,paint(topN,.62));return art;
   }finally{if(!ok){gpuBakeDrop(cn);gpuBakeDrop(cnA);}}   /* брошена недопечённой — отдать выпечки */
 }
@@ -422,12 +422,13 @@ function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
   /* светом звезды (Ships a): свет корпуса (GST, −1) по своей выпечке — краска как есть,
      дальний борт в тень, кромка цветом звезды; множитель станции (0) белил нос и знак.
      Уровень мипа на ступень мельче экрана и нерезкая маска между уровнями: резкость — не ниже 2D.
-     Гаснущий борт (полоса у дока) — прежней картинкой: у GST нет прозрачности */
-  if(G.mode==="system"&&al>.99&&G.viewCX!==undefined){
+     Гаснущий борт (полоса у дока, дальний ряд .9) — тем же светом с прозрачностью (G4d): плоской
+     картинкой он светился ровно, и у дока корабль на миг становился аппликацией */
+  if(G.mode==="system"&&G.viewCX!==undefined){
     /* к звезде: звезда в начале координат системы, точка борта — из экрана через камеру */
     const wx=G.viewCX+(x-W/2)/G.zoom,wy=G.viewCY+(y-H/2)/G.zoom,ln=Math.hypot(wx,wy)||1;
     const cv=art.cnA,lod=Math.max(0,Math.log2(cv.w/(w*GPU.bw/W))+FLEET_LOD);
-    gpuLitSprite(cv,x,y,w/2,s,rot,-wx/ln,-wy/ln,-1,0,lod,null,true);
+    gpuLitSprite(cv,x,y,w/2,s,rot,-wx/ln,-wy/ln,-1,0,lod,null,true,al);
   }else
   gpuImage(pass,art.cn,[{x,y,w,h:w,rot,a:al}],{sharp:true});
   const L=[],A=[],by=f.by||"gt",MF=(typeof makerFlame==="function")?makerFlame(by):null;

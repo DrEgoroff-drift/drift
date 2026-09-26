@@ -97,6 +97,9 @@ Heat haze behind the nozzle (G4b).
    `gpuCanvasTex` cache and the 416×140 pod as in the plan.
 5. Gate: uploads 0, submits 1 → Контроль's phone, 30 s + 5 min → candidate. Further redrawing does not hold the
    candidate.
+   *Passed with a caveat (Контроль, 26.09):* 1 submit a frame; a frame with a `gpuBake` adds +1 submit per bake, never more than one bake a frame, and bake frames are ≤ 1 % of the tour's frames. `docs/tour.py` counts bake submits apart from the
+   frame's own and goes red on two bakes in a frame or a share over 1 % (`17a0` holds one bake a frame since then).
+   ~~Контроль's phone run~~ — phone run waived by the author 26.09, redo when the phone is back.
 
 **The flight HUD pair (15/n, branch `gpu-hud` on top of a178e76, not for release — one strong variant for the
 author's verdict).** Sentence case wherever the player reads (vitals, the place name, the zoom line, the ticker
@@ -575,8 +578,8 @@ tangent. The points lie on the curve, so fills do not change.
 a surface material job; the harness has no frames, so a landing or cold-demand suite leaves it queued. The
 next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the job and pays its 2D.
 - `resetWorld` drops `MAT_JOB`: a queued job belongs to the world it was made in.
-- Gate2d names `matTick` a hole. The surface material is 2D until the surface is ported; in the game the
-  planet frame does step it on the approach to a landing.
+- Gate2d named `matTick` a hole until 26.09; now the planet frame runs only `matRows` (arithmetic) and the
+  hole is gone (see «Where I stopped», item 2).
 - Proof: «cold demand» then the gate is green with the fix and red with it reverted
   (`gpuPlanet.putImageData`).
 - The shard 4/6 stall in «сейв: поле мира…» (-Full, killed at 900 s) does not repeat: the shard alone is
@@ -674,7 +677,190 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   (1) the «кольцо дороги» isolation leak — does not reproduce (alone; gates under -Shuffle 1..3), a watch
   line in PLAN §10; (2) рейсы → посадка: matTick on the GPU; (3) review findings 5–7, 9, 10; (4) the fleet
   merge scouting.
-  Next: (2) matTick on the GPU.
+- **(2) The ground material: no 2D in the planet frame, and the landing bakes it again.** Since G3
+  (867f709c) only `gpuPlanet` stepped the job, but the first landing frame queues it: on the landing and the
+  surface the tile sat at row 0 (stand: 57 frames, row 0), and the ground had no grain. The stands hid it:
+  shot.py bakes the tile at once. Now `planetMat` steps its own job once per frame (`J.at=G.t`); the 2D
+  consumers (landing, surface, cave, base, dig) ask every frame. `gpuPlanet` calls `matRows`: rows only,
+  no `putImageData`/`createPattern`; the 2D frame that needs the pattern assembles it. Gate2d drops the
+  `matTick` hole, and its planet scene keeps a job queued. With the old call it goes red (2× putImageData,
+  2× createPattern under gpuPlanet). Stand, material dropped mid-landing: ready after 114 frames on the
+  landing and 148 on the surface (headless). New Node suite «выпечка: посадка допекает материал сама».
+- **(3) Review №9 and №10 done.** №9: `GPU.T.ui` is gone (a frame-sized rgba8 that nothing wrote since the
+  HUD moved to `#hud`: 2.6 MiB on S23, 31.6 on 4K); binding 6 holds the 64×64 noise view, `u.ui` stays 0.
+  №10: `gplCities` keeps each light's latitude windows in `GPL_WIN` by (planet, light, window turn e, star
+  side in 1/1024 turn), at most 16 planets; the search (up to 63 000 `reg()` a frame) runs once per turn.
+  Node suite: on grid sides the lights equal the old per-frame search (40 planets); a second frame in the
+  same cell rescans nothing. Golden frames, gates, gate2d, canvas and pipes green.
+- **Review №5 done; №6, №7 in PLAN §0.** `GC_ATL.gen` grows whenever the atlas pages go to the trash (six
+  pages, a new device). `stMasterJob` records the body with the generation; a changed generation before a
+  layer bake re-records the body (same station, same cuts) — a recording from an earlier frame no longer
+  binds destroyed pages. A reset in the middle of the recording itself re-records at once. Browser suite in
+  91zzzzzzy5: a fresh atlas, the body writes text into it, the atlas is reset and its pages destroyed
+  between the recording and the first layer; `createBindGroup` sees no dead view, the master bakes. With the
+  re-record disabled it goes red (1 dead view bound).
+- **Candidate 0.463.0 = 875dc0f2** (26.09): origin/main 0.462.0 merged (b6ae07b2), gpu3 e52e5213 merged
+  (05be9917: 17k billboard and 17j Cheburek on the GPU canvas, 42 warm keys), VER and the patchnote.
+  Node 16904, -Full 19137, -Mobile 19089 green; the warm table re-taken without a diff; the pipe detector
+  green. Not pushed — the push is Контроль's.
+- **The fleet merge scouting was withdrawn** (Контроль: fleet 2 is rebuilt by the cloud on main 0.462.0 in
+  `claude/fleet2`, acceptance in `claude/fleet-accept`). The local clone is shallow (`.git/shallow`), so the
+  fleet tip da6b1bfa looked like a root commit; on GitHub its merge base with main is db057213. Deepen first
+  (`git fetch --shallow-since=2026-09-24 origin main gpu claude/fleet-accept`). A merge from db057213 into
+  gpu conflicted only in INDEX and TESTMAP; both sides touch 08c, 08ca, 18a, test.ps1, 90-harness,
+  91zzzzzzy2, shot.py, PLAN.
+- **Rack merged** (26.09): origin/main ac55db27 (79f8379a), gpu3-rack bf8d96d2 (d714ef8b: rack 25d and
+  globus 25f on #ovl, the master baked in parts). No 08b1 key came with it; the warm table re-taken
+  without a diff (42). Node 16914, -Full 19172, -Mobile 19124 green.
+- **G4c the wreck as a hull** (26.09): `npcWreckDraw` (13d) draws the dead ship's own hull — the damaged
+  12i bake by its `sid` (the plan said `hullOf`, but NPCs fly as 12i welded hulls; the wreck must be the
+  ship you saw die), star-lit through `gpuPirateBody`, turning 0.07–0.14 rad/s from the angle it died at
+  (`npcWreckPose`, clock-driven, no rnd). The bake records its three breaches (`art.holes`); embers breathe
+  on their torn rims (additive), a thin smoke leaves the first. The «КОРПУС» label is gone: the nearest
+  off-screen wreck gets an edge chip «Корпус · N», a tap sends the autopilot there (`kind:"wreck"`,
+  reticle as for the belt). Pairs 760/390 vs 7e9a0b34: discs → broken lit hulls, the chip stacks with
+  the others. Suite 91zzzw-wreck (Node pose + browser chip/tap/label).
+- **G4c polish** (Контроль on pair_wk_760): the wreck has its own bake `pirateArtOf(…,2,…)` (key `!w`):
+  charred (soot .62 — hull pixels 30–36 % darker than the player's ship, measured 68/61 vs 96), two
+  larger breaches instead of three (×1.45) and fewer torn-off parts (.25 vs .55) so the silhouette reads,
+  no gun barrels (a lit barrel read as a white scratch). Embers only on the metal side of a breach rim;
+  the smoke is a soft grey-brown haze with no core. The pirate bakes (`!h`) are untouched.
+- **G4d the other ships lit** (26.09): a census of one system frame per stand (who calls `gpuLitSprite`,
+  `gpuImage`, #c) found the peace fleet, the ГЛАВТРАССА fleet, the lane, the post boat and allies already lit by
+  17c GST in system mode. Three things were not. (1) Fleet ships with alpha < 1 (the lane rush at .9, docking
+  fades) fell back to the flat bake — a jump at α .99; GST now takes an opacity (`fu.v[2].w`,
+  `gpuLitSprite(…,al)`), so a fading ship is the same lit ship. (2) «Сорока»'s hull (hub, keel, ribs, bales,
+  porch, yard, gondola) was ~150 flat kit shapes; now one mipped bake of the 2D recipe (`wanderHullPaint`,
+  shared with the 2D branch) lit as a hull (−1), density a power of two ≥ 2× the screen (≤ 16/unit), the
+  gondola lamp on top. (3) The pirate base was 2D on #c — invisible in the GPU frame; now kit shapes in the
+  scene pass (its vertices slide on a 22×16 ellipse, so no sprite), a thread of star colour on the edges that
+  face the star, the name on the label layer; flight gate scene «пиратская база» (the 2D path turns it red).
+  The barrel (Контроль: «whitening in gpuLitSprite»): on stand gz5 (8 cells — `GPU.sepH` holds 8 hulls, a 9th
+  lifts the scene around it, a stand artifact) GST over the ×.4 bake is closer to 2D than the game's gpuImage
+  (barrel 11.2/12.6 vs 11.9/13.8, 2D 10.3/11.0; |d| 4.8/4.4 vs 7.7/11.9). The lift against 2D is the scene's —
+  bloom off the hull edges, which the #c front layer used to shield — not GST's. An albedo-weighted rim was
+  tried and dropped: the barrel moved 0.2, the ГЛАВТРАССА tug lost its copper rim on dark panels (−8 %
+  sharpness). Guns stay on gpuImage (lit: −5 % light, −7 % sharpness against now).
+  Pairs vs 57243be0: the base at 760/390 on both sides of the star +4…+33 % light, +58…+132 % sharpness (it
+  appears); «Сорока» at zoom .5/1.4, 760/390: −0.1…−0.7 % light, +0.7…+1.8 % sharpness; fleet scenes
+  identical (|d| 0); a fading tug against the old flat one −2…−4 % light, −7…−12 % sharpness (= the lit ship
+  at α 1). Ships get no planet shadow at all (`GPU.oc` holds the station only), so the shadow pair is the
+  same frame.
+- **L4 sparks** (26.09, Контроль after 92679b3: «at the peak they read as a drawn star-burst»): 22 equal
+  streaks from one point, the same shutter and drag, spread evenly — a star. Now 26 drops in `GBX_WGSL`: 3–4 long
+  heavy streaks (speed 9–18 R, low drag, shutter .03–.06 s, live ~1 s) at their own uneven angles, torn off
+  the fireball's edge rather than its centre; the rest short, lighter, dragged harder, born over the first
+  .08 s from scattered points, half of them in two jets. Every drop bends a little, the streak brightens
+  toward its head and a hot point sits on the head, so it reads as a flying spark and not a drawn line.
+  Stand: one burst at a frozen age (peak .05 s and +150 ms). Pairs vs HEAD, circle 2.6 R / 4.3 R: 760 peak
+  +5.8 %/+2.1 % light, +50 %/+23 % sharpness; +150 ms +0.8 %/+0.4 %, +8 %/+5 %; 390 (dpr 1.5) peak
+  +5.8 %/+2.5 %, +36 %/+19 %; +150 ms +1.0 %/+0.5 %, +8 %/+5 %. GPU errors 0.
+  The rainbow on thin streaks (cyan and crimson, Контроль) was the shock-wave refraction splitting channels
+  (r at 1.08·o, b at 0.92·o), not the hit chroma. The split now falls back to the plain sample where the two
+  shifted samples disagree (|a−b| .03….15): a thin feature lands in one and not the other, a smooth gradient
+  keeps its lens fringe. A gate on brightness missed it (the tail is dim). Light ±0.04 %, sharpness +0.3 %.
+- **The pirate base has a body** (26.09, Контроль: «a flat red pentagon outline with a dot reads as a UI mark»):
+  the pentagon is now the plan of a building. A low five-sided prism tilted as the old ellipse says (22×16 ≈
+  43°), spinning in its own plane: the walls facing us, a five-facet pyramid roof, a mast, four docking
+  trusses with pods (back ones under the body, front ones over it). Every face has its own normal in 3D and
+  its own star light (the star at the system origin) plus a cold fill from above-front, so the facets stay
+  apart in shadow; ridges catch a bevel highlight, a dark eave seam and panel seams give scale. Lights are
+  emission only, added on top: corner beacons run round, windows and hatches glow warm, eave running lights,
+  the mast beacon blinks. A thread of star colour on silhouette edges that face the star. Shapes in the scene
+  pass, not a sprite, because the vertices slide. The name moved to `y+30s+6`, clear of the front truss.
+  Pairs vs HEAD at zoom 1.4, box r64 (toward / away from the star): 760 +31 %/+5 % light, +12 %/0 %
+  sharpness; 390 dpr 1.5 +25 %/+4 %, +16 %/+6 %. GPU errors 0.
+  Second pass (Контроль on c4f3b2e0: «toward the star the whole body is salmon — a plastic lampshade»): the hull
+  is dark raven metal, albedo near neutral; the key light takes only 20 % of the star's chroma (a red star
+  turned any warmth pink), the fill stays cold, and a small star-coloured specular reads it as metal. Red is
+  accent only: corner and mast beacons, a thin red stripe along the eave, eave running lights, the pod lights.
+  The label keeps red at ~70 % of the old saturation (the lair keeps violet): on a metal hull it says «enemy»
+  without making the body red. Pods halved (r 2.3→1.15), lit as the body, one small blinking red
+  light each instead of a big glowing ball. Windows lost the grid: wall windows at hashed irregular steps with
+  about a third dark and a few dim, roof hatches 0–3 per facet anywhere, some barely lit. Ridge bevels and roof
+  seams got more contrast so the shadow side keeps its edges once the red balls are gone.
+  Pairs vs c4f3b2e0, toward / away from the star: zoom 1.4 — 760 +8.1 %/+0.6 % light, +7.2 %/+1.0 %
+  sharpness; 390 +6.7 %/+0.2 %, +9.6 %/+4.3 %; zoom 1 — 760 +9.5 %/+3.3 %, +10.6 %/+5.2 %; 390
+  +7.6 %/+2.0 %, +11.6 %/+7.6 %. GPU errors 0.
+- **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
+  frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
+  and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
+  flipped 104 times. Three causes, three fixes in `drawSysHud`: (1) slots are still found nearest-first
+  (the stack rule of 17.09), but the overlap nudge and the draw now go in key order, so two chips whose
+  distances cross no longer swap who yields; (2) after an edge-change fade the chip lit up on its slot and
+  then stood on it while the stack slot moved — it now glides after it; (3) a yield to the other side of
+  a neighbour (a plate-sized step) is hidden like an edge change (`st.jf`: out at the old place, in at the
+  new; a chip lighting up after a yield may yield again and hides again). Green at 760 and 390; the gate
+  was red on the old code. Node 16923, -Full 19196, -Mobile 19148.
+- **Candidate 0.464.0** (26.09): gpu3-rack 725037ad merged (57243be0: belt cockpit and glass on #ovl,
+  LABDOM gone — the wreck suite reads `OVL.lab` now, key `fld.belt.sky`), the warm table re-taken without a
+  diff (43 keys), VER, README and the patchnote.
+- **Final glow source: stations** (26.09): the paint term of fsDown (`c*c`) is weighed by
+  `1-(1-.5·silK)·scene·(1-S.a)`: every lit hull (the `hull` blend leaves scene alpha 0 under it — stations,
+  barges, pirates, wrecks, fleet) gives its paint nothing, the own ship (circle u.hl) keeps half as in
+  ee46b87. Station lights were already explicit emission (stLamp: paint, core by addition, narrow halo)
+  and baked windows go above the knee through GST's `em`, so they keep their glow. Pair against 45966169,
+  station region at 760: mean L .185 → .168, V>.6 4.5 → 3.0 %, V>.85 1.88 → 1.20 %; solar wings and grey
+  panels lose the milky halo, the white lamp and the red beacon keep theirs. Wrecks: >8 on 0.02 % of pixels.
+  08b 49392 → 49333 bytes.
+- **Final glow source: the hotel facade** (26.09): B.cv is laid with the `hull` blend (colour as `over`,
+  scene alpha to 0), so fsDown takes nothing from the facade paint; the lit windows (B.cl), their light
+  (B.em, B.el by addition) and the neon stay as they were and keep their glow. New warm key
+  `pipe:kit.img|hull` (44). Pair against 96d0506e, hotel region: 760 L .162 → .147, V>.6 4.9 → 4.2 %;
+  390 L .125 → .117, V>.6 3.1 → 2.7 %; the pink haze on the towers is gone, windows, sign and pier lamps
+  glow as before.
+- **Fleet lights with the flame** (26.09): pair 760/390 against 45966169, three fleet ships (patrol,
+  ferry, tug) around the own ship on thrust. The flame stays the brightest thing, fleet lights read as
+  narrow dots with their halo (explicit emission since 7083ac58), fleet hulls lost the paint haze like
+  the stations. Line closed in PLAN.
+- **Drone captions off #c** (26.09, 09c9ea77): the Stage 1 gate on the tour (scratch counter over
+  copyExternalImageToTexture / writeTexture / submit per step) found drones uploading #c on 1080 of 1080
+  flight frames — `drawDronesSystem` wrote captions with fillText; now `domLabel`, the shadow a second label.
+  The tour stand's drones had `res:"ore"` (no such resource): the earlier census crashed the frame there.
+  G4d merged (5bed781b).
+- **Candidate 0.465.0** (26.09): the glow source (stations, facade), fleet+flame closed, drone captions, G4d.
+  Next: the Stage 1 gate in numbers — extra submits on some run frames (planet, rescue, dock: 5 of 1080).
+- **Stage 1 gate on the tour** (26.09): `docs/tour.py` (+ `tour.js`) — ten flight items, uploads 0, own submits
+  1, crashes 0; bake submits counted apart. Two to four bakes shared a frame: the scheduler let small bakes
+  through by pixels, the hotel's glow was two bakes a step, neon three (`neonBake`), the belt atlas two. Now
+  `17a0` starts no step once a bake went this frame (`PB_B0`/`GPU.bakeN`), glow is two steps (`B.e0`), neon
+  bakes ahead in steps (`neonJob`/`neonAhead`, hotel and billboard), `ckgLab` is its own step. Tour: bake
+  frames 29 of 10 000 (0.29 %), at most one a frame; dock alone 7 of 680 (a hotel relight is seven bakes).
+  Next: hull material + planet occluders.
+- **Planet occluders** (26.09): planets and moons go into `GPU.oc` (`sysOcPush`, 17-mode-system) — the shadow is
+  the ray from the star through the body; a body off screen is pushed when its ray, widened by 2r, crosses the
+  screen, moved along the ray to that edge (f16 holds ±65504; the shadowless disk stays off screen); 15 slots,
+  the 16th for the station. Pairs (scratchpad `pair_oc_*_760.png`, 0e3927ef | now): behind a planet the four
+  ships go down to the .4 floor, at the shadow's edge a penumbra across the group, toward the star unchanged
+  (0.01 % > 8), at ×3.5 a planet off the left edge still shades. Suite «свет: планета тенит корабли…».
+  Next: the hull material bake.
+- **Hull material** (26.09, `08cd-gpu-mat.js`): `gpuBake(…,{mat:t})` (t = master texels per hull unit) adds
+  one pass in the bake's own encoder (no extra submit) into a half-size rgba16f with mips: rg the broad normal
+  (alpha slopes at ±3 and ±8 units, as GST had), ba the fine relief — paint luminance at ±¾ unit ×
+  `GC_MAT_K`=2 plus the glass dome at ±2/±4 units. GST reads it as t3 (flag 8) and puts ba into the fine
+  normal, so seams and panels catch the star's rim, not only the silhouette; bank and scale stay in the shader.
+  Per pixel: 20 normal/glass samples → 5. Memory: +½ of the master (2 B/px vs 4). Own hulls (17c2) and fleet
+  `cnA` (12ai1) carry it; other masters fall back to the old path. K=.35/1.2 invisible (hull mode lights flat),
+  K=4 speckles like tin. Pairs at 760 vs 71561077 (scratchpad `pair_oc_*_760.png`, crops `mat_*`): toward
+  the star max|Δ| 182, 0.07 % > 8 — panel seams and the canopy glint; away 140 / 0.04 %, in a planet's shadow
+  149 / 0.04 % — nothing lights where no light is. Tour GREEN, -Browser green.
+- **Hull material: emission and gloss masks, every lit master** (26.09): the material texture is twice as
+  wide — left half the relief as above, right half masks × coverage (a = coverage, GST divides): r emission,
+  g metal, b glass, from master level 0 (4 subsamples a texel), mipped as averages, so far off a lamp does
+  not drown in the paint around it. Emission = a saturated or white spot BRIGHTER than its ~3-unit
+  surround (master level l+3): a paint stripe is darker than the grey plating, so it is not a lamp — the
+  0.465.0 pink-stripe case — while windows and nav lights are, now on own hulls too (hull mode glows by
+  the mask only). Carriers: own hulls, fleet `cnA`, pirates (12i), barges (12l), «Сорока» (12v), the
+  station's bottom layer and spinning parts (17c3; upper layers light by the shared master t2, no
+  material). Memory: +1× the master (4 B/px). Pairs at 760 vs 58ffd4ca: ships + pirate + barge toward the
+  star 191 / 0.16 %, away 129 / 0.11 %, in a planet's shadow 173 / 0.10 %; station toward 200 / 0.44 %,
+  away 198 / 0.42 %. Barge containers stop glowing as lamps in the dark and take the star's rim when lit;
+  pirate and station panels read in relief, station lamps are crisper, own amber lights glow. New browser
+  suite «материал корпуса: пираты, баржи, свои…». Tour GREEN, -Browser green.
+  Next: merge origin/main once 0.466.0 is out, then candidate 0.467.0 (+ gpu2-lit).
+- **0.467.0 cut on `rel-0.467`** (26.09) from 15d24597 (gpu up to 6e775fb9 + origin/main 0.466.0), without
+  gpu2-lit: its star disc drops the «система» golden contrast .88 → .69 (a real loss, LOOK_BASE kept) and moves
+  5.5–5.9 % of the blocks; the disc, the ring and gpu3-rack go to 0.468.0. Node, -Full -Jobs 3, -Mobile green.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

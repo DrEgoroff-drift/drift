@@ -2,7 +2,9 @@
    test.ps1 -Accept берёт её из набора «конвейеры: после прогрева полёт не компилирует». */
 const GPU_PIPE_KEYS=[
   "gc.blur",
+  "gc.mat",
   "gc.mip",
+  "gc.mip16",
   "gc:clp",
   "gc:cov|destination-out",
   "gc:cov|multiply",
@@ -41,6 +43,7 @@ const GPU_PIPE_KEYS=[
   "pipe:gsy.orb|over",
   "pipe:gtr|add",
   "pipe:kit.img|add",
+  "pipe:kit.img|hull",
   "pipe:kit.img|over",
   "pipe:kit.shp|add",
   "pipe:kit.shp|over"

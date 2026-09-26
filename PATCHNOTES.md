@@ -6,6 +6,84 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.467.0 - ships in a planet's shadow, hulls of real material
+
+- **A planet shades ships** (GPU-1): fly behind a planet and your ship and everyone near it go dark,
+  with a soft edge where the shadow begins. A planet just off the screen still casts its shadow in.
+- **Hulls are baked with a material once** (GPU-1): panel seams and plates catch the star's edge instead
+  of only the outline, and cockpit glass glints. Lamps are told from paint by being brighter than the
+  hull around them, so red trim no longer glows while windows and nav lights do. Pirates, barges, the
+  wanderer's sail-ship and the station get the same material; barge containers stop shining like lamps
+  in the dark. The video card now does 5 lookups a pixel for this instead of 20.
+- **No hitch when a bright building comes into view** (GPU-1): the hotel, neon signs and the belt's
+  labels are now baked one piece per frame.
+
+## 0.466.0 - the pirate base as a building, sparks without a rainbow, the last 2D layer gone
+
+- **The pirate base is a building now** (GPU-2): instead of a red pentagon mark it is a low five-sided
+  hall of dark metal with a pyramid roof, a mast and four docking trusses with pods. Each face catches the
+  star on its own, so the facets stay apart even in shadow. Red is kept for the lights: corner beacons,
+  a thin stripe under the eaves, the pod lamps. The windows are scattered, some dark. The name below it
+  is red again, only quieter.
+- **Explosion sparks fly unevenly** (GPU-2): a few long heavy streaks at their own angles and many short
+  ones, instead of an even star. Each streak thins and fades toward its tail like a small comet. The
+  cyan-and-crimson fringe that thin sparks got from the shock wave is gone.
+- **The last 2D interface layer is gone** (GPU-3): the thumb sticks and the «НАБЛЮДЕНИЕ» watch line are
+  drawn by the video card. The watch line now sits above the pads and the console; before, the round
+  «Цель» pad covered its end on the phone. On the phone this frees about 12 MB of video memory.
+- **The instrument pod is drawn by the video card** (GPU-3): the gauges and the paper tape in the
+  instrument row go out with the frame instead of as a separate 2D canvas. The pod is still redrawn only
+  when a needle or the tape moves, and never while a screen is open.
+
+## 0.465.0 - the pirate base is back, hulls stop glowing from their paint
+
+- **The pirate base is visible again** (GPU-2): on 0.464.0 it was still drawn in 2D under the video card's
+  frame and could not be seen at all. It is drawn in the scene now, with a thread of star colour on the
+  edges that face the star and its name on the label layer; the flight gate has a «пиратская база» scene.
+- **The other ships are lit by the star** (GPU-2): a fleet ship that fades (the lane rush, docking) stays
+  the same lit ship instead of dropping to a flat picture; «Сорока»'s hull is one baked, lit body instead of
+  about 150 flat shapes, its gondola lamp on top.
+- **Hulls no longer glow from their paint.** The glow around stations, barges, pirates, fleet ships and
+  the hotel's facade came from their grey and white paint, a milky haze over the metal; now only what is
+  lit glows — lamps, windows, the sign, the flame. Your own ship keeps half, as before. A station reads
+  about 9 % darker and crisper, the hotel's towers lose their pink haze.
+- **Drone captions** are drawn on the label layer: in a system with drones the old 2D captions made the
+  frame upload a whole layer every frame.
+
+## 0.464.0 - the rack and the belt cockpit on the video card, wrecks as hulls
+
+- **The instrument rack and «Глобус» are drawn by the video card** (GPU-3): the still parts are one bake,
+  the needles, carriages, pens and glyphs a queue on the interface layer — 2D on the HUD canvas went from
+  1887 calls a frame to 0. The bake is split into parts over the opening frames: the worst first-open
+  frame is 12.5–18.8 ms at 760 and 18.2–19.3 ms on a 390 phone (was 48 / 56.5 ms); opening it again bakes
+  nothing (4 ms). On the phone every channel keeps its number next to the dot.
+- **The belt cockpit and its glass are drawn by the video card** (GPU-3): frame, panel, tape and glass HUD
+  are baked in four bands by the oven, one step a frame, and fade in over 10 frames; the live parts are
+  interface-layer primitives. The belt sky no longer compiles on the entry frame (key 43 in the warm
+  table): the worst entry frame is 20.6 ms at 760 and 17.8–18.4 ms at 390 (was 26.5 / 25.7 ms), and under
+  load 24–26 ms instead of 55–75.
+- **A wreck after a battle is the ship that died**, not a dark disc: its own broken hull, charred darker
+  than a live ship, two torn breaches whose rims smoulder, a thin haze of smoke, lit by the star and slowly
+  tumbling. The «КОРПУС» label became an edge chip for the nearest wreck off screen; a tap sends the
+  autopilot there.
+- **Edge chips no longer jump.** A visible chip never moves faster than its glide speed: chips are laid
+  and nudged in a fixed order, a chip that changed edges glides after its slot, and a chip that has to
+  hop past a neighbour fades out and back in instead of teleporting.
+
+## 0.463.0 - the billboard and the Cheburek stall leave 2D
+
+- **The billboard and «Чебуречная» are drawn by the video card** (GPU-3): the ПЛАН panel, its running line
+  and the stall's boat, light and sign are GPU bakes, made ahead while they are still off screen — flying
+  past the billboard creates 3 textures in the frame instead of 19–22, none of them its own. The picture is
+  the same (at most 13/255, 2 pixels over 8).
+- **A station never loses its body.** Its master is baked one layer per frame; if the text atlas was reset
+  in between, the next layer bound a destroyed page and came out transparent. The body is now recorded
+  again when the atlas changes.
+- **Less work for a planet with cities.** The city lights looked for their latitude windows every frame (up
+  to 63 000 tests); the windows are now kept until the light moves on or the star side changes.
+- **A frame-sized texture nobody wrote is gone** (the old interface target): 2.6 MB less video memory on a
+  phone, 32 MB at 4K.
+
 ## 0.462.0 - the WebGPU line meets the phone speed-up
 
 - **0.461.0 merged into the WebGPU line** (`gpu`): orbits as a band and fields reading `fu.v[k]` in place
@@ -13,6 +91,35 @@ could ever save.
   `gpuPipeline(key, recipe)`, and `gpuInit` warms the key table behind the title with
   `createRenderPipelineAsync`; the start buttons wait for it at most 2.5 s. The station/pirate light's
   unsharp mask (flag 2/4 in `17c`) keeps its 25.09 form, rewritten to `fu.v[3]`.
+- **Flight HUD redrawn** (`gpu-hud`): sentence case, one warm accent, fuel and hull set large; the rail
+  buttons and prompts no longer touch.
+- **Pipelines are ready before the first flight.** A detector flies every scene that used to compile a
+  pipeline mid-flight (hotel, billboard, fleet, pirates, dock, the wall at the system's edge, the shield at
+  x1.5, a real first flight with pirates and allies) and fills the warm table `08b1` (40 keys). After load
+  no pipeline is created lazily.
+- **No hitch at the hotel.** The texture pool keeps its 1024² bake set, allocated and cleared behind the
+  title; big prebakes go one per frame under a GPU budget (`PB_PX`); the 512×128 shadow set is warm too.
+  On the S23 with a cold shader cache (DPR 1.5, 30 s of flight) 99.94 % of frames fit 16.7 ms and none
+  reaches 50 ms; before, the approach made one 67 ms frame.
+- **A failing frame no longer takes the video card down.** An exception while the world is drawn drops that
+  frame and goes to the frame guard («СБОЙ · …»); only a lost device or an API error drops the device, and
+  the art caches (hulls, fleet, pirates, barges, lit sprites) are baked again on the new one. If the card
+  stops answering mid-game, the notice says so and that the save is intact, instead of blaming the
+  browser. The warm-up gate is armed from load, so a start pressed before the device exists waits too.
+- **Video memory stays flat over a long game.** Art caches have caps (fleet 24, pirates 24, barges 12,
+  hulls 8, bakes 32; a system holds at most 7, 3, 1 and 1). A bake dropped while still in use is baked
+  again where it is drawn.
+- **The searchlight is a field**, not a 1000-px multisampled bake; the picture is the same (6/255 at most).
+- **iPhone: reversed `smoothstep`.** Eleven calls had their edges the wrong way round, which WGSL leaves
+  undefined and Metal draws wrong; they read `1.-smoothstep(b,a,x)` now, and a Node test scans the game
+  for new ones.
+- **Watching a crewmate is drawn by the video card**: the view makes no 2D calls; your ship's barrels and
+  launcher are GPU bakes, text widths come from `gcMeasure`.
+- **The ground has its grain again on the landing and the surface.** Since the planets moved to the video
+  card only the system view stepped the ground material, so after landing the tile stayed at its first row.
+  The material now bakes itself a portion per frame wherever it is used; the planet frame makes no 2D calls.
+- README and the site name the WebGPU requirement and the browsers; the key list on the mechanics page
+  says Space for the action and G for a missile.
 
 ## 0.461.0 - `under` on the phone: 3.3 → 2.2 ms, the picture the same
 
