@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6491
+Файлов: 641 · символов верхнего уровня: 6495
 
 ## СИМВОЛЫ
 
@@ -29,7 +29,7 @@ $menu                        src/15-input.js:243
 $msg                         src/27z-telemetry.js:43
 $msl                         src/27z-telemetry.js:47
 $nav                         src/27z-telemetry.js:45
-$opts                        src/26-ui-station.js:683
+$opts                        src/26-ui-station.js:684
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
@@ -895,8 +895,8 @@ LANE_GLOW                    src/17g-sys-lane.js:107
 LANE_GLOW_SP                 src/17g-sys-lane.js:93
 LANE_Q_CLS                   src/17g-sys-lane.js:18
 LANE_Q_MAX                   src/17g-sys-lane.js:17
-LANE_RU                      src/26-ui-station.js:389
-LANE_RX                      src/26-ui-station.js:385-388
+LANE_RU                      src/26-ui-station.js:390
+LANE_RX                      src/26-ui-station.js:386-389
 LANE_W                       src/17g-sys-lane.js:14
 LAST_RUN_DAY                 src/12k-letters.js:40
 LATE_CAP                     src/11aq-late.js:30
@@ -960,6 +960,7 @@ MAKER_G                      src/28y-look.js:318
 MAKER_KEYS                   src/03a-hull-maker.js:73
 MAKER_PX                     src/28y-look.js:313
 MAPBG                        src/17z-map-backdrop.js:14
+MAP_BORDER_NB                src/18b-map-hold.js:81
 MAP_BOX                      src/18-mode-map.js:28
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
@@ -1206,6 +1207,7 @@ POST_V                       src/25g-postcard.js:32
 POST_WHAT                    src/11e-post.js:19
 POST_WHERE                   src/25g-postcard.js:113
 POWERS                       src/12al-powers.js:18-85
+POWER_GLYPH                  src/12al-powers.js:105
 POWER_KEYS                   src/12al-powers.js:86
 POW_COUP                     src/12b0-fx-pow.js:10
 POW_PURGE                    src/12b0-fx-pow.js:11
@@ -1442,7 +1444,7 @@ SCRIP_VISIT                  src/12u-scrip.js:31
 SD_KIND                      src/12tb-settle-draw.js:33-37
 SD_MAN                       src/12tb-settle-draw.js:31
 SEAT                         src/27j-console.js:40
-SEC_CAP                      src/26-ui-station.js:359
+SEC_CAP                      src/26-ui-station.js:360
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
 SEC_KING_LIVE                src/12b2-fx-sec.js:22
@@ -1561,7 +1563,7 @@ STRIPS_MAX                   src/11b-speech.js:191
 STUN_TIME                    src/13a-guns.js:27
 ST_BY                        src/17c-system-draw.js:107
 ST_EMIT                      src/17c3-station-live.js:13
-ST_GROUPS                    src/26-ui-station.js:131-138
+ST_GROUPS                    src/26-ui-station.js:132-139
 ST_MODULES                   src/17a-station-mod.js:24-39
 ST_MOD_FILL                  src/17a-station-mod.js:91
 ST_REC                       src/17c3-station-live.js:12
@@ -1751,7 +1753,7 @@ WORLD_SUB                    src/08-state.js:202
 WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57-73
 WX_PLANES                    src/19d-weather.js:98-103
-YALTA_R                      src/12al-powers.js:159
+YALTA_R                      src/12al-powers.js:163
 YARD                         src/26f-yard-gpu.js:6
 YARD_CHANCE                  src/04b-fleet.js:162
 ZAP_COOL                     src/23-mode-dig.js:255
@@ -2145,7 +2147,7 @@ bmgrRefuses                  src/21b2-base-mgr.js:86-92
 bmgrSilent                   src/21b2-base-mgr.js:184-187
 bmgrStep                     src/21b2-base-mgr.js:140-178
 bmgrWorkMul                  src/21b2-base-mgr.js:129-132
-boardLanes                   src/26-ui-station.js:390-416
+boardLanes                   src/26-ui-station.js:391-417
 bodyInSystem                 src/16-flight.js:103-112
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
@@ -2466,7 +2468,7 @@ clockSet                     src/01-core.js:92
 clockWhy                     src/11d-clocks.js:94-100
 closeBarge                   src/12l-barge.js:667-674
 closeDeal                    src/27n-ui-deal.js:204
-closeStation                 src/26-ui-station.js:195-219
+closeStation                 src/26-ui-station.js:196-220
 cloudBoot                    src/14a-cloud.js:172-183
 cloudBusy                    src/14a-cloud.js:79
 cloudCall                    src/14a-cloud.js:72-76
@@ -3052,7 +3054,7 @@ econLine                     src/12ax-fx-econ.js:75-88
 econPriceMul                 src/12ax-fx-econ.js:66-73
 econTierBonus                src/12ax-fx-econ.js:44
 econVeinHere                 src/12ax-fx-econ.js:38-43
-el                           src/26-ui-station.js:289
+el                           src/26-ui-station.js:290
 endPtr                       src/15-input.js:428-433
 energyCap                    src/05c-arms.js:166
 energyRegen                  src/05c-arms.js:167
@@ -3244,7 +3246,7 @@ foeFlak                      src/13a-guns.js:405-429
 foeGun                       src/13d-loadout.js:40-48
 foeMineLay                   src/13d-loadout.js:132-141
 foeTetherTick                src/13d-loadout.js:145-159
-foldBlock                    src/26-ui-station.js:336-351
+foldBlock                    src/26-ui-station.js:337-352
 folkAll                      src/11ah-offer.js:82-85
 folkHere                     src/12u-folk.js:91-97
 folkLeave                    src/12u-folk.js:115
@@ -4311,6 +4313,7 @@ makerWidth                   src/03a-hull-maker.js:423-450
 mapAddrBox                   src/18a-map-addr.js:224-240
 mapBack                      src/18-mode-map.js:110-121
 mapBandPaint                 src/17z-map-backdrop.js:36-77
+mapBorderEdge                src/18b-map-hold.js:86-109
 mapBox                       src/18-mode-map.js:29
 mapCell                      src/18-mode-map.js:87
 mapCellXY                    src/18a-map-addr.js:52
@@ -4321,8 +4324,8 @@ mapFont                      src/18-mode-map.js:42
 mapGoAddr                    src/18a-map-addr.js:212-219
 mapGridDraw                  src/18a-map-addr.js:55-60
 mapGridPaint                 src/17z-map-backdrop.js:108-120
-mapHoldingsDraw              src/18b-map-hold.js:80-184
-mapHoldingsTop               src/18b-map-hold.js:186-226
+mapHoldingsDraw              src/18b-map-hold.js:110-226
+mapHoldingsTop               src/18b-map-hold.js:228-268
 mapHousePatch                src/18b-map-hold.js:31-45
 mapJump                      src/18-mode-map.js:556-564
 mapLayer                     src/18b-map-hold.js:26
@@ -4666,7 +4669,7 @@ openCrewView                 src/27b-ui-crew.js:230-236
 openDeal                     src/27n-ui-deal.js:198-203
 openHq                       src/27c-ui-hq.js:626-631
 openStation                  src/26-ui-station.js:20
-openStationBody              src/26-ui-station.js:21-125
+openStationBody              src/26-ui-station.js:21-126
 openWanderer                 src/24c-mode-wanderer.js:22-41
 opisActs                     src/27j-ui-opis.js:557-567
 opisArmed                    src/27j-ui-opis.js:197
@@ -5033,7 +5036,8 @@ powPurgeOn                   src/12b0-fx-pow.js:42-45
 powScandalOn                 src/12b0-fx-pow.js:54-57
 powSecedeOn                  src/12b0-fx-pow.js:70-74
 powWaveSilent                src/12b0-fx-pow.js:58-64
-powerEmblem                  src/12al-powers.js:106-150
+powerEmblem                  src/12al-powers.js:110-154
+powerGlyph                   src/12al-powers.js:106
 powerHail                    src/12al-powers.js:102
 powerOf                      src/12al-powers.js:87
 powerRu                      src/12al-powers.js:88
@@ -5383,8 +5387,8 @@ renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
 renderStrips                 src/27i-ui-table.js:330-366
-renderTab                    src/26-ui-station.js:474-486
-renderTabBody                src/26-ui-station.js:487-679
+renderTab                    src/26-ui-station.js:475-487
+renderTabBody                src/26-ui-station.js:488-680
 renderThings                 src/27i-ui-table.js:379-404
 rentAi                       src/12f1-mgr-rent.js:23-35
 rentBaseBurning              src/12f1-mgr-rent.js:43-47
@@ -5402,10 +5406,10 @@ repPartMul                   src/12k-rep.js:73
 repRepairMul                 src/12k-rep.js:53
 repShipMul                   src/12k-rep.js:74
 repWord                      src/12k-rep.js:31-35
-repairBtns                   src/26-ui-station.js:272-286
-repairCost                   src/26-ui-station.js:185-194
-repairDo                     src/26-ui-station.js:254-269
-repairQuote                  src/26-ui-station.js:248-253
+repairBtns                   src/26-ui-station.js:273-287
+repairCost                   src/26-ui-station.js:186-195
+repairDo                     src/26-ui-station.js:255-270
+repairQuote                  src/26-ui-station.js:249-254
 resAuto                      src/28-loop.js:263-299
 resEma                       src/28-loop.js:234
 resModeCap                   src/28-loop.js:257-262
@@ -5430,7 +5434,7 @@ rescueSig                    src/16c-rescue.js:556
 rescueSigNow                 src/16c-rescue.js:555
 rescueSync                   src/16c-rescue.js:557-570
 rescueTake                   src/16c-rescue.js:105-146
-resetArm                     src/26-ui-station.js:682
+resetArm                     src/26-ui-station.js:683
 resetWorld                   tests/90-harness.js:238-395
 resize                       src/08-state.js:29-66
 retAll                       src/11s-returners.js:32
@@ -5675,7 +5679,7 @@ seatGpuTick                  src/27j-console.js:41-55
 secBlock                     src/12b2-fx-sec.js:183-208
 secCouponRite                src/12b2-fx-sec.js:146-150
 secHailRangeMul              src/12b2-fx-sec.js:141
-secHead                      src/26-ui-station.js:308-333
+secHead                      src/26-ui-station.js:309-334
 secKingArea                  src/12b2-fx-sec.js:40-45
 secKingCount                 src/12b2-fx-sec.js:47-64
 secKingHere                  src/12b2-fx-sec.js:65-71
@@ -5694,7 +5698,7 @@ secSmugHot                   src/12b2-fx-sec.js:178-181
 secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
-secTidy                      src/26-ui-station.js:360-379
+secTidy                      src/26-ui-station.js:361-380
 sellCargo                    src/12-economy.js:106-131
 sellDroneYield               src/12-economy.js:132-137
 sellQuote                    src/12ab-hold.js:101-110
@@ -5745,7 +5749,7 @@ shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
 shipGearGpu                  src/05c-arms.js:315-335
-shipRow                      src/26-ui-station.js:418-463
+shipRow                      src/26-ui-station.js:419-464
 shipScaleAt                  src/16c-rescue.js:209
 shipScaleCap                 src/16c-rescue.js:208
 shipThumb                    src/26f-yard-gpu.js:7-11
@@ -5885,8 +5889,8 @@ stEmK                        src/17c3-station-live.js:22
 stEmP                        src/17c3-station-live.js:21
 stGet                        src/14-save.js:8
 stGround                     src/17c-system-draw.js:108
-stGroup                      src/26-ui-station.js:140
-stGroupOf                    src/26-ui-station.js:139
+stGroup                      src/26-ui-station.js:141
+stGroupOf                    src/26-ui-station.js:140
 stLamp                       src/17c3-station-live.js:23-28
 stLampRect                   src/17c3-station-live.js:30-42
 stLive                       src/17c3-station-live.js:14-17
@@ -5910,7 +5914,7 @@ stTabLab                     src/26b-ui-station-work.js:307-372
 stTabMarket                  src/26e-ui-station-trade.js:148-249
 stTabMods                    src/26b-ui-station-work.js:105-372
 stTabYard                    src/26e-ui-station-trade.js:250-395
-stTabsHere                   src/26-ui-station.js:141
+stTabsHere                   src/26-ui-station.js:142
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:379-392
 stallWho                     src/28-loop.js:122-130
@@ -6036,7 +6040,7 @@ surveyLegs                   src/12w-survey.js:48-56
 surveyList                   src/12w-survey.js:37-45
 surveyPoint                  src/12w-survey.js:20-34
 swimTestLand                 tests/91zzzc-swim.js:8-27
-syncTabs                     src/26-ui-station.js:142-184
+syncTabs                     src/26-ui-station.js:143-185
 sysDanger                    src/01-core.js:190
 sysEdge                      src/17-mode-system.js:34-40
 sysEntry                     src/17g-sys-lane.js:20-23
@@ -6476,10 +6480,10 @@ wtab                         src/02a-worldmix.js:85
 xpWorth                      tests/91zzzzzm-exploit.js:26-49
 yachtMoraleMul               src/12j-home.js:255-258
 yachtOwned                   src/12j-home.js:248-254
-yaltaAt                      src/12al-powers.js:160-167
-yaltaHere                    src/12al-powers.js:172
-yaltaIs                      src/12al-powers.js:168-171
-yaltaSealed                  src/12al-powers.js:175-179
+yaltaAt                      src/12al-powers.js:164-171
+yaltaHere                    src/12al-powers.js:176
+yaltaIs                      src/12al-powers.js:172-175
+yaltaSealed                  src/12al-powers.js:179-183
 yardCanvas                   src/26f-yard-gpu.js:12-19
 yardDraw                     src/26f-yard-gpu.js:41-54
 yardHide                     src/26f-yard-gpu.js:20
@@ -6870,9 +6874,9 @@ zoomTo                       src/15-input.js:350
 ## src/12ak-locker.js · 7 КБ
   · ящик: камера хранения транспортной конторы домов (M345):1
 
-## src/12al-powers.js · 11 КБ
+## src/12al-powers.js · 12 КБ
   · шесть держав (M369, §7.1):1
-  · «Ялта» (M369, D12):151
+  · «Ялта» (M369, D12):155
 
 ## src/12al1-toponym.js · 2 КБ
   · названия по хозяину (M489, DESIGN-birchpunk §2):1
@@ -7331,7 +7335,7 @@ zoomTo                       src/15-input.js:350
 ## src/18b-geology.js · 16 КБ
   · геология:1
 
-## src/18b-map-hold.js · 13 КБ
+## src/18b-map-hold.js · 16 КБ
   · владения на карте (M348):1
 
 ## src/18c-chunks.js · 11 КБ
@@ -7676,8 +7680,8 @@ zoomTo                       src/15-input.js:350
 
 ## src/26-ui-station.js · 49 КБ
   · станция:1
-  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):303
-  · настройки:681
+  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):304
+  · настройки:682
 
 ## src/26a-ui-station-home.js · 21 КБ
   · станция: вкладка «дом и базы»:1

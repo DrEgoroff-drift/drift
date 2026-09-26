@@ -739,7 +739,7 @@ function drawSysHud(zx,zy,sh,sys,U){
      следующее действие; имена — как написаны, регистр как в предложении */
   const marks=[{x:0,y:0,c:"#c3d0d8",l:"Звезда",t:{kind:"star"},k:"star"}];
   if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
-    l:sys.station.name,t:{kind:"station"},k:"station"});
+    l:(powerGlyph(chronOwnerKey(G.sx,G.sy))+" "+sys.station.name).trim(),t:{kind:"station"},k:"station"});   /* знак хозяина земли (M458) */
   {
     let np=null,nd=1e18;
     for(const p of sys.planets){

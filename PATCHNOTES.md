@@ -38,6 +38,14 @@ could ever save.
   at r = 40, Ялта (where its stamp is), your matches and rumour areas. A tap on the disk takes the map there at
   zoom 3; the prompt line says so. The overview finds where to look; it does not jump.
 
+- **M458: borders on the map in the owner's pattern.** Where a sector's owner differs from its neighbour's, each
+  side draws its half of the edge just inside its own cell, in its own pattern: ГЛАВТРАССА a chain of tiny stars,
+  Компания a thin line with rings, Орднунг a precise dash with ticks (every third one long), Коммуна a wave,
+  Рассвет uneven dashes with small suns, Хай-Фронт dots. Two powers meeting read as two patterns side by side;
+  against the wild, one. Where they are at war the red front stays instead. Far out, where no pattern fits, a
+  thin line in the owner's colour. The emblem chip grows at near zoom to a readable 14–18 px. The station's
+  compass chip and the station header carry the land owner's glyph (★ ◎ ▦ ∿ ☼ ●). The picture is a draft.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -45,6 +53,10 @@ could ever save.
 - M454: the builder is the owner at the first look of the session. A station keeps no memory of who built it,
   so after a conquest it redraws as the new owner's on the next session. The other reading, a station
   that stays the loser's until rebuilt, needs a saved field.
+- M458: the glyph beside the station name is the land owner's, not the builder's; after M454 they agree four
+  times in five. The glyphs are Unicode text (★ ◎ ▦ ∿ ☼ ●), so their look depends on the device font; the
+  canvas emblem stays the map's own. Орднунг's «numbered» dashes are ticks, not digits: digits at 9 px on an
+  edge were noise in the draft.
 
 ## 0.478.0 - the album on the engine
 

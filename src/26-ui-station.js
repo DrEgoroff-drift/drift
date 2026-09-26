@@ -99,7 +99,8 @@ function openStationBody(){
   {
     const k=document.getElementById("stKind");
     const flag=(typeof occPowerHere==="function"&&occPowerHere())?" · ФЛАГ СМЕНИЛСЯ":"";
-    const short=G.st.kind+" · система "+G.sys.name+flag;
+    const gl=powerGlyph(chronOwnerKey(G.sx,G.sy));   /* знак хозяина земли у имени системы (M458) */
+    const short=G.st.kind+" · система "+(gl?gl+" ":"")+G.sys.name+flag;
     k.dataset.short=short;k.dataset.full=short+"\n"+stMore;
     k.classList.remove("more");
     /* раскрытие — чип, а не слово: «ещё ▾» тусклым 9 px читалось частью
