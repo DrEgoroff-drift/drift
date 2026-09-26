@@ -96,6 +96,9 @@ struct V{@builtin(position) p:vec4f,@location(0) uv:vec2f};
    рисован красками экрана, и лампа, огонь, фонарь по каналам выцветали в белый (Контроль
    26.09, пять сцен). Оттенок держится; белеет только то, что светит много выше единицы */
 fn tone(c:vec3f)->vec3f{
+  /* дорога (u.dn.w, gpuWorld clip): у main её свет — 2D «lighter», канал упирается в единицу
+     сам. Плечо брало у ярких жгутов на ходу до 9 % (Контроль 26.09: «не ниже main») */
+  if(u.dn.w>.5){return min(c,vec3f(1.));}
   let K=.75;let x=max(c-vec3f(K),vec3f(0.));
   let pc=min(c,vec3f(K))+(1.-K)*(vec3f(1.)-exp(-x/(1.-K)));
   let m=max(c.r,max(c.g,c.b));
@@ -517,8 +520,9 @@ function gpuHueFor(m){return GPU_TONE_FILM.has(m)||GPU_FRONT_LIKE.has(m)?0:1;}
    как в main»), а с весом сцены свечение серило бы чёрное хода. Дом у main — тоже передний
    слой: с весом сцены свечение клало на хозяина +25 вместо +11 (торс +9 %, Контроль 26.09).
    Санаторий у main — тоже 2D: с весом сцены бумага щита светилась лампой, мелкие строки
-   тонули (штрих «утро» 133 против 90 у main на 390), кадр выходил на 13 % светлее */
-const GPU_FRONT_LIKE=new Set(["dig","cave","homein","spa"]);
+   тонули (штрих «утро» 133 против 90 у main на 390), кадр выходил на 13 % светлее. Зимовка у
+   main — 2D целиком: с весом сцены тёплая пелена белила комнату (+27 % к main, окно S .76) */
+const GPU_FRONT_LIKE=new Set(["dig","cave","homein","spa","winter"]);
 function gpuUni(){
   const a=GPU.UA,P=GPU.post;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
@@ -528,7 +532,9 @@ function gpuUni(){
   const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
   const Q=GPU.lens;a[56]=Q?Q.x:0;a[57]=Q?Q.y:0;a[58]=Q?Q.k:0;a[59]=Q?Q.r:0;
   a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
-  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);a[66]=GPU_FRONT_LIKE.has(G.mode)?1:0;
+  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);
+  /* кадр дороги открывается поверх любого режима: G.mode под ним — не его сцена */
+  a[66]=!P.clip&&GPU_FRONT_LIKE.has(G.mode)?1:0;a[67]=P.clip||0;
   for(let i=0;i<8;i++)for(let j=0;j<8;j++)a[68+i*8+j]=i<nd?D[i][j]:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
@@ -617,8 +623,9 @@ function gpuManual(draw){
 }
 /* мир дорисован: передний слой — в текстуру, свечение — в четверть кадра.
    Дальше кадр рисует интерфейс — на свой слой, без свечения и зерна */
-function gpuWorld(k,grain,vig){
+function gpuWorld(k,grain,vig,clip){
   GPU.wDone=true;
+  GPU.post.clip=clip?1:0;                  /* срез вместо плеча — кадр дороги (tone) */
   try{
     if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
     if(GPU.overPass){GPU.overPass.end();GPU.overPass=null;}

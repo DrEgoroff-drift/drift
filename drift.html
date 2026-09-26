@@ -10497,6 +10497,9 @@ struct V{@builtin(position) p:vec4f,@location(0) uv:vec2f};
    рисован красками экрана, и лампа, огонь, фонарь по каналам выцветали в белый (Контроль
    26.09, пять сцен). Оттенок держится; белеет только то, что светит много выше единицы */
 fn tone(c:vec3f)->vec3f{
+  /* дорога (u.dn.w, gpuWorld clip): у main её свет — 2D «lighter», канал упирается в единицу
+     сам. Плечо брало у ярких жгутов на ходу до 9 % (Контроль 26.09: «не ниже main») */
+  if(u.dn.w>.5){return min(c,vec3f(1.));}
   let K=.75;let x=max(c-vec3f(K),vec3f(0.));
   let pc=min(c,vec3f(K))+(1.-K)*(vec3f(1.)-exp(-x/(1.-K)));
   let m=max(c.r,max(c.g,c.b));
@@ -10918,8 +10921,9 @@ function gpuHueFor(m){return GPU_TONE_FILM.has(m)||GPU_FRONT_LIKE.has(m)?0:1;}
    как в main»), а с весом сцены свечение серило бы чёрное хода. Дом у main — тоже передний
    слой: с весом сцены свечение клало на хозяина +25 вместо +11 (торс +9 %, Контроль 26.09).
    Санаторий у main — тоже 2D: с весом сцены бумага щита светилась лампой, мелкие строки
-   тонули (штрих «утро» 133 против 90 у main на 390), кадр выходил на 13 % светлее */
-const GPU_FRONT_LIKE=new Set(["dig","cave","homein","spa"]);
+   тонули (штрих «утро» 133 против 90 у main на 390), кадр выходил на 13 % светлее. Зимовка у
+   main — 2D целиком: с весом сцены тёплая пелена белила комнату (+27 % к main, окно S .76) */
+const GPU_FRONT_LIKE=new Set(["dig","cave","homein","spa","winter"]);
 function gpuUni(){
   const a=GPU.UA,P=GPU.post;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
@@ -10929,7 +10933,9 @@ function gpuUni(){
   const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
   const Q=GPU.lens;a[56]=Q?Q.x:0;a[57]=Q?Q.y:0;a[58]=Q?Q.k:0;a[59]=Q?Q.r:0;
   a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
-  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);a[66]=GPU_FRONT_LIKE.has(G.mode)?1:0;
+  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);
+  /* кадр дороги открывается поверх любого режима: G.mode под ним — не его сцена */
+  a[66]=!P.clip&&GPU_FRONT_LIKE.has(G.mode)?1:0;a[67]=P.clip||0;
   for(let i=0;i<8;i++)for(let j=0;j<8;j++)a[68+i*8+j]=i<nd?D[i][j]:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
@@ -11018,8 +11024,9 @@ function gpuManual(draw){
 }
 /* мир дорисован: передний слой — в текстуру, свечение — в четверть кадра.
    Дальше кадр рисует интерфейс — на свой слой, без свечения и зерна */
-function gpuWorld(k,grain,vig){
+function gpuWorld(k,grain,vig,clip){
   GPU.wDone=true;
+  GPU.post.clip=clip?1:0;                  /* срез вместо плеча — кадр дороги (tone) */
   try{
     if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
     if(GPU.overPass){GPU.overPass.end();GPU.overPass=null;}
@@ -106399,7 +106406,11 @@ function drawRoad(ts){
     }
   }
   c.restore();
-  if(gOn){gpuWorld(ROAD_GLOW,true,true);gpuPresent();}
+  /* без виньетки: у дороги её не было и в 2D (main), а свет здесь живёт у нижних углов —
+     виньетка кадра гасила сияние на 9 % на столе и на 13 % на телефоне (Контроль 26.09:
+     «главный кадр экрана — яркость сияния не ниже main»); и без плеча тона — срез по каналу,
+     как у 2D main (08b tone) */
+  if(gOn){gpuWorld(ROAD_GLOW,true,false,true);gpuPresent();}
 }
 /* полный экран (M168k): обвязка браузера съедала седьмую часть экрана у режима,
    который стоит в держателе весь путь. Жест уже есть — нажатие «РАЗРЕШИТЬ
@@ -106494,7 +106505,10 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let w=vec2f(rsF(q+vec2f(t*.021,-t*.013)),rsF(q*1.3+vec2f(-t*.017,t*.011)+5.2));
     let n=rsF(q*1.1+w*1.7);
     let fall=1.-smoothstep(0.,1.,d+(w.x-.5)*.45);
-    let dens=fall*fall*(.25+1.55*n*n);
+    /* ×1.5: облако спадает круче круга main, и света в нём выходило 0.6 от прежнего пятна
+       (зелёное справа от корпуса на 390 — −27 %). ×1.6 вернуло бы весь свет main, но у дороги
+       теперь есть свечение кадра, а у main его не было: на ходу небо выходило на 13 % светлее */
+    let dens=fall*fall*(.375+2.325*n*n);
     let l=mix(.30,C.z,exp(-d*d*3.));
     col=col+rsHsl(C.x,C.y,l)*B.w*dens;
   }
@@ -106714,7 +106728,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   var a=lift*fu.v[1].z*max(s2,0.);
   /* рябь от верхов — быстрая и мелкая, только по краю света */
   a=a*(1.+fu.v[1].w*sin(u*41.+fl*8.5)*(1.-vt));
-  /* густое светит выше единицы: плечо кадра (08b) его сожмёт, свечение даст ореол */
+  /* густое светит выше единицы: кадр дороги режет канал в единицу, как 2D main (08b tone,
+     clip), а свечение даёт ему ореол */
   a=clamp(a,0.,1.)+max(a-.85,0.)*.9;
   /* цвет ведёт сам варп — пятна тона текут вместе со светом; место по ширине
      только подмешивается */
@@ -106748,8 +106763,9 @@ function roadBloom(pass,W,H,hue,en,bd){
    градиентами, сияние — циклом по пикселям (27lb), всё без свечения и зерна.
    Теперь кадр дороги — обычный кадр видеокарты (08b): gpuFrame → под всем 2D
    небо (27la) и поле света с гашением низа (27lb) → корпус, шлейф и монеты 2D
-   на #c → числа в очередь слоя #ovl (roadOvl) → gpuWorld (свечение, зерно,
-   виньетка; слой #ovl сводится в нём же) → gpuPresent. gpuOver не нужен ни
+   на #c → числа в очередь слоя #ovl (roadOvl) → gpuWorld (свечение и зерно; без
+   виньетки и без плеча тона — канал режется в единицу, как у 2D main; слой #ovl
+   сводится в нём же) → gpuPresent. gpuOver не нужен ни
    разу: одна загрузка #c на кадр.
 
    Экран дороги занимает всё: `body.road > *:not(#roadwin){display:none}`
@@ -111672,8 +111688,20 @@ fn trap(p:vec2f,top:f32,bot:f32,cx0:f32,w0:f32,cx1:f32,w1:f32,soft:f32)->f32{
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let t=fu.v[0].x;let man=fu.v[0].y;let flo=fu.v[0].z;let Ht=fu.res.w;
   let WARM=vec3f(1.,.659,.345);let LAMP=vec3f(1.,.878,.659);let COLD=vec3f(.502,.659,.8);
-  var c=vec3f(0.);
-  /* печь: огонь за дверцей — языки вверх, и его тепло */
+  /* что светит само (огонь за дверцей, окно) — сложением; тёплое, что
+     ложится на комнату (отсвет печи, конус лампы, пятна на полу), — краской поверх, как у main
+     (source-over): сложение поднимало светлое к белому, и тёплая дымка белила комнату
+     (Контроль 26.09: «свет должен быть цветным, а не белёсым», S .84 против main) */
+  var ad=vec3f(0.);var oc=vec3f(0.);var oa=0.;
+  /* окно: холод на полу и на стене вокруг — у main тоже сложением */
+  let w=fu.v[4];
+  let wb=w.y+w.w;
+  let tr=trap(p,wb,flo+Ht*.05,w.x+w.z*.5,w.z*.5,w.x+w.z*.5,w.z*.95,w.z*.06);
+  let tv=clamp((p.y-wb)/(flo+Ht*.05-wb),0.,1.);
+  ad=ad+COLD*tr*select(mix(.10,0.,(tv-.55)/.45),mix(.26,.10,tv/.55),tv<.55)*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
+  let wd=length((p-(w.xy+w.zw*.5))/vec2f(w.z*1.5,w.z*1.5));
+  ad=ad+COLD*.13*(1.-smoothstep(.12,1.,wd));
+  /* печь: огонь за дверцей — языки вверх; отсвет — круг в две ростовые меры, как у main */
   let sk=fu.v[1].x;
   if(sk>0.){
     let fl=fu.v[1].y;let dr=fu.v[2];
@@ -111683,39 +111711,36 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       let tongue=smoothstep(.15,.9,(1.-q.y)*.6+n*.7-.15);
       let base=smoothstep(.35,1.,q.y);
       let heat=clamp(tongue*.8+base*.9,0.,1.)*(.55+.45*sk)*fl;
-      c=c+mix(vec3f(.85,.25,.05),vec3f(1.2,.85,.45),heat)*heat*1.1;
+      ad=ad+mix(vec3f(.85,.25,.05),vec3f(1.2,.85,.45),heat)*heat*1.1;
     }
     let sc=fu.v[1].zw;
-    let d=length((p-sc)/(man*vec2f(1.,1.1)));
     let wob=.92+.08*rn(vec2f(t*2.,p.y*.02));
-    c=c+WARM*sk*fl*wob*(.30/(1.+d*d*1.4));
+    var a=.26*sk*fl*wob*max(1.-length(p-sc)/(man*2.),0.);
+    oc=oc*(1.-a)+WARM*a;oa=a+oa*(1.-a);
     let fd=length((p-vec2f(sc.x,flo+Ht*.02))/vec2f(dr.z*1.9,Ht*.03));
-    c=c+WARM*sk*fl*.16*(1.-smoothstep(.2,1.,fd));
+    a=.14*sk*fl*(1.-smoothstep(.2,1.,fd));
+    oc=oc*(1.-a)+WARM*a;oa=a+oa*(1.-a);
   }
   /* лампа: конус в воздухе и пятно на полу. Сила — как у main (конус .16 к полу в ноль,
-     пятно .10, окно .26/.10/0): вдвое сильнее давали столб ярче стены в полтора раза
-     (Контроль 26.09: «конус и пятно на полу по яркости и цвету как в main») */
+     пятно .10): вдвое сильнее давали столб ярче стены в полтора раза (Контроль 26.09: «конус
+     и пятно на полу по яркости и цвету как в main») */
   let lk=fu.v[3].x;
   if(lk>0.){
     let lx=fu.v[3].y;let ly=fu.v[3].z;
     let cone=trap(p,ly,flo,lx,man*.12,lx,man*1.05,man*.07);
     let v=clamp((p.y-ly)/(flo-ly),0.,1.);
     let dust=.70+.6*rfbm(vec2f(p.x/(man*.18),p.y/(man*.22)-t*.05));
-    c=c+LAMP*lk*cone*(.16*(1.-v))*dust;
+    var a=.16*lk*cone*(1.-v)*dust;
+    oc=oc*(1.-a)+LAMP*a;oa=a+oa*(1.-a);
     let pd=length((p-vec2f(lx,flo+Ht*.012))/vec2f(man*1.0,Ht*.026));
-    c=c+LAMP*lk*.10*(1.-smoothstep(.1,1.,pd));
-    let gd=length((p-vec2f(lx,ly))/man);
-    c=c+LAMP*lk*.06/(1.+gd*gd*4.);
+    a=.10*lk*(1.-smoothstep(.1,1.,pd));
+    oc=oc*(1.-a)+LAMP*a;oa=a+oa*(1.-a);
+    /* воздуха у лампы здесь нет: хвост 1/(1+4d²) доходил до потолка и клал тёплую пелену на
+       тёмную полосу над стеной (+10 по красному на 390, S полосы .41 от main). Воздух — пятно
+       в winGlow, оно короткое */
   }
-  /* окно: холод на полу и на стене вокруг */
-  let w=fu.v[4];
-  let wb=w.y+w.w;
-  let tr=trap(p,wb,flo+Ht*.05,w.x+w.z*.5,w.z*.5,w.x+w.z*.5,w.z*.95,w.z*.06);
-  let tv=clamp((p.y-wb)/(flo+Ht*.05-wb),0.,1.);
-  c=c+COLD*tr*select(mix(.10,0.,(tv-.55)/.45),mix(.26,.10,tv/.55),tv<.55)*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
-  let wd=length((p-(w.xy+w.zw*.5))/vec2f(w.z*1.5,w.z*1.5));
-  c=c+COLD*.13*(1.-smoothstep(.12,1.,wd));
-  return vec4f(c,0.);}`;
+  /* поверх: комната × (1−oa) + краска; сложенное — под краской, как у main (окно раньше печи и лампы) */
+  return vec4f(oc+ad*(1.-oa),oa);}`;
 const WIN_LIGHT_U=new Float32Array(20);
 function winLight(pass,g,W0){
   const li=W0.pw.light|0,he=W0.pw.heat|0,u=WIN_LIGHT_U,s=g.stove,t=g.table,w=g.win;
@@ -111725,9 +111750,9 @@ function winLight(pass,g,W0){
   u[8]=s.x+s.w*0.14;u[9]=s.y+s.h*0.16;u[10]=s.w*0.72;u[11]=s.h*0.42;
   u[12]=li>0?Math.min(1,li/3):0;u[13]=t.x+t.w*0.5;u[14]=g.cei+g.man*0.17;u[15]=0;
   u[16]=w.x;u[17]=w.y;u[18]=w.w;u[19]=w.h;
-  gpuField(pass,"win.light",WIN_LIGHT_WGSL,u,null,{blend:"add"});
+  gpuField(pass,"win.light",WIN_LIGHT_WGSL,u,null,{blend:"over"});
 }
-/* свет, который сам светится: лампочка (ярче единицы — её берёт ореол кадра),
+/* свет, который сам светится: воздух у лампы,
    лампочки поломок (мигают медленно, без щелчка), пыль в конусе лампы */
 const WIN_GLOW=[];
 function winGlow(pass,g,W0){
@@ -111735,7 +111760,10 @@ function winGlow(pass,g,W0){
   const t=g.table,lx=t.x+t.w*0.5,ly=g.cei+g.man*0.17,m=g.man;
   if(li>0){
     const k=Math.min(1,li/3);
-    S.push([2,lx-m*0.09,ly,lx+m*0.09,ly,m*0.012,m*0.02,255,232,190,0.9+0.9*k]);
+    /* нити лампочки нет: ярче единицы она ложилась на тёплый плафон белой таблеткой и
+       через ореол кадра белила верх комнаты (390: верхняя треть +17 % к main, S −18 %).
+       Плафон светит своим тёплым цветом из выпечки, как у main (Контроль 26.09: «свет
+       должен быть цветным, а не белёсым») */
     S.push([1,lx,ly,m*0.10,0,0,m*0.35,255,214,160,0.16*k]);
     const ft=(G.t/60)%3600;
     for(let i=0;i<34;i++){

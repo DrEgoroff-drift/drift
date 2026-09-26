@@ -448,8 +448,20 @@ fn trap(p:vec2f,top:f32,bot:f32,cx0:f32,w0:f32,cx1:f32,w1:f32,soft:f32)->f32{
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let t=fu.v[0].x;let man=fu.v[0].y;let flo=fu.v[0].z;let Ht=fu.res.w;
   let WARM=vec3f(1.,.659,.345);let LAMP=vec3f(1.,.878,.659);let COLD=vec3f(.502,.659,.8);
-  var c=vec3f(0.);
-  /* печь: огонь за дверцей — языки вверх, и его тепло */
+  /* что светит само (огонь за дверцей, окно) — сложением; тёплое, что
+     ложится на комнату (отсвет печи, конус лампы, пятна на полу), — краской поверх, как у main
+     (source-over): сложение поднимало светлое к белому, и тёплая дымка белила комнату
+     (Контроль 26.09: «свет должен быть цветным, а не белёсым», S .84 против main) */
+  var ad=vec3f(0.);var oc=vec3f(0.);var oa=0.;
+  /* окно: холод на полу и на стене вокруг — у main тоже сложением */
+  let w=fu.v[4];
+  let wb=w.y+w.w;
+  let tr=trap(p,wb,flo+Ht*.05,w.x+w.z*.5,w.z*.5,w.x+w.z*.5,w.z*.95,w.z*.06);
+  let tv=clamp((p.y-wb)/(flo+Ht*.05-wb),0.,1.);
+  ad=ad+COLD*tr*select(mix(.10,0.,(tv-.55)/.45),mix(.26,.10,tv/.55),tv<.55)*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
+  let wd=length((p-(w.xy+w.zw*.5))/vec2f(w.z*1.5,w.z*1.5));
+  ad=ad+COLD*.13*(1.-smoothstep(.12,1.,wd));
+  /* печь: огонь за дверцей — языки вверх; отсвет — круг в две ростовые меры, как у main */
   let sk=fu.v[1].x;
   if(sk>0.){
     let fl=fu.v[1].y;let dr=fu.v[2];
@@ -459,39 +471,36 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
       let tongue=smoothstep(.15,.9,(1.-q.y)*.6+n*.7-.15);
       let base=smoothstep(.35,1.,q.y);
       let heat=clamp(tongue*.8+base*.9,0.,1.)*(.55+.45*sk)*fl;
-      c=c+mix(vec3f(.85,.25,.05),vec3f(1.2,.85,.45),heat)*heat*1.1;
+      ad=ad+mix(vec3f(.85,.25,.05),vec3f(1.2,.85,.45),heat)*heat*1.1;
     }
     let sc=fu.v[1].zw;
-    let d=length((p-sc)/(man*vec2f(1.,1.1)));
     let wob=.92+.08*rn(vec2f(t*2.,p.y*.02));
-    c=c+WARM*sk*fl*wob*(.30/(1.+d*d*1.4));
+    var a=.26*sk*fl*wob*max(1.-length(p-sc)/(man*2.),0.);
+    oc=oc*(1.-a)+WARM*a;oa=a+oa*(1.-a);
     let fd=length((p-vec2f(sc.x,flo+Ht*.02))/vec2f(dr.z*1.9,Ht*.03));
-    c=c+WARM*sk*fl*.16*(1.-smoothstep(.2,1.,fd));
+    a=.14*sk*fl*(1.-smoothstep(.2,1.,fd));
+    oc=oc*(1.-a)+WARM*a;oa=a+oa*(1.-a);
   }
   /* лампа: конус в воздухе и пятно на полу. Сила — как у main (конус .16 к полу в ноль,
-     пятно .10, окно .26/.10/0): вдвое сильнее давали столб ярче стены в полтора раза
-     (Контроль 26.09: «конус и пятно на полу по яркости и цвету как в main») */
+     пятно .10): вдвое сильнее давали столб ярче стены в полтора раза (Контроль 26.09: «конус
+     и пятно на полу по яркости и цвету как в main») */
   let lk=fu.v[3].x;
   if(lk>0.){
     let lx=fu.v[3].y;let ly=fu.v[3].z;
     let cone=trap(p,ly,flo,lx,man*.12,lx,man*1.05,man*.07);
     let v=clamp((p.y-ly)/(flo-ly),0.,1.);
     let dust=.70+.6*rfbm(vec2f(p.x/(man*.18),p.y/(man*.22)-t*.05));
-    c=c+LAMP*lk*cone*(.16*(1.-v))*dust;
+    var a=.16*lk*cone*(1.-v)*dust;
+    oc=oc*(1.-a)+LAMP*a;oa=a+oa*(1.-a);
     let pd=length((p-vec2f(lx,flo+Ht*.012))/vec2f(man*1.0,Ht*.026));
-    c=c+LAMP*lk*.10*(1.-smoothstep(.1,1.,pd));
-    let gd=length((p-vec2f(lx,ly))/man);
-    c=c+LAMP*lk*.06/(1.+gd*gd*4.);
+    a=.10*lk*(1.-smoothstep(.1,1.,pd));
+    oc=oc*(1.-a)+LAMP*a;oa=a+oa*(1.-a);
+    /* воздуха у лампы здесь нет: хвост 1/(1+4d²) доходил до потолка и клал тёплую пелену на
+       тёмную полосу над стеной (+10 по красному на 390, S полосы .41 от main). Воздух — пятно
+       в winGlow, оно короткое */
   }
-  /* окно: холод на полу и на стене вокруг */
-  let w=fu.v[4];
-  let wb=w.y+w.w;
-  let tr=trap(p,wb,flo+Ht*.05,w.x+w.z*.5,w.z*.5,w.x+w.z*.5,w.z*.95,w.z*.06);
-  let tv=clamp((p.y-wb)/(flo+Ht*.05-wb),0.,1.);
-  c=c+COLD*tr*select(mix(.10,0.,(tv-.55)/.45),mix(.26,.10,tv/.55),tv<.55)*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
-  let wd=length((p-(w.xy+w.zw*.5))/vec2f(w.z*1.5,w.z*1.5));
-  c=c+COLD*.13*(1.-smoothstep(.12,1.,wd));
-  return vec4f(c,0.);}`;
+  /* поверх: комната × (1−oa) + краска; сложенное — под краской, как у main (окно раньше печи и лампы) */
+  return vec4f(oc+ad*(1.-oa),oa);}`;
 const WIN_LIGHT_U=new Float32Array(20);
 function winLight(pass,g,W0){
   const li=W0.pw.light|0,he=W0.pw.heat|0,u=WIN_LIGHT_U,s=g.stove,t=g.table,w=g.win;
@@ -501,9 +510,9 @@ function winLight(pass,g,W0){
   u[8]=s.x+s.w*0.14;u[9]=s.y+s.h*0.16;u[10]=s.w*0.72;u[11]=s.h*0.42;
   u[12]=li>0?Math.min(1,li/3):0;u[13]=t.x+t.w*0.5;u[14]=g.cei+g.man*0.17;u[15]=0;
   u[16]=w.x;u[17]=w.y;u[18]=w.w;u[19]=w.h;
-  gpuField(pass,"win.light",WIN_LIGHT_WGSL,u,null,{blend:"add"});
+  gpuField(pass,"win.light",WIN_LIGHT_WGSL,u,null,{blend:"over"});
 }
-/* свет, который сам светится: лампочка (ярче единицы — её берёт ореол кадра),
+/* свет, который сам светится: воздух у лампы,
    лампочки поломок (мигают медленно, без щелчка), пыль в конусе лампы */
 const WIN_GLOW=[];
 function winGlow(pass,g,W0){
@@ -511,7 +520,10 @@ function winGlow(pass,g,W0){
   const t=g.table,lx=t.x+t.w*0.5,ly=g.cei+g.man*0.17,m=g.man;
   if(li>0){
     const k=Math.min(1,li/3);
-    S.push([2,lx-m*0.09,ly,lx+m*0.09,ly,m*0.012,m*0.02,255,232,190,0.9+0.9*k]);
+    /* нити лампочки нет: ярче единицы она ложилась на тёплый плафон белой таблеткой и
+       через ореол кадра белила верх комнаты (390: верхняя треть +17 % к main, S −18 %).
+       Плафон светит своим тёплым цветом из выпечки, как у main (Контроль 26.09: «свет
+       должен быть цветным, а не белёсым») */
     S.push([1,lx,ly,m*0.10,0,0,m*0.35,255,214,160,0.16*k]);
     const ft=(G.t/60)%3600;
     for(let i=0;i<34;i++){

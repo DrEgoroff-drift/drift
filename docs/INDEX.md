@@ -642,7 +642,7 @@ GLOW_CACHE                   src/16a0-glow.js:23
 GLOW_LAMP                    src/11i-glow.js:50
 GLOW_SP                      src/16a0-glow.js:22
 GLOW_TIERS                   src/11i-glow.js:128
-GLT_H                        src/08b-gpu.js:459
+GLT_H                        src/08b-gpu.js:462
 GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:10
 GNB_EMI                      src/16gb-gpu-nebula.js:408
@@ -676,7 +676,7 @@ GPU_CVTEX_CAP                src/08c-gpu-kit.js:66
 GPU_DROP_WHY                 tests/90-harness.js:104
 GPU_FLD                      src/08b0-gpu-pipe.js:33
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:328
-GPU_FRONT_LIKE               src/08b-gpu.js:521
+GPU_FRONT_LIKE               src/08b-gpu.js:525
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:191
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:165
@@ -688,12 +688,12 @@ GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-61
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-57
-GPU_PL_WGSL                  src/08b-gpu.js:474
+GPU_PL_WGSL                  src/08b-gpu.js:477
 GPU_POST_WGSL                src/08b-gpu.js:74
 GPU_SCR                      src/08c-gpu-kit.js:172
 GPU_SCREEN_LAYERS            src/18c-chunks.js:193
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:259
-GPU_TONE_FILM                src/08b-gpu.js:510
+GPU_TONE_FILM                src/08b-gpu.js:513
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
@@ -1422,7 +1422,7 @@ RARE_WHERE_IX                src/12m-rare.js:34
 RAST_MAX                     src/18c-chunks.js:40
 RAY_R                        src/13a-guns.js:29
 RD                           src/27k-road.js:183
-RD_OVL                       src/27lc-road-gpu.js:36
+RD_OVL                       src/27lc-road-gpu.js:37
 REC                          src/15c-rec.js:18
 RECALL_WEEK                  src/05b4-recall.js:8
 RECORD_YEARS                 src/11aa-record.js:17
@@ -1478,18 +1478,18 @@ RND_SEED                     src/01-core.js:73
 ROAD_BACK_FAR                src/27k-road.js:104
 ROAD_BAND                    src/27k-road.js:586
 ROAD_BLOOM_H                 src/27k-road.js:181
-ROAD_BOX                     src/27lc-road-gpu.js:65
+ROAD_BOX                     src/27lc-road-gpu.js:66
 ROAD_BURN_LO                 src/27k-road.js:163
 ROAD_C                       src/27k-road.js:33
 ROAD_CR_KM                   src/27k-road.js:50
 ROAD_DAY_ADD                 src/27k-road.js:72
 ROAD_FAST_REF                src/27k-road.js:222
 ROAD_FLD_TOP                 src/27lb-road-bloom.js:34
-ROAD_FLD_U                   src/27lb-road-bloom.js:92
+ROAD_FLD_U                   src/27lb-road-bloom.js:93
 ROAD_FLD_WGSL                src/27lb-road-bloom.js:35
 ROAD_FOOT                    src/27k-road.js:182
 ROAD_G                       src/27k-road.js:121
-ROAD_GLOW                    src/27lc-road-gpu.js:17
+ROAD_GLOW                    src/27lc-road-gpu.js:18
 ROAD_HALF                    src/27l-road-draw.js:70
 ROAD_LAT_DEAD                src/27k-road.js:124
 ROAD_LAT_FULL                src/27k-road.js:122
@@ -1501,8 +1501,8 @@ ROAD_SHAKE_DEAD              src/27k-road.js:129
 ROAD_SHIP_LEN                src/27k-road.js:160
 ROAD_SIDE_MAX                src/27k-road.js:128
 ROAD_SKY_H                   src/27k-road.js:177
-ROAD_SKY_SH                  src/27la-road-sky.js:89
-ROAD_SKY_U                   src/27la-road-sky.js:80
+ROAD_SKY_SH                  src/27la-road-sky.js:92
+ROAD_SKY_U                   src/27la-road-sky.js:83
 ROAD_SKY_WGSL                src/27la-road-sky.js:22
 ROAD_SWERVE                  src/27k-road.js:133
 ROAD_TIERS                   src/27k-road.js:32
@@ -1895,13 +1895,13 @@ WHY_TIGHT                    tests/91zzzzzj-why.js:21
 WIND                         src/19c-light.js:41
 WIN_BAD                      src/29f-winter.js:32
 WIN_C                        src/29g-winter-draw.js:20-28
-WIN_DARK_U                   src/29g-winter-draw.js:542
-WIN_DARK_WGSL                src/29g-winter-draw.js:536
+WIN_DARK_U                   src/29g-winter-draw.js:554
+WIN_DARK_WGSL                src/29g-winter-draw.js:548
 WIN_DAYS                     src/29f-winter.js:27
 WIN_FAULT                    src/29f-winter.js:34-40
 WIN_FAULT_BY                 src/29f-winter.js:41
-WIN_GLOW                     src/29g-winter-draw.js:508
-WIN_LIGHT_U                  src/29g-winter-draw.js:495
+WIN_GLOW                     src/29g-winter-draw.js:517
+WIN_LIGHT_U                  src/29g-winter-draw.js:504
 WIN_LIGHT_WGSL               src/29g-winter-draw.js:443
 WIN_MIN                      src/29f-winter.js:31
 WIN_PAY                      src/29f-winter.js:28
@@ -3195,7 +3195,7 @@ drawRail                     src/18g-rail-ride.js:119-171
 drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:184-233
 drawRingTape                 src/11x-ring.js:107-118
-drawRoad                     src/27l-road-draw.js:86-622
+drawRoad                     src/27l-road-draw.js:86-626
 drawRocks                    src/19-mode-landing-ground.js:303-395
 drawRouteMap                 src/12r-route.js:267-323
 drawRungRing                 src/12ae-ladder.js:72-87
@@ -3369,7 +3369,7 @@ expReady                     src/11x-expedition.js:25-28
 expRelease                   src/11x-expedition.js:101-110
 expStart                     src/11x-expedition.js:29-38
 exportCode                   src/14a-cloud.js:61
-f16                          src/08b-gpu.js:460
+f16                          src/08b-gpu.js:463
 faceEl                       src/27c-ui-hq.js:6-12
 facePath                     src/12d-mgr-face.js:19-28
 faceRnd                      src/12d-mgr-face.js:16
@@ -3720,7 +3720,7 @@ gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
-gpuBloom                     src/08b-gpu.js:642-647
+gpuBloom                     src/08b-gpu.js:649-654
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:31-36
 gpuBursts                    src/13z-gpu-combat.js:277-297
@@ -3730,7 +3730,7 @@ gpuChunkBake                 src/18c-chunks.js:179-183
 gpuChunkPut                  src/18c-chunks.js:186-190
 gpuChunkStore                src/18c-chunks.js:204-208
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
-gpuCompNeb                   src/08b-gpu.js:433-443
+gpuCompNeb                   src/08b-gpu.js:436-446
 gpuCvLevel                   src/08c-gpu-kit.js:80-91
 gpuDrawChunks                src/18c-chunks.js:216-220
 gpuDrawTiles                 src/18c-chunks.js:235-240
@@ -3741,53 +3741,53 @@ gpuFail                      src/08b2-gpu-loss.js:26-30
 gpuField                     src/08c-gpu-kit.js:350-377
 gpuFieldBaked                src/08c-gpu-kit.js:385-395
 gpuFieldLayout               src/08c-gpu-kit.js:343-349
-gpuFrame                     src/08b-gpu.js:538-551
+gpuFrame                     src/08b-gpu.js:544-557
 gpuFrontClean                src/08c-gpu-kit.js:126-131
-gpuFrontCopy                 src/08b-gpu.js:585-587
+gpuFrontCopy                 src/08b-gpu.js:591-593
 gpuFrontHook                 src/08c-gpu-kit.js:115-124
-gpuHaze                      src/08b-gpu.js:456
+gpuHaze                      src/08b-gpu.js:459
 gpuHudDpr                    src/08bh-gpu-hud.js:7
-gpuHueFor                    src/08b-gpu.js:513
+gpuHueFor                    src/08b-gpu.js:516
 gpuImage                     src/08c-gpu-kit.js:236-249
 gpuImgBind                   src/08c-gpu-kit.js:229-235
 gpuImgLayout                 src/08c-gpu-kit.js:221-228
 gpuKitU                      src/08c-gpu-kit.js:174-179
-gpuLight                     src/08b-gpu.js:458
+gpuLight                     src/08b-gpu.js:461
 gpuLitSprite                 src/17c-system-draw.js:553-568
-gpuLtWrite                   src/08b-gpu.js:462-469
-gpuManual                    src/08b-gpu.js:612-617
+gpuLtWrite                   src/08b-gpu.js:465-472
+gpuManual                    src/08b-gpu.js:618-623
 gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
 gpuMoon                      src/17ga-gpu-planets.js:440-445
 gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
 gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
-gpuNoise                     src/08b-gpu.js:383-388
+gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOvFrontView               src/08bi-gpu-ovl.js:249
-gpuOver                      src/08b-gpu.js:588-608
-gpuPass                      src/08b-gpu.js:444-447
+gpuOver                      src/08b-gpu.js:594-614
+gpuPass                      src/08b-gpu.js:447-450
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
 gpuPipeRecipe                src/08b0-gpu-pipe.js:49-57
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
-gpuPipes                     src/08b-gpu.js:359-380
+gpuPipes                     src/08b-gpu.js:362-383
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesWarm                 src/08b0-gpu-pipe.js:60-72
 gpuPirateBody                src/12i-pirate-hull.js:425-434
 gpuPirateLive                src/12i-pirate-hull.js:441-485
 gpuPlanet                    src/17ga-gpu-planets.js:340-357
-gpuPresent                   src/08b-gpu.js:649-662
+gpuPresent                   src/08b-gpu.js:656-669
 gpuQuad                      src/08c-gpu-kit.js:307-311
-gpuResize                    src/08b-gpu.js:389-431
-gpuScene                     src/08b-gpu.js:555-565
-gpuScene3D                   src/08b-gpu.js:569-577
+gpuResize                    src/08b-gpu.js:392-434
+gpuScene                     src/08b-gpu.js:561-571
+gpuScene3D                   src/08b-gpu.js:575-583
 gpuScr                       src/08c-gpu-kit.js:173
 gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:312-323
-gpuShock                     src/08b-gpu.js:457
+gpuShock                     src/08b-gpu.js:460
 gpuSky                       src/19ca-gpu-sky.js:66-82
 gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:201-219
@@ -3803,9 +3803,9 @@ gpuTrail                     src/16ga-gpu-trail.js:53-98
 gpuTs                        src/28z-fps-probe.js:128-135
 gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
-gpuUni                       src/08b-gpu.js:522-534
+gpuUni                       src/08b-gpu.js:526-540
 gpuWake                      src/16ga-gpu-trail.js:107-139
-gpuWorld                     src/08b-gpu.js:620-640
+gpuWorld                     src/08b-gpu.js:626-647
 gradePass                    src/19c-light.js:260-296
 greenAll                     src/21g-greenhouse.js:26-30
 greenCanSow                  src/21g-greenhouse.js:50-52
@@ -5822,7 +5822,7 @@ roadAll                      src/27k-road.js:184-188
 roadAudio                    src/27k-road.js:546-580
 roadBands                    src/27k-road.js:587-590
 roadBankAdd                  src/27k-road.js:194-197
-roadBloom                    src/27lb-road-bloom.js:97-111
+roadBloom                    src/27lb-road-bloom.js:98-112
 roadBurn                     src/27k-road.js:166-169
 roadClose                    src/27l-road-draw.js:41-59
 roadCombo                    src/27k-road.js:229
@@ -5831,10 +5831,10 @@ roadDayReset                 src/27k-road.js:198-208
 roadEarnKm                   src/27k-road.js:237-255
 roadFast                     src/27k-road.js:223
 roadFinish                   src/27k-road.js:256-271
-roadFit                      src/27lc-road-gpu.js:66-72
+roadFit                      src/27lc-road-gpu.js:67-73
 roadFrame                    src/27l-road-draw.js:60-64
-roadFullscreen               src/27l-road-draw.js:626-632
-roadGpuMount                 src/27lc-road-gpu.js:18-30
+roadFullscreen               src/27l-road-draw.js:630-636
+roadGpuMount                 src/27lc-road-gpu.js:19-31
 roadHav                      src/27k-road.js:108-114
 roadHomeward                 src/27k-road.js:116
 roadHueMix                   src/27k-road.js:597
@@ -5848,16 +5848,16 @@ roadMoodPath                 src/27k-road.js:606-610
 roadOnPos                    src/27k-road.js:475-521
 roadOnShake                  src/27k-road.js:391-444
 roadOpen                     src/27l-road-draw.js:17-40
-roadOvl                      src/27lc-road-gpu.js:37-54
+roadOvl                      src/27lc-road-gpu.js:38-55
 roadPilotRu                  src/27k-road.js:474
 roadPing                     src/27k-road.js:458-473
 roadRank                     src/27k-road.js:95-102
-roadRgb                      src/27la-road-sky.js:82-88
+roadRgb                      src/27la-road-sky.js:85-91
 roadRgbHue                   src/27k-road.js:616-622
 roadSenseBtn                 src/27k-road.js:360-366
 roadSensorsOn                src/27k-road.js:273-288
 roadShot                     tests/91zzy-road.js:4
-roadSky                      src/27la-road-sky.js:90-190
+roadSky                      src/27la-road-sky.js:93-193
 roadSpeedOk                  src/27k-road.js:209
 roadSys                      src/27k-road.js:450-453
 roadTier                     src/27k-road.js:211-215
@@ -6593,7 +6593,7 @@ updateSpa                    src/29i-spa-draw.js:599-604
 updateSurface                src/21-mode-surface.js:200-657
 updateSystem                 src/17-mode-system.js:92-483
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
-updateWinter                 src/29g-winter-draw.js:930-939
+updateWinter                 src/29g-winter-draw.js:942-951
 useBeacon                    src/23-mode-dig.js:88-113
 vCloth                       src/18d-verlet.js:41-50
 vDrawCloth                   src/18d-verlet.js:104-121
@@ -6818,32 +6818,32 @@ winBad                       src/29f-winter.js:72-74
 winBlock                     src/29f-winter.js:253-270
 winBody                      src/29g-winter-draw.js:119-145
 winCap                       src/29f-winter.js:65-68
-winDark                      src/29g-winter-draw.js:543-546
+winDark                      src/29g-winter-draw.js:555-558
 winDiaryToday                src/29f-winter.js:176-191
 winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:193-209
-winFigBox                    src/29g-winter-draw.js:749-753
-winFigure                    src/29g-winter-draw.js:757-871
+winFigBox                    src/29g-winter-draw.js:761-765
+winFigure                    src/29g-winter-draw.js:769-883
 winFix                       src/29f-winter.js:149-160
 winGeom                      src/29g-winter-draw.js:38-57
-winGlow                      src/29g-winter-draw.js:509-534
-winHit                       src/29g-winter-draw.js:890-908
+winGlow                      src/29g-winter-draw.js:518-546
+winHit                       src/29g-winter-draw.js:902-920
 winLeverLabels               src/29g-winter-draw.js:72-83
 winLevers                    src/29g-winter-draw.js:58-65
-winLight                     src/29g-winter-draw.js:496-505
+winLight                     src/29g-winter-draw.js:505-514
 winLit                       src/29g-winter-draw.js:89-108
 winOfferHere                 src/29f-winter.js:76-94
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
-winPanel                     src/29g-winter-draw.js:665-747
-winPanelBox                  src/29g-winter-draw.js:657-661
-winProps                     src/29g-winter-draw.js:548-655
+winPanel                     src/29g-winter-draw.js:677-759
+winPanelBox                  src/29g-winter-draw.js:669-673
+winProps                     src/29g-winter-draw.js:560-667
 winRoomLayer                 src/29g-winter-draw.js:149-354
 winShift                     src/29f-winter.js:123-148
 winTake                      src/29f-winter.js:95-111
-winTap                       src/29g-winter-draw.js:909-929
+winTap                       src/29g-winter-draw.js:921-941
 winTestStart                 tests/91zzzj-winter.js:2-18
-winText                      src/29g-winter-draw.js:873-887
+winText                      src/29g-winter-draw.js:885-899
 winTone                      src/29g-winter-draw.js:111-116
 winView                      src/29g-winter-draw.js:430-439
 winWall                      src/29f-winter.js:162-172
@@ -7020,7 +7020,7 @@ zoomTo                       src/15-input.js:350
 ## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
-## src/08b-gpu.js · 51 КБ
+## src/08b-gpu.js · 52 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08b0-gpu-pipe.js · 6 КБ
@@ -8208,10 +8208,10 @@ zoomTo                       src/15-input.js:350
 ## src/27k-road.js · 48 КБ
   · дорожный спутник:1
 
-## src/27l-road-draw.js · 44 КБ
+## src/27l-road-draw.js · 45 КБ
   · дорожный спутник: экран:1
 
-## src/27la-road-sky.js · 11 КБ
+## src/27la-road-sky.js · 12 КБ
   · дорожный спутник: небо:1
 
 ## src/27lb-road-bloom.js · 8 КБ
@@ -8266,7 +8266,7 @@ zoomTo                       src/15-input.js:350
 ## src/29f-winter.js · 15 КБ
   · зимовка: месяц одному:1
 
-## src/29g-winter-draw.js · 50 КБ
+## src/29g-winter-draw.js · 51 КБ
   · зимовка: кадр:1
 
 ## src/29h-spa.js · 8 КБ

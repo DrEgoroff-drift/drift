@@ -70,7 +70,8 @@ TEST_SUITES.push(()=>suite("комнаты на видеокарте: зимов
     const sl=gpuScreenLayer;gpuScreenLayer=(k,f)=>f(ctx);   /* кисть слоя — прямо в запись */
     const R=roomsRec(W,H,()=>winRoomLayer(W0));gpuScreenLayer=sl;
     eq(R.err,"","слой комнаты: без громких дыр (свет "+pw.light+", тепло "+pw.heat+")");
-    const P=roomsRec(W,H,()=>winProps(g,W0));
+    /* приборы и зимовщик — свои выпечки поверх света комнаты (win.panel, win.fig) */
+    const P=roomsRec(W,H,()=>{winProps(g,W0);winPanel(g,W0);winFigure(g,W0);});
     eq(P.err,"","рама, лампа, стол, приборы, календарь, зимовщик — без громких дыр");
     ok(P.g._ops.length>100,"вещи зимовки записаны ("+P.g._ops.length+" команд)");
   }
