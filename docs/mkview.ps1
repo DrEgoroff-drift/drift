@@ -253,7 +253,8 @@ setTimeout(function(){
       hireMgr(genMgr(1,["cmd"]));
       hireMgr(genMgr(2,["fact"]));
     }else G.mgrs=[];
-    document.getElementById("hqbtn").click();
+    /* двери #hqbtn больше нет (штаб открывается со стола, 91zzv-table) — открываем тем же, что и она */
+    openHq();
   }else if(scene==="bird"||scene==="birdwin"){
     /* Трепло. Птица достаётся в вещах покойника, поэтому на стенде она
        просто выдаётся, и ей дают что-то услышанное — иначе на тычок она
