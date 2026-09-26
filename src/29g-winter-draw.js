@@ -441,16 +441,18 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let fd=length((p-vec2f(sc.x,flo+Ht*.02))/vec2f(dr.z*1.9,Ht*.03));
     c=c+WARM*sk*fl*.16*(1.-smoothstep(.2,1.,fd));
   }
-  /* лампа: конус в воздухе и пятно на полу */
+  /* лампа: конус в воздухе и пятно на полу. Сила — как у main (конус .16 к полу в ноль,
+     пятно .10, окно .26/.10/0): вдвое сильнее давали столб ярче стены в полтора раза
+     (Контроль 26.09: «конус и пятно на полу по яркости и цвету как в main») */
   let lk=fu.v[3].x;
   if(lk>0.){
     let lx=fu.v[3].y;let ly=fu.v[3].z;
     let cone=trap(p,ly,flo,lx,man*.12,lx,man*1.05,man*.07);
     let v=clamp((p.y-ly)/(flo-ly),0.,1.);
     let dust=.70+.6*rfbm(vec2f(p.x/(man*.18),p.y/(man*.22)-t*.05));
-    c=c+LAMP*lk*cone*(.30*(1.-v*.8))*dust;
+    c=c+LAMP*lk*cone*(.16*(1.-v))*dust;
     let pd=length((p-vec2f(lx,flo+Ht*.012))/vec2f(man*1.0,Ht*.026));
-    c=c+LAMP*lk*.20*(1.-smoothstep(.1,1.,pd));
+    c=c+LAMP*lk*.10*(1.-smoothstep(.1,1.,pd));
     let gd=length((p-vec2f(lx,ly))/man);
     c=c+LAMP*lk*.06/(1.+gd*gd*4.);
   }
@@ -459,7 +461,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let wb=w.y+w.w;
   let tr=trap(p,wb,flo+Ht*.05,w.x+w.z*.5,w.z*.5,w.x+w.z*.5,w.z*.95,w.z*.06);
   let tv=clamp((p.y-wb)/(flo+Ht*.05-wb),0.,1.);
-  c=c+COLD*tr*mix(.36,.02,pow(tv,.8))*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
+  c=c+COLD*tr*select(mix(.10,0.,(tv-.55)/.45),mix(.26,.10,tv/.55),tv<.55)*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
   let wd=length((p-(w.xy+w.zw*.5))/vec2f(w.z*1.5,w.z*1.5));
   c=c+COLD*.13*(1.-smoothstep(.12,1.,wd));
   return vec4f(c,0.);}`;

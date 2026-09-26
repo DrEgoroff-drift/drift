@@ -306,8 +306,10 @@ function bCrate(x,y,w,h,c,lit,tag){
 function bLamp(cx,y,w,fy,col,a){
   if(BASE_PASS===3){                                        // свет — в карту поля
     const L=BASE_LIGHT,g=L.createLinearGradient(0,y,0,fy);
-    g.addColorStop(0,"rgba(0,0,255,"+Math.min(1,a*1.1).toFixed(3)+")");
-    g.addColorStop(1,"rgba(0,0,255,"+Math.min(1,a*.35).toFixed(3)+")");
+    /* сила конуса — как у main (.14 цвета лампы, к полу в ноль): поле умножает её
+       ×1.5, и прежние a·1.1→a·.35 давали белый столб (Контроль 26.09) */
+    g.addColorStop(0,"rgba(0,0,255,"+Math.min(1,a*.16).toFixed(3)+")");
+    g.addColorStop(1,"rgba(0,0,255,0)");
     L.save();L.globalCompositeOperation="lighter";L.fillStyle=g;L.beginPath();
     L.moveTo(cx-w/2,y);L.lineTo(cx+w/2,y);L.lineTo(cx+w*1.5,fy);L.lineTo(cx-w*1.5,fy);
     L.closePath();L.fill();L.restore();return;

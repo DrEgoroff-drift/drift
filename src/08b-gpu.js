@@ -91,10 +91,17 @@ struct V{@builtin(position) p:vec4f,@location(0) uv:vec2f};
    экран кадр сводит плечо по каждому каналу: до .75 — как было, выше — мягко к единице,
    без плато (жёсткая обрезка давала плоские пятна). Яркий оранжевый уходит в золото,
    за единицей — в белый, как плёнка; плечо по старшему каналу держало оттенок, но кадр
-   от него выцветал в бежевый, а диск звезды — в розовый блин. Интерфейс — после плеча */
+   от него выцветал в бежевый, а диск звезды — в розовый блин. Интерфейс — после плеча.
+   На земле и в помещениях (u.dn.y — доля, gpuHueFor) плечо — по старшему каналу: там свет
+   рисован красками экрана, и лампа, огонь, фонарь по каналам выцветали в белый (Контроль
+   26.09, пять сцен). Оттенок держится; белеет только то, что светит много выше единицы */
 fn tone(c:vec3f)->vec3f{
   let K=.75;let x=max(c-vec3f(K),vec3f(0.));
-  return min(c,vec3f(K))+(1.-K)*(vec3f(1.)-exp(-x/(1.-K)));}
+  let pc=min(c,vec3f(K))+(1.-K)*(vec3f(1.)-exp(-x/(1.-K)));
+  let m=max(c.r,max(c.g,c.b));
+  if(u.dn.y<=0.||m<=K){return pc;}
+  let t=K+(1.-K)*(1.-exp(-(m-K)/(1.-K)));
+  return mix(pc,mix(c*(t/m),vec3f(t),smoothstep(2.,8.,m)),u.dn.y);}
 /* L4: преломление — горячий воздух за соплом и ударная волна разрыва не рисуются, а
    сдвигают то, что за ними (сцену). Источники кладёт gpuDistort: марево — вдоль факела,
    шум сносится потоком, доли пикселя; волна — кольцо, производная гауссианы по радиусу */
@@ -147,7 +154,11 @@ fn knee(c:vec3f,th:f32)->vec3f{
 /* те же плечо и колено в половинной точности (P2) — для лестницы свечения */
 fn toneH(c:H3)->H3{
   let K=H(.75);let x=max(c-H3(K),H3(0.));
-  return min(c,H3(K))+(H(1.)-K)*(H3(1.)-exp(-x/(H(1.)-K)));}
+  let pc=min(c,H3(K))+(H(1.)-K)*(H3(1.)-exp(-x/(H(1.)-K)));
+  let m=max(c.r,max(c.g,c.b));
+  if(u.dn.y<=0.||m<=K){return pc;}
+  let t=K+(H(1.)-K)*(H(1.)-exp(-(m-K)/(H(1.)-K)));
+  return mix(pc,mix(c*(t/m),H3(t),smoothstep(H(2.),H(8.),m)),H(u.dn.y));}
 fn kneeH(c:H3,th:H)->H3{
   let m=max(c.r,max(c.g,c.b));let kn=th*H(.4);
   let sk=clamp(m-th+kn,H(0.),H(2.)*kn);let q=max(sk*sk/(H(4.)*kn),m-th);
@@ -490,6 +501,11 @@ fn shAt(p:vec2f,sd:vec2f)->f32{
     k=min(k,mix(.4,1.,smoothstep(O.z*.75,O.z*1.05,length(q-sd*tt))));}
   return k;}
 `;
+/* плечо тона по режиму (tone в посте): в космосе — по каналам, как плёнка (L2: газ у
+   звезды уходит в золото, ядро луча — в белый); на земле и в помещениях — по старшему
+   каналу, лампа держит свой оттенок при любой яркости (Контроль 26.09) */
+const GPU_TONE_FILM=new Set(["system","map","belt","raid","scoop","wanderer","barge","rail"]);
+function gpuHueFor(m){return GPU_TONE_FILM.has(m)?0:1;}
 function gpuUni(){
   const a=GPU.UA,P=GPU.post;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
@@ -499,7 +515,7 @@ function gpuUni(){
   const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
   const Q=GPU.lens;a[56]=Q?Q.x:0;a[57]=Q?Q.y:0;a[58]=Q?Q.k:0;a[59]=Q?Q.r:0;
   a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
-  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;
+  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);
   for(let i=0;i<8;i++)for(let j=0;j<8;j++)a[68+i*8+j]=i<nd?D[i][j]:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }

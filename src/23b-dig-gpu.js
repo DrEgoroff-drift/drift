@@ -98,6 +98,11 @@ function drawDigLight(D,p,camx,camy,lamp){
   const mt={view:gpuMipTex(M.cv).view},sm=gpuMipSmp();
   gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,U,[mt],{blend:"mul",smp:sm});
   gpuField(pass,"dig.add",CAVE_ADD_WGSL+DIG_OWN_WGSL,U,[mt],{blend:"add",smp:sm});
+  /* тёплое зарево у налобника — сложением, как «digwarm» у main (.20·(1−t)^2.2 на .34
+     от max(W,H)·.62): тёплый акцент против холодной породы. Множитель поля его не давал —
+     на тёмном камне тёплое пятно исчезало (Контроль 26.09) */
+  const Rw=Math.max(W,H)*.62*.34*K;
+  warmGlow(pass,(lamp.x-camx)*K,(lamp.y-camy)*K,Rw,Rw,[1,.776,.502],.20,0);
   digEmit(D,camx,camy,pass,K);
   if(D._lamps)D._lamps.length=0;
 }

@@ -152,9 +152,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let lp=vec2f(lx,ce+m*.62);
     let d=length((p-lp)/vec2f(m*1.6,m*1.3));
     L=L+WARM*(.22/(1.+d*d));
-    L=L+WARM*lampCone(p,lx,ce+m*.62,fy,m)*.20;
+    /* конус и лужу рисует задний слой сложением (hinPaintBack); здесь — только
+       добавка света на то, что в них стоит, иначе конус вдвое ярче, чем в main */
+    L=L+WARM*lampCone(p,lx,ce+m*.62,fy,m)*.05;
     let pd=length((p-vec2f(lx,fy))/vec2f(m*1.8,m*.36));
-    L=L+WARM*.30*(1.-smoothstep(.15,1.,pd));
+    L=L+WARM*.08*(1.-smoothstep(.15,1.,pd));
   }
   for(var i=0;i<8;i++){
     let wx=fu.v[3+i/4][i%4];if(wx<-9e3){continue;}
@@ -302,6 +304,31 @@ function hinPaintBack(R,x0,cw,P,S){
       }
     }
   }
+  /* ── свет ДО обстановки: конус и лужа на полу сложением, как в main ──
+     Только умножением (hinLight) на тёмной стене конуса не видно: стена ×1.2
+     остаётся тёмной (Контроль 26.09, «конусов и пятен на полу почти нет»).
+     Сложение лежит в заднем слое ПОД вещами — положенный последним, конус
+     читался плёнкой поверх мебели (M170). Поле света умножает его вместе со
+     стеной. Край отбора — шире лужи (1.7 роста) и поля куска, иначе шов */
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  for(const r of R){
+    const lx=r.x+r.w*.5;
+    if(lx<camx-40-HIN_MAN*2||lx>camx+vw+40+HIN_MAN*2)continue;
+    const cg=ctx.createLinearGradient(0,ceil+HIN_MAN*.62,0,0);
+    cg.addColorStop(0,"rgba(255,206,138,.22)");
+    cg.addColorStop(.7,"rgba(255,196,130,.08)");
+    cg.addColorStop(1,"rgba(255,180,110,0)");
+    ctx.fillStyle=cg;
+    ctx.beginPath();
+    ctx.moveTo(lx-HIN_MAN*.22,ceil+HIN_MAN*.62);ctx.lineTo(lx+HIN_MAN*.22,ceil+HIN_MAN*.62);
+    ctx.lineTo(lx+HIN_MAN*1.5,0);ctx.lineTo(lx-HIN_MAN*1.5,0);ctx.closePath();ctx.fill();
+    const fgl=ctx.createRadialGradient(lx,0,2,lx,0,HIN_MAN*1.7);
+    fgl.addColorStop(0,"rgba(255,206,138,.24)");
+    fgl.addColorStop(1,"rgba(255,180,110,0)");
+    ctx.fillStyle=fgl;
+    ctx.beginPath();ctx.ellipse(lx,0,HIN_MAN*1.7,HIN_MAN*.32,0,0,TAU);ctx.fill();
+  }
+  ctx.restore();
   /* ── окно на первом этаже (M247) ──
      Внизу окон не было вовсе — «наверху окно, внизу нет». Ставим по окну в
      каждой второй комнате: холодное небо и вторая температура в кадре. Лужа

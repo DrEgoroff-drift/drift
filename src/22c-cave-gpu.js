@@ -141,6 +141,23 @@ function caveMaskCv(C){
   c.putImageData(im,0,0);
   return C.maskCv=cv;
 }
+/* тёплое зарево сложением — то, что у main было спрайтом «lighter» поверх темноты: у фонаря
+   пещеры и шахты, пятно на полу перед ходоком. Множитель поля на тёмной породе их не давал —
+   тёплое пятно исчезало (Контроль 26.09). Центр и радиусы — пиксели кадра; профиль 0 —
+   (1−t)^2.2, как у спрайтов, 1 — три ступени градиента пятна (a, .556a на .45, ноль) */
+const WARM_GLOW_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let A=fu.v[0];let B=fu.v[1];
+  let t=length((p-A.xy)/max(A.zw,vec2f(1.)));
+  if(t>=1.){return vec4f(0.);}
+  var a=B.w*pow(1.-t,2.2);
+  if(fu.v[2].x>.5){a=select(mix(B.w*.556,0.,(t-.45)/.55),mix(B.w,B.w*.556,t/.45),t<.45);}
+  return vec4f(B.rgb*a,0.);}`;
+const WARM_GLOW_U=new Float32Array(12);
+function warmGlow(pass,x,y,rx,ry,col,a,prof){
+  const U=WARM_GLOW_U;U[0]=x;U[1]=y;U[2]=rx;U[3]=ry;U[4]=col[0];U[5]=col[1];U[6]=col[2];U[7]=a;U[8]=prof|0;
+  gpuField(pass,"warm.glow",WARM_GLOW_WGSL,U,null,{blend:"add"});
+}
 /* источник в поле: x, y, радиус и упакованный цвет×сила */
 function caveLitPack(r,g,b,I){
   const q=v=>Math.max(0,Math.min(255,Math.round(v*I*100)));
@@ -226,6 +243,11 @@ function drawCaveLight(C,camx,camy,lamp){
   const mt={view:gpuMipTex(caveMaskCv(C)).view},sm=gpuMipSmp();
   gpuField(pass,"cave.mul",CAVE_MUL_WGSL+CAVE_OWN_WGSL,U,[mt],{blend:"mul",smp:sm});
   gpuField(pass,"cave.add",CAVE_ADD_WGSL+CAVE_OWN_WGSL,U,[mt],{blend:"add",smp:sm});
+  /* тёплое у фонаря, как у main: зарево .24 на .72 круга фонаря (R=.52·max(W,H)) и пятно
+     на полу перед ходоком — эллипс 120×44, .18/.10/0 */
+  const R=Math.max(W,H)*.52*lk,f=lamp.f||1;
+  warmGlow(pass,(C.x-camx)*K,(C.y-25-camy)*K,R*.72*K,R*.72*K,[1,.784,.518],.24,0);
+  warmGlow(pass,(C.x+f*46-camx)*K,(C.y-3-camy)*K,120*lk*K,44*lk*K,[1,.839,.588],.18,1);
   caveEmit(C,camx,camy,pass,K);
 }
 /* руда светит сама (L2): ядро выше единицы — узкий ореол в лестнице свечения,

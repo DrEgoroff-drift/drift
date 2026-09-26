@@ -78,16 +78,19 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
   let gF=vec2f(dpdxFine(F.z)*dk,F.w/hF);
   let gN=vec2f(dpdxFine(N.z)*dk,N.w/H);
   let ld=L.xy;
-  let key=mix(.30,1.,L.z);
+  /* свой цвет газа — главный: лиловый гигант под рыжим светом терминатора и втрое
+     притушенный на ночной стороне становился бурым (Контроль 26.09) — ночь гасит до
+     .92, свет звезды только подкрашивает */
+  let key=mix(.92,1.,L.z);
   let sun=fu.v[3].rgb;
   /* тёплый свет у терминатора, холодный — днём; тень холодная всегда */
-  let lc=mix(mix(vec3f(1.),sun,.55),vec3f(1.,.62,.40),L.w);
+  let lc=mix(mix(vec3f(1.),sun,.2),vec3f(1.,.96,.94),L.w);
   let shF=clamp(1.-dot(gF,ld)*22.,.55,1.5);
-  var col=spal(F.x)*F.y*mix(vec3f(.78,.80,1.),lc,.6)*mix(1.,shF,key)*key;
+  var col=spal(F.x)*F.y*mix(vec3f(.90,.90,1.),lc,.6)*mix(1.,shF,key)*key;
   let cov=smoothstep(.50,.74,N.x)*smoothstep(.02,.18,(p.y-H*.05)/H);
   let shN=clamp(1.-dot(gN,ld)*30.,.5,1.6);
-  let nc=spal(min(N.x*1.05+.08,1.))*N.y*mix(vec3f(.78,.80,1.),lc,.7)*mix(1.,shN,key)*key;
-  col=mix(col,nc,cov*.78);
+  let nc=spal(min(N.x*1.02+.03,1.))*N.y*mix(vec3f(.78,.80,1.),lc,.7)*mix(1.,shN,key)*key;
+  col=mix(col,nc,cov*.62);
   /* свет звезды сквозь верхнюю дымку: ореол с её стороны, гаснет вглубь */
   let sd=length(p-Sn.xy)/Sn.z;
   col=col+sun*(.42*exp(-sd*2.2)+.10*exp(-sd*.7))*L.z*(1.-smoothstep(.15,.7,y));

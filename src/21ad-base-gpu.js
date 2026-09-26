@@ -155,26 +155,27 @@ fn h01(p:vec2i,s:u32)->f32{return f32(hu(p,s)&0xffffu)/65535.;}
 fn cellCode(c:i32,r:i32)->f32{
   if(c<0||c>=COLS||r<0||f32(r)>=min(fu.v[2].w,5.)){return 0.;}
   let i=r*COLS+c;return fu.v[6+i/4][i%4];}
-/* лампа под потолком: x — освещённость поверхностей, y — свет в воздухе конуса */
-fn lampI(w:vec2f,lp:vec2f,fy:f32,spread:f32)->vec2f{
+/* лампа под потолком: x — освещённость поверхностей, y — свет в воздухе конуса;
+   k — сила конуса и лужи (в отсеке они слабые, как у main: .14 цвета лампы) */
+fn lampI(w:vec2f,lp:vec2f,fy:f32,spread:f32,k:f32)->vec2f{
   let d=w-lp;let depth=clamp(d.y/max(fy-lp.y,1.),0.,1.);
   let hw=6.+spread*depth;
   let cone=smoothstep(-3.,4.,d.y)*(1.-smoothstep(hw-3.,hw+14.,abs(d.x)));
   let r2=dot(d,d);let fall=1./(1.+r2/4200.);
   let pool=exp(-d.x*d.x/(spread*spread*1.4))*exp(-(w.y-fy)*(w.y-fy)/36.);
   let halo=exp(-sqrt(r2)/9.);
-  return vec2f(cone*fall*1.05+pool*.7+halo*.5+fall*.18,cone*fall);}
+  return vec2f((cone*fall*1.05+pool*.7)*k+halo*.5+fall*.18,cone*fall*k);}
 /* свет отсека в точке: x — множитель, w — воздух (для пыли) */
 fn roomLight(w:vec2f,c:i32,r:i32,code:f32,lit:f32,ex:f32)->vec4f{
   if(code<16.){return vec4f(.50,.50,.56,0.);}            /* разбитый: ламп нет */
   let L=LC[u32(code)%16u-1u];let ln=i32(L.w);
   let x0=OX+f32(c)*CW+6.;let y0=OY+f32(r)*CH+6.;let ww=CW-12.;let fy=y0+CH-18.;
   var il=0.;var air=0.;
-  for(var i=0;i<ln;i++){let lx=x0+ww*(f32(i)+.5)/f32(ln);let q=lampI(w,vec2f(lx,y0+6.),fy,18.);il+=q.x;air+=q.y;}
+  for(var i=0;i<ln;i++){let lx=x0+ww*(f32(i)+.5)/f32(ln);let q=lampI(w,vec2f(lx,y0+6.),fy,18.,.3);il+=q.x;air+=q.y;}
   /* свои лампы станка — из карты света (синий канал маски): тот же свет */
   il+=ex*1.5;air+=ex*.35;
   let g=.55+.6*lit;
-  return vec4f(vec3f(.40,.40,.43)+L.rgb*min(il,3.)*g,air*g);}
+  return vec4f(vec3f(.52,.52,.55)+L.rgb*min(il,3.)*g,air*g);}
 /* тёплый свет, что сочится из выработки в породу: от кромки ближних отсеков */
 fn spill(w:vec2f,lit:f32)->vec3f{
   let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));var s=vec3f(0.);
@@ -205,18 +206,18 @@ fn rockAlb(w:vec2f)->vec3f{
   return a*vec3f(.49,.37,.25);}
 /* свет на породе: холодный воздух глубины и тепло из выработки */
 fn rockLight(w:vec2f,lit:f32)->vec3f{
-  var l=vec3f(.80,.88,1.02)+spill(w,lit)*1.4;
+  var l=vec3f(.80,.88,1.02)+spill(w,lit)*.5;
   if(w.y>GY){l*=(.66-fu.v[2].x)/.66;}
   return l;}
 fn maskAt(w:vec2f)->vec4f{return textureSampleLevel(t0,smp,(w-fu.v[1].xy)/fu.v[1].zw,0.);}
 /* фонарь над воротами: конус на порог */
 fn gateI(w:vec2f)->vec2f{
-  let e=fu.v[4].z;let q=lampI(w,fu.v[4].xy,GY+8.,40.);return q*(.35+e*.5)*vec2f(.55,1.);}
+  let e=fu.v[4].z;let q=lampI(w,fu.v[4].xy,GY+8.,40.,1.);return q*(.35+e*.5)*vec2f(.55,1.);}
 /* полость вне отсеков: тоннель, колонна лифта, ствол M396 */
 fn shaftLight(w:vec2f,lit:f32)->vec4f{
   var il=0.;var air=0.;
-  for(var i=0;i<3;i++){let q=lampI(w,vec2f(fu.v[5][i],fu.v[5].w),GY-2.,16.);il+=q.x*.9;air+=q.y;}
-  let cg=lampI(w,fu.v[3].xy,fu.v[3].w,26.);il+=cg.x;air+=cg.y;
+  for(var i=0;i<3;i++){let q=lampI(w,vec2f(fu.v[5][i],fu.v[5].w),GY-2.,16.,1.);il+=q.x*.9;air+=q.y;}
+  let cg=lampI(w,fu.v[3].xy,fu.v[3].w,26.,1.);il+=cg.x;air+=cg.y;
   let dx=abs(w.x-fu.v[3].z);
   if(w.y>OY&&w.y<OY+fu.v[4].w*CH){il+=exp(-dx/9.)*.55;}
   let g=.55+.6*lit;
@@ -249,6 +250,20 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
 /* ── поле воздуха: пыль в свете ламп, столб света, мороз и марево (смешение add) ── */
 function baseAirWgsl(){
   return baseWgslHead()+`
+/* тёплое пятно и кайма на породе — сложением, как «lighter» у main: пятно от центра
+   каждого целого отсека (r=.95 клетки, .20·lit; у реактора бирюзовое) и два штриха по
+   контуру выработки, 34 и 14 px. Множитель на тёмном камне их не давал (Контроль 26.09) */
+fn mspill(w:vec2f,lit:f32)->vec3f{
+  let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));var s=vec3f(0.);var sd0=1e9;
+  for(var dr=-2;dr<=2;dr++){for(var dc=-2;dc<=2;dc++){
+    let c=ci+dc;let r=ri+dr;let code=cellCode(c,r);if(code<=0.){continue;}
+    let ctr=vec2f(OX+(f32(c)+.5)*CW,OY+(f32(r)+.5)*CH);
+    let q=abs(w-ctr)-vec2f(CW*.5,CH*.5);sd0=min(sd0,length(max(q,vec2f(0.)))+min(max(q.x,q.y),0.));
+    if(code<16.){continue;}
+    let wc=select(vec3f(242.,178.,92.),vec3f(140.,240.,255.),u32(code)%16u==1u)/255.;
+    s+=wc*.20*max(0.,1.-(length(w-ctr)-4.)/(CW*.95-4.));}}
+  let rim=vec3f(1.,.8,.55)*.055*(1.-smoothstep(15.,19.,sd0))+vec3f(1.,.84,.61)*.08*(1.-smoothstep(6.,8.,sd0));
+  return (s*lit+rim*step(0.,sd0))*.75;}
 fn mote(w:vec2f,t:f32)->f32{
   let q=w+vec2f(sin(t*.13)*6.,-t*3.2);let id=floor(q/7.);let ii=vec2i(id);
   let h=h01(ii,3u);if(h>.30){return 0.;}
@@ -264,9 +279,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let rk=m.r*(1.-m.g);
   if(rk>.004){
     o+=rk*rockAlb(w)*rockLight(w,lit)*.42;
-    /* тёплый воздух у выработки: свет, рассеянный в пыли у кромки, — то, что у
-       2D было ореолом «lighter», только он гаснет с расстоянием от стены */
-    o+=rk*spill(w,lit)*spill(w,lit)*.10;}
+    o+=rk*mspill(w,lit);}
   if(m.g>.02){
     let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));
     let code=cellCode(ci,ri);

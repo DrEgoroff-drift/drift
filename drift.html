@@ -10485,10 +10485,17 @@ struct V{@builtin(position) p:vec4f,@location(0) uv:vec2f};
    экран кадр сводит плечо по каждому каналу: до .75 — как было, выше — мягко к единице,
    без плато (жёсткая обрезка давала плоские пятна). Яркий оранжевый уходит в золото,
    за единицей — в белый, как плёнка; плечо по старшему каналу держало оттенок, но кадр
-   от него выцветал в бежевый, а диск звезды — в розовый блин. Интерфейс — после плеча */
+   от него выцветал в бежевый, а диск звезды — в розовый блин. Интерфейс — после плеча.
+   На земле и в помещениях (u.dn.y — доля, gpuHueFor) плечо — по старшему каналу: там свет
+   рисован красками экрана, и лампа, огонь, фонарь по каналам выцветали в белый (Контроль
+   26.09, пять сцен). Оттенок держится; белеет только то, что светит много выше единицы */
 fn tone(c:vec3f)->vec3f{
   let K=.75;let x=max(c-vec3f(K),vec3f(0.));
-  return min(c,vec3f(K))+(1.-K)*(vec3f(1.)-exp(-x/(1.-K)));}
+  let pc=min(c,vec3f(K))+(1.-K)*(vec3f(1.)-exp(-x/(1.-K)));
+  let m=max(c.r,max(c.g,c.b));
+  if(u.dn.y<=0.||m<=K){return pc;}
+  let t=K+(1.-K)*(1.-exp(-(m-K)/(1.-K)));
+  return mix(pc,mix(c*(t/m),vec3f(t),smoothstep(2.,8.,m)),u.dn.y);}
 /* L4: преломление — горячий воздух за соплом и ударная волна разрыва не рисуются, а
    сдвигают то, что за ними (сцену). Источники кладёт gpuDistort: марево — вдоль факела,
    шум сносится потоком, доли пикселя; волна — кольцо, производная гауссианы по радиусу */
@@ -10541,7 +10548,11 @@ fn knee(c:vec3f,th:f32)->vec3f{
 /* те же плечо и колено в половинной точности (P2) — для лестницы свечения */
 fn toneH(c:H3)->H3{
   let K=H(.75);let x=max(c-H3(K),H3(0.));
-  return min(c,H3(K))+(H(1.)-K)*(H3(1.)-exp(-x/(H(1.)-K)));}
+  let pc=min(c,H3(K))+(H(1.)-K)*(H3(1.)-exp(-x/(H(1.)-K)));
+  let m=max(c.r,max(c.g,c.b));
+  if(u.dn.y<=0.||m<=K){return pc;}
+  let t=K+(H(1.)-K)*(H(1.)-exp(-(m-K)/(H(1.)-K)));
+  return mix(pc,mix(c*(t/m),H3(t),smoothstep(H(2.),H(8.),m)),H(u.dn.y));}
 fn kneeH(c:H3,th:H)->H3{
   let m=max(c.r,max(c.g,c.b));let kn=th*H(.4);
   let sk=clamp(m-th+kn,H(0.),H(2.)*kn);let q=max(sk*sk/(H(4.)*kn),m-th);
@@ -10884,6 +10895,11 @@ fn shAt(p:vec2f,sd:vec2f)->f32{
     k=min(k,mix(.4,1.,smoothstep(O.z*.75,O.z*1.05,length(q-sd*tt))));}
   return k;}
 `;
+/* плечо тона по режиму (tone в посте): в космосе — по каналам, как плёнка (L2: газ у
+   звезды уходит в золото, ядро луча — в белый); на земле и в помещениях — по старшему
+   каналу, лампа держит свой оттенок при любой яркости (Контроль 26.09) */
+const GPU_TONE_FILM=new Set(["system","map","belt","raid","scoop","wanderer","barge","rail"]);
+function gpuHueFor(m){return GPU_TONE_FILM.has(m)?0:1;}
 function gpuUni(){
   const a=GPU.UA,P=GPU.post;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
@@ -10893,7 +10909,7 @@ function gpuUni(){
   const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
   const Q=GPU.lens;a[56]=Q?Q.x:0;a[57]=Q?Q.y:0;a[58]=Q?Q.k:0;a[59]=Q?Q.r:0;
   a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
-  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;
+  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);
   for(let i=0;i<8;i++)for(let j=0;j<8;j++)a[68+i*8+j]=i<nd?D[i][j]:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
@@ -63809,16 +63825,19 @@ fn field(p0:vec2f,uv:vec2f)->vec4f{
   let gF=vec2f(dpdxFine(F.z)*dk,F.w/hF);
   let gN=vec2f(dpdxFine(N.z)*dk,N.w/H);
   let ld=L.xy;
-  let key=mix(.30,1.,L.z);
+  /* свой цвет газа — главный: лиловый гигант под рыжим светом терминатора и втрое
+     притушенный на ночной стороне становился бурым (Контроль 26.09) — ночь гасит до
+     .92, свет звезды только подкрашивает */
+  let key=mix(.92,1.,L.z);
   let sun=fu.v[3].rgb;
   /* тёплый свет у терминатора, холодный — днём; тень холодная всегда */
-  let lc=mix(mix(vec3f(1.),sun,.55),vec3f(1.,.62,.40),L.w);
+  let lc=mix(mix(vec3f(1.),sun,.2),vec3f(1.,.96,.94),L.w);
   let shF=clamp(1.-dot(gF,ld)*22.,.55,1.5);
-  var col=spal(F.x)*F.y*mix(vec3f(.78,.80,1.),lc,.6)*mix(1.,shF,key)*key;
+  var col=spal(F.x)*F.y*mix(vec3f(.90,.90,1.),lc,.6)*mix(1.,shF,key)*key;
   let cov=smoothstep(.50,.74,N.x)*smoothstep(.02,.18,(p.y-H*.05)/H);
   let shN=clamp(1.-dot(gN,ld)*30.,.5,1.6);
-  let nc=spal(min(N.x*1.05+.08,1.))*N.y*mix(vec3f(.78,.80,1.),lc,.7)*mix(1.,shN,key)*key;
-  col=mix(col,nc,cov*.78);
+  let nc=spal(min(N.x*1.02+.03,1.))*N.y*mix(vec3f(.78,.80,1.),lc,.7)*mix(1.,shN,key)*key;
+  col=mix(col,nc,cov*.62);
   /* свет звезды сквозь верхнюю дымку: ореол с её стороны, гаснет вглубь */
   let sd=length(p-Sn.xy)/Sn.z;
   col=col+sun*(.42*exp(-sd*2.2)+.10*exp(-sd*.7))*L.z*(1.-smoothstep(.15,.7,y));
@@ -73588,8 +73607,10 @@ function bCrate(x,y,w,h,c,lit,tag){
 function bLamp(cx,y,w,fy,col,a){
   if(BASE_PASS===3){                                        // свет — в карту поля
     const L=BASE_LIGHT,g=L.createLinearGradient(0,y,0,fy);
-    g.addColorStop(0,"rgba(0,0,255,"+Math.min(1,a*1.1).toFixed(3)+")");
-    g.addColorStop(1,"rgba(0,0,255,"+Math.min(1,a*.35).toFixed(3)+")");
+    /* сила конуса — как у main (.14 цвета лампы, к полу в ноль): поле умножает её
+       ×1.5, и прежние a·1.1→a·.35 давали белый столб (Контроль 26.09) */
+    g.addColorStop(0,"rgba(0,0,255,"+Math.min(1,a*.16).toFixed(3)+")");
+    g.addColorStop(1,"rgba(0,0,255,0)");
     L.save();L.globalCompositeOperation="lighter";L.fillStyle=g;L.beginPath();
     L.moveTo(cx-w/2,y);L.lineTo(cx+w/2,y);L.lineTo(cx+w*1.5,fy);L.lineTo(cx-w*1.5,fy);
     L.closePath();L.fill();L.restore();return;
@@ -74980,12 +75001,15 @@ battery(x0,y0,w,h,cx,fy,lit,seed,B,P){
    мачты и площадки — живые фигуры (`baseGroundLive`), свет ворот — в поле
    света (21ad). Материал планеты кладёт поле света: у 2D он был узором с
    overlay, у видеокарты — фактура, которую свет умножает. */
-/* гора: горб над базой, склон к равнине, плато вправо. Высота — до верха
-   кадра при самой высокой камере (раньше считалась от камеры, и форма горы
-   менялась, когда камера ехала вниз) */
+/* гора: горб над базой, склон к равнине, плато вправо. Раньше высота считалась
+   от камеры, и форма горы менялась, когда камера ехала вниз; потом — «до верха
+   кадра при самой высокой камере», и на 760×475 со второго яруса (там строят)
+   вершина уходила за кадр и съедала полосу неба с грядой (Контроль 26.09).
+   Теперь вершина — в 22 px под верхом кадра при камере второго яруса, как у
+   main в этом кадре: от размера кадра, не от камеры (выпечки ключуются W×H) */
 function baseHump(wx){
   const bMidX=BASE_OX+BASE_COLS*BCELL_W*.5, bHalf=BCELL_W*BASE_COLS*.62;
-  const mtnX0=BASE_GATE_X-95, mtnTop=Math.max(40,BASE_GY+120-22);
+  const mtnX0=BASE_GATE_X-95, mtnTop=Math.max(40,BASE_GY-Math.max(-120,cellY(1)-H/2)-22);
   const u=clamp((wx-mtnX0)/(bHalf*.95),0,1), s=u*u*(3-2*u);
   const plateau=clamp((wx-bMidX)/(bHalf*2.2),0,1)*14;
   return s*mtnTop-plateau;
@@ -76772,26 +76796,27 @@ fn h01(p:vec2i,s:u32)->f32{return f32(hu(p,s)&0xffffu)/65535.;}
 fn cellCode(c:i32,r:i32)->f32{
   if(c<0||c>=COLS||r<0||f32(r)>=min(fu.v[2].w,5.)){return 0.;}
   let i=r*COLS+c;return fu.v[6+i/4][i%4];}
-/* лампа под потолком: x — освещённость поверхностей, y — свет в воздухе конуса */
-fn lampI(w:vec2f,lp:vec2f,fy:f32,spread:f32)->vec2f{
+/* лампа под потолком: x — освещённость поверхностей, y — свет в воздухе конуса;
+   k — сила конуса и лужи (в отсеке они слабые, как у main: .14 цвета лампы) */
+fn lampI(w:vec2f,lp:vec2f,fy:f32,spread:f32,k:f32)->vec2f{
   let d=w-lp;let depth=clamp(d.y/max(fy-lp.y,1.),0.,1.);
   let hw=6.+spread*depth;
   let cone=smoothstep(-3.,4.,d.y)*(1.-smoothstep(hw-3.,hw+14.,abs(d.x)));
   let r2=dot(d,d);let fall=1./(1.+r2/4200.);
   let pool=exp(-d.x*d.x/(spread*spread*1.4))*exp(-(w.y-fy)*(w.y-fy)/36.);
   let halo=exp(-sqrt(r2)/9.);
-  return vec2f(cone*fall*1.05+pool*.7+halo*.5+fall*.18,cone*fall);}
+  return vec2f((cone*fall*1.05+pool*.7)*k+halo*.5+fall*.18,cone*fall*k);}
 /* свет отсека в точке: x — множитель, w — воздух (для пыли) */
 fn roomLight(w:vec2f,c:i32,r:i32,code:f32,lit:f32,ex:f32)->vec4f{
   if(code<16.){return vec4f(.50,.50,.56,0.);}            /* разбитый: ламп нет */
   let L=LC[u32(code)%16u-1u];let ln=i32(L.w);
   let x0=OX+f32(c)*CW+6.;let y0=OY+f32(r)*CH+6.;let ww=CW-12.;let fy=y0+CH-18.;
   var il=0.;var air=0.;
-  for(var i=0;i<ln;i++){let lx=x0+ww*(f32(i)+.5)/f32(ln);let q=lampI(w,vec2f(lx,y0+6.),fy,18.);il+=q.x;air+=q.y;}
+  for(var i=0;i<ln;i++){let lx=x0+ww*(f32(i)+.5)/f32(ln);let q=lampI(w,vec2f(lx,y0+6.),fy,18.,.3);il+=q.x;air+=q.y;}
   /* свои лампы станка — из карты света (синий канал маски): тот же свет */
   il+=ex*1.5;air+=ex*.35;
   let g=.55+.6*lit;
-  return vec4f(vec3f(.40,.40,.43)+L.rgb*min(il,3.)*g,air*g);}
+  return vec4f(vec3f(.52,.52,.55)+L.rgb*min(il,3.)*g,air*g);}
 /* тёплый свет, что сочится из выработки в породу: от кромки ближних отсеков */
 fn spill(w:vec2f,lit:f32)->vec3f{
   let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));var s=vec3f(0.);
@@ -76822,18 +76847,18 @@ fn rockAlb(w:vec2f)->vec3f{
   return a*vec3f(.49,.37,.25);}
 /* свет на породе: холодный воздух глубины и тепло из выработки */
 fn rockLight(w:vec2f,lit:f32)->vec3f{
-  var l=vec3f(.80,.88,1.02)+spill(w,lit)*1.4;
+  var l=vec3f(.80,.88,1.02)+spill(w,lit)*.5;
   if(w.y>GY){l*=(.66-fu.v[2].x)/.66;}
   return l;}
 fn maskAt(w:vec2f)->vec4f{return textureSampleLevel(t0,smp,(w-fu.v[1].xy)/fu.v[1].zw,0.);}
 /* фонарь над воротами: конус на порог */
 fn gateI(w:vec2f)->vec2f{
-  let e=fu.v[4].z;let q=lampI(w,fu.v[4].xy,GY+8.,40.);return q*(.35+e*.5)*vec2f(.55,1.);}
+  let e=fu.v[4].z;let q=lampI(w,fu.v[4].xy,GY+8.,40.,1.);return q*(.35+e*.5)*vec2f(.55,1.);}
 /* полость вне отсеков: тоннель, колонна лифта, ствол M396 */
 fn shaftLight(w:vec2f,lit:f32)->vec4f{
   var il=0.;var air=0.;
-  for(var i=0;i<3;i++){let q=lampI(w,vec2f(fu.v[5][i],fu.v[5].w),GY-2.,16.);il+=q.x*.9;air+=q.y;}
-  let cg=lampI(w,fu.v[3].xy,fu.v[3].w,26.);il+=cg.x;air+=cg.y;
+  for(var i=0;i<3;i++){let q=lampI(w,vec2f(fu.v[5][i],fu.v[5].w),GY-2.,16.,1.);il+=q.x*.9;air+=q.y;}
+  let cg=lampI(w,fu.v[3].xy,fu.v[3].w,26.,1.);il+=cg.x;air+=cg.y;
   let dx=abs(w.x-fu.v[3].z);
   if(w.y>OY&&w.y<OY+fu.v[4].w*CH){il+=exp(-dx/9.)*.55;}
   let g=.55+.6*lit;
@@ -76866,6 +76891,20 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
 /* ── поле воздуха: пыль в свете ламп, столб света, мороз и марево (смешение add) ── */
 function baseAirWgsl(){
   return baseWgslHead()+`
+/* тёплое пятно и кайма на породе — сложением, как «lighter» у main: пятно от центра
+   каждого целого отсека (r=.95 клетки, .20·lit; у реактора бирюзовое) и два штриха по
+   контуру выработки, 34 и 14 px. Множитель на тёмном камне их не давал (Контроль 26.09) */
+fn mspill(w:vec2f,lit:f32)->vec3f{
+  let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));var s=vec3f(0.);var sd0=1e9;
+  for(var dr=-2;dr<=2;dr++){for(var dc=-2;dc<=2;dc++){
+    let c=ci+dc;let r=ri+dr;let code=cellCode(c,r);if(code<=0.){continue;}
+    let ctr=vec2f(OX+(f32(c)+.5)*CW,OY+(f32(r)+.5)*CH);
+    let q=abs(w-ctr)-vec2f(CW*.5,CH*.5);sd0=min(sd0,length(max(q,vec2f(0.)))+min(max(q.x,q.y),0.));
+    if(code<16.){continue;}
+    let wc=select(vec3f(242.,178.,92.),vec3f(140.,240.,255.),u32(code)%16u==1u)/255.;
+    s+=wc*.20*max(0.,1.-(length(w-ctr)-4.)/(CW*.95-4.));}}
+  let rim=vec3f(1.,.8,.55)*.055*(1.-smoothstep(15.,19.,sd0))+vec3f(1.,.84,.61)*.08*(1.-smoothstep(6.,8.,sd0));
+  return (s*lit+rim*step(0.,sd0))*.75;}
 fn mote(w:vec2f,t:f32)->f32{
   let q=w+vec2f(sin(t*.13)*6.,-t*3.2);let id=floor(q/7.);let ii=vec2i(id);
   let h=h01(ii,3u);if(h>.30){return 0.;}
@@ -76881,9 +76920,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let rk=m.r*(1.-m.g);
   if(rk>.004){
     o+=rk*rockAlb(w)*rockLight(w,lit)*.42;
-    /* тёплый воздух у выработки: свет, рассеянный в пыли у кромки, — то, что у
-       2D было ореолом «lighter», только он гаснет с расстоянием от стены */
-    o+=rk*spill(w,lit)*spill(w,lit)*.10;}
+    o+=rk*mspill(w,lit);}
   if(m.g>.02){
     let ci=i32(floor((w.x-OX)/CW));let ri=i32(floor((w.y-OY)/CH));
     let code=cellCode(ci,ri);
@@ -83180,6 +83217,23 @@ function caveMaskCv(C){
   c.putImageData(im,0,0);
   return C.maskCv=cv;
 }
+/* тёплое зарево сложением — то, что у main было спрайтом «lighter» поверх темноты: у фонаря
+   пещеры и шахты, пятно на полу перед ходоком. Множитель поля на тёмной породе их не давал —
+   тёплое пятно исчезало (Контроль 26.09). Центр и радиусы — пиксели кадра; профиль 0 —
+   (1−t)^2.2, как у спрайтов, 1 — три ступени градиента пятна (a, .556a на .45, ноль) */
+const WARM_GLOW_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let A=fu.v[0];let B=fu.v[1];
+  let t=length((p-A.xy)/max(A.zw,vec2f(1.)));
+  if(t>=1.){return vec4f(0.);}
+  var a=B.w*pow(1.-t,2.2);
+  if(fu.v[2].x>.5){a=select(mix(B.w*.556,0.,(t-.45)/.55),mix(B.w,B.w*.556,t/.45),t<.45);}
+  return vec4f(B.rgb*a,0.);}`;
+const WARM_GLOW_U=new Float32Array(12);
+function warmGlow(pass,x,y,rx,ry,col,a,prof){
+  const U=WARM_GLOW_U;U[0]=x;U[1]=y;U[2]=rx;U[3]=ry;U[4]=col[0];U[5]=col[1];U[6]=col[2];U[7]=a;U[8]=prof|0;
+  gpuField(pass,"warm.glow",WARM_GLOW_WGSL,U,null,{blend:"add"});
+}
 /* источник в поле: x, y, радиус и упакованный цвет×сила */
 function caveLitPack(r,g,b,I){
   const q=v=>Math.max(0,Math.min(255,Math.round(v*I*100)));
@@ -83265,6 +83319,11 @@ function drawCaveLight(C,camx,camy,lamp){
   const mt={view:gpuMipTex(caveMaskCv(C)).view},sm=gpuMipSmp();
   gpuField(pass,"cave.mul",CAVE_MUL_WGSL+CAVE_OWN_WGSL,U,[mt],{blend:"mul",smp:sm});
   gpuField(pass,"cave.add",CAVE_ADD_WGSL+CAVE_OWN_WGSL,U,[mt],{blend:"add",smp:sm});
+  /* тёплое у фонаря, как у main: зарево .24 на .72 круга фонаря (R=.52·max(W,H)) и пятно
+     на полу перед ходоком — эллипс 120×44, .18/.10/0 */
+  const R=Math.max(W,H)*.52*lk,f=lamp.f||1;
+  warmGlow(pass,(C.x-camx)*K,(C.y-25-camy)*K,R*.72*K,R*.72*K,[1,.784,.518],.24,0);
+  warmGlow(pass,(C.x+f*46-camx)*K,(C.y-3-camy)*K,120*lk*K,44*lk*K,[1,.839,.588],.18,1);
   caveEmit(C,camx,camy,pass,K);
 }
 /* руда светит сама (L2): ядро выше единицы — узкий ореол в лестнице свечения,
@@ -84954,6 +85013,11 @@ function drawDigLight(D,p,camx,camy,lamp){
   const mt={view:gpuMipTex(M.cv).view},sm=gpuMipSmp();
   gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,U,[mt],{blend:"mul",smp:sm});
   gpuField(pass,"dig.add",CAVE_ADD_WGSL+DIG_OWN_WGSL,U,[mt],{blend:"add",smp:sm});
+  /* тёплое зарево у налобника — сложением, как «digwarm» у main (.20·(1−t)^2.2 на .34
+     от max(W,H)·.62): тёплый акцент против холодной породы. Множитель поля его не давал —
+     на тёмном камне тёплое пятно исчезало (Контроль 26.09) */
+  const Rw=Math.max(W,H)*.62*.34*K;
+  warmGlow(pass,(lamp.x-camx)*K,(lamp.y-camy)*K,Rw,Rw,[1,.776,.502],.20,0);
   digEmit(D,camx,camy,pass,K);
   if(D._lamps)D._lamps.length=0;
 }
@@ -108624,9 +108688,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let lp=vec2f(lx,ce+m*.62);
     let d=length((p-lp)/vec2f(m*1.6,m*1.3));
     L=L+WARM*(.22/(1.+d*d));
-    L=L+WARM*lampCone(p,lx,ce+m*.62,fy,m)*.20;
+    /* конус и лужу рисует задний слой сложением (hinPaintBack); здесь — только
+       добавка света на то, что в них стоит, иначе конус вдвое ярче, чем в main */
+    L=L+WARM*lampCone(p,lx,ce+m*.62,fy,m)*.05;
     let pd=length((p-vec2f(lx,fy))/vec2f(m*1.8,m*.36));
-    L=L+WARM*.30*(1.-smoothstep(.15,1.,pd));
+    L=L+WARM*.08*(1.-smoothstep(.15,1.,pd));
   }
   for(var i=0;i<8;i++){
     let wx=fu.v[3+i/4][i%4];if(wx<-9e3){continue;}
@@ -108774,6 +108840,31 @@ function hinPaintBack(R,x0,cw,P,S){
       }
     }
   }
+  /* ── свет ДО обстановки: конус и лужа на полу сложением, как в main ──
+     Только умножением (hinLight) на тёмной стене конуса не видно: стена ×1.2
+     остаётся тёмной (Контроль 26.09, «конусов и пятен на полу почти нет»).
+     Сложение лежит в заднем слое ПОД вещами — положенный последним, конус
+     читался плёнкой поверх мебели (M170). Поле света умножает его вместе со
+     стеной. Край отбора — шире лужи (1.7 роста) и поля куска, иначе шов */
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  for(const r of R){
+    const lx=r.x+r.w*.5;
+    if(lx<camx-40-HIN_MAN*2||lx>camx+vw+40+HIN_MAN*2)continue;
+    const cg=ctx.createLinearGradient(0,ceil+HIN_MAN*.62,0,0);
+    cg.addColorStop(0,"rgba(255,206,138,.22)");
+    cg.addColorStop(.7,"rgba(255,196,130,.08)");
+    cg.addColorStop(1,"rgba(255,180,110,0)");
+    ctx.fillStyle=cg;
+    ctx.beginPath();
+    ctx.moveTo(lx-HIN_MAN*.22,ceil+HIN_MAN*.62);ctx.lineTo(lx+HIN_MAN*.22,ceil+HIN_MAN*.62);
+    ctx.lineTo(lx+HIN_MAN*1.5,0);ctx.lineTo(lx-HIN_MAN*1.5,0);ctx.closePath();ctx.fill();
+    const fgl=ctx.createRadialGradient(lx,0,2,lx,0,HIN_MAN*1.7);
+    fgl.addColorStop(0,"rgba(255,206,138,.24)");
+    fgl.addColorStop(1,"rgba(255,180,110,0)");
+    ctx.fillStyle=fgl;
+    ctx.beginPath();ctx.ellipse(lx,0,HIN_MAN*1.7,HIN_MAN*.32,0,0,TAU);ctx.fill();
+  }
+  ctx.restore();
   /* ── окно на первом этаже (M247) ──
      Внизу окон не было вовсе — «наверху окно, внизу нет». Ставим по окну в
      каждой второй комнате: холодное небо и вторая температура в кадре. Лужа
@@ -110496,16 +110587,18 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let fd=length((p-vec2f(sc.x,flo+Ht*.02))/vec2f(dr.z*1.9,Ht*.03));
     c=c+WARM*sk*fl*.16*(1.-smoothstep(.2,1.,fd));
   }
-  /* лампа: конус в воздухе и пятно на полу */
+  /* лампа: конус в воздухе и пятно на полу. Сила — как у main (конус .16 к полу в ноль,
+     пятно .10, окно .26/.10/0): вдвое сильнее давали столб ярче стены в полтора раза
+     (Контроль 26.09: «конус и пятно на полу по яркости и цвету как в main») */
   let lk=fu.v[3].x;
   if(lk>0.){
     let lx=fu.v[3].y;let ly=fu.v[3].z;
     let cone=trap(p,ly,flo,lx,man*.12,lx,man*1.05,man*.07);
     let v=clamp((p.y-ly)/(flo-ly),0.,1.);
     let dust=.70+.6*rfbm(vec2f(p.x/(man*.18),p.y/(man*.22)-t*.05));
-    c=c+LAMP*lk*cone*(.30*(1.-v*.8))*dust;
+    c=c+LAMP*lk*cone*(.16*(1.-v))*dust;
     let pd=length((p-vec2f(lx,flo+Ht*.012))/vec2f(man*1.0,Ht*.026));
-    c=c+LAMP*lk*.20*(1.-smoothstep(.1,1.,pd));
+    c=c+LAMP*lk*.10*(1.-smoothstep(.1,1.,pd));
     let gd=length((p-vec2f(lx,ly))/man);
     c=c+LAMP*lk*.06/(1.+gd*gd*4.);
   }
@@ -110514,7 +110607,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let wb=w.y+w.w;
   let tr=trap(p,wb,flo+Ht*.05,w.x+w.z*.5,w.z*.5,w.x+w.z*.5,w.z*.95,w.z*.06);
   let tv=clamp((p.y-wb)/(flo+Ht*.05-wb),0.,1.);
-  c=c+COLD*tr*mix(.36,.02,pow(tv,.8))*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
+  c=c+COLD*tr*select(mix(.10,0.,(tv-.55)/.45),mix(.26,.10,tv/.55),tv<.55)*(.85+.3*rfbm(vec2f(p.x*.02-t*.3,p.y*.03)));
   let wd=length((p-(w.xy+w.zw*.5))/vec2f(w.z*1.5,w.z*1.5));
   c=c+COLD*.13*(1.-smoothstep(.12,1.,wd));
   return vec4f(c,0.);}`;
