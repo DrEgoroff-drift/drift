@@ -1902,6 +1902,23 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   light +3.6 %, sharp +2.8 %, S .499 → .422, >250 px .387 → .388 %; 760 standing light +3.3 %, sharp +5.1 %.
   Deferred by Контроль to after the release: the cold zone hangs as a spot mid-mass; the purple on the right
   is at the edge of sweet.
+  Round 3 (26.09, the author chose «B с розовым»): no common lilac. Depth turns toward the system's OWN
+  shadow `c` (its YIQ angle in the free slot `u.j.w`, `gnbDeep`), every `hto` turn is a short arc ≤ 45° and
+  only toward a near tone (orange→teal went through olive, orange→blue through raspberry), cold palettes
+  barely turn (`tw`), a cold pixel never warms (`cw`). The lobe the author liked in round 2 was the
+  ionisation zone, not depth: orange→azure through magenta, > 100°. It is back as `lav`: near the star the
+  gas mixes in OKLab toward the shadow tone clamped into the lavender band (YIQ 2.3–2.6 rad), chroma floor
+  85 % of the interpolated one (without it the middle goes grey and S falls 25–38 % in FILL), lightness
+  never lower; radius .65 frame heights. Weaker where it would flood the field: ×(1 − cld(mid)) (ice as
+  strict), ×(1 − .7·fill), ×(1 − .5·max cld(A, B)) (a palette with its own teal). l2c lobe: hue 289°
+  (round 2 279°), lavender 63 %, raspberry 32 % (23 %). 8 systems × 390/760/1920 vs the site: S −8 %
+  (amber 760) … +6 %, neon 0, edges and >250 unchanged; the amber lobe's outer rim goes pink — the author
+  keeps it as a natural transition. Rejected: the strict ≤ 45° variant (the l2c lobe gone, the frame ≈
+  the site), the zone turned uncapped to `c` (raspberry lobe, lilac over 1920, FILL S −20 %), noise lobes
+  (lost the author's lobe). Motion, 390 at 150 px/s: frame-to-frame residual 0.41 → 0.50 grey levels, but
+  the round-trip resampling floor is 0.02–0.04 and the back-and-forth jitter (|b − (a+c)/2|) per unit of
+  gas brightness is the same .0028 for the site, round 2, strict and B — the residual follows the brighter
+  gas and its drift, not flicker.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.
