@@ -103,3 +103,53 @@ TEST_SUITES.push(()=>suite("пещера и шахта G7: художники т
   ok(lg.calls>200,"порода шахты: три тайла, вызовов канвы "+lg.calls);
   resetWorld();
 }));
+
+/* ── спуск (Контроль 26.09) ──
+   Под землёй пласты без материала планеты: «|m» из ключа подземных тайлов убран (8d3c61b6).
+   Спуск с поверхности, где материал уже испёкся, обязан дать те же пласты, что и холодный вход:
+   без серости и без перепечки всего подземелья. Тайл записывается GPU-холстом (как в выпечке),
+   подпись — команды с их вершинами и красками */
+function descSig(draw){
+  const g=new GcCtx(TILE,TILE,1),prev=ctx,pW=W,pH=H;
+  ctx=g;W=TILE;H=TILE;
+  try{draw();}finally{ctx=prev;W=pW;H=pH;}
+  return g._ops.map(o=>{const p=o.p||{},v=o.v||[];let s=0;for(let i=0;i<v.length;i+=5)s+=v[i];
+    return o.t+(o.op||"")+v.length+":"+Math.round(s*10)+(p.c?":"+p.c.map(x=>Math.round(x*255)).join(","):"")+
+      ":k"+(p.k==null?"-":p.k)+(p.img||o.view?":img":"");}).join(";");
+}
+TEST_SUITES.push(()=>suite("спуск: пещера и шахта одинаковы с материалом планеты и без",()=>{
+  resetWorld();
+  const cp=landOnTestPlanet();
+  if(!G.surf.cave)G.surf.cave={x:G.surf.x+80};
+  delete cp.mat;delete cp.matCn;MAT_JOB=null;
+  /* ключи хранилищ подземных тайлов — как их строит кадр */
+  const keys=[],ts0=gpuTileStore;
+  gpuTileStore=function(s,k){keys.push(String(k).replace(/~.*$/,""));return ts0.apply(this,arguments);};
+  const frameKeys=draw=>{keys.length=0;draw();return keys.slice().sort().join(" ; ");};
+  let caveCold,caveWarm,digCold,digWarm,kCaveCold,kCaveWarm,kDigCold,kDigWarm;
+  try{
+    enterCave();
+    const C=G.cave,T4=[[0,0],[512,0],[1024,512]];
+    const rock=()=>descSig(()=>{for(const [x,y] of T4)drawCaveRock(C,cp,x,y);});
+    caveCold=rock();kCaveCold=frameKeys(drawCave);
+    exitCave();enterDig();
+    const D=G.dig,T3=[[-256,-256],[256,1024]];
+    const dig=()=>descSig(()=>{for(const [x,y] of T3)digRockPass(D,cp,x,y);});
+    digCold=dig();kDigCold=frameKeys(drawDig);
+    ok(!cp.mat,"материал ещё не испечён — холодный вход");
+    planetMatNow(cp);
+    ok(!!cp.mat,"материал испечён — спуск с поверхности");
+    digWarm=dig();kDigWarm=frameKeys(drawDig);
+    exitDig();enterCave();
+    caveWarm=rock();kCaveWarm=frameKeys(drawCave);
+  }finally{gpuTileStore=ts0;}
+  ok(caveCold.length>200,"порода пещеры записана ("+caveCold.split(";").length+" команд)");
+  ok(digCold.length>200,"порода шахты записана ("+digCold.split(";").length+" команд)");
+  ok(caveWarm===caveCold,"пещера: те же пласты с готовым материалом");
+  ok(digWarm===digCold,"шахта: те же пласты с готовым материалом");
+  ok(/cavefar/.test(kCaveCold)&&kCaveCold.split(" ; ").length>=2,"кадр пещеры спросил хранилища тайлов: "+kCaveCold);
+  ok(kDigCold.length>0,"кадр шахты спросил хранилище тайлов: "+kDigCold);
+  eq(kCaveWarm,kCaveCold,"ключ тайлов пещеры готовности материала не знает — спуск не перепекает");
+  eq(kDigWarm,kDigCold,"ключ тайлов шахты готовности материала не знает");
+  resetWorld();
+}));

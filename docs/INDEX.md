@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 672 · символов верхнего уровня: 6882
+Файлов: 672 · символов верхнего уровня: 6883
 
 ## СИМВОЛЫ
 
@@ -2926,6 +2926,7 @@ decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 depKind                      src/21b-surface-deco.js:396-405
 deployDrone                  src/12-economy.js:234-251
+descSig                      tests/91zzza1-cave-gpu.js:112-119
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 detBgShift                   tests/90b-detect.js:150-164
@@ -8613,7 +8614,7 @@ zoomTo                       src/15-input.js:350
 
 ## tests/91zzza-trace.js · 5 КБ
 
-## tests/91zzza1-cave-gpu.js · 7 КБ
+## tests/91zzza1-cave-gpu.js · 10 КБ
   · пещера G7: свет от источников (22c):1
 
 ## tests/91zzzb-bio.js · 13 КБ
