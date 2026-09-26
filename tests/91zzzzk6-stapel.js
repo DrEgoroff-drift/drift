@@ -414,7 +414,7 @@ TEST_SUITES.push(()=>suite("едоки дальнего: верфь, земля,
   eq(farEaterMul(trade,"amber","km"),1.5,"янтарь — ювелиры Коммуны, как было");
 }));
 /* протяжка ползунка (26.09): лист — не чаще раза в кадр, последнее значение побеждает */
-TEST_SUITES.push(()=>suite("стапель: протяжка ползунка — один лист на кадр, последнее значение",{tier:"browser"},()=>{
+TEST_SUITES.push(()=>suite("стапель: протяжка — черновик без выпечки, по отпусканию ровно один лист",{tier:"browser"},()=>{
   resetWorld();
   if(!GPU.ok||!GPU.dev){ok(typeof stapelLater==="function","без видеокарты лист рисуется сразу");return;}
   let at=null;
@@ -422,19 +422,35 @@ TEST_SUITES.push(()=>suite("стапель: протяжка ползунка �
     const s=getSystem(sx,sy);if(s.station&&s.station.stype==="yard"&&stampOwnerAt(sx,sy))at=[sx,sy];}
   G.sx=at[0];G.sy=at[1];G.sys=getSystem(G.sx,G.sy);G.st=G.sys.station;
   const U0=Object.assign({},STAPEL_UI),box=stapelBlock(),sl=box.querySelector("input[type=range]");
-  const sh=stapelSheet;let ns=0;
+  const sh=stapelSheet,tick=()=>gpuManual(()=>{stapelHullTick();});let ns=0;
   try{
     document.body.appendChild(box);$st.classList.add("open");
-    gpuManual(()=>{stapelHullTick();});
+    tick();
+    const cv0=sh.gd.cv,nc0=STP_G.nc;
+    ok(STP_G.C&&STP_G.ck===sh.gd.ck,"чистый лист черновика испечён вместе с полным");
     window.stapelSheet=function(){ns++;return sh.apply(this,arguments);};Object.assign(window.stapelSheet,{last:sh.last,gd:sh.gd});
     const n0=STP_G.n;
     for(const v of [.86,.95,1.05,1.1,1.14]){sl.value=v;sl.dispatchEvent(new Event("input"));}
     eq(ns,0,"события ввода листа не рисуют — ждут кадра");
     eq(STAPEL_UI.l,1.14,"значение ползунка принято сразу");
-    gpuManual(()=>{stapelHullTick();});
-    eq(ns,1,"кадр — один лист на пять событий");
-    eq(STP_G.n-n0,1,"и одна выпечка");
-    gpuManual(()=>{stapelHullTick();});
-    eq(ns,1,"следующий кадр без событий — листа нет");
+    tick();
+    eq(ns,1,"кадр — один черновик на пять событий");
+    ok(stapelSheet.gd.draft,"на протяжке — черновик");
+    eq(stapelSheet.gd.cv,cv0,"холст листа прежний: вёрстка не дёргается");
+    for(const v of [1.02,.9]){sl.value=v;sl.dispatchEvent(new Event("input"));tick();}
+    eq(ns,3,"кадр на значение — черновик на кадр");
+    eq(STP_G.n-n0,0,"протяжка — ни одной выпечки листа");
+    eq(STP_G.nc,nc0,"и чистый лист не перепечён");
+    const g=stapelSheet.gd.geo,last=JSON.stringify(stapelSheet.last);
+    ok(g.ink.length>10,"корпус черновика — тушью по путям его же кистей ("+g.ink.length+")");
+    sl.dispatchEvent(new Event("change"));
+    tick();
+    eq(STP_G.n-n0,1,"отпустили — ровно одна выпечка");
+    ok(!stapelSheet.gd.draft,"и это полный лист");
+    const f=stapelSheet.gd.geo;
+    for(const k of ["sc","X0","Y0","xn","xt","hw"])near(f[k],g[k],1e-9,"рамка и масштаб те же, что у черновика: "+k);
+    eq(JSON.stringify(stapelSheet.last),last,"метры те же");
+    for(let i=0;i<3;i++)tick();
+    eq(STP_G.n-n0,1,"смена и следующие кадры — без выпечек");
   }finally{window.stapelSheet=sh;box.remove();$st.classList.remove("open");STAPEL_UI=U0;STP_G.pend=null;}
 }));

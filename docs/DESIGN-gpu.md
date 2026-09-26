@@ -1052,7 +1052,22 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      the frame (`stapelLater`), at most one sheet and one bake per frame, the last value wins (guard). Drag
      frame at CPU ×4 (own headless Chrome, AMD, warm): p50 57 ms, p95 83–117 ms — over 33. Half density was
      tried and dropped (p50 82, p95 168–343: the bake is CPU-bound on tessellation, and a sheet under 512 px
-     goes to ss 2). Open: what to show while dragging — Контроль's call.
+     goes to ss 2). Контроль chose (а), a draft while dragging — done: `oninput` asks for a draft
+     (`stapelDraft`), `onchange` for one full sheet. The draft is a drawing, not a placeholder: a clean sheet
+     (floor, lamp, emblem — hull-independent, baked once with the full sheet, `STP_G.C`), then ov primitives
+     in the frame, no bake: rails at the hull's width, a dash-dot axis, the hull in thin ink along the paths
+     of its own brushes (`stapelHullBox(hl,true)` keeps the opaque fill and stroke paths from the record),
+     body and wings in a bold line on top, dimension lines with live metres (the width label upright, as on
+     the sheet: `ovText(..., vert)` rasters the glyphs turned −90°). The box is the exact one every draft
+     frame, so the release lands on the same frame, scale and metres (guard checks X0, Y0, sc, xn, xt, hw),
+     on the same canvas (no layout change), and fades in over the draft in 120 ms. To afford the exact box
+     per frame, `stapelHullBox` no longer cuts what cannot grow it: a fill or stroke whose points (plus half
+     width with miter room) lie inside the box so far goes uncut — 216 hulls byte-identical to the full
+     record, 3.2 → 2.0 ms in the pane; text in the box record is sized without a mask raster (08cb
+     `raster(..., dry)`). Drag at CPU ×4 (own headless, AMD, warm reps): p50 18–20 ms, p95 25.5–30.7 ms,
+     0 sheet bakes while dragging, release 47–58 ms with exactly one. Pair `pair_draft.png` (scratchpad,
+     390 px, dpr 2: draft left, full sheet right, three classes). Guard «стапель: протяжка — черновик без
+     выпечки, по отпусканию ровно один лист».
   3. Look 28y / item h — done: `makerRead` looks at the engine's picture. `makerFeat` draws the hull with the
      studio (17c2 `hullStudio`, the ОПИСЬ one: GPU bake of the same brushes, lit by relief as in flight) into a
      52 px `webgpu` canvas and reads it back in the same task (`drawImage` into a 2D canvas, as `gpuTakeSnap`).
@@ -1062,7 +1077,9 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
      is the studio's key light on the tone features. Time 36.7 → 16.7 s and 46 → 14 s. Pair
      `pair_maker.png` (scratchpad): 7 classes × 6 makers, 2D row over engine row, same silhouettes, lit.
      A 760/390 pair does not apply: the instrument draws off screen. Guard in 91j-art: 0 `drawHull` over
-     `makerRead(14)`.
+     `makerRead(14)`. Rule (Контроль, 26.09): if the maker gate falls, fix the maker's look, not the
+     instrument's light — ГЛАВТРАССА (84.8 %) falls first, and its mark must read under light; the studio
+     light is never flattened for `makerRead`.
   4. 29d:482 stays the last 03e1 holder of my zone until the homein frame moves to the engine (Контроль,
      variant c).
   5. Home room 27e — done: `drawHomeRoom` bakes the room with the same brushes (08ca) when the tab is drawn

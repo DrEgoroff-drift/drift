@@ -135,7 +135,7 @@ function ovPush(Q,x0,y0,x1,y1,c,m,l,tx,ty,t){
 const OVL_RUN=/[0-9]+|[^0-9]+/g;
 /* строка в очередь Q: (x,y) — якорь в пикселях CSS по align и base, sc — масштаб шрифта (фишка — U).
    Возвращает рамку в CSS: для проверок наложения */
-function ovText(Q,x,y,text,font,col,align,base,al,sc){
+function ovText(Q,x,y,text,font,col,align,base,al,sc,vert){
   const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:"left"}),c=gcColor(col),a=c[3]*al;
   if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1]*sc,main:true});}
   const pm=[c[0]*a,c[1]*a,c[2]*a,a];
@@ -144,18 +144,22 @@ function ovText(Q,x,y,text,font,col,align,base,al,sc){
   for(const s of runs){const dg=s.charCodeAt(0)<58&&s.charCodeAt(0)>47,m=dg?d0:GC_GLYPHS.measure(st,s);
     tw+=dg?adv*s.length:m.width*sc;up=Math.max(up,m.actualBoundingBoxAscent*sc);dn=Math.max(dn,m.actualBoundingBoxDescent*sc);}
   /* начало строки — на целый пиксель устройства, как у прежних DOM-подписей: на ходу строка шагает
-     пикселем, а фазы цифр внутри неё постоянны — новой маски движение не просит */
-  const x0=Math.round((align==="center"?x-tw/2:(align==="right"||align==="end")?x-tw:x)*nd)/nd,iy=Math.round(y*nd),M=[nd*sc,0,0,nd*sc];
-  const put=(s,cx)=>{const X=cx*nd;let ix=Math.floor(X),ph=Math.round((X-ix)*4)/4;if(ph>=1){ix++;ph=0;}
-    const kb=font+"|"+base+"|"+M[0]+"|"+ph+"|",mk=g=>()=>GC_GLYPHS.raster(st,g,M,ph,0,null,undefined,"#fff");   /* маска — одна альфа, цвет не нужен */
+     пикселем, а фазы цифр внутри неё постоянны — новой маски движение не просит.
+     vert — строка снизу вверх, как 2D под rotate(-π/2) с центром в (x,y): перо идёт вверх, фаза — по y */
+  const t0=align==="center"?tw/2:(align==="right"||align==="end")?tw:0,k=nd*sc,M=vert?[0,-k,k,0]:[k,0,0,k];
+  const x0=Math.round((vert?y+t0:x-t0)*nd)/nd,iy=Math.round((vert?x:y)*nd);
+  const put=(s,cx)=>{const X=(vert?2*x0-cx:cx)*nd;let ix=Math.floor(X),ph=Math.round((X-ix)*4)/4;if(ph>=1){ix++;ph=0;}
+    const kb=font+"|"+base+"|"+M[0]+"|"+M[1]+"|"+ph+"|",mk=g=>()=>GC_GLYPHS.raster(st,g,M,vert?0:ph,vert?ph:0,null,undefined,"#fff");   /* маска — одна альфа, цвет не нужен */
     /* цифра, которой нет, — все десять сразу: число меняется в полёте, а растр — только в первый раз */
     if(s.length===1&&s>="0"&&s<="9"&&!OVL.A.map.has(kb+s))for(let g=0;g<10;g++)ovAtlas(kb+g,mk(String(g)));
     const e=ovAtlas(kb+s,mk(s));
-    ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,pm,1,e.l,e.x,e.y,null);};
+    if(vert)ovPush(Q,iy-e.ox,ix-e.oy,iy-e.ox+e.w,ix-e.oy+e.h,pm,1,e.l,e.x,e.y,null);
+    else ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,pm,1,e.l,e.x,e.y,null);};
   let cx=x0;
   for(const s of runs){
     if(s.charCodeAt(0)<58&&s.charCodeAt(0)>47){for(let i=0;i<s.length;i++)put(s[i],cx+i*adv);cx+=adv*s.length;}
     else{put(s,cx);cx+=GC_GLYPHS.measure(st,s).width*sc;}}
+  if(vert)return {x0:x-up,x1:x+dn,y0:x0-tw,y1:x0};
   return {x0,x1:x0+tw,y0:y-up,y1:y+dn};
 }
 /* подпись мира k (имя станции, планеты, борта): y — как у fillText при нынешнем ctx.textBaseline.
