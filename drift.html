@@ -78213,7 +78213,7 @@ function fridgeStep(B,n){
 BASE_ROOM.fridge=BASE_ROOM.fridgesub=function(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r){
   const cell=B?baseCell(B,c,r):null,lock=!!(cell&&cell.k==="fridgesub"&&fridgeLocked());
   const fw=Math.min(34,w*.24),fh=Math.min(h-20,64);
-  for(let i=0;i<2;i++){
+  if(bS())for(let i=0;i<2;i++){
     const fx=x0+w*.20+i*(fw+6),fyT=fy-fh;
     ctx.fillStyle="rgba(0,0,0,.30)";ctx.beginPath();ctx.ellipse(fx+fw/2,fy-1,fw*.6,2.6,0,0,TAU);ctx.fill();
     bBox(fx,fyT,fw,fh,"rgba(138,146,148,.97)",lit,"rgba(0,0,0,.45)");   /* белый на ступень ниже, к тону стен */
@@ -78224,6 +78224,10 @@ BASE_ROOM.fridge=BASE_ROOM.fridgesub=function(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r){
     /* шов морозилки и ручки */
     ctx.fillStyle="rgba(60,70,78,.9)";ctx.fillRect(fx+1,fyT+fh*.32,fw-2,1.2);
     ctx.fillStyle="rgba(90,100,108,.95)";ctx.fillRect(fx+fw-6,fyT+6,2,fh*.18);ctx.fillRect(fx+fw-6,fyT+fh*.40,2,fh*.30);
+  }
+  /* табло и замок — живое (G11): зависят от счёта, а не от времени, и в выпечку тела не идут */
+  if(bL())for(let i=0;i<2;i++){
+    const fx=x0+w*.20+i*(fw+6),fyT=fy-fh;
     /* табло: зелёное — кормит, красное — заперт */
     const on=lock?[230,70,60]:[120,220,150],a=(.5+lit*.5).toFixed(2);
     ctx.fillStyle="rgba(20,26,30,.95)";ctx.fillRect(fx+4,fyT+fh*.44,fw*.42,6);

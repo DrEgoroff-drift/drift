@@ -6550,7 +6550,7 @@ subBreakEven                 src/05b3-sub.js:20
 subBuy                       src/05b3-sub.js:21-33
 subCharge                    src/05b3-sub.js:36-50
 subFee                       src/05b3-sub.js:19
-subFightOffer                src/21ac4-base-fridge.js:88-99
+subFightOffer                src/21ac4-base-fridge.js:92-103
 subHereBy                    src/05b3-sub.js:12-15
 subOff                       src/05b3-sub.js:34
 subRush                      src/05b3-sub.js:65-71
