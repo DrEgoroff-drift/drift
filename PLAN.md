@@ -81,11 +81,6 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     read with the same math, the flow regenerated at age 6 with the cross-fade;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
-- [ ] **The goldens' order leak** (the worker, after f; before the fleet's landing, which reshuffles the parts): one
-  more light suite before the goldens (the ОПИСЬ guard named 91zzzzzzy7) turns -Full red on «черпак» 18.8 % and
-  «дом» 13.1 %, while the goldens alone, or with the guard in -Files, are green — a suite earlier in their part
-  leaves state behind. 0.473.0 dodged it by renaming the guard 91zzzzzzzzzz-opis-gpu. Find the polluter by -Shuffle
-  or by bisecting the part, and make it restore what it changes; a test that the goldens pass in any order.
 - [ ] **G15 everything on the engine, and 3D where it reads (the author, 26.09).** No 2D canvas stays, the interface
   too: in main 4778c719, 52 files in `src` still open a 2D context. Onto direct paths (`gpuLitSprite`, atlases,
   instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.

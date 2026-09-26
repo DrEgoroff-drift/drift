@@ -269,6 +269,12 @@ function resetWorld(){
      и уходит, а допекал его первый же кадр с планетой в чужом наборе — ворота «0 вызовов 2D»
      ловили 2× putImageData и 2× createPattern у планеты только в тех шардах, где он висел */
   if(typeof MAT_JOB!=="undefined")MAT_JOB=null;
+  /* и печь заранее (17a0) — то же самое: набор про наблюдение за наёмником смотрел кадр у
+     гостиницы, её печь оставалась недопечённой в PB на PB_STALE кадров, и bakeIdle() врал
+     «не осела» всем сценам после — detSettle крутил потолок в сорок кадров вместо двух–шести,
+     золотые «черпак» и «дом» снимались на другом кадре (18.8 % и 13.1 %, только в той части
+     -Full, где набор шёл перед ними). Брошенная задача закрывается как в игре — it.return() */
+  if(typeof PB!=="undefined")for(const k of [...PB.keys()])prebakeDrop(k);
   G.mode="system";G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.zoom=1;
   G.shipId="strizh";G.owned={strizh:true};
   G.ship={x:0,y:-760,vx:0,vy:0,a:0,av:0,bank:0};
