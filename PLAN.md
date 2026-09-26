@@ -259,7 +259,7 @@ measured on the GPU build first:
   back to `gt`): «АЭЛИТА™» (Компания, a Stalinist tower on a rock), «ДОМ ПРИЕЗЖИХ № 4» (Орднунг, khrushchyovkas on
   a truss), «ЮПИТЕР» (Коммуна, constructivism, red consoles, a glass cylinder), «БУРАН» (Хай-Фронт, a modernist
   grid with a saucer and a mosaic) — each its own file 17l3…17l6 on the engine, closed by a pair at 760 and 390,
-  at 19 h and 3 h (the author 26.09: «у нас же 6 типов гостиниц было»). Then the doors (the sanatorium wants a
+  at 19 h and 3 h (the author 26.09: «у нас же 6 типов гостиниц было»; when — «после», after the engine). Then the doors (the sanatorium wants a
   voucher and an ocean world — how a hotel offers it); cantina rumours at the desk; fatigue (does not exist for
   the player).
 - [ ] **M455 the peacetime fleet:** субботник, strike and rite driven by the chronicle's days rather than
