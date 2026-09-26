@@ -97,6 +97,15 @@ could ever save.
   skips a stop, and a stop still takes its two seconds. Under the top line of the ride a quiet hint says
   «ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ»; while held it reads «×2 · ПЭД ЗАЖАТ» in turquoise.
 
+- **M474: Рассвет's маршрутка, EXPRESS™ on the scheme, the front shuts stops.** At a Рассвет station every ticket
+  has a twin, «МАРШРУТКА «ДО КУДА?»»: the same line, slower, and on a run a tap of ДЕЙСТВИЕ («водитель, остановите
+  здесь») drops you at the nearest star by the road, station or not (never the one you just left). Holding the pad
+  does not speed a маршрутка up. The Коммуна compensation маршрутка stops on request too. The scheme draws a blue
+  dashed line beside every stretch whose both ends are Компания land (that is where EXPRESS™ runs) and a red cross
+  on every stop at the front. A front stop is shut: the ticket office does not sell it, trains pass it with an
+  announcement, and at a front station the office itself is closed, «ФРОНТ · ОСТАНОВКА ЗАКРЫТА», with no маршрутка
+  offered.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -127,6 +136,9 @@ could ever save.
 - M473: a save mid-ride still wakes at the origin. Waking at the destination means `snapshot()` writing the
   ride's end instead of `G.sx`/`G.sy`, which is the save, and the save is not to be touched. The ticket is lost
   with the ride; it is a few кредитов.
+- M474: the net past r 60 stays unbuilt. A lazy per-region build touches the net's shape everywhere (junctions,
+  loops, the scheme's bounds), and the whole build to r 60 already costs 146 ms; it stays in the plan. A маршрутка
+  drop lands you at the star's edge like a hyperjump arrival, not at a platform.
 
 ## 0.478.0 - the album on the engine
 

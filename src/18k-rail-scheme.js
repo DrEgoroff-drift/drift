@@ -147,6 +147,11 @@ function railSchemeDraw(g,cw,ch){
     g.fillStyle="rgba(239,230,207,.75)";g.fillRect(bx-1,by,w+2,bh);
     g.fillStyle="#3a2e1e";g.fillText(nm,bx,n.y-4);
   }
+  if(typeof railExpressDraw==="function")railExpressDraw(g,X,Y);   /* EXPRESS™ пунктиром (M474) */
+  /* закрытые фронтом остановки — красный крест */
+  if(typeof railFrontShut==="function"){g.strokeStyle="#c8281e";g.lineWidth=1.3;
+    for(const k in N.at){const p=k.split(",").map(Number);if(!railFrontShut({sx:p[0],sy:p[1]}))continue;
+      const x=X(p[0]),y=Y(p[1]);g.beginPath();g.moveTo(x-3.5,y-3.5);g.lineTo(x+3.5,y+3.5);g.moveTo(x+3.5,y-3.5);g.lineTo(x-3.5,y+3.5);g.stroke();}}
   /* «КРАЙ» у самой дальней стоянки линии */
   g.font="bold 7px ui-monospace,monospace";g.fillStyle="#c8281e";g.textAlign="left";
   {const done=new Set();for(const K of krai){const k=K.s.sx+","+K.s.sy;if(done.has(k))continue;done.add(k);
@@ -174,4 +179,5 @@ function railSchemeDraw(g,cw,ch){
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
   g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
   g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
+  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто",cw-10,ch-30);
 }

@@ -66,8 +66,9 @@ function updateRail(dt){
   const sec=dt/60;
   if(R.phase==="go"){
     if(typeof cueReset==="function")cueReset();   /* на перегоне выйти нельзя — пульт молчит */
-    R.t+=sec*(keys.act?2:1);   /* зажатый пэд — вдвое быстрее, но не пропуск (M473, §4) */
-    R.fast=!!keys.act;
+    if(R.bus){if(actEdge&&typeof railBusDrop==="function"&&railBusDrop())return;}   /* «остановите здесь» (M474) */
+    R.t+=sec*(keys.act&&!R.bus?2:1);   /* зажатый пэд — вдвое быстрее, но не пропуск (M473, §4) */
+    R.fast=!!keys.act&&!R.bus;
     if(R.t>=R.dur){R.seg++;R.phase="stop";R.pause=0;R.hold=2;
       const s=R.l.stops[R.seq[R.seg]],last=R.seg>=R.seq.length-1&&!R.next;
       /* пересадка (M472): конец первой ноги — поезд другой линии, три секунды стоянки */
@@ -79,6 +80,9 @@ function updateRail(dt){
       }
       /* EXPRESS™ проходит мимо: остановки нет, только конечная (M474) */
       if(R.express&&!last){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*.92;return;}
+      /* закрытая остановка фронта (M474): проходим без остановки, объявляют */
+      if(!last&&typeof railFrontShut==="function"&&railFrontShut(s)){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
+        say("«"+railStopName(s)+"» — остановка закрыта\nфронт · проследуем без остановки",110);return;}
       /* Хай-Фронт: «обновление установлено» — линия стоит на первой остановке */
       const hp=(typeof railHfPauseAt==="function"&&R.seg===1)?railHfPauseAt(R):0;
       if(hp){R.hfDone=1;R.hold=2+hp;say("Обновление установлено\nперезагрузка линии · "+hp+" с",200);return;}
@@ -175,5 +179,5 @@ function drawRail(){
   ctx.fillText(l.ru.toUpperCase()+" · "+nxt,W/2,H*.16);
   /* на перегоне: пэд зажат — «×2», иначе подсказка, что так можно (M473) */
   if(R.phase==="go"){ctx.font=uiFont(9);ctx.fillStyle=R.fast?"rgba(127,230,216,.9)":"rgba(207,227,234,.45)";
-    ctx.fillText(R.fast?"×2 · ПЭД ЗАЖАТ":"ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ",W/2,H*.16+16);}
+    ctx.fillText(R.bus?"ДЕЙСТВИЕ — «ВОДИТЕЛЬ, ОСТАНОВИТЕ ЗДЕСЬ»":R.fast?"×2 · ПЭД ЗАЖАТ":"ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ",W/2,H*.16+16);}
 }

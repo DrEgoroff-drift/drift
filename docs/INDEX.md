@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6517
+Файлов: 641 · символов верхнего уровня: 6520
 
 ## СИМВОЛЫ
 
@@ -1266,9 +1266,9 @@ RAID_ROOMS                   src/24a-mode-raid.js:7-13
 RAIL_ARM_RU                  src/18e-rail-net.js:25
 RAIL_BUFFET                  src/18f-rail-station.js:20
 RAIL_COL                     src/18e-rail-net.js:180
-RAIL_DECL                    src/18h-rail-powers.js:13
+RAIL_DECL                    src/18h-rail-powers.js:14
 RAIL_DOCK                    src/18f-rail-station.js:22
-RAIL_EXPRESS_MUL             src/18h-rail-powers.js:12
+RAIL_EXPRESS_MUL             src/18h-rail-powers.js:13
 RAIL_FLAP_PREV               src/18f-rail-station.js:151
 RAIL_FORK                    src/18e-rail-net.js:22
 RAIL_HAIL_R                  src/18f-rail-station.js:19
@@ -2955,7 +2955,7 @@ drawPlantAlien               src/20-life.js:210-377
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:171-612
 drawRaid                     src/24aa-raid-draw.js:14-655
-drawRail                     src/18g-rail-ride.js:119-179
+drawRail                     src/18g-rail-ride.js:123-183
 drawRailArrive               src/18g-rail-ride.js:31-34
 drawRailMap                  src/18e-rail-net.js:181-210
 drawRingTape                 src/11x-ring.js:107-118
@@ -5222,26 +5222,29 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:16
-railBuffet                   src/18f-rail-station.js:252-259
+railBuffet                   src/18f-rail-station.js:257-264
 railBuildLines               src/18e-rail-net.js:55-101
+railBusDrop                  src/18h-rail-powers.js:49-64
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:239-251
+railBuy                      src/18f-rail-station.js:244-256
 railCatch                    src/18j-rail-rush.js:17-25
-railClosedWhy                src/18h-rail-powers.js:16-21
-railDeclare                  src/18h-rail-powers.js:23-33
-railDestinations             src/18f-rail-station.js:166-181
+railClosedWhy                src/18h-rail-powers.js:20-26
+railDeclare                  src/18h-rail-powers.js:28-38
+railDestinations             src/18f-rail-station.js:166-182
 railDestinationsVia          src/18k-rail-scheme.js:13-35
 railDocked                   src/18f-rail-station.js:140-147
-railExit                     src/18g-rail-ride.js:106-118
-railFare                     src/18f-rail-station.js:182-190
+railExit                     src/18g-rail-ride.js:110-122
+railExpressDraw              src/18h-rail-powers.js:67-76
+railFare                     src/18f-rail-station.js:183-191
 railFlap                     src/18f-rail-station.js:152-157
 railFlash                    src/18g-rail-ride.js:17-30
 railFmt                      src/18f-rail-station.js:162
+railFrontShut                src/18h-rail-powers.js:18
 railGpu                      src/18f-rail-station.js:52-78
 railHaltCtx                  src/18f-rail-station.js:42-48
 railHaltShapes               src/18f-rail-station.js:34-41
 railHere                     src/18f-rail-station.js:24-30
-railHfPauseAt                src/18h-rail-powers.js:35-38
+railHfPauseAt                src/18h-rail-powers.js:40-43
 railInteract                 src/18f-rail-station.js:117-139
 railInterval                 src/18f-rail-station.js:159
 railKrai                     src/18k-rail-scheme.js:70-75
@@ -5255,8 +5258,8 @@ railNearest                  src/18e-rail-net.js:32-42
 railNet                      src/18e-rail-net.js:147-156
 railNetPartial               src/18e-rail-net.js:168-179
 railNextLeg                  src/18k-rail-scheme.js:37-42
-railOwner                    src/18h-rail-powers.js:14
-railOwnerAt                  src/18h-rail-powers.js:39
+railOwner                    src/18h-rail-powers.js:15
+railOwnerAt                  src/18h-rail-powers.js:44
 railParcelOffer              src/18i-rail-life.js:32-39
 railParcelTake               src/18i-rail-life.js:40-45
 railPassBuy                  src/18i-rail-life.js:24-30
@@ -5269,7 +5272,7 @@ railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
 railRideStart                src/18g-rail-ride.js:35-45
 railSchemeClose              src/18k-rail-scheme.js:60
-railSchemeDraw               src/18k-rail-scheme.js:95-177
+railSchemeDraw               src/18k-rail-scheme.js:95-183
 railSchemeOpen               src/18k-rail-scheme.js:45-59
 railSchemePick               src/18k-rail-scheme.js:77-94
 railSegDur                   src/18g-rail-ride.js:46-49
@@ -5277,15 +5280,15 @@ railStation                  src/18e-rail-net.js:158-163
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:163
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:261-266
+railTick                     src/18f-rail-station.js:266-271
 railTrainPos                 src/18g-rail-ride.js:51-63
 railUAt                      src/18e-rail-net.js:105-110
 railVisited                  src/18k-rail-scheme.js:65-69
 railWaitNow                  src/18f-rail-station.js:161
-railWinClose                 src/18f-rail-station.js:192
-railWinOpen                  src/18f-rail-station.js:191
-railWinRender                src/18f-rail-station.js:198-238
-railWinShow                  src/18f-rail-station.js:193-197
+railWinClose                 src/18f-rail-station.js:193
+railWinOpen                  src/18f-rail-station.js:192
+railWinRender                src/18f-rail-station.js:199-243
+railWinShow                  src/18f-rail-station.js:194-198
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
 rallyList                    src/12at-vote.js:70-78
@@ -6243,7 +6246,7 @@ updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:565-578
 updateRaid                   src/24a-mode-raid.js:300-430
-updateRail                   src/18g-rail-ride.js:64-104
+updateRail                   src/18g-rail-ride.js:64-108
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
@@ -7378,7 +7381,7 @@ zoomTo                       src/15-input.js:350
 ## src/18g-rail-ride.js · 13 КБ
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
-## src/18h-rail-powers.js · 3 КБ
+## src/18h-rail-powers.js · 5 КБ
   · шесть железных дорог (M474, DESIGN-metro §6):1
 
 ## src/18i-rail-life.js · 9 КБ
@@ -7389,7 +7392,7 @@ zoomTo                       src/15-input.js:350
   · «успеваете скорым» (M507):13
   · компенсационная маршрутка (M510):26
 
-## src/18k-rail-scheme.js · 12 КБ
+## src/18k-rail-scheme.js · 13 КБ
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
 ## src/19-mode-landing-ground.js · 25 КБ

@@ -61921,6 +61921,7 @@ function railDestinations(){
       if(l.loop)i=((i%n)+n)%n;else if(i<0||i>=n)break;
       if(i===i0)break;
       let dist=0;for(let m=0;m<k;m++){const a=l.stops[l.loop?((i0+dir*m)%n+n)%n:i0+dir*m],b=l.stops[l.loop?((i0+dir*(m+1))%n+n)%n:i0+dir*(m+1)];dist+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
+      if(typeof railFrontShut==="function"&&railFrontShut(l.stops[i]))continue;   /* фронт — касса не продаёт (M474) */
       out.push({l,i0,i1:i,dir,k,dist,to:l.stops[i]});
     }
   }
@@ -61960,14 +61961,18 @@ function railWinRender(){
     const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
     if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
       /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
+      if(!why.startsWith("ФРОНТ")){   /* на фронт маршрутка не едет (M474) */
       h+="<div class='rw-sec'>КОМПЕНСАЦИОННАЯ МАРШРУТКА · РАССВЕТ</div>";
       railDestinations().slice(0,6).forEach((t,i)=>{const F=railFare(t);
-        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА ДО «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>медленнее · водитель в курсе</s></button>";});
+        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА ДО «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>медленнее · водитель в курсе · ДЕЙСТВИЕ — «остановите здесь»</s></button>";});}
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
       h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
+      /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
+      if(typeof railOwner==="function"&&railOwner()==="ra")
+        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА «ДО КУДА?» · ПО ЛИНИИ К «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>остановит где скажете, хоть у звезды без станции</s></button>";
       if(typeof railOwner==="function"&&railOwner()==="co"&&t.k>=2)
         h+="<button class='act rw-go' data-i='"+i+"' data-x='1'>EXPRESS™ ДО «"+railStopName(t.to).toUpperCase()+"» · "+(F.fare*RAIL_EXPRESS_MUL)+" КР<s>на три секунды быстрее!</s></button>";
     });
@@ -62082,8 +62087,9 @@ function updateRail(dt){
   const sec=dt/60;
   if(R.phase==="go"){
     if(typeof cueReset==="function")cueReset();   /* на перегоне выйти нельзя — пульт молчит */
-    R.t+=sec*(keys.act?2:1);   /* зажатый пэд — вдвое быстрее, но не пропуск (M473, §4) */
-    R.fast=!!keys.act;
+    if(R.bus){if(actEdge&&typeof railBusDrop==="function"&&railBusDrop())return;}   /* «остановите здесь» (M474) */
+    R.t+=sec*(keys.act&&!R.bus?2:1);   /* зажатый пэд — вдвое быстрее, но не пропуск (M473, §4) */
+    R.fast=!!keys.act&&!R.bus;
     if(R.t>=R.dur){R.seg++;R.phase="stop";R.pause=0;R.hold=2;
       const s=R.l.stops[R.seq[R.seg]],last=R.seg>=R.seq.length-1&&!R.next;
       /* пересадка (M472): конец первой ноги — поезд другой линии, три секунды стоянки */
@@ -62095,6 +62101,9 @@ function updateRail(dt){
       }
       /* EXPRESS™ проходит мимо: остановки нет, только конечная (M474) */
       if(R.express&&!last){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg)*.92;return;}
+      /* закрытая остановка фронта (M474): проходим без остановки, объявляют */
+      if(!last&&typeof railFrontShut==="function"&&railFrontShut(s)){R.phase="go";R.t=0;R.dur=railSegDur(R.l,R.seq,R.seg);
+        say("«"+railStopName(s)+"» — остановка закрыта\nфронт · проследуем без остановки",110);return;}
       /* Хай-Фронт: «обновление установлено» — линия стоит на первой остановке */
       const hp=(typeof railHfPauseAt==="function"&&R.seg===1)?railHfPauseAt(R):0;
       if(hp){R.hfDone=1;R.hold=2+hp;say("Обновление установлено\nперезагрузка линии · "+hp+" с",200);return;}
@@ -62191,7 +62200,7 @@ function drawRail(){
   ctx.fillText(l.ru.toUpperCase()+" · "+nxt,W/2,H*.16);
   /* на перегоне: пэд зажат — «×2», иначе подсказка, что так можно (M473) */
   if(R.phase==="go"){ctx.font=uiFont(9);ctx.fillStyle=R.fast?"rgba(127,230,216,.9)":"rgba(207,227,234,.45)";
-    ctx.fillText(R.fast?"×2 · ПЭД ЗАЖАТ":"ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ",W/2,H*.16+16);}
+    ctx.fillText(R.bus?"ДЕЙСТВИЕ — «ВОДИТЕЛЬ, ОСТАНОВИТЕ ЗДЕСЬ»":R.fast?"×2 · ПЭД ЗАЖАТ":"ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ",W/2,H*.16+16);}
 }
 
 /* ══════════════ шесть железных дорог (M474, DESIGN-metro §6) ══════════════
@@ -62202,14 +62211,19 @@ function drawRail(){
      Орднунг    — садят только с задекларированным трюмом: «ДЕКЛАРИРУЮ» — и
                   второе нажатие; двери по секундомеру;
      Коммуна    — касса закрыта в обед и в день забастовки;
-     Рассвет    — маршрутка «до куда?» (ещё нет — плановый хвост);
+     Рассвет    — маршрутка «до куда?»: остановит где скажете, хоть между
+                  станциями, у любой звезды (M474);
      Хай-Фронт  — «обновление установлено»: иногда линия стоит минуту.
    Хозяин — земли, где станция отправления (stampOwnerAt). */
 const RAIL_EXPRESS_MUL=10,RAIL_HF_PAUSE=60;
 let RAIL_DECL="";
 function railOwner(){return (typeof stampOwnerAt==="function")?stampOwnerAt(G.sx,G.sy):null;}
+/* остановка на фронте закрыта (M474, §6): поезд проходит без остановки, касса
+   её не продаёт; если фронт — здесь, закрыт весь вестибюль */
+function railFrontShut(st){return typeof chronFront==="function"&&!!chronFront(st.sx,st.sy);}
 /* Коммуна: касса закрыта — почему; null — открыта */
 function railClosedWhy(){
+  if(railFrontShut({sx:G.sx,sy:G.sy}))return "ФРОНТ · ОСТАНОВКА ЗАКРЫТА";
   if(railOwner()!=="km")return null;
   if(typeof socStrikeHere==="function"&&socStrikeHere())return "ЗАБАСТОВКА · ПОЕЗДА СТОЯТ";
   if(typeof lawLunch==="function"&&lawLunch())return "ОБЕД · КАССА С 14:00";
@@ -62233,6 +62247,38 @@ function railHfPauseAt(R){
   return (hashi(R.seq[0],R.seq.length,(R.t0|0)&1023)%3===0)?RAIL_HF_PAUSE:0;
 }
 function railOwnerAt(st){return (typeof stampOwnerAt==="function")?stampOwnerAt(st.sx,st.sy):null;}
+/* ── маршрутка Рассвета: «водитель, остановите здесь» (M474) ──
+   На перегоне тап по ДЕЙСТВИЮ — маршрутка встаёт у ближайшей звезды, какая
+   есть рядом с дорогой, станция там или нет; дальше сами. Зажимать пэд в
+   маршрутке бесполезно: она не электричка */
+function railBusDrop(){
+  const R=RAIL_RIDE;if(!R||!R.bus||R.phase!=="go")return false;
+  const p=railTrainPos(),o=R.l.stops[R.seq[R.seg]];let best=null,bd=1e9;   /* там, откуда отошли, — не встаёт */
+  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+    const sx=Math.round(p.x)+dx,sy=Math.round(p.y)+dy,d=Math.hypot(sx-p.x,sy-p.y);
+    if(d<bd&&!(sx===o.sx&&sy===o.sy)&&starAt(sx,sy)){best={sx,sy};bd=d;}
+  }
+  if(!best)return false;
+  RAIL_RIDE=null;
+  arriveSystem(best.sx,best.sy,{rail:true});
+  RAIL_ARRIVE=G.t;
+  const nm=getSystem(best.sx,best.sy).name;
+  say("«Здесь, у "+nm+"?» — «Здесь.»\nмаршрутка ушла · дальше сами",150);
+  logAdd("dim","Маршрутка Рассвета высадила у «"+nm+"» · сектор "+best.sx+":"+best.sy+" · «кому надо — тому по пути»");
+  return true;
+}
+/* EXPRESS™ на схеме: перегоны, оба конца которых в земле Компании, — синим
+   пунктиром поверх линии: там ходит экспресс «на три секунды быстрее» */
+function railExpressDraw(g,X,Y){
+  const N=railNet();g.save();g.strokeStyle="rgba(47,111,208,.85)";g.lineWidth=1.2;g.setLineDash([2,3]);
+  for(const l of N.lines)for(let i=0;i+1<l.stops.length;i++){
+    const a=l.stops[i],b=l.stops[i+1];
+    if(railOwnerAt(a)!=="co"||railOwnerAt(b)!=="co")continue;
+    const dx=b.sx-a.sx,dy=b.sy-a.sy,L=Math.hypot(dx,dy)||1,ox=-dy/L*3,oy=dx/L*3;
+    g.beginPath();g.moveTo(X(a.sx)+ox,Y(a.sy)+oy);g.lineTo(X(b.sx)+ox,Y(b.sy)+oy);g.stroke();
+  }
+  g.restore();
+}
 
 /* ══════════════ жизнь на железной дороге (M499–M502, M508; PLAN «new mechanics») ══════════════
    Вестибюль и вагон, в которых есть люди:
@@ -62528,6 +62574,11 @@ function railSchemeDraw(g,cw,ch){
     g.fillStyle="rgba(239,230,207,.75)";g.fillRect(bx-1,by,w+2,bh);
     g.fillStyle="#3a2e1e";g.fillText(nm,bx,n.y-4);
   }
+  if(typeof railExpressDraw==="function")railExpressDraw(g,X,Y);   /* EXPRESS™ пунктиром (M474) */
+  /* закрытые фронтом остановки — красный крест */
+  if(typeof railFrontShut==="function"){g.strokeStyle="#c8281e";g.lineWidth=1.3;
+    for(const k in N.at){const p=k.split(",").map(Number);if(!railFrontShut({sx:p[0],sy:p[1]}))continue;
+      const x=X(p[0]),y=Y(p[1]);g.beginPath();g.moveTo(x-3.5,y-3.5);g.lineTo(x+3.5,y+3.5);g.moveTo(x+3.5,y-3.5);g.lineTo(x-3.5,y+3.5);g.stroke();}}
   /* «КРАЙ» у самой дальней стоянки линии */
   g.font="bold 7px ui-monospace,monospace";g.fillStyle="#c8281e";g.textAlign="left";
   {const done=new Set();for(const K of krai){const k=K.s.sx+","+K.s.sy;if(done.has(k))continue;done.add(k);
@@ -62555,6 +62606,7 @@ function railSchemeDraw(g,cw,ch){
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
   g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
   g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
+  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто",cw-10,ch-30);
 }
 
 /* ══════════════ посадка: разрез грунта ══════════════

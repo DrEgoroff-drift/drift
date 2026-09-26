@@ -172,6 +172,7 @@ function railDestinations(){
       if(l.loop)i=((i%n)+n)%n;else if(i<0||i>=n)break;
       if(i===i0)break;
       let dist=0;for(let m=0;m<k;m++){const a=l.stops[l.loop?((i0+dir*m)%n+n)%n:i0+dir*m],b=l.stops[l.loop?((i0+dir*(m+1))%n+n)%n:i0+dir*(m+1)];dist+=Math.hypot(a.sx-b.sx,a.sy-b.sy);}
+      if(typeof railFrontShut==="function"&&railFrontShut(l.stops[i]))continue;   /* фронт — касса не продаёт (M474) */
       out.push({l,i0,i1:i,dir,k,dist,to:l.stops[i]});
     }
   }
@@ -211,14 +212,18 @@ function railWinRender(){
     const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
     if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
       /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
+      if(!why.startsWith("ФРОНТ")){   /* на фронт маршрутка не едет (M474) */
       h+="<div class='rw-sec'>КОМПЕНСАЦИОННАЯ МАРШРУТКА · РАССВЕТ</div>";
       railDestinations().slice(0,6).forEach((t,i)=>{const F=railFare(t);
-        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА ДО «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>медленнее · водитель в курсе</s></button>";});
+        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА ДО «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>медленнее · водитель в курсе · ДЕЙСТВИЕ — «остановите здесь»</s></button>";});}
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
       h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
+      /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
+      if(typeof railOwner==="function"&&railOwner()==="ra")
+        h+="<button class='act rw-go' data-i='"+i+"' data-b='1'>МАРШРУТКА «ДО КУДА?» · ПО ЛИНИИ К «"+railStopName(t.to).toUpperCase()+"» · "+F.fare+" КР<s>остановит где скажете, хоть у звезды без станции</s></button>";
       if(typeof railOwner==="function"&&railOwner()==="co"&&t.k>=2)
         h+="<button class='act rw-go' data-i='"+i+"' data-x='1'>EXPRESS™ ДО «"+railStopName(t.to).toUpperCase()+"» · "+(F.fare*RAIL_EXPRESS_MUL)+" КР<s>на три секунды быстрее!</s></button>";
     });

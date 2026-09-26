@@ -228,9 +228,9 @@ measured on the GPU build first:
 
 - [ ] **Oracle lines** (`91zzzzzzzzz-worlds`): the best rail round trip ≤ ×1.3 of the best jumps in credits
   per minute of play (baggage is the lever); the stripped hauler's best one-hop deal (for M478).
-- [ ] **M474 six railways:** the net past r 60, built lazily per region (M470 rest; whole build is 146 ms to r 60); Рассвет's маршрутка (stop anywhere on the line), the dashed Express line on the
-  scheme, closed front stops. Test fragility: the ride suite picks the first heart metro station — if its
-  land ever turns Орднунг, the suite needs the double press.
+- [ ] **M474 six railways (rest):** the net past r 60, built lazily per region (M470 rest; whole build is 146 ms
+  to r 60). Test fragility: the ride suite picks the first heart metro station — if its land ever turns
+  Орднунг, the suite needs the double press.
 - [ ] **M475 economy and growth:** fares, baggage and the size rule tuned against the oracle's rail line; a
   holding-built station, «продление линии», a late holding deed named by the generator.
 - [ ] **M508:** the pirates' respect for a sealed hold. **M510:** shut stretches of the front — the line
