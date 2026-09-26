@@ -842,6 +842,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   Y 104 → 91 (the dark half), in a planet's shadow 69 → 85 (lamps and fill); with pirate and barge toward
   2.1 % > 8, away 0.87 %, shadow 1.0 %. -Browser green, tour GREEN; -Full not run yet.
   Open: d) glints by count, f) the flame lighting the stern, g) the 1-px rim, the close-up (hangar/card).
+- **Ships pass d, glints by count (26.09, `gpu-ships`):** in hull mode the metal highlight is no longer the
+  old pow 40 over the fine normal (a soft smear) but a hard step of pow 90 over the body dome plus the panel
+  relief, through the bare-metal mask only, lit side only (`key`, `sk`). The panel relief is taken at a mip
+  set by the hull's size (~1/8 of its length, `RL_GN`), not the screen's: at the screen's level every seam
+  of a big barge sparkled (10–25 one-pixel dots). Counted on the 760 pairs vs e561d7c5 (`glints.py`): own
+  ship one short dash on the spine (2–3 dots on the phone), barge 3, the red pirate none — paint is not
+  metal. One more material tap in hull mode only (6). Open: f), g), the close-up; -Full not run yet.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
