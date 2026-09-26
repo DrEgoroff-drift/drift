@@ -400,7 +400,7 @@ const GPU_LIT_SH=(.6).toFixed(2);
 const GPU_LIT_DK=Math.log2(5.5).toFixed(3);
 /* корабль в настоящем свете (§L.S): уровней мипа до купола тела, его вес, доля градиента «к звезде»
    по всему корпусу, заливка без газа, доля газа, свет, огни (выше колена — свечение подхватывает) */
-const RL_DL="3.",RL_KD="6.",RL_SIDE=".5",RL_AMB=".46",RL_GAS=".9",RL_LIT="1.1",RL_EM="2.3",RL_GD="4.",RL_GF="1.5",RL_GL="1.5",RL_GN="8.",RL_GP="90.",RL_FL="1.8",RL_RIM=".7",RL_GK="1.6";
+const RL_DL="3.",RL_KD="6.",RL_SIDE=".5",RL_AMB=".46",RL_GAS=".9",RL_LIT="1.1",RL_EM="2.3",RL_GD="4.",RL_GF="1.5",RL_GL="1.5",RL_GN="8.",RL_GP="30.",RL_FL="4.",RL_FLM=".1",RL_RIM=".7",RL_GK="1.2";
 const GST_WGSL=GPU_PL_WGSL+`
 fn plOcc(q:vec2f)->f32{let dq=q-fu.v[0].xy;let ro=fu.v[1].zw;
   let uv=(vec2f(dot(dq,ro),dot(dq,vec2f(-ro.y,ro.x)))/fu.v[0].z+1.)*.5;
@@ -509,23 +509,35 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
        кромках, скользят с поворотом; не мазок по всему корпусу */
     /* мип от размера корпуса, а не экрана: рельеф в ~1/8 длины — на барже бликов столько же, сколько на истребителе */
     let td=vec2f(textureDimensions(t3));
-    let gp0=textureSampleLevel(t3,smp,vec2f(uv.x*.5,uv.y),max(lm+${RL_GL},log2(max(td.x*.5,td.y)/${RL_GN}))).zw;
+    let glv=max(lm+${RL_GL},log2(max(td.x*.5,td.y)/${RL_GN}));
+    let gp0=textureSampleLevel(t3,smp,vec2f(uv.x*.5,uv.y),glv).zw;
     let gp=vec2f(gp0.x*ro.x-gp0.y*ro.y,gp0.x*ro.y+gp0.y*ro.x);
     let nm=normalize(vec3f(gd*${RL_GD}+gp*${RL_GF},1.));
-    let gs=smoothstep(.3,.65,pow(max(dot(nm,Hs),0.),${RL_GP}))*smoothstep(.35,.7,mk.y)*(1.-mk.z)*own*key*sk*a;
-    let sp=mix(col,vec3f(1.),.5)*gs*${RL_GK}+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs)*sk*a;
+    /* маска металла на том же грубом мипе: отлив лежит пятном в 2–4 px со спадом, а не белым пикселем по
+       заклёпке (на плоской панели баржи одиночные точки читались битыми пикселями); мягкий лепесток —
+       на развороте блик разгорается и гаснет за несколько кадров, а не мигает */
+    let mq=textureSampleLevel(t3,smp,vec2f(.5+uv.x*.5,uv.y),glv);let mg=mq.y/max(mq.w,1e-3);
+    let gs=smoothstep(.25,.85,pow(max(dot(nm,Hs),0.),${RL_GP}))*smoothstep(.35,.7,mg)*(1.-mk.z)*own*key*sk*a;
+    let sp=mix(col,vec3f(1.),.35)*gs*${RL_GK}+mix(col,vec3f(1.),.6)*gls*glassSpec(gg,Hs)*sk*a;
     /* f) огонь светит корму — второй свет, нарушение «одного света», названное: тёплое пятно у сопел,
        спадает к досягаемости; обшивка, скатом к огню, берёт больше; скала его не гасит — огонь свой */
     var fs=vec3f(0.);
-    if(fu.v[4].w>0.){let fv=fu.v[4].xy-p;let fd=length(fv)/fu.v[4].z;
-      let fa=smoothstep(-.35,.35,dot(gd,fv/max(length(fv),1e-3))*${RL_KD});
-      fs=fu.v[5].rgb*fu.v[4].w*${RL_FL}*(1.-smoothstep(0.,1.,fd))*(.45+.55*fa)*own;}
+    if(fu.v[4].w>0.){let fv=fu.v[4].xy-p;let fd=length(fv);let r0=fu.v[5].w;let rr=fu.v[4].z;
+      let fa=smoothstep(-.35,.35,dot(gd,fv/max(fd,1e-3))*${RL_KD});
+      let rg=step(r0,fd)*smoothstep(r0,r0+(rr-r0)*.3,fd)*(1.-smoothstep(r0,rr,fd));
+      /* огонь бьёт назад и вбок: конус от оси — чем дальше от оси, тем дальше вперёд достаёт; кили по
+         бокам языка светятся, фюзеляж перед гнездом (на оси) — нет */
+      let ax=dot(-fv,ro);let lat=abs(dot(-fv,vec2f(-ro.y,ro.x)));
+      let bk=1.-smoothstep(-r0*.2,r0*.3,ax-lat*.9);
+      /* гнездо сопел и его свечение светлы сами — их огонь не трогает вовсе (сам шейдер — байт в байт; ±1 даёт только блум) */
+      let yc=dot(c4.rgb/max(a,1e-3),vec3f(.299,.587,.114));
+      fs=fu.v[5].rgb*fu.v[4].w*${RL_FL}*rg*bk*(.45+.55*fa)*own*step(yc,.5);}
     /* g) обвод: пиксель устройства по кромке к звезде — сосед на пиксель к ней пуст; тёмная сторона кромки
        не светлеет, на светлом газе тело остаётся тёмным силуэтом; мип мастера — поворот не мерцает */
     let sdu=vec2f(dot(sd,ro),dot(sd,vec2f(-ro.y,ro.x)));
     let an=textureSampleLevel(t0,smp,uv+sdu*u1,fu.v[3].z).a;
     let rv=col*clamp(a-an,0.,1.)*key*sk*own*${RL_RIM};
-    return vec4f(c4.rgb*((fl+dir)*own*mix(vec3f(1.),col,.08*key)+pl+fs+e*${RL_EM})+lit*sk+sp+rv+gl*(1.-a),a);}
+    return vec4f(c4.rgb*((fl+dir)*own*mix(vec3f(1.),col,.08*key)+pl+e*${RL_EM})+min(c4.rgb*fs,fu.v[5].rgb*${RL_FLM})+lit*sk+sp+rv+gl*(1.-a),a);}
   return vec4f(c4.rgb*(shade*sk*em+pl)*mix(vec3f(1.),col,.08)+lit*sk+spec+gl*(1.-a),a);
 }`;
 /* выпечка cv (полуразмер R в пикселях экрана, поворот rot) со светом звезды по рельефу;
@@ -541,7 +553,7 @@ function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al,fl){
   const U=new Float32Array(fl?24:16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
   U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=al==null?1:clamp(al,0,1);U[12]=glow;U[13]=sy||0;U[14]=lod||0;
   /* fu.v[4..5] — свет пламени у кормы (17c2): место на экране, досягаемость, сила, цвет */
-  if(fl){U[16]=fl.x;U[17]=fl.y;U[18]=Math.max(fl.r,1);U[19]=fl.k;U[20]=fl.c[0];U[21]=fl.c[1];U[22]=fl.c[2];}
+  if(fl){U[16]=fl.x;U[17]=fl.y;U[18]=Math.max(fl.r,1);U[19]=fl.k;U[20]=fl.c[0];U[21]=fl.c[1];U[22]=fl.c[2];U[23]=fl.r0||0;}
   const mip=!!cv.view;if(mip&&cv.draw)gpuBakeLive(cv);   /* материал (08cd) — после возможной перепечки */
   const mt=mip&&!rel&&cv.mat;
   /* заливка газом — корпусу корабля с материалом, пока туманность 16gb этой системы жива */

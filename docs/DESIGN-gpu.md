@@ -863,6 +863,17 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   dark silhouette (its fill is ~half the gas behind it). `GPU.sep` untouched. The pirate's star-side edge now
   reads as a crisp line. Shimmer check (`shim.sh`: own ship at heading +0, +.015, +.03 rad): lit edge pixels
   31/27/35 before, 39/39/37 now — steadier, not worse. Open: the close-up (hangar/card), -Full on the branch.
+- **Ships passes d and f, redone after review (26.09, `gpu-ships`):** d) single white pixels on the barge's flat
+  panels read as dead pixels, so the glint is now a soft sheen: `smoothstep(.25,.85,pow(N·H,30))` over the body
+  dome plus the panel relief, gated by the metal mask read at the same coarse mip (a panel is metal or not,
+  no speckled edge), ×1.2 (`RL_GK`). Turn test (`turn12.sh`: 12 frames of .055 rad, glint = on − off): the
+  largest energy step per frame is own .09, pirate .28, barge .36; nothing pops in or out in one frame. On the
+  S23 (screen recording of the turn, 72 frames): own .12, barge .21, no lone white pixel on the barge.
+  f) the flame now lights only the keel plates beside the nozzles: a ring from `r0` (beyond the nest: spread
+  plus 1.5 nozzle radii) to the reach, a cone toward the stern only (`bk`), no light on pixels already brighter
+  than half (the nest and its glow), capped at `RL_FLM` of the flame colour. Keels +23 levels mean over 49 px;
+  nest bright pixels change by at most ±1 (the bloom halo that samples the lit keels), two runs with the light
+  off are byte-identical. Open: the close-up, -Full on the branch.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
