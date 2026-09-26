@@ -66600,7 +66600,7 @@ fn lgLander(p:vec2f)->vec4f{
   }
   if(V[9].w>.01){
     let r=length(qi-V[9].yz);
-    em=em+vec3f(1.,.47,.35)*V[9].w*(smoothstep(2.8,1.4,r)*.95+.30*exp(-r*r/60.));
+    em=em+vec3f(1.,.47,.35)*V[9].w*((1.-smoothstep(1.4,2.8,r))*.95+.30*exp(-r*r/60.));
   }
   if(V[6].z>.002){
     let v=q-V[6].xy;
@@ -76760,7 +76760,7 @@ fn mote(w:vec2f,t:f32)->f32{
   let h2=h01(ii,11u);let h3=h01(ii,23u);
   let c=id*7.+vec2f(1.6+h2*3.8,1.6+h3*3.8)+vec2f(sin(t*.6+h*40.),cos(t*.45+h2*30.))*1.1;
   let tw=.5+.5*sin(t*.7+h3*6.283);
-  return smoothstep(1.35,.25,length(q-c))*tw*tw;}
+  return (1.-smoothstep(.25,1.35,length(q-c)))*tw*tw;}
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let w=p+fu.v[0].xy;let lit=fu.v[0].z;let t=fu.v[0].w;
   let m=maskAt(w);var o=vec3f(0.);
@@ -88166,7 +88166,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let sp=(p+vec2f(t*1.1,0.))/3.;let sc=floor(sp);let h=wh1(sc);
   let so=vec2f(wh1(sc+7.3),wh1(sc+3.1));
   let sd=length(fract(sp)-so);
-  c+=vec3f(.86,.9,.95)*smoothstep(.22,0.,sd)*step(.93,h)*pow(wh1(sc+1.7),3.)*1.4;
+  c+=vec3f(.86,.9,.95)*(1.-smoothstep(0.,.22,sd))*step(.93,h)*pow(wh1(sc+1.7),3.)*1.4;
   /* планета: диск со светом снизу-слева, полосы облаков, кайма воздуха, терминатор */
   let d=(p-pc)/pr;let r2=dot(d,d);
   if(r2<1.){
@@ -88428,7 +88428,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let mp=p/2.6+vec2f(sin(t*.11+p.y*.01)*2.,t*1.3);let mc=floor(mp);
   let mh=wh(mc);let mo=vec2f(wh(mc+3.7),wh(mc+9.1));
   let md=length(fract(mp)-mo);
-  c+=cold*smoothstep(.28,0.,md)*step(.965,mh)*(.05+dens*9.)*(.6+.4*sin(t*1.3+mh*40.));
+  c+=cold*(1.-smoothstep(0.,.28,md))*step(.965,mh)*(.05+dens*9.)*(.6+.4*sin(t*1.3+mh*40.));
   /* ореолы: лампочки витрин и зелёная лампа */
   for(var i=0;i<8;i++){
     let q=fu.v[4+i];if(q.z<=0.){continue;}
@@ -98633,7 +98633,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(d.y>0.){
       let hw=10.+(46.*cone-10.)*d.y/max(cy-38.,1.);
       /* конус с кромкой (как у 2D-трапеции) и ярче у абажура */
-      let cn=smoothstep(1.0,.74,abs(d.x)/max(hw,1.))*(1.1-.8*clamp(d.y/max(cy-38.,1.),0.,1.))*smoothstep(cy+5.,cy-3.,q.y);
+      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/max(hw,1.)))*(1.1-.8*clamp(d.y/max(cy-38.,1.),0.,1.))*smoothstep(cy+5.,cy-3.,q.y);
       cs+=cn;
       beam+=lc*cn*(.060+.090*haze)*warm*pw;
     }
@@ -100150,7 +100150,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(d.y>0.){
       let hw=10.+50.*d.y/max(fy-35.,1.);
       /* конус с кромкой (как у 2D-трапеции) и ярче у лампы */
-      let cn=smoothstep(1.0,.74,abs(d.x)/hw)*(1.1-.75*clamp(d.y/max(fy-35.,1.),0.,1.))*smoothstep(fy+8.,fy-2.,q.y);
+      let cn=(1.-smoothstep(.74,1.0,abs(d.x)/hw))*(1.1-.75*clamp(d.y/max(fy-35.,1.),0.,1.))*smoothstep(fy+8.,fy-2.,q.y);
       cone+=cn;
       beam+=cold*cn*(.050+.135*haze);
     }
@@ -100179,7 +100179,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let a=(q.x-x)/16.;let b=(q.y-(fy-3.))/3.4;
     sh*=1.-.60*fu.v[2][i]*exp(-(a*a+b*b));
     let cb=abs(q.x-x)-57.;let c2=(q.y-(fy-2.))/4.5;
-    sh*=1.-.40*smoothstep(7.,-5.,cb)*exp(-c2*c2);
+    sh*=1.-.40*(1.-smoothstep(-5.,7.,cb))*exp(-c2*c2);
   }
   let jn=(q.y-(fy-4.))/7.;
   sh*=1.-.25*exp(-jn*jn);
@@ -110328,9 +110328,9 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let e=min(min(q.x,r.z-q.x),r.w-q.y)/r.w;
   let bot=(r.w-q.y)/r.w;
   let fr=rfbm(q/r.w*vec2f(9.,11.));
-  let fm=smoothstep(.10,.0,min(bot*1.1,e*1.6)-fr*.10);
+  let fm=(1.-smoothstep(.0,.10,min(bot*1.1,e*1.6)-fr*.10));
   c=mix(c,vec3f(.80,.87,.93),fm*.55);
-  c=c+vec3f(.88,.93,.97)*smoothstep(.72,.9,fr)*smoothstep(.34,.0,bot)*.22;
+  c=c+vec3f(.88,.93,.97)*smoothstep(.72,.9,fr)*(1.-smoothstep(.0,.34,bot))*.22;
   /* лампа отражается в стекле изнутри: тёплое пятно у левой кромки */
   c=c+vec3f(1.,.82,.58)*lamp*.10*exp(-q.x/(r.z*.22))*exp(-pow((v-.28)/.35,2.));
   return vec4f(c,1.);}`;
@@ -111027,12 +111027,12 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     c=mix(c,vec3f(.975,.975,.97),smoothstep(.55,.82,cl)*.30*smoothstep(.2,.9,k));
     let d=length(p-sun)/Ht;
     c=c+SUN*(.15*exp(-d*3.4)+.20*exp(-d*14.));
-    c=mix(c,vec3f(1.6,1.5,1.34),smoothstep(.031,.025,d));
+    c=mix(c,vec3f(1.6,1.5,1.34),(1.-smoothstep(.025,.031,d)));
     if(ch>0.){
       let e=p.y-(hor-ch);
       let a=clamp(e+.5,0.,1.);
       var cc=mix(vec3f(.278,.372,.425),SKY2,.10+.12*(1.-clamp(e/max(ch,1.),0.,1.)));
-      cc=cc+SUN*.16*exp(-max(e,0.)/1.6)*smoothstep(.55,0.,(p.x-fu.v[2].x)/fu.v[2].y);
+      cc=cc+SUN*.16*exp(-max(e,0.)/1.6)*(1.-smoothstep(0.,.55,(p.x-fu.v[2].x)/fu.v[2].y));
       c=mix(c,cc,a);
     }
   }else{

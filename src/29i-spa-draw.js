@@ -83,12 +83,12 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     c=mix(c,vec3f(.975,.975,.97),smoothstep(.55,.82,cl)*.30*smoothstep(.2,.9,k));
     let d=length(p-sun)/Ht;
     c=c+SUN*(.15*exp(-d*3.4)+.20*exp(-d*14.));
-    c=mix(c,vec3f(1.6,1.5,1.34),smoothstep(.031,.025,d));
+    c=mix(c,vec3f(1.6,1.5,1.34),(1.-smoothstep(.025,.031,d)));
     if(ch>0.){
       let e=p.y-(hor-ch);
       let a=clamp(e+.5,0.,1.);
       var cc=mix(vec3f(.278,.372,.425),SKY2,.10+.12*(1.-clamp(e/max(ch,1.),0.,1.)));
-      cc=cc+SUN*.16*exp(-max(e,0.)/1.6)*smoothstep(.55,0.,(p.x-fu.v[2].x)/fu.v[2].y);
+      cc=cc+SUN*.16*exp(-max(e,0.)/1.6)*(1.-smoothstep(0.,.55,(p.x-fu.v[2].x)/fu.v[2].y));
       c=mix(c,cc,a);
     }
   }else{

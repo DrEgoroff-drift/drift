@@ -229,7 +229,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let sp=(p+vec2f(t*1.1,0.))/3.;let sc=floor(sp);let h=wh1(sc);
   let so=vec2f(wh1(sc+7.3),wh1(sc+3.1));
   let sd=length(fract(sp)-so);
-  c+=vec3f(.86,.9,.95)*smoothstep(.22,0.,sd)*step(.93,h)*pow(wh1(sc+1.7),3.)*1.4;
+  c+=vec3f(.86,.9,.95)*(1.-smoothstep(0.,.22,sd))*step(.93,h)*pow(wh1(sc+1.7),3.)*1.4;
   /* планета: диск со светом снизу-слева, полосы облаков, кайма воздуха, терминатор */
   let d=(p-pc)/pr;let r2=dot(d,d);
   if(r2<1.){
@@ -491,7 +491,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let mp=p/2.6+vec2f(sin(t*.11+p.y*.01)*2.,t*1.3);let mc=floor(mp);
   let mh=wh(mc);let mo=vec2f(wh(mc+3.7),wh(mc+9.1));
   let md=length(fract(mp)-mo);
-  c+=cold*smoothstep(.28,0.,md)*step(.965,mh)*(.05+dens*9.)*(.6+.4*sin(t*1.3+mh*40.));
+  c+=cold*(1.-smoothstep(0.,.28,md))*step(.965,mh)*(.05+dens*9.)*(.6+.4*sin(t*1.3+mh*40.));
   /* ореолы: лампочки витрин и зелёная лампа */
   for(var i=0;i<8;i++){
     let q=fu.v[4+i];if(q.z<=0.){continue;}

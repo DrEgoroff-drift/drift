@@ -255,7 +255,7 @@ fn mote(w:vec2f,t:f32)->f32{
   let h2=h01(ii,11u);let h3=h01(ii,23u);
   let c=id*7.+vec2f(1.6+h2*3.8,1.6+h3*3.8)+vec2f(sin(t*.6+h*40.),cos(t*.45+h2*30.))*1.1;
   let tw=.5+.5*sin(t*.7+h3*6.283);
-  return smoothstep(1.35,.25,length(q-c))*tw*tw;}
+  return (1.-smoothstep(.25,1.35,length(q-c)))*tw*tw;}
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let w=p+fu.v[0].xy;let lit=fu.v[0].z;let t=fu.v[0].w;
   let m=maskAt(w);var o=vec3f(0.);

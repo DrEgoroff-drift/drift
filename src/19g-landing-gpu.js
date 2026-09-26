@@ -296,7 +296,7 @@ fn lgLander(p:vec2f)->vec4f{
   }
   if(V[9].w>.01){
     let r=length(qi-V[9].yz);
-    em=em+vec3f(1.,.47,.35)*V[9].w*(smoothstep(2.8,1.4,r)*.95+.30*exp(-r*r/60.));
+    em=em+vec3f(1.,.47,.35)*V[9].w*((1.-smoothstep(1.4,2.8,r))*.95+.30*exp(-r*r/60.));
   }
   if(V[6].z>.002){
     let v=q-V[6].xy;

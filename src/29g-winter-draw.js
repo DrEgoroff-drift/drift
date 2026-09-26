@@ -393,9 +393,9 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let e=min(min(q.x,r.z-q.x),r.w-q.y)/r.w;
   let bot=(r.w-q.y)/r.w;
   let fr=rfbm(q/r.w*vec2f(9.,11.));
-  let fm=smoothstep(.10,.0,min(bot*1.1,e*1.6)-fr*.10);
+  let fm=(1.-smoothstep(.0,.10,min(bot*1.1,e*1.6)-fr*.10));
   c=mix(c,vec3f(.80,.87,.93),fm*.55);
-  c=c+vec3f(.88,.93,.97)*smoothstep(.72,.9,fr)*smoothstep(.34,.0,bot)*.22;
+  c=c+vec3f(.88,.93,.97)*smoothstep(.72,.9,fr)*(1.-smoothstep(.0,.34,bot))*.22;
   /* лампа отражается в стекле изнутри: тёплое пятно у левой кромки */
   c=c+vec3f(1.,.82,.58)*lamp*.10*exp(-q.x/(r.z*.22))*exp(-pow((v-.28)/.35,2.));
   return vec4f(c,1.);}`;
