@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 632 · символов верхнего уровня: 6349
+Файлов: 632 · символов верхнего уровня: 6353
 
 ## СИМВОЛЫ
 
@@ -1512,7 +1512,7 @@ drawFindsSystem              src/17b-finds.js:238-286
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-360
-drawFleetShip                src/12ai1-fleet-art.js:447
+drawFleetShip                src/12ai1-fleet-art.js:448
 drawFoeBody                  src/24ab-raid-foe.js:10-130
 drawForeground               src/21b-surface-deco.js:278-383
 drawGalaxy                   src/17z1-galaxy.js:97-137
@@ -1554,7 +1554,7 @@ drawNodeIcon                 src/05a-nodes.js:264-361
 drawObelisk                  src/20aa-poi-shapes.js:276-376
 drawObserv                   src/20aa-poi-shapes.js:491-513
 drawPeaceFleet               src/17m-peace-fleet.js:73-144
-drawPirateBase               src/24a-mode-raid.js:103-133
+drawPirateBase               src/24a-mode-raid.js:131-162
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-172
 drawPlanetWorks              src/17e-station-body.js:71-116
@@ -1583,7 +1583,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:493-528
+drawStation                  src/17c-system-draw.js:496-531
 drawStationBody              src/17c-system-draw.js:167-370
 drawStationMods              src/17a-station-mod.js:207-210
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -1611,7 +1611,7 @@ drawTransitPlate             src/03e-hull-draw.js:59-67
 drawVan                      src/21ac3-base-van.js:71-133
 drawVanSmall                 src/21ac3-base-van.js:135-141
 drawWallPaper                src/11ae-concert.js:39-71
-drawWanderer                 src/12v-wander.js:300-448
+drawWanderer                 src/12v-wander.js:337-441
 drawWanderMap                src/12v-wander.js:159-173
 drawWanderRoom               src/24c-mode-wanderer-draw.js:117-341
 drawWater                    src/21e-surface-draw.js:194-275
@@ -1710,7 +1710,7 @@ enterBelt                    src/24-mode-belt.js:71-119
 enterCave                    src/22-mode-cave.js:175-232
 enterDig                     src/23-mode-dig.js:51-70
 enterHomeIn                  src/29c-home-in.js:65-73
-enterRaid                    src/24a-mode-raid.js:134-189
+enterRaid                    src/24a-mode-raid.js:163-218
 enterSpa                     src/29h-spa.js:51-65
 enterSurface                 src/21-mode-surface.js:7-198
 enterWinter                  src/29f-winter.js:112-119
@@ -1961,7 +1961,7 @@ fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipAt                  src/12ai1-fleet-art.js:417-445
+fleetShipAt                  src/12ai1-fleet-art.js:417-446
 fleetShipGpu                 src/12ai1-fleet-art.js:411-415
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
@@ -2068,8 +2068,8 @@ GATE2D                       tests/91zzzzzzy3-gate2d.js:27-149
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
-gateFind                     tests/91zzzzzzy-gpugate.js:270-315
-gateFlyScenes                tests/91zzzzzzy-gpugate.js:273-315
+gateFind                     tests/91zzzzzzy-gpugate.js:270-318
+gateFlyScenes                tests/91zzzzzzy-gpugate.js:273-318
 gatePlace                    tests/91zzzzzzy-gpugate.js:31-35
 gateStand                    tests/91zzzzzzy-gpugate.js:22-30
 gateWho                      tests/91zzzzzzy-gpugate.js:19-21
@@ -2353,7 +2353,7 @@ gpuHudFlush                  src/08bh-gpu-hud.js:18-32
 gpuImage                     src/08c-gpu-kit.js:212-225
 gpuKitU                      src/08c-gpu-kit.js:170-174
 gpuLight                     src/08b-gpu.js:451
-gpuLitSprite                 src/17c-system-draw.js:484-492
+gpuLitSprite                 src/17c-system-draw.js:487-495
 gpuLtWrite                   src/08b-gpu.js:455-462
 gpuManual                    src/08b-gpu.js:587-592
 gpuMipDrop                   src/08c-gpu-kit.js:110
@@ -4206,6 +4206,7 @@ PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
 pirateArmTick                src/13d-loadout.js:163-181
 pirateArtOf                  src/12i-pirate-hull.js:238-414
+pirateBaseGpu                src/24a-mode-raid.js:107-130
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
@@ -4586,8 +4587,8 @@ RAID_ROOMS                   src/24a-mode-raid.js:7-13
 raidFloorAt                  src/24a-mode-raid.js:77
 raidFloorH                   src/24a-mode-raid.js:73-76
 raidIdx                      src/24a-mode-raid.js:14
-raidLeave                    src/24a-mode-raid.js:190-213
-raidLineOfSight              src/24a-mode-raid.js:347-354
+raidLeave                    src/24a-mode-raid.js:219-242
+raidLineOfSight              src/24a-mode-raid.js:376-383
 raidSolid                    src/24a-mode-raid.js:78-81
 raidSolidAt                  src/24a-mode-raid.js:82
 raidUp                       src/24aa-raid-draw.js:8-12
@@ -5986,7 +5987,7 @@ updateDig                    src/23-mode-dig.js:144-253
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:523-536
-updateRaid                   src/24a-mode-raid.js:215-345
+updateRaid                   src/24a-mode-raid.js:244-374
 updateRail                   src/18g-rail-ride.js:64-103
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
@@ -6149,6 +6150,7 @@ wanAll                       src/24c-mode-wanderer.js:21
 wanCaseAt                    src/24c-mode-wanderer-draw.js:30-36
 wanCol                       src/24c-mode-wanderer-draw.js:21
 wanCur                       src/24c-mode-wanderer.js:50
+WAND_BAKE                    src/12v-wander.js:285
 WAND_SAIL_WGSL               src/12v-wander.js:181
 WANDER_BY_ID                 src/12v-wander-shop.js:70
 WANDER_CAT                   src/12v-wander-shop.js:27-69
@@ -6167,10 +6169,12 @@ wanderAt                     src/12v-wander.js:68-80
 wanderBuy                    src/12v-wander-shop.js:154-182
 wanderCant                   src/12v-wander-shop.js:143-151
 wanderDock                   src/12v-wander.js:123-127
-wanderGpu                    src/12v-wander.js:232-298
+wanderGpu                    src/12v-wander.js:295-335
 wanderHas                    src/12v-wander-shop.js:79
 wanderHeading                src/12v-wander.js:105
 wanderHere                   src/12v-wander.js:90-93
+wanderHullGpu                src/12v-wander.js:286-293
+wanderHullPaint              src/12v-wander.js:234-281
 wanderLeftRu                 src/12v-wander-shop.js:264-270
 wanderLen                    src/12v-wander.js:95
 wanderLoop                   src/12v-wander.js:44-66
@@ -7421,11 +7425,11 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/24-mode-belt.js · 40 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/24a-mode-raid.js · 20 КБ
+## src/24a-mode-raid.js · 22 КБ
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84
-  · обновление:214
+  · обновление:243
 
 ## src/24aa-raid-draw.js · 50 КБ
   · рейд: отрисовка:1
