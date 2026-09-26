@@ -56947,7 +56947,7 @@ const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»",co:"АЭЛИТА
 /* имя в подписи и журнале — полное: пропуск мёртвой буквы хорош в неоне, а в строке HUD читается опечаткой («ГОС ИНИЦА») */
 const hotelName=by=>HOTEL_SIGN_FULL[by]||(HOTEL_SIGN[by]||HOTEL_SIGN.gt).trim();
 const HOTEL_NIGHT=12;
-const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,neon:[r,g,b]? (свой цвет трубок, иначе лампа хозяина),sheen:[x,y,r],wins(sd),paint(c,e,sd,lit,Lt)} */
+const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,sheen:[x,y,r],wins(sd),paint(c,e,sd,lit,Lt)} */
 function hotelHere(){
   const sys=G.sys;if(!sys||!sys.station||typeof sysLane!=="function")return null;
   const P=sysLane(sys);if(!P||P.life<.45)return null;
@@ -57068,7 +57068,7 @@ function hotelNeon(Ht,T,k,col,ahead){
   if(!T.sign)return null;
   const F=T.sign[2]*k;if(F<3)return null;
   const Fb=Math.max(3,Math.round(Math.pow(2,Math.round(Math.log2(F)*4)/4)*2)/2);
-  const a=[Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,T.neon||col,"alphabetic",{core:true}];
+  const a=[Ht.sign,HOTEL_SIGN_FULL[Ht.by]||Ht.sign,Fb,col,"alphabetic",{core:true}];
   if(ahead){neonAhead(...a);return null;}
   const N=neonBake("hotel",...a);
   return N?{N,s:F/Fb}:null;
@@ -57493,17 +57493,18 @@ HOTEL_T.gt={W:250,H:170,PX:2,ax:138,ay:80,sign:[138,34,11],sheen:[138,34,30],hal
    перенесённая на камень. Каждая лоджия — сота с тёмной нишей и широким стеклом в глубине,
    перила — светлая нить; под барабаном конус днища с кольцом ресторана, ступица с маяком;
    ноги — бетон с красными хомутами и тросами в камень; у средней ноги — дверь и люди на камне.
-   На крыше — надстройка, антенны, тарелка и крашеный щит, на нём красный неон ядра (sign, HD_NEON):
-   крашеные буквы на зуме 2.2 не читались, неон «Космоса» рядом читался сразу. Над щитом и по кромке
-   крыши — гирлянда лампочек, часть перегорела (зерно). Свет —
+   На крыше — надстройка, антенны, тарелка и щит с крашеной вывеской: буквы краской, не неоном
+   (sign:null; неон — примета ГЛАВТРАССЫ, DESIGN-gpu). Над щитом — гирлянда лампочек, она же и
+   освещает щит тёплым спадом сверху вниз (в слое свечения, буквы из него вырезаны: тёмное на
+   светлом читается на зуме 2.2 в любой час); по кромке крыши — ещё гирлянда, часть перегорела
+   (зерно), лампы горят ровно. Свет —
    звезда системы (Lt из ядра): грань барабана к ней светлая, от неё — в холодной тени, крыша и
    верх камня — по hotelUp, днище — по hotelDn; ноги кладут тень на камень. Разброс от hashi(sd):
    очертание и кратеры камня, мёртвые лампочки, люди. Мерило — человек: этаж 14 ед., человек 3 */
 const HD_CX=185,HD_Y0=48,HD_RX=82,HD_RY=13,HD_DH=42,HD_NC=14,HD_FL=3,HD_FH=HD_DH/HD_FL;
 const HD_WALL=[200,190,172],HD_RED=[168,60,40],HD_ROCK=[156,146,132],HD_STEEL=[96,90,84],HD_CREAM=[214,204,184];
 const HD_DARK=["#10141c","#131722","#0e1219","#151a24"];
-const HD_HALO=[.6,.8];
-const HD_NEON=[255,86,66];   /* красные трубки по кремовому щиту — не жёлтый «Космоса» рядом (лампа ra почти того же тона) */
+const HD_HALO=[.6,.8],HD_SIGN="ТУРБАЗА «ДРУЖБА»";
 let HD_WINS=null;
 const hdA=i=>Math.PI*(i+.5)/HD_NC;                       /* угол соты i: фронт барабана — a∈(0,π), x убывает с a */
 const hdX=(a,r)=>HD_CX+Math.cos(a)*r;
@@ -57613,7 +57614,7 @@ function* hdPaint(c,e,sd,lit,Lt){
   hotelWindows(c,e,hdWins(),sd,false,HD_DARK);
   yield;
   /* ── крыша: диск под звездой, кромка, дорожки; надстройка, антенны с огнями, тарелка;
-     щит под неон (буквы кладёт ядро, 17l hotelNeon) и гирлянда над ним и по кромке ── */
+     щит с крашеной вывеской под гирляндой и гирлянда по кромке ── */
   {const g=c.createLinearGradient(sg>0?CX+RX:CX-RX,0,sg>0?CX-RX:CX+RX,0);g.addColorStop(0,C(HD_WALL,sU+.2));g.addColorStop(1,C(HD_WALL,sU*.55));c.fillStyle=g;hotelPoly(c,roof);c.fill();
    c.strokeStyle="rgba(10,10,14,.22)";c.lineWidth=.3;c.beginPath();c.ellipse(CX,Y0,RX*.72,RY*.72,0,0,TAU);c.ellipse(CX,Y0,RX*.4,RY*.4,0,0,TAU);c.stroke();
    c.strokeStyle=C([236,226,206],sU+.3);c.lineWidth=.6;c.beginPath();const fr=ring(Y0+.4,RX,.05,Math.PI-.05,30);c.moveTo(fr[0],fr[1]);for(let k=2;k<fr.length;k+=2)c.lineTo(fr[k],fr[k+1]);c.stroke();
@@ -57626,10 +57627,19 @@ function* hdPaint(c,e,sd,lit,Lt){
    for(const [x,y] of [[CX-24,17],[CX+34,24]])hotelLamp(c,e,x,y+.5,.5,[255,58,46],.9);
    c.fillStyle=C([160,150,138],sF*.5);c.fillRect(CX+44,37,1.2,-6);c.fillStyle=C([220,214,200],sU+.3);c.beginPath();c.ellipse(CX+47,31,6,3.6,-.5,0,TAU);c.fill();   /* тарелка */
    c.fillStyle=sh(.35);c.beginPath();c.ellipse(CX+46.2,31.6,4.2,2.4,-.5,0,TAU);c.fill();
-   /* щит: крашеный, под трубками неона; над ним провод с лампочками, часть перегорела */
+   /* щит: крашеный, буквы краской; над ним провод с лампочками, часть перегорела */
    const bg=c.createLinearGradient(sg>0?CX+64:CX-64,0,sg>0?CX-64:CX+64,0);bg.addColorStop(0,C(HD_CREAM,sF+.3));bg.addColorStop(1,C(HD_CREAM,sF*.7));c.fillStyle=bg;hotelPoly(c,board);c.fill();
    c.fillStyle=C(HD_RED,sF*.8);c.fillRect(CX-64,34,128,1.1);c.fillRect(CX-64,46.4,128,1.1);
    c.strokeStyle="rgba(10,10,14,.35)";c.lineWidth=.3;c.beginPath();for(const x of [CX-56,CX+56]){c.moveTo(x,47.5);c.lineTo(x,50.5);}c.stroke();
+   c.font="bold 11px ui-monospace,monospace";c.textAlign="center";c.textBaseline="alphabetic";
+   c.fillStyle=sh(.3);c.fillText(HD_SIGN,CX+.4,45.2);c.fillStyle=C([184,40,30],sF*.5+.45);c.fillText(HD_SIGN,CX,44.8);
+   /* свет гирлянды на щите: тёплый спад от ламп вниз — в слое свечения, поэтому щит светел и в тени
+      звезды, и ночью; буквы из света вырезаны (чёрное в слое свечения = ничего не прибавить) —
+      краска остаётся тёмной, и слово читается контрастом, без ореола */
+   {const lg=e.createLinearGradient(0,34,0,47.5);lg.addColorStop(0,"rgba(255,214,150,.62)");lg.addColorStop(.45,"rgba(255,200,140,.34)");lg.addColorStop(1,"rgba(255,190,130,.14)");
+    e.fillStyle=lg;hotelPoly(e,board);e.fill();
+    e.font=c.font;e.textAlign="center";e.textBaseline="alphabetic";e.fillStyle="#000";e.fillText(HD_SIGN,CX,44.8);
+    e.fillStyle="#000";e.fillRect(CX-64,34,128,1.1);e.fillRect(CX-64,46.4,128,1.1);}
    const GC=[[255,90,60],[255,200,80],[90,210,120],[100,150,255]];
    c.strokeStyle="#2c2926";c.lineWidth=.35;c.beginPath();c.moveTo(CX-64,32.6);for(let x=CX-58;x<=CX+64;x+=12)c.quadraticCurveTo(x-6,34.2,x,32.6);c.stroke();
    for(let i=0;i<22;i++){const x=CX-63+i*6,y=32.6+(i%2?1.1:.4),col=GC[i%4];
@@ -57640,7 +57650,7 @@ function* hdPaint(c,e,sd,lit,Lt){
   /* ── причальная труба от левого борта к челноку ── */
   hotelDock(c,e,CX-RX+2,84,62,90,sd,Lt);
 }
-HOTEL_T.ra={W:280,H:200,PX:2,ax:185,ay:100,sign:[185,44.5,10],neon:HD_NEON,sheen:[185,40,30],halo:HD_HALO,wins:hdWins,paint:hdPaint};
+HOTEL_T.ra={W:280,H:200,PX:2,ax:185,ay:100,sign:null,sheen:[185,40,30],halo:HD_HALO,wins:hdWins,paint:hdPaint};
 
 /* ══════════════ мирный флот в полёте (M455, DESIGN-borders §2.4, war §7.3) ══════════════
    Каждая держава в мирный день делает своё, и это видно из кабины:

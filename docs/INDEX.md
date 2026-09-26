@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 634 · символов верхнего уровня: 6395
+Файлов: 634 · символов верхнего уровня: 6394
 
 ## СИМВОЛЫ
 
@@ -2621,22 +2621,21 @@ hazeFar                      src/19c-light.js:167-188
 hazeGrab                     src/18d-postfx.js:33-50
 HB_PROBE                     src/03e1-hull-bake.js:23
 HB_STATS                     src/03e1-hull-bake.js:26
-HD_CX                        src/17l2-hotel-druzhba.js:12
-HD_DARK                      src/17l2-hotel-druzhba.js:14
-HD_HALO                      src/17l2-hotel-druzhba.js:15
-HD_NEON                      src/17l2-hotel-druzhba.js:16
-HD_WALL                      src/17l2-hotel-druzhba.js:13
-HD_WINS                      src/17l2-hotel-druzhba.js:17
-hdA                          src/17l2-hotel-druzhba.js:18
+HD_CX                        src/17l2-hotel-druzhba.js:14
+HD_DARK                      src/17l2-hotel-druzhba.js:16
+HD_HALO                      src/17l2-hotel-druzhba.js:17
+HD_WALL                      src/17l2-hotel-druzhba.js:15
+HD_WINS                      src/17l2-hotel-druzhba.js:18
+hdA                          src/17l2-hotel-druzhba.js:19
 hdAgeShifts                  tests/91zzzzy-hold.js:48-59
 hdLay                        tests/91zzzzy-hold.js:41-46
-hdPaint                      src/17l2-hotel-druzhba.js:34-152
+hdPaint                      src/17l2-hotel-druzhba.js:35-162
 hDraw                        tests/91zzzzzzz-hands.js:36
-hdS                          src/17l2-hotel-druzhba.js:21
+hdS                          src/17l2-hotel-druzhba.js:22
 hdSite                       tests/91zzzzy-hold.js:15-37
-hdWins                       src/17l2-hotel-druzhba.js:22-33
-hdX                          src/17l2-hotel-druzhba.js:19
-hdY                          src/17l2-hotel-druzhba.js:20
+hdWins                       src/17l2-hotel-druzhba.js:23-34
+hdX                          src/17l2-hotel-druzhba.js:20
+hdY                          src/17l2-hotel-druzhba.js:21
 HEARD_MAX                    src/12x-parrot.js:23
 heardAdd                     src/12x-parrot.js:42-51
 heardAll                     src/12x-parrot.js:26
@@ -7193,7 +7192,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17l1-hotel-kosmos.js · 27 КБ
   · гостиница «Космос» — ГЛАВТРАССА (gt, эталон шести типов):1
 
-## src/17l2-hotel-druzhba.js · 16 КБ
+## src/17l2-hotel-druzhba.js · 17 КБ
   · турбаза «Дружба» — РАССВЕТ (ra):1
 
 ## src/17m-peace-fleet.js · 11 КБ
