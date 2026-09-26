@@ -111,8 +111,17 @@ addEventListener("keydown",e=>{
    колодке это свой маленький canvas.
    part — для мастера кабины 24bc: "base" — бумага, края, щель, деления и нули дорожек (под перьями),
    "roll" — валик (над перьями); перья, перо у края и тень взгляда назад он кладёт сам */
-function tapePaper(c,x0,y0,w,h,part){
-  const T=tapeInit();
+/* два листа одной ленты: светлая бумага кабины пояса (её видно под лампой) и тёмная — колодки над
+   миром. Светлая полоса в строке приборов была самым ярким и самым мёртвым пятном верха кадра:
+   пустая лента не должна светиться, ярким там бывает только след пера */
+const TAPE_PAL={
+  light:{paper:"rgba(188,182,164,.62)",edge:"rgba(0,0,0,.10)",grid:"rgba(60,66,60,.18)",zero:"rgba(60,66,60,.20)",
+         ink:"rgba(38,44,40,.80)",rollHi:"rgba(150,176,190,.20)",rollLn:"rgba(150,176,190,.24)",nib:"rgba(24,28,26,.85)"},
+  dark:{paper:"rgba(16,22,28,.78)",edge:"rgba(178,202,216,.10)",grid:"rgba(178,202,216,.06)",zero:"rgba(178,202,216,.09)",
+        ink:"rgba(190,212,224,.74)",rollHi:"rgba(150,176,190,.12)",rollLn:"rgba(150,176,190,.14)",nib:"rgba(200,222,234,.80)"}
+};
+function tapePaper(c,x0,y0,w,h,part,pal){
+  const T=tapeInit(),P=TAPE_PAL[pal]||TAPE_PAL.light;
   /* бумага — вещь, она видна и до первых двух отсчётов: прежде полоса пустовала
      первые три секунды сеанса (первый столбец пишется через 1.6 с), и колодка
      на свежем кадре выглядела сломанной. Кривые — только когда есть что вести */
@@ -121,9 +130,9 @@ function tapePaper(c,x0,y0,w,h,part){
   c.save();
   if(part!=="roll"){
   /* бумага: слегка тёплая, с продольными краями и следом протяжки */
-  c.fillStyle="rgba(188,182,164,.62)";
+  c.fillStyle=P.paper;
   c.fillRect(x0,y0,w,h);
-  c.fillStyle="rgba(0,0,0,.10)";
+  c.fillStyle=P.edge;
   c.fillRect(x0,y0,w,1.2);c.fillRect(x0,y0+h-1.2,w,1.2);
   /* слева бумага уходит в щель подачи: без этой тени полоса начинается ниоткуда */
   const lw=Math.min(9,w*.1);
@@ -134,7 +143,7 @@ function tapePaper(c,x0,y0,w,h,part){
   /* поперечные деления: время, без единой цифры */
   const cols=Math.min(T.n-1,Math.floor(w));
   const sc=w/Math.max(1,cols);
-  c.strokeStyle="rgba(60,66,60,.18)";c.lineWidth=1;
+  c.strokeStyle=P.grid;c.lineWidth=1;
   for(let g=0;g<=6;g++){
     const gx=Math.round(x0+w*g/6)+.5;
     c.beginPath();c.moveTo(gx,y0+1);c.lineTo(gx,y0+h-1);c.stroke();
@@ -147,12 +156,12 @@ function tapePaper(c,x0,y0,w,h,part){
     const top=y0+th*i+1.2, hh=th-2.4;
     /* нуль дорожки: печатная линия на бумаге. На ней перо стоит там, где
        ничего не менялось, — и это само по себе показание */
-    c.strokeStyle="rgba(60,66,60,.20)";
+    c.strokeStyle=P.zero;
     c.beginPath();
     c.moveTo(x0,Math.round(top+hh*.5)+.5);c.lineTo(x1,Math.round(top+hh*.5)+.5);
     c.stroke();
     if(cols<1||part)continue;
-    c.strokeStyle="rgba(38,44,40,.80)";
+    c.strokeStyle=P.ink;
     c.beginPath();
     for(let k=0;k<=cols;k++){
       /* столбцы идут слева направо: слева старое, справа то, что пишется */
@@ -171,16 +180,16 @@ function tapePaper(c,x0,y0,w,h,part){
   const rg=c.createLinearGradient(x1-rw,0,x1,0);
   rg.addColorStop(0,"rgba(20,26,32,0)");
   rg.addColorStop(.55,"rgba(20,26,32,.30)");
-  rg.addColorStop(1,"rgba(150,176,190,.20)");
+  rg.addColorStop(1,P.rollHi);
   c.fillStyle=rg;c.fillRect(x1-rw,y0,rw,h);
-  c.strokeStyle="rgba(150,176,190,.24)";c.lineWidth=1;
+  c.strokeStyle=P.rollLn;c.lineWidth=1;
   c.beginPath();c.moveTo(x1-rw+.5,y0);c.lineTo(x1-rw+.5,y0+h);c.stroke();
   if(part){c.restore();return;}
   /* перо: короткая чёрточка у правого края, дрожит на щелчке. Ничего не
      подсвечивает — просто стоит там, где сейчас пишет */
   if(!T.back){
     const jitter=T.tick*1.6;
-    c.strokeStyle="rgba(24,28,26,.85)";c.lineWidth=1.2;
+    c.strokeStyle=P.nib;c.lineWidth=1.2;
     c.beginPath();
     c.moveTo(x1-1.5+jitter,y0+1);c.lineTo(x1-1.5+jitter,y0+h-1);
     c.stroke();
