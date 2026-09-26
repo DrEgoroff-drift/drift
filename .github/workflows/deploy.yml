@@ -209,3 +209,38 @@ jobs:
           rm -rf /tmp/drift-dev
           google-chrome --headless=new --disable-gpu --no-sandbox --window-size=1280,800 --user-data-dir=/tmp/drift-dev --virtual-time-budget=6000 --dump-dom "https://drift-game.ru/dev.html" > /tmp/dev.dom 2>/tmp/dev.err || true
           grep -q "data-alive=\"$ver\"" /tmp/dev.dom && echo "https://drift-game.ru/dev.html живёт: $ver ($GITHUB_REF_NAME)" || { echo "dev.html не ожил"; grep -i uncaught /tmp/dev.err | head -3; exit 1; }
+
+  # 26.09 (Контроль): глаза тестов на WebGPU — SwiftShader, программная видеокарта,
+  # что едет с самим Хромом. Пока только отчёт: работа отдельная, параллельно publish
+  # и без needs, так что выкладку не удлиняет и не останавливает (continue-on-error).
+  # Дома: дым + «глаза тестов» 8/8 зелёных подряд, 9–12 с на прогон.
+  # Блокирующей станет после 5 зелёных выкладок подряд — тогда publish получит
+  # needs: webgpu, а continue-on-error уйдёт.
+  webgpu:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Собрать tests.html
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: "Глаза на WebGPU (SwiftShader), только отчёт"
+        run: |
+          t0=$(date +%s)
+          google-chrome --headless=new --no-sandbox --enable-unsafe-webgpu --enable-features=Vulkan --use-webgpu-adapter=swiftshader --window-size=1280,800 --user-data-dir=/tmp/drift-webgpu --virtual-time-budget=20000 --timeout=600000 --dump-dom "file://$PWD/tests.html?only=%D0%B8%D0%B3%D1%80%D0%B0%20%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D1%82%D0%B8%D0%BB%D0%B0%D1%81%D1%8C%20%D1%81%D0%B0%D0%BC%D0%B0%7C%D0%B3%D0%BB%D0%B0%D0%B7%D0%B0%20%D1%82%D0%B5%D1%81%D1%82%D0%BE%D0%B2" > /tmp/webgpu.dom 2>/tmp/webgpu.err || true
+          echo "шаг: $(( $(date +%s) - t0 )) с"
+          python3 - <<'PY'
+          import re,html,sys
+          d=open('/tmp/webgpu.dom',encoding='utf-8',errors='replace').read()
+          m=re.search(r'<pre id="testout"[^>]*>([\s\S]*?)</pre>',d)
+          if not m: print("webgpu: отчёта нет — страница упала до runTests"); sys.exit(1)
+          t=html.unescape(m.group(1)).split(chr(10)); print("webgpu: "+t[0])
+          if re.match(r'^\S+ \d+ ',t[0]):
+              for l in t[2:12]:
+                  if not l.strip(): break
+                  print(l)
+              sys.exit(1)
+          PY
