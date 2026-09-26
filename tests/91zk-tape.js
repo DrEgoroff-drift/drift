@@ -93,7 +93,9 @@ TEST_SUITES.push(()=>suite("Колодка: приборы под рукой в 
   G.mode="surface";instrPodTick();
   eq(pod.style.display,"","на поверхности снова на месте");
 
-  /* ── рисует и молчит ── */
+  /* ── рисует и молчит ── колодку рисует видеокарта (25c, 26.09): кадр — gpuManual, читаем копией */
+  if(!ok(GPU.ok&&!!GPU.dev,"видеокарта есть"))return;
+  G.mode="system";
   const spy={say:0,tell:0,log:0,sfx:0};
   const s0=say,t0=tell,l0=logAdd,f0=sfx;
   say=function(){spy.say++;return s0.apply(null,arguments);};
@@ -101,27 +103,29 @@ TEST_SUITES.push(()=>suite("Колодка: приборы под рукой в 
   logAdd=function(){spy.log++;return l0.apply(null,arguments);};
   sfx=function(){spy.sfx++;return f0.apply(null,arguments);};
   for(let i=0;i<30;i++)tapeSample();
-  instrPodDraw();
-  say=s0;tell=t0;logAdd=l0;sfx=f0;
+  const draw=()=>gpuManual(()=>instrPodDraw());
+  try{draw();}finally{say=s0;tell=t0;logAdd=l0;sfx=f0;}
   eq(spy.say+spy.tell+spy.log+spy.sfx,0,"колодка не сказала ни слова");
-  const c=pod.getContext("2d"),d=c.getImageData(0,0,pod.width,pod.height).data;
-  let ink=0;for(let i=3;i<d.length;i+=4)if(d[i]>8)ink++;
+  eq(pod.getContext("2d"),null,"2D-контекста у колодки нет: её рисует видеокарта");
+  const read=()=>{const c=document.createElement("canvas");c.width=pod.width;c.height=pod.height;
+    const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(pod,0,0);return g.getImageData(0,0,c.width,c.height).data;};
+  const d=read();let ink=0;for(let i=3;i<d.length;i+=4)if(d[i]>8)ink++;
   ok(ink>pod.width*pod.height*.1,"на колодке действительно что-то нарисовано: "+ink+" пикселей");
 
-  /* ── перерисовка только на перемене: стоящие стрелки полотно не трогают ── */
-  let cl=0;const cr0=c.clearRect;c.clearRect=function(){cl++;return cr0.apply(c,arguments);};
-  for(let i=0;i<10;i++)instrPodDraw();
-  eq(cl,0,"кадры без перемен колодку не перерисовывают");
-  /* полотно, которое читают, Chrome переводит на программный растр, и сглаживание
-     дуг у двух растров разное: сравниваем кадры уже после перевода */
-  for(let i=0;i<4;i++)c.getImageData(0,0,1,1);
-  tapeSample();instrPodDraw();
-  eq(cl,1,"новый столбец ленты — одна перерисовка");
-  const d1=c.getImageData(0,0,pod.width,pod.height).data;
-  IPOD_SIG="";instrPodDraw();
-  const d2=c.getImageData(0,0,pod.width,pod.height).data;
+  /* ── перерисовка только на перемене: стоящие стрелки прохода не просят ── */
+  const n0=IPOD.n;
+  for(let i=0;i<10;i++)draw();
+  eq(IPOD.n-n0,0,"кадры без перемен колодку не перерисовывают");
+  tapeSample();draw();
+  eq(IPOD.n-n0,1,"новый столбец ленты — один проход");
+  const d1=read();
+  IPOD_SIG="";draw();
+  const d2=read();
   let df=0;for(let i=0;i<d1.length;i++)if(d1[i]!==d2[i])df++;
   eq(df,0,"сбережённый кадр тот же, что нарисованный заново");
-  c.clearRect=cr0;
+  /* открытый экран гасит колодку: ни прохода, ни текстуры */
+  tapeSample();const n1=IPOD.n;document.body.classList.add("screen");
+  try{gpuManual(()=>instrPodTick());}finally{document.body.classList.remove("screen");}
+  eq(IPOD.n,n1,"под открытым экраном колодка не рисуется");
   G.mode=m0;G.running=run0;
 }));
