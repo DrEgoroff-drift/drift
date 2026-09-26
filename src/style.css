@@ -1992,13 +1992,14 @@ body.table u.addr{color:#7a4a20}
 .stp-fx.stp-done .l1{font-size:14px;margin-top:2px}
 
 /* ── барахолка (M463) [design owed] ── */
-#bazWin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(420px,calc(100vw - 32px));max-height:80vh;overflow:auto;
+:is(#bazWin,#giantWin){position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(420px,calc(100vw - 32px));max-height:80vh;overflow:auto;
   background:#1b1814;border:1px solid #6a5a44;color:#eadbc0;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
-#bazWin .bz-h{font:600 15px ui-monospace,monospace;letter-spacing:.2em}#bazWin .bz-h s{display:block;text-decoration:none;font-size:11px;opacity:.6;letter-spacing:0}
-#bazWin .bz-sec{margin:10px 0 4px;font-size:11px;letter-spacing:.15em;opacity:.7}
-#bazWin .bz-row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}
-#bazWin .bz-row s{text-decoration:none;font-size:11px;opacity:.6;grid-column:1}#bazWin .bz-row button{grid-row:1/3;grid-column:2}
-#bazWin .bz-x{margin-top:10px;width:100%}
+:is(#bazWin,#giantWin) .bz-h{font:600 15px ui-monospace,monospace;letter-spacing:.2em}:is(#bazWin,#giantWin) .bz-h s{display:block;text-decoration:none;font-size:11px;opacity:.6;letter-spacing:0}
+:is(#bazWin,#giantWin) .bz-sec{margin:10px 0 4px;font-size:11px;letter-spacing:.15em;opacity:.7}
+:is(#bazWin,#giantWin) .bz-row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}
+:is(#bazWin,#giantWin) .bz-row s{text-decoration:none;font-size:11px;opacity:.6;grid-column:1}:is(#bazWin,#giantWin) .bz-row button{grid-row:1/3;grid-column:2}
+:is(#bazWin,#giantWin) .bz-x{margin-top:10px;width:100%}
+#giantWin .gi-txt{margin:8px 0 2px;font-size:12px;line-height:1.55;opacity:.85}
 
 /* ── особая система корпуса: перезарядка ободом ДЕЙСТВИЯ (M484) [design owed] ── */
 .pads button[data-k="act"]{position:relative}
@@ -2074,14 +2075,14 @@ body.table u.addr{color:#7a4a20}
 #railWin .rw-map{margin-top:10px}
 
 /* барахолка (D20): прилавок таблицей — три колонки под шапкой, продано — вычеркнуто */
-#bazWin .bz-tab{border:1px solid rgba(240,210,160,.25);border-radius:3px;overflow:hidden}
-#bazWin .bz-th{display:grid;grid-template-columns:1fr auto;gap:8px;padding:4px 8px;font-size:9px;letter-spacing:.14em;opacity:.55;background:rgba(240,210,160,.08)}
-#bazWin .bz-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border-top:1px solid rgba(255,255,255,.06)}
-#bazWin .bz-row:nth-child(2n+1){background:rgba(0,0,0,.18)}
-#bazWin .bz-row b{grid-area:nm;font-size:12px}#bazWin .bz-row s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7}#bazWin .bz-row button{grid-area:pr}
-#bazWin .bz-row.sold b{text-decoration:line-through;opacity:.5}
-#bazWin .bz-rum{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border:1px dashed rgba(240,210,160,.25);border-radius:3px}
-#bazWin .bz-rum b{grid-area:nm;font-size:12px}#bazWin .bz-rum s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7;line-height:1.6}#bazWin .bz-rum button{grid-area:pr}
+:is(#bazWin,#giantWin) .bz-tab{border:1px solid rgba(240,210,160,.25);border-radius:3px;overflow:hidden}
+:is(#bazWin,#giantWin) .bz-th{display:grid;grid-template-columns:1fr auto;gap:8px;padding:4px 8px;font-size:9px;letter-spacing:.14em;opacity:.55;background:rgba(240,210,160,.08)}
+:is(#bazWin,#giantWin) .bz-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border-top:1px solid rgba(255,255,255,.06)}
+:is(#bazWin,#giantWin) .bz-row:nth-child(2n+1){background:rgba(0,0,0,.18)}
+:is(#bazWin,#giantWin) .bz-row b{grid-area:nm;font-size:12px}:is(#bazWin,#giantWin) .bz-row s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7}:is(#bazWin,#giantWin) .bz-row button{grid-area:pr}
+:is(#bazWin,#giantWin) .bz-row.sold b{text-decoration:line-through;opacity:.5}
+:is(#bazWin,#giantWin) .bz-rum{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border:1px dashed rgba(240,210,160,.25);border-radius:3px}
+:is(#bazWin,#giantWin) .bz-rum b{grid-area:nm;font-size:12px}:is(#bazWin,#giantWin) .bz-rum s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7;line-height:1.6}:is(#bazWin,#giantWin) .bz-rum button{grid-area:pr}
 
 /* окошко Космопочты (D17) и печать подписки (D19) */
 .post .kp-win{display:block;margin:6px auto 2px;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.35)}

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 642 · символов верхнего уровня: 6623
+Файлов: 642 · символов верхнего уровня: 6632
 
 ## СИМВОЛЫ
 
@@ -588,10 +588,13 @@ GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:202
 GEX_WGSL                     src/16ga-gpu-trail.js:203
 GIANT                        src/19a-mode-scoop.js:192
-GIANTS                       src/17o-giants.js:18
-GIANTS_DEF                   src/17o-giants.js:9-17
-GIANT_CV                     src/17o-giants.js:68
+GIANTS                       src/17o-giants.js:22
+GIANTS_DEF                   src/17o-giants.js:13-21
+GIANT_CV                     src/17o-giants.js:88
+GIANT_DOCK                   src/17o-giants.js:246
 GIANT_KEEP                   src/19a-mode-scoop.js:193
+GIANT_LEN                    src/17o-giants.js:213
+GIANT_VISIT                  src/17o-giants.js:230-245
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
@@ -1445,7 +1448,7 @@ S1                           src/01-core.js:183
 S2                           src/01-core.js:184
 SAME_FRAMES                  tests/91zzzzzbb-samehash.js:21
 SAVE_BUDGET                  src/14-save.js:126
-SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-56
+SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-57
 SAVE_KEY                     src/14-save.js:6
 SCALES                       src/10-music.js:5-24
 SCALE_KEYS                   src/10-music.js:25
@@ -2373,7 +2376,7 @@ chessMove                    src/25n-chess.js:217-226
 chessMyTurn                  src/25n-chess.js:212-216
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
-chipDist                     src/17-mode-system.js:719-725
+chipDist                     src/17-mode-system.js:720-726
 chipDom                      src/08bi-gpu-ovl.js:177-192
 chipDomSnap                  src/08bh-gpu-hud.js:10-12
 chipDomSweep                 src/08bh-gpu-hud.js:20-23
@@ -2936,8 +2939,8 @@ drawGalaxyStars              src/17z1-galaxy.js:156-195
 drawGestPost                 src/17h-sys-gesture.js:196-216
 drawGesture                  src/17h-sys-gesture.js:92-144
 drawGestureTop               src/17h-sys-gesture.js:148-177
-drawGiant                    src/17o-giants.js:162-189
-drawGiantsMap                src/17o-giants.js:49-61
+drawGiant                    src/17o-giants.js:182-211
+drawGiantsMap                src/17o-giants.js:69-81
 drawGlassHUD                 src/24-mode-belt.js:702-789
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-239
@@ -3010,12 +3013,12 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:726-1052
+drawSysHud                   src/17-mode-system.js:727-1053
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:79-115
 drawSysTraffic               src/17f-sys-traffic.js:39-43
-drawSystem                   src/17-mode-system.js:530-714
+drawSystem                   src/17-mode-system.js:531-715
 drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:50-89
 drawThingIcon                src/27i-ui-table.js:409-487
@@ -3418,14 +3421,20 @@ getSystem                    src/06-galaxy.js:95-189
 gexDraw                      src/16ga-gpu-trail.js:305-314
 gexPush                      src/16ga-gpu-trail.js:269-275
 ghf                          src/17ga-gpu-planets.js:369
-giantArrive                  src/17o-giants.js:191-197
-giantAt                      src/17o-giants.js:34
-giantBake                    src/17o-giants.js:70-161
-giantLightAng                src/17o-giants.js:69
-giantMapGlyph                src/17o-giants.js:38-48
-giantPos                     src/17o-giants.js:36
+giantArrive                  src/17o-giants.js:219-225
+giantAt                      src/17o-giants.js:54
+giantBake                    src/17o-giants.js:90-181
+giantClose                   src/17o-giants.js:254
+giantInteract                src/17o-giants.js:247-253
+giantLightAng                src/17o-giants.js:89
+giantMapGlyph                src/17o-giants.js:58-68
+giantNight                   src/17o-giants.js:263-270
+giantOpen                    src/17o-giants.js:271-292
+giantPos                     src/17o-giants.js:56
+giantRuler                   src/17o-giants.js:214-217
+giantRumour                  src/17o-giants.js:256-262
 giantTex                     src/19a-mode-scoop.js:194-268
-giantsAll                    src/17o-giants.js:19-33
+giantsAll                    src/17o-giants.js:23-53
 giftArrive                   src/11at-gift.js:43-63
 giftDue                      src/11at-gift.js:30-41
 glassOutline                 src/25-cockpit.js:54-90
@@ -4810,7 +4819,7 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:340-357
 optTab                       src/27-ui-ship.js:339
 optsNumify                   src/14a2-save-ephemeral.js:23-28
-orbPathOf                    src/17-mode-system.js:493-503
+orbPathOf                    src/17-mode-system.js:494-504
 orderDeliver                 src/12aa-need.js:116-127
 orderHere                    src/12aa-need.js:112-115
 orderOf                      src/12aa-need.js:78-102
@@ -6173,13 +6182,13 @@ sysLane                      src/17g-sys-lane.js:32-63
 sysMakes                     src/12ad-site.js:134-140
 sysNebComp                   src/16a-space.js:209-234
 sysNebulaTex                 src/16a-space.js:53-101
-sysOcPush                    src/17-mode-system.js:521-529
+sysOcPush                    src/17-mode-system.js:522-530
 sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-31
 sysRasterTick                src/06-galaxy.js:33-45
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
-sysWatchLabel                src/17-mode-system.js:508-516
+sysWatchLabel                src/17-mode-system.js:509-517
 tab                          src/26-ui-station.js:3
 tabLive                      src/14a-cloud.js:36
 tableBake                    src/27i-ui-table.js:145-155
@@ -6350,7 +6359,7 @@ updateRail                   src/18g-rail-ride.js:64-111
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-658
-updateSystem                 src/17-mode-system.js:92-489
+updateSystem                 src/17-mode-system.js:92-490
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:808-817
 useBeacon                    src/23-mode-dig.js:91-116
@@ -7435,7 +7444,7 @@ zoomTo                       src/15-input.js:350
 ## src/17n-bazaar.js · 16 КБ
   · барахолка, которая помнит (M463, DESIGN-life):1
 
-## src/17o-giants.js · 18 КБ
+## src/17o-giants.js · 27 КБ
   · по великану на рукав (M464, DESIGN-life):1
 
 ## src/17z-map-backdrop.js · 8 КБ

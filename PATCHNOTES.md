@@ -6,6 +6,17 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## Unreleased - stage 2, whose land
+
+- **M464 — one giant per arm (§8).** The six giants now stand on the galaxy model's real arms: two arms, two branches each, one giant per branch at 19–22 sectors and two more nearer the core at 14–15; the hollow moon stays at the core. Where the arms cross, the placement walks along its own branch in half-sector steps until the model names the spot as that arm (or a nebula of that arm) and it is at least 8 sectors from the others. The discovery log line names the arm.
+- **The ruler in the frame.** Under the giant's name in the system: «≈ N ваших корпусов в длину», counted from the hull you fly.
+- **Docking and visiting.** Within 760 of the body the cue offers ПРИЧАЛИТЬ. The visit window gives a paragraph of the place, a rumour from its people (seeded by the giant and a three-day bucket, logged once, НА КАРТУ like a station rumour) and, on the first visit only, a keepsake in ВЕЩИ (`G.giantsSeen[k]=2`, no new save field). The Дом водителя also lets you stay the night: 150 кр, hull +15 %, a full tank.
+
+### Disputed (cautious variants taken; the author may overturn)
+- M464: only the Дом водителя sells a service (the night); the other six give a paragraph, a rumour and a keepsake. Trade or jobs inside a giant were left for a later pass.
+- M464: the giant's length for the ruler is one fixed number (GIANT_LEN 1300) for all seven, not per body.
+- M464: the six arm giants left their old ring positions (only the moon stayed); a save that already found one keeps `giantsSeen`, but its landmark is somewhere else on the map now.
+
 ## Unreleased
 
 - «Смена» (P15): a landing in a new kind of place only arms the next chapter («где-то здесь. Отойдите от корабля»); walking 480 px from the ship lives it. The arming stays in the surface state, not in the save: leave without stepping out and the chapter waits. The 72-kinds-of-place check was already a suite (r ≤ 20).

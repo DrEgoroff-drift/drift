@@ -269,8 +269,6 @@ measured on the GPU build first:
 
 ## 8. Stage 7 — the giants
 
-- [ ] **M464 one giant per arm:** the ruler in the frame; docking and visiting; the arms matched to the
-  galaxy model's real arms.
 
 ## 9. Seams to honour when the items above are built
 

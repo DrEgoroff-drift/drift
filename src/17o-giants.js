@@ -2,9 +2,13 @@
    У каждого рукава и у ядра — одно колоссальное сооружение, в 20–50 раз
    больше корабля, названное голосом галактики. Место — география, а не
    война: земли держав ходят по летописи, великан стоит, где стоял. Шесть —
-   по кругу диска на 18–26 секторах (у звезды, ближайшей к расчётной точке),
-   седьмой — полая луна у ядра. На карте — ориентир с именем, в системе —
-   само тело, далеко от звезды. Мир не трогается: только starAt, без бросков.
+   на настоящих рукавах модели галактики (17z1/17z2): два рукава по две ветви,
+   по одному на ветвь на 19–22 секторах, и ещё двое ближе к ядру, на 14–15
+   (у звезды, ближайшей к точке рукава); седьмой — полая луна у ядра. На карте —
+   ориентир с именем, в системе — само тело, далеко от звезды, и под именем —
+   мерило: во сколько ваших корпусов он длиной. К телу причаливают: посещение —
+   абзац места, слух его жителей, сувенир с первого раза (G.giantsSeen[k]=2),
+   а в Доме водителя — ночлег. Мир не трогается: только starAt, без бросков.
    (Кольцо, M154, — не из их числа.) */
 const GIANTS_DEF=[
   {k:"moon",  by:null,ru:"Полая луна «Гнездо»",   note:"в недрах — шахтёрский посёлок, огни кольцами"},
@@ -19,15 +23,31 @@ let GIANTS=null;
 function giantsAll(){
   if(GIANTS)return GIANTS;
   GIANTS=[];
-  GIANTS_DEF.forEach((D,i)=>{
-    const a=i?(i-1)*Math.PI/3+.35:0,R=i?18+((i*37)%9):3;
-    const tx=Math.round(Math.cos(a)*R),ty=Math.round(Math.sin(a)*R);
-    let best=null,bd=1e9;
+  /* ветви рукавов: [рукав, ветвь] — по кругу; пятый и шестой — ближе к ядру (M464) */
+  const BR=[[0,0],[1,0],[0,1],[1,1]];
+  /* ближайшая звезда к точке (в квадрате ±4), как и раньше */
+  const near=(tx,ty)=>{let best=null,bd=1e9;
     for(let dx=-4;dx<=4;dx++)for(let dy=-4;dy<=4;dy++){
       const sx=tx+dx,sy=ty+dy;if(!starAt(sx,sy))continue;
-      const d=dx*dx+dy*dy;if(d<bd){bd=d;best=[sx,sy];}
+      const d=dx*dx+dy*dy;if(d<bd){bd=d;best=[sx,sy];}}
+    return best;};
+  /* два рукава на средних радиусах сходятся: идём по своей ветви от целевого радиуса
+     в обе стороны шагом полсектора и берём первую звезду, что по модели лежит в этом
+     рукаве (или в туманности этого же рукава) и не ближе 8 секторов к уже поставленным */
+  const far=q=>GIANTS.every(o=>o.k==="moon"||Math.hypot(o.sx-q[0],o.sy-q[1])>=8);
+  GIANTS_DEF.forEach((D,i)=>{
+    if(!i){const q=near(3,0);if(q)GIANTS.push({...D,arm:"ядро",sx:q[0],sy:q[1],seed:hashi(q[0],q[1],0x61A7)>>>0});return;}
+    const b=BR[(i-1)%4],A=GAL_ARMS[b[0]],r0=i<=4?18+i:9+i;
+    let pick=null,first=null;
+    for(let k=0;k<=40&&!pick;k++){
+      const r=r0+((k%2)?1:-1)*Math.ceil(k/2)*.5;if(r<10||r>28)continue;
+      const P=galArmPt(A,r,b[1],0),q=near(Math.round(P.x),Math.round(P.y));if(!q)continue;
+      if(!first)first=q;
+      const nb=GAL_NEBULAE.find(n=>Math.hypot(n.x-q[0],n.y-q[1])<2.2);
+      if((nb?nb.a===b[0]:galPlaceName(q[0],q[1])===A.ru)&&far(q))pick=q;
     }
-    if(best)GIANTS.push({...D,sx:best[0],sy:best[1],seed:hashi(best[0],best[1],0x61A7)>>>0});
+    pick=pick||first;
+    if(pick)GIANTS.push({...D,arm:A.ru,sx:pick[0],sy:pick[1],seed:hashi(pick[0],pick[1],0x61A7)>>>0});
   });
   return GIANTS;
 }
@@ -183,9 +203,17 @@ function drawGiant(zx,zy,Z){
     const u=(t*.15)%1;ctx.fillStyle="rgba(47,111,208,.85)";ctx.fillRect((-700+1400*u)*S,-135*S,Math.max(2,24*S),Math.max(1,4*S));   /* бегущий огонь по верхней кромке */
   }
   ctx.restore();
-  /* имя — над телом, в пикселях экрана */
+  /* имя — над телом, в пикселях экрана; под ним мерило (M464): во сколько ваших корпусов */
   ctx.save();ctx.fillStyle="rgba(240,220,170,.85)";ctx.font=(typeof uiFont==="function")?uiFont(10):"10px monospace";ctx.textAlign="center";
-  ctx.fillText(g.ru.toUpperCase(),x,y-Math.min(H*.4,560*S)-10);ctx.restore();
+  const ny=y-Math.min(H*.4,560*S)-10;
+  ctx.fillText(g.ru.toUpperCase(),x,ny-12);
+  ctx.fillStyle="rgba(240,220,170,.55)";ctx.fillText(giantRuler(),x,ny);ctx.restore();
+}
+/* мерило: длина великана в корпусах того, на чём вы летите */
+const GIANT_LEN=1300;
+function giantRuler(){
+  const h=hullOf(G.shipId),L=Math.max(8,(h&&h.len)||40),n=Math.round(GIANT_LEN/L);
+  return "≈ "+n+" "+pl3(n,"ваш корпус","ваших корпуса","ваших корпусов")+" в длину";
 }
 /* прилёт: первая встреча — строка */
 function giantArrive(){
@@ -193,5 +221,72 @@ function giantArrive(){
   G.giantsSeen=G.giantsSeen||{};
   if(G.giantsSeen[g.k])return;
   G.giantsSeen[g.k]=1;
-  logAdd("good","Великан: "+g.ru+" — "+g.note);
+  logAdd("good","Великан · "+(g.arm==="ядро"?"у ядра":g.arm)+": "+g.ru+" — "+g.note);
+}
+/* ── причал и посещение (M464) ──
+   Великан — место, а не картинка: у тела причал, внутри — абзац того, как там
+   живут, слух от жителей (в тетрадь и на карту, как на станции), сувенир — один
+   раз на великана. Дом водителя сверх того пускает на ночь: корпус и бак. */
+const GIANT_VISIT={
+  moon:   {txt:"Причал в устье. Внутри — посёлок в три яруса, огни кольцами, клеть ходит круглые сутки. Шахтёры смотрят на гостей, как на погоду.",
+           src:"шахтёр в столовой",keep:"Жетон шахты «Гнездо»",kn:"медный, с номером клети; сдавать не надо — «это на память, у нас их ведро»"},
+  house:  {txt:"Дом водителя: коридоры в полкилометра, табличка «МЕСТ НЕТ» горит третий год. Места есть. В холле пахнет щами и солидолом.",
+           src:"водитель у стойки",keep:"Ключ от номера Дома водителя",kn:"с деревянной грушей, номер 1417 · «вернёте в следующий раз»"},
+  cyl:    {txt:"Цилиндр Компании изнутри — улица, загнутая вверх. Над головой чужие огороды, логотип виден из любой точки.",
+           src:"житель цилиндра",keep:"Буклет «Жизнь в цилиндре™»",kn:"глянец, двенадцать страниц, три из них — условия подписки"},
+  customs:{txt:"Таможенный город: каждое здание — форма, и в каждой форме — окно. Посещение тоже оформляется.",
+           src:"инспектор на обеде",keep:"Форма 1-ПОС «о посещении»",kn:"заполнена, заверена, в двух экземплярах; второй экземпляр — тоже вам"},
+  dock:   {txt:"Сухой док Коммуны: один корпус, леса до звёзд. Строят его триста лет; бригада сменилась одиннадцать раз, чертёж — ни разу.",
+           src:"бригадир на лесах",keep:"Заклёпка со стапеля Коммуны",kn:"с того самого корпуса · на ней клеймо позапрошлого века"},
+  town:   {txt:"Посёлок врос в камни пояса: дома из корпусов, мостки из обшивки. Здесь всё когда-то было кораблём.",
+           src:"старик на мостках",keep:"Камешек из пояса с дыркой",kn:"«смотришь сквозь — видишь дом»"},
+  garden: {txt:"Сад ретрансляторов: лес мачт, мигает вразнобой, и в каждом огне — чей-то разговор. Тихо здесь не бывает никогда.",
+           src:"связист на мачте",keep:"Схема мачт Хай-Фронта",kn:"синька, мачты подписаны частотами; половина уже снята"}
+};
+const GIANT_DOCK=760,GIANT_NIGHT=150;
+function giantInteract(sh){
+  const g=giantAt(G.sx,G.sy);if(!g)return false;
+  const P=giantPos(g);
+  if(Math.hypot(sh.x-P.x,sh.y-P.y)>GIANT_DOCK){if(document.getElementById("giantWin"))giantClose();return false;}
+  if(cue(g.ru.toUpperCase()+"\nДЕЙСТВИЕ — ПРИЧАЛИТЬ",CUE_ACT)&&actEdge)giantOpen(g);
+  return true;
+}
+function giantClose(){const w=document.getElementById("giantWin");if(w)w.remove();}
+/* слух жителей: посев великана и трёх суток, рассказчик — из его места */
+function giantRumour(g){
+  const V=GIANT_VISIT[g.k],q=rumoursHere(hashi(g.seed,Math.floor(celDay()/3),0x61A8))[0];if(!q)return null;
+  q.src=V.src;
+  q.lines=[capRu(q.img),capRu(q.where),"со слов: "+V.src+" — "+q.det];
+  q.text=capRu(V.src)+" рассказывал про место: "+q.img+". "+capRu(q.where)+". "+capRu(q.det)+".";
+  return q;
+}
+function giantNight(){
+  if(G.credits<GIANT_NIGHT){say("«Мест нет.»\nне хватает "+GIANT_NIGHT+" кр",110);return false;}
+  const st=stat(),heal=Math.round(st.hullMax*.15);
+  G.credits-=GIANT_NIGHT;G.hull=Math.min(st.hullMax,G.hull+heal);G.fuel=st.fuelMax;
+  logAdd("good","Дом водителя: ночь · −"+GIANT_NIGHT+" кр · корпус +"+heal+", бак полный · «…для вас нашли»");
+  say("«Мест нет. …Для вас найдём.»",140);
+  return true;
+}
+function giantOpen(g){
+  giantClose();
+  const V=GIANT_VISIT[g.k],w=document.createElement("div");w.id="giantWin";
+  G.giantsSeen=G.giantsSeen||{};
+  const first=(G.giantsSeen[g.k]|0)<2;
+  if(first){G.giantsSeen[g.k]=2;thingAdd("find",V.keep,g.ru+" · "+V.kn);}
+  const q=giantRumour(g);
+  if(q&&G.giantRum!==g.k+"#"+Math.floor(celDay()/3)){
+    G.giantRum=g.k+"#"+Math.floor(celDay()/3);peopleLine(q.text,g.ru);rumourRemember(q);}
+  let h="<div class='bz-h'>"+g.ru.toUpperCase()+"<s>"+(g.arm==="ядро"?"у ядра":g.arm)+" · "+giantRuler()+"</s></div>"+
+    "<div class='gi-txt'>"+V.txt+"</div>";
+  if(first)h+="<div class='bz-sec'>НА ПАМЯТЬ</div><div class='bz-rum'><b>"+V.keep+"</b><s>"+V.kn+" · лежит в ВЕЩАХ</s></div>";
+  if(g.k==="house")h+="<div class='bz-sec'>СТОЙКА</div><div class='bz-rum'><b>Ночлег</b><s>корпус +15 %, бак полный</s>"+
+    "<button class='act sm gi-night'"+(G.credits<GIANT_NIGHT?" disabled":"")+">"+GIANT_NIGHT+" КР</button></div>";
+  if(q)h+="<div class='bz-sec'>ГОВОРЯТ</div><div class='bz-rum'><b>"+q.lines[0]+"</b><s>"+q.lines[1]+"<br>"+q.lines[2]+"</s>"+
+    "<button class='act sm gi-map'>НА КАРТУ</button></div>";
+  h+="<button class='act bz-x'>ОТЧАЛИТЬ</button>";
+  w.innerHTML=h;document.body.appendChild(w);
+  w.querySelector(".bz-x").onclick=giantClose;
+  const bm=w.querySelector(".gi-map");if(bm)bm.onclick=()=>{giantClose();rumourToMap(q);};
+  const bn=w.querySelector(".gi-night");if(bn)bn.onclick=()=>{if(giantNight()){giantOpen(g);if(typeof saveGame==="function")saveGame(true);}};
 }
