@@ -45902,8 +45902,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
         let ab=P1-P0;let q=clamp(dot(p-P0,ab)/max(dot(ab,ab),1e-4),0.,1.);let ds=length(p-P0-ab*q);
         if(ds>3.){continue;}
         let tt=1.-ae/life;let ln=length(ab);
-        let wd=select(.22,.42,lg);let tail=mix(.2,1.,q*q);
-        em=em+lad(.3+.45*tt)*(.4+3.*tt*tt)*select(.85+1.7*h3,1.5,lg)*tail*exp(-ds*ds/wd)*clamp(3./max(ln,1.),select(.35,.6,lg),1.);
+        let wd=select(.3,.65,lg)*mix(.12,1.,q);let tail=q*q;   /* хвост сходит в ноль и по ширине, и по яркости */
+        em=em+lad(.3+.45*tt)*(.4+3.*tt*tt)*select(1.1+2.2*h3,2.2,lg)*tail*exp(-ds*ds/wd)*clamp(3./max(ln,1.),select(.35,.6,lg),1.);
         /* голова капли — раскалённая точка: штрих читается летящей искрой, а не проведённой чертой */
         let dh=p-P1;em=em+lad(.45+.5*tt)*exp(-dot(dh,dh)/select(.5,.9,lg))*tt*select(1.,1.6,lg);
       }
