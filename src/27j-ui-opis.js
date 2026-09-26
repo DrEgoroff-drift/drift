@@ -414,9 +414,42 @@ function opisHullRedraw(){
   const bw=cv.clientWidth|0,bh=cv.clientHeight|0;
   const cw=bw>40?bw:OPIS_HW,ch=bh>40?bh:OPIS_HH;
   OPIS.hullW=cw;OPIS.hullH=ch;
-  cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);
-  const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
-  OPIS.hit=hullSilhouette(c,cw,ch,G.shipId,sel,G.fit[G.shipId]||{});
+  const pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);
+  if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;}
+  const M=hullSilhouette(cw,ch,G.shipId,sel,G.fit[G.shipId]||{});
+  OPIS.hit=M.hit;
+  /* рисунок — кадру (opisHullTick): подпись меняется — холст перерисуется */
+  OPIS.gd={cv,cw,ch,nd:pw/cw,id:G.shipId,M,sig:[G.shipId,pw,ph,cw,ch,G.mods.engine,hullBakeKey(G.shipId,1),
+    M.hit.map(h=>h.i+(h.on?"+":"-")+(h.sel?"*":"")).join(",")].join("|")};
+}
+/* силуэт на движке (G15): у холста .op-hull свой контекст webgpu, как у колодки 25c; корабль —
+   студия 17c2 (hullStudio), тень, якоря и плюсы — примитивы ov* (08bi). Кадр (hud) рисует, когда
+   сменились холст, устройство или подпись; 2D у холста нет вовсе. OPIS_G.n — сколько проходов было */
+const OPIS_G={cv:null,cx:null,dev:null,T:null,S:{},sig:"",n:0};
+function opisHullTick(){
+  const D=OPIS.gd,cv=D&&D.cv,g=OPIS_G;
+  /* только открытый стол на ОПИСИ: набор, что рисует ОПИСЬ в свой ящик и не закрывает, не должен
+     рисовать силуэт в кадрах чужих сцен (золотые кадры в -Full) */
+  if(!cv||!cv.isConnected||!OPIS.box||!tableOpenNow||tableTab!=="hold"||!GPU.on||!GPU.enc||!GPU.dev)return;
+  if(g.cv!==cv||g.dev!==GPU.dev){
+    const cx=cv.getContext("webgpu");if(!cx)return;
+    cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    g.cv=cv;g.cx=cx;g.dev=GPU.dev;g.T=ovTarget();g.sig="";}
+  if(g.sig===D.sig)return;
+  const M=D.M,S=g.S;
+  if(!hullStudio(S,D.id,D.cw,D.ch,D.nd,M.x,M.y,M.sc,G.mods.engine))return;
+  const led=OVL.led;OVL.led=null;   /* плюсы якорей — не текст экрана, в журнал не идут */
+  try{ovInto(g.T,D.nd,()=>{
+    ovEll(M.sh[0],M.sh[1],M.sh[2],M.sh[3],0,"rgba(0,0,0,.35)");
+    ovImage({tex:S.tex,view:S.view,dev:S.dev,inv:true},D.cw/2,D.ch/2,D.cw,D.ch,0,0,0,1,1,1);
+    for(const a of M.hit){const r=a.sel?11:9;
+      ovEll(a.x,a.y,r,r,0,a.on?a.col:"rgba(10,14,20,.85)",a.on?.9:1);
+      ovEll(a.x,a.y,r,r,a.sel?2.4:1.6,a.sel?"#fff":a.col);
+      if(!a.on)ovText(g.T.uq,a.x,a.y+.5,"+","bold 13px ui-monospace,monospace",a.col,"center","middle",1,1);
+      if(a.sel)ovEll(a.x,a.y,16,16,1,"rgba(255,255,255,.35)");}
+  });}finally{OVL.led=led;}
+  ovPass(g.T,g.cx.getCurrentTexture().createView(),cv.width,cv.height,[g.T.uq],"opis");
+  g.sig=D.sig;g.n++;
 }
 function opisHullSlotAt(cv,x,y,kind){
   const rc=cv.getBoundingClientRect();if(!rc.width)return -1;
@@ -991,7 +1024,7 @@ function opisRender(box){
 /* закрытие стола забирает с собой всё временное: подхват, выбор, полосу люка */
 function opisLeave(){
   opisDropEnd();
-  OPIS.sel=null;OPIS.hover=null;OPIS.ask=null;OPIS.arm=null;OPIS.box=null;
+  OPIS.sel=null;OPIS.hover=null;OPIS.ask=null;OPIS.arm=null;OPIS.box=null;OPIS.gd=null;
   document.body.classList.remove("op-ask");
   const bar=document.getElementById("opisBar");if(bar)bar.classList.remove("ask");
 }

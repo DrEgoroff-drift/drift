@@ -61,7 +61,11 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     forward scattering — the gas between us and the star rimmed against the light); fine wisps inside the lit gas
     with soft mass edges; a slow flow (curl noise, seen over 10–20 s, never a flicker); young stars inside (soft
     cavities, a blue reflection haze, the brightest knots in HDR with a soft halo); the palette turned round the
-    wheel, each system its own character;
+    wheel, each system its own character. Round 1 (26.09): none much better — C1 (far layers turned to lilac) right
+    but timid, the 390 pair reads the same and the lilac is grey; C2 (LIC wisps) creased, dark grooves and a straight
+    fold, which is a threshold contour; C3 (knots) dropped. Round 2: one candidate — C1 bolder and clean (far layers
+    darker and colder, the mass lit from the star's side), C2 as bright strands along the flow, ionisation zones
+    (cold near the star, warm further out, ≥ 150 px) — with a strength knob, the 390 pair telling apart unprompted;
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
   - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
@@ -77,6 +81,11 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     read with the same math, the flow regenerated at age 6 with the cross-fade;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
 - [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
+- [ ] **The goldens' order leak** (the worker, after f; before the fleet's landing, which reshuffles the parts): one
+  more light suite before the goldens (the ОПИСЬ guard named 91zzzzzzy7) turns -Full red on «черпак» 18.8 % and
+  «дом» 13.1 %, while the goldens alone, or with the guard in -Files, are green — a suite earlier in their part
+  leaves state behind. 0.473.0 dodged it by renaming the guard 91zzzzzzzzzz-opis-gpu. Find the polluter by -Shuffle
+  or by bisecting the part, and make it restore what it changes; a test that the goldens pass in any order.
 - [ ] **G15 everything on the engine, and 3D where it reads (the author, 26.09).** No 2D canvas stays, the interface
   too: in main 4778c719, 52 files in `src` still open a 2D context. Onto direct paths (`gpuLitSprite`, atlases,
   instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.
@@ -84,10 +93,13 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   - the interface — GPU-3; its census (26.09): the panels by how often they open (the desk is on the
     engine through 27i0 `panelGpu` — the post window and КБ too; next: ОПИСЬ, the station, the album, faces and the suit); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
-    worker's studio function; the ship in ОПИСЬ — the worker (27j0); the raid
+    studio (`hullStudio`, 17c2 — the ship in ОПИСЬ already draws through it); the raid
     comes to the engine with the fleet's landing (gpuScene3D, the fleet's zone) — then re-run the 2D census on it;
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
-  - the hull bake (03e1) — the worker;
+  - the hull bake (03e1): `hullStudio` (17c2, the worker; `hullGpuDraw` under it) is the one GPU hull, and the last
+    2D `drawHull` callers move by zone — the station (26) GPU-3; the road (27l), the scoop and home outside the fleet
+    after its landing; the shipyard (26e2), the left trace (12as), `look` and home 27e/29d, unless that is home
+    outside, the worker; 03e1 is deleted with its last caller;
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):
     the surface (≈250 / 5: the deco, the lander, ground chunks baked ≈27 a frame on the descent) and the landing
     (91 / 3); the map (1191 / 2: emblems, holdings, `drawMap`, the backdrop 17z and its rulers); the mine (977 / 2),

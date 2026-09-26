@@ -2452,7 +2452,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.472.0";
+const VER="0.473.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11268,7 +11268,11 @@ fn gy(i:i32)->f32{let v=Q[u32(S.z)+u32(i)/4u];return v[u32(i)%4u];}
       a=clamp(min(min(ed(A,B,p)*s,ed(B,C,p)*s),min(ed(C,D,p)*s,ed(D,A,p)*s))+.5,0.,1.);
       let P0=(A+D)*.5;let v=(B+C)*.5-P0;a*=mix(i.m.z,i.m.w,clamp(dot(p-P0,v)/max(dot(v,v),1e-6),0.,1.));}
     else{a=clamp(min(ed(i.t0.xy,i.t0.zw,p)*s,min(ed(i.t0.zw,i.t1.xy,p)*s,ed(i.t1.xy,i.t0.xy,p)*s))+.5,0.,1.);}}
-  else if(i.m.x<3.5){return textureSampleGrad(T,sm,i.uv,dx,dy)*i.c;}
+  else if(i.m.x<3.5){var t=textureSampleGrad(T,sm,i.uv,dx,dy);
+    /* m.z — текстура студии (17c2): альфа сцены (сколько фона осталось) в покрытие, свет выше
+       единицы — тем же плечом, что tone() финала 08b, а не обрезкой: лампы не белеют пятном */
+    if(i.m.z>.5){let x=max(t.rgb-vec3f(.75),vec3f(0.));t=vec4f(min(t.rgb,vec3f(.75))+.25*(vec3f(1.)-exp(-x*4.)),1.-t.a);}
+    return t*i.c;}
   else if(i.m.x<4.5){   /* график: x0=t0.x, шаг t0.y, полутолщина m.y, точки с m.z (от S.z), их m.w */
     let x0=i.t0.x;let st=i.t0.y;let hw=i.m.y;let o=i32(i.m.z);let n=i32(i.m.w);
     let j0=max(0,i32(floor((p.x-x0-hw-1.)/st)));let j1=min(n-2,i32(floor((p.x-x0+hw+1.)/st)));
@@ -11449,11 +11453,12 @@ function gpuOvFrontView(){const t=GPU.T.front;if(OVL.fv0!==t){OVL.fv0=t;OVL.fv=t
 /* ── вид интерфейса (uq): координаты — пиксели CSS, как у 2D; al — прозрачность; col — цвет строкой ── */
 function ovPm(col,al){const c=gcColor(col),a=c[3]*(al==null?1:al);return [c[0]*a,c[1]*a,c[2]*a,a];}
 function ovRect(x0,y0,x1,y1,col,al){const s=ovNd();ovPush(OVL.uq,x0*s,y0*s,x1*s,y1*s,ovPm(col,al),0,0,0,0,null);}
-/* картинка: мастер B, центр (x,y), размер (w,h), поворот rot, кусок u0..v1, множитель mul (число — прозрачность) */
+/* картинка: мастер B, центр (x,y), размер (w,h), поворот rot, кусок u0..v1, множитель mul (число — прозрачность);
+   B.inv — альфа мастера перевёрнута (текстура студии корпуса, 17c2) */
 function ovImage(B,x,y,w,h,rot,u0,v0,u1,v1,mul){
   if(!B)return;const s=ovNd(),Q=OVL.uq,i=Q.length/OVL_N,m=typeof mul==="number"?[mul,mul,mul,mul]:(mul||[1,1,1,1]);
   const R=OVL.ur;if(!R.length||R[R.length-1][1]!==B)R.push([i,B]);
-  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,0,0,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
+  Q.push(0,0,0,0,m[0],m[1],m[2],m[3],3,rot||0,B.inv?1:0,0,x*s,y*s,w*s/2,h*s/2,u0,v0,u1,v1);
 }
 /* капсула: отрезок (x0,y0)–(x1,y1) толщиной w с круглыми концами; диск — отрезок нулевой длины */
 function ovCap(x0,y0,x1,y1,w,col,al){
@@ -11662,6 +11667,7 @@ fn kCorn(i:u32)->vec2f{var c=array(vec2f(0.,0.),vec2f(1.,0.),vec2f(1.,1.),vec2f(
 const GPU_SCR={ku:new Float32Array(4),fld:new Float32Array(64),img:new Float32Array(1200),shp:new Float32Array(1200)};
 function gpuScr(k,n){let f=GPU_SCR[k];if(f.length<n)f=GPU_SCR[k]=new Float32Array(Math.max(n,f.length*2));return f;}
 function gpuKitU(){
+  if(GPU.rt)return GPU.rt.ku;   /* своя цель (студия 17c2): её размер и плотность */
   const U=GPUBufferUsage,b=gpuBuf("kit.u",16,U.UNIFORM|U.COPY_DST);
   if(GPU.kitUF!==GPU.frameNo){GPU.kitUF=GPU.frameNo;const f=GPU_SCR.ku;f[0]=GPU.bw;f[1]=GPU.bh;f[2]=DPR;f[3]=0;GPU.dev.queue.writeBuffer(b,0,f);}
   return b;
@@ -11848,7 +11854,7 @@ function gpuField(pass,name,code,uni,texs,o){
     A.buf=d.createBuffer({size:A.cap,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   }
   const slot=A.n++,f=GPU_SCR.fld;f.fill(0,4);
-  f[0]=GPU.bw;f[1]=GPU.bh;f[2]=W;f[3]=H;if(uni)f.set(uni.subarray?uni.subarray(0,60):uni.slice(0,60),4);
+  const R=GPU.rt;f[0]=R?R.bw:GPU.bw;f[1]=R?R.bh:GPU.bh;f[2]=R?R.w:W;f[3]=R?R.h:H;if(uni)f.set(uni.subarray?uni.subarray(0,60):uni.slice(0,60),4);
   d.queue.writeBuffer(A.buf,slot*256,f);
   /* выпечка из кэша модуля (корпус, флот, пираты, баржа) пережила потерю устройства — печём заново,
      как gpuImage: вид мёртвого устройства делает группу привязок, проход и весь кадр негодными */
@@ -54341,8 +54347,9 @@ fn fieldL(p:vec2f,uv0:vec2f)->vec4f{
    без ряби, как gpuImage {sharp}; lod тогда — обычный, не на ступень мельче; "dark" — флаг 4 */
 /* al — прозрачность всего спрайта (0…1, по умолчанию 1): гаснущий борт светится тем же светом */
 function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al,fl){
-  const pass=gpuScene();if(!pass)return false;
-  const c=(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
+  /* GPU.rt — студия (17c2): свой проход, ровный свет без ламп и тени (нулевая t1), без газа */
+  const RT=GPU.rt,pass=RT?RT.pass:gpuScene();if(!pass)return false;
+  const c=RT?RT.col:(typeof starRGB==="function")?starRGB():[255,244,214],m=Math.max(1,c[0],c[1],c[2]);
   const U=new Float32Array(fl?24:16);U[0]=x;U[1]=y;U[2]=R;U[3]=s;U[4]=lx;U[5]=ly;U[6]=Math.cos(rot);U[7]=Math.sin(rot);
   U[8]=c[0]/m;U[9]=c[1]/m;U[10]=c[2]/m;U[11]=al==null?1:clamp(al,0,1);U[12]=glow;U[13]=sy||0;U[14]=lod||0;
   /* fu.v[4..5] — свет пламени у кормы (17c2): место на экране, досягаемость, сила, цвет */
@@ -54350,9 +54357,9 @@ function gpuLitSprite(cv,x,y,R,s,rot,lx,ly,glow,sy,lod,rel,sharp,al,fl){
   const mip=!!cv.view;if(mip&&cv.draw)gpuBakeLive(cv);   /* материал (08cd) — после возможной перепечки */
   const mt=mip&&!rel&&cv.mat;
   /* заливка газом — корпусу корабля с материалом, пока туманность 16gb этой системы жива */
-  const gz=mt&&glow<0&&typeof GNB!=="undefined"&&GNB.view&&GNB.dev===GPU.dev&&G.sys&&GNB.sys===G.sys;
+  const gz=mt&&glow<0&&!RT&&typeof GNB!=="undefined"&&GNB.view&&GNB.dev===GPU.dev&&G.sys&&GNB.sys===G.sys;
   U[15]=(rel?1:0)+(sharp&&mip?2:0)+(sharp==="dark"&&mip?4:0)+(mt?8:0)+(gz?16:0);
-  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:GPU.V.lt},rel||(gz?{view:GNB.view}:null),mt||null],{blend:"hull",smp:mip?gpuMipSmp():null});
+  gpuField(pass,"gst",GST_WGSL,U,[mip?cv:gpuCanvasTex(cv),{view:RT?RT.lt:GPU.V.lt},rel||(gz?{view:GNB.view}:null),mt||null],{blend:"hull",smp:mip?gpuMipSmp():null});
   return true;
 }
 function drawStation(x,y,Z){
@@ -54586,17 +54593,49 @@ function hullGpuInserts(pass,h,id,S,sc,live){
     A.push([1,gx,gy,sc,0,0,r,c[0],c[1],c[2],.14]);}   /* как радиальный градиент 2D: от .14 в центре к нулю на r */
   if(O.length)gpuShapes(pass,O);if(A.length)gpuShapes(pass,A,{blend:"add"});
 }
+/* ── студия (G15): корабль в своей текстуре, вне сцены полёта — ОПИСЬ (27j), витрина станции.
+   Тот же hullGpuDraw теми же конвейерами (цель rgba16float, как у сцены — новых ключей 08b1 нет):
+   проход свой, свет ровный слева сверху, без ламп, тени и газа (t1 нулевая, 17c), огня нет. Выпечка
+   своя и разовая (once): тёплые выпечки полёта (HG_LRU) и пул 08ca не трогаются. Альфа — как у сцены,
+   «сколько фона осталось» (очистка 1, корпус гасит); на холст её переворачивает ovImage с B.inv (08bi) */
+const HS_LT=[-.6,-.8],HS_COL=[255,244,214];
+function hullStudioSb(h,x){return Math.min(Math.pow(2,Math.ceil(Math.log2(Math.max(x,.25))*4)/4),HG_SIDE/(2*hullGpuE(h)));}
+function hullStudioBake(S,h,id,sb){
+  const key=hullBakeKey(id,sb),b=S.bk;if(b&&b.key===key&&b.h===h)return b;
+  if(b)gpuBakeDrop(b.B);
+  const E=hullGpuE(h),side=Math.ceil(E*2*sb);
+  const B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);hullPart1(h,id,0,false);hullPart2(h);hullPart3(h,id);},{ss:1,mat:sb,once:true});
+  return S.bk=B?{B,E,sb,key,h}:null;
+}
+/* S — студия держателя (объект, живёт у него): рамка w×h пикселей CSS при плотности nd, корабль id
+   с центром (x,y) и масштабом sc в той же рамке. Только из кадра, до gpuPresent: открытый проход сцены
+   закрывается (следующий gpuScene откроет его с загрузкой). Готово — S.tex/S.view/S.dev */
+function hullStudio(S,id,w,h,nd,x,y,sc,lvl){
+  if(!GPU.on||!GPU.enc||!GPU.dev)return false;
+  const d=GPU.dev,U=GPUTextureUsage,bw=Math.max(2,Math.round(w*nd)),bh=Math.max(2,Math.round(h*nd));
+  if(S.dev!==d){S.dev=d;S.tex=S.bk=S.ku=S.lt=null;}
+  if(!S.tex||S.tw!==bw||S.th!==bh){if(S.tex)GPU.trash.push(S.tex);
+    S.tex=d.createTexture({size:[bw,bh],format:"rgba16float",usage:U.RENDER_ATTACHMENT|U.TEXTURE_BINDING});S.view=S.tex.createView();S.tw=bw;S.th=bh;}
+  if(!S.ku)S.ku=d.createBuffer({size:16,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  if(!S.lt)S.lt=d.createTexture({size:[16,3],format:"rgba16float",usage:U.TEXTURE_BINDING}).createView();   /* нули: ни ламп, ни заслонов */
+  const f=GPU_SCR.ku;f[0]=bw;f[1]=bh;f[2]=nd;f[3]=0;d.queue.writeBuffer(S.ku,0,f);
+  if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
+  S.pass=GPU.enc.beginRenderPass({colorAttachments:[{view:S.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
+  S.bw=bw;S.bh=bh;S.w=w;S.h=h;S.nd=nd;S.col=HS_COL;GPU.rt=S;
+  try{hullGpuDraw(id,x,y,0,sc,false,false,lvl,0,HS_LT[0],HS_LT[1]);}finally{GPU.rt=null;S.pass.end();S.pass=null;}
+  return true;
+}
 /* корабль целиком; x,y — экран, a — курс, sc — масштаб корабля, (lx,ly) — к звезде.
    false — прохода сцены нет, рисуй по-старому */
 function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
-  const pass=gpuScene();if(!pass||!(sc>0))return false;
+  const R=GPU.rt,pass=R?R.pass:gpuScene();if(!pass||!(sc>0))return false;   /* R — студия (ниже) */
   const h=hullOf(id),live=hullLiveInserts(h,id);
-  const dk=GPU.bw/W,sb=hullGpuSb(h,dk),B=hullGpuBake(h,id,sb);if(!B)return false;const T=B.B;
+  const dk=R?R.nd:GPU.bw/W,sb=R?hullStudioSb(h,sc*dk):hullGpuSb(h,dk),B=R?hullStudioBake(R,h,id,sb):hullGpuBake(h,id,sb);if(!B)return false;const T=B.B;
   const lod=Math.max(0,Math.log2(B.sb/(sc*dk))+HG_BODY_LOD);
   bank=bank||0;lvl=lvl||0;
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
-  const FL=hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);
+  const FL=R?null:hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);   /* в студии огня нет, сглаженная тяга полёта не трогается */
   /* сопла без тяги: у люкса кольцо среза, у прочих тлеющий зев */
   if(!thrusting){
     const sh=[],gl=[];
@@ -54614,7 +54653,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   const FS=FL?S(FL.x,FL.y):null;
   gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null,undefined,undefined,FL&&{x:FS[0],y:FS[1],r0:FL.r0*sc,r:FL.r*sc,k:FL.k,c:FL.c});   /* -1: свет корпуса, не станции (17c GST) */
   /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
-  if(GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
+  if(!R&&GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
     GPU.sepH.push([x,y,h._R*sc]);}
   if(live.ticks||live.crowns)hullGpuInserts(pass,h,id,S,sc,live);
   /* тормозные языки у носа — живые, над телом */
@@ -93900,41 +93939,18 @@ function stapelFx(by,name){
    его рисует ОПИСЬ — и кнопка меню, которая открывает стол. Ниже — настройки. */
 /* корпус лежит горизонтально, как в полёте; якоря слотов — кружки цвета рода
    части: занятый залит, пустой обведён с плюсом, выбранный крупнее и с кольцом.
-   Возвращает список якорей в координатах канвы — для тапа и переноса. */
-function hullSilhouette(c,cw,ch,id,sel,fm){
+   Здесь только мера (G15): масштаб и место корпуса, тень и якоря в координатах
+   канвы — для тапа, переноса и рисунка. Рисует кадр на движке (opisHullTick, 27j) */
+function hullSilhouette(cw,ch,id,sel,fm){
   const h=hullOf(id),anchors=slotAnchors(id);fm=fm||{};
-  c.clearRect(0,0,cw,ch);
   const cx=(h.nose+h.tail)*.5;
   const sc=Math.min(cw/(h.len+14),(ch-16)/(h.halfW*2+14));   /* корпус во всю панель (второй проход ОПИСИ) */
   const px=x=>cw/2+(x-cx)*sc, py=y=>ch/2+y*sc;
+  /* 18 px, выбранный 22 (ревью 11.09: кружки по 14 px на телефоне не
+     читались метками). Зона касания шире рисунка — 30 px от центра (27j) */
+  const hit=anchors.map(a=>({x:px(a.x),y:py(a.y),i:a.i,kind:a.kind,col:PART_KINDS[a.kind].col,on:fm[a.i]!=null,sel:sel===a.i}));
   /* тень под корпусом на сукне: вещь лежит, а не парит */
-  c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(cw/2,ch/2+h.halfW*sc*.9+6,h.len*sc*.42,Math.max(4,h.halfW*sc*.22),0,0,TAU);c.fill();
-  const old=ctx;ctx=c;
-  c.save();
-  c.translate(px(0),py(0));c.scale(sc,sc);
-  drawHull(id,false,false,G.mods.engine);
-  c.restore();
-  ctx=old;
-  const hit=[];
-  anchors.forEach(a=>{
-    const sx=px(a.x), sy=py(a.y);
-    const K=PART_KINDS[a.kind],on=fm[a.i]!=null,isSel=sel===a.i;
-    hit.push({x:sx,y:sy,i:a.i,kind:a.kind});
-    /* 18 px, выбранный 22 (ревью 11.09: кружки по 14 px на телефоне не
-       читались метками). Зона касания шире рисунка — 30 px от центра (27j) */
-    c.beginPath();c.arc(sx,sy,isSel?11:9,0,TAU);
-    c.fillStyle=on?K.col:"rgba(10,14,20,.85)";
-    c.globalAlpha=on?.9:1;c.fill();c.globalAlpha=1;
-    c.lineWidth=isSel?2.4:1.6;
-    c.strokeStyle=isSel?"#fff":K.col;c.stroke();
-    if(!on){c.fillStyle=K.col;c.font="bold 13px ui-monospace,monospace";c.textAlign="center";
-      c.textBaseline="middle";c.fillText("+",sx,sy+.5);c.textBaseline="alphabetic";}
-    if(isSel){
-      c.beginPath();c.arc(sx,sy,16,0,TAU);
-      c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=1;c.stroke();
-    }
-  });
-  return hit;
+  return {hit,sc,x:px(0),y:py(0),sh:[cw/2,ch/2+h.halfW*sc*.9+6,h.len*sc*.42,Math.max(4,h.halfW*sc*.22)]};
 }
 document.getElementById("shipbtn").addEventListener("click",()=>{tableToggle(true,"hold");});
 
@@ -99941,9 +99957,42 @@ function opisHullRedraw(){
   const bw=cv.clientWidth|0,bh=cv.clientHeight|0;
   const cw=bw>40?bw:OPIS_HW,ch=bh>40?bh:OPIS_HH;
   OPIS.hullW=cw;OPIS.hullH=ch;
-  cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);
-  const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
-  OPIS.hit=hullSilhouette(c,cw,ch,G.shipId,sel,G.fit[G.shipId]||{});
+  const pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);
+  if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;}
+  const M=hullSilhouette(cw,ch,G.shipId,sel,G.fit[G.shipId]||{});
+  OPIS.hit=M.hit;
+  /* рисунок — кадру (opisHullTick): подпись меняется — холст перерисуется */
+  OPIS.gd={cv,cw,ch,nd:pw/cw,id:G.shipId,M,sig:[G.shipId,pw,ph,cw,ch,G.mods.engine,hullBakeKey(G.shipId,1),
+    M.hit.map(h=>h.i+(h.on?"+":"-")+(h.sel?"*":"")).join(",")].join("|")};
+}
+/* силуэт на движке (G15): у холста .op-hull свой контекст webgpu, как у колодки 25c; корабль —
+   студия 17c2 (hullStudio), тень, якоря и плюсы — примитивы ov* (08bi). Кадр (hud) рисует, когда
+   сменились холст, устройство или подпись; 2D у холста нет вовсе. OPIS_G.n — сколько проходов было */
+const OPIS_G={cv:null,cx:null,dev:null,T:null,S:{},sig:"",n:0};
+function opisHullTick(){
+  const D=OPIS.gd,cv=D&&D.cv,g=OPIS_G;
+  /* только открытый стол на ОПИСИ: набор, что рисует ОПИСЬ в свой ящик и не закрывает, не должен
+     рисовать силуэт в кадрах чужих сцен (золотые кадры в -Full) */
+  if(!cv||!cv.isConnected||!OPIS.box||!tableOpenNow||tableTab!=="hold"||!GPU.on||!GPU.enc||!GPU.dev)return;
+  if(g.cv!==cv||g.dev!==GPU.dev){
+    const cx=cv.getContext("webgpu");if(!cx)return;
+    cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
+    g.cv=cv;g.cx=cx;g.dev=GPU.dev;g.T=ovTarget();g.sig="";}
+  if(g.sig===D.sig)return;
+  const M=D.M,S=g.S;
+  if(!hullStudio(S,D.id,D.cw,D.ch,D.nd,M.x,M.y,M.sc,G.mods.engine))return;
+  const led=OVL.led;OVL.led=null;   /* плюсы якорей — не текст экрана, в журнал не идут */
+  try{ovInto(g.T,D.nd,()=>{
+    ovEll(M.sh[0],M.sh[1],M.sh[2],M.sh[3],0,"rgba(0,0,0,.35)");
+    ovImage({tex:S.tex,view:S.view,dev:S.dev,inv:true},D.cw/2,D.ch/2,D.cw,D.ch,0,0,0,1,1,1);
+    for(const a of M.hit){const r=a.sel?11:9;
+      ovEll(a.x,a.y,r,r,0,a.on?a.col:"rgba(10,14,20,.85)",a.on?.9:1);
+      ovEll(a.x,a.y,r,r,a.sel?2.4:1.6,a.sel?"#fff":a.col);
+      if(!a.on)ovText(g.T.uq,a.x,a.y+.5,"+","bold 13px ui-monospace,monospace",a.col,"center","middle",1,1);
+      if(a.sel)ovEll(a.x,a.y,16,16,1,"rgba(255,255,255,.35)");}
+  });}finally{OVL.led=led;}
+  ovPass(g.T,g.cx.getCurrentTexture().createView(),cv.width,cv.height,[g.T.uq],"opis");
+  g.sig=D.sig;g.n++;
 }
 function opisHullSlotAt(cv,x,y,kind){
   const rc=cv.getBoundingClientRect();if(!rc.width)return -1;
@@ -100518,7 +100567,7 @@ function opisRender(box){
 /* закрытие стола забирает с собой всё временное: подхват, выбор, полосу люка */
 function opisLeave(){
   opisDropEnd();
-  OPIS.sel=null;OPIS.hover=null;OPIS.ask=null;OPIS.arm=null;OPIS.box=null;
+  OPIS.sel=null;OPIS.hover=null;OPIS.ask=null;OPIS.arm=null;OPIS.box=null;OPIS.gd=null;
   document.body.classList.remove("op-ask");
   const bar=document.getElementById("opisBar");if(bar)bar.classList.remove("ask");
 }
@@ -103034,7 +103083,7 @@ function hud(){
   if(pb)setSt(pb,"display",(G.mode==="map"&&typeof pricesCount==="function"&&pricesCount())?"":"none");
   /* приборная колодка (25c) и пульт (27j: трепло, кресло): свои канвы в кадре */
   if(typeof instrPodTick==="function")instrPodTick();
-  consoleGpuTick();
+  consoleGpuTick();if(typeof opisHullTick==="function")opisHullTick();   /* и силуэт ОПИСИ (27j) — тем же кадром */
   setTx($place,a);setTx($sub,b);
   /* Полосу меряем по самому DOM, а не пересчитываем правила CSS в JS: состав
      строк задан таблицей стилей (body.afoot прячет топливо и корпус, узкий
