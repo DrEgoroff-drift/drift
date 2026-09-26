@@ -63,11 +63,10 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   instances), never a `GcCtx` in place of `ctx` (DECISIONS, «The renderer»); text through a glyph atlas on the GPU.
   The engine already has `gpuScene3D` (08b: depth, per-pixel light); the belt rocks and the raid use it. Owners:
   - the interface — GPU-3; its census (26.09): the console's seat icon (27j-console, timers on every screen),
-    then the panels by how often
-    they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
+    then the panels by how often they open (ОПИСЬ, the desk, the station, the post and the album, КБ, faces and the suit); a bake at first sight
     costs a hitch on the phone (P1, §1), so rank by that too. The station showcase as one canvas, the hull from the
-    worker's studio function; the ship in ОПИСЬ — the worker (27j0); the raid's `ovAtlas` bakes a new row every
-    frame (a changing number) — glyphs once, numbers built from them;
+    worker's studio function; the ship in ОПИСЬ — the worker (27j0); the raid
+    is still 2D on `#c`, uploaded whole every frame (1140×1350 at 760);
   - space (16-flight, 16a-space, 16a0-glow, 17o-giants) — GPU-2;
   - the hull bake (03e1) — the worker;
   - the fleet session, by its census (26.09, 25 scenes; 2D calls on `#c` before `gpuWorld` / `#c` uploads, a frame):

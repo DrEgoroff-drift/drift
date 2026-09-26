@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 635 · символов верхнего уровня: 6422
+Файлов: 635 · символов верхнего уровня: 6423
 
 ## СИМВОЛЫ
 
@@ -4025,6 +4025,7 @@ orderWin                     src/12aa-need.js:77
 ORE_KEYS                     src/02-world.js:128
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13-29
+OV_STEADY                    tests/91zzzzzzy4-gpu-ovl.js:48-66
 ovArc                        src/08bi-gpu-ovl.js:260-263
 ovAtlas                      src/08bi-gpu-ovl.js:100-119
 ovBind                       src/08bi-gpu-ovl.js:225-233
@@ -8434,7 +8435,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy3-gate2d.js · 18 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-gpu-ovl.js · 17 КБ
+## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ
   · слой #ovl: фишки у кромки и подписи мира на видеокарте (08bi, docs/DESIGN-gpu.md §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 7 КБ
