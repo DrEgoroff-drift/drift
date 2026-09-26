@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 632 · символов верхнего уровня: 6364
+Файлов: 633 · символов верхнего уровня: 6371
 
 ## СИМВОЛЫ
 
@@ -152,7 +152,7 @@ arrive                       src/16-flight.js:172-210
 arriveSystem                 src/18-mode-map.js:550-597
 artGet                       src/08ca-gpu-canvas.js:454
 ARTIFACTS                    src/12h-relic.js:48-63
-artPut                       src/08ca-gpu-canvas.js:455-576
+artPut                       src/08ca-gpu-canvas.js:455-577
 askText                      src/11u-names.js:59-77
 asMap                        src/14-save.js:209-215
 assignToBase                 src/12a-crew.js:181-190
@@ -1585,7 +1585,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:496-531
+drawStation                  src/17c-system-draw.js:502-537
 drawStationBody              src/17c-system-draw.js:167-370
 drawStationMods              src/17a-station-mod.js:207-210
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -2086,6 +2086,8 @@ GC_COL                       src/08ca-gpu-canvas.js:31
 GC_DEF                       src/08ca-gpu-canvas.js:85
 GC_GLYPHS                    src/08cb-gpu-text.js:17-50
 GC_KEYS                      src/08ca-gpu-canvas.js:90
+GC_MAT_K                     src/08cd-gpu-mat.js:11
+GC_MAT_WGSL                  src/08cd-gpu-mat.js:12
 GC_MIP_WGSL                  src/08ca-gpu-canvas.js:330
 GC_MISS                      src/08ca-gpu-canvas.js:27
 GC_ONCE                      src/08ca-gpu-canvas.js:464
@@ -2113,7 +2115,12 @@ GcGrad                       src/08ca-gpu-canvas.js:66-84
 gcImg                        src/08ca-gpu-canvas.js:284-362
 gcInv                        src/08ca-gpu-canvas.js:59
 gcLay                        src/08ca-gpu-canvas.js:353-362
+gcMat                        src/08cd-gpu-mat.js:35-46
+gcMatDesc                    src/08cd-gpu-mat.js:29
+gcMatPipe                    src/08cd-gpu-mat.js:28
 gcMeasure                    src/08cb-gpu-text.js:73
+gcMip16Desc                  src/08cd-gpu-mat.js:32
+gcMip16Pipe                  src/08cd-gpu-mat.js:31
 gcMipDesc                    src/08ca-gpu-canvas.js:379
 gcMipPipe                    src/08ca-gpu-canvas.js:378
 gcNo                         src/08ca-gpu-canvas.js:28
@@ -2312,7 +2319,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:185
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-48
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-50
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-54
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -2327,7 +2334,7 @@ gpuBaked                     src/08ca-gpu-canvas.js:442-447
 gpuBakeDrop                  src/08ca-gpu-canvas.js:448
 gpuBakeLive                  src/08ca-gpu-canvas.js:451
 gpuBakeRedo                  src/08ca-gpu-canvas.js:465
-gpuBakeRedo0                 src/08ca-gpu-canvas.js:466-576
+gpuBakeRedo0                 src/08ca-gpu-canvas.js:466-577
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
 gpuBloom                     src/08b-gpu.js:612-617
@@ -2353,7 +2360,7 @@ gpuHudDpr                    src/08bh-gpu-hud.js:7
 gpuImage                     src/08c-gpu-kit.js:212-225
 gpuKitU                      src/08c-gpu-kit.js:170-174
 gpuLight                     src/08b-gpu.js:444
-gpuLitSprite                 src/17c-system-draw.js:487-495
+gpuLitSprite                 src/17c-system-draw.js:492-501
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:582-587
 gpuMipDrop                   src/08c-gpu-kit.js:110
@@ -6532,6 +6539,9 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/08cc-gpu-shadow.js · 6 КБ
   · GPU-холст, v2: тень (docs/DESIGN-gpu.md, «GPU canvas»):1
 
+## src/08cd-gpu-mat.js · 5 КБ
+  · материал корпуса: раз на корпус, в той же выпечке (ступень 1, DESIGN-gpu §L.S):1
+
 ## src/09-audio.js · 18 КБ
   · звук: чистый синтез, ни одного файла:1
 
@@ -6731,7 +6741,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12ai-fleet.js · 28 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
-## src/12ai1-fleet-art.js · 38 КБ
+## src/12ai1-fleet-art.js · 39 КБ
   · ГЛАВТРАССА: как флот выглядит (выделено из 12ai, M415):1
 
 ## src/12aj-coop.js · 19 КБ
@@ -7100,7 +7110,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17b-finds.js · 18 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 35 КБ
+## src/17c-system-draw.js · 36 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17c1-station-dress.js · 4 КБ

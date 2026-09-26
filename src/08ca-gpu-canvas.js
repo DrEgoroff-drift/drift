@@ -445,7 +445,7 @@ function gpuBaked(M,key,w,h,draw,o){
   const cap=(o&&o.keep)||32;while(M.size>cap){const k=M.keys().next().value;gpuBakeDrop(M.get(k));M.delete(k);}
   return B;
 }
-function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev)GPU.trash.push(B.tex);B.tex=B.view=null;}}
+function gpuBakeDrop(B){if(B&&B.tex){if(B.dev===GPU.dev){GPU.trash.push(B.tex);if(B.mat)GPU.trash.push(B.mat.tex);}B.tex=B.view=B.mat=null;}}
 /* выпечка годна к рисованию: пережила потерю устройства или ушла из кэша, а держатель ещё рисует её —
    печём заново тем же draw (все места, что берут вид выпечки: gpuImage, gpuField, gcImg) */
 function gpuBakeLive(B){if(B.dev!==GPU.dev||!B.tex)gpuBakeRedo(B);return B;}
@@ -570,6 +570,7 @@ function gpuBakeRedo0(B){
     p.draw(3);p.end();};
   down(rs.createView(),0,256);
   for(let i=1;i<B.n;i++)down(B.tex.createView({baseMipLevel:i-1,mipLevelCount:1}),i,512);
+  if(B.o.mat)gcMat(enc,B,ub);   /* материал корпуса (08cd) — тем же кодировщиком */
   d.queue.submit([enc.finish()]);
   if(V.length>1<<22)GC_VA=new Float32Array(1<<16);   /* после огромной выпечки 16 МБ не держим */
   GPU.bakeN=(GPU.bakeN||0)+1;GPU.bakeMs=(GPU.bakeMs||0)+(wallMs()-t0);

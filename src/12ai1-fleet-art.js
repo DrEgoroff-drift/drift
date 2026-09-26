@@ -359,12 +359,12 @@ function* fleetArtJob(f){
     const lg=ctx.createLinearGradient(0,-hw*1.8,0,hw*1.6);
     lg.addColorStop(0,top);lg.addColorStop(.5,"rgba(255,224,196,0)");lg.addColorStop(1,"rgba(0,0,0,"+dark+")");
     ctx.fillStyle=lg;ctx.fillRect(-rad,-rad,rad*2,rad*2);ctx.globalCompositeOperation="source-over";};
-  const bake=(top,dark)=>gpuBake(side,side,paint(top,dark));
+  const bake=(top,dark,mat)=>gpuBake(side,side,paint(top,dark),mat?{mat:FLEET_SS}:undefined);   /* mat — материал корпуса (08cd), слою светом звезды */
   const dr=f.k==="derelict",topN=dr?"rgba(120,130,150,.18)":"rgba(255,240,216,.28)";
   let cn=null,cnA=null,ok=false;
   try{
     yield;cn=bake(topN,.62);
-    if(cn){yield;cnA=bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3);}
+    if(cn){yield;cnA=bake(dr?"rgba(120,130,150,.22)":"rgba(255,240,216,.34)",.3,true);}
     ok=true;const art={cn,cnA,rad,L,hw,lights,bx,by,emb,side};FLEET_PAINT.set(art,paint(topN,.62));return art;
   }finally{if(!ok){gpuBakeDrop(cn);gpuBakeDrop(cnA);}}   /* брошена недопечённой — отдать выпечки */
 }

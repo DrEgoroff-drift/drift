@@ -807,6 +807,17 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   ships go down to the .4 floor, at the shadow's edge a penumbra across the group, toward the star unchanged
   (0.01 % > 8), at ×3.5 a planet off the left edge still shades. Suite «свет: планета тенит корабли…».
   Next: the hull material bake.
+- **Hull material** (26.09, `08cd-gpu-mat.js`): `gpuBake(…,{mat:t})` (t = master texels per hull unit) adds
+  one pass in the bake's own encoder (no extra submit) into a half-size rgba16f with mips: rg the broad normal
+  (alpha slopes at ±3 and ±8 units, as GST had), ba the fine relief — paint luminance at ±¾ unit ×
+  `GC_MAT_K`=2 plus the glass dome at ±2/±4 units. GST reads it as t3 (flag 8) and puts ba into the fine
+  normal, so seams and panels catch the star's rim, not only the silhouette; bank and scale stay in the shader.
+  Per pixel: 20 normal/glass samples → 5. Memory: +½ of the master (2 B/px vs 4). Own hulls (17c2) and fleet
+  `cnA` (12ai1) carry it; other masters fall back to the old path. K=.35/1.2 invisible (hull mode lights flat),
+  K=4 speckles like tin. Pairs at 760 vs 71561077 (scratchpad `pair_oc_*_760.png`, crops `mat_*`): toward
+  the star max|Δ| 182, 0.07 % > 8 — panel seams and the canopy glint; away 140 / 0.04 %, in a planet's shadow
+  149 / 0.04 % — nothing lights where no light is. Tour GREEN, -Browser green.
+  Next: merge origin/main, then the candidate.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
