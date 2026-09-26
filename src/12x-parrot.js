@@ -121,7 +121,7 @@ function heardUse(h){
     /* рынок открывается ровно так же, как его открывает зарубка с ценами
        (12q): одна запись в G.market — и станция видна из другого конца */
     if(!G.market)G.market={};
-    if(!G.market[s.key])G.market[s.key]={pressure:{},t:G.t};
+    if(!G.market[s.key])G.market[s.key]={pressure:{},t:now()};
     h.used=true;
     tell("money","«"+G.parrot.name+"» повторил цены "+(h.note||"станции"),
       "ЦЕНЫ ПОВТОРЕНЫ\n"+(h.note||"")+"\nсектор "+h.sx+", "+h.sy);

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 643 · символов верхнего уровня: 6645
+Файлов: 643 · символов верхнего уровня: 6648
 
 ## СИМВОЛЫ
 
@@ -180,7 +180,7 @@ BUILD                        src/21a-mode-base.js:23-82
 BUILD_KEYS                   src/21a-mode-base.js:83
 BURN_DPS                     src/13a-guns.js:26
 BURN_TIME                    src/13a-guns.js:25
-BUY_SPREAD                   src/12-economy.js:155
+BUY_SPREAD                   src/12-economy.js:161
 CAM_LAG_PX                   src/16a-space.js:280
 CANT_STYLE                   src/27d-ui-cantina.js:15-26
 CAP_RING                     src/28-loop.js:308
@@ -397,6 +397,7 @@ DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
 DRONE_NAMES                  src/12e-drone-flight.js:43
 DRONE_QUIRKS                 src/12e-drone-flight.js:44-51
+DRONE_SEEN_DAYS              src/12-economy.js:290
 DRONE_SEG                    src/16ga-gpu-trail.js:147
 DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
@@ -442,20 +443,20 @@ FARM_HOME                    src/21ac2-base-farm.js:22
 FARM_NAMES                   src/21ac2-base-farm.js:21
 FARM_SOFT                    src/21ac2-base-farm.js:23
 FAR_CACHE                    src/06d-far.js:24
-FAR_EATER                    src/12-economy.js:26
-FAR_EAT_LAND                 src/12-economy.js:31
-FAR_EAT_YARD                 src/12-economy.js:30
+FAR_EATER                    src/12-economy.js:32
+FAR_EAT_LAND                 src/12-economy.js:37
+FAR_EAT_YARD                 src/12-economy.js:36
 FAR_FP_BEFORE                tests/91zzzzk3-far.js:5
 FAR_GRADE                    src/06d-far.js:22
 FAR_KEYS                     src/02-world.js:141
 FAR_RES                      src/02-world.js:113-126
 FAR_ROLL                     src/02-world.js:142
 FAR_SALT                     src/06d-far.js:20
-FAR_STALL_R                  src/12-economy.js:82
+FAR_STALL_R                  src/12-economy.js:88
 FAR_TAKE_SALT                src/06e-far-take.js:14
 FAR_TRAP_BANK                src/06f-far-props.js:33
 FAR_UNITS                    src/06d-far.js:23
-FAR_VOICE                    src/12-economy.js:41-53
+FAR_VOICE                    src/12-economy.js:47-59
 FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 FAUNA_RES                    src/02-world.js:137
@@ -1234,7 +1235,7 @@ POW_COUP                     src/12b0-fx-pow.js:10
 POW_PURGE                    src/12b0-fx-pow.js:11
 POW_SCANDAL                  src/12b0-fx-pow.js:12
 POW_SECEDE                   src/12b0-fx-pow.js:13
-PRICE_EV_CAP                 src/12-economy.js:123
+PRICE_EV_CAP                 src/12-economy.js:129
 PROBE_COST                   src/21a8-base-world.js:28
 PROBE_COST_CR                src/25m-probe.js:27
 PROBE_COST_DATA              src/25m-probe.js:26
@@ -2167,7 +2168,7 @@ bldUpgradeCost               src/12ac-bld.js:153-160
 bldWant                      src/12ad-site.js:243-253
 bldWhy                       src/12ad-site.js:147-154
 blockArrive                  src/13b1-blockade.js:13-23
-blockEff                     src/12-economy.js:138-144
+blockEff                     src/12-economy.js:144-150
 blockHere                    src/13b1-blockade.js:10
 blockMul                     src/13b1-blockade.js:11
 blueNoise                    src/01-core.js:136-153
@@ -2223,8 +2224,8 @@ builtHere                    src/21c-built.js:18-39
 builtSpot                    src/21c-built.js:42-63
 buoyEtherLine                src/12ae-ladder.js:124-138
 burstFx                      src/13z-gpu-combat.js:177-180
-buyCargo                     src/12-economy.js:161-174
-buyPriceFor                  src/12-economy.js:156-160
+buyCargo                     src/12-economy.js:167-180
+buyPriceFor                  src/12-economy.js:162-166
 camBody                      src/17-mode-system.js:82-91
 camBtnTick                   src/25g-postcard.js:667-671
 camOffset                    src/19c-light.js:155-162
@@ -2732,7 +2733,7 @@ decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 depKind                      src/21b-surface-deco.js:396-405
-deployDrone                  src/12-economy.js:306-323
+deployDrone                  src/12-economy.js:324-341
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 detBgShift                   tests/90b-detect.js:150-164
@@ -3050,30 +3051,31 @@ drawWrecksSystem             src/12l-barge.js:379-405
 drawYardMark                 src/03e-hull-draw.js:73-116
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
-droneCapacity                src/12-economy.js:301-304
+droneCapacity                src/12-economy.js:319-322
 droneFar                     src/12e-drone-flight.js:102
 droneFixMs                   src/12e-drone-flight.js:177-186
 droneGuestPos                src/12e-drone-flight.js:239-251
 droneHome                    src/12e-drone-flight.js:103-115
-droneMarket                  src/12-economy.js:255-277
+droneMarket                  src/12-economy.js:261-285
 droneName                    src/12e-drone-flight.js:54
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNick                    src/12e-drone-flight.js:53
 droneNormalize               src/12e-drone-flight.js:70-86
-dronePaybackH                src/12-economy.js:232
+dronePaybackH                src/12-economy.js:238
 dronePhase                   src/12e-drone-flight.js:130-139
 dronePoint                   src/12e-drone-flight.js:94-101
 dronePos                     src/12e-drone-flight.js:142-158
-dronePrice                   src/12-economy.js:227-230
+dronePrice                   src/12-economy.js:233-236
 droneQuirk                   src/12e-drone-flight.js:52
-droneRecall                  src/12-economy.js:213-221
+droneRecall                  src/12-economy.js:219-227
 droneRoutes                  src/12e-drone-flight.js:203-225
-droneShopHas                 src/12-economy.js:234-240
-droneShopTake                src/12-economy.js:241-245
+droneSellPrice               src/12-economy.js:291-295
+droneShopHas                 src/12-economy.js:240-246
+droneShopTake                src/12-economy.js:247-251
 droneStateRu                 src/12e-drone-flight.js:188-198
 droneSys                     src/12e-drone-flight.js:91-93
 droneTag                     src/12e-drone-flight.js:58-64
-droneTarget                  src/12-economy.js:305
+droneTarget                  src/12-economy.js:323
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
 dsTick                       src/12p1-doublespeak.js:33-42
@@ -3176,16 +3178,16 @@ failShift                    src/05b1-warranty.js:102
 failTick                     src/05b1-warranty.js:104-119
 fameOf                       src/21b3-base-hunt.js:98-102
 fameWhere                    src/21b3-base-hunt.js:103-115
-farBasePrice                 src/12-economy.js:68-72
+farBasePrice                 src/12-economy.js:74-78
 farBeltDress                 src/06e-far-take.js:85-98
 farCargoHit                  src/06f-far-props.js:14-31
 farCaveAmber                 src/06e-far-take.js:136-152
 farCaveAmberTake             src/06e-far-take.js:153-162
-farCurve                     src/12-economy.js:63-67
+farCurve                     src/12-economy.js:69-73
 farDeposits                  src/06d-far.js:59-79
 farDigNode                   src/06e-far-take.js:100-110
-farEaterMul                  src/12-economy.js:32-38
-farEaterVoice                src/12-economy.js:54-62
+farEaterMul                  src/12-economy.js:38-44
+farEaterVoice                src/12-economy.js:60-68
 farGradeOf                   src/06d-far.js:57
 farGradeRu                   src/06d-far.js:80
 farHere                      src/06e-far-take.js:19-23
@@ -3196,15 +3198,15 @@ farNormal                    src/06d-far.js:53-56
 farPlaces                    src/06d-far.js:33-51
 farPlanetIdx                 src/06e-far-take.js:24
 farPresence                  src/06d-far.js:28-31
-farPriceCtx                  src/12-economy.js:73-75
+farPriceCtx                  src/12-economy.js:79-81
 farR                         src/06d-far.js:25
 farReadLine                  src/06e-far-take.js:47-52
 farReadShow                  src/06e-far-take.js:55-72
 farReading                   src/06e-far-take.js:41-46
 farScoopPick                 src/06e-far-take.js:112-118
 farSpread                    src/06e-far-take.js:36-40
-farStall                     src/12-economy.js:83-91
-farStallBuy                  src/12-economy.js:92-102
+farStall                     src/12-economy.js:89-97
+farStallBuy                  src/12-economy.js:98-108
 farTake                      src/06e-far-take.js:26-34
 farTakenAll                  src/06e-far-take.js:15
 farTrapTick                  src/06f-far-props.js:34-44
@@ -4461,10 +4463,10 @@ mapUnderTrassa               src/18b-map-hold.js:60-63
 mapViewC                     src/18-mode-map.js:76
 mapZoomK                     src/18-mode-map.js:85
 mapZoomSet                   src/18-mode-map.js:89
-marketCtx                    src/12-economy.js:104-114
-marketFor                    src/12-economy.js:2-18
-marketPrice                  src/12-economy.js:145-148
-marketPriceCtx               src/12-economy.js:131-135
+marketCtx                    src/12-economy.js:110-120
+marketFor                    src/12-economy.js:2-24
+marketPrice                  src/12-economy.js:151-154
+marketPriceCtx               src/12-economy.js:137-141
 matCell                      src/18a-material.js:53-62
 matJobDone                   src/18a-material.js:364-371
 matJobMake                   src/18a-material.js:138-178
@@ -4642,7 +4644,7 @@ nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
 near                         tests/90-harness.js:172
 nearestPOI                   src/20a-poi.js:236-241
-nearestStation               src/12-economy.js:278-293
+nearestStation               src/12-economy.js:296-311
 nebMoveFrames                tests/91zzzzzzy7-gpu-nebmove.js:7-10
 nebula                       src/16-flight.js:82-96
 needAll                      src/12aa-need.js:25
@@ -5161,12 +5163,13 @@ prState                      tests/91zzzzzi-promise.js:25
 prSweep                      tests/91zzzzzi-promise.js:93-116
 prWalk                       tests/91zzzzzi-promise.js:82-92
 prbLeg                       tests/91zzw-eco-probe.js:5-23
+prbRoutes                    tests/91zzw-eco-probe.js:75-90
 prbStations                  tests/91zzw-eco-probe.js:4
 prebake                      src/17a0-prebake.js:21-39
 prebakeDrop                  src/17a0-prebake.js:20
 prevAct                      src/08-state.js:205
 priceBestOf                  src/12aa-need.js:249-258
-priceParts                   src/12-economy.js:124-130
+priceParts                   src/12-economy.js:130-136
 pricesClose                  src/12aa-need.js:301
 pricesCount                  src/12aa-need.js:259
 pricesHeard                  src/12aa-need.js:232-244
@@ -5829,8 +5832,8 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:397-416
-sellCargo                    src/12-economy.js:175-200
-sellDroneYield               src/12-economy.js:201-209
+sellCargo                    src/12-economy.js:181-206
+sellDroneYield               src/12-economy.js:207-215
 sellQuote                    src/12ab-hold.js:109-118
 setBig                       src/27z-telemetry.js:112-118
 setPair                      src/27z-telemetry.js:127-132
@@ -6256,7 +6259,7 @@ theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:332-422
+tickDrones                   src/12-economy.js:350-440
 tickLaunchHold               src/21-mode-surface.js:660-673
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
@@ -6976,9 +6979,9 @@ zoomTo                       src/15-input.js:350
 ## src/11z-misclosure.js · 6 КБ
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12-economy.js · 29 КБ
+## src/12-economy.js · 31 КБ
   · живой рынок:1
-  · дроны:211
+  · дроны:217
 
 ## src/12a-crew.js · 46 КБ
   · наёмники: флот, которым не управляешь напрямую:1
@@ -8254,7 +8257,7 @@ zoomTo                       src/15-input.js:350
   · автотесты: пульт и стол (M151a):1
   · огонёк: «пришло» ≠ «не прочитано»:207
 
-## tests/91zzw-eco-probe.js · 10 КБ
+## tests/91zzw-eco-probe.js · 13 КБ
   · проба экономики (отчёт, не проверка; аудит 2026-09-04, docs/ECONOMY-AUDIT.md):1
 
 ## tests/91zzw-economy.js · 10 КБ
@@ -8638,7 +8641,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91zzzzzt-opis.js · 7 КБ
   · опись: вещь не двоится и не пропадает (M357):1
 
-## tests/91zzzzzu-monotone.js · 8 КБ
+## tests/91zzzzzu-monotone.js · 7 КБ
   · что не имеет права идти вспять (M359):1
 
 ## tests/91zzzzzv-quote.js · 8 КБ

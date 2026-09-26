@@ -26,7 +26,7 @@ function holdUklad(key){
 function holdNews(sys,def,what){
   if(!sys||!sys.station||!def||typeof newsAll!=="function")return null;
   const ins=Object.keys(def.eats);
-  const m=G.market[sys.key]||(G.market[sys.key]={pressure:{},t:G.t});
+  const m=G.market[sys.key]||(G.market[sys.key]={pressure:{},t:now()});
   for(const k of ins)if(TRADE_KEYS.indexOf(k)>=0)m.pressure[k]=clamp((m.pressure[k]||0)+.2,-.6,.8);
   const ru="«"+sys.station.name+"»: "+(what==="up"?def.ru+" поднят до ×"+(bldEntry(sys.key,def.id)||{lvl:2}).lvl:"заложен "+def.ru.toLowerCase())+
     (ins.length?" — "+ins.filter(k=>RES[k]).map(k=>RES[k].ru.toLowerCase()).join(" и ")+" здесь в цене":" — "+def.note);

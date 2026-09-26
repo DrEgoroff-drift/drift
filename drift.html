@@ -22047,14 +22047,20 @@ function drawMisFigure(c,W,H){
 function marketFor(sys){
   const base=sys.station.prices;
   let m=G.market[sys.key];
-  if(!m){m={pressure:{},t:G.t};G.market[sys.key]=m;}
+  if(!m){m={pressure:{},t:now()};G.market[sys.key]=m;}
   if(!m.ask)m.ask={};   /* наценка прилавка от ваших покупок (M289) — живёт в той же записи */
-  const secs=Math.max(0,(G.t-m.t)/60);
+  /* по часам мира (now), а не по G.t (аудит 4.09, A4): G.t в сейв не идёт и после
+     загрузки начинался с нуля — давление стояло, пока новая сессия не догонит старую
+     метку, а за ночь вне игры рынок не отдыхал вовсе. Метка старого сейва (кадры G.t,
+     число меньше 1e11) — просто «сейчас», без броска: выгоды из перехода не будет */
+  const tn=now();
+  if(!(m.t>1e11))m.t=tn;
+  const secs=Math.max(0,(tn-m.t)/1000);
   if(secs>0){
     const decay=Math.pow(.5,secs/10800);   /* давление держится часами, а не полчаса (M152e): дальше лететь выгоднее, чем туда-сюда */
     for(const k of TRADE_KEYS){m.pressure[k]=(m.pressure[k]||0)*decay;if(m.ask[k])m.ask[k]*=decay;}
     for(const k of FAR_KEYS)if(m.pressure[k])m.pressure[k]*=decay;   /* дальние (M467) — то же давление */
-    m.t=G.t;
+    m.t=tn;
   }
   const prices={},C=marketCtx(sys,m);
   for(const k of TRADE_KEYS)prices[k]=marketPriceCtx(sys,C,k,0);
@@ -22244,7 +22250,7 @@ function sellCargo(sys,k,qty){
   return revenue;
 }
 function sellDroneYield(sys,k,qty){
-  const price=marketFor(sys)[k],revenue=qty*price;
+  const price=droneSellPrice(sys,k),revenue=qty*price;
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
   /* привоз дрона — тоже привоз: нужда ×2 закрывается им, как и вашим (§12) — иначе
@@ -22312,13 +22318,25 @@ function droneMarket(d){
     const S=seen[key];if(!S||!S.p||S.p[d.res]==null)continue;
     const dist=Math.max(Math.abs(S.sx-d.sx),Math.abs(S.sy-d.sy));
     if(dist>R)continue;
-    const v=S.p[d.res]*(1-.08*dist);
-    if(v>bv*1.1){const s=getSystem(S.sx,S.sy);if(s&&s.station){bv=v;best=s;}}
+    /* выбирает по той же цене, по какой сдаст (§12) */
+    const s=getSystem(S.sx,S.sy);if(!s||!s.station)continue;
+    const v=droneSellPrice(s,d.res)*(1-.08*dist);
+    if(v>bv*1.1){bv=v;best=s;}
   }
   const was=d.mkt&&d.mkt.key;
   d.mkt={key:best.key,sx:best.sx,sy:best.sy,name:best.station.name,day};
   if(perk&&best!==near&&was!==best.key)mgrSay(m,droneName(d)+" сдаёт на «"+best.station.name+"»: там дороже");
   return best;
+}
+/* цена сдачи дрона (§12): виденная вами у этой станции — дрон выбирает рынок по ней и по
+   ней же сдаёт (было: выбирал по виденной, сдавал по живой). Виденная годна DRONE_SEEN_DAYS
+   суток мира (сутки — минута игры): старая запись — чаще всего нужда ×2, которую давно
+   закрыли, и по ней дроны кормились бы вечно. Нет свежей — живая цена */
+const DRONE_SEEN_DAYS=30;
+function droneSellPrice(sys,k){
+  const S=G.seenPrices&&G.seenPrices[sys.key];
+  if(S&&S.p&&S.p[k]!=null&&celDay()-(S.day|0)<=DRONE_SEEN_DAYS)return Math.max(1,S.p[k]|0);
+  return marketFor(sys)[k]|0;
 }
 function nearestStation(sx,sy){
   for(let rad=0;rad<=24;rad++){
@@ -24714,7 +24732,7 @@ function holdUklad(key){
 function holdNews(sys,def,what){
   if(!sys||!sys.station||!def||typeof newsAll!=="function")return null;
   const ins=Object.keys(def.eats);
-  const m=G.market[sys.key]||(G.market[sys.key]={pressure:{},t:G.t});
+  const m=G.market[sys.key]||(G.market[sys.key]={pressure:{},t:now()});
   for(const k of ins)if(TRADE_KEYS.indexOf(k)>=0)m.pressure[k]=clamp((m.pressure[k]||0)+.2,-.6,.8);
   const ru="«"+sys.station.name+"»: "+(what==="up"?def.ru+" поднят до ×"+(bldEntry(sys.key,def.id)||{lvl:2}).lvl:"заложен "+def.ru.toLowerCase())+
     (ins.length?" — "+ins.filter(k=>RES[k]).map(k=>RES[k].ru.toLowerCase()).join(" и ")+" здесь в цене":" — "+def.note);
@@ -36606,7 +36624,7 @@ const NEWS_KINDS=[
     const s=newsSomewhere(r);if(!s)return null;
     /* настоящая перемена: давление на рынке — те же цены, что увидит игрок */
     const k=pick(TRADE_KEYS,r);
-    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:G.t});
+    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:now()});
     m.pressure[k]=clamp((m.pressure[k]||0)+.35+r()*.3,-.6,.8);
     newsMark(s.sx+","+s.sy,"цены сдвинулись","#f2b25c");
     return {ru:"«"+s.station.name+"» скупает "+RES[k].ru.toLowerCase()+
@@ -36614,7 +36632,7 @@ const NEWS_KINDS=[
   }},
   {id:"owner",apply(r){
     const s=newsSomewhere(r);if(!s)return null;
-    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:G.t});
+    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:now()});
     for(const k of TRADE_KEYS)m.pressure[k]=clamp((m.pressure[k]||0)+(r()-.5)*.5,-.6,.8);
     newsMark(s.sx+","+s.sy,"сменился хозяин","#7fe6d8");
     return {ru:"«"+s.station.name+"» перешла другим людям: и цены, и порядки там теперь чужие",
@@ -37199,7 +37217,7 @@ function loreTake(key){
       const s=getSystem(sx,sy);
       if(!s.station||(G.market&&G.market[s.key]))continue;
       if(!G.market)G.market={};
-      G.market[s.key]={pressure:{},t:G.t};
+      G.market[s.key]={pressure:{},t:now()};
       got="цены станции «"+s.station.name+"» ("+sx+":"+sy+")";done=true;
     }
     if(!done){G.data+=12;got="сводка цен, которые вы и так знаете · +12 данных";}
@@ -42854,7 +42872,7 @@ function heardUse(h){
     /* рынок открывается ровно так же, как его открывает зарубка с ценами
        (12q): одна запись в G.market — и станция видна из другого конца */
     if(!G.market)G.market={};
-    if(!G.market[s.key])G.market[s.key]={pressure:{},t:G.t};
+    if(!G.market[s.key])G.market[s.key]={pressure:{},t:now()};
     h.used=true;
     tell("money","«"+G.parrot.name+"» повторил цены "+(h.note||"станции"),
       "ЦЕНЫ ПОВТОРЕНЫ\n"+(h.note||"")+"\nсектор "+h.sx+", "+h.sy);
@@ -68417,7 +68435,7 @@ const POI_FIND={
                const s=getSystem(sx,sy);
                if(!s.station||(G.market&&G.market[s.key]))continue;
                if(!G.market)G.market={};
-               G.market[s.key]={pressure:{},t:G.t};
+               G.market[s.key]={pressure:{},t:now()};
                return "цены станции «"+s.station.name+"» ("+sx+":"+sy+")";
              }
              return "наблюдения о том, что вы и так видели";}},

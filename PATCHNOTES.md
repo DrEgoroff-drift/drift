@@ -29,6 +29,8 @@ could ever save.
   - **Gate:** three nets in `91zzzzy2-money`: freeing twice pays at most half the second time; buy-and-hand-in for the plan or the order never nets positive; the balance is never below zero after any row of the hired hands' event table.
 - **Whose voice on the approach (the author, 27.09):** the lane (billboard, hotel, parked fleet, queue) now dresses by the land's owner, `stampOwnerAt`; the builder shows only in the station's own body. Rule in docs/DECISIONS.md.
 
+- **§12, the last seams.** A drone now picks its market by the price you saw there and is paid that price (it used to choose by the seen price and be paid the live one). A seen price counts for 30 world days; after that the drone goes by the live counter. Selling pressure on a counter now decays by the world clock (`now()`), so it also eases while you are out of the game. The half-life is still three hours. The economy probe gained «маршруты по кругу»: the player skips a leg whose quote has gone negative, moves to the next route, and waits ten minutes when every leg is down. The numbers are in `docs/ECONOMY-AUDIT.md` (27.09).
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M464: only the Дом водителя sells a service (the night); the other six give a paragraph, a rumour and a keepsake. Trade or jobs inside a giant were left for a later pass.
 - M464: the giant's length for the ruler is one fixed number (GIANT_LEN 1300) for all seven, not per body.
@@ -40,6 +42,8 @@ could ever save.
 - §12 multipliers: the ×2.2 cap is my number, a little above need alone (×2).
 - §12 per visit: the norm, scrip and co-op leftovers are stored on undock in `G.hold[station].vis`, an existing saved structure.
 - Lane owner: the lane is cached in the system, so a land that changes hands re-dresses the lane only when the system is regenerated.
+- **Drone paid at the seen price for 30 days** (§12): the cautious reading of «продаёт по ним». The other option was min(seen, live), which never lets a stale ×2 need pay out, but then a drone could never be sent to a better market it had seen. Counters saved before this change carry a frame-clock stamp; the first read resets it to now, which loses at most one decay step.
+- **Half-life kept at 3 h on the world clock**, not the 6 h A4 suggested: the probe numbers did not ask for a slower recovery.
 
 ## Unreleased
 

@@ -322,18 +322,6 @@ Check each against the code before building — some may already hold.
   since 12.09) and the main checkout `C:\Claude\files` (236 behind) — see what is unmerged, then refresh
   or remove.
 
-## 12. Economy audit (23.09) — holes read from the code, and the seams that close them
-
-Read solo on 0.456.0: `12-economy`, `12ab-hold`, `12aa-need`, `12aj-coop`, `12l-barge`, `13b-occupy`,
-`12al2-laws`, `17k1-gosplan`, `12c-mgr-core`, every `earn()` caller and all ~70 deductions of
-`G.credits`. Nothing changed; each item below names the fix it wants. The net owed in §10 («the
-money-printing counter») is the gate here. Ranked by weight.
-
-- [ ] **Smaller seam left:** the drone picks its market by seen prices and sells at live ones.
-- [ ] **Owed from the audit of 4.09 (`docs/ECONOMY-AUDIT.md`):** the probe that moves to another leg
-  when one goes negative (§6, never written); pressure decay on real time (A4) — a player back after
-  two hours of play finds the same floor next day.
-
 ## 13. Outside the game — audience and money (parked; the author 26.09: «запиши куда-нибудь, потом решим»)
 
 Nothing here is started without the author's word; each item is a decision of intent, not a task.
