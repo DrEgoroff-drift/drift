@@ -1,6 +1,12 @@
 /* ══════════════ таблица ключей прогрева (08b0) — пишет детектор, руками не править ══════════════
    test.ps1 -Accept берёт её из набора «конвейеры: после прогрева полёт не компилирует». */
 const GPU_PIPE_KEYS=[
+  "belt.dust",
+  "belt.dust4",
+  "belt.rock",
+  "belt.rock4",
+  "belt.rockf",
+  "belt.rockf4",
   "gc.blur",
   "gc.mat",
   "gc.mip",
@@ -26,6 +32,7 @@ const GPU_PIPE_KEYS=[
   "gps",
   "ovl",
   "pipe:fld.abil.cone|over",
+  "pipe:fld.belt.rocklay|over",
   "pipe:fld.belt.sky|over",
   "pipe:fld.gbm|add",
   "pipe:fld.gew|over",

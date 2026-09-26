@@ -143,6 +143,28 @@ suite("шейдеры: у smoothstep нет перевёрнутых рёбер"
   while((m=re.exec(src))){n++;if(+m[1]>+m[2])bad.push(m[0]+" …"+src.slice(Math.max(0,m.index-40),m.index).replace(/\s+/g," "));}
   ok(n>20,"вызовы с числовыми рёбрами найдены ("+n+")");
   eq(bad.slice(0,6).join(" | "),"","smoothstep(a,b,x) при a>b — писать 1.-smoothstep(b,a,x)");
+  /* рёбра-выражения с общим основанием: r+.7 и r-.5, P.y и P.y-30., Wd*.84 и Wd*.80, sz и sz*.25 (множитель —
+     при основании > 0: ширины и радиусы). Слияние флота 26.09: десять таких прошли мимо числовой проверки */
+  const args=i=>{const out=[];let d=0,s=i;
+    for(let j=i;j<src.length&&j<i+400;j++){const c=src[j];
+      if(c==="("||c==="["){d++;continue;}
+      if(c===")"||c==="]"){if(!d){out.push(src.slice(s,j));return out;}d--;continue;}
+      if(c===","&&!d){out.push(src.slice(s,j));s=j+1;}}
+    return null;};
+  const NUM="(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?",RA=new RegExp("^(.+?)([+-])("+NUM+")$"),RM=new RegExp("^(.+?)\\*("+NUM+")$");
+  const edge=t=>{t=t.replace(/\s+/g,"");let q;
+    if(/\$\{|^-?[\d.]/.test(t))return null;
+    if((q=RM.exec(t)))return {b:q[1],k:"*",v:+q[2]};
+    if((q=RA.exec(t))&&/[\w.)\]]$/.test(q[1]))return {b:q[1],k:"+",v:(q[2]==="-"?-1:1)*+q[3]};
+    return {b:t,k:"",v:null};};
+  const bad2=[],re2=/smoothstep\(/g;let n2=0;
+  while((m=re2.exec(src))){const A=args(m.index+11);if(!A||A.length!==3)continue;
+    const e0=edge(A[0]),e1=edge(A[1]);if(!e0||!e1||e0.b!==e1.b)continue;
+    const k=e0.k||e1.k;if(!k||(e0.k&&e1.k&&e0.k!==e1.k))continue;
+    const v0=e0.k?e0.v:(k==="*"?1:0),v1=e1.k?e1.v:(k==="*"?1:0);n2++;
+    if(v0>v1)bad2.push("smoothstep("+A[0]+","+A[1]+",…) …"+src.slice(Math.max(0,m.index-40),m.index).replace(/\s+/g," "));}
+  ok(n2>20,"вызовы с рёбрами от общего основания найдены ("+n2+")");
+  eq(bad2.slice(0,6).join(" | "),"","smoothstep(r+a,r+b,x) при a>b — писать 1.-smoothstep(r+b,r+a,x)");
 });
 /* огни городов (17ga gplCities, ревью №10): окна широт — из кэша по (планета, огонь, оборот окна,
    сторона звезды в 1/1024 оборота). На сторонах из этой сетки огни те же, что у прежнего поиска

@@ -2433,7 +2433,7 @@ GPU_LIT_DK                   src/17c-system-draw.js:400
 GPU_LIT_SH                   src/17c-system-draw.js:398
 GPU_MIP                      src/08c-gpu-kit.js:96
 GPU_MIP_LOD                  src/08c-gpu-kit.js:185
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-50
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-57
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-56
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
@@ -8808,7 +8808,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy1a-belt3d.js · 4 КБ
   · пояс в 3D (G8): данные для видеокарты:1
 
-## tests/91zzzzzzy2-gpu-canvas.js · 18 КБ
+## tests/91zzzzzzy2-gpu-canvas.js · 20 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
 ## tests/91zzzzzzy3-gate2d.js · 18 КБ
