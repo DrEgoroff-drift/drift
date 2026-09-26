@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6487
+Файлов: 641 · символов верхнего уровня: 6491
 
 ## СИМВОЛЫ
 
@@ -963,6 +963,7 @@ MAPBG                        src/17z-map-backdrop.js:14
 MAP_BOX                      src/18-mode-map.js:28
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
+MAP_OVER                     src/18-mode-map.js:84
 MATCH_BOX                    src/12uc-matches.js:21
 MATCH_BY_TIER                src/12uc-matches.js:20
 MAT_CAP                      src/18a-material.js:96
@@ -1835,7 +1836,7 @@ applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:236
 arrive                       src/16-flight.js:172-210
-arriveSystem                 src/18-mode-map.js:550-597
+arriveSystem                 src/18-mode-map.js:592-639
 artGet                       src/08ca-gpu-canvas.js:454
 artPut                       src/08ca-gpu-canvas.js:455-577
 asMap                        src/14-save.js:209-215
@@ -2927,7 +2928,7 @@ drawLawRing                  src/12al2-laws.js:84-110
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
-drawMap                      src/18-mode-map.js:120-508
+drawMap                      src/18-mode-map.js:158-550
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModule                   src/21aa-base-rooms.js:384-500
 drawMonolith                 src/20aa-poi-shapes.js:193-210
@@ -4041,7 +4042,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:537-545
+jump                         src/18-mode-map.js:579-587
 jumpToBase                   src/21a-mode-base.js:385-402
 kbClose                      src/27jb-kb.js:83
 kbDone                       src/27jb-kb.js:130-138
@@ -4308,14 +4309,14 @@ makerTicks                   src/03a-hull-maker.js:233-236
 makerWear                    src/03a-hull-maker.js:453
 makerWidth                   src/03a-hull-maker.js:423-450
 mapAddrBox                   src/18a-map-addr.js:224-240
-mapBack                      src/18-mode-map.js:105-116
+mapBack                      src/18-mode-map.js:110-121
 mapBandPaint                 src/17z-map-backdrop.js:36-77
 mapBox                       src/18-mode-map.js:29
-mapCell                      src/18-mode-map.js:82
+mapCell                      src/18-mode-map.js:87
 mapCellXY                    src/18a-map-addr.js:52
-mapCleanSet                  src/18-mode-map.js:119
+mapCleanSet                  src/18-mode-map.js:124
 mapDeck                      src/18-mode-map.js:13-17
-mapFit                       src/18-mode-map.js:87-92
+mapFit                       src/18-mode-map.js:92-97
 mapFont                      src/18-mode-map.js:42
 mapGoAddr                    src/18a-map-addr.js:212-219
 mapGridDraw                  src/18a-map-addr.js:55-60
@@ -4323,7 +4324,7 @@ mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHoldingsDraw              src/18b-map-hold.js:80-184
 mapHoldingsTop               src/18b-map-hold.js:186-226
 mapHousePatch                src/18b-map-hold.js:31-45
-mapJump                      src/18-mode-map.js:514-522
+mapJump                      src/18-mode-map.js:556-564
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
 mapLayerOn                   src/18b-map-hold.js:27
@@ -4333,14 +4334,17 @@ mapMarkToggle                src/18a-map-addr.js:33-41
 mapMarks                     src/18a-map-addr.js:30
 mapMarksDraw                 src/18a-map-addr.js:95-110
 mapNebula                    src/17z-map-backdrop.js:15-33
+mapOverOn                    src/18-mode-map.js:86
+mapOverTap                   src/18-mode-map.js:153-157
+mapOverview                  src/18-mode-map.js:129-152
 mapOwnHere                   src/18b-map-hold.js:64-69
 mapParseAddr                 src/18a-map-addr.js:220-223
-mapPeek                      src/18-mode-map.js:98-104
+mapPeek                      src/18-mode-map.js:103-109
 mapPriceDraw                 src/12aa-need.js:329-340
 mapPriceRows                 src/12aa-need.js:304-328
 mapRail                      src/18-mode-map.js:18-21
-mapRange                     src/18-mode-map.js:83
-mapReset                     src/18-mode-map.js:117
+mapRange                     src/18-mode-map.js:88
+mapReset                     src/18-mode-map.js:122
 mapRhumbPaint                src/17z-map-backdrop.js:82-101
 mapRingsDraw                 src/18a-map-addr.js:62-74
 mapRoseDraw                  src/18a-map-addr.js:187-210
@@ -4353,8 +4357,8 @@ mapTrassaPairs               src/18b-map-hold.js:47-59
 mapU                         src/18-mode-map.js:41
 mapUnderTrassa               src/18b-map-hold.js:60-63
 mapViewC                     src/18-mode-map.js:76
-mapZoomK                     src/18-mode-map.js:81
-mapZoomSet                   src/18-mode-map.js:84
+mapZoomK                     src/18-mode-map.js:85
+mapZoomSet                   src/18-mode-map.js:89
 marketCtx                    src/12-economy.js:53-63
 marketFor                    src/12-economy.js:2-18
 marketPrice                  src/12-economy.js:76-79
@@ -5943,7 +5947,7 @@ stapelYardBy                 src/26e1-stapel.js:34-38
 starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:30-39
 starRGB                      src/19c-light.js:49-59
-start                        src/15-input.js:623-631
+start                        src/15-input.js:624-632
 startLanding                 src/19-mode-landing.js:2-33
 startScoop                   src/19a-mode-scoop.js:51-61
 stat                         src/08-state.js:297-365
@@ -6072,7 +6076,7 @@ tabsSync                     src/15-input.js:222-237
 tactHz                       src/28-loop.js:336
 tactTick                     src/28-loop.js:346-359
 tactWork                     src/28-loop.js:339
-tap                          src/15-input.js:470-594
+tap                          src/15-input.js:470-595
 tapeBuy                      src/12s1-tape.js:23-28
 tapeCan                      src/12s1-tape.js:11
 tapeInit                     src/25b-tape.js:27-31
@@ -6211,7 +6215,7 @@ updateCombat                 src/13-pirates.js:116-301
 updateDig                    src/23-mode-dig.js:144-253
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
-updateMap                    src/18-mode-map.js:523-536
+updateMap                    src/18-mode-map.js:565-578
 updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:64-103
 updateScoop                  src/19a-mode-scoop.js:75-176
@@ -7310,7 +7314,7 @@ zoomTo                       src/15-input.js:350
 ## src/17z2-galaxy-names.js · 4 КБ
   · имена мест галактики (M449, DESIGN-galaxy §M449):1
 
-## src/18-mode-map.js · 43 КБ
+## src/18-mode-map.js · 46 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:65

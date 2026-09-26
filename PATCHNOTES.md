@@ -32,6 +32,12 @@ could ever save.
   a module meets its rod is drawn in the hull grammar (clamp, flush, flange, fillet, weld, gap). The picture is
   a draft for the graphics pass.
 
+- **M450: the galaxy overview.** The map pinches past zoom 5, up to 14. There the sheet of systems goes out:
+  its per-frame loop cannot walk fifteen thousand sectors. What remains is the whole disk with its arm and nebula
+  names, and the only glyphs on it: «ВЫ ЗДЕСЬ» with your address, the core, the settled circle, the danger rim
+  at r = 40, Ялта (where its stamp is), your matches and rumour areas. A tap on the disk takes the map there at
+  zoom 3; the prompt line says so. The overview finds where to look; it does not jump.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are

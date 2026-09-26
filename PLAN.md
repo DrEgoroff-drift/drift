@@ -218,8 +218,9 @@ measured on the GPU build first:
 
 ## 3. Stage 2 — whose land, in five seconds
 
-- [ ] **M447/M448 the galaxy:** M450 the overview and M451 the flight sky from the same model; verify the
-  drag detector's thresholds («deep < 8 %, sheet ≥ 25 %» were set before measuring).
+- [ ] **M447/M448 the galaxy:** M451 the flight sky from the same model — after GPU-2's soft nebula lands in
+  `main` (it lives in `16gb`, which that branch rewrites); verify the drag detector's thresholds («deep < 8 %,
+  sheet ≥ 25 %» were set before measuring) at the release run.
 - [ ] **M458 map borders:** territory edges as lines in the owner's pattern (dotted stars, ring marks,
   numbered dashes, a wave, uneven dashes with suns, dots), 1:1 with the sheet; the emblem chip readable
   (14–18 px) at near zoom; the glyph on the compass label and the header. Not started.
