@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 630 · символов верхнего уровня: 6323
+Файлов: 631 · символов верхнего уровня: 6324
 
 ## СИМВОЛЫ
 
@@ -1570,7 +1570,7 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:702-986
+drawSysHud                   src/17-mode-system.js:702-996
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:58-92
@@ -2349,8 +2349,8 @@ gpuPipeRecipe                src/08b0-gpu-pipe.js:47-54
 gpuPipes                     src/08b-gpu.js:350-371
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesWarm                 src/08b0-gpu-pipe.js:57-69
-gpuPirateBody                src/12i-pirate-hull.js:417-426
-gpuPirateLive                src/12i-pirate-hull.js:433-477
+gpuPirateBody                src/12i-pirate-hull.js:420-429
+gpuPirateLive                src/12i-pirate-hull.js:436-480
 gpuPlanet                    src/17ga-gpu-planets.js:320-337
 gpuPresent                   src/08b-gpu.js:623-637
 gpuQuad                      src/08c-gpu-kit.js:283-287
@@ -3824,15 +3824,16 @@ now                          src/01-core.js:88
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_PICKET                   src/13d-npc.js:13
 NPC_SHIPS                    src/03-ships.js:201
-npcCrewOff                   src/13d-npc.js:201-211
+npcCrewOff                   src/13d-npc.js:202-212
 npcEnvoy                     src/13d-npc.js:108-123
 npcFoeFor                    src/13-pirates.js:103-113
-npcRescue                    src/13d-npc.js:160-199
+npcRescue                    src/13d-npc.js:161-200
 npcShip                      src/13d-npc.js:19-34
 npcSpawn                     src/13d-npc.js:39-103
-npcWreck                     src/13d-npc.js:141-150
-npcWreckDraw                 src/13d-npc.js:221-240
-npcWreckNear                 src/13d-npc.js:212-220
+npcWreck                     src/13d-npc.js:141-151
+npcWreckDraw                 src/13d-npc.js:230-261
+npcWreckNear                 src/13d-npc.js:213-221
+npcWreckPose                 src/13d-npc.js:225-229
 npcYalta                     src/13d-npc.js:127-137
 OCC_CALM_MS                  src/13b-occupy.js:250
 OCC_FRESH                    src/13b-occupy.js:41
@@ -4156,7 +4157,7 @@ peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
-PGX                          src/12i-pirate-hull.js:432
+PGX                          src/12i-pirate-hull.js:435
 PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
 physRun                      tests/91zzzzy-phys.js:29-37
@@ -4173,14 +4174,14 @@ pipeWho                      tests/91zzzzzzy4-pipes.js:50-55
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
-PIR_LOD                      src/12i-pirate-hull.js:416
+PIR_LOD                      src/12i-pirate-hull.js:419
 PIR_SS                       src/12i-pirate-hull.js:17
 PIRATE_COLS                  src/13-pirates.js:4
 PIRATE_LOADOUT               src/13d-loadout.js:23-28
 PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
 pirateArmTick                src/13d-loadout.js:163-181
-pirateArtOf                  src/12i-pirate-hull.js:238-406
+pirateArtOf                  src/12i-pirate-hull.js:238-409
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
@@ -6970,7 +6971,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/13d-loadout.js · 9 КБ
   · снаряжение пирата по рангу (M368, §5):1
 
-## src/13d-npc.js · 13 КБ
+## src/13d-npc.js · 15 КБ
   · война, которую видно (M372, §7.4):1
 
 ## src/13z-gpu-combat.js · 18 КБ
@@ -7047,7 +7048,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gb-gpu-nebula.js · 51 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
-## src/17-mode-system.js · 76 КБ
+## src/17-mode-system.js · 77 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -8112,6 +8113,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1
+
+## tests/91zzzw-wreck.js · 4 КБ
+  · обломок после боя как корпус (G4c):1
 
 ## tests/91zzzx-late.js · 8 КБ
   · M225: поздний час у стойки:1

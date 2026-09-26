@@ -144,7 +144,8 @@ function npcWreck(p){
   if(G.npcWrecks.length>=4)return;
   /* обломок остаётся, даже если у вас уже есть буксир: экипаж с него можно
      снять и без троса (M375) */
-  G.npcWrecks.push({x:p.x,y:p.y,seed:p.seed>>>0,by:p.pw,crew:1});
+  /* корпус тот же, что летал (sid, ранг — ключ выпечки 12i), и повёрнут, как погиб */
+  G.npcWrecks.push({x:p.x,y:p.y,seed:p.seed>>>0,by:p.pw,crew:1,sid:p.shipId,rank:p.rank|0,a:p.a||0});
   if(typeof etherLine==="function")
     etherLine("…сигнал с обломка. Автомат, голоса нет.","сигнал");
 }
@@ -218,23 +219,43 @@ function npcWreckNear(sh){
   }
   return best;
 }
+/* обломок (G4c): корпус того самого борта — побитая выпечка 12i по его sid, светом звезды,
+   медленно кувыркается; кромки пробоин тлеют и дышат, из первой сочится дым. Подписи над ним
+   нет: за кадром его ведёт фишка у кромки (drawSysHud), вблизи называет подсказка */
+function npcWreckPose(w){
+  const h=w.seed>>>0,sp=((h&1)?1:-1)*(.0012+((h>>>1)&255)/255*.0012);   /* рад/кадр: оборот за 45–90 с */
+  return {x:w.x,y:w.y,a:(w.a||0)+G.t*sp,hull:.3,hullMax:1,seed:h,rank:w.rank|0,
+    shipId:w.sid||("np"+w.by+h)};
+}
 function npcWreckDraw(zx,zy,Z){
-  if(!G.npcWrecks)return;
-  /* с видеокарты (ступень 1) — кругами в проходе сцены, подпись DOM: обломок лежит после
-     каждой драки, и #c из-за него не должен грузиться весь полёт */
-  const pass=gpuScene(),SH=[];
+  if(!G.npcWrecks||!G.npcWrecks.length)return;
+  const pass=gpuScene();if(!pass)return;
+  const s=shipScaleAt(Z)*.82,D=[],E=[];
   for(const w of G.npcWrecks){
     const x=zx(w.x),y=zy(w.y);
-    if(x<-40||x>W+40||y<-40||y>H+40)continue;
-    const k=clamp(Z,.5,2);
-    if(pass){SH.push([3,x,y,7*k,0,.5,0,150,160,175,.75],[1,x,y,7*k,0,0,0,40,46,54,.9]);
-      domLabel("wk"+domLabelId(w),x,y-11*k,"КОРПУС","8px ui-monospace,monospace","rgba(200,210,220,.5)","center");continue;}
-    ctx.strokeStyle="rgba(150,160,175,.75)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(x,y,7*clamp(Z,.5,2),0,TAU);ctx.stroke();
-    ctx.fillStyle="rgba(40,46,54,.9)";ctx.fill();
-    ctx.fillStyle="rgba(200,210,220,.5)";
-    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText("КОРПУС",x,y-11*clamp(Z,.5,2));
+    if(x<-60||x>W+60||y<-60||y>H+60)continue;
+    const p=npcWreckPose(w);
+    gpuPirateBody(p,x,y,s);
+    const art=pirateArtOf(p.shipId,false,true,p.rank,0),B=art.B,ca=Math.cos(p.a),sa=Math.sin(p.a);
+    const T=(lx,ly)=>[x+(lx*ca-ly*sa)*s,y+(lx*sa+ly*ca)*s];
+    const r=rng(hashi(p.seed,0x0E3B,4));
+    (art.holes||[]).forEach((o,i)=>{
+      /* угли по рваной кромке: ядро горячее, ореол красный, дыхание в несколько секунд */
+      for(let j=0;j<6;j++){
+        const aa=r()*TAU,rr=B.hw*(.34+r()*.18),ph=r()*TAU,br=.5+.5*Math.sin(G.t*.025+ph);
+        const [ex,ey]=T(o[0]+Math.cos(aa)*rr,o[1]+Math.sin(aa)*rr);
+        E.push([1,ex,ey,Math.max(.5,.09*B.hw*s),0,0,Math.max(2,.32*B.hw*s),255,110,45,.08+.16*br],
+          [1,ex,ey,Math.max(.4,.05*B.hw*s),0,0,0,255,190,110,.3+.55*br]);
+      }
+      if(i)return;
+      /* дым из первой пробоины — редкий, расходится от кромки наружу */
+      const nx=Math.sign(o[1])||1;
+      for(let k=0;k<3;k++){
+        const t=((G.t*.012+k*1.3)%4),a=.26-t*.065;if(a<=0)continue;
+        const [px,py]=T(o[0]-t*3,o[1]+nx*(B.hw*.3+t*5));D.push([1,px,py,(1.4+t*2.2)*s,0,0,0,44,40,38,a]);
+      }
+    });
   }
-  if(SH.length)gpuShapes(pass,SH);
+  if(D.length)gpuShapes(pass,D);
+  if(E.length)gpuShapes(pass,E,{blend:"add"});
 }

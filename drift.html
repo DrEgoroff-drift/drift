@@ -32685,6 +32685,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст; ГСЧ пробоин
      заводится внутри — перепечка после потери устройства даёт тот же рваный силуэт.
      Без видеокарты — null: 2D-пути нет */
+  const HO=[];
   const cn=gpuBake(side,side,g=>{
   g.setTransform(PIR_SS,0,0,PIR_SS,rad*PIR_SS,rad*PIR_SS);
   /* флагман ренегата — это ВАШ корпус, обвешанный чужим: настоящий полётный
@@ -32796,8 +32797,10 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      раньше, чем копоть на нём */
   if(hurt){
     ctx.globalCompositeOperation="destination-out";
+    HO.length=0;
     for(let i=0;i<3;i++){
       const bx=lerp(B.tail,B.nose*.4,hr()), by=(hr()<.5?-1:1)*B.hw*(.5+hr()*.6);
+      HO.push([bx,by]);   /* где пробоина — знает и обломок (13d): по её кромке тлеет */
       /* пробоина из трёх наложенных кругов: один ровный круг читается дыркой
          дырокола, а не вырванным металлом */
       for(let j=0;j<3;j++){
@@ -32825,7 +32828,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* один свет на весь корабль кладёт gpuLitSprite по рельефу, от звезды (G4): в выпечке его нет;
      нерезкая маска — в шейдере (sharp, между уровнями мипов) */
   });
-  const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru};
+  const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru,holes:HO};
   return artPut(PIR_ART,key,art,PIR_KEEP);
 }
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──
@@ -45538,7 +45541,8 @@ function npcWreck(p){
   if(G.npcWrecks.length>=4)return;
   /* обломок остаётся, даже если у вас уже есть буксир: экипаж с него можно
      снять и без троса (M375) */
-  G.npcWrecks.push({x:p.x,y:p.y,seed:p.seed>>>0,by:p.pw,crew:1});
+  /* корпус тот же, что летал (sid, ранг — ключ выпечки 12i), и повёрнут, как погиб */
+  G.npcWrecks.push({x:p.x,y:p.y,seed:p.seed>>>0,by:p.pw,crew:1,sid:p.shipId,rank:p.rank|0,a:p.a||0});
   if(typeof etherLine==="function")
     etherLine("…сигнал с обломка. Автомат, голоса нет.","сигнал");
 }
@@ -45612,25 +45616,45 @@ function npcWreckNear(sh){
   }
   return best;
 }
+/* обломок (G4c): корпус того самого борта — побитая выпечка 12i по его sid, светом звезды,
+   медленно кувыркается; кромки пробоин тлеют и дышат, из первой сочится дым. Подписи над ним
+   нет: за кадром его ведёт фишка у кромки (drawSysHud), вблизи называет подсказка */
+function npcWreckPose(w){
+  const h=w.seed>>>0,sp=((h&1)?1:-1)*(.0012+((h>>>1)&255)/255*.0012);   /* рад/кадр: оборот за 45–90 с */
+  return {x:w.x,y:w.y,a:(w.a||0)+G.t*sp,hull:.3,hullMax:1,seed:h,rank:w.rank|0,
+    shipId:w.sid||("np"+w.by+h)};
+}
 function npcWreckDraw(zx,zy,Z){
-  if(!G.npcWrecks)return;
-  /* с видеокарты (ступень 1) — кругами в проходе сцены, подпись DOM: обломок лежит после
-     каждой драки, и #c из-за него не должен грузиться весь полёт */
-  const pass=gpuScene(),SH=[];
+  if(!G.npcWrecks||!G.npcWrecks.length)return;
+  const pass=gpuScene();if(!pass)return;
+  const s=shipScaleAt(Z)*.82,D=[],E=[];
   for(const w of G.npcWrecks){
     const x=zx(w.x),y=zy(w.y);
-    if(x<-40||x>W+40||y<-40||y>H+40)continue;
-    const k=clamp(Z,.5,2);
-    if(pass){SH.push([3,x,y,7*k,0,.5,0,150,160,175,.75],[1,x,y,7*k,0,0,0,40,46,54,.9]);
-      domLabel("wk"+domLabelId(w),x,y-11*k,"КОРПУС","8px ui-monospace,monospace","rgba(200,210,220,.5)","center");continue;}
-    ctx.strokeStyle="rgba(150,160,175,.75)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(x,y,7*clamp(Z,.5,2),0,TAU);ctx.stroke();
-    ctx.fillStyle="rgba(40,46,54,.9)";ctx.fill();
-    ctx.fillStyle="rgba(200,210,220,.5)";
-    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText("КОРПУС",x,y-11*clamp(Z,.5,2));
+    if(x<-60||x>W+60||y<-60||y>H+60)continue;
+    const p=npcWreckPose(w);
+    gpuPirateBody(p,x,y,s);
+    const art=pirateArtOf(p.shipId,false,true,p.rank,0),B=art.B,ca=Math.cos(p.a),sa=Math.sin(p.a);
+    const T=(lx,ly)=>[x+(lx*ca-ly*sa)*s,y+(lx*sa+ly*ca)*s];
+    const r=rng(hashi(p.seed,0x0E3B,4));
+    (art.holes||[]).forEach((o,i)=>{
+      /* угли по рваной кромке: ядро горячее, ореол красный, дыхание в несколько секунд */
+      for(let j=0;j<6;j++){
+        const aa=r()*TAU,rr=B.hw*(.34+r()*.18),ph=r()*TAU,br=.5+.5*Math.sin(G.t*.025+ph);
+        const [ex,ey]=T(o[0]+Math.cos(aa)*rr,o[1]+Math.sin(aa)*rr);
+        E.push([1,ex,ey,Math.max(.5,.09*B.hw*s),0,0,Math.max(2,.32*B.hw*s),255,110,45,.08+.16*br],
+          [1,ex,ey,Math.max(.4,.05*B.hw*s),0,0,0,255,190,110,.3+.55*br]);
+      }
+      if(i)return;
+      /* дым из первой пробоины — редкий, расходится от кромки наружу */
+      const nx=Math.sign(o[1])||1;
+      for(let k=0;k<3;k++){
+        const t=((G.t*.012+k*1.3)%4),a=.26-t*.065;if(a<=0)continue;
+        const [px,py]=T(o[0]-t*3,o[1]+nx*(B.hw*.3+t*5));D.push([1,px,py,(1.4+t*2.2)*s,0,0,0,44,40,38,a]);
+      }
+    });
   }
-  if(SH.length)gpuShapes(pass,SH);
+  if(D.length)gpuShapes(pass,D);
+  if(E.length)gpuShapes(pass,E,{blend:"add"});
 }
 
 /* ══════════════ болты и лучи боя на видеокарте (G4, docs/DESIGN-gpu.md) ══════════════
@@ -47916,7 +47940,7 @@ function tap(sxp,syp){
     if(ch){
       G.ap=Object.assign({},ch.t);G.ap.phase="fly";
       const nm=ch.t.kind==="planet"?ch.t.p.name
-            :(ch.t.kind==="station"?(G.sys.station?G.sys.station.name:"станция"):"звезда");
+            :(ch.t.kind==="station"?(G.sys.station?G.sys.station.name:"станция"):(ch.t.nm||"звезда"));
       say("Автопилот → "+nm,90);
       return;
     }
@@ -52717,7 +52741,7 @@ function drawSystem(){
     drawStation(x,y,Z);
     if(G.ap&&G.ap.kind==="station")reticle(x,y,34);
   }
-  if(G.ap&&G.ap.kind==="belt")reticle(zx(G.ap.ax),zy(G.ap.ay),26);
+  if(G.ap&&(G.ap.kind==="belt"||G.ap.kind==="wreck"))reticle(zx(G.ap.ax),zy(G.ap.ay),26);
   drawTrail(zx,zy,Z);
   /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
   drawExhaust(zx,zy,Z,thrusting?1:0);
@@ -52826,6 +52850,16 @@ function drawSysHud(zx,zy,sh,sys,U){
     if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name,t:{kind:"planet",p:np},k:"planet:"+np.name});
   }
   if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#e6eef2",l:"Цель",t:null,k:"target"});}
+  /* корпус после боя (G4c): подпись над ним стала фишкой — ближний из тех, что за кадром
+     (видимый читается сам), по тычку автопилот к нему */
+  if(G.npcWrecks&&G.npcWrecks.length){
+    let nw=null,nd=1e18;
+    for(const w of G.npcWrecks){
+      const x=zx(w.x),y=zy(w.y);if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
+      const d=Math.hypot(w.x-sh.x,w.y-sh.y);if(d<nd){nd=d;nw=w;}
+    }
+    if(nw)marks.push({x:nw.x,y:nw.y,c:"#b8c2cc",l:"Корпус",t:{kind:"wreck",ax:nw.x,ay:nw.y,nm:"корпус"},k:"wreck:"+nw.seed});
+  }
   /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
   if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp.name||"Оклик",t:null,hail:1,k:"hail"});}
   SYS_CHIPS.length=0;

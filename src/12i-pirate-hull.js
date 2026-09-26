@@ -261,6 +261,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст; ГСЧ пробоин
      заводится внутри — перепечка после потери устройства даёт тот же рваный силуэт.
      Без видеокарты — null: 2D-пути нет */
+  const HO=[];
   const cn=gpuBake(side,side,g=>{
   g.setTransform(PIR_SS,0,0,PIR_SS,rad*PIR_SS,rad*PIR_SS);
   /* флагман ренегата — это ВАШ корпус, обвешанный чужим: настоящий полётный
@@ -372,8 +373,10 @@ function pirateArtOf(id,rogue,hurt,rank,des){
      раньше, чем копоть на нём */
   if(hurt){
     ctx.globalCompositeOperation="destination-out";
+    HO.length=0;
     for(let i=0;i<3;i++){
       const bx=lerp(B.tail,B.nose*.4,hr()), by=(hr()<.5?-1:1)*B.hw*(.5+hr()*.6);
+      HO.push([bx,by]);   /* где пробоина — знает и обломок (13d): по её кромке тлеет */
       /* пробоина из трёх наложенных кругов: один ровный круг читается дыркой
          дырокола, а не вырванным металлом */
       for(let j=0;j<3;j++){
@@ -401,7 +404,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* один свет на весь корабль кладёт gpuLitSprite по рельефу, от звезды (G4): в выпечке его нет;
      нерезкая маска — в шейдере (sharp, между уровнями мипов) */
   });
-  const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru};
+  const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru,holes:HO};
   return artPut(PIR_ART,key,art,PIR_KEEP);
 }
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──

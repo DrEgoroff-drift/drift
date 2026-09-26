@@ -709,7 +709,15 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
 - **Rack merged** (26.09): origin/main ac55db27 (79f8379a), gpu3-rack bf8d96d2 (d714ef8b: rack 25d and
   globus 25f on #ovl, the master baked in parts). No 08b1 key came with it; the warm table re-taken
   without a diff (42). Node 16914, -Full 19172, -Mobile 19124 green.
-  Next: G4c (the wreck as an NPC hull), then the chip-jump gate.
+- **G4c the wreck as a hull** (26.09): `npcWreckDraw` (13d) draws the dead ship's own hull — the damaged
+  12i bake by its `sid` (the plan said `hullOf`, but NPCs fly as 12i welded hulls; the wreck must be the
+  ship you saw die), star-lit through `gpuPirateBody`, turning 0.07–0.14 rad/s from the angle it died at
+  (`npcWreckPose`, clock-driven, no rnd). The bake records its three breaches (`art.holes`); embers breathe
+  on their torn rims (additive), a thin smoke leaves the first. The «КОРПУС» label is gone: the nearest
+  off-screen wreck gets an edge chip «Корпус · N», a tap sends the autopilot there (`kind:"wreck"`,
+  reticle as for the belt). Pairs 760/390 vs 7e9a0b34: discs → broken lit hulls, the chip stacks with
+  the others. Suite 91zzzw-wreck (Node pose + browser chip/tap/label).
+  Next: the chip-jump gate.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
