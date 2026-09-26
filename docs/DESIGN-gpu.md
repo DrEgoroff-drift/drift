@@ -752,6 +752,10 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   Stand: one burst at a frozen age (peak .05 s and +150 ms). Pairs vs HEAD, circle 2.6 R / 4.3 R: 760 peak
   +5.8 %/+2.1 % light, +50 %/+23 % sharpness; +150 ms +0.8 %/+0.4 %, +8 %/+5 %; 390 (dpr 1.5) peak
   +5.8 %/+2.5 %, +36 %/+19 %; +150 ms +1.0 %/+0.5 %, +8 %/+5 %. GPU errors 0.
+  The rainbow on thin streaks (cyan and crimson, Контроль) was the shock-wave refraction splitting channels
+  (r at 1.08·o, b at 0.92·o), not the hit chroma. The split now falls back to the plain sample where the two
+  shifted samples disagree (|a−b| .03….15): a thin feature lands in one and not the other, a smooth gradient
+  keeps its lens fringe. A gate on brightness missed it (the tail is dim). Light ±0.04 %, sharpness +0.3 %.
 - **The pirate base has a body** (26.09, Контроль: «a flat red pentagon outline with a dot reads as a UI mark»):
   the pentagon is now the plan of a building. A low five-sided prism tilted as the old ellipse says (22×16 ≈
   43°), spinning in its own plane: the walls facing us, a five-facet pyramid roof, a mast, four docking
