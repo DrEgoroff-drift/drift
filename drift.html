@@ -51886,9 +51886,9 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   /* кайма фронта ионизации — только к звезде: линия 1–3 px светлее газа и свечение наружу */
   let brk=smoothstep(.25,.55,fbt(pl*9.+vec2f(7.,3.),2));
   let o=max(dpx,0.);
-  /* кайма 15–30 px при 760, наружу гаснет; внутрь тела над тусклым газом — хвост ~22 px:
-     обрыв на тёмном читался контуром рыбки (×2) */
-  let edge=mix(exp(min(dpx,0.)/22.),smoothstep(-26.,4.,dpx),smoothstep(.15,.5,gb))*(.45*exp(-o/10.)+.55*exp(-o/28.));
+  /* кайма 15–30 px при 760, наружу гаснет; внутрь над тусклым газом — хвост ~22 px, до −70:
+     иначе на тёмном контур рыбки (×2) */
+  let edge=mix(exp(min(dpx,0.)/22.)*smoothstep(-70.,-30.,dpx),smoothstep(-26.,4.,dpx),smoothstep(.15,.5,gb))*(.45*exp(-o/10.)+.55*exp(-o/28.));
   /* кайма — фронт ионизации: светится газ у кромки, её сила — по его плотности; на пустом
      космосе пыль только гасит звёзды — ни каймы, ни бурого */
   let gas=smoothstep(.02,.3,dsum);
@@ -52149,7 +52149,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   else{let d=ph-GNB.phP;d-=Math.round(d/(2*Math.PI))*2*Math.PI;GNB.Qc+=kD*(1-wD)*d;GNB.Yc+=kD*(1-wD)*(lD-GNB.lDP);}
   GNB.phP=ph;GNB.lDP=lD;
   const moved=Math.hypot(camx-GNB.cx,camy-GNB.cy)*.09;
-  /* GPU.kill.ngen (проба ?g11=deep): сведение старой текстуры без пересчёта — цена одного пересчёта */
+  /* GPU.kill.ngen (проба ?g11=deep): сведение без пересчёта — его цена */
   if(GNB.sys===sys&&(GPU.kill.ngen||moved<.5&&GPU.frameNo-GNB.last<3&&GPU.frameNo>=GNB.last))return true;
   const a=GNB.U;
   a[0]=GNB.w;a[1]=GNB.h;a[2]=W;a[3]=H;

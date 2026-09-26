@@ -7105,7 +7105,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gaz-gpu-noise.js · 3 КБ
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 51 КБ
+## src/16gb-gpu-nebula.js · 50 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/17-mode-system.js · 81 КБ

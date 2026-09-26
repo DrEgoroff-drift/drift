@@ -845,7 +845,7 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   (fixed 26.09): lit gas OUTSIDE a body (dpx > 0, rim glow + cavity light) whose rim ended in the body over
   ~16 px (`smoothstep(-26,4,dpx)`) onto dim gas — 10–90 % in 17 px at 760 ×2 read as a cut-out outline.
   Where the gas under the pixel is dim (`gb` < .15, before the dust) the rim's inward side is now
-  `exp(dpx/22)`; on bright gas (gb > .5) it is unchanged. The fish edge goes 10–90 % in 38 px. A longer
+  `exp(dpx/22)`, faded out over dpx −30…−70 (deeper, the brk noise drew faint fish in the body); on bright gas (gb > .5) it is unchanged. The fish edge goes 10–90 % in 38 px. A longer
   outward body ramp (variant «Б») changed nothing — the dark side is the body itself. Pairs vs HEAD
   (light / sharpness): 760 ×2.00 +2.1 / +0.1 %, ×1.10 +1.7 / +0.1 %; 390 dpr 1.5 ×2.00 +1.5 / +0.3 %,
   ×1.10 +0.8 / −0.8 %; |d| on bright gas .4–.95, the change sits in the dark. nebGen 1920 8.2 / 8.36 /
