@@ -191,8 +191,13 @@ function stapelHullBox(hl){
 /* лист на движке: кадр печёт две выпечки GPU-холста (корпус с набором, потом весь лист с ним) и кладёт
    лист в свой холст webgpu — раз на лист, устройство или холст (как силуэт ОПИСИ, 27j). Только при открытой
    станции: набор, что построил её и не закрыл, не должен печь в кадрах чужих сцен. STP_G.n — сколько раз */
-const STP_G={cv:null,cx:null,dev:null,T:null,bk:[],sig:0,k:0,n:0};
+const STP_G={cv:null,cx:null,dev:null,T:null,bk:[],sig:0,k:0,n:0,pend:null};
+/* протяжка ползунка: лист (рамка по вершинам ×8, выпечка) — не чаще раза в кадр, последнее значение
+   побеждает. Половина плотности на протяжке не помогает (26.09, ×4 CPU: медиана 57 → 82 мс): выпечка
+   упирается в разбор кистей на процессоре, а мелкий лист уходит в ss 2. Без видеокарты — сразу */
+function stapelLater(f){if(!GPU.ok||!GPU.dev){f();return;}STP_G.pend=f;}
 function stapelHullTick(){
+  if(STP_G.pend){const f=STP_G.pend;STP_G.pend=null;f();}
   const D=stapelSheet.gd,cv=D&&D.cv,g=STP_G;
   if(!cv||!cv.isConnected||typeof $st==="undefined"||!$st||!$st.classList.contains("open")||!GPU.on||!GPU.enc||!GPU.dev)return;
   if(g.cv!==cv||g.dev!==GPU.dev){

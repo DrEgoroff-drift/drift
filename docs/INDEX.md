@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 639 · символов верхнего уровня: 6452
+Файлов: 639 · символов верхнего уровня: 6453
 
 ## СИМВОЛЫ
 
@@ -5638,7 +5638,7 @@ stampOwnerAt                 src/17i-stamp.js:16-21
 stampPage                    src/17i-stamp.js:64-91
 stampShow                    src/17i-stamp.js:52-62
 stampText                    src/17i-stamp.js:24-35
-STAPEL_KEYS                  src/26e2-stapel-draw.js:217
+STAPEL_KEYS                  src/26e2-stapel-draw.js:222
 STAPEL_PV                    src/26e1-stapel.js:124
 STAPEL_SIZE                  src/26e1-stapel.js:10-14
 STAPEL_SIZES                 src/26e1-stapel.js:26
@@ -5648,11 +5648,12 @@ stapelAll                    src/26e1-stapel.js:27-32
 stapelBlock                  src/26e1-stapel.js:127-194
 stapelClosedWhy              src/26e1-stapel.js:96-101
 stapelCollect                src/26e1-stapel.js:111-122
-stapelDelta                  src/26e2-stapel-draw.js:218-228
-stapelFx                     src/26e2-stapel-draw.js:230-238
+stapelDelta                  src/26e2-stapel-draw.js:223-233
+stapelFx                     src/26e2-stapel-draw.js:235-243
 stapelHullBox                src/26e2-stapel-draw.js:172-190
-stapelHullTick               src/26e2-stapel-draw.js:195-214
+stapelHullTick               src/26e2-stapel-draw.js:199-219
 stapelId                     src/26e1-stapel.js:68
+stapelLater                  src/26e2-stapel-draw.js:198
 stapelOrder                  src/26e1-stapel.js:80-94
 stapelReady                  src/26e1-stapel.js:102
 stapelRestore                src/26e1-stapel.js:75-78
@@ -7661,7 +7662,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/26e2-post.js · 8 КБ
   · Космопочта — учреждение как погода (M492, DESIGN-birchpunk):1
 
-## src/26e2-stapel-draw.js · 16 КБ
+## src/26e2-stapel-draw.js · 17 КБ
   · СТАПЕЛЬ — лист (D16, дизайн-проход):1
 
 ## src/27-ui-ship.js · 25 КБ
@@ -8323,7 +8324,7 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzk5-plan.js · 9 КБ
 
-## tests/91zzzzk6-stapel.js · 30 КБ
+## tests/91zzzzk6-stapel.js · 31 КБ
 
 ## tests/91zzzzl-maphold.js · 5 КБ
   · автотесты: владения на карте (M348):1

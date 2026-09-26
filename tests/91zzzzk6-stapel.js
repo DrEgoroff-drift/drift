@@ -413,3 +413,28 @@ TEST_SUITES.push(()=>suite("едоки дальнего: верфь, земля,
   eq(farEaterMul(trade,"antimatter",null),1,"ничья земля — как есть");
   eq(farEaterMul(trade,"amber","km"),1.5,"янтарь — ювелиры Коммуны, как было");
 }));
+/* протяжка ползунка (26.09): лист — не чаще раза в кадр, последнее значение побеждает */
+TEST_SUITES.push(()=>suite("стапель: протяжка ползунка — один лист на кадр, последнее значение",{tier:"browser"},()=>{
+  resetWorld();
+  if(!GPU.ok||!GPU.dev){ok(typeof stapelLater==="function","без видеокарты лист рисуется сразу");return;}
+  let at=null;
+  for(let sx=-14;sx<=14&&!at;sx++)for(let sy=-14;sy<=14&&!at;sy++){
+    const s=getSystem(sx,sy);if(s.station&&s.station.stype==="yard"&&stampOwnerAt(sx,sy))at=[sx,sy];}
+  G.sx=at[0];G.sy=at[1];G.sys=getSystem(G.sx,G.sy);G.st=G.sys.station;
+  const U0=Object.assign({},STAPEL_UI),box=stapelBlock(),sl=box.querySelector("input[type=range]");
+  const sh=stapelSheet;let ns=0;
+  try{
+    document.body.appendChild(box);$st.classList.add("open");
+    gpuManual(()=>{stapelHullTick();});
+    window.stapelSheet=function(){ns++;return sh.apply(this,arguments);};Object.assign(window.stapelSheet,{last:sh.last,gd:sh.gd});
+    const n0=STP_G.n;
+    for(const v of [.86,.95,1.05,1.1,1.14]){sl.value=v;sl.dispatchEvent(new Event("input"));}
+    eq(ns,0,"события ввода листа не рисуют — ждут кадра");
+    eq(STAPEL_UI.l,1.14,"значение ползунка принято сразу");
+    gpuManual(()=>{stapelHullTick();});
+    eq(ns,1,"кадр — один лист на пять событий");
+    eq(STP_G.n-n0,1,"и одна выпечка");
+    gpuManual(()=>{stapelHullTick();});
+    eq(ns,1,"следующий кадр без событий — листа нет");
+  }finally{window.stapelSheet=sh;box.remove();$st.classList.remove("open");STAPEL_UI=U0;STP_G.pend=null;}
+}));

@@ -181,7 +181,7 @@ function stapelBlock(){
   const slider=(ru,key)=>{
     const d=el("label","stp-sl","<span>"+ru+"</span>");
     const i=document.createElement("input");i.type="range";i.min=STAPEL_L[0];i.max=STAPEL_L[1];i.step=.01;i.value=U[key];
-    i.oninput=()=>{U[key]=+i.value;redraw();};
+    i.oninput=()=>{U[key]=+i.value;stapelLater(redraw);};   /* лист — раз в кадр (26e2) */
     d.appendChild(i);val[key]=el("b","","");d.appendChild(val[key]);return d;
   };
   box.appendChild(slider("длина","l"));
