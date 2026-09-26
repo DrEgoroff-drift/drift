@@ -200,6 +200,14 @@ could ever save.
   hangs as a line over the scene («АМНИСТИЯ · …», «ПЕРЕПИСЬ · ответить на вопрос»). The Коммуна strike was already
   driven by the society incidents and stays so.
 
+- **M456: the last three laws are heard.** Рассвет has its rule now, «сделаем из ваших». Its stations sell no
+  parts; instead the workshop takes two of your spare parts of one kind and builds one a step better, with the
+  Рассвет stamp, for 60 кр a step («из «…» и «…» собрали «Силовое поле, собран из трёх»»). Fitted parts are
+  never taken. An Орднунг speeding fine is no longer a journal line: it comes as a paper in ВЕЩИ, «Квитанция
+  Орднунга № 4171», with the paragraph, the speed, and «экз. 2 и 3 вам не выдаются». The Коммуна lunch hour now
+  shows on the market tab itself («ОБЕД · 13:00–14:00 · топливо продаём — топливо не обед»), not only as a
+  refusal when you try to sell.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -278,6 +286,9 @@ could ever save.
 - M455: «the chronicle's days» is read as the chronicle's day of the week plus the Director's declared rites.
   The субботник's rocks near the station are a stand-in drawn with the same dark disc as before, which is draft
   picture work.
+- M456: the fine's ticket goes to ВЕЩИ (the desk's papers), because ПОЧТА on the desk holds postcards and has no
+  place for official paper. «Two of yours → one better» takes your two best spares of a kind. The new part is one
+  tier above the better of the two, capped at 5. Рассвет's «no deadlines» for jobs taken there is not done yet.
 
 ## 0.478.0 - the album on the engine
 

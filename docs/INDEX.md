@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6587
+Файлов: 641 · символов верхнего уровня: 6594
 
 ## СИМВОЛЫ
 
@@ -915,8 +915,9 @@ LATE_LINES                   src/11aq-late.js:34-43
 LATE_LONG                    src/11aq-late.js:29
 LATE_SIT                     src/11aq-late.js:28
 LATE_WRONG                   src/11aq-late.js:45-50
-LAW_NORM                     src/12al2-laws.js:14
-LAW_NORM_LEFT                src/12al2-laws.js:15
+LAW_MAKE_FEE                 src/12al2-laws.js:50
+LAW_NORM                     src/12al2-laws.js:15
+LAW_NORM_LEFT                src/12al2-laws.js:16
 LEADBREAK                    src/13a-guns.js:42
 LEFT_CACHE                   src/12as-left.js:19
 LEFT_RU                      src/12as-left.js:18
@@ -2948,7 +2949,7 @@ drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-51
 drawLander                   src/19f-lander.js:52-340
 drawLanding                  src/19-mode-landing.js:285-413
-drawLawRing                  src/12al2-laws.js:84-110
+drawLawRing                  src/12al2-laws.js:134-160
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
@@ -3300,7 +3301,7 @@ freeVoice                    src/09-audio.js:104-108
 fuelPriceHere                src/12k-rep.js:63-70
 furColor                     src/20f-fauna.js:25-34
 fuseAffordable               src/03-ships.js:38-41
-fuseCard                     src/26b-ui-station-work.js:346-382
+fuseCard                     src/26b-ui-station-work.js:348-384
 fuseCost                     src/03-ships.js:33-37
 fuseGen                      src/03-ships.js:32
 fusePreview                  src/03-ships.js:46-63
@@ -4220,12 +4221,18 @@ lateLeft                     src/11aq-late.js:57-61
 lateSit                      src/11aq-late.js:65-113
 launch                       src/21-mode-surface.js:723-738
 launchHold                   src/21-mode-surface.js:658
-lawDock                      src/12al2-laws.js:18-28
-lawLunch                     src/12al2-laws.js:37-41
-lawNormTake                  src/12al2-laws.js:30-35
-lawOwner                     src/12al2-laws.js:16
-lawRingGpu                   src/12al2-laws.js:63-83
-lawRingTick                  src/12al2-laws.js:43-55
+lawDock                      src/12al2-laws.js:19-29
+lawLunch                     src/12al2-laws.js:38-42
+lawLunchRow                  src/12al2-laws.js:44-47
+lawMakeBlock                 src/12al2-laws.js:74-87
+lawMakeHere                  src/12al2-laws.js:51
+lawMakeOwn                   src/12al2-laws.js:63-73
+lawMakePairs                 src/12al2-laws.js:56-62
+lawNormTake                  src/12al2-laws.js:31-36
+lawOwner                     src/12al2-laws.js:17
+lawRingGpu                   src/12al2-laws.js:113-133
+lawRingTick                  src/12al2-laws.js:89-105
+lawSpares                    src/12al2-laws.js:52-55
 layerLevel                   src/10-music.js:362-377
 ldFoe                        tests/91zzzw-combat.js:472-476
 ledgerAll                    src/11ai-ledger.js:36-39
@@ -5998,12 +6005,12 @@ stSpin                       src/17c3-station-live.js:50-53
 stSpinCv                     src/17c3-station-live.js:56-62
 stSplit                      src/17c3-station-live.js:20
 stTabBoard                   src/26e-ui-station-trade.js:11-147
-stTabFuse                    src/26b-ui-station-work.js:383
-stTabInstr                   src/26b-ui-station-work.js:228-382
-stTabLab                     src/26b-ui-station-work.js:314-382
-stTabMarket                  src/26e-ui-station-trade.js:148-265
-stTabMods                    src/26b-ui-station-work.js:105-382
-stTabYard                    src/26e-ui-station-trade.js:266-411
+stTabFuse                    src/26b-ui-station-work.js:385
+stTabInstr                   src/26b-ui-station-work.js:230-384
+stTabLab                     src/26b-ui-station-work.js:316-384
+stTabMarket                  src/26e-ui-station-trade.js:148-266
+stTabMods                    src/26b-ui-station-work.js:105-384
+stTabYard                    src/26e-ui-station-trade.js:267-412
 stTabsHere                   src/26-ui-station.js:144
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:379-392
@@ -6973,7 +6980,7 @@ zoomTo                       src/15-input.js:350
 ## src/12al1-toponym.js · 2 КБ
   · названия по хозяину (M489, DESIGN-birchpunk §2):1
 
-## src/12al2-laws.js · 8 КБ
+## src/12al2-laws.js · 11 КБ
   · закон земли — по одному, только озвученные (M456, review §1.5):1
 
 ## src/12al3-reg.js · 4 КБ
@@ -7787,7 +7794,7 @@ zoomTo                       src/15-input.js:350
 ## src/26d-ui-wanderer.js · 5 КБ
   · пульт «Сороки»: карточка витрины перед вами (M343):1
 
-## src/26e-ui-station-trade.js · 30 КБ
+## src/26e-ui-station-trade.js · 31 КБ
   · станция: доска, рынок и док (выделено из 26, M415):1
 
 ## src/26e1-stapel.js · 12 КБ

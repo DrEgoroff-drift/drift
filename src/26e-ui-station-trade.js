@@ -147,6 +147,7 @@ function stTabBoard(){
 }
 function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
+    if(typeof lawLunchRow==="function"){const lr=lawLunchRow();if(lr)$body.appendChild(lr);}   /* обед Коммуны (M456) */
     if(typeof gosRow==="function"){const gr=gosRow();if(gr)$body.appendChild(gr);}
     if(typeof recallRows==="function"){const rr=recallRows();if(rr)$body.appendChild(rr);}   /* отзыв партии (M509) */   /* госзаказ со щита (M503) */
     /* пустой трюм говорит об этом в той же строке (D4, телефон 18.09): четыре

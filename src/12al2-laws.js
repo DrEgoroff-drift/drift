@@ -8,8 +8,9 @@
      метки ближе шестисот — штраф с номером параграфа, раз за подход;
    • Коммуна — ОБЕД: час по игровым суткам станция не продаёт и не берёт
      части; топливо продают всегда («топливо — не обед»);
-   • Рассвет — «сделаем из ваших» и Хай-Фронт — рейтинг доверия: пока без
-     правила (рейтинг вырезан ревью).
+   • Рассвет — «СДЕЛАЕМ ИЗ ВАШИХ»: деталей на прилавке нет, зато мастерская
+     из двух ваших запасных одного рода собирает одну на ступень лучше (M456);
+   • Хай-Фронт — рейтинг доверия: пока без правила (вырезан ревью).
    Хозяин — земли под кораблём сейчас (stampOwnerAt). */
 const LAW_NORM=20,LAW_FEE=40,LAW_RING=600,LAW_SPEED=4.5,LAW_FINE=15;
 let LAW_NORM_LEFT=0,LAW_RING_KEY="";
@@ -39,6 +40,51 @@ function lawLunch(){
   const h=Math.floor(((G.t%CEL_DAY)/CEL_DAY)*24);
   return h===13;
 }
+/* обед — строкой на вкладке торговли, а не только отказом приёмки (M456) */
+function lawLunchRow(){
+  if(!lawLunch())return null;
+  return el("div","row","<div class='nm'><b>ОБЕД · 13:00–14:00</b><s>приёмка и части с 14:00 · топливо продаём — топливо не обед</s></div>");
+}
+/* ── «сделаем из ваших» (Рассвет, M456): две запасные одного рода → одна на ступень
+   лучше; зерно — от двух старых, клеймо — Рассвета. Работа — 60 кр за ступень ── */
+const LAW_MAKE_FEE=60;
+function lawMakeHere(){return lawOwner()==="ra";}
+function lawSpares(){
+  const used=new Set();for(const id in (G.fit||{})){const f=G.fit[id]||{};for(const k in f)used.add(f[k]);}
+  return G.inv.filter(p=>!used.has(p.id));
+}
+function lawMakePairs(){
+  const by={};for(const p of lawSpares())(by[p.kind]||(by[p.kind]=[])).push(p);
+  const out=[];
+  for(const k in by){const L=by[k].sort((a,b)=>b.tier-a.tier);if(L.length<2||L[0].tier>=5)continue;
+    const t=Math.min(5,L[0].tier+1);out.push({kind:k,a:L[0],b:L[1],tier:t,fee:LAW_MAKE_FEE*t});}
+  return out;
+}
+function lawMakeOwn(kind){
+  if(!lawMakeHere())return null;
+  const P=lawMakePairs().find(x=>x.kind===kind);if(!P||G.credits<P.fee)return null;
+  G.credits-=P.fee;
+  G.inv=G.inv.filter(p=>p!==P.a&&p!==P.b);
+  const np=genPart(hashi(P.a.seed|0,P.b.seed|0,0xDA),P.tier,kind,undefined,undefined,"ra");
+  addPart(np);if(typeof invalidateParts==="function")invalidateParts();
+  tell("tech","Рассвет: «сделаем из ваших» — из «"+P.a.name+"» и «"+P.b.name+"» собрали «"+np.name+"» · −"+P.fee+" кр",
+    np.name+"\nсобрали из ваших");
+  return np;
+}
+function lawMakeBlock(){
+  if(!lawMakeHere())return null;
+  const box=document.createElement("div");
+  box.appendChild(el("div","sec","ДЕТАЛЕЙ НЕ ПРОДАЁМ · СДЕЛАЕМ ИЗ ВАШИХ · ДВЕ ЗАПАСНЫЕ — ОДНА ЛУЧШЕ"));
+  const L=lawMakePairs();
+  if(!L.length){box.appendChild(el("div","row","<div class='nm'><s>нужны две запасные одного рода — «приноси, брат, сделаем»</s></div>"));return box;}
+  for(const P of L){
+    const K=PART_KINDS[P.kind],r=el("div","row");
+    r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+K.ru+" · "+TIER_RU[P.tier]+"</b><s>из «"+P.a.name+"» и «"+P.b.name+"»</s>"));
+    const b=el("button","act gold","СОБРАТЬ · "+P.fee+" КР");b.disabled=G.credits<P.fee;
+    b.onclick=()=>{if(lawMakeOwn(P.kind))renderTab();};r.appendChild(b);box.appendChild(r);
+  }
+  return box;
+}
 /* скоростной режим Орднунга: в кольце у станции — метка скорости */
 function lawRingTick(sh){
   if(lawOwner()!=="or"||!G.sys||!G.sys.station)return;
@@ -49,7 +95,11 @@ function lawRingTick(sh){
     LAW_RING_KEY=key;
     const par="§ "+(10+(hashi(G.sx,G.sy,0x0D12)%30))+"."+(1+(G.t|0)%9);
     const fine=Math.min(LAW_FINE,G.credits|0);G.credits-=fine;
-    logAdd("warn","Орднунг: превышение в кольце станции ("+v.toFixed(1)+" при норме "+LAW_SPEED+") · "+par+" · штраф "+fine+" кр · экз. 1 из 3");
+    /* квитанция — бумагой в ВЕЩИ, а не строкой журнала (M456) */
+    const no=1000+(hashi(G.t|0,G.sx*7+G.sy,0x0D13)>>>0)%9000;
+    if(typeof thingAdd==="function")thingAdd("paper","Квитанция Орднунга № "+no,
+      "превышение в кольце станции: "+v.toFixed(1)+" при норме "+LAW_SPEED+" · "+par+" · штраф "+fine+" кр взыскан · экз. 1 из 3 · экз. 2 и 3 вам не выдаются");
+    else logAdd("warn","Орднунг: превышение в кольце станции · "+par+" · штраф "+fine+" кр");
     say("ШТРАФ · "+par+"\nскоростной режим в кольце станции",120);
   }
 }

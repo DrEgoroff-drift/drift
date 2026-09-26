@@ -131,7 +131,9 @@ function stTabMods(){
     }
 
     /* ── части в продаже: ассортимент детерминирован seed станции и временным бакетом ── */
-    const offers=stationParts(G.sys);
+    /* у Рассвета прилавка нет — «сделаем из ваших» (M456) */
+    const mk=(typeof lawMakeBlock==="function")?lawMakeBlock():null;if(mk)$body.appendChild(mk);
+    const offers=mk?[]:stationParts(G.sys);
     if(offers.length){
       $body.appendChild(el("div","sec","ЧАСТИ В ПРОДАЖЕ · АССОРТИМЕНТ СМЕНИТСЯ"));
       for(const o of offers){
