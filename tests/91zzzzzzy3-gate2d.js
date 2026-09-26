@@ -177,6 +177,21 @@ const GATE2D=[
    place(first){if(first){G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:()=>{},key:vegaSeatKey};conT=0;}return {};},
    done(){G.seat=null;SEAT.S=null;},
    probe:["seatGpuTick"]},
+  /* стол (27i, 27ia, 27i0): столешница, вещи стола, значки вещей, ленты — выпечка и проход в свои канвы.
+     Стол строится кликом, не кадром: сцена листает вкладки по разу, художники — под воротами */
+  {name:"стол (27i): доски, вещи, ленты — выпечкой, без 2D",
+   painters:["panelGpu","tableBake","tablePaint","stripPaint","drawThingIcon","drawMisFigure","drawRingTape","renderDeskTop"],
+   place(first){
+     if(first){this.i=0;G.things=[];
+       for(const k of ["letter","subletter","news","clip","cut","paper","recall","record","soccard","voucher"])thingAdd(k,"вещь "+k,"");
+       thingAdd("tape","фигура","",{full:1});
+       G.strips=[{sx:3,sy:-2,span:30,mis:.012},{sx:4,sy:1,span:44,mis:.05},{sx:-7,sy:5,span:26,mis:.002}];
+       return {};}
+     if(this.i===0){tableBaked=null;tableToggle(true,"top");}
+     else if(this.i<5)tableSetTab(["things","strips","top","things"][this.i-1]);
+     this.i++;return {};},
+   done(){tableToggle(false);G.things=[];G.strips=[];},
+   probe:["panelGpu"]},
 ];
 TEST_SUITES.push(()=>suite("ворота «0 вызовов 2D»: перенесённые печи не зовут 2D ни в кадре, ни в выпечке",{tier:"browser"},()=>{
   if(!ok(GPU.ok,"видеокарта есть — без неё ворота не меряются"))return;

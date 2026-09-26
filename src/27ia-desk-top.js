@@ -342,7 +342,7 @@ function deskItemNew(it){
 /* ── сам стол ── */
 function renderDeskTop(box){
   box.textContent="";
-  const dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
+  const dpr=panelNd();
   for(const it of DESK_ITEMS){
     let live=false;try{live=!!it.live();}catch(e){live=false;}
     if(!live)continue;
@@ -351,11 +351,9 @@ function renderDeskTop(box){
     cell.className="item"+(n?" new":"")+(it.wide?" wide":"");
     const cv=document.createElement("canvas");
     const w=it.wide?300:150,h=it.wide?150:96;
-    cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
     cv.style.width="100%";cv.style.height=h+"px";
-    const c=cv.getContext("2d");
-    c.setTransform(cv.width/w,0,0,cv.width/w,0,0);
-    try{DESK_DRAW[it.id](c,w,h);}catch(e){crashShip("desk",it.id+": "+e.message,"");}   /* сломанная вещь на столе — в журнал сбоев, а не в тишину (0.438.0) */
+    /* кисть вещи печётся на видеокарте (27i0) */
+    panelGpu(cv,w,h,dpr,c=>{try{DESK_DRAW[it.id](c,w,h);}catch(e){crashShip("desk",it.id+": "+e.message,"");}});   /* сломанная вещь на столе — в журнал сбоев, а не в тишину (0.438.0) */
     cell.appendChild(cv);
     const tx=document.createElement("em");tx.textContent=it.ru;
     const nt=document.createElement("s");nt.textContent=it.note;

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 636 · символов верхнего уровня: 6433
+Файлов: 637 · символов верхнего уровня: 6439
 
 ## СИМВОЛЫ
 
@@ -1606,7 +1606,7 @@ drawSystem                   src/17-mode-system.js:524-708
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
-drawThingIcon                src/27i-ui-table.js:400-478
+drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:159-170
 drawTrail                    src/16-flight.js:457-460
@@ -2067,7 +2067,7 @@ GATE_WARM                    tests/91zzzzzzy-gpugate.js:8
 GATE_WHY                     tests/91zzzzzl-gates.js:19
 GATE_ZB                      tests/91zzzzzzy-gpugate.js:13
 GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-180
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-195
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
@@ -4096,6 +4096,9 @@ palPay                       src/21b5-base-palata.js:156-165
 palRegistered                src/21b5-base-palata.js:74
 palSetMode                   src/21b5-base-palata.js:166-179
 palStep                      src/21b5-base-palata.js:98-154
+PANEL                        src/27i0-panel-gpu.js:8
+panelGpu                     src/27i0-panel-gpu.js:11-24
+panelNd                      src/27i0-panel-gpu.js:10
 PAR                          src/12y-parrot-face.js:50
 PAR_ACT                      src/12z-parrot-acts.js:58-196
 PAR_C                        src/12y-parrot-face.js:37-47
@@ -4900,7 +4903,7 @@ renderCantina                src/27c-ui-hq.js:68-131
 renderCardBack               src/25i-post-back.js:88-178
 renderChess                  src/25n-chess.js:279-326
 renderDeeds                  src/11-log.js:119-149
-renderDeskTop                src/27ia-desk-top.js:343-366
+renderDeskTop                src/27ia-desk-top.js:343-364
 renderDiary                  src/29f-winter.js:221-249
 renderHold                   src/27j-ui-hold.js:252
 renderLog                    src/11-log.js:94-117
@@ -4914,10 +4917,10 @@ renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
-renderStrips                 src/27i-ui-table.js:328-370
+renderStrips                 src/27i-ui-table.js:330-366
 renderTab                    src/26-ui-station.js:486-498
 renderTabBody                src/26-ui-station.js:499-691
-renderThings                 src/27i-ui-table.js:371-395
+renderThings                 src/27i-ui-table.js:379-404
 RENT_ADS                     src/12f1-mgr-rent.js:18
 RENT_OPIN                    src/12f1-mgr-rent.js:20
 RENT_TIERS                   src/12f1-mgr-rent.js:13-17
@@ -5745,6 +5748,7 @@ stPlatePath                  src/17c-system-draw.js:159-166
 STRATA_K                     src/18a1-glaze.js:119
 stRing                       src/17c-system-draw.js:133-140
 stRingBody                   src/17c-system-draw.js:141-155
+stripPaint                   src/27i-ui-table.js:370-378
 STRIPS_MAX                   src/11b-speech.js:191
 stripsAll                    src/11b-speech.js:192
 stripSell                    src/11b-speech.js:231-242
@@ -5837,17 +5841,18 @@ TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158-187
-tableBake                    src/27i-ui-table.js:145-182
+tableBake                    src/27i-ui-table.js:145-155
 tableBlock                   src/27c-ui-hq.js:646-734
-tableHead                    src/27i-ui-table.js:191-198
+tableHead                    src/27i-ui-table.js:193-200
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:111-118
 tableNewThings               src/27i-ui-table.js:108
 tableNoticeAll               src/27i-ui-table.js:103-107
-tableRender                  src/27i-ui-table.js:199-203
-tableRenderBody              src/27i-ui-table.js:204-319
-tableRow                     src/27i-ui-table.js:320-325
-tableSetTab                  src/27i-ui-table.js:141-182
+tablePaint                   src/27i-ui-table.js:156-184
+tableRender                  src/27i-ui-table.js:201-205
+tableRenderBody              src/27i-ui-table.js:206-321
+tableRow                     src/27i-ui-table.js:322-327
+tableSetTab                  src/27i-ui-table.js:141-155
 tableShowsLog                src/27i-ui-table.js:57
 tableShowsRecord             src/27i-ui-table.js:58
 tableTab                     src/27i-ui-table.js:22
@@ -5920,6 +5925,7 @@ tfbm                         src/18a-material.js:23-27
 theOne                       src/21b3-base-hunt.js:46
 theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
+thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
 tickDrones                   src/12-economy.js:260-350
 tickLaunchHold               src/21-mode-surface.js:659-672
@@ -7679,6 +7685,8 @@ zooTick                      src/11ad-zoo.js:41-54
   · стол: одно место для всего, что читают:1
   · страница никогда не теряет прокрутку (P1):24
 
+## src/27i0-panel-gpu.js · 2 КБ
+
 ## src/27ia-desk-top.js · 21 КБ
   · стол как стол: предметы, а не тринадцать закладок:1
 
@@ -8444,7 +8452,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzzzy2-gpu-canvas.js · 19 КБ
   · GPU-холст: запись команд и громкие дыры (08ca, docs/DESIGN-gpu.md «GPU canvas»):1
 
-## tests/91zzzzzzy3-gate2d.js · 20 КБ
+## tests/91zzzzzzy3-gate2d.js · 21 КБ
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-gpu-ovl.js · 20 КБ
