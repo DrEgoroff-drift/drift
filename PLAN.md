@@ -67,8 +67,7 @@ numbers; the picture only no worse. Physics, seeds, the save and QUANT stay unto
     field, the star's limb law) wait in their own items;
     merged where the target is the same;
   - P1 14/n (e): planets whose shadow cone cannot reach the screen culled on the CPU, exact to half an LSB.
-- [ ] Debts: the chip-jump gate (per-frame shift ≤ CHIP_SPEED·dt + 1 px, stable draw order by id); max|Δ| of
-  7d10c66^ against 7d10c66.
+- [ ] Debts: max|Δ| of 7d10c66^ against 7d10c66.
 
 - [ ] **G4d the other ships lit:** the peace fleet, the ГЛАВТРАССА fleet, allies, the pirate base and «Сорока» are
   still flat 2D bakes with a top-lit gradient; give them `gpuLitSprite` (17c) as barges and pirates have.

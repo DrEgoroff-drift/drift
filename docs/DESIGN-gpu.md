@@ -722,7 +722,17 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   larger breaches instead of three (×1.45) and fewer torn-off parts (.25 vs .55) so the silhouette reads,
   no gun barrels (a lit barrel read as a white scratch). Embers only on the metal side of a breach rim;
   the smoke is a soft grey-brown haze with no core. The pirate bakes (`!h`) are untouched.
-  Next: the chip-jump gate (first run: jumps up to 94× the limit, order by distance, not by key).
+- **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
+  frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
+  and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
+  flipped 104 times. Three causes, three fixes in `drawSysHud`: (1) slots are still found nearest-first
+  (the stack rule of 17.09), but the overlap nudge and the draw now go in key order, so two chips whose
+  distances cross no longer swap who yields; (2) after an edge-change fade the chip lit up on its slot and
+  then stood on it while the stack slot moved — it now glides after it; (3) a yield to the other side of
+  a neighbour (a plate-sized step) is hidden like an edge change (`st.jf`: out at the old place, in at the
+  new; a chip lighting up after a yield may yield again and hides again). Green at 760 and 390; the gate
+  was red on the old code. Node 16923, -Full 19196, -Mobile 19148.
+  Next: Контроль's queue is done; waiting.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

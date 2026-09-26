@@ -872,6 +872,7 @@ function drawSysHud(zx,zy,sh,sys,U){
   };
   let firstAnchor=null,stack=null;   // якорь и растущий фронт текущей стопки на кромке
   const chipDrawn=[];                // где фишки нарисованы в этом кадре (сглаженные места)
+  const CL=[];                       // фишки после хода к слоту — к раскладке по ключу
   for(const c of cands){
     const m=c.m,ang=c.ang,dx=c.dx,dy=c.dy,cx=c.cx,cy=c.cy,label=c.label,cw=c.cw,ch=c.ch,onSide=c.onSide;
     const A=m.hail?1:CA;   /* окликнувший не гаснет */
@@ -929,6 +930,12 @@ function drawSysHud(zx,zy,sh,sys,U){
     {
       let st=CHIP_POS.get(m.k);
       const targetEdge=chipEdge(rx,ry,cw,ch);
+      const glide=()=>{
+        const dist=Math.hypot(rx-st.x,ry-st.y);
+        const maxStep=CHIP_SPEED*chipDt;
+        if(dist<=maxStep||dist<.01){st.x=rx;st.y=ry;}
+        else{st.x+=(rx-st.x)/dist*maxStep;st.y+=(ry-st.y)/dist*maxStep;}
+      };
       /* не только «нет записи», но и «запись сломана» — испорченный кадр
        (NaN от чужого кода) иначе застревает в NaN навсегда: расстояние до
        NaN само NaN, а любое сравнение с NaN ложно, так что ни один из веток
@@ -937,21 +944,29 @@ function drawSysHud(zx,zy,sh,sys,U){
       else if(st.fading){
         st.fadeT+=chipDt;
         const half=CHIP_FADE/2;
-        if(st.fadeT>=CHIP_FADE){st.fading=false;st.x=rx;st.y=ry;st.edge=targetEdge;dcx=rx;dcy=ry;dcA=1;}
-        else if(st.fadeT<half){dcx=st.fx;dcy=st.fy;dcA=1-st.fadeT/half;}
-        else{dcx=rx;dcy=ry;dcA=(st.fadeT-half)/half;}
+        if(st.fadeT<half){dcx=st.fx;dcy=st.fy;dcA=1-st.fadeT/half;}
+        else{
+          /* загоревшись у нового слота, плашка дальше ЕДЕТ за ним, а не стоит на нём: слот
+             стопки на ходу сдвигается, и почти яркая плашка прыгала за ним (ворота прыжков) */
+          if(!st.lit){st.lit=true;st.x=rx;st.y=ry;}else glide();
+          dcx=st.x;dcy=st.y;dcA=Math.min(1,(st.fadeT-half)/half);
+          if(st.fadeT>=CHIP_FADE){st.fading=false;st.lit=false;st.edge=targetEdge;dcA=1;}
+        }
       }else if(st.edge!==targetEdge){
         st.fading=true;st.fadeT=0;st.fx=st.x;st.fy=st.y;
         dcx=st.fx;dcy=st.fy;dcA=1;
-      }else{
-        const dist=Math.hypot(rx-st.x,ry-st.y);
-        const maxStep=CHIP_SPEED*chipDt;
-        if(dist<=maxStep||dist<.01){st.x=rx;st.y=ry;}
-        else{st.x+=(rx-st.x)/dist*maxStep;st.y+=(ry-st.y)/dist*maxStep;}
-        dcx=st.x;dcy=st.y;dcA=1;
-      }
+      }else{glide();dcx=st.x;dcy=st.y;dcA=1;}
     }
-    rx=dcx;ry=dcy;
+    CL.push({m,A,st:CHIP_POS.get(m.k),rx:dcx,ry:dcy,dcA,cw,ch,label,ang});
+  }
+  /* Ворота прыжков (долг §0): фишка кладётся и отодвигается в порядке КЛЮЧА, а не
+     дальности — дальности двух целей пересекаются на ходу, и соседки менялись ролями
+     «кто стоит, кто уступает»: уступавшая прыгала на полторы плашки за кадр */
+  CL.sort((a,b)=>a.m.k<b.m.k?-1:a.m.k>b.m.k?1:0);
+  for(const q of CL){
+    const m=q.m,A=q.A,st=q.st,cw=q.cw,ch=q.ch,label=q.label,ang=q.ang;
+    let rx=q.rx,ry=q.ry,dcA=q.dcA;
+    const gap=4;
     /* нарисованные фишки не пересекаются (P1 6/n, Контроль 24.09, hb_pair): слоты
        разведены, но плашка едет к своему со скоростью CHIP_SPEED, и в пути ложилась
        на соседнюю — «ЦИЦИИН · 2092» поверх «ЗВЕЗДА · 846». Подошла к уже нарисованной
@@ -974,6 +989,23 @@ function drawSysHud(zx,zy,sh,sys,U){
         if(!hit)break;
       }
       chipDrawn.push({x:rx,y:ry,w:cw,h:ch});
+    }
+    /* уступка на другую сторону соседки (или у края кадра) — это скачок на плашку: его
+       не везут, а прячут, как смену кромки, — тухнет на старом месте, загорается на
+       новом. Всё остальное фишка и так проходит не быстрее CHIP_SPEED */
+    if(st){
+      const lim=CHIP_SPEED*chipDt+1,half=CHIP_FADE/2,a0=dcA;
+      if(st.jf){
+        st.jf.t+=chipDt;
+        if(st.jf.t>=CHIP_FADE)st.jf=null;
+        else if(st.jf.t<half){rx=st.jf.x;ry=st.jf.y;dcA*=1-st.jf.t/half;}
+        else dcA*=(st.jf.t-half)/half;
+      }
+      /* и загораясь после уступки, фишка может уступить снова — тогда прячется заново */
+      if((!st.jf||st.jf.t>=half)&&st.px!=null&&dcA>=.5&&Math.hypot(rx-st.px,ry-st.py)>lim){
+        st.jf={x:st.px,y:st.py,t:0};rx=st.px;ry=st.py;dcA=a0;
+      }
+      st.px=rx;st.py=ry;
     }
     const AA=A*dcA;
     /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а

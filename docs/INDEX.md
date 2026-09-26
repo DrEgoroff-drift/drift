@@ -1570,7 +1570,7 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:702-996
+drawSysHud                   src/17-mode-system.js:702-1028
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:58-92
@@ -7048,7 +7048,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gb-gpu-nebula.js · 51 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
-## src/17-mode-system.js · 77 КБ
+## src/17-mode-system.js · 79 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
