@@ -1585,7 +1585,7 @@ drawSkyBodies                src/19b-sky.js:96-128
 drawSkyLayer                 src/19-mode-landing.js:171-269
 drawSpa                      src/29i-spa-draw.js:41-486
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:565-600
+drawStation                  src/17c-system-draw.js:568-603
 drawStationBody              src/17c-system-draw.js:167-370
 drawStationMods              src/17a-station-mod.js:207-210
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -2363,7 +2363,7 @@ gpuImgBind                   src/08c-gpu-kit.js:228-234
 gpuImgLayout                 src/08c-gpu-kit.js:220-227
 gpuKitU                      src/08c-gpu-kit.js:174-178
 gpuLight                     src/08b-gpu.js:444
-gpuLitSprite                 src/17c-system-draw.js:550-564
+gpuLitSprite                 src/17c-system-draw.js:553-567
 gpuLtWrite                   src/08b-gpu.js:448-455
 gpuManual                    src/08b-gpu.js:582-587
 gpuMipDrop                   src/08c-gpu-kit.js:110
