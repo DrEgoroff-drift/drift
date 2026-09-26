@@ -40,7 +40,7 @@ TEST_SUITES.push(()=>suite("посадка G6: выпечка тела без ж
   ok(bake.log.lighter===0,"выпечка: ни одного «lighter» — свет люка и сопел не застывает в текстуре");
   ok(bake.log.fills>20,"выпечка: тело нарисовано ("+bake.log.fills+" заливок)");
   const live=lgDrawRec(true,true,Object.assign({live:true},base));
-  ok(live.flame===3,"живое: три тормозных факела ("+live.flame+")");
+  ok(live.flame===0,"живое: факелов 2D нет — они бьют полем видеокарты вниз ("+live.flame+")");
   ok(live.glow===0,"живое: зарево — светом поля, не пятном ("+live.glow+")");
   ok(live.log.fills<bake.log.fills/3,"живое: тела нет — "+live.log.fills+" заливок против "+bake.log.fills);
   const idle=lgDrawRec(false,false,Object.assign({live:true},base));

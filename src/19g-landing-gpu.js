@@ -5,13 +5,19 @@
      но с формой (склон к звезде светлее, от неё — в воздух), с зерном породы и
      с подошвой, что тонет в цвете воздуха. Лежит ПОВЕРХ небесных тел и облаков
      (они 2D) — отсюда свой gpuOver; дымка у горизонта ложится уже поверх гряд.
-   · под кораблём — второй gpuOver, после площадки: тень корабля ложится на
-     рельеф от звезды и растёт, темнеет и собирается, пока он садится; факел
+   · под кораблём — второй gpuOver, после грунта: сам срез получает зерно и форму
+     (бугры породы под звездой, выпуклые гребни, тёплая кожа освещённого склона,
+     холод в глубине — та же лепка, что у поверхности, 21e2), тень корабля ложится
+     на рельеф от звезды и растёт, темнеет и собирается, пока он садится; факел
      тормозных сопел светит на грунт тёплым светом, умножая его собственный цвет.
    · сам корабль — выпечка тела (drawLander в режиме bake, 08ca gpuBake) на ключ
      позы, и поле, которое кладёт на неё свет мира по рельефу маски: небо сверху,
      звезда со своей стороны с каймой, отсвет земли снизу, факел на брюхо;
-     тлеющие сопла и маяк светят сами. Факелы и дым — 2D поверх (live).
+     тлеющие сопла и маяк светят сами. Тормозные факелы бьют вниз из брюха (в 2D
+     они смотрели вверх, в корпус) и дрожат шумом, а не броском rndFx; ядро ярче
+     единицы — свечение его подхватывает. Пыль из-под струи — поле по рельефу:
+     клубится и уходит от корабля, а не перебрасывается кругами каждые два кадра.
+     Дым побитого корпуса — 2D поверх (live).
    Высота рельефа уходит на видеокарту один раз на заход: текстура N×1 (h−hMin). */
 
 /* ── высота рельефа текстурой ── одна на заход: сменился рельеф — старая в корзину */
@@ -103,19 +109,54 @@ function lgRidges(p,tr,camx,fA,fB){
   return true;
 }
 
-/* ── под кораблём: тень от звезды, тень неба у самой земли, свет факела ──
-   Смесь mul: ответ (L·(1−s), s) даёт dst·(1−s)·(1+L) — тень гасит, свет факела
-   умножает собственный цвет грунта, а не кладёт поверх оранжевое пятно.
+/* ── под кораблём: лепка среза, тень от звезды, тень неба у самой земли, свет факела ──
+   Смесь mul с альфой 1: ответ M даёт dst·M, где M = лепка·(1−s)·(1+L) — тень гасит,
+   свет факела умножает собственный цвет грунта, а не кладёт поверх оранжевое пятно.
    V0 — сдвиг камеры по x, (hMin − camy), шаг рельефа, время; V1 — тень: центр x,
    полуширина, размытие, сила; V2 — тень неба: центр x, полуширина, сила, толщина
    тени по вертикали; V3 — факел: x, y, сила, радиус; V4 — его цвет; V5 — свет
-   люка: x, y, сила, радиус */
+   люка: x, y, сила, радиус; V6 — к звезде (x,y), дневной ключ, сила лепки;
+   V7 — тон звезды, V8 — тон неба (оба по светлоте единицы) и сдвиг камеры по y */
 const LG_UNDER_WGSL=LG_WGSL_NOISE+`
+/* высота по целому индексу, без фильтра: для кривизны профиля */
+fn lgHi(i:i32)->f32{let n=i32(textureDimensions(t0).x);return textureLoad(t0,vec2i(clamp(i,0,n-1),0),0).r;}
+/* бугры породы: две октавы, крупная вытянута вдоль пластов */
+fn lgBump(w:vec2f)->f32{return lgn(w*vec2f(.045,.08))*.65+lgn(w*.19+vec2f(7.,3.))*.35;}
+/* лепка среза (рецепт поверхности, 21e2, чуть тише — с высоты захода мельче): бугры
+   под звездой, гаснущие с глубиной;
+   выпуклый гребень светлее, ложбина темнее; зерно в пиксель в координатах мира;
+   тёплая кожа склона к звезде и холод неба в глубине. Ответ — множитель цвета.
+   Нормаль склона — (s,−1): профиль растёт вниз, и лицо, сходящее вправо, смотрит
+   вправо-вверх. litRGB (19c) берёт (−s,−1) — зеркально; см. docs/fleet/landing.md */
+fn lgForm(p:vec2f,d:f32,fi:f32)->vec3f{
+  let V=fu.v;let sun=V[6].xy;let day=V[6].z;let str=V[6].w;
+  let w=vec2f(fi*V[0].z,p.y+V[8].w);
+  let e=1.6;let b0=lgBump(w);
+  let gx=(lgBump(w+vec2f(e,0.))-b0)/e;let gy=(lgBump(w+vec2f(0.,e))-b0)/e;
+  let nr=normalize(vec3f(-gx*9.,-gy*9.,1.));let L=normalize(vec3f(sun,.75));
+  let sh=dot(nr,L)/L.z-1.;
+  let deep=exp(-max(d,0.)/190.);
+  var m=1.+clamp(sh,-.6,.6)*.24*str*(.3+.7*day)*deep;
+  let i=i32(floor(fi));let f=fi-floor(fi);
+  let h0=lgHi(i);let h1=lgHi(i+1);
+  let cv=mix(lgHi(i-1)+h1-2.*h0,h0+lgHi(i+2)-2.*h1,f)/V[0].z;
+  m=m*(1.+clamp(cv,-1.,1.)*.20*exp(-max(d,0.)/36.)*(.4+.6*day));
+  let px=fu.res.z/fu.res.x;
+  m=m*(1.+(lgh(floor(w/max(px,.5)))-.5)*.07);
+  let s=(h1-h0)/V[0].z;let nl=sqrt(1.+s*s);
+  let lit=clamp(dot(vec2f(s,-1.)/nl,sun),0.,1.);
+  let band=exp(-max(d,0.)/26.)*pow(lit,1.2)*day;
+  var mc=vec3f(m)*(vec3f(1.)+V[7].rgb*band*.34);
+  mc=mc*mix(vec3f(1.),V[8].rgb,smoothstep(14.,240.,d)*.34);
+  return mc;
+}
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let V=fu.v;
-  let yt=lgH((p.x+V[0].x)/V[0].z)+V[0].y;
+  let fi=(p.x+V[0].x)/V[0].z;
+  let yt=lgH(fi)+V[0].y;
   let d=p.y-yt;
-  let on=clamp(d+1.,0.,1.);
+  let on=clamp(d+.5,0.,1.);
+  let form=mix(vec3f(1.),lgForm(p,d,fi),on*step(.5,V[6].w));
   /* тень — эллипс на плоскости земли, увиденной вскользь: верх разреза и есть
      эта плоскость, глубина под кромкой — её даль. Эллипс идёт по кромке рельефа,
      а не по прямой, и к глубине сужается, а не обрывается отвесной стенкой */
@@ -145,10 +186,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let hv=(p-V[5].xy)/vec2f(V[5].w,V[5].w*.3);
     L=L+vec3f(1.,.72,.45)*V[5].z*exp(-dot(hv,hv)*2.2)*on;
   }
-  return vec4f(L*(1.-s),s);
+  return vec4f(form*(1.-s)*(1.+L),1.);
 }`;
 const LGU=new Float32Array(60);
 let LG_FIRE=0;   /* сглаженная тяга для света факела — эфемерное, не в G и не в сейве */
+let LG_DUST=0;   /* сглаженная сила пыли из-под струи — так же */
 /* тень и свет под кораблём одним полем; false — видеокарты нет */
 function lgUnder(L,tr,camx,camy,p){
   const T=lgHTex(tr);if(!T)return false;
@@ -179,6 +221,12 @@ function lgUnder(L,tr,camx,camy,p){
   /* люк открыт после посадки: трап сходит вперёд-вправо, свет — к его пяте */
   const landed=L.over>0&&L.ok;
   U[20]=lx+(-half*.06+len*.46)-6;U[21]=gy+1;U[22]=landed?.55*(1-.6*dayK(p))*clamp(L.gear,0,1):0;U[23]=len*.28;
+  /* лепка среза: только у грунта с материалом (ломти), как у поверхности */
+  U[24]=SUN_DIR.x;U[25]=SUN_DIR.y;U[26]=dayK(p);U[27]=tr.mat?1:0;
+  const lu=c=>Math.max(1,.3*c[0]+.59*c[1]+.11*c[2]);
+  const sc=starRGB(),am=ambRGB(p),ls=lu(sc),la=lu(am);
+  U[28]=sc[0]/ls;U[29]=sc[1]/ls;U[30]=sc[2]/ls;
+  U[32]=am[0]/la;U[33]=am[1]/la;U[34]=am[2]/la;U[35]=camy;
   gpuField(pass,"lg.under",LG_UNDER_WGSL,U,[{view:T.view}],{blend:"mul"});
   /* марево под соплами — последний проход гнёт кадр под струёй (L4) */
   if(LG_FIRE>.05)gpuHaze(U[12],U[13],Math.sin(L.a),Math.cos(L.a),34+alt*.2,12,.9*LG_FIRE);
@@ -195,11 +243,45 @@ function lgUnder(L,tr,camx,camy,p){
    cos/sin кивка; V2 — к звезде в осях корабля, df, ambK; V3 — звезда, усиление;
    V4 — небо; V5 — отсвет земли; V6 — факел (оси корабля), сила, радиус; V7 — его
    цвет; V8 — сопло 1 (оси кивка), шаг до второго, радиус; V9 — жар сопел, маяк x,y,
-   сила; V10 — проём люка (оси кивка); V11 — свет люка, тексель, уровень мипа */
-const LG_LANDER_WGSL=`
+   сила; V10 — проём люка (оси кивка); V11 — свет люка, тексель, уровень мипа, длина
+   факела; V12 — пыль: x под кораблём (экран), сила, охват, высота; V13 — цвет пыли,
+   безвоздушность; V14 — рельеф (t1): сдвиг камеры, hMin−camy, шаг, время */
+const LG_LANDER_WGSL=LG_WGSL_NOISE.replace(/t0/g,"t1")+`
 fn lgA(uv:vec2f)->f32{if(any(uv<vec2f(0.))||any(uv>vec2f(1.))){return 0.;}return textureSampleLevel(t0,smp,uv,0.).a;}
 fn lgG(uv:vec2f,d:f32)->vec2f{return vec2f(lgA(uv+vec2f(d,0.))-lgA(uv-vec2f(d,0.)),lgA(uv+vec2f(0.,d))-lgA(uv-vec2f(0.,d)));}
-fn field(p:vec2f,uv0:vec2f)->vec4f{
+/* пыль из-под струи: слой над кромкой рельефа, гуще у земли и под кораблём,
+   клубы бегут от оси наружу; премультиплицирована */
+fn lgDust(p:vec2f)->vec4f{
+  let V=fu.v;let k=V[12].y;
+  if(k<.004){return vec4f(0.);}
+  let dx=p.x-V[12].x;let ax=abs(dx);
+  if(ax>V[12].z*1.3){return vec4f(0.);}
+  let fi=(p.x+V[14].x)/V[14].z;
+  let yt=lgH(fi)+V[14].y;let h=yt-p.y;
+  if(h<-4.||h>V[12].w*3.){return vec4f(0.);}
+  let t=V[14].w;
+  /* клубы: шум в осях «от корабля наружу × высота», бежит наружу со временем */
+  let u=vec2f(ax/17.-t*.05*(1.+V[13].w),h/11.+sign(dx)*1.7);
+  let n=lgf(u)*.65+lgf(u*2.1+vec2f(3.1,t*.01))*.35;
+  let fall=exp(-max(h,0.)/V[12].w)*smoothstep(-4.,1.,h)*(1.-smoothstep(V[12].w*.6,V[12].w*2.2,h));
+  let side=1.-smoothstep(V[12].z*.35,V[12].z*1.3,ax);
+  let a=clamp(k*fall*side*(smoothstep(.36,.76,n)*.75+.12),0.,.6);
+  return vec4f(V[13].rgb*a,a);
+}
+/* тормозной факел: капля вниз от сопла, ядро ярче единицы, дрожит шумом времени */
+fn lgFlame(qi:vec2f,e:vec2f,r:f32,Lf:f32,t:f32,ph:f32)->vec3f{
+  let v=qi-e;let al=v.y;
+  if(al<-r||al>Lf*1.4||abs(v.x)>r*2.5){return vec3f(0.);}
+  let ln=Lf*(.86+.28*lgn(vec2f(t*.35+ph,ph*3.)));
+  let tt=clamp(al/ln,0.,1.);
+  let w=r*(.62+.5*tt)*(1.-tt*tt*.55);
+  let den=exp(-v.x*v.x/(w*w))*pow(1.-tt,1.25)*smoothstep(-r*.6,r*.2,al);
+  let tn=lgn(vec2f(v.x*.6,al*.45-t*.9+ph))*.4+.8;
+  let d=den*tn;
+  let core=exp(-v.x*v.x/(w*w*.18))*pow(max(1.-al/(ln*.45),0.),1.5);
+  return vec3f(1.,.58,.28)*d*1.1+vec3f(1.,.9,.72)*core*1.6;
+}
+fn lgLander(p:vec2f)->vec4f{
   let V=fu.v;let dp=p-V[0].xy;let E=V[0].z;
   let q=vec2f(dp.x*V[1].x+dp.y*V[1].y,-dp.x*V[1].y+dp.y*V[1].x);
   if(abs(q.x)>E*1.25||abs(q.y-V[0].w)>E*1.25){return vec4f(0.);}
@@ -219,6 +301,15 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   if(V[6].z>.002){
     let v=q-V[6].xy;
     em=em+V[7].rgb*V[6].z*.10*exp(-dot(v,v)/(V[6].w*V[6].w*.9));
+  }
+  /* три тормозных факела из брюха (оси кивка): x — доли полудлины V4.w, срез
+     сопла V5.w, радиус от сопла кормы, длина V11.w, сила V7.w */
+  if(V[7].w>.01){
+    let r=V[8].w*.54*.8;let t=V[14].w;
+    var fl=lgFlame(qi,vec2f(V[4].w*-.5,V[5].w),r,V[11].w,t,1.3);
+    fl=fl+lgFlame(qi,vec2f(V[4].w*-.05,V[5].w),r,V[11].w,t,4.1);
+    fl=fl+lgFlame(qi,vec2f(V[4].w*.42,V[5].w),r,V[11].w,t,7.7);
+    em=em+fl*V[7].w;
   }
   let uv=(q-vec2f(0.,V[0].w))/(2.*E)+.5;
   var c4=vec4f(0.);
@@ -253,6 +344,11 @@ fn field(p:vec2f,uv0:vec2f)->vec4f{
   /* проём люка светится своим светом и в полночь */
   if(V[11].x>.01&&qi.x>V[10].x&&qi.x<V[10].z&&qi.y>V[10].y&&qi.y<V[10].w){c=max(c,alb*V[11].x);}
   return vec4f(c*a+em,a);
+}
+fn field(p:vec2f,uv0:vec2f)->vec4f{
+  /* пыль ложится поверх корпуса и факелов: облако у самой земли перед стойками */
+  let h=lgLander(p);let d=lgDust(p);
+  return d+h*(1.-d.a);
 }`;
 const LG_BAKE=new Map();       /* ключ позы → выпечка тела */
 const LG_E=100,LG_OY=-30;      /* полуразмер выпечки и сдвиг её центра (нос, киль, трап влезают) */
@@ -300,15 +396,17 @@ function lgLander(L,tr,camx,camy,p){
   const sm=Math.max(1,sun[0],sun[1],sun[2]);
   for(let i=0;i<3;i++)U[12+i]=lerp(sun[i]/sm,1,.5)*sm/255;
   U[15]=1.25;
-  U[16]=amb[0]/255;U[17]=amb[1]/255;U[18]=amb[2]/255;
+  U[16]=amb[0]/255;U[17]=amb[1]/255;U[18]=amb[2]/255;U[19]=half;
   /* отсвет земли: цвет грунта под прямым светом, слабый */
   const gc=p.T.pal[2]||[120,110,100];
   for(let i=0;i<3;i++)U[20+i]=gc[i]/255*(.05+.16*df);
+  /* срез тормозных сопел: низ их коробок в брюхе (19f) */
+  const br=bodyH*.13;U[23]=bY-bodyH*.02+br*.6;
   /* факел: под брюхом, на оси среднего тормозного сопла, в осях корабля */
   const fx=-half*.05,fy=bY+bodyH*.30;
   const lvl=1+(G.mods.engine||0)*.22;
   U[24]=fx*ci-fy*si;U[25]=fx*si+fy*ci;U[26]=LG_FIRE*lvl*(1-.55*dayK(p));U[27]=half*.6;
-  U[28]=1;U[29]=.64;U[30]=.36;
+  U[28]=1;U[29]=.64;U[30]=.36;U[31]=LG_FIRE*lvl;
   const er=bodyH*.24;
   U[32]=-half*.80;U[33]=bY+bodyH*.02+er*.6;U[34]=er*1.7;U[35]=er;
   /* маяк — плавный огонь: разгорается и гаснет, а не щёлкает (закон «движение, не мигание») */
@@ -318,6 +416,20 @@ function lgLander(L,tr,camx,camy,p){
   const hx=-half*.06,hw=len*.17;
   U[40]=hx-hw*.5+1.5;U[41]=tY+bodyH*.18+1.5;U[42]=hx+hw*.5-1.5;U[43]=bY-bodyH*.30-1.5;
   U[44]=landed?1.05:0;U[45]=1/(2*LG_E);U[46]=Math.max(0,Math.log2(lgLanderSb(dk)/dk)-.6);
-  gpuField(pass,"lg.lander",LG_LANDER_WGSL,U,[B],{smp:gpuMipSmp()});
+  /* факел короткий (в 2D — 2.4…4.1 радиуса сопла), длиннее с двигателем */
+  U[47]=br*.8*3.4*lvl;
+  /* пыль: сила — от тяги у земли и от осевшего облака первых мгновений после
+     касания; сглажена, как и тяга. На мире без воздуха ниже и резче */
+  const thin=p.T.atm==="отсутствует",gy=groundAt(tr,L.x),alt=gy-L.y-LAND_GY;
+  const push=(L.thrOn&&L.over<=0?1:0)+(L.over>0&&L.ok?Math.max(0,1-(70-L.over)/40):0);
+  LG_DUST=lerp(LG_DUST,clamp(push,0,1)*clamp(1-alt/150,0,1),.2);
+  U[48]=L.x-camx;U[49]=LG_DUST;U[50]=20+100*LG_DUST;U[51]=(thin?7:18)*(.6+LG_DUST);
+  const base=p.T.pal?(p.T.pal[3]||p.T.pal[2]):[150,140,130],dc=mixc(base,[40,34,30],.35);
+  /* пыль того же цвета, что грунт, и под тем же светом: небо и звезда */
+  const lt=[0,1,2].map(i=>clamp((ambK(p)*amb[i]/255*.9+df*.8*U[12+i])*1.1,0,1.2));
+  U[52]=dc[0]/255*lt[0];U[53]=dc[1]/255*lt[1];U[54]=dc[2]/255*lt[2];U[55]=thin?1:0;
+  const T=lgHTex(tr);
+  U[56]=camx;U[57]=T?T.hMin-camy:0;U[58]=tr.step;U[59]=G.t;
+  gpuField(pass,"lg.lander",LG_LANDER_WGSL,U,[B,T?{view:T.view}:null],{smp:gpuMipSmp()});
   return true;
 }

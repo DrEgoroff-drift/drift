@@ -401,15 +401,12 @@ function drawLanding(){
     }
   }
   /* корабль: выпечка тела под светом мира — в том же проходе, что и тень под ним
-     (19g); поверх — живое 2D: тормозные факелы и дым побитого корпуса */
+     (19g), с факелами и пылью из-под струи; поверх — живое 2D: дым побитого корпуса */
   lgLander(L,tr,camx,camy,p);
   ctx.save();ctx.translate(L.x-camx,L.y-camy);ctx.rotate(L.a);
   drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0,
     {gear:L.gear,sq:L.sq,hot:L.hot,landed:L.over>0&&L.ok,tr:tr,gx:L.x,gnd:true,live:true});
   ctx.restore();
-  /* пыль из-под струи на подходе: чем ниже, тем гуще. Без неё грунт до самого
-     касания оставался нетронутым, и посадка не чувствовалась тяжёлой */
-  landingDust(L,tr,camx,camy);
   drawWeather(p,camx,camy,"near");
   lightShafts(p);
   gradePass(p);
