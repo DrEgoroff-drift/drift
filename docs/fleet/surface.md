@@ -11,9 +11,21 @@ gpuScene   sky (19ca, unchanged)
 2D         stars, sky bodies, clouds (19-mode-landing, frozen air)
 gpuOver #1 far ridges — one field, both layers (21e2 surfRidgesGpu)
 2D         hazeBand, far weather (frozen)
-gpuOver #2 near ground — chunk textures + one multiply field (21e2 surfGroundGpu); live grass stays 2D
-2D         everything that stands on the ground
+gpuOver #2 near ground — chunk textures + one multiply field (21e2 surfGroundGpu); live grass stays 2D;
+           the lower-third sky shade (surfShadeGpu) in the same pass
+2D         everything that stands on the ground (water, POI, deco, built, home, settlement, rocks,
+           lander, cave, mine, deposits, tracks)
+upload     #c → own texture (no composite); into pass #2: cast shadows, then the same snapshot back
+           through the world's light (surfRelightGpu, blend hull); #c is cleared
+pass #2    plants, beasts, peep walkers, the astronaut — the life ship's GPU twins (20fa), same order
+upload     the foreground (21b drawForeground) drawn alone on the empty #c → pass #2, blurred (DOF)
+2D         dust puffs, swim ring, mining beam, labels (deferred list LBL), near weather,
+           night, placesLit (11va), shafts, grade
 ```
+
+Why not a third `gpuOver` for the shadows: every `gpuOver` composite runs its front layer through the
+«2D lights» emission (`fsComp` → `emit`, 08b), so everything standing before it — saturated plants
+first — started to bloom at noon. An upload without a composite keeps them as they were.
 
 Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw, so the tests that read
 `G.surf.farA`/`tr.chunks` keep their meaning.
@@ -36,6 +48,80 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
    parallax, almost the air colour) drawn only by the GPU field (texture row 3); gullies down the fall
    line on the ridges; on the ground a warm skin of star colour on sun-facing slopes and a cold sky tint
    deepening with the cut (key warm, fill cold). The 2D path ignores the third ridge.
+5. **what stands casts a shadow** — `surfCastGpu`: after the astronaut, `#c` (everything standing) is
+   uploaded to an own texture and a multiply field (`fld.scast`) in the still-open ground pass projects
+   it onto the ground band: the occluder of a ground point at depth d is looked up at height d/B above
+   the edge, shifted by the star's side (long at dusk, short at noon), seven taps with a penumbra that
+   grows with height, cold sky colour instead of black, weak halos under an alpha threshold. World
+   labels (cave, mine, deposits, «ИЗУЧЕН») moved to a deferred list drawn after it, so plaques cast no
+   shadow. The lower-third shade moved into the ground pass (`fld.sshade`). The places ship's request
+   applied: `placesLit(p,tr,camx,camy)` after the night block. Third ridge toned down (lower, paler).
+6. **what stands is lit by the world's light** — `surfRelightGpu`: the same snapshot of `#c` is drawn
+   back into the ground pass through `fld.slit` and `#c` is cleared. The silhouette normal comes from
+   the alpha gradient at two scales; a soft band of a few pixels along the sun-side silhouette takes
+   the star's colour, the band on the far side goes cold (sky colour); overexposure is scaled down as
+   a whole so hue survives and nothing crosses the bloom knee. POIs, deco, built, home, settlement,
+   lander, plants, beasts, walkers and the astronaut all get it at once, without touching a painter.
+   A contact-darkening term was tried and dropped: the home and settlements stand on yards over the
+   slope, so the terrain line cut their facades diagonally.
+7. **merge of the fleet base** (life, cave, belt, hq, road, scoop, landing…) and **the life twins on the
+   surface** (the life ship's request): the snapshot/shadow/relight moved to just before the plants;
+   plants (`lifePlantGpu`, `o.sway` = the old rotation), beasts (`lifeBeastGpu`), peep walkers
+   (`lifePeepGpu`) and the astronaut (`lifeAstroGpu`; 2D when swimming — the twin cannot be cut at the
+   waterline) draw into the ground pass on top of it, their `groundShadow` calls dropped (the twins
+   cast their own). Deposits and tracks moved before the snapshot (so they are lit and shadowed, and a
+   plant now stands in front of an ore outcrop rather than behind it). The relight uses the `hull`
+   blend, so relit things mark the scene's figure mask like the twins do.
+8. **water on the GPU** — the 2D lake mirrored `#c` by `drawImage(cvs…)`, and `#c` no longer holds the
+   sky, the ridges or the ground: the mirror would reflect nothing. `surfWaterGpu` (`fld.swater`, in the
+   ground pass right after the shade) computes it: what stands above the mirrored point — the ground,
+   one of the three ridges (the offsets and colours the ridge field used this frame) or the day's sky
+   gradient with the night — with a slow continuous ripple drifting with the wind, stronger near the
+   waterline, the body's depth gradient, rare glints by the wind and the light waterline. Algae and reeds
+   stay 2D (and so go into the lit snapshot). `drawWater` keeps its 2D path when there is no device.
+9. **the foreground out of focus** — `surfNearGpu`: right after the astronaut, `drawForeground` paints
+   alone on the empty `#c`, which is uploaded (`surfSnap`, shared with the shadow snapshot) and laid in
+   the ground pass through a 13-tap disc blur (`fld.snear`, hull blend): the boulders and grass at the
+   lens are soft, the walker keeps the focus. Above the walker, below dust, labels and weather.
+10. **tests** — `tests/91x-surface-gpu.js` (Node tier, 2 suites): without a device every surface GPU
+    layer returns false and the 2D frame still draws (ridge tiles baked, foreground drawn); the third
+    ridge is a ridge of its own (no correlation with A or the ground, larger span, mean at the ground's
+    mean), all profiles fit the 16-bit height texture, `SRG_RGB` parses `hazeFar`. Browser suites run
+    on SwiftShader after the port: `-Only "гряд"` 41/41, `-Only "поверхност"` 77/77.
+
+## What is left in the zone
+
+- Nothing half-done is committed. Not done: the Path2D painters of the zone as individual GPU bakes
+  (see «Open problems» — they reach the GPU as the lit snapshot instead); `21-mode-surface.js` (logic,
+  no drawing to port); `20b-poi-find.js` (logic).
+- `drawSurfaceHud` (`21e-surface-draw`, chips and the hint band) stays 2D on the UI layer — interface,
+  not world.
+- Browser tier on SwiftShader, run after the port: `-Only "гряд"` 41/41, `"поверхност"` 77/77,
+  `"свет: у звезды"` 2/2, `"озер"` 24/24, `"вода"` 44/44, `"растр: материал грунта"` 8/8,
+  `"растр: без материала"` 3/3, `"печь: живой кадр"` 3/3 (437 s of live GPU frames). Not settled:
+  `"растр: грунт и свод"` (its first run printed only passing checks in the tail; the rerun was still
+  going when the fleet was called home) and `"память: вечер прыжков"` (over the 900 s shard cap on
+  SwiftShader, as the tools ship saw for the heavy suites on the base). Run both on the laptop.
+
+## What the design pass (real GPU) should look at
+
+- **All surface scenes** (`surface`, `noon`, `fgrass`, `homeout`, `night`, `noonice`, `noontox`,
+  `lowsuit`): the third ridge — is the ghost range welcome or heavy (amplitude `rel*1.35`, colour
+  `hazeFar(p,.85)`, offset `camy*.34+215` in `21e1`/`21e2`); the ridge mist speed; the valley fog
+  amount `(.26+.16k)`.
+- **Ground** (every scene): the micro-relief strength (`.30` in `fld.sground`) at 2560 px — mottling
+  may read as noise at full resolution; the warm skin width (26 px) and the cold depth tint (`.34`).
+- **`fgrass`, `homeout`** (low star): cast shadows — length (`F[8]`), band squash `B=.45`, penumbra;
+  do houses and plants lay believable shadows; do glow halos stay out of them.
+- **Relight** (`homeout`, POI scenes, `hold`-like settlements): the sun-side band (`key .30/.26`) and
+  the cold band (`.45/.30`) on large flat facades; small bright shapes (flowers, lamps) should keep
+  their hue, not whiten.
+- **The twins** (plants, beasts, walker): the life ship's core request (shafts and bloom over scene
+  figures) decides whether they wash out on a real GPU.
+- **Water**: no `mkview` scene — use `lake.js` from these notes' pairs (force `tr.wet`, swim in); the
+  mirror's ridge colours carry no fog, check the reflection against the ridges above it.
+- **Foreground** (`fgrass`): the blur radius (2.4 virtual px) at 2560 px and on the phone.
+- **`night`**: the ridges and ground under the 2D night gradient; the relight's cold band at night.
 
 ## Pairs (scratchpad, not in git)
 
@@ -47,11 +133,25 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 - `pair-a4-noon.png`, `pair-a4-surface.png`, `pair-a3-night.png` — three planes of air behind the walker
   instead of two, the lit top of the ground glows warm while its body goes cold: the frame gets depth and
   a second temperature.
+- `pair-a9-fgrass.png`, `pair-a8-homeout.png` (+ `z-home.png` crop), `pair-a9-surface.png`,
+  `pair-a9-noon.png` — «before» here is the original base e4c3a56: a ghost range behind two ridges,
+  the house and the plants cast shadows on the ground band, warm lit ground skin.
+- `pair-b4-fgrass.png`, `pair-b4-homeout.png`, `pair-b4-noon.png`, `pair-b4-surface.png`, crop
+  `z-fg5.png` — roofs, leaves and walls catch the star on its side and cool on the other; plants throw
+  shadows down the slope.
+- `pair-c1-fgrass.png`, `pair-c1-noon.png`, `pair-c1-surface.png`, `pair-c1-homeout.png`; crop
+  `z-cmp-twins.png` (base e4c3a56 | relight, 2D plants | twins) — the plants have bodies (dark stems,
+  lit heads, the umbrella's shaded underside), the walker is lit from the star.
+- `pair-d2-lake.png`, crop `z-lake.png` — no `mkview` scene has water: `lake.js` (scratchpad) forces
+  `tr.wet` on the `surface` scene and swims into the lake, same snippet for before and after. The lake
+  reflects the sky and the mountains, rippling, instead of a flat dark slab.
+- `pair-e1-fgrass.png`, crop `z-near.png` — the foreground grass at the lens is soft instead of a
+  sharp black cut-out fighting the walker for attention.
 
 ## Requests outside the zone
 
 - `08b0-gpu-pipe.js` `GPU_FLD`: add `"fld.sridge":()=>GSR_WGSL` and `"fld.sground":()=>GSG_WGSL` so the
-  warm-up table can compile them.
+  warm-up table can compile them; likewise `"fld.sshade":()=>GSS_WGSL`, `"fld.scast":()=>GSC_WGSL`, `"fld.slit":()=>GSL_WGSL`, `"fld.swater":()=>GSW_WGSL`, `"fld.snear":()=>GSN_WGSL`.
 - `19-mode-landing-ground.js` (landing ship): the chunk bake recipe inside `drawGround` is copied in
   `surfGroundGpu`; a shared `groundChunkPaint(tr,fill,line,pal)` there would keep the two from drifting.
 
@@ -59,13 +159,35 @@ Without a device (`GPU.on` false — the Node tier) the old 2D tiles still draw,
 
 - `pipe:fld.sridge|over`
 - `pipe:fld.sground|mul`
+- `pipe:fld.sshade|over`
+- `pipe:fld.scast|mul`
+- `pipe:fld.slit|hull`
+- `pipe:fld.swater|over`
+- `pipe:fld.snear|hull`
 - `pipe:kit.img|over` (already known)
 
 ## Open problems
+
+- The life ship's core request (`08b` `fsFinal`: sun shafts and bloom should read the scene's figure
+  mask) matters here too: the ground, the relit snapshot and the twins all live in the scene now.
+  Everything standing is drawn with the `hull` blend, so the proposed fix covers it as is.
+
+- The shadow/relight snapshot reads `#c` just before the plants: anything a later change moves into
+  that span (a label, a halo above the alpha threshold) will cast a shadow and get a rim — keep world
+  labels in `LBL`.
+- A `gpuScene()`/`gpuOver()` call by someone else between the ground and the snapshot ends pass #2;
+  `surfCastGpu`, `surfWaterGpu`, `surfNearGpu` and the twins then fall back to 2D (checked by
+  `SURF_P2`), rather than drawing over the objects.
+- Each surface frame now uploads `#c` up to three times (snapshot, foreground, the final one) instead
+  of once; each is a plain `copyExternalImageToTexture`, no composite. Not measured (SwiftShader).
 
 - `surfGroundGpu` bakes chunks on a 2D canvas and uploads them (one upload per chunk); the kit's
   `gpuDrawChunks` could bake them on the GPU instead — not switched: the bake runs `drawGround`,
   `drawRocks`, `glazeGround` (landing's and 18a1's code), whose GcCtx compatibility is not proven here.
 
-- Wave 2: `Path2D` in `GcCtx` is not merged in the base yet (checked at start) — deco, POI skin,
-  geology and built wait for it.
+- `Path2D` in `GcCtx` landed in the base (merged in commit 3). The Path2D painters of the zone — deco
+  (`21b`, `21ba`, `21bb`), POIs (`20a`, `20aa`), built (`21c`), geology (`18b`, strata inside the ground
+  chunk bake) — were **not** moved to `gpuBake` one by one: they draw live on `#c` and reach the GPU
+  as the lit snapshot (shadows + world light), which gives every one of them the G6 gain at once and
+  keeps their animation (POI lights, smoke, rotors) per frame. Baking them into sprites would only pay
+  for draw cost, which cannot be measured here; order did not require it.

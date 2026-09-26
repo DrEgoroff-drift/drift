@@ -201,16 +201,21 @@ function drawWater(tr,camx,camy,p){
   const sky=p.T.sky[1],pal=p.T.pal[Math.min(p.T.pal.length-1,2)];
   const col=Wt.acid?[120,180,60]:[sky[0]*.78+pal[0]*.12,sky[1]*.82+pal[1]*.12,sky[2]*.9+pal[2]*.1];
   const wind=(typeof WIND==="number")?WIND:0;
+  /* на видеокарте толща, зеркало, блики и урез — одно поле (21e2): 2D-зеркало
+     читало #c, а неба и гряд там больше нет */
+  const gw=surfWaterGpu(tr,camx,camy,p,Wt,xa,xb,y);
   /* зеркало: контур — уровень сверху, дно по рельефу */
   ctx.save();
   ctx.beginPath();ctx.moveTo(xa,y);ctx.lineTo(xb,y);
   for(let x=Wt.x1;x>=Wt.x0;x-=tr.step*2)ctx.lineTo(x-camx,groundAt(tr,x)-camy+1);
   ctx.closePath();ctx.clip();
   /* толща: у уреза цвет неба, в глубине — тёмный тон породы */
-  const g=ctx.createLinearGradient(0,y,0,y+WATER_DEPTH);
-  g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
-  g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
-  ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
+  if(!gw){
+    const g=ctx.createLinearGradient(0,y,0,y+WATER_DEPTH);
+    g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
+    g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
+    ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
+  }
   /* водоросли (M327): кусты со дна, качаются медленнее камыша — вода вязче ветра */
   for(const a of waterAlgae(Wt)){
     if(a.taken)continue;
@@ -227,7 +232,7 @@ function drawWater(tr,camx,camy,p){
   }
   /* отражение: полоса над урезом, перевёрнутая, лентами со сдвигом */
   const hh=Math.min(64,y);
-  if(hh>6){
+  if(hh>6&&!gw){
     const sx0=Math.max(0,Math.floor(xa)),sw=Math.min(W,Math.ceil(xb))-sx0;
     if(sw>4){
       const n=8,bh=hh/n;
@@ -247,7 +252,7 @@ function drawWater(tr,camx,camy,p){
   /* блики по ветру: короткие светлые штрихи у уреза */
   ctx.fillStyle="rgba(255,255,255,.22)";
   const rr=rng(Wt.seed^0x11);
-  for(let i=0;i<14;i++){
+  for(let i=0;i<(gw?0:14);i++){
     const fx=Wt.x0+rr()*(Wt.x1-Wt.x0),ph=rr()*TAU,ln=4+rr()*10,dy=2+rr()*10;
     const a=.5+.5*Math.sin(G.t*.07+ph+wind*3);
     if(a<.4)continue;
@@ -257,8 +262,10 @@ function drawWater(tr,camx,camy,p){
   ctx.globalAlpha=1;
   ctx.restore();
   /* урез: тонкая светлая нить */
-  ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(xa,y+.5);ctx.lineTo(xb,y+.5);ctx.stroke();
+  if(!gw){
+    ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(xa,y+.5);ctx.lineTo(xb,y+.5);ctx.stroke();
+  }
   /* камыш по берегам */
   const rc=rng(Wt.seed^0x5EED);
   const reed=(x,n,dir)=>{

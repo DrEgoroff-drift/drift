@@ -110,10 +110,11 @@ function surfRidgesGpu(tr,p,camx,camy,stpK){
   U[28]=(G.t||0)*.0012;
   /* самая дальняя гряда: выше и крупнее, почти в цвет воздуха, параллакс слабее */
   if(tr.farH[2]){
-    U[32]=camx*.12;U[33]=camy*.34+250;U[34]=tr.step*5.4*stpK;
-    const cC=SRG_RGB(hazeFar(p,.78));U[36]=cC[0];U[37]=cC[1];U[38]=cC[2];U[39]=.78;
+    U[32]=camx*.12;U[33]=camy*.34+215;U[34]=tr.step*5.4*stpK;
+    const cC=SRG_RGB(hazeFar(p,.85));U[36]=cC[0];U[37]=cC[1];U[38]=cC[2];U[39]=.85;
   }
   gpuField(pass,"sridge",GSR_WGSL,U,[HT]);
+  SURF_RF=GPU.frameNo;
   return true;
 }
 
@@ -203,7 +204,273 @@ function surfGroundGpu(tr,camx,camy,fill,line,pal){
   U[12]=sc[0]/ls;U[13]=sc[1]/ls;U[14]=sc[2]/ls;
   U[16]=am[0]/la;U[17]=am[1]/la;U[18]=am[2]/la;
   gpuField(pass,"sground",GSG_WGSL,U,[HT],{blend:"mul"});
+  SURF_P2=pass;
   /* трава живая — кланяется ветру, остаётся 2D поверх */
   drawGroundGrass(tr,camx,camy);
+  return true;
+}
+
+/* нижняя треть уходит в тень неба (хвост G2) — тем же градиентом, что 2D в 21e1,
+   но в проходе грунта: иначе полупрозрачная заливка на #c отбрасывала бы тень */
+const GSS_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let y0=fu.v[0].x;let a=.30*clamp((p.y-y0)/max(fu.res.w-y0,1.),0.,1.);
+  return vec4f(fu.v[1].rgb*a,a);
+}`;
+const GSS=new Float32Array(8);
+function surfShadeGpu(p){
+  const pass=GPU.overPass;if(!pass)return false;
+  const sh=p.T.sky[1];
+  GSS[0]=H*(SURF_HOR+.04);GSS[4]=sh[0]/255;GSS[5]=sh[1]/255;GSS[6]=sh[2]/255;
+  gpuField(pass,"sshade",GSS_WGSL,GSS,[]);
+  return true;
+}
+
+/* ══════════════ падающие тени того, что стоит ══════════════
+   Всё, что стоит на земле (находки, формы, постройки, посёлок, корабль, кусты,
+   звери, астронавт), уже лежит на #c. Его копия (выгрузка без склейки — третий
+   gpuOver пустил бы весь мир через «огни 2D» и зажёг бы кусты) становится
+   картой заслонов, а тень кладётся в ещё открытый проход грунта — ПОД 2D: для точки грунта на глубине d под кромкой заслон
+   ищется на высоте t = d/B над кромкой, со сдвигом t·A от звезды — силуэт
+   ложится на полосу земли сплющенным и скошенным, длиннее к закату. Полутень
+   растёт с высотой заслона (семь выборок), тень холодная — цвет неба, а не
+   чёрный, и на сами предметы не ложится: они нарисованы поверх. Слабые полупрозрачные пятна (ореолы,
+   контактные тени) не заслоняют: порог по альфе. */
+const GSC_WGSL=`
+fn scH(i:i32)->f32{
+  let n=i32(fu.v[1].y);let t=textureLoad(t0,vec2i(clamp(i,0,n-1),2),0);
+  return fu.v[1].z+((t.r*255.*256.+t.g*255.)/8.-4096.);}
+fn scEdge(x:f32)->vec2f{
+  let st=fu.v[1].x;let fi=clamp((x+fu.v[0].x)/st,0.,fu.v[1].y-1.001);
+  let i=i32(floor(fi));let f=fi-floor(fi);let h0=scH(i);let h1=scH(i+1);
+  return vec2f(mix(h0,h1,f)-fu.v[0].y,(h1-h0)/st);}
+fn scOcc(q:vec2f)->f32{
+  let a=textureSampleLevel(t1,smp,q/fu.res.zw,0.).a;
+  return smoothstep(.35,.8,a)*step(0.,q.x)*step(q.x,fu.res.z)*step(0.,q.y);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V=fu.v;let e=scEdge(p.x);
+  let px=fu.res.z/fu.res.x;let dd=p.y-e.x;
+  let cov=clamp(dd/(px*sqrt(1.+e.y*e.y))+.5,0.,1.);
+  if(cov<=0.){return vec4f(0.);}
+  let A=V[2].x;let B=V[2].y;
+  let t=max(dd,0.)/B;
+  if(t<2.5||t>V[2].w){return vec4f(0.);}
+  let x1=p.x-t*A;let e1=scEdge(x1).x;
+  let r=.8+t*.03;
+  var s=scOcc(vec2f(x1,e1-t))*2.;
+  s=s+scOcc(vec2f(x1-r,e1-t))+scOcc(vec2f(x1+r,e1-t));
+  s=s+scOcc(vec2f(x1-r*2.,e1-t+r))+scOcc(vec2f(x1+r*2.,e1-t-r));
+  s=s+scOcc(vec2f(x1,e1-t-r*1.5))+scOcc(vec2f(x1,e1-t+r*1.5));
+  s=s/8.;
+  /* у основания тень гуще, к концу бледнеет: свет обходит края */
+  s=s*V[2].z*(1.-smoothstep(V[2].w*.35,V[2].w,t));
+  let m=mix(vec3f(1.),V[3].rgb,clamp(s,0.,1.));
+  return vec4f(m*cov,cov);
+}`;
+const GSC=new Float32Array(16);
+let SURF_SHADOW=null,SURF_P2=null;
+function surfCastGpu(tr,p,camx,camy){
+  /* только в проходе грунта этого кадра: если между ним и нами кто-то открыл
+     свой слой, тень легла бы поверх предметов */
+  const pass=GPU.overPass;
+  if(!GPU.on||!pass||pass!==SURF_P2||!tr.farH)return false;
+  const day=dayK(p);
+  if(GPU.cState===0)return false;           /* на #c ничего не стоит — заслонять нечему */
+  /* снимок #c — очередью, сейчас: тень рисуется позже, при отправке кадра, а к тому
+     времени #c дорисован подписями и погодой */
+  SURF_SHADOW=surfSnap(SURF_SHADOW);
+  const HT=surfHeightTex(tr),F=GSC;F.fill(0);
+  F[0]=camx;F[1]=camy;F[4]=tr.step;F[5]=tr.N;F[6]=HT.mid;
+  /* звезда низко — тень длинная; сдвиг от звезды, сплющенная полоса земли */
+  const sx=SUN_DIR.x,sy=Math.min(-.12,SUN_DIR.y);
+  F[8]=clamp(-sx/-sy,-4.5,4.5)*.9;F[9]=.45;
+  const lu=c=>Math.max(1,.3*c[0]+.59*c[1]+.11*c[2]),sc=starRGB();
+  const vac=p.T.atm==="отсутствует";
+  F[10]=clamp(day*1.4,0,1)*(vac?.78:.62)*clamp(lu(sc)/150,0,1);F[11]=260;
+  const am=ambRGB(p),la=lu(am);
+  F[12]=am[0]/la*.42;F[13]=am[1]/la*.42;F[14]=am[2]/la*.42;
+  gpuField(pass,"scast",GSC_WGSL,F,[HT,SURF_SHADOW],{blend:"mul"});
+  surfRelightGpu(tr,p,camx,camy,pass,HT);
+  return true;
+}
+
+/* ══════════════ то, что стоит, — светом мира ══════════════
+   Снимок #c (тот же, что даёт тени) кладётся обратно в проход грунта через свет,
+   а сам #c очищается. Нарисованное 2D не знало, где звезда: у находки, куста и
+   дома один и тот же градиент «низ тёмный — верх светлый». Здесь:
+   · кромка со стороны звезды ловит её цвет — нормаль силуэта берётся из
+     градиента альфы (край предмета — это и есть его нормаль в профиль);
+   · обёртка света: полоса в несколько пикселей вдоль силуэта со стороны звезды
+     светлеет мягко, а не ободком в пиксель — тело получает объём;
+   · теневая сторона — такой же полосой холоднее, в цвет неба.
+   Контактной тени здесь нет: дом и посёлок стоят на своих дворах, и линия
+   рельефа режет их фасад — тёмная полоса ложилась по стене наискось.
+   Подписи, ночь и погода идут после и через это не проходят. */
+const GSL_WGSL=`
+fn slA(q:vec2f)->f32{return textureSampleLevel(t0,smp,q/fu.res.zw,0.).a;}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let c=textureSampleLevel(t0,smp,uv,0.);
+  if(c.a<=.002){return vec4f(0.);}
+  let V=fu.v;let sun=V[2].xy;let day=V[2].z;let str=V[2].w;
+  let px=fu.res.z/fu.res.x;
+  /* нормаль силуэта: градиент альфы на двух масштабах */
+  let r=1.6*max(px,.5);
+  let g1=vec2f(slA(p+vec2f(r,0.))-slA(p-vec2f(r,0.)),slA(p+vec2f(0.,r))-slA(p-vec2f(0.,r)));
+  let R=5.*max(px,.5);
+  let g2=vec2f(slA(p+vec2f(R,0.))-slA(p-vec2f(R,0.)),slA(p+vec2f(0.,R))-slA(p-vec2f(0.,R)));
+  let g=g1+g2*.6;let gl=length(g);
+  let n=select(vec2f(0.),-g/max(gl,1e-4),gl>.02);
+  let edge=clamp(gl*1.4,0.,1.);
+  let facing=dot(n,sun);
+  /* обёртка: пустота в сторону звезды на двух дальностях */
+  let u=sun*max(px,.5);
+  /* только полоса у силуэта: глубже рисунок 2D уже держит свою светотень */
+  let wrap=1.-(slA(p+u*2.5)*.4+slA(p+u*5.)*.35+slA(p+u*9.)*.25);
+  let back=1.-(slA(p-u*2.5)*.4+slA(p-u*5.)*.35+slA(p-u*9.)*.25);
+  var rgb=c.rgb;
+  let key=clamp(facing,0.,1.)*edge*.30+wrap*.26;
+  rgb=rgb*(vec3f(1.)+V[3].rgb*key*str*day);
+  let cold=clamp(-facing,0.,1.)*edge*.45+back*.30;
+  rgb=rgb*mix(vec3f(1.),V[4].rgb,clamp(cold*str*(.4+.6*day),0.,.8));
+  /* не ярче белого, и без выцветания в белое: пересвет сжимается целиком, оттенок
+     остаётся; свет мира не должен зажечь свечение кадра */
+  let mx=max(rgb.r,max(rgb.g,rgb.b));
+  if(mx>c.a){rgb=rgb*(c.a/mx);}
+  return vec4f(rgb,c.a);
+}`;
+const GSL=new Float32Array(20);
+function surfRelightGpu(tr,p,camx,camy,pass,HT){
+  const F=GSL;F.fill(0);
+  /* к звезде — на экране вверх и в её сторону */
+  F[8]=SUN_DIR.x;F[9]=SUN_DIR.y;F[10]=clamp(dayK(p)*1.3,0,1);F[11]=1;
+  const lu=c=>Math.max(1,.3*c[0]+.59*c[1]+.11*c[2]),sc=starRGB(),am=ambRGB(p);
+  const ls=lu(sc),la=lu(am);
+  F[12]=sc[0]/ls;F[13]=sc[1]/ls;F[14]=sc[2]/ls;
+  F[16]=am[0]/la*.78;F[17]=am[1]/la*.78;F[18]=am[2]/la*.78;
+  /* смешение hull: цвет как у over, а в альфе сцены — маска фигур (её читает сведение, 08b) */
+  gpuField(pass,"slit",GSL_WGSL,F,[SURF_SHADOW],{blend:"hull"});
+  /* #c отдан видеокарте — чистим: то, что 2D нарисует дальше, ляжет поверх */
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cvs.width,cvs.height);ctx.restore();
+}
+
+/* ══════════════ вода: зеркало на видеокарте ══════════════
+   Отражение 2D брало полосу над урезом drawImage-ом с самого #c; теперь небо,
+   гряды и грунт живут на видеокарте, и в #c над водой пусто — зеркало отражало
+   бы ничего. Здесь оно считается: что стоит над точкой зеркала — грунт, одна из
+   трёх гряд или небо (градиент дня, ночь), — тем же профилем, что рисует их
+   самих. Лучше лент со сдвигом: рябь непрерывная и медленная, у уреза отражение
+   сильнее (угол скользящий), с глубиной уступает толще; блики — редкие штрихи
+   по ветру у самого уреза, урез — светлая нить. Водоросли и камыш — 2D поверх. */
+const GSW_WGSL=`
+fn swH(row:i32,i:i32)->f32{
+  let n=i32(fu.v[0].w);let t=textureLoad(t0,vec2i(clamp(i,0,n-1),row),0);
+  return fu.v[1].x+((t.r*255.*256.+t.g*255.)/8.-4096.);}
+fn swRow(row:i32,x:f32,o:vec4f)->f32{
+  if(o.z<=0.){return 1e9;}
+  let n=fu.v[0].w;let fi=(x+o.x)/o.z;
+  if(fi<0.||fi>n-1.){return 1e9;}
+  let i=i32(floor(fi));let f=fi-floor(fi);
+  return mix(swH(row,i),swH(row,i+1),f)-o.y;}
+fn swSky(y:f32)->vec3f{
+  let V=fu.v;let v=clamp(y/fu.res.w,0.,1.);
+  let k=mix(.55*smoothstep(0.,.62,v),.55+.45*smoothstep(.62,1.,v),step(.62,v));
+  return mix(mix(V[3].rgb,V[4].rgb,k),vec3f(4.,6.,14.)/255.,V[3].w*.9);}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V=fu.v;let wy=V[1].y;
+  if(p.x<V[1].z||p.x>V[1].w||p.y<wy-.5){return vec4f(0.);}
+  let g0=vec4f(V[0].x,V[0].y,V[0].z,1.);
+  let ey=swRow(2,p.x,g0);
+  let cov=clamp(ey+1.-p.y+.5,0.,1.)*clamp(p.y-wy+.5,0.,1.);
+  if(cov<=0.){return vec4f(0.);}
+  let dz=max(p.y-wy,0.);let t=V[5].w;let wind=V[12].x;let hh=V[12].y;
+  /* толща: у уреза цвет неба, в глубине — тёмный тон породы */
+  var c=mix(V[2].rgb,V[2].rgb*.5,clamp(dz/46.,0.,1.));
+  if(hh>6.&&dz<hh){
+    let q=dz/hh;
+    /* рябь: медленная, крупнее вглубь; ветер сносит отражение */
+    let dx=sin(t*.11+dz*.45+V[12].z)*(1.+2.*q)+sin(t*.07-dz*.9)*.6+wind*2.*q;
+    let xm=p.x+dx;let ym=wy-dz-sin(t*.09+p.x*.05)*.6*q;
+    var r=swSky(ym);
+    let yC=swRow(3,xm,V[10]);let yA=swRow(0,xm,V[8]);let yB=swRow(1,xm,V[6]);let yG=swRow(2,xm,g0);
+    if(ym>yC){r=V[11].rgb;}
+    if(ym>yA){r=V[9].rgb;}
+    if(ym>yB){r=V[7].rgb;}
+    if(ym>yG){r=V[5].rgb;}
+    c=mix(c,r,.55*(1.-q*.6)*smoothstep(0.,.25,1.-q));
+  }
+  /* блики по ветру: короткие штрихи у уреза, живут медленно */
+  let band=floor(dz/2.3);let cell=floor((p.x+V[0].x-t*.3*wind)/11.);
+  let s=fract(sin(band*91.7+cell*12.9898+V[12].z)*43758.55);
+  let a=.5+.5*sin(t*.07+s*6.283+wind*3.);
+  if(dz>1.5&&dz<13.&&s>.86&&a>.4){c=c+vec3f((a-.4)*.6*.22);}
+  /* урез — тонкая светлая нить */
+  c=mix(c,vec3f(1.),.28*(1.-smoothstep(.2,1.4,dz)));
+  return vec4f(c*cov,cov);
+}`;
+const GSW=new Float32Array(60);
+let SURF_RF=-1;
+function surfWaterGpu(tr,camx,camy,p,Wt,xa,xb,y){
+  const pass=GPU.overPass;
+  if(!GPU.on||!pass||pass!==SURF_P2||SURF_RF!==GPU.frameNo)return false;
+  const HT=surfHeightTex(tr),U=GSW,R=GSR;U.fill(0);
+  U[0]=camx;U[1]=camy;U[2]=tr.step;U[3]=tr.N;
+  U[4]=HT.mid;U[5]=y;U[6]=xa;U[7]=xb;
+  const sky=p.T.sky[1],pal=p.T.pal[Math.min(p.T.pal.length-1,2)];
+  const col=Wt.acid?[120,180,60]:[sky[0]*.78+pal[0]*.12,sky[1]*.82+pal[1]*.12,sky[2]*.9+pal[2]*.1];
+  U[8]=col[0]/255;U[9]=col[1]/255;U[10]=col[2]/255;
+  const D=skyDay(p);
+  U[12]=D.top[0]/255;U[13]=D.top[1]/255;U[14]=D.top[2]/255;U[15]=surfNight(p);
+  U[16]=D.bot[0]/255;U[17]=D.bot[1]/255;U[18]=D.bot[2]/255;
+  /* грунт в зеркале — тоном заливки разреза, в тень */
+  const gc=p.T.pal[3];U[20]=gc[0]/255*.42;U[21]=gc[1]/255*.42;U[22]=gc[2]/255*.42;U[23]=G.t||0;
+  /* гряды — те же смещения и цвета, что положило поле гряд в этом кадре */
+  U[24]=R[4];U[25]=R[5];U[26]=R[6];U[28]=R[12];U[29]=R[13];U[30]=R[14];
+  U[32]=R[0];U[33]=R[1];U[34]=R[2];U[36]=R[8];U[37]=R[9];U[38]=R[10];
+  U[40]=R[32];U[41]=R[33];U[42]=R[34];U[44]=R[36];U[45]=R[37];U[46]=R[38];
+  U[48]=(typeof WIND==="number")?WIND:0;U[49]=Math.min(64,y);U[50]=(Wt.seed|0)%97;
+  gpuField(pass,"swater",GSW_WGSL,U,[HT]);
+  return true;
+}
+
+/* ══════════════ передний план не в фокусе ══════════════
+   Валуны и трава у самого объектива (drawForeground, 21b) ближе камеры на
+   четверть — глаз, смотрящий на ходока, видит их мягкими. 2D клал их резкими,
+   и чёрный силуэт у кромки кадра спорил с фигурой за внимание. Здесь они
+   рисуются на пустой #c, уходят видеокарте и ложатся в проход грунта
+   размытыми по диску (глубина резкости) — поверх ходока, под пылью и подписями. */
+const GSN_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let r=fu.v[0].x/fu.res.zw;
+  var c=textureSampleLevel(t0,smp,uv,0.)*.16;
+  /* диск из двенадцати выборок, два кольца */
+  for(var i=0;i<6;i++){
+    let a=f32(i)*1.0472+.3;let o=vec2f(cos(a),sin(a));
+    c=c+textureSampleLevel(t0,smp,uv+o*r*.5,0.)*.07+textureSampleLevel(t0,smp,uv+vec2f(o.y,-o.x)*r,0.)*.07;
+  }
+  return c;
+}`;
+const GSN=new Float32Array(4);
+let SURF_NEAR=null;
+/* снимок #c в свою текстуру (очередью, сейчас); slot — чей: тени или передний план */
+function surfSnap(old){
+  const d=GPU.dev,U=GPUTextureUsage;
+  if(!old||old.dev!==d||old.w!==GPU.bw||old.h!==GPU.bh){
+    if(old&&old.dev===d)GPU.trash.push(old.tex);
+    const tex=d.createTexture({size:[GPU.bw,GPU.bh],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
+    old={dev:d,w:GPU.bw,h:GPU.bh,tex,view:tex.createView()};
+  }
+  d.queue.copyExternalImageToTexture({source:cvs},{texture:old.tex,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+  return old;
+}
+function surfNearGpu(tr,camx,camy,p){
+  const pass=GPU.overPass;
+  /* #c должен быть пуст: иначе в размытие попадёт чужое */
+  if(!GPU.on||!pass||pass!==SURF_P2||GPU.cState!==0){drawForeground(tr,camx,camy,p);return false;}
+  drawForeground(tr,camx,camy,p);
+  if(GPU.cState===0)return true;              /* в кадре переднего плана нет */
+  SURF_NEAR=surfSnap(SURF_NEAR);
+  GSN[0]=2.4;
+  gpuField(pass,"snear",GSN_WGSL,GSN,[SURF_NEAR],{blend:"hull"});
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cvs.width,cvs.height);ctx.restore();
   return true;
 }
