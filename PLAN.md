@@ -48,9 +48,8 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
     dock) is rerun and every flight item stays at 0;
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
-  - ships in real light, a–h (the worker, `gpu-ships`): d and g accepted; f — one more try on the fins with the
-    emission mask, else revert; the barge's three lone white pixels become a soft sheen or go, with a 12-frame
-    motion check;
+  - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0; open: f — one more try
+    on the keels by the emission mask, else revert; h — makerRead on the GPU frame;
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
@@ -254,8 +253,14 @@ measured on the GPU build first:
 - [ ] **M492 Космопочта:** a rare part and cooperative goods as parcels; a real queue.
 - [ ] **M460 billboards:** 1–3 signs; the hull tint within R; the сводка, циркуляры and holding lines;
   stale prices as a fork. **M491** through `12p-news` at the сводка. **P12** ЭФИР.
-- [ ] **M461 hotels:** the doors (the sanatorium wants a voucher and an ocean world — how a hotel offers
-  it); cantina rumours at the desk; fatigue (does not exist for the player).
+- [ ] **M461 hotels:** six faces in DESIGN-life §3.3, two built — «Космос» (17l1) and «Дружба» (17l2, 0.470.0).
+  The other four have their sign, window rhythm and hours but stand in «Космос»'s crescent (`hotelType` falls
+  back to `gt`): «АЭЛИТА™» (Компания, a Stalinist tower on a rock), «ДОМ ПРИЕЗЖИХ № 4» (Орднунг, khrushchyovkas on
+  a truss), «ЮПИТЕР» (Коммуна, constructivism, red consoles, a glass cylinder), «БУРАН» (Хай-Фронт, a modernist
+  grid with a saucer and a mosaic) — each its own file 17l3…17l6 on the engine, closed by a pair at 760 and 390,
+  at 19 h and 3 h (the author 26.09: «у нас же 6 типов гостиниц было»; when — «после», after the engine). Then the doors (the sanatorium wants a
+  voucher and an ocean world — how a hotel offers it); cantina rumours at the desk; fatigue (does not exist for
+  the player).
 - [ ] **M455 the peacetime fleet:** субботник, strike and rite driven by the chronicle's days rather than
   always; the belt tugs are far from the station view.
 - [ ] **M456 laws:** «сделаем из ваших» (Рассвет); the fine's ticket in ПОЧТА instead of the journal; the
