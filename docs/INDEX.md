@@ -2955,7 +2955,7 @@ drawPlantAlien               src/20-life.js:210-377
 drawPortal                   src/20aa-poi-shapes.js:464-489
 drawPostcard                 src/25g-postcard.js:171-612
 drawRaid                     src/24aa-raid-draw.js:14-655
-drawRail                     src/18g-rail-ride.js:118-175
+drawRail                     src/18g-rail-ride.js:119-179
 drawRailArrive               src/18g-rail-ride.js:31-34
 drawRailMap                  src/18e-rail-net.js:181-210
 drawRingTape                 src/11x-ring.js:107-118
@@ -5232,7 +5232,7 @@ railDeclare                  src/18h-rail-powers.js:23-33
 railDestinations             src/18f-rail-station.js:166-181
 railDestinationsVia          src/18k-rail-scheme.js:13-35
 railDocked                   src/18f-rail-station.js:140-147
-railExit                     src/18g-rail-ride.js:105-117
+railExit                     src/18g-rail-ride.js:106-118
 railFare                     src/18f-rail-station.js:182-190
 railFlap                     src/18f-rail-station.js:152-157
 railFlash                    src/18g-rail-ride.js:17-30
@@ -6243,7 +6243,7 @@ updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:68-137
 updateMap                    src/18-mode-map.js:565-578
 updateRaid                   src/24a-mode-raid.js:300-430
-updateRail                   src/18g-rail-ride.js:64-103
+updateRail                   src/18g-rail-ride.js:64-104
 updateScoop                  src/19a-mode-scoop.js:75-176
 updateSpa                    src/29i-spa-draw.js:514-519
 updateSurface                src/21-mode-surface.js:200-657
@@ -7375,7 +7375,7 @@ zoomTo                       src/15-input.js:350
 ## src/18f-rail-station.js · 20 КБ
   · станция железной дороги в системе и вестибюль (M471–M472, DESIGN-metro §3):1
 
-## src/18g-rail-ride.js · 12 КБ
+## src/18g-rail-ride.js · 13 КБ
   · поездка: режим rail на карте галактики (M473, DESIGN-metro §4):1
 
 ## src/18h-rail-powers.js · 3 КБ

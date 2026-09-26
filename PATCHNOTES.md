@@ -93,6 +93,10 @@ could ever save.
   0:14» → «через 0:13» flips only the last digit. The ticket office charges baggage ×3 as «крупногабарит» when the
   hold carries anything heavy (осмий, нейтронная крошка), and the ticket button says so.
 
+- **M473: the held pad ×2.** On a run between stops, holding ДЕЙСТВИЕ makes the train go twice as fast. It never
+  skips a stop, and a stop still takes its two seconds. Under the top line of the ride a quiet hint says
+  «ДЕЙСТВИЕ ЗАЖАТЬ — ВДВОЕ БЫСТРЕЕ»; while held it reads «×2 · ПЭД ЗАЖАТ» in turquoise.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -120,6 +124,9 @@ could ever save.
   machine); to r 120 it would be about four times that, seconds on a phone. It needs the lazy per-region build
   of the design, and that goes with M474's «infinite» net. «Край» is personal (your own visits), not
   «anyone's»: there is no shared ride record, and online stays a postcard.
+- M473: a save mid-ride still wakes at the origin. Waking at the destination means `snapshot()` writing the
+  ride's end instead of `G.sx`/`G.sy`, which is the save, and the save is not to be touched. The ticket is lost
+  with the ride; it is a few кредитов.
 
 ## 0.478.0 - the album on the engine
 
