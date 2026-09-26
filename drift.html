@@ -104291,9 +104291,9 @@ async function g11Deep(list){
    округляет метки до 0.1 мс — для проходов в миллисекунды хватает */
 function gpuTs(name){
   if(!GPU.tsOn||!GPU.tsOk)return undefined;
-  const T=GPU.tsQ||(GPU.tsQ={qs:GPU.dev.createQuerySet({type:"timestamp",count:32}),
-    res:GPU.dev.createBuffer({size:256,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC}),rb:[],names:[],n:0});
-  if(T.n+2>32)return undefined;
+  const T=GPU.tsQ||(GPU.tsQ={qs:GPU.dev.createQuerySet({type:"timestamp",count:64}),
+    res:GPU.dev.createBuffer({size:512,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC}),rb:[],names:[],n:0});
+  if(T.n+2>64)return undefined;
   const i=T.n;T.n+=2;T.names.push([name,i]);
   return {querySet:T.qs,beginningOfPassWriteIndex:i,endOfPassWriteIndex:i+1};
 }
@@ -104317,7 +104317,7 @@ function gpuTsResolve(){
   const names=T.names,n=T.n;T.n=0;T.names=[];
   let rb=T.rb.find(b=>b.mapState==="unmapped");
   if(!rb){if(T.rb.length>=4)return null;
-    rb=GPU.dev.createBuffer({size:256,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});T.rb.push(rb);}
+    rb=GPU.dev.createBuffer({size:512,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST});T.rb.push(rb);}
   GPU.enc.resolveQuerySet(T.qs,0,n,T.res,0);GPU.enc.copyBufferToBuffer(T.res,0,rb,0,n*8);
   return ()=>rb.mapAsync(GPUMapMode.READ).then(()=>{
     const a=new BigInt64Array(rb.getMappedRange(0,n*8)),acc=GPU.tsAcc||(GPU.tsAcc={});let lo=null,hi=null;

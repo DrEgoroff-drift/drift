@@ -864,6 +864,8 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   standing: nebGen per frame 0.93 / 1.81 / 0.94 ms, GPU frame 8.99 / 9.65 / 9.23 ms, regenerations 17 / 33 / 17 %,
   60 fps 100 % in all; in flight unchanged (every frame, 4.85 ms). Desktop 1920: nebGen per frame 2.09 → ~1.1 ms,
   the fade pass 0.28–0.36 ms (headless). New pipe key `gnb.fade` (08b0, GPU-1 agreed; 08b1 via -Accept).
+  The probe's timestamp query set (28z `gpuTs`) grew from 32 slots to 64: on the S23 the 32 ran out before the
+  fade pass and it went unmeasured; desktop 1920 idle, fade 0.17–0.21 ms per frame.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
