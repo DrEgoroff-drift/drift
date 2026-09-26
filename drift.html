@@ -11094,6 +11094,7 @@ for(const k of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPE_ONE["bel
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
 function gpuPipeRecipe(key){
   if(key.startsWith("gc:"))return {desc:gcPipeDesc(key.slice(3))};
+  if(key.startsWith("gc1:"))return {desc:gcPipeDesc(key.slice(4),1)};   /* крупный набор без MSAA (08ca) */
   if(key.startsWith("pipe:")){
     const a=key.slice(5),i=a.lastIndexOf("|"),s=GPU_PIPE_SRC[a.slice(0,i)];if(!s)return null;
     const [code,lay]=s();return {desc:gpuPipeDesc(code,a.slice(i+1),lay),code};
@@ -12290,11 +12291,12 @@ function gcLay(){
   return GPU.lay["gc.L"]={bgl,pl:d.createPipelineLayout({bindGroupLayouts:[bgl]}),mod:gpuShader(GC_WGSL),dm:dm.createView(),
     near:d.createSampler({magFilter:"nearest",minFilter:"nearest"})};
 }
-function gcPipe(key){
-  const c=GPU.lay["gc."+key];if(c)return c;
-  return GPU.lay["gc."+key]=gpuPipeline("gc:"+key,()=>gcPipeDesc(key));
+/* n — отсчётов на точку у цели: 4 (набор с MSAA) или 1 (крупный набор после отказа памяти, ключи gc1:) */
+function gcPipe(key,n){
+  const one=n===1,k=(one?"gc1.":"gc.")+key,c=GPU.lay[k];if(c)return c;
+  return GPU.lay[k]=gpuPipeline((one?"gc1:":"gc:")+key,()=>gcPipeDesc(key,n));
 }
-function gcPipeDesc(key){
+function gcPipeDesc(key,n){
   const [md,op]=key.split("|"),S=GC_ST[md],L=gcLay(),G=GC_OPS[op]||GC_OPX[op];
   const blend=G?{color:{srcFactor:G.c[0],dstFactor:G.c[1]},alpha:{srcFactor:G.a[0],dstFactor:G.a[1]}}:undefined;
   return {layout:L.pl,
@@ -12303,7 +12305,7 @@ function gcPipeDesc(key){
     fragment:{module:L.mod,entryPoint:S.c==="paint"&&G&&G.bk?"fover":S.c==="img"?"fimg":S.c==="mask"?"fmask":S.c==="shadow"?"fshadow":S.c==="paint"?"fpaint":"fnone",targets:[{format:"rgba8unorm",blend,writeMask:S.c?15:0}]},
     primitive:{topology:"triangle-list"},
     depthStencil:{format:"stencil8",depthWriteEnabled:false,depthCompare:"always",stencilFront:S.f,stencilBack:S.b||S.f,stencilReadMask:S.rm,stencilWriteMask:S.wm},
-    multisample:{count:4}};
+    multisample:{count:n===1?1:4}};
 }
 function gcMipPipe(){return GPU.lay["gc.mip"]||(GPU.lay["gc.mip"]=gpuPipeline("gc.mip",gcMipDesc));}
 function gcMipDesc(){const m=gpuShader(GC_MIP_WGSL);return {layout:"auto",vertex:{module:m,entryPoint:"vs"},
@@ -12324,8 +12326,10 @@ function gcMipDesc(){const m=gpuShader(GC_MIP_WGSL);return {layout:"auto",vertex
 const GC_POOL_CAP=80<<20;
 const GC_POOL_WARM=[["bake",256,256],["bake",512,512],["bake",768,768],["bake",1024,1024],["shadow",256,256],["shadow",512,128],["shadow",512,512],["ramp",256,128]];
 /* наборы: [формат, выборок, usage] — все одного размера */
-function gcPoolSpec(role){
+/* one — крупный набор выпечки после отказа памяти: без MSAA, цель — сама resolve (5 байт на точку против 24) */
+function gcPoolSpec(role,one){
   const U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT,TB=U.TEXTURE_BINDING;
+  if(one)return [["rgba8unorm",1,TB|RA|U.COPY_SRC],["stencil8",1,RA]];
   return role==="bake"?[["rgba8unorm",4,RA],["stencil8",4,RA],["rgba8unorm",1,TB|RA]]
     :role==="shadow"?[["rgba8unorm",4,RA],["stencil8",4,RA],["rgba8unorm",1,TB|RA],["r8unorm",1,TB|RA],["r8unorm",1,TB|RA]]
     :[["rgba16float",1,TB|U.COPY_DST]];}
@@ -12356,6 +12360,19 @@ function gcPool(){
    (решение Контроля 26.09; плитки базы — пункт G15). В слоте роли (Q.one) остаётся только влезающее в потолок,
    которому сейчас не нашлось места (занятое не вытесняется): до замены или выхода из сцены (gcPoolLeave) ── */
 let GC_BUSY=0;
+/* ── память кончилась на крупном наборе (флот, 26.09, решение Контроля) ──
+   Крупный набор выпечки — MSAA ×4 с трафаретом ×4, 24 байта на точку: слои базы во всю дальность
+   камеры (до 198 МБ при 2560×1440), стойка, кабина. Телефон может его не дать, и WebGPU скажет это
+   не сразу, а обещанием области ошибок out-of-memory. Тогда эта выпечка роняется (держатель испечёт
+   заново), а все следующие крупные наборы — без MSAA: цель — сама resolve-текстура, трафарет ×1,
+   5 байт на точку. Край без сглаживания лучше пустой базы. В журнал — один раз */
+let GC_BIG1=false;
+const GC_OOM={n:0,p:null};
+function gcOom(B,dev,e){
+  if(dev!==GPU.dev)return;
+  if(!GC_BIG1){GC_BIG1=true;GC_OOM.n++;
+    try{crashShip("gpu","память: крупный набор выпечки "+B.w+"×"+B.h+" — дальше без MSAA ("+String((e&&e.message)||e).slice(0,160)+")","");}catch(_){}}
+  gpuBakeDrop(B);}
 /* → текстуры набора role размером w×h или больше */
 function gcPoolSet(role,w,h){
   const Q=gcPool(),need=Math.max((w*h+4096)*2.25,65536);let e=null;
@@ -12363,10 +12380,18 @@ function gcPoolSet(role,w,h){
   for(const x of Q.t)if(fit(x)&&(!e||x.w*x.h<e.w*e.h))e=x;
   if(e){Q.t.splice(Q.t.indexOf(e),1);Q.t.push(e);return gcHold(Q,e);}
   const o=Q.one[role];if(fit(o))return gcHold(Q,o);
-  const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,S=gcPoolSpec(role),px={rgba16float:8,r8unorm:1,stencil8:1};let by=0;
-  for(const [f,n] of S)by+=W*H*n*(px[f]||4);
+  const W=Math.ceil(w/64)*64,H=Math.ceil(h/64)*64,px={rgba16float:8,r8unorm:1,stencil8:1},bys=S=>S.reduce((a,[f,n])=>a+W*H*n*(px[f]||4),0);
+  let S=gcPoolSpec(role),by=bys(S);
   const big=by>GC_POOL_CAP-Q.wb,one=!GC_ONCE&&!big&&!gcRoom(Q,by);
-  const x={role,w:W,h:H,by,T:S.map(([f,n,us])=>{Q.made++;return GPU.dev.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});})};
+  /* крупный набор выпечки: после отказа памяти — без MSAA, до него — под присмотром области
+     out-of-memory; её ответ — обещание, выпечка берёт его себе (gpuBakeRedo0) */
+  const lone=big&&role==="bake",watch=lone&&!GC_BIG1,d=GPU.dev;
+  if(lone&&GC_BIG1){S=gcPoolSpec(role,1);by=bys(S);}
+  if(watch)d.pushErrorScope("out-of-memory");
+  const T=S.map(([f,n,us])=>{Q.made++;return d.createTexture({size:[W,H],sampleCount:n,format:f,usage:us});});
+  if(watch)GC_OOM.p=d.popErrorScope();
+  if(T.length===2)T.push(T[0]);                   /* без MSAA: resolve — сама цель */
+  const x={role,w:W,h:H,by,T};
   if(GC_ONCE||big){x.once=1;Q.dead.push(x);Q.onceB+=by;if(GC_ONCE)Q.onceN++;else Q.bigN++;}
   else if(one){if(o){delete Q.one[role];gcDrop(Q,o,1);}Q.one[role]=x;Q.ob+=by;Q.ones++;Q.onesIn=(Q.onesIn|0)+1;Q.onesMax=Math.max(Q.onesMax|0,Q.onesIn);}
   else{Q.t.push(x);Q.by+=by;}
@@ -12397,7 +12422,7 @@ function gcBack(ms){let t=GC_BACK.get(ms);
   if(!t){const U=GPUTextureUsage,Q=gcPool(),by=ms.width*ms.height*8;
     const x=Q.t.find(v=>v.T[0]===ms)||Object.values(Q.one).find(v=>v.T[0]===ms)||Q.dead.find(v=>v.T&&v.T[0]===ms);
     if(x&&Q.t.includes(x))gcRoom(Q,by);
-    t=[0,1].map(()=>GPU.dev.createTexture({size:[ms.width,ms.height],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT}));GC_BACK.set(ms,t);
+    t=[0,1].map(()=>GPU.dev.createTexture({size:[ms.width,ms.height],format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT|U.COPY_DST}));GC_BACK.set(ms,t);
     if(x){x.back=t;x.by+=by;if(Q.t.includes(x))Q.by+=by;else if(x.once)Q.onceB+=by;else if(Q.dead.includes(x))Q.pend+=by;else Q.ob+=by;gcPeak(Q);}}
   return t;}
 function gcPoolBuf(role,us,a){
@@ -12451,6 +12476,9 @@ function gpuBakeRedo0(B){
   B.tex=d.createTexture({size:[w,h],mipLevelCount:B.n,format:"rgba8unorm",usage:U.TEXTURE_BINDING|U.RENDER_ATTACHMENT|U.COPY_SRC});
   B.view=B.tex.createView();B.dev=d;
   const [ms,st,rs]=gcPoolSet("bake",W,H),TW=ms.width,TH=ms.height;GC_PX+=W*H;
+  /* ответ области out-of-memory крупного набора — этой выпечке: отказ портит её, держатель испечёт заново */
+  if(GC_OOM.p){const p=GC_OOM.p;GC_OOM.p=null;p.then(e=>{if(e)gcOom(B,d,e);},()=>{});}
+  const one=ms===rs;                               /* набор без MSAA: рисуем прямо в resolve */
   /* вершины (x,y,краска,u,v), краски по 5 vec4, ленты градиентов, список вызовов */
   let V=GC_VA,vn=0;const P=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],R=[],RI=new Map(),D=[],Q=[0,0,W,0,W,H,0,0,W,H,0,H];
   let DL=D;const SH=[];   /* DL — куда идут вызовы: основной проход или слой тени */
@@ -12537,7 +12565,7 @@ function gpuBakeRedo0(B){
     R.forEach((r,i)=>{if(!r.h16){r.h16=new Uint16Array(1024);for(let j=0;j<1024;j++)r.h16[j]=f16(r[j]);}h.set(r.h16,i*1024);});d.queue.writeTexture({texture:rt},h,{bytesPerRow:2048},[256,R.length]);rv=rt.createView();}
   /* вызовы, что читают фон (overlay), — помечены; фонов два, по очереди: кусок, что пишет один, читает другой */
   let nb=0;for(const c of D)if(GC_OPS[c.md.slice(c.md.indexOf("|")+1)]?.bk){c.bk=1;nb++;}
-  const BK=nb?gcBack(ms).map(t=>t.createView()):null;
+  const BT=nb?gcBack(ms):null,BK=BT?BT.map(t=>t.createView()):null;
   const bgs=new Map(),bg=(q,u,x)=>{u=u||ub;x=x||L.dm;const key=q?q.view:null,nr=q&&q.near,sl=(nr?1:0)+(q&&q.rep?2:0);
     let M0=bgs.get(u);if(!M0)bgs.set(u,M0=new Map());let M=M0.get(x);if(!M)M0.set(x,M=new Map());
     let b=M.get(key)&&M.get(key)[sl];if(b)return b;
@@ -12545,19 +12573,22 @@ function gpuBakeRedo0(B){
       {binding:3,resource:GPU.S.lin},{binding:4,resource:q?q.view:L.dm},{binding:5,resource:q&&q.rep?gcRepSmp(nr):nr?L.near:gpuMipSmp()},
       {binding:6,resource:x}]});
     const e=M.get(key)||[];e[sl]=b;M.set(key,e);return b;};
-  const enc=d.createCommandEncoder();
+  const enc=d.createCommandEncoder();let PN=4;   /* отсчётов у цели прохода: тени — ×4, основной — как набор */
   const run=(p,list,u,j0,j1,x)=>{p.setVertexBuffer(0,vb);let m=null,im=run,r=-1,wx=run;   /* состояние — только когда меняется */
-    for(let j=j0||0,e=j1==null?list.length:j1;j<e;j++){const c=list[j],cx=c.bk?x:null;if(c.md!==m)p.setPipeline(gcPipe(m=c.md));
+    for(let j=j0||0,e=j1==null?list.length:j1;j<e;j++){const c=list[j],cx=c.bk?x:null;if(c.md!==m)p.setPipeline(gcPipe(m=c.md,PN));
       if(c.img!==im||cx!==wx)p.setBindGroup(0,bg(im=c.img,u,wx=cx));
       if(c.ref!==r)p.setStencilReference(r=c.ref);p.draw(c.n,1,c.f,0);}};
   B.shl=SH.length;if(SA)gcShadowPasses(enc,SH,SA,run);
   /* основной проход; вызов, что читает фон (overlay), режет его: всё до него — в фон (resolve в bk),
      MSAA и трафарет сохраняются и грузятся следующим куском */
-  const msv=ms.createView(),stv=st.createView();let s0=0,fst=true,ki=0;
-  const seg=(to,last)=>{const p=enc.beginRenderPass({colorAttachments:[{view:msv,resolveTarget:last?rs.createView():BK[ki&1],
-      loadOp:fst?"clear":"load",clearValue:{r:0,g:0,b:0,a:0},storeOp:last?"discard":"store"}],
+  /* без MSAA (one) resolve нет: цель хранит всё сама, а фон для overlay снимается копией */
+  const msv=ms.createView(),stv=st.createView();let s0=0,fst=true,ki=0;PN=one?1:4;
+  const seg=(to,last)=>{const p=enc.beginRenderPass({colorAttachments:[Object.assign({view:msv,
+      loadOp:fst?"clear":"load",clearValue:{r:0,g:0,b:0,a:0},storeOp:last&&!one?"discard":"store"},one?{}:{resolveTarget:last?rs.createView():BK[ki&1]})],
     depthStencilAttachment:{view:stv,stencilLoadOp:fst?"clear":"load",stencilClearValue:0x80,stencilStoreOp:last?"discard":"store"}});
-    run(p,D,ub,s0,to,BK&&!fst?BK[(ki+1)&1]:null);p.end();s0=to;fst=false;if(!last)ki++;};
+    run(p,D,ub,s0,to,BK&&!fst?BK[(ki+1)&1]:null);p.end();
+    if(one&&!last)enc.copyTextureToTexture({texture:rs},{texture:BT[ki&1]},[TW,TH]);
+    s0=to;fst=false;if(!last)ki++;};
   if(nb)for(let i=0;i<D.length;i++)if(D[i].bk)seg(i,false);
   seg(D.length,true);
   /* мипы на видеокарте: проход на уровень, среднее 2×2 (и сброс resolve в нулевой: копия 1:1 или среднее 2×2) */

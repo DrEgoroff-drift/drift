@@ -120,6 +120,39 @@ TEST_SUITES.push(()=>suite("GPU-холст: серии тени, пул целе
   eq(steps(64,64,true),1,"четыре мелкие выпечки 128² — тоже одна за кадр (GPU.bakeN)");
   ok(steps(64,64,false)>1,"шаги без выпечки — несколько за кадр");
 }));
+/* отказ памяти на крупном наборе выпечки (Контроль 26.09). Ответ области out-of-memory приходит
+   обещанием, а прогон синхронный — поэтому отказ подаётся обработчику прямо, как пришёл бы от
+   устройства, и дальше путь ведётся силой: крупная выпечка без MSAA, с тенью (её атлас — ×4) и с
+   overlay (фон — копией вместо resolve). Что кадр на этом пути без ошибок проверки — снимок базы
+   с GC_BIG1 (shot.py, gpu.errs) */
+TEST_SUITES.push(()=>suite("GPU-холст: отказ памяти на крупном наборе — выпечка без MSAA",{tier:"browser"},()=>{
+  if(!GPU.dev)return;
+  const Q=gcPool(),s=Math.ceil(Math.sqrt((GC_POOL_CAP-Q.wb)/24))+64,big0=GC_BIG1,n0=GC_OOM.n,d=GPU.dev,set0=gcPoolSet,push0=d.pushErrorScope;
+  let seen=null,scopes=0;const B=[];
+  const draw=g=>{g.fillStyle="#468";g.fillRect(0,0,s,s);g.shadowBlur=4;g.shadowColor="rgba(0,0,0,.8)";g.fillStyle="#fc8";g.fillRect(40,40,80,60);
+    g.shadowBlur=0;g.globalCompositeOperation="overlay";g.fillStyle="#fff";g.fillRect(60,50,120,40);g.globalCompositeOperation="source-over";g.fillRect(8,8,4,4);};
+  gcPoolSet=function(r,w,h){const T=set0(r,w,h);if(r==="bake"&&w>=s)seen=T;return T;};
+  d.pushErrorScope=function(f){if(f==="out-of-memory")scopes++;return push0.call(this,f);};
+  try{
+    GC_BIG1=false;B.push(gpuBake(s,s,draw,{ss:1,mips:false}));
+    ok(seen&&seen[0].sampleCount===4&&seen[0]!==seen[2],"крупный набор — MSAA ×4, resolve отдельно");
+    eq(scopes,1,"крупный набор создаётся под присмотром области out-of-memory");
+    eq(GC_OOM.p,null,"ответ области забрала выпечка");
+    gcOom(B[0],d,{message:"тест: нет памяти"});
+    ok(GC_BIG1,"после отказа крупные наборы — без MSAA");
+    eq(B[0].tex,null,"испорченная выпечка сброшена: держатель испечёт заново");
+    eq(GC_OOM.n-n0,1,"в журнал — одна строка");
+    seen=null;scopes=0;B.push(gpuBake(s,s,draw,{ss:1,mips:false}));
+    ok(seen&&seen[0].sampleCount===1&&seen[1].sampleCount===1&&seen[0]===seen[2],"новый крупный набор — ×1, цель сама resolve");
+    eq(scopes,0,"без MSAA присмотр не нужен");
+    ok(B[1]&&B[1].tex&&B[1].tex.width===s&&B[1].tex.height===s,"выпечка без MSAA есть, размер тот же");
+    ok(GPU.lay["gc1.cov|source-over"]&&GPU.lay["gc1.cov|overlay"],"конвейеры ×1: заливка и overlay (фон — копией)");
+    gcOom(B[1],d,{message:"тест: снова нет памяти"});
+    eq(GC_OOM.n-n0,1,"второй отказ в журнал не пишется");
+    const m=Q.made;gpuBakeDrop(gpuBake(64,64,draw,{mips:false}));
+    eq(Q.made-m,0,"мелкие выпечки — из прогретого пула, как прежде");
+  }finally{gcPoolSet=set0;delete d.pushErrorScope;if(d.pushErrorScope!==push0)d.pushErrorScope=push0;GC_BIG1=big0;GC_OOM.n=n0;for(const b of B)gpuBakeDrop(b);}
+}));
 /* материал корпуса (08cd): у всех, кого освещает звезда, — рельеф и маски в одной текстуре вдвое шире;
    сброс выпечки уносит и его (иначе видеопамять течёт по полтекстуры на корпус) */
 TEST_SUITES.push(()=>suite("материал корпуса: пираты, баржи, свои — рельеф и маски, сброс вместе",{tier:"browser"},()=>{

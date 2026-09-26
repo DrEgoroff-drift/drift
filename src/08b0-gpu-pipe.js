@@ -48,6 +48,7 @@ for(const k of ["rock","rockf","dust"])for(const m of ["","4"])GPU_PIPE_ONE["bel
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
 function gpuPipeRecipe(key){
   if(key.startsWith("gc:"))return {desc:gcPipeDesc(key.slice(3))};
+  if(key.startsWith("gc1:"))return {desc:gcPipeDesc(key.slice(4),1)};   /* крупный набор без MSAA (08ca) */
   if(key.startsWith("pipe:")){
     const a=key.slice(5),i=a.lastIndexOf("|"),s=GPU_PIPE_SRC[a.slice(0,i)];if(!s)return null;
     const [code,lay]=s();return {desc:gpuPipeDesc(code,a.slice(i+1),lay),code};
