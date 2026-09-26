@@ -14,6 +14,7 @@ Before a run:
 | Tool | What it does |
 |---|---|
 | `gate.py name secs [host]` | The P1 gate: easy start, DPR 1.5, a driven flight. It records every rAF interval and prints 10-s windows and a verdict: at least 95 % of frames ≤ 18 ms and no frame ≥ 50 ms. It also names hitches, textures and mips. |
+| `ROUTE=hotel\|star ZOOM=.3 gate.py …` | The same gate on the author's routes (26.09): the ship is carried round the hotel (350, 10 s) or past the star (700, 20 s) at flight speed; `ZOOM` pins the camera far out. A nebula or hotel change passes all four route runs as well as the plain one. |
 | `waitquiet.py name [secs…]` | Waits until the touchscreen has been silent for 60 s, then runs `gate.py` for each length (default 30 and 300). |
 | `phtrace.py name secs` | Records a Chrome trace of the same flight to `phtrace_<name>.json`. |
 | `phtran.py trace [gap_ms]` | Shows what every thread did in each long frame gap, plus the compile slices. |

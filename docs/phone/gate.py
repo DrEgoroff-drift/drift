@@ -15,6 +15,23 @@ name = sys.argv[1]; DUR = int(sys.argv[2]) if len(sys.argv) > 2 else 30
 # host: another site = an empty WebGPU shader cache (Chrome keeps compiled pipelines per site, 25.09: the same build hitched
 # 67/50 ms on its first run and ran clean on the second). A cold run takes a fresh name: cold1.localhost, cold2.localhost …
 HOST = sys.argv[3] if len(sys.argv) > 3 else '127.0.0.1'
+# ROUTE=hotel|star (env): instead of the thrust/turn driver the ship is carried round a circle at flight speed — 350
+# around the hotel (the station when there is none) in 10 s, or 700 around the star in 20 s — with the engine on 1 s /
+# off 1 s; ZOOM=z also pins the camera (.3 = far out). The author 26.09: «полетай у гостиницы, где много объектов, и
+# туманности где много … и мимо звезды и отдали камеру». The route and its centre go into the JSON as 'route'.
+ROUTE = os.environ.get('ROUTE', ''); ZOOM = float(os.environ.get('ZOOM', '0') or 0)
+assert ROUTE in ('', 'hotel', 'star'), 'ROUTE is hotel or star'
+DRV = ('let n=0;window.__drv=setInterval(()=>{n++;if(G.mode!=="system"){keys.thrust=false;keys.left=false;return}'
+       'keys.thrust=(n%8)<4;keys.left=(n%16)<2;},250);') if not ROUTE else (
+    'const ROUTE="%ROUTE%",Z=%ZOOM%,sy=G.sys||{},st=sy.star||{x:0,y:0};'
+    'const hh=ROUTE==="hotel"&&typeof hotelHere==="function"&&hotelHere(),P0=ROUTE==="hotel"?(hh||sy.station||st):st;'
+    'const RR=ROUTE==="hotel"?350:700,W2=2*Math.PI/(ROUTE==="hotel"?10:20),t0=performance.now();'
+    'window.__route=[ROUTE,Z,hh?"hotel":ROUTE==="hotel"&&sy.station?"station":"star",Math.round(P0.x),Math.round(P0.y)];'
+    'const pup=()=>{if(window.__drvOff||(window.__g&&window.__g.done))return;if(G.mode==="system"){if(Z)G.zoomT=Z;'
+    'const tt=performance.now()-t0,a=tt/1000*W2,s=G.ship;s.x=P0.x+RR*Math.cos(a);s.y=P0.y+RR*Math.sin(a);'
+    's.vx=-RR*W2*Math.sin(a);s.vy=RR*W2*Math.cos(a);s.a=a+Math.PI/2;keys.thrust=(tt%2000)<1000;keys.left=false;}'
+    'requestAnimationFrame(pup);};requestAnimationFrame(pup);'
+).replace('%ROUTE%', ROUTE).replace('%ZOOM%', repr(ZOOM))
 
 def adb(*a, dev=None):
     r = subprocess.run([A] + (['-s', dev] if dev else []) + list(a), capture_output=True, timeout=90)
@@ -111,8 +128,7 @@ START = ('(()=>{if(document.readyState!=="complete"||typeof G==="undefined")retu
 REC = '''(()=>{if(window.__g)return "already";
 try{navigator.wakeLock.request("screen").then(l=>window.__wl=l).catch(()=>{})}catch(e){}
 RES_AUTO=1.5;PHONE_DPR=1.5;resFresh=1e9;resize();
-let n=0;window.__drv=setInterval(()=>{n++;if(G.mode!=="system"){keys.thrust=false;keys.left=false;return}
-keys.thrust=(n%8)<4;keys.left=(n%16)<2;},250);
+%DRV%
 const R=window.__g={dts:[],win:[],done:false,off:0,hit:[],lt:[],tch:0};
 for(const k of ["touchstart","touchmove","pointerdown"])addEventListener(k,()=>R.tch++,{capture:true,passive:true});const DUR=%DUR%*1000,WARM=3000;
 const C={pipe:0,tex:0,wt:0,cx:0,wb:0,by:0,tl:[]};const d=GPU.dev,q=d.queue;R.live=0;R.mips=[];R.tx=[];const t00=performance.now();
@@ -151,8 +167,8 @@ wn++;if(dt<=18)w18++;if(dt>=33)w33++;if(dt>=50)w50++;if(dt>wmax)wmax=dt;if(js>wj
 if(now-ws>=10000){R.win.push([Math.round((now-start-WARM)/1000),wn,w18,w33,w50,Math.round(wmax),cvs.width+"x"+cvs.height,DPR,+resEma.toFixed(1),R.live,performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):-1,R.tch,Math.round(wjs)]);ws=now;wn=w18=w33=w50=0;wmax=0;wjs=0;}}
 P=cur;PT=C.tl;C.tl=[];hPrev=h;C.pipe=C.tex=C.wt=C.cx=C.wb=C.by=0;ng=g;
 if(now<start+WARM+DUR)requestAnimationFrame(f);else R.done=true;};
-requestAnimationFrame(f);return "recording "+cvs.width+"x"+cvs.height+" DPR "+DPR})()'''.replace('%DUR%', str(DUR))
-STOP = ('(()=>{clearInterval(window.__drv);keys.thrust=false;keys.left=false;RES_AUTO=RES_AUTO;resFresh=0;'
+requestAnimationFrame(f);return "recording "+cvs.width+"x"+cvs.height+" DPR "+DPR})()'''.replace('%DUR%', str(DUR)).replace('%DRV%', DRV)
+STOP = ('(()=>{clearInterval(window.__drv);window.__drvOff=1;keys.thrust=false;keys.left=false;RES_AUTO=RES_AUTO;resFresh=0;'
         'try{window.__wl&&window.__wl.release()}catch(e){}return "stopped"})()')
 GET = ('(()=>JSON.stringify({done:window.__g&&window.__g.done,n:window.__g?window.__g.dts.length:0,'
        'win:window.__g?window.__g.win:[],hidden:document.hidden,mode:G.mode,off:window.__g?window.__g.off:0}))()')
@@ -210,7 +226,7 @@ if dts:
     print('VERDICT %ds: frames %d (%.1f fps) · <=18ms %.2f%% · >=33ms %d · >=50ms %d · p50 %.1f p95 %.1f p99 %.1f max %.1f ms'
           % (DUR, n, n / DUR, 100 * ok18 / n, b33, b50, q(.5), q(.95), q(.99), s[-1]))
     print('GATE:', 'PASS' if ok18 / n >= .95 and b50 == 0 else 'FAIL', '(>=95 % at 16.7 ms and no 50 ms frame)')
-    ex = json.loads(ev(me, '(()=>JSON.stringify({hit:window.__g.hit,lt:window.__g.lt,mips:window.__g.mips,tx:window.__g.tx,gd:window.__g.gd}))()'))
+    ex = json.loads(ev(me, '(()=>JSON.stringify({hit:window.__g.hit,lt:window.__g.lt,mips:window.__g.mips,tx:window.__g.tx,gd:window.__g.gd,route:window.__route?window.__route.concat([+(G.zoom||0).toFixed(2)]):null}))()'))
     gd = ex.get('gd') or []
     if gd:
         gl = sorted(x[1] for x in gd)
@@ -228,6 +244,8 @@ if dts:
             for s in (h[k] if len(h) > k else []):
                 print('        tex %s: %s' % (lab, s))
     print('long tasks [t ms, ms]:', ex['lt'][:40])
+    if ex.get('route'):
+        print('route [name, zoom asked, centre, x, y, zoom at the end]:', ex['route'])
     tx = ex.get('tx') or []; agg = {}
     for t, s in tx:
         if t >= 0:
