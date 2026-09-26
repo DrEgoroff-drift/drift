@@ -800,6 +800,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   bakes ahead in steps (`neonJob`/`neonAhead`, hotel and billboard), `ckgLab` is its own step. Tour: bake
   frames 29 of 10 000 (0.29 %), at most one a frame; dock alone 7 of 680 (a hotel relight is seven bakes).
   Next: hull material + planet occluders.
+- **Planet occluders** (26.09): planets and moons go into `GPU.oc` (`sysOcPush`, 17-mode-system) — the shadow is
+  the ray from the star through the body; a body off screen is pushed when its ray, widened by 2r, crosses the
+  screen, moved along the ray to that edge (f16 holds ±65504; the shadowless disk stays off screen); 15 slots,
+  the 16th for the station. Pairs (scratchpad `pair_oc_*_760.png`, 0e3927ef | now): behind a planet the four
+  ships go down to the .4 floor, at the shadow's edge a penumbra across the group, toward the star unchanged
+  (0.01 % > 8), at ×3.5 a planet off the left edge still shades. Suite «свет: планета тенит корабли…».
+  Next: the hull material bake.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

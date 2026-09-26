@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 632 · символов верхнего уровня: 6363
+Файлов: 632 · символов верхнего уровня: 6364
 
 ## СИМВОЛЫ
 
@@ -781,7 +781,7 @@ CHIP_POS                     src/17-mode-system.js:14
 CHIP_SPEED                   src/17-mode-system.js:21
 CHIP_T                       src/17-mode-system.js:15
 CHIP_TOUCH                   src/17-mode-system.js:18
-chipDist                     src/17-mode-system.js:699-705
+chipDist                     src/17-mode-system.js:713-719
 chipDom                      src/08bi-gpu-ovl.js:162-177
 chipDomSnap                  src/08bh-gpu-hud.js:10-12
 chipDomSweep                 src/08bh-gpu-hud.js:20-23
@@ -1597,11 +1597,11 @@ drawSurface                  src/21e-surface-draw.js:277-291
 drawSurfaceHud               src/21e-surface-draw.js:21-115
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
-drawSysHud                   src/17-mode-system.js:706-1032
+drawSysHud                   src/17-mode-system.js:720-1046
 drawSysLane                  src/17g-sys-lane.js:108-134
 drawSysLaneShips             src/17g-sys-lane.js:164-192
 drawSysRail                  src/18f-rail-station.js:58-92
-drawSystem                   src/17-mode-system.js:511-694
+drawSystem                   src/17-mode-system.js:524-708
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawTapes                    src/12s1-tape.js:37-52
 drawTemple                   src/20aa-poi-shapes.js:50-89
@@ -5758,6 +5758,7 @@ sysLane                      src/17g-sys-lane.js:32-63
 sysMakes                     src/12ad-site.js:134-140
 sysNebComp                   src/16a-space.js:209-234
 sysNebulaTex                 src/16a-space.js:53-101
+sysOcPush                    src/17-mode-system.js:515-523
 sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-31
 sysRasterTick                src/06-galaxy.js:33-45
@@ -7087,7 +7088,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/16gb-gpu-nebula.js · 51 КБ
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
-## src/17-mode-system.js · 79 КБ
+## src/17-mode-system.js · 81 КБ
   · режим: система:1
 
 ## src/17a-station-mod.js · 13 КБ
@@ -8239,7 +8240,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## tests/91zzzzy-hold.js · 10 КБ
   · холдинг: круг стройки числами (M339):1
 
-## tests/91zzzzy-light.js · 22 КБ
+## tests/91zzzzy-light.js · 23 КБ
   · свет и свечения (M330):1
 
 ## tests/91zzzzy-look.js · 4 КБ

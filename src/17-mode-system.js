@@ -508,6 +508,19 @@ function sysWatchLabel(wA){
   const b=ovText(OVL.uq,W/2,yb+14,"ЭКИПАЖ — ВЕРНУТЬ КАМЕРУ","8px ui-monospace,monospace","rgba(93,115,130,.85)","center","alphabetic",1,1);
   return {x0:Math.min(a.x0,b.x0),x1:Math.max(a.x1,b.x1),y0:a.y0,y1:b.y1};   /* рамка обеих строк — для проверок наложения */
 }
+/* заслон тела для кораблей (GPU.oc, shAt 08b): тень — луч от звезды (ox,oy) через тело радиуса r. Кладём,
+   только если луч, раздутый на 2r, задевает экран, — тень планеты за краем тоже; далёкое тело сдвигаем по лучу
+   к краю раздутого экрана: f16 заслона держит до 65504, а диск заслона (в нём тени нет) в экран не заходит.
+   Последний из шестнадцати — станции (17c) */
+function sysOcPush(x,y,r,ox,oy){
+  if(r<2||GPU.oc.length>=15)return;
+  const d=Math.hypot(x-ox,y-oy);if(d<1)return;
+  const dx=(x-ox)/d,dy=(y-oy)/d,m=2*r,sl=(p,v,lo,hi)=>{   /* отрезок луча внутри полосы [lo,hi] */
+    if(Math.abs(v)<1e-9)return p<lo||p>hi?[1,0]:[0,Infinity];const a=(lo-p)/v,b=(hi-p)/v;return a<b?[a,b]:[b,a];};
+  const X=sl(x,dx,-m,W+m),Y=sl(y,dy,-m,H+m),t0=Math.max(0,X[0],Y[0]);
+  if(t0>Math.min(X[1],Y[1]))return;
+  GPU.oc.push([x+dx*t0,y+dy*t0,r]);
+}
 function drawSystem(){
   const sh=G.ship,sys=G.sys,Z=G.zoom;
   /* режим наблюдения за наёмником: двигается только камера, корабль игрока
@@ -571,6 +584,7 @@ function drawSystem(){
   BODY_LABELS.length=0;gpuSeg("planets");
   for(const p of sys.planets){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;   /* диск — физический (16c, п. 2): зум делает планету большой, не корабль */
+    sysOcPush(x,y,r,ox,oy);   /* тень на корабли — и от планеты за краем экрана */
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
     if(p.ring===undefined){
       const rr=rng(p.seed^0x21A9);
@@ -602,7 +616,7 @@ function drawSystem(){
     for(let mi=0;mi<p.moons.length;mi++){
       const m=p.moons[mi];
       const mx=zx(m.x),my=zy(m.y),mr=Math.max(1,m.radius*Z);
-      gpuMoon(m,(p.idx|0)+"_"+mi,mx,my,mr);
+      gpuMoon(m,(p.idx|0)+"_"+mi,mx,my,mr);sysOcPush(mx,my,mr,ox,oy);
       if(G.ap&&G.ap.kind==="planet"&&G.ap.p===m)reticle(mx,my,mr+10);
       if(G.found.has(m.key)&&mr>2.4){
         ctx.fillStyle="rgba(154,168,178,.7)";ctx.font=uiFont(8);ctx.textAlign="center";
