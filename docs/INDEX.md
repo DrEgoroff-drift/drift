@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6581
+Файлов: 641 · символов верхнего уровня: 6584
 
 ## СИМВОЛЫ
 
@@ -112,9 +112,10 @@ BAZ_CUT                      src/17n-bazaar.js:73
 BAZ_HULLS                    src/17n-bazaar.js:71
 BAZ_SIGN                     src/17n-bazaar.js:93
 BAZ_THROWN_MAX               src/17n-bazaar.js:9
-BB_BAKE                      src/17k-billboard.js:62
+BB_BAKE                      src/17k-billboard.js:90
 BB_CACHE                     src/17k-billboard.js:12
-BB_NEON                      src/17k-billboard.js:61
+BB_NEON                      src/17k-billboard.js:89
+BB_NEWS                      src/17k-billboard.js:32
 BB_TITLE                     src/17k-billboard.js:11
 BEACON_COOL                  src/23-mode-dig.js:89
 BEAM_LIFE                    src/13a-guns.js:28
@@ -2078,17 +2079,19 @@ bazOpen                      src/17n-bazaar.js:166-186
 bazPartBase                  src/17n-bazaar.js:31
 bazSign                      src/17n-bazaar.js:94-102
 bazThrow                     src/17n-bazaar.js:25-30
-bbAhead                      src/17k-billboard.js:147-153
+bbAhead                      src/17k-billboard.js:175-181
 bbDeal                       src/17k-billboard.js:20-30
-bbDrawGpu                    src/17k-billboard.js:116-144
+bbDrawGpu                    src/17k-billboard.js:144-172
 bbHere                       src/17k-billboard.js:13-18
-bbKeep                       src/17k-billboard.js:66-72
-bbLine                       src/17k-billboard.js:31-50
-bbPanelBake                  src/17k-billboard.js:74-77
-bbPanelKey                   src/17k-billboard.js:73
-bbPanelMake                  src/17k-billboard.js:78-103
-bbStripBake                  src/17k-billboard.js:105-115
-bbTitle                      src/17k-billboard.js:52-56
+bbHold                       src/17k-billboard.js:41-54
+bbKeep                       src/17k-billboard.js:94-100
+bbLine                       src/17k-billboard.js:55-78
+bbNews                       src/17k-billboard.js:33-39
+bbPanelBake                  src/17k-billboard.js:102-105
+bbPanelKey                   src/17k-billboard.js:101
+bbPanelMake                  src/17k-billboard.js:106-131
+bbStripBake                  src/17k-billboard.js:133-143
+bbTitle                      src/17k-billboard.js:80-84
 beaconCool                   src/23-mode-dig.js:90
 beaconTick                   src/23-mode-dig.js:117-128
 beamAdd                      src/13a-guns.js:79-83
@@ -2875,7 +2878,7 @@ drawBeastAlien               src/20f-fauna.js:65-229
 drawBelt                     src/24-mode-belt.js:360
 drawBeltPOISprite            src/24b-belt-poi.js:50-185
 drawBeltRocks                src/17c-system-draw.js:29-83
-drawBillboard                src/17k-billboard.js:154-168
+drawBillboard                src/17k-billboard.js:182-196
 drawBuildMenu                src/21aa-base-rooms.js:504-520
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:32-44
@@ -3055,7 +3058,7 @@ droneTag                     src/12e-drone-flight.js:58-64
 droneTarget                  src/12-economy.js:284
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
-dsTick                       src/12p1-doublespeak.js:33-39
+dsTick                       src/12p1-doublespeak.js:33-42
 dustTable                    src/16a-space.js:252-265
 e2eClickables                tests/91zzzzz-e2e-life.js:61
 e2eFind                      tests/91zzzzz-e2e-life.js:440
@@ -7369,7 +7372,7 @@ zoomTo                       src/15-input.js:350
 ## src/17j-cheburek.js · 10 КБ
   · «Чебуречная» — лодка на подъезде (M462, DESIGN-life §3.4):1
 
-## src/17k-billboard.js · 11 КБ
+## src/17k-billboard.js · 13 КБ
   · рекламные щиты на подъезде (M460, DESIGN-life §3.2, review §4.2):1
 
 ## src/17k0-neon.js · 4 КБ

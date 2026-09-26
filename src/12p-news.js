@@ -188,8 +188,8 @@ function newsRender(){
   $body.appendChild(el("div","sec","ЧТО РАССКАЗЫВАЮТ · МИР ДВИГАЛСЯ БЕЗ ВАС"));
   for(const n of list.slice(-6).reverse()){
     const mins=Math.max(1,Math.round((now()-n.t)/60000));
-    $body.appendChild(el("div","row","<div class='nm'><b>"+n.ru+"</b><s>сектор "+
-      n.sx+", "+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка</s></div>"));
+    $body.appendChild(el("div","row","<div class='nm'><b>"+n.ru+"</b><s>"+(n.id==="ds"?"сводка · слышно "+mins+" мин назад":"сектор "+
+      n.sx+", "+n.sy+" · слышно "+mins+" мин назад · на карте появилась метка")+"</s></div>"));
   }
   /* соперники: у каждого унесённого предмета есть человек и место */
   const rv=Object.keys(G.rivals||{});

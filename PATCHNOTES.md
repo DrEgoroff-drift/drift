@@ -185,6 +185,13 @@ could ever save.
   one takes a third of a post hour. Leave the station and the ticket is gone. The kind clerk still keeps a late
   parcel a day longer, once. A parcel past that goes back to the sender.
 
+- **M460, M491, P12: the billboard and the сводка talk about you.** The crawling line on a station's billboard
+  now takes turns: the best price nearby, then the latest сводка in the owner's voice («ЦИРКУЛЯР № 17: …»,
+  «FEED // …», «ГАЗЕТА «КОММУНА»: …»), then your own holding within three jumps advertising itself («СТАНЦИЯ
+  «КВАИТЭЛЬ» — ТОПЛИВО ЕСТЬ · 1 ПРЫЖОК»). An empty turn yields to the price. The two voices that retell your deed
+  (M491) are now written into the сводка too, so ЧТО РАССКАЗЫВАЮТ in the cantina keeps them, and the billboard
+  repeats them. As before, the game never says which of them is true.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -257,6 +264,9 @@ could ever save.
   new save field. Only the high-tier part event goes by post; the low-tier one still lands in the hold. If the
   post has six parcels waiting, the part falls back to the hold. The queue does not refresh the window by itself.
   The hull from the stapel now needs a ticket too.
+- M460: prices on the billboard stay live station prices. Whether the billboard should show the player's stale
+  knowledge (a fork) is left to the author. The hull tint near a billboard and the second and third signs are
+  picture work for the graphics pass.
 
 ## 0.478.0 - the album on the engine
 

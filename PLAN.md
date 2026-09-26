@@ -248,8 +248,7 @@ measured on the GPU build first:
 
 ## 6. Stage 5 — the voice and the joke
 
-- [ ] **M460 billboards:** 1–3 signs; the hull tint within R; the сводка, циркуляры and holding lines;
-  stale prices as a fork. **M491** through `12p-news` at the сводка. **P12** ЭФИР.
+- [ ] **M460 billboards (rest):** 1–3 signs; the hull tint within R (graphics pass); stale prices as a fork (the author).
 - [ ] **M461 hotels:** six faces in DESIGN-life §3.3, two built — «Космос» (17l1) and «Дружба» (17l2, 0.470.0).
   The other four have their sign, window rhythm and hours but stand in «Космос»'s crescent (`hotelType` falls
   back to `gt`): «АЭЛИТА™» (Компания, a Stalinist tower on a rock), «ДОМ ПРИЕЗЖИХ № 4» (Орднунг, khrushchyovkas on
