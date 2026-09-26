@@ -791,6 +791,13 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   star at zoom 3 had no disc at all (a white blob); now it has a soft edge, falling monotonically. Light
   −16…−19 % around the giant and −3…−5 % around a hot star: the glare over the disc and the gas beside it
   is gone, which is the point. GPU errors 0.
+  The hot star, second pass (Контроль on 287f64f4: «a grey translucent bubble, the corona outside is bluer and
+  brighter»): its disc mixed 35 % of warm orange into blue, which made grey, and the reddening limb took
+  the blue away first. Now the whiteness `wh` scales everything. Darkening is weaker by up to 45 %, the
+  channel powers go to .9/.85/.8 (the limb turns slightly blue), there is no warm mix, the disc is up to
+  +35 % brighter, and the near corona is up to 40 % weaker. Brightness now falls monotonically outward:
+  760 zoom 3, G .9 248 → limb 245 → 1.0 225 → 1.05 216 → 1.35 208. Zoom 1.6 and 390 at 3 and 1.6 fall the
+  same way. The giant (heat < .7) is untouched (|d| 1.75).
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
