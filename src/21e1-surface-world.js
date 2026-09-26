@@ -408,8 +408,8 @@ function drawSurfaceWorld(){
      земли и сам снимок — светом звезды; #c чист. Кусты, звери, идущие и ходок
      дальше рисуются двойниками (20fa) в тот же проход грунта — поверх снимка, в
      прежнем порядке. Подписи — в конце кадра: плашка тени не кладёт */
-  if(gpuGround)surfCastGpu(tr,p,camx,camy);
-  const LP=(gpuGround&&GPU.overPass&&GPU.overPass===SURF_P2)?GPU.overPass:null;
+  const cast=gpuGround?surfCastGpu(tr,p,camx,camy):false;
+  const LP=(gpuGround&&cast!==null&&GPU.overPass&&GPU.overPass===SURF_P2)?GPU.overPass:null;
   const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;

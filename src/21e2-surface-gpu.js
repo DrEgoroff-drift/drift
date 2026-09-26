@@ -269,6 +269,9 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
 }`;
 const GSC=new Float32Array(16);
 let SURF_SHADOW=null,SURF_P2=null;
+/* телефон — тот же признак, что режет плотность кадра (08-state): узкая сторона ≤ 760
+   и палец вместо мыши. Читается раз, при загрузке: кадр DOM не читает */
+const SURF_SNAP_OK=(()=>{try{return !(Math.min(window.innerWidth,window.innerHeight)<=760&&matchMedia("(pointer:coarse)").matches);}catch(e){return true;}})();
 function surfCastGpu(tr,p,camx,camy){
   /* только в проходе грунта этого кадра: если между ним и нами кто-то открыл
      свой слой, тень легла бы поверх предметов */
@@ -276,6 +279,12 @@ function surfCastGpu(tr,p,camx,camy){
   if(!GPU.on||!pass||pass!==SURF_P2||!tr.farH)return false;
   const day=dayK(p);
   if(GPU.cState===0)return false;           /* на #c ничего не стоит — заслонять нечему */
+  /* снимок #c посреди кадра на телефоне останавливает конвейер: S23 в полдень с двумя
+     снимками (этот и передний план) — 31 кадр против 60. Там и ночью (звезда под
+     горизонтом: ни тени, ни света с её стороны) стоящее остаётся на #c, как было до
+     видеокарты; null — ходок и кусты тоже 2D, иначе двойник в проходе грунта ушёл бы
+     под постройку */
+  if(!SURF_SNAP_OK||celSun(p).alt<-.09)return null;
   /* снимок #c — очередью, сейчас: тень рисуется позже, при отправке кадра, а к тому
      времени #c дорисован подписями и погодой */
   SURF_SHADOW=surfSnap(SURF_SHADOW);

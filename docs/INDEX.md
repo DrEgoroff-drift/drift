@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 674 · символов верхнего уровня: 7009
+Файлов: 674 · символов верхнего уровня: 7012
 
 ## СИМВОЛЫ
 
@@ -298,6 +298,7 @@ CLOUDS_OFF                   src/19e-clouds.js:68
 CLOUD_BASE                   src/19e-clouds.js:64
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:8-24
+CLOUD_LOW                    src/19cc-gpu-air.js:163
 CLOUD_ST                     src/14a-cloud.js:91
 CLOUD_TIER                   src/19e-clouds.js:49-62
 CLR_HOURS                    src/05e-clearance.js:29
@@ -632,8 +633,8 @@ GEW                          src/17-mode-system.js:48
 GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:202
 GEX_WGSL                     src/16ga-gpu-trail.js:203
-GHZ                          src/19cc-gpu-air.js:157
-GHZ_WGSL                     src/19cc-gpu-air.js:158
+GHZ                          src/19cc-gpu-air.js:182
+GHZ_WGSL                     src/19cc-gpu-air.js:183
 GIANTS                       src/17o-giants.js:18
 GIANTS_DEF                   src/17o-giants.js:9-17
 GIANT_CV                     src/17o-giants.js:68
@@ -725,10 +726,10 @@ GSG                          src/21e2-surface-gpu.js:130
 GSG_WGSL                     src/21e2-surface-gpu.js:131
 GSK                          src/19ca-gpu-sky.js:84
 GSK_WGSL                     src/19ca-gpu-sky.js:85
-GSL                          src/21e2-surface-gpu.js:341
-GSL_WGSL                     src/21e2-surface-gpu.js:309
-GSN                          src/21e2-surface-gpu.js:452
-GSN_WGSL                     src/21e2-surface-gpu.js:441
+GSL                          src/21e2-surface-gpu.js:350
+GSL_WGSL                     src/21e2-surface-gpu.js:318
+GSN                          src/21e2-surface-gpu.js:461
+GSN_WGSL                     src/21e2-surface-gpu.js:450
 GSP                          src/16g-gpu-space.js:17
 GSP_DUST                     src/16g-gpu-space.js:80
 GSP_DUST_L                   src/16g-gpu-space.js:19
@@ -740,8 +741,8 @@ GSR_WGSL                     src/21e2-surface-gpu.js:19
 GSS                          src/21e2-surface-gpu.js:220
 GSS_WGSL                     src/21e2-surface-gpu.js:215
 GST_WGSL                     src/17c-system-draw.js:405
-GSW                          src/21e2-surface-gpu.js:410
-GSW_WGSL                     src/21e2-surface-gpu.js:364
+GSW                          src/21e2-surface-gpu.js:419
+GSW_WGSL                     src/21e2-surface-gpu.js:373
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:56
@@ -761,8 +762,8 @@ GUN_NAMED                    src/05b-guns.js:121-162
 GUN_NAMED_BY_ID              src/05b-guns.js:163
 GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
-GWX                          src/19cc-gpu-air.js:187
-GWX_WGSL                     src/19cc-gpu-air.js:188
+GWX                          src/19cc-gpu-air.js:212
+GWX_WGSL                     src/19cc-gpu-air.js:213
 G_BOOT_KEYS                  tests/90-harness.js:209
 GcCtx                        src/08ca-gpu-canvas.js:97-244
 GcGrad                       src/08ca-gpu-canvas.js:69-87
@@ -1753,9 +1754,10 @@ SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:132
 SURF_HOR                     src/19c-light.js:202
-SURF_NEAR                    src/21e2-surface-gpu.js:453
-SURF_RF                      src/21e2-surface-gpu.js:411
+SURF_NEAR                    src/21e2-surface-gpu.js:462
+SURF_RF                      src/21e2-surface-gpu.js:420
 SURF_SHADOW                  src/21e2-surface-gpu.js:271
+SURF_SNAP_OK                 src/21e2-surface-gpu.js:274
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 SYS_BAKE_KEEP                src/06-galaxy.js:20
@@ -2743,6 +2745,7 @@ cloudCall                    src/14a-cloud.js:72-76
 cloudForget                  src/14a-cloud.js:77
 cloudHere                    src/14a-cloud.js:70
 cloudLine                    src/14a-cloud.js:107-116
+cloudLow                     src/19cc-gpu-air.js:166-179
 cloudMark                    src/14a-cloud.js:92-105
 cloudName                    src/14a-cloud.js:69
 cloudOn                      src/14a-cloud.js:71
@@ -3773,7 +3776,7 @@ gpuChunkAt                   src/18c-chunks.js:209-215
 gpuChunkBake                 src/18c-chunks.js:179-183
 gpuChunkPut                  src/18c-chunks.js:186-190
 gpuChunkStore                src/18c-chunks.js:204-208
-gpuClouds                    src/19cc-gpu-air.js:118-154
+gpuClouds                    src/19cc-gpu-air.js:118-162
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:436-446
 gpuCvLevel                   src/08c-gpu-kit.js:80-91
@@ -3852,7 +3855,7 @@ gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
 gpuUni                       src/08b-gpu.js:526-540
 gpuWake                      src/16ga-gpu-trail.js:107-139
-gpuWeatherFar                src/19cc-gpu-air.js:237-265
+gpuWeatherFar                src/19cc-gpu-air.js:262-290
 gpuWorld                     src/08b-gpu.js:643-664
 gradePass                    src/19c-light.js:250-286
 greenAll                     src/21g-greenhouse.js:26-30
@@ -3994,7 +3997,7 @@ haulSide                     src/16c-rescue.js:236
 haulStart                    src/16c-rescue.js:149-165
 haulTick                     src/16c-rescue.js:297-415
 hazardBand                   src/25-cockpit.js:166-177
-hazeBand                     src/19cc-gpu-air.js:172-184
+hazeBand                     src/19cc-gpu-air.js:197-209
 hazeDone                     src/18d-postfx.js:68
 hazeFar                      src/19c-light.js:167-188
 hazeGrab                     src/18d-postfx.js:33-50
@@ -6514,17 +6517,17 @@ sunSpot                      src/19c-light.js:203-208
 supportCall                  src/05b1-warranty.js:18-25
 supportQueue                 src/05b1-warranty.js:27-32
 supportTick                  src/05b1-warranty.js:33-42
-surfCastGpu                  src/21e2-surface-gpu.js:272-295
+surfCastGpu                  src/21e2-surface-gpu.js:275-304
 surfGroundGpu                src/21e2-surface-gpu.js:175-211
 surfHeightTex                src/21e2-surface-gpu.js:80-94
-surfNearGpu                  src/21e2-surface-gpu.js:465-476
+surfNearGpu                  src/21e2-surface-gpu.js:474-485
 surfNight                    src/06a-celest.js:43-50
-surfRelightGpu               src/21e2-surface-gpu.js:342-354
+surfRelightGpu               src/21e2-surface-gpu.js:351-363
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
 surfScale                    src/21e-surface-draw.js:283
 surfShadeGpu                 src/21e2-surface-gpu.js:221-227
-surfSnap                     src/21e2-surface-gpu.js:455-464
-surfWaterGpu                 src/21e2-surface-gpu.js:412-433
+surfSnap                     src/21e2-surface-gpu.js:464-473
+surfWaterGpu                 src/21e2-surface-gpu.js:421-442
 surfaceHint                  src/21e-surface-draw.js:4-20
 surveyColor                  src/12w-survey.js:58
 surveyLegs                   src/12w-survey.js:48-56
@@ -7931,7 +7934,7 @@ zoomTo                       src/15-input.js:350
 ## src/19cb-gpu-sky-bodies.js · 19 КБ
   · тела неба на движке (27.09.2026):1
 
-## src/19cc-gpu-air.js · 14 КБ
+## src/19cc-gpu-air.js · 15 КБ
   · облака, дымка и дальняя погода на движке (27.09.2026):1
 
 ## src/19d-weather.js · 14 КБ
@@ -8095,13 +8098,13 @@ zoomTo                       src/15-input.js:350
 ## src/21e1-surface-world.js · 47 КБ
   · поверхность: сам мир (выделено из 21e, M415):1
 
-## src/21e2-surface-gpu.js · 29 КБ
+## src/21e2-surface-gpu.js · 31 КБ
   · поверхность на видеокарте (G6, docs/DESIGN-gpu.md):1
   · ближний грунт: ломти текстурами и порода под светом:121
   · падающие тени того, что стоит:229
-  · то, что стоит, — светом мира:297
-  · вода: зеркало на видеокарте:356
-  · передний план не в фокусе:435
+  · то, что стоит, — светом мира:306
+  · вода: зеркало на видеокарте:365
+  · передний план не в фокусе:444
 
 ## src/21f-home-out.js · 22 КБ
   · дом снаружи:1

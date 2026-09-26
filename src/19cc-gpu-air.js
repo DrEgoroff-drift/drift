@@ -39,7 +39,7 @@ fn cuTier(p:vec2f,base:f32,S:f32,X0:f32,cover:f32,sd:f32,wind:f32)->vec3f{
   if(best<-S*.2){return vec3f(0.);}
   let e=fbm(vec2f(X/(S*.30),d/(S*.30))+vec2f(sd,0.),3);
   let top=best+(e-.5)*S*.16;
-  let dens=smoothstep(-S*.03,S*.06,top)*smoothstep(-S*.03,S*.03,d+(e-.5)*S*.06);
+  let dens=smoothstep(-S*.018,S*.035,top)*smoothstep(-S*.02,S*.02,d+(e-.5)*S*.06);
   let lt=clamp(.34+clamp(d/(S*.75),0.,1.)*.62+(e-.5)*.5,0.,1.);
   let rim=(1.-smoothstep(0.,S*.12,top))*dens;
   return vec3f(dens,lt,rim);
@@ -134,7 +134,7 @@ function gpuClouds(p,camx,camy){
     const S=168*.8*T.sc*Cl.sc;
     const ty=clamp(T.y-(K.hi-.30)*.42+Cl.lift,.18,.94);
     U[o]=yH*ty-camy*T.par*.5;U[o+1]=S;U[o+2]=camx*T.par+tw*T.spd;
-    U[o+3]=clamp(n*288*T.sc*Cl.sc*.9/span,0,.92);
+    U[o+3]=clamp(.16+n*288*T.sc*Cl.sc*1.35/span,0,.9);   /* vn редко выше .85: покрытие растянуто, иначе кучевых нет */
   }
   U[24]=CLOUD_TIER[0].a*.84;U[25]=Cl.sd;U[26]=CLOUD_TIER[1].a*.84;U[27]=CLOUD_TIER[2].a*.84;
   /* перья */
@@ -147,10 +147,35 @@ function gpuClouds(p,camx,camy){
   const amb=capLum((typeof ambRGB==="function")?ambRGB(p):p.T.sky[1],[C.sunL,C.sunL,C.sunL],1);
   set3(44,amb);U[47]=.34*R.haze[0];U[48]=camx*.05+tw*.05;U[49]=R.haze[1];
   const nt=surfNight(p);U[52]=.30;U[53]=.33;U[54]=.46;U[55]=clamp(nt*1.35,0,.86);
-  if(!skyClip(pass,0,0,W,yH+H*.14))return true;
-  gpuField(pass,"gcloud",GCL_WGSL,U,[]);
-  pass.setScissorRect(0,0,GPU.bw,GPU.bh);
+  const y1=Math.min(H,yH+H*.14);
+  /* мягкому полю полная плотность не нужна: где на пиксель CSS больше точки (телефон),
+     оно считается в своей текстуре по .7 точки на пиксель CSS и ложится в кадр растянутым
+     (S23 в полдень: 1.06 мс по точке). На ПК (точка на пиксель) — прямо в проход */
+  if(W/GPU.bw>.85){
+    if(!skyClip(pass,0,0,W,y1))return true;
+    gpuField(pass,"gcloud",GCL_WGSL,U,[]);
+    pass.setScissorRect(0,0,GPU.bw,GPU.bh);
+    return true;
+  }
+  const B=cloudLow(.7*W/GPU.bw,U,y1);if(B)gpuImage(pass,B,[{x:W/2,y:H/2,w:W,h:H}]);   /* x,y — центр */
   return true;
+}
+let CLOUD_LOW=null;
+/* поле облаков в текстуру доли k от кадра; своим кодировщиком, отправлен сразу —
+   раньше кадра, который её читает */
+function cloudLow(k,U,y1){
+  const d=GPU.dev,tw=Math.max(1,Math.round(GPU.bw*k)),th=Math.max(1,Math.round(GPU.bh*k));
+  let B=CLOUD_LOW;
+  if(!B||B.dev!==d||B.w!==tw||B.h!==th){
+    if(B&&B.dev===d)GPU.trash.push(B.tex);
+    const tex=d.createTexture({size:[tw,th],format:"rgba16float",usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.RENDER_ATTACHMENT});
+    B=CLOUD_LOW={tex,view:tex.createView(),w:tw,h:th,dev:d};
+  }
+  const enc=d.createCommandEncoder(),p=enc.beginRenderPass({colorAttachments:[{view:B.view,loadOp:"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}],timestampWrites:gpuTs("cloudLow")});
+  const bw=GPU.bw,bh=GPU.bh;GPU.bw=tw;GPU.bh=th;
+  try{if(skyClip(p,0,0,W,y1))gpuField(p,"gcloud",GCL_WGSL,U,[],{blend:"bake"});}
+  finally{GPU.bw=bw;GPU.bh=bh;p.end();d.queue.submit([enc.finish()]);}
+  return B;
 }
 /* ── дымка шириной в кисть (M304, §13) — поле над грядами ──
    Тон — сегодняшний воздух (ambRGB); рисунок медленных прядей — от зерна. */
