@@ -85,12 +85,13 @@ function cantLitUni(W2,H2,k){
   u.fill(0);
   u.set([k,W2,fy,G.t],0);
   for(let i=0;i<5;i++)u[4+i]=i<xs.length?xs[i]:-1e4;
-  u.set([LT.n,LT.cone,LT.pow*(K9?.18:1)],9);
+  u.set([LT.cone,LT.pow*(K9?.18:1)],9);
   u.set([lc[0]/255,lc[1]/255,lc[2]/255,S.warm],12);
   u.set([acc[0]/255,acc[1]/255,acc[2]/255,(Math.sin(G.t*.31+seed%7)>-.92)?1:.35],16);
   u.set([14,20,cantSignW(),18],20);
   u.set([W2*.56,26,Math.min(W2*.40,240),64],24);
   u.set([cy,H2,LT.amb*(K9?.75:1),0],28);
+  if(K9){const S=kinoScreenRect(W2,cy);u.set([S.x,S.y,S.w,S.h],32);}
   return u;
 }
 const CANT_LIT_WGSL=`
@@ -136,6 +137,10 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   c+=lc*m*(.004+.40*min(cs,1.2))*pw;
   let vd=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.35)/(H2*.70),0.,1.);
   c*=1.-.40*vd*vd*(3.-2.*vd);
+  /* полотно кино светится само: лампы зала, пыль и виньетка его не трогают */
+  let ks=fu.v[8];
+  let ke=min(min(q.x-ks.x,ks.x+ks.z-q.x),min(q.y-ks.y,ks.y+ks.w-q.y))*k;
+  c=mix(c,base,select(0.,clamp(ke+.5,0.,1.),ks.z>0.));
   c=rshoulder(c);
   let px=floor(p*fu.res.x/max(fu.res.z,1.));
   let gr=rh1(px+vec2f(fract(t*.37)*91.,fract(t*.53)*57.))-.5;

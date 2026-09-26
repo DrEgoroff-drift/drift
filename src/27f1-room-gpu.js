@@ -65,13 +65,23 @@ function rpgImage(R,pass,B,rects,blend){
   if(B.draw&&B.dev!==GPU.dev)gpuBakeRedo(B);
   blend=blend||"over";
   const n=rects.length,o=rpgPut(R,n);if(o<0)return;
-  const f=R.sf,P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
+  const f=R.sf,P=gpuPipe("kit.img",GPU_IMG_WGSL,blend,gpuImgLayout());
   for(let i=0;i<n;i++){const r=rects[i],k=o+i*12;
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=0;f[k+7]=GPU_MIP_LOD;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   pass.setPipeline(P);
-  pass.setBindGroup(0,rpgBindKit(R,P,"img|"+blend+"|"+rpgTexId(B),[R.ku,R.sa,B.view,gpuMipSmp()]));
+  rpgImgBind(R,pass,B.view,gpuMipSmp());
   pass.draw(6,n,0,o/12);
+}
+/* привязки картинки — по раскладке набора (08c, две группы): группа 0 — форма и буфер панели,
+   одна на панель; группа 1 — текстура и сэмплер, из общего кэша набора по виду. Одна группа
+   на четыре привязки к этому конвейеру не подходит — кантина стояла чёрной (406 отказов за прогон) */
+function rpgImgBind(R,pass,view,smp){
+  const c=GPU.lay["kit.imgL"],d=GPU.dev;
+  if(R.g0L!==c.L0){R.g0L=c.L0;R.g0=d.createBindGroup({layout:c.L0,entries:[{binding:0,resource:{buffer:R.ku}},{binding:1,resource:{buffer:R.sa}}]});}
+  let m=c.g1.get(view);if(!m)c.g1.set(view,m=new Map());
+  let g=m.get(smp);if(!g)m.set(smp,g=d.createBindGroup({layout:c.L1,entries:[{binding:0,resource:view},{binding:1,resource:smp}]}));
+  pass.setBindGroup(0,R.g0);pass.setBindGroup(1,g);
 }
 /* фигуры: те же записи, что у gpuShapes (08c) — [вид,x0,y0,x1,y1,hw,soft,r,g,b,a,жёсткие] */
 function rpgShapes(R,pass,items,blend){

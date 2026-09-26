@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 664 · символов верхнего уровня: 6750
+Файлов: 664 · символов верхнего уровня: 6752
 
 ## СИМВОЛЫ
 
@@ -680,23 +680,23 @@ canPay                       src/21a-mode-base.js:99
 CANT_EVERY                   src/27d-ui-cantina.js:41
 CANT_LIGHT                   src/27d-ui-cantina.js:67-73
 CANT_LIT_U                   src/27d-ui-cantina.js:80
-CANT_LIT_WGSL                src/27d-ui-cantina.js:96
+CANT_LIT_WGSL                src/27d-ui-cantina.js:97
 CANT_STYLE                   src/27d-ui-cantina.js:15-26
 cantBarkeep                  src/27d-ui-cantina-props.js:15-80
 cantBubble                   src/27c-ui-hq.js:264
 cantCounter                  src/27d-ui-cantina-props.js:306-385
 cantDealRow                  src/27c-ui-hq.js:167-196
-cantFigure                   src/27d-ui-cantina.js:466-513
+cantFigure                   src/27d-ui-cantina.js:471-518
 cantFolkRow                  src/27c-ui-hq.js:198-206
 cantHireRow                  src/27c-ui-hq.js:133-165
 cantinaPool                  src/12c-mgr-core.js:260-266
 cantinaScene                 src/27c-ui-hq.js:270-310
 cantLamps                    src/27d-ui-cantina.js:74-78
-cantLitUni                   src/27d-ui-cantina.js:81-95
+cantLitUni                   src/27d-ui-cantina.js:81-96
 cantProps                    src/27d-ui-cantina-props.js:153-234
-cantRoomBody                 src/27d-ui-cantina.js:144-454
+cantRoomBody                 src/27d-ui-cantina.js:149-459
 cantSay                      src/27c-ui-hq.js:265
-cantSeats                    src/27d-ui-cantina.js:458-462
+cantSeats                    src/27d-ui-cantina.js:463-467
 cantSel                      src/27c-ui-hq.js:269
 cantSignW                    src/27d-ui-cantina.js:79
 cantStyle                    src/27d-ui-cantina.js:27-30
@@ -3116,32 +3116,32 @@ HQ_LIT_U                     src/27f-hq-room.js:103
 HQ_LIT_WGSL                  src/27f-hq-room.js:118
 HQ_ORDER                     src/27f-hq-room.js:21
 hqAiOffer                    src/27c-ui-hq.js:481-501
-hqBack                       src/27f-hq-room.js:269-340
+hqBack                       src/27f-hq-room.js:272-343
 hqBtnTick                    src/27c-ui-hq.js:312-318
-hqConsole                    src/27f-hq-room.js:454-526
+hqConsole                    src/27f-hq-room.js:457-529
 hqFaceId                     src/27f-hq-room.js:39
-hqFigure                     src/27f-hq-room.js:645-751
-hqHolo                       src/27f-hq-room.js:343-393
-hqHover                      src/27f-hq-room.js:821
+hqFigure                     src/27f-hq-room.js:648-754
+hqHolo                       src/27f-hq-room.js:346-396
+hqHover                      src/27f-hq-room.js:824
 hqJobCard                    src/27c-ui-hq.js:541-579
-hqLabels                     src/27f-hq-room.js:186-207
+hqLabels                     src/27f-hq-room.js:189-210
 hqLay                        src/27f-hq-room.js:30-35
 hqLitUni                     src/27f-hq-room.js:104-117
-hqLive                       src/27f-hq-room.js:212-267
+hqLive                       src/27f-hq-room.js:215-270
 hqMgrAt                      src/27f-hq-room.js:36
 hqPx                         src/27f-hq-room.js:95-101
 hqRec                        tests/91zzzzzzy5-gpu-rooms-hq.js:11-19
 hqRelicSlot                  src/27c-ui-hq.js:507-537
 hqRender                     src/27c-ui-hq.js:319-476
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
-hqScene                      src/27f-hq-room.js:780-820
-hqScreenData                 src/27f-hq-room.js:528-580
+hqScene                      src/27f-hq-room.js:783-823
+hqScreenData                 src/27f-hq-room.js:531-583
 hqScreenKey                  src/27f-hq-room.js:41-50
 hqSel                        src/27c-ui-hq.js:5
-hqStations                   src/27f-hq-room.js:445-449
-hqTable                      src/27f-hq-room.js:584-640
-hqWallProps                  src/27f-hq-room.js:396-442
-hqWindowView                 src/27f-hq-room.js:753-776
+hqStations                   src/27f-hq-room.js:448-452
+hqTable                      src/27f-hq-room.js:587-643
+hqWallProps                  src/27f-hq-room.js:399-445
+hqWindowView                 src/27f-hq-room.js:756-779
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
 hud                          src/27z-telemetry.js:174-520
@@ -3347,8 +3347,9 @@ kinoAt                       src/27da-kino.js:39-45
 kinoBeam                     src/27da-kino.js:198-226
 kinoFrame                    src/27da-kino.js:63-67
 kinoHere                     src/27da-kino.js:46-49
-kinoOverlay                  src/27da-kino.js:233-280
+kinoOverlay                  src/27da-kino.js:236-282
 kinoScreen                   src/27da-kino.js:72-194
+kinoScreenRect               src/27da-kino.js:235
 kinoSeen                     src/27da-kino.js:36
 kinoWatch                    src/27da-kino.js:51-61
 kinoWeek                     src/27da-kino.js:38
@@ -5409,20 +5410,21 @@ routeValue                   src/12r-route.js:224-228
 routeVisit                   src/12r-route.js:179-191
 routeWhyNoPrice              src/12r-route.js:216-223
 RPG_CAP                      src/27f1-room-gpu.js:14
-RPG_IDS                      src/27f1-room-gpu.js:107
-RPG_NOP                      src/27f1-room-gpu.js:143
-RPG_NOP_R                    src/27f1-room-gpu.js:142
-RPG_NULL                     src/27f1-room-gpu.js:144
-RPG_WGSL                     src/27f1-room-gpu.js:119
-rpgBake                      src/27f1-room-gpu.js:111-117
+RPG_IDS                      src/27f1-room-gpu.js:117
+RPG_NOP                      src/27f1-room-gpu.js:153
+RPG_NOP_R                    src/27f1-room-gpu.js:152
+RPG_NULL                     src/27f1-room-gpu.js:154
+RPG_WGSL                     src/27f1-room-gpu.js:129
+rpgBake                      src/27f1-room-gpu.js:121-127
 rpgBindKit                   src/27f1-room-gpu.js:56-61
-rpgField                     src/27f1-room-gpu.js:90-105
+rpgField                     src/27f1-room-gpu.js:100-115
 rpgFrame                     src/27f1-room-gpu.js:31-49
 rpgGet                       src/27f1-room-gpu.js:15-28
 rpgImage                     src/27f1-room-gpu.js:63-75
+rpgImgBind                   src/27f1-room-gpu.js:79-85
 rpgPut                       src/27f1-room-gpu.js:52-55
-rpgShapes                    src/27f1-room-gpu.js:77-88
-rpgTexId                     src/27f1-room-gpu.js:108
+rpgShapes                    src/27f1-room-gpu.js:87-98
+rpgTexId                     src/27f1-room-gpu.js:118
 rpSig                        tests/91zzzzzzzzb-replay.js:9-12
 rtInit                       src/09a-roomtone.js:23-40
 RTONE                        src/09a-roomtone.js:22
@@ -8018,16 +8020,16 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/27d-ui-cantina.js · 32 КБ
   · кантина: помещение, а не список:1
 
-## src/27da-kino.js · 15 КБ
+## src/27da-kino.js · 16 КБ
   · кинопередвижка:1
 
 ## src/27e-ui-home.js · 44 КБ
   · дом: помещение, а не список:1
 
-## src/27f-hq-room.js · 50 КБ
+## src/27f-hq-room.js · 51 КБ
   · ШТАБ: рубка, а не список:1
 
-## src/27f1-room-gpu.js · 9 КБ
+## src/27f1-room-gpu.js · 10 КБ
   · комната в панели — на видеокарте (G11):1
 
 ## src/27g-deals.js · 16 КБ

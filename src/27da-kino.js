@@ -230,13 +230,15 @@ function kinoBeam(c,fromX,fromY,x,y,w,h){
    в тень, на задней стене полотно, через зал идёт луч, а перед нами спинки
    стульев и затылки — те же люди, только повёрнутые. Так и бывает: кантина
    не превращается в кинотеатр, она им прикидывается на вечер. */
+/* где висит полотно, в единицах зала (27d); его же читает проход света кантины —
+   полотно светится само, лампы зала его не освещают */
+function kinoScreenRect(W2,cy){const sw=W2*0.34,sh=sw*0.62;return {x:W2*0.50-sw*0.5,y:cy-sh*0.72,w:sw,h:sh};}
 function kinoOverlay(c,W2,H2,fy,cy,K,seed){
   if(!K)return;
   /* свет в зале гасят */
   c.fillStyle="rgba(8,10,14,.52)";
   c.fillRect(0,0,W2,H2);
-  const sw=W2*0.34, sh=sw*0.62;
-  const sx=W2*0.50-sw*0.5, sy=cy-sh*0.72;
+  const S=kinoScreenRect(W2,cy),sw=S.w,sh=S.h,sx=S.x,sy=S.y;
   kinoBeam(c,W2*0.06,cy-H2*0.22,sx,sy,sw,sh);
   kinoScreen(c,sx,sy,sw,sh,K,seed);
   /* отсвет полотна на потолке и на затылках */

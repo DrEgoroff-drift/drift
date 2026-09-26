@@ -98884,12 +98884,13 @@ function cantLitUni(W2,H2,k){
   u.fill(0);
   u.set([k,W2,fy,G.t],0);
   for(let i=0;i<5;i++)u[4+i]=i<xs.length?xs[i]:-1e4;
-  u.set([LT.n,LT.cone,LT.pow*(K9?.18:1)],9);
+  u.set([LT.cone,LT.pow*(K9?.18:1)],9);
   u.set([lc[0]/255,lc[1]/255,lc[2]/255,S.warm],12);
   u.set([acc[0]/255,acc[1]/255,acc[2]/255,(Math.sin(G.t*.31+seed%7)>-.92)?1:.35],16);
   u.set([14,20,cantSignW(),18],20);
   u.set([W2*.56,26,Math.min(W2*.40,240),64],24);
   u.set([cy,H2,LT.amb*(K9?.75:1),0],28);
+  if(K9){const S=kinoScreenRect(W2,cy);u.set([S.x,S.y,S.w,S.h],32);}
   return u;
 }
 const CANT_LIT_WGSL=`
@@ -98935,6 +98936,10 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   c+=lc*m*(.004+.40*min(cs,1.2))*pw;
   let vd=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.35)/(H2*.70),0.,1.);
   c*=1.-.40*vd*vd*(3.-2.*vd);
+  /* полотно кино светится само: лампы зала, пыль и виньетка его не трогают */
+  let ks=fu.v[8];
+  let ke=min(min(q.x-ks.x,ks.x+ks.z-q.x),min(q.y-ks.y,ks.y+ks.w-q.y))*k;
+  c=mix(c,base,select(0.,clamp(ke+.5,0.,1.),ks.z>0.));
   c=rshoulder(c);
   let px=floor(p*fu.res.x/max(fu.res.z,1.));
   let gr=rh1(px+vec2f(fract(t*.37)*91.,fract(t*.53)*57.))-.5;
@@ -99544,13 +99549,15 @@ function kinoBeam(c,fromX,fromY,x,y,w,h){
    в тень, на задней стене полотно, через зал идёт луч, а перед нами спинки
    стульев и затылки — те же люди, только повёрнутые. Так и бывает: кантина
    не превращается в кинотеатр, она им прикидывается на вечер. */
+/* где висит полотно, в единицах зала (27d); его же читает проход света кантины —
+   полотно светится само, лампы зала его не освещают */
+function kinoScreenRect(W2,cy){const sw=W2*0.34,sh=sw*0.62;return {x:W2*0.50-sw*0.5,y:cy-sh*0.72,w:sw,h:sh};}
 function kinoOverlay(c,W2,H2,fy,cy,K,seed){
   if(!K)return;
   /* свет в зале гасят */
   c.fillStyle="rgba(8,10,14,.52)";
   c.fillRect(0,0,W2,H2);
-  const sw=W2*0.34, sh=sw*0.62;
-  const sx=W2*0.50-sw*0.5, sy=cy-sh*0.72;
+  const S=kinoScreenRect(W2,cy),sw=S.w,sh=S.h,sx=S.x,sy=S.y;
   kinoBeam(c,W2*0.06,cy-H2*0.22,sx,sy,sw,sh);
   kinoScreen(c,sx,sy,sw,sh,K,seed);
   /* отсвет полотна на потолке и на затылках */
@@ -100468,8 +100475,11 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   /* пыль: видна в конусе лампы, в сумраке — едва */
   let m=rmotes(q,t,.20,.05)+rmotes(q+vec2f(37.,11.),t*.8,.33,.035)*.7;
   c+=cold*m*(.004+.45*min(cone,1.2));
-  /* виньетка: как у старой рубки, но по кривой, а не по прямой */
-  let vd=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.34)/(H2*.71),0.,1.);
+  /* виньетка: как у старой рубки, но по кривой, а не по прямой. Эллипс по залу, а не
+     круг по высоте: круглая в широком зале клала крайние места в полную тень (×.38) —
+     левый менеджер стоял в тёмном пятне и его табличка не читалась */
+  let vq=(q-vec2f(W2*.5,H2*.46))/vec2f(W2*.56,H2*.62);
+  let vd=clamp((length(vq)-.62)/.70,0.,1.);
   c*=1.-.62*vd*vd*(3.-2.*vd);
   /* зерно по яркости и дизеринг: тёмный градиент без ступенек */
   c=rshoulder(c);
@@ -101182,13 +101192,23 @@ function rpgImage(R,pass,B,rects,blend){
   if(B.draw&&B.dev!==GPU.dev)gpuBakeRedo(B);
   blend=blend||"over";
   const n=rects.length,o=rpgPut(R,n);if(o<0)return;
-  const f=R.sf,P=gpuPipe("kit.img",GPU_IMG_WGSL,blend);
+  const f=R.sf,P=gpuPipe("kit.img",GPU_IMG_WGSL,blend,gpuImgLayout());
   for(let i=0;i<n;i++){const r=rects[i],k=o+i*12;
     f[k]=r.x;f[k+1]=r.y;f[k+2]=r.w;f[k+3]=r.h;f[k+4]=r.a==null?1:r.a;f[k+5]=r.rot||0;f[k+6]=0;f[k+7]=GPU_MIP_LOD;
     f[k+8]=r.u0||0;f[k+9]=r.v0||0;f[k+10]=r.u1==null?1:r.u1;f[k+11]=r.v1==null?1:r.v1;}
   pass.setPipeline(P);
-  pass.setBindGroup(0,rpgBindKit(R,P,"img|"+blend+"|"+rpgTexId(B),[R.ku,R.sa,B.view,gpuMipSmp()]));
+  rpgImgBind(R,pass,B.view,gpuMipSmp());
   pass.draw(6,n,0,o/12);
+}
+/* привязки картинки — по раскладке набора (08c, две группы): группа 0 — форма и буфер панели,
+   одна на панель; группа 1 — текстура и сэмплер, из общего кэша набора по виду. Одна группа
+   на четыре привязки к этому конвейеру не подходит — кантина стояла чёрной (406 отказов за прогон) */
+function rpgImgBind(R,pass,view,smp){
+  const c=GPU.lay["kit.imgL"],d=GPU.dev;
+  if(R.g0L!==c.L0){R.g0L=c.L0;R.g0=d.createBindGroup({layout:c.L0,entries:[{binding:0,resource:{buffer:R.ku}},{binding:1,resource:{buffer:R.sa}}]});}
+  let m=c.g1.get(view);if(!m)c.g1.set(view,m=new Map());
+  let g=m.get(smp);if(!g)m.set(smp,g=d.createBindGroup({layout:c.L1,entries:[{binding:0,resource:view},{binding:1,resource:smp}]}));
+  pass.setBindGroup(0,R.g0);pass.setBindGroup(1,g);
 }
 /* фигуры: те же записи, что у gpuShapes (08c) — [вид,x0,y0,x1,y1,hw,soft,r,g,b,a,жёсткие] */
 function rpgShapes(R,pass,items,blend){
