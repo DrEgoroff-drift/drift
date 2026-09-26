@@ -12,6 +12,8 @@ could ever save.
 - **The ruler in the frame.** Under the giant's name in the system: «≈ N ваших корпусов в длину», counted from the hull you fly.
 - **Docking and visiting.** Within 760 of the body the cue offers ПРИЧАЛИТЬ. The visit window gives a paragraph of the place, a rumour from its people (seeded by the giant and a three-day bucket, logged once, НА КАРТУ like a station rumour) and, on the first visit only, a keepsake in ВЕЩИ (`G.giantsSeen[k]=2`, no new save field). The Дом водителя also lets you stay the night: 150 кр, hull +15 %, a full tank.
 
+- **Stage-6 picture pass.** The shipyard's built-in cell in the КБ drawing is now a pale blueprint stamp (fill at .15, dashed edge, letters in the same pale #dce8f4), quieter than the ochre frames of the things. The «Иней» cabinets in the base cross-section drop a step from pure white towards the wall tone and fall off under the lamp: lit at the top, about 28 % darker at the floor. The display and the padlock are unchanged.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M464: only the Дом водителя sells a service (the night); the other six give a paragraph, a rumour and a keepsake. Trade or jobs inside a giant were left for a later pass.
 - M464: the giant's length for the ruler is one fixed number (GIANT_LEN 1300) for all seven, not per body.

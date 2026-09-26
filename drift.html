@@ -76044,7 +76044,11 @@ BASE_ROOM.fridge=BASE_ROOM.fridgesub=function(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r){
   for(let i=0;i<2;i++){
     const fx=x0+w*.20+i*(fw+6),fyT=fy-fh;
     ctx.fillStyle="rgba(0,0,0,.30)";ctx.beginPath();ctx.ellipse(fx+fw/2,fy-1,fw*.6,2.6,0,0,TAU);ctx.fill();
-    bBox(fx,fyT,fw,fh,"rgba(164,172,172,.97)",lit,"rgba(0,0,0,.45)");
+    bBox(fx,fyT,fw,fh,"rgba(138,146,148,.97)",lit,"rgba(0,0,0,.45)");   /* белый на ступень ниже, к тону стен */
+    /* спад от лампы: верх в свете, у пола на ~28 % темнее — шкаф стоит в комнате, а не наклеен */
+    const fg=ctx.createLinearGradient(0,fyT,0,fy);
+    fg.addColorStop(0,"rgba(255,246,228,"+(.08*lit).toFixed(3)+")");fg.addColorStop(.35,"rgba(0,0,0,0)");fg.addColorStop(1,"rgba(0,0,0,.28)");
+    ctx.fillStyle=fg;ctx.fillRect(fx,fyT,fw,fh);
     /* шов морозилки и ручки */
     ctx.fillStyle="rgba(60,70,78,.9)";ctx.fillRect(fx+1,fyT+fh*.32,fw-2,1.2);
     ctx.fillStyle="rgba(90,100,108,.95)";ctx.fillRect(fx+fw-6,fyT+6,2,fh*.18);ctx.fillRect(fx+fw-6,fyT+fh*.40,2,fh*.30);
@@ -102634,11 +102638,12 @@ function kbDraw(c,s,d){
   for(const q of d.hold){c.fillStyle="rgba(80,190,110,.24)";c.fillRect(q.j*s+3,q.i*s+3,s-6,s-6);
     c.save();c.beginPath();c.rect(q.j*s+3,q.i*s+3,s-6,s-6);c.clip();
     for(let k=-s;k<s;k+=6){c.beginPath();c.moveTo(q.j*s+k,q.i*s);c.lineTo(q.j*s+k+s,q.i*s+s);c.stroke();}c.restore();}
-  /* встроенное верфью: белёсый оттиск с пунктиром — не охра вещей, её не берут в руки */
+  /* встроенное верфью: белёсый оттиск с пунктиром, как на синьке — тише охряных рамок вещей,
+     его не берут в руки */
   if(d.free){const q=d.free.q;
-    c.fillStyle="rgba(214,228,242,.80)";c.fillRect(q.j*s+6,q.i*s+6,s-12,s-12);
+    c.fillStyle="rgba(214,228,242,.15)";c.fillRect(q.j*s+6,q.i*s+6,s-12,s-12);
     c.strokeStyle="rgba(232,240,255,.95)";c.lineWidth=1.2;c.setLineDash([3,2]);c.strokeRect(q.j*s+3.5,q.i*s+3.5,s-7,s-7);c.setLineDash([]);
-    c.fillStyle="#0f2d52";c.font="bold "+Math.max(9,Math.floor(s*.22))+"px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+    c.fillStyle="#dce8f4";c.font="bold "+Math.max(9,Math.floor(s*.22))+"px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
     c.fillText(KB_FREE[d.free.by].ab,q.j*s+s/2,q.i*s+s/2);}
   d.items.forEach((it,k)=>{
     const on=KB.sel===k;

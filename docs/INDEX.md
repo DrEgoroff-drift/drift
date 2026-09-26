@@ -1201,7 +1201,7 @@ PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
 PLAN_DENS_MAX                src/27jb-kb.js:49
 PLAN_ETHER                   src/11r-plan.js:20-26
-PLAN_F                       src/27jb-kb.js:394
+PLAN_F                       src/27jb-kb.js:395
 PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
@@ -4109,7 +4109,7 @@ kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
 kbDensUp                     src/27jb-kb.js:84-92
 kbDone                       src/27jb-kb.js:329-349
-kbDraw                       src/27jb-kb.js:351-386
+kbDraw                       src/27jb-kb.js:351-387
 kbForeign                    src/27jb-kb.js:31
 kbFreeBy                     src/27jb-kb.js:60-64
 kbMoved                      src/27jb-kb.js:33-39
@@ -5044,7 +5044,7 @@ planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
 planExposure                 src/05e-plan.js:217-230
-planFactors                  src/27jb-kb.js:395-406
+planFactors                  src/27jb-kb.js:396-407
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
 planIsCore                   src/11r-plan.js:41
@@ -6145,7 +6145,7 @@ subBreakEven                 src/05b3-sub.js:20
 subBuy                       src/05b3-sub.js:21-33
 subCharge                    src/05b3-sub.js:36-50
 subFee                       src/05b3-sub.js:19
-subFightOffer                src/21ac4-base-fridge.js:84-95
+subFightOffer                src/21ac4-base-fridge.js:88-99
 subHereBy                    src/05b3-sub.js:12-15
 subOff                       src/05b3-sub.js:34
 subRush                      src/05b3-sub.js:65-71
@@ -7640,7 +7640,7 @@ zoomTo                       src/15-input.js:350
 ## src/21ac3-base-van.js · 10 КБ
   · «Буханка» — машина базы с именем (M498 хвост, M485):1
 
-## src/21ac4-base-fridge.js · 7 КБ
+## src/21ac4-base-fridge.js · 8 КБ
   · холодильник по подписке (M487, DESIGN-birchpunk §4.2):1
 
 ## src/21b-surface-deco.js · 34 КБ

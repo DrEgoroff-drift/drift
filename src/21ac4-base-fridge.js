@@ -62,7 +62,11 @@ BASE_ROOM.fridge=BASE_ROOM.fridgesub=function(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r){
   for(let i=0;i<2;i++){
     const fx=x0+w*.20+i*(fw+6),fyT=fy-fh;
     ctx.fillStyle="rgba(0,0,0,.30)";ctx.beginPath();ctx.ellipse(fx+fw/2,fy-1,fw*.6,2.6,0,0,TAU);ctx.fill();
-    bBox(fx,fyT,fw,fh,"rgba(164,172,172,.97)",lit,"rgba(0,0,0,.45)");
+    bBox(fx,fyT,fw,fh,"rgba(138,146,148,.97)",lit,"rgba(0,0,0,.45)");   /* белый на ступень ниже, к тону стен */
+    /* спад от лампы: верх в свете, у пола на ~28 % темнее — шкаф стоит в комнате, а не наклеен */
+    const fg=ctx.createLinearGradient(0,fyT,0,fy);
+    fg.addColorStop(0,"rgba(255,246,228,"+(.08*lit).toFixed(3)+")");fg.addColorStop(.35,"rgba(0,0,0,0)");fg.addColorStop(1,"rgba(0,0,0,.28)");
+    ctx.fillStyle=fg;ctx.fillRect(fx,fyT,fw,fh);
     /* шов морозилки и ручки */
     ctx.fillStyle="rgba(60,70,78,.9)";ctx.fillRect(fx+1,fyT+fh*.32,fw-2,1.2);
     ctx.fillStyle="rgba(90,100,108,.95)";ctx.fillRect(fx+fw-6,fyT+6,2,fh*.18);ctx.fillRect(fx+fw-6,fyT+fh*.40,2,fh*.30);

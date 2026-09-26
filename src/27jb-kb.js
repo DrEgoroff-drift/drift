@@ -362,11 +362,12 @@ function kbDraw(c,s,d){
   for(const q of d.hold){c.fillStyle="rgba(80,190,110,.24)";c.fillRect(q.j*s+3,q.i*s+3,s-6,s-6);
     c.save();c.beginPath();c.rect(q.j*s+3,q.i*s+3,s-6,s-6);c.clip();
     for(let k=-s;k<s;k+=6){c.beginPath();c.moveTo(q.j*s+k,q.i*s);c.lineTo(q.j*s+k+s,q.i*s+s);c.stroke();}c.restore();}
-  /* встроенное верфью: белёсый оттиск с пунктиром — не охра вещей, её не берут в руки */
+  /* встроенное верфью: белёсый оттиск с пунктиром, как на синьке — тише охряных рамок вещей,
+     его не берут в руки */
   if(d.free){const q=d.free.q;
-    c.fillStyle="rgba(214,228,242,.80)";c.fillRect(q.j*s+6,q.i*s+6,s-12,s-12);
+    c.fillStyle="rgba(214,228,242,.15)";c.fillRect(q.j*s+6,q.i*s+6,s-12,s-12);
     c.strokeStyle="rgba(232,240,255,.95)";c.lineWidth=1.2;c.setLineDash([3,2]);c.strokeRect(q.j*s+3.5,q.i*s+3.5,s-7,s-7);c.setLineDash([]);
-    c.fillStyle="#0f2d52";c.font="bold "+Math.max(9,Math.floor(s*.22))+"px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+    c.fillStyle="#dce8f4";c.font="bold "+Math.max(9,Math.floor(s*.22))+"px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
     c.fillText(KB_FREE[d.free.by].ab,q.j*s+s/2,q.i*s+s/2);}
   d.items.forEach((it,k)=>{
     const on=KB.sel===k;
