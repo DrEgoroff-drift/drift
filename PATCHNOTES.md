@@ -236,6 +236,8 @@ could ever save.
 
 - **M463 the bazaar: odd lots and a rumour at the stalls.** Beside the random part, РАЗНОЕ now carries a plate off a hull broken up here («Табличка с остова «…»», 40–90 кр, goes to ВЕЩИ, changes nothing — memory, not gain). Every other shift a separate counter sells one rarity from the barge-hold table (6–12 k кр), only one nobody holds yet; bought, it counts toward the hundred like a find and stays on the counter as ПРОДАНО. Under the awnings a junk-dealer tells one rumour per shift — seeded by the bazaar and the shift, so it never repeats the station of the same system — logged to ЛЮДИ, remembered on the map, with a НА КАРТУ button. `rumoursHere(seed)` takes an optional seed.
 
+- **M487 подписка: the cold store and the rush in a fight.** New base module «Иней» (`21ac4-base-fridge`), sold two ways in the build menu: bought outright (3 400 кр + 4 alloy, +4 good харч every shift for ever) or «по подписке» — 10 % up front and 136 кр per shift, only where Компания or Хай-Фронт own the base's system; the card says «к 23-й смене вы заплатите полную цену». When the fee does not go through, the door is locked: no харч that shift, and what it already gave stays («перестаёт давать, а не отнимает»). The journal warns a shift ahead (balance below the next fee), every 25th shift the tariff is «обновлён» with one trifle turned into an add-on. In the cut the owned fridge shows a green panel, the unpaid one a red panel and padlocks. In a fight, a subscribed instrument that is locked is offered on the prompt: «ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3» — one ДЕЙСТВИЕ, triple fee, unlocked now.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
   survived. Leave pay is 40 кр a day, a fixed number rather than tied to wages. People and institutions are
@@ -322,6 +324,7 @@ could ever save.
   week is seven chronicle days, which is one real week, so the union duty is slow by design.
 - M482 доводка stays paid with нейтронная крошка + 800 кр (M478), not with a node as DESIGN-shipyard §6 says: spending a node would break a set the player is collecting. Two welds per hull, +1 tier — already so.
 - M463: the rarity counter draws from the barge-hold pool, because the «hulk» and «cont» places named by `17b-finds` have no pool in `RARE_WHERE` (those finds never yield a rarity today). A bought rarity pre-empts that one barge find; the cautious take is one every other shift at 6–12 k.
+- M487: no subscription state is saved — base cells persist as `{k,hp}` only, so the subscribed fridge is its own kind (`fridgesub`) and whether it is locked is read from the balance each shift. Other base modules are not offered by subscription yet: each needs its own «stops giving» hook. In a long absence (bulk catch-up) the fridge, like the garden and the vat, neither feeds nor charges.
 
 ## 0.478.0 - the album on the engine
 

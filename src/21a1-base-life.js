@@ -175,6 +175,7 @@ function baseShiftRun(B,n){
     /* ферма (M496): зверь даёт своё, пока с ним говорят */
     if(typeof farmStep==="function")said|=farmStep(B,n)?1:0;
     if(typeof vanStep==="function")said|=vanStep(B,n)?1:0;   /* «Буханка» (M498) */
+    if(typeof fridgeStep==="function")said|=fridgeStep(B,n)?1:0;   /* «Иней», куплен или по подписке (M487) */
     /* опорный пункт экспедиции (M409, §44): трафик мира сворачивает сюда */
     if(typeof fwdStep==="function")said|=fwdStep(B,n)?1:0;
     /* и он же развивает базу (M407): строят все, правильно — один */

@@ -451,14 +451,18 @@ function updateBase(dt){
     /* постройка бывает заперта наукой: лаборатория до «Лаборатории» не ставится.
        Показываем её всё равно — игрок должен видеть, за чем идти. */
     const locked=M.needTech&&techLv(M.needTech)<=0;
-    const bad=(M.surfaceOnly&&S.row>0)||locked;
+    /* по подписке продаёт только фирма (M487): Компания или Хай-Фронт в системе базы */
+    const nofirm=!!(M.firm&&!M.firm(B));
+    const bad=(M.surfaceOnly&&S.row>0)||locked||nofirm;
     G.prompt="СТРОИТЬ: "+M.ru.toUpperCase()+"\n"+M.note+
       "\n"+baseCost(k,B).credits+" кр"+(M.cost.alloy?" + "+baseCost(k,B).alloy+" сплавов":"")+
       (locked?"\nНУЖНА НАУКА: "+TECH[M.needTech].ru.toUpperCase():"")+
       (M.surfaceOnly&&S.row>0?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
+      (nofirm?"\nПО ПОДПИСКЕ ПРОДАЮТ КОМПАНИЯ И ХАЙ-ФРОНТ — НЕ ЗДЕСЬ":"")+
       "\n◀ ▶ — выбор · ДЕЙСТВИЕ — построить";
     if(actEdge){
       if(locked)say("Сначала нужна наука\n«"+TECH[M.needTech].ru+"»");
+      else if(nofirm)say("Подписку здесь не продают\nКомпания или Хай-Фронт");
       else if(bad)say("Панель ставится только сверху");
       /* цена — через baseCost: смета смотрителя должна работать и здесь,
          иначе скидка показывалась в интерфейсе, а списывалось полное */

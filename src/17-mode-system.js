@@ -388,6 +388,7 @@ function updateSystem(dt){
   }
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
   /* кольцо железной дороги: стыковка и вестибюль (M471–M472) */
+  if(typeof subFightOffer==="function"&&subFightOffer(actEdge))return;   /* ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 в бою (M487) */
   if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
   if(typeof hotelInteract==="function"&&hotelInteract(sh))return;
