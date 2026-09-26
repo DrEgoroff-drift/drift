@@ -102,6 +102,7 @@ const WX_PLANES=[
   {s:1.95,sr:.75,l:2.1,w:2.3,a:.78,px:.26,r:1.5}
 ];
 function drawWeather(p,camx,camy,layer){
+  if(layer==="far"){gpuWeatherFar(p,camx,camy);return;}   /* дальний план — на движке (19cc) */
   const w=weatherOf(p);
   if(!w.kind)return;
   const k=weatherPower(p);

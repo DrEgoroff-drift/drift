@@ -93,7 +93,7 @@ const LGR=new Float32Array(60);
 /* гряды одним полем; false — видеокарты нет (Node, стенд без кадра): тогда их нет вовсе */
 function lgRidges(p,tr,camx,fA,fB){
   const T=lgHTex(tr);if(!T)return false;
-  const pass=gpuOver();if(!pass)return false;
+  const pass=gpuNext();if(!pass)return false;
   const U=LGR,D=skyDay(p),air=p.T.atm!=="отсутствует",sun=starRGB();
   const cel=(typeof celSun==="function")?celSun(p):{alt:.7};
   const day=clamp(1+cel.alt*2.2,0,1);
@@ -194,7 +194,7 @@ let LG_DUST=0;   /* сглаженная сила пыли из-под стру�
 /* тень и свет под кораблём одним полем; false — видеокарты нет */
 function lgUnder(L,tr,camx,camy,p){
   const T=lgHTex(tr);if(!T)return false;
-  const pass=gpuOver();if(!pass)return false;
+  const pass=gpuNext();if(!pass)return false;
   const U=LGU,len=landerLen(G.shipId),half=len*.5,air=p.T.atm!=="отсутствует";
   const lx=L.x-camx,ly=L.y-camy,gy=groundAt(tr,L.x)-camy,alt=Math.max(0,gy-ly-LAND_GY);
   LG_FIRE=lerp(LG_FIRE,(L.thrOn&&L.over<=0)?1:0,.22);

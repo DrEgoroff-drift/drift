@@ -95,7 +95,7 @@ function surfHeightTex(tr){
 /* обе дальние гряды одним полем; false — видеокарты нет, рисуют тайлы 2D */
 function surfRidgesGpu(tr,p,camx,camy,stpK){
   if(!GPU.on||!tr.farH)return false;
-  const pass=gpuOver();if(!pass)return false;
+  const pass=gpuNext();if(!pass)return false;
   const HT=surfHeightTex(tr),U=GSR;U.fill(0);
   const sA=tr.step*3.6*stpK,sB=tr.step*2.4*stpK;
   U[0]=camx*.22;U[1]=camy*.42+130;U[2]=sA;
@@ -174,7 +174,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
 }`;
 function surfGroundGpu(tr,camx,camy,fill,line,pal){
   if(!GPU.on||!pal||!tr.mat)return false;
-  const pass=gpuOver();if(!pass)return false;
+  const pass=gpuNext();if(!pass)return false;
   if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
   const top=Math.floor(tr.hMin-90),ch=Math.ceil(tr.hMax-tr.hMin+H+120);
   /* ключ и рецепт — ровно drawGround: ломоть, испечённый там, годится здесь и наоборот */

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 672 · символов верхнего уровня: 7007
+Файлов: 674 · символов верхнего уровня: 7009
 
 ## СИМВОЛЫ
 
@@ -80,6 +80,7 @@ ARTIFACTS                    src/12h-relic.js:48-63
 ASTRO_BOX                    src/20fa-life-gpu.js:190
 ASTRO_PAL                    src/20fa-life-gpu.js:191
 AST_N                        src/24-mode-belt.js:68
+AURORA_HUE                   src/19cb-gpu-sky-bodies.js:286
 AVR_BURN                     src/21a6-base-avral.js:23
 AVR_CHANCE                   src/21a6-base-avral.js:19
 AVR_HOLD                     src/21a6-base-avral.js:21
@@ -152,7 +153,7 @@ BLD_SHIFTS                   src/12ac-bld.js:27
 BLOCK_GOODS                  src/13b1-blockade.js:7
 BLOCK_LINES                  src/13b1-blockade.js:8
 BLOG                         src/21a1-base-life.js:50-114
-BLOOM_K                      src/19c-light.js:341
+BLOOM_K                      src/19c-light.js:298
 BLUEPRINTS                   src/12c-mgr-core.js:665-671
 BLUE_TAB                     src/01-core.js:135
 BMGR_BY                      src/21b2-base-mgr.js:32
@@ -293,13 +294,12 @@ CLOCKS                       src/11d-clocks.js:36-52
 CLOCK_KEYS                   src/11d-clocks.js:53
 CLOCK_PIN                    src/01-core.js:87
 CLOUD                        src/14-save.js:5
-CLOUDS_OFF                   src/19e-clouds.js:385
-CLOUD_BASE                   src/19e-clouds.js:381
+CLOUDS_OFF                   src/19e-clouds.js:68
+CLOUD_BASE                   src/19e-clouds.js:64
 CLOUD_KEYS                   src/02a-worldmix.js:80
-CLOUD_KIND                   src/19e-clouds.js:35-51
-CLOUD_SPR                    src/19e-clouds.js:61
+CLOUD_KIND                   src/19e-clouds.js:8-24
 CLOUD_ST                     src/14a-cloud.js:91
-CLOUD_TIER                   src/19e-clouds.js:366-379
+CLOUD_TIER                   src/19e-clouds.js:49-62
 CLR_HOURS                    src/05e-clearance.js:29
 CLR_KILLS                    src/05e-clearance.js:28
 COLS                         src/21ad-base-gpu.js:150
@@ -334,7 +334,6 @@ CREW_TRAITS                  src/12a-crew.js:20-27
 CREW_TRIP_QUEUE              src/12a-crew.js:348
 CREW_YIELD                   src/12a-crew.js:349
 CRYO_RECIPE                  src/21a1a-base-heat.js:33
-CSW                          src/19e-clouds.js:68
 CUE_EPS                      src/27m-scroll-cue.js:25
 CUE_INFO                     src/08-state.js:388
 CUE_LVL                      src/08-state.js:389
@@ -448,7 +447,6 @@ DS_Q                         src/12p1-doublespeak.js:27
 DUST_COL                     src/16a-space.js:250
 DUST_LAYERS                  src/16a-space.js:272
 DUST_TAB                     src/16a-space.js:251
-DW                           src/19e-clouds.js:269
 E2E_CRASHES                  tests/91zzzzz-e2e-life.js:37
 E2E_FRESH                    tests/91zzzzz-e2e-life.js:30
 ECON_CYCLE                   src/12ax-fx-econ.js:20
@@ -586,6 +584,8 @@ GATE_ZCAP                    tests/91zzzzzzy-gpugate.js:16
 GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
+GCL                          src/19cc-gpu-air.js:12
+GCL_WGSL                     src/19cc-gpu-air.js:13
 GC_ATL                       src/08cb-gpu-text.js:56
 GC_BACK                      src/08ca-gpu-canvas.js:511
 GC_BIG1                      src/08ca-gpu-canvas.js:460
@@ -632,6 +632,8 @@ GEW                          src/17-mode-system.js:48
 GEW_WGSL                     src/17-mode-system.js:49
 GEX                          src/16ga-gpu-trail.js:202
 GEX_WGSL                     src/16ga-gpu-trail.js:203
+GHZ                          src/19cc-gpu-air.js:138
+GHZ_WGSL                     src/19cc-gpu-air.js:139
 GIANTS                       src/17o-giants.js:18
 GIANTS_DEF                   src/17o-giants.js:9-17
 GIANT_CV                     src/17o-giants.js:68
@@ -714,12 +716,15 @@ GROUND_BAKING                src/19-mode-landing-ground.js:213
 GROVE_ETHER                  src/11j-grove.js:23-28
 GROVE_LIT                    src/11j-grove.js:126
 GROWN_LINES                  src/11q-grown.js:48-53
+GSB                          src/19cb-gpu-sky-bodies.js:19
+GSB_HEAD                     src/19cb-gpu-sky-bodies.js:20
+GSB_WGSL                     src/19cb-gpu-sky-bodies.js:23-74
 GSC                          src/21e2-surface-gpu.js:270
 GSC_WGSL                     src/21e2-surface-gpu.js:239
 GSG                          src/21e2-surface-gpu.js:130
 GSG_WGSL                     src/21e2-surface-gpu.js:131
-GSK                          src/19ca-gpu-sky.js:12
-GSK_WGSL                     src/19ca-gpu-sky.js:13
+GSK                          src/19ca-gpu-sky.js:84
+GSK_WGSL                     src/19ca-gpu-sky.js:85
 GSL                          src/21e2-surface-gpu.js:341
 GSL_WGSL                     src/21e2-surface-gpu.js:309
 GSN                          src/21e2-surface-gpu.js:452
@@ -756,6 +761,8 @@ GUN_NAMED                    src/05b-guns.js:121-162
 GUN_NAMED_BY_ID              src/05b-guns.js:163
 GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
+GWX                          src/19cc-gpu-air.js:160
+GWX_WGSL                     src/19cc-gpu-air.js:161
 G_BOOT_KEYS                  tests/90-harness.js:209
 GcCtx                        src/08ca-gpu-canvas.js:97-244
 GcGrad                       src/08ca-gpu-canvas.js:69-87
@@ -1648,14 +1655,15 @@ SKIPPED_PROBE                tests/90-harness.js:59
 SKIPPED_SKIP                 tests/90-harness.js:65
 SKIPPED_SLOW                 tests/90-harness.js:61
 SKY_BULL                     src/11ak-skywatch.js:27
-SKY_GPU                      src/19ca-gpu-sky.js:65
 SKY_HOR                      src/11ak-skywatch.js:80
 SKY_KINDS                    src/11ak-skywatch.js:29-33
 SKY_LAPSE                    src/11ak-skywatch.js:28
-SKY_LOUD                     src/19b-sky.js:13
+SKY_LOUD                     src/19b-sky.js:15
+SKY_NOISE_WGSL               src/19ca-gpu-sky.js:71
 SKY_OFF                      src/11ak-skywatch.js:123
-SKY_QUIET                    src/19b-sky.js:14
-SKY_WORLD_KINDS              src/19b-sky.js:136-144
+SKY_PIN                      src/19ca-gpu-sky.js:32
+SKY_QUIET                    src/19b-sky.js:16
+SKY_WORLD_KINDS              src/19b-sky.js:72-80
 SLOT_CACHE                   src/05-parts.js:226
 SLOW_CYCLE                   src/11o-slow.js:24
 SLOW_ETHER                   src/11o-slow.js:25-29
@@ -1744,7 +1752,7 @@ SUITE_WINS                   tests/90-harness.js:89
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:132
-SURF_HOR                     src/19c-light.js:212
+SURF_HOR                     src/19c-light.js:202
 SURF_NEAR                    src/21e2-surface-gpu.js:453
 SURF_RF                      src/21e2-surface-gpu.js:411
 SURF_SHADOW                  src/21e2-surface-gpu.js:271
@@ -2035,7 +2043,7 @@ assignToBase                 src/12a-crew.js:181-190
 audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
-autoLandInputs               src/19-mode-landing.js:44-67
+autoLandInputs               src/19-mode-landing.js:45-68
 autosave                     src/14a-cloud.js:52-55
 avrDraw                      src/21a6-base-avral.js:133-159
 avrHands                     src/21a6-base-avral.js:59-73
@@ -2462,7 +2470,7 @@ cantView                     src/27d-ui-cantina-props.js:82-151
 cantinaPool                  src/12c-mgr-core.js:260-266
 cantinaScene                 src/27c-ui-hq.js:270-310
 capIv                        src/28-loop.js:300
-capLum                       src/19e-clouds.js:55-60
+capLum                       src/19e-clouds.js:28-33
 capOf                        src/05-parts.js:221-225
 capRu                        src/11t-rumours.js:58
 capSample                    src/28-loop.js:309-314
@@ -2673,7 +2681,6 @@ circPaperName                src/12aw-circ.js:133
 circPut                      src/12aw-circ.js:26-30
 circSay                      src/12aw-circ.js:134-138
 circValid                    src/12aw-circ.js:34-80
-cirrusSprite                 src/19e-clouds.js:226-248
 ckLine                       src/24bc-belt-hud.js:38-41
 ckT                          src/24bc-belt-hud.js:36
 ckgAtlas                     src/24bc-belt-hud.js:64-88
@@ -2742,9 +2749,8 @@ cloudOn                      src/14a-cloud.js:71
 cloudPull                    src/14a-cloud.js:154-168
 cloudPush                    src/14a-cloud.js:132-153
 cloudRetry                   src/14a-cloud.js:120-125
-cloudSprite                  src/19e-clouds.js:75-222
 cloudTok                     src/14a-cloud.js:68
-cloudsOf                     src/19e-clouds.js:331-360
+cloudsOf                     src/19e-clouds.js:34-43
 clrHours                     src/05e-clearance.js:30
 clrTick                      src/05e-clearance.js:97-106
 cockpitPaint                 src/25-cockpit.js:202-404
@@ -2921,7 +2927,6 @@ dealRun                      src/27n-ui-deal.js:20
 dealTaken                    src/27g-deals.js:159
 dealsTick                    src/27g-deals.js:201-220
 decRu                        src/27y-hud-words.js:43
-deckSprite                   src/19e-clouds.js:270-330
 decoAntenna                  src/21bb-deco-biomes.js:283-296
 decoBlister                  src/21bb-deco-biomes.js:209-219
 decoBoulderLone              src/21bb-deco-biomes.js:121-131
@@ -3137,10 +3142,8 @@ drawCaveRock                 src/22-mode-cave.js:470-600
 drawCaveSolid                src/22a-cave-deco.js:241-299
 drawCaveWater                src/22a-cave-deco.js:300-324
 drawCaveWorld                src/22-mode-cave.js:647-716
-drawCelest                   src/06a-celest.js:167-218
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
-drawClouds                   src/19e-clouds.js:386-528
 drawCockpit                  src/25-cockpit.js:405-680
 drawCombat                   src/13-pirates.js:365-467
 drawCosmMark                 src/12va-wander-cosm.js:112-132
@@ -3155,7 +3158,7 @@ drawDigLight                 src/23b-dig-gpu.js:152-164
 drawDigWorld                 src/23a-dig-draw.js:46-517
 drawDronesMap                src/12e-drone-flight.js:296-314
 drawDronesSystem             src/12e-drone-flight.js:252-283
-drawDustMotes                src/19-mode-landing.js:271-284
+drawDustMotes                src/19-mode-landing.js:177-190
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:91-113
 drawExhaust                  src/16a-space.js:323
@@ -3193,7 +3196,7 @@ drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-52
 drawLander                   src/19f-lander.js:56-358
-drawLanding                  src/19-mode-landing.js:285-413
+drawLanding                  src/19-mode-landing.js:191-318
 drawLawRing                  src/12al2-laws.js:136-162
 drawLoreMarks                src/12q-lore.js:235-266
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
@@ -3234,9 +3237,8 @@ drawScoop                    src/19a-mode-scoop.js:181-236
 drawSeal                     src/03e-hull-draw.js:47-58
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:71-111
-drawSkyBase                  src/19c-light.js:298-332
-drawSkyBodies                src/19b-sky.js:96-128
-drawSkyLayer                 src/19-mode-landing.js:171-269
+drawSkyBase                  src/19c-light.js:290
+drawSkyLayer                 src/19-mode-landing.js:172-175
 drawSpa                      src/29i-spa-draw.js:62-80
 drawStModule                 src/17a-station-mod.js:105-216
 drawStRod                    src/17a-station-mod.js:97-104
@@ -3249,7 +3251,7 @@ drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:284-298
 drawSurfaceHud               src/21e-surface-draw.js:21-115
-drawSurfaceWorld             src/21e1-surface-world.js:10-653
+drawSurfaceWorld             src/21e1-surface-world.js:10-650
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:725-1051
 drawSysLane                  src/17g-sys-lane.js:108-134
@@ -3272,7 +3274,7 @@ drawWanderRoom               src/24c-mode-wanderer-draw.js:134-155
 drawWanderer                 src/12v-wander.js:337-441
 drawWater                    src/21e-surface-draw.js:194-282
 drawWear                     src/12s-wear.js:102-171
-drawWeather                  src/19d-weather.js:104-234
+drawWeather                  src/19d-weather.js:104-235
 drawWinter                   src/29g-winter-draw.js:365-386
 drawWorld                    src/28-loop.js:401-404
 drawWorldIn                  src/28-loop.js:405-428
@@ -3762,7 +3764,7 @@ gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
 gpuBargeBody                 src/12l-barge.js:543-550
 gpuBind                      src/08c-gpu-kit.js:38-44
-gpuBloom                     src/08b-gpu.js:649-654
+gpuBloom                     src/08b-gpu.js:666-671
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:31-36
 gpuBursts                    src/13z-gpu-combat.js:277-297
@@ -3771,6 +3773,7 @@ gpuChunkAt                   src/18c-chunks.js:209-215
 gpuChunkBake                 src/18c-chunks.js:179-183
 gpuChunkPut                  src/18c-chunks.js:186-190
 gpuChunkStore                src/18c-chunks.js:204-208
+gpuClouds                    src/19cc-gpu-air.js:100-135
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:436-446
 gpuCvLevel                   src/08c-gpu-kit.js:80-91
@@ -3785,7 +3788,7 @@ gpuFieldBaked                src/08c-gpu-kit.js:385-395
 gpuFieldLayout               src/08c-gpu-kit.js:343-349
 gpuFrame                     src/08b-gpu.js:544-557
 gpuFrontClean                src/08c-gpu-kit.js:126-131
-gpuFrontCopy                 src/08b-gpu.js:591-593
+gpuFrontCopy                 src/08b-gpu.js:594-596
 gpuFrontHook                 src/08c-gpu-kit.js:115-124
 gpuHaze                      src/08b-gpu.js:459
 gpuHudDpr                    src/08bh-gpu-hud.js:7
@@ -3797,17 +3800,18 @@ gpuKitU                      src/08c-gpu-kit.js:174-179
 gpuLight                     src/08b-gpu.js:461
 gpuLitSprite                 src/17c-system-draw.js:554-569
 gpuLtWrite                   src/08b-gpu.js:465-472
-gpuManual                    src/08b-gpu.js:618-623
+gpuManual                    src/08b-gpu.js:635-640
 gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
 gpuMoon                      src/17ga-gpu-planets.js:440-445
 gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
 gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
+gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOvFrontView               src/08bi-gpu-ovl.js:249
-gpuOver                      src/08b-gpu.js:594-614
+gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
@@ -3819,18 +3823,19 @@ gpuPipesWarm                 src/08b0-gpu-pipe.js:60-72
 gpuPirateBody                src/12i-pirate-hull.js:425-434
 gpuPirateLive                src/12i-pirate-hull.js:441-485
 gpuPlanet                    src/17ga-gpu-planets.js:340-357
-gpuPresent                   src/08b-gpu.js:656-669
+gpuPresent                   src/08b-gpu.js:673-686
 gpuQuad                      src/08c-gpu-kit.js:307-311
 gpuResize                    src/08b-gpu.js:392-434
-gpuScene                     src/08b-gpu.js:561-571
-gpuScene3D                   src/08b-gpu.js:575-583
+gpuScene                     src/08b-gpu.js:561-574
+gpuScene3D                   src/08b-gpu.js:578-586
 gpuScr                       src/08c-gpu-kit.js:173
 gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:312-323
 gpuShock                     src/08b-gpu.js:460
-gpuSky                       src/19ca-gpu-sky.js:66-82
+gpuSky                       src/19ca-gpu-sky.js:254-292
+gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:287-378
 gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:201-219
 gpuSpaceTitle                src/16g-gpu-space.js:221-232
@@ -3847,8 +3852,9 @@ gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
 gpuUni                       src/08b-gpu.js:526-540
 gpuWake                      src/16ga-gpu-trail.js:107-139
-gpuWorld                     src/08b-gpu.js:626-647
-gradePass                    src/19c-light.js:260-296
+gpuWeatherFar                src/19cc-gpu-air.js:210-238
+gpuWorld                     src/08b-gpu.js:643-664
+gradePass                    src/19c-light.js:250-286
 greenAll                     src/21g-greenhouse.js:26-30
 greenCanSow                  src/21g-greenhouse.js:50-52
 greenDraw                    src/21g-greenhouse.js:201-206
@@ -3886,7 +3892,7 @@ grokWant                     src/12tb-grok.js:41-44
 groundAt                     src/07a-terrain.js:199-202
 groundChunkPaint             src/19-mode-landing-ground.js:231-249
 groundChunkStore             src/19-mode-landing-ground.js:218-229
-groundShadow                 src/19-mode-landing.js:155-168
+groundShadow                 src/19-mode-landing.js:156-169
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30-36
 groveDepthHere               src/11j-grove.js:37
@@ -3988,7 +3994,7 @@ haulSide                     src/16c-rescue.js:236
 haulStart                    src/16c-rescue.js:149-165
 haulTick                     src/16c-rescue.js:297-415
 hazardBand                   src/25-cockpit.js:166-177
-hazeBand                     src/19c-light.js:191-198
+hazeBand                     src/19cc-gpu-air.js:149-157
 hazeDone                     src/18d-postfx.js:68
 hazeFar                      src/19c-light.js:167-188
 hazeGrab                     src/18d-postfx.js:33-50
@@ -4265,7 +4271,7 @@ hudFloorMeasure              src/27z-telemetry.js:142-173
 hudNumDirty                  src/08-state.js:101
 hudRect                      src/08-state.js:127-133
 hudWake                      src/27z-telemetry.js:60-69
-hueToward                    src/19b-sky.js:53-64
+hueToward                    src/19b-sky.js:55-66
 hullBakeDraw                 src/03e1-hull-bake.js:43-75
 hullBakeGet                  src/03e1-hull-bake.js:76-105
 hullBakeKey                  src/03e1-hull-bake.js:32-36
@@ -4497,7 +4503,7 @@ labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 labelW                       src/12ai-fleet.js:134
 landOnTestPlanet             tests/90-harness.js:420-426
-landStartY                   src/19-mode-landing.js:38-43
+landStartY                   src/19-mode-landing.js:39-44
 landerGearTick               src/19f-lander.js:15-23
 landerInk                    tests/91j-art.js:155-169
 landerLen                    src/19f-lander.js:11
@@ -4588,16 +4594,16 @@ lifePlantBox                 src/20fa-life-gpu.js:391-396
 lifePlantGpu                 src/20fa-life-gpu.js:400-427
 lifeSprite                   src/20fa-life-gpu.js:146-183
 lifeTint                     src/20fa-life-gpu.js:276-283
-lightShafts                  src/19c-light.js:223-256
+lightShafts                  src/19c-light.js:213-246
 lightsAll                    src/11g-lights.js:24
 lightsArrive                 src/11g-lights.js:53-56
-lightsCaveFind               src/11g-lights.js:190-197
+lightsCaveFind               src/11g-lights.js:159-166
 lightsConj                   src/11g-lights.js:57-65
 lightsCorePlanet             src/11g-lights.js:40-44
 lightsDepthAt                src/11g-lights.js:26-31
 lightsDepthHere              src/11g-lights.js:32
-lightsDrawReveal             src/11g-lights.js:148-181
-lightsEnter                  src/11g-lights.js:183-188
+lightsDrawReveal             src/11g-lights.js:117-150
+lightsEnter                  src/11g-lights.js:152-157
 lightsEntryX                 src/11g-lights.js:83-88
 lightsGroundLine             src/11g-lights.js:90-97
 lightsIsCore                 src/11g-lights.js:45-48
@@ -4605,8 +4611,7 @@ lightsNight                  src/11g-lights.js:68-71
 lightsOpen                   src/11g-lights.js:79-81
 lightsPeriod                 src/11g-lights.js:34-38
 lightsShut                   src/11g-lights.js:73-77
-lightsShutters               src/11g-lights.js:132-143
-lightsSuns                   src/11g-lights.js:102-128
+lightsShutters               src/11g-lights.js:101-112
 linkWord                     src/21a2-base-link.js:64
 litRGB                       src/19c-light.js:125-135
 liveScreens                  tests/91zzzzy-bake.js:43-46
@@ -6230,38 +6235,35 @@ siteTestStation              tests/91x-hold-site.js:2-9
 sixthGone                    src/12k-stories-d.js:77
 sizeIdx                      src/05d-mounts.js:69
 skyAll                       src/11ak-skywatch.js:34-38
-skyAurora                    src/19b-sky.js:445-469
 skyBlock                     src/11ak-skywatch.js:236-265
+skyBodyDraw                  src/19cb-gpu-sky-bodies.js:259-263
 skyCanReport                 src/11ak-skywatch.js:204-207
-skyComet                     src/19b-sky.js:508-527
+skyClip                      src/19cb-gpu-sky-bodies.js:253-258
+skyCloudCols                 src/19cc-gpu-air.js:90-99
 skyCometName                 src/11ak-skywatch.js:200-203
 skyDay                       src/19c-light.js:78-95
 skyDrop                      src/11ak-skywatch.js:148-152
-skyField                     src/19b-sky.js:551-563
 skyFind                      src/11ak-skywatch.js:47-56
-skyGalaxy                    src/19b-sky.js:382-403
-skyGiant                     src/19b-sky.js:222-380
-skyGrad                      src/19-mode-landing.js:138-147
-skyHole                      src/19b-sky.js:405-443
-skyMoon                      src/19b-sky.js:471-493
+skyGiantCols                 src/19cb-gpu-sky-bodies.js:267-285
+skyGrad                      src/19-mode-landing.js:139-148
+skyMeteor                    src/19ca-gpu-sky.js:240-251
 skyNameComet                 src/11ak-skywatch.js:186-198
-skyNeb                       src/19b-sky.js:494-506
-skyNebula                    src/19b-sky.js:66-95
+skyNebCols                   src/19ca-gpu-sky.js:234-238
 skyOfferHere                 src/11ak-skywatch.js:124-137
 skyOn                        src/11ak-skywatch.js:59-66
 skyPick                      src/11ak-skywatch.js:81-120
-skyPulsar                    src/19b-sky.js:529-549
+skyPin                       src/19ca-gpu-sky.js:34
 skyReport                    src/11ak-skywatch.js:208-232
-skyScene                     src/19b-sky.js:15-34
+skyReroll                    src/19ca-gpu-sky.js:36-41
+skyRoll                      src/19ca-gpu-sky.js:43-69
+skyScene                     src/19b-sky.js:17-36
 skyTake                      src/11ak-skywatch.js:138-147
 skyTestRuns                  tests/91w-celest.js:83-93
 skyTestSci                   tests/91w-celest.js:74-81
 skyTick                      src/11ak-skywatch.js:157-182
-skyTint                      src/19b-sky.js:44-47
-skyU                         src/19b-sky.js:41
+skyTint                      src/19b-sky.js:46-49
+skyU                         src/19b-sky.js:43
 skyWhere                     src/11ak-skywatch.js:39
-skyWorld                     src/19b-sky.js:191-220
-skyWorldTex                  src/19b-sky.js:145-190
 slotAnchors                  src/05-parts.js:254-307
 slotsOf                      src/05-parts.js:227-249
 slowAll                      src/11o-slow.js:30
@@ -6432,7 +6434,7 @@ starAt                       src/06-galaxy.js:2
 starMove                     src/16-flight.js:30-39
 starRGB                      src/19c-light.js:49-59
 start                        src/15-input.js:624-632
-startLanding                 src/19-mode-landing.js:2-33
+startLanding                 src/19-mode-landing.js:2-34
 startScoop                   src/19a-mode-scoop.js:51-61
 stat                         src/08-state.js:297-366
 statPreview                  src/05-parts.js:417-425
@@ -6508,7 +6510,7 @@ suiteOrder                   tests/90-harness.js:464-471
 suiteWin                     tests/90-harness.js:94-99
 sunAzQ                       src/19c-light.js:26-29
 sunDirSet                    src/19c-light.js:30-37
-sunSpot                      src/19c-light.js:213-218
+sunSpot                      src/19c-light.js:203-208
 supportCall                  src/05b1-warranty.js:18-25
 supportQueue                 src/05b1-warranty.js:27-32
 supportTick                  src/05b1-warranty.js:33-42
@@ -6709,7 +6711,7 @@ updateCaveDeco               src/22a-cave-deco.js:205-228
 updateCombat                 src/13-pirates.js:119-304
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:160-200
-updateLanding                src/19-mode-landing.js:68-137
+updateLanding                src/19-mode-landing.js:69-138
 updateMap                    src/18-mode-map.js:571-584
 updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:65-112
@@ -7110,7 +7112,7 @@ zoomTo                       src/15-input.js:350
   · галактика:1
   · испечённое живёт не дольше, чем нужно (M332):4
 
-## src/06a-celest.js · 14 КБ
+## src/06a-celest.js · 11 КБ
   · небо ведёт календарь:1
 
 ## src/06b-region.js · 7 КБ
@@ -7145,7 +7147,7 @@ zoomTo                       src/15-input.js:350
 ## src/08a-statehash.js · 6 КБ
   · хэш состояния (M441):1
 
-## src/08b-gpu.js · 52 КБ
+## src/08b-gpu.js · 53 КБ
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08b0-gpu-pipe.js · 6 КБ
@@ -7280,7 +7282,7 @@ zoomTo                       src/15-input.js:350
 ## src/11f-mirror.js · 7 КБ
   · зеркало: чужой эфир без источника:1
 
-## src/11g-lights.js · 12 КБ
+## src/11g-lights.js · 10 КБ
   · три света: область без ночи:1
 
 ## src/11h-hours.js · 8 КБ
@@ -7901,7 +7903,7 @@ zoomTo                       src/15-input.js:350
 ## src/19-mode-landing-ground.js · 26 КБ
   · посадка: разрез грунта:1
 
-## src/19-mode-landing.js · 27 КБ
+## src/19-mode-landing.js · 20 КБ
   · посадка:1
 
 ## src/19a-mode-scoop.js · 16 КБ
@@ -7912,25 +7914,31 @@ zoomTo                       src/15-input.js:350
   · течение поверх неба: кромки сдвига, валы, штрихи, коридор:148
   · помехи, след и корабль:262
 
-## src/19b-sky.js · 34 КБ
+## src/19b-sky.js · 6 КБ
   · небо:1
 
-## src/19c-light.js · 27 КБ
+## src/19c-light.js · 24 КБ
   · свет и воздух:1
-  · свечение (bloom) — M243:334
-  · зерно и виньетка — один слой на все сцены (M244):344
+  · свечение (bloom) — M243:291
+  · зерно и виньетка — один слой на все сцены (M244):301
 
 ## src/19c1-cast.js · 9 КБ
   · падающие тени: рельеф затеняет сам себя (P5, M433):1
 
-## src/19ca-gpu-sky.js · 5 КБ
-  · небо грунта на видеокарте (G5, docs/DESIGN-gpu.md):1
+## src/19ca-gpu-sky.js · 18 КБ
+  · небо на движке (переписано 27.09.2026, слово автора):1
 
-## src/19d-weather.js · 13 КБ
+## src/19cb-gpu-sky-bodies.js · 19 КБ
+  · тела неба на движке (27.09.2026):1
+
+## src/19cc-gpu-air.js · 12 КБ
+  · облака, дымка и дальняя погода на движке (27.09.2026):1
+
+## src/19d-weather.js · 14 КБ
   · погода:1
 
-## src/19e-clouds.js · 41 КБ
-  · облака:1
+## src/19e-clouds.js · 5 КБ
+  · облака: данные планеты:1
 
 ## src/19f-lander.js · 22 КБ
   · посадочный корабль:1

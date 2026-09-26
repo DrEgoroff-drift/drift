@@ -186,16 +186,6 @@ function hazeFar(p,k){
   });
   return "rgb("+v.map(Math.round).join(",")+")";
 }
-/* дымка в низинах и у горизонта: одна полоса градиента, но она делает
-   глубину сильнее, чем любой дополнительный слой рельефа */
-function hazeBand(p,y0,h){
-  const c=ambRGB(p);                          /* дымка — сегодняшним воздухом */
-  const g=ctx.createLinearGradient(0,y0-h,0,y0+h*.35);
-  g.addColorStop(0,"rgba("+c.join(",")+",0)");
-  g.addColorStop(.55,"rgba("+c.join(",")+","+(p.T.atm==="отсутствует"?.10:.34)+")");
-  g.addColorStop(1,"rgba("+c.join(",")+",0)");
-  ctx.fillStyle=g;ctx.fillRect(0,y0-h,W,h*1.35);
-}
 /* ── где на небе звезда (M172) ──
    Час суток в игре был давно (celSun, 06a), но светило всё это время стояло
    прибитым в W*.78, H*.16: менялась только заливка темноты поверх кадра.
@@ -294,43 +284,10 @@ function gradePass(p){
     ctx.fillStyle=t;ctx.fillRect(0,0,W,H);
   }),0,0,W,H);
 }
-/* небо-подложка: вертикальный градиент на весь экран, один раз на планету */
-function drawSkyBase(p){
-  if(gpuSky(p))return;   /* небо, зарево и диск — на видеокарте (19ca) */
-  const s=p.T.sky, sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a", hasAir=p.T.atm!=="отсутствует";
-  /* час суток (06a): слой печётся на 48 делений дня — небо темнеет к ночи, а
-     зарево гнётся за звездой: сидит на горизонте с её стороны и тем ярче,
-     чем она ниже (хвост G7). Ночью зарева нет — нечему рассеиваться */
-  const sun=celSun(p), hb=Math.round(sun.ph*48)%48, nite=surfNight(p);
-  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(",")+"|"+sc+"|"+hasAir+"|"+hb,()=>{
-    ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
-    if(hasAir){
-      const c=hex2rgb(sc), day=clamp(1+sun.alt*2.2,0,1);
-      /* полоса зарева — кисть у горизонта, не треть листа (M304, §13):
-         была H*.42→.78, стала H*.54→.74 */
-      const g=ctx.createLinearGradient(0,H*.54,0,H*.74);
-      g.addColorStop(0,"rgba("+c.join(",")+",0)");
-      g.addColorStop(.7,"rgba("+c.join(",")+","+(.10*day).toFixed(3)+")");
-      g.addColorStop(1,"rgba("+c.join(",")+","+(.16*day).toFixed(3)+")");
-      ctx.fillStyle=g;ctx.fillRect(0,H*.54,W,H*.20);
-      /* наклонное зарево: пятно у горизонта там, где звезда, сильнее всего
-         на восходе и закате — это и есть «гнётся по высоте» */
-      const low=clamp(1-Math.abs(sun.alt)*1.4,0,1)*day;
-      if(low>.02){
-        /* знак тот же, что у sunSpot: зарево обязано быть с той стороны, где
-           звезда. Раньше знаки расходились, и на закате небо горело на востоке */
-        const gx=W*(.5-sun.az*.42), gy=H*.74;
-        const rg=ctx.createRadialGradient(gx,gy,8,gx,gy,W*.55);
-        rg.addColorStop(0,"rgba("+c.join(",")+","+(.30*low).toFixed(3)+")");
-        rg.addColorStop(.5,"rgba("+c.join(",")+","+(.10*low).toFixed(3)+")");
-        rg.addColorStop(1,"rgba("+c.join(",")+",0)");
-        ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
-      }
-    }
-    if(nite>0){ctx.fillStyle="rgba(4,6,14,"+(nite*.9).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
-  }),0,0,W,H);
-}
 
+/* небо-подложка — на движке (19ca): градиент, заря, звёзды, полоса, диск.
+   2D-пути нет (DECISIONS: без WebGPU игра называет браузеры) */
+function drawSkyBase(p,cx,cy,hor){gpuSky(p,cx||0,cy||0,hor);}
 /* ══════════════ свечение (bloom) — M243 ══════════════
    «Свет не светит» — общая претензия ко всем сценам: лампа рисовалась пятном,
    но вокруг неё ничего не происходило. Настоящий ореол вокруг ярких мест —

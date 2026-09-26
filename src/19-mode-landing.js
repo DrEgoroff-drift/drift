@@ -23,6 +23,7 @@ function startLanding(p){
      а рельеф под ними к этому моменту уже выровнен (21b-surface-deco) */
   genDeco(tr,p);
   G.ap=null;
+  skyReroll(p);           /* состав неба — свой на каждую посадку (19ca) */
   const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
@@ -166,106 +167,11 @@ function groundShadow(x,y,rx,ry){
   ctx.beginPath();ctx.ellipse(x+off,y,rx*kx,ry,0,0,TAU);ctx.fill();
   ctx.restore();
 }
-/* небо: солнечное марево + процедурные облака для миров с атмосферой —
-   вызывается один раз в кадр поверх заливки skyGrad, перед рельефом */
+/* небо над горизонтом: тела сцены, календарь, три света и облака — на движке
+   (19cb, 19cc). Состав от зерна посадки, лицо от планеты (19ca) */
 function drawSkyLayer(p,camx,camy){
-  const hasAtm=p.T.atm!=="отсутствует";
-  /* небо садится вместе со светом: без этого затмение выглядело так, будто
-     грунт погас, а день на месте (06a-celest) */
-  const DK=typeof celDark==="function"?celDark():0;
-  if(DK>.02){
-    /* небу достаётся половина: остальное сводит gradePass на весь кадр, иначе
-       затмение получается «тёмное небо над дневной планетой» */
-    ctx.fillStyle="rgba(8,12,26,"+(.34*DK).toFixed(3)+")";
-    ctx.fillRect(0,0,W,H);
-  }
-  /* звезда ходит по небу (M172, sunSpot в 19c): зарево, диск, календарь и
-     облака берут одну точку, поэтому полдень, закат и ночь — разные кадры,
-     а не одна картинка разной яркости */
-  const SS=sunSpot(p);
-  const sunX=SS.x,sunY=SS.y;
-  const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
-  /* ── звезда как тело, а не круг из ящика canvas (П1 марафона) ──
-     Прежний вид — идеальный круг с обрывом альфы на кромке плюс радиальный
-     градиент поверх готового неба: ровно тот «naked radial gradient», который
-     DESIGN-craft §1 называет грехом. Три поимённо:
-     1. плато на стопе .12 у зарева рисовало концентрическое КОЛЬЦО — автор
-        ткнул в него пальцем («кругов дохуя», 29.08.2026);
-     2. кромка диска обрывалась на альфе .55 — круг-наклейка;
-     3. зарево светилось и в вакууме, где рассеивать нечего (закону «в вакууме
-        лучей не бывает» шафты уже подчинялись, а зарево — нет).
-     Зарево печётся спрайтом в единичных координатах и кладётся одним
-     drawImage; падение — гладкая степенная кривая без плато. Под горизонтом
-     остаётся зарево заката. */
-  {
-    const under=clamp((SS.alt+.42)/.5,0,1);        /* 0 — глубокая ночь */
-    const a=SS.up?1:under*.7;
-    if(a>.02&&SKY_GPU!==GPU.frameNo){
-      const GS=glowSprite("sunglow2|"+sc+"|"+hasAtm,()=>{
-        const g=ctx.createRadialGradient(0,0,0,0,0,1);
-        /* двенадцать стопов по степенной кривой: воздух рассеивает широко и
-           мягко, вакуум — только тесная корона у самого тела. Стопов много,
-           чтобы кусочно-линейная альфа не собиралась в еле видные кольца */
-        const a0=hasAtm?.50:.38, pw=hasAtm?2.6:5.5;
-        for(let i=0;i<=12;i++){const t=i/12;
-          g.addColorStop(t,rgba(hex2rgb(sc),a0*Math.pow(1-t,pw)));}
-        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
-      });
-      ctx.save();ctx.globalAlpha=a;
-      glowBlit(GS,sunX,sunY,hasAtm?W*.5:W*.16);
-      ctx.restore();
-    }
-  }
-  /* небесные тела идут между заревом звезды и облаками: за облаками, но
-     перед общим градиентом — так они и оказываются «в небе», а не поверх него */
-  drawSkyBodies(p,camx,camy);
-  /* ── диск: потемнение к лимбу, у горизонта — экстинкция ──
-     Цветом звезды, к центру белее (раньше он брался тоном неба и любая звезда
-     читалась затмением). Тело печётся спрайтом от высоты (12 делений): в
-     зените кромка мягкая и к краю темнее (лимб), у горизонта диск сплюснут,
-     покраснел и снизу съеден дымкой — атмосферная экстинкция. В вакууме
-     кромка резкая: смягчать её нечему. */
-  if(SS.up&&SKY_GPU!==GPU.frameNo){
-    const sr=H*.045;
-    const low=hasAtm?clamp(1-SS.alt*2.2,0,1):0;    /* 1 — у самого горизонта */
-    const altQ=Math.round(low*12);
-    const sp=glowSprite("sundisc|"+sc+"|"+hasAtm+"|"+altQ,()=>{
-      const c=hex2rgb(sc), lo=altQ/12;
-      /* к горизонту тон уходит в красную медь: воздух крадёт синее первым */
-      const cr=[lerp(c[0],205,lo*.45),lerp(c[1],84,lo*.45),lerp(c[2],40,lo*.55)].map(Math.round);
-      const g=ctx.createRadialGradient(0,0,0,0,0,1);
-      g.addColorStop(0,"rgba(255,252,240,"+(.95-lo*.25).toFixed(2)+")");
-      g.addColorStop(.55,rgba(cr,.92));
-      if(hasAtm){
-        g.addColorStop(.84,rgba(cr.map(v=>Math.round(v*.82)),.88));  /* лимб темнее кромки */
-        g.addColorStop(1,rgba(cr,0));                                /* кромку доедает воздух */
-      }else{
-        g.addColorStop(.90,rgba(cr.map(v=>Math.round(v*.86)),.94));
-        g.addColorStop(.985,rgba(cr,.92));
-        g.addColorStop(1,rgba(cr,0));                                /* полпикселя сглаживания */
-      }
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
-      /* экстинкция: дымка съедает нижний край тем сильнее, чем звезда ниже */
-      if(lo>.05){
-        const e=ctx.createLinearGradient(0,-1,0,1);
-        e.addColorStop(0,"rgba(0,0,0,0)");
-        e.addColorStop(.55,"rgba(0,0,0,0)");
-        e.addColorStop(1,"rgba(0,0,0,"+(.62*lo).toFixed(2)+")");
-        ctx.globalCompositeOperation="destination-out";
-        ctx.fillStyle=e;ctx.fillRect(-1,-1,2,2);
-      }
-    });
-    const ry=sr*(1-.20*low);                       /* у горизонта диск сплюснут */
-    ctx.drawImage(sp,sunX-sr,sunY-ry,sr*2,ry*2);
-  }
-  /* календарь неба поверх звезды: диск спутника наезжает на неё, комета и парад
-     идут своим чередом (06a-celest). Ниже облаков — они всё равно главнее */
-  if(typeof drawCelest==="function")drawCelest(p,sunX,sunY,H*.045);
-  /* три света (11g): спутники главной звезды, сходящиеся к соединению */
-  if(typeof lightsSuns==="function")lightsSuns(p,sunX,sunY,H*.045);
-  if(!hasAtm)return;
-  /* облака живут в 19e: поле плотности в перспективе, а не гроздь эллипсов */
-  drawClouds(p,camx,camy);
+  gpuSkyBodies(p,camx,camy);
+  gpuClouds(p,camx,camy);
 }
 /* пыль/пыльца в воздухе — только там, где есть атмосфера, для ощущения глубины */
 function drawDustMotes(camx,camy,p){
@@ -287,8 +193,7 @@ function drawLanding(){
   tr.mat=planetMat(p);tr.p=p;
   sunDirSet(p);            /* свет идёт оттуда, где нарисован диск (M242) */
   WIND=windOf(p);
-  drawSkyBase(p);
-  if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
+  drawSkyBase(p,L.x,L.y);
   drawSkyLayer(p,L.x,L.y);
   const camx=L.x-W/2;
   /* ── садиться нужно НА ЧТО-ТО (M233) ──

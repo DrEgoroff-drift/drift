@@ -560,6 +560,9 @@ function gpuFrame(){
    Вне кадра (прямой вызов из теста или стенда) — null: слой молчит */
 function gpuScene(){
   if(!GPU.on||!GPU.enc)return null;
+  /* проход поверх уже открыт (gpuNext/gpuOver): рисуем в него — цель та же, и всё
+     ещё под 2D, что ляжет потом. Второй проход при открытом — недействительный кадр */
+  if(GPU.overPass)return GPU.overPass;
   if(GPU.scene3D){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   if(!GPU.scenePass){
     GPU.scenePass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,
@@ -609,6 +612,20 @@ function gpuOver(){
   /* отправляем сделанное: следующая загрузка #c не должна обогнать эту склейку */
   d.queue.submit([GPU.enc.finish()]);GPU.enc=d.createCommandEncoder();
   if(GPU.cState!==0){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.restore();}
+  GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
+  return GPU.overPass;
+}
+/* ── следующий слой поверх всего, что уже есть (27.09) ──
+   Пока на #c с последней склейки ничего не нарисовано, копия #c и склейка не нужны:
+   слой ложится в открытый проход поверх, а если его нет — в новый (проход на S23
+   стоит ~10 мкс, копия холста — миллисекунды). Нарисовано — обычный gpuOver */
+function gpuNext(){
+  if(!GPU.on||!GPU.enc)return null;
+  /* не gpuFrontClean: та чистит текстуру слоя своим проходом, а здесь проход открыт */
+  gpuFrontHook();if(GPU.cState)return gpuOver();
+  if(GPU.overPass)return GPU.overPass;
+  if(!GPU.sceneOn)gpuScene();
+  if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   GPU.overPass=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}],timestampWrites:gpuTs("over")});
   return GPU.overPass;
 }
