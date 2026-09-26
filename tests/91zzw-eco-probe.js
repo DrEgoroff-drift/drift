@@ -43,7 +43,7 @@ TEST_SUITES.push(()=>suite("проба · плечи: распределение
       const q=buyCargo(L.A,L.k,L.h);if(!q)break;
       sellCargo(L.B,L.k,q);
       G.credits-=(L.d*6+4)*8;
-      G.t+=L.min*3600;t+=L.min;laps++;
+      G.t+=L.min*3600;clockAdvance(L.min*60000);t+=L.min;laps++;
       if(i<3||i%10===9)log.push(Math.round(L.rate));
     }
     note(cfg.id+" · "+laps+" кругов за "+Math.round(t)+" мин → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/t)+" кр/мин · ставки плеч по ходу: "+log.join(","));
@@ -62,10 +62,62 @@ TEST_SUITES.push(()=>suite("проба · плечи: распределение
       const q=buyCargo(L.A,L.k,h);const rev=sellCargo(L.B,L.k,q);
       const fuel=(L.d*6+4)*8;G.credits-=fuel;
       const net=rev-q*ask-fuel,min=2.5+L.d*.6;
-      G.t+=min*3600;t+=min;laps++;
+      G.t+=min*3600;clockAdvance(min*60000);t+=min;laps++;
       if(i<3||i%10===9)log.push(Math.round(net/min));
     }
     note(cfg.id+" · МАРШРУТ "+route.length+" плеча на "+Object.keys(used).length+" станциях · "+laps+" кругов за "+Math.round(t)+" мин → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/t)+" кр/мин · по ходу: "+log.join(","));
+  }
+}));
+/* сколько маршрутов нужно по кругу (долг аудита 4.09, §6): игрок ходит по своему маршруту
+   (три пары на своих станциях), а когда круг на плече ушёл в минус — уходит на следующий
+   маршрут; давление за это время спадает по часам мира. Печатает ставку за три часа при
+   одном–четырёх маршрутах: где рост кончается, там и число маршрутов, что кормят игрока */
+function prbRoutes(list,hold,n){
+  const legs=prbLeg(list,hold,0),routes=[],taken={};
+  for(let r=0;r<n;r++){
+    const route=[],used={};
+    for(const L of legs){
+      const a=L.A.key,b=L.B.key;if(taken[a]||taken[b])continue;
+      const nu=Object.keys(used).length+(used[a]?0:1)+(used[b]?0:1);if(nu>6)continue;
+      if(route.some(x=>x.A===L.A&&x.B===L.B))continue;
+      route.push(L);used[a]=1;used[b]=1;if(route.length>=3)break;
+    }
+    if(!route.length)break;
+    for(const k in used)taken[k]=1;
+    routes.push(route);
+  }
+  return routes;
+}
+TEST_SUITES.push(()=>suite("проба · маршруты по кругу: уходим, когда плечо в минус",{tier:"probe"},()=>{
+  const list=prbStations(9);
+  for(const cfg of [{id:"strizh",hold:40,cr:600},{id:"vyuk",hold:150,cr:20000}]){
+    const row=[];
+    for(let R=1;R<=4;R++){
+      resetWorld();G.shipId=cfg.id;G.owned[cfg.id]=true;G.credits=cfg.cr;
+      const routes=prbRoutes(list,cfg.hold,R);
+      let t=0,cur=0,i=0,moves=0,idle=0,miss=0;
+      const gain=L=>{const ask=buyPriceFor(L.A,L.k),h=Math.min(stat().cargoMax,Math.floor(G.credits/Math.max(1,ask)));
+        return {ask,h,net:h>0?sellQuote(L.B,L.k,h).revenue-ask*h-(L.d*6+4)*8:-1};};
+      const pass=m=>{G.t+=m*3600;clockAdvance(m*60000);t+=m;};
+      while(t<180&&routes.length){
+        const route=routes[cur],L=route[i%route.length],E=gain(L);
+        /* плечо по котировке в минус — не везём: следующее плечо, кончился маршрут —
+           следующий маршрут, в минусе везде — ждём десять минут у прилавка */
+        if(E.net<=0){
+          i++;miss++;
+          if(miss>=route.length){miss=0;i=0;
+            if(routes.length>1){cur=(cur+1)%routes.length;moves++;}
+            if(moves%routes.length===0||routes.length===1){pass(10);idle++;}}
+          continue;
+        }
+        miss=0;i++;
+        const q=buyCargo(L.A,L.k,E.h);sellCargo(L.B,L.k,q);G.credits-=(L.d*6+4)*8;
+        pass(2.5+L.d*.6);
+      }
+      row.push(R+" м.: "+Math.round((G.credits-cfg.cr)/Math.max(1,t))+" кр/мин ("+moves+" переходов, "+idle+" ожиданий"+(routes.length<R?", маршрутов нашлось "+routes.length:"")+")");
+    }
+    note(cfg.id+" · 3 ч по кругу маршрутов · "+row.join(" · "));
+    ok(row.length===4,cfg.id+": четыре прогона посчитаны");
   }
 }));
 TEST_SUITES.push(()=>suite("проба · дроны: выработка точки и масштаб по числу машин",{tier:"probe"},()=>{
@@ -89,7 +141,7 @@ TEST_SUITES.push(()=>suite("проба · дроны: выработка точ�
     for(let i=0;i<N;i++){let left=pool;while(left>0){const n=Math.min(left,12);rev+=sellDroneYield(S,k,n);left-=n;}}
     note(N+" дронов на кристаллах · цикл "+Math.round(pool/.6)+" мин · "+Math.round(rev)+" кр = "+Math.round(rev/(pool/.6))+" кр/мин · вложено "+N*2200);
   }
-  note("давление: пол −35 % · полураспад 3 ч ИГРОВОГО времени (G.t) — офлайн не спадает · дронов на точку: предела нет, тормоз — цена 9 000 и одна машина в двое суток на верфь/завод");
+  note("давление: пол −35 % · полураспад 3 ч по часам мира (now) — спадает и вне игры (A4, §12) · дронов на точку: предела нет, тормоз — цена 9 000 и одна машина в двое суток на верфь/завод");
 }));
 TEST_SUITES.push(()=>suite("проба · части, спички, награды, сбор газа",{tier:"probe"},()=>{
   resetWorld();
@@ -133,7 +185,7 @@ TEST_SUITES.push(()=>suite("проба · кооператив: прилавок
       G.sys=L.B;const rev=sellCargo(L.B,L.k,q);
       const fuel=(L.d*6+4)*8;G.credits-=fuel;
       const net=rev-cost-fuel,min=2.5+L.d*.6;
-      G.t+=min*3600;t+=min;laps++;units+=q;
+      G.t+=min*3600;clockAdvance(min*60000);t+=min;laps++;units+=q;
       if(i<3||i%10===9)log.push(Math.round(net/min));
     }
     note(cfg.id+" · разряд "+rank+" ("+R.ru+", потолок "+(R.cap||"нет")+") · "+laps+" кругов за "+Math.round(t)+" мин, "+units+" ед → касса "+Math.round(G.credits)+" · ставка "+Math.round((G.credits-cfg.cr)/Math.max(1,t))+" кр/мин · по ходу: "+log.join(","));

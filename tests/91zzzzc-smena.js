@@ -14,7 +14,12 @@ TEST_SUITES.push(()=>suite("«Смена»: 72 главы, предикаты н
   G.droneIds=[1];G.home={x:0};G.soldTotal=100;
   smenaSync();ok(!smenaIsOpen(10)&&!smenaIsOpen(2),"купленная машина и продажа глав не открывают");
   const P=G.sys.planets.find(q=>q.type!=="gas")||G.sys.planets[0];
-  eq(smenaLand(P),2,"посадка в новом месте открыла следующую по порядку — вторую");
+  eq(smenaLand(P),2,"посадка в новом месте взводит следующую по порядку — вторую");
+  ok(!smenaIsOpen(2),"одна посадка главу не открывает — нужно дело на месте");
+  G.surf={x:0,shipX:0,smena:{n:2,p:P}};
+  eq(smenaDeedTick(G.surf),0,"у трапа — ещё нет");
+  G.surf.x=SMENA_WALK+1;
+  eq(smenaDeedTick(G.surf),2,"отошёл от корабля — вторая прожита");G.surf=null;
   eq(smenaLand(P),0,"второй раз там же — ничего: нужно новое место");
   ok(smenaAtAll()[2]&&smenaAtAll()[2].k,"глава знает, где прожита");
   const snap=snapshot();G.smena=[];G.smenaAt={};applySave(snap);ok(smenaIsOpen(2)&&smenaAtAll()[2],"главы и места переживают сохранение");

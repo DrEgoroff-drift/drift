@@ -13,14 +13,19 @@
      исследователь ПРОЖЕКТОР — показывает залежи системы на 10 с.
    Состояние — эфемерное (ABIL), в сейв не идёт. */
 const ABIL={
-  scout:  {ru:"ФОРСАЖ",   cd:20,dur:3},
-  courier:{ru:"СБРОС",    cd:25,dur:4},
-  hauler: {ru:"БАЛЛАСТ",  cd:18,dur:4},
-  miner:  {ru:"РЕЗАК",    cd:12,dur:.4},
-  warship:{ru:"ЗАЛП",     cd:8, dur:.3},
-  yacht:  {ru:"СИРЕНА",   cd:30,dur:2},
-  survey: {ru:"ПРОЖЕКТОР",cd:30,dur:10}
+  scout:  {ru:"ФОРСАЖ",   cd:20,dur:3, note:"тяга ×1.6 на 3 с"},
+  courier:{ru:"СБРОС",    cd:25,dur:4, note:"груз за борт приманкой — пираты теряют вас на 4 с"},
+  hauler: {ru:"БАЛЛАСТ",  cd:18,dur:4, note:"разворот ×1.5 на 4 с ценой 1 % груза"},
+  miner:  {ru:"РЕЗАК",    cd:12,dur:.4,note:"бур коротким лучом — по чужому в носу"},
+  warship:{ru:"ЗАЛП",     cd:8, dur:.3,note:"все стволы разом"},
+  yacht:  {ru:"СИРЕНА",   cd:30,dur:2, note:"позывной: отвечают все, кто в кадре"},
+  survey: {ru:"ПРОЖЕКТОР",cd:30,dur:10,note:"дальние залежи системы на 10 с"}
 };
+/* строка для карточки корабля (M484): особая система названа там, где корабль выбирают */
+function abilCardLine(id,S){
+  const A=ABIL[hullClassOf(id,S)]||ABIL.scout;
+  return "особое · "+A.ru+" — "+A.note+" · долгое ДЕЙСТВИЕ или V · раз в "+A.cd+" с";
+}
 const ABIL_HOLD=600;
 let ABIL_ST={k:null,on:0,cd:0,armed:false,fired:false,text:""};
 function abilKind(){const S=shipData(G.shipId);return S?hullClassOf(G.shipId,S):"scout";}
@@ -36,6 +41,26 @@ function abilMul(what){
   if(what==="thr"&&abilOn("scout"))return 1.6;
   if(what==="turn"&&abilOn("hauler"))return 1.5;
   return 1;
+}
+/* кто слышит СИРЕНУ: корабли в кадре — пираты, патрули держав, линия ГЛАВТРАССЫ.
+   Чёрный дерелик в кадре не отвечает никогда — и это тоже ответ */
+function sirenHeard(){
+  const sh=G.ship,Z=G.zoom||1,hx=W/(2*Z)+60,hy=H/(2*Z)+60,out=[];
+  const seen=(x,y)=>Math.abs(x-sh.x)<hx&&Math.abs(y-sh.y)<hy;
+  for(const p of G.pirates||[]){
+    if(!(p.hull>0)||!seen(p.x,p.y))continue;
+    const by=p.owner||p.pw;
+    out.push(!by?{who:p.name||"пират",line:"«Сирена, говоришь? Стой где стоишь — подойдём.»"}:
+      p.iff?{who:p.name,line:"«Слышим, борт. "+powerOf(by).air+".»"}:
+            {who:p.name,line:"«Эфир занят. Не мешайте работать.»"});
+  }
+  if(typeof fleetHere==="function")for(const f of fleetHere()){
+    if(f.k==="node")continue;
+    const q=fleetPos(f);if(!seen(q.x,q.y))continue;
+    if(f.k==="derelict"){out.mute=true;continue;}
+    out.push({who:f.name||"борт ГЛАВТРАССЫ",line:"«Принято. Кто это такой нарядный? Музыку убавьте.»"});
+  }
+  return out;
 }
 function abilFire(){
   abilStale();
@@ -68,9 +93,11 @@ function abilFire(){
     G.engaged=true;
     line="ЗАЛП · все стволы разом";
   }else if(k==="yacht"){
-    const who=["«Слышим, борт. Красиво идёте.»","«Принято. Кто это такой нарядный?»","«Ответили. Музыку убавьте.»"];
-    if(typeof etherLine==="function")for(let i=0;i<3;i++)etherLine(who[i],["лоцман","буксир","соседний борт"][i]);
-    line="СИРЕНА · вам ответили все";
+    /* отвечают те, кто в кадре (M484), — каждый своим голосом, не больше четырёх */
+    const L=sirenHeard();
+    for(const h of L.slice(0,4))etherLine(h.line,h.who);
+    line=L.length?"СИРЕНА · ответили "+L.length+(L.mute?" · дерелик молчит":""):
+      (L.mute?"СИРЕНА · в кадре только дерелик — он не отвечает":"СИРЕНА · эфир молчит — рядом никого");
   }else if(k==="survey"){
     const L=(typeof farDeposits==="function")?farDeposits(G.sx,G.sy):[];
     const r=(typeof farReadLine==="function")?farReadLine(L):"";

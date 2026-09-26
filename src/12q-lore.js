@@ -181,7 +181,7 @@ function loreTake(key){
       const s=getSystem(sx,sy);
       if(!s.station||(G.market&&G.market[s.key]))continue;
       if(!G.market)G.market={};
-      G.market[s.key]={pressure:{},t:G.t};
+      G.market[s.key]={pressure:{},t:now()};
       got="цены станции «"+s.station.name+"» ("+sx+":"+sy+")";done=true;
     }
     if(!done){G.data+=12;got="сводка цен, которые вы и так знаете · +12 данных";}

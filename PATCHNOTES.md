@@ -6,6 +6,89 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.483.0 - the §12 remainder and the §9 seams
+
+- **§12, the last seams.** A drone now picks its market by the price you saw there and is paid that price (it used to choose by the seen price and be paid the live one). A seen price counts for 30 world days; after that the drone goes by the live counter. Selling pressure on a counter now decays by the world clock (`now()`), so it also eases while you are out of the game. The half-life is still three hours. The economy probe gained «маршруты по кругу»: the player skips a leg whose quote has gone negative, moves to the next route, and waits ten minutes when every leg is down. The numbers are in `docs/ECONOMY-AUDIT.md` (27.09).
+
+- **§9 seams, checked against the code and closed.**
+  - **Drones and far goods:** a drone no longer mines band-2/3 far goods (osmium and beyond). Neither the belt nor the surface offers the ДРОН button for them. A band-1 far good (he3, palladium, amber) is sold by the drone at half its price (`droneMayMine`, `DRONE_FAR_MUL`).
+  - **The stamp and the metro:** the stamp already landed only on a jump or on ВЫЙТИ. The ring's «Стыковка?» hail now fires only for a ship heading into the ring: by its motion, or by its nose when stopped. A ship just let out of the train no longer gets hailed as it leaves (`railHeadingIn`).
+  - **The first hour:** at the first docking in the heart, the замполит hands over one жетон («первый — за счёт трассы») and says where the ring is. The first metro ride is free, and the ticket button reads ЖЕТОН ЗАМПОЛИТА. The token does not work for the express or the маршрутка. It is kept in `G.first`, so no new save field.
+  - **Rescue and rails:** a dry ship in a system with a rail stop gets a third exit, НА МЕТРО. It is a ticket, at the ticket's price, to the stop the cashier sells that lies nearest home; the ring takes the ship on board.
+  - **The scheme's scope:** the paper opens on your stretch: you and everything the cashier sells, with a margin. The wheel or a pinch widens it to the whole net. «Край» was already per player (your own visits).
+
+- **Picture pass.** The rescue window's НА МЕТРО row had no icon and printed «undefined»; it now shows a ring on a line. The ticket buttons read ЖЕТОН where the price stands, and the section head says once what the замполит's token is; a long ticket line wraps instead of running off the button. The scheme's title and legend sit on paper plates, since the lines now run under them; on a phone the legend wraps by « · » clear of the line samples, and the captions under the paper wrap by phrase, clear of the Меню button. The empty-tank test counts the fourth exit where a stop stands.
+
+### Disputed (cautious variants taken; the author may overturn)
+
+- **Drone paid at the seen price for 30 days** (§12): the cautious reading of «продаёт по ним». The other option was min(seen, live), which never lets a stale ×2 need pay out, but then a drone could never be sent to a better market it had seen. Counters saved before this change carry a frame-clock stamp; the first read resets it to now, which loses at most one decay step.
+- **Half-life kept at 3 h on the world clock**, not the 6 h A4 suggested: the probe numbers did not ask for a slower recovery.
+- **The token is also handed to old saves** (§9) at their next docking in the heart, since a save carries no reliable age. It is worth one 5-credit ride.
+- **The scheme's scope is the cashier's reach** (§9): the stops `railDestinations` sells, rather than a graph of «rings met and their neighbours». Those rings cross that window anyway, and the rule needs no second walk of the net.
+
+## 0.482.0 - stage 7: the giants, small things and the economy seams
+
+- **M464 — one giant per arm (§8).** The six giants now stand on the galaxy model's real arms: two arms, two branches each, one giant per branch at 19–22 sectors and two more nearer the core at 14–15; the hollow moon stays at the core. Where the arms cross, the placement walks along its own branch in half-sector steps until the model names the spot as that arm (or a nebula of that arm) and it is at least 8 sectors from the others. The discovery log line names the arm.
+- **The ruler in the frame.** Under the giant's name in the system: «≈ N ваших корпусов в длину», counted from the hull you fly.
+- **Docking and visiting.** Within 760 of the body the cue offers ПРИЧАЛИТЬ. The visit window gives a paragraph of the place, a rumour from its people (seeded by the giant and a three-day bucket, logged once, НА КАРТУ like a station rumour) and, on the first visit only, a keepsake in ВЕЩИ (`G.giantsSeen[k]=2`, no new save field). The Дом водителя also lets you stay the night: 150 кр, hull +15 %, a full tank.
+
+- **Stage-6 picture pass.** The shipyard's built-in cell in the КБ drawing is now a pale blueprint stamp (fill at .15, dashed edge, letters in the same pale #dce8f4), quieter than the ochre frames of the things. The «Иней» cabinets in the base cross-section drop a step from pure white towards the wall tone and fall off under the lamp: lit at the top, about 28 % darker at the floor. The display and the padlock are unchanged.
+
+- **§11 small things.** The belt entry note folds the icy ring into the ore line («руда: … · и кристаллы льда»), so on the phone's three-line message «тяните по стеклу — обзор» is no longer pushed out. A good's name in lists and prices takes its own text shade (`resTxt`): the same hue mixed towards light until it reads at 4.5:1 on the panel. Тёмное стекло, углеволокно, графит and чернозём change; the rest keep their colour.
+- Closed as already done on this branch: station shuttles draw (`t.mk`, came with main), and chips avoid each other while gliding to their slots (the `chipDrawn` pass, 24.09).
+
+- **§12 economy audit: the faucets closed.**
+  - **Liberation prize:** paid in full only when the freed system will hold. While an occupied neighbour (not calmed by a suppressed nest, not under the трасса) can take it back, the station pays half: «вернутся».
+  - **Hotel night:** costs half of what the dock charges for the same tenth of hull (was a flat 12 кр), one night per station per shift. The mark lives in the station's holding record; the free night below a third of hull stays.
+  - **Plan and order:** one ledger, «bought here this shift» (the appetite's `here`), read by the state plan and the order. Units bought at the same counter pay the bid, not the premium; for the order they also get no per-sector fee.
+  - **A visit is (station, shift), not a docking.** Undocking and docking again in the same shift continues the visit: the ГЛАВТРАССА fuel norm, the Company fee, the scrip cap and the cooperative cap carry over from the station's holding record.
+  - **Escort:** half at accept, half when the run arrives (the barge lives its chord beside you, 90 s, or you drive off its attackers). Leaving the system with the contract fails it, and a barge is hired once.
+  - **Hired hands' fines and debts** take what is on the account and never go below zero.
+  - **Sale multipliers:** need, monopoly, expedition, occupation and spy are capped together at ×2.2. The blockade takes the larger of itself and need, not both.
+  - **Smaller seams:** a drone's delivery closes a need window; an order's deadline counts from the taking; the factor's margin floor no longer grows with level and perks; the dead `evacuate()` is gone.
+  - **Gate:** three nets in `91zzzzy2-money`: freeing twice pays at most half the second time; buy-and-hand-in for the plan or the order never nets positive; the balance is never below zero after any row of the hired hands' event table.
+- **Whose voice on the approach (the author, 27.09):** the lane (billboard, hotel, parked fleet, queue) now dresses by the land's owner, `stampOwnerAt`; the builder shows only in the station's own body. Rule in docs/DECISIONS.md.
+
+### Disputed (cautious variants taken; the author may overturn)
+- M464: only the Дом водителя sells a service (the night); the other six give a paragraph, a rumour and a keepsake. Trade or jobs inside a giant were left for a later pass.
+- M464: the giant's length for the ruler is one fixed number (GIANT_LEN 1300) for all seven, not per body.
+- M464: the six arm giants left their old ring positions (only the moon stayed); a save that already found one keeps `giantsSeen`, but its landmark is somewhere else on the map now.
+- §11 «planet angles follow the frame rate»: closed with no code change. Since the fixed quanta, `dt` is `steps × QUANT_DT` taken from real time, so `ang` already follows game time as `G.t` does. The only difference from `ang0 + w·G.t` is that orbits stand still on the surface, in the map and in the other off-system modes. A pure function would make the planet jump away from a ship taking off, and the clamp depends on the hull's thrust. `ang` is not in the save.
+- §12 liberation prize: chose «half while it can be retaken» over «full once per system, then fading». The latter needs a per-system memory, and there is no save field for it. A first liberation next to a live front also pays half.
+- §12 debts: chose a floor, as `lawDock` has, over a real debt like ПАЛАТА's `P.debt`. A broke player gets off a fine lighter than before.
+- §12 escort: the «destination» is 90 s of the barge's chord in this system, since barges are not simulated across systems. Rescue also completes the run.
+- §12 multipliers: the ×2.2 cap is my number, a little above need alone (×2).
+- §12 per visit: the norm, scrip and co-op leftovers are stored on undock in `G.hold[station].vis`, an existing saved structure.
+- Lane owner: the lane is cached in the system, so a land that changes hands re-dresses the lane only when the system is regenerated.
+
+## 0.481.0 - stage 6: the story and the rest
+
+- «Смена» (P15): a landing in a new kind of place only arms the next chapter («где-то здесь. Отойдите от корабля»); walking 480 px from the ship lives it. The arming stays in the surface state, not in the save: leave without stepping out and the chapter waits. The 72-kinds-of-place check was already a suite (r ≤ 20).
+
+- Receiver at the border (M457): entering a power's land, the ether log speaks its `air` line once per crossing («Приёмник · ГЛАВТРАССА: «На трассе спокойно»»). The ear pass on the six motifs stays for the release run.
+- Yards at work (M480), on ordered hulls only: a Рассвет hull patches itself from a pirate downed within 600 px (+6 % hull, «на соплях, но держит»); a Хай-Фронт hull's firmware moves one unwelded thing of the plan to another free deck cell once per сводка («обновление установлено… так удобнее»). The сводка mark lives in the order itself.
+
+- The special system (M484): every ship card in the yard names its ability — «особое · СБРОС — груз за борт приманкой… · долгое ДЕЙСТВИЕ или V · раз в 25 с». СИРЕНА is answered only by the ships actually in the frame, each in its own voice: a pirate threatens, a power's patrol answers with its `air` line, a ГЛАВТРАССА liner asks to turn the music down, the black derelict never answers; an empty frame — «эфир молчит».
+
+- Scars on captured pirate hulls (M482): a crewman's «пригнал трофейный корпус» no longer hands over a clean catalogue hull — it is a build of its own (a maker by seed, «трофейный корпус», «Отбит у пиратов…») with 1–3 scars, repaired at a yard like the towed and the bazaar hulls. The trophy shelf and the thing card name it.
+
+- Утильсбор, the rest (M513): once the transit runs out the paper plate hangs from one corner, crooked; while the hull is on transit plates, the КБ at a yard of your own flag refuses to re-plan it («сначала номера, потом чертёж»), and the instruments' warranty is void — the broken-instruments list says «гарантия аннулирована: корпус не на учёте» and ТЕХПОДДЕРЖКА is not offered.
+
+- **M463 the bazaar: odd lots and a rumour at the stalls.** Beside the random part, РАЗНОЕ now carries a plate off a hull broken up here («Табличка с остова «…»», 40–90 кр, goes to ВЕЩИ, changes nothing — memory, not gain). Every other shift a separate counter sells one rarity from the barge-hold table (6–12 k кр), only one nobody holds yet; bought, it counts toward the hundred like a find and stays on the counter as ПРОДАНО. Under the awnings a junk-dealer tells one rumour per shift — seeded by the bazaar and the shift, so it never repeats the station of the same system — logged to ЛЮДИ, remembered on the map, with a НА КАРТУ button. `rumoursHere(seed)` takes an optional seed.
+
+- **M487 подписка: the cold store and the rush in a fight.** New base module «Иней» (`21ac4-base-fridge`), sold two ways in the build menu: bought outright (3 400 кр + 4 alloy, +4 good харч every shift for ever) or «по подписке» — 10 % up front and 136 кр per shift, only where Компания or Хай-Фронт own the base's system; the card says «к 23-й смене вы заплатите полную цену». When the fee does not go through, the door is locked: no харч that shift, and what it already gave stays («перестаёт давать, а не отнимает»). The journal warns a shift ahead (balance below the next fee), every 25th shift the tariff is «обновлён» with one trifle turned into an add-on. In the cut the owned fridge shows a green panel, the unpaid one a red panel and padlocks. In a fight, a subscribed instrument that is locked is offered on the prompt: «ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3» — one ДЕЙСТВИЕ, triple fee, unlocked now.
+
+- **M480 the free cells.** An ordered hull from Хай-Фронт or Орднунг now carries its yard's built-in on the blueprint: a pale dashed stamp in the frontmost free nose cell nearest the axis — «дальний захват» (ПР, an instrument in the nose third, sight one palladium step up, no cargo spent) or «лобовой щит» (ЩТ, on the nose plating; its number stays the +8 % nose armour of the yard). It needs no part, is not in the hold, cannot be taken or covered («встроено верфью · не снимается»), shows in the tray and counts in ЯЧЕЙКИ. Catalogue hulls and old saves are untouched; nothing new is saved — the cell is chosen by the yard from the packer's layout each time.
+
+- **Dead rarity calls removed.** Void containers and hulks called `rareTake("cont")` / `rareTake("hulk")`, places that `RARE_WHERE` never had — they never gave anything. Removed rather than populated: the hundred live in six places, each named on the showcase, and a new place would reshuffle every rarity's address (`i % places`). A hulk's finds stay the parrot, the foreign kit piece, the book and the matchbox.
+
+### Disputed (cautious variants taken; the author may overturn)
+
+- M482 доводка stays paid with нейтронная крошка + 800 кр (M478), not with a node as DESIGN-shipyard §6 says: spending a node would break a set the player is collecting. Two welds per hull, +1 tier — already so.
+- M463: the rarity counter draws from the barge-hold pool, because the six places of `RARE_WHERE` are the only pools (the dead «hulk»/«cont» calls in `17b-finds` are removed). A bought rarity pre-empts that one barge find; the cautious take is one every other shift at 6–12 k.
+- M487: no subscription state is saved — base cells persist as `{k,hp}` only, so the subscribed fridge is its own kind (`fridgesub`) and whether it is locked is read from the balance each shift. Other base modules are not offered by subscription yet: each needs its own «stops giving» hook. In a long absence (bulk catch-up) the fridge, like the garden and the vat, neither feeds nor charges.
+- M480: Орднунг's front shield cell adds no number of its own — the yard's +8 % hull already is «носовая броня даром», and a second bonus would pay twice; the calibration pass may move it to the shield.
+
 ## 0.480.0 - stages 2 to 5: whose land, the road, the ship, the voice and the joke
 
 - **M453: the stamp page can be filled.** Ялта now gives its own round stamp (six signatures in a ring, weapons

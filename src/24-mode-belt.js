@@ -113,7 +113,7 @@ function enterBelt(){
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   if(typeof farReadShow==="function")farReadShow(farHere("belt"));   /* залежь — табличкой прибора, шкалой (D12) */
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
-    (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
+    (beltIcy(B)?" · и кристаллы льда":"")+   /* в строку руды: на телефоне #msg — три строки, четвёртая выталкивала «обзор» */
     (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
       :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
 }
@@ -321,8 +321,9 @@ function updateBelt(dt){
   if(best!==b.lock)b.prog=0;
   b.lock=best;b.beam=0;
   const dbtn=document.getElementById("dronebtn");
-  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить */
-  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
+  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить; на дальнее
+     второго-третьего пояса — тоже (§9, droneMayMine) */
+  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0&&droneMayMine(best.res)){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
 
   /* контакт с камнем перекрывает разговоры о прицеле: пока борт скребёт

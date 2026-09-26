@@ -11,7 +11,9 @@
    u.ts — заявка в поддержку {q, t0, until}. */
 const WARRANTY_SHIFTS=12,WARRANTY_WORKS={sirin:1,vekha:1};
 function warrantyShift(){return (typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1200000;}
-function warrantyOn(u){return !!(u&&u.wr&&!u.tp&&now()<u.wr);}
+function warrantyOn(u){return !!(u&&u.wr&&!u.tp&&now()<u.wr)&&!warrantyRegVoid();}
+/* утильсбор (M513): пока корпус на транзитных номерах, чужая гарантия аннулирована */
+function warrantyRegVoid(){return typeof regPending==="function"&&regPending(G.shipId);}
 function warrantyGive(u){if(u&&WARRANTY_WORKS[u.w])u.wr=now()+WARRANTY_SHIFTS*warrantyShift();}
 function instrBroken(u){return !!(u&&(u.wear||0)>=.85);}
 /* звонок в поддержку */
@@ -65,7 +67,7 @@ function warrantyBlock(){
   for(const id of broken){
     const u=K[id],nm=INSTR_BY_ID[id]?INSTR_BY_ID[id].ru:id;
     const row=document.createElement("div");row.className="op-wr";
-    const st=u.ts?"в очереди поддержки · № "+supportQueue(u):warrantyOn(u)?"на гарантии":u.tp?"гарантия аннулирована":"без гарантии";
+    const st=u.ts?"в очереди поддержки · № "+supportQueue(u):warrantyOn(u)?"на гарантии":u.tp?"гарантия аннулирована":warrantyRegVoid()&&u.wr&&now()<u.wr?"гарантия аннулирована: корпус не на учёте":"без гарантии";
     row.innerHTML="<b>"+nm+"</b><s>"+st+"</s>";
     if(warrantyOn(u)&&!u.ts){const b=document.createElement("button");b.className="act";b.textContent="ТЕХПОДДЕРЖКА · ДАРОМ, ЖДАТЬ";
       b.onclick=()=>{supportCall(id);if(typeof opisRerender==="function")opisRerender();};row.appendChild(b);}

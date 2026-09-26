@@ -94,7 +94,7 @@ const NEWS_KINDS=[
     const s=newsSomewhere(r);if(!s)return null;
     /* настоящая перемена: давление на рынке — те же цены, что увидит игрок */
     const k=pick(TRADE_KEYS,r);
-    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:G.t});
+    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:now()});
     m.pressure[k]=clamp((m.pressure[k]||0)+.35+r()*.3,-.6,.8);
     newsMark(s.sx+","+s.sy,"цены сдвинулись","#f2b25c");
     return {ru:"«"+s.station.name+"» скупает "+RES[k].ru.toLowerCase()+
@@ -102,7 +102,7 @@ const NEWS_KINDS=[
   }},
   {id:"owner",apply(r){
     const s=newsSomewhere(r);if(!s)return null;
-    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:G.t});
+    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:now()});
     for(const k of TRADE_KEYS)m.pressure[k]=clamp((m.pressure[k]||0)+(r()-.5)*.5,-.6,.8);
     newsMark(s.sx+","+s.sy,"сменился хозяин","#7fe6d8");
     return {ru:"«"+s.station.name+"» перешла другим людям: и цены, и порядки там теперь чужие",

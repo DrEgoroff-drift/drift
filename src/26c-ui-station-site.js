@@ -50,7 +50,7 @@ function renderSiteTab(){
       for(const k in def.makes){
         const have=Math.floor(B.got[k]||0),price=srcPrice(sys,k);
         const rr=el("div","row");
-        rr.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+" в запасе: "+have+"</b><s>по "+price+" кр — 0.7 цены · копится до "+
+        rr.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+" в запасе: "+have+"</b><s>по "+price+" кр — 0.7 цены · копится до "+
           def.makes[k]*B.lvl*HOLD_CAP_SHIFTS*holdCapMul(sys.key)+"</s>"));
         const free=Math.max(0,stat().cargoMax-held()),can=Math.min(have,free,Math.floor(G.credits/price));
         const b=el("button","act"+(can?" gold":""),can?"ВЗЯТЬ ×"+can:"НЕЧЕГО");
@@ -67,7 +67,7 @@ function renderSiteTab(){
         const want=Math.min(have,bldWant(sys,k));
         const price=RES[k].ind?indPrice(k):marketFor(sys)[k];
         const rr=el("div","row");
-        rr.appendChild(el("div","nm","<b>Сдать в цех: <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+"</span> ×"+have+"</b><s>"+
+        rr.appendChild(el("div","nm","<b>Сдать в цех: <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+"</span> ×"+have+"</b><s>"+
           (want?"возьмёт "+want+" по "+price+" кр · за вами запишут "+Object.keys(def.makes).map(kk=>RES[kk].ru.toLowerCase()).join(", "):"бункер полон — приходите через смену")+"</s></div>"));
         const b=el("button","act"+(want?" gold":""),"СДАТЬ");
         b.disabled=!want;
@@ -82,7 +82,7 @@ function renderSiteTab(){
       const got=Object.keys(B.got).filter(k=>Math.floor(B.got[k])>0);
       const cap=Object.keys(def.makes).map(k=>RES[k].ru.toLowerCase()+" до "+def.makes[k]*B.lvl*HOLD_CAP_SHIFTS*holdCapMul(sys.key)).join(", ");
       const rr=el("div","row");
-      rr.appendChild(el("div","nm","<b>Ваш пай: "+(got.length?got.map(k=>"<span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k])+"</span>").join(", "):"пока ничего")+
+      rr.appendChild(el("div","nm","<b>Ваш пай: "+(got.length?got.map(k=>"<span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k])+"</span>").join(", "):"пока ничего")+
         "</b><s>лежит здесь под вашим именем · "+cap+" · дальше — ничьё</s></div>"));
       const b=el("button","act"+(got.length?" gold":""),"ЗАБРАТЬ");
       b.disabled=!got.length;

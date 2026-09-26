@@ -108,6 +108,11 @@ function bargeBuyPrice(b,good){           // баржа покупает у ва
    станции, медленно, без оружия. Присутствие и состав детерминированы от
    seed сектора и окна времени. */
 function spawnBarges(){
+  /* ушли из системы с рейсом — рейс сорван (§12): вход в новую систему и есть уход */
+  for(const b of G.barges||[])if(b.escort)bargeEscortEnd(b,false,"ушли из системы — рейс сорван");
+  /* и рейс, чья баржа не пережила загрузку (баржи — мир, в сейв не идут) */
+  if(typeof questAll==="function"&&typeof questFail==="function")
+    for(const q of questAll().slice())if(q.state==="active"&&String(q.key).indexOf("escort:")===0)questFail(q.key,"рейс сорван");
   G.barges=[];
   const legs=bargeLegs();
   if(!legs.length)return;
@@ -166,6 +171,8 @@ function updateBarges(dt){
   for(let i=G.barges.length-1;i>=0;i--){
     const b=G.barges[i];
     b.x+=b.vx*dt;b.y+=b.vy*dt;
+    /* рейс под охраной дошёл: баржа прожила свою хорду рядом с вами */
+    if(b.escort&&!b.distress){b.escT=(b.escT||0)+dt;if(b.escT>=BARGE_ESCORT_T)bargeEscortEnd(b,true);}
     /* ── баржа в беде: пираты выгрызают корпус, пока их не отгонят ── */
     if(b.distress){
       const atk=bargeAttackers(b);
@@ -294,30 +301,40 @@ function bargeInteract(sh){
 /* ══════════════ контракт охраны ══════════════
    Наняться проводить баржу: плата вперёд, маршрут известен заранее (адрес — в
    журнале). Провал НЕ отнимает кредиты — он отнимает репутацию. Стабильного
-   плюса тут нет, как и у наёмника: аванс мал, а риск ваш. */
+   плюса тут нет, как и у наёмника: аванс мал, а риск ваш.
+   §12: весь аванс сразу и «ушёл из системы — засчитано» делали рейс краном —
+   взял, улетел, вернулся к новой барже. Теперь половина вперёд, половина — когда
+   рейс дошёл (баржа прожила рядом с вами BARGE_ESCORT_T или вы её отбили); уйти
+   из системы с рейсом — сорвать его. Одну баржу (seed) нанимают один раз */
+const BARGE_ESCORT_T=5400;   /* полторы минуты игры: баржа проходит свою хорду */
 function bargeEscortAdvance(b){return 200+Math.floor((b.cap||100)*3);}
+function bargeEscortHalf(b){return Math.round(bargeEscortAdvance(b)/2);}
 function bargeEscortAccept(b){
   if(b.escort||b.distress)return false;
-  b.escort=1;
-  const adv=bargeEscortAdvance(b);
+  if(typeof questAll==="function"&&questAll().some(q=>q.key==="escort:"+b.seed)){say("Этот рейс вы уже брали",90);return false;}
+  b.escort=1;b.escT=0;
+  const adv=bargeEscortHalf(b);
   earn(adv,"escort");
   const dst=bargeSysAt(b.to);
   if(typeof questAdd==="function")questAdd("escort:"+b.seed,{
     ru:"Проводить баржу «"+b.capName+"»",kind:"job",from:"баржа",
     note:"довести до «"+((dst&&dst.station&&dst.station.name)||"назначения")+
-      "» живой. Аванс уже выплачен; провал бьёт по репутации, не по кошельку",
+      "» живой. Половина выплачена, вторая — когда рейс дойдёт; уйдёте из системы — сорван",
     sx:dst?dst.sx:null,sy:dst?dst.sy:null,reward:"репутация у назначения"});
-  say("Аванс охраны +"+adv+" кр\nдоведите баржу живой");
+  say("Аванс охраны +"+adv+" кр\nдоведите баржу — вторая половина у назначения");
   logAdd("money","Наняты охраной баржи «"+b.capName+"» · аванс +"+adv+" кр");
   return true;
 }
-function bargeEscortEnd(b,ok){
+function bargeEscortEnd(b,ok,why){
   if(!b.escort)return;b.escort=0;
   const key="escort:"+b.seed;
   if(ok){
+    const rest=bargeEscortAdvance(b)-bargeEscortHalf(b);
+    earn(rest,"escort");
+    logAdd("money","Рейс баржи «"+b.capName+"» дошёл · охране +"+rest+" кр");
     if(typeof questDone==="function")questDone(key,"баржа дошла");
   }else{
-    if(typeof questFail==="function")questFail(key,"баржу потеряли");
+    if(typeof questFail==="function")questFail(key,why||"баржу потеряли");
     /* провал: репутация вниз, но кредиты (аванс) не отбираются */
     const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
     if(dst&&typeof repAdd==="function")repAdd(-2,dst);
@@ -699,9 +716,9 @@ function renderBarge(){
     " ×"+b.qty+" · назначение «"+((bargeSysAt(b.to)||{station:{name:"?"}}).station.name)+"»"));
   /* наняться охраной: аванс вперёд, довести живой (12l — контракт охраны) */
   if(!b.escort){
-    const adv=bargeEscortAdvance(b);
+    const adv=bargeEscortHalf(b),rest=bargeEscortAdvance(b)-adv;
     $bgBody.appendChild(bargeElRow("НАНЯТЬСЯ ОХРАНОЙ",
-      "аванс +"+adv+" кр вперёд · довести до назначения живой · провал бьёт по репутации, не по кошельку",
+      "аванс +"+adv+" кр вперёд, ещё +"+rest+" когда рейс дойдёт · уйдёте из системы — сорван · провал бьёт по репутации",
       [{txt:"ВЗЯТЬ РЕЙС",gold:1,dis:false,on:()=>{bargeEscortAccept(b);renderBarge();}}]));
   }else{
     $bgBody.appendChild(el("div","sec","ВЫ ОХРАНА ЭТОГО РЕЙСА · ведите баржу до назначения"));

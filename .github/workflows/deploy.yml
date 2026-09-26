@@ -32,6 +32,7 @@ concurrency:
 
 jobs:
   publish:
+    needs: webgpu
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -211,14 +212,11 @@ jobs:
           grep -q "data-alive=\"$ver\"" /tmp/dev.dom && echo "https://drift-game.ru/dev.html живёт: $ver ($GITHUB_REF_NAME)" || { echo "dev.html не ожил"; grep -i uncaught /tmp/dev.err | head -3; exit 1; }
 
   # 26.09 (Контроль): глаза тестов на WebGPU — SwiftShader, программная видеокарта,
-  # что едет с самим Хромом. Пока только отчёт: работа отдельная, параллельно publish
-  # и без needs, так что выкладку не удлиняет и не останавливает (continue-on-error).
-  # Дома: дым + «глаза тестов» 8/8 зелёных подряд, 9–12 с на прогон.
-  # Блокирующей станет после 5 зелёных выкладок подряд — тогда publish получит
-  # needs: webgpu, а continue-on-error уйдёт.
+  # что едет с самим Хромом. Дома: дым + «глаза тестов» 8/8 зелёных подряд, 9–12 с на прогон.
+  # 27.09: 7 из 7 зелёных на выкладках (1268ea91 … f26a1aeb) — работа стала блокирующей:
+  # publish ждёт её (needs: webgpu), красная останавливает выкладку, continue-on-error снят.
   webgpu:
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4

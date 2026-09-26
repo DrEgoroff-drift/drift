@@ -53,10 +53,39 @@ function railSchemeOpen(){
   if(!d){d=document.createElement("div");d.id="railScheme";d.innerHTML="<canvas></canvas><b>СХЕМА ЛИНИЙ · ГЛАВТРАССА · бесплатно, не выбрасывать</b><s>касание — свернуть</s>";
     d.onclick=e=>{if(e.target===d)railSchemeClose();};document.body.appendChild(d);
     /* КУДА ВАМ (M470): тап по остановке на бумаге — выбрать, куда ехать */
-    d.querySelector("canvas").onclick=railSchemePick;
-    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · мимо бумаги — свернуть";}
+    const cv=d.querySelector("canvas");cv.onclick=railSchemePick;
+    /* шире — колесом или щипком (§9, M470): от своего участка до всей сети */
+    cv.onwheel=e=>{e.preventDefault();e.stopPropagation();railSchemeZoom(e.deltaY>0?.25:-.25);};
+    let pin=0;
+    cv.addEventListener("touchmove",e=>{if(e.touches.length!==2)return;e.preventDefault();
+      const a=e.touches[0],b=e.touches[1],dd=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+      if(pin)railSchemeZoom((pin-dd)/300);pin=dd;},{passive:false});
+    cv.addEventListener("touchend",()=>{pin=0;});
+    /* подсказка по руке: на телефоне колеса нет, и строка короче */
+    const touch=typeof matchMedia==="function"&&matchMedia("(pointer:coarse)").matches;
+    /* фразы склеены неразрывным пробелом: узкий экран переносит строку только по « · » */
+    const sb=d.querySelector("s");if(sb)sb.textContent=["касание остановки — туда",(touch?"щипок":"колесо")+" — шире","мимо бумаги — свернуть"].map(p=>p.replace(/ /g," ")).join(" · ");}
   d.classList.add("open");
   {const p=d.querySelector(".rs-pick");if(p)p.remove();}
+  RAIL_SCHEME_Z=0;railSchemeRedraw();
+}
+/* охват (§9, M470): не вся сеть, а ваш участок — вы, всё, что продаёт касса
+   (своя линия и пересадки, а с ними и кольца, что их режут), с полем вокруг;
+   RAIL_SCHEME_Z тянет рамку от участка (0) до всей сети (1) */
+let RAIL_SCHEME_Z=0;
+function railSchemeScope(){
+  let x0=G.sx,x1=G.sx,y0=G.sy,y1=G.sy;
+  if(typeof railDestinations==="function"&&railStation(G.sx,G.sy))
+    for(const q of railDestinations()){x0=Math.min(x0,q.to.sx);x1=Math.max(x1,q.to.sx);y0=Math.min(y0,q.to.sy);y1=Math.max(y1,q.to.sy);}
+  const half=clamp(Math.max(x1-x0,y1-y0)/2*1.2+3,8,RAIL_R),z=RAIL_SCHEME_Z;
+  return {cx:(x0+x1)/2*(1-z),cy:(y0+y1)/2*(1-z),half:half+(RAIL_R-half)*z};
+}
+function railSchemeZoom(dz){
+  const z=clamp(RAIL_SCHEME_Z+dz,0,1);if(z===RAIL_SCHEME_Z)return;
+  RAIL_SCHEME_Z=z;railSchemeRedraw();
+}
+function railSchemeRedraw(){
+  const d=document.getElementById("railScheme");if(!d)return;
   const c=d.querySelector("canvas"),k=Math.min(2,(typeof devicePixelRatio==="number"&&devicePixelRatio)||1);
   const cw=Math.min(W-24,520),ch=Math.min(H-120,cw*1.15);
   const pw=Math.round(cw*k),ph=Math.round(ch*k);
@@ -109,9 +138,9 @@ function railSchemePick(e){
   host.appendChild(p);
 }
 function railSchemeDraw(g,cw,ch){
-  const N=railNet(),R=RAIL_R;
-  const pad=28,S=Math.min((cw-pad*2)/(2*R),(ch-pad*2-24)/(2*R));
-  const X=x=>cw/2+x*S,Y=y=>ch/2+12+y*S;
+  const N=railNet(),R=RAIL_R,V=railSchemeScope();
+  const pad=28,S=Math.min((cw-pad*2)/(2*V.half),(ch-pad*2-24)/(2*V.half));
+  const X=x=>cw/2+(x-V.cx)*S,Y=y=>ch/2+12+(y-V.cy)*S;
   RAIL_SCHEME_MAP={X,Y,cw,ch};
   /* бумага: кремовая, сгибы вдоль и поперёк, тень у сгиба */
   g.fillStyle="#efe6cf";g.fillRect(0,0,cw,ch);
@@ -204,15 +233,28 @@ function railSchemeDraw(g,cw,ch){
   g.fillStyle="#c8281e";g.beginPath();g.moveTo(hx,hy-1);g.lineTo(hx-5,hy-13);g.lineTo(hx+5,hy-13);g.closePath();g.fill();
   g.beginPath();g.arc(hx,hy-14,4,0,TAU);g.fill();
   g.font="bold 8px ui-monospace,monospace";g.textAlign="left";g.fillText("ВЫ ЗДЕСЬ",hx+8,hy-14);
-  /* заголовок на самой бумаге */
-  g.font="bold 9px ui-monospace,monospace";g.textAlign="left";g.fillStyle="#3a2e1e";
-  g.fillText("СХЕМА ЛИНИЙ · ГЛАВТРАССА",10,12);
-  g.font="7px ui-monospace,monospace";g.fillStyle="#7a6a50";g.fillText("выдаётся в вестибюле · не выбрасывать",10,22);
-  /* легенда */
-  g.font="7px ui-monospace,monospace";g.fillStyle="#5a4a30";g.textAlign="left";
+  /* заголовок на самой бумаге — на подложке: лист открыт на участке (§9), линии идут под него */
+  const t1="СХЕМА ЛИНИЙ · ГЛАВТРАССА",t2="выдаётся в вестибюле · не выбрасывать";
+  g.font="bold 9px ui-monospace,monospace";const w1=g.measureText(t1).width;
+  g.font="7px ui-monospace,monospace";const w2=g.measureText(t2).width;
+  g.fillStyle="rgba(239,230,207,.92)";g.fillRect(4,2,Math.max(w1,w2)+12,25);
+  g.font="bold 9px ui-monospace,monospace";g.textAlign="left";g.fillStyle="#3a2e1e";g.fillText(t1,10,12);
+  g.font="7px ui-monospace,monospace";g.fillStyle="#7a6a50";g.fillText(t2,10,22);
+  /* легенда — на подложке; строку, что не влезает правее образцов линий (узкая бумага телефона), переносим по « · » */
+  g.font="7px ui-monospace,monospace";
   const L=[["ring","кольца"],["arm","рукава"],["radial","радиалы"]];
+  const T=["синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",
+    "красное кольцо — касса берёт · за «КРАЕМ» не езжено","пересадка — двойной кружок · пунктир — метро, жетон 5 кр"];
+  const mw=cw-10-(36+Math.max(...L.map(e=>g.measureText(e[1]).width))+10),rows=[];
+  for(const s of T){
+    if(g.measureText(s).width<=mw){rows.push(s);continue;}
+    let cur="";
+    for(const p of s.split(" · ")){const n=cur?cur+" · "+p:p;if(cur&&g.measureText(n).width>mw){rows.push(cur);cur=p;}else cur=n;}
+    if(cur)rows.push(cur);
+  }
+  const top=ch-10-(Math.max(rows.length,L.length)-1)*10;
+  g.fillStyle="rgba(239,230,207,.92)";g.fillRect(4,top-9,cw-8,ch-4-(top-9));
+  g.fillStyle="#5a4a30";g.textAlign="left";
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
-  g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
-  g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
-  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",cw-10,ch-30);
+  g.textAlign="right";rows.forEach((s,i)=>g.fillText(s,cw-10,ch-10-(rows.length-1-i)*10));
 }

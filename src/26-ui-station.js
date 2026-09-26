@@ -17,6 +17,33 @@ function stationNewsLines(){
     typeof secLine==="function"&&secLine,typeof cultLine==="function"&&cultLine])if(f)add(f());
   return L;
 }
+/* ── заход = станция и смена, а не стыковка (§12) ──
+   Потолки «на заход» (норма топлива ГЛАВТРАССЫ, пошлина Компании, обмен бонов, прилавок
+   кооператива) сбрасывались на каждой стыковке: отстыковался, пристыковался — и снова
+   20 топлива по 1 кр, 40 бон, 60/150 по цене артели. Теперь заход — пара (станция,
+   holdShift()): повторная стыковка в ту же смену продолжает тот же заход, и остатки
+   потолков возвращаются из записи холдинга станции, которая и так в сейве */
+function visitOpen(sys){
+  if(!sys||!sys.key||typeof holdOf!=="function")return true;
+  const H=holdOf(sys.key),sh=holdShift(),V=H.vis;
+  if(V&&V.sh===sh){
+    if(typeof LAW_NORM_LEFT!=="undefined")LAW_NORM_LEFT=V.norm|0;
+    if(typeof scripVisit!=="undefined")scripVisit=V.scrip|0;
+    const C=typeof coopRec==="function"?coopRec():null;
+    if(C)C.visit={key:sys.key,bought:V.cb||{}};
+    return false;
+  }
+  H.vis={sh};
+  return true;
+}
+function visitClose(sys){
+  if(!sys||!sys.key||typeof holdOf!=="function")return;
+  const V=holdOf(sys.key).vis;if(!V||V.sh!==holdShift())return;
+  V.norm=typeof LAW_NORM_LEFT!=="undefined"?LAW_NORM_LEFT:0;
+  V.scrip=typeof scripVisit!=="undefined"?scripVisit:0;
+  const C=typeof coopRec==="function"?coopRec():null;
+  V.cb=C&&C.visit&&C.visit.key===sys.key?C.visit.bought:{};
+}
 function openStation(){const fi=FRAME_IN;FRAME_IN=false;try{openStationBody();}finally{FRAME_IN=fi;}}
 function openStationBody(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
@@ -24,11 +51,14 @@ function openStationBody(){
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   if(typeof railSealDock==="function")railSealDock();   /* пломбу снимает инспектор (M508) */
-  if(typeof lawDock==="function")lawDock();
+  const fresh=visitOpen(G.sys);   /* повторная стыковка в ту же смену — тот же заход (§12) */
+  if(fresh&&typeof lawDock==="function")lawDock();
   if(typeof socDock==="function")socDock();   /* обязанности и льготы обществ (M512) */   /* закон земли: норма, пошлина (M456) */
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
-  scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
-  if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
+  if(fresh){
+    scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
+    if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
+  }
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
   if(typeof parrotDock==="function")parrotDock(G.sys);
@@ -198,6 +228,7 @@ function repairCost(){
 }
 function closeStation(){
   if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
+  visitClose(G.sys);   /* остатки потолков захода — в запись станции (§12) */
   if(typeof folkLeave==="function")folkLeave();   /* свои остались на станции (12u-folk) */
   /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
      на прилавке — и тогда его покупает кто-то другой */
@@ -430,7 +461,7 @@ function shipRow(id,S){
   r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"» <span style='color:var(--dim)'>"+
     S.cls+"</span></b><s>"+(T?"<b style='color:"+T.col+"'>"+T.ru.toUpperCase()+"</b> — "+T.note+"<br>":"")+
     S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
-    " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"</s>"));
+    " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"<br>"+abilCardLine(id,S)+"</s>"));
   if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
   else{
     /* цена корпуса с поправкой на то, как к вам тут относятся (12k-rep) */
@@ -666,7 +697,7 @@ function renderTabBody(){
     $body.appendChild(el("div","sec","ОБМЕН НА РЕСУРСЫ — БЕЗ ДЕНЕГ, ТОЛЬКО ГРУЗ ИЗ ТРЮМА"));
     for(const k in BARTER){
       const item=BARTER[k],done=G.barter.has(k);
-      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+RES[rk].col+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
+      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+resTxt(rk)+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
       const have=Object.keys(item.cost).every(rk=>G.cargo[rk]>=item.cost[rk]);
       const r=el("div","row");
       r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+item.ru+"</b><s>"+item.note+"<br>"+costTxt+"</s>"));

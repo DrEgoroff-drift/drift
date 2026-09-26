@@ -70,10 +70,10 @@ function rumourToMap(q){
   if(typeof gotoSector==="function")gotoSector(q.sx,q.sy,"слух · искать в "+q.rad+" "+pl3(q.rad,"секторе","секторах","секторах")+" вокруг");
 }
 /* слухи этой станции на эти три дня: два, и один из них может врать */
-function rumoursHere(){
+function rumoursHere(seed){
   const placed=(typeof REGION_TABLE!=="undefined")?REGION_TABLE.filter(T=>regionOfTheme(T.id)):[];
   if(!placed.length)return [];
-  const r=rng(rumourSeedHere()),out=[];
+  const r=rng(seed==null?rumourSeedHere():seed),out=[];
   for(let i=0;i<2;i++){
     const T=placed[Math.floor(r()*placed.length)];
     const at=regionOfTheme(T.id),R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);

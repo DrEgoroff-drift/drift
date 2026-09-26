@@ -102,10 +102,47 @@ function stapelClosedWhy(by){
 function stapelReady(){const o=stapelAll().o;return !!(o&&now()>=o.ready);}
 /* раз в минуту: готово — строка в почте, один раз */
 function stapelTick(){
+  yardFirmware();
   const o=stapelAll().o;
   if(!o||o.told||now()<o.ready)return;
   o.told=1;
   logAdd("good","ПОЧТА · извещение: корпус со стапеля «"+o.st+"» ("+o.sx+":"+o.sy+") — получить в окне Космопочты на любой станции или на самом стапеле · хранится "+(typeof KP_KEEP==="number"?KP_KEEP:30)+" сут.");
+}
+/* ── привычки верфей в деле (M480, shipyard §4) — только на заказанном корпусе ── */
+/* заказ, из которого выведен корабль под игроком, — или null */
+function stapelMine(){
+  for(const o of stapelAll().done)if(stapelId(o)===G.shipId)return o;
+  return null;
+}
+/* Рассвет: «ремонт из хлама» — сбитый рядом даёт обшивку, 6 % корпуса за обломок */
+const YARD_DEBRIS=.06,YARD_DEBRIS_R=600;
+function yardDebris(p){
+  const o=stapelMine();if(!o||o.by!=="ra"||!p||!G.ship)return 0;
+  if(Math.hypot(p.x-G.ship.x,p.y-G.ship.y)>YARD_DEBRIS_R)return 0;
+  const hm=stat().hullMax,add=Math.min(hm-G.hull,Math.round(hm*YARD_DEBRIS));if(add<=0)return 0;
+  G.hull+=add;
+  logAdd("tech","Рассвет: обшивку подлатали с обломка «"+(p.name||"")+"» · корпус +"+add+" · «на соплях, но держит»");
+  return add;
+}
+/* Хай-Фронт: «прошивка обновляется сама» — раз в сводку одна вещь плана встаёт
+   на другую свободную клетку палубы. Номер сводки — в самом заказе (o.fw) */
+function yardFirmware(){
+  const o=stapelMine();if(!o||o.by!=="hf"||typeof chronNow!=="function"||typeof draftOf!=="function")return false;
+  const c=chronNow();if(o.fw===undefined){o.fw=c;return false;}
+  if(c<=o.fw)return false;o.fw=c;
+  const d=draftOf(G.shipId),D=G.draft&&G.draft[G.shipId],weld=(D&&D.weld)||[];
+  const L=d.items.filter(it=>weld.indexOf(it.key)<0);if(!L.length||!d.hold.length)return false;
+  const it=L[(hashi(o.no|0,c,0x4F1)>>>0)%L.length],old=it.cells;
+  const free=d.hold.slice().sort((a,b)=>(hashi(a.i,a.j,c)>>>0)-(hashi(b.i,b.j,c)>>>0));
+  for(const q of free){
+    if(kbPlace(d,it,q)!=="")continue;
+    /* освободившиеся клетки палубы уходят в трюм, как в КБ */
+    for(const x of old)if(it.cells.indexOf(x)<0&&(x.kind==="deck"||x.kind==="spine"))d.hold.push(x);
+    draftSave(G.shipId,d);if(typeof invalidateParts==="function")invalidateParts();
+    logAdd("tech","Хай-Фронт: обновление установлено · переставили «"+(it.what==="mod"?(MODS[it.kind]?MODS[it.kind].ru:it.kind):(PART_KINDS[it.kind]?PART_KINDS[it.kind].ru:it.kind))+"» на новую клетку · «так удобнее»");
+    return true;
+  }
+  return false;
 }
 /* забрать на той же верфи */
 function stapelCollect(viaPost){

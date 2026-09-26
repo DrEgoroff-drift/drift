@@ -15,7 +15,9 @@ TEST_SUITES.push(()=>suite("пустой бак: газ открывает ок�
   dispatchEvent(new KeyboardEvent("keyup",{key:"w",code:"KeyW"}));
   ok(sos.classList.contains("open"),"газ на пустом баке открыл окно");
   const ids=[...document.querySelectorAll("#sosList button")].map(b=>b.dataset.id);
-  eq(ids.join(","),"home,tow,reset","три выхода по порядку: "+ids.join(","));
+  /* у остановки метро (§9) между буксиром и сбросом встаёт НА МЕТРО */
+  const rail=!!rescueRail(rescueHomeAt());
+  eq(ids.join(","),rail?"home,tow,rail,reset":"home,tow,reset","выходы по порядку: "+ids.join(","));
   const home=document.querySelector('#sosList button[data-id="home"]');
   ok(home.disabled,"ДОМОЙ без денег не нажать — и сказано, сколько не хватает: "+home.textContent);
   ok(!document.querySelector('#sosList button[data-id="tow"]').disabled,"БУКСИР даром — нажимается всегда");

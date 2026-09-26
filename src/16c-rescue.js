@@ -87,10 +87,26 @@ function rescueOffers(){
       Object.keys(G.fit[G.shipId]||{}).length>0||RES_KEYS.some(k=>G.cargo[k]>0);
     out.push({id:"tow",ru:"БУКСИР",cost:0,
       sub:"баржа придёт и дотащит · 5 минут без руля"});   /* куда — сказано в шапке окна */
+    /* третий выход у остановки (§9): НА МЕТРО — билет к дому по цене билета */
+    const T=rescueRail(H);
+    if(T)out.push({id:"rail",ru:"НА МЕТРО",cost:T.F.sum,
+      sub:"поезд до «"+railStopName(T.t.to)+"» · ближе к дому · кольцо тащит борт само"});
     if(lose)out.push({id:"reset",ru:"СБРОС",cost:0,
       sub:"корабль, всё, что на нём стоит, и груз потеряны · «Стриж» у станции"});
   }
   return out;
+}
+/* билет к дому (§9): в системе есть остановка, корабль в пространстве системы —
+   из того, что продаёт касса, берётся остановка со станцией, ближайшая к дому,
+   если она ближе к нему, чем мы. Кольцо само берёт сухой борт (как автостыковка) */
+function rescueRail(H){
+  if(G.mode!=="system"||typeof railHere!=="function"||!railHere())return null;
+  const d0=Math.hypot(G.sx-H.sx,G.sy-H.sy);let best=null,bd=d0-.5;
+  for(const t of railDestinations()){
+    if(t.to.halt||!getSystem(t.to.sx,t.to.sy).station)continue;
+    const d=Math.hypot(t.to.sx-H.sx,t.to.sy-H.sy);if(d<bd){bd=d;best=t;}
+  }
+  return best?{t:best,F:railFare(best)}:null;
 }
 /* поставить корабль у станции системы (как буксир M331) */
 function rescuePark(dest){
@@ -123,6 +139,12 @@ function rescueTake(id){
       G.ship.vx=0;G.ship.vy=0;G.mode="system";G.surf=null;G.land=null;
     }
     haulStart();
+  }else if(id==="rail"){
+    const T=rescueRail(rescueHomeAt());if(!T)return false;
+    G.credits-=o.cost;
+    if(T.F.tok&&typeof firstAll==="function")firstAll().push("tokUsed");
+    logAdd("warn","Метро из "+from+" до «"+railStopName(T.t.to)+"» · −"+o.cost+" кр");
+    railRideStart(T.t);
   }else if(id==="reset"){
     const was=(shipData(G.shipId)||{}).ru||"корабль";
     if(G.shipId!=="strizh")delete G.owned[G.shipId];
@@ -141,7 +163,7 @@ function rescueTake(id){
     logAdd("warn","Сброс у "+from+": «"+was+"» потерян с грузом · выдан «Стриж»");
     say("Сброс\n«"+was+"» потерян · вы на «Стриже»",180);
   }
-  if(typeof saveGame==="function")saveGame(true);
+  if(id!=="rail"&&typeof saveGame==="function")saveGame(true);   /* в вагоне не пишем: поездка кончится выходом в систему */
   return true;
 }
 
@@ -576,7 +598,9 @@ function rescueSync(){
 const RESCUE_ICON={
   home:'<svg class="ic" viewBox="0 0 16 16"><path d="M2 8l6-5 6 5"/><path d="M4 7v6h8V7"/></svg>',
   tow:'<svg class="ic" viewBox="0 0 16 16"><rect x="1" y="5" width="8" height="5" rx="1"/><path d="M9 7.5h3"/><path d="M12 5.5l3 2-3 2z"/></svg>',
-  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>'
+  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>',
+  /* НА МЕТРО (§9): кольцо на пути — как знак метро на схеме */
+  rail:'<svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5"/><path d="M1 8h2.5M12.5 8H15"/></svg>'
 };
 function rescueRender(){
   const box=document.getElementById("sosList");if(!box)return;
@@ -595,7 +619,7 @@ function rescueRender(){
     const b=document.createElement("button");
     const poor=o.cost>G.credits;
     b.disabled=poor;
-    b.innerHTML=RESCUE_ICON[o.id]+'<span class="tx"><em></em><s></s></span>';
+    b.innerHTML=(RESCUE_ICON[o.id]||"")+'<span class="tx"><em></em><s></s></span>';
     b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":(o.id==="tow"?" · ДАРОМ":""));
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;

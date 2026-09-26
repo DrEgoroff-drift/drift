@@ -107,8 +107,12 @@ TEST_SUITES.push(()=>suite("гостиница: ночь за деньги, ни
   let Ht=null;
   for(let sx=-8;sx<=8&&!Ht;sx++)for(let sy=-8;sy<=8&&!Ht;sy++){const s=getSystem(sx,sy);if(!s.station)continue;G.sx=sx;G.sy=sy;G.sys=s;Ht=hotelHere();}
   ok(!!Ht,"у людной станции есть гостиница");
-  const hm=stat().hullMax;G.hull=hm*.8;G.credits=100;hotelDesk(Ht);
-  eq(G.credits,100-HOTEL_NIGHT,"ночь стоит денег");
+  const hm=stat().hullMax,P=hotelNightPrice();G.hull=hm*.8;G.credits=5000;hotelDesk(Ht);
+  eq(G.credits,5000-P,"ночь стоит денег");
+  ok(P>=Math.round(hm*.1)*repairCost()*.4,"ночь — около половины дока за ту же десятую (§12): "+P);
+  const h1=G.hull;hotelDesk(Ht);
+  eq(G.credits,5000-P,"вторая ночь в ту же смену — нет");eq(G.hull,h1,"и корпус не чинится");
+  holdOf(G.sys.key).night=null;
   G.hull=hm*.2;G.credits=100;hotelDesk(Ht);
   eq(G.credits,100,"корпус ниже трети — даром, «потом заплатите»");
   ok(G.hull>hm*.2,"и за ночь корпус подтянулся");

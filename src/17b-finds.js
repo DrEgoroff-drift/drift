@@ -97,7 +97,9 @@ function findTake(f){
   if(f.k==="cont"){
     const KS=TRADE_KEYS.filter(k=>k!=="ice");
     const k=KS[Math.floor(r()*KS.length)],n=4+Math.floor(r()*9+d*6);
-    if(typeof rareTake==="function")rareTake("cont",hashi(f.seed,0x2A2E,5));
+    /* редкостей в пустоте нет: у сотни шесть мест (RARE_WHERE, 12m), и каждая на витрине
+       подписана своим. Здесь стоял вызов rareTake("cont") — места «cont» в таблице нет,
+       он ни разу ничего не дал; убран, а не заселён: новое место перетасовало бы всю сотню */
     return addRes(k,n)?(RES[k].ru.toLowerCase()+" ×"+n):"трюм полон — груз остался дрейфовать";
   }
   if(f.k==="hulk"){
@@ -112,7 +114,7 @@ function findTake(f){
     }
     const F=POI_FIND.wreck;
     const got=F&&typeof F.give==="function"?F.give(r,d):"часть с обломков";
-    if(typeof rareTake==="function")rareTake("hulk",hashi(f.seed,0x2A2E,9));
+    /* редкости в остове нет (см. контейнер выше): его находки — птица, чужая вещь, книга, коробок */
     if(typeof kitFromHulk==="function")kitFromHulk(f.seed);   /* чужая вещь комплекта (M152) */
     if(typeof bookRoll==="function")bookRoll(f.seed,"из остова",0.40);   /* книга (M202) */
     if(typeof boxRoll==="function")boxRoll(f.seed,"из остова",0.26);      /* коробок (M346) */

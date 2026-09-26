@@ -171,7 +171,7 @@ function indPrice(k){
 function bldCostTxt(cost){
   const L=[];
   if(cost.credits)L.push(cost.credits.toLocaleString("ru")+" кр");
-  for(const k in cost)if(k!=="credits"&&RES[k])L.push("<span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+" "+cost[k]+"</span>");
+  for(const k in cost)if(k!=="credits"&&RES[k])L.push("<span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+" "+cost[k]+"</span>");
   return L.join(" · ");
 }
 function bldIoTxt(def){

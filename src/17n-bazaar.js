@@ -4,8 +4,11 @@
      ВАШЕ — что вы разобрали в ОПИСИ (G.thrown, 12 последних) лежит на
        прилавке втрое дороже: «ношеная, один хозяин»;
      КОРПУСА СО ШРАМАМИ — два остова, дёшево, со шрамами (M482);
-     РАЗНОЕ — одна вещь наугад, дешевле верфи.
-   Ряд меняется раз в смену; купленное в этой смене помечено (G.bazBought). */
+     РАЗНОЕ — одна вещь наугад, дешевле верфи; табличка с чьего-то остова
+       (в ВЕЩИ, ни на что не влияет) и через смену — редкость из таблицы трюмов
+       баржи на отдельном прилавке (M463, «странные лоты»).
+   Ряд меняется раз в смену; купленное в этой смене помечено (G.bazBought).
+   У тентов говорят: один слух на смену, тем же путём, что на станции (M463). */
 const BAZ_THROWN_MAX=12,BAZ_MUL=3;
 function bazHere(){
   const sys=G.sys;if(!sys||!sys.belt)return null;
@@ -42,6 +45,14 @@ function bazLots(B){
   }
   const odd=genPart(hashi(B.seed,b,0x0DD)>>>0,1+hashi(B.seed,b,0x0DE)%3);
   out.push({k:"o"+b,kind:"odd",part:odd,price:Math.round(bazPartBase(odd)*.7/10)*10,note:"откуда — не спрашивайте"});
+  /* табличка с остова: имя корабля из той же грамматики, что и флот, — память, не выгода */
+  const ps=hashi(B.seed,b,0x7AB)>>>0,pn=genUniqueShip(ps);
+  out.push({k:"p"+b,kind:"plate",seed:ps,ru:"Табличка с остова «"+pn.ru+"»",price:40+hashi(ps,0x7AC,1)%6*10,
+    note:"сняли с борта, который здесь разобрали; кто ходил на нём — спросите у пояса"});
+  /* редкость — через смену и только та, что ещё ничья: таблица трюмов баржи, не новая сотня */
+  const rk=hashi(B.seed,b,0x2A2E)>>>0,R=(b%2===0)?rareAtPlace("barge",rk):null;
+  if(R&&(K["r"+b]||!rareHas(R.id)&&!(typeof rivalHolds==="function"&&rivalHolds(R.id))))
+    out.push({k:"r"+b,kind:"rare",rk,ru:"«"+R.ru+"»",price:6000+(R.idx|0)%7*1000,note:R.grade+", "+R.note+" · «с баржи, клянусь, чек потерялся»"});
   return out.map(L=>(L.sold=!!K[L.k],L));
 }
 function bazBuy(L){
@@ -49,13 +60,17 @@ function bazBuy(L){
   if(!L||K[L.k]||G.credits<L.price)return false;
   if(L.kind==="hull"){
     const id="bz"+L.seed;G.uniqueShips[id]=L.ship;G.owned[id]=true;
+  }else if(L.kind==="plate"){
+    thingAdd("find",L.ru,"с барахолки у пояса · "+L.note);
+  }else if(L.kind==="rare"){
+    if(!rareTake("barge",L.rk,"на барахолке у пояса"))return false;
   }else{
     addPart(L.part);
     if(L.kind==="thrown")G.thrown.splice(L.i,1);
   }
   G.credits-=L.price;
   if(L.kind!=="thrown")K[L.k]=1;
-  logAdd("money","Барахолка: "+(L.kind==="hull"?"остов «"+L.ship.ru+"» — в ангаре":L.part.name)+" · −"+L.price.toLocaleString("ru")+" кр"+
+  logAdd("money","Барахолка: "+(L.kind==="hull"?"остов «"+L.ship.ru+"» — в ангаре":L.part?L.part.name:L.ru)+" · −"+L.price.toLocaleString("ru")+" кр"+
     (L.kind==="thrown"?" · «ваша же? бывает»":""));
   return true;
 }
@@ -162,6 +177,17 @@ function bazInteract(sh){
   if(shown&&actEdge)bazOpen(B);
   return true;
 }
+/* слух у тентов (M463): свой посев места и смены, иначе повторил бы станцию той же системы.
+   Рассказчик — не буфетчица, а тот, кто торгует; в тетрадь и на карту — как на станции */
+function bazRumour(B){
+  const q=rumoursHere(hashi(B.seed,bazBucket(),0x5A5B))[0];if(!q)return null;
+  q.src="старьёвщик под тентом";
+  q.lines=[capRu(q.img),capRu(q.where),"со слов: старьёвщик под тентом — "+q.det];
+  q.text="Старьёвщик под тентом рассказывал про место: "+q.img+". "+capRu(q.where)+". "+capRu(q.det)+".";
+  const K=bazBought();
+  if(!K._r){K._r=1;peopleLine(q.text,"слух на барахолке");rumourRemember(q);}
+  return q;
+}
 function bazClose(){const w=document.getElementById("bazWin");if(w)w.remove();}
 function bazOpen(B){
   bazClose();
@@ -169,18 +195,23 @@ function bazOpen(B){
   const L=bazLots(B);
   let h="<div class='bz-h'>БАРАХОЛКА<s>ряд меняется раз в смену · торг не уместен</s></div>";
   /* прилавок — таблица, не список (D20): три колонки, шапка, строки через одну темнее */
-  const sec=(t,kind)=>{const rows=L.filter(x=>x.kind===kind);if(!rows.length)return;
+  const sec=(t,kind)=>{const rows=L.filter(x=>[].concat(kind).indexOf(x.kind)>=0);if(!rows.length)return;
     h+="<div class='bz-sec'>"+t+"</div><div class='bz-tab'><div class='bz-th'><span>что · откуда · что с ним</span><span>цена</span></div>";
-    for(const x of rows){const nm=x.kind==="hull"?"«"+x.ship.ru+"» · "+(HULL_CLASS[hullClassOf("bz"+x.seed,x.ship)]||{}).ru:x.part.name;
+    for(const x of rows){const nm=x.kind==="hull"?"«"+x.ship.ru+"» · "+(HULL_CLASS[hullClassOf("bz"+x.seed,x.ship)]||{}).ru:x.part?x.part.name:x.ru;
       h+="<div class='bz-row"+(x.sold?" sold":"")+"'><b>"+nm+"</b><s>"+x.note+"</s><button class='act' data-k='"+x.k+"'"+(x.sold||G.credits<x.price?" disabled":"")+">"+
         (x.sold?"ПРОДАНО":x.price.toLocaleString("ru")+" КР")+"</button></div>";}
     h+="</div>";
   };
   sec("ВАШЕ · ЧТО ВЫ РАЗОБРАЛИ","thrown");
   sec("КОРПУСА СО ШРАМАМИ","hull");
-  sec("РАЗНОЕ","odd");
+  sec("РАЗНОЕ",["odd","plate"]);
+  sec("ОТДЕЛЬНЫЙ ПРИЛАВОК · РЕДКОСТЬ","rare");
+  const q=bazRumour(B);
+  if(q)h+="<div class='bz-sec'>У ТЕНТОВ ГОВОРЯТ</div><div class='bz-rum'><b>"+q.lines[0]+"</b><s>"+q.lines[1]+"<br>"+q.lines[2]+"</s>"+
+    "<button class='act sm bz-map'>НА КАРТУ</button></div>";
   h+="<button class='act bz-x'>ОТОЙТИ</button>";
   w.innerHTML=h;document.body.appendChild(w);
   w.querySelector(".bz-x").onclick=bazClose;
+  const bm=w.querySelector(".bz-map");if(bm)bm.onclick=()=>{bazClose();rumourToMap(q);};
   w.querySelectorAll("button[data-k]").forEach(b=>b.onclick=()=>{const x=L.find(y=>y.k===b.dataset.k);if(bazBuy(x)){bazOpen(B);if(typeof saveGame==="function")saveGame(true);}});
 }

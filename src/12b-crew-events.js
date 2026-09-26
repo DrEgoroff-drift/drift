@@ -117,9 +117,11 @@ const CREW_EVENTS=[
     return {tone:"warn",ru:"ушёл вместе с грузом и «"+(S?S.ru:"кораблём")+"»"};
   }},
   {id:"seized",cat:"cat",run:(c,r,gross)=>{
-    const fine=Math.round(gross*1.4+400);
-    G.credits-=fine;c.spent=(c.spent||0)+fine;c.cargo={};
-    return {tone:"warn",ru:"груз арестован как контрабанда · штраф "+fine.toLocaleString("ru")+" кр"};
+    /* штраф и долг берут со счёта, но не ниже нуля (§12): минус на счёте загрузка
+       обнуляла (14a1), и долг пропадал с перезапуском — пол, как у пошлины lawDock */
+    const want=Math.round(gross*1.4+400),fine=crewTake(want);
+    c.spent=(c.spent||0)+fine;c.cargo={};
+    return {tone:"warn",ru:"груз арестован как контрабанда · штраф "+fine.toLocaleString("ru")+" кр"+(fine<want?" — всё, что было на счёте":"")};
   }},
 
   /* ── плохое ── */
@@ -144,10 +146,10 @@ const CREW_EVENTS=[
     return {tone:"dim",ru:"встал на ремонт: сдох маршевый узел"};
   }},
   {id:"barvdebt",cat:"bad",run:(c,r,gross)=>{
-    const sum=Math.round(120+gross*.6);
-    G.credits-=sum;c.spent=(c.spent||0)+sum;
+    const want=Math.round(120+gross*.6),sum=crewTake(want);
+    c.spent=(c.spent||0)+sum;
     crewPayload(c,gross*.7,r);
-    return {tone:"money",ru:"оставил долг на станции — "+sum.toLocaleString("ru")+" кр с вас: "+crewTale(c)};
+    return {tone:"money",ru:"оставил долг на станции — "+sum.toLocaleString("ru")+" кр с вас"+(sum<want?" (больше на счёте не было)":"")+": "+crewTale(c)};
   }},
   {id:"hungover",cat:"bad",run:(c,r,gross)=>{
     crewPayload(c,gross*.6,r);c.hangover=1;
@@ -207,12 +209,18 @@ const CREW_EVENTS=[
     return {tone:"tech",ru:"снял с чужого борта: "+p.name};
   }},
   {id:"capture",cat:"jack",when:()=>Object.keys(SHIPS).some(id=>!G.owned[id]),run:(c,r,gross)=>{
-    const free=Object.keys(SHIPS).filter(id=>!G.owned[id]);
-    const id=pick(free,r);G.owned[id]=true;
+    /* пиратский корпус — чужой и битый (M482, shipyard §6): своя сборка с 1–3 шрамами,
+       а не чистый корпус из каталога. Стапель — того, у кого пираты его взяли */
+    const seed=hashi(c.seed,(c.trips|0)*131+9,0xC4A7)>>>0,sh=genUniqueShip(seed);
+    sh.by=MAKER_KEYS[seed%MAKER_KEYS.length];sh.cls="трофейный корпус";
+    sh.scars=scarsRoll(hashi(seed,0x5CA2,6),1+hashi(seed,0x5CA2,7)%3);
+    sh.note="Отбит у пиратов. Чей был до них — не сказали ни они, ни он. "+
+      "Шрамы: "+sh.scars.map(k=>SCAR_KIND[k].ru).join(", ")+" — чинит верфь.";
+    const id="c"+seed;G.uniqueShips[id]=sh;G.owned[id]=true;
     /* хвост — на витрину (M152e): ставка видна, а не строка dim */
     if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:now()});}
-    if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+SHIPS[id].ru+"»","трофей с рейса · корпус в ангаре · витрина дома помнит");
-    return {tone:"tech",ru:"пригнал трофейный корпус «"+SHIPS[id].ru+"» — он в ангаре"};
+    if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+sh.ru+"»","трофей с рейса · пиратский, со шрамами · корпус в ангаре · витрина дома помнит");
+    return {tone:"tech",ru:"пригнал трофейный корпус «"+sh.ru+"» — пиратский, шрамов "+sh.scars.length+" · он в ангаре"};
   }}
 ];
 /* ── применение ── */
@@ -230,6 +238,11 @@ function crewHistory(c,ev,ru){
   c.hist=c.hist||[];
   c.hist.unshift({cat:ev.cat,id:ev.id,ru,t:now()});
   if(c.hist.length>12)c.hist.length=12;
+}
+/* снять со счёта сколько есть, не больше: отдаёт снятое */
+function crewTake(want){
+  const n=Math.max(0,Math.min(want|0,Math.floor(G.credits)));
+  G.credits-=n;return n;
 }
 /* ── выкуп и освобождение ── */
 function ransomPay(c){

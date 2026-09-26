@@ -270,39 +270,16 @@ measured on the GPU build first:
 
 ## 7. Stage 6 — the story and the rest
 
-- [ ] **P15 «Смена»:** a chapter's deed in the place, not just a landing; check that 72 distinct kinds of
-  place exist within reach.
-- [ ] **M457 sound:** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a release
-  run); the receiver speaks the owner's `air` line once at entry.
-- [ ] **M480/M481 yards:** the free cells (need the plan, M477); Хай-Фронт firmware moving a part per
-  сводка; Рассвет hull points back from debris; calibration by the worlds oracle and the стрельбище.
-- [ ] **M484 the special system:** the ability named on the ship card; СИРЕНА answered by the ships actually
-  in view.
-- [ ] **M482 scars:** scars on captured pirate hulls; доводка — a weld with a node, +1 tier, two per hull.
-- [ ] **M513 утильсбор:** the plate crooked when expired; the home yard refusing to re-plan the hull; the
-  foreign warranty void.
-- [ ] **M463 the bazaar:** odd lots beyond parts; rumours at the stalls.
-- [ ] **M487 подписка:** base modules by subscription, and the cold store that stops giving; ×3 offered in
-  a fight.
+- [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
+  release run).
+- [ ] **M480/M481 yards (rest):** calibration by the worlds oracle and the стрельбище (release run).
 
 ## 8. Stage 7 — the giants
 
-- [ ] **M464 one giant per arm:** the ruler in the frame; docking and visiting; the arms matched to the
-  galaxy model's real arms.
 
 ## 9. Seams to honour when the items above are built
 
 Check each against the code before building — some may already hold.
-- **Drones and the far goods (M465):** drones never mine band-2/3 goods and sell band-1 goods at the band
-  price (½) — otherwise a drone on a rim жила prints money offline.
-- **The stamp and the metro (M453, M473):** a stamp lands only on arrival by jump or on ВЫЙТИ, never on a
-  stop passed through; the ring's «Стыковка?» hail fires only when heading into the ring.
-- **The first hour (M452, M472):** the замполит hands the newcomer one жетон («первый — за счёт трассы») —
-  the metro is met in the first hour, not found.
-- **Rescue and rails (`16c-rescue`):** a dry ship at a rail stop gets a third exit beside ДОМОЙ / БУКСИР —
-  НА МЕТРО, a ticket home for its fare.
-- **The scheme's scope (M470):** your line, the rings it meets and their neighbours; pinch/scroll for more —
-  never the whole infinite net. «Край» is per player.
 - **Replays (0.1, P9):** the fixed step and the seeded entry angle each move every recording and same-hash
   suite once — one `-Accept` per change, named in the patchnote, `91zzzzzzzzb-replay` re-based.
 
@@ -335,81 +312,12 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
-- [ ] **Chips on the way to their slot avoid each other:** `CHIP_POS` glides a chip to its logical slot without a
-  collision check, so two chips crossing lie on each other mid-way (seen 23.09 after a teleport). The law «chips never
-  lie on each other or on the HUD» holds in motion too (main, not the gpu branch).
-- [ ] **Station shuttles never drawn (main):** `sysTraffic` (17f) set `by` twice — the arc end's y and then the
-  maker key — so every shuttle sat at NaN and M309 traffic has been invisible since M454. Fixed on the gpu branch
-  (maker is `t.mk`); port the one-line fix to main.
-- [ ] **Planet angles follow the frame rate, not the game clock:** `updateSystem` does `p.ang+=angRate(…)*dt`
-  (moons and the station alike), so where a planet stands depends on how many frames ran — two devices see
-  different worlds. Make the angle a pure function of game time (`ang0+spd*G.t`, same clamp). Check the save
-  first: if `ang` is written there, the save format does not move — derive around it. Not on the gpu branch.
-- [ ] **The belt entry on the phone:** `#msg` is clamped to 3 lines (`-webkit-line-clamp:3`), and an icy
-  ring's fourth line pushes out «тяните по стеклу — обзор», the only hint of how to look around. Fold the
-  ice note into the ore line.
-- [ ] **Whose voice on the approach:** the lane — billboard, hotel, parked fleet — dresses by the station's
-  builder (`st.by` in `sysLane`), while laws and stamps go by the land's owner (`stampOwnerAt`); in Итлуора
-  a ГЛАВТРАССА billboard stood in Орднунг land. Decide which one speaks (M454 gives the body to the
-  builder, M460 gives the sign to the owner).
-- [ ] **A good's colour is also a text colour:** `RES[k].col` colours words in lists; тёмное стекло
-  `#3c4a66` reads at about 2:1 on the dark UI, осмий is borderline — a text shade per good.
 - [ ] **`03e-hull-draw.js` grew to 49 KB** with the yard marks: move the hull's marks (scars, transit plate,
   seal, yard mark) to their own module along that seam.
 - [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,
   330 behind), `drift-lab` (an uncommitted `site/war.js`), `drift-t1`, `drift-t2`, `drift-tests` (still
   since 12.09) and the main checkout `C:\Claude\files` (236 behind) — see what is unmerged, then refresh
   or remove.
-
-## 12. Economy audit (23.09) — holes read from the code, and the seams that close them
-
-Read solo on 0.456.0: `12-economy`, `12ab-hold`, `12aa-need`, `12aj-coop`, `12l-barge`, `13b-occupy`,
-`12al2-laws`, `17k1-gosplan`, `12c-mgr-core`, every `earn()` caller and all ~70 deductions of
-`G.credits`. Nothing changed; each item below names the fix it wants. The net owed in §10 («the
-money-printing counter») is the gate here. Ranked by weight.
-
-- [ ] **The liberation prize repeats for one system** (`13b-occupy` `occKill`): 2400 + danger × 9000
-  every time a system falls to level 0; a freed neighbour of a nest is re-occupied by `occTick` and
-  re-freed for three kills, and pirates respawn on every entry (15-min seed bucket). The largest faucet
-  in the game, several times the 200 кр/мин of trade. Pay in full once per system (a set like
-  `G.gosDone`), half and fading after — or only while the nest is suppressed.
-- [ ] **The hotel repairs for 12 кр** (`17l-hotel` `hotelDesk`): +10 % hull per press, `HOTEL_NIGHT` 12,
-  no cooldown; the dock takes 14 кр per hp. Keep the kindness under a third (review 14.09); one night
-  per game day per station, and the night priced near half of the dock's same tenth.
-- [ ] **«Bought here, handed in here» at the plan and the order:** the appetite is guarded by
-  `appetiteGotHere` (M331); the state order (`17k1-gosplan`, 1.3 × table price, handed in at the same
-  station) and the order (`12aa-need`, 1.5 × table + 120 per sector, delivered where the cooperative
-  can buy) are not; the expedition counter (`11x`) the same, nearly cancelled by ask and ×1.25. One
-  ledger «bought here this shift» read by all four, one net.
-- [ ] **«Per visit» means per docking** (`26-ui-station` `openStationBody`: `lawDock`,
-  `scripVisitReset`, `coopVisitReset`): undock and dock again resets the cooperative cap 60/150, the
-  40 bons and the ГЛАВТРАССА норма's 20 fuel at 1 кр. Key a visit on (station, `holdShift()`).
-- [ ] **The escort advance without an obligation** (`12l-barge` `bargeEscortAccept`): 200 + 3 × cap
-  (470–890 кр) at once; failure only when the barge sinks, leaving the system counts as success. Half
-  at accept, half at the destination; leaving with the contract fails it.
-- [ ] **The balance goes negative and the reload forgives it:** `12b-crew-events` seized
-  (1.4 × gross + 400) and barvdebt (120 + .6 × gross) subtract without a floor — the only two of the
-  ~70 deductions; `14a1-save-rest` clamps to 0 on load, so the debt vanishes with a restart. Either a
-  floor as in `lawDock`, or a real debt (ПАЛАТА already keeps `P.debt` for bases).
-- [ ] **Sale multipliers multiply** (`marketPriceCtx`): need ×2, monopoly, expedition, power ×1.25,
-  embargo, strike, spy, then blockade ×2 in `sellCargo` — only pressure and appetite add inside the
-  clamp, though the comment promises no multiplying; need in a blockade is ×3.1 on food. Take the max
-  of need and blockade, and cap the product.
-- [ ] **Smaller seams:** a drone in a need system sells at ×2 the whole window and never closes it
-  (`sellDroneYield` skips `needClose`); the drone picks its market by seen prices and sells at live
-  ones; an order's deadline runs from the window's end, so one taken late leaves 2–3 game minutes for
-  2–8 sectors (count `due` from the taking); the factor's margin floor .05 scales with perk volume, so a
-  maxed factor prints ~200 кр/мин whatever the market; `evacuate()` in `21-mode-surface` has no
-  callers (dead — the live path is `16c-rescue`).
-- [ ] **Owed from the audit of 4.09 (`docs/ECONOMY-AUDIT.md`):** the probe that moves to another leg
-  when one goes negative (§6, never written); pressure decay on real time (A4) — a player back after
-  two hours of play finds the same floor next day.
-- **Gate:** three nets in «деньги не печатаются»: freeing the same system twice pays at most half the
-  second time; buying and handing in at one station for the plan or the order never nets positive; the
-  balance is never below zero after any row of the hired hands' event table. Found sound and left
-  alone: the counter (ask on buying, pressure after selling, slices, spread), far goods sell-only,
-  barges (sell above and buy below the destination, budget-capped), scrip (12 % round trip), the drone
-  price 1.6ⁿ, people paid only online, the loan since 0.409.1.
 
 ## 13. Outside the game — audience and money (parked; the author 26.09: «запиши куда-нибудь, потом решим»)
 

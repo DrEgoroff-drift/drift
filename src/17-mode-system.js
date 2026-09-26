@@ -388,10 +388,12 @@ function updateSystem(dt){
   }
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
   /* кольцо железной дороги: стыковка и вестибюль (M471–M472) */
+  if(typeof subFightOffer==="function"&&subFightOffer(actEdge))return;   /* ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 в бою (M487) */
   if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
   if(typeof hotelInteract==="function"&&hotelInteract(sh))return;
-  if(typeof bazInteract==="function"&&bazInteract(sh))return;   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
+  if(typeof bazInteract==="function"&&bazInteract(sh))return;
+  if(typeof giantInteract==="function"&&giantInteract(sh))return;   /* причал великана (M464) */   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
   if(typeof fleetInteract==="function"&&fleetInteract(sh))return;
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;

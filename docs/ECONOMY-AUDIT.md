@@ -134,3 +134,5 @@ The opening laps land inside the §4 targets for Стриж (150–250 → 143�
 (500–900 → 1 900–2 400), so the open item is the same as §5's: how many *routes* a player can
 rotate before the world's recovery time catches up. That needs a probe that moves on when a leg
 goes negative — not written; the numbers above are what exists.
+
+**Written 27.09 (§12):** «проба · маршруты по кругу» in `91zzw-eco-probe`. The player reads the quote before buying, skips a leg that is negative, moves to the next route when the whole route is, and waits ten minutes when every route is. Pressure now decays on the world clock (`now()`) with the same 3 h half-life. Three hours, sustained cr/min for 1 / 2 / 3 / 4 routes: Стриж 78 / 168 / 208 / 276, Вьюк 144 / 297 / 365 / 466. The designed 200 cr/min takes about three routes on Стриж and one or two on Вьюк.

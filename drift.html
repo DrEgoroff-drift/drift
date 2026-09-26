@@ -1887,7 +1887,7 @@ body.table u.addr{color:#7a4a20}
 #railWin .rw-board{background:#07090c;border:1px solid #22303a;border-radius:6px;padding:6px 8px;font-family:ui-monospace,monospace}
 #railWin .rw-board div,#railWin .rw-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:3px 0}
 #railWin .rw-board em,#railWin .rw-row em{font-style:normal;color:#ffd08a}
-#railWin button.act{display:block;width:100%;min-height:44px;margin:6px 0;text-align:left}
+#railWin button.act{display:block;width:100%;min-height:44px;margin:6px 0;text-align:left;white-space:normal;padding-top:5px;padding-bottom:5px}
 #railWin button.act s{display:block;text-decoration:none;color:var(--dim);font-size:10px}
 /* жизнь дороги (D24, телефон 18.09): три ровных кнопки читались кассой. Посылка —
    бумажная бирка с дыркой, проездной — картонка с компостером, попутчик — силуэт */
@@ -2013,13 +2013,14 @@ body.table u.addr{color:#7a4a20}
 .stp-fx.stp-done .l1{font-size:14px;margin-top:2px}
 
 /* ── барахолка (M463) [design owed] ── */
-#bazWin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(420px,calc(100vw - 32px));max-height:80vh;overflow:auto;
+:is(#bazWin,#giantWin){position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(420px,calc(100vw - 32px));max-height:80vh;overflow:auto;
   background:#1b1814;border:1px solid #6a5a44;color:#eadbc0;padding:12px 14px;box-shadow:0 8px 30px rgba(0,0,0,.6)}
-#bazWin .bz-h{font:600 15px ui-monospace,monospace;letter-spacing:.2em}#bazWin .bz-h s{display:block;text-decoration:none;font-size:11px;opacity:.6;letter-spacing:0}
-#bazWin .bz-sec{margin:10px 0 4px;font-size:11px;letter-spacing:.15em;opacity:.7}
-#bazWin .bz-row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}
-#bazWin .bz-row s{text-decoration:none;font-size:11px;opacity:.6;grid-column:1}#bazWin .bz-row button{grid-row:1/3;grid-column:2}
-#bazWin .bz-x{margin-top:10px;width:100%}
+:is(#bazWin,#giantWin) .bz-h{font:600 15px ui-monospace,monospace;letter-spacing:.2em}:is(#bazWin,#giantWin) .bz-h s{display:block;text-decoration:none;font-size:11px;opacity:.6;letter-spacing:0}
+:is(#bazWin,#giantWin) .bz-sec{margin:10px 0 4px;font-size:11px;letter-spacing:.15em;opacity:.7}
+:is(#bazWin,#giantWin) .bz-row{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}
+:is(#bazWin,#giantWin) .bz-row s{text-decoration:none;font-size:11px;opacity:.6;grid-column:1}:is(#bazWin,#giantWin) .bz-row button{grid-row:1/3;grid-column:2}
+:is(#bazWin,#giantWin) .bz-x{margin-top:10px;width:100%}
+#giantWin .gi-txt{margin:8px 0 2px;font-size:12px;line-height:1.55;opacity:.85}
 
 /* ── особая система корпуса: перезарядка ободом ДЕЙСТВИЯ (M484) [design owed] ── */
 .pads button[data-k="act"]{position:relative}
@@ -2092,15 +2093,18 @@ body.table u.addr{color:#7a4a20}
 #railScheme canvas{display:block;border-radius:2px;box-shadow:0 14px 40px rgba(0,0,0,.7),0 0 0 1px rgba(60,40,20,.5);transform:rotate(-1.2deg)}
 #railScheme b{font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#e9dcc0}
 #railScheme s{text-decoration:none;font:10px ui-monospace,monospace;color:rgba(233,220,192,.6)}
+#railScheme b,#railScheme s{max-width:calc(100vw - 32px);text-align:center;text-wrap:balance;background:rgba(6,8,12,.72);padding:2px 8px;border-radius:3px}
 #railWin .rw-map{margin-top:10px}
 
 /* барахолка (D20): прилавок таблицей — три колонки под шапкой, продано — вычеркнуто */
-#bazWin .bz-tab{border:1px solid rgba(240,210,160,.25);border-radius:3px;overflow:hidden}
-#bazWin .bz-th{display:grid;grid-template-columns:1fr auto;gap:8px;padding:4px 8px;font-size:9px;letter-spacing:.14em;opacity:.55;background:rgba(240,210,160,.08)}
-#bazWin .bz-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border-top:1px solid rgba(255,255,255,.06)}
-#bazWin .bz-row:nth-child(2n+1){background:rgba(0,0,0,.18)}
-#bazWin .bz-row b{grid-area:nm;font-size:12px}#bazWin .bz-row s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7}#bazWin .bz-row button{grid-area:pr}
-#bazWin .bz-row.sold b{text-decoration:line-through;opacity:.5}
+:is(#bazWin,#giantWin) .bz-tab{border:1px solid rgba(240,210,160,.25);border-radius:3px;overflow:hidden}
+:is(#bazWin,#giantWin) .bz-th{display:grid;grid-template-columns:1fr auto;gap:8px;padding:4px 8px;font-size:9px;letter-spacing:.14em;opacity:.55;background:rgba(240,210,160,.08)}
+:is(#bazWin,#giantWin) .bz-row{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border-top:1px solid rgba(255,255,255,.06)}
+:is(#bazWin,#giantWin) .bz-row:nth-child(2n+1){background:rgba(0,0,0,.18)}
+:is(#bazWin,#giantWin) .bz-row b{grid-area:nm;font-size:12px}:is(#bazWin,#giantWin) .bz-row s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7}:is(#bazWin,#giantWin) .bz-row button{grid-area:pr}
+:is(#bazWin,#giantWin) .bz-row.sold b{text-decoration:line-through;opacity:.5}
+:is(#bazWin,#giantWin) .bz-rum{display:grid;grid-template-columns:1fr auto;grid-template-areas:"nm pr" "nt pr";gap:2px 10px;align-items:center;padding:6px 8px;border:1px dashed rgba(240,210,160,.25);border-radius:3px}
+:is(#bazWin,#giantWin) .bz-rum b{grid-area:nm;font-size:12px}:is(#bazWin,#giantWin) .bz-rum s{grid-area:nt;text-decoration:none;font-size:10px;opacity:.7;line-height:1.6}:is(#bazWin,#giantWin) .bz-rum button{grid-area:pr}
 
 /* окошко Космопочты (D17) и печать подписки (D19) */
 .post .kp-win{display:block;margin:6px auto 2px;border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
@@ -2491,7 +2495,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.480.0";
+const VER="0.483.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -2884,6 +2888,23 @@ const RES={
   /* срез чайного гриба с базы (M497): в конце таблицы, чтобы старый мир не сдвинулся */
   grib:     {ru:"Чайный гриб",col:"#c8a060",price:90,made:1}   /* made: делается на базе, станции его не генерируют */
 };
+/* цвет товара в тексте (§11): RES[k].col — цвет самого товара, и тёмные (тёмное стекло,
+   углеволокно, графит) на тёмной панели читались едва ли 2:1. Для слов — тот же тон,
+   подмешанный к светлому до контраста 4.5 с фоном панели; светлые остаются как были.
+   Считается один раз на товар */
+const RES_TXT={};
+function resTxt(k){
+  if(RES_TXT[k])return RES_TXT[k];
+  const R=RES[k];if(!R)return "#cfd6dd";
+  const lum=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2]);};
+  const bg=lum([16,21,27]),c0=hex2rgb(R.col),W=[238,242,246];
+  let out=R.col;
+  for(let t=0;t<=1.0001;t+=.1){
+    const c=c0.map((v,i)=>Math.round(v+(W[i]-v)*t));
+    if((lum(c)+.05)/(bg+.05)>=4.5){out=t?"#"+c.map(v=>v.toString(16).padStart(2,"0")).join(""):R.col;break;}
+  }
+  return RES_TXT[k]=out;
+}
 /* ── десять дальних товаров (M465, DESIGN-resources §2) ──
    Чем дальше от ядра, тем дороже — в сердце: ценность делает обратная дорога.
    У каждого — полоса (от ядра, в секторах), глагол добычи, одно свойство и
@@ -5334,6 +5355,8 @@ function drawTransitPlate(h,id){
   if(typeof regPending!=="function"||!regPending(id))return;
   const x=h.tail+h.len*.12,w=Math.max(4,h.bw*.5),hh=w*.42;
   ctx.save();ctx.translate(x,0);
+  /* транзит просрочен — бумажка держится на одном углу и висит криво */
+  const r=regOf(id);if(r&&now()>r.until){ctx.translate(-w/2,-hh/2);ctx.rotate(.32);ctx.translate(w/2,hh/2);}
   ctx.fillStyle="#e8c53a";ctx.fillRect(-w/2,-hh/2,w,hh);
   ctx.strokeStyle="#1a1408";ctx.lineWidth=.4;ctx.strokeRect(-w/2,-hh/2,w,hh);
   ctx.fillStyle="#1a1408";ctx.fillRect(-w*.38,-hh*.18,w*.76,hh*.14);ctx.fillRect(-w*.3,hh*.08,w*.6,hh*.14);
@@ -7795,7 +7818,9 @@ function instrFromShelf(k){
    u.ts — заявка в поддержку {q, t0, until}. */
 const WARRANTY_SHIFTS=12,WARRANTY_WORKS={sirin:1,vekha:1};
 function warrantyShift(){return (typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1200000;}
-function warrantyOn(u){return !!(u&&u.wr&&!u.tp&&now()<u.wr);}
+function warrantyOn(u){return !!(u&&u.wr&&!u.tp&&now()<u.wr)&&!warrantyRegVoid();}
+/* утильсбор (M513): пока корпус на транзитных номерах, чужая гарантия аннулирована */
+function warrantyRegVoid(){return typeof regPending==="function"&&regPending(G.shipId);}
 function warrantyGive(u){if(u&&WARRANTY_WORKS[u.w])u.wr=now()+WARRANTY_SHIFTS*warrantyShift();}
 function instrBroken(u){return !!(u&&(u.wear||0)>=.85);}
 /* звонок в поддержку */
@@ -7849,7 +7874,7 @@ function warrantyBlock(){
   for(const id of broken){
     const u=K[id],nm=INSTR_BY_ID[id]?INSTR_BY_ID[id].ru:id;
     const row=document.createElement("div");row.className="op-wr";
-    const st=u.ts?"в очереди поддержки · № "+supportQueue(u):warrantyOn(u)?"на гарантии":u.tp?"гарантия аннулирована":"без гарантии";
+    const st=u.ts?"в очереди поддержки · № "+supportQueue(u):warrantyOn(u)?"на гарантии":u.tp?"гарантия аннулирована":warrantyRegVoid()&&u.wr&&now()<u.wr?"гарантия аннулирована: корпус не на учёте":"без гарантии";
     row.innerHTML="<b>"+nm+"</b><s>"+st+"</s>";
     if(warrantyOn(u)&&!u.ts){const b=document.createElement("button");b.className="act";b.textContent="ТЕХПОДДЕРЖКА · ДАРОМ, ЖДАТЬ";
       b.onclick=()=>{supportCall(id);if(typeof opisRerender==="function")opisRerender();};row.appendChild(b);}
@@ -17829,10 +17854,23 @@ function firstSay(k){
 /* ── поводы ──
    Зовётся из кадра. Дёшево: четыре сравнения, и после того как всё сказано,
    первая же проверка выходит по длине списка. */
+/* ── жетон (§9, M452/M472): метро новичок встречает в первый час, а не находит.
+   При первой стыковке в сердце (там, где ходит метро) замполит отдаёт один
+   жетон — «первый — за счёт трассы»; первый проезд в метро им и оплачен
+   (railFare). Хранится тем же списком сказанного: "tok" выдан, "tokUsed" сдан ── */
+function firstToken(){
+  if(firstSaid("tok")||G.mode!=="dock"||typeof RAIL_METRO_R==="undefined"||Math.hypot(G.sx,G.sy)>RAIL_METRO_R)return;
+  firstAll().push("tok");
+  const t="…вам жетон. Первый — за счёт трассы. Метро — кольцо за станцией, по огням: подходите носом, медленно.";
+  if(typeof consoleHeard==="function")consoleHeard(t,"замполит");
+  if(typeof logAdd==="function")logAdd("ether","замполит: "+t);
+  if(typeof recordAdd==="function")recordAdd("замполит","выдан жетон метро — первый за счёт трассы");
+}
 function firstTick(){
   if(!G.running)return;
+  firstToken();
   const F=firstAll();
-  if(F.length>=FIRST_LINES.length)return;
+  if(FIRST_LINES.every(l=>F.indexOf(l.k)>=0))return;
   /* про воздух — когда впервые вышел на грунт и отошёл от корабля */
   if(G.mode==="surface"&&G.surf&&!firstSaid("air")){
     const d=Math.abs((G.surf.x||0)-(G.surf.shipX||0));
@@ -21286,10 +21324,10 @@ function rumourToMap(q){
   if(typeof gotoSector==="function")gotoSector(q.sx,q.sy,"слух · искать в "+q.rad+" "+pl3(q.rad,"секторе","секторах","секторах")+" вокруг");
 }
 /* слухи этой станции на эти три дня: два, и один из них может врать */
-function rumoursHere(){
+function rumoursHere(seed){
   const placed=(typeof REGION_TABLE!=="undefined")?REGION_TABLE.filter(T=>regionOfTheme(T.id)):[];
   if(!placed.length)return [];
-  const r=rng(rumourSeedHere()),out=[];
+  const r=rng(seed==null?rumourSeedHere():seed),out=[];
   for(let i=0;i<2;i++){
     const T=placed[Math.floor(r()*placed.length)];
     const at=regionOfTheme(T.id),R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
@@ -22620,14 +22658,20 @@ function drawMisFigure(c,W,H){
 function marketFor(sys){
   const base=sys.station.prices;
   let m=G.market[sys.key];
-  if(!m){m={pressure:{},t:G.t};G.market[sys.key]=m;}
+  if(!m){m={pressure:{},t:now()};G.market[sys.key]=m;}
   if(!m.ask)m.ask={};   /* наценка прилавка от ваших покупок (M289) — живёт в той же записи */
-  const secs=Math.max(0,(G.t-m.t)/60);
+  /* по часам мира (now), а не по G.t (аудит 4.09, A4): G.t в сейв не идёт и после
+     загрузки начинался с нуля — давление стояло, пока новая сессия не догонит старую
+     метку, а за ночь вне игры рынок не отдыхал вовсе. Метка старого сейва (кадры G.t,
+     число меньше 1e11) — просто «сейчас», без броска: выгоды из перехода не будет */
+  const tn=now();
+  if(!(m.t>1e11))m.t=tn;
+  const secs=Math.max(0,(tn-m.t)/1000);
   if(secs>0){
     const decay=Math.pow(.5,secs/10800);   /* давление держится часами, а не полчаса (M152e): дальше лететь выгоднее, чем туда-сюда */
     for(const k of TRADE_KEYS){m.pressure[k]=(m.pressure[k]||0)*decay;if(m.ask[k])m.ask[k]*=decay;}
     for(const k of FAR_KEYS)if(m.pressure[k])m.pressure[k]*=decay;   /* дальние (M467) — то же давление */
-    m.t=G.t;
+    m.t=tn;
   }
   const prices={},C=marketCtx(sys,m);
   for(const k of TRADE_KEYS)prices[k]=marketPriceCtx(sys,C,k,0);
@@ -22734,13 +22778,31 @@ function marketCtx(sys,m){
    M290): складывается с давлением, а не множится поверх нужды и монополии,
    и потолок 1.8 остаётся потолком. Занятая система: скупщик один, и он знает,
    что деваться некуда */
+/* множители-события (§12): нужда, монополия, экспедиция, занятость, шпион — каждый
+   по отдельности честен, но они перемножались, и вместе с блокадой еда в нужде шла
+   ×3.1. Теперь нужда отдельно (с ней блокада берётся по большему, а не поверх),
+   остальное — отдельно, и всё вместе не выше PRICE_EV_CAP */
+const PRICE_EV_CAP=2.2;
+function priceParts(sys,C,k){
+  return {need:(C.N&&C.N.k===k?NEED_MUL:1),
+    rest:C.boost*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
+      /* шпион (M387): цены на этой станции врут по каждому
+         товару в свою сторону — и врут обеим сторонам прилавка */
+      (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)};
+}
 function marketPriceCtx(sys,C,k,add){
-  const base=sys.station.prices;
-  return Math.max(1,Math.round(base[k]*C.mul*C.boost*(C.N&&C.N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
-                               /* шпион (M387): цены на этой станции врут по каждому
-                                  товару в свою сторону — и врут обеим сторонам прилавка */
-                               (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)*
+  const base=sys.station.prices,P=priceParts(sys,C,k);
+  return Math.max(1,Math.round(base[k]*C.mul*Math.min(PRICE_EV_CAP,P.need*P.rest)*
                                clamp(1+(C.m.pressure[k]||0)+(add||0),.4,1.8)));
+}
+/* блокада (M498) платит вдвое за еду, воду, топливо — но не поверх нужды: берётся
+   большее из двух, и под тем же потолком. Отдаёт множитель к уже посчитанной выручке */
+function blockEff(sys,k){
+  const bm=typeof blockMul==="function"?blockMul(sys,k):1;if(bm<=1)return 1;
+  marketFor(sys);
+  const P=priceParts(sys,marketCtx(sys,G.market[sys.key]),k);
+  const was=Math.min(PRICE_EV_CAP,P.need*P.rest);
+  return was>0?Math.min(PRICE_EV_CAP,Math.max(P.need,bm)*P.rest)/was:1;
 }
 function marketPrice(sys,k,add){
   marketFor(sys);   /* давление досчитано, запись есть */
@@ -22785,7 +22847,7 @@ function sellCargo(sys,k,qty){
   /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
      двигает только то, чего никто не съел */
   Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
-  if(typeof blockMul==="function")Q.revenue*=blockMul(sys,k);   /* блокада платит вдвое за еду, воду, топливо (M498) */
+  Q.revenue=Math.round(Q.revenue*blockEff(sys,k));   /* блокада платит вдвое за еду, воду, топливо (M498) — не поверх нужды (§12) */
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
@@ -22799,9 +22861,12 @@ function sellCargo(sys,k,qty){
   return revenue;
 }
 function sellDroneYield(sys,k,qty){
-  const price=marketFor(sys)[k],revenue=qty*price;
+  const price=droneSellPrice(sys,k),revenue=qty*price;
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
+  /* привоз дрона — тоже привоз: нужда ×2 закрывается им, как и вашим (§12) — иначе
+     дрон в системе с нуждой сдавал вдвое всё окно */
+  if(qty>0&&typeof needClose==="function")needClose(sys,k);
   return revenue;
 }
 
@@ -22864,14 +22929,31 @@ function droneMarket(d){
     const S=seen[key];if(!S||!S.p||S.p[d.res]==null)continue;
     const dist=Math.max(Math.abs(S.sx-d.sx),Math.abs(S.sy-d.sy));
     if(dist>R)continue;
-    const v=S.p[d.res]*(1-.08*dist);
-    if(v>bv*1.1){const s=getSystem(S.sx,S.sy);if(s&&s.station){bv=v;best=s;}}
+    /* выбирает по той же цене, по какой сдаст (§12) */
+    const s=getSystem(S.sx,S.sy);if(!s||!s.station)continue;
+    const v=droneSellPrice(s,d.res)*(1-.08*dist);
+    if(v>bv*1.1){bv=v;best=s;}
   }
   const was=d.mkt&&d.mkt.key;
   d.mkt={key:best.key,sx:best.sx,sy:best.sy,name:best.station.name,day};
   if(perk&&best!==near&&was!==best.key)mgrSay(m,droneName(d)+" сдаёт на «"+best.station.name+"»: там дороже");
   return best;
 }
+/* цена сдачи дрона (§12): виденная вами у этой станции — дрон выбирает рынок по ней и по
+   ней же сдаёт (было: выбирал по виденной, сдавал по живой). Виденная годна DRONE_SEEN_DAYS
+   суток мира (сутки — минута игры): старая запись — чаще всего нужда ×2, которую давно
+   закрыли, и по ней дроны кормились бы вечно. Нет свежей — живая цена */
+const DRONE_SEEN_DAYS=30;
+function droneSellPrice(sys,k){
+  const S=G.seenPrices&&G.seenPrices[sys.key];
+  const p=(S&&S.p&&S.p[k]!=null&&celDay()-(S.day|0)<=DRONE_SEEN_DAYS)?Math.max(1,S.p[k]|0):marketFor(sys)[k]|0;
+  return RES[k]&&RES[k].far?Math.max(1,Math.round(p*DRONE_FAR_MUL)):p;
+}
+/* дальнее сырьё и дроны (§9, M465): точка у дрона бездонная, поэтому дальние товары
+   второго и третьего пояса (band ≥ 25) дрон не берёт вовсе, а первого — сдаёт за
+   полцены пояса: иначе дрон на жиле у края печатал бы деньги, пока игрок спит */
+const DRONE_FAR_MUL=.5;
+function droneMayMine(k){const F=RES[k]&&RES[k].far;return !!RES[k]&&(!F||F.band<=10);}
 function nearestStation(sx,sy){
   for(let rad=0;rad<=24;rad++){
     let best=null,bd=1e9;
@@ -22901,7 +22983,7 @@ function droneCapacity(k){
 }
 let droneTarget=null;
 function deployDrone(){
-  if(G.droneInventory<=0||!droneTarget)return;
+  if(G.droneInventory<=0||!droneTarget||!droneMayMine(droneTarget))return;
   G.droneInventory--;
   /* адрес точки, а не только системы (M237): дрону теперь есть откуда лететь.
      На грунте это планета, в поясе — кольцо (pi=-1). Без адреса рейса нет. */
@@ -23836,6 +23918,9 @@ function orderOf(sys){
 function orderTake(sys){
   if(G.order)return false;
   const O=orderOf(sys);if(!O)return false;
+  /* срок — от взятия, а не от конца окна (§12): взятый под конец окна наряд
+     оставлял две игровые минуты на 2–8 секторов */
+  O.due=Math.max(O.due,celDay()+ORDER_WIN);
   G.order=O;
   tell("tech","Наряд взят: "+O.qty+" "+O.ru+" → "+O.to.name+" до "+O.due+"-го · "+O.pay+" кр",
        "НАРЯД\n"+O.qty+" "+O.ru+" → "+O.to.name);
@@ -23849,10 +23934,14 @@ function orderHere(){
 function orderDeliver(){
   const O=orderHere();if(!O)return false;
   if((G.cargo[O.k]||0)<O.qty)return false;
+  /* купленное у самого получателя в эту смену не везли: за него — цена приёмки,
+     без надбавки и без платы за сектора (§12) */
+  const S=boughtHereSplit(G.sys,O.k,O.qty);
+  const pay=S.m?Math.round(O.pay*(O.qty-S.m)/O.qty+S.m*S.bid):O.pay;
   G.cargo[O.k]-=O.qty;
-  earn(O.pay,"order");
+  earn(pay,"order");
   G.order=null;
-  tell("money","Наряд закрыт: "+O.pay+" кр · "+O.to.name,"НАРЯД ЗАКРЫТ\n+"+O.pay+" кр");
+  tell("money","Наряд закрыт: "+pay+" кр · "+O.to.name+(S.m?" · "+S.m+" куплено здесь":""),"НАРЯД ЗАКРЫТ\n+"+pay+" кр");
   if(typeof repAdd==="function")repAdd(1,G.sys);
   if(typeof peopleLine==="function")peopleLine("наряд принят, "+O.qty+" "+O.ru+". Спасибо, что в срок.",O.to.name);
   if(typeof recordAdd==="function")recordAdd(O.to.name,"благодарность за наряд");
@@ -24135,6 +24224,14 @@ function appetiteGotHere(sys,k){
   const a=h&&h.here&&h.here[k];
   return (Array.isArray(a)&&a[1]===holdShift())?(a[0]|0):0;
 }
+/* одна книга «куплено здесь в эту смену» на всех, кто платит за привоз (§12): аппетит,
+   госзаказ, наряд. Купленное у этой же стойки идёт по цене приёмки, а не по надбавке —
+   иначе «купил и тут же сдал» печатает деньги. Отдаёт {m — сколько из n куплено здесь,
+   bid — цена приёмки за единицу} */
+function boughtHereSplit(sys,k,n){
+  const m=sys?Math.min(n|0,appetiteGotHere(sys,k)):0;
+  return {m,bid:m?marketPrice(sys,k):0};
+}
 function appetiteBought(sys,k,qty){
   if(!sys||!(qty>0))return;
   const h=holdOf(sys.key);h.here=h.here||{};
@@ -24198,7 +24295,7 @@ function appetiteBlock(){
   $body.appendChild(el("div","sec","БЕРЁТ · ПЕРВЫЕ ЕДИНИЦЫ В СМЕНУ — С НАДБАВКОЙ"));
   for(const k in A){
     const ate=appetiteAte(G.sys,k),left=A[k]-ate,have=G.cargo[k]|0;
-    $body.appendChild(el("div","row","<div class='nm'><b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+    $body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
       (left>0?"ещё "+left+" из "+A[k]+" по "+appetitePrice(G.sys,k)+" кр":"на эту смену взяли всё · через смену снова")+
       " · обычная "+marketFor(G.sys)[k]+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
   }
@@ -24393,7 +24490,7 @@ function indPrice(k){
 function bldCostTxt(cost){
   const L=[];
   if(cost.credits)L.push(cost.credits.toLocaleString("ru")+" кр");
-  for(const k in cost)if(k!=="credits"&&RES[k])L.push("<span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+" "+cost[k]+"</span>");
+  for(const k in cost)if(k!=="credits"&&RES[k])L.push("<span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+" "+cost[k]+"</span>");
   return L.join(" · ");
 }
 function bldIoTxt(def){
@@ -25251,7 +25348,7 @@ function holdUklad(key){
 function holdNews(sys,def,what){
   if(!sys||!sys.station||!def||typeof newsAll!=="function")return null;
   const ins=Object.keys(def.eats);
-  const m=G.market[sys.key]||(G.market[sys.key]={pressure:{},t:G.t});
+  const m=G.market[sys.key]||(G.market[sys.key]={pressure:{},t:now()});
   for(const k of ins)if(TRADE_KEYS.indexOf(k)>=0)m.pressure[k]=clamp((m.pressure[k]||0)+.2,-.6,.8);
   const ru="«"+sys.station.name+"»: "+(what==="up"?def.ru+" поднят до ×"+(bldEntry(sys.key,def.id)||{lvl:2}).lvl:"заложен "+def.ru.toLowerCase())+
     (ins.length?" — "+ins.filter(k=>RES[k]).map(k=>RES[k].ru.toLowerCase()).join(" и ")+" здесь в цене":" — "+def.note);
@@ -26339,7 +26436,7 @@ function coopCounterBlock(){
     const maxN=Math.min(left,free);
     const q0=coopBuyQuote(G.sys,k,10);
     const r=el("div","row");
-    r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за первый десяток, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
+    r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+q0.ask0+" кр за первый десяток, дальше дороже"+(left<1e8?" · за заход ещё "+left:"")+(free?"":" · трюм полон")+"</s>"));
     const box=el("div","modbtns");
     for(const n of [10,50]){
       const nn=Math.min(n,maxN);
@@ -30521,9 +30618,11 @@ const CREW_EVENTS=[
     return {tone:"warn",ru:"ушёл вместе с грузом и «"+(S?S.ru:"кораблём")+"»"};
   }},
   {id:"seized",cat:"cat",run:(c,r,gross)=>{
-    const fine=Math.round(gross*1.4+400);
-    G.credits-=fine;c.spent=(c.spent||0)+fine;c.cargo={};
-    return {tone:"warn",ru:"груз арестован как контрабанда · штраф "+fine.toLocaleString("ru")+" кр"};
+    /* штраф и долг берут со счёта, но не ниже нуля (§12): минус на счёте загрузка
+       обнуляла (14a1), и долг пропадал с перезапуском — пол, как у пошлины lawDock */
+    const want=Math.round(gross*1.4+400),fine=crewTake(want);
+    c.spent=(c.spent||0)+fine;c.cargo={};
+    return {tone:"warn",ru:"груз арестован как контрабанда · штраф "+fine.toLocaleString("ru")+" кр"+(fine<want?" — всё, что было на счёте":"")};
   }},
 
   /* ── плохое ── */
@@ -30548,10 +30647,10 @@ const CREW_EVENTS=[
     return {tone:"dim",ru:"встал на ремонт: сдох маршевый узел"};
   }},
   {id:"barvdebt",cat:"bad",run:(c,r,gross)=>{
-    const sum=Math.round(120+gross*.6);
-    G.credits-=sum;c.spent=(c.spent||0)+sum;
+    const want=Math.round(120+gross*.6),sum=crewTake(want);
+    c.spent=(c.spent||0)+sum;
     crewPayload(c,gross*.7,r);
-    return {tone:"money",ru:"оставил долг на станции — "+sum.toLocaleString("ru")+" кр с вас: "+crewTale(c)};
+    return {tone:"money",ru:"оставил долг на станции — "+sum.toLocaleString("ru")+" кр с вас"+(sum<want?" (больше на счёте не было)":"")+": "+crewTale(c)};
   }},
   {id:"hungover",cat:"bad",run:(c,r,gross)=>{
     crewPayload(c,gross*.6,r);c.hangover=1;
@@ -30611,12 +30710,18 @@ const CREW_EVENTS=[
     return {tone:"tech",ru:"снял с чужого борта: "+p.name};
   }},
   {id:"capture",cat:"jack",when:()=>Object.keys(SHIPS).some(id=>!G.owned[id]),run:(c,r,gross)=>{
-    const free=Object.keys(SHIPS).filter(id=>!G.owned[id]);
-    const id=pick(free,r);G.owned[id]=true;
+    /* пиратский корпус — чужой и битый (M482, shipyard §6): своя сборка с 1–3 шрамами,
+       а не чистый корпус из каталога. Стапель — того, у кого пираты его взяли */
+    const seed=hashi(c.seed,(c.trips|0)*131+9,0xC4A7)>>>0,sh=genUniqueShip(seed);
+    sh.by=MAKER_KEYS[seed%MAKER_KEYS.length];sh.cls="трофейный корпус";
+    sh.scars=scarsRoll(hashi(seed,0x5CA2,6),1+hashi(seed,0x5CA2,7)%3);
+    sh.note="Отбит у пиратов. Чей был до них — не сказали ни они, ни он. "+
+      "Шрамы: "+sh.scars.map(k=>SCAR_KIND[k].ru).join(", ")+" — чинит верфь.";
+    const id="c"+seed;G.uniqueShips[id]=sh;G.owned[id]=true;
     /* хвост — на витрину (M152e): ставка видна, а не строка dim */
     if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:now()});}
-    if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+SHIPS[id].ru+"»","трофей с рейса · корпус в ангаре · витрина дома помнит");
-    return {tone:"tech",ru:"пригнал трофейный корпус «"+SHIPS[id].ru+"» — он в ангаре"};
+    if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+sh.ru+"»","трофей с рейса · пиратский, со шрамами · корпус в ангаре · витрина дома помнит");
+    return {tone:"tech",ru:"пригнал трофейный корпус «"+sh.ru+"» — пиратский, шрамов "+sh.scars.length+" · он в ангаре"};
   }}
 ];
 /* ── применение ── */
@@ -30634,6 +30739,11 @@ function crewHistory(c,ev,ru){
   c.hist=c.hist||[];
   c.hist.unshift({cat:ev.cat,id:ev.id,ru,t:now()});
   if(c.hist.length>12)c.hist.length=12;
+}
+/* снять со счёта сколько есть, не больше: отдаёт снятое */
+function crewTake(want){
+  const n=Math.max(0,Math.min(want|0,Math.floor(G.credits)));
+  G.credits-=n;return n;
 }
 /* ── выкуп и освобождение ── */
 function ransomPay(c){
@@ -32126,7 +32236,11 @@ function mgrWorkFact(m,min){
   if(mgrHas(m,"pirate"))add-=.10;
   vol*=Math.max(.2,1+add);
   const cap=vol*min;                 // прокручено кредитов
-  let gross=Math.round(cap*rel);
+  /* пол маржи — «мелочь и подряды», и он не растёт с уровнем и перками (§12): иначе
+     вкачанный фактор на сошедшихся ценах печатал ~200 кр/мин при любом рынке.
+     Перки множат настоящую маржу; пол — это плечи, и только они */
+  const real=leg?leg.margin/Math.max(1,leg.buy):0;
+  let gross=real>=.05?Math.round(cap*rel):Math.round(Math.max(cap*Math.max(0,real),260*legs*min*.05));
   m.legNote=leg?(RES[leg.k].ru.toLowerCase()+": «"+leg.from.station.name+"» "+leg.buy+
             " → «"+leg.to.station.name+"» "+leg.sell+" кр"):"";
   /* Он давит собственную маржу: сдаёт туда же, куда возит, и цена там оседает.
@@ -35849,6 +35963,11 @@ function bargeBuyPrice(b,good){           // баржа покупает у ва
    станции, медленно, без оружия. Присутствие и состав детерминированы от
    seed сектора и окна времени. */
 function spawnBarges(){
+  /* ушли из системы с рейсом — рейс сорван (§12): вход в новую систему и есть уход */
+  for(const b of G.barges||[])if(b.escort)bargeEscortEnd(b,false,"ушли из системы — рейс сорван");
+  /* и рейс, чья баржа не пережила загрузку (баржи — мир, в сейв не идут) */
+  if(typeof questAll==="function"&&typeof questFail==="function")
+    for(const q of questAll().slice())if(q.state==="active"&&String(q.key).indexOf("escort:")===0)questFail(q.key,"рейс сорван");
   G.barges=[];
   const legs=bargeLegs();
   if(!legs.length)return;
@@ -35907,6 +36026,8 @@ function updateBarges(dt){
   for(let i=G.barges.length-1;i>=0;i--){
     const b=G.barges[i];
     b.x+=b.vx*dt;b.y+=b.vy*dt;
+    /* рейс под охраной дошёл: баржа прожила свою хорду рядом с вами */
+    if(b.escort&&!b.distress){b.escT=(b.escT||0)+dt;if(b.escT>=BARGE_ESCORT_T)bargeEscortEnd(b,true);}
     /* ── баржа в беде: пираты выгрызают корпус, пока их не отгонят ── */
     if(b.distress){
       const atk=bargeAttackers(b);
@@ -36035,30 +36156,40 @@ function bargeInteract(sh){
 /* ══════════════ контракт охраны ══════════════
    Наняться проводить баржу: плата вперёд, маршрут известен заранее (адрес — в
    журнале). Провал НЕ отнимает кредиты — он отнимает репутацию. Стабильного
-   плюса тут нет, как и у наёмника: аванс мал, а риск ваш. */
+   плюса тут нет, как и у наёмника: аванс мал, а риск ваш.
+   §12: весь аванс сразу и «ушёл из системы — засчитано» делали рейс краном —
+   взял, улетел, вернулся к новой барже. Теперь половина вперёд, половина — когда
+   рейс дошёл (баржа прожила рядом с вами BARGE_ESCORT_T или вы её отбили); уйти
+   из системы с рейсом — сорвать его. Одну баржу (seed) нанимают один раз */
+const BARGE_ESCORT_T=5400;   /* полторы минуты игры: баржа проходит свою хорду */
 function bargeEscortAdvance(b){return 200+Math.floor((b.cap||100)*3);}
+function bargeEscortHalf(b){return Math.round(bargeEscortAdvance(b)/2);}
 function bargeEscortAccept(b){
   if(b.escort||b.distress)return false;
-  b.escort=1;
-  const adv=bargeEscortAdvance(b);
+  if(typeof questAll==="function"&&questAll().some(q=>q.key==="escort:"+b.seed)){say("Этот рейс вы уже брали",90);return false;}
+  b.escort=1;b.escT=0;
+  const adv=bargeEscortHalf(b);
   earn(adv,"escort");
   const dst=bargeSysAt(b.to);
   if(typeof questAdd==="function")questAdd("escort:"+b.seed,{
     ru:"Проводить баржу «"+b.capName+"»",kind:"job",from:"баржа",
     note:"довести до «"+((dst&&dst.station&&dst.station.name)||"назначения")+
-      "» живой. Аванс уже выплачен; провал бьёт по репутации, не по кошельку",
+      "» живой. Половина выплачена, вторая — когда рейс дойдёт; уйдёте из системы — сорван",
     sx:dst?dst.sx:null,sy:dst?dst.sy:null,reward:"репутация у назначения"});
-  say("Аванс охраны +"+adv+" кр\nдоведите баржу живой");
+  say("Аванс охраны +"+adv+" кр\nдоведите баржу — вторая половина у назначения");
   logAdd("money","Наняты охраной баржи «"+b.capName+"» · аванс +"+adv+" кр");
   return true;
 }
-function bargeEscortEnd(b,ok){
+function bargeEscortEnd(b,ok,why){
   if(!b.escort)return;b.escort=0;
   const key="escort:"+b.seed;
   if(ok){
+    const rest=bargeEscortAdvance(b)-bargeEscortHalf(b);
+    earn(rest,"escort");
+    logAdd("money","Рейс баржи «"+b.capName+"» дошёл · охране +"+rest+" кр");
     if(typeof questDone==="function")questDone(key,"баржа дошла");
   }else{
-    if(typeof questFail==="function")questFail(key,"баржу потеряли");
+    if(typeof questFail==="function")questFail(key,why||"баржу потеряли");
     /* провал: репутация вниз, но кредиты (аванс) не отбираются */
     const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
     if(dst&&typeof repAdd==="function")repAdd(-2,dst);
@@ -36440,9 +36571,9 @@ function renderBarge(){
     " ×"+b.qty+" · назначение «"+((bargeSysAt(b.to)||{station:{name:"?"}}).station.name)+"»"));
   /* наняться охраной: аванс вперёд, довести живой (12l — контракт охраны) */
   if(!b.escort){
-    const adv=bargeEscortAdvance(b);
+    const adv=bargeEscortHalf(b),rest=bargeEscortAdvance(b)-adv;
     $bgBody.appendChild(bargeElRow("НАНЯТЬСЯ ОХРАНОЙ",
-      "аванс +"+adv+" кр вперёд · довести до назначения живой · провал бьёт по репутации, не по кошельку",
+      "аванс +"+adv+" кр вперёд, ещё +"+rest+" когда рейс дойдёт · уйдёте из системы — сорван · провал бьёт по репутации",
       [{txt:"ВЗЯТЬ РЕЙС",gold:1,dis:false,on:()=>{bargeEscortAccept(b);renderBarge();}}]));
   }else{
     $bgBody.appendChild(el("div","sec","ВЫ ОХРАНА ЭТОГО РЕЙСА · ведите баржу до назначения"));
@@ -37109,7 +37240,7 @@ const NEWS_KINDS=[
     const s=newsSomewhere(r);if(!s)return null;
     /* настоящая перемена: давление на рынке — те же цены, что увидит игрок */
     const k=pick(TRADE_KEYS,r);
-    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:G.t});
+    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:now()});
     m.pressure[k]=clamp((m.pressure[k]||0)+.35+r()*.3,-.6,.8);
     newsMark(s.sx+","+s.sy,"цены сдвинулись","#f2b25c");
     return {ru:"«"+s.station.name+"» скупает "+RES[k].ru.toLowerCase()+
@@ -37117,7 +37248,7 @@ const NEWS_KINDS=[
   }},
   {id:"owner",apply(r){
     const s=newsSomewhere(r);if(!s)return null;
-    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:G.t});
+    const m=G.market[s.key]||(G.market[s.key]={pressure:{},t:now()});
     for(const k of TRADE_KEYS)m.pressure[k]=clamp((m.pressure[k]||0)+(r()-.5)*.5,-.6,.8);
     newsMark(s.sx+","+s.sy,"сменился хозяин","#7fe6d8");
     return {ru:"«"+s.station.name+"» перешла другим людям: и цены, и порядки там теперь чужие",
@@ -37702,7 +37833,7 @@ function loreTake(key){
       const s=getSystem(sx,sy);
       if(!s.station||(G.market&&G.market[s.key]))continue;
       if(!G.market)G.market={};
-      G.market[s.key]={pressure:{},t:G.t};
+      G.market[s.key]={pressure:{},t:now()};
       got="цены станции «"+s.station.name+"» ("+sx+":"+sy+")";done=true;
     }
     if(!done){G.data+=12;got="сводка цен, которые вы и так знаете · +12 данных";}
@@ -38158,7 +38289,7 @@ function renderRoute(){
     if(inLeg&&inLeg.k&&G.cargo[inLeg.k]>0){
       const k=inLeg.k,q=G.cargo[k],price=marketFor(G.sys)[k];
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · сдать <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+
+      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · сдать <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+
         "</span> ×"+q+"</b><s>здесь "+price+" кр/ед · по записи ждали "+routeForkTxt(inLeg.sell,inLeg.forkB)+
         (inLeg.forkB?" · записи "+Math.max(0,celDay()-inLeg.dayB)+" дн.":"")+"</s>"));
       r.appendChild(el("div","qt",(q*price).toLocaleString("ru")+"<s>кр</s>"));
@@ -38174,7 +38305,7 @@ function renderRoute(){
       const free=Math.max(0,stat().cargoMax-held()),want=Math.min(stat().cargoMax,free);
       const afford=Math.floor(G.credits/Math.max(1,ask)),can=Math.max(0,Math.min(want,afford));
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · взять <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+
+      r.appendChild(el("div","nm","<b>ПО МАРШРУТУ · взять <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+
         "</span> ×"+want+"</b><s>"+ask+" кр/ед · на «"+outLeg.to.station.name+"» ждут "+routeForkTxt(outLeg.sell,outLeg.forkB)+
         " · трюм "+held()+"/"+stat().cargoMax+
         (can<want?(can?" · денег хватит на "+can+" из "+want:(free?" · денег нет":" · трюм полон")):"")+"</s>"));
@@ -38193,7 +38324,7 @@ function renderRoute(){
     const head="<b>"+(i+1)+". «"+l.from.station.name+"» → «"+l.to.station.name+"»</b>";
     const age=Math.max(0,celDay()-Math.min(l.dayA,l.dayB));
     r.appendChild(el("div","nm",head+"<s>"+(l.k
-      ?"<span style='color:"+RES[l.k].col+"'>"+RES[l.k].ru+"</span> "+routeForkTxt(l.buy,l.forkA)+" → "+routeForkTxt(l.sell,l.forkB)+
+      ?"<span style='color:"+resTxt(l.k)+"'>"+RES[l.k].ru+"</span> "+routeForkTxt(l.buy,l.forkA)+" → "+routeForkTxt(l.sell,l.forkB)+
        " кр · "+Math.round(l.rel*100)+"% · "+l.fuel+" топлива"+(age?" · записи "+age+" дн.":"")
       :"цены сошлись — везти нечего · "+l.fuel+" топлива")+"</s>"));
     r.appendChild(el("div","qt",(l.net>0?"+"+l.net.toLocaleString("ru"):"—")+
@@ -41942,12 +42073,35 @@ function smenaPlaceKey(p){
   return (p.type||"?")+"|"+(p.mix||"")+"|"+(G.sys.cls?G.sys.cls.ru:"");
 }
 function smenaNext(){for(let n=1;n<=72;n++)if(!smenaIsOpen(n))return n;return 0;}
-/* зовёт посадка (21-mode-surface): здесь ли открывается следующая глава */
-function smenaLand(p){
-  const key=smenaPlaceKey(p);if(!key)return 0;
+/* ── дело главы на месте (P15): посадка только ВЗВОДИТ главу, открывает её шаг
+   наружу — отойти от корабля на SMENA_WALK, увидеть место, а не трап. Взвод
+   живёт в G.surf и не сохраняется: улетели, не выйдя, — глава ждёт ── */
+const SMENA_WALK=480;
+function smenaHereFree(p){
+  const key=smenaPlaceKey(p);if(!key)return "";
   const A=smenaAtAll();
-  for(const k in A)if(A[k]&&A[k].k===key)return 0;      /* здесь уже открывалась — нужно новое место */
+  for(const k in A)if(A[k]&&A[k].k===key)return "";     /* здесь уже открывалась — нужно новое место */
+  return key;
+}
+/* зовёт посадка (21-mode-surface): взвести главу, если место новое; вернёт её номер */
+function smenaLand(p){
+  if(!smenaHereFree(p))return 0;
   if(!smenaIsOpen(1))smenaRec().push(1);                /* «Док» — всегда первым, до любой посадки */
+  const n=smenaNext();if(!n)return 0;
+  if(G.surf){G.surf.smena={n,p};
+    logAdd("dim","«Смена»: глава "+n+" — где-то здесь. Отойдите от корабля, посмотрите место");}
+  return n;
+}
+/* зовёт кадр поверхности: отошли от трапа — глава прожита */
+function smenaDeedTick(S){
+  const M=S&&S.smena;if(!M||Math.abs(S.x-S.shipX)<SMENA_WALK)return 0;
+  S.smena=null;
+  return smenaOpenHere(M.p);
+}
+/* открыть главу здесь: место и снимок — в летопись главы */
+function smenaOpenHere(p){
+  const key=smenaHereFree(p);if(!key)return 0;
+  const A=smenaAtAll();
   const n=smenaNext();if(!n)return 0;
   smenaRec().push(n);
   let snap=null;try{snap=(typeof postSnap==="function")?postSnap():null;}catch(e){snap=null;}
@@ -43334,7 +43488,7 @@ function heardUse(h){
     /* рынок открывается ровно так же, как его открывает зарубка с ценами
        (12q): одна запись в G.market — и станция видна из другого конца */
     if(!G.market)G.market={};
-    if(!G.market[s.key])G.market[s.key]={pressure:{},t:G.t};
+    if(!G.market[s.key])G.market[s.key]={pressure:{},t:now()};
     h.used=true;
     tell("money","«"+G.parrot.name+"» повторил цены "+(h.note||"станции"),
       "ЦЕНЫ ПОВТОРЕНЫ\n"+(h.note||"")+"\nсектор "+h.sx+", "+h.sy);
@@ -45291,6 +45445,7 @@ function killPirate(p){
   logAdd("kill","Пират «"+p.name+"» уничтожен · +"+bounty+" кр"+
     (got?" · трофей "+RES[loot].ru.toLowerCase()+" ×"+got:"")+
     (dropped?" · контейнер с частью":""));
+  if(typeof yardDebris==="function")yardDebris(p);   /* корпус Рассвета латается с обломка (M480) */
 }
 /* коробка трофея для видеокарты: печётся раз на цвет категории, радиусом LOOT_IC_R в холсте
    LOOT_IC_K радиусов шириной; на экране ложится мипами (кромка 1.4 px при s≈8, как кистью) */
@@ -46047,11 +46202,28 @@ function occKill(sx,sy){
   if(typeof scripOnFreed==="function")scripOnFreed(sx,sy);
   /* тех, кто снял блокаду, на станции помнят долго */
   if(sys.station&&typeof repAdd==="function")repAdd(2,sys);
-  const prize=sys.station?Math.round(2400+sysDanger(sx,sy)*9000):0;
+  /* призовые полностью — только если отбитое удержится (§12): занятый сосед, которого
+     не гасит подавленный очаг, возьмёт систему снова, и три сбитых опять дадут приз —
+     самый жирный кран игры. Пока угроза рядом, станция платит половину: «вернутся» */
+  const back=occThreat(sx,sy);
+  const prize=sys.station?Math.round((2400+sysDanger(sx,sy)*9000)*(back?.5:1)):0;
   if(prize)earn(prize,"free");
-  tell("good","Система «"+sys.name+"» свободна"+(prize?" · +"+prize.toLocaleString("ru")+" кр":""),
+  tell("good","Система «"+sys.name+"» свободна"+(prize?" · +"+prize.toLocaleString("ru")+" кр"+(back?" · половина":""):""),
        "«"+sys.name+"» свободна\n"+(prize?"призовые "+prize.toLocaleString("ru")+" кр\n":"")+
+       (prize&&back?"половина: соседи ещё под ними — вернутся\n":"")+
        "освобождено систем: "+G.freed);
+}
+/* может ли свободную систему снова взять сосед: те же условия, что у occTick —
+   занятый рядом (на шаг), не притихший возле подавленного очага и не под трассой */
+function occThreat(sx,sy){
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){
+    if(!dx&&!dy)continue;
+    const nx=sx+dx,ny=sy+dy;
+    if(!occLvl(nx,ny)||occCalmNear(nx,ny))continue;
+    if(typeof mapUnderTrassa==="function"&&mapUnderTrassa(nx,ny))continue;
+    return true;
+  }
+  return false;
 }
 /* ── что занятость делает с миром ── */
 function occPriceMul(sx,sy){
@@ -48380,6 +48552,7 @@ const SAVE_EPHEMERAL={
   hailLog:"кадр",      /* кто уже здоровался — после загрузки поздороваются ещё раз, это не потеря */
   quietGone:"кадр",    /* флаг «сколько суток прошло» живёт между двумя кадрами и гасится */
   logNewBy:"кадр",     /* непрочитанное по разделам — пара к logNew, который тоже кадр */
+  giantRum:"кадр",     /* какой слух великана уже записан — после загрузки его запишут ещё раз, не беда (M464) */
 };
 
 /* ══════════════ провод войны (M376, §13, §16.4) ══════════════
@@ -51243,14 +51416,19 @@ function mslDraw(zx,zy,Z){
      исследователь ПРОЖЕКТОР — показывает залежи системы на 10 с.
    Состояние — эфемерное (ABIL), в сейв не идёт. */
 const ABIL={
-  scout:  {ru:"ФОРСАЖ",   cd:20,dur:3},
-  courier:{ru:"СБРОС",    cd:25,dur:4},
-  hauler: {ru:"БАЛЛАСТ",  cd:18,dur:4},
-  miner:  {ru:"РЕЗАК",    cd:12,dur:.4},
-  warship:{ru:"ЗАЛП",     cd:8, dur:.3},
-  yacht:  {ru:"СИРЕНА",   cd:30,dur:2},
-  survey: {ru:"ПРОЖЕКТОР",cd:30,dur:10}
+  scout:  {ru:"ФОРСАЖ",   cd:20,dur:3, note:"тяга ×1.6 на 3 с"},
+  courier:{ru:"СБРОС",    cd:25,dur:4, note:"груз за борт приманкой — пираты теряют вас на 4 с"},
+  hauler: {ru:"БАЛЛАСТ",  cd:18,dur:4, note:"разворот ×1.5 на 4 с ценой 1 % груза"},
+  miner:  {ru:"РЕЗАК",    cd:12,dur:.4,note:"бур коротким лучом — по чужому в носу"},
+  warship:{ru:"ЗАЛП",     cd:8, dur:.3,note:"все стволы разом"},
+  yacht:  {ru:"СИРЕНА",   cd:30,dur:2, note:"позывной: отвечают все, кто в кадре"},
+  survey: {ru:"ПРОЖЕКТОР",cd:30,dur:10,note:"дальние залежи системы на 10 с"}
 };
+/* строка для карточки корабля (M484): особая система названа там, где корабль выбирают */
+function abilCardLine(id,S){
+  const A=ABIL[hullClassOf(id,S)]||ABIL.scout;
+  return "особое · "+A.ru+" — "+A.note+" · долгое ДЕЙСТВИЕ или V · раз в "+A.cd+" с";
+}
 const ABIL_HOLD=600;
 let ABIL_ST={k:null,on:0,cd:0,armed:false,fired:false,text:""};
 function abilKind(){const S=shipData(G.shipId);return S?hullClassOf(G.shipId,S):"scout";}
@@ -51266,6 +51444,26 @@ function abilMul(what){
   if(what==="thr"&&abilOn("scout"))return 1.6;
   if(what==="turn"&&abilOn("hauler"))return 1.5;
   return 1;
+}
+/* кто слышит СИРЕНУ: корабли в кадре — пираты, патрули держав, линия ГЛАВТРАССЫ.
+   Чёрный дерелик в кадре не отвечает никогда — и это тоже ответ */
+function sirenHeard(){
+  const sh=G.ship,Z=G.zoom||1,hx=W/(2*Z)+60,hy=H/(2*Z)+60,out=[];
+  const seen=(x,y)=>Math.abs(x-sh.x)<hx&&Math.abs(y-sh.y)<hy;
+  for(const p of G.pirates||[]){
+    if(!(p.hull>0)||!seen(p.x,p.y))continue;
+    const by=p.owner||p.pw;
+    out.push(!by?{who:p.name||"пират",line:"«Сирена, говоришь? Стой где стоишь — подойдём.»"}:
+      p.iff?{who:p.name,line:"«Слышим, борт. "+powerOf(by).air+".»"}:
+            {who:p.name,line:"«Эфир занят. Не мешайте работать.»"});
+  }
+  if(typeof fleetHere==="function")for(const f of fleetHere()){
+    if(f.k==="node")continue;
+    const q=fleetPos(f);if(!seen(q.x,q.y))continue;
+    if(f.k==="derelict"){out.mute=true;continue;}
+    out.push({who:f.name||"борт ГЛАВТРАССЫ",line:"«Принято. Кто это такой нарядный? Музыку убавьте.»"});
+  }
+  return out;
 }
 function abilFire(){
   abilStale();
@@ -51298,9 +51496,11 @@ function abilFire(){
     G.engaged=true;
     line="ЗАЛП · все стволы разом";
   }else if(k==="yacht"){
-    const who=["«Слышим, борт. Красиво идёте.»","«Принято. Кто это такой нарядный?»","«Ответили. Музыку убавьте.»"];
-    if(typeof etherLine==="function")for(let i=0;i<3;i++)etherLine(who[i],["лоцман","буксир","соседний борт"][i]);
-    line="СИРЕНА · вам ответили все";
+    /* отвечают те, кто в кадре (M484), — каждый своим голосом, не больше четырёх */
+    const L=sirenHeard();
+    for(const h of L.slice(0,4))etherLine(h.line,h.who);
+    line=L.length?"СИРЕНА · ответили "+L.length+(L.mute?" · дерелик молчит":""):
+      (L.mute?"СИРЕНА · в кадре только дерелик — он не отвечает":"СИРЕНА · эфир молчит — рядом никого");
   }else if(k==="survey"){
     const L=(typeof farDeposits==="function")?farDeposits(G.sx,G.sy):[];
     const r=(typeof farReadLine==="function")?farReadLine(L):"";
@@ -51486,10 +51686,26 @@ function rescueOffers(){
       Object.keys(G.fit[G.shipId]||{}).length>0||RES_KEYS.some(k=>G.cargo[k]>0);
     out.push({id:"tow",ru:"БУКСИР",cost:0,
       sub:"баржа придёт и дотащит · 5 минут без руля"});   /* куда — сказано в шапке окна */
+    /* третий выход у остановки (§9): НА МЕТРО — билет к дому по цене билета */
+    const T=rescueRail(H);
+    if(T)out.push({id:"rail",ru:"НА МЕТРО",cost:T.F.sum,
+      sub:"поезд до «"+railStopName(T.t.to)+"» · ближе к дому · кольцо тащит борт само"});
     if(lose)out.push({id:"reset",ru:"СБРОС",cost:0,
       sub:"корабль, всё, что на нём стоит, и груз потеряны · «Стриж» у станции"});
   }
   return out;
+}
+/* билет к дому (§9): в системе есть остановка, корабль в пространстве системы —
+   из того, что продаёт касса, берётся остановка со станцией, ближайшая к дому,
+   если она ближе к нему, чем мы. Кольцо само берёт сухой борт (как автостыковка) */
+function rescueRail(H){
+  if(G.mode!=="system"||typeof railHere!=="function"||!railHere())return null;
+  const d0=Math.hypot(G.sx-H.sx,G.sy-H.sy);let best=null,bd=d0-.5;
+  for(const t of railDestinations()){
+    if(t.to.halt||!getSystem(t.to.sx,t.to.sy).station)continue;
+    const d=Math.hypot(t.to.sx-H.sx,t.to.sy-H.sy);if(d<bd){bd=d;best=t;}
+  }
+  return best?{t:best,F:railFare(best)}:null;
 }
 /* поставить корабль у станции системы (как буксир M331) */
 function rescuePark(dest){
@@ -51522,6 +51738,12 @@ function rescueTake(id){
       G.ship.vx=0;G.ship.vy=0;G.mode="system";G.surf=null;G.land=null;
     }
     haulStart();
+  }else if(id==="rail"){
+    const T=rescueRail(rescueHomeAt());if(!T)return false;
+    G.credits-=o.cost;
+    if(T.F.tok&&typeof firstAll==="function")firstAll().push("tokUsed");
+    logAdd("warn","Метро из "+from+" до «"+railStopName(T.t.to)+"» · −"+o.cost+" кр");
+    railRideStart(T.t);
   }else if(id==="reset"){
     const was=(shipData(G.shipId)||{}).ru||"корабль";
     if(G.shipId!=="strizh")delete G.owned[G.shipId];
@@ -51540,7 +51762,7 @@ function rescueTake(id){
     logAdd("warn","Сброс у "+from+": «"+was+"» потерян с грузом · выдан «Стриж»");
     say("Сброс\n«"+was+"» потерян · вы на «Стриже»",180);
   }
-  if(typeof saveGame==="function")saveGame(true);
+  if(id!=="rail"&&typeof saveGame==="function")saveGame(true);   /* в вагоне не пишем: поездка кончится выходом в систему */
   return true;
 }
 
@@ -51975,7 +52197,9 @@ function rescueSync(){
 const RESCUE_ICON={
   home:'<svg class="ic" viewBox="0 0 16 16"><path d="M2 8l6-5 6 5"/><path d="M4 7v6h8V7"/></svg>',
   tow:'<svg class="ic" viewBox="0 0 16 16"><rect x="1" y="5" width="8" height="5" rx="1"/><path d="M9 7.5h3"/><path d="M12 5.5l3 2-3 2z"/></svg>',
-  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>'
+  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>',
+  /* НА МЕТРО (§9): кольцо на пути — как знак метро на схеме */
+  rail:'<svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5"/><path d="M1 8h2.5M12.5 8H15"/></svg>'
 };
 function rescueRender(){
   const box=document.getElementById("sosList");if(!box)return;
@@ -51994,7 +52218,7 @@ function rescueRender(){
     const b=document.createElement("button");
     const poor=o.cost>G.credits;
     b.disabled=poor;
-    b.innerHTML=RESCUE_ICON[o.id]+'<span class="tx"><em></em><s></s></span>';
+    b.innerHTML=(RESCUE_ICON[o.id]||"")+'<span class="tx"><em></em><s></s></span>';
     b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":(o.id==="tow"?" · ДАРОМ":""));
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;
@@ -53698,10 +53922,12 @@ function updateSystem(dt){
   }
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
   /* кольцо железной дороги: стыковка и вестибюль (M471–M472) */
+  if(typeof subFightOffer==="function"&&subFightOffer(actEdge))return;   /* ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 в бою (M487) */
   if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
   if(typeof hotelInteract==="function"&&hotelInteract(sh))return;
-  if(typeof bazInteract==="function"&&bazInteract(sh))return;   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
+  if(typeof bazInteract==="function"&&bazInteract(sh))return;
+  if(typeof giantInteract==="function"&&giantInteract(sh))return;   /* причал великана (M464) */   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
   if(typeof fleetInteract==="function"&&fleetInteract(sh))return;
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
@@ -54726,7 +54952,9 @@ function findTake(f){
   if(f.k==="cont"){
     const KS=TRADE_KEYS.filter(k=>k!=="ice");
     const k=KS[Math.floor(r()*KS.length)],n=4+Math.floor(r()*9+d*6);
-    if(typeof rareTake==="function")rareTake("cont",hashi(f.seed,0x2A2E,5));
+    /* редкостей в пустоте нет: у сотни шесть мест (RARE_WHERE, 12m), и каждая на витрине
+       подписана своим. Здесь стоял вызов rareTake("cont") — места «cont» в таблице нет,
+       он ни разу ничего не дал; убран, а не заселён: новое место перетасовало бы всю сотню */
     return addRes(k,n)?(RES[k].ru.toLowerCase()+" ×"+n):"трюм полон — груз остался дрейфовать";
   }
   if(f.k==="hulk"){
@@ -54741,7 +54969,7 @@ function findTake(f){
     }
     const F=POI_FIND.wreck;
     const got=F&&typeof F.give==="function"?F.give(r,d):"часть с обломков";
-    if(typeof rareTake==="function")rareTake("hulk",hashi(f.seed,0x2A2E,9));
+    /* редкости в остове нет (см. контейнер выше): его находки — птица, чужая вещь, книга, коробок */
     if(typeof kitFromHulk==="function")kitFromHulk(f.seed);   /* чужая вещь комплекта (M152) */
     if(typeof bookRoll==="function")bookRoll(f.seed,"из остова",0.40);   /* книга (M202) */
     if(typeof boxRoll==="function")boxRoll(f.seed,"из остова",0.26);      /* коробок (M346) */
@@ -56825,7 +57053,11 @@ function sysLane(sys){
     const d=LANE_DOCK+i*LANE_GAP;if(d>L-80)break;
     for(const s of [-1,1])buoys.push({x:st.x+ux*d-uy*LANE_W*s,y:st.y+uy*d+ux*LANE_W*s,i});
   }
-  const r=rng((sys.seed^0x1A4E)>>>0),by=st.by||(typeof makerBySeed==="function"?makerBySeed(sys.seed):"gt");   /* как stationMods: полоса могла спросить раньше станции */
+  /* чей голос на подлёте (автор, 27.09): полосу — щит, гостиницу, флот на стоянке, очередь —
+     одевает хозяин земли (stampOwnerAt), как законы и печати; строитель виден только в
+     корпусе самой станции (M454). Ничьей земли нет — тогда строитель */
+  const builder=st.by||(typeof makerBySeed==="function"?makerBySeed(sys.seed):"gt");   /* как stationMods: полоса могла спросить раньше станции */
+  const r=rng((sys.seed^0x1A4E)>>>0),by=(typeof stampOwnerAt==="function"&&stampOwnerAt(sys.sx,sys.sy))||builder;
   /* очередь — только у людной станции; сбоку от полосы, чтобы не стоять на ней */
   const qn=life<.45?0:Math.min(LANE_Q_MAX,Math.round(2+(life-.45)/.55*4));
   const side=r()<.5?-1:1;
@@ -57808,10 +58040,17 @@ function stampArrive(fromBy){
   const e=had||(R.st[by]={d:celDay(),t:G.t,sx:G.sx,sy:G.sy,v:0});
   e.v=(e.v|0)+1;
   stampShow(by,had?{d:celDay(),t:G.t,sx:G.sx,sy:G.sy}:e);
+  stampAir(by);
   if(!had&&typeof recordAdd==="function")recordAdd(STAMP_RU[by],"отметка о проезде — "+stampText(by,e).join(" · "));
   if(!had&&typeof passportIssue==="function")passportIssue();   /* седьмая отметка — паспорт (M505) */
   if(typeof volBorder==="function")volBorder(by);   /* животное без бумаг — пикет (M511) */
   return by;
+}
+/* приёмник на въезде (M457): эфир державы — её строка «air», один раз за пересечение */
+function stampAir(by){
+  const P=(typeof POWERS!=="undefined")?POWERS[by]:null;if(!P||!P.air)return false;
+  logAdd("ether","Приёмник · "+P.ru+": «"+P.air+"»");
+  return true;
 }
 /* пираты печатей не ставят: их «пост» — обломок с нацарапанным «Гони груз».
    Царапина — за въезд в систему с пиратской базой из системы без неё
@@ -58302,15 +58541,22 @@ function gosBbLine(){
   const P=gosPlan();if(!P||P.done)return null;
   return "ПЛАН: "+P.n+" ЕД. "+RES[P.k].ru.toUpperCase()+" ДО СВОДКИ "+P.svodka+" · ПО "+P.price+" КР · СДАВАТЬ ЗДЕСЬ";
 }
+/* выплата по плану: купленное здесь же в эту смену — по цене приёмки (§12) */
+function gosPay(P){
+  const S=boughtHereSplit(G.sys,P.k,P.n);
+  return {pay:(P.n-S.m)*P.price+S.m*Math.min(P.price,S.bid),m:S.m};
+}
 function gosDeliver(){
   const P=gosPlan();if(!P||P.done)return false;
   if((G.cargo[P.k]|0)<P.n){say("Не хватает до плана\nнужно "+P.n+" ед.",90);return false;}
+  const Y=gosPay(P);
   G.cargo[P.k]-=P.n;
-  earn(P.n*P.price,"plan");
+  earn(Y.pay,"plan");
   if(!G.gosDone)G.gosDone={};G.gosDone[P.key]=1;
   const R=(typeof recordAll==="function")?recordAll():null;if(R)R.udar=(R.udar|0)+1;
   const pct=101+(hashi(G.sx,G.sy,gosBucket())>>>0)%7;
-  logAdd("good","Госзаказ сдан: "+RES[P.k].ru.toLowerCase()+" ×"+P.n+" · +"+(P.n*P.price).toLocaleString("ru")+" кр · КНИЖКА: «УДАРНИК»");
+  logAdd("good","Госзаказ сдан: "+RES[P.k].ru.toLowerCase()+" ×"+P.n+" · +"+Y.pay.toLocaleString("ru")+" кр"+
+    (Y.m?" (из них "+Y.m+" куплено здесь — по цене приёмки)":"")+" · КНИЖКА: «УДАРНИК»");
   logAdd("dim","Сводка "+P.svodka+": план по станции «"+G.st.name+"» выполнен на "+pct+" %");
   return true;
 }
@@ -58320,7 +58566,7 @@ function gosRow(){
   const r=el("div","row");
   r.appendChild(el("div","nm","<b>ГОСЗАКАЗ · "+RES[P.k].ru+" ×"+P.n+"</b><s>"+(P.done?"план по этой сводке выполнен — спасибо, товарищ":
     "цена твёрдая: "+P.price+" кр за ед. · до сводки "+P.svodka+" · в трюме "+(G.cargo[P.k]|0))+"</s>"));
-  if(!P.done){const b=el("button","act gold","СДАТЬ · "+(P.n*P.price).toLocaleString("ru")+" КР");
+  if(!P.done){const Y=gosPay(P),b=el("button","act gold","СДАТЬ · "+Y.pay.toLocaleString("ru")+" КР");
     b.disabled=(G.cargo[P.k]|0)<P.n;b.onclick=()=>{if(gosDeliver())renderTab();};r.appendChild(b);}
   return r;
 }
@@ -58340,7 +58586,7 @@ const HOTEL_SIGN={gt:"ГОС ИНИЦА «КОСМОС»",co:" ЭЛИТА™",or
 const HOTEL_SIGN_FULL={gt:"ГОСТИНИЦА «КОСМОС»",co:"АЭЛИТА™",or:"ДОМ ПРИЕЗЖИХ № 4",km:"ЮПИТЕР",ra:"ТУРБАЗА «ДРУЖБА»",hf:"БУРАН"};
 /* имя в подписи и журнале — полное: пропуск мёртвой буквы хорош в неоне, а в строке HUD читается опечаткой («ГОС ИНИЦА») */
 const hotelName=by=>HOTEL_SIGN_FULL[by]||(HOTEL_SIGN[by]||HOTEL_SIGN.gt).trim();
-const HOTEL_NIGHT=12;
+const HOTEL_NIGHT=12;   /* пол цены ночи; сама ночь — половина доковой цены той же десятой корпуса (§12) */
 const HOTEL_T={};   /* тип по хозяину: {W,H,PX,ax,ay,sign:[x,база,кегль]|null,sheen:[x,y,r],wins(sd),paint(c,e,sd,lit,Lt)} */
 function hotelHere(){
   const sys=G.sys;if(!sys||!sys.station||typeof sysLane!=="function")return null;
@@ -58593,16 +58839,27 @@ function hotelInteract(sh){
   if(shown&&actEdge)hotelDesk(Ht);
   return true;
 }
+/* ночь стоит половину того, что док взял бы за ту же десятую корпуса (§12): было 12 кр
+   без счёта ночей, и гостиница чинила дешевле дока вдесятеро — жми сколько хочешь */
+function hotelNightPrice(){
+  const heal=Math.round(stat().hullMax*.1);
+  return Math.max(HOTEL_NIGHT,Math.round(heal*(typeof repairCost==="function"?repairCost():14)*.5));
+}
 function hotelDesk(Ht){
   const hm=stat().hullMax,low=G.hull<hm/3;
   const free=low;                                   /* доброта: ниже трети — даром */
-  if(!free&&G.credits<HOTEL_NIGHT){say((Ht.by==="gt"?"«Мест нет.»":"«Номер — "+HOTEL_NIGHT+" кр.»")+"\nне хватает",110);return;}
-  if(!free)G.credits-=HOTEL_NIGHT;
+  /* одна ночь на смену у станции: метка в её записи холдинга, которая и так в сейве */
+  const H=G.sys&&G.sys.key&&typeof holdOf==="function"?holdOf(G.sys.key):null,sh=typeof holdShift==="function"?holdShift():0;
+  if(H&&H.night===sh){say("«Вы у нас уже ночевали.»\nследующая ночь — в другую смену",110);hotelShop(Ht);return;}
+  const price=hotelNightPrice();
+  if(!free&&G.credits<price){say((Ht.by==="gt"?"«Мест нет.»":"«Номер — "+price+" кр.»")+"\nне хватает",110);return;}
+  if(!free)G.credits-=price;
+  if(H)H.night=sh;
   const heal=Math.round(hm*.1);G.hull=Math.min(hm,G.hull+heal);
   const greet=Ht.by==="gt"?"«Мест нет. …Для вас найдём.»":Ht.by==="co"?"«Номер категории Партнёр™. Завтрак — отдельно.»":
     Ht.by==="or"?"«Отбой в 22:00. Подъём в 6:00.»":Ht.by==="km"?"«Ключ под ковриком, мы на собрании.»":
     Ht.by==="ra"?"«Ложись где свободно, брат.»":"«Ваш номер рассчитан.»";
-  logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+HOTEL_NIGHT+" кр")+" · корпус +"+heal+" за ночь стоянки");
+  logAdd("good",Ht.name+": ночь в номере"+(free?" — даром, «потом заплатите»":" · −"+price+" кр")+" · корпус +"+heal+" за ночь стоянки");
   say(greet+(free?"\n«…потом заплатите»":""),150);
   hotelShop(Ht);
   if(typeof kinoHere==="function"&&kinoHere())peopleLine("в холле афиша: сегодня кино. Идите, пока не началось.","портье",false);
@@ -59245,8 +59502,11 @@ function peaceTick(sh,dt){
      ВАШЕ — что вы разобрали в ОПИСИ (G.thrown, 12 последних) лежит на
        прилавке втрое дороже: «ношеная, один хозяин»;
      КОРПУСА СО ШРАМАМИ — два остова, дёшево, со шрамами (M482);
-     РАЗНОЕ — одна вещь наугад, дешевле верфи.
-   Ряд меняется раз в смену; купленное в этой смене помечено (G.bazBought). */
+     РАЗНОЕ — одна вещь наугад, дешевле верфи; табличка с чьего-то остова
+       (в ВЕЩИ, ни на что не влияет) и через смену — редкость из таблицы трюмов
+       баржи на отдельном прилавке (M463, «странные лоты»).
+   Ряд меняется раз в смену; купленное в этой смене помечено (G.bazBought).
+   У тентов говорят: один слух на смену, тем же путём, что на станции (M463). */
 const BAZ_THROWN_MAX=12,BAZ_MUL=3;
 function bazHere(){
   const sys=G.sys;if(!sys||!sys.belt)return null;
@@ -59283,6 +59543,14 @@ function bazLots(B){
   }
   const odd=genPart(hashi(B.seed,b,0x0DD)>>>0,1+hashi(B.seed,b,0x0DE)%3);
   out.push({k:"o"+b,kind:"odd",part:odd,price:Math.round(bazPartBase(odd)*.7/10)*10,note:"откуда — не спрашивайте"});
+  /* табличка с остова: имя корабля из той же грамматики, что и флот, — память, не выгода */
+  const ps=hashi(B.seed,b,0x7AB)>>>0,pn=genUniqueShip(ps);
+  out.push({k:"p"+b,kind:"plate",seed:ps,ru:"Табличка с остова «"+pn.ru+"»",price:40+hashi(ps,0x7AC,1)%6*10,
+    note:"сняли с борта, который здесь разобрали; кто ходил на нём — спросите у пояса"});
+  /* редкость — через смену и только та, что ещё ничья: таблица трюмов баржи, не новая сотня */
+  const rk=hashi(B.seed,b,0x2A2E)>>>0,R=(b%2===0)?rareAtPlace("barge",rk):null;
+  if(R&&(K["r"+b]||!rareHas(R.id)&&!(typeof rivalHolds==="function"&&rivalHolds(R.id))))
+    out.push({k:"r"+b,kind:"rare",rk,ru:"«"+R.ru+"»",price:6000+(R.idx|0)%7*1000,note:R.grade+", "+R.note+" · «с баржи, клянусь, чек потерялся»"});
   return out.map(L=>(L.sold=!!K[L.k],L));
 }
 function bazBuy(L){
@@ -59290,13 +59558,17 @@ function bazBuy(L){
   if(!L||K[L.k]||G.credits<L.price)return false;
   if(L.kind==="hull"){
     const id="bz"+L.seed;G.uniqueShips[id]=L.ship;G.owned[id]=true;
+  }else if(L.kind==="plate"){
+    thingAdd("find",L.ru,"с барахолки у пояса · "+L.note);
+  }else if(L.kind==="rare"){
+    if(!rareTake("barge",L.rk,"на барахолке у пояса"))return false;
   }else{
     addPart(L.part);
     if(L.kind==="thrown")G.thrown.splice(L.i,1);
   }
   G.credits-=L.price;
   if(L.kind!=="thrown")K[L.k]=1;
-  logAdd("money","Барахолка: "+(L.kind==="hull"?"остов «"+L.ship.ru+"» — в ангаре":L.part.name)+" · −"+L.price.toLocaleString("ru")+" кр"+
+  logAdd("money","Барахолка: "+(L.kind==="hull"?"остов «"+L.ship.ru+"» — в ангаре":L.part?L.part.name:L.ru)+" · −"+L.price.toLocaleString("ru")+" кр"+
     (L.kind==="thrown"?" · «ваша же? бывает»":""));
   return true;
 }
@@ -59403,6 +59675,17 @@ function bazInteract(sh){
   if(shown&&actEdge)bazOpen(B);
   return true;
 }
+/* слух у тентов (M463): свой посев места и смены, иначе повторил бы станцию той же системы.
+   Рассказчик — не буфетчица, а тот, кто торгует; в тетрадь и на карту — как на станции */
+function bazRumour(B){
+  const q=rumoursHere(hashi(B.seed,bazBucket(),0x5A5B))[0];if(!q)return null;
+  q.src="старьёвщик под тентом";
+  q.lines=[capRu(q.img),capRu(q.where),"со слов: старьёвщик под тентом — "+q.det];
+  q.text="Старьёвщик под тентом рассказывал про место: "+q.img+". "+capRu(q.where)+". "+capRu(q.det)+".";
+  const K=bazBought();
+  if(!K._r){K._r=1;peopleLine(q.text,"слух на барахолке");rumourRemember(q);}
+  return q;
+}
 function bazClose(){const w=document.getElementById("bazWin");if(w)w.remove();}
 function bazOpen(B){
   bazClose();
@@ -59410,19 +59693,24 @@ function bazOpen(B){
   const L=bazLots(B);
   let h="<div class='bz-h'>БАРАХОЛКА<s>ряд меняется раз в смену · торг не уместен</s></div>";
   /* прилавок — таблица, не список (D20): три колонки, шапка, строки через одну темнее */
-  const sec=(t,kind)=>{const rows=L.filter(x=>x.kind===kind);if(!rows.length)return;
+  const sec=(t,kind)=>{const rows=L.filter(x=>[].concat(kind).indexOf(x.kind)>=0);if(!rows.length)return;
     h+="<div class='bz-sec'>"+t+"</div><div class='bz-tab'><div class='bz-th'><span>что · откуда · что с ним</span><span>цена</span></div>";
-    for(const x of rows){const nm=x.kind==="hull"?"«"+x.ship.ru+"» · "+(HULL_CLASS[hullClassOf("bz"+x.seed,x.ship)]||{}).ru:x.part.name;
+    for(const x of rows){const nm=x.kind==="hull"?"«"+x.ship.ru+"» · "+(HULL_CLASS[hullClassOf("bz"+x.seed,x.ship)]||{}).ru:x.part?x.part.name:x.ru;
       h+="<div class='bz-row"+(x.sold?" sold":"")+"'><b>"+nm+"</b><s>"+x.note+"</s><button class='act' data-k='"+x.k+"'"+(x.sold||G.credits<x.price?" disabled":"")+">"+
         (x.sold?"ПРОДАНО":x.price.toLocaleString("ru")+" КР")+"</button></div>";}
     h+="</div>";
   };
   sec("ВАШЕ · ЧТО ВЫ РАЗОБРАЛИ","thrown");
   sec("КОРПУСА СО ШРАМАМИ","hull");
-  sec("РАЗНОЕ","odd");
+  sec("РАЗНОЕ",["odd","plate"]);
+  sec("ОТДЕЛЬНЫЙ ПРИЛАВОК · РЕДКОСТЬ","rare");
+  const q=bazRumour(B);
+  if(q)h+="<div class='bz-sec'>У ТЕНТОВ ГОВОРЯТ</div><div class='bz-rum'><b>"+q.lines[0]+"</b><s>"+q.lines[1]+"<br>"+q.lines[2]+"</s>"+
+    "<button class='act sm bz-map'>НА КАРТУ</button></div>";
   h+="<button class='act bz-x'>ОТОЙТИ</button>";
   w.innerHTML=h;document.body.appendChild(w);
   w.querySelector(".bz-x").onclick=bazClose;
+  const bm=w.querySelector(".bz-map");if(bm)bm.onclick=()=>{bazClose();rumourToMap(q);};
   w.querySelectorAll("button[data-k]").forEach(b=>b.onclick=()=>{const x=L.find(y=>y.k===b.dataset.k);if(bazBuy(x)){bazOpen(B);if(typeof saveGame==="function")saveGame(true);}});
 }
 
@@ -59430,9 +59718,13 @@ function bazOpen(B){
    У каждого рукава и у ядра — одно колоссальное сооружение, в 20–50 раз
    больше корабля, названное голосом галактики. Место — география, а не
    война: земли держав ходят по летописи, великан стоит, где стоял. Шесть —
-   по кругу диска на 18–26 секторах (у звезды, ближайшей к расчётной точке),
-   седьмой — полая луна у ядра. На карте — ориентир с именем, в системе —
-   само тело, далеко от звезды. Мир не трогается: только starAt, без бросков.
+   на настоящих рукавах модели галактики (17z1/17z2): два рукава по две ветви,
+   по одному на ветвь на 19–22 секторах, и ещё двое ближе к ядру, на 14–15
+   (у звезды, ближайшей к точке рукава); седьмой — полая луна у ядра. На карте —
+   ориентир с именем, в системе — само тело, далеко от звезды, и под именем —
+   мерило: во сколько ваших корпусов он длиной. К телу причаливают: посещение —
+   абзац места, слух его жителей, сувенир с первого раза (G.giantsSeen[k]=2),
+   а в Доме водителя — ночлег. Мир не трогается: только starAt, без бросков.
    (Кольцо, M154, — не из их числа.) */
 const GIANTS_DEF=[
   {k:"moon",  by:null,ru:"Полая луна «Гнездо»",   note:"в недрах — шахтёрский посёлок, огни кольцами"},
@@ -59447,15 +59739,31 @@ let GIANTS=null;
 function giantsAll(){
   if(GIANTS)return GIANTS;
   GIANTS=[];
-  GIANTS_DEF.forEach((D,i)=>{
-    const a=i?(i-1)*Math.PI/3+.35:0,R=i?18+((i*37)%9):3;
-    const tx=Math.round(Math.cos(a)*R),ty=Math.round(Math.sin(a)*R);
-    let best=null,bd=1e9;
+  /* ветви рукавов: [рукав, ветвь] — по кругу; пятый и шестой — ближе к ядру (M464) */
+  const BR=[[0,0],[1,0],[0,1],[1,1]];
+  /* ближайшая звезда к точке (в квадрате ±4), как и раньше */
+  const near=(tx,ty)=>{let best=null,bd=1e9;
     for(let dx=-4;dx<=4;dx++)for(let dy=-4;dy<=4;dy++){
       const sx=tx+dx,sy=ty+dy;if(!starAt(sx,sy))continue;
-      const d=dx*dx+dy*dy;if(d<bd){bd=d;best=[sx,sy];}
+      const d=dx*dx+dy*dy;if(d<bd){bd=d;best=[sx,sy];}}
+    return best;};
+  /* два рукава на средних радиусах сходятся: идём по своей ветви от целевого радиуса
+     в обе стороны шагом полсектора и берём первую звезду, что по модели лежит в этом
+     рукаве (или в туманности этого же рукава) и не ближе 8 секторов к уже поставленным */
+  const far=q=>GIANTS.every(o=>o.k==="moon"||Math.hypot(o.sx-q[0],o.sy-q[1])>=8);
+  GIANTS_DEF.forEach((D,i)=>{
+    if(!i){const q=near(3,0);if(q)GIANTS.push({...D,arm:"ядро",sx:q[0],sy:q[1],seed:hashi(q[0],q[1],0x61A7)>>>0});return;}
+    const b=BR[(i-1)%4],A=GAL_ARMS[b[0]],r0=i<=4?18+i:9+i;
+    let pick=null,first=null;
+    for(let k=0;k<=40&&!pick;k++){
+      const r=r0+((k%2)?1:-1)*Math.ceil(k/2)*.5;if(r<10||r>28)continue;
+      const P=galArmPt(A,r,b[1],0),q=near(Math.round(P.x),Math.round(P.y));if(!q)continue;
+      if(!first)first=q;
+      const nb=GAL_NEBULAE.find(n=>Math.hypot(n.x-q[0],n.y-q[1])<2.2);
+      if((nb?nb.a===b[0]:galPlaceName(q[0],q[1])===A.ru)&&far(q))pick=q;
     }
-    if(best)GIANTS.push({...D,sx:best[0],sy:best[1],seed:hashi(best[0],best[1],0x61A7)>>>0});
+    pick=pick||first;
+    if(pick)GIANTS.push({...D,arm:A.ru,sx:pick[0],sy:pick[1],seed:hashi(pick[0],pick[1],0x61A7)>>>0});
   });
   return GIANTS;
 }
@@ -59611,9 +59919,17 @@ function drawGiant(zx,zy,Z){
     const u=(t*.15)%1;ctx.fillStyle="rgba(47,111,208,.85)";ctx.fillRect((-700+1400*u)*S,-135*S,Math.max(2,24*S),Math.max(1,4*S));   /* бегущий огонь по верхней кромке */
   }
   ctx.restore();
-  /* имя — над телом, в пикселях экрана */
+  /* имя — над телом, в пикселях экрана; под ним мерило (M464): во сколько ваших корпусов */
   ctx.save();ctx.fillStyle="rgba(240,220,170,.85)";ctx.font=(typeof uiFont==="function")?uiFont(10):"10px monospace";ctx.textAlign="center";
-  ctx.fillText(g.ru.toUpperCase(),x,y-Math.min(H*.4,560*S)-10);ctx.restore();
+  const ny=y-Math.min(H*.4,560*S)-10;
+  ctx.fillText(g.ru.toUpperCase(),x,ny-12);
+  ctx.fillStyle="rgba(240,220,170,.55)";ctx.fillText(giantRuler(),x,ny);ctx.restore();
+}
+/* мерило: длина великана в корпусах того, на чём вы летите */
+const GIANT_LEN=1300;
+function giantRuler(){
+  const h=hullOf(G.shipId),L=Math.max(8,(h&&h.len)||40),n=Math.round(GIANT_LEN/L);
+  return "≈ "+n+" "+pl3(n,"ваш корпус","ваших корпуса","ваших корпусов")+" в длину";
 }
 /* прилёт: первая встреча — строка */
 function giantArrive(){
@@ -59621,7 +59937,74 @@ function giantArrive(){
   G.giantsSeen=G.giantsSeen||{};
   if(G.giantsSeen[g.k])return;
   G.giantsSeen[g.k]=1;
-  logAdd("good","Великан: "+g.ru+" — "+g.note);
+  logAdd("good","Великан · "+(g.arm==="ядро"?"у ядра":g.arm)+": "+g.ru+" — "+g.note);
+}
+/* ── причал и посещение (M464) ──
+   Великан — место, а не картинка: у тела причал, внутри — абзац того, как там
+   живут, слух от жителей (в тетрадь и на карту, как на станции), сувенир — один
+   раз на великана. Дом водителя сверх того пускает на ночь: корпус и бак. */
+const GIANT_VISIT={
+  moon:   {txt:"Причал в устье. Внутри — посёлок в три яруса, огни кольцами, клеть ходит круглые сутки. Шахтёры смотрят на гостей, как на погоду.",
+           src:"шахтёр в столовой",keep:"Жетон шахты «Гнездо»",kn:"медный, с номером клети; сдавать не надо — «это на память, у нас их ведро»"},
+  house:  {txt:"Дом водителя: коридоры в полкилометра, табличка «МЕСТ НЕТ» горит третий год. Места есть. В холле пахнет щами и солидолом.",
+           src:"водитель у стойки",keep:"Ключ от номера Дома водителя",kn:"с деревянной грушей, номер 1417 · «вернёте в следующий раз»"},
+  cyl:    {txt:"Цилиндр Компании изнутри — улица, загнутая вверх. Над головой чужие огороды, логотип виден из любой точки.",
+           src:"житель цилиндра",keep:"Буклет «Жизнь в цилиндре™»",kn:"глянец, двенадцать страниц, три из них — условия подписки"},
+  customs:{txt:"Таможенный город: каждое здание — форма, и в каждой форме — окно. Посещение тоже оформляется.",
+           src:"инспектор на обеде",keep:"Форма 1-ПОС «о посещении»",kn:"заполнена, заверена, в двух экземплярах; второй экземпляр — тоже вам"},
+  dock:   {txt:"Сухой док Коммуны: один корпус, леса до звёзд. Строят его триста лет; бригада сменилась одиннадцать раз, чертёж — ни разу.",
+           src:"бригадир на лесах",keep:"Заклёпка со стапеля Коммуны",kn:"с того самого корпуса · на ней клеймо позапрошлого века"},
+  town:   {txt:"Посёлок врос в камни пояса: дома из корпусов, мостки из обшивки. Здесь всё когда-то было кораблём.",
+           src:"старик на мостках",keep:"Камешек из пояса с дыркой",kn:"«смотришь сквозь — видишь дом»"},
+  garden: {txt:"Сад ретрансляторов: лес мачт, мигает вразнобой, и в каждом огне — чей-то разговор. Тихо здесь не бывает никогда.",
+           src:"связист на мачте",keep:"Схема мачт Хай-Фронта",kn:"синька, мачты подписаны частотами; половина уже снята"}
+};
+const GIANT_DOCK=760,GIANT_NIGHT=150;
+function giantInteract(sh){
+  const g=giantAt(G.sx,G.sy);if(!g)return false;
+  const P=giantPos(g);
+  if(Math.hypot(sh.x-P.x,sh.y-P.y)>GIANT_DOCK){if(document.getElementById("giantWin"))giantClose();return false;}
+  if(cue(g.ru.toUpperCase()+"\nДЕЙСТВИЕ — ПРИЧАЛИТЬ",CUE_ACT)&&actEdge)giantOpen(g);
+  return true;
+}
+function giantClose(){const w=document.getElementById("giantWin");if(w)w.remove();}
+/* слух жителей: посев великана и трёх суток, рассказчик — из его места */
+function giantRumour(g){
+  const V=GIANT_VISIT[g.k],q=rumoursHere(hashi(g.seed,Math.floor(celDay()/3),0x61A8))[0];if(!q)return null;
+  q.src=V.src;
+  q.lines=[capRu(q.img),capRu(q.where),"со слов: "+V.src+" — "+q.det];
+  q.text=capRu(V.src)+" рассказывал про место: "+q.img+". "+capRu(q.where)+". "+capRu(q.det)+".";
+  return q;
+}
+function giantNight(){
+  if(G.credits<GIANT_NIGHT){say("«Мест нет.»\nне хватает "+GIANT_NIGHT+" кр",110);return false;}
+  const st=stat(),heal=Math.round(st.hullMax*.15);
+  G.credits-=GIANT_NIGHT;G.hull=Math.min(st.hullMax,G.hull+heal);G.fuel=st.fuelMax;
+  logAdd("good","Дом водителя: ночь · −"+GIANT_NIGHT+" кр · корпус +"+heal+", бак полный · «…для вас нашли»");
+  say("«Мест нет. …Для вас найдём.»",140);
+  return true;
+}
+function giantOpen(g){
+  giantClose();
+  const V=GIANT_VISIT[g.k],w=document.createElement("div");w.id="giantWin";
+  G.giantsSeen=G.giantsSeen||{};
+  const first=(G.giantsSeen[g.k]|0)<2;
+  if(first){G.giantsSeen[g.k]=2;thingAdd("find",V.keep,g.ru+" · "+V.kn);}
+  const q=giantRumour(g);
+  if(q&&G.giantRum!==g.k+"#"+Math.floor(celDay()/3)){
+    G.giantRum=g.k+"#"+Math.floor(celDay()/3);peopleLine(q.text,g.ru);rumourRemember(q);}
+  let h="<div class='bz-h'>"+g.ru.toUpperCase()+"<s>"+(g.arm==="ядро"?"у ядра":g.arm)+" · "+giantRuler()+"</s></div>"+
+    "<div class='gi-txt'>"+V.txt+"</div>";
+  if(first)h+="<div class='bz-sec'>НА ПАМЯТЬ</div><div class='bz-rum'><b>"+V.keep+"</b><s>"+V.kn+" · лежит в ВЕЩАХ</s></div>";
+  if(g.k==="house")h+="<div class='bz-sec'>СТОЙКА</div><div class='bz-rum'><b>Ночлег</b><s>корпус +15 %, бак полный</s>"+
+    "<button class='act sm gi-night'"+(G.credits<GIANT_NIGHT?" disabled":"")+">"+GIANT_NIGHT+" КР</button></div>";
+  if(q)h+="<div class='bz-sec'>ГОВОРЯТ</div><div class='bz-rum'><b>"+q.lines[0]+"</b><s>"+q.lines[1]+"<br>"+q.lines[2]+"</s>"+
+    "<button class='act sm gi-map'>НА КАРТУ</button></div>";
+  h+="<button class='act bz-x'>ОТЧАЛИТЬ</button>";
+  w.innerHTML=h;document.body.appendChild(w);
+  w.querySelector(".bz-x").onclick=giantClose;
+  const bm=w.querySelector(".gi-map");if(bm)bm.onclick=()=>{giantClose();rumourToMap(q);};
+  const bn=w.querySelector(".gi-night");if(bn)bn.onclick=()=>{if(giantNight()){giantOpen(g);if(typeof saveGame==="function")saveGame(true);}};
 }
 
 /* ДРЕЙФ — фон звёздной карты: туманность, полоса Галактики, пеленги (M436).
@@ -63050,6 +63433,12 @@ function drawSysRail(zx,zy,Z){
   ctx.fillStyle="rgba(242,178,92,.75)";ctx.font=uiFont(9);ctx.textAlign="center";
   ctx.fillText((R.S.metro?"МЕТРО · ":"")+R.S.lines[0].ru.toUpperCase()+(R.S.lines.length>1?" +"+(R.S.lines.length-1):""),x,y+58*s+10);
 }
+/* идёт ли борт в кольцо: по ходу, а стоящий — по носу */
+function railHeadingIn(sh,R){
+  const dx=R.x-sh.x,dy=R.y-sh.y,sp=Math.hypot(sh.vx,sh.vy);
+  if(Math.hypot(dx,dy)<RAIL_CONE_R*.5)return true;
+  return sp>.3?dx*sh.vx+dy*sh.vy>0:dx*Math.cos(sh.a)+dy*Math.sin(sh.a)>0;
+}
 /* ── стыковка: оклик, конус, две секунды ── */
 function railInteract(sh){
   const R=railHere();
@@ -63057,6 +63446,9 @@ function railInteract(sh){
   if(railWinOpen())return true;
   const d=Math.hypot(sh.x-R.x,sh.y-R.y);
   if(d>RAIL_HAIL_R){RAIL_DOCK=null;return false;}
+  /* оклик — только тому, кто идёт В кольцо (§9): вышедший из поезда стоит в
+     шестидесяти от кольца носом к станции, и «Стыковка?» ему вслед — ошибка */
+  if(!RAIL_DOCK&&!railHeadingIn(sh,R))return false;
   if(!RAIL_DOCK){
     const shown=cue("СТАНЦИЯ «"+R.name.toUpperCase()+"» · "+(R.S.metro?"МЕТРО":"ЖЕЛЕЗНАЯ ДОРОГА")+"\nДЕЙСТВИЕ — СТЫКОВКА",CUE_ACT);
     if(shown&&actEdge)RAIL_DOCK={hold:0,t:0};
@@ -63124,8 +63516,11 @@ function railFare(t){
   /* крупногабаритный (M472, §3): тяжёлое в трюме (осмий, крошка) — багаж ×3 */
   const big=!metro&&typeof resW==="function"&&Object.keys(G.cargo).some(k=>(G.cargo[k]|0)>0&&resW(k)>1);
   const bag=metro?0:Math.ceil(held()/5)*(big?3:1);
-  const F={fare,bag,sum:fare+bag,metro,big};
-  return (typeof railPassFare==="function")?railPassFare(F):F;   /* проездной (M500) */
+  let F={fare,bag,sum:fare+bag,metro,big};
+  if(typeof railPassFare==="function")F=railPassFare(F);   /* проездной (M500) */
+  /* жетон замполита (§9, 11ao): первый проезд в метро — за счёт трассы */
+  if(metro&&typeof firstSaid==="function"&&firstSaid("tok")&&!firstSaid("tokUsed")){F.fare=0;F.sum=F.bag;F.tok=1;}
+  return F;
 }
 function railWinOpen(){const w=typeof document!=="undefined"&&document.getElementById("railWin");return !!(w&&w.classList.contains("open"));}
 function railWinClose(){const w=document.getElementById("railWin");if(w)w.classList.remove("open");RAIL_WAIT=null;}
@@ -63146,7 +63541,9 @@ function railWinRender(){
   if(RAIL_WAIT){
     h+="<div class='rw-sec'>ВАШ ПОЕЗД</div><div class='rw-row'><span>до «"+railStopName(RAIL_WAIT.to)+"» · "+RAIL_WAIT.k+" "+pl3(RAIL_WAIT.k,"остановка","остановки","остановок")+"</span><em>поезд прибывает через "+Math.ceil(RAIL_WAIT.t)+" с</em></div>";
   }else{
-    h+="<div class='rw-sec'>КУДА ВАМ · КАССА</div>";
+    /* жетон замполита (§9) объяснён один раз здесь; на кнопках — короткое ЖЕТОН вместо цены */
+    const tok=typeof firstSaid==="function"&&firstSaid("tok")&&!firstSaid("tokUsed");
+    h+="<div class='rw-sec'>КУДА ВАМ · КАССА"+(tok?" · ЖЕТОН ЗАМПОЛИТА: ОДНА ПОЕЗДКА НА МЕТРО ДАРОМ":"")+"</div>";
     const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
     if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
       /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
@@ -63157,7 +63554,7 @@ function railWinRender(){
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
-      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+F.fare+" КР"+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
+      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+(F.tok?"ЖЕТОН":F.fare+" КР")+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
       /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
       if(typeof railOwner==="function"&&railOwner()==="ra")
@@ -63184,11 +63581,13 @@ function railBuy(t,express,bus){
   if(!bus&&typeof railDeclare==="function"&&!railDeclare(t))return;   /* Орднунг: сначала декларация (M474) */
   if(typeof volRail==="function"&&!volRail())return;   /* животное без бумаг — проводник не пускает (M511) */
   const F=railFare(t);
+  if(F.tok&&(express||bus)){F.fare=5;F.sum=F.fare+F.bag;F.tok=0;}   /* жетон — на поезд, не на экспресс и маршрутку */
   if(express){F.fare*=RAIL_EXPRESS_MUL;F.sum=F.fare+F.bag;}
   if(G.credits<F.sum){say("Не хватает на билет\nнужно "+F.sum+" кр",90);return;}
   G.credits-=F.sum;
+  if(F.tok)firstAll().push("tokUsed");
   if(typeof railLifeBoard==="function")railLifeBoard(t,F);
-  logAdd("money",(F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
+  logAdd("money",(F.tok?"Жетон замполита":F.metro?"Жетон":"Билет")+" до «"+railStopName(t.to)+"» · −"+F.sum+" кр"+(F.bag?" (багаж "+F.bag+")":""));
   RAIL_WAIT={...t,express:!!express,bus:!!bus,t:bus?3:railWaitNow(G.sx,G.sy)};
   railWinRender();
 }
@@ -63798,10 +64197,39 @@ function railSchemeOpen(){
   if(!d){d=document.createElement("div");d.id="railScheme";d.innerHTML="<canvas></canvas><b>СХЕМА ЛИНИЙ · ГЛАВТРАССА · бесплатно, не выбрасывать</b><s>касание — свернуть</s>";
     d.onclick=e=>{if(e.target===d)railSchemeClose();};document.body.appendChild(d);
     /* КУДА ВАМ (M470): тап по остановке на бумаге — выбрать, куда ехать */
-    d.querySelector("canvas").onclick=railSchemePick;
-    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · мимо бумаги — свернуть";}
+    const cv=d.querySelector("canvas");cv.onclick=railSchemePick;
+    /* шире — колесом или щипком (§9, M470): от своего участка до всей сети */
+    cv.onwheel=e=>{e.preventDefault();e.stopPropagation();railSchemeZoom(e.deltaY>0?.25:-.25);};
+    let pin=0;
+    cv.addEventListener("touchmove",e=>{if(e.touches.length!==2)return;e.preventDefault();
+      const a=e.touches[0],b=e.touches[1],dd=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+      if(pin)railSchemeZoom((pin-dd)/300);pin=dd;},{passive:false});
+    cv.addEventListener("touchend",()=>{pin=0;});
+    /* подсказка по руке: на телефоне колеса нет, и строка короче */
+    const touch=typeof matchMedia==="function"&&matchMedia("(pointer:coarse)").matches;
+    /* фразы склеены неразрывным пробелом: узкий экран переносит строку только по « · » */
+    const sb=d.querySelector("s");if(sb)sb.textContent=["касание остановки — туда",(touch?"щипок":"колесо")+" — шире","мимо бумаги — свернуть"].map(p=>p.replace(/ /g," ")).join(" · ");}
   d.classList.add("open");
   {const p=d.querySelector(".rs-pick");if(p)p.remove();}
+  RAIL_SCHEME_Z=0;railSchemeRedraw();
+}
+/* охват (§9, M470): не вся сеть, а ваш участок — вы, всё, что продаёт касса
+   (своя линия и пересадки, а с ними и кольца, что их режут), с полем вокруг;
+   RAIL_SCHEME_Z тянет рамку от участка (0) до всей сети (1) */
+let RAIL_SCHEME_Z=0;
+function railSchemeScope(){
+  let x0=G.sx,x1=G.sx,y0=G.sy,y1=G.sy;
+  if(typeof railDestinations==="function"&&railStation(G.sx,G.sy))
+    for(const q of railDestinations()){x0=Math.min(x0,q.to.sx);x1=Math.max(x1,q.to.sx);y0=Math.min(y0,q.to.sy);y1=Math.max(y1,q.to.sy);}
+  const half=clamp(Math.max(x1-x0,y1-y0)/2*1.2+3,8,RAIL_R),z=RAIL_SCHEME_Z;
+  return {cx:(x0+x1)/2*(1-z),cy:(y0+y1)/2*(1-z),half:half+(RAIL_R-half)*z};
+}
+function railSchemeZoom(dz){
+  const z=clamp(RAIL_SCHEME_Z+dz,0,1);if(z===RAIL_SCHEME_Z)return;
+  RAIL_SCHEME_Z=z;railSchemeRedraw();
+}
+function railSchemeRedraw(){
+  const d=document.getElementById("railScheme");if(!d)return;
   const c=d.querySelector("canvas"),k=Math.min(2,(typeof devicePixelRatio==="number"&&devicePixelRatio)||1);
   const cw=Math.min(W-24,520),ch=Math.min(H-120,cw*1.15);
   const pw=Math.round(cw*k),ph=Math.round(ch*k);
@@ -63854,9 +64282,9 @@ function railSchemePick(e){
   host.appendChild(p);
 }
 function railSchemeDraw(g,cw,ch){
-  const N=railNet(),R=RAIL_R;
-  const pad=28,S=Math.min((cw-pad*2)/(2*R),(ch-pad*2-24)/(2*R));
-  const X=x=>cw/2+x*S,Y=y=>ch/2+12+y*S;
+  const N=railNet(),R=RAIL_R,V=railSchemeScope();
+  const pad=28,S=Math.min((cw-pad*2)/(2*V.half),(ch-pad*2-24)/(2*V.half));
+  const X=x=>cw/2+(x-V.cx)*S,Y=y=>ch/2+12+(y-V.cy)*S;
   RAIL_SCHEME_MAP={X,Y,cw,ch};
   /* бумага: кремовая, сгибы вдоль и поперёк, тень у сгиба */
   g.fillStyle="#efe6cf";g.fillRect(0,0,cw,ch);
@@ -63949,17 +64377,30 @@ function railSchemeDraw(g,cw,ch){
   g.fillStyle="#c8281e";g.beginPath();g.moveTo(hx,hy-1);g.lineTo(hx-5,hy-13);g.lineTo(hx+5,hy-13);g.closePath();g.fill();
   g.beginPath();g.arc(hx,hy-14,4,0,TAU);g.fill();
   g.font="bold 8px ui-monospace,monospace";g.textAlign="left";g.fillText("ВЫ ЗДЕСЬ",hx+8,hy-14);
-  /* заголовок на самой бумаге */
-  g.font="bold 9px ui-monospace,monospace";g.textAlign="left";g.fillStyle="#3a2e1e";
-  g.fillText("СХЕМА ЛИНИЙ · ГЛАВТРАССА",10,12);
-  g.font="7px ui-monospace,monospace";g.fillStyle="#7a6a50";g.fillText("выдаётся в вестибюле · не выбрасывать",10,22);
-  /* легенда */
-  g.font="7px ui-monospace,monospace";g.fillStyle="#5a4a30";g.textAlign="left";
+  /* заголовок на самой бумаге — на подложке: лист открыт на участке (§9), линии идут под него */
+  const t1="СХЕМА ЛИНИЙ · ГЛАВТРАССА",t2="выдаётся в вестибюле · не выбрасывать";
+  g.font="bold 9px ui-monospace,monospace";const w1=g.measureText(t1).width;
+  g.font="7px ui-monospace,monospace";const w2=g.measureText(t2).width;
+  g.fillStyle="rgba(239,230,207,.92)";g.fillRect(4,2,Math.max(w1,w2)+12,25);
+  g.font="bold 9px ui-monospace,monospace";g.textAlign="left";g.fillStyle="#3a2e1e";g.fillText(t1,10,12);
+  g.font="7px ui-monospace,monospace";g.fillStyle="#7a6a50";g.fillText(t2,10,22);
+  /* легенда — на подложке; строку, что не влезает правее образцов линий (узкая бумага телефона), переносим по « · » */
+  g.font="7px ui-monospace,monospace";
   const L=[["ring","кольца"],["arm","рукава"],["radial","радиалы"]];
+  const T=["синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",
+    "красное кольцо — касса берёт · за «КРАЕМ» не езжено","пересадка — двойной кружок · пунктир — метро, жетон 5 кр"];
+  const mw=cw-10-(36+Math.max(...L.map(e=>g.measureText(e[1]).width))+10),rows=[];
+  for(const s of T){
+    if(g.measureText(s).width<=mw){rows.push(s);continue;}
+    let cur="";
+    for(const p of s.split(" · ")){const n=cur?cur+" · "+p:p;if(cur&&g.measureText(n).width>mw){rows.push(cur);cur=p;}else cur=n;}
+    if(cur)rows.push(cur);
+  }
+  const top=ch-10-(Math.max(rows.length,L.length)-1)*10;
+  g.fillStyle="rgba(239,230,207,.92)";g.fillRect(4,top-9,cw-8,ch-4-(top-9));
+  g.fillStyle="#5a4a30";g.textAlign="left";
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
-  g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
-  g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
-  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",cw-10,ch-30);
+  g.textAlign="right";rows.forEach((s,i)=>g.fillText(s,cw-10,ch-10-(rows.length-1-i)*10));
 }
 
 /* ══════════════ посадка: разрез грунта ══════════════
@@ -69403,7 +69844,7 @@ const POI_FIND={
                const s=getSystem(sx,sy);
                if(!s.station||(G.market&&G.market[s.key]))continue;
                if(!G.market)G.market={};
-               G.market[s.key]={pressure:{},t:G.t};
+               G.market[s.key]={pressure:{},t:now()};
                return "цены станции «"+s.station.name+"» ("+sx+":"+sy+")";
              }
              return "наблюдения о том, что вы и так видели";}},
@@ -71197,6 +71638,7 @@ function updateSurface(dt){
   S.x=clamp(S.x,30,tr.W-30);
   /* амплитуда шага плавно нарастает/спадает, а не переключается щелчком —
      фаза копится только пока реально идём, поэтому ноги не дёргаются на кочках */
+  if(S.smena)smenaDeedTick(S);          /* «Смена»: глава — шагом наружу, не посадкой (P15) */
   peepUpdate(dt);                       /* луг помнит свет только пока темно (20c) */
   if(typeof countyNoiseTick==="function")countyNoiseTick(S,dt);   /* город слушает (11l) */
   /* посёлок слышно раньше, чем видно (хвост M109): редкий стук и голос,
@@ -71309,7 +71751,7 @@ function updateSurface(dt){
   for(const b of S.fauna||[])if(!b.scanned&&Math.abs(b.x-S.x)<34*kitStat().scan)beast=b;
   S.mining=null;
   const dbtn=document.getElementById("dronebtn");
-  if(dep&&G.droneInventory>0){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
+  if(dep&&G.droneInventory>0&&droneMayMine(dep.res)){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
   /* у корабля скафандр перезаряжается — сюда и возвращаются между заходами;
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
@@ -71663,27 +72105,7 @@ function tickLaunchHold(dt){
    было НИ ОДНОГО хода (17-mode-system зовёт эту же функцию). */
 function evacCost(){return Math.min(4000,Math.round(800+220*Math.hypot(G.sx,G.sy)));}
 function evacFrom(){return (G.surf&&G.surf.p&&G.surf.p.name)||(G.sys&&G.sys.name)||"пустоты";}
-function evacuate(){
-  const from=evacFrom();
-  const cost=evacCost();
-  /* нечем платить — не потеря корабля, а расплата натурой: обшивка, потом
-     трюм (16c-rescue, плейтест 11.09: «игра должна ебать игрока, но выход
-     есть всегда»). totalLoss остался для гибели в бою, не для пустого бака */
-  let paid;
-  if(G.credits>=cost){G.credits-=cost;paid="−"+cost.toLocaleString("ru")+" кр";}
-  else paid="без денег · даром";
-  const dest=nearestStation(G.sx,G.sy);
-  G.sx=dest.sx;G.sy=dest.sy;G.sys=dest;
-  G.fuel=Math.max(G.fuel,Math.min(stat().fuelMax,RESCUE_FUEL));
-  G.ship.x=Math.cos(0)*(dest.station?dest.station.orbit+120:900);
-  G.ship.y=Math.sin(0)*(dest.station?dest.station.orbit+120:900);
-  G.ship.vx=0;G.ship.vy=0;
-  G.mode="system";G.land=null;G.surf=null;
-  saveGame(true);
-  G.ap=null;
-  logAdd("warn","Эвакуация с "+from+" · "+paid+" · переброшены к "+dest.name);
-  say("Буксир\n"+paid+"\nвы в системе "+dest.name+" · станция рядом",180);
-}
+/* evacuate() — эвакуация с грунта — снят (§12): звать было некому, живой путь — 16c-rescue */
 function totalLoss(){
   const pname=evacFrom();
   /* если дом уже есть — возвращаемся туда: смерть перестаёт быть обнулением и
@@ -72181,14 +72603,18 @@ function updateBase(dt){
     /* постройка бывает заперта наукой: лаборатория до «Лаборатории» не ставится.
        Показываем её всё равно — игрок должен видеть, за чем идти. */
     const locked=M.needTech&&techLv(M.needTech)<=0;
-    const bad=(M.surfaceOnly&&S.row>0)||locked;
+    /* по подписке продаёт только фирма (M487): Компания или Хай-Фронт в системе базы */
+    const nofirm=!!(M.firm&&!M.firm(B));
+    const bad=(M.surfaceOnly&&S.row>0)||locked||nofirm;
     G.prompt="СТРОИТЬ: "+M.ru.toUpperCase()+"\n"+M.note+
       "\n"+baseCost(k,B).credits+" кр"+(M.cost.alloy?" + "+baseCost(k,B).alloy+" сплавов":"")+
       (locked?"\nНУЖНА НАУКА: "+TECH[M.needTech].ru.toUpperCase():"")+
       (M.surfaceOnly&&S.row>0?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
+      (nofirm?"\nПО ПОДПИСКЕ ПРОДАЮТ КОМПАНИЯ И ХАЙ-ФРОНТ — НЕ ЗДЕСЬ":"")+
       "\n◀ ▶ — выбор · ДЕЙСТВИЕ — построить";
     if(actEdge){
       if(locked)say("Сначала нужна наука\n«"+TECH[M.needTech].ru+"»");
+      else if(nofirm)say("Подписку здесь не продают\nКомпания или Хай-Фронт");
       else if(bad)say("Панель ставится только сверху");
       /* цена — через baseCost: смета смотрителя должна работать и здесь,
          иначе скидка показывалась в интерфейсе, а списывалось полное */
@@ -72464,6 +72890,7 @@ function baseShiftRun(B,n){
     /* ферма (M496): зверь даёт своё, пока с ним говорят */
     if(typeof farmStep==="function")said|=farmStep(B,n)?1:0;
     if(typeof vanStep==="function")said|=vanStep(B,n)?1:0;   /* «Буханка» (M498) */
+    if(typeof fridgeStep==="function")said|=fridgeStep(B,n)?1:0;   /* «Иней», куплен или по подписке (M487) */
     /* опорный пункт экспедиции (M409, §44): трафик мира сворачивает сюда */
     if(typeof fwdStep==="function")said|=fwdStep(B,n)?1:0;
     /* и он же развивает базу (M407): строят все, правильно — один */
@@ -77723,6 +78150,106 @@ function drawVanSmall(x,y,B){
   ctx.fillStyle="rgba(14,20,28,.95)";ctx.fillRect(x+15,y-7,4,3);ctx.fillRect(x+3,y-7,5,3);
   ctx.fillStyle="rgba(255,236,190,.9)";ctx.fillRect(x+21,y-4,1.4,1.4);
   ctx.fillStyle="rgba(40,44,50,.98)";ctx.fillRect(x+2,y,5,2);ctx.fillRect(x+15,y,5,2);
+}
+
+/* ══════════════ холодильник по подписке (M487, DESIGN-birchpunk §4.2) ══════════════
+   Отсек базы, который фирма (Компания, Хай-Фронт) продаёт двумя способами:
+   купить — полная цена сразу, и он кормит всегда; подписать — десятая часть
+   сразу и 4 % за каждую смену. Подписной кормит, пока взнос проходит. Не прошёл —
+   дверь заперта: харча в эту смену нет, но и уже выданное он не забирает —
+   «перестаёт давать, а не отнимает». Извещение — сменой раньше: после взноса
+   на счету меньше следующего — строка в журнале базы.
+
+   Состояния в записи нет и не нужно: каждую смену взнос либо проходит, либо нет,
+   по деньгам на счету; заперт он или открыт — видно из того же счёта. Клетка
+   хранится как {k,hp}, и подписка — это её вид (fridgesub), а не поле.
+   Каждая 25-я смена — «тариф обновлён»: цена та же, одна мелочь стала дополнением. */
+const FRIDGE_PRICE=3400,FRIDGE_FOOD=4,FRIDGE_TARIFF=25;
+const FRIDGE_FEATS=["подсветка полок","лёд в морозилке","звонок открытой двери","полка для яиц","тихий режим компрессора"];
+function fridgeFirmAt(B){
+  const by=(B&&typeof stampOwnerAt==="function")?stampOwnerAt(B.sx,B.sy):null;
+  return (by&&typeof SUB_POWERS!=="undefined"&&SUB_POWERS[by])?by:null;
+}
+function fridgeFee(){return Math.round(FRIDGE_PRICE*SUB_RATE);}
+BUILD.fridge={ru:"Холодильник «Иней»",cost:{credits:FRIDGE_PRICE,alloy:4},power:-3,
+  note:"+"+FRIDGE_FOOD+" харча за смену, вкусного · куплен насовсем — кормит всегда"};
+BUILD.fridgesub={ru:"«Иней» по подписке",cost:{credits:Math.round(FRIDGE_PRICE*SUB_UP),alloy:4},power:-3,
+  firm:fridgeFirmAt,
+  note:"то же, но "+Math.round(SUB_UP*100)+" % сразу и "+fridgeFee()+" кр за смену · без взноса дверь заперта · к "+
+    Math.ceil((1-SUB_UP)/SUB_RATE)+"-й смене вы заплатите полную цену"};
+ROOM_FIN.fridge=ROOM_FIN.fridgesub={wall:"tile",tint:"52,62,70",lamp:"222,240,250",ln:2,floor:"clean",warn:0,work:.40,
+  dress:["board","stencil"],junk:["canister","bag"]};
+JOB_ROLE.fridge=JOB_ROLE.fridgesub="gardener";
+/* журнал — только о переменах: взнос каждую смену строкой не пишется, как и зарплата */
+Object.assign(BLOG,{
+  fridgewarn:(B,a)=>"ПОЧТА · «Иней»: на счету меньше следующего взноса ("+a.cr+" кр). Через смену дверь будет заперта",
+  fridgeoff:(B,a)=>"«Иней» заперт: подписка не оплачена · харч внутри есть, дверь не открывается",
+  fridgetariff:(B,a)=>"ПОЧТА · «Иней»: тариф обновлён! Цена прежняя. «"+a.what+"» теперь — дополнение"
+});
+/* заперт ли подписной сейчас — по счёту, как и решит ближайшая смена */
+function fridgeLocked(){return G.credits<fridgeFee();}
+function fridgeStep(B,n){
+  let own=0,sub=0;
+  for(const cell of B.cells||[]){
+    if(!cell||cell.hp<=0)continue;
+    if(cell.k==="fridge")own++;else if(cell.k==="fridgesub")sub++;
+  }
+  if(!own&&!sub)return 0;
+  const L=baseLife(B);
+  let q=own*FRIDGE_FOOD,said=0;
+  if(sub){
+    const fee=fridgeFee()*sub;
+    if(G.credits>=fee){
+      G.credits-=fee;q+=sub*FRIDGE_FOOD;
+      if(n%FRIDGE_TARIFF===0){baseLog(B,"fridgetariff",n,{what:FRIDGE_FEATS[Math.floor(n/FRIDGE_TARIFF)%FRIDGE_FEATS.length]});said=1;}
+      if(G.credits<fee){baseLog(B,"fridgewarn",n,{cr:fee});said=1;}
+    }else{baseLog(B,"fridgeoff",n,{});said=1;}
+  }
+  if(q>0){L.food=Math.min(LIFE_CAP,(L.food|0)+q);L.q="good";}
+  return said;
+}
+/* отсек: два шкафа под потолок, ручки, табло на двери. Подписной и запертый —
+   табло красное и замок на ручке: в разрезе видно, почему люди голодны */
+BASE_ROOM.fridge=BASE_ROOM.fridgesub=function(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r){
+  const cell=B?baseCell(B,c,r):null,lock=!!(cell&&cell.k==="fridgesub"&&fridgeLocked());
+  const fw=Math.min(34,w*.24),fh=Math.min(h-20,64);
+  for(let i=0;i<2;i++){
+    const fx=x0+w*.20+i*(fw+6),fyT=fy-fh;
+    ctx.fillStyle="rgba(0,0,0,.30)";ctx.beginPath();ctx.ellipse(fx+fw/2,fy-1,fw*.6,2.6,0,0,TAU);ctx.fill();
+    bBox(fx,fyT,fw,fh,"rgba(138,146,148,.97)",lit,"rgba(0,0,0,.45)");   /* белый на ступень ниже, к тону стен */
+    /* спад от лампы: верх в свете, у пола на ~28 % темнее — шкаф стоит в комнате, а не наклеен */
+    const fg=ctx.createLinearGradient(0,fyT,0,fy);
+    fg.addColorStop(0,"rgba(255,246,228,"+(.08*lit).toFixed(3)+")");fg.addColorStop(.35,"rgba(0,0,0,0)");fg.addColorStop(1,"rgba(0,0,0,.28)");
+    ctx.fillStyle=fg;ctx.fillRect(fx,fyT,fw,fh);
+    /* шов морозилки и ручки */
+    ctx.fillStyle="rgba(60,70,78,.9)";ctx.fillRect(fx+1,fyT+fh*.32,fw-2,1.2);
+    ctx.fillStyle="rgba(90,100,108,.95)";ctx.fillRect(fx+fw-6,fyT+6,2,fh*.18);ctx.fillRect(fx+fw-6,fyT+fh*.40,2,fh*.30);
+    /* табло: зелёное — кормит, красное — заперт */
+    const on=lock?[230,70,60]:[120,220,150],a=(.5+lit*.5).toFixed(2);
+    ctx.fillStyle="rgba(20,26,30,.95)";ctx.fillRect(fx+4,fyT+fh*.44,fw*.42,6);
+    ctx.fillStyle="rgba("+on.join(",")+","+a+")";ctx.fillRect(fx+5,fyT+fh*.44+1.5,fw*.42-2,3);
+    if(lock){   /* навесной замок на ручке */
+      const lx=fx+fw-5,ly=fyT+fh*.58;
+      ctx.strokeStyle="rgba(150,140,110,.95)";ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(lx,ly-2,2.6,Math.PI,0);ctx.stroke();
+      ctx.fillStyle="rgba(170,150,90,.98)";ctx.fillRect(lx-3.5,ly-2,7,6);
+    }
+  }
+};
+BUILD_KEYS.push("fridge","fridgesub");   /* список меню собран в 21a раньше этого файла */
+/* ── ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 в бою (M487) ──
+   Прибор по подписке заблокирован, а вокруг бой: подсказка предлагает продлить
+   сейчас, втридорога, одним нажатием ДЕЙСТВИЯ. Не в бою — это делает станция */
+function subFightOffer(actEdge){
+  if(!G.engaged||typeof instrKit!=="function")return false;
+  const K=instrKit();let id=null;
+  for(const k in K)if(subOff(K[k])){id=k;break;}
+  if(!id)return false;
+  const fee=subFee(K[id])*3,nm=INSTR_BY_ID[id]?INSTR_BY_ID[id].ru:id;
+  if(G.credits<fee){cue("«"+nm+"» ЗАБЛОКИРОВАН · ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 · "+fee+" КР — НЕ ХВАТАЕТ",CUE_INFO);return false;}
+  if(cue("ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3\n«"+nm+"» заблокирован · "+fee+" кр\nДЕЙСТВИЕ — ПРОДЛИТЬ СЕЙЧАС",CUE_ACT)&&actEdge){
+    if(subRush(id))say("«"+nm+"» РАЗБЛОКИРОВАН · СПАСИБО, ЧТО ВЫ С НАМИ",90);
+  }
+  return true;
 }
 
 /* ══════════════ база на видеокарте (G11) ══════════════
@@ -86499,7 +87026,7 @@ function enterBelt(){
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   if(typeof farReadShow==="function")farReadShow(farHere("belt"));   /* залежь — табличкой прибора, шкалой (D12) */
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
-    (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
+    (beltIcy(B)?" · и кристаллы льда":"")+   /* в строку руды: на телефоне #msg — три строки, четвёртая выталкивала «обзор» */
     (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
       :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
 }
@@ -86707,8 +87234,9 @@ function updateBelt(dt){
   if(best!==b.lock)b.prog=0;
   b.lock=best;b.beam=0;
   const dbtn=document.getElementById("dronebtn");
-  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить */
-  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
+  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить; на дальнее
+     второго-третьего пояса — тоже (§9, droneMayMine) */
+  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0&&droneMayMine(best.res)){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
 
   /* контакт с камнем перекрывает разговоры о прицеле: пока борт скребёт
@@ -89001,7 +89529,7 @@ function ckgFrame(T,P,FS,b,proj,st,m){
   const tx=g.tx,pad=g.pad;
   if(b.lock){
     const dd=Math.hypot(b.lock.x-b.x,b.lock.y-b.y,b.lock.z-b.z)-b.lock.r,far=dd>CUT_RANGE;
-    ckT(tx,pad+12*FS,RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,fnt(12),RES[b.lock.res].col);
+    ckT(tx,pad+12*FS,RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,fnt(12),resTxt(b.lock.res));
     ckT(tx,pad+24*FS,Math.round(dd)+" М"+(far?"   ДАЛЕКО":""),fnt(8),far?"rgba(255,107,87,.9)":"rgba(93,115,130,.9)");
     ovRect(tx,pad+30*FS,tx+104,pad+30*FS+4,"rgba(255,255,255,.08)");
     ovRect(tx,pad+30*FS,tx+104*clamp(b.prog,0,1),pad+30*FS+4,"#f2b25c");
@@ -95716,6 +96244,33 @@ function stationNewsLines(){
     typeof secLine==="function"&&secLine,typeof cultLine==="function"&&cultLine])if(f)add(f());
   return L;
 }
+/* ── заход = станция и смена, а не стыковка (§12) ──
+   Потолки «на заход» (норма топлива ГЛАВТРАССЫ, пошлина Компании, обмен бонов, прилавок
+   кооператива) сбрасывались на каждой стыковке: отстыковался, пристыковался — и снова
+   20 топлива по 1 кр, 40 бон, 60/150 по цене артели. Теперь заход — пара (станция,
+   holdShift()): повторная стыковка в ту же смену продолжает тот же заход, и остатки
+   потолков возвращаются из записи холдинга станции, которая и так в сейве */
+function visitOpen(sys){
+  if(!sys||!sys.key||typeof holdOf!=="function")return true;
+  const H=holdOf(sys.key),sh=holdShift(),V=H.vis;
+  if(V&&V.sh===sh){
+    if(typeof LAW_NORM_LEFT!=="undefined")LAW_NORM_LEFT=V.norm|0;
+    if(typeof scripVisit!=="undefined")scripVisit=V.scrip|0;
+    const C=typeof coopRec==="function"?coopRec():null;
+    if(C)C.visit={key:sys.key,bought:V.cb||{}};
+    return false;
+  }
+  H.vis={sh};
+  return true;
+}
+function visitClose(sys){
+  if(!sys||!sys.key||typeof holdOf!=="function")return;
+  const V=holdOf(sys.key).vis;if(!V||V.sh!==holdShift())return;
+  V.norm=typeof LAW_NORM_LEFT!=="undefined"?LAW_NORM_LEFT:0;
+  V.scrip=typeof scripVisit!=="undefined"?scripVisit:0;
+  const C=typeof coopRec==="function"?coopRec():null;
+  V.cb=C&&C.visit&&C.visit.key===sys.key?C.visit.bought:{};
+}
 function openStation(){const fi=FRAME_IN;FRAME_IN=false;try{openStationBody();}finally{FRAME_IN=fi;}}
 function openStationBody(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
@@ -95723,11 +96278,14 @@ function openStationBody(){
   if(typeof cosmChimePlay==="function")cosmChimePlay();   /* свой сигнал стыковки (M344) */
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   if(typeof railSealDock==="function")railSealDock();   /* пломбу снимает инспектор (M508) */
-  if(typeof lawDock==="function")lawDock();
+  const fresh=visitOpen(G.sys);   /* повторная стыковка в ту же смену — тот же заход (§12) */
+  if(fresh&&typeof lawDock==="function")lawDock();
   if(typeof socDock==="function")socDock();   /* обязанности и льготы обществ (M512) */   /* закон земли: норма, пошлина (M456) */
   if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
-  scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
-  if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
+  if(fresh){
+    scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
+    if(typeof coopVisitReset==="function")coopVisitReset();   /* потолок прилавка — на заход (12aj, M351) */
+  }
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
   if(typeof parrotDock==="function")parrotDock(G.sys);
@@ -95897,6 +96455,7 @@ function repairCost(){
 }
 function closeStation(){
   if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
+  visitClose(G.sys);   /* остатки потолков захода — в запись станции (§12) */
   if(typeof folkLeave==="function")folkLeave();   /* свои остались на станции (12u-folk) */
   /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
      на прилавке — и тогда его покупает кто-то другой */
@@ -96129,7 +96688,7 @@ function shipRow(id,S){
   r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"» <span style='color:var(--dim)'>"+
     S.cls+"</span></b><s>"+(T?"<b style='color:"+T.col+"'>"+T.ru.toUpperCase()+"</b> — "+T.note+"<br>":"")+
     S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
-    " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"</s>"));
+    " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"<br>"+abilCardLine(id,S)+"</s>"));
   if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
   else{
     /* цена корпуса с поправкой на то, как к вам тут относятся (12k-rep) */
@@ -96365,7 +96924,7 @@ function renderTabBody(){
     $body.appendChild(el("div","sec","ОБМЕН НА РЕСУРСЫ — БЕЗ ДЕНЕГ, ТОЛЬКО ГРУЗ ИЗ ТРЮМА"));
     for(const k in BARTER){
       const item=BARTER[k],done=G.barter.has(k);
-      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+RES[rk].col+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
+      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+resTxt(rk)+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
       const have=Object.keys(item.cost).every(rk=>G.cargo[rk]>=item.cost[rk]);
       const r=el("div","row");
       r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+item.ru+"</b><s>"+item.note+"<br>"+costTxt+"</s>"));
@@ -97208,7 +97767,7 @@ function renderSiteTab(){
       for(const k in def.makes){
         const have=Math.floor(B.got[k]||0),price=srcPrice(sys,k);
         const rr=el("div","row");
-        rr.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+" в запасе: "+have+"</b><s>по "+price+" кр — 0.7 цены · копится до "+
+        rr.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+" в запасе: "+have+"</b><s>по "+price+" кр — 0.7 цены · копится до "+
           def.makes[k]*B.lvl*HOLD_CAP_SHIFTS*holdCapMul(sys.key)+"</s>"));
         const free=Math.max(0,stat().cargoMax-held()),can=Math.min(have,free,Math.floor(G.credits/price));
         const b=el("button","act"+(can?" gold":""),can?"ВЗЯТЬ ×"+can:"НЕЧЕГО");
@@ -97225,7 +97784,7 @@ function renderSiteTab(){
         const want=Math.min(have,bldWant(sys,k));
         const price=RES[k].ind?indPrice(k):marketFor(sys)[k];
         const rr=el("div","row");
-        rr.appendChild(el("div","nm","<b>Сдать в цех: <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+"</span> ×"+have+"</b><s>"+
+        rr.appendChild(el("div","nm","<b>Сдать в цех: <span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+"</span> ×"+have+"</b><s>"+
           (want?"возьмёт "+want+" по "+price+" кр · за вами запишут "+Object.keys(def.makes).map(kk=>RES[kk].ru.toLowerCase()).join(", "):"бункер полон — приходите через смену")+"</s></div>"));
         const b=el("button","act"+(want?" gold":""),"СДАТЬ");
         b.disabled=!want;
@@ -97240,7 +97799,7 @@ function renderSiteTab(){
       const got=Object.keys(B.got).filter(k=>Math.floor(B.got[k])>0);
       const cap=Object.keys(def.makes).map(k=>RES[k].ru.toLowerCase()+" до "+def.makes[k]*B.lvl*HOLD_CAP_SHIFTS*holdCapMul(sys.key)).join(", ");
       const rr=el("div","row");
-      rr.appendChild(el("div","nm","<b>Ваш пай: "+(got.length?got.map(k=>"<span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k])+"</span>").join(", "):"пока ничего")+
+      rr.appendChild(el("div","nm","<b>Ваш пай: "+(got.length?got.map(k=>"<span style='color:"+resTxt(k)+"'>"+RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k])+"</span>").join(", "):"пока ничего")+
         "</b><s>лежит здесь под вашим именем · "+cap+" · дальше — ничьё</s></div>"));
       const b=el("button","act"+(got.length?" gold":""),"ЗАБРАТЬ");
       b.disabled=!got.length;
@@ -97550,7 +98109,7 @@ function stTabMarket(st){
       const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
       if(RES[k].far)tg+=fv?" · "+fv[0]+": "+fv[1]:(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
+      r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
       r.appendChild(el("div","qt",q+"<s>"+Math.round(Q.revenue).toLocaleString("ru")+" кр</s>"));
       const b=el("button","act"+(Q.nA?" gold":""),"ПРОДАТЬ");
@@ -97577,7 +98136,7 @@ function stTabMarket(st){
     {const S=(typeof farStall==="function")?farStall(G.sys):null;
       if(S&&S.left){
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b>ИЗ ДАЛИ · <span style='color:"+RES[S.k].col+"'>"+RES[S.k].ru+"</span> ×"+S.left+
+        r.appendChild(el("div","nm","<b>ИЗ ДАЛИ · <span style='color:"+resTxt(S.k)+"'>"+RES[S.k].ru+"</span> ×"+S.left+
           "</b><s>"+S.ask.toLocaleString("ru")+" кр/ед · привезли с кромки, партия до конца трёх суток · «дорого, зато не лететь»</s>"));
         r.appendChild(el("div","qt",S.ask.toLocaleString("ru")+"<s>кр</s>"));
         const b=el("button","act","КУПИТЬ 1");
@@ -97599,7 +98158,7 @@ function stTabMarket(st){
         const q=G.cargo[k];if(!q)continue;
         const r=el("div","row");
         /* сперва «зачем», потом «откуда»: игрок и так знает, где это взял */
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+        r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
           (RES[k].use?RES[k].use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
@@ -97612,7 +98171,7 @@ function stTabMarket(st){
         const q=G.cargo[k];if(!q)continue;
         const e=(typeof holdNearestEater==="function")?holdNearestEater(k):null;
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+        r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
           (e?(e.d?"едят на «"+e.name+"» · "+e.d+" "+pl3(e.d,"прыжок","прыжка","прыжков"):"едят здесь — вкладка СТРОЙКА"):"едока пока нет — поставьте цех, который это ест")+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
@@ -97621,7 +98180,7 @@ function stTabMarket(st){
     $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
     for(const k of TRADE_KEYS){
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b>"));
+      r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b>"));
       r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
       $body.appendChild(r);
     }
@@ -97883,10 +98442,47 @@ function stapelClosedWhy(by){
 function stapelReady(){const o=stapelAll().o;return !!(o&&now()>=o.ready);}
 /* раз в минуту: готово — строка в почте, один раз */
 function stapelTick(){
+  yardFirmware();
   const o=stapelAll().o;
   if(!o||o.told||now()<o.ready)return;
   o.told=1;
   logAdd("good","ПОЧТА · извещение: корпус со стапеля «"+o.st+"» ("+o.sx+":"+o.sy+") — получить в окне Космопочты на любой станции или на самом стапеле · хранится "+(typeof KP_KEEP==="number"?KP_KEEP:30)+" сут.");
+}
+/* ── привычки верфей в деле (M480, shipyard §4) — только на заказанном корпусе ── */
+/* заказ, из которого выведен корабль под игроком, — или null */
+function stapelMine(){
+  for(const o of stapelAll().done)if(stapelId(o)===G.shipId)return o;
+  return null;
+}
+/* Рассвет: «ремонт из хлама» — сбитый рядом даёт обшивку, 6 % корпуса за обломок */
+const YARD_DEBRIS=.06,YARD_DEBRIS_R=600;
+function yardDebris(p){
+  const o=stapelMine();if(!o||o.by!=="ra"||!p||!G.ship)return 0;
+  if(Math.hypot(p.x-G.ship.x,p.y-G.ship.y)>YARD_DEBRIS_R)return 0;
+  const hm=stat().hullMax,add=Math.min(hm-G.hull,Math.round(hm*YARD_DEBRIS));if(add<=0)return 0;
+  G.hull+=add;
+  logAdd("tech","Рассвет: обшивку подлатали с обломка «"+(p.name||"")+"» · корпус +"+add+" · «на соплях, но держит»");
+  return add;
+}
+/* Хай-Фронт: «прошивка обновляется сама» — раз в сводку одна вещь плана встаёт
+   на другую свободную клетку палубы. Номер сводки — в самом заказе (o.fw) */
+function yardFirmware(){
+  const o=stapelMine();if(!o||o.by!=="hf"||typeof chronNow!=="function"||typeof draftOf!=="function")return false;
+  const c=chronNow();if(o.fw===undefined){o.fw=c;return false;}
+  if(c<=o.fw)return false;o.fw=c;
+  const d=draftOf(G.shipId),D=G.draft&&G.draft[G.shipId],weld=(D&&D.weld)||[];
+  const L=d.items.filter(it=>weld.indexOf(it.key)<0);if(!L.length||!d.hold.length)return false;
+  const it=L[(hashi(o.no|0,c,0x4F1)>>>0)%L.length],old=it.cells;
+  const free=d.hold.slice().sort((a,b)=>(hashi(a.i,a.j,c)>>>0)-(hashi(b.i,b.j,c)>>>0));
+  for(const q of free){
+    if(kbPlace(d,it,q)!=="")continue;
+    /* освободившиеся клетки палубы уходят в трюм, как в КБ */
+    for(const x of old)if(it.cells.indexOf(x)<0&&(x.kind==="deck"||x.kind==="spine"))d.hold.push(x);
+    draftSave(G.shipId,d);if(typeof invalidateParts==="function")invalidateParts();
+    logAdd("tech","Хай-Фронт: обновление установлено · переставили «"+(it.what==="mod"?(MODS[it.kind]?MODS[it.kind].ru:it.kind):(PART_KINDS[it.kind]?PART_KINDS[it.kind].ru:it.kind))+"» на новую клетку · «так удобнее»");
+    return true;
+  }
+  return false;
 }
 /* забрать на той же верфи */
 function stapelCollect(viaPost){
@@ -105787,10 +106383,30 @@ function kbMoved(){
 const PLAN_DENS={he3:{k:"en",ru:"КОТЁЛ",step:.12,what:"энергия"},palladium:{k:"see",ru:"ПРИБОРЫ",step:.06,what:"обзор"},
   osmium:{k:"hull",ru:"БРОНЯ",step:.08,what:"корпус"},magdust:{k:"sh",ru:"ЩИТ",step:.12,what:"щит"}};
 const PLAN_DENS_MAX=3,PLAN_WELD_MAX=2,PLAN_WELD_FEE=800;
+/* ── встроенное верфью (M480, shipyard §4): клетка, которой не нужна вещь ──
+   Только на заказанных корпусах (стапель, "sp…"), как и весь характер верфей:
+   Хай-Фронт — «дальний захват», прибор в носовой трети, обзор на ступень;
+   Орднунг — «лобовой щит в комплекте» на носовой обшивке (его число — та же
+   носовая броня +8 % в STAPEL_YARD, клетка её показывает). Встроенное не снимают
+   и не двигают; клетку выбирает верфь — самую носовую из тех, что упаковщик не занял */
+const KB_FREE={
+  hf:{ru:"дальний захват",ab:"ПР",ok:q=>q.nose3,note:"прибор в носу даром · обзор на ступень"},
+  or:{ru:"лобовой щит",ab:"ЩТ",ok:q=>q.kind==="nose",note:"щит в комплекте · носовая броня"}
+};
+function kbFreeBy(id){
+  if(!/^sp\d/.test(String(id)))return null;
+  const sh=G.uniqueShips&&G.uniqueShips[id];
+  return sh&&KB_FREE[sh.by]?sh.by:null;
+}
 function planDensOf(id){const D=G.draft&&G.draft[id];return (D&&D.dens)||null;}
 function planDens(){
-  const d=planDensOf(G.shipId),o={en:1,see:1,hull:1,sh:1};if(!d)return o;
+  const d=planDensOf(G.shipId),o={en:1,see:1,hull:1,sh:1};if(!d)return planDensFree(o);
   for(const g in PLAN_DENS){const n=d[g]|0;if(n)o[PLAN_DENS[g].k]=1+PLAN_DENS[g].step*n;}
+  return planDensFree(o);
+}
+/* обзор с «дальним захватом» Хай-Фронта — ступень палладия сверху, без груза */
+function planDensFree(o){
+  if(kbFreeBy(G.shipId)==="hf")o.see*=1+PLAN_DENS.palladium.step;
   return o;
 }
 function planMods(mods){
@@ -105856,18 +106472,27 @@ function draftOf(id){
   const P=planOf(id),pk=planPack(id,G.fit[id]||{},G.mods||{});
   const D=draftAll()[id],items=[];
   const cellAt=(i,j)=>P.cells.find(q=>q.i===i&&q.j===j)||null;
+  /* встроенное верфью (M480): самая носовая подходящая клетка вне упаковщика, ближе к оси */
+  let free=null;const fb=kbFreeBy(id);
+  if(fb){
+    const pu=new Set();for(const it of pk.items)for(const q of it.cells)pu.add(q.i+","+q.j);
+    const mid=(P.cols-1)/2,c=P.cells.filter(q=>!pu.has(q.i+","+q.j)&&KB_FREE[fb].ok(q))
+      .sort((a,b)=>a.i-b.i||Math.abs(a.j-mid)-Math.abs(b.j-mid));
+    if(c.length)free={by:fb,q:c[0]};
+  }
   for(const it of pk.items){
     const key=(it.what==="mod"?"m":"p")+(it.what==="mod"?it.kind:it.slot);
     const saved=D&&D.it&&D.it[key];
     let cells=it.cells;
-    if(saved&&saved.length===it.need){const c=saved.map(x=>cellAt(x[0],x[1]));if(c.every(Boolean))cells=c;}
+    if(saved&&saved.length===it.need){const c=saved.map(x=>cellAt(x[0],x[1]));if(c.every(Boolean)&&!(free&&c.indexOf(free.q)>=0))cells=c;}
     items.push({...it,key,cells});
   }
   const used=new Set();for(const it of items)for(const q of it.cells)used.add(q);
+  if(free)used.add(free.q);
   let hold;
   if(D&&D.hold)hold=D.hold.map(x=>cellAt(x[0],x[1])).filter(q=>q&&!used.has(q));
   else hold=P.cells.filter(q=>!used.has(q)&&(q.kind==="deck"||q.kind==="spine"));
-  return {P,items,hold};
+  return {P,items,hold,free};
 }
 function draftSave(id,d){
   const it={};for(const x of d.items)it[x.key]=x.cells.map(q=>[q.i,q.j]);
@@ -105891,6 +106516,7 @@ function kbPlace(d,it,q,turn){
   const R=kbRule(it);
   if(R&&!R.ok(q))return R.no;
   const busy=new Set();for(const x of d.items)if(x!==it)for(const c of x.cells)busy.add(c);
+  if(d.free)busy.add(d.free.q);   /* встроенное верфью не уступает клетку */
   if(busy.has(q))return "клетка занята";
   /* форма вещи от клетки-якоря (M477): 2 — в линию, как повёрнута; 4 — квадрат */
   const cells=[];
@@ -105908,7 +106534,7 @@ function kbPlace(d,it,q,turn){
 }
 function kbNums(d){
   const used=d.items.reduce((a,x)=>a+x.cells.length,0),st=stat(),F=planFactors();
-  return {cells:used+d.hold.length,cargo:st.cargoMax,fuel:st.fuelMax,energy:st.energyMax,mass:F.mass};
+  return {cells:used+d.hold.length+(d.free?1:0),cargo:st.cargoMax,fuel:st.fuelMax,energy:st.energyMax,mass:F.mass};
 }
 /* полоска чисел (§8): каждое — цветом разницы с чертежом, каким он был на входе в КБ */
 function kbNumbers(d){
@@ -105947,6 +106573,9 @@ function kbRender(){
     b.onclick=()=>{KB.sel=KB.sel===k?null:k;KB.msg="";kbRender();};
     tray.appendChild(b);
   });
+  if(d.free){const F=KB_FREE[d.free.by],b=document.createElement("button");b.className="act kb-it dim";
+    b.innerHTML="<i style='background:#dce8f4'></i>"+capRu(F.ru)+"<s>встроено верфью</s>";
+    b.onclick=()=>{KB.msg="«"+F.ru+"» — "+F.note+" · не снимается";kbRender();};tray.appendChild(b);}
   w.querySelectorAll(".kb-p").forEach(b=>b.onclick=()=>{kbProjSwitch(+b.dataset.k);kbRender();});
   /* лоток из трюма (§8): части, что лежат в инвентаре; тап при взятой вещи того же рода — замена на том же месте */
   const inv=w.querySelector(".kb-inv"),selIt=KB.sel!=null?d.items[KB.sel]:null;
@@ -106005,7 +106634,11 @@ function kbRender(){
   w.querySelector(".kb-done").onclick=kbDone;
 }
 function kbTap(i,j){
+  /* утильсбор (M513): своя верфь не перечерчивает корпус на транзитных номерах */
+  if(typeof regPending==="function"&&regPending(KB.id)&&kbYard()===playerFlag()){
+    KB.msg="своя верфь не перечерчивает: корпус не на учёте · «сначала номера, потом чертёж»";kbRender();return;}
   const d=KB.d,q=d.P.cells.find(c=>c.i===i&&c.j===j);if(!q)return;
+  if(d.free&&q===d.free.q){const F=KB_FREE[d.free.by];KB.msg="встроено верфью · «"+F.ru+"» — "+F.note+" · не снимается";kbRender();return;}
   const owner=d.items.findIndex(x=>x.cells.indexOf(q)>=0);
   if(KB.sel!=null){
     const it=d.items[KB.sel];
@@ -106065,6 +106698,13 @@ function kbDraw(c,s,d){
   for(const q of d.hold){c.fillStyle="rgba(80,190,110,.24)";c.fillRect(q.j*s+3,q.i*s+3,s-6,s-6);
     c.save();c.beginPath();c.rect(q.j*s+3,q.i*s+3,s-6,s-6);c.clip();
     for(let k=-s;k<s;k+=6){c.beginPath();c.moveTo(q.j*s+k,q.i*s);c.lineTo(q.j*s+k+s,q.i*s+s);c.stroke();}c.restore();}
+  /* встроенное верфью: белёсый оттиск с пунктиром, как на синьке — тише охряных рамок вещей,
+     его не берут в руки */
+  if(d.free){const q=d.free.q;
+    c.fillStyle="rgba(214,228,242,.15)";c.fillRect(q.j*s+6,q.i*s+6,s-12,s-12);
+    c.strokeStyle="rgba(232,240,255,.95)";c.lineWidth=1.2;c.setLineDash([3,2]);c.strokeRect(q.j*s+3.5,q.i*s+3.5,s-7,s-7);c.setLineDash([]);
+    c.fillStyle="#dce8f4";c.font="bold "+Math.max(9,Math.floor(s*.22))+"px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+    c.fillText(KB_FREE[d.free.by].ab,q.j*s+s/2,q.i*s+s/2);}
   d.items.forEach((it,k)=>{
     const on=KB.sel===k;
     for(const q of it.cells){

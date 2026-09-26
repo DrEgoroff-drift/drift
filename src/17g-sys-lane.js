@@ -49,7 +49,11 @@ function sysLane(sys){
     const d=LANE_DOCK+i*LANE_GAP;if(d>L-80)break;
     for(const s of [-1,1])buoys.push({x:st.x+ux*d-uy*LANE_W*s,y:st.y+uy*d+ux*LANE_W*s,i});
   }
-  const r=rng((sys.seed^0x1A4E)>>>0),by=st.by||(typeof makerBySeed==="function"?makerBySeed(sys.seed):"gt");   /* как stationMods: полоса могла спросить раньше станции */
+  /* чей голос на подлёте (автор, 27.09): полосу — щит, гостиницу, флот на стоянке, очередь —
+     одевает хозяин земли (stampOwnerAt), как законы и печати; строитель виден только в
+     корпусе самой станции (M454). Ничьей земли нет — тогда строитель */
+  const builder=st.by||(typeof makerBySeed==="function"?makerBySeed(sys.seed):"gt");   /* как stationMods: полоса могла спросить раньше станции */
+  const r=rng((sys.seed^0x1A4E)>>>0),by=(typeof stampOwnerAt==="function"&&stampOwnerAt(sys.sx,sys.sy))||builder;
   /* очередь — только у людной станции; сбоку от полосы, чтобы не стоять на ней */
   const qn=life<.45?0:Math.min(LANE_Q_MAX,Math.round(2+(life-.45)/.55*4));
   const side=r()<.5?-1:1;

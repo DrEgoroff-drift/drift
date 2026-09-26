@@ -32,7 +32,7 @@ TEST_SUITES.push(()=>suite("первый час: четыре строки, ка
   G.mode="surface";G.credits=200;G.surf={x:500,shipX:100,deposits:[{x:520}]};
   firstTick();
   ok(firstSaid("dig"),"у залежи и без денег сказали копать");
-  eq(firstAll().length,4,"всего четыре, и больше не будет");
+  eq(firstAll().filter(k=>FIRST_BY[k]).length,4,"всего четыре, и больше не будет");   /* жетон замполита (§9) — не строка эфира */
 }));
 TEST_SUITES.push(()=>suite("первый час: сказанное не повторяется после загрузки",()=>{
   resetWorld();

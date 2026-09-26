@@ -2,14 +2,20 @@
 function marketFor(sys){
   const base=sys.station.prices;
   let m=G.market[sys.key];
-  if(!m){m={pressure:{},t:G.t};G.market[sys.key]=m;}
+  if(!m){m={pressure:{},t:now()};G.market[sys.key]=m;}
   if(!m.ask)m.ask={};   /* наценка прилавка от ваших покупок (M289) — живёт в той же записи */
-  const secs=Math.max(0,(G.t-m.t)/60);
+  /* по часам мира (now), а не по G.t (аудит 4.09, A4): G.t в сейв не идёт и после
+     загрузки начинался с нуля — давление стояло, пока новая сессия не догонит старую
+     метку, а за ночь вне игры рынок не отдыхал вовсе. Метка старого сейва (кадры G.t,
+     число меньше 1e11) — просто «сейчас», без броска: выгоды из перехода не будет */
+  const tn=now();
+  if(!(m.t>1e11))m.t=tn;
+  const secs=Math.max(0,(tn-m.t)/1000);
   if(secs>0){
     const decay=Math.pow(.5,secs/10800);   /* давление держится часами, а не полчаса (M152e): дальше лететь выгоднее, чем туда-сюда */
     for(const k of TRADE_KEYS){m.pressure[k]=(m.pressure[k]||0)*decay;if(m.ask[k])m.ask[k]*=decay;}
     for(const k of FAR_KEYS)if(m.pressure[k])m.pressure[k]*=decay;   /* дальние (M467) — то же давление */
-    m.t=G.t;
+    m.t=tn;
   }
   const prices={},C=marketCtx(sys,m);
   for(const k of TRADE_KEYS)prices[k]=marketPriceCtx(sys,C,k,0);
@@ -116,13 +122,31 @@ function marketCtx(sys,m){
    M290): складывается с давлением, а не множится поверх нужды и монополии,
    и потолок 1.8 остаётся потолком. Занятая система: скупщик один, и он знает,
    что деваться некуда */
+/* множители-события (§12): нужда, монополия, экспедиция, занятость, шпион — каждый
+   по отдельности честен, но они перемножались, и вместе с блокадой еда в нужде шла
+   ×3.1. Теперь нужда отдельно (с ней блокада берётся по большему, а не поверх),
+   остальное — отдельно, и всё вместе не выше PRICE_EV_CAP */
+const PRICE_EV_CAP=2.2;
+function priceParts(sys,C,k){
+  return {need:(C.N&&C.N.k===k?NEED_MUL:1),
+    rest:C.boost*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
+      /* шпион (M387): цены на этой станции врут по каждому
+         товару в свою сторону — и врут обеим сторонам прилавка */
+      (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)};
+}
 function marketPriceCtx(sys,C,k,add){
-  const base=sys.station.prices;
-  return Math.max(1,Math.round(base[k]*C.mul*C.boost*(C.N&&C.N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
-                               /* шпион (M387): цены на этой станции врут по каждому
-                                  товару в свою сторону — и врут обеим сторонам прилавка */
-                               (typeof secSpyMul==="function"?secSpyMul(k,sys.sx,sys.sy):1)*
+  const base=sys.station.prices,P=priceParts(sys,C,k);
+  return Math.max(1,Math.round(base[k]*C.mul*Math.min(PRICE_EV_CAP,P.need*P.rest)*
                                clamp(1+(C.m.pressure[k]||0)+(add||0),.4,1.8)));
+}
+/* блокада (M498) платит вдвое за еду, воду, топливо — но не поверх нужды: берётся
+   большее из двух, и под тем же потолком. Отдаёт множитель к уже посчитанной выручке */
+function blockEff(sys,k){
+  const bm=typeof blockMul==="function"?blockMul(sys,k):1;if(bm<=1)return 1;
+  marketFor(sys);
+  const P=priceParts(sys,marketCtx(sys,G.market[sys.key]),k);
+  const was=Math.min(PRICE_EV_CAP,P.need*P.rest);
+  return was>0?Math.min(PRICE_EV_CAP,Math.max(P.need,bm)*P.rest)/was:1;
 }
 function marketPrice(sys,k,add){
   marketFor(sys);   /* давление досчитано, запись есть */
@@ -167,7 +191,7 @@ function sellCargo(sys,k,qty){
   /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
      двигает только то, чего никто не съел */
   Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
-  if(typeof blockMul==="function")Q.revenue*=blockMul(sys,k);   /* блокада платит вдвое за еду, воду, топливо (M498) */
+  Q.revenue=Math.round(Q.revenue*blockEff(sys,k));   /* блокада платит вдвое за еду, воду, топливо (M498) — не поверх нужды (§12) */
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
@@ -181,9 +205,12 @@ function sellCargo(sys,k,qty){
   return revenue;
 }
 function sellDroneYield(sys,k,qty){
-  const price=marketFor(sys)[k],revenue=qty*price;
+  const price=droneSellPrice(sys,k),revenue=qty*price;
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
+  /* привоз дрона — тоже привоз: нужда ×2 закрывается им, как и вашим (§12) — иначе
+     дрон в системе с нуждой сдавал вдвое всё окно */
+  if(qty>0&&typeof needClose==="function")needClose(sys,k);
   return revenue;
 }
 
@@ -246,14 +273,31 @@ function droneMarket(d){
     const S=seen[key];if(!S||!S.p||S.p[d.res]==null)continue;
     const dist=Math.max(Math.abs(S.sx-d.sx),Math.abs(S.sy-d.sy));
     if(dist>R)continue;
-    const v=S.p[d.res]*(1-.08*dist);
-    if(v>bv*1.1){const s=getSystem(S.sx,S.sy);if(s&&s.station){bv=v;best=s;}}
+    /* выбирает по той же цене, по какой сдаст (§12) */
+    const s=getSystem(S.sx,S.sy);if(!s||!s.station)continue;
+    const v=droneSellPrice(s,d.res)*(1-.08*dist);
+    if(v>bv*1.1){bv=v;best=s;}
   }
   const was=d.mkt&&d.mkt.key;
   d.mkt={key:best.key,sx:best.sx,sy:best.sy,name:best.station.name,day};
   if(perk&&best!==near&&was!==best.key)mgrSay(m,droneName(d)+" сдаёт на «"+best.station.name+"»: там дороже");
   return best;
 }
+/* цена сдачи дрона (§12): виденная вами у этой станции — дрон выбирает рынок по ней и по
+   ней же сдаёт (было: выбирал по виденной, сдавал по живой). Виденная годна DRONE_SEEN_DAYS
+   суток мира (сутки — минута игры): старая запись — чаще всего нужда ×2, которую давно
+   закрыли, и по ней дроны кормились бы вечно. Нет свежей — живая цена */
+const DRONE_SEEN_DAYS=30;
+function droneSellPrice(sys,k){
+  const S=G.seenPrices&&G.seenPrices[sys.key];
+  const p=(S&&S.p&&S.p[k]!=null&&celDay()-(S.day|0)<=DRONE_SEEN_DAYS)?Math.max(1,S.p[k]|0):marketFor(sys)[k]|0;
+  return RES[k]&&RES[k].far?Math.max(1,Math.round(p*DRONE_FAR_MUL)):p;
+}
+/* дальнее сырьё и дроны (§9, M465): точка у дрона бездонная, поэтому дальние товары
+   второго и третьего пояса (band ≥ 25) дрон не берёт вовсе, а первого — сдаёт за
+   полцены пояса: иначе дрон на жиле у края печатал бы деньги, пока игрок спит */
+const DRONE_FAR_MUL=.5;
+function droneMayMine(k){const F=RES[k]&&RES[k].far;return !!RES[k]&&(!F||F.band<=10);}
 function nearestStation(sx,sy){
   for(let rad=0;rad<=24;rad++){
     let best=null,bd=1e9;
@@ -283,7 +327,7 @@ function droneCapacity(k){
 }
 let droneTarget=null;
 function deployDrone(){
-  if(G.droneInventory<=0||!droneTarget)return;
+  if(G.droneInventory<=0||!droneTarget||!droneMayMine(droneTarget))return;
   G.droneInventory--;
   /* адрес точки, а не только системы (M237): дрону теперь есть откуда лететь.
      На грунте это планета, в поясе — кольцо (pi=-1). Без адреса рейса нет. */

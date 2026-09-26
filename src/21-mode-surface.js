@@ -211,6 +211,7 @@ function updateSurface(dt){
   S.x=clamp(S.x,30,tr.W-30);
   /* амплитуда шага плавно нарастает/спадает, а не переключается щелчком —
      фаза копится только пока реально идём, поэтому ноги не дёргаются на кочках */
+  if(S.smena)smenaDeedTick(S);          /* «Смена»: глава — шагом наружу, не посадкой (P15) */
   peepUpdate(dt);                       /* луг помнит свет только пока темно (20c) */
   if(typeof countyNoiseTick==="function")countyNoiseTick(S,dt);   /* город слушает (11l) */
   /* посёлок слышно раньше, чем видно (хвост M109): редкий стук и голос,
@@ -323,7 +324,7 @@ function updateSurface(dt){
   for(const b of S.fauna||[])if(!b.scanned&&Math.abs(b.x-S.x)<34*kitStat().scan)beast=b;
   S.mining=null;
   const dbtn=document.getElementById("dronebtn");
-  if(dep&&G.droneInventory>0){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
+  if(dep&&G.droneInventory>0&&droneMayMine(dep.res)){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
   /* у корабля скафандр перезаряжается — сюда и возвращаются между заходами;
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
@@ -677,27 +678,7 @@ function tickLaunchHold(dt){
    было НИ ОДНОГО хода (17-mode-system зовёт эту же функцию). */
 function evacCost(){return Math.min(4000,Math.round(800+220*Math.hypot(G.sx,G.sy)));}
 function evacFrom(){return (G.surf&&G.surf.p&&G.surf.p.name)||(G.sys&&G.sys.name)||"пустоты";}
-function evacuate(){
-  const from=evacFrom();
-  const cost=evacCost();
-  /* нечем платить — не потеря корабля, а расплата натурой: обшивка, потом
-     трюм (16c-rescue, плейтест 11.09: «игра должна ебать игрока, но выход
-     есть всегда»). totalLoss остался для гибели в бою, не для пустого бака */
-  let paid;
-  if(G.credits>=cost){G.credits-=cost;paid="−"+cost.toLocaleString("ru")+" кр";}
-  else paid="без денег · даром";
-  const dest=nearestStation(G.sx,G.sy);
-  G.sx=dest.sx;G.sy=dest.sy;G.sys=dest;
-  G.fuel=Math.max(G.fuel,Math.min(stat().fuelMax,RESCUE_FUEL));
-  G.ship.x=Math.cos(0)*(dest.station?dest.station.orbit+120:900);
-  G.ship.y=Math.sin(0)*(dest.station?dest.station.orbit+120:900);
-  G.ship.vx=0;G.ship.vy=0;
-  G.mode="system";G.land=null;G.surf=null;
-  saveGame(true);
-  G.ap=null;
-  logAdd("warn","Эвакуация с "+from+" · "+paid+" · переброшены к "+dest.name);
-  say("Буксир\n"+paid+"\nвы в системе "+dest.name+" · станция рядом",180);
-}
+/* evacuate() — эвакуация с грунта — снят (§12): звать было некому, живой путь — 16c-rescue */
 function totalLoss(){
   const pname=evacFrom();
   /* если дом уже есть — возвращаемся туда: смерть перестаёт быть обнулением и
