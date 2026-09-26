@@ -668,7 +668,7 @@ portable save codes.
 
 ## Status
 
-Version 0.468.0. Everything described above is built and playable, online at
+Version 0.469.0. Everything described above is built and playable, online at
 [drift-game.ru](https://drift-game.ru) with accounts and cloud saves, or offline from this file.
 
 Four development passes are behind it. The first finished the planned queue: celestial
