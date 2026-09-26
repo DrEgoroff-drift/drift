@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 641 · символов верхнего уровня: 6560
+Файлов: 641 · символов верхнего уровня: 6568
 
 ## СИМВОЛЫ
 
@@ -424,7 +424,7 @@ ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
 ETH_LO                       src/25l-post-ether.js:26
-EXPO_REAR_WEAR               src/05e-plan.js:221
+EXPO_REAR_WEAR               src/05e-plan.js:216
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
@@ -434,6 +434,7 @@ FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
 FACE_SKIN                    src/12d-mgr-face.js:10
+FAIL_IN                      src/05b1-warranty.js:99
 FAME_N                       src/21b3-base-hunt.js:27
 FARM_HOME                    src/21ac2-base-farm.js:22
 FARM_NAMES                   src/21ac2-base-farm.js:21
@@ -782,6 +783,7 @@ HK_STAIR                     src/17l1-hotel-kosmos.js:22
 HK_WALL                      src/17l1-hotel-kosmos.js:19
 HK_WINS                      src/17l1-hotel-kosmos.js:21
 HK_XL                        src/17l1-hotel-kosmos.js:12
+HOLD_BAR                     src/05b1-warranty.js:80
 HOLD_CAP_SHIFTS              src/12ad-site.js:21
 HOLD_SHIFT                   src/12ab-hold.js:23
 HOLD_SRC_LINES               src/12ah-holdnews.js:39-48
@@ -3148,6 +3150,9 @@ faceEl                       src/27c-ui-hq.js:6-12
 facePath                     src/12d-mgr-face.js:19-28
 faceRnd                      src/12d-mgr-face.js:16
 factPrices                   src/27c-ui-hq.js:587-604
+failRoll                     src/05b1-warranty.js:101
+failShift                    src/05b1-warranty.js:100
+failTick                     src/05b1-warranty.js:102-117
 fameOf                       src/21b3-base-hunt.js:98-102
 fameWhere                    src/21b3-base-hunt.js:103-115
 farBasePrice                 src/12-economy.js:68-72
@@ -3290,7 +3295,7 @@ freeVoice                    src/09-audio.js:104-108
 fuelPriceHere                src/12k-rep.js:63-70
 furColor                     src/20f-fauna.js:25-34
 fuseAffordable               src/03-ships.js:38-41
-fuseCard                     src/26b-ui-station-work.js:342-378
+fuseCard                     src/26b-ui-station-work.js:346-382
 fuseCost                     src/03-ships.js:33-37
 fuseGen                      src/03-ships.js:32
 fusePreview                  src/03-ships.js:46-63
@@ -3818,6 +3823,7 @@ holdAll                      src/12ab-hold.js:35
 holdAmbushMul                src/12ag-holdfx.js:115
 holdArchiveLines             src/12ag-holdfx.js:121-126
 holdArtel                    src/12ag-holdfx.js:94
+holdBar                      src/05b1-warranty.js:81-94
 holdCapMul                   src/12ad-site.js:208
 holdDealList                 src/12ad-site.js:324-346
 holdDeed                     src/12ad-site.js:25-29
@@ -4037,7 +4043,8 @@ instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
 instrShelf                   src/05b-instr-kit.js:43-46
-instrTape                    src/05b1-warranty.js:42-49
+instrTape                    src/05b1-warranty.js:46-57
+instrTapeCan                 src/05b1-warranty.js:45
 instrTrack                   src/25a-instr.js:86-88
 instrTraits                  src/05b-instr-kit.js:56-61
 instrUnit                    src/05b-instr-kit.js:47-51
@@ -4704,6 +4711,9 @@ offerTtl                     src/11ah-offer.js:70
 offerVisit                   src/11ah-offer.js:134-163
 offersAll                    src/11ah-offer.js:75-78
 ok                           tests/90-harness.js:165-169
+oldMasterCan                 src/05b1-warranty.js:128
+oldMasterHere                src/05b1-warranty.js:121-127
+oldMasterSeam                src/05b1-warranty.js:129-134
 opCensus                     tests/91zzzzzt-opis.js:15-21
 openBarge                    src/12l-barge.js:657-666
 openCrewView                 src/27b-ui-crew.js:230-236
@@ -4750,8 +4760,8 @@ opisPartCard                 src/27j-ui-opis.js:590-617
 opisPartHtml                 src/27j-ui-opis.js:568-589
 opisPhone                    src/27j-ui-opis.js:71
 opisPileCard                 src/27j-ui-opis.js:638-659
-opisPlanBlock                src/05e-plan.js:175-195
-opisPlanOnly                 src/05e-plan.js:196-214
+opisPlanBlock                src/05e-plan.js:175-190
+opisPlanOnly                 src/05e-plan.js:191-209
 opisPriceCue                 src/27j-ui-opis.js:619-628
 opisRender                   src/27j-ui-opis.js:748-1023
 opisRerender                 src/27j-ui-opis.js:74-84
@@ -4985,7 +4995,7 @@ planDepthAt                  src/11r-plan.js:28-33
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54-58
 planEtherLine                src/11r-plan.js:43-46
-planExposure                 src/05e-plan.js:222-235
+planExposure                 src/05e-plan.js:217-230
 planFactors                  src/27jb-kb.js:352-363
 planFoot                     src/05e-plan.js:73-76
 planGroundLine               src/11r-plan.js:47-52
@@ -5969,11 +5979,11 @@ stSpin                       src/17c3-station-live.js:50-53
 stSpinCv                     src/17c3-station-live.js:56-62
 stSplit                      src/17c3-station-live.js:20
 stTabBoard                   src/26e-ui-station-trade.js:11-147
-stTabFuse                    src/26b-ui-station-work.js:379
-stTabInstr                   src/26b-ui-station-work.js:228-378
-stTabLab                     src/26b-ui-station-work.js:310-378
+stTabFuse                    src/26b-ui-station-work.js:383
+stTabInstr                   src/26b-ui-station-work.js:228-382
+stTabLab                     src/26b-ui-station-work.js:314-382
 stTabMarket                  src/26e-ui-station-trade.js:148-265
-stTabMods                    src/26b-ui-station-work.js:105-378
+stTabMods                    src/26b-ui-station-work.js:105-382
 stTabYard                    src/26e-ui-station-trade.js:266-411
 stTabsHere                   src/26-ui-station.js:143
 stTypeOf                     src/06-galaxy.js:69
@@ -6090,9 +6100,9 @@ suiteWin                     tests/90-harness.js:94-99
 sunAzQ                       src/19c-light.js:26-29
 sunDirSet                    src/19c-light.js:30-37
 sunSpot                      src/19c-light.js:213-218
-supportCall                  src/05b1-warranty.js:18-24
-supportQueue                 src/05b1-warranty.js:26-31
-supportTick                  src/05b1-warranty.js:32-40
+supportCall                  src/05b1-warranty.js:18-25
+supportQueue                 src/05b1-warranty.js:27-32
+supportTick                  src/05b1-warranty.js:33-42
 surfNight                    src/06a-celest.js:43-50
 surfScale                    src/21e-surface-draw.js:276
 surfaceHint                  src/21e-surface-draw.js:4-20
@@ -6147,8 +6157,6 @@ tapeCan                      src/12s1-tape.js:22
 tapeFree                     src/12s1-tape.js:20
 tapeHold                     src/12s1-tape.js:21
 tapeInit                     src/25b-tape.js:27-31
-tapeInstr                    src/12s1-tape.js:72-84
-tapeInstrIds                 src/12s1-tape.js:68-71
 tapePack                     src/25b-tape.js:34-38
 tapePaper                    src/25b-tape.js:123-201
 tapeRate                     src/25b-tape.js:75-78
@@ -6468,7 +6476,7 @@ warPut                       src/14b-war-net.js:156-161
 warStore                     src/14b-war-net.js:24-29
 warStoreSet                  src/14b-war-net.js:30-36
 warTok                       src/14b-war-net.js:23
-warrantyBlock                src/05b1-warranty.js:51-69
+warrantyBlock                src/05b1-warranty.js:59-77
 warrantyGive                 src/05b1-warranty.js:15
 warrantyOn                   src/05b1-warranty.js:14
 warrantyShift                src/05b1-warranty.js:13
@@ -6635,7 +6643,7 @@ zoomTo                       src/15-input.js:350
 ## src/05b-instr-kit.js · 10 КБ
   · приборы — это товар:1
 
-## src/05b1-warranty.js · 5 КБ
+## src/05b1-warranty.js · 9 КБ
   · гарантия / техподдержка / изолента (M495, DESIGN-birchpunk §4.1):1
 
 ## src/05b2-scars.js · 3 КБ
@@ -7111,7 +7119,7 @@ zoomTo                       src/15-input.js:350
 ## src/12s-wear.js · 14 КБ
   · корабль стареет:1
 
-## src/12s1-tape.js · 5 КБ
+## src/12s1-tape.js · 4 КБ
   · изолента (M486, DESIGN-birchpunk §2):1
 
 ## src/12t-settle.js · 28 КБ

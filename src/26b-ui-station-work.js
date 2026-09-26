@@ -259,6 +259,10 @@ function stTabInstr(){
         b.onclick=()=>{if(instrFix(id))renderTab();};
         r.appendChild(b);
       }else r.appendChild(el("div","nm","<s>выверен</s>"));
+      if(typeof oldMasterCan==="function"&&oldMasterCan(u)){   /* шов старого мастера (M495) */
+        const mb=el("button","act sm","СТАРЫЙ МАСТЕР · ДАРОМ");mb.title="перешьёт замотанное; гарантию не вернёт";
+        mb.onclick=()=>{if(oldMasterSeam(id))renderTab();};r.appendChild(mb);
+      }
       if(typeof subOff==="function"&&subOff(instrUnit(id))){   /* заблокирован подпиской (M487) */
         const fee=subFee(instrUnit(id))*3,xb=el("button","act gold","ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 · "+fee+" КР");
         xb.disabled=G.credits<fee;xb.onclick=()=>{if(subRush(id))renderTab();};r.appendChild(xb);

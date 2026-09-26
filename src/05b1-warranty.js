@@ -20,6 +20,7 @@ function supportCall(id){
   const until=now()+(1+Math.floor(rnd()*3))*warrantyShift();
   u.ts={q:37,t0:now(),until};
   etherLine("Ваш звонок очень важен для нас. Вы — тридцать седьмой в очереди. ♪ ♪ ♪","Техподдержка");
+  holdBar();
   return true;
 }
 /* номер в очереди: тает с временем, а один раз посередине — назад к 41 */
@@ -31,6 +32,7 @@ function supportQueue(u){
 }
 function supportTick(){
   const K=instrKit();
+  failTick(K);
   for(const id in K){const u=K[id];
     if(u.ts&&now()>=u.ts.until){
       u.ts=null;u.wear=0;
@@ -39,12 +41,18 @@ function supportTick(){
   }
 }
 /* изолента на прибор: сейчас, до половины, гарантии конец */
+/* кулибин (M486) мотает даром и так, что не видно: гарантия цела */
+function instrTapeCan(){return typeof tapeRolls==="function"&&(tapeRolls()>0||(typeof tapeFree==="function"&&tapeFree()));}
 function instrTape(id){
   const u=instrUnit(id);
-  if(!instrBroken(u)||typeof tapeRolls!=="function"||tapeRolls()<=0)return false;
-  G.tapeRoll=tapeRolls()-1;u.wear=.5;
-  const had=warrantyOn(u);u.tp=1;u.ts=null;
-  logAdd("tech","«"+(INSTR_BY_ID[id]?INSTR_BY_ID[id].ru:id)+"» замотан изолентой · работает вполсилы"+(had?" · гарантия аннулирована: обнаружены следы изоленты":""));
+  if(!instrBroken(u)||!instrTapeCan())return false;
+  const K=(typeof kulibAny==="function")?kulibAny():null;
+  if(!K)G.tapeRoll=tapeRolls()-1;
+  u.wear=.5;u.ts=null;
+  const had=warrantyOn(u);if(!K)u.tp=1;
+  G.tapes=G.tapes||{};G.tapes[G.shipId]=Math.min(TAPE_MAX,tapesOf()+1);   /* полоса видна на корпусе */
+  logAdd("tech","«"+(INSTR_BY_ID[id]?INSTR_BY_ID[id].ru:id)+"» замотан изолентой · работает вполсилы"+
+    (K?" · кулибин "+K.name+": «так замотаю, что не видно»"+(had?" · гарантия цела":""):had?" · гарантия аннулирована: обнаружены следы изоленты":""));
   return true;
 }
 /* строки для ОПИСИ: разбитые приборы и их три дороги */
@@ -61,9 +69,66 @@ function warrantyBlock(){
     row.innerHTML="<b>"+nm+"</b><s>"+st+"</s>";
     if(warrantyOn(u)&&!u.ts){const b=document.createElement("button");b.className="act";b.textContent="ТЕХПОДДЕРЖКА · ДАРОМ, ЖДАТЬ";
       b.onclick=()=>{supportCall(id);if(typeof opisRerender==="function")opisRerender();};row.appendChild(b);}
-    if(typeof tapeRolls==="function"&&tapeRolls()>0){const b=document.createElement("button");b.className="act";b.textContent="ИЗОЛЕНТА · СЕЙЧАС, ВПОЛСИЛЫ";
+    if(instrTapeCan()){const b=document.createElement("button");b.className="act";b.textContent="ИЗОЛЕНТА · СЕЙЧАС, ВПОЛСИЛЫ";
       b.onclick=()=>{instrTape(id);if(typeof opisRerender==="function")opisRerender();};row.appendChild(b);}
     box.appendChild(row);
   }
   return box;
+}
+/* ── такт музыки ожидания: восемь квадратных нот, бодрых и чуть фальшивых — одна
+   фраза на звонок, по шине музыки, чтобы ползунок громкости её тоже слушал ── */
+const HOLD_BAR=[0,4,7,4,5,2,-1,0];   /* полутоны от до; последняя — на четверть тона ниже */
+function holdBar(){
+  if(typeof SND==="undefined"||!SND.ready||!SND.ctx||(typeof audioOn==="function"&&!audioOn()))return false;
+  const c=SND.ctx,t0=c.currentTime+.05;
+  HOLD_BAR.forEach((n,i)=>{
+    const o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();
+    o.type="square";o.frequency.value=261.6*Math.pow(2,(n-(i===7?.25:0))/12);
+    f.type="lowpass";f.frequency.value=1400;   /* телефонная трубка */
+    const w=t0+i*.22;
+    g.gain.setValueAtTime(.0001,w);g.gain.exponentialRampToValueAtTime(.06,w+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,w+.2);
+    o.connect(f);f.connect(g);g.connect(SND.music||SND.master);o.start(w);o.stop(w+.22);
+  });
+  return true;
+}
+/* ── отказ фирменных частей (M495): тонкая работа ломается сама. Раз в смену
+   каждый фирменный прибор тянет жребий от своего зерна и номера смены — на
+   гарантии редко (8 %), а в две смены после её конца часто (35 %): «гарантия
+   кончилась вчера, прибор — сегодня». u.fk — последняя разыгранная смена ── */
+const FAIL_IN=8,FAIL_AFTER=35,FAIL_AFTER_SHIFTS=2;
+function failShift(){return Math.floor(now()/warrantyShift());}
+function failRoll(u,k){return (hashi(u.s|0,k,0xFA11)>>>0)%100;}
+function failTick(K){
+  const k=failShift();
+  for(const id in K){const u=K[id];
+    if(!WARRANTY_WORKS[u.w]||!u.wr||u.fk===k)continue;
+    u.fk=k;
+    if(instrBroken(u)||u.ts)continue;
+    const after=now()>=u.wr,late=after&&now()<u.wr+FAIL_AFTER_SHIFTS*warrantyShift();
+    if(after&&!late)continue;
+    if(failRoll(u,k)>=(late?FAIL_AFTER:FAIL_IN))continue;
+    u.wear=1;
+    const nm=INSTR_BY_ID[id]?INSTR_BY_ID[id].ru:id;
+    if(late)logAdd("warn","«"+nm+"» отказал · гарантия кончилась вчера, прибор — сегодня");
+    else logAdd("warn","«"+nm+"» отказал · на гарантии ещё "+Math.ceil((u.wr-now())/warrantyShift())+" смен · ТЕХПОДДЕРЖКА в ОПИСИ");
+    if(typeof say==="function")say(nm+"\nотказал",120);
+  }
+}
+/* ── шов старого мастера (M495): на станциях Рассвета и Коммуны кое-где сидит
+   старый мастер. Замотанный прибор он перешивает даром — «изоленту вашу я
+   оставлю, она тут уже несущая». Гарантию это не вернёт; раз в смену на прибор ── */
+function oldMasterHere(){
+  if(G.mode!=="dock"||typeof stampOwnerAt!=="function")return false;
+  const by=stampOwnerAt(G.sx,G.sy);
+  if(by!=="ra"&&by!=="km")return false;
+  const sys=getSystem(G.sx,G.sy);
+  return !!sys&&(hashi(sys.seed|0,0x01D,5)%3)===0;
+}
+function oldMasterCan(u){return oldMasterHere()&&!!u&&!!u.tp&&(u.wear||0)>.2&&u.om!==failShift();}
+function oldMasterSeam(id){
+  const u=instrUnit(id);if(!oldMasterCan(u))return false;
+  u.wear=.15;u.om=failShift();
+  logAdd("tech","Старый мастер перешил «"+(INSTR_BY_ID[id]?INSTR_BY_ID[id].ru:id)+"» · даром · «изоленту вашу я оставлю, она тут уже несущая»");
+  return true;
 }

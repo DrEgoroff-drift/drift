@@ -63,22 +63,3 @@ function drawTapes(h,n){
     ctx.restore();
   }
 }
-/* ── изолента на прибор (M486): выбитое гнездо мотают — прибор работает вполсилы,
-   на корпусе ещё одна полоса. Настоящий ремонт — на верфи ── */
-function tapeInstrIds(){
-  if(typeof instrKit!=="function")return [];
-  const K=instrKit();return Object.keys(K).filter(id=>(K[id].wear||0)>=.85);
-}
-function tapeInstr(id){
-  const K=(typeof instrKit==="function")?instrKit():null;
-  if(!K||!K[id]||(K[id].wear||0)<.85)return false;
-  if(!(tapeRolls()>0||tapeFree()))return false;
-  const kul=kulibAny();
-  if(!kul)G.tapeRoll=tapeRolls()-1;
-  K[id].wear=kul?.4:.5;
-  G.tapes=G.tapes||{};G.tapes[G.shipId]=Math.min(TAPE_MAX,tapesOf()+1);
-  const I=(typeof INSTR_BY_ID!=="undefined"&&INSTR_BY_ID[id])?INSTR_BY_ID[id].ru:id;
-  logAdd("tech","Гнездо «"+I+"» замотано изолентой · работает вполсилы"+(kul?" · кулибин "+kul.name:" · рулонов "+tapeRolls()));
-  say("Замотано\n"+I+" · вполсилы",100);
-  return true;
-}

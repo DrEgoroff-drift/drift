@@ -248,8 +248,6 @@ measured on the GPU build first:
 
 ## 6. Stage 5 — the voice and the joke
 
-- [ ] **M495 the triangle:** parts do not break — the Компания/Хай-Фронт part failures need a part-failure
-  mechanic first; the bar of hold music; the old master's free seam.
 - [ ] **M489 names by owner:** settlements, holdings, the station header; firms where they appear.
 - [ ] **M492 Космопочта:** a rare part and cooperative goods as parcels; a real queue.
 - [ ] **M460 billboards:** 1–3 signs; the hull tint within R; the сводка, циркуляры and holding lines;

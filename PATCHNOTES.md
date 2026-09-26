@@ -159,9 +159,17 @@ could ever save.
 
 - **M486: the кулибин and tape on a part.** About one hired hand or manager in seven is a кулибин (it shows on the
   crew card). While one is on staff, he tapes the hull over the radio without a roll, and it holds at 60 %. A
-  knocked instrument socket can now be taped too: ЗАМОТАТЬ ГНЕЗДО in the ОПИСЬ brings it back at half strength
-  and adds a strip to the hull. The ИЗОЛЕНТА block shows whenever the hull is below half, so a new player learns
+  broken instrument taped by a кулибин keeps its гарантия («так замотаю, что не видно»), and every taped
+  instrument adds a strip to the hull. The ИЗОЛЕНТА block shows whenever the hull is below half, so a new player learns
   in the first hour that tape works anywhere and where to buy it.
+
+- **M495: the triangle closes.** Firm instruments («Сирин», «Веха») now fail on their own: once a shift each
+  one draws from its seed, rarely while under гарантия (8 %) and often in the two shifts after it runs out (35 %,
+  «гарантия кончилась вчера, прибор — сегодня»). The ТЕХПОДДЕРЖКА call plays one bar of hold music, eight
+  square notes through a phone-line filter, the last one a quarter tone flat. At some Рассвет and Коммуна
+  stations an old master sits by the repair counter: СТАРЫЙ МАСТЕР · ДАРОМ re-sews a taped instrument to near new
+  («изоленту вашу я оставлю, она тут уже несущая»), once a shift per instrument, without bringing back the
+  гарантия.
 
 ### Disputed (cautious variants taken; the author may overturn)
 - M453: the pirates' scratch is earned by entering a pirate-base system; it could instead come from a fight
@@ -224,6 +232,10 @@ could ever save.
 - M486: the кулибин is derived from the hand's seed (one in seven), not added to the trait table, so seeded hiring
   and the save stay as they were. There is no free first-hour roll: the block only shows early with a pointer to
   the station repair shop.
+- M495: «part failures» are built on the firm instruments, the only firm parts that carry a гарантия; hull
+  parts and modules still break only from hits. The old master sits at one Рассвет/Коммуна station in three,
+  chosen by the station's seed. His free seam needs tape on the instrument first, so it rewards the cheap road
+  rather than replacing the yard.
 
 ## 0.478.0 - the album on the engine
 
