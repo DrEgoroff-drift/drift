@@ -408,7 +408,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   }
   /* один свет на весь корабль кладёт gpuLitSprite по рельефу, от звезды (G4): в выпечке его нет;
      нерезкая маска — в шейдере (sharp, между уровнями мипов) */
-  });
+  },{mat:PIR_SS});   /* mat — материал корпуса (08cd) */
   const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru,holes:HO};
   return artPut(PIR_ART,key,art,PIR_KEEP);
 }

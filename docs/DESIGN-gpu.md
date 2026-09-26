@@ -97,6 +97,9 @@ Heat haze behind the nozzle (G4b).
    `gpuCanvasTex` cache and the 416×140 pod as in the plan.
 5. Gate: uploads 0, submits 1 → Контроль's phone, 30 s + 5 min → candidate. Further redrawing does not hold the
    candidate.
+   *Passed with a caveat (Контроль, 26.09):* 1 submit a frame; a frame with a `gpuBake` adds +1 submit per bake, never more than one bake a frame, and bake frames are ≤ 1 % of the tour's frames. `docs/tour.py` counts bake submits apart from the
+   frame's own and goes red on two bakes in a frame or a share over 1 % (`17a0` holds one bake a frame since then).
+   ~~Контроль's phone run~~ — phone run waived by the author 26.09, redo when the phone is back.
 
 **The flight HUD pair (15/n, branch `gpu-hud` on top of a178e76, not for release — one strong variant for the
 author's verdict).** Sentence case wherever the player reads (vitals, the place name, the zoom line, the ticker
@@ -888,6 +891,51 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   G4d merged (5bed781b).
 - **Candidate 0.465.0** (26.09): the glow source (stations, facade), fleet+flame closed, drone captions, G4d.
   Next: the Stage 1 gate in numbers — extra submits on some run frames (planet, rescue, dock: 5 of 1080).
+- **Stage 1 gate on the tour** (26.09): `docs/tour.py` (+ `tour.js`) — ten flight items, uploads 0, own submits
+  1, crashes 0; bake submits counted apart. Two to four bakes shared a frame: the scheduler let small bakes
+  through by pixels, the hotel's glow was two bakes a step, neon three (`neonBake`), the belt atlas two. Now
+  `17a0` starts no step once a bake went this frame (`PB_B0`/`GPU.bakeN`), glow is two steps (`B.e0`), neon
+  bakes ahead in steps (`neonJob`/`neonAhead`, hotel and billboard), `ckgLab` is its own step. Tour: bake
+  frames 29 of 10 000 (0.29 %), at most one a frame; dock alone 7 of 680 (a hotel relight is seven bakes).
+  Next: hull material + planet occluders.
+- **Planet occluders** (26.09): planets and moons go into `GPU.oc` (`sysOcPush`, 17-mode-system) — the shadow is
+  the ray from the star through the body; a body off screen is pushed when its ray, widened by 2r, crosses the
+  screen, moved along the ray to that edge (f16 holds ±65504; the shadowless disk stays off screen); 15 slots,
+  the 16th for the station. Pairs (scratchpad `pair_oc_*_760.png`, 0e3927ef | now): behind a planet the four
+  ships go down to the .4 floor, at the shadow's edge a penumbra across the group, toward the star unchanged
+  (0.01 % > 8), at ×3.5 a planet off the left edge still shades. Suite «свет: планета тенит корабли…».
+  Next: the hull material bake.
+- **Hull material** (26.09, `08cd-gpu-mat.js`): `gpuBake(…,{mat:t})` (t = master texels per hull unit) adds
+  one pass in the bake's own encoder (no extra submit) into a half-size rgba16f with mips: rg the broad normal
+  (alpha slopes at ±3 and ±8 units, as GST had), ba the fine relief — paint luminance at ±¾ unit ×
+  `GC_MAT_K`=2 plus the glass dome at ±2/±4 units. GST reads it as t3 (flag 8) and puts ba into the fine
+  normal, so seams and panels catch the star's rim, not only the silhouette; bank and scale stay in the shader.
+  Per pixel: 20 normal/glass samples → 5. Memory: +½ of the master (2 B/px vs 4). Own hulls (17c2) and fleet
+  `cnA` (12ai1) carry it; other masters fall back to the old path. K=.35/1.2 invisible (hull mode lights flat),
+  K=4 speckles like tin. Pairs at 760 vs 71561077 (scratchpad `pair_oc_*_760.png`, crops `mat_*`): toward
+  the star max|Δ| 182, 0.07 % > 8 — panel seams and the canopy glint; away 140 / 0.04 %, in a planet's shadow
+  149 / 0.04 % — nothing lights where no light is. Tour GREEN, -Browser green.
+- **Hull material: emission and gloss masks, every lit master** (26.09): the material texture is twice as
+  wide — left half the relief as above, right half masks × coverage (a = coverage, GST divides): r emission,
+  g metal, b glass, from master level 0 (4 subsamples a texel), mipped as averages, so far off a lamp does
+  not drown in the paint around it. Emission = a saturated or white spot BRIGHTER than its ~3-unit
+  surround (master level l+3): a paint stripe is darker than the grey plating, so it is not a lamp — the
+  0.465.0 pink-stripe case — while windows and nav lights are, now on own hulls too (hull mode glows by
+  the mask only). Carriers: own hulls, fleet `cnA`, pirates (12i), barges (12l), «Сорока» (12v), the
+  station's bottom layer and spinning parts (17c3; upper layers light by the shared master t2, no
+  material). Memory: +1× the master (4 B/px). Pairs at 760 vs 58ffd4ca: ships + pirate + barge toward the
+  star 191 / 0.16 %, away 129 / 0.11 %, in a planet's shadow 173 / 0.10 %; station toward 200 / 0.44 %,
+  away 198 / 0.42 %. Barge containers stop glowing as lamps in the dark and take the star's rim when lit;
+  pirate and station panels read in relief, station lamps are crisper, own amber lights glow. New browser
+  suite «материал корпуса: пираты, баржи, свои…». Tour GREEN, -Browser green.
+  Next: merge origin/main once 0.466.0 is out, then candidate 0.467.0 (+ gpu2-lit).
+- **0.467.0 cut on `rel-0.467`** (26.09) from 15d24597 (gpu up to 6e775fb9 + origin/main 0.466.0), without
+  gpu2-lit: its star disc drops the «система» golden contrast .88 → .69 (a real loss, LOOK_BASE kept) and moves
+  5.5–5.9 % of the blocks; the disc, the ring and gpu3-rack go to 0.468.0. Node, -Full -Jobs 3, -Mobile green.
+- **0.469.0 cut on `gpu`** (26.09): origin/main 48f71a60 (0.468.0 and the new PLAN, PLAN.md taken as main's) and
+  gpu2-lit e9fd226c (the near corona cut only from zoom 1) merged in; the 390 «грунт день» and «система» goldens
+  are green again. G2 the star disc, G3b the jets, the ring's edge-on aliasing, L1b the dust. `gpu-ships` stays
+  out (its own candidate). Node, -Full -Jobs 3, -Mobile, the golden set green.
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
@@ -2161,6 +2209,18 @@ and `lookFrame` (28y:49/326) — none in gameplay.
   `GPU.wDone`. The golden «пояс» had been red since 725037ad: `detSettle` stopped at frame 6, while the cockpit
   master is ready and faded in only by about frame 22. `bakeIdle` now also waits for the 17a0 oven and the CKG fade,
   and `detSettle` keeps going while it is busy, up to 40 frames.
+- **Instrument pod on the GPU** (25c `instrPodDraw`, `instrPodPaint`, `instrPodLive`; `IPOD`): `#ipod` stays a DOM canvas in the
+  instrument row, but its context is WebGPU (`alphaMode:"premultiplied"`, the frame device). The static parts (dark fields, arcs,
+  end ticks, codes, the paper with pen zeros) are one `ckgSpr` master; the roll is a second. Needles, hubs, the misclose, the pens
+  (`ovGraph`) and the pen tick are `#ovl` primitives in the pod's own target (`ovInto`), encoded by `ovPass` into the frame encoder
+  after `ovFlush` and sent with the same submit. A frame with an unchanged signature asks for no pass: the canvas keeps its last
+  presented image. With the screen open (`body.screen`), off flight or on a narrow screen there is no pass and no `getCurrentTexture`.
+  After a device change the context is reconfigured and the masters rebaked (loss suite 91zzzzzzy5). At 760: submits a frame 1 with
+  the pod open (60/60 over 60 frames with a tape column each frame, as at HEAD) and 1 under an open screen; `writeTexture` per frame
+  is the same as HEAD (the light table), `copyExternalImageToTexture` 0. The bake frame (once per size or device) has the two
+  `gpuBake` submits of the masters. Pairs vs HEAD: 760 — frame 3 px > 24, the pod 72 px > 24 premultiplied (max 79, needle AA);
+  390×3 — the pod is hidden, frame identical. Gate2d scene «приборная колодка»: 0 calls. Suites: 91zk «Колодка», the two-targets
+  suite in 91zzzzzzy4; mutants `ipod-target-swap`, `ipod-needle-2d`, `ipod-screen-draws`, `ipod-no-reconfig` die.
 
 - **Moored barge and planet works on the GPU canvas** (17e `drawMooredBarge`, `drawPlanetWorks`, `glowCone`; «чистый полёт» row 17e): the moored barge is `gpuBargeBody` + `bargeLiveGpu` like the factor barges (12l), the mooring line is a butt-ended rotated rect, the name a `domLabel`. Planet works: dump and spoil ellipses are triangle fans with hard inner edges (segment count by on-screen size), the strip a rotated rect; no disc clip (nothing lies beyond .85r, the clip was r−1). A radial-gradient glow (linear cone 0→R) becomes `glowCone`: three soft additive discs at thirds of R — profile within 3 % of the cone, energy .99, same peak (one soft disc gave a flat, brighter core that read as a blob); under 1.5 device px one disc with alpha ×(1.1−.35/R). The bazaar bulb halos use it too. Gate vs 2D: planet works light +0.1…+0.2 %, sharpness 0…+1.7 %; barge light −0.1…+4 %, sharpness −1.0…+1.2 % (within noise); bazaar after the switch light +1.8…+12.9 %, sharpness +0.4…+17 %; 2D calls 0, GPU errors 0.
 - **Abilities on the GPU canvas** (16c `drawAbil`, the wedge field `ABIL_CONE_WGSL` since 5c; «чистый полёт» row 16c): the siren rings are kind-3 rings (hw 1) added, the courier crate is kind-4 rects in the crate's axes (fill, a 1 px outline as four non-overlapping bars, the cross with its vertical split so the centre does not double), the cutter beam a butt-ended kind-4 rect added. The survey wedge (radial gradient in a ±.35 sector) is one GPU-canvas bake per screen size (`bakeKeep`, cap 2) at twice device resolution, drawn at mip level 0 (`lod` .5): at 1:1 the rotated bilinear sample softened its edge by 4.5 %. Its first stop is .102 for the 2D .10, since the scene pass settles 2 % darker. Gate vs 2D (760 and phone 1.5): rings, crate and beam light +1…+5 %, sharpness +0.4…+13 %; the wedge edge −0.2 %, light equal; its mean Laplacian is −4.4 %, all of it the Skia dither grain inside the gradient (−9.4 % inside, edge +3.5 %, background −0.7 %). 2D calls 0, GPU errors 0.

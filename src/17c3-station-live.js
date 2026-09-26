@@ -56,7 +56,7 @@ const ST_SPIN=new Map(),ST_MASTER=new Map();
 function stSpinCv(key,ext,draw,sb){
   const k=key+"|"+sb;let B=ST_SPIN.get(k);if(B&&B.dev===GPU.dev)return B;
   const side=Math.ceil(ext*2*sb);
-  B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);draw();});if(!B)return null;
+  B=gpuBake(side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);draw();},{mat:sb});if(!B)return null;
   if(ST_SPIN.size>=16){const k0=ST_SPIN.keys().next().value;gpuBakeDrop(ST_SPIN.get(k0));ST_SPIN.delete(k0);}
   ST_SPIN.set(k,B);return B;
 }
@@ -90,7 +90,7 @@ function* stMasterJob(side,sb,V,S,ty){
     for(let i=0;i+1<n;i++){yield;
       if(rec.gen!==GC_ATL.gen){rec=record();if(rec.cut.length!==n)return null;}
       const O=rec.O,a=rec.cut[i],b=rec.cut[i+1];
-      const B=gpuBake(side,side,q=>{for(let j=a;j<b;j++)q._ops.push(O[j]);},{ss:k});
+      const B=gpuBake(side,side,q=>{for(let j=a;j<b;j++)q._ops.push(O[j]);},i?{ss:k}:{ss:k,mat:sb});   /* материал (08cd) — нижнему слою: верхние светятся по общему мастеру */
       if(!B)return null;Ly.push(B);}
     if(Ly.length>1){yield;U=gpuBake(side,side,q=>{for(const B of Ly)q.drawImage(B,0,0);},{ss:1});}
     ok=true;return {Ly,U,E:side/(2*sb),sb,L:rec.L};

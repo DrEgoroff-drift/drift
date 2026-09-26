@@ -6,6 +6,59 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.469.0 - a star with a real edge, gas giants with jets, dust without beads
+
+- **The star's disc darkens toward its edge** (GPU-1): an ordinary star's limb goes red instead of
+  ending in a bright ring, the corona sits behind the disc, and the disc is the brightest thing in the
+  sky. A hot star stays white-blue to the edge instead of reading as a grey bubble.
+- **The corona is cut only up close** (GPU-2): from afar a giant star keeps its halo, as before.
+- **Gas giants get thin jets along the flow** (GPU-1): streaks follow the curls around the storms and
+  carry the neighbouring band's colour; they fade out from afar, so nothing ripples.
+- **No scan lines on a ring seen edge-on** (GPU-1): the ring's front arc over the planet is smoothed
+  across a pixel instead of breaking into rows.
+- **Dust pillars have blunt heads and no beads** (GPU-2): thin crests no longer sparkle with a bright
+  rim, gas-less globules stop glowing, and a dim warm light reaches in from the rim.
+
+## 0.468.0 - the instrument pod no longer eats video memory, lighter frames
+
+- **The instrument pod stops taking 6.6 MB of video memory for good** (GPU-3): since 0.466.0 its first
+  frame claimed a new slot in the bake pool that stayed there; the pod's face is now baked once, like
+  the rack's, and the warmed-up pool stays as it was.
+- **Frames make less garbage** (GPU-3): pictures drawn on the GPU no longer rebuild their bindings when
+  the texture changes (8 a frame in a system, now none), and the per-call arrays are gone (30 a frame, now 4).
+  The picture is the same to the pixel.
+- **Tests**: a fresh page in the map scene lays the whole rail net before the shot, and the hail and
+  fuel windows close between suites - the phone run in four parts is green again.
+
+## 0.467.0 - ships in a planet's shadow, hulls of real material
+
+- **A planet shades ships** (GPU-1): fly behind a planet and your ship and everyone near it go dark,
+  with a soft edge where the shadow begins. A planet just off the screen still casts its shadow in.
+- **Hulls are baked with a material once** (GPU-1): panel seams and plates catch the star's edge instead
+  of only the outline, and cockpit glass glints. Lamps are told from paint by being brighter than the
+  hull around them, so red trim no longer glows while windows and nav lights do. Pirates, barges, the
+  wanderer's sail-ship and the station get the same material; barge containers stop shining like lamps
+  in the dark. The video card now does 5 lookups a pixel for this instead of 20.
+- **No hitch when a bright building comes into view** (GPU-1): the hotel, neon signs and the belt's
+  labels are now baked one piece per frame.
+
+## 0.466.0 - the pirate base as a building, sparks without a rainbow, the last 2D layer gone
+
+- **The pirate base is a building now** (GPU-2): instead of a red pentagon mark it is a low five-sided
+  hall of dark metal with a pyramid roof, a mast and four docking trusses with pods. Each face catches the
+  star on its own, so the facets stay apart even in shadow. Red is kept for the lights: corner beacons,
+  a thin stripe under the eaves, the pod lamps. The windows are scattered, some dark. The name below it
+  is red again, only quieter.
+- **Explosion sparks fly unevenly** (GPU-2): a few long heavy streaks at their own angles and many short
+  ones, instead of an even star. Each streak thins and fades toward its tail like a small comet. The
+  cyan-and-crimson fringe that thin sparks got from the shock wave is gone.
+- **The last 2D interface layer is gone** (GPU-3): the thumb sticks and the «НАБЛЮДЕНИЕ» watch line are
+  drawn by the video card. The watch line now sits above the pads and the console; before, the round
+  «Цель» pad covered its end on the phone. On the phone this frees about 12 MB of video memory.
+- **The instrument pod is drawn by the video card** (GPU-3): the gauges and the paper tape in the
+  instrument row go out with the frame instead of as a separate 2D canvas. The pod is still redrawn only
+  when a needle or the tape moves, and never while a screen is open.
+
 ## 0.465.0 - the pirate base is back, hulls stop glowing from their paint
 
 - **The pirate base is visible again** (GPU-2): on 0.464.0 it was still drawn in 2D under the video card's

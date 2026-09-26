@@ -286,7 +286,7 @@ const WAND_BAKE=new Map(),WAND_E=57;
 function wanderHullGpu(sys,pos,x,y,s,ang){
   const dk=GPU.bw/W,sb=Math.min(16,Math.pow(2,Math.ceil(Math.log2(Math.max(.5,2*s*dk))))),side=Math.ceil(2*WAND_E*sb);
   const B=gpuBaked(WAND_BAKE,(sys.seed>>>0)+"|"+sb,side,side,g=>{g.setTransform(sb,0,0,sb,side/2,side/2);
-    wanderHullPaint(g,rng((sys.seed^0x5A1A)>>>0));},{keep:3});
+    wanderHullPaint(g,rng((sys.seed^0x5A1A)>>>0));},{keep:3,mat:sb});
   if(!B)return false;
   const ln=Math.hypot(pos.x,pos.y)||1;
   return gpuLitSprite(B,x,y,WAND_E*s,s,ang,-pos.x/ln,-pos.y/ln,-1,0,Math.max(0,Math.log2(sb/(s*dk))+HG_BODY_LOD),null,true);

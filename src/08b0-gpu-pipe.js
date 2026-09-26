@@ -34,14 +34,14 @@ const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>G
   "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
   "fld.abil.cone":()=>ABIL_CONE_WGSL};
 const GPU_PIPE_SRC={
-  "kit.img":()=>[GPU_IMG_WGSL],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
+  "kit.img":()=>[GPU_IMG_WGSL,gpuImgLayout()],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
   gtr:()=>[GTR_WGSL],gex:()=>[GEX_WGSL],"gsy.orb":()=>[GSY_ORB_WGSL],gpl:()=>[GPL_WGSL],
   "gsp.stars":()=>[GPU_WGSL_COMMON+GSP_WGSL_U+GSP_STARS],"gsp.dust":()=>[GPU_WGSL_COMMON+GSP_WGSL_U+GSP_DUST],
   "gsp.quad":()=>[(GPU_WGSL_COMMON+GSP_WGSL_U).replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_QUAD],
   "gnb.stars":()=>[GPU_WGSL_COMMON+GSP_WGSL_U.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_STARS+GNB_STAR_ABS]};
 for(const n in GPU_FLD)GPU_PIPE_SRC[n]=()=>[GPU_WGSL_COMMON+GPU_FLD_HEAD+GPU_FLD[n](),gpuFieldLayout()];
 /* одиночные ключи — функция дескриптора в своём модуле */
-const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),
+const GPU_PIPE_ONE={"gc.mip":()=>gcMipDesc(),"gc.mip16":()=>gcMip16Desc(),"gc.mat":()=>gcMatDesc(),"gc.blur":()=>gcBlurDesc(),"gnb.gen|16f":()=>gnbGenDesc(),
   "gnb.noise":()=>gnbNoiseDesc(),gps:()=>gpsDesc(),ovl:()=>ovlDesc()};
 /* рецепт по ключу: {desc, code} или null (ключ не знаком — детектор назовёт) */
 function gpuPipeRecipe(key){

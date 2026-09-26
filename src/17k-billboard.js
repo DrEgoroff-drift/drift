@@ -148,7 +148,7 @@ function bbAhead(B,s,col){
   const GP=(typeof gosBbPlan==="function")?gosBbPlan(B.by):null;
   if(!bbPanelBake(s,GP,false))return;
   const F=Math.round(11*s),T=bbTitle(B.by),full=BB_TITLE[B.by]||BB_TITLE.gt;
-  prebake("bbn|"+T+"|"+F+"|"+col.join()+"|"+DPR,function*(){return neonBake("bb",T,full,F,col,"middle");},false);
+  neonAhead(T,full,F,col,"middle");
   if(!GP)bbStripBake(bbLine(B.by)+"   ·   ",Math.round(8*s),col,false);
 }
 function drawBillboard(zx,zy,Z){
