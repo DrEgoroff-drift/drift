@@ -6,13 +6,8 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## 0.472.0 - dust without tadpoles, a nebula that stops pulsing
+## 0.472.0 - a nebula that stops pulsing
 
-- **The dust's lit rim no longer draws tadpoles** (GPU-2): where the ionisation rim met dim gas it
-  ended in a hard line, and small dust bodies read as fish with bright heads. The rim now fades into
-  the body over about 22 px and stops 30-70 px inside it, so a globule stays a soft dark cloud; the
-  lit edge is 17 → 38 px wide from 10 to 90 %. Pairs at 760 and 390: brightness +0.8…1.9 %,
-  sharpness −0.4…+0.8 %.
 - **Standing still, the nebula flows instead of stepping** (GPU-2): the gas was rebuilt every third
   frame and jumped a little each time; now it is rebuilt every sixth frame into a spare texture and
   the old picture blends into the new one over those six frames. The frame-to-frame step of the gas
