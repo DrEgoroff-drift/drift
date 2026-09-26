@@ -1126,6 +1126,15 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   `test.ps1 -Full` rebuilds with the other shell and compares everything build.ps1 writes (drift.html, tests.html,
   INDEX, TESTMAP, war.js, treplo.html) byte for byte. Any difference fails the run. Proven red with the old sort
   («docs\INDEX.md») and green with the new one.
+- **CI with WebGPU (26.09, report only):** `deploy.yml` has a second job, `webgpu`, next to `publish`. It has no
+  `needs` and is `continue-on-error`, so it neither lengthens nor stops a deploy, and a flaky SwiftShader costs
+  nothing. It builds, then runs the smoke plus the eyes suite (`only=игра запустилась сама|глаза тестов`) in headless
+  Chrome on SwiftShader (`--enable-unsafe-webgpu --enable-features=Vulkan --use-webgpu-adapter=swiftshader`;
+  the software Vulkan ships with Chrome, and the adapter reports google/swiftshader). It prints the step's seconds.
+  Locally on Windows: 8 green runs in a row, 8–12 s each (3 with the old flags and 5 with the CI flags).
+  Not proven: the Linux runner itself (known only after the first push) and the picture suites. The whole browser
+  tier on SwiftShader takes over 10 min, which is too slow for a deploy. Rule: after 5 green deploys in a row,
+  `publish` gets `needs: webgpu` and `continue-on-error` goes.
 - **08bi for the album (26.09, for GPU-3's 25g1):** `ovImage(..., mul, M)` takes `M={m:[12], grain, seed}` —
   a 3×4 matrix over the straight colour (rows R, G, B: r, g, b, offset, in units of 1) and a grain of span
   `grain` (±grain/2, one number per device pixel into all three channels, hashed from the pixel and `seed`),
