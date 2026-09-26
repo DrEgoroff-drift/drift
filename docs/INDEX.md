@@ -2245,26 +2245,26 @@ glyphEl                      src/12t-settle.js:79-90
 glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
 gn5Foe                       tests/91zzzw-guns3.js:10-16
-GNB                          src/16gb-gpu-nebula.js:19
-GNB_EMI                      src/16gb-gpu-nebula.js:408
-GNB_FINE                     src/16gb-gpu-nebula.js:362
-GNB_GEN                      src/16gb-gpu-nebula.js:46
-GNB_LM_COL                   src/16gb-gpu-nebula.js:520
-GNB_NOISE                    src/16gb-gpu-nebula.js:20
-GNB_PAL                      src/16gb-gpu-nebula.js:503-518
-GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
+GNB                          src/16gb-gpu-nebula.js:17
+GNB_EMI                      src/16gb-gpu-nebula.js:409
+GNB_FINE                     src/16gb-gpu-nebula.js:363
+GNB_GEN                      src/16gb-gpu-nebula.js:44
+GNB_LM_COL                   src/16gb-gpu-nebula.js:521
+GNB_NOISE                    src/16gb-gpu-nebula.js:18
+GNB_PAL                      src/16gb-gpu-nebula.js:504-519
+GNB_STAR_ABS                 src/16gb-gpu-nebula.js:386
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
-gnbGenDesc                   src/16gb-gpu-nebula.js:494
-gnbLandmark                  src/16gb-gpu-nebula.js:521-534
-gnbLfr                       src/16gb-gpu-nebula.js:537-550
+gnbGenDesc                   src/16gb-gpu-nebula.js:495
+gnbLandmark                  src/16gb-gpu-nebula.js:522-535
+gnbLfr                       src/16gb-gpu-nebula.js:538-551
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:510-518
-gnbPipe                      src/16gb-gpu-nebula.js:493
-gnbStar                      src/16gb-gpu-nebula.js:552-557
-gnbStars                     src/16gb-gpu-nebula.js:398-405
-gnbTarget                    src/16gb-gpu-nebula.js:485-492
+gnbPalette                   src/16gb-gpu-nebula.js:511-519
+gnbPipe                      src/16gb-gpu-nebula.js:494
+gnbStar                      src/16gb-gpu-nebula.js:553-558
+gnbStars                     src/16gb-gpu-nebula.js:399-406
+gnbTarget                    src/16gb-gpu-nebula.js:486-493
 gnFoe                        tests/91zzzw-guns2.js:17-23
 gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
@@ -2370,8 +2370,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
 gpuMoon                      src/17ga-gpu-planets.js:440-445
-gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
-gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
+gpuNebulaComp                src/16gb-gpu-nebula.js:616-626
+gpuNebulaGen                 src/16gb-gpu-nebula.js:561-613
 gpuNoise                     src/08b-gpu.js:369-374
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOver                      src/08b-gpu.js:558-578
@@ -2403,7 +2403,7 @@ gpuSpaceSys                  src/16g-gpu-space.js:201-219
 gpuSpaceTitle                src/16g-gpu-space.js:221-232
 gpuStationDraw               src/17c3-station-live.js:119-125
 gpuStationFlare              src/17c3-station-live.js:128-143
-gpuSysUnder                  src/17g-gpu-system.js:412-418
+gpuSysUnder                  src/17g-gpu-system.js:418-424
 gpuTakeSnap                  src/08b-gpu.js:27-33
 gpuTrail                     src/16ga-gpu-trail.js:53-98
 gpuTs                        src/28z-fps-probe.js:128-135
@@ -2501,13 +2501,13 @@ GST_WGSL                     src/17c-system-draw.js:401
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:56
-gsyBeltDots                  src/17g-gpu-system.js:356-364
-gsyEll                       src/17g-gpu-system.js:323-332
-gsyMean                      src/17g-gpu-system.js:333-336
-gsyOrb                       src/17g-gpu-system.js:315-321
-gsyOrbits                    src/17g-gpu-system.js:337-354
-gsyStar                      src/17g-gpu-system.js:365-410
-gsyUni                       src/17g-gpu-system.js:309-313
+gsyBeltDots                  src/17g-gpu-system.js:361-369
+gsyEll                       src/17g-gpu-system.js:328-337
+gsyMean                      src/17g-gpu-system.js:338-341
+gsyOrb                       src/17g-gpu-system.js:320-326
+gsyOrbits                    src/17g-gpu-system.js:342-359
+gsyStar                      src/17g-gpu-system.js:370-416
+gsyUni                       src/17g-gpu-system.js:314-318
 GTR                          src/16ga-gpu-trail.js:9
 GTR_WGSL                     src/16ga-gpu-trail.js:10
 gtrDraw                      src/16ga-gpu-trail.js:43-51
@@ -4778,7 +4778,7 @@ recStart                     src/15c-rec.js:28
 recStop                      src/15c-rec.js:29
 recTick                      src/15c-rec.js:39-51
 rectsDirty                   src/08-state.js:102-106
-RED                          src/16gb-gpu-nebula.js:58
+RED                          src/16gb-gpu-nebula.js:56
 refineBank                   src/11-log.js:170
 REG_TRANSIT                  src/12al3-reg.js:12
 regAll                       src/12al3-reg.js:13
@@ -7140,7 +7140,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/17f-sys-traffic.js · 8 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 29 КБ
+## src/17g-gpu-system.js · 30 КБ
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 14 КБ

@@ -801,6 +801,16 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   +35 % brighter, and the near corona is up to 40 % weaker. Brightness now falls monotonically outward:
   760 zoom 3, G .9 248 → limb 245 → 1.0 225 → 1.05 216 → 1.35 208. Zoom 1.6 and 390 at 3 and 1.6 fall the
   same way. The giant (heat < .7) is untouched (|d| 1.75).
+  The far view, third pass (golden «система» LOOK contrast .88 → .68, 5.8 % blocks at 1280, 6.1 % at 390):
+  that scene is a giant at zoom .7, and its halo holds the top 5 % of the frame that contrast is measured
+  on. The near corona is cut only from zoom 1 up now (`fd`, S[49]: 1 at zoom ≤ .75, 0 at ≥ 1, from the
+  CPU — a disc-size threshold could not tell that giant, 65 px, from the hot star at zoom 3, 85 px). The
+  glare over the disc stays as it was over the middle (`gl` .5 at the centre, .2 at the limb), so the
+  centre is again the brightest point and only the edge darkens. The tight corona at the limb stays cut
+  (bringing it back far away brought back the bright ring). lookFrame: 1280 .76 before G2 / .65 / .75;
+  390 .63 / .63. Golden 1280 green, 390 «система» green («грунт день» there is 807e51ee on gpu, not here).
+  Pairs vs HEAD: star 760 zoom 1/2 light +0.7/+0.9 %, sharpness +0.2/−0.8 %; 390 +0.9 / +0.5 %; hot star
+  zoom 3 and 390 zoom 1.6 0.0 %, −1.2/−1.0 %. GPU errors 0.
 - **G3b gas jets** (26.09, Контроль: «the thin jets along the flow read weak at 1:1»): the gas giant had only
   the vortex field and a .004 edge wave, so up close its bands were smooth. Now a noise that is long in
   longitude and dense in latitude (two octaves: 26 and 70 per unit of sine latitude) runs on the already
@@ -820,6 +830,22 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   switching each off. Pairs vs HEAD, centred on the giant: 760 zoom 2 sharpness −3.7 %, zoom 1 −8.1 %,
   zoom .5 −3.9 %; 390 dpr 1.5 zoom 2 −2.8 %, zoom 1 −7.5 %; light 0…−0.1 %. The sharpness that went away
   is the aliasing (rows on the arc, stairs on the ansae); the grooves on the ansae stay. GPU errors 0.
+- **L1b dust: blunt heads, no beads, a lit body** (26.09, Контроль, PLAN §0). With the 115–135 px soft ramp a
+  narrow head never got deep enough to go dark, so the darkness faded toward it and the pillar read as a
+  claw. The neck now tapers to .7 of the base width (was .55), and the head is 1.4× the neck (was 1.25) and
+  blunt: an ellipse 1.35× shorter along the axis. The ionisation rim needs a body at least 12 px thick,
+  measured by one more field sample 12 px inward along the gradient. On a thin crest it broke into beads at
+  ¼ resolution, and on a protrusion the rims of both sides merged into a hot spot. The same gate takes the
+  reflected-light crust off thin bodies, so a globule with no gas only dims stars. A dim warm light now
+  reaches 10–20 px into the lit side of a body (a second falloff of 18 px next to the 6 px one), so the
+  cut-out reads as a body. Cost: one more `dustAt`, taken only near an edge that has a rim or a crust
+  (−40…80 px); deep inside and far out the body is thick anyway, so the picture is identical. nebGen,
+  headless, l2c ×1.10, regen every frame, A/B/A medians: 760 1.55 → 1.66 ms; 1920 9.8 → ~10.2 ms (the
+  ungated sample was +1.1 ms there). 1920 was over the 2 ms budget before L1b. The ×2.00 «tadpoles» are
+  gas clumps seen through one body's soft ramp (body ≈ .4–.5, ~60 % through), the outline is the clump's
+  own. Gating the cavity glow by gas dimmed the frame 10 %, a haze in narrow windows missed them. Pairs vs HEAD (light / sharpness): l2c
+  760 ×1.10 +0.6 / +0.3 %, ×2.00 +1.1 / +0.6 %; l4a ×2.00 +2.1 / +0.9 %; 390 dpr 1.5 ×1.10 +0.1 / +0.5 %,
+  ×2.00 +1.0 / +0.5 %. GPU errors 0. The file is 66 bytes smaller: history went from the header comment.
 - **The chip-jump gate** (26.09, suite 91zzzzzzy6-chipjump): the ship circles the star 1.25 turns in 240
   frames of 1/60 s; every visible chip (alpha ≥ .5 on both frames) moves ≤ CHIP_SPEED·dt + 1 px a frame,
   and chips are laid in key order. First run red: 45 jumps up to 94× the limit, the order by distance
