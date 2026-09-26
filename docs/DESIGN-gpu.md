@@ -1033,6 +1033,12 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   кадры: сцена не помнит, кто рисовал до неё» shoots the two scenes forwards and backwards, with an abandoned
   job planted before each. It is red with exactly those numbers without the fix. The ОПИСЬ guard is back at
   `91zzzzzzy7`.
+- **03e1 callers, my zone (26.09; zones: station 26 — GPU-3; road 27l, scoop, home outside — fleet):**
+  1. 12as `leftDraw` — done: the 2D fallback (ghost `drawHull`, label box) is gone, no pass means no trace.
+     The GPU branch is unchanged, so the pair is identical by construction; in the pane a ghost and a note
+     draw with one `hullGpuBake`, one `domLabel`, 0 `drawHull`.
+  2. Stapel 26e2 next: `stapelSheet` draws the hull 2D into its sheet (:85), `stapelHullBox` measures it by
+     readback (:169). Then look 28y:327 (it is item h, makerRead) and 27e:296 / 29d:482 if not «home outside».
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);
