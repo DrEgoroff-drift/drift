@@ -32,6 +32,17 @@ Worker session «Флот: облако → main»; Контроль is «Опт
 - [x] 5d. The winter caption: 390 3.47 (main 2.83), 760 4.77 (main 4.19) — see below.
 - [x] 5e. Base, home and winter re-shot after the shared material change: equal to the frames
   before it (luma ratio 1.000 over a 4×4 grid at 760 and 390), except the winter caption.
+- [x] 5f. origin/main 645732e4 (0.475.0) merged — 23f2d907; the one conflict is `08b0`
+  `GPU_PIPE_ONE`: main's `gnb.fade`, `par`, `par.add` plus the fleet's belt loop.
+- [x] 5g. The winter heroine over the room's light, the lever labels in two rows — 85f58892
+  (see below).
+- [x] 5h. The gates tool, Контроль's rule: hue is compared only where S ≥ .12 in both frames,
+  below that every channel's mean within 2/255 of main's. Cave and mine pass all zones (the
+  two grey zones by the lamps: d 1.8 and 0.1).
+- [x] 5i. Material in main's stand frames: the surface carries it (the chunks wait for
+  `tr.mat`), the base draws it live every frame; the race was underground only. Base, home and
+  winter differ from main by the fleet's light, not the material (base +4…+28 % luma, home
+  −18…+11 %) — Контроль's call.
 - [ ] 6. Sheets 390 / 760 of all zones at the head with a line per scene → Контроль.
 - [ ] 7. `-Mobile`, `docs/tour.py`, cadence on the PC (390×844 and 760, marked «ПК» — no S23
   until the author says so); drop the PLAN.md «In flight» fleet line; hand over the hash.
@@ -198,3 +209,19 @@ the letters and its own blurred shadow of the same tone, so the backing fades ou
 with no edge. No padding: `#msg` is fixed at `left:50%`, so padding narrowed the line (half the
 screen) and let the phone's `line-clamp` show a fourth line; the element's own shadow is not
 clipped by its `overflow:hidden`. With a panel open the shadow is off.
+
+### The winter heroine
+The fleet laid the stove and lamp light after the props bake, the figure included: the coat went
+rust-brown, the felt boots lost their contrast, the floor spot washed out the shadow under the
+feet. The figure is its own bake (`win.fig`, in whole device pixels) drawn after `winLight`, as
+in main — the light falls on the floor and the walls under her. The frame's halo still lays 2–8
+levels of warm light over her from the brighter room, so her paint is denser by that much (body
+×0.93, boots ×0.90) and the shadow is .44. Against main: coat −3.3 % (760) / −1.7 % (390), boots
+−1.8 % / +0.9 %, floor beside the feet over the shadow 1.70 / 1.57 (main 1.44 / 1.53).
+
+### Lever labels on a narrow frame
+At 390 a lever is 19 px wide and «АНТЕННА» at the frame-height size is 46 px: the four labels
+ran into one word (main too). `winLeverLabels()` is one layout for the frame and the check: a
+label wider than its lever puts them in two rows, every other one, and the size goes down until
+a label fits two levers, never below 7 px. The check (91zzzj) walks 390, 360, 760, 1280, 1920:
+no two label boxes meet, none below 7 px, all inside the frame.
