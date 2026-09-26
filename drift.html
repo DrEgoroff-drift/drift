@@ -110862,6 +110862,21 @@ function winLevers(g){
             w:w,h:g.panel.h*0.76});
   return L;
 }
+/* подписи рычагов — одна раскладка на кадр и на проверку (91zzzw-winter-labels): на узком кадре
+   рычаг в двадцать пикселей, а «АНТЕННА» кеглем от высоты кадра — сорок шесть, и подписи
+   налезали друг на друга. Не влезает в рычаг — строки через одну в два ряда, кегль вниз, пока
+   подпись не ляжет в два рычага, но не мельче 7 px. measure(текст, кегль) — ширина в px */
+function winLeverLabels(g,measure){
+  const L=winLevers(g),lw=L[0].w;
+  let f=Math.max(7,Math.round(H*0.0135)),two=false;
+  const wid=()=>L.map(lv=>measure(WIN_RU[lv.k],f));
+  let ws=wid();
+  if(Math.max(...ws)>lw*0.94){
+    two=true;
+    while(f>7&&Math.max(...ws)>lw*2-4){f--;ws=wid();}
+  }
+  return L.map((lv,i)=>({k:lv.k,f,w:ws[i],x:lv.x+lv.w*0.5,y:lv.y+lv.h*(two?(i%2?0.49:0.39):0.44)}));
+}
 /* ── свет ──
    Три источника, и все три игрок сам и включает: лампа над столом, печь слева,
    окно справа. `winLit` отвечает, сколько света приходит в точку — по нему
@@ -111154,6 +111169,9 @@ function drawWinter(){
   const pr=roomBake("win.props",key,W,H,()=>winProps(g,W0));
   if(pr)gpuImage(pass,pr,[{x:W/2,y:H/2,w:W,h:H}]);
   winLight(pass,g,W0);
+  const fb=winFigBox(g);
+  const fg=roomBake("win.fig",key+"|"+fb.x+","+fb.y,fb.w,fb.h,()=>{ctx.translate(-fb.x,-fb.y);winFigure(g,W0);});
+  if(fg)gpuImage(pass,fg,[{x:fb.x+fb.w/2,y:fb.y+fb.h/2,w:fb.w,h:fb.h}]);
   winGlow(pass,g,W0);
   winDark(pass,g,W0);
   const tx=roomBake("win.text",sz+"|"+W0.day+"/"+W0.days+"|"+W0.pname+"|"+F,W,H*0.1,()=>winText(W0));
@@ -111391,7 +111409,8 @@ function winProps(g,W0){
   {
     const p=g.panel, L=winLevers(g), cap=winCap(W0), dr=winDraw_(W0);
     const pk=winLit(g,W0,p.x+p.w*0.5,p.y+p.h*0.5);
-    for(const lv of L){
+    const LB=winLeverLabels(g,(tx,f)=>{ctx.font=f+"px ui-monospace,monospace";return ctx.measureText(tx).width;});
+    for(const [li2,lv] of L.entries()){
       const val=W0.pw[lv.k]|0, low=val<WIN_MIN[lv.k];
       const cx=lv.x+lv.w*0.5;
       /* циферблат */
@@ -111430,9 +111449,10 @@ function winProps(g,W0){
       ctx.beginPath();ctx.arc(hx-1,hy-1,Math.max(1,H*0.0022),0,TAU);ctx.fill();
       /* подпись */
       ctx.fillStyle=wrgba([196,208,216],0.55+pk*0.35);
-      ctx.font=Math.max(7,Math.round(H*0.0135))+"px ui-monospace,monospace";
+      const lb=LB[li2];
+      ctx.font=lb.f+"px ui-monospace,monospace";
       ctx.textAlign="center";
-      ctx.fillText(WIN_RU[lv.k],cx,lv.y+lv.h*0.44);
+      ctx.fillText(WIN_RU[lv.k],lb.x,lb.y);
     }
     /* реактор: полоса на всю ширину панели, делений ровно cap */
     const bx=p.x+p.w*0.07, by=p.y+p.h*0.055, bw=p.w*0.86, bh=p.h*0.075;
@@ -111506,6 +111526,17 @@ function winProps(g,W0){
     }
   }
 
+}
+/* рамка выпечки зимовщика — в целых пикселях устройства, чтобы текстура легла пиксель в пиксель */
+function winFigBox(g){
+  const m=g.man,x0=Math.floor((g.manx-m*0.27)*DPR),y0=Math.floor((g.flo-m*1.06)*DPR);
+  const x1=Math.ceil((g.manx+m*0.27)*DPR),y1=Math.ceil((g.flo+m*0.06)*DPR);
+  return {x:x0/DPR,y:y0/DPR,w:(x1-x0)/DPR,h:(y1-y0)/DPR};
+}
+/* зимовщик — своя выпечка «win.fig», в кадре поверх света комнаты, как у main: печь и лампа
+   светят на пол и стены под ним, а не пеленой по ватнику (Контроль 26.09: пальто рыжело,
+   валенки теряли контраст, пятно печи на полу смывало тень под ногами) */
+function winFigure(g,W0){
   /* ── зимовщик ──
      Мерило кадра, и потому единственная фигура, которую нельзя рисовать
      ящиками. Ватник читается ватником не от цвета, а от ТРЁХ ПЕРЕЛОМОВ силуэта:
@@ -111520,7 +111551,11 @@ function winProps(g,W0){
     const k=winLit(g,W0,x,y-m*0.6);
     const body=pcMix([36,40,45],WIN_C.warm,0.12);
     const toStove=g.stove.x<x?-1:1;                /* с какой стороны печь */
-    ctx.fillStyle="rgba(0,0,0,.38)";
+    /* ореол кадра (08b) кладёт на фигуру у светлой комнаты два-восемь уровней тёплого
+       света — пелену, которую Контроль 26.09 видел рыжим пальто. Краска фигуры и тень
+       под ногами плотнее на эту добавку: в кадре ватник и валенки не светлее main */
+    const DEN=0.93;
+    ctx.fillStyle="rgba(0,0,0,.44)";
     ctx.beginPath();ctx.ellipse(x,y+m*0.012,m*0.19,m*0.030,0,0,TAU);ctx.fill();
     const silh=(dx,dy,col)=>{
       ctx.fillStyle=col;ctx.strokeStyle=col;
@@ -111581,7 +111616,7 @@ function winProps(g,W0){
        читался вторым, светящимся человеком рядом с тёмным */
     const off=m*0.007;
     silh(toStove*off,-off*0.6,wrgba(WIN_C.warm,0.10+k*0.10));
-    silh(0,0,wcol(body,0.52+k*0.52));
+    silh(0,0,wcol(body,(0.52+k*0.52)*DEN));
     /* воротник: светлая полоса поперёк плеч — фигура перестаёт быть плоской */
     ctx.fillStyle=wrgba([228,222,206],0.16+k*0.20);
     ctx.beginPath();
@@ -111602,7 +111637,7 @@ function winProps(g,W0){
     ctx.lineTo(x+toStove*m*0.062,y-m*0.570);
     ctx.stroke();
     /* валенки светлее ватника: серый войлок против тёмной стёжки */
-    ctx.fillStyle=wcol(pcMix([92,88,80],WIN_C.warm,0.10),0.42+k*0.44);
+    ctx.fillStyle=wcol(pcMix([92,88,80],WIN_C.warm,0.10),(0.42+k*0.44)*(DEN-0.03));
     for(const s3 of [-1,1]){
       const fx=x+s3*m*0.040;
       ctx.beginPath();

@@ -119,3 +119,21 @@ TEST_SUITES.push(()=>suite("зимовка: прерваться и вернут
   ok(!winOn(),"сохранение без зимовки — не падение");
   G.mode="system";
 }));
+/* подписи рычагов не налезают друг на друга ни в каком кадре (Контроль 26.09: на 390 читалось
+   «ТЕПВОЗДУСВЕТЕННА», и в main тоже): раскладка та же, что рисует кадр, ширины — настоящим шрифтом */
+TEST_SUITES.push(()=>suite("зимовка: подписи рычагов не перекрываются",{tier:"browser"},()=>{
+  const c=document.createElement("canvas").getContext("2d");
+  const measure=(s,f)=>{c.font=f+"px ui-monospace,monospace";return c.measureText(s).width;};
+  const box=b=>({x0:b.x-b.w/2,x1:b.x+b.w/2,y0:b.y-b.f*0.8,y1:b.y+b.f*0.25});
+  for(const [w,h] of [[390,844],[360,780],[760,475],[1280,800],[1920,1080]]){
+    T.window(w,h);
+    const B=winLeverLabels(winGeom(),measure),bad=[];
+    for(let i=0;i<B.length;i++)for(let j=i+1;j<B.length;j++){
+      const a=box(B[i]),b=box(B[j]);
+      if(a.x0<b.x1+1&&b.x0<a.x1+1&&a.y0<b.y1&&b.y0<a.y1)bad.push(B[i].k+"/"+B[j].k);
+    }
+    eq(bad.join(","),"",w+"×"+h+": подписи не перекрываются (кегль "+B[0].f+" px)");
+    ok(B.every(b=>b.f>=7),w+"×"+h+": кегль не мельче 7 px");
+    ok(B.every(b=>b.x-b.w/2>=0&&b.x+b.w/2<=W),w+"×"+h+": подписи в кадре");
+  }
+}));
