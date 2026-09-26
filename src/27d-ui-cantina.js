@@ -91,10 +91,14 @@ function cantLitUni(W2,H2,k){
   u.set([14,20,cantSignW(),18],20);
   u.set([W2*.56,26,Math.min(W2*.40,240),64],24);
   u.set([cy,H2,LT.amb*(K9?.75:1),0],28);
-  if(K9){const S=kinoScreenRect(W2,cy);u.set([S.x,S.y,S.w,S.h],32);}
+  if(K9){const S=kinoScreenRect(W2,cy),B=kinoBillRect(W2,H2,cy);u.set([S.x,S.y,S.w,S.h,B.x,B.y,B.w,B.h],32);}
   return u;
 }
 const CANT_LIT_WGSL=`
+/* доля своего света в прямоугольнике r (x, y, w, h в единицах зала), кромка в пиксель */
+fn selfLit(q:vec2f,r:vec4f,k:f32)->f32{
+  if(r.z<=0.){return 0.;}
+  return clamp(min(min(q.x-r.x,r.x+r.z-q.x),min(q.y-r.y,r.y+r.w-q.y))*k+.5,0.,1.);}
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let k=fu.v[0].x;let W2=fu.v[0].y;let fy=fu.v[0].z;let t=fu.v[0].w;
   let q=p/k;let cy=fu.v[7].x;let H2=fu.v[7].y;
@@ -137,14 +141,15 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   c+=lc*m*(.004+.40*min(cs,1.2))*pw;
   let vd=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.35)/(H2*.70),0.,1.);
   c*=1.-.40*vd*vd*(3.-2.*vd);
-  /* полотно кино светится само: лампы зала, пыль и виньетка его не трогают */
-  let ks=fu.v[8];
-  let ke=min(min(q.x-ks.x,ks.x+ks.z-q.x),min(q.y-ks.y,ks.y+ks.w-q.y))*k;
-  c=mix(c,base,select(0.,clamp(ke+.5,0.,1.),ks.z>0.));
   c=rshoulder(c);
   let px=floor(p*fu.res.x/max(fu.res.z,1.));
   let gr=rh1(px+vec2f(fract(t*.37)*91.,fract(t*.53)*57.))-.5;
   c=c*(1.+.06*gr)+(rh1(px*1.37+vec2f(3.1,7.7))-.5)/255.;
+  /* полотно кино и афиша сеанса светятся сами: лампы зала, пыль, плечо и зерно прохода их не
+     трогают — у main они лежат поверх погашенного зала своей яркостью. Зерно по кремовому
+     читалось мятой бумагой, плечо серило полотно (Контроль 26.09). Виньетка — main: чёрное
+     до .36 линейно от .35 до 1.05 высоты зала; без неё углы полотна светлели на 7–12 % */
+  c=mix(c,base*(1.-.36*vd),max(selfLit(q,fu.v[8],k),selfLit(q,fu.v[9],k)));
   return vec4f(max(c,vec3f(0.)),1.);}`;
 function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   const S=cantStyle(),seed=(G.sys.seed^0xCA47)>>>0,R=rng(seed);

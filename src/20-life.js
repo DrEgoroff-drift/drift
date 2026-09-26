@@ -128,12 +128,15 @@ function drawAstronaut(o){
   if(o.lamp){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const f=(o.face||1);
-    const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
-    g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.moveTo(f*2,-8.6);
-    ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
-    ctx.closePath();ctx.fill();
+    /* lamp:"gpu" — луч уже лёг сложением по сцене (helmBeamGpu, 22c): шахта и пещера флота */
+    if(o.lamp!=="gpu"){
+      const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
+      g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.moveTo(f*2,-8.6);
+      ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
+      ctx.closePath();ctx.fill();
+    }
     /* фонарь освещает И САМОГО ходока (M232): грудь и ближняя рука ловят
        отражённый свет — ночью человек не должен быть чёрным под своим лучом */
     const gs=ctx.createRadialGradient(f*2.4,-6.6,.5,f*2.4,-6.6,7.5);

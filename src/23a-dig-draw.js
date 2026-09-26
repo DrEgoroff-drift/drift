@@ -52,10 +52,12 @@ function drawDigWorld(){
      и материал пекутся один раз на тайл 512×512, кадр только кладёт картинки.
      digRockPass рисует через W/H, которые withCtx подменяет на размер тайла */
   /* печёт и кладёт видеокарта (G7, 18c gpuTileStore): тайл — текстура под всем 2D */
-  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR+(p.mat?"|m":""));   /* «|m»: материал допёкся — перепечь */
+  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR);
   gpuDrawTiles(gpuScene(),D.tiles,camx,camy,(g,wx0,wy0)=>digRockPass(D,p,wx0,wy0));
-  /* свет уходит от человека (M55 #1) — теперь это поле видеокарты (23b): фонарь
-     с тенями от породы, лампы, день сверху; виньетка и тёплое пятно ушли */
+  /* свет уходит от человека (M55 #1) — поле видеокарты (23b): виньетка и фонари с тенями
+     умножают породу сразу, как виньетка main; руда, зерно, пол и крепь ложатся поверх */
+  const hl={x:px+DIG_CELL/2,y:py+DIG_CELL/2-12,f:D.face||1};   /* налобник: ладонь ниже макушки */
+  digShade(D,p,camx,camy,hl);
   /* ── рудное тело ──
      Светилось радиальным пятном на клетку и читалось бесформенной кляксой,
      ни при чём к камню вокруг. Руда в породе выглядит иначе: это вкрапления —
@@ -102,10 +104,24 @@ function drawDigWorld(){
       ctx.globalAlpha=(.30+((hh>>>19)&7)/7*.35)*vis*(0.85+lampK*.35);
       ctx.fillStyle=col2;
       ctx.beginPath();ctx.ellipse(0,0,rr*el,rr,0,0,TAU);ctx.fill();
-      /* блик на зерне — выше единицы, на видеокарте (23b digEmit): его зажигает фонарь */
+      /* блик на зерне — то, из-за чего руду замечают в темноте. Кистью main, в 2D: блик
+         выше единицы (23b) давал ореол, которого у main нет, а вдали от фонаря зёрна
+         гасли вовсе, и порода у края теряла рисунок (Контроль 26.09: σ ниже main) */
+      ctx.globalAlpha=Math.min(1,(.22+((hh>>>22)&3)/3*.3)*vis*(0.7+lampK*1.5));
+      ctx.fillStyle="rgba(255,250,235,1)";
+      ctx.beginPath();ctx.ellipse(-rr*.3,-rr*.35,rr*.5,rr*.28,0,0,TAU);ctx.fill();
       ctx.restore();
     }
-    /* зарево тела — тоже там: руда светит сама, слабо, и видна за светом фонаря */
+    /* и совсем слабое зарево на всё тело — чтобы жила читалась как жила,
+       а не как россыпь точек. Ровно настолько, чтобы поймать взгляд; круг гаснет
+       к краю квадрата, поэтому прямоугольника с кромкой не выходит */
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    ctx.globalAlpha=.07*vis;
+    const g=ctx.createRadialGradient(x+DIG_CELL/2,y+DIG_CELL/2,2,
+      x+DIG_CELL/2,y+DIG_CELL/2,DIG_CELL*.8);
+    g.addColorStop(0,col2);g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.fillRect(x-DIG_CELL*.3,y-DIG_CELL*.3,DIG_CELL*1.6,DIG_CELL*1.6);
+    ctx.restore();
   }
   ctx.restore();
   /* ── выработка ── */
@@ -115,10 +131,10 @@ function drawDigWorld(){
      неё есть верх и низ. Отсюда вертикальный градиент внутри хода. */
   ctx.save();ctx.clip(VP);
   const vg=ctx.createLinearGradient(0,-camy%DIG_CELL,0,H);
-  /* G7: темноту даёт свет (23b), а не краска — ход залит не в черноту, а
-     притушен: за ним задняя стена той же породы, и фонарь её находит */
-  vg.addColorStop(0,"rgba(4,5,8,.72)");
-  vg.addColorStop(1,"rgba(9,8,7,.64)");
+  /* заливка main: свет хода кладёт поле видеокарты сложением (23b voidLit); при .72 сквозь
+     неё светилась порода, и ход над человеком выходил светлее и зеленее main */
+  vg.addColorStop(0,"rgba(4,5,8,.94)");
+  vg.addColorStop(1,"rgba(9,8,7,.88)");
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   ctx.restore();
   /* ── зерно на обнажённой породе ──
@@ -474,10 +490,8 @@ function drawDigWorld(){
   drawDigFauna(camx,camy);
   const sx=px-camx+DIG_CELL/2,sy=py-camy+DIG_CELL/2;
   const suit=G.surf.suit;
-  /* ── свет (G7, 23b) ── темнота, фонарь, лампы площадок, день в стволе, пыль и
-     руда — одно поле видеокарты по всему нарисованному выше, с тенями от породы.
-     Фонарь — на шлеме: человек стоит в (sx, sy+4), налобник на ладонь ниже макушки */
-  drawDigLight(D,p,camx,camy,{x:px+DIG_CELL/2,y:py+DIG_CELL/2-12,f:D.face||1});
+  /* ── свет (G7, 23b) ── темнота поверх всего, луч и пыль в воздухе, огни ламп */
+  drawDigLight(D,p,camx,camy,hl);
   /* забой под резаком: подсветка и полоса проходки — поверх света, это указатель */
   if(D.target){
     const t=D.target;
@@ -491,9 +505,11 @@ function drawDigWorld(){
       /* искры из-под резака — выше единицы, на видеокарте (23b digEmit) */
     }
   }
+  /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
+  const helm=helmBeamGpu(sx,sy+4,D.face||1)?"gpu":true;
   ctx.save();ctx.translate(sx,sy+4);
   drawAstronaut({face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
-    mining:!!D.target,suitLow:suit<25,lamp:true});
+    mining:!!D.target,suitLow:suit<25,lamp:helm});
   ctx.restore();
   /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
      сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —

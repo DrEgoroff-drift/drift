@@ -227,6 +227,12 @@ body:not(.inflight) .ipod{display:none}
      добавлена тёмная тень — она и есть контраст, свечение остаётся настроением. */
   text-shadow:0 1px 3px rgba(2,4,8,.95),0 0 10px rgba(2,4,8,.8),0 0 16px rgba(127,230,216,.45);
   white-space:pre-line;line-height:1.95;max-width:84%}
+/* зимовка: лампа кладёт свет по доскам, и стена под строкой светлее, чем у main, — строку держит
+   мягкая тёмная подложка, не плашка (Контроль 26.09): тон под буквами и своя размытая тень
+   того же тона — за строкой он сходит на нет без края. Поле блока то же, что без подложки:
+   отступ сужал строку (у fixed с left:50% — полэкрана) и на телефоне выпускал из line-clamp
+   четвёртую строку; тень блока его overflow:hidden не режет */
+#msg.dim{background:rgba(3,5,9,.52);box-shadow:0 0 40px 30px rgba(3,5,9,.56);border-radius:32px}
 /* подсказка держится над пэдами: это ответ на «что тут можно», её место у рук.
    Она стоит НИЖЕ строки состояния (A2): действие спрашивают чаще, чем остаток
    топлива, поэтому оно ближе к рукам */
@@ -900,6 +906,7 @@ body:has(.scr.open) .hud,body:has(.scr.open) #instrpod,body:has(#askwin.open) .h
 body:has(.scr.open) #msg{top:auto;bottom:calc(env(safe-area-inset-bottom) + 96px);left:12px;right:12px;transform:none;
   background:rgba(8,12,18,.94);border:1px solid rgba(127,230,216,.22);border-radius:8px;padding:8px 12px;z-index:26;
   white-space:normal;text-transform:none;letter-spacing:.04em;font-size:12px;text-align:left;overflow:hidden}
+body:has(.scr.open) #msg.dim{box-shadow:none}
 @media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
 
 /* ══════════════ пульт (M151a) ══════════════
@@ -10654,8 +10661,11 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
       let d=abs(a.rgb-b.rgb);hs=mix(vec3f(a.r,g.g,b.b),g,smoothstep(.03,.15,max(d.r,max(d.g,d.b))));}}
   if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
+  /* шахта и пещера — передний 2D-слой main: канал упирается в единицу сам по себе, и тёплое
+     поверх холодного луча желтеет, а не белеет (GPU_FRONT_LIKE; свечение берёт сцену целиком) */
+  if(u.dn.z>.5){hs=min(hs,vec3f(1.));}
   var h=hs*(1.-f.a)+f.rgb;
-  if(u.k>0.){h=h+u.k*.8*bloomAt(v.uv)*(1.-.6*f.a);}
+  if(u.k>0.){h=h+u.k*.8*bloomAt(v.uv)*(1.-.6*max(f.a,u.dn.z));}
   /* засветка ядра: мелочь перед ядром звезды тонет в его свете, как в камере, — тёмная
      точка в центре читалась зрачком. max, не сумма: открытая звезда не меняется, крупный
      корпус держит силуэт за пределами ядра */
@@ -10899,7 +10909,14 @@ fn shAt(p:vec2f,sd:vec2f)->f32{
    звезды уходит в золото, ядро луча — в белый); на земле и в помещениях — по старшему
    каналу, лампа держит свой оттенок при любой яркости (Контроль 26.09) */
 const GPU_TONE_FILM=new Set(["system","map","belt","raid","scoop","wanderer","barge","rail"]);
-function gpuHueFor(m){return GPU_TONE_FILM.has(m)?0:1;}
+/* шахта и пещера — плечо по каналам, как у переднего 2D-слоя main: плечо по старшему каналу
+   вынимало красный из лепестков мха и бирюзы хода (ядро лепестка 190 против 216 у main) */
+function gpuHueFor(m){return GPU_TONE_FILM.has(m)||GPU_FRONT_LIKE.has(m)?0:1;}
+/* шахта и пещера у main — передний 2D-слой: пелена свечения на них есть, а свечение ложится
+   с весом переднего слоя (1−.6·f.a при f.a = 1). Флот рисует их в сцене; без пелены кадр
+   выходил на 4 % темнее main целиком, вместе с небом над устьем (Контроль 26.09: «экспозиция
+   как в main»), а с весом сцены свечение серило бы чёрное хода */
+const GPU_FRONT_LIKE=new Set(["dig","cave"]);
 function gpuUni(){
   const a=GPU.UA,P=GPU.post;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
@@ -10909,7 +10926,7 @@ function gpuUni(){
   const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
   const Q=GPU.lens;a[56]=Q?Q.x:0;a[57]=Q?Q.y:0;a[58]=Q?Q.k:0;a[59]=Q?Q.r:0;
   a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
-  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);
+  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);a[66]=GPU_FRONT_LIKE.has(G.mode)?1:0;
   for(let i=0;i<8;i++)for(let j=0;j<8;j++)a[68+i*8+j]=i<nd?D[i][j]:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
@@ -60532,13 +60549,8 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
      перестаёт читаться, но цвет породы не уезжает */
   ctx.save();
   if(P)ctx.clip(P);   // без пути клипа нет: ctx.clip() по пустому пути вырезал всё (G3)
-  /* на холсте видеокарты (GcCtx, тайлы в выпечке) overlay нет: ему нужен фон в
-     шейдере. Тот же крупный слой кладётся обычной краской и втрое тише — он так же
-     рвёт сетку 256 светлыми и тёмными полями, а цвет породы почти не трогает:
-     тайл — та же порода */
-  const gc=ctx instanceof GcCtx;
-  ctx.globalCompositeOperation=gc?"source-over":"overlay";
-  ctx.globalAlpha=gc?a2*.35:a2;
+  ctx.globalCompositeOperation="overlay";
+  ctx.globalAlpha=a2;
   const K=3.7, PH=91;
   /* Смещение второго прохода обязано быть таким же, как у первого (делённым на
      масштаб), иначе крупный слой ползёт относительно мелкого при движении
@@ -67043,12 +67055,15 @@ function drawAstronaut(o){
   if(o.lamp){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const f=(o.face||1);
-    const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
-    g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.moveTo(f*2,-8.6);
-    ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
-    ctx.closePath();ctx.fill();
+    /* lamp:"gpu" — луч уже лёг сложением по сцене (helmBeamGpu, 22c): шахта и пещера флота */
+    if(o.lamp!=="gpu"){
+      const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
+      g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.moveTo(f*2,-8.6);
+      ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
+      ctx.closePath();ctx.fill();
+    }
     /* фонарь освещает И САМОГО ходока (M232): грудь и ближняя рука ловят
        отражённый свет — ночью человек не должен быть чёрным под своим лучом */
     const gs=ctx.createRadialGradient(f*2.4,-6.6,.5,f*2.4,-6.6,7.5);
@@ -82171,22 +82186,9 @@ function drawCaveRock(C,cp,wx0,wy0){
   /* порода той же планеты: без неё пещера — чёрные силуэты, и по ним не
      понять, в чьих недрах игрок находится */
   if(cp){
-    const mat=planetMat(cp);
-    fillMaterial(mat,wx0,wy0,.30,.18,P);
-    /* кромка тоже порода (хвост M136): полоса контура шириной в клетку шла
-       плоской краской поверх материала, и у каждой стены был нарисованный
-       обвод. Тот же тайл кладётся штрихом по контуру, в мировых координатах,
-       чтобы не ехал относительно заливки */
-    /* материал ещё печётся — кромку не кладём: 2D молча пропускал strokeStyle=null и
-       обводил прежней краской, холст видеокарты такую краску не берёт (G7) */
-    if(mat){
-      const KW=new Path2D();KW.addPath(K,new DOMMatrix().translate(wx0,wy0));
-      ctx.save();ctx.translate(-wx0,-wy0);
-      ctx.strokeStyle=mat;ctx.lineWidth=CS;ctx.globalAlpha=.30;ctx.stroke(KW);
-      ctx.restore();
-    }
-    /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
-       светит как днём и убивает единственное, что есть у пещеры — темноту */
+    /* материала планеты на стенах нет: цвет дают пласты, как в кадре main — его тайл
+       печётся раньше, чем готов материал, и не перепекается (Контроль 26.09: «цвет
+       main»). Гашение ниже main кладёт и без материала — оставлено: это темнота пещеры */
     ctx.fillStyle="rgba(2,4,9,.15)";ctx.fill(P);
     ctx.strokeStyle="rgba(2,4,9,.15)";ctx.lineWidth=CS;ctx.stroke(K);
     /* ── зерно по массиву (M253), манера — по породе (M263, 皴法) ──
@@ -82315,7 +82317,7 @@ function drawCaveFar(C,camx,camy){
   const cp=(G.surf&&G.surf.p)||null;
   /* тайлы пекутся на видеокарте (G7, 18c gpuTileStore): холст видеокарты рисует
      те же пути и узор; слой лежит под всем 2D кадра */
-  C.farT=gpuTileStore(C.farT,"cavefar|"+(C.seed&0xff)+"|"+(cp?cp.seed:0)+"|"+DPR+(cp&&cp.mat?"|m":""));
+  C.farT=gpuTileStore(C.farT,"cavefar|"+(C.seed&0xff)+"|"+(cp?cp.seed:0)+"|"+DPR);
   gpuDrawTiles(gpuScene(),C.farT,camx*.38,camy*.38,(g,wx0,wy0)=>{
     /* задняя стена — ТЕЛО (M305): при #070b11 пустота между глыбами была
        чёрной, и глыбы висели в ничём. Стена зоны I: темнее ближней породы,
@@ -82346,8 +82348,6 @@ function drawCaveFar(C,camx,camy){
       ctx.lineTo(x+w2*.55,TILE);ctx.lineTo(x-w2*.55,TILE);
       ctx.closePath();ctx.fill();
     }
-    if(cp&&typeof planetMat==="function"&&typeof fillMaterial==="function")
-      fillMaterial(planetMat(cp),wx0,wy0,.09,.08);
   });
 }
 function drawCaveWorld(){
@@ -82356,8 +82356,7 @@ function drawCaveWorld(){
   const camx=C.x-W/2, camy=C.cy-H*.56;
   drawCaveFar(C,camx,camy);
   const cp=G.surf&&G.surf.p;
-  /* «|m» — материал планеты допёкся: тайлы без него перепекаются один раз */
-  C.chunks=gpuTileStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+DPR+(cp&&cp.mat?"|m":""));
+  C.chunks=gpuTileStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+DPR);
   gpuDrawTiles(gpuScene(),C.chunks,camx,camy,(g,wx0,wy0)=>drawCaveRock(C,cp,wx0,wy0));
   /* положение астронавта на экране: камера догоняет, поэтому он не в центре */
   const px=C.x-camx, py=C.y-11-camy;
@@ -82365,14 +82364,6 @@ function drawCaveWorld(){
      живой остаётся вода, а свет пойдёт после */
   drawCaveWater(C,camx,camy);
   /* то, что лежит в пещере (M305, 22b), — в тайлах породы (drawCaveRock) */
-  for(const pl of C.plants){
-    const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
-    drawPlant(pl,x,y);
-  }
-  for(const b of C.fauna){
-    const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
-    drawBeast(b,x,y+b.r*.9,true,b.stun);
-  }
   /* чужие руки на камне у устья (M210): до света, чтобы дневной луч из устья
      лёг и на них — знак врезан в породу, а не наклеен поверх сцены */
   if(typeof wallDraw==="function"&&wallCount(WALL_C)>0){
@@ -82382,14 +82373,12 @@ function drawCaveWorld(){
       wallDraw(WALL_C,wx0,wx1,fy-50,fy-8,"rgba(236,232,214,.66)");
     }
   }
-  /* ── свет (G7, 22c): всё, что выше, — альбедо; дальше поле умножает его ──
-     на свет источников с тенями от породы и складывает рассеяние луча и пыль.
-     Темнота больше не спрайт поверх кадра, а отсутствие света: фонарь, мох,
-     кристаллы, чужая лампа и день в устье — единственное, что здесь светит.
-     Жизнь пещеры рисуется ДО света: её освещают, она не светит сама */
+  /* ── свет (G7, 22c) ── всё, что выше, — альбедо: поле гасит его темнотой main от фонаря,
+     сверху сложением ложатся тёплое у фонаря, день в устье, чужая лампа с тенями от породы
+     и слой main — грани кристаллов, жилы, мох, пыль и конус фонаря */
   drawCaveLight(C,camx,camy,{x:C.x,y:C.y-27,f:C.face||1});
   drawCaveGlow(C,camx,camy,px,py);
-  /* свой свет пещеры (M248): пятна мха и чужой фонарь — сами вещи; их свет в поле */
+  /* свой свет пещеры (M248): чужой фонарь — сама вещь; его свет и мох — на видеокарте (22c) */
   drawCaveOwnLight(C,camx,camy);
   /* дозорные посёлка у устья (хвост M110): их видно, а не только читается
      в подсказке. Те же силуэты с шестом, что на поверхности, и факел */
@@ -82404,6 +82393,16 @@ function drawCaveWorld(){
     ctx.beginPath();ctx.moveTo(wx+(i?3:-3),wy-19);ctx.lineTo(wx+(i?3:-3),wy);ctx.stroke();
     ctx.fillStyle="rgba(255,206,130,.9)";ctx.fillRect(wx+(i?2:-4),wy-21,2,2.4);
   }
+  /* жизнь пещеры — поверх света, как у main: цветы и звери видны своим цветом, темнота
+     их не гасит (под полем цветы теряли четверть яркости, Контроль 26.09) */
+  for(const pl of C.plants){
+    const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
+    drawPlant(pl,x,y);
+  }
+  for(const b of C.fauna){
+    const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
+    drawBeast(b,x,y+b.r*.9,true,b.stun);
+  }
   if(!C.found){
     const x=C.findX-camx,y=C.findY-camy;
     if(x>-40&&x<W+40&&y>-40&&y<H+40){
@@ -82411,9 +82410,11 @@ function drawCaveWorld(){
       ctx.beginPath();ctx.arc(x,y-6,4,0,TAU);ctx.fill();
     }
   }
+  /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
+  const helm=helmBeamGpu(px,py,C.face)?"gpu":true;
   ctx.save();ctx.translate(px,py);
   drawAstronaut({face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:!C.on,jet:!!C.jetOn,
-    mining:false,suitLow:G.surf.suit<25,lamp:true});
+    mining:false,suitLow:G.surf.suit<25,lamp:helm});
   ctx.restore();
   /* Показания больше не рисуются на канве в левом нижнем углу: там стоят
      DOM-пэды, и текст просвечивал сквозь кнопки (M178). Скафандр и ранец
@@ -82762,49 +82763,18 @@ function drawCaveWater(C,camx,camy){
 }
 function drawCaveGlow(C,camx,camy,px,py){
   const D=C.deco;if(!D)return;
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  for(const c of D.crystals){
-    const sx=c.x-camx;if(sx<-c.rad||sx>W+c.rad)continue;
-    const sy=(c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low))-camy;
-    if(c.low&&sy+camy>=CAVE_Y1-10)continue;
-    const puls=.55+.45*Math.sin(G.t*.014+c.ph);
-    /* тело: две грани на иглу, светлая и тёмная, и ребро между ними. Одной
-       заливкой игла читается соломиной; гранью — камнем, который ловит свет.
-       Свет один на куст — так грот светится, а не мерцает по каждой игле */
-    const col=c.col.join(",");
-    for(const s of c.spikes){
-      const bx=sx+s.dx, dir=c.up?-1:1;
-      const tx=bx+s.lean*s.h, ty=sy+s.h*dir;
-      ctx.fillStyle="rgba("+col+","+(.10+puls*.07).toFixed(3)+")";
-      ctx.beginPath();
-      ctx.moveTo(bx-s.w,sy);ctx.lineTo(tx,ty);ctx.lineTo(bx,sy-dir*s.w*.5);
-      ctx.closePath();ctx.fill();
-      ctx.fillStyle="rgba("+col+","+(.22+puls*.16).toFixed(3)+")";
-      ctx.beginPath();
-      ctx.moveTo(bx,sy-dir*s.w*.5);ctx.lineTo(tx,ty);ctx.lineTo(bx+s.w,sy);
-      ctx.closePath();ctx.fill();
-      ctx.strokeStyle="rgba(255,255,255,"+(.10+puls*.16).toFixed(3)+")";
-      ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(bx,sy-dir*s.w*.4);ctx.lineTo(tx,ty);ctx.stroke();
-    }
-  }
-  /* ореол кристалла, жилы, пыль в воздухе, конус фонаря и пятно под ногами ушли
-     на видеокарту (22c): свет лёг на породу с тенями, руда светит выше единицы */
-  /* капли и всплеск */
-  for(const d of D.drops){
-    const sx=d.x-camx;if(sx<-10||sx>W+10)continue;
-    ctx.fillStyle="rgba(170,215,235,.5)";
-    ctx.fillRect(sx-.6,d.y-camy-3,1.2,4.5);
-  }
+  /* грани кристаллов с ореолом, жилы, пыль, конус фонаря, пятно у ног и капли — слой
+     сложения main на видеокарте (22c caveMainAdd): 2D «lighter» на переднем слое ложится
+     поверх сцены с прозрачностью, а не прибавляется. Здесь остался всплеск */
   if(D.splash){
     const s=D.splash, sx=s.x-camx;
     const k=1-s.t/26;
+    ctx.save();ctx.globalCompositeOperation="lighter";
     ctx.strokeStyle="rgba(170,215,235,"+(.34*(1-k)).toFixed(3)+")";
     ctx.lineWidth=1;
     ctx.beginPath();ctx.ellipse(sx,s.y-camy,2+k*9,1+k*3,0,0,TAU);ctx.stroke();
+    ctx.restore();
   }
-  ctx.restore();
 }
 
 /* ══════════════ свой свет пещеры (M248) ══════════════
@@ -82835,27 +82805,14 @@ function caveLampSpot(C){
   return C.lamp={x,y:caveFloor(C,x),ph:r()*TAU};
 }
 function drawCaveOwnLight(C,camx,camy){
-  /* мох: холодное пятно, медленно дышит — движение, а не мигание */
-  ctx.save();ctx.globalCompositeOperation="lighter";
-  for(const m of caveMossSpots(C)){
-    const x=m.x-camx, y=m.y-camy;
-    if(x<-60||x>W+60||y<-60||y>H+60)continue;
-    const pu=.62+.38*Math.sin(G.t*.006+m.ph);
-    /* сами пятна: несколько мелких, разной величины — не одна клякса */
-    for(let i=0;i<m.n;i++){
-      const a=m.ph+i*2.1, rx=Math.cos(a)*m.rr*.6, ry=Math.sin(a)*m.rr*.35;
-      ctx.fillStyle="rgba("+m.col.join(",")+","+(.20+.14*pu).toFixed(3)+")";
-      ctx.beginPath();ctx.ellipse(x+rx,y+ry,2.2+i*.7,1.4+i*.4,a,0,TAU);ctx.fill();
-    }
-  }
-  ctx.restore();
+  /* мох — холодное пятно, медленно дышит — светит слоем сложения main (22c caveMainAdd) */
   /* чужой фонарь: он тёплый, и он тут не сам по себе — кто-то его поставил */
   const L=caveLampSpot(C);
   const lx=L.x-camx, ly=L.y-camy;
   if(lx>-80&&lx<W+80&&ly>-80&&ly<H+80){
     const pu=.78+.22*Math.sin(G.t*.011+L.ph);
-    /* свет лампы — в поле видеокарты (22c): тени от породы теперь честные
-       и живые, как у фонаря шлема; маска, печённая раз на пещеру, не нужна */
+    /* свет лампы — зарево main сложением в поле видеокарты (22c ownAdd): тени от
+       породы честные и мягкие; маска, печённая раз на пещеру, не нужна */
     /* сама вещь: корпус, дужка и стекло — вещь, а не пятно */
     ctx.fillStyle="rgba(46,52,60,.95)";
     ctx.fillRect(lx-3.4,ly-9,6.8,7.5);
@@ -83161,8 +83118,9 @@ function drawCaveProps(C,camx,camy){
    маска теней, печённая один раз. Свет лежал ПОВЕРХ камня и сквозь камень.
    Стало: сцена до этого места — альбедо (порода, натёки, вода, находки, жизнь);
    один проход поля УМНОЖАЕТ её на свет. Свет — от источников и только от них:
-   фонарь шлема конусом, чужая лампа, мох, кристаллы, жилы, дневной свет в
-   устье. Каждый источник бросает тени от породы: луч идёт по маске породы
+   фонарь шлема конусом, чужая лампа, мох, кристаллы, жилы (день в устье —
+   трапеция сложением, как у main). Каждый источник бросает тени от породы:
+   луч идёт по маске породы
    (сетка C.g, одна текстура с мипами), и чем дальше от источника, тем крупнее
    мип — полутень растёт с расстоянием, как у настоящего фонаря. Порода не
    режет свет ступенькой: свет гаснет в толще за несколько пикселей, и стена,
@@ -83172,17 +83130,21 @@ function drawCaveProps(C,camx,camy){
    колонной в луче тёмная полоса) и пылинки, которые висят и медленно плывут,
    светясь только там, где их застал луч. Третье — руда: ядра кристаллов,
    жилы и стекло лампы светят выше единицы и уходят в лестницу свечения (L2).
-   Общая часть (маска, тени, источники) — CAVE_LIT_WGSL: её же берёт шахта (23). */
+   Общая часть (маска, тени, источники) — CAVE_LIT_WGSL: её же берёт шахта (23).
+   Пещера 26.09 вернулась к модели main (Контроль: «цвет main»): множитель — одна темнота
+   от фонаря; фонарь скафандра — конус сложением; грани, жилы, мох и пыль — слой сложения
+   main (caveMainAdd); с тенями от породы светит только чужая лампа (ownAdd). */
 
 /* числа в поле: fu.v[0] камера (x,y,K,t) · [1] маска: мир → uv (ox,oy,1/w,1/h) ·
    [2] фонарь: место и направление · [3] фонарь: дальность, cos края, cos ядра, сила ·
    [4] цвет фонаря, число источников · [5] окружающий свет, доля дальней стены ·
    [6..13] источники: x, y, радиус, цвет×сила (упакован: r·65536+g·256+b, 1.00 = 100) ·
-   [14] числа режима (пещера — ближнее озеро: x0, x1, уровень, есть ли; шахта — кромка земли,
-   день, камера под землёй).
+   [14] числа режима (пещера — ближнее озеро: x0, x1, уровень, есть ли; шахта — .xy человек,
+   .z камера под землёй).
    Маска: красный — порода, зелёный — открытое небо (шахта). Свои места у режима —
-   пять функций: ambAt (окружающий), dayAt (свет сверху), skyAt (не освещается —
-   само светит), airAt (где висит воздух: рассеяние и пыль), waterAt (вода: блеск). WGSL не требует
+   шесть функций: ambAt (окружающий), dayAt (свет сверху), skyAt (не освещается —
+   само светит), airAt (где висит воздух: рассеяние и пыль), waterAt (вода: блеск),
+   ownAdd (своё сложением везде, не только в воздухе). WGSL не требует
    объявлять функцию до вызова, поэтому режим дописывает их после общего поля */
 const CAVE_LIT_MAX=8;                            /* v[14] — свои числа режима: озеро, глубина */
 const CAVE_LIT_WGSL=`
@@ -83202,7 +83164,9 @@ fn trans(a:vec2f,b:vec2f,n:i32)->f32{
     s+=rockAt(a+d*(x/L),clamp(log2(1.+x*.02),0.,3.));
   }
   return exp(-s*ds*SIG);}
-fn lampAt(w:vec2f)->f32{
+fn lampAt(w:vec2f)->f32{return lampCone(w)*fu.v[3].w;}
+/* форма луча без силы: ею же блестит вода пещеры, где в полях фонаря больше нет */
+fn lampCone(w:vec2f)->f32{
   let d=w-fu.v[2].xy;let L=length(d);let R=fu.v[3].x;
   if(L>R){return 0.;}
   let c=dot(d/max(L,1e-3),fu.v[2].zw);
@@ -83211,7 +83175,7 @@ fn lampAt(w:vec2f)->f32{
   /* ни ближней заливки, ни отражённого: у main у самого фонаря только тёплое зарево сложением
      (warmGlow), а пятно σ48 и отражённый σ130 выжигали ядро — шахта 146 против 115 у main,
      пещера белела у фонаря (Контроль 26.09) */
-  return cone*fall*fu.v[3].w;}
+  return cone*fall;}
 fn litCol(pk:f32)->vec3f{return vec3f(floor(pk/65536.),pmod(floor(pk/256.),256.),pmod(pk,256.))*.01;}
 `;
 /* свет: сцена × (окружающий + источники с тенями) */
@@ -83235,8 +83199,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
 const CAVE_ADD_WGSL=CAVE_LIT_WGSL+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let K=fu.v[0].z;let w=p/K+fu.v[0].xy;let t=fu.v[0].w;
-  let air=airAt(w);
-  if(air<.01){return vec4f(0.);}
+  let air=airAt(w);let ex=ownAdd(w);
+  if(air<.01){return vec4f(ex,0.);}
   var sc=vec3f(0.);
   let l0=lampAt(w);
   if(l0>.003){
@@ -83257,20 +83221,18 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     if(k>=n){break;}
     let P=fu.v[6+k];let dd=length(w-P.xy);
     if(dd<P.z){let a=1.-dd/P.z;
-      var v=a*a*a*.07;
-      if(P.z>300.){v=a*a*.10*trans(P.xy,w,10);}   /* дневной свет в устье — столб с тенями */
-      sc+=litCol(P.w)*v;}
+      sc+=litCol(P.w)*(a*a*a*.07);}
   }
   sc+=waterAt(w,t,K);
-  return vec4f(sc*air,0.);}
+  return vec4f(sc*air+ex,0.);}
 `;
-/* места пещеры: неба нет (день в устье — источник), окружающий ровный */
+/* места пещеры: неба нет (день в устье — трапеция main, drawCaveLight), окружающий ровный */
 const CAVE_OWN_WGSL=`
 /* темнота — как у main (drawCaveDark): в круге фонаря R=.52·max(W,H) порода гаснет от нуля
    через .18 на .45 круга до .42 у края и дальше, и гаснет ровно — тон камня, воды и мха
    остаётся своим. Синий множитель (.2,.3,.64) уводил бирюзу хода в синий (Контроль 26.09);
    холод темноты теперь сложением — тоном самой планеты (warmGlow, профиль 2). fu.v[5] —
-   общий уровень: порода флота с допечённым материалом светлее, чем в кадре main */
+   общий уровень, 1 как у main: материала под землёй нет, порода из печи того же цвета */
 fn darkA(w:vec2f)->f32{
   let R=max(fu.res.z,fu.res.w)*.52*(fu.v[3].x/300.);
   let r0=min(.5,40./max(R,1.));
@@ -83279,6 +83241,20 @@ fn darkA(w:vec2f)->f32{
 fn ambAt(w:vec2f)->vec3f{return fu.v[5].rgb*(1.-darkA(w));}
 fn dayAt(w:vec2f)->vec3f{return vec3f(0.);}
 fn skyAt(w:vec2f)->f32{return 0.;}
+/* чужая лампа — как маска main (caveLampMask): тёплое .24 → .08 на середине → ноль, сложением,
+   с тенями от породы. В поле её радиус со знаком минус — множитель и воздух её не видят */
+fn ownAdd(w:vec2f)->vec3f{
+  var o=vec3f(0.);
+  let n=i32(fu.v[4].w);
+  for(var k=0;k<${CAVE_LIT_MAX};k++){
+    if(k>=n){break;}
+    let P=fu.v[6+k];if(P.z>=0.){continue;}
+    let t=length(w-P.xy)/(-P.z);
+    if(t<1.){
+      let c=select(vec3f(.08,.0596,.0376)*(2.-2.*t),mix(vec3f(.24,.1939,.1299),vec3f(.08,.0596,.0376),t*2.),t<.5);
+      o+=c*litCol(P.w).x*trans(P.xy,w,10);}
+  }
+  return o;}
 fn airAt(w:vec2f)->f32{return 1.-smoothstep(.3,.7,rockAt(w,0.));}
 /* озеро (22a cavePool): кромка ловит фонарь той же рябью, что рисует 2D, а под ней —
    столб отражения фонаря, раздробленный рябью: вода читается водой, а не заливкой */
@@ -83287,13 +83263,14 @@ fn waterAt(w:vec2f,t:f32,K:f32)->vec3f{
   if(P.w<.5||w.x<P.x||w.x>P.y){return vec3f(0.);}
   let d=w.y-P.z-sin(w.x*.06+t*.02)*.9;
   if(d<-3.){return vec3f(0.);}
-  var c=fu.v[4].rgb*lampAt(vec2f(w.x,P.z-3.))*exp(-d*d*K*K/1.6)*.5;
+  /* сила — прежняя (.6 фонаря): в полях пещеры фонаря больше нет, блеск берёт форму луча */
+  var c=fu.v[4].rgb*lampCone(vec2f(w.x,P.z-3.))*exp(-d*d*K*K/1.6)*.3;
   let lp=fu.v[2].xy;let h=P.z-lp.y;
   if(d>0.&&h>0.){
     let rx=w.x-lp.x;let sp=5.+d*.4;
     let col=exp(-rx*rx/(sp*sp))*exp(-d/(h*1.6+24.));
     let g=cvn(vec2f(w.x*.13+t*.006,d*.7-t*.035));
-    c+=fu.v[4].rgb*col*smoothstep(.42,.78,g)*fu.v[3].w*.8;
+    c+=fu.v[4].rgb*col*smoothstep(.42,.78,g)*.48;
   }
   /* край зала — не обрез: блеск сходит на нет за 30 px */
   return c*smoothstep(P.x,P.x+30.,w.x)*(1.-smoothstep(P.y-30.,P.y,w.x));}
@@ -83313,17 +83290,24 @@ function caveMaskCv(C){
    тёплое пятно исчезало (Контроль 26.09). Центр и радиусы — пиксели кадра; профиль 0 —
    (1−t)^2.2, как у спрайтов, 1 — три ступени градиента пятна (a, .556a на .45, ноль) по кругу rx,
    обрезанные эллипсом rx×ry: у main пятно — радиальный градиент в эллипсе, край сверху и снизу чёткий,
-   2 — холод темноты пещеры: от r0 через .18 на .45 до .42 у края и так же за кругом */
+   2 — холод темноты пещеры: от r0 через .18 на .45 до .42 у края и так же за кругом. Спрайт
+   main начинается с прозрачного чёрного, а 2D тянет цвет между остановками без
+   премультипликации: до .45 тон растёт квадратом (гасит поле — линейно). Линейный тон
+   синил круг фонаря на 1–1.5 против main */
 const WARM_GLOW_WGSL=`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let A=fu.v[0];let B=fu.v[1];
   let t=length((p-A.xy)/max(A.zw,vec2f(1.)));
-  if(fu.v[2].x>1.5){let s=clamp((t-fu.v[2].y)/(1.-fu.v[2].y),0.,1.);
-    return vec4f(B.rgb*B.w*select(.18+.24*(s-.45)/.55,.18*s/.45,s<.45),0.);}
+  if(fu.v[2].x>1.5){let s=clamp((t-fu.v[2].y)/(1.-fu.v[2].y),0.,1.);let e=s/.45;
+    return vec4f(B.rgb*B.w*select(.18+.24*(s-.45)/.55,.18*e*e,s<.45),0.);}
   if(t>=1.){return vec4f(0.);}
   var a=B.w*pow(1.-t,2.2);
-  if(fu.v[2].x>.5){let c=length(p-A.xy)/max(A.z,1.);
-    a=select(mix(B.w*.556,0.,(c-.45)/.55),mix(B.w,B.w*.556,c/.45),c<.45)*clamp((1.-t)*A.w,0.,1.);}
+  if(fu.v[2].x>.5){let c=length(p-A.xy)/max(A.z,1.);let e=clamp((1.-t)*A.w,0.,1.);
+    /* цвет идёт по остановкам main сам, без премультипликации: (255,214,150) → (255,196,120)
+       на .45 → (255,190,110) у края; с одним цветом пятно выходило синее main на 2–3 */
+    let col=select(mix(vec3f(1.,.769,.471),vec3f(1.,.745,.431),(c-.45)/.55),mix(B.rgb,vec3f(1.,.769,.471),c/.45),c<.45);
+    a=select(mix(B.w*.556,0.,(c-.45)/.55),mix(B.w,B.w*.556,c/.45),c<.45)*e;
+    return vec4f(col*a,0.);}
   return vec4f(B.rgb*a,0.);}`;
 const WARM_GLOW_U=new Float32Array(12);
 function warmGlow(pass,x,y,rx,ry,col,a,prof,r0){
@@ -83336,39 +83320,21 @@ function caveLitPack(r,g,b,I){
   return q(r)*65536+q(g)*256+q(b);
 }
 const CAVE_LIT_U=new Float32Array(60), CAVE_LIT_C=[];
-/* источники в кадре: мир (x,y,r) и цвет 0..1; ближние к середине кадра — первыми */
+/* источники в кадре: мир (x,y,r) и цвет 0..1; ближние к середине кадра — первыми.
+   add — свет сложением (в поле радиус со знаком минус) */
 function caveLights(C,camx,camy){
   const L=CAVE_LIT_C;L.length=0;
   const vw=W,vh=H,cx=camx+vw/2,cy=camy+vh/2;
-  const put=(x,y,r,col,I,pri)=>{
+  const put=(x,y,r,col,I,pri,add)=>{
     if(x+r<camx||x-r>camx+vw||y+r<camy||y-r>camy+vh)return;
-    L.push({x,y,r,c:col,I,k:Math.hypot(x-cx,y-cy)-r-(pri||0)});
+    L.push({x,y,r,c:col,I,add:!!add,k:Math.hypot(x-cx,y-cy)-r-(pri||0)});
   };
-  /* день в устье — холодный сверху, по нему виден выход */
-  put(60,caveGalY(C,60)-230,520,[.58,.72,.92],1.05,2000);
+  /* чужая лампа — как у main: тёплое зарево сложением на 86 px над полом, с тенями от породы
+     (ownAdd); в цвете — только дыхание. Мох, кристаллы и жилы светят слоем сложения main
+     (caveMainAdd): умноженные источники белили и зеленили породу вокруг (Контроль 26.09);
+     дозорных освещает их факел в 2D, как у main */
   const Lp=caveLampSpot(C);
-  put(Lp.x,Lp.y-6,130,[1,.74,.48],(.78+.22*Math.sin(G.t*.011+Lp.ph))*1.3,1000);
-  for(const m of caveMossSpots(C)){
-    const pu=.62+.38*Math.sin(G.t*.006+m.ph);
-    put(m.x,m.y,m.rr*5,m.col.map(v=>v/255),.55*pu);
-  }
-  const D=C.deco;
-  if(D){
-    for(const c of D.crystals){
-      const y=c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low);
-      const pu=.55+.45*Math.sin(G.t*.014+c.ph);
-      put(c.x,y+(c.up?-10:10),Math.max(90,c.rad*4.5),c.col.map(v=>v/255),.9*(.6+.4*pu));
-    }
-    for(const v of D.veins){
-      const q=v.pts[Math.floor(v.pts.length/2)];
-      const y=(v.up?caveCeilOf(C,q[0],v.low):caveFloorOf(C,q[0],v.low))+q[1];
-      put(q[0],y,110,v.col.map(k=>k/255),.6*(.6+.4*Math.sin(G.t*.009+v.ph)));
-    }
-  }
-  if(C.watch>0)for(let i=0;i<2;i++){
-    const x=118+i*26+(i?3:-3);
-    put(x,caveFloor(C,118+i*26)-20,90,[1,.72,.42],1.1,500);
-  }
+  put(Lp.x,Lp.y-5,86,[1,1,1],.78+.22*Math.sin(G.t*.011+Lp.ph),1000,true);
   L.sort((a,b)=>a.k-b.k);
   if(L.length>CAVE_LIT_MAX)L.length=CAVE_LIT_MAX;
   return L;
@@ -83400,15 +83366,16 @@ function drawCaveLight(C,camx,camy,lamp){
   U[4]=0;U[5]=CAVE_Y0;U[6]=1/(CAVE_NX*CAVE_CS);U[7]=1/(CAVE_NY*CAVE_CS);
   const a=.2;                                   /* луч чуть вниз — на пол перед ходоком */
   U[8]=lamp.x;U[9]=lamp.y;U[10]=lamp.f*Math.cos(a);U[11]=Math.sin(a);
-  /* луч — как фонарь скафандра у main: холодный (190,215,235) и слабый; тёплое у фонаря —
-     зарево и пятно ниже. Сила 2.5 тёплого выжигала ближнее поле в белое (Контроль 26.09) */
-  U[12]=300*lk;U[13]=Math.cos(.52);U[14]=Math.cos(.16);U[15]=.6;
+  /* форма луча — для блеска воды; силы у фонаря в полях нет: у main фонарь скафандра —
+     конус сложением поверх темноты (caveMainAdd), порода под ним не умножается. Умноженный
+     фонарь белил ход у человека и уводил его в бирюзу (Контроль 26.09) */
+  U[12]=300*lk;U[13]=Math.cos(.52);U[14]=Math.cos(.16);U[15]=0;
   U[16]=.745;U[17]=.843;U[18]=.922;
-  U[20]=.68;U[21]=.72;U[22]=.75;U[23]=.45;
+  U[20]=1;U[21]=1;U[22]=1;U[23]=.45;
   const L=caveLights(C,camx,camy);
   U[19]=L.length;
   for(let i=0;i<L.length;i++){const s=L[i],o=24+i*4;
-    U[o]=s.x;U[o+1]=s.y;U[o+2]=s.r;U[o+3]=caveLitPack(s.c[0],s.c[1],s.c[2],s.I);}
+    U[o]=s.x;U[o+1]=s.y;U[o+2]=s.add?-s.r:s.r;U[o+3]=caveLitPack(s.c[0],s.c[1],s.c[2],s.I);}
   const pl=cavePoolInView(C,camx,camy);
   if(pl){U[56]=pl.x0;U[57]=pl.x1;U[58]=pl.y;U[59]=1;}
   const mt={view:gpuMipTex(caveMaskCv(C)).view},sm=gpuMipSmp();
@@ -83420,46 +83387,182 @@ function drawCaveLight(C,camx,camy,lamp){
   warmGlow(pass,(lamp.x-camx)*K,(lamp.y-camy)*K,R*K,R*K,caveDarkTone(),1,2,Math.min(.5,40/Math.max(R,1)));
   warmGlow(pass,(C.x-camx)*K,(C.y-25-camy)*K,R*.72*K,R*.72*K,[1,.784,.518],.24,0);
   warmGlow(pass,(C.x+f*46-camx)*K,(C.y-3-camy)*K,120*lk*K,44*lk*K,[1,.839,.588],.18,1);
+  /* день в устье — как у main: трапеция сложением, холодная, .16 сверху и ноль у пола галереи;
+     по ней виден выход. Источник с тенями давал белый столб (Контроль 26.09: «у main конус») */
+  const mx=60-camx,my=caveGalY(C,60)-camy;
+  if(mx>-200&&mx<W+200&&my>-300&&my<H+100){
+    const u=CAVE_MOUTH_U;u[0]=mx*K;u[1]=my*K;u[2]=K;
+    gpuField(pass,"cave.mouth",CAVE_MOUTH_WGSL,u,null,{blend:"add"});
+  }
+  caveMainAdd(C,camx,camy,pass,K);
   caveEmit(C,camx,camy,pass,K);
 }
-/* руда светит сама (L2): ядро выше единицы — узкий ореол в лестнице свечения,
-   широкое зарево слабое. Координаты — пиксели кадра (мир × K) */
+/* трапеция дня: верх 52 px на 240 над устьем, низ 140 px на 60 ниже; градиент по высоте */
+const CAVE_MOUTH_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let q=(p-fu.v[0].xy)/fu.v[0].z;
+  if(q.y<-240.||q.y>60.||abs(q.x)>26.+44.*(q.y+240.)/300.){return vec4f(0.);}
+  return vec4f(vec3f(.588,.745,.902)*(.16*(1.-clamp((q.y+220.)/280.,0.,1.))),0.);}`;
+const CAVE_MOUTH_U=new Float32Array(4);
+/* стекло чужой лампы светит само (L2): ядро выше единицы — узкий ореол в лестнице свечения.
+   Грани кристаллов и жилы светят, как у main, слоем сложения (caveMainAdd) */
 const CAVE_EMIT=[];
 function caveEmit(C,camx,camy,pass,K){
-  const S=CAVE_EMIT;S.length=0;
-  const D=C.deco;
-  const sx=x=>(x-camx)*K, sy=y=>(y-camy)*K;
+  const Lp=caveLampSpot(C);
+  if(Lp.x-camx<-40||Lp.x-camx>W+40)return;
+  const pu=.78+.22*Math.sin(G.t*.011+Lp.ph),S=CAVE_EMIT;S.length=0;
+  S.push([1,(Lp.x-camx)*K,(Lp.y-5.4-camy)*K,2.4*K,0,0,2*K,255*2.2,226*2.2,170*2.2,pu]);
+  gpuShapes(pass,S,{blend:"add"});
+}
+/* ── слой сложения main на видеокарте ──
+   Main клал поверх темноты сложением («lighter») грани кристаллов с ореолом, жилы, мох, пыль
+   в воздухе, конус фонаря скафандра, пятно у ног и капли. На переднем 2D-слое флота «lighter»
+   ложится поверх сцены с прозрачностью — сцена под ним гаснет на ту же долю, — и всё это
+   выходило тусклее main (Контроль 26.09: «цветок и кристаллы слабые»). Здесь то же сложением
+   по сцене, числа main (22a drawCaveGlow, drawCaveOwnLight). Координаты — пиксели кадра */
+const CAVE_ADD_S=[],CAVE_GLOW_L=[];
+function caveMainAdd(C,camx,camy,pass,K){
+  const S=CAVE_ADD_S,GL=CAVE_GLOW_L;S.length=0;GL.length=0;
+  const D=C.deco,t=G.t;
+  const px=C.x-camx,py=C.y-11-camy,f=C.face||1,lk=kitStat().lamp;
   if(D){
     for(const c of D.crystals){
-      const x=c.x-camx;if(x<-c.rad||x>W+c.rad)continue;
-      const y=(c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low));
-      if(c.low&&y>=CAVE_Y1-10)continue;
-      const pu=.55+.45*Math.sin(G.t*.014+c.ph), col=c.col, dir=c.up?-1:1;
-      S.push([1,sx(c.x),sy(y+dir*6),c.rad*.7*K,0,0,c.rad*1.6*K,col[0],col[1],col[2],.30+.25*pu]);
+      const sx=c.x-camx;if(sx<-c.rad||sx>W+c.rad)continue;
+      const sy=(c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low))-camy;
+      if(c.low&&sy+camy>=CAVE_Y1-10)continue;
+      const pu=.55+.45*Math.sin(t*.014+c.ph),col=c.col,dir=c.up?-1:1;
+      /* две грани на иглу — тёмная и светлая — и белое ребро между ними; свет один на куст */
       for(const s of c.spikes){
-        const bx=c.x+s.dx, tx=bx+s.lean*s.h*.55, ty=y+s.h*.55*dir;
-        S.push([2,sx(bx),sy(y),sx(tx),sy(ty),.8*K,2.2*K,col[0]*2.6,col[1]*2.6,col[2]*2.6,.7+.5*pu]);
+        const bx=sx+s.dx,tx=bx+s.lean*s.h,ty=sy+s.h*dir,my=sy-dir*s.w*.5;
+        S.push([5,(bx-s.w)*K,sy*K,tx*K,ty*K,bx*K,my*K,col[0],col[1],col[2],.10+pu*.07],
+               [5,bx*K,my*K,tx*K,ty*K,(bx+s.w)*K,sy*K,col[0],col[1],col[2],.22+pu*.16],
+               [2,bx*K,(sy-dir*s.w*.4)*K,tx*K,ty*K,.5*K,0,255,255,255,.10+pu*.16]);
       }
+      GL.push(sx,sy+(c.up?-18:18),c.rad*1.9,.19*pu+.07,col[0],col[1],col[2],0);
     }
     for(const v of D.veins){
-      const x0=v.pts[0][0]-camx, xn=v.pts[v.pts.length-1][0]-camx;
+      const x0=v.pts[0][0]-camx,xn=v.pts[v.pts.length-1][0]-camx;
       if(xn<-30||x0>W+30)continue;
-      const pu=.6+.4*Math.sin(G.t*.009+v.ph), col=v.col;
-      let px=null,py=null;
+      const pu=.6+.4*Math.sin(t*.009+v.ph),col=v.col;
+      /* широкий тусклый проход — свет вокруг жилы, узкий яркий — сама жила */
+      let qx=0,qy=0;
       for(let i=0;i<v.pts.length;i++){
-        const wx=v.pts[i][0];
-        const wy=(v.up?caveCeilOf(C,wx,v.low):caveFloorOf(C,wx,v.low))+v.pts[i][1];
-        if(px!==null)S.push([2,sx(px),sy(py),sx(wx),sy(wy),v.w*.5*K,1.2*K,col[0]*2.6,col[1]*2.6,col[2]*2.6,Math.min(1,v.a*pu*1.5)]);
-        px=wx;py=wy;
+        const wx=v.pts[i][0],x=wx-camx;
+        const y=(v.up?caveCeilOf(C,wx,v.low):caveFloorOf(C,wx,v.low))+v.pts[i][1]-camy;
+        if(i)S.push([2,qx*K,qy*K,x*K,y*K,v.w*2.5*K,0,col[0],col[1],col[2],v.a*pu*.22],
+                    [2,qx*K,qy*K,x*K,y*K,v.w*.5*K,0,col[0],col[1],col[2],v.a*pu]);
+        qx=x;qy=y;
       }
     }
+    for(const d of D.drops){
+      const sx=d.x-camx;if(sx<-10||sx>W+10)continue;
+      S.push([0,(sx-.6)*K,(d.y-camy-3)*K,(sx+.6)*K,(d.y-camy+1.5)*K,0,0,170,215,235,.5]);
+    }
   }
-  const Lp=caveLampSpot(C);
-  if(Lp.x-camx>-40&&Lp.x-camx<W+40){
-    const pu=.78+.22*Math.sin(G.t*.011+Lp.ph);
-    S.push([1,sx(Lp.x),sy(Lp.y-5.4),2.4*K,0,0,2*K,255*2.2,226*2.2,170*2.2,pu]);
+  /* мох: пятно дышит (.16 → 0 по кругу 2.2 r), на нём несколько мелких разной величины */
+  for(const m of caveMossSpots(C)){
+    const x=m.x-camx,y=m.y-camy;
+    if(x<-60||x>W+60||y<-60||y>H+60)continue;
+    const pu=.62+.38*Math.sin(t*.006+m.ph),col=m.col;
+    GL.push(x,y,m.rr*2.2,.16*pu,col[0],col[1],col[2],1);
+    for(let i=0;i<m.n;i++){
+      const a=m.ph+i*2.1,ex=x+Math.cos(a)*m.rr*.6,ey=y+Math.sin(a)*m.rr*.35;
+      const rx=2.2+i*.7,ry=1.4+i*.4,hx=Math.cos(a)*(rx-ry),hy=Math.sin(a)*(rx-ry);
+      S.push([2,(ex-hx)*K,(ey-hy)*K,(ex+hx)*K,(ey+hy)*K,ry*K,0,col[0],col[1],col[2],.20+.14*pu]);
+    }
   }
+  /* пыль в воздухе: 46 крупинок от координаты и времени, ярче у человека */
+  for(let i=0;i<46;i++){
+    const wx=(camx*.85+i*97.3+Math.sin(t*.004+i)*22)%(CAVE_W+400)-200;
+    const sx=wx-camx*.85;
+    if(sx<-10||sx>W+10)continue;
+    const sy=(i*173.7+t*.09+Math.sin(t*.006+i*2.1)*14)%(H*.9)+H*.06;
+    const a=clamp(1-Math.hypot(sx-px,sy-py)/240,0,1)*.30;
+    if(a>.01)S.push([0,sx*K,sy*K,(sx+1.2)*K,(sy+1.2)*K,0,0,190,220,240,a]);
+  }
+  /* пыль в луче: восемь крупинок плывут от фонаря */
+  for(let i=0;i<8;i++){
+    const ph=(t*.004+i*.79)%1,a=(1-Math.abs(ph-.5)*2)*.22;
+    if(a<=0)continue;
+    const dx=f*(16+ph*96*lk),dy=-14+Math.sin(i*2.1+t*.006)*13+ph*20;
+    S.push([1,(px+dx)*K,(py+dy)*K,(.9+ph*1.4)*K,0,0,0,255,232,190,a]);
+  }
+  /* пятно под ногами: без него астронавт висит в темноте */
+  GL.push(px,py+6,90,.10,170,205,230,0);
   gpuShapes(pass,S,{blend:"add"});
+  caveGlows(pass,GL,K);
+  const u=CAVE_CONE_U;u[0]=px;u[1]=py;u[2]=f;u[3]=lk;u[4]=K;
+  gpuField(pass,"cave.cone",CAVE_CONE_WGSL,u,null,{blend:"add"});
+}
+/* ореолы main: poiGlow (a, .28a на .45, ноль) и мох (линейно до нуля) — по семь за проход.
+   Список: x, y, радиус, a, r, g, b, профиль (0 — poiGlow, 1 — линейный) в пикселях вида */
+const CAVE_GLOW_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  var o=vec3f(0.);
+  let n=i32(fu.v[0].x);
+  for(var k=0;k<7;k++){
+    if(k>=n){break;}
+    let A=fu.v[1+k*2];let B=fu.v[2+k*2];
+    let t=length(p-A.xy)/max(A.z,1e-3);
+    if(t<1.){o+=B.rgb*(A.w*select(select(.28*(1.-t)/.55,1.-.72*t/.45,t<.45),1.-t,B.w>.5));}
+  }
+  return vec4f(o,0.);}`;
+const CAVE_GLOW_U=new Float32Array(60);
+function caveGlows(pass,GL,K){
+  const U=CAVE_GLOW_U;let n=0;
+  const flush=()=>{if(n){U[0]=n;gpuField(pass,"cave.glow",CAVE_GLOW_WGSL,U,null,{blend:"add"});n=0;}};
+  for(let i=0;i<GL.length;i+=8){
+    const x=GL[i],y=GL[i+1],R=GL[i+2];
+    if(x+R<0||x-R>W||y+R<0||y-R>H)continue;
+    const o=4+n*8;
+    U[o]=x*K;U[o+1]=y*K;U[o+2]=R*K;U[o+3]=GL[i+3];
+    U[o+4]=GL[i+4]/255;U[o+5]=GL[i+5]/255;U[o+6]=GL[i+6]/255;U[o+7]=GL[i+7];
+    if(++n===7)flush();
+  }
+  flush();
+}
+/* конус фонаря скафандра — как у main: три слоя (k 1, .7, .4; раствор 1, 1.55, 2.1), в каждом
+   градиент от человека вдоль взгляда (190,215,235)·.07k → (170,200,225)·.03k на .55 → ноль.
+   Один слой давал жёсткую грань — свет читался нарисованным треугольником */
+const CAVE_CONE_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let A=fu.v[0];let q=p/fu.v[1].x-A.xy;let f=A.z;
+  var o=vec3f(0.);
+  for(var i=0;i<3;i++){
+    let k=1.-f32(i)*.3;let sp=1.+f32(i)*.55;
+    let u=q.x/(f*250.*k);
+    if(u<0.||u>1.){continue;}
+    if(q.y<-16.-(70.*sp-16.)*u||q.y>-16.+(56.*sp+16.)*u){continue;}
+    let g=vec2f(f*230.*k*A.w,-20.);let t=clamp(dot(q,g)/dot(g,g),0.,1.);
+    /* цвет и прозрачность — порознь, как тянет 2D: (190,215,235) → (170,200,225) → (150,190,220) */
+    let u2=(t-.55)/.45;let u1=t/.55;
+    o+=select(mix(vec3f(.667,.784,.882),vec3f(.588,.745,.863),u2)*(.03*k*(1.-u2)),
+              mix(vec3f(.745,.843,.922),vec3f(.667,.784,.882),u1)*mix(.07*k,.03*k,u1),t<.55);
+  }
+  return vec4f(o,0.);}`;
+const CAVE_CONE_U=new Float32Array(8);
+/* луч фонаря со шлема (20-life drawAstronaut) — сложением по сцене, как «lighter» main по
+   породе. На переднем 2D-слое флота «lighter» ложится поверх сцены с прозрачностью и гасит
+   породу под собой: у лампы пещеры ядро выходило на 14 % темнее main (Контроль 26.09).
+   Четырёхугольник и градиент main: центр (3,−7), радиус 2 → 64, (255,244,205)·.30 → ноль.
+   Отсвет на груди остаётся в 2D — он лежит на самой фигуре. x, y — точка ходока в единицах
+   вида (translate у drawAstronaut); true — луч лёг, 2D его не рисует */
+const HELM_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let A=fu.v[0];let q=(p/A.w-A.xy)*vec2f(A.z,1.);
+  let u=(q.x-2.)/60.;
+  let e=min(min(q.x-2.,62.-q.x),min((q.y+8.6+21.4*u)*.9419,(25.*u-5.-q.y)*.9231));
+  let cv=clamp(e*A.w+.5,0.,1.);
+  if(cv<=0.){return vec4f(0.);}
+  let t=clamp((length(q-vec2f(3.,-7.))-2.)/62.,0.,1.);
+  return vec4f(mix(vec3f(1.,.957,.804),vec3f(1.,.863,.588),t)*(.30*(1.-t)*cv),0.);}`;
+const HELM_U=new Float32Array(4);
+function helmBeamGpu(x,y,f){
+  const pass=GPU.on&&GPU.overPass;
+  if(!pass||!GPU_FRONT_LIKE.has(G.mode))return false;
+  const u=HELM_U;u[0]=x;u[1]=y;u[2]=f||1;u[3]=G.viewK||1;
+  gpuField(pass,"helm.beam",HELM_WGSL,u,null,{blend:"add"});
+  return true;
 }
 
 /* ══════════════ шахта: спуск вглубь планеты ══════════════ */
@@ -83858,10 +83961,12 @@ function drawDigWorld(){
      и материал пекутся один раз на тайл 512×512, кадр только кладёт картинки.
      digRockPass рисует через W/H, которые withCtx подменяет на размер тайла */
   /* печёт и кладёт видеокарта (G7, 18c gpuTileStore): тайл — текстура под всем 2D */
-  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR+(p.mat?"|m":""));   /* «|m»: материал допёкся — перепечь */
+  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR);
   gpuDrawTiles(gpuScene(),D.tiles,camx,camy,(g,wx0,wy0)=>digRockPass(D,p,wx0,wy0));
-  /* свет уходит от человека (M55 #1) — теперь это поле видеокарты (23b): фонарь
-     с тенями от породы, лампы, день сверху; виньетка и тёплое пятно ушли */
+  /* свет уходит от человека (M55 #1) — поле видеокарты (23b): виньетка и фонари с тенями
+     умножают породу сразу, как виньетка main; руда, зерно, пол и крепь ложатся поверх */
+  const hl={x:px+DIG_CELL/2,y:py+DIG_CELL/2-12,f:D.face||1};   /* налобник: ладонь ниже макушки */
+  digShade(D,p,camx,camy,hl);
   /* ── рудное тело ──
      Светилось радиальным пятном на клетку и читалось бесформенной кляксой,
      ни при чём к камню вокруг. Руда в породе выглядит иначе: это вкрапления —
@@ -83908,10 +84013,24 @@ function drawDigWorld(){
       ctx.globalAlpha=(.30+((hh>>>19)&7)/7*.35)*vis*(0.85+lampK*.35);
       ctx.fillStyle=col2;
       ctx.beginPath();ctx.ellipse(0,0,rr*el,rr,0,0,TAU);ctx.fill();
-      /* блик на зерне — выше единицы, на видеокарте (23b digEmit): его зажигает фонарь */
+      /* блик на зерне — то, из-за чего руду замечают в темноте. Кистью main, в 2D: блик
+         выше единицы (23b) давал ореол, которого у main нет, а вдали от фонаря зёрна
+         гасли вовсе, и порода у края теряла рисунок (Контроль 26.09: σ ниже main) */
+      ctx.globalAlpha=Math.min(1,(.22+((hh>>>22)&3)/3*.3)*vis*(0.7+lampK*1.5));
+      ctx.fillStyle="rgba(255,250,235,1)";
+      ctx.beginPath();ctx.ellipse(-rr*.3,-rr*.35,rr*.5,rr*.28,0,0,TAU);ctx.fill();
       ctx.restore();
     }
-    /* зарево тела — тоже там: руда светит сама, слабо, и видна за светом фонаря */
+    /* и совсем слабое зарево на всё тело — чтобы жила читалась как жила,
+       а не как россыпь точек. Ровно настолько, чтобы поймать взгляд; круг гаснет
+       к краю квадрата, поэтому прямоугольника с кромкой не выходит */
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    ctx.globalAlpha=.07*vis;
+    const g=ctx.createRadialGradient(x+DIG_CELL/2,y+DIG_CELL/2,2,
+      x+DIG_CELL/2,y+DIG_CELL/2,DIG_CELL*.8);
+    g.addColorStop(0,col2);g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.fillRect(x-DIG_CELL*.3,y-DIG_CELL*.3,DIG_CELL*1.6,DIG_CELL*1.6);
+    ctx.restore();
   }
   ctx.restore();
   /* ── выработка ── */
@@ -83921,10 +84040,10 @@ function drawDigWorld(){
      неё есть верх и низ. Отсюда вертикальный градиент внутри хода. */
   ctx.save();ctx.clip(VP);
   const vg=ctx.createLinearGradient(0,-camy%DIG_CELL,0,H);
-  /* G7: темноту даёт свет (23b), а не краска — ход залит не в черноту, а
-     притушен: за ним задняя стена той же породы, и фонарь её находит */
-  vg.addColorStop(0,"rgba(4,5,8,.72)");
-  vg.addColorStop(1,"rgba(9,8,7,.64)");
+  /* заливка main: свет хода кладёт поле видеокарты сложением (23b voidLit); при .72 сквозь
+     неё светилась порода, и ход над человеком выходил светлее и зеленее main */
+  vg.addColorStop(0,"rgba(4,5,8,.94)");
+  vg.addColorStop(1,"rgba(9,8,7,.88)");
   ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   ctx.restore();
   /* ── зерно на обнажённой породе ──
@@ -84280,10 +84399,8 @@ function drawDigWorld(){
   drawDigFauna(camx,camy);
   const sx=px-camx+DIG_CELL/2,sy=py-camy+DIG_CELL/2;
   const suit=G.surf.suit;
-  /* ── свет (G7, 23b) ── темнота, фонарь, лампы площадок, день в стволе, пыль и
-     руда — одно поле видеокарты по всему нарисованному выше, с тенями от породы.
-     Фонарь — на шлеме: человек стоит в (sx, sy+4), налобник на ладонь ниже макушки */
-  drawDigLight(D,p,camx,camy,{x:px+DIG_CELL/2,y:py+DIG_CELL/2-12,f:D.face||1});
+  /* ── свет (G7, 23b) ── темнота поверх всего, луч и пыль в воздухе, огни ламп */
+  drawDigLight(D,p,camx,camy,hl);
   /* забой под резаком: подсветка и полоса проходки — поверх света, это указатель */
   if(D.target){
     const t=D.target;
@@ -84297,9 +84414,11 @@ function drawDigWorld(){
       /* искры из-под резака — выше единицы, на видеокарте (23b digEmit) */
     }
   }
+  /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
+  const helm=helmBeamGpu(sx,sy+4,D.face||1)?"gpu":true;
   ctx.save();ctx.translate(sx,sy+4);
   drawAstronaut({face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
-    mining:!!D.target,suitLow:suit<25,lamp:true});
+    mining:!!D.target,suitLow:suit<25,lamp:helm});
   ctx.restore();
   /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
      сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —
@@ -84436,9 +84555,9 @@ function digRockPass(D,p,camx,camy){
      камнем, в котором прорублен ход. Камню нужны ТРИ вещи, и все три —
      крупнее клетки: система трещин, блоки между ними и секущая дайка.
      Всё считается от мировых координат и печётся в тайл: кадру бесплатно. */
-  /* материал планеты поверх пластов: два прохода, как везде */
-  const mat=planetMat(p);
-  if(mat)fillMaterial(mat,camx,camy,.52,.30,null,{x:0,y:0,w:W,h:H});
+  /* материала планеты под землёй нет: цвет породы дают пласты. Так выглядит кадр main —
+     его тайл печётся раньше, чем готов материал, и больше не перепекается; с материалом
+     порода серела до S .13 и теряла оливу пластов (Контроль 26.09: «цвет main») */
   /* массив кладётся ПОСЛЕ материала: под ним трещины и пятна съедались до
      невидимости (самокритика M169) */
   digBedding(G0,camx,camy);
@@ -85014,47 +85133,67 @@ function digSurfFringe(p,camx,camy){
    нарисовала до этого места, — альбедо, свет его умножает. Было: виньетка
    multiply вокруг человека, тёплое пятно, конус и пыль, клипованные по
    выработке, круги ламп площадок поверх темноты. Стало:
+   · окружающий и фонари умножают ПОРОДУ — сразу после выкладки тайлов (digShade),
+     как виньетка main: руда, зерно, пол и крепь кладутся поверх своей яркостью;
+     одно поле по всему кадру гасило их на 5–17 % и сплющивало σ (Контроль 26.09);
+     темнота — поверх всего, в конце кадра;
    · фонарь шлема — конус с тенями от породы (маска — выработка и небо);
    · лампы площадок, камер и ниш — источники с тенями, а не круги;
    · резак у забоя — тёплый живой источник: работа освещает забой;
-   · день приходит СВЕРХУ: столб от неба вниз по стволу, по маске — чем больше
-     породы над точкой, тем меньше дня; у кромки земли разрез виден, как днём,
-     в глубине остаётся только то, до чего достал свет;
-   · руда светит сама: слабое зарево тела и блики зёрен выше единицы у фонаря —
-     они и вспыхивают в лестнице свечения, когда человек подходит;
+   · дня под кромкой нет, как у main: столб дня по стволу и дневной окружающий
+     у кромки белили шахту на 0 м (Контроль 26.09);
+   · руда — кистью main в 2D (23a): блик на зерне и слабое зарево тела;
    · пыль висит в луче и плывёт, искры из-под резака — выше единицы.
    Небо над устьем не освещается — оно само свет. */
 const DIG_MSK=5;                                  /* мира на тексель маски */
-/* места шахты: окружающий свет от фонаря, день сверху.
+/* места шахты: окружающий свет от фонаря, дня нет.
    Окружающий — как у main (M55): виньетка от фонаря 1 → .59 на .55 → .29 у R0=.62·max(W,H),
    ровная, без сдвига тона, и темнота .28 → .72 по кругу .52·max(W,H), пока камера под землёй
    (fu.v[14].z). Синий окружающий уводил грунт в синий, у main он оливковый (Контроль 26.09).
-   fu.v[5] — общий уровень: порода флота светлее, чем в кадре main. День у кромки — свой */
+   Центр — человек (fu.v[14].xy), как у main; фонарь шлема на ладонь выше.
+   fu.v[5] — общий уровень, 1 как у main: порода из печи того же цвета, что в кадре main */
 const DIG_OWN_WGSL=`
 fn vigA(w:vec2f)->vec3f{
   let R0=max(fu.res.z,fu.res.w)*.62;
-  let s=clamp((length(w-fu.v[2].xy)-R0*.16)/(R0*.84),0.,1.);
+  let s=clamp((length(w-fu.v[14].xy)-R0*.16)/(R0*.84),0.,1.);
   let m=vec3f(.588,.596,.627);
   return select(mix(m,vec3f(.290,.298,.337),(s-.55)/.45),mix(vec3f(1.),m,s/.55),s<.55);}
 fn darkM(w:vec2f)->f32{
   let R=max(fu.res.z,fu.res.w)*.52;
-  let s=clamp((length(w-fu.v[2].xy)-30.)/max(R-30.,1.),0.,1.);
+  let s=clamp((length(w-fu.v[14].xy)-30.)/max(R-30.,1.),0.,1.);
   return 1.-fu.v[14].z*select(.28+.44*(s-.45)/.55,.28*s/.45,s<.45);}
-fn ambAt(w:vec2f)->vec3f{
-  let dep=w.y-fu.v[14].x;let day=fu.v[14].y;
-  return vigA(w)*darkM(w)*fu.v[5].rgb+vec3f(.62,.63,.64)*day*(1.-smoothstep(20.,320.,dep));}
+fn ambAt(w:vec2f)->vec3f{return vigA(w)*darkM(w)*fu.v[5].rgb;}
 fn skyAt(w:vec2f)->f32{return smoothstep(.3,.7,maskAt(w,0.).g);}
 fn airAt(w:vec2f)->f32{let m=maskAt(w,0.);return (1.-smoothstep(.3,.7,m.r))*(1.-smoothstep(.3,.7,m.g));}
 fn waterAt(w:vec2f,t:f32,K:f32)->vec3f{return vec3f(0.);}
-fn dayAt(w:vec2f)->vec3f{
-  let day=fu.v[14].y;if(day<.01){return vec3f(0.);}
-  var s=0.;var hit=0.;
-  for(var i=1;i<=14;i++){
-    let h=f32(i)*22.;let m=maskAt(w-vec2f(0.,h),clamp(log2(1.+h*.02),0.,3.));
-    if(m.g>.5){hit=1.-f32(i)/16.;break;}
-    s+=m.r;
+fn dayAt(w:vec2f)->vec3f{return vec3f(0.);}
+/* своё сложением — свет в выработке. Тёплое у налобника («digwarm» main) ложится раньше —
+   на породу до заливки хода и до неба (digShade), как у main: поверх заливки оно высветляло
+   ход на четверть против main (Контроль 26.09) */
+fn ownAdd(w:vec2f)->vec3f{return voidLit(w)*airAt(w);}
+/* свет в выработке — как у main, сложением и только в воздухе хода (main клипует его по
+   выработке): конус налобника .13 на 170 px, пятно на полу — эллипс 130×42 (.20, .07 на
+   середине, ноль), окружающий у человека .10 на 84 px и ореолы ламп крепи .55/.18 на 64 px.
+   Без них ход под человеком был на четверть темнее main (Контроль 26.09) */
+fn voidLit(w:vec2f)->vec3f{
+  let d=w-fu.v[14].xy;let f=select(-1.,1.,fu.v[2].z>=0.);
+  var o=vec3f(0.);
+  let u=d.x*f;
+  if(u>0.&&u<190.&&d.y>-12.-52.*u/190.&&d.y<-12.+64.*u/190.){
+    o+=vec3f(.745,.843,.922)*(.13*max(0.,1.-u/170.));}
+  let e=d-vec2f(f*26.,16.);
+  if(e.x*e.x/16900.+e.y*e.y/1764.<1.){
+    let t=clamp((length(e)-4.)/126.,0.,1.);
+    o+=select(vec3f(.0494,.0494,.0439)*(2.-2.*t),mix(vec3f(.1678,.1616,.1396),vec3f(.0494,.0494,.0439),t*2.),t<.5);}
+  o+=vec3f(.0588,.0667,.0745)*(1.-clamp((length(d)-2.)/82.,0.,1.));
+  let n=i32(fu.v[4].w);
+  for(var k=0;k<${CAVE_LIT_MAX};k++){
+    if(k>=n){break;}
+    let P=fu.v[6+k];if(abs(P.z-120.)>.5){continue;}        /* лампы крепи — радиус 120 (digLights) */
+    let t=length(w-P.xy)/64.;
+    if(t<1.){o+=select(vec3f(.18,.1412,.0918)*(1.-t)/.75,mix(vec3f(.55,.4616,.3235),vec3f(.18,.1412,.0918),t*4.),t<.25);}
   }
-  return vec3f(.78,.86,1.)*day*hit*exp(-s*22.*SIG)*1.1;}
+  return o;}
 `;
 /* маска: красный — порода, зелёный — небо; пересобирается, когда копнули (D.maskV) */
 function digMask(D,p){
@@ -85078,14 +85217,16 @@ function digMask(D,p){
 }
 const DIG_LIT_C=[];
 /* источники в кадре (мир): лампы, собранные крепью за этот кадр, и резак */
-function digLights(D,camx,camy){
+function digLights(D,camx,camy,early){
   const L=DIG_LIT_C;L.length=0;
   const vw=W,vh=H,cx=camx+vw/2,cy=camy+vh/2;
   const put=(x,y,r,col,I,pri)=>{
     if(x+r<camx||x-r>camx+vw||y+r<camy||y-r>camy+vh)return;
     L.push({x,y,r,c:col,I,k:Math.hypot(x-cx,y-cy)-r-(pri||0)});
   };
-  if(D._lamps)for(const [lx,ly] of D._lamps)put(lx+camx,ly+camy,120,[1,.78,.52],1.25);
+  /* порода светится до крепи — ей лампы прошлого кадра, уже в мире (digLampsKeep) */
+  if(early){const P=D._lampsW;if(P)for(let i=0;i<P.length;i+=2)put(P[i],P[i+1],120,[1,.78,.52],1.25);}
+  else if(D._lamps)for(const [lx,ly] of D._lamps)put(lx+camx,ly+camy,120,[1,.78,.52],1.25);
   if(D.target){
     for(const k in D.cells)if(D.cells[k]===D.target){
       const i=k.indexOf(","),col=+k.slice(0,i),row=+k.slice(i+1);
@@ -85099,70 +85240,68 @@ function digLights(D,camx,camy){
   if(L.length>CAVE_LIT_MAX)L.length=CAVE_LIT_MAX;   /* v[14] — числа шахты */
   return L;
 }
-/* свет на всё нарисованное; lamp — фонарь шлема {x,y,f} в мире */
-function drawDigLight(D,p,camx,camy,lamp){
-  const pass=gpuOver();
-  if(!pass){if(D._lamps)D._lamps.length=0;return;}
-  const U=CAVE_LIT_U,K=G.viewK||1,lk=kitStat().lamp,M=digMask(D,p);
+/* числа поля: камера, маска, фонарь шлема {x,y,f} в мире, источники */
+function digLitU(D,p,camx,camy,lamp,early){
+  const U=CAVE_LIT_U,lk=kitStat().lamp,M=digMask(D,p);
   U.fill(0);
-  U[0]=camx;U[1]=camy;U[2]=K;U[3]=G.t;
+  U[0]=camx;U[1]=camy;U[2]=G.viewK||1;U[3]=G.t;
   U[4]=M.x0;U[5]=M.y0;U[6]=1/M.w;U[7]=1/M.h;
   const a=.12;
   U[8]=lamp.x;U[9]=lamp.y;U[10]=lamp.f*Math.cos(a);U[11]=Math.sin(a);
   /* луч — как у main: холодный (190,215,235) и слабый; тёплое у налобника — зарево ниже */
   U[12]=250*lk;U[13]=Math.cos(.55);U[14]=Math.cos(.18);U[15]=.6;
   U[16]=.745;U[17]=.843;U[18]=.922;
-  U[20]=.78;U[21]=.78;U[22]=.78;U[23]=.6;
-  const L=digLights(D,camx,camy);
+  U[20]=1;U[21]=1;U[22]=1;U[23]=.6;
+  const L=digLights(D,camx,camy,early);
   U[19]=L.length;
   for(let i=0;i<L.length;i++){const s=L[i],o=24+i*4;
     U[o]=s.x;U[o+1]=s.y;U[o+2]=s.r;U[o+3]=caveLitPack(s.c[0],s.c[1],s.c[2],s.I);}
-  const nite=(typeof surfNight==="function")?surfNight(p):0;
-  U[56]=digSurfY(p,camx+W/2);U[57]=clamp(1-nite,0,1);
+  U[56]=lamp.x;U[57]=lamp.y+12;                 /* человек: виньетка, темнота, тёплое, свет хода */
   U[58]=camy>-H*.3?1:0;                        /* темнота main — пока камера под землёй */
-  const mt={view:gpuMipTex(M.cv).view},sm=gpuMipSmp();
-  gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,U,[mt],{blend:"mul",smp:sm});
-  gpuField(pass,"dig.add",CAVE_ADD_WGSL+DIG_OWN_WGSL,U,[mt],{blend:"add",smp:sm});
-  /* тёплое зарево у налобника — сложением, как «digwarm» у main (.20·(1−t)^2.2 на .34
-     от max(W,H)·.62): тёплый акцент против холодной породы. Множитель поля его не давал —
-     на тёмном камне тёплое пятно исчезало (Контроль 26.09) */
-  const Rw=Math.max(W,H)*.62*.34*K;
-  warmGlow(pass,(lamp.x-camx)*K,(lamp.y-camy)*K,Rw,Rw,[1,.776,.502],.20,0);
-  digEmit(D,camx,camy,pass,K);
-  if(D._lamps)D._lamps.length=0;
+  return M;
 }
-/* руда и огни выше единицы: зарево тела, блики зёрен у фонаря, стёкла ламп, искры */
+/* порода под светом: сразу после тайлов, до 2D — как виньетка main, которая умножала
+   только породу. Темноты тут нет: она ложится поверх всего в конце кадра */
+function digShade(D,p,camx,camy,lamp){
+  const pass=gpuScene();if(!pass)return;
+  const M=digLitU(D,p,camx,camy,lamp,true);
+  CAVE_LIT_U[58]=0;
+  gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,CAVE_LIT_U,[{view:gpuMipTex(M.cv).view}],{blend:"mul",smp:gpuMipSmp()});
+  /* тёплое у налобника — «digwarm» main: .20·(1−t)^2.2 на .34·R0 у человека, сложением по породе;
+     заливка хода и небо (2D) ложатся поверх и его закрывают, как у main */
+  const K=G.viewK||1,R=Math.max(W,H)*.62*.34;
+  warmGlow(pass,(lamp.x-camx)*K,(lamp.y+12-camy)*K,R*K,R*K,[1,.776,.502],.20,0);
+}
+/* темнота main поверх всего нарисованного, небо не трогает */
+const DIG_DARK_WGSL=CAVE_LIT_WGSL+`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let w=p/fu.v[0].z+fu.v[0].xy;
+  return vec4f(vec3f(mix(darkM(w),1.,skyAt(w))),1.);}
+`;
+/* конец кадра: темнота, воздух в луче, тёплое у налобника, огни */
+function drawDigLight(D,p,camx,camy,lamp){
+  const pass=gpuOver();
+  if(!pass){digLampsKeep(D,camx,camy);return;}
+  const M=digLitU(D,p,camx,camy,lamp,false);
+  const mt={view:gpuMipTex(M.cv).view},sm=gpuMipSmp();
+  if(CAVE_LIT_U[58])gpuField(pass,"dig.dark",DIG_DARK_WGSL+DIG_OWN_WGSL,CAVE_LIT_U,[mt],{blend:"mul",smp:sm});
+  /* в поле сложения — свет хода main (voidLit): конус налобника, пятно на полу, ореолы ламп.
+     Рассеяния луча в воздухе у main нет — у фонаря здесь нет силы, иначе конус вдвое */
+  CAVE_LIT_U[15]=0;
+  gpuField(pass,"dig.add",CAVE_ADD_WGSL+DIG_OWN_WGSL,CAVE_LIT_U,[mt],{blend:"add",smp:sm});
+  digEmit(D,camx,camy,pass,G.viewK||1);
+  digLampsKeep(D,camx,camy);
+}
+/* лампы крепи этого кадра — в мир, породе следующего (digShade); список кадра — пустой */
+function digLampsKeep(D,camx,camy){
+  const P=D._lampsW||(D._lampsW=[]);P.length=0;
+  if(D._lamps){for(const [lx,ly] of D._lamps)P.push(lx+camx,ly+camy);D._lamps.length=0;}
+}
+/* огни выше единицы: стёкла ламп и искры. Руда — в 2D кистью main (23a): зерно, белый блик
+   и слабое зарево тела; блики выше единицы давали ореол, которого у main нет (Контроль 26.09) */
 const DIG_EMIT=[];
 function digEmit(D,camx,camy,pass,K){
   const S=DIG_EMIT;S.length=0;
-  const scanAll=G.tech.has("survey");
-  const r0=Math.max(0,Math.floor(camy/DIG_CELL)-1), r1=Math.ceil((camy+H)/DIG_CELL)+1;
-  for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
-    const cell=D.cells[col+","+row];
-    if(!cell||cell.dug||!cell.res)continue;
-    const dist=Math.hypot(col-D.col,row-D.row);
-    if(!scanAll&&dist>7)continue;
-    const c=digHexRgb(RES[cell.res].col);
-    const vis=clamp((scanAll?1:1.15-dist/8),0,1);
-    const x=col*DIG_CELL-camx, y=row*DIG_CELL-camy;
-    /* тело светит само — слабо: жила видна и там, куда фонарь не достал */
-    S.push([1,(x+DIG_CELL/2)*K,(y+DIG_CELL/2)*K,DIG_CELL*.35*K,0,0,DIG_CELL*.6*K,c[0],c[1],c[2],.26*vis]);
-    /* блики: те же зёрна, что рисует 23a, — там, где на них лёг фонарь */
-    const lampK=clamp(1.25-dist/3.5,0,1);
-    if(lampK<=0)continue;
-    const n=3+Math.min(5,cell.amount);
-    for(let i=0;i<n;i++){
-      const hh=hashi(col*137+i*31,row*211+i,0x0E2E);
-      const ox=(hh&31)/31*DIG_CELL, oy=((hh>>>5)&31)/31*DIG_CELL;
-      const rr=1.1+((hh>>>10)&3)*.55, an=.35+((hh>>>16)&7)/7*.5;
-      const lx=-rr*.3, ly=-rr*.35, cs=Math.cos(an), sn=Math.sin(an);
-      const gx=x+ox+lx*cs-ly*sn, gy=y+oy+lx*sn+ly*cs;
-      /* блеск идёт волной от шага человека, а не мигает: фаза — от места зерна */
-      const tw=.75+.25*Math.sin(G.t*.02+(hh>>>22)*.9+D.col*1.7+D.row*2.3);
-      const I=lampK*vis*tw*(.8+((hh>>>22)&3)/3*.9);
-      S.push([1,gx*K,gy*K,rr*.45*K,0,0,1.1*K,(255+c[0])*1.2,(244+c[1])*1.2,(220+c[2])*1.2,I]);   /* блеск — цвета зерна, добела у ядра */
-    }
-  }
   /* стёкла ламп площадок: ядро выше единицы — узкий ореол */
   if(D._lamps)for(const [lx,ly] of D._lamps)S.push([1,lx*K,ly*K,1.3*K,0,0,1.6*K,255*2.2,228*2.2,170*2.2,1]);
   /* искры из-под резака: HDR-точки, разлетаются и гаснут */
@@ -85180,12 +85319,6 @@ function digEmit(D,camx,camy,pass,K){
     }
   }
   gpuShapes(pass,S,{blend:"add"});
-}
-/* "#rrggbb" → [r,g,b] (цвет ресурса в таблице — строкой) */
-function digHexRgb(s){
-  if(typeof s!=="string"||s[0]!=="#")return [200,200,200];
-  const v=s.length===4?s.slice(1).split("").map(h=>parseInt(h+h,16)):[1,3,5].map(i=>parseInt(s.slice(i,i+2),16));
-  return v;
 }
 
 /* ══════════════ ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ ══════════════ */
@@ -98903,10 +99036,14 @@ function cantLitUni(W2,H2,k){
   u.set([14,20,cantSignW(),18],20);
   u.set([W2*.56,26,Math.min(W2*.40,240),64],24);
   u.set([cy,H2,LT.amb*(K9?.75:1),0],28);
-  if(K9){const S=kinoScreenRect(W2,cy);u.set([S.x,S.y,S.w,S.h],32);}
+  if(K9){const S=kinoScreenRect(W2,cy),B=kinoBillRect(W2,H2,cy);u.set([S.x,S.y,S.w,S.h,B.x,B.y,B.w,B.h],32);}
   return u;
 }
 const CANT_LIT_WGSL=`
+/* доля своего света в прямоугольнике r (x, y, w, h в единицах зала), кромка в пиксель */
+fn selfLit(q:vec2f,r:vec4f,k:f32)->f32{
+  if(r.z<=0.){return 0.;}
+  return clamp(min(min(q.x-r.x,r.x+r.z-q.x),min(q.y-r.y,r.y+r.w-q.y))*k+.5,0.,1.);}
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let k=fu.v[0].x;let W2=fu.v[0].y;let fy=fu.v[0].z;let t=fu.v[0].w;
   let q=p/k;let cy=fu.v[7].x;let H2=fu.v[7].y;
@@ -98949,14 +99086,15 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   c+=lc*m*(.004+.40*min(cs,1.2))*pw;
   let vd=clamp((length(q-vec2f(W2*.5,H2*.5))-H2*.35)/(H2*.70),0.,1.);
   c*=1.-.40*vd*vd*(3.-2.*vd);
-  /* полотно кино светится само: лампы зала, пыль и виньетка его не трогают */
-  let ks=fu.v[8];
-  let ke=min(min(q.x-ks.x,ks.x+ks.z-q.x),min(q.y-ks.y,ks.y+ks.w-q.y))*k;
-  c=mix(c,base,select(0.,clamp(ke+.5,0.,1.),ks.z>0.));
   c=rshoulder(c);
   let px=floor(p*fu.res.x/max(fu.res.z,1.));
   let gr=rh1(px+vec2f(fract(t*.37)*91.,fract(t*.53)*57.))-.5;
   c=c*(1.+.06*gr)+(rh1(px*1.37+vec2f(3.1,7.7))-.5)/255.;
+  /* полотно кино и афиша сеанса светятся сами: лампы зала, пыль, плечо и зерно прохода их не
+     трогают — у main они лежат поверх погашенного зала своей яркостью. Зерно по кремовому
+     читалось мятой бумагой, плечо серило полотно (Контроль 26.09). Виньетка — main: чёрное
+     до .36 линейно от .35 до 1.05 высоты зала; без неё углы полотна светлели на 7–12 % */
+  c=mix(c,base*(1.-.36*vd),max(selfLit(q,fu.v[8],k),selfLit(q,fu.v[9],k)));
   return vec4f(max(c,vec3f(0.)),1.);}`;
 function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   const S=cantStyle(),seed=(G.sys.seed^0xCA47)>>>0,R=rng(seed);
@@ -99493,21 +99631,10 @@ function kinoScreen(c,x,y,w,h,K,seed){
   for(let i=0;i<Math.round(w*h/240);i++)c.fillRect(x+rg()*w,y+rg()*h,1,1);
   c.fillStyle="rgba(255,255,255,.10)";
   c.fillRect(x,y+rg()*h,w,1);
-  /* царапины: одна-две тонкие вертикали, каждые 120 мс на новом месте */
-  c.fillStyle="rgba(40,36,30,.16)";
-  for(let i=0,n=1+(fq>>>16&1);i<n;i++)c.fillRect(x+rg()*w,y,Math.max(1,w*.002),h);
   c.restore();
-  /* свет проектора — не ровная заливка: горячая середина, края и углы
-     проваливаются, и лампа чуть дышит */
-  const fl=.5+.5*Math.sin(now()*.011)*Math.sin(now()*.0037+1.3);
-  const hot=c.createRadialGradient(cx,cy-h*.02,h*.05,cx,cy,Math.hypot(w,h)*.62);
-  hot.addColorStop(0,"rgba(255,248,228,"+(.16+.06*fl).toFixed(3)+")");
-  hot.addColorStop(.35,"rgba(255,246,222,0)");
-  hot.addColorStop(.75,"rgba(40,34,28,.30)");
-  hot.addColorStop(1,"rgba(30,26,22,.62)");
-  c.fillStyle=hot;c.fillRect(x,y,w,h);
-  c.fillStyle="rgba(10,10,12,"+(.02+.05*(1-fl)).toFixed(3)+")";
-  c.fillRect(x,y,w,h);
+  /* полотно — как у main: гладкое кремовое, своё зерно и отсвет. Царапины читались швами,
+     горячая середина с провалом углов и мигание лампы серили его и снимали контраст
+     изображения (Контроль 26.09: «без швов и без мятой бумаги») */
   /* подпись журнала */
   if(F){
     c.fillStyle="rgba(16,18,22,.80)";
@@ -99565,6 +99692,8 @@ function kinoBeam(c,fromX,fromY,x,y,w,h){
 /* где висит полотно, в единицах зала (27d); его же читает проход света кантины —
    полотно светится само, лампы зала его не освещают */
 function kinoScreenRect(W2,cy){const sw=W2*0.34,sh=sw*0.62;return {x:W2*0.50-sw*0.5,y:cy-sh*0.72,w:sw,h:sh};}
+/* афиша сеанса у края — тоже своим светом: это информация, лампы при .18 её гасили */
+function kinoBillRect(W2,H2,cy){return {x:W2*0.03,y:cy-H2*0.30,w:W2*0.16,h:H2*0.13};}
 function kinoOverlay(c,W2,H2,fy,cy,K,seed){
   if(!K)return;
   /* свет в зале гасят */
@@ -99575,10 +99704,9 @@ function kinoOverlay(c,W2,H2,fy,cy,K,seed){
   kinoScreen(c,sx,sy,sw,sh,K,seed);
   /* отсвет полотна на потолке и на затылках */
   const gl=c.createRadialGradient(sx+sw*.5,sy+sh*.5,sh*.2,sx+sw*.5,sy+sh*.5,sw*1.5);
-  gl.addColorStop(0,"rgba(226,222,206,.12)");
+  gl.addColorStop(0,"rgba(226,222,206,.16)");
   gl.addColorStop(1,"rgba(226,222,206,0)");
-  c.save();c.globalCompositeOperation="lighter";   /* отсвет — свет, а не краска */
-  c.fillStyle=gl;c.fillRect(0,0,W2,H2);c.restore();
+  c.fillStyle=gl;c.fillRect(0,0,W2,H2);          /* как у main: кремовый отсвет ровняет полотно */
   /* ряды: два ряда затылков и спинок, ближний крупнее */
   const r=rng(seed^0x0C1F);
   for(let row=0;row<2;row++){
@@ -99602,8 +99730,9 @@ function kinoOverlay(c,W2,H2,fy,cy,K,seed){
     }
   }
   /* название сеанса на афише у края */
+  const B=kinoBillRect(W2,H2,cy);
   c.fillStyle="rgba(226,218,196,.92)";
-  c.fillRect(W2*0.03,cy-H2*0.30,W2*0.16,H2*0.13);
+  c.fillRect(B.x,B.y,B.w,B.h);
   c.fillStyle="rgba(60,52,40,.9)";
   c.font=Math.max(6,Math.round(H2*0.030))+"px ui-monospace,monospace";
   c.textAlign="center";
@@ -106632,6 +106761,8 @@ function hud(){
   const msgOn=G.msgT>0&&!msgHeld();
   setTx($msg,msgOn?G.msg:"");
   setSt($msg,"opacity",msgOn?clamp(G.msgT/40,0,1):0);
+  /* зимовка: под строкой — мягкая подложка (style.css #msg.dim) */
+  $msg.classList.toggle("dim",G.mode==="winter");
   setTx($prompt,G.mode==="dock"?"":G.prompt);
   setTx($bThr,G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲"));
   /* Кнопка называет то, что сделает, а не то, как она называется. «ДЕЙСТВИЕ»

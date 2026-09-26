@@ -20,10 +20,21 @@ Worker session «Флот: облако → main»; Контроль is «Опт
 - [x] 3d. origin/main 43155172 (0.469.0) merged — deab3172; conflicts only in build artifacts.
 - [x] 3e. `-Full -Jobs 3`: red only on golden frames (the same 13 scenes, the same numbers);
   pool numbers per suite taken, the `·pool` log line dropped; `once` sets die after their bake.
-- [ ] 4. Pairs 760 / 390 against origin/main: the look scenes red in golden + the belt cockpit
-  «cloud vs main» (`a860d9ce^1`).
-- [ ] 5. The six regressions + base lamps + HQ manager.
-- [ ] S23 cadence main vs fleet (flight, landing), cold, A/B/A; `-Mobile`, tour; hand over.
+- [x] 4. Pairs 760 / 390 against origin/main (Контроль's review of the 760 set).
+- [x] 5. Regressions, each with a 760 + 390 pair and a ×3 crop: map core 32e65aea; lamps,
+  base sky strip, scoop lilac 17646e20; cave and mine a84a864b; out-of-memory fallback for
+  the big bake set 53491f3b; panel rooms (black since the deab3172 merge), cantina light
+  slots, kino screen, HQ vignette 1a9928ee; the lander at night d73ce4b1 (see below).
+- [x] 5b. Cave and mine to main's colour, Контроль's gates per zone (L ±5 %, mean S ±10 %,
+  hue ≤ 5°, σ of luminance not below main's by more than 5 %): mine and dig pass; the cave
+  passes 6 zones of 8 — the two near-grey zones by the lamps fail on hue alone (see below).
+- [x] 5c. Kino: main's canvas, the sign's own light (see below).
+- [x] 5d. The winter caption: 390 3.47 (main 2.83), 760 4.77 (main 4.19) — see below.
+- [x] 5e. Base, home and winter re-shot after the shared material change: equal to the frames
+  before it (luma ratio 1.000 over a 4×4 grid at 760 and 390), except the winter caption.
+- [ ] 6. Sheets 390 / 760 of all zones at the head with a line per scene → Контроль.
+- [ ] 7. `-Mobile`, `docs/tour.py`, cadence on the PC (390×844 and 760, marked «ПК» — no S23
+  until the author says so); drop the PLAN.md «In flight» fleet line; hand over the hash.
 
 ## Decisions
 
@@ -122,3 +133,68 @@ save/restore) over `ovText`/`ovRect`, so the drawing code in 27l did not change;
 on `#c` as world light. `roadGpuMount` moves `#ovl` with `#g` into `#roadwin` and back.
 The stand scenes `hq`/`hqfull` fail on main too (`#hqbtn` is gone from the shell) — for pairs
 the HQ is opened with `openHq()`.
+
+### Panel rooms: main's two-group image, the cantina's uniform slots (1a9928ee)
+Main 43155172 gave `kit.img` an explicit layout of two groups (uniform + arena; texture +
+sampler, cached per view). The fleet's `rpgImage` (27f1) kept binding one group of four to the
+same cached pipeline: every bind group failed validation and HQ, the cantina and the kino hall
+drew black — the merge was clean in text and broken in meaning, and `-Full` did not see it.
+`rpgImgBind` binds the panel's own uniform and buffer as group 0 and takes group 1 from the
+kit's cache. The census of GPU errors per scene (pair.py `gpu.errs`) is the net for this.
+The cantina's light pass read `[n, cone, pow]` one slot off since 685ba474: the lamp count
+worked as the cone, the cone as the power, and the show's dimming never reached the shader.
+The kino screen is self-lit — the light pass leaves `kinoScreenRect` unlit. The HQ vignette is
+an ellipse over the room: a circle by height put both outer seats of a wide panel at ×.38.
+
+### The lander at night (d73ce4b1)
+Контроль's measure: the hull's mean brightness at night at least 60 % of main's 2D. The cold
+floor of the hull light went from (.13,.16,.22) to (.38,.43,.55) (still by `sky`, the top takes
+more than the belly), the top edges take a cold rim of sky, and the cabin glass glows from
+inside inside a frame per hull form. No uniform slot was free: the flame colour and the 1.25
+gain became constants. Night 61 / 60 % (760 / 390), rain 67 / 65 %, from 42 / 40 and 51 / 48.
+Measured on a hull mask from main's frame, the fleet's frame aligned by its edges.
+
+### Cave and mine: main's colour (26.09)
+Контроль's eye: both paler and greyer than main while the numbers passed. The causes, in order of
+weight:
+
+- The helmet beam was drawn with `lighter` on `#c`. The front layer is laid over the scene with
+  alpha, not added, so the beam covered the rock with its own colour instead of lighting it. The
+  beam is now added on the GPU (`helmBeamGpu`, 22c) in the cave and the dig;
+  `drawAstronaut({lamp:"gpu"})` skips the 2D beam.
+- Main's darkness is a 2D radial gradient from transparent black. Chrome interpolates gradient
+  colours unpremultiplied, so the tone falls quadratically, not linearly: `WARM_GLOW` profile 2
+  is `.18*e*e`. The floor spot and the cone walk main's colour stops, colour and alpha apart.
+- The fleet's tone shoulder on the largest channel took red out of the moss petals and the
+  pass's turquoise (petal core 190 vs 216): the dig and the cave use main's per-channel
+  shoulder (`gpuHueFor`), the front-like clamp and bloom weight in the final pass (08b).
+- Main's frame has no planet material on the cave walls: its tile bakes before the material is
+  ready and is never baked again. The fleet re-baked with the material (`|m`) and the rock went
+  grey. The walls carry the strata only, as main shows them; `fillMaterial` on the GPU canvas
+  lays main's `overlay` (18a) instead of a third-strength `source-over`.
+- Plants and beasts are drawn after the light, as in main (under the field they lost a quarter
+  of their brightness).
+
+Cave at 760 (pairs28), fleet against main: pass L −0.5 % σ +5.7 %, water L −1.0 % S −3.8 %,
+rock L +1.6 %, beam −0.1 %, flowers σ +1.7 / +2.9 %. The pass by the lamp (hue 15.5°) and the
+rock by the lamp (6.2°) have S .08 and .06, where a hue is a rounding: mean RGB 153.1 / 155.6 /
+151.2 against 153.0 / 157.5 / 151.7. What is left is green about 1/255 low over the whole lit
+hall — the tile bake (main's 8-bit 2D canvas against the fleet's GPU canvas), ~0.3 of it bloom.
+More than an hour of work; open with Контроль.
+
+### Kino: main's canvas, the sign's own light
+The screen is main's again: smooth cream with its own grain and sheen. The scratches read as
+seams, and the hot middle with falling corners and the breathing lamp greyed the canvas and took
+the image's contrast. The cantina's light pass leaves both the screen and the session sign
+(`kinoBillRect`) to their own light — lamps, dust, shoulder and the pass's grain do not touch
+them (the grain on cream read as crumpled paper) — and gives them main's vignette. The lamps stay
+at .18. The ink of the picture against the canvas: 1.93 vs main's 1.90 at 760, 2.14 vs 2.09 at
+390; the canvas's luma ratio grid 0.998–1.004. The sign: 1.83 vs 1.71 (760), 2.47 vs 2.42 (390).
+
+### The winter caption
+The fleet's lamp lays light over the planks, and the wall under the event line is lighter than
+main's (390: 1.45 against 2.83). In the winter mode `#msg` gets `.dim` (27z): a dark tone under
+the letters and its own blurred shadow of the same tone, so the backing fades out beyond the line
+with no edge. No padding: `#msg` is fixed at `left:50%`, so padding narrowed the line (half the
+screen) and let the phone's `line-clamp` show a fourth line; the element's own shadow is not
+clipped by its `overflow:hidden`. With a panel open the shadow is off.

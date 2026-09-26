@@ -324,49 +324,18 @@ function drawCaveWater(C,camx,camy){
 }
 function drawCaveGlow(C,camx,camy,px,py){
   const D=C.deco;if(!D)return;
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  for(const c of D.crystals){
-    const sx=c.x-camx;if(sx<-c.rad||sx>W+c.rad)continue;
-    const sy=(c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low))-camy;
-    if(c.low&&sy+camy>=CAVE_Y1-10)continue;
-    const puls=.55+.45*Math.sin(G.t*.014+c.ph);
-    /* тело: две грани на иглу, светлая и тёмная, и ребро между ними. Одной
-       заливкой игла читается соломиной; гранью — камнем, который ловит свет.
-       Свет один на куст — так грот светится, а не мерцает по каждой игле */
-    const col=c.col.join(",");
-    for(const s of c.spikes){
-      const bx=sx+s.dx, dir=c.up?-1:1;
-      const tx=bx+s.lean*s.h, ty=sy+s.h*dir;
-      ctx.fillStyle="rgba("+col+","+(.10+puls*.07).toFixed(3)+")";
-      ctx.beginPath();
-      ctx.moveTo(bx-s.w,sy);ctx.lineTo(tx,ty);ctx.lineTo(bx,sy-dir*s.w*.5);
-      ctx.closePath();ctx.fill();
-      ctx.fillStyle="rgba("+col+","+(.22+puls*.16).toFixed(3)+")";
-      ctx.beginPath();
-      ctx.moveTo(bx,sy-dir*s.w*.5);ctx.lineTo(tx,ty);ctx.lineTo(bx+s.w,sy);
-      ctx.closePath();ctx.fill();
-      ctx.strokeStyle="rgba(255,255,255,"+(.10+puls*.16).toFixed(3)+")";
-      ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(bx,sy-dir*s.w*.4);ctx.lineTo(tx,ty);ctx.stroke();
-    }
-  }
-  /* ореол кристалла, жилы, пыль в воздухе, конус фонаря и пятно под ногами ушли
-     на видеокарту (22c): свет лёг на породу с тенями, руда светит выше единицы */
-  /* капли и всплеск */
-  for(const d of D.drops){
-    const sx=d.x-camx;if(sx<-10||sx>W+10)continue;
-    ctx.fillStyle="rgba(170,215,235,.5)";
-    ctx.fillRect(sx-.6,d.y-camy-3,1.2,4.5);
-  }
+  /* грани кристаллов с ореолом, жилы, пыль, конус фонаря, пятно у ног и капли — слой
+     сложения main на видеокарте (22c caveMainAdd): 2D «lighter» на переднем слое ложится
+     поверх сцены с прозрачностью, а не прибавляется. Здесь остался всплеск */
   if(D.splash){
     const s=D.splash, sx=s.x-camx;
     const k=1-s.t/26;
+    ctx.save();ctx.globalCompositeOperation="lighter";
     ctx.strokeStyle="rgba(170,215,235,"+(.34*(1-k)).toFixed(3)+")";
     ctx.lineWidth=1;
     ctx.beginPath();ctx.ellipse(sx,s.y-camy,2+k*9,1+k*3,0,0,TAU);ctx.stroke();
+    ctx.restore();
   }
-  ctx.restore();
 }
 
 /* ══════════════ свой свет пещеры (M248) ══════════════
@@ -397,27 +366,14 @@ function caveLampSpot(C){
   return C.lamp={x,y:caveFloor(C,x),ph:r()*TAU};
 }
 function drawCaveOwnLight(C,camx,camy){
-  /* мох: холодное пятно, медленно дышит — движение, а не мигание */
-  ctx.save();ctx.globalCompositeOperation="lighter";
-  for(const m of caveMossSpots(C)){
-    const x=m.x-camx, y=m.y-camy;
-    if(x<-60||x>W+60||y<-60||y>H+60)continue;
-    const pu=.62+.38*Math.sin(G.t*.006+m.ph);
-    /* сами пятна: несколько мелких, разной величины — не одна клякса */
-    for(let i=0;i<m.n;i++){
-      const a=m.ph+i*2.1, rx=Math.cos(a)*m.rr*.6, ry=Math.sin(a)*m.rr*.35;
-      ctx.fillStyle="rgba("+m.col.join(",")+","+(.20+.14*pu).toFixed(3)+")";
-      ctx.beginPath();ctx.ellipse(x+rx,y+ry,2.2+i*.7,1.4+i*.4,a,0,TAU);ctx.fill();
-    }
-  }
-  ctx.restore();
+  /* мох — холодное пятно, медленно дышит — светит слоем сложения main (22c caveMainAdd) */
   /* чужой фонарь: он тёплый, и он тут не сам по себе — кто-то его поставил */
   const L=caveLampSpot(C);
   const lx=L.x-camx, ly=L.y-camy;
   if(lx>-80&&lx<W+80&&ly>-80&&ly<H+80){
     const pu=.78+.22*Math.sin(G.t*.011+L.ph);
-    /* свет лампы — в поле видеокарты (22c): тени от породы теперь честные
-       и живые, как у фонаря шлема; маска, печённая раз на пещеру, не нужна */
+    /* свет лампы — зарево main сложением в поле видеокарты (22c ownAdd): тени от
+       породы честные и мягкие; маска, печённая раз на пещеру, не нужна */
     /* сама вещь: корпус, дужка и стекло — вещь, а не пятно */
     ctx.fillStyle="rgba(46,52,60,.95)";
     ctx.fillRect(lx-3.4,ly-9,6.8,7.5);

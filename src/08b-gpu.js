@@ -260,8 +260,11 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
       let d=abs(a.rgb-b.rgb);hs=mix(vec3f(a.r,g.g,b.b),g,smoothstep(.03,.15,max(d.r,max(d.g,d.b))));}}
   if(u.shc.w>0.&&u.scene>.5){let hk=silK(v.uv);if(hk>0.&&f.a>0.){let rn=rimN(v.uv);
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
+  /* шахта и пещера — передний 2D-слой main: канал упирается в единицу сам по себе, и тёплое
+     поверх холодного луча желтеет, а не белеет (GPU_FRONT_LIKE; свечение берёт сцену целиком) */
+  if(u.dn.z>.5){hs=min(hs,vec3f(1.));}
   var h=hs*(1.-f.a)+f.rgb;
-  if(u.k>0.){h=h+u.k*.8*bloomAt(v.uv)*(1.-.6*f.a);}
+  if(u.k>0.){h=h+u.k*.8*bloomAt(v.uv)*(1.-.6*max(f.a,u.dn.z));}
   /* засветка ядра: мелочь перед ядром звезды тонет в его свете, как в камере, — тёмная
      точка в центре читалась зрачком. max, не сумма: открытая звезда не меняется, крупный
      корпус держит силуэт за пределами ядра */
@@ -505,7 +508,14 @@ fn shAt(p:vec2f,sd:vec2f)->f32{
    звезды уходит в золото, ядро луча — в белый); на земле и в помещениях — по старшему
    каналу, лампа держит свой оттенок при любой яркости (Контроль 26.09) */
 const GPU_TONE_FILM=new Set(["system","map","belt","raid","scoop","wanderer","barge","rail"]);
-function gpuHueFor(m){return GPU_TONE_FILM.has(m)?0:1;}
+/* шахта и пещера — плечо по каналам, как у переднего 2D-слоя main: плечо по старшему каналу
+   вынимало красный из лепестков мха и бирюзы хода (ядро лепестка 190 против 216 у main) */
+function gpuHueFor(m){return GPU_TONE_FILM.has(m)||GPU_FRONT_LIKE.has(m)?0:1;}
+/* шахта и пещера у main — передний 2D-слой: пелена свечения на них есть, а свечение ложится
+   с весом переднего слоя (1−.6·f.a при f.a = 1). Флот рисует их в сцене; без пелены кадр
+   выходил на 4 % темнее main целиком, вместе с небом над устьем (Контроль 26.09: «экспозиция
+   как в main»), а с весом сцены свечение серило бы чёрное хода */
+const GPU_FRONT_LIKE=new Set(["dig","cave"]);
 function gpuUni(){
   const a=GPU.UA,P=GPU.post;
   a[0]=GPU.bw;a[1]=GPU.bh;a[2]=W;a[3]=H;a[4]=DPR;a[5]=P.k;a[6]=P.grain;a[7]=P.vig;
@@ -515,7 +525,7 @@ function gpuUni(){
   const L=GPU.sepH;for(let i=0;i<8;i++){const h=L[i],o=24+i*4;a[o]=h?h[0]:0;a[o+1]=h?h[1]:0;a[o+2]=h?h[2]:0;a[o+3]=0;}
   const Q=GPU.lens;a[56]=Q?Q.x:0;a[57]=Q?Q.y:0;a[58]=Q?Q.k:0;a[59]=Q?Q.r:0;
   a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
-  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);
+  const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);a[66]=GPU_FRONT_LIKE.has(G.mode)?1:0;
   for(let i=0;i<8;i++)for(let j=0;j<8;j++)a[68+i*8+j]=i<nd?D[i][j]:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }

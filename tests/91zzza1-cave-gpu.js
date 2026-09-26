@@ -13,21 +13,22 @@ TEST_SUITES.push(()=>suite("пещера G7: источники света в к
   const q=un(caveLitPack(1,.5,.25,1.2));
   eq(q.join(","),"1.2,0.6,0.3","цвет×сила упакован и читается обратно");
   eq(un(caveLitPack(5,0,-1,1)).join(","),"2.55,0,0","упаковка держит 0…2.55, без переноса в соседний канал");
-  /* источники: у устья первым — день, дальше не больше девяти, все в кадре */
+  /* источники: не больше CAVE_LIT_MAX, все в кадре; дня среди них нет — день в устье
+     трапеция main сложением (CAVE_MOUTH_WGSL) */
   const vw=W,vh=H;
-  let sawDay=false,maxN=0;
   for(const x of [80,500,900,1400,1900]){
     const camx=x-vw/2,camy=caveFloor(C,x)-vh*.56;
     const L=caveLights(C,camx,camy);
-    maxN=Math.max(maxN,L.length);
     ok(L.length<=CAVE_LIT_MAX,"источников не больше "+CAVE_LIT_MAX+" (x="+x+": "+L.length+")");
     ok(L.every(s=>s.x+s.r>=camx&&s.x-s.r<=camx+vw&&s.y+s.r>=camy&&s.y-s.r<=camy+vh),"каждый задевает кадр (x="+x+")");
     ok(L.every((s,i)=>!i||L[i-1].k<=s.k),"ближние к середине — первыми (x="+x+")");
     ok(L.every(s=>isFinite(s.x)&&isFinite(s.y)&&s.r>0&&s.I>0),"у источника есть место, радиус и сила (x="+x+")");
-    if(x===80&&L.length&&L[0].r>300)sawDay=true;
+    ok(L.every(s=>s.r<=300),"дня-источника нет (x="+x+")");
   }
-  ok(sawDay,"у устья первым идёт дневной свет");
-  ok(maxN>=2,"в пещере светит не один фонарь: источников в кадре до "+maxN);
+  /* чужая лампа — свет сложением с тенями: в кадре с ней она в списке с пометкой add */
+  const Lp=caveLampSpot(C),LL=caveLights(C,Lp.x-vw/2,Lp.y-vh/2);
+  ok(LL.some(s=>s.add&&Math.abs(s.x-Lp.x)<1),"чужая лампа — источник сложением");
+  ok(CAVE_OWN_WGSL.includes("P.z>=0.")&&CAVE_MUL_WGSL.includes("dd<P.z"),"лампа сложением — радиус со знаком минус, множитель её пропускает");
   /* озеро: в кадре находится ближнее, вне кадра — нет */
   const Z=caveZones(C).find(z=>cavePool(C,z));
   ok(!!Z,"в пещере есть озеро");
@@ -37,9 +38,9 @@ TEST_SUITES.push(()=>suite("пещера G7: источники света в к
     ok(inV===pl,"озеро посреди кадра найдено");
     eq(cavePoolInView(C,(pl.x0+pl.x1)/2-vw/2,pl.y+vh*3),null,"озеро далеко над кадром — не найдено");
   }
-  /* темнота холодная: фонарь остаётся единственным тёплым */
-  const am=caveAmbient();
-  ok(am[2]>am[0]&&am.every(v=>v>0&&v<1),"окружающий свет холодный и меньше единицы ("+am.map(v=>v.toFixed(2)).join(",")+")");
+  /* темнота — тоном самой планеты, почти в ноль (caveDarkTone, как у main) */
+  const dt=caveDarkTone();
+  ok(dt.every(v=>v>0&&v<40/255),"тон темноты — у нуля ("+dt.map(v=>(v*255).toFixed(0)).join(",")+")");
   /* шейдер: поле объявлено, цикл по источникам ограничен таблицей */
   ok(CAVE_MUL_WGSL.includes("fn field(")&&CAVE_ADD_WGSL.includes("fn field("),"оба поля объявляют field");
   ok(CAVE_MUL_WGSL.includes("k<"+CAVE_LIT_MAX+";"),"цикл света ограничен CAVE_LIT_MAX");
@@ -55,8 +56,6 @@ TEST_SUITES.push(()=>suite("шахта G7: лампы и резак — исто
   enterDig();
   const D=G.dig;
   ok(!!D,"шахта открыта");
-  eq(digHexRgb("#c08a6a").join(","),"192,138,106","цвет руды из таблицы читается в числа");
-  eq(digHexRgb("#abc").join(","),"170,187,204","короткая запись тоже");
   /* лампы крепи — экранные точки кадра; источники — в мире, не больше восьми */
   const camx=D.col*DIG_CELL-W/2, camy=D.row*DIG_CELL-H*.5;
   D._lamps=[];for(let i=0;i<12;i++)D._lamps.push([W/2+(i-6)*20,H/2+i*3]);

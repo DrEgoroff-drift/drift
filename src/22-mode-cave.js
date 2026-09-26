@@ -478,22 +478,9 @@ function drawCaveRock(C,cp,wx0,wy0){
   /* порода той же планеты: без неё пещера — чёрные силуэты, и по ним не
      понять, в чьих недрах игрок находится */
   if(cp){
-    const mat=planetMat(cp);
-    fillMaterial(mat,wx0,wy0,.30,.18,P);
-    /* кромка тоже порода (хвост M136): полоса контура шириной в клетку шла
-       плоской краской поверх материала, и у каждой стены был нарисованный
-       обвод. Тот же тайл кладётся штрихом по контуру, в мировых координатах,
-       чтобы не ехал относительно заливки */
-    /* материал ещё печётся — кромку не кладём: 2D молча пропускал strokeStyle=null и
-       обводил прежней краской, холст видеокарты такую краску не берёт (G7) */
-    if(mat){
-      const KW=new Path2D();KW.addPath(K,new DOMMatrix().translate(wx0,wy0));
-      ctx.save();ctx.translate(-wx0,-wy0);
-      ctx.strokeStyle=mat;ctx.lineWidth=CS;ctx.globalAlpha=.30;ctx.stroke(KW);
-      ctx.restore();
-    }
-    /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
-       светит как днём и убивает единственное, что есть у пещеры — темноту */
+    /* материала планеты на стенах нет: цвет дают пласты, как в кадре main — его тайл
+       печётся раньше, чем готов материал, и не перепекается (Контроль 26.09: «цвет
+       main»). Гашение ниже main кладёт и без материала — оставлено: это темнота пещеры */
     ctx.fillStyle="rgba(2,4,9,.15)";ctx.fill(P);
     ctx.strokeStyle="rgba(2,4,9,.15)";ctx.lineWidth=CS;ctx.stroke(K);
     /* ── зерно по массиву (M253), манера — по породе (M263, 皴法) ──
@@ -622,7 +609,7 @@ function drawCaveFar(C,camx,camy){
   const cp=(G.surf&&G.surf.p)||null;
   /* тайлы пекутся на видеокарте (G7, 18c gpuTileStore): холст видеокарты рисует
      те же пути и узор; слой лежит под всем 2D кадра */
-  C.farT=gpuTileStore(C.farT,"cavefar|"+(C.seed&0xff)+"|"+(cp?cp.seed:0)+"|"+DPR+(cp&&cp.mat?"|m":""));
+  C.farT=gpuTileStore(C.farT,"cavefar|"+(C.seed&0xff)+"|"+(cp?cp.seed:0)+"|"+DPR);
   gpuDrawTiles(gpuScene(),C.farT,camx*.38,camy*.38,(g,wx0,wy0)=>{
     /* задняя стена — ТЕЛО (M305): при #070b11 пустота между глыбами была
        чёрной, и глыбы висели в ничём. Стена зоны I: темнее ближней породы,
@@ -653,8 +640,6 @@ function drawCaveFar(C,camx,camy){
       ctx.lineTo(x+w2*.55,TILE);ctx.lineTo(x-w2*.55,TILE);
       ctx.closePath();ctx.fill();
     }
-    if(cp&&typeof planetMat==="function"&&typeof fillMaterial==="function")
-      fillMaterial(planetMat(cp),wx0,wy0,.09,.08);
   });
 }
 function drawCaveWorld(){
@@ -663,8 +648,7 @@ function drawCaveWorld(){
   const camx=C.x-W/2, camy=C.cy-H*.56;
   drawCaveFar(C,camx,camy);
   const cp=G.surf&&G.surf.p;
-  /* «|m» — материал планеты допёкся: тайлы без него перепекаются один раз */
-  C.chunks=gpuTileStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+DPR+(cp&&cp.mat?"|m":""));
+  C.chunks=gpuTileStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+DPR);
   gpuDrawTiles(gpuScene(),C.chunks,camx,camy,(g,wx0,wy0)=>drawCaveRock(C,cp,wx0,wy0));
   /* положение астронавта на экране: камера догоняет, поэтому он не в центре */
   const px=C.x-camx, py=C.y-11-camy;
@@ -672,14 +656,6 @@ function drawCaveWorld(){
      живой остаётся вода, а свет пойдёт после */
   drawCaveWater(C,camx,camy);
   /* то, что лежит в пещере (M305, 22b), — в тайлах породы (drawCaveRock) */
-  for(const pl of C.plants){
-    const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
-    drawPlant(pl,x,y);
-  }
-  for(const b of C.fauna){
-    const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
-    drawBeast(b,x,y+b.r*.9,true,b.stun);
-  }
   /* чужие руки на камне у устья (M210): до света, чтобы дневной луч из устья
      лёг и на них — знак врезан в породу, а не наклеен поверх сцены */
   if(typeof wallDraw==="function"&&wallCount(WALL_C)>0){
@@ -689,14 +665,12 @@ function drawCaveWorld(){
       wallDraw(WALL_C,wx0,wx1,fy-50,fy-8,"rgba(236,232,214,.66)");
     }
   }
-  /* ── свет (G7, 22c): всё, что выше, — альбедо; дальше поле умножает его ──
-     на свет источников с тенями от породы и складывает рассеяние луча и пыль.
-     Темнота больше не спрайт поверх кадра, а отсутствие света: фонарь, мох,
-     кристаллы, чужая лампа и день в устье — единственное, что здесь светит.
-     Жизнь пещеры рисуется ДО света: её освещают, она не светит сама */
+  /* ── свет (G7, 22c) ── всё, что выше, — альбедо: поле гасит его темнотой main от фонаря,
+     сверху сложением ложатся тёплое у фонаря, день в устье, чужая лампа с тенями от породы
+     и слой main — грани кристаллов, жилы, мох, пыль и конус фонаря */
   drawCaveLight(C,camx,camy,{x:C.x,y:C.y-27,f:C.face||1});
   drawCaveGlow(C,camx,camy,px,py);
-  /* свой свет пещеры (M248): пятна мха и чужой фонарь — сами вещи; их свет в поле */
+  /* свой свет пещеры (M248): чужой фонарь — сама вещь; его свет и мох — на видеокарте (22c) */
   drawCaveOwnLight(C,camx,camy);
   /* дозорные посёлка у устья (хвост M110): их видно, а не только читается
      в подсказке. Те же силуэты с шестом, что на поверхности, и факел */
@@ -711,6 +685,16 @@ function drawCaveWorld(){
     ctx.beginPath();ctx.moveTo(wx+(i?3:-3),wy-19);ctx.lineTo(wx+(i?3:-3),wy);ctx.stroke();
     ctx.fillStyle="rgba(255,206,130,.9)";ctx.fillRect(wx+(i?2:-4),wy-21,2,2.4);
   }
+  /* жизнь пещеры — поверх света, как у main: цветы и звери видны своим цветом, темнота
+     их не гасит (под полем цветы теряли четверть яркости, Контроль 26.09) */
+  for(const pl of C.plants){
+    const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
+    drawPlant(pl,x,y);
+  }
+  for(const b of C.fauna){
+    const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
+    drawBeast(b,x,y+b.r*.9,true,b.stun);
+  }
   if(!C.found){
     const x=C.findX-camx,y=C.findY-camy;
     if(x>-40&&x<W+40&&y>-40&&y<H+40){
@@ -718,9 +702,11 @@ function drawCaveWorld(){
       ctx.beginPath();ctx.arc(x,y-6,4,0,TAU);ctx.fill();
     }
   }
+  /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
+  const helm=helmBeamGpu(px,py,C.face)?"gpu":true;
   ctx.save();ctx.translate(px,py);
   drawAstronaut({face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:!C.on,jet:!!C.jetOn,
-    mining:false,suitLow:G.surf.suit<25,lamp:true});
+    mining:false,suitLow:G.surf.suit<25,lamp:helm});
   ctx.restore();
   /* Показания больше не рисуются на канве в левом нижнем углу: там стоят
      DOM-пэды, и текст просвечивал сквозь кнопки (M178). Скафандр и ранец

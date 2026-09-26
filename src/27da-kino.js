@@ -161,21 +161,10 @@ function kinoScreen(c,x,y,w,h,K,seed){
   for(let i=0;i<Math.round(w*h/240);i++)c.fillRect(x+rg()*w,y+rg()*h,1,1);
   c.fillStyle="rgba(255,255,255,.10)";
   c.fillRect(x,y+rg()*h,w,1);
-  /* царапины: одна-две тонкие вертикали, каждые 120 мс на новом месте */
-  c.fillStyle="rgba(40,36,30,.16)";
-  for(let i=0,n=1+(fq>>>16&1);i<n;i++)c.fillRect(x+rg()*w,y,Math.max(1,w*.002),h);
   c.restore();
-  /* свет проектора — не ровная заливка: горячая середина, края и углы
-     проваливаются, и лампа чуть дышит */
-  const fl=.5+.5*Math.sin(now()*.011)*Math.sin(now()*.0037+1.3);
-  const hot=c.createRadialGradient(cx,cy-h*.02,h*.05,cx,cy,Math.hypot(w,h)*.62);
-  hot.addColorStop(0,"rgba(255,248,228,"+(.16+.06*fl).toFixed(3)+")");
-  hot.addColorStop(.35,"rgba(255,246,222,0)");
-  hot.addColorStop(.75,"rgba(40,34,28,.30)");
-  hot.addColorStop(1,"rgba(30,26,22,.62)");
-  c.fillStyle=hot;c.fillRect(x,y,w,h);
-  c.fillStyle="rgba(10,10,12,"+(.02+.05*(1-fl)).toFixed(3)+")";
-  c.fillRect(x,y,w,h);
+  /* полотно — как у main: гладкое кремовое, своё зерно и отсвет. Царапины читались швами,
+     горячая середина с провалом углов и мигание лампы серили его и снимали контраст
+     изображения (Контроль 26.09: «без швов и без мятой бумаги») */
   /* подпись журнала */
   if(F){
     c.fillStyle="rgba(16,18,22,.80)";
@@ -233,6 +222,8 @@ function kinoBeam(c,fromX,fromY,x,y,w,h){
 /* где висит полотно, в единицах зала (27d); его же читает проход света кантины —
    полотно светится само, лампы зала его не освещают */
 function kinoScreenRect(W2,cy){const sw=W2*0.34,sh=sw*0.62;return {x:W2*0.50-sw*0.5,y:cy-sh*0.72,w:sw,h:sh};}
+/* афиша сеанса у края — тоже своим светом: это информация, лампы при .18 её гасили */
+function kinoBillRect(W2,H2,cy){return {x:W2*0.03,y:cy-H2*0.30,w:W2*0.16,h:H2*0.13};}
 function kinoOverlay(c,W2,H2,fy,cy,K,seed){
   if(!K)return;
   /* свет в зале гасят */
@@ -243,10 +234,9 @@ function kinoOverlay(c,W2,H2,fy,cy,K,seed){
   kinoScreen(c,sx,sy,sw,sh,K,seed);
   /* отсвет полотна на потолке и на затылках */
   const gl=c.createRadialGradient(sx+sw*.5,sy+sh*.5,sh*.2,sx+sw*.5,sy+sh*.5,sw*1.5);
-  gl.addColorStop(0,"rgba(226,222,206,.12)");
+  gl.addColorStop(0,"rgba(226,222,206,.16)");
   gl.addColorStop(1,"rgba(226,222,206,0)");
-  c.save();c.globalCompositeOperation="lighter";   /* отсвет — свет, а не краска */
-  c.fillStyle=gl;c.fillRect(0,0,W2,H2);c.restore();
+  c.fillStyle=gl;c.fillRect(0,0,W2,H2);          /* как у main: кремовый отсвет ровняет полотно */
   /* ряды: два ряда затылков и спинок, ближний крупнее */
   const r=rng(seed^0x0C1F);
   for(let row=0;row<2;row++){
@@ -270,8 +260,9 @@ function kinoOverlay(c,W2,H2,fy,cy,K,seed){
     }
   }
   /* название сеанса на афише у края */
+  const B=kinoBillRect(W2,H2,cy);
   c.fillStyle="rgba(226,218,196,.92)";
-  c.fillRect(W2*0.03,cy-H2*0.30,W2*0.16,H2*0.13);
+  c.fillRect(B.x,B.y,B.w,B.h);
   c.fillStyle="rgba(60,52,40,.9)";
   c.font=Math.max(6,Math.round(H2*0.030))+"px ui-monospace,monospace";
   c.textAlign="center";

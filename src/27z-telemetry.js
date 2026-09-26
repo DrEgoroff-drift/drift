@@ -373,6 +373,8 @@ function hud(){
   const msgOn=G.msgT>0&&!msgHeld();
   setTx($msg,msgOn?G.msg:"");
   setSt($msg,"opacity",msgOn?clamp(G.msgT/40,0,1):0);
+  /* зимовка: под строкой — мягкая подложка (style.css #msg.dim) */
+  $msg.classList.toggle("dim",G.mode==="winter");
   setTx($prompt,G.mode==="dock"?"":G.prompt);
   setTx($bThr,G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲"));
   /* Кнопка называет то, что сделает, а не то, как она называется. «ДЕЙСТВИЕ»

@@ -213,6 +213,12 @@ body:not(.inflight) .ipod{display:none}
      добавлена тёмная тень — она и есть контраст, свечение остаётся настроением. */
   text-shadow:0 1px 3px rgba(2,4,8,.95),0 0 10px rgba(2,4,8,.8),0 0 16px rgba(127,230,216,.45);
   white-space:pre-line;line-height:1.95;max-width:84%}
+/* зимовка: лампа кладёт свет по доскам, и стена под строкой светлее, чем у main, — строку держит
+   мягкая тёмная подложка, не плашка (Контроль 26.09): тон под буквами и своя размытая тень
+   того же тона — за строкой он сходит на нет без края. Поле блока то же, что без подложки:
+   отступ сужал строку (у fixed с left:50% — полэкрана) и на телефоне выпускал из line-clamp
+   четвёртую строку; тень блока его overflow:hidden не режет */
+#msg.dim{background:rgba(3,5,9,.52);box-shadow:0 0 40px 30px rgba(3,5,9,.56);border-radius:32px}
 /* подсказка держится над пэдами: это ответ на «что тут можно», её место у рук.
    Она стоит НИЖЕ строки состояния (A2): действие спрашивают чаще, чем остаток
    топлива, поэтому оно ближе к рукам */
@@ -886,6 +892,7 @@ body:has(.scr.open) .hud,body:has(.scr.open) #instrpod,body:has(#askwin.open) .h
 body:has(.scr.open) #msg{top:auto;bottom:calc(env(safe-area-inset-bottom) + 96px);left:12px;right:12px;transform:none;
   background:rgba(8,12,18,.94);border:1px solid rgba(127,230,216,.22);border-radius:8px;padding:8px 12px;z-index:26;
   white-space:normal;text-transform:none;letter-spacing:.04em;font-size:12px;text-align:left;overflow:hidden}
+body:has(.scr.open) #msg.dim{box-shadow:none}
 @media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
 
 /* ══════════════ пульт (M151a) ══════════════
