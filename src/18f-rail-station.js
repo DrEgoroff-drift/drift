@@ -221,7 +221,9 @@ function railWinRender(){
   if(RAIL_WAIT){
     h+="<div class='rw-sec'>ВАШ ПОЕЗД</div><div class='rw-row'><span>до «"+railStopName(RAIL_WAIT.to)+"» · "+RAIL_WAIT.k+" "+pl3(RAIL_WAIT.k,"остановка","остановки","остановок")+"</span><em>поезд прибывает через "+Math.ceil(RAIL_WAIT.t)+" с</em></div>";
   }else{
-    h+="<div class='rw-sec'>КУДА ВАМ · КАССА</div>";
+    /* жетон замполита (§9) объяснён один раз здесь; на кнопках — короткое ЖЕТОН вместо цены */
+    const tok=typeof firstSaid==="function"&&firstSaid("tok")&&!firstSaid("tokUsed");
+    h+="<div class='rw-sec'>КУДА ВАМ · КАССА"+(tok?" · ЖЕТОН ЗАМПОЛИТА: ОДНА ПОЕЗДКА НА МЕТРО ДАРОМ":"")+"</div>";
     const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
     if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
       /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
@@ -232,7 +234,7 @@ function railWinRender(){
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
-      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+(F.tok?"ЖЕТОН ЗАМПОЛИТА":F.fare+" КР")+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
+      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+(F.tok?"ЖЕТОН":F.fare+" КР")+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
       /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
       if(typeof railOwner==="function"&&railOwner()==="ra")

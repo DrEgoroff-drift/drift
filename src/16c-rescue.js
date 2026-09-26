@@ -598,7 +598,9 @@ function rescueSync(){
 const RESCUE_ICON={
   home:'<svg class="ic" viewBox="0 0 16 16"><path d="M2 8l6-5 6 5"/><path d="M4 7v6h8V7"/></svg>',
   tow:'<svg class="ic" viewBox="0 0 16 16"><rect x="1" y="5" width="8" height="5" rx="1"/><path d="M9 7.5h3"/><path d="M12 5.5l3 2-3 2z"/></svg>',
-  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>'
+  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>',
+  /* НА МЕТРО (§9): кольцо на пути — как знак метро на схеме */
+  rail:'<svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5"/><path d="M1 8h2.5M12.5 8H15"/></svg>'
 };
 function rescueRender(){
   const box=document.getElementById("sosList");if(!box)return;
@@ -617,7 +619,7 @@ function rescueRender(){
     const b=document.createElement("button");
     const poor=o.cost>G.credits;
     b.disabled=poor;
-    b.innerHTML=RESCUE_ICON[o.id]+'<span class="tx"><em></em><s></s></span>';
+    b.innerHTML=(RESCUE_ICON[o.id]||"")+'<span class="tx"><em></em><s></s></span>';
     b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":(o.id==="tow"?" · ДАРОМ":""));
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;

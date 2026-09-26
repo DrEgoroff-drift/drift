@@ -1880,7 +1880,7 @@ body.table u.addr{color:#7a4a20}
 #railWin .rw-board{background:#07090c;border:1px solid #22303a;border-radius:6px;padding:6px 8px;font-family:ui-monospace,monospace}
 #railWin .rw-board div,#railWin .rw-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:3px 0}
 #railWin .rw-board em,#railWin .rw-row em{font-style:normal;color:#ffd08a}
-#railWin button.act{display:block;width:100%;min-height:44px;margin:6px 0;text-align:left}
+#railWin button.act{display:block;width:100%;min-height:44px;margin:6px 0;text-align:left;white-space:normal;padding-top:5px;padding-bottom:5px}
 #railWin button.act s{display:block;text-decoration:none;color:var(--dim);font-size:10px}
 /* жизнь дороги (D24, телефон 18.09): три ровных кнопки читались кассой. Посылка —
    бумажная бирка с дыркой, проездной — картонка с компостером, попутчик — силуэт */
@@ -2086,6 +2086,7 @@ body.table u.addr{color:#7a4a20}
 #railScheme canvas{display:block;border-radius:2px;box-shadow:0 14px 40px rgba(0,0,0,.7),0 0 0 1px rgba(60,40,20,.5);transform:rotate(-1.2deg)}
 #railScheme b{font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#e9dcc0}
 #railScheme s{text-decoration:none;font:10px ui-monospace,monospace;color:rgba(233,220,192,.6)}
+#railScheme b,#railScheme s{max-width:calc(100vw - 32px);text-align:center;text-wrap:balance;background:rgba(6,8,12,.72);padding:2px 8px;border-radius:3px}
 #railWin .rw-map{margin-top:10px}
 
 /* барахолка (D20): прилавок таблицей — три колонки под шапкой, продано — вычеркнуто */
@@ -2487,7 +2488,7 @@ body.table u.addr{color:#7a4a20}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.482.0";
+const VER="0.483.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -51599,7 +51600,9 @@ function rescueSync(){
 const RESCUE_ICON={
   home:'<svg class="ic" viewBox="0 0 16 16"><path d="M2 8l6-5 6 5"/><path d="M4 7v6h8V7"/></svg>',
   tow:'<svg class="ic" viewBox="0 0 16 16"><rect x="1" y="5" width="8" height="5" rx="1"/><path d="M9 7.5h3"/><path d="M12 5.5l3 2-3 2z"/></svg>',
-  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>'
+  reset:'<svg class="ic" viewBox="0 0 16 16"><path d="M8 2l5 11-5-3-5 3z"/></svg>',
+  /* НА МЕТРО (§9): кольцо на пути — как знак метро на схеме */
+  rail:'<svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5"/><path d="M1 8h2.5M12.5 8H15"/></svg>'
 };
 function rescueRender(){
   const box=document.getElementById("sosList");if(!box)return;
@@ -51618,7 +51621,7 @@ function rescueRender(){
     const b=document.createElement("button");
     const poor=o.cost>G.credits;
     b.disabled=poor;
-    b.innerHTML=RESCUE_ICON[o.id]+'<span class="tx"><em></em><s></s></span>';
+    b.innerHTML=(RESCUE_ICON[o.id]||"")+'<span class="tx"><em></em><s></s></span>';
     b.querySelector("em").textContent=o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" КР":(o.id==="tow"?" · ДАРОМ":""));
     b.querySelector("s").textContent=poor?"не хватает "+(o.cost-G.credits).toLocaleString("ru")+" кр":o.sub;
     b.dataset.id=o.id;
@@ -62691,7 +62694,9 @@ function railWinRender(){
   if(RAIL_WAIT){
     h+="<div class='rw-sec'>ВАШ ПОЕЗД</div><div class='rw-row'><span>до «"+railStopName(RAIL_WAIT.to)+"» · "+RAIL_WAIT.k+" "+pl3(RAIL_WAIT.k,"остановка","остановки","остановок")+"</span><em>поезд прибывает через "+Math.ceil(RAIL_WAIT.t)+" с</em></div>";
   }else{
-    h+="<div class='rw-sec'>КУДА ВАМ · КАССА</div>";
+    /* жетон замполита (§9) объяснён один раз здесь; на кнопках — короткое ЖЕТОН вместо цены */
+    const tok=typeof firstSaid==="function"&&firstSaid("tok")&&!firstSaid("tokUsed");
+    h+="<div class='rw-sec'>КУДА ВАМ · КАССА"+(tok?" · ЖЕТОН ЗАМПОЛИТА: ОДНА ПОЕЗДКА НА МЕТРО ДАРОМ":"")+"</div>";
     const why=(typeof railClosedWhy==="function")?railClosedWhy():null;   /* Коммуна: обед, забастовка (M474) */
     if(why){h+="<div class='rw-row'><span>"+why+"</span><em>приходите позже</em></div>";
       /* компенсационная маршрутка Рассвета (M510): по той же линии, остановка за остановкой */
@@ -62702,7 +62707,7 @@ function railWinRender(){
     }
     else railDestinations().slice(0,14).forEach((t,i)=>{
       const F=railFare(t);
-      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+(F.tok?"ЖЕТОН ЗАМПОЛИТА":F.fare+" КР")+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
+      h+="<button class='act rw-go' data-i='"+i+"'>ДО «"+railStopName(t.to).toUpperCase()+"» · "+t.k+" ОСТ. · "+(F.tok?"ЖЕТОН":F.fare+" КР")+(F.bag?" + "+(F.big?"КРУПНОГАБАРИТ ":"БАГАЖ ")+F.bag:"")+"<s>"+(t.via?"пересадка на «"+railStopName(t.via.at)+"» · "+t.via.l.ru:t.l.ru)+"</s></button>";
       /* Компания: тот же путь экспрессом — без остановок, ×10, реклама под ценой */
       /* Рассвет: та же дорога маршруткой — остановит где скажете (M474) */
       if(typeof railOwner==="function"&&railOwner()==="ra")
@@ -63246,7 +63251,10 @@ function railSchemeOpen(){
       const a=e.touches[0],b=e.touches[1],dd=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
       if(pin)railSchemeZoom((pin-dd)/300);pin=dd;},{passive:false});
     cv.addEventListener("touchend",()=>{pin=0;});
-    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · колесо, щипок — шире · мимо бумаги — свернуть";}
+    /* подсказка по руке: на телефоне колеса нет, и строка короче */
+    const touch=typeof matchMedia==="function"&&matchMedia("(pointer:coarse)").matches;
+    /* фразы склеены неразрывным пробелом: узкий экран переносит строку только по « · » */
+    const sb=d.querySelector("s");if(sb)sb.textContent=["касание остановки — туда",(touch?"щипок":"колесо")+" — шире","мимо бумаги — свернуть"].map(p=>p.replace(/ /g," ")).join(" · ");}
   d.classList.add("open");
   {const p=d.querySelector(".rs-pick");if(p)p.remove();}
   RAIL_SCHEME_Z=0;railSchemeRedraw();
@@ -63391,17 +63399,30 @@ function railSchemeDraw(g,cw,ch){
   g.fillStyle="#c8281e";g.beginPath();g.moveTo(hx,hy-1);g.lineTo(hx-5,hy-13);g.lineTo(hx+5,hy-13);g.closePath();g.fill();
   g.beginPath();g.arc(hx,hy-14,4,0,TAU);g.fill();
   g.font="bold 8px ui-monospace,monospace";g.textAlign="left";g.fillText("ВЫ ЗДЕСЬ",hx+8,hy-14);
-  /* заголовок на самой бумаге */
-  g.font="bold 9px ui-monospace,monospace";g.textAlign="left";g.fillStyle="#3a2e1e";
-  g.fillText("СХЕМА ЛИНИЙ · ГЛАВТРАССА",10,12);
-  g.font="7px ui-monospace,monospace";g.fillStyle="#7a6a50";g.fillText("выдаётся в вестибюле · не выбрасывать",10,22);
-  /* легенда */
-  g.font="7px ui-monospace,monospace";g.fillStyle="#5a4a30";g.textAlign="left";
+  /* заголовок на самой бумаге — на подложке: лист открыт на участке (§9), линии идут под него */
+  const t1="СХЕМА ЛИНИЙ · ГЛАВТРАССА",t2="выдаётся в вестибюле · не выбрасывать";
+  g.font="bold 9px ui-monospace,monospace";const w1=g.measureText(t1).width;
+  g.font="7px ui-monospace,monospace";const w2=g.measureText(t2).width;
+  g.fillStyle="rgba(239,230,207,.92)";g.fillRect(4,2,Math.max(w1,w2)+12,25);
+  g.font="bold 9px ui-monospace,monospace";g.textAlign="left";g.fillStyle="#3a2e1e";g.fillText(t1,10,12);
+  g.font="7px ui-monospace,monospace";g.fillStyle="#7a6a50";g.fillText(t2,10,22);
+  /* легенда — на подложке; строку, что не влезает правее образцов линий (узкая бумага телефона), переносим по « · » */
+  g.font="7px ui-monospace,monospace";
   const L=[["ring","кольца"],["arm","рукава"],["radial","радиалы"]];
+  const T=["синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",
+    "красное кольцо — касса берёт · за «КРАЕМ» не езжено","пересадка — двойной кружок · пунктир — метро, жетон 5 кр"];
+  const mw=cw-10-(36+Math.max(...L.map(e=>g.measureText(e[1]).width))+10),rows=[];
+  for(const s of T){
+    if(g.measureText(s).width<=mw){rows.push(s);continue;}
+    let cur="";
+    for(const p of s.split(" · ")){const n=cur?cur+" · "+p:p;if(cur&&g.measureText(n).width>mw){rows.push(cur);cur=p;}else cur=n;}
+    if(cur)rows.push(cur);
+  }
+  const top=ch-10-(Math.max(rows.length,L.length)-1)*10;
+  g.fillStyle="rgba(239,230,207,.92)";g.fillRect(4,top-9,cw-8,ch-4-(top-9));
+  g.fillStyle="#5a4a30";g.textAlign="left";
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
-  g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
-  g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
-  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",cw-10,ch-30);
+  g.textAlign="right";rows.forEach((s,i)=>g.fillText(s,cw-10,ch-10-(rows.length-1-i)*10));
 }
 
 /* ══════════════ посадка: разрез грунта ══════════════

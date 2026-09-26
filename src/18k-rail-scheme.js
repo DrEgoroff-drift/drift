@@ -57,7 +57,10 @@ function railSchemeOpen(){
       const a=e.touches[0],b=e.touches[1],dd=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
       if(pin)railSchemeZoom((pin-dd)/300);pin=dd;},{passive:false});
     cv.addEventListener("touchend",()=>{pin=0;});
-    const sb=d.querySelector("s");if(sb)sb.textContent="касание остановки — туда · колесо, щипок — шире · мимо бумаги — свернуть";}
+    /* подсказка по руке: на телефоне колеса нет, и строка короче */
+    const touch=typeof matchMedia==="function"&&matchMedia("(pointer:coarse)").matches;
+    /* фразы склеены неразрывным пробелом: узкий экран переносит строку только по « · » */
+    const sb=d.querySelector("s");if(sb)sb.textContent=["касание остановки — туда",(touch?"щипок":"колесо")+" — шире","мимо бумаги — свернуть"].map(p=>p.replace(/ /g," ")).join(" · ");}
   d.classList.add("open");
   {const p=d.querySelector(".rs-pick");if(p)p.remove();}
   RAIL_SCHEME_Z=0;railSchemeRedraw();
@@ -202,15 +205,28 @@ function railSchemeDraw(g,cw,ch){
   g.fillStyle="#c8281e";g.beginPath();g.moveTo(hx,hy-1);g.lineTo(hx-5,hy-13);g.lineTo(hx+5,hy-13);g.closePath();g.fill();
   g.beginPath();g.arc(hx,hy-14,4,0,TAU);g.fill();
   g.font="bold 8px ui-monospace,monospace";g.textAlign="left";g.fillText("ВЫ ЗДЕСЬ",hx+8,hy-14);
-  /* заголовок на самой бумаге */
-  g.font="bold 9px ui-monospace,monospace";g.textAlign="left";g.fillStyle="#3a2e1e";
-  g.fillText("СХЕМА ЛИНИЙ · ГЛАВТРАССА",10,12);
-  g.font="7px ui-monospace,monospace";g.fillStyle="#7a6a50";g.fillText("выдаётся в вестибюле · не выбрасывать",10,22);
-  /* легенда */
-  g.font="7px ui-monospace,monospace";g.fillStyle="#5a4a30";g.textAlign="left";
+  /* заголовок на самой бумаге — на подложке: лист открыт на участке (§9), линии идут под него */
+  const t1="СХЕМА ЛИНИЙ · ГЛАВТРАССА",t2="выдаётся в вестибюле · не выбрасывать";
+  g.font="bold 9px ui-monospace,monospace";const w1=g.measureText(t1).width;
+  g.font="7px ui-monospace,monospace";const w2=g.measureText(t2).width;
+  g.fillStyle="rgba(239,230,207,.92)";g.fillRect(4,2,Math.max(w1,w2)+12,25);
+  g.font="bold 9px ui-monospace,monospace";g.textAlign="left";g.fillStyle="#3a2e1e";g.fillText(t1,10,12);
+  g.font="7px ui-monospace,monospace";g.fillStyle="#7a6a50";g.fillText(t2,10,22);
+  /* легенда — на подложке; строку, что не влезает правее образцов линий (узкая бумага телефона), переносим по « · » */
+  g.font="7px ui-monospace,monospace";
   const L=[["ring","кольца"],["arm","рукава"],["radial","радиалы"]];
+  const T=["синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",
+    "красное кольцо — касса берёт · за «КРАЕМ» не езжено","пересадка — двойной кружок · пунктир — метро, жетон 5 кр"];
+  const mw=cw-10-(36+Math.max(...L.map(e=>g.measureText(e[1]).width))+10),rows=[];
+  for(const s of T){
+    if(g.measureText(s).width<=mw){rows.push(s);continue;}
+    let cur="";
+    for(const p of s.split(" · ")){const n=cur?cur+" · "+p:p;if(cur&&g.measureText(n).width>mw){rows.push(cur);cur=p;}else cur=n;}
+    if(cur)rows.push(cur);
+  }
+  const top=ch-10-(Math.max(rows.length,L.length)-1)*10;
+  g.fillStyle="rgba(239,230,207,.92)";g.fillRect(4,top-9,cw-8,ch-4-(top-9));
+  g.fillStyle="#5a4a30";g.textAlign="left";
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
-  g.textAlign="right";g.fillText("пересадка — двойной кружок · пунктир — метро, жетон 5 кр",cw-10,ch-10);
-  g.fillText("красное кольцо — касса берёт · за «КРАЕМ» не езжено",cw-10,ch-20);
-  g.fillText("синий пунктир — EXPRESS™ · красный крест — фронт, закрыто · красный разрыв — путь перерезан",cw-10,ch-30);
+  g.textAlign="right";rows.forEach((s,i)=>g.fillText(s,cw-10,ch-10-(rows.length-1-i)*10));
 }

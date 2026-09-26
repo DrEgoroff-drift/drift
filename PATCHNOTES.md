@@ -6,7 +6,7 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## Unreleased - the §12 remainder and the §9 seams
+## 0.483.0 - the §12 remainder and the §9 seams
 
 - **§12, the last seams.** A drone now picks its market by the price you saw there and is paid that price (it used to choose by the seen price and be paid the live one). A seen price counts for 30 world days; after that the drone goes by the live counter. Selling pressure on a counter now decays by the world clock (`now()`), so it also eases while you are out of the game. The half-life is still three hours. The economy probe gained «маршруты по кругу»: the player skips a leg whose quote has gone negative, moves to the next route, and waits ten minutes when every leg is down. The numbers are in `docs/ECONOMY-AUDIT.md` (27.09).
 
@@ -16,6 +16,8 @@ could ever save.
   - **The first hour:** at the first docking in the heart, the замполит hands over one жетон («первый — за счёт трассы») and says where the ring is. The first metro ride is free, and the ticket button reads ЖЕТОН ЗАМПОЛИТА. The token does not work for the express or the маршрутка. It is kept in `G.first`, so no new save field.
   - **Rescue and rails:** a dry ship in a system with a rail stop gets a third exit, НА МЕТРО. It is a ticket, at the ticket's price, to the stop the cashier sells that lies nearest home; the ring takes the ship on board.
   - **The scheme's scope:** the paper opens on your stretch: you and everything the cashier sells, with a margin. The wheel or a pinch widens it to the whole net. «Край» was already per player (your own visits).
+
+- **Picture pass.** The rescue window's НА МЕТРО row had no icon and printed «undefined»; it now shows a ring on a line. The ticket buttons read ЖЕТОН where the price stands, and the section head says once what the замполит's token is; a long ticket line wraps instead of running off the button. The scheme's title and legend sit on paper plates, since the lines now run under them; on a phone the legend wraps by « · » clear of the line samples, and the captions under the paper wrap by phrase, clear of the Меню button. The empty-tank test counts the fourth exit where a stop stands.
 
 ### Disputed (cautious variants taken; the author may overturn)
 

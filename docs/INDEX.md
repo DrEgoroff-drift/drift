@@ -1307,8 +1307,8 @@ RAIL_RINGS                   src/18e-rail-net.js:23
 RAIL_RING_OFF                src/18f-rail-station.js:18
 RAIL_RING_RU                 src/18e-rail-net.js:24
 RAIL_SALT                    src/18e-rail-net.js:28
-RAIL_SCHEME_MAP              src/18k-rail-scheme.js:104
-RAIL_SCHEME_Z                src/18k-rail-scheme.js:68
+RAIL_SCHEME_MAP              src/18k-rail-scheme.js:107
+RAIL_SCHEME_Z                src/18k-rail-scheme.js:71
 RAIL_SPUR_MAX                src/18e-rail-net.js:152
 RAIL_VIA_K                   src/18k-rail-scheme.js:12
 RALLY_CACHE                  src/12at-vote.js:69
@@ -1367,7 +1367,7 @@ REP_WORDS                    src/12k-rep.js:17-25
 RES                          src/02-world.js:2-88
 RESCUE_ASK_GAP               src/16c-rescue.js:25
 RESCUE_FUEL                  src/16c-rescue.js:22
-RESCUE_ICON                  src/16c-rescue.js:598-602
+RESCUE_ICON                  src/16c-rescue.js:598-604
 RESET_ABIL0                  tests/90-harness.js:237
 RES_AUTO                     src/08-state.js:193
 RES_DOWN_K                   src/28-loop.js:226
@@ -5326,11 +5326,11 @@ railArmAng                   src/18e-rail-net.js:103
 railAt                       src/18e-rail-net.js:112-120
 railBranchAng                src/18e-rail-net.js:51-54
 railBucket                   src/18i-rail-life.js:18
-railBuffet                   src/18f-rail-station.js:272-279
+railBuffet                   src/18f-rail-station.js:274-281
 railBuildLines               src/18e-rail-net.js:55-101
 railBusDrop                  src/18h-rail-powers.js:54-69
 railBusTalk                  src/18j-rail-rush.js:29-34
-railBuy                      src/18f-rail-station.js:257-271
+railBuy                      src/18f-rail-station.js:259-273
 railCatch                    src/18j-rail-rush.js:17-25
 railClosedWhy                src/18h-rail-powers.js:25-31
 railCut                      src/18h-rail-powers.js:22
@@ -5353,7 +5353,7 @@ railHere                     src/18f-rail-station.js:24-30
 railHfPauseAt                src/18h-rail-powers.js:45-48
 railInteract                 src/18f-rail-station.js:123-148
 railInterval                 src/18f-rail-station.js:168
-railKrai                     src/18k-rail-scheme.js:98-103
+railKrai                     src/18k-rail-scheme.js:101-106
 railLen                      src/18e-rail-net.js:49
 railLifeBind                 src/18i-rail-life.js:76-81
 railLifeBoard                src/18i-rail-life.js:87-93
@@ -5378,13 +5378,13 @@ railPolar                    src/18e-rail-net.js:45-48
 railReady                    src/18f-rail-station.js:23
 railRect                     src/08-state.js:150-156
 railRideStart                src/18g-rail-ride.js:35-45
-railSchemeClose              src/18k-rail-scheme.js:88
-railSchemeDraw               src/18k-rail-scheme.js:123-216
-railSchemeOpen               src/18k-rail-scheme.js:47-64
-railSchemePick               src/18k-rail-scheme.js:105-122
-railSchemeRedraw             src/18k-rail-scheme.js:80-87
-railSchemeScope              src/18k-rail-scheme.js:69-75
-railSchemeZoom               src/18k-rail-scheme.js:76-79
+railSchemeClose              src/18k-rail-scheme.js:91
+railSchemeDraw               src/18k-rail-scheme.js:126-232
+railSchemeOpen               src/18k-rail-scheme.js:47-67
+railSchemePick               src/18k-rail-scheme.js:108-125
+railSchemeRedraw             src/18k-rail-scheme.js:83-90
+railSchemeScope              src/18k-rail-scheme.js:72-78
+railSchemeZoom               src/18k-rail-scheme.js:79-82
 railSealDock                 src/18i-rail-life.js:114-118
 railSealPirates              src/18i-rail-life.js:122-127
 railSegDur                   src/18g-rail-ride.js:46-49
@@ -5395,14 +5395,14 @@ railStation                  src/18e-rail-net.js:197-202
 railStep                     src/18e-rail-net.js:43
 railStopName                 src/18f-rail-station.js:172
 railStopsOf                  src/18e-rail-net.js:122-146
-railTick                     src/18f-rail-station.js:281-286
+railTick                     src/18f-rail-station.js:283-288
 railTrainPos                 src/18g-rail-ride.js:51-63
 railUAt                      src/18e-rail-net.js:105-110
-railVisited                  src/18k-rail-scheme.js:93-97
+railVisited                  src/18k-rail-scheme.js:96-100
 railWaitNow                  src/18f-rail-station.js:170
 railWinClose                 src/18f-rail-station.js:206
 railWinOpen                  src/18f-rail-station.js:205
-railWinRender                src/18f-rail-station.js:212-256
+railWinRender                src/18f-rail-station.js:212-258
 railWinShow                  src/18f-rail-station.js:207-211
 rallyAt                      src/12at-vote.js:102-106
 rallyJoin                    src/12at-vote.js:94-100
@@ -5570,7 +5570,7 @@ rescueNoLaunch               src/16c-rescue.js:542-545
 rescueOffers                 src/16c-rescue.js:77-98
 rescuePark                   src/16c-rescue.js:112-120
 rescueRail                   src/16c-rescue.js:102-110
-rescueRender                 src/16c-rescue.js:603-648
+rescueRender                 src/16c-rescue.js:605-650
 rescueShutT                  src/16c-rescue.js:548
 rescueSig                    src/16c-rescue.js:581
 rescueSigNow                 src/16c-rescue.js:580
@@ -6305,7 +6305,7 @@ toggleLog                    src/11-log.js:152-156
 toggleLoreBoard              src/27h-ui-lore.js:81-84
 toggleMenu                   src/15-input.js:244-251
 toggleParrotWin              src/12y-parrot-face.js:249-265
-toggleSos                    src/16c-rescue.js:649-658
+toggleSos                    src/16c-rescue.js:651-660
 toldAll                      src/11aj-told.js:34
 toldDo                       src/11aj-told.js:58-74
 toldEther                    src/11aj-told.js:78-89
@@ -7372,7 +7372,7 @@ zoomTo                       src/15-input.js:350
 ## src/16c-abil.js · 13 КБ
   · особая система корпуса (M484, DESIGN-shipyard):1
 
-## src/16c-rescue.js · 49 КБ
+## src/16c-rescue.js · 50 КБ
   · пустой бак: хода нет, но выход есть всегда (11.09):1
 
 ## src/16g-gpu-space.js · 15 КБ
@@ -7529,7 +7529,7 @@ zoomTo                       src/15-input.js:350
   · «успеваете скорым» (M507):13
   · компенсационная маршрутка (M510):26
 
-## src/18k-rail-scheme.js · 15 КБ
+## src/18k-rail-scheme.js · 17 КБ
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
 ## src/19-mode-landing-ground.js · 25 КБ
@@ -8056,7 +8056,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91k-home.js · 11 КБ
   · автотесты: дом и деньги: ступени, одна воронка дохода, маршрут фактора, дрон:1
 
-## tests/91k-rescue.js · 10 КБ
+## tests/91k-rescue.js · 11 КБ
   · пустой бак: хода нет, но выход есть всегда (16c, плейтест 11.09):1
 
 ## tests/91l-fleet.js · 14 КБ
