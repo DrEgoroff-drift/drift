@@ -717,7 +717,12 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   off-screen wreck gets an edge chip «Корпус · N», a tap sends the autopilot there (`kind:"wreck"`,
   reticle as for the belt). Pairs 760/390 vs 7e9a0b34: discs → broken lit hulls, the chip stacks with
   the others. Suite 91zzzw-wreck (Node pose + browser chip/tap/label).
-  Next: the chip-jump gate.
+- **G4c polish** (Контроль on pair_wk_760): the wreck has its own bake `pirateArtOf(…,2,…)` (key `!w`):
+  charred (soot .62 — hull pixels 30–36 % darker than the player's ship, measured 68/61 vs 96), two
+  larger breaches instead of three (×1.45) and fewer torn-off parts (.25 vs .55) so the silhouette reads,
+  no gun barrels (a lit barrel read as a white scratch). Embers only on the metal side of a breach rim;
+  the smoke is a soft grey-brown haze with no core. The pirate bakes (`!h`) are untouched.
+  Next: the chip-jump gate (first run: jumps up to 94× the limit, order by distance, not by key).
 - **`gpuHullLight` (16ga) is removed:** the hull light is 17c `gpuLitSprite`; the probe row `hullLight` is gone.
 - **Next, in Контроль's order (25.09):**
   1. the mip kernel against 2D «high» (dots, thin lines, a grid; levels 1–4);

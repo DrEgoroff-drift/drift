@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 631 · символов верхнего уровня: 6324
+Файлов: 632 · символов верхнего уровня: 6324
 
 ## СИМВОЛЫ
 
@@ -2349,8 +2349,8 @@ gpuPipeRecipe                src/08b0-gpu-pipe.js:47-54
 gpuPipes                     src/08b-gpu.js:350-371
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesWarm                 src/08b0-gpu-pipe.js:57-69
-gpuPirateBody                src/12i-pirate-hull.js:420-429
-gpuPirateLive                src/12i-pirate-hull.js:436-480
+gpuPirateBody                src/12i-pirate-hull.js:425-434
+gpuPirateLive                src/12i-pirate-hull.js:441-485
 gpuPlanet                    src/17ga-gpu-planets.js:320-337
 gpuPresent                   src/08b-gpu.js:623-637
 gpuQuad                      src/08c-gpu-kit.js:283-287
@@ -3831,7 +3831,7 @@ npcRescue                    src/13d-npc.js:161-200
 npcShip                      src/13d-npc.js:19-34
 npcSpawn                     src/13d-npc.js:39-103
 npcWreck                     src/13d-npc.js:141-151
-npcWreckDraw                 src/13d-npc.js:230-261
+npcWreckDraw                 src/13d-npc.js:230-263
 npcWreckNear                 src/13d-npc.js:213-221
 npcWreckPose                 src/13d-npc.js:225-229
 npcYalta                     src/13d-npc.js:127-137
@@ -4157,7 +4157,7 @@ peopleLine                   src/11-log.js:55-60
 peopleOffline                src/12a-crew.js:385-389
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
-PGX                          src/12i-pirate-hull.js:435
+PGX                          src/12i-pirate-hull.js:440
 PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
 physRun                      tests/91zzzzy-phys.js:29-37
@@ -4174,14 +4174,14 @@ pipeWho                      tests/91zzzzzzy4-pipes.js:50-55
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20-25
 PIR_GUNART                   src/12i-pirate-hull.js:33-46
-PIR_LOD                      src/12i-pirate-hull.js:419
+PIR_LOD                      src/12i-pirate-hull.js:424
 PIR_SS                       src/12i-pirate-hull.js:17
 PIRATE_COLS                  src/13-pirates.js:4
 PIRATE_LOADOUT               src/13d-loadout.js:23-28
 PIRATE_NAMES                 src/13-pirates.js:3
 PIRATE_RANKS                 src/13-pirates.js:13-18
 pirateArmTick                src/13d-loadout.js:163-181
-pirateArtOf                  src/12i-pirate-hull.js:238-409
+pirateArtOf                  src/12i-pirate-hull.js:238-414
 pirateBaseOf                 src/24a-mode-raid.js:87-96
 pirateBuild                  src/12i-pirate-hull.js:54-231
 pirateClass                  src/12i-pirate-hull.js:47-52
@@ -6808,7 +6808,7 @@ zooTick                      src/11ad-zoo.js:41-54
 ## src/12h-relic.js · 8 КБ
   · артефакты и лаборатория:1
 
-## src/12i-pirate-hull.js · 30 КБ
+## src/12i-pirate-hull.js · 31 КБ
   · пиратский корпус:1
 
 ## src/12j-home.js · 16 КБ
@@ -8335,6 +8335,9 @@ zooTick                      src/11ad-zoo.js:41-54
 
 ## tests/91zzzzzzy5-gpu-loss.js · 9 КБ
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
+
+## tests/91zzzzzzy6-chipjump.js · 4 КБ
+  · ворота прыжков фишек (долг §0):1
 
 ## tests/91zzzzzzz-hands.js · 14 КБ
   · руки игрока: судья — кадр:1

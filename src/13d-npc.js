@@ -224,7 +224,7 @@ function npcWreckNear(sh){
    нет: за кадром его ведёт фишка у кромки (drawSysHud), вблизи называет подсказка */
 function npcWreckPose(w){
   const h=w.seed>>>0,sp=((h&1)?1:-1)*(.0012+((h>>>1)&255)/255*.0012);   /* рад/кадр: оборот за 45–90 с */
-  return {x:w.x,y:w.y,a:(w.a||0)+G.t*sp,hull:.3,hullMax:1,seed:h,rank:w.rank|0,
+  return {x:w.x,y:w.y,a:(w.a||0)+G.t*sp,hull:.3,hullMax:1,wreck:1,seed:h,rank:w.rank|0,
     shipId:w.sid||("np"+w.by+h)};
 }
 function npcWreckDraw(zx,zy,Z){
@@ -236,23 +236,25 @@ function npcWreckDraw(zx,zy,Z){
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
     const p=npcWreckPose(w);
     gpuPirateBody(p,x,y,s);
-    const art=pirateArtOf(p.shipId,false,true,p.rank,0),B=art.B,ca=Math.cos(p.a),sa=Math.sin(p.a);
+    const art=pirateArtOf(p.shipId,false,2,p.rank,0),B=art.B,ca=Math.cos(p.a),sa=Math.sin(p.a);
     const T=(lx,ly)=>[x+(lx*ca-ly*sa)*s,y+(lx*sa+ly*ca)*s];
     const r=rng(hashi(p.seed,0x0E3B,4));
     (art.holes||[]).forEach((o,i)=>{
-      /* угли по рваной кромке: ядро горячее, ореол красный, дыхание в несколько секунд */
-      for(let j=0;j<6;j++){
-        const aa=r()*TAU,rr=B.hw*(.34+r()*.18),ph=r()*TAU,br=.5+.5*Math.sin(G.t*.025+ph);
+      /* угли по рваной кромке — только с той стороны, где металл (к оси корпуса): кольцо целиком
+         висело бусами в пустоте за бортом. Ядро горячее, ореол красный, дыхание в несколько секунд */
+      const a0=Math.atan2(-o[1],0);
+      for(let j=0;j<5;j++){
+        const aa=a0+(r()-.5)*2.4,rr=B.hw*(.34+r()*.18)*(o[2]||1),ph=r()*TAU,br=.5+.5*Math.sin(G.t*.025+ph);
         const [ex,ey]=T(o[0]+Math.cos(aa)*rr,o[1]+Math.sin(aa)*rr);
         E.push([1,ex,ey,Math.max(.5,.09*B.hw*s),0,0,Math.max(2,.32*B.hw*s),255,110,45,.08+.16*br],
           [1,ex,ey,Math.max(.4,.05*B.hw*s),0,0,0,255,190,110,.3+.55*br]);
       }
       if(i)return;
-      /* дым из первой пробоины — редкий, расходится от кромки наружу */
+      /* дымка из первой пробоины — серо-бурая, без ядра, редеет и ширится от кромки наружу */
       const nx=Math.sign(o[1])||1;
       for(let k=0;k<3;k++){
-        const t=((G.t*.012+k*1.3)%4),a=.26-t*.065;if(a<=0)continue;
-        const [px,py]=T(o[0]-t*3,o[1]+nx*(B.hw*.3+t*5));D.push([1,px,py,(1.4+t*2.2)*s,0,0,0,44,40,38,a]);
+        const t=((G.t*.012+k*1.3)%4),a=.13-t*.03;if(a<=0)continue;
+        const [px,py]=T(o[0]-t*3,o[1]+nx*(B.hw*.3+t*5));D.push([1,px,py,(2+t*3.6)*s,0,0,(3+t*4)*s,74,64,56,a]);
       }
     });
   }
