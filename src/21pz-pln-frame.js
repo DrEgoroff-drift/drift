@@ -1,7 +1,7 @@
 /* ══════════════ планета: кадр нового вида (M610) ══════════════
    Собирает кадр из состояния игры и сдаёт его рендеру (21pe): объектив по
-   рамке 2D-игры, свет по часу планеты, два короба теней, земля (21pf), человек
-   и корабль (21ph). Приборы рисует игра, как рисовала, и тычок «идти сюда»
+   рамке 2D-игры, свет по часу планеты, два короба теней, земля (21pf), то, что
+   на ней растёт и лежит (21pg, 21pga), человек и корабль (21ph). Приборы рисует игра, как рисовала, и тычок «идти сюда»
    попадает туда же: рамка кадра на линии ходьбы — та же, что была.
 
    Старый кадр не тронут: drawSurface обёрнут здесь, последним модулем
@@ -107,6 +107,7 @@ function plnSurface(){
   const L=plnLand(tr,p,S.shipX),C=plnLens(S,K),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   plnLandStep(L,C.ex,V,2);
+  plnPlantStep(L,p,C.ex,V);
   const Hr=plnHour(p),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   look.thru=Q.thru;look.waterA=Q.waterA;look.waterB=[Q.waterB[0],Q.waterB[1],Q.waterB[2],ride];
   look.moon=Q.moon;look.bands=Q.bands;
@@ -120,6 +121,8 @@ function plnSurface(){
   plnLandBatches(L,F.batches,C.ex,V);
   const man=[S.x/PLN_M,plnY(S.y+10),0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
   plnCastFrame(F,man,S.face,ship,L.shipYaw);
+  /* пятна тени героев легли первыми, остаток мест — тому, что растёт */
+  plnPlantBatches(L,F,C.ex,V);
   /* герой стоит в пятне света: пятно лежит там, куда его тень падает на уровень сцены */
   const hk=(man[1]-ride)/Math.max(Hr.dir[1],.08);
   F.hero[0]=man[0]-Hr.dir[0]*hk;F.hero[1]=man[2]-Hr.dir[2]*hk;

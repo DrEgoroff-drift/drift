@@ -378,6 +378,8 @@ function plnLandSees(J,ex,V,m){
 function plnLandBuild(L,J){
   const m=J.t==="rib"?plnLandRibMesh(L,J.c):J.t==="far"?plnLandFarMesh(L,J):J.t==="water"?plnLandWaterMesh(L,J):plnLandPondMesh(L,J);
   J.geo=m.ni?plnGeo(m):null;J.done=true;L.left--;
+  /* сетку куска ленты ждёт расстановка (21pga): трава встаёт на неё и отпускает */
+  if(J.t==="rib")J.grid=m;
   PLN.stat.verts=(PLN.stat.verts||0)+m.nv;
 }
 /* Строит не больше n кусков, ближние к объективу первыми. Первый кадр поднимает всё, что в нём
@@ -405,7 +407,8 @@ function plnLandBatches(L,out,ex,V){
   for(const J of L.jobs)if(J.geo&&plnLandSees(J,ex,V,0))out.push({geo:J.geo,inst:null,kind:J.kind,to:J.to,ride:J.ride});
 }
 function plnLandFree(L){
-  for(const J of L.jobs){if(J.geo)plnGeoFree(J.geo);J.geo=null;}
+  for(const J of L.jobs){if(J.geo)plnGeoFree(J.geo);J.geo=null;J.grid=null;J.pl=null;}
+  plnPlantDrop(L);
 }
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){

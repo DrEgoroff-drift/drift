@@ -127,8 +127,10 @@ fn unshoulder(d: vec3f) -> vec3f {
   var c = textureSampleLevel(texA, samp, in.uv, 0.0).rgb;
   c = max(c + textureSampleLevel(texC, samp, in.uv, 0.0).rgb, vec3f(0.0));
   let w = textureSampleLevel(texD, samp, in.uv, 0.0);
-  c = c * (1.0 - clamp(w.a, 0.0, 1.0)) + w.rgb;
-  c = mix(c, textureSampleLevel(texB, samp, in.uv, 0.0).rgb, pp.a.x);
+  let wa = clamp(w.a, 0.0, 1.0);
+  c = c * (1.0 - wa) + w.rgb;
+  /* кулиса — тёмный обвод перед сценой: свечение травы сквозь неё делает её серой */
+  c = mix(c, textureSampleLevel(texB, samp, in.uv, 0.0).rgb, pp.a.x * (1.0 - 0.85 * wa));
   c *= g.sunCol.w;
   let q = in.uv - 0.5;
   c *= 1.0 - dot(q, q) * pp.a.y;

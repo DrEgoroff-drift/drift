@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 651 · символов верхнего уровня: 6763
+Файлов: 654 · символов верхнего уровня: 6809
 
 ## СИМВОЛЫ
 
@@ -1208,8 +1208,10 @@ PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
 PLN                          src/21p-pln.js:15
 PLN_AZ_ELEV                  src/21pf-pln-land.js:35
+PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_CAST                     src/21ph-pln-cast.js:8
 PLN_DEG                      src/21p-pln.js:28
+PLN_FLORA                    src/21pg-pln-flora.js:21
 PLN_FRAME                    src/21pz-pln-frame.js:15
 PLN_G                        src/21pe-pln-gpu.js:24
 PLN_GPU                      src/21pe-pln-gpu.js:19
@@ -1220,9 +1222,16 @@ PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LOOK                     src/21pz-pln-frame.js:24-38
 PLN_M                        src/21p-pln.js:14
 PLN_MAT                      src/21pa-pln-mesh.js:9
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:132
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:135
+PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:30-54
+PLN_PLANT                    src/21pga-pln-plant.js:21
+PLN_TINTS                    src/21pg-pln-flora.js:17
+PLN_TINTS_FAR                src/21pg-pln-flora.js:20
 PLN_TO                       src/21pe-pln-gpu.js:17
+PLN_TREES                    src/21pgb-pln-trees.js:18-45
+PLN_TREE_MAKE                src/21pgb-pln-trees.js:240
+PLN_TREE_ORDER               src/21pgb-pln-trees.js:28
 PLN_VB                       src/21pe-pln-gpu.js:27-43
 PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
@@ -5138,11 +5147,18 @@ plnCastShipMesh              src/21ph-pln-cast.js:23-77
 plnCross                     src/21p-pln.js:35
 plnDot                       src/21p-pln.js:34
 plnFbm                       src/21p-pln.js:65-69
+plnFloraBloom                src/21pg-pln-flora.js:82-91
+plnFloraBush                 src/21pg-pln-flora.js:97-105
+plnFloraCap                  src/21pg-pln-flora.js:93-96
+plnFloraKit                  src/21pg-pln-flora.js:108-150
+plnFloraRock                 src/21pg-pln-flora.js:49-57
+plnFloraRosette              src/21pg-pln-flora.js:60-80
+plnFloraTuft                 src/21pg-pln-flora.js:30-47
 plnGeo                       src/21pe-pln-gpu.js:36-43
 plnGeoFree                   src/21pe-pln-gpu.js:44
 plnGlobals                   src/21pe-pln-gpu.js:200-222
 plnGpuDev                    src/21pe-pln-gpu.js:69-106
-plnGpuFrame                  src/21pe-pln-gpu.js:240-298
+plnGpuFrame                  src/21pe-pln-gpu.js:241-301
 plnGpuPipes                  src/21pe-pln-gpu.js:109-135
 plnGpuReady                  src/21pe-pln-gpu.js:191-195
 plnGpuSize                   src/21pe-pln-gpu.js:138-190
@@ -5154,33 +5170,33 @@ plnIco                       src/21pa-pln-mesh.js:41-58
 plnInst                      src/21pe-pln-gpu.js:46-51
 plnInstFree                  src/21pe-pln-gpu.js:57
 plnInstSet                   src/21pe-pln-gpu.js:52-56
-plnLand                      src/21pf-pln-land.js:411-417
-plnLandBatches               src/21pf-pln-land.js:404-406
-plnLandBuild                 src/21pf-pln-land.js:378-382
+plnLand                      src/21pf-pln-land.js:414-420
+plnLandBatches               src/21pf-pln-land.js:406-408
+plnLandBuild                 src/21pf-pln-land.js:378-384
 plnLandCol                   src/21pf-pln-land.js:302-334
 plnLandE                     src/21pf-pln-land.js:105
 plnLandFarH                  src/21pf-pln-land.js:232-286
-plnLandFarMesh               src/21pf-pln-land.js:461-487
+plnLandFarMesh               src/21pf-pln-land.js:464-490
 plnLandFarRows               src/21pf-pln-land.js:98-103
-plnLandFree                  src/21pf-pln-land.js:407-409
+plnLandFree                  src/21pf-pln-land.js:409-412
 plnLandJobs                  src/21pf-pln-land.js:337-368
 plnLandLift                  src/21pf-pln-land.js:221
 plnLandMake                  src/21pf-pln-land.js:108-183
-plnLandNode                  src/21pf-pln-land.js:422-428
+plnLandNode                  src/21pf-pln-land.js:425-431
 plnLandPath                  src/21pf-pln-land.js:290-299
 plnLandPond                  src/21pf-pln-land.js:185-189
-plnLandPondMesh              src/21pf-pln-land.js:505-518
+plnLandPondMesh              src/21pf-pln-land.js:508-521
 plnLandRake                  src/21pf-pln-land.js:80
 plnLandRibAt                 src/21pf-pln-land.js:208-215
 plnLandRibH                  src/21pf-pln-land.js:197-206
-plnLandRibMesh               src/21pf-pln-land.js:429-460
+plnLandRibMesh               src/21pf-pln-land.js:432-463
 plnLandRim                   src/21pf-pln-land.js:190-193
 plnLandRows                  src/21pf-pln-land.js:84-96
 plnLandSees                  src/21pf-pln-land.js:370-377
 plnLandSpan                  src/21pf-pln-land.js:223-228
-plnLandStep                  src/21pf-pln-land.js:385-403
+plnLandStep                  src/21pf-pln-land.js:387-405
 plnLandTab                   src/21pf-pln-land.js:217-220
-plnLandWaterMesh             src/21pf-pln-land.js:490-503
+plnLandWaterMesh             src/21pf-pln-land.js:493-506
 plnLen                       src/21p-pln.js:36
 plnLens                      src/21pz-pln-frame.js:44-51
 plnLightBox                  src/21pz-pln-frame.js:88-98
@@ -5201,6 +5217,24 @@ plnMix3                      src/21p-pln.js:30
 plnMul                       src/21p-pln.js:33
 plnNoise                     src/21p-pln.js:57-64
 plnNorm                      src/21p-pln.js:37
+plnPlantBatches              src/21pga-pln-plant.js:439-456
+plnPlantBodies               src/21pga-pln-plant.js:121-242
+plnPlantBucket               src/21pga-pln-plant.js:45
+plnPlantChunk                src/21pga-pln-plant.js:291-299
+plnPlantCrest                src/21pga-pln-plant.js:314-318
+plnPlantDrop                 src/21pga-pln-plant.js:457-462
+plnPlantFar                  src/21pga-pln-plant.js:319-400
+plnPlantFree                 src/21pga-pln-plant.js:114-117
+plnPlantGrass                src/21pga-pln-plant.js:244-290
+plnPlantGrid                 src/21pga-pln-plant.js:68-84
+plnPlantGroup                src/21pga-pln-plant.js:51-66
+plnPlantInit                 src/21pga-pln-plant.js:87-94
+plnPlantPut                  src/21pga-pln-plant.js:46-49
+plnPlantSeed                 src/21pga-pln-plant.js:43
+plnPlantSees                 src/21pga-pln-plant.js:403-406
+plnPlantShore                src/21pga-pln-plant.js:303-312
+plnPlantStep                 src/21pga-pln-plant.js:409-437
+plnPlantThings               src/21pga-pln-plant.js:97-112
 plnQuad                      src/21pa-pln-mesh.js:27
 plnRec                       src/21pe-pln-gpu.js:60-66
 plnRgb                       src/21p-pln.js:47
@@ -5215,8 +5249,20 @@ plnSmax                      src/21p-pln.js:80
 plnSmooth                    src/21p-pln.js:29
 plnSoftp                     src/21pf-pln-land.js:81
 plnSub                       src/21p-pln.js:32
-plnSurface                   src/21pz-pln-frame.js:101-129
+plnSurface                   src/21pz-pln-frame.js:101-132
 plnTf                        src/21p-pln.js:138-140
+plnTreeAxis                  src/21pgb-pln-trees.js:55-58
+plnTreeBark                  src/21pgb-pln-trees.js:47
+plnTreeCol                   src/21pgb-pln-trees.js:114-136
+plnTreeFork                  src/21pgb-pln-trees.js:198-220
+plnTreeKind                  src/21pgb-pln-trees.js:33-45
+plnTreeLeaf                  src/21pgb-pln-trees.js:50-53
+plnTreeLimb                  src/21pgb-pln-trees.js:68-71
+plnTreeOrb                   src/21pgb-pln-trees.js:169-194
+plnTreePag                   src/21pgb-pln-trees.js:140-164
+plnTreeSnag                  src/21pgb-pln-trees.js:223-239
+plnTreeTrunk                 src/21pgb-pln-trees.js:60-66
+plnTreeUmb                   src/21pgb-pln-trees.js:77-109
 plnTri                       src/21pa-pln-mesh.js:23-26
 plnTube                      src/21pa-pln-mesh.js:100-131
 plnVert                      src/21pa-pln-mesh.js:16-22
@@ -7835,17 +7881,26 @@ zoomTo                       src/15-input.js:350
 ## src/21pb-pln-wgsl-air.js · 16 КБ
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 12 КБ
+## src/21pc-pln-wgsl-scene.js · 13 КБ
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 7 КБ
   · планета: свёртка кадра (M610):1
 
-## src/21pe-pln-gpu.js · 19 КБ
+## src/21pe-pln-gpu.js · 20 КБ
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
 ## src/21pf-pln-land.js · 29 КБ
   · планета: земля (M610):1
+
+## src/21pg-pln-flora.js · 11 КБ
+  · планета: набор тел — трава, цветок, камень, розетка, куст, дерево (M611):1
+
+## src/21pga-pln-plant.js · 28 КБ
+  · планета: что где растёт и лежит (M611):1
+
+## src/21pgb-pln-trees.js · 17 КБ
+  · планета: породы деревьев (M611):1
 
 ## src/21ph-pln-cast.js · 8 КБ
   · планета: человек и корабль — заготовки (M610):1

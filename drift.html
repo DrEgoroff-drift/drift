@@ -80971,9 +80971,14 @@ fn turnBy(n: vec3f, i1: vec4f) -> vec3f {
   o.pos = g.viewProj * vec4f(p, 1.0);
   o.wpos = p; o.nrm = turnBy(in.nrm, in.i1);
   /* режим 0 — цвет сетки, подкрашенный записью; режим 1 — сетка несёт только ход от корня
-     к макушке (r) и свою светлоту (g), а оба цвета даёт запись */
+     к макушке (r) и свою светлоту (g), а оба цвета даёт запись; режим 2 — так красится
+     только листва, кора остаётся своей: дерево — одно тело и одна запись */
   var c = in.col * in.i2.rgb;
-  if (in.i2.w > 0.5) { c = mix(in.i2.rgb, in.i3.rgb, in.col.r) * (0.5 + in.col.g); }
+  if (in.i2.w > 0.5) {
+    let ramp = mix(in.i2.rgb, in.i3.rgb, in.col.r) * (0.5 + in.col.g);
+    let leafy = (in.par.x > 1.5 && in.par.x < 2.5) || (in.par.x > 6.5 && in.par.x < 7.5);
+    if (in.i2.w < 1.5 || leafy) { c = ramp; } else { c = in.col; }
+  }
   o.col = c; o.par = in.par;
   /* вода: в цвете вершины лежит дно — высота ленты (мировая) и высота дальнего мира (на его
      уровне); глубина считается здесь, потому что уровень воды в кадре свой */
@@ -81085,6 +81090,8 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
     let edge = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.0);
     through = clamp(0.25 - ndl * 0.8, 0.0, 1.0) * (0.12 + 0.55 * edge);
     ao = mix(0.55, 1.0, smoothstep(-0.7, 0.3, N.y));
+    /* кулиса — холодный тёмный обвод: тёплый свет насквозь делает её бурым пятном */
+    if (g.misc.y < -0.5) { through = 0.0; }
   }
   if (mat == 7) {
     lit = smoothstep(-0.4, 0.45, ndl);
@@ -81128,6 +81135,8 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   c += alb * emis;
   var cap = 1.0;
   if (mat == 9) { cap = 0.93; }
+  /* кулиса темна, и воздух, светлый против неё, красит её в серое: между нею и объективом его нет */
+  if (g.misc.y < -0.5) { cap = 0.0; }
   return vec4f(applyFog(c, in.wpos, cap), 1.0);
 }
 
@@ -81287,8 +81296,10 @@ fn unshoulder(d: vec3f) -> vec3f {
   var c = textureSampleLevel(texA, samp, in.uv, 0.0).rgb;
   c = max(c + textureSampleLevel(texC, samp, in.uv, 0.0).rgb, vec3f(0.0));
   let w = textureSampleLevel(texD, samp, in.uv, 0.0);
-  c = c * (1.0 - clamp(w.a, 0.0, 1.0)) + w.rgb;
-  c = mix(c, textureSampleLevel(texB, samp, in.uv, 0.0).rgb, pp.a.x);
+  let wa = clamp(w.a, 0.0, 1.0);
+  c = c * (1.0 - wa) + w.rgb;
+  /* кулиса — тёмный обвод перед сценой: свечение травы сквозь неё делает её серой */
+  c = mix(c, textureSampleLevel(texB, samp, in.uv, 0.0).rgb, pp.a.x * (1.0 - 0.85 * wa));
   c *= g.sunCol.w;
   let q = in.uv - 0.5;
   c *= 1.0 - dot(q, q) * pp.a.y;
@@ -81540,7 +81551,8 @@ function plnGpuWrite(F){
 }
 
 /* ── кадр ──
-   F.batches — что рисовать: {geo, inst|null, kind, to, ride}; ride — цельная сетка дальнего мира.
+   F.batches — что рисовать: {geo, inst|null, kind, to, ride}; ride — цельная сетка дальнего мира;
+   first и count — отрезок записей, когда в одном буфере лежат записи разных тел (21pga).
    Возвращает false, если сдавать кадр некуда */
 function plnGpuFrame(F){
   const Q=PLN_GPU,e=GPU.enc,P=Q.P,B=Q.B,V=Q.V,D=Q.D,ms=Q.ms;
@@ -81552,9 +81564,11 @@ function plnGpuFrame(F){
     for(const b of F.batches){
       if(b.kind!==kind||!(b.to&to)||!b.geo||b.geo.n<=0||b.geo.gen!==Q.gen)continue;
       const I=b.inst;if(I&&(I.n<=0||I.gen!==Q.gen))continue;
+      const n=I?(b.count==null?I.n:b.count):1;
+      if(n<=0)continue;
       p.setVertexBuffer(0,b.geo.vb);p.setVertexBuffer(1,I?I.buf:(b.ride?Q.oneRide:Q.one));
-      p.setIndexBuffer(b.geo.ib,"uint32");p.drawIndexed(b.geo.n,I?I.n:1);
-      calls++;tris+=b.geo.n/3*(I?I.n:1);
+      p.setIndexBuffer(b.geo.ib,"uint32");p.drawIndexed(b.geo.n,n,0,0,I?(b.first||0):0);
+      calls++;tris+=b.geo.n/3*n;
     }
   };
   for(let l=0;l<2;l++){
@@ -81982,6 +81996,8 @@ function plnLandSees(J,ex,V,m){
 function plnLandBuild(L,J){
   const m=J.t==="rib"?plnLandRibMesh(L,J.c):J.t==="far"?plnLandFarMesh(L,J):J.t==="water"?plnLandWaterMesh(L,J):plnLandPondMesh(L,J);
   J.geo=m.ni?plnGeo(m):null;J.done=true;L.left--;
+  /* сетку куска ленты ждёт расстановка (21pga): трава встаёт на неё и отпускает */
+  if(J.t==="rib")J.grid=m;
   PLN.stat.verts=(PLN.stat.verts||0)+m.nv;
 }
 /* Строит не больше n кусков, ближние к объективу первыми. Первый кадр поднимает всё, что в нём
@@ -82009,7 +82025,8 @@ function plnLandBatches(L,out,ex,V){
   for(const J of L.jobs)if(J.geo&&plnLandSees(J,ex,V,0))out.push({geo:J.geo,inst:null,kind:J.kind,to:J.to,ride:J.ride});
 }
 function plnLandFree(L){
-  for(const J of L.jobs){if(J.geo)plnGeoFree(J.geo);J.geo=null;}
+  for(const J of L.jobs){if(J.geo)plnGeoFree(J.geo);J.geo=null;J.grid=null;J.pl=null;}
+  plnPlantDrop(L);
 }
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){
@@ -82120,6 +82137,861 @@ function plnLandPondMesh(L,J){
   }
   return m;
 }
+
+/* ══════════════ планета: набор тел — трава, цветок, камень, розетка, куст, дерево (M611) ══════════════
+   Всё, что растёт и лежит на земле, — из одного набора. Тело строится раз на
+   устройство, в своей мерке (пучок и камень — метр, дерево — десять), а в мир
+   его ставит запись расстановки (21pc): место, размер, поворот, доля высоты и
+   два цвета. Сто тысяч пучков травы — это шесть сеток и сто тысяч записей, а
+   не два миллиона вершин на куске земли.
+
+   Формы — со стенда docs/look (M600): шапка с плоским исподом, розетка с
+   поникшими листьями, гранёный камень со мхом на макушке. Деревья — шесть
+   пород с разным обводом, они в 21pgb. Оранжевого в наборе нет: он у людей и
+   у руды.
+
+   Цвет. Пучки, розетки и кусты несут в вершине только ход от корня к макушке
+   (r) и свою светлоту (g): оба цвета даёт запись (режим 1). У дерева так
+   красится одна крона, кора остаётся своей (режим 2). Камень, цветок и колос
+   несут свой цвет, запись его подкрашивает (режим 0). */
+const PLN_TINTS=[{top:plnHex("#9cc04a"),under:plnHex("#2f5f45")},{top:plnHex("#bfc04e"),under:plnHex("#4a6a3a")},
+  {top:plnHex("#cf8fb0"),under:plnHex("#5a4466")},{top:plnHex("#6fb58a"),under:plnHex("#24514f")}];
+/* дальний берег: та же зелень, тише */
+const PLN_TINTS_FAR=[{top:plnHex("#86a850"),under:plnHex("#33594a")},{top:plnHex("#a9ab5a"),under:plnHex("#4a6044")}];
+const PLN_FLORA={gen:-1,kit:null,
+  dens:17,                             /* пучков на квадратный метр полки до прореживания */
+  wide:1.55,                           /* лист шире, чем в жизни: в масштабе игры ковёр — фактура, а не рисунок */
+  foot:.45,                            /* при какой высоте пучка его след — как на стенде */
+  treeH:10};                           /* мерка дерева в наборе, м */
+
+/* Пучок: три-четыре листа из одного корня, каждый гнётся в свою сторону. Листья стоят лицом к
+   объективу, и нормаль у них клонится к нему же: запись поворачивает пучок лишь слегка.
+   o: rings, w0 и w1 (ширина листа), off (разброс корней), lean, wk (ветер) */
+function plnFloraTuft(m,r,o){
+  const nb=3+(r()*2|0),S=o.rings,M=PLN_MAT.grass;
+  for(let b=0;b<nb;b++){
+    const yaw=(r()-.5)*1.9,lean=(r()-.5)*o.lean,w=o.w0+r()*o.w1,bh=.6+r()*.5;
+    const ox=(r()-.5)*o.off,oz=(r()-.5)*o.off,dx=Math.cos(yaw),dz=Math.sin(yaw);
+    const nr=plnNorm([(r()-.5)*.5,1,-.35+(r()-.5)*.3]),g=.5+(r()-.5)*.14;
+    let pa=-1,pb=-1;
+    for(let s=0;s<=S;s++){
+      const t=s/S,ww=w*(1-t*t)*.5+(s===S?0:.01),bend=lean*bh*t*t;
+      const c=[ox-dz*bend,bh*t-.1,oz+dx*bend],col=[Math.pow(t,.8),g,0],wd=t*t*o.wk*bh;
+      const a=plnVert(m,[c[0]-dx*ww,c[1],c[2]-dz*ww],nr,col,M,wd,0,t);
+      const q=plnVert(m,[c[0]+dx*ww,c[1],c[2]+dz*ww],nr,col,M,wd,0,t);
+      if(s)plnQuad(m,pa,pb,q,a);
+      pa=a;pb=q;
+    }
+  }
+  return m;
+}
+/* камень: серый, светлее к макушке, мох лежит сверху; тон даёт запись */
+function plnFloraRock(m,seed,sub,r){
+  const P=PLN_PAL,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]];
+  plnBlob(m,{c:[0,.15,0],r,sub,bump:.5,bumpF:1.25,seed,yaw:seed*1.37,lean:Math.sin(seed)*.2,cut:-.4*r[1],
+    col:(u,p,n)=>{
+      const k=lerp(.62,1,plnSmooth(-.6,.6,u[1]+plnNoise(p[0]*.9,p[1]*2.2,seed)*.5));
+      return plnMix3([k,k,k],moss,plnSmooth(.55,.9,n[1])*plnSmooth(-.1,.3,plnNoise(p[0]*.7+3,p[2]*.7,seed+2))*.7);
+    },mat:PLN_MAT.rock});
+  return m;
+}
+/* розетка: листья из одного корня, поникшие — куст ближнего плана: гладкая шапка среди травы
+   читалась бы подушкой */
+function plnFloraRosette(m,r,n){
+  const M=PLN_MAT.grass;
+  for(let b=0;b<n;b++){
+    const a=r()*TAU,el=.15+1.15*Math.sqrt(r()),len=(.75+r()*.55)*(.7+.3*Math.sin(el)),w=.10+r()*.05;
+    const ox=Math.cos(a),oz=Math.sin(a),droop=.35+r()*.5,f=.85+r()*.3;
+    let pa=-1,pb=-1,px=0,py=0;
+    for(let s=0;s<=5;s++){
+      /* лист выходит из корня под углом el к вертикали и никнет дальше по длине */
+      const t=s/5,e=el+droop*t*t*1.2;
+      if(s){const em=el+droop*(t-.1)*(t-.1)*1.2;px+=Math.sin(em)*len/5;py+=Math.cos(em)*len/5;}
+      const p=[ox*px,py-.05,oz*px],ww=w*Math.sin(Math.PI*Math.pow(t,.6))*.9+(s===5?0:.006);
+      const nr=plnNorm([-ox*Math.cos(e),Math.sin(e)+.35,-oz*Math.cos(e)]),k=Math.pow(t,.7);
+      const col=[k,.5+(f-1)*k,0],wd=t*t*.18*len;
+      const va=plnVert(m,[p[0]+oz*ww,p[1],p[2]-ox*ww],nr,col,M,wd,0,t);
+      const vb=plnVert(m,[p[0]-oz*ww,p[1],p[2]+ox*ww],nr,col,M,wd,0,t);
+      if(s)plnQuad(m,pa,pb,vb,va);
+      pa=va;pb=vb;
+    }
+  }
+  return m;
+}
+/* колосья цветения над розеткой: акцент этого мира, скупо */
+function plnFloraBloom(m,r,n){
+  const root=plnHex("#2c5a3c"),pink=plnHex("#d983b0"),M=PLN_MAT.grass;
+  for(let k=0;k<n;k++){
+    const a=r()*TAU,d=.25*r(),top=[Math.cos(a)*d*2,1.25+r()*.5,Math.sin(a)*d*2];
+    plnTube(m,{path:[[Math.cos(a)*d,0,Math.sin(a)*d],top],rad:.012,sides:4,col:root,mat:M,wind:t=>t*t*.12});
+    for(let j=0;j<5;j++)plnBlob(m,{c:[top[0]+(r()-.5)*.08,top[1]-j*.075,top[2]+(r()-.5)*.08],r:[.05,.045,.05],sub:0,
+      col:plnMul(pink,.9+r()*.25),mat:M,wind:.12,x:1,glow:.12});
+  }
+  return m;
+}
+/* шапка: купол с плоским исподом — форма, которую этот мир повторяет в облаках, кронах и кустах */
+function plnFloraCap(m,c,pr,ph,o){
+  plnBlob(m,{c,r:[pr,ph,pr],sub:o.sub,bump:o.bump==null?.2:o.bump,bumpF:o.bumpF||2.4,seed:o.seed,yaw:o.yaw||0,lean:o.lean||0,
+    cut:-.22*ph,col:o.col,mat:PLN_MAT.leaf,wind:o.wind,nc:o.nc,ncK:o.ncK==null?.5:o.ncK});
+}
+function plnFloraBush(m,r){
+  const n=3+(r()*3|0),nc=[0,-.4,0];
+  const col=(u,p,nn)=>[plnSmooth(-.2,.5,nn[1]),.5+plnNoise(p[0]*1.3,p[2]*1.3+p[1],3)*.12,0];
+  for(let k=0;k<n;k++){
+    const a=r()*TAU,d=k?.3+r()*.6:0,rr=k?.45+r()*.3:.8;
+    plnFloraCap(m,[Math.cos(a)*d,rr*.2,Math.sin(a)*d*.7],rr,rr*.78,{sub:1,seed:k*3+(r()*50|0),yaw:r()*TAU,col,wind:.04,nc});
+  }
+  return m;
+}
+
+/* набор этого поколения устройства. Кости у набора свои и всегда одни: набор — словарь стиля */
+function plnFloraKit(){
+  const Q=PLN_FLORA;
+  if(Q.kit&&Q.gen===PLN_GPU.gen)return Q.kit;
+  const t0=wallMs(),W=Q.wide,H=Q.treeH,K={};
+  let nv=0;
+  const geo=m=>{nv+=m.nv;return plnGeo(m);};
+  /* дерево породы sp; rh — радиус кроны в долях роста, если он задан композицией */
+  const tree=(sp,seed,sub,rich,o,rh)=>{
+    const r=rng(seed),T=PLN_TREES[sp],R=H*(rh||(T.R[0]+r()*T.R[1]));
+    return {geo:geo(PLN_TREE_MAKE[sp](r,H,R,sub,rich,o)),R,sp};
+  };
+  const add=(list,map,key,t)=>{(map[key]=map[key]||[]).push(list.length);list.push(t);};
+  K.tuft=[0,1,2,3,4,5].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7100+k),{rings:3,w0:.09*W,w1:.06*W,off:.4*W/Q.foot,lean:1.1,wk:.3})));
+  K.reed=[0,1,2].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7150+k),{rings:4,w0:.07,w1:.04,off:.17,lean:1.2,wk:.25})));
+  {const m=plnMesh(32);plnBlob(m,{c:[0,0,0],r:[1,.72,1],sub:0,col:[1.05,1.05,1.05],mat:PLN_MAT.grass,wind:1.1,x:1,glow:.18});K.flower=geo(m);}
+  /* камни: три малых и три больших */
+  K.rock=[[11,1,[1.2,.8,1]],[23,1,[1.35,.7,1]],[37,1,[1.05,.75,1.1]],[5,2,[1.2,.8,1]],[17,2,[1.25,.85,1]],[29,2,[1.15,.9,.95]]]
+    .map(q=>geo(plnFloraRock(plnMesh(256),q[0],q[1],q[2])));
+  K.ros=[0,1,2].map(k=>geo(plnFloraRosette(plnMesh(1024),rng(7300+k),56)));
+  K.bloom=[2,3].map(n=>geo(plnFloraBloom(plnMesh(256),rng(7350+n),n)));
+  K.bush=[0,1,2].map(k=>geo(plnFloraBush(plnMesh(512),rng(7500+k))));
+  /* деревья (породы — 21pgb). K.tree и K.far — тела подряд, K.sp и K.spFar — какие из них чьей
+     породы. «hero» — зонт, что клонится над площадкой: он один и в рощах не растёт */
+  K.tree=[];K.sp={};K.far=[];K.spFar={};
+  add(K.tree,K.sp,"hero",tree("umb",7401,3,true,{lean:-.95,bend:-1.7,thin:.74},.54));
+  [[7411,false],[7413,true],[7414,false,{lean:.55,bend:1.1,thin:.8}],[7415,false,{fork:.62,thin:.8,lean:-.3},.4],[7416,true,{fork:.27,lean:.25,bend:.6}]]
+    .forEach(q=>add(K.tree,K.sp,"umb",tree("umb",q[0],2,q[1],q[2],q[3])));
+  [[7421,false],[7422,true,{thin:.85,wide:.4}],[7423,false,{lean:.5,skirt:.26}]].forEach(q=>add(K.tree,K.sp,"col",tree("col",q[0],2,q[1],q[2])));
+  [[7431,false],[7432,true],[7433,false,{lean:-.6,bend:.9,hs:[.42,.66,.86],taper:.5}],[7434,false,{hs:[.3,.44,.57,.69,.8,.9],taper:.3,thin:.85},.3]]
+    .forEach(q=>add(K.tree,K.sp,"pag",tree("pag",q[0],2,q[1],q[2],q[3])));
+  [[7441,false],[7442,true,{thin:.85,tall:1.05}],[7443,false,{lean:.9,bend:1.4,tall:.72}]].forEach(q=>add(K.tree,K.sp,"orb",tree("orb",q[0],2,q[1],q[2])));
+  [[7451,false],[7452,true],[7453,false,{lean:-.8}]].forEach(q=>add(K.tree,K.sp,"fork",tree("fork",q[0],2,q[1],q[2])));
+  [7461,7462].forEach(s=>add(K.tree,K.sp,"snag",tree("snag",s,2,false)));
+  PLN_TREE_ORDER.forEach((sp,i)=>{
+    if(PLN_TREES[sp].far>0)for(let k=0;k<2;k++)add(K.far,K.spFar,sp,tree(sp,7600+i*10+k,1,false));
+  });
+  /* кулиса: объектив смотрит на неё сверху, и крона с просветами читается пятном — шапки шире, внахлёст */
+  K.wing=[tree("umb",7471,2,true,{lean:.3,bend:.8,dense:1.45},.49),tree("umb",7472,2,true,{lean:-.4,bend:-1,dense:1.45},.49),
+    tree("umb",7473,2,true,{fork:.3,dense:1.5},.52),tree("orb",7474,2,true,{tall:.7},.4)];
+  Q.gen=PLN_GPU.gen;Q.kit=K;
+  PLN.stat.kit={ms:Math.round(wallMs()-t0),verts:nv};
+  return K;
+}
+
+/* ══════════════ планета: что где растёт и лежит (M611) ══════════════
+   Расстановка набора тел (21pg) по земле (21pf). Лента засажена кусками — теми
+   же, какими построена: кусок отдаёт свою сетку высот и цветов, и трава встаёт
+   на неё, не спрашивая рельеф заново. Дальний берег и рощи на холмах засажены
+   своими клетками вдоль x и едут по высоте вместе с дальним миром.
+
+   Кости у каждого куска свои (rng от семени земли и номера куска): кусок,
+   построенный сегодня и завтра, одинаков, а общий случай игры не тронут.
+
+   Правила — со стенда (M600):
+   · трава густа на полке у тропы, реже за линией и на ближнем склоне; на тропе,
+     на камне и под водой её нет; метёлки и цветы лежат наносами;
+   · камень — «большой со своими малыми», не россыпь; перед линией ходьбы
+     только невысокий: человека он не закрывает выше голени;
+   · деревья на ленте стоят только ЗА линией ходьбы;
+   · вокруг корабля, трапа и вещей игры — поляна;
+   · у площадки композиция принятого кадра стоит как была, дальше — по правилам.
+
+   Куски записей одной группы лежат в одном буфере подряд, тело к телу: одна
+   заливка на группу, отрисовка — по своему отрезку записей. */
+const PLN_PLANT={zN:-44,zF:9.5,         /* где растёт трава: от объектива и до гребня */
+  bands:[-20,-6],                       /* границы полос травы по глубине: у каждой свой веер */
+  farW:64,                              /* ширина клетки дальнего берега, м */
+  thingZ:1.7,                           /* на какой глубине стоят вещи игры: сразу за тропой */
+  slice:6000};                          /* сколько проб травы ставится за кадр */
+/* композиция у площадки, в метрах от точки композиции (L.cx0): x, z, … */
+const PLN_PAD={x0:-34,x1:48,
+  /* x, z, рост, порода и номер в ней, поворот, тон кроны, стройность. Справа над площадкой клонится
+     зонт, слева ему отвечают три свечи: лежачее против стоячего */
+  trees:[[17.2,8,11.5,"hero",0,0,0,1],[-29.4,5.6,13,"col",0,.4,3,1.18],[-27.2,7.0,9.8,"col",1,2.1,3,1.1],[-25.1,5.2,7.2,"col",2,4,0,1.05],
+    [41.5,7.6,7.8,"orb",0,1.2,1,1],[44.8,6.2,5.6,"orb",2,3.3,1,1.06]],
+  /* x, z, радиус, тон */
+  rocks:[[14.2,5.2,1.6,.3],[15.6,4.0,.9,.5],[12.9,6.2,.7,.2],[-7.6,-2.7,.8,.4],[5.6,-3.3,.9,.6],[6.5,-3.9,.5,.3],
+    [-9,-9,1.3,.7],[2,-11,1.0,.6],[11,-8.5,1.5,.8],[-17.5,-1.5,.6,.4],[24.4,-2.4,.8,.4],[25.6,-3.0,.4,.3],
+    [-21.5,-3.2,.9,.5],[-22.8,-2.5,.45,.4],[-26.5,2.6,.6,.3],[43.5,-1.8,.7,.5],[44.4,-2.6,.35,.4]],
+  /* склон лежит в тени и держится тихо: три валуна со своими малыми, у подножия каждого — розетка */
+  slope:[[-4.5,-19,1.8],[24,-24,2.2],[-27,-14,1.5]],
+  /* x, z, радиус, холодная ли, сколько колосьев */
+  ros:[[-19.5,3.5,1.5,0,0],[-6.5,4.2,1.3,0,0],[.5,4.8,1.6,1,3],[7.5,4.0,1.2,0,0],[10.5,5,1.7,0,0],[-4,-7,1.1,1,0],[6,-6.5,.9,0,2],
+    [14,-5,1.2,0,0],[-13,-6,1.0,0,0],[22,4.4,1.4,0,0],[26.2,-4.2,1.1,1,2],[35.5,-4.6,1.2,0,0],[44,3.0,1.3,0,0],[-24.5,3.6,1.3,0,0],
+    [-29.5,-4.5,1.2,1,0],[20.5,-7.5,1.0,0,0],[40,-7,1.2,0,3],[-31,1.8,1.0,0,2]]};
+
+function plnPlantSeed(L,c,k){return Math.floor(plnHash(c,k,L.sd)*4294967296)>>>0;}
+/* ведро записей одного тела */
+function plnPlantBucket(geo,to,kind){return {geo,to,kind:kind||PLN_KIND.body,a:new Float32Array(16*32),n:0};}
+function plnPlantPut(B,p,scale,yaw,hk,ca,mode,cb,ride){
+  if((B.n+1)*16>B.a.length){const b=new Float32Array(B.a.length*2);b.set(B.a);B.a=b;}
+  plnRec(B.a,B.n++,p,scale,yaw,hk,B.n,ca,mode,cb,ride);
+}
+/* группа: то, что видно или не видно разом. z — самая дальняя её глубина, m — запас по ширине */
+function plnPlantGroup(xa,xb,z,m,buckets,blots){
+  const G0={xa,xb,z,m,inst:null,parts:[],blots:blots||[],n:0};
+  let n=0;
+  for(const B of buckets)n+=B.n;
+  if(!n)return G0;
+  const a=new Float32Array(n*16);
+  let k=0;
+  for(const B of buckets){
+    if(!B.n)continue;
+    a.set(B.a.subarray(0,B.n*16),k*16);
+    G0.parts.push({geo:B.geo,first:k,count:B.n,kind:B.kind,to:B.to});
+    k+=B.n;
+  }
+  G0.inst=plnInst(a,n);G0.n=n;
+  return G0;
+}
+/* земля куска в любой его точке: высота, цвет, наклон и доля камня — из сетки, которой он построен */
+function plnPlantGrid(L,J){
+  const C=PLN_LAND,i0=J.c*C.chunk,nc=Math.min(i0+C.chunk,L.NT-1)-i0+1,v=J.grid.v,zr=L.zr,R=L.R,xa=L.x0+i0*L.dx,S=PLN_VS,o=new Float32Array(6);
+  return function(x,z){
+    const u=clamp((x-xa)/L.dx,0,nc-1.001),i=Math.floor(u),tx=u-i,zz=clamp(z,zr[0],zr[R-1]);
+    let a=0,b=R-1;
+    while(b-a>1){const q=(a+b)>>1;if(zr[q]<=zz)a=q;else b=q;}
+    const tz=(zz-zr[a])/((zr[b]-zr[a])||1),p0=(a*nc+i)*S,p1=p0+S,p2=(b*nc+i)*S,p3=p2+S;
+    const w0=(1-tx)*(1-tz),w1=tx*(1-tz),w2=(1-tx)*tz,w3=tx*tz;
+    o[0]=v[p0+1]*w0+v[p1+1]*w1+v[p2+1]*w2+v[p3+1]*w3;
+    o[1]=v[p0+6]*w0+v[p1+6]*w1+v[p2+6]*w2+v[p3+6]*w3;
+    o[2]=v[p0+7]*w0+v[p1+7]*w1+v[p2+7]*w2+v[p3+7]*w3;
+    o[3]=v[p0+8]*w0+v[p1+8]*w1+v[p2+8]*w2+v[p3+8]*w3;
+    o[4]=v[p0+4]*w0+v[p1+4]*w1+v[p2+4]*w2+v[p3+4]*w3;
+    o[5]=v[p0+11]*w0+v[p1+11]*w1+v[p2+11]*w2+v[p3+11]*w3;
+    return o;
+  };
+}
+
+/* ── что знает земля о жизни на ней ── */
+function plnPlantInit(L,p){
+  const ty=p.mix==="jungle"?"jungle":p.type,atm=(p.T&&p.T.atm)||"",wet=L.tr.wet==null?.5:L.tr.wet;
+  const flora=atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||p.mix==="toxic"||p.mix==="jungle";
+  const D={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
+  const g0=G.opts&&G.opts.gfx?G.opts.gfx.plants:1,gp=clamp(g0==null?1:g0,.25,1.5);
+  return L.flora={lush:flora?clamp((D[ty]||1.2)/1.9*(.25+wet*1.85),.25,1.3)*gp:0,
+    things:plnPlantThings(L,p),groups:[],far:{},first:false,ms:0,n:0,tufts:0};
+}
+/* Вещи игры, вокруг которых держится поляна: [x, z, полуоси поляны, насколько близко могут стоять
+   высокие тела]. Места — из состояния посадки; вещь, что появится позже, встанет в траву */
+function plnPlantThings(L,p){
+  const S=G.surf,tr=L.tr,T=[],Z=PLN_PLANT.thingZ,M=PLN_M;
+  const add=(xu,z,rx,rz,tall)=>{if(xu!=null&&isFinite(xu))T.push([xu/M,z,rx,rz,tall]);};
+  add(L.shipX*M,7,6.5,4,10);
+  T.push([L.rampX,L.rampZ+1.2,1.2,2.2,0]);
+  if(!S)return T;
+  for(const d of S.deposits||[])add(d.x,Z,1.7,1.4,3);
+  for(const q of S.plants||[])add(q.x,Z+.4,.7,.7,1.5);
+  if(S.cave)add(S.cave.x,4,6,5,9);
+  add(mineSpotX(p),3,5,4,8);
+  add(homeSpotX(p,tr),3,12,6,14);
+  add(settleSpotX(p,tr),3,16,6,18);
+  add(tinSpotX(p,tr),3,14,6,16);
+  for(const q of (tr.poi||[]))add(q.x,3,Math.max(3,(q.h||60)*.22*(q.sc||1)/M+2),5,Math.max(5,(q.h||60)*.3/M));
+  return T;
+}
+/* стоит ли здесь высокое тело: не у вещей игры */
+function plnPlantFree(L,x){
+  for(const t of L.flora.things)if(t[4]>0&&Math.abs(x-t[0])<t[4])return false;
+  return true;
+}
+
+/* ── кусок ленты ──
+   Сначала тела (деревья, камни, розетки, камыш, кулиса) — разом; потом трава, порциями по кадрам */
+function plnPlantBodies(L,J){
+  const K=plnFloraKit(),P=PLN_PAL,TO=PLN_TO,F=L.flora,lush=F.lush,xa=J.xa,xb=J.xb,wd=xb-xa,c=J.c,at=plnPlantGrid(L,J);
+  const r=rng(plnPlantSeed(L,c,1)),clear=[],blots=[],lake=L.lake,H=PLN_FLORA.treeH;
+  const bTree=K.tree.map(t=>plnPlantBucket(t.geo,TO.all)),bRock=K.rock.map(g=>plnPlantBucket(g,TO.all)),
+    bRos=K.ros.map(g=>plnPlantBucket(g,TO.main|TO.sh0)),bBloom=K.bloom.map(g=>plnPlantBucket(g,TO.main)),
+    bReed=K.reed.map(g=>plnPlantBucket(g,TO.main|TO.sh0)),bWing=K.wing.map(t=>plnPlantBucket(t.geo,TO.main,PLN_KIND.wing));
+  for(const t of F.things)if(t[0]>xa-20&&t[0]<xb+20)clear.push(t);
+  const wetAt=(x,z,h)=>!!lake&&x>lake.x0-1.5&&x<lake.x1+1.5&&z>-8&&z<6&&h<lake.level+.15;
+  const padK=x=>x-L.cx0>PLN_PAD.x0&&x-L.cx0<PLN_PAD.x1;
+  /* свободно ли место под тело радиуса rr; поворот и номер тела — от места, не от костей */
+  const free=(x,z,rr)=>{for(const q of clear)if(Math.hypot((x-q[0])/(q[2]+rr),(z-q[1])/(q[3]+rr))<1)return false;return true;};
+  const hv=(x,z,s)=>plnHash(Math.round(x*8),Math.round(z*8),c*7+s);
+  const dice=n=>{const a=[];for(let k=0;k<n;k++)a.push(r());return a;};
+  /* h — рост дерева, hk — его стройность: вширь оно во столько раз уже своей мерки */
+  const tree=(x,z,h,v,yaw,ti,hk)=>{
+    const g=at(x,z)[0],t=PLN_TINTS[ti],s=h/(H*hk),R=K.tree[v].R*s;
+    if(wetAt(x,z,g-.3))return;
+    plnPlantPut(bTree[v],[x,g,z],s,yaw,hk,t.under,2,t.top,0);
+    blots.push([x,z,Math.max(R*.5,.8),.4]);clear.push([x,z,.9,.9,0]);
+  };
+  const rock=(x,z,rr,tone,shade)=>{
+    const g=at(x,z)[0];
+    if(wetAt(x,z,g))return;
+    plnPlantPut(bRock[(rr>.85?3:0)+((hv(x,z,1)*3)|0)],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),0,null,0);
+    blots.push([x,z,rr*1.8,rr>.4?.5:.4]);
+    if(rr>.4)clear.push([x,z,rr*1.3,rr*1.3,0]);
+  };
+  const root=plnHex("#2c5a3c"),tipW=plnHex("#8fb04e"),tipC=plnHex("#5fa07a");
+  const ros=(x,z,rr,cool,bloom,shade)=>{
+    const g=at(x,z)[0],k=shade==null?1:shade,yaw=hv(x,z,3)*TAU;
+    if(lush<=0||wetAt(x,z,g)||plnLandPath(L,x,z)>.3)return;
+    plnPlantPut(bRos[(hv(x,z,4)*3)|0],[x,g,z],rr,yaw,1,plnMul(root,k),1,plnMul(cool?tipC:tipW,k),0);
+    if(bloom)plnPlantPut(bBloom[bloom>2?1:0],[x,g,z],rr,yaw,1,[k,k,k],0,null,0);
+    blots.push([x,z,rr*1.3,.45]);clear.push([x,z,rr*.9,rr*.9,0]);
+  };
+  /* валун склона со своими малыми и розеткой у подножия; d — двенадцать костей */
+  const boulder=(cx,cz,rr,d)=>{
+    rock(cx,cz,rr,.6+d[0]*.3,.85);
+    rock(cx+rr*1.5+d[1]*.6,cz-.6-d[2],rr*(.4+d[3]*.15),.5+d[4]*.3,.85);
+    rock(cx-rr*1.3-d[5]*.5,cz+.5+d[6],rr*(.3+d[7]*.12),.5+d[8]*.3,.85);
+    ros(cx-rr*.4+d[9]*1.5,cz-rr*1.4-d[10],1.6+d[11]*.6,d[0]<.4?1:0,0,.9);
+  };
+  /* у площадки — принятая композиция */
+  const px=x=>x+L.cx0,mine=x=>x>=xa&&x<xb;
+  if(lush>.45)for(const t of PLN_PAD.trees)if(mine(px(t[0])))tree(px(t[0]),t[1],t[2],K.sp[t[3]][t[4]],t[5],t[6],t[7]);
+  for(const q of PLN_PAD.rocks)if(mine(px(q[0])))rock(px(q[0]),q[1],q[2],q[3]);
+  for(const q of PLN_PAD.slope)if(mine(px(q[0])))boulder(px(q[0]),q[1],q[2],[.2,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5]);
+  for(const q of PLN_PAD.ros)if(mine(px(q[0])))ros(px(q[0]),q[1],q[2],q[3],q[4]);
+  /* дальше — по правилам. Кости бросаются всегда одним числом: чья-то поляна не сдвигает соседей */
+  {
+    /* деревья: до двух групп на кусок, каждая в своей половине. Порода — главная для этого места,
+       изредка чужая; в группе первое дерево старшее. Тон кроны — породы или места; розовый — редкость */
+    const d=dice(1),n=d[0]<.3?0:(d[0]<.78?1:2),main=[0,1,3][(plnHash(Math.floor(xa/96),5,L.sd)*3)|0];
+    for(let k=0;k<2;k++){
+      const q=dice(4),sp=plnTreeKind(L,xa+wd*.5,q[0],0),T=PLN_TREES[sp],list=K.sp[sp];
+      const x0=xa+3+(k+q[1])*.5*(wd-6),z0=4.8+q[2]*3.2,cnt=T.grp[0]+((q[3]*(T.grp[1]-T.grp[0]+1))|0);
+      for(let j=0;j<3;j++){
+        const e=dice(7),x=clamp(x0+(j?(j===1?-1:1)*T.gap*(.75+e[0]*.5):0),xa+1,xb-1),z=clamp(z0+(j?(e[1]-.5)*2.4:0),4.6,8.5);
+        /* розовый — цвет плоских крон; свеча в нём читается стопкой камней */
+        const h=lerp(T.h[0],T.h[1],j?e[2]*.55:.45+e[2]*.55),ti=e[5]<.07&&sp!=="col"?2:(e[5]<.62?T.tint:main);
+        if(k<n&&j<cnt&&lush>.45&&!padK(x)&&plnPlantFree(L,x)&&!(lake&&x>lake.x0-4&&x<lake.x1+4))
+          tree(x,z,h,list[(e[3]*list.length)|0],e[4]*TAU,ti,lerp(T.hk[0],T.hk[1],e[6]));
+      }
+    }
+  }
+  {
+    /* камень у тропы: большой со своими малыми; за линией крупнее, перед ней ниже */
+    const u=r(),n=u<.25?0:(u<.75?1:2);
+    for(let k=0;k<2;k++){
+      const q=dice(14),back=q[0]<.6,x=xa+2.5+q[1]*(wd-5),z=back?3.4+q[2]*2.8:-(2.4+q[2]*1.5),rr=back?.7+q[3]*.9:.5+q[3]*.4,tone=q[4],sm=1+((q[5]*2)|0);
+      if(k>=n||padK(x)||plnLandPath(L,x,z)>.2||!free(x,z,rr)||(!back&&!plnPlantFree(L,x)))continue;
+      rock(x,z,rr,tone);
+      for(let j=0;j<sm;j++){
+        const o=6+j*4,sx=x+(q[o]<.5?-1:1)*(rr*1.15+.3+q[o+1]*.6),sz=z+(back?-1:1)*(.3+q[o+2]*.9);
+        if(plnLandPath(L,sx,sz)<.2)rock(sx,sz,rr*(.35+q[o+3]*.2),clamp(tone+(q[o+1]-.5)*.3,0,1));
+      }
+    }
+  }
+  {
+    const q=dice(16),cx=xa+5+q[12]*(wd-10),cz=-(12+q[13]*12);
+    if(q[14]<.55&&!padK(cx))boulder(cx,cz,1.5+q[15]*.7,q);
+  }
+  /* мелкий камень вдоль тропы */
+  for(let k=0;k<8;k++){
+    const q=dice(4),x=xa+.4+q[0]*(wd-.8),z=-5+q[1]*6.5,rr=.15+q[2]*.22;
+    if(plnLandPath(L,x,z)<=.3&&free(x,z,0))rock(x,z,rr,q[3]);
+  }
+  /* розетки: за линией у гребня полки и перед линией, где склон уходит вниз */
+  for(let k=0;k<4;k++){
+    const q=dice(7),x=xa+1.5+q[0]*(wd-3),front=q[1]<.4,z=front?-(4.2+q[2]*3.3):3.4+q[2]*1.6,rr=.9+q[3]*.8;
+    if(q[6]<.35+.45*lush&&!padK(x)&&free(x,z,rr))ros(x,z,rr,q[4]<.25?1:0,q[5]<.25?2+((q[5]*8)|0):0);
+  }
+  /* камыш по урезу пруда: куртинами, на дальнем берегу и по краям */
+  if(lake&&lush>0&&xb>lake.x0-4&&xa<lake.x1+4){
+    const q=rng(plnPlantSeed(L,c,4)),rootR=plnHex("#2f5040"),tipR=plnHex("#8fa05a"),dryR=plnHex("#c9b870");
+    for(let k=0;k<5;k++){
+      const cx=xa+q()*wd,far=q()<.7,cz=far?3.2+q()*2.6:-5.4+q()*1.2,n=8+((q()*14)|0),hh=1.1+q()*.9,wid=1.2+q()*2.4;
+      for(let j=0;j<n;j++){
+        const u=(q()+q()+q())/3*2-1,x=clamp(cx+u*wid*1.3,xa,xb),z=cz+(q()-.5)*1.6,h=hh*(1-.5*u*u)*(.7+q()*.5),dry=q()<.25,v=(q()*3)|0,yaw=(q()-.5)*.8;
+        const g=at(x,z)[0];
+        if(g<lake.level-.4||g>lake.level+.3||x<lake.x0-3||x>lake.x1+3)continue;
+        plnPlantPut(bReed[v],[x,Math.max(g,lake.level-.25),z],h*.8,yaw,1.25,rootR,1,dry?dryR:tipR,0);
+      }
+    }
+  }
+  /* кулиса: тёмные кроны у самого объектива, на ближнем краю ленты. Склон там ниже линии ходьбы, а
+     нижний край кадра на этой глубине идёт почти по ней; рост дерева считан от линии: крона входит
+     в кадр снизу на десятую — пятую долю его высоты и человека не закроет */
+  if(lush>.45){
+    const q=rng(plnPlantSeed(L,c,3)),wk=.68,top=plnMul(plnHex("#227a66"),wk),und=plnMul(plnHex("#0a2e30"),wk);
+    for(let k=0;k<2;k++){
+      const x=xa+2+(k+q())*.5*(wd-4),z=-51+q()*3.5,up=2.4+q()*2,v=(q()*K.wing.length)|0,yaw=q()*TAU,on=q()<.62;
+      const g=at(x,z)[0],h=clamp(at(x,0)[0]+up-g,8,17);
+      /* режим 1: в тон кроны уходит и кора — карты теней кулиса не берёт, и светлый сук сквозь размытие делает её бурой */
+      if(on)plnPlantPut(bWing[v],[x,g,z],h/H,yaw,1,und,1,top,0);
+    }
+  }
+  const bodies=bTree.concat(bRock,bRos,bBloom,bReed);
+  F.groups.push(plnPlantGroup(xa-7,xb+7,9,2,bodies,blots));
+  F.groups.push(plnPlantGroup(xa-7,xb+7,-47,2,bWing));
+  return clear;
+}
+/* трава куска: порция проб. Возвращает true, когда кусок засажен весь */
+function plnPlantGrass(L,J,n){
+  const Q=PLN_FLORA,C=PLN_PLANT,P=PLN_PAL,F=L.flora,S=J.pl,at=S.at,r=S.r,clear=S.clear,xa=J.xa,wd=J.xb-J.xa,sd=L.sd,W=Q.wide,lake=L.lake;
+  const zN=C.zN,zd=C.zF-C.zN,k1=Math.min(S.K,S.k+n),ca=[0,0,0],cb=[0,0,0],cf=[0,0,0],pos=[0,0,0];
+  const hay=plnHex("#f0e0a0"),warm=[plnHex("#f6f2e6"),plnHex("#f2c84b")],cold=[plnHex("#e8709c"),plnHex("#c9a0ff")];
+  for(let k=S.k;k<k1;k++){
+    const x=xa+r()*wd,z=zN+r()*zd,u1=r(),u2=r(),u3=r(),u4=r(),u5=r(),u6=r(),u7=r(),u8=r(),u9=r(),u10=r();
+    const pw=plnLandPath(L,x,z);
+    if(pw>.3)continue;
+    let d=z>2.5?.55:(z>-5?1:lerp(1,.4,plnSmooth(5,18,-z)));
+    d*=.45+.55*plnSmooth(.3,.6,plnFbm(x*.12,z*.12,2,sd+61)*.5+.5);
+    for(const q of clear){const e=Math.hypot((x-q[0])/q[2],(z-q[1])/q[3]);if(e<1)d*=plnSmooth(.7,1,e);}
+    if(u1>d)continue;
+    const g=at(x,z),h0=g[0];
+    /* на крутом камне и под водой пруда травы нет */
+    if(g[5]>.4||(lake&&h0<lake.level+.06&&x>lake.x0-2&&x<lake.x1+2&&z>-9&&z<7))continue;
+    const head=z>-6&&u2<.14&&plnFbm(x*.16+2,z*.16+9,2,sd+62)>.26;
+    let hgt=(z<-6?lerp(.42,.95,plnSmooth(6,20,-z)):lerp(.2,.42,plnSmooth(.1,.3,1-pw*3))*(.8+u3*.5))*(.8+u4*.4);
+    ca[0]=g[1]*.74;ca[1]=g[2]*.74;ca[2]=g[3]*.74;
+    if(head){
+      hgt*=1.6;
+      cb[0]=lerp(P.dry[0],hay[0],u5*.6)*1.2;cb[1]=lerp(P.dry[1],hay[1],u5*.6)*1.2;cb[2]=lerp(P.dry[2],hay[2],u5*.6)*1.2;
+    }else{
+      cb[0]=lerp(g[1],P.grassLit[0],.3)*1.2;cb[1]=lerp(g[2],P.grassLit[1],.3)*1.2;cb[2]=lerp(g[3],P.grassLit[2],.3)*1.2;
+    }
+    const sH=lerp(hgt,Q.foot,.5),band=z<C.bands[0]?0:(z<C.bands[1]?1:2);
+    pos[0]=x;pos[1]=h0;pos[2]=z;
+    plnPlantPut(S.tuft[band][(u6*6)|0],pos,sH,(u7-.5)*.7,hgt/sH,ca,1,cb,0);
+    S.n++;
+    if(z>-15&&z<2.2){
+      const f1=plnFbm(x*.2+3,z*.2+1,2,sd+63),f2=plnFbm(x*.17+8,z*.17+5,2,sd+65);
+      const set=f1>.3?warm:(f2>.34?cold:null),deep=set===warm?f1-.3:f2-.34;
+      if(set&&u8<(.12+1.6*deep)*(z>-7?1:.5)){
+        const pk=plnFbm(x*.05+1,z*.05+7,2,sd+66)>0?0:1,fc=set[u9<.88?pk:1-pk];
+        cf[0]=fc[0];cf[1]=fc[1];cf[2]=fc[2];
+        pos[0]=x+(u10-.5)*.4;pos[1]=h0+hgt*.7+u5*.12;pos[2]=z+(u4-.5)*.4;
+        plnPlantPut(S.flower[band],pos,.058*W,0,1,cf,0,null,0);
+      }
+    }
+  }
+  S.k=k1;
+  if(k1<S.K)return false;
+  const zs=[C.bands[0],C.bands[1],C.zF];
+  for(let b=0;b<3;b++)F.groups.push(plnPlantGroup(xa-.8,J.xb+.8,zs[b],1.5,S.tuft[b].concat([S.flower[b]])));
+  F.tufts+=S.n;
+  J.pl=null;J.grid=null;J.planted=true;
+  return true;
+}
+function plnPlantChunk(L,J,n){
+  if(!J.pl){
+    const K=plnFloraKit(),F=L.flora,C=PLN_PLANT,TO=PLN_TO,clear=plnPlantBodies(L,J),at=plnPlantGrid(L,J);
+    const tuft=[0,1,2].map(()=>K.tuft.map(g=>plnPlantBucket(g,TO.main))),flower=[0,1,2].map(()=>plnPlantBucket(K.flower,TO.main));
+    J.pl={at,clear,tuft,flower,r:rng(plnPlantSeed(L,J.c,2)),k:0,n:0,
+      K:F.lush>0?Math.round(PLN_FLORA.dens*Math.min(1,F.lush)*(J.xb-J.xa)*(C.zF-C.zN)):0};
+  }
+  return plnPlantGrass(L,J,n);
+}
+
+/* ── дальний берег и рощи: клетка вдоль x ── */
+/* где за водой начинается берег: первая глубина, на которой дно выходит из воды */
+function plnPlantShore(L,x){
+  const wy=PLN_LAND.wRel-.1;
+  let z=70;
+  for(;z<150;z+=4)if(plnLandFarH(L,x,z)>wy)break;
+  if(z>=150)return 0;
+  if(z<=70)return 70;
+  let a=z-4,b=z;
+  for(let k=0;k<4;k++){const m=(a+b)/2;if(plnLandFarH(L,x,m)>wy)b=m;else a=m;}
+  return b;
+}
+/* гребень плана на этом x: самая высокая точка между двумя глубинами */
+function plnPlantCrest(L,x,z0,z1,step){
+  let bz=z0,by=-1e9;
+  for(let z=z0;z<=z1;z+=step){const h=plnLandFarH(L,x,z);if(h>by){by=h;bz=z;}}
+  return [x,by,bz];
+}
+function plnPlantFar(L,fc){
+  const K=plnFloraKit(),C=PLN_PLANT,P=PLN_PAL,TO=PLN_TO,F=L.flora,lush=F.lush,xa=fc*C.farW,xb=xa+C.farW,wy=PLN_LAND.wRel,H=PLN_FLORA.treeH;
+  const r=rng(plnPlantSeed(L,fc,11)),lit=TO.main|TO.mirror,cast=lit|TO.sh1;
+  const bTree=K.far.map(t=>plnPlantBucket(t.geo,cast)),bTree2=K.far.map(t=>plnPlantBucket(t.geo,cast)),bRock=K.rock.map(g=>plnPlantBucket(g,cast)),
+    bBush=K.bush.map(g=>plnPlantBucket(g,cast)),bReed=K.reed.map(g=>plnPlantBucket(g,lit));
+  /* урез воды по клетке: через два метра, между ними — по прямой */
+  const NS=Math.round(C.farW/2)+1,sh=new Float32Array(NS);
+  for(let i=0;i<NS;i++)sh[i]=plnPlantShore(L,xa+i*2);
+  const shore=x=>{const u=clamp((x-xa)/2,0,NS-1.001),i=Math.floor(u);return sh[i]&&sh[i+1]?lerp(sh[i],sh[i+1],u-i):0;};
+  const rock=(x,z,y,rr,tone,big)=>plnPlantPut(bRock[(big?3:0)+((plnHash(x|0,z|0,fc)*3)|0)],[x,y,z],rr,plnHash(z|0,x|0,fc+1)*TAU,1,
+    plnMix3(P.rockWarm,P.rockCool,tone),0,null,1);
+  /* скалы дальнего берега, камни на отмели перед ними */
+  {
+    const u=r(),cx=xa+r()*C.farW,dz=14+r()*5,n=2+((r()*3)|0),list=[];
+    for(let k=0;k<4;k++)list.push([k?(r()-.5)*9:0,k?(r()-.5)*3:0,k?.7+r()*.8:2+r()*.7,.1+r()*.3]);
+    const st=[0,1,2].map(()=>[-(5+r()*7),-(3.5+r()*4.5),.45+r()*.7]);
+    if(u<.5){
+      list.slice(0,n).forEach(q=>{
+        const x=cx+q[0],z0=shore(x);
+        if(!z0)return;
+        const z=z0+dz+q[1],y=plnLandFarH(L,x,z);
+        if(y>wy+.2)rock(x,z,y+q[2]*.05,q[2],q[3],q[2]>.85);
+      });
+      for(const q of st){const x=cx+q[0],z0=shore(x);if(z0>70)rock(x,z0+q[1],wy-q[2]*.25,q[2],.25,false);}
+    }
+  }
+  if(lush>0){
+    /* кусты по берегу: куртинами */
+    for(let k=0;k<2;k++){
+      const cx=xa+r()*C.farW,dz=17+r()*7,n=3+((r()*3)|0),on=r()<.6;
+      for(let j=0;j<5;j++){
+        const x=cx+(r()-.5)*13,dd=(r()-.5)*8,rr=1+r()*1.3,ti=r()<.3?1:0,v=(r()*3)|0,yaw=r()*TAU,z0=shore(x);
+        if(!on||j>=n||!z0)continue;
+        const z=z0+dz+dd,y=plnLandFarH(L,x,z),t=PLN_TINTS_FAR[ti];
+        if(y>wy+.3)plnPlantPut(bBush[v],[x,y,z],rr,yaw,1,t.under,1,t.top,1);
+      }
+    }
+    /* камыш у дальнего уреза */
+    const rootR=plnHex("#2f5040"),tipR=plnHex("#8fa05a"),dryR=plnHex("#c9b870");
+    for(let k=0;k<2;k++){
+      const cx=xa+r()*C.farW,wid=2.5+r()*5.5,hgt=1.2+r()*1.5,n=12+((r()*52)|0),on=r()<.7,q=rng(plnPlantSeed(L,fc,12+k));
+      if(!on)continue;
+      for(let j=0;j<n;j++){
+        const u=(q()+q()+q())/3*2-1,x=cx+u*wid*1.3,dz=(q()-.45)*3.2,hh=hgt*(1-.5*u*u)*(.7+q()*.5),dry=q()<.25,v=(q()*3)|0,yaw=(q()-.5)*.8,z0=shore(x);
+        if(z0<=70)continue;
+        const z=z0+dz;
+        plnPlantPut(bReed[v],[x,Math.max(plnLandFarH(L,x,z),wy-.25),z],hh*.8,yaw,1.25,rootR,1,dry?dryR:tipR,1);
+      }
+    }
+  }
+  if(lush>.45){
+    /* рощи: на гребне дальнего берега, на равнине за ним, на склоне холмов и по их гребню */
+    /* роща — одной породы, изредка с чужим деревом; свечи стоят теснее. band — план рощи */
+    const grove=(B,cx,cz,n,spread,h0,h1,main,acc,band)=>{
+      const gs=plnTreeKind(L,cx,0,band);
+      for(let k=0;k<10;k++){
+        const e=[r(),r(),r(),r(),r(),r(),r(),r()],sp=e[0]<.78?gs:plnTreeKind(L,cx,.68+(e[0]-.78)/.22*.32,band);
+        const T=PLN_TREES[sp],list=K.spFar[sp],a=e[1]*TAU,d=k?spread*Math.sqrt(e[2])*(sp==="col"?.55:1):0,x=cx+Math.cos(a)*d*1.5,z=cz+Math.sin(a)*d;
+        const t0=e[4]<.22?acc:(e[4]<.6?T.tint:main),ti=t0===2&&sp==="col"?T.tint:t0;
+        const h=lerp(h0,h1,k?.1+e[3]*.6:1)*T.far,hk=lerp(T.hk[0],T.hk[1],e[5]);
+        if(k>=n)continue;
+        const az=Math.atan2(x-L.cx0,z+50),pass=Math.exp(-Math.pow((az-PLN_AZ_ELEV)/.075,2));
+        if(pass>.25)continue;
+        const y=plnLandFarH(L,x,z),t=PLN_TINTS[ti];
+        if(y<wy+.5)continue;
+        plnPlantPut(B[list[(e[6]*list.length)|0]],[x,y-.2,z],h/(H*hk),e[7]*TAU,hk,t.under,2,t.top,1);
+      }
+    };
+    const dice=()=>[r(),r(),r(),r(),r()];
+    let q=dice();
+    if(q[0]<.45*lush){const c=plnPlantCrest(L,xa+q[1]*C.farW,118,170,4);grove(bTree,c[0],c[2]+4+q[2]*10,4+((q[3]*4)|0),10,8,14,0,1,1);}
+    q=dice();
+    if(q[0]<.4*lush)grove(bTree2,xa+q[1]*C.farW,200+q[2]*60,5+((q[3]*4)|0),14,9,15,q[4]<.5?3:0,0,2);
+    q=dice();
+    if(q[0]<.4*lush)grove(bTree2,xa+q[1]*C.farW,290+q[2]*40,5+((q[3]*4)|0),13,8,13,q[4]<.2?2:(q[4]<.6?0:3),2,3);
+    q=dice();
+    if(q[0]<.85*lush){const c=plnPlantCrest(L,xa+q[1]*C.farW,270,430,10);grove(bTree2,c[0],c[2]-8+q[2]*30,6+((q[3]*5)|0),17,9,15,q[4]<.5?0:3,1,4);}
+  }
+  F.groups.push(plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed)));
+  F.groups.push(plnPlantGroup(xa-30,xb+30,470,8,bTree2));
+  F.far[fc]=true;
+}
+
+/* ── очередь и кадр ── */
+function plnPlantSees(G0,ex,V,m){
+  const h=V.hw*(1+G0.z/V.D)+G0.m+m;
+  return G0.xb>ex-h&&G0.xa<ex+h;
+}
+/* Сажает, что пора: куски ленты, уже построенные, — ближние первыми, траву порциями; клетки
+   дальнего берега — по одной. Первый кадр поднимает всё, что в нём видно (долг M614) */
+function plnPlantStep(L,p,ex,V){
+  const F=L.flora||plnPlantInit(L,p),C=PLN_PLANT,t0=wallMs(),all=!!PLN.rush,first=!F.first;
+  F.first=true;
+  let budget=C.slice,did=0;
+  for(;;){
+    let best=null,bp=1e9;
+    for(const J of L.jobs){
+      if(J.t!=="rib"||!J.done||J.planted||!J.grid)continue;
+      const see=plnLandSees(J,ex,V,24),pr=(see?0:1e4)+Math.abs((J.xa+J.xb)/2-ex)-(J.pl?50:0);
+      if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
+    }
+    if(!best)break;
+    const whole=all||(first&&bp<1e4);
+    if(!whole&&(budget<=0||(did&&!best.pl)))break;
+    const k0=best.pl?best.pl.k:0;
+    plnPlantChunk(L,best,whole?1e9:budget);
+    budget-=best.pl?best.pl.k-k0:budget;did++;
+  }
+  /* дальний берег: клетки, которые видит объектив на глубине холмов */
+  const hv=V.hw*(1+470/V.D)+40,f0=Math.floor((ex-hv)/C.farW),f1=Math.floor((ex+hv)/C.farW),lo=Math.floor((L.x0-260)/C.farW),hi=Math.floor((L.x0+L.NT*L.dx+260)/C.farW);
+  for(let k=0,fc=Math.round(ex/C.farW);k<=f1-f0+1;k++){
+    fc+=(k&1?k:-k);
+    if(fc<f0||fc>f1||fc<lo||fc>hi||F.far[fc])continue;
+    plnPlantFar(L,fc);
+    if(!all&&!first)break;
+  }
+  F.ms+=wallMs()-t0;
+  PLN.stat.flora={groups:F.groups.length,tufts:F.tufts,ms:Math.round(F.ms)};
+}
+/* что из посаженного в кадре; пятна тени — самые большие из тех, что видит объектив */
+function plnPlantBatches(L,F0,ex,V){
+  const F=L.flora;
+  if(!F)return;
+  const seen=[];
+  let recs=0;
+  for(const G0 of F.groups){
+    if(!G0.inst||!plnPlantSees(G0,ex,V,0))continue;
+    for(const q of G0.parts)F0.batches.push({geo:q.geo,inst:G0.inst,first:q.first,count:q.count,kind:q.kind,to:q.to});
+    recs+=G0.n;
+    for(const b of G0.blots)if(Math.abs(b[0]-ex)<V.hw*(1+b[1]/V.D)+b[2])seen.push(b);
+  }
+  const b=F0.blobs;
+  let n=b[0]|0;
+  if(seen.length>64-n)seen.sort((x,y)=>y[2]*y[3]-x[2]*x[3]);
+  for(let k=0;k<seen.length&&n<64;k++,n++)b.set(seen[k],4+n*4);
+  b[0]=n;
+  PLN.stat.recs=recs;
+}
+function plnPlantDrop(L){
+  const F=L.flora;
+  if(!F)return;
+  for(const G0 of F.groups)if(G0.inst)plnInstFree(G0.inst);
+  L.flora=null;
+}
+
+/* ══════════════ планета: породы деревьев (M611) ══════════════
+   Автор, 27.09: «все деревья по форме одинаковые, давай разнообразие». Порода —
+   это обвод, который читается с дальнего берега: зонт, свеча, ярусы, шар,
+   развилка и сухостой. Буква обвода у каждой своя: Т, I, Е, О, Y.
+
+   Язык у всех один, и он же — закон света: крона сложена из шапок с плоским
+   исподом. Свет здесь идёт из-за сцены, и тело с крутыми боками стоит к
+   объективу тенью; шапка же ловит свет плоским верхом, а верх объективу виден.
+   Первая свеча была собрана из шаров и вышла тёмной пирамидкой, первый шар —
+   бурым комом: круглого в кронах нет, круглым бывает только обвод.
+
+   Порода знает свой рост, свою повадку (свечи стоят по две-три, ярусы — по
+   одному), свою стройность и свой тон кроны. Расстановка (21pga) берёт главную
+   породу места и изредка чужую: роща читается рощей, а не ботаническим садом.
+
+   Всякое дерево строится в мерке PLN_FLORA.treeH; R — радиус кроны в этой
+   мерке. Дальним (sub 1) сучья и грани ствола урезаны: с того берега их не видно. */
+const PLN_TREES={
+  /* h — рост у тропы, м; grp — сколько в группе; gap — шаг в группе, м; tint — свой тон кроны;
+     far — доля роста на дальнем берегу (0 — там не растёт); w — вес породы; hk — стройность;
+     R — радиус кроны в долях роста: от и разброс */
+  umb:{h:[8,11.5],grp:[1,2],gap:3.8,tint:0,far:1,w:3,hk:[.92,1.1],R:[.5,.12]},
+  col:{h:[9.5,13.5],grp:[2,3],gap:2.1,tint:3,far:1.25,w:2,hk:[1,1.3],R:[.155,.03]},
+  pag:{h:[9,12.5],grp:[1,1],gap:4.5,tint:0,far:1.1,w:2,hk:[.95,1.15],R:[.38,.08]},
+  orb:{h:[6.5,9.5],grp:[1,2],gap:3.4,tint:1,far:.85,w:2,hk:[.9,1.15],R:[.29,.05]},
+  fork:{h:[6,8.5],grp:[1,1],gap:4.5,tint:1,far:.75,w:2,hk:[.9,1.1],R:[.58,.1]},
+  snag:{h:[5,8],grp:[1,1],gap:3,tint:0,far:0,w:.4,hk:[.9,1.2],R:[.2,0]}};
+const PLN_TREE_ORDER=["umb","col","pag","orb","fork","snag"];
+const PLN_BARK={a:plnHex("#a88c6c"),b:plnHex("#5c4a3c"),dry:plnHex("#e6dfcc"),dryB:plnHex("#a39c8c")};
+
+/* порода места: главная на сотню метров, изредка чужая. u — кость; band — план: 0 лента,
+   дальше рощи по глубине, у каждого плана главная порода своя */
+function plnTreeKind(L,x,u,band){
+  const O=PLN_TREE_ORDER,T=PLN_TREES,w=k=>band&&!T[k].far?0:T[k].w;
+  const roll=v=>{
+    let s=0,a;
+    for(const k of O)s+=w(k);
+    a=v*s;
+    for(const k of O){a-=w(k);if(a<0)return k;}
+    return O[0];
+  };
+  if(u>=.68)return roll((u-.68)/.32);
+  const main=roll(plnHash(Math.floor(x/120),40+(band||0),L.sd));
+  return main==="snag"?"umb":main;
+}
+
+function plnTreeBark(A,B){return (t,a)=>plnMul(plnMix3(B,A,.5+.5*Math.cos(a+1)),.82+.18*Math.sin(t*23+a*2));}
+/* цвет листвы: ход испод → верх по нормали (r) и своя светлота (g); dim — насколько ярус в тени верхних;
+   soft — куполу с крутым боком: бок держит средний тон, испод остаётся только снизу */
+function plnTreeLeaf(sd,dim,soft){
+  const a=-.15-(soft||0),b=.5-(soft||0)*.3;
+  return (u,p,n)=>[plnSmooth(a,b,n[1]),.5-(dim||0)+plnNoise(p[0]*.8,p[2]*.8+p[1],sd)*.14,0];
+}
+/* ось ствола: лёгкий наклон и изгиб; top — где ствол кончается */
+function plnTreeAxis(H,top,lean,bend){
+  const k=H/9;
+  return y=>{const t=clamp(y/top,0,1);return [lean*H*.1*t*t+bend*Math.sin(t*Math.PI*.9)*.25*k,y,.12*bend*Math.sin(t*3.3)*k];};
+}
+/* ствол по оси: радиус у комля и у вершины, к корню расширяется */
+function plnTreeTrunk(m,ax,top,r0,r1,sub,o){
+  o=o||{};
+  const path=[],n=sub>1?8:5;
+  for(let i=0;i<=n;i++)path.push(ax(i?top*i/n:-.35));
+  plnTube(m,{path,rad:t=>lerp(r0,r1,Math.pow(t,.6))*(1+1.1*Math.pow(1-t,5)),sides:sub>1?9:5,
+    col:o.col||plnTreeBark(PLN_BARK.a,PLN_BARK.b),mat:PLN_MAT.bark,wind:o.wind,cap:!!o.cap});
+}
+/* сук: от a через b к c; ветер растёт к концу */
+function plnTreeLimb(m,a,b,c,r0,r1,sub,w0,w1,col){
+  plnTube(m,{path:plnBez(a,b,c,sub>1?7:3),rad:t=>lerp(r0,r1,Math.pow(t,.8)),sides:sub>1?6:3,col:col||PLN_BARK.b,
+    mat:PLN_MAT.bark,wind:t=>lerp(w0,w1,t*t)});
+}
+
+/* Зонт — главная порода этого мира: толстая нога, развилка, ваза ветвей и крона в три яруса шапок
+   с тенью между ними. Кости идут в том же порядке, что на стенде: дерево над площадкой — то самое.
+   o.fork — где развилка (доля роста): высокая нога с малой вазой — пиния, низкая — шатёр;
+   o.dense — во сколько раз шире шапки: кулисе, на которую объектив смотрит сверху, просветы не нужны */
+function plnTreeUmb(r,H,R,sub,rich,o){
+  o=o||{};
+  const m=plnMesh(4096),k=H/9,thin=o.thin||1,fine=sub>1,dense=o.dense||1;
+  const lean=o.lean==null?(r()-.5)*.5:o.lean,bend=o.bend==null?(r()-.5)*1.2:o.bend;
+  const fork=H*(o.fork||(.40+r()*.12)),cx=lean*H*.2,path=[];
+  for(let i=0;i<=8;i++){const t=i/8;path.push([cx*t*.5+bend*Math.sin(t*Math.PI*.9)*.3*k,fork*t-.35,.15*bend*Math.sin(t*3.3)*k]);}
+  plnTube(m,{path,rad:t=>lerp(.46,.27,Math.pow(t,.6))*k*thin*(1+1.1*Math.pow(1-t,5)),sides:fine?9:5,
+    col:plnTreeBark(PLN_BARK.a,PLN_BARK.b),mat:PLN_MAT.bark,wind:t=>t*t*.02*k});
+  const F=path[8],nc=[cx,H*.60,0];
+  const leaf=(u,p,n)=>[plnSmooth(-.15,.5,n[1]),.5+plnNoise(p[0]*.8,p[2]*.8+p[1],7)*.14,0];
+  const wnd=p=>(.08+.14*Math.hypot(p[0]-cx,p[2])/R)*k;
+  /* ярус: его высота, радиус кольца, радиус шапок и сколько их */
+  const tiers=rich?[[.71,.64,.38,6],[.835,.33,.37,4],[.95,0,.33,1]]
+    :[[.72,.60,.42,4+(r()*2|0)],[.85,.27,.40,2+(r()*2|0)],[.96,0,.33,1]];
+  tiers.forEach(([th,tr,tp,tn],ti)=>{
+    const a0=r()*TAU;
+    for(let b=0;b<tn;b++){
+      const ang=a0+b/tn*TAU+(r()-.5)*.5,rr=R*tr*(.85+r()*.3);
+      const pr=R*tp*(.85+r()*.3)*dense,ph=pr*(.34+r()*.1)/dense;
+      const e=[cx+Math.cos(ang)*rr,H*(th+(r()-.5)*.035),Math.sin(ang)*rr*.9];
+      const mid=[lerp(F[0],e[0],.3),lerp(F[1],e[1],.8),lerp(F[2],e[2],.3)];
+      plnTube(m,{path:plnBez(F,mid,e,fine?7:3),rad:t=>lerp(.22,.06,Math.pow(t,.8))*k,sides:fine?6:3,col:PLN_BARK.b,mat:PLN_MAT.bark,wind:t=>(.02+.1*t*t)*k});
+      plnFloraCap(m,[e[0],e[1]+ph*.2,e[2]],pr,ph,{sub,seed:ti*31+b*7+(r()*99|0),yaw:r()*TAU,lean:(r()-.5)*.12,col:leaf,wind:wnd,nc,ncK:.35});
+      /* малая шапка на краю нижнего яруса ломает обвод */
+      if(!ti&&(rich||r()<.5)){
+        const a2=ang+(r()-.5)*.9,r2=rr+pr*(.75+r()*.2),sr=pr*(.36+r()*.16);
+        plnFloraCap(m,[cx+Math.cos(a2)*r2,e[1]-pr*(.1+r()*.15),Math.sin(a2)*r2*.9],sr,sr*.45,
+          {sub:Math.max(1,sub-1),seed:b*5+3,yaw:r()*TAU,col:leaf,wind:wnd,nc,ncK:.35});
+      }
+    }
+  });
+  return m;
+}
+
+/* Свеча: узкое веретено из тесной стопки шапок; ствол виден только у земли. Вертикаль против
+   лежачих планов дальнего берега. Шапки лежат одна на другой со сдвигом в стороны: обвод в зубцах,
+   между ярусами — полоска тени, а верх каждого на свету. Нижние темнее: верхние держат их в тени */
+function plnTreeCol(r,H,R,sub,rich,o){
+  o=o||{};
+  const m=plnMesh(4096),k=H/9,lean=o.lean==null?(r()-.5)*.4:o.lean,bend=o.bend==null?(r()-.5)*.7:o.bend;
+  const top=H*.93,ax=plnTreeAxis(H,top,lean,bend),n=rich?13:11,y0=H*(o.skirt||(.15+r()*.07)),a0=r()*TAU,wide=o.wide||.27;
+  plnTreeTrunk(m,ax,top,.3*k*(o.thin||1),.05*k,sub,{wind:t=>t*t*.2*k});
+  for(let i=0;i<n;i++){
+    const t=i/(n-1),y=lerp(y0,H*.95,Math.pow(t,.95)),tip=i===n-1,c=ax(y);
+    const rho=R*(t<wide?lerp(.5,1,t/wide):lerp(1,.2,Math.pow((t-wide)/(1-wide),1.1)));
+    const leaf=plnTreeLeaf(7+i,(1-t)*.13),w=(.04+.2*t*t)*k,nc=[c[0],y-rho*1.2,c[2]];
+    /* сдвиг и радиус вместе не выносят шапку дальше 1.3 радиуса веретена: блюдо, торчащее вбок, ломает свечу */
+    const ang=a0+i*2.4+(r()-.5)*.6,d=tip?0:rho*(.16+r()*.2),pr=tip?rho*.8:Math.min(rho*(.78+r()*.4),rho*1.3-d),ph=pr*(tip?1.25:.4+r()*.12);
+    /* шапка клонится наружу, в сторону своего сдвига: стопка не лежит блинами */
+    plnFloraCap(m,[c[0]+Math.cos(ang)*d,y+(r()-.5)*.2*k,c[2]+Math.sin(ang)*d*.9],pr,ph,
+      {sub,seed:i*17+(r()*99|0),yaw:r()*TAU,lean:(r()-.5)*.2-Math.cos(ang)*.22,col:leaf,wind:w,nc,ncK:.4});
+    /* широким ярусам — вторая шапка с другой стороны, пониже: веретено не плоское */
+    if(!tip&&rho>R*.62){
+      const p2=rho*(.55+r()*.15);
+      plnFloraCap(m,[c[0]-Math.cos(ang)*rho*.42,y-rho*(.12+r()*.1),c[2]-Math.sin(ang)*rho*.38],p2,p2*.42,
+        {sub:Math.max(1,sub-1),seed:i*23+5,yaw:r()*TAU,lean:(r()-.5)*.2,col:leaf,wind:w,nc,ncK:.4});
+    }
+  }
+  return m;
+}
+
+/* Ярусы: прямой ствол и плоские блюда кроны с воздухом между ними, кверху меньше.
+   o.hs — высоты блюд (доли роста), o.taper — во сколько раз верхнее блюдо меньше нижнего */
+function plnTreePag(r,H,R,sub,rich,o){
+  o=o||{};
+  const m=plnMesh(4096),k=H/9,lean=o.lean==null?(r()-.5)*.3:o.lean,bend=o.bend==null?(r()-.5)*.6:o.bend;
+  const top=H*.95,ax=plnTreeAxis(H,top,lean,bend),hs=o.hs||(rich?[.30,.47,.62,.76,.88]:[.34,.54,.71,.86]),n=hs.length,taper=o.taper||.4;
+  plnTreeTrunk(m,ax,top,.36*k*(o.thin||1),.05*k,sub,{wind:t=>t*t*.12*k});
+  for(let i=0;i<n;i++){
+    const t=i/(n-1),y=H*(hs[i]+(r()-.5)*.03),Rd=R*lerp(1,taper,Math.pow(t,.85))*(.92+r()*.16),c=ax(y);
+    const cc=[c[0]+(r()-.5)*Rd*.25,y,c[2]+(r()-.5)*Rd*.25],cnt=Rd>R*.7?5:(Rd>R*.5?4:3),a0=r()*TAU;
+    const leaf=plnTreeLeaf(11+i,(1-t)*.1),ty=y/top,wt=ty*ty*.12*k,nc=[cc[0],y-Rd*.9,cc[2]];
+    const w=p=>wt+.12*k*Math.hypot(p[0]-c[0],p[2]-c[2])/R;
+    plnFloraCap(m,[cc[0],y+Rd*.05,cc[2]],Rd*.56,Rd*.17,{sub,seed:i*13+(r()*99|0),yaw:r()*TAU,col:leaf,wind:w,nc,ncK:.4});
+    for(let b=0;b<cnt;b++){
+      const ang=a0+b/cnt*TAU+(r()-.5)*.6,d=Rd*(.5+r()*.12),pr=Rd*(.42+r()*.12),ph=pr*(.28+r()*.08);
+      const e=[cc[0]+Math.cos(ang)*d,y-Rd*(.03+r()*.07),cc[2]+Math.sin(ang)*d*.9],drop=(.5+r()*.4)*k;
+      if(sub>1){
+        const f=ax(y-drop);
+        plnTreeLimb(m,f,[lerp(f[0],e[0],.5),lerp(f[1],e[1],.85),lerp(f[2],e[2],.5)],[e[0],e[1]-ph*.1,e[2]],.1*k,.03*k,sub,wt,wt+.06*k);
+      }
+      plnFloraCap(m,e,pr,ph,{sub,seed:i*29+b*7+(r()*99|0),yaw:r()*TAU,lean:(r()-.5)*.14,col:leaf,wind:w,nc,ncK:.4});
+    }
+  }
+  const tp=ax(top);
+  plnFloraCap(m,[tp[0],top,tp[2]],R*.2,R*.13,{sub,seed:91,yaw:r()*TAU,col:plnTreeLeaf(19,0),wind:.26*k,nc:[tp[0],H*.8,tp[2]],ncK:.4});
+  return m;
+}
+
+/* Шар: тонкая высокая нога и крона-облако — кучевое, как облака этого мира: плоская подошва
+   и купола разного роста над ней, тесно, без неба между ними. Круглый тут обвод, а не тело:
+   купол ловит свет верхом, и верх объективу виден. o.tall — насколько крона высока */
+function plnTreeOrb(r,H,R,sub,rich,o){
+  o=o||{};
+  const m=plnMesh(4096),k=H/9,thin=o.thin||1,lean=o.lean==null?(r()-.5)*.5:o.lean,bend=o.bend==null?r()-.5:o.bend;
+  const tall=o.tall||.85,base=H-R*(tall*1.31+.02),fy=base+R*.1,ax=plnTreeAxis(H,fy,lean,bend),F=ax(fy),C=[F[0]+lean*R*.2,base+R*.25,F[2]];
+  plnTreeTrunk(m,ax,fy,.27*k*thin,.15*k*thin,sub,{wind:t=>t*t*.05*k});
+  const w=p=>(.06+.14*Math.hypot(p[0]-C[0],p[1]-C[1],p[2]-C[2])/R)*k,a0=r()*TAU;
+  /* купол стоит подошвой на общем уровне: его середина выше подошвы на .31 своей высоты */
+  const dome=(x,z,pr,ph,lift,seed,dim)=>plnFloraCap(m,[x,base+ph*.31+lift,z],pr,ph,
+    {sub,seed,yaw:r()*TAU,lean:(r()-.5)*.14,col:plnTreeLeaf(23+seed%5,dim-.05,.55),wind:w,nc:C,ncK:.35,bump:.24,bumpF:2.1});
+  dome(C[0],C[2],R*.6,R*tall,0,3,0);
+  const n=rich?6:5;
+  for(let j=0;j<n;j++){
+    const a=a0+j/n*TAU+(r()-.5)*.5,d=R*(.46+r()*.1),pr=R*(.42+r()*.12),ph=pr*(.78+r()*.2)*tall/.85;
+    dome(C[0]+Math.cos(a)*d,C[2]+Math.sin(a)*d*.9,pr,ph,(r()-.5)*R*.08,7+j*3,.04);
+  }
+  /* малые купола на плечах большого ломают обвод */
+  for(let j=0;j<3;j++){
+    const a=a0+.6+j/3*TAU+(r()-.5)*.6,d=R*(.26+r()*.1),pr=R*(.3+r()*.1);
+    dome(C[0]+Math.cos(a)*d,C[2]+Math.sin(a)*d*.9,pr,pr*.85,R*tall*(.5+r()*.12),31+j*7,0);
+  }
+  if(sub>1)for(let j=0;j<3;j++){
+    const a=a0+j*TAU/3+r(),e=[C[0]+Math.cos(a)*R*.4,base+R*.08,C[2]+Math.sin(a)*R*.36];
+    plnTreeLimb(m,F,[lerp(F[0],e[0],.5),lerp(F[1],e[1],.3),lerp(F[2],e[2],.5)],e,.13*k*thin,.05*k,sub,.05*k,.08*k);
+  }
+  return m;
+}
+
+/* Развилка: короткий толстый ствол, две-три руки, и на каждой своё блюдо — на разной высоте,
+   с небом между ними. Нижняя рука тянется дальше всех */
+function plnTreeFork(r,H,R,sub,rich,o){
+  o=o||{};
+  const m=plnMesh(4096),k=H/9,thin=o.thin||1,lean=o.lean==null?(r()-.5)*.5:o.lean,split=H*(.16+r()*.07);
+  const ax=plnTreeAxis(H,split,lean,0),F=ax(split),n=rich||r()<.6?3:2,a0=r()*TAU,flip=r()<.5?1:-1;
+  plnTreeTrunk(m,ax,split,.55*k*thin,.44*k*thin,sub,{wind:t=>t*t*.01*k});
+  /* рука: докуда тянется, как высоко несёт блюдо и каков его радиус */
+  const arms=[[.62,.62,.54],[.4,.84,.46],[.14,.97,.38]];
+  for(let j=0;j<n;j++){
+    const A=arms[j],a=a0+flip*j*(TAU/3+.35)+(r()-.5)*.5,reach=R*A[0]*(.9+r()*.2),ey=H*(A[1]+(r()-.5)*.04);
+    const pr=R*A[2]*(.9+r()*.2),ph=pr*(.3+r()*.06),e=[F[0]+Math.cos(a)*reach,ey,F[2]+Math.sin(a)*reach*.9];
+    const mid=[F[0]+Math.cos(a)*reach*.8,lerp(split,ey,.3),F[2]+Math.sin(a)*reach*.72];
+    plnTreeLimb(m,F,mid,[e[0],e[1]-ph*.1,e[2]],.34*k*thin,.09*k,sub,.01*k,.1*k);
+    const leaf=plnTreeLeaf(31+j,(2-j)*.04),nc=[e[0],ey-pr*.9,e[2]],ns=3+(r()*2|0);
+    const w=p=>(.08+.14*Math.hypot(p[0]-e[0],p[2]-e[2])/(pr*1.6))*k;
+    plnFloraCap(m,[e[0],ey+ph*.2,e[2]],pr,ph,{sub,seed:j*31+(r()*99|0),yaw:r()*TAU,lean:(r()-.5)*.12,col:leaf,wind:w,nc,ncK:.4});
+    for(let b=0;b<ns;b++){
+      const a2=b/ns*TAU+r()*1.2,d=pr*(.7+r()*.3),sr=pr*(.5+r()*.16);
+      plnFloraCap(m,[e[0]+Math.cos(a2)*d,ey-pr*(.04+r()*.1),e[2]+Math.sin(a2)*d*.9],sr,sr*.36,
+        {sub:Math.max(1,sub-1),seed:b*5+j*3+1,yaw:r()*TAU,col:leaf,wind:w,nc,ncK:.4});
+    }
+  }
+  return m;
+}
+
+/* Сухостой: выбеленный толстый ствол со сломанной вершиной и обломками сучьев. Редкость: он — событие */
+function plnTreeSnag(r,H,R,sub){
+  const m=plnMesh(1024),k=H/9,top=H*(.78+r()*.2),ax=plnTreeAxis(H,top,(r()-.5)*.7,(r()-.5)*1.5);
+  plnTreeTrunk(m,ax,top,.5*k,.2*k,sub,{col:plnTreeBark(PLN_BARK.dry,PLN_BARK.dryB),cap:true,wind:t=>t*t*.015*k});
+  const n=3+(r()*2|0),a0=r()*TAU;
+  for(let j=0;j<n;j++){
+    const f=ax(top*(.4+.5*j/n+r()*.08)),a=a0+j*2.4+(r()-.5)*.6,len=(1.5+r()*1.7)*k,up=.35+r()*.5;
+    const e=[f[0]+Math.cos(a)*len,f[1]+len*up,f[2]+Math.sin(a)*len*.9];
+    const b=[f[0]+Math.cos(a)*len*.65,f[1]+len*.05,f[2]+Math.sin(a)*len*.6];
+    plnTreeLimb(m,f,b,e,.17*k,.04*k,sub,.01*k,.04*k,PLN_BARK.dry);
+    if(j<2){
+      const a2=a+(r()-.5)*1.6,l2=len*.5,g=plnBez(f,b,e,4)[2];
+      plnTreeLimb(m,g,[g[0]+Math.cos(a2)*l2*.5,g[1]+l2*.3,g[2]+Math.sin(a2)*l2*.5],
+        [g[0]+Math.cos(a2)*l2,g[1]+l2*.8,g[2]+Math.sin(a2)*l2*.9],.08*k,.025*k,sub,.02*k,.05*k,PLN_BARK.dry);
+    }
+  }
+  return m;
+}
+const PLN_TREE_MAKE={umb:plnTreeUmb,col:plnTreeCol,pag:plnTreePag,orb:plnTreeOrb,fork:plnTreeFork,snag:plnTreeSnag};
 
 /* ══════════════ планета: человек и корабль — заготовки (M610) ══════════════
    Тела со стенда docs/look (M600), как были: человек 1.8 м в цвете людей и
@@ -82249,8 +83121,8 @@ function plnCastFrame(F,man,face,ship,yaw){
 
 /* ══════════════ планета: кадр нового вида (M610) ══════════════
    Собирает кадр из состояния игры и сдаёт его рендеру (21pe): объектив по
-   рамке 2D-игры, свет по часу планеты, два короба теней, земля (21pf), человек
-   и корабль (21ph). Приборы рисует игра, как рисовала, и тычок «идти сюда»
+   рамке 2D-игры, свет по часу планеты, два короба теней, земля (21pf), то, что
+   на ней растёт и лежит (21pg, 21pga), человек и корабль (21ph). Приборы рисует игра, как рисовала, и тычок «идти сюда»
    попадает туда же: рамка кадра на линии ходьбы — та же, что была.
 
    Старый кадр не тронут: drawSurface обёрнут здесь, последним модулем
@@ -82356,6 +83228,7 @@ function plnSurface(){
   const L=plnLand(tr,p,S.shipX),C=plnLens(S,K),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   plnLandStep(L,C.ex,V,2);
+  plnPlantStep(L,p,C.ex,V);
   const Hr=plnHour(p),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   look.thru=Q.thru;look.waterA=Q.waterA;look.waterB=[Q.waterB[0],Q.waterB[1],Q.waterB[2],ride];
   look.moon=Q.moon;look.bands=Q.bands;
@@ -82369,6 +83242,8 @@ function plnSurface(){
   plnLandBatches(L,F.batches,C.ex,V);
   const man=[S.x/PLN_M,plnY(S.y+10),0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
   plnCastFrame(F,man,S.face,ship,L.shipYaw);
+  /* пятна тени героев легли первыми, остаток мест — тому, что растёт */
+  plnPlantBatches(L,F,C.ex,V);
   /* герой стоит в пятне света: пятно лежит там, куда его тень падает на уровень сцены */
   const hk=(man[1]-ride)/Math.max(Hr.dir[1],.08);
   F.hero[0]=man[0]-Hr.dir[0]*hk;F.hero[1]=man[2]-Hr.dir[2]*hk;

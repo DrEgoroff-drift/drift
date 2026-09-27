@@ -58,9 +58,14 @@ fn turnBy(n: vec3f, i1: vec4f) -> vec3f {
   o.pos = g.viewProj * vec4f(p, 1.0);
   o.wpos = p; o.nrm = turnBy(in.nrm, in.i1);
   /* режим 0 — цвет сетки, подкрашенный записью; режим 1 — сетка несёт только ход от корня
-     к макушке (r) и свою светлоту (g), а оба цвета даёт запись */
+     к макушке (r) и свою светлоту (g), а оба цвета даёт запись; режим 2 — так красится
+     только листва, кора остаётся своей: дерево — одно тело и одна запись */
   var c = in.col * in.i2.rgb;
-  if (in.i2.w > 0.5) { c = mix(in.i2.rgb, in.i3.rgb, in.col.r) * (0.5 + in.col.g); }
+  if (in.i2.w > 0.5) {
+    let ramp = mix(in.i2.rgb, in.i3.rgb, in.col.r) * (0.5 + in.col.g);
+    let leafy = (in.par.x > 1.5 && in.par.x < 2.5) || (in.par.x > 6.5 && in.par.x < 7.5);
+    if (in.i2.w < 1.5 || leafy) { c = ramp; } else { c = in.col; }
+  }
   o.col = c; o.par = in.par;
   /* вода: в цвете вершины лежит дно — высота ленты (мировая) и высота дальнего мира (на его
      уровне); глубина считается здесь, потому что уровень воды в кадре свой */
@@ -172,6 +177,8 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
     let edge = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.0);
     through = clamp(0.25 - ndl * 0.8, 0.0, 1.0) * (0.12 + 0.55 * edge);
     ao = mix(0.55, 1.0, smoothstep(-0.7, 0.3, N.y));
+    /* кулиса — холодный тёмный обвод: тёплый свет насквозь делает её бурым пятном */
+    if (g.misc.y < -0.5) { through = 0.0; }
   }
   if (mat == 7) {
     lit = smoothstep(-0.4, 0.45, ndl);
@@ -215,6 +222,8 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   c += alb * emis;
   var cap = 1.0;
   if (mat == 9) { cap = 0.93; }
+  /* кулиса темна, и воздух, светлый против неё, красит её в серое: между нею и объективом его нет */
+  if (g.misc.y < -0.5) { cap = 0.0; }
   return vec4f(applyFog(c, in.wpos, cap), 1.0);
 }
 

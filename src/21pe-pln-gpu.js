@@ -235,7 +235,8 @@ function plnGpuWrite(F){
 }
 
 /* ── кадр ──
-   F.batches — что рисовать: {geo, inst|null, kind, to, ride}; ride — цельная сетка дальнего мира.
+   F.batches — что рисовать: {geo, inst|null, kind, to, ride}; ride — цельная сетка дальнего мира;
+   first и count — отрезок записей, когда в одном буфере лежат записи разных тел (21pga).
    Возвращает false, если сдавать кадр некуда */
 function plnGpuFrame(F){
   const Q=PLN_GPU,e=GPU.enc,P=Q.P,B=Q.B,V=Q.V,D=Q.D,ms=Q.ms;
@@ -247,9 +248,11 @@ function plnGpuFrame(F){
     for(const b of F.batches){
       if(b.kind!==kind||!(b.to&to)||!b.geo||b.geo.n<=0||b.geo.gen!==Q.gen)continue;
       const I=b.inst;if(I&&(I.n<=0||I.gen!==Q.gen))continue;
+      const n=I?(b.count==null?I.n:b.count):1;
+      if(n<=0)continue;
       p.setVertexBuffer(0,b.geo.vb);p.setVertexBuffer(1,I?I.buf:(b.ride?Q.oneRide:Q.one));
-      p.setIndexBuffer(b.geo.ib,"uint32");p.drawIndexed(b.geo.n,I?I.n:1);
-      calls++;tris+=b.geo.n/3*(I?I.n:1);
+      p.setIndexBuffer(b.geo.ib,"uint32");p.drawIndexed(b.geo.n,n,0,0,I?(b.first||0):0);
+      calls++;tris+=b.geo.n/3*n;
     }
   };
   for(let l=0;l<2;l++){
