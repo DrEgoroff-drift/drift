@@ -1,25 +1,38 @@
-# Handoff: planet branch, 27.09
+# Handoff: planet branch, 28.09.2026
 
-Moved to another computer mid-stage. Branch `planet` lives on GitHub as `claude/planet`
-(the `claude/**` prefix keeps it off the deploy workflow — do not push it as `planet`,
-that would roll the WIP onto dev.html).
+The planet and the cave are reinvented for the WebGPU engine, solo, in the worktree
+`C:\Claude\drift-planet`, branch `planet`. Commits are local. The branch lives on GitHub as
+`claude/planet` (the `claude/**` prefix keeps it off the deploy workflow) — **do not push it
+as `planet`**, that would roll the work onto dev.html. `main` only through the Control
+session.
 
-## Where it stands (M610, the new ground inside the game)
-- New surface runs in the game behind the `PLN.on` switch (off by default, old view untouched):
-  ground, water, ship, human, shadows, game UI on top. Modules `src/21p*.js`,
-  design in `docs/DESIGN-planet-engine.md`, plan in `docs/DESIGN-planet.md` (M600–M652),
-  style sheet `docs/DESIGN-planet-style.md`.
-- Second pass shot in four views (by the ship, by the lake, far along the lane, tall 390×844):
-  no frame or GPU errors. Past the walk line there is now a shelf, not a sharp edge; path lighter.
+## Read first
 
-## What is bad in the frames
-- Ground is smooth, "plasticine": no grass, trees, rocks, so no scale — that is M611.
-- Steep bumps of the game relief far from the ship read as grey cones.
-- The pond by the lake reads as a rectangular trough.
+| What | Where |
+|---|---|
+| the plan, the stages M600–M652, the laws of the picture | `docs/DESIGN-planet.md` (§7 stages, §11 laws) |
+| how the look stands in the game, decisions, modules, **the state** | `docs/DESIGN-planet-engine.md` (§2, §3, §6) |
+| the style in numbers, the kit as built | `docs/DESIGN-planet-style.md` (§10) |
+| how to shoot the game's frame | `docs/look/game/README.md` |
 
-## Not done
-Before/after pair in the game, frame cost on a real clock, tests, dusk and night.
+## Where it stands
 
-## Next
-Before/after pair and cost measurement, then a local commit and M611.
-Stand: `docs/look` (not for pushing to main). Frame shots of the last pass stayed on the old machine.
+Stage 0 (the look on the stand) is closed and M600 is accepted by the author. Since
+27.09 frames are not agreed one by one: «кадры не надо со мной согласовывать, направление
+верное, делай все». He asked for pictures to be left in the chat after every pass.
+
+Stage 1: **M610 and M611 are done**, M612 (sky and air by the hour) is next, then M613
+(the worlds on one sheet) and M614 (the cost). The new look runs in the game behind
+`?pln=1` or `PLN.on=true`, off by default; the old painter is untouched.
+
+## Rules that hold
+
+- New modules only, every top-level name begins with `pln` / `PLN`. Old painters, the
+  fleet's sky (`src/19*`, `11ak-skywatch`, `27la-road-sky`) and the nebula (`16gay`,
+  `16gb`) are read and never edited.
+- Gameplay, physics, generation and the save do not move.
+- Method: concept → first frame → the pair «было / стало» → harsh self-critique → the
+  next pass. Graphics only improve.
+- Pictures never enter git. Scripts are files, not heredocs.
+- On this machine the browser tier is red on two golden frames of the old look («база ·
+  пусто 52% против 74%», «грунт день 3.1%»): known, not to be fixed here.

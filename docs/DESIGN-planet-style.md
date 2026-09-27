@@ -478,3 +478,29 @@ one by 1.03); the greatest change is 19 (47), in the wing in both.
 3. **The wing of the far lens is crowns seen from above**, darkened to .45 of their own
    tint: that keeps its median under .20.
 4. **A way in is the darkest thing of its place and never black**: .18 by day.
+
+## 10. The kit as built in the game
+
+What M611 put into `src/`, in the measures of §4.1. The rules behind the numbers are in
+`DESIGN-planet-engine.md` §2.12–§2.21.
+
+| Body | Metres | Where it stands |
+|---|---|---|
+| Umbrella (T) | 8–11.5, crown .5 of the height in radius | alone or in twos, behind the line |
+| Column (I) | 9.5–13.5, crown .155 | in twos and threes, 2.1 m apart |
+| Tiers (E) | 9–12.5, crown .38 | alone |
+| Orb (O) | 6.5–9.5, crown .29 | alone or in twos |
+| Fork (Y) | 6–8.5, crown .58 | alone |
+| Snag | 5–8, bare | rare, never on the far shore |
+| A plant of the game | by its species, three ages | 1.9 to 4.5 m behind the line |
+| A deposit | by what is left | 1.7 to 2.5 m behind the line |
+| The cave mouth; the headframe of the mine | the opening about 3 × 2.2; the headframe 1.45 times the old painter's | 2.6 and 2.9 m behind the line |
+| A beast | its radius; a small one 1.7 times larger | small .5–1 m behind the line, large 1.3–2.8 |
+| A crag behind the line | 1.5 to 9, by the rise of its step | sole in the slope, .8 to 8 m behind the line |
+| A crag in front of the line | under the line within its footprint | 1.2 to 5.8 m before the line |
+| The life ring | .92 across, the tube .3 | at the man's waist, 1 m over his sole |
+| The wing | the top 2 to 5 m of a body | 47.5 to 51 m before the line |
+
+**Rule, every world: what stands in front of the walk line is lower than the line where
+the lens sees it against the line.** A tree never stands in front; a stone and a crag do,
+and they are fitted to the lowest point of the line over their footprint.

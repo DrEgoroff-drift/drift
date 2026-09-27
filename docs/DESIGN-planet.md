@@ -94,7 +94,8 @@ One kit for every family, so that the style cannot drift:
   occlusion at the feet of things.
 - **Air**: height fog with a ramp, shafts marched through the shadow map at half resolution,
   lit particles.
-- **Post**: bloom, grade, grain, dither — the engine's own (`18d-postfx`).
+- **Post**: bloom and grade are the planet's own, grain and dither the engine's
+  (`DESIGN-planet-engine.md` §2.3).
 - **The man**: a rig with the six suit slots as parts. The same rig rendered to a card can
   later replace the painter in the modes outside the planet, so the law «one astronaut
   everywhere» survives.
@@ -152,7 +153,8 @@ after it pass by §5.4.
 - M610 lit bodies in the engine: depth, the key with its shadow map, sky fill, fog, vertex colour
 - M611 the ground: the ribbon from the real profile, lanes, far ridges, two camera distances
 - M612 sky and air: sky, clouds, shafts, haze, the real day and night, hooks for the eclipse
-- M613 the three-world test: terran, desert, ice on one sheet — the style must hold on bare worlds
+- M613 the three-world test: terran, desert, ice on one sheet — the style must hold on bare
+  worlds; a palette, a water and a stone for every type (until then every world is terran)
 - M614 the phone gate for the foundation
 
 **Stage 2 — the cast.** Each by the method of §5.
@@ -530,8 +532,12 @@ pictures do not go into git.
 **Not done**
 - M600 in weather: it goes with M626. The cave's far lens goes with M630, by the game's
   rule of one scale (M217): 72 m × 40 m of the section in a broad frame.
-- Nothing is built in `src/`; the frame budget is not measured on the S23, and the frames
-  of the cave and of the night are not measured at all.
+- The frame budget is not measured on the S23, and the frames of the cave and of the night
+  are not measured at all.
+
+**Since 28.09.2026 the state of the work in `src/`** — stage 1, what is built, what is
+weak and what was not looked at — is kept in `DESIGN-planet-engine.md` §6; this section
+stays the state of the stand.
 
 **Known weak spots of the far frame, pass 7** — named, not hidden:
 - the man's suit is 14 pixels of orange in the broad frame and 26 in the tall one: at this
