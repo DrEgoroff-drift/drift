@@ -14,6 +14,7 @@
 # Боевую игру не трогает вовсе: play.html, index.html, api.php остаются как
 # были, выкладка идёт в отдельные имена. Поэтому сюда можно класть сломанное.
 param([switch]$SkipBuild, [switch]$Shots)
+try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } catch {}   # вывод в UTF-8: в консоли cp437/cp866 русское печаталось «?» (новый комп, 27.09.2026)
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -22,14 +23,14 @@ $web  = "drift:drift-game.ru/docs"
 
 if (-not $SkipBuild -and -not $Shots) {
   & powershell -ExecutionPolicy Bypass -File (Join-Path $root "build.ps1")
-  if ($LASTEXITCODE -ne 0) { throw "build.ps1 вернул $LASTEXITCODE — заливка отменена" }
+  if ($LASTEXITCODE -ne 0) { throw "build.ps1 returned $LASTEXITCODE — upload cancelled" }
 }
 
 $ver = (Select-String -Path (Join-Path $root "src\01-core.js") -Pattern 'VER="([0-9.]+)"').Matches[0].Groups[1].Value
 $now = Get-Date -Format "dd.MM.yyyy HH:mm"
 
 ssh drift "mkdir -p drift-game.ru/docs/dev/shots"
-if ($LASTEXITCODE -ne 0) { throw "не удалось создать папку стенда" }
+if ($LASTEXITCODE -ne 0) { throw "could not create the stand folder" }
 
 # ── листы стендов ──
 $shotDir = Join-Path $root "docs\shots"
@@ -89,29 +90,29 @@ $tmp = Join-Path $env:TEMP "drift-dev-index.html"
 [IO.File]::WriteAllText($tmp, $html, (New-Object Text.UTF8Encoding $false))
 
 scp $tmp "$web/dev/index.html"
-if ($LASTEXITCODE -ne 0) { throw "scp index стенда вернул $LASTEXITCODE" }
+if ($LASTEXITCODE -ne 0) { throw "scp of the stand index returned $LASTEXITCODE" }
 if ($sheets.Count -gt 0) {
   scp ($sheets.FullName) "$web/dev/shots/"
-  if ($LASTEXITCODE -ne 0) { throw "scp листов вернул $LASTEXITCODE" }
+  if ($LASTEXITCODE -ne 0) { throw "scp of the sheets returned $LASTEXITCODE" }
 }
 
 if (-not $Shots) {
   scp $file "$web/dev.html"
-  if ($LASTEXITCODE -ne 0) { throw "scp сборки вернул $LASTEXITCODE" }
+  if ($LASTEXITCODE -ne 0) { throw "scp of the build returned $LASTEXITCODE" }
   ssh drift "cd drift-game.ru/docs && gzip -kf9 dev.html"
   # Птица в объёме: своя сборка, свой адрес на стенде. Её надо смотреть
   # руками и с телефона — по снимку не поймёшь ни движения, ни кадра.
   $bird = Join-Path $root "site\treplo3d.html"
   if (Test-Path $bird) {
     & powershell -ExecutionPolicy Bypass -File (Join-Path $root "bird.ps1") | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "bird.ps1 вернул $LASTEXITCODE" }
+    if ($LASTEXITCODE -ne 0) { throw "bird.ps1 returned $LASTEXITCODE" }
     scp $bird "$web/dev/treplo3d.html"
-    if ($LASTEXITCODE -ne 0) { throw "scp птицы вернул $LASTEXITCODE" }
+    if ($LASTEXITCODE -ne 0) { throw "scp of the bird returned $LASTEXITCODE" }
   }
 }
 
 $kb = [math]::Round((Get-Item $file).Length / 1KB)
-"{0}  дев-стенд {1} · сборка {2} КБ · листов {3}" -f (Get-Date -Format "HH:mm:ss"), $ver, $kb, $sheets.Count
-"           https://drift-game.ru/dev/      — листы"
-"           https://drift-game.ru/dev.html  — играть эту сборку"
-"           https://drift-game.ru/dev/treplo3d.html — птица в объёме"
+"{0}  dev stand {1} · build {2} KB · sheets {3}" -f (Get-Date -Format "HH:mm:ss"), $ver, $kb, $sheets.Count
+"           https://drift-game.ru/dev/      — sheets"
+"           https://drift-game.ru/dev.html  — play this build"
+"           https://drift-game.ru/dev/treplo3d.html — the 3D bird"

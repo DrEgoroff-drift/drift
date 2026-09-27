@@ -97,10 +97,10 @@ this file keeps the evidence and the fix.
   `src/`, `site/`, `tests/`, `build.ps1`): republish with `deploy.ps1 -SkipBuild` after checking that
   `md5sum drift.html` equals the committed one.
 
-- **Test output through a Bash redirect is mojibake** (12.09.2026): `test.ps1 … > file` from Git Bash
-  writes the Cyrillic in the OEM code page and `grep "✗"` finds nothing in a red run. Capture it as
-  `powershell -Command "& { .	est.ps1 -Full -NoBuild 2>&1 | Out-File -Encoding utf8 F }"` and read
-  the file with `PYTHONIOENCODING=utf-8 python`, selecting the «✗»/«ИСКЛЮЧЕНИЕ» lines.
+- **Test output through a Bash redirect was mojibake** (12.09.2026, fixed 27.09.2026): the console
+  code page (cp866, cp437 on the new PC) ate the Cyrillic and `grep "✗"` found nothing in a red run.
+  build.ps1, test.ps1, dev.ps1 and bird.ps1 now switch the console to UTF-8 on start, so `> file`
+  is plain UTF-8: select the «✗», «EXCEPTION» and «SUITE CRASHED» lines.
 
 - **Claude Desktop updates itself at night and restarts** (14.09.2026, 04:00). The Microsoft Store
   serviced the package `Claude_1.52386.6.0` over the running app: the Claude VM Service was stopped

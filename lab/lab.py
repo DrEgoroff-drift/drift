@@ -84,19 +84,19 @@ def parse(kind, text):
     ls = body.split("\n")
     head = ""
     for l in ls:
-        if "пройдено" in l or "ЗЕЛЁН" in l or "ПРОВАЛ" in l: head = l.strip(); break
+        if l.startswith(("ALL GREEN", "FAILED ")) or "пройдено" in l or "ЗЕЛЁН" in l or "ПРОВАЛ" in l: head = l.strip(); break   # до 27.09.2026 отчёт был русским
     if not head: return None, [], 0, 0
-    passed = int((re.search(r"пройдено (\d+)", head) or [0, 0])[1] or 0)
-    suites = int((re.search(r"наборов (\d+)", head) or [0, 0])[1] or 0)
+    passed = int((re.search(r"(?:passed|пройдено) (\d+)", head) or [0, 0])[1] or 0)
+    suites = int((re.search(r"(?:suites|наборов) (\d+)", head) or [0, 0])[1] or 0)
     fails = []
     cur = ""
     staged = False   # карантин (stage, M442): провалы печатаются, но вердикт не решают — и в лог ошибок не идут (0.441.0)
     for i, l in enumerate(ls):
         s = l.strip()
-        if s.startswith("ПО ГРУППАМ") or s.startswith("САМЫЕ ДОЛГИЕ"): break   # сводки, не провалы
-        if s.startswith("КАРАНТИН"): staged = True; continue
+        if s.startswith(("BY GROUP", "SLOWEST", "ПО ГРУППАМ", "САМЫЕ ДОЛГИЕ")): break   # сводки, не провалы
+        if s.startswith(("QUARANTINE", "КАРАНТИН")): staged = True; continue
         if staged and not s: staged = False; continue
-        if s.startswith("── "): cur = s[3:].strip(); staged = "[карантин:" in cur; continue
+        if s.startswith("── "): cur = s[3:].strip(); staged = "[quarantine:" in cur or "[карантин:" in cur; continue
         if staged or not s.startswith("✗"): continue
         msg = s[1:].strip()
         if cur and msg.startswith(cur + " · "): msg = msg[len(cur) + 3:]
@@ -105,7 +105,7 @@ def parse(kind, text):
         det = []
         for j in range(i + 1, min(i + 14, len(ls))):
             t = ls[j].rstrip()
-            if not t.strip() or t.strip().startswith(("✓", "✗", "──")) or "ПО ГРУППАМ" in t: break
+            if not t.strip() or t.strip().startswith(("✓", "✗", "──")) or "BY GROUP" in t or "ПО ГРУППАМ" in t: break
             det.append(t.strip())
         fails.append((suite, msg[:400], "\n".join(det)[:1500]))
     # блок провалов внизу дублирует строки из наборов — оставляем по одному на (suite,msg)

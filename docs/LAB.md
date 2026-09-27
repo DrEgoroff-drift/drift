@@ -69,8 +69,8 @@ key is the unit of counting, not the line:
   green in a *newer* version («не повторяется с …»), so the author sees a fix without asking;
   `dropped` (`lab.py drop <key> -- <why>`, «не баг: карантин»); `quiet` — not seen for three
   finished sessions. Any of them reopens the moment the key is seen again, with the version.
-- **Staged suites (`stage:`) are not errors.** `publish` skips the КАРАНТИН block and
-  `[карантин: …]` suites when it parses a report — the golden suite's per-platform grid
+- **Staged suites (`stage:`) are not errors.** `publish` skips the QUARANTINE block and
+  `[quarantine: …]` suites (Russian words too) when it parses a report — the golden suite's per-platform grid
   mismatch is the case that taught this.
 - **No report is an error too**, with its own key, so a suite that kills the renderer shows
   up in the same table as a suite that fails.
