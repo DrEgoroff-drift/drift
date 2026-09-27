@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>planet look, the far lens</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+#cv{width:100vw;height:100vh;display:block}
+#note{display:none;position:fixed;left:12px;top:12px;color:#fff;font:14px/1.4 system-ui,sans-serif;background:rgba(0,0,0,.6);padding:8px 12px;border-radius:6px;max-width:80vw;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="note"></div>
+<!-- The planet look-dev stand: the day's world through the far lens, the man on the move. ?dolly=0 is the
+     near lens, 1 the far one. The world and the shaders are the day's; the renderer is the day's with the
+     shadow maps laid wider. -->
+<script src="pl-math.js"></script>
+<script src="pl-kit.js"></script>
+<script src="pl-ground.js"></script>
+<script src="pl-cast.js"></script>
+<script src="fr-scene.js"></script>
+<script src="pl-wgsl.js"></script>
+<script src="fr-render.js"></script>
+</body>
+</html>

@@ -58,9 +58,10 @@ brief did not foresee:
   a void. He is the hero by three means together: the pool his lamp carries, the cone seen in
   the air, and the dome of the vault over him.
 
-Against the old frame the man is 8.5 % of the height instead of 2.4 %: the map became a
+Against the old frame the man is 8.5 % of the height instead of 4.2 %: the map became a
 place. What the map gave — the whole cave at a glance — the frame does not; like the surface
-(§8.4), the cave needs its far lens before play is asked to live in it.
+(§8.4), the cave needs its far lens before play is asked to live in it. It is drawn with
+M630: 72 m × 40 m of the section, the scale of the surface.
 
 ## M602, night by the home and the base
 
@@ -113,3 +114,46 @@ brief did not foresee:
 Against the old frame the home takes 27 % of the height of the broad frame and its windows
 are the brightest and warmest spot in it; the wing is the darkest at 0.08 of the display's
 range, the lit path stands at 0.3 to 0.4, a window at 0.7 to 0.9.
+
+## M600 through the far lens
+
+**What play gives.** One scale for the surface, the cave and the mine (M217): a broad frame
+holds 76 m × 43 m of the world and the man is 4.2 % of its height; a phone's frame holds
+29 m × 63 m and he is 2.8 %. The lens follows him. What is seen coming and how far a
+landmark announces itself are play, and none of it moves.
+
+**Why the near frame was not enough.** The accepted key frame shows the man at 8.5 % and
+38 m of the lane: a place to stand in. Asked to carry play it would halve what the player
+sees ahead. And it never showed where the path leads.
+
+**The frame chosen.** The place, the light and the cast of M600, the lens pulled back along
+its own line of sight to twice the distance, so that the near frame is the far one's
+middle. Left, a pair of trees closes the lane; the ship, the man on the path, the near
+tree; right, the path ends at the mouth of the cave — a knoll of rock on the shore. The
+hero is still the man by the ship; the mouth is the place he is going to.
+
+**How it is built on the stand.** A fourth page, `far.html`. The world is the day's and is
+planted by the same dice; the page redeclares the lens, the path and the scene of the day
+and wraps the land, and adds what the near lens never saw: the lane beyond both ends of the
+near frame, the near slope to the foot of the far one, the knoll. The renderer is the day's
+with the reach of its shadow maps and of the hero's pool of light taken from the scene. The
+accepted files of M600 are not edited. `?dolly=` blends the two lenses.
+
+**What came of it** (pass 7). The frame holds at the game's scale, and four things the
+brief did not foresee:
+
+- **The land behind the crest is not there.** The lens looks down and the shore falls to
+  the lake behind the crest of the lane: a mound added to that land came out as a low
+  swelling. The knoll is built against the level of the crest.
+- **The mouth took five passes.** A hole in a hill of grass was a burrow; a face of bulging
+  beds was a striped tent; a face of flat blocks was masonry. It became rock when the face
+  followed a line in plan with a prow in the sun, the beds met in ledges, the prow's top was
+  left bare and blocks lay at the foot.
+- **Grass had to change with the lens.** The near lens's tufts at half the size were noise;
+  the far lens plants fewer and broader blades and keeps the knoll's grass short.
+- **The phone gained the ship.** The tall far frame holds the ship, the man and the beast
+  on the path together; both tall lenses of the page keep the man's feet at .32 of the
+  height, over the pads.
+
+Against the game's frame the man has the size he has today, and the world around him has
+three lanes, one light with shadows and an end to its path.

@@ -190,13 +190,15 @@ after it pass by §5.4.
    modes after M620, rendered to a card.
 3. **What may move in play** if a new body asks for it (a footprint, a height, a camera
    distance). Default: nothing moves without a question.
-4. **The camera distance.** The key frame M600 is shot with the **near** lens: the man is
-   8.5 % of the frame's height and the frame holds some 38 m of the walk line. The old frame
-   keeps him near 2 % and shows several times more land. §3.6 asks for two distances — near
-   at a thing, far on the move — and the far one has to show about as much land as the game
-   does today, or play changes (what is seen coming, how far a landmark announces itself).
-   The far lens is not drawn yet. Default until the author decides: play keeps its reach; the
-   near lens is used only when the man stands.
+4. **The camera distance.** The game keeps one scale for the surface, the cave and the mine
+   (M217): the man is 4.2 % of the height of a broad frame, which holds 76 m × 43 m of the
+   world, and 2.8 % of a phone's, which holds 29 m × 63 m. The key frames are shot with the
+   **near** lens: the man is 8.5 %, the frame holds 38 m of the walk line. §3.6 asks for two
+   distances — near at a thing, far on the move. The **far** lens is drawn (§11.10): it is
+   the near one pulled back to twice the distance, the man is 4.2 % and 2.8 % and the frame
+   holds what the game shows today, so play keeps its reach (what is seen coming, how far a
+   landmark announces itself). Default until the author decides: far on the move, the near
+   lens only when the man stands at a thing.
 5. **Two lenses for one world.** A broad one for 16:9 and a tall one for the phone (§11.7).
    The tall lens shows 12 m of the lane instead of 38 and gives the height to the sky and the
    far sign. The ship does not fit beside the man in it. Recommended: accept, the phone frame
@@ -432,14 +434,64 @@ the height**: there nothing that matters stands further right than 0.75 of the w
 man is at 0.70 and between 0.32 and 0.37 of the height. The day's tall lens (§11.7) keeps
 his feet at 0.22, under the pads — a weak spot of M600, named in §13.
 
+**11.10 The far lens** (M600 on the move, seven passes)
+
+| | broad (16:9) | tall (phone) |
+|---|---|---|
+| eye, from the walk line | 100 m, 14.45 m up | 74 m, 14.1 m up |
+| looks at | 10.85 m up | 12.85 m up |
+| lens | 24° | 46° |
+| horizon, from the bottom | 0.585 | 0.52 |
+| the man's feet, from the bottom | 0.28 | 0.32 |
+| the man | 4.2 % of the height | 2.8 % |
+| lane in the frame | 76 m | 29 m |
+
+The lens
+- The far lens is **the near one pulled back along its own line of sight**: the walk line
+  and the horizon keep their places in the frame, the actors halve. One number blends the
+  two (`dolly`), and nothing in the world moves with it.
+- The lens looks down by five degrees, and the land behind the crest falls to the lake:
+  **what lies behind the crest and below it is hidden**. A thing that must be seen there is
+  built against the level of the crest, not added to the land.
+- The tall far lens holds the ship and the man in one frame; the near tall lens cannot.
+
+The land a pull-back asks for
+- Twice the lane and a near slope some 40 m deep come into the frame. **The lane is closed
+  at its ends**: a pair of trees on the left, the place the path leads to on the right. A
+  path has its end in the frame.
+- **At half the size grass is a texture, not a drawing**: fewer and broader blades, 17
+  tufts to a square metre instead of 30, half as wide again. On a knoll the grass is
+  shorter still; long blades at this size make fur.
+- The near slope is quiet: a few stones, flowers no further than 15 m down it. The wing is
+  **crowns seen from above** in the bottom corners, dark and out of focus — we look over
+  the tops of trees that stand on the slope below.
+- The shade of things lies on the ground as sixty-four blots: the far frame keeps the
+  sixty-four largest the lens sees.
+
+The mouth of the cave
+- It is **a knoll of rock on the shore with its front fallen away**: a face 14 m long and
+  3.5 to 6 m high, a way in 3.5 m wide and 3 m high, a cap of turf with shrubs and a young
+  tree on the shoulder. Not a hole in a hill of grass: that read as a burrow.
+- The face **follows a line in plan**, with a prow turned to the sun: a face that lies in
+  one plane is a wall.
+- **Relief is drawn by ledges.** The fill light is graded by the normal, so a bed that
+  bulges comes out as a light stripe over a dark one. Beds are flat faces with a step at
+  every seam; their tones stay close; joints are few and slanted; the edges of ledges are
+  chipped; blocks that fell out lie at the foot.
+- The top of the prow is bare rock, the turf begins behind it: grass to the very edge
+  makes the knoll a hat.
+- The way in is **dark navy, not black**: .18 against .06, the floor of the sheet.
+- Shrubs on the knoll keep the greens of the lane; a teal shrub among rock reads as a stone.
+
 ## 12. The stand
 
-`docs/look/` draws the key frames on WebGPU with none of the game in it: three pages,
-`planet.html` (M600), `cave.html` (M601) and `night.html` (M602), a shooter and a measuring
-tool. It is a sketchbook: nothing in `src/` reads it, and it is thrown away at the hand-over.
+`docs/look/` draws the key frames on WebGPU with none of the game in it: four pages,
+`planet.html` (M600), `cave.html` (M601), `night.html` (M602) and `far.html` (M600 through
+the far lens), a shooter and a measuring tool. It is a sketchbook: nothing in `src/` reads
+it, and it is thrown away at the hand-over.
 
 Its manual is [`docs/look/README.md`](look/README.md): the files, the commands that shoot
-the six frames of the style sheet and the old frames for the pairs, the switches and knobs
+the frames of the style sheet and the old frames for the pairs, the switches and knobs
 of every page, and how a frame is measured. Frames are written outside the repository —
 pictures do not go into git.
 
@@ -469,10 +521,29 @@ pictures do not go into git.
   (§3, «In numbers»), the night's key is an eighteenth of the sun and not a seventh
   (§11.9), the man of the near lens is 8.5 % of the height.
 
+- **M600 through the far lens**: seven passes on the page `far.html`, both lenses, the
+  pairs «was | now» at 760 and at 390 against the game's frames of the same scale; measured
+  with the sheet's tool (§9 of the style sheet). Passed by §5.4; the laws it paid for are
+  §11.10. The scale of the old frame was measured in the game and corrected everywhere:
+  4.2 % and 2.8 %, not «near 2 %».
+
 **Not done**
-- M600 with the **far lens** (§8.4) and in weather; the cave has no far lens either.
+- M600 in weather: it goes with M626. The cave's far lens goes with M630, by the game's
+  rule of one scale (M217): 72 m × 40 m of the section in a broad frame.
 - Nothing is built in `src/`; the frame budget is not measured on the S23, and the frames
   of the cave and of the night are not measured at all.
+
+**Known weak spots of the far frame, pass 7** — named, not hidden:
+- the man's suit is 14 pixels of orange in the broad frame and 26 in the tall one: at this
+  size he is read by value — a light helmet and pack against water or shade — and by the
+  path under him, not by colour;
+- the ship is a quarter of its near size, so the lightest thousandth of the frame goes to
+  the clouds (.78) and not to the hero (.22);
+- the way in is darker than the wing (.18 against .19): a hole is allowed to be;
+- the right half of the knoll's face is two plain bands, and the arch is still regular;
+- in the tall frame the tip of the near tree's crown comes in at the right edge;
+- the far page builds 1.23 million vertices in 3.6 s, 122 thousand of them the knoll: the
+  cost of the far lens is unknown until M614.
 
 **Weak spots found by measuring** (M603; the numbers are in §8 of the style sheet):
 - M600: the heap of ore by the path is as strong as the suit and five times its size — the
@@ -523,11 +594,12 @@ pictures do not go into git.
   controls, which is where the wing and the path are;
 - the tall lens keeps the man's feet at 0.22 of the height, under the pads, and it was set
   before the buttons of the right edge were looked at; the night's tall lens (§11.9) is
-  the one to take over;
-- the tall frame does not hold the ship.
+  the one to take over — on the page `far.html` it has, in both tall lenses;
+- the near tall frame does not hold the ship; the far one does.
 
 ## 14. The key frames
 
 What each key frame was asked to be and what came of it is kept apart, in
 [`DESIGN-planet-frames.md`](DESIGN-planet-frames.md): M601 the cave, M602 the night by the
-home and the base. The laws the frames paid for stay here, in §11.
+home and the base, M600 through the far lens. The laws the frames paid for stay here, in
+§11.

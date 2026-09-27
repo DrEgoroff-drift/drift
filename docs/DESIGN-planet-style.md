@@ -279,7 +279,9 @@ a quarter of the width on each side, up to .15 of the height.
    not less than .05 of a tall one, 42 px on a phone 844 px high. Smaller, and the suit
    stops being read.
 2. **The hero building takes a quarter of the height** (the home: .27).
-3. The far lens (the man at .02, as the game shows him today) is not drawn: §8.4 of the plan.
+3. **Far lens: the man takes .042 of the height of a broad frame and .028 of a tall one**,
+   as the game shows him today (one scale for the surface, the cave and the mine). It is
+   the near lens pulled back to twice the distance; its numbers are §9.
 
 ### 4.4 The phone
 
@@ -293,7 +295,8 @@ The game's own phone frame, 390 × 844, shows what the interface covers:
 
 **Rule, every world: in the tall frame what matters stands between .15 and .90 of the
 height, and between .22 and .40 it keeps left of .75 of the width.** The night's tall lens
-is set so (the man at .70 of the width, feet at .32); the day's is not yet (feet at .22).
+is set so (the man at .70 of the width, feet at .32), and so are both tall lenses of the
+far page (§9); the day's own is not (feet at .22).
 
 ## 5. Light and air
 
@@ -396,3 +399,82 @@ Found by measuring; named, not hidden. Each is fixed in the pass of its element.
   .16): the hero has no outline, it is carried by its windows.
 - The ancients have no colour of their own yet: on the stand the far sign is pale stone
   with warm lamps.
+- **M600, far**: the suit is 14 pixels of orange in the broad frame (26 in the tall one)
+  against 63 in the near lens: colour no longer carries the man (§9).
+- **M600, far**: the clouds hold .78 of the lightest thousandth of the frame and the hull of
+  the ship .22: at a quarter of its near size the hero cannot hold it (§2.5).
+- **M600, far**: the way in to the cave is darker than the wing, .18 against .19 (§2.1).
+
+## 9. The far lens
+
+M600 on the move: the page `far.html`, pass 7, measured with the same tool over the boxes
+`m600-far` and `m600-far-tall` of `lanes.json`. The world and its light are the day's; the
+lens is the near one pulled back along its own line of sight to twice the distance.
+
+| | Far, broad | Far, tall |
+|---|---|---|
+| Eye from the walk line, m | 100 | 74 |
+| Eye above the zero of the land, m | 14.45 | 14.1 |
+| Lens | 24° | 46° |
+| Frame at the walk line, m | 76 × 43 | 29 × 63 |
+| The man, of the height | .042 | .028 |
+| His feet, from the bottom | .28 | .32 |
+| Horizon, from the bottom | .585 | .52 |
+| Pixels to a metre | 21 at 900 high | 13.4 at 844 |
+
+The game's own frames were measured for the pair: the man is .042 of a broad frame and
+.028 of a phone's, on the surface and in the cave alike.
+
+Value, broad frame, the near lens beside the far one:
+
+| Lane | Near | Far |
+|---|---|---|
+| The wing | .15 .17 .18 | .18 .19 .20 |
+| The near slope | .24 .29 .35 | .21 .24 .27 |
+| Play lane in the light | .43 .60 .72 | .41 .55 .68 |
+| The path | .39 .55 .57 | .46 .48 .50 |
+| Water under the far shore → by the lane | .43 .47 .54 → .50 .59 .67 | .42 .45 .49 → .52 .55 .60 |
+| The far shore: its face; its crest | .48 .53 .61; .58 .62 .67 | .42 .46 .52; .57 .61 .64 |
+| The plain in the shadow band | .52 .53 .54 | .48 .49 .51 |
+| Hills | .43 .63 .72 | .59 .64 .67 |
+| The mountain | .62 .65 .74 | .61 .64 .74 |
+| Sky, zenith → horizon | .61 .63 .68 → .80 .81 .82 | .60 .63 .67 → .80 .82 .83 |
+| Whole frame (5th, 50th, 95th) | .18 .54 .82 | .20 .53 .82 |
+| The ends: darkest pixel, 99.9th percentile, lightest pixel | .13 .94 .96 | .14 .94 .96 |
+
+The knoll of the cave, which only the far lens sees: the face of rock .27 .36 .49, grey-blue
+in its own shade (chroma .031); the cap of turf .27 .30 .40; the way in .18.
+
+The tall far frame: whole .19 .53 .79, the wing .18 .19 .24, the near slope .20 .22 .26,
+the lane in the light .42 .57 .70, water .43 .51 .59, the crest of the far shore .55 .61
+.65, the zenith .48 .50 .58, the horizon .75 .76 .78.
+
+| Share of the frame | under .12 | .12 – .30 | .30 – .60 | over .60 |
+|---|---|---|---|---|
+| Near | 0 | .20 | .39 | .41 |
+| Far | 0 | .27 | .33 | .41 |
+
+Colour. Strong colour takes .044 of the far frame against .101 of the near one: the green
+of the lit lane falls from .26 of the frame to .11, the teal of the near slope in its shade
+rises from .16 to .30. The accents shrink with the actors:
+
+| Family | Near | Far |
+|---|---|---|
+| The suit, pixels | 63 | 14 (26 in the tall frame) |
+| The orange of the ship, of the frame | .0016 | .0005 |
+| Ore, pixels | 321 | 76 |
+| Blossom of the grove, pixels | 933 | 735 |
+| Heather, pixels | 2085 | 694 |
+
+Motion. Over 0.6 s at 96 px wide the far frame changes by .51 of 255 on average (the near
+one by 1.03); the greatest change is 19 (47), in the wing in both.
+
+**Rules, every world**
+
+1. **The far lens keeps the bands of the near one** within .07, lane by lane, and the
+   horizon and the walk line keep their places in the frame.
+2. **At the far lens the man is read by value, not by colour.** His helmet and pack are the
+   lightest thing on the lane around him, and he walks against water or shade.
+3. **The wing of the far lens is crowns seen from above**, darkened to .45 of their own
+   tint: that keeps its median under .20.
+4. **A way in is the darkest thing of its place and never black**: .18 by day.

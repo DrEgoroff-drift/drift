@@ -5,14 +5,15 @@ in it. The plan is [`docs/DESIGN-planet.md`](../DESIGN-planet.md), the numbers o
 are [`docs/DESIGN-planet-style.md`](../DESIGN-planet-style.md). The stand is a sketchbook:
 nothing in `src/` reads it, and it is thrown away at the hand-over.
 
-Three pages, one per key frame. Each opens from disk, no server; the scripts are classic
-ones and share one scope, as the game's do.
+Four pages. Each opens from disk, no server; the scripts are classic ones and share one
+scope, as the game's do.
 
 | Page | Key frame |
 |---|---|
 | `planet.html` | M600, the surface by day |
 | `cave.html` | M601, the cave; builds its rock for some eight seconds |
 | `night.html` | M602, the night by the home and the base; builds in three seconds |
+| `far.html` | M600 through the far lens, at the game's scale; builds in four seconds |
 
 The world is left-handed: x runs along the walk line, y is up, z goes away from the lens.
 Units are metres; the man is 1.8 m.
@@ -35,12 +36,17 @@ Units are metres; the man is 1.8 m.
 | `nt-scene.js` | the yard cut into the day's land, the trodden ways, the tall lens, the directions of the sky, fireflies; the scene |
 | `nt-wgsl.js` | the night's shaders: the sky with the giant and its rings, the lantern, the light of windows, the room behind a pane, the air of the yard, smoke, halos |
 | `nt-render.js` | the night's passes: three shadow maps (two along the giant's light, one for the lantern), the mirror, the scene, the wing, the air at half resolution, bloom, the grade |
+| `fr-scene.js` | the far lens and its blend with the near one; the knoll of the cave as a mesh of its own: the line of its face, beds and ledges, the way in, the cap of turf; the path to it; grass and the wing for the far lens; the scene |
+| `fr-render.js` | the day's passes, with the reach of the shadow maps and of the hero's pool of light taken from the scene |
 | `lookshot.py` | shoots a page in its own headless Chrome on the real GPU |
 | `measure.py` | measures a frame: value by lanes, colour by families of hue |
-| `lanes.json` | the boxes of the lanes for the six frames of the style sheet |
+| `lanes.json` | the boxes of the lanes for the eight frames of the style sheet |
 
 The cave shares `pl-math.js`, `pl-kit.js`, the constants of `pl-ground.js` and the man of
-`pl-cast.js`. The night calls the day's land, flora and far shore as they stand.
+`pl-cast.js`. The night calls the day's land, flora and far shore as they stand. The far
+page loads the day's files but for its scene and renderer: a later script redeclares a
+function of an earlier one (the lens, the path, the scene), and the land is wrapped by
+assignment, `groundH = function …`, which a declaration could not do.
 
 ## Shooting
 
@@ -53,6 +59,8 @@ python docs/look/lookshot.py --page cave.html --out C:/tmp/frames/m601-broad.png
 python docs/look/lookshot.py --page cave.html --out C:/tmp/frames/m601-tall.png --w 390 --h 844 --dpr 2 --ss 1.5 --budget 150
 python docs/look/lookshot.py --page night.html --out C:/tmp/frames/m602-broad.png --ss 2 --budget 150
 python docs/look/lookshot.py --page night.html --out C:/tmp/frames/m602-tall.png --w 390 --h 844 --dpr 2 --ss 1.5 --budget 150
+python docs/look/lookshot.py --page far.html --out C:/tmp/frames/m600-far.png --ss 2 --budget 150
+python docs/look/lookshot.py --page far.html --out C:/tmp/frames/m600-far-tall.png --w 390 --h 844 --dpr 2 --ss 1.5 --budget 150
 ```
 
 A broad frame comes out 1600 × 900, a tall one 780 × 1688. `--ss` is the supersampling,
@@ -90,6 +98,7 @@ python docs/look/lookshot.py --page night.html --out C:/tmp/lamps.png --budget 1
 | `planet.html` | `wing`, `water`, `shafts`, `bloom`, `scene` (a grey card instead of the world, the wing alone) | — |
 | `cave.html` | `wing`, `water`, `air`, `bloom`, `cut`, `ink`, `cast`, `man` | multipliers of 1: `exp`, `amb`, `fogc`, `fog`, `day`, `lamp`, `air`, `airl`, `aird`, `airg` |
 | `night.html` | `scene`, `wing`, `water`, `bloom`, `air`, `haze`, `smoke`, `halos`, `stars`, `lamp`, `windows`, `points`, `mist` | plain numbers, below |
+| `far.html` | as `planet.html` | plain numbers, below |
 
 The night's knobs, the default in brackets. Light: `key` (.14), `lamp` (.37), `win` (.5),
 `pts` (.6), `halo` (.6), `manlamp` (1.2), `amb` (1), `ncol` (.45), `wingk` (.15), `grow`
@@ -98,6 +107,18 @@ The night's knobs, the default in brackets. Light: `key` (.14), `lamp` (.37), `w
 `hcl` (0), `glight` (.5), `rlight` (.42); the giant `gaz`, `gel`, `gr`, its sun `selong`,
 `spa`, its rings `rtilt`, `ropen`, `rside`. Staging: `manx` (−4.7), `basex` (29.5), `strx`
 (21), `yr0`, `yr1`, and the tall lens `tx`, `te`, `tz`, `ty`.
+
+The far page's knobs. The lens: `dolly` (1; 0 is the near lens, the day's frame), where the
+lens stands along the walk line — `fx` (8) far broad, `tx` (−4.2) far tall, `ntx` (−.8)
+near tall. The knoll of the cave: its threshold `mx` (30), `mz` (2.8), the top of the dome
+behind it `md` (6), its height `mh` (6.8), the height of the way in `ah` (3.1). Grass of
+the far lens: `gw` (1.55, how broad a blade), `gd` (17, tufts to a square metre). The
+wing: `wl` (.19), `wr` (.23), how high the two crowns of the corners reach in the frame,
+`wk` (.45), their tint. The hero's pool of light: `p0` (15), `p1` (36), metres.
+
+```bash
+python docs/look/lookshot.py --page far.html --out C:/tmp/half.png --budget 150 --q "dolly=.5"
+```
 
 ## Measuring
 
