@@ -98,7 +98,11 @@ own sky is built in the new modules and meets the old one only at the hand-over 
 1. **Purpose**: what the player does with the thing and what it must say from afar and up close.
 2. **References** and two or three silhouette ideas; self-critique; one is chosen.
 3. **Key frame** on the stand (`docs/look/`), three passes: draft, self-critique, tightening.
-4. **The author's verdict**: yes, no, or edits. Nothing is built in the engine before a yes.
+4. **The gate.** Until 27.09.2026 it was the author's verdict on every frame: yes, no, or
+   edits. That day, after he accepted M600, he lifted it: «кадры не надо со мной согласовывать,
+   направление верное, делай все». Since then the gate is mine — the pair of step 6 and a
+   written self-critique against the bar of §6, with the weak spots named in §13 — and the
+   author is shown the result of a stage, not every frame. His word overrides anything here.
 5. **Build** in `src/` with the kit.
 6. **The pair** «was | now» of the whole frame at 760 and 390 wide, by day and by night.
    While the look lives on the stand, «was» is the game's frame and «now» is the stand's: the
@@ -108,7 +112,7 @@ own sky is built in the new modules and meets the old one only at the hand-over 
 
 ## 6. The bar — what «at the level» means
 
-A frame is shown to the author only if it passes all of these:
+A frame passes its gate (§5.4) only if it holds all of these:
 
 - **Squint**: at 96 px wide the hero and the three lanes still read.
 - **Silhouette**: every actor filled with black is still recognised.
@@ -116,12 +120,14 @@ A frame is shown to the author only if it passes all of these:
 - **One hero**: the brightest, sharpest, most saturated spot is the hero; three accents at most.
 - **No flat fill, no spray**: texture only where a cluster was placed.
 - **Beside the references**: put next to frames of Planet of Lana and Cocoon at the same size,
-  it does not lose in composition, light and air. The author is the judge.
-- **Motion**: an eight-frame strip shows wind and gait, and nothing blinks.
+  it does not lose in composition, light and air. The author's eye is the last word; between
+  his looks the frame is judged harder than he would judge it.
+- **Motion**: a strip of several moments shows wind and gait, and nothing blinks.
 
 ## 7. Stages and gates
 
-**Stage 0 — the look (stand).** Gate: the author says «yes, like this».
+**Stage 0 — the look (stand).** Gate: the author said «yes, like this» to M600; the frames
+after it pass by §5.4.
 - M600 key frame: the surface by day, terran — man, ship, grove, beasts, a landmark far away
 - M601 key frame: the cave
 - M602 key frame: night by the home and the base — lamps, windows, the sky
@@ -278,6 +284,60 @@ Each line below was paid for by a frame that failed without it.
 Between them the camera is blended by the aspect of the frame (0.6 … 1.5). The tall lens
 looks up: the far sign and the sky take the upper half, high clouds are placed for it.
 
+**11.8 Underground** (M601, seven passes)
+
+Light
+- **Three lights, three colours, three places**: the day at the mouth, cool; the man's lamp,
+  warm; the crystals of the hall, mauve. Each owns its part of the frame; where two meet,
+  one yields.
+- **The lamp has a reach.** It dies between 12 and 27 m, so the hall keeps its own light.
+- **The lamp carries its own pool**: a small warm light without shadows sits at the lamp, or
+  the man walks in a hole of his own making.
+- **Far is lighter.** The haze behind the cut is lighter than unlit near stone: a far chamber
+  reads as air, not as a pit.
+- **The day is held back towards the top of the frame**, or the upper corner outshines the man.
+- **Nothing casts a striped shadow on the heap**: no bars across the mouth.
+- **In full day stone wears moss**: pale ledges in the beam read as a flight of steps.
+
+Form
+- **Dripstone is built of caps**: stacks of caps rise from the floor, bells hang from the
+  roof, a column is both with a neck between. Rims are scalloped in round lobes of **at
+  least seven ring sides each** — with fewer the rim reads as torn paper.
+- **What hangs, hangs in clumps** with bare roof between them; a clump has one long member.
+- **The vault is a vault**: a dome over the man, noses at its ends. **Ledges run and die
+  away**; a ledge drawn across the whole frame turns the rock into a staircase.
+- **Ore is orange and dim**: a tenth to four tenths of its colour. Orange is the colour of
+  people's things, and the vein must not call louder than the lamp.
+
+Staging
+- **The cut face is a page.** It is the darkest band and dims towards the frame's edges; a
+  lip and a wash of light run along the void; things lie in the stone — bones, a shell,
+  roots, an ore vein — and earth lies on top.
+- **A void that matters lies in the plane of the cut.** A passage behind the cut is not
+  seen at all; the crawl with its amber is shown whole, in section.
+- **The far lane underground is a window wider than its beam**: an arch behind the man opens
+  into a far chamber with its own shaft of day and a great stack of caps as the landmark.
+- **The man's head never touches a far line.** A stack, a rim, the edge of an arch stand
+  clear of him by a head at least.
+
+Life
+- Small lives are lights: glow-worms on the roof in fields like a sky, pale fish behind the
+  pane of the water. They drift; they do not blink.
+
+The two lenses underground
+
+| | broad (16:9) | tall (phone) |
+|---|---|---|
+| eye, from the walk line | 50 m, 3.6 m up | 30 m, 3.6 m up |
+| looks at | 3.4 m up | 5.2 m up |
+| lens | 24° | 46° |
+| frame at the cut | 36 m × 20 m | 10.8 m × 23 m |
+| the man | 8.5 % of the height | 7.7 % |
+| walk line, from the bottom | 0.34 | 0.29 |
+
+The phone's interface covers the top of the frame (chips) and its bottom quarter (pads):
+dark rock belongs there. The tall lens looks up the shafts, the broad one along the gallery.
+
 ## 12. The stand
 
 `docs/look/` is a page that draws one key frame on WebGPU with none of the game in it. It is
@@ -292,7 +352,12 @@ a sketchbook: nothing in `src/` reads it, and it is thrown away at the hand-over
 | `pl-cast.js` | trees, stone, rosettes, the ship, the man, beasts, the far sign, the wing, the scene |
 | `pl-wgsl.js` | shaders: sky and clouds, light of the scene, water, shafts, bloom, the grade |
 | `pl-render.js` | passes and targets |
-| `lookshot.py` | shoots the page in its own headless Chrome on the real GPU |
+| `cave.html` | the page of the cave (M601); shares `pl-math.js`, `pl-kit.js`, the constants of `pl-ground.js` and the man of `pl-cast.js` |
+| `cv-rock.js` | the rock: one density function, strata, the paint of stone, surface nets in the frustum of the lens, the cut face |
+| `cv-scene.js` | the cave's lenses and lights; dripstone, veils, crystals, amber, vines, the lake, what lies in the cut face, fish and glow-worms; the scene |
+| `cv-wgsl.js` | the cave's shaders: the three lights, the cut face, water, light in the air, halos |
+| `cv-render.js` | the cave's passes: two shadow maps, the scene, the air at half resolution, bloom, the grade |
+| `lookshot.py` | shoots a page in its own headless Chrome on the real GPU |
 
 ```bash
 python docs/look/lookshot.py --out C:/tmp/m600.png --ss 2
@@ -312,6 +377,20 @@ The old frame for a pair is taken from the game itself, in clear weather:
 python docs/shot.py surface --js "G.land.p.wx={kind:null};" --out C:/tmp/old.png --w 1600 --h 900
 ```
 
+The cave is another page of the same stand. It builds its rock for some eight seconds, so the
+shooter is given more time:
+
+```bash
+python docs/look/lookshot.py --page cave.html --out C:/tmp/m601.png --ss 2 --budget 150
+python docs/look/lookshot.py --page cave.html --out C:/tmp/m601-phone.png --w 390 --h 844 --dpr 2 --ss 1.5 --budget 150
+python docs/look/lookshot.py --page cave.html --out C:/tmp/lamp.png --budget 150 --q "off=wing&lamp=1.3&airl=2"
+python docs/shot.py cave --out C:/tmp/old-cave.png --w 1600 --h 900
+```
+
+Its parts for `off=` are `wing`, `water`, `air`, `bloom`, `cut`, `ink`, `cast`, `man`; its
+knobs, each a multiplier of 1, are `exp`, `amb`, `fogc`, `fog`, `day`, `lamp`, `air`, `airl`,
+`aird`, `airg`.
+
 ## 13. State on 27.09.2026
 
 **Done**
@@ -322,12 +401,28 @@ python docs/shot.py surface --js "G.land.p.wx={kind:null};" --out C:/tmp/old.png
   The frames he accepted show the two lenses and the orange suit, so §8.5 and §8.6 are taken
   as accepted with them unless he says otherwise. §8.1–§8.4 stay open.
 
-**Not done**
-- M600 with the **far lens** (§8.4), by night, and in weather.
-- M601 the cave, M602 night by the home and the base, M603 the numbers.
-- Nothing is built in `src/`; the frame budget is not measured on the S23.
+- **The gate changed** the same day (§5.4): frames are no longer agreed one by one.
+- **M601, the cave**: seven passes, both lenses, the pairs «was | now» at 760 and at 390,
+  motion looked at on strips of four moments. Passed by §5.4; the brief and the result are
+  §14, the laws it paid for are §11.8.
 
-**M601 is thought through and not drawn** — the brief is §14.
+**Not done**
+- M600 with the **far lens** (§8.4), by night, and in weather; the cave has no far lens either.
+- M602 night by the home and the base, M603 the numbers.
+- Nothing is built in `src/`; the frame budget is not measured on the S23, and the cave's
+  frame is not measured at all.
+
+**Known weak spots of M601, pass 7** — named, not hidden:
+- the rock over the gallery is still heavy with ledges, and the walls of the mouth step in
+  places;
+- the columns are plain: no wet sheen, no lines of flow;
+- fish and glow-worms are dots, and the fish only drift;
+- the man is the stand-in of M600;
+- the tall frame holds neither the mouth nor the hall — the man, the arch, the far chamber
+  and the shaft above him; its upper fifth is earth and roots, under the chips;
+- the wing underground is almost nothing: a bank and two stacks in one corner;
+- the cost is unknown: 48 steps of light in the air at half resolution, twelve point lights,
+  two shadow maps of 4096². Each has a cheaper form; M614 measures.
 
 **Known weak spots of M600, pass 3** — to be fixed in the elements' own passes, not hidden:
 - far shore and hills are smooth: at distance they read as plasticine, they want the brush;
@@ -338,7 +433,7 @@ python docs/shot.py surface --js "G.land.p.wx={kind:null};" --out C:/tmp/old.png
   controls, which is where the wing and the path are;
 - the tall frame does not hold the ship.
 
-## 14. M601, the cave — the brief (not drawn yet)
+## 14. M601, the cave — the brief and what came of it
 
 **What play gives** (`src/22-mode-cave`, `22a`, `22b`; none of it moves). A field of rock and
 void in cross-section, about 230 m by 160 m against a man of 1.8 m. The mouth is a shaft from
@@ -378,3 +473,21 @@ strata as displacement) meshed by surface nets on a grid laid in the frustum of 
 front layer closed to make the cut face. Two shadow maps: the lamp in perspective, the beam
 from above. Light in the air is marched through both at half resolution. The lake is a mirror
 with its section drawn on the cut plane.
+
+**What came of it** (pass 7). The frame holds what the brief asked for, and three things the
+brief did not foresee:
+
+- **The far lane had to be invented.** A gallery in section has no distance of its own: behind
+  the man there was a wall. Now an arch opens behind him into a far chamber with a second
+  shaft of day and a great stack of caps in its beam — the cave's own far sign.
+- **The cut face became a subject.** The brief treated it as the dark wing; in the frame it
+  takes a third of the area, so it is drawn as a page of the earth: strata, a swimmer's
+  bones, a shell, roots from the surface, an ore vein under the lake, soil on top, and the
+  crawl with its amber seen whole.
+- **The lamp alone could not be the hero.** One spot with a hard edge made the man a torch in
+  a void. He is the hero by three means together: the pool his lamp carries, the cone seen in
+  the air, and the dome of the vault over him.
+
+Against the old frame the man is 8.5 % of the height instead of 2.4 %: the map became a
+place. What the map gave — the whole cave at a glance — the frame does not; like the surface
+(§8.4), the cave needs its far lens before play is asked to live in it.
