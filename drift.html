@@ -80302,6 +80302,2102 @@ function pennDraw(x,y,w,h){
   ctx.closePath();ctx.fill();
 }
 
+/* ══════════════ планета заново: состояние, мерка, математика (M610) ══════════════
+   Поверхность перепридумана целиком (docs/DESIGN-planet.md, «Сцена»): земля —
+   объёмная лента в три плана, один ключевой свет с настоящей тенью, один воздух.
+   Старые рисовалки (21e, 21e1) не правятся и живут рядом: новый вид стоит за
+   переключателем, пока не сдан весь (M652). Как он встаёт в кадр движка —
+   docs/DESIGN-planet-engine.md.
+
+   Семейство 21p…: все имена начинаются с pln/PLN — область видимости у игры
+   одна, и свои `smooth` или `ridged` здесь затёрли бы чужие.
+
+   Мир планеты — в МЕТРАХ: x вдоль линии ходьбы, y вверх, z от объектива вглубь.
+   У игры единицы свои и y растёт вниз; человек в ней ростом 23.6 единицы, в
+   новом виде — 1.8 м, отсюда мерка. */
+const PLN_M=13.1;                     /* единиц игры в метре */
+const PLN={on:false,                  /* переключатель: ?pln=1 или PLN.on=true со стенда */
+  err:"",bad:0,                       /* последний сбой нового вида и сколько их было подряд */
+  y0:900,                             /* уровень игры, принятый за ноль высоты (ставит кадр) */
+  cam:null,sun:null,                  /* объектив и свет последнего кадра */
+  stat:{},                            /* что построено и сколько стоило: для замера и стенда */
+  log:[]};                            /* что сказали шейдеры и видеокарта: не больше сорока строк */
+try{PLN.on=/[?&]pln=1(&|$)/.test(location.search||"");}catch(e){}
+function plnLog(s){if(PLN.log.length<40)PLN.log.push(String(s).slice(0,400));}
+function plnX(X){return X/PLN_M;}
+function plnY(Y){return (PLN.y0-Y)/PLN_M;}
+function plnXu(x){return x*PLN_M;}
+function plnYu(y){return PLN.y0-y*PLN_M;}
+
+const PLN_DEG=Math.PI/180;
+function plnSmooth(a,b,x){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);}
+function plnMix3(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+function plnAdd(a,b){return [a[0]+b[0],a[1]+b[1],a[2]+b[2]];}
+function plnSub(a,b){return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];}
+function plnMul(a,s){return [a[0]*s,a[1]*s,a[2]*s];}
+function plnDot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function plnCross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+function plnLen(a){return Math.hypot(a[0],a[1],a[2]);}
+function plnNorm(a){const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];}
+function plnRotY(p,a){const c=Math.cos(a),s=Math.sin(a);return [p[0]*c+p[2]*s,p[1],-p[0]*s+p[2]*c];}
+function plnRotZ(p,a){const c=Math.cos(a),s=Math.sin(a);return [p[0]*c-p[1]*s,p[0]*s+p[1]*c,p[2]];}
+function plnRotX(p,a){const c=Math.cos(a),s=Math.sin(a);return [p[0],p[1]*c-p[2]*s,p[1]*s+p[2]*c];}
+/* цвет вершины — линейный: свет считается в линейном, в тона экрана кадр
+   переводит свёртка (21pd) */
+function plnHex(s){
+  const n=parseInt(s.slice(1),16),f=v=>Math.pow(v/255,2.2);
+  return [f(n>>16&255),f(n>>8&255),f(n&255)];
+}
+function plnRgb(c){const f=v=>Math.pow(clamp(v,0,255)/255,2.2);return [f(c[0]),f(c[1]),f(c[2])];}
+
+/* ── шум стенда ──
+   Формы дальних планов подобраны на стенде под ЭТОТ шум (градиентный, −1…1):
+   с шумом игры (значений, 0…1) те же числа дали бы другие горы. */
+function plnHash(ix,iy,s){
+  let h=Math.imul(ix|0,374761393)^Math.imul(iy|0,668265263)^Math.imul(s|0,1274126177);
+  h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;
+  return (h>>>0)/4294967296;
+}
+function plnNoise(x,y,s){
+  const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;
+  const ux=fx*fx*fx*(fx*(fx*6-15)+10),uy=fy*fy*fy*(fy*(fy*6-15)+10);
+  const a0=plnHash(ix,iy,s)*TAU,a1=plnHash(ix+1,iy,s)*TAU,a2=plnHash(ix,iy+1,s)*TAU,a3=plnHash(ix+1,iy+1,s)*TAU;
+  const a=Math.cos(a0)*fx+Math.sin(a0)*fy,b=Math.cos(a1)*(fx-1)+Math.sin(a1)*fy,
+        c=Math.cos(a2)*fx+Math.sin(a2)*(fy-1),d=Math.cos(a3)*(fx-1)+Math.sin(a3)*(fy-1);
+  return (a+(b-a)*ux+(c-a)*uy+(a-b-c+d)*ux*uy)*1.41;
+}
+function plnFbm(x,y,oct,s){
+  let v=0,a=.5,f=1,n=0;
+  for(let i=0;i<oct;i++){v+=a*plnNoise(x*f,y*f,s+i*19);n+=a;a*=.5;f*=2.02;}
+  return v/n;
+}
+/* гребни: острые хребты, 0…1 */
+function plnRidged(x,y,oct,s){
+  let v=0,a=.5,f=1,n=0,w=1;
+  for(let i=0;i<oct;i++){
+    let r=1-Math.abs(plnNoise(x*f,y*f,s+i*23));r*=r;
+    v+=a*r*w;w=clamp(r*1.6,0,1);n+=a;a*=.5;f*=2.07;
+  }
+  return v/n;
+}
+/* мягкий максимум: k — ширина перехода в единицах a и b */
+function plnSmax(a,b,k){const h=clamp(.5+.5*(a-b)/k,0,1);return lerp(b,a,h)+k*h*(1-h);}
+
+/* ── матрицы: по столбцам, Float32Array(16), левая тройка, глубина 0…1 ── */
+function plnM4mul(a,b,o){
+  o=o||new Float32Array(16);
+  for(let c=0;c<4;c++)for(let r=0;r<4;r++)
+    o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];
+  return o;
+}
+function plnM4ortho(l,r,b,t,n,f){
+  const o=new Float32Array(16);
+  o[0]=2/(r-l);o[5]=2/(t-b);o[10]=1/(f-n);
+  o[12]=-(r+l)/(r-l);o[13]=-(t+b)/(t-b);o[14]=-n/(f-n);o[15]=1;
+  return o;
+}
+function plnM4look(eye,target,up){
+  const z=plnNorm(plnSub(target,eye)),x=plnNorm(plnCross(up,z)),y=plnCross(z,x);
+  return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,
+    -plnDot(x,eye),-plnDot(y,eye),-plnDot(z,eye),1]);
+}
+/* зеркало относительно плоскости y = h */
+function plnM4mirrorY(h){return new Float32Array([1,0,0,0,0,-1,0,0,0,0,1,0,0,2*h,0,1]);}
+function plnM4inv(m,o){
+  o=o||new Float32Array(16);
+  const a00=m[0],a01=m[1],a02=m[2],a03=m[3],a10=m[4],a11=m[5],a12=m[6],a13=m[7],
+    a20=m[8],a21=m[9],a22=m[10],a23=m[11],a30=m[12],a31=m[13],a32=m[14],a33=m[15],
+    b00=a00*a11-a01*a10,b01=a00*a12-a02*a10,b02=a00*a13-a03*a10,
+    b03=a01*a12-a02*a11,b04=a01*a13-a03*a11,b05=a02*a13-a03*a12,
+    b06=a20*a31-a21*a30,b07=a20*a32-a22*a30,b08=a20*a33-a23*a30,
+    b09=a21*a32-a22*a31,b10=a21*a33-a23*a31,b11=a22*a33-a23*a32;
+  let det=b00*b11-b01*b10+b02*b09+b03*b08-b04*b07+b05*b06;
+  det=1/(det||1e-30);
+  o[0]=(a11*b11-a12*b10+a13*b09)*det;o[1]=(a02*b10-a01*b11-a03*b09)*det;
+  o[2]=(a31*b05-a32*b04+a33*b03)*det;o[3]=(a22*b04-a21*b05-a23*b03)*det;
+  o[4]=(a12*b08-a10*b11-a13*b07)*det;o[5]=(a00*b11-a02*b08+a03*b07)*det;
+  o[6]=(a32*b02-a30*b05-a33*b01)*det;o[7]=(a20*b05-a22*b02+a23*b01)*det;
+  o[8]=(a10*b10-a11*b08+a13*b06)*det;o[9]=(a01*b08-a00*b10-a03*b06)*det;
+  o[10]=(a30*b04-a31*b02+a33*b00)*det;o[11]=(a21*b02-a20*b04-a23*b00)*det;
+  o[12]=(a11*b07-a10*b09-a12*b06)*det;o[13]=(a00*b09-a01*b07+a02*b06)*det;
+  o[14]=(a31*b01-a30*b03-a32*b00)*det;o[15]=(a20*b03-a21*b01+a22*b00)*det;
+  return o;
+}
+/* ── сдвинутый объектив ──
+   Глаз смотрит строго вдоль +z, а окно кадра на плоскости z=0 — ровно тот
+   прямоугольник мира, что показывает 2D-игра: l…r и b…t в метрах, уже от глаза.
+   Всё, что стоит на линии ходьбы, ложится на экран чистым масштабом, поэтому
+   тычок «идти сюда», фишки и подписи попадают туда же, куда попадали.
+   Глубина обратная: ближняя плоскость — 1, дальняя — 0. */
+function plnM4lens(l,r,b,t,dist,near,far){
+  const o=new Float32Array(16);
+  o[0]=2*dist/(r-l);o[5]=2*dist/(t-b);
+  o[8]=-(r+l)/(r-l);o[9]=-(t+b)/(t-b);
+  o[10]=-near/(far-near);o[11]=1;o[14]=near*far/(far-near);
+  return o;
+}
+function plnM4move(x,y,z){
+  return new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,x,y,z,1]);
+}
+function plnTf(m,p){
+  return [m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12],m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13],m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14]];
+}
+
+/* ══════════════ планета: тело и его генераторы (M610) ══════════════
+   Один формат на всё, что стоит в кадре, — иначе стиль расползается по семьям.
+   Вершина: место 3, нормаль 3, цвет 3 (линейный), материал, ветер, свечение,
+   запас = 13 чисел, 52 байта. Цвет лежит в вершинах слоями, текстур нет.
+
+   Материал — номер, по нему шейдер (21pc) выбирает, как тело берёт свет:
+   земля, гранёный камень, крона, кора, гладкое людское, светящееся, вода,
+   трава, зверь, дальнее. */
+const PLN_MAT={ground:0,rock:1,leaf:2,bark:3,man:4,glow:5,water:6,grass:7,beast:8,far:9};
+const PLN_VS=13;
+
+function plnMesh(cap){
+  cap=cap||1<<12;
+  return {v:new Float32Array(cap*PLN_VS),i:new Uint32Array(cap*3),nv:0,ni:0};
+}
+function plnVert(m,p,n,c,mat,wind,glow,x){
+  if((m.nv+1)*PLN_VS>m.v.length){const b=new Float32Array(m.v.length*2);b.set(m.v);m.v=b;}
+  const o=m.nv*PLN_VS,v=m.v;
+  v[o]=p[0];v[o+1]=p[1];v[o+2]=p[2];v[o+3]=n[0];v[o+4]=n[1];v[o+5]=n[2];
+  v[o+6]=c[0];v[o+7]=c[1];v[o+8]=c[2];v[o+9]=mat;v[o+10]=wind||0;v[o+11]=glow||0;v[o+12]=x||0;
+  return m.nv++;
+}
+function plnTri(m,a,b,c){
+  if(m.ni+3>m.i.length){const b2=new Uint32Array(m.i.length*2);b2.set(m.i);m.i=b2;}
+  m.i[m.ni++]=a;m.i[m.ni++]=b;m.i[m.ni++]=c;
+}
+function plnQuad(m,a,b,c,d){plnTri(m,a,b,c);plnTri(m,a,c,d);}
+/* вложить другое тело: повернуть вокруг y, растянуть, поставить */
+function plnMeshAdd(m,src,pos,yaw,scale){
+  const base=m.nv,s=scale==null?1:scale,c=Math.cos(yaw||0),sn=Math.sin(yaw||0),v=src.v;
+  for(let k=0;k<src.nv;k++){
+    const o=k*PLN_VS,x=v[o]*s,y=v[o+1]*s,z=v[o+2]*s,nx=v[o+3],ny=v[o+4],nz=v[o+5];
+    plnVert(m,[x*c+z*sn+pos[0],y+pos[1],-x*sn+z*c+pos[2]],[nx*c+nz*sn,ny,-nx*sn+nz*c],
+      [v[o+6],v[o+7],v[o+8]],v[o+9],v[o+10]*s,v[o+11],v[o+12]);
+  }
+  for(let k=0;k<src.ni;k+=3)plnTri(m,src.i[k]+base,src.i[k+1]+base,src.i[k+2]+base);
+}
+function plnMeshDone(m){return {v:m.v.slice(0,m.nv*PLN_VS),i:m.i.slice(0,m.ni),nv:m.nv,ni:m.ni};}
+
+const PLN_ICO={};
+function plnIco(sub){
+  if(PLN_ICO[sub])return PLN_ICO[sub];
+  const t=(1+Math.sqrt(5))/2;
+  const p=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]].map(plnNorm);
+  let f=[[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],
+    [3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+  for(let s=0;s<sub;s++){
+    const cache=new Map(),nf=[];
+    const mid=(a,b)=>{
+      const k=a<b?a*65536+b:b*65536+a;let q=cache.get(k);
+      if(q===undefined){q=p.length;p.push(plnNorm(plnAdd(p[a],p[b])));cache.set(k,q);}
+      return q;
+    };
+    for(const [a,b,c] of f){const ab=mid(a,b),bc=mid(b,c),ca=mid(c,a);nf.push([a,ab,ca],[b,bc,ab],[c,ca,bc],[ab,bc,ca]);}
+    f=nf;
+  }
+  return PLN_ICO[sub]={p,f};
+}
+
+/* Надутое тело: икосфера, помятая шумом, при нужде огранённая в брус, растянутая,
+   повёрнутая и поставленная.
+   o: c центр, r [rx,ry,rz], sub, bump, bumpF, seed, yaw, lean (вокруг z), pitch (вокруг x),
+      box (степень суперквадрики, <1 — брус), col (u,p,n)→rgb или rgb, mat,
+      wind (p)→w или число, glow, x, nc (центр, от которого расходятся нормали), ncK,
+      cut (что ниже этого местного y — поджать) */
+function plnBlob(m,o){
+  const g=plnIco(o.sub==null?2:o.sub),r=o.r,e=o.box||1,P=[],N=[],sd=o.seed||0,bf=o.bumpF||1.6;
+  for(const u of g.p){
+    let q=u;
+    if(e!==1)q=[Math.sign(u[0])*Math.pow(Math.abs(u[0]),e),Math.sign(u[1])*Math.pow(Math.abs(u[1]),e),Math.sign(u[2])*Math.pow(Math.abs(u[2]),e)];
+    let b=1;
+    if(o.bump)b=1+o.bump*(plnNoise(u[0]*bf+sd*.37,u[1]*bf+u[2]*bf*.7,sd)+plnNoise(u[2]*bf-sd*.11,u[1]*bf*.8+3.1,sd+5))*.5;
+    let l=[q[0]*r[0]*b,q[1]*r[1]*b,q[2]*r[2]*b];
+    if(o.cut!=null&&l[1]<o.cut)l[1]=o.cut+(l[1]-o.cut)*.12;
+    if(o.pitch)l=plnRotX(l,o.pitch);
+    if(o.lean)l=plnRotZ(l,o.lean);
+    if(o.yaw)l=plnRotY(l,o.yaw);
+    P.push(plnAdd(l,o.c));N.push([0,0,0]);
+  }
+  for(const [a,b,c] of g.f){
+    const n=plnCross(plnSub(P[b],P[a]),plnSub(P[c],P[a]));
+    for(const k of [a,b,c]){N[k][0]+=n[0];N[k][1]+=n[1];N[k][2]+=n[2];}
+  }
+  const base=m.nv;
+  for(let k=0;k<P.length;k++){
+    let n=plnNorm(N[k]);
+    /* грани икосферы обходятся наружу в правой тройке: нормаль смотрит от центра */
+    if(plnDot(n,plnSub(P[k],o.c))<0)n=plnMul(n,-1);
+    if(o.nc)n=plnNorm(plnMix3(n,plnNorm(plnSub(P[k],o.nc)),o.ncK==null?.6:o.ncK));
+    const col=typeof o.col==="function"?o.col(g.p[k],P[k],n):o.col;
+    const w=typeof o.wind==="function"?o.wind(P[k]):(o.wind||0);
+    plnVert(m,P[k],n,col,o.mat,w,o.glow||0,typeof o.x==="function"?o.x(g.p[k],P[k],n):(o.x||0));
+  }
+  for(const [a,b,c] of g.f)plnTri(m,base+a,base+b,base+c);
+}
+
+/* Труба вдоль пути. o: path [[x,y,z]…], rad число | (t)→r, sides, col (t,a,p)→rgb или rgb,
+   mat, wind (t,p)→w, flat (сжатие второй оси сечения), up (куда смотрит первая ось),
+   cap, glow, x */
+function plnTube(m,o){
+  const path=o.path,n=path.length,sides=o.sides||8,rings=[],fl=o.flat==null?1:o.flat;
+  let nrm=null;
+  for(let k=0;k<n;k++){
+    const t=n>1?k/(n-1):0;
+    const tan=plnNorm(plnSub(path[Math.min(k+1,n-1)],path[Math.max(k-1,0)]));
+    let a=nrm||o.up||(Math.abs(tan[1])>.9?[0,0,1]:[0,1,0]);
+    a=plnNorm(plnSub(a,plnMul(tan,plnDot(a,tan))));nrm=a;
+    const b=plnCross(tan,a),rad=typeof o.rad==="function"?o.rad(t):o.rad,ring=[];
+    for(let s=0;s<sides;s++){
+      const ang=s/sides*TAU,ca=Math.cos(ang),sn=Math.sin(ang),sa=sn*fl;
+      const d=[a[0]*ca+b[0]*sa,a[1]*ca+b[1]*sa,a[2]*ca+b[2]*sa];
+      const p=[path[k][0]+d[0]*rad,path[k][1]+d[1]*rad,path[k][2]+d[2]*rad];
+      /* нормаль сплющенного сечения клонится к плоской стороне */
+      const nn=plnNorm([a[0]*ca*fl+b[0]*sn,a[1]*ca*fl+b[1]*sn,a[2]*ca*fl+b[2]*sn]);
+      const col=typeof o.col==="function"?o.col(t,ang,p):o.col;
+      const w=typeof o.wind==="function"?o.wind(t,p):(o.wind||0);
+      ring.push(plnVert(m,p,nn,col,o.mat,w,o.glow||0,typeof o.x==="function"?o.x(t,ang,p):(o.x||0)));
+    }
+    rings.push(ring);
+  }
+  for(let k=0;k+1<n;k++)for(let s=0;s<sides;s++){
+    const s2=(s+1)%sides;
+    plnQuad(m,rings[k][s],rings[k][s2],rings[k+1][s2],rings[k+1][s]);
+  }
+  if(o.cap)for(const [k,dir] of [[0,-1],[n-1,1]]){
+    const tan=plnMul(plnNorm(plnSub(path[Math.min(k+1,n-1)],path[Math.max(k-1,0)])),dir);
+    const col=typeof o.col==="function"?o.col(k?1:0,0,path[k]):o.col;
+    const c=plnVert(m,path[k],tan,col,o.mat,typeof o.wind==="function"?o.wind(k?1:0,path[k]):(o.wind||0),o.glow||0,o.x&&typeof o.x!=="function"?o.x:0);
+    for(let s=0;s<sides;s++)plnTri(m,c,rings[k][s],rings[k][(s+1)%sides]);
+  }
+}
+
+/* Корпус, вытянутый вдоль местного x. st: [{x, ry, rz, y}], сечение — эллипс с плоским брюхом.
+   col (t, s, p, c)→rgb, где s — синус угла сечения (−1 брюхо … +1 спина); x и glow так же */
+function plnLoft(m,o){
+  const st=o.st,sides=o.sides||24,rings=[];
+  for(let k=0;k<st.length;k++){
+    const S=st[k],t=k/(st.length-1),ring=[];
+    for(let s=0;s<sides;s++){
+      const a=s/sides*TAU,sa=Math.sin(a),ca=Math.cos(a);
+      const belly=sa<0?(o.belly==null?.8:o.belly):1;
+      ring.push({p:[S.x,S.y+S.ry*sa*belly,S.rz*ca],s:sa,c:ca,t});
+    }
+    rings.push(ring);
+  }
+  const ids=rings.map((ring,k)=>ring.map((q,s)=>{
+    const kp=Math.min(k+1,st.length-1),km=Math.max(k-1,0),sp=(s+1)%sides,sm=(s+sides-1)%sides;
+    const du=plnSub(rings[kp][s].p,rings[km][s].p),dv=plnSub(ring[sp].p,ring[sm].p);
+    let n=plnNorm(plnCross(du,dv));
+    const out=[0,q.p[1]-st[k].y,q.p[2]];
+    if(plnDot(n,out)<0)n=plnMul(n,-1);
+    const col=typeof o.col==="function"?o.col(q.t,q.s,q.p,q.c):o.col;
+    return plnVert(m,q.p,n,col,o.mat,0,typeof o.glow==="function"?o.glow(q.t,q.s,q.p,q.c):(o.glow||0),typeof o.x==="function"?o.x(q.t,q.s,q.p,q.c):(o.x||0));
+  }));
+  for(let k=0;k+1<st.length;k++)for(let s=0;s<sides;s++){
+    const s2=(s+1)%sides;
+    plnQuad(m,ids[k][s],ids[k][s2],ids[k+1][s2],ids[k+1][s]);
+  }
+  for(const k of [0,st.length-1]){
+    const c=plnVert(m,[st[k].x,st[k].y,0],[k?1:-1,0,0],typeof o.col==="function"?o.col(k?1:0,0,[st[k].x,st[k].y,0],0):o.col,o.mat,0,0,0);
+    for(let s=0;s<sides;s++)plnTri(m,c,ids[k][s],ids[k][(s+1)%sides]);
+  }
+}
+
+/* плоская карточка: два треугольника, нормаль задана */
+function plnCard(m,a,b,c,d,n,col,mat,wind,glow,x){
+  const w=wind||[0,0,0,0];
+  const ia=plnVert(m,a,n,col,mat,w[0],glow||0,x||0),ib=plnVert(m,b,n,col,mat,w[1],glow||0,x||0),
+    ic=plnVert(m,c,n,col,mat,w[2],glow||0,x||0),id=plnVert(m,d,n,col,mat,w[3],glow||0,x||0);
+  plnQuad(m,ia,ib,ic,id);
+}
+/* квадратичная кривая как путь */
+function plnBez(a,b,c,n){
+  const out=[];
+  for(let k=0;k<=n;k++){const t=k/n,u=1-t;out.push([u*u*a[0]+2*u*t*b[0]+t*t*c[0],u*u*a[1]+2*u*t*b[1]+t*t*c[1],u*u*a[2]+2*u*t*b[2]+t*t*c[2]]);}
+  return out;
+}
+
+/* ══════════════ планета: небо, воздух и свет облаков — общее для всех шейдеров (M610) ══════════════
+   Один свет, один воздух, одно небо на каждое тело в кадре: этот текст стоит
+   в начале и шейдера сцены (21pc), и шейдера свёртки (21pd).
+
+   Все цвета неба, воздуха и заполняющего света приходят числами из кадра
+   (21pz): час и тип мира меняют числа, а не шейдер. Блок Globals — 928 байт,
+   232 числа; раскладку держит plnGlobals (21pe), править только вместе. */
+const PLN_WGSL_AIR=/* wgsl */`
+struct Globals {
+  viewProj: mat4x4f,
+  invViewProj: mat4x4f,
+  lightVP0: mat4x4f,
+  lightVP1: mat4x4f,
+  camPos: vec4f,      // xyz, время в секундах
+  sunDir: vec4f,      // xyz, уровень воды
+  sunCol: vec4f,      // rgb ключа, экспозиция
+  screen: vec4f,      // w, h, 1/w, 1/h
+  hero: vec4f,        // x, z пятна света героя, r1, r2
+  misc: vec4f,        // y отсечения, 1 зеркало / −1 кулиса, смещения двух карт теней
+  lampPos: array<vec4f, 4>,   // xyz, дальность
+  lampCol: array<vec4f, 4>,   // rgb, сила
+  skyZen: vec4f,      // зенит в стороне от светила; w — сколько звёзд
+  skyZenS: vec4f,     // зенит со стороны светила; w — запас
+  skyHor: vec4f,      // горизонт в стороне от светила; w — перистые
+  skyHorS: vec4f,     // горизонт со стороны светила; w — дальняя гряда облаков
+  sunGlow: vec4f,     // зарево вокруг светила; w — сила
+  airFar: vec4f,      // воздух вдали, в стороне от светила; w — плотность
+  airFarS: vec4f,     // воздух вдали со стороны светила; w — как быстро редеет с высотой
+  airNear: vec4f,     // во что красится ближний воздух (множитель); w — запас
+  ambSky: vec4f,      // заполняющий от неба; w — тексель карты теней (1/размер)
+  ambGnd: vec4f,      // заполняющий от земли; w — запас
+  thru: vec4f,        // свет сквозь лист и траву; w — запас
+  bounce: vec4f,      // отсвет освещённой земли на то, что на ней стоит; w — запас
+  waterA: vec4f,      // вода на мели; w — запас
+  waterB: vec4f,      // вода в глубине; w — подъём дальнего мира, м (21pf: он едет за камерой)
+  cloudLit: vec4f,    // облако на свету; w — сколько неба открыто: меньше — больше теней облаков на земле
+  cloudDark: vec4f,   // облако в тени, в стороне от светила; w — запас
+  cloudDarkS: vec4f,  // облако в тени со стороны светила; w — запас
+  moon: vec4f,        // дневная луна: азимут, высота, радиус (рад), яркость
+  world: vec4f,       // семя мира, сила ветра, число облаков, число пятен тени
+  bands: vec4f,       // полосы тени по глубине: начало и конец ближней, начало и конец дальней
+  clouds: array<vec4f, 8>,    // азимут, высота основания, полуширина, семя
+};
+@group(0) @binding(0) var<uniform> g: Globals;
+
+const PI = 3.14159265;
+
+fn hashu(x: u32) -> u32 {
+  var v = x;
+  v ^= v >> 16u; v *= 0x7feb352du; v ^= v >> 15u; v *= 0x846ca68bu; v ^= v >> 16u;
+  return v;
+}
+fn hash2(p: vec2i, s: u32) -> f32 {
+  let h = hashu(u32(p.x) * 374761393u + u32(p.y) * 668265263u + s * 1274126177u);
+  return f32(h >> 8u) / 16777216.0;
+}
+fn hash4(p: vec2i, s: u32) -> vec4f {
+  let h = hashu(u32(p.x) * 374761393u + u32(p.y) * 668265263u + s * 1274126177u);
+  let h2 = hashu(h + 0x9e3779b9u); let h3 = hashu(h2 + 0x9e3779b9u); let h4 = hashu(h3 + 0x9e3779b9u);
+  return vec4f(f32(h >> 8u), f32(h2 >> 8u), f32(h3 >> 8u), f32(h4 >> 8u)) / 16777216.0;
+}
+fn vnoise(p: vec2f, s: u32) -> f32 {
+  let i = floor(p); let f = p - i;
+  let u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+  let ii = vec2i(i);
+  let a = hash2(ii, s); let b = hash2(ii + vec2i(1, 0), s);
+  let c = hash2(ii + vec2i(0, 1), s); let d = hash2(ii + vec2i(1, 1), s);
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+fn fbm(p: vec2f, s: u32) -> f32 {
+  var v = 0.0; var a = 0.5; var q = p;
+  for (var i = 0u; i < 4u; i++) { v += a * vnoise(q, s + i * 17u); q = q * 2.03 + vec2f(11.3, 7.7); a *= 0.5; }
+  return v / 0.9375;
+}
+fn ign(p: vec2f) -> f32 { return fract(52.9829189 * fract(dot(p, vec2f(0.06711056, 0.00583715)))); }
+
+/* ── небо ── */
+/* насколько направление близко к стороне светила: тёплое живёт только там */
+fn sunSide(rd: vec3f) -> f32 {
+  let a = normalize(rd.xz + vec2f(0.00001, 0.0)); let b = normalize(g.sunDir.xz + vec2f(0.00001, 0.0));
+  return pow(clamp(dot(a, b) * 0.5 + 0.5, 0.0, 1.0), 5.0);
+}
+fn horizonCol(rd: vec3f) -> vec3f {
+  return mix(g.skyHor.rgb, g.skyHorS.rgb, sunSide(rd));
+}
+fn skyBase(rd: vec3f) -> vec3f {
+  let el = asin(clamp(rd.y, -1.0, 1.0));
+  let t = pow(smoothstep(0.0, 0.24, el), 0.7);
+  let zen = mix(g.skyZen.rgb, g.skyZenS.rgb, sunSide(rd));
+  var c = mix(horizonCol(rd), zen, t);
+  let cs = max(dot(rd, normalize(g.sunDir.xyz)), 0.0);
+  c += g.sunGlow.rgb * ((pow(cs, 6.0) * 0.18 + pow(cs, 60.0) * 1.2) * g.sunGlow.w);
+  return c;
+}
+/* звёзды: редкие, разной силы; у горизонта их гасит воздух */
+fn starsOver(rd: vec3f, sky: vec3f) -> vec3f {
+  if (g.skyZen.w <= 0.0 || rd.y <= 0.0) { return sky; }
+  let az = atan2(rd.x, rd.z); let el = asin(clamp(rd.y, -1.0, 1.0));
+  let q = vec2f(az * cos(el), el) * 420.0;
+  let i = vec2i(floor(q)); let f = q - floor(q);
+  let h = hash4(i, 91u);
+  if (h.x > 0.035) { return sky; }
+  let d = length(f - vec2f(0.25) - h.yz * 0.5);
+  let s = smoothstep(0.22, 0.0, d) * (0.25 + 0.75 * h.w * h.w);
+  let tint = mix(vec3f(0.80, 0.88, 1.0), vec3f(1.0, 0.90, 0.78), h.y);
+  return sky + tint * (s * g.skyZen.w * smoothstep(0.02, 0.22, el));
+}
+/* дневная луна: бледный диск со светлой стороной к светилу */
+fn moonOver(rd: vec3f, sky: vec3f) -> vec3f {
+  if (g.moon.w <= 0.0) { return sky; }
+  let az = g.moon.x; let el = g.moon.y; let r = g.moon.z;
+  let md = vec3f(sin(az) * cos(el), sin(el), cos(az) * cos(el));
+  let right = normalize(cross(vec3f(0.0, 1.0, 0.0), md));
+  let up = cross(md, right);
+  let q = vec2f(dot(rd, right), dot(rd, up)) / r;
+  let d2 = dot(q, q);
+  if (d2 > 1.0 || dot(rd, md) < 0.0) { return sky; }
+  let n = q.x * right + q.y * up - sqrt(1.0 - d2) * md;
+  let l = smoothstep(-0.05, 0.30, dot(n, normalize(g.sunDir.xyz)));
+  let sea = 1.0 - 0.30 * smoothstep(0.45, 0.62, fbm(q * 2.3 + 7.0, 31u));
+  let edge = smoothstep(1.0, 0.90, d2);
+  return sky + vec3f(0.80, 0.86, 0.95) * (sea * 0.55 * l * edge * g.moon.w);
+}
+/* гряда кучевых: ячейки по азимуту, плоское основание, на нём клубы.
+   отдаёт свет −1…1, покрытие 0…1, высоту победившего клуба, основание его облака */
+fn cloudBank(az: f32, el: f32, cw: f32, e0: f32, e1: f32, cover: f32, sd: u32, lc: vec3f) -> vec4f {
+  var best = -1.0; var light = 0.0; var cov = 0.0; var baseEl = 0.0;
+  let ci = i32(floor(az / cw));
+  for (var dc = -1; dc <= 1; dc++) {
+    let h = hash4(vec2i(ci + dc, 0), sd);
+    if (h.x > cover) { continue; }
+    let cx = (f32(ci + dc) + 0.5 + (h.y - 0.5) * 0.5) * cw;
+    let eb = mix(e0, e1, h.z);
+    let wd = cw * 0.62 * mix(0.55, 1.0, h.w);
+    for (var k = 0; k < 9; k++) {
+      let hk = hash4(vec2i(ci + dc, k + 1), sd + 7u);
+      let u = (f32(k) + 0.5) / 9.0 * 2.0 - 1.0 + (hk.z - 0.5) * 0.15;
+      let r = wd * (0.20 + 0.26 * (1.0 - u * u)) * (0.75 + 0.5 * hk.x);
+      let c = vec2f(cx + u * wd * 0.78, eb + r * (0.35 + 0.75 * hk.y * (1.0 - 0.5 * u * u)));
+      let d = (vec2f(az, el) - c) / vec2f(r * 1.2, r);
+      let q = 1.0 - dot(d, d);
+      if (q > 0.0) {
+        let z = sqrt(q);
+        if (z * r > best) {
+          best = z * r;
+          light = dot(normalize(vec3f(d.x, d.y, -z * 0.9)), lc);
+          baseEl = eb;
+        }
+        cov = max(cov, smoothstep(0.0, 0.25, q));
+      }
+    }
+  }
+  return vec4f(light, cov, best, baseEl);
+}
+/* одно кучевое там, где его поставил кадр: c — середина основания, w — полуширина.
+   Ряд клубов по основанию и второй ярус над серединой. */
+fn cloudOne(az: f32, el: f32, c: vec2f, w: f32, sd: u32, lc: vec3f, acc: vec4f) -> vec4f {
+  var o = acc;
+  if (abs(az - c.x) > w * 1.5 || el < c.y - w * 0.2 || el > c.y + w * 2.6) { return o; }
+  for (var k = 0; k < 16; k++) {
+    let hk = hash4(vec2i(k, 77), sd);
+    var u = (f32(k) + 0.5) / 10.0 * 2.0 - 1.0 + (hk.z - 0.5) * 0.12;
+    var lift = 0.30 + 0.8 * hk.y * (1.0 - 0.6 * u * u);
+    var rk = 0.22 + 0.30 * (1.0 - u * u);
+    if (k >= 10) {
+      u = ((f32(k - 10) + 0.5) / 6.0 * 2.0 - 1.0) * 0.55 + (hk.z - 0.5) * 0.2;
+      lift = 1.35 + 1.1 * hk.y * (1.0 - u * u);
+      rk = 0.30 + 0.16 * (1.0 - u * u);
+    }
+    let r = w * rk * (0.7 + 0.6 * hk.x);
+    let pc = vec2f(c.x + u * w * 0.85, c.y + r * lift);
+    let d = (vec2f(az, el) - pc) / vec2f(r * 1.25, r);
+    let q = 1.0 - dot(d, d);
+    if (q > 0.0) {
+      let z = sqrt(q);
+      if (z * r > o.z) {
+        o.z = z * r;
+        /* куча освещена как одно тело, клуб только лепит её поверхность: испод верхнего клуба
+           не рисует тёмный шов по нижним */
+        let gq = (vec2f(az, el) - vec2f(c.x, c.y + w * 0.8)) / vec2f(w * 1.3, w * 1.15);
+        let gn = vec3f(gq.x, gq.y, -sqrt(max(0.08, 1.0 - dot(gq, gq))));
+        let pn = vec3f(d.x, max(d.y, -0.35), -z * 0.9);
+        o.x = dot(normalize(normalize(pn) * 0.5 + normalize(gn) * 0.5), lc);
+        o.w = c.y;
+      }
+      o.y = max(o.y, smoothstep(0.0, 0.25, q));
+    }
+  }
+  return o;
+}
+fn skyCol(rd: vec3f) -> vec3f {
+  var c = moonOver(rd, starsOver(rd, skyBase(rd)));
+  let az = atan2(rd.x, rd.z); let el = asin(clamp(rd.y, -1.0, 1.0));
+  if (el > 0.0) {
+    let t = g.camPos.w;
+    let wa = vec2f(fbm(vec2f(az * 38.0, el * 60.0), 11u), fbm(vec2f(az * 38.0 + 9.7, el * 60.0 + 3.1), 12u)) - 0.5;
+    let wb = vec2f(fbm(vec2f(az * 150.0, el * 220.0), 13u), fbm(vec2f(az * 150.0 + 4.1, el * 220.0 + 8.3), 14u)) - 0.5;
+    let a2 = az + wa.x * 0.012 + wb.x * 0.003 + t * 0.0004;
+    let e2 = el + wa.y * 0.008 + wb.y * 0.002;
+    let sd = u32(g.world.x);
+    let ci = smoothstep(0.5, 0.8, fbm(vec2f(az * 5.0 + 5.0 + t * 0.002, el * 55.0), 41u + sd)) * smoothstep(0.07, 0.15, el) * g.skyHor.w;
+    c = mix(c, g.cloudLit.rgb * 0.9, ci);
+    /* облака лепит свет ключа: его сторона и высота, довёрнутые к зрителю */
+    let sl = normalize(g.sunDir.xyz);
+    let lc = normalize(vec3f(sl.x, max(sl.y, 0.12) + 0.10, -0.35 - 0.3 * abs(sl.z)));
+    let hz = horizonCol(rd);
+    let warm = sunSide(rd);
+    /* дальняя гряда низко над землёй */
+    if (g.skyHorS.w > 0.0) {
+      let b = cloudBank(a2, e2, 0.055, 0.014, 0.034, g.skyHorS.w, 3u + sd, lc);
+      if (b.y > 0.0) {
+        let l = smoothstep(-0.35, 0.55, b.x);
+        var cc = mix(mix(g.cloudDark.rgb, g.cloudDarkS.rgb, warm), g.cloudLit.rgb * 0.9, l);
+        cc = mix(cc, hz, 0.45);
+        c = mix(c, cc, b.y * smoothstep(b.w - 0.002, b.w + 0.003, e2) * 0.9);
+      }
+    }
+    /* облака этого неба, расставленные кадром */
+    var h = vec4f(0.0, 0.0, -1.0, 0.0);
+    let nc = i32(g.world.z);
+    for (var k = 0; k < nc; k++) {
+      let q = g.clouds[k];
+      h = cloudOne(a2, e2, q.xy, q.z, u32(q.w), lc, h);
+    }
+    if (h.y > 0.0) {
+      let l = smoothstep(-0.35, 0.55, h.x);
+      let dark = mix(g.cloudDark.rgb, g.cloudDarkS.rgb, warm);
+      var cc = mix(dark, g.cloudLit.rgb, l);
+      cc *= mix(0.80, 1.0, smoothstep(h.w, h.w + 0.03, e2));
+      cc = mix(cc, hz, exp(-e2 / 0.045) * 0.55);
+      c = mix(c, cc, h.y * smoothstep(h.w - 0.003, h.w + 0.004, e2));
+    }
+  }
+  return c;
+}
+
+/* ── воздух ── */
+fn fogAmount(dist: f32, yAvg: f32) -> f32 {
+  let od = pow(dist / 1938.0, 0.713) * exp(-clamp(yAvg, 0.0, 300.0) * g.airFarS.w) * g.airFar.w;
+  return min(1.0 - exp(-od), 0.92);
+}
+/* цвет воздуха: синее и темнее неба у горизонта, чтобы каждый дальний план стоял силуэтом
+   на небе, а не таял в нём; вблизи — оттенок земли */
+fn airCol(rd: vec3f, dist: f32) -> vec3f {
+  let far = mix(g.airFar.rgb, g.airFarS.rgb, sunSide(rd) * 0.8);
+  return mix(far * g.airNear.rgb, far, smoothstep(150.0, 1500.0, dist));
+}
+fn applyFog(col: vec3f, wpos: vec3f, cap: f32) -> vec3f {
+  let d = wpos - g.camPos.xyz; let dist = length(d); let rd = d / dist;
+  let f = fogAmount(dist, 0.5 * (wpos.y + g.camPos.y) - g.waterB.w) * cap;
+  return mix(col, airCol(rd, dist), f);
+}
+/* тени облаков на земле; герой стоит в пятне света */
+fn cloudLight(p: vec3f) -> f32 {
+  let t = g.camPos.w;
+  let l = normalize(g.sunDir.xyz);
+  let ly = max(l.y, 0.08);
+  /* высота считается от уровня здешней сцены, а не от нуля мира */
+  let q = p.xz - l.xz * ((p.y - g.waterB.w) / ly);
+  let n = fbm(vec2f(q.x * 0.0045 + t * 0.006, q.y * 0.0085 + 3.7), 7u + u32(g.world.x));
+  let lo = 0.43 + (0.5 - g.cloudLit.w) * 0.5;
+  var c = mix(0.34, 1.0, smoothstep(lo, lo + 0.17, n));
+  /* планы разводит свет: тень лежит в ложбине за дальним берегом и у подножия холмов, гребни
+     стоят на солнце; то же между грядой и горами */
+  let e = (fbm(vec2f(q.x * 0.012 + 2.0, q.y * 0.02), 19u) - 0.5) * 70.0;
+  let band = smoothstep(g.bands.x, g.bands.x + 45.0, q.y + e) * (1.0 - smoothstep(g.bands.y - 45.0, g.bands.y, q.y + e));
+  let band2 = smoothstep(g.bands.z, g.bands.z + 250.0, q.y + e * 6.0) * (1.0 - smoothstep(g.bands.w - 500.0, g.bands.w, q.y + e * 6.0));
+  c = min(c, 1.0 - 0.62 * max(band, band2 * 0.8));
+  let d = length((q - g.hero.xy) * vec2f(1.0, 1.7));
+  c = max(c, 1.0 - smoothstep(g.hero.z, g.hero.w, d));
+  return c;
+}
+/* ближний склон стоит в тени, как под кронами за спиной объектива: тёмная кулиса сцены.
+   У тени очертание крон, и солнце пробивает её пятнами. */
+fn nearShadeZ(z: f32) -> f32 { return mix(0.26, 1.0, smoothstep(-16.0, -3.0, z)); }
+fn nearShade(p: vec3f) -> f32 {
+  let n = fbm(p.xz * 0.09 + vec2f(3.1, 7.7), 23u) - 0.5;
+  let e = p.z + n * 13.0;
+  var s = smoothstep(-12.5, -6.5, e);
+  let d1 = fbm(p.xz * vec2f(0.50, 0.75) + vec2f(9.0, 2.0), 29u);
+  let d2 = fbm(p.xz * vec2f(1.6, 2.2) + vec2f(1.0, 5.0), 37u);
+  let dap = smoothstep(0.50, 0.62, d1 * 0.72 + d2 * 0.28);
+  s = max(s, dap * 0.85 * smoothstep(-24.0, -9.0, e));
+  /* и тень бросает вперёд, на свет, несколько пальцев */
+  let fin = smoothstep(0.60, 0.70, fbm(p.xz * vec2f(0.34, 0.5) + vec2f(4.0, 8.0), 43u));
+  s *= 1.0 - 0.55 * fin * (1.0 - smoothstep(-8.0, -3.5, e));
+  return mix(0.26, 1.0, s);
+}
+`;
+
+/* ══════════════ планета: шейдер тел, земли, воды и тени (M610) ══════════════
+   Одна вершина на всё (21pa): место, нормаль, цвет, [материал, ветер, свечение,
+   запас]. Каждая отрисовка несёт ещё запись расстановки (64 байта на штуку):
+   тонкое и многочисленное — трава, кроны, камни — стоит одной сеткой много раз,
+   а цельные сетки идут с единичной записью.
+
+   Материал — номер из PLN_MAT. У земли в гнезде «свечение» лежит доля камня, в
+   «запасе» — затенение от соседей; у травы в «запасе» высота по стеблю; у
+   человека — блеск; у воды — глубина в метрах. */
+const PLN_WGSL_SCENE=PLN_WGSL_AIR+/* wgsl */`
+struct Blobs { n: vec4f, b: array<vec4f, 64> };
+@group(0) @binding(1) var shadowTex: texture_depth_2d_array;
+@group(0) @binding(2) var shadowSamp: sampler_comparison;
+@group(0) @binding(3) var reflTex: texture_2d<f32>;
+@group(0) @binding(4) var linSamp: sampler;
+@group(0) @binding(5) var<uniform> blobs: Blobs;
+
+struct VIn {
+  @location(0) pos: vec3f,
+  @location(1) nrm: vec3f,
+  @location(2) col: vec3f,
+  @location(3) par: vec4f,    // материал, ветер, свечение, запас
+  @location(4) i0: vec4f,     // место, размер
+  @location(5) i1: vec4f,     // cos и sin поворота, доля высоты, семя
+  @location(6) i2: vec4f,     // цвет А, режим цвета
+  @location(7) i3: vec4f,     // цвет Б, едет ли с дальним миром (0 или 1)
+};
+struct VOut {
+  @builtin(position) pos: vec4f,
+  @location(0) wpos: vec3f,
+  @location(1) nrm: vec3f,
+  @location(2) col: vec3f,
+  @location(3) par: vec4f,
+};
+struct FOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
+
+fn windAt(p: vec3f, amp: f32) -> vec3f {
+  let t = g.camPos.w;
+  let gust = sin(t * 0.7 + p.x * 0.05 + p.z * 0.03) * 0.5 + 0.5;
+  let a = sin(t * 1.7 + p.x * 0.45 + p.z * 0.31) * 0.6 + sin(t * 3.1 + p.x * 1.3 + p.z * 0.9) * 0.25;
+  return vec3f(amp * (0.5 + gust) * (0.4 + a * 0.6), 0.0, amp * a * 0.25);
+}
+/* запись расстановки: размер, доля высоты, поворот вокруг вертикали, место.
+   Дальний мир стоит на своём уровне и едет по высоте целиком, не гнётся */
+fn placeAt(p: vec3f, i0: vec4f, i1: vec4f, i3: vec4f) -> vec3f {
+  let q = p * vec3f(i0.w, i0.w * i1.z, i0.w);
+  return i0.xyz + vec3f(q.x * i1.x + q.z * i1.y, q.y + i3.w * g.waterB.w, q.z * i1.x - q.x * i1.y);
+}
+fn turnBy(n: vec3f, i1: vec4f) -> vec3f {
+  let q = vec3f(n.x, n.y / max(i1.z, 0.05), n.z);
+  return normalize(vec3f(q.x * i1.x + q.z * i1.y, q.y, q.z * i1.x - q.x * i1.y));
+}
+
+@vertex fn vs_main(in: VIn) -> VOut {
+  var o: VOut;
+  let w = placeAt(in.pos, in.i0, in.i1, in.i3);
+  let p = w + windAt(w, in.par.y * in.i0.w * g.world.y);
+  o.pos = g.viewProj * vec4f(p, 1.0);
+  o.wpos = p; o.nrm = turnBy(in.nrm, in.i1);
+  /* режим 0 — цвет сетки, подкрашенный записью; режим 1 — сетка несёт только ход от корня
+     к макушке (r) и свою светлоту (g), а оба цвета даёт запись */
+  var c = in.col * in.i2.rgb;
+  if (in.i2.w > 0.5) { c = mix(in.i2.rgb, in.i3.rgb, in.col.r) * (0.5 + in.col.g); }
+  o.col = c; o.par = in.par;
+  /* вода: в цвете вершины лежит дно — высота ленты (мировая) и высота дальнего мира (на его
+     уровне); глубина считается здесь, потому что уровень воды в кадре свой */
+  if (in.par.x > 5.5 && in.par.x < 6.5) {
+    o.par.w = p.y - max(in.col.r, in.col.g + g.waterB.w);
+  }
+  return o;
+}
+/* у прохода тени матрица его карты лежит на месте первой */
+@vertex fn vs_shadow(@location(0) pos: vec3f, @location(3) par: vec4f, @location(4) i0: vec4f, @location(5) i1: vec4f,
+    @location(7) i3: vec4f) -> @builtin(position) vec4f {
+  let w = placeAt(pos, i0, i1, i3);
+  return g.lightVP0 * vec4f(w + windAt(w, par.y * i0.w * g.world.y), 1.0);
+}
+@vertex fn vs_full(@builtin(vertex_index) i: u32) -> FOut {
+  var o: FOut;
+  let p = vec2f(f32((i << 1u) & 2u), f32(i & 2u));
+  o.pos = vec4f(p * 2.0 - 1.0, 0.0, 1.0);
+  o.uv = vec2f(p.x, 1.0 - p.y);
+  return o;
+}
+
+fn shadowTap(uv: vec2f, layer: i32, z: f32, rad: f32, rot: f32) -> f32 {
+  var s = textureSampleCompareLevel(shadowTex, shadowSamp, uv, layer, z);
+  for (var i = 0; i < 8; i++) {
+    let a = f32(i) * 2.39996 + rot;
+    let r = rad * sqrt((f32(i) + 0.5) / 8.0);
+    s += textureSampleCompareLevel(shadowTex, shadowSamp, uv + vec2f(cos(a), sin(a)) * r, layer, z);
+  }
+  return s / 9.0;
+}
+fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
+  let p = wpos + n * 0.05;
+  let rot = ign(fragXY) * 6.2831853;
+  var lp = g.lightVP0 * vec4f(p, 1.0);
+  var uv = lp.xy * vec2f(0.5, -0.5) + 0.5;
+  if (uv.x > 0.004 && uv.x < 0.996 && uv.y > 0.004 && uv.y < 0.996 && lp.z > 0.0 && lp.z < 1.0) {
+    return shadowTap(uv, 0, lp.z - g.misc.z, 3.0 * g.ambSky.w, rot);
+  }
+  lp = g.lightVP1 * vec4f(p, 1.0);
+  uv = lp.xy * vec2f(0.5, -0.5) + 0.5;
+  if (uv.x > 0.004 && uv.x < 0.996 && uv.y > 0.004 && uv.y < 0.996 && lp.z > 0.0 && lp.z < 1.0) {
+    return shadowTap(uv, 1, lp.z - g.misc.w, 1.6 * g.ambSky.w, rot);
+  }
+  return 1.0;
+}
+
+@fragment fn fs_sky(in: FOut) -> @location(0) vec4f {
+  let ndc = vec2f(in.uv.x * 2.0 - 1.0, 1.0 - in.uv.y * 2.0);
+  let pn = g.invViewProj * vec4f(ndc, 1.0, 1.0);
+  let rd = normalize(pn.xyz / pn.w - g.camPos.xyz);
+  return vec4f(skyCol(rd), 1.0);
+}
+
+@fragment fn fs_main(in: VOut) -> @location(0) vec4f {
+  let fx = dpdx(in.wpos); let fy = dpdy(in.wpos);
+  if (g.misc.y > 0.5 && in.wpos.y < g.misc.x) { discard; }
+  let mat = i32(round(in.par.x));
+  let glow = in.par.z; let ex = in.par.w;
+  if (mat == 5) { return vec4f(applyFog(in.col * glow, in.wpos, 0.9), 1.0); }
+  let V = normalize(g.camPos.xyz - in.wpos);
+  let L = normalize(g.sunDir.xyz);
+  let dist = length(g.camPos.xyz - in.wpos);
+  var N = normalize(in.nrm);
+  if (mat == 1) {
+    var fN = normalize(cross(fx, fy));
+    if (dot(fN, V) < 0.0) { fN = -fN; }
+    N = normalize(mix(N, fN, 0.7));
+  }
+  var alb = in.col;
+  /* у земли в гнезде свечения — доля камня, и на земле ничто не светится */
+  var stone = 0.0; var emis = glow;
+  if (mat == 0) {
+    stone = glow; emis = 0.0;
+    /* земля положена кистью: широкие мазки вдоль плана и мелкое зерно вблизи */
+    let near = 1.0 - smoothstep(60.0, 220.0, dist);
+    let mid = 1.0 - smoothstep(400.0, 1200.0, dist);
+    let s1 = fbm(in.wpos.xz * vec2f(0.045, 0.11) + vec2f(17.0, 3.0), 51u) - 0.5;
+    let s2 = fbm(in.wpos.xz * vec2f(0.55, 1.2) + vec2f(5.0, 9.0), 53u) - 0.5;
+    alb *= 1.0 + s1 * 0.30 * mid + s2 * 0.20 * near;
+    if (stone > 0.0) {
+      var fN = normalize(cross(fx, fy));
+      if (dot(fN, V) < 0.0) { fN = -fN; }
+      N = normalize(mix(N, fN, 0.55 * stone));
+    }
+  }
+  let ndl = dot(N, L);
+  /* кулиса стоит в метрах от объектива, где тексель дальней карты — с ладонь: карты она не берёт */
+  var sh = 1.0;
+  if (g.misc.y > -0.5) { sh = shadowAt(in.wpos, N, in.pos.xy); }
+  let cl = cloudLight(in.wpos);
+  let fg = nearShade(in.wpos);
+  var lit = smoothstep(-0.02, 0.30, ndl);
+  var ao = 1.0;
+  var through = 0.0;
+  if (mat == 0) { ao = ex; lit = smoothstep(mix(-0.10, 0.0, stone), mix(0.45, 0.24, stone), ndl); }
+  if (mat == 7) { ao = mix(0.45, 1.0, smoothstep(0.0, 0.7, ex)); }
+  if (mat == 0 || mat == 7) {
+    let nb = i32(blobs.n.x);
+    for (var i = 0; i < nb; i++) {
+      let b = blobs.b[i];
+      let d = length(in.wpos.xz - b.xy) / b.z;
+      ao *= 1.0 - b.w * (1.0 - smoothstep(0.2, 1.0, d));
+    }
+  }
+  if (mat == 2) {
+    /* крона — тело: верх берёт солнце, испод держит тень, насквозь свет идёт только по краю */
+    lit = smoothstep(-0.25, 0.45, ndl);
+    let edge = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.0);
+    through = clamp(0.25 - ndl * 0.8, 0.0, 1.0) * (0.12 + 0.55 * edge);
+    ao = mix(0.55, 1.0, smoothstep(-0.7, 0.3, N.y));
+  }
+  if (mat == 7) {
+    lit = smoothstep(-0.4, 0.45, ndl);
+    through = pow(clamp(dot(-V, L), 0.0, 1.0), 2.0) * 0.7 * ex;
+  }
+  let sun = g.sunCol.rgb * (sh * cl * fg);
+  let amb = mix(g.ambGnd.rgb, g.ambSky.rgb, N.y * 0.5 + 0.5) * ao * mix(0.55, 1.0, fg);
+  var c = alb * (sun * lit * mix(1.0, ao, 0.6) + amb);
+  c += alb * g.thru.rgb * sun * through;
+  if (mat == 0) {
+    /* крутой бок земли стоит к свету спиной, и светит ему освещённая земля вокруг: в тени — цвет */
+    c += alb * g.bounce.rgb * (cl * fg * (1.0 - N.y) * 1.1);
+  }
+  if (mat == 1 || mat == 3 || mat == 4 || mat == 8 || mat == 9) {
+    /* свет идёт из-за сцены: тело рисует его освещённый край */
+    var rk = 0.30; var rp = 3.0;
+    if (mat == 4 || mat == 8) { rk = 0.75; rp = 2.2; }
+    if (mat == 3 || mat == 1) { rk = 0.60; rp = 2.4; }
+    let rim = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), rp) * smoothstep(-0.4, 0.4, ndl);
+    c += sun * rim * rk * mix(alb, vec3f(1.0), 0.4);
+    /* освещённая трава отдаёт свет тому, что в ней стоит */
+    if (mat == 3 || mat == 1) {
+      c += alb * g.bounce.rgb * (cl * fg * 0.45 * (1.0 - N.y * 0.5));
+    }
+  }
+  if (mat == 4) {
+    let hv = normalize(L + V);
+    c += sun * pow(clamp(dot(N, hv), 0.0, 1.0), 60.0) * ex * lit * 1.5;
+    let rv = reflect(-V, N);
+    let fr = 0.05 + 0.95 * pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 4.0);
+    c += skyBase(normalize(vec3f(rv.x, abs(rv.y) + 0.02, rv.z))) * (ex * fr * 0.5 * mix(0.55, 1.0, fg));
+  }
+  for (var i = 0; i < 4; i++) {
+    let lp = g.lampPos[i]; let lc = g.lampCol[i];
+    if (lc.w <= 0.0) { continue; }
+    let d = lp.xyz - in.wpos; let dl = length(d);
+    let att = pow(clamp(1.0 - dl / lp.w, 0.0, 1.0), 2.0);
+    let nl = clamp(dot(N, d / dl) * 0.7 + 0.3, 0.0, 1.0);
+    c += alb * lc.rgb * (lc.w * att * nl);
+  }
+  c += alb * emis;
+  var cap = 1.0;
+  if (mat == 9) { cap = 0.93; }
+  return vec4f(applyFog(c, in.wpos, cap), 1.0);
+}
+
+@fragment fn fs_water(in: VOut) -> @location(0) vec4f {
+  let depth = in.par.w;
+  let t = g.camPos.w;
+  let V = normalize(g.camPos.xyz - in.wpos);
+  let p = in.wpos.xz;
+  let n1 = vnoise(vec2f(p.x * 0.30 + t * 0.25, p.y * 1.5 - t * 0.15), 3u) - 0.5;
+  let n2 = vnoise(vec2f(p.x * 0.85 - t * 0.20, p.y * 3.9 + t * 0.30), 5u) - 0.5;
+  let calm = smoothstep(0.35, 0.65, fbm(vec2f(p.x * 0.02 + 1.0, p.y * 0.06 + t * 0.01), 9u));
+  let rip = mix(0.35, 1.0, calm);
+  let N = normalize(vec3f((n1 + n2 * 0.5) * 0.10 * rip, 1.0, (n1 * 0.5 + n2) * 0.16 * rip));
+  let uv = in.pos.xy * g.screen.zw + vec2f((n1 + n2) * 0.004, (n1 + n2 * 0.6) * 0.030) * rip;
+  let refl = textureSampleLevel(reflTex, linSamp, clamp(uv, vec2f(0.002), vec2f(0.998)), 0.0).rgb;
+  let nv = clamp(dot(N, V), 0.0, 1.0);
+  let fr = 0.04 + 0.96 * pow(1.0 - nv, 5.0);
+  let cl = cloudLight(in.wpos);
+  let deep = smoothstep(0.0, 2.2, depth);
+  var body = mix(g.waterA.rgb, g.waterB.rgb, deep);
+  body *= g.sunCol.rgb * (0.55 * cl) + g.ambSky.rgb * 0.91;
+  var c = mix(body, refl * vec3f(0.84, 0.90, 0.92), clamp(fr * 1.05, 0.0, 1.0));
+  /* мокрая кромка вдоль берега: светла настолько, насколько светел ключ */
+  let key = clamp(dot(g.sunCol.rgb, vec3f(0.3333)) / 1.38, 0.0, 1.0);
+  c = mix(c, vec3f(0.85, 0.92, 0.95) * (key * (0.4 + 0.6 * cl)), (1.0 - smoothstep(0.02, 0.16, depth)) * 0.35);
+  let alpha = smoothstep(-0.03, 0.30, depth);
+  return vec4f(applyFog(c, in.wpos, 1.0), alpha);
+}
+`;
+
+/* ══════════════ планета: свёртка кадра (M610) ══════════════
+   Размытие кулисы, своё свечение, свет в воздухе, цветовая свёртка — и она же
+   сдаёт кадр движку: последний треугольник рисуется прямо в проход сцены
+   (gpuScene) в тонах экрана. Финал движка кладёт на сцену плечо
+   tone(c) = min(c,.75) + .25·(1 − exp(−(c − .75)/.25)); чтобы оно вернуло наш
+   тон нетронутым, выше .75 пишем обратное плечо. Зерно и дизеринг — движка.
+
+   Глубину сцены читает только свет в воздухе; при сглаживании 4× она
+   многовыборочная, и тип привязки другой — отсюда текст функцией. */
+function plnWgslPost(ms){
+  return PLN_WGSL_AIR+/* wgsl */`
+struct PostP { a: vec4f, b: vec4f };
+@group(0) @binding(1) var<uniform> pp: PostP;
+@group(0) @binding(2) var texA: texture_2d<f32>;
+@group(0) @binding(3) var texB: texture_2d<f32>;
+@group(0) @binding(4) var texC: texture_2d<f32>;
+@group(0) @binding(5) var texD: texture_2d<f32>;
+@group(0) @binding(6) var samp: sampler;
+@group(0) @binding(7) var depthTex: ${ms>1?"texture_depth_multisampled_2d":"texture_depth_2d"};
+@group(0) @binding(8) var shadowTex: texture_depth_2d_array;
+@group(0) @binding(9) var shadowSamp: sampler_comparison;
+
+struct FOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
+@vertex fn vs_full(@builtin(vertex_index) i: u32) -> FOut {
+  var o: FOut;
+  let p = vec2f(f32((i << 1u) & 2u), f32(i & 2u));
+  o.pos = vec4f(p * 2.0 - 1.0, 0.0, 1.0);
+  o.uv = vec2f(p.x, 1.0 - p.y);
+  return o;
+}
+
+/* a = (шаг по x, шаг по y, 0, 0) в долях кадра */
+@fragment fn fs_blur(in: FOut) -> @location(0) vec4f {
+  let d = pp.a.xy;
+  var c = textureSampleLevel(texA, samp, in.uv, 0.0) * 0.227027;
+  c += (textureSampleLevel(texA, samp, in.uv + d * 1.3846154, 0.0) + textureSampleLevel(texA, samp, in.uv - d * 1.3846154, 0.0)) * 0.3162162;
+  c += (textureSampleLevel(texA, samp, in.uv + d * 3.2307692, 0.0) + textureSampleLevel(texA, samp, in.uv - d * 3.2307692, 0.0)) * 0.0702703;
+  return c;
+}
+
+/* свечение: a = (тексель источника по x и y, 0, 0) */
+@fragment fn fs_down(in: FOut) -> @location(0) vec4f {
+  let d = pp.a.xy;
+  var c = textureSampleLevel(texA, samp, in.uv, 0.0) * 4.0;
+  c += textureSampleLevel(texA, samp, in.uv + vec2f(-d.x, -d.y), 0.0);
+  c += textureSampleLevel(texA, samp, in.uv + vec2f(d.x, -d.y), 0.0);
+  c += textureSampleLevel(texA, samp, in.uv + vec2f(-d.x, d.y), 0.0);
+  c += textureSampleLevel(texA, samp, in.uv + vec2f(d.x, d.y), 0.0);
+  return vec4f(min(c.rgb / 8.0, vec3f(24.0)), 1.0);
+}
+/* texA — уровень мельче, texB — уровень этого размера */
+@fragment fn fs_up(in: FOut) -> @location(0) vec4f {
+  let d = pp.a.xy;
+  var c = textureSampleLevel(texA, samp, in.uv, 0.0) * 4.0;
+  c += (textureSampleLevel(texA, samp, in.uv + vec2f(-d.x, 0.0), 0.0) + textureSampleLevel(texA, samp, in.uv + vec2f(d.x, 0.0), 0.0)
+      + textureSampleLevel(texA, samp, in.uv + vec2f(0.0, -d.y), 0.0) + textureSampleLevel(texA, samp, in.uv + vec2f(0.0, d.y), 0.0)) * 2.0;
+  c += textureSampleLevel(texA, samp, in.uv + vec2f(-d.x, -d.y), 0.0) + textureSampleLevel(texA, samp, in.uv + vec2f(d.x, -d.y), 0.0)
+      + textureSampleLevel(texA, samp, in.uv + vec2f(-d.x, d.y), 0.0) + textureSampleLevel(texA, samp, in.uv + vec2f(d.x, d.y), 0.0);
+  let lo = c.rgb / 16.0;
+  let hi = textureSampleLevel(texB, samp, in.uv, 0.0).rgb;
+  return vec4f(mix(hi, lo, pp.a.z), 1.0);
+}
+
+/* свет в воздухе: луч идёт сквозь тень вещей и облаков и считается против среднего света
+   воздуха — видны и лучи, и сумрак между ними, а пелены на кадре нет.
+   a = (сила, дальность, среднее, пол) */
+@fragment fn fs_shafts(in: FOut) -> @location(0) vec4f {
+  let dim = vec2f(textureDimensions(depthTex));
+  let px = vec2i(clamp(in.uv * dim, vec2f(0.0), dim - 1.0));
+  let dz = textureLoad(depthTex, px, 0);
+  let ndc = vec2f(in.uv.x * 2.0 - 1.0, 1.0 - in.uv.y * 2.0);
+  let pn = g.invViewProj * vec4f(ndc, 1.0, 1.0);
+  let rd = normalize(pn.xyz / pn.w - g.camPos.xyz);
+  var dist = pp.a.y;
+  if (dz > 0.0) {
+    let pw = g.invViewProj * vec4f(ndc, dz, 1.0);
+    dist = min(length(pw.xyz / pw.w - g.camPos.xyz), pp.a.y);
+  }
+  let L = normalize(g.sunDir.xyz);
+  let jit = ign(in.pos.xy);
+  var acc = 0.0;
+  let n = 32;
+  for (var i = 0; i < n; i++) {
+    let s = (f32(i) + jit) / f32(n);
+    let tt = dist * s * s;
+    let wgt = dist * 2.0 * s / f32(n);
+    let p = g.camPos.xyz + rd * tt;
+    var l = cloudLight(p) * nearShadeZ(p.z);
+    let lp = g.lightVP1 * vec4f(p, 1.0);
+    let uv = lp.xy * vec2f(0.5, -0.5) + 0.5;
+    if (uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0 && lp.z > 0.0 && lp.z < 1.0) {
+      l *= textureSampleCompareLevel(shadowTex, shadowSamp, uv, 1, lp.z - g.misc.w);
+    }
+    let dens = exp(-max(p.y - g.waterB.w, 0.0) * 0.010) * exp(-tt * 0.0012);
+    acc += (l - pp.a.z) * dens * wgt;
+  }
+  let cs = dot(rd, L);
+  let ph = 0.35 + 1.4 * pow(max(cs, 0.0), 4.0) + 0.25 * cs * cs;
+  let v = max(acc * ph * pp.a.x, pp.a.w);
+  return vec4f(g.sunCol.rgb * vec3f(1.0, 0.93, 0.78) * v, 1.0);
+}
+
+fn neutral(cin: vec3f) -> vec3f {
+  let startC = 0.8 - 0.04; let desat = 0.15;
+  let x = min(cin.r, min(cin.g, cin.b));
+  var off = 0.04;
+  if (x < 0.08) { off = x - 6.25 * x * x; }
+  var c = cin - off;
+  let peak = max(c.r, max(c.g, c.b));
+  if (peak < startC) { return c; }
+  let d = 1.0 - startC;
+  let newPeak = 1.0 - d * d / (peak + d - startC);
+  c *= newPeak / peak;
+  let k = 1.0 - 1.0 / (desat * (peak - newPeak) + 1.0);
+  return mix(c, vec3f(newPeak), k);
+}
+/* обратное плечо финала движка */
+fn unshoulder(d: vec3f) -> vec3f {
+  let x = clamp(d, vec3f(0.0), vec3f(0.999));
+  let hi = 0.75 - 0.25 * log(max(1.0 - (x - 0.75) / 0.25, vec3f(0.004)));
+  return select(x, hi, x > vec3f(0.75));
+}
+
+/* texA — кадр, texB — свечение, texC — свет в воздухе, texD — кулиса (цвет умножен на покрытие).
+   a = (свечение, виньетка, свёртка цвета, 0) */
+@fragment fn fs_comp(in: FOut) -> @location(0) vec4f {
+  var c = textureSampleLevel(texA, samp, in.uv, 0.0).rgb;
+  c = max(c + textureSampleLevel(texC, samp, in.uv, 0.0).rgb, vec3f(0.0));
+  let w = textureSampleLevel(texD, samp, in.uv, 0.0);
+  c = c * (1.0 - clamp(w.a, 0.0, 1.0)) + w.rgb;
+  c = mix(c, textureSampleLevel(texB, samp, in.uv, 0.0).rgb, pp.a.x);
+  c *= g.sunCol.w;
+  let q = in.uv - 0.5;
+  c *= 1.0 - dot(q, q) * pp.a.y;
+  c = neutral(max(c, vec3f(0.0)));
+  let lum = dot(c, vec3f(0.2126, 0.7152, 0.0722));
+  c = mix(vec3f(lum), c, 1.0 + 0.08 * pp.a.z);
+  c = mix(c, c * vec3f(1.03, 1.0, 0.95), smoothstep(0.3, 0.9, lum) * pp.a.z);
+  c = mix(c, c * vec3f(0.94, 0.98, 1.08) + vec3f(0.004, 0.006, 0.012), (1.0 - smoothstep(0.0, 0.35, lum)) * pp.a.z);
+  c = pow(max(c, vec3f(0.0)), vec3f(1.0 / 2.2));
+  return vec4f(unshoulder(c), 1.0);
+}
+`;
+}
+
+/* ══════════════ планета: цели, конвейеры и проходы одного кадра (M610) ══════════════
+   Свой рендер планеты. Всё пишется в кодировщик кадра движка (GPU.enc) ДО
+   того, как открыт проход сцены:
+
+     тень ×2 → зеркало воды (половина кадра) → сцена с глубиной и сглаживанием
+     → кулиса и её размытие → свет в воздухе → своё свечение → свёртка
+
+   Свёртка — последний треугольник — рисуется уже в проход сцены движка
+   (gpuScene): дальше кадр идёт общим путём, сверху ложится 2D и интерфейс.
+
+   Всё собранное принадлежит устройству: после потери видеокарты движок
+   поднимает новое, и здесь всё строится заново (PLN_GPU.gen — поколение;
+   по нему земля и актёры понимают, что их сетки пора залить снова). Цели
+   привязаны ещё и к размеру кадра. */
+const PLN_HDR="rgba16float",PLN_DEP="depth32float";
+/* куда идёт отрисовка: биты проходов и род */
+const PLN_TO={main:1,mirror:2,sh0:4,sh1:8,all:15,lit:3,near:7};
+const PLN_KIND={body:0,water:1,wing:2};
+const PLN_GPU={dev:null,gen:0,
+  ms:4,shn:4096,                       /* сглаживание сцены; сторона карты теней */
+  w:0,h:0,L:null,P:{},S:null,U:null,D:null,T:null,V:null,B:null,pp:null,one:null,oneRide:null,
+  ga:[0,1,2,3,4].map(()=>new Float32Array(232)),inv:new Float32Array(16)};
+/* где что лежит в блоке Globals после ламп (21pb) */
+const PLN_G={skyZen:120,skyZenS:124,skyHor:128,skyHorS:132,sunGlow:136,airFar:140,airFarS:144,airNear:148,
+  ambSky:152,ambGnd:156,thru:160,bounce:164,waterA:168,waterB:172,cloudLit:176,cloudDark:180,cloudDarkS:184,
+  moon:188,world:192,bands:196};
+const PLN_VB=[
+  {arrayStride:52,attributes:[
+    {shaderLocation:0,offset:0,format:"float32x3"},{shaderLocation:1,offset:12,format:"float32x3"},
+    {shaderLocation:2,offset:24,format:"float32x3"},{shaderLocation:3,offset:36,format:"float32x4"}]},
+  {arrayStride:64,stepMode:"instance",attributes:[
+    {shaderLocation:4,offset:0,format:"float32x4"},{shaderLocation:5,offset:16,format:"float32x4"},
+    {shaderLocation:6,offset:32,format:"float32x4"},{shaderLocation:7,offset:48,format:"float32x4"}]}];
+
+/* ── сетки и записи расстановки ── */
+function plnGeo(m){
+  const d=GPU.dev,nv=m.nv!==undefined?m.nv:m.v.length/PLN_VS,ni=m.ni!==undefined?m.ni:m.i.length;
+  const vb=d.createBuffer({size:Math.max(52,nv*52),usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
+  const ib=d.createBuffer({size:Math.max(12,ni*4),usage:GPUBufferUsage.INDEX|GPUBufferUsage.COPY_DST});
+  if(nv)d.queue.writeBuffer(vb,0,m.v,0,nv*PLN_VS);
+  if(ni)d.queue.writeBuffer(ib,0,m.i,0,ni);
+  return {vb,ib,n:ni,nv,gen:PLN_GPU.gen};
+}
+function plnGeoFree(g){if(g&&g.gen===PLN_GPU.gen){g.vb.destroy();g.ib.destroy();}if(g)g.n=0;}
+/* записи: по 16 чисел на штуку; cap — на сколько штук заведён буфер */
+function plnInst(a,n,cap){
+  const c=Math.max(1,cap||n||1);
+  const buf=GPU.dev.createBuffer({size:c*64,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
+  if(n)GPU.dev.queue.writeBuffer(buf,0,a,0,n*16);
+  return {buf,n:n||0,cap:c,gen:PLN_GPU.gen};
+}
+function plnInstSet(I,a,n){
+  n=Math.min(n,I.cap);
+  if(n)GPU.dev.queue.writeBuffer(I.buf,0,a,0,n*16);
+  I.n=n;
+}
+function plnInstFree(I){if(I&&I.gen===PLN_GPU.gen)I.buf.destroy();if(I)I.n=0;}
+/* одна запись в массив: место, размер, поворот, доля высоты, семя, цвет А, режим, цвет Б;
+   ride — вещь стоит в дальнем мире и едет по высоте вместе с ним (21pf) */
+function plnRec(a,k,p,scale,yaw,hk,seed,ca,mode,cb,ride){
+  const o=k*16;
+  a[o]=p[0];a[o+1]=p[1];a[o+2]=p[2];a[o+3]=scale;
+  a[o+4]=Math.cos(yaw);a[o+5]=Math.sin(yaw);a[o+6]=hk;a[o+7]=seed;
+  a[o+8]=ca?ca[0]:1;a[o+9]=ca?ca[1]:1;a[o+10]=ca?ca[2]:1;a[o+11]=mode||0;
+  a[o+12]=cb?cb[0]:0;a[o+13]=cb?cb[1]:0;a[o+14]=cb?cb[2]:0;a[o+15]=ride?1:0;
+}
+
+/* ── то, что живёт с устройством ── */
+function plnGpuDev(){
+  const Q=PLN_GPU,d=GPU.dev;
+  if(Q.dev===d)return;
+  Q.dev=d;Q.gen++;Q.w=0;Q.h=0;Q.T=null;Q.V=null;Q.B=null;Q.pp=null;Q.P={};
+  /* промах в шейдере или привязке виден здесь же, а не только в журнале сбоев движка */
+  d.addEventListener("uncapturederror",e=>plnLog("gpu "+String((e.error&&e.error.message)||e.error)));
+  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
+  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
+  const sh={sampleType:"depth",viewDimension:"2d-array"};
+  Q.L={
+    scene:d.createBindGroupLayout({entries:[
+      {binding:0,visibility:VF,buffer:{type:"uniform"}},
+      {binding:1,visibility:FR,texture:sh},{binding:2,visibility:FR,sampler:{type:"comparison"}},
+      tx(3),{binding:4,visibility:FR,sampler:{type:"filtering"}},
+      {binding:5,visibility:FR,buffer:{type:"uniform"}}]}),
+    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]}),
+    post:d.createBindGroupLayout({entries:[
+      {binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
+      tx(2),tx(3),tx(4),tx(5),{binding:6,visibility:FR,sampler:{type:"filtering"}},
+      {binding:7,visibility:FR,texture:{sampleType:"depth",multisampled:Q.ms>1}},
+      {binding:8,visibility:FR,texture:sh},{binding:9,visibility:FR,sampler:{type:"comparison"}}]})};
+  Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
+    cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
+  const ub=n=>d.createBuffer({size:n,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  Q.U={main:ub(928),refl:ub(928),sh0:ub(928),sh1:ub(928),wing:ub(928),blobs:ub(1040)};
+  /* единичные записи цельных сеток: мировая и та, что едет с дальним миром */
+  Q.one=d.createBuffer({size:64,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
+  d.queue.writeBuffer(Q.one,0,new Float32Array([0,0,0,1, 1,0,1,0, 1,1,1,0, 0,0,0,0]));
+  Q.oneRide=d.createBuffer({size:64,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
+  d.queue.writeBuffer(Q.oneRide,0,new Float32Array([0,0,0,1, 1,0,1,0, 1,1,1,0, 0,0,0,1]));
+  const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
+  const shadow=d.createTexture({size:[Q.shn,Q.shn,2],format:PLN_DEP,usage:RT});
+  const dummy=d.createTexture({size:[1,1,1],format:PLN_HDR,usage:RT});
+  Q.D={shadow,dummy,shArr:shadow.createView({dimension:"2d-array"}),dummyV:dummy.createView(),
+    shv:[0,1].map(l=>shadow.createView({dimension:"2d",baseArrayLayer:l,arrayLayerCount:1}))};
+  Q.B0={sh:[Q.U.sh0,Q.U.sh1].map(u=>d.createBindGroup({layout:Q.L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
+  plnGpuPipes();
+}
+/* конвейеры: через воронку движка (непрогретый ключ она строит на месте и пишет в GPU_PIPES.lazy),
+   а держим сами — воронка непрогретое не хранит */
+function plnGpuPipes(){
+  const Q=PLN_GPU,d=GPU.dev,L=Q.L,ms=Q.ms;
+  const mS=gpuShader(PLN_WGSL_SCENE),mP=gpuShader(plnWgslPost(ms));
+  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
+    for(const x of i.messages)if(x.type==="error")plnLog("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
+  const lS=d.createPipelineLayout({bindGroupLayouts:[L.scene]}),lH=d.createPipelineLayout({bindGroupLayouts:[L.shadow]}),
+    lP=d.createPipelineLayout({bindGroupLayouts:[L.post]});
+  const prim={topology:"triangle-list",cullMode:"none"};
+  const mk=(key,desc)=>{Q.P[key]=gpuPipeline("pln."+key,()=>desc);};
+  mk("shadow",{layout:lH,vertex:{module:mS,entryPoint:"vs_shadow",buffers:PLN_VB},primitive:prim,
+    depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"less",depthBias:2,depthBiasSlopeScale:2.2}});
+  const blend={color:{srcFactor:"src-alpha",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}};
+  for(const n of (ms>1?[1,ms]:[1])){
+    const mu={count:n};
+    mk("sky"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_full"},fragment:{module:mS,entryPoint:"fs_sky",targets:[{format:PLN_HDR}]},
+      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"always"},multisample:mu});
+    mk("body"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",targets:[{format:PLN_HDR}]},
+      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"},multisample:mu});
+    mk("water"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},
+      fragment:{module:mS,entryPoint:"fs_water",targets:[{format:PLN_HDR,blend}]},
+      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater"},multisample:mu});
+  }
+  const post=(fs,tg)=>({layout:lP,vertex:{module:mP,entryPoint:"vs_full"},fragment:{module:mP,entryPoint:fs,targets:[tg||{format:PLN_HDR}]},primitive:prim});
+  mk("blur",post("fs_blur"));mk("down",post("fs_down"));mk("up",post("fs_up"));mk("shafts",post("fs_shafts"));
+  /* свёртка пишет в сцену движка; её альфу не трогаем */
+  mk("comp",post("fs_comp",{format:PLN_HDR,writeMask:GPUColorWrite.RED|GPUColorWrite.GREEN|GPUColorWrite.BLUE}));
+}
+
+/* ── то, что живёт с размером кадра ── */
+function plnGpuSize(){
+  const Q=PLN_GPU,d=GPU.dev,w=GPU.bw,h=GPU.bh;
+  if(Q.T&&Q.w===w&&Q.h===h)return;
+  if(Q.T)for(const t of Q.T.all)t.destroy();
+  if(Q.pp)for(const b of Q.pp.all)b.destroy();
+  Q.w=w;Q.h=h;
+  const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING,all=[];
+  const tex=(tw,th,format,n,usage)=>{
+    const t=d.createTexture({size:[Math.max(1,tw|0),Math.max(1,th|0),1],format,sampleCount:n||1,usage:usage||RT});
+    all.push(t);return t;};
+  const hw=Math.max(1,w>>1),hh=Math.max(1,h>>1),NB=5;
+  const T={all,hdr:tex(w,h,PLN_HDR),depth:tex(w,h,PLN_DEP,Q.ms),
+    ms:Q.ms>1?tex(w,h,PLN_HDR,Q.ms,GPUTextureUsage.RENDER_ATTACHMENT):null,
+    refl:tex(hw,hh,PLN_HDR),reflD:tex(hw,hh,PLN_DEP,1,GPUTextureUsage.RENDER_ATTACHMENT),
+    wing:tex(hw,hh,PLN_HDR),wingD:tex(hw,hh,PLN_DEP,1,GPUTextureUsage.RENDER_ATTACHMENT),
+    wa:tex(hw,hh,PLN_HDR),wb:tex(hw,hh,PLN_HDR),sha:tex(hw,hh,PLN_HDR),shb:tex(hw,hh,PLN_HDR),down:[],up:[]};
+  for(let k=0;k<NB;k++){T.down.push(tex(w>>(k+1),h>>(k+1),PLN_HDR));T.up.push(tex(w>>(k+1),h>>(k+1),PLN_HDR));}
+  const V={};for(const k in T)if(k!=="all"&&T[k])V[k]=Array.isArray(T[k])?T[k].map(t=>t.createView()):T[k].createView();
+  Q.T=T;Q.V=V;
+  const U=Q.U,S=Q.S,D=Q.D,L=Q.L;
+  const scene=(u,refl)=>d.createBindGroup({layout:L.scene,entries:[{binding:0,resource:{buffer:u}},{binding:1,resource:D.shArr},
+    {binding:2,resource:S.cmp},{binding:3,resource:refl},{binding:4,resource:S.lin},{binding:5,resource:{buffer:U.blobs}}]});
+  const pp={all:[]};
+  /* проход свёртки: свои числа и до четырёх текстур */
+  const post=(a,texs,name)=>{
+    const u=d.createBuffer({size:32,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+    d.queue.writeBuffer(u,0,new Float32Array([a[0],a[1],a[2]||0,a[3]||0,0,0,0,0]));
+    pp.all.push(u);if(name)pp[name]=u;
+    const t=k=>texs[k]||D.dummyV;
+    return d.createBindGroup({layout:L.post,entries:[{binding:0,resource:{buffer:U.main}},{binding:1,resource:{buffer:u}},
+      {binding:2,resource:t(0)},{binding:3,resource:t(1)},{binding:4,resource:t(2)},{binding:5,resource:t(3)},
+      {binding:6,resource:S.lin},{binding:7,resource:V.depth},{binding:8,resource:D.shArr},{binding:9,resource:S.cmp}]});
+  };
+  const wbl=.30*h/900;
+  const B={main:scene(U.main,V.refl),refl:scene(U.refl,D.dummyV),wing:scene(U.wing,D.dummyV),sh:Q.B0.sh,
+    wingBlur:[post([wbl/hw,0],[V.wing]),post([0,wbl/hh],[V.wa]),post([wbl*2/hw,0],[V.wb]),post([0,wbl*2/hh],[V.wa])],
+    shafts:post([.0024,1600,.62,-.06],[],"shafts"),
+    shBlur:[post([1.2/hw,0],[V.sha]),post([0,1.2/hh],[V.shb])],down:[],up:[]};
+  for(let k=0;k<NB;k++){
+    const src=k?T.down[k-1]:T.hdr;
+    B.down.push(post([1/src.width,1/src.height],[k?V.down[k-1]:V.hdr]));
+  }
+  for(let k=NB-2;k>=0;k--){
+    const lo=k===NB-2?T.down[NB-1]:T.up[k+1];
+    B.up[k]=post([1/lo.width,1/lo.height,.62],[k===NB-2?V.down[NB-1]:V.up[k+1],V.down[k]]);
+  }
+  /* числа свёртки общие у обеих привязок: с кулисой и без неё */
+  B.comp=post([.085,.42,1,0],[V.hdr,V.up[0],V.sha,V.wb],"comp");
+  B.comp0=d.createBindGroup({layout:L.post,entries:[{binding:0,resource:{buffer:U.main}},{binding:1,resource:{buffer:pp.comp}},
+    {binding:2,resource:V.hdr},{binding:3,resource:V.up[0]},{binding:4,resource:V.sha},{binding:5,resource:D.dummyV},
+    {binding:6,resource:S.lin},{binding:7,resource:V.depth},{binding:8,resource:D.shArr},{binding:9,resource:S.cmp}]});
+  Q.B=B;Q.pp=pp;
+}
+function plnGpuReady(){
+  if(!GPU.on||!GPU.enc||!GPU.dev)return false;
+  plnGpuDev();plnGpuSize();
+  return true;
+}
+
+/* ── числа кадра ──
+   F — кадр (собирает 21pz): vp, eye, t, sun, key, expo, waterY, L0 и L1 {m, range}, hero,
+   lamps [{p,r,c,k}], look {по именам PLN_G}, clouds [[азимут, высота, полуширина, семя]] */
+function plnGlobals(a,F,o){
+  a.fill(0);
+  a.set(o.vp,0);a.set(plnM4inv(o.vp,PLN_GPU.inv),16);a.set(o.l0,32);a.set(F.L1.m,48);
+  a[64]=o.eye[0];a[65]=o.eye[1];a[66]=o.eye[2];a[67]=F.t;
+  a[68]=F.sun[0];a[69]=F.sun[1];a[70]=F.sun[2];a[71]=F.waterY;
+  a[72]=F.key[0];a[73]=F.key[1];a[74]=F.key[2];a[75]=F.expo;
+  a[76]=o.w;a[77]=o.h;a[78]=1/o.w;a[79]=1/o.h;
+  a[80]=F.hero[0];a[81]=F.hero[1];a[82]=F.hero[2];a[83]=F.hero[3];
+  /* misc.y: 1 — резать то, что под водой (зеркало), −1 — кулиса, карты теней она не берёт */
+  a[84]=o.clip?F.waterY+.02:0;a[85]=o.clip?1:(o.wing?-1:0);a[86]=.05/F.L0.range;a[87]=.16/F.L1.range;
+  const lamps=F.lamps||[];
+  for(let k=0;k<4&&k<lamps.length;k++){
+    const l=lamps[k];
+    a[88+k*4]=l.p[0];a[89+k*4]=l.p[1];a[90+k*4]=l.p[2];a[91+k*4]=l.r;
+    a[104+k*4]=l.c[0];a[105+k*4]=l.c[1];a[106+k*4]=l.c[2];a[107+k*4]=l.k;
+  }
+  for(const k in PLN_G){const v=F.look[k];if(v)a.set(v,PLN_G[k]);}
+  a[PLN_G.ambSky+3]=1/PLN_GPU.shn;
+  const cl=F.clouds||[],nc=Math.min(8,cl.length);
+  a[PLN_G.world+2]=nc;
+  for(let k=0;k<nc;k++)a.set(cl[k],200+k*4);
+  return a;
+}
+function plnGpuWrite(F){
+  const Q=PLN_GPU,q=GPU.dev.queue,U=Q.U,A=Q.ga,w=Q.w,h=Q.h;
+  const e=F.eye,er=[e[0],2*F.waterY-e[1],e[2]];
+  q.writeBuffer(U.main,0,plnGlobals(A[0],F,{vp:F.vp,l0:F.L0.m,eye:e,w,h}));
+  if(F.mirror)q.writeBuffer(U.refl,0,plnGlobals(A[1],F,{vp:F.vpMirror,l0:F.L0.m,eye:er,w:Math.max(1,w>>1),h:Math.max(1,h>>1),clip:true}));
+  q.writeBuffer(U.sh0,0,plnGlobals(A[2],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Q.shn,h:Q.shn}));
+  q.writeBuffer(U.sh1,0,plnGlobals(A[3],F,{vp:F.vp,l0:F.L1.m,eye:e,w:Q.shn,h:Q.shn}));
+  if(F.wing)q.writeBuffer(U.wing,0,plnGlobals(A[4],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Math.max(1,w>>1),h:Math.max(1,h>>1),wing:true}));
+  q.writeBuffer(U.blobs,0,F.blobs);
+  const P=F.post||{};
+  q.writeBuffer(Q.pp.shafts,0,new Float32Array(P.shafts||[.0024,1600,.62,-.06]));
+  q.writeBuffer(Q.pp.comp,0,new Float32Array([P.bloom===undefined?.085:P.bloom,P.vig===undefined?.42:P.vig,P.grade===undefined?1:P.grade,0]));
+}
+
+/* ── кадр ──
+   F.batches — что рисовать: {geo, inst|null, kind, to, ride}; ride — цельная сетка дальнего мира.
+   Возвращает false, если сдавать кадр некуда */
+function plnGpuFrame(F){
+  const Q=PLN_GPU,e=GPU.enc,P=Q.P,B=Q.B,V=Q.V,D=Q.D,ms=Q.ms;
+  F.mirror=F.waterY>-1e4&&F.batches.some(b=>b.kind===PLN_KIND.water&&b.geo.n>0);
+  F.wing=F.batches.some(b=>b.kind===PLN_KIND.wing&&b.geo.n>0);
+  plnGpuWrite(F);
+  let tris=0,calls=0;
+  const some=(p,to,kind)=>{
+    for(const b of F.batches){
+      if(b.kind!==kind||!(b.to&to)||!b.geo||b.geo.n<=0||b.geo.gen!==Q.gen)continue;
+      const I=b.inst;if(I&&(I.n<=0||I.gen!==Q.gen))continue;
+      p.setVertexBuffer(0,b.geo.vb);p.setVertexBuffer(1,I?I.buf:(b.ride?Q.oneRide:Q.one));
+      p.setIndexBuffer(b.geo.ib,"uint32");p.drawIndexed(b.geo.n,I?I.n:1);
+      calls++;tris+=b.geo.n/3*(I?I.n:1);
+    }
+  };
+  for(let l=0;l<2;l++){
+    const p=e.beginRenderPass({colorAttachments:[],timestampWrites:gpuTs("pln.shadow"),
+      depthStencilAttachment:{view:D.shv[l],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
+    p.setPipeline(P.shadow);p.setBindGroup(0,B.sh[l]);some(p,l?PLN_TO.sh1:PLN_TO.sh0,PLN_KIND.body);p.end();
+  }
+  const bg={r:.42,g:.5,b:.55,a:1};
+  if(F.mirror){
+    const p=e.beginRenderPass({colorAttachments:[{view:V.refl,clearValue:bg,loadOp:"clear",storeOp:"store"}],timestampWrites:gpuTs("pln.mirror"),
+      depthStencilAttachment:{view:V.reflD,depthClearValue:0,depthLoadOp:"clear",depthStoreOp:"discard"}});
+    p.setBindGroup(0,B.refl);p.setPipeline(P.sky1);p.draw(3);
+    p.setPipeline(P.body1);some(p,PLN_TO.mirror,PLN_KIND.body);p.end();
+  }
+  {
+    const col=ms>1?{view:V.ms,resolveTarget:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"discard"}
+      :{view:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"store"};
+    const p=e.beginRenderPass({colorAttachments:[col],timestampWrites:gpuTs("pln.scene"),
+      depthStencilAttachment:{view:V.depth,depthClearValue:0,depthLoadOp:"clear",depthStoreOp:"store"}});
+    p.setBindGroup(0,B.main);p.setPipeline(P["sky"+ms]);p.draw(3);
+    p.setPipeline(P["body"+ms]);some(p,PLN_TO.main,PLN_KIND.body);
+    if(F.mirror){p.setPipeline(P["water"+ms]);some(p,PLN_TO.main,PLN_KIND.water);}
+    p.end();
+  }
+  const full=(view,pipe,bind,name)=>{
+    const p=e.beginRenderPass({colorAttachments:[{view,clearValue:{r:0,g:0,b:0,a:0},loadOp:"clear",storeOp:"store"}],timestampWrites:gpuTs(name)});
+    p.setPipeline(pipe);p.setBindGroup(0,bind);p.draw(3);p.end();
+  };
+  if(F.wing){
+    const p=e.beginRenderPass({colorAttachments:[{view:V.wing,clearValue:{r:0,g:0,b:0,a:0},loadOp:"clear",storeOp:"store"}],timestampWrites:gpuTs("pln.wing"),
+      depthStencilAttachment:{view:V.wingD,depthClearValue:0,depthLoadOp:"clear",depthStoreOp:"discard"}});
+    p.setBindGroup(0,B.wing);p.setPipeline(P.body1);some(p,PLN_TO.main,PLN_KIND.wing);p.end();
+    full(V.wa,P.blur,B.wingBlur[0],"pln.wing");full(V.wb,P.blur,B.wingBlur[1],"pln.wing");
+    full(V.wa,P.blur,B.wingBlur[2],"pln.wing");full(V.wb,P.blur,B.wingBlur[3],"pln.wing");
+  }
+  full(V.sha,P.shafts,B.shafts,"pln.air");
+  full(V.shb,P.blur,B.shBlur[0],"pln.air");full(V.sha,P.blur,B.shBlur[1],"pln.air");
+  const NB=V.down.length;
+  for(let k=0;k<NB;k++)full(V.down[k],P.down,B.down[k],"pln.bloom");
+  for(let k=NB-2;k>=0;k--)full(V.up[k],P.up,B.up[k],"pln.bloom");
+  PLN.stat.tris=Math.round(tris);PLN.stat.calls=calls;
+  const sp=gpuScene();
+  if(!sp)return false;
+  sp.setPipeline(P.comp);sp.setBindGroup(0,F.wing?B.comp:B.comp0);sp.draw(3);
+  return true;
+}
+
+/* ══════════════ планета: земля (M610) ══════════════
+   Земля — два тела.
+
+   ЛЕНТА стоит в мире. Её середина — линия ходьбы игры, образец в образец
+   (tr.h): человек ходит по тому же рельефу, что и раньше. К объективу от линии
+   идёт ближний склон, за линией — покатая, как сцена, полка, гребень и спуск.
+   Лента режется кусками вдоль x и строится очередью.
+
+   ДАЛЬНИЙ МИР — ложбина с водой, дальний берег, холмы, хребет, горы и дальние
+   гряды — жёсток сам в себе и едет ПО ВЫСОТЕ вместе с камерой одним числом на
+   кадр: ride = lift(x камеры). По x он стоит, так что параллакс честный.
+   Рельеф игры перепадает на десятки метров, и один мировой уровень воды
+   затопил бы низины линии ходьбы; а так вода кадра всегда лежит под самой
+   низкой точкой линии, что видна, и принятая композиция держится в любом месте
+   полосы. Шов двух тел — в складке за гребнем, объективу его не видно.
+
+   Озеро игры (waterOf) — пруд на самой ленте: свой, мировой, уровень и вал
+   вокруг; плывущий виден поверх ближнего вала.
+
+   Формы дальних планов, цвета и числа — со стенда docs/look (M600), в метрах
+   от точки композиции: она в 12.8 м правее площадки. */
+const PLN_LAND={ext:180,               /* на сколько образцов лента продолжена за края полосы */
+  chunk:70,                            /* столбцов в куске ленты */
+  zNear:-52,zBack:48,                  /* лента в глубину: к объективу и от него */
+  wRel:-3.2,                           /* вода ложбины на уровне дальнего мира */
+  e0:56,                               /* полуширина вида на линии ходьбы, под которую раскрыт дальний мир */
+  edges:[4,130,300,700,2000,62000],cols:[900,800,520,320,224],
+  cur:null};
+/* зелень меняет тон с глубиной: оливковая вблизи, холоднее на дальнем берегу, сине-зелёная на холмах */
+const PLN_PAL={
+  grassLit:plnHex("#93a94f"),grassMid:plnHex("#5c8a47"),grassCool:plnHex("#3b7560"),dry:plnHex("#c4a659"),
+  heather:plnHex("#b56a8e"),clover:plnHex("#7d70ad"),soil:plnHex("#b08a5e"),soilDark:plnHex("#7a5a40"),mud:plnHex("#4a4f3c"),
+  rockWarm:plnHex("#b3aa98"),rockCool:plnHex("#8a8d9a"),crag:plnHex("#5d6378"),cragWarm:plnHex("#8a7f78"),snow:plnHex("#f2f4f8"),
+  forest:plnHex("#2f5f52"),glade:plnHex("#6b9558"),plain:plnHex("#8aa880"),moss:plnHex("#5d7f35")};
+const PLN_AZ_ELEV=5*PLN_DEG,PLN_AZ_PEAK=-11*PLN_DEG;
+
+/* ── окна по образцам ── */
+/* скользящий минимум (mx — максимум) с полушириной k образцов */
+function plnSlide(A,k,B,mx){
+  const n=A.length;
+  if(k<=0){B.set(A);return B;}
+  const q=new Int32Array(n);
+  let h=0,t=0,j=0;
+  for(let i=0;i<n;i++){
+    const hi=Math.min(n-1,i+k);
+    for(;j<=hi;j++){
+      while(t>h&&(mx?A[q[t-1]]<=A[j]:A[q[t-1]]>=A[j]))t--;
+      q[t++]=j;
+    }
+    while(q[h]<i-k)h++;
+    B[i]=A[q[h]];
+  }
+  return B;
+}
+/* среднее по окну с полушириной k образцов; у краёв окно короче. S — место под суммы */
+function plnBox(A,k,B,S){
+  const n=A.length;
+  if(k<=0){B.set(A);return B;}
+  S[0]=0;
+  for(let i=0;i<n;i++)S[i+1]=S[i]+A[i];
+  for(let i=0;i<n;i++){const lo=Math.max(0,i-k),hi=Math.min(n-1,i+k);B[i]=(S[hi+1]-S[lo])/(hi-lo+1);}
+  return B;
+}
+/* то же с дробной полушириной: между двумя целыми окнами, чтобы ряды шли без ступеней */
+function plnSlideF(A,w,B,T1,mx){
+  const k=Math.floor(w),f=w-k;
+  plnSlide(A,k,B,mx);
+  if(f>1e-3){plnSlide(A,k+1,T1,mx);for(let i=0;i<A.length;i++)B[i]+=(T1[i]-B[i])*f;}
+  return B;
+}
+function plnBoxF(A,w,B,T1,S){
+  const k=Math.floor(w),f=w-k;
+  plnBox(A,k,B,S);
+  if(f>1e-3){plnBox(A,k+1,T1,S);for(let i=0;i<A.length;i++)B[i]+=(T1[i]-B[i])*f;}
+  return B;
+}
+
+/* ── формы ── */
+/* полка покатая, как сцена: тропа, цветы и ноги видны сверху, а не с ребра. На линии ходьбы — ноль */
+function plnLandRake(z){return .9*(Math.exp(-Math.max(0,1.2-z)/3.5)-Math.exp(-1.2/3.5));}
+function plnSoftp(d){return .5*(d+Math.sqrt(d*d+1.5));}
+function plnRidge(z,zc,yc,sf,sb,k){const d=z-zc,a=yc+sf*d,b=yc-sb*d;return -plnSmax(-a,-b,k);}
+/* ряды ленты: у линии ходьбы часто, дальше реже; к объективу снова чаще — он близко */
+function plnLandRows(){
+  const C=PLN_LAND,near=[],back=[];
+  for(let z=0;z>C.zNear;){
+    const s=Math.min(.0125*(100+z),.5-z*.12);
+    z=(z-s<C.zNear+s*.5)?C.zNear:z-s;near.push(z);
+  }
+  for(let z=0;z<C.zBack;){
+    const s=Math.min(2,.5+z*.12);
+    z=(z+s>C.zBack-s*.5)?C.zBack:z+s;back.push(z);
+  }
+  near.reverse();
+  return {z:Float32Array.from(near.concat([0],back)),r0:near.length};
+}
+/* ряды дальнего мира: чаще там, где план поворачивается к объективу лицом */
+function plnLandFarRows(){
+  const st=d=>d<210?1.013:(d>300&&d<480)?1.008:(d>900&&d<1300)?1.006:(d>2900&&d<4600)?1.004:(d>6000&&d<12500)?1.008:1.022;
+  const z=[];
+  for(let d=104;d<62100;d*=st(d))z.push(d-100);
+  return Float32Array.from(z);
+}
+/* на сколько дальний мир шире полосы на этой глубине */
+function plnLandE(z){return PLN_LAND.e0*(1+z/100)*1.1;}
+
+/* ── таблицы рельефа: раз на посадку; sx — где сел корабль, в единицах игры ── */
+function plnLandMake(tr,p,sx){
+  const C=PLN_LAND,dx=tr.step/PLN_M,E=C.ext,N=tr.N,NT=N+2*E,y0=tr.padY,x0=-E*dx;
+  const P=new Float32Array(NT);
+  for(let i=0;i<NT;i++)P[i]=(y0-tr.h[clamp(i-E,0,N-1)])/PLN_M;
+  const Wt=waterOf(tr,p),ty=p&&p.type;
+  const liquid=!!(p&&p.T&&p.T.atm!=="отсутствует")&&(ty==="terran"||ty==="jungle"||ty==="ocean"||ty==="toxic"||ty==="ruin"||ty==="rocky");
+  const lake=Wt?{x0:Wt.x0/PLN_M,x1:Wt.x1/PLN_M,level:(y0-Wt.y)/PLN_M,acid:!!Wt.acid}:null;
+  const shipU=sx==null?tr.padX:sx,shipX=shipU/PLN_M,yaw=.2,padH=(y0-groundAt(tr,shipU))/PLN_M;
+  const L={tr,sx,gen:PLN_GPU.gen,y0,dx,x0,N,NT,E,len:N*dx,P,lake,wet:liquid&&((tr.wet||0)>=.2||!!lake),
+    sd:Math.floor(plnHash((p&&p.seed)|0,tr.sseed|0,7)*900000)+17,
+    shipX,shipZ:7,shipYaw:yaw,padH,cx0:shipX+12.8,
+    /* подножие трапа: место корабля (.75, −4.26), повёрнутое вместе с ним */
+    rampX:shipX+.75*Math.cos(yaw)-4.26*Math.sin(yaw),rampZ:7-.75*Math.sin(yaw)-4.26*Math.cos(yaw),
+    gk:0,jobs:[],left:0,ms:0,first:false};
+  const A=new Float32Array(NT),B=new Float32Array(NT),T1=new Float32Array(NT),S=new Float64Array(NT+1);
+  /* подъём дальнего мира: вода кадра на .8 м ниже самой низкой точки линии, что попадает в кадр;
+     в озере игры линия лежит под водой, и считается там уровень озера */
+  const Pt=new Float32Array(NT);
+  for(let i=0;i<NT;i++){const x=x0+i*dx;Pt[i]=(lake&&x>=lake.x0&&x<=lake.x1)?lake.level+.8:P[i];}
+  plnSlide(Pt,Math.round(80/dx),A);
+  L.lift=plnBox(A,Math.round(30/dx),new Float32Array(NT),S);
+  for(let i=0;i<NT;i++)L.lift[i]+=2.4;
+  L.liftLo=plnSlide(L.lift,Math.round(100/dx),new Float32Array(NT));
+  L.liftHi=plnSlide(L.lift,Math.round(100/dx),new Float32Array(NT),true);
+  /* высоты ленты без зерна: ряд за рядом по образцам линии */
+  const rows=plnLandRows(),zr=rows.z,R=zr.length,T=new Float32Array(R*NT);
+  const padL=new Float32Array(NT),padF=new Float32Array(NT);
+  for(let i=0;i<NT;i++){
+    const d=Math.abs(x0+i*dx-shipX);
+    padL[i]=1-plnSmooth(5.5,10,d);padF[i]=1-plnSmooth(4.5,9,d);
+  }
+  for(let r=0;r<R;r++){
+    const z=zr[r],o=r*NT;
+    if(z<0){
+      /* ближний склон не смеет закрыть линию ходьбы: точка на глубине d лежит ниже всего, что
+         объектив видит сквозь неё, — минимум линии по окну, которое растёт с глубиной */
+      const d=-z,b=clamp(.35*d,0,5),f=.07*d+1.6*plnSmooth(8,30,d),rk=plnLandRake(z);
+      plnSlideF(P,(.42*d+b)/dx,A,T1);
+      plnBoxF(A,b/dx,B,T1,S);
+      for(let i=0;i<NT;i++)T[o+i]=B[i]-f+rk;
+    }else if(z>0){
+      /* за линией бугры линии расходятся в холмики; под кораблём площадка ровная */
+      const rk=plnLandRake(z),kb=plnSmooth(0,6,z),kp=plnSmooth(0,3,z);
+      plnBoxF(P,.5*z/dx,B,T1,S);
+      for(let i=0;i<NT;i++){
+        const zb=10+4*padL[i];
+        T[o+i]=lerp(lerp(P[i],B[i],kb),padH,padF[i]*kp)+rk-.42*(plnSoftp(z-zb)-plnSoftp(-zb));
+      }
+    }else for(let i=0;i<NT;i++)T[i+o]=P[i];
+  }
+  /* дальний край ленты уходит под дальний мир, как бы низко тот ни стоял */
+  const last=(R-1)*NT;
+  for(let i=0;i<NT;i++)A[i]=Math.max(0,T[last+i]-(L.liftLo[i]-8));
+  plnSlide(A,Math.round(6/dx),B,true);
+  plnBox(B,Math.round(6/dx),A,S);
+  for(let r=rows.r0+1;r<R;r++){
+    const k=plnSmooth(20,48,zr[r]);
+    if(k>0)for(let i=0;i<NT;i++)T[r*NT+i]-=A[i]*k;
+  }
+  /* вал вокруг пруда: вода стоит в ленте, а не льётся по ближнему склону */
+  if(lake){
+    const ia=clamp(Math.floor((lake.x0-32-x0)/dx),0,NT-1),ib=clamp(Math.ceil((lake.x1+32-x0)/dx),0,NT-1);
+    for(let r=0;r<R;r++){
+      const z=zr[r],w=plnSmooth(.6,2.5,Math.abs(z));
+      if(w<=0||z<-38||z>36)continue;
+      for(let i=ia;i<=ib;i++){
+        const hr=plnLandRim(L,x0+i*dx,z),o=r*NT+i;
+        T[o]=lerp(T[o],Math.max(T[o],hr),w);
+      }
+    }
+  }
+  L.zr=zr;L.R=R;L.r0=rows.r0;L.T=T;
+  L.fz=plnLandFarRows();
+  plnLandJobs(L);
+  return L;
+}
+/* чаша пруда и вал: s — как далеко точка от чаши (внутри — меньше нуля) */
+function plnLandPond(L,x,z){
+  const k=L.lake,sx=Math.max(k.x0-x,0,x-k.x1),sz=Math.max(-6-z,0,z-4);
+  if(sx>0||sz>0)return Math.hypot(sx,sz);
+  return -Math.min(x-k.x0,k.x1-x,z+6,4-z);
+}
+function plnLandRim(L,x,z){
+  const s=plnLandPond(L,x,z),top=L.lake.level+.4;
+  return s>0?top-1.2*plnSmooth(3,9,s)-6*plnSmooth(9,25,s):top-3*plnSmooth(0,2.5,-s);
+}
+
+/* ── высоты ── */
+/* лента в узле сетки: таблица и зерно. Бугры ближнего склона не поднимают его выше обещанного */
+function plnLandRibH(L,r,i){
+  const z=L.zr[r],x=L.x0+i*L.dx,d=Math.abs(z);
+  let h=L.T[r*L.NT+i],calm=1;
+  if(L.lake&&x>L.lake.x0-34&&x<L.lake.x1+34&&d<40)calm=plnSmooth(2,8,Math.abs(plnLandPond(L,x,z)));
+  if(z<0){
+    const f=.07*d+1.6*plnSmooth(8,30,d);
+    h+=Math.min(plnFbm(x*.03+1.7,z*.03+4.2,3,L.sd+5)*1.3*plnSmooth(3,22,d),.8*f)*calm;
+  }
+  return h+plnFbm(x*.35,z*.35,2,L.sd+13)*.09*plnSmooth(1.2,4,d)*calm;
+}
+/* лента в любой точке: между узлами */
+function plnLandRibAt(L,x,z){
+  const zr=L.zr,R=L.R;
+  z=clamp(z,zr[0],zr[R-1]);
+  let a=0,b=R-1;
+  while(b-a>1){const m=(a+b)>>1;if(zr[m]<=z)a=m;else b=m;}
+  const tz=(z-zr[a])/((zr[b]-zr[a])||1),u=clamp((x-L.x0)/L.dx,0,L.NT-1.001),i=Math.floor(u),tx=u-i;
+  return lerp(lerp(plnLandRibH(L,a,i),plnLandRibH(L,a,i+1),tx),lerp(plnLandRibH(L,b,i),plnLandRibH(L,b,i+1),tx),tz);
+}
+/* число из таблицы вдоль x */
+function plnLandTab(L,A,x){
+  const u=clamp((x-L.x0)/L.dx,0,L.NT-1.001),i=Math.floor(u);
+  return lerp(A[i],A[i+1],u-i);
+}
+function plnLandLift(L,x){return plnLandTab(L,L.lift,x);}
+/* рельеф линии на отрезке: под короб теней */
+function plnLandSpan(L,xa,xb){
+  const ia=clamp(Math.floor((xa-L.x0)/L.dx),0,L.NT-1),ib=clamp(Math.ceil((xb-L.x0)/L.dx),0,L.NT-1);
+  let lo=1e9,hi=-1e9;
+  for(let i=ia;i<=ib;i++){const v=L.P[i];if(v<lo)lo=v;if(v>hi)hi=v;}
+  return {lo,hi};
+}
+/* Дальний мир на своём уровне: стопка кулис, у каждой гребень, склон к объективу и склон за ним.
+   Гребни расставлены по тому, куда они ложатся в кадре (стенд, M600): дальний берег, холмы,
+   хребет, горы с пиком; по пеленгу долины все они кланяются. Кто победил — в L.gk */
+function plnLandFarH(L,xw,z){
+  const sd=L.sd,x=xw-L.cx0,az=Math.atan2(x,z+50);
+  const pass=Math.exp(-Math.pow((az-PLN_AZ_ELEV)/.075,2));
+  /* ложбина держит воду у площадки и за озером игры; дальше дно поднимается и сохнет */
+  let dl=Math.abs(x-10);
+  if(L.lake){const a=L.lake.x0-L.cx0,b=L.lake.x1-L.cx0;dl=Math.min(dl,x<a?a-x:(x>b?x-b:0));}
+  let h=-6.4+.6*plnFbm(x*.02+3,z*.02+8,2,sd+7)+7*plnSmooth(70,130,dl),k=1,k2=1,w2=0;
+  /* кулиса красится своим цветом; у стыка двух — оба, долями: граница цвета идёт мимо узлов сетки
+     и без этого рисуется лесенкой. Полоса стыка — в метрах высоты, шире с расстоянием */
+  const mg=.5+.004*(z+100);
+  const take=(v,id,soft)=>{
+    const w=clamp(.5+.5*(v-h)/mg,0,1);
+    if(w>=.5){k2=k;w2=1-w;k=id;}else if(w>w2){k2=id;w2=w;}
+    h=plnSmax(h,v,soft);
+  };
+  const n1=plnFbm(x*.008+5,.5,2,sd+21),n1b=plnFbm(x*.012+9,1.5,3,sd+22);
+  /* дальний урез воды рисуется бухтами и косами */
+  const bay=17*plnFbm(x*.034+1.3,2.5,2,sd+47);
+  take(plnRidge(z,136+20*n1+bay*(1-plnSmooth(122,140,z)),(5+4*n1b)*(1-.35*pass),.26,.10,6)+plnFbm(x*.03+2,z*.03+5,3,sd+31)*.9,2,3);
+  if(z>110){
+    take(lerp(-60,3+z*.003,plnSmooth(120,230,z)),6,6);
+    const n2=plnFbm(x*.004+2,2.5,2,sd+23),n2b=plnFbm(x*.006+7,3.5,3,sd+24);
+    /* холмы в складках: по лицу идут овраги, свету есть что рисовать */
+    const fold=(plnRidged(x*.011+4+.4*plnFbm(z*.01,x*.01,2,sd+48),z*.004+2,3,sd+49)-.5)*7;
+    take(plnRidge(z,340+70*n2,(14+9*n2b)*(1-.7*pass),.16,.08,14)+(plnFbm(x*.05+1,z*.05+3,3,sd+32)*1.6+fold)*(1-.5*pass),3,8);
+  }
+  if(z>400){
+    const n3=plnFbm(x*.0012+4,4.5,2,sd+25);
+    const y3=(22+30*plnRidged(x*.0016+11,5.5,4,sd+26))*(1-.8*pass);
+    take(plnRidge(z,1050+180*n3,y3,.22,.14,30)+(plnRidged(x*.004+3,z*.0013+1,4,sd+33)-.45)*12*(1-.6*pass),4,20);
+    if(z>1500){
+      /* массив стоит слева и несёт пик; вправо гряда уходит за хребет */
+      const env=.55+.65*Math.exp(-Math.pow((az-PLN_AZ_PEAK)/.2,2));
+      const peak=200*Math.exp(-Math.pow((az-PLN_AZ_PEAK)/.05,2))+95*Math.exp(-Math.pow((az-PLN_AZ_PEAK+.105)/.036,2));
+      const n4=plnFbm(x*.0004+6,6.5,2,sd+27);
+      const y4=(120+110*plnRidged(x*.0006+2.3,7.5,5,sd+28))*env*(1-.8*pass)+peak;
+      /* рёбра сбегают с гребня: чем выше гора, тем глубже они врезаны */
+      const ribs=(plnRidged(x*.0030+8+.5*plnFbm(z*.001,x*.001,2,sd+38),z*.0006+4,5,sd+34)-.5)*.62*y4;
+      take(plnRidge(z,3700+600*n4,y4,.5,.35,50)+ribs,5,40);
+      take(25+12*plnFbm(x*.0002,z*.0002,2,sd+29)-.5*Math.max(0,4800-z),6,30);
+    }
+    if(z>5000){
+      /* две дальние гряды: долина — не чаша, а склон за склоном, каждый бледнее */
+      const n5=plnFbm(x*.0002+3,8.5,2,sd+35);
+      const y5=(70+150*plnRidged(x*.00035+5.1,9.5,5,sd+36))*(1-.45*pass);
+      take(plnRidge(z,7000+800*n5,y5,.4,.3,60)+(plnRidged(x*.0016+2,z*.0004+1,4,sd+39)-.5)*.5*y5,7,40);
+      const y6=(150+260*plnRidged(x*.00022+1.7,10.5,5,sd+37))*(1-.35*pass);
+      take(plnRidge(z,11000+1000*n5,y6,.4,.3,80)+(plnRidged(x*.0011+6,z*.0003+3,4,sd+40)-.5)*.5*y6,7,40);
+    }
+  }
+  /* ближний край дальнего мира начинается под лентой */
+  if(z<30)h-=12*(1-plnSmooth(4,30,z));
+  L.gk=k;L.gk2=k2;L.gw=w2;
+  return h;
+}
+
+/* ── цвет ── */
+/* натоптанная тропа: сама линия ходьбы и ветка от трапа корабля */
+function plnLandPath(L,x,z){
+  const e1=.22*Math.sin(x*.31)+.16*Math.sin(x*.83+1.3),e2=.2*Math.sin(x*.27+2)+.15*Math.sin(x*.71+.4);
+  const zc=-.15+(e2-e1)*.5,hw=.85+(e1+e2)*.5,rx=L.rampX;
+  let w=1-plnSmooth(hw,hw+.8,Math.abs(z-zc));
+  if(x>rx-1&&x<rx+10.5){
+    const t=clamp((x-rx)/10,0,1),zl=lerp(L.rampZ,0,t*t*(3-2*t));
+    w=Math.max(w,(1-plnSmooth(.5,1.2,Math.abs(z-zl)))*plnSmooth(rx-1,rx-.2,x));
+  }
+  return w*plnSmooth(.25,.6,plnFbm(x*.9,z*.9,2,L.sd+51)*.5+.5+w*.35);
+}
+/* поля цвета: крупные пятна, соседние — на тон друг от друга, и нигде не одна зелень.
+   k — номер кулисы: 0 лента, 1 ложбина, 2 дальний берег, 3 холмы, 4 хребет, 5 и 7 горы, 6 равнина */
+function plnLandCol(L,x,z,h,n,k){
+  const sd=L.sd,PAL=PLN_PAL,slope=1-n[1],wy=PLN_LAND.wRel;
+  const v1=plnFbm(x*.05+9,z*.05+2,3,sd+41)*.5+.5,v2=plnFbm(x*.011+4,z*.011+6,3,sd+42)*.5+.5;
+  let c;
+  if(k===0){
+    const va=plnFbm(x*.045+1,z*.07+7,3,sd+43)*.5+.5,vb=plnFbm(x*.09+5,z*.13+3,2,sd+44)*.5+.5;
+    const dry=plnSmooth(.52,.68,va);
+    c=plnMix3(PAL.grassMid,PAL.grassLit,plnSmooth(.3,.7,v1));
+    c=plnMix3(c,PAL.dry,dry*.75);
+    c=plnMix3(c,PAL.clover,plnSmooth(.60,.72,vb)*.42*(1-dry));
+    if(z<-3)c=plnMix3(c,PAL.grassCool,plnSmooth(3,16,-z)*.7);
+  }else if(k===1)c=plnMix3(PAL.grassCool,PAL.mud,plnSmooth(wy+.7,wy-.5,h));
+  else if(k===2){
+    const va=plnFbm(x*.016+1,z*.03+7,3,sd+45)*.5+.5,vb=plnFbm(x*.02+5,z*.04+3,3,sd+46)*.5+.5;
+    c=plnMix3(plnMix3(PAL.grassMid,PAL.grassLit,plnSmooth(.35,.7,v1)),PAL.grassCool,.35);
+    /* вереск лежит наносами, тонкими по краю и рваными внутри */
+    c=plnMix3(c,PAL.heather,plnSmooth(.52,.74,va)*(.25+.4*plnSmooth(.35,.65,v1)));
+    c=plnMix3(c,PAL.dry,plnSmooth(.56,.74,vb)*.55);
+    c=plnMix3(c,PAL.grassCool,plnSmooth(wy+2.5,wy+.2,h)*.6);
+  }else if(k===3){
+    c=plnMix3(PAL.forest,PAL.glade,plnSmooth(.45,.7,v2));
+    c=plnMix3(c,PAL.heather,plnSmooth(.6,.8,v1)*.35);
+  }else if(k===4)c=plnMix3(PAL.forest,PAL.crag,plnSmooth(20,52,h+14*(v1-.5)));
+  else if(k===5||k===7){
+    c=plnMix3(PAL.crag,PAL.cragWarm,v1);
+    c=plnMix3(c,PAL.forest,plnSmooth(150,60,h)*.6);
+    /* снег держится там, где позволяет склон */
+    c=plnMix3(c,PAL.snow,plnSmooth(235,310,h+70*(v2-.5))*plnSmooth(.85,.5,slope));
+  }else c=plnMix3(PAL.plain,PAL.glade,v2);
+  if(k<5)c=plnMix3(c,plnMix3(PAL.rockWarm,PAL.rockCool,v1),plnSmooth(.22,.42,slope)*(k>=4?1:.8));
+  if(k===0)c=plnMix3(c,plnMix3(PAL.soil,PAL.soilDark,v1),plnLandPath(L,x,z)*.75*(1-plnSmooth(.3,.5,slope)));
+  return c;
+}
+
+/* ── очередь стройки ── */
+function plnLandJobs(L){
+  const C=PLN_LAND,J=L.jobs,fz=L.fz,RF=fz.length,B=PLN_KIND.body,TO=PLN_TO;
+  for(let c=0;c*C.chunk<L.NT-1;c++){
+    const i0=c*C.chunk,i1=Math.min(i0+C.chunk,L.NT-1);
+    J.push({t:"rib",c,xa:L.x0+i0*L.dx,xb:L.x0+i1*L.dx,kind:B,to:TO.all,ride:false,geo:null,done:false});
+  }
+  for(let b=0;b<C.cols.length;b++){
+    const NC=C.cols[b];
+    let ra=0,rb=RF-1;
+    while(ra<RF-1&&fz[ra]<C.edges[b])ra++;
+    for(let r=ra;r<RF;r++)if(fz[r]>=C.edges[b+1]){rb=Math.min(RF-1,r+1);break;}
+    const np=Math.ceil(NC/110),per=Math.max(8,Math.floor(9000/(Math.ceil(NC/np)+1)));
+    for(let r=ra;r<rb;r+=per)for(let k=0;k<np;k++){
+      const c0=Math.round(k*NC/np),c1=Math.round((k+1)*NC/np),r1=Math.min(rb,r+per);
+      const xs=(rr,cc)=>{const e=plnLandE(fz[rr]);return -e+(L.len+2*e)*cc/NC;};
+      J.push({t:"far",b,c0,c1,ra:r,rb:r1,za:fz[r],zb:fz[r1],xa:xs(r,c0),xb:xs(r,c1),xa1:xs(r1,c0),xb1:xs(r1,c1),
+        kind:B,to:fz[r]<460?(TO.main|TO.mirror|TO.sh1):(TO.main|TO.mirror),ride:true,geo:null,done:false});
+    }
+  }
+  if(L.wet){
+    /* вода ложбины: у точки композиции и за озером игры; если рядом — одним листом */
+    const sp=[[L.cx0+10-112,L.cx0+10+112]];
+    if(L.lake){
+      const a=L.lake.x0-112,b=L.lake.x1+112;
+      if(a<sp[0][1]&&b>sp[0][0]){sp[0][0]=Math.min(sp[0][0],a);sp[0][1]=Math.max(sp[0][1],b);}
+      else sp.push([a,b]);
+    }
+    for(const s of sp)J.push({t:"water",xa:s[0],xb:s[1],kind:PLN_KIND.water,to:TO.main,ride:true,geo:null,done:false});
+    if(L.lake)J.push({t:"pond",xa:L.lake.x0-2,xb:L.lake.x1+2,kind:PLN_KIND.water,to:TO.main,ride:false,geo:null,done:false});
+  }
+  L.left=J.length;
+}
+/* виден ли кусок: V — {hw, D} объектива, ex — где он стоит; m — запас в метрах */
+function plnLandSees(J,ex,V,m){
+  if(J.t==="far"){
+    const ha=V.hw*(1+J.za/V.D)+8+m+(J.za<460?60:0),hb=V.hw*(1+J.zb/V.D)+8+m+(J.za<460?60:0);
+    return !((J.xb<ex-ha&&J.xb1<ex-hb)||(J.xa>ex+ha&&J.xa1>ex+hb));
+  }
+  const z=J.t==="water"?136:PLN_LAND.zBack,h=V.hw*(1+z/V.D)+12+m;
+  return J.xb>ex-h&&J.xa<ex+h;
+}
+function plnLandBuild(L,J){
+  const m=J.t==="rib"?plnLandRibMesh(L,J.c):J.t==="far"?plnLandFarMesh(L,J):J.t==="water"?plnLandWaterMesh(L,J):plnLandPondMesh(L,J);
+  J.geo=m.ni?plnGeo(m):null;J.done=true;L.left--;
+  PLN.stat.verts=(PLN.stat.verts||0)+m.nv;
+}
+/* Строит не больше n кусков, ближние к объективу первыми. Первый кадр поднимает всё, что в нём
+   видно, разом (долг M614: строить, пока корабль садится); PLN.rush — всё до конца, для стенда */
+function plnLandStep(L,ex,V,n){
+  if(L.left<=0)return 0;
+  const t0=wallMs(),all=!!PLN.rush,first=!L.first;
+  let k=0;
+  L.first=true;
+  for(;;){
+    let best=null,bp=1e9;
+    for(const J of L.jobs){
+      if(J.done)continue;
+      const see=plnLandSees(J,ex,V,20),pr=(see?0:1e4)+Math.abs((J.xa+J.xb)/2-ex)+(J.t==="rib"?0:J.t==="far"?200+J.b*10:100);
+      if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
+    }
+    if(!best||(!all&&!(first&&bp<1e4)&&k>=n))break;
+    plnLandBuild(L,best);k++;
+  }
+  L.ms+=wallMs()-t0;
+  PLN.stat.land={jobs:L.jobs.length,left:L.left,ms:Math.round(L.ms)};
+  return k;
+}
+function plnLandBatches(L,out,ex,V){
+  for(const J of L.jobs)if(J.geo&&plnLandSees(J,ex,V,0))out.push({geo:J.geo,inst:null,kind:J.kind,to:J.to,ride:J.ride});
+}
+function plnLandFree(L){
+  for(const J of L.jobs){if(J.geo)plnGeoFree(J.geo);J.geo=null;}
+}
+/* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
+function plnLand(tr,p,sx){
+  const C=PLN_LAND;
+  if(C.cur&&C.cur.tr===tr&&C.cur.sx===sx&&C.cur.gen===PLN_GPU.gen&&C.cur.y0===tr.padY)return C.cur;
+  if(C.cur)plnLandFree(C.cur);
+  PLN.stat.verts=0;
+  return C.cur=plnLandMake(tr,p,sx);
+}
+
+/* ── сетки ── */
+/* Узел сетки из высот соседей: нормаль и то, как глубоко он сидит ниже тех, кто в трёх клетках
+   (ложбины темнее). Высоты лежат с запасом в три клетки, поэтому швов между кусками нет */
+function plnLandNode(H,o,gw,dux,dvz,span3){
+  const duy=H[o+1]-H[o-1],dvy=H[o+gw]-H[o-gw];
+  const n=plnNorm([-dvz*duy,dvz*dux,-dvy*dux]);
+  const av=(H[o+3]+H[o-3]+H[o+3*gw]+H[o-3*gw])/4;
+  const sp=Math.max(1,Math.hypot(span3,H[o+3*gw]-H[o]));
+  return {n,ao:clamp(1-Math.max(0,av-H[o])/sp*2.2,.55,1)};
+}
+function plnLandRibMesh(L,c){
+  const C=PLN_LAND,NT=L.NT,R=L.R,MG=3,i0=c*C.chunk,i1=Math.min(i0+C.chunk,NT-1),nc=i1-i0+1,gw=nc+2*MG,gh=R+2*MG;
+  const H=new Float32Array(gw*gh),PAL=PLN_PAL;
+  for(let r=0;r<gh;r++){
+    const rr=clamp(r-MG,0,R-1);
+    for(let i=0;i<gw;i++)H[r*gw+i]=plnLandRibH(L,rr,clamp(i0+i-MG,0,NT-1));
+  }
+  const X=i=>L.x0+clamp(i0+i-MG,0,NT-1)*L.dx,Z=r=>L.zr[clamp(r-MG,0,R-1)];
+  const m=plnMesh((nc*(R+1))*2+16);
+  for(let r=0;r<R;r++)for(let i=0;i<nc;i++){
+    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X(gi),z=Z(gr);
+    const q=plnLandNode(H,o,gw,Math.max(1e-3,X(gi+1)-X(gi-1)),Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z),slope=1-q.n[1];
+    let col=plnLandCol(L,x,z,h,q.n,0);
+    /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
+    if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
+    if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>-12&&z<10)col=plnMix3(col,PAL.mud,plnSmooth(L.lake.level+.3,L.lake.level-.5,h)*.85);
+    /* крутые ступени линии — камень: в гнезде свечения у земли лежит его доля */
+    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,plnSmooth(.3,.55,slope)*.85,q.ao);
+  }
+  for(let r=0;r+1<R;r++)for(let i=0;i+1<nc;i++){
+    const a=r*nc+i;
+    plnQuad(m,a,a+1,a+nc+1,a+nc);
+  }
+  /* юбка под ближним краем: снизу в кадр не заглянуть */
+  const sk=m.nv,nk=plnNorm([0,.25,-1]);
+  for(let i=0;i<nc;i++){
+    const o=i*PLN_VS,v=m.v;
+    plnVert(m,[v[o],v[o+1]-60,v[o+2]],nk,[v[o+6]*.7,v[o+7]*.7,v[o+8]*.7],PLN_MAT.ground,0,0,.6);
+  }
+  for(let i=0;i+1<nc;i++)plnQuad(m,sk+i,sk+i+1,i+1,i);
+  return m;
+}
+function plnLandFarMesh(L,J){
+  const C=PLN_LAND,NC=C.cols[J.b],fz=L.fz,RF=fz.length,MG=3,nc=J.c1-J.c0+1,nr=J.rb-J.ra+1,gw=nc+2*MG,gh=nr+2*MG;
+  const H=new Float32Array(gw*gh),K=new Uint8Array(gw*gh),K2=new Uint8Array(gw*gh),W2=new Float32Array(gw*gh),X=new Float32Array(gw*gh);
+  for(let r=0;r<gh;r++){
+    const z=fz[clamp(J.ra+r-MG,0,RF-1)],e=plnLandE(z);
+    for(let i=0;i<gw;i++){
+      const o=r*gw+i,x=-e+(L.len+2*e)*(J.c0+i-MG)/NC;
+      X[o]=x;H[o]=plnLandFarH(L,x,z);K[o]=L.gk;K2[o]=L.gk2;W2[o]=L.gw;
+    }
+  }
+  const Z=r=>fz[clamp(J.ra+r-MG,0,RF-1)];
+  /* горы и дальние гряды — камень, хребет — наполовину */
+  const stone=k=>k===5||k===7?1:(k===4?.6:0);
+  const m=plnMesh(nc*nr*2+16);
+  for(let r=0;r<nr;r++)for(let i=0;i<nc;i++){
+    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X[o],z=Z(gr),k=K[o],w2=W2[o];
+    const q=plnLandNode(H,o,gw,X[o+1]-X[o-1],Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z);
+    let col=plnLandCol(L,x-L.cx0,z,h,q.n,k),st=stone(k);
+    if(w2>.01&&K2[o]!==k){col=plnMix3(col,plnLandCol(L,x-L.cx0,z,h,q.n,K2[o]),w2);st=lerp(st,stone(K2[o]),w2);}
+    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st,q.ao);
+  }
+  for(let r=0;r+1<nr;r++)for(let i=0;i+1<nc;i++){
+    const a=r*nc+i;
+    plnQuad(m,a,a+1,a+nc+1,a+nc);
+  }
+  return m;
+}
+/* Вода ложбины едет с дальним миром. Дно лежит в цвете вершины: высота ленты (мировая) и дна
+   ложбины (на её уровне) — глубину считает шейдер, потому что уровень воды в кадре свой */
+function plnLandWaterMesh(L,J){
+  const C=PLN_LAND,sx=2,sz=1,z0=4,z1=136,nx=Math.ceil((J.xb-J.xa)/sx),nz=(z1-z0)/sz,m=plnMesh((nx+1)*(nz+1)*2);
+  const keep=new Uint8Array((nx+1)*(nz+1));
+  for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){
+    const x=J.xa+i*sx,z=z0+j*sz,f=plnLandFarH(L,x,z),hr=z<=C.zBack?plnLandRibAt(L,x,z):-1e3;
+    plnVert(m,[x,C.wRel,z],[0,1,0],[hr,f,0],PLN_MAT.water,0,0,0);
+    keep[j*(nx+1)+i]=(C.wRel-f>-.4&&plnLandTab(L,L.liftHi,x)+C.wRel-hr>-.4)?1:0;
+  }
+  for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){
+    const a=j*(nx+1)+i,b=a+1,c=a+nx+2,d=a+nx+1;
+    if(keep[a]|keep[b]|keep[c]|keep[d])plnQuad(m,a,b,c,d);
+  }
+  return m;
+}
+/* пруд стоит в мире, на уровне озера игры */
+function plnLandPondMesh(L,J){
+  const k=L.lake,sx=L.dx*2,sz=.6,z0=-8.4,z1=6,nx=Math.ceil((J.xb-J.xa)/sx),nz=Math.round((z1-z0)/sz),m=plnMesh((nx+1)*(nz+1)*2);
+  const keep=new Uint8Array((nx+1)*(nz+1));
+  for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){
+    const x=J.xa+i*sx,z=z0+j*sz,hr=plnLandRibAt(L,x,z);
+    plnVert(m,[x,k.level,z],[0,1,0],[hr,-1e3,0],PLN_MAT.water,0,0,0);
+    keep[j*(nx+1)+i]=k.level-hr>-.4?1:0;
+  }
+  for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){
+    const a=j*(nx+1)+i,b=a+1,c=a+nx+2,d=a+nx+1;
+    if(keep[a]|keep[b]|keep[c]|keep[d])plnQuad(m,a,b,c,d);
+  }
+  return m;
+}
+
+/* ══════════════ планета: человек и корабль — заготовки (M610) ══════════════
+   Тела со стенда docs/look (M600), как были: человек 1.8 м в цвете людей и
+   корабль на шасси, около пяти его ростов. Это заготовки первого этапа: свой
+   проход по семьям тел — этап 2 (M620…), там же походка и корпус по hullOf.
+
+   Сетки лежат в начале координат, ноги на нуле; в мир их ставит запись
+   расстановки, так что шаг человека не стоит ни одной вершины. */
+const PLN_CAST={gen:-1,man:null,ship:null,manI:null,shipI:null,
+  ma:new Float32Array(16),sa:new Float32Array(16)};
+
+/* станции корпуса, сглаженные: Катмулл — Ром через заданные */
+function plnCastResample(st,n){
+  const out=[],keys=["x","ry","rz","y"];
+  for(let i=0;i<n;i++){
+    const u=i/(n-1)*(st.length-1),k=Math.min(Math.floor(u),st.length-2),t=u-k;
+    const a=st[Math.max(k-1,0)],b=st[k],c=st[k+1],d=st[Math.min(k+2,st.length-1)],o={};
+    for(const q of keys)o[q]=.5*((2*b[q])+(-a[q]+c[q])*t+(2*a[q]-5*b[q]+4*c[q]-d[q])*t*t+(-a[q]+3*b[q]-3*c[q]+d[q])*t*t*t);
+    out.push(o);
+  }
+  return out;
+}
+/* корабль: полоса ливреи — того же цвета, что носит человек */
+function plnCastShipMesh(){
+  const m=plnMesh(16384),M=PLN_MAT.man;
+  const hull=plnHex("#d9d5c8"),belly=plnHex("#34373e"),accent=plnHex("#ee7326"),glass=plnHex("#0d1820"),
+    metal=plnHex("#7d828a"),dark=plnHex("#25272c");
+  const st=plnCastResample([
+    {x:-4.5,ry:.62,rz:.85,y:2.30},{x:-3.9,ry:.98,rz:1.25,y:2.25},{x:-2.0,ry:1.22,rz:1.55,y:2.20},{x:0,ry:1.28,rz:1.62,y:2.15},
+    {x:1.9,ry:1.16,rz:1.48,y:2.12},{x:3.2,ry:.90,rz:1.15,y:2.16},{x:4.05,ry:.56,rz:.72,y:2.24},{x:4.5,ry:.16,rz:.22,y:2.30}],56);
+  const zone=(t,s,p)=>{
+    const x=p[0];
+    if(s<-.42)return 0;
+    if(x>2.3&&x<3.7&&s>.30&&s<.88)return 1;
+    if(s>.02&&s<.2&&x>-3.9&&x<2.9)return 2;
+    return 3;
+  };
+  plnLoft(m,{st,sides:64,mat:M,
+    col:(t,s,p)=>{
+      const z=zone(t,s,p);
+      if(z===0)return belly;
+      if(z===1)return glass;
+      if(z===2)return accent;
+      return plnMul(hull,Math.abs(((p[0]+9)%1.15)-.575)>.54?.78:1-.06*plnSmooth(.2,-.4,s));
+    },
+    x:(t,s,p)=>[.1,1,.3,.3][zone(t,s,p)]});
+  for(const z of [-.62,.62])plnTube(m,{path:[[-4.2,2.26,z],[-4.8,2.26,z],[-5.35,2.26,z]],rad:t=>lerp(.36,.56,t),sides:14,
+    col:t=>plnMix3(metal,dark,t),mat:M,x:.5});
+  plnBlob(m,{c:[-3.1,3.72,0],r:[1.05,.8,.07],box:.5,sub:2,lean:-.38,col:u=>u[1]>.55?accent:hull,mat:M,x:.3});
+  for(const z of [-1.95,1.95])plnBlob(m,{c:[-2.3,2.0,z],r:[1.15,.06,.75],box:.6,sub:2,yaw:z>0?.25:-.25,col:hull,mat:M,x:.3});
+  const leg=(hip,foot)=>{
+    const knee=[lerp(hip[0],foot[0],.45),lerp(hip[1],foot[1],.4)+.05,lerp(hip[2],foot[2],.7)];
+    plnTube(m,{path:[hip,knee,foot],rad:t=>lerp(.11,.075,t),sides:8,col:metal,mat:M,x:.5});
+    plnTube(m,{path:[[hip[0]-.7,hip[1]+.1,hip[2]*.8],knee],rad:.05,sides:6,col:dark,mat:M,x:.4});
+    plnBlob(m,{c:[foot[0],foot[1]-.04,foot[2]],r:[.36,.07,.36],sub:1,col:dark,mat:M,x:.2});
+  };
+  leg([2.7,1.3,0],[3.2,.12,0]);leg([-2.3,1.4,-1.2],[-2.9,.12,-2.1]);leg([-2.3,1.4,1.2],[-2.9,.12,2.1]);
+  /* люк на стороне, что смотрит на нас: воротник, тёмная рама, освещённый проём (к полу теплее и
+     ярче, как в комнате) и трап */
+  plnBlob(m,{c:[.75,2.0,-1.28],r:[.82,.92,.42],box:.35,sub:2,col:plnMul(hull,.8),mat:M,x:.3});
+  plnCard(m,[.24,1.26,-1.712],[1.26,1.26,-1.712],[1.26,2.76,-1.712],[.24,2.76,-1.712],[0,0,-1],dark,M,null,0,.2);
+  {
+    const NX=6,NY=10,ids=[];
+    for(let j=0;j<=NY;j++)for(let i=0;i<=NX;i++){
+      const u=i/NX,v=j/NY,jamb=.62+.38*Math.sin(u*Math.PI),room=lerp(3.1,.95,Math.pow(v,.8));
+      ids.push(plnVert(m,[lerp(.36,1.14,u),lerp(1.34,2.68,v),-1.722],[0,0,-1],[1,lerp(.54,.40,v),lerp(.22,.12,v)],PLN_MAT.glow,0,room*jamb,0));
+    }
+    for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+      const a=j*(NX+1)+i;
+      plnQuad(m,ids[a],ids[a+1],ids[a+NX+2],ids[a+NX+1]);
+    }
+  }
+  plnBlob(m,{c:[.75,.68,-2.95],r:[.56,.05,1.45],box:.35,sub:2,pitch:-.45,col:metal,mat:M,x:.3});
+  plnBlob(m,{c:[-3.55,4.5,0],r:[.07,.07,.07],sub:1,col:[1,.12,.08],mat:PLN_MAT.glow,glow:5});
+  plnBlob(m,{c:[.9,3.5,0],r:[.5,.1,.5],sub:1,col:hull,mat:M,x:.3});
+  plnTube(m,{path:[[.9,3.4,0],[.9,4.3,0]],rad:.025,sides:5,col:dark,mat:M});
+  return m;
+}
+/* человек: скафандр в цвете людей, белые шлем и ранец, тёмное забрало, ноги в шаге.
+   Оранжевый держится и на свету, и в тени — на траве, на воде и на небе */
+function plnCastManMesh(){
+  const m=plnMesh(8192),M=PLN_MAT.man;
+  const suit=plnHex("#ee7326"),white=plnHex("#efe9dc"),joint=plnHex("#8a8f96"),glass=plnHex("#0e1a22"),dark=plnHex("#3a3d42");
+  const limb=(path,r0,r1,col)=>plnTube(m,{path,rad:t=>lerp(r0,r1,t),sides:10,col,mat:M,x:.15,cap:true});
+  const legCol=t=>t>.42&&t<.56?white:suit;
+  limb([[0,.94,.1],[.17,.52,.1],[.30,.13,.1]],.115,.085,legCol);
+  limb([[0,.94,-.1],[-.07,.50,-.1],[-.32,.17,-.1]],.115,.085,legCol);
+  plnBlob(m,{c:[.35,.07,.1],r:[.16,.075,.095],sub:1,col:white,mat:M,x:.2});
+  plnBlob(m,{c:[-.33,.12,-.1],r:[.16,.075,.095],sub:1,lean:-.5,col:white,mat:M,x:.2});
+  plnBlob(m,{c:[.02,1.2,0],r:[.2,.33,.25],sub:2,lean:-.08,col:u=>u[1]<-.55?dark:suit,mat:M,x:.15});
+  plnBlob(m,{c:[-.26,1.24,0],r:[.13,.29,.2],box:.45,sub:2,col:u=>u[1]>.25&&u[1]<.5?joint:white,mat:M,x:.25});
+  plnTube(m,{path:[[-.3,1.5,.12],[-.31,1.95,.12]],rad:.012,sides:5,col:dark,mat:M});
+  const vis=u=>u[0]>.25&&u[1]<.55&&u[1]>-.45;
+  plnBlob(m,{c:[.04,1.64,0],r:[.175,.175,.175],sub:2,col:u=>vis(u)?glass:white,mat:M,x:u=>vis(u)?1:.3});
+  plnBlob(m,{c:[.12,1.74,-.17],r:[.04,.04,.04],sub:1,col:joint,mat:M,x:.4});
+  const armCol=t=>t>.5&&t<.62?white:suit;
+  limb([[0,1.44,-.27],[-.12,1.16,-.3],[-.22,.93,-.27]],.082,.065,armCol);
+  limb([[0,1.44,.27],[.14,1.17,.3],[.30,.98,.27]],.082,.065,armCol);
+  plnBlob(m,{c:[-.24,.88,-.27],r:[.07,.075,.06],sub:1,col:white,mat:M,x:.2});
+  plnBlob(m,{c:[.33,.94,.27],r:[.07,.075,.06],sub:1,col:white,mat:M,x:.2});
+  return m;
+}
+/* сетки и записи этого поколения устройства */
+function plnCast(){
+  const Q=PLN_CAST;
+  if(Q.gen===PLN_GPU.gen)return Q;
+  Q.gen=PLN_GPU.gen;
+  Q.man=plnGeo(plnCastManMesh());Q.ship=plnGeo(plnCastShipMesh());
+  Q.manI=plnInst(Q.ma,0,1);Q.shipI=plnInst(Q.sa,0,1);
+  return Q;
+}
+/* Ставит человека и корабль в кадр: тела, лампу люка и пятна тени под ними.
+   man и ship — места в метрах, face — куда человек смотрит */
+function plnCastFrame(F,man,face,ship,yaw){
+  const Q=plnCast(),B=PLN_KIND.body,c=Math.cos(yaw),s=Math.sin(yaw),lp=[.75,1.9,-2.4];
+  plnRec(Q.ma,0,man,1,face<0?Math.PI:0,1,1);
+  plnInstSet(Q.manI,Q.ma,1);
+  plnRec(Q.sa,0,ship,1,yaw,1,2);
+  plnInstSet(Q.shipI,Q.sa,1);
+  F.batches.push({geo:Q.ship,inst:Q.shipI,kind:B,to:PLN_TO.all},{geo:Q.man,inst:Q.manI,kind:B,to:PLN_TO.all});
+  F.lamps.push({p:[ship[0]+lp[0]*c+lp[2]*s,ship[1]+lp[1],ship[2]-lp[0]*s+lp[2]*c],r:7.5,c:[1,.6,.28],k:2.6});
+  const b=F.blobs;
+  let n=b[0]|0;
+  for(const q of [[ship[0],ship[2],5.2,.55],[man[0],man[2],.55,.5]])if(n<64){b.set(q,4+n*4);n++;}
+  b[0]=n;
+}
+
+/* ══════════════ планета: кадр нового вида (M610) ══════════════
+   Собирает кадр из состояния игры и сдаёт его рендеру (21pe): объектив по
+   рамке 2D-игры, свет по часу планеты, два короба теней, земля (21pf), человек
+   и корабль (21ph). Приборы рисует игра, как рисовала, и тычок «идти сюда»
+   попадает туда же: рамка кадра на линии ходьбы — та же, что была.
+
+   Старый кадр не тронут: drawSurface обёрнут здесь, последним модулем
+   семейства. Переключатель выключен — идёт старая рисовалка; новый вид упал —
+   тоже она, и после трёх сбоев подряд новый вид снимает себя сам.
+
+   Свет по часу здесь грубый: три набора чисел — день, закат, ночь — и переход
+   между ними по высоте светила. Закат и ночь по числам стенда, облака от
+   погоды и затмение как следует — M612. Цвета земли пока одни, землеподобные:
+   пустыня и лёд — M613. */
+const PLN_FRAME={blobs:new Float32Array(260),bloom:BLOOM_K.surface,
+  clouds:[[.318,.050,.115,21],[-.300,.058,.085,22],[-.078,.060,.034,23],[.150,.118,.030,24],[-.090,.235,.095,25],[.195,.400,.060,26]],
+  /* дневная луна: азимут, высота, радиус, яркость */
+  moon:[-2.6*PLN_DEG,7.63*PLN_DEG,1.5*PLN_DEG,1],
+  bands:[190,345,1250,3000],
+  thru:[1.2,1.1,.4,0],waterA:[.10,.30,.30,0],waterB:[.02,.10,.17,0]};
+/* Наборы чисел неба, воздуха и заполняющего света. Четвёртое число у каждого своё (21pb):
+   звёзды, перистые, дальняя гряда, сила зарева, плотность воздуха и как он редеет с высотой,
+   у облака на свету — сколько неба открыто (меньше — больше теней облаков на земле) */
+const PLN_LOOK={
+  day:{skyZen:[.13,.33,.78,0],skyZenS:[.26,.48,.84,0],skyHor:[.62,.78,.95,.2],skyHorS:[1,.89,.72,.5],sunGlow:[1,.85,.6,1],
+    airFar:[.5,.66,.92,1],airFarS:[.95,.8,.66,.003],airNear:[.8,.98,.95,0],ambSky:[.22,.3025,.451,0],ambGnd:[.16,.176,.088,0],
+    bounce:[.42,.5,.2,0],cloudLit:[1.28,1.229,1.126,.5],cloudDark:[.5,.58,.82,0],cloudDarkS:[.7,.62,.7,0],key:[1.55,1.42,1.18,0]},
+  dusk:{skyZen:[.10,.20,.52,0],skyZenS:[.30,.34,.60,0],skyHor:[.66,.62,.70,.2],skyHorS:[1.3,.66,.32,.5],sunGlow:[1,.55,.25,1.5],
+    airFar:[.5,.52,.72,1],airFarS:[1.05,.66,.42,.003],airNear:[.85,.95,.95,0],ambSky:[.17,.20,.31,0],ambGnd:[.13,.12,.075,0],
+    bounce:[.46,.39,.10,0],cloudLit:[1.3,.84,.56,.5],cloudDark:[.38,.40,.60,0],cloudDarkS:[.78,.46,.42,0],key:[1.7,1.1,.59,0]},
+  night:{skyZen:[.010,.020,.048,1],skyZenS:[.014,.028,.062,0],skyHor:[.046,.080,.122,.2],skyHorS:[.056,.090,.130,.5],sunGlow:[.35,.5,.8,.12],
+    airFar:[.030,.052,.085,1],airFarS:[.040,.064,.098,.003],airNear:[.8,.95,1,0],ambSky:[.018,.034,.072,0],ambGnd:[.0054,.0116,.0187,0],
+    bounce:[.013,.030,.024,0],cloudLit:[.10,.13,.19,.5],cloudDark:[.020,.030,.055,0],cloudDarkS:[.024,.034,.058,0],key:[.049,.084,.14,0]}};
+function plnLookMix(a,b,t){
+  const o={};
+  for(const k in a){const x=a[k],y=b[k];o[k]=[lerp(x[0],y[0],t),lerp(x[1],y[1],t),lerp(x[2],y[2],t),lerp(x[3],y[3],t)];}
+  return o;
+}
+
+/* ── объектив ──
+   Рамка кадра на линии ходьбы — прямоугольник мира, который показывает 2D-игра; ноги человека
+   стоят на доле f высоты от низа, горизонт — на доле hor. Узкому окну — шире угол: в высоком
+   кадре земли и неба помещается больше, и объектив подходит ближе */
+function plnLens(S,K){
+  const ws=W/K,hs=H/K,k=plnSmooth(.6,1.5,ws/hs),f=lerp(.32,.28,k),hor=lerp(.52,.585,k),fov=lerp(46,24,k)*PLN_DEG;
+  const co=camOffset(S),vx=S.cam.x-ws/2+co.x,vy=S.cam.y+10-hs*(1-f)+co.y;
+  const l=vx/PLN_M,r=(vx+ws)/PLN_M,t=(PLN.y0-vy)/PLN_M,b=(PLN.y0-vy-hs)/PLN_M;
+  const D=((t-b)/2)/Math.tan(fov/2),ex=(l+r)/2,ey=b+hor*(t-b);
+  const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,2,70000),plnM4move(-ex,-ey,D));
+  return {vx,vy,ws,hs,ex,ey,D,hw:(r-l)/2,vp,eye:[ex,ey,-D]};
+}
+
+/* ── свет по часу ──
+   Светило ходит по кругу, наклонённому на 52°: днём свет идёт из-за сцены и сбоку, в лицо
+   объективу не светит никогда. Ночью ключ — луна с другой стороны; ключ гаснет в ноль между
+   ними, и смены стороны не видно. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
+function plnHour(p){
+  const c=celSun(p),q=.0035,th=Math.round(c.ph*TAU/q)*q,tilt=52*PLN_DEG,A=PLN_LOOK;
+  const sun=plnNorm([-Math.cos(th),Math.sin(th)*Math.cos(tilt),Math.sin(th)*Math.sin(tilt)]),sy=sun[1];
+  const atm=(p.T&&p.T.atm)||"",air=atm==="отсутствует"?0:(atm.indexOf("разреженная")>=0?.5:1);
+  /* сколько ночи разрешает область (три света, 11g): в ядре её нет вовсе */
+  const n0=clamp(-c.alt*(air?1.5:1.9)+.15,0,.62),rk=n0>0?clamp(surfNight(p)/n0,0,1):1;
+  const high=plnSmooth(.05,.35,sy),nk=(1-plnSmooth(-.12,.08,sy))*rk,ecl=celDark();
+  const moonlit=sy<-.08&&rk>.5;
+  const dir=moonlit?plnNorm([-sun[0],Math.max(-sy,.25),Math.abs(sun[2])+.3]):plnNorm([sun[0],Math.max(sy,.1),sun[2]]);
+  const look=plnLookMix(plnLookMix(A.dusk,A.day,high),A.night,nk);
+  const kd=plnMix3(A.dusk.key,A.day.key,high),kDay=Math.max(plnSmooth(-.08,.06,sy),moonlit?0:(1-rk)*.25);
+  const kn=moonlit?plnSmooth(-.08,-.22,sy)*rk:0,e=1-ecl;
+  const key=[(kd[0]*kDay+A.night.key[0]*kn)*e,(kd[1]*kDay+A.night.key[1]*kn)*e,(kd[2]*kDay+A.night.key[2]*kn)*e];
+  /* отсвет земли светит настолько, насколько светит ключ */
+  const kb=clamp((key[0]+key[1]+key[2])/(kd[0]+kd[1]+kd[2]),0,1);
+  look.bounce=plnMul(A.day.bounce,kb).concat(0);
+  /* затмение гасит небо и воздух; без воздуха небо чёрное и днём, звёзды стоят всегда */
+  const dim=(1-.7*ecl),sk=dim*air;
+  for(const n of ["skyZen","skyZenS","skyHor","skyHorS","sunGlow","airFar","airFarS"]){const v=look[n];v[0]*=sk;v[1]*=sk;v[2]*=sk;}
+  for(const n of ["cloudLit","cloudDark","cloudDarkS"]){const v=look[n];v[0]*=dim;v[1]*=dim;v[2]*=dim;}
+  {const v=look.ambSky,g=look.ambGnd,a=dim*lerp(.3,1,air);v[0]*=a;v[1]*=a;v[2]*=a;g[0]*=dim;g[1]*=dim;g[2]*=dim;}
+  look.skyZen[3]=clamp(Math.max(nk,ecl,1-air),0,1);
+  look.airFar[3]*=air;
+  const sky=air>.7;
+  if(!sky){look.skyHor[3]=0;look.skyHorS[3]=0;look.cloudLit[3]=1.6;}
+  return {ph:c.ph,sun,dir,key,look,night:nk,air,ecl,clouds:sky?PLN_FRAME.clouds:[]};
+}
+
+/* ── короб тени ──
+   Прямоугольник света вокруг короба мира bx = [x0,x1, y0,y1, z0,z1]. Размер округлён вверх до
+   восьми метров, середина стоит на сетке текселей: на ходу тень не дрожит */
+function plnLightBox(dir,bx,n){
+  const view=plnM4look(plnMul(dir,600),[0,0,0],[0,1,0]),lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];
+  for(let k=0;k<8;k++){
+    const q=plnTf(view,[bx[k&1],bx[2+((k>>1)&1)],bx[4+((k>>2)&1)]]);
+    for(let a=0;a<3;a++){if(q[a]<lo[a])lo[a]=q[a];if(q[a]>hi[a])hi[a]=q[a];}
+  }
+  const sx=Math.ceil((hi[0]-lo[0])/8)*8,sy=Math.ceil((hi[1]-lo[1])/8)*8,tx=sx/n,ty=sy/n;
+  const cx=Math.round((lo[0]+hi[0])*.5/tx)*tx,cy=Math.round((lo[1]+hi[1])*.5/ty)*ty;
+  const near=lo[2]-80,far=hi[2]+5;
+  return {m:plnM4mul(plnM4ortho(cx-sx/2,cx+sx/2,cy-sy/2,cy+sy/2,near,far),view),range:far-near};
+}
+
+/* ── кадр ── */
+function plnSurface(){
+  const t0=wallMs(),S=G.surf,tr=S.tr,p=S.p,K=surfScale(),Q=PLN_FRAME;
+  /* то, что старый кадр делал попутно и на что опирается игра: свет 2D, ветер, камера */
+  tr.p=p;sunDirSet(p);WIND=windOf(p);
+  if(!S.cam)S.cam={x:S.x,y:S.y};
+  PLN.y0=tr.padY;
+  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
+  plnLandStep(L,C.ex,V,2);
+  const Hr=plnHour(p),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
+  look.thru=Q.thru;look.waterA=Q.waterA;look.waterB=[Q.waterB[0],Q.waterB[1],Q.waterB[2],ride];
+  look.moon=Q.moon;look.bands=Q.bands;
+  look.world=[L.sd%1000,clamp(WIND*1.4,-1.2,1.2),0,0];
+  const F={vp:C.vp,vpMirror:plnM4mul(C.vp,plnM4mirrorY(wy)),eye:C.eye,t:(G.t/60)%7200,sun:Hr.dir,key:Hr.key,expo:1,waterY:wy,
+    L0:plnLightBox(Hr.dir,[C.ex-58,C.ex+58,span.lo-8,span.hi+17,-50,24],PLN_GPU.shn),
+    L1:plnLightBox(Hr.dir,[C.ex-250,C.ex+250,Math.min(ride-12,span.lo-8),Math.max(ride+60,span.hi+20),-50,460],PLN_GPU.shn),
+    hero:[0,0,15,36],lamps:[],look,clouds:Hr.clouds,blobs:Q.blobs,batches:[],
+    post:{shafts:[.0024,1600,.62,-.06],bloom:.085,vig:.42,grade:1}};
+  Q.blobs.fill(0);
+  plnLandBatches(L,F.batches,C.ex,V);
+  const man=[S.x/PLN_M,plnY(S.y+10),0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
+  plnCastFrame(F,man,S.face,ship,L.shipYaw);
+  /* герой стоит в пятне света: пятно лежит там, куда его тень падает на уровень сцены */
+  const hk=(man[1]-ride)/Math.max(Hr.dir[1],.08);
+  F.hero[0]=man[0]-Hr.dir[0]*hk;F.hero[1]=man[2]-Hr.dir[2]*hk;
+  PLN.cam=C;PLN.sun=Hr;
+  PLN.stat.cpu=+(wallMs()-t0).toFixed(2);
+  return plnGpuFrame(F);
+}
+
+/* ── переключатель ── */
+const PLN_OLD_SURFACE=drawSurface;
+drawSurface=function(){
+  let ok=false;
+  if(PLN.on&&PLN.bad<3&&G.surf&&G.surf.tr&&G.surf.p){
+    try{
+      ok=plnGpuReady()&&plnSurface();
+      if(ok)PLN.bad=0;
+    }catch(e){
+      PLN.bad++;PLN.err=String((e&&e.stack)||e).slice(0,600);plnLog("кадр: "+PLN.err);
+      /* кадр мог упасть с открытым проходом: кодировщик берём новый, старой рисовалке — чистый лист */
+      if(GPU.on&&GPU.dev){GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.scene3D=false;}
+    }
+  }
+  /* свечение у нового вида своё; движку оставлено только зерно */
+  BLOOM_K.surface=ok?0:PLN_FRAME.bloom;
+  if(!ok){PLN_OLD_SURFACE();return;}
+  const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+  withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,G.viewK/U));
+};
+
 /* ══════════════ пещера: поле породы в двух измерениях ══════════════ */
 /* Была щелью: свод и пол по шуму, между ними две тысячи пикселей хода.
    Теперь пещера — ПОЛЕ: сетка клеток по 5 px, порода или пустота, вырезанная
