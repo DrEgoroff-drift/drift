@@ -53,6 +53,22 @@ this file keeps the evidence and the fix.
   suite that stamps game state must use `now()`, never `Date.now()`/`performance.now()` — a
   stamp on the real clock is hours away from the pinned one (the helm, HUD and ghost-click
   suites broke exactly that way). `wallMs()` stays the real, frozen-in-a-block clock.
+- **The Chrome test tier waited two minutes for nothing (fixed 27.09.2026).** `test.ps1` ran
+  `chrome --dump-dom --virtual-time-budget` and waited for Chrome to exit. On the new PC every
+  part had its report at 10–35 s, but the installed Chrome then hung at exit for 70–120 s: it
+  waits for the Google Update service (`Failed to connect to remote mojo service … scope:
+  System` ends the silence). So `-Browser` took 146 s for 26 s of work, and no test audit saw
+  it, because every clock was inside the page. Now `test-chrome.js` drives the page over the
+  DevTools protocol. It sets the same virtual-time budget, reads the DOM the moment the budget
+  expires, and closes the browser with `Browser.close`. The browser is Chrome for Testing,
+  pinned in `test.ps1` (`$CFT`, unpacked under `C:\Claude\tools\chrome-for-testing\`). It has
+  no updater, and its version does not drift under the golden frames. Two traps with it:
+  - It does not run `--dump-dom` at all.
+  - Without `--disable-field-trial-config` it switches on Chromium's experimental features.
+    That broke the postcard's pixel-exact repeat in 6 checks.
+
+  If one part of a run takes far longer than the work its log shows, look for where the log
+  goes quiet before you blame the suites (see `gaps` in the stderr log).
 - **Never measure the frame with `--virtual-time-budget`.** It fast-forwards
   timers, so the probe measures the fast-forward. `docs/g11.ps1` runs `?g11`
   correctly; it also leaves the GPU on, because `--disable-gpu` reads ~10 fps in

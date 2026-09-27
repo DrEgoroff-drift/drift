@@ -158,10 +158,21 @@ if ($Full -and -not $NoBuild) {
   } else { "  · no second shell ($other) — the two-shell build check is skipped" }
 }
 
-$chrome = @("C:\Program Files\Google\Chrome\Application\chrome.exe",
+# Браузер тестов — Chrome for Testing закреплённой версии (27.09.2026). Обычный Chrome
+# на выходе ждёт службу обновлений Google: на новом компе часть уже написала отчёт, а
+# её Chrome висел ещё 70–120 с («Failed to connect to remote mojo service … scope:
+# System»), и -Browser шёл 146 с при 20 с работы. В сборке для тестов обновлялки нет,
+# а версия не уезжает сама — золотые кадры не плывут от обновлений Chrome. Лежит вне
+# репозитория: распакованный chrome-win64.zip с
+# storage.googleapis.com/chrome-for-testing-public/<версия>/win64/. Нет его — берём
+# обычный Chrome и говорим об этом.
+$CFT = "153.0.8010.52"
+$cft = "C:\Claude\tools\chrome-for-testing\$CFT\chrome-win64\chrome.exe"
+$chrome = @($cft, "C:\Program Files\Google\Chrome\Application\chrome.exe",
             "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe") |
           Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $chrome) { throw "no headless browser found (Chrome/Edge)" }
+if ($chrome -ne $cft) { "  · no Chrome for Testing $CFT ($cft) — running $chrome, whose exit waits for Google Update: expect a slow tail" }
 
 $url = "file:///" + ((Join-Path $root "tests.html") -replace "\\", "/")
 # -Accept (M443): золотые кадры снимаются заново и пишутся в docs/golden/<окно>.json —
@@ -224,7 +235,13 @@ if ($Times) { $Jobs = 1 }
 # «самые долгие» никто никогда не видел, и список тяжёлых наборов держался
 # на памяти, а не на замере. Без бюджета часы идут, прогон дольше, зато
 # видно, за что платим.
-$vt = if ($Times) { @() } else { @("--virtual-time-budget=20000") }
+$vt = if ($Times) { "" } else { " --budget=20000" }
+# Страницу ведёт свой прогонщик test-chrome.js (27.09.2026): Chrome for Testing
+# --dump-dom не выполняет, а обычный Chrome после отчёта ещё минуты ждёт на выходе
+# службу обновлений. Прогонщик ставит то же виртуальное время через протокол
+# отладки, забирает DOM, как только бюджет вышел, и закрывает браузер сам.
+if (-not $nodeExe) { throw "no node: test-chrome.js drives the browser (C:\Claude\tools\node\node.exe or node on PATH)" }
+$runner = Join-Path $root "test-chrome.js"
 
 # ── у каждого прогона свои файлы и свой профиль ──
 # Дамп, поток ошибок и профиль Chrome были ОБЩИЕ на всю машину, и два сеанса
@@ -262,17 +279,15 @@ for ($k = 0; $k -lt $Jobs; $k++) {
   Remove-Item $dom -Force -ErrorAction SilentlyContinue
   $errf = Join-Path $env:TEMP "drift-tests-err-$tag-$k.txt"
   Remove-Item $errf -Force -ErrorAction SilentlyContinue
-  # --enable-logging=stderr --v=0: зеркалит console.* страницы в этот файл, не
-  # в терминал (--dump-dom всё равно уходит в $dom). Харнесс (90-harness.js)
+  # В $errf прогонщик пишет console.* страницы и лог Хрома. Харнесс (90-harness.js)
   # печатает «→ имя» перед КАЖДЫМ набором — на зелёном прогоне файл просто
   # никто не читает; висящая часть называется им ниже (тот же приём, что
   # lab/lab.sh делает для сервера через sed в tests-trace.html).
-  $argv = @("--headless=new", "--no-sandbox", "--window-size=$win",
-            "--user-data-dir=$($env:TEMP)\drift-tests-profile-$tag-$k",
-            "--no-first-run", "--no-default-browser-check", "--timeout=900000",
-            "--enable-logging=stderr", "--v=1") +
-          $vt + @("--dump-dom", $u)
-  $proc = Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -PassThru -RedirectStandardOutput $dom -RedirectStandardError $errf
+  # Аргументы одной строкой в кавычках: путь к Chrome бывает с пробелом, а массив
+  # Start-Process склеивает без кавычек.
+  $argv = ('"{0}" "--chrome={1}" "--url={2}" "--dom={3}" "--err={4}" "--profile={5}\drift-tests-profile-{6}-{7}" --win={8}{9}' -f
+           $runner, $chrome, $u, $dom, $errf, $env:TEMP, $tag, $k, $win, $vt)
+  $proc = Start-Process -FilePath $nodeExe -ArgumentList $argv -NoNewWindow -PassThru
   $runs += [pscustomobject]@{ proc = $proc; dom = $dom; k = $k; err = $errf }
 }
 # последняя «→ имя» в stderr части — набор, в котором её застали (host-лог
