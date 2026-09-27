@@ -122,8 +122,9 @@ function plnSurface(){
     post:{shafts:[.0024,1600,.62,-.06],bloom:.085,vig:.42,grade:1}};
   Q.blobs.fill(0);
   plnLandBatches(L,F.batches,C.ex,V);
-  const man=[S.x/PLN_M,plnY(S.y+10),0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
-  plnCastFrame(F,man,S.face,ship,L.shipYaw);
+  /* в воде человек сидит в круге по пояс: тело стоит ниже, чем его держит игра */
+  const swim=clamp(S.swim||0,0,1),man=[S.x/PLN_M,plnY(S.y+10)-PLN_CAST.sink*swim,0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
+  plnCastFrame(F,man,S.face,ship,L.shipYaw,swim);
   plnThingsFrame(L,F,S,p,C.ex,V);
   plnBeastFrame(L,F,S,p,C.ex,V);
   plnHerbFrame(L,F,S,p,C.ex,V);

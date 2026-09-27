@@ -5,8 +5,10 @@
 
    Сетки лежат в начале координат, ноги на нуле; в мир их ставит запись
    расстановки, так что шаг человека не стоит ни одной вершины. */
-const PLN_CAST={gen:-1,man:null,ship:null,manI:null,shipI:null,
-  ma:new Float32Array(16),sa:new Float32Array(16)};
+const PLN_CAST={gen:-1,man:null,ship:null,ring:null,manI:null,shipI:null,ringI:null,
+  ma:new Float32Array(16),sa:new Float32Array(16),ra:new Float32Array(16),
+  sink:.6,                              /* на сколько тело в воде сидит ниже, чем его держит игра, м */
+  belt:1.0};                            /* высота круга над подошвой, м */
 
 /* станции корпуса, сглаженные: Катмулл — Ром через заданные */
 function plnCastResample(st,n){
@@ -99,24 +101,37 @@ function plnCastManMesh(){
   plnBlob(m,{c:[.33,.94,.27],r:[.07,.075,.06],sub:1,col:white,mat:M,x:.2});
   return m;
 }
+/* спасательный круг: тор в цвете людей с белыми перехватами. Скафандр надувает его в воде,
+   человек сидит в нём по пояс */
+function plnCastRingMesh(){
+  const m=plnMesh(1024),suit=plnHex("#ee7326"),white=plnHex("#efe9dc"),path=[],n=32;
+  for(let k=0;k<=n;k++){const a=k/n*TAU;path.push([Math.cos(a)*.46,0,Math.sin(a)*.46]);}
+  plnTube(m,{path,rad:.15,sides:10,up:[0,1,0],col:t=>((t*4+.11)%1)<.22?white:suit,mat:PLN_MAT.man,x:.2});
+  return m;
+}
 /* сетки и записи этого поколения устройства */
 function plnCast(){
   const Q=PLN_CAST;
   if(Q.gen===PLN_GPU.gen)return Q;
   Q.gen=PLN_GPU.gen;
-  Q.man=plnGeo(plnCastManMesh());Q.ship=plnGeo(plnCastShipMesh());
-  Q.manI=plnInst(Q.ma,0,1);Q.shipI=plnInst(Q.sa,0,1);
+  Q.man=plnGeo(plnCastManMesh());Q.ship=plnGeo(plnCastShipMesh());Q.ring=plnGeo(plnCastRingMesh());
+  Q.manI=plnInst(Q.ma,0,1);Q.shipI=plnInst(Q.sa,0,1);Q.ringI=plnInst(Q.ra,0,1);
   return Q;
 }
 /* Ставит человека и корабль в кадр: тела, лампу люка и пятна тени под ними.
-   man и ship — места в метрах, face — куда человек смотрит */
-function plnCastFrame(F,man,face,ship,yaw){
+   man и ship — места в метрах, face — куда человек смотрит, swim — насколько надут круг (0…1) */
+function plnCastFrame(F,man,face,ship,yaw,swim){
   const Q=plnCast(),B=PLN_KIND.body,c=Math.cos(yaw),s=Math.sin(yaw),lp=[.75,1.9,-2.4];
   plnRec(Q.ma,0,man,1,face<0?Math.PI:0,1,1);
   plnInstSet(Q.manI,Q.ma,1);
   plnRec(Q.sa,0,ship,1,yaw,1,2);
   plnInstSet(Q.shipI,Q.sa,1);
   F.batches.push({geo:Q.ship,inst:Q.shipI,kind:B,to:PLN_TO.all},{geo:Q.man,inst:Q.manI,kind:B,to:PLN_TO.all});
+  if(swim>0){
+    plnRec(Q.ra,0,[man[0],man[1]+Q.belt,man[2]],.3+.7*swim,0,1,3);
+    plnInstSet(Q.ringI,Q.ra,1);
+    F.batches.push({geo:Q.ring,inst:Q.ringI,kind:B,to:PLN_TO.all});
+  }
   F.lamps.push({p:[ship[0]+lp[0]*c+lp[2]*s,ship[1]+lp[1],ship[2]-lp[0]*s+lp[2]*c],r:7.5,c:[1,.6,.28],k:2.6});
   const b=F.blobs;
   let n=b[0]|0;

@@ -11,7 +11,9 @@
 
    Форма читается силуэтом: гриб — шляпкой с плоским исподом, зонтик —
    мембраной на рёбрах, спираль — витком, шар — шаром на привязи. Это заготовки
-   первого этапа; свой проход по флоре — M622. */
+   первого этапа; свой проход по флоре — M622.
+
+   Здесь же водоросли пруда (waterAlgae): их собирают вплавь. */
 const PLN_HERB={z0:1.9,zk:2.6,          /* куртина в глубину: от и на сколько, м */
   tints:[0,3,1,2],                      /* краски мира (PLN_TINTS) по очереди; последняя — акцент */
   bark:plnHex("#5b4636"),
@@ -284,8 +286,64 @@ function plnHerbs(L,S,p){
   PLN.stat.herbs={n,kinds:Q.parts.length,ms:Math.round(Q.ms)};
   return Q;
 }
+/* ── водоросли пруда (M327): их собирают вплавь ──
+   Куст поднялся со дна и вышел из воды: пучок стеблей, макушка у каждого завита улиткой и светла —
+   её и видно с берега; по воде от куста лежат ленты. Стоит куст сразу за линией, по которой
+   плывут: человек проходит перед ним. Снятый куст из кадра уходит */
+function plnHerbAlgaMesh(k){
+  const m=plnMesh(4096),r=rng(7600+k),n=5+(k%3),dark=plnRgb([50,116,70]),lite=plnRgb([186,224,112]);
+  for(let i=0;i<n;i++){
+    const az=(i+r()*.6)/n*TAU,ox=Math.cos(az),oz=Math.sin(az)*.55,rad=.08+r()*.3,h=.3+r()*.55,R0=.15+r()*.07,path=[],n1=16;
+    for(let s=0;s<6;s++){const t=s/6,b=R0*.6*(1-t)*(1-t);path.push([ox*(rad-b),-.7+(h+.7)*t,oz*(rad-b)]);}
+    for(let s=0;s<=n1;s++){
+      const f=s/n1*2.7*Math.PI,R=R0*(1-.78*s/n1);
+      path.push([ox*(rad+R0-R*Math.cos(f)),h+R*Math.sin(f),oz*(rad+R0-R*Math.cos(f))]);
+    }
+    plnTube(m,{path,rad:t=>lerp(.05,.068,plnSmooth(.25,.6,t))*(1-.35*plnSmooth(.8,1,t)),sides:6,
+      col:t=>plnMix3(dark,lite,plnSmooth(.15,.75,t)),mat:PLN_MAT.bark,wind:t=>.06*t*t,x:.2});
+  }
+  for(let i=0;i<4;i++){
+    const len=.7+r()*.5,w=.1+r()*.04,bend=(r()-.5)*1.4,S=5;
+    let a=r()*TAU,x=Math.cos(a)*.15,z=Math.sin(a)*.15,pa=-1,pb=-1;
+    for(let s=0;s<=S;s++){
+      const t=s/S,ww=w*Math.sin(Math.PI*Math.pow(t,.7))+.012,nx=-Math.sin(a),nz=Math.cos(a),c=plnMix3(dark,lite,.2+.35*t);
+      const va=plnVert(m,[x+nx*ww,.03,z+nz*ww],[0,1,0],c,PLN_MAT.leaf,0,0,t),vb=plnVert(m,[x-nx*ww,.03,z-nz*ww],[0,1,0],c,PLN_MAT.leaf,0,0,t);
+      if(s)plnQuad(m,pa,pb,vb,va);
+      pa=va;pb=vb;
+      a+=bend/S;x+=Math.cos(a)*len/S;z+=Math.sin(a)*len/S*.55;
+    }
+  }
+  return m;
+}
+function plnHerbAlgae(L,F,S,p){
+  const Wt=L.lake?waterOf(S.tr,p):null;
+  if(!Wt)return;
+  const list=waterAlgae(Wt);
+  let Q=L.algae,sig=1;
+  for(let i=0;i<list.length;i++)if(!list[i].taken)sig+=2<<i;
+  if(Q&&Q.gen!==PLN_GPU.gen){plnInstFree(Q.inst);for(const g of Q.geo)plnGeoFree(g);Q=null;}
+  if(!Q)Q=L.algae={gen:PLN_GPU.gen,geo:[0,1,2].map(k=>plnGeo(plnHerbAlgaMesh(k))),a:new Float32Array(16*8),inst:null,parts:[],sig:-1};
+  if(Q.sig!==sig){
+    Q.sig=sig;Q.parts.length=0;
+    let n=0;
+    for(let k=0;k<3;k++){
+      const first=n;
+      for(let i=k;i<list.length&&n<8;i+=3){
+        const a=list[i];
+        /* кусты стоят не в ряд: кто за линией, по которой плывут, кто перед ней */
+        const u=(a.ph*7.13)%1,z=u<.3?-.5-u*3:.5+(u-.3)*2.6;
+        if(!a.taken)plnRec(Q.a,n++,[a.x/PLN_M,L.lake.level,z],clamp(a.h/18,.7,1.3),a.ph,1,n,null,0);
+      }
+      if(n>first)Q.parts.push({geo:Q.geo[k],first,count:n-first});
+    }
+    if(!Q.inst)Q.inst=plnInst(Q.a,n,8);
+    else plnInstSet(Q.inst,Q.a,n);
+  }
+  for(const q of Q.parts)F.batches.push({geo:q.geo,inst:Q.inst,first:q.first,count:q.count,kind:PLN_KIND.body,to:PLN_TO.near});
+}
 function plnHerbFrame(L,F,S,p,ex,V){
   const Q=plnHerbs(L,S,p),b=F.blobs;
+  plnHerbAlgae(L,F,S,p);
   if(!Q.inst||!Q.n)return;
   for(const q of Q.parts)F.batches.push({geo:q.geo,inst:Q.inst,first:q.first,count:q.count,kind:PLN_KIND.body,to:q.tall>1.5?PLN_TO.all:PLN_TO.near});
   let n=b[0]|0;
@@ -293,7 +351,8 @@ function plnHerbFrame(L,F,S,p,ex,V){
   b[0]=n;
 }
 function plnHerbDrop(L){
-  const Q=L.herbs;
+  const Q=L.herbs,A=L.algae;
+  if(A){for(const g of A.geo)plnGeoFree(g);plnInstFree(A.inst);L.algae=null;}
   if(!Q)return;
   for(const k in Q.geo)plnGeoFree(Q.geo[k]);
   if(Q.inst)plnInstFree(Q.inst);

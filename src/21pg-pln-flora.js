@@ -1,4 +1,4 @@
-/* ══════════════ планета: набор тел — трава, цветок, камень, розетка, куст, дерево (M611) ══════════════
+/* ══════════════ планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611) ══════════════
    Всё, что растёт и лежит на земле, — из одного набора. Тело строится раз на
    устройство, в своей мерке (пучок и камень — метр, дерево — десять), а в мир
    его ставит запись расстановки (21pc): место, размер, поворот, доля высоты и
@@ -6,9 +6,10 @@
    не два миллиона вершин на куске земли.
 
    Формы — со стенда docs/look (M600): шапка с плоским исподом, розетка с
-   поникшими листьями, гранёный камень со мхом на макушке. Деревья — шесть
-   пород с разным обводом, они в 21pgb. Оранжевого в наборе нет: он у людей и
-   у руды.
+   поникшими листьями, гранёный камень со мхом на макушке. Скала крутой
+   ступени — шар, срубленный плоскостями: шесть уступов, три высоких и три
+   лежачих. Деревья — шесть пород с разным обводом, они в 21pgb. Оранжевого в
+   наборе нет: он у людей и у руды.
 
    Цвет. Пучки, розетки и кусты несут в вершине только ход от корня к макушке
    (r) и свою светлоту (g): оба цвета даёт запись (режим 1). У дерева так
@@ -16,6 +17,8 @@
    несут свой цвет, запись его подкрашивает (режим 0). */
 const PLN_TINTS=[{top:plnHex("#9cc04a"),under:plnHex("#2f5f45")},{top:plnHex("#bfc04e"),under:plnHex("#4a6a3a")},
   {top:plnHex("#cf8fb0"),under:plnHex("#5a4466")},{top:plnHex("#6fb58a"),under:plnHex("#24514f")}];
+/* листья-блюдца на воде пруда: зелёные и, изредка, в цвет акцента */
+const PLN_PADS=[[plnHex("#1f5a48"),plnHex("#7fc08a")],[plnHex("#5a4466"),plnHex("#cf8fb0")]];
 /* дальний берег: та же зелень, тише */
 const PLN_TINTS_FAR=[{top:plnHex("#86a850"),under:plnHex("#33594a")},{top:plnHex("#a9ab5a"),under:plnHex("#4a6044")}];
 const PLN_FLORA={gen:-1,kit:null,
@@ -53,6 +56,45 @@ function plnFloraRock(m,seed,sub,r){
       const k=lerp(.62,1,plnSmooth(-.6,.6,u[1]+plnNoise(p[0]*.9,p[1]*2.2,seed)*.5));
       return plnMix3([k,k,k],moss,plnSmooth(.55,.9,n[1])*plnSmooth(-.1,.3,plnNoise(p[0]*.7+3,p[2]*.7,seed+2))*.7);
     },mat:PLN_MAT.rock});
+  return m;
+}
+/* скала: шар, срубленный плоскостями, — камень рублен, а не лепится. Грань несёт свою нормаль и свою
+   светлоту: что смотрит вверх — светлее, там же лежит мох. Кверху тело уже.
+   o: c (середина подошвы), r [rx, рост, rz], chops (сколько срубов), lean и pitch (наклон пласта),
+      yaw, thin (ширина макушки в долях подошвы), seed */
+function plnFloraCrag(m,r,o){
+  const P=PLN_PAL,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]],M=PLN_MAT.rock;
+  const g=plnIco(2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed;
+  for(let k=0;k<o.chops;k++)cuts.push([plnNorm([r()*2-1,r()*1.5-.6,r()*2-1]),.5+r()*.36]);
+  for(const u of g.p){
+    let q=plnMul(u,1+.2*plnNoise(u[0]*1.6+sd,u[1]*1.6+u[2]*1.1,sd));
+    for(const [n,d] of cuts){const e=plnDot(q,n)-d;if(e>0)q=plnSub(q,plnMul(n,e));}
+    const w=lerp(1.12,o.thin,clamp(q[1]*.5+.5,0,1));
+    let l=[q[0]*R[0]*w,(q[1]+1)*.5*R[1],q[2]*R[2]*w];
+    if(o.lean)l=plnRotZ(l,o.lean);
+    if(o.pitch)l=plnRotX(l,o.pitch);
+    if(o.yaw)l=plnRotY(l,o.yaw);
+    l=plnAdd(l,o.c);
+    V.push(l);G0.push(plnSmooth(-.25,.3,plnNoise(l[0]*.9+sd,l[2]*.9,sd+2))*.75);
+  }
+  const mid=plnAdd(o.c,[0,R[1]*.5,0]);
+  for(const [a,b,c] of g.f){
+    const e=plnCross(plnSub(V[b],V[a]),plnSub(V[c],V[a])),ar=plnLen(e);
+    if(ar<1e-6)continue;
+    let n=plnMul(e,1/ar);
+    if(plnDot(n,plnSub(V[a],mid))<0)n=plnMul(n,-1);
+    /* светлота — от того, куда грань смотрит: куски одного сруба красятся одинаково */
+    const k=lerp(.7,1.08,plnSmooth(-.35,.9,n[1]))*(.93+.14*plnNoise(n[0]*2.3+sd,n[2]*2.3+n[1]*1.7,sd+4)),up=plnSmooth(.45,.85,n[1]);
+    const v=i=>plnVert(m,V[i],n,plnMix3([k,k,k],moss,G0[i]*up),M,0,0,0);
+    plnTri(m,v(a),v(b),v(c));
+  }
+}
+/* уступ: скала со своими малыми — тело крутой ступени тропы. Пласты клонятся в одну сторону.
+   parts: [x, z, rx, рост над нулём, rz]…; подошва на полметра ниже нуля: тело сидит в склоне */
+function plnFloraLedge(m,seed,parts,dip){
+  const r=rng(seed);
+  parts.forEach((q,k)=>plnFloraCrag(m,r,{c:[q[0],-.5,q[1]],r:[q[2],q[3]+.5,q[4]],chops:7+((r()*4)|0),
+    lean:dip*(.7+r()*.6),pitch:(r()-.5)*.24,yaw:(r()-.5)*1.2,thin:.6+r()*.25,seed:seed+k*17}));
   return m;
 }
 /* розетка: листья из одного корня, поникшие — куст ближнего плана: гладкая шапка среди травы
@@ -94,6 +136,18 @@ function plnFloraCap(m,c,pr,ph,o){
   plnBlob(m,{c,r:[pr,ph,pr],sub:o.sub,bump:o.bump==null?.2:o.bump,bumpF:o.bumpF||2.4,seed:o.seed,yaw:o.yaw||0,lean:o.lean||0,
     cut:-.22*ph,col:o.col,mat:PLN_MAT.leaf,wind:o.wind,nc:o.nc,ncK:o.ncK==null?.5:o.ncK});
 }
+/* лист-блюдце на воде: круг с вырезом, край чуть поднят и светлее середины */
+function plnFloraPad(m,r){
+  const M=PLN_MAT.leaf,n=14,cut=.5+r()*.5,a0=r()*TAU,g=.5+(r()-.5)*.16,c=plnVert(m,[0,.012,0],[0,1,0],[.4,g-.06,0],M,0,0,0);
+  let p=-1;
+  for(let i=0;i<=n;i++){
+    const a=a0+cut*.5+(TAU-cut)*i/n,rr=1+.07*Math.sin(a*3+g*20),x=Math.cos(a)*rr,z=Math.sin(a)*rr;
+    const v=plnVert(m,[x,.035,z],plnNorm([-x*.25,1,-z*.25]),[.8+.2*Math.sin(a*2+1),g+.05,0],M,0,0,1);
+    if(i)plnTri(m,c,p,v);
+    p=v;
+  }
+  return m;
+}
 function plnFloraBush(m,r){
   const n=3+(r()*3|0),nc=[0,-.4,0];
   const col=(u,p,nn)=>[plnSmooth(-.2,.5,nn[1]),.5+plnNoise(p[0]*1.3,p[2]*1.3+p[1],3)*.12,0];
@@ -123,9 +177,28 @@ function plnFloraKit(){
   /* камни: три малых и три больших */
   K.rock=[[11,1,[1.2,.8,1]],[23,1,[1.35,.7,1]],[37,1,[1.05,.75,1.1]],[5,2,[1.2,.8,1]],[17,2,[1.25,.85,1]],[29,2,[1.15,.9,.95]]]
     .map(q=>geo(plnFloraRock(plnMesh(256),q[0],q[1],q[2])));
+  /* уступы: зуб, двойня, столб — высокие, им стоять за тропой; гребень, глыба, плита — низкие, они
+     лежат и перед ней. Мерки тела — для посадки на склон: top — макушка над нулём, rx и rz — полуоси
+     подошвы, low — на сколько подошва ниже нуля */
+  K.ledge=[[[[0,0,.85,2.6,.75],[-.95,-.25,.6,1.3,.55],[.8,.2,.5,.9,.5]],.2],
+    [[[-.45,0,.7,2.1,.65],[.55,.15,.6,1.5,.6],[1.3,-.2,.45,.7,.45]],-.24],
+    [[[0,0,.75,2.9,.65],[.7,.1,.5,1.4,.5]],.16],
+    [[[-1.1,0,.7,1.2,.6],[0,.1,.8,1.7,.7],[1.0,-.1,.6,1.0,.55]],-.18],
+    [[[0,0,1.2,1.3,.9],[.9,-.35,.5,.7,.45]],.22],
+    [[[0,0,1.4,.8,.9],[-.3,.1,.8,1.2,.6]],-.14]].map((q,k)=>{
+    const m=plnFloraLedge(plnMesh(4096),7250+k*7,q[0],q[1]);
+    let top=0,rx=0,rz=0;
+    for(let i=0;i<m.nv;i++){
+      const o=i*PLN_VS;
+      top=Math.max(top,m.v[o+1]);
+      if(m.v[o+1]<.2){rx=Math.max(rx,Math.abs(m.v[o]));rz=Math.max(rz,Math.abs(m.v[o+2]));}
+    }
+    return {geo:geo(m),top,rx,rz,low:.5};
+  });
   K.ros=[0,1,2].map(k=>geo(plnFloraRosette(plnMesh(1024),rng(7300+k),56)));
   K.bloom=[2,3].map(n=>geo(plnFloraBloom(plnMesh(256),rng(7350+n),n)));
   K.bush=[0,1,2].map(k=>geo(plnFloraBush(plnMesh(512),rng(7500+k))));
+  K.pad=[0,1,2].map(k=>geo(plnFloraPad(plnMesh(32),rng(7550+k))));
   /* деревья (породы — 21pgb). K.tree и K.far — тела подряд, K.sp и K.spFar — какие из них чьей
      породы. «hero» — зонт, что клонится над площадкой: он один и в рощах не растёт */
   K.tree=[];K.sp={};K.far=[];K.spFar={};

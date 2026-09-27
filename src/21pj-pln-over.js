@@ -1,7 +1,7 @@
 /* ══════════════ планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611) ══════════════
    Кадр нового вида — тела в объёме. Поверх него, тем же 2D, что рисует
    приборы, ложится то, что телом не бывает: подписи вещей, полоса добычи, луч
-   бура, следы и пыль из-под ног, спасательный круг, ближняя погода.
+   бура, следы и пыль из-под ног, ближняя погода. Спасательный круг — тело (21ph).
 
    И то, что ещё НЕ перерисовано: находки, свои постройки, дом, посёлок,
    «Жестянка», чужой знак, подглядка, места уездов. Их кладут старые рисовалки,
@@ -119,18 +119,6 @@ function plnOver(){
     }
   }
   const x=S.x-camx,y=S.y-camy;
-  /* спасательный круг: рыжий тор по урезу, блик сверху, кольца волны от него */
-  if(S.swim>0){
-    const k=S.swim,Wt=typeof waterOf==="function"?waterOf(tr,p):null,wy=Wt?Wt.y-camy:y-1;
-    ctx.save();ctx.globalAlpha=k;
-    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=4.6;
-    ctx.beginPath();ctx.ellipse(x,wy-1.5,8.5*k+1,3.4,0,0,TAU);ctx.stroke();
-    ctx.strokeStyle="rgb(226,116,58)";ctx.lineWidth=3.4;
-    ctx.beginPath();ctx.ellipse(x,wy-1.5,8.5*k+1,3.4,0,0,TAU);ctx.stroke();
-    ctx.strokeStyle="rgba(255,226,190,.55)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.ellipse(x,wy-2.6,8.5*k+1,3.2,0,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
-    ctx.restore();
-  }
   if(S.mining){
     const d=S.mining,dx=d.x/M,dz=plnThingDepZ(d),q=at([dx,gy(dx,dz)+.45,dz]);
     ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.5;

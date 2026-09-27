@@ -129,6 +129,16 @@ function plnLandMake(tr,p,sx){
   for(let i=0;i<NT;i++)L.lift[i]+=2.4;
   L.liftLo=plnSlide(L.lift,Math.round(100/dx),new Float32Array(NT));
   L.liftHi=plnSlide(L.lift,Math.round(100/dx),new Float32Array(NT),true);
+  /* где линия идёт ступенью круче сорока градусов, земля — скала (тела её стоят там же, 21pga);
+     берег пруда остаётся берегом */
+  {
+    const cr=new Float32Array(NT);
+    for(let i=1;i<NT-1;i++){
+      const x=x0+i*dx;
+      if(!(lake&&x>lake.x0-2&&x<lake.x1+2))cr[i]=plnSmooth(.8,1.05,Math.abs(P[i+1]-P[i-1])/(2*dx));
+    }
+    L.crag=plnBox(plnSlide(cr,1,A,true),1,new Float32Array(NT),S);
+  }
   /* высоты ленты без зерна: ряд за рядом по образцам линии */
   const rows=plnLandRows(),zr=rows.z,R=zr.length,T=new Float32Array(R*NT);
   const padL=new Float32Array(NT),padF=new Float32Array(NT);
@@ -167,10 +177,11 @@ function plnLandMake(tr,p,sx){
   }
   /* вал вокруг пруда: вода стоит в ленте, а не льётся по ближнему склону */
   if(lake){
+    plnLandPondLine(L);
     const ia=clamp(Math.floor((lake.x0-32-x0)/dx),0,NT-1),ib=clamp(Math.ceil((lake.x1+32-x0)/dx),0,NT-1);
     for(let r=0;r<R;r++){
       const z=zr[r],w=plnSmooth(.6,2.5,Math.abs(z));
-      if(w<=0||z<-38||z>36)continue;
+      if(w<=0||z<lake.zn-32||z>lake.zf+32)continue;
       for(let i=ia;i<=ib;i++){
         const hr=plnLandRim(L,x0+i*dx,z),o=r*NT+i;
         T[o]=lerp(T[o],Math.max(T[o],hr),w);
@@ -182,15 +193,53 @@ function plnLandMake(tr,p,sx){
   plnLandJobs(L);
   return L;
 }
-/* чаша пруда и вал: s — как далеко точка от чаши (внутри — меньше нуля) */
-function plnLandPond(L,x,z){
-  const k=L.lake,sx=Math.max(k.x0-x,0,x-k.x1),sz=Math.max(-6-z,0,z-4);
-  if(sx>0||sz>0)return Math.hypot(sx,sz);
-  return -Math.min(x-k.x0,k.x1-x,z+6,4-z);
+/* Берег пруда. По линии ходьбы вода лежит от x0 до x1 — так в игре; в глубину берег свой: к объективу
+   и от него он отходит заливами и мысами, концы скруглены. Обвод — многоугольник, раз на посадку;
+   far и near — его берега по x, дальний и ближний */
+function plnLandPondLine(L){
+  const k=L.lake,xc=(k.x0+k.x1)/2,hx=(k.x1-k.x0)/2,n=40,far=[],near=[];
+  const zf=clamp(.62*hx,5.5,7.5),zn=clamp(.7*hx,6.5,9);
+  for(let i=0;i<=n;i++){
+    const a=Math.PI*i/n,x=xc-hx*Math.cos(a),e=Math.pow(Math.sin(a),.6);
+    far.push([x,e*zf*(1+.3*plnFbm(x*.13+3.1,1.7,2,L.sd+71)+.1*Math.sin(x*.9+L.sd))]);
+    near.push([x,-e*zn*(1+.3*plnFbm(x*.13+9.4,5.1,2,L.sd+72)+.1*Math.sin(x*.8+1+L.sd))]);
+  }
+  k.far=far;k.near=near;k.poly=far.concat(near.slice(1,n).reverse());
+  k.zf=0;k.zn=0;
+  for(const p of k.poly){k.zf=Math.max(k.zf,p[1]);k.zn=Math.min(k.zn,p[1]);}
 }
+/* где берег пруда на этом x: дальний (far) или ближний */
+function plnLandPondZ(L,x,far){
+  const k=L.lake,A=far?k.far:k.near,n=A.length-1;
+  if(x<=k.x0||x>=k.x1)return 0;
+  let a=0,b=n;
+  while(b-a>1){const m=(a+b)>>1;if(A[m][0]<=x)a=m;else b=m;}
+  return lerp(A[a][1],A[b][1],(x-A[a][0])/((A[b][0]-A[a][0])||1));
+}
+/* чаша пруда и вал: s — как далеко точка от берега (внутри чаши — меньше нуля) */
+function plnLandPond(L,x,z){
+  const k=L.lake,P=k.poly,n=P.length,bx=Math.max(k.x0-x,0,x-k.x1),bz=Math.max(k.zn-z,0,z-k.zf);
+  if(bx>30||bz>30)return Math.hypot(bx,bz);
+  let d2=1e18,inside=false;
+  for(let i=0,j=n-1;i<n;j=i++){
+    const a=P[j],b=P[i],ex=b[0]-a[0],ez=b[1]-a[1],px=x-a[0],pz=z-a[1];
+    const t=clamp((px*ex+pz*ez)/((ex*ex+ez*ez)||1),0,1),qx=px-ex*t,qz=pz-ez*t;
+    d2=Math.min(d2,qx*qx+qz*qz);
+    if((a[1]>z)!==(b[1]>z)&&x<a[0]+(z-a[1])*ex/ez)inside=!inside;
+  }
+  return inside?-Math.sqrt(d2):Math.sqrt(d2);
+}
+/* Вал у объектива низок — вровень с водой: за высоким, да с травой на нём, воды не видно, объектив
+   смотрит на неё вскользь. Дно у берега — отмель, глубина начинается в шаге от неё */
 function plnLandRim(L,x,z){
-  const s=plnLandPond(L,x,z),top=L.lake.level+.4;
-  return s>0?top-1.2*plnSmooth(3,9,s)-6*plnSmooth(9,25,s):top-3*plnSmooth(0,2.5,-s);
+  const s=plnLandPond(L,x,z),top=L.lake.level+lerp(.15,.4,plnSmooth(-2,3,z));
+  return s>0?top-1.2*plnSmooth(3,9,s)-6*plnSmooth(9,25,s):top-.3*plnSmooth(0,.9,-s)-2.7*plnSmooth(.7,4.5,-s);
+}
+/* Голый берег: полоса сырой земли у самой воды. Полоса рваная — местами трава спускается к урезу:
+   сплошная читается второй тропой вокруг пруда */
+function plnLandBare(L,x,z){
+  const s=plnLandPond(L,x,z);
+  return s>1.3?0:plnSmooth(1.3,.2,s)*plnSmooth(-.45,.15,plnFbm(x*.42+7.3,z*.42+1.9,2,L.sd+73));
 }
 
 /* ── высоты ── */
@@ -202,6 +251,13 @@ function plnLandRibH(L,r,i){
   if(z<0){
     const f=.07*d+1.6*plnSmooth(8,30,d);
     h+=Math.min(plnFbm(x*.03+1.7,z*.03+4.2,3,L.sd+5)*1.3*plnSmooth(3,22,d),.8*f)*calm;
+  }
+  /* скала ступени рублена: узлы сдвинуты кто куда, и грань встаёт к грани. Перед линией — только вниз;
+     сама линия стоит, где была */
+  const cr=L.crag[i];
+  if(cr>0&&d>.2&&d<10){
+    const u=plnHash(i,r,L.sd+91);
+    h+=cr*plnSmooth(.2,.9,d)*plnSmooth(10,6,d)*(z<0?-.45*u:.6*(u-.5));
   }
   return h+plnFbm(x*.35,z*.35,2,L.sd+13)*.09*plnSmooth(1.2,4,d)*calm;
 }
@@ -451,9 +507,17 @@ function plnLandRibMesh(L,c){
     let col=plnLandCol(L,x,z,h,q.n,0);
     /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
     if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
-    if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>-12&&z<10)col=plnMix3(col,PAL.mud,plnSmooth(L.lake.level+.3,L.lake.level-.5,h)*.85);
-    /* отвесные ступени линии — камень: в гнезде свечения у земли лежит его доля */
-    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,plnSmooth(.5,.7,slope)*.85,q.ao);
+    if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>L.lake.zn-4&&z<L.lake.zf+4){
+      /* у самой воды берег гол: сырая земля темнее тропы */
+      col=plnMix3(col,plnMix3(PAL.soilDark,PAL.mud,.6),plnLandBare(L,x,z)*plnSmooth(.6,2.5,Math.abs(z))*.65);
+      col=plnMix3(col,PAL.mud,plnSmooth(L.lake.level+.12,L.lake.level-.5,h)*.85);
+    }
+    /* ступень линии — скала: камень там, где земля под ней и за ней сама идёт круто */
+    const st=Math.max(plnSmooth(.5,.7,slope),plnLandTab(L,L.crag,x)*plnSmooth(.16,.34,slope)*plnSmooth(9,5,Math.abs(z)));
+    if(st>0)col=plnMix3(col,plnMul(plnMix3(PAL.rockWarm,PAL.rockCool,plnFbm(x*.05+9,z*.05+2,3,L.sd+41)*.5+.5),.74+.26*plnHash(i0+i,r,L.sd+92)),
+      (st-plnSmooth(.5,.7,slope))*.8);
+    /* в гнезде свечения у земли лежит доля камня */
+    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st*.85,q.ao);
   }
   for(let r=0;r+1<R;r++)for(let i=0;i+1<nc;i++){
     const a=r*nc+i;
@@ -513,12 +577,13 @@ function plnLandWaterMesh(L,J){
 }
 /* пруд стоит в мире, на уровне озера игры */
 function plnLandPondMesh(L,J){
-  const k=L.lake,sx=L.dx*2,sz=.6,z0=-8.4,z1=6,nx=Math.ceil((J.xb-J.xa)/sx),nz=Math.round((z1-z0)/sz),m=plnMesh((nx+1)*(nz+1)*2);
+  const k=L.lake,sx=L.dx*2,sz=.6,z0=k.zn-2.4,z1=k.zf+2,nx=Math.ceil((J.xb-J.xa)/sx),nz=Math.ceil((z1-z0)/sz),m=plnMesh((nx+1)*(nz+1)*2);
   const keep=new Uint8Array((nx+1)*(nz+1));
   for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){
     const x=J.xa+i*sx,z=z0+j*sz,hr=plnLandRibAt(L,x,z);
     plnVert(m,[x,k.level,z],[0,1,0],[hr,-1e3,0],PLN_MAT.water,0,0,0);
-    keep[j*(nx+1)+i]=k.level-hr>-.4?1:0;
+    /* вода — только в чаше: за валом бугры склона уходят ниже её уровня, и там она легла бы лужами */
+    keep[j*(nx+1)+i]=k.level-hr>-.4&&(Math.abs(z)<2.5||plnLandPond(L,x,z)<1.2)?1:0;
   }
   for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){
     const a=j*(nx+1)+i,b=a+1,c=a+nx+2,d=a+nx+1;
