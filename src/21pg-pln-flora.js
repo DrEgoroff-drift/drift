@@ -141,9 +141,8 @@ function plnFloraKit(){
   PLN_TREE_ORDER.forEach((sp,i)=>{
     if(PLN_TREES[sp].far>0)for(let k=0;k<2;k++)add(K.far,K.spFar,sp,tree(sp,7600+i*10+k,1,false));
   });
-  /* кулиса: объектив смотрит на неё сверху, и крона с просветами читается пятном — шапки шире, внахлёст */
-  K.wing=[tree("umb",7471,2,true,{lean:.3,bend:.8,dense:1.45},.49),tree("umb",7472,2,true,{lean:-.4,bend:-1,dense:1.45},.49),
-    tree("umb",7473,2,true,{fork:.3,dense:1.5},.52),tree("orb",7474,2,true,{tall:.7},.4)];
+  /* кулиса: свои тела, узнаваемые по одной макушке (21pgc) */
+  K.wing=plnWingKit(geo);
   Q.gen=PLN_GPU.gen;Q.kit=K;
   PLN.stat.kit={ms:Math.round(wallMs()-t0),verts:nv};
   return K;

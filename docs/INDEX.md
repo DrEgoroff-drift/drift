@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 658 · символов верхнего уровня: 6850
+Файлов: 659 · символов верхнего уровня: 6863
 
 ## СИМВОЛЫ
 
@@ -1235,12 +1235,13 @@ PLN_TINTS                    src/21pg-pln-flora.js:17
 PLN_TINTS_FAR                src/21pg-pln-flora.js:20
 PLN_TO                       src/21pe-pln-gpu.js:17
 PLN_TREES                    src/21pgb-pln-trees.js:18-45
-PLN_TREE_MAKE                src/21pgb-pln-trees.js:240
+PLN_TREE_MAKE                src/21pgb-pln-trees.js:239
 PLN_TREE_ORDER               src/21pgb-pln-trees.js:28
 PLN_VB                       src/21pe-pln-gpu.js:27-43
 PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
 PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
+PLN_WING                     src/21pgc-pln-wing.js:23
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 POI_FIND                     src/20b-poi-find.js:18-91
 POI_KINDS                    src/20a-poi.js:11-30
@@ -5163,7 +5164,7 @@ plnFbm                       src/21p-pln.js:65-69
 plnFloraBloom                src/21pg-pln-flora.js:82-91
 plnFloraBush                 src/21pg-pln-flora.js:97-105
 plnFloraCap                  src/21pg-pln-flora.js:93-96
-plnFloraKit                  src/21pg-pln-flora.js:108-150
+plnFloraKit                  src/21pg-pln-flora.js:108-149
 plnFloraRock                 src/21pg-pln-flora.js:49-57
 plnFloraRosette              src/21pg-pln-flora.js:60-80
 plnFloraTuft                 src/21pg-pln-flora.js:30-47
@@ -5245,23 +5246,23 @@ plnOver                      src/21pj-pln-over.js:44-140
 plnOverAt                    src/21pj-pln-over.js:18-21
 plnOverOld                   src/21pj-pln-over.js:28-43
 plnOverPlate                 src/21pj-pln-over.js:22-26
-plnPlantBatches              src/21pga-pln-plant.js:440-457
-plnPlantBodies               src/21pga-pln-plant.js:122-243
+plnPlantBatches              src/21pga-pln-plant.js:450-467
+plnPlantBodies               src/21pga-pln-plant.js:122-253
 plnPlantBucket               src/21pga-pln-plant.js:45
-plnPlantChunk                src/21pga-pln-plant.js:292-300
-plnPlantCrest                src/21pga-pln-plant.js:315-319
-plnPlantDrop                 src/21pga-pln-plant.js:458-463
-plnPlantFar                  src/21pga-pln-plant.js:320-401
+plnPlantChunk                src/21pga-pln-plant.js:302-310
+plnPlantCrest                src/21pga-pln-plant.js:325-329
+plnPlantDrop                 src/21pga-pln-plant.js:468-473
+plnPlantFar                  src/21pga-pln-plant.js:330-411
 plnPlantFree                 src/21pga-pln-plant.js:115-118
-plnPlantGrass                src/21pga-pln-plant.js:245-291
+plnPlantGrass                src/21pga-pln-plant.js:255-301
 plnPlantGrid                 src/21pga-pln-plant.js:68-84
 plnPlantGroup                src/21pga-pln-plant.js:51-66
 plnPlantInit                 src/21pga-pln-plant.js:87-94
 plnPlantPut                  src/21pga-pln-plant.js:46-49
 plnPlantSeed                 src/21pga-pln-plant.js:43
-plnPlantSees                 src/21pga-pln-plant.js:404-407
-plnPlantShore                src/21pga-pln-plant.js:304-313
-plnPlantStep                 src/21pga-pln-plant.js:410-438
+plnPlantSees                 src/21pga-pln-plant.js:414-417
+plnPlantShore                src/21pga-pln-plant.js:314-323
+plnPlantStep                 src/21pga-pln-plant.js:420-448
 plnPlantThings               src/21pga-pln-plant.js:97-113
 plnQuad                      src/21pa-pln-mesh.js:27
 plnRec                       src/21pe-pln-gpu.js:60-66
@@ -5294,20 +5295,32 @@ plnThingsDrop                src/21pi-pln-things.js:366-374
 plnThingsFrame               src/21pi-pln-things.js:345-365
 plnTreeAxis                  src/21pgb-pln-trees.js:55-58
 plnTreeBark                  src/21pgb-pln-trees.js:47
-plnTreeCol                   src/21pgb-pln-trees.js:114-136
-plnTreeFork                  src/21pgb-pln-trees.js:198-220
+plnTreeCol                   src/21pgb-pln-trees.js:113-135
+plnTreeFork                  src/21pgb-pln-trees.js:197-219
 plnTreeKind                  src/21pgb-pln-trees.js:33-45
 plnTreeLeaf                  src/21pgb-pln-trees.js:50-53
 plnTreeLimb                  src/21pgb-pln-trees.js:68-71
-plnTreeOrb                   src/21pgb-pln-trees.js:169-194
-plnTreePag                   src/21pgb-pln-trees.js:140-164
-plnTreeSnag                  src/21pgb-pln-trees.js:223-239
+plnTreeOrb                   src/21pgb-pln-trees.js:168-193
+plnTreePag                   src/21pgb-pln-trees.js:139-163
+plnTreeSnag                  src/21pgb-pln-trees.js:222-238
 plnTreeTrunk                 src/21pgb-pln-trees.js:60-66
-plnTreeUmb                   src/21pgb-pln-trees.js:77-109
+plnTreeUmb                   src/21pgb-pln-trees.js:76-108
 plnTri                       src/21pa-pln-mesh.js:23-26
 plnTube                      src/21pa-pln-mesh.js:100-131
 plnVert                      src/21pa-pln-mesh.js:16-22
 plnWgslPost                  src/21pd-pln-wgsl-post.js:10-30
+plnWingAz                    src/21pgc-pln-wing.js:37
+plnWingBlade                 src/21pgc-pln-wing.js:113-121
+plnWingCaps                  src/21pgc-pln-wing.js:174-192
+plnWingCurl                  src/21pgc-pln-wing.js:102-111
+plnWingFern                  src/21pgc-pln-wing.js:125-140
+plnWingFrond                 src/21pgc-pln-wing.js:77-100
+plnWingGrass                 src/21pgc-pln-wing.js:155-172
+plnWingKit                   src/21pgc-pln-wing.js:195-205
+plnWingLeaves                src/21pgc-pln-wing.js:142-153
+plnWingPath                  src/21pgc-pln-wing.js:41-53
+plnWingRamp                  src/21pgc-pln-wing.js:35
+plnWingRibbon                src/21pgc-pln-wing.js:59-73
 plnX                         src/21p-pln.js:23
 plnXu                        src/21p-pln.js:25
 plnY                         src/21p-pln.js:24
@@ -7934,7 +7947,7 @@ zoomTo                       src/15-input.js:350
 ## src/21pf-pln-land.js · 30 КБ
   · планета: земля (M610):1
 
-## src/21pg-pln-flora.js · 11 КБ
+## src/21pg-pln-flora.js · 10 КБ
   · планета: набор тел — трава, цветок, камень, розетка, куст, дерево (M611):1
 
 ## src/21pga-pln-plant.js · 28 КБ
@@ -7942,6 +7955,9 @@ zoomTo                       src/15-input.js:350
 
 ## src/21pgb-pln-trees.js · 17 КБ
   · планета: породы деревьев (M611):1
+
+## src/21pgc-pln-wing.js · 15 КБ
+  · планета: кулиса — что растёт у самого объектива (M611):1
 
 ## src/21ph-pln-cast.js · 8 КБ
   · планета: человек и корабль — заготовки (M610):1

@@ -72,11 +72,10 @@ function plnTreeLimb(m,a,b,c,r0,r1,sub,w0,w1,col){
 
 /* Зонт — главная порода этого мира: толстая нога, развилка, ваза ветвей и крона в три яруса шапок
    с тенью между ними. Кости идут в том же порядке, что на стенде: дерево над площадкой — то самое.
-   o.fork — где развилка (доля роста): высокая нога с малой вазой — пиния, низкая — шатёр;
-   o.dense — во сколько раз шире шапки: кулисе, на которую объектив смотрит сверху, просветы не нужны */
+   o.fork — где развилка (доля роста): высокая нога с малой вазой — пиния, низкая — шатёр */
 function plnTreeUmb(r,H,R,sub,rich,o){
   o=o||{};
-  const m=plnMesh(4096),k=H/9,thin=o.thin||1,fine=sub>1,dense=o.dense||1;
+  const m=plnMesh(4096),k=H/9,thin=o.thin||1,fine=sub>1;
   const lean=o.lean==null?(r()-.5)*.5:o.lean,bend=o.bend==null?(r()-.5)*1.2:o.bend;
   const fork=H*(o.fork||(.40+r()*.12)),cx=lean*H*.2,path=[];
   for(let i=0;i<=8;i++){const t=i/8;path.push([cx*t*.5+bend*Math.sin(t*Math.PI*.9)*.3*k,fork*t-.35,.15*bend*Math.sin(t*3.3)*k]);}
@@ -92,7 +91,7 @@ function plnTreeUmb(r,H,R,sub,rich,o){
     const a0=r()*TAU;
     for(let b=0;b<tn;b++){
       const ang=a0+b/tn*TAU+(r()-.5)*.5,rr=R*tr*(.85+r()*.3);
-      const pr=R*tp*(.85+r()*.3)*dense,ph=pr*(.34+r()*.1)/dense;
+      const pr=R*tp*(.85+r()*.3),ph=pr*(.34+r()*.1);
       const e=[cx+Math.cos(ang)*rr,H*(th+(r()-.5)*.035),Math.sin(ang)*rr*.9];
       const mid=[lerp(F[0],e[0],.3),lerp(F[1],e[1],.8),lerp(F[2],e[2],.3)];
       plnTube(m,{path:plnBez(F,mid,e,fine?7:3),rad:t=>lerp(.22,.06,Math.pow(t,.8))*k,sides:fine?6:3,col:PLN_BARK.b,mat:PLN_MAT.bark,wind:t=>(.02+.1*t*t)*k});
