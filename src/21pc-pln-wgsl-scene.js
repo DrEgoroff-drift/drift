@@ -6,7 +6,8 @@
 
    Материал — номер из PLN_MAT. У земли в гнезде «свечение» лежит доля камня, в
    «запасе» — затенение от соседей; у травы в «запасе» высота по стеблю; у
-   человека — блеск; у воды — глубина в метрах. */
+   человека — блеск; у воды — глубина в метрах; у свечения — доля пустоты
+   (темнота проёма: не светится и воздуха не берёт). */
 const PLN_WGSL_SCENE=PLN_WGSL_AIR+/* wgsl */`
 struct Blobs { n: vec4f, b: array<vec4f, 64> };
 @group(0) @binding(1) var shadowTex: texture_depth_2d_array;
@@ -125,7 +126,8 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   if (g.misc.y > 0.5 && in.wpos.y < g.misc.x) { discard; }
   let mat = i32(round(in.par.x));
   let glow = in.par.z; let ex = in.par.w;
-  if (mat == 5) { return vec4f(applyFog(in.col * glow, in.wpos, 0.9), 1.0); }
+  /* своё свечение света не берёт; в запасе у него доля пустоты: темнота проёма воздуха почти не берёт */
+  if (mat == 5) { return vec4f(applyFog(in.col * glow, in.wpos, 0.9 * (1.0 - clamp(ex, 0.0, 1.0))), 1.0); }
   let V = normalize(g.camPos.xyz - in.wpos);
   let L = normalize(g.sunDir.xyz);
   let dist = length(g.camPos.xyz - in.wpos);
@@ -215,9 +217,19 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
     let lp = g.lampPos[i]; let lc = g.lampCol[i];
     if (lc.w <= 0.0) { continue; }
     let d = lp.xyz - in.wpos; let dl = length(d);
-    let att = pow(clamp(1.0 - dl / lp.w, 0.0, 1.0), 2.0);
+    /* лампа людей — под козырьком: светит вниз и в стороны, а крону над собой не зажигает */
+    let hood = 1.0 - smoothstep(0.2, 1.6, in.wpos.y - lp.y);
+    let att = pow(clamp(1.0 - dl / lp.w, 0.0, 1.0), 2.0) * hood;
     let nl = clamp(dot(N, d / dl) * 0.7 + 0.3, 0.0, 1.0);
     c += alb * lc.rgb * (lc.w * att * nl);
+  }
+  /* цветок, лист, руда светятся отражённым: днём это запас яркости, ночью его почти нет.
+     Лист, что светится сам (вид игры, свечение от .45), светится и ночью */
+  {
+    let day = clamp(dot(g.sunCol.rgb, vec3f(0.3333)) / 1.38, 0.0, 1.0);
+    var own = 0.0;
+    if (mat == 7 || mat == 2) { own = smoothstep(0.25, 0.45, emis); }
+    emis *= mix(mix(0.22, 1.0, day), 1.0, own);
   }
   c += alb * emis;
   var cap = 1.0;

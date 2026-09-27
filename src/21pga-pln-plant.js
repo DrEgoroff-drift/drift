@@ -95,15 +95,16 @@ function plnPlantInit(L,p){
 /* Вещи игры, вокруг которых держится поляна: [x, z, полуоси поляны, насколько близко могут стоять
    высокие тела]. Места — из состояния посадки; вещь, что появится позже, встанет в траву */
 function plnPlantThings(L,p){
-  const S=G.surf,tr=L.tr,T=[],Z=PLN_PLANT.thingZ,M=PLN_M;
+  const S=G.surf,tr=L.tr,T=[],M=PLN_M;
   const add=(xu,z,rx,rz,tall)=>{if(xu!=null&&isFinite(xu))T.push([xu/M,z,rx,rz,tall]);};
   add(L.shipX*M,7,6.5,4,10);
   T.push([L.rampX,L.rampZ+1.2,1.2,2.2,0]);
   if(!S)return T;
-  for(const d of S.deposits||[])add(d.x,Z,1.7,1.4,3);
-  for(const q of S.plants||[])add(q.x,Z+.4,.7,.7,1.5);
-  if(S.cave)add(S.cave.x,4,6,5,9);
-  add(mineSpotX(p),3,5,4,8);
+  const TH=PLN_THINGS;
+  for(const d of S.deposits||[])add(d.x,plnThingDepZ(d),1.7,1.4,3);
+  for(const q of S.plants||[])add(q.x,plnHerbZ(q),.7,.7,1.5);
+  if(S.cave)add(S.cave.x,TH.caveZ+3*TH.caveQ,6*TH.caveQ,5*TH.caveQ,8*TH.caveQ);
+  add(mineSpotX(p),TH.mineZ,3.3*TH.mineQ,2.6*TH.mineQ,8);
   add(homeSpotX(p,tr),3,12,6,14);
   add(settleSpotX(p,tr),3,16,6,18);
   add(tinSpotX(p,tr),3,14,6,16);

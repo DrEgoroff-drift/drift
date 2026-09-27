@@ -141,7 +141,8 @@ function plnLandMake(tr,p,sx){
     if(z<0){
       /* ближний склон не смеет закрыть линию ходьбы: точка на глубине d лежит ниже всего, что
          объектив видит сквозь неё, — минимум линии по окну, которое растёт с глубиной */
-      const d=-z,b=clamp(.35*d,0,5),f=.07*d+1.6*plnSmooth(8,30,d),rk=plnLandRake(z);
+      /* чем дальше от линии, тем шире сглажен её уступ: стена вдоль взгляда расходится в откос */
+      const d=-z,b=clamp(.6*d,0,5),f=.07*d+1.6*plnSmooth(8,30,d),rk=plnLandRake(z);
       plnSlideF(P,(.42*d+b)/dx,A,T1);
       plnBoxF(A,b/dx,B,T1,S);
       for(let i=0;i<NT;i++)T[o+i]=B[i]-f+rk;
@@ -328,8 +329,11 @@ function plnLandCol(L,x,z,h,n,k){
     /* снег держится там, где позволяет склон */
     c=plnMix3(c,PAL.snow,plnSmooth(235,310,h+70*(v2-.5))*plnSmooth(.85,.5,slope));
   }else c=plnMix3(PAL.plain,PAL.glade,v2);
-  if(k<5)c=plnMix3(c,plnMix3(PAL.rockWarm,PAL.rockCool,v1),plnSmooth(.22,.42,slope)*(k>=4?1:.8));
-  if(k===0)c=plnMix3(c,plnMix3(PAL.soil,PAL.soilDark,v1),plnLandPath(L,x,z)*.75*(1-plnSmooth(.3,.5,slope)));
+  /* на ленте крутой бок холма — травяной откос: камень выходит только там, где круче шестидесяти
+     градусов. Голый серый бок в рост человека стоял посреди кадра «шатром» */
+  if(k===0)c=plnMix3(c,plnMix3(PAL.rockWarm,PAL.rockCool,v1),plnSmooth(.5,.7,slope)*.8);
+  else if(k<5)c=plnMix3(c,plnMix3(PAL.rockWarm,PAL.rockCool,v1),plnSmooth(.22,.42,slope)*(k>=4?1:.8));
+  if(k===0)c=plnMix3(c,plnMix3(PAL.soil,PAL.soilDark,v1),plnLandPath(L,x,z)*.75*(1-plnSmooth(.55,.75,slope)));
   return c;
 }
 
@@ -409,6 +413,9 @@ function plnLandBatches(L,out,ex,V){
 function plnLandFree(L){
   for(const J of L.jobs){if(J.geo)plnGeoFree(J.geo);J.geo=null;J.grid=null;J.pl=null;}
   plnPlantDrop(L);
+  plnThingsDrop(L);
+  plnHerbDrop(L);
+  plnBeastDrop(L);
 }
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){
@@ -445,8 +452,8 @@ function plnLandRibMesh(L,c){
     /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
     if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
     if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>-12&&z<10)col=plnMix3(col,PAL.mud,plnSmooth(L.lake.level+.3,L.lake.level-.5,h)*.85);
-    /* крутые ступени линии — камень: в гнезде свечения у земли лежит его доля */
-    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,plnSmooth(.3,.55,slope)*.85,q.ao);
+    /* отвесные ступени линии — камень: в гнезде свечения у земли лежит его доля */
+    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,plnSmooth(.5,.7,slope)*.85,q.ao);
   }
   for(let r=0;r+1<R;r++)for(let i=0;i+1<nc;i++){
     const a=r*nc+i;
