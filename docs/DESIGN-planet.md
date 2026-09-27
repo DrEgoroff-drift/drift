@@ -68,6 +68,20 @@ One set of laws for everything on the planet, above and below ground.
    gait; nothing blinks.
 10. **Words.** A prompt hangs on its thing. Nothing sits in the centre of the frame.
 
+**In numbers (M603).** The laws above and those of §11 are measured on the three key frames
+and written down in [`DESIGN-planet-style.md`](DESIGN-planet-style.md): value by lanes,
+colour by depth and by families, sizes in men, the lenses, light and air, motion, and the
+twelve checks M651 turns into detectors. Four things the measuring settled:
+
+- The wing is the darkest lane and the sky the lightest, but **by day the play lane and the
+  far lane share one band of value** (.60 against .53–.68). They are parted by bands of
+  light and shade laid in turn, each lighter with depth, and by colour: from flat to flat
+  the hue turns towards the air, some 25° a flat, and the chroma falls to a quarter.
+- By night and underground nine tenths of the frame lie under .30; what is lighter is the
+  work of a light. The lightest thousandth of a frame tells whose the frame is.
+- No neon: chroma passes .22 nowhere, and the strongest colour is the orange of people.
+- The man takes .085 of the height of a broad frame in the near lens, and never under .05.
+
 ## 4. The kit — how a thing is built
 
 One kit for every family, so that the style cannot drift:
@@ -116,7 +130,7 @@ A frame passes its gate (§5.4) only if it holds all of these:
 
 - **Squint**: at 96 px wide the hero and the three lanes still read.
 - **Silhouette**: every actor filled with black is still recognised.
-- **Values**: four bands, each lane inside its own.
+- **Values**: each lane inside its band, the bands of `DESIGN-planet-style.md` §2.
 - **One hero**: the brightest, sharpest, most saturated spot is the hero; three accents at most.
 - **No flat fill, no spray**: texture only where a cluster was placed.
 - **Beside the references**: put next to frames of Planet of Lana and Cocoon at the same size,
@@ -131,7 +145,8 @@ after it pass by §5.4.
 - M600 key frame: the surface by day, terran — man, ship, grove, beasts, a landmark far away
 - M601 key frame: the cave
 - M602 key frame: night by the home and the base — lamps, windows, the sky
-- M603 the style frozen: palettes, value bands, sizes, written into §3 with numbers
+- M603 the style frozen with numbers: value bands, colour, sizes, light, motion — the sheet
+  `DESIGN-planet-style.md`, its summary in §3
 
 **Stage 1 — the stage in the engine.** Gate: a real planet is walked in the new look.
 - M610 lit bodies in the engine: depth, the key with its shadow map, sky fill, fog, vertex colour
@@ -175,8 +190,8 @@ after it pass by §5.4.
    modes after M620, rendered to a card.
 3. **What may move in play** if a new body asks for it (a footprint, a height, a camera
    distance). Default: nothing moves without a question.
-4. **The camera distance.** The key frame M600 is shot with the **near** lens: the man is about
-   8 % of the frame's height and the frame holds some 38 m of the walk line. The old frame
+4. **The camera distance.** The key frame M600 is shot with the **near** lens: the man is
+   8.5 % of the frame's height and the frame holds some 38 m of the walk line. The old frame
    keeps him near 2 % and shows several times more land. §3.6 asks for two distances — near
    at a thing, far on the move — and the far one has to show about as much land as the game
    does today, or play changes (what is seen coming, how far a landmark announces itself).
@@ -278,7 +293,7 @@ Each line below was paid for by a frame that failed without it.
 | lens | 24° | 46° |
 | horizon, from the bottom | 0.585 of the height | about 0.45 |
 | walk line, from the bottom | 0.28 | about 0.22 |
-| the man | 8 % of the height | 7 % |
+| the man | 8.5 % of the height | 7 % |
 | lane in the frame | 38 m | 12 m |
 
 Between them the camera is blended by the aspect of the frame (0.6 … 1.5). The tall lens
@@ -343,8 +358,9 @@ dark rock belongs there. The tall lens looks up the shafts, the broad one along 
 Light
 - **The night keeps the value of a thing and lets most of its colour go; a lamp gives the
   colour back.** Unlit, a thing keeps 45 % of its colour.
-- **The key of the night is the giant**: cold, a seventh of the day's sun, from behind and
-  from the left, so a body is drawn by its lit rim.
+- **The key of the night is the giant**: cold, an eighteenth of the day's sun by luminance,
+  from behind and from the left, so a body is drawn by its lit rim. The exposure is the
+  day's: the night is dark because its key is weak, not because the frame was dimmed.
 - **Warm light is people's**: windows, the lantern of the porch, the lamp on the man's
   helmet. The lantern alone casts shadows; every other lamp is a small light without them.
 - **Walls are lit by what the lit ground gives back**: a low, wide light without a shadow
@@ -418,81 +434,14 @@ his feet at 0.22, under the pads — a weak spot of M600, named in §13.
 
 ## 12. The stand
 
-`docs/look/` is a page that draws one key frame on WebGPU with none of the game in it. It is
-a sketchbook: nothing in `src/` reads it, and it is thrown away at the hand-over.
+`docs/look/` draws the key frames on WebGPU with none of the game in it: three pages,
+`planet.html` (M600), `cave.html` (M601) and `night.html` (M602), a shooter and a measuring
+tool. It is a sketchbook: nothing in `src/` reads it, and it is thrown away at the hand-over.
 
-| File | What is inside |
-|---|---|
-| `planet.html` | the page; opens from disk, no server |
-| `pl-math.js` | vectors, matrices, noise, colour |
-| `pl-kit.js` | the mesh and its generators: blob, tube, loft, quad |
-| `pl-ground.js` | the lenses, the palette, the land by lanes, grass and flowers |
-| `pl-cast.js` | trees, stone, rosettes, the ship, the man, beasts, the far sign, the wing, the scene |
-| `pl-wgsl.js` | shaders: sky and clouds, light of the scene, water, shafts, bloom, the grade |
-| `pl-render.js` | passes and targets |
-| `cave.html` | the page of the cave (M601); shares `pl-math.js`, `pl-kit.js`, the constants of `pl-ground.js` and the man of `pl-cast.js` |
-| `cv-rock.js` | the rock: one density function, strata, the paint of stone, surface nets in the frustum of the lens, the cut face |
-| `cv-scene.js` | the cave's lenses and lights; dripstone, veils, crystals, amber, vines, the lake, what lies in the cut face, fish and glow-worms; the scene |
-| `cv-wgsl.js` | the cave's shaders: the three lights, the cut face, water, light in the air, halos |
-| `cv-render.js` | the cave's passes: two shadow maps, the scene, the air at half resolution, bloom, the grade |
-| `night.html` | the page of the night (M602); the land, the flora and the far shore are the day's, called as they stand |
-| `nt-home.js` | people's things: the home, the garage, the mast, the base; panes, fixtures, cloth; the lights they give |
-| `nt-scene.js` | the yard cut into the day's land, the trodden ways, the tall lens, the directions of the sky, fireflies; the scene |
-| `nt-wgsl.js` | the night's shaders: the sky with the giant and its rings, the lantern, the light of windows, the room behind a pane, the air of the yard, smoke, halos |
-| `nt-render.js` | the night's passes: three shadow maps (two along the giant's light, one for the lantern), the mirror, the scene, the wing, the air at half resolution, bloom, the grade |
-| `lookshot.py` | shoots a page in its own headless Chrome on the real GPU |
-
-```bash
-python docs/look/lookshot.py --out C:/tmp/m600.png --ss 2
-python docs/look/lookshot.py --out C:/tmp/m600-phone.png --w 390 --h 844 --dpr 2 --ss 1.5
-python docs/look/lookshot.py --out C:/tmp/wing.png --q "off=scene"
-```
-
-`--q "off=…"` switches parts off to judge the rest: `wing`, `water`, `shafts`, `bloom`,
-`scene` (a grey card instead of the world, the wing alone). `--t` is the moment in seconds.
-The shooter waits for the page's title: `LOOK_DONE`, `LOOK_DONE_ERR` (drawn, with shader or
-GPU messages) or `LOOK_FAIL`. Frames are written outside the repository — pictures do not
-go into git.
-
-The old frame for a pair is taken from the game itself, in clear weather:
-
-```bash
-python docs/shot.py surface --js "G.land.p.wx={kind:null};" --out C:/tmp/old.png --w 1600 --h 900
-```
-
-The cave is another page of the same stand. It builds its rock for some eight seconds, so the
-shooter is given more time:
-
-```bash
-python docs/look/lookshot.py --page cave.html --out C:/tmp/m601.png --ss 2 --budget 150
-python docs/look/lookshot.py --page cave.html --out C:/tmp/m601-phone.png --w 390 --h 844 --dpr 2 --ss 1.5 --budget 150
-python docs/look/lookshot.py --page cave.html --out C:/tmp/lamp.png --budget 150 --q "off=wing&lamp=1.3&airl=2"
-python docs/shot.py cave --out C:/tmp/old-cave.png --w 1600 --h 900
-```
-
-Its parts for `off=` are `wing`, `water`, `air`, `bloom`, `cut`, `ink`, `cast`, `man`; its
-knobs, each a multiplier of 1, are `exp`, `amb`, `fogc`, `fog`, `day`, `lamp`, `air`, `airl`,
-`aird`, `airg`.
-
-The night is a third page. It builds in three seconds; the old frame wants a home of the
-last tier and a base founded on the spot, which a script gives to `docs/shot.py night`
-through `--js`.
-
-```bash
-python docs/look/lookshot.py --page night.html --out C:/tmp/m602.png --ss 2 --budget 150
-python docs/look/lookshot.py --page night.html --out C:/tmp/m602-phone.png --w 390 --h 844 --dpr 2 --ss 1.5 --budget 150
-python docs/look/lookshot.py --page night.html --out C:/tmp/lamps.png --budget 150 --q "off=wing,smoke&key=.2&lamp=.5"
-```
-
-Its parts for `off=` are `scene`, `wing`, `water`, `bloom`, `air`, `haze`, `smoke`, `halos`,
-`stars`, `lamp`, `windows`, `points`, `mist`. Its knobs are plain numbers, the default in
-brackets. Light: `key` (.14), `lamp` (.37), `win` (.5), `pts` (.6), `halo` (.6), `manlamp`
-(1.2), `amb` (1), `ncol` (.45), `wingk` (.15), `grow` (.15), `exp` (1), `bloom` (.14). Air:
-`haze` (.014), `mist` (.016), `smoke` (.7), `drift` (1), `gair` (.28). Sky: `stars` (1),
-`band` (.05), `after` (1), `mauve` (1), `teal` (1), `hcl` (0), `glight` (.5), `rlight`
-(.42); the giant `gaz`, `gel`, `gr`, its sun `selong`, `spa`, its rings `rtilt`, `ropen`,
-`rside`. Staging: `manx` (−4.7), `basex` (29.5), `strx` (21), `yr0`, `yr1`, and the tall
-lens `tx`, `te`, `tz`, `ty`.
+Its manual is [`docs/look/README.md`](look/README.md): the files, the commands that shoot
+the six frames of the style sheet and the old frames for the pairs, the switches and knobs
+of every page, and how a frame is measured. Frames are written outside the repository —
+pictures do not go into git.
 
 ## 13. State on 27.09.2026
 
@@ -513,11 +462,28 @@ lens `tx`, `te`, `tz`, `ty`.
   at 760 and at 390, motion looked at on strips of four moments. Passed by §5.4; the brief
   and the result are in `DESIGN-planet-frames.md`, the laws it paid for are §11.9.
 
+- **M603, the style in numbers**: the sheet `DESIGN-planet-style.md`, measured on the six
+  frames (three key frames, two lenses each) with `docs/look/measure.py` over the boxes of
+  `docs/look/lanes.json`; every box was checked against the land by a ray from the lens.
+  The measuring corrected the plan in three places: the four bands of value overlap by day
+  (§3, «In numbers»), the night's key is an eighteenth of the sun and not a seventh
+  (§11.9), the man of the near lens is 8.5 % of the height.
+
 **Not done**
 - M600 with the **far lens** (§8.4) and in weather; the cave has no far lens either.
-- M603 the numbers.
 - Nothing is built in `src/`; the frame budget is not measured on the S23, and the frames
   of the cave and of the night are not measured at all.
+
+**Weak spots found by measuring** (M603; the numbers are in §8 of the style sheet):
+- M600: the heap of ore by the path is as strong as the suit and five times its size — the
+  cave's law «ore is orange and dim» is not applied by day; the man's suit is 63 pixels of
+  orange, the hero's colour is carried by the ship;
+- M600: the greatest change of the frame in 0.6 s is the wing swaying in a bottom corner,
+  away from the hero;
+- M601: the moss at the mouth has the greatest chroma of the frame, over the suit's; the
+  hall's columns are grey bodies in a mauve room;
+- M602: the base holds more of the lightest thousandth of the frame than the home does —
+  the accent is lighter than the hero.
 
 **Known weak spots of M602, pass 8** — named, not hidden:
 - the roofs of the home are dark on a dark shore: the hero is carried by its windows and
