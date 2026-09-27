@@ -327,6 +327,8 @@ python docs/shot.py surface --js "G.land.p.wx={kind:null};" --out C:/tmp/old.png
 - M601 the cave, M602 night by the home and the base, M603 the numbers.
 - Nothing is built in `src/`; the frame budget is not measured on the S23.
 
+**M601 is thought through and not drawn** — the brief is §14.
+
 **Known weak spots of M600, pass 3** — to be fixed in the elements' own passes, not hidden:
 - far shore and hills are smooth: at distance they read as plasticine, they want the brush;
 - near stones are grey low-poly lumps, the same stone everywhere;
@@ -335,3 +337,44 @@ python docs/shot.py surface --js "G.land.p.wx={kind:null};" --out C:/tmp/old.png
 - the stand has no interface: on the phone the lower fifth of the frame lies under the
   controls, which is where the wing and the path are;
 - the tall frame does not hold the ship.
+
+## 14. M601, the cave — the brief (not drawn yet)
+
+**What play gives** (`src/22-mode-cave`, `22a`, `22b`; none of it moves). A field of rock and
+void in cross-section, about 230 m by 160 m against a man of 1.8 m. The mouth is a shaft from
+the surface; the upper gallery runs right, 3 to 5.5 m high; two shafts lead down, each with a
+rope and a stake; the lower gallery runs back to the find; dead ends hold bones, a crate or
+nothing; pockets are reached only by jetpack. Halls in order: a plain gallery first, then
+dripstone, ore, the lake, and the crystal grotto last. Amber is the one warm spot. Few things
+glow: darkness is the material.
+
+**Why the old frame fails.** It reads as a map: a thin lit band in a flat dark field, no
+depth, the lamp a flat wedge.
+
+**The frame chosen** (of three: the hall beyond, the mouth, the lake). The upper gallery just
+past the mouth, near lens. Far left, the daylight beam falls down the mouth onto rubble where
+surface plants still grow. Left of centre, the man with his lamp, walking right. Before him a
+shaft down with the rope. Right, the gallery opens into a hall with columns standing in a still
+lake. Far right and deep, crystals glow and the lake repeats them. The hero is the man's warm
+pool of light; the beam is cooler and weaker; the crystals are the small saturated accent.
+
+**The same laws underground**
+- Three lanes: the **cut face** of the rock is the wing and the darkest band; the play lane is
+  what the lamp lights; the far lane is halls in haze.
+- The floor is raked: it rises towards the back wall, the ceiling falls, so both are seen.
+- Void must read against rock everywhere: the cut face takes no ambient and carries a dim lip
+  along the outline; unlit void is dark blue and lightens with depth.
+- The shape of rock underground is the **layer**: strata with ledges, the same lines drawn on
+  the cut face. Dripstone is the soft maker's hand: pale, smooth, wet.
+- The world's identity continues: caps (stalagmites as stacks of caps, fungi), the mauve
+  accent in the crystals, orange for the man, his lamp and amber.
+- Light: the lamp is the key, with real shadows and a cone seen in the air; the beam at the
+  mouth comes through the rock by a shadow map; a few small lights without shadows.
+
+**How to build it on the stand.** A separate page `cave.html` with its own scene, shaders and
+renderer, sharing `pl-math.js`, `pl-kit.js` and the man from `pl-cast.js`; the accepted M600
+files are not edited. Rock is one density function (gallery, hall, shafts, a side passage,
+strata as displacement) meshed by surface nets on a grid laid in the frustum of the lens, the
+front layer closed to make the cut face. Two shadow maps: the lamp in perspective, the beam
+from above. Light in the air is marched through both at half resolution. The lake is a mirror
+with its section drawn on the cut plane.
