@@ -338,6 +338,84 @@ The two lenses underground
 The phone's interface covers the top of the frame (chips) and its bottom quarter (pads):
 dark rock belongs there. The tall lens looks up the shafts, the broad one along the gallery.
 
+**11.9 Night and people's things** (M602, eight passes)
+
+Light
+- **The night keeps the value of a thing and lets most of its colour go; a lamp gives the
+  colour back.** Unlit, a thing keeps 45 % of its colour.
+- **The key of the night is the giant**: cold, a seventh of the day's sun, from behind and
+  from the left, so a body is drawn by its lit rim.
+- **Warm light is people's**: windows, the lantern of the porch, the lamp on the man's
+  helmet. The lantern alone casts shadows; every other lamp is a small light without them.
+- **Walls are lit by what the lit ground gives back**: a low, wide light without a shadow
+  lies before the porch, or the hero's facade stays black beside its own lantern.
+- **A window throws its light out** as a patch with the bars of the frame in it, and the
+  patch has an end: it dies between 9 and 16 m.
+- **A halo has a short tail**: it falls as 1/(1+s²). With 1/(1+s) a far lamp grows a cloud.
+- **No bright lamp at the frame's edge.** The garage's lamp is dimmed for that.
+- **The man's lamp is on.** Without it he is a dark figure on dark water; with it the hero
+  is found at 96 px.
+- **The air of the yard is thin**: it shows the lantern's cone and the shadows of the posts
+  in it. Mist lies on the lake and nowhere else.
+
+Sky
+- **No orange in the sky.** Where the sun went down the ridge wears the mauve of this world,
+  with teal over it.
+- **The giant rises from behind the ridge**: the land cuts its lower third, and that makes it
+  far and huge. Its night side is the sky itself, a little darker; air lies before it; its
+  rings go out in the shadow of the ball, they do not turn black.
+- **Stars are steady**: one to a cell of the sky, three sizes, and the air over the land
+  puts the faint ones out.
+- **No dark blots over stars**: high clouds are off; low banks at the horizon are dark
+  bodies with a pale rim.
+- **A faint band has no thin threads.** The galaxy is a soft glow with one wide rift, laid
+  where the sky is empty, away from the giant; a thread of dust in it reads as a scratch.
+- **The far sign catches the sun the land has lost**: high up, its line is lit.
+
+Staging
+- **One hero: the home with the man.** The giant, the base and the beacon are the accents;
+  the far sign is a silhouette with a few lamps.
+- **The man comes home.** He walks towards the lit door, so the light is on his chest and
+  the frame tells where he is going.
+- **A roof never meets a far line**: beasts, the feet of far trees and the far waterline
+  stand clear of the roofs in both lenses. What is clear in one lens may stand on the roof
+  in the other — both are checked.
+- **A mast's light is seen against the dark hill**, clear of any crown; **a lamp is seen
+  against a dark wall**, never against a pale dome.
+- **The yard ends before the man**: the bank behind him is narrow and its crest crosses him
+  at the waist, not at the head.
+- **Small lives in a few clusters**: fireflies in three, by the water and in the near grass.
+  They drift and breathe slowly.
+
+People's things
+- Hulls are smooth and seamed, with **a belt of orange** along the body. The home: a body,
+  a wheelhouse with a band of glass, a porch under the lantern; beside it a vaulted garage
+  and a banded lattice mast whose beacon breathes. The base: modules on a deck over the
+  shallows, a pier with a lamp, a dome, a mast with a steady red light.
+- **A window is a room**: a lamp hangs in it, the wall behind is lit, a curtain is drawn
+  half-way, a pot stands on the sill, the jambs are the darkest. It is one card and a
+  shader; nothing is built inside.
+- **Life is told by small things**: smoke from the flue, washing on a line, a woodpile, a
+  bed of cabbages, the small beast waiting on the porch.
+
+The two lenses by night
+
+| | broad (16:9) | tall (phone) |
+|---|---|---|
+| eye, from the walk line | 50 m, 8 m up | 42 m, 8.4 m up |
+| looks at | 6.2 m up | 7.6 m up |
+| lens | 24° | 46° |
+| horizon, from the bottom | 0.585 | 0.52 |
+| the man's feet, from the bottom | 0.27 | 0.32 |
+| the man | 8.4 % of the height | 5 % |
+| lane in the frame | 38 m | 16.5 m |
+
+The game's old phone frame shows where the interface lies, and the tall lens is set by it.
+Besides the top and the bottom, **the right edge carries buttons between 0.22 and 0.40 of
+the height**: there nothing that matters stands further right than 0.75 of the width. The
+man is at 0.70 and between 0.32 and 0.37 of the height. The day's tall lens (§11.7) keeps
+his feet at 0.22, under the pads — a weak spot of M600, named in §13.
+
 ## 12. The stand
 
 `docs/look/` is a page that draws one key frame on WebGPU with none of the game in it. It is
@@ -357,6 +435,11 @@ a sketchbook: nothing in `src/` reads it, and it is thrown away at the hand-over
 | `cv-scene.js` | the cave's lenses and lights; dripstone, veils, crystals, amber, vines, the lake, what lies in the cut face, fish and glow-worms; the scene |
 | `cv-wgsl.js` | the cave's shaders: the three lights, the cut face, water, light in the air, halos |
 | `cv-render.js` | the cave's passes: two shadow maps, the scene, the air at half resolution, bloom, the grade |
+| `night.html` | the page of the night (M602); the land, the flora and the far shore are the day's, called as they stand |
+| `nt-home.js` | people's things: the home, the garage, the mast, the base; panes, fixtures, cloth; the lights they give |
+| `nt-scene.js` | the yard cut into the day's land, the trodden ways, the tall lens, the directions of the sky, fireflies; the scene |
+| `nt-wgsl.js` | the night's shaders: the sky with the giant and its rings, the lantern, the light of windows, the room behind a pane, the air of the yard, smoke, halos |
+| `nt-render.js` | the night's passes: three shadow maps (two along the giant's light, one for the lantern), the mirror, the scene, the wing, the air at half resolution, bloom, the grade |
 | `lookshot.py` | shoots a page in its own headless Chrome on the real GPU |
 
 ```bash
@@ -391,6 +474,26 @@ Its parts for `off=` are `wing`, `water`, `air`, `bloom`, `cut`, `ink`, `cast`, 
 knobs, each a multiplier of 1, are `exp`, `amb`, `fogc`, `fog`, `day`, `lamp`, `air`, `airl`,
 `aird`, `airg`.
 
+The night is a third page. It builds in three seconds; the old frame wants a home of the
+last tier and a base founded on the spot, which a script gives to `docs/shot.py night`
+through `--js`.
+
+```bash
+python docs/look/lookshot.py --page night.html --out C:/tmp/m602.png --ss 2 --budget 150
+python docs/look/lookshot.py --page night.html --out C:/tmp/m602-phone.png --w 390 --h 844 --dpr 2 --ss 1.5 --budget 150
+python docs/look/lookshot.py --page night.html --out C:/tmp/lamps.png --budget 150 --q "off=wing,smoke&key=.2&lamp=.5"
+```
+
+Its parts for `off=` are `scene`, `wing`, `water`, `bloom`, `air`, `haze`, `smoke`, `halos`,
+`stars`, `lamp`, `windows`, `points`, `mist`. Its knobs are plain numbers, the default in
+brackets. Light: `key` (.14), `lamp` (.37), `win` (.5), `pts` (.6), `halo` (.6), `manlamp`
+(1.2), `amb` (1), `ncol` (.45), `wingk` (.15), `grow` (.15), `exp` (1), `bloom` (.14). Air:
+`haze` (.014), `mist` (.016), `smoke` (.7), `drift` (1), `gair` (.28). Sky: `stars` (1),
+`band` (.05), `after` (1), `mauve` (1), `teal` (1), `hcl` (0), `glight` (.5), `rlight`
+(.42); the giant `gaz`, `gel`, `gr`, its sun `selong`, `spa`, its rings `rtilt`, `ropen`,
+`rside`. Staging: `manx` (−4.7), `basex` (29.5), `strx` (21), `yr0`, `yr1`, and the tall
+lens `tx`, `te`, `tz`, `ty`.
+
 ## 13. State on 27.09.2026
 
 **Done**
@@ -403,14 +506,35 @@ knobs, each a multiplier of 1, are `exp`, `amb`, `fogc`, `fog`, `day`, `lamp`, `
 
 - **The gate changed** the same day (§5.4): frames are no longer agreed one by one.
 - **M601, the cave**: seven passes, both lenses, the pairs «was | now» at 760 and at 390,
-  motion looked at on strips of four moments. Passed by §5.4; the brief and the result are
-  §14, the laws it paid for are §11.8.
+  motion looked at on strips of four moments. Passed by §5.4; the brief and the result are in
+  `DESIGN-planet-frames.md`, the laws it paid for are §11.8.
+
+- **M602, night by the home and the base**: eight passes, both lenses, the pairs «was | now»
+  at 760 and at 390, motion looked at on strips of four moments. Passed by §5.4; the brief
+  and the result are in `DESIGN-planet-frames.md`, the laws it paid for are §11.9.
 
 **Not done**
-- M600 with the **far lens** (§8.4), by night, and in weather; the cave has no far lens either.
-- M602 night by the home and the base, M603 the numbers.
-- Nothing is built in `src/`; the frame budget is not measured on the S23, and the cave's
-  frame is not measured at all.
+- M600 with the **far lens** (§8.4) and in weather; the cave has no far lens either.
+- M603 the numbers.
+- Nothing is built in `src/`; the frame budget is not measured on the S23, and the frames
+  of the cave and of the night are not measured at all.
+
+**Known weak spots of M602, pass 8** — named, not hidden:
+- the roofs of the home are dark on a dark shore: the hero is carried by its windows and
+  its lit front, not by its outline;
+- in the tall frame the smoke climbs across the lower limb of the giant, where the ridge
+  already cuts it;
+- the man is the stand-in of M600 with a lamp on his helmet; the lamp is a small even light
+  ahead of him, not a cone, and it casts no shadow;
+- the base and the garage are first drafts: the dome is a dark ball by night, the garage is
+  cut by the edge of the broad frame;
+- the striders are dark on dark and read only against the mist; the band of the galaxy is
+  hardly seen in the broad frame;
+- the tall frame holds neither the base nor the garage, and its upper third is sky with the
+  line of the far sign, under the chips;
+- the cost is unknown: three shadow maps of 4096², 56 steps of air at half resolution, six
+  windows that throw light and up to twelve small lights for every pixel of the yard. Each
+  has a cheaper form; M614 measures.
 
 **Known weak spots of M601, pass 7** — named, not hidden:
 - the rock over the gallery is still heavy with ledges, and the walls of the mouth step in
@@ -431,63 +555,13 @@ knobs, each a multiplier of 1, are `exp`, `amb`, `fogc`, `fog`, `day`, `lamp`, `
 - big clouds are still heaps of balls; high streaks in the tall frame read as scratches;
 - the stand has no interface: on the phone the lower fifth of the frame lies under the
   controls, which is where the wing and the path are;
+- the tall lens keeps the man's feet at 0.22 of the height, under the pads, and it was set
+  before the buttons of the right edge were looked at; the night's tall lens (§11.9) is
+  the one to take over;
 - the tall frame does not hold the ship.
 
-## 14. M601, the cave — the brief and what came of it
+## 14. The key frames
 
-**What play gives** (`src/22-mode-cave`, `22a`, `22b`; none of it moves). A field of rock and
-void in cross-section, about 230 m by 160 m against a man of 1.8 m. The mouth is a shaft from
-the surface; the upper gallery runs right, 3 to 5.5 m high; two shafts lead down, each with a
-rope and a stake; the lower gallery runs back to the find; dead ends hold bones, a crate or
-nothing; pockets are reached only by jetpack. Halls in order: a plain gallery first, then
-dripstone, ore, the lake, and the crystal grotto last. Amber is the one warm spot. Few things
-glow: darkness is the material.
-
-**Why the old frame fails.** It reads as a map: a thin lit band in a flat dark field, no
-depth, the lamp a flat wedge.
-
-**The frame chosen** (of three: the hall beyond, the mouth, the lake). The upper gallery just
-past the mouth, near lens. Far left, the daylight beam falls down the mouth onto rubble where
-surface plants still grow. Left of centre, the man with his lamp, walking right. Before him a
-shaft down with the rope. Right, the gallery opens into a hall with columns standing in a still
-lake. Far right and deep, crystals glow and the lake repeats them. The hero is the man's warm
-pool of light; the beam is cooler and weaker; the crystals are the small saturated accent.
-
-**The same laws underground**
-- Three lanes: the **cut face** of the rock is the wing and the darkest band; the play lane is
-  what the lamp lights; the far lane is halls in haze.
-- The floor is raked: it rises towards the back wall, the ceiling falls, so both are seen.
-- Void must read against rock everywhere: the cut face takes no ambient and carries a dim lip
-  along the outline; unlit void is dark blue and lightens with depth.
-- The shape of rock underground is the **layer**: strata with ledges, the same lines drawn on
-  the cut face. Dripstone is the soft maker's hand: pale, smooth, wet.
-- The world's identity continues: caps (stalagmites as stacks of caps, fungi), the mauve
-  accent in the crystals, orange for the man, his lamp and amber.
-- Light: the lamp is the key, with real shadows and a cone seen in the air; the beam at the
-  mouth comes through the rock by a shadow map; a few small lights without shadows.
-
-**How to build it on the stand.** A separate page `cave.html` with its own scene, shaders and
-renderer, sharing `pl-math.js`, `pl-kit.js` and the man from `pl-cast.js`; the accepted M600
-files are not edited. Rock is one density function (gallery, hall, shafts, a side passage,
-strata as displacement) meshed by surface nets on a grid laid in the frustum of the lens, the
-front layer closed to make the cut face. Two shadow maps: the lamp in perspective, the beam
-from above. Light in the air is marched through both at half resolution. The lake is a mirror
-with its section drawn on the cut plane.
-
-**What came of it** (pass 7). The frame holds what the brief asked for, and three things the
-brief did not foresee:
-
-- **The far lane had to be invented.** A gallery in section has no distance of its own: behind
-  the man there was a wall. Now an arch opens behind him into a far chamber with a second
-  shaft of day and a great stack of caps in its beam — the cave's own far sign.
-- **The cut face became a subject.** The brief treated it as the dark wing; in the frame it
-  takes a third of the area, so it is drawn as a page of the earth: strata, a swimmer's
-  bones, a shell, roots from the surface, an ore vein under the lake, soil on top, and the
-  crawl with its amber seen whole.
-- **The lamp alone could not be the hero.** One spot with a hard edge made the man a torch in
-  a void. He is the hero by three means together: the pool his lamp carries, the cone seen in
-  the air, and the dome of the vault over him.
-
-Against the old frame the man is 8.5 % of the height instead of 2.4 %: the map became a
-place. What the map gave — the whole cave at a glance — the frame does not; like the surface
-(§8.4), the cave needs its far lens before play is asked to live in it.
+What each key frame was asked to be and what came of it is kept apart, in
+[`DESIGN-planet-frames.md`](DESIGN-planet-frames.md): M601 the cave, M602 the night by the
+home and the base. The laws the frames paid for stay here, in §11.
