@@ -101,7 +101,7 @@ fn starsOver(rd: vec3f, sky: vec3f) -> vec3f {
   let h = hash4(i, 91u);
   if (h.x > 0.035) { return sky; }
   let d = length(f - vec2f(0.25) - h.yz * 0.5);
-  let s = smoothstep(0.22, 0.0, d) * (0.25 + 0.75 * h.w * h.w);
+  let s = (1.0 - smoothstep(0.0, 0.22, d)) * (0.25 + 0.75 * h.w * h.w);
   let tint = mix(vec3f(0.80, 0.88, 1.0), vec3f(1.0, 0.90, 0.78), h.y);
   return sky + tint * (s * g.skyZen.w * smoothstep(0.02, 0.22, el));
 }
@@ -118,7 +118,7 @@ fn moonOver(rd: vec3f, sky: vec3f) -> vec3f {
   let n = q.x * right + q.y * up - sqrt(1.0 - d2) * md;
   let l = smoothstep(-0.05, 0.30, dot(n, normalize(g.sunDir.xyz)));
   let sea = 1.0 - 0.30 * smoothstep(0.45, 0.62, fbm(q * 2.3 + 7.0, 31u));
-  let edge = smoothstep(1.0, 0.90, d2);
+  let edge = 1.0 - smoothstep(0.90, 1.0, d2);
   return sky + vec3f(0.80, 0.86, 0.95) * (sea * 0.55 * l * edge * g.moon.w);
 }
 /* гряда кучевых: ячейки по азимуту, плоское основание, на нём клубы.
