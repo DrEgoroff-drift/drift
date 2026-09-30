@@ -263,7 +263,7 @@ function plnSurface(){
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* вода, отсвет земли и ближний воздух — от листа мира (M613) */
   const wl=L.wl,wa=wl.water[0],wb=wl.water[1];
-  look.thru=Q.thru;look.waterA=[wa[0],wa[1],wa[2],0];look.waterB=[wb[0],wb[1],wb[2],ride];
+  look.thru=Q.thru;look.waterA=[wa[0],wa[1],wa[2],wl.murk||0];look.waterB=[wb[0],wb[1],wb[2],ride];
   for(let i=0;i<3;i++){look.ambGnd[i]*=wl.gnd[i];look.bounce[i]*=wl.gnd[i];look.airNear[i]=lerp(look.airNear[i],wl.air[i],.7);}
   look.bands=Q.bands;
   look.world=[L.sd%1000,clamp(WIND*1.4,-1.2,1.2),0,0];
@@ -284,6 +284,8 @@ function plnSurface(){
   /* фонарь — ночью и в тени затмения */
   const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));
   if(lampK>0)F.lamps.push({p:[man[0]+S.face*1.6,man[1]+1.5,man[2]-.4],r:8,c:[1,.86,.62],k:2.4*lampK});
+  /* светящийся пруд ночью светит и на берег: лампа посреди воды, её же цвета (M613) */
+  if(L.lake&&(wl.murk||0)>.5&&Hr.night>.05){const k=L.lake;F.lamps.push({p:[(k.x0+k.x1)/2,k.level+1.2,(k.zn+k.zf)/2],r:(k.x1-k.x0)/2+8,c:[wa[0]*2,wa[1]*2,wa[2]*2],k:1.2*wl.murk*Hr.night});}
   /* пятна тени героев и вещей легли первыми, остаток мест — тому, что растёт */
   plnPlantBatches(L,F,C.ex,V);
   /* герой стоит в пятне света: пятно лежит там, куда его тень падает на уровень сцены */

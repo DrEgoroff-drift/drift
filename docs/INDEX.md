@@ -1226,7 +1226,7 @@ PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LOOK                     src/21pz-pln-frame.js:28-50
 PLN_M                        src/21p-pln.js:14
 PLN_MAT                      src/21pa-pln-mesh.js:9
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:298
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:300
 PLN_OVER                     src/21pj-pln-over.js:15
 PLN_PAD                      src/21pga-pln-plant.js:28
 PLN_PADS                     src/21pg-pln-flora.js:21
@@ -1245,7 +1245,7 @@ PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
 PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
 PLN_WING                     src/21pgc-pln-wing.js:23
-PLN_WORLDS                   src/21pfa-pln-worlds.js:17-61
+PLN_WORLDS                   src/21pfa-pln-worlds.js:18-62
 PLN_WX_COL                   src/21pz-pln-frame.js:115
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 POI_FIND                     src/20b-poi-find.js:18-91
@@ -5262,7 +5262,7 @@ plnOver                      src/21pj-pln-over.js:44-128
 plnOverAt                    src/21pj-pln-over.js:18-21
 plnOverOld                   src/21pj-pln-over.js:28-43
 plnOverPlate                 src/21pj-pln-over.js:22-26
-plnPalSet                    src/21pfa-pln-worlds.js:54-61
+plnPalSet                    src/21pfa-pln-worlds.js:55-62
 plnPlantBatches              src/21pga-pln-plant.js:552-569
 plnPlantBodies               src/21pga-pln-plant.js:123-349
 plnPlantBucket               src/21pga-pln-plant.js:46
@@ -5295,7 +5295,7 @@ plnSmax                      src/21p-pln.js:80
 plnSmooth                    src/21p-pln.js:29
 plnSoftp                     src/21pf-pln-land.js:82
 plnSub                       src/21p-pln.js:32
-plnSurface                   src/21pz-pln-frame.js:253-295
+plnSurface                   src/21pz-pln-frame.js:253-297
 plnTf                        src/21p-pln.js:138-140
 plnThingApron                src/21pi-pln-things.js:55-69
 plnThingCaveMesh             src/21pi-pln-things.js:176-232
@@ -7953,7 +7953,7 @@ zoomTo                       src/15-input.js:350
 ## src/21pb-pln-wgsl-air.js · 23 КБ
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 14 КБ
+## src/21pc-pln-wgsl-scene.js · 15 КБ
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 7 КБ

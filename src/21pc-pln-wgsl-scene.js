@@ -243,25 +243,30 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
 @fragment fn fs_water(in: VOut) -> @location(0) vec4f {
   let depth = in.par.w;
   let t = g.camPos.w;
+  let murk = g.waterA.w;
   let V = normalize(g.camPos.xyz - in.wpos);
   let p = in.wpos.xz;
   let n1 = vnoise(vec2f(p.x * 0.30 + t * 0.25, p.y * 1.5 - t * 0.15), 3u) - 0.5;
   let n2 = vnoise(vec2f(p.x * 0.85 - t * 0.20, p.y * 3.9 + t * 0.30), 5u) - 0.5;
   let calm = smoothstep(0.35, 0.65, fbm(vec2f(p.x * 0.02 + 1.0, p.y * 0.06 + t * 0.01), 9u));
-  let rip = mix(0.35, 1.0, calm);
+  let rip = mix(0.35, 1.0, calm) * mix(1.0, 0.6, murk);
   let N = normalize(vec3f((n1 + n2 * 0.5) * 0.10 * rip, 1.0, (n1 * 0.5 + n2) * 0.16 * rip));
   let uv = in.pos.xy * g.screen.zw + vec2f((n1 + n2) * 0.004, (n1 + n2 * 0.6) * 0.030) * rip;
   let refl = textureSampleLevel(reflTex, linSamp, clamp(uv, vec2f(0.002), vec2f(0.998)), 0.0).rgb;
   let nv = clamp(dot(N, V), 0.0, 1.0);
   let fr = 0.04 + 0.96 * pow(1.0 - nv, 5.0);
   let cl = cloudLight(in.wpos);
-  let deep = smoothstep(0.0, 2.2, depth);
+  /* мутная вода непрозрачна с малой глубины, зеркало в ней проигрывает телу, и тело чуть светит само:
+     сильнее в упор и пятнами, слабее вскользь — иначе ночью это плоский лист */
+  let deep = smoothstep(0.0, mix(2.2, 0.5, murk), depth);
   var body = mix(g.waterA.rgb, g.waterB.rgb, deep);
-  body *= g.sunCol.rgb * (0.55 * cl) + g.ambSky.rgb * 0.91;
-  var c = mix(body, refl * vec3f(0.84, 0.90, 0.92), clamp(fr * 1.05, 0.0, 1.0));
-  /* мокрая кромка вдоль берега: светла настолько, насколько светел ключ */
+  let gl = murk * (0.16 + 0.30 * nv) * (0.6 + 0.6 * calm);
+  body = body * (g.sunCol.rgb * (0.55 * cl) + g.ambSky.rgb * 0.91) + g.waterA.rgb * gl;
+  var c = mix(body, refl * vec3f(0.84, 0.90, 0.92), clamp(fr * 1.05 * (1.0 - 0.8 * murk), 0.0, 1.0));
+  /* мокрая кромка вдоль берега: светла настолько, насколько светел ключ; у мутной воды — её же цвета */
   let key = clamp(dot(g.sunCol.rgb, vec3f(0.3333)) / 1.38, 0.0, 1.0);
-  c = mix(c, vec3f(0.85, 0.92, 0.95) * (key * (0.4 + 0.6 * cl)), (1.0 - smoothstep(0.02, 0.16, depth)) * 0.35);
+  let edge = mix(vec3f(0.85, 0.92, 0.95), g.waterA.rgb * 2.2, murk);
+  c = mix(c, edge * (key * (0.4 + 0.6 * cl)), (1.0 - smoothstep(0.02, 0.16, depth)) * 0.35);
   let alpha = smoothstep(-0.03, 0.30, depth);
   return vec4f(applyFog(c, in.wpos, 1.0), alpha);
 }
