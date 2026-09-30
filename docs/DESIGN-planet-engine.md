@@ -78,11 +78,42 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
 10. **Until stage 2 the cast is a blockout**: the stand's man and ship, and plain bodies
     from the game's own lists — `S.plants`, `S.fauna`, `S.deposits`, `S.cave.x`,
     `mineSpotX(p)`, the water. The interface is the game's, `drawSurfaceHud`, unchanged.
-11. **The sun goes where the hour says.** `celSun(p).ph` turns the key along one circle,
-    tilted 52° back from the zenith: it rises on the left, stands 38° high behind the
-    scene at noon, sets on the right. The key frame M600 is this circle at ph = .125.
-    Shadows therefore always fall towards the lens. `celDark()` dims the key and nothing
-    else (the eclipse); by night the key is the cold light of M602.
+11. **The sun goes where the hour says, in five acts.** `celSun(p).ph` turns the key along
+    one circle tilted 52° back from the zenith: it rises on the left, stands 38° high behind
+    the scene at noon, sets on the right; the key frame M600 is this circle at ph = .125,
+    and shadows fall towards the lens. The hour is painted by five looks — noon, day, gold,
+    blue, night (`PLN_LOOK`, `PLN_ACTS`) — mixed by the height of the sun; a low sun slides
+    behind the scene so that its glow stands over the far hills, and dawn is warmer than
+    dusk. The sun is never in the frame: nothing on its circle can enter the window the
+    lens sees.
+    - **The bodies of the sky come from the world** (`plnBodies`). The moons of the planet
+      (`p.moons`) ride a low road over the far hills, rising behind the left edge of the
+      frame and setting behind the right, never above eight degrees; a moon's hour is the
+      sun's hour minus its phase, so the full moon stands over the scene at midnight. They
+      are lit by the true sun (`sunTrue`), so the phase comes out by itself. Standing on a
+      moon, the parent hangs at one place, large, banded if a gas giant, with seas and
+      clouds if a living world. The brightest body over the horizon is the key of the night
+      (cold for a moon, warm for a parent); a moonless night has no key, and its clouds go
+      almost as dark as the sky. Stars and a galaxy band (its great circle through a point
+      of the window, the tilt from the seed) come out with `skyZen.w`. A moon in conjunction
+      stands before the sun and is off its road.
+    - **Clouds, air and light come from the weather of the world** (`plnWeatherLook`, from
+      `19d`). Rain, snow and acid bring a deck of overcast drawn in the sky shader from
+      `cloudDark.w`: the grey of that hour's shaded cloud, darker towards the zenith, tinted
+      by the precipitation; the key drops to a fifth, the shafts go, the cloud shadows on
+      the ground flatten out, the far bank thins so the far hills stay, the air takes the
+      same grey. While it gathers it hangs as dark patches on the blue. Fog lays the air low
+      and thick and pulls the sky and the clouds into milk; dust and ash colour the air, the
+      sky and the clouds and dim the key; spores tint the air. Fog, dust and ash take the
+      brightness of the hour, so they do not glow at night. The clouds drift with the wind
+      of the world. The precipitation itself is M626.
+    - **The eclipse is a scene, not a dimmer.** `celDark()` deepens the sky and the air,
+      darkens the clouds, brings the stars; a ring of sunset glow stands round the whole
+      horizon (`skyBase`, from `sunTrue.w`); the shadow of the moon walks over the land as a
+      band with soft edges whose middle follows `celEclipse().ph` (carried in `ambGnd.w`)
+      from the far mountains through the hero to behind the lens (`cloudLight`, so the
+      ground, the things and the shafts darken alike); the headlamp comes on in the dark.
+      The calendar of `06a` is not touched.
 
 12. **One kit of bodies, placed by records** (`21pg`, `21pga`). A body is built once for a
     device, in its own measure (a tuft and a stone are a metre, a tree is ten); a record of
@@ -170,7 +201,7 @@ with `pln` or `PLN`: the game is one scope.
 |---|---|
 | `21p-pln` | the state `PLN`, the switch, units, small math: vectors, matrices, noise |
 | `21pa-pln-mesh` | the mesh and its generators: blob, tube, loft, card, icosphere |
-| `21pb-pln-wgsl-air` | shaders shared by all: the sky, clouds, the air, the light of clouds |
+| `21pb-pln-wgsl-air` | shaders shared by all: the sky, its bodies, stars and the galaxy band, the deck of weather, clouds, the air, the light of clouds and the shadow of the eclipse |
 | `21pc-pln-wgsl-scene` | shaders of bodies, the land, water, shadow |
 | `21pd-pln-wgsl-post` | blur, bloom, light in the air, the grade, the hand-over triangle |
 | `21pe-pln-gpu` | targets, pipelines, groups, the passes of one frame |
@@ -184,7 +215,7 @@ with `pln` or `PLN`: the game is one scope.
 | `21pia-pln-herb` | the plants of the game, the algae of the pond |
 | `21pib-pln-beast` | the beasts of the game, a flip book of seven bodies each |
 | `21pj-pln-over` | what lies over the frame in 2D, and the stickers of the old painters |
-| `21pz-pln-frame` | the lens, the hour's light, what is built when, the frame, the wrap |
+| `21pz-pln-frame` | the lens, the five acts of the hour, the bodies of the sky, the weather's look, what is built when, the frame, the wrap |
 
 `21pga` stands at 36 KB: the next pass of placement goes to a module of its own.
 
@@ -196,8 +227,8 @@ with `pln` or `PLN`: the game is one scope.
   the hollow and water, far lanes from the seed, the wing. **Done**, in four passes:
   A — what grows (§2.12–§2.14), B — the things of the game (§2.16–§2.18), the wing
   (§2.15), C — the pond, the swimmer and the crags (§2.19–§2.21).
-- **M612** sky and air by the hour: the circle of the sun, dusk and night, clouds from the
-  planet's weather, the eclipse.
+- **M612** sky and air by the hour: the five acts of the day, the bodies of the sky and the
+  stars, the deck and the air of the weather, the eclipse. **Done**, in four passes.
 - **M613** the worlds on one sheet. Today every world is painted terran. Owed here: a
   palette for every type of world (the ground, the grass or its absence, stone, the air);
   the colours of water by type — `lake.acid` is read by nobody; crags and their light on a
@@ -208,14 +239,21 @@ with `pln` or `PLN`: the game is one scope.
 ## 5. What is not done here
 
 The landing, the cave, the mine and the base keep their old painters until their own
-steps (M621, M630–M632). Weather is M626. The old painters, the fleet's sky
+steps (M621, M630–M632). The precipitation of the weather is M626, its light is M612.
+The old painters, the fleet's sky
 (`src/19*`, `11ak-skywatch`, `27la-road-sky`) and the nebula are read and never edited.
 
-## 6. State on 28.09.2026
+## 6. State on 30.09.2026
 
-Stage 1 stands at M611 done, M612 next. The new look is walked in the game behind
+Stage 1 stands at M612 done, M613 next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
+
+**M612** went in four passes (`a38f36be` the five acts, `544ca5e6` the bodies of the sky
+and the stars, `0045a98a` the weather, `4ffb79bc` the eclipse). The Globals block is 248
+floats (992 bytes); its spare slots are `airNear.w`, `thru.w`, `bounce.w`, `waterA.w`,
+`cloudDarkS.w`. The frames of the passes are in the author's chat; the shooting helpers
+for hours, moons, weather and eclipses are in `docs/look/game/`.
 
 **Measured** (RTX 5070, everything planted, after pass A): 1600 × 900 — 5.5 ms;
 3840 × 2160 — 20.8 ms, over the budget; the phone's frame — 2.7 ms. A broad frame holds
@@ -229,7 +267,12 @@ are those of `main`.
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;
 - the first frame plants everything at once; 4K is over the budget (M614);
-- the wing's fern is pale and its caps are flattish.
+- the wing's fern is pale and its caps are flattish;
+- the sky of M612: the lumps of the overcast deck are soft and its lower edge is a soft
+  line; the drops and flakes are the old overlay (M626); the day crescent hides behind the
+  cumulus; the giant's bands are subtle; the stars at the totality of an eclipse are faint
+  and the shadow of the moon is a straight band in depth; wet ground neither darkens nor
+  shines (M613/M626).
 
 **Not looked at yet**: the crags, the ring and the algae by night and in the mirror; dust
 on a dry world; the tints of scanned plants; beasts in motion; whether a crag can hide the

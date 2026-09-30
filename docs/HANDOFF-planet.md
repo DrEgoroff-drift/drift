@@ -21,8 +21,9 @@ Stage 0 (the look on the stand) is closed and M600 is accepted by the author. Si
 27.09 frames are not agreed one by one: «кадры не надо со мной согласовывать, направление
 верное, делай все». He asked for pictures to be left in the chat after every pass.
 
-Stage 1: **M610 and M611 are done**, M612 (sky and air by the hour) is next, then M613
-(the worlds on one sheet) and M614 (the cost). The new look runs in the game behind
+Stage 1: **M610, M611 and M612 are done** (the sky by the hour, the bodies of the sky, the
+weather's light, the eclipse — `docs/DESIGN-planet-engine.md` §2.11), M613 (the worlds on
+one sheet) is next, then M614 (the cost). The new look runs in the game behind
 `?pln=1` or `PLN.on=true`, off by default; the old painter is untouched.
 
 ## Rules that hold

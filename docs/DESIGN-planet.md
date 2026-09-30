@@ -153,6 +153,7 @@ after it pass by §5.4.
 - M610 lit bodies in the engine: depth, the key with its shadow map, sky fill, fog, vertex colour
 - M611 the ground: the ribbon from the real profile, lanes, far ridges, two camera distances
 - M612 sky and air: sky, clouds, shafts, haze, the real day and night, hooks for the eclipse
+  — done 30.09: five acts of the day, the bodies of the sky, stars, the weather's deck and air, the eclipse as a scene
 - M613 the three-world test: terran, desert, ice on one sheet — the style must hold on bare
   worlds; a palette, a water and a stone for every type (until then every world is terran)
 - M614 the phone gate for the foundation
@@ -528,6 +529,9 @@ pictures do not go into git.
   with the sheet's tool (§9 of the style sheet). Passed by §5.4; the laws it paid for are
   §11.10. The scale of the old frame was measured in the game and corrected everywhere:
   4.2 % and 2.8 %, not «near 2 %».
+
+- **Stage 1 in the engine, M610–M612** (28–30.09): the state, the decisions and the weak
+  spots are in `DESIGN-planet-engine.md` §2 and §6.
 
 **Not done**
 - M600 in weather: it goes with M626. The cave's far lens goes with M630, by the game's
