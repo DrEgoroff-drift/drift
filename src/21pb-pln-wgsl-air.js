@@ -3,8 +3,8 @@
    в начале и шейдера сцены (21pc), и шейдера свёртки (21pd).
 
    Все цвета неба, воздуха и заполняющего света приходят числами из кадра
-   (21pz): час и тип мира меняют числа, а не шейдер. Блок Globals — 928 байт,
-   232 числа; раскладку держит plnGlobals (21pe), править только вместе. */
+   (21pz): час и тип мира меняют числа, а не шейдер. Блок Globals — 992 байта,
+   248 чисел; раскладку держит plnGlobals (21pe), править только вместе. */
 const PLN_WGSL_AIR=/* wgsl */`
 struct Globals {
   viewProj: mat4x4f,
@@ -36,10 +36,14 @@ struct Globals {
   cloudLit: vec4f,    // облако на свету; w — сколько неба открыто: меньше — больше теней облаков на земле
   cloudDark: vec4f,   // облако в тени, в стороне от светила; w — запас
   cloudDarkS: vec4f,  // облако в тени со стороны светила; w — запас
-  moon: vec4f,        // дневная луна: азимут, высота, радиус (рад), яркость
+  moon: vec4f,        // первое тело неба: азимут, высота, радиус (рад), яркость
   world: vec4f,       // семя мира, сила ветра, число облаков, число пятен тени
   bands: vec4f,       // полосы тени по глубине: начало и конец ближней, начало и конец дальней
   clouds: array<vec4f, 8>,    // азимут, высота основания, полуширина, семя
+  sunTrue: vec4f,     // светило как оно есть, без подмены ключа луной: xyz; w — затмение 0…1
+  moon2: vec4f,       // второе тело неба: азимут, высота, радиус (рад), яркость
+  moon3: vec4f,       // третье
+  bodyKind: vec4f,    // род трёх тел: 0 нет, 1 камень, 2 лёд, 3 металл или руина, 4 гигант в полосах, 5 живой мир; w — семя
 };
 @group(0) @binding(0) var<uniform> g: Globals;
 
@@ -93,34 +97,91 @@ fn skyBase(rd: vec3f) -> vec3f {
   c += g.sunGlow.rgb * ((pow(cs, 6.0) * 0.18 + pow(cs, 60.0) * 1.2) * g.sunGlow.w);
   return c;
 }
-/* звёзды: редкие, разной силы; у горизонта их гасит воздух */
-fn starsOver(rd: vec3f, sky: vec3f) -> vec3f {
-  if (g.skyZen.w <= 0.0 || rd.y <= 0.0) { return sky; }
+/* звёзды: одна ячейка из двадцати пяти, разной силы, редкие яркие — с ореолом; у горизонта их
+   гасит воздух. Отдаётся сам свет звёзд: небо прибавляет его там, где его не закрыло тело */
+fn stars(rd: vec3f) -> vec3f {
+  if (g.skyZen.w <= 0.0 || rd.y <= 0.0) { return vec3f(0.0); }
   let az = atan2(rd.x, rd.z); let el = asin(clamp(rd.y, -1.0, 1.0));
   let q = vec2f(az * cos(el), el) * 420.0;
   let i = vec2i(floor(q)); let f = q - floor(q);
   let h = hash4(i, 91u);
-  if (h.x > 0.035) { return sky; }
+  if (h.x > 0.04) { return vec3f(0.0); }
   let d = length(f - vec2f(0.25) - h.yz * 0.5);
-  let s = (1.0 - smoothstep(0.0, 0.22, d)) * (0.25 + 0.75 * h.w * h.w);
+  let big = smoothstep(0.93, 1.0, h.w);
+  let s = (1.0 - smoothstep(0.0, 0.30, d)) * (0.22 + 0.78 * h.w * h.w) + big * 0.5 * exp(-d * d * 5.0);
   let tint = mix(vec3f(0.80, 0.88, 1.0), vec3f(1.0, 0.90, 0.78), h.y);
-  return sky + tint * (s * g.skyZen.w * smoothstep(0.02, 0.22, el));
+  return tint * (s * 1.3 * g.skyZen.w * smoothstep(0.02, 0.22, el));
 }
-/* дневная луна: бледный диск со светлой стороной к светилу */
-fn moonOver(rd: vec3f, sky: vec3f) -> vec3f {
-  if (g.moon.w <= 0.0) { return sky; }
-  let az = g.moon.x; let el = g.moon.y; let r = g.moon.z;
-  let md = vec3f(sin(az) * cos(el), sin(el), cos(az) * cos(el));
+/* полоса галактики: пояс по большому кругу; круг проходит через точку окна кадра, наклон и
+   сторона — от семени мира, иначе пояс почти всегда лежал бы вне окна и от него оставался один
+   хвост. В поясе сгустки и тёмная пыль; он встаёт из-за дальних холмов и уходит вверх через кадр */
+fn galaxy(rd: vec3f) -> vec3f {
+  if (g.skyZen.w <= 0.0 || rd.y <= 0.0) { return vec3f(0.0); }
+  let sd = g.world.x;
+  let az0 = (fract(sd * 0.0731) - 0.5) * 0.5; let el0 = 0.03 + 0.09 * fract(sd * 0.0417);
+  let psi = 0.45 + 0.7 * fract(sd * 0.0577);
+  let side = select(-1.0, 1.0, fract(sd * 0.0193) > 0.5);
+  let P = vec3f(sin(az0) * cos(el0), sin(el0), cos(az0) * cos(el0));
+  let E = vec3f(cos(az0), 0.0, -sin(az0));
+  let U = vec3f(-sin(az0) * sin(el0), cos(el0), -cos(az0) * sin(el0));
+  let ng = normalize(cross(P, normalize(E * (cos(psi) * side) + U * sin(psi))));
+  let d = dot(rd, ng);
+  let az = atan2(rd.x, rd.z); let el = asin(clamp(rd.y, -1.0, 1.0));
+  let w = 0.11 + 0.05 * fbm(vec2f(az * 3.0, el * 4.0) + sd, 51u);
+  let band = exp(-d * d / (w * w));
+  let clump = 0.6 + 0.4 * fbm(vec2f(az * 9.0, el * 9.0) + sd * 0.3, 52u);
+  let dust = smoothstep(0.58, 0.78, fbm(vec2f(az * 14.0, el * 18.0) + sd * 0.7, 53u));
+  let col = mix(vec3f(0.09, 0.10, 0.16), vec3f(0.14, 0.11, 0.12), fract(sd * 0.0413));
+  return col * (band * clump * (1.0 - 0.5 * dust) * g.skyZen.w * smoothstep(0.0, 0.2, el));
+}
+/* тело неба — луна или родитель луны: диск с фазой от светила как оно есть (sunTrue), на тёмной
+   стороне пепельный свет; у гиганта полосы, у живого мира моря и облака, у обоих ободок воздуха.
+   acc: rgb — небо, w — сколько неба уже закрыто телами. Свет тела прибавляется к небу, как и в
+   жизни: воздух перед ним светится сам, оттого днём луна бледна, а ночью горит */
+fn bodyOver(rd: vec3f, acc: vec4f, m: vec4f, kind: f32, seed: f32) -> vec4f {
+  if (m.w <= 0.0 || kind <= 0.0) { return acc; }
+  let md = vec3f(sin(m.x) * cos(m.y), sin(m.y), cos(m.x) * cos(m.y));
+  if (dot(rd, md) < 0.0) { return acc; }
   let right = normalize(cross(vec3f(0.0, 1.0, 0.0), md));
   let up = cross(md, right);
-  let q = vec2f(dot(rd, right), dot(rd, up)) / r;
+  let q = vec2f(dot(rd, right), dot(rd, up)) / m.z;
   let d2 = dot(q, q);
-  if (d2 > 1.0 || dot(rd, md) < 0.0) { return sky; }
-  let n = q.x * right + q.y * up - sqrt(1.0 - d2) * md;
-  let l = smoothstep(-0.05, 0.30, dot(n, normalize(g.sunDir.xyz)));
-  let sea = 1.0 - 0.30 * smoothstep(0.45, 0.62, fbm(q * 2.3 + 7.0, 31u));
-  let edge = 1.0 - smoothstep(0.90, 1.0, d2);
-  return sky + vec3f(0.80, 0.86, 0.95) * (sea * 0.55 * l * edge * g.moon.w);
+  if (d2 > 1.35) { return acc; }
+  let sun = normalize(g.sunTrue.xyz);
+  let n = q.x * right + q.y * up - sqrt(max(1.0 - d2, 0.0)) * md;
+  let l = smoothstep(-0.10, 0.40, dot(n, sun));
+  var alb = vec3f(0.60, 0.57, 0.52);
+  var tex = 1.0 - 0.32 * smoothstep(0.45, 0.62, fbm(q * 2.3 + seed, 31u));
+  if (kind > 1.5 && kind < 2.5) {
+    alb = vec3f(0.84, 0.88, 0.95); tex = 1.0 - 0.16 * smoothstep(0.50, 0.70, fbm(q * 3.1 + seed, 32u));
+  } else if (kind > 2.5 && kind < 3.5) {
+    alb = vec3f(0.40, 0.37, 0.34); tex = 1.0 - 0.35 * smoothstep(0.40, 0.60, fbm(q * 4.0 + seed, 33u));
+  } else if (kind > 3.5 && kind < 4.5) {
+    let band = q.y * 4.5 + 0.12 * fbm(vec2f(q.x * 2.0, q.y * 6.0) + seed, 34u);
+    let s = sin(band * PI) * 0.5 + 0.5;
+    alb = mix(vec3f(0.60, 0.42, 0.28), vec3f(1.0, 0.88, 0.70), s);
+    alb = mix(alb, vec3f(0.48, 0.32, 0.34), 0.7 * smoothstep(0.62, 0.90, fbm(vec2f(q.x * 5.0, q.y * 9.0) + seed * 1.7, 35u)));
+    tex = 0.62;
+  } else if (kind > 4.5) {
+    let land = smoothstep(0.50, 0.58, fbm(q * 2.2 + seed, 36u));
+    alb = mix(vec3f(0.16, 0.30, 0.62), vec3f(0.36, 0.42, 0.22), land);
+    alb = mix(alb, vec3f(0.95, 0.96, 1.0), 0.8 * smoothstep(0.58, 0.72, fbm(vec2f(q.x * 4.0 + q.y, q.y * 2.5) + seed * 2.3, 37u)));
+    tex = 0.62;
+  }
+  let edge = 1.0 - smoothstep(0.92, 1.0, d2);
+  /* низко над землёй воздух гасит тело */
+  let thin = mix(0.55, 1.0, smoothstep(0.0, 0.20, m.y));
+  let col = alb * tex * mix(0.05, 1.0, l) * (m.w * thin);
+  var c = acc.rgb + col * edge;
+  if (kind > 3.5) { c += alb * (0.22 * m.w * thin * (0.3 + 0.7 * l)) * smoothstep(0.80, 1.0, d2) * (1.0 - smoothstep(1.0, 1.35, d2)); }
+  return vec4f(c, max(acc.w, edge));
+}
+fn bodiesOver(rd: vec3f, sky: vec3f) -> vec4f {
+  var r = vec4f(sky, 0.0);
+  r = bodyOver(rd, r, g.moon, g.bodyKind.x, g.bodyKind.w);
+  r = bodyOver(rd, r, g.moon2, g.bodyKind.y, g.bodyKind.w + 3.0);
+  r = bodyOver(rd, r, g.moon3, g.bodyKind.z, g.bodyKind.w + 6.0);
+  return r;
 }
 /* гряда кучевых: ячейки по азимуту, плоское основание, на нём клубы.
    отдаёт свет −1…1, покрытие 0…1, высоту победившего клуба, основание его облака */
@@ -190,7 +251,8 @@ fn cloudOne(az: f32, el: f32, c: vec2f, w: f32, sd: u32, lc: vec3f, acc: vec4f) 
   return o;
 }
 fn skyCol(rd: vec3f) -> vec3f {
-  var c = moonOver(rd, starsOver(rd, skyBase(rd)));
+  let bd = bodiesOver(rd, skyBase(rd));
+  var c = bd.rgb + (stars(rd) + galaxy(rd)) * (1.0 - bd.w);
   let az = atan2(rd.x, rd.z); let el = asin(clamp(rd.y, -1.0, 1.0));
   if (el > 0.0) {
     let t = g.camPos.w;

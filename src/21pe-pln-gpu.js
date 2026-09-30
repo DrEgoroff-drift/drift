@@ -19,11 +19,11 @@ const PLN_KIND={body:0,water:1,wing:2};
 const PLN_GPU={dev:null,gen:0,
   ms:4,shn:4096,                       /* сглаживание сцены; сторона карты теней */
   w:0,h:0,L:null,P:{},S:null,U:null,D:null,T:null,V:null,B:null,pp:null,one:null,oneRide:null,
-  ga:[0,1,2,3,4].map(()=>new Float32Array(232)),inv:new Float32Array(16)};
+  ga:[0,1,2,3,4].map(()=>new Float32Array(248)),inv:new Float32Array(16)};
 /* где что лежит в блоке Globals после ламп (21pb) */
 const PLN_G={skyZen:120,skyZenS:124,skyHor:128,skyHorS:132,sunGlow:136,airFar:140,airFarS:144,airNear:148,
   ambSky:152,ambGnd:156,thru:160,bounce:164,waterA:168,waterB:172,cloudLit:176,cloudDark:180,cloudDarkS:184,
-  moon:188,world:192,bands:196};
+  moon:188,world:192,bands:196,sunTrue:232,moon2:236,moon3:240,bodyKind:244};
 const PLN_VB=[
   {arrayStride:52,attributes:[
     {shaderLocation:0,offset:0,format:"float32x3"},{shaderLocation:1,offset:12,format:"float32x3"},
@@ -90,7 +90,7 @@ function plnGpuDev(){
   Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
     cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
   const ub=n=>d.createBuffer({size:n,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
-  Q.U={main:ub(928),refl:ub(928),sh0:ub(928),sh1:ub(928),wing:ub(928),blobs:ub(1040)};
+  Q.U={main:ub(992),refl:ub(992),sh0:ub(992),sh1:ub(992),wing:ub(992),blobs:ub(1040)};
   /* единичные записи цельных сеток: мировая и та, что едет с дальним миром */
   Q.one=d.createBuffer({size:64,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
   d.queue.writeBuffer(Q.one,0,new Float32Array([0,0,0,1, 1,0,1,0, 1,1,1,0, 0,0,0,0]));
