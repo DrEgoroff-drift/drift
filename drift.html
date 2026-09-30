@@ -80643,7 +80643,7 @@ struct Globals {
   lampPos: array<vec4f, 4>,   // xyz, дальность
   lampCol: array<vec4f, 4>,   // rgb, сила
   skyZen: vec4f,      // зенит в стороне от светила; w — сколько звёзд
-  skyZenS: vec4f,     // зенит со стороны светила; w — запас
+  skyZenS: vec4f,     // зенит со стороны светила; w — узость его стороны (степень)
   skyHor: vec4f,      // горизонт в стороне от светила; w — перистые
   skyHorS: vec4f,     // горизонт со стороны светила; w — дальняя гряда облаков
   sunGlow: vec4f,     // зарево вокруг светила; w — сила
@@ -80698,10 +80698,11 @@ fn fbm(p: vec2f, s: u32) -> f32 {
 fn ign(p: vec2f) -> f32 { return fract(52.9829189 * fract(dot(p, vec2f(0.06711056, 0.00583715)))); }
 
 /* ── небо ── */
-/* насколько направление близко к стороне светила: тёплое живёт только там */
+/* насколько направление близко к стороне светила: тёплое живёт только там. Днём сторона узка,
+   на заре зарево расходится по горизонту широко — узость даёт кадр */
 fn sunSide(rd: vec3f) -> f32 {
   let a = normalize(rd.xz + vec2f(0.00001, 0.0)); let b = normalize(g.sunDir.xz + vec2f(0.00001, 0.0));
-  return pow(clamp(dot(a, b) * 0.5 + 0.5, 0.0, 1.0), 5.0);
+  return pow(clamp(dot(a, b) * 0.5 + 0.5, 0.0, 1.0), max(g.skyZenS.w, 0.5));
 }
 fn horizonCol(rd: vec3f) -> vec3f {
   return mix(g.skyHor.rgb, g.skyHorS.rgb, sunSide(rd));
@@ -84683,33 +84684,48 @@ function plnOver(){
    семейства. Переключатель выключен — идёт старая рисовалка; новый вид упал —
    тоже она, и после трёх сбоев подряд новый вид снимает себя сам.
 
-   Свет по часу здесь грубый: три набора чисел — день, закат, ночь — и переход
-   между ними по высоте светила. Закат и ночь по числам стенда, облака от
-   погоды и затмение как следует — M612. Цвета земли пока одни, землеподобные:
-   пустыня и лёд — M613. */
+   Свет по часу — пять картин суток и переход между ними по высоте светила
+   (M612). Цвета земли пока одни, землеподобные: пустыня и лёд — M613. */
 const PLN_FRAME={blobs:new Float32Array(260),bloom:BLOOM_K.surface,
   clouds:[[.318,.050,.115,21],[-.300,.058,.085,22],[-.078,.060,.034,23],[.150,.118,.030,24],[-.090,.235,.095,25],[.195,.400,.060,26]],
   /* дневная луна: азимут, высота, радиус, яркость */
   moon:[-2.6*PLN_DEG,7.63*PLN_DEG,1.5*PLN_DEG,1],
   bands:[190,345,1250,3000],
   thru:[1.2,1.1,.4,0],waterA:[.10,.30,.30,0],waterB:[.02,.10,.17,0]};
-/* Наборы чисел неба, воздуха и заполняющего света. Четвёртое число у каждого своё (21pb):
-   звёзды, перистые, дальняя гряда, сила зарева, плотность воздуха и как он редеет с высотой,
-   у облака на свету — сколько неба открыто (меньше — больше теней облаков на земле) */
+/* Наборы чисел неба, воздуха и заполняющего света — картины суток. Четвёртое число у каждого
+   своё (21pb): звёзды, узость тёплой стороны неба, перистые, дальняя гряда, сила зарева,
+   плотность воздуха и как он редеет с высотой, у облака на свету — сколько неба открыто
+   (меньше — больше теней облаков на земле).
+   Картин пять: ночь, синий час (светило под горизонтом, землю светит небо), золотой час,
+   день — принятый кадр M600 — и полдень. У полудня светило стоит прямо за сценой, и вся
+   ширина кадра — «его сторона»: тёплый горизонт дня там заливал кадр молоком */
 const PLN_LOOK={
-  day:{skyZen:[.13,.33,.78,0],skyZenS:[.26,.48,.84,0],skyHor:[.62,.78,.95,.2],skyHorS:[1,.89,.72,.5],sunGlow:[1,.85,.6,1],
+  noon:{skyZen:[.11,.30,.78,0],skyZenS:[.15,.37,.82,5],skyHor:[.58,.76,.96,.2],skyHorS:[.76,.85,.97,.5],sunGlow:[1,.92,.75,.7],
+    airFar:[.50,.67,.94,1],airFarS:[.64,.76,.95,.003],airNear:[.8,.98,.95,0],ambSky:[.23,.32,.48,0],ambGnd:[.165,.18,.09,0],
+    bounce:[.44,.5,.2,0],cloudLit:[1.3,1.27,1.2,.5],cloudDark:[.5,.58,.82,0],cloudDarkS:[.6,.62,.78,0],key:[1.6,1.5,1.3,0]},
+  day:{skyZen:[.13,.33,.78,0],skyZenS:[.26,.48,.84,5],skyHor:[.62,.78,.95,.2],skyHorS:[1,.89,.72,.5],sunGlow:[1,.85,.6,1],
     airFar:[.5,.66,.92,1],airFarS:[.95,.8,.66,.003],airNear:[.8,.98,.95,0],ambSky:[.22,.3025,.451,0],ambGnd:[.16,.176,.088,0],
     bounce:[.42,.5,.2,0],cloudLit:[1.28,1.229,1.126,.5],cloudDark:[.5,.58,.82,0],cloudDarkS:[.7,.62,.7,0],key:[1.55,1.42,1.18,0]},
-  dusk:{skyZen:[.10,.20,.52,0],skyZenS:[.30,.34,.60,0],skyHor:[.66,.62,.70,.2],skyHorS:[1.3,.66,.32,.5],sunGlow:[1,.55,.25,1.5],
-    airFar:[.5,.52,.72,1],airFarS:[1.05,.66,.42,.003],airNear:[.85,.95,.95,0],ambSky:[.17,.20,.31,0],ambGnd:[.13,.12,.075,0],
-    bounce:[.46,.39,.10,0],cloudLit:[1.3,.84,.56,.5],cloudDark:[.38,.40,.60,0],cloudDarkS:[.78,.46,.42,0],key:[1.7,1.1,.59,0]},
-  night:{skyZen:[.010,.020,.048,1],skyZenS:[.014,.028,.062,0],skyHor:[.046,.080,.122,.2],skyHorS:[.056,.090,.130,.5],sunGlow:[.35,.5,.8,.12],
+  gold:{skyZen:[.10,.21,.58,0],skyZenS:[.30,.33,.60,1.7],skyHor:[.70,.62,.72,.2],skyHorS:[1.45,.78,.34,.5],sunGlow:[1,.58,.26,1.6],
+    airFar:[.54,.52,.74,1],airFarS:[1.15,.70,.42,.003],airNear:[.9,.95,.92,0],ambSky:[.18,.21,.34,0],ambGnd:[.14,.125,.078,0],
+    bounce:[.5,.4,.12,0],cloudLit:[1.4,.9,.58,.5],cloudDark:[.38,.39,.62,0],cloudDarkS:[.86,.47,.42,0],key:[1.8,1.1,.54,0]},
+  blue:{skyZen:[.035,.075,.24,.3],skyZenS:[.07,.12,.30,1.4],skyHor:[.22,.28,.50,.2],skyHorS:[1.05,.50,.30,.5],sunGlow:[1,.5,.25,1.1],
+    airFar:[.15,.20,.40,1],airFarS:[.52,.36,.38,.003],airNear:[.85,.95,1,0],ambSky:[.085,.125,.25,0],ambGnd:[.035,.045,.055,0],
+    bounce:[.06,.05,.03,0],cloudLit:[.74,.40,.38,.5],cloudDark:[.11,.13,.27,0],cloudDarkS:[.30,.19,.26,0],key:[1.3,.62,.3,0]},
+  night:{skyZen:[.010,.020,.048,1],skyZenS:[.014,.028,.062,3],skyHor:[.046,.080,.122,.2],skyHorS:[.056,.090,.130,.5],sunGlow:[.35,.5,.8,.12],
     airFar:[.030,.052,.085,1],airFarS:[.040,.064,.098,.003],airNear:[.8,.95,1,0],ambSky:[.018,.034,.072,0],ambGnd:[.0054,.0116,.0187,0],
     bounce:[.013,.030,.024,0],cloudLit:[.10,.13,.19,.5],cloudDark:[.020,.030,.055,0],cloudDarkS:[.024,.034,.058,0],key:[.049,.084,.14,0]}};
+/* на какой высоте светила (синус) стоит какая картина; между соседними — плавно */
+const PLN_ACTS=[[-.17,"night"],[-.05,"blue"],[.075,"gold"],[.40,"day"],[.60,"noon"]];
 function plnLookMix(a,b,t){
   const o={};
   for(const k in a){const x=a[k],y=b[k];o[k]=[lerp(x[0],y[0],t),lerp(x[1],y[1],t),lerp(x[2],y[2],t),lerp(x[3],y[3],t)];}
   return o;
+}
+function plnLookAt(sy){
+  const T=PLN_ACTS,A=PLN_LOOK;
+  for(let k=1;k<T.length;k++)if(sy<T[k][0])return plnLookMix(A[T[k-1][1]],A[T[k][1]],plnSmooth(T[k-1][0],T[k][0],sy));
+  return plnLookMix(A.noon,A.noon,0);
 }
 
 /* ── объектив ──
@@ -84727,34 +84743,48 @@ function plnLens(S,K){
 
 /* ── свет по часу ──
    Светило ходит по кругу, наклонённому на 52°: днём свет идёт из-за сцены и сбоку, в лицо
-   объективу не светит никогда. Ночью ключ — луна с другой стороны; ключ гаснет в ноль между
-   ними, и смены стороны не видно. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
+   объективу не светит никогда. Низкое светило уходит за сцену глубже: встаёт слева-сзади,
+   садится справа-сзади — свет и на заре остаётся контровым, а зарево входит в кадр с его края.
+   Выше двадцати градусов круг прежний, кадр M600 (ph = .125) стоит на нём, как стоял.
+   Ночью ключ — луна с другой стороны; ключ гаснет в ноль между ними, и смены стороны не
+   видно. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
 function plnHour(p){
   const c=celSun(p),q=.0035,th=Math.round(c.ph*TAU/q)*q,tilt=52*PLN_DEG,A=PLN_LOOK;
-  const sun=plnNorm([-Math.cos(th),Math.sin(th)*Math.cos(tilt),Math.sin(th)*Math.sin(tilt)]),sy=sun[1];
+  const s0=Math.sin(th)*Math.cos(tilt),back=.55*(1-plnSmooth(.05,.38,s0));
+  const sun=plnNorm([-Math.cos(th),s0,Math.sin(th)*Math.sin(tilt)+back]),sy=sun[1],rise=Math.cos(th)>0;
   const atm=(p.T&&p.T.atm)||"",air=atm==="отсутствует"?0:(atm.indexOf("разреженная")>=0?.5:1);
-  /* сколько ночи разрешает область (три света, 11g): в ядре её нет вовсе */
+  /* сколько ночи разрешает область (три света, 11g): в ядре её нет вовсе — там вечный золотой час */
   const n0=clamp(-c.alt*(air?1.5:1.9)+.15,0,.62),rk=n0>0?clamp(surfNight(p)/n0,0,1):1;
-  const high=plnSmooth(.05,.35,sy),nk=(1-plnSmooth(-.12,.08,sy))*rk,ecl=celDark();
+  const se=Math.max(sy,lerp(.075,-.2,rk)),nk=(1-plnSmooth(-.14,.02,sy))*rk,ecl=celDark();
   const moonlit=sy<-.08&&rk>.5;
   const dir=moonlit?plnNorm([-sun[0],Math.max(-sy,.25),Math.abs(sun[2])+.3]):plnNorm([sun[0],Math.max(sy,.1),sun[2]]);
-  const look=plnLookMix(plnLookMix(A.dusk,A.day,high),A.night,nk);
-  const kd=plnMix3(A.dusk.key,A.day.key,high),kDay=Math.max(plnSmooth(-.08,.06,sy),moonlit?0:(1-rk)*.25);
+  const look=plnLookAt(se);
+  /* утро не вечер: на заре воздух гуще и лежит низко, тёплое — розовее; вечер суше и рыжее */
+  const low=1-plnSmooth(.08,.42,se),warm=low*plnSmooth(-.12,-.02,se);
+  if(rise&&warm>0){
+    const m=(v,c2,k)=>{v[0]=lerp(v[0],c2[0],k);v[1]=lerp(v[1],c2[1],k);v[2]=lerp(v[2],c2[2],k);};
+    m(look.skyHorS,[1.3,.80,.62],.7*warm);m(look.airFarS,[1.05,.74,.62],.7*warm);m(look.cloudLit,[1.35,.98,.80],.6*warm);
+    m(look.cloudDarkS,[.74,.50,.56],.6*warm);m(look.key,[1.7,1.16,.72],.5*warm);
+    look.airFar[3]*=1+.45*warm;look.airFarS[3]*=1+.8*warm;
+  }
+  /* ключ светила гаснет у горизонта, ключ луны встаёт, когда светило ушло */
+  const kd=look.key,kDay=Math.max(plnSmooth(-.05,.05,sy),moonlit?0:(1-rk)*.25);
   const kn=moonlit?plnSmooth(-.08,-.22,sy)*rk:0,e=1-ecl;
   const key=[(kd[0]*kDay+A.night.key[0]*kn)*e,(kd[1]*kDay+A.night.key[1]*kn)*e,(kd[2]*kDay+A.night.key[2]*kn)*e];
   /* отсвет земли светит настолько, насколько светит ключ */
-  const kb=clamp((key[0]+key[1]+key[2])/(kd[0]+kd[1]+kd[2]),0,1);
-  look.bounce=plnMul(A.day.bounce,kb).concat(0);
+  look.bounce=plnMul(look.bounce,clamp(kDay+kn,0,1)*e).concat(0);
   /* затмение гасит небо и воздух; без воздуха небо чёрное и днём, звёзды стоят всегда */
   const dim=(1-.7*ecl),sk=dim*air;
   for(const n of ["skyZen","skyZenS","skyHor","skyHorS","sunGlow","airFar","airFarS"]){const v=look[n];v[0]*=sk;v[1]*=sk;v[2]*=sk;}
   for(const n of ["cloudLit","cloudDark","cloudDarkS"]){const v=look[n];v[0]*=dim;v[1]*=dim;v[2]*=dim;}
   {const v=look.ambSky,g=look.ambGnd,a=dim*lerp(.3,1,air);v[0]*=a;v[1]*=a;v[2]*=a;g[0]*=dim;g[1]*=dim;g[2]*=dim;}
-  look.skyZen[3]=clamp(Math.max(nk,ecl,1-air),0,1);
+  look.skyZen[3]=clamp(Math.max(look.skyZen[3],ecl,1-air),0,1);
   look.airFar[3]*=air;
   const sky=air>.7;
   if(!sky){look.skyHor[3]=0;look.skyHorS[3]=0;look.cloudLit[3]=1.6;}
-  return {ph:c.ph,sun,dir,key,look,night:nk,air,ecl,clouds:sky?PLN_FRAME.clouds:[]};
+  /* лучи в воздухе сильнее, когда светило низко */
+  const shafts=.0024*(1+.9*low*plnSmooth(-.02,.06,sy));
+  return {ph:c.ph,sun,dir,key,look,night:nk,low,rise,air,ecl,shafts,clouds:sky?PLN_FRAME.clouds:[]};
 }
 
 /* ── короб тени ──
@@ -84791,7 +84821,7 @@ function plnSurface(){
     L0:plnLightBox(Hr.dir,[C.ex-58,C.ex+58,span.lo-8,span.hi+17,-50,24],PLN_GPU.shn),
     L1:plnLightBox(Hr.dir,[C.ex-250,C.ex+250,Math.min(ride-12,span.lo-8),Math.max(ride+60,span.hi+20),-50,460],PLN_GPU.shn),
     hero:[0,0,15,36],lamps:[],look,clouds:Hr.clouds,blobs:Q.blobs,batches:[],
-    post:{shafts:[.0024,1600,.62,-.06],bloom:.085,vig:.42,grade:1}};
+    post:{shafts:[Hr.shafts,1600,.62,-.06],bloom:.085,vig:.42,grade:1}};
   Q.blobs.fill(0);
   plnLandBatches(L,F.batches,C.ex,V);
   /* в воде человек сидит в круге по пояс: тело стоит ниже, чем его держит игра */

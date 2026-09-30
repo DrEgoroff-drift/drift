@@ -20,7 +20,7 @@ struct Globals {
   lampPos: array<vec4f, 4>,   // xyz, дальность
   lampCol: array<vec4f, 4>,   // rgb, сила
   skyZen: vec4f,      // зенит в стороне от светила; w — сколько звёзд
-  skyZenS: vec4f,     // зенит со стороны светила; w — запас
+  skyZenS: vec4f,     // зенит со стороны светила; w — узость его стороны (степень)
   skyHor: vec4f,      // горизонт в стороне от светила; w — перистые
   skyHorS: vec4f,     // горизонт со стороны светила; w — дальняя гряда облаков
   sunGlow: vec4f,     // зарево вокруг светила; w — сила
@@ -75,10 +75,11 @@ fn fbm(p: vec2f, s: u32) -> f32 {
 fn ign(p: vec2f) -> f32 { return fract(52.9829189 * fract(dot(p, vec2f(0.06711056, 0.00583715)))); }
 
 /* ── небо ── */
-/* насколько направление близко к стороне светила: тёплое живёт только там */
+/* насколько направление близко к стороне светила: тёплое живёт только там. Днём сторона узка,
+   на заре зарево расходится по горизонту широко — узость даёт кадр */
 fn sunSide(rd: vec3f) -> f32 {
   let a = normalize(rd.xz + vec2f(0.00001, 0.0)); let b = normalize(g.sunDir.xz + vec2f(0.00001, 0.0));
-  return pow(clamp(dot(a, b) * 0.5 + 0.5, 0.0, 1.0), 5.0);
+  return pow(clamp(dot(a, b) * 0.5 + 0.5, 0.0, 1.0), max(g.skyZenS.w, 0.5));
 }
 fn horizonCol(rd: vec3f) -> vec3f {
   return mix(g.skyHor.rgb, g.skyHorS.rgb, sunSide(rd));

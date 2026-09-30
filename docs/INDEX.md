@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 659 · символов верхнего уровня: 6873
+Файлов: 659 · символов верхнего уровня: 6875
 
 ## СИМВОЛЫ
 
@@ -1207,13 +1207,14 @@ PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
 PLN                          src/21p-pln.js:15
+PLN_ACTS                     src/21pz-pln-frame.js:46
 PLN_AZ_ELEV                  src/21pf-pln-land.js:35
 PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:15
 PLN_CAST                     src/21ph-pln-cast.js:8
 PLN_DEG                      src/21p-pln.js:28
 PLN_FLORA                    src/21pg-pln-flora.js:24
-PLN_FRAME                    src/21pz-pln-frame.js:18
+PLN_FRAME                    src/21pz-pln-frame.js:16
 PLN_G                        src/21pe-pln-gpu.js:24
 PLN_GPU                      src/21pe-pln-gpu.js:19
 PLN_HDR                      src/21pe-pln-gpu.js:15
@@ -1222,10 +1223,10 @@ PLN_HERB_MAKE                src/21pia-pln-herb.js:72-237
 PLN_ICO                      src/21pa-pln-mesh.js:40
 PLN_KIND                     src/21pe-pln-gpu.js:18
 PLN_LAND                     src/21pf-pln-land.js:22
-PLN_LOOK                     src/21pz-pln-frame.js:27-41
+PLN_LOOK                     src/21pz-pln-frame.js:29-51
 PLN_M                        src/21p-pln.js:14
 PLN_MAT                      src/21pa-pln-mesh.js:9
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:144
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:173
 PLN_OVER                     src/21pj-pln-over.js:15
 PLN_PAD                      src/21pga-pln-plant.js:28
 PLN_PADS                     src/21pg-pln-flora.js:21
@@ -5197,7 +5198,7 @@ plnHerbTone                  src/21pia-pln-herb.js:28-31
 plnHerbZ                     src/21pia-pln-herb.js:22
 plnHerbs                     src/21pia-pln-herb.js:240-288
 plnHex                       src/21p-pln.js:43-46
-plnHour                      src/21pz-pln-frame.js:60-86
+plnHour                      src/21pz-pln-frame.js:78-115
 plnIco                       src/21pa-pln-mesh.js:41-58
 plnInst                      src/21pe-pln-gpu.js:46-51
 plnInstFree                  src/21pe-pln-gpu.js:57
@@ -5233,11 +5234,12 @@ plnLandStep                  src/21pf-pln-land.js:447-465
 plnLandTab                   src/21pf-pln-land.js:274-277
 plnLandWaterMesh             src/21pf-pln-land.js:564-577
 plnLen                       src/21p-pln.js:36
-plnLens                      src/21pz-pln-frame.js:47-54
-plnLightBox                  src/21pz-pln-frame.js:91-101
+plnLens                      src/21pz-pln-frame.js:62-69
+plnLightBox                  src/21pz-pln-frame.js:120-130
 plnLoft                      src/21pa-pln-mesh.js:135-163
 plnLog                       src/21p-pln.js:22
-plnLookMix                   src/21pz-pln-frame.js:37-41
+plnLookAt                    src/21pz-pln-frame.js:52-56
+plnLookMix                   src/21pz-pln-frame.js:47-51
 plnM4inv                     src/21p-pln.js:102-121
 plnM4lens                    src/21p-pln.js:128-134
 plnM4look                    src/21p-pln.js:95-99
@@ -5288,7 +5290,7 @@ plnSmax                      src/21p-pln.js:80
 plnSmooth                    src/21p-pln.js:29
 plnSoftp                     src/21pf-pln-land.js:81
 plnSub                       src/21p-pln.js:32
-plnSurface                   src/21pz-pln-frame.js:104-141
+plnSurface                   src/21pz-pln-frame.js:133-170
 plnTf                        src/21p-pln.js:138-140
 plnThingApron                src/21pi-pln-things.js:55-69
 plnThingCaveMesh             src/21pi-pln-things.js:176-232
@@ -7984,7 +7986,7 @@ zoomTo                       src/15-input.js:350
 ## src/21pj-pln-over.js · 7 КБ
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
 
-## src/21pz-pln-frame.js · 12 КБ
+## src/21pz-pln-frame.js · 15 КБ
   · планета: кадр нового вида (M610):1
 
 ## src/22-mode-cave.js · 46 КБ
