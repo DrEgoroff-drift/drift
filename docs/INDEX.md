@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 660 · символов верхнего уровня: 6881
+Файлов: 660 · символов верхнего уровня: 6885
 
 ## СИМВОЛЫ
 
@@ -1213,6 +1213,7 @@ PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:15
 PLN_CAST                     src/21ph-pln-cast.js:8
 PLN_DEG                      src/21p-pln.js:28
+PLN_FAR                      src/21pfa-pln-worlds.js:73-98
 PLN_FLORA                    src/21pg-pln-flora.js:24
 PLN_FRAME                    src/21pz-pln-frame.js:17
 PLN_G                        src/21pe-pln-gpu.js:24
@@ -1231,7 +1232,7 @@ PLN_OVER                     src/21pj-pln-over.js:15
 PLN_PAD                      src/21pga-pln-plant.js:28
 PLN_PADS                     src/21pg-pln-flora.js:21
 PLN_PAL                      src/21pf-pln-land.js:31-55
-PLN_PAL0                     src/21pfa-pln-worlds.js:9
+PLN_PAL0                     src/21pfa-pln-worlds.js:11
 PLN_PLANT                    src/21pga-pln-plant.js:21
 PLN_THINGS                   src/21pi-pln-things.js:15
 PLN_TINTS                    src/21pg-pln-flora.js:18
@@ -1245,7 +1246,7 @@ PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
 PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
 PLN_WING                     src/21pgc-pln-wing.js:23
-PLN_WORLDS                   src/21pfa-pln-worlds.js:18-62
+PLN_WORLDS                   src/21pfa-pln-worlds.js:20-65
 PLN_WX_COL                   src/21pz-pln-frame.js:115
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 POI_FIND                     src/20b-poi-find.js:18-91
@@ -5167,6 +5168,9 @@ plnCastRingMesh              src/21ph-pln-cast.js:106-111
 plnCastShipMesh              src/21ph-pln-cast.js:25-79
 plnCross                     src/21p-pln.js:35
 plnDot                       src/21p-pln.js:34
+plnFarCrater                 src/21pfa-pln-worlds.js:88-98
+plnFarLane                   src/21pfa-pln-worlds.js:101-167
+plnFarMesa                   src/21pfa-pln-worlds.js:86
 plnFbm                       src/21p-pln.js:65-69
 plnFloraBloom                src/21pg-pln-flora.js:124-133
 plnFloraBush                 src/21pg-pln-flora.js:151-159
@@ -5207,36 +5211,36 @@ plnIco                       src/21pa-pln-mesh.js:41-58
 plnInst                      src/21pe-pln-gpu.js:46-51
 plnInstFree                  src/21pe-pln-gpu.js:57
 plnInstSet                   src/21pe-pln-gpu.js:52-56
-plnLand                      src/21pf-pln-land.js:479-485
+plnLand                      src/21pf-pln-land.js:504-510
 plnLandBare                  src/21pf-pln-land.js:242-245
-plnLandBatches               src/21pf-pln-land.js:468-470
-plnLandBuild                 src/21pf-pln-land.js:440-446
-plnLandCol                   src/21pf-pln-land.js:361-396
+plnLandBatches               src/21pf-pln-land.js:493-495
+plnLandBuild                 src/21pf-pln-land.js:465-471
+plnLandCol                   src/21pf-pln-land.js:383-421
 plnLandE                     src/21pf-pln-land.js:106
-plnLandFarH                  src/21pf-pln-land.js:291-345
-plnLandFarMesh               src/21pf-pln-land.js:537-563
+plnLandFarH                  src/21pf-pln-land.js:291-367
+plnLandFarMesh               src/21pf-pln-land.js:562-588
 plnLandFarRows               src/21pf-pln-land.js:99-104
-plnLandFree                  src/21pf-pln-land.js:471-477
-plnLandJobs                  src/21pf-pln-land.js:399-430
+plnLandFree                  src/21pf-pln-land.js:496-502
+plnLandJobs                  src/21pf-pln-land.js:424-455
 plnLandLift                  src/21pf-pln-land.js:280
 plnLandMake                  src/21pf-pln-land.js:109-197
-plnLandNode                  src/21pf-pln-land.js:490-496
-plnLandPath                  src/21pf-pln-land.js:349-358
+plnLandNode                  src/21pf-pln-land.js:515-521
+plnLandPath                  src/21pf-pln-land.js:371-380
 plnLandPond                  src/21pf-pln-land.js:222-233
 plnLandPondLine              src/21pf-pln-land.js:201-212
-plnLandPondMesh              src/21pf-pln-land.js:581-595
+plnLandPondMesh              src/21pf-pln-land.js:606-620
 plnLandPondZ                 src/21pf-pln-land.js:214-220
 plnLandRake                  src/21pf-pln-land.js:81
 plnLandRibAt                 src/21pf-pln-land.js:267-274
 plnLandRibH                  src/21pf-pln-land.js:249-265
-plnLandRibMesh               src/21pf-pln-land.js:497-536
+plnLandRibMesh               src/21pf-pln-land.js:522-561
 plnLandRim                   src/21pf-pln-land.js:236-239
 plnLandRows                  src/21pf-pln-land.js:85-97
-plnLandSees                  src/21pf-pln-land.js:432-439
+plnLandSees                  src/21pf-pln-land.js:457-464
 plnLandSpan                  src/21pf-pln-land.js:282-287
-plnLandStep                  src/21pf-pln-land.js:449-467
+plnLandStep                  src/21pf-pln-land.js:474-492
 plnLandTab                   src/21pf-pln-land.js:276-279
-plnLandWaterMesh             src/21pf-pln-land.js:566-579
+plnLandWaterMesh             src/21pf-pln-land.js:591-604
 plnLen                       src/21p-pln.js:36
 plnLens                      src/21pz-pln-frame.js:61-68
 plnLightBox                  src/21pz-pln-frame.js:240-250
@@ -5262,7 +5266,7 @@ plnOver                      src/21pj-pln-over.js:44-128
 plnOverAt                    src/21pj-pln-over.js:18-21
 plnOverOld                   src/21pj-pln-over.js:28-43
 plnOverPlate                 src/21pj-pln-over.js:22-26
-plnPalSet                    src/21pfa-pln-worlds.js:55-62
+plnPalSet                    src/21pfa-pln-worlds.js:57-65
 plnPlantBatches              src/21pga-pln-plant.js:552-569
 plnPlantBodies               src/21pga-pln-plant.js:123-349
 plnPlantBucket               src/21pga-pln-plant.js:46
@@ -7962,10 +7966,10 @@ zoomTo                       src/15-input.js:350
 ## src/21pe-pln-gpu.js · 20 КБ
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
-## src/21pf-pln-land.js · 34 КБ
+## src/21pf-pln-land.js · 35 КБ
   · планета: земля (M610):1
 
-## src/21pfa-pln-worlds.js · 8 КБ
+## src/21pfa-pln-worlds.js · 16 КБ
   · планета: листы миров (M613):1
 
 ## src/21pg-pln-flora.js · 15 КБ

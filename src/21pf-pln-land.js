@@ -289,7 +289,7 @@ function plnLandSpan(L,xa,xb){
    Гребни расставлены по тому, куда они ложатся в кадре (стенд, M600): дальний берег, холмы,
    хребет, горы с пиком; по пеленгу долины все они кланяются. Кто победил — в L.gk */
 function plnLandFarH(L,xw,z){
-  const sd=L.sd,x=xw-L.cx0,az=Math.atan2(x,z+50);
+  const sd=L.sd,x=xw-L.cx0,az=Math.atan2(x,z+50),Fw=L.wl&&L.wl.far||PLN_FAR.terran,Hk=Fw.h||1;
   const pass=Math.exp(-Math.pow((az-PLN_AZ_ELEV)/.075,2));
   /* ложбина держит воду у площадки и за озером игры; дальше дно поднимается и сохнет */
   let dl=Math.abs(x-10);
@@ -307,35 +307,57 @@ function plnLandFarH(L,xw,z){
   /* дальний урез воды рисуется бухтами и косами */
   const bay=17*plnFbm(x*.034+1.3,2.5,2,sd+47);
   take(plnRidge(z,136+20*n1+bay*(1-plnSmooth(122,140,z)),(5+4*n1b)*(1-.35*pass),.26,.10,6)+plnFbm(x*.03+2,z*.03+5,3,sd+31)*.9,2,3);
+  /* кулисы по типу мира (21pfa): где форма мира отвечает — берётся она, где null — землеподобная,
+     умноженная на её рост Hk */
   if(z>110){
-    take(lerp(-60,3+z*.003,plnSmooth(120,230,z)),6,6);
-    const n2=plnFbm(x*.004+2,2.5,2,sd+23),n2b=plnFbm(x*.006+7,3.5,3,sd+24);
-    /* холмы в складках: по лицу идут овраги, свету есть что рисовать */
-    const fold=(plnRidged(x*.011+4+.4*plnFbm(z*.01,x*.01,2,sd+48),z*.004+2,3,sd+49)-.5)*7;
-    take(plnRidge(z,340+70*n2,(14+9*n2b)*(1-.7*pass),.16,.08,14)+(plnFbm(x*.05+1,z*.05+3,3,sd+32)*1.6+fold)*(1-.5*pass),3,8);
+    take(lerp(-60,3+z*.003,plnSmooth(120,230,z))+(Fw.crater?plnFarCrater(L,x,z):0),6,6);
+    const v3=plnFarLane(Fw,3,0,L,x,z,az,pass);
+    if(v3!==null)take(v3,3,8);
+    else{
+      const n2=plnFbm(x*.004+2,2.5,2,sd+23),n2b=plnFbm(x*.006+7,3.5,3,sd+24);
+      /* холмы в складках: по лицу идут овраги, свету есть что рисовать */
+      const fold=(plnRidged(x*.011+4+.4*plnFbm(z*.01,x*.01,2,sd+48),z*.004+2,3,sd+49)-.5)*7;
+      take(plnRidge(z,340+70*n2,(14+9*n2b)*(1-.7*pass),.16,.08,14)+(plnFbm(x*.05+1,z*.05+3,3,sd+32)*1.6+fold)*(1-.5*pass),3,8);
+    }
   }
   if(z>400){
-    const n3=plnFbm(x*.0012+4,4.5,2,sd+25);
-    const y3=(22+30*plnRidged(x*.0016+11,5.5,4,sd+26))*(1-.8*pass);
-    take(plnRidge(z,1050+180*n3,y3,.22,.14,30)+(plnRidged(x*.004+3,z*.0013+1,4,sd+33)-.45)*12*(1-.6*pass),4,20);
+    const v4=plnFarLane(Fw,4,0,L,x,z,az,pass);
+    if(v4!==null)take(v4,4,20);
+    else{
+      const n3=plnFbm(x*.0012+4,4.5,2,sd+25);
+      const y3=(22+30*plnRidged(x*.0016+11,5.5,4,sd+26))*(1-.8*pass)*Hk;
+      take(plnRidge(z,1050+180*n3,y3,.22,.14,30)+(plnRidged(x*.004+3,z*.0013+1,4,sd+33)-.45)*12*(1-.6*pass),4,20);
+    }
     if(z>1500){
-      /* массив стоит слева и несёт пик; вправо гряда уходит за хребет */
-      const env=.55+.65*Math.exp(-Math.pow((az-PLN_AZ_PEAK)/.2,2));
-      const peak=200*Math.exp(-Math.pow((az-PLN_AZ_PEAK)/.05,2))+95*Math.exp(-Math.pow((az-PLN_AZ_PEAK+.105)/.036,2));
-      const n4=plnFbm(x*.0004+6,6.5,2,sd+27);
-      const y4=(120+110*plnRidged(x*.0006+2.3,7.5,5,sd+28))*env*(1-.8*pass)+peak;
-      /* рёбра сбегают с гребня: чем выше гора, тем глубже они врезаны */
-      const ribs=(plnRidged(x*.0030+8+.5*plnFbm(z*.001,x*.001,2,sd+38),z*.0006+4,5,sd+34)-.5)*.62*y4;
-      take(plnRidge(z,3700+600*n4,y4,.5,.35,50)+ribs,5,40);
+      const v5=plnFarLane(Fw,5,0,L,x,z,az,pass);
+      if(v5!==null)take(v5,5,40);
+      else{
+        /* массив стоит слева и несёт пик; вправо гряда уходит за хребет */
+        const env=.55+.65*Math.exp(-Math.pow((az-PLN_AZ_PEAK)/.2,2));
+        const peak=200*Math.exp(-Math.pow((az-PLN_AZ_PEAK)/.05,2))+95*Math.exp(-Math.pow((az-PLN_AZ_PEAK+.105)/.036,2));
+        const n4=plnFbm(x*.0004+6,6.5,2,sd+27);
+        const y4=((120+110*plnRidged(x*.0006+2.3,7.5,5,sd+28))*env*(1-.8*pass)+peak)*Hk;
+        /* рёбра сбегают с гребня: чем выше гора, тем глубже они врезаны */
+        const ribs=(plnRidged(x*.0030+8+.5*plnFbm(z*.001,x*.001,2,sd+38),z*.0006+4,5,sd+34)-.5)*.62*y4;
+        take(plnRidge(z,3700+600*n4,y4,.5,.35,50)+ribs,5,40);
+      }
       take(25+12*plnFbm(x*.0002,z*.0002,2,sd+29)-.5*Math.max(0,4800-z),6,30);
     }
     if(z>5000){
       /* две дальние гряды: долина — не чаша, а склон за склоном, каждый бледнее */
       const n5=plnFbm(x*.0002+3,8.5,2,sd+35);
-      const y5=(70+150*plnRidged(x*.00035+5.1,9.5,5,sd+36))*(1-.45*pass);
-      take(plnRidge(z,7000+800*n5,y5,.4,.3,60)+(plnRidged(x*.0016+2,z*.0004+1,4,sd+39)-.5)*.5*y5,7,40);
-      const y6=(150+260*plnRidged(x*.00022+1.7,10.5,5,sd+37))*(1-.35*pass);
-      take(plnRidge(z,11000+1000*n5,y6,.4,.3,80)+(plnRidged(x*.0011+6,z*.0003+3,4,sd+40)-.5)*.5*y6,7,40);
+      const v6=plnFarLane(Fw,7,0,L,x,z,az,pass);
+      if(v6!==null)take(v6,7,40);
+      else{
+        const y5=(70+150*plnRidged(x*.00035+5.1,9.5,5,sd+36))*(1-.45*pass)*Hk;
+        take(plnRidge(z,7000+800*n5,y5,.4,.3,60)+(plnRidged(x*.0016+2,z*.0004+1,4,sd+39)-.5)*.5*y5,7,40);
+      }
+      const v7=plnFarLane(Fw,7,1,L,x,z,az,pass);
+      if(v7!==null)take(v7,7,40);
+      else{
+        const y6=(150+260*plnRidged(x*.00022+1.7,10.5,5,sd+37))*(1-.35*pass)*Hk;
+        take(plnRidge(z,11000+1000*n5,y6,.4,.3,80)+(plnRidged(x*.0011+6,z*.0003+3,4,sd+40)-.5)*.5*y6,7,40);
+      }
     }
   }
   /* ближний край дальнего мира начинается под лентой */
@@ -359,7 +381,7 @@ function plnLandPath(L,x,z){
 /* поля цвета: крупные пятна, соседние — на тон друг от друга, и нигде не одна зелень.
    k — номер кулисы: 0 лента, 1 ложбина, 2 дальний берег, 3 холмы, 4 хребет, 5 и 7 горы, 6 равнина */
 function plnLandCol(L,x,z,h,n,k){
-  const sd=L.sd,PAL=PLN_PAL,slope=1-n[1],wy=PLN_LAND.wRel;
+  const sd=L.sd,PAL=PLN_PAL,slope=1-n[1],wy=PLN_LAND.wRel,Fw=L.wl&&L.wl.far||PLN_FAR.terran,sn=Fw.snow,tl=Fw.tree;
   const v1=plnFbm(x*.05+9,z*.05+2,3,sd+41)*.5+.5,v2=plnFbm(x*.011+4,z*.011+6,3,sd+42)*.5+.5;
   let c;
   if(k===0){
@@ -380,12 +402,15 @@ function plnLandCol(L,x,z,h,n,k){
   }else if(k===3){
     c=plnMix3(PAL.forest,PAL.glade,plnSmooth(.45,.7,v2));
     c=plnMix3(c,PAL.heather,plnSmooth(.6,.8,v1)*.35);
-  }else if(k===4)c=plnMix3(PAL.forest,PAL.crag,plnSmooth(20,52,h+14*(v1-.5)));
-  else if(k===5||k===7){
+  }else if(k===4){
+    /* лес по хребту до своей черты (лист мира), выше — камень; снег — где позволяет склон */
+    c=plnMix3(PAL.forest,PAL.crag,tl>0?plnSmooth(tl*.13,tl*.35,h+14*(v1-.5)):1);
+    c=plnMix3(c,PAL.snow,plnSmooth(sn,sn+75,h+30*(v2-.5))*plnSmooth(.85,.5,slope));
+  }else if(k===5||k===7){
     c=plnMix3(PAL.crag,PAL.cragWarm,v1);
-    c=plnMix3(c,PAL.forest,plnSmooth(150,60,h)*.6);
-    /* снег держится там, где позволяет склон */
-    c=plnMix3(c,PAL.snow,plnSmooth(235,310,h+70*(v2-.5))*plnSmooth(.85,.5,slope));
+    if(tl>0)c=plnMix3(c,PAL.forest,plnSmooth(tl,tl*.4,h)*.6);
+    /* снег держится там, где позволяет склон; черта снега — листа мира */
+    c=plnMix3(c,PAL.snow,plnSmooth(sn,sn+75,h+70*(v2-.5))*plnSmooth(.85,.5,slope));
   }else c=plnMix3(PAL.plain,PAL.glade,v2);
   /* на ленте крутой бок холма — травяной откос: камень выходит только там, где круче шестидесяти
      градусов. Голый серый бок в рост человека стоял посреди кадра «шатром» */
