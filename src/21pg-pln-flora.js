@@ -50,7 +50,7 @@ function plnFloraTuft(m,r,o){
 }
 /* камень: серый, светлее к макушке, мох лежит сверху; тон даёт запись */
 function plnFloraRock(m,seed,sub,r){
-  const P=PLN_PAL,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]];
+  const P=PLN_PAL0,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]];
   plnBlob(m,{c:[0,.15,0],r,sub,bump:.5,bumpF:1.25,seed,yaw:seed*1.37,lean:Math.sin(seed)*.2,cut:-.4*r[1],
     col:(u,p,n)=>{
       const k=lerp(.62,1,plnSmooth(-.6,.6,u[1]+plnNoise(p[0]*.9,p[1]*2.2,seed)*.5));
@@ -63,7 +63,7 @@ function plnFloraRock(m,seed,sub,r){
    o: c (середина подошвы), r [rx, рост, rz], chops (сколько срубов), lean и pitch (наклон пласта),
       yaw, thin (ширина макушки в долях подошвы), seed */
 function plnFloraCrag(m,r,o){
-  const P=PLN_PAL,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]],M=PLN_MAT.rock;
+  const P=PLN_PAL0,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]],M=PLN_MAT.rock;
   const g=plnIco(2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed;
   for(let k=0;k<o.chops;k++)cuts.push([plnNorm([r()*2-1,r()*1.5-.6,r()*2-1]),.5+r()*.36]);
   for(const u of g.p){

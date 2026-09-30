@@ -26,7 +26,8 @@ const PLN_LAND={ext:180,               /* на сколько образцов �
   e0:56,                               /* полуширина вида на линии ходьбы, под которую раскрыт дальний мир */
   edges:[4,130,300,700,2000,62000],cols:[900,800,520,320,224],
   cur:null};
-/* зелень меняет тон с глубиной: оливковая вблизи, холоднее на дальнем берегу, сине-зелёная на холмах */
+/* зелень меняет тон с глубиной: оливковая вблизи, холоднее на дальнем берегу, сине-зелёная на холмах.
+   Это рабочий лист: перед стройкой земли в него ложится лист типа мира (21pfa, plnPalSet) */
 const PLN_PAL={
   grassLit:plnHex("#93a94f"),grassMid:plnHex("#5c8a47"),grassCool:plnHex("#3b7560"),dry:plnHex("#c4a659"),
   heather:plnHex("#b56a8e"),clover:plnHex("#7d70ad"),soil:plnHex("#b08a5e"),soilDark:plnHex("#7a5a40"),mud:plnHex("#4a4f3c"),
@@ -106,6 +107,7 @@ function plnLandE(z){return PLN_LAND.e0*(1+z/100)*1.1;}
 
 /* ── таблицы рельефа: раз на посадку; sx — где сел корабль, в единицах игры ── */
 function plnLandMake(tr,p,sx){
+  const wl=plnPalSet(p);
   const C=PLN_LAND,dx=tr.step/PLN_M,E=C.ext,N=tr.N,NT=N+2*E,y0=tr.padY,x0=-E*dx;
   const P=new Float32Array(NT);
   for(let i=0;i<NT;i++)P[i]=(y0-tr.h[clamp(i-E,0,N-1)])/PLN_M;
@@ -118,7 +120,7 @@ function plnLandMake(tr,p,sx){
     shipX,shipZ:7,shipYaw:yaw,padH,cx0:shipX+12.8,
     /* подножие трапа: место корабля (.75, −4.26), повёрнутое вместе с ним */
     rampX:shipX+.75*Math.cos(yaw)-4.26*Math.sin(yaw),rampZ:7-.75*Math.sin(yaw)-4.26*Math.cos(yaw),
-    gk:0,jobs:[],left:0,ms:0,first:false};
+    gk:0,jobs:[],left:0,ms:0,first:false,wl};
   const A=new Float32Array(NT),B=new Float32Array(NT),T1=new Float32Array(NT),S=new Float64Array(NT+1);
   /* подъём дальнего мира: вода кадра на .8 м ниже самой низкой точки линии, что попадает в кадр;
      в озере игры линия лежит под водой, и считается там уровень озера */

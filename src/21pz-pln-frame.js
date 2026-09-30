@@ -172,7 +172,7 @@ function plnWeatherLook(p,look){
    Ночью ключ — самое сильное тело над горизонтом (plnBodies): луна или родитель; ключ гаснет
    в ноль между светилом и им, и смены стороны не видно. Тел нет — ночь без ключа: землю держат
    звёзды, воздух и лампы. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
-function plnHour(p){
+function plnHour(p,wl){
   const c=celSun(p),q=.0035,th=Math.round(c.ph*TAU/q)*q,tilt=52*PLN_DEG,A=PLN_LOOK;
   const s0=Math.sin(th)*Math.cos(tilt),back=.55*(1-plnSmooth(.05,.38,s0));
   const sun=plnNorm([-Math.cos(th),s0,Math.sin(th)*Math.sin(tilt)+back]),sy=sun[1],rise=Math.cos(th)>0;
@@ -190,6 +190,20 @@ function plnHour(p){
     m(look.skyHorS,[1.3,.80,.62],.7*warm);m(look.airFarS,[1.05,.74,.62],.7*warm);m(look.cloudLit,[1.35,.98,.80],.6*warm);
     m(look.cloudDarkS,[.74,.50,.56],.6*warm);m(look.key,[1.7,1.16,.72],.5*warm);
     look.airFar[3]*=1+.45*warm;look.airFarS[3]*=1+.8*warm;
+  }
+  /* воздух мира (M613): небо ведёт к цвету листа мира, яркость часа остаётся; дальний воздух, тень
+     неба и облака идут за ним слабее, ключ — едва: иначе весь кадр под одним фильтром.
+     Густота воздуха — против землеподобного */
+  if(wl&&wl.sky){
+    const S=wl.sky,k=S[3];
+    if(k>0){
+      const lm=S[0]*.2126+S[1]*.7152+S[2]*.0722||1,d=[S[0]/lm,S[1]/lm,S[2]/lm];
+      const tint=(v,q)=>{const l=v[0]*.2126+v[1]*.7152+v[2]*.0722;v[0]=lerp(v[0],l*d[0],q);v[1]=lerp(v[1],l*d[1],q);v[2]=lerp(v[2],l*d[2],q);};
+      for(const n of ["skyZen","skyZenS","skyHor","skyHorS"])tint(look[n],k);
+      for(const n of ["airFar","airFarS","cloudDark","cloudDarkS"])tint(look[n],k*.7);
+      tint(look.ambSky,k*.8);tint(look.sunGlow,k*.6);tint(look.cloudLit,k*.4);tint(look.key,k*.25);
+    }
+    look.airFar[3]*=S[4];
   }
   const Wx=plnWeatherLook(p,look),wq=(1-.8*Wx.cover)*(1-.5*Wx.fog);
   /* ключ светила гаснет у горизонта, ключ тела неба встаёт, когда светило ушло: луна холодная, родитель тёплый;
@@ -246,8 +260,11 @@ function plnSurface(){
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   plnLandStep(L,C.ex,V,2);
   plnPlantStep(L,p,C.ex,V);
-  const Hr=plnHour(p),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
-  look.thru=Q.thru;look.waterA=Q.waterA;look.waterB=[Q.waterB[0],Q.waterB[1],Q.waterB[2],ride];
+  const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
+  /* вода, отсвет земли и ближний воздух — от листа мира (M613) */
+  const wl=L.wl,wa=wl.water[0],wb=wl.water[1];
+  look.thru=Q.thru;look.waterA=[wa[0],wa[1],wa[2],0];look.waterB=[wb[0],wb[1],wb[2],ride];
+  for(let i=0;i<3;i++){look.ambGnd[i]*=wl.gnd[i];look.bounce[i]*=wl.gnd[i];look.airNear[i]=lerp(look.airNear[i],wl.air[i],.7);}
   look.bands=Q.bands;
   look.world=[L.sd%1000,clamp(WIND*1.4,-1.2,1.2),0,0];
   const F={vp:C.vp,vpMirror:plnM4mul(C.vp,plnM4mirrorY(wy)),eye:C.eye,t:(G.t/60)%7200,sun:Hr.dir,key:Hr.key,expo:1,waterY:wy,
