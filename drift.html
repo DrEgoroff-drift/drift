@@ -80657,7 +80657,7 @@ struct Globals {
   waterA: vec4f,      // вода на мели; w — запас
   waterB: vec4f,      // вода в глубине; w — подъём дальнего мира, м (21pf: он едет за камерой)
   cloudLit: vec4f,    // облако на свету; w — сколько неба открыто: меньше — больше теней облаков на земле
-  cloudDark: vec4f,   // облако в тени, в стороне от светила; w — запас
+  cloudDark: vec4f,   // облако в тени, в стороне от светила; w — сплошной покров непогоды 0…1
   cloudDarkS: vec4f,  // облако в тени со стороны светила; w — запас
   moon: vec4f,        // первое тело неба: азимут, высота, радиус (рад), яркость
   world: vec4f,       // семя мира, сила ветра, число облаков, число пятен тени
@@ -80881,7 +80881,8 @@ fn skyCol(rd: vec3f) -> vec3f {
     let t = g.camPos.w;
     let wa = vec2f(fbm(vec2f(az * 38.0, el * 60.0), 11u), fbm(vec2f(az * 38.0 + 9.7, el * 60.0 + 3.1), 12u)) - 0.5;
     let wb = vec2f(fbm(vec2f(az * 150.0, el * 220.0), 13u), fbm(vec2f(az * 150.0 + 4.1, el * 220.0 + 8.3), 14u)) - 0.5;
-    let a2 = az + wa.x * 0.012 + wb.x * 0.003 + t * 0.0004;
+    /* облака сносит ветер мира: с ним быстрее, против него назад */
+    let a2 = az + wa.x * 0.012 + wb.x * 0.003 + t * (0.0002 + 0.0005 * g.world.y);
     let e2 = el + wa.y * 0.008 + wb.y * 0.002;
     let sd = u32(g.world.x);
     let ci = smoothstep(0.5, 0.8, fbm(vec2f(az * 5.0 + 5.0 + t * 0.002, el * 55.0), 41u + sd)) * smoothstep(0.07, 0.15, el) * g.skyHor.w;
@@ -80915,6 +80916,23 @@ fn skyCol(rd: vec3f) -> vec3f {
       cc *= mix(0.80, 1.0, smoothstep(h.w, h.w + 0.03, e2));
       cc = mix(cc, hz, exp(-e2 / 0.045) * 0.55);
       c = mix(c, cc, h.y * smoothstep(h.w - 0.003, h.w + 0.004, e2));
+    }
+    /* сплошной покров непогоды: пелена с рваным низом над всем, что ниже; при малом покрытии —
+       прорехи, при полном — ровное серое небо с клубящимся исподом */
+    let dw = g.cloudDark.w;
+    if (dw > 0.0) {
+      let n1 = fbm(vec2f(a2 * 5.0, e2 * 11.0) + vec2f(t * 0.002, 0.0), 61u + sd);
+      let n2 = fbm(vec2f(a2 * 16.0, e2 * 40.0) + vec2f(t * 0.004, 0.0), 62u + sd);
+      let nn = n1 * 0.55 + n2 * 0.45;
+      let base = 0.05 + 0.02 * (n1 - 0.5);
+      let alpha = smoothstep(base, base + 0.03, e2) * smoothstep(0.62 - 0.45 * dw, 0.78 - 0.45 * dw, nn);
+      /* низ рваный: толстые клубы висят ниже и темнее, между ними просвет светлее; к зениту покров темнее */
+      let lum = 0.1 + 0.85 * (1.0 - smoothstep(0.30, 0.70, nn));
+      var dc = mix(mix(g.cloudDark.rgb, g.cloudDarkS.rgb, warm), g.cloudLit.rgb, lum);
+      /* собирающийся покров тёмен на синем небе, сплошной — серый */
+      dc *= mix(1.0, 0.78, smoothstep(0.03, 0.22, e2)) * mix(0.62, 1.0, smoothstep(0.35, 1.0, dw));
+      dc = mix(dc, hz, exp(-e2 / 0.06) * 0.5);
+      c = mix(c, dc, alpha);
     }
   }
   return c;
@@ -84746,8 +84764,9 @@ function plnOver(){
    семейства. Переключатель выключен — идёт старая рисовалка; новый вид упал —
    тоже она, и после трёх сбоев подряд новый вид снимает себя сам.
 
-   Свет по часу — пять картин суток и переход между ними по высоте светила
-   (M612). Цвета земли пока одни, землеподобные: пустыня и лёд — M613. */
+   Свет по часу — пять картин суток и переход между ними по высоте светила,
+   тела неба от мира, облака и воздух от его погоды (M612). Цвета земли пока
+   одни, землеподобные: пустыня и лёд — M613. */
 const PLN_FRAME={blobs:new Float32Array(260),bloom:BLOOM_K.surface,
   clouds:[[.318,.050,.115,21],[-.300,.058,.085,22],[-.078,.060,.034,23],[.150,.118,.030,24],[-.090,.235,.095,25],[.195,.400,.060,26]],
   bands:[190,345,1250,3000],
@@ -84837,6 +84856,65 @@ function plnBodies(p,th,sun){
   return {B,K,k:best,dir,warm};
 }
 
+/* ── погода в небе ──
+   Облака, воздух и свет от погоды мира (19d). Дождь, снег и кислота идут из сплошного покрова:
+   небо серое, ключ гаснет, свет плоский, лучей в воздухе нет, воздух гуще; туман кладёт воздух
+   низко и густо, небо и облака уходят в молоко; пыль и пепел красят воздух и небо в свой цвет
+   и гасят ключ, пепел ещё и темнит; споры чуть зеленят воздух. Сила погоды ходит своим циклом
+   (weatherPower), затишья длиннее бурь. Сами осадки рисует слой поверх кадра (M626).
+   Цвета погоды — линейные, от WEATHER.col */
+const PLN_WX_COL={dust:[.55,.31,.12],ash:[.39,.30,.29],fog:[.55,.67,.77],rain:[.32,.40,.50],snow:[.85,.93,1],acid:[.49,.67,.15],spore:[.30,.83,.51]};
+function plnWeatherLook(p,look){
+  const wx=weatherOf(p),kind=wx.kind,wp=kind?weatherPower(p):0;
+  if(!kind||wp<.04)return {kind,wp:0,cover:0,fog:0};
+  const mx=(v,c,k)=>{v[0]=lerp(v[0],c[0],k);v[1]=lerp(v[1],c[1],k);v[2]=lerp(v[2],c[2],k);};
+  const sc=(v,k)=>{v[0]*=k;v[1]*=k;v[2]*=k;};
+  const lum=v=>.2126*v[0]+.7152*v[1]+.0722*v[2];
+  const col=PLN_WX_COL[kind]||[.5,.5,.5],hb=Math.min(1.2,lum(look.skyHor)/.76),colH=[col[0]*hb,col[1]*hb,col[2]*hb];
+  let cover=0,fog=0;
+  if(kind==="rain"||kind==="snow"||kind==="acid"){
+    cover=plnSmooth(.08,.55,wp);
+    /* серое небо: уровень — от облака в тени этого часа, темнее к зениту, светлее к горизонту; оттенок
+       осадка: снег белит и светлит, кислота зеленит. Земля под покровом темнее ясного дня */
+    const lg=lum(look.cloudDark)*(kind==="snow"?.7:.55),lc=lum(col)||1,grey=[lg*(.65+.35*col[0]/lc),lg*(.65+.35*col[1]/lc),lg*(.65+.35*col[2]/lc)];
+    const g=k=>[grey[0]*k,grey[1]*k,grey[2]*k];
+    look.cloudDark[3]=cover;look.skyHorS[3]=lerp(look.skyHorS[3],.3,cover);
+    mx(look.skyZen,g(.8),cover*.9);mx(look.skyZenS,g(.85),cover*.9);
+    mx(look.skyHor,g(1.15),cover*.85);mx(look.skyHorS,g(1.2),cover*.85);
+    mx(look.sunGlow,g(1.1),cover*.7);look.sunGlow[3]*=1-.85*cover;
+    /* облака серые раньше, чем покров сплошной */
+    const cg=Math.min(1,cover*1.4);
+    mx(look.cloudLit,g(1.35),cg);mx(look.cloudDark,g(.72),cg);mx(look.cloudDarkS,g(.95),cg);
+    sc(look.key,1-.8*cover);mx(look.ambSky,g(1),cover*.6);sc(look.ambGnd,1-.35*cover);sc(look.bounce,1-.6*cover);
+    look.cloudLit[3]=lerp(look.cloudLit[3],1,cover);
+    /* воздух под покровом того же серого, осадок его сгущает */
+    mx(look.airFar,g(1.05),cover*.5);mx(look.airFarS,g(1.05),cover*.5);
+    look.airFar[3]*=1+.7*wp;
+  }else if(kind==="fog"){
+    fog=plnSmooth(.05,.6,wp);
+    mx(look.airFar,colH,.6*fog);mx(look.airFarS,colH,.6*fog);
+    look.airFar[3]*=1+4.5*wp;look.airFarS[3]*=1+2*fog;
+    for(const n of ["skyZen","skyZenS","skyHor","skyHorS"])mx(look[n],colH,.75*fog);
+    for(const n of ["cloudLit","cloudDark","cloudDarkS"])mx(look[n],colH,.85*fog);
+    look.sunGlow[3]*=1-.7*fog;sc(look.key,1-.55*fog);mx(look.ambSky,colH,.4*fog);sc(look.bounce,1-.4*fog);
+  }else if(kind==="dust"||kind==="ash"){
+    const k=plnSmooth(.05,.7,wp);
+    mx(look.airFar,colH,.8*k);mx(look.airFarS,colH,.8*k);look.airFar[3]*=1+3*wp;look.airFarS[3]*=1+1.2*k;
+    for(const n of ["skyHor","skyHorS"])mx(look[n],colH,.8*k);
+    for(const n of ["skyZen","skyZenS"])mx(look[n],colH,(kind==="ash"?.7:.4)*k);
+    for(const n of ["cloudLit","cloudDark","cloudDarkS"])mx(look[n],colH,.8*k);
+    look.sunGlow[3]*=1-.5*k;
+    sc(look.key,1-(kind==="ash"?.6:.45)*k);
+    if(kind==="dust")mx(look.key,[look.key[0],look.key[1]*.9,look.key[2]*.7],k);
+    mx(look.ambSky,colH,.5*k);
+    if(kind==="ash"){sc(look.ambSky,1-.4*k);for(const n of ["skyZen","skyZenS","skyHor","skyHorS"])sc(look[n],1-.45*k);}
+  }else if(kind==="spore"){
+    const k=plnSmooth(.1,.8,wp);
+    mx(look.airFar,colH,.25*k);mx(look.airFarS,colH,.25*k);mx(look.ambSky,colH,.15*k);
+  }
+  return {kind,wp,cover,fog};
+}
+
 /* ── свет по часу ──
    Светило ходит по кругу, наклонённому на 52°: днём свет идёт из-за сцены и сбоку, в лицо
    объективу не светит никогда. Низкое светило уходит за сцену глубже: встаёт слева-сзади,
@@ -84864,9 +84942,11 @@ function plnHour(p){
     m(look.cloudDarkS,[.74,.50,.56],.6*warm);m(look.key,[1.7,1.16,.72],.5*warm);
     look.airFar[3]*=1+.45*warm;look.airFarS[3]*=1+.8*warm;
   }
-  /* ключ светила гаснет у горизонта, ключ тела неба встаёт, когда светило ушло: луна холодная, родитель тёплый */
+  const Wx=plnWeatherLook(p,look),wq=(1-.8*Wx.cover)*(1-.5*Wx.fog);
+  /* ключ светила гаснет у горизонта, ключ тела неба встаёт, когда светило ушло: луна холодная, родитель тёплый;
+     покров и туман гасят и его */
   const kd=look.key,kDay=Math.max(plnSmooth(-.05,.05,sy),moonlit?0:(1-rk)*.25);
-  const kn=moonlit?plnSmooth(-.08,-.22,sy)*rk*Math.min(Bd.k,1.2):0,e=1-ecl,kc=Bd.warm?[.20,.17,.13]:A.night.key;
+  const kn=moonlit?plnSmooth(-.08,-.22,sy)*rk*Math.min(Bd.k,1.2)*wq:0,e=1-ecl,kc=Bd.warm?[.20,.17,.13]:A.night.key;
   const key=[(kd[0]*kDay+kc[0]*kn)*e,(kd[1]*kDay+kc[1]*kn)*e,(kd[2]*kDay+kc[2]*kn)*e];
   /* отсвет земли светит настолько, насколько светит ключ */
   look.bounce=plnMul(look.bounce,clamp(kDay+kn,0,1)*e).concat(0);
@@ -84884,9 +84964,9 @@ function plnHour(p){
   /* тела неба и светило как оно есть — шейдеру */
   const Z=[0,0,0,0];
   look.sunTrue=[sun[0],sun[1],sun[2],ecl];look.moon=Bd.B[0]||Z;look.moon2=Bd.B[1]||Z;look.moon3=Bd.B[2]||Z;look.bodyKind=Bd.K;
-  /* лучи в воздухе сильнее, когда светило низко */
-  const shafts=.0024*(1+.9*low*plnSmooth(-.02,.06,sy));
-  return {ph:c.ph,sun,dir,key,look,night:nk,low,rise,air,ecl,shafts,bodies:Bd,clouds:sky?PLN_FRAME.clouds:[]};
+  /* лучи в воздухе сильнее, когда светило низко; под покровом и в тумане их нет */
+  const shafts=.0024*(1+.9*low*plnSmooth(-.02,.06,sy))*(1-Wx.cover)*(1-.85*Wx.fog);
+  return {ph:c.ph,sun,dir,key,look,night:nk,low,rise,air,ecl,shafts,bodies:Bd,wx:Wx,clouds:sky?PLN_FRAME.clouds:[]};
 }
 
 /* ── короб тени ──

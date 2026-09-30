@@ -34,7 +34,7 @@ struct Globals {
   waterA: vec4f,      // вода на мели; w — запас
   waterB: vec4f,      // вода в глубине; w — подъём дальнего мира, м (21pf: он едет за камерой)
   cloudLit: vec4f,    // облако на свету; w — сколько неба открыто: меньше — больше теней облаков на земле
-  cloudDark: vec4f,   // облако в тени, в стороне от светила; w — запас
+  cloudDark: vec4f,   // облако в тени, в стороне от светила; w — сплошной покров непогоды 0…1
   cloudDarkS: vec4f,  // облако в тени со стороны светила; w — запас
   moon: vec4f,        // первое тело неба: азимут, высота, радиус (рад), яркость
   world: vec4f,       // семя мира, сила ветра, число облаков, число пятен тени
@@ -258,7 +258,8 @@ fn skyCol(rd: vec3f) -> vec3f {
     let t = g.camPos.w;
     let wa = vec2f(fbm(vec2f(az * 38.0, el * 60.0), 11u), fbm(vec2f(az * 38.0 + 9.7, el * 60.0 + 3.1), 12u)) - 0.5;
     let wb = vec2f(fbm(vec2f(az * 150.0, el * 220.0), 13u), fbm(vec2f(az * 150.0 + 4.1, el * 220.0 + 8.3), 14u)) - 0.5;
-    let a2 = az + wa.x * 0.012 + wb.x * 0.003 + t * 0.0004;
+    /* облака сносит ветер мира: с ним быстрее, против него назад */
+    let a2 = az + wa.x * 0.012 + wb.x * 0.003 + t * (0.0002 + 0.0005 * g.world.y);
     let e2 = el + wa.y * 0.008 + wb.y * 0.002;
     let sd = u32(g.world.x);
     let ci = smoothstep(0.5, 0.8, fbm(vec2f(az * 5.0 + 5.0 + t * 0.002, el * 55.0), 41u + sd)) * smoothstep(0.07, 0.15, el) * g.skyHor.w;
@@ -292,6 +293,23 @@ fn skyCol(rd: vec3f) -> vec3f {
       cc *= mix(0.80, 1.0, smoothstep(h.w, h.w + 0.03, e2));
       cc = mix(cc, hz, exp(-e2 / 0.045) * 0.55);
       c = mix(c, cc, h.y * smoothstep(h.w - 0.003, h.w + 0.004, e2));
+    }
+    /* сплошной покров непогоды: пелена с рваным низом над всем, что ниже; при малом покрытии —
+       прорехи, при полном — ровное серое небо с клубящимся исподом */
+    let dw = g.cloudDark.w;
+    if (dw > 0.0) {
+      let n1 = fbm(vec2f(a2 * 5.0, e2 * 11.0) + vec2f(t * 0.002, 0.0), 61u + sd);
+      let n2 = fbm(vec2f(a2 * 16.0, e2 * 40.0) + vec2f(t * 0.004, 0.0), 62u + sd);
+      let nn = n1 * 0.55 + n2 * 0.45;
+      let base = 0.05 + 0.02 * (n1 - 0.5);
+      let alpha = smoothstep(base, base + 0.03, e2) * smoothstep(0.62 - 0.45 * dw, 0.78 - 0.45 * dw, nn);
+      /* низ рваный: толстые клубы висят ниже и темнее, между ними просвет светлее; к зениту покров темнее */
+      let lum = 0.1 + 0.85 * (1.0 - smoothstep(0.30, 0.70, nn));
+      var dc = mix(mix(g.cloudDark.rgb, g.cloudDarkS.rgb, warm), g.cloudLit.rgb, lum);
+      /* собирающийся покров тёмен на синем небе, сплошной — серый */
+      dc *= mix(1.0, 0.78, smoothstep(0.03, 0.22, e2)) * mix(0.62, 1.0, smoothstep(0.35, 1.0, dw));
+      dc = mix(dc, hz, exp(-e2 / 0.06) * 0.5);
+      c = mix(c, dc, alpha);
     }
   }
   return c;
