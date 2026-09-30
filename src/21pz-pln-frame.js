@@ -96,6 +96,8 @@ function plnBodies(p,th,sun){
     if(par)put((u(p.seed,1)-.5)*.5,.10+u(p.seed,2)*.05,clamp(par.radius/Math.max(20,p.orbit),.06,.15),kindOf(par.type),true);
   }
   for(const m of (p.moons||[])){
+    /* луна в соединении стоит перед светилом, а не на своей дороге */
+    {const P=celMoonPeriod(m);let mp=celMoonPhase(m,G.t);if(mp>.5)mp-=1;if(Math.abs(mp)<.16/P)continue;}
     const A=.40+u(m.seed,3)*.14,E=.10+u(m.seed,4)*.04,h=th-celMoonPhase(m,G.t)*TAU;
     if(Math.sin(h)<=0)continue;
     put(-A*Math.cos(h),E*Math.sin(h),clamp(m.radius/Math.max(20,m.orbit),.02,.07),kindOf(m.type),false);
@@ -177,7 +179,7 @@ function plnHour(p){
   const atm=(p.T&&p.T.atm)||"",air=atm==="отсутствует"?0:(atm.indexOf("разреженная")>=0?.5:1);
   /* сколько ночи разрешает область (три света, 11g): в ядре её нет вовсе — там вечный золотой час */
   const n0=clamp(-c.alt*(air?1.5:1.9)+.15,0,.62),rk=n0>0?clamp(surfNight(p)/n0,0,1):1;
-  const se=Math.max(sy,lerp(.075,-.2,rk)),nk=(1-plnSmooth(-.14,.02,sy))*rk,ecl=celDark();
+  const se=Math.max(sy,lerp(.075,-.2,rk)),nk=(1-plnSmooth(-.14,.02,sy))*rk,ecl=celDark(),ee=ecl>0?celEclipse(p,G.t):null;
   const Bd=plnBodies(p,th,sun),bk=clamp(Bd.k,0,1),moonlit=sy<-.08&&rk>.5&&Bd.k>.05;
   const dir=moonlit?plnNorm([Bd.dir[0],Math.max(Bd.dir[1],.25),Bd.dir[2]]):plnNorm([sun[0],Math.max(sy,.1),sun[2]]);
   const look=plnLookAt(se);
@@ -199,7 +201,8 @@ function plnHour(p){
   look.bounce=plnMul(look.bounce,clamp(kDay+kn,0,1)*e).concat(0);
   /* затмение гасит небо и воздух; без воздуха небо чёрное и днём, звёзды стоят всегда;
      ночью облака светит тело неба — без него они темнеют почти до неба, а звёзд при нём меньше */
-  const dim=(1-.7*ecl),sk=dim*air,cm=dim*lerp(1,lerp(.3,1,bk),nk);
+  /* затмение: небо и воздух гаснут глубоко, облака в тени луны темнее неба */
+  const dim=(1-.88*ecl),sk=dim*air,cm=dim*(1-.6*ecl)*lerp(1,lerp(.3,1,bk),nk);
   for(const n of ["skyZen","skyZenS","skyHor","skyHorS","sunGlow","airFar","airFarS"]){const v=look[n];v[0]*=sk;v[1]*=sk;v[2]*=sk;}
   for(const n of ["cloudLit","cloudDark","cloudDarkS"]){const v=look[n];v[0]*=cm;v[1]*=cm;v[2]*=cm;}
   /* свет тела неба рассеян и в воздухе: лунная ночь светлее безлунной не только ключом */
@@ -210,6 +213,7 @@ function plnHour(p){
   if(!sky){look.skyHor[3]=0;look.skyHorS[3]=0;look.cloudLit[3]=1.6;}
   /* тела неба и светило как оно есть — шейдеру */
   const Z=[0,0,0,0];
+  look.ambGnd[3]=ee?ee.ph:0;
   look.sunTrue=[sun[0],sun[1],sun[2],ecl];look.moon=Bd.B[0]||Z;look.moon2=Bd.B[1]||Z;look.moon3=Bd.B[2]||Z;look.bodyKind=Bd.K;
   /* лучи в воздухе сильнее, когда светило низко; под покровом и в тумане их нет */
   const shafts=.0024*(1+.9*low*plnSmooth(-.02,.06,sy))*(1-Wx.cover)*(1-.85*Wx.fog);
@@ -260,7 +264,9 @@ function plnSurface(){
   plnBeastFrame(L,F,S,p,C.ex,V);
   plnHerbFrame(L,F,S,p,C.ex,V);
   /* ночью у человека горит налобник: светит вперёд по взгляду, на землю перед ним */
-  if(Hr.night>.15)F.lamps.push({p:[man[0]+S.face*1.6,man[1]+1.5,man[2]-.4],r:8,c:[1,.86,.62],k:2.4*plnSmooth(.15,.6,Hr.night)});
+  /* фонарь — ночью и в тени затмения */
+  const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));
+  if(lampK>0)F.lamps.push({p:[man[0]+S.face*1.6,man[1]+1.5,man[2]-.4],r:8,c:[1,.86,.62],k:2.4*lampK});
   /* пятна тени героев и вещей легли первыми, остаток мест — тому, что растёт */
   plnPlantBatches(L,F,C.ex,V);
   /* герой стоит в пятне света: пятно лежит там, куда его тень падает на уровень сцены */

@@ -1226,7 +1226,7 @@ PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LOOK                     src/21pz-pln-frame.js:28-50
 PLN_M                        src/21p-pln.js:14
 PLN_MAT                      src/21pa-pln-mesh.js:9
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:275
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:281
 PLN_OVER                     src/21pj-pln-over.js:15
 PLN_PAD                      src/21pga-pln-plant.js:28
 PLN_PADS                     src/21pg-pln-flora.js:21
@@ -1244,7 +1244,7 @@ PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
 PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
 PLN_WING                     src/21pgc-pln-wing.js:23
-PLN_WX_COL                   src/21pz-pln-frame.js:113
+PLN_WX_COL                   src/21pz-pln-frame.js:115
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 POI_FIND                     src/20b-poi-find.js:18-91
 POI_KINDS                    src/20a-poi.js:11-30
@@ -5153,7 +5153,7 @@ plnBeastTilt                 src/21pib-pln-beast.js:36-45
 plnBeastZ                    src/21pib-pln-beast.js:24-27
 plnBez                       src/21pa-pln-mesh.js:173-177
 plnBlob                      src/21pa-pln-mesh.js:66-95
-plnBodies                    src/21pz-pln-frame.js:80-104
+plnBodies                    src/21pz-pln-frame.js:80-106
 plnBox                       src/21pf-pln-land.js:56-63
 plnBoxF                      src/21pf-pln-land.js:71-76
 plnCard                      src/21pa-pln-mesh.js:166-171
@@ -5200,7 +5200,7 @@ plnHerbTone                  src/21pia-pln-herb.js:28-31
 plnHerbZ                     src/21pia-pln-herb.js:22
 plnHerbs                     src/21pia-pln-herb.js:240-288
 plnHex                       src/21p-pln.js:43-46
-plnHour                      src/21pz-pln-frame.js:173-217
+plnHour                      src/21pz-pln-frame.js:175-221
 plnIco                       src/21pa-pln-mesh.js:41-58
 plnInst                      src/21pe-pln-gpu.js:46-51
 plnInstFree                  src/21pe-pln-gpu.js:57
@@ -5237,7 +5237,7 @@ plnLandTab                   src/21pf-pln-land.js:274-277
 plnLandWaterMesh             src/21pf-pln-land.js:564-577
 plnLen                       src/21p-pln.js:36
 plnLens                      src/21pz-pln-frame.js:61-68
-plnLightBox                  src/21pz-pln-frame.js:222-232
+plnLightBox                  src/21pz-pln-frame.js:226-236
 plnLoft                      src/21pa-pln-mesh.js:135-163
 plnLog                       src/21p-pln.js:22
 plnLookAt                    src/21pz-pln-frame.js:51-55
@@ -5292,7 +5292,7 @@ plnSmax                      src/21p-pln.js:80
 plnSmooth                    src/21p-pln.js:29
 plnSoftp                     src/21pf-pln-land.js:81
 plnSub                       src/21p-pln.js:32
-plnSurface                   src/21pz-pln-frame.js:235-272
+plnSurface                   src/21pz-pln-frame.js:239-278
 plnTf                        src/21p-pln.js:138-140
 plnThingApron                src/21pi-pln-things.js:55-69
 plnThingCaveMesh             src/21pi-pln-things.js:176-232
@@ -5322,7 +5322,7 @@ plnTreeUmb                   src/21pgb-pln-trees.js:76-108
 plnTri                       src/21pa-pln-mesh.js:23-26
 plnTube                      src/21pa-pln-mesh.js:100-131
 plnVert                      src/21pa-pln-mesh.js:16-22
-plnWeatherLook               src/21pz-pln-frame.js:114-163
+plnWeatherLook               src/21pz-pln-frame.js:116-165
 plnWgslPost                  src/21pd-pln-wgsl-post.js:10-30
 plnWingAz                    src/21pgc-pln-wing.js:37
 plnWingBlade                 src/21pgc-pln-wing.js:113-121
@@ -7947,7 +7947,7 @@ zoomTo                       src/15-input.js:350
 ## src/21pa-pln-mesh.js · 9 КБ
   · планета: тело и его генераторы (M610):1
 
-## src/21pb-pln-wgsl-air.js · 22 КБ
+## src/21pb-pln-wgsl-air.js · 23 КБ
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
 ## src/21pc-pln-wgsl-scene.js · 14 КБ
