@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 660 · символов верхнего уровня: 6885
+Файлов: 660 · символов верхнего уровня: 6886
 
 ## СИМВОЛЫ
 
@@ -1213,8 +1213,9 @@ PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:15
 PLN_CAST                     src/21ph-pln-cast.js:8
 PLN_DEG                      src/21p-pln.js:28
-PLN_FAR                      src/21pfa-pln-worlds.js:73-98
-PLN_FLORA                    src/21pg-pln-flora.js:24
+PLN_FAR                      src/21pfa-pln-worlds.js:74-99
+PLN_FL                       src/21pfa-pln-worlds.js:212
+PLN_FLORA                    src/21pg-pln-flora.js:23
 PLN_FRAME                    src/21pz-pln-frame.js:17
 PLN_G                        src/21pe-pln-gpu.js:24
 PLN_GPU                      src/21pe-pln-gpu.js:19
@@ -1230,23 +1231,22 @@ PLN_MAT                      src/21pa-pln-mesh.js:9
 PLN_OLD_SURFACE              src/21pz-pln-frame.js:300
 PLN_OVER                     src/21pj-pln-over.js:15
 PLN_PAD                      src/21pga-pln-plant.js:28
-PLN_PADS                     src/21pg-pln-flora.js:21
 PLN_PAL                      src/21pf-pln-land.js:31-55
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
 PLN_PLANT                    src/21pga-pln-plant.js:21
 PLN_THINGS                   src/21pi-pln-things.js:15
-PLN_TINTS                    src/21pg-pln-flora.js:18
-PLN_TINTS_FAR                src/21pg-pln-flora.js:23
+PLN_TINTS                    src/21pg-pln-flora.js:22
 PLN_TO                       src/21pe-pln-gpu.js:17
 PLN_TREES                    src/21pgb-pln-trees.js:18-45
 PLN_TREE_MAKE                src/21pgb-pln-trees.js:239
 PLN_TREE_ORDER               src/21pgb-pln-trees.js:28
 PLN_VB                       src/21pe-pln-gpu.js:27-43
 PLN_VS                       src/21pa-pln-mesh.js:10
+PLN_WFLORA                   src/21pfa-pln-worlds.js:177-222
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
 PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
 PLN_WING                     src/21pgc-pln-wing.js:23
-PLN_WORLDS                   src/21pfa-pln-worlds.js:20-65
+PLN_WORLDS                   src/21pfa-pln-worlds.js:20-66
 PLN_WX_COL                   src/21pz-pln-frame.js:115
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 POI_FIND                     src/20b-poi-find.js:18-91
@@ -5168,20 +5168,21 @@ plnCastRingMesh              src/21ph-pln-cast.js:106-111
 plnCastShipMesh              src/21ph-pln-cast.js:25-79
 plnCross                     src/21p-pln.js:35
 plnDot                       src/21p-pln.js:34
-plnFarCrater                 src/21pfa-pln-worlds.js:88-98
-plnFarLane                   src/21pfa-pln-worlds.js:101-167
-plnFarMesa                   src/21pfa-pln-worlds.js:86
+plnFarCrater                 src/21pfa-pln-worlds.js:89-99
+plnFarLane                   src/21pfa-pln-worlds.js:102-168
+plnFarMesa                   src/21pfa-pln-worlds.js:87
 plnFbm                       src/21p-pln.js:65-69
-plnFloraBloom                src/21pg-pln-flora.js:124-133
-plnFloraBush                 src/21pg-pln-flora.js:151-159
-plnFloraCap                  src/21pg-pln-flora.js:135-138
-plnFloraCrag                 src/21pg-pln-flora.js:65-91
-plnFloraKit                  src/21pg-pln-flora.js:162-222
-plnFloraLedge                src/21pg-pln-flora.js:94-99
-plnFloraPad                  src/21pg-pln-flora.js:140-150
-plnFloraRock                 src/21pg-pln-flora.js:52-60
-plnFloraRosette              src/21pg-pln-flora.js:102-122
-plnFloraTuft                 src/21pg-pln-flora.js:33-50
+plnFloraBloom                src/21pg-pln-flora.js:122-131
+plnFloraBush                 src/21pg-pln-flora.js:149-157
+plnFloraCap                  src/21pg-pln-flora.js:133-136
+plnFloraCrag                 src/21pg-pln-flora.js:64-89
+plnFloraKit                  src/21pg-pln-flora.js:160-220
+plnFloraLedge                src/21pg-pln-flora.js:92-97
+plnFloraPad                  src/21pg-pln-flora.js:138-148
+plnFloraRock                 src/21pg-pln-flora.js:51-59
+plnFloraRosette              src/21pg-pln-flora.js:100-120
+plnFloraSheet                src/21pfa-pln-worlds.js:214-222
+plnFloraTuft                 src/21pg-pln-flora.js:32-49
 plnGeo                       src/21pe-pln-gpu.js:36-43
 plnGeoFree                   src/21pe-pln-gpu.js:44
 plnGlobals                   src/21pe-pln-gpu.js:200-222
@@ -5266,7 +5267,7 @@ plnOver                      src/21pj-pln-over.js:44-128
 plnOverAt                    src/21pj-pln-over.js:18-21
 plnOverOld                   src/21pj-pln-over.js:28-43
 plnOverPlate                 src/21pj-pln-over.js:22-26
-plnPalSet                    src/21pfa-pln-worlds.js:57-65
+plnPalSet                    src/21pfa-pln-worlds.js:57-66
 plnPlantBatches              src/21pga-pln-plant.js:552-569
 plnPlantBodies               src/21pga-pln-plant.js:123-349
 plnPlantBucket               src/21pga-pln-plant.js:46
@@ -5331,18 +5332,18 @@ plnTube                      src/21pa-pln-mesh.js:100-131
 plnVert                      src/21pa-pln-mesh.js:16-22
 plnWeatherLook               src/21pz-pln-frame.js:116-165
 plnWgslPost                  src/21pd-pln-wgsl-post.js:10-30
-plnWingAz                    src/21pgc-pln-wing.js:37
-plnWingBlade                 src/21pgc-pln-wing.js:113-121
-plnWingCaps                  src/21pgc-pln-wing.js:174-192
-plnWingCurl                  src/21pgc-pln-wing.js:102-111
-plnWingFern                  src/21pgc-pln-wing.js:125-140
-plnWingFrond                 src/21pgc-pln-wing.js:77-100
-plnWingGrass                 src/21pgc-pln-wing.js:155-172
-plnWingKit                   src/21pgc-pln-wing.js:195-205
-plnWingLeaves                src/21pgc-pln-wing.js:142-153
-plnWingPath                  src/21pgc-pln-wing.js:41-53
-plnWingRamp                  src/21pgc-pln-wing.js:35
-plnWingRibbon                src/21pgc-pln-wing.js:59-73
+plnWingAz                    src/21pgc-pln-wing.js:35
+plnWingBlade                 src/21pgc-pln-wing.js:111-119
+plnWingCaps                  src/21pgc-pln-wing.js:172-190
+plnWingCurl                  src/21pgc-pln-wing.js:100-109
+plnWingFern                  src/21pgc-pln-wing.js:123-138
+plnWingFrond                 src/21pgc-pln-wing.js:75-98
+plnWingGrass                 src/21pgc-pln-wing.js:153-170
+plnWingKit                   src/21pgc-pln-wing.js:193-203
+plnWingLeaves                src/21pgc-pln-wing.js:140-151
+plnWingPath                  src/21pgc-pln-wing.js:39-51
+plnWingRamp                  src/21pgc-pln-wing.js:33
+plnWingRibbon                src/21pgc-pln-wing.js:57-71
 plnX                         src/21p-pln.js:23
 plnXu                        src/21p-pln.js:25
 plnY                         src/21p-pln.js:24
@@ -7969,7 +7970,7 @@ zoomTo                       src/15-input.js:350
 ## src/21pf-pln-land.js · 35 КБ
   · планета: земля (M610):1
 
-## src/21pfa-pln-worlds.js · 16 КБ
+## src/21pfa-pln-worlds.js · 22 КБ
   · планета: листы миров (M613):1
 
 ## src/21pg-pln-flora.js · 15 КБ

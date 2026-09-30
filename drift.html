@@ -82412,6 +82412,7 @@ function plnPalSet(p){
   const mix=(a,b)=>w?plnMix3(a,b,w):a,sky=X=>{const c=plnHex(X.sky[0]);return [c[0],c[1],c[2],X.sky[1],X.sky[2]];};
   for(const k in PLN_PAL0)PLN_PAL[k]=mix(plnHex(A[k]),B?plnHex(B[k]):null);
   const sa=sky(A),sb=B?sky(B):null;
+  plnFloraSheet(p,w);
   return {water:[mix(A.water[0],B&&B.water[0]),mix(A.water[1],B&&B.water[1])],gnd:mix(A.gnd,B&&B.gnd),air:mix(A.air,B&&B.air),
     murk:B?lerp(A.murk,B.murk,w):A.murk,sky:sb?sa.map((v,i)=>lerp(v,sb[i],w)):sa,acid:!!(p&&(p.type==="toxic"||p.mix==="toxic"&&w>.2)),
     far:PLN_FAR[p&&p.type]||PLN_FAR.terran};
@@ -82519,6 +82520,61 @@ function plnFarLane(Fw,lane,sub,L,x,z,az,pass){
   return null;
 }
 
+/* ── растительность по миру ──
+   Краски пучков, розеток, кустов и крон (верх/испод ×4; четвёртая — акцент), дальнего берега (×2),
+   листьев-блюдец (тень/свет ×2), камыша (корень, макушка, сухой), розетки (корень, тёплая и холодная
+   макушка), цветов (сено, тёплая пара, холодная пара) и кулисы (тень/свет ×4). Растёт только там,
+   где воздух пригоден, и на метановом мире (21pga): листы есть у тех миров и у тех, что к ним
+   подмешиваются; остальные берут земной. Смешанный мир — на треть чужой. Рабочий лист — PLN_FL:
+   его читают 21pg, 21pga и 21pia; мох на камне — PLN_PAL.moss своего мира. */
+const PLN_WFLORA={
+  terran:{tints:[["#9cc04a","#2f5f45"],["#bfc04e","#4a6a3a"],["#cf8fb0","#5a4466"],["#6fb58a","#24514f"]],
+    far:[["#86a850","#33594a"],["#a9ab5a","#4a6044"]],pads:[["#1f5a48","#7fc08a"],["#5a4466","#cf8fb0"]],
+    reed:["#2f5040","#8fa05a","#c9b870"],ros:["#2c5a3c","#8fb04e","#5fa07a"],bloom:["#f0e0a0","#f6f2e6","#f2c84b","#e8709c","#c9a0ff"],
+    wing:[["#0a2e30","#227a66"],["#0f2a1a","#3a7a40"],["#0b2140","#2a6488"],["#1f1436","#6d4a86"]]},
+  /* океан: зелень холоднее, к морю; акцент сиреневый */
+  ocean:{tints:[["#8cc06a","#2c5a4c"],["#a8c060","#3e6a48"],["#b892c8","#4a4470"],["#5cb8a4","#1e5058"]],
+    far:[["#7aa868","#2e5850"],["#98ac68","#42604c"]],pads:[["#1c5850","#7ac0a0"],["#4a4470","#b892c8"]],
+    reed:["#2c5048","#88a870","#c8b878"],ros:["#285a48","#88b46a","#58a88c"],bloom:["#ecdfa8","#f4f4ec","#e8d060","#e070a0","#b0a8ff"],
+    wing:[["#082c34","#1e7a70"],["#0e2a24","#2e7a54"],["#0a2044","#2860a0"],["#1a1838","#5c4a90"]]},
+  /* пустыня: солома, олива, охра; акцент пыльная роза (только в примеси к живому миру) */
+  desert:{tints:[["#c8b464","#665a30"],["#d2c078","#76683a"],["#c8906a","#6a4a34"],["#a4aa64","#4a5a34"]],
+    far:[["#b0a45a","#5a5432"],["#c0b068","#6a6040"]],pads:[["#5a5a34","#b0b070"],["#6a4a34","#c8906a"]],
+    reed:["#5a5230","#b0a464","#d8c884"],ros:["#5a5a34","#c0b466","#a0aa6c"],bloom:["#f0e0a0","#f6f2e6","#f2c84b","#e89a70","#d8b8a8"],
+    wing:[["#2a2410","#7a6c34"],["#2a2010","#6a5c2c"],["#24201a","#64584a"],["#2a1a18","#7a4c3c"]]},
+  /* лёд: иней и лишайник, серо-голубое; акцент ледяная синь */
+  ice:{tints:[["#a8c8b8","#4a6a68"],["#b8c8a8","#5a6a58"],["#b0b8d8","#4a5070"],["#8ab8b8","#2e5460"]],
+    far:[["#98b8a8","#44605c"],["#a8b898","#546050"]],pads:[["#3a5a58","#9ac8b8"],["#4a5070","#b0b8d8"]],
+    reed:["#4a5a58","#a0b09a","#d0d4c8"],ros:["#4a6260","#a8c0a4","#8ab8b0"],bloom:["#e8ecdc","#f6f6f2","#dce8f0","#d8a0c8","#b8c8ff"],
+    wing:[["#1a2c34","#4a7a80"],["#1a2c24","#4a7a60"],["#182040","#3a6090"],["#241a38","#605080"]]},
+  /* метановый мир: шартрез и олива, жёлто-зелёное; акцент лиловый */
+  toxic:{tints:[["#b8c840","#3e5a2c"],["#d0c848","#5a6430"],["#c880c0","#4a3860"],["#8ec860","#2e5040"]],
+    far:[["#9cac48","#3c5030"],["#b4ac50","#4c5a34"]],pads:[["#2e5030","#a0c860"],["#4a3860","#c880c0"]],
+    reed:["#3a4a2c","#a8b050","#d0c470"],ros:["#385a30","#b0c04c","#7ab060"],bloom:["#e8e090","#f4f0d0","#e8d040","#d060b0","#b090f0"],
+    wing:[["#182c10","#4a7a2c"],["#1a2a14","#4a7a30"],["#102030","#2a6070"],["#24143a","#7a4a90"]]},
+  /* джунгли: густая сочная зелень; акценты бирюза и маджента */
+  jungle:{tints:[["#7cc040","#1e5030"],["#a8c848","#3a6030"],["#d070a0","#4a2c58"],["#4cb890","#124840"]],
+    far:[["#6aa848","#1e4a30"],["#8ca850","#385430"]],pads:[["#165040","#66b880"],["#4a2c58","#d070a0"]],
+    reed:["#1e4a30","#7aa050","#c0b070"],ros:["#1e5030","#8cb848","#4ca884"],bloom:["#e8d890","#f4f0e0","#f0c040","#f060a0","#b090ff"],
+    wing:[["#062824","#187060"],["#0a2814","#2c7838"],["#082040","#245a90"],["#1c1034","#6a4088"]]},
+  /* руины: сухая олива, охра, серо-зелёное; акцент ржавый (только в примеси) */
+  ruin:{tints:[["#a8a858","#4a4c30"],["#b8b068","#585034"],["#b87850","#5a3828"],["#88a068","#3a4a34"]],
+    far:[["#989858","#444a30"],["#a8a068","#504c38"]],pads:[["#3a4a34","#98b070"],["#5a3828","#b87850"]],
+    reed:["#484a30","#a0a060","#ccc080"],ros:["#484c30","#b0ac5c","#88a068"],bloom:["#e8dca0","#f4f0e0","#e8c050","#d07040","#c0a0a0"],
+    wing:[["#1c2410","#5a6a30"],["#1a2410","#4a6a2c"],["#1c201c","#586050"],["#241810","#6a4020"]]}};
+const PLN_FL={tints:[],far:[],pads:[],reed:[],ros:[],bloom:[],wing:[]};
+/* заполнить рабочий лист по миру p; w — доля примеси (как у листа красок) */
+function plnFloraSheet(p,w){
+  const T=PLN_WFLORA,A=T[p&&p.type]||T.terran,B=w>0&&p.mix&&T[p.mix]||null,FL=PLN_FL;
+  const cv=(a,b)=>{const c=plnHex(a);return B?plnMix3(c,plnHex(b),w):c;};
+  const pair=(a,b)=>({top:cv(a[0],B&&b[0]),under:cv(a[1],B&&b[1])}),two=(a,b)=>[cv(a[0],B&&b[0]),cv(a[1],B&&b[1])];
+  for(let i=0;i<4;i++){FL.tints[i]=pair(A.tints[i],B&&B.tints[i]);FL.wing[i]=two(A.wing[i],B&&B.wing[i]);}
+  for(let i=0;i<2;i++){FL.far[i]=pair(A.far[i],B&&B.far[i]);FL.pads[i]=two(A.pads[i],B&&B.pads[i]);}
+  for(let i=0;i<3;i++){FL.reed[i]=cv(A.reed[i],B&&B.reed[i]);FL.ros[i]=cv(A.ros[i],B&&B.ros[i]);}
+  for(let i=0;i<5;i++)FL.bloom[i]=cv(A.bloom[i],B&&B.bloom[i]);
+}
+plnFloraSheet(null,0);
+
 /* ══════════════ планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611) ══════════════
    Всё, что растёт и лежит на земле, — из одного набора. Тело строится раз на
    устройство, в своей мерке (пучок и камень — метр, дерево — десять), а в мир
@@ -82534,14 +82590,13 @@ function plnFarLane(Fw,lane,sub,L,x,z,az,pass){
 
    Цвет. Пучки, розетки и кусты несут в вершине только ход от корня к макушке
    (r) и свою светлоту (g): оба цвета даёт запись (режим 1). У дерева так
-   красится одна крона, кора остаётся своей (режим 2). Камень, цветок и колос
-   несут свой цвет, запись его подкрашивает (режим 0). */
-const PLN_TINTS=[{top:plnHex("#9cc04a"),under:plnHex("#2f5f45")},{top:plnHex("#bfc04e"),under:plnHex("#4a6a3a")},
-  {top:plnHex("#cf8fb0"),under:plnHex("#5a4466")},{top:plnHex("#6fb58a"),under:plnHex("#24514f")}];
-/* листья-блюдца на воде пруда: зелёные и, изредка, в цвет акцента */
-const PLN_PADS=[[plnHex("#1f5a48"),plnHex("#7fc08a")],[plnHex("#5a4466"),plnHex("#cf8fb0")]];
-/* дальний берег: та же зелень, тише */
-const PLN_TINTS_FAR=[{top:plnHex("#86a850"),under:plnHex("#33594a")},{top:plnHex("#a9ab5a"),under:plnHex("#4a6044")}];
+   красится одна крона, кора остаётся своей (режим 2). Камень и скала несут
+   долю мха (r) и светлоту грани (g), цвет камня и мха даёт запись (режим 1):
+   на безвоздушном мире мох — пыль своего цвета. Цветок и колос несут свой
+   цвет, запись его подкрашивает (режим 0).
+   Краски — по миру: пучки, листья-блюдца на воде пруда (зелёные и, изредка, в цвет акцента),
+   дальний берег (та же зелень, тише) — рабочий лист PLN_FL (21pfa). */
+const PLN_TINTS=PLN_FL.tints,PLN_PADS=PLN_FL.pads,PLN_TINTS_FAR=PLN_FL.far;
 const PLN_FLORA={gen:-1,kit:null,
   dens:17,                             /* пучков на квадратный метр полки до прореживания */
   wide:1.55,                           /* лист шире, чем в жизни: в масштабе игры ковёр — фактура, а не рисунок */
@@ -82571,11 +82626,11 @@ function plnFloraTuft(m,r,o){
 }
 /* камень: серый, светлее к макушке, мох лежит сверху; тон даёт запись */
 function plnFloraRock(m,seed,sub,r){
-  const P=PLN_PAL0,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]];
+  /* вершина: r — доля мха (на макушке, пятнами), g — светлота минус половина (режим 1) */
   plnBlob(m,{c:[0,.15,0],r,sub,bump:.5,bumpF:1.25,seed,yaw:seed*1.37,lean:Math.sin(seed)*.2,cut:-.4*r[1],
     col:(u,p,n)=>{
       const k=lerp(.62,1,plnSmooth(-.6,.6,u[1]+plnNoise(p[0]*.9,p[1]*2.2,seed)*.5));
-      return plnMix3([k,k,k],moss,plnSmooth(.55,.9,n[1])*plnSmooth(-.1,.3,plnNoise(p[0]*.7+3,p[2]*.7,seed+2))*.7);
+      return [plnSmooth(.55,.9,n[1])*plnSmooth(-.1,.3,plnNoise(p[0]*.7+3,p[2]*.7,seed+2))*.7,k-.5,0];
     },mat:PLN_MAT.rock});
   return m;
 }
@@ -82584,8 +82639,7 @@ function plnFloraRock(m,seed,sub,r){
    o: c (середина подошвы), r [rx, рост, rz], chops (сколько срубов), lean и pitch (наклон пласта),
       yaw, thin (ширина макушки в долях подошвы), seed */
 function plnFloraCrag(m,r,o){
-  const P=PLN_PAL0,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]],M=PLN_MAT.rock;
-  const g=plnIco(2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed;
+  const M=PLN_MAT.rock,g=plnIco(2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed;
   for(let k=0;k<o.chops;k++)cuts.push([plnNorm([r()*2-1,r()*1.5-.6,r()*2-1]),.5+r()*.36]);
   for(const u of g.p){
     let q=plnMul(u,1+.2*plnNoise(u[0]*1.6+sd,u[1]*1.6+u[2]*1.1,sd));
@@ -82606,7 +82660,7 @@ function plnFloraCrag(m,r,o){
     if(plnDot(n,plnSub(V[a],mid))<0)n=plnMul(n,-1);
     /* светлота — от того, куда грань смотрит: куски одного сруба красятся одинаково */
     const k=lerp(.7,1.08,plnSmooth(-.35,.9,n[1]))*(.93+.14*plnNoise(n[0]*2.3+sd,n[2]*2.3+n[1]*1.7,sd+4)),up=plnSmooth(.45,.85,n[1]);
-    const v=i=>plnVert(m,V[i],n,plnMix3([k,k,k],moss,G0[i]*up),M,0,0,0);
+    const v=i=>plnVert(m,V[i],n,[G0[i]*up,k-.5,0],M,0,0,0);
     plnTri(m,v(a),v(b),v(c));
   }
 }
@@ -82889,11 +82943,11 @@ function plnPlantBodies(L,J){
   const rock=(x,z,rr,tone,shade)=>{
     const g=at(x,z)[0];
     if(wetAt(x,z,g))return;
-    plnPlantPut(bRock[(rr>.85?3:0)+((hv(x,z,1)*3)|0)],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),0,null,0);
+    plnPlantPut(bRock[(rr>.85?3:0)+((hv(x,z,1)*3)|0)],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),1,plnMul(P.moss,shade==null?1:shade),0);
     blots.push([x,z,rr*1.8,rr>.4?.5:.4]);
     if(rr>.4)clear.push([x,z,rr*1.3,rr*1.3,0]);
   };
-  const root=plnHex("#2c5a3c"),tipW=plnHex("#8fb04e"),tipC=plnHex("#5fa07a");
+  const [root,tipW,tipC]=PLN_FL.ros;
   const ros=(x,z,rr,cool,bloom,shade)=>{
     const g=at(x,z)[0],k=shade==null?1:shade,yaw=hv(x,z,3)*TAU;
     if(lush<=0||wetAt(x,z,g)||plnLandPath(L,x,z)>.3)return;
@@ -82928,7 +82982,7 @@ function plnPlantBodies(L,J){
     const put=(v,x,z,y,s,yaw,tone)=>{
       const B=K.ledge[v];
       if(padK(x)||!room(x,z,B.rx*s*.8,B.rz*s)||wetAt(x,z,y)||(lake&&x>lake.x0-2&&x<lake.x1+2))return false;
-      plnPlantPut(bLedge[v],[x,y,z],s,yaw,1,plnMix3(P.rockWarm,P.rockCool,tone),0,null,0);
+      plnPlantPut(bLedge[v],[x,y,z],s,yaw,1,plnMix3(P.rockWarm,P.rockCool,tone),1,P.moss,0);
       blots.push([x,z,B.rx*s*1.3,.5]);own.push([x,z,B.rx*s*1.1,B.rz*s*1.1,0]);
       F.crags.push([x,z,y,s,v]);
       return true;
@@ -83037,7 +83091,7 @@ function plnPlantBodies(L,J){
      и там он растёт только у концов пруда. Камни лежат на урезе и в воде у берега, листья-блюдца —
      на глубине, стайками: это та же шапка с плоским исподом, только легла на воду */
   if(lake&&xb>lake.x0-2&&xa<lake.x1+2){
-    const q=rng(plnPlantSeed(L,c,4)),rootR=plnHex("#2f5040"),tipR=plnHex("#8fa05a"),dryR=plnHex("#c9b870");
+    const q=rng(plnPlantSeed(L,c,4)),[rootR,tipR,dryR]=PLN_FL.reed;
     const la=Math.max(xa,lake.x0-2),span=Math.min(xb,lake.x1+2)-la,lx=lake.x1-lake.x0,mid=(lake.x0+lake.x1)/2;
     const dice=n=>{const a=[];for(let k=0;k<n;k++)a.push(q());return a;};
     for(let k=Math.ceil(span/4.5);k>0&&lush>0;k--){
@@ -83053,7 +83107,7 @@ function plnPlantBodies(L,J){
       const d=dice(6),x=la+d[0]*span,far=d[1]<.55,rr=.22+d[2]*d[2]*.55,z=plnLandPondZ(L,x,far)+(far?-1:1)*(d[3]*1.6-.2),g=at(x,z)[0];
       if(x<lake.x0+.5||x>lake.x1-.5||Math.abs(z)<2.2||g>lake.level+.35)continue;
       plnPlantPut(bRock[(rr>.55?3:0)+((d[4]*3)|0)],[x,Math.max(g,lake.level-rr*.45),z],rr,d[5]*TAU,1,
-        plnMul(plnMix3(P.rockWarm,P.rockCool,.3+d[4]*.5),.8),0,null,0);
+        plnMul(plnMix3(P.rockWarm,P.rockCool,.3+d[4]*.5),.8),1,plnMul(P.moss,.8),0);
     }
     for(let k=Math.ceil(span/5.5);k>0&&lush>0;k--){
       const d=dice(4),cx=la+d[0]*span,cz=lerp(plnLandPondZ(L,cx,false),plnLandPondZ(L,cx,true),.12+d[1]*.76),n=4+((d[2]*7)|0),T=PLN_PADS[d[3]<.2?1:0];
@@ -83072,7 +83126,7 @@ function plnPlantBodies(L,J){
   if(lush>.45){
     const Wg=PLN_WING,q=rng(plnPlantSeed(L,c,3)),NW=K.wing.length;
     const put=(v,x,z,lift,s,yaw,tn)=>plnPlantPut(bWing[v],[x,at(x,0)[0]+Math.min(lift,Wg.cap-K.wing[v].top*s),z],s,yaw,1,
-      Wg.cols[tn][0],1,Wg.cols[tn][1],0);
+      plnMul(PLN_FL.wing[tn][0],Wg.dim),1,plnMul(PLN_FL.wing[tn][1],Wg.dim),0);
     for(let k=0;k<2;k++){
       const d=[];
       for(let j=0;j<12;j++)d.push(q());
@@ -83095,7 +83149,7 @@ function plnPlantBodies(L,J){
 function plnPlantGrass(L,J,n){
   const Q=PLN_FLORA,C=PLN_PLANT,P=PLN_PAL,F=L.flora,S=J.pl,at=S.at,r=S.r,clear=S.clear,xa=J.xa,wd=J.xb-J.xa,sd=L.sd,W=Q.wide,lake=L.lake;
   const zN=C.zN,zd=C.zF-C.zN,k1=Math.min(S.K,S.k+n),ca=[0,0,0],cb=[0,0,0],cf=[0,0,0],pos=[0,0,0];
-  const hay=plnHex("#f0e0a0"),warm=[plnHex("#f6f2e6"),plnHex("#f2c84b")],cold=[plnHex("#e8709c"),plnHex("#c9a0ff")];
+  const [hay,warmA,warmB,coldA,coldB]=PLN_FL.bloom,warm=[warmA,warmB],cold=[coldA,coldB];
   for(let k=S.k;k<k1;k++){
     const x=xa+r()*wd,z=zN+r()*zd,u1=r(),u2=r(),u3=r(),u4=r(),u5=r(),u6=r(),u7=r(),u8=r(),u9=r(),u10=r();
     const pw=plnLandPath(L,x,z);
@@ -83183,7 +83237,7 @@ function plnPlantFar(L,fc){
   for(let i=0;i<NS;i++)sh[i]=plnPlantShore(L,xa+i*2);
   const shore=x=>{const u=clamp((x-xa)/2,0,NS-1.001),i=Math.floor(u);return sh[i]&&sh[i+1]?lerp(sh[i],sh[i+1],u-i):0;};
   const rock=(x,z,y,rr,tone,big)=>plnPlantPut(bRock[(big?3:0)+((plnHash(x|0,z|0,fc)*3)|0)],[x,y,z],rr,plnHash(z|0,x|0,fc+1)*TAU,1,
-    plnMix3(P.rockWarm,P.rockCool,tone),0,null,1);
+    plnMix3(P.rockWarm,P.rockCool,tone),1,P.moss,1);
   /* скалы дальнего берега, камни на отмели перед ними */
   {
     const u=r(),cx=xa+r()*C.farW,dz=14+r()*5,n=2+((r()*3)|0),list=[];
@@ -83211,7 +83265,7 @@ function plnPlantFar(L,fc){
       }
     }
     /* камыш у дальнего уреза */
-    const rootR=plnHex("#2f5040"),tipR=plnHex("#8fa05a"),dryR=plnHex("#c9b870");
+    const [rootR,tipR,dryR]=PLN_FL.reed;
     for(let k=0;k<2;k++){
       const cx=xa+r()*C.farW,wid=2.5+r()*5.5,hgt=1.2+r()*1.5,n=12+((r()*52)|0),on=r()<.7,q=rng(plnPlantSeed(L,fc,12+k));
       if(!on)continue;
@@ -83586,10 +83640,8 @@ const PLN_WING={deep:12,                /* на сколько стебли ух
   cap:5.7,                              /* выше этого над линией макушка не встаёт: там ноги человека */
   size:[.9,.35],                        /* размер записи: от и на сколько */
   turn:.7,                              /* на сколько запись крутит тело, рад (в обе стороны поровну) */
-  dim:.72,                              /* кулиса темнее своих красок: она — обвод сцены */
-  /* тень и свет листа: бирюза — главная, дальше зелень, синева и редкий сливовый */
-  tones:[["#0a2e30","#227a66"],["#0f2a1a","#3a7a40"],["#0b2140","#2a6488"],["#1f1436","#6d4a86"]]};
-PLN_WING.cols=PLN_WING.tones.map(t=>[plnMul(plnHex(t[0]),PLN_WING.dim),plnMul(plnHex(t[1]),PLN_WING.dim)]);
+  dim:.72};                              /* кулиса темнее своих красок: она — обвод сцены */
+/* тень и свет листа — по миру: PLN_FL.wing (21pfa); запись красит тело в них, потемнив на dim */
 
 /* ход от тени к свету по высоте тела: у нуля — треть, у макушки — единица */
 function plnWingRamp(y){return Math.pow(clamp((y+1.5)/5,0,1),.8);}

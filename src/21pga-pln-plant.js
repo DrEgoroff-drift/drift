@@ -145,11 +145,11 @@ function plnPlantBodies(L,J){
   const rock=(x,z,rr,tone,shade)=>{
     const g=at(x,z)[0];
     if(wetAt(x,z,g))return;
-    plnPlantPut(bRock[(rr>.85?3:0)+((hv(x,z,1)*3)|0)],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),0,null,0);
+    plnPlantPut(bRock[(rr>.85?3:0)+((hv(x,z,1)*3)|0)],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),1,plnMul(P.moss,shade==null?1:shade),0);
     blots.push([x,z,rr*1.8,rr>.4?.5:.4]);
     if(rr>.4)clear.push([x,z,rr*1.3,rr*1.3,0]);
   };
-  const root=plnHex("#2c5a3c"),tipW=plnHex("#8fb04e"),tipC=plnHex("#5fa07a");
+  const [root,tipW,tipC]=PLN_FL.ros;
   const ros=(x,z,rr,cool,bloom,shade)=>{
     const g=at(x,z)[0],k=shade==null?1:shade,yaw=hv(x,z,3)*TAU;
     if(lush<=0||wetAt(x,z,g)||plnLandPath(L,x,z)>.3)return;
@@ -184,7 +184,7 @@ function plnPlantBodies(L,J){
     const put=(v,x,z,y,s,yaw,tone)=>{
       const B=K.ledge[v];
       if(padK(x)||!room(x,z,B.rx*s*.8,B.rz*s)||wetAt(x,z,y)||(lake&&x>lake.x0-2&&x<lake.x1+2))return false;
-      plnPlantPut(bLedge[v],[x,y,z],s,yaw,1,plnMix3(P.rockWarm,P.rockCool,tone),0,null,0);
+      plnPlantPut(bLedge[v],[x,y,z],s,yaw,1,plnMix3(P.rockWarm,P.rockCool,tone),1,P.moss,0);
       blots.push([x,z,B.rx*s*1.3,.5]);own.push([x,z,B.rx*s*1.1,B.rz*s*1.1,0]);
       F.crags.push([x,z,y,s,v]);
       return true;
@@ -293,7 +293,7 @@ function plnPlantBodies(L,J){
      и там он растёт только у концов пруда. Камни лежат на урезе и в воде у берега, листья-блюдца —
      на глубине, стайками: это та же шапка с плоским исподом, только легла на воду */
   if(lake&&xb>lake.x0-2&&xa<lake.x1+2){
-    const q=rng(plnPlantSeed(L,c,4)),rootR=plnHex("#2f5040"),tipR=plnHex("#8fa05a"),dryR=plnHex("#c9b870");
+    const q=rng(plnPlantSeed(L,c,4)),[rootR,tipR,dryR]=PLN_FL.reed;
     const la=Math.max(xa,lake.x0-2),span=Math.min(xb,lake.x1+2)-la,lx=lake.x1-lake.x0,mid=(lake.x0+lake.x1)/2;
     const dice=n=>{const a=[];for(let k=0;k<n;k++)a.push(q());return a;};
     for(let k=Math.ceil(span/4.5);k>0&&lush>0;k--){
@@ -309,7 +309,7 @@ function plnPlantBodies(L,J){
       const d=dice(6),x=la+d[0]*span,far=d[1]<.55,rr=.22+d[2]*d[2]*.55,z=plnLandPondZ(L,x,far)+(far?-1:1)*(d[3]*1.6-.2),g=at(x,z)[0];
       if(x<lake.x0+.5||x>lake.x1-.5||Math.abs(z)<2.2||g>lake.level+.35)continue;
       plnPlantPut(bRock[(rr>.55?3:0)+((d[4]*3)|0)],[x,Math.max(g,lake.level-rr*.45),z],rr,d[5]*TAU,1,
-        plnMul(plnMix3(P.rockWarm,P.rockCool,.3+d[4]*.5),.8),0,null,0);
+        plnMul(plnMix3(P.rockWarm,P.rockCool,.3+d[4]*.5),.8),1,plnMul(P.moss,.8),0);
     }
     for(let k=Math.ceil(span/5.5);k>0&&lush>0;k--){
       const d=dice(4),cx=la+d[0]*span,cz=lerp(plnLandPondZ(L,cx,false),plnLandPondZ(L,cx,true),.12+d[1]*.76),n=4+((d[2]*7)|0),T=PLN_PADS[d[3]<.2?1:0];
@@ -328,7 +328,7 @@ function plnPlantBodies(L,J){
   if(lush>.45){
     const Wg=PLN_WING,q=rng(plnPlantSeed(L,c,3)),NW=K.wing.length;
     const put=(v,x,z,lift,s,yaw,tn)=>plnPlantPut(bWing[v],[x,at(x,0)[0]+Math.min(lift,Wg.cap-K.wing[v].top*s),z],s,yaw,1,
-      Wg.cols[tn][0],1,Wg.cols[tn][1],0);
+      plnMul(PLN_FL.wing[tn][0],Wg.dim),1,plnMul(PLN_FL.wing[tn][1],Wg.dim),0);
     for(let k=0;k<2;k++){
       const d=[];
       for(let j=0;j<12;j++)d.push(q());
@@ -351,7 +351,7 @@ function plnPlantBodies(L,J){
 function plnPlantGrass(L,J,n){
   const Q=PLN_FLORA,C=PLN_PLANT,P=PLN_PAL,F=L.flora,S=J.pl,at=S.at,r=S.r,clear=S.clear,xa=J.xa,wd=J.xb-J.xa,sd=L.sd,W=Q.wide,lake=L.lake;
   const zN=C.zN,zd=C.zF-C.zN,k1=Math.min(S.K,S.k+n),ca=[0,0,0],cb=[0,0,0],cf=[0,0,0],pos=[0,0,0];
-  const hay=plnHex("#f0e0a0"),warm=[plnHex("#f6f2e6"),plnHex("#f2c84b")],cold=[plnHex("#e8709c"),plnHex("#c9a0ff")];
+  const [hay,warmA,warmB,coldA,coldB]=PLN_FL.bloom,warm=[warmA,warmB],cold=[coldA,coldB];
   for(let k=S.k;k<k1;k++){
     const x=xa+r()*wd,z=zN+r()*zd,u1=r(),u2=r(),u3=r(),u4=r(),u5=r(),u6=r(),u7=r(),u8=r(),u9=r(),u10=r();
     const pw=plnLandPath(L,x,z);
@@ -439,7 +439,7 @@ function plnPlantFar(L,fc){
   for(let i=0;i<NS;i++)sh[i]=plnPlantShore(L,xa+i*2);
   const shore=x=>{const u=clamp((x-xa)/2,0,NS-1.001),i=Math.floor(u);return sh[i]&&sh[i+1]?lerp(sh[i],sh[i+1],u-i):0;};
   const rock=(x,z,y,rr,tone,big)=>plnPlantPut(bRock[(big?3:0)+((plnHash(x|0,z|0,fc)*3)|0)],[x,y,z],rr,plnHash(z|0,x|0,fc+1)*TAU,1,
-    plnMix3(P.rockWarm,P.rockCool,tone),0,null,1);
+    plnMix3(P.rockWarm,P.rockCool,tone),1,P.moss,1);
   /* скалы дальнего берега, камни на отмели перед ними */
   {
     const u=r(),cx=xa+r()*C.farW,dz=14+r()*5,n=2+((r()*3)|0),list=[];
@@ -467,7 +467,7 @@ function plnPlantFar(L,fc){
       }
     }
     /* камыш у дальнего уреза */
-    const rootR=plnHex("#2f5040"),tipR=plnHex("#8fa05a"),dryR=plnHex("#c9b870");
+    const [rootR,tipR,dryR]=PLN_FL.reed;
     for(let k=0;k<2;k++){
       const cx=xa+r()*C.farW,wid=2.5+r()*5.5,hgt=1.2+r()*1.5,n=12+((r()*52)|0),on=r()<.7,q=rng(plnPlantSeed(L,fc,12+k));
       if(!on)continue;

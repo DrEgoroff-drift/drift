@@ -13,14 +13,13 @@
 
    Цвет. Пучки, розетки и кусты несут в вершине только ход от корня к макушке
    (r) и свою светлоту (g): оба цвета даёт запись (режим 1). У дерева так
-   красится одна крона, кора остаётся своей (режим 2). Камень, цветок и колос
-   несут свой цвет, запись его подкрашивает (режим 0). */
-const PLN_TINTS=[{top:plnHex("#9cc04a"),under:plnHex("#2f5f45")},{top:plnHex("#bfc04e"),under:plnHex("#4a6a3a")},
-  {top:plnHex("#cf8fb0"),under:plnHex("#5a4466")},{top:plnHex("#6fb58a"),under:plnHex("#24514f")}];
-/* листья-блюдца на воде пруда: зелёные и, изредка, в цвет акцента */
-const PLN_PADS=[[plnHex("#1f5a48"),plnHex("#7fc08a")],[plnHex("#5a4466"),plnHex("#cf8fb0")]];
-/* дальний берег: та же зелень, тише */
-const PLN_TINTS_FAR=[{top:plnHex("#86a850"),under:plnHex("#33594a")},{top:plnHex("#a9ab5a"),under:plnHex("#4a6044")}];
+   красится одна крона, кора остаётся своей (режим 2). Камень и скала несут
+   долю мха (r) и светлоту грани (g), цвет камня и мха даёт запись (режим 1):
+   на безвоздушном мире мох — пыль своего цвета. Цветок и колос несут свой
+   цвет, запись его подкрашивает (режим 0).
+   Краски — по миру: пучки, листья-блюдца на воде пруда (зелёные и, изредка, в цвет акцента),
+   дальний берег (та же зелень, тише) — рабочий лист PLN_FL (21pfa). */
+const PLN_TINTS=PLN_FL.tints,PLN_PADS=PLN_FL.pads,PLN_TINTS_FAR=PLN_FL.far;
 const PLN_FLORA={gen:-1,kit:null,
   dens:17,                             /* пучков на квадратный метр полки до прореживания */
   wide:1.55,                           /* лист шире, чем в жизни: в масштабе игры ковёр — фактура, а не рисунок */
@@ -50,11 +49,11 @@ function plnFloraTuft(m,r,o){
 }
 /* камень: серый, светлее к макушке, мох лежит сверху; тон даёт запись */
 function plnFloraRock(m,seed,sub,r){
-  const P=PLN_PAL0,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]];
+  /* вершина: r — доля мха (на макушке, пятнами), g — светлота минус половина (режим 1) */
   plnBlob(m,{c:[0,.15,0],r,sub,bump:.5,bumpF:1.25,seed,yaw:seed*1.37,lean:Math.sin(seed)*.2,cut:-.4*r[1],
     col:(u,p,n)=>{
       const k=lerp(.62,1,plnSmooth(-.6,.6,u[1]+plnNoise(p[0]*.9,p[1]*2.2,seed)*.5));
-      return plnMix3([k,k,k],moss,plnSmooth(.55,.9,n[1])*plnSmooth(-.1,.3,plnNoise(p[0]*.7+3,p[2]*.7,seed+2))*.7);
+      return [plnSmooth(.55,.9,n[1])*plnSmooth(-.1,.3,plnNoise(p[0]*.7+3,p[2]*.7,seed+2))*.7,k-.5,0];
     },mat:PLN_MAT.rock});
   return m;
 }
@@ -63,8 +62,7 @@ function plnFloraRock(m,seed,sub,r){
    o: c (середина подошвы), r [rx, рост, rz], chops (сколько срубов), lean и pitch (наклон пласта),
       yaw, thin (ширина макушки в долях подошвы), seed */
 function plnFloraCrag(m,r,o){
-  const P=PLN_PAL0,ref=plnMix3(P.rockWarm,P.rockCool,.45),moss=[P.moss[0]/ref[0],P.moss[1]/ref[1],P.moss[2]/ref[2]],M=PLN_MAT.rock;
-  const g=plnIco(2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed;
+  const M=PLN_MAT.rock,g=plnIco(2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed;
   for(let k=0;k<o.chops;k++)cuts.push([plnNorm([r()*2-1,r()*1.5-.6,r()*2-1]),.5+r()*.36]);
   for(const u of g.p){
     let q=plnMul(u,1+.2*plnNoise(u[0]*1.6+sd,u[1]*1.6+u[2]*1.1,sd));
@@ -85,7 +83,7 @@ function plnFloraCrag(m,r,o){
     if(plnDot(n,plnSub(V[a],mid))<0)n=plnMul(n,-1);
     /* светлота — от того, куда грань смотрит: куски одного сруба красятся одинаково */
     const k=lerp(.7,1.08,plnSmooth(-.35,.9,n[1]))*(.93+.14*plnNoise(n[0]*2.3+sd,n[2]*2.3+n[1]*1.7,sd+4)),up=plnSmooth(.45,.85,n[1]);
-    const v=i=>plnVert(m,V[i],n,plnMix3([k,k,k],moss,G0[i]*up),M,0,0,0);
+    const v=i=>plnVert(m,V[i],n,[G0[i]*up,k-.5,0],M,0,0,0);
     plnTri(m,v(a),v(b),v(c));
   }
 }
