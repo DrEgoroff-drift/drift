@@ -191,6 +191,32 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
       (.25 of its depth), so the man on the step is never covered;
     - a body keeps off the things of the game by its own footprint and steps deeper when
       the place is taken; the pond and the pad stay free. `F.crags` logs what was placed.
+22. **Every world has a sheet** (`21pfa`, `PLN_WORLDS`): eighteen colours of the land, two
+    of water, the bounce of the ground, the near air, the pull of the sky `[hex, k, haze]`
+    and the murk. `plnPalSet` fills the working `PLN_PAL` at landing; a mixed world takes
+    up to a third of the other (`.7·mw`, capped at .34); an airless world does not tint
+    the sky. The pull is **per element** — the sky by `k`, the far air by `.7k`, the ambient
+    by `.8k`, the glow by `.6k`, the lit cloud by `.4k`, the key by `.25k` — because one
+    pull over the whole frame is a colour filter: the methane world lost its blue and the
+    crystal world went violet before this was learnt.
+23. **The murk of water** is `waterA.w`: 0 clear, 1 opaque (acid, silt, tar). Murk
+    shortens the ramp of depth, dims the reflection and tints the shore line with the water
+    itself; a murky pond glows by night, `murk·(.16 + .30·nv)`, and lights its shore with a
+    lamp of the water's colour. `lake.acid` now has a reader.
+24. **The far world by type** (`PLN_FAR`, `plnFarLane`). The sheet names a shape — peaks,
+    isles, mesa, cones, shelf, domes, spires, karst, slabs, blocks — a height for the terran
+    lanes where the shape keeps them, the snow line, the tree line and craters; the shapers
+    answer lane by lane (hills at 340 m, the ridge at 1050, the mountains at 3700, the two
+    far ranges at 7 and 11 km) and `null` keeps the terran build. A far shape must clear the
+    angular horizon of the near hills (400 m at 7 km ≈ 18 m at 340) and the haze eats four
+    fifths at 7 km: a low shape far away is not there. The landmark azimuth `PLN_AZ_PEAK`
+    carries every world's own mark — the volcano, the lone island, the tallest spire.
+25. **Flora by world** (`PLN_WFLORA` → the working `PLN_FL`). The carpet of tufts takes the
+    colour of the land already; the sheet gives the crowns, rosettes and bushes (four tints,
+    the fourth an accent), the far bank, the pads, the reeds, the blooms and the wing.
+    Rocks and crags are mode 1: the vertex carries the share of moss and the lightness of
+    the facet, the record gives the stone and the moss of its world — an airless world gets
+    caps of dust in its own colour, and the terran frame does not change by a pixel.
 
 ## 3. The family
 
@@ -206,6 +232,7 @@ with `pln` or `PLN`: the game is one scope.
 | `21pd-pln-wgsl-post` | blur, bloom, light in the air, the grade, the hand-over triangle |
 | `21pe-pln-gpu` | targets, pipelines, groups, the passes of one frame |
 | `21pf-pln-land` | `H(x, z)`, the colour of the land, the pond, the crag table, chunks of the near band, far strips |
+| `21pfa-pln-worlds` | the sheets of the eleven worlds: land, water, air and sky by type; the far world by type and its shapers; the flora sheet |
 | `21pg-pln-flora` | the kit of bodies: tuft, flower, reed, stone, crag, rosette, bush |
 | `21pga-pln-plant` | what grows and lies where: placement by chunk, the pad's composition, the pond's shore, the crags |
 | `21pgb-pln-trees` | the six species of trees and their makers |
@@ -229,10 +256,10 @@ with `pln` or `PLN`: the game is one scope.
   (§2.15), C — the pond, the swimmer and the crags (§2.19–§2.21).
 - **M612** sky and air by the hour: the five acts of the day, the bodies of the sky and the
   stars, the deck and the air of the weather, the eclipse. **Done**, in four passes.
-- **M613** the worlds on one sheet. Today every world is painted terran. Owed here: a
-  palette for every type of world (the ground, the grass or its absence, stone, the air);
-  the colours of water by type — `lake.acid` is read by nobody; crags and their light on a
-  rocky airless world, where they come out near black on a green-yellow ground.
+- **M613** the worlds on one sheet. **Done**, in four passes: 1 — the sheets of the
+  eleven worlds and the pull of the sky (§2.22), 2 — the murk of water (§2.23), 3 — the far
+  world by type (§2.24; the author asked for it: «везде одинаковые горы сзади, должно быть
+  разнообразие, задний фон для каждого»), 4 — stone and flora by type (§2.25).
 - **M614** the cost: frame time on the PC by `docs/g11.ps1`, the list of what is cut for
   the phone and what each cut buys.
 
@@ -245,15 +272,22 @@ The old painters, the fleet's sky
 
 ## 6. State on 30.09.2026
 
-Stage 1 stands at M612 done, M613 next. The new look is walked in the game behind
+Stage 1 stands at M613 done, M614 next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
 **M612** went in four passes (`a38f36be` the five acts, `544ca5e6` the bodies of the sky
 and the stars, `0045a98a` the weather, `4ffb79bc` the eclipse). The Globals block is 248
-floats (992 bytes); its spare slots are `airNear.w`, `thru.w`, `bounce.w`, `waterA.w`,
-`cloudDarkS.w`. The frames of the passes are in the author's chat; the shooting helpers
-for hours, moons, weather and eclipses are in `docs/look/game/`.
+floats (992 bytes); its spare slots are `airNear.w`, `thru.w`, `bounce.w`,
+`cloudDarkS.w` (`waterA.w` is the murk since M613). The frames of the passes are in the
+author's chat; the shooting helpers for hours, moons, weather and eclipses are in
+`docs/look/game/`.
+
+**M613** went in four passes (`62bb05b1` the sheets of the worlds and the pull of the sky,
+`8adec61e` the murk of water, `b9ab0b55` the far world by type, `5cf8e2b2` stone and flora
+by type). The test is one terrain landed as every type (`world.py <type> 1 lake`), so the
+silhouettes compare across the sheet; `sheet.py` glues the eleven, `diff.py` says what a
+pass touched. Passes 2–4 leave the terran frame unchanged to the pixel.
 
 **Measured** (RTX 5070, everything planted, after pass A): 1600 × 900 — 5.5 ms;
 3840 × 2160 — 20.8 ms, over the budget; the phone's frame — 2.7 ms. A broad frame holds
@@ -268,14 +302,19 @@ for hours, moons, weather and eclipses are in `docs/look/game/`.
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;
 - the first frame plants everything at once; 4K is over the budget (M614);
 - the wing's fern is pale and its caps are flattish;
+- M613: the far world of the swamp and of the jungle is pale in the haze; the crater on
+  the metal world is one big ring; the volcano has no smoke and no glow of lava; the far
+  plain of the ocean world is matte land, not sea; the species of trees are the same on
+  every world; the blooms and the far bank are too small to carry a world's colour;
 - the sky of M612: the lumps of the overcast deck are soft and its lower edge is a soft
   line; the drops and flakes are the old overlay (M626); the day crescent hides behind the
   cumulus; the giant's bands are subtle; the stars at the totality of an eclipse are faint
   and the shadow of the moon is a straight band in depth; wet ground neither darkens nor
-  shines (M613/M626).
+  shines (M626).
 
 **Not looked at yet**: the crags, the ring and the algae by night and in the mirror; dust
-on a dry world; the tints of scanned plants; beasts in motion; whether a crag can hide the
+on a dry world; the eleven worlds by night and in weather (only the methane night was
+shot); the tints of scanned plants; beasts in motion; whether a crag can hide the
 label of a deposit.
 
 **No tests.** Nothing in `tests/` names the new modules: they come with M651. The crag

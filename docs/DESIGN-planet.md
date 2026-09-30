@@ -154,8 +154,10 @@ after it pass by §5.4.
 - M611 the ground: the ribbon from the real profile, lanes, far ridges, two camera distances
 - M612 sky and air: sky, clouds, shafts, haze, the real day and night, hooks for the eclipse
   — done 30.09: five acts of the day, the bodies of the sky, stars, the weather's deck and air, the eclipse as a scene
-- M613 the three-world test: terran, desert, ice on one sheet — the style must hold on bare
-  worlds; a palette, a water and a stone for every type (until then every world is terran)
+- M613 the worlds on one sheet — the style must hold on bare worlds; a palette, a water, a
+  far world and a flora for every type
+  — done 30.09: sheets of the eleven worlds (land, water, air, sky), the murk of water, the
+  far world by type (the author asked for it the same day), stone and flora by type
 - M614 the phone gate for the foundation
 
 **Stage 2 — the cast.** Each by the method of §5.

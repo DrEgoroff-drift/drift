@@ -20,6 +20,8 @@ every shot lie there too.
 | `eclipse.py` | the same moon set so that its eclipse runs at a given point (−1 start, 0 middle, 1 end) |
 | `moonland.py` | lands on a moon of the first gas giant: the parent in the sky |
 | `weather.py` | the test planet under a fixed kind and power of weather |
+| `sheet.py` | a contact sheet of the eleven worlds shot with one prefix: `<prefix>_<type>.png` → `<prefix>_sheet.png` |
+| `diff.py` | what changed between two frames: the share of moved pixels, their box, an 8 × 4 grid of shares, a mask |
 | `eval-frame.js` | the default question: errors, counts, the man, the lens, the light, the bodies of the sky, the weather |
 | `eval-sys.js` | the system: planets, moons, their angular size and phase |
 | `eval-crags.js` | the crags placed near the man, the measures of the kit, the steep steps of the line |
@@ -34,6 +36,10 @@ python docs/look/game/pic.py pair old.png crag.png pair.png --a "было" --b "
 python docs/look/game/gshot.py js=g_at_4600_125.js out=tall.png w=390 h=844 dpr=2
 python docs/look/game/hours.py h1 3300
 python docs/look/game/weather.py 3300 .125 rain .8
+python docs/look/game/world.py toxic 1 lake .125
+python docs/look/game/gshot.py js=g_w_toxic_1_lake.js out=w_toxic.png tail=1500
+python docs/look/game/sheet.py w 3 960
+python docs/look/game/diff.py w_toxic.png w2_toxic.png mask.png
 python docs/look/game/gshot.py js=g_wx_rain_8_125.js out=rain.png
 python docs/look/game/eclipse.py 3300 .25 0
 python docs/look/game/gshot.py js=g_ec_3300_25_0.js out=totality.png
