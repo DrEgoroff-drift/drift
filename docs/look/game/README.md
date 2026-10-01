@@ -28,6 +28,7 @@ every shot lie there too.
 | `eval-sys.js` | the system: planets, moons, their angular size and phase |
 | `eval-crags.js` | the crags placed near the man, the measures of the kit, the steep steps of the line |
 | `pose.py` | the man in a given pose, cropped out: `<name>:ph=;amp=;air=;jet=;vy=;raise=;swim=;hour=;near=;face=;where=;crop=;scale=` — the state is frozen through getters, the near lens is on by default |
+| `ship.py` | writes a pad snippet with a synthetic hull of a given form and class (`<form> [class] [colour] [hour]`; forms swept/delta/xwing/twin/slab/boxed/disc/trident), so the planet's ship (21phb) can be looked at across the fleet; shoot it with `pose.py base=g_ship_<form>_<class>.js` |
 | `where.py` | where the frames go |
 
 ```bash
@@ -49,6 +50,7 @@ python docs/look/game/eclipse.py 3300 .25 0
 python docs/look/game/gshot.py js=g_ec_3300_25_0.js out=totality.png
 python docs/look/game/world.py terran 1 pad .30
 python docs/look/game/pose.py "walk:ph=2.1;amp=1" "jet:air=1;jet=1;vy=-.6;raise=1.4" "night:hour=.8" "far:near=0;dpr=1"
+python docs/look/game/ship.py delta warship && python docs/look/game/pose.py "f_delta:base=g_ship_delta_warship.js;near=1;dpr=1;face=-1;crop=.02,.30,.62,.80;scale=1"
 python docs/look/game/pic.py strip states.png pose_walk_crop.png pose_jet_crop.png pose_night_crop.png --w 300 --cols 3 --t "шаг,ранец,ночь"
 ```
 

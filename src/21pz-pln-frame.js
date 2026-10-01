@@ -281,7 +281,7 @@ function plnSurface(){
      Налобник горит ночью и в тени затмения; его свет и факел ранца ставит риг (21pha) */
   const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));
   const swim=clamp(S.swim||0,0,1),man=[S.x/PLN_M,plnY(S.y+10)-PLN_CAST.sink*swim,0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
-  plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK});
+  plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
   plnThingsFrame(L,F,S,p,C.ex,V);
   plnBeastFrame(L,F,S,p,C.ex,V);
   plnHerbFrame(L,F,S,p,C.ex,V);

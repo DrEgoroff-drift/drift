@@ -137,9 +137,11 @@ function plnLoft(m,o){
   for(let k=0;k<st.length;k++){
     const S=st[k],t=k/(st.length-1),ring=[];
     for(let s=0;s<sides;s++){
-      const a=s/sides*TAU,sa=Math.sin(a),ca=Math.cos(a);
+      const a=s/sides*TAU,sa=Math.sin(a),ca=Math.cos(a),e=2/(2+2*(o.sq||0));
+      /* sq — квадратность: суперэллипс |y|^p+|z|^p=1, p=2+2·sq; s и c остаются углом */
+      const sq=e<1?Math.sign(sa)*Math.pow(Math.abs(sa),e):sa,cq=e<1?Math.sign(ca)*Math.pow(Math.abs(ca),e):ca;
       const belly=sa<0?(o.belly==null?.8:o.belly):1;
-      ring.push({p:[S.x,S.y+S.ry*sa*belly,S.rz*ca],s:sa,c:ca,t});
+      ring.push({p:[S.x,S.y+S.ry*sq*belly,S.rz*cq],s:sa,c:ca,t});
     }
     rings.push(ring);
   }
