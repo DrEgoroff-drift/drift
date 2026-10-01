@@ -165,6 +165,10 @@ after it pass by §5.4.
 
 **Stage 2 — the cast.** Each by the method of §5.
 - M620 the man: rig, six suit slots, lamp, jetpack
+  — done 02.10: a hinge rig posed on the CPU from the game's own state, the «Орлан»
+  silhouette, the kit's families on the marks of the six slots, the lamp and the flame as
+  glow bodies, the rig's own lamps by night, the near lens `PLN.near`; three passes,
+  `docs/DESIGN-planet-engine.md` §2.28
 - M621 the ship on its gear and the descent
 - M622 flora: twelve forms as a kit, the genome of a world
 - M623 stone and ground dress, water
@@ -191,13 +195,26 @@ after it pass by §5.4.
 
 ## 8. Decisions that are the author's
 
+On 02.10.2026 the author handed these to me: «про открытые решения сам реши». Each item
+below keeps its original text and ends with what was decided and why; his word overrides
+any of it.
+
 1. **How it ships.** Recommended: a vertical slice — terran surface with its cave goes out when
    stages 1–3 are complete for it, then the worlds follow type by type. The alternative is one
    release at the end of stage 4. Until then the old look, ported by the fleet session, lives on.
+   **Decided 02.10: the vertical slice.** The terran surface and its cave go out first; the
+   other worlds follow type by type, each behind the same switch until its own gate.
 2. **The man outside the planet.** Recommended: the new rig replaces the painter in the other
    modes after M620, rendered to a card.
+   **Decided 02.10: yes, but after the cave.** The card must carry the poses of the mine and
+   the cave as well as the walk, so it is cut once the rig has them all (M630+), as its own
+   task; until then the old painter stays outside the planet and the law «one astronaut
+   everywhere» is kept by the rig's colours coming from the same kit.
 3. **What may move in play** if a new body asks for it (a footprint, a height, a camera
    distance). Default: nothing moves without a question.
+   **Decided 02.10: nothing moves.** The rig stands where the game holds the man (his feet
+   at the game's ground), the ring, the water and the jetpack keep their numbers; a body
+   that needs a change is reshaped instead.
 4. **The camera distance.** The game keeps one scale for the surface, the cave and the mine
    (M217): the man is 4.2 % of the height of a broad frame, which holds 76 m × 43 m of the
    world, and 2.8 % of a phone's, which holds 29 m × 63 m. The key frames are shot with the
@@ -207,14 +224,25 @@ after it pass by §5.4.
    holds what the game shows today, so play keeps its reach (what is seen coming, how far a
    landmark announces itself). Default until the author decides: far on the move, the near
    lens only when the man stands at a thing.
+   **Decided 02.10: the default.** The far lens on the move, the near one when the man stands
+   at a thing; the change is a glide of the lens alone (`plnLens`), the game's scale and its
+   touch mapping do not move. It is built with the things (M624), where «at a thing» gets
+   its meaning.
 5. **Two lenses for one world.** A broad one for 16:9 and a tall one for the phone (§11.7).
    The tall lens shows 12 m of the lane instead of 38 and gives the height to the sky and the
    far sign. The ship does not fit beside the man in it. Recommended: accept, the phone frame
    is composed as a portrait, not as a cut from the broad one.
+   **Decided 02.10: accepted** (the author's frames of 27.09 already showed both).
 6. **The man's suit.** On the stand the man wears orange with a white helmet and pack: orange
    is the colour of people (the ship's stripe, markers) and holds against grass, water and sky
    in light and in shade. The six suit slots must keep that read. The author decides whether
    the astronaut changes colour.
+   **Decided 02.10: the suit stays orange on every world.** The kit's three families and its
+   wear (`KIT_FAM`, `kitColOf`) colour the **marks** of each slot, not the body: the helmet's
+   shell and its band, the chest plate and the belt of the torso, the gloves, the boots, the
+   tanks of the pack, the housing of the lamp. So «Стриж-2 на Кречете-3» is still seen as a
+   mix, and the man still reads as the one orange spot of people against grass, water and
+   sky (M620).
 
 ## 9. Risks
 

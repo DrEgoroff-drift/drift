@@ -27,6 +27,7 @@ every shot lie there too.
 | `eval-frame.js` | the default question: errors, counts, the man, the lens, the light, the bodies of the sky, the weather |
 | `eval-sys.js` | the system: planets, moons, their angular size and phase |
 | `eval-crags.js` | the crags placed near the man, the measures of the kit, the steep steps of the line |
+| `pose.py` | the man in a given pose, cropped out: `<name>:ph=;amp=;air=;jet=;vy=;raise=;swim=;hour=;near=;face=;where=;crop=;scale=` — the state is frozen through getters, the near lens is on by default |
 | `where.py` | where the frames go |
 
 ```bash
@@ -46,6 +47,9 @@ python docs/look/game/cost.py terran pc,4k,s23 q="G.opts.gfx.pln='low'" tag=low
 python docs/look/game/gshot.py js=g_wx_rain_8_125.js out=rain.png
 python docs/look/game/eclipse.py 3300 .25 0
 python docs/look/game/gshot.py js=g_ec_3300_25_0.js out=totality.png
+python docs/look/game/world.py terran 1 pad .30
+python docs/look/game/pose.py "walk:ph=2.1;amp=1" "jet:air=1;jet=1;vy=-.6;raise=1.4" "night:hour=.8" "far:near=0;dpr=1"
+python docs/look/game/pic.py strip states.png pose_walk_crop.png pose_jet_crop.png pose_night_crop.png --w 300 --cols 3 --t "шаг,ранец,ночь"
 ```
 
 Hours are the phase of `celSun`: .125 the key frame, .25 noon, .5 sunset, .75 midnight, 0

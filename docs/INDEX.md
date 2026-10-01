@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 660 · символов верхнего уровня: 6893
+Файлов: 661 · символов верхнего уровня: 6904
 
 ## СИМВОЛЫ
 
@@ -1212,8 +1212,8 @@ PLN_AZ_ELEV                  src/21pf-pln-land.js:43
 PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:15
 PLN_BUILD                    src/21pf-pln-land.js:35
-PLN_CAST                     src/21ph-pln-cast.js:8
-PLN_DEG                      src/21p-pln.js:29
+PLN_CAST                     src/21ph-pln-cast.js:9
+PLN_DEG                      src/21p-pln.js:30
 PLN_FAR                      src/21pfa-pln-worlds.js:74-99
 PLN_FL                       src/21pfa-pln-worlds.js:212
 PLN_FLORA                    src/21pg-pln-flora.js:23
@@ -1228,9 +1228,13 @@ PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LOOK                     src/21pz-pln-frame.js:28-50
 PLN_M                        src/21p-pln.js:14
+PLN_MAN                      src/21pha-pln-man.js:23
+PLN_MAN_BONES                src/21pha-pln-man.js:32-54
+PLN_MAN_FLAME                src/21pha-pln-man.js:44
+PLN_MAN_POSE                 src/21pha-pln-man.js:39-54
 PLN_MAT                      src/21pa-pln-mesh.js:9
-PLN_OLD_LANDING              src/21pz-pln-frame.js:330
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:302
+PLN_OLD_LANDING              src/21pz-pln-frame.js:329
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:301
 PLN_OVER                     src/21pj-pln-over.js:15
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:38-62
@@ -5148,7 +5152,7 @@ plantTraitWord               src/20e-species.js:29-37
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
-plnAdd                       src/21p-pln.js:32
+plnAdd                       src/21p-pln.js:33
 plnBeastDrop                 src/21pib-pln-beast.js:189-195
 plnBeastEyes                 src/21pib-pln-beast.js:46-49
 plnBeastFrame                src/21pib-pln-beast.js:152-188
@@ -5163,18 +5167,17 @@ plnBodies                    src/21pz-pln-frame.js:80-106
 plnBox                       src/21pf-pln-land.js:64-71
 plnBoxF                      src/21pf-pln-land.js:79-84
 plnCard                      src/21pa-pln-mesh.js:166-171
-plnCast                      src/21ph-pln-cast.js:113-120
-plnCastFrame                 src/21ph-pln-cast.js:123-140
-plnCastManMesh               src/21ph-pln-cast.js:82-103
-plnCastResample              src/21ph-pln-cast.js:14-23
-plnCastRingMesh              src/21ph-pln-cast.js:106-111
-plnCastShipMesh              src/21ph-pln-cast.js:25-79
-plnCross                     src/21p-pln.js:36
-plnDot                       src/21p-pln.js:35
+plnCast                      src/21ph-pln-cast.js:90-97
+plnCastFrame                 src/21ph-pln-cast.js:101-117
+plnCastResample              src/21ph-pln-cast.js:15-24
+plnCastRingMesh              src/21ph-pln-cast.js:83-88
+plnCastShipMesh              src/21ph-pln-cast.js:26-80
+plnCross                     src/21p-pln.js:37
+plnDot                       src/21p-pln.js:36
 plnFarCrater                 src/21pfa-pln-worlds.js:89-99
 plnFarLane                   src/21pfa-pln-worlds.js:102-168
 plnFarMesa                   src/21pfa-pln-worlds.js:87
-plnFbm                       src/21p-pln.js:66-70
+plnFbm                       src/21p-pln.js:67-71
 plnFloraBloom                src/21pg-pln-flora.js:122-131
 plnFloraBush                 src/21pg-pln-flora.js:149-157
 plnFloraCap                  src/21pg-pln-flora.js:133-136
@@ -5196,7 +5199,7 @@ plnGpuReady                  src/21pe-pln-gpu.js:248-252
 plnGpuSize                   src/21pe-pln-gpu.js:193-247
 plnGpuTier                   src/21pe-pln-gpu.js:144-161
 plnGpuWrite                  src/21pe-pln-gpu.js:281-294
-plnHash                      src/21p-pln.js:53-57
+plnHash                      src/21p-pln.js:54-58
 plnHerbAlgaMesh              src/21pia-pln-herb.js:293-317
 plnHerbAlgae                 src/21pia-pln-herb.js:318-343
 plnHerbBlade                 src/21pia-pln-herb.js:56-68
@@ -5210,7 +5213,7 @@ plnHerbStem                  src/21pia-pln-herb.js:35-47
 plnHerbTone                  src/21pia-pln-herb.js:28-31
 plnHerbZ                     src/21pia-pln-herb.js:22
 plnHerbs                     src/21pia-pln-herb.js:240-288
-plnHex                       src/21p-pln.js:44-47
+plnHex                       src/21p-pln.js:45-48
 plnHour                      src/21pz-pln-frame.js:175-235
 plnIco                       src/21pa-pln-mesh.js:41-58
 plnInst                      src/21pe-pln-gpu.js:89-94
@@ -5247,27 +5250,35 @@ plnLandSpan                  src/21pf-pln-land.js:291-296
 plnLandStep                  src/21pf-pln-land.js:485-504
 plnLandTab                   src/21pf-pln-land.js:285-288
 plnLandWaterMesh             src/21pf-pln-land.js:611-624
-plnLen                       src/21p-pln.js:37
+plnLen                       src/21p-pln.js:38
 plnLens                      src/21pz-pln-frame.js:61-68
 plnLightBox                  src/21pz-pln-frame.js:240-250
 plnLoft                      src/21pa-pln-mesh.js:135-163
-plnLog                       src/21p-pln.js:23
+plnLog                       src/21p-pln.js:24
 plnLookAt                    src/21pz-pln-frame.js:51-55
 plnLookMix                   src/21pz-pln-frame.js:46-50
-plnM4inv                     src/21p-pln.js:103-122
-plnM4lens                    src/21p-pln.js:129-135
-plnM4look                    src/21p-pln.js:96-100
-plnM4mirrorY                 src/21p-pln.js:102
-plnM4move                    src/21p-pln.js:136-138
-plnM4mul                     src/21p-pln.js:84-89
-plnM4ortho                   src/21p-pln.js:90-95
+plnM4inv                     src/21p-pln.js:104-123
+plnM4lens                    src/21p-pln.js:130-136
+plnM4look                    src/21p-pln.js:97-101
+plnM4mirrorY                 src/21p-pln.js:103
+plnM4move                    src/21p-pln.js:137-139
+plnM4mul                     src/21p-pln.js:85-90
+plnM4ortho                   src/21p-pln.js:91-96
+plnMan                       src/21pha-pln-man.js:202-215
+plnManBuild                  src/21pha-pln-man.js:72-154
+plnManCss                    src/21pha-pln-man.js:47-54
+plnManFlame                  src/21pha-pln-man.js:185-199
+plnManFrame                  src/21pha-pln-man.js:222-249
+plnManPalette                src/21pha-pln-man.js:56-68
+plnManPose                   src/21pha-pln-man.js:157-182
+plnManState                  src/21pha-pln-man.js:216-219
 plnMesh                      src/21pa-pln-mesh.js:12-15
 plnMeshAdd                   src/21pa-pln-mesh.js:29-37
 plnMeshDone                  src/21pa-pln-mesh.js:38
-plnMix3                      src/21p-pln.js:31
-plnMul                       src/21p-pln.js:34
-plnNoise                     src/21p-pln.js:58-65
-plnNorm                      src/21p-pln.js:38
+plnMix3                      src/21p-pln.js:32
+plnMul                       src/21p-pln.js:35
+plnNoise                     src/21p-pln.js:59-66
+plnNorm                      src/21p-pln.js:39
 plnOver                      src/21pj-pln-over.js:44-128
 plnOverAt                    src/21pj-pln-over.js:18-21
 plnOverOld                   src/21pj-pln-over.js:28-43
@@ -5295,20 +5306,20 @@ plnQuad                      src/21pa-pln-mesh.js:27
 plnQualAuto                  src/21pe-pln-gpu.js:56-65
 plnQualSet                   src/21pe-pln-gpu.js:47-52
 plnRec                       src/21pe-pln-gpu.js:103-109
-plnRgb                       src/21p-pln.js:48
+plnRgb                       src/21p-pln.js:49
 plnRidge                     src/21pf-pln-land.js:90
-plnRidged                    src/21p-pln.js:72-79
-plnRotX                      src/21p-pln.js:41
-plnRotY                      src/21p-pln.js:39
-plnRotZ                      src/21p-pln.js:40
+plnRidged                    src/21p-pln.js:73-80
+plnRotX                      src/21p-pln.js:42
+plnRotY                      src/21p-pln.js:40
+plnRotZ                      src/21p-pln.js:41
 plnSlide                     src/21pf-pln-land.js:47-62
 plnSlideF                    src/21pf-pln-land.js:73-78
-plnSmax                      src/21p-pln.js:81
-plnSmooth                    src/21p-pln.js:30
+plnSmax                      src/21p-pln.js:82
+plnSmooth                    src/21p-pln.js:31
 plnSoftp                     src/21pf-pln-land.js:89
-plnSub                       src/21p-pln.js:33
-plnSurface                   src/21pz-pln-frame.js:253-299
-plnTf                        src/21p-pln.js:139-141
+plnSub                       src/21p-pln.js:34
+plnSurface                   src/21pz-pln-frame.js:253-298
+plnTf                        src/21p-pln.js:140-142
 plnThingApron                src/21pi-pln-things.js:55-69
 plnThingCaveMesh             src/21pi-pln-things.js:176-232
 plnThingDepZ                 src/21pi-pln-things.js:26
@@ -5351,10 +5362,10 @@ plnWingLeaves                src/21pgc-pln-wing.js:140-151
 plnWingPath                  src/21pgc-pln-wing.js:39-51
 plnWingRamp                  src/21pgc-pln-wing.js:33
 plnWingRibbon                src/21pgc-pln-wing.js:57-71
-plnX                         src/21p-pln.js:24
-plnXu                        src/21p-pln.js:26
-plnY                         src/21p-pln.js:25
-plnYu                        src/21p-pln.js:27
+plnX                         src/21p-pln.js:25
+plnXu                        src/21p-pln.js:27
+plnY                         src/21p-pln.js:26
+plnYu                        src/21p-pln.js:28
 poiBody                      src/20a-poi.js:168-172
 poiDrift                     src/20a-poi.js:147-165
 poiGlow                      src/20a-poi.js:78-84
@@ -7992,8 +8003,11 @@ zoomTo                       src/15-input.js:350
 ## src/21pgc-pln-wing.js · 15 КБ
   · планета: кулиса — что растёт у самого объектива (M611):1
 
-## src/21ph-pln-cast.js · 9 КБ
-  · планета: человек и корабль — заготовки (M610):1
+## src/21ph-pln-cast.js · 7 КБ
+  · планета: корабль и круг — заготовки (M610), человек — риг (M620):1
+
+## src/21pha-pln-man.js · 16 КБ
+  · планета: человек — риг (M620):1
 
 ## src/21pi-pln-things.js · 22 КБ
   · планета: вещи игры — залежи, вход в пещеру, устье шахты (M611):1
@@ -8007,7 +8021,7 @@ zoomTo                       src/15-input.js:350
 ## src/21pj-pln-over.js · 7 КБ
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
 
-## src/21pz-pln-frame.js · 26 КБ
+## src/21pz-pln-frame.js · 27 КБ
   · планета: кадр нового вида (M610):1
 
 ## src/22-mode-cave.js · 46 КБ

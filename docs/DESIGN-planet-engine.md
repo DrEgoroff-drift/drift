@@ -249,6 +249,24 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     earlier; the descent only warms the device, the tier and the flora kit (`drawLanding`
     is wrapped in 21pz as `drawSurface` is). `PLN.rush` still builds all at once, for the
     stand and the shots.
+28. **The man is a rig** (`21pha`, `plnMan*`; M620). A hinge skeleton of thirteen bones in
+    the x–y plane: pelvis, spine, head, two legs of three, two arms of two. The parts are
+    built once from the kit (blobs, tubes, rings — ~2.5k vertices) in their bone's own
+    frame, and the pose is assembled on the CPU every frame into one vertex buffer
+    (`writeBuffer`): one geometry, one record, one draw; yaw π flips the facing. The pose
+    reads the game's own state — `walkPhase`, `walkAmp`, `on`, `jetOn`, `vy`, `swim` —
+    nothing of `21-mode-surface` moved (§8.3 of the plan); the stride is a law (the knee by
+    `sin^1.2`, toe-off and heel-strike, counter-swung arms, the bob) and four keys (air,
+    jet, fall, swim) blend over it. The silhouette is the «Орлан»: a stocky suit, not a
+    slim man. The body is orange on every world (§8.6); the kit's three families colour
+    the marks of the six slots through `kitPalette()` — the helmet's shell and band, the
+    chest plate and the belt, the gloves, the boots, the pack's tanks, the lamp's housing
+    — so the man the station dresses is the man the planet shows. The lamp's lens, the
+    antenna's bead, the chest light and the flame are glow bodies driven per frame
+    (`dyn`), and the rig pushes the frame's lamps itself: the headlamp's pool ahead of the
+    man by night and in the eclipse, the jet's warm light under the pack. `PLN.near` is
+    the near lens of §8.4: the lens alone glides twice as close (0 the game, 1 twice as
+    near); the stand sets it for the frames of the man, play will set it at a thing (M624).
 
 ## 3. The family
 
@@ -269,7 +287,8 @@ with `pln` or `PLN`: the game is one scope.
 | `21pga-pln-plant` | what grows and lies where: placement by chunk, the pad's composition, the pond's shore, the crags |
 | `21pgb-pln-trees` | the six species of trees and their makers |
 | `21pgc-pln-wing` | the wing: four families of bodies next to the lens |
-| `21ph-pln-cast` | the man, the ship, the life ring |
+| `21ph-pln-cast` | the ship, the life ring, the cast's frame (the man is called from here) |
+| `21pha-pln-man` | the man: the rig's bones, parts from the kit, the poses, the flame, the lamps of his own |
 | `21pi-pln-things` | deposits, the cave mouth, the mine mouth |
 | `21pia-pln-herb` | the plants of the game, the algae of the pond |
 | `21pib-pln-beast` | the beasts of the game, a flip book of seven bodies each |
@@ -295,6 +314,11 @@ with `pln` or `PLN`: the game is one scope.
 - **M614** the cost. **Done**: the measure by the real clock (`docs/look/game/cost.py`),
   the series of cuts at 4K and at the phone's pixel count, the tiers (§2.26), the build
   by frames and the far heights once (§2.27). The numbers are in §6.
+- **M620** the man. **Done**, in three passes: the rig and its poses (§2.28), the stocky
+  suit after the first frame read as a slim man, then the flame in the rig's frame, the
+  tanks proud of the pack, the glint of the visor, the shorter legs. The decisions of §8
+  of the plan were handed to me the same day («про открытые решения сам реши») and are
+  written there.
 
 ## 5. What is not done here
 
@@ -303,9 +327,10 @@ steps (M621, M630–M632). The precipitation of the weather is M626, its light i
 The old painters, the fleet's sky
 (`src/19*`, `11ak-skywatch`, `27la-road-sky`) and the nebula are read and never edited.
 
-## 6. State on 01.10.2026
+## 6. State on 02.10.2026
 
-Stage 1 stands at M614 done, stage 2 (M620, the man) next. The new look is walked in the game behind
+Stage 1 is closed (M610–M614); stage 2 stands at M620 done, M621 (the ship and the
+descent) next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
@@ -345,6 +370,13 @@ own passes are a fixed .8; the shadow map matters there (the pass .16 → .05 at
 while the taps, the wing, the bloom and the density do not; at 1600 × 900 `low` is 3.3
 (−45 %).
 
+**M620** (the man) went in three passes, uncommitted between them. The rig costs nothing
+measurable: ~2.5k vertices posed on the CPU in well under a millisecond and one
+`writeBuffer` of 130 KB a frame. The frames of the passes are in the author's chat; the
+pose shooter is `docs/look/game/pose.py` (a frozen state through getters, the near lens,
+the crop). At the game's far lens the man stands 38 px tall at 1600 × 900 and reads as
+an orange body with a white helmet and pack; at the 96-px squint he is one orange dot.
+
 The first frame: 2.6 s at once → 95 ms after a landing (the descent warmed the kit), 170
 when a save opens on the surface; then ~11 ms a frame for 2.5 s while the world rises
 nearest first, with a frame over 16 ms now and then (a ribbon chunk is 13 ms and atomic)
@@ -353,9 +385,15 @@ and the land standing by frame 150. The far heights once took a far piece from 8
 1.0 s of plantings. The S23 itself is not measured: that is the author's daytime.
 
 **Known weak spots** — named, not hidden:
+- M620: at the far lens the man is a dot in the squint — the far lens is the game's own
+  scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
+  the arms are slim for an Orlan; the flame is a plain cone; the far arm and leg are told
+  from the near ones by depth alone; behind the visor there is no face, a dark glass with
+  one glint; the poses of the mine, the dig and the cave come with M630+ and the card of
+  §8.2; the belt and the collar are rings, not seams;
 - the face of a crag knoll is smooth in places and its facets are low in contrast;
 - the water of the pond is darker than the far water;
-- beasts are blockouts (M625); tracks are the old game's dashes; landmarks, the base, the
+- the ship is the stand's blockout (M621); beasts are blockouts (M625); tracks are the old game's dashes; landmarks, the base, the
   home and the settlement are stickers of the old painters (M626–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;

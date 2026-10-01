@@ -251,7 +251,8 @@ function plnLightBox(dir,bx,n){
 
 /* ── кадр ── */
 function plnSurface(){
-  const t0=wallMs(),S=G.surf,tr=S.tr,p=S.p,K=surfScale(),Q=PLN_FRAME;
+  /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам */
+  const t0=wallMs(),S=G.surf,tr=S.tr,p=S.p,K=surfScale()*(1+clamp(PLN.near||0,0,1)),Q=PLN_FRAME;
   /* то, что старый кадр делал попутно и на что опирается игра: свет 2D, ветер, камера */
   tr.p=p;sunDirSet(p);WIND=windOf(p);
   if(!S.cam)S.cam={x:S.x,y:S.y};
@@ -276,16 +277,14 @@ function plnSurface(){
     post:{shafts:[Hr.shafts,1600,.62,-.06],bloom:.085,vig:.42,grade:1}};
   Q.blobs.fill(0);
   plnLandBatches(L,F.batches,C.ex,V);
-  /* в воде человек сидит в круге по пояс: тело стоит ниже, чем его держит игра */
+  /* в воде человек сидит в круге по пояс: тело стоит ниже, чем его держит игра.
+     Налобник горит ночью и в тени затмения; его свет и факел ранца ставит риг (21pha) */
+  const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));
   const swim=clamp(S.swim||0,0,1),man=[S.x/PLN_M,plnY(S.y+10)-PLN_CAST.sink*swim,0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
-  plnCastFrame(F,man,S.face,ship,L.shipYaw,swim);
+  plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK});
   plnThingsFrame(L,F,S,p,C.ex,V);
   plnBeastFrame(L,F,S,p,C.ex,V);
   plnHerbFrame(L,F,S,p,C.ex,V);
-  /* ночью у человека горит налобник: светит вперёд по взгляду, на землю перед ним */
-  /* фонарь — ночью и в тени затмения */
-  const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));
-  if(lampK>0)F.lamps.push({p:[man[0]+S.face*1.6,man[1]+1.5,man[2]-.4],r:8,c:[1,.86,.62],k:2.4*lampK});
   /* светящийся пруд ночью светит и на берег: лампа посреди воды, её же цвета (M613) */
   if(L.lake&&(wl.murk||0)>.5&&Hr.night>.05){const k=L.lake;F.lamps.push({p:[(k.x0+k.x1)/2,k.level+1.2,(k.zn+k.zf)/2],r:(k.x1-k.x0)/2+8,c:[wa[0]*2,wa[1]*2,wa[2]*2],k:1.2*wl.murk*Hr.night});}
   /* пятна тени героев и вещей легли первыми, остаток мест — тому, что растёт */
