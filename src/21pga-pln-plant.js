@@ -22,8 +22,7 @@ const PLN_PLANT={zN:-44,zF:9.5,         /* где растёт трава: от 
   bands:[-20,-6],                       /* границы полос травы по глубине: у каждой свой веер */
   farW:64,                              /* ширина клетки дальнего берега, м */
   thingZ:1.7,                           /* на какой глубине стоят вещи игры: сразу за тропой */
-  steep:.9,                             /* круче этого (тангенс) ступень тропы — камень: там встают уступы */
-  slice:6000};                          /* сколько проб травы ставится за кадр */
+  steep:.9};                            /* круче этого (тангенс) ступень тропы — камень: там встают уступы */
 /* композиция у площадки, в метрах от точки композиции (L.cx0): x, z, … */
 const PLN_PAD={x0:-34,x1:48,
   /* x, z, рост, порода и номер в ней, поворот, тон кроны, стройность. Справа над площадкой клонится
@@ -89,7 +88,7 @@ function plnPlantInit(L,p){
   const ty=p.mix==="jungle"?"jungle":p.type,atm=(p.T&&p.T.atm)||"",wet=L.tr.wet==null?.5:L.tr.wet;
   const flora=atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||p.mix==="toxic"||p.mix==="jungle";
   const D={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
-  const g0=G.opts&&G.opts.gfx?G.opts.gfx.plants:1,gp=clamp(g0==null?1:g0,.25,1.5);
+  const g0=G.opts&&G.opts.gfx?G.opts.gfx.plants:1,gp=clamp(g0==null?1:g0,.25,1.5)*(PLN_GPU.plK||1);   /* ярус (21pe) режет густоту */
   return L.flora={lush:flora?clamp((D[ty]||1.2)/1.9*(.25+wet*1.85),.25,1.3)*gp:0,
     things:plnPlantThings(L,p),groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0};
 }
@@ -517,12 +516,15 @@ function plnPlantSees(G0,ex,V,m){
   const h=V.hw*(1+G0.z/V.D)+G0.m+m;
   return G0.xb>ex-h&&G0.xa<ex+h;
 }
-/* Сажает, что пора: куски ленты, уже построенные, — ближние первыми, траву порциями; клетки
-   дальнего берега — по одной. Первый кадр поднимает всё, что в нём видно (долг M614) */
-function plnPlantStep(L,p,ex,V){
-  const F=L.flora||plnPlantInit(L,p),C=PLN_PLANT,t0=wallMs(),all=!!PLN.rush,first=!F.first;
+/* Сажает, что пора, по бюджету (M614): куски ленты, уже построенные, — видимые и ближние первыми,
+   траву порциями (PLN_BUILD.slice проб за кадр, по piece между сверками с часами, не дольше lim мс;
+   без lim — числа PLN_BUILD, первому вызову — свои); клетки дальнего берега — по одной. Первый вызов берёт только
+   видимое, дальше — всё по кадрам; PLN.rush — разом */
+function plnPlantStep(L,p,ex,V,lim){
+  const F=L.flora||plnPlantInit(L,p),C=PLN_PLANT,B=PLN_BUILD,t0=wallMs(),all=!!PLN.rush,first=!F.first;
+  const ms=lim==null?(first?B.first:B.ms):lim;
   F.first=true;
-  let budget=C.slice,did=0;
+  let budget=first?B.sliceFirst:B.slice,did=0;
   for(;;){
     let best=null,bp=1e9;
     for(const J of L.jobs){
@@ -531,10 +533,9 @@ function plnPlantStep(L,p,ex,V){
       if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
     }
     if(!best)break;
-    const whole=all||(first&&bp<1e4);
-    if(!whole&&(budget<=0||(did&&!best.pl)))break;
+    if(!all&&(budget<=0||wallMs()-t0>=ms||(did&&!best.pl)))break;
     const k0=best.pl?best.pl.k:0;
-    plnPlantChunk(L,best,whole?1e9:budget);
+    plnPlantChunk(L,best,all?1e9:Math.min(budget,B.piece));
     budget-=best.pl?best.pl.k-k0:budget;did++;
   }
   /* дальний берег: клетки, которые видит объектив на глубине холмов */
@@ -543,7 +544,7 @@ function plnPlantStep(L,p,ex,V){
     fc+=(k&1?k:-k);
     if(fc<f0||fc>f1||fc<lo||fc>hi||F.far[fc])continue;
     plnPlantFar(L,fc);
-    if(!all&&!first)break;
+    if(!all&&(!first||wallMs()-t0>=ms))break;
   }
   F.ms+=wallMs()-t0;
   PLN.stat.flora={groups:F.groups.length,tufts:F.tufts,ms:Math.round(F.ms)};

@@ -258,8 +258,10 @@ function plnSurface(){
   PLN.y0=tr.padY;
   const L=plnLand(tr,p,S.shipX),C=plnLens(S,K),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
-  plnLandStep(L,C.ex,V,2);
-  plnPlantStep(L,p,C.ex,V);
+  /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
+  const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
+  plnLandStep(L,C.ex,V,null,lim);
+  plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* вода, отсвет земли и ближний воздух — от листа мира (M613) */
   const wl=L.wl,wa=wl.water[0],wb=wl.water[1];
@@ -302,6 +304,7 @@ drawSurface=function(){
   let ok=false;
   if(PLN.on&&PLN.bad<3&&G.surf&&G.surf.tr&&G.surf.p){
     try{
+      plnQualAuto();
       ok=plnGpuReady()&&plnSurface();
       if(ok)PLN.bad=0;
     }catch(e){
@@ -316,4 +319,24 @@ drawSurface=function(){
   withScale(G.viewK,plnOver);
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
   withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,G.viewK/U));
+};
+
+/* ── посадка греет то, что не зависит от места (M614) ──
+   Сцена складывается вокруг точки касания (L.cx0 — от корабля: дальние высоты, ложбина, перевал,
+   композиция площадки), а корабль садится, где остановился, — до касания землю не построить.
+   Пока он садится, поднимаются устройство, ярус и набор растений (70 мс на ПК); землю у корабля
+   первый кадр поверхности берёт по бюджету PLN_BUILD.first, остальное встаёт по кадрам, ближнее
+   первым (21pf, 21pga). Старая посадка рисуется как есть */
+const PLN_OLD_LANDING=drawLanding;
+drawLanding=function(){
+  PLN_OLD_LANDING.apply(this,arguments);
+  if(!PLN.on||PLN.bad>=3||PLN.warm===PLN_GPU.gen)return;
+  try{
+    plnQualAuto();
+    if(!plnGpuReady())return;
+    plnFloraKit();
+    PLN.warm=PLN_GPU.gen;
+  }catch(e){
+    PLN.bad++;PLN.err=String((e&&e.stack)||e).slice(0,600);plnLog("посадка: "+PLN.err);
+  }
 };

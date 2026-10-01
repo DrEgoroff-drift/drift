@@ -22,6 +22,8 @@ every shot lie there too.
 | `weather.py` | the test planet under a fixed kind and power of weather |
 | `sheet.py` | a contact sheet of the eleven worlds shot with one prefix: `<prefix>_<type>.png` → `<prefix>_sheet.png` |
 | `diff.py` | what changed between two frames: the share of moved pixels, their box, an 8 × 4 grid of shares, a mask |
+| `cost.py` | the cost of a frame by the real clock: `[type] [sizes] [q=JS] [tag=]`, sizes `pc 2k 4k s23 phone tab`; the GPU passes, the engine, the CPU, the first frame, what was built. The stand steps the page's clock by hand, so the game's own `ms` read 0 under it — this one hooks the real clock |
+| `eval-cost.js` | the question of `cost.py`: the GPU passes, the CPU by the real clock, the stats, the tier |
 | `eval-frame.js` | the default question: errors, counts, the man, the lens, the light, the bodies of the sky, the weather |
 | `eval-sys.js` | the system: planets, moons, their angular size and phase |
 | `eval-crags.js` | the crags placed near the man, the measures of the kit, the steep steps of the line |
@@ -40,6 +42,7 @@ python docs/look/game/world.py toxic 1 lake .125
 python docs/look/game/gshot.py js=g_w_toxic_1_lake.js out=w_toxic.png tail=1500
 python docs/look/game/sheet.py w 3 960
 python docs/look/game/diff.py w_toxic.png w2_toxic.png mask.png
+python docs/look/game/cost.py terran pc,4k,s23 q="G.opts.gfx.pln='low'" tag=low
 python docs/look/game/gshot.py js=g_wx_rain_8_125.js out=rain.png
 python docs/look/game/eclipse.py 3300 .25 0
 python docs/look/game/gshot.py js=g_ec_3300_25_0.js out=totality.png

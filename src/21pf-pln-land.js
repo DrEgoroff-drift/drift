@@ -26,6 +26,13 @@ const PLN_LAND={ext:180,               /* на сколько образцов �
   e0:56,                               /* полуширина вида на линии ходьбы, под которую раскрыт дальний мир */
   edges:[4,130,300,700,2000,62000],cols:[900,800,520,320,224],
   cur:null};
+/* бюджет стройки по кадрам (M614). ms — стенного часа на кадр, на землю и посадки вместе; n и
+   slice — счётом (в наборе тестов часы стоят, и без счёта стройка легла бы разом); first, nFirst и
+   sliceFirst — первому вызову: он поднимает землю у корабля; piece — проб травы между сверками с
+   часами (проба ~3 мкс); farV — вершин в куске дальнего мира: кусок в 9000 стоил 33 мс на ПК, в
+   бюджет ложится один в 1200 (~8 мс: большая часть — запас высот по краям куска). До касания
+   стройки нет: сцена складывается вокруг точки касания (L.cx0), а корабль садится, где остановился */
+const PLN_BUILD={ms:8,first:40,n:2,nFirst:6,slice:6000,sliceFirst:12000,piece:1200,farV:1200};
 /* зелень меняет тон с глубиной: оливковая вблизи, холоднее на дальнем берегу, сине-зелёная на холмах.
    Это рабочий лист: перед стройкой земли в него ложится лист типа мира (21pfa, plnPalSet) */
 const PLN_PAL={
@@ -95,13 +102,15 @@ function plnLandRows(){
   near.reverse();
   return {z:Float32Array.from(near.concat([0],back)),r0:near.length};
 }
-/* ряды дальнего мира: чаще там, где план поворачивается к объективу лицом */
+/* ряды дальнего мира: чаще там, где план поворачивается к объективу лицом; ярус (21pe, farK) редит их */
 function plnLandFarRows(){
   const st=d=>d<210?1.013:(d>300&&d<480)?1.008:(d>900&&d<1300)?1.006:(d>2900&&d<4600)?1.004:(d>6000&&d<12500)?1.008:1.022;
-  const z=[];
-  for(let d=104;d<62100;d*=st(d))z.push(d-100);
+  const z=[],k=PLN_GPU.farK||1;
+  for(let d=104;d<62100;d*=Math.pow(st(d),k))z.push(d-100);
   return Float32Array.from(z);
 }
+/* столбцов дальнего мира в полосе b; ярус (farK) редит их */
+function plnLandCols(b){return Math.max(24,Math.round(PLN_LAND.cols[b]/(PLN_GPU.farK||1)));}
 /* на сколько дальний мир шире полосы на этой глубине */
 function plnLandE(z){return PLN_LAND.e0*(1+z/100)*1.1;}
 
@@ -120,7 +129,7 @@ function plnLandMake(tr,p,sx){
     shipX,shipZ:7,shipYaw:yaw,padH,cx0:shipX+12.8,
     /* подножие трапа: место корабля (.75, −4.26), повёрнутое вместе с ним */
     rampX:shipX+.75*Math.cos(yaw)-4.26*Math.sin(yaw),rampZ:7-.75*Math.sin(yaw)-4.26*Math.cos(yaw),
-    gk:0,jobs:[],left:0,ms:0,first:false,wl};
+    gk:0,jobs:[],left:0,ms:0,first:false,wl,farC:[]};
   const A=new Float32Array(NT),B=new Float32Array(NT),T1=new Float32Array(NT),S=new Float64Array(NT+1);
   /* подъём дальнего мира: вода кадра на .8 м ниже самой низкой точки линии, что попадает в кадр;
      в озере игры линия лежит под водой, и считается там уровень озера */
@@ -428,11 +437,11 @@ function plnLandJobs(L){
     J.push({t:"rib",c,xa:L.x0+i0*L.dx,xb:L.x0+i1*L.dx,kind:B,to:TO.all,ride:false,geo:null,done:false});
   }
   for(let b=0;b<C.cols.length;b++){
-    const NC=C.cols[b];
+    const NC=plnLandCols(b);
     let ra=0,rb=RF-1;
     while(ra<RF-1&&fz[ra]<C.edges[b])ra++;
     for(let r=ra;r<RF;r++)if(fz[r]>=C.edges[b+1]){rb=Math.min(RF-1,r+1);break;}
-    const np=Math.ceil(NC/110),per=Math.max(8,Math.floor(9000/(Math.ceil(NC/np)+1)));
+    const np=Math.ceil(NC/110),per=Math.max(4,Math.floor(PLN_BUILD.farV/(Math.ceil(NC/np)+1)));
     for(let r=ra;r<rb;r+=per)for(let k=0;k<np;k++){
       const c0=Math.round(k*NC/np),c1=Math.round((k+1)*NC/np),r1=Math.min(rb,r+per);
       const xs=(rr,cc)=>{const e=plnLandE(fz[rr]);return -e+(L.len+2*e)*cc/NC;};
@@ -469,11 +478,14 @@ function plnLandBuild(L,J){
   if(J.t==="rib")J.grid=m;
   PLN.stat.verts=(PLN.stat.verts||0)+m.nv;
 }
-/* Строит не больше n кусков, ближние к объективу первыми. Первый кадр поднимает всё, что в нём
-   видно, разом (долг M614: строить, пока корабль садится); PLN.rush — всё до конца, для стенда */
-function plnLandStep(L,ex,V,n){
+/* Строит куски по бюджету (M614): не больше n штук и не дольше lim мс стенного часа, видимые и
+   ближние к объективу первыми; без n и lim — числа PLN_BUILD, первому вызову — его собственные.
+   Первый вызов берёт только видимое у корабля, дальше очередь идёт до конца по кадрам, ближнее
+   первым. PLN.rush — всё до конца разом, для стенда и съёмки */
+function plnLandStep(L,ex,V,n,lim){
   if(L.left<=0)return 0;
-  const t0=wallMs(),all=!!PLN.rush,first=!L.first;
+  const t0=wallMs(),all=!!PLN.rush,first=!L.first,B=PLN_BUILD;
+  const cap=n==null?(first?B.nFirst:B.n):n,ms=lim==null?(first?B.first:B.ms):lim;
   let k=0;
   L.first=true;
   for(;;){
@@ -483,7 +495,7 @@ function plnLandStep(L,ex,V,n){
       const see=plnLandSees(J,ex,V,20),pr=(see?0:1e4)+Math.abs((J.xa+J.xb)/2-ex)+(J.t==="rib"?0:J.t==="far"?200+J.b*10:100);
       if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
     }
-    if(!best||(!all&&!(first&&bp<1e4)&&k>=n))break;
+    if(!best||(!all&&(k>=cap||wallMs()-t0>=ms)))break;
     plnLandBuild(L,best);k++;
   }
   L.ms+=wallMs()-t0;
@@ -560,13 +572,21 @@ function plnLandRibMesh(L,c){
   return m;
 }
 function plnLandFarMesh(L,J){
-  const C=PLN_LAND,NC=C.cols[J.b],fz=L.fz,RF=fz.length,MG=3,nc=J.c1-J.c0+1,nr=J.rb-J.ra+1,gw=nc+2*MG,gh=nr+2*MG;
+  const C=PLN_LAND,NC=plnLandCols(J.b),fz=L.fz,RF=fz.length,MG=3,nc=J.c1-J.c0+1,nr=J.rb-J.ra+1,gw=nc+2*MG,gh=nr+2*MG;
   const H=new Float32Array(gw*gh),K=new Uint8Array(gw*gh),K2=new Uint8Array(gw*gh),W2=new Float32Array(gw*gh),X=new Float32Array(gw*gh);
+  /* высоты полосы считаются раз на посадку (M614): куски делят края (запас MG с каждой стороны —
+     до двух третей высот куска), и без общей памяти каждая крайняя высота считалась бы по два-четыре
+     раза. Память полосы — по рядам, ряд заводится, когда его впервые трогают; пустая высота — NaN */
+  const FC=L.farC[J.b]||(L.farC[J.b]=[]),CW=NC+2*MG+1;
   for(let r=0;r<gh;r++){
-    const z=fz[clamp(J.ra+r-MG,0,RF-1)],e=plnLandE(z);
+    const rr=clamp(J.ra+r-MG,0,RF-1),z=fz[rr],e=plnLandE(z);
+    let R=FC[rr];
+    if(!R)R=FC[rr]={h:new Float32Array(CW).fill(NaN),k:new Uint8Array(CW),k2:new Uint8Array(CW),w2:new Float32Array(CW)};
     for(let i=0;i<gw;i++){
-      const o=r*gw+i,x=-e+(L.len+2*e)*(J.c0+i-MG)/NC;
-      X[o]=x;H[o]=plnLandFarH(L,x,z);K[o]=L.gk;K2[o]=L.gk2;W2[o]=L.gw;
+      const o=r*gw+i,ci=J.c0+i,x=-e+(L.len+2*e)*(ci-MG)/NC;
+      let h=R.h[ci];
+      if(h!==h){h=R.h[ci]=plnLandFarH(L,x,z);R.k[ci]=L.gk;R.k2[ci]=L.gk2;R.w2[ci]=L.gw;}
+      X[o]=x;H[o]=h;K[o]=R.k[ci];K2[o]=R.k2[ci];W2[o]=R.w2[ci];
     }
   }
   const Z=r=>fz[clamp(J.ra+r-MG,0,RF-1)];

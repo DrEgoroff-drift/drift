@@ -63,7 +63,7 @@ struct FOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
 
 /* свет в воздухе: луч идёт сквозь тень вещей и облаков и считается против среднего света
    воздуха — видны и лучи, и сумрак между ними, а пелены на кадре нет.
-   a = (сила, дальность, среднее, пол) */
+   a = (сила, дальность, среднее, пол); b.x — шагов луча (ярус, 21pe: 32 на ПК, 12 на телефоне) */
 @fragment fn fs_shafts(in: FOut) -> @location(0) vec4f {
   let dim = vec2f(textureDimensions(depthTex));
   let px = vec2i(clamp(in.uv * dim, vec2f(0.0), dim - 1.0));
@@ -79,7 +79,7 @@ struct FOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
   let L = normalize(g.sunDir.xyz);
   let jit = ign(in.pos.xy);
   var acc = 0.0;
-  let n = 32;
+  let n = max(i32(pp.b.x), 4);
   for (var i = 0; i < n; i++) {
     let s = (f32(i) + jit) / f32(n);
     let tt = dist * s * s;

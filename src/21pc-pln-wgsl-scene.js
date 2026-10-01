@@ -89,14 +89,16 @@ fn turnBy(n: vec3f, i1: vec4f) -> vec3f {
   return o;
 }
 
+/* отводов сверх центрального — g.thru.w (ярус, 21pe): 8 на ПК, 4 на телефоне, 0 — один отвод */
 fn shadowTap(uv: vec2f, layer: i32, z: f32, rad: f32, rot: f32) -> f32 {
   var s = textureSampleCompareLevel(shadowTex, shadowSamp, uv, layer, z);
-  for (var i = 0; i < 8; i++) {
+  let nt = i32(g.thru.w);
+  for (var i = 0; i < nt; i++) {
     let a = f32(i) * 2.39996 + rot;
-    let r = rad * sqrt((f32(i) + 0.5) / 8.0);
+    let r = rad * sqrt((f32(i) + 0.5) / f32(nt));
     s += textureSampleCompareLevel(shadowTex, shadowSamp, uv + vec2f(cos(a), sin(a)) * r, layer, z);
   }
-  return s / 9.0;
+  return s / f32(nt + 1);
 }
 fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   let p = wpos + n * 0.05;

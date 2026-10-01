@@ -11,15 +11,58 @@
    Всё собранное принадлежит устройству: после потери видеокарты движок
    поднимает новое, и здесь всё строится заново (PLN_GPU.gen — поколение;
    по нему земля и актёры понимают, что их сетки пора залить снова). Цели
-   привязаны ещё и к размеру кадра. */
+   привязаны ещё и к размеру кадра.
+
+   Ярус качества (M614): PLN_QUAL — три набора чисел (high, mid, low), что кадр
+   платит: сглаживание сцены, сторона карты теней, доля кадра и шаги луча света
+   в воздухе, доля кадра у зеркала и кулисы, число её размытий, ступени
+   свечения, отводы карты теней, густота посадок. plnQualSet ставит набор и
+   просит пересобрать то, что от него зависит (привязку свёртки, карту теней,
+   конвейеры, цели); plnQualAuto выбирает ярус: явный G.opts.gfx.pln, иначе
+   телефон — low, спущенное движком разрешение (RES_AUTO<2) — mid, иначе high. */
 const PLN_HDR="rgba16float",PLN_DEP="depth32float";
 /* куда идёт отрисовка: биты проходов и род */
 const PLN_TO={main:1,mirror:2,sh0:4,sh1:8,all:15,lit:3,near:7};
 const PLN_KIND={body:0,water:1,wing:2};
 const PLN_GPU={dev:null,gen:0,
   ms:4,shn:4096,                       /* сглаживание сцены; сторона карты теней */
-  w:0,h:0,L:null,P:{},S:null,U:null,D:null,T:null,V:null,B:null,pp:null,one:null,oneRide:null,
+  shD:2,shN:32,                        /* свет в воздухе: делитель кадра, шагов луча */
+  mrD:2,wgD:2,wgN:4,blN:5,             /* делитель зеркала; делитель кулисы и число её размытий (чётное); ступеней свечения */
+  pcf:8,plK:1,farK:1,                      /* отводов карты теней сверх центрального; множитель густоты посадок */
+  qual:"high",tier:0,tierGen:-1,phone:null,   /* ярус; счётчик пересборок и какая собрана; телефон ли (решается раз) */
+  w:0,h:0,mw:0,mh:0,ww:0,wh:0,sw:0,sh:0,       /* размер кадра и размеры зеркала, кулисы, света в воздухе */
+  L:null,P:{},S:null,U:null,D:null,T:null,V:null,B:null,pp:null,one:null,oneRide:null,dummy:null,
   ga:[0,1,2,3,4].map(()=>new Float32Array(248)),inv:new Float32Array(16)};
+/* ярусы — что кадр платит (сглаживание в WebGPU бывает только 1 и 4). high — как принято на ПК
+   (M600); mid — сглаживание остаётся, дешевеет остальное: свет в воздухе в четверть кадра и 16
+   шагов, зеркало в четверть, карта теней 2048, пять отводов тени, два размытия кулисы, четыре
+   ступени свечения, дальний мир в полтора раза реже; low — телефон: ещё без сглаживания, карта теней
+   1024, 12 шагов луча, кулиса в четверть, посадки реже, дальний мир вдвое реже (farK — во сколько раз
+   реже его ряды и столбцы: треугольников в farK² меньше, стройка короче; берётся на следующей
+   посадке). Числа — по замеру docs/look/game/cost.py (docs/DESIGN-planet-engine.md §6) */
+const PLN_QUAL={
+  high:{ms:4,shn:4096,shD:2,shN:32,mrD:2,wgD:2,wgN:4,blN:5,pcf:8,plK:1,farK:1},
+  mid:{ms:4,shn:2048,shD:4,shN:16,mrD:4,wgD:2,wgN:2,blN:4,pcf:4,plK:1,farK:1.5},
+  low:{ms:1,shn:1024,shD:4,shN:12,mrD:4,wgD:4,wgN:2,blN:4,pcf:4,plK:.6,farK:2}};
+function plnQualSet(name){
+  const Q=PLN_GPU,T=PLN_QUAL[name]||PLN_QUAL.high;
+  for(const k in T)Q[k]=T[k];
+  Q.qual=PLN_QUAL[name]?name:"high";Q.tier++;
+  return Q.qual;
+}
+/* ярус по обстановке: явный выбор (G.opts.gfx.pln), иначе телефон — low, спущенное движком
+   разрешение (28-loop: RES_AUTO<2 — кадр три секунды не укладывался) — mid, иначе high.
+   Густота посадок (plK) берётся при посадке: смена яруса на ходу пересаживать не заставляет */
+function plnQualAuto(){
+  const Q=PLN_GPU;
+  let want=null;try{want=G.opts.gfx.pln||null;}catch(e){}
+  if(!PLN_QUAL[want]){
+    if(Q.phone==null){Q.phone=false;try{Q.phone=Math.min(window.innerWidth,window.innerHeight)<=760&&matchMedia("(pointer:coarse)").matches;}catch(e){}}
+    want=Q.phone?"low":(typeof RES_AUTO==="number"&&RES_AUTO<2)?"mid":"high";
+  }
+  if(want!==Q.qual)plnQualSet(want);
+  return Q.qual;
+}
 /* где что лежит в блоке Globals после ламп (21pb) */
 const PLN_G={skyZen:120,skyZenS:124,skyHor:128,skyHorS:132,sunGlow:136,airFar:140,airFarS:144,airNear:148,
   ambSky:152,ambGnd:156,thru:160,bounce:164,waterA:168,waterB:172,cloudLit:176,cloudDark:180,cloudDarkS:184,
@@ -69,7 +112,7 @@ function plnRec(a,k,p,scale,yaw,hk,seed,ca,mode,cb,ride){
 function plnGpuDev(){
   const Q=PLN_GPU,d=GPU.dev;
   if(Q.dev===d)return;
-  Q.dev=d;Q.gen++;Q.w=0;Q.h=0;Q.T=null;Q.V=null;Q.B=null;Q.pp=null;Q.P={};
+  Q.dev=d;Q.gen++;Q.w=0;Q.h=0;Q.T=null;Q.V=null;Q.B=null;Q.pp=null;Q.P={};Q.D=null;Q.tierGen=-1;
   /* промах в шейдере или привязке виден здесь же, а не только в журнале сбоев движка */
   d.addEventListener("uncapturederror",e=>plnLog("gpu "+String((e.error&&e.error.message)||e.error)));
   const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
@@ -82,11 +125,7 @@ function plnGpuDev(){
       tx(3),{binding:4,visibility:FR,sampler:{type:"filtering"}},
       {binding:5,visibility:FR,buffer:{type:"uniform"}}]}),
     shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]}),
-    post:d.createBindGroupLayout({entries:[
-      {binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
-      tx(2),tx(3),tx(4),tx(5),{binding:6,visibility:FR,sampler:{type:"filtering"}},
-      {binding:7,visibility:FR,texture:{sampleType:"depth",multisampled:Q.ms>1}},
-      {binding:8,visibility:FR,texture:sh},{binding:9,visibility:FR,sampler:{type:"comparison"}}]})};
+    post:null};   /* привязка свёртки — в plnGpuTier: её глубина многовыборочная или нет по ярусу */
   Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
     cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
   const ub=n=>d.createBuffer({size:n,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
@@ -97,12 +136,28 @@ function plnGpuDev(){
   Q.oneRide=d.createBuffer({size:64,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
   d.queue.writeBuffer(Q.oneRide,0,new Float32Array([0,0,0,1, 1,0,1,0, 1,1,1,0, 0,0,0,1]));
   const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
-  const shadow=d.createTexture({size:[Q.shn,Q.shn,2],format:PLN_DEP,usage:RT});
   const dummy=d.createTexture({size:[1,1,1],format:PLN_HDR,usage:RT});
-  Q.D={shadow,dummy,shArr:shadow.createView({dimension:"2d-array"}),dummyV:dummy.createView(),
-    shv:[0,1].map(l=>shadow.createView({dimension:"2d",baseArrayLayer:l,arrayLayerCount:1}))};
+  Q.dummy={t:dummy,v:dummy.createView()};
   Q.B0={sh:[Q.U.sh0,Q.U.sh1].map(u=>d.createBindGroup({layout:Q.L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
+}
+/* ── то, что живёт с ярусом: привязка свёртки, карта теней, конвейеры ── */
+function plnGpuTier(){
+  const Q=PLN_GPU,d=GPU.dev;
+  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
+  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
+  Q.L.post=d.createBindGroupLayout({entries:[
+    {binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
+    tx(2),tx(3),tx(4),tx(5),{binding:6,visibility:FR,sampler:{type:"filtering"}},
+    {binding:7,visibility:FR,texture:{sampleType:"depth",multisampled:Q.ms>1}},
+    {binding:8,visibility:FR,texture:{sampleType:"depth",viewDimension:"2d-array"}},{binding:9,visibility:FR,sampler:{type:"comparison"}}]});
+  if(Q.D&&Q.D.shadow)Q.D.shadow.destroy();
+  const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
+  const shadow=d.createTexture({size:[Q.shn,Q.shn,2],format:PLN_DEP,usage:RT});
+  Q.D={shadow,dummy:Q.dummy.t,shArr:shadow.createView({dimension:"2d-array"}),dummyV:Q.dummy.v,
+    shv:[0,1].map(l=>shadow.createView({dimension:"2d",baseArrayLayer:l,arrayLayerCount:1}))};
   plnGpuPipes();
+  /* цели и привязки — заново: они держат карту теней и размеры яруса */
+  Q.tierGen=Q.tier;Q.w=0;Q.h=0;
 }
 /* конвейеры: через воронку движка (непрогретый ключ она строит на месте и пишет в GPU_PIPES.lazy),
    а держим сами — воронка непрогретое не хранит */
@@ -145,12 +200,14 @@ function plnGpuSize(){
   const tex=(tw,th,format,n,usage)=>{
     const t=d.createTexture({size:[Math.max(1,tw|0),Math.max(1,th|0),1],format,sampleCount:n||1,usage:usage||RT});
     all.push(t);return t;};
-  const hw=Math.max(1,w>>1),hh=Math.max(1,h>>1),NB=5;
+  /* размеры яруса: зеркало, кулиса и свет в воздухе — доли кадра */
+  const dv=(n,k)=>Math.max(1,Math.floor(n/k)),NB=Q.blN;
+  const mw=Q.mw=dv(w,Q.mrD),mh=Q.mh=dv(h,Q.mrD),ww=Q.ww=dv(w,Q.wgD),wh=Q.wh=dv(h,Q.wgD),shw=Q.sw=dv(w,Q.shD),shh=Q.sh=dv(h,Q.shD);
   const T={all,hdr:tex(w,h,PLN_HDR),depth:tex(w,h,PLN_DEP,Q.ms),
     ms:Q.ms>1?tex(w,h,PLN_HDR,Q.ms,GPUTextureUsage.RENDER_ATTACHMENT):null,
-    refl:tex(hw,hh,PLN_HDR),reflD:tex(hw,hh,PLN_DEP,1,GPUTextureUsage.RENDER_ATTACHMENT),
-    wing:tex(hw,hh,PLN_HDR),wingD:tex(hw,hh,PLN_DEP,1,GPUTextureUsage.RENDER_ATTACHMENT),
-    wa:tex(hw,hh,PLN_HDR),wb:tex(hw,hh,PLN_HDR),sha:tex(hw,hh,PLN_HDR),shb:tex(hw,hh,PLN_HDR),down:[],up:[]};
+    refl:tex(mw,mh,PLN_HDR),reflD:tex(mw,mh,PLN_DEP,1,GPUTextureUsage.RENDER_ATTACHMENT),
+    wing:tex(ww,wh,PLN_HDR),wingD:tex(ww,wh,PLN_DEP,1,GPUTextureUsage.RENDER_ATTACHMENT),
+    wa:tex(ww,wh,PLN_HDR),wb:tex(ww,wh,PLN_HDR),sha:tex(shw,shh,PLN_HDR),shb:tex(shw,shh,PLN_HDR),down:[],up:[]};
   for(let k=0;k<NB;k++){T.down.push(tex(w>>(k+1),h>>(k+1),PLN_HDR));T.up.push(tex(w>>(k+1),h>>(k+1),PLN_HDR));}
   const V={};for(const k in T)if(k!=="all"&&T[k])V[k]=Array.isArray(T[k])?T[k].map(t=>t.createView()):T[k].createView();
   Q.T=T;Q.V=V;
@@ -161,7 +218,7 @@ function plnGpuSize(){
   /* проход свёртки: свои числа и до четырёх текстур */
   const post=(a,texs,name)=>{
     const u=d.createBuffer({size:32,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
-    d.queue.writeBuffer(u,0,new Float32Array([a[0],a[1],a[2]||0,a[3]||0,0,0,0,0]));
+    d.queue.writeBuffer(u,0,new Float32Array([a[0],a[1],a[2]||0,a[3]||0,a[4]||0,a[5]||0,a[6]||0,a[7]||0]));
     pp.all.push(u);if(name)pp[name]=u;
     const t=k=>texs[k]||D.dummyV;
     return d.createBindGroup({layout:L.post,entries:[{binding:0,resource:{buffer:U.main}},{binding:1,resource:{buffer:u}},
@@ -170,9 +227,9 @@ function plnGpuSize(){
   };
   const wbl=.30*h/900;
   const B={main:scene(U.main,V.refl),refl:scene(U.refl,D.dummyV),wing:scene(U.wing,D.dummyV),sh:Q.B0.sh,
-    wingBlur:[post([wbl/hw,0],[V.wing]),post([0,wbl/hh],[V.wa]),post([wbl*2/hw,0],[V.wb]),post([0,wbl*2/hh],[V.wa])],
-    shafts:post([.0024,1600,.62,-.06],[],"shafts"),
-    shBlur:[post([1.2/hw,0],[V.sha]),post([0,1.2/hh],[V.shb])],down:[],up:[]};
+    wingBlur:[post([wbl/ww,0],[V.wing]),post([0,wbl/wh],[V.wa]),post([wbl*2/ww,0],[V.wb]),post([0,wbl*2/wh],[V.wa])],
+    shafts:post([.0024,1600,.62,-.06,Q.shN],[],"shafts"),
+    shBlur:[post([1.2/shw,0],[V.sha]),post([0,1.2/shh],[V.shb])],down:[],up:[]};
   for(let k=0;k<NB;k++){
     const src=k?T.down[k-1]:T.hdr;
     B.down.push(post([1/src.width,1/src.height],[k?V.down[k-1]:V.hdr]));
@@ -190,7 +247,7 @@ function plnGpuSize(){
 }
 function plnGpuReady(){
   if(!GPU.on||!GPU.enc||!GPU.dev)return false;
-  plnGpuDev();plnGpuSize();
+  plnGpuDev();if(PLN_GPU.tierGen!==PLN_GPU.tier)plnGpuTier();plnGpuSize();
   return true;
 }
 
@@ -215,6 +272,7 @@ function plnGlobals(a,F,o){
   }
   for(const k in PLN_G){const v=F.look[k];if(v)a.set(v,PLN_G[k]);}
   a[PLN_G.ambSky+3]=1/PLN_GPU.shn;
+  a[PLN_G.thru+3]=PLN_GPU.pcf;   /* отводов карты теней сверх центрального (ярус) */
   const cl=F.clouds||[],nc=Math.min(8,cl.length);
   a[PLN_G.world+2]=nc;
   for(let k=0;k<nc;k++)a.set(cl[k],200+k*4);
@@ -224,13 +282,14 @@ function plnGpuWrite(F){
   const Q=PLN_GPU,q=GPU.dev.queue,U=Q.U,A=Q.ga,w=Q.w,h=Q.h;
   const e=F.eye,er=[e[0],2*F.waterY-e[1],e[2]];
   q.writeBuffer(U.main,0,plnGlobals(A[0],F,{vp:F.vp,l0:F.L0.m,eye:e,w,h}));
-  if(F.mirror)q.writeBuffer(U.refl,0,plnGlobals(A[1],F,{vp:F.vpMirror,l0:F.L0.m,eye:er,w:Math.max(1,w>>1),h:Math.max(1,h>>1),clip:true}));
+  if(F.mirror)q.writeBuffer(U.refl,0,plnGlobals(A[1],F,{vp:F.vpMirror,l0:F.L0.m,eye:er,w:Q.mw,h:Q.mh,clip:true}));
   q.writeBuffer(U.sh0,0,plnGlobals(A[2],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Q.shn,h:Q.shn}));
   q.writeBuffer(U.sh1,0,plnGlobals(A[3],F,{vp:F.vp,l0:F.L1.m,eye:e,w:Q.shn,h:Q.shn}));
-  if(F.wing)q.writeBuffer(U.wing,0,plnGlobals(A[4],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Math.max(1,w>>1),h:Math.max(1,h>>1),wing:true}));
+  if(F.wing)q.writeBuffer(U.wing,0,plnGlobals(A[4],F,{vp:F.vp,l0:F.L0.m,eye:e,w:Q.ww,h:Q.wh,wing:true}));
   q.writeBuffer(U.blobs,0,F.blobs);
   const P=F.post||{};
-  q.writeBuffer(Q.pp.shafts,0,new Float32Array(P.shafts||[.0024,1600,.62,-.06]));
+  const sf=(P.shafts||[.0024,1600,.62,-.06]).slice(0,4);sf[4]=Q.shN;
+  q.writeBuffer(Q.pp.shafts,0,new Float32Array(sf));
   q.writeBuffer(Q.pp.comp,0,new Float32Array([P.bloom===undefined?.085:P.bloom,P.vig===undefined?.42:P.vig,P.grade===undefined?1:P.grade,0]));
 }
 
@@ -285,15 +344,14 @@ function plnGpuFrame(F){
     const p=e.beginRenderPass({colorAttachments:[{view:V.wing,clearValue:{r:0,g:0,b:0,a:0},loadOp:"clear",storeOp:"store"}],timestampWrites:gpuTs("pln.wing"),
       depthStencilAttachment:{view:V.wingD,depthClearValue:0,depthLoadOp:"clear",depthStoreOp:"discard"}});
     p.setBindGroup(0,B.wing);p.setPipeline(P.body1);some(p,PLN_TO.main,PLN_KIND.wing);p.end();
-    full(V.wa,P.blur,B.wingBlur[0],"pln.wing");full(V.wb,P.blur,B.wingBlur[1],"pln.wing");
-    full(V.wa,P.blur,B.wingBlur[2],"pln.wing");full(V.wb,P.blur,B.wingBlur[3],"pln.wing");
+    for(let k=0;k<Q.wgN;k++)full(k&1?V.wb:V.wa,P.blur,B.wingBlur[k],"pln.wing");
   }
   full(V.sha,P.shafts,B.shafts,"pln.air");
   full(V.shb,P.blur,B.shBlur[0],"pln.air");full(V.sha,P.blur,B.shBlur[1],"pln.air");
   const NB=V.down.length;
   for(let k=0;k<NB;k++)full(V.down[k],P.down,B.down[k],"pln.bloom");
   for(let k=NB-2;k>=0;k--)full(V.up[k],P.up,B.up[k],"pln.bloom");
-  PLN.stat.tris=Math.round(tris);PLN.stat.calls=calls;
+  PLN.stat.tris=Math.round(tris);PLN.stat.calls=calls;PLN.stat.qual=Q.qual;
   const sp=gpuScene();
   if(!sp)return false;
   sp.setPipeline(P.comp);sp.setBindGroup(0,F.wing?B.comp:B.comp0);sp.draw(3);

@@ -217,6 +217,38 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     Rocks and crags are mode 1: the vertex carries the share of moss and the lightness of
     the facet, the record gives the stone and the moss of its world — an airless world gets
     caps of dust in its own colour, and the terran frame does not change by a pixel.
+26. **The tiers** (`PLN_QUAL`, `plnQualSet`, `plnQualAuto`, 21pe). One table of what the
+    frame pays: the samples of the smoothing, the side of the shadow map, the divisor and
+    the steps of the shafts, the divisors of the mirror and of the wing, the blurs of the
+    wing, the levels of the bloom, the taps of the shadow beyond the centre, the density of
+    the plantings, the thinning of the far world. `high` is the frame of M600; `mid` keeps
+    the smoothing and cuts the rest (the shafts at a quarter with 16 steps, the mirror at a
+    quarter, the shadow 2048, four taps, two blurs, four levels, the far world 1.5× sparser);
+    `low` is the phone: no smoothing, the shadow 1024, 12 steps, the wing at a quarter, the
+    plantings at .6, the far world 2× sparser. The tier is chosen once a frame before the
+    planet draws: `G.opts.gfx.pln` if it names one, else a phone (the short side ≤ 760 with
+    a coarse pointer, as 08-state) takes `low`, an engine already stepped down
+    (`RES_AUTO < 2`) takes `mid`, the rest `high`. A change rebuilds the post layout, the
+    shadow map and the pipelines (`plnGpuTier`), the targets after them; the density and
+    the far thinning are taken on the next landing. Two lessons: WebGPU knows the sample
+    counts 1 and 4 only (a `mid` with 2 drew nothing at all), and the shaders read the
+    tier from slots the Globals already had — `thru.w` the taps, `pp.b.x` the steps — so
+    no layout moved and the `high` frame is the same to the pixel.
+27. **The build by frames** (`PLN_BUILD`, `plnLandStep`, `plnPlantStep`; 21pf, 21pga,
+    21pz). The first frame of the planet built and planted everything in view at once:
+    2.6 s on the 9950X, several times that on a phone. Now every job is small (a far piece
+    is 1200 vertices, ~5 ms; the grass goes in pieces of 1200 probes) and a frame builds
+    while the wall clock allows — 8 ms, the land first, the plantings the rest — or, where
+    the clock stands (the test harness), while the count allows; the first call takes
+    40 ms for the ground by the ship. Jobs go nearest first, so the horizon rises last:
+    2.5 s on the PC. The far heights are computed once per land, by row, on demand
+    (`L.farC`): the pieces share margins of three cells and computed each of them twice
+    before. Nothing is built before the touchdown: the scene is composed around the
+    touchdown point (`L.cx0` — the far heights, the basin, the pass, the pad), and the auto
+    landing has no lateral control, so the place is known at the touch and not a frame
+    earlier; the descent only warms the device, the tier and the flora kit (`drawLanding`
+    is wrapped in 21pz as `drawSurface` is). `PLN.rush` still builds all at once, for the
+    stand and the shots.
 
 ## 3. The family
 
@@ -260,8 +292,9 @@ with `pln` or `PLN`: the game is one scope.
   eleven worlds and the pull of the sky (§2.22), 2 — the murk of water (§2.23), 3 — the far
   world by type (§2.24; the author asked for it: «везде одинаковые горы сзади, должно быть
   разнообразие, задний фон для каждого»), 4 — stone and flora by type (§2.25).
-- **M614** the cost: frame time on the PC by `docs/g11.ps1`, the list of what is cut for
-  the phone and what each cut buys.
+- **M614** the cost. **Done**: the measure by the real clock (`docs/look/game/cost.py`),
+  the series of cuts at 4K and at the phone's pixel count, the tiers (§2.26), the build
+  by frames and the far heights once (§2.27). The numbers are in §6.
 
 ## 5. What is not done here
 
@@ -270,16 +303,16 @@ steps (M621, M630–M632). The precipitation of the weather is M626, its light i
 The old painters, the fleet's sky
 (`src/19*`, `11ak-skywatch`, `27la-road-sky`) and the nebula are read and never edited.
 
-## 6. State on 30.09.2026
+## 6. State on 01.10.2026
 
-Stage 1 stands at M613 done, M614 next. The new look is walked in the game behind
+Stage 1 stands at M614 done, stage 2 (M620, the man) next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
 **M612** went in four passes (`a38f36be` the five acts, `544ca5e6` the bodies of the sky
 and the stars, `0045a98a` the weather, `4ffb79bc` the eclipse). The Globals block is 248
-floats (992 bytes); its spare slots are `airNear.w`, `thru.w`, `bounce.w`,
-`cloudDarkS.w` (`waterA.w` is the murk since M613). The frames of the passes are in the
+floats (992 bytes); its spare slots are `airNear.w`, `bounce.w`, `cloudDarkS.w`
+(`waterA.w` is the murk since M613, `thru.w` the shadow taps since M614). The frames of the passes are in the
 author's chat; the shooting helpers for hours, moons, weather and eclipses are in
 `docs/look/game/`.
 
@@ -289,9 +322,35 @@ by type). The test is one terrain landed as every type (`world.py <type> 1 lake`
 silhouettes compare across the sheet; `sheet.py` glues the eleven, `diff.py` says what a
 pass touched. Passes 2–4 leave the terran frame unchanged to the pixel.
 
-**Measured** (RTX 5070, everything planted, after pass A): 1600 × 900 — 5.5 ms;
-3840 × 2160 — 20.8 ms, over the budget; the phone's frame — 2.7 ms. A broad frame holds
-3.3 to 3.5 million triangles after pass C. The S23 is not measured.
+**M614** (the cost) is measured by the wall clock: the stand steps the page's clock by
+hand, so the game's own `ms` read 0 under it until `cost.py` hooked the real one
+(`__STEP.real`). RTX 5070, the test terrain, everything planted, the tier `high`:
+
+| frame | ms | scene / air / mirror / engine |
+|---|---|---|
+| 1600 × 900 | 5.8–6.0 | 3.1 / .7 / .4 / .9 |
+| 3840 × 2160 | 18.2–18.7 | 10.7 / 3.9 / 1.3 / 1.1 |
+| 390 × 844 at 1.5 (the S23's pixels) | 3.1 | 1.1 / .4 / .2 / .8 |
+
+The base at 4K drifts by .5 between runs, so a cut under that is noise. What a cut buys
+at 4K: no smoothing −2.9; the shafts at a quarter of the frame −2.9, or 12 steps −2.2;
+the plantings at .6 −2.3; four taps of the shadow −1.1, none −1.3; the mirror at a
+quarter −.8; the wing at a quarter with two blurs −.5; four levels of bloom, the shadow
+map at 2048 or 1024, the far world 1.5× sparser — noise; the far world 2× sparser −.4 on
+the GPU, but the land builds in .85 s instead of 2.1. The tiers: `low` 11.1 at 4K (−41 %)
+and 2.0 at the S23's pixels (−35 %); `mid` 15.0–15.3 at 4K (−20 %; the base drifts
+18.2–19.6 between runs and the scene pass is the same in both) and 2.6 at the S23's
+pixels (−18 %). At the phone's pixel count every cut buys .1–.3 of 3.1 and the engine's
+own passes are a fixed .8; the shadow map matters there (the pass .16 → .05 at 1024)
+while the taps, the wing, the bloom and the density do not; at 1600 × 900 `low` is 3.3
+(−45 %).
+
+The first frame: 2.6 s at once → 95 ms after a landing (the descent warmed the kit), 170
+when a save opens on the surface; then ~11 ms a frame for 2.5 s while the world rises
+nearest first, with a frame over 16 ms now and then (a ribbon chunk is 13 ms and atomic)
+and the land standing by frame 150. The far heights once took a far piece from 8 to
+5.4 ms and the far build from 1.7 to 1.1 s; the whole build at once is 1.6 s of land and
+1.0 s of plantings. The S23 itself is not measured: that is the author's daytime.
 
 **Known weak spots** — named, not hidden:
 - the face of a crag knoll is smooth in places and its facets are low in contrast;
@@ -300,7 +359,10 @@ pass touched. Passes 2–4 leave the terran frame unchanged to the pixel.
   home and the settlement are stickers of the old painters (M626–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;
-- the first frame plants everything at once; 4K is over the budget (M614);
+- 4K at `high` is over the budget (18 ms; `mid` is the answer until the scene pass is
+  cheaper); the first 2.5 s after a landing drop a frame now and then while the world
+  rises, and the horizon pops in piece by piece without a fade; a change of tier takes
+  its density and its far world on the next landing only; the S23 itself is not measured;
 - the wing's fern is pale and its caps are flattish;
 - M613: the far world of the swamp and of the jungle is pale in the haze; the crater on
   the metal world is one big ring; the volcano has no smoke and no glow of lava; the far

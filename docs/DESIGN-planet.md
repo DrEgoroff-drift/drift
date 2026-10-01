@@ -159,6 +159,9 @@ after it pass by §5.4.
   — done 30.09: sheets of the eleven worlds (land, water, air, sky), the murk of water, the
   far world by type (the author asked for it the same day), stone and flora by type
 - M614 the phone gate for the foundation
+  — done 01.10: the measure by the real clock (`docs/look/game/cost.py`), the series of
+  cuts at 4K and at the phone's pixel count, three tiers, the build by frames, the far
+  heights once; the S23 itself is owed to the author's daytime
 
 **Stage 2 — the cast.** Each by the method of §5.
 - M620 the man: rig, six suit slots, lamp, jetpack
