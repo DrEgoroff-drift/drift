@@ -25,9 +25,10 @@ Stage 1: **M610–M614 are done** (the sky by the hour, the bodies of the sky, t
 weather's light, the eclipse — `docs/DESIGN-planet-engine.md` §2.11; the eleven worlds on
 one sheet, their water, their far world and their flora — §2.22–§2.25; the cost: the
 tiers and the build by frames — §2.26–§2.27, the numbers in §6). Stage 2: **M620 (the
-man) is done** — the rig of `21pha`, §2.28; the open decisions of the plan's §8 were handed
-to me on 02.10 and are decided there. **M621 (the ship on its gear and the descent) is
-next**, then M622–M629 and stages 3–5. The new look runs in the game behind
+man) and M621 (the ship and the descent) are done** — the rig of `21pha`, §2.28; the open
+decisions of the plan's §8 were handed to me on 02.10 and are decided there; the ship from
+the game's hull and the descent as the surface's own frame, §2.29–§2.30. **M622 (the flora
+kit) is next**, then M623–M629 and stages 3–5. The new look runs in the game behind
 `?pln=1` or `PLN.on=true`, off by default; the old painter is untouched.
 
 ## Rules that hold

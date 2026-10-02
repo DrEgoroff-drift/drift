@@ -90,12 +90,13 @@ function plnPlantInit(L,p){
   const D={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
   const g0=G.opts&&G.opts.gfx?G.opts.gfx.plants:1,gp=clamp(g0==null?1:g0,.25,1.5)*(PLN_GPU.plK||1);   /* ярус (21pe) режет густоту */
   return L.flora={lush:flora?clamp((D[ty]||1.2)/1.9*(.25+wet*1.85),.25,1.3)*gp:0,
-    things:plnPlantThings(L,p),groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0};
+    things:plnPlantThings(L,p),src:G.surf&&G.surf.tr===L.tr?G.surf:null,groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0};
 }
 /* Вещи игры, вокруг которых держится поляна: [x, z, полуоси поляны, насколько близко могут стоять
    высокие тела]. Места — из состояния посадки; вещь, что появится позже, встанет в траву */
 function plnPlantThings(L,p){
-  const S=G.surf,tr=L.tr,T=[],M=PLN_M;
+  /* вещи поверхности — только если она эта: на спуске G.surf ещё прошлая или её нет */
+  const S=G.surf&&G.surf.tr===L.tr?G.surf:null,tr=L.tr,T=[],M=PLN_M;
   const add=(xu,z,rx,rz,tall)=>{if(xu!=null&&isFinite(xu))T.push([xu/M,z,rx,rz,tall]);};
   const shipL=typeof plnShipLenM==="function"?plnShipLenM():8.5;   /* расчистка под корабль — по его длине */
   add(L.shipX*M,7,shipL*.62+1.6,shipL*.42+1.8,shipL*1.1+2);
@@ -166,10 +167,11 @@ function plnPlantBodies(L,J){
   };
   /* у площадки — принятая композиция */
   const px=x=>x+L.cx0,mine=x=>x>=xa&&x<xb;
-  if(lush>.45)for(const t of PLN_PAD.trees)if(mine(px(t[0])))tree(px(t[0]),t[1],t[2],K.sp[t[3]][t[4]],t[5],t[6],t[7]);
-  for(const q of PLN_PAD.rocks)if(mine(px(q[0])))rock(px(q[0]),q[1],q[2],q[3]);
-  for(const q of PLN_PAD.slope)if(mine(px(q[0])))boulder(px(q[0]),q[1],q[2],[.2,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5]);
-  for(const q of PLN_PAD.ros)if(mine(px(q[0])))ros(px(q[0]),q[1],q[2],q[3],q[4]);
+  /* …но не сквозь корабль, севший мимо площадки, и не сквозь вещи игры (M621) */
+  if(lush>.45)for(const t of PLN_PAD.trees)if(mine(px(t[0]))&&free(px(t[0]),t[1],0))tree(px(t[0]),t[1],t[2],K.sp[t[3]][t[4]],t[5],t[6],t[7]);
+  for(const q of PLN_PAD.rocks)if(mine(px(q[0]))&&free(px(q[0]),q[1],0))rock(px(q[0]),q[1],q[2],q[3]);
+  for(const q of PLN_PAD.slope)if(mine(px(q[0]))&&free(px(q[0]),q[1],0))boulder(px(q[0]),q[1],q[2],[.2,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5]);
+  for(const q of PLN_PAD.ros)if(mine(px(q[0]))&&free(px(q[0]),q[1],0))ros(px(q[0]),q[1],q[2],q[3],q[4]);
   /* Крутая ступень тропы — камень: земля круче сорока градусов не держится. Скалы за линией встают
      выше неё, перед линией лежат ниже: человека на ступени они не закрывают. Ступень принадлежит
      куску, в котором началась; кости у неё свои */
@@ -396,9 +398,15 @@ function plnPlantGrass(L,J,n){
   S.k=k1;
   if(k1<S.K)return false;
   const zs=[C.bands[0],C.bands[1],C.zF];
-  for(let b=0;b<3;b++)F.groups.push(plnPlantGroup(xa-.8,J.xb+.8,zs[b],1.5,S.tuft[b].concat([S.flower[b]])));
+  for(let b=0;b<3;b++){const G0=plnPlantGroup(xa-.8,J.xb+.8,zs[b],1.5,S.tuft[b].concat([S.flower[b]]));G0.grass=true;F.groups.push(G0);}
   F.tufts+=S.n;
-  J.pl=null;J.grid=null;J.planted=true;
+  /* пересадка (M621): старая трава куска стояла, пока росла новая, — теперь уходит */
+  if(J.stale){for(const G0 of J.stale)if(G0.inst)plnInstFree(G0.inst);F.groups=F.groups.filter(G0=>J.stale.indexOf(G0)<0);J.stale=null;}
+  /* сетка куска у площадки остаётся: корабль, севший мимо, переставят и полосу пересадят без
+     перестройки земли (21pf plnLandMove) */
+  const pc=L.tr.plnCx!=null?L.tr.padX/PLN_M:null;
+  J.pl=null;J.planted=true;
+  if(!(pc!=null&&J.xb>pc-50&&J.xa<pc+50))J.grid=null;
   return true;
 }
 function plnPlantChunk(L,J,n){
@@ -507,8 +515,7 @@ function plnPlantFar(L,fc){
     q=dice();
     if(q[0]<.85*lush){const c=plnPlantCrest(L,xa+q[1]*C.farW,270,430,10);grove(bTree2,c[0],c[2]-8+q[2]*30,6+((q[3]*5)|0),17,9,15,q[4]<.5?0:3,1,4);}
   }
-  F.groups.push(plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed)));
-  F.groups.push(plnPlantGroup(xa-30,xb+30,470,8,bTree2));
+  for(const G0 of [plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed)),plnPlantGroup(xa-30,xb+30,470,8,bTree2)]){G0.far=true;F.groups.push(G0);}
   F.far[fc]=true;
 }
 
@@ -568,6 +575,27 @@ function plnPlantBatches(L,F0,ex,V){
   for(let k=0;k<seen.length&&n<64;k++,n++)b.set(seen[k],4+n*4);
   b[0]=n;
   PLN.stat.recs=recs;
+}
+/* Пересадка полосы [x0,x1] м (M621): корабль переставлен или вещи игры стали известны — расчистка
+   заново; тела куска уходят сразу, трава стоит, пока не вырастет новая (J.stale) */
+function plnPlantRefit(L,x0,x1){
+  const F=L.flora;
+  if(!F)return;
+  F.src=G.surf&&G.surf.tr===L.tr?G.surf:null;
+  F.things=plnPlantThings(L,L.tr.p);
+  for(const J of L.jobs){
+    if(J.t!=="rib"||!J.planted||!J.grid||J.xb<x0||J.xa>x1)continue;
+    const mid=(J.xa+J.xb)/2,mine=G0=>!G0.far&&Math.abs((G0.xa+G0.xb)/2-mid)<.5,stale=J.stale||[];
+    F.groups=F.groups.filter(G0=>{
+      if(!mine(G0)||stale.indexOf(G0)>=0)return true;
+      if(G0.grass){stale.push(G0);return true;}
+      if(G0.inst)plnInstFree(G0.inst);
+      return false;
+    });
+    J.stale=stale.length?stale:null;
+    F.crags=F.crags.filter(q=>q[0]<J.xa||q[0]>=J.xb);
+    J.planted=false;J.pl=null;
+  }
 }
 function plnPlantDrop(L){
   const F=L.flora;

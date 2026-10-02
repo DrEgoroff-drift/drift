@@ -43,21 +43,30 @@ fn windAt(p: vec3f, amp: f32) -> vec3f {
 }
 /* запись расстановки: размер, доля высоты, поворот вокруг вертикали, место.
    Дальний мир стоит на своём уровне и едет по высоте целиком, не гнётся */
+/* размер со знаком минус — твёрдое тело с креном: угол вокруг z лежит в ячейке зерна (i1.w);
+   крен идёт до поворота, в теле (корабль на спуске, M621) */
 fn placeAt(p: vec3f, i0: vec4f, i1: vec4f, i3: vec4f) -> vec3f {
-  let q = p * vec3f(i0.w, i0.w * i1.z, i0.w);
+  let sc = abs(i0.w);
+  let roll = select(0.0, i1.w, i0.w < 0.0);
+  let q0 = p * vec3f(sc, sc * i1.z, sc);
+  let cr = cos(roll); let sr = sin(roll);
+  let q = vec3f(q0.x * cr - q0.y * sr, q0.x * sr + q0.y * cr, q0.z);
   return i0.xyz + vec3f(q.x * i1.x + q.z * i1.y, q.y + i3.w * g.waterB.w, q.z * i1.x - q.x * i1.y);
 }
-fn turnBy(n: vec3f, i1: vec4f) -> vec3f {
-  let q = vec3f(n.x, n.y / max(i1.z, 0.05), n.z);
+fn turnBy(n: vec3f, i0: vec4f, i1: vec4f) -> vec3f {
+  let roll = select(0.0, i1.w, i0.w < 0.0);
+  let q0 = vec3f(n.x, n.y / max(i1.z, 0.05), n.z);
+  let cr = cos(roll); let sr = sin(roll);
+  let q = vec3f(q0.x * cr - q0.y * sr, q0.x * sr + q0.y * cr, q0.z);
   return normalize(vec3f(q.x * i1.x + q.z * i1.y, q.y, q.z * i1.x - q.x * i1.y));
 }
 
 @vertex fn vs_main(in: VIn) -> VOut {
   var o: VOut;
   let w = placeAt(in.pos, in.i0, in.i1, in.i3);
-  let p = w + windAt(w, in.par.y * in.i0.w * g.world.y);
+  let p = w + windAt(w, in.par.y * abs(in.i0.w) * g.world.y);
   o.pos = g.viewProj * vec4f(p, 1.0);
-  o.wpos = p; o.nrm = turnBy(in.nrm, in.i1);
+  o.wpos = p; o.nrm = turnBy(in.nrm, in.i0, in.i1);
   /* режим 0 — цвет сетки, подкрашенный записью; режим 1 — сетка несёт только ход от корня
      к макушке (r) и свою светлоту (g), а оба цвета даёт запись; режим 2 — так красится
      только листва, кора остаётся своей: дерево — одно тело и одна запись */
@@ -79,7 +88,7 @@ fn turnBy(n: vec3f, i1: vec4f) -> vec3f {
 @vertex fn vs_shadow(@location(0) pos: vec3f, @location(3) par: vec4f, @location(4) i0: vec4f, @location(5) i1: vec4f,
     @location(7) i3: vec4f) -> @builtin(position) vec4f {
   let w = placeAt(pos, i0, i1, i3);
-  return g.lightVP0 * vec4f(w + windAt(w, par.y * i0.w * g.world.y), 1.0);
+  return g.lightVP0 * vec4f(w + windAt(w, par.y * abs(i0.w) * g.world.y), 1.0);
 }
 @vertex fn vs_full(@builtin(vertex_index) i: u32) -> FOut {
   var o: FOut;

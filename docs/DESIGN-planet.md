@@ -170,6 +170,9 @@ after it pass by §5.4.
   glow bodies, the rig's own lamps by night, the near lens `PLN.near`; three passes,
   `docs/DESIGN-planet-engine.md` §2.28
 - M621 the ship on its gear and the descent
+  — done 02.10: the ship lofted from the game's own hull; the descent as the surface's
+  own frame (21pza): the composition sticks to the pad, the window is the surface's, the
+  touch moves the ship without a rebuild; `docs/DESIGN-planet-engine.md` §2.29–§2.30
 - M622 flora: twelve forms as a kit, the genome of a world
 - M623 stone and ground dress, water
 - M624 things to take: deposits, finds, drill, tracks

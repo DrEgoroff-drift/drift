@@ -126,7 +126,8 @@ function plnLandMake(tr,p,sx){
   const shipU=sx==null?tr.padX:sx,shipX=shipU/PLN_M,yaw=.2,padH=(y0-groundAt(tr,shipU))/PLN_M;
   const L={tr,sx,gen:PLN_GPU.gen,y0,dx,x0,N,NT,E,len:N*dx,P,lake,wet:liquid&&((tr.wet||0)>=.2||!!lake),
     sd:Math.floor(plnHash((p&&p.seed)|0,tr.sseed|0,7)*900000)+17,
-    shipX,shipZ:7,shipYaw:yaw,padH,cx0:shipX+12.8,
+    /* точка композиции: от площадки, если спуск её запомнил (tr.plnCx, M621), иначе от корабля */
+    shipX,shipZ:7,shipYaw:yaw,padH,cx0:tr.plnCx!=null?tr.plnCx:shipX+12.8,
     /* подножие трапа: место корабля (.75, −4.26), повёрнутое вместе с ним */
     rampX:shipX+.75*Math.cos(yaw)-4.26*Math.sin(yaw),rampZ:7-.75*Math.sin(yaw)-4.26*Math.cos(yaw),
     gk:0,jobs:[],left:0,ms:0,first:false,wl,farC:[]};
@@ -514,11 +515,24 @@ function plnLandFree(L){
 }
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){
-  const C=PLN_LAND;
-  if(C.cur&&C.cur.tr===tr&&C.cur.sx===sx&&C.cur.gen===PLN_GPU.gen&&C.cur.y0===tr.padY)return C.cur;
-  if(C.cur)plnLandFree(C.cur);
+  const C=PLN_LAND,cur=C.cur;
+  if(cur&&cur.tr===tr&&cur.gen===PLN_GPU.gen&&cur.y0===tr.padY){
+    if(cur.sx===sx)return cur;
+    /* корабль сел не там, где ждали (спуск, M621): композиция липнет к площадке — землю не
+       перестраиваем, переставляем корабль и пересаживаем полосу у него */
+    if(tr.plnCx!=null)return plnLandMove(cur,sx);
+  }
+  if(cur)plnLandFree(cur);
   PLN.stat.verts=0;
   return C.cur=plnLandMake(tr,p,sx);
+}
+/* перестановка корабля без перестройки земли: место, высота под ним, подножие трапа, расчистка */
+function plnLandMove(L,sx){
+  const tr=L.tr,shipU=sx==null?tr.padX:sx,yaw=L.shipYaw,old=L.shipX;
+  L.sx=sx;L.shipX=shipU/PLN_M;L.padH=(L.y0-groundAt(tr,shipU))/PLN_M;
+  L.rampX=L.shipX+.75*Math.cos(yaw)-4.26*Math.sin(yaw);L.rampZ=7-.75*Math.sin(yaw)-4.26*Math.cos(yaw);
+  if(L.flora){const r=plnShipLenM()*.62+4;plnPlantRefit(L,Math.min(old,L.shipX)-r,Math.max(old,L.shipX)+r);}
+  return L;
 }
 
 /* ── сетки ── */

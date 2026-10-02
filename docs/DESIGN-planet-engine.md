@@ -243,12 +243,13 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     40 ms for the ground by the ship. Jobs go nearest first, so the horizon rises last:
     2.5 s on the PC. The far heights are computed once per land, by row, on demand
     (`L.farC`): the pieces share margins of three cells and computed each of them twice
-    before. Nothing is built before the touchdown: the scene is composed around the
-    touchdown point (`L.cx0` — the far heights, the basin, the pass, the pad), and the auto
-    landing has no lateral control, so the place is known at the touch and not a frame
-    earlier; the descent only warms the device, the tier and the flora kit (`drawLanding`
-    is wrapped in 21pz as `drawSurface` is). `PLN.rush` still builds all at once, for the
-    stand and the shots.
+    before. The scene is composed around one point (`L.cx0` — the far heights, the basin,
+    the pass, the pad; since M621 it is `tr.plnCx`, set at the first frame of the descent):
+    the descent builds the land around the pad while the ship is still in the air, the
+    touch moves the ship within it without a rebuild (§2.30), and the first frame of the
+    surface takes the land from the cache (`drawLanding` is wrapped in 21pza as
+    `drawSurface` is in 21pz). `PLN.rush` still builds all at once, for the stand and the
+    shots.
 28. **The man is a rig** (`21pha`, `plnMan*`; M620). A hinge skeleton of thirteen bones in
     the x–y plane: pelvis, spine, head, two legs of three, two arms of two. The parts are
     built once from the kit (blobs, tubes, rings — ~2.5k vertices) in their bone's own
@@ -267,6 +268,47 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     man by night and in the eclipse, the jet's warm light under the pack. `PLN.near` is
     the near lens of §8.4: the lens alone glides twice as close (0 the game, 1 twice as
     near); the stand sets it for the frames of the man, play will set it at a thing (M624).
+29. **The ship is the game's hull** (`21phb`, `plnShip*`; M621). The stand's blockout was
+    one ship for all; now the body is lofted from `hullOf(G.shipId)`: the plan-form stations
+    (nose, midship, step, stern), the airframe scheme (`form`), the wings as plates from
+    the hull's own polygons, the nacelles on pylons, the class marks (`HULL_CLASS`:
+    radiators, fin, dish, containers), a windscreen band with a rim, the owner's paint with
+    the people's colour as the stripe (§3 of the plan). The loft has a squareness
+    (superellipse section) so the flat forms read as boxes. The scale is the man: 7–10 m
+    long (`landerLen`), the belly at the waist, three legs under it. The body is one mesh
+    per hull; the legs and the flames are small dynamic meshes rewritten in place: each
+    foot on its own ground (as in the old landing), folded in flight (`gear` 0…1), squatting
+    at the touch (`sq`); embers idle and flame rings grow by thrust (`plnShipFx`) — from
+    the main nozzles along the body, or from the belly jets downward (`down`), wider and
+    longer so they read from the far lens. The hatch is on the near side (−z): in the body
+    a collar and a closed door with a window; the open door, the lit room (warmer and
+    brighter toward the floor, as a room is) and the ramp down to where the land expects it
+    (21pf `rampX`/`rampZ`) are a geometry of their own (`plnShipOpen`), drawn with the
+    hatch lamp when the ship stands (`open`). The frame also gets the thrust lamp under
+    the jets and the ground blob under the body, fading with altitude. A rigid body may
+    roll: a negative scale in the record marks it and the roll (about z, before the yaw)
+    rides in the seed slot (`plnRec`, `placeAt`, `turnBy`); the wind reads `abs(scale)`.
+30. **The descent is the surface's frame** (`21pza`, `plnDescent`; M621). The old landing
+    (`19-mode-landing`) still computes everything — the thrust, the tilt, the touch, the
+    gear, the squat — and its painter stays the fallback; the new frame calls `plnSurface`
+    with a lens and a ship. The ship hangs at the game's altitude over the pad lane with
+    the landing's tilt, the legs come out from 14 m and stand by 5 (or as the game's gear
+    says), the belly jets burn by thrust (eased over frames) and glow hot after the touch
+    while the touchdown count runs; the hatch stays closed. The window is the surface's:
+    the ground under the ship at the same share of the frame as on the surface (1−f from
+    the top) while the ship is low, the ship pinned at 24 % from the top when high — so
+    the touchdown and the first frame of the surface are one window (at 3 m: the ground
+    at 72 % of the view, the body at 62 %, K 1.6). The composition sticks to the pad:
+    `tr.plnCx` is set on the terrain at the first frame of the descent and read by
+    `plnLandMake` on the surface, so the far heights, the basin, the pass and the pad are
+    composed around one point and the land built in flight is the land the surface takes
+    from the cache. The touch moves the ship within that land without a rebuild:
+    `plnLandMove` updates the ship's spot, the pad height and the ramp, and
+    `plnPlantRefit` replants only the band the ship covers (the grass of a chunk stays
+    drawn as `stale` until the chunk regrows); the mode switch replants once more, because
+    the game's deposits, plants and the cave mouth exist only from `enterSurface`
+    (`L.flora.src`). The first frame of the descent carries the land by the ship and the
+    flora kit (~110 ms); nothing of the sort remains at the touchdown.
 
 ## 3. The family
 
@@ -287,13 +329,15 @@ with `pln` or `PLN`: the game is one scope.
 | `21pga-pln-plant` | what grows and lies where: placement by chunk, the pad's composition, the pond's shore, the crags |
 | `21pgb-pln-trees` | the six species of trees and their makers |
 | `21pgc-pln-wing` | the wing: four families of bodies next to the lens |
-| `21ph-pln-cast` | the ship, the life ring, the cast's frame (the man is called from here) |
+| `21ph-pln-cast` | the life ring, the cast's frame (the man and the ship are called from here) |
 | `21pha-pln-man` | the man: the rig's bones, parts from the kit, the poses, the flame, the lamps of his own |
+| `21phb-pln-ship` | the ship from the game's hull: the loft, the class marks, the legs, the flames, the hatch open and closed |
 | `21pi-pln-things` | deposits, the cave mouth, the mine mouth |
 | `21pia-pln-herb` | the plants of the game, the algae of the pond |
 | `21pib-pln-beast` | the beasts of the game, a flip book of seven bodies each |
 | `21pj-pln-over` | what lies over the frame in 2D, and the stickers of the old painters |
 | `21pz-pln-frame` | the lens, the five acts of the hour, the bodies of the sky, the weather's look, what is built when, the frame, the wrap |
+| `21pza-pln-descent` | the descent: the landing's state as a lens and a ship for the frame of 21pz, the wrap of `drawLanding` |
 
 `21pga` stands at 36 KB: the next pass of placement goes to a module of its own.
 
@@ -319,18 +363,21 @@ with `pln` or `PLN`: the game is one scope.
   tanks proud of the pack, the glint of the visor, the shorter legs. The decisions of §8
   of the plan were handed to me the same day («про открытые решения сам реши») and are
   written there.
+- **M621** the ship and the descent. **Done**, in two passes: 1 — the ship from the game's
+  hull (§2.29), 2 — the descent as the surface's own frame (§2.30): the sticky
+  composition, the move at the touch, the replant at the switch.
 
 ## 5. What is not done here
 
-The landing, the cave, the mine and the base keep their old painters until their own
-steps (M621, M630–M632). The precipitation of the weather is M626, its light is M612.
+The cave, the mine and the base keep their old painters until their own steps
+(M630–M632); the landing is drawn by `21pza` since M621, its old painter is the fallback. The precipitation of the weather is M626, its light is M612.
 The old painters, the fleet's sky
 (`src/19*`, `11ak-skywatch`, `27la-road-sky`) and the nebula are read and never edited.
 
 ## 6. State on 02.10.2026
 
-Stage 1 is closed (M610–M614); stage 2 stands at M620 done, M621 (the ship and the
-descent) next. The new look is walked in the game behind
+Stage 1 is closed (M610–M614); stage 2 stands at M620 and M621 done, M622 (the flora
+kit) next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
@@ -384,6 +431,18 @@ and the land standing by frame 150. The far heights once took a far piece from 8
 5.4 ms and the far build from 1.7 to 1.1 s; the whole build at once is 1.6 s of land and
 1.0 s of plantings. The S23 itself is not measured: that is the author's daytime.
 
+**M621** (the ship and the descent) went in two passes (`863ed075` the ship from the
+game's hull, then the descent). The ship is one geo per hull and two cap-sized dynamic
+geos a frame. The descent window was measured at 3 m (the ground at 72 % of the view, the
+body at 62 %, K 1.6 — the surface's own numbers) and the flow touchdown → `plnLandMove` →
+`enterSurface` → the first frame of the surface was run under the stepped clock
+(`descent.py "<name>:alt=0;touched=1;flow=12"`, shot with `until=window.__FLOW`): the same
+land object, the band replanted in the frame of the switch, no errors. The ship's shadow is
+cast by the near map (the ship and its shadow point both inside the box; the ground under
+it 27–42 % darker, measured with the ship's frame stubbed out), but at a low sun it lies
+ten metres toward the lens — below the ship in the frame, among the trees' shadows. The
+frames are in the author's chat; the shooter is `docs/look/game/descent.py`.
+
 **Known weak spots** — named, not hidden:
 - M620: at the far lens the man is a dot in the squint — the far lens is the game's own
   scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
@@ -393,7 +452,13 @@ and the land standing by frame 150. The far heights once took a far piece from 8
   §8.2; the belt and the collar are rings, not seams;
 - the face of a crag knoll is smooth in places and its facets are low in contrast;
 - the water of the pond is darker than the far water;
-- the ship is the stand's blockout (M621); beasts are blockouts (M625); tracks are the old game's dashes; landmarks, the base, the
+- M621: the descent has no weather and no dust at the touch; the game's deposits, plants
+  and beasts appear at the switch to the surface and the hatch opens with a pop
+  (`enterSurface` makes them and cannot run earlier); the landing's caption stays where
+  the old painter's ship stood, not under the new one (it is drawn by the old HUD); the
+  first frame of the descent carries ~110 ms; the flames are plain rings, the landing lamp
+  a disc of light; the ship's shadow at a low sun lies far below the ship in the frame;
+- beasts are blockouts (M625); tracks are the old game's dashes; landmarks, the base, the
   home and the settlement are stickers of the old painters (M626–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;

@@ -81056,21 +81056,30 @@ fn windAt(p: vec3f, amp: f32) -> vec3f {
 }
 /* запись расстановки: размер, доля высоты, поворот вокруг вертикали, место.
    Дальний мир стоит на своём уровне и едет по высоте целиком, не гнётся */
+/* размер со знаком минус — твёрдое тело с креном: угол вокруг z лежит в ячейке зерна (i1.w);
+   крен идёт до поворота, в теле (корабль на спуске, M621) */
 fn placeAt(p: vec3f, i0: vec4f, i1: vec4f, i3: vec4f) -> vec3f {
-  let q = p * vec3f(i0.w, i0.w * i1.z, i0.w);
+  let sc = abs(i0.w);
+  let roll = select(0.0, i1.w, i0.w < 0.0);
+  let q0 = p * vec3f(sc, sc * i1.z, sc);
+  let cr = cos(roll); let sr = sin(roll);
+  let q = vec3f(q0.x * cr - q0.y * sr, q0.x * sr + q0.y * cr, q0.z);
   return i0.xyz + vec3f(q.x * i1.x + q.z * i1.y, q.y + i3.w * g.waterB.w, q.z * i1.x - q.x * i1.y);
 }
-fn turnBy(n: vec3f, i1: vec4f) -> vec3f {
-  let q = vec3f(n.x, n.y / max(i1.z, 0.05), n.z);
+fn turnBy(n: vec3f, i0: vec4f, i1: vec4f) -> vec3f {
+  let roll = select(0.0, i1.w, i0.w < 0.0);
+  let q0 = vec3f(n.x, n.y / max(i1.z, 0.05), n.z);
+  let cr = cos(roll); let sr = sin(roll);
+  let q = vec3f(q0.x * cr - q0.y * sr, q0.x * sr + q0.y * cr, q0.z);
   return normalize(vec3f(q.x * i1.x + q.z * i1.y, q.y, q.z * i1.x - q.x * i1.y));
 }
 
 @vertex fn vs_main(in: VIn) -> VOut {
   var o: VOut;
   let w = placeAt(in.pos, in.i0, in.i1, in.i3);
-  let p = w + windAt(w, in.par.y * in.i0.w * g.world.y);
+  let p = w + windAt(w, in.par.y * abs(in.i0.w) * g.world.y);
   o.pos = g.viewProj * vec4f(p, 1.0);
-  o.wpos = p; o.nrm = turnBy(in.nrm, in.i1);
+  o.wpos = p; o.nrm = turnBy(in.nrm, in.i0, in.i1);
   /* режим 0 — цвет сетки, подкрашенный записью; режим 1 — сетка несёт только ход от корня
      к макушке (r) и свою светлоту (g), а оба цвета даёт запись; режим 2 — так красится
      только листва, кора остаётся своей: дерево — одно тело и одна запись */
@@ -81092,7 +81101,7 @@ fn turnBy(n: vec3f, i1: vec4f) -> vec3f {
 @vertex fn vs_shadow(@location(0) pos: vec3f, @location(3) par: vec4f, @location(4) i0: vec4f, @location(5) i1: vec4f,
     @location(7) i3: vec4f) -> @builtin(position) vec4f {
   let w = placeAt(pos, i0, i1, i3);
-  return g.lightVP0 * vec4f(w + windAt(w, par.y * i0.w * g.world.y), 1.0);
+  return g.lightVP0 * vec4f(w + windAt(w, par.y * abs(i0.w) * g.world.y), 1.0);
 }
 @vertex fn vs_full(@builtin(vertex_index) i: u32) -> FOut {
   var o: FOut;
@@ -81922,7 +81931,8 @@ function plnLandMake(tr,p,sx){
   const shipU=sx==null?tr.padX:sx,shipX=shipU/PLN_M,yaw=.2,padH=(y0-groundAt(tr,shipU))/PLN_M;
   const L={tr,sx,gen:PLN_GPU.gen,y0,dx,x0,N,NT,E,len:N*dx,P,lake,wet:liquid&&((tr.wet||0)>=.2||!!lake),
     sd:Math.floor(plnHash((p&&p.seed)|0,tr.sseed|0,7)*900000)+17,
-    shipX,shipZ:7,shipYaw:yaw,padH,cx0:shipX+12.8,
+    /* точка композиции: от площадки, если спуск её запомнил (tr.plnCx, M621), иначе от корабля */
+    shipX,shipZ:7,shipYaw:yaw,padH,cx0:tr.plnCx!=null?tr.plnCx:shipX+12.8,
     /* подножие трапа: место корабля (.75, −4.26), повёрнутое вместе с ним */
     rampX:shipX+.75*Math.cos(yaw)-4.26*Math.sin(yaw),rampZ:7-.75*Math.sin(yaw)-4.26*Math.cos(yaw),
     gk:0,jobs:[],left:0,ms:0,first:false,wl,farC:[]};
@@ -82310,11 +82320,24 @@ function plnLandFree(L){
 }
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){
-  const C=PLN_LAND;
-  if(C.cur&&C.cur.tr===tr&&C.cur.sx===sx&&C.cur.gen===PLN_GPU.gen&&C.cur.y0===tr.padY)return C.cur;
-  if(C.cur)plnLandFree(C.cur);
+  const C=PLN_LAND,cur=C.cur;
+  if(cur&&cur.tr===tr&&cur.gen===PLN_GPU.gen&&cur.y0===tr.padY){
+    if(cur.sx===sx)return cur;
+    /* корабль сел не там, где ждали (спуск, M621): композиция липнет к площадке — землю не
+       перестраиваем, переставляем корабль и пересаживаем полосу у него */
+    if(tr.plnCx!=null)return plnLandMove(cur,sx);
+  }
+  if(cur)plnLandFree(cur);
   PLN.stat.verts=0;
   return C.cur=plnLandMake(tr,p,sx);
+}
+/* перестановка корабля без перестройки земли: место, высота под ним, подножие трапа, расчистка */
+function plnLandMove(L,sx){
+  const tr=L.tr,shipU=sx==null?tr.padX:sx,yaw=L.shipYaw,old=L.shipX;
+  L.sx=sx;L.shipX=shipU/PLN_M;L.padH=(L.y0-groundAt(tr,shipU))/PLN_M;
+  L.rampX=L.shipX+.75*Math.cos(yaw)-4.26*Math.sin(yaw);L.rampZ=7-.75*Math.sin(yaw)-4.26*Math.cos(yaw);
+  if(L.flora){const r=plnShipLenM()*.62+4;plnPlantRefit(L,Math.min(old,L.shipX)-r,Math.max(old,L.shipX)+r);}
+  return L;
 }
 
 /* ── сетки ── */
@@ -82972,12 +82995,13 @@ function plnPlantInit(L,p){
   const D={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
   const g0=G.opts&&G.opts.gfx?G.opts.gfx.plants:1,gp=clamp(g0==null?1:g0,.25,1.5)*(PLN_GPU.plK||1);   /* ярус (21pe) режет густоту */
   return L.flora={lush:flora?clamp((D[ty]||1.2)/1.9*(.25+wet*1.85),.25,1.3)*gp:0,
-    things:plnPlantThings(L,p),groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0};
+    things:plnPlantThings(L,p),src:G.surf&&G.surf.tr===L.tr?G.surf:null,groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0};
 }
 /* Вещи игры, вокруг которых держится поляна: [x, z, полуоси поляны, насколько близко могут стоять
    высокие тела]. Места — из состояния посадки; вещь, что появится позже, встанет в траву */
 function plnPlantThings(L,p){
-  const S=G.surf,tr=L.tr,T=[],M=PLN_M;
+  /* вещи поверхности — только если она эта: на спуске G.surf ещё прошлая или её нет */
+  const S=G.surf&&G.surf.tr===L.tr?G.surf:null,tr=L.tr,T=[],M=PLN_M;
   const add=(xu,z,rx,rz,tall)=>{if(xu!=null&&isFinite(xu))T.push([xu/M,z,rx,rz,tall]);};
   const shipL=typeof plnShipLenM==="function"?plnShipLenM():8.5;   /* расчистка под корабль — по его длине */
   add(L.shipX*M,7,shipL*.62+1.6,shipL*.42+1.8,shipL*1.1+2);
@@ -83048,10 +83072,11 @@ function plnPlantBodies(L,J){
   };
   /* у площадки — принятая композиция */
   const px=x=>x+L.cx0,mine=x=>x>=xa&&x<xb;
-  if(lush>.45)for(const t of PLN_PAD.trees)if(mine(px(t[0])))tree(px(t[0]),t[1],t[2],K.sp[t[3]][t[4]],t[5],t[6],t[7]);
-  for(const q of PLN_PAD.rocks)if(mine(px(q[0])))rock(px(q[0]),q[1],q[2],q[3]);
-  for(const q of PLN_PAD.slope)if(mine(px(q[0])))boulder(px(q[0]),q[1],q[2],[.2,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5]);
-  for(const q of PLN_PAD.ros)if(mine(px(q[0])))ros(px(q[0]),q[1],q[2],q[3],q[4]);
+  /* …но не сквозь корабль, севший мимо площадки, и не сквозь вещи игры (M621) */
+  if(lush>.45)for(const t of PLN_PAD.trees)if(mine(px(t[0]))&&free(px(t[0]),t[1],0))tree(px(t[0]),t[1],t[2],K.sp[t[3]][t[4]],t[5],t[6],t[7]);
+  for(const q of PLN_PAD.rocks)if(mine(px(q[0]))&&free(px(q[0]),q[1],0))rock(px(q[0]),q[1],q[2],q[3]);
+  for(const q of PLN_PAD.slope)if(mine(px(q[0]))&&free(px(q[0]),q[1],0))boulder(px(q[0]),q[1],q[2],[.2,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5]);
+  for(const q of PLN_PAD.ros)if(mine(px(q[0]))&&free(px(q[0]),q[1],0))ros(px(q[0]),q[1],q[2],q[3],q[4]);
   /* Крутая ступень тропы — камень: земля круче сорока градусов не держится. Скалы за линией встают
      выше неё, перед линией лежат ниже: человека на ступени они не закрывают. Ступень принадлежит
      куску, в котором началась; кости у неё свои */
@@ -83278,9 +83303,15 @@ function plnPlantGrass(L,J,n){
   S.k=k1;
   if(k1<S.K)return false;
   const zs=[C.bands[0],C.bands[1],C.zF];
-  for(let b=0;b<3;b++)F.groups.push(plnPlantGroup(xa-.8,J.xb+.8,zs[b],1.5,S.tuft[b].concat([S.flower[b]])));
+  for(let b=0;b<3;b++){const G0=plnPlantGroup(xa-.8,J.xb+.8,zs[b],1.5,S.tuft[b].concat([S.flower[b]]));G0.grass=true;F.groups.push(G0);}
   F.tufts+=S.n;
-  J.pl=null;J.grid=null;J.planted=true;
+  /* пересадка (M621): старая трава куска стояла, пока росла новая, — теперь уходит */
+  if(J.stale){for(const G0 of J.stale)if(G0.inst)plnInstFree(G0.inst);F.groups=F.groups.filter(G0=>J.stale.indexOf(G0)<0);J.stale=null;}
+  /* сетка куска у площадки остаётся: корабль, севший мимо, переставят и полосу пересадят без
+     перестройки земли (21pf plnLandMove) */
+  const pc=L.tr.plnCx!=null?L.tr.padX/PLN_M:null;
+  J.pl=null;J.planted=true;
+  if(!(pc!=null&&J.xb>pc-50&&J.xa<pc+50))J.grid=null;
   return true;
 }
 function plnPlantChunk(L,J,n){
@@ -83389,8 +83420,7 @@ function plnPlantFar(L,fc){
     q=dice();
     if(q[0]<.85*lush){const c=plnPlantCrest(L,xa+q[1]*C.farW,270,430,10);grove(bTree2,c[0],c[2]-8+q[2]*30,6+((q[3]*5)|0),17,9,15,q[4]<.5?0:3,1,4);}
   }
-  F.groups.push(plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed)));
-  F.groups.push(plnPlantGroup(xa-30,xb+30,470,8,bTree2));
+  for(const G0 of [plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed)),plnPlantGroup(xa-30,xb+30,470,8,bTree2)]){G0.far=true;F.groups.push(G0);}
   F.far[fc]=true;
 }
 
@@ -83450,6 +83480,27 @@ function plnPlantBatches(L,F0,ex,V){
   for(let k=0;k<seen.length&&n<64;k++,n++)b.set(seen[k],4+n*4);
   b[0]=n;
   PLN.stat.recs=recs;
+}
+/* Пересадка полосы [x0,x1] м (M621): корабль переставлен или вещи игры стали известны — расчистка
+   заново; тела куска уходят сразу, трава стоит, пока не вырастет новая (J.stale) */
+function plnPlantRefit(L,x0,x1){
+  const F=L.flora;
+  if(!F)return;
+  F.src=G.surf&&G.surf.tr===L.tr?G.surf:null;
+  F.things=plnPlantThings(L,L.tr.p);
+  for(const J of L.jobs){
+    if(J.t!=="rib"||!J.planted||!J.grid||J.xb<x0||J.xa>x1)continue;
+    const mid=(J.xa+J.xb)/2,mine=G0=>!G0.far&&Math.abs((G0.xa+G0.xb)/2-mid)<.5,stale=J.stale||[];
+    F.groups=F.groups.filter(G0=>{
+      if(!mine(G0)||stale.indexOf(G0)>=0)return true;
+      if(G0.grass){stale.push(G0);return true;}
+      if(G0.inst)plnInstFree(G0.inst);
+      return false;
+    });
+    J.stale=stale.length?stale:null;
+    F.crags=F.crags.filter(q=>q[0]<J.xa||q[0]>=J.xb);
+    J.planted=false;J.pl=null;
+  }
 }
 function plnPlantDrop(L){
   const F=L.flora;
@@ -83946,7 +83997,7 @@ function plnCast(){
 function plnCastFrame(F,man,face,ship,yaw,swim,o){
   const Q=plnCast(),B=PLN_KIND.body;
   plnManFrame(F,man,face,swim,o);
-  plnShipFrame(F,ship,yaw,{L:o&&o.L,gear:1,sq:0,thr:0});
+  plnShipFrame(F,ship,yaw,{L:o&&o.L,gear:1,sq:0,thr:0,open:true});
   if(swim>0){
     plnRec(Q.ra,0,[man[0],man[1]+Q.belt,man[2]],.3+.7*swim,0,1,3);
     plnInstSet(Q.ringI,Q.ra,1);
@@ -84350,6 +84401,15 @@ function plnShipMesh(h,D){
     E.push({x:x-r*.8,y,z,r});
   }
   D.eng=E;
+  /* посадочные сопла под брюхом (M621): по паре у носа и у кормы; факел спуска бьёт из них вниз */
+  const J=[],jr=Math.max(.13,lenM*.02);
+  for(const jx of [lenM*.28,-lenM*.2])for(const sg of [-1,1]){
+    const z=sg*D.rz(jx)*.45,y=bellyY+D.lift(jx)+.04;
+    plnTube(m,{path:[[jx,y+jr*.5,z],[jx,y-jr*.55,z]],rad:t=>jr*lerp(.7,1,t),sides:10,col:t=>plnMix3(steel,iron,.35+.55*t),mat:M,x:.5,cap:true});
+    plnBlob(m,{c:[jx,y-jr*.56,z],r:[jr*.74,.015,jr*.74],sub:1,col:[.004,.005,.006],mat:M,x:.05});
+    J.push({x:jx,y:y-jr*.58,z,r:jr});
+  }
+  D.jets=J;
   /* ── приметы класса: контейнеры, радиаторы, плавник, тарелка, купол диска ── */
   const topY=x=>bellyY+D.ry(x)*1.78+D.lift(x);
   if((h.mark&&h.mark.cont)||form==="boxed"||form==="slab"){
@@ -84373,24 +84433,13 @@ function plnShipMesh(h,D){
     plnBlob(m,{c:[x,y+.62,0],r:[.34,.07,.34],sub:1,lean:.5,col:u=>u[1]>0?plnMul(cer,1.05):plnMul(cer,.7),mat:M,x:.25});
   }
   if(disc)plnBlob(m,{c:[lenM*.04,topY(0)-.12,0],r:[lenM*.2,D.ry(0)*.9,lenM*.2],sub:2,col:u=>u[1]>.15?glass:paint,mat:M,x:u=>u[1]>.15?1:shine});
-  /* ── люк на ближнем борту: воротник, тёмная рама, освещённый проём (к полу теплее и ярче, как в
-     комнате) и трап до того места, где его ждёт земля (21pf rampX/rampZ) ── */
+  /* ── люк на ближнем борту: воротник и закрытая дверь с окошком; открытый проём и трап — своя
+     сетка (plnShipOpen), её кладут, когда корабль стоит ── */
   const hy=bellyY+ryH*.78,zc=-rzH,fz=zc-.08,fr=plnMul(paint,.84);
   for(const q of [[hx-.60,hy,.09,.84],[hx+.60,hy,.09,.84],[hx,hy+.80,.66,.08]])
     plnBlob(m,{c:[q[0],q[1],fz],r:[q[2],q[3],.24],box:.5,sub:1,col:fr,mat:M,x:shine});
-  plnCard(m,[hx-.51,hy-.72,zc-.30],[hx+.51,hy-.72,zc-.30],[hx+.51,hy+.74,zc-.30],[hx-.51,hy+.74,zc-.30],[0,0,-1],dark,M,null,0,.2);
-  {
-    const NX=6,NY=10,ids=[];
-    for(let j=0;j<=NY;j++)for(let i=0;i<=NX;i++){
-      const u=i/NX,v=j/NY,jamb=.62+.38*Math.sin(u*Math.PI),room=lerp(3.1,.95,Math.pow(v,.8));
-      ids.push(plnVert(m,[lerp(hx-.39,hx+.39,u),lerp(hy-.64,hy+.66,v),zc-.31],[0,0,-1],[1,lerp(.54,.40,v),lerp(.22,.12,v)],PLN_MAT.glow,0,room*jamb,0));
-    }
-    for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){const a=j*(NX+1)+i;plnQuad(m,ids[a],ids[a+1],ids[a+NX+2],ids[a+NX+1]);}
-  }
-  {
-    const y0=hy-.66,z0=zc-.32,y1=.05,z1=-4.26,half=Math.hypot(y0-y1,z0-z1)/2;
-    plnBlob(m,{c:[hx,(y0+y1)/2,(z0+z1)/2],r:[.56,.05,half],box:.35,sub:2,pitch:-Math.atan2(y0-y1,z0-z1),col:steel,mat:M,x:.3});
-  }
+  plnCard(m,[hx-.51,hy-.72,zc-.30],[hx+.51,hy-.72,zc-.30],[hx+.51,hy+.74,zc-.30],[hx-.51,hy+.74,zc-.30],[0,0,-1],plnMul(paint,.9),M,null,0,shine);
+  plnCard(m,[hx-.17,hy+.14,zc-.305],[hx+.17,hy+.14,zc-.305],[hx+.17,hy+.46,zc-.305],[hx-.17,hy+.46,zc-.305],[0,0,-1],plnMix3(glass,sky,.3),M,null,0,1);
   D.lamp=[hx,hy-.1,zc-1.1];
   /* маяк на корме и мачта */
   const bx=-lenM*.36;
@@ -84398,6 +84447,26 @@ function plnShipMesh(h,D){
   const ax=lenM*.1;
   plnBlob(m,{c:[ax,topY(ax)-.02,0],r:[.42,.08,.42],sub:1,col:paint,mat:M,x:shine});
   plnTube(m,{path:[[ax,topY(ax),0],[ax,topY(ax)+.9,0]],rad:.025,sides:5,col:dark,mat:M});
+  return m;
+}
+/* открытый люк: тёмная рама, освещённый проём (к полу теплее и ярче, как в комнате) и трап до того
+   места, где его ждёт земля (21pf rampX/rampZ); кладётся, когда корабль стоит */
+function plnShipOpen(h,D){
+  const m=plnMesh(1024),M=PLN_MAT.man,c=plnShipRgb,dark=c(h.dark),steel=c(h.steel||[118,124,132]);
+  const {hx,ryH,rzH,bellyY}=D,hy=bellyY+ryH*.78,zc=-rzH;
+  plnCard(m,[hx-.51,hy-.72,zc-.32],[hx+.51,hy-.72,zc-.32],[hx+.51,hy+.74,zc-.32],[hx-.51,hy+.74,zc-.32],[0,0,-1],dark,M,null,0,.2);
+  {
+    const NX=6,NY=10,ids=[];
+    for(let j=0;j<=NY;j++)for(let i=0;i<=NX;i++){
+      const u=i/NX,v=j/NY,jamb=.62+.38*Math.sin(u*Math.PI),room=lerp(3.1,.95,Math.pow(v,.8));
+      ids.push(plnVert(m,[lerp(hx-.39,hx+.39,u),lerp(hy-.64,hy+.66,v),zc-.33],[0,0,-1],[1,lerp(.54,.40,v),lerp(.22,.12,v)],PLN_MAT.glow,0,room*jamb,0));
+    }
+    for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){const a=j*(NX+1)+i;plnQuad(m,ids[a],ids[a+1],ids[a+NX+2],ids[a+NX+1]);}
+  }
+  {
+    const y0=hy-.66,z0=zc-.34,y1=.05,z1=-4.26,half=Math.hypot(y0-y1,z0-z1)/2;
+    plnBlob(m,{c:[hx,(y0+y1)/2,(z0+z1)/2],r:[.56,.05,half],box:.35,sub:2,pitch:-Math.atan2(y0-y1,z0-z1),col:steel,mat:M,x:.3});
+  }
   return m;
 }
 /* опоры: нос и две главные, каждая на свой грунт; g — выпуск 0…1, sq — просадка 0…1,
@@ -84417,16 +84486,20 @@ function plnShipLegs(m,h,D,g,sq,feet){
     if(g>.5)plnBlob(m,{c:[foot[0],foot[1]-.06,foot[2]],r:[.42*k,.08,.42*k],sub:1,col:u=>u[1]>.5?paint:dark,mat:M,x:.2});
   });
 }
-/* факелы по тяге: конус колец за каждым соплом, вдоль −x */
-function plnShipFx(m,D,thr,t){
-  const R=7,S=10,glow=PLN_MAT.glow;
-  for(const e of D.eng){
-    const len=e.r*(5+2*thr)*thr,fl=.9+.1*Math.sin(t*.9+e.z*3);
+/* факелы по тяге: конус колец за каждым соплом — вдоль −x у маршевых, вниз у посадочных (down) */
+function plnShipFx(m,D,thr,t,down){
+  const R=7,S=10,glow=PLN_MAT.glow,E=down?(D.jets||[]):D.eng;
+  for(const e of E){
+    const fr=down?e.r*1.5+.22:e.r,len=fr*(down?5+2.5*thr:5+2*thr)*thr,fl=.9+.1*Math.sin(t*.9+e.z*3+e.x*1.7);
     const rings=[];
     for(let k=0;k<R;k++){
-      const u=k/(R-1),rad=e.r*(1-u)*(.95-.35*u)*Math.min(1,u*6+.25)*fl,x=e.x-u*len*fl,ring=[];
+      const u=k/(R-1),rad=fr*(1-u)*(.95-.35*u)*Math.min(1,u*6+.25)*fl,d=u*len*fl,ring=[];
       const col=u<.3?[1,.95,.72]:u<.65?[1,.6,.22]:[.9,.26,.08],gl=(u<.3?8:u<.65?4:1.4)*thr;
-      for(let s=0;s<S;s++){const a=s/S*TAU,cy=Math.cos(a),sz=Math.sin(a);ring.push(plnVert(m,[x,e.y+cy*rad,e.z+sz*rad],[-.4,cy*.8,sz*.8],col,glow,0,gl,0));}
+      for(let s=0;s<S;s++){
+        const a=s/S*TAU,cy=Math.cos(a),sz=Math.sin(a);
+        if(down)ring.push(plnVert(m,[e.x+cy*rad,e.y-d,e.z+sz*rad],[cy*.8,-.4,sz*.8],col,glow,0,gl,0));
+        else ring.push(plnVert(m,[e.x-d,e.y+cy*rad,e.z+sz*rad],[-.4,cy*.8,sz*.8],col,glow,0,gl,0));
+      }
       rings.push(ring);
     }
     for(let k=0;k+1<R;k++)for(let s=0;s<S;s++){const s2=(s+1)%S;plnQuad(m,rings[k][s],rings[k][s2],rings[k+1][s2],rings[k+1][s]);}
@@ -84436,10 +84509,11 @@ function plnShipFx(m,D,thr,t){
 function plnShip(){
   const Q=PLN_SHIP,h=plnShipHull(),key=(G.shipId||"-")+"!"+(h.by||"")+"!"+h.len;
   if(Q.gen===PLN_GPU.gen&&Q.key===key)return Q;
-  if(Q.gen===PLN_GPU.gen){plnGeoFree(Q.geo);plnGeoFree(Q.legs);plnGeoFree(Q.fx);}
+  if(Q.gen===PLN_GPU.gen){plnGeoFree(Q.geo);plnGeoFree(Q.open);plnGeoFree(Q.legs);plnGeoFree(Q.fx);}
   Q.gen=PLN_GPU.gen;Q.key=key;Q.hull=h;Q.legKey="";
   Q.D=plnShipDims(h);
   Q.geo=plnGeo(plnMeshDone(plnShipMesh(h,Q.D)));
+  Q.open=plnGeo(plnMeshDone(plnShipOpen(h,Q.D)));
   const C=PLN_SHIP_CAP;
   Q.legs=plnGeo({v:new Float32Array(C.legV*PLN_VS),i:new Uint32Array(C.legI),nv:C.legV,ni:C.legI});Q.legs.n=0;
   Q.fx=plnGeo({v:new Float32Array(C.fxV*PLN_VS),i:new Uint32Array(C.fxI),nv:C.fxV,ni:C.fxI});Q.fx.n=0;
@@ -84452,19 +84526,23 @@ function plnShipWrite(geo,m){
   if(m.ni)d.writeBuffer(geo.ib,0,m.i,0,Math.min(m.ni,geo.ib.size/4|0));
   geo.n=Math.min(m.ni,geo.ib.size/4|0);
 }
-/* Корабль в кадре. pos — место тела (грунт под ним), yaw — поворот; o: {L — земля (для
-   опор), gear 0…1, sq 0…1, thr 0…1 тяга, hot}. Кладёт тело, опоры, факелы, лампу люка и
-   пятно тени */
+/* Корабль в кадре. pos — место тела (грунт под ним, на спуске — точка касания + alt), yaw —
+   поворот; o: {L — земля (для опор), gear 0…1, sq 0…1, thr 0…1 тяга, hot — жар сопел после
+   касания, alt — высота над землёй, м, tilt — крен (вокруг z тела; нос вниз при минусе), down —
+   факел из посадочных сопел, не из маршевых, open — люк открыт, трап спущен, лампа люка горит}.
+   Кладёт тело, опоры, факелы, открытый люк, лампу люка и пятно
+   тени; крен уезжает в запись знаком размера (21pc) */
 function plnShipFrame(F,pos,yaw,o){
   const Q=plnShip(),D=Q.D,B=PLN_KIND.body,c=Math.cos(yaw),s=Math.sin(yaw);
   o=o||{};
-  const g=o.gear==null?1:clamp(o.gear,0,1),sq=clamp(o.sq||0,0,1),thr=clamp(o.thr||0,0,1);
-  const at=(x,y,z)=>[pos[0]+x*c+z*s,pos[1]+y,pos[2]-x*s+z*c];
-  /* опоры: грунт под каждой пятой — по земле, если она есть */
-  const feet=[],L=o.L,rzT=D.rz(-D.lenM*.26);
+  const g=o.gear==null?1:clamp(o.gear,0,1),sq=clamp(o.sq||0,0,1),thr=clamp(o.thr||0,0,1),hot=clamp(o.hot||0,0,1);
+  const tilt=o.tilt||0,alt=Math.max(0,o.alt||0),ct=Math.cos(tilt),st=Math.sin(tilt);
+  const at=(x,y,z)=>{const xr=x*ct-y*st,yr=x*st+y*ct;return [pos[0]+xr*c+z*s,pos[1]+yr,pos[2]-xr*s+z*c];};
+  /* опоры: грунт под каждой пятой — по земле, если она есть и корабль на ней */
+  const feet=[],L=o.L,rzT=D.rz(-D.lenM*.26),air=alt>.25;
   for(const q of [[D.lenM*.40,0],[-D.lenM*.33,-(rzT*.72+.95)],[-D.lenM*.33,rzT*.72+.95]]){
     const w=at(q[0],0,q[1]);
-    feet.push(L&&typeof plnLandRibAt==="function"?clamp(plnLandRibAt(L,w[0],w[2])-pos[1],-1.2,1.2):0);
+    feet.push(!air&&L&&typeof plnLandRibAt==="function"?clamp(plnLandRibAt(L,w[0],w[2])-pos[1],-1.2,1.2):0);
   }
   const drop=.32*sq;
   const lk=g.toFixed(2)+"|"+sq.toFixed(2)+"|"+feet.map(v=>v.toFixed(2)).join(",");
@@ -84473,23 +84551,30 @@ function plnShipFrame(F,pos,yaw,o){
     plnShipLegs(m,Q.hull,D,g,sq,feet.map(v=>v+drop));
     plnShipWrite(Q.legs,m);Q.legKey=lk;
   }
-  plnRec(Q.a,0,[pos[0],pos[1]-drop,pos[2]],1,yaw,1,2);
+  plnRec(Q.a,0,[pos[0],pos[1]-drop,pos[2]],tilt?-1:1,yaw,1,tilt||2);
   plnInstSet(Q.inst,Q.a,1);
   F.batches.push({geo:Q.geo,inst:Q.inst,kind:B,to:PLN_TO.all});
   if(Q.legs.n)F.batches.push({geo:Q.legs,inst:Q.inst,kind:B,to:PLN_TO.all});
-  if(thr>.02){
+  if(o.open)F.batches.push({geo:Q.open,inst:Q.inst,kind:B,to:PLN_TO.all});
+  /* факелы: на спуске — посадочные сопла вниз; после касания они ещё тлеют (hot) */
+  const fx=o.down?Math.max(thr,.3*hot):thr;
+  if(fx>.02){
     const m=plnMesh(PLN_SHIP_CAP.fxV);
-    plnShipFx(m,D,thr,G.t*.1);
+    plnShipFx(m,D,fx,G.t*.1,!!o.down);
     plnShipWrite(Q.fx,m);
     F.batches.push({geo:Q.fx,inst:Q.inst,kind:B,to:PLN_TO.main|PLN_TO.mirror});
-    const e=D.eng[0],w=at(e.x-e.r*2,e.y-drop,e.z);
-    F.lamps.push({p:w,r:D.lenM*1.3,c:[1,.6,.26],k:3*thr});
+    if(thr>.02){
+      const e=D.eng[0],w=o.down||!e?at(0,-1.4,0):at(e.x-e.r*2,e.y-drop,e.z);
+      F.lamps.push({p:w,r:D.lenM*(o.down?2.2:1.3),c:[1,.6,.26],k:(o.down?4.5:3)*thr});
+    }
   }
   const lp=D.lamp,w=at(lp[0],lp[1]-drop,lp[2]);
   Q.lamp=w;
-  F.lamps.push({p:w,r:7.5,c:[1,.6,.28],k:2.6});
-  const b=F.blobs;let n=b[0]|0;
-  if(n<64){b.set([pos[0],pos[2],D.lenM*.58,.55],4+n*4);n++;b[0]=n;}
+  if(o.open)F.lamps.push({p:w,r:7.5,c:[1,.6,.28],k:2.6});
+  /* пятно тени: с высотой уже и бледнее (как у старой посадки; 47 м — предел) */
+  const b=F.blobs,a=clamp(alt/47,0,1);
+  let n=b[0]|0;
+  if(n<64){b.set([pos[0],pos[2],D.lenM*.58*(1-.5*a),.55*(1-.75*a)],4+n*4);n++;b[0]=n;}
 }
 
 /* ══════════════ планета: вещи игры — залежи, вход в пещеру, устье шахты (M611) ══════════════
@@ -85613,9 +85698,12 @@ function plnLookAt(sy){
    Рамка кадра на линии ходьбы — прямоугольник мира, который показывает 2D-игра; ноги человека
    стоят на доле f высоты от низа, горизонт — на доле hor. Узкому окну — шире угол: в высоком
    кадре земли и неба помещается больше, и объектив подходит ближе */
-function plnLens(S,K){
+function plnLens(S,K,o){
   const ws=W/K,hs=H/K,k=plnSmooth(.6,1.5,ws/hs),f=lerp(.32,.28,k),hor=lerp(.52,.585,k),fov=lerp(46,24,k)*PLN_DEG;
-  const co=camOffset(S),vx=S.cam.x-ws/2+co.x,vy=S.cam.y+10-hs*(1-f)+co.y;
+  /* o — свой верхний левый угол окна (спуск, 21pza): {vx,vy} или функция от (ws,hs,f); объектив
+     тот же, окно задано снаружи */
+  const co=camOffset(S),win=typeof o==="function"?o(ws,hs,f):o;
+  const vx=win&&win.vx!=null?win.vx:S.cam.x-ws/2+co.x,vy=win&&win.vy!=null?win.vy:S.cam.y+10-hs*(1-f)+co.y;
   const l=vx/PLN_M,r=(vx+ws)/PLN_M,t=(PLN.y0-vy)/PLN_M,b=(PLN.y0-vy-hs)/PLN_M;
   const D=((t-b)/2)/Math.tan(fov/2),ex=(l+r)/2,ey=b+hor*(t-b);
   const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,2,70000),plnM4move(-ex,-ey,D));
@@ -85805,18 +85893,25 @@ function plnLightBox(dir,bx,n){
 }
 
 /* ── кадр ── */
-function plnSurface(){
-  /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам */
-  const t0=wallMs(),S=G.surf,tr=S.tr,p=S.p,K=surfScale()*(1+clamp(PLN.near||0,0,1)),Q=PLN_FRAME;
+function plnSurface(S,o){
+  /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
+     S — состояние поверхности (без него G.surf); o — спуск (21pza): {lens(ws,hs) → {vx,vy},
+     ship:{x,alt,gear,sq,thr,hot,tilt,yaw,down}} — корабль в воздухе, людей и вещей в кадре нет */
+  const t0=wallMs(),fly=!!(o&&o.ship),Q=PLN_FRAME;
+  S=S||G.surf;
+  const tr=S.tr,p=S.p,K=surfScale()*(1+clamp(fly?0:PLN.near||0,0,1));
   /* то, что старый кадр делал попутно и на что опирается игра: свет 2D, ветер, камера */
   tr.p=p;sunDirSet(p);WIND=windOf(p);
   if(!S.cam)S.cam={x:S.x,y:S.y};
   PLN.y0=tr.padY;
-  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,o&&o.lens),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
   const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
   plnLandStep(L,C.ex,V,null,lim);
+  /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
+     заново, засаженное пересаживается (M621) */
+  if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
   plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* вода, отсвет земли и ближний воздух — от листа мира (M613) */
@@ -85835,11 +85930,20 @@ function plnSurface(){
   /* в воде человек сидит в круге по пояс: тело стоит ниже, чем его держит игра.
      Налобник горит ночью и в тени затмения; его свет и факел ранца ставит риг (21pha) */
   const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));
-  const swim=clamp(S.swim||0,0,1),man=[S.x/PLN_M,plnY(S.y+10)-PLN_CAST.sink*swim,0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
-  plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
-  plnThingsFrame(L,F,S,p,C.ex,V);
-  plnBeastFrame(L,F,S,p,C.ex,V);
-  plnHerbFrame(L,F,S,p,C.ex,V);
+  const swim=clamp(S.swim||0,0,1);
+  let man=[S.x/PLN_M,plnY(S.y+10)-PLN_CAST.sink*swim,0];
+  if(fly){
+    /* спуск: корабль игры висит над точкой касания; пятно героя — под ним */
+    const q=o.ship,sp=[q.x,plnLandRibAt(L,q.x,L.shipZ)+q.alt,L.shipZ];
+    plnShipFrame(F,sp,q.yaw==null?L.shipYaw:q.yaw,Object.assign({L},q));
+    man=[sp[0],sp[1]-q.alt,sp[2]];
+  }else{
+    const ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
+    plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
+    plnThingsFrame(L,F,S,p,C.ex,V);
+    plnBeastFrame(L,F,S,p,C.ex,V);
+    plnHerbFrame(L,F,S,p,C.ex,V);
+  }
   /* светящийся пруд ночью светит и на берег: лампа посреди воды, её же цвета (M613) */
   if(L.lake&&(wl.murk||0)>.5&&Hr.night>.05){const k=L.lake;F.lamps.push({p:[(k.x0+k.x1)/2,k.level+1.2,(k.zn+k.zf)/2],r:(k.x1-k.x0)/2+8,c:[wa[0]*2,wa[1]*2,wa[2]*2],k:1.2*wl.murk*Hr.night});}
   /* пятна тени героев и вещей легли первыми, остаток мест — тому, что растёт */
@@ -85875,24 +85979,55 @@ drawSurface=function(){
   withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,G.viewK/U));
 };
 
-/* ── посадка греет то, что не зависит от места (M614) ──
-   Сцена складывается вокруг точки касания (L.cx0 — от корабля: дальние высоты, ложбина, перевал,
-   композиция площадки), а корабль садится, где остановился, — до касания землю не построить.
-   Пока он садится, поднимаются устройство, ярус и набор растений (70 мс на ПК); землю у корабля
-   первый кадр поверхности берёт по бюджету PLN_BUILD.first, остальное встаёт по кадрам, ближнее
-   первым (21pf, 21pga). Старая посадка рисуется как есть */
+/* ══════════════ планета: спуск в новом виде (M621) ══════════════
+   Старая посадка (19-mode-landing) считает всё: тягу, наклон, касание, выпуск опор, просадку.
+   Здесь — только кадр: та же сцена, что встретит на поверхности (композиция липнет к площадке —
+   tr.plnCx — и переживает касание), корабль по корпусу игры висит на своей высоте с креном
+   посадки, опоры выходят у земли, факелы посадочных сопел — по тяге, люк закрыт, объектив — окно
+   поверхности: земля под кораблём на своей доле кадра, высоко — корабль на 24 % от верха. Пока летим, земля
+   строится по бюджету кадра (21pf, 21pga); с касания корабль переставляется на своё место без
+   перестройки земли (plnLandMove), и первый кадр поверхности берёт её из кэша. Старая
+   рисовалка — запасной выход, как и у поверхности. */
+const PLN_DESC={thr:0,S:null,bloom:BLOOM_K.landing};
+
+function plnDescent(){
+  const L=G.land,tr=L.tr,p=L.p;
+  if(!tr||!p||!tr.h)return false;
+  /* композиция липнет к площадке: спуск и поверхность складывают сцену вокруг одной точки */
+  if(tr.plnCx==null)tr.plnCx=tr.padX/PLN_M+12.8;
+  const touched=L.over>0,sx=touched?L.x:tr.padX;
+  let S=PLN_DESC.S;
+  if(!S||S.tr!==tr)S=PLN_DESC.S={tr,p,cam:{x:0,y:0},face:1,swim:0,shake:0};
+  S.shipX=sx;S.x=L.x;S.y=L.y;S.cam.x=L.x;S.cam.y=L.y;
+  const gyw=groundAt(tr,L.x),alt=Math.max(0,gyw-L.y-LAND_GY)/PLN_M;
+  /* тяга набирает и гаснет не рывком: факел растёт за несколько кадров */
+  PLN_DESC.thr+=((L.thrOn&&!touched?1:0)-PLN_DESC.thr)*.3;
+  const thr=PLN_DESC.thr<.01?0:PLN_DESC.thr;
+  return plnSurface(S,{
+    /* окно: земля под кораблём на той же доле кадра, что и у поверхности (1−f от верха), пока корабль
+       не поднялся до 24 % — выше окно идёт за ним; так касание и первый кадр поверхности — одно окно */
+    lens:(ws,hs,f)=>({vx:L.x-ws/2,vy:Math.max(-400,Math.min(gyw-hs*(1-f),L.y-hs*.24))}),
+    /* опоры выходят с четырнадцати метров и стоят к пяти; жар сопел гаснет с отсчётом касания */
+    ship:{x:L.x/PLN_M,alt,gear:Math.max(L.gear||0,plnSmooth(14,5,alt)),sq:L.sq||0,thr,
+      hot:(L.hot||0)*(touched?clamp(L.over/70,0,1):0),tilt:-(L.a||0),yaw:.2,down:true}});
+}
+
+/* ── переключатель ── */
 const PLN_OLD_LANDING=drawLanding;
 drawLanding=function(){
-  PLN_OLD_LANDING.apply(this,arguments);
-  if(!PLN.on||PLN.bad>=3||PLN.warm===PLN_GPU.gen)return;
-  try{
-    plnQualAuto();
-    if(!plnGpuReady())return;
-    plnFloraKit();
-    PLN.warm=PLN_GPU.gen;
-  }catch(e){
-    PLN.bad++;PLN.err=String((e&&e.stack)||e).slice(0,600);plnLog("посадка: "+PLN.err);
+  let ok=false;
+  if(PLN.on&&PLN.bad<3&&G.land&&G.land.tr&&G.land.p){
+    try{
+      plnQualAuto();
+      ok=plnGpuReady()&&plnDescent();
+      if(ok)PLN.bad=0;
+    }catch(e){
+      PLN.bad++;PLN.err=String((e&&e.stack)||e).slice(0,600);plnLog("спуск: "+PLN.err);
+      if(GPU.on&&GPU.dev){GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.scene3D=false;}
+    }
   }
+  BLOOM_K.landing=ok?0:PLN_DESC.bloom;
+  if(!ok){PLN_OLD_LANDING.apply(this,arguments);return;}
 };
 
 /* ══════════════ пещера: поле породы в двух измерениях ══════════════ */

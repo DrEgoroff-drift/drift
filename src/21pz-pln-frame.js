@@ -58,9 +58,12 @@ function plnLookAt(sy){
    Рамка кадра на линии ходьбы — прямоугольник мира, который показывает 2D-игра; ноги человека
    стоят на доле f высоты от низа, горизонт — на доле hor. Узкому окну — шире угол: в высоком
    кадре земли и неба помещается больше, и объектив подходит ближе */
-function plnLens(S,K){
+function plnLens(S,K,o){
   const ws=W/K,hs=H/K,k=plnSmooth(.6,1.5,ws/hs),f=lerp(.32,.28,k),hor=lerp(.52,.585,k),fov=lerp(46,24,k)*PLN_DEG;
-  const co=camOffset(S),vx=S.cam.x-ws/2+co.x,vy=S.cam.y+10-hs*(1-f)+co.y;
+  /* o — свой верхний левый угол окна (спуск, 21pza): {vx,vy} или функция от (ws,hs,f); объектив
+     тот же, окно задано снаружи */
+  const co=camOffset(S),win=typeof o==="function"?o(ws,hs,f):o;
+  const vx=win&&win.vx!=null?win.vx:S.cam.x-ws/2+co.x,vy=win&&win.vy!=null?win.vy:S.cam.y+10-hs*(1-f)+co.y;
   const l=vx/PLN_M,r=(vx+ws)/PLN_M,t=(PLN.y0-vy)/PLN_M,b=(PLN.y0-vy-hs)/PLN_M;
   const D=((t-b)/2)/Math.tan(fov/2),ex=(l+r)/2,ey=b+hor*(t-b);
   const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,2,70000),plnM4move(-ex,-ey,D));
@@ -250,18 +253,25 @@ function plnLightBox(dir,bx,n){
 }
 
 /* ── кадр ── */
-function plnSurface(){
-  /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам */
-  const t0=wallMs(),S=G.surf,tr=S.tr,p=S.p,K=surfScale()*(1+clamp(PLN.near||0,0,1)),Q=PLN_FRAME;
+function plnSurface(S,o){
+  /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
+     S — состояние поверхности (без него G.surf); o — спуск (21pza): {lens(ws,hs) → {vx,vy},
+     ship:{x,alt,gear,sq,thr,hot,tilt,yaw,down}} — корабль в воздухе, людей и вещей в кадре нет */
+  const t0=wallMs(),fly=!!(o&&o.ship),Q=PLN_FRAME;
+  S=S||G.surf;
+  const tr=S.tr,p=S.p,K=surfScale()*(1+clamp(fly?0:PLN.near||0,0,1));
   /* то, что старый кадр делал попутно и на что опирается игра: свет 2D, ветер, камера */
   tr.p=p;sunDirSet(p);WIND=windOf(p);
   if(!S.cam)S.cam={x:S.x,y:S.y};
   PLN.y0=tr.padY;
-  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,o&&o.lens),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
   const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
   plnLandStep(L,C.ex,V,null,lim);
+  /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
+     заново, засаженное пересаживается (M621) */
+  if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
   plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* вода, отсвет земли и ближний воздух — от листа мира (M613) */
@@ -280,11 +290,20 @@ function plnSurface(){
   /* в воде человек сидит в круге по пояс: тело стоит ниже, чем его держит игра.
      Налобник горит ночью и в тени затмения; его свет и факел ранца ставит риг (21pha) */
   const lampK=Math.max(plnSmooth(.15,.6,Hr.night),plnSmooth(.45,.8,Hr.ecl));
-  const swim=clamp(S.swim||0,0,1),man=[S.x/PLN_M,plnY(S.y+10)-PLN_CAST.sink*swim,0],ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
-  plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
-  plnThingsFrame(L,F,S,p,C.ex,V);
-  plnBeastFrame(L,F,S,p,C.ex,V);
-  plnHerbFrame(L,F,S,p,C.ex,V);
+  const swim=clamp(S.swim||0,0,1);
+  let man=[S.x/PLN_M,plnY(S.y+10)-PLN_CAST.sink*swim,0];
+  if(fly){
+    /* спуск: корабль игры висит над точкой касания; пятно героя — под ним */
+    const q=o.ship,sp=[q.x,plnLandRibAt(L,q.x,L.shipZ)+q.alt,L.shipZ];
+    plnShipFrame(F,sp,q.yaw==null?L.shipYaw:q.yaw,Object.assign({L},q));
+    man=[sp[0],sp[1]-q.alt,sp[2]];
+  }else{
+    const ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
+    plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
+    plnThingsFrame(L,F,S,p,C.ex,V);
+    plnBeastFrame(L,F,S,p,C.ex,V);
+    plnHerbFrame(L,F,S,p,C.ex,V);
+  }
   /* светящийся пруд ночью светит и на берег: лампа посреди воды, её же цвета (M613) */
   if(L.lake&&(wl.murk||0)>.5&&Hr.night>.05){const k=L.lake;F.lamps.push({p:[(k.x0+k.x1)/2,k.level+1.2,(k.zn+k.zf)/2],r:(k.x1-k.x0)/2+8,c:[wa[0]*2,wa[1]*2,wa[2]*2],k:1.2*wl.murk*Hr.night});}
   /* пятна тени героев и вещей легли первыми, остаток мест — тому, что растёт */
@@ -318,24 +337,4 @@ drawSurface=function(){
   withScale(G.viewK,plnOver);
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
   withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,G.viewK/U));
-};
-
-/* ── посадка греет то, что не зависит от места (M614) ──
-   Сцена складывается вокруг точки касания (L.cx0 — от корабля: дальние высоты, ложбина, перевал,
-   композиция площадки), а корабль садится, где остановился, — до касания землю не построить.
-   Пока он садится, поднимаются устройство, ярус и набор растений (70 мс на ПК); землю у корабля
-   первый кадр поверхности берёт по бюджету PLN_BUILD.first, остальное встаёт по кадрам, ближнее
-   первым (21pf, 21pga). Старая посадка рисуется как есть */
-const PLN_OLD_LANDING=drawLanding;
-drawLanding=function(){
-  PLN_OLD_LANDING.apply(this,arguments);
-  if(!PLN.on||PLN.bad>=3||PLN.warm===PLN_GPU.gen)return;
-  try{
-    plnQualAuto();
-    if(!plnGpuReady())return;
-    plnFloraKit();
-    PLN.warm=PLN_GPU.gen;
-  }catch(e){
-    PLN.bad++;PLN.err=String((e&&e.stack)||e).slice(0,600);plnLog("посадка: "+PLN.err);
-  }
 };

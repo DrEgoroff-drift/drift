@@ -140,6 +140,15 @@ function plnShipMesh(h,D){
     E.push({x:x-r*.8,y,z,r});
   }
   D.eng=E;
+  /* посадочные сопла под брюхом (M621): по паре у носа и у кормы; факел спуска бьёт из них вниз */
+  const J=[],jr=Math.max(.13,lenM*.02);
+  for(const jx of [lenM*.28,-lenM*.2])for(const sg of [-1,1]){
+    const z=sg*D.rz(jx)*.45,y=bellyY+D.lift(jx)+.04;
+    plnTube(m,{path:[[jx,y+jr*.5,z],[jx,y-jr*.55,z]],rad:t=>jr*lerp(.7,1,t),sides:10,col:t=>plnMix3(steel,iron,.35+.55*t),mat:M,x:.5,cap:true});
+    plnBlob(m,{c:[jx,y-jr*.56,z],r:[jr*.74,.015,jr*.74],sub:1,col:[.004,.005,.006],mat:M,x:.05});
+    J.push({x:jx,y:y-jr*.58,z,r:jr});
+  }
+  D.jets=J;
   /* ── приметы класса: контейнеры, радиаторы, плавник, тарелка, купол диска ── */
   const topY=x=>bellyY+D.ry(x)*1.78+D.lift(x);
   if((h.mark&&h.mark.cont)||form==="boxed"||form==="slab"){
@@ -163,24 +172,13 @@ function plnShipMesh(h,D){
     plnBlob(m,{c:[x,y+.62,0],r:[.34,.07,.34],sub:1,lean:.5,col:u=>u[1]>0?plnMul(cer,1.05):plnMul(cer,.7),mat:M,x:.25});
   }
   if(disc)plnBlob(m,{c:[lenM*.04,topY(0)-.12,0],r:[lenM*.2,D.ry(0)*.9,lenM*.2],sub:2,col:u=>u[1]>.15?glass:paint,mat:M,x:u=>u[1]>.15?1:shine});
-  /* ── люк на ближнем борту: воротник, тёмная рама, освещённый проём (к полу теплее и ярче, как в
-     комнате) и трап до того места, где его ждёт земля (21pf rampX/rampZ) ── */
+  /* ── люк на ближнем борту: воротник и закрытая дверь с окошком; открытый проём и трап — своя
+     сетка (plnShipOpen), её кладут, когда корабль стоит ── */
   const hy=bellyY+ryH*.78,zc=-rzH,fz=zc-.08,fr=plnMul(paint,.84);
   for(const q of [[hx-.60,hy,.09,.84],[hx+.60,hy,.09,.84],[hx,hy+.80,.66,.08]])
     plnBlob(m,{c:[q[0],q[1],fz],r:[q[2],q[3],.24],box:.5,sub:1,col:fr,mat:M,x:shine});
-  plnCard(m,[hx-.51,hy-.72,zc-.30],[hx+.51,hy-.72,zc-.30],[hx+.51,hy+.74,zc-.30],[hx-.51,hy+.74,zc-.30],[0,0,-1],dark,M,null,0,.2);
-  {
-    const NX=6,NY=10,ids=[];
-    for(let j=0;j<=NY;j++)for(let i=0;i<=NX;i++){
-      const u=i/NX,v=j/NY,jamb=.62+.38*Math.sin(u*Math.PI),room=lerp(3.1,.95,Math.pow(v,.8));
-      ids.push(plnVert(m,[lerp(hx-.39,hx+.39,u),lerp(hy-.64,hy+.66,v),zc-.31],[0,0,-1],[1,lerp(.54,.40,v),lerp(.22,.12,v)],PLN_MAT.glow,0,room*jamb,0));
-    }
-    for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){const a=j*(NX+1)+i;plnQuad(m,ids[a],ids[a+1],ids[a+NX+2],ids[a+NX+1]);}
-  }
-  {
-    const y0=hy-.66,z0=zc-.32,y1=.05,z1=-4.26,half=Math.hypot(y0-y1,z0-z1)/2;
-    plnBlob(m,{c:[hx,(y0+y1)/2,(z0+z1)/2],r:[.56,.05,half],box:.35,sub:2,pitch:-Math.atan2(y0-y1,z0-z1),col:steel,mat:M,x:.3});
-  }
+  plnCard(m,[hx-.51,hy-.72,zc-.30],[hx+.51,hy-.72,zc-.30],[hx+.51,hy+.74,zc-.30],[hx-.51,hy+.74,zc-.30],[0,0,-1],plnMul(paint,.9),M,null,0,shine);
+  plnCard(m,[hx-.17,hy+.14,zc-.305],[hx+.17,hy+.14,zc-.305],[hx+.17,hy+.46,zc-.305],[hx-.17,hy+.46,zc-.305],[0,0,-1],plnMix3(glass,sky,.3),M,null,0,1);
   D.lamp=[hx,hy-.1,zc-1.1];
   /* маяк на корме и мачта */
   const bx=-lenM*.36;
@@ -188,6 +186,26 @@ function plnShipMesh(h,D){
   const ax=lenM*.1;
   plnBlob(m,{c:[ax,topY(ax)-.02,0],r:[.42,.08,.42],sub:1,col:paint,mat:M,x:shine});
   plnTube(m,{path:[[ax,topY(ax),0],[ax,topY(ax)+.9,0]],rad:.025,sides:5,col:dark,mat:M});
+  return m;
+}
+/* открытый люк: тёмная рама, освещённый проём (к полу теплее и ярче, как в комнате) и трап до того
+   места, где его ждёт земля (21pf rampX/rampZ); кладётся, когда корабль стоит */
+function plnShipOpen(h,D){
+  const m=plnMesh(1024),M=PLN_MAT.man,c=plnShipRgb,dark=c(h.dark),steel=c(h.steel||[118,124,132]);
+  const {hx,ryH,rzH,bellyY}=D,hy=bellyY+ryH*.78,zc=-rzH;
+  plnCard(m,[hx-.51,hy-.72,zc-.32],[hx+.51,hy-.72,zc-.32],[hx+.51,hy+.74,zc-.32],[hx-.51,hy+.74,zc-.32],[0,0,-1],dark,M,null,0,.2);
+  {
+    const NX=6,NY=10,ids=[];
+    for(let j=0;j<=NY;j++)for(let i=0;i<=NX;i++){
+      const u=i/NX,v=j/NY,jamb=.62+.38*Math.sin(u*Math.PI),room=lerp(3.1,.95,Math.pow(v,.8));
+      ids.push(plnVert(m,[lerp(hx-.39,hx+.39,u),lerp(hy-.64,hy+.66,v),zc-.33],[0,0,-1],[1,lerp(.54,.40,v),lerp(.22,.12,v)],PLN_MAT.glow,0,room*jamb,0));
+    }
+    for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){const a=j*(NX+1)+i;plnQuad(m,ids[a],ids[a+1],ids[a+NX+2],ids[a+NX+1]);}
+  }
+  {
+    const y0=hy-.66,z0=zc-.34,y1=.05,z1=-4.26,half=Math.hypot(y0-y1,z0-z1)/2;
+    plnBlob(m,{c:[hx,(y0+y1)/2,(z0+z1)/2],r:[.56,.05,half],box:.35,sub:2,pitch:-Math.atan2(y0-y1,z0-z1),col:steel,mat:M,x:.3});
+  }
   return m;
 }
 /* опоры: нос и две главные, каждая на свой грунт; g — выпуск 0…1, sq — просадка 0…1,
@@ -207,16 +225,20 @@ function plnShipLegs(m,h,D,g,sq,feet){
     if(g>.5)plnBlob(m,{c:[foot[0],foot[1]-.06,foot[2]],r:[.42*k,.08,.42*k],sub:1,col:u=>u[1]>.5?paint:dark,mat:M,x:.2});
   });
 }
-/* факелы по тяге: конус колец за каждым соплом, вдоль −x */
-function plnShipFx(m,D,thr,t){
-  const R=7,S=10,glow=PLN_MAT.glow;
-  for(const e of D.eng){
-    const len=e.r*(5+2*thr)*thr,fl=.9+.1*Math.sin(t*.9+e.z*3);
+/* факелы по тяге: конус колец за каждым соплом — вдоль −x у маршевых, вниз у посадочных (down) */
+function plnShipFx(m,D,thr,t,down){
+  const R=7,S=10,glow=PLN_MAT.glow,E=down?(D.jets||[]):D.eng;
+  for(const e of E){
+    const fr=down?e.r*1.5+.22:e.r,len=fr*(down?5+2.5*thr:5+2*thr)*thr,fl=.9+.1*Math.sin(t*.9+e.z*3+e.x*1.7);
     const rings=[];
     for(let k=0;k<R;k++){
-      const u=k/(R-1),rad=e.r*(1-u)*(.95-.35*u)*Math.min(1,u*6+.25)*fl,x=e.x-u*len*fl,ring=[];
+      const u=k/(R-1),rad=fr*(1-u)*(.95-.35*u)*Math.min(1,u*6+.25)*fl,d=u*len*fl,ring=[];
       const col=u<.3?[1,.95,.72]:u<.65?[1,.6,.22]:[.9,.26,.08],gl=(u<.3?8:u<.65?4:1.4)*thr;
-      for(let s=0;s<S;s++){const a=s/S*TAU,cy=Math.cos(a),sz=Math.sin(a);ring.push(plnVert(m,[x,e.y+cy*rad,e.z+sz*rad],[-.4,cy*.8,sz*.8],col,glow,0,gl,0));}
+      for(let s=0;s<S;s++){
+        const a=s/S*TAU,cy=Math.cos(a),sz=Math.sin(a);
+        if(down)ring.push(plnVert(m,[e.x+cy*rad,e.y-d,e.z+sz*rad],[cy*.8,-.4,sz*.8],col,glow,0,gl,0));
+        else ring.push(plnVert(m,[e.x-d,e.y+cy*rad,e.z+sz*rad],[-.4,cy*.8,sz*.8],col,glow,0,gl,0));
+      }
       rings.push(ring);
     }
     for(let k=0;k+1<R;k++)for(let s=0;s<S;s++){const s2=(s+1)%S;plnQuad(m,rings[k][s],rings[k][s2],rings[k+1][s2],rings[k+1][s]);}
@@ -226,10 +248,11 @@ function plnShipFx(m,D,thr,t){
 function plnShip(){
   const Q=PLN_SHIP,h=plnShipHull(),key=(G.shipId||"-")+"!"+(h.by||"")+"!"+h.len;
   if(Q.gen===PLN_GPU.gen&&Q.key===key)return Q;
-  if(Q.gen===PLN_GPU.gen){plnGeoFree(Q.geo);plnGeoFree(Q.legs);plnGeoFree(Q.fx);}
+  if(Q.gen===PLN_GPU.gen){plnGeoFree(Q.geo);plnGeoFree(Q.open);plnGeoFree(Q.legs);plnGeoFree(Q.fx);}
   Q.gen=PLN_GPU.gen;Q.key=key;Q.hull=h;Q.legKey="";
   Q.D=plnShipDims(h);
   Q.geo=plnGeo(plnMeshDone(plnShipMesh(h,Q.D)));
+  Q.open=plnGeo(plnMeshDone(plnShipOpen(h,Q.D)));
   const C=PLN_SHIP_CAP;
   Q.legs=plnGeo({v:new Float32Array(C.legV*PLN_VS),i:new Uint32Array(C.legI),nv:C.legV,ni:C.legI});Q.legs.n=0;
   Q.fx=plnGeo({v:new Float32Array(C.fxV*PLN_VS),i:new Uint32Array(C.fxI),nv:C.fxV,ni:C.fxI});Q.fx.n=0;
@@ -242,19 +265,23 @@ function plnShipWrite(geo,m){
   if(m.ni)d.writeBuffer(geo.ib,0,m.i,0,Math.min(m.ni,geo.ib.size/4|0));
   geo.n=Math.min(m.ni,geo.ib.size/4|0);
 }
-/* Корабль в кадре. pos — место тела (грунт под ним), yaw — поворот; o: {L — земля (для
-   опор), gear 0…1, sq 0…1, thr 0…1 тяга, hot}. Кладёт тело, опоры, факелы, лампу люка и
-   пятно тени */
+/* Корабль в кадре. pos — место тела (грунт под ним, на спуске — точка касания + alt), yaw —
+   поворот; o: {L — земля (для опор), gear 0…1, sq 0…1, thr 0…1 тяга, hot — жар сопел после
+   касания, alt — высота над землёй, м, tilt — крен (вокруг z тела; нос вниз при минусе), down —
+   факел из посадочных сопел, не из маршевых, open — люк открыт, трап спущен, лампа люка горит}.
+   Кладёт тело, опоры, факелы, открытый люк, лампу люка и пятно
+   тени; крен уезжает в запись знаком размера (21pc) */
 function plnShipFrame(F,pos,yaw,o){
   const Q=plnShip(),D=Q.D,B=PLN_KIND.body,c=Math.cos(yaw),s=Math.sin(yaw);
   o=o||{};
-  const g=o.gear==null?1:clamp(o.gear,0,1),sq=clamp(o.sq||0,0,1),thr=clamp(o.thr||0,0,1);
-  const at=(x,y,z)=>[pos[0]+x*c+z*s,pos[1]+y,pos[2]-x*s+z*c];
-  /* опоры: грунт под каждой пятой — по земле, если она есть */
-  const feet=[],L=o.L,rzT=D.rz(-D.lenM*.26);
+  const g=o.gear==null?1:clamp(o.gear,0,1),sq=clamp(o.sq||0,0,1),thr=clamp(o.thr||0,0,1),hot=clamp(o.hot||0,0,1);
+  const tilt=o.tilt||0,alt=Math.max(0,o.alt||0),ct=Math.cos(tilt),st=Math.sin(tilt);
+  const at=(x,y,z)=>{const xr=x*ct-y*st,yr=x*st+y*ct;return [pos[0]+xr*c+z*s,pos[1]+yr,pos[2]-xr*s+z*c];};
+  /* опоры: грунт под каждой пятой — по земле, если она есть и корабль на ней */
+  const feet=[],L=o.L,rzT=D.rz(-D.lenM*.26),air=alt>.25;
   for(const q of [[D.lenM*.40,0],[-D.lenM*.33,-(rzT*.72+.95)],[-D.lenM*.33,rzT*.72+.95]]){
     const w=at(q[0],0,q[1]);
-    feet.push(L&&typeof plnLandRibAt==="function"?clamp(plnLandRibAt(L,w[0],w[2])-pos[1],-1.2,1.2):0);
+    feet.push(!air&&L&&typeof plnLandRibAt==="function"?clamp(plnLandRibAt(L,w[0],w[2])-pos[1],-1.2,1.2):0);
   }
   const drop=.32*sq;
   const lk=g.toFixed(2)+"|"+sq.toFixed(2)+"|"+feet.map(v=>v.toFixed(2)).join(",");
@@ -263,21 +290,28 @@ function plnShipFrame(F,pos,yaw,o){
     plnShipLegs(m,Q.hull,D,g,sq,feet.map(v=>v+drop));
     plnShipWrite(Q.legs,m);Q.legKey=lk;
   }
-  plnRec(Q.a,0,[pos[0],pos[1]-drop,pos[2]],1,yaw,1,2);
+  plnRec(Q.a,0,[pos[0],pos[1]-drop,pos[2]],tilt?-1:1,yaw,1,tilt||2);
   plnInstSet(Q.inst,Q.a,1);
   F.batches.push({geo:Q.geo,inst:Q.inst,kind:B,to:PLN_TO.all});
   if(Q.legs.n)F.batches.push({geo:Q.legs,inst:Q.inst,kind:B,to:PLN_TO.all});
-  if(thr>.02){
+  if(o.open)F.batches.push({geo:Q.open,inst:Q.inst,kind:B,to:PLN_TO.all});
+  /* факелы: на спуске — посадочные сопла вниз; после касания они ещё тлеют (hot) */
+  const fx=o.down?Math.max(thr,.3*hot):thr;
+  if(fx>.02){
     const m=plnMesh(PLN_SHIP_CAP.fxV);
-    plnShipFx(m,D,thr,G.t*.1);
+    plnShipFx(m,D,fx,G.t*.1,!!o.down);
     plnShipWrite(Q.fx,m);
     F.batches.push({geo:Q.fx,inst:Q.inst,kind:B,to:PLN_TO.main|PLN_TO.mirror});
-    const e=D.eng[0],w=at(e.x-e.r*2,e.y-drop,e.z);
-    F.lamps.push({p:w,r:D.lenM*1.3,c:[1,.6,.26],k:3*thr});
+    if(thr>.02){
+      const e=D.eng[0],w=o.down||!e?at(0,-1.4,0):at(e.x-e.r*2,e.y-drop,e.z);
+      F.lamps.push({p:w,r:D.lenM*(o.down?2.2:1.3),c:[1,.6,.26],k:(o.down?4.5:3)*thr});
+    }
   }
   const lp=D.lamp,w=at(lp[0],lp[1]-drop,lp[2]);
   Q.lamp=w;
-  F.lamps.push({p:w,r:7.5,c:[1,.6,.28],k:2.6});
-  const b=F.blobs;let n=b[0]|0;
-  if(n<64){b.set([pos[0],pos[2],D.lenM*.58,.55],4+n*4);n++;b[0]=n;}
+  if(o.open)F.lamps.push({p:w,r:7.5,c:[1,.6,.28],k:2.6});
+  /* пятно тени: с высотой уже и бледнее (как у старой посадки; 47 м — предел) */
+  const b=F.blobs,a=clamp(alt/47,0,1);
+  let n=b[0]|0;
+  if(n<64){b.set([pos[0],pos[2],D.lenM*.58*(1-.5*a),.55*(1-.75*a)],4+n*4);n++;b[0]=n;}
 }

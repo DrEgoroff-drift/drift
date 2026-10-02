@@ -29,6 +29,7 @@ every shot lie there too.
 | `eval-crags.js` | the crags placed near the man, the measures of the kit, the steep steps of the line |
 | `pose.py` | the man in a given pose, cropped out: `<name>:ph=;amp=;air=;jet=;vy=;raise=;swim=;hour=;near=;face=;where=;crop=;scale=` — the state is frozen through getters, the near lens is on by default |
 | `ship.py` | writes a pad snippet with a synthetic hull of a given form and class (`<form> [class] [colour] [hour]`; forms swept/delta/xwing/twin/slab/boxed/disc/trident), so the planet's ship (21phb) can be looked at across the fleet; shoot it with `pose.py base=g_ship_<form>_<class>.js` |
+| `descent.py` | writes a snippet that holds the landing still at a height: `<name>:alt=;dx=;a=;gear=;thr=;touched=;flow=;hour=;t=;n=` — the descent frame of 21pza; `flow=N` switches to the surface after N frames, shoot it with `until=window.__FLOW` |
 | `where.py` | where the frames go |
 
 ```bash
