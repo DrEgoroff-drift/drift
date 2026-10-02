@@ -245,7 +245,7 @@ function plnLandPond(L,x,z){
    смотрит на неё вскользь. Дно у берега — отмель, глубина начинается в шаге от неё */
 function plnLandRim(L,x,z){
   const s=plnLandPond(L,x,z),top=L.lake.level+lerp(.15,.4,plnSmooth(-2,3,z));
-  return s>0?top-1.2*plnSmooth(3,9,s)-6*plnSmooth(9,25,s):top-.3*plnSmooth(0,.9,-s)-2.7*plnSmooth(.7,4.5,-s);
+  return s>0?top-1.2*plnSmooth(3,9,s)-6*plnSmooth(9,25,s):top-.28*plnSmooth(0,1.3,-s)-2.7*plnSmooth(1.1,5,-s);
 }
 /* Голый берег: полоса сырой земли у самой воды. Полоса рваная — местами трава спускается к урезу:
    сплошная читается второй тропой вокруг пруда */
@@ -304,6 +304,7 @@ function plnLandFarH(L,xw,z){
   /* ложбина держит воду у площадки и за озером игры; дальше дно поднимается и сохнет */
   let dl=Math.abs(x-10);
   if(L.lake){const a=L.lake.x0-L.cx0,b=L.lake.x1-L.cx0;dl=Math.min(dl,x<a?a-x:(x>b?x-b:0));}
+  dl+=14*plnFbm(x*.03+1.7,z*.06+4.2,2,sd+74);   /* урез ложбины — бухтами и косами, не по линейке (M623) */
   let h=-6.4+.6*plnFbm(x*.02+3,z*.02+8,2,sd+7)+7*plnSmooth(70,130,dl),k=1,k2=1,w2=0;
   /* кулиса красится своим цветом; у стыка двух — оба, долями: граница цвета идёт мимо узлов сетки
      и без этого рисуется лесенкой. Полоса стыка — в метрах высоты, шире с расстоянием */
@@ -378,13 +379,13 @@ function plnLandFarH(L,xw,z){
 
 /* ── цвет ── */
 /* натоптанная тропа: сама линия ходьбы и ветка от трапа корабля */
-function plnLandPath(L,x,z){
+function plnLandPath(L,x,z,nw){
   const e1=.22*Math.sin(x*.31)+.16*Math.sin(x*.83+1.3),e2=.2*Math.sin(x*.27+2)+.15*Math.sin(x*.71+.4);
-  const zc=-.15+(e2-e1)*.5,hw=.85+(e1+e2)*.5,rx=L.rampX;
-  let w=1-plnSmooth(hw,hw+.8,Math.abs(z-zc));
+  const zc=-.15+(e2-e1)*.5,hw=(.85+(e1+e2)*.5)*(nw||1),rx=L.rampX;   /* nw — доля полуширины (середина тропы, 21pge) */
+  let w=1-plnSmooth(hw,hw+.4,Math.abs(z-zc));   /* край резче: за .8 м тропа была мазком кисти (M623) */
   if(x>rx-1&&x<rx+10.5){
     const t=clamp((x-rx)/10,0,1),zl=lerp(L.rampZ,0,t*t*(3-2*t));
-    w=Math.max(w,(1-plnSmooth(.5,1.2,Math.abs(z-zl)))*plnSmooth(rx-1,rx-.2,x));
+    w=Math.max(w,(1-plnSmooth(hw*.6,hw*1.4,Math.abs(z-zl)))*plnSmooth(rx-1,rx-.2,x));
   }
   return w*plnSmooth(.25,.6,plnFbm(x*.9,z*.9,2,L.sd+51)*.5+.5+w*.35);
 }
@@ -427,7 +428,7 @@ function plnLandCol(L,x,z,h,n,k){
      градусов. Голый серый бок в рост человека стоял посреди кадра «шатром» */
   if(k===0)c=plnMix3(c,plnMix3(PAL.rockWarm,PAL.rockCool,v1),plnSmooth(.5,.7,slope)*.8);
   else if(k<5)c=plnMix3(c,plnMix3(PAL.rockWarm,PAL.rockCool,v1),plnSmooth(.22,.42,slope)*(k>=4?1:.8));
-  if(k===0)c=plnMix3(c,plnMix3(PAL.soil,PAL.soilDark,v1),plnLandPath(L,x,z)*.75*(1-plnSmooth(.55,.75,slope)));
+  if(k===0)c=plnDressPath(L,x,z,c,slope,v1);   /* тропа: натоптанная середина, пыльный край (21pge) */
   return c;
 }
 
@@ -562,9 +563,7 @@ function plnLandRibMesh(L,c){
     /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
     if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
     if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>L.lake.zn-4&&z<L.lake.zf+4){
-      /* у самой воды берег гол: сырая земля темнее тропы */
-      col=plnMix3(col,plnMix3(PAL.soilDark,PAL.mud,.6),plnLandBare(L,x,z)*plnSmooth(.6,2.5,Math.abs(z))*.65);
-      col=plnMix3(col,PAL.mud,plnSmooth(L.lake.level+.12,L.lake.level-.5,h)*.85);
+      col=plnDressShore(L,x,z,h,col);   /* голый берег, отмель, ил (21pge) */
     }
     /* ступень линии — скала: камень там, где земля под ней и за ней сама идёт круто */
     const st=Math.max(plnSmooth(.5,.7,slope),plnLandTab(L,L.crag,x)*plnSmooth(.16,.34,slope)*plnSmooth(9,5,Math.abs(z)));

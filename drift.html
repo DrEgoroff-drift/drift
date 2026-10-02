@@ -81159,7 +81159,7 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   if (mat == 1) {
     var fN = normalize(cross(fx, fy));
     if (dot(fN, V) < 0.0) { fN = -fN; }
-    N = normalize(mix(N, fN, 0.7));
+    N = normalize(mix(N, fN, 0.92));
   }
   var alb = in.col;
   /* у земли в гнезде свечения — доля камня, и на земле ничто не светится */
@@ -81172,10 +81172,13 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
     let s1 = fbm(in.wpos.xz * vec2f(0.045, 0.11) + vec2f(17.0, 3.0), 51u) - 0.5;
     let s2 = fbm(in.wpos.xz * vec2f(0.55, 1.2) + vec2f(5.0, 9.0), 53u) - 0.5;
     alb *= 1.0 + s1 * 0.30 * mid + s2 * 0.20 * near;
+    /* у объектива — мелкое зерно: пыль и крошка на тропе (M623) */
+    let s3 = fbm(in.wpos.xz * vec2f(2.4, 4.8) + vec2f(1.0, 2.0), 59u) - 0.5;
+    alb *= 1.0 + s3 * 0.12 * (1.0 - smoothstep(14.0, 45.0, dist));
     if (stone > 0.0) {
       var fN = normalize(cross(fx, fy));
       if (dot(fN, V) < 0.0) { fN = -fN; }
-      N = normalize(mix(N, fN, 0.55 * stone));
+      N = normalize(mix(N, fN, 0.85 * stone));
     }
   }
   let ndl = dot(N, L);
@@ -81185,9 +81188,10 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   let cl = cloudLight(in.wpos);
   let fg = nearShade(in.wpos);
   var lit = smoothstep(-0.02, 0.30, ndl);
+  if (mat == 1) { lit = smoothstep(0.0, 0.22, ndl); }
   var ao = 1.0;
   var through = 0.0;
-  if (mat == 0) { ao = ex; lit = smoothstep(mix(-0.10, 0.0, stone), mix(0.45, 0.24, stone), ndl); }
+  if (mat == 0) { ao = ex; lit = smoothstep(mix(-0.10, 0.0, stone), mix(0.45, 0.22, stone), ndl); }
   if (mat == 7) { ao = mix(0.45, 1.0, smoothstep(0.0, 0.7, ex)); }
   if (mat == 0 || mat == 7) {
     let nb = i32(blobs.n.x);
@@ -81209,6 +81213,14 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   if (mat == 7) {
     lit = smoothstep(-0.4, 0.45, ndl);
     through = pow(clamp(dot(-V, L), 0.0, 1.0), 2.0) * 0.7 * ex;
+  }
+  /* камень: плоскости делит свет — освещённая грань теплеет, теневая холодеет, насколько силён
+     ключ (ночью деления нет). Пласты по высоте пробовали — на свету это мазня (M623) */
+  let stoneK = select(stone, 1.0, mat == 1);
+  if (stoneK > 0.0) {
+    let key = clamp(dot(g.sunCol.rgb, vec3f(0.3333)) / 1.38, 0.0, 1.0);
+    let lk = lit * sh * cl;
+    alb *= mix(vec3f(1.0), mix(vec3f(0.76, 0.86, 1.14), vec3f(1.16, 1.05, 0.86), lk), stoneK * key);
   }
   let sun = g.sunCol.rgb * (sh * cl * fg);
   let amb = mix(g.ambGnd.rgb, g.ambSky.rgb, N.y * 0.5 + 0.5) * ao * mix(0.55, 1.0, fg);
@@ -81284,14 +81296,18 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
      сильнее в упор и пятнами, слабее вскользь — иначе ночью это плоский лист */
   let deep = smoothstep(0.0, mix(2.2, 0.5, murk), depth);
   var body = mix(g.waterA.rgb, g.waterB.rgb, deep);
+  /* отмель: у уреза тело воды светлее и зеленее, дно сквозит (M623) */
+  body = mix(body * vec3f(1.12, 1.18, 1.04), body, smoothstep(0.0, 0.7, depth));
   let gl = murk * (0.16 + 0.30 * nv) * (0.6 + 0.6 * calm);
   body = body * (g.sunCol.rgb * (0.55 * cl) + g.ambSky.rgb * 0.91) + g.waterA.rgb * gl;
   var c = mix(body, refl * vec3f(0.84, 0.90, 0.92), clamp(fr * 1.05 * (1.0 - 0.8 * murk), 0.0, 1.0));
   /* мокрая кромка вдоль берега: светла настолько, насколько светел ключ; у мутной воды — её же цвета */
   let key = clamp(dot(g.sunCol.rgb, vec3f(0.3333)) / 1.38, 0.0, 1.0);
   let edge = mix(vec3f(0.85, 0.92, 0.95), g.waterA.rgb * 2.2, murk);
-  c = mix(c, edge * (key * (0.4 + 0.6 * cl)), (1.0 - smoothstep(0.02, 0.16, depth)) * 0.35);
-  let alpha = smoothstep(-0.03, 0.30, depth);
+  /* мягкая полоса у берега и тонкая светлая нитка по самому урезу, рваная рябью (M623) */
+  let shore = (1.0 - smoothstep(0.02, 0.16, depth)) * 0.30 + (1.0 - smoothstep(0.0, 0.06, depth + n2 * 0.03)) * 0.35;
+  c = mix(c, edge * (key * (0.4 + 0.6 * cl)), clamp(shore, 0.0, 1.0));
+  let alpha = smoothstep(-0.03, 0.6, depth);
   return vec4f(applyFog(c, in.wpos, 1.0), alpha);
 }
 `;
@@ -82050,7 +82066,7 @@ function plnLandPond(L,x,z){
    смотрит на неё вскользь. Дно у берега — отмель, глубина начинается в шаге от неё */
 function plnLandRim(L,x,z){
   const s=plnLandPond(L,x,z),top=L.lake.level+lerp(.15,.4,plnSmooth(-2,3,z));
-  return s>0?top-1.2*plnSmooth(3,9,s)-6*plnSmooth(9,25,s):top-.3*plnSmooth(0,.9,-s)-2.7*plnSmooth(.7,4.5,-s);
+  return s>0?top-1.2*plnSmooth(3,9,s)-6*plnSmooth(9,25,s):top-.28*plnSmooth(0,1.3,-s)-2.7*plnSmooth(1.1,5,-s);
 }
 /* Голый берег: полоса сырой земли у самой воды. Полоса рваная — местами трава спускается к урезу:
    сплошная читается второй тропой вокруг пруда */
@@ -82109,6 +82125,7 @@ function plnLandFarH(L,xw,z){
   /* ложбина держит воду у площадки и за озером игры; дальше дно поднимается и сохнет */
   let dl=Math.abs(x-10);
   if(L.lake){const a=L.lake.x0-L.cx0,b=L.lake.x1-L.cx0;dl=Math.min(dl,x<a?a-x:(x>b?x-b:0));}
+  dl+=14*plnFbm(x*.03+1.7,z*.06+4.2,2,sd+74);   /* урез ложбины — бухтами и косами, не по линейке (M623) */
   let h=-6.4+.6*plnFbm(x*.02+3,z*.02+8,2,sd+7)+7*plnSmooth(70,130,dl),k=1,k2=1,w2=0;
   /* кулиса красится своим цветом; у стыка двух — оба, долями: граница цвета идёт мимо узлов сетки
      и без этого рисуется лесенкой. Полоса стыка — в метрах высоты, шире с расстоянием */
@@ -82183,13 +82200,13 @@ function plnLandFarH(L,xw,z){
 
 /* ── цвет ── */
 /* натоптанная тропа: сама линия ходьбы и ветка от трапа корабля */
-function plnLandPath(L,x,z){
+function plnLandPath(L,x,z,nw){
   const e1=.22*Math.sin(x*.31)+.16*Math.sin(x*.83+1.3),e2=.2*Math.sin(x*.27+2)+.15*Math.sin(x*.71+.4);
-  const zc=-.15+(e2-e1)*.5,hw=.85+(e1+e2)*.5,rx=L.rampX;
-  let w=1-plnSmooth(hw,hw+.8,Math.abs(z-zc));
+  const zc=-.15+(e2-e1)*.5,hw=(.85+(e1+e2)*.5)*(nw||1),rx=L.rampX;   /* nw — доля полуширины (середина тропы, 21pge) */
+  let w=1-plnSmooth(hw,hw+.4,Math.abs(z-zc));   /* край резче: за .8 м тропа была мазком кисти (M623) */
   if(x>rx-1&&x<rx+10.5){
     const t=clamp((x-rx)/10,0,1),zl=lerp(L.rampZ,0,t*t*(3-2*t));
-    w=Math.max(w,(1-plnSmooth(.5,1.2,Math.abs(z-zl)))*plnSmooth(rx-1,rx-.2,x));
+    w=Math.max(w,(1-plnSmooth(hw*.6,hw*1.4,Math.abs(z-zl)))*plnSmooth(rx-1,rx-.2,x));
   }
   return w*plnSmooth(.25,.6,plnFbm(x*.9,z*.9,2,L.sd+51)*.5+.5+w*.35);
 }
@@ -82232,7 +82249,7 @@ function plnLandCol(L,x,z,h,n,k){
      градусов. Голый серый бок в рост человека стоял посреди кадра «шатром» */
   if(k===0)c=plnMix3(c,plnMix3(PAL.rockWarm,PAL.rockCool,v1),plnSmooth(.5,.7,slope)*.8);
   else if(k<5)c=plnMix3(c,plnMix3(PAL.rockWarm,PAL.rockCool,v1),plnSmooth(.22,.42,slope)*(k>=4?1:.8));
-  if(k===0)c=plnMix3(c,plnMix3(PAL.soil,PAL.soilDark,v1),plnLandPath(L,x,z)*.75*(1-plnSmooth(.55,.75,slope)));
+  if(k===0)c=plnDressPath(L,x,z,c,slope,v1);   /* тропа: натоптанная середина, пыльный край (21pge) */
   return c;
 }
 
@@ -82367,9 +82384,7 @@ function plnLandRibMesh(L,c){
     /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
     if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
     if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>L.lake.zn-4&&z<L.lake.zf+4){
-      /* у самой воды берег гол: сырая земля темнее тропы */
-      col=plnMix3(col,plnMix3(PAL.soilDark,PAL.mud,.6),plnLandBare(L,x,z)*plnSmooth(.6,2.5,Math.abs(z))*.65);
-      col=plnMix3(col,PAL.mud,plnSmooth(L.lake.level+.12,L.lake.level-.5,h)*.85);
+      col=plnDressShore(L,x,z,h,col);   /* голый берег, отмель, ил (21pge) */
     }
     /* ступень линии — скала: камень там, где земля под ней и за ней сама идёт круто */
     const st=Math.max(plnSmooth(.5,.7,slope),plnLandTab(L,L.crag,x)*plnSmooth(.16,.34,slope)*plnSmooth(9,5,Math.abs(z)));
@@ -82745,10 +82760,11 @@ function plnFloraRock(m,seed,sub,r){
 /* скала: шар, срубленный плоскостями, — камень рублен, а не лепится. Грань несёт свою нормаль и свою
    светлоту: что смотрит вверх — светлее, там же лежит мох. Кверху тело уже.
    o: c (середина подошвы), r [rx, рост, rz], chops (сколько срубов), lean и pitch (наклон пласта),
-      yaw, thin (ширина макушки в долях подошвы), seed */
+      yaw, thin (ширина макушки в долях подошвы), seed; ico — ступень шара (2), deep — ближний сруб (.5):
+      грубый шар, срубленный глубже, — крупные плоские грани, их видно и за сто метров (M623) */
 function plnFloraCrag(m,r,o){
-  const M=PLN_MAT.rock,g=plnIco(2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed;
-  for(let k=0;k<o.chops;k++)cuts.push([plnNorm([r()*2-1,r()*1.5-.6,r()*2-1]),.5+r()*.36]);
+  const M=PLN_MAT.rock,g=plnIco(o.ico||2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed,deep=o.deep||.5;
+  for(let k=0;k<o.chops;k++)cuts.push([plnNorm([r()*2-1,r()*1.5-.6,r()*2-1]),deep+r()*.36]);
   for(const u of g.p){
     let q=plnMul(u,1+.2*plnNoise(u[0]*1.6+sd,u[1]*1.6+u[2]*1.1,sd));
     for(const [n,d] of cuts){const e=plnDot(q,n)-d;if(e>0)q=plnSub(q,plnMul(n,e));}
@@ -82758,7 +82774,8 @@ function plnFloraCrag(m,r,o){
     if(o.pitch)l=plnRotX(l,o.pitch);
     if(o.yaw)l=plnRotY(l,o.yaw);
     l=plnAdd(l,o.c);
-    V.push(l);G0.push(plnSmooth(-.25,.3,plnNoise(l[0]*.9+sd,l[2]*.9,sd+2))*.75);
+    /* мох — шапкой с рваным краем, не мутью: доля либо есть, либо нет (M623) */
+    V.push(l);G0.push(plnSmooth(.0,.22,plnNoise(l[0]*.9+sd,l[2]*.9,sd+2))*.9);
   }
   const mid=plnAdd(o.c,[0,R[1]*.5,0]);
   for(const [a,b,c] of g.f){
@@ -82767,7 +82784,7 @@ function plnFloraCrag(m,r,o){
     let n=plnMul(e,1/ar);
     if(plnDot(n,plnSub(V[a],mid))<0)n=plnMul(n,-1);
     /* светлота — от того, куда грань смотрит: куски одного сруба красятся одинаково */
-    const k=lerp(.7,1.08,plnSmooth(-.35,.9,n[1]))*(.93+.14*plnNoise(n[0]*2.3+sd,n[2]*2.3+n[1]*1.7,sd+4)),up=plnSmooth(.45,.85,n[1]);
+    const k=lerp(.58,1.14,plnSmooth(-.35,.9,n[1]))*(.9+.2*plnNoise(n[0]*2.3+sd,n[2]*2.3+n[1]*1.7,sd+4)),up=plnSmooth(.45,.85,n[1]);
     const v=i=>plnVert(m,V[i],n,[G0[i]*up,k-.5,0],M,0,0,0);
     plnTri(m,v(a),v(b),v(c));
   }
@@ -82860,6 +82877,13 @@ function plnFloraKit(){
   /* камни: три малых и три больших */
   K.rock=[[11,1,[1.2,.8,1]],[23,1,[1.35,.7,1]],[37,1,[1.05,.75,1.1]],[5,2,[1.2,.8,1]],[17,2,[1.25,.85,1]],[29,2,[1.15,.9,.95]]]
     .map(q=>geo(plnFloraRock(plnMesh(256),q[0],q[1],q[2])));
+  /* скалы-тела для камня покрупнее: рублены гранями — валун-шар читался комом глины (M623).
+     Подошва чуть ниже нуля, мерка — единица: запись даёт размер */
+  K.crag=[[41,[1.15,.95,.9],10,.7],[43,[1.0,1.15,.85],12,.6],[47,[1.3,.7,1.0],9,.8],[53,[.95,1.3,.8],13,.55]].map(q=>{
+    const m=plnMesh(256),r=rng(q[0]);
+    plnFloraCrag(m,r,{c:[0,-.12,0],r:[q[1][0],q[1][1]+.12,q[1][2]],chops:q[2],lean:(r()-.5)*.3,pitch:(r()-.5)*.2,yaw:0,thin:q[3],seed:q[0],ico:1,deep:.42});
+    return geo(m);
+  });
   /* уступы: зуб, двойня, столб — высокие, им стоять за тропой; гребень, глыба, плита — низкие, они
      лежат и перед ней. Мерки тела — для посадки на склон: top — макушка над нулём, rx и rz — полуоси
      подошвы, low — на сколько подошва ниже нуля */
@@ -83030,7 +83054,7 @@ function plnPlantFree(L,x){
 function plnPlantBodies(L,J){
   const K=plnFloraKit(),P=PLN_PAL,TO=PLN_TO,F=L.flora,lush=F.lush,xa=J.xa,xb=J.xb,wd=xb-xa,c=J.c,at=plnPlantGrid(L,J);
   const r=rng(plnPlantSeed(L,c,1)),clear=[],blots=[],lake=L.lake,H=PLN_FLORA.treeH;
-  const bTree=K.tree.map(t=>plnPlantBucket(t.geo,TO.all)),bRock=K.rock.map(g=>plnPlantBucket(g,TO.all)),
+  const bTree=K.tree.map(t=>plnPlantBucket(t.geo,TO.all)),bRock=K.rock.map(g=>plnPlantBucket(g,TO.all)),bCrag=K.crag.map(g=>plnPlantBucket(g,TO.all)),
     bRos=K.ros.map(g=>plnPlantBucket(g,TO.main|TO.sh0)),bBloom=K.bloom.map(g=>plnPlantBucket(g,TO.main)),
     bReed=K.reed.map(g=>plnPlantBucket(g,TO.main|TO.sh0)),bPad=K.pad.map(g=>plnPlantBucket(g,TO.main)),
     bLedge=K.ledge.map(t=>plnPlantBucket(t.geo,TO.all)),
@@ -83049,11 +83073,12 @@ function plnPlantBodies(L,J){
     plnPlantPut(bTree[v],[x,g,z],s,yaw,hk,t.under,2,t.top,0);
     blots.push([x,z,Math.max(R*.5,.8),.4]);clear.push([x,z,.9,.9,0]);
   };
-  const rock=(x,z,rr,tone,shade)=>{
+  const rock=(x,z,rr,tone,shade,nb)=>{
     const g=at(x,z)[0];
     if(wetAt(x,z,g))return;
-    plnPlantPut(bRock[(rr>.85?3:0)+((hv(x,z,1)*3)|0)],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),1,plnMul(P.moss,shade==null?1:shade),0);
-    blots.push([x,z,rr*1.8,rr>.4?.5:.4]);
+    /* крупный камень — рублёное тело (M623) */
+    plnPlantPut(rr>.85?bCrag[(hv(x,z,1)*4)|0]:bRock[(hv(x,z,1)*3)|0],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),1,plnMul(P.moss,shade==null?1:shade),0);
+    if(!nb)blots.push([x,z,rr*1.8,rr>.4?.5:.4]);
     if(rr>.4)clear.push([x,z,rr*1.3,rr*1.3,0]);
   };
   const [root,tipW,tipC]=PLN_FL.ros;
@@ -83204,8 +83229,10 @@ function plnPlantBodies(L,J){
     const q=rng(plnPlantSeed(L,c,4)),[rootR,tipR,dryR]=PLN_FL.reed;
     const la=Math.max(xa,lake.x0-2),span=Math.min(xb,lake.x1+2)-la,lx=lake.x1-lake.x0,mid=(lake.x0+lake.x1)/2;
     const dice=n=>{const a=[];for(let k=0;k<n;k++)a.push(q());return a;};
-    for(let k=Math.ceil(span/4.5);k>0&&lush>0;k--){
-      const d=dice(5),cx=la+d[0]*span,far=d[1]<.7||Math.abs(cx-mid)<.33*lx,n=8+((d[2]*14)|0),hh=1.1+d[3]*.9,wid=1.2+d[4]*2.4;
+    /* камыш — немногими купами, меж ними открытая вода (M623) */
+    for(let k=Math.ceil(span/9);k>0&&lush>0;k--){
+      const d=dice(6),cx=la+d[0]*span,far=d[1]<.7||Math.abs(cx-mid)<.33*lx,n=10+((d[2]*12)|0),hh=1.1+d[3]*.9,wid=.9+d[4]*1.3;
+      if(d[5]<.3)continue;
       for(let j=0;j<n;j++){
         const e=dice(8),u=(e[0]+e[1]+e[2])/3*2-1,x=clamp(cx+u*wid*1.3,xa,xb-.01);
         const z=far?plnLandPondZ(L,x,true)-.9+(e[3]-.5)*1.8:plnLandPondZ(L,x,false)+.5+(e[3]-.5)*1.2,g=at(x,z)[0];
@@ -83250,8 +83277,9 @@ function plnPlantBodies(L,J){
       }
     }
   }
+  plnDressBodies(L,J,{free,rock});   /* галька кучками по краю тропы и у трапа (21pge) */
   /* дикие куртины видов планеты — последними, по оставшейся земле (21pgd) */
-  const bodies=bTree.concat(bRock,bLedge,bRos,bBloom,bReed,bPad,plnWildBodies(L,J,{at,free,clear,blots,wetAt,padK}));
+  const bodies=bTree.concat(bRock,bCrag,bLedge,bRos,bBloom,bReed,bPad,plnWildBodies(L,J,{at,free,clear,blots,wetAt,padK}));
   F.groups.push(plnPlantGroup(xa-7,xb+7,9,2,bodies,blots));
   F.groups.push(plnPlantGroup(xa-7,xb+7,-47,2,bWing));
   return clear;
@@ -83348,12 +83376,13 @@ function plnPlantFar(L,fc){
   const K=plnFloraKit(),C=PLN_PLANT,P=PLN_PAL,TO=PLN_TO,F=L.flora,lush=F.lush,xa=fc*C.farW,xb=xa+C.farW,wy=PLN_LAND.wRel,H=PLN_FLORA.treeH;
   const r=rng(plnPlantSeed(L,fc,11)),lit=TO.main|TO.mirror,cast=lit|TO.sh1;
   const bTree=K.far.map(t=>plnPlantBucket(t.geo,cast)),bTree2=K.far.map(t=>plnPlantBucket(t.geo,cast)),bRock=K.rock.map(g=>plnPlantBucket(g,cast)),
-    bBush=K.bush.map(g=>plnPlantBucket(g,cast)),bReed=K.reed.map(g=>plnPlantBucket(g,lit));
+    bCrag=K.crag.map(g=>plnPlantBucket(g,cast)),bBush=K.bush.map(g=>plnPlantBucket(g,cast)),bReed=K.reed.map(g=>plnPlantBucket(g,lit));
   /* урез воды по клетке: через два метра, между ними — по прямой */
   const NS=Math.round(C.farW/2)+1,sh=new Float32Array(NS);
   for(let i=0;i<NS;i++)sh[i]=plnPlantShore(L,xa+i*2);
   const shore=x=>{const u=clamp((x-xa)/2,0,NS-1.001),i=Math.floor(u);return sh[i]&&sh[i+1]?lerp(sh[i],sh[i+1],u-i):0;};
-  const rock=(x,z,y,rr,tone,big)=>plnPlantPut(bRock[(big?3:0)+((plnHash(x|0,z|0,fc)*3)|0)],[x,y,z],rr,plnHash(z|0,x|0,fc+1)*TAU,1,
+  /* камень дальнего берега рублен гранями (M623): шар на ста метрах — ком */
+  const rock=(x,z,y,rr,tone,big)=>plnPlantPut(big?bCrag[(plnHash(x|0,z|0,fc)*4)|0]:bRock[(plnHash(x|0,z|0,fc)*3)|0],[x,y,z],rr,plnHash(z|0,x|0,fc+1)*TAU,1,
     plnMix3(P.rockWarm,P.rockCool,tone),1,P.moss,1);
   /* скалы дальнего берега, камни на отмели перед ними */
   {
@@ -83422,7 +83451,7 @@ function plnPlantFar(L,fc){
     q=dice();
     if(q[0]<.85*lush){const c=plnPlantCrest(L,xa+q[1]*C.farW,270,430,10);grove(bTree2,c[0],c[2]-8+q[2]*30,6+((q[3]*5)|0),17,9,15,q[4]<.5?0:3,1,4);}
   }
-  for(const G0 of [plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed,plnWildFar(L,fc,xa))),plnPlantGroup(xa-30,xb+30,470,8,bTree2)]){G0.far=true;F.groups.push(G0);}
+  for(const G0 of [plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bCrag,bBush,bReed,plnWildFar(L,fc,xa))),plnPlantGroup(xa-30,xb+30,470,8,bTree2)]){G0.far=true;F.groups.push(G0);}
   F.far[fc]=true;
 }
 
@@ -84037,6 +84066,50 @@ function plnWildFar(L,fc,xa){
 }
 /* порода дерева — по миру: множитель веса породы k на посадке L */
 function plnTreeWorldW(L,k){const t=L.flora&&L.flora.type,T=PLN_WILD.trees[t];return T&&T[k]!=null?T[k]:1;}
+
+/* ══════════════ планета: одежда земли — тропа, берег, галька (M623) ══════════════
+   Тропа — не мазок кисти: натоптанная середина темнее и плотнее, края светлее и пыльнее, кромка
+   рвана маской plnLandPath. У уреза пруда — отмель: дно у берега светлее ила на глубине, а полоса
+   сырой земли у воды темнее тропы. Галька — тела, не зерно: кучками по краю тропы и у трапа, где
+   человек сходит на землю, — деталь там, где актёр. Цвета — рабочий лист мира (PLN_PAL). */
+const PLN_DRESS={
+  core:.45,                /* натоптанная середина тропы — доля её полуширины */
+  heaps:[3,5],             /* кучек гальки на кусок: от и до */
+  per:[5,10],              /* камешков в кучке */
+  r:[.06,.2]};             /* радиус камешка, м */
+/* краска тропы на ленте: c — цвет земли до тропы, slope — крутизна (1 − n.y), v1 — крупное зерно куска */
+function plnDressPath(L,x,z,c,slope,v1){
+  const w=plnLandPath(L,x,z);
+  if(w<=0)return c;
+  const PAL=PLN_PAL,k=1-plnSmooth(.55,.75,slope),core=plnLandPath(L,x,z,PLN_DRESS.core);
+  const edge=plnMix3(plnMix3(PAL.soil,PAL.dry,.3),PAL.soilDark,v1*.35);   /* пыльный край */
+  const mid=plnMix3(PAL.soilDark,PAL.soil,.25+.3*v1);                       /* натоптанная середина */
+  c=plnMix3(c,edge,plnSmooth(0,.6,w)*.8*k);
+  return plnMix3(c,mid,plnSmooth(.3,1,core)*.85*k);
+}
+/* берег пруда: полоса сырой земли у воды, отмель у уреза светлее, ил на глубине */
+function plnDressShore(L,x,z,h,c){
+  const PAL=PLN_PAL,lv=L.lake.level;
+  c=plnMix3(c,plnMix3(PAL.soilDark,PAL.mud,.6),plnLandBare(L,x,z)*plnSmooth(.6,2.5,Math.abs(z))*.7);
+  c=plnMix3(c,plnMix3(PAL.soil,PAL.mud,.45),plnSmooth(lv+.12,lv-.2,h)*.9);
+  return plnMix3(c,PAL.mud,plnSmooth(lv-.2,lv-.9,h)*.85);
+}
+/* галька куска: кучками по краю тропы (не по самой середине) и у трапа корабля; o — помощники куска
+   (21pga): free, rock. Пятен тени галька не даёт: их в кадре шесть десятков, и они нужны деревьям */
+function plnDressBodies(L,J,o){
+  const D=PLN_DRESS,xa=J.xa,xb=J.xb,wd=xb-xa,r=rng(plnPlantSeed(L,J.c,6)),spots=[];
+  const n=D.heaps[0]+((r()*(D.heaps[1]-D.heaps[0]+1))|0);
+  for(let d=0;d<n;d++)spots.push([xa+1+r()*(wd-2),-.15+(r()<.5?-1:1)*(1.1+r()*.7)]);
+  if(L.rampX>xa&&L.rampX<xb)spots.push([L.rampX+1.8,L.rampZ*.55]);
+  for(const s of spots){
+    const m=D.per[0]+((r()*(D.per[1]-D.per[0]+1))|0),rx=.5+r()*.5,rz=.35+r()*.3;
+    for(let i=0;i<m;i++){
+      const a=r()*TAU,u=Math.sqrt(r()),x=s[0]+Math.cos(a)*rx*u,z=s[1]+Math.sin(a)*rz*u,rr=lerp(D.r[0],D.r[1],r()*r());
+      if(x<xa||x>=xb||plnLandPath(L,x,z)>.7||!o.free(x,z,0))continue;
+      o.rock(x,z,rr,.35+r()*.4,.9+r()*.2,true);
+    }
+  }
+}
 
 /* ══════════════ планета: состав в кадре — круг (M610), человек (M620), корабль (M621) ══════════════
    Человек с M620 живёт в 21pha (риг с шестью гнёздами комплекта), корабль с M621 — в 21phb

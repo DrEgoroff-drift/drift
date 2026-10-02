@@ -177,6 +177,9 @@ after it pass by §5.4.
   the planet's species near and far, tree weights by world, the heather in ragged
   drifts; `docs/DESIGN-planet-engine.md` §2.31–§2.33
 - M623 stone and ground dress, water
+  — done 02.10: planes part by light, crag bodies for big stones, the path's core and rim,
+  pebble heaps, the shallows and the shore line, the hollow's bays, reeds in clumps;
+  `docs/DESIGN-planet-engine.md` §2.34–§2.36
 - M624 things to take: deposits, finds, drill, tracks
 - M625 fauna: ten silhouettes, gait, the hostile pose, far-then-near
 - M626 weather and sky events

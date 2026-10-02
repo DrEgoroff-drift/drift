@@ -60,10 +60,11 @@ function plnFloraRock(m,seed,sub,r){
 /* скала: шар, срубленный плоскостями, — камень рублен, а не лепится. Грань несёт свою нормаль и свою
    светлоту: что смотрит вверх — светлее, там же лежит мох. Кверху тело уже.
    o: c (середина подошвы), r [rx, рост, rz], chops (сколько срубов), lean и pitch (наклон пласта),
-      yaw, thin (ширина макушки в долях подошвы), seed */
+      yaw, thin (ширина макушки в долях подошвы), seed; ico — ступень шара (2), deep — ближний сруб (.5):
+      грубый шар, срубленный глубже, — крупные плоские грани, их видно и за сто метров (M623) */
 function plnFloraCrag(m,r,o){
-  const M=PLN_MAT.rock,g=plnIco(2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed;
-  for(let k=0;k<o.chops;k++)cuts.push([plnNorm([r()*2-1,r()*1.5-.6,r()*2-1]),.5+r()*.36]);
+  const M=PLN_MAT.rock,g=plnIco(o.ico||2),R=o.r,V=[],G0=[],cuts=[],sd=o.seed,deep=o.deep||.5;
+  for(let k=0;k<o.chops;k++)cuts.push([plnNorm([r()*2-1,r()*1.5-.6,r()*2-1]),deep+r()*.36]);
   for(const u of g.p){
     let q=plnMul(u,1+.2*plnNoise(u[0]*1.6+sd,u[1]*1.6+u[2]*1.1,sd));
     for(const [n,d] of cuts){const e=plnDot(q,n)-d;if(e>0)q=plnSub(q,plnMul(n,e));}
@@ -73,7 +74,8 @@ function plnFloraCrag(m,r,o){
     if(o.pitch)l=plnRotX(l,o.pitch);
     if(o.yaw)l=plnRotY(l,o.yaw);
     l=plnAdd(l,o.c);
-    V.push(l);G0.push(plnSmooth(-.25,.3,plnNoise(l[0]*.9+sd,l[2]*.9,sd+2))*.75);
+    /* мох — шапкой с рваным краем, не мутью: доля либо есть, либо нет (M623) */
+    V.push(l);G0.push(plnSmooth(.0,.22,plnNoise(l[0]*.9+sd,l[2]*.9,sd+2))*.9);
   }
   const mid=plnAdd(o.c,[0,R[1]*.5,0]);
   for(const [a,b,c] of g.f){
@@ -82,7 +84,7 @@ function plnFloraCrag(m,r,o){
     let n=plnMul(e,1/ar);
     if(plnDot(n,plnSub(V[a],mid))<0)n=plnMul(n,-1);
     /* светлота — от того, куда грань смотрит: куски одного сруба красятся одинаково */
-    const k=lerp(.7,1.08,plnSmooth(-.35,.9,n[1]))*(.93+.14*plnNoise(n[0]*2.3+sd,n[2]*2.3+n[1]*1.7,sd+4)),up=plnSmooth(.45,.85,n[1]);
+    const k=lerp(.58,1.14,plnSmooth(-.35,.9,n[1]))*(.9+.2*plnNoise(n[0]*2.3+sd,n[2]*2.3+n[1]*1.7,sd+4)),up=plnSmooth(.45,.85,n[1]);
     const v=i=>plnVert(m,V[i],n,[G0[i]*up,k-.5,0],M,0,0,0);
     plnTri(m,v(a),v(b),v(c));
   }
@@ -175,6 +177,13 @@ function plnFloraKit(){
   /* камни: три малых и три больших */
   K.rock=[[11,1,[1.2,.8,1]],[23,1,[1.35,.7,1]],[37,1,[1.05,.75,1.1]],[5,2,[1.2,.8,1]],[17,2,[1.25,.85,1]],[29,2,[1.15,.9,.95]]]
     .map(q=>geo(plnFloraRock(plnMesh(256),q[0],q[1],q[2])));
+  /* скалы-тела для камня покрупнее: рублены гранями — валун-шар читался комом глины (M623).
+     Подошва чуть ниже нуля, мерка — единица: запись даёт размер */
+  K.crag=[[41,[1.15,.95,.9],10,.7],[43,[1.0,1.15,.85],12,.6],[47,[1.3,.7,1.0],9,.8],[53,[.95,1.3,.8],13,.55]].map(q=>{
+    const m=plnMesh(256),r=rng(q[0]);
+    plnFloraCrag(m,r,{c:[0,-.12,0],r:[q[1][0],q[1][1]+.12,q[1][2]],chops:q[2],lean:(r()-.5)*.3,pitch:(r()-.5)*.2,yaw:0,thin:q[3],seed:q[0],ico:1,deep:.42});
+    return geo(m);
+  });
   /* уступы: зуб, двойня, столб — высокие, им стоять за тропой; гребень, глыба, плита — низкие, они
      лежат и перед ней. Мерки тела — для посадки на склон: top — макушка над нулём, rx и rz — полуоси
      подошвы, low — на сколько подошва ниже нуля */

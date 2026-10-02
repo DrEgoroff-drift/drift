@@ -146,7 +146,7 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   if (mat == 1) {
     var fN = normalize(cross(fx, fy));
     if (dot(fN, V) < 0.0) { fN = -fN; }
-    N = normalize(mix(N, fN, 0.7));
+    N = normalize(mix(N, fN, 0.92));
   }
   var alb = in.col;
   /* у земли в гнезде свечения — доля камня, и на земле ничто не светится */
@@ -159,10 +159,13 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
     let s1 = fbm(in.wpos.xz * vec2f(0.045, 0.11) + vec2f(17.0, 3.0), 51u) - 0.5;
     let s2 = fbm(in.wpos.xz * vec2f(0.55, 1.2) + vec2f(5.0, 9.0), 53u) - 0.5;
     alb *= 1.0 + s1 * 0.30 * mid + s2 * 0.20 * near;
+    /* у объектива — мелкое зерно: пыль и крошка на тропе (M623) */
+    let s3 = fbm(in.wpos.xz * vec2f(2.4, 4.8) + vec2f(1.0, 2.0), 59u) - 0.5;
+    alb *= 1.0 + s3 * 0.12 * (1.0 - smoothstep(14.0, 45.0, dist));
     if (stone > 0.0) {
       var fN = normalize(cross(fx, fy));
       if (dot(fN, V) < 0.0) { fN = -fN; }
-      N = normalize(mix(N, fN, 0.55 * stone));
+      N = normalize(mix(N, fN, 0.85 * stone));
     }
   }
   let ndl = dot(N, L);
@@ -172,9 +175,10 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   let cl = cloudLight(in.wpos);
   let fg = nearShade(in.wpos);
   var lit = smoothstep(-0.02, 0.30, ndl);
+  if (mat == 1) { lit = smoothstep(0.0, 0.22, ndl); }
   var ao = 1.0;
   var through = 0.0;
-  if (mat == 0) { ao = ex; lit = smoothstep(mix(-0.10, 0.0, stone), mix(0.45, 0.24, stone), ndl); }
+  if (mat == 0) { ao = ex; lit = smoothstep(mix(-0.10, 0.0, stone), mix(0.45, 0.22, stone), ndl); }
   if (mat == 7) { ao = mix(0.45, 1.0, smoothstep(0.0, 0.7, ex)); }
   if (mat == 0 || mat == 7) {
     let nb = i32(blobs.n.x);
@@ -196,6 +200,14 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   if (mat == 7) {
     lit = smoothstep(-0.4, 0.45, ndl);
     through = pow(clamp(dot(-V, L), 0.0, 1.0), 2.0) * 0.7 * ex;
+  }
+  /* камень: плоскости делит свет — освещённая грань теплеет, теневая холодеет, насколько силён
+     ключ (ночью деления нет). Пласты по высоте пробовали — на свету это мазня (M623) */
+  let stoneK = select(stone, 1.0, mat == 1);
+  if (stoneK > 0.0) {
+    let key = clamp(dot(g.sunCol.rgb, vec3f(0.3333)) / 1.38, 0.0, 1.0);
+    let lk = lit * sh * cl;
+    alb *= mix(vec3f(1.0), mix(vec3f(0.76, 0.86, 1.14), vec3f(1.16, 1.05, 0.86), lk), stoneK * key);
   }
   let sun = g.sunCol.rgb * (sh * cl * fg);
   let amb = mix(g.ambGnd.rgb, g.ambSky.rgb, N.y * 0.5 + 0.5) * ao * mix(0.55, 1.0, fg);
@@ -271,14 +283,18 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
      сильнее в упор и пятнами, слабее вскользь — иначе ночью это плоский лист */
   let deep = smoothstep(0.0, mix(2.2, 0.5, murk), depth);
   var body = mix(g.waterA.rgb, g.waterB.rgb, deep);
+  /* отмель: у уреза тело воды светлее и зеленее, дно сквозит (M623) */
+  body = mix(body * vec3f(1.12, 1.18, 1.04), body, smoothstep(0.0, 0.7, depth));
   let gl = murk * (0.16 + 0.30 * nv) * (0.6 + 0.6 * calm);
   body = body * (g.sunCol.rgb * (0.55 * cl) + g.ambSky.rgb * 0.91) + g.waterA.rgb * gl;
   var c = mix(body, refl * vec3f(0.84, 0.90, 0.92), clamp(fr * 1.05 * (1.0 - 0.8 * murk), 0.0, 1.0));
   /* мокрая кромка вдоль берега: светла настолько, насколько светел ключ; у мутной воды — её же цвета */
   let key = clamp(dot(g.sunCol.rgb, vec3f(0.3333)) / 1.38, 0.0, 1.0);
   let edge = mix(vec3f(0.85, 0.92, 0.95), g.waterA.rgb * 2.2, murk);
-  c = mix(c, edge * (key * (0.4 + 0.6 * cl)), (1.0 - smoothstep(0.02, 0.16, depth)) * 0.35);
-  let alpha = smoothstep(-0.03, 0.30, depth);
+  /* мягкая полоса у берега и тонкая светлая нитка по самому урезу, рваная рябью (M623) */
+  let shore = (1.0 - smoothstep(0.02, 0.16, depth)) * 0.30 + (1.0 - smoothstep(0.0, 0.06, depth + n2 * 0.03)) * 0.35;
+  c = mix(c, edge * (key * (0.4 + 0.6 * cl)), clamp(shore, 0.0, 1.0));
+  let alpha = smoothstep(-0.03, 0.6, depth);
   return vec4f(applyFog(c, in.wpos, 1.0), alpha);
 }
 `;

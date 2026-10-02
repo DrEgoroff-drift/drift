@@ -124,7 +124,7 @@ function plnPlantFree(L,x){
 function plnPlantBodies(L,J){
   const K=plnFloraKit(),P=PLN_PAL,TO=PLN_TO,F=L.flora,lush=F.lush,xa=J.xa,xb=J.xb,wd=xb-xa,c=J.c,at=plnPlantGrid(L,J);
   const r=rng(plnPlantSeed(L,c,1)),clear=[],blots=[],lake=L.lake,H=PLN_FLORA.treeH;
-  const bTree=K.tree.map(t=>plnPlantBucket(t.geo,TO.all)),bRock=K.rock.map(g=>plnPlantBucket(g,TO.all)),
+  const bTree=K.tree.map(t=>plnPlantBucket(t.geo,TO.all)),bRock=K.rock.map(g=>plnPlantBucket(g,TO.all)),bCrag=K.crag.map(g=>plnPlantBucket(g,TO.all)),
     bRos=K.ros.map(g=>plnPlantBucket(g,TO.main|TO.sh0)),bBloom=K.bloom.map(g=>plnPlantBucket(g,TO.main)),
     bReed=K.reed.map(g=>plnPlantBucket(g,TO.main|TO.sh0)),bPad=K.pad.map(g=>plnPlantBucket(g,TO.main)),
     bLedge=K.ledge.map(t=>plnPlantBucket(t.geo,TO.all)),
@@ -143,11 +143,12 @@ function plnPlantBodies(L,J){
     plnPlantPut(bTree[v],[x,g,z],s,yaw,hk,t.under,2,t.top,0);
     blots.push([x,z,Math.max(R*.5,.8),.4]);clear.push([x,z,.9,.9,0]);
   };
-  const rock=(x,z,rr,tone,shade)=>{
+  const rock=(x,z,rr,tone,shade,nb)=>{
     const g=at(x,z)[0];
     if(wetAt(x,z,g))return;
-    plnPlantPut(bRock[(rr>.85?3:0)+((hv(x,z,1)*3)|0)],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),1,plnMul(P.moss,shade==null?1:shade),0);
-    blots.push([x,z,rr*1.8,rr>.4?.5:.4]);
+    /* крупный камень — рублёное тело (M623) */
+    plnPlantPut(rr>.85?bCrag[(hv(x,z,1)*4)|0]:bRock[(hv(x,z,1)*3)|0],[x,g,z],rr,hv(x,z,2)*TAU,1,plnMul(plnMix3(P.rockWarm,P.rockCool,tone),shade==null?1:shade),1,plnMul(P.moss,shade==null?1:shade),0);
+    if(!nb)blots.push([x,z,rr*1.8,rr>.4?.5:.4]);
     if(rr>.4)clear.push([x,z,rr*1.3,rr*1.3,0]);
   };
   const [root,tipW,tipC]=PLN_FL.ros;
@@ -298,8 +299,10 @@ function plnPlantBodies(L,J){
     const q=rng(plnPlantSeed(L,c,4)),[rootR,tipR,dryR]=PLN_FL.reed;
     const la=Math.max(xa,lake.x0-2),span=Math.min(xb,lake.x1+2)-la,lx=lake.x1-lake.x0,mid=(lake.x0+lake.x1)/2;
     const dice=n=>{const a=[];for(let k=0;k<n;k++)a.push(q());return a;};
-    for(let k=Math.ceil(span/4.5);k>0&&lush>0;k--){
-      const d=dice(5),cx=la+d[0]*span,far=d[1]<.7||Math.abs(cx-mid)<.33*lx,n=8+((d[2]*14)|0),hh=1.1+d[3]*.9,wid=1.2+d[4]*2.4;
+    /* камыш — немногими купами, меж ними открытая вода (M623) */
+    for(let k=Math.ceil(span/9);k>0&&lush>0;k--){
+      const d=dice(6),cx=la+d[0]*span,far=d[1]<.7||Math.abs(cx-mid)<.33*lx,n=10+((d[2]*12)|0),hh=1.1+d[3]*.9,wid=.9+d[4]*1.3;
+      if(d[5]<.3)continue;
       for(let j=0;j<n;j++){
         const e=dice(8),u=(e[0]+e[1]+e[2])/3*2-1,x=clamp(cx+u*wid*1.3,xa,xb-.01);
         const z=far?plnLandPondZ(L,x,true)-.9+(e[3]-.5)*1.8:plnLandPondZ(L,x,false)+.5+(e[3]-.5)*1.2,g=at(x,z)[0];
@@ -344,8 +347,9 @@ function plnPlantBodies(L,J){
       }
     }
   }
+  plnDressBodies(L,J,{free,rock});   /* галька кучками по краю тропы и у трапа (21pge) */
   /* дикие куртины видов планеты — последними, по оставшейся земле (21pgd) */
-  const bodies=bTree.concat(bRock,bLedge,bRos,bBloom,bReed,bPad,plnWildBodies(L,J,{at,free,clear,blots,wetAt,padK}));
+  const bodies=bTree.concat(bRock,bCrag,bLedge,bRos,bBloom,bReed,bPad,plnWildBodies(L,J,{at,free,clear,blots,wetAt,padK}));
   F.groups.push(plnPlantGroup(xa-7,xb+7,9,2,bodies,blots));
   F.groups.push(plnPlantGroup(xa-7,xb+7,-47,2,bWing));
   return clear;
@@ -442,12 +446,13 @@ function plnPlantFar(L,fc){
   const K=plnFloraKit(),C=PLN_PLANT,P=PLN_PAL,TO=PLN_TO,F=L.flora,lush=F.lush,xa=fc*C.farW,xb=xa+C.farW,wy=PLN_LAND.wRel,H=PLN_FLORA.treeH;
   const r=rng(plnPlantSeed(L,fc,11)),lit=TO.main|TO.mirror,cast=lit|TO.sh1;
   const bTree=K.far.map(t=>plnPlantBucket(t.geo,cast)),bTree2=K.far.map(t=>plnPlantBucket(t.geo,cast)),bRock=K.rock.map(g=>plnPlantBucket(g,cast)),
-    bBush=K.bush.map(g=>plnPlantBucket(g,cast)),bReed=K.reed.map(g=>plnPlantBucket(g,lit));
+    bCrag=K.crag.map(g=>plnPlantBucket(g,cast)),bBush=K.bush.map(g=>plnPlantBucket(g,cast)),bReed=K.reed.map(g=>plnPlantBucket(g,lit));
   /* урез воды по клетке: через два метра, между ними — по прямой */
   const NS=Math.round(C.farW/2)+1,sh=new Float32Array(NS);
   for(let i=0;i<NS;i++)sh[i]=plnPlantShore(L,xa+i*2);
   const shore=x=>{const u=clamp((x-xa)/2,0,NS-1.001),i=Math.floor(u);return sh[i]&&sh[i+1]?lerp(sh[i],sh[i+1],u-i):0;};
-  const rock=(x,z,y,rr,tone,big)=>plnPlantPut(bRock[(big?3:0)+((plnHash(x|0,z|0,fc)*3)|0)],[x,y,z],rr,plnHash(z|0,x|0,fc+1)*TAU,1,
+  /* камень дальнего берега рублен гранями (M623): шар на ста метрах — ком */
+  const rock=(x,z,y,rr,tone,big)=>plnPlantPut(big?bCrag[(plnHash(x|0,z|0,fc)*4)|0]:bRock[(plnHash(x|0,z|0,fc)*3)|0],[x,y,z],rr,plnHash(z|0,x|0,fc+1)*TAU,1,
     plnMix3(P.rockWarm,P.rockCool,tone),1,P.moss,1);
   /* скалы дальнего берега, камни на отмели перед ними */
   {
@@ -516,7 +521,7 @@ function plnPlantFar(L,fc){
     q=dice();
     if(q[0]<.85*lush){const c=plnPlantCrest(L,xa+q[1]*C.farW,270,430,10);grove(bTree2,c[0],c[2]-8+q[2]*30,6+((q[3]*5)|0),17,9,15,q[4]<.5?0:3,1,4);}
   }
-  for(const G0 of [plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed,plnWildFar(L,fc,xa))),plnPlantGroup(xa-30,xb+30,470,8,bTree2)]){G0.far=true;F.groups.push(G0);}
+  for(const G0 of [plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bCrag,bBush,bReed,plnWildFar(L,fc,xa))),plnPlantGroup(xa-30,xb+30,470,8,bTree2)]){G0.far=true;F.groups.push(G0);}
   F.far[fc]=true;
 }
 

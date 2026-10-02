@@ -346,6 +346,35 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     snags and forks, a jungle in umbrellas and tiers. The far bank's heather lies in
     ragged drifts muted toward the grass: an even patch of pure heather read as a puddle.
 
+34. **Stone: planes part by light** (`fs_main`, `plnFloraCrag`, `K.crag`; M623). A rock's lit
+    facet is warm and its shaded facet is cool — `(1.16, 1.05, .86)` against `(.76, .86, 1.14)`,
+    scaled by the key, so by night there is no split; the facet normal rules the shading (rock
+    bodies .92, the stone share of the ground .85) and the lit step of rock is harder. The
+    crag maker's facet lightness runs .58–1.14 by where the facet looks, and the moss is a
+    cap with a ragged edge, not a wash. Big stones — near, behind the line, and on the far
+    shore — are crag bodies of the kit (`K.crag`: a coarse sphere, ico 1, cut by 9–13 planes
+    from .42), because a bumpy sphere read as a lump of clay at every distance. The first
+    pass (±10 % of hue and strata by height) changed nothing visible, and the strata were
+    smudges on a lit face: dropped.
+
+35. **The ground's dress** (`21pge`, `plnDress*`; M623). The path is not a brush stroke: its
+    mask falls over .4 m (was .8); inside it a trodden core of .45 of the half-width is darker
+    (soilDark toward soil) and the rim is dusty (soil toward dry) — the core is the same
+    `plnLandPath` with a width factor. Pebbles are bodies in heaps: 3–5 heaps a chunk
+    straddling the path's edge, 5–10 stones of 6–20 cm each, and one heap at the ramp's
+    foot where the man steps down; they give no shadow blots (a frame holds 65, and the
+    trees need them). The ground takes a fine brush grain within 45 m of the lens.
+
+36. **Water: the shallows and the shore** (`fs_water`, `plnLandRim`, `plnLandFarH`; M623).
+    The pond's shelf is wider (.28 m deep over 1.3 m), the water's alpha ramps to .6 m of
+    depth and its body is lighter and greener in the shallows, so the bottom shows through
+    in a band along the shore; the bottom there is a lighter mix of soil and mud
+    (`plnDressShore`), the mud only deeper. A thin light line runs along the waterline,
+    broken by the ripple, over the softer band. The far water of the hollow keeps its line
+    in bays and spits: the distance that dries the floor wanders by fbm (±7 m) instead of
+    running parallel to the lens. Reeds stand in a few clumps with open water between —
+    one clump per 9 m, a third skipped — instead of a continuous row.
+
 ## 3. The family
 
 New modules, glued after the old surface (`21h…` < `21p…` < `22…`). Every name begins
@@ -366,6 +395,7 @@ with `pln` or `PLN`: the game is one scope.
 | `21pgb-pln-trees` | the six species of trees and their makers |
 | `21pgc-pln-wing` | the wing: four families of bodies next to the lens |
 | `21pgd-pln-wild` | the wild drifts of the planet's own species, near and far; the tree weights of a world |
+| `21pge-pln-dress` | the ground's dress: the path's core and rim, the pond's shore and shelf, pebble heaps |
 | `21ph-pln-cast` | the life ring, the cast's frame (the man and the ship are called from here) |
 | `21pha-pln-man` | the man: the rig's bones, parts from the kit, the poses, the flame, the lamps of his own |
 | `21phb-pln-ship` | the ship from the game's hull: the loft, the class marks, the legs, the flames, the hatch open and closed |
@@ -406,6 +436,10 @@ with `pln` or `PLN`: the game is one scope.
 - **M622** the flora. **Done**, in three passes: 1 — the twelve anatomies (§2.31), 1b —
   the colour law (§2.32), 2 — the wild drifts, the far silhouettes, the tree weights by
   world and the heather (§2.33).
+- **M623** stone, the ground's dress, water. **Done**, in three passes: 1 — stone parted by
+  light, crag bodies for big stones (§2.34), 2 — the path's core and rim, pebble heaps, the
+  shallows and the shore line, the hollow's bays, reeds in clumps (§2.35–§2.36), 2b — the
+  path's edge crisper, more pebbles.
 
 ## 5. What is not done here
 
@@ -416,8 +450,8 @@ The old painters, the fleet's sky
 
 ## 6. State on 02.10.2026
 
-Stage 1 is closed (M610–M614); stage 2 stands at M620–M622 done, M623 (stone, the
-ground's dress, water) next. The new look is walked in the game behind
+Stage 1 is closed (M610–M614); stage 2 stands at M620–M623 done, M624 (things to take)
+next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
@@ -491,6 +525,13 @@ mushrooms and coils — that is the game's own planting (`S.plants`: 314 bodies 
 line, giants by the biome), not the drifts; the drifts of tall species were cut to one to
 three. The desert has no flora and no drifts. No errors in any frame.
 
+**M623** (stone, the ground's dress, water) went in three passes on the test terrain: the lake
+by day and by night, the shore and the path at the near lens. The first stone pass changed
+almost nothing visible — ±10 % of hue and a strata band under the facets' own lightness;
+the second raised the split to ±15 % and let the facet normal rule, and the knolls stopped
+being putty. The dress and the water went in one pass, the path's edge and the pebbles in a
+short third. No errors in any frame.
+
 **Known weak spots** — named, not hidden:
 - M620: at the far lens the man is a dot in the squint — the far lens is the game's own
   scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
@@ -511,6 +552,10 @@ three. The desert has no flora and no drifts. No errors in any frame.
   clearing; the far silhouettes of tall species are small at 125–175 m; fiddleheads and
   gills are not read at the far lens; the herbs' tint is by species index, not by how
   common the species is;
+- M623: the path is still a band of two tones, not a shape of its own; pebbles read only at
+  the near lens or on the phone; the pond's far shore meets the grass in a hard edge at the
+  grazing angle; a knoll's facets are the grid's own triangles; stone has no lichen and no
+  cracks;
 - beasts are blockouts (M625); tracks are the old game's dashes; landmarks, the base, the
   home and the settlement are stickers of the old painters (M626–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
