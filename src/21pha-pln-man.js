@@ -23,7 +23,7 @@
 const PLN_MAN={gen:-1,geo:null,inst:null,a:new Float32Array(16),
   parts:null,V:null,nv:0,ni:0,ib:null,
   key:"",                              /* палитра и заряд, под которые собраны части */
-  k:{air:0,jet:0,fall:0},              /* сглаженные доли поз: воздух, факел, падение */
+  k:{air:0,jet:0,fall:0,drill:0},      /* сглаженные доли поз: воздух, факел, падение, бур в руках */
   W:[],                                /* кости в мире на этот кадр */
   lamp:[0,0,0],jet:[0,0,0]};           /* где фонарь и сопло ранца в мире (для ламп кадра) */
 /* кости: родитель и место в системе родителя (м). 0 таз, 1 корпус, 2 голова,
@@ -40,7 +40,9 @@ const PLN_MAN_POSE={
   air: [0,-.10,.06, .45,-.95,.25, -.15,-.60,.15, .9,.5, .4,.4],
   jet: [0,.12,.10, -.20,-.80,.10, -.35,-.80,.10, .55,.4, .35,.35],
   fall:[0,-.15,-.15, .35,-.50,.10, -.30,-.30,.05, 1.6,.3, 1.3,.3],
-  swim:[0,-.05,-.06, .60,-1.1,.20, .40,-.90,.20, .6,.9, .5,.8]};
+  swim:[0,-.05,-.06, .60,-1.1,.20, .40,-.90,.20, .6,.9, .5,.8],
+  /* бурение (M624): стойка — ноги врозь, корпус вперёд, обе руки держат бур перед собой */
+  drill:[0,.20,.26, -.28,.22,.05, .30,-.30,0, 1.10,-.20, 1.00,-.28]};
 const PLN_MAN_FLAME={rings:7,sides:8};
 
 /* цвет комплекта: «#rrggbb» или «rgb(r,g,b)» (mixHex) → линейный */
@@ -138,6 +140,8 @@ function plnManBuild(P,low){
       plnBlob(m,{c:[.01,-.315,0],r:[.07,.085,.06],sub:1,lean:.25,col:P.gloves.main,mat:M,x:.2});
     });
   }
+  /* бур в ближней руке (21pic): без работы сжат в перчатку, пишется по кадру */
+  part(10,m=>plnDrillTool(m,P),"tool");
   /* факел ранца: кольца конуса пишутся по кадру (plnManFlame); без тяги он сжат в точку */
   part(1,m=>{
     const R=PLN_MAN_FLAME.rings,S=PLN_MAN_FLAME.sides,ids=[];
@@ -159,6 +163,7 @@ function plnManPose(st){
   K.air+=((st.on?0:1)-K.air)*.2;
   K.jet+=((st.jet?1:0)-K.jet)*.25;
   K.fall+=(((!st.on&&!st.jet&&st.vy>.4)?1:0)-K.fall)*.15;
+  K.drill+=((st.drill?1:0)-K.drill)*.2;
   const sw=st.swim,a=st.amp*(1-K.air)*(1-sw),ph=st.phase,t=st.t,sN=Math.sin(ph),sF=-sN,breath=Math.sin(t*.026);
   const kneeW=p=>Math.pow(Math.max(0,Math.sin(p+1.77)),1.2),toe=p=>Math.max(0,-Math.sin(p+.3)),heel=p=>Math.max(0,Math.sin(p-.3));
   const A=[0,a*.10+.015*breath,-.04+a*.04*Math.cos(2*ph)+.01*breath,
@@ -168,9 +173,11 @@ function plnManPose(st){
   A[8]=-(A[6]+A[7])*.75-a*.7*toe(ph+Math.PI)+a*.2*heel(ph+Math.PI);
   for(let i=0;i<13;i++){
     let v=lerp(A[i],PS.air[i],K.air);
-    v=lerp(v,PS.jet[i],K.jet);v=lerp(v,PS.fall[i],K.fall);v=lerp(v,PS.swim[i],sw);
+    v=lerp(v,PS.jet[i],K.jet);v=lerp(v,PS.fall[i],K.fall);v=lerp(v,PS.swim[i],sw);v=lerp(v,PS.drill[i],K.drill*(1-K.air));
     A[i]=v;
   }
+  /* бур в руках дрожит: плечи и чуть корпус (M624) */
+  if(K.drill>.02){const vb=K.drill*.022*Math.sin(t*2.7);A[9]+=vb;A[11]+=vb*.9;A[1]+=vb*.25;}
   const bob=a*.028*Math.cos(2*ph)+(1-a)*.006*breath,W=Q.W;
   for(let k=0;k<13;k++){
     const B=PLN_MAN_BONES[k],o=B.o,P=B.p<0?null:W[B.p],w=W[k]||(W[k]={c:1,s:0,x:0,y:0,z:0,a:0});
@@ -215,15 +222,17 @@ function plnMan(st){
 }
 function plnManState(S,lampK,swim){
   return {phase:S?S.walkPhase||0:0,amp:S?clamp(S.walkAmp||0,0,1):0,on:S?S.on!==false:true,jet:!!(S&&S.jetOn),
-    vy:S?S.vy||0:0,swim:clamp(swim||0,0,1),t:G.t||0,lamp:lampK||0,low:!!(S&&S.suit!=null&&S.suit<25)};
+    vy:S?S.vy||0:0,swim:clamp(swim||0,0,1),t:G.t||0,lamp:lampK||0,drill:!!(S&&S.mining),low:!!(S&&S.suit!=null&&S.suit<25)};
 }
 /* Ставит человека в кадр: поза по состоянию, вершины в буфер, запись, лампы фонаря и факела.
    pos — место ног в метрах, face — куда смотрит, swim — насколько он в круге, o — {S, lamp} */
 function plnManFrame(F,pos,face,swim,o){
   const st=plnManState(o&&o.S,o&&o.lamp,swim),Q=plnMan(st),W=plnManPose(st),V=Q.V;
+  PLN_DRILL.on=st.drill?1:0;
   for(const q of Q.parts){
     const w=W[q.bone],c=w.c,s=w.s,src=q.m.v,n=q.m.nv;
     if(q.dyn==="flame"){plnManFlame(st,V,q.off,w);}
+    else if(q.dyn==="tool"){plnDrillWrite(st,V,q.off,w,q.m);}
     else{
       let d=q.dyn?q.dyn(st):null,o2=q.off*PLN_VS;
       for(let k=0;k<n;k++){
@@ -238,6 +247,7 @@ function plnManFrame(F,pos,face,swim,o){
   /* в поле факела и фонарь, и сопло — в мире, с учётом стороны взгляда */
   const fx=face<0?-1:1,at=(w,lx,ly,lz)=>[pos[0]+fx*(w.c*lx-w.s*ly+w.x),pos[1]+(w.s*lx+w.c*ly+w.y),pos[2]+fx*(lz+w.z)];
   Q.lamp=at(W[2],.222,.40,0);Q.jet=at(W[1],-.31,.0,0);
+  PLN_DRILL.tip=at(W[10],0,-.30-PLN_DRILL.len*Q.k.drill,0);   /* остриё коронки — для луча (21pic) */
   GPU.dev.queue.writeBuffer(Q.geo.vb,0,V,0,Q.nv*PLN_VS);
   plnRec(Q.a,0,pos,1,fx<0?Math.PI:0,1,1);
   plnInstSet(Q.inst,Q.a,1);

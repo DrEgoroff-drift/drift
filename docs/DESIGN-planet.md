@@ -181,6 +181,10 @@ after it pass by §5.4.
   pebble heaps, the shallows and the shore line, the hollow's bays, reeds in clumps;
   `docs/DESIGN-planet-engine.md` §2.34–§2.36
 - M624 things to take: deposits, finds, drill, tracks
+  — done 02.10: the deposit a boulder with its ore and spoil, the drill in hand with a beam
+  and chips, footprints as bodies, labels in window pixels, the lens glides to a thing;
+  «finds» on the surface are the landmarks' inspection (M627);
+  `docs/DESIGN-planet-engine.md` §2.37–§2.40
 - M625 fauna: ten silhouettes, gait, the hostile pose, far-then-near
 - M626 weather and sky events
 - M627 landmarks: the twelve POI
@@ -232,7 +236,7 @@ any of it.
    holds what the game shows today, so play keeps its reach (what is seen coming, how far a
    landmark announces itself). Default until the author decides: far on the move, the near
    lens only when the man stands at a thing.
-   **Decided 02.10: the default.** The far lens on the move, the near one when the man stands
+   **Decided 02.10: the default; built in M624 (`plnGlide`, §2.40 of the engine doc).** The far lens on the move, the near one when the man stands
    at a thing; the change is a glide of the lens alone (`plnLens`), the game's scale and its
    touch mapping do not move. It is built with the things (M624), where «at a thing» gets
    its meaning.

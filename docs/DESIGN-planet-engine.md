@@ -150,7 +150,8 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     beast is drawn larger than its measure (1.7 times at the smallest, as it is from a
     radius of 12 units): the game measures a beast by its place, not by its height.
 17. **What is never a body lies over the frame in 2D** (`21pj`): labels (stacked when they
-    meet), the drilling bar and beam, tracks, dust, near weather. What is not redrawn yet —
+    meet; in window pixels since M624, the drill's bar under its label), dust, near weather;
+    the beam and the tracks are bodies since M624 (§2.38–§2.39). What is not redrawn yet —
     finds, the base, the home, the settlement, signs — is laid by the old painters as
     stickers on the walk line, where the lens maps by pure scale. A sticker leaves the list
     when it gets a body (M626–M629). If an old painter throws, the whole list is dropped
@@ -375,6 +376,45 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     running parallel to the lens. Reeds stand in a few clumps with open water between —
     one clump per 9 m, a third skipped — instead of a continuous row.
 
+37. **A deposit is a boulder with the ore on its crown** (`plnThingBoulder`,
+    `plnThingDeposit`, `plnThingSpoil`; M624). A faceted stone of the world — an icosphere
+    cut by eight planes, one of them the flat crown, each facet coloured by where it faces
+    (the crown lighter) and parted further by the light (§2.34) — breaks the turf with its
+    base .15 m under the ground; the ore of the seven forms stands on the crown, a fifth
+    larger than the old painter's, and eight clods of dark soil lie at the foot. The old
+    dark «nest» read as the stand of a figurine, the first pass's flat slab as a platter.
+    What is taken out is a spoil heap of its own mesh: two blobs of ground mixed from the
+    ore and the soil, scaled by the record from nothing at a full deposit to full at an
+    empty one, so a worked deposit shows its work.
+38. **The drill is a tool in the hand; the beam and the chips are bodies** (`21pic`,
+    `21pha`; M624). The rig has a `drill` pose — the torso leans to the bite, the head
+    looks down, the near arm points the tool — eased by `K.drill` from `S.mining`, with a
+    small vibration of the arms and the torso while it runs; the tool is a part of the near
+    forearm (grip, barrel with the gloves' accent ring, nose, bit, a side box, a glowing
+    tip) built once from the kit and written each frame like the flame. The beam is a tube
+    from the tip to the bite — on the ore's near face, at a height from what is left — of
+    the ore's colour mixed with white, glow 5, pulsing in radius; a flare blob sits at the
+    bite and sixteen chips fly from it toward the man in arcs of their own (hashed ages,
+    angles and speeds), bigger and brighter when young; one lamp at the bite lights the man
+    and the stone. The per-frame mesh is rebuilt on the CPU into one buffer, one record,
+    one batch. The 2D beam and the bar at the man's waist are gone; the bar sits under the
+    label.
+39. **Footprints are bodies** (`21pid`; M624). The game's `S.tracks` (one every 13 units,
+    alive `TRACK_LIFE` ticks) are drawn as one sole mesh (a flat cut blob with a heel) in up
+    to 220 records, newest first within the frame, left and right of the walk line by turns
+    (.13 m), turned by the facing; each takes the ground's colour at its spot (cached per
+    track) darkened by 42 % when fresh and fading to the ground over the second half of its
+    life; no shadow blots. The old dashes of dirt in 2D are gone.
+40. **The lens glides to a thing** (`plnGlide`, `plnAtThing`; M624, the decision of §8.4 of
+    the plan). The far lens on the move, the near one (twice as close, `PLN.near` of M620)
+    when the man stands at a thing: mining, or within 26 units of a deposit, 34 of the cave
+    mouth, 40 of the ship, the mine mouth's radius, 30 of a plant, or at a landmark
+    (`poiNear`); never while walking (`walkAmp` > .25), on the jet or in the air. The glide
+    is an exponential ease by the wall clock, .45 s in and .7 s out, snapping within .002;
+    the frame's `K` is `surfScale()·(1 + max(PLN.near, glide))`, so the stand's `near`
+    still works. Labels and the drill's bar are drawn in window pixels
+    (`surfScale()/G.viewK`), so the near lens does not blow them up.
+
 ## 3. The family
 
 New modules, glued after the old surface (`21h…` < `21p…` < `22…`). Every name begins
@@ -399,9 +439,11 @@ with `pln` or `PLN`: the game is one scope.
 | `21ph-pln-cast` | the life ring, the cast's frame (the man and the ship are called from here) |
 | `21pha-pln-man` | the man: the rig's bones, parts from the kit, the poses, the flame, the lamps of his own |
 | `21phb-pln-ship` | the ship from the game's hull: the loft, the class marks, the legs, the flames, the hatch open and closed |
-| `21pi-pln-things` | deposits, the cave mouth, the mine mouth |
+| `21pi-pln-things` | deposits (the boulder, the ore, the spoil), the cave mouth, the mine mouth, «at a thing» |
 | `21pia-pln-herb` | the plants of the game, the algae of the pond |
 | `21pib-pln-beast` | the beasts of the game, a flip book of seven bodies each |
+| `21pic-pln-drill` | the drill in the hand, its beam, the flare and the chips at the bite, the lamp of the bite |
+| `21pid-pln-tracks` | footprints as bodies: the ground's colour, fading by age |
 | `21pj-pln-over` | what lies over the frame in 2D, and the stickers of the old painters |
 | `21pz-pln-frame` | the lens, the five acts of the hour, the bodies of the sky, the weather's look, what is built when, the frame, the wrap |
 | `21pza-pln-descent` | the descent: the landing's state as a lens and a ship for the frame of 21pz, the wrap of `drawLanding` |
@@ -440,6 +482,11 @@ with `pln` or `PLN`: the game is one scope.
   light, crag bodies for big stones (§2.34), 2 — the path's core and rim, pebble heaps, the
   shallows and the shore line, the hollow's bays, reeds in clumps (§2.35–§2.36), 2b — the
   path's edge crisper, more pebbles.
+- **M624** things to take. **Done**, in three passes: 1 — the drill in hand and the stance,
+  the beam and the chips as bodies, the deposit on stone with clods, the spoil, footprints
+  as bodies, labels in window pixels, the lens glide (§2.37–§2.40); 2 — the boulder instead
+  of the slab, the beam hotter with a flare, the head to the bite; 3 — the deposit a fifth
+  bigger, the chips bigger and wider.
 
 ## 5. What is not done here
 
@@ -450,8 +497,7 @@ The old painters, the fleet's sky
 
 ## 6. State on 02.10.2026
 
-Stage 1 is closed (M610–M614); stage 2 stands at M620–M623 done, M624 (things to take)
-next. The new look is walked in the game behind
+Stage 1 is closed (M610–M614); stage 2 stands at M620–M624 done, M625 (fauna) next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
@@ -532,6 +578,14 @@ the second raised the split to ±15 % and let the facet normal rule, and the kno
 being putty. The dress and the water went in one pass, the path's edge and the pebbles in a
 short third. No errors in any frame.
 
+**M624** (things to take) went in three passes at the organics deposit of the test terrain,
+by day, by night and worked down to three: the deposit as a boulder with its ore and spoil,
+the drill as a pose, a tool, a beam with a flare and chips, footprints as bodies, labels in
+window pixels, the lens glide (§2.37–§2.40). No errors in any frame. The headless stand
+draws two frames after a snippet, so an eased value never settles on its own: the near lens
+is pre-set in the snippet (`PLN.glide=1`, `dep.py`), and the live step was checked by its
+number (K 1.6 → 1.87 after one frame of 83 ms, as the ease says).
+
 **Known weak spots** — named, not hidden:
 - M620: at the far lens the man is a dot in the squint — the far lens is the game's own
   scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
@@ -556,8 +610,13 @@ short third. No errors in any frame.
   the near lens or on the phone; the pond's far shore meets the grass in a hard edge at the
   grazing angle; a knoll's facets are the grid's own triangles; stone has no lichen and no
   cracks;
-- beasts are blockouts (M625); tracks are the old game's dashes; landmarks, the base, the
-  home and the settlement are stickers of the old painters (M626–M629);
+- M624: the boulder of a deposit sinks into a slope (its base is set at the ground of the
+  deposit's x, the slope is not read); the chips are one colour; footprints are faint at
+  the far lens; by day the beam is pale; the dust puffs under the feet are still 2D
+  ellipses; the dust at the touch of a landing is still a debt; «finds» on the surface are
+  the landmarks' inspection (M627);
+- beasts are blockouts (M625); landmarks, the base, the home and the settlement are
+  stickers of the old painters (M626–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;
 - 4K at `high` is over the budget (18 ms; `mid` is the answer until the scene pass is

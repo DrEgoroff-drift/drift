@@ -3,7 +3,8 @@
    рамке 2D-игры, свет по часу планеты, два короба теней, земля (21pf), то, что
    на ней растёт и лежит (21pg, 21pga), человек и корабль (21ph), вещи игры —
    залежи, вход в пещеру, устье шахты (21pi), её растения (21pia) и звери
-   (21pib). Поверх кадра — подписи, следы и то, что ещё не перерисовано (21pj).
+   (21pib), бур в руках и следы (21pic, 21pid). Поверх кадра — подписи и то, что
+   ещё не перерисовано (21pj).
    Приборы рисует игра, как рисовала, и тычок «идти сюда» попадает туда же:
    рамка кадра на линии ходьбы — та же, что была.
 
@@ -252,6 +253,20 @@ function plnLightBox(dir,bx,n){
   return {m:plnM4mul(plnM4ortho(cx-sx/2,cx+sx/2,cy-sy/2,cy+sy/2,near,far),view),range:far-near};
 }
 
+/* ── скольжение объектива (M624, план §8.4) ──
+   На ходу — объектив игры, у вещи — вдвое ближе: доля PLN.glide идёт к цели по часам стены,
+   к вещи быстрее (0.45 с), от неё медленнее (0.7 с). Мерка игры и тычок не трогаются: рамка
+   на линии ходьбы та же, что показана, и G.viewK идёт вместе с ней */
+function plnGlide(S,p,fly){
+  const t=wallMs(),dt=Math.min(.1,Math.max(0,(t-(PLN.glideT||t))/1000));
+  PLN.glideT=t;
+  const want=fly?0:plnAtThing(S,p),g=PLN.glide||0,tau=want>g?.45:.7;
+  let v=g+(want-g)*(1-Math.exp(-dt/tau));
+  if(Math.abs(v-want)<.002)v=want;
+  PLN.glide=v;
+  return v;
+}
+
 /* ── кадр ── */
 function plnSurface(S,o){
   /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
@@ -259,7 +274,7 @@ function plnSurface(S,o){
      ship:{x,alt,gear,sq,thr,hot,tilt,yaw,down}} — корабль в воздухе, людей и вещей в кадре нет */
   const t0=wallMs(),fly=!!(o&&o.ship),Q=PLN_FRAME;
   S=S||G.surf;
-  const tr=S.tr,p=S.p,K=surfScale()*(1+clamp(fly?0:PLN.near||0,0,1));
+  const tr=S.tr,p=S.p,K=surfScale()*(1+clamp(fly?0:Math.max(PLN.near||0,plnGlide(S,p,fly)),0,1));
   /* то, что старый кадр делал попутно и на что опирается игра: свет 2D, ветер, камера */
   tr.p=p;sunDirSet(p);WIND=windOf(p);
   if(!S.cam)S.cam={x:S.x,y:S.y};
@@ -301,6 +316,7 @@ function plnSurface(S,o){
     const ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
     plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
     plnThingsFrame(L,F,S,p,C.ex,V);
+    plnDrillFrame(F,S,L);plnTracksFrame(L,F,S,C.ex,V);
     plnBeastFrame(L,F,S,p,C.ex,V);
     plnHerbFrame(L,F,S,p,C.ex,V);
   }

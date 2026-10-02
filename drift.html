@@ -80321,6 +80321,7 @@ const PLN={on:false,                  /* переключатель: ?pln=1 ил
   y0:900,                             /* уровень игры, принятый за ноль высоты (ставит кадр) */
   cam:null,sun:null,                  /* объектив и свет последнего кадра */
   near:0,                             /* ближний объектив: 0 — дальний (игра), 1 — вдвое ближе (у вещи, стенд) */
+  glide:0,glideT:0,                   /* скольжение объектива к вещи: доля и часы последнего шага (21pz, M624) */
   stat:{},                            /* что построено и сколько стоило: для замера и стенда */
   warm:-1,                            /* поколение устройства, под которое посадка уже согрела набор растений (21pz) */
   log:[]};                            /* что сказали шейдеры и видеокарта: не больше сорока строк */
@@ -84192,7 +84193,7 @@ function plnCastFrame(F,man,face,ship,yaw,swim,o){
 const PLN_MAN={gen:-1,geo:null,inst:null,a:new Float32Array(16),
   parts:null,V:null,nv:0,ni:0,ib:null,
   key:"",                              /* палитра и заряд, под которые собраны части */
-  k:{air:0,jet:0,fall:0},              /* сглаженные доли поз: воздух, факел, падение */
+  k:{air:0,jet:0,fall:0,drill:0},      /* сглаженные доли поз: воздух, факел, падение, бур в руках */
   W:[],                                /* кости в мире на этот кадр */
   lamp:[0,0,0],jet:[0,0,0]};           /* где фонарь и сопло ранца в мире (для ламп кадра) */
 /* кости: родитель и место в системе родителя (м). 0 таз, 1 корпус, 2 голова,
@@ -84209,7 +84210,9 @@ const PLN_MAN_POSE={
   air: [0,-.10,.06, .45,-.95,.25, -.15,-.60,.15, .9,.5, .4,.4],
   jet: [0,.12,.10, -.20,-.80,.10, -.35,-.80,.10, .55,.4, .35,.35],
   fall:[0,-.15,-.15, .35,-.50,.10, -.30,-.30,.05, 1.6,.3, 1.3,.3],
-  swim:[0,-.05,-.06, .60,-1.1,.20, .40,-.90,.20, .6,.9, .5,.8]};
+  swim:[0,-.05,-.06, .60,-1.1,.20, .40,-.90,.20, .6,.9, .5,.8],
+  /* бурение (M624): стойка — ноги врозь, корпус вперёд, обе руки держат бур перед собой */
+  drill:[0,.20,.26, -.28,.22,.05, .30,-.30,0, 1.10,-.20, 1.00,-.28]};
 const PLN_MAN_FLAME={rings:7,sides:8};
 
 /* цвет комплекта: «#rrggbb» или «rgb(r,g,b)» (mixHex) → линейный */
@@ -84307,6 +84310,8 @@ function plnManBuild(P,low){
       plnBlob(m,{c:[.01,-.315,0],r:[.07,.085,.06],sub:1,lean:.25,col:P.gloves.main,mat:M,x:.2});
     });
   }
+  /* бур в ближней руке (21pic): без работы сжат в перчатку, пишется по кадру */
+  part(10,m=>plnDrillTool(m,P),"tool");
   /* факел ранца: кольца конуса пишутся по кадру (plnManFlame); без тяги он сжат в точку */
   part(1,m=>{
     const R=PLN_MAN_FLAME.rings,S=PLN_MAN_FLAME.sides,ids=[];
@@ -84328,6 +84333,7 @@ function plnManPose(st){
   K.air+=((st.on?0:1)-K.air)*.2;
   K.jet+=((st.jet?1:0)-K.jet)*.25;
   K.fall+=(((!st.on&&!st.jet&&st.vy>.4)?1:0)-K.fall)*.15;
+  K.drill+=((st.drill?1:0)-K.drill)*.2;
   const sw=st.swim,a=st.amp*(1-K.air)*(1-sw),ph=st.phase,t=st.t,sN=Math.sin(ph),sF=-sN,breath=Math.sin(t*.026);
   const kneeW=p=>Math.pow(Math.max(0,Math.sin(p+1.77)),1.2),toe=p=>Math.max(0,-Math.sin(p+.3)),heel=p=>Math.max(0,Math.sin(p-.3));
   const A=[0,a*.10+.015*breath,-.04+a*.04*Math.cos(2*ph)+.01*breath,
@@ -84337,9 +84343,11 @@ function plnManPose(st){
   A[8]=-(A[6]+A[7])*.75-a*.7*toe(ph+Math.PI)+a*.2*heel(ph+Math.PI);
   for(let i=0;i<13;i++){
     let v=lerp(A[i],PS.air[i],K.air);
-    v=lerp(v,PS.jet[i],K.jet);v=lerp(v,PS.fall[i],K.fall);v=lerp(v,PS.swim[i],sw);
+    v=lerp(v,PS.jet[i],K.jet);v=lerp(v,PS.fall[i],K.fall);v=lerp(v,PS.swim[i],sw);v=lerp(v,PS.drill[i],K.drill*(1-K.air));
     A[i]=v;
   }
+  /* бур в руках дрожит: плечи и чуть корпус (M624) */
+  if(K.drill>.02){const vb=K.drill*.022*Math.sin(t*2.7);A[9]+=vb;A[11]+=vb*.9;A[1]+=vb*.25;}
   const bob=a*.028*Math.cos(2*ph)+(1-a)*.006*breath,W=Q.W;
   for(let k=0;k<13;k++){
     const B=PLN_MAN_BONES[k],o=B.o,P=B.p<0?null:W[B.p],w=W[k]||(W[k]={c:1,s:0,x:0,y:0,z:0,a:0});
@@ -84384,15 +84392,17 @@ function plnMan(st){
 }
 function plnManState(S,lampK,swim){
   return {phase:S?S.walkPhase||0:0,amp:S?clamp(S.walkAmp||0,0,1):0,on:S?S.on!==false:true,jet:!!(S&&S.jetOn),
-    vy:S?S.vy||0:0,swim:clamp(swim||0,0,1),t:G.t||0,lamp:lampK||0,low:!!(S&&S.suit!=null&&S.suit<25)};
+    vy:S?S.vy||0:0,swim:clamp(swim||0,0,1),t:G.t||0,lamp:lampK||0,drill:!!(S&&S.mining),low:!!(S&&S.suit!=null&&S.suit<25)};
 }
 /* Ставит человека в кадр: поза по состоянию, вершины в буфер, запись, лампы фонаря и факела.
    pos — место ног в метрах, face — куда смотрит, swim — насколько он в круге, o — {S, lamp} */
 function plnManFrame(F,pos,face,swim,o){
   const st=plnManState(o&&o.S,o&&o.lamp,swim),Q=plnMan(st),W=plnManPose(st),V=Q.V;
+  PLN_DRILL.on=st.drill?1:0;
   for(const q of Q.parts){
     const w=W[q.bone],c=w.c,s=w.s,src=q.m.v,n=q.m.nv;
     if(q.dyn==="flame"){plnManFlame(st,V,q.off,w);}
+    else if(q.dyn==="tool"){plnDrillWrite(st,V,q.off,w,q.m);}
     else{
       let d=q.dyn?q.dyn(st):null,o2=q.off*PLN_VS;
       for(let k=0;k<n;k++){
@@ -84407,6 +84417,7 @@ function plnManFrame(F,pos,face,swim,o){
   /* в поле факела и фонарь, и сопло — в мире, с учётом стороны взгляда */
   const fx=face<0?-1:1,at=(w,lx,ly,lz)=>[pos[0]+fx*(w.c*lx-w.s*ly+w.x),pos[1]+(w.s*lx+w.c*ly+w.y),pos[2]+fx*(lz+w.z)];
   Q.lamp=at(W[2],.222,.40,0);Q.jet=at(W[1],-.31,.0,0);
+  PLN_DRILL.tip=at(W[10],0,-.30-PLN_DRILL.len*Q.k.drill,0);   /* остриё коронки — для луча (21pic) */
   GPU.dev.queue.writeBuffer(Q.geo.vb,0,V,0,Q.nv*PLN_VS);
   plnRec(Q.a,0,pos,1,fx<0?Math.PI:0,1,1);
   plnInstSet(Q.inst,Q.a,1);
@@ -84805,15 +84816,42 @@ function plnThingApron(m,L,cx,cz,rx,rz,a0,a1,hole,seed,dip,shade){
   return ids;
 }
 
+/* валун залежи: гранёный камень мира — икосфера, срезанная плоскостями, с плоской макушкой,
+   на которой стоит руда; грани красятся по тому, куда смотрят (верх светлее), свет делит их
+   дальше сам (§2.34). Подошва на .15 м ниже земли. Отдаёт высоту макушки */
+function plnThingBoulder(m,r,stone,sd,R){
+  const g=plnIco(1),cuts=[[[0,1,0],.5]],V=[],M=PLN_MAT.rock,mid=[0,R[1]*.4,0];
+  for(let k=0;k<7;k++)cuts.push([plnNorm([r()*2-1,r()*1.2-.4,r()*2-1]),.5+r()*.35]);
+  for(const u of g.p){
+    let q=plnMul(u,1+.15*plnNoise(u[0]*1.7+sd,u[1]*1.7+u[2],sd));
+    for(const [n,d] of cuts){const e=plnDot(q,n)-d;if(e>0)q=plnSub(q,plnMul(n,e));}
+    V.push([q[0]*R[0]*lerp(1.1,.85,clamp(q[1]*.5+.5,0,1)),(q[1]+1)*.5*R[1]-.15,q[2]*R[2]]);
+  }
+  for(const [a,b,c] of g.f){
+    const e=plnCross(plnSub(V[b],V[a]),plnSub(V[c],V[a])),ar=plnLen(e);
+    if(ar<1e-6)continue;
+    let n=plnMul(e,1/ar);
+    if(plnDot(n,plnSub(V[a],mid))<0)n=plnMul(n,-1);
+    const col=plnMul(stone,lerp(.62,1.08,plnSmooth(-.3,.9,n[1]))*(.92+.16*plnNoise(n[0]*2.3+sd,n[2]*2.3,sd+4)));
+    plnTri(m,plnVert(m,V[a],n,col,M,0,0,0),plnVert(m,V[b],n,col,M,0,0,0),plnVert(m,V[c],n,col,M,0,0,0));
+  }
+  return .75*R[1]-.15;
+}
 /* ── залежь ──
-   Тело в метр с небольшим, лицом к объективу (−z): гнездо потревоженного грунта и порода.
-   Формы — те же семь, что знала старая рисовалка */
+   Выход породы, лицом к объективу (−z): гранёный валун камня мира ломает дёрн, на его макушке
+   руда одной из семи форм старой рисовалки, у подошвы — выброшенные комья. Тёмный блин
+   «гнезда» читался подставкой фигурки, плоская плита — блюдом (M624). Отвал выбуренного — своя
+   сетка (plnThingSpoil): растёт с выработкой, запись масштабирует */
 function plnThingDeposit(res,seed){
-  const m=plnMesh(4096),r=rng(seed),P=PLN_PAL,R=PLN_MAT.rock,kind=depKind(res),sd=seed%97;
+  const m0=plnMesh(4096),m=plnMesh(4096),r=rng(seed),P=PLN_PAL,R=PLN_MAT.rock,kind=depKind(res),sd=seed%97;
   const ore=plnHex((RES[res]||RES.iron).col),hi=plnMix3(ore,[1,1,1],.4),lo=plnMul(ore,.5);
   const stone=plnMix3(P.rockWarm,P.rockCool,.3+r()*.4),dark=plnMul(stone,.4);
-  plnBlob(m,{c:[0,-.03,0],r:[1.3,.17,1],sub:2,bump:.4,bumpF:1.7,seed:sd,cut:-.06,
-    col:(u,p)=>plnMix3(P.soil,P.soilDark,plnSmooth(-.3,.4,plnNoise(p[0]*1.6,p[2]*1.6,sd+1))),mat:PLN_MAT.ground,glow:0,x:1});
+  const top=plnThingBoulder(m0,r,stone,sd,[1.15,1.05,.85]);
+  for(let k=0;k<8;k++){
+    const a=r()*TAU,dd=1.15+r()*.4,rr=.07+r()*.08;
+    plnBlob(m0,{c:[Math.cos(a)*dd,rr*.3,Math.sin(a)*dd*.72],r:[rr*1.3,rr*.7,rr],sub:1,box:.7,bump:.3,seed:sd+30+k,yaw:r()*TAU,
+      col:plnMix3(P.soilDark,P.mud,.35+r()*.3),mat:PLN_MAT.ground,glow:0});
+  }
   const pebble=(n,c)=>{
     for(let k=0;k<n;k++){
       const a=r()*TAU,d=.55+r()*.5,rr=.1+r()*.12;
@@ -84853,7 +84891,7 @@ function plnThingDeposit(res,seed){
     /* корка: низкие шапки с порами */
     for(let k=0;k<5;k++){
       const a=r()*TAU,d=k?.3+r()*.5:0,rr=k?.26+r()*.2:.52,c=[Math.cos(a)*d,.04,Math.sin(a)*d*.75];
-      plnBlob(m,{c,r:[rr,rr*.6,rr],sub:2,bump:.25,bumpF:2.2,seed:sd+k,cut:-.12*rr,yaw:r()*TAU,
+      plnBlob(m,{c,r:[rr,rr*.85,rr],sub:2,bump:.25,bumpF:2.2,seed:sd+k,cut:-.12*rr,yaw:r()*TAU,
         col:(u,p)=>plnMul(plnMix3(lo,ore,plnSmooth(-.2,.7,u[1])),plnNoise(p[0]*9,p[2]*9+p[1]*5,sd+9)>.35?.45:1),mat:PLN_MAT.bark});
     }
   }else if(kind==="vein"){
@@ -84904,6 +84942,16 @@ function plnThingDeposit(res,seed){
     }
     pebble(3,plnMix3(dark,lo,.5));
   }
+  plnMeshAdd(m0,plnMeshDone(m),[0,top-.02,0],0,1.2);   /* руда стоит на макушке валуна */
+  return m0;
+}
+/* отвал выбуренного: горка крошки у ног залежи, к тропе, в цвет земли с руды; свежая залежь
+   его не имеет — запись ставит масштаб по выработке */
+function plnThingSpoil(res,seed){
+  const m=plnMesh(512),P=PLN_PAL,ore=plnHex((RES[res]||RES.iron).col),sd=seed%89;
+  const col=(u,p)=>plnNoise(p[0]*7+sd,p[2]*7,sd+2)>.25?plnMix3(ore,P.soilDark,.35):plnMix3(P.soil,P.soilDark,.5+.5*plnNoise(p[0]*3,p[2]*3,sd+4));
+  plnBlob(m,{c:[.15,0,-.95],r:[.55,.24,.38],sub:2,bump:.3,bumpF:2,seed:sd+1,cut:-.02,col,mat:PLN_MAT.ground,glow:0});
+  plnBlob(m,{c:[-.35,0,-.8],r:[.3,.14,.24],sub:1,bump:.3,seed:sd+2,cut:-.02,col,mat:PLN_MAT.ground,glow:0});
   return m;
 }
 
@@ -85044,23 +85092,30 @@ function plnThingsDeposits(Q,L,S){
   Q.parts.length=0;Q.blots.length=0;
   let n=0;
   for(const key in by){
-    if(!Q.geo[key])Q.geo[key]=plnGeo(plnThingDeposit(key.slice(0,key.lastIndexOf(".")),plnThingSeed(key)));
+    if(!Q.geo[key]){
+      const res=key.slice(0,key.lastIndexOf(".")),sd=plnThingSeed(key);
+      Q.geo[key]=plnGeo(plnThingDeposit(res,sd));Q.geo[key+"~"]=plnGeo(plnThingSpoil(res,sd));
+    }
     const first=n;
     for(const d of by[key]){
       if(n>=PLN_THINGS.cap)break;
       const x=d.x/M,z=plnThingDepZ(d),k=clamp(.45+Math.min(1,(d.left||1)/9)*.55,0,1),hh=hashi(d.i|0,Math.round(d.x),0xD4);
-      plnRec(Q.a,n++,[x,plnLandRibAt(L,x,z)-.02,z],k,(((hh>>>4)&1023)/1023-.5)*1.3,1,n);
+      const pos=[x,plnLandRibAt(L,x,z)-.02,z],yaw=(((hh>>>4)&1023)/1023-.5)*1.3;
+      plnRec(Q.a,n,pos,k,yaw,1,n+1);
+      /* отвал растёт по мере выработки: свежая залежь — без него */
+      plnRec(Q.as,n,pos,clamp((1-k)/.55,0,1)*1.15,yaw,1,n+1);
+      n++;
       Q.blots.push([x,z,1.7*k,.45]);
     }
-    if(n>first)Q.parts.push({geo:Q.geo[key],first,count:n-first});
+    if(n>first){Q.parts.push({geo:Q.geo[key],first,count:n-first});Q.parts.push({geo:Q.geo[key+"~"],first,count:n-first,spoil:true});}
   }
-  if(!Q.inst)Q.inst=plnInst(Q.a,n,PLN_THINGS.cap);
-  else plnInstSet(Q.inst,Q.a,n);
+  if(!Q.inst){Q.inst=plnInst(Q.a,n,PLN_THINGS.cap);Q.instS=plnInst(Q.as,n,PLN_THINGS.cap);}
+  else{plnInstSet(Q.inst,Q.a,n);plnInstSet(Q.instS,Q.as,n);}
 }
 function plnThings(L,S,p){
   let Q=L.things;
   if(Q&&Q.gen!==PLN_GPU.gen){plnThingsDrop(L);Q=null;}
-  if(!Q)Q=L.things={gen:PLN_GPU.gen,dep:{geo:{},inst:null,a:new Float32Array(16*PLN_THINGS.cap),sig:-1,parts:[],blots:[]},cave:null,mine:null,ms:0};
+  if(!Q)Q=L.things={gen:PLN_GPU.gen,dep:{geo:{},inst:null,instS:null,a:new Float32Array(16*PLN_THINGS.cap),as:new Float32Array(16*PLN_THINGS.cap),sig:-1,parts:[],blots:[]},cave:null,mine:null,ms:0};
   const t0=wallMs();
   plnThingsDeposits(Q.dep,L,S);
   const cx=S.cave&&isFinite(S.cave.x)?S.cave.x/PLN_M:null;
@@ -85086,7 +85141,7 @@ function plnThingsFrame(L,F,S,p,ex,V){
   const blot=q=>{if(n<64&&sees(q[0],q[1],q[2])){b.set(q,4+n*4);n++;}};
   const D=Q.dep;
   if(D.inst&&D.inst.n>0){
-    for(const q of D.parts)F.batches.push({geo:q.geo,inst:D.inst,first:q.first,count:q.count,kind:B,to:TO});
+    for(const q of D.parts)F.batches.push({geo:q.geo,inst:q.spoil?D.instS:D.inst,first:q.first,count:q.count,kind:B,to:TO});
     for(const q of D.blots)blot(q);
   }
   if(Q.cave&&sees(Q.cave.x,T.caveZ+7,9*T.caveQ)){
@@ -85105,9 +85160,26 @@ function plnThingsDrop(L){
   if(!Q)return;
   for(const k in Q.dep.geo)plnGeoFree(Q.dep.geo[k]);
   if(Q.dep.inst)plnInstFree(Q.dep.inst);
+  if(Q.dep.instS)plnInstFree(Q.dep.instS);
   if(Q.cave)plnGeoFree(Q.cave.geo);
   if(Q.mine)plnGeoFree(Q.mine.geo);
   L.things=null;
+}
+/* «у вещи» — для объектива (21pz, M624): человек стоит на земле, и рядом залежь, вход в
+   пещеру, устье шахты, памятник, корабль или растение игры. Дальности — те, с которых игра
+   даёт действие (21-mode-surface) */
+function plnAtThing(S,p){
+  if(!S||S.on===false||S.jetOn||(S.walkAmp||0)>.25)return 0;
+  if(S.mining)return 1;
+  const x=S.x;
+  for(const d of S.deposits||[])if(d.left>0&&Math.abs(d.x-x)<26)return 1;
+  if(S.cave&&isFinite(S.cave.x)&&Math.abs(S.cave.x-x)<34)return 1;
+  if(S.shipX!=null&&Math.abs(S.shipX-x)<40)return 1;
+  const mu=mineSpotX(p);
+  if(mu!=null&&isFinite(mu)&&Math.abs(mu-x)<MINE_MOUTH_R)return 1;
+  for(const pl of S.plants||[])if(Math.abs(pl.x-x)<30)return 1;
+  if(typeof poiNear==="function"&&S.tr&&poiNear(S,S.tr))return 1;
+  return 0;
 }
 
 /* ══════════════ планета: растения игры — двенадцать форм (M611) ══════════════
@@ -85763,10 +85835,116 @@ function plnBeastDrop(L){
   L.beasts=null;
 }
 
+/* ══════════════ планета: бур в руках — инструмент, луч, крошка у забоя (M624) ══════════════
+   Добыча в старом кадре была ниточкой от человека к залежи и полоской над ней. Здесь это
+   работа: человек встаёт в стойку (поза drill, 21pha), в руках у него бур — тело на кости
+   предплечья, без работы сжатое в перчатку, как факел без тяги; от коронки к забою идёт
+   луч — тело из света; у забоя летит крошка цвета руды и горит тёплая лампа, так что залежь
+   и земля под ней освещены самой работой. Полоса добычи остаётся подписью (21pj): она
+   прибор, а не вещь. */
+const PLN_DRILL={len:.50,                 /* от перчатки до острия коронки, м */
+  chips:16,                               /* крошек у забоя */
+  geo:null,inst:null,a:new Float32Array(16),m:null,gen:-1,
+  tip:[0,0,0],on:0};                      /* остриё в мире и доля работы на этот кадр */
+/* бур в системе предплечья: рукоять в перчатке (y −.30), ствол с кольцом цвета перчаток,
+   короб привода сбоку, нос, коронка, огонёк острия. Строится один раз частью рига (21pha),
+   по кадру переписывается plnDrillWrite */
+function plnDrillTool(m,P){
+  const M=PLN_MAT.man,dark=plnHex("#3a3d42"),steel=plnHex("#9aa3ad"),acc=P.gloves.acc,y0=-.30,L=PLN_DRILL.len;
+  plnTube(m,{path:[[0,y0+.02,0],[0,y0-.07,0]],rad:.045,sides:10,col:dark,mat:M,x:.3,cap:true});
+  plnTube(m,{path:[[0,y0-.08,0],[0,y0-.26,0],[0,y0-.30,0]],rad:t=>t<.9?.072:.05,sides:10,col:t=>t>.45&&t<.6?acc:dark,mat:M,x:.35,cap:true});
+  plnTube(m,{path:[[0,y0-.30,0],[0,y0-.38,0]],rad:t=>lerp(.05,.028,t),sides:8,col:steel,mat:M,x:.5,cap:true});
+  plnTube(m,{path:[[0,y0-.38,0],[0,y0-L+.02,0]],rad:t=>.017*(1-t*.5),sides:6,col:steel,mat:M,x:.6});
+  plnBlob(m,{c:[.07,y0-.14,.05],r:[.03,.045,.03],sub:1,col:dark,mat:M,x:.2});
+  plnBlob(m,{c:[0,y0-L+.01,0],r:[.022,.03,.022],sub:1,col:[1,.9,.75],mat:PLN_MAT.glow,glow:0});
+}
+/* по кадру: вершины бура в буфер рига, сжатые к перчатке долей k (без работы — в точку);
+   огонёк острия горит по работе. w — кость предплечья в мире, off — смещение части, src — её сетка */
+function plnDrillWrite(st,V,off,w,src){
+  const k=PLN_MAN.k.drill,v=src.v,n=src.nv,c=w.c,s=w.s,py0=-.30,Gm=PLN_MAT.glow;
+  let o=off*PLN_VS;
+  for(let i=0;i<n;i++){
+    const q=i*PLN_VS,px=v[q]*k,py=py0+(v[q+1]-py0)*k,pz=v[q+2]*k,nx=v[q+3],ny=v[q+4];
+    V[o]=c*px-s*py+w.x;V[o+1]=s*px+c*py+w.y;V[o+2]=pz+w.z;
+    V[o+3]=c*nx-s*ny;V[o+4]=s*nx+c*ny;V[o+5]=v[q+5];
+    V[o+6]=v[q+6];V[o+7]=v[q+7];V[o+8]=v[q+8];V[o+9]=v[q+9];V[o+10]=0;
+    V[o+11]=v[q+9]===Gm?2.5*PLN_DRILL.on:0;V[o+12]=v[q+12];
+    o+=PLN_VS;
+  }
+}
+/* луч и крошка по кадру: от острия к забою залежи, которую бурит игра (S.mining). Своя сетка
+   постоянной топологии — трубка луча и крошки, — переписываются только вершины */
+function plnDrillFrame(F,S,L){
+  const Q=PLN_DRILL,d=S.mining;
+  if(!d||!(d.left>0)||!Q.on)return;
+  const k=clamp(.45+Math.min(1,(d.left||1)/9)*.55,0,1),dx=d.x/PLN_M,dz=plnThingDepZ(d),gy=plnLandRibAt(L,dx,dz);
+  const tip=Q.tip,toMan=plnNorm([tip[0]-dx,0,tip[2]-dz]);
+  const bite=[dx+toMan[0]*.6*k,gy+.17+.36*k,dz+toMan[2]*.6*k];
+  const ore=plnHex((RES[d.res]||RES.iron).col),hot=plnMix3(ore,[1,1,1],.7),t=G.t||0;
+  if(Q.gen!==PLN_GPU.gen||!Q.m){Q.m=plnMesh(512);Q.gen=PLN_GPU.gen;Q.geo=null;}
+  const m=Q.m;m.nv=0;m.ni=0;
+  /* луч: трубка с лёгким провисом, радиус дышит */
+  const mid=[(tip[0]+bite[0])/2,(tip[1]+bite[1])/2-.02,(tip[2]+bite[2])/2],pul=.036+.012*Math.sin(t*.9);
+  plnTube(m,{path:[tip,mid,bite],rad:u=>pul*(1.1-.3*u),sides:6,col:u=>plnMix3(hot,ore,u*.4),mat:PLN_MAT.glow,glow:5});
+  /* вспышка у забоя */
+  plnBlob(m,{c:bite,r:[.09,.07,.09],sub:0,col:hot,mat:PLN_MAT.glow,glow:5+Math.sin(t*1.7)});
+  /* крошка: летит от забоя к человеку и вверх, по возрасту гаснет; у каждой свой круг */
+  for(let i=0;i<Q.chips;i++){
+    const h=hashi(i,7,0xC4),u=(t*.03+i*.137+(h&255)/255)%1,a=-1.1+((h>>>8)&255)/255*2.2,sp=.35+((h>>>16)&255)/255*.4;
+    const ca=Math.cos(a),sa=Math.sin(a),dir=[toMan[0]*ca+toMan[2]*sa,0,toMan[2]*ca-toMan[0]*sa];
+    const p=[bite[0]+dir[0]*sp*u*1.5,bite[1]+(1.3*u-1.5*u*u)*sp*2.4,bite[2]+dir[2]*sp*u*1.5],r=.035+.03*(1-u);
+    plnBlob(m,{c:p,r:[r,r*.8,r],sub:0,col:plnMix3(hot,ore,u*.7),mat:PLN_MAT.glow,glow:5.5*(1-u*.7)});
+  }
+  if(!Q.geo){Q.geo=plnGeo(m);Q.inst=plnInst(Q.a,0,1);}
+  else GPU.dev.queue.writeBuffer(Q.geo.vb,0,m.v,0,m.nv*PLN_VS);
+  plnRec(Q.a,0,[0,0,0],1,0,1,1);plnInstSet(Q.inst,Q.a,1);
+  F.batches.push({geo:Q.geo,inst:Q.inst,kind:PLN_KIND.body,to:PLN_TO.lit});
+  F.lamps.push({p:[bite[0],bite[1]+.15,bite[2]],r:3.4,c:[hot[0],hot[1],hot[2]],k:2+.4*Math.sin(t*1.3)});
+}
+
+/* ══════════════ планета: следы — отпечатки на земле (M624) ══════════════
+   Старый след был чёрточкой поверх кромки. Здесь след — плоское тело подошвы на самой земле:
+   пара идёт попеременно левой и правой ногой по обе стороны линии ходьбы, носком по ходу.
+   Цвет — земля под ним, придавленная темнее; с возрастом след светлеет до цвета земли и
+   уходит в неё, не мигая. Записи переписываются по кадру из S.tracks игры; цвет земли под
+   следом считается раз и помнится по самой записи игры */
+const PLN_TRACKS={cap:220,geo:null,inst:null,a:null,gen:-1,cols:new WeakMap(),
+  len:.14,wid:.055,                      /* полуоси подошвы, м */
+  side:.13};                             /* на сколько след отстоит от линии ходьбы */
+function plnTrackMesh(){
+  const m=plnMesh(128),M=PLN_MAT.ground,T=PLN_TRACKS;
+  /* подошва: овал с пяткой, едва выше земли; нормаль вверх — свет тот же, что у земли */
+  plnBlob(m,{c:[0,0,0],r:[T.len,.012,T.wid],box:.6,sub:1,cut:-.004,col:[1,1,1],mat:M,glow:0});
+  plnBlob(m,{c:[-T.len*.55,0,0],r:[T.wid*1.1,.011,T.wid*1.05],sub:1,cut:-.004,col:[1,1,1],mat:M,glow:0});
+  return m;
+}
+function plnTracksFrame(L,F,S,ex,V){
+  const Q=PLN_TRACKS,list=S.tracks;
+  if(!list||!list.length)return;
+  if(Q.gen!==PLN_GPU.gen||!Q.geo){Q.gen=PLN_GPU.gen;Q.geo=plnGeo(plnTrackMesh());Q.a=new Float32Array(16*Q.cap);Q.inst=plnInst(Q.a,0,Q.cap);}
+  const life=TRACK_LIFE,t=G.t||0,M=PLN_M,hw=V.hw+2;
+  let n=0;
+  for(let i=list.length-1;i>=0&&n<Q.cap;i--){
+    const tk=list[i],age=t-tk.t;
+    if(age>life)continue;
+    const x=tk.x/M;
+    if(Math.abs(x-ex)>hw)continue;
+    const z=(Math.round(tk.x/13)&1?1:-1)*Q.side;
+    let c=Q.cols.get(tk);
+    if(!c){const g=plnThingGround(L,x,z);c={h:g.h,col:plnLandCol(L,x,z,g.h,g.n,0)};Q.cols.set(tk,c);}
+    const fade=clamp((age-life*.5)/(life*.5),0,1),col=plnMix3(plnMul(c.col,.58),c.col,fade);
+    plnRec(Q.a,n++,[x,c.h+.02,z],1,tk.f<0?Math.PI:0,1,i,col,0);
+  }
+  if(!n)return;
+  plnInstSet(Q.inst,Q.a,n);
+  F.batches.push({geo:Q.geo,inst:Q.inst,kind:PLN_KIND.body,to:PLN_TO.lit});
+}
+
 /* ══════════════ планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611) ══════════════
    Кадр нового вида — тела в объёме. Поверх него, тем же 2D, что рисует
-   приборы, ложится то, что телом не бывает: подписи вещей, полоса добычи, луч
-   бура, следы и пыль из-под ног, ближняя погода. Спасательный круг — тело (21ph).
+   приборы, ложится то, что телом не бывает: подписи вещей, полоса добычи, пыль
+   из-под ног, ближняя погода. Спасательный круг — тело (21ph); луч бура и следы
+   с M624 тоже тела (21pic, 21pid). Подписи — в пикселях окна, не в мерке объектива.
 
    И то, что ещё НЕ перерисовано: находки, свои постройки, дом, посёлок,
    «Жестянка», чужой знак, подглядка, места уездов. Их кладут старые рисовалки,
@@ -85784,9 +85962,9 @@ function plnOverAt(C,p){
   const k=C.D/(C.D+p[2]);
   return [(C.ex+(p[0]-C.ex)*k)*PLN_M-C.vx,PLN.y0-(C.ey+(p[1]-C.ey)*k)*PLN_M-C.vy];
 }
-function plnOverPlate(txt,x,y,plate,ink){
-  const tw=ctx.measureText(txt).width;
-  ctx.fillStyle=plate;ctx.fillRect(x-tw/2-5,y-10,tw+10,14);
+function plnOverPlate(txt,x,y,plate,ink,u){
+  const tw=ctx.measureText(txt).width,s=u||1;
+  ctx.fillStyle=plate;ctx.fillRect(x-tw/2-5*s,y-10*s,tw+10*s,14*s);
   ctx.fillStyle=ink;ctx.fillText(txt,x,y);
 }
 /* то, что ещё не перерисовано: старые рисовалки в том же порядке, что клал старый кадр */
@@ -85816,16 +85994,7 @@ function plnOver(){
     catch(e){O.old=false;O.err=String((e&&e.stack)||e).slice(0,400);plnLog("старые рисовалки: "+O.err);}
     ctx.restore();
   }
-  /* следы и пыль из-под ног: на самой линии ходьбы */
-  if(S.tracks)for(const tk of S.tracks){
-    const age=G.t-tk.t;
-    if(age>TRACK_LIFE)continue;
-    const tx=tk.x-camx;
-    if(tx<-10||tx>W+10)continue;
-    const a=clamp(1-(age-TRACK_LIFE*.5)/(TRACK_LIFE*.5),0,1),ty=groundAt(tr,tk.x)-camy;
-    ctx.fillStyle="rgba(0,0,0,"+(.30*a).toFixed(3)+")";
-    ctx.fillRect(tx-2.4,ty+.3,4.8,1.5);
-  }
+  /* пыль из-под ног: на самой линии ходьбы (следы — тела, 21pid) */
   if(S.dust)for(const dp of S.dust){
     const age=(G.t-dp.t)/46;
     if(age>=1)continue;
@@ -85835,17 +86004,19 @@ function plnOver(){
     ctx.fillStyle="rgba(214,198,172,"+((1-age)*.22).toFixed(3)+")";
     ctx.beginPath();ctx.ellipse(dx-dp.f*age*5,dy-1-age*4,1.5+age*4.5,1+age*2.6,0,0,TAU);ctx.fill();
   }
-  ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+  /* подписи в пикселях окна: в мерке объектива при ближнем они вырастали вдвое (M624) */
+  const u=surfScale()/(G.viewK||1);
+  ctx.font=(8*u).toFixed(2)+"px ui-monospace,monospace";ctx.textAlign="center";
   const PLATE="rgba(5,7,12,.72)",INK="rgba(176,196,208,.95)";
   if(S.cave&&isFinite(S.cave.x)){
     const x=S.cave.x/M,q=at([x,gy(x,PLN_THINGS.caveZ)+2.1*PLN_THINGS.caveQ+1.5,PLN_THINGS.caveZ]);
-    if(q[0]>-60&&q[0]<W+60)plnOverPlate("ПЕЩЕРА",q[0],q[1],PLATE,INK);
+    if(q[0]>-60&&q[0]<W+60)plnOverPlate("ПЕЩЕРА",q[0],q[1],PLATE,INK,u);
   }
   {
     const mu=mineSpotX(p);
     if(mu!=null&&isFinite(mu)){
       const x=mu/M,q=at([x,gy(x,PLN_THINGS.mineZ)+2.15*PLN_THINGS.mineQ+1.3,PLN_THINGS.mineZ]);
-      if(q[0]>-60&&q[0]<W+60)plnOverPlate("ШАХТА",q[0],q[1],PLATE,INK);
+      if(q[0]>-60&&q[0]<W+60)plnOverPlate("ШАХТА",q[0],q[1],PLATE,INK,u);
     }
   }
   for(const b of S.fauna||[]){
@@ -85859,7 +86030,7 @@ function plnOver(){
   for(const d of S.deposits||[]){
     if(!(d.left>0)||!(Math.abs(d.x-S.x)<70))continue;
     const x=d.x/M,z=plnThingDepZ(d),q=at([x,gy(x,z)+1.75,z]),txt=RES[d.res].ru.toUpperCase()+" "+d.left;
-    tags.push({txt,x:q[0],y:q[1]-(Math.round(d.x/60)%2)*11,w:ctx.measureText(txt).width+10,col:RES[d.res].col,far:Math.abs(d.x-S.x)});
+    tags.push({txt,x:q[0],y:q[1]-(Math.round(d.x/60)%2)*11*u,w:ctx.measureText(txt).width+10*u,col:RES[d.res].col,far:Math.abs(d.x-S.x)});
   }
   tags.sort((a,b)=>a.far-b.far);
   for(let k=0;k<tags.length;k++){
@@ -85868,27 +86039,23 @@ function plnOver(){
       let hit=false;
       for(let j=0;j<k;j++){
         const o=tags[j];
-        if(Math.abs(o.x-t.x)<(o.w+t.w)/2+3&&Math.abs(o.y-t.y)<16){t.y=o.y-16;hit=true;}
+        if(Math.abs(o.x-t.x)<(o.w+t.w)/2+3*u&&Math.abs(o.y-t.y)<16*u){t.y=o.y-16*u;hit=true;}
       }
       if(!hit)break;
     }
-    plnOverPlate(t.txt,t.x,t.y,"rgba(5,7,12,.62)",t.col);
+    plnOverPlate(t.txt,t.x,t.y,"rgba(5,7,12,.62)",t.col,u);
   }
   for(const d of S.deposits||[]){
     if(!(d.left>0))continue;
     const x=d.x/M,z=plnThingDepZ(d),g=gy(x,z),col=RES[d.res].col;
     if(S.mining===d){
-      const q=at([x,g+1.35,z]);
-      ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(q[0]-18,q[1],36,4);
-      ctx.fillStyle=col;ctx.fillRect(q[0]-18,q[1],36*clamp(d.prog,0,1),4);
+      /* полоса добычи — под подписью, не на поясе человека */
+      const q=at([x,g+1.75,z]),bw=36*u,bh=4*u,by=q[1]+6*u;
+      ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(q[0]-bw/2,by,bw,bh);
+      ctx.fillStyle=col;ctx.fillRect(q[0]-bw/2,by,bw*clamp(d.prog,0,1),bh);
     }
   }
-  const x=S.x-camx,y=S.y-camy;
-  if(S.mining){
-    const d=S.mining,dx=d.x/M,dz=plnThingDepZ(d),q=at([dx,gy(dx,dz)+.45,dz]);
-    ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(x+S.face*6,y+2);ctx.lineTo(q[0],q[1]);ctx.stroke();
-  }
+  /* луч бура — тело (21pic) */
   drawWeather(p,camx,camy,"near");
 }
 
@@ -85897,7 +86064,8 @@ function plnOver(){
    рамке 2D-игры, свет по часу планеты, два короба теней, земля (21pf), то, что
    на ней растёт и лежит (21pg, 21pga), человек и корабль (21ph), вещи игры —
    залежи, вход в пещеру, устье шахты (21pi), её растения (21pia) и звери
-   (21pib). Поверх кадра — подписи, следы и то, что ещё не перерисовано (21pj).
+   (21pib), бур в руках и следы (21pic, 21pid). Поверх кадра — подписи и то, что
+   ещё не перерисовано (21pj).
    Приборы рисует игра, как рисовала, и тычок «идти сюда» попадает туда же:
    рамка кадра на линии ходьбы — та же, что была.
 
@@ -86146,6 +86314,20 @@ function plnLightBox(dir,bx,n){
   return {m:plnM4mul(plnM4ortho(cx-sx/2,cx+sx/2,cy-sy/2,cy+sy/2,near,far),view),range:far-near};
 }
 
+/* ── скольжение объектива (M624, план §8.4) ──
+   На ходу — объектив игры, у вещи — вдвое ближе: доля PLN.glide идёт к цели по часам стены,
+   к вещи быстрее (0.45 с), от неё медленнее (0.7 с). Мерка игры и тычок не трогаются: рамка
+   на линии ходьбы та же, что показана, и G.viewK идёт вместе с ней */
+function plnGlide(S,p,fly){
+  const t=wallMs(),dt=Math.min(.1,Math.max(0,(t-(PLN.glideT||t))/1000));
+  PLN.glideT=t;
+  const want=fly?0:plnAtThing(S,p),g=PLN.glide||0,tau=want>g?.45:.7;
+  let v=g+(want-g)*(1-Math.exp(-dt/tau));
+  if(Math.abs(v-want)<.002)v=want;
+  PLN.glide=v;
+  return v;
+}
+
 /* ── кадр ── */
 function plnSurface(S,o){
   /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
@@ -86153,7 +86335,7 @@ function plnSurface(S,o){
      ship:{x,alt,gear,sq,thr,hot,tilt,yaw,down}} — корабль в воздухе, людей и вещей в кадре нет */
   const t0=wallMs(),fly=!!(o&&o.ship),Q=PLN_FRAME;
   S=S||G.surf;
-  const tr=S.tr,p=S.p,K=surfScale()*(1+clamp(fly?0:PLN.near||0,0,1));
+  const tr=S.tr,p=S.p,K=surfScale()*(1+clamp(fly?0:Math.max(PLN.near||0,plnGlide(S,p,fly)),0,1));
   /* то, что старый кадр делал попутно и на что опирается игра: свет 2D, ветер, камера */
   tr.p=p;sunDirSet(p);WIND=windOf(p);
   if(!S.cam)S.cam={x:S.x,y:S.y};
@@ -86195,6 +86377,7 @@ function plnSurface(S,o){
     const ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
     plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
     plnThingsFrame(L,F,S,p,C.ex,V);
+    plnDrillFrame(F,S,L);plnTracksFrame(L,F,S,C.ex,V);
     plnBeastFrame(L,F,S,p,C.ex,V);
     plnHerbFrame(L,F,S,p,C.ex,V);
   }
