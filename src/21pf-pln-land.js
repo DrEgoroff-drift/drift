@@ -403,15 +403,16 @@ function plnLandCol(L,x,z,h,n,k){
     if(z<-3)c=plnMix3(c,PAL.grassCool,plnSmooth(3,16,-z)*.7);
   }else if(k===1)c=plnMix3(PAL.grassCool,PAL.mud,plnSmooth(wy+.7,wy-.5,h));
   else if(k===2){
-    const va=plnFbm(x*.016+1,z*.03+7,3,sd+45)*.5+.5,vb=plnFbm(x*.02+5,z*.04+3,3,sd+46)*.5+.5;
+    const va=plnFbm(x*.012+1,z*.03+7,3,sd+45)*.5+.5,vb=plnFbm(x*.02+5,z*.04+3,3,sd+46)*.5+.5,vc=plnFbm(x*.09+2,z*.14+9,3,sd+47)*.5+.5;
     c=plnMix3(plnMix3(PAL.grassMid,PAL.grassLit,plnSmooth(.35,.7,v1)),PAL.grassCool,.35);
-    /* вереск лежит наносами, тонкими по краю и рваными внутри */
-    c=plnMix3(c,PAL.heather,plnSmooth(.52,.74,va)*(.25+.4*plnSmooth(.35,.65,v1)));
+    /* вереск лежит наносами вдоль берега: доля мягкая, край рван мелким зерном, цвет приглушён
+       к траве — ровное пятно чистого вереска читалось лужей (M622) */
+    c=plnMix3(c,plnMix3(PAL.heather,PAL.grassMid,.35),plnSmooth(.5,.74,va*.72+vc*.28)*(.18+.24*plnSmooth(.35,.65,v1)));
     c=plnMix3(c,PAL.dry,plnSmooth(.56,.74,vb)*.55);
     c=plnMix3(c,PAL.grassCool,plnSmooth(wy+2.5,wy+.2,h)*.6);
   }else if(k===3){
     c=plnMix3(PAL.forest,PAL.glade,plnSmooth(.45,.7,v2));
-    c=plnMix3(c,PAL.heather,plnSmooth(.6,.8,v1)*.35);
+    c=plnMix3(c,plnMix3(PAL.heather,PAL.grassMid,.3),plnSmooth(.6,.8,v1)*.28);
   }else if(k===4){
     /* лес по хребту до своей черты (лист мира), выше — камень; снег — где позволяет склон */
     c=plnMix3(PAL.forest,PAL.crag,tl>0?plnSmooth(tl*.13,tl*.35,h+14*(v1-.5)):1);

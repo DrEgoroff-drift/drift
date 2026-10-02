@@ -165,15 +165,17 @@ after it pass by §5.4.
 
 **Stage 2 — the cast.** Each by the method of §5.
 - M620 the man: rig, six suit slots, lamp, jetpack
-  — done 02.10: a hinge rig posed on the CPU from the game's own state, the «Орлан»
-  silhouette, the kit's families on the marks of the six slots, the lamp and the flame as
-  glow bodies, the rig's own lamps by night, the near lens `PLN.near`; three passes,
+  — done 02.10: a hinge rig posed on the CPU from the game's state, the «Орлан»
+  silhouette, the lamp and the flame as glow bodies, the near lens `PLN.near`;
   `docs/DESIGN-planet-engine.md` §2.28
 - M621 the ship on its gear and the descent
   — done 02.10: the ship lofted from the game's own hull; the descent as the surface's
   own frame (21pza): the composition sticks to the pad, the window is the surface's, the
   touch moves the ship without a rebuild; `docs/DESIGN-planet-engine.md` §2.29–§2.30
 - M622 flora: twelve forms as a kit, the genome of a world
+  — done 02.10: twelve anatomies, the accent only on flower parts, the wild drifts of
+  the planet's species near and far, tree weights by world, the heather in ragged
+  drifts; `docs/DESIGN-planet-engine.md` §2.31–§2.33
 - M623 stone and ground dress, water
 - M624 things to take: deposits, finds, drill, tracks
 - M625 fauna: ten silhouettes, gait, the hostile pose, far-then-near

@@ -31,7 +31,7 @@ const PLN_BARK={a:plnHex("#a88c6c"),b:plnHex("#5c4a3c"),dry:plnHex("#e6dfcc"),dr
 /* порода места: главная на сотню метров, изредка чужая. u — кость; band — план: 0 лента,
    дальше рощи по глубине, у каждого плана главная порода своя */
 function plnTreeKind(L,x,u,band){
-  const O=PLN_TREE_ORDER,T=PLN_TREES,w=k=>band&&!T[k].far?0:T[k].w;
+  const O=PLN_TREE_ORDER,T=PLN_TREES,w=k=>(band&&!T[k].far?0:T[k].w)*plnTreeWorldW(L,k);   /* мир правит породы (21pgd) */
   const roll=v=>{
     let s=0,a;
     for(const k of O)s+=w(k);

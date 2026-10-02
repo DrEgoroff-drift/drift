@@ -30,6 +30,7 @@ every shot lie there too.
 | `pose.py` | the man in a given pose, cropped out: `<name>:ph=;amp=;air=;jet=;vy=;raise=;swim=;hour=;near=;face=;where=;crop=;scale=` — the state is frozen through getters, the near lens is on by default |
 | `ship.py` | writes a pad snippet with a synthetic hull of a given form and class (`<form> [class] [colour] [hour]`; forms swept/delta/xwing/twin/slab/boxed/disc/trident), so the planet's ship (21phb) can be looked at across the fleet; shoot it with `pose.py base=g_ship_<form>_<class>.js` |
 | `descent.py` | writes a snippet that holds the landing still at a height: `<name>:alt=;dx=;a=;gear=;thr=;touched=;flow=;hour=;t=;n=` — the descent frame of 21pza; `flow=N` switches to the surface after N frames, shoot it with `until=window.__FLOW` |
+| `herb.py` | lines the twelve plant forms up along the walk line: `<name>:forms=;ages=;gap=;x=;near=;hour=;seed=;wet=;walk=` — one species per form, the row's species become the planet's for the frame; shoot with `dpr=3` (the plant's pixel size comes from the device ratio) |
 | `where.py` | where the frames go |
 
 ```bash

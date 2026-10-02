@@ -90,7 +90,7 @@ function plnPlantInit(L,p){
   const D={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
   const g0=G.opts&&G.opts.gfx?G.opts.gfx.plants:1,gp=clamp(g0==null?1:g0,.25,1.5)*(PLN_GPU.plK||1);   /* ярус (21pe) режет густоту */
   return L.flora={lush:flora?clamp((D[ty]||1.2)/1.9*(.25+wet*1.85),.25,1.3)*gp:0,
-    things:plnPlantThings(L,p),src:G.surf&&G.surf.tr===L.tr?G.surf:null,groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0};
+    p,type:ty,things:plnPlantThings(L,p),src:G.surf&&G.surf.tr===L.tr?G.surf:null,groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0,wild:null};
 }
 /* Вещи игры, вокруг которых держится поляна: [x, z, полуоси поляны, насколько близко могут стоять
    высокие тела]. Места — из состояния посадки; вещь, что появится позже, встанет в траву */
@@ -344,7 +344,8 @@ function plnPlantBodies(L,J){
       }
     }
   }
-  const bodies=bTree.concat(bRock,bLedge,bRos,bBloom,bReed,bPad);
+  /* дикие куртины видов планеты — последними, по оставшейся земле (21pgd) */
+  const bodies=bTree.concat(bRock,bLedge,bRos,bBloom,bReed,bPad,plnWildBodies(L,J,{at,free,clear,blots,wetAt,padK}));
   F.groups.push(plnPlantGroup(xa-7,xb+7,9,2,bodies,blots));
   F.groups.push(plnPlantGroup(xa-7,xb+7,-47,2,bWing));
   return clear;
@@ -515,7 +516,7 @@ function plnPlantFar(L,fc){
     q=dice();
     if(q[0]<.85*lush){const c=plnPlantCrest(L,xa+q[1]*C.farW,270,430,10);grove(bTree2,c[0],c[2]-8+q[2]*30,6+((q[3]*5)|0),17,9,15,q[4]<.5?0:3,1,4);}
   }
-  for(const G0 of [plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed)),plnPlantGroup(xa-30,xb+30,470,8,bTree2)]){G0.far=true;F.groups.push(G0);}
+  for(const G0 of [plnPlantGroup(xa-16,xb+16,190,6,bTree.concat(bRock,bBush,bReed,plnWildFar(L,fc,xa))),plnPlantGroup(xa-30,xb+30,470,8,bTree2)]){G0.far=true;F.groups.push(G0);}
   F.far[fc]=true;
 }
 
@@ -601,5 +602,6 @@ function plnPlantDrop(L){
   const F=L.flora;
   if(!F)return;
   for(const G0 of F.groups)if(G0.inst)plnInstFree(G0.inst);
+  plnWildDrop(F);
   L.flora=null;
 }

@@ -310,6 +310,42 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     (`L.flora.src`). The first frame of the descent carries the land by the ship and the
     flora kit (~110 ms); nothing of the sort remains at the touchdown.
 
+31. **The twelve forms are anatomies, not sticks with balls** (`21pia`, `PLN_HERB_MAKE`;
+    M622). Each form of the genome has a body of its own: the stem form — a basal rosette,
+    saucer leaves on petioles, a candle of buds; branched — a shrub of caps with flat
+    undersides; fern — a trunk and two tiers of fronds with fiddleheads; pod — pods hung in
+    pairs and a bunch at the top; druse — crystals out of a crust, not out of the grass;
+    spike — ears with awns over narrow leaves; carpet — cushions with lobes, built in
+    metres, because a species half a metre tall sank in the grass when its cushions
+    followed its height; mushroom — a dense cap with a rim, gills underneath, a ring on
+    the stem, spots; spiral — a tapering coil with feathers; umbrella — a translucent
+    membrane scalloped on its ribs, a second tier when old; ball — tethered balls with
+    calyxes over a rosette; ribbon — twisted strips, every other one a petal when the
+    species blooms. The body is built at unit height and scaled by the record. The
+    catalogue (`herb.py`) lines the forms up at the near lens and is shot at `dpr=3`: the
+    pixel size of a plant comes from the device ratio, the lens itself is clamped.
+
+32. **Colour: the leaves are the world's greens, the accent is for flower parts only**
+    (`plnHerbMesh`; M622). A whole plant in the world's accent read as a maroon yucca —
+    the under colour dominates on vertical blades. A species' leaves take one of the
+    world's three green pairs by species index (one rule near the line and in the wild);
+    only the blooming species carry the accent pair, on their flower parts — buds, pods,
+    ears, balls, the cap, petals, the druse's crystals — as literal colours on matte
+    materials, while the other species carry those parts in the record's tone (ears straw,
+    caps ochre). The accent on a four-metre cap read as candy, so the cap takes it dusty,
+    mixed toward ochre.
+
+33. **The genome is in the carpet** (`21pgd`, `plnWild*`; M622). The planet's species grow
+    beyond the line the game planted them on: drifts of one species behind the line (3–9
+    bodies in an ellipse, tall species one to three, up to three drifts a chunk by
+    lushness, on free land — not the path, the water, the pad lane or steep ground), and
+    the tall species (from 2.5 m) as silhouettes by the crests of the far shore at one and
+    a half their height. The bodies are the same `plnHerbMesh` in the world's tone, cached
+    per species and age on the landing and freed with it. The trees answer the world too:
+    `PLN_WILD.trees` multiplies the kit's weights in `plnTreeKind` — a desert stands in
+    snags and forks, a jungle in umbrellas and tiers. The far bank's heather lies in
+    ragged drifts muted toward the grass: an even patch of pure heather read as a puddle.
+
 ## 3. The family
 
 New modules, glued after the old surface (`21h…` < `21p…` < `22…`). Every name begins
@@ -329,6 +365,7 @@ with `pln` or `PLN`: the game is one scope.
 | `21pga-pln-plant` | what grows and lies where: placement by chunk, the pad's composition, the pond's shore, the crags |
 | `21pgb-pln-trees` | the six species of trees and their makers |
 | `21pgc-pln-wing` | the wing: four families of bodies next to the lens |
+| `21pgd-pln-wild` | the wild drifts of the planet's own species, near and far; the tree weights of a world |
 | `21ph-pln-cast` | the life ring, the cast's frame (the man and the ship are called from here) |
 | `21pha-pln-man` | the man: the rig's bones, parts from the kit, the poses, the flame, the lamps of his own |
 | `21phb-pln-ship` | the ship from the game's hull: the loft, the class marks, the legs, the flames, the hatch open and closed |
@@ -366,6 +403,9 @@ with `pln` or `PLN`: the game is one scope.
 - **M621** the ship and the descent. **Done**, in two passes: 1 — the ship from the game's
   hull (§2.29), 2 — the descent as the surface's own frame (§2.30): the sticky
   composition, the move at the touch, the replant at the switch.
+- **M622** the flora. **Done**, in three passes: 1 — the twelve anatomies (§2.31), 1b —
+  the colour law (§2.32), 2 — the wild drifts, the far silhouettes, the tree weights by
+  world and the heather (§2.33).
 
 ## 5. What is not done here
 
@@ -376,8 +416,8 @@ The old painters, the fleet's sky
 
 ## 6. State on 02.10.2026
 
-Stage 1 is closed (M610–M614); stage 2 stands at M620 and M621 done, M622 (the flora
-kit) next. The new look is walked in the game behind
+Stage 1 is closed (M610–M614); stage 2 stands at M620–M622 done, M623 (stone, the
+ground's dress, water) next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
@@ -443,6 +483,14 @@ it 27–42 % darker, measured with the ship's frame stubbed out), but at a low s
 ten metres toward the lens — below the ship in the frame, among the trees' shadows. The
 frames are in the author's chat; the shooter is `docs/look/game/descent.py`.
 
+**M622** (the flora) went in three passes, committed as one. The forms were judged on a
+catalogue at the near lens (`herb.py "c0:forms=0-2;gap=4;near=1;walk=25"`, shot at
+`dpr=3`), then on the game's frames: the test terrain at 4600 by day and by night, one
+terrain landed as jungle and as desert. The jungle stands in walls of four-metre
+mushrooms and coils — that is the game's own planting (`S.plants`: 314 bodies on the
+line, giants by the biome), not the drifts; the drifts of tall species were cut to one to
+three. The desert has no flora and no drifts. No errors in any frame.
+
 **Known weak spots** — named, not hidden:
 - M620: at the far lens the man is a dot in the squint — the far lens is the game's own
   scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
@@ -458,6 +506,11 @@ frames are in the author's chat; the shooter is `docs/look/game/descent.py`.
   the old painter's ship stood, not under the new one (it is drawn by the old HUD); the
   first frame of the descent carries ~110 ms; the flames are plain rings, the landing lamp
   a disc of light; the ship's shadow at a low sun lies far below the ship in the frame;
+- M622: the literal parts of a body (caps, ears, pods) take no jitter from the record, so
+  the giants of a jungle wear one colour; the carpet is low in tall grass away from its
+  clearing; the far silhouettes of tall species are small at 125–175 m; fiddleheads and
+  gills are not read at the far lens; the herbs' tint is by species index, not by how
+  common the species is;
 - beasts are blockouts (M625); tracks are the old game's dashes; landmarks, the base, the
   home and the settlement are stickers of the old painters (M626–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
