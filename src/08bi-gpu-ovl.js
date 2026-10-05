@@ -162,6 +162,17 @@ function ovText(Q,x,y,text,font,col,align,base,al,sc,vert){
   if(vert)return {x0:x-up,x1:x+dn,y0:x0-tw,y1:x0};
   return {x0,x1:x0+tw,y0:y-up,y1:y+dn};
 }
+/* строка под углом ang (рад) одной маской: как 2D под translate(x,y)+rotate(ang) с fillText(text,0,0).
+   Угол — шагом 1/256 оборота, фаза — ¼ пикселя устройства: ключей атласа конечное число (рукава карты) */
+function ovTextRot(Q,x,y,text,font,col,align,base,al,ang){
+  const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:align}),c=gcColor(col),a=c[3]*al;
+  if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1],main:true});}
+  const q=Math.round(ang/TAU*256)/256*TAU,co=Math.cos(q)*nd,si=Math.sin(q)*nd;
+  const X=x*nd,Y=y*nd,ix=Math.floor(X),iy=Math.floor(Y),fx=Math.round((X-ix)*4)/4,fy=Math.round((Y-iy)*4)/4;
+  const e=ovAtlas("rot|"+font+"|"+base+"|"+align+"|"+q.toFixed(4)+"|"+fx+"|"+fy+"|"+text,
+    ()=>GC_GLYPHS.raster(st,text,[co,si,-si,co],fx,fy,null,undefined,"#fff"));
+  ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,[c[0]*a,c[1]*a,c[2]*a,a],1,e.l,e.x,e.y,null);
+}
 /* подпись мира k (имя станции, планеты, борта): y — как у fillText при нынешнем ctx.textBaseline.
    Без видеокарты — прямо на ctx, как раньше */
 function domLabel(k,x,y,text,font,col,align,al){

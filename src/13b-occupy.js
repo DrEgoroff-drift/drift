@@ -310,12 +310,10 @@ function drawFactRoute(vis){
   if(pts.length<2)return;
   const col="rgba(242,178,92,";
   ctx.save();
-  ctx.setLineDash([1,5]);ctx.lineCap="round";
-  ctx.strokeStyle=col+".45)";ctx.lineWidth=1.2;
-  ctx.beginPath();
-  pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.stroke();
-  ctx.setLineDash([]);ctx.lineCap="butt";
+  /* пером карты (17z4): точки по плечам — пунктир 1/5 с круглыми концами */
+  if(!MPN.gpu)ctx.lineCap="round";
+  for(let i=1;i<pts.length;i++)mpDash(pts[i-1].x,pts[i-1].y,pts[i].x,pts[i].y,1.2,col+".45)",[1,5]);
+  if(!MPN.gpu)ctx.lineCap="butt";
   /* борт идёт по маршруту: точка, ползущая от плеча к плечу, — это и есть
      «домен работает», видимое без единой цифры */
   if(pts.length>1){
@@ -323,33 +321,27 @@ function drawFactRoute(vis){
     const i0=Math.floor(seg),t=seg-i0;
     const a=pts[i0],b=pts[Math.min(pts.length-1,i0+1)];
     const bx=lerp(a.x,b.x,t),by=lerp(a.y,b.y,t);
-    ctx.fillStyle=col+".9)";
-    ctx.beginPath();ctx.arc(bx,by,2.6,0,TAU);ctx.fill();
-    ctx.strokeStyle=col+".35)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(bx,by,5.5,0,TAU);ctx.stroke();
+    mpDisc(bx,by,2.6,col+".9)");
+    mpCircle(bx,by,5.5,1,col+".35)");
   }
   /* метки плеч: маленький ромб, чтобы плечо отличалось от просто станции */
   for(const p of pts){
-    ctx.strokeStyle=col+".6)";ctx.lineWidth=1.2;
-    ctx.beginPath();
-    ctx.moveTo(p.x,p.y-9);ctx.lineTo(p.x+9,p.y);ctx.lineTo(p.x,p.y+9);
-    ctx.lineTo(p.x-9,p.y);ctx.closePath();ctx.stroke();
+    mpPath([p.x,p.y-9,p.x+9,p.y,p.x,p.y+9,p.x-9,p.y],1.2,col+".6)",true);
   }
   /* подпись на лучшем плече: что и почём везут прямо сейчас */
   const leg=mgrBestLeg(m);
   if(!leg)return;
   const a=at(leg.from.sx+","+leg.from.sy),b=at(leg.to.sx+","+leg.to.sy);
   if(!a||!b)return;
-  ctx.strokeStyle=col+".85)";ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  mpLine(a.x,a.y,b.x,b.y,2,col+".85)");
   const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
   const rel=Math.round((leg.sell-leg.buy)/Math.max(1,leg.buy)*100);
   const label=RES[leg.k].ru.toUpperCase()+" "+leg.buy+" → "+leg.sell+" ("+rel+"%)";
   ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
   const tw=ctx.measureText(label).width;
-  ctx.fillStyle="rgba(6,10,16,.85)";ctx.fillRect(mx-tw/2-6,my-8,tw+12,16);
-  ctx.strokeStyle=col+".55)";ctx.lineWidth=1;ctx.strokeRect(mx-tw/2-5.5,my-7.5,tw+11,15);
-  ctx.fillStyle="#f2b25c";ctx.fillText(label,mx,my+.5);
+  mpRect(mx-tw/2-6,my-8,tw+12,16,"rgba(6,10,16,.85)");
+  mpFrame(mx-tw/2-5.5,my-7.5,tw+11,15,1,col+".55)");
+  mpText(label,mx,my+.5,"#f2b25c");
   ctx.textBaseline="alphabetic";
   ctx.restore();
 }

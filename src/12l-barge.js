@@ -661,10 +661,8 @@ function drawBargesMap(vis){
     const ph=((G.t*.03+r()*7)%2);
     const t=ph<1?ph:2-ph;
     const bx=lerp(a.x,c.x,t),by=lerp(a.y,c.y,t);
-    ctx.fillStyle="rgba(143,208,138,.9)";
-    ctx.beginPath();ctx.arc(bx,by,2.4,0,TAU);ctx.fill();
-    ctx.strokeStyle="rgba(143,208,138,.3)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(bx,by,5,0,TAU);ctx.stroke();
+    mpDisc(bx,by,2.4,"rgba(143,208,138,.9)");   /* перо карты (17z4) */
+    mpCircle(bx,by,5,1,"rgba(143,208,138,.3)");
   }
 }
 

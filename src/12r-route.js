@@ -284,16 +284,11 @@ function drawRouteMap(vis){
       const a=at(l.from.sx+","+l.from.sy),b=at(l.to.sx+","+l.to.sy);
       if(!a||!b||a===b)return;
       const next=NX&&NX.inLeg===l;
-      ctx.strokeStyle=col+(next?".95)":(l.net>0?".7)":".28)"));ctx.lineWidth=next?2.4:(l.net>0?1.8:1);
-      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+      mpLine(a.x,a.y,b.x,b.y,next?2.4:(l.net>0?1.8:1),col+(next?".95)":(l.net>0?".7)":".28)")));   /* перо карты (17z4) */
       /* стрелка на середине плеча: куда везём */
       const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,an=Math.atan2(b.y-a.y,b.x-a.x);
-      ctx.fillStyle=col+(l.net>0?".85)":".35)");
-      ctx.beginPath();
-      ctx.moveTo(mx+Math.cos(an)*7,my+Math.sin(an)*7);
-      ctx.lineTo(mx+Math.cos(an+2.5)*6,my+Math.sin(an+2.5)*6);
-      ctx.lineTo(mx+Math.cos(an-2.5)*6,my+Math.sin(an-2.5)*6);
-      ctx.closePath();ctx.fill();
+      mpTri(mx+Math.cos(an)*7,my+Math.sin(an)*7,mx+Math.cos(an+2.5)*6,my+Math.sin(an+2.5)*6,
+        mx+Math.cos(an-2.5)*6,my+Math.sin(an-2.5)*6,col+(l.net>0?".85)":".35)"));
       /* подпись — только на ЛУЧШЕМ плече. Три плашки на трёх плечах налезали
          друг на друга и на цену прыжка: карта превращалась в таблицу, а таблица
          у нас на станции. Одна подпись отвечает на единственный вопрос, с которым
@@ -302,9 +297,9 @@ function drawRouteMap(vis){
         const label=RES[l.k].ru.toUpperCase()+" "+l.buy+" → "+l.sell;
         const tw=ctx.measureText(label).width;
         const lx=mx+Math.cos(an+Math.PI/2)*14,ly=my+Math.sin(an+Math.PI/2)*14;
-        ctx.fillStyle="rgba(6,10,16,.85)";ctx.fillRect(lx-tw/2-6,ly-8,tw+12,16);
-        ctx.strokeStyle=col+".4)";ctx.lineWidth=1;ctx.strokeRect(lx-tw/2-5.5,ly-7.5,tw+11,15);
-        ctx.fillStyle="#7fe6d8";ctx.fillText(label,lx,ly+.5);
+        mpRect(lx-tw/2-6,ly-8,tw+12,16,"rgba(6,10,16,.85)");
+        mpFrame(lx-tw/2-5.5,ly-7.5,tw+11,15,1,col+".4)");
+        mpText(label,lx,ly+.5,"#7fe6d8");
       }
     });
   }
@@ -312,11 +307,9 @@ function drawRouteMap(vis){
   pts.forEach((p,i)=>{
     if(!p)return;
     const next=NX&&NX.idx===i&&R.legs.length>=2;
-    ctx.strokeStyle=col+".8)";ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.arc(p.x,p.y,11,0,TAU);ctx.stroke();
-    ctx.fillStyle=next?"rgba(127,230,216,.85)":"rgba(6,10,16,.8)";
-    ctx.beginPath();ctx.arc(p.x,p.y,11,0,TAU);ctx.fill();
-    ctx.fillStyle=next?"#06101a":"#7fe6d8";ctx.fillText(String(i+1),p.x,p.y+.5);
+    mpCircle(p.x,p.y,11,1.2,col+".8)");
+    mpDisc(p.x,p.y,11,next?"rgba(127,230,216,.85)":"rgba(6,10,16,.8)");
+    mpText(String(i+1),p.x,p.y+.5,next?"#06101a":"#7fe6d8");
   });
   ctx.textBaseline="alphabetic";
   ctx.restore();
