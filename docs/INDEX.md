@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 682 · top-level symbols: 7132
+Files: 683 · top-level symbols: 7158
 
 ## SYMBOLS
 
@@ -726,7 +726,7 @@ GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
 GROK_NAME                    src/12tb-grok.js:26
-GROUND_BAKING                src/19-mode-landing-ground.js:213
+GROUND_BAKING                src/19-mode-landing-ground.js:222
 GROVE_ETHER                  src/11j-grove.js:23-28
 GROVE_LIT                    src/11j-grove.js:126
 GROWN_LINES                  src/11q-grown.js:48-53
@@ -1036,6 +1036,7 @@ LG_BAKE                      src/19g-landing-gpu.js:362
 LG_DUST                      src/19g-landing-gpu.js:193
 LG_E                         src/19g-landing-gpu.js:363
 LG_FIRE                      src/19g-landing-gpu.js:192
+LG_GLOW                      src/19-mode-landing.js:195
 LG_H                         src/19g-landing-gpu.js:24
 LG_ID                        src/20fa-life-gpu.js:90
 LG_LANDER_WGSL               src/19g-landing-gpu.js:249
@@ -1335,9 +1336,16 @@ PL_LH                        src/11va-places-lit.js:103
 PL_MAX                       src/11va-places-lit.js:18
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 PL_WGSL                      src/11va-places-lit.js:52
+POI_BK                       src/20ab-poi-gpu.js:89
+POI_BOX                      src/20ab-poi-gpu.js:87
 POI_FIND                     src/20b-poi-find.js:18-91
 POI_KINDS                    src/20a-poi.js:11-30
+POI_NULL                     src/20ab-poi-gpu.js:18
+POI_NULL_G                   src/20ab-poi-gpu.js:17
+POI_PH                       src/20ab-poi-gpu.js:15
 POI_SEED                     src/20a-poi.js:90
+POI_SH                       src/20ab-poi-gpu.js:16
+POI_SHTEX                    src/20ab-poi-gpu.js:129
 POST_ADDR                    src/11e-post.js:46
 POST_FORMS                   src/25h-post-forms.js:40-199
 POST_FORMS2                  src/25h-post-forms2.js:22-126
@@ -3151,10 +3159,10 @@ draftOf                      src/27jb-kb.js:135-160
 draftSave                    src/27jb-kb.js:161-168
 draftTowerAt                 src/27jb-kb.js:170-175
 drawAbil                     src/16c-abil.js:167-195
-drawAccel                    src/20aa-poi-shapes.js:143-166
+drawAccel                    src/20aa-poi-shapes.js:142-162
 drawAccountShelf             src/12w-survey.js:93-109
 drawAllies                   src/12a-crew.js:678-698
-drawAnomaly                  src/20aa-poi-shapes.js:168-191
+drawAnomaly                  src/20aa-poi-shapes.js:164-187
 drawAstronaut                src/20-life.js:4-147
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-646
@@ -3186,8 +3194,8 @@ drawCockpit                  src/25-cockpit.js:405-680
 drawCombat                   src/13-pirates.js:366-468
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
-drawCrystalForest            src/20aa-poi-shapes.js:115-141
-drawDeadBattery              src/20aa-poi-shapes.js:221-275
+drawCrystalForest            src/20aa-poi-shapes.js:114-140
+drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:166-225
 drawDeposit                  src/21b-surface-deco.js:414-568
 drawDig                      src/23a-dig-draw.js:592-596
@@ -3196,12 +3204,12 @@ drawDigLight                 src/23b-dig-gpu.js:152-164
 drawDigWorld                 src/23a-dig-draw.js:456-544
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
-drawDustMotes                src/19-mode-landing.js:177-190
+drawDustMotes                src/19-mode-landing.js:177-191
 drawEdgeWall                 src/17-mode-system.js:69-78
-drawElevator                 src/20aa-poi-shapes.js:91-113
+drawElevator                 src/20aa-poi-shapes.js:90-112
 drawExhaust                  src/16a-space.js:323
 drawFactRoute                src/13b-occupy.js:302-347
-drawFactory                  src/20aa-poi-shapes.js:378-462
+drawFactory                  src/20aa-poi-shapes.js:374-457
 drawFindsSystem              src/17b-finds.js:240-288
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:135-155
@@ -3219,9 +3227,9 @@ drawGiant                    src/17o-giants.js:183-212
 drawGiantsMap                src/17o-giants.js:70-82
 drawGlassHUD                 src/24-mode-belt.js:364-451
 drawGlyph                    src/12t-settle.js:59-77
-drawGround                   src/19-mode-landing-ground.js:11-212
-drawGroundCrumbs             src/19-mode-landing-ground.js:251-261
-drawGroundGrass              src/19-mode-landing-ground.js:264-301
+drawGround                   src/19-mode-landing-ground.js:11-221
+drawGroundCrumbs             src/19-mode-landing-ground.js:260-270
+drawGroundGrass              src/19-mode-landing-ground.js:273-310
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-110
@@ -3234,7 +3242,7 @@ drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:286-306
 drawLandGear                 src/19f-lander.js:26-52
 drawLander                   src/19f-lander.js:56-358
-drawLanding                  src/19-mode-landing.js:191-318
+drawLanding                  src/19-mode-landing.js:204-353
 drawLawRing                  src/12al2-laws.js:136-162
 drawLoreMarks                src/12q-lore.js:235-261
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
@@ -3246,12 +3254,12 @@ drawModuleBody               src/21aa-base-rooms.js:493-501
 drawModuleFloor              src/21aa-base-rooms.js:546-572
 drawModuleLive               src/21aa-base-rooms.js:502-539
 drawModuleShell              src/21aa-base-rooms.js:438-484
-drawMonolith                 src/20aa-poi-shapes.js:193-210
+drawMonolith                 src/20aa-poi-shapes.js:189-206
 drawMooredBarge              src/17e-station-body.js:17-36
 drawNodeIcon                 src/05a-nodes.js:264-361
-drawObelisk                  src/20aa-poi-shapes.js:276-376
-drawObserv                   src/20aa-poi-shapes.js:491-513
-drawPOI                      src/20a-poi.js:173-234
+drawObelisk                  src/20aa-poi-shapes.js:272-372
+drawObserv                   src/20aa-poi-shapes.js:485-506
+drawPOI                      src/20a-poi.js:195-241
 drawPeaceFleet               src/17m-peace-fleet.js:83-162
 drawPirateBase               src/24a-mode-raid.js:187-218
 drawPirateSkin               src/03d-hull-marks.js:99-126
@@ -3259,7 +3267,7 @@ drawPlan                     src/05e-plan.js:137-173
 drawPlanetWorks              src/17e-station-body.js:71-116
 drawPlant                    src/20-life.js:417-425
 drawPlantAlien               src/20-life.js:221-388
-drawPortal                   src/20aa-poi-shapes.js:464-489
+drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-612
 drawRaid                     src/24aa-raid-draw.js:14-629
 drawRail                     src/18g-rail-ride.js:127-182
@@ -3267,7 +3275,7 @@ drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-272
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:86-626
-drawRocks                    src/19-mode-landing-ground.js:303-395
+drawRocks                    src/19-mode-landing-ground.js:312-404
 drawRouteMap                 src/12r-route.js:267-316
 drawRungRing                 src/12ae-ladder.js:72-86
 drawRushTraffic              src/17g-sys-lane.js:153-167
@@ -3299,7 +3307,7 @@ drawSysRail                  src/18f-rail-station.js:79-115
 drawSysTraffic               src/17f-sys-traffic.js:39-43
 drawSystem                   src/17-mode-system.js:531-715
 drawTapes                    src/12s1-tape.js:51-66
-drawTemple                   src/20aa-poi-shapes.js:50-89
+drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
 drawTierTrim                 src/03b-hull-paint.js:73-166
 drawTiles                    src/18c-chunks.js:159-170
@@ -3317,7 +3325,7 @@ drawWeather                  src/19d-weather.js:186-318
 drawWinter                   src/29g-winter-draw.js:365-386
 drawWorld                    src/28-loop.js:401-404
 drawWorldIn                  src/28-loop.js:405-428
-drawWreck                    src/20aa-poi-shapes.js:8-48
+drawWreck                    src/20aa-poi-shapes.js:8-47
 drawWrecksSystem             src/12l-barge.js:379-405
 drawYardMark                 src/03e-hull-draw.js:73-116
 droneBreakP                  src/12e-drone-flight.js:171-175
@@ -3949,8 +3957,8 @@ grokTeach                    src/12tb-grok.js:144-157
 grokTick                     src/12tb-grok.js:75-79
 grokWant                     src/12tb-grok.js:41-44
 groundAt                     src/07a-terrain.js:199-202
-groundChunkPaint             src/19-mode-landing-ground.js:231-249
-groundChunkStore             src/19-mode-landing-ground.js:218-229
+groundChunkPaint             src/19-mode-landing-ground.js:240-258
+groundChunkStore             src/19-mode-landing-ground.js:227-238
 groundGrassGpu               src/21e3-surface-stand-gpu.js:38-62
 groundShadow                 src/19-mode-landing.js:156-169
 groveAll                     src/11j-grove.js:29
@@ -4628,6 +4636,8 @@ lgBox                        tests/91zzzzy-light.js:22-39
 lgBrightest                  tests/91zzzzy-light.js:42-50
 lgClean                      tests/91zzzzy-light.js:56-58
 lgDrawRec                    tests/91q1-landing-gpu.js:22-29
+lgGlowTex                    src/19-mode-landing.js:196-203
+lgGpu                        src/19-mode-landing.js:193
 lgHTex                       src/19g-landing-gpu.js:25-37
 lgHour                       tests/91zzzzy-light.js:77-86
 lgLander                     src/19g-landing-gpu.js:390-448
@@ -5034,7 +5044,7 @@ navAction                    src/15-input.js:278-295
 nbFoe                        tests/91zzzw-notebook.js:15-20
 nbWorld                      tests/91zzzw-notebook.js:6-14
 near                         tests/90-harness.js:195
-nearestPOI                   src/20a-poi.js:236-241
+nearestPOI                   src/20a-poi.js:243-248
 nearestStation               src/12-economy.js:301-316
 nebMoveFrames                tests/91zzzzzzy7-gpu-nebmove.js:7-10
 nebula                       src/16-flight.js:82-96
@@ -5513,15 +5523,31 @@ plantUx                      src/20-life.js:427-431
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
+poiBake                      src/20ab-poi-gpu.js:109-127
 poiBody                      src/20a-poi.js:168-172
+poiC                         src/20ab-poi-gpu.js:33
 poiDrift                     src/20a-poi.js:147-165
 poiGlow                      src/20a-poi.js:78-84
+poiGpu                       src/20ab-poi-gpu.js:145-166
 poiInspect                   src/20b-poi-find.js:104-137
+poiLArc                      src/20ab-poi-gpu.js:65-72
+poiLDisc                     src/20ab-poi-gpu.js:43-47
+poiLEll                      src/20ab-poi-gpu.js:74-84
+poiLGlow                     src/20ab-poi-gpu.js:36-42
+poiLPoly                     src/20ab-poi-gpu.js:54-63
+poiLRect                     src/20ab-poi-gpu.js:48-52
+poiLight                     src/20ab-poi-gpu.js:93-108
 poiMemo                      src/20b-poi-find.js:99-103
-poiNear                      src/20a-poi.js:245-252
+poiNear                      src/20a-poi.js:252-259
 poiPath                      src/20a-poi.js:91-109
 poiPoly                      src/20a-poi.js:110-116
+poiPt                        src/20ab-poi-gpu.js:31
+poiSc                        src/20ab-poi-gpu.js:32
+poiShadowRect                src/20ab-poi-gpu.js:139-143
+poiShadowTex                 src/20ab-poi-gpu.js:130-137
+poiShape                     src/20a-poi.js:181-194
 poiSkin                      src/20a-poi.js:119-144
+poiTone                      src/20a-poi.js:176-180
 postAddrs                    src/11e-post.js:47-71
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113-142
@@ -8029,7 +8055,7 @@ zoomTo                       src/15-input.js:350
 ## src/19-mode-landing-ground.js · 26 KB
   · посадка: разрез грунта:1
 
-## src/19-mode-landing.js · 20 KB
+## src/19-mode-landing.js · 22 KB
   · посадка:1
 
 ## src/19a-mode-scoop.js · 16 KB
@@ -8079,8 +8105,11 @@ zoomTo                       src/15-input.js:350
 ## src/20a-poi.js · 16 KB
   · точки интереса:1
 
-## src/20aa-poi-shapes.js · 30 KB
+## src/20aa-poi-shapes.js · 29 KB
   · фигуры находок: одна функция на вид:1
+
+## src/20ab-poi-gpu.js · 11 KB
+  · постройки на движке (G15):1
 
 ## src/20b-poi-find.js · 11 KB
   · осмотр достопримечательности:1

@@ -41,9 +41,8 @@ function drawWreck(q,r,dark,lite,pal){
   const bl=Math.pow(Math.max(0,Math.sin(G.t*.06)),8);
   if(bl>.02){
     const bx=-L*.42*Math.cos(tilt), by=-q.h*.42;
-    poiGlow(bx,by,60,"255,90,70",.5*bl);
-    ctx.fillStyle="rgba(255,190,170,"+(.9*bl).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(bx,by,2.2,0,TAU);ctx.fill();
+    poiLGlow(bx,by,60,"255,90,70",.5*bl);   /* живое — кистями poiL* (20ab) */
+    poiLDisc(bx,by,2.2,"rgba(255,190,170,"+(.9*bl).toFixed(2)+")");
   }
 }
 /* ── древний храм: ступенчатая пирамида, вход светится ── */
@@ -103,8 +102,8 @@ function drawElevator(q,r,dark,lite){
   /* кабина ползёт вверх — единственное, что здесь движется */
   const t=(G.t*.0016+((q.seed&255)/255))%1;
   const cy=-q.h*(.16+t*.8), cw=bw*.5*(1-t*.7);
-  ctx.fillStyle="rgba(235,240,245,.7)";ctx.fillRect(-cw,cy,cw*2,cw*1.6);
-  poiGlow(0,cy,bw*2.4,"200,230,255",.18);
+  poiLRect(-cw,cy,cw*2,cw*1.6,"rgba(235,240,245,.7)");
+  poiLGlow(0,cy,bw*2.4,"200,230,255",.18);
   /* растяжки к грунту */
   ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1.4;
   for(const s of [-1,1]){
@@ -132,10 +131,10 @@ function drawCrystalForest(q,r,pal){
     poiPoly([[-s.w,0],[s.w,0],[s.w*.35,-s.h*.82],[0,-s.h],[-s.w*.42,-s.h*.8]],g,"rgba(255,255,255,.28)",.35);
     /* блик: узкая грань, которая «загорается» на своей фазе */
     const tw=.35+.65*Math.pow(Math.max(0,Math.sin(G.t*.02+s.ph)),6);
-    ctx.fillStyle="rgba(255,255,255,"+(.30*tw).toFixed(3)+")";
-    poiPoly([[-s.w*.3,-s.h*.12],[0,-s.h*.1],[0,-s.h*.9],[-s.w*.18,-s.h*.86]],
+    if(POI_PH!=="live")ctx.fillStyle="rgba(255,255,255,"+(.30*tw).toFixed(3)+")";
+    poiLPoly([[-s.w*.3,-s.h*.12],[0,-s.h*.1],[0,-s.h*.9],[-s.w*.18,-s.h*.86]],
       "rgba(255,255,255,"+(.30*tw).toFixed(3)+")",null);
-    if(tw>.75)poiGlow(0,-s.h*.7,s.h*.5,col,.10*tw);
+    if(tw>.75)poiLGlow(0,-s.h*.7,s.h*.5,col,.10*tw);
     ctx.restore();
   }
 }
@@ -155,12 +154,9 @@ function drawAccel(q,r,dark,lite){
   const a=G.t*.012+((q.seed&63)/63)*TAU;
   const px=Math.cos(a)*R, py=-R*.34+Math.sin(a)*R;
   if(py<4){
-    poiGlow(px,py,R*.34,"150,220,255",.5);
-    ctx.fillStyle="rgba(230,248,255,.9)";
-    ctx.beginPath();ctx.arc(px,py,R*.035,0,TAU);ctx.fill();
-    /* хвост */
-    ctx.strokeStyle="rgba(150,220,255,.35)";ctx.lineWidth=R*.05;
-    ctx.beginPath();ctx.arc(0,-R*.34,R,a-.5,a);ctx.stroke();
+    poiLGlow(px,py,R*.34,"150,220,255",.5);
+    poiLDisc(px,py,R*.035,"rgba(230,248,255,.9)");
+    poiLArc(0,-R*.34,R,a-.5,a,R*.05,"rgba(150,220,255,.35)");   /* хвост */
   }
   ctx.restore();
 }
@@ -184,8 +180,8 @@ function drawAnomaly(q,r,pal){
     const px=Math.cos(a)*rr, py=cy+Math.sin(a)*rr*.42;
     const s=2+ (i%4)*2.4;
     ctx.save();ctx.translate(px,py);ctx.rotate(a*1.7);
-    ctx.fillStyle="rgb("+c0.map(v=>Math.round(v*.9+18)).join(",")+")";
-    poiPoly([[-s,0],[-s*.3,-s*.8],[s*.9,-s*.2],[s*.4,s*.7]],ctx.fillStyle,"rgba(0,0,0,.4)");
+    const fc="rgb("+c0.map(v=>Math.round(v*.9+18)).join(",")+")";
+    poiLPoly([[-s,0],[-s*.3,-s*.8],[s*.9,-s*.2],[s*.4,s*.7]],fc,"rgba(0,0,0,.4)");
     ctx.restore();
   }
 }
@@ -201,10 +197,10 @@ function drawMonolith(q,r,dark,lite,pal){
   ctx.strokeStyle="rgba(210,235,255,.4)";ctx.lineWidth=1.6;
   ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(w*.93,-q.h);ctx.stroke();
   /* насечки на грани — оживают только вблизи */
-  ctx.fillStyle="rgba(120,200,230,"+(.14+.10*Math.sin(G.t*.01)).toFixed(3)+")";
+  const nc="rgba(120,200,230,"+(.14+.10*Math.sin(G.t*.01)).toFixed(3)+")";
   for(let i=0;i<9;i++){
     const yy=-q.h*(.15+i*.085);
-    ctx.fillRect(-w*.35,yy,w*.7*(.3+((q.seed>>>i)&3)/3*.7),1.6);
+    poiLRect(-w*.35,yy,w*.7*(.3+((q.seed>>>i)&3)/3*.7),1.6,nc);
   }
   poiGlow(0,-q.h*.55,q.h*.7,"90,170,220",.06);
 }
@@ -415,8 +411,7 @@ function drawFactory(q,r,dark,lite,pal){
       const sm=(G.t*.5)%400;
       for(let s=0;s<8;s++){
         const t=((sm+s*50)%400)/400;
-        ctx.fillStyle="rgba(184,188,196,"+(.13*(1-t)).toFixed(3)+")";
-        ctx.beginPath();ctx.arc(tx+Math.sin(t*4+q.seed)*t*30,-th-tw*.5-t*q.h*1.1,5+t*26,0,TAU);ctx.fill();
+        poiLDisc(tx+Math.sin(t*4+q.seed)*t*30,-th-tw*.5-t*q.h*1.1,5+t*26,"rgba(184,188,196,"+(.13*(1-t)).toFixed(3)+")");
       }
     }
   }
@@ -458,7 +453,7 @@ function drawFactory(q,r,dark,lite,pal){
   }
   /* аварийный огонь на дальней башне: точка внимания в мёртвом объекте */
   const fl=.5+.5*Math.sin(G.t*.035);
-  poiGlow(w*.28,-q.h*.7,26,"255,120,60",.22*fl);
+  poiLGlow(w*.28,-q.h*.7,26,"255,120,60",.22*fl);
 }
 /* ── врата: стоящее кольцо, внутри — не этот мир ── */
 function drawPortal(q,r,pal){
@@ -473,10 +468,9 @@ function drawPortal(q,r,pal){
   g.addColorStop(.5,"rgba(140,90,220,.5)");
   g.addColorStop(1,"rgba(20,8,40,.85)");
   ctx.fillStyle=g;ctx.fillRect(-R,cy-R,R*2,R*2);
-  ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1.4;
   for(let i=0;i<5;i++){
     const rr=R*(.16+i*.19), a=G.t*.006*(i%2?1:-1);
-    ctx.beginPath();ctx.ellipse(0,cy,rr,rr*.9,a,0,TAU);ctx.stroke();
+    poiLEll(0,cy,rr,rr*.9,a,"rgba(255,255,255,.16)",1.4);
   }
   ctx.restore();
   /* сама рама: два незамкнутых полукольца, между ними разрыв */
@@ -506,9 +500,8 @@ function drawObserv(q,r,dark,lite,pal){
   poiPoly([[-4,0],[4,0],[2.5,-q.h*.4],[-2.5,-q.h*.4]],dark,null);
   ctx.translate(0,-q.h*.4);
   ctx.rotate(-1.1+Math.sin(G.t*.0026+(q.seed&31))*.5);
-  ctx.beginPath();ctx.ellipse(0,0,R*.5,R*.2,0,0,TAU);
-  ctx.fillStyle="rgba(180,195,205,.55)";ctx.fill();
-  ctx.strokeStyle="rgba(0,0,0,.4)";ctx.stroke();
+  poiLEll(0,0,R*.5,R*.2,0,"rgba(180,195,205,.55)",0);
+  poiLEll(0,0,R*.5,R*.2,0,"rgba(0,0,0,.4)",1);
   ctx.restore();
 }
 /* ближайшая точка интереса — для навигатора сверху */

@@ -64507,7 +64507,16 @@ function drawGround(tr,camx,camy,fill,line,pal){
      она одна здесь живая, потому что кланяется ветру. */
   if(pal&&tr.mat&&!GROUND_BAKING){
     tr.chunks=groundChunkStore(tr,fill,line);
-    drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>groundChunkPaint(tr,wx0,wy0,fill,line,pal));
+    const paint=(g,wx0,wy0)=>groundChunkPaint(tr,wx0,wy0,fill,line,pal);
+    /* с видеокартой (заход, G15) — ломти картинками в проход, трава фигурами (21e3) */
+    const gp=(typeof GPU!=="undefined"&&GPU.ok&&GPU.on&&GPU.enc)?gpuNext():null;
+    if(gp){
+      const o=lifeHere(0,0),K=o.s,S=tr.chunks,k0=Math.floor(camx/CHUNK_W),k1=Math.floor((camx+W)/CHUNK_W);
+      for(let k=k0;k<=k1;k++)gpuImage(gp,chunkAt(S,k,paint),[{x:o.x+(k*CHUNK_W-camx+CHUNK_W/2)*K,y:o.y+(S.top-camy+S.ch/2)*K,w:CHUNK_W*K,h:S.ch*K}]);
+      if(!groundGrassGpu(gp,tr,camx,camy))drawGroundGrass(tr,camx,camy);
+      return;
+    }
+    drawChunks(tr.chunks,camx,camy,paint);
     drawGroundGrass(tr,camx,camy);
     return;
   }
@@ -65059,6 +65068,7 @@ function drawSkyLayer(p,camx,camy){
 /* пыль/пыльца в воздухе — только там, где есть атмосфера, для ощущения глубины */
 function drawDustMotes(camx,camy,p){
   if(p.T.atm==="отсутствует")return;
+  const gp=lgGpu();if(gp&&dustMotesGpu(gp,camx,camy,p))return;   /* с видеокартой — кругами в проход (21e3) */
   const n=26;
   for(let i=0;i<n;i++){
     const r=rng(hashi(Math.floor(p.seed),i,0xD05));
@@ -65070,6 +65080,18 @@ function drawDustMotes(camx,camy,p){
     ctx.fillStyle="rgba(255,255,255,"+(.05+r()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(x,y,.8+r()*1.2,0,TAU);ctx.fill();
   }
+}
+/* проход видеокарты для живого заходa или null — тогда рисует 2D */
+function lgGpu(){return (typeof GPU!=="undefined"&&GPU.ok&&GPU.on&&GPU.enc)?gpuNext():null;}
+/* мягкое пятно цвета col ("r,g,b"): спад 1 → .35 к середине → 0, холст на цвет (зарево захода) */
+const LG_GLOW={};
+function lgGlowTex(col){
+  let cn=LG_GLOW[col];if(cn)return cn;
+  cn=document.createElement("canvas");cn.width=cn.height=96;
+  const g=cn.getContext("2d"),gr=g.createRadialGradient(48,48,0,48,48,48);
+  gr.addColorStop(0,"rgba("+col+",1)");gr.addColorStop(.45,"rgba("+col+",.35)");gr.addColorStop(1,"rgba("+col+",0)");
+  g.fillStyle=gr;g.fillRect(0,0,96,96);
+  return LG_GLOW[col]=cn;
 }
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
@@ -65105,11 +65127,14 @@ function drawLanding(){
   const alt=Math.max(0,gyw-L.y-11);
   const fA=Math.max(Math.min(camy*.46+110,camy+H*.20),gyw-H*.72), fB=Math.max(Math.min(camy*.55+60,camy+H*.11),gyw-H*.80);
   if(alt>160&&p.T.atm!=="отсутствует"){
-    const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1];
+    const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1],gz=lgGpu();
+    if(gz)gpuShapes(gz,[[8,0,0,W,H*.62,0,0,s1[0],s1[1],s1[2],hi]],{blend:"over"});
+    else{
     const zg=ctx.createLinearGradient(0,0,0,H*.62);
     zg.addColorStop(0,"rgba("+s1.join(",")+","+hi.toFixed(3)+")");
     zg.addColorStop(1,"rgba("+s1.join(",")+",0)");
     ctx.fillStyle=zg;ctx.fillRect(0,0,W,H*.62);
+    }
   }
   /* гряды — поле видеокарты (19g): форма, зерно, подошва в воздухе; слой поверх
      небесных тел и облаков, дымка горизонта ляжет уже на него */
@@ -65132,7 +65157,10 @@ function drawLanding(){
     if(k>.02){
       const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)?hex2rgb(G.sys.cls.col):[255,214,150];
       const wc=[Math.round(sc[0]*.4+153),Math.round(sc[1]*.4+120),Math.round(sc[2]*.3+70)];
-      const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04;
+      const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04,gw=lgGpu();
+      /* на видеокарте — пятно, растянутое в тот же эллипс, сложением */
+      if(gw)gpuImage(gw,lgGlowTex(wc.join(",")),[{x:gx,y:gy,w:W*.72,h:H*.32,a:k}],{blend:"add"});
+      else{
       const g=ctx.createRadialGradient(gx,gy,0,gx,gy,W*.36);
       g.addColorStop(0,"rgba("+wc.join(",")+","+k.toFixed(3)+")");
       g.addColorStop(.45,"rgba("+wc.join(",")+","+(k*.35).toFixed(3)+")");
@@ -65140,6 +65168,7 @@ function drawLanding(){
       ctx.save();ctx.globalCompositeOperation="lighter";
       ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(gx,gy,W*.36,H*.16,0,0,TAU);ctx.fill();
       ctx.restore();
+      }
     }
   }
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
@@ -65164,7 +65193,22 @@ function drawLanding(){
      и оно само показывает, куда садиться; плита — тело с тёплой кромкой и
      двумя огнями по краям. Столб — одна узкая трапеция, кадру дёшево. */
   const px=tr.padX-camx,py=tr.padY-camy;
-  {
+  const gc=lgGpu();
+  if(gc){
+    /* столб — стопкой полос: ширина трапеции по высоте, прозрачность сверху вниз */
+    const hUp=H*.85,SH=[],n=16;
+    for(let i=0;i<n;i++){const u0=i/n,u1=(i+1)/n,hw=10+26*(u0+u1)/2;
+      SH.push([8,px-hw,py-hUp*u1,px+hw,py-hUp*u0,.11*(1-u0),0,242,178,92,.11*(1-u1)+.001]);}
+    const u=(G.t*.22)%1,ry=py-hUp*(1-u);
+    SH.push([1,px,ry,1.5+u*1.5,0,0,0,255,220,150,.10+.5*u*u]);
+    SH.push([0,px-46,py,px+46,py+4,0,0,16,20,26,.9]);
+    SH.push([0,px-46,py-1,px+46,py+1,0,0,242,178,92,.85]);
+    for(const sx of [-46,46]){
+      const bl=.5+.5*Math.sin(G.t*.05+(sx>0?0:Math.PI));
+      SH.push([1,px+sx,py-2,1.8,0,0,0,255,214,150,.35+.5*bl]);
+    }
+    gpuShapes(gc,SH,{blend:"over"});
+  }else{
     const hUp=H*.85;
     const g=ctx.createLinearGradient(0,py,0,py-hUp);
     g.addColorStop(0,"rgba(242,178,92,.11)");
@@ -69424,8 +69468,32 @@ function poiBody(hgt,dark,lite){
   g.addColorStop(0,lite);g.addColorStop(1,dark);
   return g;
 }
+/* рукотворное красится своим сплавом, а не палитрой грунта: покрашенная
+   биомом постройка сливается с холмами и перестаёт читаться как постройка.
+   Доля биома оставлена (.22) ради цветовой связки с окружением. */
+function poiTone(pal){
+  const mix=(a,b)=>Math.round(lerp(a,b,.22));
+  return ["rgb("+[mix(28,pal[0][0]),mix(30,pal[0][1]),mix(36,pal[0][2])].join(",")+")",
+          "rgb("+[mix(150,pal[3][0]),mix(158,pal[3][1]),mix(168,pal[3][2])].join(",")+")"];
+}
+function poiShape(q,rr,dark,lite,pal){
+  if(q.k==="wreck")drawWreck(q,rr,dark,lite,pal);
+  else if(q.k==="temple")drawTemple(q,rr,dark,lite,pal);
+  else if(q.k==="elevator")drawElevator(q,rr,dark,lite);
+  else if(q.k==="crystals")drawCrystalForest(q,rr,pal);
+  else if(q.k==="ring")drawAccel(q,rr,dark,lite);
+  else if(q.k==="anomaly")drawAnomaly(q,rr,pal);
+  else if(q.k==="monolith")drawMonolith(q,rr,dark,lite,pal);
+  else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
+  else if(q.k==="portal")drawPortal(q,rr,pal);
+  else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
+  else if(q.k==="obelisk")drawObelisk(q,rr,dark,lite,pal);
+  else if(q.k==="battery")drawDeadBattery(q,rr,dark,lite,pal);
+}
 function drawPOI(tr,camx,camy,p){
   const list=tr.poi;if(!list||!list.length)return;
+  /* с видеокартой — выпечкой и фигурами (20ab); ниже — прежний 2D */
+  if(poiGpu(tr,camx,camy,p))return;
   const pal=p.T.pal;
   /* всё, что ниже линии грунта, срезается: иначе упавший корпус лежит поверх
      земли, как наклейка, вместо того чтобы уходить в неё. Запас в 6 px оставлен
@@ -69463,25 +69531,8 @@ function drawPOI(tr,camx,camy,p){
     /* всё, что нужно «скину», кладём в общие переменные: тащить пять
        аргументов через десять функций рисования — только шум */
     POI_SEED=q.seed;POI_MAT=tr.mat;POI_OX=camx-x;POI_OY=camy-y;
-    const rr=rng(q.seed);
-    /* рукотворное красится своим сплавом, а не палитрой грунта: покрашенная
-       биомом постройка сливается с холмами и перестаёт читаться как постройка.
-       Доля биома оставлена (.22) ради цветовой связки с окружением. */
-    const mix=(a,b)=>Math.round(lerp(a,b,.22));
-    const dark="rgb("+[mix(28,pal[0][0]),mix(30,pal[0][1]),mix(36,pal[0][2])].join(",")+")";
-    const lite="rgb("+[mix(150,pal[3][0]),mix(158,pal[3][1]),mix(168,pal[3][2])].join(",")+")";
-    if(q.k==="wreck")drawWreck(q,rr,dark,lite,pal);
-    else if(q.k==="temple")drawTemple(q,rr,dark,lite,pal);
-    else if(q.k==="elevator")drawElevator(q,rr,dark,lite);
-    else if(q.k==="crystals")drawCrystalForest(q,rr,pal);
-    else if(q.k==="ring")drawAccel(q,rr,dark,lite);
-    else if(q.k==="anomaly")drawAnomaly(q,rr,pal);
-    else if(q.k==="monolith")drawMonolith(q,rr,dark,lite,pal);
-    else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
-    else if(q.k==="portal")drawPortal(q,rr,pal);
-    else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
-    else if(q.k==="obelisk")drawObelisk(q,rr,dark,lite,pal);
-    else if(q.k==="battery")drawDeadBattery(q,rr,dark,lite,pal);
+    const [dark,lite]=poiTone(pal);
+    poiShape(q,rng(q.seed),dark,lite,pal);
     ctx.restore();
   }
   ctx.restore();
@@ -69548,9 +69599,8 @@ function drawWreck(q,r,dark,lite,pal){
   const bl=Math.pow(Math.max(0,Math.sin(G.t*.06)),8);
   if(bl>.02){
     const bx=-L*.42*Math.cos(tilt), by=-q.h*.42;
-    poiGlow(bx,by,60,"255,90,70",.5*bl);
-    ctx.fillStyle="rgba(255,190,170,"+(.9*bl).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(bx,by,2.2,0,TAU);ctx.fill();
+    poiLGlow(bx,by,60,"255,90,70",.5*bl);   /* живое — кистями poiL* (20ab) */
+    poiLDisc(bx,by,2.2,"rgba(255,190,170,"+(.9*bl).toFixed(2)+")");
   }
 }
 /* ── древний храм: ступенчатая пирамида, вход светится ── */
@@ -69610,8 +69660,8 @@ function drawElevator(q,r,dark,lite){
   /* кабина ползёт вверх — единственное, что здесь движется */
   const t=(G.t*.0016+((q.seed&255)/255))%1;
   const cy=-q.h*(.16+t*.8), cw=bw*.5*(1-t*.7);
-  ctx.fillStyle="rgba(235,240,245,.7)";ctx.fillRect(-cw,cy,cw*2,cw*1.6);
-  poiGlow(0,cy,bw*2.4,"200,230,255",.18);
+  poiLRect(-cw,cy,cw*2,cw*1.6,"rgba(235,240,245,.7)");
+  poiLGlow(0,cy,bw*2.4,"200,230,255",.18);
   /* растяжки к грунту */
   ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1.4;
   for(const s of [-1,1]){
@@ -69639,10 +69689,10 @@ function drawCrystalForest(q,r,pal){
     poiPoly([[-s.w,0],[s.w,0],[s.w*.35,-s.h*.82],[0,-s.h],[-s.w*.42,-s.h*.8]],g,"rgba(255,255,255,.28)",.35);
     /* блик: узкая грань, которая «загорается» на своей фазе */
     const tw=.35+.65*Math.pow(Math.max(0,Math.sin(G.t*.02+s.ph)),6);
-    ctx.fillStyle="rgba(255,255,255,"+(.30*tw).toFixed(3)+")";
-    poiPoly([[-s.w*.3,-s.h*.12],[0,-s.h*.1],[0,-s.h*.9],[-s.w*.18,-s.h*.86]],
+    if(POI_PH!=="live")ctx.fillStyle="rgba(255,255,255,"+(.30*tw).toFixed(3)+")";
+    poiLPoly([[-s.w*.3,-s.h*.12],[0,-s.h*.1],[0,-s.h*.9],[-s.w*.18,-s.h*.86]],
       "rgba(255,255,255,"+(.30*tw).toFixed(3)+")",null);
-    if(tw>.75)poiGlow(0,-s.h*.7,s.h*.5,col,.10*tw);
+    if(tw>.75)poiLGlow(0,-s.h*.7,s.h*.5,col,.10*tw);
     ctx.restore();
   }
 }
@@ -69662,12 +69712,9 @@ function drawAccel(q,r,dark,lite){
   const a=G.t*.012+((q.seed&63)/63)*TAU;
   const px=Math.cos(a)*R, py=-R*.34+Math.sin(a)*R;
   if(py<4){
-    poiGlow(px,py,R*.34,"150,220,255",.5);
-    ctx.fillStyle="rgba(230,248,255,.9)";
-    ctx.beginPath();ctx.arc(px,py,R*.035,0,TAU);ctx.fill();
-    /* хвост */
-    ctx.strokeStyle="rgba(150,220,255,.35)";ctx.lineWidth=R*.05;
-    ctx.beginPath();ctx.arc(0,-R*.34,R,a-.5,a);ctx.stroke();
+    poiLGlow(px,py,R*.34,"150,220,255",.5);
+    poiLDisc(px,py,R*.035,"rgba(230,248,255,.9)");
+    poiLArc(0,-R*.34,R,a-.5,a,R*.05,"rgba(150,220,255,.35)");   /* хвост */
   }
   ctx.restore();
 }
@@ -69691,8 +69738,8 @@ function drawAnomaly(q,r,pal){
     const px=Math.cos(a)*rr, py=cy+Math.sin(a)*rr*.42;
     const s=2+ (i%4)*2.4;
     ctx.save();ctx.translate(px,py);ctx.rotate(a*1.7);
-    ctx.fillStyle="rgb("+c0.map(v=>Math.round(v*.9+18)).join(",")+")";
-    poiPoly([[-s,0],[-s*.3,-s*.8],[s*.9,-s*.2],[s*.4,s*.7]],ctx.fillStyle,"rgba(0,0,0,.4)");
+    const fc="rgb("+c0.map(v=>Math.round(v*.9+18)).join(",")+")";
+    poiLPoly([[-s,0],[-s*.3,-s*.8],[s*.9,-s*.2],[s*.4,s*.7]],fc,"rgba(0,0,0,.4)");
     ctx.restore();
   }
 }
@@ -69708,10 +69755,10 @@ function drawMonolith(q,r,dark,lite,pal){
   ctx.strokeStyle="rgba(210,235,255,.4)";ctx.lineWidth=1.6;
   ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(w*.93,-q.h);ctx.stroke();
   /* насечки на грани — оживают только вблизи */
-  ctx.fillStyle="rgba(120,200,230,"+(.14+.10*Math.sin(G.t*.01)).toFixed(3)+")";
+  const nc="rgba(120,200,230,"+(.14+.10*Math.sin(G.t*.01)).toFixed(3)+")";
   for(let i=0;i<9;i++){
     const yy=-q.h*(.15+i*.085);
-    ctx.fillRect(-w*.35,yy,w*.7*(.3+((q.seed>>>i)&3)/3*.7),1.6);
+    poiLRect(-w*.35,yy,w*.7*(.3+((q.seed>>>i)&3)/3*.7),1.6,nc);
   }
   poiGlow(0,-q.h*.55,q.h*.7,"90,170,220",.06);
 }
@@ -69922,8 +69969,7 @@ function drawFactory(q,r,dark,lite,pal){
       const sm=(G.t*.5)%400;
       for(let s=0;s<8;s++){
         const t=((sm+s*50)%400)/400;
-        ctx.fillStyle="rgba(184,188,196,"+(.13*(1-t)).toFixed(3)+")";
-        ctx.beginPath();ctx.arc(tx+Math.sin(t*4+q.seed)*t*30,-th-tw*.5-t*q.h*1.1,5+t*26,0,TAU);ctx.fill();
+        poiLDisc(tx+Math.sin(t*4+q.seed)*t*30,-th-tw*.5-t*q.h*1.1,5+t*26,"rgba(184,188,196,"+(.13*(1-t)).toFixed(3)+")");
       }
     }
   }
@@ -69965,7 +70011,7 @@ function drawFactory(q,r,dark,lite,pal){
   }
   /* аварийный огонь на дальней башне: точка внимания в мёртвом объекте */
   const fl=.5+.5*Math.sin(G.t*.035);
-  poiGlow(w*.28,-q.h*.7,26,"255,120,60",.22*fl);
+  poiLGlow(w*.28,-q.h*.7,26,"255,120,60",.22*fl);
 }
 /* ── врата: стоящее кольцо, внутри — не этот мир ── */
 function drawPortal(q,r,pal){
@@ -69980,10 +70026,9 @@ function drawPortal(q,r,pal){
   g.addColorStop(.5,"rgba(140,90,220,.5)");
   g.addColorStop(1,"rgba(20,8,40,.85)");
   ctx.fillStyle=g;ctx.fillRect(-R,cy-R,R*2,R*2);
-  ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1.4;
   for(let i=0;i<5;i++){
     const rr=R*(.16+i*.19), a=G.t*.006*(i%2?1:-1);
-    ctx.beginPath();ctx.ellipse(0,cy,rr,rr*.9,a,0,TAU);ctx.stroke();
+    poiLEll(0,cy,rr,rr*.9,a,"rgba(255,255,255,.16)",1.4);
   }
   ctx.restore();
   /* сама рама: два незамкнутых полукольца, между ними разрыв */
@@ -70013,12 +70058,178 @@ function drawObserv(q,r,dark,lite,pal){
   poiPoly([[-4,0],[4,0],[2.5,-q.h*.4],[-2.5,-q.h*.4]],dark,null);
   ctx.translate(0,-q.h*.4);
   ctx.rotate(-1.1+Math.sin(G.t*.0026+(q.seed&31))*.5);
-  ctx.beginPath();ctx.ellipse(0,0,R*.5,R*.2,0,0,TAU);
-  ctx.fillStyle="rgba(180,195,205,.55)";ctx.fill();
-  ctx.strokeStyle="rgba(0,0,0,.4)";ctx.stroke();
+  poiLEll(0,0,R*.5,R*.2,0,"rgba(180,195,205,.55)",0);
+  poiLEll(0,0,R*.5,R*.2,0,"rgba(0,0,0,.4)",1);
   ctx.restore();
 }
 /* ближайшая точка интереса — для навигатора сверху */
+
+/* ══════════════ постройки на движке (G15) ══════════════
+   Постройка от кадра к кадру не меняется — камера её только двигает. Поэтому тело
+   (силуэт, порода, потёки, срез по грунту, статичные огни) печётся один раз на
+   постройку в свой холст и дальше ложится одной картинкой в проход видеокарты, как
+   ломти грунта. Живое — маяк остова, кабина лифта, блики кристаллов, импульс кольца,
+   обломки аномалии, насечки монолита, дым и огонь завода, кольца врат, тарелка
+   обсерватории — каждый кадр фигурами (gpuShapes) поверх выпечки.
+
+   Одна и та же функция фигуры (20aa) рисует все три фазы, POI_PH говорит какую:
+   ""     — по-старому, всё в ctx (нет видеокарты, ярус тестов);
+   "base" — выпечка: живые кисти poiL* молчат;
+   "live" — кадр: ctx подменён пустышкой POI_NULL, которая помнит только матрицу,
+            а poiL* кладут фигуры в POI_SH по этой матрице. Остальное рисование
+            уходит в пустоту — зато порядок rng и все размеры те же, что у выпечки. */
+let POI_PH="";
+const POI_SH=[];
+const POI_NULL_G={addColorStop(){}};
+const POI_NULL={m:[1,0,0,1,0,0],st:[],fillStyle:"#000",strokeStyle:"#000",lineWidth:1,globalAlpha:1,
+  globalCompositeOperation:"source-over",lineCap:"butt",lineJoin:"miter",
+  save(){this.st.push(this.m.slice());},
+  restore(){const m=this.st.pop();if(m)this.m=m;},
+  translate(x,y){const m=this.m;m[4]+=m[0]*x+m[2]*y;m[5]+=m[1]*x+m[3]*y;},
+  rotate(a){const m=this.m,c=Math.cos(a),s=Math.sin(a),a0=m[0],b0=m[1],c0=m[2],d0=m[3];
+    m[0]=a0*c+c0*s;m[1]=b0*c+d0*s;m[2]=c0*c-a0*s;m[3]=d0*c-b0*s;},
+  scale(x,y){const m=this.m;m[0]*=x;m[1]*=x;m[2]*=y;m[3]*=y;},
+  createLinearGradient(){return POI_NULL_G;},createRadialGradient(){return POI_NULL_G;}};
+for(const f of ["beginPath","moveTo","lineTo","arc","ellipse","closePath","fill","stroke","fillRect","strokeRect",
+  "clip","rect","quadraticCurveTo","bezierCurveTo","setLineDash","clearRect"])POI_NULL[f]=function(){};
+
+/* точка постройки → пиксели CSS кадра; масштаб матрицы — для толщин и радиусов */
+function poiPt(x,y){const m=POI_NULL.m;return [m[0]*x+m[2]*y+m[4],m[1]*x+m[3]*y+m[5]];}
+function poiSc(){const m=POI_NULL.m;return Math.sqrt(Math.abs(m[0]*m[3]-m[1]*m[2]));}
+function poiC(col,a){const c=gcColor(col);return [c[0]*255,c[1]*255,c[2]*255,c[3]*(a==null?1:a)];}
+
+/* ── живые кисти: в 2D — ровно прежний вызов, в выпечке — ничего, в кадре — фигуры ── */
+function poiLGlow(x,y,rad,col,a){
+  if(POI_PH==="base")return;
+  if(POI_PH!=="live"){poiGlow(x,y,rad,col,a);return;}
+  /* радиальный спад 1 → .28 к середине → 0: мягкий круг шириной в радиус */
+  const [X,Y]=poiPt(x,y),R=rad*poiSc(),c=col.split(",").map(Number);
+  POI_SH.push([1,X,Y,0,0,0,R,c[0],c[1],c[2],a*.8]);
+}
+function poiLDisc(x,y,r,col){
+  if(POI_PH==="base")return;
+  if(POI_PH!=="live"){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();return;}
+  const [X,Y]=poiPt(x,y),C=poiC(col);POI_SH.push([1,X,Y,r*poiSc(),0,0,0,C[0],C[1],C[2],C[3]]);
+}
+function poiLRect(x,y,w,h,col){
+  if(POI_PH==="base")return;
+  if(POI_PH!=="live"){ctx.fillStyle=col;ctx.fillRect(x,y,w,h);return;}
+  gpuQuad(POI_SH,poiPt(x,y),poiPt(x+w,y),poiPt(x+w,y+h),poiPt(x,y+h),poiC(col));
+}
+/* многоугольник: в 2D — poiPoly со сколом кромки и кожей, в кадре — веер треугольников и обвод */
+function poiLPoly(pts,fill,line){
+  if(POI_PH==="base")return;
+  if(POI_PH!=="live"){poiPoly(pts,fill,line);return;}
+  const P=pts.map(p=>poiPt(p[0],p[1]));
+  if(fill){const C=poiC(fill);
+    for(let i=1;i+1<P.length;i++)POI_SH.push([5,P[0][0],P[0][1],P[i][0],P[i][1],P[i+1][0],P[i+1][1],C[0],C[1],C[2],C[3],
+      (i>1?1:0)|(i+2<P.length?4:0)]);}   /* внутренние рёбра веера жёсткие — без шва */
+  if(line){const C=poiC(line),hw=.5*poiSc();
+    for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];POI_SH.push([2,a[0],a[1],b[0],b[1],hw,0,C[0],C[1],C[2],C[3]]);}}
+}
+/* дуга обводкой: в кадре — ломаная из капсул */
+function poiLArc(cx,cy,R,a0,a1,w,col){
+  if(POI_PH==="base")return;
+  if(POI_PH!=="live"){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.arc(cx,cy,R,a0,a1);ctx.stroke();return;}
+  const C=poiC(col),hw=w*.5*poiSc(),n=Math.max(4,Math.ceil(Math.abs(a1-a0)*R/6));
+  let p=poiPt(cx+Math.cos(a0)*R,cy+Math.sin(a0)*R);
+  for(let i=1;i<=n;i++){const a=a0+(a1-a0)*i/n,q=poiPt(cx+Math.cos(a)*R,cy+Math.sin(a)*R);
+    POI_SH.push([2,p[0],p[1],q[0],q[1],hw,0,C[0],C[1],C[2],C[3]]);p=q;}
+}
+/* эллипс под углом: w>0 — обвод, иначе заливка */
+function poiLEll(cx,cy,rx,ry,rot,col,w){
+  if(POI_PH==="base")return;
+  if(POI_PH!=="live"){ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,rot,0,TAU);
+    if(w>0){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.stroke();}else{ctx.fillStyle=col;ctx.fill();}return;}
+  const C=poiC(col),n=Math.max(12,Math.min(48,Math.ceil(Math.max(rx,ry)*poiSc()/3))),cr=Math.cos(rot),sr=Math.sin(rot),P=[];
+  for(let i=0;i<n;i++){const a=i/n*TAU,u=Math.cos(a)*rx,v=Math.sin(a)*ry;P.push(poiPt(cx+u*cr-v*sr,cy+u*sr+v*cr));}
+  if(w>0){const hw=w*.5*poiSc();
+    for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n];POI_SH.push([2,a[0],a[1],b[0],b[1],hw,0,C[0],C[1],C[2],C[3]]);}}
+  else{const [X,Y]=poiPt(cx,cy);
+    for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n];POI_SH.push([5,X,Y,a[0],a[1],b[0],b[1],C[0],C[1],C[2],C[3],5]);}}
+}
+
+/* поле выпечки вокруг подножия, в долях высоты: полуширина и верх (что выше — живое или воздух) */
+const POI_BOX={wreck:[2.1,1.1],temple:[1.15,1.05],elevator:[.25,1.02],crystals:[1.25,1.2],ring:[1.25,1.55],
+  anomaly:[1,1.6],monolith:[.75,1.3],factory:[1.3,1.1],portal:[1.15,1.65],observ:[1.15,.9],obelisk:[.7,1.05],battery:[1.25,1.35]};
+const POI_BK=new WeakMap();
+/* один свет на тело постройки: сторона к звезде теплеет её цветом, обратная
+   уходит в холодную тень неба, низ берёт отсвет грунта, у самой земли — темнее.
+   Без этого корпус читается вырезкой из картона, серой на любом мире. */
+function poiLight(g,q,hw,top,p){
+  const s=SUN_DIR.x>=0?1:-1,e=Math.min(hw,q.h*.8),k=.35+.65*dayKq(p);
+  const sr=starRGB().join(","),am=(typeof ambRGB==="function"?ambRGB(p):[40,50,70]).map(v=>v*.35|0).join(","),gc=p.T.pal[2].join(",");
+  g.save();g.globalCompositeOperation="source-atop";
+  let gr=g.createLinearGradient(e*s,0,-e*s,0);
+  gr.addColorStop(0,"rgba("+sr+","+(.26*k).toFixed(3)+")");gr.addColorStop(.42,"rgba("+sr+",0)");
+  gr.addColorStop(.52,"rgba("+am+",0)");gr.addColorStop(1,"rgba("+am+","+(.30+.25*k).toFixed(3)+")");
+  g.fillStyle=gr;g.fillRect(-hw,-top,2*hw,top+16);
+  const b=Math.min(q.h*.4,90);gr=g.createLinearGradient(0,6,0,-b);
+  gr.addColorStop(0,"rgba("+gc+",.38)");gr.addColorStop(1,"rgba("+gc+",0)");
+  g.fillStyle=gr;g.fillRect(-hw,-b,2*hw,b+16);
+  gr=g.createLinearGradient(0,6,0,-14);
+  gr.addColorStop(0,"rgba(0,0,0,.45)");gr.addColorStop(1,"rgba(0,0,0,0)");
+  g.fillStyle=gr;g.fillRect(-hw,-14,2*hw,20);
+  g.restore();
+}
+function poiBake(q,tr,p,dark,lite){
+  const key=p.seed+"|"+DPR+"|"+SCK+"|d"+dayKq(p)+"|a"+sunAzQ(p)+"|"+(tr.mat?1:0);
+  const o=POI_BK.get(q);if(o&&o.key===key)return o;
+  const bx=POI_BOX[q.k]||[2.1,1.7],hw=Math.ceil(q.h*bx[0]),top=Math.ceil(q.h*bx[1]),bot=16,w=hw*2,h=top+bot;
+  const cn=mkCanvas(w,h);
+  withCtx(cn,w,h,0,0,g=>{
+    g.translate(hw,top);
+    /* срез по грунту — тот же, что клип кадра: ниже линии грунта плюс 6 px постройки нет */
+    const i0=clamp(Math.floor((q.x-hw)/tr.step),0,tr.N-1),i1=clamp(Math.ceil((q.x+hw)/tr.step),0,tr.N-1);
+    g.beginPath();g.moveTo(i0*tr.step-q.x,-top-4);
+    for(let i=i0;i<=i1;i++)g.lineTo(i*tr.step-q.x,tr.h[i]-q.y+6);
+    g.lineTo(i1*tr.step-q.x,-top-4);g.closePath();g.clip();
+    POI_SEED=q.seed;POI_MAT=tr.mat;POI_OX=q.x;POI_OY=q.y;
+    const p0=POI_PH;POI_PH="base";
+    try{poiShape(q,rng(q.seed),dark,lite,p.T.pal);}finally{POI_PH=p0;}
+    poiLight(g,q,hw,top,p);
+  });
+  const B={key,cn,cx:0,cy:(bot-top)/2,w,h};POI_BK.set(q,B);return B;
+}
+/* мягкое пятно тени: радиальный спад, растянутый в эллипс — один холст на всю игру */
+let POI_SHTEX=null;
+function poiShadowTex(){
+  if(POI_SHTEX)return POI_SHTEX;
+  const cn=document.createElement("canvas");cn.width=cn.height=64;
+  const g=cn.getContext("2d"),gr=g.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,"rgba(0,0,0,1)");gr.addColorStop(1,"rgba(0,0,0,0)");
+  g.fillStyle=gr;g.fillRect(0,0,64,64);
+  return POI_SHTEX=cn;
+}
+/* то же место и тот же размах, что groundShadow (19-mode-landing), в пикселях кадра */
+function poiShadowRect(x,y,rx,ry,al,o){
+  const sx=SUN_DIR.x,sy=SUN_DIR.y,low=clamp(1-Math.abs(sy),0,1);
+  const off=-sx*rx*(.35+low*1.6),kx=1+low*1.2,a=.32*(1-low*.40);
+  const K=o.s;return {x:o.x+(x+off)*K,y:o.y+y*K,w:2*rx*kx*K,h:2*ry*K,a:a*al};
+}
+/* кадр построек на видеокарте; false — пусть рисует 2D */
+function poiGpu(tr,camx,camy,p){
+  if(typeof GPU==="undefined"||!GPU.ok||!GPU.on||!GPU.enc||typeof SUN_DIR!=="object")return false;
+  const vis=[];
+  for(const q of tr.poi){const x=q.x-camx;if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;vis.push(q);}
+  if(!vis.length)return true;
+  const pass=gpuNext();if(!pass)return false;
+  const o=lifeHere(0,0),K=o.s,pal=p.T.pal,[dark,lite]=poiTone(pal);   /* кадр — по матрице ctx (масштаб мира) */
+  const sh=[];
+  for(const q of vis){const rx=q.h*(q.k==="wreck"?1.1:(q.k==="ring"?.9:.55));
+    sh.push(poiShadowRect(q.x-camx+rx*.12,q.y-camy+3,rx,Math.max(4,rx*.15),.55,o));}
+  gpuImage(pass,poiShadowTex(),sh);
+  const c0=ctx;
+  for(const q of vis){
+    const x=q.x-camx,y=q.y-camy,B=poiBake(q,tr,p,dark,lite);
+    gpuImage(pass,B.cn,[{x:o.x+(x+B.cx)*K,y:o.y+(y+B.cy)*K,w:B.w*K,h:B.h*K}]);
+    POI_SH.length=0;POI_NULL.m=[K,0,0,K,o.x+x*K,o.y+y*K];POI_NULL.st.length=0;
+    POI_SEED=q.seed;POI_MAT=null;POI_PH="live";ctx=POI_NULL;
+    try{poiShape(q,rng(q.seed),dark,lite,pal);}finally{ctx=c0;POI_PH="";}
+    if(POI_SH.length)gpuShapes(pass,POI_SH,{blend:"over"});
+  }
+  return true;
+}
 
 /* ══════════════ осмотр достопримечательности ══════════════ */
 /* Отрезано от 20a-poi на M106: генерация и рисовка форм переросли 40 КБ, а шов

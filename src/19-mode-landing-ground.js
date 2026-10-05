@@ -20,7 +20,16 @@ function drawGround(tr,camx,camy,fill,line,pal){
      она одна здесь живая, потому что кланяется ветру. */
   if(pal&&tr.mat&&!GROUND_BAKING){
     tr.chunks=groundChunkStore(tr,fill,line);
-    drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>groundChunkPaint(tr,wx0,wy0,fill,line,pal));
+    const paint=(g,wx0,wy0)=>groundChunkPaint(tr,wx0,wy0,fill,line,pal);
+    /* с видеокартой (заход, G15) — ломти картинками в проход, трава фигурами (21e3) */
+    const gp=(typeof GPU!=="undefined"&&GPU.ok&&GPU.on&&GPU.enc)?gpuNext():null;
+    if(gp){
+      const o=lifeHere(0,0),K=o.s,S=tr.chunks,k0=Math.floor(camx/CHUNK_W),k1=Math.floor((camx+W)/CHUNK_W);
+      for(let k=k0;k<=k1;k++)gpuImage(gp,chunkAt(S,k,paint),[{x:o.x+(k*CHUNK_W-camx+CHUNK_W/2)*K,y:o.y+(S.top-camy+S.ch/2)*K,w:CHUNK_W*K,h:S.ch*K}]);
+      if(!groundGrassGpu(gp,tr,camx,camy))drawGroundGrass(tr,camx,camy);
+      return;
+    }
+    drawChunks(tr.chunks,camx,camy,paint);
     drawGroundGrass(tr,camx,camy);
     return;
   }

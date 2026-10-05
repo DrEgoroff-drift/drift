@@ -170,8 +170,32 @@ function poiBody(hgt,dark,lite){
   g.addColorStop(0,lite);g.addColorStop(1,dark);
   return g;
 }
+/* рукотворное красится своим сплавом, а не палитрой грунта: покрашенная
+   биомом постройка сливается с холмами и перестаёт читаться как постройка.
+   Доля биома оставлена (.22) ради цветовой связки с окружением. */
+function poiTone(pal){
+  const mix=(a,b)=>Math.round(lerp(a,b,.22));
+  return ["rgb("+[mix(28,pal[0][0]),mix(30,pal[0][1]),mix(36,pal[0][2])].join(",")+")",
+          "rgb("+[mix(150,pal[3][0]),mix(158,pal[3][1]),mix(168,pal[3][2])].join(",")+")"];
+}
+function poiShape(q,rr,dark,lite,pal){
+  if(q.k==="wreck")drawWreck(q,rr,dark,lite,pal);
+  else if(q.k==="temple")drawTemple(q,rr,dark,lite,pal);
+  else if(q.k==="elevator")drawElevator(q,rr,dark,lite);
+  else if(q.k==="crystals")drawCrystalForest(q,rr,pal);
+  else if(q.k==="ring")drawAccel(q,rr,dark,lite);
+  else if(q.k==="anomaly")drawAnomaly(q,rr,pal);
+  else if(q.k==="monolith")drawMonolith(q,rr,dark,lite,pal);
+  else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
+  else if(q.k==="portal")drawPortal(q,rr,pal);
+  else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
+  else if(q.k==="obelisk")drawObelisk(q,rr,dark,lite,pal);
+  else if(q.k==="battery")drawDeadBattery(q,rr,dark,lite,pal);
+}
 function drawPOI(tr,camx,camy,p){
   const list=tr.poi;if(!list||!list.length)return;
+  /* с видеокартой — выпечкой и фигурами (20ab); ниже — прежний 2D */
+  if(poiGpu(tr,camx,camy,p))return;
   const pal=p.T.pal;
   /* всё, что ниже линии грунта, срезается: иначе упавший корпус лежит поверх
      земли, как наклейка, вместо того чтобы уходить в неё. Запас в 6 px оставлен
@@ -209,25 +233,8 @@ function drawPOI(tr,camx,camy,p){
     /* всё, что нужно «скину», кладём в общие переменные: тащить пять
        аргументов через десять функций рисования — только шум */
     POI_SEED=q.seed;POI_MAT=tr.mat;POI_OX=camx-x;POI_OY=camy-y;
-    const rr=rng(q.seed);
-    /* рукотворное красится своим сплавом, а не палитрой грунта: покрашенная
-       биомом постройка сливается с холмами и перестаёт читаться как постройка.
-       Доля биома оставлена (.22) ради цветовой связки с окружением. */
-    const mix=(a,b)=>Math.round(lerp(a,b,.22));
-    const dark="rgb("+[mix(28,pal[0][0]),mix(30,pal[0][1]),mix(36,pal[0][2])].join(",")+")";
-    const lite="rgb("+[mix(150,pal[3][0]),mix(158,pal[3][1]),mix(168,pal[3][2])].join(",")+")";
-    if(q.k==="wreck")drawWreck(q,rr,dark,lite,pal);
-    else if(q.k==="temple")drawTemple(q,rr,dark,lite,pal);
-    else if(q.k==="elevator")drawElevator(q,rr,dark,lite);
-    else if(q.k==="crystals")drawCrystalForest(q,rr,pal);
-    else if(q.k==="ring")drawAccel(q,rr,dark,lite);
-    else if(q.k==="anomaly")drawAnomaly(q,rr,pal);
-    else if(q.k==="monolith")drawMonolith(q,rr,dark,lite,pal);
-    else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
-    else if(q.k==="portal")drawPortal(q,rr,pal);
-    else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
-    else if(q.k==="obelisk")drawObelisk(q,rr,dark,lite,pal);
-    else if(q.k==="battery")drawDeadBattery(q,rr,dark,lite,pal);
+    const [dark,lite]=poiTone(pal);
+    poiShape(q,rng(q.seed),dark,lite,pal);
     ctx.restore();
   }
   ctx.restore();
