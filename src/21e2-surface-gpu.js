@@ -205,8 +205,8 @@ function surfGroundGpu(tr,camx,camy,fill,line,pal){
   U[16]=am[0]/la;U[17]=am[1]/la;U[18]=am[2]/la;
   gpuField(pass,"sground",GSG_WGSL,U,[HT],{blend:"mul"});
   SURF_P2=pass;
-  /* трава живая — кланяется ветру, остаётся 2D поверх */
-  drawGroundGrass(tr,camx,camy);
+  /* трава живая — кланяется ветру: каждый кадр фигурами в том же проходе (21e3), 2D — запасной путь */
+  if(!groundGrassGpu(pass,tr,camx,camy))drawGroundGrass(tr,camx,camy);
   return true;
 }
 

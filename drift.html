@@ -82391,8 +82391,8 @@ function surfGroundGpu(tr,camx,camy,fill,line,pal){
   U[16]=am[0]/la;U[17]=am[1]/la;U[18]=am[2]/la;
   gpuField(pass,"sground",GSG_WGSL,U,[HT],{blend:"mul"});
   SURF_P2=pass;
-  /* трава живая — кланяется ветру, остаётся 2D поверх */
-  drawGroundGrass(tr,camx,camy);
+  /* трава живая — кланяется ветру: каждый кадр фигурами в том же проходе (21e3), 2D — запасной путь */
+  if(!groundGrassGpu(pass,tr,camx,camy))drawGroundGrass(tr,camx,camy);
   return true;
 }
 
@@ -82707,6 +82707,33 @@ function surfDepositGpu(pass,d,x,y,near,pal){
   return true;
 }
 
+/* трава на кромке (19 drawGroundGrass) капсулами фигур: те же места, формы и ветер; дуга кустика —
+   двумя звеньями. Белый блик, в падающей тени гребня — втрое тусклее (M434) */
+function groundGrassGpu(pass,tr,camx,camy){
+  if(!pass||!GPU.dev)return false;
+  const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1),i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
+  const dstep=Math.max(1,Math.round(14/tr.step)),live=(typeof castLive==="function");
+  const o=lifeHere(0,0),s=o.s,hw=.5*s,A=[];
+  let a=.14;
+  const seg=(x0,y0,x1,y1)=>A.push([2,o.x+x0*s,o.y+y0*s,o.x+x1*s,o.y+y1*s,hw,.9,255,255,255,a]);
+  const quad=(x0,y0,cx,cy,x1,y1)=>{const mx=.25*x0+.5*cx+.25*x1,my=.25*y0+.5*cy+.25*y1;seg(x0,y0,mx,my);seg(mx,my,x1,y1);};
+  for(let i=i0;i<i1;i+=dstep){
+    const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
+    const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
+    if((hh&7)===0||(hh&3)===0)continue;
+    const y=tr.h[i]-camy,th=2+((hh>>>4)&3);
+    const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
+    const form=(hh>>>8)&3;
+    a=(live&&castLive(tr,wx)>.5)?.05:.14;
+    if(form===1){for(let b=-1;b<=1;b++)seg(x+b*.8,y,x+b*2.2+sw*1.2,y-th+Math.abs(b));}
+    else if(form===2){
+      quad(x-2.2,y,x-1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+      quad(x+2.2,y,x+1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+    }else seg(x,y,x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+  }
+  if(A.length)gpuShapes(pass,A,{blend:"over"});
+  return true;
+}
 /* пыль/пыльца в воздухе (19 drawDustMotes) кружками фигур; тот же поток чисел, тот же
    ветер. x,y — в осях мира 2D, кадр — через lifeHere */
 function dustMotesGpu(pass,camx,camy,p){
