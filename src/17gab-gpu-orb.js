@@ -408,3 +408,11 @@ function gpuOrb(p,x,y,r,lights){
   gorBody(pass,"p"+(p.idx|0),x,y,r,o);
   return true;
 }
+/* луна (M701): тот же шар, каменистый, серый по прежнему тону луны */
+const GOR_MOON=[[30,32,36],[58,62,68],[92,98,106],[128,136,146],[160,168,178],[196,204,212]];
+function gpuOrbMoon(m,key,x,y,r){
+  const pass=gpuScene();if(!pass)return;
+  const dx=-(m.x||0),dy=-(m.y||0),dl=Math.hypot(dx,dy)||1;
+  gorBody(pass,"m"+key,x,y,Math.max(1.2,r),{k:0,sx:dx/dl,sy:dy/dl,turn:0,air:[0,0,0],th:0,sun:gplSun(),
+    seed:(m.seed||key.length*13)%97,pal:GOR_MOON,ring:null,cities:0});
+}

@@ -53,12 +53,12 @@ draws the old textured ball.
   disc had almost no night; the old city window logic depends on it. M700 lowers it to .46: the
   ball reads as a sphere, and the side away from the star is the night where building lights
   (`gplCities`, unchanged) now actually show. Cost: a quarter of each disc is dark.
+- Moons (M701) are the same ball: rocky, a grey ramp `GOR_MOON`, no air (`gpuOrbMoon`).
 - Building lights keep their places from `gplCities` (wet mask off); the shader drops those that
   fall into its own sea (`landAt`).
 
 ### Open
 
-- M701 moons through the same shader (now still 17ga `gpuMoon`).
 - M702 cost on the S23 (`docs/g11.ps1`, A/B/A with `?orb=0`) and a cheaper tier if needed:
   the surface runs up to ~6-octave fbm with a domain warp per pixel.
 - M703 gas giants: more, irregular belts; cloud tint stays neutral under warm stars.

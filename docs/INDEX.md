@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 679 · top-level symbols: 7078
+Files: 679 · top-level symbols: 7080
 
 ## SYMBOLS
 
@@ -677,6 +677,7 @@ GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
 GOR_LIT                      src/17gab-gpu-orb.js:18
 GOR_LZ                       src/17gab-gpu-orb.js:16
+GOR_MOON                     src/17gab-gpu-orb.js:412
 GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
@@ -3848,13 +3849,14 @@ gpuManual                    src/08b-gpu.js:635-640
 gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
-gpuMoon                      src/17ga-gpu-planets.js:441-446
+gpuMoon                      src/17ga-gpu-planets.js:441-447
 gpuNebulaComp                src/16gb-gpu-nebula.js:618-628
 gpuNebulaGen                 src/16gb-gpu-nebula.js:563-615
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOrb                       src/17gab-gpu-orb.js:397-410
+gpuOrbMoon                   src/17gab-gpu-orb.js:413-418
 gpuOvFrontView               src/08bi-gpu-ovl.js:249
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
