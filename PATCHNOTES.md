@@ -6,6 +6,18 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.485.0 - far galaxies instead of the big spiral
+
+- **The big spiral galaxy is gone from the system sky.** It was one of the three landmarks a system can get
+  (about a third of them had it) and read as a sticker on top of the sky rather than something far behind it
+  (the author: «всратая галактика»). The landmark roll is untouched, so comets, remnants and the hole's jets stay
+  where they were; a system that had the spiral now has open gas there.
+- **Eight far galaxies in every system, at the edge of seeing.** Spiral, elliptical, edge-on with a dust lane
+  and irregular, 2–5% of the frame tall, drawn in the nebula's full-resolution compose pass behind the gas: dense
+  gas covers them, dust dims them, the star's glare hides them, and they move least of all with the camera
+  (parallax .004). New module `16gaza-gpu-fargal`; the look came from the three.js probe on the `three` branch,
+  where the rest of the probe's nebula lost to ours and was not taken.
+
 ## 0.484.0 - the fleet lands: the other modes on the engine, and a new sky
 
 - **The cloud fleet's zones are in.** What the cloud sessions moved onto the GPU (G6–G13) now ships, after the

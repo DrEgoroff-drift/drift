@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 677 · top-level symbols: 7069
+Files: 678 · top-level symbols: 7070
 
 ## SYMBOLS
 
@@ -663,11 +663,12 @@ GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:10
 GNB_EMI                      src/16gb-gpu-nebula.js:408
 GNB_FADE                     src/16gc-gpu-nebfade.js:11
+GNB_FGAL                     src/16gaza-gpu-fargal.js:7
 GNB_FINE                     src/16gb-gpu-nebula.js:363
 GNB_GEN                      src/16gb-gpu-nebula.js:44
-GNB_LM_COL                   src/16gb-gpu-nebula.js:520
+GNB_LM_COL                   src/16gb-gpu-nebula.js:521
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gb-gpu-nebula.js:503-518
+GNB_PAL                      src/16gb-gpu-nebula.js:504-519
 GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
@@ -3752,17 +3753,17 @@ gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
 gnbFade                      src/16gc-gpu-nebfade.js:37-42
 gnbFadeDesc                  src/16gc-gpu-nebfade.js:16-20
-gnbGenDesc                   src/16gb-gpu-nebula.js:494
+gnbGenDesc                   src/16gb-gpu-nebula.js:495
 gnbGenView                   src/16gc-gpu-nebfade.js:22-35
-gnbLandmark                  src/16gb-gpu-nebula.js:521-534
-gnbLfr                       src/16gb-gpu-nebula.js:537-550
+gnbLandmark                  src/16gb-gpu-nebula.js:522-537
+gnbLfr                       src/16gb-gpu-nebula.js:540-553
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:510-518
-gnbPipe                      src/16gb-gpu-nebula.js:493
-gnbStar                      src/16gb-gpu-nebula.js:552-557
+gnbPalette                   src/16gb-gpu-nebula.js:511-519
+gnbPipe                      src/16gb-gpu-nebula.js:494
+gnbStar                      src/16gb-gpu-nebula.js:555-560
 gnbStars                     src/16gb-gpu-nebula.js:398-405
-gnbTarget                    src/16gb-gpu-nebula.js:485-492
+gnbTarget                    src/16gb-gpu-nebula.js:486-493
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
 goldCmp                      tests/91zzzzzzzzz-golden.js:36-46
@@ -3841,8 +3842,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
 gpuMoon                      src/17ga-gpu-planets.js:440-445
-gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
-gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
+gpuNebulaComp                src/16gb-gpu-nebula.js:618-628
+gpuNebulaGen                 src/16gb-gpu-nebula.js:563-615
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
@@ -7806,7 +7807,9 @@ zoomTo                       src/15-input.js:350
 ## src/16gaz-gpu-noise.js · 3 KB
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 50 KB
+## src/16gaza-gpu-fargal.js · 3 KB
+
+## src/16gb-gpu-nebula.js · 51 KB
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/16gc-gpu-nebfade.js · 3 KB
