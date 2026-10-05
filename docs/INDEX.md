@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7077
+Files: 680 · top-level symbols: 7083
 
 ## SYMBOLS
 
@@ -1769,6 +1769,7 @@ SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:132
 SURF_HOR                     src/19c-light.js:202
+SURF_LND                     src/21e3-surface-stand-gpu.js:75
 SURF_NEAR                    src/21e2-surface-gpu.js:462
 SURF_RF                      src/21e2-surface-gpu.js:420
 SURF_SHADOW                  src/21e2-surface-gpu.js:271
@@ -3280,7 +3281,7 @@ drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:284-298
 drawSurfaceHud               src/21e-surface-draw.js:21-115
-drawSurfaceWorld             src/21e1-surface-world.js:10-655
+drawSurfaceWorld             src/21e1-surface-world.js:10-630
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:727-1053
 drawSysLane                  src/17g-sys-lane.js:112-138
@@ -6580,12 +6581,17 @@ surfCastGpu                  src/21e2-surface-gpu.js:275-304
 surfDepositGpu               src/21e3-surface-stand-gpu.js:11-33
 surfGroundGpu                src/21e2-surface-gpu.js:175-211
 surfHeightTex                src/21e2-surface-gpu.js:80-94
+surfLander2D                 src/21e3-surface-stand-gpu.js:38-60
+surfLanderGpu                src/21e3-surface-stand-gpu.js:76-123
+surfLanderHot                src/21e3-surface-stand-gpu.js:69
+surfLanderNite               src/21e3-surface-stand-gpu.js:70
 surfNearGpu                  src/21e2-surface-gpu.js:474-485
 surfNight                    src/06a-celest.js:43-50
 surfRelightGpu               src/21e2-surface-gpu.js:351-363
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
 surfScale                    src/21e-surface-draw.js:283
 surfShadeGpu                 src/21e2-surface-gpu.js:221-227
+surfShadowShapes             src/21e3-surface-stand-gpu.js:63-68
 surfSnap                     src/21e2-surface-gpu.js:464-473
 surfWaterGpu                 src/21e2-surface-gpu.js:421-442
 surfaceHint                  src/21e-surface-draw.js:4-20
@@ -8163,7 +8169,7 @@ zoomTo                       src/15-input.js:350
 ## src/21e-surface-draw.js · 19 KB
   · поверхность: подсказка, HUD и кадр:1
 
-## src/21e1-surface-world.js · 47 KB
+## src/21e1-surface-world.js · 46 KB
   · поверхность: сам мир (выделено из 21e, M415):1
 
 ## src/21e2-surface-gpu.js · 31 KB
@@ -8174,7 +8180,7 @@ zoomTo                       src/15-input.js:350
   · вода: зеркало на видеокарте:365
   · передний план не в фокусе:444
 
-## src/21e3-surface-stand-gpu.js · 3 KB
+## src/21e3-surface-stand-gpu.js · 8 KB
   · стоящее на поверхности — двойники видеокарты (G15):1
 
 ## src/21f-home-out.js · 22 KB

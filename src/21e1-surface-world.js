@@ -160,36 +160,10 @@ function drawSurfaceWorld(){
   if(typeof slowDraw==="function")slowDraw(tr,camx,camy,p);   /* выкладка долины (11o) */
   if(typeof passDraw==="function")passDraw(tr,camx,camy,p);   /* корабль перевала (11p) */
   if(typeof placeDraw==="function")placeDraw(tr,camx,camy,p); /* единичные места (11v) */
-  /* тень по длине корпуса, а не по прежним 34 px: у нового посадочного силуэта
-     она иначе выдаёт игрушку на палочках */
-  groundShadow(S.shipX-camx,S.shipY-camy+12,landerLen(G.shipId)*.46,8);
-  ctx.save();ctx.translate(S.shipX-camx,S.shipY-camy);
-  /* стоим: шасси выпущено, трап спущен, сопла ещё остывают после посадки */
-  drawLander(false,false,{gear:1,sq:0,landed:true,tr:S.tr,gx:S.shipX,
-    hot:Math.max(0,1-(G.t-(S.t0||0))/700)});
-  ctx.restore();
-  /* ── ночью корабль живой, а не белое пятно (M243) ──
-     На ночных кадрах лендер оставался дневным: самая светлая вещь в кадре без
-     единого источника. Теперь в темноте у него горит окно кабины и лежит
-     тёплое пятно под брюхом — «внутри кто-то есть», а заодно вторая, тёплая
-     температура в холодном кадре. */
-  {
-    const nite=(typeof surfNight==="function")?surfNight(p):0;
-    if(nite>.18){
-      const lx=S.shipX-camx, ly=S.shipY-camy;
-      const k=clamp((nite-.18)/.35,0,1);
-      const gp=ctx.createRadialGradient(lx,ly+13,0,lx,ly+13,52);
-      gp.addColorStop(0,"rgba(255,206,138,"+(.20*k).toFixed(3)+")");
-      gp.addColorStop(1,"rgba(255,206,138,0)");
-      ctx.fillStyle=gp;ctx.beginPath();ctx.ellipse(lx,ly+13,52,15,0,0,TAU);ctx.fill();
-      ctx.fillStyle="rgba(255,224,170,"+(.62*k).toFixed(3)+")";
-      ctx.fillRect(lx-4,ly-6,9,5);
-      const gw=ctx.createRadialGradient(lx,ly-4,0,lx,ly-4,26);
-      gw.addColorStop(0,"rgba(255,214,150,"+(.26*k).toFixed(3)+")");
-      gw.addColorStop(1,"rgba(255,214,150,0)");
-      ctx.fillStyle=gw;ctx.beginPath();ctx.arc(lx,ly-4,26,0,TAU);ctx.fill();
-    }
-  }
+  /* корабль: на видеокарте — двойником в проход грунта (21e3), ниже, после снимка;
+     иначе 2D здесь, как было */
+  const LDR=gpuGround;
+  if(!LDR)surfLander2D(S,camx,camy,p);
   drawDustMotes(camx,camy,p);
   /* три света (11g): дороги, фундаменты и вход — видны только в соединение */
   if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);
@@ -413,6 +387,7 @@ function drawSurfaceWorld(){
      прежнем порядке. Подписи — в конце кадра: плашка тени не кладёт */
   const cast=gpuGround?surfCastGpu(tr,p,camx,camy):false;
   const LP=(gpuGround&&cast!==null&&GPU.overPass&&GPU.overPass===SURF_P2)?GPU.overPass:null;
+  if(LDR&&!(LP&&surfLanderGpu(LP,S,camx,camy,p)))surfLander2D(S,camx,camy,p);
   for(const [d,x,y,near] of DEPG)
     if(!(LP&&surfDepositGpu(LP,d,x,y,near,p.T.pal[3])))drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
   const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */

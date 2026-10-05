@@ -31,3 +31,93 @@ function surfDepositGpu(pass,d,x,y,near,pal){
   }
   return true;
 }
+
+/* ── корабль на стоянке ──
+   2D — как было до видеокарты (телефон без снимка, Node): тень, корпус, ночью окно и
+   тёплое пятно под брюхом (M243) */
+function surfLander2D(S,camx,camy,p){
+  groundShadow(S.shipX-camx,S.shipY-camy+12,landerLen(G.shipId)*.46,8);
+  ctx.save();ctx.translate(S.shipX-camx,S.shipY-camy);
+  /* стоим: шасси выпущено, трап спущен, сопла ещё остывают после посадки */
+  drawLander(false,false,{gear:1,sq:0,landed:true,tr:S.tr,gx:S.shipX,hot:surfLanderHot(S)});
+  ctx.restore();
+  /* ночью корабль живой, а не белое пятно: окно кабины и тёплое пятно под брюхом —
+     «внутри кто-то есть», вторая, тёплая температура в холодном кадре */
+  const k=surfLanderNite(p);
+  if(k>0){
+    const lx=S.shipX-camx, ly=S.shipY-camy;
+    const gp=ctx.createRadialGradient(lx,ly+13,0,lx,ly+13,52);
+    gp.addColorStop(0,"rgba(255,206,138,"+(.20*k).toFixed(3)+")");
+    gp.addColorStop(1,"rgba(255,206,138,0)");
+    ctx.fillStyle=gp;ctx.beginPath();ctx.ellipse(lx,ly+13,52,15,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,224,170,"+(.62*k).toFixed(3)+")";
+    ctx.fillRect(lx-4,ly-6,9,5);
+    const gw=ctx.createRadialGradient(lx,ly-4,0,lx,ly-4,26);
+    gw.addColorStop(0,"rgba(255,214,150,"+(.26*k).toFixed(3)+")");
+    gw.addColorStop(1,"rgba(255,214,150,0)");
+    ctx.fillStyle=gw;ctx.beginPath();ctx.arc(lx,ly-4,26,0,TAU);ctx.fill();
+  }
+}
+/* groundShadow (19) фигурами: овал от звезды — три мягкие капсулы вложенной длины
+   вместо радиального градиента, середина темнее краёв */
+function surfShadowShapes(A,x,y,rx,ry,k){
+  const sx=SUN_DIR.x,sy=SUN_DIR.y,low=clamp(1-Math.abs(sy),0,1);
+  const cx=x-sx*rx*(.35+low*1.6),R=rx*(1+low*1.2),a=.32*(1-low*.40)*(k==null?1:k);
+  for(const f of [.75,.45,.15]){const l=Math.max(0,R*f-ry*.3);
+    A.push([2,cx-l,y,cx+l,y,0,ry*(1.35-f*.5),0,0,0,a*.42]);}
+}
+function surfLanderHot(S){return Math.max(0,1-(G.t-(S.t0||0))/700);}
+function surfLanderNite(p){const n=(typeof surfNight==="function")?surfNight(p):0;return n>.18?clamp((n-.18)/.35,0,1):0;}
+/* двойник: тело — выпечкой корабля посадки (19g, lgLanderBake) под светом мира, как ходок
+   и кусты (20fa): поле посадки красило белый корпус под оранжевой звездой в лосося и мылило
+   швы. Падающая тень — силуэтом той же выпечки (снимок #c её больше не даёт) и пятнами
+   касания, как у 2D; огни — маяк, тлеющие сопла, свет люка, ночное окно — мягкими фигурами */
+const SURF_LND={x:0,y:0,a:0,gear:1,sq:0,over:1,ok:true,thrOn:false,hot:0};
+function surfLanderGpu(pass,S,camx,camy,p){
+  if(!pass||!GPU.dev||typeof lgLanderBake!=="function")return false;
+  const L=SURF_LND,h=lifeHere(S.shipX-camx,S.shipY-camy),s=h.s;
+  L.x=S.shipX;L.y=S.shipY;
+  const len=landerLen(G.shipId),half=len*.5,bodyH=len*.30,bY=LAND_GY-19,tY=bY-bodyH;
+  const B=lgLanderBake(L,S.tr,GPU.bw/W*s);if(!B)return false;
+  if(!B.lid)B.lid=++LG_ID;
+  /* местные оси корабля с кивком носа −0.05 (19f) → кадр */
+  const cr=Math.cos(-.05),sr=Math.sin(-.05);
+  const at=(lx,ly)=>[h.x+(lx*cr-ly*sr)*s,h.y+(lx*sr+ly*cr)*s];
+  const SH=[];
+  /* пятно касания: силуэт от звезды лежит за корпусом и его почти не видно, а корабль
+     без пятна висит над грунтом */
+  surfShadowShapes(SH,h.x,h.y+12*s,len*.46*s,8*s,1);
+  surfShadowShapes(SH,h.x+half*.05*s,h.y+(LAND_GY+2)*s,half*1.05*s,Math.max(3.5,len*.055)*s,.85);
+  /* и тень каждой пяты (drawLandGear): стойка стоит на своей точке грунта */
+  const g0=groundAt(S.tr,S.shipX);
+  for(const [lx,la] of [[-half*.42,1],[-half*.10,.62],[half*.42,1]]){
+    const f=at(lx,LAND_GY+clamp(groundAt(S.tr,S.shipX+lx)-g0,-9,9)+1);
+    SH.push([2,f[0]-7*s,f[1],f[0]+7*s,f[1],0,2.6*s,0,0,0,.28*la]);
+  }
+  gpuShapes(pass,SH,{blend:"over"});
+  const E=LG_E*2*s;
+  if(!lifeSprite(pass,B,{x:h.x,y:h.y+LG_OY*s,w:E,h:E,base:(LAND_GY-LG_OY+LG_E)/(2*LG_E),lod:2.5,
+    ao:half*.95*s,dim:lifeDim(S.shipX)},lifeLight()))return false;
+  const A=[];
+  /* свет люка на грунте у пяты трапа */
+  const hp=at(-half*.06+len*.46-6,LAND_GY+1),hl=len*.28*s,hh=len*.07*s;
+  A.push([2,hp[0]-hl*.55,hp[1],hp[0]+hl*.55,hp[1],0,hh*1.4,255,190,115,.16],
+    [2,hp[0]-hl*.25,hp[1],hp[0]+hl*.25,hp[1],0,hh,255,200,130,.14]);
+  /* сопла ещё остывают после посадки */
+  const hot=surfLanderHot(S),ex=-half*.80,ey=bY+bodyH*.02,er=bodyH*.24;
+  if(hot>.02)for(const d of [0,er*1.7]){const q=at(ex+d,ey+er*.6);
+    A.push([1,q[0],q[1],0,0,0,er*2.2*s,255,140,70,hot*.45]);}
+  /* маяк — плавный огонь, а не щелчок (закон «движение, не мигание») */
+  const bk=clamp((Math.sin(G.t*.07)-.05)/.5,0,1),bs=bk*bk*(3-2*bk);
+  if(bs>.01){const q=at(half*.1,tY-1.5);
+    A.push([1,q[0],q[1],2.2*s,0,0,.8*s,255,120,90,.9*bs],[1,q[0],q[1],0,0,0,8*s,255,110,80,.3*bs]);}
+  const k=surfLanderNite(p);
+  if(k>0){
+    const y1=h.y+13*s,y2=h.y-4*s;
+    A.push([2,h.x-36*s,y1,h.x+36*s,y1,0,15*s,255,206,138,.17*k],
+      [1,h.x,y2,0,0,0,26*s,255,214,150,.22*k],
+      [0,h.x-4*s,h.y-6*s,h.x+5*s,h.y-1*s,0,0,255,224,170,.62*k]);
+  }
+  gpuShapes(pass,A,{blend:"add"});
+  return true;
+}
