@@ -53,34 +53,15 @@ function digRockBelow(D,p,camx,camy){
   digRockPass(D,p,camx,camy);
   ctx.restore();
 }
-function drawDigWorld(){
-  const D=G.dig,p=D.p;
-  const px=D.col*DIG_CELL,py=D.row*DIG_CELL;
-  const camx=px-W/2,camy=py-H*.5;
-  const scanAll=G.tech.has("survey");
-  /* порода ломтями по world-x И world-y (хвост G3, правило G11): пласты, жилы
-     и материал пекутся один раз на тайл 512×512, кадр только кладёт картинки.
-     digRockPass рисует через W/H, которые withCtx подменяет на размер тайла */
-  /* печёт и кладёт видеокарта (G7, 18c gpuTileStore): тайл — текстура под всем 2D */
-  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR+"|sky");
-  /* небо над устьем — то же, что над грунтом (19ca, G15): поле во всю ширину под породой,
-     ножницы по полосе над линией поверхности; порода тайлов закрывает всё ниже неё */
-  const hy=digSurfY(p,camx+W*.5)-camy;
-  D.gSky=false;
-  if(hy>-40){const sp=gpuScene();
-    if(sp&&skyClip(sp,0,0,W,hy+16)){D.gSky=gpuSky(p,camx,camy,hy);sp.setScissorRect(0,0,GPU.bw,GPU.bh);}}
-  gpuDrawTiles(gpuScene(),D.tiles,camx,camy,(g,wx0,wy0)=>digRockBelow(D,p,wx0,wy0));
-  /* свет уходит от человека (M55 #1) — поле видеокарты (23b): виньетка и фонари с тенями
-     умножают породу сразу, как виньетка main; руда, зерно, пол и крепь ложатся поверх */
-  const hl={x:px+DIG_CELL/2,y:py+DIG_CELL/2-12,f:D.face||1};   /* налобник: ладонь ниже макушки */
-  digShade(D,p,camx,camy,hl);
+/* средний слой шахты: руда, выработка, сколы, стены и пол, следы работы, крепь, лестница.
+   Кисти 2D; на видеокарте — двойник digMidGpu (23ac) фигурами сцены (G15) */
+function digMid(D,p,camx,camy,px,py,scanAll,r0,r1){
   /* ── рудное тело ──
      Светилось радиальным пятном на клетку и читалось бесформенной кляксой,
      ни при чём к камню вокруг. Руда в породе выглядит иначе: это вкрапления —
      зёрна и линзы, вытянутые по пласту, гуще к середине тела и сходящие на
      нет по краю, плюс ореол изменённой породы вокруг. Свечения почти нет:
      под землёй руда не лампа, её выдаёт отражённый блеск на зерне. */
-  const r0=Math.max(0,Math.floor(camy/DIG_CELL)-1), r1=Math.ceil((camy+H)/DIG_CELL)+1;
   ctx.save();
   for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
     const key=col+","+row, cell=D.cells[key]||digCell(D,col,row);
@@ -471,6 +452,31 @@ function drawDigWorld(){
       ctx.fillRect(L-1.4,y+1.5,R-L+4.6,2.2);
     }
   }
+}
+function drawDigWorld(){
+  const D=G.dig,p=D.p;
+  const px=D.col*DIG_CELL,py=D.row*DIG_CELL;
+  const camx=px-W/2,camy=py-H*.5;
+  const scanAll=G.tech.has("survey");
+  /* порода ломтями по world-x И world-y (хвост G3, правило G11): пласты, жилы
+     и материал пекутся один раз на тайл 512×512, кадр только кладёт картинки.
+     digRockPass рисует через W/H, которые withCtx подменяет на размер тайла */
+  /* печёт и кладёт видеокарта (G7, 18c gpuTileStore): тайл — текстура под всем 2D */
+  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR+"|sky");
+  /* небо над устьем — то же, что над грунтом (19ca, G15): поле во всю ширину под породой,
+     ножницы по полосе над линией поверхности; порода тайлов закрывает всё ниже неё */
+  const hy=digSurfY(p,camx+W*.5)-camy;
+  D.gSky=false;
+  if(hy>-40){const sp=gpuScene();
+    if(sp&&skyClip(sp,0,0,W,hy+16)){D.gSky=gpuSky(p,camx,camy,hy);sp.setScissorRect(0,0,GPU.bw,GPU.bh);}}
+  gpuDrawTiles(gpuScene(),D.tiles,camx,camy,(g,wx0,wy0)=>digRockBelow(D,p,wx0,wy0));
+  /* свет уходит от человека (M55 #1) — поле видеокарты (23b): виньетка и фонари с тенями
+     умножают породу сразу, как виньетка main; руда, зерно, пол и крепь ложатся поверх */
+  const hl={x:px+DIG_CELL/2,y:py+DIG_CELL/2-12,f:D.face||1};   /* налобник: ладонь ниже макушки */
+  digShade(D,p,camx,camy,hl);
+  const r0=Math.max(0,Math.floor(camy/DIG_CELL)-1), r1=Math.ceil((camy+H)/DIG_CELL)+1;
+  /* средний слой — фигурами сцены (23ac); без видеокарты — 2D */
+  if(!digMidGpu(D,p,camx,camy,px,py,scanAll,r0,r1))digMid(D,p,camx,camy,px,py,scanAll,r0,r1);
   /* ── небо в устье шахты ──
      Была заливка прямоугольником до y=0, то есть ЛИНЕЙКА во всю ширину кадра:
      выше небо, ниже порода, между ними бритвенный горизонт. Теперь небо кончается
@@ -501,7 +507,7 @@ function drawDigWorld(){
     }
     ctx.restore();}
     /* трава и щебень стоят НА линии, поэтому идут после неба (23aa) */
-    digSurfFringe(p,camx,camy);
+    digSurfFringe(p,camx,camy,D.gSky);
   }
   drawDigFauna(camx,camy);
   const sx=px-camx+DIG_CELL/2,sy=py-camy+DIG_CELL/2;
@@ -510,16 +516,20 @@ function drawDigWorld(){
   drawDigLight(D,p,camx,camy,hl);
   /* забой под резаком: подсветка и полоса проходки — поверх света, это указатель */
   if(D.target){
-    const t=D.target;
+    const t=D.target,TP=GPU.on?gpuNext():null,TS=[];
     for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
       if(D.cells[col+","+row]!==t)continue;
-      const x=col*DIG_CELL-camx,y=row*DIG_CELL-camy;
+      const x=col*DIG_CELL-camx,y=row*DIG_CELL-camy,k=(DIG_CELL-6)*clamp(t.prog/t.hard,0,1);
+      if(TP){TS.push([0,x,y,x+DIG_CELL,y+DIG_CELL,0,0,242,178,92,.20],
+        [0,x+3,y+DIG_CELL-8,x+DIG_CELL-3,y+DIG_CELL-4,0,0,0,0,0,.55]);
+        if(k>0)TS.push([0,x+3,y+DIG_CELL-8,x+3+k,y+DIG_CELL-4,0,0,242,178,92,1]);continue;}
       ctx.fillStyle="rgba(242,178,92,.20)";ctx.fillRect(x,y,DIG_CELL,DIG_CELL);
       ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x+3,y+DIG_CELL-8,DIG_CELL-6,4);
       ctx.fillStyle="#f2b25c";
-      ctx.fillRect(x+3,y+DIG_CELL-8,(DIG_CELL-6)*clamp(t.prog/t.hard,0,1),4);
+      ctx.fillRect(x+3,y+DIG_CELL-8,k,4);
       /* искры из-под резака — выше единицы, на видеокарте (23b digEmit) */
     }
+    if(TP)gpuShapes(TP,TS,{blend:"over"});
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
   const helm=helmBeamGpu(sx,sy+4,D.face||1)?"gpu":true;

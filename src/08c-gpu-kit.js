@@ -255,7 +255,8 @@ function gpuImage(pass,cv,rects,o){
    двенадцатое поле — маска жёстких рёбер (1 — первое-второе, 2 — второе-третье, 4 — третье-первое):
    внутреннее ребро сетки жёсткое, пиксель достаётся ровно одному треугольнику — ни шва, ни
    лишнего света у острых углов; наружные гладятся по полуплоскости.
-   soft>0 — мягкая кромка такой ширины (свечение, боке); o.blend: over | add */
+   soft>0 — мягкая кромка такой ширины (свечение, боке); o.blend: over | add.
+   вид 6 — прямоугольник (x0,y0)-(x1,y1) со скруглением углов радиуса hw (выработка шахты, 23ac) */
 const GPU_SHP_WGSL=GPU_KIT_WGSL+GPU_WGSL_COMMON+`
 @group(0) @binding(1) var<storage,read> sq:array<vec4f>;
 struct SO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interpolate(flat) g:vec4f,@location(2) @interpolate(flat) h:vec4f};
@@ -263,7 +264,7 @@ struct SO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interp
   let a=sq[ii*3u];let b=sq[ii*3u+1u];let c=sq[ii*3u+2u];let k=a.x;let d=ku.res.z;
   let g=vec4f(a.yzw,b.x);let hw=b.y;let so=b.z;let m=1./d+so;
   var lo:vec2f;var hi:vec2f;var h=vec4f(k,hw*d,so*d,0.);
-  if(k<.5){lo=g.xy-m;hi=g.zw+m;}
+  if(k<.5||k>5.5){lo=g.xy-m;hi=g.zw+m;}
   else if(k>4.5){let t=vec2f(hw,so);lo=min(min(g.xy,g.zw),t)-1./d;hi=max(max(g.xy,g.zw),t)+1./d;h.w=b.w;}
   else if(k>3.5){let r=length(g.zw);lo=g.xy-r-m;hi=g.xy+r+m;h.y=hw;}
   else if(k<1.5||k>2.5){let r=g.z+hw;lo=g.xy-r-m;hi=g.xy+r+m;}
@@ -282,6 +283,8 @@ fn sdTri(p:vec2f,a:vec2f,b:vec2f,c:vec2f)->f32{
   return -sqrt(w.x)*sign(w.y);}
 @fragment fn fs(i:SO)->@location(0) vec4f{
   var p=i.p.xy;let k=i.h.x;var cov=0.;
+  if(k>5.5){let r=min(i.h.y,min(i.g.z-i.g.x,i.g.w-i.g.y)*.5);let q=abs(p-(i.g.xy+i.g.zw)*.5)-(i.g.zw-i.g.xy)*.5+r;
+    let al=i.col.a*clamp(.5-(length(max(q,vec2f(0.)))+min(max(q.x,q.y),0.)-r),0.,1.);return vec4f(i.col.rgb*al,al);}
   if(k>4.5){let A=i.g.xy;let B=i.g.zw;let C=i.h.yz;let m=u32(i.h.w+.5);var c=0.;
     if(m==0u){c=clamp(.5-sdTri(p,A,B,C),0.,1.);}
     else{let sg=sign((B.x-A.x)*(C.y-A.y)-(B.y-A.y)*(C.x-A.x));

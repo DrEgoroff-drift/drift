@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 678 · top-level symbols: 7072
+Files: 679 · top-level symbols: 7076
 
 ## SYMBOLS
 
@@ -398,6 +398,7 @@ DIG_LIT_C                    src/23b-dig-gpu.js:88
 DIG_MSK                      src/23b-dig-gpu.js:18
 DIG_OWN_WGSL                 src/23b-dig-gpu.js:25
 DIG_TURF                     src/23aa-dig-rock.js:463
+DIG_TXT                      src/23ac-dig-mid-gpu.js:13
 DIP_ENVOY                    src/12b1-fx-dip.js:23
 DIP_ESCORT                   src/12b1-fx-dip.js:24
 DIP_LETTER                   src/12b1-fx-dip.js:27
@@ -692,7 +693,7 @@ GPU_CH_R                     src/18c-chunks.js:185
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:66
 GPU_DROP_WHY                 tests/90-harness.js:104
 GPU_FLD                      src/08b0-gpu-pipe.js:33
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:328
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:331
 GPU_FRONT_LIKE               src/08b-gpu.js:525
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:191
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
@@ -709,7 +710,7 @@ GPU_PL_WGSL                  src/08b-gpu.js:477
 GPU_POST_WGSL                src/08b-gpu.js:74
 GPU_SCR                      src/08c-gpu-kit.js:172
 GPU_SCREEN_LAYERS            src/18c-chunks.js:193
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:259
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:260
 GPU_TONE_FILM                src/08b-gpu.js:513
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
 GREEN_BEDS                   src/21g-greenhouse.js:23
@@ -3067,6 +3068,8 @@ digLampsKeep                 src/23b-dig-gpu.js:166-169
 digLights                    src/23b-dig-gpu.js:90-112
 digLitU                      src/23b-dig-gpu.js:114-132
 digMask                      src/23b-dig-gpu.js:69-87
+digMid                       src/23a-dig-draw.js:58-455
+digMidGpu                    src/23ac-dig-mid-gpu.js:14-236
 digRGB                       src/23aa-dig-rock.js:465
 digRockBelow                 src/23a-dig-draw.js:48-55
 digRockMass                  src/23aa-dig-rock.js:183-446
@@ -3076,7 +3079,8 @@ digShade                     src/23b-dig-gpu.js:135-144
 digSoil                      src/23aa-dig-rock.js:499-599
 digSoilBand                  src/23aa-dig-rock.js:492-498
 digSoilCols                  src/23aa-dig-rock.js:473-490
-digSurfFringe                src/23aa-dig-rock.js:610-650
+digSurfFringe                src/23aa-dig-rock.js:610-651
+digSurfFringeGpu             src/23ac-dig-mid-gpu.js:241-278
 digSurfY                     src/23aa-dig-rock.js:469-472
 digVoidPath                  src/23a-dig-draw.js:5-45
 dipBlock                     src/12b1-fx-dip.js:165-203
@@ -3177,10 +3181,10 @@ drawCrystalForest            src/20aa-poi-shapes.js:115-141
 drawDeadBattery              src/20aa-poi-shapes.js:221-275
 drawDeco                     src/21b-surface-deco.js:166-225
 drawDeposit                  src/21b-surface-deco.js:406-560
-drawDig                      src/23a-dig-draw.js:582-586
+drawDig                      src/23a-dig-draw.js:592-596
 drawDigFauna                 src/23-mode-dig.js:336-345
 drawDigLight                 src/23b-dig-gpu.js:152-164
-drawDigWorld                 src/23a-dig-draw.js:56-534
+drawDigWorld                 src/23a-dig-draw.js:456-544
 drawDronesMap                src/12e-drone-flight.js:296-314
 drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:177-190
@@ -3821,9 +3825,9 @@ gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:276-302
 gpuFail                      src/08b2-gpu-loss.js:26-30
-gpuField                     src/08c-gpu-kit.js:350-377
-gpuFieldBaked                src/08c-gpu-kit.js:385-395
-gpuFieldLayout               src/08c-gpu-kit.js:343-349
+gpuField                     src/08c-gpu-kit.js:353-380
+gpuFieldBaked                src/08c-gpu-kit.js:388-398
+gpuFieldLayout               src/08c-gpu-kit.js:346-352
 gpuFrame                     src/08b-gpu.js:544-557
 gpuFrontClean                src/08c-gpu-kit.js:126-131
 gpuFrontCopy                 src/08b-gpu.js:594-596
@@ -3862,7 +3866,7 @@ gpuPirateBody                src/12i-pirate-hull.js:425-434
 gpuPirateLive                src/12i-pirate-hull.js:441-485
 gpuPlanet                    src/17ga-gpu-planets.js:340-357
 gpuPresent                   src/08b-gpu.js:673-686
-gpuQuad                      src/08c-gpu-kit.js:307-311
+gpuQuad                      src/08c-gpu-kit.js:310-314
 gpuResize                    src/08b-gpu.js:392-434
 gpuScene                     src/08b-gpu.js:561-574
 gpuScene3D                   src/08b-gpu.js:578-586
@@ -3870,7 +3874,7 @@ gpuScr                       src/08c-gpu-kit.js:173
 gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
-gpuShapes                    src/08c-gpu-kit.js:312-323
+gpuShapes                    src/08c-gpu-kit.js:315-326
 gpuShock                     src/08b-gpu.js:460
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:287-378
@@ -4894,12 +4898,12 @@ mgrWorkFact                  src/12c-mgr-core.js:609-665
 mgrWorkKeep                  src/12c-mgr-core.js:555-564
 mgrWorkSci                   src/12c-mgr-core.js:690-745
 midiHz                       src/10-music.js:106
-mineDeep                     src/23a-dig-draw.js:552-555
-mineKey                      src/23a-dig-draw.js:541
+mineDeep                     src/23a-dig-draw.js:562-565
+mineKey                      src/23a-dig-draw.js:551
 mineLay                      src/13a-guns.js:267-275
-mineLoad                     src/23a-dig-draw.js:556-565
-mineSave                     src/23a-dig-draw.js:566-575
-mineSpotX                    src/23a-dig-draw.js:548-551
+mineLoad                     src/23a-dig-draw.js:566-575
+mineSave                     src/23a-dig-draw.js:576-585
+mineSpotX                    src/23a-dig-draw.js:558-561
 minedUnit                    src/11-log.js:171-179
 minesTick                    src/13a-guns.js:276-320
 mirrorAck                    src/11f-mirror.js:33-40
@@ -8194,12 +8198,15 @@ zoomTo                       src/15-input.js:350
 ## src/23-mode-dig.js · 20 KB
   · шахта: спуск вглубь планеты:1
 
-## src/23a-dig-draw.js · 37 KB
+## src/23a-dig-draw.js · 38 KB
   · шахта: отрисовка:1
 
 ## src/23aa-dig-rock.js · 39 KB
   · шахта: порода:1
   · почвенный профиль: небо кончается не линейкой:449
+
+## src/23ac-dig-mid-gpu.js · 16 KB
+  · средний слой шахты на видеокарте (G15):1
 
 ## src/23b-dig-gpu.js · 13 KB
   · шахта на видеокарте: свет, день в стволе, руда, пыль (G7):1
