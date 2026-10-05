@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7092
+Files: 680 · top-level symbols: 7094
 
 ## SYMBOLS
 
@@ -785,12 +785,13 @@ GcGrad                       src/08ca-gpu-canvas.js:69-87
 GcPat                        src/08cab-gpu-pattern.js:11-14
 GcPath2D                     src/08caa-gpu-path.js:15-27
 H3D                          src/17c2a-hull3d.js:15
-H3D_CARGO                    src/17c2a-hull3d.js:21
-H3D_LZ                       src/17c2a-hull3d.js:17
-H3D_MK                       src/17c2a-hull3d.js:20
+H3D_CARGO                    src/17c2a-hull3d.js:22
+H3D_LZ                       src/17c2a-hull3d.js:18
+H3D_MK                       src/17c2a-hull3d.js:21
 H3D_N                        src/17c2a-hull3d.js:16
-H3D_RING                     src/17c2a-hull3d.js:18
-H3D_WGSL                     src/17c2a-hull3d.js:163
+H3D_RING                     src/17c2a-hull3d.js:19
+H3D_SIDES                    src/17c2a-hull3d.js:17
+H3D_WGSL                     src/17c2a-hull3d.js:164
 HAIL_HOLD                    src/12ar-hail.js:20
 HAIL_HOLD_PHONE              src/12ar-hail.js:23
 HAIL_RANGE                   src/12ar-hail.js:25
@@ -4006,11 +4007,12 @@ gunSpecs                     src/05c-arms.js:207-218
 gunTotals                    src/05c-arms.js:336-350
 gunsInGroup                  src/05c-arms.js:230-233
 h01                          src/01-core.js:28
-h3dDesc                      src/17c2a-hull3d.js:237-245
-h3dDev                       src/17c2a-hull3d.js:247-257
-h3dDraw                      src/17c2a-hull3d.js:261-298
-h3dEar                       src/17c2a-hull3d.js:146-161
-h3dMesh                      src/17c2a-hull3d.js:25-144
+h3dCls                       src/17c2a-hull3d.js:263-272
+h3dDesc                      src/17c2a-hull3d.js:245-253
+h3dDev                       src/17c2a-hull3d.js:255-261
+h3dDraw                      src/17c2a-hull3d.js:276-313
+h3dEar                       src/17c2a-hull3d.js:147-162
+h3dMesh                      src/17c2a-hull3d.js:26-145
 hDraw                        tests/91zzzzzzz-hands.js:36
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
@@ -7857,7 +7859,7 @@ zoomTo                       src/15-input.js:350
 ## src/17c2-hull-gpu.js · 18 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 23 KB
+## src/17c2a-hull3d.js · 24 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c3-station-live.js · 11 KB

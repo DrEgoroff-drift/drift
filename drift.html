@@ -56154,6 +56154,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
    ?h3d=0 или H3D.on=false — старый спрайт 17c2 */
 const H3D={on:typeof location==="undefined"||!/[?&]h3d=0\b/.test(location.search),M:new WeakMap(),dev:null,frame:-1,slot:0};
 const H3D_N=512,H3D_L=4;   /* сторона слоя (пиксели устройства) и слоёв на кадр: свой корабль и трое рядом */
+const H3D_SIDES=[256,512];   /* классы слоя: мелкий корпус не чистит и не сводит 512² ×4 (телефон — тайлы) */
 const H3D_LZ=.48,H3D_FILL=.30,H3D_KEY=1.6;   /* высота звезды над плоскостью; заливка; сила звезды */
 const H3D_RING=24;
 /* изготовитель → [квадратность сечения, высота спины к полуширине, лоск] */
@@ -56236,7 +56237,7 @@ function h3dMesh(h){
     const tr=h3dEar(P);if(!tr)return;
     for(const [a,b,c] of tr){
       face([[...P[a].slice(0,2),P[a][2]+tw],[...P[b].slice(0,2),P[b][2]+tw],[...P[c].slice(0,2),P[c][2]+tw]],[P[a][0],P[a][1],P[a][2]-9],col,0,gl,0);
-      face([[...P[a].slice(0,2),P[a][2]-tw],[...P[b].slice(0,2),P[b][2]-tw],[...P[c].slice(0,2),P[c][2]-tw]],[P[a][0],P[a][1],P[a][2]+9],col,0,gl,0);}
+      face([[...P[a].slice(0,2),P[a][2]-tw],[...P[b].slice(0,2),P[b][2]-tw],[...P[c].slice(0,2),P[c][2]-tw]],[P[a][0],P[a][1],P[a][2]+9],side,0,gl,0);}
     const cw=ctr(P);
     for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];
       face([[a[0],a[1],a[2]-tw],[b[0],b[1],b[2]-tw],[b[0],b[1],b[2]+tw],[a[0],a[1],a[2]+tw]],[cw[0],cw[1],(a[2]+b[2])/2],dark,2,.4,0);}
@@ -56338,8 +56339,15 @@ struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
   let pa=b.rgb/max(b.a,1e-3);
   /* своя краска части: на бортах (по нормали корпуса) и там, где выпечка пуста */
   var sw=select(i.c.w*(1.-smoothstep(.2,.65,abs(normalize(i.no).z))),1.,i.c.w>1.5);
-  sw=max(sw,1.-smoothstep(.1,.5,b.a));if(dec){sw=0.;}
-  let alb=mix(pa,i.c.rgb,sw);
+  /* брюхо (грань вниз) — своя краска темнее: выпечка — вид сверху, под корпус её не кладут */
+  let dn=select(smoothstep(-.05,-.4,normalize(i.no).z),0.,dec);
+  sw=max(max(sw,dn),1.-smoothstep(.1,.5,b.a));if(dec){sw=0.;}
+  /* швы там, куда выпечка не достаёт (борт, брюхо): стык листов через 2.4 по длине и пояс тела —
+     без них борт в крене был ровной белой доской без масштаба */
+  let fx=fract(i.o.x/2.4);let dx=min(fx,1.-fx)*2.4;let wx=fwidth(i.o.x);
+  var sm=1.-smoothstep(.04,.04+wx*1.5,dx);
+  if(i.m.x<0.){sm=max(sm,1.-smoothstep(.05,.05+fwidth(i.o.z)*1.5,abs(i.o.z)));}
+  let alb=mix(pa,i.c.rgb*(1.-.32*sm),sw)*(1.-.22*dn);
   let mk=q.xyz/max(q.w,1e-3)*(1.-sw);
   let L=u.v[2].xyz;let sc=u.v[3].rgb;let ndl=dot(n,L);
   /* части (не тело) — в тени тела и темнее у самого борта */
@@ -56386,14 +56394,21 @@ function h3dDesc(){
 /* слои и буферы — на устройство */
 function h3dDev(){
   const d=GPU.dev;if(H3D.dev===d)return;
-  H3D.dev=d;const U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT;
-  H3D.ms=d.createTexture({size:[H3D_N,H3D_N],format:"rgba16float",sampleCount:4,usage:RA});
-  H3D.md=d.createTexture({size:[H3D_N,H3D_N],format:"depth24plus",sampleCount:4,usage:RA});
-  H3D.lay=d.createTexture({size:[H3D_N,H3D_N,H3D_L],format:"rgba16float",usage:RA|U.TEXTURE_BINDING});
-  H3D.msV=H3D.ms.createView();H3D.mdV=H3D.md.createView();
-  H3D.img=[];for(let i=0;i<H3D_L;i++)H3D.img.push({view:H3D.lay.createView({dimension:"2d",baseArrayLayer:i,arrayLayerCount:1})});
+  H3D.dev=d;
+  H3D.K={};
   H3D.ub=d.createBuffer({size:512,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   H3D.U=new Float32Array(128);H3D.P=null;
+}
+/* слои класса заводятся при первой нужде: ×4 цвет и глубина на проход, массив сведённых — на кадр */
+function h3dCls(n){
+  let K=H3D.K[n];if(K)return K;
+  const d=GPU.dev,U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT;
+  K=H3D.K[n]={slot:0,ms:d.createTexture({size:[n,n],format:"rgba16float",sampleCount:4,usage:RA}),
+    md:d.createTexture({size:[n,n],format:"depth24plus",sampleCount:4,usage:RA}),
+    lay:d.createTexture({size:[n,n,H3D_L],format:"rgba16float",usage:RA|U.TEXTURE_BINDING}),img:[]};
+  K.msV=K.ms.createView();K.mdV=K.md.createView();
+  for(let i=0;i<H3D_L;i++)K.img.push({view:K.lay.createView({dimension:"2d",baseArrayLayer:i,arrayLayerCount:1})});
+  return K;
 }
 /* корпус в объёме на место спрайта 17c2: x,y — экран, a — курс, sc — масштаб, bank — крен,
    (lx,ly) — к звезде, B — выпечка тела (hullGpuBake), fl — огонь у кормы на экране или null.
@@ -56403,12 +56418,12 @@ function h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,ember){
   const T=B.B;if(!T||!T.view)return false;
   if(T.draw)gpuBakeLive(T);
   h3dDev();
-  if(H3D.frame!==GPU.frameNo){H3D.frame=GPU.frameNo;H3D.slot=0;}
-  if(H3D.slot>=H3D_L)return false;
+  if(H3D.frame!==GPU.frameNo){H3D.frame=GPU.frameNo;for(const k in H3D.K)H3D.K[k].slot=0;}
   const d=GPU.dev,m=h3dMesh(h);
   if(m.dev!==d){m.buf=d.createBuffer({size:m.v.byteLength,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});d.queue.writeBuffer(m.buf,0,m.v);m.dev=d;}
   if(!H3D.P)H3D.P=gpuPipeline("h3d.hull",h3dDesc);
-  const dk=GPU.bw/W,Rb=m.R,n=Math.max(8,Math.min(H3D_N,Math.ceil(2*Rb*sc*dk)));
+  const dk=GPU.bw/W,Rb=m.R,n=Math.max(8,Math.min(H3D_N,Math.ceil(2*Rb*sc*dk))),side=H3D_SIDES.find(v=>v>=n)||H3D_N,K=h3dCls(side);
+  if(K.slot>=H3D_L)return false;
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],cm=Math.max(1,c[0],c[1],c[2]);
   let sl=Math.hypot(lx,ly);const sx=sl>1e-6?lx/sl:.6,sy=sl>1e-6?ly/sl:-.8,ll=Math.hypot(1,H3D_LZ);
   const U=H3D.U;U.fill(0);
@@ -56426,14 +56441,14 @@ function h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,ember){
   const mat=T.mat||{view:GPU.nView||(GPU.nView=GPU.N.createView())};
   const bg=d.createBindGroup({layout:H3D.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:H3D.ub}},{binding:1,resource:gpuMipSmp()},
     {binding:2,resource:T.view},{binding:3,resource:mat.view},{binding:4,resource:GPU.V.lt}]});
-  const L=H3D.slot++,enc=d.createCommandEncoder();
-  const p=enc.beginRenderPass({colorAttachments:[{view:H3D.msV,resolveTarget:H3D.img[L].view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
-    depthStencilAttachment:{view:H3D.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});
+  const L=K.slot++,enc=d.createCommandEncoder();
+  const p=enc.beginRenderPass({colorAttachments:[{view:K.msV,resolveTarget:K.img[L].view,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:0}}],
+    depthStencilAttachment:{view:K.mdV,depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"discard"}});
   p.setViewport(0,0,n,n,0,1);p.setScissorRect(0,0,n,n);
   p.setPipeline(H3D.P);p.setBindGroup(0,bg);p.setVertexBuffer(0,m.buf);p.draw(m.n);p.end();
   d.queue.submit([enc.finish()]);
   const pass=gpuScene();if(!pass)return false;
-  gpuImage(pass,H3D.img[L],[{x,y,w:2*Rb*sc,h:2*Rb*sc,u1:n/H3D_N,v1:n/H3D_N}],{blend:"hull"});
+  gpuImage(pass,K.img[L],[{x,y,w:2*Rb*sc,h:2*Rb*sc,u1:n/side,v1:n/side}],{blend:"hull"});
   return true;
 }
 
