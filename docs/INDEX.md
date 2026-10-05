@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7094
+Files: 680 · top-level symbols: 7097
 
 ## SYMBOLS
 
@@ -504,7 +504,7 @@ FAR_VOICE                    src/12-economy.js:47-59
 FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 FAUNA_RES                    src/02-world.js:137
-FG_BK                        src/21e3-surface-stand-gpu.js:60
+FG_BK                        src/21e3-surface-stand-gpu.js:88
 FG_MAN                       src/21b-surface-deco.js:277
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
@@ -1772,11 +1772,12 @@ SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:132
 SURF_HOR                     src/19c-light.js:202
-SURF_LND                     src/21e3-surface-stand-gpu.js:132
+SURF_LND                     src/21e3-surface-stand-gpu.js:160
 SURF_NEAR                    src/21e2-surface-gpu.js:462
 SURF_RF                      src/21e2-surface-gpu.js:420
 SURF_SHADOW                  src/21e2-surface-gpu.js:271
 SURF_SNAP_OK                 src/21e2-surface-gpu.js:274
+SURF_TAG_FONT                src/21e3-surface-stand-gpu.js:58
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 SYS_BAKE_KEEP                src/06-galaxy.js:20
@@ -3284,7 +3285,7 @@ drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:284-298
 drawSurfaceHud               src/21e-surface-draw.js:21-115
-drawSurfaceWorld             src/21e1-surface-world.js:10-631
+drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:727-1053
 drawSysLane                  src/17g-sys-lane.js:112-138
@@ -3583,7 +3584,7 @@ folkShown                    src/12u-folk.js:114
 folkShut                     src/11ah-offer.js:96-103
 folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
-foregroundGpu                src/21e3-surface-stand-gpu.js:61-90
+foregroundGpu                src/21e3-surface-stand-gpu.js:89-118
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:628-674
 frameBody                    src/28-loop.js:429-560
@@ -6587,22 +6588,24 @@ sunSpot                      src/19c-light.js:203-208
 supportCall                  src/05b1-warranty.js:20-27
 supportQueue                 src/05b1-warranty.js:29-34
 supportTick                  src/05b1-warranty.js:35-44
+surfBar                      src/21e3-surface-stand-gpu.js:72-80
 surfCastGpu                  src/21e2-surface-gpu.js:275-304
 surfDepositGpu               src/21e3-surface-stand-gpu.js:11-34
 surfGroundGpu                src/21e2-surface-gpu.js:175-211
 surfHeightTex                src/21e2-surface-gpu.js:80-94
-surfLander2D                 src/21e3-surface-stand-gpu.js:95-117
-surfLanderGpu                src/21e3-surface-stand-gpu.js:133-180
-surfLanderHot                src/21e3-surface-stand-gpu.js:126
-surfLanderNite               src/21e3-surface-stand-gpu.js:127
+surfLander2D                 src/21e3-surface-stand-gpu.js:123-145
+surfLanderGpu                src/21e3-surface-stand-gpu.js:161-208
+surfLanderHot                src/21e3-surface-stand-gpu.js:154
+surfLanderNite               src/21e3-surface-stand-gpu.js:155
 surfNearGpu                  src/21e2-surface-gpu.js:474-487
 surfNight                    src/06a-celest.js:43-50
 surfRelightGpu               src/21e2-surface-gpu.js:351-363
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
 surfScale                    src/21e-surface-draw.js:283
 surfShadeGpu                 src/21e2-surface-gpu.js:221-227
-surfShadowShapes             src/21e3-surface-stand-gpu.js:120-125
+surfShadowShapes             src/21e3-surface-stand-gpu.js:148-153
 surfSnap                     src/21e2-surface-gpu.js:464-473
+surfTag                      src/21e3-surface-stand-gpu.js:59-70
 surfWaterGpu                 src/21e2-surface-gpu.js:421-442
 surfaceHint                  src/21e-surface-draw.js:4-20
 surveyColor                  src/12w-survey.js:58
@@ -8180,7 +8183,7 @@ zoomTo                       src/15-input.js:350
 ## src/21e-surface-draw.js · 19 KB
   · поверхность: подсказка, HUD и кадр:1
 
-## src/21e1-surface-world.js · 46 KB
+## src/21e1-surface-world.js · 45 KB
   · поверхность: сам мир (выделено из 21e, M415):1
 
 ## src/21e2-surface-gpu.js · 31 KB
@@ -8191,7 +8194,7 @@ zoomTo                       src/15-input.js:350
   · вода: зеркало на видеокарте:365
   · передний план не в фокусе:444
 
-## src/21e3-surface-stand-gpu.js · 11 KB
+## src/21e3-surface-stand-gpu.js · 13 KB
   · стоящее на поверхности — двойники видеокарты (G15):1
 
 ## src/21f-home-out.js · 22 KB

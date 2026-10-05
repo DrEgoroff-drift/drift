@@ -51,6 +51,34 @@ function dustMotesGpu(pass,camx,camy,p){
   return true;
 }
 
+/* ── подписи поверхности: строка на тёмной плашке ──
+   С видеокартой — в #ovl (08bi: domLabel и ovRect под ней), над миром, без #c; без неё — 2D,
+   как было. x,y — якорь строки (центр, базовая линия) в мерке мира 2D; pa — плотность
+   плашки, 0 — без плашки; k — ключ подписи */
+const SURF_TAG_FONT="8px ui-monospace,monospace";
+function surfTag(k,x,y,text,col,pa){
+  ctx.font=SURF_TAG_FONT;ctx.textAlign="center";
+  if(!GPU.ok||!GPU.on){
+    if(pa>0){const tw=ctx.measureText(text).width;
+      ctx.fillStyle="rgba(5,7,12,"+pa+")";ctx.fillRect(x-tw/2-5,y-10,tw+10,14);}
+    ctx.fillStyle=col;ctx.fillText(text,x,y);return;
+  }
+  const h=lifeHere(x,y),s=h.s;
+  domLabel(k,h.x,h.y,text,+(8*s).toFixed(2)+"px ui-monospace,monospace",col,"center",1);
+  const e=OVL.lab.get(k);
+  if(pa>0&&e)ovRect(e.x0-5*s,h.y-10*s,e.x1+5*s,h.y+4*s,"rgba(5,7,12,"+pa+")",1);
+}
+/* полоска хода работы над вещью (бурение): x0,y — левый верх, w — ширина, f — доля */
+function surfBar(x0,y,w,f,col){
+  if(!GPU.ok||!GPU.on){
+    ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x0,y,w,4);
+    ctx.fillStyle=col;ctx.fillRect(x0,y,w*f,4);return;
+  }
+  const a=lifeHere(x0,y),s=a.s;
+  ovRect(a.x,a.y,a.x+w*s,a.y+4*s,"rgba(0,0,0,.5)",1);
+  ovRect(a.x,a.y,a.x+w*f*s,a.y+4*s,col,1);
+}
+
 /* ── передний план не в фокусе (21b fgEach) ──
    Был на #c и уходил снимком с размытием по диску (21e2 surfNearGpu) — снимок на кадр.
    Валун неподвижен: печётся раз на (слот, размер, небо) в разрешении ниже кадра, и

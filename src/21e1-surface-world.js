@@ -237,10 +237,7 @@ function drawSurfaceWorld(){
       /* подпись входа на плашке, как у устья и залежей: стальная строка по
          дневному небу читалась с контрастом 2.2 (M444, прогон «посадка и
          залежь» под детектором текста) */
-      LBL.push(()=>{ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-       const tw=ctx.measureText("ПЕЩЕРА").width;
-       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-tw/2-5,cy-hh-24,tw+10,14);
-       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ПЕЩЕРА",cx,cy-hh-14);});
+      LBL.push(()=>surfTag("srf.cave",cx,cy-hh-14,"ПЕЩЕРА","rgba(176,196,208,.95)",.72));
     }
   }
   /* ── устье своей шахты (M234) ──
@@ -324,10 +321,7 @@ function drawSurfaceWorld(){
       /* подпись устья на плашке, как у залежей: стальная строка по дневному
          небу читалась с контрастом 1.9 (M444, прогон «шахта» под детектором
          текста) */
-      LBL.push(()=>{ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-       const tw=ctx.measureText("ШАХТА").width;
-       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(sx-tw/2-5,sy-42,tw+10,14);
-       ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ШАХТА",sx,sy-32);});
+      LBL.push(()=>surfTag("srf.mine",sx,sy-32,"ШАХТА","rgba(176,196,208,.95)",.72));
     }
   }
   const DEPG=[];
@@ -342,21 +336,14 @@ function drawSurfaceWorld(){
     if(gpuGround)DEPG.push([d,x,y,near]);
     else drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
     if(Math.abs(d.x-S.x)<70)LBL.push(()=>{
-      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       /* соседние залежи разводим по высоте: рядом стоящие подписи наезжали друг
          на друга и читались как каша из двух названий */
       const lbl=RES[d.res].ru.toUpperCase()+" "+d.left,ly=y-24-(Math.round(d.x/60)%2)*11;
       /* подпись на тёмной плашке: цветом сырья по дневному небу она читалась
          с контрастом 1.4 (M443, детектор текста) */
-      const tw=ctx.measureText(lbl).width;
-      ctx.fillStyle="rgba(5,7,12,.62)";ctx.fillRect(x-tw/2-5,ly-10,tw+10,14);
-      ctx.fillStyle=col;
-      ctx.fillText(lbl,x,ly);
+      surfTag("srf.dep."+Math.round(d.x),x,ly,lbl,col,.62);
     });
-    if(S.mining===d)LBL.push(()=>{
-      ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x-18,y-20,36,4);
-      ctx.fillStyle=col;ctx.fillRect(x-18,y-20,36*clamp(d.prog,0,1),4);
-    });
+    if(S.mining===d)LBL.push(()=>surfBar(x-18,y-20,36,clamp(d.prog,0,1),col));
   }
   /* следы гаснут за минуту: пыль оседает, и тропа остаётся только там, где
      ходили только что — так видно, откуда пришёл */
@@ -420,10 +407,7 @@ function drawSurfaceWorld(){
       groundShadow(x,b.y-camy+1,b.r*.9,2.6);
       drawBeast(b,x,b.y-camy,false,0);
     }
-    if(b.scanned)LBL.push(()=>{
-      ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ИЗУЧЕН",x,b.y-camy-b.r*2.6);
-    });
+    if(b.scanned)LBL.push(()=>surfTag("srf.scan."+S.fauna.indexOf(b),x,b.y-camy-b.r*2.6,"ИЗУЧЕН","rgba(127,230,216,.75)",0));
   }
   /* идущие — позади астронавта и поверх кустов: они на лугу, а не за ним (20c) */
   {const h0=LP?lifeHere(0,0):null;
