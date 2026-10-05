@@ -30,7 +30,7 @@ const HULL_MAKER={
     snd:{f:70, bank:1},
     note:"по ГОСТу: ступени, хомут, номер и «изделие»"},
   co:{ru:"Компания",ab:"КП",short:"КП",
-    bw:.90,  len:1.04, prof:"capsule", forms:["twin","swept"],
+    bw:.90,  len:1.04, prof:"capsule", forms:["swept","twin","disc","delta","xwing"],
     out:["logofin","runline"],     joint:"flush",
     ground:[246,247,249],tint:.06,stripe:2,gloss:1,  wear:.5,
     mark:"logo", lights:"run",
@@ -38,7 +38,7 @@ const HULL_MAKER={
     snd:{f:150,bank:1.35},
     note:"белое и гладкое, логотип во весь борт, бегущая строка"},
   or:{ru:"Орднунг",ab:"ОР",short:"ОР",
-    bw:1.02, len:1.12, prof:"chamfer", forms:["slab","boxed","twin"],
+    bw:1.02, len:1.12, prof:"chamfer", forms:["slab","boxed","twin","trident","xwing"],
     out:["plinth","comb"],         joint:"flange",
     ground:[138,144,152],tint:.02,stripe:0,gloss:0,  wear:.8, ribs:1,
     mark:"stencil",lights:"none",
@@ -46,7 +46,7 @@ const HULL_MAKER={
     snd:{f:96, bank:0},
     note:"прямые грани, гребень рёбер, номера по трафарету и ни одной лишней линии"},
   km:{ru:"Коммуна",ab:"КМ",short:"КМ",
-    bw:.84,  len:1.18, prof:"swan",    forms:["swept","delta"],
+    bw:.84,  len:1.18, prof:"swan",    forms:["swept","delta","disc","twin"],
     out:["bowsprit","band","pennant"],joint:"fillet",
     ground:[176,204,234],tint:.18,stripe:1,gloss:.6, wear:.9,
     mark:"name", lights:"band",
@@ -54,7 +54,7 @@ const HULL_MAKER={
     snd:{f:120,bank:1.5},
     note:"лебединый обвод, бушприт, лента окон и вымпел; имя, а не номер"},
   ra:{ru:"Рассвет",ab:"РС",short:"РС",
-    bw:1.28, len:.94,  prof:"modules", forms:["boxed","twin","slab"],
+    bw:1.28, len:.94,  prof:"modules", forms:["boxed","twin","slab","disc","trident"],
     out:["tanks","braces"],        joint:"weld",
     ground:[198,150,74], tint:.20,stripe:0,gloss:0,  wear:1.6,
     mark:"sun",  lights:"lantern",
@@ -62,7 +62,7 @@ const HULL_MAKER={
     snd:{f:58, bank:1.1},
     note:"сваренный из модулей, баки наружу, охра и чёрное, имя от руки"},
   hf:{ru:"Хай-Фронт",ab:"ХФ",short:"ХФ",
-    bw:.72,  len:1.16, prof:"spindle", forms:["trident","xwing"],
+    bw:.72,  len:1.16, prof:"spindle", forms:["trident","xwing","delta","swept"],
     out:["array","under"],         joint:"gap",
     ground:[206,216,224],tint:.05,stripe:0,gloss:.35,wear:.6,
     mark:"glyph",lights:"under",
@@ -90,6 +90,9 @@ function makerBySeed(seed){return MAKER_KEYS[hashi(seed|0,0x4B17,0x11)%MAKER_KEY
 function makerRu(by){return makerRow(by).ru;}
 /* схемы планера: изготовитель сужает выбор класса, но не отменяет его —
    если пересечение пусто, класс сильнее (рудовоз Хай-Фронта существует) */
+/* M714: по две-три схемы на завод давали линию верфи (24 корпуса) из одного силуэта — у Коммуны 19
+   стреловидных, у Хай-Фронта 17 крестов. Палитры шире, характер держат: у Орднунга нет диска,
+   у Коммуны — плиты, у Хай-Фронта — ящика */
 function makerForms(by,forms){
   const M=makerRow(by);
   if(!M.forms)return forms;

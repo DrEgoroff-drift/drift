@@ -116,7 +116,8 @@ const PYARD={};
         ru=ru.endsWith("™")?ru.slice(0,-1)+" "+mk+"™":ru+" "+mk;}
       PYARD["y"+by+i]={ru,cls:HULL_CLASS[hcls].ru+" · "+T.ru,hcls,seed,tier,by,
         thr,turn,fuel,cargo,hull,price,col:pick(M.pal,r),
-        hl:+((M.hl[0]+r()*(M.hl[1]-M.hl[0]))*(hcls==="yacht"?.88:1)).toFixed(2),hw:+yardBeam(by,hcls,M.hw[0]+r()*(M.hw[1]-M.hw[0])).toFixed(2),
+        /* курьер и разведчик длинные сами (класс × завод): ползунок длины сверху делал из них спицу */
+        hl:+Math.min((M.hl[0]+r()*(M.hl[1]-M.hl[0]))*(hcls==="yacht"?.88:1),hcls==="courier"||hcls==="scout"?.96:9).toFixed(2),hw:+yardBeam(by,hcls,M.hw[0]+r()*(M.hw[1]-M.hw[0])).toFixed(2),
         note:pick(M.note,r)};
     }
   }

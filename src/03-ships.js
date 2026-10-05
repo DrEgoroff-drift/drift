@@ -243,7 +243,7 @@ const HULL_CLASS={
      в воздух, а вакууму он безразличен. Так форма начинает следовать работе,
      а не привычке рисовать самолёт. */
   scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,2],nac:.40,notch:.55,dish:1,boom:1,wsp:.95,atm:1},
-  courier:{ru:"курьер",        bw:.50,len:1.52,wing:[2,3],nac:.80,notch:.30,fin:1,wsp:1.25,atm:1},
+  courier:{ru:"курьер",        bw:.62,len:1.36,wing:[2,3],nac:.80,notch:.30,fin:1,wsp:1.25,atm:1},
   hauler: {ru:"рудовоз",       bw:1.90,len:1.04,wing:[0,0],nac:.38,notch:.85,cont:1,wsp:.5,rad:1,blunt:1,arm:1},
   miner:  {ru:"буровик",       bw:1.52,len:.92,wing:[0,0],nac:.50,notch:.70,cont:1,drill:1,wsp:.62,rad:1,blunt:1,frame:1},
   warship:{ru:"фрегат",        bw:1.16,len:1.12,wing:[1,1],nac:.74,notch:.50,guns:1,armor:1,wsp:.86,rad:1,blunt:1},
