@@ -85561,6 +85561,16 @@ function digVoidPath(D,camx,camy,ra,rb){
   }
   return P;
 }
+/* тайл породы — только под линией поверхности: выше неё прозрачно, там небо (G15).
+   Тайл ниже размаха линии (±16) режется незачем */
+function digRockBelow(D,p,camx,camy){
+  if(camy>40){digRockPass(D,p,camx,camy);return;}
+  ctx.save();ctx.beginPath();ctx.moveTo(-2,H+2);
+  for(let sx=-2;sx<=W+8;sx+=6)ctx.lineTo(sx,digSurfY(p,camx+sx)-camy);
+  ctx.lineTo(W+8,H+2);ctx.closePath();ctx.clip();
+  digRockPass(D,p,camx,camy);
+  ctx.restore();
+}
 function drawDigWorld(){
   const D=G.dig,p=D.p;
   const px=D.col*DIG_CELL,py=D.row*DIG_CELL;
@@ -85570,8 +85580,14 @@ function drawDigWorld(){
      и материал пекутся один раз на тайл 512×512, кадр только кладёт картинки.
      digRockPass рисует через W/H, которые withCtx подменяет на размер тайла */
   /* печёт и кладёт видеокарта (G7, 18c gpuTileStore): тайл — текстура под всем 2D */
-  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR);
-  gpuDrawTiles(gpuScene(),D.tiles,camx,camy,(g,wx0,wy0)=>digRockPass(D,p,wx0,wy0));
+  D.tiles=gpuTileStore(D.tiles,p.seed+"|"+DPR+"|sky");
+  /* небо над устьем — то же, что над грунтом (19ca, G15): поле во всю ширину под породой,
+     ножницы по полосе над линией поверхности; порода тайлов закрывает всё ниже неё */
+  const hy=digSurfY(p,camx+W*.5)-camy;
+  D.gSky=false;
+  if(hy>-40){const sp=gpuScene();
+    if(sp&&skyClip(sp,0,0,W,hy+16)){D.gSky=gpuSky(p,camx,camy,hy);sp.setScissorRect(0,0,GPU.bw,GPU.bh);}}
+  gpuDrawTiles(gpuScene(),D.tiles,camx,camy,(g,wx0,wy0)=>digRockBelow(D,p,wx0,wy0));
   /* свет уходит от человека (M55 #1) — поле видеокарты (23b): виньетка и фонари с тенями
      умножают породу сразу, как виньетка main; руда, зерно, пол и крепь ложатся поверх */
   const hl={x:px+DIG_CELL/2,y:py+DIG_CELL/2-12,f:D.face||1};   /* налобник: ладонь ниже макушки */
@@ -85985,7 +86001,7 @@ function drawDigWorld(){
      Спрашиваем прямо: попадает ли линия поверхности в кадр (с запасом на
      разброс профиля) — если да, над ней небо. */
   if(digSurfY(p,camx+W*.5)-camy>-40){
-    ctx.save();
+    if(!D.gSky){ctx.save();
     ctx.beginPath();
     ctx.moveTo(-2,-2);
     for(let sx=-2;sx<=W+2;sx+=6)ctx.lineTo(sx,digSurfY(p,camx+sx)-camy);
@@ -86001,7 +86017,7 @@ function drawDigWorld(){
     if(p.T.atm==="отсутствует"||nite>.15){
       if(typeof drawStars==="function")drawStars(camx*.1,0,p.T.atm==="отсутствует"?1:nite);
     }
-    ctx.restore();
+    ctx.restore();}
     /* трава и щебень стоят НА линии, поэтому идут после неба (23aa) */
     digSurfFringe(p,camx,camy);
   }

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 678 · top-level symbols: 7071
+Files: 678 · top-level symbols: 7072
 
 ## SYMBOLS
 
@@ -3068,6 +3068,7 @@ digLights                    src/23b-dig-gpu.js:90-112
 digLitU                      src/23b-dig-gpu.js:114-132
 digMask                      src/23b-dig-gpu.js:69-87
 digRGB                       src/23aa-dig-rock.js:465
+digRockBelow                 src/23a-dig-draw.js:48-55
 digRockMass                  src/23aa-dig-rock.js:183-446
 digRockPass                  src/23aa-dig-rock.js:26-101
 digSMix                      src/23aa-dig-rock.js:464
@@ -3176,10 +3177,10 @@ drawCrystalForest            src/20aa-poi-shapes.js:115-141
 drawDeadBattery              src/20aa-poi-shapes.js:221-275
 drawDeco                     src/21b-surface-deco.js:166-225
 drawDeposit                  src/21b-surface-deco.js:406-560
-drawDig                      src/23a-dig-draw.js:566-570
+drawDig                      src/23a-dig-draw.js:582-586
 drawDigFauna                 src/23-mode-dig.js:336-345
 drawDigLight                 src/23b-dig-gpu.js:152-164
-drawDigWorld                 src/23a-dig-draw.js:46-518
+drawDigWorld                 src/23a-dig-draw.js:56-534
 drawDronesMap                src/12e-drone-flight.js:296-314
 drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:177-190
@@ -4893,12 +4894,12 @@ mgrWorkFact                  src/12c-mgr-core.js:609-665
 mgrWorkKeep                  src/12c-mgr-core.js:555-564
 mgrWorkSci                   src/12c-mgr-core.js:690-745
 midiHz                       src/10-music.js:106
-mineDeep                     src/23a-dig-draw.js:536-539
-mineKey                      src/23a-dig-draw.js:525
+mineDeep                     src/23a-dig-draw.js:552-555
+mineKey                      src/23a-dig-draw.js:541
 mineLay                      src/13a-guns.js:267-275
-mineLoad                     src/23a-dig-draw.js:540-549
-mineSave                     src/23a-dig-draw.js:550-559
-mineSpotX                    src/23a-dig-draw.js:532-535
+mineLoad                     src/23a-dig-draw.js:556-565
+mineSave                     src/23a-dig-draw.js:566-575
+mineSpotX                    src/23a-dig-draw.js:548-551
 minedUnit                    src/11-log.js:171-179
 minesTick                    src/13a-guns.js:276-320
 mirrorAck                    src/11f-mirror.js:33-40
@@ -8193,7 +8194,7 @@ zoomTo                       src/15-input.js:350
 ## src/23-mode-dig.js · 20 KB
   · шахта: спуск вглубь планеты:1
 
-## src/23a-dig-draw.js · 36 KB
+## src/23a-dig-draw.js · 37 KB
   · шахта: отрисовка:1
 
 ## src/23aa-dig-rock.js · 39 KB
