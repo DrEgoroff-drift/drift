@@ -9,13 +9,19 @@ TEST_SUITES.push(()=>suite("проба · перепись 2D по сценам"
   if(!ok(GPU.ok,"видеокарта есть"))return;
   const WARM=8,N=10,Cx=MAIN_CTX,cm={},pm={},P2=CanvasRenderingContext2D.prototype,Q=GPUQueue.prototype,c0=Q.copyExternalImageToTexture,run0=G.running,loop0=LOOP_OFF;
   const K={on:false,c:0,o:0,up:0,byC:{},byO:{}};
-  const who=()=>{const s=new Error().stack.split("\n").slice(3,7);for(const l of s){const m=/at (?:new )?([\w$.]+)/.exec(l);if(m&&!/^(Object|Array|Function)\./.test(m[1]))return m[1];}return "?";};
+  /* вызывающий и его вызывающий («кисть<кто позвал»): одна кисть зовётся из многих мест */
+  const who=()=>{const s=new Error().stack.split("\n").slice(3,9),o=[];
+    for(const l of s){const m=/at (?:new )?([\w$.]+)/.exec(l);if(m&&!/^(Object|Array|Function)\./.test(m[1])){o.push(m[1]);if(o.length===2)break;}}
+    return o.join("<")||"?";};
   const top=(o,n)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>(v/n).toFixed(0)+" "+k).join(", ");
   let t=wallMs();
   const fb=()=>frameBody(t+=16.7);
   const run=(name,set,frame)=>{
     resetWorld();G.running=true;LOOP_OFF=false;
     try{set();}catch(e){note(name+": сцена не встала: "+e.message);return;}
+    /* материал планеты печётся порциями по кадрам; за прогрев он не успевал, и грунт
+       шёл запасным 2D-путём, которого в игре через секунду уже нет — допекаем сразу */
+    const sp=(G.surf&&G.surf.p)||(G.land&&G.land.p);if(sp)planetMatNow(sp);
     K.c=K.o=K.up=0;K.byC={};K.byO={};
     try{for(let i=0;i<WARM+N;i++){K.on=i>=WARM;frame(i);}}catch(e){note(name+": кадр упал: "+e.message);}
     K.on=false;
