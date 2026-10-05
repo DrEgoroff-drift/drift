@@ -75,6 +75,10 @@ Worker session «Флот: облако → main»; Контроль is «Опт
     descent / cold-start / black-room tests, `-Mobile`, the tour, the full run, the cadence.
   - Pairs against 0d1e8255 (spa, hq, hqfull, home, kino, cantina at 760; spa, hq, hqfull at
     390): `%TEMP%\claude\C--Claude\253595ac-…\scratchpad\pairs36\{760,390}`.
+- [x] 9. Landed as 0.484.0 (59023b8e) by the author's word, 05.10: the new sky, the phone budget,
+  main 0.483.0 and 5ad1395f merged (test.ps1: main's runner at home, the fleet's direct launch on
+  Linux/SwiftShader). Node green, `-Mobile` green, `-Full -Jobs 3` red only on golden frames.
+  Left (PLAN.md «After the fleet's landing»): golden frames (Контроль), the tour, the PC A/B/A.
 
 ## Decisions
 
