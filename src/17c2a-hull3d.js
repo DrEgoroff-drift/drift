@@ -153,6 +153,22 @@ function h3dMesh(h){
     lathe(h.nose-1,0,0,[[0,r],[b.l+1,r]],C(h.lite),.6,.8,0,8,null,null);
     const S=[];for(let k=0;k<=6;k++){const ph=-Math.PI/2+Math.PI*k/6;S.push([rb*Math.sin(ph),Math.max(rb*Math.cos(ph),.01)]);}
     lathe(h.nose+b.l,0,0,S,C(h.lite),.6,.9,0,10,null,null);}
+  /* тарелка (M712): на краске — плоский эллипс, в объёме читалась блином. Здесь чаша-параболоид на
+     штанге от борта, смотрит вверх и наружу (к зрителю и прочь от корпуса), облучатель — на трёх ногах */
+  if(M.dish){const d=M.dish,R0=d.r,cx=d.x-d.boom*.4,cy=-h.bw-d.boom,cz=Math.max(1.2,hgt(h.bw)*.7)+R0*.2;
+    const al=Math.hypot(.28,.44,.85),A=[.28/al,-.44/al,.85/al];
+    let u=[A[1],-A[0],0];const ul=Math.hypot(u[0],u[1]);u=[u[0]/ul,u[1]/ul,0];
+    const v=[A[1]*u[2]-A[2]*u[1],A[2]*u[0]-A[0]*u[2],A[0]*u[1]-A[1]*u[0]],dep=R0*.38,Q=[];
+    const at=(t,f)=>{const r=t*R0,o=dep*t*t,c=Math.cos(f)*r,sn=Math.sin(f)*r;
+      return [cx+A[0]*o+u[0]*c+v[0]*sn,cy+A[1]*o+u[1]*c+v[1]*sn,cz+A[2]*o+u[2]*c+v[2]*sn];};
+    for(const t of [0,.3,.55,.78,1]){const q=[];for(let i=0;i<=20;i++)q.push(at(t,i/20*TAU));Q.push(q);}
+    /* грани, а не loft: у чаши нормаль смотрит в раскрыв (вдоль оси), а loft ставит её от центра кольца */
+    const dc=C(mixc(h.lite,[255,255,255],.35)),inn=[cx-A[0]*9,cy-A[1]*9,cz-A[2]*9];
+    for(let k=0;k+1<Q.length;k++)for(let i=0;i<20;i++)face([Q[k][i],Q[k+1][i],Q[k+1][i+1],Q[k][i+1]],inn,dc,.9,.9,0);
+    const F=[cx+A[0]*dep*1.5,cy+A[1]*dep*1.5,cz+A[2]*dep*1.5],rl=Math.max(.12,R0*.035);
+    for(let k=0;k<3;k++)tube([at(.92,k/3*TAU+.5),F],rl,iron,.8,.6,5);
+    tube([[cx-A[0]*.6,cy-A[1]*.6,cz-A[2]*.6],[cx+A[0]*dep*.2,cy+A[1]*dep*.2,cz+A[2]*dep*.2]],Math.max(.3,R0*.12),iron,.8,.6,8);
+    tube([[d.x,-profW(h.prof,d.x)*.85,hb(profW(h.prof,d.x))*.2],[cx,cy,cz-.4]],Math.max(.22,R0*.07),iron,.8,.6,6);}
   /* радиаторы — тонкие плиты за бортом (стойки — на плоскости краски) */
   if(M.rad)for(const Rd of M.rad)for(const s of [1,-1]){const y0=Math.min(Rd.w*s,(Rd.w+Rd.th)*s),y1=Math.max(Rd.w*s,(Rd.w+Rd.th)*s);
     box(Rd.x-Rd.l/2,Rd.x+Rd.l/2,y0,y1,-.18,.18,0,C(h.radm),.9,.5);}
@@ -305,7 +321,9 @@ function h3dCls(n){
    false — слоя нет (не тот кадр, слои кончились): рисуй спрайтом */
 function h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,ember){
   if(!H3D.on||!GPU.on||!GPU.dev||!GPU.enc)return false;
-  return h3dRun(h3dMesh(h),B.B,x,y,a,sc,bank,lx,ly,fl,ember);
+  /* крен в объёме — меньше игрового (M712): на .8 рад корпус сверху ложился боком, в тень и в палку;
+     .6 от него держит план читаемым, а поворот всё равно виден по бликам (пираты — так же) */
+  return h3dRun(h3dMesh(h),B.B,x,y,a,sc,(bank||0)*.6,lx,ly,fl,ember);
 }
 /* общий проход: сетка m, выпечка T (с .view и .mat), остальное — как у h3dDraw */
 function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember){

@@ -231,7 +231,7 @@ function radioLoad(t){
   RADIO.next=t;RADIO.src=radioSrc();RADIO.sec="intro";
   RADIO.tempoK=1;RADIO.keyShift=0;RADIO.modeNow=null;RADIO.pending=null;RADIO.pivot=null;RADIO.lv={pad:1,lead:1,arp:1};RADIO.specNext=t+15+RADIO.r()*30;
   radioMix(t,true);
-  if(RADIO.tuned)radioTune(t-.6);RADIO.tuned=true;
+  if(RADIO.tuned)radioSweep(t-.6);RADIO.tuned=true;
   const g=RADIO.bus.gain;g.cancelScheduledValues(t);g.setValueAtTime(.0001,t);g.linearRampToValueAtTime(1,t+1.5);
 }
 /* конец пьесы: трек листается сам, генератор берёт новое зерно */
@@ -853,8 +853,10 @@ function radioWave(t,len){
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.012,t+len*.5);g.gain.exponentialRampToValueAtTime(.0001,t+len);
   n.connect(bp);bp.connect(g);g.connect(p);p.connect(RADIO.layers.fx);n.start(t);n.stop(t+len+.05);
 }
-/* подстройка по шкале между пьесами: эфирный шум в узкой полосе и свист гетеродина */
-function radioTune(t){
+/* подстройка по шкале между пьесами: эфирный шум в узкой полосе и свист гетеродина.
+   Звалась radioTune — тем же именем, что приёмник 25e: в общей области побеждал поздний, и каждая
+   смена пьесы ставила ручку приёмника (G.radioF) в край шкалы, а свиста не было вовсе */
+function radioSweep(t){
   const c=SND.ctx;t=Math.max(t,c.currentTime);
   const n=c.createBufferSource(),bp=c.createBiquadFilter(),g=c.createGain();
   n.buffer=RADIO.noise;n.loop=true;bp.type="bandpass";bp.Q.value=3;
