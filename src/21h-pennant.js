@@ -78,10 +78,40 @@ function pennTick(){
     recordAdd("вымпел","переходящее знамя за квартал · сектор "+nm);
   return true;
 }
+/* знамя на видеокарте (G15): те же тень, древко, полосы складок, кромка, бахрома и
+   звезда — фигурами в слой поверх; false — нет видеокарты, рисует 2D ниже */
+function pennGpu(x,y,w,h){
+  if(typeof GPU==="undefined"||!GPU.on||!GPU.enc)return false;
+  const pass=gpuNext();if(!pass)return false;
+  const o=lifeHere(0,0),K=o.s,P=(a,b)=>[o.x+a*K,o.y+b*K],SH=[],t=G.t*0.02;
+  const rect=(a,b,rw,rh,C)=>SH.push([0,o.x+a*K,o.y+b*K,o.x+(a+rw)*K,o.y+(b+rh)*K,0,0,C[0],C[1],C[2],C[3]]);
+  rect(x+w*0.06,y+h*0.05,w,h,[0,0,0,.28]);
+  const c=Math.cos(-.22),s=Math.sin(-.22),R=(u,v)=>P(x+u*c-v*s,y+u*s+v*c),pw=Math.max(2,w*0.05);
+  gpuQuad(SH,R(-w*0.03,0),R(-w*0.03+pw,0),R(-w*0.03+pw,h*1.15),R(-w*0.03,h*1.15),[122,98,68,.95]);
+  const wv=q=>Math.sin(t*1.35-q*4.6)*h*.045*q;
+  const N=14,top=q=>y+h*0.06*q+wv(q),bot=q=>y+h*(0.94-0.08*q)+wv(q)*1.15;
+  for(let i=0;i<N;i++){
+    const q0=i/N,q1=(i+1)/N,qm=(q0+q1)*.5;
+    const sk=Math.cos(t*1.35-qm*4.6)*Math.min(1,qm*2.2),k=1+.32*sk-.10*qm;
+    const xa=x+w*q0,xb=x+w*q1;
+    /* общие стороны полос — жёсткие: стык без шва, без нахлёста в .6 px */
+    gpuQuad(SH,P(xa,top(q0)),P(xb,top(q1)),P(xb,bot(q1)),P(xa,bot(q0)),
+      [Math.min(255,168*k),Math.min(255,44*k+6*Math.max(0,sk)),Math.min(255,40*k),.96],(i<N-1?2:0)|(i>0?8:0));
+  }
+  let a0=P(x,y);
+  for(let i=1;i<=N;i++){const a1=P(x+w*i/N,top(i/N));SH.push([2,a0[0],a0[1],a1[0],a1[1],.5*K,.5,60,10,12,.45]);a0=a1;}
+  for(let i=0;i<10;i++){const q=i/9;rect(x+w*q,y+h*(0.94-0.08*q)+wv(q)*1.15,Math.max(1.5,w*0.02),h*0.10,[226,190,96,.9]);}
+  const cx=x+w*0.56,cy=y+h*0.46+wv(0.56)*0.9,rr=Math.min(w,h)*0.22,C=P(cx,cy),st=[];
+  for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?rr*0.44:rr;st.push(P(cx+Math.cos(a)*q,cy+Math.sin(a)*q));}
+  for(let i=0;i<10;i++){const A=st[i],B=st[(i+1)%10];SH.push([5,C[0],C[1],A[0],A[1],B[0],B[1],240,222,150,.95,1|4]);}
+  gpuShapes(pass,SH);
+  return true;
+}
 /* ── знамя на стене ──
    Полотнище с бахромой, древко наискось, тень на стену. Висит в отсеке, а не
    парит: у знамени есть крепление, и его видно. */
 function pennDraw(x,y,w,h){
+  if(pennGpu(x,y,w,h))return;
   const t=G.t*0.02;
   ctx.fillStyle="rgba(0,0,0,.28)";
   ctx.fillRect(x+w*0.06,y+h*0.05,w,h);

@@ -451,6 +451,7 @@ function drawRaid(){
   LP.sort((p,q)=>Math.hypot(p.x-S.x,p.z-S.z)-Math.hypot(q.x-S.x,q.z-S.z));
   /* тела-спрайты и тени на полу копятся в метках ниже; проход — после них */
   const FS=[],OC=[[S.x,S.z,11]];
+  let AST=null;   /* ходок на видеокарте — после стен (G15): см. ниже */
   /* ── метка не проходит сквозь стену (хвост M180) ──
      Маячки, трафареты и полоски здоровья рисуются поверх всей геометрии, без
      теста глубины: на кадре пиратской базы два маячка горели по тёмной стене
@@ -573,19 +574,32 @@ function drawRaid(){
     }else{
       /* и у самого скафандра тень тоже: он ходит по тому же полу */
       const pm=proj(S.x,raidFloorAt(R,S.x,S.z)+1,S.z);
-      if(pm&&pm.y>m.p.y+2){
+      const ao={phase:S.walkPhase,amp:keys.thrust||keys.brake?1:0,walk:false,air:false};
+      const gpu=GPU.on&&GPU.dev&&GPU.enc;
+      if(gpu){
+        /* с видеокартой и тень, и фигура ложатся после стен отсека: на #c они всегда
+           стояли поверх прохода, двойник в проходе до стен ушёл бы под них */
+        const sh=pm&&pm.y>m.p.y+2?lifeHere(pm.x,pm.y):null;
+        ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
+        AST={o:ao,h:lifeHere(0,0),sh,rx:Math.max(3,9.5*ppu),ry:Math.max(1.2,2.9*ppu)};ctx.restore();
+      }else if(pm&&pm.y>m.p.y+2){
         ctx.fillStyle="rgba(0,0,0,.45)";
         ctx.beginPath();ctx.ellipse(pm.x,pm.y,Math.max(3,9.5*ppu),Math.max(1.2,2.9*ppu),0,0,TAU);ctx.fill();
       }
       /* Метка стоит на середине роста, а спрайт нарисован вокруг своей
          середины — доводка на +10*s больше не нужна и при честном масштабе
          превратилась бы в полроста вниз. */
-      ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
-      drawAstronaut({phase:S.walkPhase,amp:keys.thrust||keys.brake?1:0,walk:false,air:false});
-      ctx.restore();
+      if(!gpu){ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s,s);
+        drawAstronaut(ao);
+        ctx.restore();}
     }
   }
   raidGpuDraw(polys,{cam,fwd,right,up,F,CY,px:S.x,py:S.y,pz:S.z,a:S.a},LP,FS,OC);
+  if(AST){const pass=gpuNext(),h=AST.h,k=AST.sh?AST.sh.s:1;
+    if(pass){
+      if(AST.sh)gpuImage(pass,poiShadowTex(),[{x:AST.sh.x,y:AST.sh.y,w:AST.rx*2.6*k,h:AST.ry*2.6*k,a:.7}]);
+      lifeAstroGpu(pass,h.x,h.y,Object.assign({},AST.o,{s:h.s}));
+    }else{ctx.save();ctx.setTransform(DPR*h.s,0,0,DPR*h.s,DPR*h.x,DPR*h.y);drawAstronaut(AST.o);ctx.restore();}}
   /* ── воздух отсека ──
      Пыль вокруг человека: частицы привязаны к сетке мира, чтобы не «ехали» с
      камерой; в конусе фонаря они вспыхивают, вне его — едва. Сам луч в воздухе

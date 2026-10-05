@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 683 · top-level symbols: 7167
+Files: 683 · top-level symbols: 7168
 
 ## SYMBOLS
 
@@ -3171,7 +3171,7 @@ drawAstronaut                src/20-life.js:4-147
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-646
 drawBargesMap                src/12l-barge.js:648-667
-drawBase                     src/21ac-base-draw.js:372-680
+drawBase                     src/21ac-base-draw.js:372-681
 drawBaseBuilding             src/21c-built.js:105-136
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
@@ -3273,7 +3273,7 @@ drawPlant                    src/20-life.js:417-425
 drawPlantAlien               src/20-life.js:221-388
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-612
-drawRaid                     src/24aa-raid-draw.js:14-629
+drawRaid                     src/24aa-raid-draw.js:14-643
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-272
@@ -5405,7 +5405,8 @@ peepScene                    src/20c-peep.js:42-48
 peepUpdate                   src/20c-peep.js:67-83
 peepWalk                     src/20c-peep.js:207-236
 pennAll                      src/21h-pennant.js:24
-pennDraw                     src/21h-pennant.js:84-134
+pennDraw                     src/21h-pennant.js:113-164
+pennGpu                      src/21h-pennant.js:83-109
 pennHash                     src/21h-pennant.js:41-45
 pennHere                     src/21h-pennant.js:58-63
 pennHolder                   src/21h-pennant.js:47-57
@@ -8282,7 +8283,7 @@ zoomTo                       src/15-input.js:350
 ## src/21g-greenhouse.js · 11 KB
   · грядка у дома:1
 
-## src/21h-pennant.js · 8 KB
+## src/21h-pennant.js · 10 KB
   · переходящий вымпел:1
 
 ## src/22-mode-cave.js · 45 KB
@@ -8323,7 +8324,7 @@ zoomTo                       src/15-input.js:350
   · вход, выход, наполнение:84
   · обновление:299
 
-## src/24aa-raid-draw.js · 49 KB
+## src/24aa-raid-draw.js · 50 KB
   · рейд: отрисовка:1
   · рисование: пол → стены → объекты → эффекты:13
 
