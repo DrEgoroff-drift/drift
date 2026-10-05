@@ -262,7 +262,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* выпечка на GPU-холсте (25.09): кисть та же, ctx на время выпечки — GPU-холст; ГСЧ пробоин
      заводится внутри — перепечка после потери устройства даёт тот же рваный силуэт.
      Без видеокарты — null: 2D-пути нет */
-  const HO=[];
+  const HO=[],drop=[];   /* сорванное у побитого — и для объёма (17c2a) */
   const cn=gpuBake(side,side,g=>{
   g.setTransform(PIR_SS,0,0,PIR_SS,rad*PIR_SS,rad*PIR_SS);
   /* флагман ренегата — это ВАШ корпус, обвешанный чужим: настоящий полётный
@@ -278,7 +278,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* у побитого отрывает навесное и часть кормы: силуэт становится рваным,
      и подбитого видно по форме, а не только по полоске */
   const hr=rng(hashi(S.seed,0x8B17,7));
-  const drop=[];
+  drop.length=0;
   /* у обломка навесного отрывает меньше: силуэт борта должен узнаваться, а не сыпаться решёткой */
   if(hurt)for(let i=0;i<B.polys.length;i++)drop.push(i>=B.coreN?hr()<(wk?.25:.55):false);
   for(let qi=0;qi<B.polys.length;qi++){
@@ -409,7 +409,7 @@ function pirateArtOf(id,rogue,hurt,rank,des){
   /* один свет на весь корабль кладёт gpuLitSprite по рельефу, от звезды (G4): в выпечке его нет;
      нерезкая маска — в шейдере (sharp, между уровнями мипов) */
   },{mat:PIR_SS});   /* mat — материал корпуса (08cd) */
-  const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru,holes:HO};
+  const art={cn,rad,B,cls,cols:C,ru:PIR_CLASS[cls].ru,holes:HO,drop:hurt?drop:null};
   return artPut(PIR_ART,key,art,PIR_KEEP);
 }
 /* ── рисование: картинка плюс живой слой, который печь нельзя ──
@@ -430,6 +430,7 @@ function gpuPirateBody(p,x,y,s){
      поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
   if(!art.cn)return false;
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
+  if(H3D.on&&h3dPirate(art,p,x,y,s,lx,ly))return true;   /* объём (17c2a, M710) */
   return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,-1,0,lod,null,"dark");   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх

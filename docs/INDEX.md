@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7094
+Files: 680 · top-level symbols: 7100
 
 ## SYMBOLS
 
@@ -789,9 +789,10 @@ H3D_CARGO                    src/17c2a-hull3d.js:22
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
 H3D_N                        src/17c2a-hull3d.js:16
+H3D_PIR                      src/17c2a-hull3d.js:341
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
-H3D_WGSL                     src/17c2a-hull3d.js:164
+H3D_WGSL                     src/17c2a-hull3d.js:179
 HAIL_HOLD                    src/12ar-hail.js:20
 HAIL_HOLD_PHONE              src/12ar-hail.js:23
 HAIL_RANGE                   src/12ar-hail.js:25
@@ -1298,7 +1299,7 @@ PENN_DAYS                    src/21h-pennant.js:22
 PEOPLE_GAP_MS                src/12a-crew.js:384
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
-PGX                          src/12i-pirate-hull.js:440
+PGX                          src/12i-pirate-hull.js:441
 PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
 PICKUPS                      src/24a-mode-raid.js:24-28
@@ -3875,8 +3876,8 @@ gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:362-383
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesWarm                 src/08b0-gpu-pipe.js:60-72
-gpuPirateBody                src/12i-pirate-hull.js:425-434
-gpuPirateLive                src/12i-pirate-hull.js:441-485
+gpuPirateBody                src/12i-pirate-hull.js:425-435
+gpuPirateLive                src/12i-pirate-hull.js:442-486
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
 gpuPresent                   src/08b-gpu.js:673-686
 gpuQuad                      src/08c-gpu-kit.js:307-311
@@ -4007,12 +4008,17 @@ gunSpecs                     src/05c-arms.js:207-218
 gunTotals                    src/05c-arms.js:336-350
 gunsInGroup                  src/05c-arms.js:230-233
 h01                          src/01-core.js:28
-h3dCls                       src/17c2a-hull3d.js:263-272
-h3dDesc                      src/17c2a-hull3d.js:245-253
-h3dDev                       src/17c2a-hull3d.js:255-261
-h3dDraw                      src/17c2a-hull3d.js:276-313
-h3dEar                       src/17c2a-hull3d.js:147-162
-h3dMesh                      src/17c2a-hull3d.js:26-145
+h3dCls                       src/17c2a-hull3d.js:280-290
+h3dDesc                      src/17c2a-hull3d.js:262-270
+h3dDev                       src/17c2a-hull3d.js:272-278
+h3dDraw                      src/17c2a-hull3d.js:294-297
+h3dEar                       src/17c2a-hull3d.js:162-177
+h3dKit                       src/17c2a-hull3d.js:27-83
+h3dMesh                      src/17c2a-hull3d.js:90-160
+h3dPack                      src/17c2a-hull3d.js:85-89
+h3dPirMesh                   src/17c2a-hull3d.js:342-398
+h3dPirate                    src/17c2a-hull3d.js:400-403
+h3dRun                       src/17c2a-hull3d.js:299-335
 hDraw                        tests/91zzzzzzz-hands.js:36
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
@@ -7859,7 +7865,7 @@ zoomTo                       src/15-input.js:350
 ## src/17c2-hull-gpu.js · 18 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 24 KB
+## src/17c2a-hull3d.js · 31 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c3-station-live.js · 11 KB
