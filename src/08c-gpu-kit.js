@@ -318,6 +318,15 @@ function gpuQuad(SH,a,b,c,d,C,hard){
   SH.push([5,a[0],a[1],b[0],b[1],c[0],c[1],C[0],C[1],C[2],al,4|(h&1)|(h&2)],
     [5,a[0],a[1],c[0],c[1],d[0],d[1],C[0],C[1],C[2],al,1|(h&4?2:0)|(h&8?4:0)]);
 }
+/* приёмник фигур (G15): живые мелочи 2D-рисовальщиков (верёвка, ткань, дым, огонёк)
+   пишутся сюда фигурами gpuShapes в пикселях CSS вместо ctx. {o:lifeHere(0,0),SH:[]}:
+   o переводит координаты ctx в CSS. Ставит и снимает тот, кто зовёт рисовальщика */
+let VSINK=null;
+function vsinkCol(col){const c=typeof col==="string"?gcColor(col):col;return [c[0]*255,c[1]*255,c[2]*255,c[3]==null?1:c[3]];}
+function vsinkDisc(x,y,r,col,soft){
+  const o=VSINK.o,K=o.s,c=vsinkCol(col);
+  VSINK.SH.push([1,o.x+x*K,o.y+y*K,r*K,0,0,(soft||0)*K,c[0],c[1],c[2],c[3]]);
+}
 function gpuShapes(pass,items,o){
   if(!pass||!items.length)return;
   const blend=(o&&o.blend)||"over",P=gpuPipe("kit.shp",GPU_SHP_WGSL,blend);

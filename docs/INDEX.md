@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 684 · top-level symbols: 7184
+Files: 685 · top-level symbols: 7195
 
 ## SYMBOLS
 
@@ -698,7 +698,7 @@ GPU_CH_R                     src/18c-chunks.js:185
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:66
 GPU_DROP_WHY                 tests/90-harness.js:104
 GPU_FLD                      src/08b0-gpu-pipe.js:33
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:337
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:346
 GPU_FRONT_LIKE               src/08b-gpu.js:525
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:191
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
@@ -897,14 +897,16 @@ HOL_BY                       src/11am-holiday.js:26
 HOL_D                        tests/91zzzm-holiday.js:2
 HOL_ETHER                    src/11am-holiday.js:28-43
 HOL_GREET                    src/11am-holiday.js:45-58
+HOME_BAKING                  src/21f-home-out.js:56
 HOME_BK                      src/27e-ui-home.js:46
 HOME_COOL_MS                 src/16c-rescue.js:45
 HOME_DOCK_COOL               src/16c-rescue.js:47
 HOME_HIT                     src/27e-ui-home.js:33
 HOME_JUMP_BASE               src/16c-rescue.js:44
-HOME_LAMP                    src/21f-home-out.js:56
+HOME_LAMP                    src/21f-home-out.js:57
 HOME_MAN                     src/21f-home-out.js:55
 HOME_MATE                    src/12j-home.js:86
+HOME_OBK                     src/21fa-home-out-gpu.js:8
 HOME_ROOM_H                  src/27e-ui-home.js:14
 HOME_STEP_W                  src/27e-ui-home.js:20
 HOME_TAXI                    src/16c-rescue.js:46
@@ -1336,10 +1338,11 @@ PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
 PL_GS                        src/11va-places-lit.js:19
-PL_LH                        src/11va-places-lit.js:103
+PL_LH                        src/11va-places-lit.js:106
 PL_MAX                       src/11va-places-lit.js:18
+PL_SINK                      src/11va-places-lit.js:27
 PL_SKIP                      tests/91zzzzzo-plural.js:31
-PL_WGSL                      src/11va-places-lit.js:52
+PL_WGSL                      src/11va-places-lit.js:55
 POI_BK                       src/20ab-poi-gpu.js:89
 POI_BOX                      src/20ab-poi-gpu.js:87
 POI_FIND                     src/20b-poi-find.js:18-91
@@ -1639,6 +1642,7 @@ SCRIP_SPREAD                 src/12u-scrip.js:30
 SCRIP_VISIT                  src/12u-scrip.js:31
 SD_KIND                      src/12tb-settle-draw.js:33-37
 SD_MAN                       src/12tb-settle-draw.js:31
+SD_SHSINK                    src/12tb-settle-draw.js:241
 SEAT                         src/27j-console.js:40
 SEC_CAP                      src/26-ui-station.js:396
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
@@ -1910,6 +1914,7 @@ VOL_DOCS                     src/12al5-vol.js:16-25
 VOL_FAST                     src/12al5-vol.js:26
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
+VSINK                        src/08c-gpu-kit.js:324
 W                            src/08-state.js:7
 W3                           src/08cd-gpu-mat.js:33
 WAKE                         src/16-flight.js:292
@@ -3250,7 +3255,7 @@ drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-110
-drawHomeOut                  src/21f-home-out.js:74-310
+drawHomeOut                  src/21f-home-out.js:75-265
 drawHomeRoom                 src/27e-ui-home.js:47-69
 drawHotel                    src/17l-hotel.js:147-174
 drawHqRoom                   src/27f-hq-room.js:51-99
@@ -3866,9 +3871,9 @@ gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:276-302
 gpuFail                      src/08b2-gpu-loss.js:26-30
-gpuField                     src/08c-gpu-kit.js:359-386
-gpuFieldBaked                src/08c-gpu-kit.js:394-404
-gpuFieldLayout               src/08c-gpu-kit.js:352-358
+gpuField                     src/08c-gpu-kit.js:368-395
+gpuFieldBaked                src/08c-gpu-kit.js:403-413
+gpuFieldLayout               src/08c-gpu-kit.js:361-367
 gpuFrame                     src/08b-gpu.js:544-557
 gpuFrontClean                src/08c-gpu-kit.js:126-131
 gpuFrontCopy                 src/08b-gpu.js:594-596
@@ -3915,7 +3920,7 @@ gpuScr                       src/08c-gpu-kit.js:173
 gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
-gpuShapes                    src/08c-gpu-kit.js:321-332
+gpuShapes                    src/08c-gpu-kit.js:330-341
 gpuShock                     src/08b-gpu.js:460
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
@@ -4246,7 +4251,8 @@ homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:153
 homeCool                     src/16c-rescue.js:55
 homeCrewFigure               src/27e-ui-home.js:685-698
-homeDoorX                    src/21f-home-out.js:312-316
+homeDock                     src/21f-home-out.js:272-299
+homeDoorX                    src/21f-home-out.js:327-331
 homeFigure                   src/27e-ui-home.js:618-627
 homeHas                      src/12j-home.js:24-28
 homeHereP                    src/21f-home-out.js:26-32
@@ -4259,8 +4265,9 @@ homeMateTake                 src/12j-home.js:99-137
 homeMoraleMul                src/12j-home.js:213
 homeNext                     src/12j-home.js:29-32
 homeOrderBonus               src/12j-home.js:210
-homeOutPal                   src/21f-home-out.js:58-69
-homePlan                     src/21f-home-out.js:325-332
+homeOutGpu                   src/21fa-home-out-gpu.js:9-54
+homeOutPal                   src/21f-home-out.js:59-70
+homePlan                     src/21f-home-out.js:340-347
 homePlanet                   src/21f-home-out.js:18-24
 homeProgress                 src/12j-home.js:139-147
 homeRebuild                  src/12j-home.js:227-241
@@ -4271,11 +4278,13 @@ homeSceneClick               src/27e-ui-home.js:633-681
 homeShade                    src/27e-ui-home.js:701-704
 homeShow                     src/12j-home.js:196-203
 homeShowBonus                src/12j-home.js:217-222
-homeSigns                    src/21f-home-out.js:333-366
+homeSigns                    src/21f-home-out.js:348-381
+homeSmoke                    src/21f-home-out.js:269-271
 homeSpotX                    src/21f-home-out.js:34-54
 homeStore                    src/12j-home.js:189-195
 homeTurn                     src/12j-home.js:47-77
 homeUpWorld                  tests/91zzzc-home-up.js:5-9
+homeWash                     src/21f-home-out.js:300-325
 homingStep                   src/13a-guns.js:470-477
 hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:179
@@ -5462,24 +5471,24 @@ placeAge                     src/11d-place.js:53-56
 placeAll                     src/11d-place.js:27
 placeAt                      src/11v-places.js:32
 placeDraw                    src/11v-places.js:46-90
-placeFigure                  src/11va-places-lit.js:209-220
+placeFigure                  src/11va-places-lit.js:212-223
 placeHere                    src/11v-places.js:33-37
 placeKeyHere                 src/11d-place.js:28-32
-placeLamp                    src/11va-places-lit.js:26-41
-placeLampsN                  src/11va-places-lit.js:43-46
+placeLamp                    src/11va-places-lit.js:28-44
+placeLampsN                  src/11va-places-lit.js:46-49
 placeMark                    src/11d-place.js:36-43
 placeMem                     src/11d-place.js:34
 placeMood                    src/11d-place.js:59-64
 placeNote                    src/11d-place.js:45-51
-placeShade                   src/11va-places-lit.js:168-207
-placeSun                     src/11va-places-lit.js:158-166
+placeShade                   src/11va-places-lit.js:171-210
+placeSun                     src/11va-places-lit.js:161-169
 placeX                       src/11v-places.js:38
 placesAll                    src/11v-places.js:19-31
-placesGlow                   src/11va-places-lit.js:143-149
-placesLit                    src/11va-places-lit.js:132-140
-placesLitK                   src/11va-places-lit.js:48-51
-placesLitRun                 src/11va-places-lit.js:109-130
-placesLitTex                 src/11va-places-lit.js:92-102
+placesGlow                   src/11va-places-lit.js:146-152
+placesLit                    src/11va-places-lit.js:135-143
+placesLitK                   src/11va-places-lit.js:51-54
+placesLitRun                 src/11va-places-lit.js:112-133
+placesLitTex                 src/11va-places-lit.js:95-105
 planAll                      src/11r-plan.js:27
 planCorePlanet               src/11r-plan.js:36-40
 planDeliver                  src/11r-plan.js:67-85
@@ -6265,9 +6274,9 @@ scripVisitReset              src/12u-scrip.js:96
 scrollCue                    src/27m-scroll-cue.js:26-30
 scrollCueAll                 src/27m-scroll-cue.js:31-33
 sdBody                       src/12tb-settle-draw.js:224-234
-sdCast                       src/12tb-settle-draw2.js:297-306
+sdCast                       src/12tb-settle-draw2.js:299-308
 sdCut                        src/12tc-settle-crafts.js:144-170
-sdDoor                       src/12tb-settle-draw.js:390-407
+sdDoor                       src/12tb-settle-draw.js:394-411
 sdDwell                      src/12tb-settle-draw2.js:11-112
 sdFarPal                     src/12tb-settle-draw.js:90-95
 sdFence                      src/12tb-settle-draw2.js:171-198
@@ -6280,16 +6289,16 @@ sdPal                        src/12tb-settle-draw.js:71-87
 sdPerson                     src/12tb-settle-draw2.js:204-235
 sdProps                      src/12tb-settle-draw2.js:113-168
 sdRGB                        src/12tb-settle-draw.js:50
-sdRoof                       src/12tb-settle-draw.js:287-350
-sdShadow                     src/12tb-settle-draw.js:239-249
-sdSmoke                      src/12tb-settle-draw2.js:263-294
+sdRoof                       src/12tb-settle-draw.js:291-354
+sdShadow                     src/12tb-settle-draw.js:242-253
+sdSmoke                      src/12tb-settle-draw2.js:263-296
 sdStill                      src/12tc-settle-crafts.js:226-264
 sdTerrace                    src/12tb-settle-draw.js:152-220
-sdWallTex                    src/12tb-settle-draw.js:251-285
+sdWallTex                    src/12tb-settle-draw.js:255-289
 sdWeir                       src/12tc-settle-crafts.js:49-106
-sdWindow                     src/12tb-settle-draw.js:352-388
-sdWoodpile                   src/12tb-settle-draw.js:409-425
-sdYard                       src/12tb-settle-draw2.js:450-462
+sdWindow                     src/12tb-settle-draw.js:356-392
+sdWoodpile                   src/12tb-settle-draw.js:413-429
+sdYard                       src/12tb-settle-draw2.js:452-464
 sealedWhy                    src/05e-clearance.js:85-95
 seamAdd                      src/12s-wear.js:182
 seamsAll                     src/12s-wear.js:181
@@ -6333,7 +6342,7 @@ settleAt                     src/12t-settle.js:106
 settleCanHand                src/12td-settle-hand.js:36-39
 settleCanLive                src/12t-settle.js:110-112
 settleDraw                   src/12t-settle.js:327-390
-settleDrawBody               src/12tb-settle-draw2.js:308-448
+settleDrawBody               src/12tb-settle-draw2.js:310-450
 settleGive                   src/12t-settle.js:220-236
 settleHandLine               src/12td-settle-hand.js:65-68
 settleHandMast               src/12td-settle-hand.js:97-118
@@ -6892,11 +6901,11 @@ updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:942-951
 useBeacon                    src/23-mode-dig.js:91-116
 vCloth                       src/18d-verlet.js:41-50
-vDrawCloth                   src/18d-verlet.js:104-121
-vDrawRope                    src/18d-verlet.js:90-100
+vDrawCloth                   src/18d-verlet.js:110-133
+vDrawRope                    src/18d-verlet.js:90-106
 vLink                        src/18d-verlet.js:78-86
 vRope                        src/18d-verlet.js:27-37
-vRopeAt                      src/18d-verlet.js:125-131
+vRopeAt                      src/18d-verlet.js:137-143
 vStep                        src/18d-verlet.js:53-77
 vanHasPad                    src/21ac3-base-van.js:28-31
 vanLine                      src/21ac3-base-van.js:39
@@ -6972,6 +6981,8 @@ voteMonth                    src/12at-vote.js:21
 voteQuestion                 src/12at-vote.js:23-28
 voteTally                    src/12at-vote.js:32-42
 voteWinner                   src/12at-vote.js:43-50
+vsinkCol                     src/08c-gpu-kit.js:325
+vsinkDisc                    src/08c-gpu-kit.js:326-329
 wakeBurst                    src/16-flight.js:297
 wakeLanes                    src/16-flight.js:357
 wakeStep                     src/16-flight.js:326-354
@@ -7507,7 +7518,7 @@ zoomTo                       src/15-input.js:350
 
 ## src/11va-places-lit.js · 13 KB
   · свет, который светит: фонари мест на видеокарте (G6):1
-  · свет дня на вещах мест:151
+  · свет дня на вещах мест:154
 
 ## src/11w-vega.js · 20 KB
   · Вега: жиличка, которую нельзя выгнать:1
@@ -7757,7 +7768,7 @@ zoomTo                       src/15-input.js:350
 ## src/12tb-grok.js · 22 KB
   · Грохотун: единственный, кто работает не за деньги:1
 
-## src/12tb-settle-draw.js · 24 KB
+## src/12tb-settle-draw.js · 25 KB
   · посёлок с земли:1
 
 ## src/12tb-settle-draw2.js · 28 KB
@@ -8049,7 +8060,7 @@ zoomTo                       src/15-input.js:350
 ## src/18d-postfx.js · 6 KB
   · эффекты кадра: марево, хроматика (M325):1
 
-## src/18d-verlet.js · 7 KB
+## src/18d-verlet.js · 8 KB
   · верле: верёвки и ткань:1
 
 ## src/18e-rail-net.js · 16 KB
@@ -8297,8 +8308,11 @@ zoomTo                       src/15-input.js:350
 ## src/21e4-surface-night-gpu.js · 5 KB
   · ночь поверхности на видеокарте (G15):1
 
-## src/21f-home-out.js · 22 KB
+## src/21f-home-out.js · 23 KB
   · дом снаружи:1
+
+## src/21fa-home-out-gpu.js · 4 KB
+  · дом снаружи на видеокарте (G15):1
 
 ## src/21g-greenhouse.js · 11 KB
   · грядка у дома:1
