@@ -56678,7 +56678,7 @@ function h3dDev(){
 function h3dCls(n){
   let K=H3D.K[n];if(K)return K;
   const d=GPU.dev,U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT;
-  const nl=n>256?H3D_L+2:H3D_L*2;
+  const nl=n>256?H3D_L+2:n>128?H3D_L*2:H3D_L*4;
   K=H3D.K[n]={slot:0,nl,ms:d.createTexture({size:[n,n],format:"rgba16float",sampleCount:4,usage:RA}),
     md:d.createTexture({size:[n,n],format:"depth24plus",sampleCount:4,usage:RA}),
     lay:d.createTexture({size:[n,n,nl],format:"rgba16float",usage:RA|U.TEXTURE_BINDING}),img:[]};
@@ -56704,8 +56704,13 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember){
   const d=GPU.dev;
   if(m.dev!==d){m.buf=d.createBuffer({size:m.v.byteLength,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});d.queue.writeBuffer(m.buf,0,m.v);m.dev=d;}
   if(!H3D.P)H3D.P=gpuPipeline("h3d.hull",h3dDesc);
-  const dk=GPU.bw/W,Rb=m.R,n=Math.max(8,Math.min(H3D_N,Math.ceil(2*Rb*sc*dk))),side=H3D_SIDES.find(v=>v>=n)||H3D_N,K=h3dCls(side);
+  const dk=GPU.bw/W,Rb=m.R;let n=Math.max(8,Math.min(H3D_N,Math.ceil(2*Rb*sc*dk))),si=H3D_SIDES.findIndex(v=>v>=n);
+  if(si<0)si=H3D_SIDES.length-1;
+  /* слои класса кончились (конвой, свалка у станции) — корпус уходит в класс мельче (M713): чуть мягче,
+     но в объёме, а не плоским спрайтом рядом с объёмными соседями */
+  let K=h3dCls(H3D_SIDES[si]);while(K.slot>=K.nl&&si>0)K=h3dCls(H3D_SIDES[--si]);
   if(K.slot>=K.nl)return false;
+  const side=H3D_SIDES[si];n=Math.min(n,side);
   const c=(typeof starRGB==="function")?starRGB():[255,244,214],cm=Math.max(1,c[0],c[1],c[2]);
   let sl=Math.hypot(lx,ly);const sx=sl>1e-6?lx/sl:.6,sy=sl>1e-6?ly/sl:-.8,ll=Math.hypot(1,H3D_LZ);
   const U=H3D.U;U.fill(0);

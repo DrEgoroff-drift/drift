@@ -793,7 +793,7 @@ H3D_CARGO                    src/17c2a-hull3d.js:22
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
 H3D_N                        src/17c2a-hull3d.js:16
-H3D_PIR                      src/17c2a-hull3d.js:371
+H3D_PIR                      src/17c2a-hull3d.js:376
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
 H3D_WGSL                     src/17c2a-hull3d.js:207
@@ -4057,9 +4057,9 @@ h3dEar                       src/17c2a-hull3d.js:190-205
 h3dKit                       src/17c2a-hull3d.js:27-90
 h3dMesh                      src/17c2a-hull3d.js:97-188
 h3dPack                      src/17c2a-hull3d.js:92-96
-h3dPirMesh                   src/17c2a-hull3d.js:372-428
-h3dPirate                    src/17c2a-hull3d.js:430-433
-h3dRun                       src/17c2a-hull3d.js:329-365
+h3dPirMesh                   src/17c2a-hull3d.js:377-433
+h3dPirate                    src/17c2a-hull3d.js:435-438
+h3dRun                       src/17c2a-hull3d.js:329-370
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -7901,7 +7901,7 @@ zoomTo                       src/15-input.js:350
 ## src/17c2-hull-gpu.js · 18 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 34 KB
+## src/17c2a-hull3d.js · 35 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c3-station-live.js · 11 KB
