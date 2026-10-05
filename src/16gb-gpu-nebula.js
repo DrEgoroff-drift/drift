@@ -405,7 +405,7 @@ function gnbStars(pass,ub,sb){
 }
 /* V[0]: камера x,y, время, зерно · V[1]: звезда x,y, радиус/H, вкл · V[2]: цвет звезды, ширина тени ·
    V[3]: цвет теней · V[4..10]: планеты x,y,r (CSS px) — их тени */
-const GNB_EMI=GNB_FINE+`
+const GNB_EMI=GNB_FINE+GNB_FGAL+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let H=fu.res.w;
   /* одна бикубика на пиксель: цвет, туман и цвет космоса читают её (было три — 12 выборок) */
@@ -481,7 +481,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let Tb=pow(vec3f(fineT(p,clamp(1.-g0.a,0.,1.))),vec3f(.72,1.,1.42));
   /* неон ушёл: насыщенность и яркость газа ниже, туманность остаётся цветной (автор, 24.09) */
   let co=c*(1.-exp(-mm*1.25))/(mm*1.25)*1.12;let cy=dot(co,vec3f(.2126,.7152,.0722));
-  return vec4f(mix(vec3f(cy),co,.66)*mix(1.,.72,smoothstep(.12,.6,cy))+vec3f(5.,7.,12.)/255.*Tb,0.);}`;
+  /* далёкие галактики — за газом: густой газ их закрывает, пыль гасит, как космос */
+  return vec4f(mix(vec3f(cy),co,.66)*mix(1.,.72,smoothstep(.12,.6,cy))+(vec3f(5.,7.,12.)/255.)*Tb+fgal(p)*(1.-.8*body)*mix(.4,1.,Tb.g),0.);}`;
 function gnbTarget(){
   const w=Math.max(2,Math.ceil(GPU.bw/4)),h=Math.max(2,Math.ceil(GPU.bh/4));
   if(GNB.tex&&GNB.dev===GPU.dev&&GNB.w===w&&GNB.h===h)return;
@@ -530,7 +531,9 @@ function gnbLandmark(sys,k){
         q=(v,sg)=>sg*(.66+.29*Math.min(1,Math.abs(v)*2));
   /* верхний левый — под полосами HUD: громадину ниже блока полос, ближе к кромке по x */
   const tl=cr===0,x=q(x0,cr&1?1:-1),y=tl?-(.36+.14*Math.min(1,Math.abs(y0)*2)):q(y0,cr&2?1:-1);
-  return {t,x:tl?Math.min(x,-.74):x,y,s,a:r()*6.283,p:.35+r()*.3,l:r()*40,k:2.2,c:GNB_LM_COL[t]};
+  /* спираль-громадина (вид 2) снята 06.10: читалась наклейкой поверх. Далёкие галактики —
+     россыпью в сведении (fgal); поток случайности тот же, у остальных видов ничего не сдвинулось */
+  return {t,x:tl?Math.min(x,-.74):x,y,s,a:r()*6.283,p:.35+r()*.3,l:r()*40,k:t===2?0:2.2,c:GNB_LM_COL[t]};
 }
 /* место и поворот громадины в кадре (P1 14/n г): константы кадра — раз на процессоре, а не в
    каждом пикселе. Параллакс .006. Возвращает [x, y, cos, sin, размер в px] */
