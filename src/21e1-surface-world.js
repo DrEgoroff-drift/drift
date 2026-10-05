@@ -356,6 +356,7 @@ function drawSurfaceWorld(){
        ctx.fillStyle="rgba(176,196,208,.95)";ctx.fillText("ШАХТА",sx,sy-32);});
     }
   }
+  const DEPG=[];
   for(const d of S.deposits){
     if(d.left<=0)continue;
     const x=d.x-camx;if(x<-50||x>W+50)continue;
@@ -363,7 +364,9 @@ function drawSurfaceWorld(){
     /* тело залежи — выход породы по виду сырья (21b, M169): три треугольника
        и пульсирующий круг были значком интерфейса, приклеенным к миру */
     const near=clamp(1-Math.abs(d.x-S.x)/120,0,1);
-    drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
+    /* с видеокартой тело ложится двойником (21e3) в проход грунта — после падающей тени */
+    if(gpuGround)DEPG.push([d,x,y,near]);
+    else drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
     if(Math.abs(d.x-S.x)<70)LBL.push(()=>{
       ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       /* соседние залежи разводим по высоте: рядом стоящие подписи наезжали друг
@@ -410,6 +413,8 @@ function drawSurfaceWorld(){
      прежнем порядке. Подписи — в конце кадра: плашка тени не кладёт */
   const cast=gpuGround?surfCastGpu(tr,p,camx,camy):false;
   const LP=(gpuGround&&cast!==null&&GPU.overPass&&GPU.overPass===SURF_P2)?GPU.overPass:null;
+  for(const [d,x,y,near] of DEPG)
+    if(!(LP&&surfDepositGpu(LP,d,x,y,near,p.T.pal[3])))drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
   const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;

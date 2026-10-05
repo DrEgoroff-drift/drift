@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 679 · top-level symbols: 7076
+Files: 680 · top-level symbols: 7077
 
 ## SYMBOLS
 
@@ -3280,7 +3280,7 @@ drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:284-298
 drawSurfaceHud               src/21e-surface-draw.js:21-115
-drawSurfaceWorld             src/21e1-surface-world.js:10-650
+drawSurfaceWorld             src/21e1-surface-world.js:10-655
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:727-1053
 drawSysLane                  src/17g-sys-lane.js:112-138
@@ -6577,6 +6577,7 @@ supportCall                  src/05b1-warranty.js:20-27
 supportQueue                 src/05b1-warranty.js:29-34
 supportTick                  src/05b1-warranty.js:35-44
 surfCastGpu                  src/21e2-surface-gpu.js:275-304
+surfDepositGpu               src/21e3-surface-stand-gpu.js:11-33
 surfGroundGpu                src/21e2-surface-gpu.js:175-211
 surfHeightTex                src/21e2-surface-gpu.js:80-94
 surfNearGpu                  src/21e2-surface-gpu.js:474-485
@@ -8173,6 +8174,9 @@ zoomTo                       src/15-input.js:350
   · вода: зеркало на видеокарте:365
   · передний план не в фокусе:444
 
+## src/21e3-surface-stand-gpu.js · 3 KB
+  · стоящее на поверхности — двойники видеокарты (G15):1
+
 ## src/21f-home-out.js · 22 KB
   · дом снаружи:1
 
@@ -9224,7 +9228,7 @@ zoomTo                       src/15-input.js:350
 ## tests/91zzzzzzy6-chipjump.js · 4 KB
   · ворота прыжков фишек (долг §0):1
 
-## tests/91zzzzzzy7-census2d.js · 3 KB
+## tests/91zzzzzzy7-census2d.js · 4 KB
   · проба · перепись 2D по сценам (G15, 05.10):1
 
 ## tests/91zzzzzzy7-gpu-nebmove.js · 3 KB
