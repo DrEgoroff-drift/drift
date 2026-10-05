@@ -152,9 +152,12 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let e=length(vec2f(g.x/1.9,g.y/.42));
   let dop=1.+.55*clamp(g.x/1.9,-1.,1.);
   let ring=exp(-pow((e-1.)/.09,2.))*dop;
-  let back=select(0.,ring*.32*(1.-clamp((1.-r)*R+.5,0.,1.)),g.y<0.);
-  let front=select(0.,ring*.75,g.y>=0.);
-  let arc=exp(-pow((r-1.18)/.045,2.))*select(0.,.5,g.y<0.);
+  /* дальняя и ближняя половины диска сходятся плавно: ступенью по g.y=0 на кончиках эллипса
+     был шов, а дуга над горизонтом обрывалась вертикальными обрубками — она тает к плоскости диска */
+  let fw=smoothstep(-.12,.12,g.y);
+  let back=ring*.32*(1.-clamp((1.-r)*R+.5,0.,1.))*(1.-fw);
+  let front=ring*.75*fw;
+  let arc=exp(-pow((r-1.18)/.045,2.))*.5*(1.-smoothstep(-.42,0.,g.y));
   let ph=exp(-pow((r-1.04)/.025,2.))*.55;
   let em=vec3f(1.,.84,.59)*front+vec3f(1.,.71,.43)*back+vec3f(1.,.93,.77)*(arc+ph);
   return vec4f(col+em*glow,a)*A;

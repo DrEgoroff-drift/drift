@@ -80,7 +80,7 @@ ARTIFACTS                    src/12h-relic.js:48-63
 ASTRO_BOX                    src/20fa-life-gpu.js:190
 ASTRO_PAL                    src/20fa-life-gpu.js:191
 AST_N                        src/24-mode-belt.js:68
-AURORA_HUE                   src/19cb-gpu-sky-bodies.js:286
+AURORA_HUE                   src/19cb-gpu-sky-bodies.js:289
 AVR_BURN                     src/21a6-base-avral.js:23
 AVR_CHANCE                   src/21a6-base-avral.js:19
 AVR_HOLD                     src/21a6-base-avral.js:21
@@ -3890,7 +3890,7 @@ gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:321-332
 gpuShock                     src/08b-gpu.js:460
 gpuSky                       src/19ca-gpu-sky.js:254-292
-gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:287-378
+gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:290-381
 gpuSnapshot                  src/08b-gpu.js:22-26
 gpuSpaceSys                  src/16g-gpu-space.js:201-219
 gpuSpaceTitle                src/16g-gpu-space.js:221-232
@@ -6307,15 +6307,15 @@ sixthGone                    src/12k-stories-d.js:77
 sizeIdx                      src/05d-mounts.js:69
 skyAll                       src/11ak-skywatch.js:34-38
 skyBlock                     src/11ak-skywatch.js:236-265
-skyBodyDraw                  src/19cb-gpu-sky-bodies.js:259-263
+skyBodyDraw                  src/19cb-gpu-sky-bodies.js:262-266
 skyCanReport                 src/11ak-skywatch.js:204-207
-skyClip                      src/19cb-gpu-sky-bodies.js:253-258
+skyClip                      src/19cb-gpu-sky-bodies.js:256-261
 skyCloudCols                 src/19cc-gpu-air.js:108-117
 skyCometName                 src/11ak-skywatch.js:200-203
 skyDay                       src/19c-light.js:78-95
 skyDrop                      src/11ak-skywatch.js:148-152
 skyFind                      src/11ak-skywatch.js:47-56
-skyGiantCols                 src/19cb-gpu-sky-bodies.js:267-285
+skyGiantCols                 src/19cb-gpu-sky-bodies.js:270-288
 skyGrad                      src/19-mode-landing.js:139-148
 skyMeteor                    src/19ca-gpu-sky.js:240-251
 skyNameComet                 src/11ak-skywatch.js:186-198
