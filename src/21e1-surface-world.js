@@ -164,7 +164,7 @@ function drawSurfaceWorld(){
      иначе 2D здесь, как было */
   const LDR=gpuGround;
   if(!LDR)surfLander2D(S,camx,camy,p);
-  drawDustMotes(camx,camy,p);
+  if(!LDR)drawDustMotes(camx,camy,p);
   /* три света (11g): дороги, фундаменты и вход — видны только в соединение */
   if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);
   if(S.cave){
@@ -388,6 +388,7 @@ function drawSurfaceWorld(){
   const cast=gpuGround?surfCastGpu(tr,p,camx,camy):false;
   const LP=(gpuGround&&cast!==null&&GPU.overPass&&GPU.overPass===SURF_P2)?GPU.overPass:null;
   if(LDR&&!(LP&&surfLanderGpu(LP,S,camx,camy,p)))surfLander2D(S,camx,camy,p);
+  if(LDR&&!(LP&&dustMotesGpu(LP,camx,camy,p)))drawDustMotes(camx,camy,p);
   for(const [d,x,y,near] of DEPG)
     if(!(LP&&surfDepositGpu(LP,d,x,y,near,p.T.pal[3])))drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
   const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */

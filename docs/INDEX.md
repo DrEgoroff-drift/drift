@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7083
+Files: 680 · top-level symbols: 7090
 
 ## SYMBOLS
 
@@ -504,6 +504,7 @@ FAR_VOICE                    src/12-economy.js:47-59
 FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 FAUNA_RES                    src/02-world.js:137
+FG_BK                        src/21e3-surface-stand-gpu.js:60
 FG_MAN                       src/21b-surface-deco.js:277
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
@@ -1769,7 +1770,7 @@ SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:132
 SURF_HOR                     src/19c-light.js:202
-SURF_LND                     src/21e3-surface-stand-gpu.js:75
+SURF_LND                     src/21e3-surface-stand-gpu.js:132
 SURF_NEAR                    src/21e2-surface-gpu.js:462
 SURF_RF                      src/21e2-surface-gpu.js:420
 SURF_SHADOW                  src/21e2-surface-gpu.js:271
@@ -2983,7 +2984,7 @@ decoTruss                    src/21ba-deco-shapes.js:101-143
 decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
-depKind                      src/21b-surface-deco.js:396-405
+depKind                      src/21b-surface-deco.js:404-413
 deployDrone                  src/12-economy.js:329-346
 descSig                      tests/91zzza1-cave-gpu.js:112-119
 deskItemNew                  src/27ia-desk-top.js:337-341
@@ -3181,7 +3182,7 @@ drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:115-141
 drawDeadBattery              src/20aa-poi-shapes.js:221-275
 drawDeco                     src/21b-surface-deco.js:166-225
-drawDeposit                  src/21b-surface-deco.js:406-560
+drawDeposit                  src/21b-surface-deco.js:414-568
 drawDig                      src/23a-dig-draw.js:592-596
 drawDigFauna                 src/23-mode-dig.js:336-345
 drawDigLight                 src/23b-dig-gpu.js:152-164
@@ -3200,7 +3201,7 @@ drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-360
 drawFleetShip                src/12ai1-fleet-art.js:448
 drawFoeBody                  src/24ab-raid-foe.js:11-131
-drawForeground               src/21b-surface-deco.js:278-383
+drawForeground               src/21b-surface-deco.js:285-298
 drawGalaxy                   src/17z1-galaxy.js:64-67
 drawGalaxyNames              src/17z2-galaxy-names.js:38-63
 drawGalaxyStars              src/17z1-galaxy.js:86-115
@@ -3281,7 +3282,7 @@ drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:284-298
 drawSurfaceHud               src/21e-surface-draw.js:21-115
-drawSurfaceWorld             src/21e1-surface-world.js:10-630
+drawSurfaceWorld             src/21e1-surface-world.js:10-631
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:727-1053
 drawSysLane                  src/17g-sys-lane.js:112-138
@@ -3342,6 +3343,7 @@ droneTarget                  src/12-economy.js:328
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
 dsTick                       src/12p1-doublespeak.js:33-42
+dustMotesGpu                 src/21e3-surface-stand-gpu.js:38-52
 dustTable                    src/16a-space.js:252-265
 e2eClickables                tests/91zzzzz-e2e-life.js:61
 e2eFind                      tests/91zzzzz-e2e-life.js:440
@@ -3491,6 +3493,10 @@ faunaOf                      src/20e-species.js:268-284
 fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
 fbm3                         src/24ba-belt-gpu.js:32-36
+fgBlades                     src/21b-surface-deco.js:379-391
+fgBoulder                    src/21b-surface-deco.js:334-374
+fgColors                     src/21b-surface-deco.js:279-284
+fgEach                       src/21b-surface-deco.js:301-332
 fillMaterial                 src/18a-material.js:382-412
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:141-177
@@ -3575,6 +3581,7 @@ folkShown                    src/12u-folk.js:114
 folkShut                     src/11ah-offer.js:96-103
 folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
+foregroundGpu                src/21e3-surface-stand-gpu.js:61-90
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:628-674
 frameBody                    src/28-loop.js:429-560
@@ -6578,20 +6585,20 @@ supportCall                  src/05b1-warranty.js:20-27
 supportQueue                 src/05b1-warranty.js:29-34
 supportTick                  src/05b1-warranty.js:35-44
 surfCastGpu                  src/21e2-surface-gpu.js:275-304
-surfDepositGpu               src/21e3-surface-stand-gpu.js:11-33
+surfDepositGpu               src/21e3-surface-stand-gpu.js:11-34
 surfGroundGpu                src/21e2-surface-gpu.js:175-211
 surfHeightTex                src/21e2-surface-gpu.js:80-94
-surfLander2D                 src/21e3-surface-stand-gpu.js:38-60
-surfLanderGpu                src/21e3-surface-stand-gpu.js:76-123
-surfLanderHot                src/21e3-surface-stand-gpu.js:69
-surfLanderNite               src/21e3-surface-stand-gpu.js:70
-surfNearGpu                  src/21e2-surface-gpu.js:474-485
+surfLander2D                 src/21e3-surface-stand-gpu.js:95-117
+surfLanderGpu                src/21e3-surface-stand-gpu.js:133-180
+surfLanderHot                src/21e3-surface-stand-gpu.js:126
+surfLanderNite               src/21e3-surface-stand-gpu.js:127
+surfNearGpu                  src/21e2-surface-gpu.js:474-487
 surfNight                    src/06a-celest.js:43-50
 surfRelightGpu               src/21e2-surface-gpu.js:351-363
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
 surfScale                    src/21e-surface-draw.js:283
 surfShadeGpu                 src/21e2-surface-gpu.js:221-227
-surfShadowShapes             src/21e3-surface-stand-gpu.js:63-68
+surfShadowShapes             src/21e3-surface-stand-gpu.js:120-125
 surfSnap                     src/21e2-surface-gpu.js:464-473
 surfWaterGpu                 src/21e2-surface-gpu.js:421-442
 surfaceHint                  src/21e-surface-draw.js:4-20
@@ -8131,7 +8138,7 @@ zoomTo                       src/15-input.js:350
 
 ## src/21b-surface-deco.js · 34 KB
   · крупная форма на поверхности:1
-  · залежь как выход породы (M169):385
+  · залежь как выход породы (M169):393
 
 ## src/21b0-base-ruin.js · 8 KB
   · развалина и возврат (M402, DESIGN-base §22.1, §39):1
@@ -8180,7 +8187,7 @@ zoomTo                       src/15-input.js:350
   · вода: зеркало на видеокарте:365
   · передний план не в фокусе:444
 
-## src/21e3-surface-stand-gpu.js · 8 KB
+## src/21e3-surface-stand-gpu.js · 11 KB
   · стоящее на поверхности — двойники видеокарты (G15):1
 
 ## src/21f-home-out.js · 22 KB

@@ -473,6 +473,8 @@ function surfSnap(old){
 }
 function surfNearGpu(tr,camx,camy,p){
   const pass=GPU.overPass;
+  /* двойник (21e3) — без снимка; снимок с размытием остаётся запасным путём */
+  if(GPU.on&&pass&&pass===SURF_P2&&foregroundGpu(pass,tr,camx,camy,p))return true;
   /* #c должен быть пуст: иначе в размытие попадёт чужое */
   if(!GPU.on||!pass||pass!==SURF_P2||GPU.cState!==0){drawForeground(tr,camx,camy,p);return false;}
   drawForeground(tr,camx,camy,p);

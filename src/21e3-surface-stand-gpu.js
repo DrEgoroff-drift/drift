@@ -16,9 +16,10 @@ function surfDepositGpu(pass,d,x,y,near,pal){
     drawDeposit(0,0,d.res,d.left,0,d.x,pal);});
   if(!B)return false;
   const h=lifeHere(x,y),s=h.s,L=lifeLight();
-  /* своё гнездо и тень у залежи нарисованы в выпечке — тень спрайта не нужна */
+  /* гнездо у залежи нарисовано в выпечке; падающая тень от звезды — силуэтом, как у куста
+     (прежде её давал снимок #c) */
   const ok=lifeSprite(pass,B,{x:h.x+(BW/2-OX)*s,y:h.y+(BH/2-OY)*s,w:BW*s,h:BH*s,base:OY/BH,lod:1.5,
-    dim:lifeDim(d.x),shadow:false},Object.assign({},L,{k:(L.k==null?.8:L.k)*.6,rim:(L.rim==null?1:L.rim)*.4}));
+    dim:lifeDim(d.x),shadow:.7,ao:BW*.16*s},Object.assign({},L,{k:(L.k==null?.8:L.k)*.6,rim:(L.rim==null?1:L.rim)*.4}));
   if(!ok)return false;
   if(near>0){
     /* размер тела — тем же потоком, что у drawDeposit (21b): первое число r() */
@@ -29,6 +30,62 @@ function surfDepositGpu(pass,d,x,y,near,pal){
     for(let i=1;i<=10;i++){const n=pt(i/10);A.push([2,q[0],q[1],n[0],n[1],.7*s,0,255,255,255,a]);q=n;}
     gpuShapes(pass,A,{blend:"over"});
   }
+  return true;
+}
+
+/* пыль/пыльца в воздухе (19 drawDustMotes) кружками фигур; тот же поток чисел, тот же
+   ветер. x,y — в осях мира 2D, кадр — через lifeHere */
+function dustMotesGpu(pass,camx,camy,p){
+  if(!pass||!GPU.dev)return false;
+  if(p.T.atm==="отсутствует")return true;
+  const o=lifeHere(0,0),s=o.s,A=[];
+  for(let i=0;i<26;i++){
+    const r=rng(hashi(Math.floor(p.seed),i,0xD05));
+    const wx=(r()*3000+G.t*(6+r()*10)*(1+WIND*1.6))%3000;
+    const x=((wx-camx*.6)%(W+60)+W+60)%(W+60)-30;
+    const y=(r()*H*.8+Math.sin(G.t*.03+i)*14+WIND*Math.sin(G.t*.02+i*2)*8);
+    const a=+(.05+r()*.12).toFixed(2),rad=.8+r()*1.2;
+    A.push([1,o.x+x*s,o.y+y*s,rad*s,0,0,0,255,255,255,a]);
+  }
+  gpuShapes(pass,A,{blend:"over"});
+  return true;
+}
+
+/* ── передний план не в фокусе (21b fgEach) ──
+   Был на #c и уходил снимком с размытием по диску (21e2 surfNearGpu) — снимок на кадр.
+   Валун неподвижен: печётся раз на (слот, размер, небо) в разрешении ниже кадра, и
+   растяжка выпечки даёт ту же мягкость. Трава гнётся ветром каждый кадр — мягкими
+   капсулами по своей кривой. Смешение — корпусом (hull), как у снимка: последний проход
+   знает, что здесь тело */
+const FG_BK=new Map();
+function foregroundGpu(pass,tr,camx,camy,p){
+  if(!pass||!GPU.dev)return false;
+  const o=lifeHere(0,0),s=o.s,DP=DPR||1;
+  /* небо ступенями: выпечка валуна не перепекается на каждом кадре сумерек */
+  const amb=ambRGB(p).map(v=>Math.round(v/6)*6),C=fgColors(p,amb);
+  const ca=[amb[0]*.42,amb[1]*.44,amb[2]*.50],ra=[amb[0]*1.15+30,amb[1]*1.15+34,amb[2]*1.2+40].map(v=>Math.min(255,v));
+  const q=Math.max(.25,Math.round(s*DP*.42*20)/20),SH=[],IM=[];
+  let bad=false;
+  fgEach(tr,camx,camy,p,(slot,h,sx,y,r,grass)=>{
+    if(!grass){
+      const EX=r*1.42+3,EY=r*.95+3;
+      const B=gpuBaked(FG_BK,"fg|"+slot+"|"+r+"|"+amb.join(",")+"|"+q,EX*2*q,EY*2*q,g=>{
+        g.setTransform(q,0,0,q,EX*q,EY*q);fgBoulder(slot,0,0,r,C);},{mips:false,keep:12});
+      if(!B){bad=true;return;}
+      IM.push([B,{x:o.x+sx*s,y:o.y+y*s,w:EX*2*s,h:EY*2*s}]);
+      return;
+    }
+    /* кривая лезвия почти прямая (изгиб — доли пикселя), и одна капсула не даёт бусин на
+       стыках полупрозрачных кусков; плотность — как у снимка после размытия: тонкое
+       лезвие под диском теряло больше трети */
+    fgBlades(slot,h,sx,y,(bx,y0,cx,cy,tx,ty,lw,ux,uy)=>{
+      SH.push([2,o.x+bx*s,o.y+y0*s,o.x+tx*s,o.y+ty*s,lw*.5*s,1.8,ca[0],ca[1],ca[2],.58],
+        [2,o.x+ux*s,o.y+uy*s,o.x+tx*s,o.y+ty*s,.55*s,1.2,ra[0],ra[1],ra[2],.15]);
+    });
+  });
+  if(bad)return false;
+  for(const [B,R] of IM)gpuImage(pass,B,[R],{blend:"hull"});
+  gpuShapes(pass,SH,{blend:"hull"});
   return true;
 }
 
