@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 683 · top-level symbols: 7174
+Files: 684 · top-level symbols: 7182
 
 ## SYMBOLS
 
@@ -357,9 +357,12 @@ CUT_RANGE                    src/24-mode-belt.js:169
 CVS_RECT                     src/08-state.js:92
 CV_LVL                       src/08c-gpu-kit.js:70
 DEAL_KINDS                   src/27g-deals.js:17-137
+DECO_BEND                    src/21bc-deco-gpu.js:9
+DECO_BK                      src/21bc-deco-gpu.js:7
 DECO_FN                      src/21bb-deco-biomes.js:34
 DECO_KINDS                   src/21b-surface-deco.js:24-33
 DECO_LIT                     src/21b-surface-deco.js:154
+DECO_ROT                     src/21bc-deco-gpu.js:8
 DEEDS                        src/11ai-ledger.js:25-35
 DEPTH_TIERS                  src/04-mods.js:57-61
 DESC_MOOD                    src/01-core.js:196-201
@@ -506,7 +509,7 @@ FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
 FAUNA_RES                    src/02-world.js:137
 FG_BK                        src/21e3-surface-stand-gpu.js:115
-FG_MAN                       src/21b-surface-deco.js:277
+FG_MAN                       src/21b-surface-deco.js:268
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19-25
@@ -727,23 +730,23 @@ GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
 GROK_NAME                    src/12tb-grok.js:26
-GROUND_BAKING                src/19-mode-landing-ground.js:222
+GROUND_BAKING                src/19-mode-landing-ground.js:233
 GROVE_ETHER                  src/11j-grove.js:23-28
 GROVE_LIT                    src/11j-grove.js:126
 GROWN_LINES                  src/11q-grown.js:48-53
 GSB                          src/19cb-gpu-sky-bodies.js:19
 GSB_HEAD                     src/19cb-gpu-sky-bodies.js:20
 GSB_WGSL                     src/19cb-gpu-sky-bodies.js:23-74
-GSC                          src/21e2-surface-gpu.js:270
-GSC_WGSL                     src/21e2-surface-gpu.js:239
+GSC                          src/21e2-surface-gpu.js:273
+GSC_WGSL                     src/21e2-surface-gpu.js:242
 GSG                          src/21e2-surface-gpu.js:130
 GSG_WGSL                     src/21e2-surface-gpu.js:131
 GSK                          src/19ca-gpu-sky.js:84
 GSK_WGSL                     src/19ca-gpu-sky.js:85
-GSL                          src/21e2-surface-gpu.js:388
-GSL_WGSL                     src/21e2-surface-gpu.js:356
-GSN                          src/21e2-surface-gpu.js:499
-GSN_WGSL                     src/21e2-surface-gpu.js:488
+GSL                          src/21e2-surface-gpu.js:393
+GSL_WGSL                     src/21e2-surface-gpu.js:361
+GSN                          src/21e2-surface-gpu.js:504
+GSN_WGSL                     src/21e2-surface-gpu.js:493
 GSP                          src/16g-gpu-space.js:17
 GSP_DUST                     src/16g-gpu-space.js:80
 GSP_DUST_L                   src/16g-gpu-space.js:19
@@ -752,11 +755,11 @@ GSP_STARS                    src/16g-gpu-space.js:39
 GSP_WGSL_U                   src/16g-gpu-space.js:20
 GSR                          src/21e2-surface-gpu.js:18
 GSR_WGSL                     src/21e2-surface-gpu.js:19
-GSS                          src/21e2-surface-gpu.js:220
-GSS_WGSL                     src/21e2-surface-gpu.js:215
+GSS                          src/21e2-surface-gpu.js:223
+GSS_WGSL                     src/21e2-surface-gpu.js:218
 GST_WGSL                     src/17c-system-draw.js:405
-GSW                          src/21e2-surface-gpu.js:457
-GSW_WGSL                     src/21e2-surface-gpu.js:411
+GSW                          src/21e2-surface-gpu.js:462
+GSW_WGSL                     src/21e2-surface-gpu.js:416
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:56
@@ -1785,11 +1788,11 @@ SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:142
 SURF_HOR                     src/19c-light.js:202
 SURF_LND                     src/21e3-surface-stand-gpu.js:187
-SURF_NEAR                    src/21e2-surface-gpu.js:500
-SURF_RF                      src/21e2-surface-gpu.js:458
-SURF_SHADOW                  src/21e2-surface-gpu.js:271
-SURF_SNAP_OK                 src/21e2-surface-gpu.js:274
-SURF_STAND                   src/21e2-surface-gpu.js:283
+SURF_NEAR                    src/21e2-surface-gpu.js:505
+SURF_RF                      src/21e2-surface-gpu.js:463
+SURF_SHADOW                  src/21e2-surface-gpu.js:274
+SURF_SNAP_OK                 src/21e2-surface-gpu.js:277
+SURF_STAND                   src/21e2-surface-gpu.js:286
 SURF_TAG_FONT                src/21e3-surface-stand-gpu.js:85
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
@@ -2115,6 +2118,7 @@ bakeKeep                     src/08c-gpu-kit.js:74-79
 bakePut                      src/20ab-poi-gpu.js:155
 bakeRect                     src/20ab-poi-gpu.js:154
 bakeStand                    src/20ab-poi-gpu.js:157
+bakeTrim                     src/21bc-deco-gpu.js:25-35
 bankTransform                src/03b-hull-paint.js:59-66
 banyaLive                    src/21ac1-base-banya.js:37-40
 banyaRested                  src/21ac1-base-banya.js:64
@@ -2977,6 +2981,7 @@ dealTaken                    src/27g-deals.js:159
 dealsTick                    src/27g-deals.js:201-220
 decRu                        src/27y-hud-words.js:43
 decoAntenna                  src/21bb-deco-biomes.js:283-296
+decoBake                     src/21bc-deco-gpu.js:36-51
 decoBlister                  src/21bb-deco-biomes.js:209-219
 decoBoulderLone              src/21bb-deco-biomes.js:121-131
 decoButte                    src/21bb-deco-biomes.js:39-62
@@ -2988,10 +2993,12 @@ decoCrownRound               src/21bb-deco-biomes.js:322-327
 decoDruse                    src/21ba-deco-shapes.js:12-37
 decoDryTree                  src/21bb-deco-biomes.js:63-90
 decoFrond                    src/21ba-deco-shapes.js:317-343
+decoGpu                      src/21bc-deco-gpu.js:58-79
 decoHummock                  src/21bb-deco-biomes.js:133-147
 decoLavaTree                 src/21bb-deco-biomes.js:173-187
 decoLitSide                  src/21bb-deco-biomes.js:37
 decoMat                      src/21b-surface-deco.js:163-165
+decoPaint                    src/21bc-deco-gpu.js:11-22
 decoPodTree                  src/21bb-deco-biomes.js:189-208
 decoPoly                     src/21bb-deco-biomes.js:36
 decoScree                    src/21bb-deco-biomes.js:312-320
@@ -3002,11 +3009,12 @@ decoSpire                    src/21bb-deco-biomes.js:148-156
 decoStack                    src/21bb-deco-biomes.js:92-120
 decoStair                    src/21bb-deco-biomes.js:297-310
 decoStela                    src/21bb-deco-biomes.js:267-282
+decoSway                     src/21bc-deco-gpu.js:53-57
 decoTruss                    src/21ba-deco-shapes.js:101-143
 decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
-depKind                      src/21b-surface-deco.js:404-413
+depKind                      src/21b-surface-deco.js:395-404
 deployDrone                  src/12-economy.js:329-346
 descSig                      tests/91zzza1-cave-gpu.js:112-119
 deskItemNew                  src/27ia-desk-top.js:337-341
@@ -3203,8 +3211,8 @@ drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:114-140
 drawDeadBattery              src/20aa-poi-shapes.js:217-271
-drawDeco                     src/21b-surface-deco.js:166-225
-drawDeposit                  src/21b-surface-deco.js:414-568
+drawDeco                     src/21b-surface-deco.js:166-216
+drawDeposit                  src/21b-surface-deco.js:405-559
 drawDig                      src/23a-dig-draw.js:592-596
 drawDigFauna                 src/23-mode-dig.js:336-345
 drawDigLight                 src/23b-dig-gpu.js:152-164
@@ -3223,7 +3231,7 @@ drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-358
 drawFleetShip                src/12ai1-fleet-art.js:448
 drawFoeBody                  src/24ab-raid-foe.js:11-131
-drawForeground               src/21b-surface-deco.js:285-298
+drawForeground               src/21b-surface-deco.js:276-289
 drawGalaxy                   src/17z1-galaxy.js:64-67
 drawGalaxyNames              src/17z2-galaxy-names.js:38-61
 drawGalaxyStars              src/17z1-galaxy.js:86-115
@@ -3234,9 +3242,9 @@ drawGiant                    src/17o-giants.js:183-212
 drawGiantsMap                src/17o-giants.js:70-82
 drawGlassHUD                 src/24-mode-belt.js:364-451
 drawGlyph                    src/12t-settle.js:59-77
-drawGround                   src/19-mode-landing-ground.js:11-221
-drawGroundCrumbs             src/19-mode-landing-ground.js:260-270
-drawGroundGrass              src/19-mode-landing-ground.js:273-310
+drawGround                   src/19-mode-landing-ground.js:11-232
+drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
+drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
 drawHomeIn                   src/29d-home-draw.js:9-110
@@ -3282,7 +3290,7 @@ drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-272
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:86-626
-drawRocks                    src/19-mode-landing-ground.js:312-404
+drawRocks                    src/19-mode-landing-ground.js:323-415
 drawRouteMap                 src/12r-route.js:267-316
 drawRungRing                 src/12ae-ladder.js:72-86
 drawRushTraffic              src/17g-sys-lane.js:153-167
@@ -3516,10 +3524,10 @@ faunaOf                      src/20e-species.js:268-284
 fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
 fbm3                         src/24ba-belt-gpu.js:32-36
-fgBlades                     src/21b-surface-deco.js:379-391
-fgBoulder                    src/21b-surface-deco.js:334-374
-fgColors                     src/21b-surface-deco.js:279-284
-fgEach                       src/21b-surface-deco.js:301-332
+fgBlades                     src/21b-surface-deco.js:370-382
+fgBoulder                    src/21b-surface-deco.js:325-365
+fgColors                     src/21b-surface-deco.js:270-275
+fgEach                       src/21b-surface-deco.js:292-323
 fillMaterial                 src/18a-material.js:382-412
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:141-177
@@ -3964,8 +3972,8 @@ grokTeach                    src/12tb-grok.js:144-157
 grokTick                     src/12tb-grok.js:75-79
 grokWant                     src/12tb-grok.js:41-44
 groundAt                     src/07a-terrain.js:199-202
-groundChunkPaint             src/19-mode-landing-ground.js:240-258
-groundChunkStore             src/19-mode-landing-ground.js:227-238
+groundChunkPaint             src/19-mode-landing-ground.js:251-269
+groundChunkStore             src/19-mode-landing-ground.js:238-249
 groundClip                   src/20ab-poi-gpu.js:92-97
 groundGrassGpu               src/21e3-surface-stand-gpu.js:38-62
 groundShadow                 src/19-mode-landing.js:156-169
@@ -5619,7 +5627,7 @@ pricesHeard                  src/12aa-need.js:232-244
 pricesOpen                   src/12aa-need.js:293-300
 pricesSeen                   src/12aa-need.js:203-209
 pricesTrim                   src/12aa-need.js:212-218
-prism                        src/21b-surface-deco.js:230-269
+prism                        src/21b-surface-deco.js:221-260
 probeAll                     src/25m-probe.js:31-34
 probeBlock                   src/25m-probe.js:125-138
 probeBuild                   src/25m-probe.js:51-66
@@ -6551,9 +6559,9 @@ stampPage                    src/17i-stamp.js:94-121
 stampPirate                  src/17i-stamp.js:69-80
 stampShow                    src/17i-stamp.js:82-92
 stampText                    src/17i-stamp.js:27-40
-standAdd                     src/21e2-surface-gpu.js:284-287
-standFlush                   src/21e2-surface-gpu.js:288-292
-standLayer                   src/21e2-surface-gpu.js:294-311
+standAdd                     src/21e2-surface-gpu.js:287-290
+standFlush                   src/21e2-surface-gpu.js:291-295
+standLayer                   src/21e2-surface-gpu.js:297-314
 standPass                    src/20ab-poi-gpu.js:140-143
 stapelAll                    src/26e1-stapel.js:27-32
 stapelBlock                  src/26e1-stapel.js:164-234
@@ -6664,26 +6672,26 @@ supportCall                  src/05b1-warranty.js:20-27
 supportQueue                 src/05b1-warranty.js:29-34
 supportTick                  src/05b1-warranty.js:35-44
 surfBar                      src/21e3-surface-stand-gpu.js:99-107
-surfCastGpu                  src/21e2-surface-gpu.js:312-342
+surfCastGpu                  src/21e2-surface-gpu.js:315-347
 surfDepositGpu               src/21e3-surface-stand-gpu.js:11-34
-surfGroundGpu                src/21e2-surface-gpu.js:175-211
+surfGroundGpu                src/21e2-surface-gpu.js:178-214
 surfHeightTex                src/21e2-surface-gpu.js:80-94
 surfHudPen                   src/21e-surface-draw.js:23-38
 surfLander2D                 src/21e3-surface-stand-gpu.js:150-172
 surfLanderGpu                src/21e3-surface-stand-gpu.js:188-235
 surfLanderHot                src/21e3-surface-stand-gpu.js:181
 surfLanderNite               src/21e3-surface-stand-gpu.js:182
-surfNearGpu                  src/21e2-surface-gpu.js:512-525
+surfNearGpu                  src/21e2-surface-gpu.js:517-530
 surfNight                    src/06a-celest.js:43-50
 surfNightGpu                 src/21e4-surface-night-gpu.js:59-80
-surfRelightGpu               src/21e2-surface-gpu.js:389-401
+surfRelightGpu               src/21e2-surface-gpu.js:394-406
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
 surfScale                    src/21e-surface-draw.js:293
-surfShadeGpu                 src/21e2-surface-gpu.js:221-227
+surfShadeGpu                 src/21e2-surface-gpu.js:224-230
 surfShadowShapes             src/21e3-surface-stand-gpu.js:175-180
-surfSnap                     src/21e2-surface-gpu.js:502-511
+surfSnap                     src/21e2-surface-gpu.js:507-516
 surfTag                      src/21e3-surface-stand-gpu.js:86-97
-surfWaterGpu                 src/21e2-surface-gpu.js:459-480
+surfWaterGpu                 src/21e2-surface-gpu.js:464-485
 surfaceHint                  src/21e-surface-draw.js:4-20
 surveyColor                  src/12w-survey.js:58
 surveyLegs                   src/12w-survey.js:48-56
@@ -8068,7 +8076,7 @@ zoomTo                       src/15-input.js:350
 ## src/18k-rail-scheme.js · 19 KB
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
 
-## src/19-mode-landing-ground.js · 26 KB
+## src/19-mode-landing-ground.js · 27 KB
   · посадка: разрез грунта:1
 
 ## src/19-mode-landing.js · 22 KB
@@ -8228,7 +8236,7 @@ zoomTo                       src/15-input.js:350
 
 ## src/21b-surface-deco.js · 34 KB
   · крупная форма на поверхности:1
-  · залежь как выход породы (M169):393
+  · залежь как выход породы (M169):384
 
 ## src/21b0-base-ruin.js · 8 KB
   · развалина и возврат (M402, DESIGN-base §22.1, §39):1
@@ -8257,6 +8265,9 @@ zoomTo                       src/15-input.js:350
 ## src/21bb-deco-biomes.js · 24 KB
   · большая вещь на каждый биом (M352):1
 
+## src/21bc-deco-gpu.js · 5 KB
+  · формы рельефа на видеокарте (G15):1
+
 ## src/21c-built.js · 9 KB
   · ваша база видна с земли:1
 
@@ -8272,11 +8283,11 @@ zoomTo                       src/15-input.js:350
 ## src/21e2-surface-gpu.js · 34 KB
   · поверхность на видеокарте (G6, docs/DESIGN-gpu.md):1
   · ближний грунт: ломти текстурами и порода под светом:121
-  · падающие тени того, что стоит:229
-  · слой стоящего (G15):275
-  · то, что стоит, — светом мира:344
-  · вода: зеркало на видеокарте:403
-  · передний план не в фокусе:482
+  · падающие тени того, что стоит:232
+  · слой стоящего (G15):278
+  · то, что стоит, — светом мира:349
+  · вода: зеркало на видеокарте:408
+  · передний план не в фокусе:487
 
 ## src/21e3-surface-stand-gpu.js · 14 KB
   · стоящее на поверхности — двойники видеокарты (G15):1

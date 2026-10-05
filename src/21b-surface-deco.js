@@ -175,6 +175,8 @@ function drawDeco(tr,camx,camy,p){
     vis.push({d,x,y,w:d.h*.42*d.sc,hgt:d.h});
   }
   if(!vis.length)return;
+  /* с видеокартой — выпечкой в слой стоящего (21bc); ниже — прежний 2D */
+  if(decoGpu(tr,camx,camy,p,vis))return;
   /* тени — ДО клипа: они лежат на грунте, а клип как раз всё, что ниже линии
      грунта, и срезает (та же причина и тот же порядок, что у построек) */
   const live=(typeof castLive==="function");
@@ -207,18 +209,7 @@ function drawDeco(tr,camx,camy,p){
     if(d.flip)ctx.scale(-1,1);
     const A={d,pal,p,tr,w,hgt,ox:camx-x,oy:camy-y};
     DECO_LIT=1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*(q.sh||0);   /* в тени гребня (M434) */
-    try{
-      const fn=DECO_FN[d.k];            // семьи биомов (21bb-deco-biomes, M352) — по таблице
-      if(fn)fn(A);
-      else if(d.k==="druse")decoDruse(A);
-      else if(d.k==="shard")decoShard(A);
-      else if(d.k==="slab")decoSlab(A);
-      else if(d.k==="truss")decoTruss(A);
-      else if(d.k==="wall")decoWall(A);
-      else if(d.k==="column")decoColumn(A);
-      else if(d.k==="canopy")decoCanopy(A);
-      else if(d.k==="frond")decoFrond(A);
-    }finally{DECO_LIT=1;}
+    try{decoPaint(A);}finally{DECO_LIT=1;}
     ctx.restore();
   }
   ctx.restore();
