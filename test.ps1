@@ -31,6 +31,7 @@ $onLin = ($PSVersionTable.PSVersion.Major -ge 6) -and -not $IsWindows
 $psh = if ($onLin) { "pwsh" } else { "powershell" }
 if (-not $env:TEMP) { $env:TEMP = [System.IO.Path]::GetTempPath().TrimEnd('/') }
 if (-not $env:NUMBER_OF_PROCESSORS) { $env:NUMBER_OF_PROCESSORS = [Environment]::ProcessorCount }
+try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } catch {}   # вывод в UTF-8: в консоли cp437/cp866 русское печаталось «?» (новый комп, 27.09.2026)
 # ── зоопарк мутантов (M445, DESIGN-tests §5) ──
 # Мера тестов одна: долю авторских багов прогон нашёл бы первым. Каждый из
 # пятнадцати багов истории воспроизводится мутантом — правкой в одну строку
@@ -48,13 +49,13 @@ if ($Mutants) {
     $path = Join-Path $root0 $m.file
     $src = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
     $hits = [regex]::Matches($src, $m.find).Count
-    if ($hits -ne 1) { $rows += "  ?  {0,-22} нет места: «{1}» найдено {2} раз в {3}" -f $m.name, $m.find, $hits, $m.file; $alive++; continue }
+    if ($hits -ne 1) { $rows += "  ?  {0,-22} no spot: «{1}» found {2} times in {3}" -f $m.name, $m.find, $hits, $m.file; $alive++; continue }
     # возвращаем ТЕКСТ, который прочли, а не `git checkout -- файл`: тот откатывал
     # файл целиком, вместе с чужими несохранёнными правками в нём (0.438.0)
     [System.IO.File]::WriteAllText($path, [regex]::Replace($src, $m.find, $m.replace, 1), $utf8)
     try {
       $b = & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") 2>&1 | Out-String
-      if ($LASTEXITCODE -ne 0 -or $b -match "закон|нарушен") { $rows += "  ✓  {0,-22} убит сборкой: {1}" -f $m.name, (($b -split "`n") | Where-Object { $_ -match "закон|нарушен|throw" } | Select-Object -First 1); continue }
+      if ($LASTEXITCODE -ne 0 -or $b -match "M441|violation") { $rows += "  ✓  {0,-22} killed by the build: {1}" -f $m.name, (($b -split "`n") | Where-Object { $_ -match "M441|violation|throw" } | Select-Object -First 1); continue }
       $args2 = @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $root0 "test.ps1"), "-NoBuild")
       if ($m.kill) { $args2 += @("-Only", $m.kill) } else { $args2 += "-Browser" }
       if ($m.mobile) { $args2 += "-Mobile" }
@@ -64,15 +65,15 @@ if ($Mutants) {
       if ($null -eq $who) { $who = "" }
       $who = ($who -replace "^\s+[✗?]\s+", "").Trim()
       if ($who.Length -gt 110) { $who = $who.Substring(0, 110) + "…" }
-      if ($rc -ne 0) { $rows += "  ✓  {0,-22} убит: {1}" -f $m.name, $who }
-      else { $rows += "  ✗  {0,-22} ВЫЖИЛ — {1} ({2})" -f $m.name, $m.why, $(if ($m.kill) { $m.kill } else { "-Browser" }); $alive++ }
+      if ($rc -ne 0) { $rows += "  ✓  {0,-22} killed: {1}" -f $m.name, $who }
+      else { $rows += "  ✗  {0,-22} SURVIVED — {1} ({2})" -f $m.name, $m.why, $(if ($m.kill) { $m.kill } else { "-Browser" }); $alive++ }
     } finally {
       [System.IO.File]::WriteAllText($path, $src, $utf8)
     }
   }
   # чистая сборка после зоопарка: tests.html не должен остаться мутантом
   & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null
-  "зоопарк: мутантов {0}, выжило {1} · {2:N0} с" -f $zoo.Count, $alive, $sw0.Elapsed.TotalSeconds
+  "zoo: mutants {0}, survived {1} · {2:N0} s" -f $zoo.Count, $alive, $sw0.Elapsed.TotalSeconds
   $rows | ForEach-Object { $_ }
   if ($alive) { exit 1 } else { exit 0 }
 }
@@ -108,11 +109,11 @@ if ($Changed) {
     foreach ($c in $chg) { if ($c -like "tests/*") { [void]$pick.Add([System.IO.Path]::GetFileName($c)) } }
     foreach ($p in $map.PSObject.Properties) { foreach ($c in $chg) { if (@($p.Value) -contains $c) { [void]$pick.Add([System.IO.Path]::GetFileName($p.Name)) } } }
     $names = @($pick | Sort-Object | ForEach-Object { $_ -replace '\.js$', '' })
-    "изменено: {0} → файлов наборов: {1}" -f ($chg -join ", "), $names.Count
+    "changed: {0} → suite files: {1}" -f ($chg -join ", "), $names.Count
     # правка обвязки (tests/90*) касается каждого набора — карта этого не знает,
     # и «сам себя» тут был бы обманом: идёт полный прогон (0.438.0)
-    if (@($chg | Where-Object { $_ -like "tests/90*" }).Count) { "изменена обвязка тестов → полный прогон"; $names = @() ; $Full = $true }
-    elseif (-not $names.Count) { "ни один набор не называет изменённые модули → обычный быстрый ярус" }
+    if (@($chg | Where-Object { $_ -like "tests/90*" }).Count) { "test harness changed → full run"; $names = @() ; $Full = $true }
+    elseif (-not $names.Count) { "no suite names the changed modules → the usual quick tier" }
     else { $Files = $names -join "|"; $Full = $true; $Jobs = 1 }
     $nodeExe0 = (Get-Command node -ErrorAction SilentlyContinue).Source
     if (-not $nodeExe0 -and (Test-Path "C:\Claude\tools\node\node.exe")) { $nodeExe0 = "C:\Claude\tools\node\node.exe" }
@@ -122,10 +123,10 @@ if ($Changed) {
       & $nodeExe0 (Join-Path $root0 "test-node.js") $narg
       if ($LASTEXITCODE -ne 0) { exit 1 }
     }
-  } else { "ничего не менялось со времени HEAD — обычный быстрый ярус" }
+  } else { "nothing changed since HEAD — the usual quick tier" }
 }
 $nodeTier = -not ($Full -or $Browser -or $Only -or $Mobile -or $Fuzz -or $Size -or $Times -or $Jobs -or $Probe -or $Accept -or $Files)
-if ($nodeTier -and -not $nodeExe) { "node не найден (C:\Claude\tools\node или PATH) — идём через Хром"; $nodeTier = $false; $Browser = $true }
+if ($nodeTier -and -not $nodeExe) { "node not found (C:\Claude\tools\node or PATH) — going through Chrome"; $nodeTier = $false; $Browser = $true }
 if ($nodeTier) {
   [Console]::OutputEncoding = [Text.Encoding]::UTF8   # node пишет UTF-8; консоль 5.1 по умолчанию cp866
   if (-not $NoBuild) { & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null }
@@ -162,15 +163,26 @@ if ($Full -and -not $NoBuild) {
     & $other -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root "build.ps1") | Out-Null
     foreach ($f in $gen) { if ((Get-FileHash $f -Algorithm MD5).Hash -ne $h0[$f]) { $shellDiff += $f.Substring($root.Length + 1) } }
     if ($shellDiff.Count) { & (Join-Path $root "build.ps1") | Out-Null }   # прогон идёт на сборке своей оболочки
-  } else { "  · второй оболочки ($other) нет — сверка сборки двумя оболочками пропущена" }
+  } else { "  · no second shell ($other) — the two-shell build check is skipped" }
 }
 
-$chrome = @("C:\Program Files\Google\Chrome\Application\chrome.exe",
+# Браузер тестов — Chrome for Testing закреплённой версии (27.09.2026). Обычный Chrome
+# на выходе ждёт службу обновлений Google: на новом компе часть уже написала отчёт, а
+# её Chrome висел ещё 70–120 с («Failed to connect to remote mojo service … scope:
+# System»), и -Browser шёл 146 с при 20 с работы. В сборке для тестов обновлялки нет,
+# а версия не уезжает сама — золотые кадры не плывут от обновлений Chrome. Лежит вне
+# репозитория: распакованный chrome-win64.zip с
+# storage.googleapis.com/chrome-for-testing-public/<версия>/win64/. Нет его — берём
+# обычный Chrome и говорим об этом.
+$CFT = "153.0.8010.52"
+$cft = "C:\Claude\tools\chrome-for-testing\$CFT\chrome-win64\chrome.exe"
+$chrome = @($cft, "C:\Program Files\Google\Chrome\Application\chrome.exe",
             "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe") |
           Where-Object { Test-Path $_ } | Select-Object -First 1
 # Linux: Хром Playwright'а (облако Claude) первым — те же пути, что в docs/shot.py (CHROMES)
 if ($onLin) { $chrome = @("/opt/pw-browsers/chromium", "/usr/bin/chromium", "/usr/bin/google-chrome") | Where-Object { Test-Path $_ } | Select-Object -First 1 }
 if (-not $chrome) { throw "no headless browser found (Chrome/Edge)" }
+if ($chrome -ne $cft) { "  · no Chrome for Testing $CFT ($cft) — running $chrome, whose exit waits for Google Update: expect a slow tail" }
 
 $url = "file:///" + ((Join-Path $root "tests.html") -replace "\\", "/")
 if ($onLin) { $url = "file://" + (Join-Path $root "tests.html") }   # путь уже с «/» в начале
@@ -248,7 +260,13 @@ if ($Times) { $Jobs = 1 }
 # «самые долгие» никто никогда не видел, и список тяжёлых наборов держался
 # на памяти, а не на замере. Без бюджета часы идут, прогон дольше, зато
 # видно, за что платим.
-$vt = if ($Times) { @() } else { @("--virtual-time-budget=20000") }
+$vt = if ($Times) { "" } else { " --budget=20000" }
+# Страницу ведёт свой прогонщик test-chrome.js (27.09.2026): Chrome for Testing
+# --dump-dom не выполняет, а обычный Chrome после отчёта ещё минуты ждёт на выходе
+# службу обновлений. Прогонщик ставит то же виртуальное время через протокол
+# отладки, забирает DOM, как только бюджет вышел, и закрывает браузер сам.
+if (-not $nodeExe) { throw "no node: test-chrome.js drives the browser (C:\Claude\tools\node\node.exe or node on PATH)" }
+$runner = Join-Path $root "test-chrome.js"
 
 # ── у каждого прогона свои файлы и свой профиль ──
 # Дамп, поток ошибок и профиль Chrome были ОБЩИЕ на всю машину, и два сеанса
@@ -286,19 +304,28 @@ for ($k = 0; $k -lt $Jobs; $k++) {
   Remove-Item $dom -Force -ErrorAction SilentlyContinue
   $errf = Join-Path $env:TEMP "drift-tests-err-$tag-$k.txt"
   Remove-Item $errf -Force -ErrorAction SilentlyContinue
-  # --enable-logging=stderr --v=0: зеркалит console.* страницы в этот файл, не
-  # в терминал (--dump-dom всё равно уходит в $dom). Харнесс (90-harness.js)
+  # В $errf прогонщик пишет console.* страницы и лог Хрома. Харнесс (90-harness.js)
   # печатает «→ имя» перед КАЖДЫМ набором — на зелёном прогоне файл просто
   # никто не читает; висящая часть называется им ниже (тот же приём, что
   # lab/lab.sh делает для сервера через sed в tests-trace.html).
-  $profDir = "$($env:TEMP)\drift-tests-profile-$tag-$k"
-  if ($onLin) { $profDir = Join-Path $env:TEMP "drift-tests-profile-$tag-$k" }
-  $argv = @("--headless=new", "--no-sandbox", "--window-size=$win",
-            "--user-data-dir=$profDir",
-            "--no-first-run", "--no-default-browser-check", "--timeout=900000",
-            "--enable-logging=stderr", "--v=1") +
-          $gpuArgs + $vt + @("--dump-dom", $u)
-  $proc = Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -PassThru -RedirectStandardOutput $dom -RedirectStandardError $errf
+  # Облако и CI (G13): Хром Playwright'а и флаги SwiftShader — прямой запуск с --dump-dom,
+  # как до test-chrome.js; дома (Windows, без DRIFT_GPU) — ведомый запуск ниже
+  if ($onLin -or $gpuArgs.Count) {
+    $profDir = Join-Path $env:TEMP "drift-tests-profile-$tag-$k"
+    $vtl = if ($Times) { @() } else { @("--virtual-time-budget=20000") }
+    $argl = @("--headless=new", "--no-sandbox", "--window-size=$win",
+              "--user-data-dir=$profDir",
+              "--no-first-run", "--no-default-browser-check", "--timeout=900000",
+              "--enable-logging=stderr", "--v=1") +
+            $gpuArgs + $vtl + @("--dump-dom", $u)
+    $proc = Start-Process -FilePath $chrome -ArgumentList $argl -NoNewWindow -PassThru -RedirectStandardOutput $dom -RedirectStandardError $errf
+  } else {
+    # Аргументы одной строкой в кавычках: путь к Chrome бывает с пробелом, а массив
+    # Start-Process склеивает без кавычек.
+    $argv = ('"{0}" "--chrome={1}" "--url={2}" "--dom={3}" "--err={4}" "--profile={5}\drift-tests-profile-{6}-{7}" --win={8}{9}' -f
+             $runner, $chrome, $u, $dom, $errf, $env:TEMP, $tag, $k, $win, $vt)
+    $proc = Start-Process -FilePath $nodeExe -ArgumentList $argv -NoNewWindow -PassThru
+  }
   $runs += [pscustomobject]@{ proc = $proc; dom = $dom; k = $k; err = $errf }
 }
 # последняя «→ имя» в stderr части — набор, в котором её застали (host-лог
@@ -330,8 +357,8 @@ foreach ($r in $runs) {
   $left = [math]::Max(1000, $SHARD_SEC * 1000 - [int]$sw.ElapsedMilliseconds)
   if (-not $r.proc.WaitForExit($left)) {
     $hung = Last-Suite $r.err
-    if ($hung) { "  ! часть {0}/{1} не кончилась за {2} с — ВИСИТ в наборе «{3}», убиваю Chrome профиля drift-tests-profile-{4}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $hung, $tag }
-    else { "  ! часть {0}/{1} не кончилась за {2} с — ВИСИТ (имя набора не поймано), убиваю Chrome профиля drift-tests-profile-{3}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $tag }
+    if ($hung) { "  ! part {0}/{1} did not finish in {2} s — HUNG in suite «{3}», killing the Chrome of profile drift-tests-profile-{4}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $hung, $tag }
+    else { "  ! part {0}/{1} did not finish in {2} s — HUNG (suite name not caught), killing the Chrome of profile drift-tests-profile-{3}-{0}" -f $r.k, $Jobs, $SHARD_SEC, $tag }
     if ($onLin) { & pkill -9 -f "drift-tests-profile-$tag-$($r.k)( |$)" 2>$null }
     else {
     Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -match "drift-tests-profile-$tag-$($r.k)\b" } |
@@ -364,17 +391,17 @@ function Read-Dump($dom) {
 }
 
 # ── отчёты частей складываются в один ──
-# Заголовок части: «ПРОВАЛЕНО N · пройдено P · наборов R из S …» либо «ВСЁ ЗЕЛЁНОЕ · …».
+# Заголовок части: «FAILED N · passed P · suites R of S …» либо «ALL GREEN · …».
 # Блок провалов идёт после заголовка через пустую строку и кончается пустой строкой.
 $pass = 0; $fail = 0; $ran = 0; $all = 0; $tail = ""; $fails = @(); $slowest = @()
 # карантин (опция stage у набора, M442): провалы печатаются своей строкой и не решают вердикт
 $stRan = 0; $stFail = 0; $staged = @(); $offWin = 0
-if ($shellDiff.Count) { $fail++; $fails += ("  ✗ сборка зависит от оболочки: powershell 5.1 и pwsh 7 пишут разное — " + ($shellDiff -join ", ")) }
+if ($shellDiff.Count) { $fail++; $fails += ("  ✗ the build depends on the shell: powershell 5.1 and pwsh 7 write different bytes — " + ($shellDiff -join ", ")) }
 foreach ($r in $runs) {
   # убитая часть — провал, что бы ни лежало в её DOM: 25.09 шард 4/6 убили на 900 с
   # в «сейв: поле мира…», а итог вышел «ВСЁ ЗЕЛЁНОЕ» — отчёт той части не считали провалом
   if ($killed.ContainsKey($r.k)) {
-    $fail++; $fails += ("  ✗ часть {0}/{1} не кончилась за {2} с и убита · последний набор «{3}»" -f $r.k, $Jobs, $SHARD_SEC, $killed[$r.k])
+    $fail++; $fails += ("  ✗ part {0}/{1} did not finish in {2} s and was killed · last suite «{3}»" -f $r.k, $Jobs, $SHARD_SEC, $killed[$r.k])
     continue
   }
   $text = Read-Dump $r.dom
@@ -388,29 +415,29 @@ foreach ($r in $runs) {
   }
   $lines = $text -split "`n"
   $h = $lines[0].TrimEnd()
-  # зелёный — только дописанный отчёт: заголовок «ВСЁ ЗЕЛЁНОЕ · …» или «ПРОВАЛЕНО N · …»
-  if ($h -notmatch '^(ВСЁ ЗЕЛЁНОЕ|ПРОВАЛЕНО \d+) · ') {
-    $fail++; $fails += ("  ✗ часть {0}/{1}: отчёт не дописан («{2}»)" -f $r.k, $Jobs, $h.Substring(0, [math]::Min(80, $h.Length)))
+  # зелёный — только дописанный отчёт: заголовок «ALL GREEN · …» или «FAILED N · …»
+  if ($h -notmatch '^(ALL GREEN|FAILED \d+) · ') {
+    $fail++; $fails += ("  ✗ part {0}/{1}: report unfinished («{2}»)" -f $r.k, $Jobs, $h.Substring(0, [math]::Min(80, $h.Length)))
     continue
   }
-  if ($h -match 'пройдено (\d+)')         { $pass += [int]$Matches[1] }
-  if ($h -match '^ПРОВАЛЕНО (\d+)')       { $fail += [int]$Matches[1] }
-  if ($h -match 'наборов (\d+) из (\d+)') { $ran += [int]$Matches[1]; $all = [int]$Matches[2] }
-  # хвост заголовка (без тяжёлых / полный / без картинки) один на все части
-  if ($h -match ' · карантин (\d+)') { $stRan += [int]$Matches[1] }
-  if ($h -match ' · не в своём окне (\d+)') { $offWin += [int]$Matches[1] }
-  if ($h -match ' · карантин \d+ \(провалов (\d+)\)') { $stFail += [int]$Matches[1] }
-  if ($h -match 'из \d+(.*)$') { $t = $Matches[1] -replace ' · часть \d+/\d+', '' -replace ' · карантин \d+( \(провалов \d+\))?', '' -replace ' · не в своём окне \d+ \(win\)', ''; if ($t.Length -gt $tail.Length) { $tail = $t } }
+  if ($h -match 'passed (\d+)')         { $pass += [int]$Matches[1] }
+  if ($h -match '^FAILED (\d+)')       { $fail += [int]$Matches[1] }
+  if ($h -match 'suites (\d+) of (\d+)') { $ran += [int]$Matches[1]; $all = [int]$Matches[2] }
+  # хвост заголовка (heavy skipped / full / no picture/UI) один на все части
+  if ($h -match ' · quarantine (\d+)') { $stRan += [int]$Matches[1] }
+  if ($h -match ' · off-window (\d+)') { $offWin += [int]$Matches[1] }
+  if ($h -match ' · quarantine \d+ \(failed (\d+)\)') { $stFail += [int]$Matches[1] }
+  if ($h -match ' of \d+(.*)$') { $t = $Matches[1] -replace ' · part \d+/\d+', '' -replace ' · quarantine \d+( \(failed \d+\))?', '' -replace ' · off-window \d+ \(win\)', ''; if ($t.Length -gt $tail.Length) { $tail = $t } }
   for ($i = 1; $i -lt $lines.Count; $i++) {
-    if ($lines[$i] -match '^КАРАНТИН') { for ($i++; $i -lt $lines.Count -and $lines[$i] -notmatch '^\s*$'; $i++) { $staged += $lines[$i].TrimEnd() }; break }
+    if ($lines[$i] -match '^QUARANTINE') { for ($i++; $i -lt $lines.Count -and $lines[$i] -notmatch '^\s*$'; $i++) { $staged += $lines[$i].TrimEnd() }; break }
   }
-  if ($lines[0] -match '^\S+ \d+ ') {
+  if ($lines[0] -match '^FAILED \d+ ') {
     $j = 2
     while ($j -lt $lines.Count -and $lines[$j] -notmatch '^\s*$') { $fails += $lines[$j].TrimEnd(); $j++ }
   }
   if ($Times) {
     for ($i = 0; $i -lt $lines.Count; $i++) {
-      if ($lines[$i] -match '^САМЫЕ ДОЛГИЕ') {
+      if ($lines[$i] -match '^SLOWEST') {
         for ($i++; $i -lt $lines.Count -and $lines[$i] -match '^\s+(\d+)\s\s(.+)$'; $i++) { $slowest += , @([int]$Matches[1], $Matches[2].TrimEnd()) }
         break
       }
@@ -418,7 +445,7 @@ foreach ($r in $runs) {
   }
 }
 # наборы не в своём окне (опция win) складываются по частям, как и карантин
-if ($offWin) { $tail += " · не в своём окне $offWin (win)" }
+if ($offWin) { $tail += " · off-window $offWin (win)" }
 # золотые кадры: снятое страницей — в docs/golden/<окно>.json (UTF-8 без BOM, LF)
 if ($Accept) {
   $gdir = Join-Path $root "docs\golden"
@@ -433,7 +460,7 @@ if ($Accept) {
     $p = Join-Path $gdir ($key + ".json")
     [System.IO.File]::WriteAllText($p, $json, (New-Object System.Text.UTF8Encoding $false))
     $n = ([regex]::Matches($json, '"b":"')).Count
-    "эталон записан: docs/golden/$key.json ($n сцен) — пересобрать (build.ps1), чтобы прогон его увидел"
+    "reference written: docs/golden/$key.json ($n scenes) — rebuild (build.ps1) so the run sees it"
     $got++
   }
   foreach ($r in $runs) {
@@ -445,15 +472,15 @@ if ($Accept) {
             "   test.ps1 -Accept берёт её из набора «конвейеры: после прогрева полёт не компилирует». */`n" +
             "const GPU_PIPE_KEYS=[`n" + (($keys | ForEach-Object { '  "' + $_ + '"' }) -join ",`n") + "`n];`n"
     [System.IO.File]::WriteAllText((Join-Path $root "src\08b1-gpu-pipe-keys.js"), $body, (New-Object System.Text.UTF8Encoding $false))
-    "таблица прогрева записана: src/08b1-gpu-pipe-keys.js ($(@($keys).Count) ключей) — пересобрать (build.ps1)"
+    "warm-up table written: src/08b1-gpu-pipe-keys.js ($(@($keys).Count) keys) — rebuild (build.ps1)"
     $got++
   }
-  if (-not $got) { "страница не отдала ни золотых кадров, ни ключей конвейеров: наборы не шли или окно не то" }
+  if (-not $got) { "the page returned neither golden frames nor pipeline keys: the suites did not run or the window is wrong" }
 }
-"{0} · пройдено {1} · наборов {2} из {3}{4}{5} · {6:N1} с" -f $(if ($fail) { "ПРОВАЛЕНО $fail" } else { "ВСЁ ЗЕЛЁНОЕ" }), $pass, $ran, $all, $tail, $(if ($Jobs -gt 1) { " · частей $Jobs" } else { "" }), $sw.Elapsed.TotalSeconds
-if ($stRan) { "карантин (в вердикт не идёт): наборов $stRan, провалов $stFail"; $staged | ForEach-Object { $_ } }
+"{0} · passed {1} · suites {2} of {3}{4}{5} · {6:N1} s" -f $(if ($fail) { "FAILED $fail" } else { "ALL GREEN" }), $pass, $ran, $all, $tail, $(if ($Jobs -gt 1) { " · parts $Jobs" } else { "" }), $sw.Elapsed.TotalSeconds
+if ($stRan) { "quarantine (not in the verdict): suites $stRan, failed $stFail"; $staged | ForEach-Object { $_ } }
 if ($Times -and $slowest.Count) {
-  "САМЫЕ ДОЛГИЕ (мс):"
+  "SLOWEST (ms):"
   $slowest | Sort-Object { - $_[0] } | Select-Object -First 30 | ForEach-Object { "  {0,6}  {1}" -f $_[0], $_[1] }
 }
 if ($fail) { $fails | ForEach-Object { $_ }; exit 1 }

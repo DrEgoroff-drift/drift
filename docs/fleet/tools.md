@@ -45,7 +45,7 @@ under `docs/`/`tools/`. Machine: 4 CPUs, Chromium 141 (`/opt/pw-browsers/chromiu
    dozen unrelated-looking failures («кадр пуст», «видеокарта есть — без неё ворота не меряются»).
    Now `gpuDrop` is wrapped to keep its reason (`crashShip` is silent under TEST), and a suite
    during which `GPU.ok` went from true to false gets one extra failure naming itself and the
-   reason. The report also gets a line «видеокарта к старту: …, конвейеры …» after the failure
+   reason. The report also gets a line «GPU at start: …, pipelines …» after the failure
    and quarantine blocks (not before: `test.ps1` reads failures from line 2). Node: no-op.
 
 ## The browser tier on SwiftShader (measured 25.09, 4 CPUs, Chromium 141)
@@ -53,7 +53,7 @@ under `docs/`/`tools/`. Machine: 4 CPUs, Chromium 141 (`/opt/pw-browsers/chromiu
 | Run | Result | Wall |
 |---|---|---|
 | default tier (`test.ps1`): Node + Chrome smoke | green: 16 888 Node checks, the smoke suite 5/5 with `GPU.ok` | 28 s (Node 18 s, smoke 4.7 s) |
-| `-Only "инструменты: руки и глаза…"` (one picture suite) | green, 35/35; «видеокарта к старту: есть» | 25 s |
+| `-Only "инструменты: руки и глаза…"` (one picture suite) | green, 35/35; «GPU at start: up» | 25 s |
 | `-Browser` (2 shards by default, cap 900 s) | **did not finish**: both shards killed at 900 s after ~810 suites; the kill path named the hung suites correctly | 900 s |
 | `-Browser -Jobs 3 -ShardSec 3600` | shard 3/3 **finished in 26 min**: 288 suites, 5 230 passed, **13 failed** (below); shards 1/3 and 2/3 still grinding after 35 min in «прогоны: двенадцать путей игрока ботом…» and «детерминизм: рисованный кадр…» when the fleet was called home — killed | 26–35+ min |
 | `-Full`, `-Mobile` | not run — no time left | — |
@@ -98,7 +98,7 @@ machine that was enough here; under three Chromes it may not be (see requests).
 
 - Browser tier: unchanged — `powershell -ExecutionPolicy Bypass -File test.ps1 -Browser` / `-Full`.
   Without `DRIFT_GPU` nothing new is added to Chrome's command line. The report now carries
-  «видеокарта к старту: …» and, if the device drops, one failure naming the suite and the reason.
+  «GPU at start: …» and, if the device drops, one failure naming the suite and the reason.
 - main|gpu pairs: `python docs\pair.py system cave --before origin/main --out-dir C:\tmp\pairs`
   (builds `origin/main` in a cached worktree under `%TEMP%`, the current tree as «after», both shot
   by this tree's `docs/shot.py` on the real GPU; one 1528×501 sheet per scene). Delete the
