@@ -793,10 +793,10 @@ H3D_CARGO                    src/17c2a-hull3d.js:22
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
 H3D_N                        src/17c2a-hull3d.js:16
-H3D_PIR                      src/17c2a-hull3d.js:353
+H3D_PIR                      src/17c2a-hull3d.js:371
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
-H3D_WGSL                     src/17c2a-hull3d.js:191
+H3D_WGSL                     src/17c2a-hull3d.js:207
 HAIL_HOLD                    src/12ar-hail.js:20
 HAIL_HOLD_PHONE              src/12ar-hail.js:23
 HAIL_RANGE                   src/12ar-hail.js:25
@@ -4049,17 +4049,17 @@ gunSpecs                     src/05c-arms.js:207-218
 gunTotals                    src/05c-arms.js:336-350
 gunsInGroup                  src/05c-arms.js:230-233
 h01                          src/01-core.js:28
-h3dCls                       src/17c2a-hull3d.js:292-302
-h3dDesc                      src/17c2a-hull3d.js:274-282
-h3dDev                       src/17c2a-hull3d.js:284-290
-h3dDraw                      src/17c2a-hull3d.js:306-309
-h3dEar                       src/17c2a-hull3d.js:174-189
+h3dCls                       src/17c2a-hull3d.js:308-318
+h3dDesc                      src/17c2a-hull3d.js:290-298
+h3dDev                       src/17c2a-hull3d.js:300-306
+h3dDraw                      src/17c2a-hull3d.js:322-327
+h3dEar                       src/17c2a-hull3d.js:190-205
 h3dKit                       src/17c2a-hull3d.js:27-90
-h3dMesh                      src/17c2a-hull3d.js:97-172
+h3dMesh                      src/17c2a-hull3d.js:97-188
 h3dPack                      src/17c2a-hull3d.js:92-96
-h3dPirMesh                   src/17c2a-hull3d.js:354-410
-h3dPirate                    src/17c2a-hull3d.js:412-415
-h3dRun                       src/17c2a-hull3d.js:311-347
+h3dPirMesh                   src/17c2a-hull3d.js:372-428
+h3dPirate                    src/17c2a-hull3d.js:430-433
+h3dRun                       src/17c2a-hull3d.js:329-365
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -5730,11 +5730,11 @@ radioSnare                   src/10a-radio.js:760-769
 radioSpectral                src/10a-radio.js:829-846
 radioSrc                     src/10a-radio.js:124
 radioStep                    src/10a-radio.js:307-372
-radioStop                    src/10a-radio.js:870-875
+radioStop                    src/10a-radio.js:872-877
+radioSweep                   src/10a-radio.js:859-871
 radioTabla                   src/10a-radio.js:738-743
 radioTick                    src/10a-radio.js:285-301
 radioTimp                    src/10a-radio.js:744-752
-radioTune                    src/10a-radio.js:857-869
 radioTune                    src/25e-receiver.js:29-85
 radioWave                    src/10a-radio.js:848-855
 radioWhere                   src/10a-radio.js:302-306
@@ -7322,7 +7322,7 @@ zoomTo                       src/15-input.js:350
 ## src/10-music.js · 33 KB
   · музыка: слои, а не треки:1
 
-## src/10a-radio.js · 63 KB
+## src/10a-radio.js · 64 KB
   · радио: треки и генератор:1
 
 ## src/11-log.js · 10 KB
@@ -7901,7 +7901,7 @@ zoomTo                       src/15-input.js:350
 ## src/17c2-hull-gpu.js · 18 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 32 KB
+## src/17c2a-hull3d.js · 34 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c3-station-live.js · 11 KB
