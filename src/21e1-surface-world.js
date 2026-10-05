@@ -189,7 +189,7 @@ function drawSurfaceWorld(){
       const amb=ambRGB(p);
       const r2=rng(hashi(S.cave.x|0,7,0xCA7E));r2();const hh=36+r2()*12;   /* высота — второй бросок тела */
       const gp=gpuGround?standPass():null;
-      if(gp)bakePut(gp,bakeAt("cave",p.seed+"|"+S.cave.x+"|"+dayKq(p)+"|a"+sunAzQ(p)+"|"+DPR+"|"+SCK,64,72,40,g=>{
+      if(gp)bakeStand(bakeAt("cave",p.seed+"|"+S.cave.x+"|"+dayKq(p)+"|a"+sunAzQ(p)+"|"+DPR+"|"+SCK,64,72,40,g=>{
         const gy=groundAt(tr,S.cave.x);groundClip(g,tr,S.cave.x,gy,64,72,3,3);
         caveBody(0,0,amb,S.cave.x,36);poiLight(g,{h:hh},64,72,p,tr,S.cave.x,gy);}),cx,cy);
       else caveBody(cx,cy,amb,S.cave.x);
@@ -220,9 +220,10 @@ function drawSurfaceWorld(){
       const gp=gpuGround?standPass():null;
       if(gp){
         const o=lifeHere(0,0),k=p.seed+"|"+Math.round(mx)+"|"+dayKq(p)+"|"+DPR+"|"+SCK;
-        gpuImage(gp,poiShadowTex(),[poiShadowRect(sx+22,sy+1,13,3,1,o),poiShadowRect(sx-2,sy+1,16,2.6,1,o)]);
+        const shs=[poiShadowRect(sx+22,sy+1,13,3,1,o),poiShadowRect(sx-2,sy+1,16,2.6,1,o)];
+        standAdd((ps,bl,layer)=>{if(!layer)gpuImage(ps,poiShadowTex(),shs);});   /* в слое тень даёт поле */
         bakePut(gp,bakeAt("mineM",k,40,14,14,()=>mineMul(0,0)),sx,sy,"mul");
-        bakePut(gp,bakeAt("mineO",k,40,32,6,()=>mineOver(0,0,iron)),sx,sy);
+        bakeStand(bakeAt("mineO",k,40,32,6,()=>mineOver(0,0,iron)),sx,sy);
       }else{
         groundShadow(sx+22,sy+1,13,3);
         ctx.save();ctx.globalCompositeOperation="multiply";mineMul(sx,sy);ctx.restore();
@@ -239,7 +240,7 @@ function drawSurfaceWorld(){
         S.vMine=vRope(7,0,0,3.4,{grav:.14,wind:.9});S.vMineX=Math.round(mx);
       }
       vStep(S.vMine,1);
-      if(gp)mineRopeGpu(gp,S.vMine,sx,sy-22,amb);else vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
+      if(gp)mineRopeGpu(S.vMine,sx,sy-22,amb);else vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
       /* подпись устья на плашке, как у залежей: стальная строка по дневному
          небу читалась с контрастом 1.9 (M444, прогон «шахта» под детектором
          текста) */
@@ -642,10 +643,10 @@ function mineOver(sx,sy,iron){
   ctx.beginPath();ctx.arc(sx,sy-25,3,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
 }
 /* трос копра отрезками на видеокарте: та же толщина к низу тоньше, тот же цвет, что iron(.8,.85) */
-function mineRopeGpu(pass,B,ox,oy,amb){
+function mineRopeGpu(B,ox,oy,amb){
   if(!B||B.p.length<2)return;
   const o=lifeHere(0,0),K=o.s,c=[amb[0]*.4+34*.8|0,amb[1]*.4+38*.8|0,amb[2]*.4+44*.8|0],SH=[];
   for(let i=1;i<B.p.length;i++){const a=B.p[i-1],z=B.p[i],w=1.4*(1-i/B.p.length*.55);
     SH.push([2,o.x+(a.x+ox)*K,o.y+(a.y+oy)*K,o.x+(z.x+ox)*K,o.y+(z.y+oy)*K,w*K/2,.5,c[0],c[1],c[2],.85]);}
-  gpuShapes(pass,SH);
+  standAdd((ps,bl)=>gpuShapes(ps,SH,{blend:bl}));
 }

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 683 · top-level symbols: 7168
+Files: 683 · top-level symbols: 7174
 
 ## SYMBOLS
 
@@ -740,10 +740,10 @@ GSG                          src/21e2-surface-gpu.js:130
 GSG_WGSL                     src/21e2-surface-gpu.js:131
 GSK                          src/19ca-gpu-sky.js:84
 GSK_WGSL                     src/19ca-gpu-sky.js:85
-GSL                          src/21e2-surface-gpu.js:350
-GSL_WGSL                     src/21e2-surface-gpu.js:318
-GSN                          src/21e2-surface-gpu.js:461
-GSN_WGSL                     src/21e2-surface-gpu.js:450
+GSL                          src/21e2-surface-gpu.js:388
+GSL_WGSL                     src/21e2-surface-gpu.js:356
+GSN                          src/21e2-surface-gpu.js:499
+GSN_WGSL                     src/21e2-surface-gpu.js:488
 GSP                          src/16g-gpu-space.js:17
 GSP_DUST                     src/16g-gpu-space.js:80
 GSP_DUST_L                   src/16g-gpu-space.js:19
@@ -755,8 +755,8 @@ GSR_WGSL                     src/21e2-surface-gpu.js:19
 GSS                          src/21e2-surface-gpu.js:220
 GSS_WGSL                     src/21e2-surface-gpu.js:215
 GST_WGSL                     src/17c-system-draw.js:405
-GSW                          src/21e2-surface-gpu.js:419
-GSW_WGSL                     src/21e2-surface-gpu.js:373
+GSW                          src/21e2-surface-gpu.js:457
+GSW_WGSL                     src/21e2-surface-gpu.js:411
 GSY                          src/17g-gpu-system.js:18
 GSY_ORB_WGSL                 src/17g-gpu-system.js:19
 GSY_STAR_WGSL                src/17g-gpu-system.js:56
@@ -1785,10 +1785,11 @@ SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:142
 SURF_HOR                     src/19c-light.js:202
 SURF_LND                     src/21e3-surface-stand-gpu.js:187
-SURF_NEAR                    src/21e2-surface-gpu.js:462
-SURF_RF                      src/21e2-surface-gpu.js:420
+SURF_NEAR                    src/21e2-surface-gpu.js:500
+SURF_RF                      src/21e2-surface-gpu.js:458
 SURF_SHADOW                  src/21e2-surface-gpu.js:271
 SURF_SNAP_OK                 src/21e2-surface-gpu.js:274
+SURF_STAND                   src/21e2-surface-gpu.js:283
 SURF_TAG_FONT                src/21e3-surface-stand-gpu.js:85
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
@@ -2111,7 +2112,9 @@ bakeAt                       src/20ab-poi-gpu.js:148-153
 bakeCount                    tests/91zzzzy-bake.js:32-41
 bakeIdle                     tests/90-harness.js:436-443
 bakeKeep                     src/08c-gpu-kit.js:74-79
-bakePut                      src/20ab-poi-gpu.js:154-157
+bakePut                      src/20ab-poi-gpu.js:155
+bakeRect                     src/20ab-poi-gpu.js:154
+bakeStand                    src/20ab-poi-gpu.js:157
 bankTransform                src/03b-hull-paint.js:59-66
 banyaLive                    src/21ac1-base-banya.js:37-40
 banyaRested                  src/21ac1-base-banya.js:64
@@ -2524,7 +2527,7 @@ castMap                      src/19c1-cast.js:81-100
 castMapFor                   src/19c1-cast.js:103-108
 castOccH                     src/19c1-cast.js:53-62
 castShadeAt                  src/19c1-cast.js:64-76
-caveBody                     src/21e1-surface-world.js:542-591
+caveBody                     src/21e1-surface-world.js:543-592
 caveBoxFree                  src/22-mode-cave.js:239-243
 caveBuild                    src/22-mode-cave.js:105-174
 caveCeil                     src/22-mode-cave.js:67-72
@@ -3302,7 +3305,7 @@ drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:294-308
 drawSurfaceHud               src/21e-surface-draw.js:39-125
-drawSurfaceWorld             src/21e1-surface-world.js:10-538
+drawSurfaceWorld             src/21e1-surface-world.js:10-539
 drawSurvey                   src/12w-survey.js:63-83
 drawSysHud                   src/17-mode-system.js:727-1053
 drawSysLane                  src/17g-sys-lane.js:112-138
@@ -4935,9 +4938,9 @@ mineDeep                     src/23a-dig-draw.js:562-565
 mineKey                      src/23a-dig-draw.js:551
 mineLay                      src/13a-guns.js:267-275
 mineLoad                     src/23a-dig-draw.js:566-575
-mineMul                      src/21e1-surface-world.js:595-613
-mineOver                     src/21e1-surface-world.js:614-643
-mineRopeGpu                  src/21e1-surface-world.js:645-651
+mineMul                      src/21e1-surface-world.js:596-614
+mineOver                     src/21e1-surface-world.js:615-644
+mineRopeGpu                  src/21e1-surface-world.js:646-652
 mineSave                     src/23a-dig-draw.js:576-585
 mineSpotX                    src/23a-dig-draw.js:558-561
 minedUnit                    src/11-log.js:171-179
@@ -5537,7 +5540,7 @@ poiBody                      src/20a-poi.js:168-172
 poiC                         src/20ab-poi-gpu.js:33
 poiDrift                     src/20a-poi.js:147-165
 poiGlow                      src/20a-poi.js:78-84
-poiGpu                       src/20ab-poi-gpu.js:175-196
+poiGpu                       src/20ab-poi-gpu.js:175-199
 poiInspect                   src/20b-poi-find.js:104-137
 poiLArc                      src/20ab-poi-gpu.js:65-72
 poiLDisc                     src/20ab-poi-gpu.js:43-47
@@ -6548,6 +6551,9 @@ stampPage                    src/17i-stamp.js:94-121
 stampPirate                  src/17i-stamp.js:69-80
 stampShow                    src/17i-stamp.js:82-92
 stampText                    src/17i-stamp.js:27-40
+standAdd                     src/21e2-surface-gpu.js:284-287
+standFlush                   src/21e2-surface-gpu.js:288-292
+standLayer                   src/21e2-surface-gpu.js:294-311
 standPass                    src/20ab-poi-gpu.js:140-143
 stapelAll                    src/26e1-stapel.js:27-32
 stapelBlock                  src/26e1-stapel.js:164-234
@@ -6658,7 +6664,7 @@ supportCall                  src/05b1-warranty.js:20-27
 supportQueue                 src/05b1-warranty.js:29-34
 supportTick                  src/05b1-warranty.js:35-44
 surfBar                      src/21e3-surface-stand-gpu.js:99-107
-surfCastGpu                  src/21e2-surface-gpu.js:275-304
+surfCastGpu                  src/21e2-surface-gpu.js:312-342
 surfDepositGpu               src/21e3-surface-stand-gpu.js:11-34
 surfGroundGpu                src/21e2-surface-gpu.js:175-211
 surfHeightTex                src/21e2-surface-gpu.js:80-94
@@ -6667,17 +6673,17 @@ surfLander2D                 src/21e3-surface-stand-gpu.js:150-172
 surfLanderGpu                src/21e3-surface-stand-gpu.js:188-235
 surfLanderHot                src/21e3-surface-stand-gpu.js:181
 surfLanderNite               src/21e3-surface-stand-gpu.js:182
-surfNearGpu                  src/21e2-surface-gpu.js:474-487
+surfNearGpu                  src/21e2-surface-gpu.js:512-525
 surfNight                    src/06a-celest.js:43-50
 surfNightGpu                 src/21e4-surface-night-gpu.js:59-80
-surfRelightGpu               src/21e2-surface-gpu.js:351-363
+surfRelightGpu               src/21e2-surface-gpu.js:389-401
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
 surfScale                    src/21e-surface-draw.js:293
 surfShadeGpu                 src/21e2-surface-gpu.js:221-227
 surfShadowShapes             src/21e3-surface-stand-gpu.js:175-180
-surfSnap                     src/21e2-surface-gpu.js:464-473
+surfSnap                     src/21e2-surface-gpu.js:502-511
 surfTag                      src/21e3-surface-stand-gpu.js:86-97
-surfWaterGpu                 src/21e2-surface-gpu.js:421-442
+surfWaterGpu                 src/21e2-surface-gpu.js:459-480
 surfaceHint                  src/21e-surface-draw.js:4-20
 surveyColor                  src/12w-survey.js:58
 surveyLegs                   src/12w-survey.js:48-56
@@ -8118,7 +8124,7 @@ zoomTo                       src/15-input.js:350
 ## src/20aa-poi-shapes.js · 29 KB
   · фигуры находок: одна функция на вид:1
 
-## src/20ab-poi-gpu.js · 13 KB
+## src/20ab-poi-gpu.js · 14 KB
   · постройки на движке (G15):1
 
 ## src/20b-poi-find.js · 11 KB
@@ -8260,16 +8266,17 @@ zoomTo                       src/15-input.js:350
 ## src/21e-surface-draw.js · 20 KB
   · поверхность: подсказка, HUD и кадр:1
 
-## src/21e1-surface-world.js · 47 KB
+## src/21e1-surface-world.js · 48 KB
   · поверхность: сам мир (выделено из 21e, M415):1
 
-## src/21e2-surface-gpu.js · 31 KB
+## src/21e2-surface-gpu.js · 34 KB
   · поверхность на видеокарте (G6, docs/DESIGN-gpu.md):1
   · ближний грунт: ломти текстурами и порода под светом:121
   · падающие тени того, что стоит:229
-  · то, что стоит, — светом мира:306
-  · вода: зеркало на видеокарте:365
-  · передний план не в фокусе:444
+  · слой стоящего (G15):275
+  · то, что стоит, — светом мира:344
+  · вода: зеркало на видеокарте:403
+  · передний план не в фокусе:482
 
 ## src/21e3-surface-stand-gpu.js · 14 KB
   · стоящее на поверхности — двойники видеокарты (G15):1

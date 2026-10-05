@@ -151,10 +151,10 @@ function bakeAt(id,key,hw,top,bot,f){
   withCtx(cn,w,h,0,0,g=>{g.translate(hw,top);f(g);});
   const B={key,cn,w,h,cy:(bot-top)/2};BK_AT.set(id,B);return B;
 }
-function bakePut(pass,B,x,y,blend){
-  const o=lifeHere(0,0),K=o.s;
-  gpuImage(pass,B.cn,[{x:o.x+x*K,y:o.y+(y+B.cy)*K,w:B.w*K,h:B.h*K}],blend?{blend}:undefined);
-}
+function bakeRect(B,x,y){const o=lifeHere(0,0),K=o.s;return {x:o.x+x*K,y:o.y+(y+B.cy)*K,w:B.w*K,h:B.h*K};}
+function bakePut(pass,B,x,y,blend){gpuImage(pass,B.cn,[bakeRect(B,x,y)],blend?{blend}:undefined);}
+/* выпечка в слой стоящего (21e2): место считается сейчас, по матрице этого кадра */
+function bakeStand(B,x,y){const r=bakeRect(B,x,y);standAdd((ps,bl)=>gpuImage(ps,B.cn,[r],{blend:bl}));}
 /* мягкое пятно тени: радиальный спад, растянутый в эллипс — один холст на всю игру */
 let POI_SHTEX=null;
 function poiShadowTex(){
@@ -177,20 +177,23 @@ function poiGpu(tr,camx,camy,p){
   const vis=[];
   for(const q of tr.poi){const x=q.x-camx;if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;vis.push(q);}
   if(!vis.length)return true;
-  const pass=standPass();if(!pass)return false;
+  if(!GPU.overPass&&!standPass())return false;
   const o=lifeHere(0,0),K=o.s,pal=p.T.pal,[dark,lite]=poiTone(pal);   /* кадр — по матрице ctx (масштаб мира) */
-  const sh=[];
+  /* пятна теней — только без слоя стоящего: в слое тень даёт поле по силуэту (21e2) */
+  const sh=[],L=[];
   for(const q of vis){const rx=q.h*(q.k==="wreck"?1.1:(q.k==="ring"?.9:.55));
     sh.push(poiShadowRect(q.x-camx+rx*.12,q.y-camy+3,rx,Math.max(4,rx*.15),.55,o));}
-  gpuImage(pass,poiShadowTex(),sh);
   const c0=ctx;
   for(const q of vis){
     const x=q.x-camx,y=q.y-camy,B=poiBake(q,tr,p,dark,lite);
-    gpuImage(pass,B.cn,[{x:o.x+(x+B.cx)*K,y:o.y+(y+B.cy)*K,w:B.w*K,h:B.h*K}]);
     POI_SH.length=0;POI_NULL.m=[K,0,0,K,o.x+x*K,o.y+y*K];POI_NULL.st.length=0;
     POI_SEED=q.seed;POI_MAT=null;POI_PH="live";ctx=POI_NULL;
     try{poiShape(q,rng(q.seed),dark,lite,pal);}finally{ctx=c0;POI_PH="";}
-    if(POI_SH.length)gpuShapes(pass,POI_SH,{blend:"over"});
+    L.push([B.cn,{x:o.x+(x+B.cx)*K,y:o.y+(y+B.cy)*K,w:B.w*K,h:B.h*K},POI_SH.slice()]);
   }
+  standAdd((pass,bl,layer)=>{
+    if(!layer)gpuImage(pass,poiShadowTex(),sh);
+    for(const [cn,r,S] of L){gpuImage(pass,cn,[r],{blend:bl});if(S.length)gpuShapes(pass,S,{blend:bl});}
+  });
   return true;
 }

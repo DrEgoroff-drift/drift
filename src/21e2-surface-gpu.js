@@ -204,7 +204,7 @@ function surfGroundGpu(tr,camx,camy,fill,line,pal){
   U[12]=sc[0]/ls;U[13]=sc[1]/ls;U[14]=sc[2]/ls;
   U[16]=am[0]/la;U[17]=am[1]/la;U[18]=am[2]/la;
   gpuField(pass,"sground",GSG_WGSL,U,[HT],{blend:"mul"});
-  SURF_P2=pass;
+  SURF_P2=pass;SURF_STAND.length=0;
   /* трава живая — кланяется ветру: каждый кадр фигурами в том же проходе (21e3), 2D — запасной путь */
   if(!groundGrassGpu(pass,tr,camx,camy))drawGroundGrass(tr,camx,camy);
   return true;
@@ -272,22 +272,59 @@ let SURF_SHADOW=null,SURF_P2=null;
 /* телефон — тот же признак, что режет плотность кадра (08-state): узкая сторона ≤ 760
    и палец вместо мыши. Читается раз, при загрузке: кадр DOM не читает */
 const SURF_SNAP_OK=(()=>{try{return !(Math.min(window.innerWidth,window.innerHeight)<=760&&matchMedia("(pointer:coarse)").matches);}catch(e){return true;}})();
+/* ══════════════ слой стоящего (G15) ══════════════
+   Двойники того, что стоит на грунте (постройки, пещера, шахта…), в проходе грунта
+   не рисуются сразу: они встают в очередь и при тени ложатся в слой стоящего — ту
+   самую текстуру, куда снимался #c. Оттуда падающая тень и свет мира берут их так
+   же, как брали 2D, а снимок #c нужен только тому, что ещё рисуется на #c. Без слоя
+   (ночь, телефон, нет прохода грунта) очередь ложится прямо в проход.
+   fn(pass,blend,layer): blend — чем класть ("bake" в слое пишет альфу-маску, "over"
+   в проходе), layer — в слое ли (тогда свои пятна теней не нужны: их даёт поле) */
+const SURF_STAND=[];
+function standAdd(fn){
+  if(GPU.on&&GPU.overPass&&GPU.overPass===SURF_P2&&SURF_SNAP_OK){SURF_STAND.push(fn);return;}
+  const pass=standPass();if(pass)fn(pass,"over",false);
+}
+function standFlush(){
+  const pass=GPU.overPass;
+  for(const fn of SURF_STAND)if(pass)fn(pass,"over",false);
+  SURF_STAND.length=0;
+}
+/* слой стоящего: #c (если на нём рисовали) снимком, поверх — очередь двойников */
+function standLayer(old,snap){
+  const d=GPU.dev,U=GPUTextureUsage;
+  if(!old||old.dev!==d||old.w!==GPU.bw||old.h!==GPU.bh||old.f!==1){
+    if(old&&old.dev===d)GPU.trash.push(old.tex);
+    const tex=d.createTexture({size:[GPU.bw,GPU.bh],format:"rgba16float",usage:U.TEXTURE_BINDING|U.COPY_DST|U.RENDER_ATTACHMENT});
+    old={dev:d,w:GPU.bw,h:GPU.bh,tex,view:tex.createView(),f:1};
+  }
+  if(snap)d.queue.copyExternalImageToTexture({source:cvs},{texture:old.tex,premultipliedAlpha:true},[GPU.bw,GPU.bh]);
+  if(SURF_STAND.length){
+    /* проход грунта закрывается на время слоя и открывается заново поверх того же кадра */
+    GPU.overPass.end();
+    const lp=GPU.enc.beginRenderPass({colorAttachments:[{view:old.view,loadOp:snap?"load":"clear",clearValue:{r:0,g:0,b:0,a:0},storeOp:"store"}]});
+    try{for(const fn of SURF_STAND)fn(lp,"bake",true);}
+    finally{lp.end();SURF_STAND.length=0;
+      GPU.overPass=SURF_P2=GPU.enc.beginRenderPass({colorAttachments:[{view:GPU.V.scene,loadOp:"load",storeOp:"store"}]});}
+  }
+  return old;
+}
 function surfCastGpu(tr,p,camx,camy){
   /* только в проходе грунта этого кадра: если между ним и нами кто-то открыл
      свой слой, тень легла бы поверх предметов */
   const pass=GPU.overPass;
-  if(!GPU.on||!pass||pass!==SURF_P2||!tr.farH)return false;
+  if(!GPU.on||!pass||pass!==SURF_P2||!tr.farH){standFlush();return false;}
   const day=dayK(p);
-  if(GPU.cState===0)return false;           /* на #c ничего не стоит — заслонять нечему */
+  if(GPU.cState===0&&!SURF_STAND.length)return false;   /* ничего не стоит — заслонять нечему */
   /* снимок #c посреди кадра на телефоне останавливает конвейер: S23 в полдень с двумя
      снимками (этот и передний план) — 31 кадр против 60. Там и ночью (звезда под
      горизонтом: ни тени, ни света с её стороны) стоящее остаётся на #c, как было до
      видеокарты; null — ходок и кусты тоже 2D, иначе двойник в проходе грунта ушёл бы
-     под постройку */
-  if(!SURF_SNAP_OK||celSun(p).alt<-.09)return null;
+     под постройку. Очередь двойников тогда — прямо в проход */
+  if(!SURF_SNAP_OK||celSun(p).alt<-.09){standFlush();return GPU.cState===0?false:null;}
   /* снимок #c — очередью, сейчас: тень рисуется позже, при отправке кадра, а к тому
      времени #c дорисован подписями и погодой */
-  SURF_SHADOW=surfSnap(SURF_SHADOW);
+  SURF_SHADOW=standLayer(SURF_SHADOW,GPU.cState!==0);
   const HT=surfHeightTex(tr),F=GSC;F.fill(0);
   F[0]=camx;F[1]=camy;F[4]=tr.step;F[5]=tr.N;F[6]=HT.mid;
   /* звезда низко — тень длинная; сдвиг от звезды, сплющенная полоса земли */
@@ -298,8 +335,9 @@ function surfCastGpu(tr,p,camx,camy){
   F[10]=clamp(day*1.4,0,1)*(vac?.78:.62)*clamp(lu(sc)/150,0,1);F[11]=260;
   const am=ambRGB(p),la=lu(am);
   F[12]=am[0]/la*.42;F[13]=am[1]/la*.42;F[14]=am[2]/la*.42;
-  gpuField(pass,"scast",GSC_WGSL,F,[HT,SURF_SHADOW],{blend:"mul"});
-  surfRelightGpu(tr,p,camx,camy,pass,HT);
+  const P2=GPU.overPass;   /* слой стоящего мог переоткрыть проход грунта */
+  gpuField(P2,"scast",GSC_WGSL,F,[HT,SURF_SHADOW],{blend:"mul"});
+  surfRelightGpu(tr,p,camx,camy,P2,HT);
   return true;
 }
 
