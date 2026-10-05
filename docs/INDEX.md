@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 684 · top-level symbols: 7182
+Files: 684 · top-level symbols: 7184
 
 ## SYMBOLS
 
@@ -2486,7 +2486,9 @@ brockTex                     src/24be-belt-rock-gpu.js:164-174
 brownBuf                     src/10-music.js:125
 brownNoise                   src/10-music.js:126-141
 buildAi                      src/12f-mgr-ai.js:29-48
+builtGpu                     src/21c-built.js:109-139
 builtHere                    src/21c-built.js:18-39
+builtMast                    src/21c-built.js:141
 builtSpot                    src/21c-built.js:42-63
 buoyEtherLine                src/12ae-ladder.js:123-137
 burstFx                      src/13z-gpu-combat.js:177-180
@@ -3183,7 +3185,7 @@ drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-646
 drawBargesMap                src/12l-barge.js:648-667
 drawBase                     src/21ac-base-draw.js:372-681
-drawBaseBuilding             src/21c-built.js:105-136
+drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
 drawBeastAlien               src/20f-fauna.js:68-238
@@ -3191,7 +3193,7 @@ drawBelt                     src/24-mode-belt.js:362
 drawBeltRocks                src/17c-system-draw.js:29-83
 drawBillboard                src/17k-billboard.js:182-196
 drawBuildMenu                src/21aa-base-rooms.js:576-592
-drawBuilt                    src/21c-built.js:64-101
+drawBuilt                    src/21c-built.js:64-102
 drawCantinaRoom              src/27d-ui-cantina.js:42-75
 drawCave                     src/22-mode-cave.js:729-739
 drawCaveFar                  src/22-mode-cave.js:610-646
@@ -8268,7 +8270,7 @@ zoomTo                       src/15-input.js:350
 ## src/21bc-deco-gpu.js · 5 KB
   · формы рельефа на видеокарте (G15):1
 
-## src/21c-built.js · 9 KB
+## src/21c-built.js · 13 KB
   · ваша база видна с земли:1
 
 ## src/21d-battery.js · 4 KB

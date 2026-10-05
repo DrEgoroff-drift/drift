@@ -68,6 +68,7 @@ function drawBuilt(tr,camx,camy,p){
     const x=sp.x-camx,y=sp.y-camy;
     if(x<-360||x>W+360)continue;
     const hgt=150;
+    if(builtGpu(b,sp,tr,p,x,y,hgt))continue;
     ctx.save();ctx.globalAlpha=.7;
     groundShadow(x-60,y+2,140,7);
     ctx.restore();
@@ -96,41 +97,106 @@ function drawBuilt(tr,camx,camy,p){
     ctx.strokeRect(x-tw/2-5.5,ly-9.5,tw+11,14);
     ctx.fillStyle="rgba("+col+",.95)";ctx.fillText(lab,x,ly);
     ctx.strokeStyle="rgba("+col+",.35)";                    // выноска к крыше
-    ctx.beginPath();ctx.moveTo(x,ly+5);ctx.lineTo(x,y-hgt-6);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x,ly+5);ctx.lineTo(x,y-hgt*.82-3);ctx.stroke();
   }
 }
 /* ── ангар базы ──
    Куб на опорах, шлюз, мачта связи и панели: то же, что игрок видит в разрезе
    (`21a-mode-base`), только снаружи и целиком. */
-function drawBaseBuilding(b,hgt){
-  const w=104,h=hgt;
-  const g=ctx.createLinearGradient(0,-h,0,0);
-  g.addColorStop(0,"rgba(58,70,84,1)");g.addColorStop(1,"rgba(26,32,42,1)");
-  ctx.fillStyle=g;
-  ctx.beginPath();
-  ctx.moveTo(-w/2,0);ctx.lineTo(-w/2,-h*.62);ctx.lineTo(-w*.3,-h*.82);
-  ctx.lineTo(w*.3,-h*.82);ctx.lineTo(w/2,-h*.62);ctx.lineTo(w/2,0);
-  ctx.closePath();ctx.fill();
-  ctx.strokeStyle="rgba(143,208,138,.35)";ctx.lineWidth=1.4;ctx.stroke();
+/* с видеокартой (G15): тело печётся раз на свет и ложится в слой стоящего — тень
+   и свет мира от него, как от находок; мигалка мачты живая, поверх выпечки;
+   подпись — в слой интерфейса (#ovl), тем же рисунком, что 2D */
+function builtGpu(b,sp,tr,p,x,y,hgt){
+  if(typeof GPU==="undefined"||!GPU.ok||!GPU.on||!GPU.enc||typeof SUN_DIR!=="object")return false;
+  const gp=standPass();if(!gp)return false;
+  const o=lifeHere(0,0),hw=136,top=Math.ceil(hgt*1.2+12);
+  const k=p.seed+"|"+sp.x+"|"+sp.y+"|"+b.lvl+"|d"+dayKq(p)+"|a"+sunAzQ(p)+"|"+DPR+"|"+SCK;
+  const shs=[poiShadowRect(x+10,y+2,70,3.5,.7,o)];
+  standAdd((ps,bl,layer)=>{if(!layer)gpuImage(ps,poiShadowTex(),shs);});
+  bakeStand(bakeAt("built|"+b.kind,k,hw,top,12,g=>{
+    groundClip(g,tr,sp.x,sp.y,hw,top,8);
+    drawBaseBuilding(b,hgt,true);
+    poiLight(g,{h:hgt},hw,top,p,tr,sp.x,sp.y);
+  }),x,y);
+  const M=builtMast(hgt),m=lifeHere(x+M.x,y+M.y),on=Math.sin(G.t*.2)>0;
+  const L=[[1,m.x,m.y,2.6*m.s,0,0,0,255,90,70,on?.95:.25]];
+  if(on)L.unshift([1,m.x,m.y,7*m.s,0,0,5*m.s,255,90,70,.22]);   /* ореол горящей мигалки */
+  standAdd((ps,bl)=>gpuShapes(ps,L,{blend:bl}));
+  /* подпись на подложке и выноска к крыше */
+  const col="143,208,138",lab=b.ru+" · ячеек "+b.lvl,ly=y-hgt-30;
+  const a=lifeHere(x,ly),s=a.s;
+  domLabel("built|"+b.kind,a.x,a.y,lab,+(9*s).toFixed(2)+"px ui-monospace,monospace","rgba("+col+",.95)","center",1);
+  const e=OVL.lab.get("built|"+b.kind);
+  if(e){
+    const x0=e.x0-6*s,x1=e.x1+6*s,y0=a.y-10*s,y1=a.y+5*s,t=s,bc="rgba("+col+",.5)";
+    ovRect(x0,y0,x1,y1,"rgba(6,10,16,.8)",1);
+    ovRect(x0,y0,x1,y0+t,bc,1);ovRect(x0,y1-t,x1,y1,bc,1);
+    ovRect(x0,y0,x0+t,y1,bc,1);ovRect(x1-t,y0,x1,y1,bc,1);
+  }
+  const r=lifeHere(x,y-hgt*.82-3);
+  ovRect(a.x-.5*s,a.y+5*s,a.x+.5*s,r.y,"rgba("+col+",.35)",1);
+  return true;
+}
+/* мачта базы: подножие на крыше и мигалка — одно место для 2D и для живой мигалки */
+function builtMast(h){return {x0:104*.22+8,y0:-h*.82-4.5,x:104*.25+8,y:-h*1.12};}
+function drawBaseBuilding(b,hgt,still){
+  const w=104,h=hgt,d=16,e=-9;            // глубина: грань уходит вправо-вверх
+  const hw=w/2,hr=h*.62,ht=h*.82,wt=w*.3;
+  const poly=(pts,f)=>{ctx.beginPath();ctx.moveTo(pts[0],pts[1]);
+    for(let i=2;i<pts.length;i+=2)ctx.lineTo(pts[i],pts[i+1]);ctx.closePath();ctx.fillStyle=f;ctx.fill();};
+  /* солнечные панели на стойках — до корпуса, они стоят за ним */
+  for(let i=0;i<3;i++){
+    const cx=-hw-18-i*22,cy=-h*.17-i*3;
+    ctx.strokeStyle="rgba(40,48,58,1)";ctx.lineWidth=1.8;
+    ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,cy);ctx.stroke();
+    poly([cx-11,cy+4,cx+10,cy-6,cx+11,cy-1,cx-10,cy+9],"rgba(34,58,96,1)");
+    ctx.strokeStyle="rgba(127,176,230,.8)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx-11,cy+4);ctx.lineTo(cx+10,cy-6);ctx.stroke();
+    ctx.strokeStyle="rgba(127,176,230,.25)";
+    for(const t of [-.33,.33]){ctx.beginPath();ctx.moveTo(cx+t*21-.5,cy-t*10-1);ctx.lineTo(cx+t*21+.5,cy-t*10+4);ctx.stroke();}
+  }
   /* опоры: без них куб лежит на грунте брюхом */
   ctx.fillStyle="rgba(30,36,46,1)";
-  for(const s of [-1,1])ctx.fillRect(s*w*.36-4,-h*.12,8,h*.12);
+  for(const sd of [-1,1])ctx.fillRect(sd*w*.36-4,-h*.12,8,h*.12);
+  /* боковая грань и крыша — объём; лицо рисуется последним и перекрывает стык */
+  poly([hw,-h*.1,hw+d,-h*.1+e,hw+d,-hr+e,hw,-hr],"rgba(22,27,36,1)");
+  poly([hw,-hr,wt,-ht,wt+d,-ht+e,hw+d,-hr+e],"rgba(44,53,66,1)");
+  poly([-wt,-ht,wt,-ht,wt+d,-ht+e,-wt+d,-ht+e],"rgba(84,98,114,1)");
+  const g=ctx.createLinearGradient(0,-h,0,0);
+  g.addColorStop(0,"rgba(62,75,90,1)");g.addColorStop(1,"rgba(28,34,44,1)");
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.moveTo(-hw,-h*.1);ctx.lineTo(-hw,-hr);ctx.lineTo(-wt,-ht);
+  ctx.lineTo(wt,-ht);ctx.lineTo(hw,-hr);ctx.lineTo(hw,-h*.1);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(143,208,138,.35)";ctx.lineWidth=1.4;ctx.stroke();
+  /* швы этажей — корпус собран из колец, а не отлит */
+  ctx.fillStyle="rgba(0,0,0,.22)";
+  for(let r=1;r<4;r++)ctx.fillRect(-hw+2,-h*.1-r*h*.13,w-4,1);
+  ctx.fillStyle="rgba(255,255,255,.06)";
+  for(let r=1;r<4;r++)ctx.fillRect(-hw+2,-h*.1-r*h*.13+1,w-4,1);
   /* ряды окон: свет изнутри — единственное, что говорит «тут живут» */
   for(let r=0;r<3;r++)for(let c=0;c<5;c++){
-    const on=((r*5+c)%3)!==1;
-    ctx.fillStyle=on?"rgba(255,226,180,.75)":"rgba(20,26,34,.9)";
-    ctx.fillRect(-w*.36+c*w*.17,-h*.7+r*h*.18,10,7);
+    const on=((r*5+c)%3)!==1,x=-w*.36+c*w*.17,y=-h*.7+r*h*.18;
+    if(on){ctx.fillStyle="rgba(255,196,130,.10)";ctx.fillRect(x-3,y-3,16,13);}
+    ctx.fillStyle="rgba(12,16,22,1)";ctx.fillRect(x-1,y-1,12,9);
+    ctx.fillStyle=on?"rgba(255,226,180,.82)":"rgba(26,34,44,1)";
+    ctx.fillRect(x,y,10,7);
+    if(on){ctx.fillStyle="rgba(255,244,220,.5)";ctx.fillRect(x,y,10,2);}
   }
   ctx.fillStyle="rgba(18,22,30,1)";                    // шлюз
-  ctx.fillRect(-13,-h*.24,26,h*.24);
-  ctx.fillStyle="rgba(143,208,138,.5)";ctx.fillRect(-13,-h*.24,26,2);
-  ctx.strokeStyle="rgba(120,140,160,.6)";ctx.lineWidth=1.6; // мачта
-  ctx.beginPath();ctx.moveTo(w*.4,-h*.62);ctx.lineTo(w*.44,-h*1.15);ctx.stroke();
-  ctx.fillStyle=(Math.sin(G.t*.2)>0)?"rgba(255,90,70,.95)":"rgba(255,90,70,.25)";
-  ctx.beginPath();ctx.arc(w*.44,-h*1.17,2.6,0,TAU);ctx.fill();
-  ctx.strokeStyle="rgba(127,176,230,.5)";ctx.lineWidth=1.2;  // панели
-  for(let i=0;i<3;i++){
-    ctx.beginPath();
-    ctx.moveTo(-w*.5-6-i*11,-h*.3);ctx.lineTo(-w*.5-2-i*11,-h*.52);ctx.stroke();
+  ctx.fillRect(-13,-h*.24,26,h*.24-h*.1);
+  ctx.fillStyle="rgba(143,208,138,.55)";ctx.fillRect(-13,-h*.24,26,2);
+  ctx.fillStyle="rgba(143,208,138,.18)";ctx.fillRect(-1,-h*.24+4,2,h*.14-6);
+  /* мачта стоит на крыше: короб, ствол, поперечина */
+  const M=builtMast(h),mx0=M.x0,my0=M.y0;
+  ctx.fillStyle="rgba(36,43,54,1)";ctx.fillRect(mx0-5,my0-5,10,6);
+  ctx.strokeStyle="rgba(120,140,160,.8)";ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(mx0,my0-5);ctx.lineTo(M.x,M.y+2.6);ctx.stroke();
+  const my=lerp(my0,M.y,.55),mx=lerp(mx0,M.x,.55);
+  ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(mx-6,my);ctx.lineTo(mx+6,my);ctx.stroke();
+  if(!still){            /* выпечка (builtGpu) мигалку не держит — она живая, поверх */
+    ctx.fillStyle=(Math.sin(G.t*.2)>0)?"rgba(255,90,70,.95)":"rgba(255,90,70,.25)";
+    ctx.beginPath();ctx.arc(M.x,M.y,2.6,0,TAU);ctx.fill();
   }
 }
