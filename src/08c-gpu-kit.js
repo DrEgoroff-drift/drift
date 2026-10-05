@@ -256,7 +256,9 @@ function gpuImage(pass,cv,rects,o){
    внутреннее ребро сетки жёсткое, пиксель достаётся ровно одному треугольнику — ни шва, ни
    лишнего света у острых углов; наружные гладятся по полуплоскости.
    soft>0 — мягкая кромка такой ширины (свечение, боке); o.blend: over | add.
-   вид 6 — прямоугольник (x0,y0)-(x1,y1) со скруглением углов радиуса hw (выработка шахты, 23ac) */
+   вид 6 — прямоугольник (x0,y0)-(x1,y1) со скруглением углов радиуса hw (выработка шахты, 23ac);
+   вид 7 — прямоугольник, прозрачность шатром по x: ноль по краям, a посередине (полосы тумана,
+   пласты пыли); вид 8 — прямоугольник, прозрачность по y линейно от a сверху до hw снизу (пелена) */
 const GPU_SHP_WGSL=GPU_KIT_WGSL+GPU_WGSL_COMMON+`
 @group(0) @binding(1) var<storage,read> sq:array<vec4f>;
 struct SO{@builtin(position) p:vec4f,@location(0) col:vec4f,@location(1) @interpolate(flat) g:vec4f,@location(2) @interpolate(flat) h:vec4f};
@@ -283,6 +285,10 @@ fn sdTri(p:vec2f,a:vec2f,b:vec2f,c:vec2f)->f32{
   return -sqrt(w.x)*sign(w.y);}
 @fragment fn fs(i:SO)->@location(0) vec4f{
   var p=i.p.xy;let k=i.h.x;var cov=0.;
+  if(k>6.5){let al0=covRect(p,i.g);var w=1.;
+    if(k>7.5){w=mix(1.,i.h.y/ku.res.z/max(i.col.a,1e-4),clamp((p.y-i.g.y)/max(i.g.w-i.g.y,1e-3),0.,1.));}
+    else{w=1.-abs(2.*clamp((p.x-i.g.x)/max(i.g.z-i.g.x,1e-3),0.,1.)-1.);}
+    let al=i.col.a*al0*w;return vec4f(i.col.rgb*al,al);}
   if(k>5.5){let r=min(i.h.y,min(i.g.z-i.g.x,i.g.w-i.g.y)*.5);let q=abs(p-(i.g.xy+i.g.zw)*.5)-(i.g.zw-i.g.xy)*.5+r;
     let al=i.col.a*clamp(.5-(length(max(q,vec2f(0.)))+min(max(q.x,q.y),0.)-r),0.,1.);return vec4f(i.col.rgb*al,al);}
   if(k>4.5){let A=i.g.xy;let B=i.g.zw;let C=i.h.yz;let m=u32(i.h.w+.5);var c=0.;

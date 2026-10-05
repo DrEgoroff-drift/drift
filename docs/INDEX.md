@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7090
+Files: 680 · top-level symbols: 7094
 
 ## SYMBOLS
 
@@ -154,7 +154,7 @@ BLD_SHIFTS                   src/12ac-bld.js:27
 BLOCK_GOODS                  src/13b1-blockade.js:7
 BLOCK_LINES                  src/13b1-blockade.js:8
 BLOG                         src/21a1-base-life.js:50-114
-BLOOM_K                      src/19c-light.js:298
+BLOOM_K                      src/19c-light.js:326
 BLUEPRINTS                   src/12c-mgr-core.js:669-675
 BLUE_TAB                     src/01-core.js:135
 BMGR_BY                      src/21b2-base-mgr.js:32
@@ -694,7 +694,7 @@ GPU_CH_R                     src/18c-chunks.js:185
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:66
 GPU_DROP_WHY                 tests/90-harness.js:104
 GPU_FLD                      src/08b0-gpu-pipe.js:33
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:331
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:337
 GPU_FRONT_LIKE               src/08b-gpu.js:525
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:191
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
@@ -711,9 +711,11 @@ GPU_PL_WGSL                  src/08b-gpu.js:477
 GPU_POST_WGSL                src/08b-gpu.js:74
 GPU_SCR                      src/08c-gpu-kit.js:172
 GPU_SCREEN_LAYERS            src/18c-chunks.js:193
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:260
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:262
 GPU_TONE_FILM                src/08b-gpu.js:513
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
+GRADE_U                      src/19c-light.js:263
+GRADE_WGSL                   src/19c-light.js:253
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
 GREEN_SP                     src/21g-greenhouse.js:68
@@ -3268,7 +3270,7 @@ drawScoop                    src/19a-mode-scoop.js:181-236
 drawSeal                     src/03e-hull-draw.js:47-58
 drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:71-111
-drawSkyBase                  src/19c-light.js:290
+drawSkyBase                  src/19c-light.js:318
 drawSkyLayer                 src/19-mode-landing.js:172-175
 drawSpa                      src/29i-spa-draw.js:62-80
 drawStModule                 src/17a-station-mod.js:105-216
@@ -3305,7 +3307,7 @@ drawWanderRoom               src/24c-mode-wanderer-draw.js:134-155
 drawWanderer                 src/12v-wander.js:337-441
 drawWater                    src/21e-surface-draw.js:194-282
 drawWear                     src/12s-wear.js:102-171
-drawWeather                  src/19d-weather.js:104-235
+drawWeather                  src/19d-weather.js:186-318
 drawWinter                   src/29g-winter-draw.js:365-386
 drawWorld                    src/28-loop.js:401-404
 drawWorldIn                  src/28-loop.js:405-428
@@ -3833,9 +3835,9 @@ gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:276-302
 gpuFail                      src/08b2-gpu-loss.js:26-30
-gpuField                     src/08c-gpu-kit.js:353-380
-gpuFieldBaked                src/08c-gpu-kit.js:388-398
-gpuFieldLayout               src/08c-gpu-kit.js:346-352
+gpuField                     src/08c-gpu-kit.js:359-386
+gpuFieldBaked                src/08c-gpu-kit.js:394-404
+gpuFieldLayout               src/08c-gpu-kit.js:352-358
 gpuFrame                     src/08b-gpu.js:544-557
 gpuFrontClean                src/08c-gpu-kit.js:126-131
 gpuFrontCopy                 src/08b-gpu.js:594-596
@@ -3874,7 +3876,7 @@ gpuPirateBody                src/12i-pirate-hull.js:425-434
 gpuPirateLive                src/12i-pirate-hull.js:441-485
 gpuPlanet                    src/17ga-gpu-planets.js:340-357
 gpuPresent                   src/08b-gpu.js:673-686
-gpuQuad                      src/08c-gpu-kit.js:310-314
+gpuQuad                      src/08c-gpu-kit.js:316-320
 gpuResize                    src/08b-gpu.js:392-434
 gpuScene                     src/08b-gpu.js:561-574
 gpuScene3D                   src/08b-gpu.js:578-586
@@ -3882,7 +3884,7 @@ gpuScr                       src/08c-gpu-kit.js:173
 gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
-gpuShapes                    src/08c-gpu-kit.js:315-326
+gpuShapes                    src/08c-gpu-kit.js:321-332
 gpuShock                     src/08b-gpu.js:460
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:287-378
@@ -3904,7 +3906,8 @@ gpuUni                       src/08b-gpu.js:526-540
 gpuWake                      src/16ga-gpu-trail.js:107-139
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
 gpuWorld                     src/08b-gpu.js:643-664
-gradePass                    src/19c-light.js:250-286
+gradeGpu                     src/19c-light.js:264-275
+gradePass                    src/19c-light.js:276-314
 greenAll                     src/21g-greenhouse.js:26-30
 greenCanSow                  src/21g-greenhouse.js:50-52
 greenDraw                    src/21g-greenhouse.js:201-206
@@ -7012,6 +7015,7 @@ wearService                  src/12s-wear.js:52-58
 wearServiceTo                src/12s-wear.js:81-88
 wearTick                     src/12s-wear.js:26-34
 wearYardCost                 src/12s-wear.js:91-94
+weatherGpu                   src/19d-weather.js:109-185
 weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
@@ -7246,7 +7250,7 @@ zoomTo                       src/15-input.js:350
 ## src/08bi-gpu-ovl.js · 27 KB
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
-## src/08c-gpu-kit.js · 31 KB
+## src/08c-gpu-kit.js · 32 KB
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/08ca-gpu-canvas.js · 60 KB
@@ -7998,10 +8002,10 @@ zoomTo                       src/15-input.js:350
 ## src/19b-sky.js · 6 KB
   · небо:1
 
-## src/19c-light.js · 24 KB
+## src/19c-light.js · 25 KB
   · свет и воздух:1
-  · свечение (bloom) — M243:291
-  · зерно и виньетка — один слой на все сцены (M244):301
+  · свечение (bloom) — M243:319
+  · зерно и виньетка — один слой на все сцены (M244):329
 
 ## src/19c1-cast.js · 9 KB
   · падающие тени: рельеф затеняет сам себя (P5, M433):1
@@ -8015,7 +8019,7 @@ zoomTo                       src/15-input.js:350
 ## src/19cc-gpu-air.js · 16 KB
   · облака, дымка и дальняя погода на движке (27.09.2026):1
 
-## src/19d-weather.js · 14 KB
+## src/19d-weather.js · 17 KB
   · погода:1
 
 ## src/19e-clouds.js · 5 KB

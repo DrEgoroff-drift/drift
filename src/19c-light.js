@@ -247,7 +247,35 @@ function lightShafts(p){
 /* ── финальная свёртка кадра ──
    виньетка и лёгкий цветовой сдвиг: две заливки, которые сводят разнородные
    слои в одну картинку. Всё, что тут делается, стоит два fillRect. */
+/* виньетка и тон на видеокарте (G15): та же радиальная рамка и тот же вертикальный сдвиг,
+   одним полем в последний проход мира, без слоя на #c и его загрузки. Затмение (насыщенность
+   уходит — режим saturation) поле не умеет: тогда вся свёртка 2D */
+const GRADE_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V=fu.v;
+  let av=clamp((length(p-V[0].xy)-V[0].z)/max(V[0].w-V[0].z,1.),0.,1.)*V[1].x;
+  let y=clamp((p.y-V[1].z)/max(V[1].y,1.),0.,1.);
+  var tc=vec3f(0.);var ta=0.;
+  if(y<.5){let u=y*2.;tc=V[2].rgb*(1.-u);ta=V[2].a*(1.-u);}
+  else{let u=y*2.-1.;tc=V[3].rgb*u;ta=V[3].a*u;}
+  return vec4f(tc*ta,1.-(1.-ta)*(1.-av));
+}`;
+const GRADE_U=new Float32Array(16);
+function gradeGpu(p,sun,amb,dk2){
+  if(!GPU.on)return false;
+  const pass=gpuNext();if(!pass)return false;
+  /* пиксель поля — в мерке кадра 2D (gpuField берёт W,H текущего withScale) */
+  const U=GRADE_U;
+  U[0]=W*.5;U[1]=H*.46;U[2]=Math.min(W,H)*.30;U[3]=Math.max(W,H)*.78;
+  U[4]=+lerp(.34,.22,dk2).toFixed(3);U[5]=H;U[6]=0;
+  for(let i=0;i<3;i++){U[8+i]=sun[i]/255;U[12+i]=amb[i]/255;}
+  U[11]=.07;U[15]=.09;
+  gpuField(pass,"grade",GRADE_WGSL,U,[]);
+  return true;
+}
 function gradePass(p){
+  const DK0=typeof celDark==="function"?celDark():0;
+  if(DK0<=.02&&gradeGpu(p,starRGB(),ambRGB(p),dayKq(p)))return;
   /* ── затмение сводится здесь, а не в небе ──
      Первый проход гасил только небо: сверху темнело, а грунт, флора и
      скафандр оставались дневными, и кадр разваливался на две картинки.
