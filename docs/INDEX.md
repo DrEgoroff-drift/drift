@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7100
+Files: 682 · top-level symbols: 7108
 
 ## SYMBOLS
 
@@ -29,7 +29,7 @@ $menu                        src/15-input.js:243
 $msg                         src/27z-telemetry.js:43
 $msl                         src/27z-telemetry.js:47
 $nav                         src/27z-telemetry.js:45
-$opts                        src/26-ui-station.js:720
+$opts                        src/26-ui-station.js:723
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:42
 $sh                          src/27z-telemetry.js:8
@@ -789,10 +789,10 @@ H3D_CARGO                    src/17c2a-hull3d.js:22
 H3D_LZ                       src/17c2a-hull3d.js:18
 H3D_MK                       src/17c2a-hull3d.js:21
 H3D_N                        src/17c2a-hull3d.js:16
-H3D_PIR                      src/17c2a-hull3d.js:341
+H3D_PIR                      src/17c2a-hull3d.js:353
 H3D_RING                     src/17c2a-hull3d.js:19
 H3D_SIDES                    src/17c2a-hull3d.js:17
-H3D_WGSL                     src/17c2a-hull3d.js:179
+H3D_WGSL                     src/17c2a-hull3d.js:191
 HAIL_HOLD                    src/12ar-hail.js:20
 HAIL_HOLD_PHONE              src/12ar-hail.js:23
 HAIL_RANGE                   src/12ar-hail.js:25
@@ -1384,6 +1384,11 @@ PROFILE                      src/02-world.js:146-159
 PROMPT_RECT                  src/08-state.js:114
 PR_VERBS                     tests/91zzzzzi-promise.js:34-44
 PU_CELLS                     tests/91zzzzzd-pure.js:28
+PYARD                        src/04c-yards.js:89
+PYARD_KEYS                   src/04c-yards.js:124
+PYARD_MAKERS                 src/04c-yards.js:81
+PYARD_MK                     src/04c-yards.js:18-80
+PYARD_N                      src/04c-yards.js:17
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24-45
 QSL_SPREAD                   src/11an-qsl.js:23
@@ -3713,7 +3718,7 @@ gestRect                     src/17h-sys-gesture.js:90
 gestShip                     src/17h-sys-gesture.js:91
 gestShipFrame                src/17h-sys-gesture.js:81-85
 gestTick                     src/17h-sys-gesture.js:52-79
-getSystem                    src/06-galaxy.js:95-189
+getSystem                    src/06-galaxy.js:95-198
 gexDraw                      src/16ga-gpu-trail.js:305-314
 gexPush                      src/16ga-gpu-trail.js:269-275
 ghf                          src/17ga-gpu-planets.js:370
@@ -4008,17 +4013,17 @@ gunSpecs                     src/05c-arms.js:207-218
 gunTotals                    src/05c-arms.js:336-350
 gunsInGroup                  src/05c-arms.js:230-233
 h01                          src/01-core.js:28
-h3dCls                       src/17c2a-hull3d.js:280-290
-h3dDesc                      src/17c2a-hull3d.js:262-270
-h3dDev                       src/17c2a-hull3d.js:272-278
-h3dDraw                      src/17c2a-hull3d.js:294-297
-h3dEar                       src/17c2a-hull3d.js:162-177
-h3dKit                       src/17c2a-hull3d.js:27-83
-h3dMesh                      src/17c2a-hull3d.js:90-160
-h3dPack                      src/17c2a-hull3d.js:85-89
-h3dPirMesh                   src/17c2a-hull3d.js:342-398
-h3dPirate                    src/17c2a-hull3d.js:400-403
-h3dRun                       src/17c2a-hull3d.js:299-335
+h3dCls                       src/17c2a-hull3d.js:292-302
+h3dDesc                      src/17c2a-hull3d.js:274-282
+h3dDev                       src/17c2a-hull3d.js:284-290
+h3dDraw                      src/17c2a-hull3d.js:306-309
+h3dEar                       src/17c2a-hull3d.js:174-189
+h3dKit                       src/17c2a-hull3d.js:27-90
+h3dMesh                      src/17c2a-hull3d.js:97-172
+h3dPack                      src/17c2a-hull3d.js:92-96
+h3dPirMesh                   src/17c2a-hull3d.js:354-410
+h3dPirate                    src/17c2a-hull3d.js:412-415
+h3dRun                       src/17c2a-hull3d.js:311-347
 hDraw                        tests/91zzzzzzz-hands.js:36
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
@@ -5913,8 +5918,8 @@ renderRoute                  src/12r-route.js:349-448
 renderSiteTab                src/26c-ui-station-site.js:7-130
 renderSmena                  src/12ud-smena.js:123-176
 renderStrips                 src/27i-ui-table.js:330-366
-renderTab                    src/26-ui-station.js:511-523
-renderTabBody                src/26-ui-station.js:524-716
+renderTab                    src/26-ui-station.js:514-526
+renderTabBody                src/26-ui-station.js:527-719
 renderThings                 src/27i-ui-table.js:379-404
 rentAi                       src/12f1-mgr-rent.js:23-35
 rentBaseBurning              src/12f1-mgr-rent.js:43-47
@@ -5962,7 +5967,7 @@ rescueSig                    src/16c-rescue.js:581
 rescueSigNow                 src/16c-rescue.js:580
 rescueSync                   src/16c-rescue.js:582-595
 rescueTake                   src/16c-rescue.js:121-168
-resetArm                     src/26-ui-station.js:719
+resetArm                     src/26-ui-station.js:722
 resetWorld                   tests/90-harness.js:261-418
 resize                       src/08-state.js:29-66
 retAll                       src/11s-returners.js:32
@@ -6299,7 +6304,7 @@ shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
 shipGearGpu                  src/05c-arms.js:315-335
-shipRow                      src/26-ui-station.js:455-500
+shipRow                      src/26-ui-station.js:455-503
 shipScaleAt                  src/16c-rescue.js:234
 shipScaleCap                 src/16c-rescue.js:233
 shipThumb                    src/26f-yard-gpu.js:7-11
@@ -6478,7 +6483,7 @@ stTabInstr                   src/26b-ui-station-work.js:230-384
 stTabLab                     src/26b-ui-station-work.js:316-384
 stTabMarket                  src/26e-ui-station-trade.js:148-267
 stTabMods                    src/26b-ui-station-work.js:105-384
-stTabYard                    src/26e-ui-station-trade.js:268-413
+stTabYard                    src/26e-ui-station-trade.js:268-421
 stTabsHere                   src/26-ui-station.js:175
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:379-392
@@ -6537,6 +6542,7 @@ stationNewsLines             src/26-ui-station.js:11-19
 stationParts                 src/03-ships.js:159-198
 stationUniqueOffer           src/03-ships.js:143-156
 stationViz                   src/17c-system-draw.js:99-104
+stationYard                  src/04c-yards.js:126-141
 stepWorld                    src/28-loop.js:378-398
 steps                        tests/90-harness.js:457
 stopEngine                   src/09-audio.js:369-373
@@ -7087,10 +7093,12 @@ yaltaAt                      src/12al-powers.js:164-171
 yaltaHere                    src/12al-powers.js:176
 yaltaIs                      src/12al-powers.js:172-175
 yaltaSealed                  src/12al-powers.js:179-183
+yardBeam                     src/04c-yards.js:84-88
 yardCanvas                   src/26f-yard-gpu.js:12-19
 yardDebris                   src/26e1-stapel.js:119-126
 yardDraw                     src/26f-yard-gpu.js:41-54
 yardFirmware                 src/26e1-stapel.js:129-146
+yardGate                     src/04c-yards.js:143-147
 yardHide                     src/26f-yard-gpu.js:20
 yardTick                     src/26f-yard-gpu.js:22-39
 zooAll                       src/11ad-zoo.js:15
@@ -7128,7 +7136,7 @@ zoomTo                       src/15-input.js:350
 ## src/02a-worldmix.js · 8 KB
   · смешанные миры:1
 
-## src/03-ships.js · 19 KB
+## src/03-ships.js · 20 KB
   · корабли: процедурные корпуса:1
   · лаборатория: сплав двух корпусов:28
   · класс корпуса:215
@@ -7159,6 +7167,9 @@ zoomTo                       src/15-input.js:350
 
 ## src/04b-fleet.js · 14 KB
   · флот: сто корпусов и их редкость:1
+
+## src/04c-yards.js · 11 KB
+  · верфи держав: свои линии корпусов у пяти заводов (M714):1
 
 ## src/05-parts.js · 27 KB
   · части корабля:1
@@ -7199,7 +7210,7 @@ zoomTo                       src/15-input.js:350
 ## src/05e-plan.js · 17 KB
   · чертёж корабля: клетки из корпуса и упаковщик (M476, DESIGN-shipyard §3, review §2.2):1
 
-## src/06-galaxy.js · 13 KB
+## src/06-galaxy.js · 14 KB
   · галактика:1
   · испечённое живёт не дольше, чем нужно (M332):4
 
@@ -7865,7 +7876,7 @@ zoomTo                       src/15-input.js:350
 ## src/17c2-hull-gpu.js · 18 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 31 KB
+## src/17c2a-hull3d.js · 32 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c3-station-live.js · 11 KB
@@ -8349,10 +8360,10 @@ zoomTo                       src/15-input.js:350
 ## src/25n-chess.js · 18 KB
   · шахматы по почте:1
 
-## src/26-ui-station.js · 51 KB
+## src/26-ui-station.js · 52 KB
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):340
-  · настройки:718
+  · настройки:721
 
 ## src/26a-ui-station-home.js · 21 KB
   · станция: вкладка «дом и базы»:1
@@ -8366,7 +8377,7 @@ zoomTo                       src/15-input.js:350
 ## src/26d-ui-wanderer.js · 5 KB
   · пульт «Сороки»: карточка витрины перед вами (M343):1
 
-## src/26e-ui-station-trade.js · 31 KB
+## src/26e-ui-station-trade.js · 32 KB
   · станция: доска, рынок и док (выделено из 26, M415):1
 
 ## src/26e1-stapel.js · 15 KB
@@ -8577,6 +8588,9 @@ zoomTo                       src/15-input.js:350
 ## tests/91l-fleet.js · 14 KB
   · автотесты: флот и фронт: сто корпусов, занятые системы, ранги, следы на земле:1
   · M234: у шахты есть адрес:180
+
+## tests/91l2-yards.js · 3 KB
+  · автотесты: верфи держав (M714):1
 
 ## tests/91m-nodes.js · 20 KB
   · автотесты: журнал, тысяча узлов и венцы, кантина, репутация, памятники:1

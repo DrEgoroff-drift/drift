@@ -314,9 +314,17 @@ function stTabYard(st){
     }
     const yard=stationFleet(G.sys);
     $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
-    for(const id of yard)$body.appendChild(shipRow(id,FLEET[id]));
+    for(const id of yard)$body.appendChild(shipRow(id,shipData(id)));
+    /* верфь державы (M714): своя линия у своей станции, в «Ялте» — от всех пяти, вдвое дороже */
+    const yl=(typeof stationYard==="function")?stationYard(G.sys):[];
+    if(yl.length){
+      const yal=(typeof yaltaIs==="function")&&yaltaIs(G.sx,G.sy),by=G.sys.station.by;
+      $body.appendChild(el("div","sec",yal?"ЯЛТА · ВЕРФИ ВСЕХ ДЕРЖАВ · ВДВОЕ ДОРОЖЕ":
+        "ВЕРФЬ ДЕРЖАВЫ · "+makerRu(by).toUpperCase()+(hasEpisode(by)?" · РАЗРЕШЕНИЕ ЕСТЬ":" · ПРОДАЮТ ТОЛЬКО ПО ДЕЛУ С НЕЙ")));
+      for(const id of yl)if(yard.indexOf(id)<0)$body.appendChild(shipRow(id,shipData(id)));
+    }
     /* Свои корпуса из ангара показываем всегда: пересесть обратно можно везде */
-    const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0);
+    const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0&&yl.indexOf(id)<0);
     if(own.length){
       $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
       for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}

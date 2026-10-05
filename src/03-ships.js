@@ -10,7 +10,7 @@ const SHIPS={
   mamont:{ru:"Мамонт",cls:"тяжёлый рудовоз",  hcls:"hauler", seed:8849, thr:.7,  turn:.62, fuel:230,cargo:290,hull:220,price:24000,col:"#c58ae0",note:"Летающий склад с бронёй. Разворачивается как луна."}
 };
 const SHIP_KEYS=Object.keys(SHIPS);
-function shipData(id){return SHIPS[id]||(typeof FLEET!=="undefined"&&FLEET[id])||G.uniqueShips[id]||NPC_SHIPS[id];}
+function shipData(id){return SHIPS[id]||(typeof FLEET!=="undefined"&&FLEET[id])||(typeof PYARD!=="undefined"&&PYARD[id])||G.uniqueShips[id]||NPC_SHIPS[id];}
 const UNIQUE_COLS=["#7fe6d8","#9fd8ff","#f2b25c","#8fd08a","#ff9d7a","#c9c9d4","#e0d28a","#c58ae0","#ff6b6b","#6bffb8"];
 const UNIQUE_TAG=["уникальный корпус","экспериментальный корпус","одиночная сборка","опытный образец","штучная работа"];
 function genUniqueShip(seed){

@@ -465,7 +465,10 @@ function shipRow(id,S){
   if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
   else{
     /* цена корпуса с поправкой на то, как к вам тут относятся (12k-rep) */
-    const pay=Math.round(S.price*repShipMul(G.sys));
+    /* чужая линия (04c): в «Ялте» вдвое, без дела с державой — замок, а не кнопка */
+    const gate=(typeof yardGate==="function")?yardGate(id,S):null;
+    const pay=Math.round(S.price*repShipMul(G.sys)*(gate?gate.mul:1));
+    if(gate&&gate.lock&&!own){r.appendChild(el("div","qt","НУЖНО ДЕЛО С «"+makerRu(S.by).toUpperCase()+"»<br>"+pay.toLocaleString("ru")+" кр"));return r;}
     const b=el("button","act"+(own?"":" gold"),own?"ПЕРЕСЕСТЬ":pay.toLocaleString("ru")+" кр");
     b.disabled=!own&&G.credits<pay;
     b.onclick=()=>{

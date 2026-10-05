@@ -182,6 +182,15 @@ function getSystem(sx,sy){
     sys.station={name:stName,stype:ST.id,kind:ST.ru,
       orbit:Math.round(sorb),ang:r()*TAU,spd:.00055,prices,
       fuelPrice:Math.max(2,Math.round((5+r()*7)*ST.fuel)),x:0,y:0,vx:0,vy:0};
+    /* чья станция (M714): завод отвечает на первый же вопрос — `stationBuilder` (17a), хозяин системы
+       по летописи или завод по зерну. Раньше `by` ставил только `stationMods` при отрисовке тела, и до
+       первого взгляда на станцию прилавок, уникальный корпус, кантина и марка патронов считали её
+       ГЛАВТРАССОЙ — а после взгляда держава менялась. Внутри шага летописи завод — от зерна, без кэша:
+       летопись не спрашивает саму себя (12am, 0.385.0). Поле не перечисляется: слепок мира (91…-goods) его не видит */
+    {const st=sys.station,put=v=>Object.defineProperty(st,"by",{value:v,writable:true,enumerable:false,configurable:true});
+      Object.defineProperty(st,"by",{enumerable:false,configurable:true,set:put,get(){
+        if(typeof CHRON_BUSY!=="undefined"&&CHRON_BUSY)return makerBySeed(sys.seed);
+        const v=stationBuilder(sys);put(v);return v;}});}
   }
   sys.desc=genDesc(r,sys);
   SYS_CACHE.set(key,sys);

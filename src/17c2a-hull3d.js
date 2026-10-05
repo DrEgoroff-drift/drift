@@ -79,7 +79,14 @@ function h3dKit(){
     for(let i=0;i<P.length;i++){const q=P[i],r=P[(i+1)%P.length];
       face([[q[0],q[1],z0],[r[0],r[1],z0],[r[0],r[1],z1],[q[0],q[1],z1]],c,col,w,sp,0);}
   };
-  return {V,C,vx,ctr,face,loft,lathe,box,prism};
+  /* труба по ломаной P [[x,y,z]]: кольца поперёк хода, торцы открыты (тонкая — не видно) */
+  const tube=(P,r,col,w,sp,N)=>{N=N||8;const R=[];
+    for(let k=0;k<P.length;k++){const a=P[Math.max(0,k-1)],b=P[Math.min(P.length-1,k+1)];
+      const t=nrm(sub(b,a))||[1,0,0],up=Math.abs(t[2])<.9?[0,0,1]:[0,1,0],u=nrm(crs(t,up)),v=crs(t,u),q=[];
+      for(let i=0;i<=N;i++){const f=i/N*TAU,c=Math.cos(f)*r,sn=Math.sin(f)*r;
+        q.push([P[k][0]+u[0]*c+v[0]*sn,P[k][1]+u[1]*c+v[1]*sn,P[k][2]+u[2]*c+v[2]*sn]);}R.push(q);}
+    loft(R,col,w,sp,0);};
+  return {V,C,vx,ctr,face,loft,lathe,box,prism,tube};
 }
 /* плоскость краски посередине высоты (вырез по альфе выпечки), радиус и упаковка */
 function h3dPack(V,E,o){
@@ -90,7 +97,7 @@ function h3dPack(V,E,o){
 function h3dMesh(h){
   let m=H3D.M.get(h);if(m)return m;
   const K=H3D_MK[h.by]||H3D_MK.gt,ne=K[0],kh=K[1];
-  const {V,C,ctr,face,loft,lathe,box}=h3dKit();
+  const {V,C,ctr,face,loft,lathe,box,tube}=h3dKit();
   const hgt=w=>Math.min(w*kh,1.6+w*.34),hb=w=>hgt(w)*.55;
   const deck=(x,y)=>{const w=profW(h.prof,x);if(Math.abs(y)>=w)return 0;return hgt(w)*Math.pow(1-Math.pow(Math.abs(y)/w,ne),1/ne);};
   const deckMax=(x0,x1,y0,y1)=>{let z=0;for(let i=0;i<=4;i++)for(let j=0;j<=4;j++)z=Math.max(z,deck(x0+(x1-x0)*i/4,y0+(y1-y0)*j/4));return z;};
@@ -154,6 +161,11 @@ function h3dMesh(h){
     const zt=deckMax(x0,x1,y0,y1);if(zt<=0)continue;
     box(x0,x1,y0,y1,Math.max(0,zt-.6),zt+.25+.12*Math.min(x1-x0,y1-y0),g[4]?Math.min(x1-x0,y1-y0)*.3:.12,side,.7,gl);}
 
+  /* буксирный крюк ГЛАВТРАССЫ (03a makerDraw): на краске он плоский штрих и в объёме читался цифрой «5»
+     за кормой — здесь он труба: тяга от кормы и загиб, тем же путём, что и кисть */
+  for(const o of (h.outs||[]))if(o.k==="hook"){const rr=Math.max(.3,h.bw*.09),cr=o.w*.3,P=[[o.x+o.l+.6,0,0],[o.x,0,0]];
+    for(let i=1;i<=9;i++){const f=-Math.PI/2+i/9*(Math.PI*1.4);P.push([o.x+Math.cos(f)*cr,cr+Math.sin(f)*cr,0]);}
+    tube(P,rr,iron,.9,.8,8);}
   const st=[[tip,.3]].concat(h.prof).slice(0,16);
   m=h3dPack(V,hullGpuE(h),{st,ne,kh,gl});
   H3D.M.set(h,m);return m;
@@ -217,7 +229,7 @@ struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
   /* своя краска части: на бортах (по нормали корпуса) и там, где выпечка пуста */
   var sw=select(i.c.w*(1.-smoothstep(.2,.65,abs(normalize(i.no).z))),1.,i.c.w>1.5);
   /* брюхо (грань вниз) — своя краска темнее: выпечка — вид сверху, под корпус её не кладут */
-  let dn=select(smoothstep(-.05,-.4,normalize(i.no).z),0.,dec);
+  let dn=select((1.-smoothstep(-.4,-.05,normalize(i.no).z)),0.,dec);
   sw=max(max(sw,dn),1.-smoothstep(.1,.5,b.a));if(dec){sw=0.;}
   /* швы там, куда выпечка не достаёт (борт, брюхо): стык листов через 2.4 по длине и пояс тела —
      без них борт в крене был ровной белой доской без масштаба */

@@ -194,7 +194,7 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     let sr = sqrt(sx*sx + sy*sy); let ang = atan2(sy, sx) + 2.5*exp(-sr*1.5);
     let sw = fbm(vec3f(cos(ang)*sr, sin(ang)*sr, 1.)*3. + s, 3, fw);
     let st = 1. - smoothstep(.75, 1.05, sr + .1*sw);
-    tone = mix(tone, .88 + .08*sw - .35*smoothstep(.45, .1, abs(sr - .62)), st);
+    tone = mix(tone, .88 + .08*sw - .35*(1.-smoothstep(.1,.45, abs(sr - .62))), st);
     o.alb = ramp(k, tone);
   } else if (k == 4 || k == 7 || k == 9) {      // jungle, ocean, terran: water and land
     var lv = .05; var sc = 1.1;
@@ -208,13 +208,13 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     let lat = abs(p.y);
     let rid = 1. - abs(n3(p*7. + s)); let mtn = smoothstep(.75, .95, rid)*smoothstep(lv + .04, lv + .2, n);
     var gr = ramp(k, .5 + .1*fbm(p*7. + s, 3, fw));
-    if (k == 4) { gr = mix(mix(rp(k, 2), rp(k, 1), smoothstep(-.2, .3, fbm(p*5. + s, 4, fw))), rp(k, 3), smoothstep(lv + .06, lv + .01, n)*.6); }
+    if (k == 4) { gr = mix(mix(rp(k, 2), rp(k, 1), smoothstep(-.2, .3, fbm(p*5. + s, 4, fw))), rp(k, 3), (1.-smoothstep(lv + .01,lv + .06, n))*.6); }
     if (k == 7) { gr = mix(rp(k, 4), rp(k, 5), .3); }
     var ground = gr;
     if (k == 9) {
-      let dry = smoothstep(.17, .03, abs(lat - .3))*smoothstep(lv + .02, lv + .2, n);
+      let dry = (1.-smoothstep(.03,.17, abs(lat - .3)))*smoothstep(lv + .02, lv + .2, n);
       ground = mix(rp(k, 3), vec3f(.42, .33, .2), dry*.8);
-      ground = mix(ground, rp(k, 2)*.8, smoothstep(.4, .1, lat)*.5);
+      ground = mix(ground, rp(k, 2)*.8, (1.-smoothstep(.1,.4, lat))*.5);
     }
     ground = mix(ground, rp(k, 4)*.8, mtn*select(.6, .0, k == 4));
     var alb = mix(sea, ground, land);
@@ -332,7 +332,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     if (thick > 0.) {
       let path = min(thick*3./max(nz, .04), 3.);
       let litA = smoothstep(-.25, .35, m0g);
-      let warm = smoothstep(.4, -.05, m0g)*litA;
+      let warm = (1.-smoothstep(-.05,.4, m0g))*litA;
       let tint = mix(air, air*vec3f(1.6, .75, .45), warm);
       sc = sc*exp(-path*.3) + tint*(1. - exp(-path))*litA*sun*.6;
     }
@@ -354,7 +354,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     let h = max(len - 1., 0.)/thick;
     let n2 = vec3f(d/max(len, 1e-4), 0.);
     let litA = smoothstep(-.35, .45, dot(n2, L));
-    let warm = smoothstep(.35, -.1, dot(n2, L))*litA;
+    let warm = (1.-smoothstep(-.1,.35, dot(n2, L)))*litA;
     let tint = mix(air, air*vec3f(1.6, .75, .45), warm);
     lin += tint*exp(-h*2.2)*smoothstep(1. - 2.*px, 1., len)*litA*sun*.9;
   }
