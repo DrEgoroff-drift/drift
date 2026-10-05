@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7097
+Files: 680 · top-level symbols: 7098
 
 ## SYMBOLS
 
@@ -1770,7 +1770,7 @@ SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
-SURF_BASE                    src/21e-surface-draw.js:132
+SURF_BASE                    src/21e-surface-draw.js:142
 SURF_HOR                     src/19c-light.js:202
 SURF_LND                     src/21e3-surface-stand-gpu.js:160
 SURF_NEAR                    src/21e2-surface-gpu.js:462
@@ -1935,7 +1935,7 @@ WAR_API                      src/14b-war-net.js:19
 WAR_BUSY                     src/14b-war-net.js:21
 WAR_LED_CACHE                src/14b-war-net.js:45
 WAR_PULL_MS                  src/14b-war-net.js:20
-WATER_MIN_SPAN               src/21e-surface-draw.js:150
+WATER_MIN_SPAN               src/21e-surface-draw.js:160
 WEAR_BASE                    src/21a9-base-laws.js:72
 WEAR_FULL                    src/12s-wear.js:16
 WEAR_RATE                    src/12s-wear.js:18
@@ -3283,8 +3283,8 @@ drawStationBody              src/17c-system-draw.js:168-371
 drawStationMods              src/17a-station-mod.js:220-223
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
-drawSurface                  src/21e-surface-draw.js:284-298
-drawSurfaceHud               src/21e-surface-draw.js:21-115
+drawSurface                  src/21e-surface-draw.js:294-308
+drawSurfaceHud               src/21e-surface-draw.js:39-125
 drawSurfaceWorld             src/21e1-surface-world.js:10-615
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:727-1053
@@ -3306,7 +3306,7 @@ drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-173
 drawWanderRoom               src/24c-mode-wanderer-draw.js:134-155
 drawWanderer                 src/12v-wander.js:337-441
-drawWater                    src/21e-surface-draw.js:194-282
+drawWater                    src/21e-surface-draw.js:204-292
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-318
 drawWinter                   src/29g-winter-draw.js:365-386
@@ -6593,6 +6593,7 @@ surfCastGpu                  src/21e2-surface-gpu.js:275-304
 surfDepositGpu               src/21e3-surface-stand-gpu.js:11-34
 surfGroundGpu                src/21e2-surface-gpu.js:175-211
 surfHeightTex                src/21e2-surface-gpu.js:80-94
+surfHudPen                   src/21e-surface-draw.js:23-38
 surfLander2D                 src/21e3-surface-stand-gpu.js:123-145
 surfLanderGpu                src/21e3-surface-stand-gpu.js:161-208
 surfLanderHot                src/21e3-surface-stand-gpu.js:154
@@ -6601,7 +6602,7 @@ surfNearGpu                  src/21e2-surface-gpu.js:474-487
 surfNight                    src/06a-celest.js:43-50
 surfRelightGpu               src/21e2-surface-gpu.js:351-363
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
-surfScale                    src/21e-surface-draw.js:283
+surfScale                    src/21e-surface-draw.js:293
 surfShadeGpu                 src/21e2-surface-gpu.js:221-227
 surfShadowShapes             src/21e3-surface-stand-gpu.js:148-153
 surfSnap                     src/21e2-surface-gpu.js:464-473
@@ -6997,10 +6998,10 @@ warrantyRegVoid              src/05b1-warranty.js:16
 warrantyShift                src/05b1-warranty.js:13
 wasBlurred                   src/15-input.js:207
 watchCrew                    src/27b-ui-crew.js:34-44
-waterAlga                    src/21e-surface-draw.js:183-187
-waterAlgae                   src/21e-surface-draw.js:176-182
-waterDeepAt                  src/21e-surface-draw.js:189-193
-waterOf                      src/21e-surface-draw.js:151-171
+waterAlga                    src/21e-surface-draw.js:193-197
+waterAlgae                   src/21e-surface-draw.js:186-192
+waterDeepAt                  src/21e-surface-draw.js:199-203
+waterOf                      src/21e-surface-draw.js:161-181
 waveBlock                    src/12pa-beacon.js:146-175
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
@@ -8180,7 +8181,7 @@ zoomTo                       src/15-input.js:350
 ## src/21d-battery.js · 4 KB
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 19 KB
+## src/21e-surface-draw.js · 20 KB
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21e1-surface-world.js · 45 KB
