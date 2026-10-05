@@ -6,6 +6,42 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.486.0 - the vision: the interface judged as numbers, and what it found
+
+- **The vision.** The tests were green while every button in the build was overrun by its own text. The
+  interface is now read as numbers before the raster: `test-geom.js` walks 17 windows (phones 320–421,
+  landscape 568 and 780, tablets, PC 900–2560, the native font, DPR 1 against 3), ~110 screens and ~75 taps
+  each, and holds every DOM box, 2D-canvas line, engine layer and bake against inequalities — overflow, cut,
+  screen edge, overlap, covered, see-through, tap target, contrast, size under 8 px, squeeze, garbage, frame
+  crash, DPR drift — plus composition notes (alignment, step, φ). It plants one defect per law first and goes
+  «СЛЕПО» if it misses one. ~6 s; a rotated canvas line is measured as its own quad; a frame in which the game
+  changed its layout is followed by one more, and that one is judged.
+- **Tests cut to the stability core.** 248 files → 29 (save, money, time, travel, cloud, the frame guard,
+  GPU loss, detectors); golden frames and the mutant zoo are gone. `test.ps1` with no flags — build, Node,
+  smoke, the vision — runs in ~13 s and is the release gate with `-Full` (~26 s).
+- **What the vision found, fixed:**
+  - **the map:** labels lay over labels — thirteen modules, each placing from its own point. Own marks now
+    register their ink; world captions (arm and nebula names, giants, rumour areas, prices, change tags, jump
+    rings, the search circle, notches, ГЛАВТРАССА) are placed last on the first free spot of several, or not at
+    all; a system's tags stack in rows inside the ruler frame; map type never under 8 px; the header and the
+    footer on solid plates. The address row and the header share the top through one placer (on a phone the
+    row used to cover the header whole), and the message line sits on a frosted plate under them — on a low
+    window, in a column on the left when the radio leaves no room below;
+  - long road hints on a tablet were wider than the glyph atlas and froze the road: runs are split by words,
+    and a road frame that throws is now named and survived like the main frame; the road's instruments keep
+    8 px on a 320-px landscape sheet;
+  - the home's progress line came out at 3 px on a phone and the room shrank to a third at DPR 3; the base's
+    «МЕСТО ПОД ЗАСТРОЙКУ» left its dashed cell at 1920 (now two lines when it must); instrument labels under
+    8 px; hull lettering is paint, not interface, and is no longer measured as text;
+  - layout: window footers and a module card's actions wrap instead of squeezing («СНЯТЬ УР.» stuck out of
+    its button); the things table gets its own width from 900 up (at 2560 the labels left their cards); the
+    ОПИСЬ parts grid stacks at 761–899; the radio scale is 8 px; on low windows (568×320, 780×360) the rail
+    hangs between the vitals and the pads, «КАРТА» and «МЕНЮ» first (it grew off the top over the place line
+    and the wallet), the menu starts under the vitals and scrolls instead of running off the bottom, and on
+    touch the zoom buttons give way to pinch; on touch screens wider than 760 the console and the prompt stand
+    above the pads (the console sat on ИМПУЛЬС); the jump pad says «Прыжок»/«Вверх» in a word that fits.
+- VER 0.486.0.
+
 ## 0.485.0 - far galaxies instead of the big spiral
 
 - **The big spiral galaxy is gone from the system sky.** It was one of the three landmarks a system can get

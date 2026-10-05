@@ -27,7 +27,7 @@ function earn(){}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.485.0";
+const VER="0.486.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -250,6 +250,11 @@ function hex2rgb(h){
 }
 const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
 const mixc=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+/* надпись-краска: номер на борту, клеймо, лозунг — часть рисунка, а не подпись интерфейса; читается
+   только вблизи, как настоящая краска. Зрение (tests/90b2-geom.js) не меряет у неё кегль, сжатие и
+   наезд — только то, что она не NaN. Подпись, которую игрок должен прочесть, краской не бывает */
+let PAINT_TEXT=0;
+function paintText(c,s,x,y,mw){PAINT_TEXT++;try{if(mw===undefined)c.fillText(s,x,y);else c.fillText(s,x,y,mw);}finally{PAINT_TEXT--;}}
 
 /* ══════════════ у всего есть изготовитель (M369, §19.1, §19.4) ══════════════
    Класс отвечает «кто это»: курьер, рудовоз, фрегат. Изготовитель отвечает на
@@ -625,7 +630,7 @@ function makerMarks(h){
     ctx.fillStyle="rgba(30,28,26,.55)";
     const n=(S%900+100)|0;
     ctx.font=u.toFixed(1)+"px monospace";ctx.textAlign="center";
-    ctx.fillText(String(n),mid,u*.35);
+    paintText(ctx,String(n),mid,u*.35);
   }else if(M.mark==="logo"){
     /* логотип во весь борт: круг с хвостом, читается пятном */
     ctx.strokeStyle="rgba(60,120,210,.75)";ctx.lineWidth=Math.max(.5,u*.22);
