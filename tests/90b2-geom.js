@@ -31,6 +31,25 @@ function geoD(r){return {x0:r.left,y0:r.top,x1:r.right,y1:r.bottom};}
 function geoArea(r){return r?Math.max(0,r.x1-r.x0)*Math.max(0,r.y1-r.y0):0;}
 function geoAnd(a,b){if(!a||!b)return null;const x0=Math.max(a.x0,b.x0),y0=Math.max(a.y0,b.y0),x1=Math.min(a.x1,b.x1),y1=Math.min(a.y1,b.y1);
   return (x1>x0&&y1>y0)?{x0,y0,x1,y1}:null;}
+/* ── многоугольники [[x,y],…]: наклонная строка холста — четырёхугольник букв, а не описанный
+   прямоугольник (у рукава галактики под 30° он втрое больше самих букв) ── */
+function geoPoly(r){return [[r.x0,r.y0],[r.x1,r.y0],[r.x1,r.y1],[r.x0,r.y1]];}
+function geoPArea(P){let s=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];s+=a[0]*b[1]-b[0]*a[1];}return s/2;}
+/* выпуклый P, отсечённый выпуклым Q (Сазерленд — Ходжман) */
+function geoClipPoly(P,Q){const o=geoPArea(Q)>=0?1:-1;let R=P;
+  for(let i=0;i<Q.length&&R.length;i++){const a=Q[i],b=Q[(i+1)%Q.length],I=R;R=[];
+    const s=p=>o*((b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]));
+    for(let j=0;j<I.length;j++){const p=I[j],q=I[(j+1)%I.length],sp=s(p),sq=s(q);
+      if(sp>=0)R.push(p);if((sp>=0)!==(sq>=0)){const k=sp/(sp-sq);R.push([p[0]+(q[0]-p[0])*k,p[1]+(q[1]-p[1])*k]);}}}
+  return R;}
+/* глубина взаимного захода по разделяющим осям: у двух прямых прямоугольников это min(w,h) пересечения */
+function geoSat(P,Q){let d=Infinity;
+  for(const S of [P,Q])for(let i=0;i<S.length;i++){const a=S[i],b=S[(i+1)%S.length];let nx=b[1]-a[1],ny=a[0]-b[0];const l=Math.hypot(nx,ny);if(l<1e-9)continue;nx/=l;ny/=l;
+    let p0=Infinity,p1=-Infinity,q0=Infinity,q1=-Infinity;
+    for(const p of P){const v=p[0]*nx+p[1]*ny;if(v<p0)p0=v;if(v>p1)p1=v;}
+    for(const p of Q){const v=p[0]*nx+p[1]*ny;if(v<q0)q0=v;if(v>q1)q1=v;}
+    d=Math.min(d,Math.min(p1,q1)-Math.max(p0,q0));}
+  return d;}
 function geoFin(r){return isFinite(r.x0)&&isFinite(r.y0)&&isFinite(r.x1)&&isFinite(r.y1);}
 function geoMin(r){return Math.min(r.x1-r.x0,r.y1-r.y0);}
 function geoIn(p,r){return p[0]>=r.x0&&p[0]<=r.x1&&p[1]>=r.y0&&p[1]<=r.y1;}
@@ -114,11 +133,12 @@ function geoText(c,S,t,x,y,mw,fill,O){
   if(mw!==undefined&&mw>0&&tm.width>mw){sq=mw/tm.width;L*=sq;R*=sq;}
   const A=tm.actualBoundingBoxAscent,D=tm.actualBoundingBoxDescent;
   const P=(u,v)=>[(m.a*u+m.c*v+m.e)/k,(m.b*u+m.d*v+m.f)/k];
-  const q=[P(x-L,y-A),P(x+R,y-A),P(x+R,y+D),P(x-L,y+D)],xs=q.map(p=>p[0]),ys=q.map(p=>p[1]);
+  const q=[P(x-L,y-A),P(x+R,y-A),P(x+R,y+D),P(x-L,y+D)],xs=q.map(p=>p[0]),ys=q.map(p=>p[1]),rot=Math.abs(m.b)>1e-6||Math.abs(m.c)>1e-6;
   const f=/(\d*\.?\d+)px/.exec(c.font);
   (O||GEO.c).push({L:"c",k:"t",s,r:geoR(Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)),
     px:f?+f[1]*Math.hypot(m.a,m.b)/k:0,col:geoCol(fill?c.fillStyle:c.strokeStyle),a:c.globalAlpha,sq,
-    clip:S.clip?{x0:S.clip.x0/k,y0:S.clip.y0/k,x1:S.clip.x1/k,y1:S.clip.y1/k}:null,an:P(x,y),z:0,g:0,n:O?++GEO.xn:GEO.n++});
+    clip:S.clip?{x0:S.clip.x0/k,y0:S.clip.y0/k,x1:S.clip.x1/k,y1:S.clip.y1/k}:null,an:P(x,y),z:0,g:0,n:O?++GEO.xn:GEO.n++,
+    pt:PAINT_TEXT>0?1:0,q:rot?q:null});   /* краска (paintText, 01-core): номер на борту — не подпись, кегль и наезд у неё не меряются */
 }
 
 /* ── прочие 2D-холсты страницы (#ipod, #tablecv, #roadcv, …) рисуют в своё время, не в кадре.
@@ -272,7 +292,14 @@ function geoHookOvl(){
 }
 
 /* ── кадр под записью: тот же порядок, что в frameBody (28-loop) ── */
+/* кадр, в котором игра сменила раскладку (режим, классы тела, ряд карты — HUD_LKEY, 27z), рисовал
+   по вчерашним меркам DOM: борт, колодка и полосы перемеряются в его конце. Игрок видит следующий
+   — его и судим. Кадр без смены раскладки судится сразу */
 function geoFrame(){
+  const k0=typeof HUD_LKEY==="string"?HUD_LKEY:null,drew=geoFrame1();
+  return k0!==null&&HUD_LKEY!==k0?geoFrame1():drew;
+}
+function geoFrame1(){
   GEO.c.length=0;for(const q in GEO.ov)GEO.ov[q].length=0;GEO.bad.length=0;GEO.crash.length=0;GEO.n=0;
   geoHookCtx(typeof MAIN_CTX!=="undefined"?MAIN_CTX:ctx);geoHookOvl();
   const rc=cvs.getBoundingClientRect();GEO.k=(rc.width>0)?cvs.width/rc.width:1;
@@ -357,7 +384,7 @@ function geoDom(root,vp){
      прокрутку не считаем — ту докрутят */
   const cutBy=(e,r,th,tv)=>{for(let a=e;!top(a);a=a.parentElement){const s=sty(a);
       if(s.overflowX!=="visible"||s.overflowY!=="visible"){const o=geoOut(r,geoPad(a,s),th,tv);
-        if(o)return /auto|scroll/.test(s.overflowX+s.overflowY)?null:{e:a,o,ell:s.textOverflow==="ellipsis"};}
+        if(o)return /auto|scroll/.test(s.overflowX+s.overflowY)?{scroll:a}:{e:a,o,ell:s.textOverflow==="ellipsis"};}
       if(s.position==="fixed")break;}
     return null;};
   const tw=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT,{acceptNode(n){
@@ -442,12 +469,17 @@ function geoLaws(D,C,O,vp,where,opt){
     const who=geoWho(t.p),th=1+.05*t.px,tv=1+.15*t.px,f=[],tx={px:t.px,n:t.s.length};
     if(GEO_JUNK.test(t.s))f.push(["мусор",0,{s:t.s.slice(0,40)}]);
     if(t.px&&t.px<8)f.push(["кегль",t.px,{}]);
-    const cut=D.cutBy(t.p,t.r,th,tv);
-    if(cut){if(!(cut.ell&&(cut.o.side==="l"||cut.o.side==="r"))||t.ctl)
+    /* за сгибом прокрутки строка не срезана и не вылетела: она в полотне окна. Вылет меряется только от
+       рамки, что едет вместе с ней внутри прокрутки (КБ на 1024: строка у нижней кромки окна) */
+    const cut=D.cutBy(t.p,t.r,th,tv),scr=cut&&cut.scroll;
+    if(scr){if(t.box&&t.box!==scr&&scr.contains(t.box)){const o=geoOut(t.r,geoPad(t.box,sty(t.box)),th,tv);
+        if(o)f.push(["вылет",o.v,Object.assign({side:GEO_SIDE[o.side],box:geoWho(t.box),r:geoRs(t.r)},tx)]);}}
+    else if(cut){if(!(cut.ell&&(cut.o.side==="l"||cut.o.side==="r"))||t.ctl)
         f.push([cut.ell?"срез…":"срез",cut.o.v,Object.assign({side:GEO_SIDE[cut.o.side],box:geoWho(cut.e)},tx)]);}
     else if(t.box){const o=geoOut(t.r,geoPad(t.box,sty(t.box)),th,tv);
       if(o)f.push(["вылет",o.v,Object.assign({side:GEO_SIDE[o.side],box:geoWho(t.box),r:geoRs(t.r)},tx)]);}
-    if(!t.scr){const o=geoEdge(t.r,V);if(o)f.push(["край",o.v,Object.assign({side:GEO_SIDE[o.side]},tx)]);}
+    /* край — по видимой части: строка под многоточием в рамке на экране за экран не торчит */
+    if(!t.scr){const o=geoEdge(t.vis,V);if(o)f.push(["край",o.v,Object.assign({side:GEO_SIDE[o.side]},tx)]);}
     /* контраст: подложка — фоны предков снизу вверх до первого сплошного; картинка на пути — не знаем */
     if(t.col&&!t.dis){const L=[];let base=null;
       for(let a=t.p;a&&a.nodeType===1;a=a.parentElement){const s=sty(a);
@@ -503,8 +535,10 @@ function geoLaws(D,C,O,vp,where,opt){
     if(!geoFin(t.r)){add("мусор",who,0,{s:"NaN в рамке"});continue;}
     t.vis=t.clip?geoAnd(t.r,t.clip):t.r;if(t.vis&&t.view)t.vis=geoAnd(t.vis,t.view);if(!t.vis)continue;
     if(GEO_JUNK.test(t.s))f.push(["мусор",0,{s:t.s.slice(0,40)}]);
-    if(t.px&&t.px<8)f.push(["кегль",t.px,{}]);
-    if(t.sq<.8)f.push(["сжатие",Math.round(t.sq*100),{}]);
+    /* холст целый: его мерка расходится с DPR на полпикселя из ширины, и шрифт 8 px мерится как 7,997 —
+       это не мельче. Допуск 0,05 px меньше любого настоящего шага кегля */
+    if(t.px&&t.px<7.95&&!t.pt)f.push(["кегль",t.px,{}]);
+    if(t.sq<.8&&!t.pt)f.push(["сжатие",Math.round(t.sq*100),{}]);
     if(t.clip){const o=geoOut(t.r,t.clip,1,1);if(o)f.push(["срез",o.v,Object.assign({side:GEO_SIDE[o.side]},tx)]);}
     const b=own(A,i,t);
     if(b){const o=geoOut(t.r,b.r,1,1);if(o)f.push(["вылет",o.v,Object.assign({side:GEO_SIDE[o.side],box:"плашка "+geoRs(b.r),r:geoRs(t.r)},tx)]);
@@ -522,15 +556,24 @@ function geoLaws(D,C,O,vp,where,opt){
   const T=[];
   for(const t of D.texts){if(domHid(t))continue;const e=.15*t.px;
     for(const q of t.lines){const r=geoAnd({x0:q.x0,y0:q.y0+e,x1:q.x1,y1:q.y1-e},t.cl);if(r)T.push({r,t,z:4,g:0,nm:"dom"});}}
-  for(const [nm,A] of layers)for(const t of A)if(t.k==="t"&&t.vis&&geoFin(t.r)&&!cvHid.get(t))T.push({r:t.vis,t,z:t.z,g:t.g,nm});
-  const boxes=[];for(const [,A] of layers)for(const b of A)if(b.k==="b"&&b.fill&&(b.col?b.col[3]:0)*b.a>=.9)boxes.push(b);
+  for(const [nm,A] of layers)for(const t of A)if(t.k==="t"&&t.vis&&geoFin(t.r)&&!cvHid.get(t)&&!t.pt)
+    T.push({r:t.vis,t,z:t.z,g:t.g,nm,q:t.q?geoClipPoly(t.q,geoPoly(t.vis)):null});
+  /* заливка между двумя надписями прячет нижнюю, если сквозь неё видно не больше десятой доли нижней:
+     сплошная (от 0,9) прячет любую, доска на 0,82 — бледный номер в 0,4 (зрение 06.10.2026) */
+  const boxes=[];for(const [,A] of layers)for(const b of A){const al=(b.col?b.col[3]:0)*b.a;if(b.k==="b"&&b.fill&&al>=.5){b.al=al;boxes.push(b);}}
+  const ink=q=>(q.t.col?q.t.col[3]:1)*(q.t.a==null?1:q.t.a);
   const above=(a,b)=>a.z!==b.z?a.z>b.z:(a.t.n||0)>(b.t.n||0);
   const lbl=a=>a.z===4?geoWho(a.t.p):(a.nm+" «"+a.t.s.slice(0,24)+"»");
   T.sort((a,b)=>a.r.x0-b.r.x0);
   for(let i=0;i<T.length;i++){const a=T[i];
     for(let j=i+1;j<T.length&&T[j].r.x0<a.r.x1;j++){const b=T[j];if(a.t===b.t||a.g!==b.g)continue;
-      const x=geoAnd(a.r,b.r);if(!x)continue;const w=x.x1-x.x0,h=x.y1-x.y0;
-      if(w<1.5||h<1.5||w*h<.1*Math.min(geoArea(a.r),geoArea(b.r)))continue;
+      const x=geoAnd(a.r,b.r);if(!x)continue;let w=x.x1-x.x0,h=x.y1-x.y0;
+      if(a.q||b.q){   /* наклонная строка: заход и общая площадь — по самим четырёхугольникам */
+        const P=a.q||geoPoly(a.r),Q=b.q||geoPoly(b.r);if(P.length<3||Q.length<3)continue;
+        const d=geoSat(P,Q);if(d<1.5)continue;
+        if(Math.abs(geoPArea(geoClipPoly(P,Q)))<.1*Math.min(Math.abs(geoPArea(P)),Math.abs(geoPArea(Q))))continue;
+        w=h=d;}
+      else if(w<1.5||h<1.5||w*h<.1*Math.min(geoArea(a.r),geoArea(b.r)))continue;
       if(a.z===b.z&&a.t.s===b.t.s&&Math.abs(a.r.x0-b.r.x0)<=3&&Math.abs(a.r.y0-b.r.y0)<=3)continue;   /* тень и обвод той же строки; та же строка в двух слоях — двойная печать, брак */
       const cx=(x.x0+x.x1)/2,cy=(x.y0+x.y1)/2,hi=above(a,b)?a:b,lo=hi===a?b:a;
       if(hi.z===4&&lo.z===4){   /* DOM с DOM: кто сверху в месте встречи */
@@ -546,7 +589,7 @@ function geoLaws(D,C,O,vp,where,opt){
         if(cov)continue;
       }else{   /* холст и #ovl: сплошная фигура между ними по порядку рисования, накрывающая место встречи */
         if(!hi.g&&coverAt(cx,cy,Kof(hi)))continue;
-        if(boxes.some(B=>B.g===lo.g&&above({z:B.z,t:B},lo)&&above(hi,{z:B.z,t:B})&&geoOut(x,B.r,0,0)===null))continue;
+        if(boxes.some(B=>B.g===lo.g&&(1-B.al)*ink(lo)<=.1&&above({z:B.z,t:B},lo)&&above(hi,{z:B.z,t:B})&&geoOut(x,B.r,0,0)===null))continue;
       }
       const alf=q=>Math.round((q.t.col?q.t.col[3]:1)*(q.z===4?(q.t.op==null?1:q.t.op):(q.t.a==null?1:q.t.a))*100)/100;
       add("наезд",lbl(a),Math.min(w,h),{with:lbl(b),kind:"надписи",al:[alf(a),alf(b)]});
@@ -671,6 +714,7 @@ function geoSelf(vp){
   try{geoHookAll();geoHookOvl();
     const a=fx.querySelector("#geocvA").getContext("2d"),b=fx.querySelector("#geocvB").getContext("2d");
     a.font="12px monospace";a.fillStyle="#fff";a.fillText("МЕЛКО",4,20);
+    paintText(a,"ЧИСТО КРАСКА",4,36);   /* те же 6 px, но краска: молчит */
     b.font="12px monospace";b.fillStyle="#234";b.fillRect(2,2,50,16);b.fillStyle="#fff";b.fillText("ХОЛСТ ВЫЛЕТ",6,14);
     b.fillStyle="#234";b.fillRect(2,20,110,14);b.fillStyle="#fff";b.fillText("ЧИСТО",6,31);
     /* холсты движка видны только счётной видеокарте: её кадр знает свой холст (view.__cv). При ней обе
@@ -694,6 +738,10 @@ function geoSelf(vp){
     c.fillText("НЕ ЧИСЛО",NaN,80);
     c.fillText("СЖАТО ВДВОЕ ДЛИННАЯ",10,100,60);
     c.fillStyle="#234";c.fillRect(10,120,200,22);c.fillStyle="#fff";c.fillText("ЧИСТО",16,135);
+    /* косая строка поперёк прямой — наезд; у чистой пары под косой встречаются только описанные
+       прямоугольники, буквы врозь на 13 px */
+    c.save();c.translate(60,250);c.rotate(-Math.PI/4);c.fillText("КОСАЯ ЛИНИЯ",0,0);c.restore();c.fillText("ПОПЕРЁК",40,232);
+    c.save();c.translate(200,250);c.rotate(-Math.PI/4);c.fillText("ЧИСТО КОСО",0,0);c.restore();c.fillText("ЧИСТО",222,256);
   }finally{GEO.on=false;c.restore();}
   const D0={texts:[],ctls:[],M:new Map(),sty:e=>getComputedStyle(e),V:{x0:0,y0:0,x1:vp.w,y1:vp.h},cutBy:()=>null};
   F=F.concat(geoLaws(D0,GEO.c.slice(),{lab:[],chip:[],ui:[],dock:[]},vp,"тест теста",{noCover:true}));
@@ -701,7 +749,7 @@ function geoSelf(vp){
   try{c.save();c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cvs.width,cvs.height);c.restore();}catch(e){}
   const has=(law,re)=>F.some(f=>f.law===law&&re.test(f.who+" "+(f.with||"")+" "+(f.s||"")));
   const need=[["вылет",/ПРОВЕРКА ВЫЛЕТА/],["наезд",/НАЛОЖЕНИЕ/],["край",/КРАЙ ЭКРАНА/],["срез",/СРЕЗАННАЯ/],["невидим",/НЕВИДИМКА/],
-    ["мусор",/NaN/],["накрыта",/ПОД ПЛАШКОЙ/],["вылет",/ПЛАШКА С ДЛИННЫМ/],["наезд",/СТРОКА ОДИН|СТРОКА ДВА/],["мусор",/НЕ ЧИСЛО/],["сжатие",/СЖАТО/],
+    ["мусор",/NaN/],["накрыта",/ПОД ПЛАШКОЙ/],["вылет",/ПЛАШКА С ДЛИННЫМ/],["наезд",/СТРОКА ОДИН|СТРОКА ДВА/],["наезд",/КОСАЯ ЛИНИЯ|ПОПЕРЁК/],["мусор",/НЕ ЧИСЛО/],["сжатие",/СЖАТО/],
     ["поверх",/ЧУЖАЯ/],["сквозь",/ПОДЛОЖКА/],["поверх",/ПРИШЕЛЕЦ/],["накрыта",/ПОД ВИДЖЕТОМ/],["кегль",/МЕЛКО/],["вылет",/ХОЛСТ ВЫЛЕТ/]];
   if(vp.touch)need.push(["цель",/button/]);
   if(bk)need.push(["вылет",/ВЫПЕЧКА ВЫЛЕТ/],["вылет",/СЛОЙ ВЫЛЕТ/]);

@@ -224,3 +224,8 @@ function hex2rgb(h){
 }
 const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
 const mixc=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+/* надпись-краска: номер на борту, клеймо, лозунг — часть рисунка, а не подпись интерфейса; читается
+   только вблизи, как настоящая краска. Зрение (tests/90b2-geom.js) не меряет у неё кегль, сжатие и
+   наезд — только то, что она не NaN. Подпись, которую игрок должен прочесть, краской не бывает */
+let PAINT_TEXT=0;
+function paintText(c,s,x,y,mw){PAINT_TEXT++;try{if(mw===undefined)c.fillText(s,x,y);else c.fillText(s,x,y,mw);}finally{PAINT_TEXT--;}}

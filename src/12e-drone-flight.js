@@ -309,7 +309,7 @@ function drawDronesMap(vis){
     ctx.fillText(String(n),bx+5,by2+4);
     ctx.fillStyle="rgba(127,230,216,.9)";
     ctx.beginPath();ctx.arc(bx,by2+1,1.8,0,TAU);ctx.fill();
-    ctx.fillText(String(n),bx+4,by2+3);
+    ctx.fillText(String(n),bx+4,by2+3);mapInkText(String(n),bx+4,by2+3);
   }
 }
 

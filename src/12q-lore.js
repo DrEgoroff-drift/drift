@@ -249,7 +249,7 @@ function drawLoreMarks(cell){
       if(here){
         ctx.fillStyle="rgba(255,214,120,.9)";
         ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-        ctx.fillText("ЗАРУБКА",x,y+22);
+        mapLate("ЗАРУБКА",[[x,y+22],[x,y-17]],3);   /* под кольцом, а занято — над ним (18, mapLate) */
       }
     }else{
       /* за краем — стрелка на кромке: адрес есть, руки не хватает */

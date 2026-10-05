@@ -29,6 +29,39 @@ let HUD_BAND=72;
    HUD_FLOOR — верх самого верхнего из нижних наложений, HUD_RAIL — левый край
    правого борта. Обе величины в CSS-пикселях, как и координаты рисования. */
 let HUD_FLOOR=0, HUD_RAIL=0;
+/* низ верха карты — ряда адреса и шапки (--mapbar, 0 — не карта; кладёт раскладчик 18a): под ним
+   встаёт строка сообщения. HUD_LKEY — режим, классы тела и подписи ряда: при их смене полосы
+   меряются заново */
+let HUD_MAPBAR=-1, HUD_LKEY="", HUD_MAPROW="";
+/* ── строка сообщения на карте (зрение 06.10.2026) ──
+   По центру под верхом карты (--mapbar), пока под ней свободно. На низком окне до пульта места нет
+   (780×360: от ряда до приёмника 28 px, а строк две) — тогда колонкой слева, под шапкой, шириной до
+   ближайшего препятствия: ряд адреса, пульт, борт. Не встала и там — остаётся по центру. Решается
+   при смене текста и раскладки, а не каждый кадр: каждая проба — вёрстка */
+let HUD_MSGKEY="";
+const HUD_MSGOBS=["#console","#mapaddr",".rail","#ipod",".pads",".vitals",".locus"];
+function hudMsgPlace(){
+  const T=typeof MAP_TOP!=="undefined"?MAP_TOP:null;
+  const on=G.mode==="map"&&!!T&&!!$msg.textContent&&!document.querySelector(".scr.open");
+  const key=on?$msg.textContent+"|"+HUD_LKEY+"|"+innerWidth+"x"+innerHeight+"|"+Math.round(T.floor)+"|"+Math.round(T.hb):"";
+  if(key===HUD_MSGKEY)return;HUD_MSGKEY=key;
+  const reset=()=>{for(const p of ["left","top","maxWidth","transform","textAlign"])setSt($msg,p,"");};
+  reset();if(!on)return;
+  const obs=[];
+  for(const s of HUD_MSGOBS){const e=document.querySelector(s);if(!e||!e.offsetWidth)continue;const r=e.getBoundingClientRect();if(r.width>0&&r.height>0)obs.push(r);}
+  obs.push({left:T.hx-4,right:T.hx+T.hw,top:T.hb-26*mapU(),bottom:T.hb});   /* шапка — холст */
+  const fits=()=>{const r=$msg.getBoundingClientRect();
+    return r.bottom<=innerHeight-4&&$msg.scrollHeight<=$msg.clientHeight+1&&
+      !obs.some(o=>r.left<o.right+4&&r.right+4>o.left&&r.top<o.bottom+4&&r.bottom+4>o.top);};
+  if(fits())return;
+  const k=(typeof UIK==="number"&&UIK>0)?UIK:1,U=mapU(),x0=MAP_RUL*U+8,top=Math.max(T.hb,mapRulerTop()+14*U)+4;
+  setSt($msg,"left",(x0/k).toFixed(1)+"px");setSt($msg,"top",(top/k).toFixed(1)+"px");
+  setSt($msg,"transform","none");setSt($msg,"textAlign","left");
+  /* правый край — у левой кромки препятствия: от дальнего к ближнему, пока строка не встанет */
+  const xs=[...new Set(obs.filter(o=>o.left>x0+60).map(o=>Math.round(o.left-8)))].sort((a,b)=>b-a);
+  for(const x1 of xs){setSt($msg,"maxWidth",((x1-x0)/k).toFixed(1)+"px");if(fits())return;}
+  reset();
+}
 const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
 /* узлы, которые hud() искал заново каждый кадр (0.3): в index.html они стоят
    всегда, и поиск по селектору под пальцем набирал 4–5 мс в секунду на пустом месте */
@@ -354,7 +387,10 @@ function hud(){
     const mk=document.getElementById("mapMarkGo");
     if(mk&&onMap&&typeof mapMarkAt==="function")setTx(mk,mapMarkAt(G.sel.x,G.sel.y)>=0?"СНЯТЬ МЕТКУ":"ОТМЕТИТЬ");
     const ly=document.getElementById("mapLayerGo");
-    if(ly&&onMap&&typeof mapLayerRu==="function")setTx(ly,mapLayerRu());}
+    if(ly&&onMap&&typeof mapLayerRu==="function")setTx(ly,mapLayerRu());
+    HUD_MAPROW=onMap?(mk?mk.textContent:"")+"|"+(ly?ly.textContent:""):"";
+    const mb=onMap&&typeof MAP_TOP!=="undefined"&&MAP_TOP?Math.round(MAP_TOP.floor):0;
+    if(HUD_MAPBAR!==mb){HUD_MAPBAR=mb;document.documentElement.style.setProperty("--mapbar",mb+"px");}}
   const wp=document.getElementById("wanwin");
   if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");
@@ -377,8 +413,12 @@ function hud(){
   setSt($msg,"opacity",msgOn?clamp(G.msgT/40,0,1):0);
   /* зимовка: под строкой — мягкая подложка (style.css #msg.dim) */
   $msg.classList.toggle("dim",G.mode==="winter");
+  hudMsgPlace();
   setTx($prompt,G.mode==="dock"?"":G.prompt);
-  setTx($bThr,G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲"));
+  /* на тяге значок, на грунте и в шахте — слово. Слову, как подписям прочих пэдов, свой <span>,
+     регистр предложения и кегль (.word): ПРЫЖОК капителью в 17 px был шире круга на телефоне в 320 */
+  if($bThr){const w=G.mode==="surface"?"Прыжок":(G.mode==="dig"?"Вверх":"");
+    setTx(padWord($bThr),w||"▲");if($bThr.classList.contains("word")!==!!w)$bThr.classList.toggle("word",!!w);}
   /* Кнопка называет то, что сделает, а не то, как она называется. «ДЕЙСТВИЕ»
      не отвечает ни на один вопрос игрока; «СТЫКОВКА» отвечает на все.
      Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
@@ -514,6 +554,7 @@ function hud(){
   document.body.classList.toggle("inflight",
     G.mode==="system"||G.mode==="map"||G.mode==="belt"||G.mode==="scoop"||G.mode==="landing");
   document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
+  document.body.classList.toggle("onmap",G.mode==="map");   /* строка сообщения на карте — на матовой плашке */
   /* ── ВЗЛЁТ гасит кадр, а не поверхность (M234, второй заход) ──
      Кнопку показывал и прятал `updateSurface`, то есть код, который в других
      режимах не работает вовсе: взлетел, ушёл в шахту, спустился в базу — и она
@@ -521,4 +562,10 @@ function hud(){
      одна знает, стоишь ли ты у корабля), а гасит кадр — отовсюду, кроме
      поверхности. То же правило, что у ОГНЯ и РАКЕТЫ: у кнопки один хозяин. */
   if($launch&&G.mode!=="surface")setSt($launch,"display","none");
+  /* Режим и классы тела перекладывают приборы (у причала полоса в строку, в полёте — столбиком), ряд
+     адреса на карте меняет ширину с подписью, а наблюдатель из 08-state видит только перемены внутри
+     шести узлов: со станции на карту полоса оставалась от вёрстки причала, и ряд адреса ложился на
+     счётчик груза (зрение 06.10.2026). Меряем последним делом кадра, когда классы уже стоят */
+  const lk=G.mode+"|"+document.body.className+"|"+HUD_MAPROW;
+  if(lk!==HUD_LKEY){HUD_LKEY=lk;rectsDirty();hudFloorMeasure(true);}
 }

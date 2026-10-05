@@ -77,6 +77,15 @@ a record (what is done: `PATCHNOTES.md` by version, `docs/done/` for the old pla
 - **No parallax on the map (M447, author 11.09.2026).** A map layer is either in the world -
   moves 1:1 with the sheet and scales with the zoom - or it is paper - does not move and carries
   no recognisable object. Map stars do not twinkle. Why and how: `docs/DESIGN-galaxy.md` §1-2.
+- **Map labels in two tiers (0.486.0).** Own marks — you, the course, the route, the footer, the
+  header, the card, a system's tags — are drawn where they belong and register their ink
+  (`mapInkText`/`mapInkBox`, `18`). World captions — arm and nebula names, giants, rumour areas,
+  price and change tags, jump rings, the search circle, notches, ГЛАВТРАССА — come with fallback
+  spots (`mapLate`) and are placed last, on the first spot clear of all ink and of the DOM over the
+  sheet; with no spot free they are not drawn in that frame. A system's tags stack in rows inside
+  the ruler frame. The top of the map (the address row and the header) is laid out by
+  `mapTopPlace` (`18a`), the message line by `hudMsgPlace` (`27z`). Why: the vision (06.10.2026)
+  found labels over labels on the map — thirteen modules, each placing from its own point.
 
 
 ## How a frame is judged (M241) — `look()`/`lookAll()` print five numbers per frame against

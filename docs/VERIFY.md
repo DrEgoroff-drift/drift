@@ -30,6 +30,11 @@ the bakes (`gpuBakeRedo` on `GcCtx`) and their placement by `ovImage`; the road 
 `drawRoad`. Frosted glass counts as opaque; windows are planes (a widget and the scene under it are
 not an overlap, two texts on one plane are).
 
+**The judged frame.** A frame in which the game changed its layout (the key `HUD_LKEY` in `27z`:
+mode, body classes, the map row) drew against the DOM measured before the change — the rail, the
+locus and the bands are re-measured at its end. The player sees the next frame, so the vision runs
+one more and judges that one. A frame without a layout change is judged at once.
+
 **Laws** (red):
 
 | law | inequality |
@@ -37,7 +42,7 @@ not an overlap, two texts on one plane are).
 | `вылет` | a text's box leaves its plate or control by more than 1 px + 5 % of its size (15 % up and down) |
 | `срез` | a text is cut by its clip, an `overflow` box or the canvas edge (`срез…` — cut with an ellipsis) |
 | `край` | a control or a text leaves the window |
-| `наезд` | two controls, or two texts, on one plane intersect by 2 px or more |
+| `наезд` | two controls, or two texts, on one plane intersect by 1.5 px or more over at least 10 % of the smaller; a rotated canvas line is its own quad (depth by separating axes, shared area by a convex clip), not its bounding box |
 | `накрыта` / `поверх` / `сквозь` | a text is covered by an opaque box of another window / a text of one window is drawn over another's / a text shows through a window above it |
 | `цель` | on touch windows: a target under 24 CSS px whose 24-px square touches another target or another small target's square (WCAG 2.5.8) |
 | `невидим` | contrast of the text against what is really under it below 1.35:1 |

@@ -206,7 +206,7 @@ body:not(.inflight) .ipod{display:none}
 /* ══════════════ сообщения ══════════════ */
 /* Событие проходит под приборами, а не сквозь них: приборы вернулись наверх,
    и строке нужен воздух, иначе она читается их четвёртой шкалой. */
-#msg{position:fixed;left:50%;top:25%;transform:translateX(-50%);text-align:center;
+#msg{position:fixed;left:50%;top:max(25%,calc(var(--mapbar,0px) / var(--ui,1) + 8px));transform:translateX(-50%);text-align:center;
   pointer-events:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
   /* Свечение отделяет букву от ТЁМНОГО фона и бессильно на светлом: на кадре
      строка шла поперёк освещённого кольца планеты и там пропадала. К свечению
@@ -651,7 +651,7 @@ nav.tabs.solo{display:none}
    законом в 44 (замер 30.08.2026). Закон один для всех кнопок, а не только для
    пульта и ящика, которые сторожил 91f-ui. */
 .act.sm{padding:0 12px;min-height:44px;min-width:44px;font-size:9px}
-.scr footer{display:flex;gap:10px;padding:12px var(--pad) 12px;border-top:1px solid var(--edge);
+.scr footer{display:flex;flex-wrap:wrap;gap:10px;padding:12px var(--pad) 12px;border-top:1px solid var(--edge);
   background:linear-gradient(0deg,rgba(127,230,216,.04),transparent)}
 .scr footer .act{flex:1;text-align:center;padding:0 6px;min-height:48px}
 
@@ -685,7 +685,10 @@ nav.tabs.solo{display:none}
 .mcap s{display:block;text-decoration:none;color:var(--dim);font-size:9px;letter-spacing:.06em;margin-top:4px}
 .modcard .mf .ln.cap{margin-top:2px;padding-top:2px;border-top:1px solid rgba(255,255,255,.05)}
 .modcard .mf .ln.cap u{color:var(--dim)}.modcard .mf .ln.cap u.dn{color:#ff9d7a}
-.modcard .macts{display:flex;gap:8px}
+.modcard .macts{display:flex;flex-wrap:wrap;gap:8px}
+/* «СНЯТЬ УР.» не сжимается под свою подпись: min-width 44 у .act.sm отменял min-width:auto, и кнопка
+   ужималась до 44 px, а подпись вылезала на 46 (зрение 06.10.2026) — тесно, значит в новую строку */
+.modcard .macts .act.sm{flex:none}
 .modcard .macts .act:first-child{flex:1 1 auto}
 .modcard.work .macts .act:first-child{position:relative;overflow:hidden;opacity:1}
 .modcard.work .macts .act:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:100%;
@@ -1005,6 +1008,10 @@ body.screen #parrotwin,body.table #parrotwin{display:none}
    поворотом, потому что руками их клали, а не выравнивали по сетке.
    Всё под `body.table`: остальные экраны остаются стеклом поверх мира. */
 #tablewin{z-index:22;background:#0a0806}
+/* стол с вещами — раскладка, а не строка текста: его ширина растёт вместе со шрифтом (--ui). Под общей
+   колонной в 1000 экранных точек на 2560 столу оставалось 570 своих, и подписи вещей вылезали из карточек
+   (зрение 06.10.2026). Журнал на том же столе — текст, ему остаётся человеческая колонна */
+@media (min-width:900px){#tablewin:has(#loglist.opis){inset:22px max(24px,calc(50% - 475px))}}
 /* шапка и вкладки — по дереву, а не по стеклу */
 body.table #tablewin>header{border-bottom-color:rgba(122,90,54,.55);
   background:linear-gradient(180deg,rgba(0,0,0,.30),transparent)}
@@ -1153,8 +1160,8 @@ body.table #loglist.top .item.new::after{content:"";position:absolute;right:12px
 #lorelist .li.chap.read span{color:var(--amber)}
 #lorelist .li.note span{color:var(--dim);font-style:italic}
 #lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
-#rxScale{position:relative;height:9px;margin-top:-4px}
-#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+#rxScale{position:relative;height:10px;margin-top:-4px}
+#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:8px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
 /* ночная почта (M191): подпись зажигается, когда диапазон появляется. Она
    чуть теплее остальных — это единственное, чем игра сообщает о вечере */
 #rxNight{color:var(--amber);opacity:.85}
@@ -1268,7 +1275,7 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      полосу от края до края с многоточием на конце (M360a, телефонный
      кадр автора). Перевод строки снова работает, потолок держит
      line-clamp: длинное не зальёт экран. */
-  #msg{top:20%;bottom:auto;white-space:pre-line;overflow:hidden;
+  #msg{top:max(20%,calc(var(--mapbar,0px) / var(--ui,1) + 8px));bottom:auto;white-space:pre-line;overflow:hidden;
     display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
     text-overflow:ellipsis;max-width:calc(100vw - 24px);font-size:11px;line-height:1.4}
   /* ── ВЗЛЁТ на телефоне стоял поверх ФОТО (M234) ──
@@ -1571,6 +1578,12 @@ body.op-lift .opis .op-card,body.op-lift .opis{touch-action:none}
 .opis .op-parts-grid{display:grid;grid-template-columns:1.35fr 1fr;grid-template-areas:"hull panel" "slots spare";gap:10px;align-items:start}
 .opis .op-parts-grid canvas.op-hull{grid-area:hull;align-self:stretch;height:100%;min-height:240px}
 .opis .op-parts-grid .op-panel{grid-area:panel;margin-top:0}
+/* 761–899: средняя зона описи около 300 px, и в два столбца щиток приборов (не уже 139 px) вылезал
+   из неё в соседнюю, на коробок спичек и мел (зрение 06.10.2026). Здесь зона — столбиком */
+@media (min-width:761px) and (max-width:899px){
+  .opis .op-parts-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"hull" "panel" "slots" "spare"}
+  .opis .op-parts-grid canvas.op-hull{height:auto}
+}
 .opis .op-slots{grid-area:slots;display:flex;flex-direction:column;gap:8px;min-width:0}
 .opis .op-spare{grid-area:spare}
 .opis .op-slot{padding:6px;border:1px dashed rgba(232,220,190,.28);border-radius:4px;min-height:44px}
@@ -1743,13 +1756,18 @@ body.table #loglist .matchbox s{display:block;text-decoration:none;color:#6a5a3e
 u.addr{text-decoration:none;border-bottom:1px dotted currentColor;cursor:pointer;color:var(--amber)}
 body.table u.addr{color:#7a4a20}
 /* поле адреса над картой (M347): под полосой приборов, по центру */
-#mapaddr{position:fixed;right:calc(var(--railw,72px) + 8px);top:calc(var(--hudband,72px) + 22px);z-index:5;display:none;
-  align-items:center;gap:6px;padding:4px 6px 4px 10px;background:rgba(6,10,16,.72);border:1px solid rgba(150,182,212,.35);border-radius:6px;zoom:var(--ui,1)}
+/* --railw и --hudband мерены снаружи зума, а свои px ряд умножает на --ui — потому делим. Ряд не шире
+   места слева от борта и переносится: на 320 он вылезал за левую кромку экрана (зрение 06.10.2026) */
+#mapaddr{position:fixed;right:calc(var(--railw,72px) / var(--ui,1) + 8px);top:calc(var(--hudband,72px) / var(--ui,1) + 22px);z-index:5;display:none;
+  flex-wrap:wrap;justify-content:flex-end;max-width:calc((100vw - var(--railw,72px)) / var(--ui,1) - 16px);align-items:center;gap:6px;padding:4px 6px 4px 10px;background:rgba(6,10,16,.72);border:1px solid rgba(150,182,212,.35);border-radius:6px;zoom:var(--ui,1)}
 #mapaddr span{color:var(--dim);font-size:9px;letter-spacing:.14em}
 #mapaddr input{width:64px;min-height:36px;padding:0 8px;font:inherit;font-size:12px;color:var(--text);background:rgba(0,0,0,.35);
   border:1px solid rgba(150,182,212,.3);border-radius:4px;text-align:center}
 #mapaddr .act.sm{min-width:44px;padding:0 10px}
-@media (max-width:760px){#mapaddr{top:calc(var(--hudband,72px) + 20px);padding:3px 4px 3px 8px}#mapaddr input{width:52px}#mapaddr span{display:none}}
+#mapaddr>*{flex:none}   /* ряд переносится, а не ужимает кнопки: его ширину строкой меряет раскладчик верха (18a) */
+/* на карте строка сообщения ложится поверх подписей листа — матовая плашка, как у пэдов (зрение 06.10.2026) */
+body.onmap #msg{background:rgba(6,10,16,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:3px 10px;border-radius:8px;line-height:1.45}
+@media (max-width:760px){#mapaddr{top:calc(var(--hudband,72px) / var(--ui,1) + 20px);padding:3px 4px 3px 8px}#mapaddr input{width:52px}#mapaddr span{display:none}}
 /* запись кооператива (M351): поле имени в ряду станции */
 .row .nm input.coopname{display:block;margin-top:6px;width:min(260px,100%);min-height:44px;padding:0 10px;font:inherit;font-size:13px;color:var(--text);
   background:rgba(0,0,0,.3);border:1px solid var(--edge);border-radius:4px}
@@ -2155,6 +2173,7 @@ body.table u.addr{color:#7a4a20}
 .pads button[data-k=lock]{color:#d3e3e9;font-size:10px;letter-spacing:0}
 .pads button[data-k=lock]::before{border-color:rgba(190,228,236,.24)}
 .pads button[data-k=act]{font-size:9px}
+.pads button[data-k=thrust].word{font-size:12px}   /* «Прыжок», «Вверх»: значку ▲ кегль 17, слову — свой (27z) */
 .pads button[data-k=act]::before{border-color:rgba(242,178,92,.32)}
 .pads button.abil-ok{align-content:center;row-gap:2px}
 /* подсказка системы — вторая строка ВНУТРИ пэда (правка Контроля): подписью под
@@ -2184,4 +2203,32 @@ body.table u.addr{color:#7a4a20}
   .v.big u{font-size:18px}
   .locus u{font-size:12px}
   #camBtn{min-height:44px}
+}
+
+/* ══════════════ короткое окно и палец шире 760 ══════════════
+   Зрение 06.10.2026, телефон боком (568×320, 780×360): колонна борта, растущая вверх от пульта,
+   уходила за верх кадра и ложилась на строку места и кошелёк; меню с верхом на 104 px выезжало
+   за низ; на ширине больше 760 пульт стоял на 18 px от низа — прямо на пэдах, на ИМПУЛЬСЕ.
+   Мерки здесь не из макета, а из того, что уже измерено: --hudband (низ строки приборов),
+   --padsh (высота ряда пэдов). Всё внутри zoom:var(--ui): px умножаются на мерку, проценты нет,
+   поэтому измеренные точки делятся на --ui. */
+@media (max-height:480px){
+  /* борт висит между строкой приборов и пультом. КАРТА и МЕНЮ — первыми и всегда на одном месте,
+     кнопки к случаю встают под ними и, не влезая, переносятся столбцами влево */
+  .rail{top:calc(var(--hudband,44px) / var(--ui,1) + 8px);bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 48px);
+    flex-wrap:wrap-reverse;align-items:flex-start;align-content:flex-start}
+  .rail .ctx{display:contents}
+  .rail #navbtn,.rail #menubtn,.rail .zoom{order:-1}
+  /* меню — от строки приборов и не ниже кромки; не влезло — листается */
+  #menu{top:calc(var(--hudband,44px) / var(--ui,1) + 8px);overflow-x:hidden;overflow-y:auto;
+    max-height:calc(100% - var(--hudband,44px) / var(--ui,1) - 20px - env(safe-area-inset-bottom))}
+  #menu>*{flex-shrink:0}
+}
+/* под пальцем зум — щипком, как на телефоне (M167): в коротком окне кнопкам зума места нет */
+@media (max-height:480px) and (pointer:coarse){.rail .zoom{display:none}}
+/* пэды есть везде, где палец, и пульт с подсказкой стоят над ними на любой ширине,
+   а не только до 760 */
+@media (pointer:coarse) and (min-width:761px){
+  #console{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 10px)}
+  #prompt{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 118px + var(--helmlift,0px))}
 }

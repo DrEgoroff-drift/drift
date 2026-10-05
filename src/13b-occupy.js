@@ -347,7 +347,7 @@ function drawFactRoute(vis){
   const label=RES[leg.k].ru.toUpperCase()+" "+leg.buy+" → "+leg.sell+" ("+rel+"%)";
   ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
   const tw=ctx.measureText(label).width;
-  ctx.fillStyle="rgba(6,10,16,.85)";ctx.fillRect(mx-tw/2-6,my-8,tw+12,16);
+  ctx.fillStyle="rgba(6,10,16,.85)";ctx.fillRect(mx-tw/2-6,my-8,tw+12,16);mapInkBox(mx-tw/2-6,my-8,tw+12,16);
   ctx.strokeStyle=col+".55)";ctx.lineWidth=1;ctx.strokeRect(mx-tw/2-5.5,my-7.5,tw+11,15);
   ctx.fillStyle="#f2b25c";ctx.fillText(label,mx,my+.5);
   ctx.textBaseline="alphabetic";

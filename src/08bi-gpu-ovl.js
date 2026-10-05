@@ -133,13 +133,28 @@ function ovPush(Q,x0,y0,x1,y1,c,m,l,tx,ty,t){
   if(t)Q.push(t[0],t[1],t[2],t[3],t[4],t[5],t[6]||0,t[7]||0);else Q.push(0,0,0,0,0,0,0,0);
 }
 const OVL_RUN=/[0-9]+|[^0-9]+/g;
+/* прогоны строки; маска прогона — одна картинка атласа, и шире его стороны её не положить: длинная
+   подсказка дороги крупным кеглем на планшете (17 px × DPR 2 = 1148 px) роняла кадр. Такой прогон
+   режется по словам (слово длиннее — по буквам); k — пикселей устройства на пиксель шрифта */
+function ovRuns(st,text,k){
+  const R=text.match(OVL_RUN)||[],lim=OVL.A.S*.9/k,out=[],wd=s=>GC_GLYPHS.measure(st,s).width;
+  for(const s of R){
+    if(s.charCodeAt(0)<58&&s.charCodeAt(0)>47||wd(s)<=lim){out.push(s);continue;}
+    let cur="";
+    for(const w of s.match(/\S+\s*|\s+/g)){
+      if(cur&&wd(cur+w)>lim){out.push(cur);cur="";}
+      if(wd(w)<=lim){cur+=w;continue;}
+      for(const ch of w){if(cur&&wd(cur+ch)>lim){out.push(cur);cur="";}cur+=ch;}}
+    if(cur)out.push(cur);}
+  return out;
+}
 /* строка в очередь Q: (x,y) — якорь в пикселях CSS по align и base, sc — масштаб шрифта (фишка — U).
    Возвращает рамку в CSS: для проверок наложения */
 function ovText(Q,x,y,text,font,col,align,base,al,sc,vert){
   const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:"left"}),c=gcColor(col),a=c[3]*al;
   if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1]*sc,main:true});}
   const pm=[c[0]*a,c[1]*a,c[2]*a,a];
-  const d0=GC_GLYPHS.measure(st,"0"),adv=d0.width*sc,runs=text.match(OVL_RUN)||[];
+  const d0=GC_GLYPHS.measure(st,"0"),adv=d0.width*sc,runs=ovRuns(st,text,nd*sc);
   let tw=0,up=0,dn=0;
   for(const s of runs){const dg=s.charCodeAt(0)<58&&s.charCodeAt(0)>47,m=dg?d0:GC_GLYPHS.measure(st,s);
     tw+=dg?adv*s.length:m.width*sc;up=Math.max(up,m.actualBoundingBoxAscent*sc);dn=Math.max(dn,m.actualBoundingBoxDescent*sc);}

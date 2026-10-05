@@ -40,15 +40,21 @@ function drawGalaxyNames(V,cell){
   const k=clamp((24-cell)/10,0,1);          /* проявляются по мере отъезда */
   const X=x=>W/2+(x-V.x)*cell,Y=y=>H/2+(y-V.y)*cell;
   ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";
-  for(const A of GAL_ARMS)for(const [r,kk] of [[14,0],[24,1]]){
-    const p=galArmPt(A,r,kk,0),q=galArmPt(A,r+.5,kk,0),x=X(p.x),y=Y(p.y);
-    if(x<-80||x>W+80||y<-40||y>H+40)continue;
-    let a=Math.atan2(Y(q.y)-y,X(q.x)-x);if(Math.cos(a)<0)a+=Math.PI;   /* читается слева направо */
-    ctx.save();ctx.translate(x,y);ctx.rotate(a);
-    ctx.font=(11*mapU()).toFixed(1)+"px ui-monospace,monospace";
-    ctx.fillStyle="rgba(200,214,255,"+(.42*k).toFixed(2)+")";
+  ctx.font=(11*mapU()).toFixed(1)+"px ui-monospace,monospace";
+  ctx.fillStyle="rgba(200,214,255,"+(.42*k).toFixed(2)+")";
+  for(const A of GAL_ARMS){
     const t=A.ru.toUpperCase().split("").join(" ");   /* разрядка: слово лежит на рукаве, а не стоит поверх */
-    ctx.fillText(t,0,0);ctx.restore();
+    for(const [r,kk] of [[14,0],[24,1]]){
+      /* место — у отметки и дальше по рукаву в обе стороны: имя уступает меткам карты (mapLate, 18) */
+      const sp=[];
+      for(const dr of [0,1.5,-1.5,3,-3,4.5,-4.5]){
+        const p=galArmPt(A,r+dr,kk,0),q=galArmPt(A,r+dr+.5,kk,0),x=X(p.x),y=Y(p.y);
+        if(x<-80||x>W+80||y<-40||y>H+40)continue;
+        let a=Math.atan2(Y(q.y)-y,X(q.x)-x);if(Math.cos(a)<0)a+=Math.PI;   /* читается слева направо */
+        sp.push([x,y,a]);
+      }
+      if(sp.length)mapLate(t,sp,0);
+    }
   }
   ctx.font=(9*mapU()).toFixed(1)+"px ui-monospace,monospace";
   for(const n of GAL_NEBULAE){
@@ -57,7 +63,7 @@ function drawGalaxyNames(V,cell){
     ctx.fillStyle="rgba(255,190,220,"+(.55*k).toFixed(2)+")";
     ctx.beginPath();ctx.arc(x,y,1.6,0,TAU);ctx.fill();
     ctx.fillStyle="rgba(230,214,236,"+(.5*k).toFixed(2)+")";
-    ctx.fillText(n.ru.toLowerCase(),x,y+10);
+    mapLate(n.ru.toLowerCase(),[[x,y+10],[x,y-8]],0);   /* под точкой или над ней */
   }
   ctx.restore();
 }

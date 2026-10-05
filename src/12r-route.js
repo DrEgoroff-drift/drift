@@ -302,7 +302,7 @@ function drawRouteMap(vis){
         const label=RES[l.k].ru.toUpperCase()+" "+l.buy+" → "+l.sell;
         const tw=ctx.measureText(label).width;
         const lx=mx+Math.cos(an+Math.PI/2)*14,ly=my+Math.sin(an+Math.PI/2)*14;
-        ctx.fillStyle="rgba(6,10,16,.85)";ctx.fillRect(lx-tw/2-6,ly-8,tw+12,16);
+        ctx.fillStyle="rgba(6,10,16,.85)";ctx.fillRect(lx-tw/2-6,ly-8,tw+12,16);mapInkBox(lx-tw/2-6,ly-8,tw+12,16);
         ctx.strokeStyle=col+".4)";ctx.lineWidth=1;ctx.strokeRect(lx-tw/2-5.5,ly-7.5,tw+11,15);
         ctx.fillStyle="#7fe6d8";ctx.fillText(label,lx,ly+.5);
       }
@@ -316,7 +316,7 @@ function drawRouteMap(vis){
     ctx.beginPath();ctx.arc(p.x,p.y,11,0,TAU);ctx.stroke();
     ctx.fillStyle=next?"rgba(127,230,216,.85)":"rgba(6,10,16,.8)";
     ctx.beginPath();ctx.arc(p.x,p.y,11,0,TAU);ctx.fill();
-    ctx.fillStyle=next?"#06101a":"#7fe6d8";ctx.fillText(String(i+1),p.x,p.y+.5);
+    ctx.fillStyle=next?"#06101a":"#7fe6d8";ctx.fillText(String(i+1),p.x,p.y+.5);mapInkBox(p.x-11,p.y-11,22,22);
   });
   ctx.textBaseline="alphabetic";
   ctx.restore();
