@@ -66,6 +66,27 @@ draws the old textured ball.
 - M703 gas giants: more, irregular belts; cloud tint stays neutral under warm stars.
 - Golden frames that show planets will need `-Accept` on the release machine.
 
-## Ships in flight (M710) — not started
+## Ships in flight (M710) — full 3D
+
+The author chose full 3D over sprite relief (06.10). Module `src/17c2a-hull3d.js`, hooked into
+`hullGpuDraw` (17c2) in place of the `gpuLitSprite` body; `?h3d=0` / `H3D.on=false` brings the sprite back.
+The studio (`GPU.rt`) and pirates/barges/fleet still use their sprites.
+
+| Law | Decision |
+|---|---|
+| Geometry | A real mesh from `hullOf`: body lofted through the profile stations (tip from `poly[0]`), superellipse section, belly .55 of the back; wings as plates at mid-height (x-wing pairs splay ±.16), nacelle and nozzle barrels, pods, cargo, bridge, canopy bubble, drill cone, boom, radiator plates, deck greebles as bevelled boxes |
+| Maker grammar | `H3D_MK`: section squareness, back height, gloss per maker — Ordnung boxy (3.6), High-Front a flat drop (2, .46), Company glossy |
+| Paint | The existing body bake (17c2 `hullGpuBake`), projected from above: livery, panels, wear, scars, seals, maker marks stay in the 03e brushes and nowhere else. Side walls blend to the part's own colour by the object normal; where the bake is empty the part's colour |
+| Nothing lost | Everything painted but given no volume (masts, struts, hooks, frames) lives on a paint plane at mid-height, cut out by the bake's alpha through `sample_mask` (manual alpha-to-coverage, colour alpha stays 1) |
+| Light | Star at height `H3D_LZ` .48, fill .30 (darker towards the belly), key 1.6; Blinn sheen by maker gloss and the material's metal mask; glass from the material; own lights (windows) from the emissive mask ×`RL_EM` |
+| Shadow | The body as a field (stations + superellipse in the uniform): parts march 6 steps toward the star and fall into the body's shadow; parts touching the body darken (contact) |
+| Other light | Scene lights (08b light texture) at .25, as the sprite took .2; flame light only back-and-sideways and capped at .16 of the flame colour — uncapped, Mamont's long flame bleached the whole hull |
+| Composition | Own ×4 MSAA layer (one of `H3D_L`=4 array layers per frame, 512²), its own submit before the frame encoder — the scene pass is never broken — then one `gpuImage` with the "hull" blend (hull mask kept). More than four hulls in a frame fall back to sprites |
+| Warm | `h3d.hull` in `GPU_PIPE_ONE` and the key table (also `pipe:gor|over` for M700) |
+
+Open:
+- **M711** S23 cost (A/B/A with `?h3d=0`), together with M702: one 512² ×4 layer per ship, clear + resolve.
+- **M712** the dish as a real dish; nose cap reads white on haulers (bridge + tip); bank .8 legibility.
+- **M713** allies/escorts beyond four per frame — a smaller layer per far hull instead of the sprite.
 
 ## The interface (M720) — not started
