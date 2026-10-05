@@ -173,11 +173,19 @@ procedural and infinite · jumps stay for near · «пока только в п�
 ## Housekeeping
 
 - **Refactors rejected (0.438.0 audit):** a palette module, a `G.mode` table, removing `typeof` guards, a schema-driven `applySave`, an uncommitted `drift.html`.
-- **Releases:** push only after a green run — `test.ps1` (no flags: the Node tier the deploy runs), `-Full`, `-Mobile`, `-Mutants`; run and push in separate commands; after the push, the GitHub run's status and the md5 of `play.html` against `drift.html`. Patch bump for tests/tools/docs, minor for `src/`.
+- **Releases:** push only after a green run — `test.ps1` (no flags: build, the Node tier the deploy runs, the smoke and the vision), and `-Full`; run and push in separate commands; after the push, the GitHub run's status and the md5 of `play.html` against `drift.html`. Patch bump for tests/tools/docs, minor for `src/`.
 - **The freeze item (M234/M238/M417/M418) stays closed** until a stall that is not a bake shows in `crash.log` (`stallWho`, 0.448.0).
 - **The plan holds only what we want next** (the author, 23.09: «план это план, а не то что мы сделали»). A finished item is deleted from `PLAN.md` in the commit that finishes it; its story goes to the patchnote, a long body to `docs/done/` (files of at most 40 KB, `build.ps1` warns past that).
 
 ## Decisions taken on the author's behalf, so they are not re-litigated
+
+- **2026-10-06, the author: «тесты всегда зелёные… все кнопки перехерачены текстом, ни один тест
+  не поймал».** Tests are cut to the stability core (29 files: save, money, time, travel, cloud,
+  frame guard, GPU loss, detectors); golden frames and the mutant zoo are gone. The interface is
+  judged by the vision (`test-geom.js`): numbers before the raster, no screenshots, no stand —
+  «твоё зрение, ты будешь видеть интерфейс в формулах и неравенствах». Resolution, font and DPR
+  are multipliers the laws must survive; the golden section and alignment are notes, not
+  failures. Budget: ~15 s, never past 2 min. The release gate is build + core + vision.
 
 - **2026-09-14, the author.** The hold and tanks are cells of the plan · the metro is a real
   station in the system with a real gate, not an abstract ring · a ride is seconds to a minute ·
@@ -190,7 +198,7 @@ procedural and infinite · jumps stay for near · «пока только в п�
     is a separate field (`T.state()` returns both). Two saves of one world at different hours
     must hash alike; «where did it diverge» compares worlds and prints the clocks beside.
   - **Versions:** a commit touching only tests, tools or docs bumps the patch (0.443.1); a minor
-    bump means `src/` changed and `test.ps1 -Mutants` ran green before it.
+    bump means `src/` changed and `test.ps1 -Full` (suites and the vision) ran green before it.
   - **PATCHNOTES: trim, not split** — versions before 0.400.0 go to `docs/PATCHNOTES-archive.md`.
     Splitting per file would add a build step and a habit for a conflict that resolves itself
     (both sides prepend).
@@ -199,8 +207,6 @@ procedural and infinite · jumps stay for near · «пока только в п�
     more than 2 MB.
   - **No Node jobs on the PHP host** triggered by players: 768 MB that already kills the lab's
     Chromes, and the live site shares it. The lab stays on the GitHub schedule.
-  - **Goldens per platform:** `docs/golden/<W>x<H>@lab.json`, accepted by the lab itself on its
-    first run after the laptop's goldens changed; the laptop's stay the reference.
   - **`resAuto` never lowers the resolution while the clock is pinned**; the sharpness detector
     then holds the canvas to the DPR the settings ask for, and `DPR=.5` gets a killer.
   - **P4 grisaille — no.** The world's palette ramp stays the ground's hue: worlds are told apart

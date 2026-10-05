@@ -663,7 +663,9 @@ function geoSelf(vp){
     '<canvas id="geocvA" width="240" height="40" style="position:absolute;left:170px;top:6px;width:120px;height:20px"></canvas>'+
     '<canvas id="geocvB" width="120" height="36" style="position:absolute;left:170px;top:28px;width:120px;height:36px"></canvas>'+
     /* холст движка: выпечка (panelGpu, как стол и опись) с той же длинной подписью на короткой плашке */
-    '<canvas id="geocvC" style="position:absolute;left:10px;top:292px;width:120px;height:24px"></canvas>';
+    '<canvas id="geocvC" style="position:absolute;left:10px;top:292px;width:120px;height:24px"></canvas>'+
+    /* и слой (ovPaint: ovRect, ovText — как приборы на своих холстах) */
+    '<canvas id="geocvD" width="120" height="24" style="position:absolute;left:140px;top:292px;width:120px;height:24px"></canvas>';
   document.body.appendChild(fx);GEO.fx=fx;
   let F=[],bk=false;
   try{geoHookAll();geoHookOvl();
@@ -671,11 +673,13 @@ function geoSelf(vp){
     a.font="12px monospace";a.fillStyle="#fff";a.fillText("МЕЛКО",4,20);
     b.font="12px monospace";b.fillStyle="#234";b.fillRect(2,2,50,16);b.fillStyle="#fff";b.fillText("ХОЛСТ ВЫЛЕТ",6,14);
     b.fillStyle="#234";b.fillRect(2,20,110,14);b.fillStyle="#fff";b.fillText("ЧИСТО",6,31);
-    /* видна только счётной видеокарте: её кадр знает свой холст (view.__cv) */
-    const cC=fx.querySelector("#geocvC");
-    if(typeof panelGpu==="function"&&typeof GPU==="object"&&GPU.dev)try{
-      bk=!!cC.getContext("webgpu").getCurrentTexture().createView().__cv&&
-        panelGpu(cC,120,24,1,g=>{g.font="12px monospace";g.fillStyle="#234";g.fillRect(2,2,40,18);g.fillStyle="#fff";g.fillText("ВЫПЕЧКА ВЫЛЕТ",6,15);});}catch(e){bk=false;}
+    /* холсты движка видны только счётной видеокарте: её кадр знает свой холст (view.__cv). При ней обе
+       находки обязательны — переименованная печь или кисть слоя ослепили бы зрение молча */
+    const cC=fx.querySelector("#geocvC"),cD=fx.querySelector("#geocvD");
+    try{bk=!!cC.getContext("webgpu").getCurrentTexture().createView().__cv;}catch(e){bk=false;}
+    if(bk){
+      try{panelGpu(cC,120,24,1,g=>{g.font="12px monospace";g.fillStyle="#234";g.fillRect(2,2,40,18);g.fillStyle="#fff";g.fillText("ВЫПЕЧКА ВЫЛЕТ",6,15);});}catch(e){}
+      try{ovPaint(cD,1,()=>{ovRect(2,2,42,20,"#234",1);ovText(OVL.uq,6,15,"СЛОЙ ВЫЛЕТ","12px monospace","#fff","left","alphabetic",1,1);return true;});}catch(e){}}
     F=geoLaws(geoDom(fx,vp),[],{lab:[],chip:[],ui:[],dock:[]},vp,"тест теста",{x:geoExtra(vp,fx)});}
   finally{fx.remove();GEO.fx=null;}
   /* холст: плашка с длинной подписью, две наезжающие строки, NaN, сжатие вдвое, чистая плашка */
@@ -700,7 +704,7 @@ function geoSelf(vp){
     ["мусор",/NaN/],["накрыта",/ПОД ПЛАШКОЙ/],["вылет",/ПЛАШКА С ДЛИННЫМ/],["наезд",/СТРОКА ОДИН|СТРОКА ДВА/],["мусор",/НЕ ЧИСЛО/],["сжатие",/СЖАТО/],
     ["поверх",/ЧУЖАЯ/],["сквозь",/ПОДЛОЖКА/],["поверх",/ПРИШЕЛЕЦ/],["накрыта",/ПОД ВИДЖЕТОМ/],["кегль",/МЕЛКО/],["вылет",/ХОЛСТ ВЫЛЕТ/]];
   if(vp.touch)need.push(["цель",/button/]);
-  if(bk)need.push(["вылет",/ВЫПЕЧКА ВЫЛЕТ/]);
+  if(bk)need.push(["вылет",/ВЫПЕЧКА ВЫЛЕТ/],["вылет",/СЛОЙ ВЫЛЕТ/]);
   const miss=need.filter(([l,re])=>!has(l,re)).map(([l,re])=>l+" "+re.source);
   /* композиция: два соседа столбцом, левые края врозь на 2 px — заметка «ровно»; ровная пара рядом — без заметки */
   const cx=document.createElement("div");cx.style.cssText="position:fixed;left:140px;top:150px;width:150px;height:60px";

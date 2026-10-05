@@ -11,8 +11,8 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 - **One worker** on his own branch from `main`, commits in batches locally; Контроль pushes.
 - **The game first.** Stages 2 → 7 (§3–§8) in plan order; inside a stage the mechanic and the play first, the
   picture as a draft. The seams of §9 bind every item. The engine (§0) goes on, but not first.
-- **No tests along the way.** Before each release: a graphics pass with the author, then the whole run
-  (`test.ps1`, `-Full`, `-Mobile`, `-Mutants`).
+- **No tests along the way.** Before each release: a graphics pass with the author, then the gate
+  (`test.ps1` — build, the core, the vision — and `-Full`).
 - **A release point after each stage.**
 - **A fork in the design:** take the cautious variant and list it under «Disputed» in the stage's patchnote, so
   the author can overturn it.
@@ -43,8 +43,7 @@ occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py
 
 The game's stages (§3–§8) wait for the author's word; Контроль asks once P1 passes and the fleet has landed.
 
-- [ ] **After the fleet's landing (0.484.0)**: the golden frames are red on 11 scenes (the new sky and the
-  fleet's light) — Контроль re-accepts them after a look; the tour (NEYEL, Коммуна, wrecks, rescue, drones,
+- [ ] **After the fleet's landing (0.484.0)**: the tour (NEYEL, Коммуна, wrecks, rescue, drones,
   «Сорока», belt, hotel, planet, dock) is rerun and every flight item stays at 0; the night surface owes an
   A/B/A at 760 on a quiet PC (the S23 A/B against 0.480.0 is level: 58–60 fps, p99 16.8 ms in all five scenes);
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
@@ -276,7 +275,7 @@ measured on the GPU build first:
 
 Check each against the code before building — some may already hold.
 - **Replays (0.1, P9):** the fixed step and the seeded entry angle each move every recording and same-hash
-  suite once — one `-Accept` per change, named in the patchnote, `91zzzzzzzzb-replay` re-based.
+  suite once — `91zzzzzbb-samehash` re-based in the same commit, named in the patchnote.
 
 ## 10. Tests and tooling
 
@@ -284,21 +283,13 @@ Check each against the code before building — some may already hold.
   (`wanderBuy`/`wanStep`, 24c); the clock out of `stateHash` (`08a-statehash`, ~79 `mixN(now())` — decided
   11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl` into
   hashed state.
-- [ ] **Watch:** the quarantined «рейсы» — Омксиий (±3:∓1): «посадка: заход кончился режимом system»
-  (23.09, Node and `-Mobile`); «кольцо дороги: отправок ровно по одной» (gate «полёт по переписи») went red
-  once in a whole run for GPU-3 (25.09), neighbour unknown — does not reproduce at 66b51af6 (alone, and the
-  gate set under `-Shuffle 1..3`); «прогоны: двенадцать путей» flickered once under load; «свет: звезда — самое
-  светлое» went red once in the pane (the cumulus, `CLOUDS_OFF`) — one look.
-- [ ] **Nets owed (M443–M446):** `TEST_T0` at local noon; a drawn-vs-undrawn hash detector; the tools'
-  self-test before the net; not caught yet — the .55 auto-brake, the money-printing counter, idle drones;
-  partial — helm switching, sharpness at DPR 1, contrast under a vignette; goldens per platform once the lab
-  runs; M444 the cooperative walk, drags/wheel, the map per window; M445 a `DPR=.5` mutant; M446 a
-  previous-version diff and `look()` telemetry; a per-suite dirty-page check after `fn()`.
+- [ ] **Watch:** «прогоны: двенадцать путей» flickered once under load.
+- [ ] **Nets owed:** `TEST_T0` at local noon; not caught yet — the .55 auto-brake, the money-printing
+  counter, idle drones; a per-suite dirty-page check after `fn()`.
 - [ ] **Refactor queue, each a commit:** `detStuck`'s key law (fires only on a diff of exactly 0 — soften
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
   names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
-  functions, on touch only; the tools zoo → one way to take a frame; the button family merge; `-Times` for
-  the Node tier.
+  functions, on touch only; the button family merge; `-Times` for the Node tier.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed

@@ -218,7 +218,7 @@ before doing the thing, not after it bites.
   The *game* clock there is pinned (M441): stamp game state with `now()`, never `Date.now()`.
 - **Never measure the frame with `--virtual-time-budget`** — it fast-forwards the timers.
 - **`docs/pageshot.ps1` crops instead of narrowing.** Use it for how things look, never for
-  whether they fit; for edges measure `getBoundingClientRect()` or run `test.ps1 -Mobile`.
+  whether they fit; for edges measure `getBoundingClientRect()` or run the vision (`test-geom.js`).
 - **Long quoted one-liners and paragraph-sized heredocs get mangled.** Anything with prose in
   it goes to a `.py` in the scratchpad and runs by path.
 - **A heredoc through the Bash tool eats backslash escapes** (`\\n` → `\n`, `\b` → 0x08, into
@@ -236,11 +236,11 @@ The long form — the suites, the seven cross-cutting nets, the staging traps �
 powershell -ExecutionPolicy Bypass -File test.ps1
 ```
 
-**Three tiers (0.359.3).** No flags is the per-edit run: the Node tier (`test-node.js`, the
-formula-and-data suites, ~5 s) plus one Chrome smoke (~2 s). `-Browser` adds the picture and
-interface suites; `-Full` runs everything including the heavy nets — on request, before a
-release. `-Only текст` narrows, `-NoBuild` skips the build, `-Mobile` is the only way the
-phone-layout guards run at all (they are declared `win:"phone"`).
+**Three tiers (0.359.3), and the vision (06.10.2026).** No flags is the per-edit run and the
+release gate: build, the Node tier (`test-node.js`, ~2 s), one Chrome smoke (~2 s) and the
+vision (~7 s) — about 15 s in all. `-Browser` adds the Chrome-only suites; `-Full` runs every
+suite including the heavy nets, then the vision (~30 s). `-Only текст` narrows, `-NoBuild` skips
+the build, `-Mobile` runs the suites in a phone window.
 
 **The full run is split across Chromes (0.426.0).** `-Full` deals the corpus to four headless
 Chromes (`?shard=i/N`, heavy and light dealt round-robin apart) and adds up their reports;
@@ -257,17 +257,32 @@ isolation leak and fix the leak.
 the project. `test.ps1` prints one head line plus the failures block, ~30 tokens instead of a
 5 500-line page; the pane is for pixels and manual looks.
 
-Suites are split by topic: `tests/91a-flight` … `91n-barge`, harness in `90-harness`. A new
-mechanic goes into the suite it belongs to; if no topic fits, add `91x-name.js`. Each suite
+Suites are the stability core (pruned 06.10.2026 from 248 files to 29: suites that were always
+green and cost fifteen minutes are gone): save and its net, money, time, travel, landing, cloud,
+sync, market, the frame guard, GPU loss, pipelines, detectors — `tests/91a-frame` …
+`91zzzzzzzzz-savenet`, harness in `90-harness`. A suite is added only for what can break the
+game (a lost save, money from nothing, a frame that kills the loop); how the interface looks and
+fits is the vision's job, not a suite's. Each suite
 starts with `resetWorld()` and drives the real `G` — nothing is mocked. A suite that needs
 pixels or layout goes red under the Node stubs: declare it `suite(name,{tier:"browser"},fn)` and
 it moves to Chrome (tiers, `win`, `stage`, `?shuffle` and the tools `T.*` of `tests/90a-tools.js`:
 `docs/VERIFY.md`). A suite with zero assertions is red, and `ok(true` / `typeof`-guards in suites
 are refused by a net. Detectors (`90b`/`90c`, driver `91zzzzzzzz-detect`) judge every scene after
-every gesture; golden frames live in `docs/golden/` as block signatures — after a deliberate
-picture change, `test.ps1 -Accept` (and `-Mobile`, `-Size 1440,1440`) re-shoots them.
-`test.ps1 -Changed` runs only the suites that name what you edited (`docs/TESTMAP.json`);
-`test.ps1 -Mutants` runs the zoo (`tests/mutants.json`) — every mutant must die, before a release.
+every gesture. `test.ps1 -Changed` runs only the suites that name what you edited
+(`docs/TESTMAP.json`); `test.ps1 -Accept` rewrites the pipeline warm-up table
+(`src/08b1-gpu-pipe-keys.js`).
+
+**The vision** (`test-geom.js` driving `tests/90b2-geom.js`) sees the interface as numbers,
+never as pixels: 17 windows (phones 320–421, landscape 568/780, tablets, PC 900–2560, native
+zoom, DPR 1 against 3), ~110 screens each, every DOM box, every 2D-canvas text and every item the
+engine layers and bakes draw (a counting WebGPU records them; nothing is rasterised). Laws are
+inequalities on CSS-px rectangles: `вылет` (text past its plate), `срез` (clipped), `край`
+(off-screen), `наезд`/`накрыта`/`поверх`/`сквозь` (overlaps by layer and window), `цель` (touch
+target), `невидим` (contrast), `кегль` (< 8 px), `мусор` (non-finite coordinates), `сбой` (a draw
+that throws), `DPR` (a text moves or resizes between DPR 1 and 3). Composition notes — `ровно`
+(near-miss alignment), `шаг` (uneven gaps), `φ` (a window off the golden section) — print but do
+not fail. Before the walk a self-test plants one defect per law; a missed plant is «СЛЕПО» and
+red. Alone: `node test-geom.js --page=tests.html [--only="phone 390"] [--json=out.json]`.
 
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1

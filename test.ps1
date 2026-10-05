@@ -1,6 +1,6 @@
 ﻿# Headless run of tests.html — the cheap way to verify.
 #
-#   powershell -ExecutionPolicy Bypass -File test.ps1            # build + run, print verdict
+#   powershell -ExecutionPolicy Bypass -File test.ps1            # build + run, print verdict (Node, smoke, the vision)
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -NoBuild   # run the existing tests.html
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Only роща # suites whose name contains the text
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Mobile    # same, in a 390x844 window
@@ -17,12 +17,11 @@
 # -Mobile runs the same suites in a phone window instead: the layout guards are
 # declared {win:"phone"} and do not run in a desktop window at all, so without
 # this switch the phone half of the interface is never actually measured.
-#   powershell -ExecutionPolicy Bypass -File test.ps1 -Accept          # золотые кадры: снять эталон этого окна в docs/golden/ (с -Mobile/-Size — того окна)
-#   powershell -ExecutionPolicy Bypass -File test.ps1 -Mutants         # зоопарк (M445): каждый мутант из tests/mutants.json обязан покраснеть
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Accept          # таблица прогрева конвейеров: src/08b1-gpu-pipe-keys.js из набора «конвейеры»
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Changed         # только наборы, которые называют изменённые модули (docs/TESTMAP.json)
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Files "91a-flight|91c-mgr"  # наборы этих файлов
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Full -ShardSec 15   # потолок части (900 с); убитая часть — красный итог
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept, [switch]$Mutants, [switch]$Changed, [string]$Files = "", [int]$ShardSec = 900)
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0, [int]$Seed = 0, [string]$Size = "", [switch]$Full, [switch]$Browser, [int]$Jobs = 0, [switch]$Times, [switch]$Probe, [string]$Shuffle = "", [switch]$Accept, [switch]$Changed, [string]$Files = "", [int]$ShardSec = 900)
 # ── не Windows: облако Claude, раннер CI (G13, 25.09) ──
 # Дома всё ниже — пустые ветки: $onLin ложно, TEMP и NUMBER_OF_PROCESSORS заданы
 # системой, $psh — тот же powershell. На Linux (pwsh 7) нет ни powershell, ни этих
@@ -32,57 +31,16 @@ $psh = if ($onLin) { "pwsh" } else { "powershell" }
 if (-not $env:TEMP) { $env:TEMP = [System.IO.Path]::GetTempPath().TrimEnd('/') }
 if (-not $env:NUMBER_OF_PROCESSORS) { $env:NUMBER_OF_PROCESSORS = [Environment]::ProcessorCount }
 try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } catch {}   # вывод в UTF-8: в консоли cp437/cp866 русское печаталось «?» (новый комп, 27.09.2026)
-# ── зоопарк мутантов (M445, DESIGN-tests §5) ──
-# Мера тестов одна: долю авторских багов прогон нашёл бы первым. Каждый из
-# пятнадцати багов истории воспроизводится мутантом — правкой в одну строку
-# (tests/mutants.json: файл, что найти, чем заменить, кто обязан убить) — и
-# прогон его убийц ОБЯЗАН покраснеть. Выживший мутант — дыра в детекторах, а не
-# в игре. Файл правится на месте, собирается, гоняется, возвращается через git.
-if ($Mutants) {
-  $root0 = Split-Path -Parent $MyInvocation.MyCommand.Path
-  $mj = Join-Path $root0 "tests\mutants.json"
-  $zoo = [System.IO.File]::ReadAllText($mj, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
-  $utf8 = New-Object System.Text.UTF8Encoding $false
-  $rows = @(); $alive = 0; $sw0 = [Diagnostics.Stopwatch]::StartNew()
-  if ($Only) { $zoo = @($zoo | Where-Object { $_.name -like "*$Only*" }) }   # -Mutants -Only имя: один мутант
-  foreach ($m in $zoo) {
-    $path = Join-Path $root0 $m.file
-    $src = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
-    $hits = [regex]::Matches($src, $m.find).Count
-    if ($hits -ne 1) { $rows += "  ?  {0,-22} no spot: «{1}» found {2} times in {3}" -f $m.name, $m.find, $hits, $m.file; $alive++; continue }
-    # возвращаем ТЕКСТ, который прочли, а не `git checkout -- файл`: тот откатывал
-    # файл целиком, вместе с чужими несохранёнными правками в нём (0.438.0)
-    [System.IO.File]::WriteAllText($path, [regex]::Replace($src, $m.find, $m.replace, 1), $utf8)
-    try {
-      $b = & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") 2>&1 | Out-String
-      if ($LASTEXITCODE -ne 0 -or $b -match "M441|violation") { $rows += "  ✓  {0,-22} killed by the build: {1}" -f $m.name, (($b -split "`n") | Where-Object { $_ -match "M441|violation|throw" } | Select-Object -First 1); continue }
-      $args2 = @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $root0 "test.ps1"), "-NoBuild")
-      if ($m.kill) { $args2 += @("-Only", $m.kill) } else { $args2 += "-Browser" }
-      if ($m.mobile) { $args2 += "-Mobile" }
-      $out = & $psh @args2 2>&1 | Out-String
-      $rc = $LASTEXITCODE
-      $who = (($out -split "`n") | Where-Object { $_ -match "^\s+[✗?]\s" } | Select-Object -First 1)
-      if ($null -eq $who) { $who = "" }
-      $who = ($who -replace "^\s+[✗?]\s+", "").Trim()
-      if ($who.Length -gt 110) { $who = $who.Substring(0, 110) + "…" }
-      if ($rc -ne 0) { $rows += "  ✓  {0,-22} killed: {1}" -f $m.name, $who }
-      else { $rows += "  ✗  {0,-22} SURVIVED — {1} ({2})" -f $m.name, $m.why, $(if ($m.kill) { $m.kill } else { "-Browser" }); $alive++ }
-    } finally {
-      [System.IO.File]::WriteAllText($path, $src, $utf8)
-    }
-  }
-  # чистая сборка после зоопарка: tests.html не должен остаться мутантом
-  & $psh -ExecutionPolicy Bypass -File (Join-Path $root0 "build.ps1") | Out-Null
-  "zoo: mutants {0}, survived {1} · {2:N0} s" -f $zoo.Count, $alive, $sw0.Elapsed.TotalSeconds
-  $rows | ForEach-Object { $_ }
-  if ($alive) { exit 1 } else { exit 0 }
-}
 # ── три яруса (0.359.3; автор 06.09: «в разработке никто хром не запускает», «быстрый — 20 с») ──
 #   test.ps1            Node: формулы и данные (325 наборов, ~5 с) + дым в Хроме: игра сама
 #                       прожила кадр (~2 с). Итого под десять секунд. Это прогон на каждую правку.
 #   test.ps1 -Browser   Хром, картинка и интерфейс без тяжёлых сетей (~30 с) — после правок в рисовании и вёрстке.
 #   test.ps1 -Full      Хром, всё, включая тяжёлые сети (~95 с) — по просьбе, перед релизом.
 #   -Only/-Mobile/-Fuzz/-Size идут в Хром, как раньше.
+# ── и зрение (06.10.2026): test-geom.js — интерфейс в неравенствах, 17 окон за ~7 с ──
+#   Идёт в быстром ярусе и в -Full: вылет, срез, наезд, кегль, контраст, DPR-неизменность —
+#   числами до растра. Брак — красный итог. Золотые кадры и зоопарк мутантов сняты с ним
+#   (вечно зелёные, 15 минут); остались наборы стабильности.
 # ── и с 0.426.0 прогон делится (замер 10.09.2026, шестнадцать ядер) ──
 #   -Full шёл 292 с одной страницей. Три вещи по очереди: убран --disable-gpu
 #   (280 → 230 с), прогон роздан шести Хромам (230 → 97 с), и из самих наборов
@@ -200,12 +158,9 @@ if ($env:DRIFT_GPU -eq "swiftshader") {
   if (-not $swm.Success) { throw "docs/shot.py: no SWIFTSHADER list — the GPU flags live there" }
   $gpuArgs += @([regex]::Matches($swm.Groups[1].Value, '"([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
 }
-# -Accept (M443): золотые кадры снимаются заново и пишутся в docs/golden/<окно>.json —
-# после нарочной правки картинки или для окна, у которого эталона ещё нет. Гоняется
-# один набор, в одну страницу; страница кладёт снятое в <pre id="golden">.
-# Детектор конвейеров (91zzzzzzy4) кладёт ключи полёта в <pre id="pipekeys"> — -Accept пишет
-# из них таблицу прогрева src/08b1-gpu-pipe-keys.js.
-if ($Accept -and -not $Only) { $Only = "золотые кадры|конвейеры" }
+# -Accept: детектор конвейеров (91zzzzzzy4) кладёт ключи полёта в <pre id="pipekeys"> —
+# -Accept пишет из них таблицу прогрева src/08b1-gpu-pipe-keys.js. Один набор, одна страница.
+if ($Accept -and -not $Only) { $Only = "конвейеры" }
 if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
 if ($Accept) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "accept=1" }
 if ($Files) { $sep = if ($url -match "\?") { "&" } else { "?" }; $url += "$sep" + "files=" + [uri]::EscapeDataString($Files) }
@@ -446,23 +401,9 @@ foreach ($r in $runs) {
 }
 # наборы не в своём окне (опция win) складываются по частям, как и карантин
 if ($offWin) { $tail += " · off-window $offWin (win)" }
-# золотые кадры: снятое страницей — в docs/golden/<окно>.json (UTF-8 без BOM, LF)
+# таблица прогрева: ключи конвейеров, снятые страницей
 if ($Accept) {
-  $gdir = Join-Path $root "docs\golden"
-  if (-not (Test-Path $gdir)) { New-Item -ItemType Directory -Path $gdir | Out-Null }
   $got = 0
-  foreach ($r in $runs) {
-    $raw = try { [System.IO.File]::ReadAllText($r.dom, [System.Text.Encoding]::UTF8) } catch { "" }
-    $gm = [regex]::Match($raw, '<pre id="golden"[^>]*data-key="([^"]+)"[^>]*>([\s\S]*?)</pre>')
-    if (-not $gm.Success) { continue }
-    $key = $gm.Groups[1].Value
-    $json = [System.Net.WebUtility]::HtmlDecode($gm.Groups[2].Value) -replace "`r`n", "`n"
-    $p = Join-Path $gdir ($key + ".json")
-    [System.IO.File]::WriteAllText($p, $json, (New-Object System.Text.UTF8Encoding $false))
-    $n = ([regex]::Matches($json, '"b":"')).Count
-    "reference written: docs/golden/$key.json ($n scenes) — rebuild (build.ps1) so the run sees it"
-    $got++
-  }
   foreach ($r in $runs) {
     $raw = try { [System.IO.File]::ReadAllText($r.dom, [System.Text.Encoding]::UTF8) } catch { "" }
     $pm = [regex]::Match($raw, '<pre id="pipekeys"[^>]*data-pipe="1"[^>]*>([\s\S]*?)</pre>')   # метка — чтобы не поймать текст самих наборов
@@ -475,7 +416,7 @@ if ($Accept) {
     "warm-up table written: src/08b1-gpu-pipe-keys.js ($(@($keys).Count) keys) — rebuild (build.ps1)"
     $got++
   }
-  if (-not $got) { "the page returned neither golden frames nor pipeline keys: the suites did not run or the window is wrong" }
+  if (-not $got) { "the page returned no pipeline keys: the suite did not run or the window is wrong" }
 }
 "{0} · passed {1} · suites {2} of {3}{4}{5} · {6:N1} s" -f $(if ($fail) { "FAILED $fail" } else { "ALL GREEN" }), $pass, $ran, $all, $tail, $(if ($Jobs -gt 1) { " · parts $Jobs" } else { "" }), $sw.Elapsed.TotalSeconds
 if ($stRan) { "quarantine (not in the verdict): suites $stRan, failed $stFail"; $staged | ForEach-Object { $_ } }
@@ -483,6 +424,13 @@ if ($Times -and $slowest.Count) {
   "SLOWEST (ms):"
   $slowest | Sort-Object { - $_[0] } | Select-Object -First 30 | ForEach-Object { "  {0,6}  {1}" -f $_[0], $_[1] }
 }
-if ($fail) { $fails | ForEach-Object { $_ }; exit 1 }
-if ($nodeTier -and $nodeRc -ne 0) { exit 1 }
+if ($fail) { $fails | ForEach-Object { $_ } }
+# зрение: тот же tests.html, своя страница на каждое окно; печатает брак и выходит 1 на браке или слепоте
+$geoRc = 0
+if (($nodeTier -or $Full) -and -not $Files -and $nodeExe) {
+  [Console]::OutputEncoding = [Text.Encoding]::UTF8
+  & $nodeExe (Join-Path $root0 "test-geom.js") ("--page=" + (Join-Path $root0 "tests.html"))
+  $geoRc = $LASTEXITCODE
+}
+if ($fail -or ($nodeTier -and $nodeRc -ne 0) -or $geoRc -ne 0) { exit 1 }
 exit 0
