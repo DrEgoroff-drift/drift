@@ -80,12 +80,12 @@ function drawYardMark(h,id){
     ctx.fillStyle=P.col||"#d8433a";ctx.globalAlpha=.85;ctx.fillRect(x0+L*.22,B*.14,L*.6,B*.16);
     ctx.globalAlpha=1;ctx.fillStyle="rgba(238,232,218,.82)";
     ctx.font="bold "+(B*.46).toFixed(2)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText("ПЛАН — ЗАКОН",x0+L*.52,-B*.18,L*.62);
+    paintText(ctx,"ПЛАН — ЗАКОН",x0+L*.52,-B*.18,L*.62);
   }else if(S.by==="co"){
     const C=["#ff4fa8","#3fd6ff","#ffe04a","#f4f4f4","#8a5cff"],n=10,w=L*.44/n;
     for(let i=0;i<n;i++){ctx.fillStyle=C[i%C.length];ctx.globalAlpha=.78;ctx.fillRect(x0+L*.3+i*w,B*.36,w*.9,B*.16);}
     ctx.globalAlpha=.9;ctx.fillStyle="#f4f4f4";ctx.font=(B*.14).toFixed(2)+"px ui-monospace,monospace";ctx.textBaseline="middle";
-    ctx.fillText("™",x0+L*.75,B*.44);
+    paintText(ctx,"™",x0+L*.75,B*.44);
   }else if(S.by==="or"){
     const xa=h.nose-L*.22;                                                        /* носовая броня: светлая сталь на тёмном */
     ctx.fillStyle="rgba(168,176,186,.62)";ctx.fillRect(xa,-B*1.2,L*.34,B*2.4);

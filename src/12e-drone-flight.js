@@ -307,7 +307,7 @@ function drawDronesMap(vis){
     const bx=v.x+15,by2=v.y-13;
     mpText(String(n),bx+5,by2+4,"rgba(4,6,10,.75)");   /* перо карты (17z4) */
     mpDisc(bx,by2+1,1.8,"rgba(127,230,216,.9)");
-    mpText(String(n),bx+4,by2+3,"rgba(127,230,216,.9)");
+    mpText(String(n),bx+4,by2+3,"rgba(127,230,216,.9)");mapInkText(String(n),bx+4,by2+3);
   }
 }
 

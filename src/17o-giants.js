@@ -76,7 +76,7 @@ function drawGiantsMap(V,cell){
     const r=Math.max(4,cell*.26);
     ctx.lineJoin="round";
     giantMapGlyph(g.k,x,y,r,"rgba(240,220,170,.9)");
-    if(cell>=10){ctx.font=(typeof uiFont==="function")?uiFont(9):"9px monospace";mpText(g.ru.toUpperCase(),x,y+r*1.9+11,"rgba(240,220,170,.9)");}   /* под знаком: над ним — имя системы */
+    if(cell>=10){ctx.fillStyle="rgba(240,220,170,.9)";ctx.font=(typeof uiFont==="function")?uiFont(9):"9px monospace";mapLate(g.ru.toUpperCase(),[[x,y+r*1.9+11],[x,y-r*1.9-5]],4);}   /* под знаком, а занято — над ним (18, mapLate) */
   }
   ctx.restore();
 }

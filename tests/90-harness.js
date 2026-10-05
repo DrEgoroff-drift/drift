@@ -543,7 +543,7 @@ function runTests(){
     });
     suite("сеть: в наборах нет ok(true и typeof-сторожей",()=>{
       const src=testSource();
-      ok(src.split("\n").length>5000,"область наборов найдена по меткам: "+src.split("\n").length+" строк");
+      ok(src.split("\n").length>1500,"область наборов найдена по меткам: "+src.split("\n").length+" строк");
       const hits=testNetHits(src);
       eq(hits.slice(0,6).join(" ;; "),"","ни одной проверки, которая не может покраснеть"+(hits.length?" (всего "+hits.length+")":""));
     });

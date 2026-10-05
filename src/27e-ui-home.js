@@ -32,6 +32,8 @@ function homeRoomW(){
    уровне экрана: зона — это целая ступень, а не мелкая деталь в ней. */
 let HOME_HIT=[];
 let HOME_VIEW={k:1,pad:0};
+/* кегль строки прогресса в единицах комнаты: не мельче 8,5 точек CSS, как бы ни ужалась картинка на экране */
+let HOME_TXT=7;
 function homeHitAt(px,py){
   const k=HOME_VIEW.k||1;
   const rx=(px-HOME_VIEW.pad)/k, ry=py/k;
@@ -54,11 +56,17 @@ function drawHomeRoom(cn){
      кружка — с ведро. Картинка ровно в ширину дома, полтора-два пикселя на
      единицу, и она растёт вместе с ним — то самое правило из M83, которое
      потерялось при переносе. Остаток ширины — поля по бокам. */
+  /* потолок — в пикселях CSS: холст в пикселях устройства, и с потолком в них при DPR 3 комната
+     ложилась на треть ширины, а надписи — в полтора пикселя (зрение 06.10.2026, закон DPR) */
   const W2=homeRoomW();
-  const k=Math.min(cn.width/W2,2.2), H2=cn.height/k;
+  const k=Math.min(cn.width/W2,2.2*(window.devicePixelRatio||1)), H2=cn.height/k;
   const pad=(cn.width-W2*k)/2;
   /* тот же перевод, что у рисунка, — им же и попадают пальцем */
   HOME_VIEW={k,pad:Math.max(0,pad)};
+  /* на телефоне картинка в max-width:100% — уже своей ширины, и строка «ещё N кр заработать» в 7 единиц
+     выходила в три точки (зрение 06.10.2026): кегль берём от того, как комната легла на экран */
+  const cu=k*(cn.getBoundingClientRect().width/cn.width)||k/(window.devicePixelRatio||1);
+  HOME_TXT=Math.max(7,8.5/cu);
   const draw=c=>{c.save();c.translate(Math.max(0,pad),0);c.scale(k,k);homeRoomBody(c,W2,H2);c.restore();};
   if(HOME_BK){gpuBakeDrop(HOME_BK);HOME_BK=null;}
   const B=gpuBake(cn.width,cn.height,draw,{mips:false,once:true});
@@ -595,15 +603,18 @@ function homeRoomBody(c,W2,H2){
      у подписей в рубке и на поверхности. */
   const pr=homeProgress();
   if(pr){
-    const bh=13, by=H2-bh;
+    const s=HOME_TXT/7,bh=13*s, by=H2-bh;
     c.fillStyle="rgba(6,9,14,.82)";c.fillRect(0,by,W2,bh);
     c.fillStyle="rgba(255,255,255,.06)";c.fillRect(0,by,W2,1);
-    const bx=12,bw=Math.min(W2-24,300);
-    c.fillStyle="rgba(255,255,255,.12)";c.fillRect(bx,by+8,bw,2.6);
-    c.fillStyle=rgba(acc,.9);c.fillRect(bx,by+8,bw*pr.frac,2.6);
+    const bx=12,bw=Math.min(W2-24,300*s);
+    c.fillStyle="rgba(255,255,255,.12)";c.fillRect(bx,by+8*s,bw,2.6*s);
+    c.fillStyle=rgba(acc,.9);c.fillRect(bx,by+8*s,bw*pr.frac,2.6*s);
     c.fillStyle=pr.done?rgba(acc,.9):"rgba(210,225,235,.8)";
-    c.font="7px ui-monospace,monospace";c.textAlign="left";
-    c.fillText(pr.done?"дом достроен":pr.ru,bx,by+6);
+    c.font=HOME_TXT.toFixed(2)+"px ui-monospace,monospace";c.textAlign="left";
+    /* не влезла — обрезается с многоточием, а не ужимается: ужатый моноширинный не читается */
+    let tx=pr.done?"дом достроен":pr.ru;
+    while(tx.length>4&&c.measureText(tx).width>W2-2*bx)tx=tx.slice(0,-2)+"…";
+    c.fillText(tx,bx,by+6*s);
   }
   /* виньетка: комната смотрит на игрока из своего света, а не лежит плоско */
   const vg=c.createRadialGradient(W2/2,H2*.5,H2*.4,W2/2,H2*.5,H2*1.15);

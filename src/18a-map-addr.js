@@ -72,7 +72,9 @@ function mapRingsDraw(px,py,cell,st){
     const r=k*(st.jump+.02)*cell;
     if(r>Math.hypot(W,H))continue;
     mpDashCircle(px,py,r,1,"rgba(127,230,216,"+(k===2?.14:.09)+")",[2,6]);
-    mpText(k+" "+pl3(k,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"),px+r*.707+4,py-r*.707-3,"rgba(127,230,216,"+(k===2?.42:.3)+")");
+    ctx.fillStyle="rgba(127,230,216,"+(k===2?.42:.3)+")";
+    const t=k+" "+pl3(k,"ПРЫЖОК","ПРЫЖКА","ПРЫЖКОВ"),tw=ctx.measureText(t).width,d=r*.707;
+    mapLate(t,[[px+d+4,py-d-3],[px-d-4-tw,py-d-3],[px+d+4,py+d+11],[px-d-4-tw,py+d+11]],1);   /* у кольца, в любой четверти */
   }
   ctx.restore();
 }
@@ -86,8 +88,9 @@ function mapRumoursDraw(V,cell){
     if(x0>W||y0>H||x0+w<0||y0+w<0)continue;
     mpHatch(x0,y0,w,w,9,1,1,"rgba(207,227,234,.16)");
     mpDashFrame(x0+.5,y0+.5,w,w,1,"rgba(207,227,234,.35)",[4,4]);
-    mapFont(8);ctx.textAlign="left";
-    mpText("В "+r.rad+" "+pl3(r.rad,"СЕКТОРЕ","СЕКТОРАХ","СЕКТОРАХ")+" ВОКРУГ "+r.sx+":"+r.sy+(r.src?" · "+r.src.toUpperCase():""),x0+4,y0-4,"rgba(207,227,234,.7)");
+    ctx.fillStyle="rgba(207,227,234,.7)";mapFont(8);ctx.textAlign="left";
+    mapLate("В "+r.rad+" "+pl3(r.rad,"СЕКТОРЕ","СЕКТОРАХ","СЕКТОРАХ")+" ВОКРУГ "+r.sx+":"+r.sy+(r.src?" · "+r.src.toUpperCase():""),
+      [[x0+4,y0-4],[x0+4,y0+w+11],[x0+4,y0+12],[x0+4,y0+w-4]],2);   /* над областью, под ней или у кромки внутри */
   }
   ctx.restore();
 }
@@ -158,14 +161,16 @@ function mapRulersDraw(V,cell,foot){
   const j=dsel>0?Math.max(1,Math.ceil(dsel/Math.max(.5,st.jump))):0;
   const star=starAt(G.sel.x,G.sel.y);
   const l2=dch===0?"":"сектор "+G.sel.x+":"+G.sel.y+" · "+dch+" "+pl3(dch,"сектор","сектора","секторов")+" · "+j+" "+pl3(j,"прыжок","прыжка","прыжков")+" · "+dsel.toFixed(1).replace(".",",")+" пк"+(star?"":" · пусто, курса нет");
-  const hx=xL+8*U,hy=y0+30*U;
-  const ab=document.getElementById("mapaddr"),abw=(ab&&ab.offsetWidth)?ab.offsetWidth*((typeof UIK==="number")?UIK:1)+12:0;
-  const avail=RX-hx-4-abw;
+  /* место шапки делит с рядом адреса раскладчик верха карты */
+  const T=mapTopPlace();
+  const hx=T?T.hx:xL+8*U,hy=T?T.hy:y0+30*U;
+  const avail=T?T.hw:RX-hx-4;
   /* строка длиннее места теряет хвост по « · », а не лезет под поле адреса */
   const trim=t=>{let s2=t;while(s2&&ctx.measureText(s2).width>avail-10&&s2.indexOf(" · ")>0)s2=s2.slice(0,s2.lastIndexOf(" · "));return s2;};
   const L1=trim(l1),L2=trim(l2);
   const w1=ctx.measureText(L1).width,w2=L2?ctx.measureText(L2).width:0,wmax=Math.min(avail,Math.max(w1,w2)+10*U);
-  mpRect(hx-4*U,hy-10*U,wmax,(l2?26:14)*U,"rgba(6,10,16,.5)");
+  /* подложка сплошная: подпись листа под полупрозрачной шапкой читалась сквозь неё (зрение 06.10.2026) */
+  mpRect(hx-4*U,hy-10*U,wmax,(l2?26:14)*U,"rgba(6,10,16,.9)");
   mapBox("шапка карты",hx-4*U,hy-10*U,wmax,(l2?26:14)*U);
   mpText(L1,hx,hy,"#7fe6d8");
   if(L2)mpText(L2,hx,hy+12*U,"#f2b25c");
@@ -233,6 +238,43 @@ function mapAddrBox(){
   inp.addEventListener("keydown",ev=>{if(ev.key==="Enter"){run();ev.preventDefault();}ev.stopPropagation();});
   inp.addEventListener("keyup",ev=>ev.stopPropagation());
   return e;
+}
+/* ── верх карты: ряд адреса (DOM) и шапка (холст) делят одно место ──
+   На телефоне ряд строкой шире места до борта и накрывал шапку (на 320 — целиком), на низком окне
+   свёрнутый столбиком уходил к приёмнику (зрение 06.10.2026). Места ищутся по очереди. Ряд: на низком
+   окне — в верхней полосе между приборами и колодкой области, если там встаёт строкой (на высоком эта
+   полоса — воздух над картой); иначе под линейкой — до правой кромки, если борт ниже ряда, или до
+   борта, с переносом. Шапка: рядом с рядом, если остаётся 150 px; иначе в верхнюю полосу, если та
+   свободна и широка; иначе под рядом. Низ всего (floor) — потолок строки сообщения (--mapbar, 27z).
+   Пиксели — окна; ряд живёт внутри zoom:var(--ui) и свои px умножает на UIK — потому делим. */
+let MAP_TOP=null;
+function mapTopPlace(){
+  if(G.mapClean||typeof $vitals==="undefined"||!$vitals||!$locusEl){MAP_TOP=null;return null;}
+  const ab=mapAddrBox();setSt(ab,"display","flex");
+  const k=(typeof UIK==="number"&&UIK>0)?UIK:1,U=mapU();
+  const vr=$vitals.getBoundingClientRect(),lr=$locusEl.getBoundingClientRect();
+  const rl=document.querySelector(".rail"),rr=rl?rl.getBoundingClientRect():null;
+  const cs=getComputedStyle(ab),gap=parseFloat(cs.columnGap)||0;
+  let need=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0)+2,hgt=0,n=0;
+  for(const c of ab.children){if(!c.offsetWidth)continue;need+=c.offsetWidth;hgt=Math.max(hgt,c.offsetHeight);n++;}
+  need=(need+gap*Math.max(0,n-1))*k;
+  const rowH=(hgt+(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0)+2)*k;
+  const y0=mapRulerTop(),band=y0-4,xL=MAP_RUL*U,hx0=xL+8*U,RX=mapRail();
+  const tx0=vr.right+8,tx1=lr.left-8,shortWin=innerHeight<=480;
+  let top,right,maxW;
+  if(shortWin&&tx1-tx0>=need&&vr.top+rowH<=band+2){top=vr.top;right=innerWidth-tx1;maxW=tx1-tx0;}
+  else{const ry=band+20,free=!rr||!rr.width||rr.top>=ry+rowH+8,x1=free?innerWidth-8:rr.left-8;
+    top=ry;right=innerWidth-x1;maxW=x1-(xL+8);}
+  setSt(ab,"top",(top/k).toFixed(1)+"px");setSt(ab,"right",(right/k).toFixed(1)+"px");setSt(ab,"maxWidth",Math.max(60,maxW/k).toFixed(1)+"px");
+  const R=ab.getBoundingClientRect(),hH=26*U;
+  let hx=hx0,hy=y0+30*U,hw=RX-hx0-4,floor=R.bottom;
+  if(R.top>=band-2&&R.bottom>hy-10*U&&R.top<hy-10*U+hH&&R.left<RX){   /* ряд в полосе шапки */
+    if(R.left-8-hx0>=150*U)hw=R.left-8-hx0;
+    else if(tx1-tx0>=150*U&&vr.top+hH<=band){hx=tx0+4*U;hy=vr.top+10*U;hw=tx1-tx0-8*U;}
+    else{hy=R.bottom+6+10*U;floor=hy-10*U+hH;}
+  }else floor=Math.max(R.top<band?0:R.bottom,y0+20*U+hH);
+  MAP_TOP={hx,hy,hw,floor,hb:hy-10*U+hH};   /* hb — низ подложки шапки */
+  return MAP_TOP;
 }
 /* адреса в тексте игры становятся нажимаемыми: «сектор 4:-7» → на карту */
 function addrify(root){

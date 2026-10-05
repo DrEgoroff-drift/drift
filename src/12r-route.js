@@ -297,7 +297,7 @@ function drawRouteMap(vis){
         const label=RES[l.k].ru.toUpperCase()+" "+l.buy+" → "+l.sell;
         const tw=ctx.measureText(label).width;
         const lx=mx+Math.cos(an+Math.PI/2)*14,ly=my+Math.sin(an+Math.PI/2)*14;
-        mpRect(lx-tw/2-6,ly-8,tw+12,16,"rgba(6,10,16,.85)");
+        mpRect(lx-tw/2-6,ly-8,tw+12,16,"rgba(6,10,16,.85)");mapInkBox(lx-tw/2-6,ly-8,tw+12,16);
         mpFrame(lx-tw/2-5.5,ly-7.5,tw+11,15,1,col+".4)");
         mpText(label,lx,ly+.5,"#7fe6d8");
       }
@@ -309,7 +309,7 @@ function drawRouteMap(vis){
     const next=NX&&NX.idx===i&&R.legs.length>=2;
     mpCircle(p.x,p.y,11,1.2,col+".8)");
     mpDisc(p.x,p.y,11,next?"rgba(127,230,216,.85)":"rgba(6,10,16,.8)");
-    mpText(String(i+1),p.x,p.y+.5,next?"#06101a":"#7fe6d8");
+    mpText(String(i+1),p.x,p.y+.5,next?"#06101a":"#7fe6d8");mapInkBox(p.x-11,p.y-11,22,22);
   });
   ctx.textBaseline="alphabetic";
   ctx.restore();

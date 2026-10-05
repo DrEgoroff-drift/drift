@@ -39,7 +39,66 @@ function mapBox(name,x,y,w,h){MAP_BOX.push({s:name,x,y,w,h});}
    надписями значит сменить масштаб карты. Поэтому линейка входит в
    НАЧЕРТАНИЕ и в отступы интерфейса, а не в координаты сетки. */
 function mapU(){return (typeof UIK==="number"&&UIK>1)?UIK:1;}
-function mapFont(px){ctx.font=(px*mapU()).toFixed(1)+"px ui-monospace,monospace";}
+function mapFont(px){ctx.font=Math.max(8,px*mapU()).toFixed(1)+"px ui-monospace,monospace";}   /* мельче 8 буква не читается (закон кегля, зрение 06.10.2026) */
+/* ── чернила карты (зрение 06.10.2026) ──
+   Подпись поверх подписи не читается ни одна, а на карте их ставили тринадцать модулей, каждый от своей
+   точки. Подписи мира — имена рукавов и туманностей, края слухов, великаны, ценники, бирки, кольца
+   прыжков, круг поиска, засечки — кадр ставит последними (mapLateFlush) и только на пустое место:
+   каждая приносит запасные места, а не влезла ни в одно — в этом кадре её нет. Свои метки (вы, курс,
+   маршрут, подвал, шапка, карточка) рисуются как прежде и только записываются сюда. Чернила —
+   выпуклые четырёхугольники в пикселях листа: наклонная подпись — своим наклоном. */
+const MAP_INK=[],MAP_LATE=[];
+const MAP_DOM=["#mapaddr","#ipod",".rail","#console","#prompt",".vitals",".locus",".pads"];   /* DOM поверх листа */
+function mapInkPoly(P){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of P){if(p[0]<x0)x0=p[0];if(p[0]>x1)x1=p[0];if(p[1]<y0)y0=p[1];if(p[1]>y1)y1=p[1];}
+  MAP_INK.push({P,x0,y0,x1,y1});}
+function mapInkBox(x,y,w,h){mapInkPoly([[x,y],[x+w,y],[x+w,y+h],[x,y+h]]);}
+/* строка при нынешних шрифте, выравнивании и основании — в чернила */
+function mapInkText(s,x,y){const m=ctx.measureText(s);
+  mapInkBox(x-m.actualBoundingBoxLeft,y-m.actualBoundingBoxAscent,m.actualBoundingBoxLeft+m.actualBoundingBoxRight,m.actualBoundingBoxAscent+m.actualBoundingBoxDescent);}
+/* подпись мира: запомнить, как её рисовать, и места — [x,y] или [x,y,поворот]; plate — подложка
+   [dx,dy,w,h,цвет] от точки строки. Выше prio — раньше выбирает место */
+function mapLate(s,spots,prio,plate){MAP_LATE.push({s,spots,prio:prio||0,plate:plate||null,n:MAP_LATE.length,
+  font:ctx.font,fill:ctx.fillStyle,align:ctx.textAlign,base:ctx.textBaseline,alpha:MPN.gpu?MPN.al:ctx.globalAlpha});}   /* прозрачность пера (17z4): на видеокарте ctx.globalAlpha её не знает */
+/* заходят ли два выпуклых четырёхугольника друг в друга ближе, чем на pad (разделяющие оси) */
+function mapHit(P,Q,pad){
+  for(const S of [P,Q])for(let i=0;i<4;i++){const a=S[i],b=S[(i+1)%4];let nx=b[1]-a[1],ny=a[0]-b[0];const l=Math.hypot(nx,ny);if(l<1e-9)continue;nx/=l;ny/=l;
+    let p0=1e9,p1=-1e9,q0=1e9,q1=-1e9;
+    for(const p of P){const v=p[0]*nx+p[1]*ny;if(v<p0)p0=v;if(v>p1)p1=v;}
+    for(const p of Q){const v=p[0]*nx+p[1]*ny;if(v<q0)q0=v;if(v>q1)q1=v;}
+    if(p1+pad<=q0||q1+pad<=p0)return false;}
+  return true;}
+function mapLateFlush(){
+  for(const sel of MAP_DOM){const e=document.querySelector(sel);if(!e)continue;const r=e.getBoundingClientRect();if(r.width>0&&r.height>0)mapInkBox(r.left,r.top,r.width,r.height);}
+  for(const b of MAP_BOX)mapInkBox(b.x,b.y,b.w,b.h);
+  MAP_LATE.sort((a,b)=>b.prio-a.prio||a.n-b.n);
+  ctx.save();
+  for(const q of MAP_LATE){
+    ctx.font=q.font;ctx.textAlign=q.align;ctx.textBaseline=q.base;
+    const m=ctx.measureText(q.s),pl=q.plate;
+    let u0=-m.actualBoundingBoxLeft,v0=-m.actualBoundingBoxAscent,u1=m.actualBoundingBoxRight,v1=m.actualBoundingBoxDescent;
+    if(pl){u0=Math.min(u0,pl[0]);v0=Math.min(v0,pl[1]);u1=Math.max(u1,pl[0]+pl[2]);v1=Math.max(v1,pl[1]+pl[3]);}
+    for(const sp of q.spots){
+      const x=sp[0],y=sp[1],a=sp[2]||0,c=Math.cos(a),s=Math.sin(a);
+      const P=[[u0,v0],[u1,v0],[u1,v1],[u0,v1]].map(p=>[x+p[0]*c-p[1]*s,y+p[0]*s+p[1]*c]);
+      let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of P){if(p[0]<x0)x0=p[0];if(p[0]>x1)x1=p[0];if(p[1]<y0)y0=p[1];if(p[1]>y1)y1=p[1];}
+      if(x0<2||y0<2||x1>W-2||y1>H-2)continue;   /* целиком на листе */
+      let hit=false;
+      for(const Q of MAP_INK){if(Q.x0>=x1+2||Q.x1+2<=x0||Q.y0>=y1+2||Q.y1+2<=y0)continue;if(mapHit(P,Q.P,2)){hit=true;break;}}
+      if(hit)continue;
+      /* пером карты (17z4): плашка — прямоугольник или повёрнутый четырёхугольник, строка — прямо или вдоль */
+      mpAlpha(q.alpha);
+      if(pl){if(!a)mpRect(x+pl[0],y+pl[1],pl[2],pl[3],pl[4]);
+        else{const R=(u,v)=>[x+u*c-v*s,y+u*s+v*c],A=R(pl[0],pl[1]),B=R(pl[0]+pl[2],pl[1]),C=R(pl[0]+pl[2],pl[1]+pl[3]),D=R(pl[0],pl[1]+pl[3]);
+          mpQuad(A[0],A[1],B[0],B[1],C[0],C[1],D[0],D[1],pl[4]);}}
+      if(!a)mpText(q.s,x,y,q.fill);
+      else if(MPN.gpu)ovTextRot(OVL.uq,x,y,q.s,q.font,q.fill,q.align,q.base,MPN.al,a);
+      else{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle=q.fill;ctx.fillText(q.s,0,0);ctx.restore();}
+      MAP_INK.push({P,x0,y0,x1,y1});break;
+    }
+  }
+  mpAlpha(1);ctx.restore();
+  MAP_LATE.length=0;
+}
 function wrapLeft(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y,n=1;
   for(const w of words){
@@ -133,18 +192,19 @@ function mapOverview(V,cell,px,py){
   mpDashCircle(c0.x,c0.y,CR,1,"rgba(242,178,92,.35)",[3,5]);
   mpDashCircle(c0.x,c0.y,40*cell,1,"rgba(255,107,87,.35)",[2,7]);
   mapFont(9);ctx.textAlign="center";
-  mpText("ОБЖИТЫЙ КРУГ",c0.x,c0.y-CR-5,"rgba(242,178,92,.7)");
-  mpText("КРОМКА · ДАЛЬШЕ ОПАСНО",c0.x,c0.y+40*cell+14,"rgba(255,107,87,.65)");
-  mpText("ЯДРО",c0.x,c0.y+14,"rgba(207,227,234,.6)");
+  const ink=(s,x,y,c)=>{mpText(s,x,y,c);mapInkText(s,x,y);};   /* свои подписи обзора — в чернила: имена рукавов их обойдут */
+  ink("ОБЖИТЫЙ КРУГ",c0.x,c0.y-CR-5,"rgba(242,178,92,.7)");
+  ink("КРОМКА · ДАЛЬШЕ ОПАСНО",c0.x,c0.y+40*cell+14,"rgba(255,107,87,.65)");
+  ink("ЯДРО",c0.x,c0.y+14,"rgba(207,227,234,.6)");
   if(typeof yaltaAt==="function"){const y=yaltaAt(),q=at(y.sx,y.sy);
     mpCircle(q.x,q.y,4,1,"rgba(217,194,122,.8)");
-    mpText("ЯЛТА",q.x,q.y-8,"rgba(217,194,122,.8)");}
+    ink("ЯЛТА",q.x,q.y-8,"rgba(217,194,122,.8)");}
   if(typeof mapRumoursDraw==="function"){if(typeof mapLayerOn!=="function"||mapLayerOn("rumours"))mapRumoursDraw(V,cell);}
   if(typeof mapMarksDraw==="function")mapMarksDraw(V,cell);
   /* вы здесь — крупно, иначе на диске в полторы сотни секторов себя не найти */
   mpDisc(px,py,4,"rgba(127,230,216,.95)");
   mpCircle(px,py,10,1,"rgba(127,230,216,.5)");
-  mapFont(10);mpText("ВЫ ЗДЕСЬ · "+G.sx+":"+G.sy,px,py-16,"rgba(127,230,216,.95)");
+  mapFont(10);ink("ВЫ ЗДЕСЬ · "+G.sx+":"+G.sy,px,py-16,"rgba(127,230,216,.95)");
   ctx.restore();
 }
 function mapOverTap(x,y){
@@ -158,6 +218,7 @@ function drawMap(){
 }
 function drawMapIn(){
   const st=stat();
+  MAP_INK.length=0;MAP_LATE.length=0;
   /* заливки листа нет: небо — первый слой кадра на видеокарте, непрозрачное (17z3) */
   const cell=mapCell(),R=mapRange();
   const V=mapViewC(),vx=V.x,vy=V.y;              /* окно карты: обычно вы, по слуху — названный сектор (M298) */
@@ -173,8 +234,8 @@ function drawMapIn(){
   mpRhumb(px,py);
   mpFlush();   /* дальше рисуют и сами (звёзды галактики, железная дорога) — пеленги под ними */
   if(mapOverOn()){   /* обзор: весь диск, лист погашен (M450) */
-    if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);
-    mpLay("o");mapOverview(V,cell,px,py);return;
+    MAP_BOX=[];if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);
+    mpLay("o");mapOverview(V,cell,px,py);mapLateFlush();return;
   }
   drawGalaxyStars(V,cell);   /* звёзды галактики — предметы мира, не мерцают (M448) */
   if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);   /* рукава и туманности по имени (M449) */
@@ -187,9 +248,10 @@ function drawMapIn(){
   const srch=G.mapSearch||(G.course&&G.course.rad?G.course:null);
   if(srch){
     const S=srch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
-    mpDashCircle(sxp,syp,Math.max(6,S.rad*cell),1,"rgba(207,227,234,.45)",[4,5]);
-    mapFont(8);ctx.textAlign="center";
-    mpText("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),sxp,syp-S.rad*cell-6,"rgba(207,227,234,.7)");
+    const sr=Math.max(6,S.rad*cell);   /* над кругом, под ним или в середине — где свободно */
+    mpDashCircle(sxp,syp,sr,1,"rgba(207,227,234,.45)",[4,5]);
+    ctx.fillStyle="rgba(207,227,234,.7)";mapFont(8);ctx.textAlign="center";
+    mapLate("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),[[sxp,syp-sr-6],[sxp,syp+sr+14],[sxp,syp+4]],5);
   }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
   /* адреса (M347): сетка клеток под законом тьмы и кольца прыжков — под звёздами */
@@ -250,9 +312,27 @@ function drawMapIn(){
   mpFlush();
   {const sp=mapGpuOver();if(sp)mapStarsGpu(sp,vis,gk);}
   mpLay("o");
+  /* рамка листа для строк при системе: линейка X сверху, линейка Y слева, борт справа (18a) */
+  const FR={x0:MAP_RUL*mapU()+2,y0:mapRulerTop()+14*mapU()+2,x1:mapRail()-2};
   for(const v of vis){
     const{gx,gy,s,x,y,fade,rr}=v;
     const here=gx===G.sx&&gy===G.sy;
+    /* строки при системе — стопкой: над ней «ВЫ» с носиком, ренегат, след артефакта; под ней фронт,
+       слух, расхождение. Каждая — в свою строку, а не в общую точку («СЛЕД АРТЕФАКТА» ложился
+       на «ВЫ · ОТРАДНОЕ», зрение 06.10.2026). tagUp/tagDn — основание следующей строки */
+    let tagUp=here?y-rr-28-9*mapU()-4:y-rr-21,tagDn=y+rr+13;
+    /* строка в стопку: над системой — пока не уходит под линейку X, иначе под неё, зеркально: так же
+       далеко от звезды, как стояла над ней, — снаружи своего кольца. Вбок сдвигается с линейки Y и
+       с борта. Строки стопки — по центру (textAlign center); цвет — нынешний ctx.fillStyle, пером */
+    const tag=(t,up,pref)=>{
+      const m=ctx.measureText(t),hw=m.width/2;
+      let b=up?Math.min(tagUp,pref):Math.max(tagDn,pref);
+      const A=m.actualBoundingBoxAscent,D=m.actualBoundingBoxDescent;
+      if(up&&b-A<FR.y0){up=false;b=Math.max(tagDn,2*y-pref+A-D);}
+      const cx=Math.max(FR.x0+hw,Math.min(FR.x1-hw,x));
+      mpText(t,cx,b,ctx.fillStyle);mapInkText(t,cx,b);
+      if(up)tagUp=b-11;else tagDn=b+10;
+    };
     mpAlpha(fade);
     /* ── занятая пиратами система ──
        Кольцо из штрихов вместо ровного круга: занятость должна читаться как
@@ -276,8 +356,8 @@ function drawMapIn(){
         mpLine(x+Math.cos(ae)*orr,y+Math.sin(ae)*orr,x+Math.cos(ae)*(orr+2.5+ol*.6),y+Math.sin(ae)*(orr+2.5+ol*.6),ow,oco);
       }
       if(ol>=2){
-        mapFont(8);ctx.textAlign="center";
-        mpText(ol>=OCC_MAX?"ПОД ПИРАТАМИ":"БЛОКАДА",x,y+orr+11,rgba(oc,.95*of));
+        ctx.fillStyle=rgba(oc,.95*of);mapFont(8);ctx.textAlign="center";
+        tag(ol>=OCC_MAX?"ПОД ПИРАТАМИ":"БЛОКАДА",false,y+orr+11);
       }
     }
     if(s.station&&cell>=16)mpCircle(x,y,rr+6,1,"rgba(242,178,92,.55)");
@@ -300,19 +380,20 @@ function drawMapIn(){
       const youS="ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),
             youU=mapU(),youW=ctx.measureText(youS).width;
       mpRect(x-youW/2-4*youU,y-rr-28-9*youU,youW+8*youU,13*youU,"rgba(6,10,16,.66)");
+      mapInkBox(x-youW/2-4*youU,y-rr-28-9*youU,youW+8*youU,13*youU);
       mpText(youS,x,y-rr-28,"#7fe6d8");
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
        которые поставил не мир, а сам игрок. Без них до них не долететь. */
     if((G.rogues||[]).some(R=>R.sx===gx&&R.sy===gy)){
       mpCircle(x,y,rr+17,1.4,"#c58ae0");
-      mapFont(8);ctx.textAlign="center";
-      mpText("РЕНЕГАТ",x,y-rr-21,"rgba(197,138,224,.9)");
+      ctx.fillStyle="rgba(197,138,224,.9)";mapFont(8);ctx.textAlign="center";
+      tag("РЕНЕГАТ",true,y-rr-21);
     }
     if(G.aiRift&&G.aiRift.sx===gx&&G.aiRift.sy===gy){
       mpCircle(x,y,rr+21,1.2,"#7fb0e6");
-      mapFont(8);ctx.textAlign="center";
-      mpText("РАСХОЖДЕНИЕ",x,y+rr+21,"rgba(127,176,230,.9)");
+      ctx.fillStyle="rgba(127,176,230,.9)";mapFont(8);ctx.textAlign="center";
+      tag("РАСХОЖДЕНИЕ",false,y+rr+21);
     }
     /* «Охота» командира: пиратские базы соседних секторов помечены заранее.
        Без перка их находят только прилетев — перк и продаёт именно это знание. */
@@ -330,15 +411,15 @@ function drawMapIn(){
       mpAlpha(.75);
       mpArc(x,y,rr+9,-.6,.6,1,NM.col);
       mpArc(x,y,rr+9,Math.PI-.6,Math.PI+.6,1,NM.col);
-      mapFont(7);ctx.textAlign="center";
-      mpText(NM.what.toUpperCase(),x,y+rr+13,NM.col);
+      ctx.fillStyle=NM.col;mapFont(8);ctx.textAlign="center";
+      tag(NM.what.toUpperCase(),false,y+rr+13);
       mpAlpha(1);
     }
     /* след артефакта: сектор, который вычитал исследователь с «происхождением» */
     if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
       mpDashCircle(x,y,rr+25,1,"#c58ae0",[3,3]);
-      mapFont(8);ctx.textAlign="center";
-      mpText("СЛЕД АРТЕФАКТА",x,y-rr-29,"rgba(197,138,224,.85)");
+      ctx.fillStyle="rgba(197,138,224,.85)";mapFont(8);ctx.textAlign="center";
+      tag("СЛЕД АРТЕФАКТА",true,y-rr-29);
     }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
     if(here)cur=v;
@@ -352,7 +433,7 @@ function drawMapIn(){
     const P=(u,v)=>[ex+u*ca-v*sa,ey+u*sa+v*ca],A=P(8,0),B=P(-6,-6),C=P(-6,6);
     mpTri(A[0],A[1],B[0],B[1],C[0],C[1],"#7fe6d8");
     mapFont(8);ctx.textAlign="center";
-    mpText("ВЫ",ex-ca*16,ey-sa*16+3,"#7fe6d8");
+    mpText("ВЫ",ex-ca*16,ey-sa*16+3,"#7fe6d8");mapInkText("ВЫ",ex-ca*16,ey-sa*16+3);
   }
   /* имя трассы, бирки перемен и ценники (M348) — над звёздами */
   if(typeof mapHoldingsTop==="function"&&!G.mapClean)mapHoldingsTop(vis,cell,V,st);
@@ -449,7 +530,7 @@ function drawMapIn(){
     const U=mapU();
     mapFont(10);ctx.textAlign="center";ctx.textBaseline="middle";
     const tw=ctx.measureText(label).width;
-    mpRect(mx-tw/2-7*U,my-9*U,tw+14*U,18*U,"rgba(6,10,16,.82)");
+    mpRect(mx-tw/2-7*U,my-9*U,tw+14*U,18*U,"rgba(6,10,16,.82)");mapInkBox(mx-tw/2-7*U,my-9*U,tw+14*U,18*U);
     mpFrame(mx-tw/2-6.5*U,my-8.5*U,tw+13*U,17*U,1,col);
     mpText(label,mx,my+.5,far||poor?"rgba(255,150,135,.95)":"#f2b25c");
     /* сколько останется в баке — вторая строка, мельче: это уже подробность */
@@ -457,7 +538,7 @@ function drawMapIn(){
       mapFont(8);
       const L2="останется "+Math.round(G.fuel-cost),w2=ctx.measureText(L2).width;
       /* под строкой своя подложка: без неё контраст решала галактика за ней */
-      mpRect(mx-w2/2-4*U,my+12*U,w2+8*U,12*U,"rgba(6,10,16,.72)");
+      mpRect(mx-w2/2-4*U,my+12*U,w2+8*U,12*U,"rgba(6,10,16,.72)");mapInkBox(mx-w2/2-4*U,my+12*U,w2+8*U,12*U);
       mpText(L2,mx,my+18*U,"rgba(170,192,202,.9)");
     }
     ctx.restore();
@@ -508,6 +589,12 @@ function drawMapIn(){
   /* ── подвал: одним циклом, снизу вверх ── */
   if(!G.mapClean){const deck=mapDeck(),U=mapU();
    mapFont(10);
+   /* подвал — интерфейс поверх листа: под каждой колонкой своя подложка, иначе подпись мира под строкой
+      читалась сквозь неё (зрение 06.10.2026: туманность под «ТЕЛ · ВИДОВ», «ВЫ ·» под строкой системы) */
+   {let wl=0,wr=0,nl=0,nr=0;
+    foot.rows.forEach((row,i)=>{if(row[0]){wl=Math.max(wl,ctx.measureText(row[0][1]).width);nl=i+1;}if(row[1]){wr=Math.max(wr,ctx.measureText(row[1][1]).width);nr=i+1;}});
+    if(nl)mpRect(16-5*U,deck-(nl-1)*16*U-12*U,wl+10*U,(nl-1)*16*U+16*U,"rgba(6,10,16,.9)");
+    if(nr)mpRect(foot.RX-wr-5*U,deck-(nr-1)*16*U-12*U,wr+10*U,(nr-1)*16*U+16*U,"rgba(6,10,16,.9)");}
    foot.rows.forEach((row,i)=>{
      const y=deck-i*16*U;
      if(row[0]){ctx.textAlign="left";mpText(row[0][1],16,y,row[0][0]);
@@ -519,6 +606,7 @@ function drawMapIn(){
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
    if(typeof mapRulersDraw==="function"){mapRulersDraw(V,cell,foot);mapRoseDraw(foot);}
   }
+  mapLateFlush();   /* подписи мира — последними и на свободное место */
 }
 /* ── расклад прыжка: расстояние, цена, можно ли ──
    Один на кадр и на шаг мира: кадр рисует цену и красит курс, шаг мира по

@@ -339,7 +339,7 @@ function drawFactRoute(vis){
   const label=RES[leg.k].ru.toUpperCase()+" "+leg.buy+" → "+leg.sell+" ("+rel+"%)";
   ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
   const tw=ctx.measureText(label).width;
-  mpRect(mx-tw/2-6,my-8,tw+12,16,"rgba(6,10,16,.85)");
+  mpRect(mx-tw/2-6,my-8,tw+12,16,"rgba(6,10,16,.85)");mapInkBox(mx-tw/2-6,my-8,tw+12,16);
   mpFrame(mx-tw/2-5.5,my-7.5,tw+11,15,1,col+".55)");
   mpText(label,mx,my+.5,"#f2b25c");
   ctx.textBaseline="alphabetic";
