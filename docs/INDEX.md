@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 677 · top-level symbols: 7069
+Files: 679 · top-level symbols: 7078
 
 ## SYMBOLS
 
@@ -663,25 +663,31 @@ GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:10
 GNB_EMI                      src/16gb-gpu-nebula.js:408
 GNB_FADE                     src/16gc-gpu-nebfade.js:11
+GNB_FGAL                     src/16gaza-gpu-fargal.js:7
 GNB_FINE                     src/16gb-gpu-nebula.js:363
 GNB_GEN                      src/16gb-gpu-nebula.js:44
-GNB_LM_COL                   src/16gb-gpu-nebula.js:520
+GNB_LM_COL                   src/16gb-gpu-nebula.js:521
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gb-gpu-nebula.js:503-518
+GNB_PAL                      src/16gb-gpu-nebula.js:504-519
 GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
 GOLD_BW                      tests/91zzzzzzzzz-golden.js:25
+GOR                          src/17gab-gpu-orb.js:11
+GOR_AIR                      src/17gab-gpu-orb.js:14
+GOR_LIT                      src/17gab-gpu-orb.js:18
+GOR_LZ                       src/17gab-gpu-orb.js:16
+GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
 GPI                          src/17z3-map-gpu.js:26
 GPL                          src/17ga-gpu-planets.js:24
-GPL_CITY_D                   src/17ga-gpu-planets.js:365
+GPL_CITY_D                   src/17ga-gpu-planets.js:366
 GPL_CLOUD                    src/17ga-gpu-planets.js:28
-GPL_LAND                     src/17ga-gpu-planets.js:367
+GPL_LAND                     src/17ga-gpu-planets.js:368
 GPL_SEA                      src/17ga-gpu-planets.js:26
 GPL_WGSL                     src/17ga-gpu-planets.js:30
-GPL_WIN                      src/17ga-gpu-planets.js:366
+GPL_WIN                      src/17ga-gpu-planets.js:367
 GPS                          src/17gb-gpu-planet-strip.js:97
 GPS_BLEND                    src/17gb-gpu-planet-strip.js:10
 GPS_WGSL                     src/17gb-gpu-planet-strip.js:47
@@ -3700,7 +3706,7 @@ gestTick                     src/17h-sys-gesture.js:52-79
 getSystem                    src/06-galaxy.js:95-189
 gexDraw                      src/16ga-gpu-trail.js:305-314
 gexPush                      src/16ga-gpu-trail.js:269-275
-ghf                          src/17ga-gpu-planets.js:369
+ghf                          src/17ga-gpu-planets.js:370
 giantArrive                  src/17o-giants.js:219-225
 giantAt                      src/17o-giants.js:54
 giantBake                    src/17o-giants.js:90-181
@@ -3752,21 +3758,23 @@ gnGun                        tests/91zzzw-guns2.js:25-28
 gnWorld                      tests/91zzzw-guns2.js:7-16
 gnbFade                      src/16gc-gpu-nebfade.js:37-42
 gnbFadeDesc                  src/16gc-gpu-nebfade.js:16-20
-gnbGenDesc                   src/16gb-gpu-nebula.js:494
+gnbGenDesc                   src/16gb-gpu-nebula.js:495
 gnbGenView                   src/16gc-gpu-nebfade.js:22-35
-gnbLandmark                  src/16gb-gpu-nebula.js:521-534
-gnbLfr                       src/16gb-gpu-nebula.js:537-550
+gnbLandmark                  src/16gb-gpu-nebula.js:522-537
+gnbLfr                       src/16gb-gpu-nebula.js:540-553
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:510-518
-gnbPipe                      src/16gb-gpu-nebula.js:493
-gnbStar                      src/16gb-gpu-nebula.js:552-557
+gnbPalette                   src/16gb-gpu-nebula.js:511-519
+gnbPipe                      src/16gb-gpu-nebula.js:494
+gnbStar                      src/16gb-gpu-nebula.js:555-560
 gnbStars                     src/16gb-gpu-nebula.js:398-405
-gnbTarget                    src/16gb-gpu-nebula.js:485-492
+gnbTarget                    src/16gb-gpu-nebula.js:486-493
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
 goldCmp                      tests/91zzzzzzzzz-golden.js:36-46
 goldSig                      tests/91zzzzzzzzz-golden.js:26-35
+gorBody                      src/17gab-gpu-orb.js:375-395
+gorLin                       src/17gab-gpu-orb.js:373
 gosBbLine                    src/17k1-gosplan.js:25-28
 gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
@@ -3783,9 +3791,9 @@ gotRender                    src/27jb-ui-got.js:29-55
 gotTick                      src/27jb-ui-got.js:56-60
 gotoSector                   src/11a-quests.js:68-88
 gplBody                      src/17ga-gpu-planets.js:309-332
-gplCities                    src/17ga-gpu-planets.js:396-438
-gplLandAt                    src/17ga-gpu-planets.js:380-395
-gplLandMask                  src/17ga-gpu-planets.js:375-379
+gplCities                    src/17ga-gpu-planets.js:397-439
+gplLandAt                    src/17ga-gpu-planets.js:381-396
+gplLandMask                  src/17ga-gpu-planets.js:376-380
 gplSun                       src/17ga-gpu-planets.js:334-337
 gpsBake                      src/17gb-gpu-planet-strip.js:106-122
 gpsDesc                      src/17gb-gpu-planet-strip.js:98
@@ -3840,12 +3848,13 @@ gpuManual                    src/08b-gpu.js:635-640
 gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
-gpuMoon                      src/17ga-gpu-planets.js:440-445
-gpuNebulaComp                src/16gb-gpu-nebula.js:615-625
-gpuNebulaGen                 src/16gb-gpu-nebula.js:560-612
+gpuMoon                      src/17ga-gpu-planets.js:441-446
+gpuNebulaComp                src/16gb-gpu-nebula.js:618-628
+gpuNebulaGen                 src/16gb-gpu-nebula.js:563-615
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
+gpuOrb                       src/17gab-gpu-orb.js:397-410
 gpuOvFrontView               src/08bi-gpu-ovl.js:249
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
@@ -3858,7 +3867,7 @@ gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesWarm                 src/08b0-gpu-pipe.js:60-72
 gpuPirateBody                src/12i-pirate-hull.js:425-434
 gpuPirateLive                src/12i-pirate-hull.js:441-485
-gpuPlanet                    src/17ga-gpu-planets.js:340-357
+gpuPlanet                    src/17ga-gpu-planets.js:340-358
 gpuPresent                   src/08b-gpu.js:673-686
 gpuQuad                      src/08c-gpu-kit.js:307-311
 gpuResize                    src/08b-gpu.js:392-434
@@ -3955,7 +3964,7 @@ gspSeed                      src/16g-gpu-space.js:198
 gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
-gss                          src/17ga-gpu-planets.js:368
+gss                          src/17ga-gpu-planets.js:369
 gsyBeltDots                  src/17g-gpu-system.js:361-369
 gsyEll                       src/17g-gpu-system.js:328-337
 gsyMean                      src/17g-gpu-system.js:338-341
@@ -7806,7 +7815,9 @@ zoomTo                       src/15-input.js:350
 ## src/16gaz-gpu-noise.js · 3 KB
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1
 
-## src/16gb-gpu-nebula.js · 50 KB
+## src/16gaza-gpu-fargal.js · 3 KB
+
+## src/16gb-gpu-nebula.js · 51 KB
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/16gc-gpu-nebfade.js · 3 KB
@@ -7851,6 +7862,9 @@ zoomTo                       src/15-input.js:350
 
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
+
+## src/17gab-gpu-orb.js · 24 KB
+  · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
 
 ## src/17gb-gpu-planet-strip.js · 7 KB
   · развёртка планеты — шейдером на видеокарте (GPU-3, DESIGN-gpu §G, 25.09):1

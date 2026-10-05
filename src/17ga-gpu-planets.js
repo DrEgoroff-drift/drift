@@ -338,6 +338,7 @@ function gplSun(){
 /* планета системы: развёртка — шейдером (07/17gb), свет, воздух, облака и огни — здесь.
    lights — сколько огней построек на ней (planetLightsOn, 17e) */
 function gpuPlanet(p,x,y,r,lights){
+  if(GOR.on&&gpuOrb(p,x,y,r,lights))return;   /* шар M700 (17gab); этот — запасной, ?orb=0 */
   const pass=gpuScene();if(!pass)return;
   const lvl=r>150?2:(r>60?1:0);
   const S=planetStrip(p,lvl);
