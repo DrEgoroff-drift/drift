@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 680 · top-level symbols: 7099
+Files: 681 · top-level symbols: 7102
 
 ## SYMBOLS
 
@@ -1693,6 +1693,8 @@ SMENA_WALK                   src/12ud1-smena-quest.js:21
 SMOKE_N                      src/17c-system-draw.js:378
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 SND                          src/09-audio.js:4
+SNT                          src/21e4-surface-night-gpu.js:8
+SNT_WGSL                     src/21e4-surface-night-gpu.js:9
 SOC                          src/12al4-soc.js:17-36
 SOC_CULT                     src/12ay-fx-soc.js:13
 SOC_HOLIDAY                  src/12ay-fx-soc.js:12
@@ -3285,7 +3287,7 @@ drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:294-308
 drawSurfaceHud               src/21e-surface-draw.js:39-125
-drawSurfaceWorld             src/21e1-surface-world.js:10-615
+drawSurfaceWorld             src/21e1-surface-world.js:10-616
 drawSurvey                   src/12w-survey.js:63-89
 drawSysHud                   src/17-mode-system.js:727-1053
 drawSysLane                  src/17g-sys-lane.js:112-138
@@ -6601,6 +6603,7 @@ surfLanderHot                src/21e3-surface-stand-gpu.js:181
 surfLanderNite               src/21e3-surface-stand-gpu.js:182
 surfNearGpu                  src/21e2-surface-gpu.js:474-487
 surfNight                    src/06a-celest.js:43-50
+surfNightGpu                 src/21e4-surface-night-gpu.js:59-80
 surfRelightGpu               src/21e2-surface-gpu.js:351-363
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
 surfScale                    src/21e-surface-draw.js:293
@@ -8198,6 +8201,9 @@ zoomTo                       src/15-input.js:350
 
 ## src/21e3-surface-stand-gpu.js · 14 KB
   · стоящее на поверхности — двойники видеокарты (G15):1
+
+## src/21e4-surface-night-gpu.js · 5 KB
+  · ночь поверхности на видеокарте (G15):1
 
 ## src/21f-home-out.js · 22 KB
   · дом снаружи:1
