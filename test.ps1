@@ -443,6 +443,8 @@ foreach ($r in $runs) {
       }
     }
   }
+  # стенды «проба · …» ничего не утверждают — их числа (note) и есть результат
+  if ($Probe) { $lines | Where-Object { $_ -match '^(── проба · |  · )' } | ForEach-Object { Write-Host $_.TrimEnd() } }
 }
 # наборы не в своём окне (опция win) складываются по частям, как и карантин
 if ($offWin) { $tail += " · off-window $offWin (win)" }

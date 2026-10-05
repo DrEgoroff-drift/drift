@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 677 · top-level symbols: 7069
+Files: 678 · top-level symbols: 7070
 
 ## SYMBOLS
 
@@ -336,6 +336,7 @@ CREW_TRAITS                  src/12a-crew.js:20-27
 CREW_TRIP_QUEUE              src/12a-crew.js:348
 CREW_YIELD                   src/12a-crew.js:349
 CRYO_RECIPE                  src/21a1a-base-heat.js:33
+CS_KS                        tests/91zzzzzzy7-census2d.js:7
 CUE_EPS                      src/27m-scroll-cue.js:25
 CUE_INFO                     src/08-state.js:388
 CUE_LVL                      src/08-state.js:389
@@ -9213,6 +9214,9 @@ zoomTo                       src/15-input.js:350
 
 ## tests/91zzzzzzy6-chipjump.js · 4 KB
   · ворота прыжков фишек (долг §0):1
+
+## tests/91zzzzzzy7-census2d.js · 3 KB
+  · проба · перепись 2D по сценам (G15, 05.10):1
 
 ## tests/91zzzzzzy7-gpu-nebmove.js · 3 KB
   · туманность на ходу — без ступеней (26.09, PLAN §1):1
