@@ -6,6 +6,36 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.484.0 - the fleet lands: the other modes on the engine, and a new sky
+
+- **The cloud fleet's zones are in.** What the cloud sessions moved onto the GPU (G6–G13) now ships, after the
+  merge with main, the regressions fixed and a census of 2D calls after `gpuWorld` at 0 in all 25 scenes:
+  - **landing and surface:** near ground chunks as GPU textures lit per pixel, a third far ridge, gullies, a warm
+    key and a cold fill; braking flames, dust, the lander's shadow and flame light on the ground; what stands is lit
+    by the world's light and casts a shadow; the lake mirrors; the foreground band goes out of focus;
+  - **underground:** cave rock, far wall and mine rock bake on the GPU with stalactites, curtains and lichens; cave
+    water catches the lamp; the mine's lamps throw rock shadows, day falls down the shaft, ore glows — in main's colour;
+  - **the belt:** asteroids in real 3D under the star, the maw landmark a 3D rock, the cockpit frame a GPU bake lit
+    through the glass; **the raid** with depth-tested compartments and a per-pixel torch;
+  - **rooms:** home, HQ, the cantina, kino, chess, «Сорока», the spa and the base — baked rooms, lamp light per
+    pixel, air; people and lettering come after the room's light; the base's machines are baked bodies with live
+    motion, and the fridge room splits the same way;
+  - **the road, the map, the scoop, the rail:** the road's sky and bloom on the GPU, the galaxy made of stars with
+    dust lanes and your rails burning, the scoop's heat bow shock and plumes, the rail scheme and the ride on the GPU.
+- **A new sky, drawn by the engine.** Every landing composes its own sky from the world's seed: bodies, cumulus as
+  merged round puffs with a flat base, a high deck, haze and far weather — all fields on the GPU; clouds sink into the
+  night, a low sun glows through the ridge haze. The 2D sky is removed.
+- **Phone budget.** On a phone the clouds bake at reduced density and composite once, and the surface skips its
+  mid-frame canvas snapshots (cast, relight, near blur), which stalled the S23 to 31 fps at noon. Against 0.480.0 on
+  the S23: night 58.2, noon 59.6, cave, winter and the system 60 fps, p99 16.8 ms everywhere.
+- **Tests.** The harness names the suite where the GPU dropped and prints the GPU state at the start; the bake pool
+  has a ceiling checked per suite; `test.ps1` runs on Linux (the cloud, CI) through SwiftShader.
+
+### Disputed
+
+- **Golden frames are not re-accepted**: 11 scenes differ from their reference by the new sky and the fleet's
+  light. Контроль re-shoots them after a look; they gate no deploy.
+
 ## 0.483.0 - the §12 remainder and the §9 seams
 
 - **§12, the last seams.** A drone now picks its market by the price you saw there and is paid that price (it used to choose by the seen price and be paid the live one). A seen price counts for 30 world days; after that the drone goes by the live counter. Selling pressure on a counter now decays by the world clock (`now()`), so it also eases while you are out of the game. The half-life is still three hours. The economy probe gained «маршруты по кругу»: the player skips a leg whose quote has gone negative, moves to the next route, and waits ten minutes when every leg is down. The numbers are in `docs/ECONOMY-AUDIT.md` (27.09).

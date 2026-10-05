@@ -43,15 +43,10 @@ occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py
 
 The game's stages (§3–§8) wait for the author's word; Контроль asks once P1 passes and the fleet has landed.
 
-- [ ] **In flight** — each release deletes its line here:
-  - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
-    drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
-    lands after its tests, whole-frame pairs and six regressions (the pairs 26.09: the belt, «Сорока», the raid,
-    the spa, the surface by day and winter better; worse and fixed before it lands — the lamps in five scenes
-    going white and losing their cones, the base's strip of sky with the ridge, the map's milky core and glare,
-    the scoop's lilac giant gone brown, the cave's turquoise), with its census of 2D calls after `gpuWorld` at 0
-    (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
-    dock) is rerun and every flight item stays at 0;
+- [ ] **After the fleet's landing (0.484.0)**: the golden frames are red on 11 scenes (the new sky and the
+  fleet's light) — Контроль re-accepts them after a look; the tour (NEYEL, Коммуна, wrecks, rescue, drones,
+  «Сорока», belt, hotel, planet, dock) is rerun and every flight item stays at 0; the night surface owes an
+  A/B/A at 760 on a quiet PC (the S23 A/B against 0.480.0 is level: 58–60 fps, p99 16.8 ms in all five scenes);
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
   - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0, h (makerRead on the
     engine's picture) on gpu-f (f's last try, the keels by the emission mask, gave no visible gain; the 0.471.0 keels stay);
