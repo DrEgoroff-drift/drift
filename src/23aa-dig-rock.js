@@ -607,7 +607,8 @@ function digSoil(p,camx,camy){
    Мелочь, а решает: пучки травы (или щебень на мире без воздуха) на линии
    мгновенно говорят, что это ЗЕМЛЯ, а не граница двух заливок. Плюс полоска
    воздуха у самого горизонта — свет, лежащий на пыли над грунтом. */
-function digSurfFringe(p,camx,camy){
+function digSurfFringe(p,camx,camy,gsky){
+  if(gsky&&digSurfFringeGpu(p,camx,camy))return;
   if(camy>60||camy+H<-40)return;
   const C=digSoilCols(p), s=(p&&p.seed)|0;
   ctx.save();

@@ -138,26 +138,63 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   return vec4f(col*b*.55*(1.-lane),lane*.7)*A;
 }`,
 hole:`
+/* дыра (автор, 06.10: «сделай красивую», образ — «Интерстеллар»). Всё в осях диска g (g.x вдоль
+   плоскости, g.y поперёк, вниз — к нам), r — в радиусах тени:
+   · диск тонкий (наклон ci), от rin до rout, горячий белый у края тени → оранжевый → бурый;
+     по радиусу волокна, по кругу сгустки, кружат по Кеплеру; сторона, что летит к нам, ярче;
+   · ближняя половина диска идёт ПЕРЕД тенью, дальняя за ней не видна — зато линза поднимает
+     её дугой над тенью (тот же диск, сжатый в полосу у края), а снизу — тонкое второе изображение;
+   · фотонное кольцо по самому краю, мягкий ореол; небо вокруг темнеет (линза).
+   Свет выше единицы — сцена в HDR, свечение даст bloom */
+const ci=.045;const rin=1.55;const rout=4.6;
+fn hI(rho:f32)->f32{return smoothstep(rin-.06,rin+.22,rho)*pow(rin/max(rho,rin),1.8)*(1.-smoothstep(rout-1.8,rout,rho));}
+fn hT(rho:f32)->vec3f{let k=clamp((rho-rin)/(rout-rin),0.,1.);
+  return mix(mix(vec3f(1.,.93,.80),vec3f(1.,.56,.22),smoothstep(0.,.28,k)),vec3f(.55,.18,.07),smoothstep(.28,1.,k));}
+fn hS(rho:f32,sd:f32)->f32{return .42+.52*vn(vec2f(rho*9.,sd))+.14*vn(vec2f(rho*29.,sd+3.7))-.06;}
+/* сгустки: шум на окружности радиуса rho, повёрнутой на угол Кеплера — шва по углу нет */
+fn hK(rho:f32,cs:f32,sn:f32,t:f32,sd:f32)->f32{let w=t*.0035/(rho*sqrt(rho));let c=cos(w);let s=sin(w);
+  let d=vec2f(cs*c-sn*s,sn*c+cs*s);return .72+.56*vn(vec2f(rho*7.,sd)+d*2.6);}
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let c0=fu.v[0].xy;let R=fu.v[0].z;let A=fu.v[0].w;
-  let dark=fu.v[1].x;let glow=fu.v[1].y;let tl=fu.v[3].z;
-  let q=(p-c0)/R;let r=length(q);
-  var col=vec3f(0.);var a=0.;
-  /* линза: небо вокруг темнеет и еле заметное кольцо Эйнштейна */
-  let ld=dark*(.9*(1.-smoothstep(.9,3.4,r)));
-  a=ld*.6;col=vec3f(.59,.67,1.)*.07*bump(r,2.1,.35)*dark;
-  let hc=clamp((1.-r)*R+.5,0.,1.)*dark;
-  col=col*(1.-hc);a=hc+a*(1.-hc);
-  let g=rot2(q,tl);
-  let e=length(vec2f(g.x/1.9,g.y/.42));
-  let dop=1.+.55*clamp(g.x/1.9,-1.,1.);
-  let ring=exp(-pow((e-1.)/.09,2.))*dop;
-  let back=select(0.,ring*.32*(1.-clamp((1.-r)*R+.5,0.,1.)),g.y<0.);
-  let front=select(0.,ring*.75,g.y>=0.);
-  let arc=exp(-pow((r-1.18)/.045,2.))*select(0.,.5,g.y<0.);
-  let ph=exp(-pow((r-1.04)/.025,2.))*.55;
-  let em=vec3f(1.,.84,.59)*front+vec3f(1.,.71,.43)*back+vec3f(1.,.93,.77)*(arc+ph);
-  return vec4f(col+em*glow,a)*A;
+  let dark=fu.v[1].x;let glow=fu.v[1].y;let tl=fu.v[3].z;let sd=fu.v[3].w;let T=fu.v[5].w;
+  let q=(p-c0)/R;let r=length(q);let g=rot2(q,tl);
+  /* линза: небо вокруг темнеет, ореол — к краю рамки в ноль */
+  let ld=dark*.9*(1.-smoothstep(.9,2.3,r));
+  let hc=clamp((1.-r)*R+.5,0.,1.);
+  var a=hc+ld*.6*(1.-hc);
+  var em=vec3f(0.);
+  /* ── прямое изображение диска ── */
+  /* диск — слой толщиной ~.05: три выборки поперёк, иначе полоса перед тенью — нитка в пиксель */
+  var disk=0.;var dc=vec3f(0.);var I=0.;
+  for(var k=-2;k<=2;k++){
+    let gy=g.y+f32(k)*.024;let rho=length(vec2f(g.x,gy/ci));
+    let cs=g.x/max(rho,1e-3);let sn=(gy/ci)/max(rho,1e-3);
+    let i1=hI(rho);let d1=i1*hS(rho,sd)*hK(rho,cs,sn,T,sd)*max(.30,1.-.62*cs);
+    disk+=d1/5.;dc+=hT(rho)*d1/5.;I+=i1/5.;}
+  let front=select(1.-hc,1.,g.y>0.);   /* дальнюю половину прячет тень, ближняя — перед ней */
+  em+=dc*(1.9+2.2*hc*select(0.,1.,g.y>0.))*front;
+  let op=clamp(I*1.6,0.,.92)*select(0.,1.,g.y>0.);   /* ближний диск закрывает то, что за ним */
+  let dop=max(.30,1.-.62*g.x/max(length(vec2f(g.x,g.y/ci)),1e-3));
+  /* ── линза: дальняя сторона дугой над тенью ── */
+  let ra=rin+(r-1.03)*6.;
+  let up=1.-smoothstep(-.06,.16,g.y);
+  if(r>1.&&up>0.){
+    let ca=g.x/r;let sa=-g.y/r;
+    let arc=hI(ra)*hS(rin+(ra-rin)*.35,sd+1.3)*hK(ra,ca,sa,T,sd+1.3)*max(.30,1.-.55*ca)*smoothstep(1.0,1.04,r);
+    em+=hT(ra)*arc*2.1*up*(1.-op);
+  }
+  /* ── второе изображение снизу: тонкое кольцо у тени ── */
+  let lo=smoothstep(-.04,.14,g.y);
+  let rw=max(.022,1.2/R);
+  em+=vec3f(1.,.74,.45)*exp(-pow((r-1.07)/rw,2.))*.85*lo*max(.35,1.-.5*g.x/max(r,1e-3))*(1.-op);
+  /* ── фотонное кольцо и ореол ── */
+  let pw=max(.010,.9/R);
+  em+=vec3f(1.,.88,.70)*exp(-pow((r-1.012)/pw,2.))*1.1*(1.-op*.7);
+  em+=vec3f(1.,.55,.25)*exp(-max(r-1.,0.)*3.2)*.10*(1.-hc);
+  /* свечение плоскости: диск в пыли — тянется вдоль, гаснет к рамке */
+  em+=vec3f(1.,.50,.22)*exp(-abs(g.y)/.16)*exp(-abs(g.x)/2.2)*(1.-smoothstep(3.6,4.8,abs(g.x)))*.10*dop*(1.-hc);
+  let sky=vec3f(.59,.67,1.)*.05*exp(-pow((r-2.)/.3,2.))*dark;
+  return vec4f(sky*(1.-hc)+em*glow,a)*A;
 }`,
 aurora:`
 fn field(p:vec2f,uv:vec2f)->vec4f{
@@ -333,7 +370,7 @@ function gpuSkyBodies(p,camx,camy){
         const Rr=u*.075*e.s;
         U[0]=x;U[1]=y;U[2]=Rr;U[3]=1;U[4]=atm?nite*.85/.62:1;U[5]=atm?.35+nite*.5/.62:1;U[14]=-.22+(e.spin-Math.PI)*.12;
         U[4]=Math.min(U[4],1);U[5]=Math.min(U[5],1);
-        skyBodyDraw(pass,"hole",[x-Rr*3.5,y-Rr*3.5,x+Rr*3.5,y+Rr*3.5]);
+        skyBodyDraw(pass,"hole",[x-Rr*5,y-Rr*2.5,x+Rr*5,y+Rr*2.5]);
       }else if(k==="aurora"){
         const hh=H*(.18+r()*.22)*e.s,HU=AURORA_HUE[e.seed%4];
         U[0]=x;U[1]=H*.02+r()*H*.06;U[2]=hh;

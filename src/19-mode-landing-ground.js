@@ -20,7 +20,16 @@ function drawGround(tr,camx,camy,fill,line,pal){
      она одна здесь живая, потому что кланяется ветру. */
   if(pal&&tr.mat&&!GROUND_BAKING){
     tr.chunks=groundChunkStore(tr,fill,line);
-    drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>groundChunkPaint(tr,wx0,wy0,fill,line,pal));
+    const paint=(g,wx0,wy0)=>groundChunkPaint(tr,wx0,wy0,fill,line,pal);
+    /* с видеокартой (заход, G15) — ломти картинками в проход, трава фигурами (21e3) */
+    const gp=(typeof GPU!=="undefined"&&GPU.ok&&GPU.on&&GPU.enc)?gpuNext():null;
+    if(gp){
+      const o=lifeHere(0,0),K=o.s,S=tr.chunks,k0=Math.floor(camx/CHUNK_W),k1=Math.floor((camx+W)/CHUNK_W);
+      for(let k=k0;k<=k1;k++)gpuImage(gp,chunkAt(S,k,paint),[{x:o.x+(k*CHUNK_W-camx+CHUNK_W/2)*K,y:o.y+(S.top-camy+S.ch/2)*K,w:CHUNK_W*K,h:S.ch*K}]);
+      if(!groundGrassGpu(gp,tr,camx,camy))drawGroundGrass(tr,camx,camy);
+      return;
+    }
+    drawChunks(tr.chunks,camx,camy,paint);
     drawGroundGrass(tr,camx,camy);
     return;
   }
@@ -102,11 +111,22 @@ function drawGround(tr,camx,camy,fill,line,pal){
     const lumFull=Math.max(1,lum3([0,1,2].map(q=>P0[q]*(k*amb[q]/255+df*sun[q]/255))));
     /* падающая тень (P5, 19c1): что стоит между точкой и светилом */
     const CM=castMapFor(tr,camx);
+    /* наклон и тень гребня — по пяти отрезкам, а не по одному: лента уходит на
+       66–99 px вглубь, и один крутой отрезок в узкой выемке вытягивал под собой
+       отвесный тёмный столб — на кадре он читался швом в грунте */
+    const SMW=[1,2,3,2,1];
+    const slopeAt=j=>{j=clamp(j,0,tr.N-2);return clamp((tr.h[j+1]-tr.h[j])/tr.step,-2.5,2.5);};
+    const shAt=(j,i)=>(CM&&(j<CM.i0||j>=CM.i0+CM.a.length))?castAt(CM,i):castAt(CM,j);
+    /* низ ленты — по сглаженной кромке (±5 отрезков): верх идёт по каждому зубцу,
+       а низ зубец не повторяет, иначе выемка рисовала под собой клин вглубь */
+    const hs=j=>{let a=0,w=0;for(let q=-5;q<=5;q++){const m=6-Math.abs(q);a+=m*tr.h[clamp(j+q,0,tr.N-1)];w+=m;}return a/w-camy;};
     for(let i=i0;i<i1;i++){
       const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
       if(x1<-4||x0>W+4)continue;
       const y0=tr.h[i]-camy,y1=tr.h[i+1]-camy;
-      const slope=clamp((tr.h[i+1]-tr.h[i])/tr.step,-2.5,2.5);
+      let slope=0,sh=0;
+      for(let q=0;q<5;q++){slope+=SMW[q]*slopeAt(i+q-2);sh+=SMW[q]*shAt(i+q-2,i);}
+      slope/=9;sh/=9;
       /* ── свет склона тоже стал светлотой (гризайль) ──
          Это было ЕДИНСТВЕННОЕ место разреза, где свет считался по-настоящему
          (`litRGB`), и клалось оно поверх материала одной лентой. Теперь то же
@@ -114,12 +134,12 @@ function drawGround(tr,camx,camy,fill,line,pal){
          всему разрезу, а не ленте. */
       /* в тени прямого света нет, остаётся небо. `litRGB` читает `df||.78`,
          поэтому ноль ему отдавать нельзя — отдаём эпсилон */
-      const sh=castAt(CM,i);
       const c=litRGB(P0,slope,null,sun,amb,k,sh>0?Math.max(1e-3,df*(1-sh)):df);
       ctx.fillStyle=(pal&&tr.mat)?greyA(255*clamp(lum3(c)/lumFull,0,1),.42)
         :"rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
       ctx.beginPath();
-      ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
+      const b0=hs(i),b1=hs(i+1);
+      ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,Math.max(y1+8,b1+stripD));ctx.lineTo(x0,Math.max(y0+8,b0+stripD));
       ctx.closePath();ctx.fill();
       /* ── маска тени (P5) ──
          Погашенная лента склона — сорок процентов серого на шестидесяти px —
@@ -128,13 +148,13 @@ function drawGround(tr,camx,camy,fill,line,pal){
          тень гребня на склон за ним. Серым, в проход формы: цвет неба ей даст
          лессировка. Печётся в ломоть, кадру даром. */
       if(sh>.02){
-        const d2=stripD*1.5, ya=Math.min(y0,y1);
-        const dgr=ctx.createLinearGradient(0,ya,0,Math.max(y0,y1)+d2);
+        const d2=stripD*1.5, ya=Math.min(b0,b1);
+        const dgr=ctx.createLinearGradient(0,ya,0,Math.max(b0,b1)+d2);
         dgr.addColorStop(0,"rgba(0,0,0,"+(.55*sh).toFixed(3)+")");
         dgr.addColorStop(1,"rgba(0,0,0,0)");
         ctx.fillStyle=dgr;
         ctx.beginPath();
-        ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+d2);ctx.lineTo(x0,y0+d2);
+        ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,Math.max(y1+8,b1+d2));ctx.lineTo(x0,Math.max(y0+8,b0+d2));
         ctx.closePath();ctx.fill();
       }
     }

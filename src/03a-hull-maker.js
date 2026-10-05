@@ -375,7 +375,7 @@ function makerMarks(h){
     ctx.fillStyle="rgba(30,28,26,.55)";
     const n=(S%900+100)|0;
     ctx.font=u.toFixed(1)+"px monospace";ctx.textAlign="center";
-    ctx.fillText(String(n),mid,u*.35);
+    paintText(ctx,String(n),mid,u*.35);
   }else if(M.mark==="logo"){
     /* логотип во весь борт: круг с хвостом, читается пятном */
     ctx.strokeStyle="rgba(60,120,210,.75)";ctx.lineWidth=Math.max(.5,u*.22);

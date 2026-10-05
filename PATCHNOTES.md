@@ -6,6 +6,103 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.488.0 - ships in 3D, planets on the engine, and the yards of the five powers
+
+- **Ships in flight are real 3D meshes (M710).** The hull is built from `hullOf` as a loft with
+  wings, nacelles, nozzles and boxes; the old bake becomes its paint. Star light, body shadow,
+  belly paint, side seams and a flame light cone. Layer classes 128/256/512 keep big hulls in 3D.
+  GT's tow hook is a tube now, not a stroke on the paint.
+- **Pirates in 3D.** A welded lump on a height map: every plate a prism, holes cut through where
+  the bake is empty, engines as barrels with an ember, turrets as spheres.
+- **Planets and moons from orbit redrawn on the engine (M700-M702),** with an octave early-out and
+  detail by CSS pixel for cost.
+- **The yards of the five powers (M714).** Компания, Орднунг, Коммуна, Рассвет and Хай-Фронт each
+  sell a line of 24 hulls with their own classes, stat character, prices, palette, proportions,
+  naming habit (`Юнион Про™`, `Шлюз 4/Б`, `Розетта II`, `Наби v2.3`) and lore. A power's line is
+  in its own stations and sold only after an episode with that power; in Ялта all five, at x2.
+  The row is shown with the lock named.
+- **Shapes.** Each power now has four or five airframe schemes instead of two or three, and the
+  courier class is wider and shorter: it was a wire with no body in 3D.
+- **Fix: a station's power was unknown until it was drawn.** `station.by` was set only when the
+  station body was painted, so counters, unique hulls, the cantina and the ammo stamp all read
+  ГЛАВТРАССА until the first look. It is now resolved on first read.
+- Reversed `smoothstep` edges flipped in the hull and orb shaders.
+- **The planet orb compiles per world family.** All twelve worlds in one shader took 3.1-3.5 s to
+  compile and held the start gate; nine family shaders cost 0.2-1.2 s each, the ones a flight
+  needs are warmed (warm-up 1.6 s), the rest build in the background while the old orb stands in.
+
+## 0.487.0 - the fleet lands: the world off #c and onto the GPU
+
+- **The surface, the cave and the mine draw on the engine.** Deposits, the landed ship, dust motes,
+  the out-of-focus foreground, near weather and the final grade, the ground-edge grass, the night
+  field, world labels and the drill bar, the hint band and edge chips: each moved off the 2D canvas
+  into GPU shapes, lit bakes or the `#ovl` overlay. The cave and the mine now issue no 2D calls; a
+  per-scene 2D census probe (`-Probe`) counts what is left.
+- **The stand layer.** GPU twins of upright things cast shadows and take the world's light. Relief
+  forms are baked per light and bent by wind in strips; buildings, the approach, the cave entrance,
+  the mine head, the walker and the pennant are drawn the same way.
+- **The player's base outside has volume.** Side face, chamfered roof, floor seams, lit windows,
+  a door with a light slit, solar panels and a mast with a live beacon. One bake per light, with the
+  beacon and label live on top.
+- **The home outside is one bake.** Smoke, guy ropes and the washing stay live and are pushed as
+  shapes (`VSINK`); shadows and lamps come from sinks recorded while baking.
+- **Ground.** Narrow notches no longer extrude dark vertical shadow columns: slope and shade are
+  smoothed over five segments.
+- **The map is drawn with a pen.** Shapes go to the GPU and marks and text to `#ovl`, so `#c` is
+  idle on the map. It merges with 0.486.0's late labels: `mapLateFlush` now draws plates and
+  strings with the pen, rotated arm names through `ovTextRot`, and the late labels keep the pen's
+  transparency.
+- **The sky black hole redrawn.** A thin streaked disc across the shadow, a lensed arc, a photon
+  ring and a brighter Doppler side, with no seams between the disc halves.
+
+## 0.486.0 - the vision: the interface judged as numbers, and what it found
+
+- **The vision.** The tests were green while every button in the build was overrun by its own text. The
+  interface is now read as numbers before the raster: `test-geom.js` walks 17 windows (phones 320–421,
+  landscape 568 and 780, tablets, PC 900–2560, the native font, DPR 1 against 3), ~110 screens and ~75 taps
+  each, and holds every DOM box, 2D-canvas line, engine layer and bake against inequalities — overflow, cut,
+  screen edge, overlap, covered, see-through, tap target, contrast, size under 8 px, squeeze, garbage, frame
+  crash, DPR drift — plus composition notes (alignment, step, φ). It plants one defect per law first and goes
+  «СЛЕПО» if it misses one. ~6 s; a rotated canvas line is measured as its own quad; a frame in which the game
+  changed its layout is followed by one more, and that one is judged.
+- **Tests cut to the stability core.** 248 files → 29 (save, money, time, travel, cloud, the frame guard,
+  GPU loss, detectors); golden frames and the mutant zoo are gone. `test.ps1` with no flags — build, Node,
+  smoke, the vision — runs in ~13 s and is the release gate with `-Full` (~26 s).
+- **What the vision found, fixed:**
+  - **the map:** labels lay over labels — thirteen modules, each placing from its own point. Own marks now
+    register their ink; world captions (arm and nebula names, giants, rumour areas, prices, change tags, jump
+    rings, the search circle, notches, ГЛАВТРАССА) are placed last on the first free spot of several, or not at
+    all; a system's tags stack in rows inside the ruler frame; map type never under 8 px; the header and the
+    footer on solid plates. The address row and the header share the top through one placer (on a phone the
+    row used to cover the header whole), and the message line sits on a frosted plate under them — on a low
+    window, in a column on the left when the radio leaves no room below;
+  - long road hints on a tablet were wider than the glyph atlas and froze the road: runs are split by words,
+    and a road frame that throws is now named and survived like the main frame; the road's instruments keep
+    8 px on a 320-px landscape sheet;
+  - the home's progress line came out at 3 px on a phone and the room shrank to a third at DPR 3; the base's
+    «МЕСТО ПОД ЗАСТРОЙКУ» left its dashed cell at 1920 (now two lines when it must); instrument labels under
+    8 px; hull lettering is paint, not interface, and is no longer measured as text;
+  - layout: window footers and a module card's actions wrap instead of squeezing («СНЯТЬ УР.» stuck out of
+    its button); the things table gets its own width from 900 up (at 2560 the labels left their cards); the
+    ОПИСЬ parts grid stacks at 761–899; the radio scale is 8 px; on low windows (568×320, 780×360) the rail
+    hangs between the vitals and the pads, «КАРТА» and «МЕНЮ» first (it grew off the top over the place line
+    and the wallet), the menu starts under the vitals and scrolls instead of running off the bottom, and on
+    touch the zoom buttons give way to pinch; on touch screens wider than 760 the console and the prompt stand
+    above the pads (the console sat on ИМПУЛЬС); the jump pad says «Прыжок»/«Вверх» in a word that fits.
+- VER 0.486.0.
+
+## 0.485.0 - far galaxies instead of the big spiral
+
+- **The big spiral galaxy is gone from the system sky.** It was one of the three landmarks a system can get
+  (about a third of them had it) and read as a sticker on top of the sky rather than something far behind it
+  (the author: «всратая галактика»). The landmark roll is untouched, so comets, remnants and the hole's jets stay
+  where they were; a system that had the spiral now has open gas there.
+- **Eight far galaxies in every system, at the edge of seeing.** Spiral, elliptical, edge-on with a dust lane
+  and irregular, 2–5% of the frame tall, drawn in the nebula's full-resolution compose pass behind the gas: dense
+  gas covers them, dust dims them, the star's glare hides them, and they move least of all with the camera
+  (parallax .004). New module `16gaza-gpu-fargal`; the look came from the three.js probe on the `three` branch,
+  where the rest of the probe's nebula lost to ours and was not taken.
+
 ## 0.484.0 - the fleet lands: the other modes on the engine, and a new sky
 
 - **The cloud fleet's zones are in.** What the cloud sessions moved onto the GPU (G6–G13) now ships, after the

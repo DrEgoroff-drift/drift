@@ -105,17 +105,6 @@ function Build {
     if ($tfiles.Count -gt 0) {
       # перед каждым файлом — его имя (M444, ?files=): набор помнит, из какого он файла
       $tparts = foreach ($f in $tfiles) { 'var TEST_FILE="' + $f.Name + '";' + "`n" + [System.IO.File]::ReadAllText($f.FullName, $enc) }
-      # Золотые кадры (M443): эталоны docs/golden/<окно>.json вшиваются константой
-      # GOLDEN — страница с file:// прочитать их сама не может. Нет эталонов — {}.
-      $gold = "{}"
-      $gdir = Join-Path $root "docs\golden"
-      if (Test-Path $gdir) {
-        $gfiles = @(Get-ChildItem (Join-Path $gdir "*.json") -File)
-        if ($gfiles.Count -gt 0) {
-          $gl = foreach ($g in (Sort-Ordinal $gfiles)) { '"' + $g.BaseName + '":' + ([System.IO.File]::ReadAllText($g.FullName, $enc)).Trim() }
-          $gold = "{" + ($gl -join ",") + "}"
-        }
-      }
       # Поля мира (0.438.0): каждое имя, которому где-то в src/ присваивают `G.имя=`,
       # вшивается списком G_FIELDS — сеть сейва (91zzzzzzzzz-savenet) сверяет его со
       # snapshot() и SAVE_EPHEMERAL: поле либо сохраняется, либо названо эфемерным
@@ -123,7 +112,7 @@ function Build {
       $gf = New-Object 'System.Collections.Generic.HashSet[string]'
       foreach ($m in [regex]::Matches($js, '\bG\.([A-Za-z_$][\w$]*)\s*(?:=(?!=)|\|\|=|\?\?=|\+\+|--|[-+*/]=)')) { [void]$gf.Add($m.Groups[1].Value) }
       $gfl = @($gf); [Array]::Sort($gfl, [System.StringComparer]::Ordinal)
-      $tjs = $js + "`nconst GOLDEN=" + $gold + ";`nconst G_FIELDS=[" + (($gfl | ForEach-Object { '"' + $_ + '"' }) -join ",") + "];`n" + ($tparts -join "`n")
+      $tjs = $js + "`nconst G_FIELDS=[" + (($gfl | ForEach-Object { '"' + $_ + '"' }) -join ",") + "];`n" + ($tparts -join "`n")
       $thtml = $shell.Replace("/*{{STYLE}}*/", $css).Replace("//{{SCRIPT}}", $tjs)
       [System.IO.File]::WriteAllText((Join-Path $root "tests.html"), $thtml, $enc)
       $msg += " · tests.html from {0} suites" -f $tfiles.Count

@@ -344,17 +344,15 @@ function drawFleetMap(vis,cell){
        на постановочном кадре со всеми станциями пятой ступени дальние плечи
        читались ярче ближних дорог; здесь они уходят в треть */
     const k=(a.near||b.near)?1:.35;
-    ctx.strokeStyle="rgba(236,232,220,"+(.42*k).toFixed(3)+")";
-    ctx.beginPath();ctx.moveTo(a.x+nx,a.y+ny);ctx.lineTo(b.x+nx,b.y+ny);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(a.x-nx,a.y-ny);ctx.lineTo(b.x-nx,b.y-ny);ctx.stroke();
-    ctx.strokeStyle="rgba(226,120,100,"+(.6*k).toFixed(3)+")";
-    for(let t=.25;t<.99;t+=.25){const tx=a.x+dx*t,ty=a.y+dy*t;ctx.beginPath();ctx.moveTo(tx+nx*2.6,ty+ny*2.6);ctx.lineTo(tx-nx*2.6,ty-ny*2.6);ctx.stroke();}
+    const c1="rgba(236,232,220,"+(.42*k).toFixed(3)+")",c2="rgba(226,120,100,"+(.6*k).toFixed(3)+")";   /* перо карты (17z4) */
+    mpLine(a.x+nx,a.y+ny,b.x+nx,b.y+ny,1,c1);
+    mpLine(a.x-nx,a.y-ny,b.x-nx,b.y-ny,1,c1);
+    for(let t=.25;t<.99;t+=.25){const tx=a.x+dx*t,ty=a.y+dy*t;mpLine(tx+nx*2.6,ty+ny*2.6,tx-nx*2.6,ty-ny*2.6,1,c2);}
   }}
   for(const v of L){
     if(fleetRung(v.s)<25)continue;
-    ctx.strokeStyle="rgba(236,232,220,.7)";ctx.lineWidth=1;
-    ctx.strokeRect(v.x+7,v.y-11,6,6);
-    ctx.fillStyle="rgba(226,120,100,.9)";ctx.fillRect(v.x+8,v.y-10,4,1.5);
+    mpFrame(v.x+7,v.y-11,6,6,1,"rgba(236,232,220,.7)");
+    mpRect(v.x+8,v.y-10,4,1.5,"rgba(226,120,100,.9)");
   }
   ctx.restore();
 }

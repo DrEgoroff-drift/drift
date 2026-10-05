@@ -23,8 +23,11 @@ const PL={n:0,f:-1,t:-1,a:new Float32Array(PL_MAX*8),gnd:null,lamp:null,gv:null,
    плоскостью кадра (свет ложится и на полосу грунта вглубь); hz<0 — окно
    или щель: светит так же, но своей точки-лампы у него нет. Список
    живёт один кадр: новый кадр начинает его заново сам */
+/* приёмник ламп (G15): выпечка пишет сюда свои источники, кадр заводит их на месте */
+let PL_SINK=null;
 function placeLamp(x,y,rad,rgb,k,hz){
   if(!(k>0)||!(rad>0))return;
+  if(PL_SINK){PL_SINK.push([x,y,rad,rgb,k,hz]);return;}
   const f=(typeof GPU!=="undefined")?GPU.frameNo:0,t=G.t||0;
   if(PL.f!==f||PL.t!==t){PL.f=f;PL.t=t;PL.n=0;}
   if(x+rad<0||x-rad>W||y+rad<0||y-rad>H)return;

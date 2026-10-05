@@ -69,7 +69,7 @@ function instrPodPaint(c,w,h,R){
     /* код прибора: три буквы под шкалой — тот же ответ, что в кабине (стрелка над ним не ходит) */
     c.textAlign="center";
     c.fillStyle=col+".62)";
-    c.font="7px ui-monospace,monospace";
+    c.font="8px ui-monospace,monospace";   /* 7 было мельче закона кегля (зрение 06.10.2026) */
     c.fillText(R[i].ab,cx,nh+7);
   }
   /* лента: та же лента, что и в кабине, только узкая полоска и тёмный лист (TAPE_PAL.dark):

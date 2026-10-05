@@ -86,26 +86,25 @@ const MAP_BORDER_NB=[[1,0,1,0,1,1],[-1,0,0,0,0,1],[0,1,0,1,1,1],[0,-1,0,0,1,0]];
 function mapBorderEdge(key,ax,ay,bx,by,a,cell,nx,ny){   /* nx,ny — внутрь своей клетки */
   const P=powerOf(key),col=rgba(hex2rgb(P.col),a.toFixed(3));
   const L=Math.hypot(bx-ax,by-ay);if(L<1)return;
-  const ux=(bx-ax)/L,uy=(by-ay)/L;
-  ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1;
-  const line=()=>{ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();};
+  const ux=(bx-ax)/L,uy=(by-ay)/L,g=!MPN.gpu,al=MPN.al;
+  if(g)ctx.save();
   const along=(step,fn)=>{const n=Math.max(1,Math.round(L/step));for(let i=0;i<n;i++){const t=(i+.5)/n*L;fn(ax+ux*t,ay+uy*t,i);}};
-  if(cell<24){ctx.globalAlpha=.7;line();ctx.restore();return;}
+  if(cell<24){mpAlpha(al*.7);mpLine(ax,ay,bx,by,1,col);mpAlpha(al);if(g)ctx.restore();return;}
   const e=P.emblem;
   if(e==="star")along(7,(x,y)=>{   /* звёздочка — четыре луча, заливка на 3 px стала бы кляксой */
-    ctx.beginPath();ctx.moveTo(x-1.8,y);ctx.lineTo(x+1.8,y);ctx.moveTo(x,y-1.8);ctx.lineTo(x,y+1.8);ctx.stroke();});
-  else if(e==="ring"){ctx.lineWidth=.8;line();ctx.lineWidth=1;
-    along(14,(x,y)=>{ctx.beginPath();ctx.arc(x,y,1.9,0,TAU);ctx.stroke();});}
-  else if(e==="grid"){ctx.setLineDash([5,2]);line();ctx.setLineDash([]);
-    along(9,(x,y,i)=>{const h=i%3===0?3:1.6;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+nx*h,y+ny*h);ctx.stroke();});}
-  else if(e==="wave"){ctx.beginPath();
+    mpLine(x-1.8,y,x+1.8,y,1,col);mpLine(x,y-1.8,x,y+1.8,1,col);});
+  else if(e==="ring"){mpLine(ax,ay,bx,by,.8,col);
+    along(14,(x,y)=>mpCircle(x,y,1.9,1,col));}
+  else if(e==="grid"){mpDash(ax,ay,bx,by,1,col,[5,2]);
+    along(9,(x,y,i)=>{const h=i%3===0?3:1.6;mpLine(x,y,x+nx*h,y+ny*h,1,col);});}
+  else if(e==="wave"){const pts=[];
     for(let t=0;t<=L;t+=1.5){const w=Math.sin(t/L*TAU*Math.max(1,Math.round(L/9)))*1.4;
-      const x=ax+ux*t+nx*w,y=ay+uy*t+ny*w;if(t)ctx.lineTo(x,y);else ctx.moveTo(x,y);}
-    ctx.stroke();}
-  else if(e==="sun"){ctx.setLineDash([7,3,3,3,10,3]);line();ctx.setLineDash([]);
-    along(16,(x,y)=>{ctx.beginPath();ctx.arc(x+nx*2.5,y+ny*2.5,1.3,0,TAU);ctx.fill();});}
-  else along(4,(x,y)=>{ctx.beginPath();ctx.arc(x,y,.9,0,TAU);ctx.fill();});
-  ctx.restore();
+      pts.push(ax+ux*t+nx*w,ay+uy*t+ny*w);}
+    mpPath(pts,1,col);}
+  else if(e==="sun"){mpDash(ax,ay,bx,by,1,col,[7,3,3,3,10,3]);
+    along(16,(x,y)=>mpDisc(x+nx*2.5,y+ny*2.5,1.3,col));}
+  else along(4,(x,y)=>mpDisc(x,y,.9,col));
+  if(g)ctx.restore();
 }
 function mapHoldingsDraw(vis,cell,V,st){
   if(!mapLayerOn("own"))return;
@@ -126,29 +125,24 @@ function mapHoldingsDraw(vis,cell,V,st){
          карте и так хватает */
       /* M458: вблизи чип дорастает до читаемых 14–18 px (радиус 7–9) */
       const cr=clamp(cell*.12,3.2,9);
-      ctx.globalAlpha=.8*fade;
+      mpAlpha(.8*fade);
       powerEmblem(key,x0+cell-cr*1.7,y0+cr*1.7,cr);
-      ctx.globalAlpha=1;
+      mpAlpha(1);
     }else{
-      ctx.fillStyle=rgba(hex2rgb(powerOf(key).col),(.5*fade).toFixed(3));
-      ctx.beginPath();ctx.arc(x0+cell-6,y0+6,2,0,TAU);ctx.fill();
+      mpDisc(x0+cell-6,y0+6,2,rgba(hex2rgb(powerOf(key).col),(.5*fade).toFixed(3)));
     }
     /* сигнал сбора (M378): чип с числом ответивших — ни имени, ни слова */
     if(typeof rallyAt==="function"){
       const R=rallyAt(v.gx,v.gy);
       if(R){
-        ctx.strokeStyle="rgba(255,214,120,.9)";ctx.lineWidth=1.4;
-        ctx.beginPath();ctx.arc(x0+cell*.5,y0+cell*.5,cell*.32,0,TAU);ctx.stroke();
-        ctx.fillStyle="rgba(255,214,120,.9)";
+        mpCircle(x0+cell*.5,y0+cell*.5,cell*.32,1.4,"rgba(255,214,120,.9)");
         ctx.font=Math.max(8,cell*.16).toFixed(0)+"px ui-monospace,monospace";
         ctx.textAlign="center";
-        ctx.fillText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06);
+        mpText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06,"rgba(255,214,120,.9)");mapInkText("СБОР "+(R.yes|0),x0+cell*.5,y0+cell*.5+cell*.06);
       }
     }
-    if(chronFront(v.gx,v.gy)){
-      ctx.strokeStyle="rgba(255,90,70,"+(.7*fade).toFixed(2)+")";ctx.lineWidth=1.4;
-      ctx.strokeRect(x0+.7,y0+.7,cell-1.4,cell-1.4);
-    }
+    if(chronFront(v.gx,v.gy))
+      mpFrame(x0+.7,y0+.7,cell-1.4,cell-1.4,1.4,"rgba(255,90,70,"+(.7*fade).toFixed(2)+")");
     /* ── фронт пунктиром по границе (M371, §7.4) ──
        Не заливка и не рамка вокруг клетки, а ЛИНИЯ между двумя владениями,
        которые сейчас воюют: по ней видно, где именно проходит война, а не
@@ -165,15 +159,13 @@ function mapHoldingsDraw(vis,cell,V,st){
       mapBorderEdge(key,ax,ay,bx,by,.55*fade,cell,-q[0],-q[1]);
     }
     if(typeof chronWarBetween==="function"){
-      ctx.save();ctx.setLineDash([3,3]);
-      ctx.strokeStyle="rgba(255,120,90,"+(.85*fade).toFixed(2)+")";ctx.lineWidth=1.6;
+      const wc="rgba(255,120,90,"+(.85*fade).toFixed(2)+")";
       const nb=[[1,0,x0+cell,y0,x0+cell,y0+cell],[0,1,x0,y0+cell,x0+cell,y0+cell]];
       for(const q of nb){
         const o2=chronOwner(v.gx+q[0],v.gy+q[1]);
         if(o2<0||o2===o||!chronWarBetween(o,o2))continue;
-        ctx.beginPath();ctx.moveTo(q[2],q[3]);ctx.lineTo(q[4],q[5]);ctx.stroke();
+        mpDash(q[2],q[3],q[4],q[5],1.6,wc,[3,3]);
       }
-      ctx.restore();
     }
   }
   for(const k in P){
@@ -182,36 +174,24 @@ function mapHoldingsDraw(vis,cell,V,st){
     if(x0>W||y0>H||x0+cell<0||y0+cell<0)continue;
     const d=Math.hypot(gx-G.sx,gy-G.sy),fade=clamp(1.1-d/(st.jump*2.2),.25,1);
     const ids=P[k];
-    ctx.fillStyle=rgba(hex2rgb(HOUSE_BY_ID[ids[0]].col),(.10*fade).toFixed(3));
-    ctx.fillRect(x0,y0,cell,cell);
-    if(ids.length>1){
-      /* второй дом — штриховкой своего цвета: там принимают обе боны */
-      ctx.save();ctx.beginPath();ctx.rect(x0,y0,cell,cell);ctx.clip();
-      ctx.strokeStyle=rgba(hex2rgb(HOUSE_BY_ID[ids[1]].col),(.28*fade).toFixed(3));ctx.lineWidth=1;
-      for(let q=-cell;q<cell;q+=6){ctx.beginPath();ctx.moveTo(x0+q,y0+cell);ctx.lineTo(x0+q+cell,y0);ctx.stroke();}
-      ctx.restore();
-    }
+    mpRect(x0,y0,cell,cell,rgba(hex2rgb(HOUSE_BY_ID[ids[0]].col),(.10*fade).toFixed(3)));
+    /* второй дом — штриховкой своего цвета: там принимают обе боны */
+    if(ids.length>1)mpHatch(x0,y0,cell,cell,6,-1,1,rgba(hex2rgb(HOUSE_BY_ID[ids[1]].col),(.28*fade).toFixed(3)));
   }
   /* полоса трассы под линией: сектора «под трассой» */
   const pairs=mapTrassaPairs(vis,cell);
-  if(pairs.length){
-    ctx.lineCap="round";ctx.lineWidth=cell*.55;
-    for(const [a,b] of pairs){
-      const k=(a.near||b.near)?1:.4;                       // закон темноты: за кромкой полоса тише
-      ctx.strokeStyle="rgba(236,232,220,"+(.07*k).toFixed(3)+")";
-      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-    }
+  for(const [a,b] of pairs){
+    const k=(a.near||b.near)?1:.4;                       // закон темноты: за кромкой полоса тише
+    if(!MPN.gpu)ctx.lineCap="round";
+    mpLine(a.x,a.y,b.x,b.y,cell*.55,"rgba(236,232,220,"+(.07*k).toFixed(3)+")");
   }
   /* пираты: ржавый косой штрих; у пятна дома — фронт ярче */
   if(typeof occLvl==="function"){
     for(const v of vis){
       const ol=occLvl(v.gx,v.gy);if(!ol)continue;
       const x0=v.x-cell/2,y0=v.y-cell/2;
-      ctx.save();ctx.beginPath();ctx.rect(x0,y0,cell,cell);ctx.clip();
-      ctx.strokeStyle="rgba(200,96,60,"+(.16+ol*.07).toFixed(2)+")";ctx.lineWidth=1.2;
-      for(let q=-cell;q<cell;q+=5){ctx.beginPath();ctx.moveTo(x0+q,y0);ctx.lineTo(x0+q+cell,y0+cell);ctx.stroke();}
-      ctx.restore();
-      if(P[v.gx+","+v.gy]){ctx.strokeStyle="rgba(255,120,80,.55)";ctx.lineWidth=1;ctx.strokeRect(x0+.5,y0+.5,cell-1,cell-1);}
+      mpHatch(x0,y0,cell,cell,5,1,1.2,"rgba(200,96,60,"+(.16+ol*.07).toFixed(2)+")");
+      if(P[v.gx+","+v.gy])mpFrame(x0+.5,y0+.5,cell-1,cell-1,1,"rgba(255,120,80,.55)");
     }
   }
   /* своё: рамка цвета игрока, видна и во тьме */
@@ -219,8 +199,7 @@ function mapHoldingsDraw(vis,cell,V,st){
   for(let gy=vy0-R;gy<=vy0+R;gy++)for(let gx=vx0-R;gx<=vx0+R;gx++){
     if(!mapOwnHere(gx,gy))continue;
     const c=mapCellXY(gx,gy,V,cell);
-    ctx.strokeStyle="rgba(127,230,216,.75)";ctx.lineWidth=1.2;
-    ctx.strokeRect(c.x-cell/2+1.5,c.y-cell/2+1.5,cell-3,cell-3);
+    mpFrame(c.x-cell/2+1.5,c.y-cell/2+1.5,cell-3,cell-3,1.2,"rgba(127,230,216,.75)");
   }
   ctx.restore();
 }
@@ -228,30 +207,30 @@ function mapHoldingsDraw(vis,cell,V,st){
 function mapHoldingsTop(vis,cell,V,st){
   ctx.save();
   if(mapLayerOn("own")){
-    /* имя трассы — один раз, вдоль самого длинного видимого плеча, как у реки */
+    /* имя трассы — один раз, вдоль самого длинного видимого плеча, как у реки:
+       буквы вразрядку стоят каждая на своём месте вдоль линии, прямо (перо пишет без поворота) */
     const pairs=mapTrassaPairs(vis,cell);
     let best=null,bl=0;
     for(const [a,b] of pairs){const l=Math.hypot(a.x-b.x,a.y-b.y);if(l>bl){bl=l;best=[a,b];}}
     if(best&&bl>60){
       const [a,b]=best,ang=Math.atan2(b.y-a.y,b.x-a.x);
-      ctx.save();ctx.translate((a.x+b.x)/2,(a.y+b.y)/2);ctx.rotate(Math.abs(ang)>Math.PI/2?ang+Math.PI:ang);
+      const ra=Math.abs(ang)>Math.PI/2?ang+Math.PI:ang,mx=(a.x+b.x)/2,my=(a.y+b.y)/2,o=cell*.32,c=Math.cos(ra),s=Math.sin(ra);
       mapFont(8);ctx.textAlign="center";ctx.fillStyle="rgba(236,232,220,.55)";
-      ctx.fillText("Г Л А В Т Р А С С А",0,-cell*.32);
-      ctx.restore();
+      mapLate("Г Л А В Т Р А С С А",[[mx+o*s,my-o*c,ra],[mx-o*s,my+o*c+8*c,ra]],1);   /* над плечом или под ним */
     }
     /* бирки перемен */
     const now=clockNow();
     for(const v of vis){
       const tg=mapTagAt(v.gx,v.gy,now);if(!tg)continue;
-      mapFont(7);ctx.textAlign="left";
+      mapFont(8);ctx.textAlign="left";
       const tw=ctx.measureText(tg.ru).width;
-      ctx.fillStyle="rgba(6,10,16,"+(.6*tg.a).toFixed(2)+")";ctx.fillRect(v.x+10,v.y+6,tw+8,11);
-      ctx.fillStyle="rgba(127,230,216,"+(.85*tg.a).toFixed(2)+")";ctx.fillText(tg.ru,v.x+14,v.y+14);
+      ctx.fillStyle="rgba(127,230,216,"+(.85*tg.a).toFixed(2)+")";
+      mapLate(tg.ru,[[v.x+14,v.y+14],[v.x+14,v.y-8],[v.x-tw-14,v.y+14]],2,[-4,-8,tw+8,11,"rgba(6,10,16,"+(.6*tg.a).toFixed(2)+")"]);
     }
   }
   /* ценники: лучшая виденная цена станции — коротко, под звездой */
   if(mapLayerOn("prices")&&G.seenPrices){
-    mapFont(7);ctx.textAlign="center";
+    mapFont(8);ctx.textAlign="center";
     for(const v of vis){
       if(!v.s||!v.s.station)continue;
       let pr=G.seenPrices[v.s.key];
@@ -261,7 +240,7 @@ function mapHoldingsTop(vis,cell,V,st){
       if(!bk)continue;
       const hot=(G.cargo[bk]|0)>0;
       ctx.fillStyle=hot?"#f2b25c":"rgba(160,182,192,.75)";
-      ctx.fillText(RES[bk].ru.toLowerCase()+" "+pr.p[bk],v.x,v.y+cell*.42);
+      mapLate(RES[bk].ru.toLowerCase()+" "+pr.p[bk],[[v.x,v.y+cell*.42],[v.x,v.y-cell*.42-2]],hot?3:2);   /* под звездой, а занято — над ней */
     }
   }
   ctx.restore();

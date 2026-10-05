@@ -305,11 +305,9 @@ function drawDronesMap(vis){
     /* значок уходит от звезды дальше, чем прицел и кольца системы: на своей
        же системе он ложился ровно на рамку выбора и не читался (второй проход) */
     const bx=v.x+15,by2=v.y-13;
-    ctx.fillStyle="rgba(4,6,10,.75)";
-    ctx.fillText(String(n),bx+5,by2+4);
-    ctx.fillStyle="rgba(127,230,216,.9)";
-    ctx.beginPath();ctx.arc(bx,by2+1,1.8,0,TAU);ctx.fill();
-    ctx.fillText(String(n),bx+4,by2+3);
+    mpText(String(n),bx+5,by2+4,"rgba(4,6,10,.75)");   /* перо карты (17z4) */
+    mpDisc(bx,by2+1,1.8,"rgba(127,230,216,.9)");
+    mpText(String(n),bx+4,by2+3,"rgba(127,230,216,.9)");mapInkText(String(n),bx+4,by2+3);
   }
 }
 

@@ -465,7 +465,7 @@ function drawHullMarks(h){
        сторону — на зуме перевёрнутый номер был первым, что бросалось в глаза */
     ctx.translate(lerp(h.nose*.35,h.tail*.5,.5),-h.bw*.52);
     ctx.rotate(Math.PI/2);
-    ctx.fillText(M.num,0,0);
+    paintText(ctx,M.num,0,0);
     ctx.restore();
   }
   /* штанга приборов вперёд: у разведчика нос продолжается за габарит */

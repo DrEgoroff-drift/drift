@@ -439,7 +439,7 @@ function gplCities(o,a){
 }
 /* луна: освещённый шар; свет — от звезды, как у её планеты */
 function gpuMoon(m,key,x,y,r){
-  if(GOR.on){gpuOrbMoon(m,key,x,y,r);return;}   /* луна M701 (17gab) */
+  if(GOR.on&&gpuOrbMoon(m,key,x,y,r))return;   /* луна M701 (17gab); пока конвейер в сборке — эта */
   const pass=gpuScene();if(!pass)return;
   const dx=-(m.x||0),dy=-(m.y||0),dl=Math.hypot(dx,dy)||1;
   gplBody(pass,"m"+key,x,y,Math.max(1.2,r),null,{sx:dx/dl,sy:dy/dl,rimK:0,rim:[0,0,0],

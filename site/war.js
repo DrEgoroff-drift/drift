@@ -27,7 +27,7 @@ function earn(){}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.484.0";
+const VER="0.488.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -250,6 +250,11 @@ function hex2rgb(h){
 }
 const rgba=(c,a)=>"rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";
 const mixc=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+/* надпись-краска: номер на борту, клеймо, лозунг — часть рисунка, а не подпись интерфейса; читается
+   только вблизи, как настоящая краска. Зрение (tests/90b2-geom.js) не меряет у неё кегль, сжатие и
+   наезд — только то, что она не NaN. Подпись, которую игрок должен прочесть, краской не бывает */
+let PAINT_TEXT=0;
+function paintText(c,s,x,y,mw){PAINT_TEXT++;try{if(mw===undefined)c.fillText(s,x,y);else c.fillText(s,x,y,mw);}finally{PAINT_TEXT--;}}
 
 /* ══════════════ у всего есть изготовитель (M369, §19.1, §19.4) ══════════════
    Класс отвечает «кто это»: курьер, рудовоз, фрегат. Изготовитель отвечает на
@@ -628,7 +633,7 @@ function makerMarks(h){
     ctx.fillStyle="rgba(30,28,26,.55)";
     const n=(S%900+100)|0;
     ctx.font=u.toFixed(1)+"px monospace";ctx.textAlign="center";
-    ctx.fillText(String(n),mid,u*.35);
+    paintText(ctx,String(n),mid,u*.35);
   }else if(M.mark==="logo"){
     /* логотип во весь борт: круг с хвостом, читается пятном */
     ctx.strokeStyle="rgba(60,120,210,.75)";ctx.lineWidth=Math.max(.5,u*.22);
@@ -829,49 +834,39 @@ function powerGlyph(k){return k&&POWERS[k]?(POWER_GLYPH[POWERS[k].emblem]||""):"
    Шесть цветов на карте были бы шумом (holding §13), поэтому на карте — чип
    с эмблемой, а не заливка. */
 function powerEmblem(k,x,y,r){
-  const P=powerOf(k),col=P.col;
-  ctx.save();
-  ctx.strokeStyle=col;ctx.lineWidth=Math.max(1,r*.16);
-  ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.stroke();
-  ctx.fillStyle=col;
+  /* пером карты (17z4): на карте — видеокарта, в выпечке (ctx подменён) — mp2d */
+  const P=powerOf(k),col=P.col,g=!MPN.gpu;
+  if(g)ctx.save();
+  mpCircle(x,y,r,Math.max(1,r*.16),col);
   if(P.emblem==="star"){
     /* пятиконечная — но собранная из лучей, а не залитая: на чипе в шесть
        пикселей залитая звезда превращается в кляксу */
     for(let i=0;i<5;i++){
       const a=-Math.PI/2+i/5*TAU;
-      ctx.beginPath();ctx.moveTo(x,y);
-      ctx.lineTo(x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72);
-      ctx.lineWidth=Math.max(1,r*.22);ctx.strokeStyle=col;ctx.stroke();
+      mpLine(x,y,x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72,Math.max(1,r*.22),col);
     }
   }else if(P.emblem==="ring"){
-    ctx.beginPath();ctx.arc(x,y,r*.42,0,TAU);ctx.stroke();
+    mpCircle(x,y,r*.42,Math.max(1,r*.16),col);
   }else if(P.emblem==="grid"){
-    ctx.lineWidth=Math.max(1,r*.14);
+    const w=Math.max(1,r*.14);
     for(const t of [-.35,.35]){
-      ctx.beginPath();ctx.moveTo(x+r*t,y-r*.55);ctx.lineTo(x+r*t,y+r*.55);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(x-r*.55,y+r*t);ctx.lineTo(x+r*.55,y+r*t);ctx.stroke();
+      mpLine(x+r*t,y-r*.55,x+r*t,y+r*.55,w,col);
+      mpLine(x-r*.55,y+r*t,x+r*.55,y+r*t,w,col);
     }
   }else if(P.emblem==="wave"){
-    ctx.lineWidth=Math.max(1,r*.16);
-    ctx.beginPath();
-    for(let i=0;i<=8;i++){
-      const t=i/8,px=x-r*.6+r*1.2*t,py=y+Math.sin(t*TAU)*r*.34;
-      i?ctx.lineTo(px,py):ctx.moveTo(px,py);
-    }
-    ctx.stroke();
+    const pts=[];
+    for(let i=0;i<=8;i++){const t=i/8;pts.push(x-r*.6+r*1.2*t,y+Math.sin(t*TAU)*r*.34);}
+    mpPath(pts,Math.max(1,r*.16),col);
   }else if(P.emblem==="sun"){
-    ctx.beginPath();ctx.arc(x,y,r*.34,0,TAU);ctx.fill();
-    ctx.lineWidth=Math.max(1,r*.12);
+    mpDisc(x,y,r*.34,col);
     for(let i=0;i<8;i++){
       const a=i/8*TAU;
-      ctx.beginPath();
-      ctx.moveTo(x+Math.cos(a)*r*.5,y+Math.sin(a)*r*.5);
-      ctx.lineTo(x+Math.cos(a)*r*.78,y+Math.sin(a)*r*.78);ctx.stroke();
+      mpLine(x+Math.cos(a)*r*.5,y+Math.sin(a)*r*.5,x+Math.cos(a)*r*.78,y+Math.sin(a)*r*.78,Math.max(1,r*.12),col);
     }
   }else{
-    ctx.beginPath();ctx.arc(x,y,r*.3,0,TAU);ctx.fill();
+    mpDisc(x,y,r*.3,col);
   }
-  ctx.restore();
+  if(g)ctx.restore();
 }
 /* ══════════════ «Ялта» (M369, D12) ══════════════
    Одна система на всю галактику, куда все шестеро летают отдыхать и где никто

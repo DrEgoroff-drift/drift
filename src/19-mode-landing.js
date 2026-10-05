@@ -176,6 +176,7 @@ function drawSkyLayer(p,camx,camy){
 /* пыль/пыльца в воздухе — только там, где есть атмосфера, для ощущения глубины */
 function drawDustMotes(camx,camy,p){
   if(p.T.atm==="отсутствует")return;
+  const gp=lgGpu();if(gp&&dustMotesGpu(gp,camx,camy,p))return;   /* с видеокартой — кругами в проход (21e3) */
   const n=26;
   for(let i=0;i<n;i++){
     const r=rng(hashi(Math.floor(p.seed),i,0xD05));
@@ -187,6 +188,18 @@ function drawDustMotes(camx,camy,p){
     ctx.fillStyle="rgba(255,255,255,"+(.05+r()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(x,y,.8+r()*1.2,0,TAU);ctx.fill();
   }
+}
+/* проход видеокарты для живого заходa или null — тогда рисует 2D */
+function lgGpu(){return (typeof GPU!=="undefined"&&GPU.ok&&GPU.on&&GPU.enc)?gpuNext():null;}
+/* мягкое пятно цвета col ("r,g,b"): спад 1 → .35 к середине → 0, холст на цвет (зарево захода) */
+const LG_GLOW={};
+function lgGlowTex(col){
+  let cn=LG_GLOW[col];if(cn)return cn;
+  cn=document.createElement("canvas");cn.width=cn.height=96;
+  const g=cn.getContext("2d"),gr=g.createRadialGradient(48,48,0,48,48,48);
+  gr.addColorStop(0,"rgba("+col+",1)");gr.addColorStop(.45,"rgba("+col+",.35)");gr.addColorStop(1,"rgba("+col+",0)");
+  g.fillStyle=gr;g.fillRect(0,0,96,96);
+  return LG_GLOW[col]=cn;
 }
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
@@ -222,11 +235,14 @@ function drawLanding(){
   const alt=Math.max(0,gyw-L.y-11);
   const fA=Math.max(Math.min(camy*.46+110,camy+H*.20),gyw-H*.72), fB=Math.max(Math.min(camy*.55+60,camy+H*.11),gyw-H*.80);
   if(alt>160&&p.T.atm!=="отсутствует"){
-    const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1];
+    const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1],gz=lgGpu();
+    if(gz)gpuShapes(gz,[[8,0,0,W,H*.62,0,0,s1[0],s1[1],s1[2],hi]],{blend:"over"});
+    else{
     const zg=ctx.createLinearGradient(0,0,0,H*.62);
     zg.addColorStop(0,"rgba("+s1.join(",")+","+hi.toFixed(3)+")");
     zg.addColorStop(1,"rgba("+s1.join(",")+",0)");
     ctx.fillStyle=zg;ctx.fillRect(0,0,W,H*.62);
+    }
   }
   /* гряды — поле видеокарты (19g): форма, зерно, подошва в воздухе; слой поверх
      небесных тел и облаков, дымка горизонта ляжет уже на него */
@@ -249,7 +265,10 @@ function drawLanding(){
     if(k>.02){
       const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)?hex2rgb(G.sys.cls.col):[255,214,150];
       const wc=[Math.round(sc[0]*.4+153),Math.round(sc[1]*.4+120),Math.round(sc[2]*.3+70)];
-      const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04;
+      const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04,gw=lgGpu();
+      /* на видеокарте — пятно, растянутое в тот же эллипс, сложением */
+      if(gw)gpuImage(gw,lgGlowTex(wc.join(",")),[{x:gx,y:gy,w:W*.72,h:H*.32,a:k}],{blend:"add"});
+      else{
       const g=ctx.createRadialGradient(gx,gy,0,gx,gy,W*.36);
       g.addColorStop(0,"rgba("+wc.join(",")+","+k.toFixed(3)+")");
       g.addColorStop(.45,"rgba("+wc.join(",")+","+(k*.35).toFixed(3)+")");
@@ -257,6 +276,7 @@ function drawLanding(){
       ctx.save();ctx.globalCompositeOperation="lighter";
       ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(gx,gy,W*.36,H*.16,0,0,TAU);ctx.fill();
       ctx.restore();
+      }
     }
   }
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
@@ -281,7 +301,22 @@ function drawLanding(){
      и оно само показывает, куда садиться; плита — тело с тёплой кромкой и
      двумя огнями по краям. Столб — одна узкая трапеция, кадру дёшево. */
   const px=tr.padX-camx,py=tr.padY-camy;
-  {
+  const gc=lgGpu();
+  if(gc){
+    /* столб — стопкой полос: ширина трапеции по высоте, прозрачность сверху вниз */
+    const hUp=H*.85,SH=[],n=16;
+    for(let i=0;i<n;i++){const u0=i/n,u1=(i+1)/n,hw=10+26*(u0+u1)/2;
+      SH.push([8,px-hw,py-hUp*u1,px+hw,py-hUp*u0,.11*(1-u0),0,242,178,92,.11*(1-u1)+.001]);}
+    const u=(G.t*.22)%1,ry=py-hUp*(1-u);
+    SH.push([1,px,ry,1.5+u*1.5,0,0,0,255,220,150,.10+.5*u*u]);
+    SH.push([0,px-46,py,px+46,py+4,0,0,16,20,26,.9]);
+    SH.push([0,px-46,py-1,px+46,py+1,0,0,242,178,92,.85]);
+    for(const sx of [-46,46]){
+      const bl=.5+.5*Math.sin(G.t*.05+(sx>0?0:Math.PI));
+      SH.push([1,px+sx,py-2,1.8,0,0,0,255,214,150,.35+.5*bl]);
+    }
+    gpuShapes(gc,SH,{blend:"over"});
+  }else{
     const hUp=H*.85;
     const g=ctx.createLinearGradient(0,py,0,py-hUp);
     g.addColorStop(0,"rgba(242,178,92,.11)");

@@ -264,7 +264,7 @@ function drawLuxeDeck(h,L){
     ctx.fillStyle=rgba(mixc(PAL.trim,[255,246,220],.25),.6);
     ctx.font="1.5px ui-monospace,monospace";
     ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText(L.name,0,0);
+    paintText(ctx,L.name,0,0);
     ctx.restore();
   }
   /* ── огни палубы ── тёплые точки вдоль ограждения: их не видно днём и

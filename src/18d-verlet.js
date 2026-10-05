@@ -89,6 +89,12 @@ function vLink(B,a,b){
    ровная линия по всей длине снова читается палкой. */
 function vDrawRope(B,ox,oy,col,w){
   if(!B||B.p.length<2)return;
+  if(VSINK){                                 /* с видеокартой — капсулами в приёмник (08c) */
+    const o=VSINK.o,K=o.s,c=vsinkCol(col);
+    for(let i=1;i<B.p.length;i++){const a=B.p[i-1],z=B.p[i],lw=(w||1.4)*(1-i/B.p.length*.55);
+      VSINK.SH.push([2,o.x+(a.x+ox)*K,o.y+(a.y+oy)*K,o.x+(z.x+ox)*K,o.y+(z.y+oy)*K,lw*K/2,.5,c[0],c[1],c[2],c[3]]);}
+    return;
+  }
   ctx.save();ctx.lineCap="round";
   for(let i=1;i<B.p.length;i++){
     const a=B.p[i-1],z=B.p[i];
@@ -111,6 +117,12 @@ function vDrawCloth(B,ox,oy,base,alpha){
     /* наклон клетки к свету: горизонтальная разница даёт складку */
     const tilt=clamp(((b.x-a.x)/B.seg-1)*1.6*(sx>0?1:-1),-.5,.5);
     const k=clamp(1+tilt,.55,1.45);
+    if(VSINK){                               /* клетка — два треугольника; общие стороны жёсткие, без шва */
+      const o=VSINK.o,K=o.s,P=q=>[o.x+(q.x+ox)*K,o.y+(q.y+oy)*K];
+      gpuQuad(VSINK.SH,P(a),P(b),P(d),P(e),[base[0]*k,base[1]*k,base[2]*k,alpha===undefined?1:alpha],
+        (r>0?1:0)|(c+2<C?2:0)|(r+2<R?4:0)|(c>0?8:0));
+      continue;
+    }
     ctx.fillStyle="rgba("+Math.round(base[0]*k)+","+Math.round(base[1]*k)+","+
       Math.round(base[2]*k)+","+(alpha===undefined?1:alpha)+")";
     ctx.beginPath();

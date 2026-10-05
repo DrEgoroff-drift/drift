@@ -285,9 +285,11 @@ function sdSmoke(x,y,wind,strength,seed,n){
     /* клуб едет по линии тока; своя скорость подъёма — свой участок пути */
     const u=Math.min(K-1e-6,t*K*(.8+j2*.5)),k0=u|0,fr=u-k0;
     const px=P[k0][0]+(P[k0+1][0]-P[k0][0])*fr,py=P[k0][1]+(P[k0+1][1]-P[k0][1])*fr;
+    const ex=x+px+Math.sin(t*6+i*1.7)*(1+j*2)*t+(j-.5)*3;
+    if(VSINK){vsinkDisc(ex,y+py,rr*1.05,col+(day?a*.8:a).toFixed(3)+")",rr*.5);continue;}   /* фигурой (08c) */
     ctx.fillStyle=col+(day?a*.8:a).toFixed(3)+")";
     ctx.beginPath();
-    ctx.ellipse(x+px+Math.sin(t*6+i*1.7)*(1+j*2)*t+(j-.5)*3,y+py,rr*1.2,rr*.9,t*.5,0,TAU);
+    ctx.ellipse(ex,y+py,rr*1.2,rr*.9,t*.5,0,TAU);
     ctx.fill();
   }
   ctx.restore();

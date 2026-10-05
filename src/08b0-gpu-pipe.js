@@ -35,7 +35,7 @@ const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>G
   "fld.abil.cone":()=>ABIL_CONE_WGSL,"fld.belt.rocklay":()=>BROCK_LAY_WGSL};
 const GPU_PIPE_SRC={
   "kit.img":()=>[GPU_IMG_WGSL,gpuImgLayout()],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
-  gtr:()=>[GTR_WGSL],gex:()=>[GEX_WGSL],gor:()=>[GOR_WGSL],"gsy.orb":()=>[GSY_ORB_WGSL],gpl:()=>[GPL_WGSL],
+  gtr:()=>[GTR_WGSL],gex:()=>[GEX_WGSL],gor:()=>[GOR_WGSL],gor0:()=>[gorCode(0)],gor1:()=>[gorCode(1)],gor2:()=>[gorCode(2)],gor3:()=>[gorCode(3)],gor4:()=>[gorCode(4)],gor5:()=>[gorCode(5)],gor6:()=>[gorCode(6)],gor7:()=>[gorCode(7)],gor8:()=>[gorCode(8)],"gsy.orb":()=>[GSY_ORB_WGSL],gpl:()=>[GPL_WGSL],
   "gsp.stars":()=>[GPU_WGSL_COMMON+GSP_WGSL_U+GSP_STARS],"gsp.dust":()=>[GPU_WGSL_COMMON+GSP_WGSL_U+GSP_DUST],
   "gsp.quad":()=>[(GPU_WGSL_COMMON+GSP_WGSL_U).replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_QUAD],
   "gnb.stars":()=>[GPU_WGSL_COMMON+GSP_WGSL_U.replace(/@fragment fn fs\(i:VO\)[\s\S]*$/,"")+GSP_STARS+GNB_STAR_ABS]};

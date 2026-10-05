@@ -101,12 +101,95 @@ const WX_PLANES=[
   {s:1.30,sr:.60,l:1.45,w:1.5,a:.62,px:.17,r:1.15},
   {s:1.95,sr:.75,l:2.1,w:2.3,a:.78,px:.26,r:1.5}
 ];
+/* ── ближние осадки на видеокарте (G15) ──
+   Тот же расчёт, что у 2D ниже (те же числа h01, планы, ветер), но фигурами набора
+   (08c) в проход поверх мира, без #c: пелена — вид 8, полосы тумана и пласты пыли — вид 7,
+   штрихи — капсулы, снег, пепел и угли — круги, молния — вспышка и ломаная капсулами.
+   Точки — в мерке мира 2D; в кадр — через lifeHere (withScale) */
+function weatherGpu(p,camx,camy,layer,w,k){
+  if(!GPU.on)return false;
+  const pass=gpuNext();if(!pass)return false;
+  const o=lifeHere(0,0),s=o.s,X=x=>o.x+x*s,Y=y=>o.y+y*s,A=[];
+  const W0=WEATHER[w.kind],c=W0.col,t=G.t;
+  const n=Math.round(W0.n*k*G.opts.gfx.particles);
+  const wind=WIND*2.2+(w.kind==="dust"?2.6*k:0);
+  if(k>.12){
+    const kq=Math.round(k*40)/40,a0=W0.tint*kq*.5,a1=W0.tint*kq,a2=W0.tint*kq*.7;
+    A.push([8,X(0),Y(0),X(W),Y(H*.55),a1,0,c[0],c[1],c[2],a0],[8,X(0),Y(H*.55),X(W),Y(H),a2,0,c[0],c[1],c[2],a1]);
+  }
+  if(w.kind==="fog"){
+    for(let i=0;i<n;i++){
+      const r1=h01(i,1,0xF06), r2=h01(i,2,0xF06), r3=h01(i,3,0xF06);
+      const y=r1*H,spd=.12+r2*.5;
+      const x=((r3*2400+t*spd*(1+wind*.2)-camx*.35)%(W+520)+W+520)%(W+520)-260;
+      const ww=140+r2*320, hh=14+r3*40;
+      A.push([7,X(x),Y(y),X(x+ww),Y(y+hh),0,0,c[0],c[1],c[2],(.05+r2*.09)*k]);
+    }
+    gpuShapes(pass,A,{blend:"over"});return true;
+  }
+  const PL=WX_PLANES,Q=layer==="far"?[0,1]:layer==="near"?[2,3]:[0,1,2,3];
+  const dr=W0.dir||0,sgn=wind<0?-1:1,hor=H*SURF_HOR;
+  for(let i=0;i<n;i++){
+    const r1=h01(i,1,0x5E7), r2=h01(i,2,0x5E7), r3=h01(i,3,0x5E7);
+    const q=r2<.45?0:r2<.74?1:r2<.9?2:3;
+    if(Q.indexOf(q)<0)continue;
+    const P=PL[q],rs=h01(i,4,0x5E7);
+    const spd=W0.spd*(P.s+rs*P.sr);
+    const fall=(r1*1400+t*spd)%(H+80);
+    const drift=(r3*1600+t*spd*wind*.5-camx*P.px)%(W+160);
+    const x=((drift)%(W+160)+W+160)%(W+160)-80;
+    const y=fall-40;
+    if(W0.len>0){
+      /* штрих по земле глуше и короче неба (§14) */
+      const gnd=y>hor?1:0,lk=P.l*(gnd?.7:1);
+      const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4),vy=W0.len*lk*(1-dr*.82);
+      const lw=(w.kind==="rain"?1:1.4)*P.w;
+      A.push([2,X(x),Y(y),X(x+vx),Y(y+vy),lw*.5*s,0,c[0],c[1],c[2],P.a*k*(gnd?.45:1)]);
+    }else{
+      const sw=Math.sin(t*.02*(.5+r2)+r3*TAU)*(10+r2*22),rr=(.9+r2*2.1)*P.r;
+      A.push([1,X(x+sw+wind*8),Y(y),rr*s,0,0,0,c[0],c[1],c[2],P.a*k*.9]);
+    }
+  }
+  if(W0.sheets&&k>.25){
+    for(let i=0;i<4;i++){
+      const r1=h01(i,21,0xD457), r2=h01(i,22,0xD457);
+      const spd=(1.6+r1*3.2)*(1+k);
+      const x=((r2*3000+t*spd*sgn)%(W+900)+W+900)%(W+900)-450;
+      const y=H*(.15+r1*.6), hh=H*(.18+r2*.35);
+      A.push([7,X(x),Y(y-hh*.5),X(x+520),Y(y+hh*.5),0,0,c[0],c[1],c[2],(.10+r1*.12)*k]);
+    }
+  }
+  if(w.kind==="ash"&&k>.3){
+    for(let i=0;i<Math.round(12*k*G.opts.gfx.particles);i++){
+      const r1=h01(i,7,0xE12), r2=h01(i,8,0xE12);
+      const y=((r1*1400+t*1.1)%(H+60))-30;
+      const x=((r2*1700+t*.7*wind-camx*.1)%(W+120)+W+120)%(W+120)-60;
+      const gl=.4+.6*Math.abs(Math.sin(t*.05+i));
+      A.push([1,X(x),Y(y),(1.4+gl)*s,0,0,0,255,Math.round(120+80*gl),60,+(.5*gl*k).toFixed(2)]);
+    }
+  }
+  if(w.kind==="rain"&&k>.5){
+    const per=420,ph=(t%per)/per;
+    if(ph<.06){
+      const f=Math.pow(1-ph/.06,2);
+      A.push([0,X(0),Y(0),X(W),Y(H),0,0,200,225,255,.30*f*k]);
+      let lx=W*(((t/per)|0)%7)/7+W*.08,ly=0;
+      for(let q=0;q<7;q++){
+        const nx=lx+(h01(q,(t/per)|0,0x1177)-.5)*70,ny=ly+H*.09;
+        A.push([2,X(lx),Y(ly),X(nx),Y(ny),.9*s,0,226,240,255,.8*f]);lx=nx;ly=ny;
+      }
+    }
+  }
+  gpuShapes(pass,A,{blend:"over"});
+  return true;
+}
 function drawWeather(p,camx,camy,layer){
   if(layer==="far"){gpuWeatherFar(p,camx,camy);return;}   /* дальний план — на движке (19cc) */
   const w=weatherOf(p);
   if(!w.kind)return;
   const k=weatherPower(p);
   if(k<.04)return;
+  if(weatherGpu(p,camx,camy,layer,w,k))return;
   const W0=WEATHER[w.kind];
   const gp=G.opts.gfx.particles;
   const n=Math.round(W0.n*k*gp);

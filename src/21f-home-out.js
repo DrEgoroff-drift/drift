@@ -53,6 +53,7 @@ function homeSpotX(p,tr){
   return x;
 }
 const HOME_MAN=17;                                    /* тот же человек, что везде */
+let HOME_BAKING=null;                                     /* выпечка дома (21fa): якоря живого */
 const HOME_LAMP=[1,.76,.47];                          /* лампа накаливания: тот же тёплый, что окно */
 /* палитра дома: местный камень и дерево, но теплее — это жильё, а не порода */
 function homeOutPal(p){
@@ -75,6 +76,7 @@ function drawHomeOut(tr,camx,camy,p){
   const bx=homeSpotX(p,tr);if(bx==null)return;
   const sx=bx-camx;
   if(sx<-420||sx>W+420)return;
+  if(!HOME_BAKING&&homeOutGpu(tr,camx,camy,p,bx,sx))return;
   const H0=G.home,tier=H0.tier|0;
   const pal=homeOutPal(p);
   const gy=groundAt(tr,bx)+2-camy;   /* дом стоит на срезанной полке (см. ниже) */
@@ -164,8 +166,8 @@ function drawHomeOut(tr,camx,camy,p){
   /* оголовок: без него труба — просто кирпич, а с ним она труба */
   ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.25));
   ctx.fillRect(chX-1.5,chTop-2,chW+3,2.5);
-  if(typeof sdSmoke==="function")
-    sdSmoke(chX+chW*.5,chTop-3,wind,.7,3,9);
+  if(HOME_BAKING)HOME_BAKING.smoke=[chX+chW*.5-sx,chTop-3-gy];
+  else homeSmoke(chX+chW*.5,chTop-3,wind);
   /* окно: главный признак жилья — в нём свет */
   const ww=w*.26,wh=wallH*.30,wx=sx+w*plan.win,wy=gy-wallH*.70;
   sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
@@ -219,6 +221,7 @@ function drawHomeOut(tr,camx,camy,p){
   /* ── причал с маяком (ступень 8): мачта выше всего, огонь мигает ── */
   if(homeHas("dock")){
     const mx=sx+w*1.15, myy=gy;
+    if(HOME_BAKING)HOME_BAKING.dock=[mx-sx,myy-gy];else homeDock(mx,myy,M,pal);
     ctx.strokeStyle=sdRGB(sdMix(pal.metal,[0,0,0],.2));ctx.lineWidth=2.4;
     ctx.beginPath();ctx.moveTo(mx,myy);ctx.lineTo(mx,myy-M*4.4);ctx.stroke();
     ctx.lineWidth=1.2;
@@ -227,6 +230,46 @@ function drawHomeOut(tr,camx,camy,p){
       ctx.beginPath();ctx.moveTo(mx-4,yy+4);ctx.lineTo(mx+4,yy-1);ctx.stroke();
       ctx.beginPath();ctx.moveTo(mx+4,yy+4);ctx.lineTo(mx-4,yy-1);ctx.stroke();
     }
+  }
+  /* ── двор: поленница, бочка, верёвка — то же, чем живёт посёлок ── */
+  if(typeof sdWoodpile==="function")
+    sdWoodpile(sx+w*.62,gy,M*.7,M*.8,pal.wood,0x40EB);
+  /* ── бельё на верёвке (M245) ──
+     Первая настоящая ткань в игре: три полотнища на Верле (18d), подвешенные
+     к верёвке, которая сама провисает. Ветер один и тот же — тот, что качает
+     траву, растяжки мачты и трос шахты. Это и «одно движение» в кадре, и тот
+     самый след жизни, которого дому не хватало по пяти проходам: бельё вешает
+     человек, и по нему видно, что в доме живут. */
+  if(homeHas("living")){
+    /* место: чистый двор справа от дома, между стеной и мачтой — слева
+       верёвка ложилась на крышу гаража и читалась пятном */
+    const ax=sx+w*.58, ay=gy-M*2.25, dx=w*.62, dy=M*.30;
+    ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(ax+dx,ay+dy);ctx.lineTo(ax+dx,gy);ctx.stroke();
+    if(HOME_BAKING)HOME_BAKING.wash=[ax-sx,ay-gy,dx,dy];else homeWash(ax,ay,dx,dy,M,pal);
+  }
+  if(homeHas("shop")){                                /* мастерская — верстак во дворе */
+    const tx=sx-w*.95, tyy=gy;
+    ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.28));
+    ctx.fillRect(tx-M*.7,tyy-M*.7,M*1.4,M*.16);
+    ctx.fillRect(tx-M*.6,tyy-M*.55,M*.12,M*.55);
+    ctx.fillRect(tx+M*.48,tyy-M*.55,M*.12,M*.55);
+    ctx.fillStyle=sdRGB(pal.metal);
+    ctx.fillRect(tx-M*.2,tyy-M*.86,M*.36,M*.18);      /* тиски */
+  }
+  /* тропа к двери: тёмная утоптанная полоса — по ней видно, что сюда ходят */
+  ctx.fillStyle="rgba(0,0,0,.16)";
+  ctx.beginPath();ctx.ellipse(dX+dw*.5,gy+1,M*1.1,3,0,0,TAU);ctx.fill();
+  /* грядка (M204): ряд у стены, с той стороны, где не ходят к двери */
+  if(typeof greenDraw==="function")greenDraw(sx+w*.58,gy,M*2.6,p);
+}
+/* ── живое у дома: дым, растяжки и огонь маяка, бельё (M245) ──
+   В 2D зовутся из drawHomeOut на месте; с видеокартой (21fa) — из кадра поверх
+   выпечки, с приёмником фигур VSINK (08c): верёвка, ткань и дым идут фигурами */
+function homeSmoke(x,y,wind){
+  if(typeof sdSmoke==="function")sdSmoke(x,y,wind,.7,3,9);
+}
+function homeDock(mx,myy,M,pal){
     /* ── растяжки: мачта не палка (M245) ──
        Была вертикаль в два пикселя с тремя крестиками — «схема мачты». Две
        растяжки на Верле (18d) дают ей вес и ветер: они провисают и качаются
@@ -249,23 +292,12 @@ function drawHomeOut(tr,camx,camy,p){
     }
     /* огонь маяка дышит, а не мигает: синус, не ступенька; ореол — светом (11va) */
     const bl=(Math.sin(G.t*.06)+1)*.5;
-    ctx.fillStyle="rgba(255,150,90,"+(.35+bl*.6).toFixed(2)+")";
-    ctx.beginPath();ctx.arc(mx,myy-M*4.6,3.2,0,TAU);ctx.fill();
+    const bc="rgba(255,150,90,"+(.35+bl*.6).toFixed(2)+")";
+    if(VSINK)vsinkDisc(mx,myy-M*4.6,3.2,bc,.6);
+    else{ctx.fillStyle=bc;ctx.beginPath();ctx.arc(mx,myy-M*4.6,3.2,0,TAU);ctx.fill();}
     placeLamp(mx,myy-M*4.6,M*5,[1,.56,.32],.35+.65*bl,M*.8);
-  }
-  /* ── двор: поленница, бочка, верёвка — то же, чем живёт посёлок ── */
-  if(typeof sdWoodpile==="function")
-    sdWoodpile(sx+w*.62,gy,M*.7,M*.8,pal.wood,0x40EB);
-  /* ── бельё на верёвке (M245) ──
-     Первая настоящая ткань в игре: три полотнища на Верле (18d), подвешенные
-     к верёвке, которая сама провисает. Ветер один и тот же — тот, что качает
-     траву, растяжки мачты и трос шахты. Это и «одно движение» в кадре, и тот
-     самый след жизни, которого дому не хватало по пяти проходам: бельё вешает
-     человек, и по нему видно, что в доме живут. */
-  if(homeHas("living")){
-    /* место: чистый двор справа от дома, между стеной и мачтой — слева
-       верёвка ложилась на крышу гаража и читалась пятном */
-    const ax=sx+w*.58, ay=gy-M*2.25, dx=w*.62, dy=M*.30;
+}
+function homeWash(ax,ay,dx,dy,M,pal){
     if(!G.surf.vLine){
       G.surf.vLine=vRope(9,0,0,Math.hypot(dx,dy)/8*.97,
         {grav:.05,wind:.5,pinLast:true,dx:dx/8,dy:dy/8});
@@ -277,8 +309,6 @@ function drawHomeOut(tr,camx,camy,p){
     const L=G.surf.vLine;
     L.p[0].x=0;L.p[0].y=0;L.p[8].x=dx;L.p[8].y=dy;
     vStep(L,1);
-    ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(ax+dx,ay+dy);ctx.lineTo(ax+dx,gy);ctx.stroke();
     vDrawRope(L,ax,ay,"rgba(226,220,200,.45)",1);
     const WCOL=[[196,202,212],[186,158,124]];
     /* каждое полотнище занимает свою пятую часть верёвки и висит на ней
@@ -292,21 +322,6 @@ function drawHomeOut(tr,camx,camy,p){
       vStep(C,1);
       vDrawCloth(C,ax,ay,WCOL[i],.96);
     });
-  }
-  if(homeHas("shop")){                                /* мастерская — верстак во дворе */
-    const tx=sx-w*.95, tyy=gy;
-    ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.28));
-    ctx.fillRect(tx-M*.7,tyy-M*.7,M*1.4,M*.16);
-    ctx.fillRect(tx-M*.6,tyy-M*.55,M*.12,M*.55);
-    ctx.fillRect(tx+M*.48,tyy-M*.55,M*.12,M*.55);
-    ctx.fillStyle=sdRGB(pal.metal);
-    ctx.fillRect(tx-M*.2,tyy-M*.86,M*.36,M*.18);      /* тиски */
-  }
-  /* тропа к двери: тёмная утоптанная полоса — по ней видно, что сюда ходят */
-  ctx.fillStyle="rgba(0,0,0,.16)";
-  ctx.beginPath();ctx.ellipse(dX+dw*.5,gy+1,M*1.1,3,0,0,TAU);ctx.fill();
-  /* грядка (M204): ряд у стены, с той стороны, где не ходят к двери */
-  if(typeof greenDraw==="function")greenDraw(sx+w*.58,gy,M*2.6,p);
 }
 /* дверь дома в мировых координатах: по ней считают, дошёл ли игрок */
 function homeDoorX(tr,p){

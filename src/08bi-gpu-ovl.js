@@ -133,13 +133,28 @@ function ovPush(Q,x0,y0,x1,y1,c,m,l,tx,ty,t){
   if(t)Q.push(t[0],t[1],t[2],t[3],t[4],t[5],t[6]||0,t[7]||0);else Q.push(0,0,0,0,0,0,0,0);
 }
 const OVL_RUN=/[0-9]+|[^0-9]+/g;
+/* прогоны строки; маска прогона — одна картинка атласа, и шире его стороны её не положить: длинная
+   подсказка дороги крупным кеглем на планшете (17 px × DPR 2 = 1148 px) роняла кадр. Такой прогон
+   режется по словам (слово длиннее — по буквам); k — пикселей устройства на пиксель шрифта */
+function ovRuns(st,text,k){
+  const R=text.match(OVL_RUN)||[],lim=OVL.A.S*.9/k,out=[],wd=s=>GC_GLYPHS.measure(st,s).width;
+  for(const s of R){
+    if(s.charCodeAt(0)<58&&s.charCodeAt(0)>47||wd(s)<=lim){out.push(s);continue;}
+    let cur="";
+    for(const w of s.match(/\S+\s*|\s+/g)){
+      if(cur&&wd(cur+w)>lim){out.push(cur);cur="";}
+      if(wd(w)<=lim){cur+=w;continue;}
+      for(const ch of w){if(cur&&wd(cur+ch)>lim){out.push(cur);cur="";}cur+=ch;}}
+    if(cur)out.push(cur);}
+  return out;
+}
 /* строка в очередь Q: (x,y) — якорь в пикселях CSS по align и base, sc — масштаб шрифта (фишка — U).
    Возвращает рамку в CSS: для проверок наложения */
 function ovText(Q,x,y,text,font,col,align,base,al,sc,vert){
   const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:"left"}),c=gcColor(col),a=c[3]*al;
   if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1]*sc,main:true});}
   const pm=[c[0]*a,c[1]*a,c[2]*a,a];
-  const d0=GC_GLYPHS.measure(st,"0"),adv=d0.width*sc,runs=text.match(OVL_RUN)||[];
+  const d0=GC_GLYPHS.measure(st,"0"),adv=d0.width*sc,runs=ovRuns(st,text,nd*sc);
   let tw=0,up=0,dn=0;
   for(const s of runs){const dg=s.charCodeAt(0)<58&&s.charCodeAt(0)>47,m=dg?d0:GC_GLYPHS.measure(st,s);
     tw+=dg?adv*s.length:m.width*sc;up=Math.max(up,m.actualBoundingBoxAscent*sc);dn=Math.max(dn,m.actualBoundingBoxDescent*sc);}
@@ -161,6 +176,17 @@ function ovText(Q,x,y,text,font,col,align,base,al,sc,vert){
     else{put(s,cx);cx+=GC_GLYPHS.measure(st,s).width*sc;}}
   if(vert)return {x0:x-up,x1:x+dn,y0:x0-tw,y1:x0};
   return {x0,x1:x0+tw,y0:y-up,y1:y+dn};
+}
+/* строка под углом ang (рад) одной маской: как 2D под translate(x,y)+rotate(ang) с fillText(text,0,0).
+   Угол — шагом 1/256 оборота, фаза — ¼ пикселя устройства: ключей атласа конечное число (рукава карты) */
+function ovTextRot(Q,x,y,text,font,col,align,base,al,ang){
+  const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:align}),c=gcColor(col),a=c[3]*al;
+  if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1],main:true});}
+  const q=Math.round(ang/TAU*256)/256*TAU,co=Math.cos(q)*nd,si=Math.sin(q)*nd;
+  const X=x*nd,Y=y*nd,ix=Math.floor(X),iy=Math.floor(Y),fx=Math.round((X-ix)*4)/4,fy=Math.round((Y-iy)*4)/4;
+  const e=ovAtlas("rot|"+font+"|"+base+"|"+align+"|"+q.toFixed(4)+"|"+fx+"|"+fy+"|"+text,
+    ()=>GC_GLYPHS.raster(st,text,[co,si,-si,co],fx,fy,null,undefined,"#fff"));
+  ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,[c[0]*a,c[1]*a,c[2]*a,a],1,e.l,e.x,e.y,null);
 }
 /* подпись мира k (имя станции, планеты, борта): y — как у fillText при нынешнем ctx.textBaseline.
    Без видеокарты — прямо на ctx, как раньше */

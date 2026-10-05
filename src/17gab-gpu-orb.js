@@ -373,8 +373,38 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
   return acc;
 }`;
 const gorLin=c=>Math.pow(Math.max(0,c)/255,2.2);
+/* ── один конвейер на семью миров ──
+   Все двенадцать миров в одной `surf` компилировались 3.1–3.5 с (Blackwell, D3D12): прогрев
+   конвейеров кончался позже всех и ворота старта ждали его одного. Константа вместо `k` не
+   спасает (2 с — ветки выбрасываются поздно), вырезанная из текста — спасает: семья стоит
+   0.2–1.2 с, и строится она асинхронно, когда впервые понадобилась. Пока не готова — рисует
+   запасной шар 17ga: подмена на полсекунды лучше замершего кадра. Семьи — по веткам `surf`:
+   0 камень+металл, 1 кристалл, 2 руины, 3 газ, 4 джунгли+океан+земля, 5 лёд, 6 токсик,
+   7 вулкан, 8 пустыня */
+const GOR_FAM=[0,1,2,3,4,5,6,4,7,4,0,8],GOR_CODE=[];
+function gorCode(f){
+  if(GOR_CODE[f])return GOR_CODE[f];
+  const s=GOR_WGSL,a=s.indexOf("fn surf("),b=s.indexOf("fn rx("),body=s.slice(a,b);
+  const h=body.indexOf("  if (k == 0 || k == 10) {"),t=body.lastIndexOf("  return o;");
+  const parts=body.slice(h,t).split(/\n  \} else (?:if \([^\n]*\) )?\{/);
+  /* ветки разошлись с таблицей семей — честнее целый шар, чем чужая ветка */
+  if(h<0||t<0||parts.length!==9)return GOR_CODE[f]=s;
+  parts[0]=parts[0].replace(/^  if \([^\n]*\) \{/,"");
+  parts[8]=parts[8].replace(/\n  \}\s*$/,"");
+  return GOR_CODE[f]=s.slice(0,a)+body.slice(0,h)+"  {"+parts[f]+"\n  }\n"+body.slice(t)+s.slice(b);
+}
+/* конвейер семьи: прогретый (08b1) — сразу; иначе сборка в фоне и null, пока не собран */
+function gorPipe(f){
+  const key="pipe:gor"+f+"|over",code=gorCode(f),w=GPU_PIPES.warm.get(key);GPU_PIPES.used.add(key);
+  if(GPU.lay["gor"+f+"|over"]||(w&&w.p))return gpuPipe("gor"+f,code,"over");
+  if(!w){const d=gpuPipesDev(),e={p:null,code};GPU_PIPES.warm.set(key,e);
+    d.createRenderPipelineAsync(gpuPipeDesc(code,"over")).then(p=>{if(GPU_PIPES.dev===d)e.p=p;},
+      ()=>{GPU_PIPES.warm.delete(key);GOR_CODE[f]=null;});}
+  return null;
+}
 /* одно тело: k — мир (GOR.K), pal — палитра 0..255, air — цвет воздуха, th — его толщина */
 function gorBody(pass,key,x,y,r,o){
+  const P=gorPipe(GOR_FAM[o.k]|0);if(!P)return false;
   const a=GOR.A;a.fill(0);
   const l=Math.hypot(o.sx,o.sy)||1,kx=Math.sqrt(1-GOR_LZ*GOR_LZ)/l;
   a[0]=x;a[1]=y;a[2]=r;a[3]=o.k;
@@ -392,8 +422,8 @@ function gorBody(pass,key,x,y,r,o){
   const ub=gpuBuf("gpl.u",32,U.UNIFORM|U.COPY_DST);
   const u=GOR.U;u[0]=GPU.bw;u[1]=GPU.bh;u[2]=W;u[3]=H;u[4]=DPR;u[5]=G.t||0;d.queue.writeBuffer(ub,0,u);
   const sb=gpuBuf("gor.b."+key,1024,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(sb,0,a);
-  const P=gpuPipe("gor",GOR_WGSL,"over");
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gor."+key,P,[ub,sb]));pass.draw(6);
+  return true;
 }
 /* планета системы: false — мир не из двенадцати, пусть рисует 17ga */
 function gpuOrb(p,x,y,r,lights){
@@ -407,14 +437,13 @@ function gpuOrb(p,x,y,r,lights){
   /* огни построек — те же точки, что у 17ga; сушу под ними проверяет шейдер своими материками */
   if(lights){const C=GOR.C||(GOR.C=new Float32Array(256));C.fill(0);
     o.cities=gplCities({sx,sy,lights,wet:0,seed:o.seed,T:o.turn},C);o.cpts=C;}
-  gorBody(pass,"p"+(p.idx|0),x,y,r,o);
-  return true;
+  return gorBody(pass,"p"+(p.idx|0),x,y,r,o);
 }
 /* луна (M701): тот же шар, каменистый, серый по прежнему тону луны */
 const GOR_MOON=[[30,32,36],[58,62,68],[92,98,106],[128,136,146],[160,168,178],[196,204,212]];
 function gpuOrbMoon(m,key,x,y,r){
-  const pass=gpuScene();if(!pass)return;
+  const pass=gpuScene();if(!pass)return true;
   const dx=-(m.x||0),dy=-(m.y||0),dl=Math.hypot(dx,dy)||1;
-  gorBody(pass,"m"+key,x,y,Math.max(1.2,r),{k:0,sx:dx/dl,sy:dy/dl,turn:0,air:[0,0,0],th:0,sun:gplSun(),
+  return gorBody(pass,"m"+key,x,y,Math.max(1.2,r),{k:0,sx:dx/dl,sy:dy/dl,turn:0,air:[0,0,0],th:0,sun:gplSun(),
     seed:(m.seed||key.length*13)%97,pal:GOR_MOON,ring:null,cities:0});
 }

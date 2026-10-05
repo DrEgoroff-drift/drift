@@ -445,7 +445,7 @@ function drawBase(){
   {
     const {sx0,sw,y0}=baseShaftBox(B);
     if(X(sx0)>-BCELL_W&&X(sx0)<W+BCELL_W){
-      ctx.font="7px ui-monospace,monospace";ctx.textAlign="right";
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="right";
       for(let r=0;r<baseRows(B);r++){
         ctx.fillStyle="rgba(190,214,232,"+((r===(S.row|0)?.5:.24)+lit*.16).toFixed(2)+")";
         ctx.fillText(String(r+1),X(sx0+sw-11),Y(BASE_OY+r*BCELL_H+11));
@@ -496,7 +496,8 @@ function drawBase(){
   }
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
-  drawAstronaut({phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false});
+  {const ao={phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false};
+    if(!lifeAstroAt(ao))drawAstronaut(ao);}   /* двойник 20fa (G15) */
   ctx.restore();
   /* место под застройку: не рамка на каждой клетке, а метка только на выбранной.
      На снимке заглавной курсора нет: там показывают базу, а не выбор (M233) */
@@ -534,7 +535,11 @@ function drawBase(){
     ctx.strokeRect(sx+10,sy+10,BCELL_W-20,BCELL_H-20);
     ctx.setLineDash([]);
     ctx.fillStyle="rgba(127,230,216,.5)";ctx.font=uiFont(9);ctx.textAlign="center";
-    ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3*uiK());
+    /* подпись растёт с бортом (UIK), клетка — нет: на 1920 строка вылезала из пунктира (зрение 06.10.2026).
+       Не влезла — две строки */
+    const lx=sx+BCELL_W/2,ly=sy+BCELL_H/2+3*uiK();
+    if(ctx.measureText("МЕСТО ПОД ЗАСТРОЙКУ").width<=BCELL_W-28)ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",lx,ly);
+    else{const lh=11*uiK();ctx.fillText("МЕСТО ПОД",lx,ly-lh/2);ctx.fillText("ЗАСТРОЙКУ",lx,ly+lh/2);}
   }
   /* ── патрубки соседства (M404, §7) ──
      Девять правил были числами в подсказке; здесь они становятся тем, что

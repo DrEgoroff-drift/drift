@@ -696,3 +696,62 @@ TEST_SUITES.push(()=>suite("инструменты: руки и глаза от�
   ok(b2&&!b2.ok&&/нет/.test(b2.why),"незнакомая цель — тоже словом");
   resetWorld();
 }));
+
+/* ── помощники наборов, что ушли при обрезке до ядра (06.10.2026): ими пользуются оставшиеся ── */
+function fuzzRich(){T.give("rich");}   /* тело — в инструментах (90a-tools, M442) */
+const KEY_MODES={system:1,dock:1,barge:1,map:1,landing:1,surface:1,dig:1,cave:1,belt:1,
+  scoop:1,base:1,raid:1,homein:1,winter:1,spa:1,wanderer:1,none:1};
+function keyStateOK(){
+  const need={surface:"surf",landing:"land",dig:"dig",cave:"cave",belt:"belt",scoop:"scoop",
+    base:"base",raid:"raid",homein:"hin",winter:"win",spa:"spa",wanderer:"wan"}[G.mode];
+  if(!KEY_MODES[G.mode])return "неизвестный режим "+G.mode;
+  if(need&&!G[need])return "режим "+G.mode+" без состояния G."+need;
+  return "";
+}
+function mkMerc(seed,spec,shipId){
+  const c=genMerc(seed,[spec]);
+  G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},
+    tMs:now(),paidMs:now()}));
+  const m=G.crew[G.crew.length-1];
+  if(shipId){G.owned[shipId]=true;crewAssignShip(m,shipId);
+    crewOrder(m,spec==="fight"?"hunt":spec)||crewOrder(m,spec==="fight"?"hunt":spec);}
+  return m;
+}
+function prState(){return T.purse();}
+function prSpoke(fn){return T.spoke(fn);}
+function prButtons(sel,cap,onlyBtn){return T.controls(sel,{text:true,btn:!!onlyBtn,cap:cap||30});}
+function plWorlds(n) {
+  const out = [];
+  for (let r = 0; r < 12 && out.length < n; r++)
+    for (let x = -r; x <= r && out.length < n; x++)
+      for (let y = -r; y <= r && out.length < n; y++) {
+        if (Math.max(Math.abs(x), Math.abs(y)) !== r) continue;
+        if (!starAt(x, y)) continue;
+        const s = getSystem(x, y);
+        for (const p of s.planets || []) if (p.type !== "gas") { out.push({ s, p }); break; }
+      }
+  return out;
+}
+function plLand(s, p) {
+  G.sx = s.sx; G.sy = s.sy; G.sys = s; G.ap = null; G.orbit = null;
+  const tr = genTerrain(p);
+  G.land = { p, tr, x: tr.padX, y: groundAt(tr, tr.padX) };
+  enterSurface();
+  return G.surf;
+}
+const PLACE_LIFT = 10;
+function pcTestPlanet(){
+  for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
+    if(!starAt(dx,dy))continue;
+    const s=getSystem(dx,dy);
+    for(const p of s.planets)if(p.type!=="gas")return {s,p};
+  }
+  return null;
+}
+/* снимок собирается руками: тесты не летают, а художник и не должен знать,
+   откуда снимок взялся — в этом весь смысл отдельного художника */
+function pcTestSnap(F,over){
+  const tr=genTerrain(F.p,null);
+  return Object.assign({v:POST_V,m:"s",sx:F.s.sx,sy:F.s.sy,pi:F.p.idx,mi:-1,
+    lon:+tr.lon.toFixed(3),cx:Math.round(tr.W*.5),t:CEL_DAY*7+123,ver:VER},over||{});
+}

@@ -92,7 +92,7 @@ function stapelSheet(o,cw,ch,st){
   };
   const marks=c=>{
     /* эмблема хозяйки и номер стапеля */
-    const oldc=ctx;ctx=c;try{powerEmblem(by,cw-22,19,10);}finally{ctx=oldc;}
+    const oldc=ctx;ctx=c;try{mp2d(()=>powerEmblem(by,cw-22,19,10));}finally{ctx=oldc;}
     c.textAlign="right";c.textBaseline="middle";c.fillStyle=P.col||ink;c.font="10px ui-monospace,monospace";
     c.fillText(makerRu(by).toUpperCase(),cw-38,15);
     c.fillStyle="rgba(226,234,244,.5)";c.fillText("стапель № "+(1+((hashi(G.sx|0,G.sy|0,0x57A9)>>>0)%9)),cw-38,27);
