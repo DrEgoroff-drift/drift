@@ -11869,7 +11869,7 @@ function gpuCanvasTex(cv,ver){
 /* в кадре живут десятки печёных холстов (дом, вывеска, Чебурек, челноки, по два слоя):
    восемь мест перегружали их по кругу каждый кадр. Печи по кеглю (bakeKeep: неон, доски,
    бегущая строка — до 30 мелких холстов) держатся здесь же, иначе проезд зума их вытеснит */
-const GPU_CVTEX_CAP=64;
+const GPU_CVTEX_CAP=128;   /* G15: формы рельефа и постройки — по холсту на штуку */
 /* уровень детализации печёного холста: gpuImage берёт нулевой уровень, и сильно сжатый
    холст мерцает (окно дома — в пиксель). Уровни — половинки, печёт лениво; берётся тот,
    что не мельче ширины на экране devW (пиксели устройства). ver — как у gpuCanvasTex */
@@ -64598,11 +64598,22 @@ function drawGround(tr,camx,camy,fill,line,pal){
     const lumFull=Math.max(1,lum3([0,1,2].map(q=>P0[q]*(k*amb[q]/255+df*sun[q]/255))));
     /* падающая тень (P5, 19c1): что стоит между точкой и светилом */
     const CM=castMapFor(tr,camx);
+    /* наклон и тень гребня — по пяти отрезкам, а не по одному: лента уходит на
+       66–99 px вглубь, и один крутой отрезок в узкой выемке вытягивал под собой
+       отвесный тёмный столб — на кадре он читался швом в грунте */
+    const SMW=[1,2,3,2,1];
+    const slopeAt=j=>{j=clamp(j,0,tr.N-2);return clamp((tr.h[j+1]-tr.h[j])/tr.step,-2.5,2.5);};
+    const shAt=(j,i)=>(CM&&(j<CM.i0||j>=CM.i0+CM.a.length))?castAt(CM,i):castAt(CM,j);
+    /* низ ленты — по сглаженной кромке (±5 отрезков): верх идёт по каждому зубцу,
+       а низ зубец не повторяет, иначе выемка рисовала под собой клин вглубь */
+    const hs=j=>{let a=0,w=0;for(let q=-5;q<=5;q++){const m=6-Math.abs(q);a+=m*tr.h[clamp(j+q,0,tr.N-1)];w+=m;}return a/w-camy;};
     for(let i=i0;i<i1;i++){
       const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
       if(x1<-4||x0>W+4)continue;
       const y0=tr.h[i]-camy,y1=tr.h[i+1]-camy;
-      const slope=clamp((tr.h[i+1]-tr.h[i])/tr.step,-2.5,2.5);
+      let slope=0,sh=0;
+      for(let q=0;q<5;q++){slope+=SMW[q]*slopeAt(i+q-2);sh+=SMW[q]*shAt(i+q-2,i);}
+      slope/=9;sh/=9;
       /* ── свет склона тоже стал светлотой (гризайль) ──
          Это было ЕДИНСТВЕННОЕ место разреза, где свет считался по-настоящему
          (`litRGB`), и клалось оно поверх материала одной лентой. Теперь то же
@@ -64610,12 +64621,12 @@ function drawGround(tr,camx,camy,fill,line,pal){
          всему разрезу, а не ленте. */
       /* в тени прямого света нет, остаётся небо. `litRGB` читает `df||.78`,
          поэтому ноль ему отдавать нельзя — отдаём эпсилон */
-      const sh=castAt(CM,i);
       const c=litRGB(P0,slope,null,sun,amb,k,sh>0?Math.max(1e-3,df*(1-sh)):df);
       ctx.fillStyle=(pal&&tr.mat)?greyA(255*clamp(lum3(c)/lumFull,0,1),.42)
         :"rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
       ctx.beginPath();
-      ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
+      const b0=hs(i),b1=hs(i+1);
+      ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,Math.max(y1+8,b1+stripD));ctx.lineTo(x0,Math.max(y0+8,b0+stripD));
       ctx.closePath();ctx.fill();
       /* ── маска тени (P5) ──
          Погашенная лента склона — сорок процентов серого на шестидесяти px —
@@ -64624,13 +64635,13 @@ function drawGround(tr,camx,camy,fill,line,pal){
          тень гребня на склон за ним. Серым, в проход формы: цвет неба ей даст
          лессировка. Печётся в ломоть, кадру даром. */
       if(sh>.02){
-        const d2=stripD*1.5, ya=Math.min(y0,y1);
-        const dgr=ctx.createLinearGradient(0,ya,0,Math.max(y0,y1)+d2);
+        const d2=stripD*1.5, ya=Math.min(b0,b1);
+        const dgr=ctx.createLinearGradient(0,ya,0,Math.max(b0,b1)+d2);
         dgr.addColorStop(0,"rgba(0,0,0,"+(.55*sh).toFixed(3)+")");
         dgr.addColorStop(1,"rgba(0,0,0,0)");
         ctx.fillStyle=dgr;
         ctx.beginPath();
-        ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+d2);ctx.lineTo(x0,y0+d2);
+        ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,Math.max(y1+8,b1+d2));ctx.lineTo(x0,Math.max(y0+8,b0+d2));
         ctx.closePath();ctx.fill();
       }
     }
@@ -79220,6 +79231,8 @@ function drawDeco(tr,camx,camy,p){
     vis.push({d,x,y,w:d.h*.42*d.sc,hgt:d.h});
   }
   if(!vis.length)return;
+  /* с видеокартой — выпечкой в слой стоящего (21bc); ниже — прежний 2D */
+  if(decoGpu(tr,camx,camy,p,vis))return;
   /* тени — ДО клипа: они лежат на грунте, а клип как раз всё, что ниже линии
      грунта, и срезает (та же причина и тот же порядок, что у построек) */
   const live=(typeof castLive==="function");
@@ -79252,18 +79265,7 @@ function drawDeco(tr,camx,camy,p){
     if(d.flip)ctx.scale(-1,1);
     const A={d,pal,p,tr,w,hgt,ox:camx-x,oy:camy-y};
     DECO_LIT=1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*(q.sh||0);   /* в тени гребня (M434) */
-    try{
-      const fn=DECO_FN[d.k];            // семьи биомов (21bb-deco-biomes, M352) — по таблице
-      if(fn)fn(A);
-      else if(d.k==="druse")decoDruse(A);
-      else if(d.k==="shard")decoShard(A);
-      else if(d.k==="slab")decoSlab(A);
-      else if(d.k==="truss")decoTruss(A);
-      else if(d.k==="wall")decoWall(A);
-      else if(d.k==="column")decoColumn(A);
-      else if(d.k==="canopy")decoCanopy(A);
-      else if(d.k==="frond")decoFrond(A);
-    }finally{DECO_LIT=1;}
+    try{decoPaint(A);}finally{DECO_LIT=1;}
     ctx.restore();
   }
   ctx.restore();
@@ -81410,6 +81412,86 @@ DECO_KINDS.push(
   {k:"twincanopy",on:"jungle",  w:.8, h:200}
 );
 
+/* ══════════════ формы рельефа на видеокарте (G15) ══════════════
+   Тело формы печётся раз на свет — день, сторона звезды, доля тени гребня — с ветром
+   и часами на нуле, обрезается по нарисованному и кладётся в слой стоящего (21e2):
+   оттуда падающая тень и свет мира, как у построек. Ветер гнёт форму от подножия:
+   выпечка ложится полосами, верхние уходят дальше нижних. Кроны — поворотом всей
+   формы (так их качал 2D), деревья и вайи — изгибом, остальное стоит одной полосой. */
+const DECO_BK=new WeakMap();
+const DECO_ROT={canopy:1,crownround:1,twincanopy:1};
+const DECO_BEND={frond:1,drytree:1,podtree:1,shoretree:1,lavatree:1};
+/* одна форма в ctx, начало в подножии — общий путь 2D и выпечки */
+function decoPaint(A){
+  const d=A.d,fn=DECO_FN[d.k];            // семьи биомов (21bb-deco-biomes, M352) — по таблице
+  if(fn)fn(A);
+  else if(d.k==="druse")decoDruse(A);
+  else if(d.k==="shard")decoShard(A);
+  else if(d.k==="slab")decoSlab(A);
+  else if(d.k==="truss")decoTruss(A);
+  else if(d.k==="wall")decoWall(A);
+  else if(d.k==="column")decoColumn(A);
+  else if(d.k==="canopy")decoCanopy(A);
+  else if(d.k==="frond")decoFrond(A);
+}
+/* холст, обрезанный по нарисованному: выпечка с запасом на любую форму весила бы
+   мегабайты на штуку. Ответ — тесный холст и его середина относительно подножия */
+function bakeTrim(big,hw,top){
+  const dk=DPR*SCK,bw=big.width,bh=big.height,px=big.getContext("2d").getImageData(0,0,bw,bh).data;
+  let x0=bw,y0=bh,x1=-1,y1=-1;
+  for(let y=0;y<bh;y++){const r=y*bw*4;
+    for(let x=0;x<bw;x++)if(px[r+x*4+3]>2){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}}
+  if(x1<0)return null;
+  x0=Math.max(0,x0-1);y0=Math.max(0,y0-1);x1=Math.min(bw-1,x1+1);y1=Math.min(bh-1,y1+1);
+  const cw=x1-x0+1,ch=y1-y0+1,cn=document.createElement("canvas");cn.width=cw;cn.height=ch;
+  cn.getContext("2d").drawImage(big,x0,y0,cw,ch,0,0,cw,ch);
+  return {cn,w:cw/dk,h:ch/dk,cx:(x0+cw/2)/dk-hw,cy:(y0+ch/2)/dk-top};
+}
+function decoBake(d,tr,p,s){
+  const key=p.seed+"|"+DPR+"|"+SCK+"|d"+dayKq(p)+"|a"+sunAzQ(p)+"|s"+s+"|"+(tr.mat?1:0);
+  const o=DECO_BK.get(d);if(o&&o.key===key)return o.B;
+  const hgt=d.h,hw=Math.ceil(hgt*.95+30),top=Math.ceil(hgt*2.7+24),bot=14;
+  const gy=groundAt(tr,d.x),w=d.h*.42*d.sc,big=mkCanvas(hw*2,top+bot),t0=G.t,w0=WIND;
+  withCtx(big,hw*2,top+bot,0,0,g=>{
+    g.translate(hw,top);
+    groundClip(g,tr,d.x,gy,hw,top,10);    /* форма стоит НА земле; запас 10 px — подножию */
+    G.t=0;WIND=0;POI_SEED=d.seed;POI_MAT=null;
+    DECO_LIT=1-((typeof CAST_LIVE==="number")?CAST_LIVE:.5)*s;
+    try{if(d.flip)g.scale(-1,1);decoPaint({d,pal:p.T.pal,p,tr,w,hgt,ox:d.x,oy:gy});}
+    finally{G.t=t0;WIND=w0;DECO_LIT=1;}
+  });
+  const B=bakeTrim(big,hw,top);
+  DECO_BK.set(d,{key,B});return B;
+}
+/* насколько ушёл верх формы от ветра, px в мире: та же формула, что качала крону */
+function decoSway(d){
+  if(!DECO_ROT[d.k]&&!DECO_BEND[d.k])return 0;
+  const a=WIND*.02*(.7+.3*Math.sin(G.t*.02+d.seed%97))*d.h*(DECO_BEND[d.k]?1.2:1);
+  return d.flip&&DECO_ROT[d.k]?-a:a;
+}
+function decoGpu(tr,camx,camy,p,vis){
+  if(typeof GPU==="undefined"||!GPU.ok||!GPU.on||!GPU.enc||typeof SUN_DIR!=="object")return false;
+  if(!GPU.overPass&&!standPass())return false;
+  const o=lifeHere(0,0),K=o.s,live=(typeof castLive==="function"),sh=[],R=[];
+  for(const q of vis){
+    const s=live?castLive(tr,q.d.x):0;
+    /* контактная тень — от прямого света: в падающей тени её нечем отбросить */
+    if(s<=.97)sh.push(poiShadowRect(q.x-q.w*.45,q.y+2,Math.max(6,q.w*1.5),Math.max(2.6,q.hgt*.055),.72*(1-s),o));
+    const B=decoBake(q.d,tr,p,Math.round(s*8)/8);if(!B)continue;
+    const sw=decoSway(q.d),n=sw&&Math.abs(sw)>.3?8:1,lin=!!DECO_ROT[q.d.k],y0=B.cy-B.h/2,L=[];
+    for(let j=0;j<n;j++){
+      const v0=j/n,v1=(j+1)/n,ym=y0+(v0+v1)/2*B.h,u=clamp(-ym/q.hgt,0,1.4),dx=sw*(lin?u:u*u);
+      L.push({x:o.x+(q.x+B.cx+dx)*K,y:o.y+(q.y+ym)*K,w:B.w*K,h:B.h/n*K,v0,v1});
+    }
+    R.push([B.cn,L]);
+  }
+  standAdd((pass,bl,layer)=>{
+    if(!layer&&sh.length)gpuImage(pass,poiShadowTex(),sh);
+    for(const [cn,L] of R)gpuImage(pass,cn,L,{blend:bl});
+  });
+  return true;
+}
+
 /* ══════════════ ваша база видна с земли ══════════════ */
 /* База существовала строчкой в меню: чтобы понять, что она у вас есть, нужно
    было зайти в раздел. Сели на планету, где стоит ваша база, — на горизонте
@@ -82720,7 +82802,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let wx=p.x+V[0].x;let fi=wx/st;
   if(fi<0.||fi>n-1.){return vec4f(0.);}
   let i=i32(floor(fi));let f=fi-floor(fi);
-  let h0=sgH(i);let h1=sgH(i+1);let hm=sgH(i-1);let hp=sgH(i+2);
+  let h0=sgH(i);let h1=sgH(i+1);
   let ey=mix(h0,h1,f)-V[0].y;let s=(h1-h0)/st;
   let px=fu.res.z/fu.res.x;
   let dd=p.y-ey;
@@ -82736,14 +82818,17 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let deep=exp(-max(dd,0.)/190.);
   var m=1.+clamp(sh,-.6,.6)*.30*str*(.3+.7*day)*deep;
   /* выпуклость профиля: гребень ловит свет, ложбина держит тень */
-  let cv=mix((hm+h1-2.*h0),(h0+hp-2.*h1),f)/st;
+  /* по шести отрезкам, не по одному: узкая выемка давала под собой отвесный столб тени */
+  let c0=sgH(i-3)+sgH(i+3)-2.*h0;let c1=sgH(i-2)+sgH(i+4)-2.*h1;
+  let cv=mix(c0,c1,f)/(9.*st);
   m=m*(1.+clamp(cv,-1.,1.)*.20*exp(-max(dd,0.)/36.)*(.4+.6*day));
   /* зерно в пиксель, в координатах мира */
   m=m*(1.+(sgk(floor(w/max(px,.5)))-.5)*.07);
   /* тёплый ключ и холодная тень: верхняя кожа склона, повёрнутого к звезде, берёт
      цвет звезды; тело разреза с глубиной уходит в холод неба (закон «ключ тёплый,
      заполнение холодное») */
-  let nl=sqrt(1.+s*s);let lit=clamp(dot(vec2f(-s,-1.)/nl,sun),0.,1.);
+  let sw=(sgH(i+3)-sgH(i-2))/(5.*st);   /* наклон для света — тоже шире отрезка */
+  let nl=sqrt(1.+sw*sw);let lit=clamp(dot(vec2f(-sw,-1.)/nl,sun),0.,1.);
   let band=exp(-max(dd,0.)/26.)*pow(lit,1.2)*day;
   var mc=vec3f(m)*(vec3f(1.)+V[3].rgb*band*.42);
   let cold=smoothstep(14.,240.,dd)*.34;
@@ -82907,7 +82992,9 @@ function surfCastGpu(tr,p,camx,camy){
   F[0]=camx;F[1]=camy;F[4]=tr.step;F[5]=tr.N;F[6]=HT.mid;
   /* звезда низко — тень длинная; сдвиг от звезды, сплющенная полоса земли */
   const sx=SUN_DIR.x,sy=Math.min(-.12,SUN_DIR.y);
-  F[8]=clamp(-sx/-sy,-4.5,4.5)*.9;F[9]=.45;
+  /* глубина полосы — тоже от высоты звезды: в полдень тень короткая во все стороны,
+     иначе ствол под звездой в зените тянул отвесный столб сквозь срез грунта */
+  F[8]=clamp(-sx/-sy,-4.5,4.5)*.9;F[9]=clamp(.07+.38*Math.abs(sx)/-sy,.07,.45);
   const lu=c=>Math.max(1,.3*c[0]+.59*c[1]+.11*c[2]),sc=starRGB();
   const vac=p.T.atm==="отсутствует";
   F[10]=clamp(day*1.4,0,1)*(vac?.78:.62)*clamp(lu(sc)/150,0,1);F[11]=260;

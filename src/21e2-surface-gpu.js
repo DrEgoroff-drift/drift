@@ -142,7 +142,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let wx=p.x+V[0].x;let fi=wx/st;
   if(fi<0.||fi>n-1.){return vec4f(0.);}
   let i=i32(floor(fi));let f=fi-floor(fi);
-  let h0=sgH(i);let h1=sgH(i+1);let hm=sgH(i-1);let hp=sgH(i+2);
+  let h0=sgH(i);let h1=sgH(i+1);
   let ey=mix(h0,h1,f)-V[0].y;let s=(h1-h0)/st;
   let px=fu.res.z/fu.res.x;
   let dd=p.y-ey;
@@ -158,14 +158,17 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let deep=exp(-max(dd,0.)/190.);
   var m=1.+clamp(sh,-.6,.6)*.30*str*(.3+.7*day)*deep;
   /* выпуклость профиля: гребень ловит свет, ложбина держит тень */
-  let cv=mix((hm+h1-2.*h0),(h0+hp-2.*h1),f)/st;
+  /* по шести отрезкам, не по одному: узкая выемка давала под собой отвесный столб тени */
+  let c0=sgH(i-3)+sgH(i+3)-2.*h0;let c1=sgH(i-2)+sgH(i+4)-2.*h1;
+  let cv=mix(c0,c1,f)/(9.*st);
   m=m*(1.+clamp(cv,-1.,1.)*.20*exp(-max(dd,0.)/36.)*(.4+.6*day));
   /* зерно в пиксель, в координатах мира */
   m=m*(1.+(sgk(floor(w/max(px,.5)))-.5)*.07);
   /* тёплый ключ и холодная тень: верхняя кожа склона, повёрнутого к звезде, берёт
      цвет звезды; тело разреза с глубиной уходит в холод неба (закон «ключ тёплый,
      заполнение холодное») */
-  let nl=sqrt(1.+s*s);let lit=clamp(dot(vec2f(-s,-1.)/nl,sun),0.,1.);
+  let sw=(sgH(i+3)-sgH(i-2))/(5.*st);   /* наклон для света — тоже шире отрезка */
+  let nl=sqrt(1.+sw*sw);let lit=clamp(dot(vec2f(-sw,-1.)/nl,sun),0.,1.);
   let band=exp(-max(dd,0.)/26.)*pow(lit,1.2)*day;
   var mc=vec3f(m)*(vec3f(1.)+V[3].rgb*band*.42);
   let cold=smoothstep(14.,240.,dd)*.34;
@@ -329,7 +332,9 @@ function surfCastGpu(tr,p,camx,camy){
   F[0]=camx;F[1]=camy;F[4]=tr.step;F[5]=tr.N;F[6]=HT.mid;
   /* звезда низко — тень длинная; сдвиг от звезды, сплющенная полоса земли */
   const sx=SUN_DIR.x,sy=Math.min(-.12,SUN_DIR.y);
-  F[8]=clamp(-sx/-sy,-4.5,4.5)*.9;F[9]=.45;
+  /* глубина полосы — тоже от высоты звезды: в полдень тень короткая во все стороны,
+     иначе ствол под звездой в зените тянул отвесный столб сквозь срез грунта */
+  F[8]=clamp(-sx/-sy,-4.5,4.5)*.9;F[9]=clamp(.07+.38*Math.abs(sx)/-sy,.07,.45);
   const lu=c=>Math.max(1,.3*c[0]+.59*c[1]+.11*c[2]),sc=starRGB();
   const vac=p.T.atm==="отсутствует";
   F[10]=clamp(day*1.4,0,1)*(vac?.78:.62)*clamp(lu(sc)/150,0,1);F[11]=260;
