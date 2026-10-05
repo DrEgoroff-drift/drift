@@ -677,7 +677,7 @@ GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
 GOR_LIT                      src/17gab-gpu-orb.js:18
 GOR_LZ                       src/17gab-gpu-orb.js:16
-GOR_MOON                     src/17gab-gpu-orb.js:412
+GOR_MOON                     src/17gab-gpu-orb.js:414
 GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
@@ -3774,8 +3774,8 @@ goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
 goldCmp                      tests/91zzzzzzzzz-golden.js:36-46
 goldSig                      tests/91zzzzzzzzz-golden.js:26-35
-gorBody                      src/17gab-gpu-orb.js:375-395
-gorLin                       src/17gab-gpu-orb.js:373
+gorBody                      src/17gab-gpu-orb.js:377-397
+gorLin                       src/17gab-gpu-orb.js:375
 gosBbLine                    src/17k1-gosplan.js:25-28
 gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
@@ -3855,8 +3855,8 @@ gpuNebulaGen                 src/16gb-gpu-nebula.js:563-615
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
-gpuOrb                       src/17gab-gpu-orb.js:397-410
-gpuOrbMoon                   src/17gab-gpu-orb.js:413-418
+gpuOrb                       src/17gab-gpu-orb.js:399-412
+gpuOrbMoon                   src/17gab-gpu-orb.js:415-420
 gpuOvFrontView               src/08bi-gpu-ovl.js:249
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
@@ -7865,7 +7865,7 @@ zoomTo                       src/15-input.js:350
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
-## src/17gab-gpu-orb.js · 24 KB
+## src/17gab-gpu-orb.js · 25 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
 
 ## src/17gb-gpu-planet-strip.js · 7 KB

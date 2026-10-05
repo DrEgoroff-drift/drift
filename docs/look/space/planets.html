@@ -19,7 +19,7 @@ const SEED={rocky:11,crystal:23,ruin:37,gas:41,jungle:53,ice:67,toxic:71,ocean:8
 const KIND=["rocky","crystal","ruin","gas","jungle","ice","toxic","ocean","volcanic","terran","metal","desert"];
 const Q=new URLSearchParams(location.search);
 const ONLY=(Q.get("only")||KIND.join(",")).split(",").filter(k=>KIND.includes(k));
-const SS=+Q.get("ss")||1, STILL=Q.get("still")==="1", T0=+Q.get("t")||3;
+const SS=+Q.get("ss")||1, STILL=Q.get("still")==="1", T0=+Q.get("t")||3, BENCH=+Q.get("bench")||0;
 const COLS=+Q.get("cols")||Math.min(4,ONLY.length), ROWS=Math.ceil(ONLY.length/COLS);
 window.__errs=window.__errs||[];
 
@@ -52,6 +52,7 @@ fn n3(p: vec3f) -> f32 {
 fn fbm(p: vec3f, oct: i32, fw: f32) -> f32 {
   var s = 0.; var a = .5; var q = p; var f = 1.;
   for (var i = 0; i < oct; i++) {
+    if (fw*f > .6) { break; }
     s += a * n3(q) * (1. - smoothstep(.25, .6, fw*f));
     q = q*2.03 + vec3f(1.7, 9.2, 3.1); a *= .5; f *= 2.03;
   }
@@ -351,6 +352,12 @@ async function main(){
     const ps=enc.beginRenderPass({colorAttachments:[{view:ctx.getCurrentTexture().createView(),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
     ps.setPipeline(pipe); ps.setBindGroup(0,bg); ps.draw(3); ps.end();
     dev.queue.submit([enc.finish()]);
+    /* ?bench=N: N кадров подряд, ждём видеокарту — мс на кадр в window.__bench */
+    if(BENCH){(async()=>{await dev.queue.onSubmittedWorkDone();const t0=performance.now();
+      for(let i=0;i<BENCH;i++){const e=dev.createCommandEncoder();
+        const p2=e.beginRenderPass({colorAttachments:[{view:ctx.getCurrentTexture().createView(),loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
+        p2.setPipeline(pipe);p2.setBindGroup(0,bg);p2.draw(3);p2.end();dev.queue.submit([e.finish()]);}
+      await dev.queue.onSubmittedWorkDone();window.__bench=+((performance.now()-t0)/BENCH).toFixed(3);document.title="LOOK_DONE"})();return}
     if(STILL){dev.queue.onSubmittedWorkDone().then(()=>{document.title=__errs.length?"LOOK_ERR":"LOOK_DONE"});return}
     requestAnimationFrame(frame);
   }

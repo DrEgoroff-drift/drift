@@ -52,7 +52,7 @@ def main():
             if isinstance(title, str) and title.startswith("LOOK_"): break
             time.sleep(.3)
         time.sleep(.3)
-        st = ev(ws, "({title:document.title,errors:(window.__errs||[]).slice(0,12)})")
+        st = ev(ws, "({title:document.title,bench:window.__bench||null,errors:(window.__errs||[]).slice(0,12)})")
         png = ws.call("Page.captureScreenshot", format="png")
         out = os.path.abspath(a.out); os.makedirs(os.path.dirname(out), exist_ok=True)
         open(out, "wb").write(base64.b64decode(png["data"]))

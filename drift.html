@@ -57776,6 +57776,7 @@ fn n3(p: vec3f) -> f32 {
 fn fbm(p: vec3f, oct: i32, fw: f32) -> f32 {
   var s = 0.; var a = .5; var q = p; var f = 1.;
   for (var i = 0; i < oct; i++) {
+    if (fw*f > .6) { break; }
     s += a * n3(q) * (1. - smoothstep(.25, .6, fw*f));
     q = q*2.03 + vec3f(1.7, 9.2, 3.1); a *= .5; f *= 2.03;
   }
@@ -57972,7 +57973,8 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
   let sun = v3.rgb*v6.y;
   let seed = v3.w; let s = vec3f(seed*1.37, seed*.71, seed*2.13);
   let len = length(d);
-  let fw = 1.5*px;
+  /* детализация — по CSS-пикселю, а не по физическому: на DPR 3 мельче глаз не видит, а платим октавами */
+  let fw = 1.5*px*max(1., u.b.x*.6);
   var lin = vec3f(0.); var cov = 0.; var nz = -1.;
   if (len < 1. + px) {
     nz = sqrt(max(0., 1. - len*len));

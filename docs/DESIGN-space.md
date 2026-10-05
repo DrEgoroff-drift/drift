@@ -59,8 +59,10 @@ draws the old textured ball.
 
 ### Open
 
-- M702 cost on the S23 (`docs/g11.ps1`, A/B/A with `?orb=0`) and a cheaper tier if needed:
-  the surface runs up to ~6-octave fbm with a domain warp per pixel.
+- M702 cost on the S23 (A/B/A with `?orb=0`). This desktop: a planet filling a 1200×900 frame
+  (r 360 px) costs .26 (crystal) to .88 ms (ocean) — `docs/look/space/shoot.py --q bench=60&only=ocean&cols=1`.
+  Already cheaper: the octave loop breaks once an octave is under a pixel, and detail follows the
+  CSS pixel, not the device one (DPR 3 skips about one octave).
 - M703 gas giants: more, irregular belts; cloud tint stays neutral under warm stars.
 - Golden frames that show planets will need `-Accept` on the release machine.
 
