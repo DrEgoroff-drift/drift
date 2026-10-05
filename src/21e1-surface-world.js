@@ -187,53 +187,12 @@ function drawSurfaceWorld(){
          небо → осыпь у порога. Силуэт сеется от x устья: на одной планете
          пещера всегда одна и та же. */
       const amb=ambRGB(p);
-      const rr=rng(hashi(S.cave.x|0,7,0xCA7E));
-      const rock=(k,a)=>"rgba("+(amb[0]*k|0)+","+(amb[1]*k|0)+","+(amb[2]*k*1.06|0)+","+(a==null?1:a)+")";
-      /* 1. тень под скалой: она стоит на земле, а не приклеена */
-      ctx.fillStyle="rgba(0,0,0,.28)";
-      ctx.beginPath();ctx.ellipse(cx+4,cy+2,54,5,0,0,TAU);ctx.fill();
-      /* 2. тело скалы: девять вершин, левый скат круче, правый — длинный */
-      const top=[];
-      const hw=44+rr()*10, hh=36+rr()*12;
-      for(let i=0;i<=8;i++){
-        const t=i/8, x=cx-hw+t*hw*2;
-        const prof=Math.sin(t*Math.PI)**.7*(1-.25*Math.abs(t-.42));       /* горб, чуть смещённый влево */
-        top.push({x:x+(rr()-.5)*6,y:cy+2-hh*prof-(rr()-.5)*5});
-      }
-      ctx.fillStyle=rock(.46);
-      ctx.beginPath();ctx.moveTo(cx-hw-6,cy+3);
-      for(const q of top)ctx.lineTo(q.x,q.y);
-      ctx.lineTo(cx+hw+6,cy+3);ctx.closePath();ctx.fill();
-      /* слоистость породы: два тёмных горизонта в теле */
-      ctx.strokeStyle=rock(.34,.7);ctx.lineWidth=1.2;
-      for(const k of [.38,.66]){
-        ctx.beginPath();
-        for(let i=0;i<top.length;i++){const q=top[i];ctx.lineTo(q.x+(rr()-.5)*3,q.y+(cy+2-q.y)*k);}
-        ctx.stroke();
-      }
-      /* свет сверху: кромка силуэта светлее — небо лизнуло камень */
-      ctx.strokeStyle=rock(.98,.75);ctx.lineWidth=1.4;
-      ctx.beginPath();for(const q of top)ctx.lineTo(q.x,q.y);ctx.stroke();
-      /* 3. проём: арка с неровным краем, нутро уходит в глубину */
-      const arch=[[-19,1],[-17,-9],[-13,-19],[-6,-26],[3,-27],[11,-21],[16,-11],[18,1]];
-      const ig=ctx.createLinearGradient(cx,cy-26,cx,cy+2);
-      ig.addColorStop(0,rock(.22));ig.addColorStop(.5,"rgba(8,10,13,1)");ig.addColorStop(1,"rgba(3,4,6,1)");
-      ctx.fillStyle=ig;
-      ctx.beginPath();for(const [ax,ay] of arch)ctx.lineTo(cx+ax,cy+ay);ctx.closePath();ctx.fill();
-      /* глубина: вторая, меньшая арка темнее — ход поворачивает */
-      ctx.fillStyle="rgba(0,0,0,.55)";
-      ctx.beginPath();ctx.ellipse(cx+2,cy-6,8,11,0,0,TAU);ctx.fill();
-      /* 4. губа проёма: светлая по верхнему краю, где её видит небо */
-      ctx.strokeStyle="rgba("+(amb[0]*1.1+34|0)+","+(amb[1]*1.1+36|0)+","+(amb[2]*1.15+42|0)+",.62)";
-      ctx.lineWidth=1.8;
-      ctx.beginPath();for(let i=1;i<arch.length-1;i++)ctx.lineTo(cx+arch[i][0],cy+arch[i][1]);ctx.stroke();
-      /* 5. осыпь у порога: камни разного размера, светлые макушки */
-      for(let i=0;i<7;i++){
-        const sx=cx+(rr()-.5)*70, r0=1.6+rr()*4, sy=cy-r0*.4+rr()*2;
-        if(Math.abs(sx-cx)<14)continue;                    /* не в проходе */
-        ctx.fillStyle=rock(.5,.95);ctx.beginPath();ctx.ellipse(sx,sy,r0*1.3,r0,rr()-.5,0,TAU);ctx.fill();
-        ctx.fillStyle="rgba(255,255,255,.12)";ctx.beginPath();ctx.ellipse(sx-r0*.3,sy-r0*.5,r0*.7,r0*.35,0,0,TAU);ctx.fill();
-      }
+      const r2=rng(hashi(S.cave.x|0,7,0xCA7E));r2();const hh=36+r2()*12;   /* высота — второй бросок тела */
+      const gp=gpuGround?standPass():null;
+      if(gp)bakePut(gp,bakeAt("cave",p.seed+"|"+S.cave.x+"|"+dayKq(p)+"|a"+sunAzQ(p)+"|"+DPR+"|"+SCK,64,72,40,g=>{
+        const gy=groundAt(tr,S.cave.x);groundClip(g,tr,S.cave.x,gy,64,72,3,3);
+        caveBody(0,0,amb,S.cave.x,36);poiLight(g,{h:hh},64,72,p,tr,S.cave.x,gy);}),cx,cy);
+      else caveBody(cx,cy,amb,S.cave.x);
       /* подпись входа на плашке, как у устья и залежей: стальная строка по
          дневному небу читалась с контрастом 2.2 (M444, прогон «посадка и
          залежь» под детектором текста) */
@@ -255,58 +214,21 @@ function drawSurfaceWorld(){
       /* железо копра — не грунт: своя, холодная светлота, иначе на тёмной
          планете вся постройка сходится в один чёрный силуэт (закон 4) */
       const iron=(k,a)=>"rgba("+(amb[0]*.4+34*k|0)+","+(amb[1]*.4+38*k|0)+","+(amb[2]*.4+44*k|0)+","+a+")";
-      /* отвал: то, что вынесли наверх, лежит горкой сбоку — с тенью под ней */
-      groundShadow(sx+22,sy+1,13,3);
-      /* отвал и яма сделаны из ТОГО ЖЕ грунта, что под ними: цвет не задаётся,
-         а гасится умножением по уже нарисованной земле. Палитра планеты для
-         этого не годится — видимый грунт складывается ещё и из материала со
-         светом, и любой «свой» цвет садится рядом чужим пятном. */
-      ctx.save();ctx.globalCompositeOperation="multiply";
-      ctx.fillStyle="rgba(124,122,126,1)";
-      ctx.beginPath();ctx.moveTo(sx+8,sy+1);ctx.quadraticCurveTo(sx+22,sy-11,sx+36,sy+1);ctx.fill();
-      ctx.restore();
-      ctx.fillStyle="rgba(255,255,255,.16)";
-      ctx.beginPath();ctx.moveTo(sx+13,sy-2.5);ctx.quadraticCurveTo(sx+22,sy-10,sx+30,sy-2.5);
-      ctx.quadraticCurveTo(sx+22,sy-6.5,sx+13,sy-2.5);ctx.fill();
-      /* ствол: яма, а не чёрный ящик. Прямоугольник в 22 px на склоне торчал
-         из грунта коробкой — дыра идёт полуэллипсом ВНИЗ от линии земли, как
-         устье пещеры идёт полуэллипсом вверх, и на любом уклоне остаётся ямой.
-         Сверху ещё видно породу, ко дну она гаснет — но не в общую черноту, а
-         в свою же (та же ошибка, что чинили в пещере на 0.226.0). */
-      ctx.save();ctx.globalCompositeOperation="multiply";
-      const gg=ctx.createLinearGradient(sx,sy-2,sx,sy+11);
-      gg.addColorStop(0,"rgba(150,148,154,1)");
-      gg.addColorStop(.5,"rgba(74,72,78,1)");
-      gg.addColorStop(1,"rgba(38,37,42,1)");
-      ctx.fillStyle=gg;
-      ctx.beginPath();ctx.ellipse(sx,sy-1,12,10,0,0,Math.PI);ctx.fill();
-      ctx.restore();
-      /* срез породы по краю: две светлые засечки на самой линии земли — по ним
-         яма и читается ямой, а не пятном (закон 3) */
-      ctx.strokeStyle="rgba(255,255,255,.22)";
-      ctx.lineWidth=1.6;ctx.beginPath();
-      ctx.moveTo(sx-13.5,sy-1.3);ctx.lineTo(sx-5,sy-1.3);
-      ctx.moveTo(sx+5,sy-1.3);ctx.lineTo(sx+13.5,sy-1.3);ctx.stroke();
-      /* копёр: две ноги и балка, тень от него на грунте */
-      groundShadow(sx-2,sy+1,16,2.6);
-      ctx.strokeStyle=iron(1,1);ctx.lineWidth=2.2;
-      ctx.beginPath();
-      ctx.moveTo(sx-12,sy-3);ctx.lineTo(sx-6,sy-25);
-      ctx.moveTo(sx+12,sy-3);ctx.lineTo(sx+6,sy-25);
-      ctx.moveTo(sx-7.4,sy-25);ctx.lineTo(sx+7.4,sy-25);
-      /* распорка: без неё две ноги читаются циркулем, а не станком */
-      ctx.moveTo(sx-9.4,sy-14);ctx.lineTo(sx+9.4,sy-14);
-      ctx.stroke();
-      /* верхняя кромка балки и ноги, обращённой к небу, ловит свет (закон 3) */
-      ctx.strokeStyle=iron(2.1,.75);ctx.lineWidth=1;
-      ctx.beginPath();
-      ctx.moveTo(sx-7.4,sy-26.1);ctx.lineTo(sx+7.4,sy-26.1);
-      ctx.moveTo(sx-11,sy-3.6);ctx.lineTo(sx-5.2,sy-24.4);ctx.stroke();
-      /* шкив и трос: трос покачивается от ветра — движение, а не мигание */
-      ctx.fillStyle=iron(1.3,1);
-      ctx.beginPath();ctx.arc(sx,sy-25,3,0,TAU);ctx.fill();
-      ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1;
-      ctx.beginPath();ctx.arc(sx,sy-25,3,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+      /* отвал: то, что вынесли наверх, лежит горкой сбоку — с тенью под ней; копёр
+         тоже кладёт тень. С видеокартой тени — мягким пятном по звезде, тело —
+         выпечкой (умножение и поверх), трос — живыми отрезками */
+      const gp=gpuGround?standPass():null;
+      if(gp){
+        const o=lifeHere(0,0),k=p.seed+"|"+Math.round(mx)+"|"+dayKq(p)+"|"+DPR+"|"+SCK;
+        gpuImage(gp,poiShadowTex(),[poiShadowRect(sx+22,sy+1,13,3,1,o),poiShadowRect(sx-2,sy+1,16,2.6,1,o)]);
+        bakePut(gp,bakeAt("mineM",k,40,14,14,()=>mineMul(0,0)),sx,sy,"mul");
+        bakePut(gp,bakeAt("mineO",k,40,32,6,()=>mineOver(0,0,iron)),sx,sy);
+      }else{
+        groundShadow(sx+22,sy+1,13,3);
+        ctx.save();ctx.globalCompositeOperation="multiply";mineMul(sx,sy);ctx.restore();
+        groundShadow(sx-2,sy+1,16,2.6);
+        mineOver(sx,sy,iron);
+      }
       /* ── трос висит, а не нарисован (M245) ──
          Была парабола с синусом — то есть верёвка, у которой нет ни веса, ни
          инерции: качается ровно, как метроном. Теперь это верёвка на Верле
@@ -317,7 +239,7 @@ function drawSurfaceWorld(){
         S.vMine=vRope(7,0,0,3.4,{grav:.14,wind:.9});S.vMineX=Math.round(mx);
       }
       vStep(S.vMine,1);
-      vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
+      if(gp)mineRopeGpu(gp,S.vMine,sx,sy-22,amb);else vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
       /* подпись устья на плашке, как у залежей: стальная строка по дневному
          небу читалась с контрастом 1.9 (M444, прогон «шахта» под детектором
          текста) */
@@ -613,4 +535,117 @@ function drawSurfaceWorld(){
   placesLit(p,tr,camx,camy);   /* фонари мест светят ПОСЛЕ ночи (11va) */
   lightShafts(p);
   gradePass(p);
+}
+
+/* тело входа в пещеру (M178, M327) — в ctx, начало в подножии устья; на видеокарте
+   печётся раз на свет (bakeAt), без неё рисуется прямо в кадр */
+function caveBody(cx,cy,amb,cxw,deep){
+  deep=deep||0;   /* на видеокарте скала уходит в грунт и режется его профилем: на склоне не висит */
+  const rr=rng(hashi(cxw|0,7,0xCA7E));
+  const rock=(k,a)=>"rgba("+(amb[0]*k|0)+","+(amb[1]*k|0)+","+(amb[2]*k*1.06|0)+","+(a==null?1:a)+")";
+  /* 1. тень под скалой: она стоит на земле, а не приклеена */
+  if(!deep){ctx.fillStyle="rgba(0,0,0,.28)";
+  ctx.beginPath();ctx.ellipse(cx+4,cy+2,54,5,0,0,TAU);ctx.fill();}   /* в грунте тень даёт сам грунт */
+  /* 2. тело скалы: девять вершин, левый скат круче, правый — длинный */
+  const top=[];
+  const hw=44+rr()*10, hh=36+rr()*12;
+  for(let i=0;i<=8;i++){
+    const t=i/8, x=cx-hw+t*hw*2;
+    const prof=Math.sin(t*Math.PI)**.7*(1-.25*Math.abs(t-.42));       /* горб, чуть смещённый влево */
+    top.push({x:x+(rr()-.5)*6,y:cy+2-hh*prof-(rr()-.5)*5});
+  }
+  ctx.fillStyle=rock(.46);
+  ctx.beginPath();ctx.moveTo(cx-hw-6,cy+3+deep);
+  for(const q of top)ctx.lineTo(q.x,q.y);
+  ctx.lineTo(cx+hw+6,cy+3+deep);ctx.closePath();ctx.fill();
+  /* слоистость породы: два тёмных горизонта в теле */
+  ctx.strokeStyle=rock(.34,.7);ctx.lineWidth=1.2;
+  for(const k of [.38,.66]){
+    ctx.beginPath();
+    for(let i=0;i<top.length;i++){const q=top[i];ctx.lineTo(q.x+(rr()-.5)*3,q.y+(cy+2-q.y)*k);}
+    ctx.stroke();
+  }
+  /* свет сверху: кромка силуэта светлее — небо лизнуло камень */
+  ctx.strokeStyle=rock(.98,.75);ctx.lineWidth=1.4;
+  ctx.beginPath();for(const q of top)ctx.lineTo(q.x,q.y);ctx.stroke();
+  /* 3. проём: арка с неровным краем, нутро уходит в глубину */
+  const arch=[[-19,1],[-17,-9],[-13,-19],[-6,-26],[3,-27],[11,-21],[16,-11],[18,1]];
+  const ig=ctx.createLinearGradient(cx,cy-26,cx,cy+2);
+  ig.addColorStop(0,rock(.22));ig.addColorStop(.5,"rgba(8,10,13,1)");ig.addColorStop(1,"rgba(3,4,6,1)");
+  ctx.fillStyle=ig;
+  ctx.beginPath();for(const [ax,ay] of arch)ctx.lineTo(cx+ax,cy+ay);ctx.closePath();ctx.fill();
+  /* глубина: вторая, меньшая арка темнее — ход поворачивает */
+  ctx.fillStyle="rgba(0,0,0,.55)";
+  ctx.beginPath();ctx.ellipse(cx+2,cy-6,8,11,0,0,TAU);ctx.fill();
+  /* 4. губа проёма: светлая по верхнему краю, где её видит небо */
+  ctx.strokeStyle="rgba("+(amb[0]*1.1+34|0)+","+(amb[1]*1.1+36|0)+","+(amb[2]*1.15+42|0)+",.62)";
+  ctx.lineWidth=1.8;
+  ctx.beginPath();for(let i=1;i<arch.length-1;i++)ctx.lineTo(cx+arch[i][0],cy+arch[i][1]);ctx.stroke();
+  /* 5. осыпь у порога: камни разного размера, светлые макушки */
+  for(let i=0;i<7;i++){
+    const sx=cx+(rr()-.5)*70, r0=1.6+rr()*4, sy=cy-r0*.4+rr()*2;
+    if(Math.abs(sx-cx)<14)continue;                    /* не в проходе */
+    ctx.fillStyle=rock(.5,.95);ctx.beginPath();ctx.ellipse(sx,sy,r0*1.3,r0,rr()-.5,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.12)";ctx.beginPath();ctx.ellipse(sx-r0*.3,sy-r0*.5,r0*.7,r0*.35,0,0,TAU);ctx.fill();
+  }
+}
+/* устье шахты (M234): то, что ложится умножением по грунту, — отвал и яма из того же
+   грунта; начало в устье. Обе части неподвижны при данном свете и на видеокарте
+   печутся (bakeAt) */
+function mineMul(sx,sy){
+  /* отвал и яма сделаны из ТОГО ЖЕ грунта, что под ними: цвет не задаётся,
+     а гасится умножением по уже нарисованной земле. Палитра планеты для
+     этого не годится — видимый грунт складывается ещё и из материала со
+     светом, и любой «свой» цвет садится рядом чужим пятном. */
+  ctx.fillStyle="rgba(124,122,126,1)";
+  ctx.beginPath();ctx.moveTo(sx+8,sy+1);ctx.quadraticCurveTo(sx+22,sy-11,sx+36,sy+1);ctx.fill();
+  /* ствол: яма, а не чёрный ящик. Прямоугольник в 22 px на склоне торчал
+     из грунта коробкой — дыра идёт полуэллипсом ВНИЗ от линии земли, как
+     устье пещеры идёт полуэллипсом вверх, и на любом уклоне остаётся ямой.
+     Сверху ещё видно породу, ко дну она гаснет — но не в общую черноту, а
+     в свою же (та же ошибка, что чинили в пещере на 0.226.0). */
+  const gg=ctx.createLinearGradient(sx,sy-2,sx,sy+11);
+  gg.addColorStop(0,"rgba(150,148,154,1)");
+  gg.addColorStop(.5,"rgba(74,72,78,1)");
+  gg.addColorStop(1,"rgba(38,37,42,1)");
+  ctx.fillStyle=gg;
+  ctx.beginPath();ctx.ellipse(sx,sy-1,12,10,0,0,Math.PI);ctx.fill();
+}
+function mineOver(sx,sy,iron){
+  ctx.fillStyle="rgba(255,255,255,.16)";
+  ctx.beginPath();ctx.moveTo(sx+13,sy-2.5);ctx.quadraticCurveTo(sx+22,sy-10,sx+30,sy-2.5);
+  ctx.quadraticCurveTo(sx+22,sy-6.5,sx+13,sy-2.5);ctx.fill();
+  /* срез породы по краю: две светлые засечки на самой линии земли — по ним
+     яма и читается ямой, а не пятном (закон 3) */
+  ctx.strokeStyle="rgba(255,255,255,.22)";
+  ctx.lineWidth=1.6;ctx.beginPath();
+  ctx.moveTo(sx-13.5,sy-1.3);ctx.lineTo(sx-5,sy-1.3);
+  ctx.moveTo(sx+5,sy-1.3);ctx.lineTo(sx+13.5,sy-1.3);ctx.stroke();
+  /* копёр: две ноги и балка, тень от него на грунте */
+  ctx.strokeStyle=iron(1,1);ctx.lineWidth=2.2;
+  ctx.beginPath();
+  ctx.moveTo(sx-12,sy-3);ctx.lineTo(sx-6,sy-25);
+  ctx.moveTo(sx+12,sy-3);ctx.lineTo(sx+6,sy-25);
+  ctx.moveTo(sx-7.4,sy-25);ctx.lineTo(sx+7.4,sy-25);
+  /* распорка: без неё две ноги читаются циркулем, а не станком */
+  ctx.moveTo(sx-9.4,sy-14);ctx.lineTo(sx+9.4,sy-14);
+  ctx.stroke();
+  /* верхняя кромка балки и ноги, обращённой к небу, ловит свет (закон 3) */
+  ctx.strokeStyle=iron(2.1,.75);ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(sx-7.4,sy-26.1);ctx.lineTo(sx+7.4,sy-26.1);
+  ctx.moveTo(sx-11,sy-3.6);ctx.lineTo(sx-5.2,sy-24.4);ctx.stroke();
+  /* шкив и трос: трос покачивается от ветра — движение, а не мигание */
+  ctx.fillStyle=iron(1.3,1);
+  ctx.beginPath();ctx.arc(sx,sy-25,3,0,TAU);ctx.fill();
+  ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(sx,sy-25,3,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+}
+/* трос копра отрезками на видеокарте: та же толщина к низу тоньше, тот же цвет, что iron(.8,.85) */
+function mineRopeGpu(pass,B,ox,oy,amb){
+  if(!B||B.p.length<2)return;
+  const o=lifeHere(0,0),K=o.s,c=[amb[0]*.4+34*.8|0,amb[1]*.4+38*.8|0,amb[2]*.4+44*.8|0],SH=[];
+  for(let i=1;i<B.p.length;i++){const a=B.p[i-1],z=B.p[i],w=1.4*(1-i/B.p.length*.55);
+    SH.push([2,o.x+(a.x+ox)*K,o.y+(a.y+oy)*K,o.x+(z.x+ox)*K,o.y+(z.y+oy)*K,w*K/2,.5,c[0],c[1],c[2],.85]);}
+  gpuShapes(pass,SH);
 }

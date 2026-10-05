@@ -87,10 +87,18 @@ function poiLEll(cx,cy,rx,ry,rot,col,w){
 const POI_BOX={wreck:[2.1,1.1],temple:[1.15,1.05],elevator:[.25,1.02],crystals:[1.25,1.2],ring:[1.25,1.55],
   anomaly:[1,1.6],monolith:[.75,1.3],factory:[1.3,1.1],portal:[1.15,1.65],observ:[1.15,.9],obelisk:[.7,1.05],battery:[1.25,1.35]};
 const POI_BK=new WeakMap();
+/* клип выпечки по профилю грунта: начало в (x,y) мира, ниже линии земли плюс pad не рисуется;
+   floor — не выше этой отметки: там, где грунт поднимается над подножием, тело стоит перед ним */
+function groundClip(g,tr,x,y,hw,top,pad,floor){
+  const i0=clamp(Math.floor((x-hw)/tr.step),0,tr.N-1),i1=clamp(Math.ceil((x+hw)/tr.step),0,tr.N-1),f=floor==null?-1e9:floor;
+  g.beginPath();g.moveTo(i0*tr.step-x,-top-4);
+  for(let i=i0;i<=i1;i++)g.lineTo(i*tr.step-x,Math.max(f,tr.h[i]-y+pad));
+  g.lineTo(i1*tr.step-x,-top-4);g.closePath();g.clip();
+}
 /* один свет на тело постройки: сторона к звезде теплеет её цветом, обратная
    уходит в холодную тень неба, низ берёт отсвет грунта, у самой земли — темнее.
    Без этого корпус читается вырезкой из картона, серой на любом мире. */
-function poiLight(g,q,hw,top,p){
+function poiLight(g,q,hw,top,p,tr,X,Y){
   const s=SUN_DIR.x>=0?1:-1,e=Math.min(hw,q.h*.8),k=.35+.65*dayKq(p);
   const sr=starRGB().join(","),am=(typeof ambRGB==="function"?ambRGB(p):[40,50,70]).map(v=>v*.35|0).join(","),gc=p.T.pal[2].join(",");
   g.save();g.globalCompositeOperation="source-atop";
@@ -98,12 +106,16 @@ function poiLight(g,q,hw,top,p){
   gr.addColorStop(0,"rgba("+sr+","+(.26*k).toFixed(3)+")");gr.addColorStop(.42,"rgba("+sr+",0)");
   gr.addColorStop(.52,"rgba("+am+",0)");gr.addColorStop(1,"rgba("+am+","+(.30+.25*k).toFixed(3)+")");
   g.fillStyle=gr;g.fillRect(-hw,-top,2*hw,top+16);
-  const b=Math.min(q.h*.4,90);gr=g.createLinearGradient(0,6,0,-b);
-  gr.addColorStop(0,"rgba("+gc+",.38)");gr.addColorStop(1,"rgba("+gc+",0)");
-  g.fillStyle=gr;g.fillRect(-hw,-b,2*hw,b+16);
-  gr=g.createLinearGradient(0,6,0,-14);
-  gr.addColorStop(0,"rgba(0,0,0,.45)");gr.addColorStop(1,"rgba(0,0,0,0)");
-  g.fillStyle=gr;g.fillRect(-hw,-14,2*hw,20);
+  /* отсвет и прижим — от линии земли под каждым столбцом (tr): на склоне подножие не одно */
+  const b=Math.min(q.h*.4,90),foot=(x0,w,gy)=>{
+    gr=g.createLinearGradient(0,gy+6,0,gy-b);
+    gr.addColorStop(0,"rgba("+gc+",.38)");gr.addColorStop(1,"rgba("+gc+",0)");
+    g.fillStyle=gr;g.fillRect(x0,gy-b,w,b+16);
+    gr=g.createLinearGradient(0,gy+6,0,gy-14);
+    gr.addColorStop(0,"rgba(0,0,0,.45)");gr.addColorStop(1,"rgba(0,0,0,0)");
+    g.fillStyle=gr;g.fillRect(x0,gy-14,w,30);};
+  if(tr)for(let x=-hw;x<hw;x+=2)foot(x,2,groundAt(tr,X+x+1)-Y);
+  else foot(-hw,2*hw,0);
   g.restore();
 }
 function poiBake(q,tr,p,dark,lite){
@@ -114,16 +126,34 @@ function poiBake(q,tr,p,dark,lite){
   withCtx(cn,w,h,0,0,g=>{
     g.translate(hw,top);
     /* срез по грунту — тот же, что клип кадра: ниже линии грунта плюс 6 px постройки нет */
-    const i0=clamp(Math.floor((q.x-hw)/tr.step),0,tr.N-1),i1=clamp(Math.ceil((q.x+hw)/tr.step),0,tr.N-1);
-    g.beginPath();g.moveTo(i0*tr.step-q.x,-top-4);
-    for(let i=i0;i<=i1;i++)g.lineTo(i*tr.step-q.x,tr.h[i]-q.y+6);
-    g.lineTo(i1*tr.step-q.x,-top-4);g.closePath();g.clip();
+    groundClip(g,tr,q.x,q.y,hw,top,6);
     POI_SEED=q.seed;POI_MAT=tr.mat;POI_OX=q.x;POI_OY=q.y;
     const p0=POI_PH;POI_PH="base";
     try{poiShape(q,rng(q.seed),dark,lite,p.T.pal);}finally{POI_PH=p0;}
-    poiLight(g,q,hw,top,p);
+    poiLight(g,q,hw,top,p,tr,q.x,q.y);
   });
   const B={key,cn,cx:0,cy:(bot-top)/2,w,h};POI_BK.set(q,B);return B;
+}
+/* проход для стоящего на земле: на грунте — его собственный проход (SURF_P2), даже если
+   на #c уже рисовали: gpuNext тогда снял бы #c в новый слой, и падающие тени со
+   светом мира (21e2) не нашли бы своего прохода. Вне грунта — обычный gpuNext */
+function standPass(){
+  if(typeof SURF_P2!=="undefined"&&SURF_P2&&GPU.overPass===SURF_P2)return SURF_P2;
+  return gpuNext();
+}
+/* выпечка неподвижного 2D-рисунка: тело, которое при данном свете не меняется,
+   печётся раз на ключ; f рисует в ctx с началом в подножии, top — сколько над ним,
+   bot — под ним. bakePut кладёт её в проход по матрице ctx (масштаб мира) */
+const BK_AT=new Map();
+function bakeAt(id,key,hw,top,bot,f){
+  const o=BK_AT.get(id);if(o&&o.key===key)return o;
+  const w=hw*2,h=top+bot,cn=mkCanvas(w,h);
+  withCtx(cn,w,h,0,0,g=>{g.translate(hw,top);f(g);});
+  const B={key,cn,w,h,cy:(bot-top)/2};BK_AT.set(id,B);return B;
+}
+function bakePut(pass,B,x,y,blend){
+  const o=lifeHere(0,0),K=o.s;
+  gpuImage(pass,B.cn,[{x:o.x+x*K,y:o.y+(y+B.cy)*K,w:B.w*K,h:B.h*K}],blend?{blend}:undefined);
 }
 /* мягкое пятно тени: радиальный спад, растянутый в эллипс — один холст на всю игру */
 let POI_SHTEX=null;
@@ -147,7 +177,7 @@ function poiGpu(tr,camx,camy,p){
   const vis=[];
   for(const q of tr.poi){const x=q.x-camx;if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;vis.push(q);}
   if(!vis.length)return true;
-  const pass=gpuNext();if(!pass)return false;
+  const pass=standPass();if(!pass)return false;
   const o=lifeHere(0,0),K=o.s,pal=p.T.pal,[dark,lite]=poiTone(pal);   /* кадр — по матрице ctx (масштаб мира) */
   const sh=[];
   for(const q of vis){const rx=q.h*(q.k==="wreck"?1.1:(q.k==="ring"?.9:.55));

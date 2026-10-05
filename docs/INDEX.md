@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 683 · top-level symbols: 7158
+Files: 683 · top-level symbols: 7167
 
 ## SYMBOLS
 
@@ -146,6 +146,7 @@ BGPU_U                       src/24ba-belt-gpu.js:90
 BG_BRIGHT                    src/16-flight.js:17
 BG_GROUP                     src/16-flight.js:11
 BHUD                         src/24bc-belt-hud.js:13
+BK_AT                        src/20ab-poi-gpu.js:147
 BLD                          src/12ac-bld.js:29
 BLD_FAM                      src/12ac-bld.js:16-26
 BLD_FAM_KEYS                 src/12ac-bld.js:28
@@ -1345,7 +1346,7 @@ POI_NULL_G                   src/20ab-poi-gpu.js:17
 POI_PH                       src/20ab-poi-gpu.js:15
 POI_SEED                     src/20a-poi.js:90
 POI_SH                       src/20ab-poi-gpu.js:16
-POI_SHTEX                    src/20ab-poi-gpu.js:129
+POI_SHTEX                    src/20ab-poi-gpu.js:159
 POST_ADDR                    src/11e-post.js:46
 POST_FORMS                   src/25h-post-forms.js:40-199
 POST_FORMS2                  src/25h-post-forms2.js:22-126
@@ -2106,9 +2107,11 @@ bScreen                      src/21aa-base-rooms.js:280-295
 bShift                       tests/91zzzw-base.js:21-24
 bWall                        src/21aa-base-rooms.js:211-266
 bWorker                      src/21aa-base-rooms.js:367-428
+bakeAt                       src/20ab-poi-gpu.js:148-153
 bakeCount                    tests/91zzzzy-bake.js:32-41
 bakeIdle                     tests/90-harness.js:436-443
 bakeKeep                     src/08c-gpu-kit.js:74-79
+bakePut                      src/20ab-poi-gpu.js:154-157
 bankTransform                src/03b-hull-paint.js:59-66
 banyaLive                    src/21ac1-base-banya.js:37-40
 banyaRested                  src/21ac1-base-banya.js:64
@@ -2521,6 +2524,7 @@ castMap                      src/19c1-cast.js:81-100
 castMapFor                   src/19c1-cast.js:103-108
 castOccH                     src/19c1-cast.js:53-62
 castShadeAt                  src/19c1-cast.js:64-76
+caveBody                     src/21e1-surface-world.js:542-591
 caveBoxFree                  src/22-mode-cave.js:239-243
 caveBuild                    src/22-mode-cave.js:105-174
 caveCeil                     src/22-mode-cave.js:67-72
@@ -3298,7 +3302,7 @@ drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
 drawSurface                  src/21e-surface-draw.js:294-308
 drawSurfaceHud               src/21e-surface-draw.js:39-125
-drawSurfaceWorld             src/21e1-surface-world.js:10-616
+drawSurfaceWorld             src/21e1-surface-world.js:10-538
 drawSurvey                   src/12w-survey.js:63-83
 drawSysHud                   src/17-mode-system.js:727-1053
 drawSysLane                  src/17g-sys-lane.js:112-138
@@ -3959,6 +3963,7 @@ grokWant                     src/12tb-grok.js:41-44
 groundAt                     src/07a-terrain.js:199-202
 groundChunkPaint             src/19-mode-landing-ground.js:240-258
 groundChunkStore             src/19-mode-landing-ground.js:227-238
+groundClip                   src/20ab-poi-gpu.js:92-97
 groundGrassGpu               src/21e3-surface-stand-gpu.js:38-62
 groundShadow                 src/19-mode-landing.js:156-169
 groveAll                     src/11j-grove.js:29
@@ -4930,6 +4935,9 @@ mineDeep                     src/23a-dig-draw.js:562-565
 mineKey                      src/23a-dig-draw.js:551
 mineLay                      src/13a-guns.js:267-275
 mineLoad                     src/23a-dig-draw.js:566-575
+mineMul                      src/21e1-surface-world.js:595-613
+mineOver                     src/21e1-surface-world.js:614-643
+mineRopeGpu                  src/21e1-surface-world.js:645-651
 mineSave                     src/23a-dig-draw.js:576-585
 mineSpotX                    src/23a-dig-draw.js:558-561
 minedUnit                    src/11-log.js:171-179
@@ -5523,12 +5531,12 @@ plantUx                      src/20-life.js:427-431
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
-poiBake                      src/20ab-poi-gpu.js:109-127
+poiBake                      src/20ab-poi-gpu.js:121-136
 poiBody                      src/20a-poi.js:168-172
 poiC                         src/20ab-poi-gpu.js:33
 poiDrift                     src/20a-poi.js:147-165
 poiGlow                      src/20a-poi.js:78-84
-poiGpu                       src/20ab-poi-gpu.js:145-166
+poiGpu                       src/20ab-poi-gpu.js:175-196
 poiInspect                   src/20b-poi-find.js:104-137
 poiLArc                      src/20ab-poi-gpu.js:65-72
 poiLDisc                     src/20ab-poi-gpu.js:43-47
@@ -5536,15 +5544,15 @@ poiLEll                      src/20ab-poi-gpu.js:74-84
 poiLGlow                     src/20ab-poi-gpu.js:36-42
 poiLPoly                     src/20ab-poi-gpu.js:54-63
 poiLRect                     src/20ab-poi-gpu.js:48-52
-poiLight                     src/20ab-poi-gpu.js:93-108
+poiLight                     src/20ab-poi-gpu.js:101-120
 poiMemo                      src/20b-poi-find.js:99-103
 poiNear                      src/20a-poi.js:252-259
 poiPath                      src/20a-poi.js:91-109
 poiPoly                      src/20a-poi.js:110-116
 poiPt                        src/20ab-poi-gpu.js:31
 poiSc                        src/20ab-poi-gpu.js:32
-poiShadowRect                src/20ab-poi-gpu.js:139-143
-poiShadowTex                 src/20ab-poi-gpu.js:130-137
+poiShadowRect                src/20ab-poi-gpu.js:169-173
+poiShadowTex                 src/20ab-poi-gpu.js:160-167
 poiShape                     src/20a-poi.js:181-194
 poiSkin                      src/20a-poi.js:119-144
 poiTone                      src/20a-poi.js:176-180
@@ -6539,6 +6547,7 @@ stampPage                    src/17i-stamp.js:94-121
 stampPirate                  src/17i-stamp.js:69-80
 stampShow                    src/17i-stamp.js:82-92
 stampText                    src/17i-stamp.js:27-40
+standPass                    src/20ab-poi-gpu.js:140-143
 stapelAll                    src/26e1-stapel.js:27-32
 stapelBlock                  src/26e1-stapel.js:164-234
 stapelClosedWhy              src/26e1-stapel.js:96-101
@@ -8108,7 +8117,7 @@ zoomTo                       src/15-input.js:350
 ## src/20aa-poi-shapes.js · 29 KB
   · фигуры находок: одна функция на вид:1
 
-## src/20ab-poi-gpu.js · 11 KB
+## src/20ab-poi-gpu.js · 13 KB
   · постройки на движке (G15):1
 
 ## src/20b-poi-find.js · 11 KB
@@ -8250,7 +8259,7 @@ zoomTo                       src/15-input.js:350
 ## src/21e-surface-draw.js · 20 KB
   · поверхность: подсказка, HUD и кадр:1
 
-## src/21e1-surface-world.js · 45 KB
+## src/21e1-surface-world.js · 47 KB
   · поверхность: сам мир (выделено из 21e, M415):1
 
 ## src/21e2-surface-gpu.js · 31 KB
