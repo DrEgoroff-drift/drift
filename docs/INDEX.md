@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 678 · top-level symbols: 7070
+Files: 678 · top-level symbols: 7071
 
 ## SYMBOLS
 
@@ -1036,8 +1036,8 @@ LG_H                         src/19g-landing-gpu.js:24
 LG_ID                        src/20fa-life-gpu.js:90
 LG_LANDER_WGSL               src/19g-landing-gpu.js:249
 LG_N                         src/20fa-life-gpu.js:89
-LG_OID                       src/20fa-life-gpu.js:272
-LG_ON                        src/20fa-life-gpu.js:273
+LG_OID                       src/20fa-life-gpu.js:280
+LG_ON                        src/20fa-life-gpu.js:281
 LG_RIDGE_WGSL                src/19g-landing-gpu.js:55
 LG_UNDER_WGSL                src/19g-landing-gpu.js:120
 LG_WGSL                      src/20fa-life-gpu.js:30
@@ -1315,7 +1315,7 @@ PLANT_BAKE                   src/20-life.js:211
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
 PLANT_KINDS                  src/20-life.js:166
-PLANT_UXQ                    src/20fa-life-gpu.js:390
+PLANT_UXQ                    src/20fa-life-gpu.js:398
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
 PLAN_DENS                    src/27jb-kb.js:47
@@ -3156,7 +3156,7 @@ drawBillboard                src/17k-billboard.js:182-196
 drawBuildMenu                src/21aa-base-rooms.js:576-592
 drawBuilt                    src/21c-built.js:64-101
 drawCantinaRoom              src/27d-ui-cantina.js:42-75
-drawCave                     src/22-mode-cave.js:722-732
+drawCave                     src/22-mode-cave.js:729-739
 drawCaveFar                  src/22-mode-cave.js:610-646
 drawCaveGlow                 src/22a-cave-deco.js:325-339
 drawCaveLight                src/22c-cave-gpu.js:247-285
@@ -3165,7 +3165,7 @@ drawCaveProps                src/22b-cave-props.js:250-267
 drawCaveRock                 src/22-mode-cave.js:470-600
 drawCaveSolid                src/22a-cave-deco.js:241-299
 drawCaveWater                src/22a-cave-deco.js:300-324
-drawCaveWorld                src/22-mode-cave.js:647-716
+drawCaveWorld                src/22-mode-cave.js:647-723
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
 drawCockpit                  src/25-cockpit.js:405-680
@@ -3176,10 +3176,10 @@ drawCrystalForest            src/20aa-poi-shapes.js:115-141
 drawDeadBattery              src/20aa-poi-shapes.js:221-275
 drawDeco                     src/21b-surface-deco.js:166-225
 drawDeposit                  src/21b-surface-deco.js:406-560
-drawDig                      src/23a-dig-draw.js:565-569
+drawDig                      src/23a-dig-draw.js:566-570
 drawDigFauna                 src/23-mode-dig.js:336-345
 drawDigLight                 src/23b-dig-gpu.js:152-164
-drawDigWorld                 src/23a-dig-draw.js:46-517
+drawDigWorld                 src/23a-dig-draw.js:46-518
 drawDronesMap                src/12e-drone-flight.js:296-314
 drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:177-190
@@ -4614,6 +4614,7 @@ lgRGB                        src/19g-landing-gpu.js:39
 lgRecCtx                     tests/91q1-landing-gpu.js:9-21
 lgRidges                     src/19g-landing-gpu.js:94-110
 lgUnder                      src/19g-landing-gpu.js:195-234
+lifeAstroAt                  src/20fa-life-gpu.js:268-272
 lifeAstroBake                src/20fa-life-gpu.js:208-214
 lifeAstroGpu                 src/20fa-life-gpu.js:219-244
 lifeAstroPal                 src/20fa-life-gpu.js:192-199
@@ -4621,18 +4622,18 @@ lifeAstroPose                src/20fa-life-gpu.js:201-207
 lifeBake2D                   src/20fa-life-gpu.js:104-109
 lifeBakeDrop                 src/20fa-life-gpu.js:101
 lifeBaked                    src/20fa-life-gpu.js:92-100
-lifeBeastBox                 src/20fa-life-gpu.js:285-297
-lifeBeastGpu                 src/20fa-life-gpu.js:300-381
+lifeBeastBox                 src/20fa-life-gpu.js:293-305
+lifeBeastGpu                 src/20fa-life-gpu.js:308-389
 lifeDim                      src/20fa-life-gpu.js:137-140
 lifeHere                     src/20fa-life-gpu.js:263
-lifeId                       src/20fa-life-gpu.js:274
+lifeId                       src/20fa-life-gpu.js:282
 lifeLampGpu                  src/20fa-life-gpu.js:247-259
 lifeLight                    src/20fa-life-gpu.js:116-134
-lifePeepGpu                  src/20fa-life-gpu.js:435-482
-lifePlantBox                 src/20fa-life-gpu.js:391-396
-lifePlantGpu                 src/20fa-life-gpu.js:400-427
+lifePeepGpu                  src/20fa-life-gpu.js:443-490
+lifePlantBox                 src/20fa-life-gpu.js:399-404
+lifePlantGpu                 src/20fa-life-gpu.js:408-435
 lifeSprite                   src/20fa-life-gpu.js:146-183
-lifeTint                     src/20fa-life-gpu.js:276-283
+lifeTint                     src/20fa-life-gpu.js:284-291
 lightShafts                  src/19c-light.js:213-246
 lightsAll                    src/11g-lights.js:24
 lightsArrive                 src/11g-lights.js:53-56
@@ -4892,12 +4893,12 @@ mgrWorkFact                  src/12c-mgr-core.js:609-665
 mgrWorkKeep                  src/12c-mgr-core.js:555-564
 mgrWorkSci                   src/12c-mgr-core.js:690-745
 midiHz                       src/10-music.js:106
-mineDeep                     src/23a-dig-draw.js:535-538
-mineKey                      src/23a-dig-draw.js:524
+mineDeep                     src/23a-dig-draw.js:536-539
+mineKey                      src/23a-dig-draw.js:525
 mineLay                      src/13a-guns.js:267-275
-mineLoad                     src/23a-dig-draw.js:539-548
-mineSave                     src/23a-dig-draw.js:549-558
-mineSpotX                    src/23a-dig-draw.js:531-534
+mineLoad                     src/23a-dig-draw.js:540-549
+mineSave                     src/23a-dig-draw.js:550-559
+mineSpotX                    src/23a-dig-draw.js:532-535
 minedUnit                    src/11-log.js:171-179
 minesTick                    src/13a-guns.js:276-320
 mirrorAck                    src/11f-mirror.js:33-40
@@ -8035,7 +8036,7 @@ zoomTo                       src/15-input.js:350
 ## src/20f-fauna.js · 17 KB
   · фауна:1
 
-## src/20fa-life-gpu.js · 32 KB
+## src/20fa-life-gpu.js · 33 KB
   · жизнь на видеокарте: двойники кистей ходока, зверя и травы:1
 
 ## src/21-mode-surface.js · 50 KB
@@ -8176,7 +8177,7 @@ zoomTo                       src/15-input.js:350
 ## src/21h-pennant.js · 8 KB
   · переходящий вымпел:1
 
-## src/22-mode-cave.js · 44 KB
+## src/22-mode-cave.js · 45 KB
   · пещера: поле породы в двух измерениях:1
 
 ## src/22a-cave-deco.js · 22 KB

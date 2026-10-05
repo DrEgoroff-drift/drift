@@ -508,8 +508,9 @@ function drawDigWorld(){
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
   const helm=helmBeamGpu(sx,sy+4,D.face||1)?"gpu":true;
   ctx.save();ctx.translate(sx,sy+4);
-  drawAstronaut({face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
-    mining:!!D.target,suitLow:suit<25,lamp:helm});
+  const ao={face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
+    mining:!!D.target,suitLow:suit<25,lamp:helm};
+  if(!lifeAstroAt(ao))drawAstronaut(ao);   /* двойник 20fa (G15) */
   ctx.restore();
   /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
      сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —

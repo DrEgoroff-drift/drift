@@ -71206,6 +71206,14 @@ function lifeLampGpu(pass,x,y,fc,s){
    стоит в DPR, двойник — в пикселях CSS */
 function lifeHere(x,y){const m=ctx.getTransform(),d=DPR||1;x=x||0;y=y||0;
   return {x:(m.a*x+m.c*y+m.e)/d,y:(m.b*x+m.d*y+m.f)/d,s:Math.hypot(m.a,m.b)/d};}
+/* ходок там, куда смотрит перенос 2D (G15): режим двигает ctx как прежде, а фигуру
+   кладёт двойник в следующий слой поверх (gpuNext — копия #c, только если на нём
+   рисовали). false — видеокарты нет, режим зовёт 2D-кисть сам */
+function lifeAstroAt(o){
+  if(!GPU.on||!GPU.dev)return false;
+  const h=lifeHere(0,0),pass=gpuNext();if(!pass)return false;
+  return lifeAstroGpu(pass,h.x,h.y,Object.assign({},o,{s:h.s}));
+}
 
 /* ══ зверь ══
    Тело печётся неподвижным (drawBeast с выпечкой k: профиль вправо, без ног и парения),
@@ -83967,26 +83975,33 @@ function drawCaveWorld(){
   }
   /* жизнь пещеры — поверх света, как у main: цветы и звери видны своим цветом, темнота
      их не гасит (под полем цветы теряли четверть яркости, Контроль 26.09) */
+  /* G15: жизнь и метка — двойниками 20fa в слой поверх (без видеокарты — 2D-кисти).
+     Точки — через lifeHere: кадр пещеры стоит в withScale */
+  const LP=GPU.on?gpuNext():null;
   for(const pl of C.plants){
     const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
+    if(LP){const h=lifeHere(x,y);if(lifePlantGpu(LP,pl,h.x,h.y,0,{s:h.s}))continue;}
     drawPlant(pl,x,y);
   }
   for(const b of C.fauna){
     const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
+    if(LP){const h=lifeHere(x,y+b.r*.9);if(lifeBeastGpu(LP,b,h.x,h.y,true,b.stun,{s:h.s}))continue;}
     drawBeast(b,x,y+b.r*.9,true,b.stun);
   }
   if(!C.found){
     const x=C.findX-camx,y=C.findY-camy;
     if(x>-40&&x<W+40&&y>-40&&y<H+40){
-      ctx.fillStyle=Math.sin(G.t*.08)>0?"rgba(255,225,140,.9)":"rgba(255,225,140,.4)";
-      ctx.beginPath();ctx.arc(x,y-6,4,0,TAU);ctx.fill();
+      const k=Math.sin(G.t*.08)>0?.9:.4;
+      if(LP){const h=lifeHere(x,y-6);gpuShapes(LP,[[1,h.x,h.y,4*h.s,0,0,1.2*h.s,255,225,140,k]],{blend:"over"});}
+      else{ctx.fillStyle="rgba(255,225,140,"+k+")";ctx.beginPath();ctx.arc(x,y-6,4,0,TAU);ctx.fill();}
     }
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
   const helm=helmBeamGpu(px,py,C.face)?"gpu":true;
   ctx.save();ctx.translate(px,py);
-  drawAstronaut({face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:!C.on,jet:!!C.jetOn,
-    mining:false,suitLow:G.surf.suit<25,lamp:helm});
+  const ao={face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:!C.on,jet:!!C.jetOn,
+    mining:false,suitLow:G.surf.suit<25,lamp:helm};
+  if(!lifeAstroAt(ao))drawAstronaut(ao);
   ctx.restore();
   /* Показания больше не рисуются на канве в левом нижнем углу: там стоят
      DOM-пэды, и текст просвечивал сквозь кнопки (M178). Скафандр и ранец
@@ -86011,8 +86026,9 @@ function drawDigWorld(){
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
   const helm=helmBeamGpu(sx,sy+4,D.face||1)?"gpu":true;
   ctx.save();ctx.translate(sx,sy+4);
-  drawAstronaut({face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
-    mining:!!D.target,suitLow:suit<25,lamp:helm});
+  const ao={face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
+    mining:!!D.target,suitLow:suit<25,lamp:helm};
+  if(!lifeAstroAt(ao))drawAstronaut(ao);   /* двойник 20fa (G15) */
   ctx.restore();
   /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
      сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —

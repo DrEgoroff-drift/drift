@@ -262,6 +262,14 @@ function lifeLampGpu(pass,x,y,fc,s){
    стоит в DPR, двойник — в пикселях CSS */
 function lifeHere(x,y){const m=ctx.getTransform(),d=DPR||1;x=x||0;y=y||0;
   return {x:(m.a*x+m.c*y+m.e)/d,y:(m.b*x+m.d*y+m.f)/d,s:Math.hypot(m.a,m.b)/d};}
+/* ходок там, куда смотрит перенос 2D (G15): режим двигает ctx как прежде, а фигуру
+   кладёт двойник в следующий слой поверх (gpuNext — копия #c, только если на нём
+   рисовали). false — видеокарты нет, режим зовёт 2D-кисть сам */
+function lifeAstroAt(o){
+  if(!GPU.on||!GPU.dev)return false;
+  const h=lifeHere(0,0),pass=gpuNext();if(!pass)return false;
+  return lifeAstroGpu(pass,h.x,h.y,Object.assign({},o,{s:h.s}));
+}
 
 /* ══ зверь ══
    Тело печётся неподвижным (drawBeast с выпечкой k: профиль вправо, без ног и парения),
