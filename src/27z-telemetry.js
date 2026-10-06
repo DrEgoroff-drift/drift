@@ -204,6 +204,7 @@ function hudFloorMeasure(force){
    if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,innerWidth-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
    HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);
 }
+let $vShip=null,$actKey=null;
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
@@ -298,7 +299,11 @@ function hud(){
   rescueSync();   /* открытое окно выходов сверяет себя с миром (16c) */
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
-  if(G.mode==="system"){a=(typeof nameOf==="function")?nameOf(G.sys):G.sys.name;b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
+  /* имя корабля — в шапке плиты борта (M720), строка места говорит только место */
+  {const vs=$vShip||($vShip=document.getElementById("vShip"));if(vs)setTx(vs,"«"+st.S.ru+"»");
+    const ak=$actKey||($actKey=document.getElementById("actKey"));
+    if(ak&&typeof actionKey==="function"){const c=actionKey("main","act");setTx(ak,c==="Space"?"Пробел":keyLabel(c));}}
+  if(G.mode==="system"){a=(typeof nameOf==="function")?nameOf(G.sys):G.sys.name;b="сектор "+G.sx+":"+G.sy;
     /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
     if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
   else if(G.mode==="wanderer"){a="На борту «Сороки»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 473 · top-level symbols: 7134
+Files: 473 · top-level symbols: 7142
 
 ## SYMBOLS
 
@@ -22,7 +22,7 @@ $fb                          src/27z-telemetry.js:7
 $fn                          src/27z-telemetry.js:12
 $hq                          src/27c-ui-hq.js:4
 $hudp                        src/27z-telemetry.js:92
-$ipod                        src/25c-instr-hud.js:16
+$ipod                        src/25c-instr-hud.js:19
 $jn                          src/27z-telemetry.js:74
 $launch                      src/27z-telemetry.js:81
 $menu                        src/15-input.js:243
@@ -37,6 +37,7 @@ $sn                          src/27z-telemetry.js:13
 $sos                         src/16c-rescue.js:547
 $st                          src/26-ui-station.js:2
 $un                          src/27z-telemetry.js:72
+$vShip                       src/27z-telemetry.js:207
 $vc                          src/27z-telemetry.js:70
 $vf                          src/27z-telemetry.js:69
 $vitals                      src/27z-telemetry.js:65
@@ -981,12 +982,17 @@ INSTR_SHELF_MAX              src/05b-instr-kit.js:32
 INSTR_WEAR_RATE              src/05b-instr-kit.js:85
 INSTR_WORKS                  src/05b-instr-kit.js:18-31
 INST_TOPICS                  src/11ab-institute.js:17-24
-IPOD                         src/25c-instr-hud.js:38
-IPOD_FLY                     src/25c-instr-hud.js:150
-IPOD_MQ                      src/25c-instr-hud.js:147
-IPOD_NARROW                  src/25c-instr-hud.js:148
-IPOD_S                       src/25c-instr-hud.js:17
-IPOD_SIG                     src/25c-instr-hud.js:25
+IPOD                         src/25c-instr-hud.js:41
+IPOD_A0                      src/25c-instr-hud.js:42
+IPOD_FACE                    src/25c-instr-hud.js:40
+IPOD_FLY                     src/25c-instr-hud.js:174
+IPOD_H                       src/25c-instr-hud.js:23
+IPOD_MQ                      src/25c-instr-hud.js:167
+IPOD_NARROW                  src/25c-instr-hud.js:168
+IPOD_S                       src/25c-instr-hud.js:22
+IPOD_SHORT                   src/25c-instr-hud.js:172
+IPOD_SIG                     src/25c-instr-hud.js:26
+IPOD_SQ                      src/25c-instr-hud.js:171
 ISLAND_LETTERS               src/11y-island.js:15-22
 JAM_R                        src/13a-guns.js:34
 JAM_TIME                     src/13a-guns.js:35
@@ -4366,7 +4372,7 @@ hqWallProps                  src/27f-hq-room.js:426-472
 hqWindowView                 src/27f-hq-room.js:783-806
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:207-571
+hud                          src/27z-telemetry.js:208-576
 hudFloorMeasure              src/27z-telemetry.js:175-206
 hudMsgPlace                  src/27z-telemetry.js:43-64
 hudNumDirty                  src/08-state.js:101
@@ -4440,12 +4446,14 @@ instrOffers                  src/05b-instr-kit.js:127-143
 instrPanel                   src/25a-instr.js:109-199
 instrPanelGeo                src/25a-instr.js:103-106
 instrPenWidth                src/05b-instr-kit.js:78-80
-instrPodDraw                 src/25c-instr-hud.js:111-138
-instrPodGeo                  src/25c-instr-hud.js:40-43
-instrPodLive                 src/25c-instr-hud.js:83-110
-instrPodPaint                src/25c-instr-hud.js:45-81
-instrPodSig                  src/25c-instr-hud.js:26-30
-instrPodTick                 src/25c-instr-hud.js:151-157
+instrPodDial                 src/25c-instr-hud.js:50-66
+instrPodDraw                 src/25c-instr-hud.js:125-148
+instrPodGeo                  src/25c-instr-hud.js:44-47
+instrPodLive                 src/25c-instr-hud.js:111-124
+instrPodPaint                src/25c-instr-hud.js:68-109
+instrPodSig                  src/25c-instr-hud.js:27-31
+instrPodSize                 src/25c-instr-hud.js:151-158
+instrPodTick                 src/25c-instr-hud.js:175-181
 instrPrice                   src/05b-instr-kit.js:115-118
 instrQuality                 src/05b-instr-kit.js:65-71
 instrRead                    src/25a-instr.js:59-82
@@ -8351,7 +8359,7 @@ zoomTo                       src/15-input.js:350
 ## src/25b-tape.js · 14 KB
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 13 KB
+## src/25c-instr-hud.js · 14 KB
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25d-instr-rack.js · 36 KB
@@ -8522,7 +8530,7 @@ zoomTo                       src/15-input.js:350
 
 ## src/27y-hud-words.js · 3 KB
 
-## src/27z-telemetry.js · 46 KB
+## src/27z-telemetry.js · 47 KB
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 65 KB
