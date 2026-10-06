@@ -6,6 +6,20 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.489.0 - gas giants of their own, crowds in volume, the dish
+
+- **Every gas giant has its own weather (M703).** One of eight palettes per world (ochre, toffee,
+  turquoise, deep blue, rust, sulphur, lilac, ammonia green) instead of one lilac for the whole
+  galaxy; belts of uneven width and edge, mottled polar caps, from none to three storms at seeded
+  places, bright ovals or dark eyes. A warm star tints the clouds less, so giants no longer all
+  slide into one yellow.
+- **Crowds stay in volume (M713).** When the frame runs out of full-size 3D layers, the next hull
+  takes a smaller layer instead of dropping to the flat sprite beside its 3D neighbours.
+- **The dish is a dish (M712)**: a paraboloid on a boom with its feed on three legs. Banked hulls
+  roll at .6 of the game's bank, so a hard turn no longer lays a ship on its side into a dark stick.
+- Fixed: the radio's tuning sweep never played - a second `radioTune` in the receiver module
+  replaced the first, so each change of piece snapped the dial straight to the station.
+
 ## 0.488.0 - ships in 3D, planets on the engine, and the yards of the five powers
 
 - **Ships in flight are real 3D meshes (M710).** The hull is built from `hullOf` as a loft with

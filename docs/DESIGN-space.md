@@ -63,7 +63,6 @@ draws the old textured ball.
   (r 360 px) costs .26 (crystal) to .88 ms (ocean) — `docs/look/space/shoot.py --q bench=60&only=ocean&cols=1`.
   Already cheaper: the octave loop breaks once an octave is under a pixel, and detail follows the
   CSS pixel, not the device one (DPR 3 skips about one octave).
-- M703 gas giants: more, irregular belts; cloud tint stays neutral under warm stars.
 - Golden frames that show planets will need `-Accept` on the release machine.
 
 ## Ships in flight (M710) — full 3D
@@ -81,12 +80,10 @@ The studio (`GPU.rt`) and pirates/barges/fleet still use their sprites.
 | Light | Star at height `H3D_LZ` .48, fill .30 (darker towards the belly), key 1.6; Blinn sheen by maker gloss and the material's metal mask; glass from the material; own lights (windows) from the emissive mask ×`RL_EM` |
 | Shadow | The body as a field (stations + superellipse in the uniform): parts march 6 steps toward the star and fall into the body's shadow; parts touching the body darken (contact) |
 | Other light | Scene lights (08b light texture) at .25, as the sprite took .2; flame light only back-and-sideways and capped at .16 of the flame colour — uncapped, Mamont's long flame bleached the whole hull |
-| Composition | Own ×4 MSAA layer (one of `H3D_L`=4 array layers per frame, 512²), its own submit before the frame encoder — the scene pass is never broken — then one `gpuImage` with the "hull" blend (hull mask kept). More than four hulls in a frame fall back to sprites |
-| Warm | `h3d.hull` in `GPU_PIPE_ONE` and the key table (also `pipe:gor|over` for M700) |
+| Composition | Own ×4 MSAA layer (one of `H3D_L`=4 array layers per frame, 512²), its own submit before the frame encoder — the scene pass is never broken — then one `gpuImage` with the "hull" blend (hull mask kept). A class out of layers steps the hull down to the next smaller class (M713: 512 → 256 → 128, 6/8/16 layers); only then the sprite |
+| Warm | `h3d.hull` in `GPU_PIPE_ONE` and the key table; the orb per family `pipe:gor0/3/4/7/8|over`, the rest built async |
 
 Open:
 - **M711** S23 cost (A/B/A with `?h3d=0`), together with M702: one 512² ×4 layer per ship, clear + resolve.
-- **M712** the dish as a real dish; nose cap reads white on haulers (bridge + tip); bank .8 legibility.
-- **M713** allies/escorts beyond four per frame — a smaller layer per far hull instead of the sprite.
 
 ## The interface (M720) — not started
