@@ -293,7 +293,9 @@ function hud(){
      плашкой посреди мира; на буксире и под окнами её нет, как и было */
   if($zl){
     const bc=document.body.classList;
-    const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen");
+    /* цифра — повод, а не вывеска (M721): две секунды после того, как масштаб сдвинулся */
+    if($zl.__z!==G.zoom){$zl.__z=G.zoom;$zl.__t=wallMs();}
+    const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen")&&wallMs()-$zl.__t<2000;
     $zl.style.display=zs?"":"none";
     if(zs)setTx($zl,"Масштаб ×"+decRu(G.zoom,2));
   }

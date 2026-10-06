@@ -744,8 +744,8 @@ function drawSysHud(zx,zy,sh,sys,U){
      у кромки одну звезду. Теперь из пустоты всегда видно, куда лететь. */
   /* звезда и цель — тихие холодные фишки (пара HUD 15/n): тёплый у кадра один,
      следующее действие; имена — как написаны, регистр как в предложении */
-  const marks=[{x:0,y:0,c:"#c3d0d8",l:"Звезда",t:{kind:"star"},k:"star"}];
-  if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
+  const marks=[{x:0,y:0,c:"#d9d2c4",l:"Звезда",t:{kind:"star"},k:"star"}];
+  if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#f1ebde",
     l:sys.station.name+((g=>g?" · "+g:"")(powerGlyph(chronOwnerKey(G.sx,G.sy)))),t:{kind:"station"},k:"station"});   /* знак хозяина земли — после имени: имя фишки как в таблицах (M458) */
   {
     let np=null,nd=1e18;
@@ -753,9 +753,9 @@ function drawSysHud(zx,zy,sh,sys,U){
       const d=Math.hypot(p.x-sh.x,p.y-sh.y);
       if(d<nd){nd=d;np=p;}
     }
-    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name,t:{kind:"planet",p:np},k:"planet:"+np.name});
+    if(np)marks.push({x:np.x,y:np.y,c:"#c4bba9",l:np.name,t:{kind:"planet",p:np},k:"planet:"+np.name});
   }
-  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#e6eef2",l:"Цель",t:null,k:"target"});}
+  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6a2b",l:"Цель",t:null,k:"target"});}
   /* корпус после боя (G4c): подпись над ним стала фишкой — ближний из тех, что за кадром
      (видимый читается сам), по тычку автопилот к нему */
   if(G.npcWrecks&&G.npcWrecks.length){
@@ -764,7 +764,7 @@ function drawSysHud(zx,zy,sh,sys,U){
       const x=zx(w.x),y=zy(w.y);if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
       const d=Math.hypot(w.x-sh.x,w.y-sh.y);if(d<nd){nd=d;nw=w;}
     }
-    if(nw)marks.push({x:nw.x,y:nw.y,c:"#b8c2cc",l:"Корпус",t:{kind:"wreck",ax:nw.x,ay:nw.y,nm:"корпус"},k:"wreck:"+nw.seed});
+    if(nw)marks.push({x:nw.x,y:nw.y,c:"#a59d8f",l:"Корпус",t:{kind:"wreck",ax:nw.x,ay:nw.y,nm:"корпус"},k:"wreck:"+nw.seed});
   }
   /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
   if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp.name||"Оклик",t:null,hail:1,k:"hail"});}

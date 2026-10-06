@@ -304,9 +304,24 @@ function repairDo(frac){
 }
 /* подписи кнопок: половина прячется, когда корпус уже выше неё; одна кнопка —
    «РЕМОНТ · N», две — «ДО 50% · N» и «ПОЛНОСТЬЮ · N» */
+/* карточка борта (M720): то, за что платишь, — над кнопкой, которая это покупает: топливо над
+   ЗАПРАВКОЙ, корпус над ремонтом, трюм над изолентой. Строки — отдельные дети подвала, порядок им даёт
+   style.css; на узком экране правой колонки нет, и строки спрятаны там же */
+function stShipCard(ft){
+  const st=stat(),seg=(v,m)=>{const n=Math.round(10*clamp(m>0?v/m:0,0,1));let s="";for(let i=0;i<10;i++)s+=i<n?'<i class="f"></i>':"<i></i>";return s;};
+  const put=(id,html)=>{let e=document.getElementById(id);
+    if(!e){e=document.createElement("div");e.id=id;e.className="sr";ft.insertBefore(e,ft.firstChild);}
+    if(e.__h!==html){e.__h=html;e.innerHTML=html;}};
+  const row=(l,v,m)=>'<span>'+l+'</span><b>'+Math.round(v)+" / "+Math.round(m)+'</b><div class="sb">'+seg(v,m)+"</div>";
+  put("stShipC",row("ТРЮМ",held(),st.cargoMax));
+  put("stShipH",row("КОРПУС",G.hull,st.hullMax));
+  put("stShipF",row("ТОПЛИВО",G.fuel,st.fuelMax));
+  put("stShipN",'<span>БОРТ</span><b>«'+st.S.ru+'»</b>');
+}
 function repairBtns(){
   const bh=document.getElementById("bRepairHalf"),bf=document.getElementById("bRepair");
   if(!bh||!bf)return;
+  if(bf.parentNode)stShipCard(bf.parentNode);
   const h=repairQuote(.5),f=repairQuote(1);
   bh.style.display=h.units?"":"none";
   bh.textContent="ДО 50% · "+h.cost.toLocaleString("ru");
