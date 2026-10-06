@@ -2350,18 +2350,16 @@ body.mobile kbd{display:none}
 @media (pointer:coarse){kbd{display:none}}
 
 /* ── связь и действие на компьютере ── */
-/* связь — по центру снизу, когда ряду хватает места (вёрстка шире 1100 px: ширина/--ui), иначе
-   поднимается над плитами действия; на экранах станции приёмник живёт в шапке окна (выше по файлу).
-   Только под мышью: под пальцем (планшет, телефон боком) пульт стоит над пэдами по правилу выше */
+/* связь — слева внизу или по центру внизу, где ряд пэдов оставил место (body.conleft/.conlow
+   ставит мерка 27z hudFloorMeasure), иначе поднимается над плитами; на экранах станции приёмник
+   живёт в шапке окна (выше по файлу). Только под мышью: под пальцем пульт над пэдами по правилу выше */
 @media (pointer:fine){
 body:not(.mobile):not(.screen) #console{gap:10px;align-items:stretch;max-width:none;
   bottom:calc(env(safe-area-inset-bottom) + 86px + var(--helmlift,0px))}
-@media (min-width:1100px) and (min-aspect-ratio:1100/760){
-  body:not(.mobile):not(.screen):not(.padrow) #console{bottom:calc(env(safe-area-inset-bottom) + 16px);
-    left:calc(env(safe-area-inset-left) + 16px);transform:none}}
+body.conlow:not(.mobile):not(.screen) #console{bottom:calc(env(safe-area-inset-bottom) + 16px)}
+body.conleft:not(.mobile):not(.screen) #console{left:var(--conx,16px);transform:none}
 body:not(.mobile):not(.screen) #prompt{bottom:calc(env(safe-area-inset-bottom) + 156px + var(--helmlift,0px))}
-@media (min-width:1100px) and (min-aspect-ratio:1100/760){
-  body:not(.mobile):not(.screen):not(.padrow) #prompt{bottom:calc(env(safe-area-inset-bottom) + 96px + var(--helmlift,0px))}}
+body.conlow:not(.mobile):not(.screen) #prompt{bottom:calc(env(safe-area-inset-bottom) + 96px + var(--helmlift,0px))}
 body:not(.mobile):not(.screen) #rx{display:grid;grid-template-columns:118px 1fr;grid-template-rows:auto auto;column-gap:16px;row-gap:2px;
   align-items:center;padding:10px 16px 9px;width:min(420px,calc(100vw / var(--ui,1) - 130px))}
 body:not(.mobile):not(.screen) #rxOut{grid-column:1;grid-row:1/3;align-self:center;border-right:1px solid rgba(150,222,232,.10);padding-right:12px}
@@ -2472,6 +2470,26 @@ body.mobile #rx{padding:6px 12px}
 body.rackon #msg{top:calc(var(--rackbot,0px) / var(--ui,1) + 10px)}
 body.rackon #prompt{opacity:0}
 
+/* ── меню борта: плита, а не стеклянный диалог — срез, волосок, засечка; под верхним рядом плит
+   (у правого края оно накрывало плиту места), Esc назван в шапке ── */
+#menu{background:var(--pl-bg);-webkit-backdrop-filter:var(--pl-blur);backdrop-filter:var(--pl-blur);
+  box-shadow:inset 0 0 0 1px var(--pl-edge);border:0;border-radius:0;clip-path:var(--pl-cutp);
+  width:min(304px,86vw);right:calc(env(safe-area-inset-right) + 16px);
+  top:calc(var(--hudband,88px) / var(--ui,1) + 10px);max-height:calc(100vh / var(--ui,1) - var(--hudband,88px) / var(--ui,1) - 24px)}
+#menu::before{content:"";position:absolute;top:0;left:0;width:40px;height:2px;background:var(--phos);
+  box-shadow:0 0 10px var(--phos);pointer-events:none}
+#menu>b{font-size:10px;letter-spacing:.22em;color:var(--ink2);padding:13px 14px 11px;border-bottom:1px solid var(--pl-edge);gap:8px}
+#menu>b kbd{margin-left:auto;font-size:9px;padding:3px 5px 2px}
+@media (pointer:fine){body:not(.mobile) #menu>b kbd+span{margin-left:0}}   /* колпачок виден — крестик за ним */
+#menu button{padding:12px 14px;min-height:54px;gap:13px;border-bottom:1px solid rgba(150,222,232,.07);color:var(--ink)}
+#menu button::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:var(--phos);
+  opacity:0;transition:opacity .14s}
+#menu button svg{width:17px;height:17px;opacity:.75;stroke:var(--phos)}
+#menu button em{font-size:13px;letter-spacing:.12em;font-weight:600}
+#menu button s{font-size:10.5px;color:var(--ink2);margin-top:4px}
+@media (hover:hover){#menu button:hover{background:linear-gradient(90deg,rgba(127,230,216,.10),rgba(127,230,216,0))}
+  #menu button:hover::before{opacity:1}}
+
 </style>
 </head>
 <body>
@@ -2561,7 +2579,7 @@ body.rackon #prompt{opacity:0}
 </div>
 
 <div id="menu">
-  <b>БОРТОВЫЕ СИСТЕМЫ<span id="menuclose">×</span></b>
+  <b>БОРТОВЫЕ СИСТЕМЫ<kbd>Esc</kbd><span id="menuclose">×</span></b>
   <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>ОПИСЬ</em><s>трюм, комплект, части, вещи</s></span></button>
   <button id="dealbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="5.4" cy="5" r="2.1"/><path d="M1.6 13c0-2.2 1.7-3.6 3.8-3.6S9.2 10.8 9.2 13"/><circle cx="11.6" cy="4.2" r="1.5"/><path d="M11.6 7.2v5.6M9.4 9.4h4.4"/></svg><span class="tx"><em>ДЕЛО</em><s>кто и что на вас работает</s></span></button>
   <button id="tablebtn"><svg viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7"/><path d="M5 3.5h6l1 2.5H4z"/></svg><span class="tx"><em>СТОЛ</em><s>тетрадь, ленты, письма, вещи</s></span></button>
@@ -49400,6 +49418,14 @@ addEventListener("keydown",e=>{
     rebinding=null;renderOpts();e.preventDefault();return;
   }
   if(e.code==="KeyM"){navAction();e.preventDefault();return;}
+  /* Esc — меню борта (M720): открытое закрывает; закрытое открывает только в полёте, когда Esc
+     никому другому не нужен — экран, стол, окно пустого бака и метки курса разбирают его сами */
+  if(e.code==="Escape"){
+    if($menu.classList.contains("open")){toggleMenu(false);e.preventDefault();return;}
+    const busy=!G.running||(typeof scrOpen==="function"&&scrOpen())||(typeof tableOpenNow!=="undefined"&&tableOpenNow)||
+      (G.marks&&G.marks.length)||document.querySelector("#sos.open,.scr.open,#opts.open");
+    if(!busy){toggleMenu(true);e.preventDefault();return;}
+  }
   if(e.code==="F8"&&REC){recMark();e.preventDefault();return;}   /* «баг здесь» (15c-rec) */
   const k=keyMap()[e.code];
   if(k){keys[k]=true;if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;e.preventDefault();}
@@ -112125,6 +112151,23 @@ function hudFloorMeasure(force){
      const band=Math.max(vb,lb);
      if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
    }
+   /* место пульта связи (M720): слева внизу, по центру внизу или над плитами — по тому, где ряд
+      пэдов оставил место, а не по составу ряда (на карте тормоз и тяга поднимали пульт в середину
+      карты при свободном низе). Мерка ширины пульта от его места не зависит — петли нет */
+   const con=document.getElementById("console");
+   if(con&&$padsEl){
+     const cw=con.getBoundingClientRect().width,u=(typeof UIK==="number"&&UIK>0)?UIK:1,gap=12*u,WW=innerWidth;
+     const bs=[];for(const b of $padsEl.querySelectorAll("button")){const r=b.getBoundingClientRect();if(r.width>0&&r.height>0)bs.push(r);}
+     const free=(x0,x1)=>!bs.some(r=>r.left<x1+gap&&r.right>x0-gap);
+     /* три места по очереди: у левой кромки, сразу за левыми пэдами (A/D), по центру */
+     let lx=16*u;for(const r of bs)if(r.right<WW/2)lx=Math.max(lx,r.right+gap);
+     const xs=[16*u,lx];let x=-1;
+     for(const c of xs)if(cw>0&&c+cw<WW/2+cw/2&&free(c,c+cw)){x=c;break;}
+     const mid=x<0&&cw>0&&free((WW-cw)/2,(WW+cw)/2);
+     if(x>=0){const v=Math.round(x/u)+"px";if(document.documentElement.style.getPropertyValue("--conx")!==v)document.documentElement.style.setProperty("--conx",v);}
+     document.body.classList.toggle("conleft",x>=0);
+     document.body.classList.toggle("conlow",x>=0||mid);
+   }
    let fl=innerHeight,rl=innerWidth,rt=0;
    /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
       подсказка и правый борт стоят position:fixed, а у таких offsetParent
@@ -112479,8 +112522,6 @@ function hud(){
       setTx(padWord($lock),padCase((lv&&lv.length<=14)?lv:"ЦЕЛЬ"));
     }
   }
-  /* ряд пэдов шире «ЦЕЛИ» и «ДЕЙСТВИЯ» — пульт на компьютере стоит над ним, а не рядом (style.css, M720) */
-  document.body.classList.toggle("padrow",[$fire,$msl,$bBrk,$bThr].some(b=>b&&b.style.display!=="none"));
   document.body.classList.toggle("inbelt",G.mode==="belt");
   document.body.classList.toggle("inrail",G.mode==="rail");
   if(G.mode!=="system"&&typeof abilPadRim==="function")abilPadRim();   /* подпись способности не залипает с полёта (18.09) */   /* в вагоне пэды полёта ни к чему (M473 хвост, 18.09) */

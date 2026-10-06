@@ -184,6 +184,23 @@ function hudFloorMeasure(force){
      const band=Math.max(vb,lb);
      if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
    }
+   /* место пульта связи (M720): слева внизу, по центру внизу или над плитами — по тому, где ряд
+      пэдов оставил место, а не по составу ряда (на карте тормоз и тяга поднимали пульт в середину
+      карты при свободном низе). Мерка ширины пульта от его места не зависит — петли нет */
+   const con=document.getElementById("console");
+   if(con&&$padsEl){
+     const cw=con.getBoundingClientRect().width,u=(typeof UIK==="number"&&UIK>0)?UIK:1,gap=12*u,WW=innerWidth;
+     const bs=[];for(const b of $padsEl.querySelectorAll("button")){const r=b.getBoundingClientRect();if(r.width>0&&r.height>0)bs.push(r);}
+     const free=(x0,x1)=>!bs.some(r=>r.left<x1+gap&&r.right>x0-gap);
+     /* три места по очереди: у левой кромки, сразу за левыми пэдами (A/D), по центру */
+     let lx=16*u;for(const r of bs)if(r.right<WW/2)lx=Math.max(lx,r.right+gap);
+     const xs=[16*u,lx];let x=-1;
+     for(const c of xs)if(cw>0&&c+cw<WW/2+cw/2&&free(c,c+cw)){x=c;break;}
+     const mid=x<0&&cw>0&&free((WW-cw)/2,(WW+cw)/2);
+     if(x>=0){const v=Math.round(x/u)+"px";if(document.documentElement.style.getPropertyValue("--conx")!==v)document.documentElement.style.setProperty("--conx",v);}
+     document.body.classList.toggle("conleft",x>=0);
+     document.body.classList.toggle("conlow",x>=0||mid);
+   }
    let fl=innerHeight,rl=innerWidth,rt=0;
    /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
       подсказка и правый борт стоят position:fixed, а у таких offsetParent
@@ -538,8 +555,6 @@ function hud(){
       setTx(padWord($lock),padCase((lv&&lv.length<=14)?lv:"ЦЕЛЬ"));
     }
   }
-  /* ряд пэдов шире «ЦЕЛИ» и «ДЕЙСТВИЯ» — пульт на компьютере стоит над ним, а не рядом (style.css, M720) */
-  document.body.classList.toggle("padrow",[$fire,$msl,$bBrk,$bThr].some(b=>b&&b.style.display!=="none"));
   document.body.classList.toggle("inbelt",G.mode==="belt");
   document.body.classList.toggle("inrail",G.mode==="rail");
   if(G.mode!=="system"&&typeof abilPadRim==="function")abilPadRim();   /* подпись способности не залипает с полёта (18.09) */   /* в вагоне пэды полёта ни к чему (M473 хвост, 18.09) */

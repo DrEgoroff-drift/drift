@@ -183,6 +183,14 @@ addEventListener("keydown",e=>{
     rebinding=null;renderOpts();e.preventDefault();return;
   }
   if(e.code==="KeyM"){navAction();e.preventDefault();return;}
+  /* Esc — меню борта (M720): открытое закрывает; закрытое открывает только в полёте, когда Esc
+     никому другому не нужен — экран, стол, окно пустого бака и метки курса разбирают его сами */
+  if(e.code==="Escape"){
+    if($menu.classList.contains("open")){toggleMenu(false);e.preventDefault();return;}
+    const busy=!G.running||(typeof scrOpen==="function"&&scrOpen())||(typeof tableOpenNow!=="undefined"&&tableOpenNow)||
+      (G.marks&&G.marks.length)||document.querySelector("#sos.open,.scr.open,#opts.open");
+    if(!busy){toggleMenu(true);e.preventDefault();return;}
+  }
   if(e.code==="F8"&&REC){recMark();e.preventDefault();return;}   /* «баг здесь» (15c-rec) */
   const k=keyMap()[e.code];
   if(k){keys[k]=true;if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;e.preventDefault();}
