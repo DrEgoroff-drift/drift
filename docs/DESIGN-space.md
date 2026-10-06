@@ -86,4 +86,36 @@ The studio (`GPU.rt`) and pirates/barges/fleet still use their sprites.
 Open:
 - **M711** S23 cost (A/B/A with `?h3d=0`), together with M702: one 512² ×4 layer per ship, clear + resolve.
 
-## The interface (M720) — not started
+## The interface (M720) «Борт»
+
+The author, 06.10: the desktop interface looked bad at 4K — «перепридумай», «игровые панельки, удобные
+кнопки, как в ААА», then «приборы сверху плохие … перепридумывай все», no limits, phone included.
+The CSS lives in one block at the end of `src/style.css` (from the `M720 «Борт»` marker) and overrides
+everything above it.
+
+Laws:
+1. **One material — the instrument plate.** Smoky glass (`--pl-bg`), a cut corner (`--pl-cutp`), an edge
+   hair, a short glowing role tick on the top edge. Vitals, place, receiver, rail keys, pads and the menu
+   are all plates; nothing is a rounded dialog.
+2. **One face** — a narrow grotesque (`--face`: Bahnschrift / Roboto Condensed), tabular digits.
+   Monospace stays only on the canvas.
+3. **Hierarchy by size**: the place name 21, the main numbers 19, captions 10–11 caps with tracking.
+4. **A key is drawn on its button** (keycap `kbd`), read live from the key map (`actionKey`/`keyLabel`,
+   so a rebind shows at once); hidden on a phone and under a finger.
+5. **Corners are addresses**: ship top-left, place and purse top-right, instruments top-centre, tools on
+   the right rail, action bottom-right, the receiver bottom-left/centre.
+6. **The collapsed instruments are a piece of the rack** (`25c`): the same cream dials under glass,
+   amber needles, the misclose window, an `I` keycap — not a separate tape gadget. Opening the rack
+   (`I`) hides the pod.
+7. **The open rack stands under the top band** (`HUD_BAND`), never behind plates; it is drawn in layout
+   pixels with the overlay density times `UIK` (`RACK_K`), so at 4K it is the size the plates are; the
+   world's labels and chips are dropped for that frame (`OVL.hush`); `#msg` goes under it (`--rackbot`),
+   the prompt rests. A narrow rack (< 640 layout px) stands its gauges in two rows and ends above the rail.
+8. **The console's place is measured, not guessed**: left edge, right after the left pads, or centre —
+   the first the pad row leaves free (`body.conleft/.conlow`, `--conx`, set in `hudFloorMeasure`);
+   only otherwise it lifts over the plates.
+9. **The menu** is a plate under the top band at the right edge; `Esc` opens and closes it when nothing
+   else wants the key.
+
+Open: the station screens (`.scr`) are still the old glass — next pass; the S23 cost of the pod (M702/M711).
+

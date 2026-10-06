@@ -6,6 +6,24 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.490.0 - «Борт»: the flight interface made anew
+
+- **One material for everything over the world (M720).** Vitals, the place, the receiver, the rail,
+  the pads and the menu are instrument plates: smoky glass, a cut corner, an edge hair and a glowing
+  role tick; one narrow face with tabular digits; hierarchy by size. Laws in `docs/DESIGN-space.md`.
+- **Keys are drawn on the buttons.** Every pad and rail button with a key shows its keycap, read
+  live from the key map, so a rebind shows at once; the action plate says ПРОБЕЛ, the lock TAB. Hidden
+  on a phone and under a finger.
+- **The collapsed instruments are a piece of the rack.** Five cream dials under glass with amber
+  needles, the misclose window and an `I` keycap, top-centre — instead of a tape gadget.
+- **The open rack stands under the plates, at the plates' size.** It no longer hides behind the top
+  row, it scales with the interface ruler at 4K, world labels stay off it, the message line goes under
+  it; on a phone its eight gauges stand in two rows and it ends above the rail.
+- **The menu is a plate too, and `Esc` opens it.** It opens under the top row instead of over the
+  place plate.
+- **The receiver finds its own place**: at the left edge, right after the left pads, or in the
+  middle — wherever the pad row leaves room; on the map it no longer floats over the chart.
+
 ## 0.489.0 - gas giants of their own, crowds in volume, the dish
 
 - **Every gas giant has its own weather (M703).** One of eight palettes per world (ochre, toffee,
