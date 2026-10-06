@@ -58548,19 +58548,41 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     o.alb = ramp(k, mix(basin, .5 + .1*fbm(p*6., 3, fw), land) - .25*gl*dist*gfade - .08*dist);
     let pts = smoothstep(.85, .97, h3(floor(q) + 3.).x)*(1. - smoothstep(.0, .25, length(fract(q) - .5)))*gfade;
     o.emit = vec3f(1., .55, .25)*1.2*pts*dist;
-  } else if (k == 3) {                          // gas: bands, turbulence at their edges, one storm
+  } else if (k == 3) {                          // gas: belts and zones of uneven width, turbulence at their edges, storms
+    let sd = s.x/1.37;
+    /* пояса (M703): число, ширина, тон и мягкость каждой кромки — от зерна мира; ровная тельняшка
+       одинаковых полос читалась одной и той же планетой во всех системах */
+    let nb = 4. + floor(fract(sd*.618)*5.);
     let tb = fbm(vec3f(p.x*2.5, p.y*14., p.z*2.5) + s, 4, fw);
-    let b = p.y*7. + .5*tb + .25*fbm(warp(p*3. + s, .6, fw), 3, fw);
-    let band = .5 + .5*sin(b*3. + 1.4*sin(b*1.3 + 2.));
-    /* пояса и зоны с чёткой кромкой и тонкие полосы внутри — гигант не должен быть молочным яйцом */
-    let fine = sin(b*11. + 2.*tb)*(1. - smoothstep(.2, .6, fw*25.));
-    var tone = .14 + .62*smoothstep(.25, .75, band) + .07*fine + .08*fbm(p*vec3f(4., 20., 4.), 3, fw);
-    let cs = normalize(vec3f(.55, -.32, .77)); let ex = normalize(cross(vec3f(0., 1., 0.), cs)); let ey = cross(cs, ex);
-    let d = p - cs; let sx = dot(d, ex)/.24; let sy = dot(d, ey)/.13;
-    let sr = sqrt(sx*sx + sy*sy); let ang = atan2(sy, sx) + 2.5*exp(-sr*1.5);
-    let sw = fbm(vec3f(cos(ang)*sr, sin(ang)*sr, 1.)*3. + s, 3, fw);
-    let st = 1. - smoothstep(.75, 1.05, sr + .1*sw);
-    tone = mix(tone, .88 + .08*sw - .35*(1.-smoothstep(.1,.45, abs(sr - .62))), st);
+    let lat = p.y + .03*tb + .045*fbm(warp(p*3. + s, .6, fw), 3, fw);
+    let yy = lat*nb + .5*sin(lat*nb*.8 + sd) + .22*sin(lat*nb*2.1 + sd*1.7) - .5;
+    let bi = floor(yy); let bf = fract(yy);
+    let ta = smoothstep(.15, .85, h3(vec3f(bi, sd, 1.)).x); let tb2 = smoothstep(.15, .85, h3(vec3f(bi + 1., sd, 1.)).x);
+    let ew = mix(.04, .3, h3(vec3f(bi, sd, 2.)).y);
+    var tone = .12 + .66*mix(ta, tb2, smoothstep(.5 - ew, .5 + ew, bf + .06*tb));
+    let fine = sin(yy*9. + 2.*tb)*(1. - smoothstep(.2, .6, fw*nb*9.));
+    tone += .05*fine + .07*fbm(p*vec3f(4., 20., 4.) + s, 3, fw);
+    /* полюса — без поясов, рябая шапка темнее */
+    let pol = smoothstep(.62, .9, abs(p.y));
+    tone = mix(tone, .2 + .22*fbm(p*7. + s, 3, fw), pol*.85);
+    /* штормы: от нуля до трёх, место и размер — от зерна; светлый овал или тёмный глаз */
+    let ns = i32(floor(fract(sd*.377)*3.999));
+    for (var j = 0; j < 3; j++) {
+      if (j >= ns) { break; }
+      let hj = h3(vec3f(sd, f32(j), 5.));
+      let la = (hj.x - .5)*1.1; let lo = hj.y*6.2832;
+      let cs = vec3f(cos(lo)*sqrt(1. - la*la), la, sin(lo)*sqrt(1. - la*la));
+      let ex = normalize(cross(vec3f(0., 1., 0.), cs)); let ey = cross(cs, ex);
+      let rw = mix(.11, .26, hj.z)/(1. + f32(j)*.4);
+      let d = p - cs; let sx = dot(d, ex)/rw; let sy = dot(d, ey)/(rw*.55);
+      if (dot(d, cs) < -.2 || sx*sx + sy*sy > 2.) { continue; }
+      let sr = sqrt(sx*sx + sy*sy); let ang = atan2(sy, sx) + 2.5*exp(-sr*1.5);
+      let sw = fbm(vec3f(cos(ang)*sr, sin(ang)*sr, f32(j))*3. + s, 3, fw);
+      let st = 1. - smoothstep(.75, 1.05, sr + .1*sw);
+      let lit = step(.4, fract(hj.z*7.));
+      let core = mix(tone*.55 + .05*sw, .88 + .08*sw - .35*(1. - smoothstep(.1, .45, abs(sr - .62))), lit);
+      tone = mix(tone, core, st);
+    }
     o.alb = ramp(k, tone);
   } else if (k == 4 || k == 7 || k == 9) {      // jungle, ocean, terran: water and land
     var lv = .05; var sc = 1.1;
@@ -58768,6 +58790,17 @@ function gorPipe(f){
       ()=>{GPU_PIPES.warm.delete(key);GOR_CODE[f]=null;});}
   return null;
 }
+/* газовые гиганты (M703): своя палитра у каждого — по зерну; у мира одна сиреневая на всех, и все
+   гиганты галактики выходили близнецами. Тёмное → светлое, пять ступеней, sRGB */
+const GOR_GAS=[
+  [[70,42,30],[128,82,52],[184,136,96],[222,196,160],[244,232,214]],     /* юпитер: охра и сливки */
+  [[96,74,40],[156,124,72],[204,172,112],[232,212,160],[246,236,206]],   /* сатурн: ириска */
+  [[40,88,104],[78,140,152],[128,186,192],[180,222,222],[222,244,240]],  /* ледяной: бирюза */
+  [[18,32,92],[36,70,150],[70,118,196],[128,170,226],[204,226,248]],     /* глубокий синий */
+  [[40,18,16],[92,40,30],[150,72,46],[198,120,80],[232,180,140]],        /* горячий: ржавь */
+  [[64,52,24],[124,104,44],[184,160,76],[220,204,130],[242,234,190]],    /* серный */
+  [[52,38,72],[96,68,110],[152,116,138],[204,168,158],[238,216,198]],    /* сиреневый, прежний */
+  [[24,52,48],[50,96,84],[96,146,120],[156,194,160],[214,232,204]]];     /* аммиачный, зелёный */
 /* одно тело: k — мир (GOR.K), pal — палитра 0..255, air — цвет воздуха, th — его толщина */
 function gorBody(pass,key,x,y,r,o){
   const P=gorPipe(GOR_FAM[o.k]|0);if(!P)return false;
@@ -58777,7 +58810,10 @@ function gorBody(pass,key,x,y,r,o){
   a[4]=o.sx*kx;a[5]=o.sy*kx;a[6]=GOR_LZ;a[7]=o.turn||0;
   a[8]=gorLin(o.air[0]);a[9]=gorLin(o.air[1]);a[10]=gorLin(o.air[2]);a[11]=o.th||0;
   /* цвет звезды — наполовину к белому: палитра мира должна читаться и у красного карлика */
-  a[12]=.5+.5*o.sun[0];a[13]=.5+.5*o.sun[1];a[14]=.5+.5*o.sun[2];a[15]=o.seed||0;
+  /* у гиганта — на три четверти к белому (M703): облака сами цветные, и под тёплой звездой все гиганты
+     сползали в одну желтизну */
+  const tw=o.k===3?.75:.5;
+  a[12]=tw+(1-tw)*o.sun[0];a[13]=tw+(1-tw)*o.sun[1];a[14]=tw+(1-tw)*o.sun[2];a[15]=o.seed||0;
   const R=o.ring;if(R){a[16]=R.i;a[17]=R.o;a[18]=(R.s%997)*.013;a[19]=R.tilt;a[23]=R.n;}
   a[20]=o.sun[0];a[21]=o.sun[1];a[22]=o.sun[2];
   const pal=o.pal,np=Math.min(6,pal.length);
@@ -58796,10 +58832,10 @@ function gpuOrb(p,x,y,r,lights){
   const k=GOR.K[p.type];if(k===undefined||!p.T||!p.T.pal)return false;
   const pass=gpuScene();if(!pass)return true;
   const gas=p.type==="gas",airless=!gas&&p.T.atm==="отсутствует";
-  const sky=gas?p.T.pal[p.T.pal.length-1]:((p.T.sky&&p.T.sky[0])||[130,180,210]);
+  const sky=gas?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0][4]:((p.T.sky&&p.T.sky[0])||[130,180,210]);
   const sa=PLANET_BAKE_ANG+planetSunRot(p),sx=Math.cos(sa),sy=Math.sin(sa);
   const o={k,sx,sy,turn:planetSpin(p)/TAU,air:sky,th:airless?0:(GOR_AIR[p.type]||0),sun:gplSun(),seed:p.seed%97,
-    pal:p.T.pal,ring:(p.ring&&r>5)?p.ring:null,cities:0};
+    pal:gas?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:p.T.pal,ring:(p.ring&&r>5)?p.ring:null,cities:0};
   /* огни построек — те же точки, что у 17ga; сушу под ними проверяет шейдер своими материками */
   if(lights){const C=GOR.C||(GOR.C=new Float32Array(256));C.fill(0);
     o.cities=gplCities({sx,sy,lights,wet:0,seed:o.seed,T:o.turn},C);o.cpts=C;}
