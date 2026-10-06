@@ -171,9 +171,9 @@ function hullStudio(S,id,w,h,nd,x,y,sc,lvl){
   try{hullGpuDraw(id,x,y,0,sc,false,false,lvl,0,HS_LT[0],HS_LT[1]);}finally{GPU.rt=null;S.pass.end();S.pass=null;}
   return true;
 }
-/* корабль целиком; x,y — экран, a — курс, sc — масштаб корабля, (lx,ly) — к звезде.
-   false — прохода сцены нет, рисуй по-старому */
-function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
+/* корабль целиком; x,y — экран, a — курс, sc — масштаб корабля, (lx,ly) — к звезде; gear — части на подвесах
+   (17c2b shipGear3d у своего, без него — штатный набор по слотам корпуса). false — прохода сцены нет, рисуй по-старому */
+function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly,gear){
   const R=GPU.rt,pass=R?R.pass:gpuScene();if(!pass||!(sc>0))return false;   /* R — студия (ниже) */
   const h=hullOf(id),live=hullLiveInserts(h,id);
   const dk=R?R.nd:GPU.bw/W,sb=R?hullStudioSb(h,sc*dk):hullGpuSb(h,dk),B=R?hullStudioBake(R,h,id,sb):hullGpuBake(h,id,sb);if(!B)return false;const T=B.B;
@@ -199,7 +199,7 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
     if(Bl.B)gpuImage(pass,Bl.B,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   const FS=FL?S(FL.x,FL.y):null;
   const fl=FL&&{x:FS[0],y:FS[1],r0:FL.r0*sc,r:FL.r*sc,k:FL.k,c:FL.c};
-  if(!(H3&&h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,thrusting?0:.25)))
+  if(!(H3&&h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,thrusting?0:.25,gear||h3dStockGear(id))))
   gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null,undefined,undefined,fl);   /* -1: свет корпуса, не станции (17c GST) */
   /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
   if(!R&&GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}

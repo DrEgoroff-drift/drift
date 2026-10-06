@@ -12,9 +12,10 @@
    Рисуется в свой слой ×4 MSAA (слой текстуры-массива) отдельной отправкой до кадра — проход
    сцены не рвётся, — и ложится в сцену одной картинкой смешением "hull" (маска корпуса 08b).
    ?h3d=0 или H3D.on=false — старый спрайт 17c2 */
-const H3D={on:typeof location==="undefined"||!/[?&]h3d=0\b/.test(location.search),M:new WeakMap(),dev:null,frame:-1,slot:0};
-const H3D_N=512,H3D_L=4;   /* сторона слоя (пиксели устройства) и слоёв на кадр: свой корабль и трое рядом */
-const H3D_SIDES=[128,256,512];   /* классы слоя: мелкий корпус не чистит и не сводит 512² ×4 (телефон — тайлы) */
+/* cap — потолок стороны слоя: в полёте 512, ангар (M723) и крупная проба поднимают до 1024 на время рисования */
+const H3D={on:typeof location==="undefined"||!/[?&]h3d=0\b/.test(location.search),M:new WeakMap(),MG:new WeakMap(),dev:null,frame:-1,slot:0,cap:512};
+const H3D_L=4;   /* слоёв на кадр: свой корабль и трое рядом */
+const H3D_SIDES=[128,256,512,1024];   /* классы слоя: мелкий корпус не чистит и не сводит 512² ×4 (телефон — тайлы); 1024 — только витрина, два слоя */
 const H3D_LZ=.48,H3D_FILL=.30,H3D_KEY=1.6;   /* высота звезды над плоскостью; заливка; сила звезды */
 const H3D_RING=24;
 /* изготовитель → [квадратность сечения, высота спины к полуширине, лоск] */
@@ -90,14 +91,20 @@ function h3dKit(){
 }
 /* плоскость краски посередине высоты (вырез по альфе выпечки), радиус и упаковка */
 function h3dPack(V,E,o){
-  for(const q of [[-E,-E],[E,-E],[E,E],[-E,-E],[E,E],[-E,E]])V.push(q[0],q[1],-.05,0,0,1,0,0,0,0,0,-1);
+  /* радиус — по объёму, не по углам плоскости краски: угол квадрата E на E·√2 раздувал слой в полтора раза,
+     а краска живёт внутри круга E (за ним в выпечке пусто) */
   let r=0;for(let i=0;i<V.length;i+=12)r=Math.max(r,Math.hypot(V[i],V[i+1],V[i+2]));
+  for(const q of [[-E,-E],[E,-E],[E,E],[-E,-E],[E,E],[-E,E]])V.push(q[0],q[1],-.05,0,0,1,0,0,0,0,0,-1);
   return Object.assign({v:new Float32Array(V),n:V.length/12,R:Math.max(E,r*1.02),E,buf:null,dev:null},o);
 }
-function h3dMesh(h){
-  let m=H3D.M.get(h);if(m)return m;
+/* gear — что висит на подвесах (17c2b shipGear3d/h3dStockGear): части строятся в ту же сетку. Сеток на корпус
+   несколько (своя оснастка меняется в ангаре) — последние четыре по подписи оснастки, старая отдаёт буфер */
+function h3dMesh(h,gear){
+  let C4=H3D.MG.get(h);if(!C4)H3D.MG.set(h,C4=new Map());
+  const sig=gear?gear.sig:"";let m=C4.get(sig);
+  if(m){C4.delete(sig);C4.set(sig,m);return m;}
   const K=H3D_MK[h.by]||H3D_MK.gt,ne=K[0],kh=K[1];
-  const {V,C,ctr,face,loft,lathe,box,tube}=h3dKit();
+  const kit=h3dKit(),{V,C,ctr,face,loft,lathe,box,tube}=kit;
   const hgt=w=>Math.min(w*kh,1.6+w*.34),hb=w=>hgt(w)*.55;
   const deck=(x,y)=>{const w=profW(h.prof,x);if(Math.abs(y)>=w)return 0;return hgt(w)*Math.pow(1-Math.pow(Math.abs(y)/w,ne),1/ne);};
   const deckMax=(x0,x1,y0,y1)=>{let z=0;for(let i=0;i<=4;i++)for(let j=0;j<=4;j++)z=Math.max(z,deck(x0+(x1-x0)*i/4,y0+(y1-y0)*j/4));return z;};
@@ -182,9 +189,13 @@ function h3dMesh(h){
   for(const o of (h.outs||[]))if(o.k==="hook"){const rr=Math.max(.3,h.bw*.09),cr=o.w*.3,P=[[o.x+o.l+.6,0,0],[o.x,0,0]];
     for(let i=1;i<=9;i++){const f=-Math.PI/2+i/9*(Math.PI*1.4);P.push([o.x+Math.cos(f)*cr,cr+Math.sin(f)*cr,0]);}
     tube(P,rr,iron,.9,.8,8);}
+  /* части на подвесах и спонсоны фрегата (M722) — после корпуса: им нужна его палуба */
+  const pr=(gear&&gear.list&&gear.list.length)||(M.guns&&M.guns.length)?h3dParts(kit,h,gear||{list:[]},deck):null;
   const st=[[tip,.3]].concat(h.prof).slice(0,16);
-  m=h3dPack(V,hullGpuE(h),{st,ne,kh,gl});
-  H3D.M.set(h,m);return m;
+  m=h3dPack(V,hullGpuE(h),{st,ne,kh,gl,rig:pr?pr.rigs:[]});
+  if(pr)m.R=Math.max(m.R,pr.R*1.02);
+  if(C4.size>=4){const k0=C4.keys().next().value,o=C4.get(k0);if(o.buf)o.buf.destroy();C4.delete(k0);}
+  C4.set(sig,m);return m;
 }
 /* треугольники простого многоугольника ушами (крыло бывает вогнутым); P — точки [x,y,…] */
 function h3dEar(P){
@@ -217,9 +228,14 @@ struct VO{@builtin(position) q:vec4f,@location(0) o:vec3f,@location(1) n:vec3f,@
 /* корпус → экран: крен вокруг продольной оси, потом курс; y экрана вниз, z — к зрителю */
 fn rot(v:vec3f)->vec3f{let a=u.v[1];let y=v.y*a.z-v.z*a.w;let z=v.y*a.w+v.z*a.z;
   return vec3f(v.x*a.x-y*a.y,v.x*a.y+y*a.x,z);}
-@vertex fn vs(i:VI)->VO{var o:VO;let r=rot(i.p);let R=u.v[0].w;
+/* часть на погоне (доля своего цвета 3+k+металл, 17c2b): турель k = 1..7 поворачивается вокруг своей оси
+   углом наводки из u.v[24+k] = (ось x, ось y, cos, sin) — сетка не перестраивается, когда ствол водит */
+@vertex fn vs(i:VI)->VO{var o:VO;var p=i.p;var nn=i.n;
+  if(i.c.w>2.5){let k=i32(floor(i.c.w-3.));if(k>0&&k<8){let t=u.v[24+k];let d=p.xy-t.xy;
+    p=vec3f(t.x+d.x*t.z-d.y*t.w,t.y+d.x*t.w+d.y*t.z,p.z);nn=vec3f(nn.x*t.z-nn.y*t.w,nn.x*t.w+nn.y*t.z,nn.z);}}
+  let r=rot(p);let R=u.v[0].w;
   o.q=vec4f(r.x/R,-r.y/R,.5-r.z/(2.2*R),1.);
-  o.o=i.p;o.n=rot(i.n);o.no=i.n;o.c=i.c;o.m=i.m;o.s=u.v[0].xy+r.xy*u.v[0].z;return o;}
+  o.o=p;o.n=rot(nn);o.no=nn;o.c=i.c;o.m=i.m;o.s=u.v[0].xy+r.xy*u.v[0].z;return o;}
 /* тело как поле: станции профиля u.v[9..], сечение — тот же суперэллипс; <1 — внутри */
 fn bodyF(p:vec3f)->f32{let n=i32(u.v[8].y);let ne=u.v[7].w;let kh=u.v[8].x;
   if(p.x>u.v[9].x||p.x<u.v[8+n].x){return 9.;}
@@ -252,6 +268,8 @@ struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
   let fx=fract(i.o.x/2.4);let dx=min(fx,1.-fx)*2.4;let wx=fwidth(i.o.x);
   var sm=1.-smoothstep(.04,.04+wx*1.5,dx);
   if(i.m.x<0.){sm=max(sm,1.-smoothstep(.05,.05+fwidth(i.o.z)*1.5,abs(i.o.z)));}
+  /* часть (17c2b): своя краска целиком, швов корпуса нет, металл — в дробной доле */
+  let pm=i.c.w>2.5;if(pm){sm=0.;}
   let alb=mix(pa,i.c.rgb*(1.-.32*sm),sw)*(1.-.22*dn);
   let mk=q.xyz/max(q.w,1e-3)*(1.-sw);
   let L=u.v[2].xyz;let sc=u.v[3].rgb;let ndl=dot(n,L);
@@ -274,12 +292,14 @@ struct FO{@location(0) c:vec4f,@builtin(sample_mask) k:u32};
     let bk=1.-smoothstep(-r0*.2,r0*.3,ax-lat*.9);
     fs=u.v[6].rgb*u.v[5].w*${RL_FL}*fa*bk*(1.-smoothstep(r0,rr,fd));}
   let H=normalize(L+vec3f(0.,0.,1.));let nh=max(dot(n,H),0.);
-  let met=mk.y;let gls=mk.z;let gl=u.v[2].w;
+  let met=max(mk.y,select(0.,fract(i.c.w-3.)/.9,pm));let gls=mk.z;let gl=u.v[2].w;
   let sp=sh*sc*step(0.,ndl)*(pow(nh,mix(18.,70.,met))*(abs(i.m.x)*.3*gl+met*.8)+gls*(.06+2.2*pow(nh,140.)));
   let rim=vec3f(.55,.68,.85)*pow(1.-max(n.z,0.),3.)*.12;
   let em=mk.x;
   var c=alb*(fill+key+pl+rim)*(1.-em)+alb*em*${RL_EM}+sp*(1.-em)+min(alb*fs,u.v[6].rgb*.16)*(1.-em);
-  c+=vec3f(1.,.42,.16)*max(i.m.y,0.)*u.v[4].w;
+  c+=vec3f(1.,.42,.16)*max(i.m.y,0.)*step(i.m.y,1.)*u.v[4].w;
+  /* огонь сверх 1 — своё свечение части: излучатель, щель реактора, линза */
+  c+=i.c.rgb*max(i.m.y-1.,0.);
   var o:FO;o.c=vec4f(c,1.);o.k=0xFu;
   /* плоскость краски: доля выборок по альфе выпечки, узор поворачивается от пикселя к пикселю */
   if(dec){let a=smoothstep(.25,.75,b.a);if(a<.06){discard;}
@@ -308,7 +328,7 @@ function h3dDev(){
 function h3dCls(n){
   let K=H3D.K[n];if(K)return K;
   const d=GPU.dev,U=GPUTextureUsage,RA=U.RENDER_ATTACHMENT;
-  const nl=n>256?H3D_L+2:n>128?H3D_L*2:H3D_L*4;
+  const nl=n>512?2:n>256?H3D_L+2:n>128?H3D_L*2:H3D_L*4;
   K=H3D.K[n]={slot:0,nl,ms:d.createTexture({size:[n,n],format:"rgba16float",sampleCount:4,usage:RA}),
     md:d.createTexture({size:[n,n],format:"depth24plus",sampleCount:4,usage:RA}),
     lay:d.createTexture({size:[n,n,nl],format:"rgba16float",usage:RA|U.TEXTURE_BINDING}),img:[]};
@@ -319,14 +339,20 @@ function h3dCls(n){
 /* корпус в объёме на место спрайта 17c2: x,y — экран, a — курс, sc — масштаб, bank — крен,
    (lx,ly) — к звезде, B — выпечка тела (hullGpuBake), fl — огонь у кормы на экране или null.
    false — слоя нет (не тот кадр, слои кончились): рисуй спрайтом */
-function h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,ember){
+function h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,ember,gear){
   if(!H3D.on||!GPU.on||!GPU.dev||!GPU.enc)return false;
+  /* новая сетка с частями — одна за кадр (M722): штука стоит 2–3,5 мс на ПК и вчетверо больше на телефоне, вход
+     в систему с восемью корпусами иначе встаёт колом. Кто ждёт очереди — голый корпус, стволы ему рисует 05c */
+  if(gear){const C4=H3D.MG.get(h);if(!(C4&&C4.has(gear.sig))){if(H3D.built===GPU.frameNo)gear=null;else H3D.built=GPU.frameNo;}}
   /* крен в объёме — меньше игрового (M712): на .8 рад корпус сверху ложился боком, в тень и в палку;
      .6 от него держит план читаемым, а поворот всё равно виден по бликам (пираты — так же) */
-  return h3dRun(h3dMesh(h),B.B,x,y,a,sc,(bank||0)*.6,lx,ly,fl,ember);
+  const ok=h3dRun(h3dMesh(h,gear),B.B,x,y,a,sc,(bank||0)*.6,lx,ly,fl,ember,gear&&gear.yaw?s=>gear.yaw(s,a):null);
+  /* части нарисованы объёмом — плоские стволы 05c поверх уже не нужны */
+  if(ok&&gear)gear.drawn=GPU.frameNo;
+  return ok;
 }
-/* общий проход: сетка m, выпечка T (с .view и .mat), остальное — как у h3dDraw */
-function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember){
+/* общий проход: сетка m, выпечка T (с .view и .mat), остальное — как у h3dDraw; yaw(слот) — угол турели к курсу */
+function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember,yaw){
   if(!T||!T.view)return false;
   if(T.draw)gpuBakeLive(T);
   h3dDev();
@@ -334,7 +360,7 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember){
   const d=GPU.dev;
   if(m.dev!==d){m.buf=d.createBuffer({size:m.v.byteLength,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});d.queue.writeBuffer(m.buf,0,m.v);m.dev=d;}
   if(!H3D.P)H3D.P=gpuPipeline("h3d.hull",h3dDesc);
-  const dk=GPU.bw/W,Rb=m.R;let n=Math.max(8,Math.min(H3D_N,Math.ceil(2*Rb*sc*dk))),si=H3D_SIDES.findIndex(v=>v>=n);
+  const dk=GPU.bw/W,Rb=m.R;let n=Math.max(8,Math.min(H3D.cap,Math.ceil(2*Rb*sc*dk))),si=H3D_SIDES.findIndex(v=>v>=n);
   if(si<0)si=H3D_SIDES.length-1;
   /* слои класса кончились (конвой, свалка у станции) — корпус уходит в класс мельче (M713): чуть мягче,
      но в объёме, а не плоским спрайтом рядом с объёмными соседями */
@@ -354,6 +380,10 @@ function h3dRun(m,T,x,y,a,sc,bank,lx,ly,fl,ember){
   {const ca=U[4],sa=U[5],cb=U[6],sb=U[7],X=U[8]*ca+U[9]*sa,Y=-U[8]*sa+U[9]*ca,Z=U[10];
     U[28]=X;U[29]=Y*cb+Z*sb;U[30]=-Y*sb+Z*cb;U[31]=m.ne;}
   U[32]=m.kh;U[33]=m.st.length;U[34]=m.cut||0;for(let i=0;i<m.st.length;i++){U[36+i*4]=m.st[i][0];U[37+i*4]=m.st[i][1];}
+  /* погоны турелей u.v[25..31]: ось и поворот; без наводки — прямо (cos 1), локатор крутится сам */
+  for(let k=1;k<8;k++){const r=m.rig&&m.rig[k-1],j=96+k*4;let t=0;
+    if(r){U[j]=r.x;U[j+1]=r.y;t=r.spin?(G.t||0)*r.spin:(yaw?yaw(r.slot):0);}
+    U[j+2]=Math.cos(t);U[j+3]=Math.sin(t);}
   d.queue.writeBuffer(H3D.ub,0,U);
   const mat=T.mat||{view:GPU.nView||(GPU.nView=GPU.N.createView())};
   const bg=d.createBindGroup({layout:H3D.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:H3D.ub}},{binding:1,resource:gpuMipSmp()},

@@ -686,10 +686,12 @@ function drawSystem(){
      2D-пути нет (25.09): без видеокарты нет и полёта. Стека матриц ctx здесь больше нет —
      место, курс и масштаб идут числами */
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
-  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
+  const gr=shipGear3d();
+  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln,gr);
   /* стволы на подвесах, повёрнутые по наводке (M363), и пусковая под корпусом (хвост M112):
-     сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c) */
-  {const stl=stat();shipGearGpu(stl.guns,!!stl.launcher,(G.cargo.missile|0)<=0,hsx,hsy,sh.a,shS);}
+     сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c).
+     Корпус в объёме (M722) несёт части сам — плоские стволы только там, где объёма не было */
+  if(gr.drawn!==GPU.frameNo){const stl=stat();shipGearGpu(stl.guns,!!stl.launcher,(G.cargo.missile|0)<=0,hsx,hsy,sh.a,shS);}
   if(typeof drawGestureTop==="function")drawGestureTop(zx,zy,Z);   /* жест поверх корпуса (17h) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */

@@ -117,5 +117,36 @@ Laws:
 9. **The menu** is a plate under the top band at the right edge; `Esc` opens and closes it when nothing
    else wants the key.
 
-Open: the station screens (`.scr`) are still the old glass — next pass; the S23 cost of the pod (M702/M711).
+Open: the S23 cost of the pod (M702/M711).
+
+### «Сурик» (M721) — the palette
+
+The author, 06.10: «все синее не очень, можно че то акцентное». Three candidates were painted over the station
+concept (`docs/ui-brief/concept/station.html`): «Сурик», «Лайм», «Коралл»; «Сурик» won — a Soyuz panel.
+
+1. **Graphite, cream ink, one accent.** Plates warm graphite (no navy), ink cream `#f1ebde`/`#a59d8f`, the accent red
+   lead `#ff6a2b` (`--amber`, the name is a fossil), alarm crimson `#ff2d55` — never mixed up with the accent.
+2. **The accent means act, choose, money** — buttons, the selected section, the purse. Prices, names, full gauges are
+   cream; a goods' colour is a diamond by its name, not a rainbow of names.
+3. **A full gauge is cream; only shortage lights up** (crimson).
+4. **Colours are tokens**: `--c-phos/--c-acc/--c-edge/--c-ink/--c-alarm` triplets for `rgba(var(--c-acc),.2)`; a
+   new rule takes a token, never a literal. The canvas still has literals (world chips are recoloured; the rest
+   with M728).
+
+## Parts on the mounts (M722–M724)
+
+The part data stays as it is (`05-parts`: `{s,t,k,g,by}`, seven kinds; `slotsOf`, `mountsOf` — `{i,kind,size,mount,x,y}`
+in hull coordinates). What is new is the picture: a part is geometry built into the hull mesh at its mount.
+
+Laws:
+1. **One mesh, one light.** Parts are built by the same kit (`h3dKit`) into the same vertex buffer as the hull, so
+   the body shadows them, contact darkens them and the star glints on them. The mesh cache key is the hull plus the
+   fit signature.
+2. **Read from above.** The camera looks down; everything sits on the deck or the wing's top, never underneath.
+3. **Kind by silhouette, tier by detail, maker by grammar.** A gun is barrels, a launcher a cell block, a shield an
+   emitter ring, a core a domed housing with a glowing slit, armour bolted slabs, an engine a bigger bell with a
+   collar, a utility a mast/dish/arm. Size L/M/H scales calibre and length; each tier adds parts (fins, cables, a
+   second barrel, sensor boxes). Ordnung boxy, High-Front smooth drops, Company glossy (`H3D_MK`).
+4. **Glow is a vertex channel**: `m.y` in (1,3] lights the part in its own colour (emitters, core slits); 0..1 stays
+   the ember.
 

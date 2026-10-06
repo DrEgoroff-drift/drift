@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 473 · top-level symbols: 7148
+Files: 475 · top-level symbols: 7164
 
 ## SYMBOLS
 
@@ -790,15 +790,15 @@ GcCtx                        src/08ca-gpu-canvas.js:97-244
 GcGrad                       src/08ca-gpu-canvas.js:69-87
 GcPat                        src/08cab-gpu-pattern.js:11-14
 GcPath2D                     src/08caa-gpu-path.js:15-27
-H3D                          src/17c2a-hull3d.js:15
-H3D_CARGO                    src/17c2a-hull3d.js:22
-H3D_LZ                       src/17c2a-hull3d.js:18
-H3D_MK                       src/17c2a-hull3d.js:21
-H3D_N                        src/17c2a-hull3d.js:16
-H3D_PIR                      src/17c2a-hull3d.js:376
-H3D_RING                     src/17c2a-hull3d.js:19
-H3D_SIDES                    src/17c2a-hull3d.js:17
-H3D_WGSL                     src/17c2a-hull3d.js:207
+H3D                          src/17c2a-hull3d.js:16
+H3D_CARGO                    src/17c2a-hull3d.js:23
+H3D_L                        src/17c2a-hull3d.js:17
+H3D_LZ                       src/17c2a-hull3d.js:19
+H3D_MK                       src/17c2a-hull3d.js:22
+H3D_PIR                      src/17c2a-hull3d.js:406
+H3D_RING                     src/17c2a-hull3d.js:20
+H3D_SIDES                    src/17c2a-hull3d.js:18
+H3D_WGSL                     src/17c2a-hull3d.js:218
 HAIL_HOLD                    src/12ar-hail.js:20
 HAIL_HOLD_PHONE              src/12ar-hail.js:23
 HAIL_RANGE                   src/12ar-hail.js:25
@@ -1259,6 +1259,13 @@ OVR                          src/08bi-gpu-ovl.js:318
 OV_CV                        src/08bi-gpu-ovl.js:299
 OV_EYE                       src/08bi-gpu-ovl.js:295
 OX                           src/21ad-base-gpu.js:149
+P3                           src/17c2b-parts3d.js:18
+P3_GL                        src/17c2b-parts3d.js:29
+P3_K                         src/17c2b-parts3d.js:32
+P3_MK                        src/17c2b-parts3d.js:20-27
+P3_SHIELD                    src/17c2b-parts3d.js:33
+P3_TURR                      src/17c2b-parts3d.js:370
+P3_UT                        src/17c2b-parts3d.js:371
 PADNAME_K                    src/27y-hud-words.js:9
 PAD_KEY                      src/15-input.js:19
 PAD_SAFE                     src/18-mode-map.js:2
@@ -2659,7 +2666,7 @@ chessMyTurn                  src/25n-chess.js:212-216
 chessPaint                   src/25n-chess.js:256-316
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
-chipDist                     src/17-mode-system.js:720-726
+chipDist                     src/17-mode-system.js:722-728
 chipDom                      src/08bi-gpu-ovl.js:203-218
 chipDomSnap                  src/08bh-gpu-hud.js:10-12
 chipDomSweep                 src/08bh-gpu-hud.js:20-23
@@ -3304,12 +3311,12 @@ drawSurface                  src/21e-surface-draw.js:294-308
 drawSurfaceHud               src/21e-surface-draw.js:39-125
 drawSurfaceWorld             src/21e1-surface-world.js:10-539
 drawSurvey                   src/12w-survey.js:63-83
-drawSysHud                   src/17-mode-system.js:727-1053
+drawSysHud                   src/17-mode-system.js:729-1055
 drawSysLane                  src/17g-sys-lane.js:112-138
 drawSysLaneShips             src/17g-sys-lane.js:168-196
 drawSysRail                  src/18f-rail-station.js:79-115
 drawSysTraffic               src/17f-sys-traffic.js:39-43
-drawSystem                   src/17-mode-system.js:531-715
+drawSystem                   src/17-mode-system.js:531-717
 drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
@@ -4057,17 +4064,19 @@ gunSpecs                     src/05c-arms.js:207-218
 gunTotals                    src/05c-arms.js:336-350
 gunsInGroup                  src/05c-arms.js:230-233
 h01                          src/01-core.js:28
-h3dCls                       src/17c2a-hull3d.js:308-318
-h3dDesc                      src/17c2a-hull3d.js:290-298
-h3dDev                       src/17c2a-hull3d.js:300-306
-h3dDraw                      src/17c2a-hull3d.js:322-327
-h3dEar                       src/17c2a-hull3d.js:190-205
-h3dKit                       src/17c2a-hull3d.js:27-90
-h3dMesh                      src/17c2a-hull3d.js:97-188
-h3dPack                      src/17c2a-hull3d.js:92-96
-h3dPirMesh                   src/17c2a-hull3d.js:377-433
-h3dPirate                    src/17c2a-hull3d.js:435-438
-h3dRun                       src/17c2a-hull3d.js:329-370
+h3dCls                       src/17c2a-hull3d.js:328-338
+h3dDesc                      src/17c2a-hull3d.js:310-318
+h3dDev                       src/17c2a-hull3d.js:320-326
+h3dDraw                      src/17c2a-hull3d.js:342-353
+h3dEar                       src/17c2a-hull3d.js:201-216
+h3dKit                       src/17c2a-hull3d.js:28-91
+h3dMesh                      src/17c2a-hull3d.js:102-199
+h3dPack                      src/17c2a-hull3d.js:93-99
+h3dParts                     src/17c2b-parts3d.js:158-351
+h3dPirMesh                   src/17c2a-hull3d.js:407-463
+h3dPirate                    src/17c2a-hull3d.js:465-468
+h3dRun                       src/17c2a-hull3d.js:355-400
+h3dStockGear                 src/17c2b-parts3d.js:372-381
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -5290,6 +5299,12 @@ ovlDesc                      src/08bi-gpu-ovl.js:220
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
 ownerSign                    src/12al1-toponym.js:20-23
+p3Guns                       src/17c2c-parts3d-guns.js:5-225
+p3In                         src/17c2b-parts3d.js:36
+p3KindCol                    src/17c2b-parts3d.js:35
+p3PartOf                     src/17c2b-parts3d.js:355-358
+p3Tools                      src/17c2b-parts3d.js:68-153
+p3Top                        src/17c2b-parts3d.js:40-62
 packPart                     src/05-parts.js:465-472
 padCase                      src/27y-hud-words.js:31-40
 padNames                     src/27y-hud-words.js:10-23
@@ -6349,6 +6364,7 @@ shieldTypeOf                 src/05c-arms.js:59-62
 shiftLogRec                  src/12pa-beacon.js:43-47
 shiftTalkTick                src/03f-hull-role.js:73-83
 shipData                     src/03-ships.js:13
+shipGear3d                   src/17c2b-parts3d.js:359-369
 shipGearGpu                  src/05c-arms.js:315-335
 shipRow                      src/26-ui-station.js:470-518
 shipScaleAt                  src/16c-rescue.js:234
@@ -7916,8 +7932,14 @@ zoomTo                       src/15-input.js:358
 ## src/17c2-hull-gpu.js · 18 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 35 KB
+## src/17c2a-hull3d.js · 38 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
+
+## src/17c2b-parts3d.js · 33 KB
+  · части на подвесах — в объёме (M722):1
+
+## src/17c2c-parts3d-guns.js · 20 KB
+  · стволы на подвесах — в объёме (M722):1
 
 ## src/17c3-station-live.js · 11 KB
 

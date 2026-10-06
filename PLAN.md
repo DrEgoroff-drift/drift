@@ -351,3 +351,25 @@ Nothing here is started without the author's word; each item is a decision of in
   trial), bindless (a proposal). `shader-f16`: our S23 grants it and it costs 6 % — stays off. Transient
   attachments (Chrome 146) help only attachments not sampled after the pass (MSAA, depth), not our nebula or glow
   targets.
+
+## 15. Branch `space` — parts on the mounts and every screen (M723–M728)
+
+The author, 06.10: «кучу деталей смоделировать и чтобы ставить на подвесы на корабли и интерфейс чтобы в слоты
+вставлять … кантина еще, короче все интерфейсы давай делай, и не жалей там деталей отрисовки, прям жирным
+слоем … в стиле ААА». Worked in `C:\Claude\drift-space`, released by the usual procedure. Design and laws:
+`docs/DESIGN-space.md` «Parts on the mounts» and «The interface».
+
+- **M723 The hangar (ОПИСЬ).** The ship in 3D large in the middle under studio light, slowly turning; each mount a
+  marker with a leader line to its slot card; drag a part onto a mount (tap-select-confirm on the phone); the stats
+  panel shows now → after; the phone gets its own layout.
+- **M724 Part thumbnails.** The same models rendered to cards for the hangar, the station's parts tabs and loot lines.
+- **M725 The cantina.** The room in a thicker layer (depth, light, haze, more props per station type), people as big
+  portrait cards with traits and the offer, rumours and the bartender as a side panel in «Сурик».
+- **M726 The station, finished.** Line icons for sections and goods, the state order as a card with progress, the own
+  ship's thumbnail in the ship column, keycaps on actions, «КОРПУС ЦЕЛ» as a state and not a button.
+- **M727 Every other window** in the same kit: СТОЛ, ДЕЛО, crew, HQ, barge, prices, settings, menu, SOS, road.
+- **M728 Flight HUD, finished**: the receiver as a compact plate, the rail grouped, world tags with leader lines,
+  one bottom line, readable pod labels.
+- **The parts' bill on the phone.** Gear multiplies a hull's vertices 3–5× (topor 14k → 34k, mamont 5k → 29k; a
+  build costs 2–3.5 ms on the PC, at most one per frame). The P1 gate measures it with the release; if it costs,
+  a lighter stock fit for small distant hulls.

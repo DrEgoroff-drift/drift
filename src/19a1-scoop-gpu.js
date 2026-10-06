@@ -415,7 +415,7 @@ function scoopGpuThings(pass,S,sh,L){
   }
   if(FA.length)gpuShapes(pass,FA,{blend:"add"});
   const thr=keys.thrust&&G.fuel>0;
-  hullGpuDraw(G.shipId,sx,sy,S.bank*.5,1.5,thr,false,(G.mods&&G.mods.engine)||0,0,L[0],L[1]);
+  hullGpuDraw(G.shipId,sx,sy,S.bank*.5,1.5,thr,false,(G.mods&&G.mods.engine)||0,0,L[0],L[1],shipGear3d());
   /* сборник: два раструба забирают газ, пока корабль в коридоре */
   if(S.y>=bt&&S.y<=bb){
     const C=[];
