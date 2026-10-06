@@ -2475,3 +2475,35 @@ body.rackon #prompt{opacity:0}
 #menu button s{font-size:10.5px;color:var(--ink2);margin-top:4px}
 @media (hover:hover){#menu button:hover{background:linear-gradient(90deg,rgba(127,230,216,.10),rgba(127,230,216,0))}
   #menu button:hover::before{opacity:1}}
+
+/* ── экраны станции и окна: та же плита, что борт (M720) — один шрифт, срезанные углы окна и кнопок,
+   засечка роли, подвал в один ряд. Стол и дорога — бумага со своим языком, их не трогаем.
+   :where() держит вес селектора на уровне .act, чтобы бумажные карточки описи (.opis …) и окна
+   рельса (#railWin …) по-прежнему перебивали своё */
+.scr:where(:not(#tablewin,#roadwin)){font-family:var(--face);font-variant-numeric:tabular-nums}
+:where(.scr:not(#tablewin,#roadwin)) header b{font-weight:600;letter-spacing:.08em}
+:where(.scr:not(#tablewin,#roadwin)) nav.groups button{font-family:var(--face);font-weight:600;letter-spacing:.16em}
+:where(.scr:not(#tablewin,#roadwin)) nav.groups button.on{background:linear-gradient(0deg,rgba(127,230,216,.10),rgba(127,230,216,0))}
+:where(.scr:not(#tablewin,#roadwin)) nav.tabs button{font-family:var(--face);font-weight:600;letter-spacing:.14em}
+:where(.scr:not(#tablewin,#roadwin)) .act{font-family:var(--face);font-weight:600;letter-spacing:.12em;border:0;border-radius:0;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+  box-shadow:inset 0 0 0 1px rgba(127,230,216,.30);background:linear-gradient(180deg,rgba(127,230,216,.13),rgba(127,230,216,.04))}
+:where(.scr:not(#tablewin,#roadwin)) .act.gold{box-shadow:inset 0 0 0 1px rgba(242,178,92,.55);
+  background:linear-gradient(180deg,rgba(242,178,92,.18),rgba(242,178,92,.05))}
+:where(.scr:not(#tablewin,#roadwin)) .act:active{box-shadow:inset 0 0 0 1px rgba(127,230,216,.6)}
+@media (hover:hover){:where(.scr:not(#tablewin,#roadwin)) .act:not(:disabled):hover{background:linear-gradient(180deg,rgba(127,230,216,.22),rgba(127,230,216,.07))}
+  :where(.scr:not(#tablewin,#roadwin)) .act.gold:not(:disabled):hover{background:linear-gradient(180deg,rgba(242,178,92,.28),rgba(242,178,92,.08))}}
+@media (min-width:900px){
+  .scr:where(:not(#tablewin,#roadwin)){border:0;border-radius:0;
+    clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));
+    box-shadow:inset 0 0 0 1px var(--pl-edge);
+    background:linear-gradient(90deg,var(--phos) 0 72px,transparent 72px) top left/100% 2px no-repeat,
+      radial-gradient(120% 70% at 50% -10%,rgba(127,230,216,.06),transparent 60%),
+      linear-gradient(180deg,rgba(13,21,31,.975),rgba(6,10,15,.985) 60%,rgba(4,7,11,.99))}
+  :where(.scr:not(#tablewin,#roadwin)) header b{font-size:26px}
+  :where(.scr:not(#tablewin,#roadwin)) header s{font-size:12px}
+  :where(.scr:not(#tablewin,#roadwin)) .wallet em{font-size:19px;font-weight:600}
+  :where(.scr:not(#tablewin,#roadwin)) nav.groups button{font-size:12px}
+  :where(.scr:not(#tablewin,#roadwin)) .act{font-size:12px}
+  .scr footer .act{flex:1 1 180px}   /* ряд — пока кнопки влезают, иначе перенос ровными долями */
+}
