@@ -139,7 +139,7 @@ function detCloseTry(){
 /* показания и строки приборов, которые видит игрок (DOM) */
 function detHudText(){
   const out=[];
-  for(const id of ["fnum","hnum","snum","enum","unum","jnum","cnum","purse","place","sub","msg","prompt","mslbtn","wCr","wDt"]){
+  for(const id of ["fnum","hnum","snum","enum","unum","jnum","cnum","purse","place","sub","msg","prompt","mslword","wCr","wDt"]){
     const e=document.getElementById(id);if(!e||!e.getClientRects().length)continue;
     const s=String(e.textContent||"").trim();if(s)out.push(s);
   }

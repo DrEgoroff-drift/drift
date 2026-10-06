@@ -2343,10 +2343,11 @@ body.mobile kbd{display:none}
 body:not(.mobile):not(.screen) #console{gap:10px;align-items:stretch;max-width:none;
   bottom:calc(env(safe-area-inset-bottom) + 86px + var(--helmlift,0px))}
 @media (min-width:1100px) and (min-aspect-ratio:1100/760){
-  body:not(.mobile):not(.screen) #console{bottom:calc(env(safe-area-inset-bottom) + 16px)}}
+  body:not(.mobile):not(.screen):not(.padrow) #console{bottom:calc(env(safe-area-inset-bottom) + 16px);
+    left:calc(env(safe-area-inset-left) + 16px);transform:none}}
 body:not(.mobile):not(.screen) #prompt{bottom:calc(env(safe-area-inset-bottom) + 156px + var(--helmlift,0px))}
 @media (min-width:1100px) and (min-aspect-ratio:1100/760){
-  body:not(.mobile):not(.screen) #prompt{bottom:calc(env(safe-area-inset-bottom) + 96px + var(--helmlift,0px))}}
+  body:not(.mobile):not(.screen):not(.padrow) #prompt{bottom:calc(env(safe-area-inset-bottom) + 96px + var(--helmlift,0px))}}
 body:not(.mobile):not(.screen) #rx{display:grid;grid-template-columns:118px 1fr;grid-template-rows:auto auto;column-gap:16px;row-gap:2px;
   align-items:center;padding:10px 16px 9px;width:min(420px,calc(100vw / var(--ui,1) - 130px))}
 body:not(.mobile):not(.screen) #rxOut{grid-column:1;grid-row:1/3;align-self:center;border-right:1px solid rgba(150,222,232,.10);padding-right:12px}
@@ -2376,10 +2377,28 @@ body:not(.mobile) .pads button[data-k=act].ready{background:linear-gradient(180d
 body:not(.mobile) .pads button[data-k=act].ready::before{animation:none;width:100%}
 body:not(.mobile) .pads button kbd{order:-1;font-size:10px;padding:4px 6px 3px}
 body:not(.mobile) .pads button[data-k=act] kbd{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(242,178,92,.5);background:rgba(242,178,92,.1)}
-body:not(.mobile) .pads button>span{font-size:15px}
+body:not(.mobile) .pads button:is([data-k=act],[data-k=lock])>span{font-size:15px}
 body:not(.mobile) .pads button.abil-ok::after{font-family:var(--face);font-size:11px;line-height:13px;width:auto;text-align:left;color:var(--amber)}
 body:not(.mobile) .pads button[data-k=lock]{color:var(--ink)}
 body:not(.mobile) .pads button.on{transform:scale(.97)}
+/* под мышью и прочие пэды — плиты с клавишей: огонь, ракета, тормоз, тяга, рули (в поясе, на грунте) */
+@media (pointer:fine){
+  body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust],[data-k=left],[data-k=right],[data-k=pup],[data-k=pdown]){
+    width:auto;height:52px;min-width:60px;border-radius:0;clip-path:var(--pl-cutp);
+    display:flex;flex-direction:row;align-items:center;justify-content:center;gap:9px;padding:0 13px 0 10px;
+    background:var(--pl-bg);box-shadow:inset 0 0 0 1px var(--pl-edge),var(--pl-lift);
+    font-size:14px;font-weight:600;letter-spacing:.04em;color:var(--ink)}
+  body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust],[data-k=left],[data-k=right],[data-k=pup],[data-k=pdown])::before{
+    inset:0 auto auto 0;width:28px;height:2px;border:0;border-radius:0;background:currentColor;opacity:.8;transform:none;box-shadow:0 0 8px currentColor}
+  body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust],[data-k=left],[data-k=right],[data-k=pup],[data-k=pdown])>span{font-size:14px}
+  body:not(.mobile) .pads button[data-k=fire]{color:var(--alarm);box-shadow:inset 0 0 0 1px rgba(255,107,87,.42),var(--pl-lift)}
+  body:not(.mobile) .pads button[data-k=fire] kbd{color:var(--alarm);box-shadow:inset 0 0 0 1px rgba(255,107,87,.5);background:rgba(255,107,87,.1)}
+  body:not(.mobile) .pads button[data-k=msl]{color:#ff8f6a;box-shadow:inset 0 0 0 1px rgba(255,143,106,.36),var(--pl-lift)}
+  body:not(.mobile) .pads button[data-k=thrust]{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(242,178,92,.40),var(--pl-lift)}
+  body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust]).on::before{width:100%}
+  body:not(.mobile) .pads button.off{opacity:.45}
+}
+.pads kbd:empty{display:none}
 
 /* ── телефон: те же плиты, тесней ── */
 body.mobile .hud{gap:8px;padding:0 calc(env(safe-area-inset-right) + 10px) 0 calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px)}
@@ -2433,3 +2452,8 @@ body.mobile #rx{padding:6px 12px}
   body:not(.mobile) .locus #zoomlbl{display:none!important}
   body.onmap .ipod{display:none!important}
 }
+
+/* ── открытая стойка (25d): строка сообщения под ней, подсказка отдыхает — глагол назван на плите
+   действия; --rackbot — низ стойки в пикселях окна, строка живёт в zoom ── */
+body.rackon #msg{top:calc(var(--rackbot,0px) / var(--ui,1) + 10px)}
+body.rackon #prompt{opacity:0}

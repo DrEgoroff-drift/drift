@@ -28,7 +28,7 @@ let HUD_BAND=72;
    кр», а правый борт въехал в угол карточки (замер 30.08.2026).
    HUD_FLOOR — верх самого верхнего из нижних наложений, HUD_RAIL — левый край
    правого борта. Обе величины в CSS-пикселях, как и координаты рисования. */
-let HUD_FLOOR=0, HUD_RAIL=0;
+let HUD_FLOOR=0, HUD_RAIL=0, HUD_RAILTOP=0;   /* верх правого борта — низ открытой стойки над ним (25d) */
 /* низ верха карты — ряда адреса и шапки (--mapbar, 0 — не карта; кладёт раскладчик 18a): под ним
    встаёт строка сообщения. HUD_LKEY — режим, классы тела и подписи ряда: при их смене полосы
    меряются заново */
@@ -184,7 +184,7 @@ function hudFloorMeasure(force){
      const band=Math.max(vb,lb);
      if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
    }
-   let fl=innerHeight,rl=innerWidth;
+   let fl=innerHeight,rl=innerWidth,rt=0;
    /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
       подсказка и правый борт стоят position:fixed, а у таких offsetParent
       всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
@@ -199,12 +199,13 @@ function hudFloorMeasure(force){
    const rail=document.querySelector(".rail");
    if(rail){
      const r=rail.getBoundingClientRect();
-     if(r.width>0&&r.height>0)rl=Math.min(rl,r.left);
+     if(r.width>0&&r.height>0){rl=Math.min(rl,r.left);rt=r.top;}
    }
    if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,innerWidth-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
-   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);
+   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);HUD_RAILTOP=Math.round(rt);
 }
-let $vShip=null,$actKey=null;
+/* колпачки клавиш на пэдах: [элемент, действие] — собраны раз, чтения DOM в кадре нет */
+let $vShip=null,$padKeys=null;
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
@@ -301,8 +302,10 @@ function hud(){
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
   /* имя корабля — в шапке плиты борта (M720), строка места говорит только место */
   {const vs=$vShip||($vShip=document.getElementById("vShip"));if(vs)setTx(vs,"«"+st.S.ru+"»");
-    const ak=$actKey||($actKey=document.getElementById("actKey"));
-    if(ak&&typeof actionKey==="function"){const c=actionKey("main","act");setTx(ak,c==="Space"?"Пробел":keyLabel(c));}}
+    /* клавиша на каждом пэде — из живой раскладки (переназначение в настройках, пояс — своя) */
+    const sec=G.mode==="belt"?"belt":"main";
+    for(const [k,a] of ($padKeys||($padKeys=[...document.querySelectorAll(".pads kbd[data-a]")].map(k=>[k,k.dataset.a])))){
+      const c=actionKey(sec,a);setTx(k,c?keyLabel(c):"");}}
   if(G.mode==="system"){a=(typeof nameOf==="function")?nameOf(G.sys):G.sys.name;b="сектор "+G.sx+":"+G.sy;
     /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
     if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
@@ -483,7 +486,7 @@ function hud(){
   $bBrk.classList.toggle("off",G.mode==="surface"||G.mode==="dig");
   if(G.mode!=="system"){
     setSt($bBrk,"display","");
-    setTx($bBrk,"ТОРМОЗ");
+    setTx(padWord($bBrk),"ТОРМОЗ");
     setSt($bBrk,"opacity","");
   }
   /* слово — в своём span: setTx по кнопке целиком стирал и значок */
@@ -505,15 +508,15 @@ function hud(){
   const fireOn=G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed);
   setSt($fire,"display",fireHas?"":"none");
   $fire.classList.toggle("off",fireHas&&!fireOn);
-  if(G.mode==="dig")setTx($fire,(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
-  else setTx($fire,"ОГОНЬ");
+  if(G.mode==="dig")setTx(padWord($fire),(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
+  else setTx(padWord($fire),"ОГОНЬ");
   /* ракета: на кнопке не «готово», а остаток в трюме — боеприпас это груз,
      и он тает */
   if($msl){
     const has=!!st.launcher, on=G.mode==="system"&&has;
     setSt($msl,"display",has?"":"none");
     $msl.classList.toggle("off",has&&!on);
-    if(has)setTx($msl,(on&&G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
+    if(has)setTx(padWord($msl),(on&&G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   /* ── системный режим ведут стики и захват (M360) ──
@@ -535,6 +538,8 @@ function hud(){
       setTx(padWord($lock),padCase((lv&&lv.length<=14)?lv:"ЦЕЛЬ"));
     }
   }
+  /* ряд пэдов шире «ЦЕЛИ» и «ДЕЙСТВИЯ» — пульт на компьютере стоит над ним, а не рядом (style.css, M720) */
+  document.body.classList.toggle("padrow",[$fire,$msl,$bBrk,$bThr].some(b=>b&&b.style.display!=="none"));
   document.body.classList.toggle("inbelt",G.mode==="belt");
   document.body.classList.toggle("inrail",G.mode==="rail");
   if(G.mode!=="system"&&typeof abilPadRim==="function")abilPadRim();   /* подпись способности не залипает с полёта (18.09) */   /* в вагоне пэды полёта ни к чему (M473 хвост, 18.09) */

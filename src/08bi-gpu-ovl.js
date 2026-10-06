@@ -225,6 +225,10 @@ function ovFlush(){
   const n=(OVL.uq.length+OVL.lq.length+OVL.cq.length)/OVL_N;
   for(const M of [OVL.lab,OVL.chip])for(const [k,e] of M){e.on=e.fr===OVL.fno;if(OVL.fno-e.fr>600)M.delete(k);}
   OVL.fno++;
+  /* OVL.hush — кадр отдан одной вещи поверх мира (открытая стойка, 25d): подписи и фишки мира
+     лежат выше интерфейса и легли бы на неё — их слои в этом кадре сброшены. Картинки (прогоны
+     T.ur) живут только в OVL.uq, поэтому сброс не сдвигает ни одного прогона */
+  if(OVL.hush){OVL.hush=false;OVL.lq.length=OVL.cq.length=0;}
   const cv=n&&GPU.enc?ovCanvas():null;
   if(!cv){OVL.uq.length=OVL.lq.length=OVL.cq.length=OVL.ur.length=OVL.gd.length=0;if(OVL.on){OVL.on=false;OVL.cv.style.display="none";}return;}
   OVL.nu=OVL.uq.length/OVL_N;OVL.nl=OVL.lq.length/OVL_N;   /* сколько примитивов интерфейса и подписей (наборы: порядок слоёв) */

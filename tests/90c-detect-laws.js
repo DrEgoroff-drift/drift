@@ -24,7 +24,7 @@ const DET_INSTR=[
   {ru:"кошелёк",dom:"purse",re:/^([\d\s  ]+) кр · (\d+) дан/,want:m=>[String(Math.round(G.credits)),String(G.data)],
     got:m=>[m[1].replace(/[\s  ]/g,""),m[2]]},
   /* ракеты: остаток в трюме, а не счётчик кнопки; «…» — перезарядка */
-  {ru:"ракеты",dom:"mslbtn",re:/^РАКЕТА (\d+)$/,want:()=>[String(G.cargo.missile|0)],got:m=>[m[1]]},
+  {ru:"ракеты",dom:"mslword",re:/^РАКЕТА (\d+)$/,want:()=>[String(G.cargo.missile|0)],got:m=>[m[1]]},
   {ru:"кошелёк станции",dom:"wCr",re:/^([\d\s  ]+) кр$/,want:()=>[String(G.credits|0)],got:m=>[m[1].replace(/[\s  ]/g,"")]},
   {ru:"данные станции",dom:"wDt",re:/^(\d+) данных$/,want:()=>[String(G.data)],got:m=>[m[1]]},
   /* канва: масштаб камеры и расстояния на фишках у кромки (17-mode-system) */

@@ -174,7 +174,8 @@ if(IPOD_SQ&&IPOD_SQ.addEventListener)IPOD_SQ.addEventListener("change",e=>{IPOD_
 const IPOD_FLY={system:1,map:1,belt:1,scoop:1,landing:1};
 function instrPodTick(){
   if(!$ipod)return;
-  const on=G.running&&G.mode!=="belt"&&G.mode!=="dock";
+  /* открытая стойка (25d) — те же приборы в полный рост: колодка на это время уходит */
+  const on=G.running&&G.mode!=="belt"&&G.mode!=="dock"&&!(typeof rackOpen==="function"&&rackOpen());
   $ipod.style.display=on?"":"none";
   /* открытый экран (body.screen, 27z — класс ставится раньше в том же hud()) колодку гасит: ни прохода, ни текстуры */
   if(on&&!IPOD_NARROW&&IPOD_FLY[G.mode]&&!(IPOD_SHORT&&G.mode==="map")&&!document.body.classList.contains("screen")){instrPodSize();instrPodDraw();}
