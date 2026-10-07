@@ -6,6 +6,29 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.491.0 - the station on the board, parts on the mounts, the cantina in 3D, faces that live
+
+- **The station joins the board (M720–M721).** One face and one chamfered window for every station screen; on a wide
+  screen three columns — sections with nested tabs, the tab, the ship card (fuel over ЗАПРАВКА, hull over the repair,
+  hold over the tape, ОТСТЫКОВКА at the foot). The «Сурик» palette: graphite, cream ink, one red-lead accent, crimson
+  only for alarm; one market table; the station head's ether is one framed line — tuning belongs to flight.
+- **Parts in volume on the mounts (M722).** Every fitted part is a model in the hull mesh, under its light and
+  shadow: turrets of six maker houses with twenty gun heads, towers, rails with copper coils, the shield's prongs, the
+  reactor with radiators, a VLS with red noses, plates and engines — sitting on the real surface.
+- **The hangar (M723).** ОПИСЬ's third zone is a graphite bay: the fitted ship in studio 3D (drag to turn), numbered
+  mount markers, slot cards with leader lines, the inspector and the spare-parts tray. The studio renders at the
+  frame's own size, sharp at 4K and cheaper on the phone.
+- **Part thumbnails (M724).** Every card that names a part shows the part itself on a studio turntable.
+- **The cantina in full 3D (M725).** The hall, its people and their portraits are engine scenes: lamps over the
+  frame edge with soft haze, candidates on the stools, the keeper behind the counter. People are built from the
+  manager's seed in role kits. The 2D hall is gone.
+- **Faces that live (M729, first part).** The head is one sculpted skin — lids over the eyeballs, a real nose and
+  lips, teeth behind them — and it moves by skinning: blinks, saccades, glances away, breathing, and six emotions
+  (calm, glad, angry, sad, surprised, sly) read from the person's loyalty and character. Portraits on the cards are
+  alive. The generator for every NPC and the wardrobe come next.
+- **Recovered from old branches**: three open items of 28.09 that never reached the plan (the metro board against
+  the fare, «КРАЙ» over a stop name, the yard calibration findings).
+
 ## 0.490.0 - «Борт»: the flight interface made anew
 
 - **One material for everything over the world (M720).** Vitals, the place, the receiver, the rail,

@@ -267,6 +267,13 @@ measured on the GPU build first:
 - [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
   release run).
 - [ ] **M480/M481 yards (rest):** calibration by the worlds oracle and the стрельбище (release run).
+  Started 28.09 (recovered 08.10 from the unpushed `game` branch of the old `drift-design` clone; its probe
+  `tests/91zzzzk7-yard-probe.js` lives only there): **worlds** is usable — a heavy wide hauler pays for itself in one
+  best one-hop run at every yard except Коммуна (two, hold −15 %); Компания is −15 % price with no number against it,
+  its limit (КБ billing) is not in the stats. **The стрельбище is not trustworthy yet**: six duels against a rank-2
+  pirate (160 hp) kill nothing in 60 s at any yard, and the damage taken does not follow hull size (Хай-Фронт loses
+  less than the base). Fix the duel first (aim, `g.range`/cone, the `weapon` mod tier, pirate flight), then read hull
+  against price. No yard number has been moved.
 
 ## 8. Stage 7 — the giants
 
@@ -274,6 +281,12 @@ measured on the GPU build first:
 ## 9. Seams to honour when the items above are built
 
 Check each against the code before building — some may already hold.
+- [ ] **Metro board against the fare (Контроль, 28.09; recovered 08.10):** the board says «МЕТРО · Линия 3», but
+  the ticket to «Рациорн» is not at the metro fare and the token does not work on it. Chosen: the fare stays by zone
+  (both ends inside `RAIL_METRO_R`). The board calls a line МЕТРО only when all its stops lie inside the circle,
+  otherwise ЭЛЕКТРИЧКА — today `18f` decides it per station (`S.metro`), not per line.
+- [ ] **«КРАЙ» over a stop name** next to «ВЫ ЗДЕСЬ» on the scheme (sector 6,1, phone; recovered 08.10). Give it
+  the same collision check the stop labels use.
 - **Replays (0.1, P9):** the fixed step and the seeded entry angle each move every recording and same-hash
   suite once — `91zzzzzbb-samehash` re-based in the same commit, named in the patchnote.
 
