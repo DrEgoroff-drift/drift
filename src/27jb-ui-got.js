@@ -42,6 +42,7 @@ function gotRender(){
   e.innerHTML="<b><em>С БОЯ"+(more?" · ЕЩЁ "+more:"")+"</em><span>×</span></b>"+
     "<div class='gp' style='border-top:3px solid "+PART_KINDS[p.kind].col+"'>"+opisPartHtml(p)+"</div>"+
     "<div class='gf'>"+(diff||"")+"<s>"+where+"</s></div><div class='ga'></div>";
+  e.querySelector(".gp").prepend(partThumb(p,260,96,"fl"));   /* добыча — сама вещь, как в ангаре (M724) */
   e.querySelector("b span").onclick=()=>{GOT.q=[];gotClose();};
   const acts=e.querySelector(".ga");
   const on=el("button","act gold","НАДЕТЬ");

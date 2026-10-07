@@ -552,11 +552,13 @@ function opisPartHtml(p){
     (mkBy?" · "+mkBy:"")+made+
     " · место "+p.cap+"</s><i>"+seal+p.aff.map(a=>"<span class='"+(a.v>0?"up":"dn")+"'>"+affLabel(a)+"</span>").join(" · ")+"</i>";
 }
-function opisPartCard(p,where){
+function opisPartCard(p,where,th){
   const fitted=where==="slot",slot=fitted?opisSlotOf(p.id):-1;
   const payload=fitted?{t:"slot",i:slot,id:p.id}:{t:"part",id:p.id};
   const card=opisCard("part",payload,opisPartHtml(p));
   card.dataset.id=p.id;
+  /* сама вещь — та же модель, что встанет на подвес (17c2d, M724); у инспектора ангара она крупно над карточкой */
+  if(th!==false)card.prepend(partThumb(p,240,88,"fl"));
   card.style.borderTop="3px solid "+PART_KINDS[p.kind].col;   /* род части — полосой, а не цветом букв на бумаге */
   const f=OPIS.sel;
   if(!fitted&&f&&f.t==="slot"&&slotsOf(G.shipId)[f.i]===p.kind)card.classList.add("fit");
@@ -655,6 +657,8 @@ function opisHullCap(slots,fm,inv,spare){
       (kin&&M&&typeof MOUNT_SIZE_RU!=="undefined"?"снятые есть, но в "+MOUNT_SIZE_RU[M.size]+" подвес не встанут":"снятых такого рода нет");
     cap.innerHTML="<b style='color:"+K.col+"'>СЛОТ "+(s.i+1)+" · "+K.sh+"</b><s>"+
       (p?"«"+p.name+"»":"пусто · "+why)+"</s>";
+    /* в подвесе вещь — она же слева крупно (M724): инспектора на телефоне нет, это его место */
+    if(p){cap.classList.add("wth");cap.prepend(partThumb(p,128,92,"cap"));}
     const acts=[];
     if(p)acts.push({ru:"СНЯТЬ",go:()=>opisUnfit(s.i)});
     else if(n)acts.push({ru:"К СНЯТЫМ",gold:true,go:()=>{OPIS.tab="spare";opisRerender();}});   /* вкладка СНЯТОЕ (R6) */

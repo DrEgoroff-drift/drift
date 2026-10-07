@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 476 · top-level symbols: 7181
+Files: 477 · top-level symbols: 7192
 
 ## SYMBOLS
 
@@ -1263,6 +1263,8 @@ OV_CV                        src/08bi-gpu-ovl.js:300
 OV_EYE                       src/08bi-gpu-ovl.js:296
 OX                           src/21ad-base-gpu.js:149
 P3                           src/17c2b-parts3d.js:18
+P3T                          src/17c2d-parts-thumb.js:21
+P3T_CAM                      src/17c2d-parts-thumb.js:22
 P3_GL                        src/17c2b-parts3d.js:29
 P3_K                         src/17c2b-parts3d.js:32
 P3_MK                        src/17c2b-parts3d.js:20-27
@@ -3618,7 +3620,7 @@ fridgeStep                   src/21ac4-base-fridge.js:37-56
 fuelPriceHere                src/12k-rep.js:63-70
 furColor                     src/20f-fauna.js:25-34
 fuseAffordable               src/03-ships.js:38-41
-fuseCard                     src/26b-ui-station-work.js:348-384
+fuseCard                     src/26b-ui-station-work.js:349-385
 fuseCost                     src/03-ships.js:33-37
 fuseGen                      src/03-ships.js:32
 fusePreview                  src/03-ships.js:46-63
@@ -3853,8 +3855,8 @@ gotCalm                      src/27jb-ui-got.js:15-20
 gotClose                     src/27jb-ui-got.js:27
 gotEl                        src/27jb-ui-got.js:21-26
 gotNext                      src/27jb-ui-got.js:28
-gotRender                    src/27jb-ui-got.js:29-55
-gotTick                      src/27jb-ui-got.js:56-60
+gotRender                    src/27jb-ui-got.js:29-56
+gotTick                      src/27jb-ui-got.js:57-61
 gotoSector                   src/11a-quests.js:68-88
 gplBody                      src/17ga-gpu-planets.js:309-332
 gplCities                    src/17ga-gpu-planets.js:397-439
@@ -4184,17 +4186,17 @@ hexA                         src/12e-drone-flight.js:286-292
 hexRGB                       src/24-mode-belt.js:63-65
 hexa                         src/12w-survey.js:85-88
 hgCall                       src/27j1-ui-hangar.js:101-120
-hgFloor                      src/27j1-ui-hangar.js:243-280
-hgFrame                      src/27j1-ui-hangar.js:282-286
-hgInspect                    src/27j1-ui-hangar.js:137-171
-hgLay                        src/27j1-ui-hangar.js:197-232
-hgMark                       src/27j1-ui-hangar.js:289-297
-hgRing                       src/27j1-ui-hangar.js:236-241
+hgFloor                      src/27j1-ui-hangar.js:244-281
+hgFrame                      src/27j1-ui-hangar.js:283-287
+hgInspect                    src/27j1-ui-hangar.js:137-172
+hgLay                        src/27j1-ui-hangar.js:198-233
+hgMark                       src/27j1-ui-hangar.js:290-298
+hgRing                       src/27j1-ui-hangar.js:237-242
 hgRows                       src/27j1-ui-hangar.js:44-56
 hgSlotList                   src/27j1-ui-hangar.js:122-134
-hgTick                       src/27j1-ui-hangar.js:298-354
+hgTick                       src/27j1-ui-hangar.js:299-355
 hgUnits                      src/27j1-ui-hangar.js:23-41
-hgWire                       src/27j1-ui-hangar.js:174-194
+hgWire                       src/27j1-ui-hangar.js:175-195
 hgZone                       src/27j1-ui-hangar.js:59-98
 hinChunks                    src/29d-home-draw.js:124-149
 hinDrawHole                  src/29e-home-up.js:219-238
@@ -4284,7 +4286,7 @@ holdShift                    src/12ab-hold.js:34
 holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdUklad                    src/12ah-holdnews.js:19-24
-holdWorth                    src/27j-ui-opis.js:594-602
+holdWorth                    src/27j-ui-opis.js:596-604
 homeBeacon                   src/12j-home.js:180-186
 homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
@@ -4415,7 +4417,7 @@ hullBakeScale                src/03e1-hull-bake.js:27-30
 hullClassOf                  src/03-ships.js:253-268
 hullGpuBake                  src/17c2-hull-gpu.js:30-43
 hullGpuBelly                 src/17c2-hull-gpu.js:44-49
-hullGpuDraw                  src/17c2-hull-gpu.js:178-230
+hullGpuDraw                  src/17c2-hull-gpu.js:185-237
 hullGpuE                     src/17c2-hull-gpu.js:23
 hullGpuFlames                src/17c2-hull-gpu.js:96-123
 hullGpuInserts               src/17c2-hull-gpu.js:126-141
@@ -4430,7 +4432,7 @@ hullPart2                    src/03e-hull-draw.js:681-684
 hullPart3                    src/03e-hull-draw.js:687-764
 hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:176-183
-hullStudio                   src/17c2-hull-gpu.js:161-175
+hullStudio                   src/17c2-hull-gpu.js:161-165
 hullStudioBake               src/17c2-hull-gpu.js:151-157
 hullStudioSb                 src/17c2-hull-gpu.js:150
 huntAll                      src/12o-hunter.js:27
@@ -5230,8 +5232,8 @@ openWanderer                 src/24c-mode-wanderer.js:22-41
 opisActs                     src/27j-ui-opis.js:522-532
 opisArmed                    src/27j-ui-opis.js:197
 opisAsk                      src/27j-ui-opis.js:233-236
-opisAskForm                  src/27j-ui-opis.js:676-694
-opisBar                      src/27j-ui-opis.js:696-712
+opisAskForm                  src/27j-ui-opis.js:680-698
+opisBar                      src/27j-ui-opis.js:700-716
 opisCanDump                  src/27j-ui-opis.js:232
 opisCard                     src/27j-ui-opis.js:508-521
 opisConfirm                  src/27j-ui-opis.js:198-202
@@ -5245,30 +5247,30 @@ opisDropEnd                  src/27j-ui-opis.js:356-366
 opisDump                     src/27j-ui-opis.js:237-246
 opisFit                      src/27j-ui-opis.js:203-217
 opisFocus                    src/27j-ui-opis.js:86
-opisFold                     src/27j-ui-opis.js:637-641
+opisFold                     src/27j-ui-opis.js:639-643
 opisGhostMove                src/27j-ui-opis.js:321-324
 opisGpu                      src/27i0-panel-gpu.js:29
-opisHead                     src/27j-ui-opis.js:670-674
-opisHullCap                  src/27j-ui-opis.js:645-669
+opisHead                     src/27j-ui-opis.js:674-678
+opisHullCap                  src/27j-ui-opis.js:647-673
 opisHullRedraw               src/27j-ui-opis.js:407-413
 opisHullSlotAt               src/27j-ui-opis.js:419-430
 opisHullTick                 src/27j-ui-opis.js:418
-opisKitCard                  src/27j-ui-opis.js:625-633
+opisKitCard                  src/27j-ui-opis.js:627-635
 opisKitFuture                src/27j-ui-opis.js:128-135
-opisLeave                    src/27j-ui-opis.js:944-949
+opisLeave                    src/27j-ui-opis.js:948-953
 opisLift                     src/27j-ui-opis.js:278-320
 opisMarkCan                  src/27j-ui-opis.js:326-343
 opisMarkOver                 src/27j-ui-opis.js:344-349
 opisPanel                    src/27j-ui-opis.js:136-163
 opisPanels                   src/27j-ui-opis.js:175-195
-opisPartCard                 src/27j-ui-opis.js:555-582
+opisPartCard                 src/27j-ui-opis.js:555-584
 opisPartHtml                 src/27j-ui-opis.js:533-554
 opisPhone                    src/27j-ui-opis.js:71
-opisPileCard                 src/27j-ui-opis.js:603-624
+opisPileCard                 src/27j-ui-opis.js:605-626
 opisPlanBlock                src/05e-plan.js:175-190
 opisPlanOnly                 src/05e-plan.js:191-209
-opisPriceCue                 src/27j-ui-opis.js:584-593
-opisRender                   src/27j-ui-opis.js:714-942
+opisPriceCue                 src/27j-ui-opis.js:586-595
+opisRender                   src/27j-ui-opis.js:718-946
 opisRerender                 src/27j-ui-opis.js:74-84
 opisSame                     src/27j-ui-opis.js:85
 opisScarRows                 src/27j-ui-opis.js:167-174
@@ -5322,6 +5324,12 @@ p3KindCol                    src/17c2b-parts3d.js:35
 p3PartOf                     src/17c2b-parts3d.js:357-360
 p3Tools                      src/17c2b-parts3d.js:68-153
 p3Top                        src/17c2b-parts3d.js:40-62
+p3tFlush                     src/17c2d-parts-thumb.js:106-115
+p3tFrame                     src/17c2d-parts-thumb.js:61-69
+p3tMesh                      src/17c2d-parts-thumb.js:25-59
+p3tPaint                     src/17c2d-parts-thumb.js:78-94
+p3tSig                       src/17c2d-parts-thumb.js:23
+p3tZero                      src/17c2d-parts-thumb.js:71-76
 packPart                     src/05-parts.js:465-472
 padCase                      src/27y-hud-words.js:31-40
 padNames                     src/27y-hud-words.js:10-23
@@ -5397,6 +5405,7 @@ partMakerRu                  src/05-parts.js:140-143
 partSealed                   src/05e-clearance.js:80
 partSeq                      src/05-parts.js:364
 partSize                     src/05d-mounts.js:59-68
+partThumb                    src/17c2d-parts-thumb.js:97-105
 passAll                      src/11p-pass.js:19
 passAtShip                   src/11p-pass.js:47
 passAtVillage                src/11p-pass.js:48
@@ -5981,7 +5990,7 @@ relicUnequip                 src/12h-relic.js:87
 renderAlbum                  src/25g-postcard.js:679-703
 renderBarge                  src/12l-barge.js:707-798
 renderBaseLink               src/21a2-base-link.js:137-163
-renderBasesTab               src/26a-ui-station-home.js:4-331
+renderBasesTab               src/26a-ui-station-home.js:4-332
 renderBooks                  src/12ub-books.js:157-186
 renderCantina                src/27c-ui-hq.js:68-131
 renderCardBack               src/25i-post-back.js:88-178
@@ -6552,11 +6561,11 @@ stSpin                       src/17c3-station-live.js:50-53
 stSpinCv                     src/17c3-station-live.js:56-62
 stSplit                      src/17c3-station-live.js:20
 stTabBoard                   src/26e-ui-station-trade.js:11-147
-stTabFuse                    src/26b-ui-station-work.js:385
-stTabInstr                   src/26b-ui-station-work.js:230-384
-stTabLab                     src/26b-ui-station-work.js:316-384
+stTabFuse                    src/26b-ui-station-work.js:386
+stTabInstr                   src/26b-ui-station-work.js:231-385
+stTabLab                     src/26b-ui-station-work.js:317-385
 stTabMarket                  src/26e-ui-station-trade.js:148-273
-stTabMods                    src/26b-ui-station-work.js:105-384
+stTabMods                    src/26b-ui-station-work.js:105-385
 stTabYard                    src/26e-ui-station-trade.js:274-427
 stTabsHere                   src/26-ui-station.js:175
 stTypeOf                     src/06-galaxy.js:69
@@ -6660,6 +6669,8 @@ stripPaint                   src/27i-ui-table.js:370-378
 stripSell                    src/11b-speech.js:231-242
 stripValue                   src/11b-speech.js:193-195
 stripsAll                    src/11b-speech.js:192
+studioClose                  src/17c2-hull-gpu.js:182
+studioOpen                   src/17c2-hull-gpu.js:168-181
 subAllowed                   src/05b3-sub.js:16-18
 subBreakEven                 src/05b3-sub.js:20
 subBuy                       src/05b3-sub.js:21-33
@@ -7958,6 +7969,9 @@ zoomTo                       src/15-input.js:358
 ## src/17c2c-parts3d-guns.js · 20 KB
   · стволы на подвесах — в объёме (M722):1
 
+## src/17c2d-parts-thumb.js · 9 KB
+  · миниатюры частей (M724):1
+
 ## src/17c3-station-live.js · 11 KB
 
 ## src/17d-house-shapes.js · 7 KB
@@ -8543,7 +8557,7 @@ zoomTo                       src/15-input.js:358
 ## src/27j-ui-kitlay.js · 9 KB
   · комплект, разложенный на столе:1
 
-## src/27j-ui-opis.js · 58 KB
+## src/27j-ui-opis.js · 59 KB
   · ОПИСЬ: один стол для всего, что на тебе и в трюме (M341):1
 
 ## src/27j1-ui-hangar.js · 26 KB

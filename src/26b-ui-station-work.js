@@ -139,6 +139,7 @@ function stTabMods(){
       for(const o of offers){
         const K=PART_KINDS[o.part.kind],bought=G.partsBought[o.key];
         const r=el("div","row");
+        r.appendChild(partThumb(o.part,120,80,"row"));   /* та же модель, что встанет на подвес (17c2d, M724) */
         r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+o.part.name+
           (o.black?" <span style='color:#c58ae0;font-size:9px'>ПО СВЯЗЯМ ФАКТОРА</span>":"")+"</b><s>"+
           K.ru.toLowerCase()+" · "+TIER_RU[o.part.tier]+" · место "+o.part.cap+"<br>"+

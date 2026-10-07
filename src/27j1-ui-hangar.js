@@ -143,7 +143,7 @@ function hgInspect(slots,fm,inv){
     box.style.setProperty("--k",K.col);
     box.innerHTML="<h4><i>"+(i+1)+"</i>"+K.sh+"<s>"+(M&&kind==="gun"?MOUNT_SIZE_RU[M.size]+" · "+MOUNT_KINDS[M.mount].ru:K.note)+"</s></h4>"+
       (M&&kind==="gun"?"<s class='chalk'>"+MOUNT_KINDS[M.mount].note+"</s>":"");
-    if(p)box.appendChild(opisPartCard(p,"slot"));
+    if(p){box.appendChild(partThumb(p,232,128,"fl hero"));box.appendChild(opisPartCard(p,"slot",false));}
     else{
       const takes=q=>q.kind===kind&&(!M||typeof mountTakes!=="function"||mountTakes(M,q));
       const n=inv.filter(takes).length,kin=inv.filter(q=>q.kind===kind).length;
@@ -160,6 +160,7 @@ function hgInspect(slots,fm,inv){
       box.innerHTML="<h4><i>·</i>В РУКЕ<s>"+K.sh+"</s></h4><b class='nm'>"+p.name+"</b><s class='chalk'>"+
         (t<0?"на этом корпусе подвеса под неё нет":"встанет в слот "+(t+1)+(fm[t]!=null?" вместо «"+partById(fm[t]).name+"»":"")+
           " · или тащите на любую подсвеченную метку")+"</s>";
+      box.insertBefore(partThumb(p,232,128,"fl hero"),box.children[1]);
       return box;}
   }
   const cnt={};slots.forEach((k,i)=>{const c=cnt[k]||(cnt[k]=[0,0]);c[1]++;if(fm[i]!=null)c[0]++;});

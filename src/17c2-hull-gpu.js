@@ -159,6 +159,13 @@ function hullStudioBake(S,h,id,sb){
    с центром (x,y) и масштабом sc в той же рамке. Только из кадра, до gpuPresent: открытый проход сцены
    закрывается (следующий gpuScene откроет его с загрузкой). Готово — S.tex/S.view/S.dev */
 function hullStudio(S,id,w,h,nd,x,y,sc,lvl){
+  if(!studioOpen(S,w,h,nd))return false;
+  try{hullGpuDraw(id,x,y,0,sc,false,false,lvl,0,HS_LT[0],HS_LT[1]);}finally{studioClose(S);}
+  return true;
+}
+/* открыть студию S (рамка w×h CSS при плотности nd): текстура, форма кита, пустые лампы, проход с очисткой
+   «весь фон на месте»; GPU.rt — она, пока не закрыта. Общая дверь корпуса (выше) и миниатюр частей (17c2d) */
+function studioOpen(S,w,h,nd){
   if(!GPU.on||!GPU.enc||!GPU.dev)return false;
   const d=GPU.dev,U=GPUTextureUsage,bw=Math.max(2,Math.round(w*nd)),bh=Math.max(2,Math.round(h*nd));
   if(S.dev!==d){S.dev=d;S.tex=S.bk=S.ku=S.lt=null;}
@@ -169,10 +176,10 @@ function hullStudio(S,id,w,h,nd,x,y,sc,lvl){
   const f=GPU_SCR.ku;f[0]=bw;f[1]=bh;f[2]=nd;f[3]=0;d.queue.writeBuffer(S.ku,0,f);
   if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   S.pass=GPU.enc.beginRenderPass({colorAttachments:[{view:S.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
-  S.bw=bw;S.bh=bh;S.w=w;S.h=h;S.nd=nd;S.col=HS_COL;GPU.rt=S;
-  try{hullGpuDraw(id,x,y,0,sc,false,false,lvl,0,HS_LT[0],HS_LT[1]);}finally{GPU.rt=null;S.pass.end();S.pass=null;}
+  S.bw=bw;S.bh=bh;S.w=w;S.h=h;S.nd=nd;S.col=S.col||HS_COL;GPU.rt=S;
   return true;
 }
+function studioClose(S){GPU.rt=null;if(S.pass){S.pass.end();S.pass=null;}}
 /* корабль целиком; x,y — экран, a — курс, sc — масштаб корабля, (lx,ly) — к звезде; gear — части на подвесах
    (17c2b shipGear3d у своего, без него — штатный набор по слотам корпуса). false — прохода сцены нет, рисуй по-старому */
 function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly,gear){

@@ -168,3 +168,23 @@ marker a leader line to its slot card. Laws:
 6. **The table yields to the hangar**: on the table the console's 56 px top padding is gone, and from 900 px the
    table widens to 1400 so the whole bay fits the first screen at 1920×1080.
 
+### Part thumbnails (M724) — `17c2d-parts-thumb`
+
+Every card that names a part shows the part: the hangar tray (banner on top of the card), the inspector's hero, the
+phone's slot plate, the station's «части в продаже» and workshop rows, the «С БОЯ» loot card. Laws:
+1. **The very model that goes on the mount.** `h3dParts` builds it on a synthetic one-pedestal hull; what is bought
+   at the counter is what stands on the wing.
+2. **A product shot, not a diagram.** Fixed camera (`P3T_CAM`: yaw .66, tilt 1.16 — low, near profile, so turret
+   rings foreshorten and barrels read), studio key from the upper left; the part is fitted to 90 × 88 % of the frame
+   by its own vertices, so L and H are the same height in a card — the size is written, not drawn.
+3. **The pedestal serves the part.** A graphite turntable sized by the part's base (what lies within .2 of the top,
+   ×1.1) — a long low barrel overhangs instead of inflating it; the top is darker than any part, the band and every
+   sixth tick glow in the kind's colour. The niche behind is CSS (graphite, a horizon at 58 %, the kind's glow below),
+   the canvas is transparent around the part.
+4. **Painted outside the frame, one encoder each.** `partThumb` queues the canvas, a timer paints it through
+   `ovPaint`; studio targets are shared per size, so two thumbnails never share an encoder. No GPU memory per card:
+   the canvas keeps the picture; caches are meshes (48) and studios (8).
+5. **Banners paint at their real box.** A fluid thumbnail (`fl`) measures `clientWidth/Height` in the timer (never
+   in the frame or a pointer handler) and paints at that size, so it is never stretched; `max-height` caps it on a
+   phone's single column.
+
