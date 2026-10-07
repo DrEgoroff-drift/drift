@@ -214,6 +214,16 @@ the player meets first and by what one reinvention gives to the next.
   intersects the centre 40 % of the frame in any scene.
 - **M804 The night side.** Sky fill and a warm terminator on every orb; caps as grain; moons
   from the parent's palette. Gate: a pair of five worlds at 760.
+  - *Done (four passes, `17gab`):* the night side is filled by its own sky — a cold blue
+    for an airless rock, the air's hue (`chromaCap`) where there is air — so the dark half is
+    a shape, not a hole; the terminator is a warm *rim* (`termB`, a gaussian in `m0g` whose
+    width grows with `thick`), not a band — pass 3 smeared a brown belt over the night land
+    and pass 4 narrowed it to an edge; the polar cap is grain with cracks (`n3` at 70 and
+    120, a cold tint in the hollows) instead of a white blot — judged on an ice world, since
+    the terran's pole sits under its clouds; a moon's palette is `GOR_MOON` pulled towards
+    the parent's hue (`gorMoonPal`, .55 of the chroma, cached by the parent's seed) — the
+    ice moon of a crystal world reads mauve. Frames: `orb_n5_*` in the scratchpad; the
+    gate pair at 760 is folded into the hotfix release's P1 run.
 
 ### Stage B — the station as a place (M810–M819)
 

@@ -8,6 +8,10 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M804 — the night side of the orbs.** The dark half of every planet is filled by its own
+  sky (cold blue where there is no air, the air's hue where there is) so it reads as a shape;
+  the terminator is a warm rim whose width follows the air; polar caps are grain with cracks
+  rather than a white blot; moons take their tint from the parent's palette (`gorMoonPal`).
 - **M800c — the planet is the default view.** The engine's surface (`PLN`, M600–M627) is on
   unless `?pln=0`; the old painter stays behind that switch until M890. Its overlay tags now scale
   by the frame's ruler (`UIK`) — at 2560 the vision found them at 8.5 px. The travel-cache suite
