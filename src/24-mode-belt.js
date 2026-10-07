@@ -112,10 +112,11 @@ function enterBelt(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   if(typeof farReadShow==="function")farReadShow(farHere("belt"));   /* залежь — табличкой прибора, шкалой (D12) */
-  say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
+  /* четыре строки — табличкой на камне-цели (M803, точка — beltHudPush 24bc), без слоя — строкой #msg */
+  hangSay("belt.in","Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
     (beltIcy(B)?" · и кристаллы льда":"")+   /* в строку руды: на телефоне #msg — три строки, четвёртая выталкивала «обзор» */
     (document.body.classList.contains("mobile")?"\nтяните по стеклу — обзор"   /* на касании клавиш нет (R6) */
-      :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"));
+      :"\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор"),"rock",240);
 }
 /* обломки: разлетаются, тают и ничего не задевают */
 function shatter(b,a,n,power,px,py,pz){
@@ -164,7 +165,7 @@ function exitBelt(){
   G.ship.vx=0;G.ship.vy=0;
   G.belt=null;G.mode="system";
   saveGame(true);
-  say("Выход из пояса\nв трюме: "+held());
+  hangSay("belt.out",["Выход из пояса","в трюме: "+held()],"ship",150);   /* на корабле (M803) */
 }
 const CUT_RANGE=340;   // резак достаёт только вблизи, захват — издалека
 function updateBelt(dt){

@@ -23,6 +23,9 @@ could ever save.
   (a soft halo on the sphere) with a two-scale city pattern that averages, rather than vanishes,
   once a scale is under two pixels; only land, only past the terminator, dimmed under cloud.
   The per-pixel land test per city is gone, so the loop is cheaper too.
+- **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
+  the scoop and belt briefings and the surface «what» line are plates on their object with a
+  leader (`08bj` `ovHang`); the centre 40 % of the frame stays empty, the vision checks it.
 - **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
   texture in any pose of its book, any facing and the caller's light; the base, the cave and the
   raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).

@@ -220,6 +220,14 @@ the player meets first and by what one reinvention gives to the next.
   the arrival line are leader-lined plates on their object (`OVL`), the centre of the frame
   kept empty; the tutorial banner finds a free band. Gate: `test-geom` asserts no prompt box
   intersects the centre 40 % of the frame in any scene.
+  *Done (08.10, remake-a2):* `08bj` `ovHang()` / `hangSay()` — M720 plates (graphite, cut
+  corner, cream ink, the verb in accent) laid out per frame off the centre band, the HUD, the
+  rail, world labels, chips, the #msg line, the surface hint and the man; leader when stood
+  off; hidden when nothing fits. Takers: discovery (on the planet), arrival and stamp (on the
+  ship, stamp in its power's ink), landing readout and gravity, scoop in/out, belt in (on the
+  target rock), the surface «what» line of a landmark or a deposit. Without WebGPU the old
+  `say()`. Vision law «центр» in `90b2-geom` with a planted plate. Open: the old
+  tutorial banner and `G.prompt` stay as they were (brief); only the wreck has act lines.
 - **M804 The night side.** Sky fill and a warm terminator on every orb; caps as grain; moons
   from the parent's palette. Gate: a pair of five worlds at 760.
   - *Done (four passes, `17gab`):* the night side is filled by its own sky — a cold blue

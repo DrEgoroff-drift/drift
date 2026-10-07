@@ -433,9 +433,20 @@ function ckgUnder(i0,r0){
   const A=Q.splice(0,i0);for(let i=0;i<A.length;i++)Q.push(A[i]);
   const Ra=R.splice(0,r0);for(const r of R)r[0]-=n0;for(const r of Ra){r[0]+=n1;R.push(r);}
 }
+/* камень, о котором говорят (M803): взятый в рамку, иначе тот, что ближе всех к прицелу и виден */
+function beltHangAt(b,proj){
+  let best=null,bd=1e9;
+  const one=a=>{const t=proj(a.x,a.y,a.z);if(!t||!(t.z>0))return null;
+    const r=a.r*Math.min(W,H)*.95/t.z*.75;return (t.x>-r&&t.x<W+r&&t.y>-r&&t.y<H+r)?{x:t.x,y:t.y,r}:null;};
+  if(b.lock)best=one(b.lock);
+  if(!best)for(const a of b.ast||[]){const s=one(a);if(!s||s.r<10)continue;
+    const d=Math.hypot(s.x-W/2,s.y-H/2)-s.r;if(d<bd){bd=d;best=s;}}
+  if(best)hangAt("rock",best.x,best.y,clamp(best.r,10,220));
+}
 /* стекло и кабина пояса: с видеокартой — мастер и очередь #ovl, без неё — на #c */
 function beltHudPush(b,proj,fwd,st,bas){
   if(!GPU.on||!GPU.ok){drawGlassHUD(b,proj,fwd,st);drawCockpit(b,st);return;}
+  beltHangAt(b,proj);   /* камень-цель — точка слов (M803, 08bj) */
   if(!OVL.cv&&!ovCanvas())return;   /* мерка слоя (ovNd) — от его холста с первого кадра: иначе ключ мастера сменится на втором */
   const P=ckgPlan(),FS=ckgFS(P),I=CKG.in;
   I.b=b;I.proj=proj;I.st=st;

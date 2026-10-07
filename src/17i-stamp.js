@@ -11,6 +11,7 @@
 const STAMP_ORDER=["gt","co","or","km","ra","hf","yalta","pirate"];
 const STAMP_RU={gt:"ГЛАВТРАССА",co:"Компания",or:"Орднунг",km:"Коммуна",ra:"Рассвет",hf:"Хай-Фронт",
   yalta:"Ялта",pirate:"пираты"};
+const STAMP_INK={gt:"#9a7cf0",co:"#efe8da",or:"#e8e4dc",km:"#6f9cf2",ra:"#e0a64e",hf:"#b9c4cc",yalta:"#d9c27a",pirate:"#c9c2b4"};
 const STAMP_POEM=["и звёзды, как соль на ладони","мы все немного космос","здесь обедают медленно",
   "ни шагу без песни","дорога — это тоже дом"];
 function stampOwnerAt(sx,sy){
@@ -81,6 +82,9 @@ function stampPirate(R,after){
 /* ── штамп через экран: DOM на бумаге, 1.2 с ── */
 function stampShow(by,e){
   if(typeof document==="undefined"||!document.body)return;
+  /* M803: в системе штамп — не поверх строки прибытия посреди экрана, а табличкой у корабля,
+     чернилами державы (те же, что у .stp-* в style.css); раскладка 08bj ставит его рядом */
+  if(hangOk()&&G.mode==="system"){hangSay("stamp",stampText(by,e),"ship",78,{ink:STAMP_INK[by]||STAMP_INK.or});return;}
   const old=document.getElementById("stampFx");if(old)old.remove();
   const d=document.createElement("div");d.id="stampFx";d.className="stp-fx stp-"+by;
   const tilt=(5+(hashi(e.sx|0,e.sy|0,0x57A9)>>>0)%8)*((e.sx+e.sy)&1?-1:1);

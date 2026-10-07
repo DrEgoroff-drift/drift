@@ -415,7 +415,10 @@ function updateSystem(dt){
   if(near&&nd<250){
     if(!G.found.has(near.key)){
       G.found.add(near.key);G.data+=6;
-      tell("","Открыта планета "+near.name+" · "+near.T.ru.toLowerCase()+" · +6 данных",
+      /* открытие висит на самом теле (M803, 08bj), а не тремя строками посреди экрана */
+      if(hangOk()){logAdd("","Открыта планета "+near.name+" · "+near.T.ru.toLowerCase()+" · +6 данных");
+        hangSay("found",["Открыто: "+near.name,near.T.ru+" · +6 данных"],"sys",180,{obj:near});}
+      else tell("","Открыта планета "+near.name+" · "+near.T.ru.toLowerCase()+" · +6 данных",
            "Открыто: "+near.name+"\n"+near.T.ru+"\n+6 данных");
     }
     if(nd<110){
@@ -576,6 +579,8 @@ function drawSystem(){
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   /* ввод пересчитывает тычок через ту же камеру */
   G.viewCX=cx0;G.viewCY=cy0;
+  hangAt("ship",zx(sh.x),zy(sh.y),Math.max(14,22*Z));   /* корабль — точка слов прибытия и штампа (M803, 08bj) */
+  hangAt("sys",cx0,cy0,0,Z);   /* камера системы: тело, о котором говорят, ставится по ней (открытие) */
   /* Тёмный фон запечён внутрь тайла туманности: тайл по построению кроет весь
      экран, поэтому отдельная заливка под ним была лишним полноэкранным
      проходом, а само наложение из складывающего стало непрозрачным — это
