@@ -366,6 +366,7 @@ function bGlow(cx,cy,r,col,a){
    шлем, один цветной блик на стекле. */
 function bWorker(x,fy,lit,sit,phase,face,bare){
   if(!bL())return;                                      // человек всегда живой
+  if(rigCardWorker(x,fy,lit,sit,phase,face,bare))return; // риг карточкой в очередь (21phc, M801)
   const d=face===-1?-1:1;
   const L=.55+lit*.45;                                  // общая освещённость фигуры
   const mix=(a,b,t)=>Math.round(a+(b-a)*t);

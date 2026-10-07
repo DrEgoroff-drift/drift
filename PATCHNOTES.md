@@ -30,6 +30,9 @@ could ever save.
   (a soft halo on the sphere) with a two-scale city pattern that averages, rather than vanishes,
   once a scale is under two pixels; only land, only past the terminator, dimmed under cloud.
   The per-pixel land test per city is gone, so the loop is cheaper too.
+- **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
+  texture in any pose of its book, any facing and the caller's light; the base, the cave and the
+  raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).
 
 ## 0.492.0 - the nebula «смело»
 

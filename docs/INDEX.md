@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 514 · top-level symbols: 7671
+Files: 516 · top-level symbols: 7702
 
 ## SYMBOLS
 
@@ -1668,6 +1668,12 @@ RES_TXT                      src/02-world.js:93
 RES_WAIT0                    src/28-loop.js:229
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19-23
+RIG_ALIAS                    src/21phc-pln-rig-card.js:35
+RIG_BOX                      src/21phc-pln-rig-card.js:31
+RIG_CARD                     src/21phc-pln-rig-card.js:20
+RIG_CARD_WGSL                src/21phc-pln-rig-card.js:121
+RIG_H                        src/21phc-pln-rig-card.js:32
+RIG_POSES                    src/21phc-pln-rig-card.js:34
 RING_FIRST                   src/11x-ring.js:20
 RING_LEN                     src/11x-ring.js:21
 RING_SRC                     src/11x-ring.js:19
@@ -2242,7 +2248,7 @@ bPipe                        src/21aa-base-rooms.js:268-278
 bS                           src/21aa-base-rooms.js:28
 bScreen                      src/21aa-base-rooms.js:280-295
 bWall                        src/21aa-base-rooms.js:211-266
-bWorker                      src/21aa-base-rooms.js:367-428
+bWorker                      src/21aa-base-rooms.js:367-429
 bakeAt                       src/20ab-poi-gpu.js:148-153
 bakeIdle                     tests/90-harness.js:436-443
 bakeKeep                     src/08c-gpu-kit.js:76-81
@@ -2373,7 +2379,7 @@ baseIsRuin                   src/21b0-base-ruin.js:23
 baseJumpCost                 src/21a-mode-base.js:382-385
 baseKey                      src/21a-mode-base.js:84
 baseLampKind                 src/21ad-base-gpu.js:134
-baseLamps                    src/21aa-base-rooms.js:487-491
+baseLamps                    src/21aa-base-rooms.js:488-492
 baseLife                     src/21a1-base-life.js:285-292
 baseLifeBoost                src/21a3-base-people.js:36-38
 baseLifeBulk                 src/21a1b-base-food.js:122-159
@@ -3343,7 +3349,7 @@ drawAstronaut                src/20-life.js:4-147
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-646
 drawBargesMap                src/12l-barge.js:648-667
-drawBase                     src/21ac-base-draw.js:372-685
+drawBase                     src/21ac-base-draw.js:372-689
 drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
@@ -3351,7 +3357,7 @@ drawBeastAlien               src/20f-fauna.js:68-238
 drawBelt                     src/24-mode-belt.js:362
 drawBeltRocks                src/17c-system-draw.js:29-83
 drawBillboard                src/17k-billboard.js:182-196
-drawBuildMenu                src/21aa-base-rooms.js:576-592
+drawBuildMenu                src/21aa-base-rooms.js:577-593
 drawBuilt                    src/21c-built.js:64-102
 drawCantinaRoom              src/27d-ui-cantina.js:32-34
 drawCave                     src/22-mode-cave.js:729-739
@@ -3426,10 +3432,10 @@ drawLuxeSkin                 src/03c-hull-luxe.js:27-108
 drawMap                      src/18-mode-map.js:215-218
 drawMapIn                    src/18-mode-map.js:219-610
 drawMisFigure                src/11z-misclosure.js:63-87
-drawModuleBody               src/21aa-base-rooms.js:493-501
-drawModuleFloor              src/21aa-base-rooms.js:546-572
-drawModuleLive               src/21aa-base-rooms.js:502-539
-drawModuleShell              src/21aa-base-rooms.js:438-484
+drawModuleBody               src/21aa-base-rooms.js:494-502
+drawModuleFloor              src/21aa-base-rooms.js:547-573
+drawModuleLive               src/21aa-base-rooms.js:503-540
+drawModuleShell              src/21aa-base-rooms.js:439-485
 drawMonolith                 src/20aa-poi-shapes.js:189-206
 drawMooredBarge              src/17e-station-body.js:17-36
 drawNodeIcon                 src/05a-nodes.js:264-361
@@ -3445,7 +3451,7 @@ drawPlant                    src/20-life.js:417-425
 drawPlantAlien               src/20-life.js:221-388
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-612
-drawRaid                     src/24aa-raid-draw.js:14-643
+drawRaid                     src/24aa-raid-draw.js:14-650
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-272
@@ -6395,6 +6401,8 @@ rareSum                      src/12m-rare.js:144-151
 rareTake                     src/12m-rare.js:118-141
 rayDamage                    src/13a-guns.js:93-96
 rayHits                      src/13a-guns.js:66-78
+rcBase                       tests/91qb-rig-card.js:6-13
+rcRaid                       tests/91qb-rig-card.js:14-21
 rebinding                    src/15-input.js:176
 recApEv                      src/15c-rec.js:33-37
 recDump                      src/15c-rec.js:52-54
@@ -6555,6 +6563,29 @@ retGroundLine                src/11s-returners.js:44-46
 reticle                      src/17c-system-draw.js:4-12
 rgba                         src/01-core.js:225
 ridged                       src/18a-material.js:30
+rigCard                      src/21phc-pln-rig-card.js:197-245
+rigCardBase                  src/21phc-pln-rig-card.js:284-295
+rigCardBounds                src/21phc-pln-rig-card.js:111-119
+rigCardCave                  src/21phc-pln-rig-card.js:316-324
+rigCardDesc                  src/21phc-pln-rig-card.js:160-167
+rigCardDev                   src/21phc-pln-rig-card.js:169-175
+rigCardDraw                  src/21phc-pln-rig-card.js:248-254
+rigCardFlush                 src/21phc-pln-rig-card.js:305-314
+rigCardIssueTint             src/21phc-pln-rig-card.js:61-67
+rigCardMS                    src/21phc-pln-rig-card.js:176-185
+rigCardMesh                  src/21phc-pln-rig-card.js:47-57
+rigCardPal                   src/21phc-pln-rig-card.js:39-46
+rigCardPose                  src/21phc-pln-rig-card.js:81-102
+rigCardRaid                  src/21phc-pln-rig-card.js:328-336
+rigCardRot                   src/21phc-pln-rig-card.js:106-109
+rigCardState                 src/21phc-pln-rig-card.js:69-79
+rigCardWorker                src/21phc-pln-rig-card.js:298-304
+rigLightBase                 src/21phc-pln-rig-card.js:266-269
+rigLightCave                 src/21phc-pln-rig-card.js:272-275
+rigLightKey                  src/21phc-pln-rig-card.js:187-190
+rigLightRaid                 src/21phc-pln-rig-card.js:277-279
+rigPoseOf                    src/21phc-pln-rig-card.js:256-262
+rigPpmQ                      src/21phc-pln-rig-card.js:192
 ringAll                      src/11x-ring.js:22-25
 ringBlock                    src/11x-ring.js:95-105
 ringDir                      src/11x-ring.js:26-29
@@ -8870,6 +8901,9 @@ zoomTo                       src/15-input.js:358
 ## src/21phb-pln-ship.js · 22 KB
   · планета: корабль на опорах — по корпусу игры (M621):1
 
+## src/21phc-pln-rig-card.js · 22 KB
+  · планета: человек в карточке — один астронавт везде (M801):1
+
 ## src/21pi-pln-things.js · 26 KB
   · планета: вещи игры — залежи, вход в пещеру, устье шахты (M611):1
 
@@ -8945,7 +8979,7 @@ zoomTo                       src/15-input.js:358
   · вход, выход, наполнение:84
   · обновление:299
 
-## src/24aa-raid-draw.js · 50 KB
+## src/24aa-raid-draw.js · 51 KB
   · рейд: отрисовка:1
   · рисование: пол → стены → объекты → эффекты:13
 
@@ -9247,6 +9281,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qa-marks-act.js · 10 KB
   · ориентиры как места действия (M627b):1
+
+## tests/91qb-rig-card.js · 4 KB
+  · один астронавт везде: риг в карточке (M801):1
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1
