@@ -352,15 +352,20 @@ Nothing here is started without the author's word; each item is a decision of in
   attachments (Chrome 146) help only attachments not sampled after the pass (MSAA, depth), not our nebula or glow
   targets.
 
-## 15. Branch `space` — parts on the mounts and every screen (M725–M728)
+## 15. Branch `space` — parts on the mounts and every screen (M726–M729)
 
 The author, 06.10: «кучу деталей смоделировать и чтобы ставить на подвесы на корабли и интерфейс чтобы в слоты
 вставлять … кантина еще, короче все интерфейсы давай делай, и не жалей там деталей отрисовки, прям жирным
 слоем … в стиле ААА». Worked in `C:\Claude\drift-space`, released by the usual procedure. Design and laws:
 `docs/DESIGN-space.md` «Parts on the mounts» and «The interface».
 
-- **M725 The cantina.** The room in a thicker layer (depth, light, haze, more props per station type), people as big
-  portrait cards with traits and the offer, rumours and the bartender as a side panel in «Сурик».
+- **M729 People — the generator for every NPC.** The author, 07.10: «Сделай портреты анимированные с эмоциями,
+  людей еще проработай скафандры пиджаки все такое, по детальнее, потом будем как НПС использовать везде генератор
+  такой … он должен тоже процедурно челиков генерировать». One generator from a seed and a brief (job, house, age):
+  face, body, hair and a wardrobe — spacesuit with helmet and pack, suit and tie, coverall, coat, lab coat, leather,
+  uniform — each with its own layers of detail. Portraits live: blinking, breathing, the gaze moving, and an emotion
+  (calm, glad, angry, sad, surprised, sly) read from the person's state and played on events. Then every place that
+  shows a person takes it: HQ (`27f-hq-room.js` still paints `mgrFace` in 2D), crew, story people, the road.
 - **M726 The station, finished.** Line icons for sections and goods, the state order as a card with progress, the own
   ship's thumbnail in the ship column, keycaps on actions, «КОРПУС ЦЕЛ» as a state and not a button.
 - **M727 Every other window** in the same kit: СТОЛ, ДЕЛО, crew, HQ, barge, prices, settings, menu, SOS, road.

@@ -4,7 +4,7 @@
 const $hq=document.getElementById("hqview"),$hqBody=document.getElementById("hqBody");
 let hqSel=null;
 function faceEl(m,size){
-  const cn=mgrFace(m,size);
+  const cn=cantFace(m,size);   /* плотность панели (27cb): на зуме --ui портрет не мылится */
   const w=el("div","face");
   w.style.cssText="flex:0 0 auto;width:"+size+"px;height:"+size+"px;line-height:0";
   w.appendChild(cn);
@@ -82,16 +82,8 @@ function renderCantina(){
   if(isFolk&&!(folk&&FOLK[folk.id]&&"folk:"+folk.id===cantSel))cantSel=null;
   const back=()=>{cantSel=null;sfx("ui");renderTab();};
   if(!cantSel){
-    secHead("В ЗАЛЕ",{count:free.length+deals.length+(folk?1:0)+1,
-      note:"тыкните по человеку или по стойке — или по строке ниже: это те же люди",key:"cant"});
-    const rc=el("div","row");rc.style.cursor="pointer";
-    rc.onclick=()=>{cantSel="counter";sfx("ui");renderTab();};
-    rc.appendChild(el("div","nm","<b>Бармен</b><s>у стойки: слушают, отвечают на вещь, наливают допоздна</s>"));
-    const bc=el("button","act sm","К СТОЙКЕ");bc.onclick=rc.onclick;rc.appendChild(bc);
-    $body.appendChild(rc);
-    for(const m of free)cantHireRow(m,false);
-    for(const d of deals)cantDealRow(d,false);
-    if(folk&&FOLK[folk.id])cantFolkRow(folk,false);
+    /* люди карточками, стойка панелью (M725, 27cb) */
+    cantHall(free,deals,folk);
     if(typeof mayakBlock==="function")mayakBlock();   /* лист маяка на стене (M349) */
     if(typeof noteBlock==="function")noteBlock();     /* записная книжка (M374) */
     if(typeof voteBlock==="function")voteBlock();     /* выборы и сбор (M378) */
@@ -115,7 +107,7 @@ function renderCantina(){
   }else{
     const m=free.find(x=>x.id===cantSel);
     secHead("У СТОЙКИ",{back,note:"управляющий берёт домен целиком — звено, базы, маршрут или лабораторию — и долю с того, что домен приносит",key:"hire"});
-    cantHireRow(m,true);
+    cantDossier(m);
   }
   /* всё остальное, что живёт в зале: за сгибом, но с честным счётом */
   foldBlock("ЕЩЁ В ЗАЛЕ",()=>{
@@ -128,40 +120,6 @@ function renderCantina(){
     if(typeof quietBlock==="function")quietBlock();
     if(typeof newsRender==="function")newsRender();
   },"cantMore");
-}
-/* карточка кандидата: сжатая — имя, роль, одна строка, НАНЯТЬ; полная — с цифрами и чертами */
-function cantHireRow(m,full){
-  const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
-  const spoke=!!G.cantina.talked[m.id];
-  const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
-  const r=el("div","row"+(full?" on":""));
-  r.style.cursor="pointer";
-  r.onclick=ev=>{
-    if(ev.target.closest("button"))return;
-    cantSel=full?null:m.id;sfx("ui");renderTab();
-  };
-  r.appendChild(faceEl(m,full?64:44));
-  /* сжатый ряд — одна строка (M300): роль и уровень; чем он занят — в полной карточке */
-  const line=full?R.ru.toLowerCase()+" · "+R.note:R.ru.toLowerCase()+" · уровень "+mgrLevel(m)+(taken?" · домен занят":"");
-  let html="<b style='color:"+R.col+"'>"+m.name+"</b><s>"+line+"</s>";
-  if(full){
-    html+="<s class='fig'>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%</s>"+
-      "<s>"+(known
-        ? m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>")
-        : "чем хорош и чем плох — видно после разговора"+(m.traits.length>2?" (черт три)":""))+"</s>"+
-      (taken?"<s style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</s>":"");
-  }
-  r.appendChild(el("div","nm",html));
-  if(full&&!known){
-    const bt=el("button","act sm","РАССПРОСИТЬ");
-    bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
-    r.appendChild(bt);
-  }
-  const b=el("button","act"+(taken?"":" gold")+(full?"":" sm"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");
-  b.disabled=taken||G.credits<fee||G.mgrs.length>=MGR_CAP;
-  b.onclick=()=>{if(hireMgr(m)){hqSel=m.id;cantSel=null;renderTab();}};
-  r.appendChild(b);
-  $body.appendChild(r);
 }
 /* чужое дело: сжатое — что и кто; полное — текст и ответы */
 function cantDealRow(d,full){
@@ -268,15 +226,16 @@ function cantSay(line){cantBubble={line:String(line||"").replace(/^—\s*/,""),t
    после ухода со вкладки и жёг бы кадр впустую. */
 let cantSel=null, cantHover=null;
 function cantinaScene(list,deals,folk){
-  const wrap=el("div","");
-  wrap.style.cssText="margin:6px 0 10px;line-height:0;position:relative";
+  const wrap=el("div","cant-stage");
   const cn=document.createElement("canvas");
-  const cssW=Math.max(360,Math.min(($body.clientWidth||640)-4,980));
-  const cssH=Math.round(clamp(cssW*.30,190,260));
-  const dpr=Math.min(window.devicePixelRatio||1,2);
+  /* кадр зала (M725): выше прежней ленты — люди крупнее, зал глубже; плотность — панели (с зумом --ui),
+     а не только экрана: на ПК при --ui 1.4 зал рисовался в 1/1.4 своего роста и мылился */
+  const cssW=Math.max(320,Math.min(($body.clientWidth||640)-4,980));
+  const cssH=Math.round(clamp(cssW*.36,200,320));
+  const dpr=Math.min(panelNd(),2.5);   /* потолок: зал печётся четырьмя слоями раз в три кадра */
   cn.width=Math.round(cssW*dpr);cn.height=Math.round(cssH*dpr);cn.__dpr=dpr;
-  cn.style.cssText="width:100%;height:"+cssH+"px;display:block;border-radius:8px;"+
-    "border:1px solid rgba(120,150,170,.25);cursor:pointer;touch-action:manipulation";
+  cn.className="cant-room";
+  cn.style.cssText="width:100%;height:"+cssH+"px;display:block;cursor:pointer;touch-action:manipulation";
   wrap.appendChild(cn);
   $body.appendChild(wrap);
   /* выбор мог указывать на человека, которого уже наняли, или на дело,

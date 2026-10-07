@@ -2749,3 +2749,121 @@ body.rackon #prompt{opacity:0}
   #station .mk-r .act{grid-column:1/-1;margin-top:6px}
   #station .mk-r.tot .qt{grid-column:3}
 }
+
+/* ══════════════ кантина (M725, 27cb): зал в рамке кадра, под ним люди карточками и стойка панелью ══════════════
+   Карточка — ниша с портретом: снизу отсвет цвета роли (--k), сверху тёплый верхний свет, по краям портрет
+   растворяется в нише маской (квадрат лица с рамкой не читается фотографией на картоне). Стойка — плита
+   с неоновой вывеской акцента станции, бармен в нише с плечами и фартуком. Цифры — только в досье */
+#station .cant-stage{position:relative;margin:2px 0 16px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+#station .cant-stage::after{content:"";position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 0 1px var(--pl-edge),inset 0 0 48px rgba(0,0,0,.42);
+  background:
+    linear-gradient(var(--phos),var(--phos)) 8px 8px/20px 2px,linear-gradient(var(--phos),var(--phos)) 8px 8px/2px 20px,
+    linear-gradient(var(--phos),var(--phos)) right 8px bottom 8px/20px 2px,linear-gradient(var(--phos),var(--phos)) right 8px bottom 8px/2px 20px,
+    linear-gradient(90deg,var(--amber) 0 72px,transparent 72px) top left/100% 2px;
+  background-repeat:no-repeat;opacity:.8}
+#station .cant-hall{display:flex;flex-wrap:wrap;align-items:flex-start;gap:14px;margin:4px 0 20px}
+#station .cant-hall :is(s,i),#station .ch-dos :is(s,i){text-decoration:none;font-style:normal}
+#station .ch-main{flex:1 1 440px;min-width:0}
+#station .ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:12px}
+/* ── карточка человека ── */
+#station .ch-card{position:relative;display:flex;flex-direction:column;cursor:pointer;min-width:0;
+  background:linear-gradient(180deg,rgba(28,27,26,.94),rgba(11,12,14,.97));
+  box-shadow:inset 0 0 0 1px var(--pl-edge);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));transition:box-shadow .15s}
+#station .ch-card::before{content:"";position:absolute;top:0;left:0;z-index:3;width:40px;height:2px;
+  background:var(--k,var(--amber));box-shadow:0 0 10px var(--k,var(--amber))}
+#station .ch-card.on{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k,var(--amber)) 70%,transparent),
+  inset 0 0 28px color-mix(in srgb,var(--k,var(--amber)) 16%,transparent)}
+@media (hover:hover){#station .ch-card:not(.on):hover{box-shadow:inset 0 0 0 1px rgba(var(--c-edge),.34)}}
+#station .ch-face{position:relative;height:148px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;
+  background:radial-gradient(70% 58% at 50% 104%,color-mix(in srgb,var(--k,var(--amber)) 36%,transparent),transparent 72%),
+    radial-gradient(56% 46% at 50% 22%,rgba(255,236,206,.08),transparent 72%),
+    linear-gradient(180deg,#16181c,#0c0e11);
+  border-bottom:1px solid color-mix(in srgb,var(--k,var(--amber)) 42%,transparent)}
+#station .ch-face::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 60%,rgba(0,0,0,.28));mix-blend-mode:multiply}
+#station .ch-face>canvas{position:relative;flex:0 0 auto;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent),linear-gradient(180deg,transparent,#000 22%);
+  -webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent),linear-gradient(180deg,transparent,#000 22%);
+  mask-composite:intersect}
+#station .ch-face>svg{width:76px;height:48px;margin:0 auto 26px;color:var(--k,var(--amber));opacity:.82;
+  filter:drop-shadow(0 0 8px color-mix(in srgb,var(--k,var(--amber)) 55%,transparent))}
+#station .ch-face.sm{height:104px;align-items:flex-end}
+#station .ch-role{position:absolute;top:9px;left:11px;right:58px;z-index:2;font-size:10px;font-weight:600;letter-spacing:.2em;line-height:1.35;
+  color:var(--k,var(--amber));text-shadow:0 0 8px color-mix(in srgb,var(--k,var(--amber)) 60%,transparent)}
+#station .ch-lv{position:absolute;top:7px;right:9px;z-index:2;padding:2px 6px;font-size:10px;font-weight:600;letter-spacing:.12em;
+  color:var(--ink);background:rgba(0,0,0,.5);box-shadow:inset 0 0 0 1px var(--pl-edge)}
+#station .ch-id{padding:10px 12px 0;min-width:0}
+#station .ch-id b{display:block;font-size:15px;font-weight:600;color:var(--ink);letter-spacing:.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#station .ch-id s{display:block;margin-top:3px;font-size:11px;line-height:1.35;color:var(--ink2)}
+#station .ch-tr{display:flex;flex-wrap:wrap;gap:5px;padding:9px 12px 0}
+#station .ch-tr i{padding:3px 7px;font-size:10px;letter-spacing:.06em;color:var(--text);
+  background:color-mix(in srgb,var(--k,var(--amber)) 10%,transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k,var(--amber)) 38%,transparent)}
+#station .ch-tr i.q{color:var(--dim);background:none;box-shadow:inset 0 0 0 1px rgba(var(--c-edge),.10)}
+#station .ch-go{display:flex;margin-top:auto;padding:12px 10px 10px}
+#station .ch-go .act{flex:1 1 auto;min-height:44px;margin:0;font-size:11px;letter-spacing:.1em}
+/* ── стойка ── */
+#station .ch-bar{position:relative;flex:1 0 236px;display:flex;flex-direction:column;gap:11px;padding:15px 16px 16px;
+  background:radial-gradient(90% 40% at 50% 0%,color-mix(in srgb,var(--k) 12%,transparent),transparent 70%),
+    linear-gradient(180deg,rgba(26,24,23,.95),rgba(10,11,13,.97));
+  box-shadow:inset 0 0 0 1px var(--pl-edge);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+#station .ch-sign b{display:block;font-size:18px;font-weight:600;letter-spacing:.16em;color:var(--k);
+  text-shadow:0 0 4px var(--k),0 0 16px color-mix(in srgb,var(--k) 65%,transparent);animation:chNeon 9s steps(1) infinite}
+#station .ch-sign s{display:block;margin-top:4px;font-size:11px;color:var(--ink2);letter-spacing:.04em}
+@keyframes chNeon{0%,100%{opacity:1}61%{opacity:.55}62%{opacity:1}64%{opacity:.7}65%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#station .ch-sign b{animation:none}}
+#station .ch-keep{display:grid;grid-template-columns:72px minmax(0,1fr);column-gap:12px;align-items:end}
+#station .ch-kf{position:relative;height:86px;overflow:hidden;
+  background:radial-gradient(80% 62% at 50% 26%,color-mix(in srgb,var(--k) 24%,transparent),transparent 72%),linear-gradient(180deg,#17191d,#0d0e11);
+  box-shadow:inset 0 0 0 1px var(--pl-edge);
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+#station .ch-kf>canvas{position:absolute;left:4px;top:4px}
+#station .ch-kf::after{content:"";position:absolute;left:2px;right:2px;bottom:-2px;height:24px;z-index:1;
+  border-radius:50% 50% 0 0/80% 80% 0 0;background:linear-gradient(180deg,#3a332c,#16130f);
+  box-shadow:inset 0 1px 0 rgba(255,226,190,.30)}
+#station .ch-kf::before{content:"";position:absolute;left:25px;right:25px;bottom:0;height:17px;z-index:2;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--k) 40%,#d8cdb6),color-mix(in srgb,var(--k) 22%,#8c8474));
+  clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+#station .ch-say b{display:block;font-size:10px;font-weight:600;letter-spacing:.22em;color:var(--ink2);text-transform:uppercase}
+#station .ch-say s{display:block;margin-top:5px;font-size:13px;line-height:1.45;color:var(--text)}
+#station .ch-h{display:flex;justify-content:space-between;align-items:baseline;padding-top:11px;border-top:1px solid var(--pl-edge)}
+#station .ch-h span{font-size:10px;font-weight:600;letter-spacing:.22em;color:var(--ink2)}
+#station .ch-h i{font-size:13px;font-weight:600;color:var(--amber)}
+#station .ch-rum{display:flex;flex-direction:column;gap:3px;padding-bottom:11px;border-bottom:1px solid rgba(var(--c-edge),.07)}
+#station .ch-rum b{font-size:13px;font-weight:600;line-height:1.35;color:var(--ink)}
+#station .ch-rum s{font-size:11px;line-height:1.45;color:var(--ink2)}
+#station .ch-rum s.src{color:var(--dim)}
+#station .ch-rum .act{align-self:flex-start;margin:6px 0 0;min-height:44px;padding:0 16px}
+#station .ch-bar>.act.gold{width:100%;min-height:46px;margin:2px 0 0}
+/* ── досье ── */
+#station .ch-dos{--k:var(--amber);display:grid;grid-template-columns:196px minmax(0,1fr);gap:18px;margin:2px 0 18px;padding:14px;
+  background:linear-gradient(180deg,rgba(28,27,26,.94),rgba(11,12,14,.97));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k) 55%,transparent),inset 0 0 36px color-mix(in srgb,var(--k) 10%,transparent);
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+#station .ch-face.big{height:206px;border:0;box-shadow:inset 0 0 0 1px var(--pl-edge)}
+#station .ch-txt{min-width:0;display:flex;flex-direction:column}
+#station .ch-txt b.nm{font-size:24px;font-weight:600;color:var(--ink);letter-spacing:.01em;line-height:1.15}
+#station .ch-txt s.rl{display:block;margin-top:5px;font-size:12px;line-height:1.45;color:var(--ink2)}
+#station .ch-txt s.busy{display:block;margin-top:8px;font-size:12px;color:var(--amber)}
+#station .ch-fig{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin:14px 0 12px;background:var(--pl-edge);
+  box-shadow:0 0 0 1px var(--pl-edge)}
+#station .ch-fig span{padding:8px 10px;background:rgba(14,14,15,.97);min-width:0}
+#station .ch-fig em{display:block;font-style:normal;font-size:10px;letter-spacing:.18em;color:var(--ink2);text-transform:uppercase}
+#station .ch-fig b{display:block;margin-top:3px;font-size:17px;font-weight:600;color:var(--ink);white-space:nowrap}
+#station .ch-trl p{margin:0 0 7px;font-size:13px;line-height:1.45;color:var(--text)}
+#station .ch-trl p b{margin-right:8px;font-weight:600;color:var(--k)}
+#station .ch-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:auto;padding-top:12px}
+#station .ch-acts .act{flex:1 1 160px;min-height:46px;margin:0}
+#station .ch-empty{grid-column:1/-1;padding:24px 18px;text-align:center;outline:1px dashed rgba(var(--c-edge),.16);outline-offset:-1px}
+#station .ch-empty b{display:block;font-size:15px;font-weight:600;color:var(--ink)}
+#station .ch-empty s{display:block;margin-top:6px;font-size:12px;line-height:1.45;color:var(--ink2)}
+@media (max-width:560px){
+  #station .ch-dos{grid-template-columns:minmax(0,1fr);padding:12px}
+  #station .ch-face.big{height:190px}
+  #station .ch-fig{grid-template-columns:repeat(2,minmax(0,1fr))}
+}

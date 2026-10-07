@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 477 · top-level symbols: 7192
+Files: 481 · top-level symbols: 7270
 
 ## SYMBOLS
 
@@ -197,14 +197,20 @@ BUILD_KEYS                   src/21a-mode-base.js:83
 BURN_DPS                     src/13a-guns.js:26
 BURN_TIME                    src/13a-guns.js:25
 BUY_SPREAD                   src/12-economy.js:161
+C3                           src/27f4-cant3d.js:19
+C3_CL                        src/27f4-cant3d.js:25
+C3_CROWD                     src/27f4-cant3d.js:24
+C3_LH                        src/27f4-cant3d.js:117
+C3_M                         src/27f4-cant3d.js:310
+C3_SLOT                      src/27f4-cant3d.js:22
+C3_STORY                     src/27f4-cant3d.js:26
+C3_VIEW                      src/27f4-cant3d.js:20
 CAM_LAG_PX                   src/16a-space.js:280
-CANT_EVERY                   src/27d-ui-cantina.js:41
-CANT_LET_WGSL                src/27d-ui-cantina.js:194
-CANT_LIGHT                   src/27d-ui-cantina.js:80-86
-CANT_LIT_U                   src/27d-ui-cantina.js:93
-CANT_LIT_WGSL                src/27d-ui-cantina.js:110
-CANT_PARTS                   src/27d-ui-cantina.js:77
+CANT_FOLK_SVG                src/27cb-ui-cantina-hall.js:88
+CANT_KEEP_LINE               src/27cb-ui-cantina-hall.js:23-29
+CANT_LIGHT                   src/27d-ui-cantina.js:36-42
 CANT_STYLE                   src/27d-ui-cantina.js:15-26
+CANT_TABLE_SVG               src/27cb-ui-cantina-hall.js:74
 CAP_RING                     src/28-loop.js:308
 CAST                         src/12k-stories-a.js:22-43
 CAST_B                       src/12k-stories-b.js:7-24
@@ -322,6 +328,13 @@ COSM_TABLES                  src/12va-wander-cosm.js:63
 COSM_TRAIL                   src/12va-wander-cosm.js:32-37
 COSM_VISOR                   src/12va-wander-cosm.js:44-48
 COUNTY_LVL                   src/11l-county.js:20
+CPP                          src/27f5-portrait3d.js:11
+CP_CLOTH                     src/27f3-person3d.js:41
+CP_GAZE                      src/27f3-person3d.js:74
+CP_HLO                       src/27f3-person3d.js:72
+CP_KIT                       src/27f3-person3d.js:346
+CP_MESH                      src/27f3-person3d.js:490
+CP_TORSO                     src/27f3-person3d.js:319
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
@@ -1432,6 +1445,14 @@ QUANT_MAX                    src/28-loop.js:163
 QUANT_MS                     src/28-loop.js:161
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
+R3                           src/27f2-room3d.js:360
+R3P                          src/27f2-room3d.js:26
+R3U                          src/27f2-room3d.js:22
+R3_DOWN_WGSL                 src/27f2-room3d.js:339
+R3_MAXI                      src/27f2-room3d.js:19
+R3_POST_WGSL                 src/27f2-room3d.js:493
+R3_UN                        src/27f2-room3d.js:24
+R3_WGSL                      src/27f2-room3d.js:149
 RACK                         src/25d-instr-rack.js:54
 RACK_CH                      src/25d-instr-rack.js:27-33
 RACK_DQ                      src/25d-instr-rack.js:187
@@ -1799,7 +1820,7 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:321
+STORY_SEAT                   src/11c-stories.js:320
 STORY_WHEN                   src/11c-stories.js:147-204
 STP_FADE                     src/26e2-stapel-draw.js:284
 STP_G                        src/26e2-stapel-draw.js:283
@@ -2061,7 +2082,7 @@ afterFitChange               src/05-parts.js:408-414
 aiAfford                     src/12f-mgr-ai.js:25-28
 aiCanBuild                   src/12f-mgr-ai.js:24
 aiDrift                      src/12f-mgr-ai.js:52-105
-aiFace                       src/12d-mgr-face.js:210-244
+aiFace                       src/12d-mgr-face.js:229-263
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
@@ -2512,32 +2533,52 @@ buoyEtherLine                src/12ae-ladder.js:123-137
 burstFx                      src/13z-gpu-combat.js:177-180
 buyCargo                     src/12-economy.js:167-180
 buyPriceFor                  src/12-economy.js:162-166
+c3Bottle                     src/27f4-cant3d.js:76-84
+c3Cam                        src/27f4-cant3d.js:28-34
+c3Chair                      src/27f4-cant3d.js:100-108
+c3Counter                    src/27f4-cant3d.js:132-166
+c3FilmTex                    src/27f4-cant3d.js:424-429
+c3Glass                      src/27f4-cant3d.js:85-89
+c3Hits                       src/27f4-cant3d.js:370-382
+c3Labels                     src/27f4-cant3d.js:384-411
+c3Lamp                       src/27f4-cant3d.js:118-131
+c3LampX                      src/27f4-cant3d.js:308
+c3Layout                     src/27f4-cant3d.js:39-74
+c3Prop                       src/27f4-cant3d.js:193-220
+c3RoomMesh                   src/27f4-cant3d.js:242-296
+c3RoundTable                 src/27f4-cant3d.js:109-114
+c3Scene                      src/27f4-cant3d.js:312-368
+c3Seats                      src/27f4-cant3d.js:36
+c3Shelf                      src/27f4-cant3d.js:168-191
+c3SignTex                    src/27f4-cant3d.js:413-422
+c3Stool                      src/27f4-cant3d.js:90-99
+c3StoryProp                  src/27f4-cant3d.js:229-241
+c3TableMesh                  src/27f4-cant3d.js:298-306
+c3Tree                       src/27f4-cant3d.js:221-227
 camBody                      src/17-mode-system.js:82-91
 camBtnTick                   src/25g-postcard.js:667-671
 camOffset                    src/19c-light.js:155-162
 camStep                      src/19c-light.js:141-153
 canPay                       src/21a-mode-base.js:99
-cantBarkeep                  src/27d-ui-cantina-props.js:15-80
-cantBubble                   src/27c-ui-hq.js:264
-cantCounter                  src/27d-ui-cantina-props.js:306-385
-cantDealRow                  src/27c-ui-hq.js:167-196
-cantFigure                   src/27d-ui-cantina.js:530-577
-cantFolkRow                  src/27c-ui-hq.js:198-206
-cantHireRow                  src/27c-ui-hq.js:133-165
-cantLamps                    src/27d-ui-cantina.js:87-91
-cantLetters                  src/27d-ui-cantina.js:78
-cantLitUni                   src/27d-ui-cantina.js:94-109
-cantProps                    src/27d-ui-cantina-props.js:153-234
-cantRoomBody                 src/27d-ui-cantina.js:200-518
-cantSay                      src/27c-ui-hq.js:265
-cantSeats                    src/27d-ui-cantina.js:522-526
-cantSel                      src/27c-ui-hq.js:269
-cantSignW                    src/27d-ui-cantina.js:92
+cant3dFrame                  src/27f4-cant3d.js:431-457
+cantBarPanel                 src/27cb-ui-cantina-hall.js:102-126
+cantBubble                   src/27c-ui-hq.js:222
+cantCard                     src/27cb-ui-cantina-hall.js:51-72
+cantDealCard                 src/27cb-ui-cantina-hall.js:76-86
+cantDealRow                  src/27c-ui-hq.js:125-154
+cantDossier                  src/27cb-ui-cantina-hall.js:128-151
+cantFace                     src/27cb-ui-cantina-hall.js:16
+cantFolkCard                 src/27cb-ui-cantina-hall.js:90-100
+cantFolkRow                  src/27c-ui-hq.js:156-164
+cantHall                     src/27cb-ui-cantina-hall.js:38-49
+cantKeeper                   src/27cb-ui-cantina-hall.js:18-21
+cantKeeperLine               src/27cb-ui-cantina-hall.js:30-33
+cantPick                     src/27cb-ui-cantina-hall.js:35
+cantSay                      src/27c-ui-hq.js:223
+cantSel                      src/27c-ui-hq.js:227
 cantStyle                    src/27d-ui-cantina.js:27-30
-cantTables                   src/27d-ui-cantina-props.js:241-296
-cantView                     src/27d-ui-cantina-props.js:82-151
 cantinaPool                  src/12c-mgr-core.js:260-266
-cantinaScene                 src/27c-ui-hq.js:270-310
+cantinaScene                 src/27c-ui-hq.js:228-269
 capIv                        src/28-loop.js:300
 capLum                       src/19e-clouds.js:28-33
 capOf                        src/05-parts.js:221-225
@@ -2881,6 +2922,27 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
+cpBand                       src/27f3-person3d.js:333-341
+cpBasis                      src/27f3-person3d.js:66-70
+cpBeard                      src/27f3-person3d.js:288-303
+cpBody                       src/27f3-person3d.js:348-488
+cpCloth                      src/27f3-person3d.js:42-47
+cpClump                      src/27f3-person3d.js:280-287
+cpFaceAt                     src/27f3-person3d.js:107
+cpGene                       src/27f3-person3d.js:17-39
+cpHair                       src/27f3-person3d.js:205-277
+cpHairline                   src/27f3-person3d.js:198-204
+cpHead                       src/27f3-person3d.js:110-196
+cpHeadAI                     src/27f3-person3d.js:305-315
+cpHeadFn                     src/27f3-person3d.js:75-105
+cpMesh                       src/27f3-person3d.js:491-498
+cpPortrait                   src/27f5-portrait3d.js:13-19
+cpPose                       src/27f3-person3d.js:49-64
+cpTorsoAt                    src/27f3-person3d.js:322-331
+cppBackdrop                  src/27f5-portrait3d.js:26-32
+cppFlush                     src/27f5-portrait3d.js:20-24
+cppPaint                     src/27f5-portrait3d.js:56-71
+cppScene                     src/27f5-portrait3d.js:33-55
 craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
@@ -3193,7 +3255,7 @@ drawBeltRocks                src/17c-system-draw.js:29-83
 drawBillboard                src/17k-billboard.js:182-196
 drawBuildMenu                src/21aa-base-rooms.js:576-592
 drawBuilt                    src/21c-built.js:64-102
-drawCantinaRoom              src/27d-ui-cantina.js:42-75
+drawCantinaRoom              src/27d-ui-cantina.js:32-34
 drawCave                     src/22-mode-cave.js:729-739
 drawCaveFar                  src/22-mode-cave.js:610-646
 drawCaveGlow                 src/22a-cave-deco.js:325-339
@@ -3467,7 +3529,7 @@ f16                          src/08b-gpu.js:463
 faceEl                       src/27c-ui-hq.js:6-12
 facePath                     src/12d-mgr-face.js:19-28
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:584-601
+factPrices                   src/27c-ui-hq.js:543-560
 failRoll                     src/05b1-warranty.js:103
 failShift                    src/05b1-warranty.js:102
 failTick                     src/05b1-warranty.js:104-119
@@ -3990,7 +4052,7 @@ gribEat                      src/21ac1-base-banya.js:72-79
 gribMul                      src/21ac1-base-banya.js:71
 gribOn                       src/21ac1-base-banya.js:66
 gribStart                    src/21ac1-base-banya.js:67-70
-grokBlock                    src/27c-ui-hq.js:211-261
+grokBlock                    src/27c-ui-hq.js:169-219
 grokBusy                     src/12tb-grok.js:68
 grokCanTeach                 src/12tb-grok.js:136-143
 grokFace                     src/12tb-grok.js:173-346
@@ -4374,23 +4436,23 @@ housePennant                 src/17d-house-shapes.js:96-99
 housePlan                    src/12tb-settle-draw.js:61-70
 houseRGB                     src/17d-house-shapes.js:16
 houseWallMark                src/17d-house-shapes.js:72-94
-hqAiOffer                    src/27c-ui-hq.js:481-501
+hqAiOffer                    src/27c-ui-hq.js:440-460
 hqBack                       src/27f-hq-room.js:294-365
-hqBtnTick                    src/27c-ui-hq.js:312-318
+hqBtnTick                    src/27c-ui-hq.js:271-277
 hqConsole                    src/27f-hq-room.js:484-556
 hqFaceId                     src/27f-hq-room.js:39
 hqFigure                     src/27f-hq-room.js:675-781
 hqHolo                       src/27f-hq-room.js:368-423
 hqHover                      src/27f-hq-room.js:851
-hqJobCard                    src/27c-ui-hq.js:541-579
+hqJobCard                    src/27c-ui-hq.js:500-538
 hqLabels                     src/27f-hq-room.js:211-232
 hqLay                        src/27f-hq-room.js:30-35
 hqLitUni                     src/27f-hq-room.js:110-126
 hqLive                       src/27f-hq-room.js:237-292
 hqMgrAt                      src/27f-hq-room.js:36
 hqPx                         src/27f-hq-room.js:101-107
-hqRelicSlot                  src/27c-ui-hq.js:507-537
-hqRender                     src/27c-ui-hq.js:319-476
+hqRelicSlot                  src/27c-ui-hq.js:466-496
+hqRender                     src/27c-ui-hq.js:278-435
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
 hqScene                      src/27f-hq-room.js:810-850
 hqScreenData                 src/27f-hq-room.js:558-610
@@ -4568,13 +4630,9 @@ keys                         src/08-state.js:203
 killPirate                   src/13-pirates.js:311-353
 killRock                     src/24-mode-belt.js:136-143
 kinoAt                       src/27da-kino.js:39-45
-kinoBeam                     src/27da-kino.js:187-215
-kinoBillRect                 src/27da-kino.js:226
 kinoFrame                    src/27da-kino.js:63-67
 kinoHere                     src/27da-kino.js:46-49
-kinoOverlay                  src/27da-kino.js:227-273
 kinoScreen                   src/27da-kino.js:72-183
-kinoScreenRect               src/27da-kino.js:224
 kinoSeen                     src/27da-kino.js:36
 kinoWatch                    src/27da-kino.js:51-61
 kinoWeek                     src/27da-kino.js:38
@@ -4945,9 +5003,9 @@ mgrCrewYield                 src/12c-mgr-core.js:204-208
 mgrCut                       src/12c-mgr-core.js:174-182
 mgrDefect                    src/12c-mgr-core.js:349-356
 mgrDomain                    src/12c-mgr-core.js:518-528
-mgrDomainLine                src/27c-ui-hq.js:603-622
+mgrDomainLine                src/27c-ui-hq.js:562-581
 mgrDroneRate                 src/12c-mgr-core.js:220-223
-mgrFace                      src/12d-mgr-face.js:29-205
+mgrFace                      src/12d-mgr-face.js:33-224
 mgrFee                       src/12c-mgr-core.js:300
 mgrHas                       src/12c-mgr-core.js:48
 mgrHead                      src/27c-ui-hq.js:24-42
@@ -5225,7 +5283,7 @@ oldMasterSeam                src/05b1-warranty.js:131-136
 openBarge                    src/12l-barge.js:672-681
 openCrewView                 src/27b-ui-crew.js:230-236
 openDeal                     src/27n-ui-deal.js:198-203
-openHq                       src/27c-ui-hq.js:623-628
+openHq                       src/27c-ui-hq.js:582-587
 openStation                  src/26-ui-station.js:47
 openStationBody              src/26-ui-station.js:48-159
 openWanderer                 src/24c-mode-wanderer.js:22-41
@@ -5719,6 +5777,28 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
+r3Desc                       src/27f2-room3d.js:361-367
+r3Dev                        src/27f2-room3d.js:384-402
+r3DownDesc                   src/27f2-room3d.js:376-380
+r3Drop                       src/27f2-room3d.js:409
+r3Frame                      src/27f2-room3d.js:424-490
+r3Free                       src/27f2-room3d.js:411
+r3Kit                        src/27f2-room3d.js:60-146
+r3Lin                        src/27f2-room3d.js:29
+r3Look                       src/27f2-room3d.js:37-146
+r3Mix                        src/27f2-room3d.js:30
+r3Mul                        src/27f2-room3d.js:34
+r3Persp                      src/27f2-room3d.js:36
+r3Pivot                      src/27f2-room3d.js:51
+r3Proj                       src/27f2-room3d.js:54-146
+r3Pt                         src/27f2-room3d.js:52
+r3Sc                         src/27f2-room3d.js:31
+r3ShDesc                     src/27f2-room3d.js:368-373
+r3ShadowVP                   src/27f2-room3d.js:413-418
+r3Step                       src/27f2-room3d.js:32
+r3Up                         src/27f2-room3d.js:404-408
+r3VB                         src/27f2-room3d.js:374
+r3Xf                         src/27f2-room3d.js:43-146
 rackBakeJob                  src/25d-instr-rack.js:220-236
 rackBottom                   src/25d-instr-rack.js:477-482
 rackCell                     src/25d-instr-rack.js:193-197
@@ -5992,7 +6072,7 @@ renderBarge                  src/12l-barge.js:707-798
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-332
 renderBooks                  src/12ub-books.js:157-186
-renderCantina                src/27c-ui-hq.js:68-131
+renderCantina                src/27c-ui-hq.js:68-123
 renderCardBack               src/25i-post-back.js:88-178
 renderChess                  src/25n-chess.js:320-367
 renderDeeds                  src/11-log.js:119-149
@@ -6210,8 +6290,9 @@ rpgShapes                    src/27f1-room-gpu.js:90-101
 rpgTexId                     src/27f1-room-gpu.js:121
 rtInit                       src/09a-roomtone.js:23-40
 rtWant                       src/09a-roomtone.js:42-78
-rumourBlock                  src/11t-rumours.js:141-162
+rumourBlock                  src/11t-rumours.js:141-157
 rumourEtherLine              src/11t-rumours.js:121-135
+rumourHeard                  src/11t-rumours.js:160-167
 rumourRemember               src/18a-map-addr.js:44-50
 rumourSeedHere               src/11t-rumours.js:55-57
 rumourToMap                  src/11t-rumours.js:68-71
@@ -6637,9 +6718,7 @@ storyAddrMatch               src/11c-stories.js:69-82
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:87-92
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:328-336
-storyCantProps               src/11c-stories.js:337-343
-storyCantScene               src/11c-stories.js:322-327
+storyCantScene               src/11c-stories.js:321-326
 storyCheckWhen               src/11c-stories.js:210-215
 storyCtx                     src/11c-stories.js:39-48
 storyDay                     src/11c-stories.js:28
@@ -6648,15 +6727,14 @@ storyFindLine                src/11c-stories.js:289-294
 storyFixedAddr               src/11c-stories.js:55-67
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:412-420
+storyGroundLine              src/11c-stories.js:373-381
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:369-406
+storyLint                    src/11c-stories.js:330-367
 storyNewsItem                src/11c-stories.js:296-313
-storyNote                    src/11c-stories.js:424-427
+storyNote                    src/11c-stories.js:385-388
 storyPickOne                 src/11c-stories.js:252-257
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:93-106
-storyProp                    src/11c-stories.js:345-365
 storyQueueLine               src/11c-stories.js:269-279
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
@@ -6741,7 +6819,7 @@ sysWatchLabel                src/17-mode-system.js:509-517
 tab                          src/26-ui-station.js:3
 tabLive                      src/14a-cloud.js:36
 tableBake                    src/27i-ui-table.js:145-155
-tableBlock                   src/27c-ui-hq.js:643-731
+tableBlock                   src/27c-ui-hq.js:602-690
 tableHead                    src/27i-ui-table.js:193-200
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:111-118
@@ -7452,7 +7530,7 @@ zoomTo                       src/15-input.js:358
 ## src/11b-speech.js · 17 KB
   · речь: очередь реплик и вещь на столе:1
 
-## src/11c-stories.js · 25 KB
+## src/11c-stories.js · 23 KB
   · истории: следы, а не задания:1
   · каналы:259
 
@@ -7507,7 +7585,7 @@ zoomTo                       src/15-input.js:358
 ## src/11s-returners.js · 5 KB
   · возвращение: люди моложе своих внуков:1
 
-## src/11t-rumours.js · 13 KB
+## src/11t-rumours.js · 14 KB
   · слухи: как вообще узнают, что место есть:1
 
 ## src/11u-names.js · 5 KB
@@ -7668,7 +7746,7 @@ zoomTo                       src/15-input.js:358
   · стоящие приказы:374
   · ленивый тик домена:422
 
-## src/12d-mgr-face.js · 13 KB
+## src/12d-mgr-face.js · 14 KB
   · портреты управляющих:1
 
 ## src/12e-drone-flight.js · 21 KB
@@ -8512,16 +8590,16 @@ zoomTo                       src/15-input.js:358
 ## src/27b-ui-crew.js · 15 KB
   · экран экипажа:1
 
-## src/27c-ui-hq.js · 47 KB
+## src/27c-ui-hq.js · 45 KB
   · ШТАБ и кантина:1
 
-## src/27d-ui-cantina-props.js · 22 KB
-  · кантина: бармен, виды, реквизит, столики, стойка:1
+## src/27cb-ui-cantina-hall.js · 11 KB
+  · зал кантины под сценой (M725):1
 
-## src/27d-ui-cantina.js · 37 KB
+## src/27d-ui-cantina.js · 3 KB
   · кантина: помещение, а не список:1
 
-## src/27da-kino.js · 15 KB
+## src/27da-kino.js · 10 KB
   · кинопередвижка:1
 
 ## src/27e-ui-home.js · 46 KB
@@ -8532,6 +8610,18 @@ zoomTo                       src/15-input.js:358
 
 ## src/27f1-room-gpu.js · 11 KB
   · комната в панели — на видеокарте (G11):1
+
+## src/27f2-room3d.js · 41 KB
+  · комната в объёме (M725):1
+
+## src/27f3-person3d.js · 41 KB
+  · человек в объёме (M725):1
+
+## src/27f4-cant3d.js · 36 KB
+  · кантина в объёме (M725):1
+
+## src/27f5-portrait3d.js · 5 KB
+  · портрет в объёме (M725):1
 
 ## src/27g-deals.js · 16 KB
   · кантина: дела, а не поручения:1

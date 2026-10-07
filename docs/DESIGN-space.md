@@ -188,3 +188,52 @@ phone's slot plate, the station's «части в продаже» and workshop 
    in the frame or a pointer handler) and paints at that size, so it is never stretched; `max-height` caps it on a
    phone's single column.
 
+## The cantina (M725) — full 3D, no 2D anywhere
+
+The author, 07.10: «2d не должно быть». The hall, its people and every portrait of them are engine scenes; the 2D
+hall (brushes, layered bakes, the light pass over a flat picture), the 2D props, the story figures and the cinema
+overlay are deleted. Modules: `27f2-room3d` (the interior renderer), `27f3-person3d` (people), `27f4-cant3d` (the
+hall), `27f5-portrait3d` (portraits); `27d-ui-cantina` keeps only the station styles, the lamp table and the entry.
+
+### The interior renderer — `27f2-room3d`
+1. **One forward pass, two targets.** Colour and the lamps' volumetric haze leave the main pass separately (MRT); the
+   haze is resolved at half size and blurred with a tent, so cones are soft and never noisy. Shadows: one depth layer
+   per shadowing lamp (≤ 6), up to 12 lamps.
+2. **Bloom is a mip chain**, 13-tap downsamples with a soft-knee threshold on the first — a sign glows without rings.
+3. **Linear colour, ACES, then gamma** — vertex colours are linear (`r3Lin`); the post owns the look (grain,
+   vignette, halos).
+4. **Normals agree with the face** (derivative face normal), not with `front_facing`: tubes, surfaces and boxes wind
+   differently, and a flipped normal glows.
+5. **Materials are patterns, not textures**: cloth (weave, matte — a broad highlight turns cloth into varnished
+   wood), skin (wrap light reddening past the terminator, pores as normal jitter, oily patches), hair (strand
+   clumps as normal jitter and two highlights along the strand, Kajiya–Kay), wet cornea, glass, film, neon.
+
+### People — `27f3-person3d`
+1. **A person is a seed.** `cpGene` (face, build, hair, skin, marks) and `cpCloth` (role kit) are read from the
+   manager's seed; `cpMesh` caches by seed, pose, detail, mood bucket and level. Detail 0 is the crowd, 1 the hall,
+   2 the portrait (denser everything: `K.q` multiplies segments).
+2. **The face is a profile, not an ellipsoid**: the lower face is a plane down to the chin, the jaw keeps its width
+   to the angle, eyes sit at mid-head; tone zones like a painter's (redder nose and cheeks, cooler under the eyes,
+   lighter brow).
+3. **Hair is strands over a cap.** The cap sinks under the skin below the hairline, so the edge is where two surfaces
+   meet — smooth, never the grid's staircase; roots thin to skin. A bob and dreads are ribbons laid along the skull
+   (Catmull–Rom), a fringe lies on the forehead, ends taper to nothing.
+4. **Clothes read before the face**: a commander's vest with pouches, radio and pad; a keeper's overalls with flat
+   straps (bands along the body's own normal, never hoses), hi-vis bands and a tool belt; a factor's coat with lapels
+   and a scarf wound round the neck; a scientist's tunic with pens and a glowing pass. The neckline is geometry, and
+   the torso table is a spline (cosine between rows put steps into the neckline).
+
+### The hall — `27f4-cant3d`
+1. **The room is the station's**: palette, sign, window view, props and lamp count from `stype` and the system seed.
+2. **Lamps hang above the frame edge** so their cones cross the picture; the sign is read under them, never
+   behind a shade. A low lamp over every table: whoever sits by the lens is a person, not a silhouette.
+3. **Candidates sit on the stools** at the bar under a key light from the door; the keeper behind the counter; deals at
+   the tables; story figures and their things on the counter; on cinema nights the hall goes dark and gets rows.
+
+### Portraits — `27f5-portrait3d`
+1. **The very mesh that sits on the stool** (`cpMesh(m,"stand",2)`), framed head and shoulders (`cut` — the head).
+2. **The sitter looks into the lens**: the head turns most of the way, the eyes finish it (`CP_GAZE`).
+3. **A studio of the role**: warm key with a shadow, cool fill, a rim in the role's colour, a curved backdrop.
+4. **Painted outside the frame**: a timer queue paints connected canvases straight into each card's own WebGPU
+   context; render targets are shared per size (≤ 4). The card niche lays no scanlines over the face.
+

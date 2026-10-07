@@ -121,6 +121,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 | `25g-postcard` `25g-post-under` `25g-post-void` `25h-post-forms*` `25i-post-back` `25j-post-wire` `25k-post-mail` `25l-post-ether` | the postcard painter (`drawPostcard` from a ~200-byte snapshot), the eight places, a hundred blanks, the card's back, the global pool and replies, the night band |
 | `26-ui-station` `26a-ui-station-home` `26b-ui-station-work` | station screens: sections, home tab, ОСНАСТКА/ПРИБОРЫ/ЛАБОРАТОРИЯ tabs |
 | `27-ui-ship` `27j-ui-opis` `27j-ui-hold` `27j-ui-kitlay` `27c-ui-hq` `27e-ui-home` `27n-ui-deal` `27k-road` `27m-scroll-cue` | hull silhouette and options; the ОПИСЬ table (M341: worn, fitted, carried — one cloth, four zones, the ПРИБОРЫ panels that show the future); the piles; the kit laid out; HQ and cantina, the home desk, ДЕЛО, the road companion, the fold fade |
+| `27f2-room3d` `27f3-person3d` `27f4-cant3d` `27f5-portrait3d` `27cb-ui-cantina-hall` | the interior renderer (MRT haze, mip bloom, shadows, materials as patterns); people from a seed (face, hair strands, role kits); the cantina hall as an engine scene; 3D portraits painted outside the frame; the cantina's cards and side panel (laws: `docs/DESIGN-space.md` «The cantina») |
 | `28-loop` `28y-look` `27z-telemetry` | the frame guard and `frame()`; the frame meter `look()`/`lookAll()`; telemetry |
 
 ## Hard constraints
