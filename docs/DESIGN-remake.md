@@ -52,9 +52,23 @@ Six laws that carry «Сцена» beyond the planet (new, 08.10):
 
 ### 2.1 Already built — replace, do not rebuild
 
-The author, 08.10: «учти, что у тебя уже есть, чтобы заменить просто». Every milestone below
-first asks what the planet branch and the space branch already hold, and puts it in the old
-thing's place; a new body is built only where nothing fits. The map of replacements:
+The author, 08.10: «учти, что у тебя уже есть, чтобы заменить просто… не надо старую трогать,
+а просто новой заменить. Вся игра должна быть в новом стиле. Если людей в 3D уже построили —
+принимаем и критикуем по новым правилам». So every old thing falls into one of three kinds,
+and each kind has one rule:
+
+1. **The planet branch already built it** (the table below) — the new thing goes in the old
+   thing's place whole. The old module is switched off and later deleted, never patched or
+   repainted: not one hour goes into the Canvas 2D cave, landing, figure or drill.
+2. **The space branch built it** (3D people, hulls, rooms, the orb, «Борт») — accepted as the
+   body and judged by §2's laws; what fails a law is fixed in that body, not replaced by a
+   third one. The verdicts of §3 are those judgements.
+3. **Nobody built it yet** (the station hall, the cave, the dig, own base, the road's place) —
+   built new, by the laws of §2 and from the kits of kind 1 and 2. The old 2D version is not a
+   reference and is not compared with (the rule of 06.10); it is read once for what the player
+   does there, then left alone until the new one replaces it.
+
+The map of replacements:
 
 | Already built | Replaces | Where |
 |---|---|---|
@@ -224,9 +238,10 @@ the player meets first and by what one reinvention gives to the next.
 - **M830 Landing by the planet's descent.** `21pza` already wraps `drawLanding` with the planet
   renderer's far lens and the 3D ship coming down (`21phb`, M621), so with `PLN.on` the old
   approach is replaced, not rebuilt: M830 is its hand-over — the seams (the readout, weather,
-  the pad, the touchdown into the surface frame without a cut), the strata slab, the lollipop
-  trees and the landing bake deleted, `19b/19e/19c*` kept only for what the planet's sky does
-  not do. The autoland rule and controls stay. Gate: the landing pair; the S23 budget.
+  the pad, the touchdown into the surface frame without a cut) done in the planet's modules,
+  then the strata slab, the lollipop trees, the landing bake and the 2D sky (`19b/19e/19c*`)
+  switched off for good; whatever they did that the planet's sky lacks is built in `21pz`,
+  not kept. The autoland rule and controls stay. Gate: the landing pair; the S23 budget.
 - **M831 Scoop**: a dark near plume, warm light on the ship, the prompt on the ship.
 - **M832 Postcard from the frame**: the card is the live engine frame through the album's
   filters; the painter deleted.
