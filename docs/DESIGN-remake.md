@@ -235,6 +235,8 @@ the player meets first and by what one reinvention gives to the next.
 
 ### Stage B — the station as a place (M810–M819)
 
+Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the camera stations, the plate.
+
 - **M810 The hall behind the screens.** One interior scene per station type (`27f2`, props
   from the people's grammar of `21pie`, the planet through the window by `17gab`): the
   counter, the yard window, the board wall, the cantina door, the office. The camera glides to
