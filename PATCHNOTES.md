@@ -8,6 +8,9 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
+  the scoop and belt briefings and the surface «what» line are plates on their object with a
+  leader (`08bj` `ovHang`); the centre 40 % of the frame stays empty, the vision checks it.
 - **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
   texture in any pose of its book, any facing and the caller's light; the base, the cave and the
   raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).

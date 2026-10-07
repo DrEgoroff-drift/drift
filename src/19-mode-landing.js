@@ -29,7 +29,9 @@ function startLanding(p){
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   G.mode="landing";
-  say((G.opts.easyLand?"Автоматический заход":"Заход")+" на "+p.name+
+  /* заход и тяготение — табличкой на корабле (M803, drawLanding), без слоя — строкой #msg */
+  G.land.hi=150;
+  if(!hangOk())say((G.opts.easyLand?"Автоматический заход":"Заход")+" на "+p.name+
     "\nтяготение "+p.T.grav.toFixed(2)+"g");
 }
 /* высота начала захода (M327): было 110 при любом рельефе — на рваных мирах
@@ -91,7 +93,8 @@ function updateLanding(dt){
   if(L.auto){
     const ai=autoLandInputs(L,st);
     inThr=ai.thrust;inBrk=ai.brake;inL=inR=false;
-    G.prompt="АВТОМАТИЧЕСКАЯ ПОСАДКА · "+Math.max(0,Math.round(groundAt(tr,L.x)-L.y-11))+" м";
+    /* со слоем #ovl высота висит табличкой на корабле (M803, drawLanding): кнопке глагол не нужен */
+    G.prompt=hangOk()?"":"АВТОМАТИЧЕСКАЯ ПОСАДКА · "+Math.max(0,Math.round(groundAt(tr,L.x)-L.y-11))+" м";
   }
   if(inL)L.a-=.05*st.turn*dt;
   if(inR)L.a+=.05*st.turn*dt;
@@ -347,6 +350,13 @@ function drawLanding(){
   drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0,
     {gear:L.gear,sq:L.sq,hot:L.hot,landed:L.over>0&&L.ok,tr:tr,gx:L.x,gnd:true,live:true});
   ctx.restore();
+  /* слова на корабле (M803): имя мира, автопосадка с высотой, тяготение первые 2,5 с захода */
+  if(L.over<=0&&hangOk()){
+    const ln=[(L.auto?"Автоматический заход на ":"Заход на ")+p.name];
+    if(L.auto)ln.push("автопосадка · "+Math.round(alt)+" м");
+    if(L.hi>0){L.hi--;ln.push("тяготение "+p.T.grav.toFixed(2)+"g");}
+    if(ln.length>1)ovHang("land",ln,L.x-camx,L.y-camy,{r:30});
+  }
   drawWeather(p,camx,camy,"near");
   lightShafts(p);
   gradePass(p);

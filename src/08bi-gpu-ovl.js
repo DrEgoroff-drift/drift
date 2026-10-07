@@ -223,6 +223,7 @@ function ovlDesc(){const m=gpuShader(OVL_WGSL);return {layout:"auto",vertex:{mod
     alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}}}]}};}
 function ovFlush(){
   OVL.fl=true;
+  ovHangFlush();   /* слова на вещах (08bj, M803): таблички кадра — в OVL.uq, до счёта */
   const n=(OVL.uq.length+OVL.lq.length+OVL.cq.length)/OVL_N;
   for(const M of [OVL.lab,OVL.chip])for(const [k,e] of M){e.on=e.fr===OVL.fno;if(OVL.fno-e.fr>600)M.delete(k);}
   OVL.fno++;
