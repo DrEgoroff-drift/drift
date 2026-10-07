@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 670 · символов верхнего уровня: 6978
+Файлов: 672 · символов верхнего уровня: 7008
 
 ## СИМВОЛЫ
 
@@ -993,6 +993,7 @@ MAT_ROWS                     src/18a-material.js:88
 MAT_S                        src/18a-material.js:34
 MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
+MA_Q                         tests/91qa-marks-act.js:6
 MGR_CAP                      src/12c-mgr-core.js:8
 MGR_JOBS                     src/12e-mgr-jobs.js:90-224
 MGR_PERKS                    src/12c-mgr-core.js:60-129
@@ -1207,7 +1208,9 @@ PLAN_ITEM_COL                src/05e-plan.js:132
 PLAN_LETTER                  src/05e-plan.js:136
 PLAN_WANT                    src/05e-plan.js:78
 PLN                          src/21p-pln.js:15
+PLN_ACT                      src/21pif-pln-marks-act.js:18
 PLN_ACTS                     src/21pz-pln-frame.js:46
+PLN_ACT_POI_NEAR             src/21pif-pln-marks-act.js:193
 PLN_AZ_ELEV                  src/21pf-pln-land.js:43
 PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:16
@@ -1238,7 +1241,7 @@ PLN_MAN_BONES                src/21pha-pln-man.js:32-56
 PLN_MAN_FLAME                src/21pha-pln-man.js:46
 PLN_MAN_POSE                 src/21pha-pln-man.js:39-56
 PLN_MARK                     src/21pie-pln-marks.js:20
-PLN_MARK_COL                 src/21pie-pln-marks.js:32
+PLN_MARK_COL                 src/21pie-pln-marks.js:33
 PLN_MAT                      src/21pa-pln-mesh.js:9
 PLN_OLD_LANDING              src/21pza-pln-descent.js:35
 PLN_OLD_SURFACE              src/21pz-pln-frame.js:338
@@ -1266,6 +1269,7 @@ PLN_WGSL_WX                  src/21pk-pln-weather.js:73
 PLN_WILD                     src/21pgd-pln-wild.js:10-35
 PLN_WING                     src/21pgc-pln-wing.js:23
 PLN_WORLDS                   src/21pfa-pln-worlds.js:20-66
+PLN_WRECK_END                src/21pif-pln-marks-act.js:209-230
 PLN_WX                       src/21pk-pln-weather.js:26
 PLN_WX_COL                   src/21pz-pln-frame.js:119
 PL_SKIP                      tests/91zzzzzo-plural.js:31
@@ -4422,6 +4426,8 @@ loyWord                      src/27c-ui-hq.js:13-16
 luckLine                     src/27b-ui-crew.js:15-25
 lum3                         src/18a1-glaze.js:101
 luxPal                       src/03c-hull-luxe.js:16-26
+maLive                       tests/91qa-marks-act.js:7-10
+maShape                      tests/91qa-marks-act.js:11-18
 mailAll                      src/25j-post-wire.js:31-35
 mailBusy                     src/25j-post-wire.js:46
 mailCall                     src/25j-post-wire.js:47-52
@@ -5165,6 +5171,26 @@ plantTraitWord               src/20e-species.js:29-37
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
+plnActBar                    src/21pif-pln-marks-act.js:87
+plnActBranch                 src/21pif-pln-marks-act.js:156-159
+plnActDaily                  src/21pif-pln-marks-act.js:53
+plnActDailyReady             src/21pif-pln-marks-act.js:52
+plnActDims                   src/21pif-pln-marks-act.js:56
+plnActDo                     src/21pif-pln-marks-act.js:125-145
+plnActEase                   src/21pif-pln-marks-act.js:160
+plnActFrame                  src/21pif-pln-marks-act.js:163-191
+plnActInput                  src/21pif-pln-marks-act.js:148-154
+plnActLive                   src/21pif-pln-marks-act.js:68
+plnActMemo                   src/21pif-pln-marks-act.js:26-46
+plnActOn                     src/21pif-pln-marks-act.js:23
+plnActPay                    src/21pif-pln-marks-act.js:111-123
+plnActPriceLead              src/21pif-pln-marks-act.js:219-230
+plnActPrompt                 src/21pif-pln-marks-act.js:91-108
+plnActReach                  src/21pif-pln-marks-act.js:70-85
+plnActRoll                   src/21pif-pln-marks-act.js:51
+plnActSpan                   src/21pif-pln-marks-act.js:62-67
+plnActSpotDx                 src/21pif-pln-marks-act.js:57-60
+plnActVerb                   src/21pif-pln-marks-act.js:88
 plnAdd                       src/21p-pln.js:34
 plnAtThing                   src/21pi-pln-things.js:423-436
 plnBeastCapsule              src/21piba-pln-gait.js:76-101
@@ -5312,13 +5338,16 @@ plnManFrame                  src/21pha-pln-man.js:229-259
 plnManPalette                src/21pha-pln-man.js:58-70
 plnManPose                   src/21pha-pln-man.js:161-189
 plnManState                  src/21pha-pln-man.js:223-226
-plnMarkH                     src/21pie-pln-marks.js:37
-plnMarkMesh                  src/21pie-pln-marks.js:50-277
-plnMarkPad                   src/21pie-pln-marks.js:39-44
-plnMarkWorld                 src/21pie-pln-marks.js:316-319
-plnMarks                     src/21pie-pln-marks.js:280-314
-plnMarksDrop                 src/21pie-pln-marks.js:350-355
-plnMarksFrame                src/21pie-pln-marks.js:322-349
+plnMarkH                     src/21pie-pln-marks.js:38
+plnMarkMesh                  src/21pie-pln-marks.js:56-368
+plnMarkPad                   src/21pie-pln-marks.js:42-47
+plnMarkSpark                 src/21pie-pln-marks.js:418-427
+plnMarkState                 src/21pif-pln-marks-act.js:48
+plnMarkWorld                 src/21pie-pln-marks.js:413-416
+plnMarkZ                     src/21pie-pln-marks.js:40
+plnMarks                     src/21pie-pln-marks.js:371-411
+plnMarksDrop                 src/21pie-pln-marks.js:480-486
+plnMarksFrame                src/21pie-pln-marks.js:433-479
 plnMesh                      src/21pa-pln-mesh.js:12-15
 plnMeshAdd                   src/21pa-pln-mesh.js:29-37
 plnMeshDone                  src/21pa-pln-mesh.js:38
@@ -5436,6 +5465,7 @@ plnWingLeaves                src/21pgc-pln-wing.js:140-151
 plnWingPath                  src/21pgc-pln-wing.js:39-51
 plnWingRamp                  src/21pgc-pln-wing.js:33
 plnWingRibbon                src/21pgc-pln-wing.js:57-71
+plnWreckBeacon               src/21pif-pln-marks-act.js:231
 plnX                         src/21p-pln.js:26
 plnXu                        src/21p-pln.js:28
 plnY                         src/21p-pln.js:27
@@ -8110,8 +8140,12 @@ zoomTo                       src/15-input.js:350
 ## src/21pid-pln-tracks.js · 3 КБ
   · планета: следы — отпечатки на земле (M624):1
 
-## src/21pie-pln-marks.js · 26 КБ
+## src/21pie-pln-marks.js · 38 КБ
   · планета: ориентиры — двенадцать памятников игры (M627):1
+
+## src/21pif-pln-marks-act.js · 19 КБ
+  · планета: ориентиры как места действия (M627b):1
+  · остов корабля (§4.1):204
 
 ## src/21pj-pln-over.js · 7 КБ
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
@@ -8481,6 +8515,9 @@ zoomTo                       src/15-input.js:350
   · планета за полный набор:1
   · M242: свет идёт оттуда, где нарисовано солнце:267
   · M242: дом не стоит на посадочной площадке:299
+
+## tests/91qa-marks-act.js · 10 КБ
+  · ориентиры как места действия (M627b):1
 
 ## tests/91r-hunter.js · 3 КБ
   · охотник: приходит только за долгом:1
