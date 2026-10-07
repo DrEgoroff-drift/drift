@@ -15,6 +15,12 @@ could ever save.
   pipeline (no other per-family or per-blend pipeline can repeat it), and the orb's key carries
   the family so two families never thrash one slot. A new browser suite flies a jump between two
   such systems and checks at encode time that no group meets a pipeline it was not built for.
+- **M800b — city lights on the night side.** Each building light was a 2-px dot dropped whole when
+  its centre fell into the shader's sea, and the terran world's own city pattern faded to nothing
+  below r ≈ 300 px, so 24 lights read as one faint dot. Now a settlement lights the land around it
+  (a soft halo on the sphere) with a two-scale city pattern that averages, rather than vanishes,
+  once a scale is under two pixels; only land, only past the terminator, dimmed under cloud.
+  The per-pixel land test per city is gone, so the loop is cheaper too.
 
 ## 0.492.0 - the nebula «смело»
 

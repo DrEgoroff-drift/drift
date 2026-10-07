@@ -191,6 +191,10 @@ the player meets first and by what one reinvention gives to the next.
     the resources, and the orb's group carries its family (`"gor"+fam+"."+key`, `17gab`); a jump
     into a system whose planet 0 is of another family no longer reuses a foreign bind group —
     `errs 12` → `errs 0`, guarded at encode time by «видеокарта: после прыжка группы привязок — своего конвейера».
+  - *Stage A, done — M800b:* city lights in the orb (`17gab` `cityLit`, the `nc` block of `fs`): a
+    settlement lights the land around it (a ~.17 rad halo on the sphere) with a city pattern whose
+    sub-pixel scales fade to their mean instead of to zero; sea, caps and the lit side stay dark.
+    24 lights at zoom 2.5: one faint dot → a field of warm specks on the night land (`night_lights.png`).
 - **M801 One astronaut everywhere.** The rig of `21pha` rendered to a card (`rigCard(pose,
   lens)`) and used by the base, the cave, the dig, the raid, the home, the winter, the spa and
   the postcard in place of their own figures. Gate: the man at the same size in men across the
