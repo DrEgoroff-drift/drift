@@ -7,7 +7,8 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ## Unreleased (planet-main)
-n- **M803b Plates stay near their thing.** The leader is at most a quarter of the frame height; a plate may stand beside its body inside the centre band when its middle is in the middle third (the vision knows it); lines wrap to fit; a landmark plate drops the name when the world label is within 200 px. Debt found: the surface hint band of `21e` draws at U² instead of U (left as is).
+
+- **M803b Plates stay near their thing.** The leader is at most a quarter of the frame height; a plate may stand beside its body inside the centre band when its middle is in the middle third (the vision knows it); lines wrap to fit; a landmark plate drops the name when the world label is within 200 px. Debt found: the surface hint band of `21e` draws at U² instead of U (left as is).
 
 - **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
   the scoop and belt briefings and the surface «what» line are plates on their object with a
