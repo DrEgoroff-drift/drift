@@ -101,6 +101,7 @@ function plnPlantThings(L,p){
   const shipL=typeof plnShipLenM==="function"?plnShipLenM():8.5;   /* расчистка под корабль — по его длине */
   add(L.shipX*M,7,shipL*.62+1.6,shipL*.42+1.8,shipL*1.1+2);
   T.push([L.rampX,L.rampZ+1.2,1.2,2.2,0]);
+  for(const q of tr.poi||[]){const mk=plnMarkPad(q);if(mk)T.push(mk);}   /* площадки памятников (21pie, M627) */
   if(!S)return T;
   const TH=PLN_THINGS;
   for(const d of S.deposits||[])add(d.x,plnThingDepZ(d),1.7,1.4,3);

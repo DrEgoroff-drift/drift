@@ -499,6 +499,34 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     (albedo ×(.50, .52, .56)), take the sky by Fresnel on flat faces and a sun glint; the wet
     eases in over 30 s and dries over 150 s (`PLN_WX.wet`), so a passing shower leaves a
     dark path for a while.
+51. **Landmarks are bodies behind the crest** (`21pie`; M627). The twelve POI of the game
+    stand on the land ribbon at `tr.poi[].x / PLN_M`, each kind at its own depth behind the
+    walk line (12–36 m), with its own yaw and its own size law (`h × sc / PLN_M × .8 × s`,
+    `s` per kind). The walk line is a crest and the ribbon drops 5–28 m behind it, so a body
+    set on its own ground shows only its top: the base is `max(ground − .4, crest − 2.5)`,
+    the crest being the highest ground between the line and the body, and a mound of the
+    world's stone fills the gap down to the ground. The old sticker is off while
+    `PLN_MARK.on`; the pad of each landmark is a clearance for the planter (`plnMarkPad`).
+52. **Three grammars** (M627). People's things (wreck, elevator, factory, observatory,
+    obelisk, battery) are mid steel with rust and soot by noise, orange belts and concrete;
+    the ancients' things (temple, ring, anomaly, monolith, portal) are dark blue-grey stone
+    (`#2a3040`/`#4e566c`) and carry the world's accent (the old sticker's colour per world
+    type) as their own light; crystals are the world's crag colour graded to the accent by
+    height, with snow on the tops. Every body is one mesh of the kit (blobs as boxes,
+    tubes, lofts, cards) in MAN or ROCK; the mound is a ROCK blob in the world's palette.
+53. **Light and move records** (M627). A landmark is three records of one instance set:
+    the body, the light (the GLOW parts — windows, seams, beacons, panes — with `ca` = the
+    pulse of the hour) and the moving part (the elevator's climber, the anomaly's shards)
+    placed by `moveAt(t)`. The ancients' light is always on and brings a tinted lamp
+    (`always`); people's windows and lamps come with the night key `nk`, their lamps are
+    warm and strong (k 3). Lamps go into `F.lamps` behind the headlamp and the mine, so two
+    ancients in view may push the lake's lamp over the cap of four.
+54. **The hour lesson** (M627). At .30 the key stands behind the subject and mid steel
+    reads black — not a material bug: on the test terrain .2 and .4 are the front-lit day
+    hours, .5 dusk, .55 and .8 night. The kit's colour callbacks differ in signature
+    (blob `(u,p,n)`, tube `(t,ang,p)`, loft `(t,s,p,c)`): one callback used across kit
+    calls gives NaN colours (white parts); `P3`/`N3` take the point and the normal from
+    any of them.
 
 ## 3. The family
 
@@ -530,6 +558,7 @@ with `pln` or `PLN`: the game is one scope.
 | `21piba-pln-gait` | the gait: the stride law, two-bone legs, the five earthly anatomies and their poses |
 | `21pic-pln-drill` | the drill in the hand, its beam, the flare and the chips at the bite, the lamp of the bite |
 | `21pid-pln-tracks` | footprints as bodies: the ground's colour, fading by age |
+| `21pie-pln-marks` | the landmarks: the twelve POI of the game as bodies behind the crest with a mound, the three grammars, the light and move records, their lamps |
 | `21pj-pln-over` | what lies over the frame in 2D, and the stickers of the old painters |
 | `21pk-pln-weather` | the precipitation as cards in the scene's air: drops, flakes, embers, spores, dust grains, lamp drops, lightning, sheets (dust veils, fog banks, far rain curtains); the wet of the ground |
 | `21pz-pln-frame` | the lens, the five acts of the hour, the bodies of the sky, the weather's look, what is built when, the frame, the wrap |
@@ -583,17 +612,22 @@ with `pln` or `PLN`: the game is one scope.
   the scene's air on four depth planes, sized in pixels (§2.46); 2 — lamp drops at night,
   lightning with a bolt body, wet ground, sheets that bend what lies behind them
   (§2.47–§2.50).
+- **M627** landmarks. **Done**, in three passes: 1 — the twelve POI as bodies of the kit
+  behind the crest with a mound to the ground (§2.51); 2 — sizes by kind, the three
+  grammars, the ring's band of light, the obelisk's notch (§2.52); 3 — the night: the
+  ancients' light always on with a lamp, people's windows and lamps by the night key, the
+  light and move records (§2.53–§2.54).
 
 ## 5. What is not done here
 
 The cave, the mine and the base keep their old painters until their own steps
-(M630–M632); the landing is drawn by `21pza` since M621, its old painter is the fallback. The precipitation of the weather is `21pk` since M626, its light is M612.
+(M630–M632); the landing is drawn by `21pza` since M621, its old painter is the fallback. The precipitation of the weather is `21pk` since M626, its light is M612. The landmarks are `21pie` since M627; the old sticker is the fallback behind `PLN_MARK.on`.
 The old painters, the fleet's sky
 (`src/19*`, `11ak-skywatch`, `27la-road-sky`) and the nebula are read and never edited.
 
 ## 6. State on 07.10.2026
 
-Stage 1 is closed (M610–M614); stage 2 stands at M620–M626 done, M627 (landmarks) next. The new look is walked in the game behind
+Stage 1 is closed (M610–M614); stage 2 stands at M620–M627 done, M628 (own things) next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
@@ -703,6 +737,18 @@ of guessing, then the measurement (§2.49) showed them on screen and invisible b
 The cost of the pass on the PC at 1600 × 900: 0.07 ms of a 6.2 ms frame. No errors in any
 frame.
 
+**M627** (landmarks) went in three passes in the game frame on each kind's own world
+(`mark.py <kind> [type|-] [phase] [off] [near]` writes the snippet, trying seeds until the
+terrain holds the kind — `genPOI` is called by the landing mode only, so the snippet calls
+it; `eval-marks.js` answers with the bodies, their heights and mounds, the man and the
+lens): the twelve kinds by day front-lit and by night, the far lens, the battery on ice
+and desert. The first build hid the temple and the factory behind the crest of the walk
+line, so the base went up to the crest and a mound of the world's stone fills the gap
+(up to 26 m on a rough terran). The first scale made the wreck a 74 m hull across the
+frame; the size law is per kind now. The cost with the factory in view: 3.85 ms on the PC
+against 5.45 ms with the old sticker (the sticker is 1.7 ms of the 2D front pass; the
+bodies add .03 ms to the scene).
+
 **Known weak spots** — named, not hidden:
 - M620: at the far lens the man is a dot in the squint — the far lens is the game's own
   scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
@@ -742,8 +788,15 @@ frame.
   far rain curtains are five even stripes under the cloud; the drops do not splash on the
   ground or on the water; the sky events of the plan (auroras, meteors, the giant's storms)
   are not drawn;
-- landmarks, the base, the home and the settlement are stickers of the old painters
-  (M627–M629);
+- M627: the factory's sawtooth wedges and the wreck's halves read as loaves; crystals are
+  pale on ice; the obelisk's belt and notch are weak; the anomaly's shards are chunky; the
+  game's cave often stands on the landmark's pad and hides it (rocky, desert and ice
+  battery, crystals, monolith); the elevator's beacons stand above the near lens's frame;
+  people's bodies vanish at night beyond their lamps; the temple's steps hide behind the
+  crest; the mound reaches 26 m on rough worlds and reads as a hill of its own; the
+  ancients' day lamps add nothing visible; there is no far sign of a landmark beyond the
+  frame's edge; the «find» at a landmark keeps the game's old flow;
+- the base, the home and the settlement are stickers of the old painters (M628–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;
 - 4K at `high` is over the budget (18 ms; `mid` is the answer until the scene pass is

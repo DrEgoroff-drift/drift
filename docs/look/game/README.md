@@ -23,6 +23,8 @@ every shot lie there too.
 | `eval-wx.js` | the question of weather: the kind and power, the look's cover and fog, the cards' counts (`PLN.stat.wx`), the wet, the wind, the man, the lens |
 | `sheet.py` | a contact sheet of the eleven worlds shot with one prefix: `<prefix>_<type>.png` → `<prefix>_sheet.png` |
 | `diff.py` | what changed between two frames: the share of moved pixels, their box, an 8 × 4 grid of shares, a mask |
+| `mark.py` | writes a snippet at a landmark of a kind on the test terrain or another world: `<kind> [type\|-] [phase] [off] [near]` — seeds are tried until the terrain holds the kind (`genPOI` is called by the snippet, the landing mode alone calls it in the game), the man stands `off` m from it, `near` sets the near lens; lands next to the shots as `g_mark_<kind>_<type|any>[_<phase>].js` |
+| `eval-marks.js` | the question of landmarks: on/bad/err, the bodies with their heights and mounds (`PLN.stat.marks`), the game's POI list, the man, the lens, the errors |
 | `cost.py` | the cost of a frame by the real clock: `[type] [sizes] [q=JS] [tag=]`, sizes `pc 2k 4k s23 phone tab`; the GPU passes, the engine, the CPU, the first frame, what was built. The stand steps the page's clock by hand, so the game's own `ms` read 0 under it — this one hooks the real clock |
 | `eval-cost.js` | the question of `cost.py`: the GPU passes, the CPU by the real clock, the stats, the tier |
 | `eval-frame.js` | the default question: errors, counts, the man, the lens, the light, the bodies of the sky, the weather |
@@ -48,6 +50,8 @@ python docs/look/game/gshot.py js=g_at_4600_125.js out=tall.png w=390 h=844 dpr=
 python docs/look/game/cost.py terran pc 'q=weatherOf=function(p){return {kind:"rain",per:1e9,ph:Math.PI/2,lo:.8,hi:.8,cap:1}};weatherPower=function(){return .8}'
 python docs/look/game/hours.py h1 3300
 python docs/look/game/weather.py 3300 .125 rain .8
+python docs/look/game/mark.py temple - .4
+python docs/look/game/gshot.py js=g_mark_temple_any_4.js eval=eval-marks.js out=m_temple.png tail=0
 python docs/look/game/world.py toxic 1 lake .125
 python docs/look/game/gshot.py js=g_w_toxic_1_lake.js out=w_toxic.png tail=1500
 python docs/look/game/sheet.py w 3 960

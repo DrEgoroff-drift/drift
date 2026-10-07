@@ -28,7 +28,7 @@ function plnOverPlate(txt,x,y,plate,ink,u){
 /* то, что ещё не перерисовано: старые рисовалки в том же порядке, что клал старый кадр */
 function plnOverOld(tr,camx,camy,p){
   if(!tr.mat)tr.mat=planetMat(p);
-  drawPOI(tr,camx,camy,p);
+  if(!PLN_MARK.on)drawPOI(tr,camx,camy,p);
   drawBuilt(tr,camx,camy,p);
   if(typeof drawHomeOut==="function"&&typeof homeHereP==="function"&&homeHereP(p))drawHomeOut(tr,camx,camy,p);
   if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);

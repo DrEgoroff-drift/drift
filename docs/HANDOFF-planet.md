@@ -30,8 +30,8 @@ decisions of the plan's §8 were handed to me on 02.10 and are decided there; th
 the game's hull and the descent as the surface's own frame, §2.29–§2.30; the flora — the
 twelve anatomies, the colour law, the wild drifts and the tree weights of a world,
 §2.31–§2.33; stone parted by light, the ground's dress and the water, §2.34–§2.36; the beasts — anatomies on one leg law, the book of poses, far herds and
-flocks, §2.41–§2.45; the weather as cards in the scene's air, lamp drops, lightning, wet ground and sheets, §2.46–§2.50.
-**M627 (landmarks) is next**, then M628–M629 and stages 3–5. The new look runs in the game behind
+flocks, §2.41–§2.45; the weather as cards in the scene's air, lamp drops, lightning, wet ground and sheets, §2.46–§2.50; the landmarks as bodies behind the crest, the three grammars, the light and move records, §2.51–§2.54.
+**M628 (own things) is next**, then M629 and stages 3–5. The new look runs in the game behind
 `?pln=1` or `PLN.on=true`, off by default; the old painter is untouched.
 
 ## Rules that hold

@@ -193,7 +193,10 @@ after it pass by §5.4.
   air (`21pk`), lamp drops at night, lightning with a bolt body, wet ground, sheets
   that bend what lies behind them (dust veils, fog banks, rain curtains); the sky
   events proper are a debt; `docs/DESIGN-planet-engine.md` §2.46–§2.50
-- M627 landmarks: the twelve POI
+- M627 landmarks: the twelve POI — done 07.10: bodies of the kit behind the crest with a
+  mound to the ground (`21pie`), three grammars (people's steel, the ancients' stone lit
+  in the world's accent, crystals), light and move records, the old sticker off;
+  `docs/DESIGN-planet-engine.md` §2.51–§2.54
 - M628 own things: base above ground, home and fence, greenhouse, battery, pennant
 - M629 other people's things: settlement and wall, signs, the stone, «Жестянка»
 

@@ -316,6 +316,7 @@ function plnSurface(S,o){
     const ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
     plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
     plnThingsFrame(L,F,S,p,C.ex,V);
+    plnMarksFrame(L,F,S,p,C.ex,V,lampK);
     plnDrillFrame(F,S,L);plnTracksFrame(L,F,S,C.ex,V);
     plnBeastFrame(L,F,S,p,C.ex,V);
     plnHerbFrame(L,F,S,p,C.ex,V);

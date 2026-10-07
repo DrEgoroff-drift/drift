@@ -514,6 +514,7 @@ function plnLandFree(L){
   plnThingsDrop(L);
   plnHerbDrop(L);
   plnBeastDrop(L);
+  plnMarksDrop(L);
 }
 /* земля этой посадки: одна на рельеф, место корабля и поколение устройства */
 function plnLand(tr,p,sx){
