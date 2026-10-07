@@ -195,6 +195,12 @@ the player meets first and by what one reinvention gives to the next.
     settlement lights the land around it (a ~.17 rad halo on the sphere) with a city pattern whose
     sub-pixel scales fade to their mean instead of to zero; sea, caps and the lit side stay dark.
     24 lights at zoom 2.5: one faint dot → a field of warm specks on the night land (`night_lights.png`).
+  - *Stage A, done — M800c:* `PLN.on` is true by default (`21p-pln`), `?pln=0` keeps the old
+    painter until M890; the planet overlay's tags follow the frame's ruler `UIK` (the кегль law
+    at 2560 found them at 8.5 px); the travel suite warms the two one-time tables (regions,
+    «Сорока») before it counts the road and allows the rail net's stops along it. The dig's sky
+    strip is *not* patched: the dig is a kind-3 thing (§2.1) and gets the planet's sky whole in
+    Stage E. The P1 phone gate is run with the hotfix release, not here.
 - **M801 One astronaut everywhere.** The rig of `21pha` rendered to a card (`rigCard(pose,
   lens)`) and used by the base, the cave, the dig, the raid, the home, the winter, the spa and
   the postcard in place of their own figures. Gate: the man at the same size in men across the

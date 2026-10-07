@@ -8,6 +8,11 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M800c — the planet is the default view.** The engine's surface (`PLN`, M600–M627) is on
+  unless `?pln=0`; the old painter stays behind that switch until M890. Its overlay tags now scale
+  by the frame's ruler (`UIK`) — at 2560 the vision found them at 8.5 px. The travel-cache suite
+  warms the region table and the wanderer's loop before counting (both are one-time tables, not
+  the road) and allows the rail net's stops along the road.
 - **M800a — the world no longer dies after a jump.** The bind-group cache (`gpuBind`) checked the
   name and the resources but not the pipeline; the orb keys its group by planet index while its
   pipeline is per world family, so a jump where planet 0 changed family set a group of another

@@ -62,8 +62,9 @@ function plnOver(){
     ctx.fillStyle="rgba(214,198,172,"+((1-age)*.22).toFixed(3)+")";
     ctx.beginPath();ctx.ellipse(dx-dp.f*age*5,dy-1-age*4,1.5+age*4.5,1+age*2.6,0,0,TAU);ctx.fill();
   }
-  /* подписи в пикселях окна: в мерке объектива при ближнем они вырастали вдвое (M624) */
-  const u=surfScale()/(G.viewK||1);
+  /* подписи в пикселях окна: в мерке объектива при ближнем они вырастали вдвое (M624);
+     это интерфейс, и он идёт по линейке кадра UIK — иначе на 2560 кегль 8.5 px (M800) */
+  const u=surfScale()/(G.viewK||1)*UIK;
   ctx.font=(8*u).toFixed(2)+"px ui-monospace,monospace";ctx.textAlign="center";
   const PLATE="rgba(5,7,12,.72)",INK="rgba(176,196,208,.95)";
   if(S.cave&&isFinite(S.cave.x)){
