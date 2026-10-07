@@ -17,10 +17,13 @@
    Первый акт на памятнике платит то же, что платил осмотр 20b: данные, узел, редкость. */
 const PLN_ACT={on:true,kinds:{},
   pinAge:null,                          /* стенд: сколько секунд прошло после последнего акта (кадр ловит тело в движении) */
-  hold:{seed:null,id:null,p:0,lock:false},
+  hd:{seed:null,id:null,p:0,lock:false}, /* удержание изнутри: чьё место, сколько набрано, отпустить ли до повтора */
+  hold:null,                            /* наружу (риг, привод): {id,k,tool} — пока человек работает у места, иначе null */
+  lastHold:-1e9,                        /* G.t последнего кадра работы: резак короче бура и после отпуска, пока риг его прячет */
   inp:{prev:false,lastT:null,down:false,edge:false,dT:0},
   wrote:"",dbg:null,sfxT:0};
-function plnActOn(){return !!(PLN_ACT.on&&(typeof PLN_MARK==="undefined"||PLN_MARK.on));}
+/* только в новом кадре: старый 2D-кадр живёт со старым осмотром 20b */
+function plnActOn(){return !!(PLN_ACT.on&&(typeof PLN_MARK==="undefined"||PLN_MARK.on)&&typeof PLN!=="undefined"&&PLN.on&&PLN.bad<3);}
 
 /* ── память памятника ── make — завести, если нет */
 function plnActMemo(q,make){
@@ -51,6 +54,12 @@ function plnMarkState(q){return plnActMemo(q,false);}
 function plnActRoll(seed,salt,n){return rng(hashi(seed>>>0,salt|0,n|0));}
 function plnActDailyReady(m){return !!m&&m.day!==celDay();}
 function plnActDaily(m){if(!plnActDailyReady(m))return false;m.day=celDay();return true;}
+/* сколько секунд прошло после последнего акта; стенд держит возраст сам (pinAge) */
+function plnActAge(m){return PLN_ACT.pinAge!=null?PLN_ACT.pinAge:(m?((G.t||0)-(m.t0||0))/60:99);}
+/* ночь у человека: обсерватория смотрит в небо, днём — в архив */
+function plnActNight(){return !!(G.surf&&G.surf.p&&typeof surfNight==="function"&&surfNight(G.surf.p)>.2);}
+/* высота места в воздухе (м над землёй) — числом или от мерок */
+function plnActAir(s,D){return typeof s.air==="function"?s.air(D):(s.air||0);}
 
 /* ── места ── */
 function plnActDims(q){const K=PLN_ACT.kinds[q.k];return K?K.dims(plnMarkH(q)):null;}
@@ -76,7 +85,7 @@ function plnActReach(q,S,m){
     if(!plnActLive(K,s,m,D))continue;
     const dx=cx+s.dx(D)-xm,d=Math.abs(dx);
     let ok=d<s.r;
-    if(ok&&s.air)ok=S.on===false&&hAir>=s.air;
+    if(ok&&s.air)ok=S.on===false&&hAir>=plnActAir(s,D);
     else if(ok)ok=S.on!==false&&!S.jetOn&&(S.walkAmp||0)<.25;
     if(ok){if(!best||d<best.d)best={s,d,dx};}
     else if(!near||d<near.d)near={s,d,dx};
@@ -86,24 +95,36 @@ function plnActReach(q,S,m){
 /* полоса удержания: восемь клеток, ━ — сделано, ╌ — осталось */
 function plnActBar(f){const n=clamp(Math.round(f*8),0,8);return "━".repeat(n)+"╌".repeat(8-n);}
 function plnActVerb(s,m,D){return typeof s.verb==="function"?s.verb(m,D):s.verb;}
+function plnActNote(s,m,D,st){const n=typeof s.note==="function"?s.note(m,D):s.note;return String(n||st).toUpperCase();}
+/* живое место в воздухе прямо над человеком — его глагол и стрелка вверх, иначе null */
+function plnActAirNear(q,K,m,R){
+  for(const o of K.spots)if(o.air&&plnActLive(K,o,m,R.D)&&plnActVerb(o,m,R.D)&&Math.abs(q.x/PLN_M+o.dx(R.D)-R.xm)<o.r)
+    return plnActVerb(o,m,R.D)+" "+plnActUp(o,R.D);
+  return null;
+}
+/* место в воздухе — стрелкой вверх и словом ранца; need — чего не хватает (заряда) */
+function plnActUp(s,D){const n=s.need&&s.need(G.surf);return "▲ "+Math.round(plnActAir(s,D)+2)+" М · РАНЦЕМ"+(n?" · "+String(n).toUpperCase():"");}
 
 /* ── подсказка: не больше двух строк; глагол — первым после «ДЕЙСТВИЕ —» (его берёт кнопка телефона) ── */
 function plnActPrompt(q,m,R,holdP){
-  const K=PLN_ACT.kinds[q.k],name=String(q.ru||K.ru||"").toUpperCase(),st=String(m.got||"").toUpperCase();
+  /* состояние — живым словом вида (выученное после акта слово монолита читается сразу), запись памяти — запасом */
+  const K=PLN_ACT.kinds[q.k],name=String(q.ru||K.ru||"").toUpperCase(),st=String((typeof K.got==="function"?K.got(m):m.got)||"").toUpperCase();
   const arrow=x=>(x>0?"▶ ":"◀ ")+Math.max(1,Math.round(Math.abs(x)))+" М";
+  /* второе живое место той же развилки — с направлением (null — нет такого) */
+  const other=s=>{if(s.fork)for(const o of K.spots)if(o!==s&&o.fork===s.fork&&plnActLive(K,o,m,R.D)&&plnActVerb(o,m,R.D))
+    return "ИЛИ "+String(o.ru).toUpperCase()+" "+(o.air?plnActUp(o,R.D):arrow(q.x/PLN_M+o.dx(R.D)-R.xm)+" · ОДНО ИЗ ДВУХ");return null;};
   if(R.at){
     const s=R.at.s,v=plnActVerb(s,m,R.D);
-    if(!v)return name+" · "+String(s.note||st).toUpperCase()+"\n"+st;
+    /* место молчит (баки полны, класть нечего): forkAlt — зовёт ко второй стороне развилки */
+    if(!v){const n=plnActNote(s,m,R.D,st),up=plnActAirNear(q,K,m,R),alt=s.forkAlt?other(s):null;
+      return name+" · "+n+(up?"\n"+up:alt?"\n"+alt:n!==st?"\n"+st:"");}
     const l1=s.hold?("УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — "+v+" · "+plnActBar(holdP/s.hold)):("ДЕЙСТВИЕ — "+v+(v.indexOf(String(s.ru).toUpperCase())>=0?"":" · "+String(s.ru).toUpperCase()));
     /* развилка видна с места: второе живое место той же развилки названо с направлением */
-    let l2=name+" · "+st;
-    if(s.fork)for(const o of K.spots)if(o!==s&&o.fork===s.fork&&plnActLive(K,o,m,R.D)){
-      l2="ИЛИ "+String(o.ru).toUpperCase()+" "+arrow(q.x/PLN_M+o.dx(R.D)-R.xm)+" · ОДНО ИЗ ДВУХ";break;}
-    return l1+"\n"+l2;
+    return l1+"\n"+(other(s)||name+" · "+st);
   }
   const l1=name+" · "+st;
-  if(R.near){const v=plnActVerb(R.near.s,m,R.D);
-    if(v)return l1+"\n"+String(R.near.s.ru).toUpperCase()+" "+arrow(R.near.dx);}
+  if(R.near){const s=R.near.s,v=plnActVerb(s,m,R.D);
+    if(v)return l1+"\n"+(s.air&&R.near.d<s.r?v+" "+plnActUp(s,R.D):String(s.ru).toUpperCase()+" "+arrow(R.near.dx));}
   return l1;
 }
 
@@ -129,7 +150,7 @@ function plnActDo(q,id,ctx){
   if(!s||!plnActLive(K,s,m,D)||!plnActVerb(s,m,D))return null;
   ctx=ctx||{};
   const d=ctx.d!=null?ctx.d:sysDanger(G.sx,G.sy),p=ctx.p||(G.surf&&G.surf.p)||null;
-  const c={q,m,D,d,p,K};
+  const c={q,m,D,d,p,K,night:ctx.night!=null?!!ctx.night:plnActNight()};
   const out=s.act(c)||{};
   if(out.keep){say(out.full||out.short||"");return {id,keep:true,msg:out.short||""};}
   const base=plnActPay(q,m,d);
@@ -150,6 +171,7 @@ function plnActInput(){
   I.dT=I.lastT==null?0:clamp(now-I.lastT,0,4);I.lastT=now;
   I.down=!!(typeof keys!=="undefined"&&keys&&keys.act);
   I.edge=I.down&&!I.prev;I.prev=I.down;
+  PLN_ACT.hold=null;                    /* кадр памятника поставит снова, если работа идёт */
   return I;
 }
 /* ветка памятника у поверхности: её подсказка или наша прошлого кадра */
@@ -166,20 +188,26 @@ function plnActFrame(it,S,p,nk,t){
   const own=S&&S.tr&&poiNear(S,S.tr)===q&&plnActBranch();
   const m=own?plnActMemo(q,true):plnMarkState(q);
   const D=K.dims(it.H);
-  const age=PLN_ACT.pinAge!=null?PLN_ACT.pinAge:(m?((G.t||0)-(m.t0||0))/60:99);
+  const age=plnActAge(m);
   const mm=m||{st:0,way:null,n:{},got:""};
   const drive=K.drive?K.drive(mm,age,D,t,nk):{};
-  let prompt=null,H=PLN_ACT.hold;
+  let prompt=null,H=PLN_ACT.hd;
   if(own){
     const I=PLN_ACT.inp,R=plnActReach(q,S,m),s=R.at&&R.at.s;
     if(!s||H.seed!==q.seed||H.id!==s.id){H.seed=q.seed;H.id=s?s.id:null;H.p=0;}
     if(!I.down)H.lock=false;
+    /* место, где стоят: убежище храма и подобное — каждый кадр, без нажатия */
+    if(s&&s.stand)s.stand(S,I.dT,m);
     if(s&&plnActVerb(s,m,R.D)){
       if(s.hold){
         if(I.down&&!H.lock){
           H.p+=I.dT/60;
-          if((G.t||0)-PLN_ACT.sfxT>22){PLN_ACT.sfxT=G.t||0;sfx(s.hum||"drill");}
-          if(H.p>=s.hold){H.p=0;H.lock=true;plnActDo(q,s.id);}
+          if(s.hum!==false&&(G.t||0)-PLN_ACT.sfxT>22){PLN_ACT.sfxT=G.t||0;sfx(s.hum||"drill");}
+          /* человек работает: риг берёт стойку бура лицом к месту (21pha через обёртку ниже) */
+          PLN_ACT.hold={id:s.id,k:clamp(H.p/s.hold,0,1),tool:s.tool!==false};
+          if(s.tool!==false)PLN_ACT.lastHold=G.t||0;
+          if(Math.abs(R.at.dx)>.3)S.face=Math.sign(R.at.dx);
+          if(H.p>=s.hold){H.p=0;H.lock=true;PLN_ACT.hold=null;plnActDo(q,s.id);}
         }else H.p=Math.max(0,H.p-I.dT/60*1.5);
         if(H.p>0&&H.id===s.id)drive.spark={id:s.id,k:.6+.4*Math.abs(Math.sin((G.t||0)*.9))};
       }else if(I.edge){plnActDo(q,s.id);H.lock=true;}
@@ -189,16 +217,63 @@ function plnActFrame(it,S,p,nk,t){
   }
   return {prompt,drive,age};
 }
-/* охват подхода: поверхность зовёт памятник «рядом», пока человек в пределах его дальнего места */
+/* охват подхода: поверхность зовёт памятник «рядом», пока человек в пределах его дальнего места.
+   В добавленном охвате первенство у старых веток: залежь под буром (тот же охват, что у 21-mode-surface)
+   и зверь или растение под сканером, если места памятника под рукой нет */
+function plnActDepNear(S){for(const d of S.deposits||[])if(d.left>0&&Math.abs(d.x-S.x)<26)return true;return false;}
+function plnActLifeNear(S){
+  const sc=typeof kitStat==="function"?kitStat().scan:1;
+  for(const p of S.plants||[])if(!p.scanned&&Math.abs(p.x-S.x)<30*sc)return true;
+  for(const b of S.fauna||[])if((!b.scanned&&Math.abs(b.x-S.x)<34*sc)||(b.scanned&&!b.caught&&Math.abs(b.x-S.x)<30))return true;
+  return false;
+}
 const PLN_ACT_POI_NEAR=poiNear;
 poiNear=function(S,tr){
   const q=PLN_ACT_POI_NEAR(S,tr);
   if(q||!plnActOn()||!S)return q;
   for(const z of (tr&&tr.poi)||[]){
-    if(!PLN_ACT.kinds[z.k])continue;
-    if(Math.abs(z.x-S.x)<plnActSpan(z)*PLN_M)return z;
+    if(!PLN_ACT.kinds[z.k]||Math.abs(z.x-S.x)>=plnActSpan(z)*PLN_M)continue;
+    if(plnActDepNear(S))return null;
+    const R=plnActReach(z,S,plnActMemo(z,true));
+    if(!(R&&R.at)&&plnActLifeNear(S))return null;
+    return z;
   }
   return null;
+};
+/* память и старый осмотр: в новом кадре память есть всегда (её заводит подход) — старый осмотр 20b
+   не срабатывает; в 2D нетронутая память (st 0, в n пусто) — не память, и осмотр идёт как шёл */
+const PLN_ACT_POI_MEMO=poiMemo;
+poiMemo=function(seed){
+  const v=PLN_ACT_POI_MEMO(seed);
+  if(plnActOn()){
+    if(v)return v;
+    const q=G.surf&&G.surf.tr&&(G.surf.tr.poi||[]).find(z=>z.seed===seed&&PLN_ACT.kinds[z.k]);
+    return q?plnActMemo(q,true):null;
+  }
+  if(v&&v.st===0&&!v.way&&(!v.n||!Object.keys(v.n).length))return null;
+  return v;
+};
+/* засечка навигатора (21e) — ярлык игры над памятником; пока человек в охвате его мест, имя уже
+   стоит в подсказке, и ярлык над телом прячется */
+const PLN_ACT_NEAREST=nearestPOI;
+nearestPOI=function(tr,x){
+  const q=PLN_ACT_NEAREST(tr,x);
+  if(q&&plnActOn()&&PLN_ACT.kinds[q.k]&&Math.abs(q.x-x)<plnActSpan(q)*PLN_M)return null;
+  return q;
+};
+/* риг (21pha, 21pic) за обёрткой: пока идёт работа у места — стойка бура; резак — бур покороче.
+   S.mining не трогается: луча к залежи нет */
+const PLN_ACT_MAN_STATE=plnManState;
+plnManState=function(S,lampK,swim){
+  const st=PLN_ACT_MAN_STATE(S,lampK,swim),h=PLN_ACT.hold;
+  if(h&&h.tool&&plnActOn())st.drill=true;
+  return st;
+};
+const PLN_ACT_DRILL_WRITE=plnDrillWrite;
+plnDrillWrite=function(st,V,off,w,src){
+  const K=PLN_MAN.k,k0=K.drill,cut=(G.t||0)-PLN_ACT.lastHold<45&&!(G.surf&&G.surf.mining);
+  if(cut)K.drill=k0*.55;
+  try{PLN_ACT_DRILL_WRITE(st,V,off,w,src);}finally{K.drill=k0;}
 };
 
 /* ══════════════ остов корабля (§4.1) ══════════════
@@ -230,7 +305,7 @@ function plnActPriceLead(r){
 }
 const plnWreckBeacon=m=>m.n.beacon!==0;
 PLN_ACT.kinds.wreck={ru:"ОСТОВ КОРАБЛЯ",
-  dims:H=>({H,L:H*2.6,R:H*.34}),
+  dims:H=>{H=Math.max(H,7);return {H,L:H*2.6,R:H*.34};},
   got:m=>m.st===0?"не вскрыт":m.st===1?"люк вскрыт":m.way==="part"?"снята часть, груз сгорел":"взят груз, отсек ушёл",
   spots:[
     {id:"hatch",ru:"люк",dx:D=>-D.L*.2,r:3,hold:3,verb:"ВСКРЫТЬ ЛЮК",sfx:"creak",when:m=>m.st===0,
@@ -278,9 +353,9 @@ PLN_ACT.kinds.wreck={ru:"ОСТОВ КОРАБЛЯ",
     const cargo=m.way==="cargo",part=m.way==="part";
     const doorE=cargo?ev("cargo",0,.8):part?ev("part",.15,.5):0;
     P.door={roll:-1.45*doorE,y:-.08*doorE,k:part?.35:1};
-    const out=-(D.R*.45+1.4);
-    for(let i=1;i<=3;i++){const e=cargo?ev("cargo",.5+i*.3,1.5+i*.3):0;
-      P["crate"+i]={z:out*e*(1-.12*(i-2)),x:(i-2)*.35*e,y:-.14*e,yaw:.25*(i-2)*e,k:part?.3:1};}
+    /* ящики — по дуге из проёма туда, где их земля (to, 21piea); при паре — копоть */
+    for(let i=1;i<=3;i++){const e=cargo?ev("cargo",.5+i*.3,1.4+i*.3):0;
+      P["crate"+i]={go:e,y:.55*Math.sin(Math.PI*e),k:part?.3:1};}
     const bay=cargo?ev("cargo",2.2,3.4):0;
     P.bay={y:-2*bay,roll:.32*bay};
     /* пар: вспухает за треть секунды и съёживается к двум, оставаясь ярким — свечение непрозрачно, тусклое читалось бы копотью */
