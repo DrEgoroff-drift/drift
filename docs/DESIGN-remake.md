@@ -173,6 +173,10 @@ the player meets first and by what one reinvention gives to the next.
   moons), the jump repro green; city lights seen on the night side; the dig's sky strip. Then
   `PLN.on` true by default, `?pln=0` the old painter until M890; the P1 phone gate re-run.
   Gate: a jump, a landing and a walk in one session with `errs 0`; test.ps1 green.
+  - *Stage A, done — M800a:* `gpuBind` (`08c-gpu-kit`) keys its cache by the pipeline as well as
+    the resources, and the orb's group carries its family (`"gor"+fam+"."+key`, `17gab`); a jump
+    into a system whose planet 0 is of another family no longer reuses a foreign bind group —
+    `errs 12` → `errs 0`, guarded at encode time by «видеокарта: после прыжка группы привязок — своего конвейера».
 - **M801 One astronaut everywhere.** The rig of `21pha` rendered to a card (`rigCard(pose,
   lens)`) and used by the base, the cave, the dig, the raid, the home, the winter, the spa and
   the postcard in place of their own figures. Gate: the man at the same size in men across the

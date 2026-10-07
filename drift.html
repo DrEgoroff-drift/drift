@@ -12714,13 +12714,15 @@ function gpuBuf(name,bytes,usage){
   if(b)GPU.trash.push(b);
   return GPU.bufs[name]=GPU.dev.createBuffer({size:Math.max(16,Math.ceil(bytes/16)*16),usage});
 }
-/* привязки кэшируются по набору ресурсов: сменился буфер или текстура — новая группа */
+/* привязки кэшируются по конвейеру и набору ресурсов: сменился буфер, текстура или конвейер — новая
+   группа. Конвейер в проверке обязателен (M800): у конвейера с layout "auto" своя раскладка, и группа
+   чужого конвейера под тем же ключом — 12 ошибок проверки и чёрный кадр (шар после прыжка сменил семью) */
 function gpuBind(name,pipe,res){
   const c=GPU.bgs[name];
-  if(c&&c.res.length===res.length&&c.res.every((r,i)=>r===res[i]))return c.bg;
+  if(c&&c.pipe===pipe&&c.res.length===res.length&&c.res.every((r,i)=>r===res[i]))return c.bg;
   const bg=GPU.dev.createBindGroup({layout:pipe.getBindGroupLayout(0),
     entries:res.map((r,i)=>({binding:i,resource:(r instanceof GPUBuffer)?{buffer:r}:r}))});
-  GPU.bgs[name]={res,bg};return bg;
+  GPU.bgs[name]={pipe,res,bg};return bg;
 }
 /* 2D-холст как текстура: печки при перепечке отдают НОВЫЙ холст, поэтому ключ —
    сам объект. Старые уходят в корзину и гибнут в начале следующего кадра */
@@ -60340,7 +60342,7 @@ const GOR_GAS=[
   [[24,52,48],[50,96,84],[96,146,120],[156,194,160],[214,232,204]]];     /* аммиачный, зелёный */
 /* одно тело: k — мир (GOR.K), pal — палитра 0..255, air — цвет воздуха, th — его толщина */
 function gorBody(pass,key,x,y,r,o){
-  const P=gorPipe(GOR_FAM[o.k]|0);if(!P)return false;
+  const fam=GOR_FAM[o.k]|0,P=gorPipe(fam);if(!P)return false;
   const a=GOR.A;a.fill(0);
   const l=Math.hypot(o.sx,o.sy)||1,kx=Math.sqrt(1-GOR_LZ*GOR_LZ)/l;
   a[0]=x;a[1]=y;a[2]=r;a[3]=o.k;
@@ -60361,7 +60363,7 @@ function gorBody(pass,key,x,y,r,o){
   const ub=gpuBuf("gpl.u",32,U.UNIFORM|U.COPY_DST);
   const u=GOR.U;u[0]=GPU.bw;u[1]=GPU.bh;u[2]=W;u[3]=H;u[4]=DPR;u[5]=G.t||0;d.queue.writeBuffer(ub,0,u);
   const sb=gpuBuf("gor.b."+key,1024,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(sb,0,a);
-  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gor."+key,P,[ub,sb]));pass.draw(6);
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gor"+fam+"."+key,P,[ub,sb]));pass.draw(6);
   return true;
 }
 /* планета системы: false — мир не из двенадцати, пусть рисует 17ga */

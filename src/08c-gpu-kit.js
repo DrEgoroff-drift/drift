@@ -34,13 +34,15 @@ function gpuBuf(name,bytes,usage){
   if(b)GPU.trash.push(b);
   return GPU.bufs[name]=GPU.dev.createBuffer({size:Math.max(16,Math.ceil(bytes/16)*16),usage});
 }
-/* привязки кэшируются по набору ресурсов: сменился буфер или текстура — новая группа */
+/* привязки кэшируются по конвейеру и набору ресурсов: сменился буфер, текстура или конвейер — новая
+   группа. Конвейер в проверке обязателен (M800): у конвейера с layout "auto" своя раскладка, и группа
+   чужого конвейера под тем же ключом — 12 ошибок проверки и чёрный кадр (шар после прыжка сменил семью) */
 function gpuBind(name,pipe,res){
   const c=GPU.bgs[name];
-  if(c&&c.res.length===res.length&&c.res.every((r,i)=>r===res[i]))return c.bg;
+  if(c&&c.pipe===pipe&&c.res.length===res.length&&c.res.every((r,i)=>r===res[i]))return c.bg;
   const bg=GPU.dev.createBindGroup({layout:pipe.getBindGroupLayout(0),
     entries:res.map((r,i)=>({binding:i,resource:(r instanceof GPUBuffer)?{buffer:r}:r}))});
-  GPU.bgs[name]={res,bg};return bg;
+  GPU.bgs[name]={pipe,res,bg};return bg;
 }
 /* 2D-холст как текстура: печки при перепечке отдают НОВЫЙ холст, поэтому ключ —
    сам объект. Старые уходят в корзину и гибнут в начале следующего кадра */

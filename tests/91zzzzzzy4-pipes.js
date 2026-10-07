@@ -90,3 +90,48 @@ const PIPE_SUITE=()=>suite("конвейеры: после прогрева по
   resetWorld();
 });
 PIPE_SUITE.pin="first";
+/* ══════════════ прыжок между системами: группа привязок — своего конвейера (M800) ══════════════
+   gpuBind кэшировал группу по имени и ресурсам: у шара ключ "p"+idx, конвейер — по семье мира (GOR_FAM).
+   Прыжок, где планета 0 сменила семью, отдавал группу прежнего конвейера: 12 ошибок проверки
+   («pipeline created with a default layout is not compatible with the BindGroup»), чёрный кадр до
+   перезагрузки. Ошибки устройства приходят позже кадра, поэтому сторож здесь — то же правило в момент
+   записи: группа, собранная по раскладке конвейера "auto", ставится только при этом конвейере. */
+TEST_SUITES.push(()=>suite("видеокарта: после прыжка группы привязок — своего конвейера",{tier:"browser"},()=>{
+  resetWorld();
+  if(!ok(GPU.ok&&!!GPU.dev&&GPU_PIPES.done,"видеокарта поднялась, прогрев кончился"))return;
+  const famOf=(sx,sy)=>{const p=getSystem(sx,sy).planets[0];return p&&GOR.K[p.type]!==undefined?GOR_FAM[GOR.K[p.type]]:-1;};
+  const fa=famOf(0,0);let to=null;
+  for(let r=1;r<=12&&!to;r++)for(let x=-r;x<=r&&!to;x++)for(let y=-r;y<=r&&!to;y++){
+    if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const f=famOf(x,y);
+    if(f>=0&&f!==fa&&gorPipe(f))to=[x,y,f];}
+  if(!ok(fa>=0&&!!gorPipe(fa)&&!!to,"нашлись две системы с планетой 0 разных семей ("+fa+" → "+(to&&to[2])+"), конвейеры прогреты"))return;
+  const PP=GPURenderPipeline.prototype,DP=GPUDevice.prototype,EP=GPURenderPassEncoder.prototype;
+  const dL=Object.getOwnPropertyDescriptor(PP,"getBindGroupLayout"),dB=Object.getOwnPropertyDescriptor(DP,"createBindGroup"),
+    dS=Object.getOwnPropertyDescriptor(EP,"setPipeline"),dG=Object.getOwnPropertyDescriptor(EP,"setBindGroup");
+  const layOf=new WeakMap(),bgOf=new WeakMap(),cur=new WeakMap(),used=new Set(),bad=[];
+  PP.getBindGroupLayout=function(i){const L=dL.value.call(this,i);layOf.set(L,this);return L;};
+  DP.createBindGroup=function(d){const g=dB.value.call(this,d);if(d&&d.layout)bgOf.set(g,d.layout);return g;};
+  EP.setPipeline=function(p){cur.set(this,p);used.add(p);return dS.value.call(this,p);};
+  EP.setBindGroup=function(i,g){
+    const L=g&&bgOf.get(g),P=L&&layOf.get(L),c=cur.get(this);
+    if(P&&c&&P!==c&&bad.length<6)bad.push((G.sx+","+G.sy)+" · "+(P.label||"конвейер")+" ≠ "+(c.label||"текущий"));
+    return dG.value.apply(this,arguments);};
+  for(const k in GPU.bgs)if(/^gor/.test(k))delete GPU.bgs[k];   /* кэш с прошлых наборов — собрать заново под сторожем */
+  const run0=G.running,loop0=LOOP_OFF,e0=GPU.errs;
+  try{
+    G.running=true;LOOP_OFF=false;let t=wallMs();
+    const fly=(n)=>{for(let i=0;i<n;i++){const p=G.sys.planets[0];G.ship.x=p.x-150;G.ship.y=p.y+60;G.ship.vx=G.ship.vy=0;
+      G.zoom=.5;G.zoomT=null;frameBody(t+=16.7);}};
+    G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.ap=null;G.orbit=null;G.mode="system";fly(60);
+    ok(used.has(gorPipe(fa)),"до прыжка планета 0 нарисована шаром своей семьи ("+fa+")");
+    arriveSystem(to[0],to[1],{cost:0});fly(60);
+    ok(used.has(gorPipe(to[2])),"после прыжка в "+to[0]+","+to[1]+" планета 0 нарисована шаром семьи "+to[2]);
+  }finally{
+    Object.defineProperty(PP,"getBindGroupLayout",dL);Object.defineProperty(DP,"createBindGroup",dB);
+    Object.defineProperty(EP,"setPipeline",dS);Object.defineProperty(EP,"setBindGroup",dG);
+    G.running=run0;LOOP_OFF=loop0;
+  }
+  eq(bad.join("; "),"","группа привязок чужого конвейера в проходе (ошибка проверки на устройстве)");
+  eq(GPU.errs-e0,0,"ошибок устройства за набор не прибавилось (те, что успели прийти)");
+  resetWorld();
+}));

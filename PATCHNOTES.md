@@ -6,6 +6,16 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## Unreleased (planet-main)
+
+- **M800a — the world no longer dies after a jump.** The bind-group cache (`gpuBind`) checked the
+  name and the resources but not the pipeline; the orb keys its group by planet index while its
+  pipeline is per world family, so a jump where planet 0 changed family set a group of another
+  pipeline's layout — 12 validation errors and a black frame until reload. The cache now checks the
+  pipeline (no other per-family or per-blend pipeline can repeat it), and the orb's key carries
+  the family so two families never thrash one slot. A new browser suite flies a jump between two
+  such systems and checks at encode time that no group meets a pipeline it was not built for.
+
 ## 0.492.0 - the nebula «смело»
 
 - **The nebula «смело» (GPU-2).** The look the author chose on 26.09 («B с розовым») sat ready on an unpushed
