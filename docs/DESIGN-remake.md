@@ -113,7 +113,7 @@ the real GPU; I read the sheets. The frames with their reports stay in the scrat
 | Nebula near the star («смело», the author 26.09) | keep | the author's choice |
 | Nebula far from the star: flat peach shards, no depth ramp, straight streaks | remake | 5 |
 | Own ship in 3D with parts on the mounts | keep; tint away from the nebula's brown, a brighter silhouette edge | 6 |
-| Pirates, barges, traffic: sprites beside a 3D hero; friend and foe differ by a label bar | reinvent | L4, 2 — bodies, a hostile form that reads without the bar |
+| Pirates, barges, traffic: sprites beside a 3D hero; friend and foe differ by a label bar (09.10: pirates, NPC and allies are already bodies — M710; barges, traffic, the station are not) | reinvent | L4, 2 — bodies, a hostile form that reads without the bar |
 | Station body: a flat grey top-down sprite, no lamp, no shadow | reinvent | L4, 4 — the one thing people live in is the dullest |
 | Belt rocks sprayed, a straight lighter band across the frame at zoom 2 | remake | 1 |
 | Discovery, arrival, prompt text in the centre; a stamp over a line | remake | L5 |
@@ -250,6 +250,8 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   site's silhouette. **M815 The phone reflow** of all of the above.
 
 ### Stage C — flight (M820–M829)
+
+Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, kind 2); barges, traffic and the station become bodies of the hull kit; the hostile form without a bar.
 
 - **M820 Bodies for everyone.** Pirates, barges, traffic and the station as meshes of the hull
   kit with a maker grammar; hostile forms that read without the bar; the station with lamps
