@@ -17,13 +17,6 @@ could ever save.
   by the frame's ruler (`UIK`) — at 2560 the vision found them at 8.5 px. The travel-cache suite
   warms the region table and the wanderer's loop before counting (both are one-time tables, not
   the road) and allows the rail net's stops along the road.
-- **M800a — the world no longer dies after a jump.** The bind-group cache (`gpuBind`) checked the
-  name and the resources but not the pipeline; the orb keys its group by planet index while its
-  pipeline is per world family, so a jump where planet 0 changed family set a group of another
-  pipeline's layout — 12 validation errors and a black frame until reload. The cache now checks the
-  pipeline (no other per-family or per-blend pipeline can repeat it), and the orb's key carries
-  the family so two families never thrash one slot. A new browser suite flies a jump between two
-  such systems and checks at encode time that no group meets a pipeline it was not built for.
 - **M800b — city lights on the night side.** Each building light was a 2-px dot dropped whole when
   its centre fell into the shader's sea, and the terran world's own city pattern faded to nothing
   below r ≈ 300 px, so 24 lights read as one faint dot. Now a settlement lights the land around it
@@ -33,6 +26,16 @@ could ever save.
 - **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
   texture in any pose of its book, any facing and the caller's light; the base, the cave and the
   raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).
+
+## 0.492.1 - the world no longer dies after a jump
+
+- **M800a — the world no longer dies after a jump.** The bind-group cache (`gpuBind`) checked the
+  name and the resources but not the pipeline; the orb keys its group by planet index while its
+  pipeline is per world family, so a jump where planet 0 changed family set a group of another
+  pipeline's layout — 12 validation errors and a black frame until reload. The cache now checks the
+  pipeline (no other per-family or per-blend pipeline can repeat it), and the orb's key carries
+  the family so two families never thrash one slot. A new browser suite flies a jump between two
+  such systems and checks at encode time that no group meets a pipeline it was not built for.
 
 ## 0.492.0 - the nebula «смело»
 

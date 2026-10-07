@@ -191,6 +191,7 @@ the player meets first and by what one reinvention gives to the next.
     the resources, and the orb's group carries its family (`"gor"+fam+"."+key`, `17gab`); a jump
     into a system whose planet 0 is of another family no longer reuses a foreign bind group —
     `errs 12` → `errs 0`, guarded at encode time by «видеокарта: после прыжка группы привязок — своего конвейера».
+    Shipped alone as the hotfix release **0.492.1** (9a9bc13a, cherry-picked onto origin/main, dev → main).
   - *Stage A, done — M800b:* city lights in the orb (`17gab` `cityLit`, the `nc` block of `fs`): a
     settlement lights the land around it (a ~.17 rad halo on the sphere) with a city pattern whose
     sub-pixel scales fade to their mean instead of to zero; sea, caps and the lit side stay dark.
