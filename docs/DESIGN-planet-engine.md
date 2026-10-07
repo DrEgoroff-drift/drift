@@ -464,6 +464,41 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     the camera gets only the ambient, and mid-brown fur read black. The beast material (8)
     has a wrapped terminator (`smoothstep(−.22, .42, ndl)`) and takes the grass bounce like
     bark and rock — a fill at the material, not a brighter palette.
+46. **Weather is cards in the scene's air, not an overlay** (`21pk`; M626). Drops, flakes,
+    embers, spores and dust grains are quads born in the vertex stage from a hash and the
+    clock — no buffers, nothing uploaded. Four depth planes as fractions of the lens
+    distance D (far 1–2.4 D thin and lazy, near 0.2–0.35 D thick and fast); widths and
+    lengths are set in pixels and turned into metres through the frame's height at that
+    distance (`mpp`), so a drop is 1–2.6 px wide at any size of window. The cards wrap in
+    the world, not in the frame: the man walks through the rain, it does not walk with
+    him. Being in the scene they are occluded by the hills and the trees, lit by the key,
+    the sky and the lamps, and sunk by the air like every body. The old overlay stays
+    behind `PLN_WX.on`.
+47. **Lamp drops** (M626). Of the global cards only a handful ever fall inside a lamp's
+    sphere, so the night read dry. Each lamp (headlamp, the ship's door, the mine, the drill,
+    the glowing pond) gets its own range of cards — 90 at full power — falling through its
+    light, under the hood (nothing above the lamp), tilted by the wind, fading with distance
+    from the lamp's centre.
+48. **Lightning** (M626). A double flash in the look (the key ×(1 + 4 fl), the sky, the
+    clouds and the ambient whitened by a share of fl) and a bolt body of two cards per
+    segment (core and halo, sixteen segments) running from the frame's top at its distance
+    behind the ridge. The vertical field is ≈ 24°: the frame's top at distance s is only
+    E.y + 0.177 s, so a bolt placed at 300 m up was never seen — it hangs from the top edge
+    of the frame now.
+49. **Sheets are a poke at what lies behind them** (M626). Fog banks, dust veils and the
+    far rain curtains were drawn with their own lit colour and vanished: measured, a curtain
+    darkened the sky by 2 % and a fog bank in thick air came out exactly the air's colour.
+    A sheet now takes the colour of what is behind it and bends it — a curtain is the sky
+    at 0.45, a fog bank the air whitened and brightened, a dust veil the air at 0.6 — and
+    the air does not fog it again. Fog banks lie where the picture has water and ground:
+    six of ten over the far water (z 60–150, the water's level), four at the hero's feet
+    (the ground of the walking line, passed from the land profile). The method: a magenta
+    debug return proves the geometry is on screen, a diff against a frame with zero sheets
+    measures what they add.
+50. **Wet ground** (`21pc`; M626). Under rain and acid the ground and the stone darken
+    (albedo ×(.50, .52, .56)), take the sky by Fresnel on flat faces and a sun glint; the wet
+    eases in over 30 s and dries over 150 s (`PLN_WX.wet`), so a passing shower leaves a
+    dark path for a while.
 
 ## 3. The family
 
@@ -496,6 +531,7 @@ with `pln` or `PLN`: the game is one scope.
 | `21pic-pln-drill` | the drill in the hand, its beam, the flare and the chips at the bite, the lamp of the bite |
 | `21pid-pln-tracks` | footprints as bodies: the ground's colour, fading by age |
 | `21pj-pln-over` | what lies over the frame in 2D, and the stickers of the old painters |
+| `21pk-pln-weather` | the precipitation as cards in the scene's air: drops, flakes, embers, spores, dust grains, lamp drops, lightning, sheets (dust veils, fog banks, far rain curtains); the wet of the ground |
 | `21pz-pln-frame` | the lens, the five acts of the hour, the bodies of the sky, the weather's look, what is built when, the frame, the wrap |
 | `21pza-pln-descent` | the descent: the landing's state as a lens and a ship for the frame of 21pz, the wrap of `drawLanding` |
 
@@ -543,17 +579,21 @@ with `pln` or `PLN`: the game is one scope.
   (§2.41–§2.43, §2.45); 2 — the aliens' poses (the jelly beached, the strider's lunge, the
   manta's dive and its flat stun, the shell on its back); 3 — far herds and flocks on the
   far lane, a beast as a thing for the near lens (§2.44).
+- **M626** weather and sky events. **Done**, in two passes: 1 — the seven kinds as cards in
+  the scene's air on four depth planes, sized in pixels (§2.46); 2 — lamp drops at night,
+  lightning with a bolt body, wet ground, sheets that bend what lies behind them
+  (§2.47–§2.50).
 
 ## 5. What is not done here
 
 The cave, the mine and the base keep their old painters until their own steps
-(M630–M632); the landing is drawn by `21pza` since M621, its old painter is the fallback. The precipitation of the weather is M626, its light is M612.
+(M630–M632); the landing is drawn by `21pza` since M621, its old painter is the fallback. The precipitation of the weather is `21pk` since M626, its light is M612.
 The old painters, the fleet's sky
 (`src/19*`, `11ak-skywatch`, `27la-road-sky`) and the nebula are read and never edited.
 
 ## 6. State on 07.10.2026
 
-Stage 1 is closed (M610–M614); stage 2 stands at M620–M625 done, M626 (weather) next. The new look is walked in the game behind
+Stage 1 is closed (M610–M614); stage 2 stands at M620–M626 done, M627 (landmarks) next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
@@ -652,6 +692,17 @@ backlit key with a hard terminator; the fix went into the shader, not into the p
 far lane is empty in the natural frame about six tenths of the time by design; the stand
 forces it. No errors in any frame.
 
+**M626** (weather) went in two passes in the game frame at 3300 under a fixed weather
+(`weather.py <x> <phase> <kind> <power>` writes the snippet next to the shots; `eval-wx.js`
+answers with the kind, the power, the look's cover and fog, the cards' counts and the wet):
+the seven kinds by day and by night, the downpour with its bolt, the blizzard, the dust
+storm, spores on the crystal world, ash on the volcanic one; the eleven worlds for seven of
+them. The first law drew cards in metres and they came out an order too big; the law in
+pixels fixed every size at once. The sheets were the long debt of the pass: three builds
+of guessing, then the measurement (§2.49) showed them on screen and invisible by colour.
+The cost of the pass on the PC at 1600 × 900: 0.07 ms of a 6.2 ms frame. No errors in any
+frame.
+
 **Known weak spots** — named, not hidden:
 - M620: at the far lens the man is a dot in the squint — the far lens is the game's own
   scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
@@ -685,8 +736,14 @@ forces it. No errors in any frame.
   the flank; a lying beast is a lump; the crystal's poses barely differ; the far herd
   drifts relative to the camera on a cycle, not across the world; a flock only drifts, it
   does not wheel;
+- M626: the fog banks are even bars of mist, not torn wisps; the dust veils are faint;
+  the near banks at the hero's feet hide behind the ridge most of the time; the flakes of
+  the near plane read as bokeh discs; the embers are small; the day flash is sharp; the
+  far rain curtains are five even stripes under the cloud; the drops do not splash on the
+  ground or on the water; the sky events of the plan (auroras, meteors, the giant's storms)
+  are not drawn;
 - landmarks, the base, the home and the settlement are stickers of the old painters
-  (M626–M629);
+  (M627–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;
 - 4K at `high` is over the budget (18 ms; `mid` is the answer until the scene pass is
@@ -699,10 +756,9 @@ forces it. No errors in any frame.
   plain of the ocean world is matte land, not sea; the species of trees are the same on
   every world; the blooms and the far bank are too small to carry a world's colour;
 - the sky of M612: the lumps of the overcast deck are soft and its lower edge is a soft
-  line; the drops and flakes are the old overlay (M626); the day crescent hides behind the
+  line; the day crescent hides behind the
   cumulus; the giant's bands are subtle; the stars at the totality of an eclipse are faint
-  and the shadow of the moon is a straight band in depth; wet ground neither darkens nor
-  shines (M626).
+  and the shadow of the moon is a straight band in depth.
 
 **Not looked at yet**: the crags, the ring and the algae by night and in the mirror; dust
 on a dry world; the eleven worlds by night and in weather (only the methane night was

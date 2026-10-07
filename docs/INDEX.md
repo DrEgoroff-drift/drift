@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 668 · символов верхнего уровня: 6966
+Файлов: 669 · символов верхнего уровня: 6969
 
 ## СИМВОЛЫ
 
@@ -1170,7 +1170,7 @@ PERCH_EVERY                  src/27j-console.js:25
 PGX                          src/12i-pirate-hull.js:440
 PHONE_DPR                    src/08-state.js:12
 PHYS_DT                      tests/91zzzzy-phys.js:14
-PI                           src/21pb-pln-wgsl-air.js:50
+PI                           src/21pb-pln-wgsl-air.js:54
 PICKUPS                      src/24a-mode-raid.js:24-28
 PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-53
 PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:61-91
@@ -1239,7 +1239,7 @@ PLN_MAN_FLAME                src/21pha-pln-man.js:46
 PLN_MAN_POSE                 src/21pha-pln-man.js:39-56
 PLN_MAT                      src/21pa-pln-mesh.js:9
 PLN_OLD_LANDING              src/21pza-pln-descent.js:35
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:336
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:337
 PLN_OVER                     src/21pj-pln-over.js:16
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:38-62
@@ -1260,9 +1260,11 @@ PLN_VS                       src/21pa-pln-mesh.js:10
 PLN_WFLORA                   src/21pfa-pln-worlds.js:177-222
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
 PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
+PLN_WGSL_WX                  src/21pk-pln-weather.js:73
 PLN_WILD                     src/21pgd-pln-wild.js:10-35
 PLN_WING                     src/21pgc-pln-wing.js:23
 PLN_WORLDS                   src/21pfa-pln-worlds.js:20-66
+PLN_WX                       src/21pk-pln-weather.js:26
 PLN_WX_COL                   src/21pz-pln-frame.js:119
 PL_SKIP                      tests/91zzzzzo-plural.js:31
 POI_FIND                     src/20b-poi-find.js:18-91
@@ -5219,14 +5221,14 @@ plnFoot                      src/21piba-pln-gait.js:43-45
 plnGeo                       src/21pe-pln-gpu.js:79-86
 plnGeoFree                   src/21pe-pln-gpu.js:87
 plnGlide                     src/21pz-pln-frame.js:260-268
-plnGlobals                   src/21pe-pln-gpu.js:257-280
+plnGlobals                   src/21pe-pln-gpu.js:260-283
 plnGpuDev                    src/21pe-pln-gpu.js:112-142
-plnGpuFrame                  src/21pe-pln-gpu.js:300-359
-plnGpuPipes                  src/21pe-pln-gpu.js:164-190
-plnGpuReady                  src/21pe-pln-gpu.js:248-252
-plnGpuSize                   src/21pe-pln-gpu.js:193-247
+plnGpuFrame                  src/21pe-pln-gpu.js:303-363
+plnGpuPipes                  src/21pe-pln-gpu.js:164-193
+plnGpuReady                  src/21pe-pln-gpu.js:251-255
+plnGpuSize                   src/21pe-pln-gpu.js:196-250
 plnGpuTier                   src/21pe-pln-gpu.js:144-161
-plnGpuWrite                  src/21pe-pln-gpu.js:281-294
+plnGpuWrite                  src/21pe-pln-gpu.js:284-297
 plnHash                      src/21p-pln.js:55-59
 plnHerbAlgaMesh              src/21pia-pln-herb.js:389-413
 plnHerbAlgae                 src/21pia-pln-herb.js:414-439
@@ -5368,7 +5370,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:89
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:271-333
+plnSurface                   src/21pz-pln-frame.js:271-334
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
 plnThingBoulder              src/21pi-pln-things.js:74-91
@@ -5403,6 +5405,7 @@ plnTreeWorldW                src/21pgd-pln-wild.js:81
 plnTri                       src/21pa-pln-mesh.js:23-26
 plnTube                      src/21pa-pln-mesh.js:100-131
 plnVert                      src/21pa-pln-mesh.js:16-22
+plnWeatherFrame              src/21pk-pln-weather.js:34-70
 plnWeatherLook               src/21pz-pln-frame.js:120-169
 plnWgslPost                  src/21pd-pln-wgsl-post.js:10-30
 plnWildBodies                src/21pgd-pln-wild.js:46-62
@@ -8035,10 +8038,10 @@ zoomTo                       src/15-input.js:350
 ## src/21pa-pln-mesh.js · 10 КБ
   · планета: тело и его генераторы (M610):1
 
-## src/21pb-pln-wgsl-air.js · 23 КБ
+## src/21pb-pln-wgsl-air.js · 24 КБ
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 17 КБ
+## src/21pc-pln-wgsl-scene.js · 18 КБ
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 8 КБ
@@ -8101,7 +8104,10 @@ zoomTo                       src/15-input.js:350
 ## src/21pj-pln-over.js · 7 КБ
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
 
-## src/21pz-pln-frame.js · 27 КБ
+## src/21pk-pln-weather.js · 20 КБ
+  · осадки в воздухе сцены (M626):1
+
+## src/21pz-pln-frame.js · 28 КБ
   · планета: кадр нового вида (M610):1
 
 ## src/21pza-pln-descent.js · 4 КБ

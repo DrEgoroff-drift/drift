@@ -168,6 +168,9 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
       N = normalize(mix(N, fN, 0.85 * stone));
     }
   }
+  /* мокрая земля (M626): темнее и гуще цветом; блик неба по глади — ниже, после света */
+  let wet = g.wx.z * select(0.0, 1.0, mat == 0 || mat == 1);
+  alb *= mix(vec3f(1.0), vec3f(0.50, 0.52, 0.56), wet);
   let ndl = dot(N, L);
   /* кулиса стоит в метрах от объектива, где тексель дальней карты — с ладонь: карты она не берёт */
   var sh = 1.0;
@@ -238,6 +241,15 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
     let rv = reflect(-V, N);
     let fr = 0.05 + 0.95 * pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 4.0);
     c += skyBase(normalize(vec3f(rv.x, abs(rv.y) + 0.02, rv.z))) * (ex * fr * 0.5 * mix(0.55, 1.0, fg));
+  }
+  if (wet > 0.0) {
+    /* мокрая гладь отражает небо под скользящим углом и ловит ключ узким бликом */
+    let hv = normalize(L + V);
+    let fr = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0);
+    let rv = reflect(-V, N);
+    let flat = clamp(N.y, 0.0, 1.0);
+    c += skyBase(normalize(vec3f(rv.x, abs(rv.y) + 0.02, rv.z))) * (wet * fr * 0.60 * flat * mix(0.55, 1.0, fg));
+    c += sun * pow(clamp(dot(N, hv), 0.0, 1.0), 36.0) * (wet * 0.8 * flat);
   }
   for (var i = 0; i < 4; i++) {
     let lp = g.lampPos[i]; let lc = g.lampCol[i];

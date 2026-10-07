@@ -113,6 +113,6 @@ function plnOver(){
       ctx.fillStyle=col;ctx.fillRect(q[0]-bw/2,by,bw*clamp(d.prog,0,1),bh);
     }
   }
-  /* луч бура — тело (21pic) */
-  drawWeather(p,camx,camy,"near");
+  /* луч бура — тело (21pic); осадки — карточки в воздухе сцены (21pk), старый слой — только если они выключены */
+  if(!PLN_WX.on)drawWeather(p,camx,camy,"near");
 }

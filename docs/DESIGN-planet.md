@@ -189,7 +189,10 @@ after it pass by §5.4.
   earthly anatomies on one leg law (`21piba`), six walk frames and four poses per body,
   the aliens' poses, far herds and flocks on the far lane, a beast as a thing for the near
   lens, fur lit at the material; `docs/DESIGN-planet-engine.md` §2.41–§2.45
-- M626 weather and sky events
+- M626 weather and sky events — done 07.10: the seven kinds as cards in the scene's
+  air (`21pk`), lamp drops at night, lightning with a bolt body, wet ground, sheets
+  that bend what lies behind them (dust veils, fog banks, rain curtains); the sky
+  events proper are a debt; `docs/DESIGN-planet-engine.md` §2.46–§2.50
 - M627 landmarks: the twelve POI
 - M628 own things: base above ground, home and fence, greenhouse, battery, pennant
 - M629 other people's things: settlement and wall, signs, the stone, «Жестянка»

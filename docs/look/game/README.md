@@ -19,7 +19,8 @@ every shot lie there too.
 | `withmoon.py` | the test planet with a moon borrowed from the gas giant, its phase set (0 new, .5 full) |
 | `eclipse.py` | the same moon set so that its eclipse runs at a given point (−1 start, 0 middle, 1 end) |
 | `moonland.py` | lands on a moon of the first gas giant: the parent in the sky |
-| `weather.py` | the test planet under a fixed kind and power of weather |
+| `weather.py` | the test planet under a fixed kind and power of weather: `<x> <phase> <kind> <power>`; the snippet lands next to the shots (`PLN_SHOTS`), not here |
+| `eval-wx.js` | the question of weather: the kind and power, the look's cover and fog, the cards' counts (`PLN.stat.wx`), the wet, the wind, the man, the lens |
 | `sheet.py` | a contact sheet of the eleven worlds shot with one prefix: `<prefix>_<type>.png` → `<prefix>_sheet.png` |
 | `diff.py` | what changed between two frames: the share of moved pixels, their box, an 8 × 4 grid of shares, a mask |
 | `cost.py` | the cost of a frame by the real clock: `[type] [sizes] [q=JS] [tag=]`, sizes `pc 2k 4k s23 phone tab`; the GPU passes, the engine, the CPU, the first frame, what was built. The stand steps the page's clock by hand, so the game's own `ms` read 0 under it — this one hooks the real clock |
@@ -44,6 +45,7 @@ python docs/look/game/world.py rocky 1 7900
 python docs/look/game/gshot.py js=g_w_rocky_1_7900.js eval=eval-crags.js out=rocky.png
 python docs/look/game/pic.py pair old.png crag.png pair.png --a "было" --b "стало"
 python docs/look/game/gshot.py js=g_at_4600_125.js out=tall.png w=390 h=844 dpr=2
+python docs/look/game/cost.py terran pc 'q=weatherOf=function(p){return {kind:"rain",per:1e9,ph:Math.PI/2,lo:.8,hi:.8,cap:1}};weatherPower=function(){return .8}'
 python docs/look/game/hours.py h1 3300
 python docs/look/game/weather.py 3300 .125 rain .8
 python docs/look/game/world.py toxic 1 lake .125

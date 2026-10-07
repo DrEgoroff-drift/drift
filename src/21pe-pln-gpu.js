@@ -32,7 +32,7 @@ const PLN_GPU={dev:null,gen:0,
   qual:"high",tier:0,tierGen:-1,phone:null,   /* ярус; счётчик пересборок и какая собрана; телефон ли (решается раз) */
   w:0,h:0,mw:0,mh:0,ww:0,wh:0,sw:0,sh:0,       /* размер кадра и размеры зеркала, кулисы, света в воздухе */
   L:null,P:{},S:null,U:null,D:null,T:null,V:null,B:null,pp:null,one:null,oneRide:null,dummy:null,
-  ga:[0,1,2,3,4].map(()=>new Float32Array(248)),inv:new Float32Array(16)};
+  ga:[0,1,2,3,4].map(()=>new Float32Array(264)),inv:new Float32Array(16)};
 /* ярусы — что кадр платит (сглаживание в WebGPU бывает только 1 и 4). high — как принято на ПК
    (M600); mid — сглаживание остаётся, дешевеет остальное: свет в воздухе в четверть кадра и 16
    шагов, зеркало в четверть, карта теней 2048, пять отводов тени, два размытия кулисы, четыре
@@ -66,7 +66,7 @@ function plnQualAuto(){
 /* где что лежит в блоке Globals после ламп (21pb) */
 const PLN_G={skyZen:120,skyZenS:124,skyHor:128,skyHorS:132,sunGlow:136,airFar:140,airFarS:144,airNear:148,
   ambSky:152,ambGnd:156,thru:160,bounce:164,waterA:168,waterB:172,cloudLit:176,cloudDark:180,cloudDarkS:184,
-  moon:188,world:192,bands:196,sunTrue:232,moon2:236,moon3:240,bodyKind:244};
+  moon:188,world:192,bands:196,sunTrue:232,moon2:236,moon3:240,bodyKind:244,wx:248,wxCol:252,wxBox:256,wxSpare:260};
 const PLN_VB=[
   {arrayStride:52,attributes:[
     {shaderLocation:0,offset:0,format:"float32x3"},{shaderLocation:1,offset:12,format:"float32x3"},
@@ -129,7 +129,7 @@ function plnGpuDev(){
   Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
     cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
   const ub=n=>d.createBuffer({size:n,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
-  Q.U={main:ub(992),refl:ub(992),sh0:ub(992),sh1:ub(992),wing:ub(992),blobs:ub(1040)};
+  Q.U={main:ub(1056),refl:ub(1056),sh0:ub(1056),sh1:ub(1056),wing:ub(1056),blobs:ub(1040)};
   /* единичные записи цельных сеток: мировая и та, что едет с дальним миром */
   Q.one=d.createBuffer({size:64,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
   d.queue.writeBuffer(Q.one,0,new Float32Array([0,0,0,1, 1,0,1,0, 1,1,1,0, 0,0,0,0]));
@@ -163,7 +163,7 @@ function plnGpuTier(){
    а держим сами — воронка непрогретое не хранит */
 function plnGpuPipes(){
   const Q=PLN_GPU,d=GPU.dev,L=Q.L,ms=Q.ms;
-  const mS=gpuShader(PLN_WGSL_SCENE),mP=gpuShader(plnWgslPost(ms));
+  const mS=gpuShader(PLN_WGSL_SCENE+PLN_WGSL_WX),mP=gpuShader(plnWgslPost(ms));   /* осадки — в шейдере сцены (21pk) */
   for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
     for(const x of i.messages)if(x.type==="error")plnLog("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
   const lS=d.createPipelineLayout({bindGroupLayouts:[L.scene]}),lH=d.createPipelineLayout({bindGroupLayouts:[L.shadow]}),
@@ -181,6 +181,9 @@ function plnGpuPipes(){
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"},multisample:mu});
     mk("water"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},
       fragment:{module:mS,entryPoint:"fs_water",targets:[{format:PLN_HDR,blend}]},
+      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater"},multisample:mu});
+    /* осадки: карточки без буферов, по шесть вершин на штуку; глубину читают, не пишут (M626) */
+    mk("wx"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_wx"},fragment:{module:mS,entryPoint:"fs_wx",targets:[{format:PLN_HDR,blend}]},
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater"},multisample:mu});
   }
   const post=(fs,tg)=>({layout:lP,vertex:{module:mP,entryPoint:"vs_full"},fragment:{module:mP,entryPoint:fs,targets:[tg||{format:PLN_HDR}]},primitive:prim});
@@ -334,6 +337,7 @@ function plnGpuFrame(F){
     p.setBindGroup(0,B.main);p.setPipeline(P["sky"+ms]);p.draw(3);
     p.setPipeline(P["body"+ms]);some(p,PLN_TO.main,PLN_KIND.body);
     if(F.mirror){p.setPipeline(P["water"+ms]);some(p,PLN_TO.main,PLN_KIND.water);}
+    if(F.wx&&F.wx.n>0){p.setPipeline(P["wx"+ms]);p.draw(F.wx.n*6);calls++;tris+=F.wx.n*2;}
     p.end();
   }
   const full=(view,pipe,bind,name)=>{
