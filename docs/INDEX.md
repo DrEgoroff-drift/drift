@@ -3450,7 +3450,7 @@ drawPlant                    src/20-life.js:417-425
 drawPlantAlien               src/20-life.js:221-388
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-612
-drawRaid                     src/24aa-raid-draw.js:14-644
+drawRaid                     src/24aa-raid-draw.js:14-650
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
 drawRailMap                  src/18e-rail-net.js:223-272
