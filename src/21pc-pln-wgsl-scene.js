@@ -176,6 +176,8 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   let fg = nearShade(in.wpos);
   var lit = smoothstep(-0.02, 0.30, ndl);
   if (mat == 1) { lit = smoothstep(0.0, 0.22, ndl); }
+  /* шерсть рассеивает: свет заходит за край тела дальше, чем по камню (M625) */
+  if (mat == 8) { lit = smoothstep(-0.22, 0.42, ndl); }
   var ao = 1.0;
   var through = 0.0;
   if (mat == 0) { ao = ex; lit = smoothstep(mix(-0.10, 0.0, stone), mix(0.45, 0.22, stone), ndl); }
@@ -225,8 +227,8 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
     if (mat == 3 || mat == 1) { rk = 0.60; rp = 2.4; }
     let rim = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), rp) * smoothstep(-0.4, 0.4, ndl);
     c += sun * rim * rk * mix(alb, vec3f(1.0), 0.4);
-    /* освещённая трава отдаёт свет тому, что в ней стоит */
-    if (mat == 3 || mat == 1) {
+    /* освещённая трава отдаёт свет тому, что в ней стоит — и зверю тоже (M625) */
+    if (mat == 3 || mat == 1 || mat == 8) {
       c += alb * g.bounce.rgb * (cl * fg * 0.45 * (1.0 - N.y * 0.5));
     }
   }

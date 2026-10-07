@@ -415,6 +415,56 @@ gpuPresent()    the final pass: frame + bloom, the shoulder, grain, vignette, di
     still works. Labels and the drill's bar are drawn in window pixels
     (`surfScale()/G.viewK`), so the near lens does not blow them up.
 
+41. **A beast is an anatomy with a gait, not a blob with legs** (`21piba`; M625). Five
+    earthly anatomies by the species' `shape`: capsule (0; the hopper when `hop` and two
+    legs or fewer — hind legs longer, front paws, thighs), long (1; a tube body with a
+    lateral sway, sprawled legs bent up, a dorsal sail if `crest`), stout (2; a big torso on
+    columnar legs, a hump and a ridge, a big low head), upright (3; a leaned egg, folded
+    wings on the flanks — without them it read as a lizard — an S-neck, a beak, a comb if
+    `ears`), segmented (4; six segments in a wave, leg pairs from `legs` on the front
+    segments with a metachronal phase, antennae, a tail spike). The skin is a baked gradient
+    along the body's up axis (`skin(lo,hi)`: .8 at the belly, 1.1 at the back) with the
+    species' spots as noise; legs darker (.72). The five aliens (jelly, strider, crystal,
+    manta, shell) keep their own bodies in `21pib`.
+
+42. **The leg law** (`plnStride`, `plnLeg`; M625). One stride for every walker: stance for
+    `duty` .6 of the cycle (the foot slides from +s to −s), swing by a smoothstep with a
+    lift of `lift`·sin; legs alternate by `plnLegPhase` (the parity of index and side, a
+    hopper moves its pairs together). A leg is a two-bone chain solved by IK: the knee sits
+    at the midpoint plus the bend direction given by the anatomy (forward for a hind leg,
+    backward for a front one, up and out for a sprawler), a tube of five sides with a foot
+    blob. Six walk frames (`PLN_BEAST.N`) go into the flip book; the body rides on `up` (a
+    hopper by |sin|, a walker by a small bob).
+
+43. **The book of poses** (`PLN_BEAST.poses`; M625). After the six walk frames the book holds
+    stand, graze, hostile and stun. Hostile: the torso lower and forward, the ridge raised, a
+    lower jaw with two fangs, the eyes hot (`[1,.32,.2]`, glow .9, a third bigger — the first
+    thing that reads at night); graze: the head down to the grass; stun: the body laid on its
+    side by `plnBeastLay` (roll 1.35, the lowest point at .03), the eyes flattened. The aliens
+    answer in their own way: the jelly flattens and spreads when hostile and lies beached with
+    its tentacles radial when stunned, the strider lunges with the neck forward and lies down,
+    the manta dives and droops flat on the ground, the shell is flipped by π with its legs up.
+    The frame takes `b.pose` when the game sets one, else stun, hostile, the walk, or a slow
+    sine between stand and graze. A book is keyed by the species' identity (`plnBeastSpId`,
+    a WeakMap counter) plus tail, crest and head size, so the young (no tail, no crest, a big
+    head) get a book of their own.
+
+44. **Far herds and flocks, then the near beast** (`plnBeastFarKit`; M625, the «sign at a
+    distance» of the plan's §4). On the far lane (`PLN_BEAST.far` 140, scale `farK` 1.6) a
+    herd of three of the world's herd species walks one way in a loose file, and a flock of
+    five of its first flying species crosses the sky at `flockH` 24 above the far ground.
+    Both drift by the clock on a cycle of the lane's width plus `farGap` 220, so a group is in
+    view about four tenths of the time (the stand forces it with `farGap` −60). A far beast
+    is skipped in water, in front of the elevation's azimuth and off the lane; far records go
+    to the main pass, the mirror and the far shadow, no blots. `PLN.stat.beasts.dbg` reports
+    the lane's width and each group's drift and skips. A beast within 20 units is «a thing»
+    for the near lens (`plnAtThing`).
+
+45. **Fur in the light** (`21pc`; M625). The scene at the key hour is backlit: a body facing
+    the camera gets only the ambient, and mid-brown fur read black. The beast material (8)
+    has a wrapped terminator (`smoothstep(−.22, .42, ndl)`) and takes the grass bounce like
+    bark and rock — a fill at the material, not a brighter palette.
+
 ## 3. The family
 
 New modules, glued after the old surface (`21h…` < `21p…` < `22…`). Every name begins
@@ -441,7 +491,8 @@ with `pln` or `PLN`: the game is one scope.
 | `21phb-pln-ship` | the ship from the game's hull: the loft, the class marks, the legs, the flames, the hatch open and closed |
 | `21pi-pln-things` | deposits (the boulder, the ore, the spoil), the cave mouth, the mine mouth, «at a thing» |
 | `21pia-pln-herb` | the plants of the game, the algae of the pond |
-| `21pib-pln-beast` | the beasts of the game, a flip book of seven bodies each |
+| `21pib-pln-beast` | the beasts of the game: a flip book of ten frames per body (six of the walk, stand, graze, hostile, stun), the alien bodies, the far herd and flock |
+| `21piba-pln-gait` | the gait: the stride law, two-bone legs, the five earthly anatomies and their poses |
 | `21pic-pln-drill` | the drill in the hand, its beam, the flare and the chips at the bite, the lamp of the bite |
 | `21pid-pln-tracks` | footprints as bodies: the ground's colour, fading by age |
 | `21pj-pln-over` | what lies over the frame in 2D, and the stickers of the old painters |
@@ -487,6 +538,11 @@ with `pln` or `PLN`: the game is one scope.
   as bodies, labels in window pixels, the lens glide (§2.37–§2.40); 2 — the boulder instead
   of the slab, the beam hotter with a flare, the head to the bite; 3 — the deposit a fifth
   bigger, the chips bigger and wider.
+- **M625** fauna. **Done**, in three passes: 1 — the five earthly anatomies on one leg law,
+  six walk frames, the book of poses (stand, graze, hostile, stun), fur lit at the material
+  (§2.41–§2.43, §2.45); 2 — the aliens' poses (the jelly beached, the strider's lunge, the
+  manta's dive and its flat stun, the shell on its back); 3 — far herds and flocks on the
+  far lane, a beast as a thing for the near lens (§2.44).
 
 ## 5. What is not done here
 
@@ -495,9 +551,9 @@ The cave, the mine and the base keep their old painters until their own steps
 The old painters, the fleet's sky
 (`src/19*`, `11ak-skywatch`, `27la-road-sky`) and the nebula are read and never edited.
 
-## 6. State on 02.10.2026
+## 6. State on 07.10.2026
 
-Stage 1 is closed (M610–M614); stage 2 stands at M620–M624 done, M625 (fauna) next. The new look is walked in the game behind
+Stage 1 is closed (M610–M614); stage 2 stands at M620–M625 done, M626 (weather) next. The new look is walked in the game behind
 `?pln=1`; it is off by default, so the tests and the golden frames of the old surface
 are those of `main`.
 
@@ -586,6 +642,16 @@ draws two frames after a snippet, so an eased value never settles on its own: th
 is pre-set in the snippet (`PLN.glide=1`, `dep.py`), and the live step was checked by its
 number (K 1.6 → 1.87 after one frame of 83 ms, as the ease says).
 
+**M625** (fauna) went in three passes on the beast stand (`beast.py`: one archetype in eleven
+slots — five walk frames, the man for scale, the sixth walk frame and the four poses;
+`eval-beasts.js` answers with the books, the records, the nearest beasts and the far lane's
+numbers) and in the game frame at 3300 by day and by night: the five earthly anatomies on one
+leg law, the book of poses, the aliens' poses, the far herd and flock, fur lit at the
+material. The first frames read black — not the fur (Ракваара is [.43,.35,.20]) but the
+backlit key with a hard terminator; the fix went into the shader, not into the palette. The
+far lane is empty in the natural frame about six tenths of the time by design; the stand
+forces it. No errors in any frame.
+
 **Known weak spots** — named, not hidden:
 - M620: at the far lens the man is a dot in the squint — the far lens is the game's own
   scale (§8.4 of the plan) and the near lens at a thing is the answer, not a bigger man;
@@ -615,8 +681,12 @@ number (K 1.6 → 1.87 after one frame of 83 ms, as the ease says).
   the far lens; by day the beam is pale; the dust puffs under the feet are still 2D
   ellipses; the dust at the touch of a landing is still a debt; «finds» on the surface are
   the landmarks' inspection (M627);
-- beasts are blockouts (M625); landmarks, the base, the home and the settlement are
-  stickers of the old painters (M626–M629);
+- M625: bodies are smooth, no fur at the silhouette; the bird's folded wing is a patch on
+  the flank; a lying beast is a lump; the crystal's poses barely differ; the far herd
+  drifts relative to the camera on a cycle, not across the world; a flock only drifts, it
+  does not wheel;
+- landmarks, the base, the home and the settlement are stickers of the old painters
+  (M626–M629);
 - the markers of the interface at the top of the frame repeat the labels of the things;
 - by the pad two orbs of the composition stand outside the frame, the far orb is dark;
 - 4K at `high` is over the budget (18 ms; `mid` is the answer until the scene pass is

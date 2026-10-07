@@ -185,7 +185,10 @@ after it pass by §5.4.
   and chips, footprints as bodies, labels in window pixels, the lens glides to a thing;
   «finds» on the surface are the landmarks' inspection (M627);
   `docs/DESIGN-planet-engine.md` §2.37–§2.40
-- M625 fauna: ten silhouettes, gait, the hostile pose, far-then-near
+- M625 fauna: ten silhouettes, gait, the hostile pose, far-then-near — done 07.10: five
+  earthly anatomies on one leg law (`21piba`), six walk frames and four poses per body,
+  the aliens' poses, far herds and flocks on the far lane, a beast as a thing for the near
+  lens, fur lit at the material; `docs/DESIGN-planet-engine.md` §2.41–§2.45
 - M626 weather and sky events
 - M627 landmarks: the twelve POI
 - M628 own things: base above ground, home and fence, greenhouse, battery, pennant

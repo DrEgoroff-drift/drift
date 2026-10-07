@@ -430,6 +430,7 @@ function plnAtThing(S,p){
   const mu=mineSpotX(p);
   if(mu!=null&&isFinite(mu)&&Math.abs(mu-x)<MINE_MOUTH_R)return 1;
   for(const pl of S.plants||[])if(Math.abs(pl.x-x)<30)return 1;
+  for(const b of S.fauna||[])if(b&&!b.caught&&isFinite(b.x)&&Math.abs(b.x-x)<20)return 1;
   if(typeof poiNear==="function"&&S.tr&&poiNear(S,S.tr))return 1;
   return 0;
 }

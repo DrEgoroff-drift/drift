@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 667 · символов верхнего уровня: 6949
+Файлов: 668 · символов верхнего уровня: 6966
 
 ## СИМВОЛЫ
 
@@ -1210,7 +1210,8 @@ PLN                          src/21p-pln.js:15
 PLN_ACTS                     src/21pz-pln-frame.js:46
 PLN_AZ_ELEV                  src/21pf-pln-land.js:43
 PLN_BARK                     src/21pgb-pln-trees.js:29
-PLN_BEAST                    src/21pib-pln-beast.js:15
+PLN_BEAST                    src/21pib-pln-beast.js:16
+PLN_BEAST_IDS                src/21piba-pln-gait.js:13
 PLN_BUILD                    src/21pf-pln-land.js:35
 PLN_CAST                     src/21ph-pln-cast.js:6
 PLN_DEG                      src/21p-pln.js:31
@@ -1222,6 +1223,7 @@ PLN_FL                       src/21pfa-pln-worlds.js:212
 PLN_FLORA                    src/21pg-pln-flora.js:23
 PLN_FRAME                    src/21pz-pln-frame.js:18
 PLN_G                        src/21pe-pln-gpu.js:67
+PLN_GAIT                     src/21piba-pln-gait.js:12
 PLN_GPU                      src/21pe-pln-gpu.js:27
 PLN_HDR                      src/21pe-pln-gpu.js:23
 PLN_HERB                     src/21pia-pln-herb.js:30
@@ -5160,15 +5162,25 @@ plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
 plnAdd                       src/21p-pln.js:34
-plnAtThing                   src/21pi-pln-things.js:423-435
-plnBeastDrop                 src/21pib-pln-beast.js:189-195
-plnBeastEyes                 src/21pib-pln-beast.js:46-49
-plnBeastFrame                src/21pib-pln-beast.js:152-188
-plnBeastFur                  src/21pib-pln-beast.js:30-33
-plnBeastMesh                 src/21pib-pln-beast.js:51-150
-plnBeastR                    src/21pib-pln-beast.js:22
-plnBeastTilt                 src/21pib-pln-beast.js:36-45
-plnBeastZ                    src/21pib-pln-beast.js:24-27
+plnAtThing                   src/21pi-pln-things.js:423-436
+plnBeastCapsule              src/21piba-pln-gait.js:76-101
+plnBeastDrop                 src/21pib-pln-beast.js:246-252
+plnBeastEarth                src/21piba-pln-gait.js:185-198
+plnBeastEyes                 src/21pib-pln-beast.js:48-51
+plnBeastFarKit               src/21pib-pln-beast.js:229-245
+plnBeastFrame                src/21pib-pln-beast.js:149-226
+plnBeastFur                  src/21pib-pln-beast.js:32-35
+plnBeastJaw                  src/21piba-pln-gait.js:70-73
+plnBeastLay                  src/21piba-pln-gait.js:64-68
+plnBeastLong                 src/21piba-pln-gait.js:103-119
+plnBeastMesh                 src/21pib-pln-beast.js:53-147
+plnBeastR                    src/21pib-pln-beast.js:24
+plnBeastSegment              src/21piba-pln-gait.js:160-183
+plnBeastSpId                 src/21piba-pln-gait.js:16-21
+plnBeastStout                src/21piba-pln-gait.js:121-137
+plnBeastTilt                 src/21pib-pln-beast.js:38-47
+plnBeastUpright              src/21piba-pln-gait.js:139-158
+plnBeastZ                    src/21pib-pln-beast.js:26-29
 plnBez                       src/21pa-pln-mesh.js:175-179
 plnBlob                      src/21pa-pln-mesh.js:66-95
 plnBodies                    src/21pz-pln-frame.js:84-110
@@ -5203,6 +5215,7 @@ plnFloraRock                 src/21pg-pln-flora.js:51-59
 plnFloraRosette              src/21pg-pln-flora.js:102-122
 plnFloraSheet                src/21pfa-pln-worlds.js:214-222
 plnFloraTuft                 src/21pg-pln-flora.js:32-49
+plnFoot                      src/21piba-pln-gait.js:43-45
 plnGeo                       src/21pe-pln-gpu.js:79-86
 plnGeoFree                   src/21pe-pln-gpu.js:87
 plnGlide                     src/21pz-pln-frame.js:260-268
@@ -5270,6 +5283,9 @@ plnLandSpan                  src/21pf-pln-land.js:292-297
 plnLandStep                  src/21pf-pln-land.js:488-507
 plnLandTab                   src/21pf-pln-land.js:286-289
 plnLandWaterMesh             src/21pf-pln-land.js:625-638
+plnLeg                       src/21piba-pln-gait.js:33-41
+plnLegPhase                  src/21piba-pln-gait.js:30
+plnLegs                      src/21piba-pln-gait.js:49-62
 plnLen                       src/21p-pln.js:39
 plnLens                      src/21pz-pln-frame.js:62-72
 plnLightBox                  src/21pz-pln-frame.js:244-254
@@ -5350,6 +5366,7 @@ plnSlideF                    src/21pf-pln-land.js:73-78
 plnSmax                      src/21p-pln.js:83
 plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:89
+plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
 plnSurface                   src/21pz-pln-frame.js:271-333
 plnTf                        src/21p-pln.js:141-143
@@ -8069,8 +8086,11 @@ zoomTo                       src/15-input.js:350
 ## src/21pia-pln-herb.js · 30 КБ
   · планета: растения игры — двенадцать форм (M611):1
 
-## src/21pib-pln-beast.js · 13 КБ
+## src/21pib-pln-beast.js · 18 КБ
   · планета: звери игры (M611):1
+
+## src/21piba-pln-gait.js · 16 КБ
+  · планета: походка и земные анатомии зверей (M625):1
 
 ## src/21pic-pln-drill.js · 6 КБ
   · планета: бур в руках — инструмент, луч, крошка у забоя (M624):1

@@ -29,8 +29,9 @@ man) and M621 (the ship and the descent) are done** — the rig of `21pha`, §2.
 decisions of the plan's §8 were handed to me on 02.10 and are decided there; the ship from
 the game's hull and the descent as the surface's own frame, §2.29–§2.30; the flora — the
 twelve anatomies, the colour law, the wild drifts and the tree weights of a world,
-§2.31–§2.33; stone parted by light, the ground's dress and the water, §2.34–§2.36.
-**M625 (fauna) is next**, then M626–M629 and stages 3–5. The new look runs in the game behind
+§2.31–§2.33; stone parted by light, the ground's dress and the water, §2.34–§2.36; the beasts — anatomies on one leg law, the book of poses, far herds and
+flocks, §2.41–§2.45.
+**M626 (weather and sky events) is next**, then M627–M629 and stages 3–5. The new look runs in the game behind
 `?pln=1` or `PLN.on=true`, off by default; the old painter is untouched.
 
 ## Rules that hold
