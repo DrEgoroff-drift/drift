@@ -6,6 +6,17 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.492.0 - the nebula «смело»
+
+- **The nebula «смело» (GPU-2).** The look the author chose on 26.09 («B с розовым») sat ready on an unpushed
+  branch and is in the game now: far layers turn toward the system's own shadow tone, near layers warmer; near the
+  star the gas goes lavender with a pink transition at the rim; the side of a mass facing the star is lighter;
+  bright strands follow the gas. Every turn of tone is a short arc toward a near tone — no olive, no raspberry.
+- **No black thread where dust bodies meet.** Where a pillar grows out of the dust wall, the edge's distance was
+  divided by a slope that vanished on the joint: a black thread of beads ran along it, and on the lit side a
+  straight light ray from the star. The slope is now taken so it cannot vanish on a crease; the rest of the frame
+  is unchanged.
+
 ## 0.491.0 - the station on the board, parts on the mounts, the cantina in 3D, faces that live
 
 - **The station joins the board (M720–M721).** One face and one chamfered window for every station screen; on a wide

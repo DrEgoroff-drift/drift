@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 483 · top-level symbols: 7293
+Files: 484 · top-level symbols: 7301
 
 ## SYMBOLS
 
@@ -685,17 +685,24 @@ GLOW_TIERS                   src/11i-glow.js:128
 GLT_H                        src/08b-gpu.js:462
 GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:10
-GNB_EMI                      src/16gb-gpu-nebula.js:408
+GNB_EMI                      src/16gb-gpu-nebula.js:412
 GNB_FADE                     src/16gc-gpu-nebfade.js:11
 GNB_FGAL                     src/16gaza-gpu-fargal.js:7
-GNB_FINE                     src/16gb-gpu-nebula.js:363
+GNB_FIL                      src/16gay-gpu-nebula-look.js:62
+GNB_FILC                     src/16gay-gpu-nebula-look.js:77
+GNB_FINE                     src/16gb-gpu-nebula.js:367
 GNB_GEN                      src/16gb-gpu-nebula.js:44
-GNB_LM_COL                   src/16gb-gpu-nebula.js:521
+GNB_HTO                      src/16gay-gpu-nebula-look.js:24
+GNB_LM_COL                   src/16gb-gpu-nebula.js:525
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gb-gpu-nebula.js:504-519
-GNB_STAR_ABS                 src/16gb-gpu-nebula.js:385
+GNB_PAL                      src/16gb-gpu-nebula.js:508-523
+GNB_SS                       src/16gay-gpu-nebula-look.js:17
+GNB_STAR_ABS                 src/16gb-gpu-nebula.js:389
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
+GNB_TONE                     src/16gay-gpu-nebula-look.js:47
+GNB_VOL                      src/16gay-gpu-nebula-look.js:81
+GNB_WC                       src/16gay-gpu-nebula-look.js:57
 GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
 GOR_FAM                      src/17gab-gpu-orb.js:406
@@ -3909,19 +3916,20 @@ glowTier                     src/11i-glow.js:129-135
 glyphEl                      src/12t-settle.js:79-90
 glyphHasRunes                src/12t-settle.js:52-56
 glyphNodes                   src/12t-settle.js:92-102
+gnbDeep                      src/16gay-gpu-nebula-look.js:44
 gnbFade                      src/16gc-gpu-nebfade.js:37-42
 gnbFadeDesc                  src/16gc-gpu-nebfade.js:16-20
-gnbGenDesc                   src/16gb-gpu-nebula.js:495
+gnbGenDesc                   src/16gb-gpu-nebula.js:499
 gnbGenView                   src/16gc-gpu-nebfade.js:22-35
-gnbLandmark                  src/16gb-gpu-nebula.js:522-537
-gnbLfr                       src/16gb-gpu-nebula.js:540-553
+gnbLandmark                  src/16gb-gpu-nebula.js:526-541
+gnbLfr                       src/16gb-gpu-nebula.js:544-557
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:511-519
-gnbPipe                      src/16gb-gpu-nebula.js:494
-gnbStar                      src/16gb-gpu-nebula.js:555-560
-gnbStars                     src/16gb-gpu-nebula.js:398-405
-gnbTarget                    src/16gb-gpu-nebula.js:486-493
+gnbPalette                   src/16gb-gpu-nebula.js:515-523
+gnbPipe                      src/16gb-gpu-nebula.js:498
+gnbStar                      src/16gb-gpu-nebula.js:559-564
+gnbStars                     src/16gb-gpu-nebula.js:402-409
+gnbTarget                    src/16gb-gpu-nebula.js:490-497
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
 gorBody                      src/17gab-gpu-orb.js:439-463
@@ -4002,8 +4010,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:110
 gpuMipSmp                    src/08c-gpu-kit.js:111
 gpuMipTex                    src/08c-gpu-kit.js:97-109
 gpuMoon                      src/17ga-gpu-planets.js:441-447
-gpuNebulaComp                src/16gb-gpu-nebula.js:618-628
-gpuNebulaGen                 src/16gb-gpu-nebula.js:563-615
+gpuNebulaComp                src/16gb-gpu-nebula.js:622-632
+gpuNebulaGen                 src/16gb-gpu-nebula.js:567-619
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
@@ -8029,6 +8037,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/16ga-gpu-trail.js · 20 KB
   · шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
+
+## src/16gay-gpu-nebula-look.js · 9 KB
+  · облик туманности «смело» (26.09, docs/DESIGN-gpu.md):1
 
 ## src/16gaz-gpu-noise.js · 3 KB
   · плитка шума туманности (P1 13/n–14/n, docs/DESIGN-gpu.md):1

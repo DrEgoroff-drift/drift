@@ -51,20 +51,9 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
     engine's picture) on gpu-f (f's last try, the keels by the emission mask, gave no visible gain; the 0.471.0 keels stay);
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
-  - the nebula much better (GPU-2; the author 26.09: «туманность хуже не будет, она должна прям быть лучше на много,
-    потому что сейчас она хорошая»). The look first, the price after: three candidates at any cost on the PC, each a
-    pair of the whole frame against the live release (standing by the star, in flight at v 8; 760 and 390; a ×3
-    crop); the best one goes to the author before it ships; only what reads clearly better at first sight, never «a
-    bit different». The 24.09 rules hold (no threshold contour; dust 10→90 % over ≥ 40 px at 760; a change of tone
-    over ≥ 150 px; field S ≈ .40–.45, no neon). Directions: depth that reads (far layers cooler, dimmer and softer;
-    forward scattering — the gas between us and the star rimmed against the light); fine wisps inside the lit gas
-    with soft mass edges; a slow flow (curl noise, seen over 10–20 s, never a flicker); young stars inside (soft
-    cavities, a blue reflection haze, the brightest knots in HDR with a soft halo); the palette turned round the
-    wheel, each system its own character. Round 1 (26.09): none much better — C1 (far layers turned to lilac) right
-    but timid, the 390 pair reads the same and the lilac is grey; C2 (LIC wisps) creased, dark grooves and a straight
-    fold, which is a threshold contour; C3 (knots) dropped. Round 2: one candidate — C1 bolder and clean (far layers
-    darker and colder, the mass lit from the star's side), C2 as bright strands along the flow, ionisation zones
-    (cold near the star, warm further out, ≥ 150 px) — with a strength knob, the 390 pair telling apart unprompted;
+  - the nebula's strands smoothed in time (GPU-2; «смело» round 3 of 26.09 sat on the unpushed gpu2-lit branch and shipped only in 0.492.0): in flight at 390 and
+    150 px/s the strands add a jitter tail — 0.03 % of the bright gas over 4 grey levels, max 6.7 (the site 3.8);
+    the jitter per unit of gas brightness already equals the site's. Gate: that tail at the site's, the look kept.
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
   - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
