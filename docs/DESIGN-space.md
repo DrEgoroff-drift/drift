@@ -210,8 +210,8 @@ hall), `27f5-portrait3d` (portraits); `27d-ui-cantina` keeps only the station st
 
 ### People — `27f3-person3d`
 1. **A person is a seed.** `cpGene` (face, build, hair, skin, marks) and `cpCloth` (role kit) are read from the
-   manager's seed; `cpMesh` caches by seed, pose, detail, mood bucket and level. Detail 0 is the crowd, 1 the hall,
-   2 the portrait (denser everything: `K.q` multiplies segments).
+   manager's seed; `cpMesh` caches by seed, pose, detail, level, role and outfit — never by mood: the face moves by
+   matrices. Detail 0 is the crowd, 1 the hall, 2 the portrait (denser everything: `K.q` multiplies segments).
 2. **The face is a profile, not an ellipsoid**: the lower face is a plane down to the chin, the jaw keeps its width
    to the angle, eyes sit at mid-head; tone zones like a painter's (redder nose and cheeks, cooler under the eyes,
    lighter brow).
@@ -222,6 +222,24 @@ hall), `27f5-portrait3d` (portraits); `27d-ui-cantina` keeps only the station st
    straps (bands along the body's own normal, never hoses), hi-vis bands and a tool belt; a factor's coat with lapels
    and a scarf wound round the neck; a scientist's tunic with pens and a glowing pass. The neckline is geometry, and
    the torso table is a spline (cosine between rows put steps into the neckline).
+
+### The face (M729) — `27f3a-face3d`, `27f6-face-live`
+1. **One skin, sculpted.** The head is a dense warped grid (cell ≈ 1.3 mm at the eyes and lips on a portrait) of the
+   skull (`cpHeadFn`) plus a soft-tissue sculpt (`cpSculpt`): lids are shells over the eyeballs with an almond aperture
+   that plunges behind the ball, so the lid edge is where two surfaces meet; a nose with bridge, tip, alae and
+   nostrils; lips with a Cupid's bow and a slit that plunges 7.5 mm — opened, the stretched slit is the dark mouth.
+   Lashes, teeth, moustache and beard take their height from the same sculpt (`cpSkinZ`, `cpSkin`).
+2. **Expression is skinning, not morphs.** A vertex may hold a second face part with a weight (renderer flags:
+   `+2048·part₂ + 32768·weight`): the lid pulls the skin up to the crease, the brow the forehead, the lower lip the
+   chin; near the slit the lip weight narrows, so the corners hold and the mouth opens as an oval. Lip curves are two
+   bend numbers in the part matrix's spare row (`y += a·x² + b·x|x|`, corners back by `c·x²`).
+3. **No hard edge in the height field.** A `max`, a box or a shell without falloff becomes a seam under a grazing
+   rim light: the nose box, the lid plateau at the temple and the jaw's `max(cos φ, width)` ridge were all such seams.
+   Unions are `(a³+b³)^⅓` or a polynomial smooth max.
+4. **The face lives on the wall clock** (`cpFace`): blinks of 70/40/120 ms (sometimes double), saccades and
+   look-aways, breathing, smoothing at 7/s (face) and 18/s (eyes). The mood is read from the person: loyalty first,
+   then the trait's temper (`CP_TEMPER` — a coward blinks more and looks away, a legend holds the gaze), and
+   `cpEmote(m,k,ms)` plays an event. Six emotions: calm, glad, angry, sad, surprised, sly (`CP_EMO`).
 
 ### The hall — `27f4-cant3d`
 1. **The room is the station's**: palette, sign, window view, props and lamp count from `stype` and the system seed.
@@ -236,4 +254,6 @@ hall), `27f5-portrait3d` (portraits); `27d-ui-cantina` keeps only the station st
 3. **A studio of the role**: warm key with a shadow, cool fill, a rim in the role's colour, a curved backdrop.
 4. **Painted outside the frame**: a timer queue paints connected canvases straight into each card's own WebGPU
    context; render targets are shared per size (≤ 4). The card niche lays no scanlines over the face.
+5. **Portraits are alive**: a 50 ms timer repaints at most six of them per tick, round-robin, and sleeps while the
+   tab is hidden or the frame's encoder is open; the head breathes, sways and nods with the emotion.
 

@@ -5,9 +5,13 @@
 
    Устройство:
    1. Сетка — вершины по 12 чисел: место, нормаль, краска, (блеск: целое — глянец, дробь — сила блика;
-      своё свечение; часть + 8·узор + 512·флаги). Часть (0..7) — номер матрицы внутри экземпляра:
-      экземпляр — instance_index, его матрицы — M[ii·8 + часть]. Одна сетка человека рисуется в любом
-      месте зала своим экземпляром, сетка не перестраивается, когда он дышит или поворачивает голову.
+      своё свечение; часть + 16·узор + 1024·флаги). Часть (0..15) — номер матрицы внутри экземпляра:
+      экземпляр — instance_index, его матрицы — M[ii·16 + часть]. Одна сетка человека рисуется в любом
+      месте зала своим экземпляром, сетка не перестраивается, когда он дышит, моргает или улыбается.
+      Нижняя строка матрицы части в xyz не участвует — в ней два числа изгиба (M729): y += a·x² + b·x·|x|
+      до переноса; так губы улыбаются и кривятся без морфов (27f3 cpRig).
+      Кожа (M729): вершина может держаться за вторую часть с весом — флаги + 2048·часть₂ + 32768·вес(0..255);
+      матрица — смесь двух (как скиннинг в два кости): веко тянет кожу над глазом, нижняя губа — подбородок.
    2. Тени — до R3_SH ламп, слой карты глубины на каждую (перспектива из лампы вниз), 4 выборки.
       Флаг 1 — «не бросает тени»: колба внутри абажура иначе гасила бы свою же лампу.
    3. Узоры (pat) — подробность без текстур: обшивка, плитка, дерево, шлифованный металл, ткань,
@@ -16,7 +20,7 @@
       виньетка и подписи поверх. Цвета сцены — линейные, выше единицы — свет; тон сводит их в кадр.
    Без устройства (Node) — ничего не рисуется, но камера и проекция работают: попадания по людям
    считаются в JS той же матрицей. */
-const R3_MAXI=32,R3_PART=8,R3_MAXL=12,R3_SH=6,R3_SHN=1024;
+const R3_MAXI=32,R3_PART=16,R3_MAXL=12,R3_SH=6,R3_SHN=1024;
 /* раскладка формы (числа float32): матрица камеры, камера, небо, пол, дым, акцент, окно, вывеска, кино,
    лампы, матрицы теней, матрицы частей, тон частей */
 const R3U={vp:0,cam:16,sky:20,gnd:24,fog:28,acc:32,win:36,win2:40,sgn:44,sgn2:48,flm:52,flm2:56,lt:60,sv:60+R3_MAXL*16};
@@ -72,8 +76,9 @@ function r3Kit(){
   K.pushM=M=>{ST.push(T);T=r3Mul(T,M);};
   K.pop=()=>{T=ST.pop();};
   /* вершина: p, n — местные (через T); col — своя краска вершины (иначе материал) */
-  K.vx=(p,n,M,col)=>{const q=P(p),m=N(n),c=col||M.c;
-    V.push(q[0],q[1],q[2],m[0],m[1],m[2],c[0],c[1],c[2],Math.round(M.g)+Math.min(M.s,.99),M.e,K.part+8*M.p+512*((M.ns||K.flags&1)?1:0));};
+  K.vx=(p,n,M,col,sk)=>{const q=P(p),m=N(n),c=col||M.c,wq=sk?Math.round(clamp(sk[1],0,1)*255):0;
+    V.push(q[0],q[1],q[2],m[0],m[1],m[2],c[0],c[1],c[2],Math.round(M.g)+Math.min(M.s,.99),M.e,
+      K.part+16*M.p+1024*((M.ns||K.flags&1)?1:0)+(wq?2048*sk[0]+32768*wq:0));};
   K.tri=(a,b,c,M,n)=>{n=n||nz(cr(sub(b,a),sub(c,a)));K.vx(a,n,M);K.vx(b,n,M);K.vx(c,n,M);};
   K.quad=(a,b,c,d,M,n)=>{n=n||nz(cr(sub(b,a),sub(d,a)));K.vx(a,n,M);K.vx(b,n,M);K.vx(c,n,M);K.vx(a,n,M);K.vx(c,n,M);K.vx(d,n,M);};
   /* ящик со скошенными рёбрами: c — середина, h — полуразмеры, b — фаска (ловит блик, как у настоящей вещи) */
@@ -110,8 +115,8 @@ function r3Kit(){
       if(i<nl-1){K.vx(a[0],a[1],M,col);K.vx(e[0],e[1],M,col);K.vx(d[0],d[1],M,col);}}};
   /* поверхность по сетке параметров: f(u,v) → [p, краска?]; u — по кругу (wrap), v — вдоль. Нормаль — по сетке
      (центральные разности), наружу — cross(dP/du, dP/dv)·flip. keep(u,v) — какие клетки строить (вырезы) */
-  K.surf=(nu,nv,f,M,o)=>{o=o||{};const G=[],C=[];
-    for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const r=f(i/nu,j/nv);G.push(r[0]);C.push(r[1]||null);}
+  K.surf=(nu,nv,f,M,o)=>{o=o||{};const G=[],C=[],W=[];
+    for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const r=f(i/nu,j/nv);G.push(r[0]);C.push(r[1]||null);W.push(r[2]||null);}
     const at=(i,j)=>{if(o.wrap)i=(i+nu)%nu;else i=Math.max(0,Math.min(nu,i));j=Math.max(0,Math.min(nv,j));return G[j*(nu+1)+i];};
     const NN=[];for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){
       const du=sub(at(i+1,j),at(i-1,j)),dv=sub(at(i,j+1),at(i,j-1));let n=cr(du,dv);
@@ -121,7 +126,7 @@ function r3Kit(){
     for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){
       if(o.keep&&!o.keep((i+.5)/nu,(j+.5)/nv))continue;
       const q=[id(i,j),id(i+1,j),id(i+1,j+1),id(i,j+1)];
-      for(const k of [q[0],q[1],q[2],q[0],q[2],q[3]])K.vx(G[k],NN[k],M,C[k]||null);}};
+      for(const k of [q[0],q[1],q[2],q[0],q[2],q[3]])K.vx(G[k],NN[k],M,C[k]||null,W[k]);}};
   /* труба по ломаной P с радиусом r (число или массив); N — граней; кольца — параллельным переносом */
   K.tube=(Pp,r,M,Nn,cap)=>{Nn=Math.round((Nn||8)*K.q);const R=[];let u0=null;
     for(let k=0;k<Pp.length;k++){const a=Pp[Math.max(0,k-1)],b=Pp[Math.min(Pp.length-1,k+1)],t=nz(sub(b,a));
@@ -158,18 +163,23 @@ struct U{vp:mat4x4f,cam:vec4f,sky:vec4f,gnd:vec4f,fog:vec4f,acc:vec4f,win:vec4f,
 @group(0) @binding(5) var tfl:texture_2d<f32>;
 @group(1) @binding(0) var<uniform> sk:vec4u;
 struct VI{@location(0) p:vec3f,@location(1) n:vec3f,@location(2) c:vec3f,@location(3) m:vec3f};
-struct VO{@builtin(position) q:vec4f,@location(0) w:vec3f,@location(1) n:vec3f,@location(2) c:vec3f,@location(3) m:vec3f,
+struct VO{@builtin(position) q:vec4f,@location(0) w:vec3f,@location(1) n:vec3f,@location(2) c:vec3f,@location(3) @interpolate(flat) m:vec3f,
   @location(4) l:vec3f,@location(5) @interpolate(flat) ob:u32};
+/* изгиб части: числа — в нижней строке её матрицы (в xyz она не участвует); губы — улыбка и кривая усмешка */
+fn bend(p:vec3f,M:mat4x4f)->vec3f{return vec3f(p.x,p.y+M[0].w*p.x*p.x+M[1].w*p.x*abs(p.x),p.z-M[2].w*p.x*p.x);}
+/* матрица вершины: своя часть или смесь с второй по весу (кожа лица) */
+fn skinM(ii:u32,f:u32)->mat4x4f{let b=ii*${R3_PART}u;let M=u.M[b+(f&15u)];let w=f32((f>>15u)&255u)/255.;
+  if(w<=0.){return M;}return M*(1.-w)+u.M[b+((f>>11u)&15u)]*w;}
 @vertex fn vs(i:VI,@builtin(instance_index) ii:u32)->VO{
-  var o:VO;let f=u32(i.m.z+.5);let ob=ii*${R3_PART}u+(f&7u);let M=u.M[ob];
-  let w=(M*vec4f(i.p,1.)).xyz;
+  var o:VO;let f=u32(i.m.z+.5);let ob=ii*${R3_PART}u+(f&15u);let M=skinM(ii,f);
+  let w=(M*vec4f(bend(i.p,M),1.)).xyz;
   o.q=u.vp*vec4f(w,1.);o.w=w;o.n=(M*vec4f(i.n,0.)).xyz;o.c=i.c;o.m=i.m;o.l=i.p;o.ob=ob;return o;}
 /* тень: глубина из лампы sk.x; «не бросает» — за дальнюю плоскость */
 @vertex fn vsh(i:VI,@builtin(instance_index) ii:u32)->@builtin(position) vec4f{
   let f=u32(i.m.z+.5);
-  if(((f>>9u)&1u)==1u){return vec4f(0.,0.,2.,1.);}
-  let M=u.M[ii*${R3_PART}u+(f&7u)];
-  return u.sv[sk.x]*(M*vec4f(i.p,1.));}
+  if(((f>>10u)&1u)==1u){return vec4f(0.,0.,2.,1.);}
+  let M=skinM(ii,f);
+  return u.sv[sk.x]*vec4f((M*vec4f(bend(i.p,M),1.)).xyz,1.);}
 fn hh(p:vec3f)->f32{return fract(sin(dot(p,vec3f(127.1,311.7,74.7)))*43758.5453);}
 fn h2(p:vec2f)->f32{return fract(sin(dot(p,vec2f(127.1,311.7)))*43758.5453);}
 fn vn3(p:vec3f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
@@ -223,7 +233,7 @@ fn aces(x:vec3f)->vec3f{return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),vec3f
 /* два слоя: цвет и дым отдельно — дым шумит по шагам и размывается в последнем проходе, не задевая контуры */
 struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
 @fragment fn fs(i:VO,@builtin(front_facing) ff:bool)->FO2{
-  let f=u32(i.m.z+.5);let pat=(f>>3u)&63u;
+  let f=u32(i.m.z+.5);let pat=(f>>4u)&63u;
   /* сторона нормали — по грани, а не по обходу: у трубок, лент и тел обход разный, а грань к зрителю всегда своя.
      Нормаль, что смотрит против видимой грани, — изнанка: перевернуть */
   let W=i.w;let V=normalize(u.cam.xyz-W);

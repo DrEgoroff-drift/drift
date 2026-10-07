@@ -333,7 +333,8 @@ function c3Scene(L,sel,hover,t){
     const look=P.id&&(P.id===sel||P.id===hover);
     const hy=look?0:.28*Math.sin(t*.21+ph*3)*Math.max(0,Math.sin(t*.09+ph)),hp=look?.04:.05*Math.sin(t*.17+ph);
     M.set(B,(ii*R3_PART)*16);
-    M.set(r3Pivot(B,at.neck,hy,hp,0),(ii*R3_PART+1)*16);
+    const Mh=r3Pivot(B,at.neck,hy,hp,0);M.set(Mh,(ii*R3_PART+1)*16);
+    cpRig(M,ii*R3_PART,Mh,P.mesh,cpFace(P.m,look?[-hy*.6,0]:null));   /* лицо живёт: моргает, смотрит, улыбается (27f6) */
     for(let k=0;k<2;k++){let rA=B;
       if(P.kind==="keep"&&k===1)rA=r3Pivot(B,at.sh[1],.18*Math.sin(t*1.3),0,.04*Math.sin(t*2.6));
       M.set(rA,(ii*R3_PART+2+k)*16);}

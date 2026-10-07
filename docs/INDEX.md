@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 481 · top-level symbols: 7270
+Files: 483 · top-level symbols: 7293
 
 ## SYMBOLS
 
@@ -328,13 +328,20 @@ COSM_TABLES                  src/12va-wander-cosm.js:63
 COSM_TRAIL                   src/12va-wander-cosm.js:32-37
 COSM_VISOR                   src/12va-wander-cosm.js:44-48
 COUNTY_LVL                   src/11l-county.js:20
-CPP                          src/27f5-portrait3d.js:11
-CP_CLOTH                     src/27f3-person3d.js:41
-CP_GAZE                      src/27f3-person3d.js:74
-CP_HLO                       src/27f3-person3d.js:72
-CP_KIT                       src/27f3-person3d.js:346
-CP_MESH                      src/27f3-person3d.js:490
-CP_TORSO                     src/27f3-person3d.js:319
+CPP                          src/27f5-portrait3d.js:13
+CPP_LIVE                     src/27f5-portrait3d.js:14
+CPR                          src/27f3a-face3d.js:57
+CP_CLOTH                     src/27f3-person3d.js:44
+CP_EMO                       src/27f6-face-live.js:15-22
+CP_EMO_RU                    src/27f6-face-live.js:23
+CP_FACE                      src/27f6-face-live.js:41
+CP_GAZE                      src/27f3a-face3d.js:17
+CP_HLO                       src/27f3a-face3d.js:15
+CP_KIT                       src/27f3-person3d.js:104
+CP_MESH                      src/27f3-person3d.js:250
+CP_TEMPER                    src/27f6-face-live.js:25
+CP_TORSO                     src/27f3-person3d.js:77
+CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
 CREW_BASE_TRAITS             src/21a9-base-laws.js:92-97
@@ -1445,14 +1452,14 @@ QUANT_MAX                    src/28-loop.js:163
 QUANT_MS                     src/28-loop.js:161
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:360
-R3P                          src/27f2-room3d.js:26
-R3U                          src/27f2-room3d.js:22
-R3_DOWN_WGSL                 src/27f2-room3d.js:339
-R3_MAXI                      src/27f2-room3d.js:19
-R3_POST_WGSL                 src/27f2-room3d.js:493
-R3_UN                        src/27f2-room3d.js:24
-R3_WGSL                      src/27f2-room3d.js:149
+R3                           src/27f2-room3d.js:370
+R3P                          src/27f2-room3d.js:30
+R3U                          src/27f2-room3d.js:26
+R3_DOWN_WGSL                 src/27f2-room3d.js:349
+R3_MAXI                      src/27f2-room3d.js:23
+R3_POST_WGSL                 src/27f2-room3d.js:503
+R3_UN                        src/27f2-room3d.js:28
+R3_WGSL                      src/27f2-room3d.js:154
 RACK                         src/25d-instr-rack.js:54
 RACK_CH                      src/25d-instr-rack.js:27-33
 RACK_DQ                      src/25d-instr-rack.js:187
@@ -2537,20 +2544,20 @@ c3Bottle                     src/27f4-cant3d.js:76-84
 c3Cam                        src/27f4-cant3d.js:28-34
 c3Chair                      src/27f4-cant3d.js:100-108
 c3Counter                    src/27f4-cant3d.js:132-166
-c3FilmTex                    src/27f4-cant3d.js:424-429
+c3FilmTex                    src/27f4-cant3d.js:425-430
 c3Glass                      src/27f4-cant3d.js:85-89
-c3Hits                       src/27f4-cant3d.js:370-382
-c3Labels                     src/27f4-cant3d.js:384-411
+c3Hits                       src/27f4-cant3d.js:371-383
+c3Labels                     src/27f4-cant3d.js:385-412
 c3Lamp                       src/27f4-cant3d.js:118-131
 c3LampX                      src/27f4-cant3d.js:308
 c3Layout                     src/27f4-cant3d.js:39-74
 c3Prop                       src/27f4-cant3d.js:193-220
 c3RoomMesh                   src/27f4-cant3d.js:242-296
 c3RoundTable                 src/27f4-cant3d.js:109-114
-c3Scene                      src/27f4-cant3d.js:312-368
+c3Scene                      src/27f4-cant3d.js:312-369
 c3Seats                      src/27f4-cant3d.js:36
 c3Shelf                      src/27f4-cant3d.js:168-191
-c3SignTex                    src/27f4-cant3d.js:413-422
+c3SignTex                    src/27f4-cant3d.js:414-423
 c3Stool                      src/27f4-cant3d.js:90-99
 c3StoryProp                  src/27f4-cant3d.js:229-241
 c3TableMesh                  src/27f4-cant3d.js:298-306
@@ -2560,7 +2567,7 @@ camBtnTick                   src/25g-postcard.js:667-671
 camOffset                    src/19c-light.js:155-162
 camStep                      src/19c-light.js:141-153
 canPay                       src/21a-mode-base.js:99
-cant3dFrame                  src/27f4-cant3d.js:431-457
+cant3dFrame                  src/27f4-cant3d.js:432-458
 cantBarPanel                 src/27cb-ui-cantina-hall.js:102-126
 cantBubble                   src/27c-ui-hq.js:222
 cantCard                     src/27cb-ui-cantina-hall.js:51-72
@@ -2922,27 +2929,43 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:333-341
-cpBasis                      src/27f3-person3d.js:66-70
-cpBeard                      src/27f3-person3d.js:288-303
-cpBody                       src/27f3-person3d.js:348-488
-cpCloth                      src/27f3-person3d.js:42-47
-cpClump                      src/27f3-person3d.js:280-287
-cpFaceAt                     src/27f3-person3d.js:107
-cpGene                       src/27f3-person3d.js:17-39
-cpHair                       src/27f3-person3d.js:205-277
-cpHairline                   src/27f3-person3d.js:198-204
-cpHead                       src/27f3-person3d.js:110-196
-cpHeadAI                     src/27f3-person3d.js:305-315
-cpHeadFn                     src/27f3-person3d.js:75-105
-cpMesh                       src/27f3-person3d.js:491-498
-cpPortrait                   src/27f5-portrait3d.js:13-19
-cpPose                       src/27f3-person3d.js:49-64
-cpTorsoAt                    src/27f3-person3d.js:322-331
-cppBackdrop                  src/27f5-portrait3d.js:26-32
-cppFlush                     src/27f5-portrait3d.js:20-24
-cppPaint                     src/27f5-portrait3d.js:56-71
-cppScene                     src/27f5-portrait3d.js:33-55
+cpBand                       src/27f3-person3d.js:91-99
+cpBasis                      src/27f3-person3d.js:69-73
+cpBeard                      src/27f3a-face3d.js:373-388
+cpBody                       src/27f3-person3d.js:106-247
+cpCloth                      src/27f3-person3d.js:45-50
+cpClump                      src/27f3a-face3d.js:364-371
+cpEmoMix                     src/27f6-face-live.js:56-58
+cpEmote                      src/27f6-face-live.js:43-46
+cpFace                       src/27f6-face-live.js:60-89
+cpFaceAt                     src/27f3a-face3d.js:54
+cpFaceRig                    src/27f3a-face3d.js:71-77
+cpFaceState                  src/27f6-face-live.js:47-54
+cpGene                       src/27f3-person3d.js:20-42
+cpHair                       src/27f3a-face3d.js:286-361
+cpHairline                   src/27f3a-face3d.js:279-285
+cpHead                       src/27f3a-face3d.js:182-277
+cpHeadAI                     src/27f3a-face3d.js:390-400
+cpHeadFn                     src/27f3a-face3d.js:18-52
+cpMesh                       src/27f3-person3d.js:251-258
+cpMood                       src/27f6-face-live.js:30-40
+cpPortrait                   src/27f5-portrait3d.js:16-22
+cpPose                       src/27f3-person3d.js:52-67
+cpRig                        src/27f3a-face3d.js:404-426
+cpSculpt                     src/27f3a-face3d.js:81-158
+cpSkin                       src/27f3a-face3d.js:160-163
+cpSkinZ                      src/27f3a-face3d.js:165
+cpTeeth                      src/27f3a-face3d.js:168-180
+cpTorsoAt                    src/27f3-person3d.js:80-89
+cpWarp                       src/27f3a-face3d.js:61-67
+cpWarpPh                     src/27f3a-face3d.js:69
+cpWarpTh                     src/27f3a-face3d.js:68
+cppBackdrop                  src/27f5-portrait3d.js:41-47
+cppFlush                     src/27f5-portrait3d.js:23-28
+cppPaint                     src/27f5-portrait3d.js:79-94
+cppScene                     src/27f5-portrait3d.js:48-76
+cppTick                      src/27f5-portrait3d.js:30-39
+cppX                         src/27f5-portrait3d.js:78
 craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
@@ -5777,28 +5800,28 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:361-367
-r3Dev                        src/27f2-room3d.js:384-402
-r3DownDesc                   src/27f2-room3d.js:376-380
-r3Drop                       src/27f2-room3d.js:409
-r3Frame                      src/27f2-room3d.js:424-490
-r3Free                       src/27f2-room3d.js:411
-r3Kit                        src/27f2-room3d.js:60-146
-r3Lin                        src/27f2-room3d.js:29
-r3Look                       src/27f2-room3d.js:37-146
-r3Mix                        src/27f2-room3d.js:30
-r3Mul                        src/27f2-room3d.js:34
-r3Persp                      src/27f2-room3d.js:36
-r3Pivot                      src/27f2-room3d.js:51
-r3Proj                       src/27f2-room3d.js:54-146
-r3Pt                         src/27f2-room3d.js:52
-r3Sc                         src/27f2-room3d.js:31
-r3ShDesc                     src/27f2-room3d.js:368-373
-r3ShadowVP                   src/27f2-room3d.js:413-418
-r3Step                       src/27f2-room3d.js:32
-r3Up                         src/27f2-room3d.js:404-408
-r3VB                         src/27f2-room3d.js:374
-r3Xf                         src/27f2-room3d.js:43-146
+r3Desc                       src/27f2-room3d.js:371-377
+r3Dev                        src/27f2-room3d.js:394-412
+r3DownDesc                   src/27f2-room3d.js:386-390
+r3Drop                       src/27f2-room3d.js:419
+r3Frame                      src/27f2-room3d.js:434-500
+r3Free                       src/27f2-room3d.js:421
+r3Kit                        src/27f2-room3d.js:64-151
+r3Lin                        src/27f2-room3d.js:33
+r3Look                       src/27f2-room3d.js:41-151
+r3Mix                        src/27f2-room3d.js:34
+r3Mul                        src/27f2-room3d.js:38
+r3Persp                      src/27f2-room3d.js:40
+r3Pivot                      src/27f2-room3d.js:55
+r3Proj                       src/27f2-room3d.js:58-151
+r3Pt                         src/27f2-room3d.js:56
+r3Sc                         src/27f2-room3d.js:35
+r3ShDesc                     src/27f2-room3d.js:378-383
+r3ShadowVP                   src/27f2-room3d.js:423-428
+r3Step                       src/27f2-room3d.js:36
+r3Up                         src/27f2-room3d.js:414-418
+r3VB                         src/27f2-room3d.js:384
+r3Xf                         src/27f2-room3d.js:47-151
 rackBakeJob                  src/25d-instr-rack.js:220-236
 rackBottom                   src/25d-instr-rack.js:477-482
 rackCell                     src/25d-instr-rack.js:193-197
@@ -8611,17 +8634,23 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 11 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 41 KB
+## src/27f2-room3d.js · 43 KB
   · комната в объёме (M725):1
 
-## src/27f3-person3d.js · 41 KB
+## src/27f3-person3d.js · 22 KB
   · человек в объёме (M725):1
 
-## src/27f4-cant3d.js · 36 KB
+## src/27f3a-face3d.js · 37 KB
+  · лицо и голова в объёме (M725, M729):1
+
+## src/27f4-cant3d.js · 37 KB
   · кантина в объёме (M725):1
 
-## src/27f5-portrait3d.js · 5 KB
+## src/27f5-portrait3d.js · 7 KB
   · портрет в объёме (M725):1
+
+## src/27f6-face-live.js · 7 KB
+  · живое лицо (M729):1
 
 ## src/27g-deals.js · 16 KB
   · кантина: дела, а не поручения:1
