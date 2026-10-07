@@ -50,6 +50,32 @@ Six laws that carry «Сцена» beyond the planet (new, 08.10):
   player is about to act on. The hero stands against air (a value and hue gap), never against
   its own colour.
 
+### 2.1 Already built — replace, do not rebuild
+
+The author, 08.10: «учти, что у тебя уже есть, чтобы заменить просто». Every milestone below
+first asks what the planet branch and the space branch already hold, and puts it in the old
+thing's place; a new body is built only where nothing fits. The map of replacements:
+
+| Already built | Replaces | Where |
+|---|---|---|
+| the man's rig `21pha` (bones, suit parts, poses, flame, lamps) | every figure of the player: base, cave, dig, raid, home, winter, spa, the postcard's box-man | M801 |
+| the ship on its gear and the descent `21phb` + `21pza` (already wraps `drawLanding`) | the landing approach (slab, strata, lollipop trees, the lander bake); the ship of the road and the postcard | M830, M851, M832 |
+| the frame and the lens `21pz` (far/near lens, the glide, the hour's five acts, the sky bodies) | the landing camera, the cave's push into the rock, the base's cross-section opening, the hour of the base's surface strip | M830, E |
+| the planet's sky (clouds, eclipse and corona, hours, weather look) | `19b-sky`, `19e-clouds`, `19ca–cc` of the landing; the road's sky over a planet | M830, M851 |
+| the ground kit `21pg*` (facets, the world's dress, water, crags, the wing) | the landing ground, the base's mountain and earth, the dig's cut (the same rock kit in section) | M830, E |
+| plants `21pia`/`21pgd`, trees `21pgb` | the landing's trees, the greenhouse and the farm room of the base | M830, E |
+| beasts `21pib`/`21piba` | any creature of the cave or the landing | E |
+| the drill `21pic`, tracks `21pid`, the deposit boulder | the dig's drill and bite, the base's drill room | E |
+| landmarks `21pie` — the people's grammar (grey steel, rust and soot, orange belts, concrete, lamps by the night key) and the ancients' | the base's modules and the settlement (M628), home and fence, the station hall's props, the postcard's places | E, M810 |
+| weather cards `21pk` | the landing's rain streaks, the base's surface weather | M830, E |
+| the planet's light (one shadow map, sky fill, lamps, fog, bloom) | the cave's, the dig's and the base's light passes | E |
+| the interior renderer `27f2` (MRT haze, shadows, bloom) | the station hall, HQ, home, winter, spa, «Сорока» | M810, M850 |
+| people `27f3`/`27f3a`/`27f6` (seed → body, face, emotions) | HQ's dolls, crew lists, story figures, the keeper, the road's voices | M802 |
+| hulls `17c2a` + `h3dKit` + parts `17c2b/c` | pirates, barges, traffic, the station body, the road's sprite, ВЕРФЬ's thumbnails | M820, M812 |
+| the hangar studio `h3dStudioRT`, `partThumb` | any card that shows a thing: ВЕРФЬ hulls, ПРИБОРЫ dials, the site's silhouette | M812–M814 |
+| the orb `17gab` | the map's planet icons, the station window's view of the planet | M822, M810 |
+| the plate material of M720 and `#ovl` | every prompt, discovery and arrival line (`ovHang`), the map's status lines | M803, M822 |
+
 ## 3. The verdict on main 0.492.0 (the space branch's work, reviewed 08.10)
 
 Four reviewers (Sonnet, read-only, by `scratchpad/review_brief.md`) shot ~70 frames of main on
@@ -163,7 +189,8 @@ the player meets first and by what one reinvention gives to the next.
 
 ### Stage B — the station as a place (M810–M819)
 
-- **M810 The hall behind the screens.** One interior scene per station type (`27f2`): the
+- **M810 The hall behind the screens.** One interior scene per station type (`27f2`, props
+  from the people's grammar of `21pie`, the planet through the window by `17gab`): the
   counter, the yard window, the board wall, the cantina door, the office. The camera glides to
   the section's place; the screen is a plate over the hall at 60 % of the width, the hall and
   the station body (through the window) always visible. Gate: the dock pair at 1920 and 390.
@@ -190,16 +217,21 @@ the player meets first and by what one reinvention gives to the next.
 
 ### Stage D — the way down (M830–M839)
 
-- **M830 Landing by the planet's descent.** The approach is the planet renderer's far lens with
-  the 3D ship coming down (`21phb`); the strata slab, the lollipop trees and the landing bake
-  go. The autoland rule, controls and weather stay. Gate: the landing pair; the S23 budget.
+- **M830 Landing by the planet's descent.** `21pza` already wraps `drawLanding` with the planet
+  renderer's far lens and the 3D ship coming down (`21phb`, M621), so with `PLN.on` the old
+  approach is replaced, not rebuilt: M830 is its hand-over — the seams (the readout, weather,
+  the pad, the touchdown into the surface frame without a cut), the strata slab, the lollipop
+  trees and the landing bake deleted, `19b/19e/19c*` kept only for what the planet's sky does
+  not do. The autoland rule and controls stay. Gate: the landing pair; the S23 budget.
 - **M831 Scoop**: a dark near plume, warm light on the ship, the prompt on the ship.
 - **M832 Postcard from the frame**: the card is the live engine frame through the album's
   filters; the painter deleted.
 
 ### Stage E — under the ground and the base (the planet's own numbers)
 
-M628 own base and home, M630+ the cave, the dig as lit rooms (one source through air only,
+Built from §2.1, not anew: the rock and ground kit in section, the planet's light pass, the
+people's grammar of `21pie` for modules and props, the rig for the figures. M628 own base and
+home, M630+ the cave, the dig as lit rooms (one source through air only,
 veins as three or four large forms), the raid's light: these are built in `DESIGN-planet.md`'s
 queue by the same builder, in this order after Stage D: base and home → cave → dig → raid.
 
