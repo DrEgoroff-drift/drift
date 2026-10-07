@@ -50,6 +50,46 @@ Six laws that carry «Сцена» beyond the planet (new, 08.10):
   player is about to act on. The hero stands against air (a value and hue gap), never against
   its own colour.
 
+### 2.1 Already built — replace, do not rebuild
+
+The author, 08.10: «учти, что у тебя уже есть, чтобы заменить просто… не надо старую трогать,
+а просто новой заменить. Вся игра должна быть в новом стиле. Если людей в 3D уже построили —
+принимаем и критикуем по новым правилам». So every old thing falls into one of three kinds,
+and each kind has one rule:
+
+1. **The planet branch already built it** (the table below) — the new thing goes in the old
+   thing's place whole. The old module is switched off and later deleted, never patched or
+   repainted: not one hour goes into the Canvas 2D cave, landing, figure or drill.
+2. **The space branch built it** (3D people, hulls, rooms, the orb, «Борт») — accepted as the
+   body and judged by §2's laws; what fails a law is fixed in that body, not replaced by a
+   third one. The verdicts of §3 are those judgements.
+3. **Nobody built it yet** (the station hall, the cave, the dig, own base, the road's place) —
+   built new, by the laws of §2 and from the kits of kind 1 and 2. The old 2D version is not a
+   reference and is not compared with (the rule of 06.10); it is read once for what the player
+   does there, then left alone until the new one replaces it.
+
+The map of replacements:
+
+| Already built | Replaces | Where |
+|---|---|---|
+| the man's rig `21pha` (bones, suit parts, poses, flame, lamps) | every figure of the player: base, cave, dig, raid, home, winter, spa, the postcard's box-man | M801 |
+| the ship on its gear and the descent `21phb` + `21pza` (already wraps `drawLanding`) | the landing approach (slab, strata, lollipop trees, the lander bake); the ship of the road and the postcard | M830, M851, M832 |
+| the frame and the lens `21pz` (far/near lens, the glide, the hour's five acts, the sky bodies) | the landing camera, the cave's push into the rock, the base's cross-section opening, the hour of the base's surface strip | M830, E |
+| the planet's sky (clouds, eclipse and corona, hours, weather look) | `19b-sky`, `19e-clouds`, `19ca–cc` of the landing; the road's sky over a planet | M830, M851 |
+| the ground kit `21pg*` (facets, the world's dress, water, crags, the wing) | the landing ground, the base's mountain and earth, the dig's cut (the same rock kit in section) | M830, E |
+| plants `21pia`/`21pgd`, trees `21pgb` | the landing's trees, the greenhouse and the farm room of the base | M830, E |
+| beasts `21pib`/`21piba` | any creature of the cave or the landing | E |
+| the drill `21pic`, tracks `21pid`, the deposit boulder | the dig's drill and bite, the base's drill room | E |
+| landmarks `21pie` — the people's grammar (grey steel, rust and soot, orange belts, concrete, lamps by the night key) and the ancients' | the base's modules and the settlement (M628), home and fence, the station hall's props, the postcard's places | E, M810 |
+| weather cards `21pk` | the landing's rain streaks, the base's surface weather | M830, E |
+| the planet's light (one shadow map, sky fill, lamps, fog, bloom) | the cave's, the dig's and the base's light passes | E |
+| the interior renderer `27f2` (MRT haze, shadows, bloom) | the station hall, HQ, home, winter, spa, «Сорока» | M810, M850 |
+| people `27f3`/`27f3a`/`27f6` (seed → body, face, emotions) | HQ's dolls, crew lists, story figures, the keeper, the road's voices | M802 |
+| hulls `17c2a` + `h3dKit` + parts `17c2b/c` | pirates, barges, traffic, the station body, the road's sprite, ВЕРФЬ's thumbnails | M820, M812 |
+| the hangar studio `h3dStudioRT`, `partThumb` | any card that shows a thing: ВЕРФЬ hulls, ПРИБОРЫ dials, the site's silhouette | M812–M814 |
+| the orb `17gab` | the map's planet icons, the station window's view of the planet | M822, M810 |
+| the plate material of M720 and `#ovl` | every prompt, discovery and arrival line (`ovHang`), the map's status lines | M803, M822 |
+
 ## 3. The verdict on main 0.492.0 (the space branch's work, reviewed 08.10)
 
 Four reviewers (Sonnet, read-only, by `scratchpad/review_brief.md`) shot ~70 frames of main on
@@ -73,7 +113,7 @@ the real GPU; I read the sheets. The frames with their reports stay in the scrat
 | Nebula near the star («смело», the author 26.09) | keep | the author's choice |
 | Nebula far from the star: flat peach shards, no depth ramp, straight streaks | remake | 5 |
 | Own ship in 3D with parts on the mounts | keep; tint away from the nebula's brown, a brighter silhouette edge | 6 |
-| Pirates, barges, traffic: sprites beside a 3D hero; friend and foe differ by a label bar | reinvent | L4, 2 — bodies, a hostile form that reads without the bar |
+| Pirates, barges, traffic: sprites beside a 3D hero; friend and foe differ by a label bar (09.10: pirates, NPC and allies are already bodies — M710; barges, traffic, the station are not) | reinvent | L4, 2 — bodies, a hostile form that reads without the bar |
 | Station body: a flat grey top-down sprite, no lamp, no shadow | reinvent | L4, 4 — the one thing people live in is the dullest |
 | Belt rocks sprayed, a straight lighter band across the frame at zoom 2 | remake | 1 |
 | Discovery, arrival, prompt text in the centre; a stamp over a line | remake | L5 |
@@ -147,6 +187,21 @@ the player meets first and by what one reinvention gives to the next.
   moons), the jump repro green; city lights seen on the night side; the dig's sky strip. Then
   `PLN.on` true by default, `?pln=0` the old painter until M890; the P1 phone gate re-run.
   Gate: a jump, a landing and a walk in one session with `errs 0`; test.ps1 green.
+  - *Stage A, done — M800a:* `gpuBind` (`08c-gpu-kit`) keys its cache by the pipeline as well as
+    the resources, and the orb's group carries its family (`"gor"+fam+"."+key`, `17gab`); a jump
+    into a system whose planet 0 is of another family no longer reuses a foreign bind group —
+    `errs 12` → `errs 0`, guarded at encode time by «видеокарта: после прыжка группы привязок — своего конвейера».
+    Shipped alone as the hotfix release **0.492.1** (9a9bc13a, cherry-picked onto origin/main, dev → main).
+  - *Stage A, done — M800b:* city lights in the orb (`17gab` `cityLit`, the `nc` block of `fs`): a
+    settlement lights the land around it (a ~.17 rad halo on the sphere) with a city pattern whose
+    sub-pixel scales fade to their mean instead of to zero; sea, caps and the lit side stay dark.
+    24 lights at zoom 2.5: one faint dot → a field of warm specks on the night land (`night_lights.png`).
+  - *Stage A, done — M800c:* `PLN.on` is true by default (`21p-pln`), `?pln=0` keeps the old
+    painter until M890; the planet overlay's tags follow the frame's ruler `UIK` (the кегль law
+    at 2560 found them at 8.5 px); the travel suite warms the two one-time tables (regions,
+    «Сорока») before it counts the road and allows the rail net's stops along it. The dig's sky
+    strip is *not* patched: the dig is a kind-3 thing (§2.1) and gets the planet's sky whole in
+    Stage E. The P1 phone gate is run with the hotfix release, not here.
 - **M801 One astronaut everywhere.** The rig of `21pha` rendered to a card (`rigCard(pose,
   lens)`) and used by the base, the cave, the dig, the raid, the home, the winter, the spa and
   the postcard in place of their own figures. Gate: the man at the same size in men across the
@@ -175,10 +230,23 @@ the player meets first and by what one reinvention gives to the next.
   tutorial banner and `G.prompt` stay as they were (brief); only the wreck has act lines.
 - **M804 The night side.** Sky fill and a warm terminator on every orb; caps as grain; moons
   from the parent's palette. Gate: a pair of five worlds at 760.
+  - *Done (four passes, `17gab`):* the night side is filled by its own sky — a cold blue
+    for an airless rock, the air's hue (`chromaCap`) where there is air — so the dark half is
+    a shape, not a hole; the terminator is a warm *rim* (`termB`, a gaussian in `m0g` whose
+    width grows with `thick`), not a band — pass 3 smeared a brown belt over the night land
+    and pass 4 narrowed it to an edge; the polar cap is grain with cracks (`n3` at 70 and
+    120, a cold tint in the hollows) instead of a white blot — judged on an ice world, since
+    the terran's pole sits under its clouds; a moon's palette is `GOR_MOON` pulled towards
+    the parent's hue (`gorMoonPal`, .55 of the chroma, cached by the parent's seed) — the
+    ice moon of a crystal world reads mauve. Frames: `orb_n5_*` in the scratchpad; the
+    gate pair at 760 is folded into the hotfix release's P1 run.
 
 ### Stage B — the station as a place (M810–M819)
 
-- **M810 The hall behind the screens.** One interior scene per station type (`27f2`): the
+Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the camera stations, the plate.
+
+- **M810 The hall behind the screens.** One interior scene per station type (`27f2`, props
+  from the people's grammar of `21pie`, the planet through the window by `17gab`): the
   counter, the yard window, the board wall, the cantina door, the office. The camera glides to
   the section's place; the screen is a plate over the hall at 60 % of the width, the hall and
   the station body (through the window) always visible. Gate: the dock pair at 1920 and 390.
@@ -190,6 +258,8 @@ the player meets first and by what one reinvention gives to the next.
   site's silhouette. **M815 The phone reflow** of all of the above.
 
 ### Stage C — flight (M820–M829)
+
+Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, kind 2); barges, traffic and the station become bodies of the hull kit; the hostile form without a bar.
 
 - **M820 Bodies for everyone.** Pirates, barges, traffic and the station as meshes of the hull
   kit with a maker grammar; hostile forms that read without the bar; the station with lamps
@@ -205,16 +275,22 @@ the player meets first and by what one reinvention gives to the next.
 
 ### Stage D — the way down (M830–M839)
 
-- **M830 Landing by the planet's descent.** The approach is the planet renderer's far lens with
-  the 3D ship coming down (`21phb`); the strata slab, the lollipop trees and the landing bake
-  go. The autoland rule, controls and weather stay. Gate: the landing pair; the S23 budget.
+- **M830 Landing by the planet's descent.** `21pza` already wraps `drawLanding` with the planet
+  renderer's far lens and the 3D ship coming down (`21phb`, M621), so with `PLN.on` the old
+  approach is replaced, not rebuilt: M830 is its hand-over — the seams (the readout, weather,
+  the pad, the touchdown into the surface frame without a cut) done in the planet's modules,
+  then the strata slab, the lollipop trees, the landing bake and the 2D sky (`19b/19e/19c*`)
+  switched off for good; whatever they did that the planet's sky lacks is built in `21pz`,
+  not kept. The autoland rule and controls stay. Gate: the landing pair; the S23 budget.
 - **M831 Scoop**: a dark near plume, warm light on the ship, the prompt on the ship.
 - **M832 Postcard from the frame**: the card is the live engine frame through the album's
   filters; the painter deleted.
 
 ### Stage E — under the ground and the base (the planet's own numbers)
 
-M628 own base and home, M630+ the cave, the dig as lit rooms (one source through air only,
+Built from §2.1, not anew: the rock and ground kit in section, the planet's light pass, the
+people's grammar of `21pie` for modules and props, the rig for the figures. M628 own base and
+home, M630+ the cave, the dig as lit rooms (one source through air only,
 veins as three or four large forms), the raid's light: these are built in `DESIGN-planet.md`'s
 queue by the same builder, in this order after Stage D: base and home → cave → dig → raid.
 

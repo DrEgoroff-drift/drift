@@ -12,6 +12,11 @@
       act=<id>[,<id>...]         spots acted on after the landing through plnActDo, in order
       t=<sec>                    the body is caught t seconds after the last act (PLN_ACT.pinAge)
       at=<id>                    the man stands at that spot, `off` m aside from it
+      fuel=<0..1>                the tank's share before the acts (the portal drains only into room)
+      cargo=<json>               the hold before the acts, {"iron":6} (the temple's gift takes three)
+      words=1                    the monolith's two words are learned before the acts (the report pieces that carry them)
+      hold=1                     the action is held at the `at` spot for good (the work pose; the hold never completes, the bar reads empty)
+      title=0                    the stand mutes the «Смена» chapter card (it hangs over the bodies); the game is untouched
 Terrains are tried (seed + n*7919) until one holds the kind; the first found is taken.
 Prints the file's name in the folder of frames: g_mark_<kind>_<type>[_<phase>][_<acts>].js
 """
@@ -22,6 +27,8 @@ import sys
 from where import shots
 
 T = """(function(){
+  if(!%(title)d){smenaAct=function(){};var o=document.getElementById("smenaAct");if(o)o.remove();
+    var cs=document.createElement("style");cs.textContent="#smenaAct{display:none!important}";document.head.appendChild(cs);}
   var kind="%(kind)s",want="%(type)s",ph=%(ph)s,off=%(off)s,near=%(near)d;
   var K=POI_KINDS.find(function(k){return k.k===kind;});
   var t=want||K.on[0];
@@ -46,13 +53,17 @@ T = """(function(){
   var period=CEL_DAY*(6+((p.seed>>>7)&3));G.t=period*((ph-(p.seed%%100)/100+1)%%1);
   PLN.glide=near;
   if(q&&typeof plnActMemo==="function"){
-    var ST=%(st)s,WAY=%(way)s,N=%(n)s,ACTS=%(acts)s,TT=%(t)s,AT=%(at)s;
+    var ST=%(st)s,WAY=%(way)s,N=%(n)s,ACTS=%(acts)s,TT=%(t)s,AT=%(at)s,FUEL=%(fuel)s;
+    if(FUEL!=null)G.fuel=Math.round(stat().fuelMax*FUEL);
+    var CARGO=%(cargo)s;if(CARGO)for(var c in CARGO)G.cargo[c]=CARGO[c];
+    if(%(words)d&&q.k==="monolith")plnMonoWords(q.seed).forEach(function(w){var L=LORE.find(function(x){return x.word===w;});if(L&&!loreHas(L.id))loreList().push(L.id);});
     if(ST!=null||WAY!=null||N){var m=plnActMemo(q,true);
       if(ST!=null)m.st=ST;if(WAY!=null)m.way=WAY;if(N)for(var k in N)m.n[k]=N[k];
       if(PLN_ACT.kinds[q.k])m.got=PLN_ACT.kinds[q.k].got(m);}
     for(var i=0;i<ACTS.length;i++){var R=plnActDo(q,ACTS[i],{});(window.__ACTS=window.__ACTS||[]).push(ACTS[i]+":"+(R?(R.msg||"ok"):"нет"));}
     PLN_ACT.pinAge=TT;
     if(AT){S.x=q.x+(plnActSpotDx(q.k,AT,plnMarkH(q))+off)*PLN_M;S.y=groundAt(S.tr,S.x)-10;}
+    if(%(hold)d&&AT){keys.act=true;PLN_ACT.hd={seed:q.seed,id:AT,p:-600,lock:false};}
   }
   window.__EXTRA={type:t,tries:n,poi:q?{k:q.k,x:Math.round(q.x),h:Math.round(q.h),sc:+(q.sc||1).toFixed(2)}:null,
     all:(tr.poi||[]).map(function(z){return z.k+"@"+Math.round(z.x);})};
@@ -78,7 +89,9 @@ def main():
         f.write(T % {"kind": kind, "type": typ, "ph": ph, "off": off, "near": near,
                      "st": kv.get("st", "null"), "way": q(kv["way"]) if "way" in kv else "null",
                      "n": kv.get("n", "null"), "acts": q(acts), "t": kv.get("t", "null"),
-                     "at": q(kv["at"]) if "at" in kv else "null"})
+                     "at": q(kv["at"]) if "at" in kv else "null", "fuel": kv.get("fuel", "null"),
+                     "cargo": kv.get("cargo", "null"), "words": int(kv.get("words", "0")),
+                     "hold": int(kv.get("hold", "0")), "title": int(kv.get("title", "1"))})
     print(name)
 
 

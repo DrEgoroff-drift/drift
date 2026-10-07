@@ -48,14 +48,13 @@ fn ring0(rho: f32, v4: vec4f, v5: vec4f, dr: f32) -> vec4f {
 fn ring(rho: f32, v4: vec4f, v5: vec4f, dr: f32) -> vec4f {
   return .25*(ring0(rho - .375*dr, v4, v5, dr) + ring0(rho - .125*dr, v4, v5, dr) + ring0(rho + .125*dr, v4, v5, dr) + ring0(rho + .375*dr, v4, v5, dr));
 }
-/* суша под городом: у мокрых миров — та же отметка, что рисует материки */
-fn landAt(k: i32, p: vec3f, s: vec3f, fw: f32) -> f32 {
-  if (k != 4 && k != 7 && k != 9) { return 1.; }
-  var lv = .05; var sc = 1.1;
-  if (k == 4) { lv = -.06; sc = 1.4; }
-  if (k == 7) { lv = .34; sc = 2.3; }
-  let n = fbm(warp(p*sc + s, .55, fw), 6, fw) + select(0., .12*n3(p*9. + s), k == 7);
-  return smoothstep(lv, lv + .012, n);
+/* огни городов (M800): города (×18) и кварталы (×55). Масштаб мельче двух пикселей не гаснет, а
+   сходится к своему среднему — иначе на зуме 2–3 от огней оставалась одна точка (ничто не мигает, и
+   ничто не пропадает) */
+fn cityLit(p: vec3f, s: vec3f, fw: f32) -> f32 {
+  let c1 = smoothstep(.32, .62, n3(p*18. + s + 5.));
+  let c2 = smoothstep(.05, .45, n3(p*55. + s));
+  return mix(c1, .07, smoothstep(.25, .6, fw*18.))*mix(c2, .22, smoothstep(.25, .6, fw*55.));
 }
 fn tmap(x0: vec3f) -> vec3f {
   let x = max(x0, vec3f(0.));
@@ -129,7 +128,7 @@ fn crat(p: vec3f, sc: f32, dens: f32, dep: f32, fw: f32) -> C {
   return r;
 }
 
-struct S { hs: f32, alb: vec3f, b: vec3f, spec: f32, rough: f32, emit: vec3f, glow: vec3f, cloud: f32, ccol: vec3f };
+struct S { hs: f32, alb: vec3f, b: vec3f, spec: f32, rough: f32, emit: vec3f, glow: vec3f, cloud: f32, ccol: vec3f, land: f32 };
 
 fn toLab(c: vec3f) -> vec3f {
   let l = .4122214708*c.r + .5363325363*c.g + .0514459929*c.b; let m = .2119034982*c.r + .6806995451*c.g + .1073969566*c.b; let s = .0883024619*c.r + .2817188376*c.g + .6299787005*c.b;
@@ -149,7 +148,7 @@ fn chromaCap(c: vec3f, cmax: f32) -> vec3f {
 fn tang(g: vec3f, n: vec3f) -> vec3f { return g - n*dot(g, n); }
 
 fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
-  var o: S; o.hs = 0.; o.b = vec3f(0.); o.spec = 0.; o.rough = .5; o.emit = vec3f(0.); o.glow = vec3f(0.); o.cloud = 0.; o.ccol = vec3f(.9);
+  var o: S; o.hs = 0.; o.b = vec3f(0.); o.spec = 0.; o.rough = .5; o.emit = vec3f(0.); o.glow = vec3f(0.); o.cloud = 0.; o.ccol = vec3f(.9); o.land = 1.;
   let t = u.b.y;
   if (k == 0 || k == 10) {                      // rocky, metal: few big craters, maria
     let mar = smoothstep(.0, .3, fbm(p*1.3 + s, 4, fw));
@@ -241,13 +240,17 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     ground = mix(ground, rp(k, 4)*.8, mtn*select(.6, .0, k == 4));
     var alb = mix(sea, ground, land);
     if (k != 4) {
-      let cap = smoothstep(.94, .97, lat + .04*n3(p*6. + s));
-      alb = mix(alb, rp(k, 5), cap); o.spec = (1. - land)*(1. - cap);
+      /* шапка — зерно, не заливка (M804): рваный край двумя масштабами, крупа льда и голубые трещины */
+      let cap = smoothstep(.93, .975, lat + .04*n3(p*6. + s) + .02*n3(p*21. + s));
+      let grain = (.72 + .28*n3(p*70. + s))*(1. - .3*smoothstep(.55, .75, n3(p*120. + s)));
+      let capC = rp(k, 5)*.88*grain*mix(vec3f(1.), vec3f(.8, .89, 1.), smoothstep(.4, .8, n3(p*34. + s)));
+      alb = mix(alb, capC, cap); o.spec = (1. - land)*(1. - cap);
     } else { o.spec = 1. - land; }
-    o.rough = .11; o.alb = alb;
+    o.rough = .11; o.alb = alb; o.land = smoothstep(lv + .004, lv + .07, n)*(1. - smoothstep(.85, .95, lat));   // огни глубже в суше, берег не режет их краем
     if (k == 9) {
-      let city = smoothstep(.6, .75, n3(p*55. + s))*smoothstep(.3, .6, n3(p*6. + s + 2.))*land*(1. - smoothstep(.5, .7, lat))*(1. - smoothstep(.3, .6, fw*55.));
-      o.emit = vec3f(1., .72, .38)*.9*city;
+      /* свои огни у земли: районы ×6, в них города; тусклее огней ваших построек */
+      let city = cityLit(p, s, fw)*smoothstep(.3, .6, n3(p*6. + s + 2.))*o.land*(1. - smoothstep(.5, .7, lat));
+      o.emit = vec3f(1., .72, .38)*.5*city;
     }
     let cw = warp(p*vec3f(1.4, 4.2, 1.4) + s + vec3f(0., 0., t*.004), 1.1, fw);
     var cv = .5; if (k == 4) { cv = .6; } if (k == 7) { cv = .55; }
@@ -327,6 +330,14 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
       dif = clamp((mu0 + w)/(1. + w), 0., 1.)*smoothstep(-w, .05, m0g);
     }
     var sc = sf.alb*dif*sun;
+    /* ночная сторона не чёрная (M804): пыль неба кладёт холодную заливку, воздух — свою, и у
+       самого терминатора свет тёплый — в воздухе шире и краснее, на голом камне узкой кромкой */
+    let airK = min(thick*3., 1.);
+    let nightK = 1. - smoothstep(-.3, .12, m0g);
+    let fillC = mix(vec3f(.05, .062, .09), chromaCap(air*1.5, .12), airK);
+    sc += sf.alb*fillC*nightK*.32*sun;
+    let termB = exp(-m0g*m0g/mix(.003, .011, airK))*(.2 + .8*airK)*smoothstep(-.2, .04, m0g);
+    sc += (sf.alb*.6 + .1)*vec3f(1., .55, .3)*termB*sun;
     let H = normalize(Lo + Vo);
     let sp = pow(max(dot(n, H), 0.), 2./(sf.rough*sf.rough*sf.rough + .002))*sf.spec*smoothstep(.0, .1, mu0);
     sc += sun*sp*(.04 + .5*pow(1. - mu, 5.))*select(1., 3., sf.rough < .32);
@@ -336,20 +347,23 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
       let cd = clamp((dot(p, Lo) + .15)/1.15, 0., 1.);
       sc = mix(sc, sf.ccol*cd*sun, sf.cloud);
     }
-    /* огни построек (gplCities, 17ga): точки тела на стороне от звезды; на мокрых мирах — только на суше */
+    /* огни построек (gplCities, 17ga): поселение светит сушей вокруг себя — пятно на шаре (~.17 рад),
+       в нём узор городов и ядро. Море и день не светят (M800: точка в море гасла целиком, и из 24 огней
+       на зуме 2.5 читалась одна). Угол — в виде, без поворота в тело: dot(c, N) */
     let nc = i32(v6.w);
     if (nc > 0) {
-      var g = 0.; var ha = 0.;
+      var ha = 0.; var co = 0.;
       for (var j = 0; j < nc; j++) {
-        let c = pb[16 + j]; let dv = (d - c.xy)*r; let dd = dot(dv, dv);
-        if (dd < 160.) {
-          let cp = toObj(vec3f(c.xy, sqrt(max(0., 1. - dot(c.xy, c.xy)))), tilt, spin);
-          let ld = landAt(k, cp, s, fw);
-          g += exp(-dd/6.)*c.z*ld; ha += exp(-dd/54.)*c.z*ld;
+        let c = pb[16 + j]; let dv = d - c.xy;
+        if (dot(dv, dv) < .16) {
+          let a = 1. - dot(vec3f(c.xy, sqrt(max(0., 1. - dot(c.xy, c.xy)))), N);
+          ha += c.z*exp(-a/.015); co += c.z*exp(-a/.0004);
         }
       }
-      let lk = (.25 + .75*night)*(1. - sf.cloud*.5);
-      sc += (vec3f(1., .82, .55)*min(g, 1.)*1.4 + vec3f(1., .45, .18)*min(ha, 1.)*.25)*lk;
+      /* огни зажигаются в сумерках, а не на освещённой суше: окно уже, чем у ночного свечения */
+      let lk = (1. - smoothstep(-.1, .02, m0g))*(1. - sf.cloud*.6)*sf.land;
+      let pat = cityLit(p, s, fwp);
+      sc += (vec3f(1., .78, .45)*pat*min(ha, 1.)*4.2 + vec3f(1., .86, .62)*min(co, 1.)*(.25 + 2.*pat))*lk;
     }
     if (thick > 0.) {
       let path = min(thick*3./max(nz, .04), 3.);
@@ -437,7 +451,7 @@ const GOR_GAS=[
   [[24,52,48],[50,96,84],[96,146,120],[156,194,160],[214,232,204]]];     /* аммиачный, зелёный */
 /* одно тело: k — мир (GOR.K), pal — палитра 0..255, air — цвет воздуха, th — его толщина */
 function gorBody(pass,key,x,y,r,o){
-  const P=gorPipe(GOR_FAM[o.k]|0);if(!P)return false;
+  const fam=GOR_FAM[o.k]|0,P=gorPipe(fam);if(!P)return false;
   const a=GOR.A;a.fill(0);
   const l=Math.hypot(o.sx,o.sy)||1,kx=Math.sqrt(1-GOR_LZ*GOR_LZ)/l;
   a[0]=x;a[1]=y;a[2]=r;a[3]=o.k;
@@ -458,7 +472,7 @@ function gorBody(pass,key,x,y,r,o){
   const ub=gpuBuf("gpl.u",32,U.UNIFORM|U.COPY_DST);
   const u=GOR.U;u[0]=GPU.bw;u[1]=GPU.bh;u[2]=W;u[3]=H;u[4]=DPR;u[5]=G.t||0;d.queue.writeBuffer(ub,0,u);
   const sb=gpuBuf("gor.b."+key,1024,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(sb,0,a);
-  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gor."+key,P,[ub,sb]));pass.draw(6);
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gor"+fam+"."+key,P,[ub,sb]));pass.draw(6);
   return true;
 }
 /* планета системы: false — мир не из двенадцати, пусть рисует 17ga */
@@ -475,11 +489,22 @@ function gpuOrb(p,x,y,r,lights){
     o.cities=gplCities({sx,sy,lights,wet:0,seed:o.seed,T:o.turn},C);o.cpts=C;}
   return gorBody(pass,"p"+(p.idx|0),x,y,r,o);
 }
-/* луна (M701): тот же шар, каменистый, серый по прежнему тону луны */
+/* луна (M701): тот же шар, каменистый, серый по прежнему тону луны; с M804 серый ряд берёт
+   оттенок у палитры своей планеты (ключ луны начинается с номера планеты) — одна пыль на систему */
 const GOR_MOON=[[30,32,36],[58,62,68],[92,98,106],[128,136,146],[160,168,178],[196,204,212]];
+const GOR_MOONPAL={};
+function gorMoonPal(par){
+  const pp=par&&par.T&&par.T.pal;if(!pp||!pp.length)return GOR_MOON;
+  const ck=par.seed|0;if(GOR_MOONPAL[ck])return GOR_MOONPAL[ck];
+  const out=GOR_MOON.map((g,i)=>{const c=pp[Math.min(i,pp.length-1)];
+    const y=Math.max(8,c[0]*.3+c[1]*.59+c[2]*.11);
+    return [0,1,2].map(j=>Math.round(clamp(g[j]*(1+.55*(c[j]/y-1)),0,255)));});
+  return GOR_MOONPAL[ck]=out;
+}
 function gpuOrbMoon(m,key,x,y,r){
   const pass=gpuScene();if(!pass)return true;
   const dx=-(m.x||0),dy=-(m.y||0),dl=Math.hypot(dx,dy)||1;
+  const par=G.sys&&G.sys.planets&&G.sys.planets[parseInt(key,10)|0];
   return gorBody(pass,"m"+key,x,y,Math.max(1.2,r),{k:0,sx:dx/dl,sy:dy/dl,turn:0,air:[0,0,0],th:0,sun:gplSun(),
-    seed:(m.seed||key.length*13)%97,pal:GOR_MOON,ring:null,cities:0});
+    seed:(m.seed||key.length*13)%97,pal:gorMoonPal(par),ring:null,cities:0});
 }

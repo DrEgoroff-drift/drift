@@ -11,9 +11,34 @@ could ever save.
 - **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
   the scoop and belt briefings and the surface «what» line are plates on their object with a
   leader (`08bj` `ovHang`); the centre 40 % of the frame stays empty, the vision checks it.
+- **M804 — the night side of the orbs.** The dark half of every planet is filled by its own
+  sky (cold blue where there is no air, the air's hue where there is) so it reads as a shape;
+  the terminator is a warm rim whose width follows the air; polar caps are grain with cracks
+  rather than a white blot; moons take their tint from the parent's palette (`gorMoonPal`).
+- **M800c — the planet is the default view.** The engine's surface (`PLN`, M600–M627) is on
+  unless `?pln=0`; the old painter stays behind that switch until M890. Its overlay tags now scale
+  by the frame's ruler (`UIK`) — at 2560 the vision found them at 8.5 px. The travel-cache suite
+  warms the region table and the wanderer's loop before counting (both are one-time tables, not
+  the road) and allows the rail net's stops along the road.
+- **M800b — city lights on the night side.** Each building light was a 2-px dot dropped whole when
+  its centre fell into the shader's sea, and the terran world's own city pattern faded to nothing
+  below r ≈ 300 px, so 24 lights read as one faint dot. Now a settlement lights the land around it
+  (a soft halo on the sphere) with a two-scale city pattern that averages, rather than vanishes,
+  once a scale is under two pixels; only land, only past the terminator, dimmed under cloud.
+  The per-pixel land test per city is gone, so the loop is cheaper too.
 - **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
   texture in any pose of its book, any facing and the caller's light; the base, the cave and the
   raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).
+
+## 0.492.1 - the world no longer dies after a jump
+
+- **M800a — the world no longer dies after a jump.** The bind-group cache (`gpuBind`) checked the
+  name and the resources but not the pipeline; the orb keys its group by planet index while its
+  pipeline is per world family, so a jump where planet 0 changed family set a group of another
+  pipeline's layout — 12 validation errors and a black frame until reload. The cache now checks the
+  pipeline (no other per-family or per-blend pipeline can repeat it), and the orb's key carries
+  the family so two families never thrash one slot. A new browser suite flies a jump between two
+  such systems and checks at encode time that no group meets a pipeline it was not built for.
 
 ## 0.492.0 - the nebula «смело»
 

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 517 · top-level symbols: 7725
+Files: 520 · top-level symbols: 7758
 
 ## SYMBOLS
 
@@ -373,7 +373,7 @@ CULT_SER_RU                  src/12b3-fx-cult.js:182
 CUN                          src/22-mode-cave.js:22-32
 CUT_RANGE                    src/24-mode-belt.js:170
 CVS_RECT                     src/08-state.js:92
-CV_LVL                       src/08c-gpu-kit.js:70
+CV_LVL                       src/08c-gpu-kit.js:72
 DEAL_KINDS                   src/27g-deals.js:17-137
 DECO_BEND                    src/21bc-deco-gpu.js:9
 DECO_BK                      src/21bc-deco-gpu.js:7
@@ -705,11 +705,12 @@ GNB_VOL                      src/16gay-gpu-nebula-look.js:81
 GNB_WC                       src/16gay-gpu-nebula-look.js:57
 GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
-GOR_FAM                      src/17gab-gpu-orb.js:406
-GOR_GAS                      src/17gab-gpu-orb.js:429-463
+GOR_FAM                      src/17gab-gpu-orb.js:420
+GOR_GAS                      src/17gab-gpu-orb.js:443-477
 GOR_LIT                      src/17gab-gpu-orb.js:18
 GOR_LZ                       src/17gab-gpu-orb.js:16
-GOR_MOON                     src/17gab-gpu-orb.js:479
+GOR_MOON                     src/17gab-gpu-orb.js:494
+GOR_MOONPAL                  src/17gab-gpu-orb.js:495
 GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
@@ -727,29 +728,29 @@ GPS_WGSL                     src/17gb-gpu-planet-strip.js:47
 GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-24
 GPU_CH_R                     src/18c-chunks.js:185
-GPU_CVTEX_CAP                src/08c-gpu-kit.js:66
+GPU_CVTEX_CAP                src/08c-gpu-kit.js:68
 GPU_DROP_WHY                 tests/90-harness.js:104
 GPU_FLD                      src/08b0-gpu-pipe.js:33
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:346
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:348
 GPU_FRONT_LIKE               src/08b-gpu.js:525
-GPU_IMG_WGSL                 src/08c-gpu-kit.js:191
+GPU_IMG_WGSL                 src/08c-gpu-kit.js:193
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
-GPU_KIT_WGSL                 src/08c-gpu-kit.js:165
+GPU_KIT_WGSL                 src/08c-gpu-kit.js:167
 GPU_LIT_DK                   src/17c-system-draw.js:401
 GPU_LIT_SH                   src/17c-system-draw.js:399
-GPU_MIP                      src/08c-gpu-kit.js:96
-GPU_MIP_LOD                  src/08c-gpu-kit.js:190
+GPU_MIP                      src/08c-gpu-kit.js:98
+GPU_MIP_LOD                  src/08c-gpu-kit.js:192
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-65
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-57
 GPU_PL_WGSL                  src/08b-gpu.js:477
 GPU_POST_WGSL                src/08b-gpu.js:74
-GPU_SCR                      src/08c-gpu-kit.js:172
+GPU_SCR                      src/08c-gpu-kit.js:174
 GPU_SCREEN_LAYERS            src/18c-chunks.js:193
-GPU_SHP_WGSL                 src/08c-gpu-kit.js:262
+GPU_SHP_WGSL                 src/08c-gpu-kit.js:264
 GPU_TONE_FILM                src/08b-gpu.js:513
-GPU_WGSL_COMMON              src/08c-gpu-kit.js:134
+GPU_WGSL_COMMON              src/08c-gpu-kit.js:136
 GRADE_U                      src/19c-light.js:263
 GRADE_WGSL                   src/19c-light.js:253
 GREEN_BEDS                   src/21g-greenhouse.js:23
@@ -1173,6 +1174,7 @@ MAT_ROWS                     src/18a-material.js:88
 MAT_S                        src/18a-material.js:34
 MAYAK_KEEP                   src/12pa-beacon.js:37
 MAYAK_NUM                    src/12pa-beacon.js:65
+MA_FIVE                      tests/91qa-marks-act.js:165
 MA_Q                         tests/91qa-marks-act.js:6
 MGR_CAP                      src/12c-mgr-core.js:8
 MGR_JOBS                     src/12e-mgr-jobs.js:90-224
@@ -1402,7 +1404,11 @@ PLAN_WANT                    src/05e-plan.js:78
 PLN                          src/21p-pln.js:15
 PLN_ACT                      src/21pif-pln-marks-act.js:18
 PLN_ACTS                     src/21pz-pln-frame.js:46
-PLN_ACT_POI_NEAR             src/21pif-pln-marks-act.js:193
+PLN_ACT_DRILL_WRITE          src/21pif-pln-marks-act.js:272
+PLN_ACT_MAN_STATE            src/21pif-pln-marks-act.js:266
+PLN_ACT_NEAREST              src/21pif-pln-marks-act.js:258
+PLN_ACT_POI_MEMO             src/21pif-pln-marks-act.js:245
+PLN_ACT_POI_NEAR             src/21pif-pln-marks-act.js:230
 PLN_AZ_ELEV                  src/21pf-pln-land.js:43
 PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:16
@@ -1461,7 +1467,7 @@ PLN_WGSL_WX                  src/21pk-pln-weather.js:73
 PLN_WILD                     src/21pgd-pln-wild.js:10-35
 PLN_WING                     src/21pgc-pln-wing.js:23
 PLN_WORLDS                   src/21pfa-pln-worlds.js:20-66
-PLN_WRECK_END                src/21pif-pln-marks-act.js:209-230
+PLN_WRECK_END                src/21pif-pln-marks-act.js:284-305
 PLN_WX                       src/21pk-pln-weather.js:26
 PLN_WX_COL                   src/21pz-pln-frame.js:119
 PL_GS                        src/11va-places-lit.js:19
@@ -2059,7 +2065,7 @@ VOL_DOCS                     src/12al5-vol.js:16-25
 VOL_FAST                     src/12al5-vol.js:26
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
-VSINK                        src/08c-gpu-kit.js:324
+VSINK                        src/08c-gpu-kit.js:326
 W                            src/08-state.js:7
 W3                           src/08cd-gpu-mat.js:33
 WAKE                         src/16-flight.js:292
@@ -2253,7 +2259,7 @@ bWall                        src/21aa-base-rooms.js:211-266
 bWorker                      src/21aa-base-rooms.js:367-429
 bakeAt                       src/20ab-poi-gpu.js:148-153
 bakeIdle                     tests/90-harness.js:436-443
-bakeKeep                     src/08c-gpu-kit.js:74-79
+bakeKeep                     src/08c-gpu-kit.js:76-81
 bakePut                      src/20ab-poi-gpu.js:155
 bakeRect                     src/20ab-poi-gpu.js:154
 bakeStand                    src/20ab-poi-gpu.js:157
@@ -4010,10 +4016,11 @@ gnbStars                     src/16gb-gpu-nebula.js:402-409
 gnbTarget                    src/16gb-gpu-nebula.js:490-497
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
-gorBody                      src/17gab-gpu-orb.js:439-463
-gorCode                      src/17gab-gpu-orb.js:407-417
-gorLin                       src/17gab-gpu-orb.js:397
-gorPipe                      src/17gab-gpu-orb.js:419-426
+gorBody                      src/17gab-gpu-orb.js:453-477
+gorCode                      src/17gab-gpu-orb.js:421-431
+gorLin                       src/17gab-gpu-orb.js:411
+gorMoonPal                   src/17gab-gpu-orb.js:496-503
+gorPipe                      src/17gab-gpu-orb.js:433-440
 gosBbLine                    src/17k1-gosplan.js:25-28
 gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
@@ -4038,7 +4045,7 @@ gpsBake                      src/17gb-gpu-planet-strip.js:106-122
 gpsDesc                      src/17gb-gpu-planet-strip.js:98
 gpsPipe                      src/17gb-gpu-planet-strip.js:100-104
 gpuAfterWarm                 src/08b0-gpu-pipe.js:74-78
-gpuArena                     src/08c-gpu-kit.js:154-164
+gpuArena                     src/08c-gpu-kit.js:156-166
 gpuBake                      src/08ca-gpu-canvas.js:529-534
 gpuBakeDrop                  src/08ca-gpu-canvas.js:544
 gpuBakeLive                  src/08ca-gpu-canvas.js:547
@@ -4046,12 +4053,12 @@ gpuBakeRedo                  src/08ca-gpu-canvas.js:561
 gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
 gpuBargeBody                 src/12l-barge.js:560-567
-gpuBind                      src/08c-gpu-kit.js:38-44
+gpuBind                      src/08c-gpu-kit.js:40-46
 gpuBloom                     src/08b-gpu.js:666-671
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:31-36
 gpuBursts                    src/13z-gpu-combat.js:277-297
-gpuCanvasTex                 src/08c-gpu-kit.js:47-62
+gpuCanvasTex                 src/08c-gpu-kit.js:49-64
 gpuChunkAt                   src/18c-chunks.js:209-215
 gpuChunkBake                 src/18c-chunks.js:179-183
 gpuChunkPut                  src/18c-chunks.js:186-190
@@ -4059,42 +4066,42 @@ gpuChunkStore                src/18c-chunks.js:204-208
 gpuClouds                    src/19cc-gpu-air.js:118-165
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:436-446
-gpuCvLevel                   src/08c-gpu-kit.js:80-91
+gpuCvLevel                   src/08c-gpu-kit.js:82-93
 gpuDrawChunks                src/18c-chunks.js:216-220
 gpuDrawTiles                 src/18c-chunks.js:235-240
 gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:276-302
 gpuFail                      src/08b2-gpu-loss.js:26-30
-gpuField                     src/08c-gpu-kit.js:368-395
-gpuFieldBaked                src/08c-gpu-kit.js:403-413
-gpuFieldLayout               src/08c-gpu-kit.js:361-367
+gpuField                     src/08c-gpu-kit.js:370-397
+gpuFieldBaked                src/08c-gpu-kit.js:405-415
+gpuFieldLayout               src/08c-gpu-kit.js:363-369
 gpuFrame                     src/08b-gpu.js:544-557
-gpuFrontClean                src/08c-gpu-kit.js:126-131
+gpuFrontClean                src/08c-gpu-kit.js:128-133
 gpuFrontCopy                 src/08b-gpu.js:594-596
-gpuFrontHook                 src/08c-gpu-kit.js:115-124
+gpuFrontHook                 src/08c-gpu-kit.js:117-126
 gpuHaze                      src/08b-gpu.js:459
 gpuHudDpr                    src/08bh-gpu-hud.js:7
 gpuHueFor                    src/08b-gpu.js:516
-gpuImage                     src/08c-gpu-kit.js:236-249
-gpuImgBind                   src/08c-gpu-kit.js:229-235
-gpuImgLayout                 src/08c-gpu-kit.js:221-228
-gpuKitU                      src/08c-gpu-kit.js:174-179
+gpuImage                     src/08c-gpu-kit.js:238-251
+gpuImgBind                   src/08c-gpu-kit.js:231-237
+gpuImgLayout                 src/08c-gpu-kit.js:223-230
+gpuKitU                      src/08c-gpu-kit.js:176-181
 gpuLight                     src/08b-gpu.js:461
 gpuLitSprite                 src/17c-system-draw.js:554-569
 gpuLtWrite                   src/08b-gpu.js:465-472
 gpuManual                    src/08b-gpu.js:635-640
-gpuMipDrop                   src/08c-gpu-kit.js:110
-gpuMipSmp                    src/08c-gpu-kit.js:111
-gpuMipTex                    src/08c-gpu-kit.js:97-109
+gpuMipDrop                   src/08c-gpu-kit.js:112
+gpuMipSmp                    src/08c-gpu-kit.js:113
+gpuMipTex                    src/08c-gpu-kit.js:99-111
 gpuMoon                      src/17ga-gpu-planets.js:441-447
 gpuNebulaComp                src/16gb-gpu-nebula.js:622-632
 gpuNebulaGen                 src/16gb-gpu-nebula.js:567-619
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
-gpuOrb                       src/17gab-gpu-orb.js:465-477
-gpuOrbMoon                   src/17gab-gpu-orb.js:480-485
+gpuOrb                       src/17gab-gpu-orb.js:479-491
+gpuOrbMoon                   src/17gab-gpu-orb.js:504-510
 gpuOvFrontView               src/08bi-gpu-ovl.js:281
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
@@ -4109,15 +4116,15 @@ gpuPirateBody                src/12i-pirate-hull.js:425-435
 gpuPirateLive                src/12i-pirate-hull.js:442-486
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
 gpuPresent                   src/08b-gpu.js:673-686
-gpuQuad                      src/08c-gpu-kit.js:316-320
+gpuQuad                      src/08c-gpu-kit.js:318-322
 gpuResize                    src/08b-gpu.js:392-434
 gpuScene                     src/08b-gpu.js:561-574
 gpuScene3D                   src/08b-gpu.js:578-586
-gpuScr                       src/08c-gpu-kit.js:173
+gpuScr                       src/08c-gpu-kit.js:175
 gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
-gpuShapes                    src/08c-gpu-kit.js:330-341
+gpuShapes                    src/08c-gpu-kit.js:332-343
 gpuShock                     src/08b-gpu.js:460
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
@@ -4979,7 +4986,9 @@ loyWord                      src/27c-ui-hq.js:13-16
 luckLine                     src/27b-ui-crew.js:15-25
 lum3                         src/18a1-glaze.js:101
 luxPal                       src/03c-hull-luxe.js:16-26
+maExplore                    tests/91qa-marks-act.js:173-191
 maLive                       tests/91qa-marks-act.js:7-10
+maPrep                       tests/91qa-marks-act.js:166-170
 maShape                      tests/91qa-marks-act.js:11-18
 mailAll                      src/25j-post-wire.js:31-35
 mailBusy                     src/25j-post-wire.js:46
@@ -5772,26 +5781,42 @@ plantUx                      src/20-life.js:427-431
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
-plnActBar                    src/21pif-pln-marks-act.js:87
-plnActBranch                 src/21pif-pln-marks-act.js:156-159
-plnActDaily                  src/21pif-pln-marks-act.js:53
-plnActDailyReady             src/21pif-pln-marks-act.js:52
-plnActDims                   src/21pif-pln-marks-act.js:56
-plnActDo                     src/21pif-pln-marks-act.js:125-145
-plnActEase                   src/21pif-pln-marks-act.js:160
-plnActFrame                  src/21pif-pln-marks-act.js:163-191
-plnActInput                  src/21pif-pln-marks-act.js:148-154
-plnActLive                   src/21pif-pln-marks-act.js:68
-plnActMemo                   src/21pif-pln-marks-act.js:26-46
-plnActOn                     src/21pif-pln-marks-act.js:23
-plnActPay                    src/21pif-pln-marks-act.js:111-123
-plnActPriceLead              src/21pif-pln-marks-act.js:219-230
-plnActPrompt                 src/21pif-pln-marks-act.js:91-108
-plnActReach                  src/21pif-pln-marks-act.js:70-85
-plnActRoll                   src/21pif-pln-marks-act.js:51
-plnActSpan                   src/21pif-pln-marks-act.js:62-67
-plnActSpotDx                 src/21pif-pln-marks-act.js:57-60
-plnActVerb                   src/21pif-pln-marks-act.js:88
+plnActAge                    src/21pif-pln-marks-act.js:58
+plnActAir                    src/21pif-pln-marks-act.js:62
+plnActAirNear                src/21pif-pln-marks-act.js:100-104
+plnActBar                    src/21pif-pln-marks-act.js:96
+plnActBranch                 src/21pif-pln-marks-act.js:178-181
+plnActDaily                  src/21pif-pln-marks-act.js:56
+plnActDailyReady             src/21pif-pln-marks-act.js:55
+plnActDepNear                src/21pif-pln-marks-act.js:223
+plnActDims                   src/21pif-pln-marks-act.js:65
+plnActDo                     src/21pif-pln-marks-act.js:146-166
+plnActEase                   src/21pif-pln-marks-act.js:182
+plnActFrame                  src/21pif-pln-marks-act.js:185-219
+plnActFuel                   src/21pifa-pln-marks-act-stone.js:48
+plnActFull                   src/21pifa-pln-marks-act-stone.js:46
+plnActGlyphs                 src/21pifa-pln-marks-act-stone.js:16
+plnActHint                   src/21pifa-pln-marks-act-stone.js:33-38
+plnActInput                  src/21pif-pln-marks-act.js:169-176
+plnActLifeNear               src/21pif-pln-marks-act.js:224-229
+plnActLive                   src/21pif-pln-marks-act.js:77
+plnActMemo                   src/21pif-pln-marks-act.js:29-49
+plnActNight                  src/21pif-pln-marks-act.js:60
+plnActNotchLine              src/21pifa-pln-marks-act-stone.js:20-25
+plnActNotches                src/21pifa-pln-marks-act-stone.js:150
+plnActNote                   src/21pif-pln-marks-act.js:98
+plnActOn                     src/21pif-pln-marks-act.js:26
+plnActPay                    src/21pif-pln-marks-act.js:132-144
+plnActPriceLead              src/21pif-pln-marks-act.js:294-305
+plnActPrompt                 src/21pif-pln-marks-act.js:109-129
+plnActReach                  src/21pif-pln-marks-act.js:79-94
+plnActRelic                  src/21pifa-pln-marks-act-stone.js:40-44
+plnActRoll                   src/21pif-pln-marks-act.js:54
+plnActRoom                   src/21pifa-pln-marks-act-stone.js:45
+plnActSpan                   src/21pif-pln-marks-act.js:71-76
+plnActSpotDx                 src/21pif-pln-marks-act.js:66-69
+plnActUp                     src/21pif-pln-marks-act.js:106
+plnActVerb                   src/21pif-pln-marks-act.js:97
 plnAdd                       src/21p-pln.js:34
 plnAtThing                   src/21pi-pln-things.js:423-436
 plnBeastCapsule              src/21piba-pln-gait.js:76-101
@@ -5939,24 +5964,30 @@ plnManFrame                  src/21pha-pln-man.js:229-259
 plnManPalette                src/21pha-pln-man.js:58-70
 plnManPose                   src/21pha-pln-man.js:161-189
 plnManState                  src/21pha-pln-man.js:223-226
-plnMarkH                     src/21pie-pln-marks.js:38
-plnMarkMesh                  src/21pie-pln-marks.js:56-368
-plnMarkPad                   src/21pie-pln-marks.js:42-47
-plnMarkSpark                 src/21pie-pln-marks.js:418-427
-plnMarkState                 src/21pif-pln-marks-act.js:48
-plnMarkWorld                 src/21pie-pln-marks.js:413-416
-plnMarkZ                     src/21pie-pln-marks.js:40
-plnMarks                     src/21pie-pln-marks.js:371-411
-plnMarksDrop                 src/21pie-pln-marks.js:480-486
-plnMarksFrame                src/21pie-pln-marks.js:433-479
+plnMarkH                     src/21pie-pln-marks.js:40
+plnMarkMesh                  src/21pie-pln-marks.js:58-200
+plnMarkPad                   src/21pie-pln-marks.js:44-49
+plnMarkSpark                 src/21pie-pln-marks.js:250-259
+plnMarkState                 src/21pif-pln-marks-act.js:51
+plnMarkStone                 src/21pieb-pln-marks-stone.js:8-213
+plnMarkWorld                 src/21pie-pln-marks.js:245-248
+plnMarkWreck                 src/21piea-pln-marks-wreck.js:12-209
+plnMarkZ                     src/21pie-pln-marks.js:42
+plnMarks                     src/21pie-pln-marks.js:203-243
+plnMarksDrop                 src/21pie-pln-marks.js:316-322
+plnMarksFrame                src/21pie-pln-marks.js:265-315
 plnMesh                      src/21pa-pln-mesh.js:12-15
 plnMeshAdd                   src/21pa-pln-mesh.js:29-37
 plnMeshDone                  src/21pa-pln-mesh.js:38
 plnMix3                      src/21p-pln.js:33
+plnMonoKnown                 src/21pifa-pln-marks-act-stone.js:15
+plnMonoLine                  src/21pifa-pln-marks-act-stone.js:18
+plnMonoWords                 src/21pifa-pln-marks-act-stone.js:10-14
 plnMul                       src/21p-pln.js:36
 plnNoise                     src/21p-pln.js:60-67
 plnNorm                      src/21p-pln.js:40
-plnOver                      src/21pj-pln-over.js:45-118
+plnObsSky                    src/21pifa-pln-marks-act-stone.js:233-248
+plnOver                      src/21pj-pln-over.js:45-119
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:29-44
 plnOverPlate                 src/21pj-pln-over.js:23-27
@@ -5980,6 +6011,7 @@ plnPlantSees                 src/21pga-pln-plant.js:530-533
 plnPlantShore                src/21pga-pln-plant.js:430-439
 plnPlantStep                 src/21pga-pln-plant.js:538-566
 plnPlantThings               src/21pga-pln-plant.js:97-116
+plnPortalOpen                src/21pifa-pln-marks-act-stone.js:188
 plnQuad                      src/21pa-pln-mesh.js:27
 plnQualAuto                  src/21pe-pln-gpu.js:56-65
 plnQualSet                   src/21pe-pln-gpu.js:47-52
@@ -6010,6 +6042,7 @@ plnSoftp                     src/21pf-pln-land.js:89
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
 plnSurface                   src/21pz-pln-frame.js:271-335
+plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
 plnThingBoulder              src/21pi-pln-things.js:74-91
@@ -6066,7 +6099,7 @@ plnWingLeaves                src/21pgc-pln-wing.js:140-151
 plnWingPath                  src/21pgc-pln-wing.js:39-51
 plnWingRamp                  src/21pgc-pln-wing.js:33
 plnWingRibbon                src/21pgc-pln-wing.js:57-71
-plnWreckBeacon               src/21pif-pln-marks-act.js:231
+plnWreckBeacon               src/21pif-pln-marks-act.js:306
 plnX                         src/21p-pln.js:26
 plnXu                        src/21p-pln.js:28
 plnY                         src/21p-pln.js:27
@@ -7523,8 +7556,8 @@ voteMonth                    src/12at-vote.js:21
 voteQuestion                 src/12at-vote.js:23-28
 voteTally                    src/12at-vote.js:32-42
 voteWinner                   src/12at-vote.js:43-50
-vsinkCol                     src/08c-gpu-kit.js:325
-vsinkDisc                    src/08c-gpu-kit.js:326-329
+vsinkCol                     src/08c-gpu-kit.js:327
+vsinkDisc                    src/08c-gpu-kit.js:328-331
 wakeBurst                    src/16-flight.js:297
 wakeLanes                    src/16-flight.js:357
 wakeStep                     src/16-flight.js:326-354
@@ -7887,7 +7920,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bj-ovl-hang.js · 15 KB
   · Слова на вещах (M803): табличка у вещи, центр кадра пуст:1
 
-## src/08c-gpu-kit.js · 32 KB
+## src/08c-gpu-kit.js · 33 KB
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/08ca-gpu-canvas.js · 60 KB
@@ -8531,7 +8564,7 @@ zoomTo                       src/15-input.js:358
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
-## src/17gab-gpu-orb.js · 30 KB
+## src/17gab-gpu-orb.js · 32 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
 
 ## src/17gb-gpu-planet-strip.js · 7 KB
@@ -8948,12 +8981,26 @@ zoomTo                       src/15-input.js:358
 ## src/21pid-pln-tracks.js · 3 KB
   · планета: следы — отпечатки на земле (M624):1
 
-## src/21pie-pln-marks.js · 38 KB
+## src/21pie-pln-marks.js · 25 KB
   · планета: ориентиры — двенадцать памятников игры (M627):1
 
-## src/21pif-pln-marks-act.js · 19 KB
+## src/21piea-pln-marks-wreck.js · 18 KB
+  · планета: остов корабля — тело (M627b, проход 2):1
+
+## src/21pieb-pln-marks-stone.js · 20 KB
+  · планета: тихая пятёрка — тела и места под рукой (M627b, проход 2):1
+
+## src/21pif-pln-marks-act.js · 25 KB
   · планета: ориентиры как места действия (M627b):1
-  · остов корабля (§4.1):204
+  · остов корабля (§4.1):279
+
+## src/21pifa-pln-marks-act-stone.js · 23 KB
+  · тихая пятёрка как места действия (M627b, проход 2):1
+  · храм (§4.2):50
+  · монолит (§4.7):105
+  · зарубка (§4.11):146
+  · врата (§4.9):184
+  · обсерватория (§4.10):228
 
 ## src/21pj-pln-over.js · 7 KB
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
@@ -9305,8 +9352,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91a-frame.js · 1 KB
   · M234: сбой кадра не убивает игру:1
 
-## tests/91qa-marks-act.js · 10 KB
+## tests/91qa-marks-act.js · 31 KB
   · ориентиры как места действия (M627b):1
+  · тихая пятёрка и правила движка (M627b, проход 2):159
 
 ## tests/91qb-rig-card.js · 4 KB
   · один астронавт везде: риг в карточке (M801):1
@@ -9359,14 +9407,15 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzr-cloud.js · 6 KB
   · облако не съедает вечер (M357):1
 
-## tests/91zzzzzw-travel.js · 7 KB
+## tests/91zzzzzw-travel.js · 8 KB
   · вечер не по времени, а по дороге (M359):1
 
 ## tests/91zzzzzzy3-gate2d.js · 25 KB
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
-## tests/91zzzzzzy4-pipes.js · 8 KB
+## tests/91zzzzzzy4-pipes.js · 12 KB
   · детектор конвейеров: после прогрева полёт не компилирует (DESIGN-gpu §G):1
+  · прыжок между системами: группа привязок — своего конвейера (M800):93
 
 ## tests/91zzzzzzy5-gpu-loss.js · 10 KB
   · отказ видеокарты: сбой кадра — не потеря устройства (08b2, ревью 25.09 п. 5a):1
