@@ -105,36 +105,87 @@ function hangObstacles(bot){
   }
   return O;
 }
-/* раскладка: каждая табличка — первая годная точка по каждой стороне, лучшая по цене */
+/* раскладка (M803b): каждая табличка — первая годная точка по каждой стороне, лучшая по цене.
+   Выноска от кромки вещи — не длиннее четверти высоты кадра, её длина — в цене; выноска не режет
+   уже поставленную табличку. Сбоку от тела (вправо, влево) табличке можно в центральную полосу,
+   если её середина в средней трети высоты: она стоит при вещи, а не посреди кадра. Не встала —
+   строки переносятся по словам до ширины, что помещается сбоку. Рядом с подписью мира того же тела
+   (ближе 200 px) имя не повторяется: o.alt — строки без имени */
+function hangPlace(P,k,C){
+  const S=hangSize(P,k),r=Math.max(4,P.o.r||10),mem=HANG.mem[P.id];
+  let best=null;
+  for(let di=0;di<8;di++){
+    const D=HANG_DIR[di],pref=P.o.up?(di===2?-12:di===1||di===3?-4:D[2]):D[2];
+    for(let d=r+C.g;d<C.maxD;d+=C.step){
+      const R=hangRectAt(P,D[0],D[1],d,S.w,S.h);
+      if(R.x0<8||R.x1>W-8||R.y0<C.top||R.y1>C.bot)continue;
+      const nx=clamp(P.x,R.x0,R.x1),ny=clamp(P.y,R.y0,R.y1),L=Math.hypot(nx-P.x,ny-P.y);
+      if(L-r>C.Lmax)break;   /* дальше по этой стороне только длиннее */
+      let side=0;
+      if(hangHit(R,C.band,2*k)){   /* кайма шире рамки на 1k, плюс сетка устройства */
+        const cy=(R.y0+R.y1)/2;
+        if(D[1]!==0||cy<H/3||cy>H*2/3)continue;
+        side=cy;
+      }
+      /* не на самой вещи: ближняя точка таблички дальше её радиуса */
+      if(L<r*.9)continue;
+      let bad=false;
+      for(const B of C.placed)if(hangHit(R,B,6*k)){bad=true;break;}
+      if(!bad)for(const B of C.O)if(hangHit(R,B,4*k)){bad=true;break;}
+      if(!bad&&L>r+16*k&&hangCut(P.x,P.y,nx,ny,C.placed))bad=true;
+      if(bad)continue;
+      const cost=d+Math.max(0,L-r)+pref*k-(mem===di?40*k:0)+(hangCut(P.x,P.y,nx,ny,C.O)?400*k:0);
+      if(!best||cost<best.cost)best={R,cost,di,d,nx,ny,r,side};
+      break;
+    }
+  }
+  return best;
+}
+/* перенос по словам до ширины mw (пиксели CSS): строки той же таблички; null — слово шире mw */
+function hangWrap(P,k,mw){
+  const out=[];let verb=null,cut=false;
+  for(let i=0;i<P.lines.length;i++){
+    const f=hangFont(out.length?1:0,P),fits=t=>hangTW(f,t)*k+20*k<=mw;
+    if(i===P.o.verb)verb=out.length;
+    if(fits(P.lines[i])){out.push(P.lines[i]);continue;}
+    const w=P.lines[i].split(" ");let cur="";
+    for(const x of w){const t=cur?cur+" "+x:x;if(fits(t)||!cur)cur=t;else{out.push(cur);cur=x;cut=true;}}
+    if(cur)out.push(cur);
+  }
+  if(!cut)return null;
+  for(let i=0;i<out.length;i++)if(hangTW(hangFont(i,P),out[i])*k+20*k>mw)return null;
+  return {lines:out,verb};
+}
+/* подпись мира с именем name ближе 200 px к рамке R */
+function hangNamed(name,R){
+  if(!name)return false;
+  for(const M of [OVL.lab,OVL.chip])for(const e of M.values()){
+    if(e.fr!==OVL.fno||String(e.s||"").toUpperCase().indexOf(name)<0)continue;
+    const b=e.w!=null?{x0:e.x,y0:e.y,x1:e.x+e.w,y1:e.y+e.h}:{x0:e.x0,y0:e.y0,x1:e.x1,y1:e.y1};
+    const gx=Math.max(0,b.x0-R.x1,R.x0-b.x1),gy=Math.max(0,b.y0-R.y1,R.y0-b.y1);
+    if(Math.hypot(gx,gy)<200)return true;
+  }
+  return false;
+}
 function hangLayout(Q,k){
-  const band={x0:W*.3,y0:H*.3,x1:W*.7,y1:H*.7};
   const top=Math.max(8,(typeof HUD_BAND==="number"?HUD_BAND:0)+6);
   const bot=((typeof HUD_FLOOR==="number"&&HUD_FLOOR>0)?Math.min(H,HUD_FLOOR):H)-6;
-  const O=hangObstacles(bot+6),placed=[],g=12*k,step=4*k,maxD=Math.max(W,H)*.7;
+  const C={band:{x0:W*.3,y0:H*.3,x1:W*.7,y1:H*.7},top,bot,O:hangObstacles(bot+6),placed:[],
+    g:12*k,step:4*k,maxD:Math.max(W,H)*.7,Lmax:H*.25};
   for(const P of Q){
-    const S=hangSize(P,k),r=Math.max(4,P.o.r||10),mem=HANG.mem[P.id];
-    let best=null;
-    for(let di=0;di<8;di++){
-      const D=HANG_DIR[di],pref=P.o.up?(di===2?-12:di===1||di===3?-4:D[2]):D[2];
-      for(let d=r+g;d<maxD;d+=step){
-        const R=hangRectAt(P,D[0],D[1],d,S.w,S.h);
-        if(R.x0<8||R.x1>W-8||R.y0<top||R.y1>bot)continue;
-        if(hangHit(R,band,2*k))continue;   /* кайма шире рамки на 1k, плюс сетка устройства */
-        /* не на самой вещи: ближняя точка таблички дальше её радиуса */
-        const nx=clamp(P.x,R.x0,R.x1),ny=clamp(P.y,R.y0,R.y1);
-        if(Math.hypot(nx-P.x,ny-P.y)<r*.9)continue;
-        let bad=false;
-        for(const B of placed)if(hangHit(R,B,6*k)){bad=true;break;}
-        if(!bad)for(const B of O)if(hangHit(R,B,4*k)){bad=true;break;}
-        if(bad)continue;
-        const cost=d+pref*k-(mem===di?40*k:0)+(hangCut(P.x,P.y,nx,ny,O)?400*k:0);
-        if(!best||cost<best.cost)best={R,cost,di,d,nx,ny};
-        break;
-      }
+    let best=hangPlace(P,k,C);
+    if(!best){
+      const r=Math.max(4,P.o.r||10),room=Math.max(P.x-r-C.g-8,W-8-P.x-r-C.g),Z=hangWrap(P,k,room);
+      if(Z){const l0=P.lines,v0=P.o.verb;P.lines=Z.lines;P.o=Object.assign({},P.o,{verb:Z.verb});
+        best=hangPlace(P,k,C);if(!best){P.lines=l0;P.o.verb=v0;}}
+    }
+    if(best&&P.o.alt&&hangNamed(P.o.name,best.R)){
+      const l0=P.lines,v0=P.o.verb;P.lines=P.o.alt;P.o=Object.assign({},P.o,{verb:P.o.altVerb});
+      const b2=hangPlace(P,k,C);if(b2)best=b2;else{P.lines=l0;P.o.verb=v0;}
     }
     if(!best){P.hide=true;continue;}
-    HANG.mem[P.id]=best.di;P.R=best.R;P.nx=best.nx;P.ny=best.ny;P.r=r;
-    placed.push(best.R);
+    HANG.mem[P.id]=best.di;P.R=best.R;P.nx=best.nx;P.ny=best.ny;P.r=best.r;P.side=best.side;
+    C.placed.push(best.R);
   }
 }
 /* ── рисунок ── */
@@ -161,7 +212,7 @@ function hangDraw(P,k){
     ovCap(ax,ay,P.nx-ux*2*k,P.ny-uy*2*k,1*k,ink||HANG.INK,.42*al);
     ovEll(ax,ay,2*k,2*k,0,ink||HANG.INK,.85*al);
   }
-  OVL.hangOn=P.lines[0]||"·";
+  OVL.hangOn=P.lines[0]||"·";OVL.hangSide=P.side||0;   /* сбоку от тела: середина по высоте — для зрения */
   const e=ink?1.5*k:1*k;
   hangHex(sn(x0-e),sn(y0-e),sn(x1+e),sn(y1+e),sn(c+e*.42),ink||HANG.EDGE,(ink?.62:.17)*al);
   hangHex(x0,y0,x1,y1,c,HANG.BODY,.86*al);
@@ -170,7 +221,7 @@ function hangDraw(P,k){
     const col=ink||(i===P.o.verb?HANG.VERB:i===0?HANG.INK:HANG.INK2);
     ovText(OVL.uq,tx,y0+(17+i*14)*k-(i?1*k:0),P.lines[i],hangFont(i,P),col,"left","alphabetic",al,k);
   }
-  OVL.hangOn=0;
+  OVL.hangOn=0;OVL.hangSide=0;
 }
 /* ── слив: зовёт ovFlush (08bi) первым делом ── */
 function ovHangFlush(){
@@ -198,12 +249,15 @@ function hangSurface(){
   if(G.mode!=="surface"||typeof PLN==="undefined"||!PLN.on||!hangIn())return;
   const S=G.surf,pr=String(G.prompt||"");
   if(!S||!S.tr||!pr||G.viewK==null)return;
-  let w=null,line=null,id;
+  let w=null,line=null,id,o=null;
   if(typeof PLN_ACT!=="undefined"&&PLN_ACT.wrote&&pr===PLN_ACT.wrote){
     const q=poiNear(S,S.tr),L=PLN_LAND.cur,M=L&&L.marks,it=q&&M&&M.items.find(i=>i.q===q);
     if(!it)return;
-    const K=PLN_ACT.kinds[q.k]||{},nm=String(q.ru||K.ru||"").toUpperCase();
-    line=pr.split("\n").find(s=>s.indexOf(nm+" · ")===0);
+    const K=PLN_ACT.kinds[q.k]||{},nm=String(q.ru||K.ru||"").toUpperCase(),PL=pr.split("\n");
+    line=PL.find(s=>s.indexOf(nm+" · ")===0);
+    /* без имени (подпись мира рядом): первая строка — состояние, вторая — действие или место */
+    if(line){const rest=PL.filter(s=>s!==line),al=[line.slice(nm.length+3)].concat(rest);
+      o={name:nm,alt:al,altVerb:rest.length&&/^(ДЕЙСТВИЕ|УДЕРЖИВАЙТЕ)/.test(rest[0])?1:undefined};}
     w=plnMarkWorld(it,0,it.H*.5,0);id="pln.mark";   /* середина тела: it.H — рост с запасом, макушка висит в небе */
   }else if(pr.indexOf("ЗАЛЕЖЬ")>=0){
     let dep=null,dd=1e9;
@@ -221,5 +275,5 @@ function hangSurface(){
   /* человек — не подставка для таблички: его рост от ступней до макушки с запасом в полроста по бокам */
   const mx=S.x/PLN_M,my=plnY(S.y+10),f=pj([mx,my,0]),h=pj([mx,my+1.9,0]);
   if(f&&h){const t=Math.abs(f[1]-h[1]),n=ovNd();hangBlock((f[0]-t*.45)*n,(h[1]-t*.1)*n,(f[0]+t*.45)*n,(f[1]+t*.05)*n);}
-  ovHang(id,line,a[0],a[1],{r:6,up:true});
+  ovHang(id,line,a[0],a[1],Object.assign({r:6,up:true},o));
 }
