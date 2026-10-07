@@ -141,15 +141,17 @@ a cracked canopy; the **beacon** blinks at the tail (dx −L·.4).
 
 ### 4.2 Храм — temple (ancients)
 
-Hand piece: the **altar** at the foot of the stair (dx 0, a stone table 0.9 m with the
-carved plates on top, their grooves lit by the slab's accent at night).
+Hand piece: the **altar** at the foot of the stair (dx 0, a stone table at the man's waist
+— a palm-thick slab 1.05 m up on two pedestals — with the carved plates on top, their grooves lit by the slab's accent at night).
 - **плиты · 0 · 3 · ЧИТАТЬ ПЛИТЫ** (hold 2 s): the coordinates (`G.relicHint`) as 20b;
   if known already, the plates give their xeno ×n as 20b. Once. st 0→1.
 - **The fork at the same altar**, by what the man holds up: the prompt cycles the cargo's
   kinds (4 s each, the settlement's idiom) — **дар · 0 · 3 · ПОЛОЖИТЬ НА АЛТАРЬ: <RES> ×3**
   (tap): takes 3 units; the octahedron descends to the slab over 4 s (part `octa` y),
   opens (part `octa` hk 1→.3 and the inner glow k 3), the slab's light turns to the
-  world's accent at full: the gift answers with `relicRoll(hashi(seed,0x7E,1),.4)` →
+  world's accent at full — the band under the roof burns twice the untouched light, and from the
+  altar up to the band go 6–10 slow pink moth-sparks (parts `moth0..7`, 22 s a trip, a sway
+  aside and an arch up, steady light fading only at the ends — motion, not blinking): the gift answers with `relicRoll(hashi(seed,0x7E,1),.4)` →
   `relicFind(id,"дар храму")`, else `rareTake("temple",seed,"здесь: храм")` and xeno ×4.
   The temple is **woken** (st 2, way «gift»): its lamp is always on; **every later visit the
   suit fills to `suitMax()` while the man stands at the altar** (a refuge at night).
@@ -262,15 +264,17 @@ The slab moves to z 8 (it is thin); its −z face is at the man's reach when he 
 before it (dx 0). The seam of light is on the face.
 - **касание · 0 · 2.5 · КОСНУТЬСЯ** (tap): a ripple runs out from the seam (the light
   record's pulse spikes, the lamp k ×2 for 1 s), a tone (`sfx motif`), +18 data as 20b,
-  once; st 0→1. From now the face shows **a line of two glyphs** (two panes in a row,
-  accent light): the monolith's **words**, seeded from the words of the report pieces
+  once; st 0→1. From now the face shows **two glyphs one above the other** around the man's chest,
+  on the right half (the man at the seam hides the left), each a quarter of the slab's width,
+  cut as dark grooves with a lit lower lip: the monolith's **words**, seeded from the words of the report pieces
   (`LORE` entries with `.word`; pick two by `hashi(seed,0x1F,…)`). A word the player
   already knows (`loreVocab()`) is written in the prompt as the word, the other as glyphs
   — the idiom of `settleLine`.
-- **слово · 0 · 2.5 · СКАЗАТЬ: <WORD>** (tap; the player's known words cycle in the
-  prompt every 4 s; shown only when he knows at least one): if the word is one of the
-  two, that glyph lights steady and +10 data; else the seam dims .5 s and a low tone.
-  Both lit → the monolith **opens**: the slab splits (parts `l`,`r` slide ±.6 m over 3 s),
+- **слово · 0 · 2 · СКАЗАТЬ: <WORD> <WORD>** (hold 2 s): one hold says all the known words;
+  a heard word's groove lights in the seam's colour at half the seam's strength. With fewer
+  than two known the prompt reads «НЕ ХВАТАЕТ СЛОВ: n» and its second line shows the glyphs,
+  the known ones written as words (the one-word-every-4-s cycle was dropped: tedious).
+  Both said → the monolith **opens**: the slab splits (parts `l`,`r` slide ±.6 m over 3 s),
   the inside is light, and it gives `relicRoll(hashi(seed,0x7E,2),.6)` →
   `relicFind(id,"монолит открылся")`, else `G.relicHint` by the temple's law and xeno
   ×3. st 2, way «word»: the seam stays lit as your light. With no words the man is told
@@ -325,6 +329,11 @@ causeway (z 28→2), with the U seam's foot at the line (dx 0).
 
 Hand pieces: the drum's **door** with a console at the line (dx −R·1.2) and the **mast's
 base** with a crank (dx +R·1.8).
+The body carries its own light: the slit runs up the dome a quarter of its width, and the open
+shutter slides aside past its own width toward the lens (against the dome's turn). At night a
+warm console window at the tower's foot (one man high, two wide, mullioned) lights the ground
+before it, a steady red lamp tops the mast (the dish hangs on its front), and the open slit's
+light falls on the dome's rim and the tower wall — the body reads as volume, not a floating slit.
 - **The fork is the one battery:** the observatory has one charge; the door's console
   drives the **dome**, the mast's crank drives the **dish** — the first used takes the
   charge; the other says «батарея пуста · зарядится за день» and is possible a day later.

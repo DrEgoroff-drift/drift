@@ -90,11 +90,16 @@ PLN_ACT.kinds.temple={ru:"ХРАМ",
     P.grooves={k:take?0:gift?1.8:.35+1.3*nk+2*read,hide:take};
     P.plates={roll:take?.2*ev("sample",0,.4):0,x:take?.05:0,y:take?-.015:0};
     const pul=.72+.28*Math.sin(t*.9);
-    const light=take?(last==="sample"?Math.max(0,1-age/1.2)*pul:0):gift?1.1+.1*Math.sin(t*.5)+.8*op*(1-ev("gift",5,7)):pul;
+    /* дар: полоса под крышей горит вдвое ярче нетронутой, и от алтаря к ней идут мотыльки — по 22 с
+       путь, восемь вразбежку; колыхание вбок и дуга вверх, без мигания */
+    const light=take?(last==="sample"?Math.max(0,1-age/1.2)*pul:0):gift?2*pul+.8*op*(1-ev("gift",5,7)):pul;
+    const mo=gift?ev("gift",4,6):0;
+    for(let i=0;i<8;i++){const u=((t/22)+i/8)%1,s=Math.sin(Math.PI*u);
+      P["moth"+i]={go:u,x:.45*Math.sin(t*.7+i*1.7)*s,y:D.H*.08*s+.25*Math.sin(t*1.1+i)*s,k:2.2*mo*Math.pow(s,.6),hide:mo<.01};}
     const lamps=[];
     if(gift)lamps.push({id:"altar",r:6,k:1.2+.8*nk});
     else if(read>0)lamps.push({id:"altar",r:4,k:2.2*read});
-    return {light,lampK:take?0:gift?1.5:1,parts:P,lamps};
+    return {light,lampK:take?0:gift?2:1,parts:P,lamps};
   }};
 
 /* ══════════════ монолит (§4.7) ══════════════
@@ -127,10 +132,13 @@ PLN_ACT.kinds.monolith={ru:"МОНОЛИТ",
     P.l={x:-.6*o};P.r={x:.6*o};
     P.inner={k:2.4*o,hide:o<.02};
     const K=st===1||st===2?plnMonoKnown(m.n.w):[];
-    for(let i=0;i<2;i++){const w=(m.n.w||[])[i],kn=K.indexOf(w)>=0;
-      P["g"+(i+1)]={k:st===2?2:kn?1.7:.4+.15*Math.sin(t*.8+i),hide:!(st===1||st===2)};}
     const pul=.72+.28*Math.sin(t*.9);
     const light=st===3?(last==="sample"?Math.max(0,1-age/1.5)*pul:0):st===2?1.25:pul+1.8*rip;
+    /* глифы: борозда видна с касания и уезжает с правой половиной; свет борозды — у услышанного слова,
+       той же яркости, что шов (геометрия светит вдвое слабее) */
+    const on=st===1||st===2;
+    for(let i=0;i<2;i++){const w=(m.n.w||[])[i],kn=st===2||K.indexOf(w)>=0;
+      P["g"+(i+1)]={x:.6*o,hide:!on};P["g"+(i+1)+"L"]={x:.6*o,k:on&&kn?light:0,hide:!(on&&kn)};}
     const lamps=o>.02?[{id:"face",r:7,k:2*o}]:[];
     return {light,lampK:st===3?(last==="sample"?Math.max(0,1-age/1.5):0):st===2?1.6:1+rip,parts:P,lamps};
   }};
@@ -248,7 +256,7 @@ PLN_ACT.kinds.observ={ru:"ОБСЕРВАТОРИЯ",
         let out;
         if(c.night)out=plnObsSky(c);
         else{const l=plnActPriceLead(plnActRoll(c.q.seed,0x0B5,celDay()));out={short:l?l.toLowerCase():"архив: ничего нового"};}
-        const m=c.m;m.n.dome=celDay();m.n.domeYaw=c.night?-1.15:.85;
+        const m=c.m;m.n.dome=celDay();m.n.domeYaw=c.night?-.55:.45;
         m.st=m.n.dish!=null?2:1;m.way=m.st===2?"both":null;
         return out;}},
     {id:"dish",ru:"ворот антенны",dx:D=>D.R*1.8,r:2,hold:3,fork:"charge",sfx:"signoff",hum:"crackle",
@@ -263,13 +271,18 @@ PLN_ACT.kinds.observ={ru:"ОБСЕРВАТОРИЯ",
   drive:(m,age,D,t,nk)=>{
     const E=plnActEase,P={},last=m.n.last,today=celDay();
     const dy=(m.n.domeYaw||0)*(last==="dome"?E(age/6):1),open=m.n.dome===today?(last==="dome"?E(age/1.5):1):0;
-    P.dome={yaw:dy};P.slit={yaw:dy,k:1.8*open,hide:open<.02};P.shutter={yaw:dy+.62*open};
+    /* створка уходит по кругу купола дальше своей ширины, к объективу (против поворота купола), — сдвинута
+       набок явно; нутро днём тусклое,
+       ночью тёплое */
+    const sk=open*(.25+1.55*nk);
+    P.dome={yaw:dy};P.slit={yaw:dy,k:sk,hide:sk<.02};P.shutter={yaw:dy+(dy>0?-1.15:1.15)*open};
     const de=m.n.dish!=null?(last==="dish"?E(age/5):1):0;
     /* на три четверти, не ребром: ребром тарелка пропадала, и казалось, что её сняли */
     P.dish={yaw:-.85*de,roll:.45*de};
     const h=PLN_ACT.hold,work=h&&h.id==="dish";
     P.crank={roll:work?t*5:(last==="dish"&&age<5?(1-age/5)*2:0)};
     P.screen={k:plnActDailyReady(m)?1.3+.25*Math.sin(t*1.7):.18};
-    const lamps=open>.02&&nk>.1?[{id:"console",r:4,c:[.5,1,.7],k:.4},{id:"slit",r:D.H*.6,c:[1,.74,.42],k:1.6*open*nk}]:[];
+    /* свет щели — первым (на обод и стену башни); окно пульта светит лампой вида (21pieb) */
+    const lamps=open>.02&&nk>.1?[{id:"slit",r:D.H*.45,c:[1,.74,.42],k:1.8*open*nk},{id:"console",r:4,c:[.5,1,.7],k:.4}]:[];
     return {light:nk,parts:P,lamps};
   }};

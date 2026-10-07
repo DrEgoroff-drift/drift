@@ -234,6 +234,14 @@ TEST_SUITES.push(()=>suite("ориентиры: тихая пятёрка — м
   ok(plnActDo(qt,"gift",{d:.3}),"храм: дар принят");
   eq(G.cargo[giftK],n0-3,"храм: дар — ровно три единицы");
   const mt=plnActMemo(qt,false);
+  /* проход 3: дар — полоса под крышей вдвое ярче нетронутой, от алтаря идут 6–10 мотыльков */
+  {const dims=plnActDims(qt),dT=PLN_ACT.kinds.temple.drive(mt,99,dims,3,.5),d0=PLN_ACT.kinds.temple.drive({st:0,way:null,n:{}},99,dims,3,.5);
+    ok(dT.light>=2*d0.light-1e-6,"храм: дар — полоса вдвое ярче нетронутой ("+dT.light.toFixed(2)+" против "+d0.light.toFixed(2)+")");
+    const mk=Object.keys(dT.parts).filter(k=>/^moth/.test(k)),on=mk.filter(k=>!dT.parts[k].hide&&dT.parts[k].k>.01);
+    ok(on.length>=6&&on.length<=10,"храм: мотыльков дара 6–10, видно "+on.length);
+    ok(mk.every(k=>d0.parts[k].hide),"храм: без дара мотыльков нет");
+    const t2=PLN_ACT.kinds.temple.drive(mt,99,dims,3.5,.5);
+    ok(mk.every(k=>Math.abs(t2.parts[k].go-dT.parts[k].go)<.05),"храм: мотыльки идут медленно — за полсекунды меньше двадцатой пути");}
   eq(mt.way,"gift","храм: путь — дар");
   const ref=PLN_ACT.kinds.temple.spots.find(s=>s.id==="refuge"),Sx={suit:10};
   ok(plnActLive(PLN_ACT.kinds.temple,ref,mt,plnActDims(qt)),"храм: убежище живо после дара");
@@ -267,6 +275,12 @@ TEST_SUITES.push(()=>suite("ориентиры: тихая пятёрка — м
   const mv=/(?:УДЕРЖИВАЙТЕ\s+)?ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(pr);
   eq(mv&&mv[1].trim(),"СКАЗАТЬ: "+Wm.join(" ").toUpperCase(),"монолит: кнопка телефона читает «сказать» с обоими словами");
   ok(pr.indexOf("ИЛИ КРОМКА")>=0,"монолит: развилка видна — образец с кромки: "+pr.split("\n")[1]);
+  /* проход 3: услышанные слова светятся по борозде, неуслышанные — только борозда */
+  {const dg=PLN_ACT.kinds.monolith.drive(plnActMemo(qm,false),9,plnActDims(qm),0,.5).parts;
+    ok(!dg.g1L.hide&&!dg.g2L.hide&&dg.g1L.k>0&&dg.g2L.k>0,"монолит: оба слова знакомы — обе борозды светятся");
+    ok(!dg.g1.hide&&!dg.g2.hide,"монолит: после касания борозды видны");
+    const dn=PLN_ACT.kinds.monolith.drive({st:1,way:null,n:{w:["__нет","__нет2"]}},9,plnActDims(qm),0,.5).parts;
+    ok(dn.g1L.hide&&dn.g2L.hide&&!dn.g1.hide,"монолит: незнакомые слова — борозда без света");}
 
   /* ── зарубка: у засечки после чтения подсказка зовёт к клину вверх ── */
   const qo=MA_Q(0x0BE1,"obelisk");
@@ -326,6 +340,27 @@ TEST_SUITES.push(()=>suite("ориентиры: тихая пятёрка — м
   eq(plnActMemo(qb,false).st,2,"обсерватория: оба — st 2");
   eq(plnActMemo(qb,false).way,"both","обсерватория: путь — оба");
   eq(plnActDo(qb,"dome",{d:.3}),null,"обсерватория: второй акт за сутки — нет");
+  /* проход 3: открытая створка уходит вбок дальше своей ширины и к объективу — против поворота купола */
+  {const mb=plnActMemo(qb,false),P=PLN_ACT.kinds.observ.drive(Object.assign({},mb,{n:Object.assign({},mb.n,{dome:celDay(),last:"dome"})}),99,plnActDims(qb),0,.8).parts;
+    const dd=P.shutter.yaw-P.dome.yaw;
+    ok(Math.abs(dd)>=1&&Math.sign(dd)===-Math.sign(P.dome.yaw||1),"обсерватория: створка сдвинута набок к объективу ("+dd.toFixed(2)+")");
+    ok(!P.slit.hide&&P.slit.k>1,"обсерватория ночью: нутро щели светит");}
+
+  /* проход 3 — тела по мерилу человека (таз 0,87 м): глифы монолита у груди, друг над другом, каждый
+     не уже шестой доли плиты; столешница алтаря на поясе; у обсерватории окно у земли и лампа перед ним */
+  {const body=(k,H)=>plnMarkMesh(k,H,0x51A7,()=>0,PLN_PAL,[.4,.9,.8],H*PLN_MARK.kinds[k].w,0,{yaw:0,z:PLN_MARK.kinds[k].z});
+    const box=(B,id)=>{const p=B.parts.find(x=>x.id===id),v=p.m.v;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+      for(let i=0;i<p.m.nv;i++){const o=i*PLN_VS;x0=Math.min(x0,v[o]);x1=Math.max(x1,v[o]);y0=Math.min(y0,v[o+1]);y1=Math.max(y1,v[o+1]);}
+      return {w:x1-x0,y0:y0+p.pv[1],y1:y1+p.pv[1],x:p.pv[0]};};
+    const Hm=12,Bm=body("monolith",Hm),g1=box(Bm,"g1"),g2=box(Bm,"g2"),pw=2*Hm*.17;
+    ok(g1.w>=pw/6&&g2.w>=pw/6,"монолит: глиф не уже шестой доли плиты ("+g1.w.toFixed(2)+" / "+pw.toFixed(2)+")");
+    ok(g1.y1<1.45&&g2.y0>1.2&&g2.y0>=g1.y1-.1,"монолит: глифы друг над другом вокруг груди ("+g1.y0.toFixed(2)+"–"+g1.y1.toFixed(2)+", "+g2.y0.toFixed(2)+"–"+g2.y1.toFixed(2)+")");
+    ok(Math.abs(g1.x-g2.x)<.01,"монолит: глифы на одной вертикали");
+    const Bt=body("temple",9),pl=Bt.parts.find(x=>x.id==="plates");
+    ok(pl.pv[1]>=.95&&pl.pv[1]<=1.2,"храм: столешница алтаря на поясе ("+pl.pv[1].toFixed(2)+" м)");
+    const Bo=body("observ",14);
+    ok(Bo.lamp&&Bo.lamp.p[1]<2.5&&Bo.lamp.p[2]<-14*.3,"обсерватория: лампа окна низко перед башней");
+    ok(Bo.light&&Bo.light.nv>0,"обсерватория: у тела есть ночной свет (окно, красная лампа)");}
 
   eq(G.credits,cr,"тихая пятёрка: ни один акт не дал кредитов");
   PLN.on=pOn;PLN.bad=pBad;

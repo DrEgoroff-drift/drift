@@ -5200,7 +5200,7 @@ plnActLive                   src/21pif-pln-marks-act.js:77
 plnActMemo                   src/21pif-pln-marks-act.js:29-49
 plnActNight                  src/21pif-pln-marks-act.js:60
 plnActNotchLine              src/21pifa-pln-marks-act-stone.js:20-25
-plnActNotches                src/21pifa-pln-marks-act-stone.js:142
+plnActNotches                src/21pifa-pln-marks-act-stone.js:150
 plnActNote                   src/21pif-pln-marks-act.js:98
 plnActOn                     src/21pif-pln-marks-act.js:26
 plnActPay                    src/21pif-pln-marks-act.js:132-144
@@ -5366,7 +5366,7 @@ plnMarkMesh                  src/21pie-pln-marks.js:58-200
 plnMarkPad                   src/21pie-pln-marks.js:44-49
 plnMarkSpark                 src/21pie-pln-marks.js:250-259
 plnMarkState                 src/21pif-pln-marks-act.js:51
-plnMarkStone                 src/21pieb-pln-marks-stone.js:8-168
+plnMarkStone                 src/21pieb-pln-marks-stone.js:8-213
 plnMarkWorld                 src/21pie-pln-marks.js:245-248
 plnMarkWreck                 src/21piea-pln-marks-wreck.js:12-209
 plnMarkZ                     src/21pie-pln-marks.js:42
@@ -5383,7 +5383,7 @@ plnMonoWords                 src/21pifa-pln-marks-act-stone.js:10-14
 plnMul                       src/21p-pln.js:36
 plnNoise                     src/21p-pln.js:60-67
 plnNorm                      src/21p-pln.js:40
-plnObsSky                    src/21pifa-pln-marks-act-stone.js:225-240
+plnObsSky                    src/21pifa-pln-marks-act-stone.js:233-248
 plnOver                      src/21pj-pln-over.js:45-118
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:29-44
@@ -5408,7 +5408,7 @@ plnPlantSees                 src/21pga-pln-plant.js:530-533
 plnPlantShore                src/21pga-pln-plant.js:430-439
 plnPlantStep                 src/21pga-pln-plant.js:538-566
 plnPlantThings               src/21pga-pln-plant.js:97-116
-plnPortalOpen                src/21pifa-pln-marks-act-stone.js:180
+plnPortalOpen                src/21pifa-pln-marks-act-stone.js:188
 plnQuad                      src/21pa-pln-mesh.js:27
 plnQualAuto                  src/21pe-pln-gpu.js:56-65
 plnQualSet                   src/21pe-pln-gpu.js:47-52
@@ -8177,20 +8177,20 @@ zoomTo                       src/15-input.js:350
 ## src/21piea-pln-marks-wreck.js · 18 КБ
   · планета: остов корабля — тело (M627b, проход 2):1
 
-## src/21pieb-pln-marks-stone.js · 14 КБ
+## src/21pieb-pln-marks-stone.js · 20 КБ
   · планета: тихая пятёрка — тела и места под рукой (M627b, проход 2):1
 
 ## src/21pif-pln-marks-act.js · 25 КБ
   · планета: ориентиры как места действия (M627b):1
   · остов корабля (§4.1):279
 
-## src/21pifa-pln-marks-act-stone.js · 22 КБ
+## src/21pifa-pln-marks-act-stone.js · 23 КБ
   · тихая пятёрка как места действия (M627b, проход 2):1
   · храм (§4.2):50
-  · монолит (§4.7):100
-  · зарубка (§4.11):138
-  · врата (§4.9):176
-  · обсерватория (§4.10):220
+  · монолит (§4.7):105
+  · зарубка (§4.11):146
+  · врата (§4.9):184
+  · обсерватория (§4.10):228
 
 ## src/21pj-pln-over.js · 7 КБ
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
@@ -8561,7 +8561,7 @@ zoomTo                       src/15-input.js:350
   · M242: свет идёт оттуда, где нарисовано солнце:267
   · M242: дом не стоит на посадочной площадке:299
 
-## tests/91qa-marks-act.js · 27 КБ
+## tests/91qa-marks-act.js · 31 КБ
   · ориентиры как места действия (M627b):1
   · тихая пятёрка и правила движка (M627b, проход 2):159
 

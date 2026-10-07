@@ -16,6 +16,7 @@
       cargo=<json>               the hold before the acts, {"iron":6} (the temple's gift takes three)
       words=1                    the monolith's two words are learned before the acts (the report pieces that carry them)
       hold=1                     the action is held at the `at` spot for good (the work pose; the hold never completes, the bar reads empty)
+      title=0                    the stand mutes the «Смена» chapter card (it hangs over the bodies); the game is untouched
 Terrains are tried (seed + n*7919) until one holds the kind; the first found is taken.
 Prints the file's name in the folder of frames: g_mark_<kind>_<type>[_<phase>][_<acts>].js
 """
@@ -26,6 +27,8 @@ import sys
 from where import shots
 
 T = """(function(){
+  if(!%(title)d){smenaAct=function(){};var o=document.getElementById("smenaAct");if(o)o.remove();
+    var cs=document.createElement("style");cs.textContent="#smenaAct{display:none!important}";document.head.appendChild(cs);}
   var kind="%(kind)s",want="%(type)s",ph=%(ph)s,off=%(off)s,near=%(near)d;
   var K=POI_KINDS.find(function(k){return k.k===kind;});
   var t=want||K.on[0];
@@ -88,7 +91,7 @@ def main():
                      "n": kv.get("n", "null"), "acts": q(acts), "t": kv.get("t", "null"),
                      "at": q(kv["at"]) if "at" in kv else "null", "fuel": kv.get("fuel", "null"),
                      "cargo": kv.get("cargo", "null"), "words": int(kv.get("words", "0")),
-                     "hold": int(kv.get("hold", "0"))})
+                     "hold": int(kv.get("hold", "0")), "title": int(kv.get("title", "1"))})
     print(name)
 
 
