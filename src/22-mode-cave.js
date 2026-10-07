@@ -715,7 +715,7 @@ function drawCaveWorld(){
   ctx.save();ctx.translate(px,py);
   const ao={face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:!C.on,jet:!!C.jetOn,
     mining:false,suitLow:G.surf.suit<25,lamp:helm};
-  if(!lifeAstroAt(ao))drawAstronaut(ao);
+  if(!rigCardCave(ao)&&!lifeAstroAt(ao))drawAstronaut(ao);   /* риг карточкой (21phc, M801) */
   ctx.restore();
   /* Показания больше не рисуются на канве в левом нижнем углу: там стоят
      DOM-пэды, и текст просвечивал сквозь кнопки (M178). Скафандр и ранец

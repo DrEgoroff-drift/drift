@@ -6,6 +6,12 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## Unreleased (planet-main)
+
+- **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
+  texture in any pose of its book, any facing and the caller's light; the base, the cave and the
+  raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).
+
 ## 0.492.0 - the nebula «смело»
 
 - **The nebula «смело» (GPU-2).** The look the author chose on 26.09 («B с розовым») sat ready on an unpushed

@@ -378,6 +378,8 @@ function drawBase(){
      иначе половина базы читается нежилой. Разница между сытой и голодной
      базой остаётся, но теперь это «ярко или тускло», а не «видно или нет» */
   const lit=.55+P.eff*.45;
+  /* смена в шлемах — карточкой рига (21phc, M801): bWorker кладёт её в очередь до переборок */
+  RIG_CARD.q.length=0;RIG_CARD.baseQ=true;RIG_CARD.lit=lit;
   /* ── под 2D: небо, гряды, задник, клети, отсеки (21ad) ── */
   baseGpuUnder(S,B,pl,lit,camx,camy);
   /* ── станки и смена: единственное, что в отсеке движется ── */
@@ -410,7 +412,7 @@ function drawBase(){
       const fy2=Y(BASE_OY+r*BCELL_H)+BCELL_H-12;
       ctx.fillStyle="rgba(0,0,0,.34)";
       ctx.beginPath();ctx.ellipse(px,fy2-1,7,2,0,0,TAU);ctx.fill();
-      bWorker(px,fy2,lit,false,G.t*.30,cb>ca?1:-1);
+      RIG_CARD.walk=1;bWorker(px,fy2,lit,false,G.t*.30,cb>ca?1:-1);RIG_CARD.walk=0;
     }
   }
   /* ── человек на своём месте (M395, §8) ──
@@ -432,6 +434,8 @@ function drawBase(){
       bWorker(px,fy,lit,false,G.t*.06+c*1.7,-1);
       named.push([who.name,px,fy]);
     }
+  /* смена карточками — одним слоем, под переборками, как прежде (21phc) */
+  rigCardFlush();
   /* ── над 2D: настилы, переборки, кабель, свет и воздух (21ad) ── */
   baseGpuOver(S,B,pl,lit,camx,camy);
   /* подпись поверх машинерии читается только с подложкой: имя — это то,
@@ -497,7 +501,7 @@ function drawBase(){
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   {const ao={phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false};
-    if(!lifeAstroAt(ao))drawAstronaut(ao);}   /* двойник 20fa (G15) */
+    if(!rigCardBase(ao,S)&&!lifeAstroAt(ao))drawAstronaut(ao);}   /* риг карточкой (21phc, M801); двойник 20fa (G15) */
   ctx.restore();
   /* место под застройку: не рамка на каждой клетке, а метка только на выбранной.
      На снимке заглавной курсора нет: там показывают базу, а не выбор (M233) */

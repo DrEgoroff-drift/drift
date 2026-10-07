@@ -151,6 +151,13 @@ the player meets first and by what one reinvention gives to the next.
   lens)`) and used by the base, the cave, the dig, the raid, the home, the winter, the spa and
   the postcard in place of their own figures. Gate: the man at the same size in men across the
   modes; no second painter of the man left in `src/`.
+  *Done, first part (08.10, remake-a2):* `21phc` `rigCard()` renders the rig to a card (all
+  seven poses of the book, walk in eight phase steps, cache ≤ 24); takers behind `RIG_CARD.on`:
+  the base (player and the standing/walking shift in issue grey; seated and bare-headed still
+  the old brush — the rig cannot sit), the cave (headlamp light), the raid (a card from behind,
+  tilted to the camera). The man is 1.8 m everywhere; frame share at 1080: base .022, cave .042,
+  raid .209 — base and cave under .05 by the modes' own scales. Open: dig, home, winter, spa,
+  postcard; the old painters stay until M890. Suite `91qb-rig-card`.
 - **M802 One person generator everywhere.** `npcMake(seed, brief)` of `27f3` for the HQ, crew
   lists, story figures, the keeper of «Сорока», the road's voices. Gate: no `mgrFace` 2D call
   left.

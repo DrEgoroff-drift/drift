@@ -598,7 +598,8 @@ function drawRaid(){
   if(AST){const pass=gpuNext(),h=AST.h,k=AST.sh?AST.sh.s:1;
     if(pass){
       if(AST.sh)gpuImage(pass,poiShadowTex(),[{x:AST.sh.x,y:AST.sh.y,w:AST.rx*2.6*k,h:AST.ry*2.6*k,a:.7}]);
-      lifeAstroGpu(pass,h.x,h.y,Object.assign({},AST.o,{s:h.s}));
+      /* риг карточкой (21phc, M801): спиной к камере, объектив наклонён на её угол к середине роста */
+      if(!rigCardRaid(pass,h,AST.o,Math.atan2(78-RBODY*.5,back)))lifeAstroGpu(pass,h.x,h.y,Object.assign({},AST.o,{s:h.s}));
     }else{ctx.save();ctx.setTransform(DPR*h.s,0,0,DPR*h.s,DPR*h.x,DPR*h.y);drawAstronaut(AST.o);ctx.restore();}}
   /* ── воздух отсека ──
      Пыль вокруг человека: частицы привязаны к сетке мира, чтобы не «ехали» с
