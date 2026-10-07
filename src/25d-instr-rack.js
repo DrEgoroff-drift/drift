@@ -65,10 +65,21 @@ addEventListener("keydown",e=>{
 /* ── геометрия ──
    Размер считается от экрана, но с потолком: стойка — вещь, у неё есть свои
    пропорции, и растягивать её на четыре тысячи пикселей незачем. */
+/* масштаб стойки — UIK кадра; ставится в rackDraw до любой мерки */
+let RACK_K=1;
 function rackGeo(){
-  const w=Math.min(W*.94,1180), h=Math.min(H*.66,470);
-  const x=(W-w)/2, y=Math.min(14,H*.03);
-  const gh=Math.round(h*.40);                 // верхняя секция: стрелки
+  /* M720: стойка встаёт ПОД верхний ряд плит (HUD_BAND, 27z), а не за ними — плиты борта и места
+     ложились на её циферблаты; снизу — место подсказке и пэдам. Короткое окно (телефон боком) этого
+     места не даёт — там стойка по-прежнему от кромки */
+  /* пиксели вёрстки: стойка — интерфейс и меряется той же линейкой --ui (UIK), что плиты вокруг */
+  const k=RACK_K,LW=W/k,LH=H/k;
+  const w=Math.min(LW*.94,1180), top=(typeof HUD_BAND==="number"?HUD_BAND:72)/k+10;
+  /* стойка шире промежутка до борта (телефон): кончается над ним, а не на «Карте» */
+  const over=LW*.94<640&&typeof HUD_RAIL==="number"&&HUD_RAIL>0&&HUD_RAILTOP>0&&(LW+w)/2>HUD_RAIL/k;
+  const room=over?Math.min(LH-top-170,HUD_RAILTOP/k-12-top):LH-top-170;
+  const tall=room>=240, h=tall?Math.min(LH*.66,470,room):Math.min(LH*.66,470);
+  const x=(LW-w)/2, y=tall?top:Math.min(14,LH*.03);
+  const gh=Math.round(h*(w<640?.5:.40));      // верхняя секция: стрелки (узкая стойка — два ряда, выше)
   /* Справа от самописца — круглое окно «Глобуса» (25f): он не стрелка в общем
      ряду, он показывает МЕСТО, и потому стоит отдельно и своей формой. */
   const recH=h-gh-10-RACK_PAD;
@@ -174,7 +185,16 @@ function rackGlass(c,cx,cy,r){
    кадр в 50 мс. Дальше ни одной новой текстуры */
 const RACK_SH=[40,30,50];
 const RACK_DQ=4;   /* ряд циферблатов — четыре части: первый прибор растрит шрифты шкалы, на 390 половина ряда стоила 20 мс */   /* поля мастера (px устройства): бока, верх, низ — размытие 26 и сдвиг 10 */
-function rackR(g0){const cw=(g0.w-RACK_PAD*2)/RACK_G.length;return Math.max(1,Math.min(cw*.36,(g0.gh-40)*.5));}
+/* ряды приборов: узкая стойка (телефон) ставит восемь в два ряда по четыре — в один ряд это были
+   кружки в 16 px в высоких пустых гнёздах. Одна мерка ячейки на рисунок, части печи и стрелки */
+function rackRows(g0){return g0.w<640?2:1;}
+function rackR(g0){const rows=rackRows(g0),per=Math.ceil(RACK_G.length/rows),cw=(g0.w-RACK_PAD*2)/per,rh=g0.gh/rows;
+  return Math.max(1,Math.min(cw*.36,(rh-RACK_PAD-36)*.5));}   /* низ ободка — над подписью гнезда (by+bh-8) */
+function rackCell(g0,i){
+  const rows=rackRows(g0),per=Math.ceil(RACK_G.length/rows),row=Math.floor(i/per),col=i%per;
+  const cw=(g0.w-RACK_PAD*2)/per,rh=g0.gh/rows,y0=row*rh,r=rackR(g0),cx=RACK_PAD+cw*(col+.5);
+  return {cx,cy:y0+RACK_PAD+r+6,bx:cx-cw*.46,by:y0+8,bw:cw*.92,bh:rh-16,cw,x0:RACK_PAD+cw*col,x1:RACK_PAD+cw*(col+1),y0,y1:y0+rh};
+}
 function rackDrop(){
   if(RACK.P)for(const p of RACK.P)gpuBakeDrop(p.B);if(RACK.S)gpuBakeDrop(RACK.S.B);RACK.P=RACK.S=null;RACK.key="";
   if(RACK.jk){prebakeDrop(RACK.jk);RACK.jk="";}}
@@ -182,12 +202,14 @@ function rackDrop(){
    корпус — весь мастер с полями под тень, остальное — только свой кусок */
 function rackParts(g0,nd){
   const [mx,mt,mb]=RACK_SH,MW=Math.ceil(g0.w*nd)+mx*2,MH=Math.ceil(g0.h*nd)+mt+mb;
-  const n=RACK_G.length,cw=(g0.w-RACK_PAD*2)/n,R=g0.rec,gh=g0.gh;
+  const n=RACK_G.length,R=g0.rec,gh=g0.gh;
   const box=(k,x0,y0,x1,y1)=>{const X0=clamp(Math.floor(x0*nd)+mx,0,MW-1),Y0=clamp(Math.floor(y0*nd)+mt,0,MH-1);
     return {k,X0,Y0,X1:clamp(Math.ceil(x1*nd)+mx,X0+1,MW),Y1:clamp(Math.ceil(y1*nd)+mt,Y0+1,MH)};};
   const L=[{k:"body",X0:0,Y0:0,X1:MW,Y1:MH}];
   for(let q=0;q<RACK_DQ;q++){const i0=Math.ceil(n*q/RACK_DQ),i1=Math.ceil(n*(q+1)/RACK_DQ);
-    if(i1>i0)L.push(box("d"+q,RACK_PAD+cw*i0-(q?1:2),6,RACK_PAD+cw*i1+(q<RACK_DQ-1?1:2),gh-6));}
+    if(i1>i0){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+      for(let i=i0;i<i1;i++){const c=rackCell(g0,i);x0=Math.min(x0,c.x0-2);x1=Math.max(x1,c.x1+2);y0=Math.min(y0,c.y0+6);y1=Math.max(y1,c.y1-6);}
+      L.push(box("d"+q,x0,y0,x1,y1));}}
   return [...L,
     box("rec",R.x-2,R.y-2,R.x+R.w+2,R.y+R.h+2),
     box("right",R.x+R.w+1,gh-28,g0.w,g0.h)];
@@ -215,7 +237,7 @@ function* rackBakeJob(g0,nd){
 function rackTex(){
   const g0=rackGeo(),nd=ovNd();
   const key=Math.round(g0.w)+"x"+Math.round(g0.h)+"|"+nd.toFixed(2);
-  if(RACK.key===key&&RACK.P&&RACK.P[0].B.dev===GPU.dev)return RACK;
+  if(RACK.key===key&&RACK.P&&RACK.P[0].B.dev===GPU.dev){RACK.geo.x=g0.x;RACK.geo.y=g0.y;return RACK;}   /* верх ряда плит сдвинулся — сдвигается и стойка, без перепечки */
   const jk="rack|"+key;
   if(RACK.P||RACK.jk&&RACK.jk!==jk)rackDrop();
   RACK.jk=jk;RACK.w=g0.w;RACK.h=g0.h;RACK.geo=g0;RACK.nd=nd;
@@ -244,14 +266,13 @@ function rackPaint(c,g0,part){
   }
 
   /* ── верхняя секция: восемь приборов в гнёздах ── */
-  const gh=g0.gh, n=RACK_G.length;
-  const cw=(w-RACK_PAD*2)/n;
-  const r=Math.min(cw*.36,(gh-40)*.5);
+  const n=RACK_G.length;
+  const r=rackR(g0);
   for(let i=0;i<n;i++){
     if(part&&part!=="d"+Math.floor(i*RACK_DQ/n))continue;
-    const g=RACK_G[i], cx=RACK_PAD+cw*(i+.5), cy=RACK_PAD+r+6;
+    const g=RACK_G[i], C=rackCell(g0,i), cx=C.cx, cy=C.cy, cw=C.cw;
     /* гнездо: прямоугольная рамка вокруг круглого прибора, как в стойке */
-    const bx=cx-cw*.46, by=8, bw=cw*.92, bh=gh-16;
+    const bx=C.bx, by=C.by, bw=C.bw, bh=C.bh;
     const socket=c.createLinearGradient(0,by,0,by+bh);
     socket.addColorStop(0,"#262b2e");socket.addColorStop(1,"#14181a");
     c.fillStyle=socket;
@@ -452,13 +473,29 @@ function rackRoller(c,cx,cy,r,h,kind){
    Каждый кадр — только стрелки, перья и сами кривые, и не рисунком, а примитивами слоя #ovl (08bi):
    затемнение — прямоугольник, стойка — мастер, стрелки и каретки — спрайты, перья — графики,
    числа — глифы. Ни одного вызова 2D. Кадр зовёт стойку ДО мира: очередь сливается в конце мира */
+/* низ открытой стойки — для строки сообщения (--rackbot, body.rackon в style.css): пишется при перемене */
+function rackBottom(on){
+  const g=on?rackGeo():null,rb=g?Math.round((g.y+g.h)*RACK_K):0;
+  if(RACK.rb===rb)return;RACK.rb=rb;
+  document.documentElement.style.setProperty("--rackbot",rb+"px");
+  document.body.classList.toggle("rackon",rb>0);
+}
 function rackDraw(){
+  RACK_K=Math.max(1,(typeof UIK==="number"&&UIK>0)?UIK:1);
+  rackBottom(rackOpen()&&G.running&&!scrOpen());
   if(!rackOpen()||!G.running){RACK.fade=0;return;}
   if(scrOpen())return;
+  /* кадр стойки — в пикселях вёрстки: плотность слоя на это время умножена на UIK (все ov* множат
+     координаты на ovNd), печь берёт ту же плотность — мастер ложится текстель в пиксель */
+  OVL.hush=true;   /* подписи и фишки мира — не поверх стойки (08bi ovFlush) */
+  const nd0=OVL.nd;OVL.nd=ovNd()*RACK_K;
+  try{rackDrawK();}finally{OVL.nd=nd0;}
+}
+function rackDrawK(){
   const T=rackTex(), g0=RACK.geo;
   /* открытие: затемнение наплывает за четыре кадра, пока печь печёт части; стойка встаёт целиком */
   RACK.fade=Math.min(1,RACK.fade+.25);
-  if(!T.P||!T.S){ovRect(0,0,W,H,"rgba(3,5,8,.42)",RACK.fade);return;}
+  if(!T.P||!T.S){ovRect(0,0,W/RACK_K,H/RACK_K,"rgba(3,5,8,.42)",RACK.fade);return;}
   rackFrame(T,g0);
 }
 /* прогрев — кадр стойки вхолостую последним шагом печи: глифы живых надписей растрятся там, а не в
@@ -471,15 +508,14 @@ function rackFrame(T,g0){
   const R=instrRead(),nd=T.nd,S=T.S,[mx,mt]=RACK_SH,Q=OVL.uq;
   /* начало стойки — на целый пиксель устройства: мастер ложится текстель в пиксель */
   const ox=Math.round(g0.x*nd),oy=Math.round(g0.y*nd),X=ox/nd,Y=oy/nd;
-  ovRect(0,0,W,H,"rgba(3,5,8,.42)",T.fade);
+  ovRect(0,0,W/RACK_K,H/RACK_K,"rgba(3,5,8,.42)",T.fade);
   for(const p of T.P)ovImage(p.B,(ox-mx+p.X0+p.B.w/2)/nd,(oy-mt+p.Y0+p.B.h/2)/nd,p.B.w/nd,p.B.h/nd,0,0,0,1,1,1);
 
   /* ── стрелки ── */
-  const n=RACK_G.length, cw=(g0.w-RACK_PAD*2)/n;
-  const rr=rackR(g0);
+  const n=RACK_G.length;
   const A0=Math.PI*.78, A1=Math.PI*2.22;
   for(let i=0;i<n;i++){
-    const g=RACK_G[i], cx=X+RACK_PAD+cw*(i+.5), cy=Y+RACK_PAD+rr+6;
+    const g=RACK_G[i], C=rackCell(g0,i), cx=X+C.cx, cy=Y+C.cy;
     let v=g.read(R);
     if(g.id==="hold")g.hi=Math.max(1,stat().cargoMax);
     let t=clamp((v-g.lo)/(g.hi-g.lo),0,1);

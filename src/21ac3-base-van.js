@@ -71,13 +71,22 @@ function vanStep(B,n){
 function drawVan(x0,fy,lit,seed,B){
   const v=vanOf(B),q=vanQuirk(B),name=vanName(B);
   const vx=x0-6,vw=52,vh=24,vy=fy-8-vh;             /* стоит на полозьях в 8 px над полом */
+  /* машина стоит — печётся; живы только прогрев двигателей и марево причуды */
+  if(bL()){
+    const eg=.35+.25*Math.sin(G.t*.07+seed);
+    ctx.fillStyle="rgba(255,170,90,"+(eg*.5).toFixed(2)+")";ctx.fillRect(vx+2,fy-8,2,4);ctx.fillRect(vx+vw-22,fy-8,2,4);
+    if(q&&q.id==="heat"){                               /* марево над капотом */
+      ctx.strokeStyle="rgba(255,255,255,"+(.08+lit*.06).toFixed(3)+")";ctx.lineWidth=1;
+      for(let i=0;i<3;i++){const hx=vx+vw-12+i*4,ph=G.t*.08+i;
+        ctx.beginPath();for(let k=0;k<=6;k++)ctx.lineTo(hx+Math.sin(ph+k*.9)*1.5,vy-1-k*1.6);ctx.stroke();}
+    }
+  }
+  if(!bS())return;
   ctx.fillStyle="rgba(0,0,0,.32)";ctx.beginPath();ctx.ellipse(vx+vw/2,fy-1,vw*.55,3,0,0,TAU);ctx.fill();
   /* двигатели снизу сзади и полозья */
   ctx.fillStyle="rgba(40,44,50,.98)";
   ctx.beginPath();ctx.roundRect(vx+4,fy-9,12,6,2);ctx.fill();
   ctx.beginPath();ctx.roundRect(vx+vw-20,fy-9,12,6,2);ctx.fill();
-  const eg=.35+.25*Math.sin(G.t*.07+seed);
-  ctx.fillStyle="rgba(255,170,90,"+(eg*.5).toFixed(2)+")";ctx.fillRect(vx+2,fy-8,2,4);ctx.fillRect(vx+vw-22,fy-8,2,4);
   ctx.fillStyle="rgba(90,98,108,.98)";ctx.fillRect(vx+2,fy-3,vw-4,2);
   ctx.fillRect(vx+8,fy-4,2,2);ctx.fillRect(vx+vw-10,fy-4,2,2);
   /* кузов: тёплый серо-зелёный, как красили такие машины */
@@ -117,11 +126,6 @@ function drawVan(x0,fy,lit,seed,B){
     }
     if(q.id==="blink"){                                 /* правый поворотник горит всегда */
       ctx.fillStyle="rgba(255,170,60,.95)";ctx.fillRect(vx+vw-4,vy+8,3,3);bGlow(vx+vw-2,vy+9,9,"255,170,60",.12);
-    }
-    if(q.id==="heat"){                                  /* марево над капотом */
-      ctx.strokeStyle="rgba(255,255,255,"+(.08+lit*.06).toFixed(3)+")";ctx.lineWidth=1;
-      for(let i=0;i<3;i++){const hx=vx+vw-12+i*4,ph=G.t*.08+i;
-        ctx.beginPath();for(let k=0;k<=6;k++)ctx.lineTo(hx+Math.sin(ph+k*.9)*1.5,vy-1-k*1.6);ctx.stroke();}
     }
     if(q.id==="start"){                                 /* капот приоткрыт, кто-то заглядывает */
       ctx.fillStyle="rgba(98,110,90,.98)";ctx.beginPath();ctx.moveTo(vx+vw-14,vy+2);ctx.lineTo(vx+vw-2,vy-3);ctx.lineTo(vx+vw-1,vy+2);ctx.closePath();ctx.fill();

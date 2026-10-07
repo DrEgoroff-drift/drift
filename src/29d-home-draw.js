@@ -22,14 +22,274 @@ function drawHomeIn(){
   const cLo=R[0].x-30, cHi=Math.max(cLo,R[R.length-1].x+R[R.length-1].w-vw+30);
   const want=clamp(S.x-vw*.5,cLo,cHi);
   S.cam+=(want-S.cam)*.12;
-  const camx=S.cam;
-  ctx.fillStyle="#0a0808";ctx.fillRect(0,0,W,H);
+  /* ── кадр на видеокарте (G11) ──
+     Дом неподвижен, и печётся он кусками по миру (hinChunks): задний слой —
+     стены, пол, окна, обстановка, проёмы, лестница; передний — вещи ближе
+     человека и лампы; оболочка (чердак, верх, лаги) — в заднем. Камера стоит
+     на целом пикселе устройства, и куски ложатся текстурой пиксель в пиксель.
+     Между слоями — живые люди на 2D.
+     Свет — по пикселю поверх всего: лампа на комнату светит конусом и гаснет
+     к углам, окна льют холод на пол, из проёмов тянет теплом соседней лампы;
+     в конусах висит пыль. Без устройства дом не рисуется: 2D-пути нет */
+  const camx=Math.round(S.cam*k*DPR)/(k*DPR);
+  const fy=0, ceil=-HIN_ROOM_H;
+  const sig=hinSig(S,k);
+  const sp=gpuScene();
+  hinChunks(sp,"back",sig,k,camx,(x0,x1)=>hinPaintBack(R,x0,x1-x0,P,S));
+  /* свет — на задний слой, ДО людей: люди в сцене рисуются после её света, не под
+     пеленой (DECISIONS; Контроль 26.09 — хозяин выходил на 8 % светлее main и серее) */
+  const lu=hinLightU(R,k,camx);
+  if(sp){
+    gpuField(sp,"hin.light",HIN_LIGHT_WGSL,lu,null,{blend:"mul"});
+    gpuField(sp,"hin.haze",HIN_HAZE_WGSL,lu,null,{blend:"add"});
+  }
   ctx.save();ctx.scale(k,k);
   ctx.translate(-camx,H/k-HIN_MAN*.9);
-  const fy=0, ceil=-HIN_ROOM_H;
+  /* ── жильцы и хозяин ── */
+  /* У каждого своя глубина (M173): раньше все стояли на одной линии, и пятеро
+     в комнате читались рядом одинаковых вырезок. Кто дальше — выше, мельче и
+     глуше; разница маленькая, но именно она превращает ряд в компанию. */
+  for(const f of S.folk){
+    if((f.up|0)!==(S.up|0))continue;      /* каждый на своём этаже (M178-9) */
+    if(f.x<camx-40||f.x>camx+vw+40)continue;
+    const z=f.z||0;
+    ctx.save();
+    ctx.translate(f.x,fy-z*HIN_MAN*.13);ctx.scale(1-z*.10,1-z*.10);
+    ctx.globalAlpha=1-z*.22;
+    hinFigure(0,0,f.col,f.face,f.pose,f.walk||0,f.name,f.look);
+    ctx.restore();
+  }
+  /* ── дома он не в скафандре ──
+     Хозяин рисовался почти белым (214,222,228) и на тёмной стене читался
+     КЛЯКСОЙ: руки той же светлоты тонули в корпусе, силуэт распадался на
+     белое пятно и две серые палки. Правило старое, из отсеков базы: одежда
+     средне-серая или цвета роли, белое пятно — брак. Дома человек в домашнем:
+     тёплый серо-синий, по нему видно и плечи, и руки. */
+  hinFigure(S.x,fy,[126,136,150],S.face,(keys.left||keys.right)?"walk":"stand",S.walk,null,
+            {skin:[206,172,142]});
+  ctx.restore();
+  const op=gpuOver();
+  if(op){
+    /* люди — краска, не огонь: склейка 2D кладёт почти упёршееся тёплое в слой огней, и
+       лицо под лампой светило ореолом (торс +11 % к main только от свечения кадра, 26.09).
+       У main дом шёл без этого слоя — чистим его после склейки */
+    const ec=GPU.dev.createCommandEncoder();
+    ec.beginRenderPass({colorAttachments:[{view:GPU.V.emit,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:0}}]}).end();
+    GPU.dev.queue.submit([ec.finish()]);
+    /* на людей — только воздух комнаты, как у main: мягкий тёплый отсвет вокруг лампы
+       (маска — альфа слоя 2D, где сейчас одни люди); вещи ближе людей — под тем же
+       светом, что и комната, своим полем; лампочки и пыль — поверх всего */
+    const fv=hinFrontTex();
+    if(fv)gpuField(op,"hin.air",HIN_AIR_WGSL,lu,[fv],{blend:"add"});
+    hinChunks(op,"front",sig,k,camx,(x0,x1)=>hinPaintFront(R,x0,x1-x0,P),lu);
+    hinGlow(op,R,k,camx,lu);
+    /* воздух читал передний слой: отправляем сразу, как фонари (11va), — следующая
+       выгрузка #c (сборка кадра) не должна обогнать это чтение */
+    if(fv){GPU.overPass.end();GPU.overPass=null;GPU.dev.queue.submit([GPU.enc.finish()]);GPU.enc=GPU.dev.createCommandEncoder();}
+  }
+  /* ── строка внимания и имя комнаты: по линейке борта (M443) ── */
+  withScale(uiK(),()=>{
+  if(S.look){
+    const a=clamp(S.lookT/120,0,1);
+    ctx.fillStyle="rgba(6,8,12,"+(.72*a).toFixed(2)+")";
+    ctx.fillRect(0,H-66,W,46);
+    ctx.fillStyle="rgba(242,178,92,"+a.toFixed(2)+")";
+    ctx.font="12px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText(S.look.ru.toUpperCase(),16,H-45);
+    ctx.fillStyle="rgba(214,226,232,"+a.toFixed(2)+")";
+    ctx.font="13px ui-monospace,monospace";
+    ctx.fillText(S.look.say,16,H-27);
+  }
+  const room=hinRoomAt(S.x);
+  if(room){
+    ctx.fillStyle="rgba(127,230,216,.55)";
+    ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText(room.ru.toUpperCase(),12,26);
+  }
+  });
+}
+/* что меняет неподвижный дом: сколько построено, этаж, верх, корабль в гараже,
+   кубки в витрине — и масштаб кадра. Сменилось — куски перепекаются */
+function hinSig(S,k){
+  const Hm=G.home||{},gk=(Hm.garage&&Hm.garage[0])||null;
+  return (Hm.tier|0)+"|"+(S.up|0)+"|"+(hinHasUp()?1:0)+"|"+(gk?JSON.stringify(gk).length+":"+(gk.id||gk.k||gk.name||""):"-")+"|"+
+    JSON.stringify(Hm.trophies||[])+"|"+k.toFixed(4)+"|"+W+"x"+H+"|"+DPR;
+}
+/* ── куски дома ──
+   Кусок — HIN_CH единиц мира по ширине и весь кадр по высоте, в пикселях
+   устройства. Печётся с полем в HIN_CHP с каждой стороны, а кладётся без
+   него: край куска не видит соседнего края, и шва нет. Держим только
+   видимые и соседние; сменилась подпись — все вон */
+const HIN_CH=160, HIN_CHP=6, HIN_CHUNKS={};
+function hinChunks(pass,layer,sig,k,camx,paint,lu){
+  let T=HIN_CHUNKS[layer];
+  if(!T||T.sig!==sig){if(T)for(const B of T.m.values())gpuBakeDrop(B);T=HIN_CHUNKS[layer]={sig,m:new Map()};}
+  if(!pass)return;
+  const y0=-(H/k-HIN_MAN*.9), vw=W/k, i0=Math.floor(camx/HIN_CH), i1=Math.floor((camx+vw)/HIN_CH);
+  const cw=HIN_CH+HIN_CHP*2, R=[];
+  for(let i=i0;i<=i1;i++){
+    let B=T.m.get(i);
+    if(!B){
+      const x0=i*HIN_CH-HIN_CHP;
+      B=gpuBake(cw*k*DPR,H*DPR,c=>{c.scale(k*DPR,k*DPR);c.translate(-x0,-y0);paint(x0,x0+cw);},{mips:false});
+      if(!B)return;
+      T.m.set(i,B);
+    }
+    const u=HIN_CHP/cw;
+    R.push({B,r:{x:(i*HIN_CH+HIN_CH*.5-camx)*k,y:H/2,w:HIN_CH*k,h:H,u0:u,u1:1-u}});
+  }
+  /* передние куски — через поле света (lu): свет дома лёг на задний слой до людей */
+  if(lu)for(const q of R){
+    const r=q.r;lu[28]=r.x-r.w/2;lu[29]=r.x+r.w/2;lu[30]=r.u0;lu[31]=r.u1;
+    gpuField(pass,"hin.flit",HIN_FLIT_WGSL,lu,[q.B]);
+  }
+  else for(const q of R)gpuImage(pass,q.B,[q.r]);
+  /* ушедшие далеко куски — в корзину */
+  for(const [i,B] of T.m)if(i<i0-2||i>i1+2){gpuBakeDrop(B);T.m.delete(i);}
+}
+/* окна первого этажа: в каждой второй комнате, и в кабинете всегда (M247, M304) */
+function hinWinXs(R){
+  const out=[];
+  for(let i=0;i<R.length;i++){
+    const r=R[i];
+    if(i%2&&r.key!=="study")continue;
+    /* в кабинете справа висит экран, а слева стол: окно встаёт между ними */
+    out.push(r.x+r.w*(r.key==="study"?.50:.68));
+  }
+  return out;
+}
+/* ── свет дома на видеокарте ──
+   Множитель по пикселю: в комнате без лампы темно, у лампы — светлее, чем
+   нарисовано, конус ложится на стену и пол, у каждой лампы лужа на полу.
+   Окна холодят пол под собой и стену под подоконником, проёмы тянут тепло
+   соседней комнаты на наш пол. Над потолком и под полом (оболочка) свет не
+   меняет ничего. Потом сложением — дымка в конусах с пылью; лампочки и
+   огонёк причала — сами светятся */
+const HIN_LIGHT_WGSL=ROOM_WGSL_NOISE+`
+fn lampCone(p:vec2f,lx:f32,top:f32,bot:f32,m:f32)->f32{
+  let v=(p.y-top)/(bot-top);if(v<0.||v>1.05){return 0.;}
+  let hw=mix(m*.22,m*1.5,v);
+  return (1.-smoothstep(hw*.72,hw*1.08,abs(p.x-lx)));}
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let fy=fu.v[0].x;let ce=fu.v[0].y;let m=fu.v[0].z;let t=fu.v[0].w;
+  let WARM=vec3f(1.,.80,.58);let COLD=vec3f(.70,.84,1.08);
+  var L=vec3f(.74,.72,.74);
+  for(var i=0;i<8;i++){
+    let lx=fu.v[1+i/4][i%4];if(lx<-9e3){continue;}
+    let lp=vec2f(lx,ce+m*.62);
+    let d=length((p-lp)/vec2f(m*1.6,m*1.3));
+    L=L+WARM*(.22/(1.+d*d));
+    /* конус и лужу рисует задний слой сложением (hinPaintBack); здесь — только
+       добавка света на то, что в них стоит, иначе конус вдвое ярче, чем в main */
+    L=L+WARM*lampCone(p,lx,ce+m*.62,fy,m)*.05;
+    let pd=length((p-vec2f(lx,fy))/vec2f(m*1.8,m*.36));
+    L=L+WARM*.08*(1.-smoothstep(.15,1.,pd));
+  }
+  for(var i=0;i<8;i++){
+    let wx=fu.v[3+i/4][i%4];if(wx<-9e3){continue;}
+    let pd=length((p-vec2f(wx,fy))/vec2f(m*1.35,m*.32));
+    L=L+COLD*.36*(1.-smoothstep(.1,1.,pd));
+    let wd=length((p-vec2f(wx,fy-m*.95))/vec2f(m*.95,m*.95));
+    L=L+COLD*.22/(1.+wd*wd*1.5);
+  }
+  for(var i=0;i<8;i++){
+    let dx=fu.v[5+i/4][i%4];if(dx<-9e3){continue;}
+    let pd=length((p-vec2f(dx,fy))/vec2f(m*1.25,m*.20));
+    L=L+WARM*.34*(1.-smoothstep(.1,1.,pd));
+  }
+  /* над потолком и под полом — оболочка: там свет свой */
+  let inR=smoothstep(ce-m*.18,ce,p.y)*(1.-smoothstep(fy+m*.88,fy+m*.92,p.y));
+  return vec4f(mix(vec3f(1.),L,inR),1.);}`;
+const HIN_HAZE_WGSL=ROOM_WGSL_NOISE+`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let fy=fu.v[0].x;let ce=fu.v[0].y;let m=fu.v[0].z;let t=fu.v[0].w;
+  var c=vec3f(0.);
+  for(var i=0;i<8;i++){
+    let lx=fu.v[1+i/4][i%4];if(lx<-9e3){continue;}
+    let top=ce+m*.62;let v=(p.y-top)/(fy-top);
+    if(v<0.||v>1.){continue;}
+    let hw=mix(m*.22,m*1.5,v);
+    let cone=1.-smoothstep(hw*.82,hw*1.02,abs(p.x-lx));
+    let dust=.45+.8*rfbm(vec2f(p.x/(m*.2),p.y/(m*.26)-t*.06));
+    c=c+vec3f(1.,.84,.62)*cone*(1.-v*.9)*.085*dust;
+  }
+  return vec4f(c,0.);}`;
+/* передний кусок под светом дома: тот же множитель, что у комнаты, но только по своей
+   краске (v[7] — где кусок на экране и какая часть текстуры видна) */
+const HIN_FLIT_WGSL=HIN_LIGHT_WGSL.replace("fn field(","fn hinL(")+`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let r=fu.v[7];
+  if(p.x<r.x||p.x>r.y){return vec4f(0.);}
+  let s=textureSampleLevel(t0,smp,vec2f(r.z+(p.x-r.x)/max(r.y-r.x,1.)*(r.w-r.z),uv.y),0.);
+  if(s.a<.004){return vec4f(0.);}
+  return vec4f(s.rgb*hinL(p,uv).rgb,s.a);}`;
+/* воздух комнаты на людях — как у main: мягкий тёплый отсвет вокруг лампы (.13 у лампы,
+   к нулю на .7 высоты комнаты), сложением, только там, где слой 2D (люди) непрозрачен */
+const HIN_AIR_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let a=textureSampleLevel(t0,smp,uv,0.).a;
+  if(a<.004){return vec4f(0.);}
+  let fy=fu.v[0].x;let ce=fu.v[0].y;let m=fu.v[0].z;let R=max((fy-ce)*.7,1.);
+  var c=vec3f(0.);
+  for(var i=0;i<8;i++){
+    let lx=fu.v[1+i/4][i%4];if(lx<-9e3){continue;}
+    let t=clamp(length(p-vec2f(lx,ce+m*.6))/R,0.,1.);
+    c=c+mix(vec3f(1.,.808,.541),vec3f(1.,.706,.431),t)*.13*(1.-t);
+  }
+  return vec4f(c*a,0.);}`;
+let HIN_FV=null;
+function hinFrontTex(){
+  const t=GPU.T&&GPU.T.front;if(!t)return null;
+  if(!HIN_FV||HIN_FV.t!==t)HIN_FV={t,view:t.createView()};
+  return HIN_FV;
+}
+const HIN_LIGHT_U=new Float32Array(32),HIN_GLOW=[],HIN_STRIP=[];
+/* числа света дома: пол и потолок на экране, лампы, окна, проёмы (в пикселях CSS) */
+function hinLightU(R,k,camx){
+  const u=HIN_LIGHT_U,M=HIN_MAN,oy=H-M*.9*k,sx=x=>(x-camx)*k;
+  u.fill(-1e4);
+  u[0]=oy;u[1]=oy-HIN_ROOM_H*k;u[2]=M*k;u[3]=(G.t/60)%3600;
+  let n=0;
+  for(const r of R){const lx=sx(r.x+r.w*.5);if(lx<-M*3*k||lx>W+M*3*k||n>7)continue;u[4+n++]=lx;}
+  n=0;
+  for(const wx of hinWinXs(R)){const x=sx(wx);if(x<-M*3*k||x>W+M*3*k||n>7)continue;u[12+n++]=x;}
+  n=0;
+  for(let i=1;i<R.length;i++){const x=sx(R[i].x);if(x<-M*3*k||x>W+M*3*k||n>7)continue;u[20+n++]=x;}
+  return u;
+}
+function hinGlow(pass,R,k,camx,u){
+  const M=HIN_MAN,oy=u[0],sx=x=>(x-camx)*k;
+  /* лампочки: полоса под абажуром и мягкий венчик у неё; пыль, что плывёт
+     в конусе; огонёк причала мигает */
+  const G2=HIN_GLOW,GS=HIN_STRIP;G2.length=0;GS.length=0;
+  const ly=oy+(-HIN_ROOM_H+M*.61)*k,ft=u[3];
+  for(let j=4;j<12;j++){
+    const lx=u[j];if(lx<-9e3)continue;
+    /* полоса — краской поверх, как у main (255,214,150 на .9): сложением она упиралась
+       в единицу по всем каналам и горела белым пятном (S .007 против .29, 26.09) */
+    GS.push([2,lx-M*.14*k,ly,lx+M*.14*k,ly,1.1*k,1.2*k,255,214,150,.9]);
+    G2.push([1,lx,ly+M*.1*k,M*.3*k,0,0,M*.6*k,255,200,140,.06]);
+    for(let i=0;i<14;i++){
+      const h1=hashi(i,j,0x40FD)/4294967296,h2=hashi(i,j+9,0x40FD)/4294967296,h3=hashi(i,j+19,0x40FD)/4294967296;
+      const v=(h2+ft*.010*(.3+h3))%1,hw=M*k*(.22+v*1.28)*.7;
+      const a=(.10+.22*h3)*(1-v*.7)*(.6+.4*Math.sin(ft*.4+i*1.9+j));
+      G2.push([1,lx+(h1-.5)*2*hw+Math.sin(ft*.3+i)*M*k*.03,ly+M*k*.06+v*(oy-ly),.45+h3*.8,0,0,.9+h3*1.1,255,234,196,a]);
+    }
+  }
+  for(const r of R)if(r.key==="dock"){
+    const x=sx(r.x+r.w*.40+M*.3),y=oy-M*.98*k,b=.4+.5*Math.abs(Math.sin(G.t*.05));
+    G2.push([1,x,y,3*k,0,0,6*k,255,150,90,.35*b]);
+  }
+  gpuShapes(pass,GS,{blend:"over"});
+  gpuShapes(pass,G2,{blend:"add"});
+}
+/* ── задний слой дома (кусок hinChunks): всё, что стоит за людьми ── */
+function hinPaintBack(R,x0,cw,P,S){
+  const camx=x0+40, vw=cw-80, fy=0, ceil=-HIN_ROOM_H;
+  ctx.fillStyle="#0a0808";ctx.fillRect(x0,-1e4,cw,2e4);
   /* оболочка (29e): чердак или комната сверху и лаги снизу. Рисуется ПЕРВОЙ —
      это то, что за стеной комнаты, а не поверх неё */
-  if(typeof hinDrawShell==="function")hinDrawShell(R,camx,vw,fy,ceil,P,S.up|0);
+  hinDrawShell(R,camx,vw,fy,ceil,P,S.up|0);
   /* ── дальняя стена ── */
   const wg=ctx.createLinearGradient(0,ceil,0,fy);
   wg.addColorStop(0,"rgb("+P.wall.map(v=>v*.7|0).join(",")+")");
@@ -49,7 +309,7 @@ function drawHomeIn(){
       ctx.fillRect(cx0,cy0,2,2);
   }
   ctx.fillStyle="rgba(0,0,0,.18)";ctx.fillRect(camx-40,wsy,vw+80,1.5);
-  for(let i=0;i<30;i++){
+  for(let i=0;i<10;i++){   /* на кусок — треть прежнего: кусок в треть кадра */
     ctx.fillStyle="rgba(0,0,0,"+(.03+rr()*.05).toFixed(3)+")";
     ctx.fillRect(camx-40+rr()*(vw+80),ceil+8+rr()*(HIN_ROOM_H-16),1.4,1.4);
   }
@@ -105,15 +365,16 @@ function drawHomeIn(){
       }
     }
   }
-  ctx.fillStyle="rgba(0,0,0,.34)";ctx.fillRect(camx-40,fy,vw+80,2.4);
-  /* ── свет ДО обстановки ──
-     Конус, положенный последним, читался плёнкой поверх мебели: он лежал на
-     витрине и на станке, будто они прозрачные (самокритика M170). Свет падает
-     на пол и стену, а вещи стоят В НЁМ — значит, рисуется он раньше вещей. */
+  /* ── свет ДО обстановки: конус и лужа на полу сложением, как в main ──
+     Только умножением (hinLight) на тёмной стене конуса не видно: стена ×1.2
+     остаётся тёмной (Контроль 26.09, «конусов и пятен на полу почти нет»).
+     Сложение лежит в заднем слое ПОД вещами — положенный последним, конус
+     читался плёнкой поверх мебели (M170). Поле света умножает его вместе со
+     стеной. Край отбора — шире лужи (1.7 роста) и поля куска, иначе шов */
   ctx.save();ctx.globalCompositeOperation="lighter";
   for(const r of R){
     const lx=r.x+r.w*.5;
-    if(lx<camx-100||lx>camx+vw+100)continue;
+    if(lx<camx-40-HIN_MAN*2||lx>camx+vw+40+HIN_MAN*2)continue;
     const cg=ctx.createLinearGradient(0,ceil+HIN_MAN*.62,0,0);
     cg.addColorStop(0,"rgba(255,206,138,.22)");
     cg.addColorStop(.7,"rgba(255,196,130,.08)");
@@ -130,35 +391,12 @@ function drawHomeIn(){
   }
   ctx.restore();
   /* ── окно на первом этаже (M247) ──
-     Внизу окон не было вовсе — «наверху окно, внизу нет». Из-за этого в доме
-     не оказывалось ни одного холодного источника: прибор мерил 99% тепла и
-     пару в 1%, то есть комнату, освещённую только лампой. А снаружи у дома
-     окна первого этажа горят — то есть рисунок ещё и противоречил сам себе.
-     Ставим по окну в каждой второй комнате: холодное небо, отсвет на полу и
-     вторая температура в кадре. */
-  /* M304. Кабинет по чётности пролетал мимо и оставался комнатой без единого
-     холодного пикселя — прибор мерил там 99% тепла. Окно ему положено отдельно. */
-  if(typeof hinUpWindow==="function")for(let i=0;i<R.length;i++){
-    const r=R[i];
-    if(i%2&&r.key!=="study")continue;
-    if(r.x+r.w<camx-60||r.x>camx+vw+60)continue;
-    /* в кабинете справа висит экран, а слева стол: окно встаёт между ними */
-    const wx=r.x+r.w*(r.key==="study"?.50:.68);
+     Внизу окон не было вовсе — «наверху окно, внизу нет». Ставим по окну в
+     каждой второй комнате: холодное небо и вторая температура в кадре. Лужа
+     холода под окном и подмес по стене — свет, он теперь в hinLight (G11). */
+  if(typeof hinUpWindow==="function")for(const wx of hinWinXs(R)){
+    if(wx<camx-120||wx>camx+vw+120)continue;
     hinUpWindow(wx,fy,ceil,P,1.05);
-    /* M304. Окно светило только себе: прибор мерил на полу 99% тепла и
-       ни одного холодного пикселя. Лужа под окном и подмес по стене под
-       подоконником — до обстановки, чтобы вещи стояли В нём, как и в тёплом конусе. */
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const ww=HIN_MAN*1.05;
-    const pg=ctx.createRadialGradient(wx,fy,2,wx,fy,HIN_MAN*1.3);
-    pg.addColorStop(0,"rgba(150,190,240,.16)");
-    pg.addColorStop(1,"rgba(150,190,240,0)");
-    ctx.fillStyle=pg;
-    ctx.save();ctx.translate(wx,fy);ctx.scale(1,HIN_MAN*.30/(HIN_MAN*1.3));
-    ctx.beginPath();ctx.arc(0,0,HIN_MAN*1.3,0,TAU);ctx.fill();ctx.restore();
-    ctx.fillStyle="rgba(150,190,240,.05)";
-    ctx.fillRect(wx-ww*.5,fy-HIN_MAN*.56,ww,HIN_MAN*.56);
-    ctx.restore();
   }
   /* ── обстановка ── */
   for(const r of R){
@@ -212,14 +450,6 @@ function drawHomeIn(){
     ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,4);
     ctx.restore();
     /* свет из проёма ложится на НАШ пол: без этого проход светится сам в себе,
-       а комната перед ним остаётся тёмной (закон 1) */
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const pg=ctx.createRadialGradient(x,fy,2,x,fy,HIN_DOORW*1.1);
-    pg.addColorStop(0,"rgba(255,206,138,.16)");
-    pg.addColorStop(1,"rgba(255,206,138,0)");
-    ctx.fillStyle=pg;
-    ctx.beginPath();ctx.ellipse(x,fy,HIN_DOORW*1.1,HIN_MAN*.16,0,0,TAU);ctx.fill();
-    ctx.restore();
     /* косяк ДЕРЕВЯННЫЙ, а не волосок обводки: рамка в один пиксель вокруг
        светлого поля и делала из прохода панель (M247) */
     ctx.fillStyle="rgb("+P.wood.map(v=>v*.52|0).join(",")+")";
@@ -251,28 +481,10 @@ function drawHomeIn(){
     for(let yy=ceil+10;yy<fy;yy+=9)
       for(let xx=x+((((yy-ceil)/9)|0)%2?6:0);xx<x+80;xx+=18)ctx.strokeRect(xx+.5,yy+.5,16,8);
   }
-  /* ── жильцы и хозяин ── */
-  /* У каждого своя глубина (M173): раньше все стояли на одной линии, и пятеро
-     в комнате читались рядом одинаковых вырезок. Кто дальше — выше, мельче и
-     глуше; разница маленькая, но именно она превращает ряд в компанию. */
-  for(const f of S.folk){
-    if((f.up|0)!==(S.up|0))continue;      /* каждый на своём этаже (M178-9) */
-    if(f.x<camx-40||f.x>camx+vw+40)continue;
-    const z=f.z||0;
-    ctx.save();
-    ctx.translate(f.x,fy-z*HIN_MAN*.13);ctx.scale(1-z*.10,1-z*.10);
-    ctx.globalAlpha=1-z*.22;
-    hinFigure(0,0,f.col,f.face,f.pose,f.walk||0,f.name,f.look);
-    ctx.restore();
-  }
-  /* ── дома он не в скафандре ──
-     Хозяин рисовался почти белым (214,222,228) и на тёмной стене читался
-     КЛЯКСОЙ: руки той же светлоты тонули в корпусе, силуэт распадался на
-     белое пятно и две серые палки. Правило старое, из отсеков базы: одежда
-     средне-серая или цвета роли, белое пятно — брак. Дома человек в домашнем:
-     тёплый серо-синий, по нему видно и плечи, и руки. */
-  hinFigure(S.x,fy,[126,136,150],S.face,(keys.left||keys.right)?"walk":"stand",S.walk,null,
-            {skin:[206,172,142]});
+}
+/* ── передний слой дома: вещи ближе человека и лампы под потолком ── */
+function hinPaintFront(R,x0,cw,P){
+  const camx=x0+40, vw=cw-80, fy=0, ceil=-HIN_ROOM_H;
   /* ── передний план (M173) ──
      Комната была одной плоскостью: стена, вещи у стены, человек — и всё на
      одной глубине. Пара предметов БЛИЖЕ человека, обрезанных нижней кромкой
@@ -282,19 +494,6 @@ function drawHomeIn(){
     if(r.x+r.w<camx-80||r.x>camx+vw+80)continue;
     hinMaterialize(fy,()=>hinFrontStuff(r,fy,P));
   }
-  /* ── свет: по лампе на комнату ── */
-  ctx.save();ctx.globalCompositeOperation="lighter";
-  for(const r of R){
-    const lx=r.x+r.w*.5;
-    if(lx<camx-100||lx>camx+vw+100)continue;
-    /* поверх остаётся только мягкий тёплый отсвет вокруг самой лампы: он
-       ложится и на вещи, и на людей — это воздух комнаты, а не луч */
-    const g=ctx.createRadialGradient(lx,ceil+HIN_MAN*.6,4,lx,ceil+HIN_MAN*.6,HIN_ROOM_H*.7);
-    g.addColorStop(0,"rgba(255,206,138,.13)");
-    g.addColorStop(1,"rgba(255,180,110,0)");
-    ctx.fillStyle=g;ctx.fillRect(r.x,ceil,r.w,HIN_ROOM_H+HIN_MAN);
-  }
-  ctx.restore();
   for(const r of R){
     const lx=r.x+r.w*.5;
     if(lx<camx-100||lx>camx+vw+100)continue;
@@ -308,27 +507,6 @@ function drawHomeIn(){
     ctx.fillStyle="rgba(255,214,150,.9)";
     ctx.fillRect(lx-HIN_MAN*.16,ceil+HIN_MAN*.6,HIN_MAN*.32,2.2);
   }
-  ctx.restore();
-  /* ── строка внимания и имя комнаты: по линейке борта (M443) ── */
-  withScale(uiK(),()=>{
-  if(S.look){
-    const a=clamp(S.lookT/120,0,1);
-    ctx.fillStyle="rgba(6,8,12,"+(.72*a).toFixed(2)+")";
-    ctx.fillRect(0,H-66,W,46);
-    ctx.fillStyle="rgba(242,178,92,"+a.toFixed(2)+")";
-    ctx.font="12px ui-monospace,monospace";ctx.textAlign="left";
-    ctx.fillText(S.look.ru.toUpperCase(),16,H-45);
-    ctx.fillStyle="rgba(214,226,232,"+a.toFixed(2)+")";
-    ctx.font="13px ui-monospace,monospace";
-    ctx.fillText(S.look.say,16,H-27);
-  }
-  const room=hinRoomAt(S.x);
-  if(room){
-    ctx.fillStyle="rgba(127,230,216,.55)";
-    ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
-    ctx.fillText(room.ru.toUpperCase(),12,26);
-  }
-  });
 }
 /* ── передний план комнаты (M173) ──
    Одна-две вещи БЛИЖЕ человека, срезанные нижней кромкой. Их задача не быть
@@ -608,7 +786,7 @@ function hinRoomStuff(r,fy,ceil,P){
     ctx.fillStyle="rgba(20,26,32,.9)";ctx.fillRect(at(.40)-M*.4,fy-M*.8,M*.8,M*.34);
     ctx.fillStyle="rgba(127,230,216,.6)";
     for(let i=0;i<4;i++)ctx.fillRect(at(.40)-M*.34+i*M*.2,fy-M*.72,M*.12,M*.06);
-    ctx.fillStyle="rgba(255,150,90,"+(.4+.5*Math.abs(Math.sin(G.t*.05))).toFixed(2)+")";
+    ctx.fillStyle="rgba(255,150,90,.45)";   /* мигает свечением поверх (hinLight) */
     ctx.beginPath();ctx.arc(at(.40)+M*.3,fy-M*.98,3,0,TAU);ctx.fill();
     /* причальные захваты: клешни на станинах, между ними трос и кнехт —
        две палки с перекладиной ни на что не были похожи (проход M170) */

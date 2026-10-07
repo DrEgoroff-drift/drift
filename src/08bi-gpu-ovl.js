@@ -78,7 +78,8 @@ fn gh(p:vec2f,s:f32)->f32{var q=fract(vec3f(p.x,p.y,s)*.1031);q=q+dot(q,q.yzx+33
   else{   /* эллипс t0 (центр, полуоси): расстояние ≈ f/|∇f|; t1.y — заливка, иначе обвод полутолщиной t1.x;
              t1.w>0 — только дуга от угла t1.z размахом t1.w (угол параметра), концы круглые */
     let q=(p-i.t0.xy)/i.t0.zw;let L=max(length(q),1e-5);let g=max(length(q/i.t0.zw),1e-6);let d=(L-1.)*L/g;
-    if(i.t1.y>.5){a=clamp(.5-d,0.,1.);}
+    /* t1.z>0 у заливки — мягкий край: доля радиуса, на которой заливка гаснет к нулю (1 — пятно света) */
+    if(i.t1.y>.5){a=clamp(.5-d,0.,1.);if(i.t1.z>0.){a=1.-smoothstep(1.-i.t1.z,1.,L);}}
     else{var e=abs(d);
       if(i.t1.w>0.&&fract((atan2(q.y,q.x)-i.t1.z)/6.2831853)*6.2831853>i.t1.w){let z=i.t1.z+i.t1.w;
         e=min(length(p-i.t0.xy-i.t0.zw*vec2f(cos(i.t1.z),sin(i.t1.z))),length(p-i.t0.xy-i.t0.zw*vec2f(cos(z),sin(z))));}
@@ -133,13 +134,28 @@ function ovPush(Q,x0,y0,x1,y1,c,m,l,tx,ty,t){
   if(t)Q.push(t[0],t[1],t[2],t[3],t[4],t[5],t[6]||0,t[7]||0);else Q.push(0,0,0,0,0,0,0,0);
 }
 const OVL_RUN=/[0-9]+|[^0-9]+/g;
+/* прогоны строки; маска прогона — одна картинка атласа, и шире его стороны её не положить: длинная
+   подсказка дороги крупным кеглем на планшете (17 px × DPR 2 = 1148 px) роняла кадр. Такой прогон
+   режется по словам (слово длиннее — по буквам); k — пикселей устройства на пиксель шрифта */
+function ovRuns(st,text,k){
+  const R=text.match(OVL_RUN)||[],lim=OVL.A.S*.9/k,out=[],wd=s=>GC_GLYPHS.measure(st,s).width;
+  for(const s of R){
+    if(s.charCodeAt(0)<58&&s.charCodeAt(0)>47||wd(s)<=lim){out.push(s);continue;}
+    let cur="";
+    for(const w of s.match(/\S+\s*|\s+/g)){
+      if(cur&&wd(cur+w)>lim){out.push(cur);cur="";}
+      if(wd(w)<=lim){cur+=w;continue;}
+      for(const ch of w){if(cur&&wd(cur+ch)>lim){out.push(cur);cur="";}cur+=ch;}}
+    if(cur)out.push(cur);}
+  return out;
+}
 /* строка в очередь Q: (x,y) — якорь в пикселях CSS по align и base, sc — масштаб шрифта (фишка — U).
    Возвращает рамку в CSS: для проверок наложения */
 function ovText(Q,x,y,text,font,col,align,base,al,sc,vert){
   const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:"left"}),c=gcColor(col),a=c[3]*al;
   if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1]*sc,main:true});}
   const pm=[c[0]*a,c[1]*a,c[2]*a,a];
-  const d0=GC_GLYPHS.measure(st,"0"),adv=d0.width*sc,runs=text.match(OVL_RUN)||[];
+  const d0=GC_GLYPHS.measure(st,"0"),adv=d0.width*sc,runs=ovRuns(st,text,nd*sc);
   let tw=0,up=0,dn=0;
   for(const s of runs){const dg=s.charCodeAt(0)<58&&s.charCodeAt(0)>47,m=dg?d0:GC_GLYPHS.measure(st,s);
     tw+=dg?adv*s.length:m.width*sc;up=Math.max(up,m.actualBoundingBoxAscent*sc);dn=Math.max(dn,m.actualBoundingBoxDescent*sc);}
@@ -161,6 +177,17 @@ function ovText(Q,x,y,text,font,col,align,base,al,sc,vert){
     else{put(s,cx);cx+=GC_GLYPHS.measure(st,s).width*sc;}}
   if(vert)return {x0:x-up,x1:x+dn,y0:x0-tw,y1:x0};
   return {x0,x1:x0+tw,y0:y-up,y1:y+dn};
+}
+/* строка под углом ang (рад) одной маской: как 2D под translate(x,y)+rotate(ang) с fillText(text,0,0).
+   Угол — шагом 1/256 оборота, фаза — ¼ пикселя устройства: ключей атласа конечное число (рукава карты) */
+function ovTextRot(Q,x,y,text,font,col,align,base,al,ang){
+  const nd=ovNd(),st=Object.assign({},GC_DEF,{font,textBaseline:base,textAlign:align}),c=gcColor(col),a=c[3]*al;
+  if(OVL.led){const m=/(\d+(?:\.\d+)?)px/.exec(font)||[0,0];OVL.led({s:text,px:+m[1],css:+m[1],main:true});}
+  const q=Math.round(ang/TAU*256)/256*TAU,co=Math.cos(q)*nd,si=Math.sin(q)*nd;
+  const X=x*nd,Y=y*nd,ix=Math.floor(X),iy=Math.floor(Y),fx=Math.round((X-ix)*4)/4,fy=Math.round((Y-iy)*4)/4;
+  const e=ovAtlas("rot|"+font+"|"+base+"|"+align+"|"+q.toFixed(4)+"|"+fx+"|"+fy+"|"+text,
+    ()=>GC_GLYPHS.raster(st,text,[co,si,-si,co],fx,fy,null,undefined,"#fff"));
+  ovPush(Q,ix-e.ox,iy-e.oy,ix-e.ox+e.w,iy-e.oy+e.h,[c[0]*a,c[1]*a,c[2]*a,a],1,e.l,e.x,e.y,null);
 }
 /* подпись мира k (имя станции, планеты, борта): y — как у fillText при нынешнем ctx.textBaseline.
    Без видеокарты — прямо на ctx, как раньше */
@@ -199,6 +226,10 @@ function ovFlush(){
   const n=(OVL.uq.length+OVL.lq.length+OVL.cq.length)/OVL_N;
   for(const M of [OVL.lab,OVL.chip])for(const [k,e] of M){e.on=e.fr===OVL.fno;if(OVL.fno-e.fr>600)M.delete(k);}
   OVL.fno++;
+  /* OVL.hush — кадр отдан одной вещи поверх мира (открытая стойка, 25d): подписи и фишки мира
+     лежат выше интерфейса и легли бы на неё — их слои в этом кадре сброшены. Картинки (прогоны
+     T.ur) живут только в OVL.uq, поэтому сброс не сдвигает ни одного прогона */
+  if(OVL.hush){OVL.hush=false;OVL.lq.length=OVL.cq.length=0;}
   const cv=n&&GPU.enc?ovCanvas():null;
   if(!cv){OVL.uq.length=OVL.lq.length=OVL.cq.length=OVL.ur.length=OVL.gd.length=0;if(OVL.on){OVL.on=false;OVL.cv.style.display="none";}return;}
   OVL.nu=OVL.uq.length/OVL_N;OVL.nl=OVL.lq.length/OVL_N;   /* сколько примитивов интерфейса и подписей (наборы: порядок слоёв) */
@@ -301,10 +332,11 @@ function ovCap(x0,y0,x1,y1,w,col,al){
   const s=ovNd(),r=w*s/2,X0=x0*s,Y0=y0*s,X1=x1*s,Y1=y1*s;
   ovPush(OVL.uq,Math.min(X0,X1)-r,Math.min(Y0,Y1)-r,Math.max(X0,X1)+r,Math.max(Y0,Y1)+r,ovPm(col,al),5,0,0,0,[X0,Y0,X1,Y1,r,0]);
 }
-/* эллипс: центр, полуоси; w>0 — обвод толщиной w, иначе заливка */
+/* эллипс: центр, полуоси; w>0 — обвод толщиной w, 0 — заливка, w<0 — заливка с мягким краем на долю −w
+   радиуса (−1 — пятно света от центра к краю) */
 function ovEll(cx,cy,rx,ry,w,col,al){
   const s=ovNd(),X=cx*s,Y=cy*s,Rx=Math.max(.5,rx*s),Ry=Math.max(.5,ry*s),h=w>0?w*s/2:0;
-  ovPush(OVL.uq,X-Rx-h,Y-Ry-h,X+Rx+h,Y+Ry+h,ovPm(col,al),6,0,0,0,[X,Y,Rx,Ry,h,w>0?0:1]);
+  ovPush(OVL.uq,X-Rx-h,Y-Ry-h,X+Rx+h,Y+Ry+h,ovPm(col,al),6,0,0,0,[X,Y,Rx,Ry,h,w>0?0:1,w<0?Math.min(1,-w):0]);
 }
 /* ломаная a→b→c толщиной w, концы и стык круглые (шеврон одним покрытием, как путь 2D) */
 function ovCap3(ax,ay,bx,by,cx,cy,w,col,al){

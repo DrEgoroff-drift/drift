@@ -186,16 +186,6 @@ function hazeFar(p,k){
   });
   return "rgb("+v.map(Math.round).join(",")+")";
 }
-/* дымка в низинах и у горизонта: одна полоса градиента, но она делает
-   глубину сильнее, чем любой дополнительный слой рельефа */
-function hazeBand(p,y0,h){
-  const c=ambRGB(p);                          /* дымка — сегодняшним воздухом */
-  const g=ctx.createLinearGradient(0,y0-h,0,y0+h*.35);
-  g.addColorStop(0,"rgba("+c.join(",")+",0)");
-  g.addColorStop(.55,"rgba("+c.join(",")+","+(p.T.atm==="отсутствует"?.10:.34)+")");
-  g.addColorStop(1,"rgba("+c.join(",")+",0)");
-  ctx.fillStyle=g;ctx.fillRect(0,y0-h,W,h*1.35);
-}
 /* ── где на небе звезда (M172) ──
    Час суток в игре был давно (celSun, 06a), но светило всё это время стояло
    прибитым в W*.78, H*.16: менялась только заливка темноты поверх кадра.
@@ -257,7 +247,35 @@ function lightShafts(p){
 /* ── финальная свёртка кадра ──
    виньетка и лёгкий цветовой сдвиг: две заливки, которые сводят разнородные
    слои в одну картинку. Всё, что тут делается, стоит два fillRect. */
+/* виньетка и тон на видеокарте (G15): та же радиальная рамка и тот же вертикальный сдвиг,
+   одним полем в последний проход мира, без слоя на #c и его загрузки. Затмение (насыщенность
+   уходит — режим saturation) поле не умеет: тогда вся свёртка 2D */
+const GRADE_WGSL=`
+fn field(p:vec2f,uv:vec2f)->vec4f{
+  let V=fu.v;
+  let av=clamp((length(p-V[0].xy)-V[0].z)/max(V[0].w-V[0].z,1.),0.,1.)*V[1].x;
+  let y=clamp((p.y-V[1].z)/max(V[1].y,1.),0.,1.);
+  var tc=vec3f(0.);var ta=0.;
+  if(y<.5){let u=y*2.;tc=V[2].rgb*(1.-u);ta=V[2].a*(1.-u);}
+  else{let u=y*2.-1.;tc=V[3].rgb*u;ta=V[3].a*u;}
+  return vec4f(tc*ta,1.-(1.-ta)*(1.-av));
+}`;
+const GRADE_U=new Float32Array(16);
+function gradeGpu(p,sun,amb,dk2){
+  if(!GPU.on)return false;
+  const pass=gpuNext();if(!pass)return false;
+  /* пиксель поля — в мерке кадра 2D (gpuField берёт W,H текущего withScale) */
+  const U=GRADE_U;
+  U[0]=W*.5;U[1]=H*.46;U[2]=Math.min(W,H)*.30;U[3]=Math.max(W,H)*.78;
+  U[4]=+lerp(.34,.22,dk2).toFixed(3);U[5]=H;U[6]=0;
+  for(let i=0;i<3;i++){U[8+i]=sun[i]/255;U[12+i]=amb[i]/255;}
+  U[11]=.07;U[15]=.09;
+  gpuField(pass,"grade",GRADE_WGSL,U,[]);
+  return true;
+}
 function gradePass(p){
+  const DK0=typeof celDark==="function"?celDark():0;
+  if(DK0<=.02&&gradeGpu(p,starRGB(),ambRGB(p),dayKq(p)))return;
   /* ── затмение сводится здесь, а не в небе ──
      Первый проход гасил только небо: сверху темнело, а грунт, флора и
      скафандр оставались дневными, и кадр разваливался на две картинки.
@@ -294,43 +312,10 @@ function gradePass(p){
     ctx.fillStyle=t;ctx.fillRect(0,0,W,H);
   }),0,0,W,H);
 }
-/* небо-подложка: вертикальный градиент на весь экран, один раз на планету */
-function drawSkyBase(p){
-  if(gpuSky(p))return;   /* небо, зарево и диск — на видеокарте (19ca) */
-  const s=p.T.sky, sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a", hasAir=p.T.atm!=="отсутствует";
-  /* час суток (06a): слой печётся на 48 делений дня — небо темнеет к ночи, а
-     зарево гнётся за звездой: сидит на горизонте с её стороны и тем ярче,
-     чем она ниже (хвост G7). Ночью зарева нет — нечему рассеиваться */
-  const sun=celSun(p), hb=Math.round(sun.ph*48)%48, nite=surfNight(p);
-  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(",")+"|"+sc+"|"+hasAir+"|"+hb,()=>{
-    ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
-    if(hasAir){
-      const c=hex2rgb(sc), day=clamp(1+sun.alt*2.2,0,1);
-      /* полоса зарева — кисть у горизонта, не треть листа (M304, §13):
-         была H*.42→.78, стала H*.54→.74 */
-      const g=ctx.createLinearGradient(0,H*.54,0,H*.74);
-      g.addColorStop(0,"rgba("+c.join(",")+",0)");
-      g.addColorStop(.7,"rgba("+c.join(",")+","+(.10*day).toFixed(3)+")");
-      g.addColorStop(1,"rgba("+c.join(",")+","+(.16*day).toFixed(3)+")");
-      ctx.fillStyle=g;ctx.fillRect(0,H*.54,W,H*.20);
-      /* наклонное зарево: пятно у горизонта там, где звезда, сильнее всего
-         на восходе и закате — это и есть «гнётся по высоте» */
-      const low=clamp(1-Math.abs(sun.alt)*1.4,0,1)*day;
-      if(low>.02){
-        /* знак тот же, что у sunSpot: зарево обязано быть с той стороны, где
-           звезда. Раньше знаки расходились, и на закате небо горело на востоке */
-        const gx=W*(.5-sun.az*.42), gy=H*.74;
-        const rg=ctx.createRadialGradient(gx,gy,8,gx,gy,W*.55);
-        rg.addColorStop(0,"rgba("+c.join(",")+","+(.30*low).toFixed(3)+")");
-        rg.addColorStop(.5,"rgba("+c.join(",")+","+(.10*low).toFixed(3)+")");
-        rg.addColorStop(1,"rgba("+c.join(",")+",0)");
-        ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
-      }
-    }
-    if(nite>0){ctx.fillStyle="rgba(4,6,14,"+(nite*.9).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
-  }),0,0,W,H);
-}
 
+/* небо-подложка — на движке (19ca): градиент, заря, звёзды, полоса, диск.
+   2D-пути нет (DECISIONS: без WebGPU игра называет браузеры) */
+function drawSkyBase(p,cx,cy,hor){gpuSky(p,cx||0,cy||0,hor);}
 /* ══════════════ свечение (bloom) — M243 ══════════════
    «Свет не светит» — общая претензия ко всем сценам: лампа рисовалась пятном,
    но вокруг неё ничего не происходило. Настоящий ореол вокруг ярких мест —

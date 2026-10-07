@@ -7,7 +7,8 @@
 
    Зовётся из `drawRaid`, уже в её системе координат: масштаб и поворот
    выставлены снаружи, отсюда рисуется фигура от собственного нуля. */
-function drawFoeBody(f,K){
+/* still — без вдоха: так тело печётся в спрайт (raidFoeSprite), вдох даёт сдвиг */
+function drawFoeBody(f,K,still){
   const col=hex2rgb(K.col),r=K.r;
   const body=rgba(col,.95),dark=rgba(mixc(col,[8,12,18],.6),.96);
   const sc=f.baron?1.35:1;
@@ -15,7 +16,7 @@ function drawFoeBody(f,K){
   /* поза покоя (хвост G4): пока тревоги нет, каждый второй привалился к
      стене — фигура скошена; оружие у всех опущено (ниже, у ствола) */
   if(!f.aware&&(f.seed&1))ctx.transform(1,0,.16,1,0,0);
-  const bob=Math.sin((f.bob||0)+G.t*.05)*.8;
+  const bob=still?0:Math.sin((f.bob||0)+G.t*.05)*.8;
   ctx.fillStyle="rgba(0,0,0,.45)";                 // тень под ногами
   ctx.beginPath();ctx.ellipse(0,r*1.5,r*1.1,r*.3,0,0,TAU);ctx.fill();
   if(f.baron){
@@ -127,4 +128,17 @@ function drawFoeBody(f,K){
   ctx.beginPath();
   ctx.moveTo(-r*.62,-r*.73+bob);ctx.lineTo(r*.62,-r*.73+bob);     /* плечи */
   ctx.stroke();
+}
+/* ── тело спрайтом (G11, 24aa1) ──
+   Тело зависит только от рода, барона, тревоги и зерна (стойка, привалился ли к
+   стене), поэтому печётся GPU-холстом один раз на такое сочетание и встаёт в
+   проход с глубиной щитом лицом к камере: его закрывает стена и освещает фонарь.
+   hx, hy — полуразмеры спрайта в единицах тела (с запасом на ствол, плащ и гребень) */
+const RAID_FOE_BK=new Map();
+function raidFoeSprite(f,K){
+  const r=K.r,sc=f.baron?1.35:1,hx=2.8*r*sc,hy=2.2*r*sc,px=Math.ceil(hx*2*4),py=Math.ceil(hy*2*4);
+  const key=f.kind+"|"+(f.baron?1:0)+"|"+(f.aware?1:0)+"|"+(f.seed&31)+"|"+r;
+  if(RAID_FOE_BK.size>48&&!RAID_FOE_BK.has(key)){for(const B of RAID_FOE_BK.values())gpuBakeDrop(B);RAID_FOE_BK.clear();}
+  const B=gpuBaked(RAID_FOE_BK,key,px,py,g=>{g.scale(4,4);g.translate(hx,hy);drawFoeBody(f,K,true);});
+  return B?{B,hx,hy}:null;
 }

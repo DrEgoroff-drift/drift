@@ -181,7 +181,7 @@ function loreTake(key){
       const s=getSystem(sx,sy);
       if(!s.station||(G.market&&G.market[s.key]))continue;
       if(!G.market)G.market={};
-      G.market[s.key]={pressure:{},t:G.t};
+      G.market[s.key]={pressure:{},t:now()};
       got="цены станции «"+s.station.name+"» ("+sx+":"+sy+")";done=true;
     }
     if(!done){G.data+=12;got="сводка цен, которые вы и так знаете · +12 данных";}
@@ -240,26 +240,22 @@ function drawLoreMarks(cell){
     const here=(m.sx===G.sx&&m.sy===G.sy);
     const x=cx+(m.sx-G.sx)*cell, y=cy+(m.sy-G.sy)*cell;
     const inside=x>18&&x<W-18&&y>18&&y<H-18;
-    ctx.strokeStyle=here?"rgba(255,214,120,.85)":"rgba(255,196,92,.55)";
-    ctx.lineWidth=1.2;
+    const lc=here?"rgba(255,214,120,.85)":"rgba(255,196,92,.55)";   /* перо карты (17z4) */
     if(inside){
       /* кольцо-засечка: не звезда и не станция, чтобы не спорить с картой */
-      ctx.beginPath();ctx.arc(x,y,9,0,TAU);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(x,y-13);ctx.lineTo(x,y-9);ctx.stroke();
+      mpCircle(x,y,9,1.2,lc);
+      mpLine(x,y-13,x,y-9,1.2,lc);
       if(here){
-        ctx.fillStyle="rgba(255,214,120,.9)";
         ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-        ctx.fillText("ЗАРУБКА",x,y+22);
+        ctx.fillStyle="rgba(255,214,120,.9)";
+        mapLate("ЗАРУБКА",[[x,y+22],[x,y-17]],3);   /* под кольцом, а занято — над ним (18, mapLate) */
       }
     }else{
       /* за краем — стрелка на кромке: адрес есть, руки не хватает */
       const a=Math.atan2(y-cy,x-cx);
       const ex=cx+Math.cos(a)*(Math.min(W,H)/2-16), ey=cy+Math.sin(a)*(Math.min(W,H)/2-16);
-      ctx.beginPath();
-      ctx.moveTo(ex+Math.cos(a)*7,ey+Math.sin(a)*7);
-      ctx.lineTo(ex+Math.cos(a+2.5)*7,ey+Math.sin(a+2.5)*7);
-      ctx.lineTo(ex+Math.cos(a-2.5)*7,ey+Math.sin(a-2.5)*7);
-      ctx.closePath();ctx.stroke();
+      mpPath([ex+Math.cos(a)*7,ey+Math.sin(a)*7,ex+Math.cos(a+2.5)*7,ey+Math.sin(a+2.5)*7,
+        ex+Math.cos(a-2.5)*7,ey+Math.sin(a-2.5)*7],1.2,lc,true);
     }
   }
   ctx.restore();

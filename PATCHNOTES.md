@@ -6,7 +6,220 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## Unreleased - stage 2, whose land
+## 0.492.0 - the nebula «смело»
+
+- **The nebula «смело» (GPU-2).** The look the author chose on 26.09 («B с розовым») sat ready on an unpushed
+  branch and is in the game now: far layers turn toward the system's own shadow tone, near layers warmer; near the
+  star the gas goes lavender with a pink transition at the rim; the side of a mass facing the star is lighter;
+  bright strands follow the gas. Every turn of tone is a short arc toward a near tone — no olive, no raspberry.
+- **No black thread where dust bodies meet.** Where a pillar grows out of the dust wall, the edge's distance was
+  divided by a slope that vanished on the joint: a black thread of beads ran along it, and on the lit side a
+  straight light ray from the star. The slope is now taken so it cannot vanish on a crease; the rest of the frame
+  is unchanged.
+
+## 0.491.0 - the station on the board, parts on the mounts, the cantina in 3D, faces that live
+
+- **The station joins the board (M720–M721).** One face and one chamfered window for every station screen; on a wide
+  screen three columns — sections with nested tabs, the tab, the ship card (fuel over ЗАПРАВКА, hull over the repair,
+  hold over the tape, ОТСТЫКОВКА at the foot). The «Сурик» palette: graphite, cream ink, one red-lead accent, crimson
+  only for alarm; one market table; the station head's ether is one framed line — tuning belongs to flight.
+- **Parts in volume on the mounts (M722).** Every fitted part is a model in the hull mesh, under its light and
+  shadow: turrets of six maker houses with twenty gun heads, towers, rails with copper coils, the shield's prongs, the
+  reactor with radiators, a VLS with red noses, plates and engines — sitting on the real surface.
+- **The hangar (M723).** ОПИСЬ's third zone is a graphite bay: the fitted ship in studio 3D (drag to turn), numbered
+  mount markers, slot cards with leader lines, the inspector and the spare-parts tray. The studio renders at the
+  frame's own size, sharp at 4K and cheaper on the phone.
+- **Part thumbnails (M724).** Every card that names a part shows the part itself on a studio turntable.
+- **The cantina in full 3D (M725).** The hall, its people and their portraits are engine scenes: lamps over the
+  frame edge with soft haze, candidates on the stools, the keeper behind the counter. People are built from the
+  manager's seed in role kits. The 2D hall is gone.
+- **Faces that live (M729, first part).** The head is one sculpted skin — lids over the eyeballs, a real nose and
+  lips, teeth behind them — and it moves by skinning: blinks, saccades, glances away, breathing, and six emotions
+  (calm, glad, angry, sad, surprised, sly) read from the person's loyalty and character. Portraits on the cards are
+  alive. The generator for every NPC and the wardrobe come next.
+- **Recovered from old branches**: three open items of 28.09 that never reached the plan (the metro board against
+  the fare, «КРАЙ» over a stop name, the yard calibration findings).
+
+## 0.490.0 - «Борт»: the flight interface made anew
+
+- **One material for everything over the world (M720).** Vitals, the place, the receiver, the rail,
+  the pads and the menu are instrument plates: smoky glass, a cut corner, an edge hair and a glowing
+  role tick; one narrow face with tabular digits; hierarchy by size. Laws in `docs/DESIGN-space.md`.
+- **Keys are drawn on the buttons.** Every pad and rail button with a key shows its keycap, read
+  live from the key map, so a rebind shows at once; the action plate says ПРОБЕЛ, the lock TAB. Hidden
+  on a phone and under a finger.
+- **The collapsed instruments are a piece of the rack.** Five cream dials under glass with amber
+  needles, the misclose window and an `I` keycap, top-centre — instead of a tape gadget.
+- **The open rack stands under the plates, at the plates' size.** It no longer hides behind the top
+  row, it scales with the interface ruler at 4K, world labels stay off it, the message line goes under
+  it; on a phone its eight gauges stand in two rows and it ends above the rail.
+- **The menu is a plate too, and `Esc` opens it.** It opens under the top row instead of over the
+  place plate.
+- **The receiver finds its own place**: at the left edge, right after the left pads, or in the
+  middle — wherever the pad row leaves room; on the map it no longer floats over the chart.
+
+## 0.489.0 - gas giants of their own, crowds in volume, the dish
+
+- **Every gas giant has its own weather (M703).** One of eight palettes per world (ochre, toffee,
+  turquoise, deep blue, rust, sulphur, lilac, ammonia green) instead of one lilac for the whole
+  galaxy; belts of uneven width and edge, mottled polar caps, from none to three storms at seeded
+  places, bright ovals or dark eyes. A warm star tints the clouds less, so giants no longer all
+  slide into one yellow.
+- **Crowds stay in volume (M713).** When the frame runs out of full-size 3D layers, the next hull
+  takes a smaller layer instead of dropping to the flat sprite beside its 3D neighbours.
+- **The dish is a dish (M712)**: a paraboloid on a boom with its feed on three legs. Banked hulls
+  roll at .6 of the game's bank, so a hard turn no longer lays a ship on its side into a dark stick.
+- Fixed: the radio's tuning sweep never played - a second `radioTune` in the receiver module
+  replaced the first, so each change of piece snapped the dial straight to the station.
+
+## 0.488.0 - ships in 3D, planets on the engine, and the yards of the five powers
+
+- **Ships in flight are real 3D meshes (M710).** The hull is built from `hullOf` as a loft with
+  wings, nacelles, nozzles and boxes; the old bake becomes its paint. Star light, body shadow,
+  belly paint, side seams and a flame light cone. Layer classes 128/256/512 keep big hulls in 3D.
+  GT's tow hook is a tube now, not a stroke on the paint.
+- **Pirates in 3D.** A welded lump on a height map: every plate a prism, holes cut through where
+  the bake is empty, engines as barrels with an ember, turrets as spheres.
+- **Planets and moons from orbit redrawn on the engine (M700-M702),** with an octave early-out and
+  detail by CSS pixel for cost.
+- **The yards of the five powers (M714).** Компания, Орднунг, Коммуна, Рассвет and Хай-Фронт each
+  sell a line of 24 hulls with their own classes, stat character, prices, palette, proportions,
+  naming habit (`Юнион Про™`, `Шлюз 4/Б`, `Розетта II`, `Наби v2.3`) and lore. A power's line is
+  in its own stations and sold only after an episode with that power; in Ялта all five, at x2.
+  The row is shown with the lock named.
+- **Shapes.** Each power now has four or five airframe schemes instead of two or three, and the
+  courier class is wider and shorter: it was a wire with no body in 3D.
+- **Fix: a station's power was unknown until it was drawn.** `station.by` was set only when the
+  station body was painted, so counters, unique hulls, the cantina and the ammo stamp all read
+  ГЛАВТРАССА until the first look. It is now resolved on first read.
+- Reversed `smoothstep` edges flipped in the hull and orb shaders.
+- **The planet orb compiles per world family.** All twelve worlds in one shader took 3.1-3.5 s to
+  compile and held the start gate; nine family shaders cost 0.2-1.2 s each, the ones a flight
+  needs are warmed (warm-up 1.6 s), the rest build in the background while the old orb stands in.
+
+## 0.487.0 - the fleet lands: the world off #c and onto the GPU
+
+- **The surface, the cave and the mine draw on the engine.** Deposits, the landed ship, dust motes,
+  the out-of-focus foreground, near weather and the final grade, the ground-edge grass, the night
+  field, world labels and the drill bar, the hint band and edge chips: each moved off the 2D canvas
+  into GPU shapes, lit bakes or the `#ovl` overlay. The cave and the mine now issue no 2D calls; a
+  per-scene 2D census probe (`-Probe`) counts what is left.
+- **The stand layer.** GPU twins of upright things cast shadows and take the world's light. Relief
+  forms are baked per light and bent by wind in strips; buildings, the approach, the cave entrance,
+  the mine head, the walker and the pennant are drawn the same way.
+- **The player's base outside has volume.** Side face, chamfered roof, floor seams, lit windows,
+  a door with a light slit, solar panels and a mast with a live beacon. One bake per light, with the
+  beacon and label live on top.
+- **The home outside is one bake.** Smoke, guy ropes and the washing stay live and are pushed as
+  shapes (`VSINK`); shadows and lamps come from sinks recorded while baking.
+- **Ground.** Narrow notches no longer extrude dark vertical shadow columns: slope and shade are
+  smoothed over five segments.
+- **The map is drawn with a pen.** Shapes go to the GPU and marks and text to `#ovl`, so `#c` is
+  idle on the map. It merges with 0.486.0's late labels: `mapLateFlush` now draws plates and
+  strings with the pen, rotated arm names through `ovTextRot`, and the late labels keep the pen's
+  transparency.
+- **The sky black hole redrawn.** A thin streaked disc across the shadow, a lensed arc, a photon
+  ring and a brighter Doppler side, with no seams between the disc halves.
+
+## 0.486.0 - the vision: the interface judged as numbers, and what it found
+
+- **The vision.** The tests were green while every button in the build was overrun by its own text. The
+  interface is now read as numbers before the raster: `test-geom.js` walks 17 windows (phones 320–421,
+  landscape 568 and 780, tablets, PC 900–2560, the native font, DPR 1 against 3), ~110 screens and ~75 taps
+  each, and holds every DOM box, 2D-canvas line, engine layer and bake against inequalities — overflow, cut,
+  screen edge, overlap, covered, see-through, tap target, contrast, size under 8 px, squeeze, garbage, frame
+  crash, DPR drift — plus composition notes (alignment, step, φ). It plants one defect per law first and goes
+  «СЛЕПО» if it misses one. ~6 s; a rotated canvas line is measured as its own quad; a frame in which the game
+  changed its layout is followed by one more, and that one is judged.
+- **Tests cut to the stability core.** 248 files → 29 (save, money, time, travel, cloud, the frame guard,
+  GPU loss, detectors); golden frames and the mutant zoo are gone. `test.ps1` with no flags — build, Node,
+  smoke, the vision — runs in ~13 s and is the release gate with `-Full` (~26 s).
+- **What the vision found, fixed:**
+  - **the map:** labels lay over labels — thirteen modules, each placing from its own point. Own marks now
+    register their ink; world captions (arm and nebula names, giants, rumour areas, prices, change tags, jump
+    rings, the search circle, notches, ГЛАВТРАССА) are placed last on the first free spot of several, or not at
+    all; a system's tags stack in rows inside the ruler frame; map type never under 8 px; the header and the
+    footer on solid plates. The address row and the header share the top through one placer (on a phone the
+    row used to cover the header whole), and the message line sits on a frosted plate under them — on a low
+    window, in a column on the left when the radio leaves no room below;
+  - long road hints on a tablet were wider than the glyph atlas and froze the road: runs are split by words,
+    and a road frame that throws is now named and survived like the main frame; the road's instruments keep
+    8 px on a 320-px landscape sheet;
+  - the home's progress line came out at 3 px on a phone and the room shrank to a third at DPR 3; the base's
+    «МЕСТО ПОД ЗАСТРОЙКУ» left its dashed cell at 1920 (now two lines when it must); instrument labels under
+    8 px; hull lettering is paint, not interface, and is no longer measured as text;
+  - layout: window footers and a module card's actions wrap instead of squeezing («СНЯТЬ УР.» stuck out of
+    its button); the things table gets its own width from 900 up (at 2560 the labels left their cards); the
+    ОПИСЬ parts grid stacks at 761–899; the radio scale is 8 px; on low windows (568×320, 780×360) the rail
+    hangs between the vitals and the pads, «КАРТА» and «МЕНЮ» first (it grew off the top over the place line
+    and the wallet), the menu starts under the vitals and scrolls instead of running off the bottom, and on
+    touch the zoom buttons give way to pinch; on touch screens wider than 760 the console and the prompt stand
+    above the pads (the console sat on ИМПУЛЬС); the jump pad says «Прыжок»/«Вверх» in a word that fits.
+- VER 0.486.0.
+
+## 0.485.0 - far galaxies instead of the big spiral
+
+- **The big spiral galaxy is gone from the system sky.** It was one of the three landmarks a system can get
+  (about a third of them had it) and read as a sticker on top of the sky rather than something far behind it
+  (the author: «всратая галактика»). The landmark roll is untouched, so comets, remnants and the hole's jets stay
+  where they were; a system that had the spiral now has open gas there.
+- **Eight far galaxies in every system, at the edge of seeing.** Spiral, elliptical, edge-on with a dust lane
+  and irregular, 2–5% of the frame tall, drawn in the nebula's full-resolution compose pass behind the gas: dense
+  gas covers them, dust dims them, the star's glare hides them, and they move least of all with the camera
+  (parallax .004). New module `16gaza-gpu-fargal`; the look came from the three.js probe on the `three` branch,
+  where the rest of the probe's nebula lost to ours and was not taken.
+
+## 0.484.0 - the fleet lands: the other modes on the engine, and a new sky
+
+- **The cloud fleet's zones are in.** What the cloud sessions moved onto the GPU (G6–G13) now ships, after the
+  merge with main, the regressions fixed and a census of 2D calls after `gpuWorld` at 0 in all 25 scenes:
+  - **landing and surface:** near ground chunks as GPU textures lit per pixel, a third far ridge, gullies, a warm
+    key and a cold fill; braking flames, dust, the lander's shadow and flame light on the ground; what stands is lit
+    by the world's light and casts a shadow; the lake mirrors; the foreground band goes out of focus;
+  - **underground:** cave rock, far wall and mine rock bake on the GPU with stalactites, curtains and lichens; cave
+    water catches the lamp; the mine's lamps throw rock shadows, day falls down the shaft, ore glows — in main's colour;
+  - **the belt:** asteroids in real 3D under the star, the maw landmark a 3D rock, the cockpit frame a GPU bake lit
+    through the glass; **the raid** with depth-tested compartments and a per-pixel torch;
+  - **rooms:** home, HQ, the cantina, kino, chess, «Сорока», the spa and the base — baked rooms, lamp light per
+    pixel, air; people and lettering come after the room's light; the base's machines are baked bodies with live
+    motion, and the fridge room splits the same way;
+  - **the road, the map, the scoop, the rail:** the road's sky and bloom on the GPU, the galaxy made of stars with
+    dust lanes and your rails burning, the scoop's heat bow shock and plumes, the rail scheme and the ride on the GPU.
+- **A new sky, drawn by the engine.** Every landing composes its own sky from the world's seed: bodies, cumulus as
+  merged round puffs with a flat base, a high deck, haze and far weather — all fields on the GPU; clouds sink into the
+  night, a low sun glows through the ridge haze. The 2D sky is removed.
+- **Phone budget.** On a phone the clouds bake at reduced density and composite once, and the surface skips its
+  mid-frame canvas snapshots (cast, relight, near blur), which stalled the S23 to 31 fps at noon. Against 0.480.0 on
+  the S23: night 58.2, noon 59.6, cave, winter and the system 60 fps, p99 16.8 ms everywhere.
+- **Tests.** The harness names the suite where the GPU dropped and prints the GPU state at the start; the bake pool
+  has a ceiling checked per suite; `test.ps1` runs on Linux (the cloud, CI) through SwiftShader.
+
+### Disputed
+
+- **Golden frames are not re-accepted**: 11 scenes differ from their reference by the new sky and the fleet's
+  light. Контроль re-shoots them after a look; they gate no deploy.
+
+## 0.483.0 - the §12 remainder and the §9 seams
+
+- **§12, the last seams.** A drone now picks its market by the price you saw there and is paid that price (it used to choose by the seen price and be paid the live one). A seen price counts for 30 world days; after that the drone goes by the live counter. Selling pressure on a counter now decays by the world clock (`now()`), so it also eases while you are out of the game. The half-life is still three hours. The economy probe gained «маршруты по кругу»: the player skips a leg whose quote has gone negative, moves to the next route, and waits ten minutes when every leg is down. The numbers are in `docs/ECONOMY-AUDIT.md` (27.09).
+
+- **§9 seams, checked against the code and closed.**
+  - **Drones and far goods:** a drone no longer mines band-2/3 far goods (osmium and beyond). Neither the belt nor the surface offers the ДРОН button for them. A band-1 far good (he3, palladium, amber) is sold by the drone at half its price (`droneMayMine`, `DRONE_FAR_MUL`).
+  - **The stamp and the metro:** the stamp already landed only on a jump or on ВЫЙТИ. The ring's «Стыковка?» hail now fires only for a ship heading into the ring: by its motion, or by its nose when stopped. A ship just let out of the train no longer gets hailed as it leaves (`railHeadingIn`).
+  - **The first hour:** at the first docking in the heart, the замполит hands over one жетон («первый — за счёт трассы») and says where the ring is. The first metro ride is free, and the ticket button reads ЖЕТОН ЗАМПОЛИТА. The token does not work for the express or the маршрутка. It is kept in `G.first`, so no new save field.
+  - **Rescue and rails:** a dry ship in a system with a rail stop gets a third exit, НА МЕТРО. It is a ticket, at the ticket's price, to the stop the cashier sells that lies nearest home; the ring takes the ship on board.
+  - **The scheme's scope:** the paper opens on your stretch: you and everything the cashier sells, with a margin. The wheel or a pinch widens it to the whole net. «Край» was already per player (your own visits).
+
+- **Picture pass.** The rescue window's НА МЕТРО row had no icon and printed «undefined»; it now shows a ring on a line. The ticket buttons read ЖЕТОН where the price stands, and the section head says once what the замполит's token is; a long ticket line wraps instead of running off the button. The scheme's title and legend sit on paper plates, since the lines now run under them; on a phone the legend wraps by « · » clear of the line samples, and the captions under the paper wrap by phrase, clear of the Меню button. The empty-tank test counts the fourth exit where a stop stands.
+
+### Disputed (cautious variants taken; the author may overturn)
+
+- **Drone paid at the seen price for 30 days** (§12): the cautious reading of «продаёт по ним». The other option was min(seen, live), which never lets a stale ×2 need pay out, but then a drone could never be sent to a better market it had seen. Counters saved before this change carry a frame-clock stamp; the first read resets it to now, which loses at most one decay step.
+- **Half-life kept at 3 h on the world clock**, not the 6 h A4 suggested: the probe numbers did not ask for a slower recovery.
+- **The token is also handed to old saves** (§9) at their next docking in the heart, since a save carries no reliable age. It is worth one 5-credit ride.
+- **The scheme's scope is the cashier's reach** (§9): the stops `railDestinations` sells, rather than a graph of «rings met and their neighbours». Those rings cross that window anyway, and the rule needs no second walk of the net.
+
+## 0.482.0 - stage 7: the giants, small things and the economy seams
 
 - **M464 — one giant per arm (§8).** The six giants now stand on the galaxy model's real arms: two arms, two branches each, one giant per branch at 19–22 sectors and two more nearer the core at 14–15; the hollow moon stays at the core. Where the arms cross, the placement walks along its own branch in half-sector steps until the model names the spot as that arm (or a nebula of that arm) and it is at least 8 sectors from the others. The discovery log line names the arm.
 - **The ruler in the frame.** Under the giant's name in the system: «≈ N ваших корпусов в длину», counted from the hull you fly.
@@ -17,13 +230,31 @@ could ever save.
 - **§11 small things.** The belt entry note folds the icy ring into the ore line («руда: … · и кристаллы льда»), so on the phone's three-line message «тяните по стеклу — обзор» is no longer pushed out. A good's name in lists and prices takes its own text shade (`resTxt`): the same hue mixed towards light until it reads at 4.5:1 on the panel. Тёмное стекло, углеволокно, графит and чернозём change; the rest keep their colour.
 - Closed as already done on this branch: station shuttles draw (`t.mk`, came with main), and chips avoid each other while gliding to their slots (the `chipDrawn` pass, 24.09).
 
+- **§12 economy audit: the faucets closed.**
+  - **Liberation prize:** paid in full only when the freed system will hold. While an occupied neighbour (not calmed by a suppressed nest, not under the трасса) can take it back, the station pays half: «вернутся».
+  - **Hotel night:** costs half of what the dock charges for the same tenth of hull (was a flat 12 кр), one night per station per shift. The mark lives in the station's holding record; the free night below a third of hull stays.
+  - **Plan and order:** one ledger, «bought here this shift» (the appetite's `here`), read by the state plan and the order. Units bought at the same counter pay the bid, not the premium; for the order they also get no per-sector fee.
+  - **A visit is (station, shift), not a docking.** Undocking and docking again in the same shift continues the visit: the ГЛАВТРАССА fuel norm, the Company fee, the scrip cap and the cooperative cap carry over from the station's holding record.
+  - **Escort:** half at accept, half when the run arrives (the barge lives its chord beside you, 90 s, or you drive off its attackers). Leaving the system with the contract fails it, and a barge is hired once.
+  - **Hired hands' fines and debts** take what is on the account and never go below zero.
+  - **Sale multipliers:** need, monopoly, expedition, occupation and spy are capped together at ×2.2. The blockade takes the larger of itself and need, not both.
+  - **Smaller seams:** a drone's delivery closes a need window; an order's deadline counts from the taking; the factor's margin floor no longer grows with level and perks; the dead `evacuate()` is gone.
+  - **Gate:** three nets in `91zzzzy2-money`: freeing twice pays at most half the second time; buy-and-hand-in for the plan or the order never nets positive; the balance is never below zero after any row of the hired hands' event table.
+- **Whose voice on the approach (the author, 27.09):** the lane (billboard, hotel, parked fleet, queue) now dresses by the land's owner, `stampOwnerAt`; the builder shows only in the station's own body. Rule in docs/DECISIONS.md.
+
 ### Disputed (cautious variants taken; the author may overturn)
 - M464: only the Дом водителя sells a service (the night); the other six give a paragraph, a rumour and a keepsake. Trade or jobs inside a giant were left for a later pass.
 - M464: the giant's length for the ruler is one fixed number (GIANT_LEN 1300) for all seven, not per body.
 - M464: the six arm giants left their old ring positions (only the moon stayed); a save that already found one keeps `giantsSeen`, but its landmark is somewhere else on the map now.
 - §11 «planet angles follow the frame rate»: closed with no code change. Since the fixed quanta, `dt` is `steps × QUANT_DT` taken from real time, so `ang` already follows game time as `G.t` does. The only difference from `ang0 + w·G.t` is that orbits stand still on the surface, in the map and in the other off-system modes. A pure function would make the planet jump away from a ship taking off, and the clamp depends on the hull's thrust. `ang` is not in the save.
+- §12 liberation prize: chose «half while it can be retaken» over «full once per system, then fading». The latter needs a per-system memory, and there is no save field for it. A first liberation next to a live front also pays half.
+- §12 debts: chose a floor, as `lawDock` has, over a real debt like ПАЛАТА's `P.debt`. A broke player gets off a fine lighter than before.
+- §12 escort: the «destination» is 90 s of the barge's chord in this system, since barges are not simulated across systems. Rescue also completes the run.
+- §12 multipliers: the ×2.2 cap is my number, a little above need alone (×2).
+- §12 per visit: the norm, scrip and co-op leftovers are stored on undock in `G.hold[station].vis`, an existing saved structure.
+- Lane owner: the lane is cached in the system, so a land that changes hands re-dresses the lane only when the system is regenerated.
 
-## Unreleased
+## 0.481.0 - stage 6: the story and the rest
 
 - «Смена» (P15): a landing in a new kind of place only arms the next chapter («где-то здесь. Отойдите от корабля»); walking 480 px from the ship lives it. The arming stays in the surface state, not in the save: leave without stepping out and the chapter waits. The 72-kinds-of-place check was already a suite (r ≤ 20).
 

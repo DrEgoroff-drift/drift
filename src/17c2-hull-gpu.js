@@ -145,7 +145,9 @@ function hullGpuInserts(pass,h,id,S,sc,live){
    своя и разовая (once): тёплые выпечки полёта (HG_LRU) и пул 08ca не трогаются. Альфа — как у сцены,
    «сколько фона осталось» (очистка 1, корпус гасит); на холст её переворачивает ovImage с B.inv (08bi) */
 const HS_LT=[-.6,-.8],HS_COL=[255,244,214];
-function hullStudioSb(h,x){return Math.min(Math.pow(2,Math.ceil(Math.log2(Math.max(x,.25))*4)/4),HG_SIDE/(2*hullGpuE(h)));}
+/* потолок выпечки студии — вдвое выше полёта: ангар на 4K держит корпус ~1800 пикселей, 1024 мылило краску */
+const HS_SIDE=2048;
+function hullStudioSb(h,x){return Math.min(Math.pow(2,Math.ceil(Math.log2(Math.max(x,.25))*4)/4),HS_SIDE/(2*hullGpuE(h)));}
 function hullStudioBake(S,h,id,sb){
   const key=hullBakeKey(id,sb),b=S.bk;if(b&&b.key===key&&b.h===h)return b;
   if(b)gpuBakeDrop(b.B);
@@ -157,6 +159,13 @@ function hullStudioBake(S,h,id,sb){
    с центром (x,y) и масштабом sc в той же рамке. Только из кадра, до gpuPresent: открытый проход сцены
    закрывается (следующий gpuScene откроет его с загрузкой). Готово — S.tex/S.view/S.dev */
 function hullStudio(S,id,w,h,nd,x,y,sc,lvl){
+  if(!studioOpen(S,w,h,nd))return false;
+  try{hullGpuDraw(id,x,y,0,sc,false,false,lvl,0,HS_LT[0],HS_LT[1]);}finally{studioClose(S);}
+  return true;
+}
+/* открыть студию S (рамка w×h CSS при плотности nd): текстура, форма кита, пустые лампы, проход с очисткой
+   «весь фон на месте»; GPU.rt — она, пока не закрыта. Общая дверь корпуса (выше) и миниатюр частей (17c2d) */
+function studioOpen(S,w,h,nd){
   if(!GPU.on||!GPU.enc||!GPU.dev)return false;
   const d=GPU.dev,U=GPUTextureUsage,bw=Math.max(2,Math.round(w*nd)),bh=Math.max(2,Math.round(h*nd));
   if(S.dev!==d){S.dev=d;S.tex=S.bk=S.ku=S.lt=null;}
@@ -167,13 +176,13 @@ function hullStudio(S,id,w,h,nd,x,y,sc,lvl){
   const f=GPU_SCR.ku;f[0]=bw;f[1]=bh;f[2]=nd;f[3]=0;d.queue.writeBuffer(S.ku,0,f);
   if(GPU.scenePass){GPU.scenePass.end();GPU.scenePass=null;GPU.scene3D=false;}
   S.pass=GPU.enc.beginRenderPass({colorAttachments:[{view:S.view,loadOp:"clear",storeOp:"store",clearValue:{r:0,g:0,b:0,a:1}}]});
-  S.bw=bw;S.bh=bh;S.w=w;S.h=h;S.nd=nd;S.col=HS_COL;GPU.rt=S;
-  try{hullGpuDraw(id,x,y,0,sc,false,false,lvl,0,HS_LT[0],HS_LT[1]);}finally{GPU.rt=null;S.pass.end();S.pass=null;}
+  S.bw=bw;S.bh=bh;S.w=w;S.h=h;S.nd=nd;S.col=S.col||HS_COL;GPU.rt=S;
   return true;
 }
-/* корабль целиком; x,y — экран, a — курс, sc — масштаб корабля, (lx,ly) — к звезде.
-   false — прохода сцены нет, рисуй по-старому */
-function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
+function studioClose(S){GPU.rt=null;if(S.pass){S.pass.end();S.pass=null;}}
+/* корабль целиком; x,y — экран, a — курс, sc — масштаб корабля, (lx,ly) — к звезде; gear — части на подвесах
+   (17c2b shipGear3d у своего, без него — штатный набор по слотам корпуса). false — прохода сцены нет, рисуй по-старому */
+function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly,gear){
   const R=GPU.rt,pass=R?R.pass:gpuScene();if(!pass||!(sc>0))return false;   /* R — студия (ниже) */
   const h=hullOf(id),live=hullLiveInserts(h,id);
   const dk=R?R.nd:GPU.bw/W,sb=R?hullStudioSb(h,sc*dk):hullGpuSb(h,dk),B=R?hullStudioBake(R,h,id,sb):hullGpuBake(h,id,sb);if(!B)return false;const T=B.B;
@@ -182,6 +191,10 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
   const FL=R?null:hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);   /* в студии огня нет, сглаженная тяга полёта не трогается */
+  /* студия в объёме (M723: ангар ОПИСИ, R.v3 — курс, наклон, перспектива, оснастка): корпус наклонён к зрителю,
+     и плоские огни, зевы и вставки легли бы мимо своих мест — их нет, жар сопел даёт сам объём */
+  const V3=!!(R&&R.v3&&H3D.on);
+  if(V3)return h3dDraw(h,B,x,y,0,sc,0,lx,ly,null,.25,R.v3.gear||h3dStockGear(id),R)||(gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null),true);
   /* сопла без тяги: у люкса кольцо среза, у прочих тлеющий зев */
   if(!thrusting){
     const sh=[],gl=[];
@@ -194,10 +207,13 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly){
     gpuShapes(pass,gl,{blend:"add"});
   }
   /* брюхо: тёмный силуэт со стороны крена, под телом */
-  if(bank){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
+  const H3=!R&&H3D.on;   /* объём M710 (17c2a): крен настоящий, брюхо — своё */
+  if(bank&&!H3){const Bl=hullGpuBelly(h,sb),[bx,by]=S(0,Math.sin(bank)*h.bw*.62);
     if(Bl.B)gpuImage(pass,Bl.B,[{x:bx,y:by,w:Bl.E*2*sc,h:Bl.E*2*sc*cb,rot:a}]);}
   const FS=FL?S(FL.x,FL.y):null;
-  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null,undefined,undefined,FL&&{x:FS[0],y:FS[1],r0:FL.r0*sc,r:FL.r*sc,k:FL.k,c:FL.c});   /* -1: свет корпуса, не станции (17c GST) */
+  const fl=FL&&{x:FS[0],y:FS[1],r0:FL.r0*sc,r:FL.r*sc,k:FL.k,c:FL.c};
+  if(!(H3&&h3dDraw(h,B,x,y,a,sc,bank,lx,ly,fl,thrusting?0:.25,gear||h3dStockGear(id))))
+  gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null,undefined,undefined,fl);   /* -1: свет корпуса, не станции (17c GST) */
   /* круг корпуса в финал (08b u.hl), как у 2D-корпуса: свечение не белит свою обшивку */
   if(!R&&GPU.sepH.length<8){if(!h._R){let r=0;for(const q of h.poly)r=Math.max(r,Math.hypot(q[0],q[1]));h._R=r*1.3;}
     GPU.sepH.push([x,y,h._R*sc]);}

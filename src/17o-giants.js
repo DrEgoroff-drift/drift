@@ -55,16 +55,17 @@ function giantAt(sx,sy){for(const g of giantsAll())if(g.sx===sx&&g.sy===sy)retur
 /* в системе: далеко от звезды, по зерну */
 function giantPos(g){const a=(g.seed%628)/100,R=2600;return {x:Math.cos(a)*R,y:Math.sin(a)*R,a};}
 /* ── карта: у каждого великана свой значок (D26) ── */
-function giantMapGlyph(k,x,y,r){
-  ctx.beginPath();
-  if(k==="moon"){ctx.arc(x,y,r,0,TAU);ctx.moveTo(x+r*.5,y-r*.15);ctx.arc(x+r*.15,y-r*.15,r*.35,0,TAU);}
-  else if(k==="house"){ctx.rect(x-r*1.3,y-r*.6,r*2.6,r*1.2);for(let i=-1;i<=1;i++){ctx.moveTo(x+i*r*.7,y-r*.2);ctx.lineTo(x+i*r*.7,y+r*.2);}}
-  else if(k==="cyl"){ctx.roundRect(x-r*1.5,y-r*.45,r*3,r*.9,r*.45);}
-  else if(k==="customs"){for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)ctx.rect(x+i*r*.8-r*.25,y+j*r*.8-r*.25,r*.5,r*.5);}
-  else if(k==="dock"){ctx.rect(x-r*1.4,y-r*.6,r*2.8,r*1.2);ctx.moveTo(x+r*.8,y);ctx.arc(x,y,r*.8,0,Math.PI);}
-  else if(k==="town"){for(let i=-1;i<=1;i++){ctx.moveTo(x+i*r*.8-r*.4,y+r*.5);ctx.lineTo(x+i*r*.8,y-r*.5+Math.abs(i)*r*.3);ctx.lineTo(x+i*r*.8+r*.4,y+r*.5);}}
-  else{for(let i=-1;i<=1;i++){ctx.moveTo(x+i*r*.7,y+r*.7);ctx.lineTo(x+i*r*.7,y-r*.7+Math.abs(i)*r*.4);ctx.moveTo(x+i*r*.7-r*.25,y-r*.2);ctx.lineTo(x+i*r*.7+r*.25,y-r*.2);}}
-  ctx.stroke();
+function giantMapGlyph(k,x,y,r,col){   /* пером карты (17z4), обвод 1.3 */
+  const w=1.3;
+  if(k==="moon"){mpCircle(x,y,r,w,col);mpCircle(x+r*.15,y-r*.15,r*.35,w,col);}
+  else if(k==="house"){mpFrame(x-r*1.3,y-r*.6,r*2.6,r*1.2,w,col);for(let i=-1;i<=1;i++)mpLine(x+i*r*.7,y-r*.2,x+i*r*.7,y+r*.2,w,col);}
+  else if(k==="cyl"){const q=r*.45,xl=x-r*1.5+q,xr=x+r*1.5-q;
+    mpLine(xl,y-q,xr,y-q,w,col);mpLine(xl,y+q,xr,y+q,w,col);
+    mpArc(xr,y,q,-Math.PI/2,Math.PI/2,w,col);mpArc(xl,y,q,Math.PI/2,Math.PI*1.5,w,col);}
+  else if(k==="customs"){for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)mpFrame(x+i*r*.8-r*.25,y+j*r*.8-r*.25,r*.5,r*.5,w,col);}
+  else if(k==="dock"){mpFrame(x-r*1.4,y-r*.6,r*2.8,r*1.2,w,col);mpArc(x,y,r*.8,0,Math.PI,w,col);}
+  else if(k==="town"){for(let i=-1;i<=1;i++)mpPath([x+i*r*.8-r*.4,y+r*.5,x+i*r*.8,y-r*.5+Math.abs(i)*r*.3,x+i*r*.8+r*.4,y+r*.5],w,col);}
+  else{for(let i=-1;i<=1;i++){mpLine(x+i*r*.7,y+r*.7,x+i*r*.7,y-r*.7+Math.abs(i)*r*.4,w,col);mpLine(x+i*r*.7-r*.25,y-r*.2,x+i*r*.7+r*.25,y-r*.2,w,col);}}
 }
 function drawGiantsMap(V,cell){
   const vx=V.x,vy=V.y;
@@ -73,9 +74,9 @@ function drawGiantsMap(V,cell){
     const x=W/2+(g.sx-vx)*cell,y=H/2+(g.sy-vy)*cell;
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
     const r=Math.max(4,cell*.26);
-    ctx.strokeStyle="rgba(240,220,170,.9)";ctx.lineWidth=1.3;ctx.lineJoin="round";
-    giantMapGlyph(g.k,x,y,r);
-    if(cell>=10){ctx.fillStyle="rgba(240,220,170,.9)";ctx.font=(typeof uiFont==="function")?uiFont(9):"9px monospace";ctx.fillText(g.ru.toUpperCase(),x,y+r*1.9+11);}   /* под знаком: над ним — имя системы */
+    ctx.lineJoin="round";
+    giantMapGlyph(g.k,x,y,r,"rgba(240,220,170,.9)");
+    if(cell>=10){ctx.fillStyle="rgba(240,220,170,.9)";ctx.font=(typeof uiFont==="function")?uiFont(9):"9px monospace";mapLate(g.ru.toUpperCase(),[[x,y+r*1.9+11],[x,y-r*1.9-5]],4);}   /* под знаком, а занято — над ним (18, mapLate) */
   }
   ctx.restore();
 }

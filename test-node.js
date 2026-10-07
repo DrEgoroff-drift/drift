@@ -237,7 +237,7 @@ const SHIM = {
   FileReader: class { readAsText() { setTimeout(() => this.onload && this.onload({ target: { result: "" } }), 0); } readAsDataURL() { setTimeout(() => this.onload && this.onload({ target: { result: "" } }), 0); } },
   FontFace: class { load() { return Promise.resolve(this); } },
   /* fetch: в Node 16 на сервере лаборатории его нет; в Хроме с file:// он отвечает отказом — отвечаем так же */
-  fetch: (typeof globalThis.fetch === "function") ? globalThis.fetch : (() => Promise.reject(new TypeError("fetch: нет сети под Node"))),
+  fetch: (typeof globalThis.fetch === "function") ? globalThis.fetch : (() => Promise.reject(new TypeError("fetch: no network under Node"))),
   Notification: undefined, speechSynthesis: undefined, SpeechSynthesisUtterance: undefined, AudioContext: undefined, webkitAudioContext: undefined, caches: undefined, indexedDB: undefined,
   KeyboardEvent: class { constructor(t, o) { Object.assign(this, { type: t }, o || {}); } preventDefault() {} stopPropagation() {} },
   MouseEvent: class { constructor(t, o) { Object.assign(this, { type: t }, o || {}); } preventDefault() {} stopPropagation() {} },
@@ -251,36 +251,36 @@ for (const k of Object.keys(SHIM)) Object.defineProperty(G0, k, { value: SHIM[k]
 
 /* ── скрипты страницы: ровно то, что тесты в Хроме, и в том же порядке ── */
 const html = fs.readFileSync(path.join(__dirname, "tests.html"), "utf8");
-if (!html.includes("TEST_SUITES")) { console.error("tests.html без тестов — сначала build.ps1"); process.exit(2); }
-parseBody(html); if (flag("trace")) console.error("[node-run] разметка: элементов " + byId.size);
+if (!html.includes("TEST_SUITES")) { console.error("tests.html has no tests — run build.ps1 first"); process.exit(2); }
+parseBody(html); if (flag("trace")) console.error("[node-run] markup: elements " + byId.size);
 const scripts = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 process.on("uncaughtException", (e) => { /* как window.onerror: сторож кадра считает, а прогон идёт */ if (typeof crashSay === "function") { try { crashSay(e, "вне кадра"); return; } catch (_) {} } console.error("UNCAUGHT", e && e.stack || e); });
 process.on("unhandledRejection", (e) => { if (typeof crashSay === "function") { try { crashSay(e, "обещание"); } catch (_) {} } });
 document.scripts = scripts.map(t => ({ textContent: t, src: "" }));
 const t0 = Date.now();
 try {
-  for (let i = 0; i < scripts.length; i++) { if (flag("trace")) console.error("[node-run] скрипт " + (i + 1) + "/" + scripts.length); vm.runInThisContext(scripts[i], { filename: "tests.html#" + (i + 1) }); }
+  for (let i = 0; i < scripts.length; i++) { if (flag("trace")) console.error("[node-run] script " + (i + 1) + "/" + scripts.length); vm.runInThisContext(scripts[i], { filename: "tests.html#" + (i + 1) }); }
 
-} catch (e) { console.error("сборка не загрузилась под Node: " + (e && e.stack || e)); process.exit(2); }
+} catch (e) { console.error("the build did not load under Node: " + (e && e.stack || e)); process.exit(2); }
 
 /* ── ждём отчёт ── */
 const tick = setInterval(() => {
-  if (typeof TEST === "undefined" || !TEST.summary) { if (Date.now() - t0 > 240000) { console.error("отчёта нет за четыре минуты"); process.exit(2); } return; }
+  if (typeof TEST === "undefined" || !TEST.summary) { if (Date.now() - t0 > 240000) { console.error("no report in four minutes"); process.exit(2); } return; }
   clearInterval(tick);
   const sec = ((Date.now() - t0) / 1000).toFixed(1);
-  console.log(TEST.summary + " · node · " + sec + " с");
-  if (TEST.failed.length) { console.log("ПРОВАЛЫ:"); for (const f of TEST.failed) console.log("  ✗ " + f); }
+  console.log(TEST.summary + " · node · " + sec + " s");
+  if (TEST.failed.length) { console.log("FAILURES:"); for (const f of TEST.failed) console.log("  ✗ " + f); }
   /* карантин (опция stage у набора, M442): печатается, но код выхода не решает */
-  if ((TEST.staged || []).length) { console.log("КАРАНТИН (в вердикт не идёт):"); for (const f of TEST.staged) console.log("  ✗ " + f); }
-  for (const l of TEST.lines) if (l.startsWith("ПО ГРУППАМ")) console.log(l);
+  if ((TEST.staged || []).length) { console.log("QUARANTINE (not in the verdict):"); for (const f of TEST.staged) console.log("  ✗ " + f); }
+  for (const l of TEST.lines) if (l.startsWith("BY GROUP")) console.log(l);
   /* --times (test.ps1 -Times): у Node часы всегда настоящие — нет виртуального
      бюджета, который под Хромом держит все замеры на нуле, — так что самые
      долгие наборы видны без единого лишнего флага. На зелёном прогоне без
      --times ничего не печатается: харнесс сам считает список (90-harness.js),
      здесь только решение — показать тридцать строк или промолчать. */
   if (flag("times")) {
-    const slowBlock = TEST.lines.find(l => l.startsWith("САМЫЕ ДОЛГИЕ"));
-    if (slowBlock) { const rows = slowBlock.split("\n").slice(1).filter(Boolean); console.log("САМЫЕ ДОЛГИЕ (мс) · node:"); for (const r of rows.slice(0, 30)) console.log(r); }
+    const slowBlock = TEST.lines.find(l => l.startsWith("SLOWEST"));
+    if (slowBlock) { const rows = slowBlock.split("\n").slice(1).filter(Boolean); console.log("SLOWEST (ms) · node:"); for (const r of rows.slice(0, 30)) console.log(r); }
   }
   if (flag("verbose")) console.log(TEST.lines.join("\n"));
   process.exit(TEST.fail ? 1 : 0);

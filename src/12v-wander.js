@@ -161,12 +161,14 @@ function drawWanderMap(vis,cell){
   const w=wanderAt();
   const glyph=(sx,sy,a)=>{
     const v=vis.find(q=>q.gx===sx&&q.gy===sy);if(!v)return;
-    ctx.save();ctx.globalAlpha=a;ctx.translate(v.x+9,v.y-10);
-    ctx.fillStyle="#c9922e";ctx.strokeStyle="rgba(255,230,168,.9)";ctx.lineWidth=.8;
-    ctx.beginPath();ctx.moveTo(-4,4);ctx.lineTo(-1,-5);ctx.lineTo(-1,4);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(1,4);ctx.lineTo(4,-3);ctx.lineTo(1,4);ctx.lineTo(1,-2);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.fillStyle="rgba(236,232,220,.8)";ctx.fillRect(-5,4,10,1);
-    ctx.restore();
+    /* перо карты (17z4): парус — треугольник с обводом, второй — две черты */
+    const ox=v.x+9,oy=v.y-10,a0=MPN.al,ln="rgba(255,230,168,.9)";
+    if(!MPN.gpu)ctx.save();mpAlpha(a0*a);
+    mpTri(ox-4,oy+4,ox-1,oy-5,ox-1,oy+4,"#c9922e");
+    mpPath([ox-4,oy+4,ox-1,oy-5,ox-1,oy+4],.8,ln,true);
+    mpLine(ox+1,oy+4,ox+4,oy-3,.8,ln);mpLine(ox+1,oy+4,ox+1,oy-2,.8,ln);
+    mpRect(ox-5,oy+4,10,1,"rgba(236,232,220,.8)");
+    mpAlpha(a0);if(!MPN.gpu)ctx.restore();
   };
   if(w.phase==="stop")glyph(w.sx,w.sy,1);
   if(typeof relicDeep==="function"&&relicDeep("chart"))glyph(w.next.sx,w.next.sy,.55);

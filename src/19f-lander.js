@@ -23,7 +23,7 @@ function landerGearTick(L,dt){
 }
 /* профиль стойки: бедро → шток → пята, каждая садится на грунт СВОЕЙ
    координаты (та же ошибка и то же лекарство, что у друз в M79) */
-function drawLandGear(h,len,hipY,lx,dgy,gear,sq){
+function drawLandGear(h,len,hipY,lx,dgy,gear,sq,gnd){
   const foot=LAND_GY+dgy-sq*3.4;
   const knee=[lerp(lx*.55,lx*.92,gear),lerp(hipY+len*.05,(hipY+foot)*.5,gear)];
   const fx=lerp(lx*.42,lx,gear), fy=lerp(hipY+len*.08,foot,gear);
@@ -46,11 +46,16 @@ function drawLandGear(h,len,hipY,lx,dgy,gear,sq){
   ctx.fillStyle=rgba(h.dark,1);
   ctx.beginPath();ctx.ellipse(fx,fy-1.5,6.5,2.6,0,0,TAU);ctx.fill();
   ctx.fillStyle=rgba(h.body,1);ctx.fillRect(fx-2,fy-5,4,3.4);
+  if(gnd)return;                        /* тень пяты кладёт поле под кораблём (19g) */
   ctx.fillStyle="rgba(0,0,0,.28)";
   ctx.beginPath();ctx.ellipse(fx,fy+1,10,2.6,0,0,TAU);ctx.fill();
 }
+/* opt.bake — только тело (с тормозными соплами в брюхе): без факела, маяка, дыма,
+   тлеющих сопел и света на грунте — это выпечка для видеокарты (19g), живое и свет
+   она кладёт сама, факелы тоже; opt.live — только живое 2D поверх выпечки: дым */
 function drawLander(broken,fire,opt){
   opt=opt||{};
+  const BAKE=!!opt.bake, LIVE=!!opt.live;
   const h=hullOf(G.shipId), len=landerLen(G.shipId), M=h.mark||{};
   const gear=opt.gear==null?1:opt.gear, sq=opt.sq||0;
   const bodyH=len*.30, half=len*.5;
@@ -62,18 +67,20 @@ function drawLander(broken,fire,opt){
   /* нос чуть задран, а на касании опускается вместе с просадкой стоек: без
      этого посадка оставалась подменой картинки, как и было обещано в M81 */
   ctx.rotate(-.05+sq*.12);
+  if(!LIVE){   /* тело — всё до тормозных сопел; в режиме live его кладёт видеокарта */
   /* ── стойки: три точки, разнос 0.84 длины; средняя — дальнего борта ── */
   const legs=[[-half*.42,1],[-half*.10,.62],[half*.42,1]];
   /* контактная тень: без неё корабль на земле — марка, приклеенная к грунту,
      а не масса, которая на нём стоит (G8). Растёт с выпуском стоек. */
-  if(gear>.5&&opt.tr){
+  /* opt.gnd — тень и свет на грунте кладёт поле под кораблём (19g, посадка) */
+  if(gear>.5&&opt.tr&&!opt.gnd&&!BAKE){
     ctx.save();ctx.globalAlpha=(gear-.5)*2*.85;
     groundShadow(half*.05,LAND_GY+gy(half*.05)+2,half*1.05,Math.max(3.5,len*.055));
     ctx.restore();
   }
   for(const lg of legs){
     ctx.globalAlpha=lg[1];
-    drawLandGear(h,len,bY-bodyH*.12,lg[0],gy(lg[0]),gear,sq);
+    drawLandGear(h,len,bY-bodyH*.12,lg[0],gy(lg[0]),gear,sq,opt.gnd||BAKE);
   }
   ctx.globalAlpha=1;
   /* ── корпус по схеме планера ──
@@ -257,12 +264,15 @@ function drawLander(broken,fire,opt){
       ctx.beginPath();ctx.moveTo(sx-2.5,sy-2.5);ctx.lineTo(sx+2.5,sy+1);ctx.stroke();
     }
     /* свет из люка ложится на грунт у трапа — тёплое пятно, по которому
-       корабль виден ночью раньше корпуса (G8) */
+       корабль виден ночью раньше корпуса (G8). У выпечки его кладёт поле под
+       кораблём (19g) */
+    if(!BAKE){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const pg=ctx.createRadialGradient(rx-6,ry+1,2,rx-6,ry+1,len*.28);
     pg.addColorStop(0,"rgba(255,200,130,.28)");pg.addColorStop(1,"rgba(255,170,90,0)");
     ctx.fillStyle=pg;ctx.beginPath();ctx.ellipse(rx-6,ry+1,len*.28,len*.07,0,0,TAU);ctx.fill();
     ctx.restore();
+    }
   }
   /* ── сопла снизу-сзади: после посадки ещё горячие ── */
   const ex=-half*.80, ey=bY+bodyH*.02, er=bodyH*.24;
@@ -275,7 +285,7 @@ function drawLander(broken,fire,opt){
     ctx.beginPath();
     ctx.moveTo(ex+d,ey-er);ctx.lineTo(ex+d-er*.7,ey+er*.8);
     ctx.lineTo(ex+d+er*.9,ey+er*.8);ctx.closePath();ctx.fill();
-    const hot=opt.hot||0;
+    const hot=BAKE?0:(opt.hot||0);   /* у выпечки тлеющие сопла светит поле (19g) */
     if(hot>.02){
       const hg=ctx.createRadialGradient(ex+d,ey+er*.6,0,ex+d,ey+er*.6,er*2.2);
       hg.addColorStop(0,"rgba(255,150,80,"+(hot*.5).toFixed(2)+")");
@@ -284,18 +294,26 @@ function drawLander(broken,fire,opt){
     }
     /* маршевые сопла на посадке только тлеют: тягу вниз дают не они */
   }
+  /* тормозные сопла в брюхе — железо, а не огонь: у выпечки они есть всегда,
+     факел из них бьёт поле видеокарты (19g) */
+  if(BAKE)for(const bx of [-half*.5,-half*.05,half*.42]){
+    const by=bY-bodyH*.02, br=bodyH*.13;
+    ctx.fillStyle=rgba(h.dark,1);ctx.fillRect(bx-br*.9,by-br*.6,br*1.8,br*1.2);
+  }
+  }   /* тело */
   /* ── тормозные сопла в брюхе ──
      Тяга на посадке направлена ВВЕРХ (`L.vy-=cos(a)…`), а маршевые движки
      смотрят назад: пока факел бил из кормы, корабль на подходе выглядел так,
      будто разгоняется вбок, а не висит. Жмёт тягу — из брюха бьют вниз три
      коротких факела, и они же поднимают пыль. */
-  if(fire){
+  if(fire&&!BAKE&&!LIVE){
     const lvl=1+(G.mods.engine||0)*.22;
     /* ── зарево тяги: источник у света и освещённое у источника ──
        Леджер кадров: «заход» — pair 0%, тонов 2, холодный монохром. Пламя
        было, а СВЕТА от него не было: тормозящий корабль — единственный
        честный тёплый источник кадра на любой высоте и в любой час. Тёплое
-       зарево под соплами красит и низ корпуса — закон §1. */
+       зарево под соплами красит и низ корпуса — закон §1. На видеокарте
+       это свет поля корабля (19g), а не наложенное пятно, и факелы там же. */
     {
       const FG=glowSprite("thrustglow",()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
@@ -316,8 +334,8 @@ function drawLander(broken,fire,opt){
       ctx.restore();
     }
   }
-  /* проблесковый маяк */
-  if(Math.sin(G.t*.07)>.2){
+  /* проблесковый маяк; у выпечки — огонь поля (19g), плавный, а не щелчок */
+  if(!BAKE&&!LIVE&&Math.sin(G.t*.07)>.2){
     ctx.fillStyle="rgba(255,120,90,.9)";
     ctx.beginPath();ctx.arc(half*.1,tY-1.5,2.2,0,TAU);ctx.fill();
   }
@@ -326,45 +344,15 @@ function drawLander(broken,fire,opt){
     /* побитый корпус: трещины и дым, а не другая форма */
     ctx.strokeStyle="rgba(255,90,60,.9)";ctx.lineWidth=1.6;
     const r=rng(0x9911);
-    for(let i=0;i<5;i++){
+    if(!LIVE)for(let i=0;i<5;i++){
       const a=r()*TAU, d=6+r()*12;
       ctx.beginPath();ctx.moveTo(Math.cos(a)*d*.3,Math.sin(a)*d*.3);
       ctx.lineTo(Math.cos(a)*d,Math.sin(a)*d-4);ctx.stroke();
     }
-    for(let i=0;i<4;i++){
+    if(!BAKE)for(let i=0;i<4;i++){
       const t=(G.t*.05+i*.9)%6;
       ctx.fillStyle="rgba(90,80,78,"+(.3-t*.05).toFixed(2)+")";
       ctx.beginPath();ctx.arc((i-1.5)*5,-12-t*7,3+t*2.2,0,TAU);ctx.fill();
     }
-  }
-}/* ── пыль от струи ──
-   Работает и на подходе (пока жмёшь тягу), и в первые мгновения после касания:
-   осевшее облако не исчезает мгновенно. На мире без атмосферы пыль ниже и
-   резче — ей нечем виться. */
-function landingDust(L,tr,camx,camy){
-  const alt=groundAt(tr,L.x)-L.y-LAND_GY;
-  const push=(L.thrOn?1:0)+(L.over>0&&L.ok?Math.max(0,1-(70-L.over)/40):0);
-  if(push<=0||alt>150)return;
-  const p=L.p, thin=p.T.atm==="отсутствует";
-  const k=push*clamp(1-alt/150,0,1);
-  const n=Math.round(10+k*16);
-  for(let i=0;i<n;i++){
-    const r=rng(hashi(i,Math.floor(G.t*.5)+i,0xD05));
-    const side=r()<.5?-1:1;
-    const t=r();
-    /* пыль расходится от точки под кораблём вдоль СВОЕГО грунта, а не по
-       прямой: на склоне ровное облако сразу выдаёт наклейку */
-    const dx=side*(10+t*90*k);
-    const gx=L.x+dx, gy=groundAt(tr,gx);
-    const rise=(thin?6:16)*k*(1-t)*(.5+r()*.7);
-    const x=gx-camx, y=gy-camy-rise;
-    const a=(thin?.3:.45)*k*(1-t)*(.6+r()*.7);
-    const rad=(3+t*13)*(thin?.8:1.25)*(.6+k);
-    /* пыль того же цвета, что грунт под ней, и ЛЕЖИТ по земле сплюснутым
-       облаком: круглые светлые шары читались мыльными пузырями */
-    const base=p.T.pal?p.T.pal[3]||p.T.pal[2]:[150,140,130];
-    const col=mixc(base,[40,34,30],.35);
-    ctx.fillStyle="rgba("+col.map(v=>Math.round(v)).join(",")+","+a.toFixed(2)+")";
-    ctx.beginPath();ctx.ellipse(x,y,rad*1.7,rad*.55,0,0,TAU);ctx.fill();
   }
 }

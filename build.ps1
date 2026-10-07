@@ -12,6 +12,7 @@
 # раньше, чем их читают на верхнем уровне.
 
 param([switch]$Watch)
+try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } catch {}   # вывод в UTF-8: в консоли cp437/cp866 русское печаталось «?» (новый комп, 27.09.2026)
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -64,7 +65,7 @@ function ClockLaw($files) {
         if (& $inCm $r.Index) { continue }
         $name = ""
         foreach ($q in $tops) { if ($q.Index -gt $r.Index) { break }; $name = if ($q.Groups[1].Success) { $q.Groups[1].Value } else { $q.Groups[2].Value } }
-        if ($drawFile -or $name -match '^draw') { $bad.Add(("{0}:{1}  rnd() в рисовании ({2}) — здесь rndFx()" -f $f.Name, (& $lineOf $r.Index), $name)) }
+        if ($drawFile -or $name -match '^draw') { $bad.Add(("{0}:{1}  rnd() in drawing ({2}) — use rndFx() here" -f $f.Name, (& $lineOf $r.Index), $name)) }
       }
     }
   }
@@ -76,25 +77,25 @@ function Build {
   $css   = [System.IO.File]::ReadAllText((Join-Path $src "style.css"),  $enc)
 
   $files = Sort-Ordinal (Get-ChildItem (Join-Path $src "*.js"))
-  if ($files.Count -eq 0) { throw "в src/ нет ни одного .js — собирать нечего" }
+  if ($files.Count -eq 0) { throw "no .js in src/ — nothing to build" }
 
   $law = ClockLaw $files
   if ($law.Count) {
     $tOld = Join-Path $root "tests.html"
     if (Test-Path $tOld) { Remove-Item $tOld -Force }
-    throw ("закон часов и случая (M441): {0} нарушений — rnd/rndFx/now/wallMs/wallNow из 01-core`n  " -f $law.Count) + ($law -join "`n  ")
+    throw ("clock-and-chance law (M441): {0} violations — rnd/rndFx/now/wallMs/wallNow come from 01-core`n  " -f $law.Count) + ($law -join "`n  ")
   }
   $parts = foreach ($f in $files) { [System.IO.File]::ReadAllText($f.FullName, $enc) }
   $js = $parts -join "`n"
 
   foreach ($mark in @("/*{{STYLE}}*/", "//{{SCRIPT}}")) {
-    if ($shell -notmatch [regex]::Escape($mark)) { throw "в src/index.html нет маркера $mark" }
+    if ($shell -notmatch [regex]::Escape($mark)) { throw "no marker $mark in src/index.html" }
   }
   $html = $shell.Replace("/*{{STYLE}}*/", $css).Replace("//{{SCRIPT}}", $js)
 
   [System.IO.File]::WriteAllText($out, $html, $enc)
   $kb = [math]::Round((Get-Item $out).Length / 1KB)
-  $msg = "{0}  собран из {1} модулей, {2} КБ" -f (Get-Date -Format "HH:mm:ss"), $files.Count, $kb
+  $msg = "{0}  built from {1} modules, {2} KB" -f (Get-Date -Format "HH:mm:ss"), $files.Count, $kb
 
   # tests.html — та же игра плюс набор проверок в конце. Отдельный файл, чтобы
   # drift.html оставался чистым, и при этом тесты гоняли ровно тот же код.
@@ -104,17 +105,6 @@ function Build {
     if ($tfiles.Count -gt 0) {
       # перед каждым файлом — его имя (M444, ?files=): набор помнит, из какого он файла
       $tparts = foreach ($f in $tfiles) { 'var TEST_FILE="' + $f.Name + '";' + "`n" + [System.IO.File]::ReadAllText($f.FullName, $enc) }
-      # Золотые кадры (M443): эталоны docs/golden/<окно>.json вшиваются константой
-      # GOLDEN — страница с file:// прочитать их сама не может. Нет эталонов — {}.
-      $gold = "{}"
-      $gdir = Join-Path $root "docs\golden"
-      if (Test-Path $gdir) {
-        $gfiles = @(Get-ChildItem (Join-Path $gdir "*.json") -File)
-        if ($gfiles.Count -gt 0) {
-          $gl = foreach ($g in (Sort-Ordinal $gfiles)) { '"' + $g.BaseName + '":' + ([System.IO.File]::ReadAllText($g.FullName, $enc)).Trim() }
-          $gold = "{" + ($gl -join ",") + "}"
-        }
-      }
       # Поля мира (0.438.0): каждое имя, которому где-то в src/ присваивают `G.имя=`,
       # вшивается списком G_FIELDS — сеть сейва (91zzzzzzzzz-savenet) сверяет его со
       # snapshot() и SAVE_EPHEMERAL: поле либо сохраняется, либо названо эфемерным
@@ -122,10 +112,10 @@ function Build {
       $gf = New-Object 'System.Collections.Generic.HashSet[string]'
       foreach ($m in [regex]::Matches($js, '\bG\.([A-Za-z_$][\w$]*)\s*(?:=(?!=)|\|\|=|\?\?=|\+\+|--|[-+*/]=)')) { [void]$gf.Add($m.Groups[1].Value) }
       $gfl = @($gf); [Array]::Sort($gfl, [System.StringComparer]::Ordinal)
-      $tjs = $js + "`nconst GOLDEN=" + $gold + ";`nconst G_FIELDS=[" + (($gfl | ForEach-Object { '"' + $_ + '"' }) -join ",") + "];`n" + ($tparts -join "`n")
+      $tjs = $js + "`nconst G_FIELDS=[" + (($gfl | ForEach-Object { '"' + $_ + '"' }) -join ",") + "];`n" + ($tparts -join "`n")
       $thtml = $shell.Replace("/*{{STYLE}}*/", $css).Replace("//{{SCRIPT}}", $tjs)
       [System.IO.File]::WriteAllText((Join-Path $root "tests.html"), $thtml, $enc)
-      $msg += " · tests.html из {0} наборов" -f $tfiles.Count
+      $msg += " · tests.html from {0} suites" -f $tfiles.Count
     }
   }
   $msg += " · " + (Index $files $tfiles)
@@ -198,8 +188,8 @@ function Bulk($files, $tfiles) {
     if ($BULK_OLD.ContainsKey($_.Name)) { $kb -gt $BULK_OLD[$_.Name] } else { $kb -gt $BULK_KB }
   } | Sort-Object Length -Descending)
   if ($big.Count) {
-    "  ! просятся на распил (>{0} КБ): {1}" -f $BULK_KB,
-      (($big | ForEach-Object { "{0} {1} КБ" -f $_.Name, [math]::Round($_.Length / 1KB) }) -join ", ")
+    "  ! asking to be split (>{0} KB): {1}" -f $BULK_KB,
+      (($big | ForEach-Object { "{0} {1} KB" -f $_.Name, [math]::Round($_.Length / 1KB) }) -join ", ")
   }
   # ── кодировка скриптов ──
   # Windows PowerShell 5.1 читает .ps1 БЕЗ BOM как ANSI-кодировку системы, и
@@ -221,7 +211,7 @@ function Bulk($files, $tfiles) {
       $false
     })
   if ($noBom.Count) {
-    "  ! .ps1 с русским текстом и БЕЗ BOM (5.1 прочтёт как ANSI): {0}" -f
+    "  ! .ps1 with Russian text and NO BOM (5.1 reads it as ANSI): {0}" -f
       (($noBom | ForEach-Object { $_.Name }) -join ", ")
   }
   # ── вызов в никуда ──
@@ -255,7 +245,7 @@ function Bulk($files, $tfiles) {
   if ($ghosts.Count) {
     # это закон, а не напоминание: такой вызов не сработает никогда, и предупреждение
     # в хвосте сборки никто не читает — crewGift молчал тридцать версий именно так
-    throw ("typeof-проверка бережёт несуществующую функцию (вызов не сработает НИКОГДА): {0}" -f
+    throw ("a typeof check guards a function that does not exist (the call will NEVER run): {0}" -f
       ($ghosts -join ", "))
   }
   # ── байт, которого не видно ──
@@ -291,14 +281,14 @@ function Bulk($files, $tfiles) {
     }
   }
   if ($ctrl.Count) {
-    "  ! управляющий символ в исходнике (съеденная обратная косая? см. CLAUDE.md): {0}" -f
+    "  ! control character in a source file (an eaten backslash? see CLAUDE.md): {0}" -f
       (($ctrl | Select-Object -First 8) -join ", ")
   }
   $plan = Join-Path $root "PLAN.md"
   if (Test-Path $plan) {
     $pkb = [math]::Round((Get-Item $plan).Length / 1KB)
     if ($pkb -gt $PLAN_KB) {
-      "  ! PLAN.md разросся до {0} КБ: в плане только открытое — сделанное удалить, длинное — в docs/done/" -f $pkb
+      "  ! PLAN.md has grown to {0} KB: the plan holds only open items — delete what is done, move long text to docs/done/" -f $pkb
     }
   }
   # сделанное лежит файлами по 40 КБ (23.09.2026): переполненный файл — сигнал начать следующий номер
@@ -306,7 +296,7 @@ function Bulk($files, $tfiles) {
   if (Test-Path $done) {
     foreach ($f in (Get-ChildItem -Path $done -Filter "*.md")) {
       $dkb = [math]::Round($f.Length / 1KB)
-      if ($dkb -gt $BULK_KB) { "  ! docs/done/{0} — {1} КБ: больше {2}, начать следующий файл" -f $f.Name, $dkb, $BULK_KB }
+      if ($dkb -gt $BULK_KB) { "  ! docs/done/{0} — {1} KB: over {2}, start the next file" -f $f.Name, $dkb, $BULK_KB }
     }
   }
 }
@@ -368,24 +358,24 @@ function Index($files, $tfiles) {
       }
     }
     [void]$lines.Add("")
-    [void]$lines.Add(("## {0} · {1} КБ" -f $rel, $kb))
+    [void]$lines.Add(("## {0} · {1} KB" -f $rel, $kb))
     if ($secs.Count) { foreach ($s in $secs) { [void]$lines.Add("  · $s") } }
   }
   $head = @(
-    "# Индекс «Дрейфа» — генерируется build.ps1, руками не править",
+    "# Drift index — generated by build.ps1, do not edit by hand",
     "",
-    "Адресная книга исходников: где что лежит, с точностью до строки.",
-    "Читать целиком не надо — искать grep-ом:",
+    "Address book of the sources: where everything lives, down to the line.",
+    "Do not read it whole — grep it:",
     "",
-    '    grep -n "^rareTake " docs/INDEX.md      # где объявлен символ: файл:начало-конец',
-    '    grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера',
+    '    grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end',
+    '    grep -n "^## src/12" docs/INDEX.md      # what the file is and how big',
     "",
-    ("Файлов: {0} · символов верхнего уровня: {1}" -f $all.Count, $n),
+    ("Files: {0} · top-level symbols: {1}" -f $all.Count, $n),
     "",
-    "## СИМВОЛЫ",
+    "## SYMBOLS",
     ""
   )
-  $body = @("", "## ФАЙЛЫ И РАЗДЕЛЫ")
+  $body = @("", "## FILES AND SECTIONS")
   # символы — по байтам, как склейка (0.359.0): Sort-Object под powershell 5.1 и pwsh 7 ставил «_file»
   # и «_suite» в разные места, и INDEX у сеансов расходился (26.09)
   $sa = @($sym); [Array]::Sort($sa, [System.StringComparer]::Ordinal)
@@ -393,7 +383,7 @@ function Index($files, $tfiles) {
   $dir = Join-Path $root "docs"
   if (-not (Test-Path $dir)) { [void](New-Item -ItemType Directory $dir) }
   [System.IO.File]::WriteAllText((Join-Path $dir "INDEX.md"), $doc, $enc)
-  "INDEX.md: {0} символов" -f $n
+  "INDEX.md: {0} symbols" -f $n
 }
 
 # Птица одним файлом. На сайте `parrot.html` тянет стиль и код ссылками — это
@@ -403,13 +393,13 @@ function Index($files, $tfiles) {
 function Bird {
   $s = Join-Path $root "site"
   $src = Join-Path $s "parrot.html"
-  if (-not (Test-Path $src)) { return "птицы нет" }
+  if (-not (Test-Path $src)) { return "no bird" }
   $h = [System.IO.File]::ReadAllText($src, $enc)
 
   foreach ($pair in @(@("/site.css","style"), @("/planets.js","script"),
                       @("/sky.js","script"), @("/parrot.js","script"))) {
     $file = Join-Path $s ($pair[0].TrimStart("/"))
-    if (-not (Test-Path $file)) { throw "нет $file — птица не соберётся" }
+    if (-not (Test-Path $file)) { throw "no $file — the bird will not build" }
     $body = [System.IO.File]::ReadAllText($file, $enc)
     if ($pair[1] -eq "style") {
       $h = $h.Replace('<link rel="stylesheet" href="/site.css">', "<style>`n$body`n</style>")
@@ -427,7 +417,7 @@ function Bird {
 
   $out = Join-Path $s "treplo.html"
   [System.IO.File]::WriteAllText($out, $h, $enc)
-  "treplo.html: {0} КБ" -f [math]::Round((Get-Item $out).Length / 1KB)
+  "treplo.html: {0} KB" -f [math]::Round((Get-Item $out).Length / 1KB)
 }
 
 # Летопись войны для сайта (M411). Карта на drift-game.ru/war.html повторяет
@@ -442,16 +432,16 @@ $WAR_MODULES = @("01-core.js", "03a-hull-maker.js", "12al-powers.js", "17z-map-b
 function War {
   $s = Join-Path $root "site"
   $head = Join-Path $s "war-head.js"
-  if (-not (Test-Path $head)) { return "летописи для сайта нет" }
+  if (-not (Test-Path $head)) { return "no chronicle for the site" }
   $parts = @([System.IO.File]::ReadAllText($head, $enc))
   foreach ($m in $WAR_MODULES) {
     $f = Join-Path $src $m
-    if (-not (Test-Path $f)) { throw "нет $f — war.js не соберётся" }
+    if (-not (Test-Path $f)) { throw "no $f — war.js will not build" }
     $parts += [System.IO.File]::ReadAllText($f, $enc)
   }
   $out = Join-Path $s "war.js"
   [System.IO.File]::WriteAllText($out, ($parts -join "`n"), $enc)
-  "war.js: {0} КБ из {1} модулей" -f [math]::Round((Get-Item $out).Length / 1KB), $WAR_MODULES.Count
+  "war.js: {0} KB from {1} modules" -f [math]::Round((Get-Item $out).Length / 1KB), $WAR_MODULES.Count
 }
 
 Build
@@ -459,7 +449,7 @@ Bird
 War
 
 if ($Watch) {
-  "слежу за src/ — Ctrl+C чтобы остановить"
+  "watching src/ — Ctrl+C to stop"
   $last = @{}
   while ($true) {
     Start-Sleep -Milliseconds 500
@@ -471,7 +461,7 @@ if ($Watch) {
       }
     }
     if ($changed) {
-      try { Build } catch { "ошибка сборки: $_" }
+      try { Build } catch { "build error: $_" }
     }
   }
 }

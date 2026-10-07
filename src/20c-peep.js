@@ -203,9 +203,10 @@ function peepFigure(x,y,face,ph,a,load){
    Шли по этому лугу однажды, и мат отдаёт ровно это: столько-то тел, с тем-то
    в руках, в ту сторону. За каждым тянется остывающий след — свет, который они
    выжгли ногами и который гаснет позади. */
-function peepGhosts(camx,camy){
+/* кто где идёт в этом кадре — общее у 2D и двойника (20fa): {pos,sc,P} или null */
+function peepWalk(camx,camy){
   const S=G.surf,P=S&&S.peep;
-  if(!P||(P.dk||0)<.22||P.ph<=0)return;
+  if(!P||(P.dk||0)<.22||P.ph<=0)return null;
   /* ярус громкости (11i): в ядре уезда сцены идут от громкой к тихой */
   const GL=(typeof glowTier==="function")?glowTier(P,S.p):null;
   const sc=GL?GL.scene:P.scene,tr=S.tr,dk=P.dk,gk=GL?GL.k:1;
@@ -231,7 +232,11 @@ function peepGhosts(camx,camy){
     if(GL&&GL.near&&Math.abs(wx-S.x)>GL.near)continue;
     pos.push({x:wx-camx,y:wy-camy,face,a,ph:uu*P.r*2*.14,i});
   }
-  if(!pos.length)return;
+  return pos.length?{pos,sc,P}:null;
+}
+function peepGhosts(camx,camy){
+  const Q=peepWalk(camx,camy);if(!Q)return;
+  const {pos,sc}=Q;
   ctx.save();ctx.globalCompositeOperation="lighter";
   /* след: свет остывает позади идущего */
   for(const q of pos){

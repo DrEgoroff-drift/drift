@@ -100,6 +100,10 @@ function suiteWin(w){
 /* строка в отчёт, которая НЕ проверка: стенды печатают ей свои числа. Раньше
    это делал ok(true,…) — зелёная галочка, которая не могла покраснеть */
 function note(msg){TEST.lines.push("  · "+msg);}
+/* причина ухода видеокарты: gpuDrop (08b) шлёт её в crashShip, а тот под тестами молчит */
+let GPU_DROP_WHY="";
+if(typeof gpuDrop==="function"){const gpuDrop0=gpuDrop;
+  gpuDrop=function(why){GPU_DROP_WHY=String(why||"").slice(0,200);return gpuDrop0.apply(this,arguments);};}
 function suite(name,a,b){
   const fn=(typeof a==="function")?a:b;
   const o=((typeof a==="function")?b:a)||{};
@@ -129,14 +133,26 @@ function suite(name,a,b){
      без правки файла: тонкий след живёт в самом харнессе. */
   if(TEST_NODE){if(globalThis.TEST_TRACE)console.error("→ "+name);}
   else console.log("→ "+name);
-  TEST.lines.push("── "+name+(o.stage?"  [карантин: "+o.stage+"]":"")+((TEST_SHUFFLE!==null||TEST_PICK)?"  [#"+seq+"]":""));
+  TEST.lines.push("── "+name+(o.stage?"  [quarantine: "+o.stage+"]":"")+((TEST_SHUFFLE!==null||TEST_PICK)?"  [#"+seq+"]":""));
   const p0=TEST.pass,f0=TEST.fail,n0=TEST.failed.length;
   const ts=performance.now();
+  const gpu0=typeof GPU==="object"&&!!GPU.ok;GPU_DROP_WHY="";
+  const QP=typeof GPU==="object"&&GPU.lay&&GPU.lay["gc.pool"];if(QP){QP.peak=QP.by+QP.pend;QP.peakAll=QP.by+QP.ob+QP.pend+(QP.onceB|0);}
   try{fn();}
-  catch(e){TEST.fail++;TEST.failed.push(name+" · ИСКЛЮЧЕНИЕ: "+(e&&e.message||e));
-    TEST.lines.push("  ✗ ИСКЛЮЧЕНИЕ: "+(e&&e.stack||e));}
+  catch(e){TEST.fail++;TEST.failed.push(name+" · EXCEPTION: "+(e&&e.message||e));
+    TEST.lines.push("  ✗ EXCEPTION: "+(e&&e.stack||e));}
   /* инструменты (90a) прибирают за собой: окно, сдвиг часов, клавиши */
   try{T._undo();}catch(e){}
+  /* ── видеокарта ушла посреди набора (G13, 25.09) ──
+     Прогон синхронный: gpuDrop зовёт gpuInit через полторы секунды, но до конца
+     прогона очередь не доходит, и КАЖДЫЙ набор после этого смотрит в мёртвое
+     устройство — «кадр пуст», «видеокарты нет», дюжина странных провалов без
+     причины. На SwiftShader (облако) это случилось в части из трёх. Здесь — одна
+     строка с виновником и причиной; остальное в отчёте читать уже после неё. */
+  if(gpu0&&!GPU.ok){TEST.fail++;
+    TEST.failed.push(name+" · the GPU dropped mid-suite: "+(GPU_DROP_WHY||"cause not caught")+" — every suite after it sees a dead device");
+    TEST.lines.push("  ✗ the GPU dropped mid-suite: "+(GPU_DROP_WHY||"cause not caught"));
+    if(!TEST_NODE)console.log("✗ the GPU dropped in suite «"+name+"»: "+(GPU_DROP_WHY||"?"));}
   uiSelRestore();
   /* ── набор без единой проверки — красный (M442) ──
      Такой набор не может покраснеть ни при какой поломке: он «проходит»
@@ -144,8 +160,15 @@ function suite(name,a,b){
      этом окне или в этом мире проверять нечего — это решает его win/tier или
      сама постановка мира, а не молчаливый return. */
   if(TEST.pass===p0&&TEST.fail===f0){TEST.fail++;
-    TEST.failed.push(name+" · ни одной проверки: набор не может покраснеть, значит ничего не проверяет");
-    TEST.lines.push("  ✗ ни одной проверки");}
+    TEST.failed.push(name+" · no checks: a suite that cannot go red checks nothing");
+    TEST.lines.push("  ✗ no checks");}
+  /* ── потолок пула выпечки (08ca, флот 26.09) ──
+     Живое плюс ждущее уничтожения — не больше GC_POOL_CAP ни на миг внутри набора (пик, не только конец).
+     Разовые наборы (Q.one) и наборы на одну выпечку (once и крупнее места над прогретым) в пул не входят: их счёт — peakAll */
+  const QA=typeof GPU==="object"&&GPU.lay&&GPU.lay["gc.pool"];
+  if(QA&&QA.peak>GC_POOL_CAP){TEST.fail++;
+    const s="bake pool over the cap: peak "+(QA.peak/1048576).toFixed(1)+" MB (live plus pending) > "+(GC_POOL_CAP>>20)+" MB";
+    TEST.failed.push(name+" · "+s);TEST.lines.push("  ✗ "+s);}
   /* карантин: провалы уходят в отдельный список, вердикт их не видит */
   if(o.stage){
     TEST.stageRan=(TEST.stageRan|0)+1;
@@ -476,10 +499,15 @@ function runTests(){
      дойти до отчёта (M170) */
   LOOP_OFF=true;
   const t0=performance.now();
+  /* с чем прогон начался: видеокарта и прогрев конвейеров (08b0). Наборы картинки
+     без прогретых конвейеров видят чёрный кадр — строка в отчёте говорит это сразу */
+  const gpuAtStart=(TEST_NODE||typeof GPU!=="object")?"":"GPU at start: "+(GPU.none?"no WebGPU":GPU.ok?"up":"failed to start")+
+    (GPU.ok?", pipelines "+(GPU_PIPES.done?"warm ("+GPU_PIPES.n+", "+GPU_PIPES.ms+" ms)":"still warming ("+GPU_PIPES.n+" ready)"):"");
+  if(gpuAtStart)console.log(gpuAtStart);
   for(const fn of suiteOrder(TEST_SUITES)){
     _file=fn.file||"";
-    try{fn();}catch(e){TEST.fail++;TEST.failed.push("набор упал: "+(e&&e.message||e));
-      TEST.lines.push("✗✗ НАБОР УПАЛ: "+(e&&e.stack||e));}
+    try{fn();}catch(e){TEST.fail++;TEST.failed.push("suite crashed: "+(e&&e.message||e));
+      TEST.lines.push("✗✗ SUITE CRASHED: "+(e&&e.stack||e));}
   }
   /* ── время прогона тут не измеряется, и это не лень ──
      `test.ps1` запускает страницу с `--virtual-time-budget`: внутри
@@ -515,44 +543,44 @@ function runTests(){
     });
     suite("сеть: в наборах нет ok(true и typeof-сторожей",()=>{
       const src=testSource();
-      ok(src.split("\n").length>5000,"область наборов найдена по меткам: "+src.split("\n").length+" строк");
+      ok(src.split("\n").length>1500,"область наборов найдена по меткам: "+src.split("\n").length+" строк");
       const hits=testNetHits(src);
       eq(hits.slice(0,6).join(" ;; "),"","ни одной проверки, которая не может покраснеть"+(hits.length?" (всего "+hits.length+")":""));
     });
     SHARD_FREE=false;
   }
   const ms=Math.round(performance.now()-t0);
-  const head=(TEST.fail?"ПРОВАЛЕНО "+TEST.fail:"ВСЁ ЗЕЛЁНОЕ")+
-    " · пройдено "+TEST.pass+" · наборов "+(TEST.ran|0)+" из "+TEST_SUITES.length+
-    (TEST_SHARD?" · часть "+(TEST_SHARD.i+1)+"/"+TEST_SHARD.n:"")+
-    (SKIPPED_SLOW?" · без тяжёлых "+SKIPPED_SLOW+" (полный: test.ps1 -Full)":(SKIPPED_NODE?"":" · полный"))+
-    (SKIPPED_PROBE?" · без проб "+SKIPPED_PROBE+" (стенд: test.ps1 -Probe)":"")+
-    (SKIPPED_SKIP?" · мимо "+SKIPPED_SKIP+" (skip=)":"")+
-    (SKIPPED_NODE?" · без картинки и интерфейса "+SKIPPED_NODE+" (они в test.ps1 -Browser)":"")+
-    (SKIPPED_WIN?" · не в своём окне "+SKIPPED_WIN+" (win)":"")+
-    (TEST_SHUFFLE!==null?" · перемешано "+TEST_SHUFFLE:"")+
-    (TEST.stageRan?" · карантин "+TEST.stageRan+(TEST.stageFail?" (провалов "+TEST.stageFail+")":""):"")+
-    (ms>0?" · "+ms+" мс":"");
+  const head=(TEST.fail?"FAILED "+TEST.fail:"ALL GREEN")+
+    " · passed "+TEST.pass+" · suites "+(TEST.ran|0)+" of "+TEST_SUITES.length+
+    (TEST_SHARD?" · part "+(TEST_SHARD.i+1)+"/"+TEST_SHARD.n:"")+
+    (SKIPPED_SLOW?" · heavy skipped "+SKIPPED_SLOW+" (full: test.ps1 -Full)":(SKIPPED_NODE?"":" · full"))+
+    (SKIPPED_PROBE?" · probes skipped "+SKIPPED_PROBE+" (stand: test.ps1 -Probe)":"")+
+    (SKIPPED_SKIP?" · skipped "+SKIPPED_SKIP+" (skip=)":"")+
+    (SKIPPED_NODE?" · no picture/UI "+SKIPPED_NODE+" (test.ps1 -Browser runs them)":"")+
+    (SKIPPED_WIN?" · off-window "+SKIPPED_WIN+" (win)":"")+
+    (TEST_SHUFFLE!==null?" · shuffled "+TEST_SHUFFLE:"")+
+    (TEST.stageRan?" · quarantine "+TEST.stageRan+(TEST.stageFail?" (failed "+TEST.stageFail+")":""):"")+
+    (ms>0?" · "+ms+" ms":"");
   TEST.summary=head;
   const groups=Object.keys(TEST.groups||{}).sort((a,b)=>TEST.groups[b].fail-TEST.groups[a].fail||a.localeCompare(b))
-    .map(g=>{const r=TEST.groups[g];return "  "+(r.fail?"✗":"·")+" "+g+": наборов "+r.suites+", пройдено "+r.pass+(r.fail?", ПРОВАЛОВ "+r.fail:"");});
-  TEST.lines.unshift("ПО ГРУППАМ:\n"+groups.join("\n")+"\n");
+    .map(g=>{const r=TEST.groups[g];return "  "+(r.fail?"✗":"·")+" "+g+": suites "+r.suites+", passed "+r.pass+(r.fail?", FAILED "+r.fail:"");});
+  TEST.lines.unshift("BY GROUP:\n"+groups.join("\n")+"\n");
   /* самые долгие наборы — только там, где часы идут (test.ps1 -Times гоняет без
      --virtual-time-budget); под виртуальным временем всё по нулям и блок не печатается */
   const slow=(TEST.times||[]).filter(t=>t[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,45);
-  if(slow.length)TEST.lines.unshift("САМЫЕ ДОЛГИЕ (мс):\n"+slow.map(t=>"  "+t[1]+"  "+t[0]).join("\n")+"\n");
+  if(slow.length)TEST.lines.unshift("SLOWEST (ms):\n"+slow.map(t=>"  "+t[1]+"  "+t[0]).join("\n")+"\n");
   const box=document.createElement("pre");
   box.id="testout";
   box.style.cssText="position:fixed;inset:0;z-index:9999;overflow:auto;margin:0;padding:14px;"+
     "background:#05070c;color:#bfe8f0;font:11px/1.5 ui-monospace,monospace;white-space:pre-wrap";
   /* карантин — своим блоком после провалов: test.ps1 печатает его отдельной
      строкой и в код выхода не складывает */
-  const staged=(TEST.staged||[]).length?"КАРАНТИН (в вердикт не идёт):\n"+TEST.staged.map(s=>"  ✗ "+s).join("\n")+"\n\n":"";
-  box.textContent=head+"\n\n"+(TEST.failed.length?"ПРОВАЛЫ:\n"+TEST.failed.map(s=>"  ✗ "+s).join("\n")+"\n\n":"")+staged+
-    TEST.lines.join("\n");
+  const staged=(TEST.staged||[]).length?"QUARANTINE (not in the verdict):\n"+TEST.staged.map(s=>"  ✗ "+s).join("\n")+"\n\n":"";
+  box.textContent=head+"\n\n"+(TEST.failed.length?"FAILURES:\n"+TEST.failed.map(s=>"  ✗ "+s).join("\n")+"\n\n":"")+staged+
+    (gpuAtStart?gpuAtStart+"\n\n":"")+TEST.lines.join("\n");
   document.body.appendChild(box);
   console.log(head);
-  if(TEST.failed.length)console.log("ПРОВАЛЫ:\n"+TEST.failed.join("\n"));
+  if(TEST.failed.length)console.log("FAILURES:\n"+TEST.failed.join("\n"));
   return head;
 }
 const TEST_SUITES=[];

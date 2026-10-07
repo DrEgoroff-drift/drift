@@ -98,6 +98,8 @@ TEST_SUITES.push(() => suite("утечки: страница не остаётс
     ok(document.body.classList.contains("road"),"дорога открыта");
     resetWorld();
     ok(!document.body.classList.contains("road"),"и сброс мира из неё выводит");
+    /* кадр дороги рисует видеокарта (G12): её холст на время дороги живёт в #roadwin */
+    ok(!GPU.cv||GPU.cv.parentNode!==document.getElementById("roadwin"),"холст видеокарты вернулся из окна дороги");
   }
   resetWorld();
 }));

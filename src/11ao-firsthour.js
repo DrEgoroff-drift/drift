@@ -47,10 +47,23 @@ function firstSay(k){
 /* ── поводы ──
    Зовётся из кадра. Дёшево: четыре сравнения, и после того как всё сказано,
    первая же проверка выходит по длине списка. */
+/* ── жетон (§9, M452/M472): метро новичок встречает в первый час, а не находит.
+   При первой стыковке в сердце (там, где ходит метро) замполит отдаёт один
+   жетон — «первый — за счёт трассы»; первый проезд в метро им и оплачен
+   (railFare). Хранится тем же списком сказанного: "tok" выдан, "tokUsed" сдан ── */
+function firstToken(){
+  if(firstSaid("tok")||G.mode!=="dock"||typeof RAIL_METRO_R==="undefined"||Math.hypot(G.sx,G.sy)>RAIL_METRO_R)return;
+  firstAll().push("tok");
+  const t="…вам жетон. Первый — за счёт трассы. Метро — кольцо за станцией, по огням: подходите носом, медленно.";
+  if(typeof consoleHeard==="function")consoleHeard(t,"замполит");
+  if(typeof logAdd==="function")logAdd("ether","замполит: "+t);
+  if(typeof recordAdd==="function")recordAdd("замполит","выдан жетон метро — первый за счёт трассы");
+}
 function firstTick(){
   if(!G.running)return;
+  firstToken();
   const F=firstAll();
-  if(F.length>=FIRST_LINES.length)return;
+  if(FIRST_LINES.every(l=>F.indexOf(l.k)>=0))return;
   /* про воздух — когда впервые вышел на грунт и отошёл от корабля */
   if(G.mode==="surface"&&G.surf&&!firstSaid("air")){
     const d=Math.abs((G.surf.x||0)-(G.surf.shipX||0));

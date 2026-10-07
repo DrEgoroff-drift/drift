@@ -69,21 +69,15 @@ function drawSurvey(cell){
   /* сперва ноги маршрута — они уходят под значки */
   for(const [a,b,chap] of surveyLegs()){
     const [x1,y1]=at(a),[x2,y2]=at(b);
-    ctx.strokeStyle=hexa(surveyColor(chap),.20);
-    ctx.lineWidth=1;ctx.setLineDash([5,4]);
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    mpDash(x1,y1,x2,y2,1,hexa(surveyColor(chap),.20),[5,4]);   /* перо карты (17z4) */
   }
-  ctx.setLineDash([]);
   for(const p of pts){
     const [x,y]=at(p);
     if(x<-40||x>W+40||y<-40||y>H+40)continue;
     const col=surveyColor(p.chap);
-    ctx.strokeStyle=hexa(col,.45);ctx.lineWidth=1;
-    ctx.beginPath();
-    ctx.moveTo(x-4,y-4);ctx.lineTo(x+4,y+4);
-    ctx.moveTo(x+4,y-4);ctx.lineTo(x-4,y+4);
-    ctx.moveTo(x-6,y+6.5);ctx.lineTo(x+6,y+6.5);       // черта под крестом: их подпись
-    ctx.stroke();
+    const c=hexa(col,.45);
+    mpLine(x-4,y-4,x+4,y+4,1,c);mpLine(x+4,y-4,x-4,y+4,1,c);
+    mpLine(x-6,y+6.5,x+6,y+6.5,1,c);       // черта под крестом: их подпись
   }
   ctx.restore();
 }

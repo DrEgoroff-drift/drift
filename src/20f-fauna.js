@@ -62,16 +62,19 @@ function genBeast(r,p,x,gy){
    Не «зверь другого цвета»: медуза висит и пульсирует, ходун стоит на высоких
    дугах, кристаллическое насекомое гранёное и светится в шве, манта идёт
    волной по крылу, панцирный похож на камень, пока не пошёл. */
-function drawBeastAlien(b,x,y,hostile,stun){
+/* k — выпечка двойника (20fa): только неподвижное тело в профиль вправо, без парения,
+   ног, щупалец, свечения и оглушения — живое кладёт двойник поверх. k.th — фаза крыла
+   манты, k.moving — голова панцирного наружу, k.blink — глаз прикрыт */
+function drawBeastAlien(b,x,y,hostile,stun,k){
   const c=b.body;
   const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
   const t=G.t*b.spd+b.phase;
   const R=b.r;
-  const hov=b.hover?b.hover*(1+.16*Math.sin(t*.6)):0;
+  const hov=k?0:(b.hover?b.hover*(1+.16*Math.sin(t*.6)):0);
   ctx.save();
   ctx.translate(x,y-R*.9-hov);
-  ctx.scale(b.face,1);
-  if(stun>0){
+  ctx.scale(k?1:b.face,1);
+  if(stun>0&&!k){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const g=ctx.createRadialGradient(0,0,0,0,0,R*2.6);
     g.addColorStop(0,"rgba(140,220,255,.3)");g.addColorStop(1,"rgba(120,200,255,0)");
@@ -81,7 +84,7 @@ function drawBeastAlien(b,x,y,hostile,stun){
   const hi=hostile?"rgba(255,120,90,.9)":col(1.25,.95);
   if(b.alien==="jelly"){
     /* купол пульсирует: сжался — потянулся вверх, это и есть его движение */
-    const puls=.82+.18*Math.sin(t*1.6);
+    const puls=k?1:.82+.18*Math.sin(t*1.6);
     const bw=R*1.25*puls, bh=R*.95/puls;
     ctx.fillStyle=col(.9,.62);
     ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,Math.PI,TAU);ctx.fill();
@@ -90,6 +93,7 @@ function drawBeastAlien(b,x,y,hostile,stun){
     ctx.strokeStyle=col(.6,.5);ctx.lineWidth=1.2;
     ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,Math.PI,TAU);ctx.stroke();
     /* щупальца тянутся вниз с задержкой по фазе */
+    if(!k){
     ctx.strokeStyle=col(1.1,.45);
     for(let i=0;i<b.tent;i++){
       const u=(i/(b.tent-1)-.5)*1.7;
@@ -106,9 +110,11 @@ function drawBeastAlien(b,x,y,hostile,stun){
     g.addColorStop(0,col(1.6,.20));g.addColorStop(1,col(1.6,0));
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,-bh*.2,R*2.2,0,TAU);ctx.fill();
     ctx.restore();
+    }
   }else if(b.alien==="strider"){
     /* шесть высоких дуг: тело висит вверху, ноги переступают попарно */
     const legH=R*2.2;
+    if(!k){
     ctx.strokeStyle=col(.65,.9);
     for(let i=0;i<6;i++){
       const side=i<3?-1:1, k=i%3;
@@ -119,6 +125,7 @@ function drawBeastAlien(b,x,y,hostile,stun){
       ctx.moveTo(px,0);
       ctx.quadraticCurveTo(px+side*R*1.1,legH*.45,px+step+side*R*.5,legH);
       ctx.stroke();
+    }
     }
     ctx.fillStyle=col(.95,.95);
     ctx.beginPath();ctx.ellipse(0,0,R*.95,R*.5,0,0,TAU);ctx.fill();
@@ -145,6 +152,7 @@ function drawBeastAlien(b,x,y,hostile,stun){
     g.addColorStop(0,col(1.5,.85));g.addColorStop(.5,col(.8,.9));g.addColorStop(1,col(1.2,.8));
     ctx.fillStyle=g;ctx.fill();
     ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=.8;ctx.stroke();
+    if(!k){
     ctx.strokeStyle=col(1.8,.5+.3*Math.sin(t*2));
     ctx.lineWidth=1.4;
     ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);ctx.lineTo(P[(b.facets>>1)][0],P[(b.facets>>1)][1]);
@@ -162,14 +170,15 @@ function drawBeastAlien(b,x,y,hostile,stun){
     gg.addColorStop(0,col(1.9,.16));gg.addColorStop(1,col(1.9,0));
     ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,R*1.8,0,TAU);ctx.fill();
     ctx.restore();
+    }
   }else if(b.alien==="manta"){
     /* крыло идёт волной: три сегмента с разной фазой вместо жёсткой дуги */
-    const S=R*b.span;
+    const S=R*b.span,tw=k?k.th:t*1.5;
     for(const side of [-1,1]){
       ctx.beginPath();
       ctx.moveTo(0,0);
-      const w1=Math.sin(t*1.5+(side>0?0:.9))*R*.5;
-      const w2=Math.sin(t*1.5+1+(side>0?0:.9))*R*.7;
+      const w1=Math.sin(tw+(side>0?0:.9))*R*.5;
+      const w2=Math.sin(tw+1+(side>0?0:.9))*R*.7;
       ctx.quadraticCurveTo(side*S*.5,w1-R*.5,side*S,w2);
       ctx.quadraticCurveTo(side*S*.5,w1+R*.35,0,R*.45);
       ctx.closePath();
@@ -183,18 +192,18 @@ function drawBeastAlien(b,x,y,hostile,stun){
     ctx.fillStyle=hi;
     ctx.beginPath();ctx.arc(R*.18,-R*.05,1.5,0,TAU);ctx.fill();
     /* хвост-жало */
-    ctx.strokeStyle=col(.7,.7);ctx.lineWidth=1.2;
+    if(!k){ctx.strokeStyle=col(.7,.7);ctx.lineWidth=1.2;
     ctx.beginPath();ctx.moveTo(0,R*.6);
-    ctx.quadraticCurveTo(-R*.3,R*1.4,-R*.1+Math.sin(t)*R*.3,R*2.1);ctx.stroke();
+    ctx.quadraticCurveTo(-R*.3,R*1.4,-R*.1+Math.sin(t)*R*.3,R*2.1);ctx.stroke();}
   }else{
     /* панцирный: купол-камень на коротких ногах, пока стоит — не отличить
        от валуна, и в этом весь смысл */
-    ctx.fillStyle=col(.5,.95);
+    if(!k){ctx.fillStyle=col(.5,.95);
     for(let i=0;i<4;i++){
       const px=(i-1.5)*R*.5;
       const step=Math.sin(t*1.6+i*1.6)*R*.22;
       ctx.fillRect(px-1.2,R*.2,2.4,R*.6+step);
-    }
+    }}
     const g=ctx.createLinearGradient(0,-R*.9,0,R*.3);
     g.addColorStop(0,col(1.35,.95));g.addColorStop(1,col(.55,.95));
     ctx.fillStyle=g;
@@ -209,7 +218,7 @@ function drawBeastAlien(b,x,y,hostile,stun){
       ctx.stroke();
     }
     /* голова выглядывает только на ходу */
-    if(Math.abs(b.vx)>.02){
+    if(k?k.moving:Math.abs(b.vx)>.02){
       ctx.fillStyle=col(.9,.95);
       ctx.beginPath();ctx.ellipse(R*1.15,R*.05,R*.3,R*.22,0,0,TAU);ctx.fill();
       ctx.fillStyle=hi;
@@ -218,7 +227,7 @@ function drawBeastAlien(b,x,y,hostile,stun){
   }
   /* свечение чужих архетипов рисовалось только у земных форм: панцирник,
      названный светящимся, не светился (M174 — имя обязано быть правдой) */
-  if(b.glow){
+  if(b.glow&&!k){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const gg=ctx.createRadialGradient(0,0,0,0,0,R*2.2);
     gg.addColorStop(0,col(1.5,.20));gg.addColorStop(1,"rgba(0,0,0,0)");
@@ -228,20 +237,21 @@ function drawBeastAlien(b,x,y,hostile,stun){
   ctx.restore();
 }
 /* тело собирается из тех же частей, но пропорции, силуэт и набор — от seed */
-function drawBeast(b,x,y,hostile,stun){
-  if(b.alien){drawBeastAlien(b,x,y,hostile,stun);return;}
+function drawBeast(b,x,y,hostile,stun,k){
+  if(b.alien){drawBeastAlien(b,x,y,hostile,stun,k);return;}
   const c=b.body;
   const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
   const t=G.t*b.spd+b.phase;
-  const bob=b.hop?Math.abs(Math.sin(t))*b.r*.35:Math.sin(t)*b.r*.08;
-  ctx.save();ctx.translate(x,y-b.r*.9-bob);ctx.scale(b.face,1);
-  if(stun>0){
+  const bob=k?0:b.hop?Math.abs(Math.sin(t))*b.r*.35:Math.sin(t)*b.r*.08;
+  ctx.save();ctx.translate(x,y-b.r*.9-bob);ctx.scale(k?1:b.face,1);
+  if(stun>0&&!k){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const g=ctx.createRadialGradient(0,0,0,0,0,b.r*2.6);
     g.addColorStop(0,"rgba(140,220,255,.3)");g.addColorStop(1,"rgba(120,200,255,0)");
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,b.r*2.6,0,TAU);ctx.fill();
     ctx.restore();
   }
+  if(!k){
   /* ноги */
   ctx.strokeStyle=col(.55,1);ctx.lineWidth=Math.max(1,b.r*.16);ctx.lineCap="round";
   for(let i=0;i<b.legs;i++){
@@ -258,6 +268,7 @@ function drawBeast(b,x,y,hostile,stun){
     ctx.beginPath();ctx.moveTo(-b.r*.8*b.bx,-b.r*.1);
     ctx.quadraticCurveTo(-b.r*1.7*b.bx,-b.r*.5-Math.sin(t*1.6)*b.r*.3,
                          -b.r*1.9*b.bx,b.r*.2);ctx.stroke();
+  }
   }
   /* туловище: гранёный многоугольник (не гладкий эллипс), каждая грань
      чуть светлее/темнее соседней — читается как настоящая полигональная форма */
@@ -315,7 +326,7 @@ function drawBeast(b,x,y,hostile,stun){
     }
   }
   /* глаз */
-  const blink=Math.sin(G.t*.05+b.phase*3)>.96;
+  const blink=k?!!k.blink:Math.sin(G.t*.05+b.phase*3)>.96;
   ctx.fillStyle=stun>0?"#6fa8c8":(hostile?"#ff6b57":b.eye);
   if(blink&&stun<=0){
     ctx.fillRect(hx+hs*.05,-b.r*.3*b.by-hs*.2,hs*.4,hs*.15);
@@ -324,7 +335,7 @@ function drawBeast(b,x,y,hostile,stun){
     if(!hostile){ctx.fillStyle="rgba(255,255,255,.9)";
       ctx.beginPath();ctx.arc(hx+hs*.28,-b.r*.3*b.by-hs*.22,hs*.08,0,TAU);ctx.fill();}
   }
-  if(b.glow){
+  if(b.glow&&!k){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const gg=ctx.createRadialGradient(0,0,0,0,0,b.r*2.2);
     gg.addColorStop(0,col(1.4,.18));gg.addColorStop(1,"rgba(0,0,0,0)");
@@ -332,7 +343,7 @@ function drawBeast(b,x,y,hostile,stun){
     ctx.restore();
   }
   ctx.restore();
-  if(stun>0){
+  if(stun>0&&!k){
     ctx.fillStyle="rgba(160,225,255,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText("ОГЛУШЁН",x,y-b.r*2.6);
   }

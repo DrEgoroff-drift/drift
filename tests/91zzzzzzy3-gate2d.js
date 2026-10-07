@@ -165,11 +165,12 @@ const GATE2D=[
      return {};},
    done(){if(!this.mob)document.body.classList.remove("mobile");HELM.S=HELM.fade=null;},
    probe:["helmDrawSticks","sysWatchLabel"]},
-  /* колодка — DOM-холст с контекстом WebGPU: мастер и валик — выпечки, живое — очередь #ovl своей цели.
-     Лента пишет столбец каждый кадр — каждый кадр проход. На узком экране колодки нет — и мерить нечего */
-  {name:"приборная колодка (25c): мастер, стрелки, перья — проходом видеокарты",
-   painters:["instrPodTick","instrPodDraw","instrPodLive","instrPodPaint","ckgSpr","tapePaper"],warm:30,
-   place(first){if(first){for(let i=0;i<40;i++)tapeSample();return {};}tapeSample();return {};},
+  /* колодка — DOM-холст с контекстом WebGPU: мастер — выпечка, живое — очередь #ovl своей цели.
+     С M720 ленты в колодке нет и она рисует только на перемене подписи (стрелки, невязка) — замер
+     сбрасывает подпись каждый кадр, чтобы каждый кадр был проход. На узком экране колодки нет */
+  {name:"приборная колодка (25c): мастер, стрелки, невязка — проходом видеокарты",
+   painters:["instrPodTick","instrPodDraw","instrPodLive","instrPodPaint","ckgSpr"],warm:30,
+   place(){IPOD_SIG="";return {};},
    get probe(){return IPOD_NARROW?[]:["instrPodDraw","instrPodLive"];}},
   /* кресло пульта (27j): портрет — выпечка по ключу, проход в свою канву WebGPU; обида Веги сменит ключ */
   {name:"кресло пульта (27j): портрет Веги — выпечкой, без 2D",

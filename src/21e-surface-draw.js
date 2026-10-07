@@ -18,6 +18,24 @@ function surfaceHint(){
   }
   return null;
 }
+/* перо подсказки и фишек (G15): с видеокартой — верхний слой #ovl (08bi), в мерке U (рисуем под
+   withScale), без неё — ctx, как раньше. Раскладка одна, меняется только перо */
+function surfHudPen(U){
+  if(!GPU.ok||!GPU.on)return {
+    rect:(x,y,w,h,col)=>{ctx.fillStyle=col;ctx.fillRect(x,y,w,h);},
+    frame:(x,y,w,h,col,al)=>{ctx.strokeStyle=col;ctx.globalAlpha=al;ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,w-1,h-1);ctx.globalAlpha=1;},
+    tri:(t,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(t[0],t[1]);ctx.lineTo(t[2],t[3]);ctx.lineTo(t[4],t[5]);ctx.closePath();ctx.fill();},
+    text:(t,x,y,col,align)=>{ctx.fillStyle=col;ctx.textAlign=align;ctx.fillText(t,x,y);}};
+  const Q=OVL.cq,n=()=>ovNd()*U,R=(x0,y0,x1,y1,c)=>{const k=n();ovPush(Q,x0*k,y0*k,x1*k,y1*k,c,0,0,0,0,null);};
+  return {
+    rect:(x,y,w,h,col)=>R(x,y,x+w,y+h,ovPm(col)),
+    /* волосяной обвод — четыре полосы в пиксель мерки, как strokeRect со сдвигом .5 */
+    frame:(x,y,w,h,col,al)=>{const c=ovPm(col,al),x1=x+w,y1=y+h;
+      R(x,y,x1,y+1,c);R(x,y1-1,x1,y1,c);R(x,y+1,x+1,y1-1,c);R(x1-1,y+1,x1,y1-1,c);},
+    tri:(t,col)=>{const k=n(),q=t.map(v=>v*k);
+      ovPush(Q,Math.min(q[0],q[2],q[4]),Math.min(q[1],q[3],q[5]),Math.max(q[0],q[2],q[4]),Math.max(q[1],q[3],q[5]),ovPm(col),2,0,0,0,q);},
+    text:(t,x,y,col,align)=>ovText(Q,x*U,y*U,t,ctx.font,col,align,"alphabetic",1,U)};
+}
 function drawSurfaceHud(camx,camy,K){
   K=K||1;
   const S=G.surf;
@@ -32,7 +50,7 @@ function drawSurfaceHud(camx,camy,K){
   /* HUD_BAND измерен по DOM, то есть в настоящих пикселях экрана; здесь мы
      рисуем в UI-мерке, поэтому его надо в неё же и перевести (M221) */
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
-  const TOP=Math.max(58,(typeof HUD_BAND==="number"?HUD_BAND/U:58)+10), RIGHT_PAD=118;
+  const TOP=Math.max(58,(typeof HUD_BAND==="number"?HUD_BAND/U:58)+10), RIGHT_PAD=118, pen=surfHudPen(U);
   const hint=surfaceHint();
   if(hint){
     ctx.font="10px ui-monospace,monospace";
@@ -42,10 +60,9 @@ function drawSurfaceHud(camx,camy,K){
     while(ht.length>4&&ctx.measureText(ht).width>maxW)ht=ht.slice(0,-4)+"…";
     const w=Math.min(W-RIGHT_PAD-20,ctx.measureText(ht).width+22);
     const cx=(W-RIGHT_PAD)/2;
-    ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-w/2,TOP,w,20);
-    ctx.strokeStyle="rgba(127,230,216,.28)";ctx.lineWidth=1;
-    ctx.strokeRect(cx-w/2+.5,TOP+.5,w-1,19);
-    ctx.fillStyle="rgba(190,235,240,.92)";ctx.fillText(ht,cx,TOP+14);
+    pen.rect(cx-w/2,TOP,w,20,"rgba(5,7,12,.72)");
+    pen.frame(cx-w/2,TOP,w,20,"rgba(127,230,216,.28)",1);
+    pen.text(ht,cx,TOP+14,"rgba(190,235,240,.92)","center");
   }
   /* навигатор: маркеры цели у верхней кромки — корабль и пещера */
   const marks=[];
@@ -78,7 +95,6 @@ function drawSurfaceHud(camx,camy,K){
   for(const m of marks){const ad=Math.abs(m.x-S.x);(ad*K>W*.45?far:near).push(m);}
   for(const m of far.concat(near)){
     const d=m.x-S.x, ad=Math.abs(d);
-    ctx.fillStyle=m.col;
     if(ad*K>W*.45){                       // цель за краем — фишка у своей кромки
       const dir=Math.sign(d);
       const label=m.ru+" "+Math.round(ad)+" м";
@@ -86,30 +102,24 @@ function drawSurfaceHud(camx,camy,K){
       const rx=dir>0?W-RIGHT_PAD-8-cw:8;
       const ry=dir>0?(rightY+=0,rightY):(leftY+=0,leftY);
       if(dir>0)rightY+=ch+4;else leftY+=ch+4;
-      ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
-      ctx.strokeStyle=m.col;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
-      ctx.fillStyle=m.col;
+      pen.rect(rx,ry,cw,ch,"rgba(5,7,12,.72)");
+      pen.frame(rx,ry,cw,ch,m.col,.5);
       const ax=dir>0?rx+cw-7:rx+7;
-      ctx.beginPath();
-      ctx.moveTo(ax+dir*4,ry+ch/2);ctx.lineTo(ax-dir*3,ry+ch/2-4);ctx.lineTo(ax-dir*3,ry+ch/2+4);
-      ctx.closePath();ctx.fill();
-      const old=ctx.textAlign;ctx.textAlign=dir>0?"right":"left";
-      ctx.fillText(label,dir>0?rx+cw-14:rx+14,ry+11);
-      ctx.textAlign=old;
+      pen.tri([ax+dir*4,ry+ch/2,ax-dir*3,ry+ch/2-4,ax-dir*3,ry+ch/2+4],m.col);
+      pen.text(label,dir>0?rx+cw-14:rx+14,ry+11,m.col,dir>0?"right":"left");
     }else{
       const sx=clamp((m.x-camx)*K,64,W-RIGHT_PAD-14);
       if(rowY<Math.max(leftY,rightY)-6)rowY=Math.max(leftY,rightY)-6;   // ниже столбиков фишек
       rowY+=13;
-      ctx.fillRect(sx-1,rowY-5,2,10);
+      pen.rect(sx-1,rowY-5,2,10,m.col);
       /* у правой кромки подпись уходит влево от засечки, иначе обрезается */
-      const old=ctx.textAlign,right=sx>W-RIGHT_PAD-120;ctx.textAlign=right?"right":"left";
+      const right=sx>W-RIGHT_PAD-120;
       /* и лежит на плашке, как фишка у кромки: голая подпись на дневном небе
          читалась с контрастом 1.2 — оранжевое «КОРАБЛЬ» по светлой дымке
          (M443, детектор текста) */
       {const tw=ctx.measureText(m.ru).width;
-       ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(right?sx-tw-4:sx-4,rowY+7,tw+8,12);
-       ctx.fillStyle=m.col;}
-      ctx.fillText(m.ru,sx,rowY+16);ctx.textAlign=old;
+       pen.rect(right?sx-tw-4:sx-4,rowY+7,tw+8,12,"rgba(5,7,12,.72)");}
+      pen.text(m.ru,sx,rowY+16,m.col,right?"right":"left");
     }
   }
 }
@@ -201,16 +211,21 @@ function drawWater(tr,camx,camy,p){
   const sky=p.T.sky[1],pal=p.T.pal[Math.min(p.T.pal.length-1,2)];
   const col=Wt.acid?[120,180,60]:[sky[0]*.78+pal[0]*.12,sky[1]*.82+pal[1]*.12,sky[2]*.9+pal[2]*.1];
   const wind=(typeof WIND==="number")?WIND:0;
+  /* на видеокарте толща, зеркало, блики и урез — одно поле (21e2): 2D-зеркало
+     читало #c, а неба и гряд там больше нет */
+  const gw=surfWaterGpu(tr,camx,camy,p,Wt,xa,xb,y);
   /* зеркало: контур — уровень сверху, дно по рельефу */
   ctx.save();
   ctx.beginPath();ctx.moveTo(xa,y);ctx.lineTo(xb,y);
   for(let x=Wt.x1;x>=Wt.x0;x-=tr.step*2)ctx.lineTo(x-camx,groundAt(tr,x)-camy+1);
   ctx.closePath();ctx.clip();
   /* толща: у уреза цвет неба, в глубине — тёмный тон породы */
-  const g=ctx.createLinearGradient(0,y,0,y+WATER_DEPTH);
-  g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
-  g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
-  ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
+  if(!gw){
+    const g=ctx.createLinearGradient(0,y,0,y+WATER_DEPTH);
+    g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
+    g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
+    ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
+  }
   /* водоросли (M327): кусты со дна, качаются медленнее камыша — вода вязче ветра */
   for(const a of waterAlgae(Wt)){
     if(a.taken)continue;
@@ -227,7 +242,7 @@ function drawWater(tr,camx,camy,p){
   }
   /* отражение: полоса над урезом, перевёрнутая, лентами со сдвигом */
   const hh=Math.min(64,y);
-  if(hh>6){
+  if(hh>6&&!gw){
     const sx0=Math.max(0,Math.floor(xa)),sw=Math.min(W,Math.ceil(xb))-sx0;
     if(sw>4){
       const n=8,bh=hh/n;
@@ -247,7 +262,7 @@ function drawWater(tr,camx,camy,p){
   /* блики по ветру: короткие светлые штрихи у уреза */
   ctx.fillStyle="rgba(255,255,255,.22)";
   const rr=rng(Wt.seed^0x11);
-  for(let i=0;i<14;i++){
+  for(let i=0;i<(gw?0:14);i++){
     const fx=Wt.x0+rr()*(Wt.x1-Wt.x0),ph=rr()*TAU,ln=4+rr()*10,dy=2+rr()*10;
     const a=.5+.5*Math.sin(G.t*.07+ph+wind*3);
     if(a<.4)continue;
@@ -257,8 +272,10 @@ function drawWater(tr,camx,camy,p){
   ctx.globalAlpha=1;
   ctx.restore();
   /* урез: тонкая светлая нить */
-  ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(xa,y+.5);ctx.lineTo(xb,y+.5);ctx.stroke();
+  if(!gw){
+    ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(xa,y+.5);ctx.lineTo(xb,y+.5);ctx.stroke();
+  }
   /* камыш по берегам */
   const rc=rng(Wt.seed^0x5EED);
   const reed=(x,n,dir)=>{

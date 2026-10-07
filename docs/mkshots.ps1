@@ -1,11 +1,12 @@
 ﻿# Скрины для README: одна страница на все сцены, сцена выбирается ?scene=имя.
 #
 #   powershell -ExecutionPolicy Bypass -File docs\mkshots.ps1          # собрать docs/shots.html
-#   powershell -ExecutionPolicy Bypass -File docs\mkshots.ps1 -Shoot   # и снять все сцены headless Chrome
+#   powershell -ExecutionPolicy Bypass -File docs\mkshots.ps1 -Shoot   # и снять все сцены (docs/shotstand.py → docs/shot.py)
+#   powershell -ExecutionPolicy Bypass -File docs\mkshots.ps1 -Shoot -Only cave,base   # только эти
 #
-# Снимает сам Chrome (--screenshot): в кадр попадает и канва, и HUD поверх неё,
-# как видит игрок. Бюджет виртуального времени даёт таймерам и кадрам отработать.
-param([switch]$Shoot)
+# Снимок — вся страница: и кадр видеокарты, и приборы поверх него, как видит игрок.
+# Кадры ведут шаговые часы docs/shot.py, а не бюджет виртуального времени.
+param([switch]$Shoot, [string[]]$Only)
 $ErrorActionPreference="Continue"   # chrome пишет в stderr даже при успехе
 $root=Split-Path -Parent $PSScriptRoot
 $src=Get-Content -Raw -Encoding UTF8 (Join-Path $root "drift.html")
@@ -217,7 +218,7 @@ setTimeout(function(){
       surf(p);G.surf.x=lightsEntryX(G.surf.tr,p)-140;G.surf.cam=null;
     }
   };
-  try{(SC[scene]||SC.system)();}catch(e){document.title="ERR "+e.message;}
+  try{(SC[scene]||SC.system)();}catch(e){document.title="ERR "+e.message;console.error("сцена "+scene+": "+e.message);}   /* заголовок стенд shot.py перепишет — ошибку несёт консоль */
   /* объявление say() у живого игрока гаснет за пару секунд; под виртуальным
      временем rAF даёт лишь пару кадров, и плашка застревала посреди КАЖДОГО
      кадра README. Снимаем её: кадр должен показывать игру, а не тост входа */
@@ -229,12 +230,12 @@ $out=$head+$add+"</body></html>"
 [IO.File]::WriteAllText((Join-Path $root "docs\shots.html"),$out,(New-Object Text.UTF8Encoding $false))
 Write-Output "docs/shots.html собран"
 if($Shoot){
-  $chrome="C:\Program Files\Google\Chrome\Application\chrome.exe"
+  # Снимает docs/shotstand.py (G13): страница — хвост этого файла поверх drift.html, а Хром,
+  # флаги видеокарты (SwiftShader при DRIFT_GPU=swiftshader), шаговые часы и ожидание
+  # устройства — docs/shot.py, одно место. Прежний Хром с --disable-gpu со стенда :8777
+  # с 23.09 снимал надпись «нет WebGPU» вместо игры. Стенд больше не нужен.
+  $py=if($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows){"python3"}else{"python"}
   $scenes=@("system","system2","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","station","cantina","hq","hours","lights","home","rooms","wander","winter")
-  $dir=Join-Path $root "docs\shots"
-  foreach($s in $scenes){
-    $png=Join-Path $dir "$s.png"
-    & $chrome --headless=new --no-first-run --no-default-browser-check --disable-extensions --disable-gpu --hide-scrollbars --window-size=1280,720 --virtual-time-budget=9000 "--user-data-dir=$($env:TEMP)\drift-shots" "--screenshot=$png" "http://localhost:8777/docs/shots.html?scene=$s&v=$(Get-Random)" 2>$null | Out-Null
-    Write-Output "$s → $((Get-Item $png).Length) байт"
-  }
+  if($Only){$scenes=@($scenes | Where-Object { $Only -contains $_ })}
+  & $py (Join-Path $PSScriptRoot "shotstand.py") (Join-Path $PSScriptRoot "mkshots.ps1") @scenes --outdir (Join-Path $root "docs\shots") --w 1280 --h 720 --dpr 1
 }

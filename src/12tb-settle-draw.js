@@ -236,7 +236,11 @@ function sdBody(path,fill,lit,alpha){
 /* тень постройки: смещение и длина — от того же SUN_DIR, что и свет (M243).
    Было жёстко «чуть влево» независимо от часа: на закате дом стоял на пятне,
    а не отбрасывал тень. */
+/* приёмник теней (G15): выпечка постройки пишет сюда свои пятна, а кладёт их кадр —
+   они зависят от звезды, а при слое стоящего их даёт поле */
+let SD_SHSINK=null;
 function sdShadow(x,y,w,h){
+  if(SD_SHSINK){SD_SHSINK.push([x,y,w,h]);return;}
   const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:.55;
   const sy=(typeof SUN_DIR==="object")?SUN_DIR.y:-.83;
   const low=clamp(1-Math.abs(sy),0,1);

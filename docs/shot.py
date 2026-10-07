@@ -30,7 +30,14 @@ ROOT = os.path.dirname(HERE)
 CHROMES = [r"C:\Program Files\Google\Chrome\Application\chrome.exe",
            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
            r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-           "/usr/bin/google-chrome", "/usr/bin/chromium"]
+           "/usr/bin/google-chrome", "/usr/bin/chromium", "/opt/pw-browsers/chromium"]
+# No video card (Claude's cloud, CI): WebGPU on SwiftShader, on the CPU. --use-angle=swiftshader is the key:
+# with any other ANGLE backend the canvas swap chain finds no shared-image backing ("Could not find
+# SharedImageBackingFactory ... WebgpuSwapChainTexture") and the device is lost within seconds (25.09).
+# Slow: about a frame a second at 760x475, so shoot small and give the scene a long --budget.
+# Never add --disable-vulkan-surface: it is faster, and the world comes out a white haze behind a correct HUD.
+SWIFTSHADER = ["--no-sandbox", "--enable-features=Vulkan", "--use-vulkan=swiftshader",
+               "--use-webgpu-adapter=swiftshader", "--use-angle=swiftshader"]
 BLOCK = ["*api.php*", "*log.php*", "*drift-sw.js*", "*war.php*"]
 CATCH = ("window.__errs=[];addEventListener('error',e=>__errs.push('E '+e.message));"
          "addEventListener('unhandledrejection',e=>__errs.push('R '+(e.reason&&e.reason.message||e.reason)));"
@@ -54,8 +61,12 @@ S.each=function(f){S.pre.push(f);};
 S.step=function(){S.vt+=1000/60;for(var j=0;j<S.pre.length;j++){try{S.pre[j]();}catch(e){console.error("each: "+e);}}
   var a=S.q;S.q=[];
   for(var i=0;i<a.length;i++){try{a[i].f(S.vt);}catch(e){console.error("step: "+e);}}};
-S.run=function(n,done){if(n<=0){done();return;}S.step();setTimeout(function(){S.run(n-1,done);},0);};
+S.run=function(n,done){if(n<=0){done();return;}S.step();var nx=function(){S.run(n-1,done);};
+  var d=window.__SOFT&&typeof GPU!=="undefined"&&GPU.dev;if(d)d.queue.onSubmittedWorkDone().then(nx,nx);else setTimeout(nx,0);};
 })();</script>"""
+# On SwiftShader a step must wait for the GPU: stepping ahead queues minutes of frames and the screenshot waits for
+# all of them (a 760x475 system shot timed out after 126 s, 25.09).
+SOFT_MARK = "<script>window.__SOFT=1;</script>"
 
 
 def stand_tail():
@@ -68,7 +79,8 @@ def stand_tail():
 def page_for(scene, tail, a):
     html = open(os.path.join(ROOT, "drift.html"), encoding="utf-8").read()
     # one seed per launch unless asked otherwise: the starfield and chance repeat, so was | now pairs compare
-    pre = ("<script>var DRIFT_SEED=%d;</script>" % a.seed if a.seed >= 0 else "") + (STEP_CLOCK if a.clock == "step" else "")
+    pre = (("<script>var DRIFT_SEED=%d;</script>" % a.seed if a.seed >= 0 else "") + (SOFT_MARK if getattr(a, "soft", False) else "")
+           + (STEP_CLOCK if a.clock == "step" else ""))
     if pre:
         s = html.find("<script")
         html = html[:s] + pre + html[s:]
@@ -118,10 +130,10 @@ function RT(){ return window.__STEP?__STEP.real():performance.now(); }
 
 class WS:
     """a minimal CDP websocket client (stdlib only)"""
-    def __init__(self, url):
+    def __init__(self, url, timeout=120):
         hostport, path = url.split("://", 1)[1].split("/", 1)
         host, port = hostport.split(":")
-        self.s = socket.create_connection((host, int(port)), timeout=120)
+        self.s = socket.create_connection((host, int(port)), timeout=timeout)
         key = base64.b64encode(os.urandom(16)).decode()
         self.s.sendall(("GET /%s HTTP/1.1\r\nHost: %s\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
                         "Sec-WebSocket-Key: %s\r\nSec-WebSocket-Version: 13\r\n\r\n" % (path, hostport, key)).encode())
@@ -190,8 +202,13 @@ def main():
     ap.add_argument("--until", default="", help="JS expression: after --js, wait (within --budget) until it is truthy, then --eval and shoot")
     ap.add_argument("--clock", choices=["step", "wall"], default="step", help="step: the stand steps frames at 1/60 s; wall: the page's rAF on real time")
     ap.add_argument("--seed", type=int, default=1, help="DRIFT_SEED for rnd/rndFx (stars, chance); -1 = the wall clock, as in play")
-    ap.add_argument("--budget", type=int, default=40000, help="ms a scene may take before it is shot as is (vetshot passes it)")
+    ap.add_argument("--budget", type=int, default=0, help="ms a scene may take before it is shot as is (vetshot passes it); "
+                    "default 40000 on a real GPU, 600000 on SwiftShader")
+    ap.add_argument("--gpu", choices=["auto", "real", "swiftshader"], default="auto",
+                    help="auto: SwiftShader when DRIFT_GPU=swiftshader (the cloud session hook sets it), else the real GPU")
     a = ap.parse_args()
+    soft = a.soft = a.gpu == "swiftshader" or (a.gpu == "auto" and os.environ.get("DRIFT_GPU") == "swiftshader")
+    if not a.budget: a.budget = 600000 if soft else 40000
     chrome = next((c for c in CHROMES if os.path.exists(c)), None)
     if not chrome: sys.exit("no Chrome")
     tail = stand_tail()
@@ -200,7 +217,8 @@ def main():
     prof = os.path.join(tempfile.gettempdir(), "drift-shot-%d" % a.port)
     proc = subprocess.Popen([chrome, "--headless=new", "--remote-debugging-port=%d" % a.port, "--user-data-dir=" + prof,
                              "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--mute-audio",
-                             "--enable-unsafe-webgpu", "--window-size=%d,%d" % (max(a.w, 500), max(a.h, 400)), "about:blank"],
+                             "--enable-unsafe-webgpu", "--window-size=%d,%d" % (max(a.w, 500), max(a.h, 400))]
+                            + (SWIFTSHADER if soft else []) + ["about:blank"],
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         for _ in range(60):
@@ -212,7 +230,7 @@ def main():
             out = os.path.abspath(a.out) if (a.out and len(a.scenes) == 1) else os.path.join(outdir, "%s_%s.png" % (a.tag, sc))
             req = urllib.request.Request("http://127.0.0.1:%d/json/new?about:blank" % a.port, method="PUT")
             t = json.load(urllib.request.urlopen(req, timeout=10))
-            ws = WS(t["webSocketDebuggerUrl"])
+            ws = WS(t["webSocketDebuggerUrl"], 900 if soft else 120)
             ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=a.dpr, mobile=a.w <= 760)
             if a.w <= 760: ws.call("Emulation.setTouchEmulationEnabled", enabled=True, maxTouchPoints=5)
             ws.call("Network.enable"); ws.call("Network.setBlockedURLs", urls=BLOCK)

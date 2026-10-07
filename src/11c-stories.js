@@ -314,54 +314,15 @@ function storyNewsItem(r){
 
 /* ── кантина: фигуры и вещи на стойке ──
    Канал без текста. Фигура садится на место (corner / far / end), вещь
-   кладётся на столешницу. Кисти — те же, что у зала (cantFigure), плюс
-   десяток мелких форм для вещей. Сцена не выбирает «одну из» — показываются
-   все следы, чьи условия истинны: так пустой стол после поворота виден вместе
-   с оставшимся стаканом. */
+   кладётся на столешницу — обе строит сцена движка (27f4). Сцена не выбирает
+   «одну из» — показываются все следы, чьи условия истинны: так пустой стол
+   после поворота виден вместе с оставшимся стаканом. */
 const STORY_SEAT={corner:.10,far:.50,end:.76,door:.26};
 function storyCantScene(){
   if(!G.st)return [];
   const out=[];
   for(const h of storyTraces("cant",storyCtx())){storyShow(h);out.push(h.t.scene||{});}
   return out;
-}
-function storyCantFigures(c,W2,fy,cy){
-  for(const sc of storyCantScene()){
-    if(!sc.figure)continue;
-    const x=W2*(STORY_SEAT[sc.seat]||.5);
-    c.globalAlpha=sc.dim?.2:.42;
-    cantFigure(c,x,cy+16+(sc.dim?-4:0),sc.col||[70,76,90],G.t*.017+x*.01,null,0);
-    c.globalAlpha=1;
-  }
-}
-function storyCantProps(c,W2,fy,cy){
-  for(const sc of storyCantScene()){
-    if(!sc.props)continue;
-    let x=W2*(STORY_SEAT[sc.seat]||.5)-((sc.props.length-1)*7);
-    for(const p of sc.props){storyProp(c,p,x,cy-7);x+=14;}
-  }
-}
-/* вещи на столешнице: стакан, кружка, кепка, хлеб, палочки мелом, свеча, ключ */
-function storyProp(c,p,x,y){
-  c.save();c.lineWidth=1;
-  if(p==="glass"){c.strokeStyle="rgba(200,230,240,.7)";c.strokeRect(x-3,y-9,6,9);
-    c.fillStyle="rgba(200,230,240,.28)";c.fillRect(x-2.5,y-6,5,5.5);}
-  else if(p==="glass_empty"){c.strokeStyle="rgba(200,230,240,.45)";c.strokeRect(x-3,y-9,6,9);}
-  else if(p==="cup"){c.fillStyle="rgba(210,200,180,.85)";c.fillRect(x-3,y-7,6,7);
-    c.strokeStyle="rgba(210,200,180,.85)";c.beginPath();c.arc(x+4,y-3.5,2,-1.4,1.4);c.stroke();}
-  else if(p==="cap"){c.fillStyle="rgba(70,78,92,.95)";c.beginPath();c.ellipse(x,y-2,6,2.6,0,0,TAU);c.fill();
-    c.fillRect(x-4,y-5,8,3);}
-  else if(p==="bread"){c.fillStyle="rgba(188,140,86,.95)";c.beginPath();c.ellipse(x,y-3,7,3.2,0,0,TAU);c.fill();
-    c.strokeStyle="rgba(120,80,40,.7)";c.beginPath();c.moveTo(x-4,y-4);c.lineTo(x+4,y-4);c.stroke();}
-  else if(p==="tally"){c.strokeStyle="rgba(230,230,220,.8)";c.beginPath();
-    for(let i=0;i<4;i++){c.moveTo(x-5+i*3,y-9);c.lineTo(x-5+i*3,y-2);}c.moveTo(x-6,y-3);c.lineTo(x+5,y-8);c.stroke();}
-  else if(p==="candle"){c.fillStyle="rgba(230,220,190,.9)";c.fillRect(x-1.5,y-8,3,8);
-    c.fillStyle="rgba(255,200,90,.9)";c.beginPath();c.ellipse(x,y-10,1.6,2.6,0,0,TAU);c.fill();}
-  else if(p==="key"){c.strokeStyle="rgba(210,190,120,.9)";c.beginPath();c.arc(x-3,y-3,2.2,0,TAU);c.moveTo(x-1,y-3);c.lineTo(x+5,y-3);c.lineTo(x+5,y-1);c.stroke();}
-  else if(p==="jar"){c.strokeStyle="rgba(180,220,200,.7)";c.strokeRect(x-4,y-9,8,9);c.fillStyle="rgba(120,180,140,.35)";c.fillRect(x-3.5,y-6,7,5.5);}
-  else if(p==="paper"){c.fillStyle="rgba(230,226,210,.9)";c.fillRect(x-5,y-3,10,3);c.strokeStyle="rgba(60,60,60,.5)";c.beginPath();c.moveTo(x-3,y-1.5);c.lineTo(x+3,y-1.5);c.stroke();}
-  else if(p==="stool_empty"){c.strokeStyle="rgba(127,230,216,.25)";c.strokeRect(x-5,y+4,10,3);c.beginPath();c.moveTo(x-4,y+7);c.lineTo(x-4,y+16);c.moveTo(x+4,y+7);c.lineTo(x+4,y+16);c.stroke();}
-  c.restore();
 }
 
 /* ── проверки для автотестов: у каждого флага есть читатель, у каждой истории —

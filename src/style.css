@@ -23,15 +23,19 @@
   --void:#05070c;         /* пустота под всем */
   --deep:#080d16;         /* панели поверх мира */
   --panel:rgba(9,14,23,.9);
-  --edge:rgba(127,230,216,.16);   /* обычная линия */
-  --edge2:rgba(127,230,216,.34);  /* линия под вниманием */
-  --phos:#7fe6d8;         /* основное: приборы, свои системы */
-  --amber:#f2b25c;        /* деньги и действие */
+  --edge:rgba(var(--c-phos),.16);   /* обычная линия */
+  --edge2:rgba(var(--c-phos),.34);  /* линия под вниманием */
+  /* «Сурик» (M721): графит, кремовые надписи и один акцент — сурик пульта «Союза». Палитра живёт здесь,
+     ниже цвета берутся только через токены; триплеты --c-* — для rgba(var(--c-acc),.2) */
+  --c-phos:233,220,192; --c-acc:255,106,43; --c-edge:232,220,196; --c-ink:241,235,222; --c-alarm:255,45,85;
+  --phos:#e9dcc0;         /* основное: приборы, свои системы — крем */
+  --amber:#ff6a2b;        /* деньги, выбор и действие — сурик (имя осталось от янтаря) */
+  --alarm:#ff2d55;        /* тревога: малиновый, не путать с суриком */
   --alarm:#ff6b57;        /* угроза и потеря */
   --rare:#c58ae0;         /* редкое, трюм, наука */
   --good:#8fd08a;         /* прибыль и рост */
-  --dim:#5d7382;          /* второстепенное */
-  --text:#cfe3ea;         /* читаемый текст, а не свечение */
+  --dim:#6d675e;          /* второстепенное */
+  --text:#e4ddcf;         /* читаемый текст, а не свечение */
   --rad:3px;
   --pad:16px;
 
@@ -41,7 +45,7 @@
      Один набор токенов на все панели: если панель выглядит иначе, значит
      она собрана не из этого, и это ошибка, а не «особый случай». */
   --glass:linear-gradient(157deg,rgba(28,44,60,.50),rgba(7,12,20,.62) 62%,rgba(6,10,17,.70));
-  --glass-hi:inset 0 1px 0 rgba(190,245,255,.10),inset 0 0 22px rgba(127,230,216,.045);
+  --glass-hi:inset 0 1px 0 rgba(190,245,255,.10),inset 0 0 22px rgba(var(--c-phos),.045);
   --lift:0 10px 30px rgba(0,0,0,.42);
   --rad-p:13px;           /* панель */
   --rad-b:11px;           /* кнопка */
@@ -52,8 +56,8 @@ html,body{height:100%;overflow:hidden;background:var(--void);
   font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   color:var(--phos);user-select:none;-webkit-user-select:none;touch-action:none}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0}
-#nogpu{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;padding:22px 26px;background:#0b1018;border:1px solid #2a3a48;border-radius:10px;color:#cfe3ea;font:14px/1.5 ui-monospace,monospace;z-index:50}
-#nogpu b{display:block;color:#f2b25c;margin-bottom:8px}#nogpu s{text-decoration:none;color:#9fb4c0}
+#nogpu{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;padding:22px 26px;background:#0b1018;border:1px solid #2a3a48;border-radius:10px;color:var(--text);font:14px/1.5 ui-monospace,monospace;z-index:50}
+#nogpu b{display:block;color:var(--amber);margin-bottom:8px}#nogpu s{text-decoration:none;color:#a59d8f}
 
 /* ══════════════ одна мерка на весь интерфейс (M221) ══════════════
    Мир с M217 растёт вместе с окном. Приборы, пульт, пэды, борт и экраны
@@ -115,16 +119,16 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .slope{position:fixed;inset:0;pointer-events:none;transition:opacity .3s var(--ease);
   background:none}
 .slope::before{content:"";position:fixed;left:0;right:0;top:0;height:150px;
-  background:linear-gradient(to bottom,rgba(3,6,12,.58),rgba(3,6,12,.24) 46%,rgba(3,6,12,0))}
+  background:linear-gradient(to bottom,rgba(7,7,7,.58),rgba(7,7,7,.24) 46%,rgba(7,7,7,0))}
 .slope::after{content:"";position:fixed;left:0;right:0;bottom:0;height:210px;
-  background:linear-gradient(to top,rgba(3,6,12,.60),rgba(3,6,12,.26) 42%,rgba(3,6,12,0))}
+  background:linear-gradient(to top,rgba(7,7,7,.60),rgba(7,7,7,.26) 42%,rgba(7,7,7,0))}
 /* Событие делает верхнюю кромку плотнее — подложка помогает числам, а не
    заменяет их. Живёт на приборах, потому что зажигается вместе с ними. */
 .hud::before{content:"";position:fixed;left:0;right:0;top:0;height:170px;z-index:-1;
   pointer-events:none;opacity:0;transition:opacity .5s var(--ease);
-  background:linear-gradient(to bottom,rgba(3,6,12,.34),rgba(3,6,12,.14) 50%,rgba(3,6,12,0))}
+  background:linear-gradient(to bottom,rgba(7,7,7,.34),rgba(7,7,7,.14) 50%,rgba(7,7,7,0))}
 .hud.live::before{opacity:1;transition-duration:.14s}
-.vitals,.locus{text-shadow:0 1px 4px rgba(2,4,8,.92),0 0 14px rgba(2,4,8,.75)}
+.vitals,.locus{text-shadow:0 1px 4px rgba(5,5,5,.92),0 0 14px rgba(5,5,5,.75)}
 .vitals{display:flex;flex-direction:column;gap:4px;background:none;
   border:0;border-radius:0;padding:0;backdrop-filter:none;box-shadow:none}
 /* строка прибора: подпись — шкала — число. Число появилось потому, что
@@ -158,7 +162,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .bar.hold i{background:var(--rare)}
 .bar.shld i{background:#9fd8ff}
 .bar.enr i{background:#c58ae0}
-.bar.suit i{background:#cfe3ea}
+.bar.suit i{background:var(--text)}
 .bar.jet i{background:#ffd27a}
 .bar.low i{background:var(--alarm)}
 /* Тревога красит и саму шкалу, а не только число. `.low` у топлива и корпуса
@@ -183,7 +187,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
    читалась им, наверху под ней бывает и звёздное небо, и облако. Линия сверху,
    а не снизу — колодка висит под кромкой кадра, как потолочный блок кабины,
    и линия читается полкой, с которой она свешивается. */
-.ipod{width:208px;height:70px;background:linear-gradient(to bottom,rgba(6,10,16,.52),rgba(6,10,16,.16));
+.ipod{width:208px;height:70px;background:linear-gradient(to bottom,rgba(11,11,11,.52),rgba(11,11,11,.16));
   border:0;border-top:1px solid var(--edge2);border-bottom:0;border-radius:0;
   backdrop-filter:none;box-shadow:none;margin:0 auto}
 /* на узком экране колодка уходит: «где мы» и кнопки под пальцем важнее */
@@ -206,20 +210,26 @@ body:not(.inflight) .ipod{display:none}
 /* ══════════════ сообщения ══════════════ */
 /* Событие проходит под приборами, а не сквозь них: приборы вернулись наверх,
    и строке нужен воздух, иначе она читается их четвёртой шкалой. */
-#msg{position:fixed;left:50%;top:25%;transform:translateX(-50%);text-align:center;
+#msg{position:fixed;left:50%;top:max(25%,calc(var(--mapbar,0px) / var(--ui,1) + 8px));transform:translateX(-50%);text-align:center;
   pointer-events:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
   /* Свечение отделяет букву от ТЁМНОГО фона и бессильно на светлом: на кадре
      строка шла поперёк освещённого кольца планеты и там пропадала. К свечению
      добавлена тёмная тень — она и есть контраст, свечение остаётся настроением. */
-  text-shadow:0 1px 3px rgba(2,4,8,.95),0 0 10px rgba(2,4,8,.8),0 0 16px rgba(127,230,216,.45);
+  text-shadow:0 1px 3px rgba(5,5,5,.95),0 0 10px rgba(5,5,5,.8),0 0 16px rgba(var(--c-phos),.45);
   white-space:pre-line;line-height:1.95;max-width:84%}
+/* зимовка: лампа кладёт свет по доскам, и стена под строкой светлее, чем у main, — строку держит
+   мягкая тёмная подложка, не плашка (Контроль 26.09): тон под буквами и своя размытая тень
+   того же тона — за строкой он сходит на нет без края. Поле блока то же, что без подложки:
+   отступ сужал строку (у fixed с left:50% — полэкрана) и на телефоне выпускал из line-clamp
+   четвёртую строку; тень блока его overflow:hidden не режет */
+#msg.dim{background:rgba(6,6,6,.52);box-shadow:0 0 40px 30px rgba(6,6,6,.56);border-radius:32px}
 /* подсказка держится над пэдами: это ответ на «что тут можно», её место у рук.
    Она стоит НИЖЕ строки состояния (A2): действие спрашивают чаще, чем остаток
    топлива, поэтому оно ближе к рукам */
 #prompt{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 112px + var(--helmlift,0px));transform:translateX(-50%);
   pointer-events:none;font-size:10px;letter-spacing:.1em;color:var(--amber);text-align:center;
   /* то же и для подсказки: она висит над грунтом, а грунт бывает светлым */
-  text-shadow:0 1px 3px rgba(2,4,8,.95),0 0 10px rgba(2,4,8,.75),0 0 14px rgba(242,178,92,.4);
+  text-shadow:0 1px 3px rgba(5,5,5,.95),0 0 10px rgba(5,5,5,.75),0 0 14px rgba(var(--c-acc),.4);
   white-space:pre-line;line-height:1.85;max-width:90%}
 
 /* ══════════════ пэды ══════════════ */
@@ -240,7 +250,7 @@ body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],
    рисуется отдельным слоем (::before), чтобы нажатие меняло его отдельно
    от тела кнопки — от этого и берётся ощущение хода, а не мигания цвета. */
 .pads button{-webkit-appearance:none;position:relative;isolation:isolate;
-  background:radial-gradient(120% 120% at 50% 12%,rgba(127,230,216,.10),rgba(8,14,23,.60) 62%);
+  background:radial-gradient(120% 120% at 50% 12%,rgba(var(--c-phos),.10),rgba(8,14,23,.60) 62%);
   border:0;color:var(--phos);font-family:inherit;font-size:15px;width:var(--padw,56px);height:var(--padw,56px);
   border-radius:50%;display:grid;place-items:center;backdrop-filter:blur(12px) saturate(1.1);flex:0 0 auto;
   transition:transform .14s var(--ease),box-shadow .18s var(--ease),color .18s;
@@ -250,31 +260,31 @@ body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],
   border:1px solid var(--edge);transition:border-color .18s,box-shadow .18s,transform .18s var(--ease)}
 .pads button.on{transform:scale(.93)}
 .pads button.on::before{border-color:var(--edge2);transform:scale(1.06);
-  box-shadow:0 0 20px rgba(127,230,216,.32),inset 0 0 16px rgba(127,230,216,.22)}
+  box-shadow:0 0 20px rgba(var(--c-phos),.32),inset 0 0 16px rgba(var(--c-phos),.22)}
 .pads button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 /* тяга крупнее прочего: её жмут чаще всех и держат */
 .pads button[data-k=thrust]{width:calc(var(--padw,56px)*1.25);height:calc(var(--padw,56px)*1.25);color:var(--amber);font-size:17px;
-  background:radial-gradient(120% 120% at 50% 12%,rgba(242,178,92,.14),rgba(10,12,18,.62) 62%)}
-.pads button[data-k=thrust]::before{border-color:rgba(242,178,92,.42)}
+  background:radial-gradient(120% 120% at 50% 12%,rgba(var(--c-acc),.14),rgba(10,12,18,.62) 62%)}
+.pads button[data-k=thrust]::before{border-color:rgba(var(--c-acc),.42)}
 .pads button[data-k=thrust].on::before{border-color:var(--amber);
-  box-shadow:0 0 22px rgba(242,178,92,.36),inset 0 0 16px rgba(242,178,92,.24)}
+  box-shadow:0 0 22px rgba(var(--c-acc),.36),inset 0 0 16px rgba(var(--c-acc),.24)}
 /* «ДЕЙСТВИЕ» подписывается по месту (СТЫКОВКА, ПОСАДКА, РЕЗАК), поэтому
    текст мелкий и переносится: подпись важнее, чем ровный кегль */
 .pads button[data-k=act]{color:var(--amber);font-size:8px;padding:0 1px;
   letter-spacing:0;text-align:center;word-break:keep-all;overflow-wrap:normal}
-.pads button[data-k=act]::before{border-color:rgba(242,178,92,.38)}
+.pads button[data-k=act]::before{border-color:rgba(var(--c-acc),.38)}
 /* есть что сделать — кнопка светится, и свет дышит: неподвижное свечение
    глазом читается как заливка, а не как «сюда» */
 .pads button[data-k=act].ready{
-  background:radial-gradient(120% 120% at 50% 12%,rgba(242,178,92,.22),rgba(10,12,18,.62) 62%);
-  box-shadow:var(--lift),0 0 26px rgba(242,178,92,.26),inset 0 1px 0 rgba(255,225,180,.16)}
+  background:radial-gradient(120% 120% at 50% 12%,rgba(var(--c-acc),.22),rgba(10,12,18,.62) 62%);
+  box-shadow:var(--lift),0 0 26px rgba(var(--c-acc),.26),inset 0 1px 0 rgba(255,225,180,.16)}
 .pads button[data-k=act].ready::before{border-color:var(--amber);animation:breathe 2.6s ease-in-out infinite}
-@keyframes breathe{50%{box-shadow:0 0 22px rgba(242,178,92,.34);border-color:rgba(242,178,92,.55)}}
+@keyframes breathe{50%{box-shadow:0 0 22px rgba(var(--c-acc),.34);border-color:rgba(var(--c-acc),.55)}}
 .pads button[data-k=brake]{font-size:8px;letter-spacing:.03em}
 .pads button[data-k=fire]{font-size:9px;color:var(--alarm)}
-.pads button[data-k=fire]::before{border-color:rgba(255,107,87,.5)}
+.pads button[data-k=fire]::before{border-color:rgba(var(--c-alarm),.5)}
 .pads button[data-k=fire].on::before{border-color:var(--alarm);
-  box-shadow:0 0 22px rgba(255,107,87,.34),inset 0 0 16px rgba(255,107,87,.22)}
+  box-shadow:0 0 22px rgba(var(--c-alarm),.34),inset 0 0 16px rgba(var(--c-alarm),.22)}
 /* ракета (M112): та же тревожная семья, что и огонь, но тусклее — это не
    основное оружие, а расход. Пустой боекомплект гасит кнопку, а не прячет её:
    игрок должен видеть, что пусковая есть, а везти к ней нечего. */
@@ -285,15 +295,15 @@ body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],
 .pads button[data-k=msl].empty{opacity:.4}
 /* ЦЕЛЬ (M360): захват ближайшего — той же тревожной семьи, что огонь, но тоньше */
 .pads button[data-k=lock]{font-size:9px;color:var(--alarm);letter-spacing:.03em}
-.pads button[data-k=lock]::before{border-color:rgba(255,107,87,.38)}
+.pads button[data-k=lock]::before{border-color:rgba(var(--c-alarm),.38)}
 #launchbtn{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 100px);
   z-index:6;
   width:88px;height:44px;border-radius:var(--rad-b);background:var(--glass);
-  border:1px solid rgba(242,178,92,.5);color:var(--amber);font-family:inherit;font-size:10px;
+  border:1px solid rgba(var(--c-acc),.5);color:var(--amber);font-family:inherit;font-size:10px;
   letter-spacing:.08em;overflow:hidden;-webkit-appearance:none;
   backdrop-filter:blur(14px) saturate(1.1);box-shadow:var(--lift),var(--glass-hi)}
 #launchbtn span{position:relative;z-index:1}
-#launchbtn i{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(242,178,92,.3);
+#launchbtn i{position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(var(--c-acc),.3);
   transition:width .05s linear}
 
 /* ══════════════ правый борт ══════════════
@@ -318,17 +328,17 @@ body.tankdry .pads button[data-k=thrust],body.tankdry .pads button[data-k=left],
   fill:none;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
 .rail button.key{border-color:var(--edge2)}
 .rail button:active{transform:scale(.96);border-color:var(--phos);
-  box-shadow:var(--lift),0 0 20px rgba(127,230,216,.24),var(--glass-hi)}
-.rail .ctx button{border-color:rgba(242,178,92,.42);color:var(--amber)}
+  box-shadow:var(--lift),0 0 20px rgba(var(--c-phos),.24),var(--glass-hi)}
+.rail .ctx button{border-color:rgba(var(--c-acc),.42);color:var(--amber)}
 .rail .ctx button:active{border-color:var(--amber);
-  box-shadow:var(--lift),0 0 20px rgba(242,178,92,.26),var(--glass-hi)}
+  box-shadow:var(--lift),0 0 20px rgba(var(--c-acc),.26),var(--glass-hi)}
 /* масштаб — пара, поэтому и выглядит парой, а не двумя случайными кнопками */
 .rail .zoom{display:flex;flex-direction:column;border:1px solid var(--edge);border-radius:var(--rad-b);
   overflow:hidden;background:var(--glass);backdrop-filter:blur(14px) saturate(1.1);
   box-shadow:var(--lift),var(--glass-hi)}
 .rail .zoom button{border:0;border-radius:0;height:44px;width:44px;min-width:44px;padding:0;
   font-size:17px;box-shadow:none;background:none;justify-content:center}
-.rail .zoom button:active{transform:none;background:rgba(127,230,216,.14)}
+.rail .zoom button:active{transform:none;background:rgba(var(--c-phos),.14)}
 .rail .zoom button:first-child{border-bottom:1px solid var(--edge)}
 /* ── точка внимания: у кнопки есть что посмотреть ──
    Приход сообщается движением, а не появлением. Игрок смотрит в мир, и точка,
@@ -373,11 +383,11 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
   padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
 #menu>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
 #menu button{position:relative;-webkit-appearance:none;background:none;border:0;
-  border-bottom:1px solid rgba(127,230,216,.08);color:var(--phos);font-family:inherit;
+  border-bottom:1px solid rgba(var(--c-phos),.08);color:var(--phos);font-family:inherit;
   text-align:left;padding:11px 12px;min-height:48px;width:100%;
   display:flex;align-items:center;gap:11px;transition:background .16s}
 #menu button:last-child{border-bottom:0}
-#menu button:active{background:rgba(127,230,216,.1)}
+#menu button:active{background:rgba(var(--c-phos),.1)}
 #menu button svg{opacity:.65}
 #menu button .tx{flex:1;min-width:0}
 #menu button em{font-style:normal;font-size:11px;letter-spacing:.13em;display:block}
@@ -389,7 +399,7 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
    куда смотрят. Тот же терминал, что меню, но янтарный: это не дверь, а беда */
 #sos{position:fixed;left:50%;transform:translateX(-50%);z-index:9;   /* нижняя треть, над падами (дизайнер 12.09) */
   bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);max-height:72vh;overflow-y:auto;
-  width:min(320px,88vw);background:var(--glass);border:1px solid rgba(242,178,92,.5);
+  width:min(320px,88vw);background:var(--glass);border:1px solid rgba(var(--c-acc),.5);
   border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
   box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
   display:none;flex-direction:column;overflow:hidden}
@@ -400,22 +410,22 @@ body.menuopen .rail{opacity:.12;pointer-events:none;transition:opacity .15s}
 #sos>b span{margin:-12px -12px -12px auto;color:var(--phos);font-size:20px;line-height:1;cursor:pointer;
   min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}   /* 44 под палец */
 #sosHead{color:#c8d3dc;font-size:11px;letter-spacing:.03em;padding:8px 12px;white-space:pre-line;line-height:1.4;
-  border-bottom:1px solid rgba(127,230,216,.08)}
+  border-bottom:1px solid rgba(var(--c-phos),.08)}
 #sos button{position:relative;-webkit-appearance:none;background:none;border:0;
-  border-bottom:1px solid rgba(127,230,216,.08);color:var(--amber);font-family:inherit;
+  border-bottom:1px solid rgba(var(--c-phos),.08);color:var(--amber);font-family:inherit;
   text-align:left;padding:11px 12px;min-height:48px;width:100%;display:flex;align-items:center}
 #sos button:last-child{border-bottom:0}
-#sos button:active{background:rgba(242,178,92,.12)}
+#sos button:active{background:rgba(var(--c-acc),.12)}
 #sos button:disabled{color:var(--dim);opacity:.6}
 #sos button .tx{flex:1;min-width:0}
 #sos button em{font-style:normal;font-size:11px;letter-spacing:.13em;display:block}
 #sos button s{text-decoration:none;display:block;color:#b9c6d0;font-size:11px;margin-top:3px;letter-spacing:.01em;line-height:1.35}
 #sos .ic{flex:0 0 auto;width:22px;height:22px;margin-right:10px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
 #sos button.lose.armed{background:rgba(255,90,70,.26);color:#ffd8cf}
-#sos button .arm{position:absolute;left:0;bottom:0;height:3px;width:100%;background:#ff6b57;animation:sosArm 4s linear forwards}
+#sos button .arm{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--alarm);animation:sosArm 4s linear forwards}
 @keyframes sosArm{from{width:100%}to{width:0}}
 body.sosopen #hailwin{bottom:auto;top:calc(env(safe-area-inset-top) + 96px)}   /* низ держит окно бака — оклик уходит наверх */
-#sos button.main{background:rgba(242,178,92,.16);color:#ffd59a}
+#sos button.main{background:rgba(var(--c-acc),.16);color:#ffd59a}
 #sos button.main em{font-size:12px}
 #sos button.lose{color:#ff7a66;margin-top:10px;border-top:1px solid rgba(255,110,90,.45)}
 .sosnone{color:var(--dim);font-size:10px;padding:12px;line-height:1.5}
@@ -425,7 +435,7 @@ body.sosopen #console,body.sosopen #camBtn,body.hailopen #console,body.hailopen 
    пикет видны; вопрос, отсчёт, два больших ответа. Подсказка под ним молчит */
 #hailwin{position:fixed;left:50%;transform:translateX(-50%);z-index:24;   /* поверх экранов (.scr 20) и стола (22): R0 */
   bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);width:min(360px,92vw);
-  background:var(--glass);border:1px solid rgba(242,178,92,.55);border-radius:var(--rad-p);
+  background:var(--glass);border:1px solid rgba(var(--c-acc),.55);border-radius:var(--rad-p);
   backdrop-filter:blur(18px) saturate(1.2);box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
   display:none;flex-direction:column;overflow:hidden}
 #hailwin.open{display:flex}
@@ -434,30 +444,30 @@ body.sosopen #console,body.sosopen #camBtn,body.hailopen #console,body.hailopen 
 #hailwin .hq{padding:2px 12px 8px;font-size:15px;color:var(--text);line-height:1.35}
 #hailwin .hbar{margin:0 12px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
 #hailwin .hbar i{display:block;height:100%;background:var(--amber);transition:width .1s linear}
-#hailwin.warn .hbar i{background:#ff6b57}
+#hailwin.warn .hbar i{background:var(--alarm)}
 #hailwin .hw{display:block;text-decoration:none;padding:6px 12px 0;font-size:11px;color:#c8d3dc;letter-spacing:.02em}
 #hailwin.warn .hw{color:#ff9d7a}
 #hailwin .ha{display:flex;gap:8px;padding:10px 12px 12px}
 #hailwin .ha .act{flex:1 1 0;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 #hailwin .ha .act small{font-size:9px;letter-spacing:.12em;opacity:.7}
 /* ответы по последствиям (автор 18.09): безопасный — зелёный фосфор, опасный — красный */
-#hailwin .ha .act.safe{color:var(--phos);border-color:rgba(127,230,216,.55);background:rgba(127,230,216,.08)}
-#hailwin .ha .act.risk{color:#ff6b57;border-color:rgba(255,107,87,.6);background:rgba(255,107,87,.10)}
+#hailwin .ha .act.safe{color:var(--phos);border-color:rgba(var(--c-phos),.55);background:rgba(var(--c-phos),.08)}
+#hailwin .ha .act.risk{color:var(--alarm);border-color:rgba(var(--c-alarm),.6);background:rgba(var(--c-alarm),.10)}
 body[data-hail-lock=safe] .pads button[data-k=lock]{color:var(--phos)}
-body[data-hail-lock=safe] .pads button[data-k=lock]::before{border-color:rgba(127,230,216,.45)}
+body[data-hail-lock=safe] .pads button[data-k=lock]::before{border-color:rgba(var(--c-phos),.45)}
 body[data-hail-act=safe] .pads button[data-k=act]{color:var(--phos)}
-body[data-hail-act=safe] .pads button[data-k=act]::before{border-color:rgba(127,230,216,.45)}
+body[data-hail-act=safe] .pads button[data-k=act]::before{border-color:rgba(var(--c-phos),.45)}
 body[data-hail-act=risk] .pads button[data-k=act]{color:var(--alarm)}
-body[data-hail-act=risk] .pads button[data-k=act]::before{border-color:rgba(255,107,87,.38)}
+body[data-hail-act=risk] .pads button[data-k=act]::before{border-color:rgba(var(--c-alarm),.38)}
 /* пэд под окликом «готов» (.ready) дышал ЯНТАРЁМ поверх цвета ответа (D5, телефон
    18.09): анимация breathe красит кольцо сама, и опасный «ПРОХОДОМ» выглядел
    рекомендованным. Дыхание остаётся — цветом последствия */
 body[data-hail-act=risk] .pads button[data-k=act].ready{color:var(--alarm)}
 body[data-hail-act=risk] .pads button[data-k=act].ready::before{border-color:var(--alarm);animation:breatheRisk 2.6s ease-in-out infinite}
-@keyframes breatheRisk{50%{box-shadow:0 0 22px rgba(255,107,87,.34);border-color:rgba(255,107,87,.6)}}
+@keyframes breatheRisk{50%{box-shadow:0 0 22px rgba(var(--c-alarm),.34);border-color:rgba(var(--c-alarm),.6)}}
 body[data-hail-act=safe] .pads button[data-k=act].ready{color:var(--phos)}
 body[data-hail-act=safe] .pads button[data-k=act].ready::before{border-color:var(--phos);animation:breatheSafe 2.6s ease-in-out infinite}
-@keyframes breatheSafe{50%{box-shadow:0 0 22px rgba(127,230,216,.30);border-color:rgba(127,230,216,.6)}}
+@keyframes breatheSafe{50%{box-shadow:0 0 22px rgba(var(--c-phos),.30);border-color:rgba(var(--c-phos),.6)}}
 body.hailopen #prompt{visibility:hidden}
 body.hailopen .rail{opacity:.12;pointer-events:none}   /* как у окна бака: на 7 секунд оклика борт не нужен */
 /* «что получил» (п. 5, 12.09): добыча боя карточкой — стекло окна выходов,
@@ -492,7 +502,7 @@ body.hailopen .rail{opacity:.12;pointer-events:none}   /* как у окна б�
    подвал с действиями. Фон непрозрачный — сквозь прежние 96% просвечивали
    кнопки правого борта, и это читалось как брак. */
 .scr{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;
-  background:radial-gradient(120% 80% at 50% -10%,rgba(127,230,216,.07),transparent 60%),
+  background:radial-gradient(120% 80% at 50% -10%,rgba(var(--c-phos),.07),transparent 60%),
     linear-gradient(180deg,#070b12,#05070c 55%,#04060a);
   padding:calc(env(safe-area-inset-top)) 0 calc(env(safe-area-inset-bottom))}
 .scr.open{display:flex;animation:scrIn .22s var(--ease)}
@@ -501,7 +511,7 @@ body.screen .hud,body.screen .rail,body.screen .pads,body.screen #prompt,
 body.screen #msg,body.screen #launchbtn,body.screen .slope{opacity:0;pointer-events:none}
 .scr header{padding:16px var(--pad) 13px;display:flex;align-items:flex-end;gap:12px;
   border-bottom:1px solid var(--edge);
-  background:linear-gradient(180deg,rgba(127,230,216,.05),transparent)}
+  background:linear-gradient(180deg,rgba(var(--c-phos),.05),transparent)}
 .scr header .ttl{min-width:0}
 .scr header b{font-weight:400;font-size:17px;letter-spacing:.16em;display:block;color:var(--phos);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -550,7 +560,7 @@ nav.groups button.on::after{content:"";position:absolute;left:14px;right:14px;bo
    Тень у правого края — тот же приём, что у кромки в кадре: край,
    который не кончается, обязан выглядеть незаконченным. */
 nav.tabs{display:flex;border-bottom:1px solid var(--edge);overflow-x:auto;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none;background:rgba(127,230,216,.03);
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;background:rgba(var(--c-phos),.03);
   -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%);
   mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%)}
 /* докрутили до конца — маска не нужна, иначе последняя вкладка вечно бледная */
@@ -558,13 +568,13 @@ nav.tabs.tail{-webkit-mask-image:none;mask-image:none}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{flex:0 0 auto;-webkit-appearance:none;background:none;border:0;
   color:var(--dim);font-family:inherit;font-size:9px;letter-spacing:.1em;padding:0 16px;
-  min-height:44px;white-space:nowrap;border-right:1px solid rgba(127,230,216,.08);
+  min-height:44px;white-space:nowrap;border-right:1px solid rgba(var(--c-phos),.08);
   position:relative;transition:color .18s}
 /* Выбранная вкладка была сплошной плашкой цвета фосфора — единственный
    кричащий прямоугольник во всём интерфейсе. Теперь это свечение изнутри
    и волосок по нижней кромке: тот же язык, что у остальных панелей. */
 nav.tabs button.on{color:var(--phos);
-  background:linear-gradient(180deg,rgba(127,230,216,.16),rgba(127,230,216,.04))}
+  background:linear-gradient(180deg,rgba(var(--c-phos),.16),rgba(var(--c-phos),.04))}
 nav.tabs button.on::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:1.5px;
   background:var(--phos);box-shadow:0 0 12px var(--phos)}
 /* когда в разделе одна вкладка, вторая ступень не нужна */
@@ -578,11 +588,11 @@ nav.tabs.solo{display:none}
 #stGroups.tail{-webkit-mask-image:none;mask-image:none}
 #stGroups button.open{color:var(--phos);flex:0 0 auto}
 #stGroups #stTabs{flex:0 0 auto;display:flex;overflow:visible;border:0;padding:0;margin:0;
-  background:rgba(127,230,216,.05);border-left:1px solid rgba(127,230,216,.14);
+  background:rgba(var(--c-phos),.05);border-left:1px solid rgba(var(--c-phos),.14);
   -webkit-mask-image:none;mask-image:none}
 #stGroups #stTabs.solo{display:none}
 #stGroups #stTabs button{min-height:46px;font-size:9px;padding:0 13px;border-right:0}
-#stGroups #stTabs button:last-child{border-right:1px solid rgba(127,230,216,.14)}
+#stGroups #stTabs button:last-child{border-right:1px solid rgba(var(--c-phos),.14)}
 
 .body{flex:1;overflow-y:auto;padding:0 0 10px;-webkit-overflow-scrolling:touch}
 /* «внизу ещё есть» (M212): список, который продолжается за кромкой, уходит в
@@ -597,7 +607,7 @@ nav.tabs.solo{display:none}
    (что добывать, куда лететь) кнопок пять, и на узком телефоне они уезжали
    за правый край вместе с половиной подписи. */
 .row{display:flex;align-items:center;gap:10px;padding:13px var(--pad);
-  border-bottom:1px solid rgba(127,230,216,.08);min-height:56px;flex-wrap:wrap}
+  border-bottom:1px solid rgba(var(--c-phos),.08);min-height:56px;flex-wrap:wrap}
 .row .nm{flex:1 1 190px;min-width:0}
 .row .nm b{display:block;font-weight:400;font-size:13px;letter-spacing:.02em;color:var(--text)}
 .row .nm s{text-decoration:none;display:block;color:var(--dim);font-size:10px;margin-top:4px;
@@ -606,15 +616,15 @@ nav.tabs.solo{display:none}
   font-variant-numeric:tabular-nums}
 .row .qt s{text-decoration:none;display:block;color:var(--dim);font-size:9px;margin-top:3px}
 .row canvas{flex:0 0 auto}
-.row.on{background:rgba(127,230,216,.08)}
+.row.on{background:rgba(var(--c-phos),.08)}
 /* ДЕЛО (11.09): строка-кнопка говорит об этом шевроном справа — ›  ведёт в
    экран, ▾/▴ раскрывает здесь; в ряд без переноса, чтобы шеврон не падал вниз */
 .row.deal{flex-wrap:nowrap}
 .row.go{cursor:pointer}
-.row.go:active{background:rgba(127,230,216,.08)}
+.row.go:active{background:rgba(var(--c-phos),.08)}
 /* машины раскрытого маршрута — подстроки: их не жмут, и тринадцать строк по
    56 px растягивали ДЕЛО на три экрана */
-.row.sub{min-height:0;padding-top:6px;padding-bottom:6px;padding-left:calc(var(--pad) + 12px);border-bottom-color:rgba(127,230,216,.04)}
+.row.sub{min-height:0;padding-top:6px;padding-bottom:6px;padding-left:calc(var(--pad) + 12px);border-bottom-color:rgba(var(--c-phos),.04)}
 .row.sub .nm s{margin-top:0}
 #dealview .sec.note{padding-top:12px}
 #dealview .sec.note b{font-weight:400;color:var(--amber)}
@@ -627,37 +637,37 @@ nav.tabs.solo{display:none}
    отличается не размером, а тем, что светится тёплым — второстепенные
    остаются холодными и тихими. */
 .act{-webkit-appearance:none;
-  background:linear-gradient(180deg,rgba(127,230,216,.14),rgba(127,230,216,.05));
+  background:linear-gradient(180deg,rgba(var(--c-phos),.14),rgba(var(--c-phos),.05));
   border:1px solid var(--edge2);
   color:var(--phos);font-family:inherit;font-size:10px;letter-spacing:.09em;padding:0 14px;
   min-height:44px;white-space:nowrap;border-radius:var(--rad-b);
   box-shadow:var(--glass-hi);
   transition:background .16s,box-shadow .18s var(--ease),transform .12s var(--ease)}
 .act:active{transform:scale(.975);
-  background:linear-gradient(180deg,rgba(127,230,216,.26),rgba(127,230,216,.10));
-  box-shadow:0 0 20px rgba(127,230,216,.22),var(--glass-hi)}
+  background:linear-gradient(180deg,rgba(var(--c-phos),.26),rgba(var(--c-phos),.10));
+  box-shadow:0 0 20px rgba(var(--c-phos),.22),var(--glass-hi)}
 .act:disabled{opacity:.28;box-shadow:none}
-.act.gold{border-color:rgba(242,178,92,.5);color:var(--amber);
-  background:linear-gradient(180deg,rgba(242,178,92,.16),rgba(242,178,92,.05))}
-.act.gold:active{background:linear-gradient(180deg,rgba(242,178,92,.28),rgba(242,178,92,.10));
-  box-shadow:0 0 20px rgba(242,178,92,.26),var(--glass-hi)}
+.act.gold{border-color:rgba(var(--c-acc),.5);color:var(--amber);
+  background:linear-gradient(180deg,rgba(var(--c-acc),.16),rgba(var(--c-acc),.05))}
+.act.gold:active{background:linear-gradient(180deg,rgba(var(--c-acc),.28),rgba(var(--c-acc),.10));
+  box-shadow:0 0 20px rgba(var(--c-acc),.26),var(--glass-hi)}
 /* 40 px и ширина в один символ давали кнопку 31×40 на экране экипажа — под
    законом в 44 (замер 30.08.2026). Закон один для всех кнопок, а не только для
    пульта и ящика, которые сторожил 91f-ui. */
 .act.sm{padding:0 12px;min-height:44px;min-width:44px;font-size:9px}
-.scr footer{display:flex;gap:10px;padding:12px var(--pad) 12px;border-top:1px solid var(--edge);
-  background:linear-gradient(0deg,rgba(127,230,216,.04),transparent)}
+.scr footer{display:flex;flex-wrap:wrap;gap:10px;padding:12px var(--pad) 12px;border-top:1px solid var(--edge);
+  background:linear-gradient(0deg,rgba(var(--c-phos),.04),transparent)}
 .scr footer .act{flex:1;text-align:center;padding:0 6px;min-height:48px}
 
 .dots{display:flex;gap:3px;margin-top:6px}
 .dots i{width:13px;height:3px;background:rgba(255,255,255,.14);border-radius:2px}
 .dots i.f{background:var(--phos)}
-.dots i.o{background:rgba(127,230,216,.28)}
+.dots i.o{background:rgba(var(--c-phos),.28)}
 .modbtns{display:flex;gap:8px;align-items:center;flex-shrink:0}
 /* карточка улучшения (п. 4, 12.09): точки крупно, «сейчас → станет», полоса
    оснастки, одна кнопка с глаголом; монтаж — секунда заливки по кнопке */
 .modgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;padding:4px var(--pad) 14px}
-.modcard{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid rgba(127,230,216,.14);border-radius:6px;background:rgba(127,230,216,.035)}
+.modcard{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid rgba(var(--c-phos),.14);border-radius:6px;background:rgba(var(--c-phos),.035)}
 .modcard.fuse{margin:6px var(--pad) 14px}
 .modcard .mh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .modcard .mh b{font-weight:400;font-size:13px;color:var(--text);letter-spacing:.02em}
@@ -665,7 +675,7 @@ nav.tabs.solo{display:none}
 .dots.big{margin-top:2px;gap:5px;flex:0 0 auto}
 .dots.big i{width:12px;height:12px;border-radius:50%;background:none;border:1.5px solid rgba(255,255,255,.18)}
 .dots.big i.f{background:var(--phos);border-color:var(--phos)}
-.dots.big i.o{border-color:rgba(127,230,216,.6)}
+.dots.big i.o{border-color:rgba(var(--c-phos),.6)}
 .modcard .mf{min-height:34px}
 .modcard .mf .ln{display:flex;align-items:baseline;gap:8px;font-size:11px;line-height:1.7;font-variant-numeric:tabular-nums}
 .modcard .mf .ln em{flex:1;font-style:normal;color:var(--dim)}
@@ -675,15 +685,18 @@ nav.tabs.solo{display:none}
 .modcard .mf>s{text-decoration:none;color:var(--dim);font-size:10px}
 .mcap.top{padding:0 var(--pad) 10px}
 .mcap .bar{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
-.mcap .bar i{position:absolute;left:0;top:0;bottom:0;background:rgba(127,230,216,.45)}
+.mcap .bar i{position:absolute;left:0;top:0;bottom:0;background:rgba(var(--c-phos),.45)}
 .mcap s{display:block;text-decoration:none;color:var(--dim);font-size:9px;letter-spacing:.06em;margin-top:4px}
 .modcard .mf .ln.cap{margin-top:2px;padding-top:2px;border-top:1px solid rgba(255,255,255,.05)}
 .modcard .mf .ln.cap u{color:var(--dim)}.modcard .mf .ln.cap u.dn{color:#ff9d7a}
-.modcard .macts{display:flex;gap:8px}
+.modcard .macts{display:flex;flex-wrap:wrap;gap:8px}
+/* «СНЯТЬ УР.» не сжимается под свою подпись: min-width 44 у .act.sm отменял min-width:auto, и кнопка
+   ужималась до 44 px, а подпись вылезала на 46 (зрение 06.10.2026) — тесно, значит в новую строку */
+.modcard .macts .act.sm{flex:none}
 .modcard .macts .act:first-child{flex:1 1 auto}
 .modcard.work .macts .act:first-child{position:relative;overflow:hidden;opacity:1}
 .modcard.work .macts .act:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:100%;
-  background:rgba(127,230,216,.22);transform-origin:left;animation:modfill .85s linear both}
+  background:rgba(var(--c-phos),.22);transform-origin:left;animation:modfill .85s linear both}
 .modcard.done .macts .act:first-child{color:var(--good);border-color:rgba(143,208,138,.6)}
 .modcard.done .macts .act:first-child::before{animation:none;background:rgba(143,208,138,.16)}
 @keyframes modfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -708,22 +721,22 @@ input.vol::-moz-range-thumb{width:20px;height:20px;background:var(--phos);
    Титул, три двери и всё. Таблица клавиш была первым, что видел игрок,
    и первым же, чего он не читал: теперь она за кнопкой. */
 #intro{position:fixed;inset:0;background:
-  radial-gradient(ellipse at 50% 32%,rgba(127,230,216,.09),transparent 62%),var(--void);
+  radial-gradient(ellipse at 50% 32%,rgba(var(--c-phos),.09),transparent 62%),var(--void);
   display:grid;place-items:center;padding:24px;text-align:center;z-index:30;overflow-y:auto}
 #intro div.wrap{max-width:520px;width:100%;padding:32px 0}
 #intro .mark{margin-bottom:38px}
 #intro h1{font-size:min(52px,13vw);font-weight:400;letter-spacing:.44em;margin:0 0 14px .44em;
-  text-shadow:0 0 34px rgba(127,230,216,.45)}
+  text-shadow:0 0 34px rgba(var(--c-phos),.45)}
 #intro p.sub{color:var(--dim);font-size:9px;letter-spacing:.3em}
 .choice{display:flex;flex-direction:column;gap:10px;max-width:340px;margin:0 auto}
 .choice button{-webkit-appearance:none;
-  background:linear-gradient(180deg,rgba(242,178,92,.14),rgba(242,178,92,.04));
-  border:1px solid rgba(242,178,92,.45);color:var(--amber);font-family:inherit;
+  background:linear-gradient(180deg,rgba(var(--c-acc),.14),rgba(var(--c-acc),.04));
+  border:1px solid rgba(var(--c-acc),.45);color:var(--amber);font-family:inherit;
   padding:16px 18px;font-size:11px;letter-spacing:.16em;line-height:1.6;border-radius:var(--rad-b);
   box-shadow:var(--glass-hi);transition:box-shadow .2s var(--ease),transform .12s var(--ease)}
 .choice button:active{transform:scale(.985);
-  box-shadow:0 0 26px rgba(242,178,92,.24),var(--glass-hi)}
-.choice button.alt{background:linear-gradient(180deg,rgba(127,230,216,.10),rgba(127,230,216,.03));
+  box-shadow:0 0 26px rgba(var(--c-acc),.24),var(--glass-hi)}
+.choice button.alt{background:linear-gradient(180deg,rgba(var(--c-phos),.10),rgba(var(--c-phos),.03));
   border-color:var(--edge2);color:var(--phos)}
 .choice small{display:block;color:var(--dim);font-size:9px;letter-spacing:.05em;margin-top:6px}
 .keysbtn{-webkit-appearance:none;background:none;border:0;color:var(--dim);font-family:inherit;
@@ -785,15 +798,15 @@ body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
    Строка дела крупнее записи ленты и явно нажимаема: у неё своя подложка,
    левая полоса-акцент и стрелка на строках с адресом. Журнал — не лента,
    и выглядеть одинаково они не должны. */
-#loglist .li.quest{background:rgba(127,230,216,.045);
-  border-left:2px solid rgba(242,178,92,.55);align-items:flex-start}
+#loglist .li.quest{background:rgba(var(--c-phos),.045);
+  border-left:2px solid rgba(var(--c-acc),.55);align-items:flex-start}
 #loglist .li.quest span{color:var(--text)}
 #loglist .li.quest span i{font-style:normal;color:var(--dim);font-size:10px}
 #loglist .li.quest em{color:var(--amber)}
 /* книжка: круглая печать учреждения и росчерк человека (P14) */
 #loglist .li .rec-seal{display:inline-block;margin-left:8px;padding:1px 5px;border:1px solid rgba(154,124,240,.55);border-radius:50%;color:rgba(154,124,240,.8);font:italic 9px/1.2 ui-monospace,monospace;transform:rotate(-8deg)}
 #loglist .li .rec-sign{margin-left:8px;color:rgba(111,156,242,.75);font:italic 12px/1 cursive}
-#loglist .li.quest.go:active{background:rgba(242,178,92,.14)}
+#loglist .li.quest.go:active{background:rgba(var(--c-acc),.14)}
 #loglist .li.quest.go span b:first-child::after{content:" →";color:var(--amber)}
 
 /* ══════════════ широкий экран ══════════════
@@ -815,7 +828,7 @@ body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
     /* стекло чуть глуше (аудит интерфейсов): при .93 яркая станция за листом
        просвечивала оранжевым пятном сквозь строки настроек — лист обязан
        быть листом (§3), а не витриной поверх витрины */
-    background:radial-gradient(120% 80% at 50% -10%,rgba(127,230,216,.07),transparent 60%),
+    background:radial-gradient(120% 80% at 50% -10%,rgba(var(--c-phos),.07),transparent 60%),
       linear-gradient(180deg,rgba(9,14,22,.965),rgba(5,8,13,.975) 55%,rgba(4,6,10,.985));
     backdrop-filter:blur(18px) saturate(1.15);padding:0;overflow:hidden}
   .scr header{padding:20px 24px 16px}
@@ -859,8 +872,8 @@ body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
 /* системный скроллбар внутри стекла читался чужим — тонкая полоска в цвет */
 .body::-webkit-scrollbar,#loglist::-webkit-scrollbar,#lorelist::-webkit-scrollbar{width:6px}
 .body::-webkit-scrollbar-thumb,#loglist::-webkit-scrollbar-thumb,#lorelist::-webkit-scrollbar-thumb{
-  background:rgba(127,230,216,.18);border-radius:3px}
-.body,#loglist,#lorelist{scrollbar-width:thin;scrollbar-color:rgba(127,230,216,.18) transparent}
+  background:rgba(var(--c-phos),.18);border-radius:3px}
+.body,#loglist,#lorelist{scrollbar-width:thin;scrollbar-color:rgba(var(--c-phos),.18) transparent}
 /* длинная «секция» — это фраза, а не подпись: обычный регистр, читаемый кегль */
 .sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim);display:block;padding-top:0}
 /* ── заголовки и полосы (M299) ── */
@@ -870,9 +883,9 @@ body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
 .sec .q{flex:0 0 auto;min-height:44px;min-width:44px;height:44px;padding:0 4px;margin:-12px -6px -12px 0;font:inherit;
   background:none;border:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim)}
 .sec .q i{font-style:normal;height:22px;line-height:20px;padding:0 9px;font-size:9px;letter-spacing:.08em;
-  background:rgba(127,230,216,.06);border:1px solid rgba(127,230,216,.22);border-radius:11px}
+  background:rgba(var(--c-phos),.06);border:1px solid rgba(var(--c-phos),.22);border-radius:11px}
 .sec .q:hover{color:var(--text)}
-.sec.lane{margin-top:14px;padding-top:26px;border-top:1px solid rgba(127,230,216,.12);font-size:11px;letter-spacing:.26em;color:var(--text)}
+.sec.lane{margin-top:14px;padding-top:26px;border-top:1px solid rgba(var(--c-phos),.12);font-size:11px;letter-spacing:.26em;color:var(--text)}
 .sec.lane:first-child{margin-top:0;border-top:0}
 .sec.fold{cursor:pointer}
 .sec.fold.on .cnt{color:var(--text)}
@@ -891,8 +904,9 @@ body:has(.scr.open) .hud,body:has(.scr.open) #instrpod,body:has(#askwin.open) .h
 /* и подсказка say() под открытым экраном — не поперёк его шапки, а плашкой
    над нижними кнопками: «ПРИШЁЛ ОТВЕТ» шла по имени станции */
 body:has(.scr.open) #msg{top:auto;bottom:calc(env(safe-area-inset-bottom) + 96px);left:12px;right:12px;transform:none;
-  background:rgba(8,12,18,.94);border:1px solid rgba(127,230,216,.22);border-radius:8px;padding:8px 12px;z-index:26;
+  background:rgba(8,12,18,.94);border:1px solid rgba(var(--c-phos),.22);border-radius:8px;padding:8px 12px;z-index:26;
   white-space:normal;text-transform:none;letter-spacing:.04em;font-size:12px;text-align:left;overflow:hidden}
+body:has(.scr.open) #msg.dim{box-shadow:none}
 @media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
 
 /* ══════════════ пульт (M151a) ══════════════
@@ -909,14 +923,14 @@ body.screen #console{opacity:1}
   backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #rxOut{display:flex;flex-direction:column;min-width:0}
 #rxOut b{font-weight:400;color:var(--dim);font-size:8px;letter-spacing:.18em}
-#rxOut s{text-decoration:none;color:#cfe3ea;font-size:10px;line-height:1.5;white-space:nowrap;
+#rxOut s{text-decoration:none;color:var(--text);font-size:10px;line-height:1.5;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
 #rx.fresh #rxOut s{color:var(--phos)}
 #rxKnob{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0;cursor:pointer}
-#rxKnob::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,transparent 0 12%,rgba(127,230,216,.35) 12% 30%,transparent 30% 40%,rgba(242,178,92,.35) 40% 58%,transparent 58% 66%,rgba(143,208,138,.35) 66% 80%,transparent 80% 88%,rgba(207,227,234,.4) 88% 100%)}
+#rxKnob::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,transparent 0 12%,rgba(var(--c-phos),.35) 12% 30%,transparent 30% 40%,rgba(var(--c-acc),.35) 40% 58%,transparent 58% 66%,rgba(143,208,138,.35) 66% 80%,transparent 80% 88%,rgba(228,221,207,.4) 88% 100%)}
 #rxKnob::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:22px;margin-top:-10px;border-radius:3px;
-  background:linear-gradient(180deg,#cfe3ea,#6f8891);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 10px rgba(127,230,216,.35)}
-#rxRec{-webkit-appearance:none;align-self:flex-start;background:none;border:1px solid rgba(242,178,92,.5);color:var(--amber);
+  background:linear-gradient(180deg,#e4ddcf,#8b8478);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 10px rgba(var(--c-phos),.35)}
+#rxRec{-webkit-appearance:none;align-self:flex-start;background:none;border:1px solid rgba(var(--c-acc),.5);color:var(--amber);
   border-radius:8px;font:inherit;font-size:9px;letter-spacing:.14em;min-height:44px;padding:0 14px;cursor:pointer}
 #seat{display:flex;align-items:center;gap:8px;pointer-events:auto;cursor:pointer;
   background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);padding:6px 12px 6px 6px;
@@ -998,6 +1012,15 @@ body.screen #parrotwin,body.table #parrotwin{display:none}
    поворотом, потому что руками их клали, а не выравнивали по сетке.
    Всё под `body.table`: остальные экраны остаются стеклом поверх мира. */
 #tablewin{z-index:22;background:#0a0806}
+/* стол с вещами — раскладка, а не строка текста: его ширина растёт вместе со шрифтом (--ui). Под общей
+   колонной в 1000 экранных точек на 2560 столу оставалось 570 своих, и подписи вещей вылезали из карточек
+   (зрение 06.10.2026). Журнал на том же столе — текст, ему остаётся человеческая колонна */
+/* ОПИСЬ с ангаром (M723) — шире: в колонне 950 сцена корабля шла на 590, и карточки подвесов ломали
+   имена в три строки */
+@media (min-width:900px){#tablewin:has(#loglist.opis){inset:22px max(24px,calc(50% - 700px))}}
+/* строка приёмника над шапкой (56 px, body.screen .scr.open) столу не нужна: на столе приёмник скрыт
+   (body.table #console), и полоса пустого дерева съедала первый экран описи (M723) */
+body.table.screen #tablewin.open{padding-top:env(safe-area-inset-top)}
 /* шапка и вкладки — по дереву, а не по стеклу */
 body.table #tablewin>header{border-bottom-color:rgba(122,90,54,.55);
   background:linear-gradient(180deg,rgba(0,0,0,.30),transparent)}
@@ -1124,7 +1147,7 @@ body.table #loglist.top .item.new::after{content:"";position:absolute;right:12px
 #loglist .li.money span{color:var(--amber)}
 #loglist .li.kill span,#loglist .li.warn span{color:var(--alarm)}
 #loglist .li.tech span{color:var(--rare)}
-#loglist .li.ether span{color:#cfe3ea}
+#loglist .li.ether span{color:var(--text)}
 #loglist .li.talk span{color:#f2e6c8}
 #loglist .li.dim span{color:var(--dim)}
 #loglist .li.head span,#loglist .li.sec span{color:var(--dim);letter-spacing:.16em;font-size:8px}
@@ -1136,7 +1159,7 @@ body.table #loglist.top .item.new::after{content:"";position:absolute;right:12px
 #loglist .thing .nm s{display:block;text-decoration:none;color:var(--dim);font-size:9px;line-height:1.6}
 #loglist .thing.new{box-shadow:inset 3px 0 0 var(--phos)}
 #lorelist .li{display:flex;gap:9px;padding:7px 12px;line-height:1.6;
-  border-bottom:1px solid rgba(127,230,216,.06)}
+  border-bottom:1px solid rgba(var(--c-phos),.06)}
 #lorelist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 22px;
   font-variant-numeric:tabular-nums}
 #lorelist .li span{flex:1;min-width:0;color:var(--text)}
@@ -1146,8 +1169,8 @@ body.table #loglist.top .item.new::after{content:"";position:absolute;right:12px
 #lorelist .li.chap.read span{color:var(--amber)}
 #lorelist .li.note span{color:var(--dim);font-style:italic}
 #lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
-#rxScale{position:relative;height:9px;margin-top:-4px}
-#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+#rxScale{position:relative;height:10px;margin-top:-4px}
+#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:8px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
 /* ночная почта (M191): подпись зажигается, когда диапазон появляется. Она
    чуть теплее остальных — это единственное, чем игра сообщает о вечере */
 #rxNight{color:var(--amber);opacity:.85}
@@ -1194,10 +1217,10 @@ body.road > *:not(#roadwin){display:none}
    «НАЗАД» стояло янтарём по ярко-зелёному. За рулём их жмут не глядя, поэтому
    читаемость важнее красоты: холст гасит полосу под линией подвала, а подвал
    добавляет к этому своё стекло. */
-body.road .scr footer{background:linear-gradient(0deg,rgba(4,7,12,.94),rgba(4,7,12,.74));
+body.road .scr footer{background:linear-gradient(0deg,rgba(8,8,8,.94),rgba(8,8,8,.74));
   backdrop-filter:blur(8px) saturate(1.05);-webkit-backdrop-filter:blur(8px) saturate(1.05)}
-body.road .scr footer .act{background:linear-gradient(180deg,rgba(127,230,216,.19),rgba(127,230,216,.07))}
-body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,92,.20),rgba(242,178,92,.07))}
+body.road .scr footer .act{background:linear-gradient(180deg,rgba(var(--c-phos),.19),rgba(var(--c-phos),.07))}
+body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(var(--c-acc),.20),rgba(var(--c-acc),.07))}
 
 /* ══════════════ телефон (M167) ══════════════
    Всё взаимодействие — в нижней четверти, под большим пальцем. Приёмник —
@@ -1261,7 +1284,7 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      полосу от края до края с многоточием на конце (M360a, телефонный
      кадр автора). Перевод строки снова работает, потолок держит
      line-clamp: длинное не зальёт экран. */
-  #msg{top:20%;bottom:auto;white-space:pre-line;overflow:hidden;
+  #msg{top:max(20%,calc(var(--mapbar,0px) / var(--ui,1) + 8px));bottom:auto;white-space:pre-line;overflow:hidden;
     display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
     text-overflow:ellipsis;max-width:calc(100vw - 24px);font-size:11px;line-height:1.4}
   /* ── ВЗЛЁТ на телефоне стоял поверх ФОТО (M234) ──
@@ -1303,12 +1326,12 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
    Кнопки правого борта и пэды не трогаем: в них целятся. */
 body.helmstick #console{opacity:.3;transition:opacity .12s}
 .pads button.off{opacity:.38;pointer-events:none}
-.pads button.off::before{border-color:rgba(127,230,216,.16)}
+.pads button.off::before{border-color:rgba(var(--c-phos),.16)}
 /* фишки комплекта (M167): класс — фишкой, новое — точкой; ничего не переносится */
 .kitchip{font-style:normal;color:var(--void);background:var(--dim);border-radius:6px;
   padding:0 5px;font-size:8px;letter-spacing:.08em;vertical-align:1px;white-space:nowrap}
 .kitnew{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--phos);
-  box-shadow:0 0 6px rgba(127,230,216,.7);vertical-align:1px}
+  box-shadow:0 0 6px rgba(var(--c-phos),.7);vertical-align:1px}
 
 /* ── на ногах приборы корабля не показываются (релизный вид, проход 1) ──
    Правило стиля «над миром — только то, что нужно сейчас» до сих пор
@@ -1526,9 +1549,9 @@ body.table #loglist.opis::before{display:none}
    отдана браузеру, как и у закрытой карточки; подъём вещи от этого не страдает —
    он ждёт 380 мс БЕЗ движения (больше 14 px его отменяют), а пока вещь несут,
    прокрутка глушится на всёй описи классом body.op-lift (ниже). */
-.opis .op-card.on{box-shadow:0 0 0 2px #f2b25c,0 8px 18px rgba(0,0,0,.5);transform:translateY(-2px);touch-action:pan-y}
+.opis .op-card.on{box-shadow:0 0 0 2px var(--amber),0 8px 18px rgba(0,0,0,.5);transform:translateY(-2px);touch-action:pan-y}
 body.op-lift .opis .op-card,body.op-lift .opis{touch-action:none}
-.opis .op-card.fit{box-shadow:0 0 0 1px rgba(127,230,216,.7),0 5px 12px rgba(0,0,0,.4)}
+.opis .op-card.fit{box-shadow:0 0 0 1px rgba(var(--c-phos),.7),0 5px 12px rgba(0,0,0,.4)}
 .opis .op-card.lifted{opacity:.35}
 /* кнопки — вторая дорога: показываются у выбранной бирки (тап) и под мышью;
    так сукно не заставлено кнопками, а телефон и фаззер ими пользуются */
@@ -1538,7 +1561,7 @@ body.op-lift .opis .op-card,body.op-lift .opis{touch-action:none}
 .opis .op-card .acts .act{flex:1 1 auto}
 /* кнопка на бумаге — чернилами, а не фосфором: стекло на бирке не читалось */
 .opis .op-card .act{color:#2c2418;border-color:rgba(60,48,30,.5);background:rgba(255,255,255,.25);box-shadow:none;text-shadow:none}
-.opis .op-card .act.gold{color:#6b3f0a;border-color:rgba(150,100,30,.7);background:rgba(242,178,92,.22)}
+.opis .op-card .act.gold{color:#6b3f0a;border-color:rgba(150,100,30,.7);background:rgba(var(--c-acc),.22)}
 .opis .op-card .act:disabled{opacity:.35}
 .opis .op-card .cue{display:block;width:100%;margin-top:8px;white-space:normal;line-height:1.3;text-align:left;
   color:#3d3222;border-color:rgba(60,48,30,.35);background:rgba(255,255,255,.18);font-size:9px}
@@ -1551,8 +1574,8 @@ body.op-lift .opis .op-card,body.op-lift .opis{touch-action:none}
 .op-ghost canvas{display:block;width:100%;height:auto}
 .op-ghost b,.op-ghost s,.op-ghost i{display:block;text-decoration:none;font-style:normal}
 /* мишени переноса */
-.opis [data-drop].can{outline:1px dashed rgba(242,178,92,.55);outline-offset:2px}
-.opis [data-drop].over,#opisBar.over{outline:2px solid #f2b25c;outline-offset:2px;background-color:rgba(242,178,92,.10)}
+.opis [data-drop].can{outline:1px dashed rgba(var(--c-acc),.55);outline-offset:2px}
+.opis [data-drop].over,#opisBar.over{outline:2px solid var(--amber);outline-offset:2px;background-color:rgba(var(--c-acc),.10)}
 /* зона 1: кучи */
 .opis .op-piles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .opis .op-worth{margin-top:10px;font-size:10px;color:#efe4c8;letter-spacing:.04em}
@@ -1564,12 +1587,18 @@ body.op-lift .opis .op-card,body.op-lift .opis{touch-action:none}
 .opis .op-parts-grid{display:grid;grid-template-columns:1.35fr 1fr;grid-template-areas:"hull panel" "slots spare";gap:10px;align-items:start}
 .opis .op-parts-grid canvas.op-hull{grid-area:hull;align-self:stretch;height:100%;min-height:240px}
 .opis .op-parts-grid .op-panel{grid-area:panel;margin-top:0}
+/* 761–899: средняя зона описи около 300 px, и в два столбца щиток приборов (не уже 139 px) вылезал
+   из неё в соседнюю, на коробок спичек и мел (зрение 06.10.2026). Здесь зона — столбиком */
+@media (min-width:761px) and (max-width:899px){
+  .opis .op-parts-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"hull" "panel" "slots" "spare"}
+  .opis .op-parts-grid canvas.op-hull{height:auto}
+}
 .opis .op-slots{grid-area:slots;display:flex;flex-direction:column;gap:8px;min-width:0}
 .opis .op-spare{grid-area:spare}
 .opis .op-slot{padding:6px;border:1px dashed rgba(232,220,190,.28);border-radius:4px;min-height:44px}
 .opis .op-slot em{display:block;font-style:normal;font-size:8px;letter-spacing:.16em;margin-bottom:5px}
-.opis .op-slot.on{border-color:#f2b25c;border-style:solid}
-.opis .op-slot.aim{border-color:rgba(127,230,216,.85);border-style:solid;background:rgba(127,230,216,.06)}
+.opis .op-slot.on{border-color:var(--amber);border-style:solid}
+.opis .op-slot.aim{border-color:rgba(var(--c-phos),.85);border-style:solid;background:rgba(var(--c-phos),.06)}
 .opis canvas.op-hull{display:block;width:100%;height:auto;border-radius:4px;cursor:pointer;touch-action:manipulation;
   background:radial-gradient(ellipse at 50% 40%,rgba(255,224,170,.10) 0%,rgba(0,0,0,.18) 55%,rgba(0,0,0,.42) 100%);
   box-shadow:inset 0 0 0 1px rgba(232,220,190,.14),inset 0 10px 24px rgba(0,0,0,.35)}
@@ -1655,6 +1684,7 @@ body.op-ask #opisBar>s{display:none}
   .opis .op-hullcap b{display:block;font-weight:400;font-size:11px;letter-spacing:.12em}
   .opis .op-hullcap>s{display:block;text-decoration:none;color:rgba(232,220,190,.62);font-size:10px;line-height:1.55;margin-top:2px}
   .opis .op-hullcap .lg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:9px;letter-spacing:.12em;color:#efe4c8}
+  .opis .op-hullcap .lg>span{white-space:nowrap}
   .opis .op-hullcap .lg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
   .opis .op-hullcap .acts{display:flex;gap:6px;margin-top:6px}
   .opis .op-hullcap .acts .act{flex:1 1 auto}
@@ -1668,21 +1698,21 @@ body.op-ask #opisBar>s{display:none}
   .opis .op-fold b{display:block;font-weight:400;font-size:9px;letter-spacing:.16em;color:rgba(239,228,200,.75)}
   .opis .op-fold s{display:block;text-decoration:none;color:rgba(232,220,190,.5);font-size:10px;line-height:1.5;margin-top:2px}
 }
-.op-hatchbar>s b{display:block;font-weight:400;font-size:12px;letter-spacing:.18em;color:#f2b25c;margin-bottom:2px}
+.op-hatchbar>s b{display:block;font-weight:400;font-size:12px;letter-spacing:.18em;color:var(--amber);margin-bottom:2px}
 /* виденные цены на карте: то, что в трюме, — светлым */
 #pricewin .row .nm s .hot{color:var(--amber)}
 
 /* ══════════════ пульт «Сороки» (M343): карточка витрины над пультом ══════════════ */
 .wanwin{position:fixed;left:50%;transform:translateX(-50%);z-index:6;display:none;flex-direction:column;gap:8px;
   bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 12px);width:min(620px,calc(100vw - 200px));
-  padding:10px 12px 12px;background:rgba(6,10,16,.80);border:1px solid rgba(201,162,74,.38);border-radius:8px;
+  padding:10px 12px 12px;background:rgba(11,11,11,.80);border:1px solid rgba(201,162,74,.38);border-radius:8px;
   box-shadow:0 12px 30px rgba(0,0,0,.5);backdrop-filter:blur(6px)}
 .wanwin.open{display:flex}
 .wanwin header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .wanwin header b{font-weight:400;color:var(--amber);font-size:12px;letter-spacing:.18em}
 .wanwin header s{text-decoration:none;color:var(--dim);font-size:10px;letter-spacing:.04em}
 .wanwin .card b{display:block;font-weight:400;color:var(--text);font-size:13px;line-height:1.35}
-.wanwin .card s{display:block;text-decoration:none;color:#cfe3ea;font-size:11px;line-height:1.55;margin-top:3px;font-style:italic}
+.wanwin .card s{display:block;text-decoration:none;color:var(--text);font-size:11px;line-height:1.55;margin-top:3px;font-style:italic}
 .wanwin .card i{display:block;font-style:normal;color:var(--dim);font-size:10px;line-height:1.5;margin-top:4px}
 .wanwin .card u{display:block;text-decoration:none;color:var(--amber);font-size:11px;margin-top:5px;font-variant-numeric:tabular-nums}
 .wanwin .card .dn{color:#ff9d7a}
@@ -1724,6 +1754,144 @@ body.aboard #console{display:none!important}
 .opis .op-lockgrid .empty{display:block;height:24px;border:1px dashed rgba(232,220,190,.25);border-radius:4px}
 .opis .op-card.lock{padding:6px 8px}
 .opis .op-card.lock.on{transform:none;box-shadow:0 5px 12px rgba(0,0,0,.4)}
+
+/* ══════════════ ангар описи (M723, 27j1): графитовый отсек, врезанный в сукно ══════════════
+   Сукно — для вещей в руках; корабль стоит в железе: тёмная ниша под студийным светом, подвесы —
+   карточками на выносках над сценой и под ней. Ангар — первым и во всю ширину: ради него стол и
+   открывают. Цвета отсека — свои (--hg-*): бумага и мел сукна на графите не читаются. */
+body.table #loglist.opis{grid-template-columns:1fr 1fr .62fr;grid-template-areas:"parts parts parts" "top top top" "hold kit side" "hold kit hatch"}
+.opis .op-shelf,.opis .op-box{grid-row:2}
+.opis .op-parts.hg{--hg-ink:#f1ebde;--hg-ink2:#a59d8f;--hg-acc:#ff6a2b;container-type:inline-size;
+  padding:12px 14px 14px;border:0;border-radius:6px;
+  background:
+    radial-gradient(ellipse 60% 38% at 50% 0%,rgba(255,214,170,.07),transparent 70%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 4px),
+    linear-gradient(180deg,#202328 0%,#16181b 55%,#111315 100%);
+  box-shadow:0 0 0 1px #050607,0 0 0 3px #2c3036,0 0 0 4px rgba(0,0,0,.6),0 16px 34px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.6)}
+/* заклёпки по углам отсека */
+.opis .op-parts.hg::before{content:"";position:absolute;inset:4px;pointer-events:none;
+  background:
+    radial-gradient(circle,#5a6068 0 1.4px,#08090b 1.9px,transparent 2.5px) 0 0/8px 8px no-repeat,
+    radial-gradient(circle,#5a6068 0 1.4px,#08090b 1.9px,transparent 2.5px) 100% 0/8px 8px no-repeat,
+    radial-gradient(circle,#5a6068 0 1.4px,#08090b 1.9px,transparent 2.5px) 0 100%/8px 8px no-repeat,
+    radial-gradient(circle,#5a6068 0 1.4px,#08090b 1.9px,transparent 2.5px) 100% 100%/8px 8px no-repeat}
+.opis .hg>h3{color:var(--hg-ink);font-size:11px;letter-spacing:.24em;padding-bottom:9px;margin-bottom:12px;
+  border-bottom:1px solid rgba(255,255,255,.07);box-shadow:0 1px 0 rgba(0,0,0,.55)}
+.opis .hg>h3 i{background:var(--hg-acc);color:#16120c}
+.opis .hg>h3 s{color:var(--hg-ink2)}
+.opis .hg h4{color:var(--hg-ink)}
+.opis .hg h4 s{color:var(--hg-ink2)}
+.opis .hg .chalk{color:rgba(241,235,222,.6)}
+.hg .hg-grid{display:grid;grid-template-columns:minmax(0,1fr) 256px;gap:14px;align-items:start}
+.hg .hg-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.hg .hg-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.hg .hg-stage{display:flex;flex-direction:column;min-width:0}
+.hg .hg-low{display:flex;gap:14px;align-items:flex-start;min-width:0}
+.hg .hg-low>.op-spare{flex:1 1 0;min-width:0}
+.hg .hg-plan{flex:0 0 232px;box-sizing:border-box;min-width:0;padding:8px 10px;border-radius:4px;background:linear-gradient(180deg,#1a1d21,#141619);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+/* узко — одна лента: колонны растворяются, порядок — сцена, подпись и слоты (телефон), разбор, приборы, снятые, чертёж */
+@container (max-width:780px){
+  .hg .hg-grid{display:flex;flex-direction:column;gap:12px}
+  .hg .hg-main,.hg .hg-side,.hg .hg-low{display:contents}
+  .hg .hg-stage{order:1}.hg .op-hullcap{order:2}.hg .op-slots{order:3}.hg .hg-insp{order:4}
+  .hg .op-panel{order:5}.hg .op-spare{order:6}.hg .hg-plan{order:7}
+  .hg .hg-low>.op-spare,.hg .hg-plan{flex:none}
+}
+/* сцена: ряд карточек, холст, ряд карточек — без зазоров, выноска переходит в полосу карточки */
+/* карточки ряда — одной высоты: ровный край сверху и снизу, полосы рода на одной линии */
+.hg .hg-row{display:flex;flex-wrap:nowrap;align-items:stretch;min-width:0}
+.hg .hg-row:empty{display:none}
+.opis .hg .op-slot.hg-call{display:flex;flex-direction:column}
+.opis .hg .hg-call>.op-card{flex:1 1 auto}
+/* высота сцены — от экрана: под --ui видимый стол 16:9 почти всегда 760 css-px, из них шапке и кнопке — 250;
+   ангар с двумя рядами карточек должен встать в первый экран целиком. Высокий экран (4K) — щедрее */
+.opis .hg canvas.op-hull{width:100%;height:auto;aspect-ratio:2.5/1;max-height:270px;min-height:200px;border-radius:2px;
+  cursor:grab;touch-action:pan-y;
+  background:radial-gradient(ellipse 70% 62% at 50% 36%,#262a30 0%,#16181b 56%,#0b0c0e 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 18px 40px rgba(0,0,0,.45),inset 0 -26px 44px rgba(0,0,0,.55)}
+.opis .hg canvas.op-hull:active{cursor:grabbing}
+@media (min-height:1700px) and (min-width:761px){.opis .hg canvas.op-hull{max-height:420px}}
+/* карточка подвеса у выноски: полоса рода смотрит на сцену */
+.opis .hg .op-slot.hg-call{flex:0 1 auto;min-width:0;box-sizing:border-box;min-height:44px;padding:0;border:0;border-radius:3px;cursor:pointer;
+  background:linear-gradient(180deg,#2b2f35,#1e2126);box-shadow:0 6px 14px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07);
+  transition:box-shadow .12s,filter .12s}
+.opis .hg .op-slot.hg-call.top{border-bottom:2px solid var(--k);border-radius:3px 3px 0 0}
+.opis .hg .op-slot.hg-call.bot{border-top:2px solid var(--k);border-radius:0 0 3px 3px}
+.opis .hg .op-slot.hg-call.empty{padding:6px 9px 7px;background:linear-gradient(180deg,rgba(43,47,53,.7),rgba(30,33,38,.7))}
+.opis .hg .op-slot.hg-call.on{border-color:var(--hg-acc);box-shadow:0 0 0 1px var(--hg-acc),0 0 18px rgba(255,106,43,.28),0 6px 14px rgba(0,0,0,.45)}
+.opis .hg .op-slot.hg-call.aim{border-color:var(--hg-acc);background:linear-gradient(180deg,#3a2c24,#241c18)}
+@media (hover:hover){.opis .hg .op-slot.hg-call:hover{filter:brightness(1.14)}}
+.opis .hg .hg-call .op-card{padding:6px 9px 7px;min-height:44px;box-sizing:border-box;background:none;box-shadow:none;border-radius:0;transform:none}
+.opis .hg .hg-call em,.opis .hg .hg-chip em{display:flex;align-items:center;gap:6px;margin:0 0 3px;font-style:normal;font-size:9px;letter-spacing:.16em;color:var(--k)}
+.opis .hg .hg-call em i,.opis .hg .hg-chip em i{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;
+  box-sizing:border-box;border-radius:8px;background:var(--k);color:#0b0d10;font-style:normal;font-size:10px;font-weight:700;line-height:1;letter-spacing:0}
+.opis .hg .hg-call b,.opis .hg .hg-chip b{display:block;font-weight:400;font-size:12px;line-height:1.3;color:var(--hg-ink)}
+.opis .hg .hg-call b.nil,.opis .hg .hg-chip b.nil{font-style:italic;color:var(--hg-ink2)}
+.opis .hg .hg-call s,.opis .hg .hg-chip s{display:block;text-decoration:none;font-size:9px;line-height:1.45;color:var(--hg-ink2)}
+/* разбор выбранного */
+.opis .hg .hg-insp{padding:10px 12px 12px;border-radius:4px;border-left:3px solid var(--k,var(--hg-acc));
+  background:linear-gradient(180deg,#24282e,#1a1d21);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px rgba(255,255,255,.04),0 6px 14px rgba(0,0,0,.35)}
+.opis .hg .hg-insp h4 i{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;
+  border-radius:9px;background:var(--k,var(--hg-acc));color:#0b0d10;font-style:normal;font-size:10px;font-weight:700;letter-spacing:0}
+.opis .hg .hg-insp .nm{display:block;font-weight:400;font-size:13px;color:var(--hg-ink);margin:2px 0 4px}
+.opis .hg .hg-insp .op-card{margin-top:8px}
+.opis .hg .hg-lg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin:2px 0 8px}
+.opis .hg .hg-lg span{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.12em;color:var(--hg-ink)}
+.opis .hg .hg-lg i{width:9px;height:9px;border-radius:50%;background:var(--k);box-shadow:0 0 6px var(--k);flex:0 0 auto}
+.opis .hg .hg-lg b{margin-left:auto;font-weight:400;color:var(--hg-ink2);font-variant-numeric:tabular-nums}
+/* приборы — шкала, утопленная в металл */
+.opis .hg .op-panel{margin-top:0;background:linear-gradient(180deg,#121417,#0d0f11);border:1px solid rgba(255,255,255,.07);
+  box-shadow:inset 0 1px 8px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.04)}
+.opis .hg .op-panel .ln em{color:rgba(241,235,222,.62)}
+.opis .hg .op-panel .ln b{color:var(--hg-ink)}
+.opis .hg .op-panel .up{color:#8fd18b}.opis .hg .op-panel .dn{color:#ff8a6a}
+/* лоток снятых: решётка карточек на рифлёном дне */
+.opis .hg .op-spare{grid-area:spare;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;align-content:start;
+  padding:10px;border:0;border-radius:4px;min-height:96px;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.02) 0 10px,transparent 10px 20px),linear-gradient(180deg,#141619,#0f1113);
+  box-shadow:inset 0 2px 10px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.05)}
+.opis .hg .op-spare>h4,.opis .hg .op-spare>.chalk{grid-column:1/-1;margin-bottom:0}
+/* карточки части в отсеке — тёмные пластины, род полосой сверху (инлайн из opisPartCard) */
+.opis .hg .op-card{background:linear-gradient(180deg,#2a2e34,#1f2227);color:var(--hg-ink);border-radius:3px;
+  box-shadow:0 6px 14px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(255,255,255,.05)}
+.opis .hg .op-card b{color:var(--hg-ink)}
+.opis .hg .op-card s{color:var(--hg-ink2)}
+.opis .hg .op-card i{color:#cfc6b4}
+.opis .hg .op-card .up{color:#8fd18b}.opis .hg .op-card .dn{color:#ff8a6a}
+.opis .hg .op-card.on{box-shadow:0 0 0 2px var(--hg-acc),0 10px 22px rgba(0,0,0,.55),0 0 18px rgba(255,106,43,.22)}
+.opis .hg .op-card.fit{box-shadow:0 0 0 1px rgba(143,209,139,.75),0 6px 14px rgba(0,0,0,.45)}
+.opis .hg .op-card .act{color:var(--hg-ink);border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.opis .hg .op-card .act.gold{color:#1a0f06;border-color:var(--hg-acc);background:var(--hg-acc)}
+/* миниатюра части (M724): вещь на поворотном столе в нише; ниша — графит с отсветом рода снизу и полом-горизонтом.
+   Сам холст прозрачен вокруг части, свет ниши — фоном, так что одна картинка годится на любой карточке */
+canvas.p3th{display:block;flex:0 0 auto;border-radius:3px;
+  background:radial-gradient(60% 46% at 50% 78%,color-mix(in srgb,var(--k,#888) 26%,transparent),transparent 72%),
+    linear-gradient(180deg,#121418 0%,#1b1e23 58%,#24282e 58.5%,#171a1e 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 -10px 18px rgba(0,0,0,.35)}
+canvas.p3th.fl{width:100%;height:auto}
+.opis .hg .op-card>canvas.p3th.fl{width:calc(100% + 20px);margin:-8px -10px 7px;border-radius:0;max-height:124px}
+.opis .hg .hg-insp>canvas.p3th.hero{margin:8px 0 0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),inset 0 -14px 26px rgba(0,0,0,.4),0 1px 0 rgba(255,255,255,.04)}
+.row>canvas.p3th.row{margin:-4px 0}
+.opis .op-hullcap.wth{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-self:stretch;align-content:start}
+.opis .op-hullcap.wth>canvas.p3th{grid-row:1/span 3}
+.opis .op-hullcap.wth>:not(canvas){grid-column:2}
+#gotwin .gp>canvas.p3th{width:calc(100% + 24px);margin:-10px -12px 9px;border-radius:3px 3px 0 0}
+@media (max-width:760px){
+  /* в колонке телефона отсек тянут поперёк: со сдерживанием ширины (container-type) своя ширина у него — ноль */
+  .opis .op-parts.hg{padding:10px;align-self:stretch}
+  .opis .hg .hg-grid{gap:10px}
+  .opis .hg canvas.op-hull{aspect-ratio:1.5/1;min-height:180px}
+  .opis .hg .op-hullcap{background:linear-gradient(180deg,#24282e,#1a1d21);border-color:rgba(255,255,255,.06)}
+  .opis .hg .op-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .opis .hg .op-slot.hg-chip{display:block;min-height:44px;box-sizing:border-box;padding:6px 8px;border:0;border-left:3px solid var(--k);border-radius:3px;
+    background:linear-gradient(180deg,#24282e,#1b1e22);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .opis .hg .op-slot.hg-chip.on{box-shadow:0 0 0 2px var(--hg-acc)}
+  .opis .hg .op-slot.hg-chip b{font-size:11px}
+  .opis.op-tab-spare .hg-stage{display:none}
+}
 /* коробки на полке дома (M346): ряд этикеток рядом с книгами */
 body.table #loglist .boxes{display:flex;flex-wrap:wrap;gap:8px;padding:6px 18px 12px 60px}
 body.table #loglist .matchbox{flex:0 0 auto;width:118px;padding:6px 8px 7px;border-radius:2px;
@@ -1736,13 +1904,18 @@ body.table #loglist .matchbox s{display:block;text-decoration:none;color:#6a5a3e
 u.addr{text-decoration:none;border-bottom:1px dotted currentColor;cursor:pointer;color:var(--amber)}
 body.table u.addr{color:#7a4a20}
 /* поле адреса над картой (M347): под полосой приборов, по центру */
-#mapaddr{position:fixed;right:calc(var(--railw,72px) + 8px);top:calc(var(--hudband,72px) + 22px);z-index:5;display:none;
-  align-items:center;gap:6px;padding:4px 6px 4px 10px;background:rgba(6,10,16,.72);border:1px solid rgba(150,182,212,.35);border-radius:6px;zoom:var(--ui,1)}
+/* --railw и --hudband мерены снаружи зума, а свои px ряд умножает на --ui — потому делим. Ряд не шире
+   места слева от борта и переносится: на 320 он вылезал за левую кромку экрана (зрение 06.10.2026) */
+#mapaddr{position:fixed;right:calc(var(--railw,72px) / var(--ui,1) + 8px);top:calc(var(--hudband,72px) / var(--ui,1) + 22px);z-index:5;display:none;
+  flex-wrap:wrap;justify-content:flex-end;max-width:calc((100vw - var(--railw,72px)) / var(--ui,1) - 16px);align-items:center;gap:6px;padding:4px 6px 4px 10px;background:rgba(11,11,11,.72);border:1px solid rgba(150,182,212,.35);border-radius:6px;zoom:var(--ui,1)}
 #mapaddr span{color:var(--dim);font-size:9px;letter-spacing:.14em}
 #mapaddr input{width:64px;min-height:36px;padding:0 8px;font:inherit;font-size:12px;color:var(--text);background:rgba(0,0,0,.35);
   border:1px solid rgba(150,182,212,.3);border-radius:4px;text-align:center}
 #mapaddr .act.sm{min-width:44px;padding:0 10px}
-@media (max-width:760px){#mapaddr{top:calc(var(--hudband,72px) + 20px);padding:3px 4px 3px 8px}#mapaddr input{width:52px}#mapaddr span{display:none}}
+#mapaddr>*{flex:none}   /* ряд переносится, а не ужимает кнопки: его ширину строкой меряет раскладчик верха (18a) */
+/* на карте строка сообщения ложится поверх подписей листа — матовая плашка, как у пэдов (зрение 06.10.2026) */
+body.onmap #msg{background:rgba(11,11,11,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:3px 10px;border-radius:8px;line-height:1.45}
+@media (max-width:760px){#mapaddr{top:calc(var(--hudband,72px) / var(--ui,1) + 20px);padding:3px 4px 3px 8px}#mapaddr input{width:52px}#mapaddr span{display:none}}
 /* запись кооператива (M351): поле имени в ряду станции */
 .row .nm input.coopname{display:block;margin-top:6px;width:min(260px,100%);min-height:44px;padding:0 10px;font:inherit;font-size:13px;color:var(--text);
   background:rgba(0,0,0,.3);border:1px solid var(--edge);border-radius:4px}
@@ -1830,7 +2003,7 @@ body.table u.addr{color:#7a4a20}
 /* ── вестибюль железной дороги (M472, 18f): одна страница на бумаге станций ── */
 #railWin{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:40;
   width:min(420px,calc(100vw - 32px));max-height:calc(100vh - 140px);overflow-y:auto;padding:12px 14px 14px;
-  background:#101419;border:1px solid rgba(242,178,92,.35);border-radius:10px;color:var(--text);
+  background:#101419;border:1px solid rgba(var(--c-acc),.35);border-radius:10px;color:var(--text);
   box-shadow:0 12px 40px rgba(0,0,0,.6)}
 #railWin.open{display:block}
 #railWin .rw-board em i.fl{display:inline-block;font-style:normal;animation:rwFlap .32s steps(4) both}
@@ -1866,16 +2039,16 @@ body.table u.addr{color:#7a4a20}
 #railWin .rw-board{background:#07090c;border:1px solid #22303a;border-radius:6px;padding:6px 8px;font-family:ui-monospace,monospace}
 #railWin .rw-board div,#railWin .rw-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:3px 0}
 #railWin .rw-board em,#railWin .rw-row em{font-style:normal;color:#ffd08a}
-#railWin button.act{display:block;width:100%;min-height:44px;margin:6px 0;text-align:left}
+#railWin button.act{display:block;width:100%;min-height:44px;margin:6px 0;text-align:left;white-space:normal;padding-top:5px;padding-bottom:5px}
 #railWin button.act s{display:block;text-decoration:none;color:var(--dim);font-size:10px}
 /* жизнь дороги (D24, телефон 18.09): три ровных кнопки читались кассой. Посылка —
    бумажная бирка с дыркой, проездной — картонка с компостером, попутчик — силуэт */
 #railWin button.rw-parcel{position:relative;padding-left:34px;background:#d9c9a3;border:1px dashed #6a5a3c;border-radius:3px;color:#2a2418}
 #railWin button.rw-parcel s{color:#6a5a3c}
 #railWin button.rw-parcel::before{content:"";position:absolute;left:12px;top:50%;width:9px;height:9px;margin-top:-5px;border-radius:50%;background:#101419;box-shadow:0 0 0 2px #6a5a3c}
-#railWin button.rw-pass{position:relative;padding-bottom:16px;background:linear-gradient(180deg,#2c3a3d,#1c262a);border:1px solid rgba(127,230,216,.5);border-radius:6px}
+#railWin button.rw-pass{position:relative;padding-bottom:16px;background:linear-gradient(180deg,#2c3a3d,#1c262a);border:1px solid rgba(var(--c-phos),.5);border-radius:6px}
 #railWin button.rw-pass::after{content:"";position:absolute;left:12px;right:12px;bottom:6px;height:6px;
-  background:radial-gradient(circle,rgba(127,230,216,.7) 2px,transparent 2.5px) 0 0/16px 6px repeat-x}
+  background:radial-gradient(circle,rgba(var(--c-phos),.7) 2px,transparent 2.5px) 0 0/16px 6px repeat-x}
 #railWin button.rw-pax{position:relative;padding-left:38px}
 #railWin button.rw-pax::before{content:"";position:absolute;left:12px;top:50%;width:16px;height:18px;margin-top:-10px;
   background:radial-gradient(circle at 50% 28%,var(--phos) 4px,transparent 4.5px),radial-gradient(ellipse at 50% 100%,var(--phos) 8px,transparent 8.5px);opacity:.8}
@@ -1943,7 +2116,7 @@ body.table u.addr{color:#7a4a20}
 .dn-tag{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin-bottom:3px}
 .dn-lamp{width:8px;height:8px;border-radius:50%;background:#2b3a2e;box-shadow:inset 0 -1px 1px rgba(0,0,0,.6)}
 .dn-lamp.run{background:#7ce0a0;box-shadow:0 0 6px rgba(124,224,160,.55),inset 0 -1px 1px rgba(0,0,0,.35)}
-.dn-lamp.down{background:#f2b25c;box-shadow:0 0 6px rgba(242,178,92,.6),inset 0 -1px 1px rgba(0,0,0,.35)}
+.dn-lamp.down{background:var(--amber);box-shadow:0 0 6px rgba(var(--c-acc),.6),inset 0 -1px 1px rgba(0,0,0,.35)}
 .dn-lamp.stuck{background:#e0685a;box-shadow:0 0 6px rgba(224,104,90,.6),inset 0 -1px 1px rgba(0,0,0,.35)}
 .dn-plate{position:relative;padding:3px 12px 2px;font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--c);
   background:radial-gradient(circle at 5px 50%,rgba(210,220,230,.45) 0 1.2px,transparent 1.8px),
@@ -1958,7 +2131,7 @@ body.table u.addr{color:#7a4a20}
 .stapel .stp-ch{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;margin:6px 0}
 .stapel .chip{min-height:44px;font-size:11px;line-height:1.1;font-family:inherit;padding:0 4px;border:1px solid rgba(232,214,168,.22);
   background:rgba(232,214,168,.03);color:rgba(232,214,168,.72);border-radius:2px}
-.stapel .chip.on{border-color:#f2b25c;color:#f2b25c;background:rgba(242,178,92,.10);box-shadow:inset 0 -2px 0 #f2b25c}
+.stapel .chip.on{border-color:var(--amber);color:var(--amber);background:rgba(var(--c-acc),.10);box-shadow:inset 0 -2px 0 var(--amber)}
 .stapel .stp-seg{gap:0;grid-template-columns:repeat(3,1fr)}.stapel .stp-seg .chip{border-radius:0}.stapel .stp-seg .chip+.chip{border-left-width:0}
 .stapel .stp-seg .chip.on{border-left-width:1px}.stapel .stp-seg .chip.on+.chip{border-left-width:0}
 .stapel .stp-pv{display:flex;justify-content:center;margin:8px 0 4px}
@@ -2008,7 +2181,7 @@ body.table u.addr{color:#7a4a20}
 /* заряжено (D21, телефон 18.09): кольцо было волоском, а готовности не было видно
    вовсе — теперь над кнопкой имя системы, «долгое — ФОРСАЖ» */
 .pads button.abil-ok::after{content:attr(data-abil);position:absolute;left:50%;top:-15px;transform:translateX(-50%);
-  font:600 7px ui-monospace,monospace;letter-spacing:.14em;color:rgba(242,178,92,.85);white-space:nowrap;pointer-events:none}
+  font:600 7px ui-monospace,monospace;letter-spacing:.14em;color:rgba(var(--c-acc),.85);white-space:nowrap;pointer-events:none}
 /* ── ПРИЁМНИКИ: куда ведёт строка (P11) [design owed] ── */
 .rl-go{display:inline-block;margin-top:3px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#1f5f57}
 
@@ -2029,10 +2202,10 @@ body.table u.addr{color:#7a4a20}
 #albumLb .lb-cap{color:#e6dcc4;font:italic 13px Georgia,"Times New Roman",serif;letter-spacing:.04em;text-align:center}
 #albumLb .lb-fx,#albumLb .lb-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 #albumLb .chip{font:600 11px ui-monospace,monospace;letter-spacing:.1em;padding:8px 10px;min-height:44px;border:1px solid #6a5a44;background:none;color:#d9ccb0;border-radius:3px}
-#albumLb .chip.on{border-color:#f2b25c;color:#f2b25c}
+#albumLb .chip.on{border-color:var(--amber);color:var(--amber)}
 #albumLb .chip.fxth{display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 5px 4px;font-size:9px;letter-spacing:.06em}
 #albumLb .chip.fxth canvas{display:block;border:2px solid #f3ecdc;box-shadow:0 1px 3px rgba(0,0,0,.6)}
-#albumLb .chip.fxth.on{background:rgba(242,178,92,.08)}#albumLb .chip.fxth.on canvas{border-color:#f2b25c}
+#albumLb .chip.fxth.on{background:rgba(var(--c-acc),.08)}#albumLb .chip.fxth.on canvas{border-color:var(--amber)}
 
 /* волокита (M511): стопка бумаг на столе — каждая подпись листом со своим оттенком державы,
    «принято к сведению» лиловым штампом, единственное имя — на последнем листе */
@@ -2072,6 +2245,7 @@ body.table u.addr{color:#7a4a20}
 #railScheme canvas{display:block;border-radius:2px;box-shadow:0 14px 40px rgba(0,0,0,.7),0 0 0 1px rgba(60,40,20,.5);transform:rotate(-1.2deg)}
 #railScheme b{font:600 10px ui-monospace,monospace;letter-spacing:.12em;color:#e9dcc0}
 #railScheme s{text-decoration:none;font:10px ui-monospace,monospace;color:rgba(233,220,192,.6)}
+#railScheme b,#railScheme s{max-width:calc(100vw - 32px);text-align:center;text-wrap:balance;background:rgba(6,8,12,.72);padding:2px 8px;border-radius:3px}
 #railWin .rw-map{margin-top:10px}
 
 /* барахолка (D20): прилавок таблицей — три колонки под шапкой, продано — вычеркнуто */
@@ -2109,14 +2283,14 @@ body.table u.addr{color:#7a4a20}
      уже плашки фишки, и нижний ряд фишек лёг на борт.
    Блок стоит последним и перекрывает прежние правила той же силы — откат пары
    равен удалению блока и разметки. */
-:root{--plate:rgba(7,11,17,.74);--hair:rgba(190,228,236,.13);
+:root{--plate:rgba(7,11,17,.74);--hair:rgba(228,221,207,.13);
   --plate-lift:0 8px 22px rgba(0,0,0,.38),inset 0 1px 0 rgba(200,240,250,.07)}
 
 .vitals{flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:8px 18px;max-width:min(232px,58vw)}
 .v{grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:6px;row-gap:2px;
   height:auto;align-items:center;justify-content:start}
 .v b{grid-column:1/-1;grid-row:1;font-size:10px;letter-spacing:0;filter:none;color:#8197a4}
-.v u{grid-column:1;grid-row:2;text-align:left;font-size:12px;line-height:1;color:rgba(207,227,234,.8)}
+.v u{grid-column:1;grid-row:2;text-align:left;font-size:12px;line-height:1;color:rgba(228,221,207,.8)}
 .v .bar{grid-column:2;grid-row:2;width:22px;height:2px}
 .v .bar::after{background:none}
 .v.big b{color:#9db1bc}
@@ -2124,7 +2298,7 @@ body.table u.addr{color:#7a4a20}
 .v.big u small{font-size:10px;font-weight:400;color:var(--dim);margin-left:1px;letter-spacing:0}
 .v.big .bar{width:34px;height:4px}
 /* шкала теплеет, пустея: холодная выше 60 %, к 20 % — янтарь, ниже — тревога */
-.v.big .bar i{background:color-mix(in oklab,#bfe6ec clamp(0%,calc((var(--p,100) - 20) * 2.5%),100%),var(--amber))}
+.v.big .bar i{background:color-mix(in oklab,var(--phos) clamp(0%,calc((var(--p,100) - 20) * 2.5%),100%),var(--amber))}
 .v.big .bar.low i,.v.big.low .bar i{background:var(--alarm)}
 
 .locus u{color:#e3edf1;font-size:14px;font-weight:600;letter-spacing:0}
@@ -2133,10 +2307,10 @@ body.table u.addr{color:#7a4a20}
 
 .rail button{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);letter-spacing:0;font-size:11px}
 .rail button.key{flex-direction:column;justify-content:center;gap:3px;width:48px;height:48px;min-width:48px;
-  padding:0;font-size:9px;border-color:rgba(127,230,216,.22)}
+  padding:0;font-size:9px;border-color:rgba(var(--c-phos),.22)}
 .rail button.key svg{width:16px;height:16px}
-.rail .ctx button{color:var(--phos);border-color:rgba(127,230,216,.22)}
-.rail .ctx button:active{border-color:var(--phos);box-shadow:var(--plate-lift),0 0 18px rgba(127,230,216,.2)}
+.rail .ctx button{color:var(--phos);border-color:rgba(var(--c-phos),.22)}
+.rail .ctx button:active{border-color:var(--phos);box-shadow:var(--plate-lift),0 0 18px rgba(var(--c-phos),.2)}
 .rail .zoom{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
 .rail .zoom button{background:none;box-shadow:none}
 
@@ -2145,15 +2319,16 @@ body.table u.addr{color:#7a4a20}
 /* регистр подписи ставит JS (padCase, 27y): CSS-строчные ломали имена — «К главтрассе» */
 .pads button>span{display:block;letter-spacing:0}
 .pads button[data-k=lock]{color:#d3e3e9;font-size:10px;letter-spacing:0}
-.pads button[data-k=lock]::before{border-color:rgba(190,228,236,.24)}
+.pads button[data-k=lock]::before{border-color:rgba(228,221,207,.24)}
 .pads button[data-k=act]{font-size:9px}
-.pads button[data-k=act]::before{border-color:rgba(242,178,92,.32)}
+.pads button[data-k=thrust].word{font-size:12px}   /* «Прыжок», «Вверх»: значку ▲ кегль 17, слову — свой (27z) */
+.pads button[data-k=act]::before{border-color:rgba(var(--c-acc),.32)}
 .pads button.abil-ok{align-content:center;row-gap:2px}
 /* подсказка системы — вторая строка ВНУТРИ пэда (правка Контроля): подписью под
    пэдом она стояла в 4,5 px от нижней кромки, а погашенный пэд гасил и её — 2:1
    к фону. Внутри она дальше от кромки, чем сам пэд, и лежит на его плашке. */
 .pads button.abil-ok::after{position:static;transform:none;display:block;width:9ch;white-space:normal;text-align:center;
-  font:500 8px/9px ui-monospace,monospace;letter-spacing:0;color:#f2b25c}
+  font:500 8px/9px ui-monospace,monospace;letter-spacing:0;color:var(--amber)}
 /* пэд без действия, но с готовой системой — не погашен: .off снимал с него
    касания (pointer-events:none), и долгое нажатие не доходило — форсаж в
    открытом космосе был только на клавише V. Гаснет лишь слово «Действие». */
@@ -2166,7 +2341,7 @@ body.table u.addr{color:#7a4a20}
 #rx,#seat,#perch{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
 #rxOut b{font-size:9px;letter-spacing:0}
 #camBtn{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);
-  color:#cfe3ea;font-size:10px;letter-spacing:0}
+  color:var(--text);font-size:10px;letter-spacing:0}
 
 .hud{top:calc(env(safe-area-inset-top) + 12px);
   padding:0 calc(env(safe-area-inset-right) + 14px) 0 calc(env(safe-area-inset-left) + 14px)}
@@ -2176,4 +2351,519 @@ body.table u.addr{color:#7a4a20}
   .v.big u{font-size:18px}
   .locus u{font-size:12px}
   #camBtn{min-height:44px}
+}
+
+/* ══════════════ короткое окно и палец шире 760 ══════════════
+   Зрение 06.10.2026, телефон боком (568×320, 780×360): колонна борта, растущая вверх от пульта,
+   уходила за верх кадра и ложилась на строку места и кошелёк; меню с верхом на 104 px выезжало
+   за низ; на ширине больше 760 пульт стоял на 18 px от низа — прямо на пэдах, на ИМПУЛЬСЕ.
+   Мерки здесь не из макета, а из того, что уже измерено: --hudband (низ строки приборов),
+   --padsh (высота ряда пэдов). Всё внутри zoom:var(--ui): px умножаются на мерку, проценты нет,
+   поэтому измеренные точки делятся на --ui. */
+@media (max-height:480px){
+  /* борт висит между строкой приборов и пультом. КАРТА и МЕНЮ — первыми и всегда на одном месте,
+     кнопки к случаю встают под ними и, не влезая, переносятся столбцами влево */
+  .rail{top:calc(var(--hudband,44px) / var(--ui,1) + 8px);bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 48px);
+    flex-wrap:wrap-reverse;align-items:flex-start;align-content:flex-start}
+  .rail .ctx{display:contents}
+  .rail #navbtn,.rail #menubtn,.rail .zoom{order:-1}
+  /* меню — от строки приборов и не ниже кромки; не влезло — листается */
+  #menu{top:calc(var(--hudband,44px) / var(--ui,1) + 8px);overflow-x:hidden;overflow-y:auto;
+    max-height:calc(100% - var(--hudband,44px) / var(--ui,1) - 20px - env(safe-area-inset-bottom))}
+  #menu>*{flex-shrink:0}
+}
+/* под пальцем зум — щипком, как на телефоне (M167): в коротком окне кнопкам зума места нет */
+@media (max-height:480px) and (pointer:coarse){.rail .zoom{display:none}}
+/* пэды есть везде, где палец, и пульт с подсказкой стоят над ними на любой ширине,
+   а не только до 760 */
+@media (pointer:coarse) and (min-width:761px){
+  #console{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 10px)}
+  #prompt{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 118px + var(--helmlift,0px))}
+}
+
+/* ══════════════ M720 «Борт»: интерфейс полёта заново ══════════════
+   Автор, 06.10: «интерфейс ужасно выглядит … перепридумай … игровые панельки, удобные кнопки, как
+   норм интерфейс ААА игр»; «ограничений нет, придумывай заново». Этот блок стоит последним и
+   перебивает всё, что выше, по приборам, борту, пульту и пэдам. Законы — docs/DESIGN-space.md M720.
+
+   1. Один материал — приборная плита: дымчатое стекло, срезанный угол, волосок кромки и цветная
+      засечка роли в шапке. Плита — не наклейка: у неё есть шапка (что это) и тело (показания).
+   2. Один шрифт — узкий гротеск приборов (Bahnschrift на Windows, Roboto Condensed на Android),
+      цифры табличные. Моноширинный остался только на канве.
+   3. Иерархия размером: имя места 21, главные числа 19, подписи 10–11 капсом с разрядкой.
+   4. У каждой кнопки, у которой есть клавиша, клавиша нарисована на ней (keycap); на телефоне нет.
+   5. Углы — адреса: слева сверху корабль, справа сверху место и касса, по центру сверху приборы,
+      справа инструменты, справа снизу действие, по центру снизу связь. */
+:root{
+  --face:"Bahnschrift","DIN Alternate","Roboto Condensed","sans-serif-condensed","Arial Narrow",sans-serif;
+  --pl-bg:linear-gradient(180deg,rgba(24,23,22,.80),rgba(12,12,12,.86));
+  --pl-edge:rgba(var(--c-edge),.17);
+  --pl-cut:12px;
+  --pl-blur:blur(12px) saturate(1.25);
+  --pl-cutp:polygon(0 0,calc(100% - var(--pl-cut)) 0,100% var(--pl-cut),100% 100%,var(--pl-cut) 100%,0 calc(100% - var(--pl-cut)));
+  --pl-lift:0 12px 28px rgba(0,0,0,.38);
+  --ink:#f1ebde;
+  --ink2:#a59d8f;
+}
+.hud,#console,.rail,.pads,#prompt,#msg,#menu{font-family:var(--face)}
+.hud{opacity:.92;top:calc(env(safe-area-inset-top) + 14px);padding:0 calc(env(safe-area-inset-right) + 16px) 0 calc(env(safe-area-inset-left) + 16px)}
+.hud::before{display:none}
+.slope::before{height:120px;background:linear-gradient(to bottom,rgba(7,7,7,.40),rgba(7,7,7,0))}
+.slope::after{height:150px;background:linear-gradient(to top,rgba(7,7,7,.44),rgba(7,7,7,0))}
+
+/* ── плита ── */
+.vitals,.locus,body:not(.screen) #rx,body:not(.screen) #seat,#perch,.rail button.key,.rail .zoom,#camBtn{position:relative;background:var(--pl-bg);
+  -webkit-backdrop-filter:var(--pl-blur);backdrop-filter:var(--pl-blur);
+  box-shadow:inset 0 0 0 1px var(--pl-edge),var(--pl-lift);
+  clip-path:var(--pl-cutp);border:0;border-radius:0;text-shadow:none}
+/* засечка роли: короткая светящаяся черта по верхней кромке */
+.vitals::before,.locus::before,body:not(.screen) #rx::before{content:"";position:absolute;top:0;width:40px;height:2px;
+  background:var(--tick,var(--phos));box-shadow:0 0 10px var(--tick,var(--phos));pointer-events:none}
+.vitals::before,body:not(.screen) #rx::before{left:0}
+.locus::before{right:var(--pl-cut);--tick:var(--amber)}
+
+/* ── корабль: слева сверху ── */
+.vitals{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;width:262px;max-width:none;padding:9px 14px 12px;gap:7px}
+.vh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  padding-bottom:7px;margin-bottom:1px;border-bottom:1px solid rgba(var(--c-edge),.10)}
+.vh b{font-weight:400;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink2)}
+.vh s{text-decoration:none;font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vitals .v{display:grid;grid-template-columns:66px 1fr 62px;grid-template-rows:auto;column-gap:10px;row-gap:0;height:auto;align-items:center}
+.vitals .v b{grid-column:1;grid-row:1;font-size:10px;letter-spacing:.12em;color:var(--ink2);filter:none;text-transform:uppercase;font-weight:400}
+.vitals .v .bar{grid-column:2;grid-row:1}
+.vitals .v u{grid-column:3;grid-row:1;text-align:right;font-size:14px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.vitals .v.big u{font-size:19px;font-weight:600}
+.vitals .v.big u small{font-size:11px;font-weight:400;color:var(--ink2)}
+/* шкала: десять делений, пустые видны — прибор, а не волосок */
+.vitals .v .bar,.vitals .v.big .bar{display:block;width:auto;height:6px;border-radius:0;background:rgba(var(--c-edge),.10);box-shadow:none;overflow:hidden}
+.vitals .v.big .bar{height:8px}
+.vitals .v .bar i{background:currentColor;color:var(--phos);box-shadow:0 0 8px currentColor}
+.vitals .v .bar::after{left:0;right:0;width:auto;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(5,9,14,.95) calc(10% - 2px) 10%)}
+/* «Сурик»: полная шкала — крем, акцент и тревога только у нехватки */
+.vitals .v .bar.hull i{color:var(--phos)}
+.vitals .v .bar.hold i{color:#a59d8f}
+.vitals .v .bar.enr i{color:#d8cfbd}
+.vitals .v .bar.shld i{color:#efe9dc}
+.vitals .v.low .bar i,.vitals .v .bar.low i{color:var(--alarm)}
+.vitals .v.low u{color:var(--alarm)}
+
+/* ── место и касса: справа сверху ── */
+.locus{min-width:236px;max-width:min(360px,40vw);padding:9px 16px 12px;text-align:right}
+.locus u{font-size:21px;font-weight:600;color:var(--ink);letter-spacing:.01em;line-height:1.15}
+.locus s{font-size:12px;color:var(--ink2);margin-top:3px;letter-spacing:.03em}
+.locus #purse{display:inline-block;margin-top:9px;padding:5px 10px 4px;font-size:16px;font-weight:600;color:var(--amber);
+  background:rgba(var(--c-acc),.09);box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.34);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.locus #zoomlbl{font-size:10px;color:var(--ink2);margin-top:7px;letter-spacing:.14em;text-transform:uppercase}
+
+/* ── приборы: кусок стойки (25d) свисает с кромки по центру; металл и циферблаты рисует сам холст,
+   ширину и плотность ставит instrPodSize (25c) ── */
+.ipod{margin-top:-14px;width:360px;height:80px;background:#1f2427;box-shadow:none;
+  border:0;filter:drop-shadow(0 8px 18px rgba(0,0,0,.45));
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px))}
+
+/* ── инструменты: правый борт ── */
+.rail{right:calc(env(safe-area-inset-right) + 16px);gap:10px}
+.rail button.key{width:62px;height:58px;min-width:62px;flex-direction:column;justify-content:center;gap:5px;
+  padding:0;color:var(--ink);font-size:11px;letter-spacing:.06em}
+.rail button.key svg{width:19px;height:19px;opacity:1;stroke:var(--phos)}
+.rail button.key:hover,.rail .zoom button:hover{background:rgba(var(--c-phos),.10)}
+.rail button.key:active{transform:scale(.96)}
+.rail .zoom{width:62px}
+.rail .zoom button{width:62px;height:44px;color:var(--ink)}
+.rail .zoom button:first-child{border-bottom:1px solid rgba(var(--c-edge),.12)}
+.rail .zoom svg{stroke:var(--phos)}
+.rail .ctx button{background:var(--pl-bg);border:0;border-radius:0;clip-path:var(--pl-cutp);
+  box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.36);color:var(--amber);font-size:13px;letter-spacing:.03em;height:44px;padding:0 16px}
+
+/* ── клавиша на кнопке ── */
+kbd{font-family:var(--face);font-size:9px;line-height:1;letter-spacing:.06em;color:var(--ink);
+  padding:3px 5px 2px;border-radius:3px;background:rgba(var(--c-ink),.08);
+  box-shadow:inset 0 0 0 1px rgba(var(--c-ink),.32),0 1px 0 rgba(var(--c-ink),.18);text-transform:uppercase;white-space:nowrap}
+.rail button.key kbd{position:absolute;top:5px;right:6px;font-size:8px;padding:2px 4px 1px}
+body.mobile kbd{display:none}
+/* под пальцем клавиш нет — колпачок был бы враньём (планшет, телефон боком) */
+@media (pointer:coarse){kbd{display:none}}
+
+/* ── связь и действие на компьютере ── */
+/* связь — слева внизу или по центру внизу, где ряд пэдов оставил место (body.conleft/.conlow
+   ставит мерка 27z hudFloorMeasure), иначе поднимается над плитами; на экранах станции приёмник
+   живёт в шапке окна (выше по файлу). Только под мышью: под пальцем пульт над пэдами по правилу выше */
+@media (pointer:fine){
+body:not(.mobile):not(.screen) #console{gap:10px;align-items:stretch;max-width:none;
+  bottom:calc(env(safe-area-inset-bottom) + 86px + var(--helmlift,0px))}
+body.conlow:not(.mobile):not(.screen) #console{bottom:calc(env(safe-area-inset-bottom) + 16px)}
+body.conleft:not(.mobile):not(.screen) #console{left:var(--conx,16px);transform:none}
+body:not(.mobile):not(.screen) #prompt{bottom:calc(env(safe-area-inset-bottom) + 156px + var(--helmlift,0px))}
+body.conlow:not(.mobile):not(.screen) #prompt{bottom:calc(env(safe-area-inset-bottom) + 96px + var(--helmlift,0px))}
+body:not(.mobile):not(.screen) #rx{display:grid;grid-template-columns:118px 1fr;grid-template-rows:auto auto;column-gap:16px;row-gap:2px;
+  align-items:center;padding:10px 16px 9px;width:min(420px,calc(100vw / var(--ui,1) - 130px))}
+body:not(.mobile):not(.screen) #rxOut{grid-column:1;grid-row:1/3;align-self:center;border-right:1px solid rgba(var(--c-edge),.10);padding-right:12px}
+body:not(.mobile):not(.screen) #rxKnob{grid-column:2;grid-row:1}
+body:not(.mobile):not(.screen) #rxScale{grid-column:2;grid-row:2;margin-top:0;height:12px}
+body:not(.mobile):not(.screen) #rxRec{grid-column:1/-1;grid-row:3;min-height:36px}
+}
+#rxScale i{font-size:9px;letter-spacing:.14em;color:var(--ink2)}
+#rxOut b{font-size:10px;letter-spacing:.2em;color:var(--ink2);text-transform:uppercase}
+#rxOut s{font-size:13px;color:var(--ink)}
+#camBtn{min-width:62px;min-height:44px;color:var(--ink);font-size:11px;letter-spacing:.06em}
+body:not(.mobile):not(.screen) #camBtn{height:auto}
+
+body:not(.mobile) .pads{padding:0 calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 16px) 16px}
+body:not(.mobile) .pads>div{gap:10px}
+body:not(.mobile) .pads button[data-k=act],body:not(.mobile) .pads button[data-k=lock]{
+  width:auto;height:52px;min-width:104px;border-radius:0;clip-path:var(--pl-cutp);
+  display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;padding:0 14px 0 10px;
+  background:var(--pl-bg);box-shadow:inset 0 0 0 1px var(--pl-edge),var(--pl-lift);
+  font-size:15px;font-weight:600;letter-spacing:.02em;color:var(--ink);text-align:left}
+body:not(.mobile) .pads button[data-k=act]::before,body:not(.mobile) .pads button[data-k=lock]::before{
+  inset:0 auto auto 0;width:40px;height:2px;border:0;border-radius:0;background:currentColor;opacity:.9;transform:none;box-shadow:0 0 10px currentColor}
+body:not(.mobile) .pads button[data-k=act]{min-width:150px;color:var(--amber);
+  box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.40),var(--pl-lift)}
+body:not(.mobile) .pads button[data-k=act].ready{background:linear-gradient(180deg,rgba(58,40,16,.84),rgba(18,12,6,.88));
+  box-shadow:inset 0 0 0 1px var(--amber),0 0 26px rgba(var(--c-acc),.26),var(--pl-lift)}
+body:not(.mobile) .pads button[data-k=act].ready::before{animation:none;width:100%}
+body:not(.mobile) .pads button kbd{order:-1;font-size:10px;padding:4px 6px 3px}
+body:not(.mobile) .pads button[data-k=act] kbd{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.5);background:rgba(var(--c-acc),.1)}
+body:not(.mobile) .pads button:is([data-k=act],[data-k=lock])>span{font-size:15px}
+body:not(.mobile) .pads button.abil-ok::after{font-family:var(--face);font-size:11px;line-height:13px;width:auto;text-align:left;color:var(--amber)}
+body:not(.mobile) .pads button[data-k=lock]{color:var(--ink)}
+/* нет действия — глагол тихим кремом, а не тёмным суриком на чёрном: читается, но не зовёт */
+body:not(.mobile) .pads button[data-k=act].off{color:var(--ink2)}
+body:not(.mobile) .pads button[data-k=act].off kbd{color:var(--ink2);box-shadow:inset 0 0 0 1px rgba(var(--c-edge),.3);background:none}
+body:not(.mobile) .pads button[data-k=act].off.abil-ok>span{opacity:.75}
+body:not(.mobile) .pads button.on{transform:scale(.97)}
+/* под мышью и прочие пэды — плиты с клавишей: огонь, ракета, тормоз, тяга, рули (в поясе, на грунте) */
+@media (pointer:fine){
+  body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust],[data-k=left],[data-k=right],[data-k=pup],[data-k=pdown]){
+    width:auto;height:52px;min-width:60px;border-radius:0;clip-path:var(--pl-cutp);
+    display:flex;flex-direction:row;align-items:center;justify-content:center;gap:9px;padding:0 13px 0 10px;
+    background:var(--pl-bg);box-shadow:inset 0 0 0 1px var(--pl-edge),var(--pl-lift);
+    font-size:14px;font-weight:600;letter-spacing:.04em;color:var(--ink)}
+  body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust],[data-k=left],[data-k=right],[data-k=pup],[data-k=pdown])::before{
+    inset:0 auto auto 0;width:28px;height:2px;border:0;border-radius:0;background:currentColor;opacity:.8;transform:none;box-shadow:0 0 8px currentColor}
+  body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust],[data-k=left],[data-k=right],[data-k=pup],[data-k=pdown])>span{font-size:14px}
+  body:not(.mobile) .pads button[data-k=fire]{color:var(--alarm);box-shadow:inset 0 0 0 1px rgba(var(--c-alarm),.42),var(--pl-lift)}
+  body:not(.mobile) .pads button[data-k=fire] kbd{color:var(--alarm);box-shadow:inset 0 0 0 1px rgba(var(--c-alarm),.5);background:rgba(var(--c-alarm),.1)}
+  body:not(.mobile) .pads button[data-k=msl]{color:#ff8f6a;box-shadow:inset 0 0 0 1px rgba(255,143,106,.36),var(--pl-lift)}
+  body:not(.mobile) .pads button[data-k=thrust]{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.40),var(--pl-lift)}
+  body:not(.mobile) .pads button:is([data-k=fire],[data-k=msl],[data-k=brake],[data-k=thrust]).on::before{width:100%}
+  body:not(.mobile) .pads button.off{opacity:.45}
+}
+.pads kbd:empty{display:none}
+
+/* ── телефон: те же плиты, тесней ── */
+body.mobile .hud{gap:8px;padding:0 calc(env(safe-area-inset-right) + 10px) 0 calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px)}
+body.mobile .vitals{width:auto;flex:1 1 52%;min-width:0;max-width:200px;padding:7px 10px 9px;gap:6px}
+body.mobile .vh{display:none}
+body.mobile .vitals .v{grid-template-columns:44px 1fr 44px;column-gap:7px}
+body.mobile .vitals .v b{font-size:9px;letter-spacing:.06em}
+body.mobile .vitals .v u{font-size:12px}
+body.mobile .vitals .v.big u{font-size:15px}
+body.mobile .vitals .v.big u small{display:none}
+body.mobile .vitals .v .bar{height:4px}
+body.mobile .vitals .v.big .bar{height:6px}
+body.mobile .locus{flex:1 1 44%;min-width:0;max-width:170px;padding:7px 11px 9px}
+body.mobile .locus u{font-size:15px}
+body.mobile .locus s{font-size:10px}
+body.mobile .locus #purse{font-size:13px;margin-top:6px;padding:3px 7px 2px}
+body.mobile .locus #zoomlbl{display:none!important}
+body.mobile .rail button.key{width:56px;height:54px;min-width:56px}
+body.mobile .pads button{background:var(--pl-bg);box-shadow:inset 0 0 0 1px var(--pl-edge),var(--pl-lift);font-family:var(--face);font-weight:600}
+body.mobile .pads button::before{border-color:transparent}
+/* круглые пэды на самых узких (320–370): слово длиннее круга — тоньше и без разрядки */
+@media (max-width:370px){body.mobile .pads button:is([data-k=fire],[data-k=msl],[data-k=brake]){font-weight:400;letter-spacing:0}}
+body.mobile .pads button[data-k=act]{box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.45),var(--pl-lift)}
+body.mobile .pads button[data-k=act].ready{background:radial-gradient(120% 120% at 50% 20%,rgba(var(--c-acc),.30),rgba(18,12,6,.88) 66%);
+  box-shadow:inset 0 0 0 1.5px var(--amber),0 0 22px rgba(var(--c-acc),.3),var(--pl-lift)}
+body.mobile .pads button[data-k=thrust]{box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.45),var(--pl-lift)}
+body.mobile #rx{padding:6px 12px}
+
+/* ── невысокое окно: борт растёт вверх от пэдов, и на 600 px кнопки над ним («Цен не видели»)
+   доставали до кошелька — плитки площе, зазор меньше ── */
+@media (max-height:700px){
+  .rail{gap:7px}
+  .rail button.key{height:48px;gap:3px}
+  .rail button.key svg{width:17px;height:17px}
+}
+/* ── короткое окно (телефон боком, низкий ноутбук): плиты в рост не помещаются ──
+   В 360 px высоты плита борта брала треть кадра и сталкивала вниз линейку карты. Без строки «Борт»,
+   ряды плотнее, место — одной строкой с кошельком рядом; на карте верхняя полоса между плитами —
+   ряду адреса, колодка уходит (стойка открывается клавишей I) */
+@media (max-height:480px){
+  body:not(.mobile) .vh{display:none}
+  body:not(.mobile) .vitals{width:228px;padding:6px 12px 8px;gap:4px}
+  body:not(.mobile) .vitals .v{grid-template-columns:56px 1fr 56px;column-gap:8px}
+  body:not(.mobile) .vitals .v.big u{font-size:15px}
+  body:not(.mobile) .vitals .v.big u small{font-size:10px}
+  body:not(.mobile) .vitals .v u{font-size:12px}
+  body:not(.mobile) .locus{min-width:0;padding:6px 12px 8px}
+  body:not(.mobile) .locus u{font-size:16px}
+  body:not(.mobile) .locus s{font-size:11px;margin-top:1px}
+  body:not(.mobile) .locus #purse{margin-top:5px;padding:3px 8px 2px;font-size:13px}
+  body:not(.mobile) .locus #zoomlbl{display:none!important}
+  body.onmap .ipod{display:none!important}
+}
+
+/* ── открытая стойка (25d): строка сообщения под ней, подсказка отдыхает — глагол назван на плите
+   действия; --rackbot — низ стойки в пикселях окна, строка живёт в zoom ── */
+body.rackon #msg{top:calc(var(--rackbot,0px) / var(--ui,1) + 10px)}
+body.rackon #prompt{opacity:0}
+
+/* ── меню борта: плита, а не стеклянный диалог — срез, волосок, засечка; под верхним рядом плит
+   (у правого края оно накрывало плиту места), Esc назван в шапке ── */
+#menu{background:var(--pl-bg);-webkit-backdrop-filter:var(--pl-blur);backdrop-filter:var(--pl-blur);
+  box-shadow:inset 0 0 0 1px var(--pl-edge);border:0;border-radius:0;clip-path:var(--pl-cutp);
+  width:min(304px,86vw);right:calc(env(safe-area-inset-right) + 16px);
+  top:calc(var(--hudband,88px) / var(--ui,1) + 10px);max-height:calc(100vh / var(--ui,1) - var(--hudband,88px) / var(--ui,1) - 24px)}
+#menu::before{content:"";position:absolute;top:0;left:0;width:40px;height:2px;background:var(--phos);
+  box-shadow:0 0 10px var(--phos);pointer-events:none}
+#menu>b{font-size:10px;letter-spacing:.22em;color:var(--ink2);padding:13px 14px 11px;border-bottom:1px solid var(--pl-edge);gap:8px}
+#menu>b kbd{margin-left:auto;font-size:9px;padding:3px 5px 2px}
+@media (pointer:fine){body:not(.mobile) #menu>b kbd+span{margin-left:0}}   /* колпачок виден — крестик за ним */
+#menu button{padding:12px 14px;min-height:54px;gap:13px;border-bottom:1px solid rgba(var(--c-edge),.07);color:var(--ink)}
+#menu button::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:var(--phos);
+  opacity:0;transition:opacity .14s}
+#menu button svg{width:17px;height:17px;opacity:.75;stroke:var(--phos)}
+#menu button em{font-size:13px;letter-spacing:.12em;font-weight:600}
+#menu button s{font-size:10.5px;color:var(--ink2);margin-top:4px}
+@media (hover:hover){#menu button:hover{background:linear-gradient(90deg,rgba(var(--c-phos),.10),rgba(var(--c-phos),0))}
+  #menu button:hover::before{opacity:1}}
+
+/* ── экраны станции и окна: та же плита, что борт (M720) — один шрифт, срезанные углы окна и кнопок,
+   засечка роли, подвал в один ряд. Стол и дорога — бумага со своим языком, их не трогаем.
+   :where() держит вес селектора на уровне .act, чтобы бумажные карточки описи (.opis …) и окна
+   рельса (#railWin …) по-прежнему перебивали своё */
+.scr:where(:not(#tablewin,#roadwin)){font-family:var(--face);font-variant-numeric:tabular-nums}
+:where(.scr:not(#tablewin,#roadwin)) header b{font-weight:600;letter-spacing:.08em}
+:where(.scr:not(#tablewin,#roadwin)) nav.groups button{font-family:var(--face);font-weight:600;letter-spacing:.16em}
+:where(.scr:not(#tablewin,#roadwin)) nav.groups button.on{background:linear-gradient(0deg,rgba(var(--c-phos),.10),rgba(var(--c-phos),0))}
+:where(.scr:not(#tablewin,#roadwin)) nav.tabs button{font-family:var(--face);font-weight:600;letter-spacing:.14em}
+:where(.scr:not(#tablewin,#roadwin)) .act{font-family:var(--face);font-weight:600;letter-spacing:.12em;border:0;border-radius:0;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));
+  box-shadow:inset 0 0 0 1px rgba(var(--c-phos),.30);background:linear-gradient(180deg,rgba(var(--c-phos),.13),rgba(var(--c-phos),.04))}
+:where(.scr:not(#tablewin,#roadwin)) .act.gold{box-shadow:inset 0 0 0 1px rgba(var(--c-acc),.55);
+  background:linear-gradient(180deg,rgba(var(--c-acc),.18),rgba(var(--c-acc),.05))}
+:where(.scr:not(#tablewin,#roadwin)) .act:active{box-shadow:inset 0 0 0 1px rgba(var(--c-phos),.6)}
+@media (hover:hover){:where(.scr:not(#tablewin,#roadwin)) .act:not(:disabled):hover{background:linear-gradient(180deg,rgba(var(--c-phos),.22),rgba(var(--c-phos),.07))}
+  :where(.scr:not(#tablewin,#roadwin)) .act.gold:not(:disabled):hover{background:linear-gradient(180deg,rgba(var(--c-acc),.28),rgba(var(--c-acc),.08))}}
+@media (min-width:900px){
+  .scr:where(:not(#tablewin,#roadwin)){border:0;border-radius:0;
+    clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));
+    box-shadow:inset 0 0 0 1px var(--pl-edge);
+    background:linear-gradient(90deg,var(--phos) 0 72px,transparent 72px) top left/100% 2px no-repeat,
+      radial-gradient(120% 70% at 50% -10%,rgba(var(--c-phos),.06),transparent 60%),
+      linear-gradient(180deg,rgba(20,19,18,.975),rgba(6,10,15,.985) 60%,rgba(4,7,11,.99))}
+  :where(.scr:not(#tablewin,#roadwin)) header b{font-size:26px}
+  :where(.scr:not(#tablewin,#roadwin)) header s{font-size:12px}
+  :where(.scr:not(#tablewin,#roadwin)) .wallet em{font-size:19px;font-weight:600}
+  :where(.scr:not(#tablewin,#roadwin)) nav.groups button{font-size:12px}
+  :where(.scr:not(#tablewin,#roadwin)) .act{font-size:12px}
+  .scr footer .act{flex:1 1 180px}   /* ряд — пока кнопки влезают, иначе перенос ровными долями */
+}
+
+/* ── станция в три колонки (M720, концепт docs/ui-brief/concept/station.html): разделы слева, вкладки
+   раскрытого раздела вложены под ним (#stTabs и так стоит за ним в #stGroups, 26-ui-station syncTabs),
+   вкладка в середине, борт справа. Только где ширина вёрстки (окно/--ui) не меньше 1150 ── */
+#station .sr{display:none}
+@media (pointer:fine) and (min-width:1150px) and (min-aspect-ratio:1150/760){
+  body:not(.mobile) #station{inset:22px max(24px,calc(50% - 680px))}   /* 1360 px вёрстки, а не экрана */
+  body:not(.mobile) #station.open{display:grid;grid-template-columns:224px minmax(0,1fr) 292px;grid-template-rows:auto minmax(0,1fr);
+    grid-template-areas:"head head head" "nav body ship"}
+  body:not(.mobile) #station>header{grid-area:head;min-height:104px;align-items:center;padding:18px 26px}
+  /* эфир — в середине шапки, а не полосой над ней: окно станции без верхнего поля */
+  body.screen:not(.mobile):has(#station.open) .scr.open{padding-top:0}
+  body.screen:not(.mobile):has(#station.open) #console{top:calc(22px + 27px)}
+  /* эфир в шапке — строкой в рамке: у прилавка слушают, настраивают — в полёте */
+  body.screen:not(.mobile):has(#station.open) #console{top:calc(22px + 33px)}
+  body.screen:not(.mobile):has(#station.open) #rx :is(#rxKnob,#rxScale,#rxRec){display:none}
+  body.screen:not(.mobile):has(#station.open) #rx{display:block;padding:0;background:none;box-shadow:none}
+  body.screen:not(.mobile):has(#station.open) #console #rx #rxOut{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:baseline;gap:14px;max-width:min(560px,32vw);padding:10px 18px;
+    box-shadow:inset 0 0 0 1px var(--pl-edge);background:rgba(var(--c-edge),.03);border:0;
+    clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+  body.screen:not(.mobile):has(#station.open) #console #rx #rxOut b{display:block;margin:0;flex:0 0 auto;color:var(--amber)}
+  body.screen:not(.mobile):has(#station.open) #console #rx #rxOut s{display:block;flex:1 1 auto;margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--text)}
+  body:not(.mobile) #station header .wallet{display:flex;align-items:center;gap:10px}
+  body:not(.mobile) #station header .wallet>:is(em,i){display:flex;align-items:center;height:40px;margin:0;padding:0 14px;
+    box-shadow:inset 0 0 0 1px var(--pl-edge);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+    font-size:18px;font-weight:600}
+  body:not(.mobile) #station header .wallet>i{font-size:15px}
+  body:not(.mobile) #station header .wallet #stDesk{display:flex;align-items:center;margin:0;height:40px;min-height:40px;padding:0 16px;
+    box-shadow:inset 0 0 0 1px rgba(216,200,164,.45);background:rgba(216,200,164,.06);font-size:13px;font-weight:600;
+    clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+  body:not(.mobile) #station header .wallet #stDesk em{border:0;background:none;padding:0}
+  body:not(.mobile) #station #stGroups{grid-area:nav;flex-direction:column;align-items:stretch;overflow-x:hidden;overflow-y:auto;
+    border-bottom:0;border-right:1px solid var(--pl-edge);padding:14px 0;-webkit-mask-image:none;mask-image:none}
+  body:not(.mobile) #station #stGroups>button{flex:0 0 auto;text-align:left;padding:0 22px;min-height:46px;font-size:13px}
+  body:not(.mobile) #station #stGroups>button:is(.on,.open){color:var(--amber);background:linear-gradient(90deg,rgba(var(--c-acc),.14),rgba(var(--c-acc),0))}
+  body:not(.mobile) #station #stGroups>button:is(.on,.open)::after{content:"";position:absolute;left:0;right:auto;top:8px;bottom:8px;width:3px;height:auto;
+    background:var(--amber);box-shadow:0 0 10px var(--amber)}
+  body:not(.mobile) #station #stTabs{flex-direction:column;align-items:stretch;background:none;border:0;padding:0 0 10px 40px;
+    -webkit-mask-image:none;mask-image:none;overflow:visible}
+  body:not(.mobile) #station #stTabs button{flex:0 0 auto;position:relative;text-align:left;min-height:36px;padding:0 0 0 16px;
+    font-size:12px;color:#8a8478;background:none;border:0}
+  body:not(.mobile) #station #stTabs button.on{color:var(--ink);background:none}
+  body:not(.mobile) #station #stTabs button.on::after{content:"";position:absolute;left:0;right:auto;top:50%;bottom:auto;width:6px;height:6px;
+    margin-top:-3px;transform:rotate(45deg);background:var(--phos);box-shadow:0 0 8px var(--phos)}
+  body:not(.mobile) #station>.body{grid-area:body;padding:6px 14px 14px}
+  body:not(.mobile) #station>footer{grid-area:ship;flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-start;
+    border-top:0;border-left:1px solid var(--pl-edge);padding:18px 20px 20px;gap:10px;overflow-y:auto;background:none}
+  body:not(.mobile) #station>footer .act{flex:0 0 auto;width:100%;min-height:42px}
+  body:not(.mobile) #station #bUndock{margin-top:auto;min-height:56px;font-size:14px}
+  body:not(.mobile) #station .sr{display:grid;grid-template-columns:1fr auto;align-items:baseline;row-gap:7px}
+  body:not(.mobile) #station .sr span{font-size:11px;letter-spacing:.2em;color:var(--ink2)}
+  body:not(.mobile) #station .sr b{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:.02em}
+  body:not(.mobile) #station .sr .sb{grid-column:1/3;display:flex;gap:3px}
+  body:not(.mobile) #station .sr .sb i{flex:1;height:7px;background:rgba(var(--c-phos),.12)}
+  body:not(.mobile) #station .sr .sb i.f{background:var(--sc,var(--phos));box-shadow:0 0 6px var(--sc,var(--phos))}
+  body:not(.mobile) #station #stShipN{padding-bottom:6px}
+  body:not(.mobile) #station #stShipN b{font-size:17px;letter-spacing:.06em}
+  body:not(.mobile) #station #stShipH{--sc:var(--phos);margin-top:8px}
+  body:not(.mobile) #station #stShipC{--sc:#a59d8f;margin-top:8px}
+  body:not(.mobile) #station #stShipN{order:0}body:not(.mobile) #station #stShipF{order:1}body:not(.mobile) #station #bRefuel{order:2}
+  body:not(.mobile) #station #stShipH{order:3}body:not(.mobile) #station #bRepairHalf{order:4}body:not(.mobile) #station #bRepair{order:5}
+  body:not(.mobile) #station #stShipC{order:6}body:not(.mobile) #station #bTape{order:7}body:not(.mobile) #station #bUndock{order:9}
+}
+
+/* ── рынок одной таблицей (M721, 26e stTabMarket): ТОВАР · ЦЕНА · К БАЗЕ · В ТРЮМЕ · кнопка ── */
+#station .mk{margin:2px 0 16px}
+#station :is(.mk-h,.mk-r){display:grid;grid-template-columns:minmax(0,1fr) 84px 72px 96px 132px;align-items:center;column-gap:14px;padding:0 12px}
+#station .mk-h{padding-bottom:9px;border-bottom:1px solid var(--pl-edge);font-size:10px;letter-spacing:.2em;color:var(--ink2)}
+#station .mk-h span:not(:first-child){text-align:right}
+#station .mk-r{min-height:50px;padding-top:6px;padding-bottom:6px;border-bottom:1px solid rgba(var(--c-edge),.07)}
+#station .mk-r.has{background:linear-gradient(90deg,rgba(var(--c-acc),.07),rgba(var(--c-acc),0) 70%)}
+#station .mk-r .nm{min-width:0}
+#station .mk-r .nm i{display:inline-block;width:7px;height:7px;margin:0 11px 0 1px;transform:rotate(45deg);vertical-align:middle}
+#station .mk-r .nm b{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:.02em}
+#station .mk-r .nm s{display:block;text-decoration:none;font-size:11px;line-height:1.4;color:var(--ink2);margin:3px 0 0 19px}
+#station .mk-r :is(.pr,.qt){text-align:right;font-size:17px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+#station .mk-r :is(.pr,.qt) s{display:block;text-decoration:none;font-size:10px;font-weight:400;letter-spacing:.06em;color:var(--ink2)}
+#station .mk-r .dv{text-align:right;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
+#station .mk-r .dv.up{color:var(--phos);font-weight:600}
+#station .mk-r .dv.dn{color:#7b756b}
+#station .mk-r .act{grid-column:5;min-height:40px;margin:0}
+#station .mk-r.tot{border-bottom:0;margin-top:6px}
+#station .mk-r.tot .qt{grid-column:4}
+@media (max-width:560px){
+  #station :is(.mk-h,.mk-r){grid-template-columns:minmax(0,1fr) 62px 66px;column-gap:10px;padding:0 18px}
+  #station .mk-h span:is(:nth-child(3),:nth-child(5)),#station .mk-r .dv{display:none}
+  #station .mk-r .act{grid-column:1/-1;margin-top:6px}
+  #station .mk-r.tot .qt{grid-column:3}
+}
+
+/* ══════════════ кантина (M725, 27cb): зал в рамке кадра, под ним люди карточками и стойка панелью ══════════════
+   Карточка — ниша с портретом: снизу отсвет цвета роли (--k), сверху тёплый верхний свет, по краям портрет
+   растворяется в нише маской (квадрат лица с рамкой не читается фотографией на картоне). Стойка — плита
+   с неоновой вывеской акцента станции, бармен в нише с плечами и фартуком. Цифры — только в досье */
+#station .cant-stage{position:relative;margin:2px 0 16px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+#station .cant-stage::after{content:"";position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 0 1px var(--pl-edge),inset 0 0 48px rgba(0,0,0,.42);
+  background:
+    linear-gradient(var(--phos),var(--phos)) 8px 8px/20px 2px,linear-gradient(var(--phos),var(--phos)) 8px 8px/2px 20px,
+    linear-gradient(var(--phos),var(--phos)) right 8px bottom 8px/20px 2px,linear-gradient(var(--phos),var(--phos)) right 8px bottom 8px/2px 20px,
+    linear-gradient(90deg,var(--amber) 0 72px,transparent 72px) top left/100% 2px;
+  background-repeat:no-repeat;opacity:.8}
+#station .cant-hall{display:flex;flex-wrap:wrap;align-items:flex-start;gap:14px;margin:4px 0 20px}
+#station .cant-hall :is(s,i),#station .ch-dos :is(s,i){text-decoration:none;font-style:normal}
+#station .ch-main{flex:1 1 440px;min-width:0}
+#station .ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:12px}
+/* ── карточка человека ── */
+#station .ch-card{position:relative;display:flex;flex-direction:column;cursor:pointer;min-width:0;
+  background:linear-gradient(180deg,rgba(28,27,26,.94),rgba(11,12,14,.97));
+  box-shadow:inset 0 0 0 1px var(--pl-edge);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));transition:box-shadow .15s}
+#station .ch-card::before{content:"";position:absolute;top:0;left:0;z-index:3;width:40px;height:2px;
+  background:var(--k,var(--amber));box-shadow:0 0 10px var(--k,var(--amber))}
+#station .ch-card.on{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k,var(--amber)) 70%,transparent),
+  inset 0 0 28px color-mix(in srgb,var(--k,var(--amber)) 16%,transparent)}
+@media (hover:hover){#station .ch-card:not(.on):hover{box-shadow:inset 0 0 0 1px rgba(var(--c-edge),.34)}}
+#station .ch-face{position:relative;height:148px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;
+  background:radial-gradient(70% 58% at 50% 104%,color-mix(in srgb,var(--k,var(--amber)) 36%,transparent),transparent 72%),
+    radial-gradient(56% 46% at 50% 22%,rgba(255,236,206,.08),transparent 72%),
+    linear-gradient(180deg,#16181c,#0c0e11);
+  border-bottom:1px solid color-mix(in srgb,var(--k,var(--amber)) 42%,transparent)}
+#station .ch-face::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 60%,rgba(0,0,0,.28));mix-blend-mode:multiply}
+#station .ch-face>canvas{position:relative;flex:0 0 auto;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent),linear-gradient(180deg,transparent,#000 22%);
+  -webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent),linear-gradient(180deg,transparent,#000 22%);
+  mask-composite:intersect}
+#station .ch-face>svg{width:76px;height:48px;margin:0 auto 26px;color:var(--k,var(--amber));opacity:.82;
+  filter:drop-shadow(0 0 8px color-mix(in srgb,var(--k,var(--amber)) 55%,transparent))}
+#station .ch-face.sm{height:104px;align-items:flex-end}
+#station .ch-role{position:absolute;top:9px;left:11px;right:58px;z-index:2;font-size:10px;font-weight:600;letter-spacing:.2em;line-height:1.35;
+  color:var(--k,var(--amber));text-shadow:0 0 8px color-mix(in srgb,var(--k,var(--amber)) 60%,transparent)}
+#station .ch-lv{position:absolute;top:7px;right:9px;z-index:2;padding:2px 6px;font-size:10px;font-weight:600;letter-spacing:.12em;
+  color:var(--ink);background:rgba(0,0,0,.5);box-shadow:inset 0 0 0 1px var(--pl-edge)}
+#station .ch-id{padding:10px 12px 0;min-width:0}
+#station .ch-id b{display:block;font-size:15px;font-weight:600;color:var(--ink);letter-spacing:.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#station .ch-id s{display:block;margin-top:3px;font-size:11px;line-height:1.35;color:var(--ink2)}
+#station .ch-tr{display:flex;flex-wrap:wrap;gap:5px;padding:9px 12px 0}
+#station .ch-tr i{padding:3px 7px;font-size:10px;letter-spacing:.06em;color:var(--text);
+  background:color-mix(in srgb,var(--k,var(--amber)) 10%,transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k,var(--amber)) 38%,transparent)}
+#station .ch-tr i.q{color:var(--dim);background:none;box-shadow:inset 0 0 0 1px rgba(var(--c-edge),.10)}
+#station .ch-go{display:flex;margin-top:auto;padding:12px 10px 10px}
+#station .ch-go .act{flex:1 1 auto;min-height:44px;margin:0;font-size:11px;letter-spacing:.1em}
+/* ── стойка ── */
+#station .ch-bar{position:relative;flex:1 0 236px;display:flex;flex-direction:column;gap:11px;padding:15px 16px 16px;
+  background:radial-gradient(90% 40% at 50% 0%,color-mix(in srgb,var(--k) 12%,transparent),transparent 70%),
+    linear-gradient(180deg,rgba(26,24,23,.95),rgba(10,11,13,.97));
+  box-shadow:inset 0 0 0 1px var(--pl-edge);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+#station .ch-sign b{display:block;font-size:18px;font-weight:600;letter-spacing:.16em;color:var(--k);
+  text-shadow:0 0 4px var(--k),0 0 16px color-mix(in srgb,var(--k) 65%,transparent);animation:chNeon 9s steps(1) infinite}
+#station .ch-sign s{display:block;margin-top:4px;font-size:11px;color:var(--ink2);letter-spacing:.04em}
+@keyframes chNeon{0%,100%{opacity:1}61%{opacity:.55}62%{opacity:1}64%{opacity:.7}65%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#station .ch-sign b{animation:none}}
+#station .ch-keep{display:grid;grid-template-columns:72px minmax(0,1fr);column-gap:12px;align-items:end}
+#station .ch-kf{position:relative;height:86px;overflow:hidden;
+  background:radial-gradient(80% 62% at 50% 26%,color-mix(in srgb,var(--k) 24%,transparent),transparent 72%),linear-gradient(180deg,#17191d,#0d0e11);
+  box-shadow:inset 0 0 0 1px var(--pl-edge);
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+#station .ch-kf>canvas{position:absolute;left:4px;top:4px}
+#station .ch-kf::after{content:"";position:absolute;left:2px;right:2px;bottom:-2px;height:24px;z-index:1;
+  border-radius:50% 50% 0 0/80% 80% 0 0;background:linear-gradient(180deg,#3a332c,#16130f);
+  box-shadow:inset 0 1px 0 rgba(255,226,190,.30)}
+#station .ch-kf::before{content:"";position:absolute;left:25px;right:25px;bottom:0;height:17px;z-index:2;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--k) 40%,#d8cdb6),color-mix(in srgb,var(--k) 22%,#8c8474));
+  clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+#station .ch-say b{display:block;font-size:10px;font-weight:600;letter-spacing:.22em;color:var(--ink2);text-transform:uppercase}
+#station .ch-say s{display:block;margin-top:5px;font-size:13px;line-height:1.45;color:var(--text)}
+#station .ch-h{display:flex;justify-content:space-between;align-items:baseline;padding-top:11px;border-top:1px solid var(--pl-edge)}
+#station .ch-h span{font-size:10px;font-weight:600;letter-spacing:.22em;color:var(--ink2)}
+#station .ch-h i{font-size:13px;font-weight:600;color:var(--amber)}
+#station .ch-rum{display:flex;flex-direction:column;gap:3px;padding-bottom:11px;border-bottom:1px solid rgba(var(--c-edge),.07)}
+#station .ch-rum b{font-size:13px;font-weight:600;line-height:1.35;color:var(--ink)}
+#station .ch-rum s{font-size:11px;line-height:1.45;color:var(--ink2)}
+#station .ch-rum s.src{color:var(--dim)}
+#station .ch-rum .act{align-self:flex-start;margin:6px 0 0;min-height:44px;padding:0 16px}
+#station .ch-bar>.act.gold{width:100%;min-height:46px;margin:2px 0 0}
+/* ── досье ── */
+#station .ch-dos{--k:var(--amber);display:grid;grid-template-columns:196px minmax(0,1fr);gap:18px;margin:2px 0 18px;padding:14px;
+  background:linear-gradient(180deg,rgba(28,27,26,.94),rgba(11,12,14,.97));
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--k) 55%,transparent),inset 0 0 36px color-mix(in srgb,var(--k) 10%,transparent);
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+#station .ch-face.big{height:206px;border:0;box-shadow:inset 0 0 0 1px var(--pl-edge)}
+#station .ch-txt{min-width:0;display:flex;flex-direction:column}
+#station .ch-txt b.nm{font-size:24px;font-weight:600;color:var(--ink);letter-spacing:.01em;line-height:1.15}
+#station .ch-txt s.rl{display:block;margin-top:5px;font-size:12px;line-height:1.45;color:var(--ink2)}
+#station .ch-txt s.busy{display:block;margin-top:8px;font-size:12px;color:var(--amber)}
+#station .ch-fig{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin:14px 0 12px;background:var(--pl-edge);
+  box-shadow:0 0 0 1px var(--pl-edge)}
+#station .ch-fig span{padding:8px 10px;background:rgba(14,14,15,.97);min-width:0}
+#station .ch-fig em{display:block;font-style:normal;font-size:10px;letter-spacing:.18em;color:var(--ink2);text-transform:uppercase}
+#station .ch-fig b{display:block;margin-top:3px;font-size:17px;font-weight:600;color:var(--ink);white-space:nowrap}
+#station .ch-trl p{margin:0 0 7px;font-size:13px;line-height:1.45;color:var(--text)}
+#station .ch-trl p b{margin-right:8px;font-weight:600;color:var(--k)}
+#station .ch-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:auto;padding-top:12px}
+#station .ch-acts .act{flex:1 1 160px;min-height:46px;margin:0}
+#station .ch-empty{grid-column:1/-1;padding:24px 18px;text-align:center;outline:1px dashed rgba(var(--c-edge),.16);outline-offset:-1px}
+#station .ch-empty b{display:block;font-size:15px;font-weight:600;color:var(--ink)}
+#station .ch-empty s{display:block;margin-top:6px;font-size:12px;line-height:1.45;color:var(--ink2)}
+@media (max-width:560px){
+  #station .ch-dos{grid-template-columns:minmax(0,1fr);padding:12px}
+  #station .ch-face.big{height:190px}
+  #station .ch-fig{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

@@ -52,7 +52,7 @@ const POI_FIND={
                const s=getSystem(sx,sy);
                if(!s.station||(G.market&&G.market[s.key]))continue;
                if(!G.market)G.market={};
-               G.market[s.key]={pressure:{},t:G.t};
+               G.market[s.key]={pressure:{},t:now()};
                return "цены станции «"+s.station.name+"» ("+sx+":"+sy+")";
              }
              return "наблюдения о том, что вы и так видели";}},

@@ -105,16 +105,32 @@ function greenSpeciesFields(r,p,bi,kind){
 function greenDrawBed(x,gy,w,b,p){
   const sp=greenSpecies(b.name,p);
   const t=greenGrow(b);
-  /* земля */
-  ctx.fillStyle="rgba(48,38,28,.92)";
+  /* земля: вскопанный гребень, верх подсох и светлее, комья с тенью (G6) */
+  const L=(typeof placeSun==="function")?placeSun(p):{k:0,sx:1,col:[255,236,200]};
+  const gs=ctx.createLinearGradient(0,gy-w*.10,0,gy);
+  gs.addColorStop(0,"rgba(84,66,46,.95)");gs.addColorStop(1,"rgba(40,31,23,.95)");
+  ctx.fillStyle=gs;
   ctx.beginPath();
   ctx.moveTo(x-w*.5,gy);ctx.lineTo(x+w*.5,gy);
   ctx.lineTo(x+w*.42,gy-w*.10);ctx.lineTo(x-w*.42,gy-w*.10);
   ctx.closePath();ctx.fill();
+  {
+    const r=rng(hashi(b.t|0,0x6E,0x0C));
+    for(let i=0;i<7;i++){
+      const cx=x+(r()-.5)*w*.8,cy=gy-w*(.02+r()*.07),cr=Math.max(.8,w*.022);
+      ctx.fillStyle="rgba(22,16,10,.55)";ctx.fillRect(cx-cr+L.sx*.6,cy,cr*2,cr);
+      ctx.fillStyle="rgba(120,96,68,.7)";ctx.fillRect(cx-cr,cy-cr*.6,cr*2,cr*.8);
+    }
+  }
   ctx.fillStyle="rgba(0,0,0,.30)";
   ctx.fillRect(x-w*.5,gy-1,w,2);
   /* растение: высота от возраста, форма от вида */
   const hh=w*(0.25+t*1.15);
+  /* тень стебля по грунту — от той же звезды, что тень дома */
+  if(t>0.02&&L.k>.02){
+    ctx.fillStyle="rgba(0,0,0,"+(.22*L.k).toFixed(3)+")";
+    ctx.beginPath();ctx.ellipse(x-L.sx*hh*.35,gy-.5,hh*.36,Math.max(1,w*.03),0,0,TAU);ctx.fill();
+  }
   const sc=`rgb(${sp.stem[0]|0},${sp.stem[1]|0},${sp.stem[2]|0})`;
   const lc=`rgb(${sp.leaf[0]|0},${sp.leaf[1]|0},${sp.leaf[2]|0})`;
   if(t>0.02){
@@ -150,6 +166,14 @@ function greenDrawBed(x,gy,w,b,p){
     }else{                                            /* шар */
       ctx.fillStyle=lc;
       ctx.beginPath();ctx.arc(tipx,tipy,hh*.20,0,TAU);ctx.fill();
+    }
+    /* лист ловит свет стороной к звезде */
+    if(L.k>.02&&(sp.kind===0||sp.kind===5||sp.kind===4||sp.kind>5)){
+      ctx.fillStyle=rgba(sdMix(sp.leaf,L.col,.5),.45*L.k);
+      ctx.beginPath();
+      if(sp.kind===0||sp.kind===5)ctx.ellipse(tipx+L.sx*hh*sp.cap*.12,tipy-hh*sp.cap*.03,hh*sp.cap*.26,hh*sp.cap*.09,0,Math.PI,TAU);
+      else ctx.arc(tipx+L.sx*hh*.07,tipy-hh*.06,hh*.10,0,TAU);
+      ctx.fill();
     }
     if(sp.bloom&&t>0.7){
       ctx.fillStyle="rgba(240,220,160,.85)";

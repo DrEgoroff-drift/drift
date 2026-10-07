@@ -117,9 +117,11 @@ const CREW_EVENTS=[
     return {tone:"warn",ru:"ушёл вместе с грузом и «"+(S?S.ru:"кораблём")+"»"};
   }},
   {id:"seized",cat:"cat",run:(c,r,gross)=>{
-    const fine=Math.round(gross*1.4+400);
-    G.credits-=fine;c.spent=(c.spent||0)+fine;c.cargo={};
-    return {tone:"warn",ru:"груз арестован как контрабанда · штраф "+fine.toLocaleString("ru")+" кр"};
+    /* штраф и долг берут со счёта, но не ниже нуля (§12): минус на счёте загрузка
+       обнуляла (14a1), и долг пропадал с перезапуском — пол, как у пошлины lawDock */
+    const want=Math.round(gross*1.4+400),fine=crewTake(want);
+    c.spent=(c.spent||0)+fine;c.cargo={};
+    return {tone:"warn",ru:"груз арестован как контрабанда · штраф "+fine.toLocaleString("ru")+" кр"+(fine<want?" — всё, что было на счёте":"")};
   }},
 
   /* ── плохое ── */
@@ -144,10 +146,10 @@ const CREW_EVENTS=[
     return {tone:"dim",ru:"встал на ремонт: сдох маршевый узел"};
   }},
   {id:"barvdebt",cat:"bad",run:(c,r,gross)=>{
-    const sum=Math.round(120+gross*.6);
-    G.credits-=sum;c.spent=(c.spent||0)+sum;
+    const want=Math.round(120+gross*.6),sum=crewTake(want);
+    c.spent=(c.spent||0)+sum;
     crewPayload(c,gross*.7,r);
-    return {tone:"money",ru:"оставил долг на станции — "+sum.toLocaleString("ru")+" кр с вас: "+crewTale(c)};
+    return {tone:"money",ru:"оставил долг на станции — "+sum.toLocaleString("ru")+" кр с вас"+(sum<want?" (больше на счёте не было)":"")+": "+crewTale(c)};
   }},
   {id:"hungover",cat:"bad",run:(c,r,gross)=>{
     crewPayload(c,gross*.6,r);c.hangover=1;
@@ -236,6 +238,11 @@ function crewHistory(c,ev,ru){
   c.hist=c.hist||[];
   c.hist.unshift({cat:ev.cat,id:ev.id,ru,t:now()});
   if(c.hist.length>12)c.hist.length=12;
+}
+/* снять со счёта сколько есть, не больше: отдаёт снятое */
+function crewTake(want){
+  const n=Math.max(0,Math.min(want|0,Math.floor(G.credits)));
+  G.credits-=n;return n;
 }
 /* ── выкуп и освобождение ── */
 function ransomPay(c){

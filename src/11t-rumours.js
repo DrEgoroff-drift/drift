@@ -153,6 +153,11 @@ function rumourBlock(){
     b.onclick=()=>{rumourToMap(q);};
     r.appendChild(b);$body.appendChild(r);
   }
+  rumourHeard(L);
+}
+/* слух услышан — в тетрадь и на карту областью, раз на станцию и бакет: доска и стойка кантины (M725)
+   рассказывают одно и то же, второй раз не записывается */
+function rumourHeard(L){
   const tag=G.sys.key+"#"+rumourSeedHere();
   if(G.rumLogged!==tag){
     G.rumLogged=tag;

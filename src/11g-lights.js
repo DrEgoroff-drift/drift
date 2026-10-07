@@ -95,27 +95,6 @@ function lightsGroundLine(){
   if(C.k>0)return d===2?"Третий свет встал над грядой. Тени легли в одну сторону.":"Три света сошлись в один. Ставни закрыты.";
   return d===2?"Ночи здесь не бывает: три света по очереди.":"Сумерки, которые не кончаются. На каждом дворе — ставни.";
 }
-/* ── три света на небе ──
-   Рисуется после диска главной звезды (19-mode-landing). Окраина — один
-   тусклый спутник, ядро — два; к соединению они сходятся к главному, и
-   третий свет даёт белёсый ореол. Громкость неба не растёт: это три диска. */
-function lightsSuns(p,sunX,sunY,sunR){
-  const d=lightsDepthHere();if(!d)return;
-  const C=lightsConj(),k=C.k;
-  const n=d===2?2:1;
-  for(let i=0;i<n;i++){
-    const ox=(i?-1:1)*W*(.11+i*.05)*(1-k), oy=H*(.05+i*.03)*(1-k);
-    const x=sunX+ox,y=sunY+oy,r=sunR*(.55-i*.12+k*.3);
-    ctx.fillStyle=i?"rgba(255,214,170,.75)":"rgba(226,236,255,.8)";
-    ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
-  }
-  if(k>0){
-    const g=ctx.createRadialGradient(sunX,sunY,sunR,sunX,sunY,sunR*3.2);
-    g.addColorStop(0,"rgba(255,250,236,"+(.34*k).toFixed(3)+")");
-    g.addColorStop(1,"rgba(255,250,236,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(sunX,sunY,sunR*3.2,0,TAU);ctx.fill();
-  }
-}
 /* ── ставни на дворах посёлка (12t) ──
    Обычная архитектура области: окно со ставнями на каждом дворе. Закрыты —
    доска поперёк; открыты — тёплый свет изнутри. Вне области ничего. */
@@ -128,6 +107,7 @@ function lightsShutters(ox,oy,ww,hh){
     ctx.beginPath();ctx.moveTo(x,y+h*.5);ctx.lineTo(x+w,y+h*.5);ctx.stroke();
   }else{
     ctx.fillStyle="rgba(255,222,160,.6)";ctx.fillRect(x,y,w,h);
+    placeLamp(x+w*.5,y+h*.5,34,[1,.82,.56],.4,-5);   /* открытое окно светит во двор (11va) */
   }
 }
 /* ── явление ──

@@ -23,6 +23,7 @@ function startLanding(p){
      а рельеф под ними к этому моменту уже выровнен (21b-surface-deco) */
   genDeco(tr,p);
   G.ap=null;
+  skyReroll(p);           /* состав неба — свой на каждую посадку (19ca) */
   const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
@@ -166,110 +167,16 @@ function groundShadow(x,y,rx,ry){
   ctx.beginPath();ctx.ellipse(x+off,y,rx*kx,ry,0,0,TAU);ctx.fill();
   ctx.restore();
 }
-/* небо: солнечное марево + процедурные облака для миров с атмосферой —
-   вызывается один раз в кадр поверх заливки skyGrad, перед рельефом */
+/* небо над горизонтом: тела сцены, календарь, три света и облака — на движке
+   (19cb, 19cc). Состав от зерна посадки, лицо от планеты (19ca) */
 function drawSkyLayer(p,camx,camy){
-  const hasAtm=p.T.atm!=="отсутствует";
-  /* небо садится вместе со светом: без этого затмение выглядело так, будто
-     грунт погас, а день на месте (06a-celest) */
-  const DK=typeof celDark==="function"?celDark():0;
-  if(DK>.02){
-    /* небу достаётся половина: остальное сводит gradePass на весь кадр, иначе
-       затмение получается «тёмное небо над дневной планетой» */
-    ctx.fillStyle="rgba(8,12,26,"+(.34*DK).toFixed(3)+")";
-    ctx.fillRect(0,0,W,H);
-  }
-  /* звезда ходит по небу (M172, sunSpot в 19c): зарево, диск, календарь и
-     облака берут одну точку, поэтому полдень, закат и ночь — разные кадры,
-     а не одна картинка разной яркости */
-  const SS=sunSpot(p);
-  const sunX=SS.x,sunY=SS.y;
-  const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
-  /* ── звезда как тело, а не круг из ящика canvas (П1 марафона) ──
-     Прежний вид — идеальный круг с обрывом альфы на кромке плюс радиальный
-     градиент поверх готового неба: ровно тот «naked radial gradient», который
-     DESIGN-craft §1 называет грехом. Три поимённо:
-     1. плато на стопе .12 у зарева рисовало концентрическое КОЛЬЦО — автор
-        ткнул в него пальцем («кругов дохуя», 29.08.2026);
-     2. кромка диска обрывалась на альфе .55 — круг-наклейка;
-     3. зарево светилось и в вакууме, где рассеивать нечего (закону «в вакууме
-        лучей не бывает» шафты уже подчинялись, а зарево — нет).
-     Зарево печётся спрайтом в единичных координатах и кладётся одним
-     drawImage; падение — гладкая степенная кривая без плато. Под горизонтом
-     остаётся зарево заката. */
-  {
-    const under=clamp((SS.alt+.42)/.5,0,1);        /* 0 — глубокая ночь */
-    const a=SS.up?1:under*.7;
-    if(a>.02&&SKY_GPU!==GPU.frameNo){
-      const GS=glowSprite("sunglow2|"+sc+"|"+hasAtm,()=>{
-        const g=ctx.createRadialGradient(0,0,0,0,0,1);
-        /* двенадцать стопов по степенной кривой: воздух рассеивает широко и
-           мягко, вакуум — только тесная корона у самого тела. Стопов много,
-           чтобы кусочно-линейная альфа не собиралась в еле видные кольца */
-        const a0=hasAtm?.50:.38, pw=hasAtm?2.6:5.5;
-        for(let i=0;i<=12;i++){const t=i/12;
-          g.addColorStop(t,rgba(hex2rgb(sc),a0*Math.pow(1-t,pw)));}
-        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
-      });
-      ctx.save();ctx.globalAlpha=a;
-      glowBlit(GS,sunX,sunY,hasAtm?W*.5:W*.16);
-      ctx.restore();
-    }
-  }
-  /* небесные тела идут между заревом звезды и облаками: за облаками, но
-     перед общим градиентом — так они и оказываются «в небе», а не поверх него */
-  drawSkyBodies(p,camx,camy);
-  /* ── диск: потемнение к лимбу, у горизонта — экстинкция ──
-     Цветом звезды, к центру белее (раньше он брался тоном неба и любая звезда
-     читалась затмением). Тело печётся спрайтом от высоты (12 делений): в
-     зените кромка мягкая и к краю темнее (лимб), у горизонта диск сплюснут,
-     покраснел и снизу съеден дымкой — атмосферная экстинкция. В вакууме
-     кромка резкая: смягчать её нечему. */
-  if(SS.up&&SKY_GPU!==GPU.frameNo){
-    const sr=H*.045;
-    const low=hasAtm?clamp(1-SS.alt*2.2,0,1):0;    /* 1 — у самого горизонта */
-    const altQ=Math.round(low*12);
-    const sp=glowSprite("sundisc|"+sc+"|"+hasAtm+"|"+altQ,()=>{
-      const c=hex2rgb(sc), lo=altQ/12;
-      /* к горизонту тон уходит в красную медь: воздух крадёт синее первым */
-      const cr=[lerp(c[0],205,lo*.45),lerp(c[1],84,lo*.45),lerp(c[2],40,lo*.55)].map(Math.round);
-      const g=ctx.createRadialGradient(0,0,0,0,0,1);
-      g.addColorStop(0,"rgba(255,252,240,"+(.95-lo*.25).toFixed(2)+")");
-      g.addColorStop(.55,rgba(cr,.92));
-      if(hasAtm){
-        g.addColorStop(.84,rgba(cr.map(v=>Math.round(v*.82)),.88));  /* лимб темнее кромки */
-        g.addColorStop(1,rgba(cr,0));                                /* кромку доедает воздух */
-      }else{
-        g.addColorStop(.90,rgba(cr.map(v=>Math.round(v*.86)),.94));
-        g.addColorStop(.985,rgba(cr,.92));
-        g.addColorStop(1,rgba(cr,0));                                /* полпикселя сглаживания */
-      }
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
-      /* экстинкция: дымка съедает нижний край тем сильнее, чем звезда ниже */
-      if(lo>.05){
-        const e=ctx.createLinearGradient(0,-1,0,1);
-        e.addColorStop(0,"rgba(0,0,0,0)");
-        e.addColorStop(.55,"rgba(0,0,0,0)");
-        e.addColorStop(1,"rgba(0,0,0,"+(.62*lo).toFixed(2)+")");
-        ctx.globalCompositeOperation="destination-out";
-        ctx.fillStyle=e;ctx.fillRect(-1,-1,2,2);
-      }
-    });
-    const ry=sr*(1-.20*low);                       /* у горизонта диск сплюснут */
-    ctx.drawImage(sp,sunX-sr,sunY-ry,sr*2,ry*2);
-  }
-  /* календарь неба поверх звезды: диск спутника наезжает на неё, комета и парад
-     идут своим чередом (06a-celest). Ниже облаков — они всё равно главнее */
-  if(typeof drawCelest==="function")drawCelest(p,sunX,sunY,H*.045);
-  /* три света (11g): спутники главной звезды, сходящиеся к соединению */
-  if(typeof lightsSuns==="function")lightsSuns(p,sunX,sunY,H*.045);
-  if(!hasAtm)return;
-  /* облака живут в 19e: поле плотности в перспективе, а не гроздь эллипсов */
-  drawClouds(p,camx,camy);
+  gpuSkyBodies(p,camx,camy);
+  gpuClouds(p,camx,camy);
 }
 /* пыль/пыльца в воздухе — только там, где есть атмосфера, для ощущения глубины */
 function drawDustMotes(camx,camy,p){
   if(p.T.atm==="отсутствует")return;
+  const gp=lgGpu();if(gp&&dustMotesGpu(gp,camx,camy,p))return;   /* с видеокартой — кругами в проход (21e3) */
   const n=26;
   for(let i=0;i<n;i++){
     const r=rng(hashi(Math.floor(p.seed),i,0xD05));
@@ -282,13 +189,24 @@ function drawDustMotes(camx,camy,p){
     ctx.beginPath();ctx.arc(x,y,.8+r()*1.2,0,TAU);ctx.fill();
   }
 }
+/* проход видеокарты для живого заходa или null — тогда рисует 2D */
+function lgGpu(){return (typeof GPU!=="undefined"&&GPU.ok&&GPU.on&&GPU.enc)?gpuNext():null;}
+/* мягкое пятно цвета col ("r,g,b"): спад 1 → .35 к середине → 0, холст на цвет (зарево захода) */
+const LG_GLOW={};
+function lgGlowTex(col){
+  let cn=LG_GLOW[col];if(cn)return cn;
+  cn=document.createElement("canvas");cn.width=cn.height=96;
+  const g=cn.getContext("2d"),gr=g.createRadialGradient(48,48,0,48,48,48);
+  gr.addColorStop(0,"rgba("+col+",1)");gr.addColorStop(.45,"rgba("+col+",.35)");gr.addColorStop(1,"rgba("+col+",0)");
+  g.fillStyle=gr;g.fillRect(0,0,96,96);
+  return LG_GLOW[col]=cn;
+}
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   tr.mat=planetMat(p);tr.p=p;
   sunDirSet(p);            /* свет идёт оттуда, где нарисован диск (M242) */
   WIND=windOf(p);
-  drawSkyBase(p);
-  if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
+  drawSkyBase(p,L.x,L.y);
   drawSkyLayer(p,L.x,L.y);
   const camx=L.x-W/2;
   /* ── садиться нужно НА ЧТО-ТО (M233) ──
@@ -317,14 +235,18 @@ function drawLanding(){
   const alt=Math.max(0,gyw-L.y-11);
   const fA=Math.max(Math.min(camy*.46+110,camy+H*.20),gyw-H*.72), fB=Math.max(Math.min(camy*.55+60,camy+H*.11),gyw-H*.80);
   if(alt>160&&p.T.atm!=="отсутствует"){
-    const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1];
+    const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1],gz=lgGpu();
+    if(gz)gpuShapes(gz,[[8,0,0,W,H*.62,0,0,s1[0],s1[1],s1[2],hi]],{blend:"over"});
+    else{
     const zg=ctx.createLinearGradient(0,0,0,H*.62);
     zg.addColorStop(0,"rgba("+s1.join(",")+","+hi.toFixed(3)+")");
     zg.addColorStop(1,"rgba("+s1.join(",")+",0)");
     ctx.fillStyle=zg;ctx.fillRect(0,0,W,H*.62);
+    }
   }
-  drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},camx*.26,fA,hazeFar(p,.58),null);
-  drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.4,fB,hazeFar(p,.32),null);
+  /* гряды — поле видеокарты (19g): форма, зерно, подошва в воздухе; слой поверх
+     небесных тел и облаков, дымка горизонта ляжет уже на него */
+  lgRidges(p,tr,camx,fA,fB);
   /* ── дымка ложится на ГОРИЗОНТ, а не на 46% кадра (M233) ──
      Полоса стояла на постоянной высоте экрана и на подходе с высоты висела
      ровной горизонтальной чертой посреди пустого неба — та самая линейка, от
@@ -343,7 +265,10 @@ function drawLanding(){
     if(k>.02){
       const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)?hex2rgb(G.sys.cls.col):[255,214,150];
       const wc=[Math.round(sc[0]*.4+153),Math.round(sc[1]*.4+120),Math.round(sc[2]*.3+70)];
-      const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04;
+      const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04,gw=lgGpu();
+      /* на видеокарте — пятно, растянутое в тот же эллипс, сложением */
+      if(gw)gpuImage(gw,lgGlowTex(wc.join(",")),[{x:gx,y:gy,w:W*.72,h:H*.32,a:k}],{blend:"add"});
+      else{
       const g=ctx.createRadialGradient(gx,gy,0,gx,gy,W*.36);
       g.addColorStop(0,"rgba("+wc.join(",")+","+k.toFixed(3)+")");
       g.addColorStop(.45,"rgba("+wc.join(",")+","+(k*.35).toFixed(3)+")");
@@ -351,6 +276,7 @@ function drawLanding(){
       ctx.save();ctx.globalCompositeOperation="lighter";
       ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(gx,gy,W*.36,H*.16,0,0,TAU);ctx.fill();
       ctx.restore();
+      }
     }
   }
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
@@ -361,6 +287,13 @@ function drawLanding(){
   drawDeco(tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   drawDustMotes(camx,camy,p);
+  /* тень растёт навстречу кораблю: высоту чувствуешь землёй, а не альтиметром
+     (П6). Тень, тень неба под брюхом и свет факела на грунте — поле видеокарты
+     (19g): тень ложится по рельефу от звезды, свет умножает цвет земли */
+  lgUnder(L,tr,camx,camy,p);
+  /* площадка — после слоя под кораблём: в сегменте gpuOver насыщенный 2D-цвет у
+     единицы становится источником свечения (08b emit), и её янтарная кромка
+     горела бы днём полосой. Тень корабля на неё не ложится — она в четыре пикселя */
   /* ── коридор — это свет, а не чертёж (П6 марафона; долг «approach = CAD») ──
      Пунктирная вертикаль в три тысячи пикселей была линией из чертёжника.
      Посадочную систему видно иначе: узкий столб света над плитой, шире и
@@ -368,7 +301,22 @@ function drawLanding(){
      и оно само показывает, куда садиться; плита — тело с тёплой кромкой и
      двумя огнями по краям. Столб — одна узкая трапеция, кадру дёшево. */
   const px=tr.padX-camx,py=tr.padY-camy;
-  {
+  const gc=lgGpu();
+  if(gc){
+    /* столб — стопкой полос: ширина трапеции по высоте, прозрачность сверху вниз */
+    const hUp=H*.85,SH=[],n=16;
+    for(let i=0;i<n;i++){const u0=i/n,u1=(i+1)/n,hw=10+26*(u0+u1)/2;
+      SH.push([8,px-hw,py-hUp*u1,px+hw,py-hUp*u0,.11*(1-u0),0,242,178,92,.11*(1-u1)+.001]);}
+    const u=(G.t*.22)%1,ry=py-hUp*(1-u);
+    SH.push([1,px,ry,1.5+u*1.5,0,0,0,255,220,150,.10+.5*u*u]);
+    SH.push([0,px-46,py,px+46,py+4,0,0,16,20,26,.9]);
+    SH.push([0,px-46,py-1,px+46,py+1,0,0,242,178,92,.85]);
+    for(const sx of [-46,46]){
+      const bl=.5+.5*Math.sin(G.t*.05+(sx>0?0:Math.PI));
+      SH.push([1,px+sx,py-2,1.8,0,0,0,255,214,150,.35+.5*bl]);
+    }
+    gpuShapes(gc,SH,{blend:"over"});
+  }else{
     const hUp=H*.85;
     const g=ctx.createLinearGradient(0,py,0,py-hUp);
     g.addColorStop(0,"rgba(242,178,92,.11)");
@@ -392,21 +340,13 @@ function drawLanding(){
       ctx.beginPath();ctx.arc(px+sx,py-2,1.8,0,TAU);ctx.fill();
     }
   }
-  /* тень растёт навстречу кораблю: высоту чувствуешь землёй, а не альтиметром
-     (П6) — у самой земли тень собирается в полный размер под брюхом */
-  {
-    const gy=groundAt(tr,L.x);
-    const alt=clamp((gy-L.y)/620,0,1);
-    if(alt<.96)groundShadow(L.x-camx,gy-camy+1,
-      landerLen(G.shipId)*.46*(1-alt*.62),8*(1-alt*.55));
-  }
+  /* корабль: выпечка тела под светом мира — в том же проходе, что и тень под ним
+     (19g), с факелами и пылью из-под струи; поверх — живое 2D: дым побитого корпуса */
+  lgLander(L,tr,camx,camy,p);
   ctx.save();ctx.translate(L.x-camx,L.y-camy);ctx.rotate(L.a);
   drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0,
-    {gear:L.gear,sq:L.sq,hot:L.hot,landed:L.over>0&&L.ok,tr:tr,gx:L.x});
+    {gear:L.gear,sq:L.sq,hot:L.hot,landed:L.over>0&&L.ok,tr:tr,gx:L.x,gnd:true,live:true});
   ctx.restore();
-  /* пыль из-под струи на подходе: чем ниже, тем гуще. Без неё грунт до самого
-     касания оставался нетронутым, и посадка не чувствовалась тяжёлой */
-  landingDust(L,tr,camx,camy);
   drawWeather(p,camx,camy,"near");
   lightShafts(p);
   gradePass(p);

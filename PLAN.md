@@ -11,8 +11,8 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 - **One worker** on his own branch from `main`, commits in batches locally; Контроль pushes.
 - **The game first.** Stages 2 → 7 (§3–§8) in plan order; inside a stage the mechanic and the play first, the
   picture as a draft. The seams of §9 bind every item. The engine (§0) goes on, but not first.
-- **No tests along the way.** Before each release: a graphics pass with the author, then the whole run
-  (`test.ps1`, `-Full`, `-Mobile`, `-Mutants`).
+- **No tests along the way.** Before each release: a graphics pass with the author, then the gate
+  (`test.ps1` — build, the core, the vision — and `-Full`).
 - **A release point after each stage.**
 - **A fork in the design:** take the cautious variant and list it under «Disputed» in the stage's patchnote, so
   the author can overturn it.
@@ -43,34 +43,17 @@ occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py
 
 The game's stages (§3–§8) wait for the author's word; Контроль asks once P1 passes and the fleet has landed.
 
-- [ ] **In flight** — each release deletes its line here:
-  - the fleet (its own session: the cloud's zones into main) — engine stage 2, the other modes, G6–G13 as the zones
-    drew them: landing and surface, cave, the belt rocks and the raid in `gpuScene3D`, the road, the map, life. It
-    lands after its tests, whole-frame pairs and six regressions (the pairs 26.09: the belt, «Сорока», the raid,
-    the spa, the surface by day and winter better; worse and fixed before it lands — the lamps in five scenes
-    going white and losing their cones, the base's strip of sky with the ridge, the map's milky core and glare,
-    the scoop's lilac giant gone brown, the cave's turquoise), with its census of 2D calls after `gpuWorld` at 0
-    (its census 26.09: 0 in all 25 scenes; what is still drawn before `gpuWorld` is G15 below). After it the tour (NEYEL, Коммуна, wrecks, rescue, drones, «Сорока», belt, hotel, planet,
-    dock) is rerun and every flight item stays at 0;
+- [ ] **After the fleet's landing (0.484.0)**: the tour (NEYEL, Коммуна, wrecks, rescue, drones,
+  «Сорока», belt, hotel, planet, dock) is rerun and every flight item stays at 0; the night surface owes an
+  A/B/A at 760 on a quiet PC (the S23 A/B against 0.480.0 is level: 58–60 fps, p99 16.8 ms in all five scenes);
 - [ ] **Redraw passes** (§L.S), each closed by a pair of the WHOLE frame at 760 and 390:
   - ships in real light (the worker, `gpu-ships`): a, b, c, d, e, g landed in 0.471.0, h (makerRead on the
     engine's picture) on gpu-f (f's last try, the keels by the emission mask, gave no visible gain; the 0.471.0 keels stay);
   - the flight HUD as a quiet instrument (a–g): one pair at 390×844 and 760 to the author for a verdict before any
     other screen;
-  - the nebula much better (GPU-2; the author 26.09: «туманность хуже не будет, она должна прям быть лучше на много,
-    потому что сейчас она хорошая»). The look first, the price after: three candidates at any cost on the PC, each a
-    pair of the whole frame against the live release (standing by the star, in flight at v 8; 760 and 390; a ×3
-    crop); the best one goes to the author before it ships; only what reads clearly better at first sight, never «a
-    bit different». The 24.09 rules hold (no threshold contour; dust 10→90 % over ≥ 40 px at 760; a change of tone
-    over ≥ 150 px; field S ≈ .40–.45, no neon). Directions: depth that reads (far layers cooler, dimmer and softer;
-    forward scattering — the gas between us and the star rimmed against the light); fine wisps inside the lit gas
-    with soft mass edges; a slow flow (curl noise, seen over 10–20 s, never a flicker); young stars inside (soft
-    cavities, a blue reflection haze, the brightest knots in HDR with a soft halo); the palette turned round the
-    wheel, each system its own character. Round 1 (26.09): none much better — C1 (far layers turned to lilac) right
-    but timid, the 390 pair reads the same and the lilac is grey; C2 (LIC wisps) creased, dark grooves and a straight
-    fold, which is a threshold contour; C3 (knots) dropped. Round 2: one candidate — C1 bolder and clean (far layers
-    darker and colder, the mass lit from the star's side), C2 as bright strands along the flow, ionisation zones
-    (cold near the star, warm further out, ≥ 150 px) — with a strength knob, the 390 pair telling apart unprompted;
+  - the nebula's strands smoothed in time (GPU-2; «смело» round 3 of 26.09 sat on the unpushed gpu2-lit branch and shipped only in 0.492.0): in flight at 390 and
+    150 px/s the strands add a jitter tail — 0.03 % of the bright gas over 4 grey levels, max 6.7 (the site 3.8);
+    the jitter per unit of gas brightness already equals the site's. Gate: that tail at the site's, the look kept.
 - [ ] **Heat margin** — on the S23 the frame's price is the nebula (2.6 + 1.2 ms of 8.6), then the star's corona
   (≈ 0.65 ms, only if the heat gate asks for it):
   - the nebula's regeneration (GPU-2). Step 1 (a826a27a, gpu2-lit): standing, age 6 with a linear cross-fade — the
@@ -149,6 +132,13 @@ The game's stages (§3–§8) wait for the author's word; Контроль asks 
   profile shows hitches on bake frames.
 - [ ] **G14 the rest:** the postcard painter on the GPU if it reads better; the `gfx` options of the 2D era
   (resolution tricks, `draw`) reviewed — keep what still means something.
+- [ ] **Design control and pass over the cloud fleet's ports** (the author, 25.09: «тут в облаке дорабатывать не
+  будем … нужен будет дизайн контроль и проход»). The fleet (`docs/fleet/README.md`, branches `claude/gpu-*`,
+  merged into `claude/optimistic-gates-u46osn`) moves the 2D modes onto the GPU without polishing the look on
+  SwiftShader. After it: Контроль shoots every ported mode as a whole-frame `main | gpu` pair on the laptop and
+  the S23, and a design pass brings each to the bar «графика должна быть лучше после переделки, прям пиздатой»;
+  the ships' notes (`docs/fleet/<ship>.md`) list, per scene, what to look at. First seen: the map's pair is
+  hardly different at 760 px; winter reads clearly better.
 - **Gate:**
   - every mode drawn by WebGPU with zero validation errors on the laptop and the S23;
   - each step closed by a `main | gpu` pair of the WHOLE frame, scaled to 760 px wide, visibly better at first
@@ -266,6 +256,13 @@ measured on the GPU build first:
 - [ ] **M457 sound (rest):** an ear pass on the six motifs (the AnalyserNode check of `docs/VERIFY.md` at a
   release run).
 - [ ] **M480/M481 yards (rest):** calibration by the worlds oracle and the стрельбище (release run).
+  Started 28.09 (recovered 08.10 from the unpushed `game` branch of the old `drift-design` clone; its probe
+  `tests/91zzzzk7-yard-probe.js` lives only there): **worlds** is usable — a heavy wide hauler pays for itself in one
+  best one-hop run at every yard except Коммуна (two, hold −15 %); Компания is −15 % price with no number against it,
+  its limit (КБ billing) is not in the stats. **The стрельбище is not trustworthy yet**: six duels against a rank-2
+  pirate (160 hp) kill nothing in 60 s at any yard, and the damage taken does not follow hull size (Хай-Фронт loses
+  less than the base). Fix the duel first (aim, `g.range`/cone, the `weapon` mod tier, pirate flight), then read hull
+  against price. No yard number has been moved.
 
 ## 8. Stage 7 — the giants
 
@@ -273,18 +270,14 @@ measured on the GPU build first:
 ## 9. Seams to honour when the items above are built
 
 Check each against the code before building — some may already hold.
-- **Drones and the far goods (M465):** drones never mine band-2/3 goods and sell band-1 goods at the band
-  price (½) — otherwise a drone on a rim жила prints money offline.
-- **The stamp and the metro (M453, M473):** a stamp lands only on arrival by jump or on ВЫЙТИ, never on a
-  stop passed through; the ring's «Стыковка?» hail fires only when heading into the ring.
-- **The first hour (M452, M472):** the замполит hands the newcomer one жетон («первый — за счёт трассы») —
-  the metro is met in the first hour, not found.
-- **Rescue and rails (`16c-rescue`):** a dry ship at a rail stop gets a third exit beside ДОМОЙ / БУКСИР —
-  НА МЕТРО, a ticket home for its fare.
-- **The scheme's scope (M470):** your line, the rings it meets and their neighbours; pinch/scroll for more —
-  never the whole infinite net. «Край» is per player.
+- [ ] **Metro board against the fare (Контроль, 28.09; recovered 08.10):** the board says «МЕТРО · Линия 3», but
+  the ticket to «Рациорн» is not at the metro fare and the token does not work on it. Chosen: the fare stays by zone
+  (both ends inside `RAIL_METRO_R`). The board calls a line МЕТРО only when all its stops lie inside the circle,
+  otherwise ЭЛЕКТРИЧКА — today `18f` decides it per station (`S.metro`), not per line.
+- [ ] **«КРАЙ» over a stop name** next to «ВЫ ЗДЕСЬ» on the scheme (sector 6,1, phone; recovered 08.10). Give it
+  the same collision check the stop labels use.
 - **Replays (0.1, P9):** the fixed step and the seeded entry angle each move every recording and same-hash
-  suite once — one `-Accept` per change, named in the patchnote, `91zzzzzzzzb-replay` re-based.
+  suite once — `91zzzzzbb-samehash` re-based in the same commit, named in the patchnote.
 
 ## 10. Tests and tooling
 
@@ -292,21 +285,13 @@ Check each against the code before building — some may already hold.
   (`wanderBuy`/`wanStep`, 24c); the clock out of `stateHash` (`08a-statehash`, ~79 `mixN(now())` — decided
   11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl` into
   hashed state.
-- [ ] **Watch:** the quarantined «рейсы» — Омксиий (±3:∓1): «посадка: заход кончился режимом system»
-  (23.09, Node and `-Mobile`); «кольцо дороги: отправок ровно по одной» (gate «полёт по переписи») went red
-  once in a whole run for GPU-3 (25.09), neighbour unknown — does not reproduce at 66b51af6 (alone, and the
-  gate set under `-Shuffle 1..3`); «прогоны: двенадцать путей» flickered once under load; «свет: звезда — самое
-  светлое» went red once in the pane (the cumulus, `CLOUDS_OFF`) — one look.
-- [ ] **Nets owed (M443–M446):** `TEST_T0` at local noon; a drawn-vs-undrawn hash detector; the tools'
-  self-test before the net; not caught yet — the .55 auto-brake, the money-printing counter, idle drones;
-  partial — helm switching, sharpness at DPR 1, contrast under a vignette; goldens per platform once the lab
-  runs; M444 the cooperative walk, drags/wheel, the map per window; M445 a `DPR=.5` mutant; M446 a
-  previous-version diff and `look()` telemetry; a per-suite dirty-page check after `fn()`.
+- [ ] **Watch:** «прогоны: двенадцать путей» flickered once under load.
+- [ ] **Nets owed:** `TEST_T0` at local noon; not caught yet — the .55 auto-brake, the money-printing
+  counter, idle drones; a per-suite dirty-page check after `fn()`.
 - [ ] **Refactor queue, each a commit:** `detStuck`'s key law (fires only on a diff of exactly 0 — soften
   with the silence table); a shard that hangs now and then (`--enable-logging=stderr` on laptop runs so it
   names its suite; a part that fails by timeout names the last suite it started); the source net is line-based and the clock law skips `tests/` (41 raw calls); long
-  functions, on touch only; the tools zoo → one way to take a frame; the button family merge; `-Times` for
-  the Node tier.
+  functions, on touch only; the button family merge; `-Times` for the Node tier.
 - [ ] **The lab:** stopped since 11.09 (CPU 57 % of a day against 50 %) — a CPU budget per session before any
   restart. The author 26.09: it comes back on the author's own server («сервак будет, будем крутить») and is
   the nightly visual tour as well — every zone framed against the reference, a morning page «what changed
@@ -315,66 +300,12 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
-- [ ] **Whose voice on the approach:** the lane — billboard, hotel, parked fleet — dresses by the station's
-  builder (`st.by` in `sysLane`), while laws and stamps go by the land's owner (`stampOwnerAt`); in Итлуора
-  a ГЛАВТРАССА billboard stood in Орднунг land. Decide which one speaks (M454 gives the body to the
-  builder, M460 gives the sign to the owner).
 - [ ] **`03e-hull-draw.js` grew to 49 KB** with the yard marks: move the hull's marks (scars, transit plate,
   seal, yard mark) to their own module along that seam.
 - [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,
   330 behind), `drift-lab` (an uncommitted `site/war.js`), `drift-t1`, `drift-t2`, `drift-tests` (still
   since 12.09) and the main checkout `C:\Claude\files` (236 behind) — see what is unmerged, then refresh
   or remove.
-
-## 12. Economy audit (23.09) — holes read from the code, and the seams that close them
-
-Read solo on 0.456.0: `12-economy`, `12ab-hold`, `12aa-need`, `12aj-coop`, `12l-barge`, `13b-occupy`,
-`12al2-laws`, `17k1-gosplan`, `12c-mgr-core`, every `earn()` caller and all ~70 deductions of
-`G.credits`. Nothing changed; each item below names the fix it wants. The net owed in §10 («the
-money-printing counter») is the gate here. Ranked by weight.
-
-- [ ] **The liberation prize repeats for one system** (`13b-occupy` `occKill`): 2400 + danger × 9000
-  every time a system falls to level 0; a freed neighbour of a nest is re-occupied by `occTick` and
-  re-freed for three kills, and pirates respawn on every entry (15-min seed bucket). The largest faucet
-  in the game, several times the 200 кр/мин of trade. Pay in full once per system (a set like
-  `G.gosDone`), half and fading after — or only while the nest is suppressed.
-- [ ] **The hotel repairs for 12 кр** (`17l-hotel` `hotelDesk`): +10 % hull per press, `HOTEL_NIGHT` 12,
-  no cooldown; the dock takes 14 кр per hp. Keep the kindness under a third (review 14.09); one night
-  per game day per station, and the night priced near half of the dock's same tenth.
-- [ ] **«Bought here, handed in here» at the plan and the order:** the appetite is guarded by
-  `appetiteGotHere` (M331); the state order (`17k1-gosplan`, 1.3 × table price, handed in at the same
-  station) and the order (`12aa-need`, 1.5 × table + 120 per sector, delivered where the cooperative
-  can buy) are not; the expedition counter (`11x`) the same, nearly cancelled by ask and ×1.25. One
-  ledger «bought here this shift» read by all four, one net.
-- [ ] **«Per visit» means per docking** (`26-ui-station` `openStationBody`: `lawDock`,
-  `scripVisitReset`, `coopVisitReset`): undock and dock again resets the cooperative cap 60/150, the
-  40 bons and the ГЛАВТРАССА норма's 20 fuel at 1 кр. Key a visit on (station, `holdShift()`).
-- [ ] **The escort advance without an obligation** (`12l-barge` `bargeEscortAccept`): 200 + 3 × cap
-  (470–890 кр) at once; failure only when the barge sinks, leaving the system counts as success. Half
-  at accept, half at the destination; leaving with the contract fails it.
-- [ ] **The balance goes negative and the reload forgives it:** `12b-crew-events` seized
-  (1.4 × gross + 400) and barvdebt (120 + .6 × gross) subtract without a floor — the only two of the
-  ~70 deductions; `14a1-save-rest` clamps to 0 on load, so the debt vanishes with a restart. Either a
-  floor as in `lawDock`, or a real debt (ПАЛАТА already keeps `P.debt` for bases).
-- [ ] **Sale multipliers multiply** (`marketPriceCtx`): need ×2, monopoly, expedition, power ×1.25,
-  embargo, strike, spy, then blockade ×2 in `sellCargo` — only pressure and appetite add inside the
-  clamp, though the comment promises no multiplying; need in a blockade is ×3.1 on food. Take the max
-  of need and blockade, and cap the product.
-- [ ] **Smaller seams:** a drone in a need system sells at ×2 the whole window and never closes it
-  (`sellDroneYield` skips `needClose`); the drone picks its market by seen prices and sells at live
-  ones; an order's deadline runs from the window's end, so one taken late leaves 2–3 game minutes for
-  2–8 sectors (count `due` from the taking); the factor's margin floor .05 scales with perk volume, so a
-  maxed factor prints ~200 кр/мин whatever the market; `evacuate()` in `21-mode-surface` has no
-  callers (dead — the live path is `16c-rescue`).
-- [ ] **Owed from the audit of 4.09 (`docs/ECONOMY-AUDIT.md`):** the probe that moves to another leg
-  when one goes negative (§6, never written); pressure decay on real time (A4) — a player back after
-  two hours of play finds the same floor next day.
-- **Gate:** three nets in «деньги не печатаются»: freeing the same system twice pays at most half the
-  second time; buying and handing in at one station for the plan or the order never nets positive; the
-  balance is never below zero after any row of the hired hands' event table. Found sound and left
-  alone: the counter (ask on buying, pressure after selling, slices, spread), far goods sell-only,
-  barges (sell above and buy below the destination, budget-capped), scrip (12 % round trip), the drone
-  price 1.6ⁿ, people paid only online, the loan since 0.409.1.
 
 ## 13. Outside the game — audience and money (parked; the author 26.09: «запиши куда-нибудь, потом решим»)
 
@@ -422,3 +353,29 @@ Nothing here is started without the author's word; each item is a decision of in
   trial), bindless (a proposal). `shader-f16`: our S23 grants it and it costs 6 % — stays off. Transient
   attachments (Chrome 146) help only attachments not sampled after the pass (MSAA, depth), not our nebula or glow
   targets.
+
+## 15. Branch `space` — parts on the mounts and every screen (M726–M729)
+
+The author, 06.10: «кучу деталей смоделировать и чтобы ставить на подвесы на корабли и интерфейс чтобы в слоты
+вставлять … кантина еще, короче все интерфейсы давай делай, и не жалей там деталей отрисовки, прям жирным
+слоем … в стиле ААА». Worked in `C:\Claude\drift-space`, released by the usual procedure. Design and laws:
+`docs/DESIGN-space.md` «Parts on the mounts» and «The interface».
+
+- **M729 People — the generator for every NPC.** The author, 07.10: «Сделай портреты анимированные с эмоциями,
+  людей еще проработай скафандры пиджаки все такое, по детальнее, потом будем как НПС использовать везде генератор
+  такой … он должен тоже процедурно челиков генерировать». One generator from a seed and a brief (job, house, age):
+  face, body, hair and a wardrobe — spacesuit with helmet and pack, suit and tie, coverall, coat, lab coat, leather,
+  uniform — each with its own layers of detail. Then every place that shows a person takes it: HQ
+  (`27f-hq-room.js` still paints `mgrFace` in 2D), crew, story people, the road. Done in 0.491.0: the sculpted face
+  and live portraits with six emotions (`docs/DESIGN-space.md` «The face»). Left: the wardrobe, `npcMake(seed,brief)`
+  (job, house, age, `fem` only from a brief — managers' text is masculine), `cpEmote` on events (hire, refusal,
+  hover), the places above; and the face's own rest — eyes a touch larger and less doll-like, an ear with a tragus,
+  hair with volume instead of a cap.
+- **M726 The station, finished.** Line icons for sections and goods, the state order as a card with progress, the own
+  ship's thumbnail in the ship column, keycaps on actions, «КОРПУС ЦЕЛ» as a state and not a button.
+- **M727 Every other window** in the same kit: СТОЛ, ДЕЛО, crew, HQ, barge, prices, settings, menu, SOS, road.
+- **M728 Flight HUD, finished**: the receiver as a compact plate, the rail grouped, world tags with leader lines,
+  one bottom line, readable pod labels.
+- **The parts' bill on the phone.** Gear multiplies a hull's vertices 3–5× (topor 14k → 34k, mamont 5k → 29k; a
+  build costs 2–3.5 ms on the PC, at most one per frame). The P1 gate measures it with the release; if it costs,
+  a lighter stock fit for small distant hulls.

@@ -53,6 +53,22 @@ this file keeps the evidence and the fix.
   suite that stamps game state must use `now()`, never `Date.now()`/`performance.now()` — a
   stamp on the real clock is hours away from the pinned one (the helm, HUD and ghost-click
   suites broke exactly that way). `wallMs()` stays the real, frozen-in-a-block clock.
+- **The Chrome test tier waited two minutes for nothing (fixed 27.09.2026).** `test.ps1` ran
+  `chrome --dump-dom --virtual-time-budget` and waited for Chrome to exit. On the new PC every
+  part had its report at 10–35 s, but the installed Chrome then hung at exit for 70–120 s: it
+  waits for the Google Update service (`Failed to connect to remote mojo service … scope:
+  System` ends the silence). So `-Browser` took 146 s for 26 s of work, and no test audit saw
+  it, because every clock was inside the page. Now `test-chrome.js` drives the page over the
+  DevTools protocol. It sets the same virtual-time budget, reads the DOM the moment the budget
+  expires, and closes the browser with `Browser.close`. The browser is Chrome for Testing,
+  pinned in `test.ps1` (`$CFT`, unpacked under `C:\Claude\tools\chrome-for-testing\`). It has
+  no updater, and its version does not drift under the golden frames. Two traps with it:
+  - It does not run `--dump-dom` at all.
+  - Without `--disable-field-trial-config` it switches on Chromium's experimental features.
+    That broke the postcard's pixel-exact repeat in 6 checks.
+
+  If one part of a run takes far longer than the work its log shows, look for where the log
+  goes quiet before you blame the suites (see `gaps` in the stderr log).
 - **Never measure the frame with `--virtual-time-budget`.** It fast-forwards
   timers, so the probe measures the fast-forward. `docs/g11.ps1` runs `?g11`
   correctly; it also leaves the GPU on, because `--disable-gpu` reads ~10 fps in
@@ -97,10 +113,10 @@ this file keeps the evidence and the fix.
   `src/`, `site/`, `tests/`, `build.ps1`): republish with `deploy.ps1 -SkipBuild` after checking that
   `md5sum drift.html` equals the committed one.
 
-- **Test output through a Bash redirect is mojibake** (12.09.2026): `test.ps1 … > file` from Git Bash
-  writes the Cyrillic in the OEM code page and `grep "✗"` finds nothing in a red run. Capture it as
-  `powershell -Command "& { .	est.ps1 -Full -NoBuild 2>&1 | Out-File -Encoding utf8 F }"` and read
-  the file with `PYTHONIOENCODING=utf-8 python`, selecting the «✗»/«ИСКЛЮЧЕНИЕ» lines.
+- **Test output through a Bash redirect was mojibake** (12.09.2026, fixed 27.09.2026): the console
+  code page (cp866, cp437 on the new PC) ate the Cyrillic and `grep "✗"` found nothing in a red run.
+  build.ps1, test.ps1, dev.ps1 and bird.ps1 now switch the console to UTF-8 on start, so `> file`
+  is plain UTF-8: select the «✗», «EXCEPTION» and «SUITE CRASHED» lines.
 
 - **Claude Desktop updates itself at night and restarts** (14.09.2026, 04:00). The Microsoft Store
   serviced the package `Claude_1.52386.6.0` over the running app: the Claude VM Service was stopped

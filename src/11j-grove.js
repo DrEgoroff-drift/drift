@@ -118,18 +118,20 @@ function groveVisit(){
 }
 /* ── вид ──
    После камней: зелёный ореол на каждом наросте, ярче, когда идёт к тебе.
-   Своего языка нет — тот же свет памяти, что у луга (PEEP_LIT). */
+   Своего языка нет — тот же свет памяти, что у луга (PEEP_LIT).
+   G6: ореол был кругом «lighter» поверх камня — наклейкой. Теперь нарост —
+   источник света (placeLamp, 11va): он сам светится по своей поверхности,
+   соседние камни ловят зелёное той стороной, что к нему, а сердце ореола
+   ярче единицы, и свечение кадра даёт ему дышать. Один проход на всю рощу */
+const GROVE_LIT=[150/255,235/255,180/255];
 function groveDraw(b,proj){
   if(!b.grove||!b.grove.length)return;
-  ctx.save();ctx.globalCompositeOperation="lighter";
   for(const a of b.grove){
     const p=proj(a.x,a.y,a.z);if(!p)continue;
     /* proj отдаёт {x,y,z}: масштаб — фокус на глубину, как у камней */
     const sc=Math.min(W,H)*.95/p.z;
     const rr=Math.max(3,a.r*sc*1.35),al=(.22+.4*(a.gl||0))*clamp(1-p.z/2600,.1,1);
-    const g=ctx.createRadialGradient(p.x,p.y,rr*.3,p.x,p.y,rr);
-    g.addColorStop(0,"rgba(150,235,180,"+al.toFixed(3)+")");g.addColorStop(1,"rgba(150,235,180,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,rr,0,TAU);ctx.fill();
+    placeLamp(p.x,p.y,rr*2.6,GROVE_LIT,al*1.6,-rr);
   }
-  ctx.restore();
+  placesGlow();
 }

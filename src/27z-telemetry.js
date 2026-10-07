@@ -28,7 +28,40 @@ let HUD_BAND=72;
    кр», а правый борт въехал в угол карточки (замер 30.08.2026).
    HUD_FLOOR — верх самого верхнего из нижних наложений, HUD_RAIL — левый край
    правого борта. Обе величины в CSS-пикселях, как и координаты рисования. */
-let HUD_FLOOR=0, HUD_RAIL=0;
+let HUD_FLOOR=0, HUD_RAIL=0, HUD_RAILTOP=0;   /* верх правого борта — низ открытой стойки над ним (25d) */
+/* низ верха карты — ряда адреса и шапки (--mapbar, 0 — не карта; кладёт раскладчик 18a): под ним
+   встаёт строка сообщения. HUD_LKEY — режим, классы тела и подписи ряда: при их смене полосы
+   меряются заново */
+let HUD_MAPBAR=-1, HUD_LKEY="", HUD_MAPROW="";
+/* ── строка сообщения на карте (зрение 06.10.2026) ──
+   По центру под верхом карты (--mapbar), пока под ней свободно. На низком окне до пульта места нет
+   (780×360: от ряда до приёмника 28 px, а строк две) — тогда колонкой слева, под шапкой, шириной до
+   ближайшего препятствия: ряд адреса, пульт, борт. Не встала и там — остаётся по центру. Решается
+   при смене текста и раскладки, а не каждый кадр: каждая проба — вёрстка */
+let HUD_MSGKEY="";
+const HUD_MSGOBS=["#console","#mapaddr",".rail","#ipod",".pads",".vitals",".locus"];
+function hudMsgPlace(){
+  const T=typeof MAP_TOP!=="undefined"?MAP_TOP:null;
+  const on=G.mode==="map"&&!!T&&!!$msg.textContent&&!document.querySelector(".scr.open");
+  const key=on?$msg.textContent+"|"+HUD_LKEY+"|"+innerWidth+"x"+innerHeight+"|"+Math.round(T.floor)+"|"+Math.round(T.hb):"";
+  if(key===HUD_MSGKEY)return;HUD_MSGKEY=key;
+  const reset=()=>{for(const p of ["left","top","maxWidth","transform","textAlign"])setSt($msg,p,"");};
+  reset();if(!on)return;
+  const obs=[];
+  for(const s of HUD_MSGOBS){const e=document.querySelector(s);if(!e||!e.offsetWidth)continue;const r=e.getBoundingClientRect();if(r.width>0&&r.height>0)obs.push(r);}
+  obs.push({left:T.hx-4,right:T.hx+T.hw,top:T.hb-26*mapU(),bottom:T.hb});   /* шапка — холст */
+  const fits=()=>{const r=$msg.getBoundingClientRect();
+    return r.bottom<=innerHeight-4&&$msg.scrollHeight<=$msg.clientHeight+1&&
+      !obs.some(o=>r.left<o.right+4&&r.right+4>o.left&&r.top<o.bottom+4&&r.bottom+4>o.top);};
+  if(fits())return;
+  const k=(typeof UIK==="number"&&UIK>0)?UIK:1,U=mapU(),x0=MAP_RUL*U+8,top=Math.max(T.hb,mapRulerTop()+14*U)+4;
+  setSt($msg,"left",(x0/k).toFixed(1)+"px");setSt($msg,"top",(top/k).toFixed(1)+"px");
+  setSt($msg,"transform","none");setSt($msg,"textAlign","left");
+  /* правый край — у левой кромки препятствия: от дальнего к ближнему, пока строка не встанет */
+  const xs=[...new Set(obs.filter(o=>o.left>x0+60).map(o=>Math.round(o.left-8)))].sort((a,b)=>b-a);
+  for(const x1 of xs){setSt($msg,"maxWidth",((x1-x0)/k).toFixed(1)+"px");if(fits())return;}
+  reset();
+}
 const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
 /* узлы, которые hud() искал заново каждый кадр (0.3): в index.html они стоят
    всегда, и поиск по селектору под пальцем набирал 4–5 мс в секунду на пустом месте */
@@ -151,7 +184,24 @@ function hudFloorMeasure(force){
      const band=Math.max(vb,lb);
      if(band>0){if(HUD_BAND!==Math.round(band))document.documentElement.style.setProperty("--hudband",Math.round(band)+"px");HUD_BAND=Math.round(band);}
    }
-   let fl=innerHeight,rl=innerWidth;
+   /* место пульта связи (M720): слева внизу, по центру внизу или над плитами — по тому, где ряд
+      пэдов оставил место, а не по составу ряда (на карте тормоз и тяга поднимали пульт в середину
+      карты при свободном низе). Мерка ширины пульта от его места не зависит — петли нет */
+   const con=document.getElementById("console");
+   if(con&&$padsEl){
+     const cw=con.getBoundingClientRect().width,u=(typeof UIK==="number"&&UIK>0)?UIK:1,gap=12*u,WW=innerWidth;
+     const bs=[];for(const b of $padsEl.querySelectorAll("button")){const r=b.getBoundingClientRect();if(r.width>0&&r.height>0)bs.push(r);}
+     const free=(x0,x1)=>!bs.some(r=>r.left<x1+gap&&r.right>x0-gap);
+     /* три места по очереди: у левой кромки, сразу за левыми пэдами (A/D), по центру */
+     let lx=16*u;for(const r of bs)if(r.right<WW/2)lx=Math.max(lx,r.right+gap);
+     const xs=[16*u,lx];let x=-1;
+     for(const c of xs)if(cw>0&&c+cw<WW/2+cw/2&&free(c,c+cw)){x=c;break;}
+     const mid=x<0&&cw>0&&free((WW-cw)/2,(WW+cw)/2);
+     if(x>=0){const v=Math.round(x/u)+"px";if(document.documentElement.style.getPropertyValue("--conx")!==v)document.documentElement.style.setProperty("--conx",v);}
+     document.body.classList.toggle("conleft",x>=0);
+     document.body.classList.toggle("conlow",x>=0||mid);
+   }
+   let fl=innerHeight,rl=innerWidth,rt=0;
    /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
       подсказка и правый борт стоят position:fixed, а у таких offsetParent
       всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
@@ -166,11 +216,13 @@ function hudFloorMeasure(force){
    const rail=document.querySelector(".rail");
    if(rail){
      const r=rail.getBoundingClientRect();
-     if(r.width>0&&r.height>0)rl=Math.min(rl,r.left);
+     if(r.width>0&&r.height>0){rl=Math.min(rl,r.left);rt=r.top;}
    }
    if(HUD_RAIL!==Math.round(rl))document.documentElement.style.setProperty("--railw",Math.max(0,innerWidth-Math.round(rl))+"px");   /* ширина борта — для поля адреса (M347) */
-   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);
+   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);HUD_RAILTOP=Math.round(rt);
 }
+/* колпачки клавиш на пэдах: [элемент, действие] — собраны раз, чтения DOM в кадре нет */
+let $vShip=null,$padKeys=null;
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
@@ -241,7 +293,9 @@ function hud(){
      плашкой посреди мира; на буксире и под окнами её нет, как и было */
   if($zl){
     const bc=document.body.classList;
-    const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen");
+    /* цифра — повод, а не вывеска (M721): две секунды после того, как масштаб сдвинулся */
+    if($zl.__z!==G.zoom){$zl.__z=G.zoom;$zl.__t=wallMs();}
+    const zs=G.mode==="system"&&!G.haul&&!bc.contains("hailopen")&&!bc.contains("sosopen")&&wallMs()-$zl.__t<2000;
     $zl.style.display=zs?"":"none";
     if(zs)setTx($zl,"Масштаб ×"+decRu(G.zoom,2));
   }
@@ -265,7 +319,13 @@ function hud(){
   rescueSync();   /* открытое окно выходов сверяет себя с миром (16c) */
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
-  if(G.mode==="system"){a=(typeof nameOf==="function")?nameOf(G.sys):G.sys.name;b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;
+  /* имя корабля — в шапке плиты борта (M720), строка места говорит только место */
+  {const vs=$vShip||($vShip=document.getElementById("vShip"));if(vs)setTx(vs,"«"+st.S.ru+"»");
+    /* клавиша на каждом пэде — из живой раскладки (переназначение в настройках, пояс — своя) */
+    const sec=G.mode==="belt"?"belt":"main";
+    for(const [k,a] of ($padKeys||($padKeys=[...document.querySelectorAll(".pads kbd[data-a]")].map(k=>[k,k.dataset.a])))){
+      const c=actionKey(sec,a);setTx(k,c?keyLabel(c):"");}}
+  if(G.mode==="system"){a=(typeof nameOf==="function")?nameOf(G.sys):G.sys.name;b="сектор "+G.sx+":"+G.sy;
     /* тетрадь ветра («Сорока»): в строке места — когда парусник уйдёт */
     if(typeof wanderHas==="function"&&wanderHas("notebook"))b+=" · «Сорока» "+wanderLeftRu();}
   else if(G.mode==="wanderer"){a="На борту «Сороки»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
@@ -354,7 +414,10 @@ function hud(){
     const mk=document.getElementById("mapMarkGo");
     if(mk&&onMap&&typeof mapMarkAt==="function")setTx(mk,mapMarkAt(G.sel.x,G.sel.y)>=0?"СНЯТЬ МЕТКУ":"ОТМЕТИТЬ");
     const ly=document.getElementById("mapLayerGo");
-    if(ly&&onMap&&typeof mapLayerRu==="function")setTx(ly,mapLayerRu());}
+    if(ly&&onMap&&typeof mapLayerRu==="function")setTx(ly,mapLayerRu());
+    HUD_MAPROW=onMap?(mk?mk.textContent:"")+"|"+(ly?ly.textContent:""):"";
+    const mb=onMap&&typeof MAP_TOP!=="undefined"&&MAP_TOP?Math.round(MAP_TOP.floor):0;
+    if(HUD_MAPBAR!==mb){HUD_MAPBAR=mb;document.documentElement.style.setProperty("--mapbar",mb+"px");}}
   const wp=document.getElementById("wanwin");
   if(wp)setSt(wp,"display",G.mode==="wanderer"?"":"none");
   const pb=document.getElementById("pricesbtn");
@@ -375,8 +438,14 @@ function hud(){
   const msgOn=G.msgT>0&&!msgHeld();
   setTx($msg,msgOn?G.msg:"");
   setSt($msg,"opacity",msgOn?clamp(G.msgT/40,0,1):0);
+  /* зимовка: под строкой — мягкая подложка (style.css #msg.dim) */
+  $msg.classList.toggle("dim",G.mode==="winter");
+  hudMsgPlace();
   setTx($prompt,G.mode==="dock"?"":G.prompt);
-  setTx($bThr,G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲"));
+  /* на тяге значок, на грунте и в шахте — слово. Слову, как подписям прочих пэдов, свой <span>,
+     регистр предложения и кегль (.word): ПРЫЖОК капителью в 17 px был шире круга на телефоне в 320 */
+  if($bThr){const w=G.mode==="surface"?"Прыжок":(G.mode==="dig"?"Вверх":"");
+    setTx(padWord($bThr),w||"▲");if($bThr.classList.contains("word")!==!!w)$bThr.classList.toggle("word",!!w);}
   /* Кнопка называет то, что сделает, а не то, как она называется. «ДЕЙСТВИЕ»
      не отвечает ни на один вопрос игрока; «СТЫКОВКА» отвечает на все.
      Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
@@ -436,7 +505,7 @@ function hud(){
   $bBrk.classList.toggle("off",G.mode==="surface"||G.mode==="dig");
   if(G.mode!=="system"){
     setSt($bBrk,"display","");
-    setTx($bBrk,"ТОРМОЗ");
+    setTx(padWord($bBrk),"ТОРМОЗ");
     setSt($bBrk,"opacity","");
   }
   /* слово — в своём span: setTx по кнопке целиком стирал и значок */
@@ -458,15 +527,15 @@ function hud(){
   const fireOn=G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed);
   setSt($fire,"display",fireHas?"":"none");
   $fire.classList.toggle("off",fireHas&&!fireOn);
-  if(G.mode==="dig")setTx($fire,(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
-  else setTx($fire,"ОГОНЬ");
+  if(G.mode==="dig")setTx(padWord($fire),(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
+  else setTx(padWord($fire),"ОГОНЬ");
   /* ракета: на кнопке не «готово», а остаток в трюме — боеприпас это груз,
      и он тает */
   if($msl){
     const has=!!st.launcher, on=G.mode==="system"&&has;
     setSt($msl,"display",has?"":"none");
     $msl.classList.toggle("off",has&&!on);
-    if(has)setTx($msl,(on&&G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
+    if(has)setTx(padWord($msl),(on&&G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   /* ── системный режим ведут стики и захват (M360) ──
@@ -512,6 +581,7 @@ function hud(){
   document.body.classList.toggle("inflight",
     G.mode==="system"||G.mode==="map"||G.mode==="belt"||G.mode==="scoop"||G.mode==="landing");
   document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
+  document.body.classList.toggle("onmap",G.mode==="map");   /* строка сообщения на карте — на матовой плашке */
   /* ── ВЗЛЁТ гасит кадр, а не поверхность (M234, второй заход) ──
      Кнопку показывал и прятал `updateSurface`, то есть код, который в других
      режимах не работает вовсе: взлетел, ушёл в шахту, спустился в базу — и она
@@ -519,4 +589,10 @@ function hud(){
      одна знает, стоишь ли ты у корабля), а гасит кадр — отовсюду, кроме
      поверхности. То же правило, что у ОГНЯ и РАКЕТЫ: у кнопки один хозяин. */
   if($launch&&G.mode!=="surface")setSt($launch,"display","none");
+  /* Режим и классы тела перекладывают приборы (у причала полоса в строку, в полёте — столбиком), ряд
+     адреса на карте меняет ширину с подписью, а наблюдатель из 08-state видит только перемены внутри
+     шести узлов: со станции на карту полоса оставалась от вёрстки причала, и ряд адреса ложился на
+     счётчик груза (зрение 06.10.2026). Меряем последним делом кадра, когда классы уже стоят */
+  const lk=G.mode+"|"+document.body.className+"|"+HUD_MAPROW;
+  if(lk!==HUD_LKEY){HUD_LKEY=lk;rectsDirty();hudFloorMeasure(true);}
 }

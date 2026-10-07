@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>concept · station</title>
+<style>
+:root{--phos:#7fe6d8;--amber:#f2b25c;--ink:#e8f2f5;--ink2:#93aab6;--ink3:#5d717c;--edge:rgba(150,222,232,.17);--edge2:rgba(150,222,232,.32);
+  --face:"Bahnschrift","Roboto Condensed","Arial Narrow",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1600px;height:900px;overflow:hidden;font-family:var(--face);color:var(--ink);font-variant-numeric:tabular-nums;
+  background:radial-gradient(60% 70% at 85% 30%,rgba(190,110,50,.45),transparent 70%),radial-gradient(50% 60% at 10% 80%,rgba(160,90,40,.35),transparent 70%),#06090e}
+.win{position:absolute;inset:34px 40px;clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,24px 100%,0 calc(100% - 24px));
+  background:linear-gradient(180deg,rgba(13,21,31,.97),rgba(6,10,15,.985));box-shadow:inset 0 0 0 1px var(--edge);display:grid;
+  grid-template-columns:232px 1fr 316px;grid-template-rows:96px 1fr;}
+.win::before{content:"";position:absolute;left:0;top:0;width:96px;height:2px;background:var(--phos);box-shadow:0 0 12px var(--phos)}
+/* head */
+.head{grid-column:1/4;display:flex;align-items:center;gap:20px;padding:0 28px;border-bottom:1px solid var(--edge);
+  background:linear-gradient(180deg,rgba(127,230,216,.05),transparent)}
+.emb{width:54px;height:54px}
+.ttl b{display:block;font-size:30px;font-weight:600;letter-spacing:.16em;color:#efe2c2}
+.ttl s{display:block;text-decoration:none;color:var(--ink2);font-size:13px;letter-spacing:.06em;margin-top:5px}
+.rx{margin:0 auto;display:flex;align-items:center;gap:12px;color:var(--ink3);font-size:11px;letter-spacing:.16em;
+  padding:8px 16px;box-shadow:inset 0 0 0 1px var(--edge)}
+.rx i{font-style:normal;color:var(--phos);letter-spacing:.02em;font-size:12px}
+.chips{display:flex;gap:10px}
+.chip{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;box-shadow:inset 0 0 0 1px var(--edge);
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));font-size:17px;font-weight:600}
+.chip.cr{color:var(--amber)}.chip.dt{color:#c7a6f0}
+.chip.btn{color:var(--ink);font-size:13px;letter-spacing:.16em;background:rgba(127,230,216,.06)}
+kbd{font-family:var(--face);font-size:10px;letter-spacing:.06em;color:var(--ink);padding:3px 5px 2px;box-shadow:inset 0 0 0 1px rgba(232,242,245,.45);background:rgba(232,242,245,.06)}
+/* nav */
+.nav{border-right:1px solid var(--edge);padding:18px 0}
+.g{display:flex;align-items:center;gap:12px;height:48px;padding:0 22px;color:var(--ink2);font-size:14px;font-weight:600;letter-spacing:.16em;position:relative}
+.g svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.4;opacity:.8}
+.g.on{color:var(--amber);background:linear-gradient(90deg,rgba(242,178,92,.14),transparent)}
+.g.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.sub{padding:2px 0 10px 52px}
+.sub div{height:34px;display:flex;align-items:center;font-size:12px;letter-spacing:.16em;color:var(--ink3)}
+.sub div.on{color:var(--ink)}
+.sub div.on::before{content:"";width:6px;height:6px;margin:0 10px 0 -16px;background:var(--phos);transform:rotate(45deg);box-shadow:0 0 8px var(--phos)}
+.navfoot{position:absolute;left:0;bottom:0;width:232px;padding:18px 22px;color:var(--ink3);font-size:11px;letter-spacing:.12em;line-height:1.7}
+/* center */
+.main{padding:22px 28px;overflow:hidden}
+.h2{display:flex;align-items:center;gap:14px;color:var(--ink);font-size:13px;font-weight:600;letter-spacing:.26em;margin:4px 0 14px}
+.h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--edge2),transparent)}
+.h2 em{font-style:normal;color:var(--ink3);font-weight:400;letter-spacing:.1em;font-size:12px}
+.order{position:relative;display:grid;grid-template-columns:52px 1fr 220px;align-items:center;gap:16px;padding:16px 18px;margin-bottom:22px;
+  box-shadow:inset 0 0 0 1px rgba(242,178,92,.45);background:linear-gradient(90deg,rgba(242,178,92,.10),rgba(242,178,92,.02));
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+.order .k{font-size:11px;letter-spacing:.24em;color:var(--amber)}
+.order b{display:block;font-size:20px;font-weight:600;letter-spacing:.06em;margin-top:3px}
+.order s{display:block;text-decoration:none;color:var(--ink2);font-size:12px;margin-top:6px}
+.seg{display:flex;gap:3px;margin-top:9px}.seg i{width:14px;height:6px;background:rgba(242,178,92,.16)}.seg i.f{background:var(--amber)}
+.act{height:44px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--phos);
+  box-shadow:inset 0 0 0 1px rgba(127,230,216,.35);background:linear-gradient(180deg,rgba(127,230,216,.13),rgba(127,230,216,.04));
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.act.gold{color:var(--amber);box-shadow:inset 0 0 0 1px rgba(242,178,92,.6);background:linear-gradient(180deg,rgba(242,178,92,.2),rgba(242,178,92,.05))}
+.act.off{opacity:.38}
+table{width:100%;border-collapse:collapse}
+th{font-weight:400;text-align:left;color:var(--ink3);font-size:11px;letter-spacing:.2em;padding:0 10px 10px;border-bottom:1px solid var(--edge)}
+td{padding:0 10px;height:52px;border-bottom:1px solid rgba(150,222,232,.07);font-size:15px}
+td.nm{font-weight:600;letter-spacing:.04em}td.nm i{display:inline-block;width:8px;height:8px;margin-right:12px;transform:rotate(45deg)}
+td.pr{color:var(--amber);font-size:18px;font-weight:600;text-align:right}td.pr s{text-decoration:none;color:var(--ink3);font-size:11px;margin-left:4px;font-weight:400}
+td.tr svg{width:110px;height:22px}
+td.q{color:var(--ink2);text-align:right}
+td.bt{width:150px}.pm{display:flex;gap:6px;justify-content:flex-end}.pm .act{width:44px;height:36px;font-size:16px}
+tr.hot td{background:linear-gradient(90deg,rgba(127,230,216,.07),transparent)}
+tr.hot td.nm{color:var(--phos)}
+.far{display:inline-block;margin-left:10px;font-size:10px;letter-spacing:.2em;color:#c7a6f0;padding:3px 6px 2px;box-shadow:inset 0 0 0 1px rgba(199,166,240,.45)}
+/* right: the ship */
+.ship{border-left:1px solid var(--edge);padding:22px 22px;display:flex;flex-direction:column;gap:16px;position:relative}
+.ship .nm{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;letter-spacing:.24em;color:var(--ink3)}
+.ship .nm b{font-size:18px;font-weight:600;letter-spacing:.08em;color:var(--ink)}
+.sil{height:92px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px var(--edge);
+  background:repeating-linear-gradient(0deg,rgba(127,230,216,.035) 0 1px,transparent 1px 12px),repeating-linear-gradient(90deg,rgba(127,230,216,.035) 0 1px,transparent 1px 12px)}
+.stat .l{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.2em;color:var(--ink2)}
+.stat .l b{font-size:16px;color:var(--ink);font-weight:600;letter-spacing:.02em}
+.bar{display:flex;gap:3px;margin:8px 0 10px}.bar i{flex:1;height:8px;background:rgba(127,230,216,.12)}.bar i.f{background:var(--c,var(--phos));box-shadow:0 0 6px var(--c,var(--phos))}
+.stat .act{height:40px;font-size:12px}
+.stat .act s{text-decoration:none;color:var(--amber);letter-spacing:.06em}
+.undock{margin-top:auto;height:56px;font-size:15px}
+</style></head><body>
+<div class="win">
+  <div class="head">
+    <svg class="emb" viewBox="0 0 54 54" fill="none" stroke="#7fe6d8" stroke-width="1.3"><path d="M27 3 48 15v24L27 51 6 39V15z" opacity=".55"/><path d="M27 12 40 19.5v15L27 42 14 34.5v-15z"/><circle cx="27" cy="27" r="5" fill="#7fe6d8" stroke="none" opacity=".9"/><path d="M27 3v9M27 42v9" opacity=".5"/></svg>
+    <div class="ttl"><b>ПГТ ЦИЦИИН</b><s>торговый узел · система ★ Нейэль · ГЛАВТРАССА</s></div>
+    <div class="rx">ЭФИР <i>стойка: …работа всегда на доске, у стойки. Кто ищет — …</i></div>
+    <div class="chips"><div class="chip cr">◈ 600 кр</div><div class="chip dt">◇ 0 данных</div><div class="chip btn">СТОЛ <kbd>T</kbd></div></div>
+  </div>
+  <div class="nav">
+    <div class="g"><svg viewBox="0 0 18 18"><rect x="3" y="3" width="12" height="12"/><path d="M6 7h6M6 10h6M6 13h3"/></svg>ДОСКА</div>
+    <div class="g on"><svg viewBox="0 0 18 18"><path d="M3 6h12l-1.5 8h-9z"/><path d="M6.5 6 9 2.5 11.5 6"/></svg>ТОРГОВЛЯ</div>
+    <div class="sub"><div class="on">РЫНОК</div><div>БАРТЕР</div><div>БОНЫ</div></div>
+    <div class="g"><svg viewBox="0 0 18 18"><path d="M9 2l3.5 7L9 16 5.5 9z"/><path d="M5.5 10.5 3 13M12.5 10.5 15 13"/></svg>КОРАБЛЬ</div>
+    <div class="g"><svg viewBox="0 0 18 18"><circle cx="9" cy="6" r="3"/><path d="M3.5 16c0-3 2.4-5 5.5-5s5.5 2 5.5 5"/></svg>ЛЮДИ</div>
+    <div class="g"><svg viewBox="0 0 18 18"><path d="M3 15V7l6-4 6 4v8z"/><path d="M7 15v-4h4v4"/></svg>ВЛАДЕНИЯ</div>
+    <div class="navfoot">стыковка 3 ч 12 мин<br>пошлина уплачена<br>держава · ГЛАВТРАССА</div>
+  </div>
+  <div class="main">
+    <div class="h2">ГОСЗАКАЗ <em>до сводки 880</em></div>
+    <div class="order">
+      <svg viewBox="0 0 52 52" fill="none" stroke="#f2b25c" stroke-width="1.3"><path d="M26 4 46 15.5v21L26 48 6 36.5v-21z"/><path d="M18 30l8-14 8 14z"/><path d="M26 22v4" /></svg>
+      <div><div class="k">ИРИДИЙ × 25 · ЦЕНА ТВЁРДАЯ 96 КР</div><b>Сдать партию на склад узла</b>
+        <s>в трюме 0 из 25</s><div class="seg"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="act gold off">СДАТЬ · 2 400 КР</div>
+    </div>
+    <div class="h2">РЫНОК <em>закупочные цены меняются от продаж и со временем</em></div>
+    <table>
+      <tr><th>ТОВАР</th><th style="text-align:right">ЦЕНА</th><th>СУТКИ</th><th style="text-align:right">В ТРЮМЕ</th><th></th></tr>
+      <tr class="hot"><td class="nm"><i style="background:#9fd8ff"></i>Лёд</td><td class="pr">21<s>кр/ед</s></td>
+        <td class="tr"><svg viewBox="0 0 110 22" fill="none" stroke="#7fe6d8" stroke-width="1.3"><path d="M0 16 14 14 28 15 42 10 56 12 70 7 84 9 98 5 110 6"/></svg></td><td class="q">0</td>
+        <td class="bt"><div class="pm"><div class="act off">−</div><div class="act">+</div></div></td></tr>
+      <tr><td class="nm"><i style="background:#e0956a"></i>Железо</td><td class="pr">16<s>кр/ед</s></td>
+        <td class="tr"><svg viewBox="0 0 110 22" fill="none" stroke="#93aab6" stroke-width="1.3"><path d="M0 8 14 9 28 11 42 10 56 13 70 12 84 15 98 14 110 16"/></svg></td><td class="q">0</td>
+        <td class="bt"><div class="pm"><div class="act off">−</div><div class="act">+</div></div></td></tr>
+      <tr><td class="nm"><i style="background:#c9d2d6"></i>Кремний</td><td class="pr">18<s>кр/ед</s></td>
+        <td class="tr"><svg viewBox="0 0 110 22" fill="none" stroke="#93aab6" stroke-width="1.3"><path d="M0 12 14 11 28 12 42 12 56 10 70 11 84 11 98 10 110 11"/></svg></td><td class="q">0</td>
+        <td class="bt"><div class="pm"><div class="act off">−</div><div class="act">+</div></div></td></tr>
+      <tr><td class="nm"><i style="background:#9fe08a"></i>Органика</td><td class="pr">36<s>кр/ед</s></td>
+        <td class="tr"><svg viewBox="0 0 110 22" fill="none" stroke="#93aab6" stroke-width="1.3"><path d="M0 14 14 12 28 13 42 9 56 10 70 6 84 8 98 7 110 4"/></svg></td><td class="q">0</td>
+        <td class="bt"><div class="pm"><div class="act off">−</div><div class="act">+</div></div></td></tr>
+      <tr><td class="nm"><i style="background:#b8c6d0"></i>Титан</td><td class="pr">52<s>кр/ед</s></td>
+        <td class="tr"><svg viewBox="0 0 110 22" fill="none" stroke="#93aab6" stroke-width="1.3"><path d="M0 6 14 7 28 9 42 8 56 11 70 10 84 12 98 13 110 12"/></svg></td><td class="q">0</td>
+        <td class="bt"><div class="pm"><div class="act off">−</div><div class="act">+</div></div></td></tr>
+      <tr><td class="nm"><i style="background:#c7a6f0"></i>Осмий <span class="far">ИЗ ДАЛИ · ×4</span></td><td class="pr">1 002<s>кр/ед</s></td>
+        <td class="tr" style="color:#5d717c;font-size:12px">привезли с кромки</td><td class="q">0</td>
+        <td class="bt"><div class="pm"><div class="act off" style="width:auto;padding:0 14px;font-size:12px">КУПИТЬ 1</div></div></td></tr>
+    </table>
+  </div>
+  <div class="ship">
+    <div class="nm">БОРТ <b>«Стриж»</b></div>
+    <div class="sil"><svg viewBox="0 0 200 70" width="200" height="70" fill="none" stroke="#7fe6d8" stroke-width="1.3"><path d="M20 35 60 22h70l50 13-50 13H60z"/><path d="M60 22 48 8h30l14 14M60 48 48 62h30l14-14"/><path d="M130 22v26M150 27v16" opacity=".6"/><circle cx="168" cy="35" r="3" fill="#7fe6d8"/></svg></div>
+    <div class="stat"><div class="l">ТОПЛИВО <b>97 / 100</b></div>
+      <div class="bar"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></div>
+      <div class="act">ЗАПРАВКА <s>21 кр</s></div></div>
+    <div class="stat" style="--c:#f2b25c"><div class="l">КОРПУС <b>100 / 100</b></div>
+      <div class="bar"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></div>
+      <div class="act off">КОРПУС ЦЕЛ</div></div>
+    <div class="stat" style="--c:#c9d2d6"><div class="l">ТРЮМ <b>0 / 40</b></div>
+      <div class="bar"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="act" style="height:40px">ИЗОЛЕНТА · 5 <s style="text-decoration:none;color:#f2b25c">14 кр</s></div>
+    <div class="act gold undock">ОТСТЫКОВКА <kbd style="color:#f2b25c;box-shadow:inset 0 0 0 1px rgba(242,178,92,.6)">ESC</kbd></div>
+  </div>
+</div>
+</body></html>

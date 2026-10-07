@@ -830,6 +830,14 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   switching each off. Pairs vs HEAD, centred on the giant: 760 zoom 2 sharpness −3.7 %, zoom 1 −8.1 %,
   zoom .5 −3.9 %; 390 dpr 1.5 zoom 2 −2.8 %, zoom 1 −7.5 %; light 0…−0.1 %. The sharpness that went away
   is the aliasing (rows on the arc, stairs on the ansae); the grooves on the ansae stay. GPU errors 0.
+- **L1b dust: the slope by one-sided differences** (08.10, 0.492.0). The edge distance `dpx` is the field over
+  its slope, and the field is `max(wall, pillars)` — a V crease where the two bodies meet. The central
+  difference cancels on the crease, the slope went to zero and `dpx` to ±∞: inside a soft edge a black thread
+  along the joint (beads at ¼ resolution, a solid line at ½), outside it the rim's `face` turned to 1 and drew a
+  straight bright ray from the star. The slope is now |f(+e) − f| + |f − f(−e)| per axis from the same four
+  samples: equal to the gradient where the field is monotonic, not zero on a crease. Found by elimination at
+  390×844 (dust ridges, the near band, a density fold: no change; the dust's own cover `ta` = 1: gone).
+  A hard `max` in a field that a distance is taken from is a crease — the face's jaw had the same one (M729).
 - **L1b dust: blunt heads, no beads, a lit body** (26.09, Контроль, PLAN §0). With the 115–135 px soft ramp a
   narrow head never got deep enough to go dark, so the darkness faded toward it and the pillar read as a
   claw. The neck now tapers to .7 of the base width (was .55), and the head is 1.4× the neck (was 1.25) and
@@ -1996,6 +2004,39 @@ next suite that draws a planet runs `matTick` inside `gpuPlanet`, finishes the j
   dust only dims stars. Field (L median / black < 12): l4a ×2.00 8.2 / 88%, nnormal 10.6 / 61% (was 17.6 /
   38%), l2c 24.2 / 22%. What is left at ×2.00: gas clumps in the windows between bodies, one rim where gas
   meets an edge. Parallax (x 480 → 560): the pattern slides, shapes kept.
+  Done (L1b look, «смело»; the author 26.09: «мне смело нравится, круто»): four moves under one strength
+  knob `GNB_SS` = 1.6 (soft .5, medium 1 were the other two), WGSL pieces in `16gay` because 16gb is at its
+  size cap. Depth: a layer's tone turns round the hue circle in YIQ (`hto`, positive way only — through
+  magenta, never green) toward blue-violet, the far layer darker, the near one warmer; a linear mix of
+  complements would be grey. Ionisation zones: near the star gas and the wide glow turn azure (3.0 rad; cyan
+  3.5 read sage under the warm layer), paler and less saturated, the middle of the change brighter, not duller;
+  farther out toward orange-red; the knob widens the zone instead of stopping the turn half way (magenta).
+  Volume: density toward the star vs here (3 taps, 22/60/130 px, a ratio so dim and bright gas act alike),
+  exp(−.5·ss·rel) — the star side of a mass lighter; brightening fades near the star and near white (hot
+  pixels rose 1.13 → 1.29 % before that gate). Strands: bright only, LIC along the structure-tensor
+  orientation (a luminance tangent flips on ridges — that was round 1's dark cracks), a coherence gate, the
+  noise domain rotated so its lattice never lies along the flow as a straight fold. Peak channel capped at
+  1.08× the input so blue at the same luma does not blow to white. Pair vs 0.473.0, l2c DPR 1.5: 390 flying
+  light +3.6 %, sharp +2.8 %, S .499 → .422, >250 px .387 → .388 %; 760 standing light +3.3 %, sharp +5.1 %.
+  Deferred by Контроль to after the release: the cold zone hangs as a spot mid-mass; the purple on the right
+  is at the edge of sweet.
+  Round 3 (26.09, the author chose «B с розовым»): no common lilac. Depth turns toward the system's OWN
+  shadow `c` (its YIQ angle in the free slot `u.j.w`, `gnbDeep`), every `hto` turn is a short arc ≤ 45° and
+  only toward a near tone (orange→teal went through olive, orange→blue through raspberry), cold palettes
+  barely turn (`tw`), a cold pixel never warms (`cw`). The lobe the author liked in round 2 was the
+  ionisation zone, not depth: orange→azure through magenta, > 100°. It is back as `lav`: near the star the
+  gas mixes in OKLab toward the shadow tone clamped into the lavender band (YIQ 2.3–2.6 rad), chroma floor
+  85 % of the interpolated one (without it the middle goes grey and S falls 25–38 % in FILL), lightness
+  never lower; radius .65 frame heights. Weaker where it would flood the field: ×(1 − cld(mid)) (ice as
+  strict), ×(1 − .7·fill), ×(1 − .5·max cld(A, B)) (a palette with its own teal). l2c lobe: hue 289°
+  (round 2 279°), lavender 63 %, raspberry 32 % (23 %). 8 systems × 390/760/1920 vs the site: S −8 %
+  (amber 760) … +6 %, neon 0, edges and >250 unchanged; the amber lobe's outer rim goes pink — the author
+  keeps it as a natural transition. Rejected: the strict ≤ 45° variant (the l2c lobe gone, the frame ≈
+  the site), the zone turned uncapped to `c` (raspberry lobe, lilac over 1920, FILL S −20 %), noise lobes
+  (lost the author's lobe). Motion, 390 at 150 px/s: frame-to-frame residual 0.41 → 0.50 grey levels, but
+  the round-trip resampling floor is 0.02–0.04 and the back-and-forth jitter (|b − (a+c)/2|) per unit of
+  gas brightness is the same .0028 for the site, round 2, strict and B — the residual follows the brighter
+  gas and its drift, not flicker.
   A GPU draw after `gpuHullLight` must use `gpuOver`, not `gpuScene` (the scene pass is closed by then).
 - Merge each: `build.ps1`, `python docs/shot.py <scenes> --look --tag gpu`, 0 `gpu.errs`, pair with
   `scratchpad/mainref/docs/shots/main_<scene>.png`, one line of what got better, commit, strike from PLAN §0.

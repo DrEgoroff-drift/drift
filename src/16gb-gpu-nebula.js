@@ -22,7 +22,7 @@ fn gn(p:vec2f)->f32{let i=floor(p);let f=fract(p);let w=f*f*(3.-2.*f);
 fn fb(p0:vec2f,n:i32)->f32{var p=p0;var s=0.;var a=.5;var m=0.;
   for(var k=0;k<n;k++){s=s+a*gn(p);m=m+a;p=mat2x2f(1.6,1.2,-1.2,1.6)*p+vec2f(3.1,7.7);a=a*.5;}
   return s/m;}
-fn sat(c:vec3f)->f32{let mx=max(c.r,max(c.g,c.b));return (mx-min(c.r,min(c.g,c.b)))/max(mx,1e-4);}
+fn sat(c:vec3f)->f32{let mx=max(c.r,max(c.g,c.b));return (mx-min(c.r,min(c.g,c.b)))/max(mx,1e-4);}${GNB_HTO}
 fn sq(x:f32)->f32{return x*x;}
 /* громадина (L1.7) — общая геометрия для объёма и сведения. q: центр в px, cos и sin
    угла; sc — размер в px. Всё это константы кадра — их считает gnbLfr на процессоре */
@@ -271,7 +271,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     var col=mix(A,B,tone);
     let cmx=max(col.r,max(col.g,col.b));
     col=max(cmx+(col-cmx)*mix(sat(A),sat(B),tone)/max(sat(col),1e-3),vec3f(0.));
-    col=mix(col,sc,tint)*(1.+.25*fl);
+    col=mix(col,sc,tint)*(1.+.25*fl);${GNB_TONE}
     /* волокна — самые плотные гребни — светят ярче тела */
     let e=col*g*(.62+1.3*lit)*(.6+1.1*smoothstep(.62,.84,d))*(1.+.8*lit*smoothstep(.55,.9,d));
     let rim=mix(gc,vec3f(1.),.25)*max(sc.r,max(sc.g,sc.b))*lit*ab*.3;
@@ -284,7 +284,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   /* у звезды свет уходит в тёплый белый, а не в её цвет поверх чужого тона: оранжевое
      на бирюзе давало серое */
   let sw=mix(sc,vec3f(1.,.95,.88)*max(sc.r,max(sc.g,sc.b)),.6);
-  let wc=mix(sw,gc*max(sc.r,max(sc.g,sc.b)),.8);
+${GNB_WC}
   C=C+son*(sw*core+wc*wide*1.6*dsum*(1.-.8*seam))*mix(1.,T,.6);
   /* L1b: пыль перед газом (Киль, Столпы) — кадр перестаёт быть стеной газа. Непрозрачные
      массы с резким краем, внутри бурые с тонкой структурой; к звезде край горит тонкой яркой
@@ -298,9 +298,13 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
   C=C+mix(gc,sw,.3)*cvg*.3;dsum=dsum+cvg*.5;
   /* край — в пикселях: расстояние до порога по градиенту гладкого поля */
   let ex=1.5;
-  let gD=vec2f(dustAt(p+vec2f(ex,0.),W,H,seed).x-dustAt(p-vec2f(ex,0.),W,H,seed).x,
-               dustAt(p+vec2f(0.,ex),W,H,seed).x-dustAt(p-vec2f(0.,ex),W,H,seed).x)/(2.*ex);
-  let gl2=max(length(gD),1e-5);
+  let fxp=dustAt(p+vec2f(ex,0.),W,H,seed).x;let fxm=dustAt(p-vec2f(ex,0.),W,H,seed).x;
+  let fyp=dustAt(p+vec2f(0.,ex),W,H,seed).x;let fym=dustAt(p-vec2f(0.,ex),W,H,seed).x;
+  let gD=vec2f(fxp-fxm,fyp-fym)/(2.*ex);
+  /* крутизна — по модулям односторонних разностей: на стыке стены и столпа (max двух тел)
+     центральная разность гаснет, расстояние уходило в минус бесконечность — по стыку
+     чёрная нить, в четверти разрешения бусами (08.10). На гладком поле — тот же градиент */
+  let gl2=max(length(vec2f(abs(fxp-DD.x)+abs(DD.x-fxm),abs(fyp-DD.x)+abs(DD.x-fym))/(2.*ex)),1e-5);
   let tS=normalize(sp-p+vec2f(1e-3));
   let fd=dot(-gD/gl2,tS);let face=max(fd,0.);
   let fw=smoothstep(.15,.55,face);
@@ -375,7 +379,7 @@ fn fineE(p:vec2f)->f32{
   let qf=((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*9.+fu.v[0].w+vec2f(4.,9.);
   let wv=vec2f(gnt(qf*.45+fu.v[0].z),gnt(qf*.45+vec2f(5.,1.)))*2.2;
   let r=1.-abs(2.*fbt(qf+wv,2)-1.);
-  return .5+.95*r*r;}`;
+  return .5+.95*r*r;}${GNB_FIL}`;
 /* поглощение — в шейдере звезды (P1 11/n): полноэкранный проход ABS умножал цель сцены, а под
    туманностью в ней только чёрная очистка и звёзды. Смешение «поверх» линейно по цвету, поэтому множитель на каждом
    пикселе звезды даёт то же, что множитель на экране, — и платится площадью звёзд.
@@ -405,7 +409,7 @@ function gnbStars(pass,ub,sb){
 }
 /* V[0]: камера x,y, время, зерно · V[1]: звезда x,y, радиус/H, вкл · V[2]: цвет звезды, ширина тени ·
    V[3]: цвет теней · V[4..10]: планеты x,y,r (CSS px) — их тени */
-const GNB_EMI=GNB_FINE+`
+const GNB_EMI=GNB_FINE+GNB_FGAL+`
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let H=fu.res.w;
   /* одна бикубика на пиксель: цвет, туман и цвет космоса читают её (было три — 12 выборок) */
@@ -417,7 +421,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   /* волокна: гребни в полном разрешении режут тело газа */
   let body=smoothstep(.015,.14,l0);
   /* деталь — только где её вес не ноль: вне газа шум не считается */
-  if(body>0.){c=c*mix(1.,fineE(p),body*.85);}
+  if(body>0.){c=c*mix(1.,fineE(p),body*.85);}${GNB_FILC}
   /* фронт ионизации: где газ густеет прочь от звезды — это его кромка к звезде */
   let ts=1./vec2f(textureDimensions(t0));
   let lx=textureSampleLevel(t0,smp,uv+vec2f(ts.x*1.5,0.),0.).rgb-textureSampleLevel(t0,smp,uv-vec2f(ts.x*1.5,0.),0.).rgb;
@@ -425,7 +429,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let gr=vec2f(max(lx.r,max(lx.g,lx.b)),max(ly.r,max(ly.g,ly.b)));
   let dir=normalize(p-fu.v[1].xy+vec2f(1e-3));
   let sd=max(length(p-fu.v[1].xy)/H-fu.v[1].z,0.);let lit=fu.v[1].w/(1.+sq(sd/.2));
-  let fr=max(dot(gr,dir),0.)*lit;
+  let fr=max(dot(gr,dir),0.)*lit;${GNB_VOL}
   /* тени планет (L1.6): планета между звездой и газом режет свет — за ней по газу
      тёмный клин от звезды, край мягкий и расходится с расстоянием (у звезды есть
      размер), вдали клин тает — газ освещает и рассеянный свет */
@@ -481,7 +485,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let Tb=pow(vec3f(fineT(p,clamp(1.-g0.a,0.,1.))),vec3f(.72,1.,1.42));
   /* неон ушёл: насыщенность и яркость газа ниже, туманность остаётся цветной (автор, 24.09) */
   let co=c*(1.-exp(-mm*1.25))/(mm*1.25)*1.12;let cy=dot(co,vec3f(.2126,.7152,.0722));
-  return vec4f(mix(vec3f(cy),co,.66)*mix(1.,.72,smoothstep(.12,.6,cy))+vec3f(5.,7.,12.)/255.*Tb,0.);}`;
+  /* далёкие галактики — за газом: густой газ их закрывает, пыль гасит, как космос */
+  return vec4f(mix(vec3f(cy),co,.66)*mix(1.,.72,smoothstep(.12,.6,cy))+(vec3f(5.,7.,12.)/255.)*Tb+fgal(p)*(1.-.8*body)*mix(.4,1.,Tb.g),0.);}`;
 function gnbTarget(){
   const w=Math.max(2,Math.ceil(GPU.bw/4)),h=Math.max(2,Math.ceil(GPU.bh/4));
   if(GNB.tex&&GNB.dev===GPU.dev&&GNB.w===w&&GNB.h===h)return;
@@ -530,7 +535,9 @@ function gnbLandmark(sys,k){
         q=(v,sg)=>sg*(.66+.29*Math.min(1,Math.abs(v)*2));
   /* верхний левый — под полосами HUD: громадину ниже блока полос, ближе к кромке по x */
   const tl=cr===0,x=q(x0,cr&1?1:-1),y=tl?-(.36+.14*Math.min(1,Math.abs(y0)*2)):q(y0,cr&2?1:-1);
-  return {t,x:tl?Math.min(x,-.74):x,y,s,a:r()*6.283,p:.35+r()*.3,l:r()*40,k:2.2,c:GNB_LM_COL[t]};
+  /* спираль-громадина (вид 2) снята 06.10: читалась наклейкой поверх. Далёкие галактики —
+     россыпью в сведении (fgal); поток случайности тот же, у остальных видов ничего не сдвинулось */
+  return {t,x:tl?Math.min(x,-.74):x,y,s,a:r()*6.283,p:.35+r()*.3,l:r()*40,k:t===2?0:2.2,c:GNB_LM_COL[t]};
 }
 /* место и поворот громадины в кадре (P1 14/n г): константы кадра — раз на процессоре, а не в
    каждом пикселе. Параллакс .006. Возвращает [x, y, cos, sin, размер в px] */
@@ -600,7 +607,7 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   a[20]=st.c[0]/255;a[21]=st.c[1]/255;a[22]=st.c[2]/255;a[23]=pl.fill;
   a[24]=GNB.Qc;a[25]=GNB.Yc;a[26]=(l0-lD)*kD+GNB.Yc;a[27]=(l1-lD)*kD+GNB.Yc;
   a[28]=lm.x;a[29]=lm.y;a[30]=lm.s;a[31]=lm.t;a[32]=lm.a;a[33]=lm.p;a[34]=lm.l;a[35]=lm.k;
-  a[36]=lm.c[0][0];a[37]=lm.c[0][1];a[38]=lm.c[0][2];a[39]=.006;a[40]=lm.c[1][0];a[41]=lm.c[1][1];a[42]=lm.c[1][2];
+  a[36]=lm.c[0][0];a[37]=lm.c[0][1];a[38]=lm.c[0][2];a[39]=gnbDeep(pl);a[40]=lm.c[1][0];a[41]=lm.c[1][1];a[42]=lm.c[1][2];
   a[43]=lq[4];for(let k=0;k<4;k++)a[44+k]=lq[k];
   const U=GPUBufferUsage,ub=gpuBuf("gnb.u",192,U.UNIFORM|U.COPY_DST);
   GPU.dev.queue.writeBuffer(ub,0,a);

@@ -686,10 +686,12 @@ function drawSystem(){
      2D-пути нет (25.09): без видеокарты нет и полёта. Стека матриц ctx здесь больше нет —
      место, курс и масштаб идут числами */
   const hsx=zx(sh.x),hsy=zy(sh.y),hlx=zx(0)-hsx,hly=zy(0)-hsy,hln=Math.hypot(hlx,hly)||1;
-  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln);
+  const gr=shipGear3d();
+  hullGpuDraw(G.shipId,hsx,hsy,sh.a,shS,thrusting,!!(G.ctl&&G.ctl.out.thr&&G.fuel>0),G.mods.engine,sh.bank,hlx/hln,hly/hln,gr);
   /* стволы на подвесах, повёрнутые по наводке (M363), и пусковая под корпусом (хвост M112):
-     сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c) */
-  {const stl=stat();shipGearGpu(stl.guns,!!stl.launcher,(G.cargo.missile|0)<=0,hsx,hsy,sh.a,shS);}
+     сборка читается силуэтом раньше первого выстрела, а сухая пусковая — без панели (05c).
+     Корпус в объёме (M722) несёт части сам — плоские стволы только там, где объёма не было */
+  if(gr.drawn!==GPU.frameNo){const stl=stat();shipGearGpu(stl.guns,!!stl.launcher,(G.cargo.missile|0)<=0,hsx,hsy,sh.a,shS);}
   if(typeof drawGestureTop==="function")drawGestureTop(zx,zy,Z);   /* жест поверх корпуса (17h) */
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */
@@ -744,8 +746,8 @@ function drawSysHud(zx,zy,sh,sys,U){
      у кромки одну звезду. Теперь из пустоты всегда видно, куда лететь. */
   /* звезда и цель — тихие холодные фишки (пара HUD 15/n): тёплый у кадра один,
      следующее действие; имена — как написаны, регистр как в предложении */
-  const marks=[{x:0,y:0,c:"#c3d0d8",l:"Звезда",t:{kind:"star"},k:"star"}];
-  if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
+  const marks=[{x:0,y:0,c:"#d9d2c4",l:"Звезда",t:{kind:"star"},k:"star"}];
+  if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#f1ebde",
     l:sys.station.name+((g=>g?" · "+g:"")(powerGlyph(chronOwnerKey(G.sx,G.sy)))),t:{kind:"station"},k:"station"});   /* знак хозяина земли — после имени: имя фишки как в таблицах (M458) */
   {
     let np=null,nd=1e18;
@@ -753,9 +755,9 @@ function drawSysHud(zx,zy,sh,sys,U){
       const d=Math.hypot(p.x-sh.x,p.y-sh.y);
       if(d<nd){nd=d;np=p;}
     }
-    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name,t:{kind:"planet",p:np},k:"planet:"+np.name});
+    if(np)marks.push({x:np.x,y:np.y,c:"#c4bba9",l:np.name,t:{kind:"planet",p:np},k:"planet:"+np.name});
   }
-  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#e6eef2",l:"Цель",t:null,k:"target"});}
+  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6a2b",l:"Цель",t:null,k:"target"});}
   /* корпус после боя (G4c): подпись над ним стала фишкой — ближний из тех, что за кадром
      (видимый читается сам), по тычку автопилот к нему */
   if(G.npcWrecks&&G.npcWrecks.length){
@@ -764,7 +766,7 @@ function drawSysHud(zx,zy,sh,sys,U){
       const x=zx(w.x),y=zy(w.y);if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
       const d=Math.hypot(w.x-sh.x,w.y-sh.y);if(d<nd){nd=d;nw=w;}
     }
-    if(nw)marks.push({x:nw.x,y:nw.y,c:"#b8c2cc",l:"Корпус",t:{kind:"wreck",ax:nw.x,ay:nw.y,nm:"корпус"},k:"wreck:"+nw.seed});
+    if(nw)marks.push({x:nw.x,y:nw.y,c:"#a59d8f",l:"Корпус",t:{kind:"wreck",ax:nw.x,ay:nw.y,nm:"корпус"},k:"wreck:"+nw.seed});
   }
   /* окликнувший: одна негашёная стрелка под окном оклика (R6, 12.09) */
   if(G.hail){const hp=G.pirates.find(q=>q._hail);if(hp)marks.push({x:hp.x,y:hp.y,c:"#ffd27a",l:hp.name||"Оклик",t:null,hail:1,k:"hail"});}

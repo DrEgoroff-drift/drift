@@ -13,7 +13,7 @@ GcCtx.prototype._sh=function(op){
   const b=this.shadowBlur>0&&isFinite(this.shadowBlur)?+this.shadowBlur:0,x=+this.shadowOffsetX||0,y=+this.shadowOffsetY||0;
   if(!b&&!x&&!y)return null;
   const c=gcColor(this.shadowColor);if(!(c[3]>0))return null;
-  if(GC_OPS[op]&&GC_OPS[op].u)throw gcNo("тень со смешением "+op);
+  if(GC_OPS[op]&&(GC_OPS[op].u||GC_OPS[op].bk))throw gcNo("тень со смешением "+op);
   return {c:[c[0]*c[3],c[1]*c[3],c[2]*c[3],c[3]],b,x,y};};
 
 /* размытие: проход по оси; o.xy — сдвиг окна в источнике, o.zw — ось; s.x — σ, s.y — радиус,

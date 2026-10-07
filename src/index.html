@@ -33,6 +33,7 @@
      ногах топливо и корпус решают не здесь, здесь решают скафандр и трюм. -->
 <div class="hud">
   <div class="vitals">
+    <div class="vh"><b>Борт</b><s id="vShip">—</s></div>
     <div class="v big" id="vFuel"><b>Топливо</b><div class="bar" id="fbar"><i></i></div><u id="fnum">—</u></div>
     <div class="v big" id="vHull"><b>Корпус</b><div class="bar hull" id="hbar"><i></i></div><u id="hnum">—</u></div>
     <div class="v" id="sgauge" style="display:none"><b>Щит</b><div class="bar shld" id="sbar"><i></i></div><u id="snum">—</u></div>
@@ -45,7 +46,7 @@
   </div>
   <!-- приборы области (M122-M124): пять стрелок, невязка и полоска ленты.
        В поясе прячется — там есть настоящий потолочный блок. -->
-  <canvas id="ipod" class="ipod" width="416" height="140"></canvas>
+  <canvas id="ipod" class="ipod" width="720" height="160"></canvas>
   <div class="locus">
     <u id="place">—</u>
     <s id="sub">—</s>
@@ -92,7 +93,7 @@
   <!-- Иконки тонкой линией и все из одного набора: круг-орбита, три полосы
        систем, плюс и минус одной толщины. Значок опознают быстрее слова,
        но слово оставлено — оно снимает сомнение. -->
-  <button id="navbtn" class="key"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><ellipse cx="8" cy="8" rx="6" ry="2.4"/><path d="M8 2v12"/></svg><span>Карта</span></button>
+  <button id="navbtn" class="key"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><ellipse cx="8" cy="8" rx="6" ry="2.4"/><path d="M8 2v12"/></svg><span>Карта</span><kbd>M</kbd></button>
   <button id="menubtn" class="key"><svg viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h7"/></svg>Меню</button>
   <div class="zoom">
     <button id="zin" aria-label="приблизить"><svg viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></svg></button>
@@ -101,7 +102,7 @@
 </div>
 
 <div id="menu">
-  <b>БОРТОВЫЕ СИСТЕМЫ<span id="menuclose">×</span></b>
+  <b>БОРТОВЫЕ СИСТЕМЫ<kbd>Esc</kbd><span id="menuclose">×</span></b>
   <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>ОПИСЬ</em><s>трюм, комплект, части, вещи</s></span></button>
   <button id="dealbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="5.4" cy="5" r="2.1"/><path d="M1.6 13c0-2.2 1.7-3.6 3.8-3.6S9.2 10.8 9.2 13"/><circle cx="11.6" cy="4.2" r="1.5"/><path d="M11.6 7.2v5.6M9.4 9.4h4.4"/></svg><span class="tx"><em>ДЕЛО</em><s>кто и что на вас работает</s></span></button>
   <button id="tablebtn"><svg viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7"/><path d="M5 3.5h6l1 2.5H4z"/></svg><span class="tx"><em>СТОЛ</em><s>тетрадь, ленты, письма, вещи</s></span></button>
@@ -169,8 +170,8 @@
 
 <!-- ══ управление ══ большим пальцем, поэтому по нижним углам ══ -->
 <div class="pads">
-  <div><button data-k="pup" class="beltonly">▲</button><button data-k="left">◀</button><button data-k="right">▶</button><button data-k="pdown" class="beltonly">▼</button></div>
-  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="msl" id="mslbtn" style="display:none">РАКЕТА</button><button data-k="brake">ТОРМОЗ</button><button data-k="lock" id="lockbtn" style="display:none"><span>ЦЕЛЬ</span></button><button data-k="act"><span>ДЕЙСТВИЕ</span></button><button data-k="thrust">▲</button></div>
+  <div><button data-k="pup" class="beltonly">▲</button><button data-k="left"><span>◀</span><kbd data-a="left">A</kbd></button><button data-k="right"><span>▶</span><kbd data-a="right">D</kbd></button><button data-k="pdown" class="beltonly">▼</button></div>
+  <div><button data-k="fire" id="firebtn" style="display:none"><span>ОГОНЬ</span><kbd data-a="fire">F</kbd></button><button data-k="msl" id="mslbtn" style="display:none"><span id="mslword">РАКЕТА</span><kbd data-a="msl">G</kbd></button><button data-k="brake"><span>ТОРМОЗ</span><kbd data-a="brake">S</kbd></button><button data-k="lock" id="lockbtn" style="display:none"><span>ЦЕЛЬ</span><kbd>Tab</kbd></button><button data-k="act"><span>ДЕЙСТВИЕ</span><kbd id="actKey" data-a="act">Пробел</kbd></button><button data-k="thrust"><span>▲</span><kbd data-a="thrust">W</kbd></button></div>
 </div>
 
 <div class="scr" id="station">

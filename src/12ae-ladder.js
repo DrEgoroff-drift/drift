@@ -73,16 +73,15 @@ function drawRungRing(x,y,rr,sx,sy){
   const r=rungOfCached(sx,sy);
   if(r<5)return;
   const seg=rungRingSegs(r),R=rr+8;
-  ctx.strokeStyle="rgba(127,230,216,.7)";ctx.lineWidth=1.3;
+  const c="rgba(127,230,216,.7)";   /* перо карты (17z4) */
   for(let i=0;i<seg;i++){
     const a0=-Math.PI/2+i*TAU/6+.07,a1=-Math.PI/2+(i+1)*TAU/6-.07;
-    ctx.beginPath();ctx.arc(x,y,R,a0,a1);ctx.stroke();
+    mpArc(x,y,R,a0,a1,1.3,c);
   }
-  if(r>=24){ctx.beginPath();ctx.moveTo(x,y-R-3);ctx.lineTo(x,y-R+3);ctx.stroke();}
+  if(r>=24)mpLine(x,y-R-3,x,y-R+3,1.3,c);
   const H=G.hold&&G.hold[sx+","+sy],nb=H&&H.bld?Object.keys(H.bld).length:0;
   if(nb){
-    ctx.fillStyle="rgba(242,178,92,.85)";
-    for(let j=0;j<Math.min(8,nb);j++)ctx.fillRect(x+rr+12,y+2-j*3.5,2,2);
+    for(let j=0;j<Math.min(8,nb);j++)mpRect(x+rr+12,y+2-j*3.5,2,2,"rgba(242,178,92,.85)");
   }
 }
 /* ── момент при стыковке: что здесь теперь стоит ──

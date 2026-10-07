@@ -154,8 +154,7 @@ function stTabMarket(st){
        серых строки подряд до первой цены — полэкрана объяснений; «откуда
        берётся» — одна строка, не блок */
     const empty=held()===0;
-    $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+(empty?" · ПУСТ — ПЛАНЕТА ИЛИ ПОЯС":"")+
-      " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
+    $body.appendChild(el("div","sec","ЗДЕСЬ ЗАКУПАЮТ · ЦЕНЫ ДВИЖУТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"+(empty?" · ТРЮМ ПУСТ — ПЛАНЕТА ИЛИ ПОЯС":"")));
     /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым
        блоком сверху, и у игрока без маршрута — то есть у всякого, кто открыл
        рынок впервые, — первая цена оказывалась ниже середины экрана: шапка,
@@ -167,45 +166,59 @@ function stTabMarket(st){
        прямо сейчас. Такой остаётся наверху. */
     const hasRoute=(typeof routeOf==="function")&&routeOf().legs.length>=2;
     if(hasRoute)renderRoute();
+    /* одна таблица (M721): почём здесь берут, к базе, сколько этого у тебя и кнопка — в одной строке.
+       Станция только закупает: колонки «купить» нет, товар добывают сами. Цена — кремом, акцент только
+       у кнопки; цвет товара — ромбом у имени, а не радугой имён */
     let any=false,tot=0;
-    for(const k of TRADE_KEYS.concat(FAR_KEYS)){   /* дальние продаются тем же рядом (M467) */
-      const q=G.cargo[k];if(!q)continue;any=true;
-      const price=prices[k],base=RES[k].price;
-      /* котировка с аппетитом (M290): тег говорит правду для первых N единиц и
-         для (N+1)-й — «берут первые 6», а не «выгодно» на весь трюм */
-      const Q=(typeof sellQuote==="function")?sellQuote(G.sys,k,q):{revenue:q*price,nA:0,priceA:price};
-      tot+=Q.revenue;
-      let tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
-      if(Q.nA)tg="берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:"");
-      if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
-      /* дальний товар: приёмщик говорит своё (review §3) — весы наши */
-      /* едок говорит сам (M469): кто берёт и зачем; без едока — приёмщик про весы */
-      const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
-      if(RES[k].far)tg+=fv?" · "+fv[0]+": "+fv[1]:(RES[k].far.prop==="fragile"?" · «принимаем по весу, вес — наш»":" · «весы наши, тара ваша»");
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+
-        "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
-      r.appendChild(el("div","qt",q+"<s>"+Math.round(Q.revenue).toLocaleString("ru")+" кр</s>"));
-      const b=el("button","act"+(Q.nA?" gold":""),"ПРОДАТЬ");
-      b.onclick=()=>{const rev=sellCargo(G.sys,k,q),L=sellCargo.last||{};
-        const extra=L.nA?" · "+L.nA+" с надбавкой":"";
-        tell("money","Продано на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+q+" · +"+rev.toLocaleString("ru")+" кр"+extra,
-             "Продано: "+RES[k].ru+" ×"+q+"\n+"+rev.toLocaleString("ru")+" кр"+extra);
-        renderTab();};
-      r.appendChild(b);$body.appendChild(r);
+    const T=el("div","mk");
+    T.appendChild(el("div","mk-h","<span>ТОВАР</span><span>ЦЕНА</span><span>К БАЗЕ</span><span>В ТРЮМЕ</span><span></span>"));
+    for(const k of TRADE_KEYS.concat(FAR_KEYS)){   /* дальние продаются тем же рядом (M467) — когда они в трюме */
+      const q=G.cargo[k]||0;if(!q&&!TRADE_KEYS.includes(k))continue;
+      const price=prices[k],base=RES[k].price,d=Math.round((price/base-1)*100);
+      let tg="",Q=null;
+      if(q){any=true;
+        /* котировка с аппетитом (M290): тег говорит правду для первых N единиц и
+           для (N+1)-й — «берут первые 6», а не «выгодно» на весь трюм */
+        Q=(typeof sellQuote==="function")?sellQuote(G.sys,k,q):{revenue:q*price,nA:0,priceA:price};
+        tot+=Q.revenue;
+        const tl=[];
+        if(Q.nA)tl.push("берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:""));
+        if((mkt.pressure[k]||0)<-.05)tl.push("недавно продавали здесь");
+        /* дальний товар: едок говорит сам (M469), без едока — приёмщик про весы (review §3) */
+        const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
+        if(RES[k].far)tl.push(fv?fv[0]+": "+fv[1]:(RES[k].far.prop==="fragile"?"«принимаем по весу, вес — наш»":"«весы наши, тара ваша»"));
+        tg=tl.join(" · ");
+      }
+      const r=el("div","mk-r"+(q?" has":""));
+      r.appendChild(el("div","nm","<i style='background:"+resTxt(k)+"'></i><b>"+RES[k].ru+"</b>"+(tg?"<s>"+tg+"</s>":"")));
+      r.appendChild(el("div","pr",price+"<s>кр/ед</s>"));
+      r.appendChild(el("div","dv"+(d>=12?" up":d<=-10?" dn":""),(d>0?"+":d<0?"−":"")+Math.abs(d)+" %"));
+      r.appendChild(el("div","qt",q?q+"<s>"+Math.round(Q.revenue).toLocaleString("ru")+" кр</s>":"—"));
+      if(q){
+        const b=el("button","act"+(Q.nA?" gold":""),"ПРОДАТЬ");
+        b.onclick=()=>{const rev=sellCargo(G.sys,k,q),L=sellCargo.last||{};
+          const extra=L.nA?" · "+L.nA+" с надбавкой":"";
+          tell("money","Продано на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+q+" · +"+rev.toLocaleString("ru")+" кр"+extra,
+               "Продано: "+RES[k].ru+" ×"+q+"\n+"+rev.toLocaleString("ru")+" кр"+extra);
+          renderTab();};
+        r.appendChild(b);
+      }
+      T.appendChild(r);
     }
     if(any){
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>Продать весь груз</b><s>по ценам этой станции</s>"));
-      r.appendChild(el("div","qt",tot.toLocaleString("ru")+"<s>кр</s>"));
+      const r=el("div","mk-r tot");
+      r.appendChild(el("div","nm","<b>Весь груз</b><s>по ценам этой станции</s>"));
+      r.appendChild(el("div","qt",Math.round(tot).toLocaleString("ru")+"<s>кр</s>"));
       const b=el("button","act gold","ПРОДАТЬ ВСЁ");
       b.onclick=()=>{let sum=0,n=0;
         for(const k of TRADE_KEYS.concat(FAR_KEYS)){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
         tell("money","Груз сдан на «"+G.st.name+"» · "+n+" ед · +"+sum.toLocaleString("ru")+" кр",
              "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
         renderTab();};
-      r.appendChild(b);$body.appendChild(r);
-    }else if(!empty)$body.appendChild(el("div","sec","НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"));   /* редкое — тоже груз (хвост R6) */
+      r.appendChild(b);T.appendChild(r);
+    }
+    $body.appendChild(T);
+    if(!any&&!empty)$body.appendChild(el("div","sec","НА ПРОДАЖУ НЕЧЕГО — В ТРЮМЕ ТОЛЬКО РЕДКОЕ И СВОЁ"));   /* редкое — тоже груз (хвост R6) */
     /* «ИЗ ДАЛИ» (M467): в сердце изредка продают далёкое — втридорога */
     {const S=(typeof farStall==="function")?farStall(G.sys):null;
       if(S&&S.left){
@@ -250,13 +263,6 @@ function stTabMarket(st){
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
       }
-    }
-    $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
-    for(const k of TRADE_KEYS){
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b>"));
-      r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
-      $body.appendChild(r);
     }
     /* запись кооператива — ПОСЛЕ цен (ревью шапки 13–15): на рынок приходят
        узнать, почём; форма на полэкрана над ценами отвечала на вопрос,
@@ -314,9 +320,17 @@ function stTabYard(st){
     }
     const yard=stationFleet(G.sys);
     $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
-    for(const id of yard)$body.appendChild(shipRow(id,FLEET[id]));
+    for(const id of yard)$body.appendChild(shipRow(id,shipData(id)));
+    /* верфь державы (M714): своя линия у своей станции, в «Ялте» — от всех пяти, вдвое дороже */
+    const yl=(typeof stationYard==="function")?stationYard(G.sys):[];
+    if(yl.length){
+      const yal=(typeof yaltaIs==="function")&&yaltaIs(G.sx,G.sy),by=G.sys.station.by;
+      $body.appendChild(el("div","sec",yal?"ЯЛТА · ВЕРФИ ВСЕХ ДЕРЖАВ · ВДВОЕ ДОРОЖЕ":
+        "ВЕРФЬ ДЕРЖАВЫ · "+makerRu(by).toUpperCase()+(hasEpisode(by)?" · РАЗРЕШЕНИЕ ЕСТЬ":" · ПРОДАЮТ ТОЛЬКО ПО ДЕЛУ С НЕЙ")));
+      for(const id of yl)if(yard.indexOf(id)<0)$body.appendChild(shipRow(id,shipData(id)));
+    }
     /* Свои корпуса из ангара показываем всегда: пересесть обратно можно везде */
-    const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0);
+    const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0&&yl.indexOf(id)<0);
     if(own.length){
       $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
       for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}

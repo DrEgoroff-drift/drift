@@ -26,37 +26,49 @@ function facePath(c,r,cx,cy,w,h){
   c.bezierCurveTo(cx-w,cy-h*.1,cx-w*brow,cy-h*.85,cx,cy-h*brow);
   c.closePath();
 }
-function mgrFace(m,size){
-  const key=size+":"+Math.round((m.loy||55)/12)+":"+mgrLevel(m)+":"+Math.round((m.drift||0)/10);
-  if(m._face&&m._faceKey===key)return m._face;
-  const S=size,cn=document.createElement("canvas");
+/* cut — «вырез» для зала кантины (M725): одна голова на прозрачном, без фона роли, плеч, ворота и рамки —
+   тело ей дорисовывает фигура. Лицо то же: шум фона берёт свой генератор (faceRnd 11), а не общий, — иначе
+   число его вызовов (от размера) сдвигало причёску и кожу, и в зале (34 px) и в строке (44 px) сидели
+   разные люди. Кэш — на четыре размера: зал, строка, карточка и досье спрашивают одно лицо подряд */
+function mgrFace(m,size,cut){
+  const key=size+":"+(cut?1:0)+":"+Math.round((m.loy||55)/12)+":"+mgrLevel(m)+":"+Math.round((m.drift||0)/10);
+  const FC=m._faces||(m._faces=new Map());
+  let cn=FC.get(key);if(cn)return cn;
+  const S=size;cn=document.createElement("canvas");
   cn.width=S;cn.height=S;
+  if(FC.size>=4)FC.delete(FC.keys().next().value);
+  FC.set(key,cn);
   const c=cn.getContext("2d");
   const r=faceRnd(m,1);
   const R=MGR_ROLES[m.role];
-  if(m.ai){aiFace(c,m,S,r,R);m._face=cn;m._faceKey=key;return cn;}
+  if(m.ai){aiFace(c,m,S,r,R);return cn;}
   /* габарит головы тоже от seed: без этого все лица одного размера и на витрине
      кантины читаются как один человек в разных париках */
   const rg=faceRnd(m,3);
   const cx=S*.5,cy=S*(.5+rg()*.08),w=S*(.23+rg()*.08),h=S*(.3+rg()*.09);
-  /* 1. фон — роль цветом, шум от seed */
-  c.fillStyle=FACE_ROLE_BG[m.role]||"#151a22";
-  c.fillRect(0,0,S,S);
-  const g=c.createRadialGradient(cx,cy-S*.1,S*.05,cx,cy,S*.75);
-  g.addColorStop(0,"rgba(255,255,255,.14)");g.addColorStop(1,"rgba(0,0,0,.55)");
-  c.fillStyle=g;c.fillRect(0,0,S,S);
-  for(let i=0;i<S*1.2;i++){
-    c.fillStyle="rgba(255,255,255,"+(r()*.05).toFixed(3)+")";
-    c.fillRect(Math.floor(r()*S),Math.floor(r()*S),1,1);
+  /* 1. фон — роль цветом, шум от seed (свой генератор: см. выше) */
+  if(!cut){
+    c.fillStyle=FACE_ROLE_BG[m.role]||"#151a22";
+    c.fillRect(0,0,S,S);
+    const g=c.createRadialGradient(cx,cy-S*.1,S*.05,cx,cy,S*.75);
+    g.addColorStop(0,"rgba(255,255,255,.14)");g.addColorStop(1,"rgba(0,0,0,.55)");
+    c.fillStyle=g;c.fillRect(0,0,S,S);
+    const rn=faceRnd(m,11);
+    for(let i=0;i<S*1.2;i++){
+      c.fillStyle="rgba(255,255,255,"+(rn()*.05).toFixed(3)+")";
+      c.fillRect(Math.floor(rn()*S),Math.floor(rn()*S),1,1);
+    }
   }
   /* 2. плечи — комплекция */
   const build=.7+r()*.7;
-  c.fillStyle="rgba(10,14,18,.9)";
-  c.beginPath();
-  c.moveTo(cx-w*2.1*build,S);
-  c.quadraticCurveTo(cx-w*1.1*build,S*.72,cx,S*.72);
-  c.quadraticCurveTo(cx+w*1.1*build,S*.72,cx+w*2.1*build,S);
-  c.closePath();c.fill();
+  if(!cut){
+    c.fillStyle="rgba(10,14,18,.9)";
+    c.beginPath();
+    c.moveTo(cx-w*2.1*build,S);
+    c.quadraticCurveTo(cx-w*1.1*build,S*.72,cx,S*.72);
+    c.quadraticCurveTo(cx+w*1.1*build,S*.72,cx+w*2.1*build,S);
+    c.closePath();c.fill();
+  }
   /* 3. причёска задним планом.
      Раньше она рисовалась поверх готового лица — и капюшон честно закрывал глаза.
      Объём идёт под череп, вперёд выходит только чёлка (ниже). */
@@ -87,6 +99,13 @@ function mgrFace(m,size){
   }
   /* 4. череп и кожа */
   const skin=FACE_SKIN[Math.floor(r()*FACE_SKIN.length)];
+  /* у выреза — шея до нижнего края: голову ставят на плечи фигуры, а не на воздух */
+  if(cut){
+    const ng=c.createLinearGradient(0,cy+h*.3,0,S);
+    ng.addColorStop(0,"rgba(0,0,0,.35)");ng.addColorStop(.35,"rgba(0,0,0,.18)");ng.addColorStop(1,"rgba(0,0,0,.05)");
+    c.fillStyle=skin;c.fillRect(cx-w*.42,cy+h*.3,w*.84,S-cy-h*.3);
+    c.fillStyle=ng;c.fillRect(cx-w*.42,cy+h*.3,w*.84,S-cy-h*.3);
+  }
   const rr=faceRnd(m,7);
   facePath(c,rr,cx,cy,w,h);
   c.fillStyle=skin;c.fill();
@@ -182,6 +201,7 @@ function mgrFace(m,size){
     }
     c.globalAlpha=1;
   }
+  if(cut)return cn;
   /* 8. ворот и нашивки: портрет растёт вместе с уровнем */
   const lv=mgrLevel(m);
   c.fillStyle="rgba(18,24,30,.95)";
@@ -200,7 +220,6 @@ function mgrFace(m,size){
   /* рамка по роли — по ней список читается одним взглядом */
   c.strokeStyle=R.col;c.globalAlpha=.55;c.lineWidth=Math.max(1,S*.016);
   c.strokeRect(0,0,S,S);c.globalAlpha=1;
-  m._face=cn;m._faceKey=key;
   return cn;
 }
 /* ── лицо ядра ──

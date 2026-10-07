@@ -133,6 +133,7 @@ function renderBasesTab(st){
           "<div class='nm'><s>перебирать нечего: все части стоят на корабле</s></div>"));
         for(const p of free.slice(0,6)){
           const pr2=el("div","row");
+          pr2.appendChild(partThumb(p,120,80,"row"));
           pr2.appendChild(el("div","nm","<b>"+p.name+"</b> <span style='color:var(--dim)'>"+
             TIER_RU[p.tier]+"</span><s>"+p.aff.map(affLabel).join(" · ")+"</s>"));
           const pb=document.createElement("button");

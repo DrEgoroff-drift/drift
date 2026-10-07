@@ -78,6 +78,11 @@ function kinoScreen(c,x,y,w,h,K,seed){
   c.fillRect(x,y,w,h);
   c.save();
   c.beginPath();c.rect(x,y,w,h);c.clip();
+  /* плёнка в фильмовом канале гуляет: кадр чуть дрожит целиком, вместе с
+     подписью — её печатают на той же плёнке (G11) */
+  const fq=hashi(seed|0,Math.floor(now()/120),11);
+  const jx=((fq&255)/255-.5)*w*.006, jy=(((fq>>>8)&255)/255-.5)*h*.010;
+  c.save();c.translate(jx,jy);
   const cx=x+w*.5, cy=y+h*.52;
   const ink="rgba(30,34,38,.86)", pale="rgba(120,126,130,.55)";
   if(F&&F.k==="map"){
@@ -156,6 +161,10 @@ function kinoScreen(c,x,y,w,h,K,seed){
   for(let i=0;i<Math.round(w*h/240);i++)c.fillRect(x+rg()*w,y+rg()*h,1,1);
   c.fillStyle="rgba(255,255,255,.10)";
   c.fillRect(x,y+rg()*h,w,1);
+  c.restore();
+  /* полотно — как у main: гладкое кремовое, своё зерно и отсвет. Царапины читались швами,
+     горячая середина с провалом углов и мигание лампы серили его и снимали контраст
+     изображения (Контроль 26.09: «без швов и без мятой бумаги») */
   /* подпись журнала */
   if(F){
     c.fillStyle="rgba(16,18,22,.80)";
@@ -171,68 +180,4 @@ function kinoScreen(c,x,y,w,h,K,seed){
     c.textAlign="left";
   }
   c.restore();
-}
-/* луч из будки: конус пыльного света над головами */
-function kinoBeam(c,fromX,fromY,x,y,w,h){
-  const g=c.createLinearGradient(fromX,fromY,x+w*.5,y+h*.5);
-  g.addColorStop(0,"rgba(255,246,220,.20)");
-  g.addColorStop(1,"rgba(255,246,220,.03)");
-  c.fillStyle=g;
-  c.beginPath();
-  c.moveTo(fromX,fromY-2);c.lineTo(fromX,fromY+2);
-  c.lineTo(x,y+h);c.lineTo(x+w,y);
-  c.closePath();c.fill();
-}
-
-/* ── зал на один вечер ──
-   Хол не перестраивается заново: он ГАСНЕТ и обрастает рядами. Стойка уходит
-   в тень, на задней стене полотно, через зал идёт луч, а перед нами спинки
-   стульев и затылки — те же люди, только повёрнутые. Так и бывает: кантина
-   не превращается в кинотеатр, она им прикидывается на вечер. */
-function kinoOverlay(c,W2,H2,fy,cy,K,seed){
-  if(!K)return;
-  /* свет в зале гасят */
-  c.fillStyle="rgba(8,10,14,.52)";
-  c.fillRect(0,0,W2,H2);
-  const sw=W2*0.34, sh=sw*0.62;
-  const sx=W2*0.50-sw*0.5, sy=cy-sh*0.72;
-  kinoBeam(c,W2*0.06,cy-H2*0.22,sx,sy,sw,sh);
-  kinoScreen(c,sx,sy,sw,sh,K,seed);
-  /* отсвет полотна на потолке и на затылках */
-  const gl=c.createRadialGradient(sx+sw*.5,sy+sh*.5,sh*.2,sx+sw*.5,sy+sh*.5,sw*1.5);
-  gl.addColorStop(0,"rgba(226,222,206,.16)");
-  gl.addColorStop(1,"rgba(226,222,206,0)");
-  c.fillStyle=gl;c.fillRect(0,0,W2,H2);
-  /* ряды: два ряда затылков и спинок, ближний крупнее */
-  const r=rng(seed^0x0C1F);
-  for(let row=0;row<2;row++){
-    const y=fy+row*H2*0.075+H2*0.02;
-    const k=1+row*0.34;
-    const n=Math.max(4,Math.round(W2/(66*k)));
-    for(let i=0;i<n;i++){
-      const x=W2*(i+0.5)/n+(r()-0.5)*10;
-      /* спинка стула */
-      c.fillStyle="rgba(18,20,26,.92)";
-      c.fillRect(x-16*k,y-6*k,32*k,26*k);
-      c.fillStyle="rgba(255,255,255,.05)";
-      c.fillRect(x-16*k,y-6*k,32*k,Math.max(1,2*k));
-      /* затылок: голова, плечи, и подсвеченный полотном край */
-      c.fillStyle="rgba(24,26,32,.96)";
-      c.beginPath();c.arc(x,y-14*k,9*k,0,TAU);c.fill();
-      c.fillRect(x-13*k,y-8*k,26*k,10*k);
-      c.strokeStyle="rgba(226,222,206,.18)";
-      c.lineWidth=Math.max(1,1.4*k);
-      c.beginPath();c.arc(x,y-14*k,9*k,Math.PI*1.15,Math.PI*1.75);c.stroke();
-    }
-  }
-  /* название сеанса на афише у края */
-  c.fillStyle="rgba(226,218,196,.92)";
-  c.fillRect(W2*0.03,cy-H2*0.30,W2*0.16,H2*0.13);
-  c.fillStyle="rgba(60,52,40,.9)";
-  c.font=Math.max(6,Math.round(H2*0.030))+"px ui-monospace,monospace";
-  c.textAlign="center";
-  const t=K.title.length>16?K.title.slice(0,15)+"…":K.title;
-  c.fillText("СЕГОДНЯ",W2*0.11,cy-H2*0.30+H2*0.050);
-  c.fillText(t,W2*0.11,cy-H2*0.30+H2*0.098);
-  c.textAlign="left";
 }

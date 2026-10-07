@@ -103,6 +103,9 @@ function orderOf(sys){
 function orderTake(sys){
   if(G.order)return false;
   const O=orderOf(sys);if(!O)return false;
+  /* срок — от взятия, а не от конца окна (§12): взятый под конец окна наряд
+     оставлял две игровые минуты на 2–8 секторов */
+  O.due=Math.max(O.due,celDay()+ORDER_WIN);
   G.order=O;
   tell("tech","Наряд взят: "+O.qty+" "+O.ru+" → "+O.to.name+" до "+O.due+"-го · "+O.pay+" кр",
        "НАРЯД\n"+O.qty+" "+O.ru+" → "+O.to.name);
@@ -336,8 +339,7 @@ function mapPriceDraw(PR,x0,y0){
     let x=x0;const y=y0+ri*11;
     row.forEach(cell=>{
       ctx.font=(cell.best?"bold ":"")+"9px ui-monospace,monospace";
-      ctx.fillStyle=cell.hot?"#f2b25c":(cell.mark?"rgba(255,150,135,.85)":"rgba(160,182,192,.62)");
-      ctx.fillText(cell.t,x,y);x+=ctx.measureText(cell.t).width+sep;
+      mpText(cell.t,x,y,cell.hot?"#f2b25c":(cell.mark?"rgba(255,150,135,.85)":"rgba(160,182,192,.62)"));x+=ctx.measureText(cell.t).width+sep;
     });
   });
   ctx.font="9px ui-monospace,monospace";
