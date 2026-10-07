@@ -1015,7 +1015,12 @@ body.screen #parrotwin,body.table #parrotwin{display:none}
 /* стол с вещами — раскладка, а не строка текста: его ширина растёт вместе со шрифтом (--ui). Под общей
    колонной в 1000 экранных точек на 2560 столу оставалось 570 своих, и подписи вещей вылезали из карточек
    (зрение 06.10.2026). Журнал на том же столе — текст, ему остаётся человеческая колонна */
-@media (min-width:900px){#tablewin:has(#loglist.opis){inset:22px max(24px,calc(50% - 475px))}}
+/* ОПИСЬ с ангаром (M723) — шире: в колонне 950 сцена корабля шла на 590, и карточки подвесов ломали
+   имена в три строки */
+@media (min-width:900px){#tablewin:has(#loglist.opis){inset:22px max(24px,calc(50% - 700px))}}
+/* строка приёмника над шапкой (56 px, body.screen .scr.open) столу не нужна: на столе приёмник скрыт
+   (body.table #console), и полоса пустого дерева съедала первый экран описи (M723) */
+body.table.screen #tablewin.open{padding-top:env(safe-area-inset-top)}
 /* шапка и вкладки — по дереву, а не по стеклу */
 body.table #tablewin>header{border-bottom-color:rgba(122,90,54,.55);
   background:linear-gradient(180deg,rgba(0,0,0,.30),transparent)}
@@ -1679,6 +1684,7 @@ body.op-ask #opisBar>s{display:none}
   .opis .op-hullcap b{display:block;font-weight:400;font-size:11px;letter-spacing:.12em}
   .opis .op-hullcap>s{display:block;text-decoration:none;color:rgba(232,220,190,.62);font-size:10px;line-height:1.55;margin-top:2px}
   .opis .op-hullcap .lg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:9px;letter-spacing:.12em;color:#efe4c8}
+  .opis .op-hullcap .lg>span{white-space:nowrap}
   .opis .op-hullcap .lg i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
   .opis .op-hullcap .acts{display:flex;gap:6px;margin-top:6px}
   .opis .op-hullcap .acts .act{flex:1 1 auto}
@@ -1748,6 +1754,130 @@ body.aboard #console{display:none!important}
 .opis .op-lockgrid .empty{display:block;height:24px;border:1px dashed rgba(232,220,190,.25);border-radius:4px}
 .opis .op-card.lock{padding:6px 8px}
 .opis .op-card.lock.on{transform:none;box-shadow:0 5px 12px rgba(0,0,0,.4)}
+
+/* ══════════════ ангар описи (M723, 27j1): графитовый отсек, врезанный в сукно ══════════════
+   Сукно — для вещей в руках; корабль стоит в железе: тёмная ниша под студийным светом, подвесы —
+   карточками на выносках над сценой и под ней. Ангар — первым и во всю ширину: ради него стол и
+   открывают. Цвета отсека — свои (--hg-*): бумага и мел сукна на графите не читаются. */
+body.table #loglist.opis{grid-template-columns:1fr 1fr .62fr;grid-template-areas:"parts parts parts" "top top top" "hold kit side" "hold kit hatch"}
+.opis .op-shelf,.opis .op-box{grid-row:2}
+.opis .op-parts.hg{--hg-ink:#f1ebde;--hg-ink2:#a59d8f;--hg-acc:#ff6a2b;container-type:inline-size;
+  padding:12px 14px 14px;border:0;border-radius:6px;
+  background:
+    radial-gradient(ellipse 60% 38% at 50% 0%,rgba(255,214,170,.07),transparent 70%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 4px),
+    linear-gradient(180deg,#202328 0%,#16181b 55%,#111315 100%);
+  box-shadow:0 0 0 1px #050607,0 0 0 3px #2c3036,0 0 0 4px rgba(0,0,0,.6),0 16px 34px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(0,0,0,.6)}
+/* заклёпки по углам отсека */
+.opis .op-parts.hg::before{content:"";position:absolute;inset:4px;pointer-events:none;
+  background:
+    radial-gradient(circle,#5a6068 0 1.4px,#08090b 1.9px,transparent 2.5px) 0 0/8px 8px no-repeat,
+    radial-gradient(circle,#5a6068 0 1.4px,#08090b 1.9px,transparent 2.5px) 100% 0/8px 8px no-repeat,
+    radial-gradient(circle,#5a6068 0 1.4px,#08090b 1.9px,transparent 2.5px) 0 100%/8px 8px no-repeat,
+    radial-gradient(circle,#5a6068 0 1.4px,#08090b 1.9px,transparent 2.5px) 100% 100%/8px 8px no-repeat}
+.opis .hg>h3{color:var(--hg-ink);font-size:11px;letter-spacing:.24em;padding-bottom:9px;margin-bottom:12px;
+  border-bottom:1px solid rgba(255,255,255,.07);box-shadow:0 1px 0 rgba(0,0,0,.55)}
+.opis .hg>h3 i{background:var(--hg-acc);color:#16120c}
+.opis .hg>h3 s{color:var(--hg-ink2)}
+.opis .hg h4{color:var(--hg-ink)}
+.opis .hg h4 s{color:var(--hg-ink2)}
+.opis .hg .chalk{color:rgba(241,235,222,.6)}
+.hg .hg-grid{display:grid;grid-template-columns:minmax(0,1fr) 256px;gap:14px;align-items:start}
+.hg .hg-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.hg .hg-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.hg .hg-stage{display:flex;flex-direction:column;min-width:0}
+.hg .hg-low{display:flex;gap:14px;align-items:flex-start;min-width:0}
+.hg .hg-low>.op-spare{flex:1 1 0;min-width:0}
+.hg .hg-plan{flex:0 0 232px;box-sizing:border-box;min-width:0;padding:8px 10px;border-radius:4px;background:linear-gradient(180deg,#1a1d21,#141619);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+/* узко — одна лента: колонны растворяются, порядок — сцена, подпись и слоты (телефон), разбор, приборы, снятые, чертёж */
+@container (max-width:780px){
+  .hg .hg-grid{display:flex;flex-direction:column;gap:12px}
+  .hg .hg-main,.hg .hg-side,.hg .hg-low{display:contents}
+  .hg .hg-stage{order:1}.hg .op-hullcap{order:2}.hg .op-slots{order:3}.hg .hg-insp{order:4}
+  .hg .op-panel{order:5}.hg .op-spare{order:6}.hg .hg-plan{order:7}
+  .hg .hg-low>.op-spare,.hg .hg-plan{flex:none}
+}
+/* сцена: ряд карточек, холст, ряд карточек — без зазоров, выноска переходит в полосу карточки */
+/* карточки ряда — одной высоты: ровный край сверху и снизу, полосы рода на одной линии */
+.hg .hg-row{display:flex;flex-wrap:nowrap;align-items:stretch;min-width:0}
+.hg .hg-row:empty{display:none}
+.opis .hg .op-slot.hg-call{display:flex;flex-direction:column}
+.opis .hg .hg-call>.op-card{flex:1 1 auto}
+/* высота сцены — от экрана: под --ui видимый стол 16:9 почти всегда 760 css-px, из них шапке и кнопке — 250;
+   ангар с двумя рядами карточек должен встать в первый экран целиком. Высокий экран (4K) — щедрее */
+.opis .hg canvas.op-hull{width:100%;height:auto;aspect-ratio:2.5/1;max-height:270px;min-height:200px;border-radius:2px;
+  cursor:grab;touch-action:pan-y;
+  background:radial-gradient(ellipse 70% 62% at 50% 36%,#262a30 0%,#16181b 56%,#0b0c0e 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 18px 40px rgba(0,0,0,.45),inset 0 -26px 44px rgba(0,0,0,.55)}
+.opis .hg canvas.op-hull:active{cursor:grabbing}
+@media (min-height:1700px) and (min-width:761px){.opis .hg canvas.op-hull{max-height:420px}}
+/* карточка подвеса у выноски: полоса рода смотрит на сцену */
+.opis .hg .op-slot.hg-call{flex:0 1 auto;min-width:0;box-sizing:border-box;min-height:44px;padding:0;border:0;border-radius:3px;cursor:pointer;
+  background:linear-gradient(180deg,#2b2f35,#1e2126);box-shadow:0 6px 14px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07);
+  transition:box-shadow .12s,filter .12s}
+.opis .hg .op-slot.hg-call.top{border-bottom:2px solid var(--k);border-radius:3px 3px 0 0}
+.opis .hg .op-slot.hg-call.bot{border-top:2px solid var(--k);border-radius:0 0 3px 3px}
+.opis .hg .op-slot.hg-call.empty{padding:6px 9px 7px;background:linear-gradient(180deg,rgba(43,47,53,.7),rgba(30,33,38,.7))}
+.opis .hg .op-slot.hg-call.on{border-color:var(--hg-acc);box-shadow:0 0 0 1px var(--hg-acc),0 0 18px rgba(255,106,43,.28),0 6px 14px rgba(0,0,0,.45)}
+.opis .hg .op-slot.hg-call.aim{border-color:var(--hg-acc);background:linear-gradient(180deg,#3a2c24,#241c18)}
+@media (hover:hover){.opis .hg .op-slot.hg-call:hover{filter:brightness(1.14)}}
+.opis .hg .hg-call .op-card{padding:6px 9px 7px;min-height:44px;box-sizing:border-box;background:none;box-shadow:none;border-radius:0;transform:none}
+.opis .hg .hg-call em,.opis .hg .hg-chip em{display:flex;align-items:center;gap:6px;margin:0 0 3px;font-style:normal;font-size:9px;letter-spacing:.16em;color:var(--k)}
+.opis .hg .hg-call em i,.opis .hg .hg-chip em i{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;
+  box-sizing:border-box;border-radius:8px;background:var(--k);color:#0b0d10;font-style:normal;font-size:10px;font-weight:700;line-height:1;letter-spacing:0}
+.opis .hg .hg-call b,.opis .hg .hg-chip b{display:block;font-weight:400;font-size:12px;line-height:1.3;color:var(--hg-ink)}
+.opis .hg .hg-call b.nil,.opis .hg .hg-chip b.nil{font-style:italic;color:var(--hg-ink2)}
+.opis .hg .hg-call s,.opis .hg .hg-chip s{display:block;text-decoration:none;font-size:9px;line-height:1.45;color:var(--hg-ink2)}
+/* разбор выбранного */
+.opis .hg .hg-insp{padding:10px 12px 12px;border-radius:4px;border-left:3px solid var(--k,var(--hg-acc));
+  background:linear-gradient(180deg,#24282e,#1a1d21);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),inset 0 0 0 1px rgba(255,255,255,.04),0 6px 14px rgba(0,0,0,.35)}
+.opis .hg .hg-insp h4 i{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;
+  border-radius:9px;background:var(--k,var(--hg-acc));color:#0b0d10;font-style:normal;font-size:10px;font-weight:700;letter-spacing:0}
+.opis .hg .hg-insp .nm{display:block;font-weight:400;font-size:13px;color:var(--hg-ink);margin:2px 0 4px}
+.opis .hg .hg-insp .op-card{margin-top:8px}
+.opis .hg .hg-lg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin:2px 0 8px}
+.opis .hg .hg-lg span{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.12em;color:var(--hg-ink)}
+.opis .hg .hg-lg i{width:9px;height:9px;border-radius:50%;background:var(--k);box-shadow:0 0 6px var(--k);flex:0 0 auto}
+.opis .hg .hg-lg b{margin-left:auto;font-weight:400;color:var(--hg-ink2);font-variant-numeric:tabular-nums}
+/* приборы — шкала, утопленная в металл */
+.opis .hg .op-panel{margin-top:0;background:linear-gradient(180deg,#121417,#0d0f11);border:1px solid rgba(255,255,255,.07);
+  box-shadow:inset 0 1px 8px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.04)}
+.opis .hg .op-panel .ln em{color:rgba(241,235,222,.62)}
+.opis .hg .op-panel .ln b{color:var(--hg-ink)}
+.opis .hg .op-panel .up{color:#8fd18b}.opis .hg .op-panel .dn{color:#ff8a6a}
+/* лоток снятых: решётка карточек на рифлёном дне */
+.opis .hg .op-spare{grid-area:spare;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;align-content:start;
+  padding:10px;border:0;border-radius:4px;min-height:96px;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.02) 0 10px,transparent 10px 20px),linear-gradient(180deg,#141619,#0f1113);
+  box-shadow:inset 0 2px 10px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.05)}
+.opis .hg .op-spare>h4,.opis .hg .op-spare>.chalk{grid-column:1/-1;margin-bottom:0}
+/* карточки части в отсеке — тёмные пластины, род полосой сверху (инлайн из opisPartCard) */
+.opis .hg .op-card{background:linear-gradient(180deg,#2a2e34,#1f2227);color:var(--hg-ink);border-radius:3px;
+  box-shadow:0 6px 14px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(255,255,255,.05)}
+.opis .hg .op-card b{color:var(--hg-ink)}
+.opis .hg .op-card s{color:var(--hg-ink2)}
+.opis .hg .op-card i{color:#cfc6b4}
+.opis .hg .op-card .up{color:#8fd18b}.opis .hg .op-card .dn{color:#ff8a6a}
+.opis .hg .op-card.on{box-shadow:0 0 0 2px var(--hg-acc),0 10px 22px rgba(0,0,0,.55),0 0 18px rgba(255,106,43,.22)}
+.opis .hg .op-card.fit{box-shadow:0 0 0 1px rgba(143,209,139,.75),0 6px 14px rgba(0,0,0,.45)}
+.opis .hg .op-card .act{color:var(--hg-ink);border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06)}
+.opis .hg .op-card .act.gold{color:#1a0f06;border-color:var(--hg-acc);background:var(--hg-acc)}
+@media (max-width:760px){
+  /* в колонке телефона отсек тянут поперёк: со сдерживанием ширины (container-type) своя ширина у него — ноль */
+  .opis .op-parts.hg{padding:10px;align-self:stretch}
+  .opis .hg .hg-grid{gap:10px}
+  .opis .hg canvas.op-hull{aspect-ratio:1.5/1;min-height:180px}
+  .opis .hg .op-hullcap{background:linear-gradient(180deg,#24282e,#1a1d21);border-color:rgba(255,255,255,.06)}
+  .opis .hg .op-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .opis .hg .op-slot.hg-chip{display:block;min-height:44px;box-sizing:border-box;padding:6px 8px;border:0;border-left:3px solid var(--k);border-radius:3px;
+    background:linear-gradient(180deg,#24282e,#1b1e22);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .opis .hg .op-slot.hg-chip.on{box-shadow:0 0 0 2px var(--hg-acc)}
+  .opis .hg .op-slot.hg-chip b{font-size:11px}
+  .opis.op-tab-spare .hg-stage{display:none}
+}
 /* коробки на полке дома (M346): ряд этикеток рядом с книгами */
 body.table #loglist .boxes{display:flex;flex-wrap:wrap;gap:8px;padding:6px 18px 12px 60px}
 body.table #loglist .matchbox{flex:0 0 auto;width:118px;padding:6px 8px 7px;border-radius:2px;

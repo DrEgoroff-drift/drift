@@ -150,3 +150,21 @@ Laws:
 4. **Glow is a vertex channel**: `m.y` in (1,3] lights the part in its own colour (emitters, core slits); 0..1 stays
    the ember.
 
+### The hangar (M723) — `27j1-ui-hangar`
+
+Zone 3 of ОПИСЬ is a hangar bay: the fitted ship in 3D under studio light, every mount a numbered marker, every
+marker a leader line to its slot card. Laws:
+1. **The ship is the hero, the cards frame it.** Slot cards stand in a row above and a row below the stage, ordered
+   by the marker's x so leader lines never cross; the stage is fitted to the hull alone (`hu0..hv1`), not to the
+   markers. The camera is fixed by eye (tilt .95, yaw .14, perspective .14) and sways slowly; a drag turns it.
+2. **Graphite bay, one accent.** Dark graphite plates with rivets and a bezel, ink `#f1ebde`, one accent `#ff6a2b`
+   for the selection and the action; the part kind's colour lives only on the card's edge, the marker and the line.
+3. **Markers never stack.** True positions are projected, then pushed apart (radius 25, five passes); a moved marker
+   keeps a thin stalk to its true point.
+4. **The studio renders at the frame's own size** (`h3dStudioRT`): no intermediate square layer, so 4K is sharp and
+   the phone pays less than the 1024 class; the studio bake caps at `HS_SIDE` 2048, twice the flight's.
+5. **Phone and narrow windows reflow, not shrink.** A container query (≤ 780 px of the bay) turns the two columns
+   into one: stage, legend, slot chips in two columns, inspector, panel, spare parts, plan.
+6. **The table yields to the hangar**: on the table the console's 56 px top padding is gone, and from 900 px the
+   table widens to 1400 so the whole bay fits the first screen at 1920×1080.
+

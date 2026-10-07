@@ -338,9 +338,12 @@ function opisMarkCan(pl){
   });
   const bar=document.getElementById("opisBar");
   if(bar)bar.classList.toggle("can",pl.t!=="kit"&&(pl.t!=="pile"||opisCanDump(pl.k)));
+  /* рамка сцены ангара — один раз на подъём: кадр по ней ищет метку под пальцем, сам DOM не читает (27j1) */
+  const hc=root.querySelector("canvas.op-hull");HANGAR.rc=hc?hc.getBoundingClientRect():null;HANGAR.ptr=null;
 }
 function opisMarkOver(x,y){
   const tgt=opisDropAt(x,y);
+  HANGAR.ptr=tgt&&tgt.kind==="hull"?[x,y]:null;
   document.querySelectorAll("[data-drop].over").forEach(e=>{if(!tgt||e!==tgt.el)e.classList.remove("over");});
   if(tgt)tgt.el.classList.add("over");
 }
@@ -357,7 +360,7 @@ function opisDropEnd(){
   try{d.card.releasePointerCapture(d.pid);}catch(e){}
   document.body.classList.remove("op-lift");
   document.querySelectorAll("[data-drop].can,[data-drop].over").forEach(e=>{e.classList.remove("can");e.classList.remove("over");});
-  OPIS.drag=null;
+  OPIS.drag=null;HANGAR.ptr=HANGAR.rc=null;
   /* отложенная перестройка, если пока несли вещь что-то поменялось (P2) */
   if(OPIS.rerenderPending){OPIS.rerenderPending=false;opisRerender();}
 }
@@ -400,62 +403,24 @@ function opisDrop(tgt,pl){
     else say(hullish?"Это на корпус":"Это на скафандр");
   }
 }
-/* ── силуэт корпуса: якоря слотов — мишени и для тапа, и для переноса ── */
+/* ── корпус в ангаре: метки подвесов — мишени и для тапа, и для переноса ── */
 function opisHullRedraw(){
   const cv=OPIS.box&&OPIS.box.querySelector("canvas.op-hull");if(!cv)return;
   const f=opisFocus(),fut=opisShipFuture(f);
-  let sel=-1;
-  if(OPIS.sel&&OPIS.sel.t==="slot")sel=OPIS.sel.i;
-  else if(fut&&fut.slot>=0)sel=fut.slot;
-  const dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
-  /* логический размер — по КЛЕТКЕ сетки, а не константой: канва растянута на
-     ячейку, и рисунок другого отношения сторон вышел бы сплющенным (первый снимок
-     M341: корпус читался повёрнутым). Без вёрстки (тесты, фаззер) — запас */
-  const bw=cv.clientWidth|0,bh=cv.clientHeight|0;
-  const cw=bw>40?bw:OPIS_HW,ch=bh>40?bh:OPIS_HH;
-  OPIS.hullW=cw;OPIS.hullH=ch;
-  const pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);
-  if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;}
-  const M=hullSilhouette(cw,ch,G.shipId,sel,G.fit[G.shipId]||{});
-  OPIS.hit=M.hit;
-  /* рисунок — кадру (opisHullTick): подпись меняется — холст перерисуется */
-  OPIS.gd={cv,cw,ch,nd:pw/cw,id:G.shipId,M,sig:[G.shipId,pw,ph,cw,ch,G.mods.engine,hullBakeKey(G.shipId,1),
-    M.hit.map(h=>h.i+(h.on?"+":"-")+(h.sel?"*":"")).join(",")].join("|")};
+  /* ангар (M723, 27j1): размер холста по клетке, масштаб, ряды выносок, метки для тычка; выбранный
+     слот — одно, слот, куда встанет наведённая снятая, — другое (мишень) */
+  hgLay(cv,OPIS.sel&&OPIS.sel.t==="slot"?OPIS.sel.i:-1,fut&&fut.slot>=0&&(!f||f.t!=="slot")?fut.slot:-1);
 }
-/* силуэт на движке (G15): у холста .op-hull свой контекст webgpu, как у колодки 25c; корабль —
-   студия 17c2 (hullStudio), тень, якоря и плюсы — примитивы ov* (08bi). Кадр (hud) рисует, когда
-   сменились холст, устройство или подпись; 2D у холста нет вовсе. OPIS_G.n — сколько проходов было */
+/* сцена ангара на движке: у холста .op-hull свой контекст webgpu, как у колодки 25c; корабль — студия 17c2
+   в объёме, пол, выноски и метки — примитивы ov* (08bi). Рисует каждый кадр, пока опись открыта:
+   корабль водит носом. OPIS_G.n — сколько проходов было */
 const OPIS_G={cv:null,cx:null,dev:null,T:null,S:{},sig:"",n:0};
-function opisHullTick(){
-  const D=OPIS.gd,cv=D&&D.cv,g=OPIS_G;
-  /* только открытый стол на ОПИСИ: набор, что рисует ОПИСЬ в свой ящик и не закрывает, не должен
-     рисовать силуэт в кадрах чужих сцен (золотые кадры в -Full) */
-  if(!cv||!cv.isConnected||!OPIS.box||!tableOpenNow||tableTab!=="hold"||!GPU.on||!GPU.enc||!GPU.dev)return;
-  if(g.cv!==cv||g.dev!==GPU.dev){
-    const cx=cv.getContext("webgpu");if(!cx)return;
-    cx.configure({device:GPU.dev,format:GPU.fmt,alphaMode:"premultiplied"});
-    g.cv=cv;g.cx=cx;g.dev=GPU.dev;g.T=ovTarget();g.sig="";}
-  if(g.sig===D.sig)return;
-  const M=D.M,S=g.S;
-  if(!hullStudio(S,D.id,D.cw,D.ch,D.nd,M.x,M.y,M.sc,G.mods.engine))return;
-  const led=OVL.led;OVL.led=null;   /* плюсы якорей — не текст экрана, в журнал не идут */
-  try{ovInto(g.T,D.nd,()=>{
-    ovEll(M.sh[0],M.sh[1],M.sh[2],M.sh[3],0,"rgba(0,0,0,.35)");
-    ovImage({tex:S.tex,view:S.view,dev:S.dev,inv:true},D.cw/2,D.ch/2,D.cw,D.ch,0,0,0,1,1,1);
-    for(const a of M.hit){const r=a.sel?11:9;
-      ovEll(a.x,a.y,r,r,0,a.on?a.col:"rgba(10,14,20,.85)",a.on?.9:1);
-      ovEll(a.x,a.y,r,r,a.sel?2.4:1.6,a.sel?"#fff":a.col);
-      if(!a.on)ovText(g.T.uq,a.x,a.y+.5,"+","bold 13px ui-monospace,monospace",a.col,"center","middle",1,1);
-      if(a.sel)ovEll(a.x,a.y,16,16,1,"rgba(255,255,255,.35)");}
-  });}finally{OVL.led=led;}
-  ovPass(g.T,g.cx.getCurrentTexture().createView(),cv.width,cv.height,[g.T.uq],"opis");
-  g.sig=D.sig;g.n++;
-}
+function opisHullTick(){hgTick();}
 function opisHullSlotAt(cv,x,y,kind){
   const rc=cv.getBoundingClientRect();if(!rc.width)return -1;
   const mx=(x-rc.left)*((OPIS.hullW||OPIS_HW)/rc.width),my=(y-rc.top)*((OPIS.hullH||OPIS_HH)/rc.height);
   const slots=slotsOf(G.shipId);
-  let best=-1,bd=30;
+  let best=-1,bd=44;
   for(const h of OPIS.hit){
     if(kind&&slots[h.i]!==kind)continue;
     const d=Math.hypot(h.x-mx,h.y-my);
@@ -697,8 +662,9 @@ function opisHullCap(slots,fm,inv,spare){
     return cap;
   }
   const seen=[];for(const k of slots)if(PART_KINDS[k]&&seen.indexOf(k)<0)seen.push(k);
-  cap.innerHTML="<span class='lg'>"+seen.map(k=>"<i style='background:"+PART_KINDS[k].col+"'></i>"+PART_KINDS[k].sh).join("")+
-    "</span><s>точки на корпусе — слоты: залитая занята, с плюсом свободна. Тап по точке — выбрать</s>";
+  /* пара «кружок + род» — одним куском: иначе перенос строки отрывал кружок от своего слова */
+  cap.innerHTML="<span class='lg'>"+seen.map(k=>"<span><i style='background:"+PART_KINDS[k].col+"'></i>"+PART_KINDS[k].sh+"</span>").join("")+
+    "</span><s>метки на корпусе — подвесы: залитая занята, с плюсом свободна. Тап по метке — выбрать</s>";
   return cap;
 }
 function opisHead(n,ru,sub){
@@ -861,55 +827,8 @@ function opisRender(box){
     zs.appendChild(note);
     box.appendChild(zs);
   }
-  /* ── зона 3: силуэт, приборы, слоты, снятые ── */
-  const z3=document.createElement("section");z3.className="op-z op-parts";
-  const inv=G.inv.filter(p=>!isFitted(p.id)).sort((a,b)=>b.tier-a.tier);
-  z3.appendChild(opisHead(3,"ЧАСТИ И ВЕЩИ","«"+st.S.ru+"» · оснастка "+capUsed()+"/"+capOf(G.shipId)+
-    " · частей "+G.inv.length+"/"+PART_MAX));
-  const pg=document.createElement("div");pg.className="op-parts-grid";
-  const sc=document.createElement("div");sc.className="op-slots";
-  slots.forEach((kind,i)=>{
-    const K=PART_KINDS[kind];
-    const chip=document.createElement("div");chip.className="op-slot"+(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i?" on":"");
-    chip.dataset.drop="slot";chip.dataset.slot=i;
-    /* M363: подвес называет себя — размер и повадка. По ним видно, что
-       именно сюда встанет, ещё до того как часть взята в руку. */
-    const M=(typeof mountAt==="function")?mountAt(G.shipId,i):null;
-    const mru=M?(kind==="gun"?" · "+MOUNT_SIZE_RU[M.size]+" · "+MOUNT_KINDS[M.mount].ru:""):"";
-    chip.innerHTML="<em style='color:"+K.col+"'>"+K.sh+" · слот "+(i+1)+mru+"</em>";
-    if(fm[i]!=null)chip.appendChild(opisPartCard(partById(fm[i]),"slot"));
-    else{
-      /* пустой слот говорит, где взять (R6): части продают на станции, вкладка МОДУЛИ */
-      const e=document.createElement("s");e.className="chalk";e.textContent="пусто · продают на станции: КОРАБЛЬ → МОДУЛИ";
-      chip.appendChild(e);
-      chip.addEventListener("click",ev=>{if(ev.target.closest("button"))return;
-        OPIS.sel=(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i)?null:{t:"slot",i};opisRerender();});
-    }
-    sc.appendChild(chip);
-  });
-  const hcv=document.createElement("canvas");hcv.className="op-hull";hcv.dataset.drop="hull";
-  hcv.addEventListener("click",e=>{
-    const i=opisHullSlotAt(hcv,e.clientX,e.clientY,null);
-    if(i<0)return;
-    /* с id занятой части — тогда и её карточка в списке слотов выбрана и
-       показывает кнопки (без id выбор слота с неё не совпадал) */
-    OPIS.sel=(OPIS.sel&&OPIS.sel.t==="slot"&&OPIS.sel.i===i)?null:(fm[i]!=null?{t:"slot",i,id:fm[i]}:{t:"slot",i});opisRerender();
-  });
-  const ps=opisPanel("ship","ПРИБОРЫ",OPIS_SHIP,st,opisShipFuture(opisFocus()),"оснастка "+capUsed()+"/"+capOf(G.shipId));
-  opisScarRows(ps);
-  OPIS.panels.ship=ps;
-  const sp=document.createElement("div");sp.className="op-spare";sp.dataset.drop="spare";
-  sp.innerHTML="<h4>СНЯТЫЕ ЧАСТИ<s>"+inv.length+"</s></h4>";
-  if(!inv.length){const e=document.createElement("s");e.className="chalk";
-    e.textContent="снятых нет: части роняют пираты и продают станции";sp.appendChild(e);}
-  for(const p of inv)sp.appendChild(opisPartCard(p,"spare"));
-  /* корпус — герой зоны: силуэт сверху во всю левую половину, приборы рядом,
-     под ними слоты и снятые двумя колонками */
-  pg.appendChild(hcv);
-  if(phone)pg.appendChild(opisHullCap(slots,fm,inv,sp));
-  pg.appendChild(ps);pg.appendChild(sc);pg.appendChild(sp);
-  if(typeof opisPlanBlock==="function")pg.appendChild(opisPlanBlock());   /* чертёж корабля, только вид (M476) */
-  z3.appendChild(pg);
+  /* ── зона 3: ангар — корабль в объёме, подвесы с выносками, приборы, снятые (M723, 27j1) ── */
+  const z3=hgZone(st,fm,slots,phone);
   /* ── зона 2: кукла, раскладка, шесть мест, приборы комплекта, запас ── */
   const z2=document.createElement("section");z2.className="op-z op-kit";z2.dataset.drop="kit";
   const K=kitAll();

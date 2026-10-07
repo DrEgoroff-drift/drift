@@ -66,7 +66,7 @@ function p3Top(h,deck,x,y){
    seat — высота посадки (к ней вершина темнеет), rig — номер погона (0 — неподвижна), Rb — куда дотянется
    повёрнутая турель */
 function p3Tools(K){
-  const vx=K.vx,T={rig:0,seat:0,O:[0,0,0],S:1,Rb:0,rigs:[]};
+  const vx=K.vx,T={rig:0,seat:0,O:[0,0,0],S:1,Rb:0,rigs:[],zt:0};
   const cr=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
   const nz=v=>{const l=Math.hypot(v[0],v[1],v[2]);return l>1e-9?[v[0]/l,v[1]/l,v[2]/l]:[0,0,1];};
   const L=(x,y,z)=>[T.O[0]+x,T.O[1]+y*T.S,T.O[2]+z],Ln=(x,y,z)=>[x,y*T.S,z];
@@ -75,7 +75,7 @@ function p3Tools(K){
   /* вершина: к посадке темнее — контакт части с палубой без теней между частями */
   const put=(p,n,M)=>{let c=M.c;
     if(!M.gl){const a=clamp(.58+(p[2]-T.seat)*.6,.58,1);c=[c[0]*a,c[1]*a,c[2]*a];}
-    vx(p,n,c,3+T.rig+Math.min(M.met,1)*.9,M.sp,M.gl?1+M.gl:0);
+    vx(p,n,c,3+T.rig+Math.min(M.met,1)*.9,M.sp,M.gl?1+M.gl:0);if(p[2]>T.zt)T.zt=p[2];
     if(T.rig){const O=T.O;T.Rb=Math.max(T.Rb,Math.hypot(Math.hypot(O[0],O[1])+Math.hypot(p[0]-O[0],p[1]-O[1]),p[2]));}};
   const quad=(a,b,c,d,n,M)=>{put(a,n,M);put(b,n,M);put(c,n,M);put(a,n,M);put(c,n,M);put(d,n,M);};
   /* тело вращения: ось из местной точки o по единичной оси ax, профиль [[d,r,M?]] — M красит пролёт от этой
@@ -327,8 +327,11 @@ function h3dParts(K,h,gear,deck){
       rev([3.4,0,.5],[1,0,0],[[0,0],[0,.98],[1.1,.98],[1.1,.88],[Lg-5.1,rT],[Lg-5.1,.95,Hm],[Lg-3.15,.95,Hm],[Lg-3.15,.5],[Lg-2.7,.5],[Lg-2.7,.28,Hk],[Lg-2.75,0,Hk]],14,Hs);
       for(let i=0;i<3;i++)bx([Lg-1.3+i*.5,0,1.43],.08,.3,.03,0,Hk);}}
 
-  const kh=clamp(.9+h.bw*.07,1,1.8),kH=clamp(.8+h.bw*.12,1,2.6);
-  for(const g of gear.list){
+  const kh=clamp(.9+h.bw*.07,1,1.8),kH=clamp(.8+h.bw*.12,1,2.6),tops=[];
+  /* верх каждой части — точка для маркера ангара (M723): по ней студия ставит метку и выноску */
+  for(const g of gear.list){T.zt=0;build(g);tops.push({slot:g.slot,x:g.x,y:g.y,z:T.zt});}
+  return {rigs:T.rigs,R:T.Rb,tops};
+  function build(g){
     const p=g.p,by=(p&&p.by)||h.by||"gt",MK=P3_MK[by]||P3_MK.gt,t=p?clamp(p.tier|0,1,5):1;
     const M={S:mt(MK.sh,MK.met,.55),D:mt(MK.dk,.55,.7),G:mt(P3_GM,.8,.9),T:mt(MK.tr,.3,.5),B:mt([18,19,21],.1,.12),
       Br:mt(P3_BRASS,.9,.9),Cu:mt(P3_CU,.7,.6),W:glo(MK.gl,.85),P:mt(mixc(MK.sh,[112,108,100],.45),MK.met,.4)};
@@ -337,7 +340,7 @@ function h3dParts(K,h,gear,deck){
     /* точка в пустоте (вынос за обвод) — пилон к борту */
     if(!Tp.hit&&Math.abs(g.y)>.5){const ye=profW(h.prof,g.x)*.82,d=Math.abs(g.y)-ye;
       if(d>.2)bx([0,-d/2,-.05],.42*kb,d/2+.3,.2,.05,M.D);}
-    if(!p){empty(g.kind==="gun"?kb:kH*.8,M,p3KindCol(g.kind));continue;}
+    if(!p){empty(g.kind==="gun"?kb:kH*.8,M,p3KindCol(g.kind));return;}
     if(g.kind==="gun")gun(g,p,t,M,MK,kh);
     else if(g.kind==="shield")shield(t,M,kH,by);
     else if(g.kind==="core")core(t,M,MK,kH,by,g.x,g.y);
@@ -347,7 +350,6 @@ function h3dParts(K,h,gear,deck){
     else if(g.kind==="missile")missile(t,M,kH,gear.dry);
     T.rig=0;
   }
-  return {rigs:T.rigs,R:T.Rb};
 }
 
 /* ── что висит на корпусе ── свой корабль: настоящая оснастка (ключ — слоты и номера частей, плюс сухая

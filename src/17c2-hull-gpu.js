@@ -145,7 +145,9 @@ function hullGpuInserts(pass,h,id,S,sc,live){
    своя и разовая (once): тёплые выпечки полёта (HG_LRU) и пул 08ca не трогаются. Альфа — как у сцены,
    «сколько фона осталось» (очистка 1, корпус гасит); на холст её переворачивает ovImage с B.inv (08bi) */
 const HS_LT=[-.6,-.8],HS_COL=[255,244,214];
-function hullStudioSb(h,x){return Math.min(Math.pow(2,Math.ceil(Math.log2(Math.max(x,.25))*4)/4),HG_SIDE/(2*hullGpuE(h)));}
+/* потолок выпечки студии — вдвое выше полёта: ангар на 4K держит корпус ~1800 пикселей, 1024 мылило краску */
+const HS_SIDE=2048;
+function hullStudioSb(h,x){return Math.min(Math.pow(2,Math.ceil(Math.log2(Math.max(x,.25))*4)/4),HS_SIDE/(2*hullGpuE(h)));}
 function hullStudioBake(S,h,id,sb){
   const key=hullBakeKey(id,sb),b=S.bk;if(b&&b.key===key&&b.h===h)return b;
   if(b)gpuBakeDrop(b.B);
@@ -182,6 +184,10 @@ function hullGpuDraw(id,x,y,a,sc,thrusting,braking,lvl,bank,lx,ly,gear){
   const cb=Math.cos(bank),ca=Math.cos(a),sa=Math.sin(a);
   const S=(px,py)=>{py*=cb;return [x+(px*ca-py*sa)*sc,y+(px*sa+py*ca)*sc];};   /* точка корпуса → экран */
   const FL=R?null:hullGpuFlames(pass,h,id,x,y,a,sc,cb,thrusting,lvl);   /* в студии огня нет, сглаженная тяга полёта не трогается */
+  /* студия в объёме (M723: ангар ОПИСИ, R.v3 — курс, наклон, перспектива, оснастка): корпус наклонён к зрителю,
+     и плоские огни, зевы и вставки легли бы мимо своих мест — их нет, жар сопел даёт сам объём */
+  const V3=!!(R&&R.v3&&H3D.on);
+  if(V3)return h3dDraw(h,B,x,y,0,sc,0,lx,ly,null,.25,R.v3.gear||h3dStockGear(id),R)||(gpuLitSprite(T,x,y,B.E*sc,sc,a,lx,ly,-1,cb,lod,null),true);
   /* сопла без тяги: у люкса кольцо среза, у прочих тлеющий зев */
   if(!thrusting){
     const sh=[],gl=[];

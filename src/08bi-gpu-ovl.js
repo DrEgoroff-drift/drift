@@ -78,7 +78,8 @@ fn gh(p:vec2f,s:f32)->f32{var q=fract(vec3f(p.x,p.y,s)*.1031);q=q+dot(q,q.yzx+33
   else{   /* эллипс t0 (центр, полуоси): расстояние ≈ f/|∇f|; t1.y — заливка, иначе обвод полутолщиной t1.x;
              t1.w>0 — только дуга от угла t1.z размахом t1.w (угол параметра), концы круглые */
     let q=(p-i.t0.xy)/i.t0.zw;let L=max(length(q),1e-5);let g=max(length(q/i.t0.zw),1e-6);let d=(L-1.)*L/g;
-    if(i.t1.y>.5){a=clamp(.5-d,0.,1.);}
+    /* t1.z>0 у заливки — мягкий край: доля радиуса, на которой заливка гаснет к нулю (1 — пятно света) */
+    if(i.t1.y>.5){a=clamp(.5-d,0.,1.);if(i.t1.z>0.){a=1.-smoothstep(1.-i.t1.z,1.,L);}}
     else{var e=abs(d);
       if(i.t1.w>0.&&fract((atan2(q.y,q.x)-i.t1.z)/6.2831853)*6.2831853>i.t1.w){let z=i.t1.z+i.t1.w;
         e=min(length(p-i.t0.xy-i.t0.zw*vec2f(cos(i.t1.z),sin(i.t1.z))),length(p-i.t0.xy-i.t0.zw*vec2f(cos(z),sin(z))));}
@@ -331,10 +332,11 @@ function ovCap(x0,y0,x1,y1,w,col,al){
   const s=ovNd(),r=w*s/2,X0=x0*s,Y0=y0*s,X1=x1*s,Y1=y1*s;
   ovPush(OVL.uq,Math.min(X0,X1)-r,Math.min(Y0,Y1)-r,Math.max(X0,X1)+r,Math.max(Y0,Y1)+r,ovPm(col,al),5,0,0,0,[X0,Y0,X1,Y1,r,0]);
 }
-/* эллипс: центр, полуоси; w>0 — обвод толщиной w, иначе заливка */
+/* эллипс: центр, полуоси; w>0 — обвод толщиной w, 0 — заливка, w<0 — заливка с мягким краем на долю −w
+   радиуса (−1 — пятно света от центра к краю) */
 function ovEll(cx,cy,rx,ry,w,col,al){
   const s=ovNd(),X=cx*s,Y=cy*s,Rx=Math.max(.5,rx*s),Ry=Math.max(.5,ry*s),h=w>0?w*s/2:0;
-  ovPush(OVL.uq,X-Rx-h,Y-Ry-h,X+Rx+h,Y+Ry+h,ovPm(col,al),6,0,0,0,[X,Y,Rx,Ry,h,w>0?0:1]);
+  ovPush(OVL.uq,X-Rx-h,Y-Ry-h,X+Rx+h,Y+Ry+h,ovPm(col,al),6,0,0,0,[X,Y,Rx,Ry,h,w>0?0:1,w<0?Math.min(1,-w):0]);
 }
 /* ломаная a→b→c толщиной w, концы и стык круглые (шеврон одним покрытием, как путь 2D) */
 function ovCap3(ax,ay,bx,by,cx,cy,w,col,al){
