@@ -437,7 +437,7 @@ const GOR_GAS=[
   [[24,52,48],[50,96,84],[96,146,120],[156,194,160],[214,232,204]]];     /* аммиачный, зелёный */
 /* одно тело: k — мир (GOR.K), pal — палитра 0..255, air — цвет воздуха, th — его толщина */
 function gorBody(pass,key,x,y,r,o){
-  const P=gorPipe(GOR_FAM[o.k]|0);if(!P)return false;
+  const fam=GOR_FAM[o.k]|0,P=gorPipe(fam);if(!P)return false;
   const a=GOR.A;a.fill(0);
   const l=Math.hypot(o.sx,o.sy)||1,kx=Math.sqrt(1-GOR_LZ*GOR_LZ)/l;
   a[0]=x;a[1]=y;a[2]=r;a[3]=o.k;
@@ -458,7 +458,7 @@ function gorBody(pass,key,x,y,r,o){
   const ub=gpuBuf("gpl.u",32,U.UNIFORM|U.COPY_DST);
   const u=GOR.U;u[0]=GPU.bw;u[1]=GPU.bh;u[2]=W;u[3]=H;u[4]=DPR;u[5]=G.t||0;d.queue.writeBuffer(ub,0,u);
   const sb=gpuBuf("gor.b."+key,1024,U.STORAGE|U.COPY_DST);d.queue.writeBuffer(sb,0,a);
-  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gor."+key,P,[ub,sb]));pass.draw(6);
+  pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gor"+fam+"."+key,P,[ub,sb]));pass.draw(6);
   return true;
 }
 /* планета системы: false — мир не из двенадцати, пусть рисует 17ga */
