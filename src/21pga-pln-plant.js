@@ -104,6 +104,7 @@ function plnPlantThings(L,p){
   /* плита площадки (21pza, M830): трава не прорастает сквозь неё */
   if(tr.padX!=null&&typeof PLN_LPAD==="object")add(tr.padX,7+PLN_LPAD.dz,PLN_LPAD.hx*1.2+.4,PLN_LPAD.hz*1.2+.4,PLN_LPAD.hx+3);
   for(const q of tr.poi||[]){const mk=plnMarkPad(q);if(mk)T.push(mk);}   /* площадки памятников (21pie, M627) */
+  for(const q of plnOwnPads(tr,p,L))T.push(q);   /* настил базы и двор дома (21pig, M628a) */
   if(!S)return T;
   const TH=PLN_THINGS;
   for(const d of S.deposits||[])add(d.x,plnThingDepZ(d),1.7,1.4,3);

@@ -350,6 +350,24 @@ Design for the first two steps: `docs/DESIGN-base-scene.md` (09.10) — own thin
 The third step: `docs/DESIGN-cave-scene.md` (09.10) — the stand's M601 scene fed by the game's grid (one density from `C.g`, the cut face as a page, the lamp as the key with shadows and a cone, the day by a second map, three lenses), the way in as a push through the arch without a cut; `CAVE3.on`/`?cave=0` (M630a–d).
 The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section on the cave's kit, dug cells as rooms each under one source, ore bodies as three or four large forms, the planet's sky whole at the top, the way in as a pan down; `DIG3.on`/`?dig=0` (M631a–c). The last: `docs/DESIGN-raid-scene.md` (09.10) — the raid on the interior renderer `27f2` (one key with shadows per room, materials and palette per room kind), foes by the generator in a hostile kit with walk/aim, the rig ported to `r3Kit`, the push through the gate; `RAID3.on`/`?raid=0` (**M633a–c**, a planet-range number so the same builder's queue reads in order).
 
+  - *Done (M628a pass 1, `21pig-pln-own` — the design's `21pif` was taken by the landmarks' acts):*
+    `OWN` (`?own=0`) builds the base and the home once per landing and per make-up (key: the
+    top row's kinds, battery, pennant; the beds' growth in eighths) through `plnGeo/plnInst/plnRec`
+    like `21pie`; `plnOwnFrame` beside `plnMarksFrame` culls by the lens, pushes the body, the light
+    (windows and the gate, warmer by night), the battery's charge light (`basePower.eff`) or the
+    home's breathing beacon, the grow light and the pennant, two blots each, and at night the porch
+    and pier lamps (a lamp beyond the frame's edge gives its slot up). `plnOwnBaseX` re-measures
+    `builtSpot`'s seed in metres: 28 seeded places, the flattest footprint, ≥ 33 m from the pad and
+    clear of the yard, the POIs, the settlement and the shaft, cached on the profile. The deck rides
+    1.2 m over the footprint's highest ground (or 1.6 m over water); the yard by the landmarks' rule
+    but tighter (sole ≥ crest − 1 m, a rock mound takes the rest). Entry: `updateSurface` is wrapped
+    — the ship branch's `enterBase` is refused away from the gate and its line becomes a pointer;
+    within 40 units of the gate «ДЕЙСТВИЕ — ВОЙТИ В БАЗУ» (it beats the mine's founding); `enterDig`
+    is refused at the gate, under the deck and in the yard. `plnAtThing` → 1 at the gate and the
+    porch, and always on a phone except on the jet. `21pj` draws `drawBuilt`/`drawHomeOut` only with
+    `?own=0`; `21pga` clears the flora under the deck and the yard (`plnOwnPads`); `21e` adds the
+    «БАЗА» chip at the gate; `21pzb` hangs the gate and porch plates on the things. Test: `91qe-own`.
+
 ### Stage F — rooms and people (M850–M859)
 
 - **M850 HQ, home, winter, spa** on `27f2` with the rig and the generator: one key lamp with

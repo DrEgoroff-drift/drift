@@ -350,6 +350,7 @@ function plnSurface(S,o){
     plnPadFrame(F,L,tr,0);
     plnThingsFrame(L,F,S,p,C.ex,V);
     plnMarksFrame(L,F,S,p,C.ex,V,lampK);
+    plnOwnFrame(L,F,S,p,C.ex,V,lampK);   /* база и дом телами (21pig, M628a) */
     plnDrillFrame(F,S,L);plnTracksFrame(L,F,S,C.ex,V);
     plnBeastFrame(L,F,S,p,C.ex,V);
     plnHerbFrame(L,F,S,p,C.ex,V);

@@ -37,6 +37,24 @@ could ever save.
   landing's deposit count; the action line is a plate at the ship (away from it, at the man) — no
   bare orange text on the sand; the near «КОРАБЛЬ» tick, placed by the 2D camera and hanging in the
   sky beside the ship, is gone under the planet frame.
+- **M628a — the base and the home as bodies.** The base is no longer a sticker over the frame: a
+  deck 40 × 11 m stands 1.2 m over the shallows (over the ground where there is no water) on piles,
+  behind the walk line, on the flattest stretch of the engine's land clear of the pad, the yard, the
+  settlement, the landmarks and the shaft. On it one module per built top-row cell, round ends to
+  the lens, an orange belt and a window each; a solar cell is a row of panel frames, an empty cell a
+  span with a rail, so the base outside says what is built inside. A dome at the end towards the
+  pad, the battery as four cans with a cable and a green charge light (when the base has a battery),
+  a lattice mast 12 m with a steady red light, a pier 10 m out with a lamp on a post, and the
+  travelling pennant on the mast while it is this base's. The base is entered at its **gate** — a
+  lit door in the module nearest the pad with stairs down to the walk line, the action plate hung
+  on it; by the ship the line points the way («БАЗА «…» · ВОРОТА n М ▶»), and founding a base by the
+  ship still goes straight in. The home stands on a terrace in its yard behind a wire fence open at
+  the path: a body with a band of wheelhouse glass, a porch under a lantern, a vaulted garage, a
+  lattice mast 9 m with a breathing beacon, and the greenhouse — a vault of ribs over the beds of
+  `21g`, each growing as its plant does, under a cold grow light. At the gate and at the porch the
+  lens glides closer; on a phone the near lens holds all the time on foot (the far lens made the
+  ship and the man specks). Under the deck and in the yard no shaft is founded, and the porch and
+  the bed prompts are no longer written over by «ЗАЛОЖИТЬ ШАХТУ». `?own=0` keeps the stickers.
 - **M820 Bodies for everyone.** The barge, its wreck, the station, shuttles, line and lane
   ships are meshes under the system's star (`17c2e` kit, `17c2f` barge, `17c2g` station,
   `17c2h` pirates): own paint, the light from the star with no top-left fallback, a dot under
