@@ -54,3 +54,14 @@ function bodyPower(p,x,y,s,lx,ly){
 }
 /* факел пирата (12i gpuPirateLive): длина и лестница; у прочих — прежние */
 function bodyPirFlame(p){return BODY.on&&!p.pw&&!p.wreck?BODY_PIR:null;}
+/* габарит цели на экране для рамки захвата (15b): полуширина и полувысота повёрнутого корпуса + 4 px;
+   null — не корабль с корпусом, рамка прежняя */
+function bodyMarkBox(p,Z){
+  if(!p||!p.shipId||typeof shipScaleAt!=="function")return null;
+  let nose,tail,hw,s=shipScaleAt(Z)*.82;
+  if(bodyPowerOn(p)){const h=hullOf(p.shipId);nose=h.nose;tail=h.tail;hw=(nose-tail)*.22;}
+  else{const hp=clamp((p.hull||0)/(p.hullMax||1),0,1),B=pirateArtOf(p.shipId,p.rogue||p.hunter,p.wreck?2:hp<.5,p.rank|0,p.deserter?1:0).B;
+    if(!B)return null;nose=B.nose+(BODY.on&&!p.pw?B.L*.2:0);tail=B.tail;hw=B.hw*1.2;}
+  const c=Math.abs(Math.cos(p.a||0)),n=Math.abs(Math.sin(p.a||0)),hl=(nose-tail)/2;
+  return [(hl*c+hw*n)*s+4,(hl*n+hw*c)*s+4];
+}

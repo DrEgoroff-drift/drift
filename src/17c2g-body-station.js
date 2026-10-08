@@ -23,11 +23,11 @@ const BODY_ST_CORE={
     B.wins(cx+14,cx+21,-17,17,6.7,3);P.push([cx,0,.8]);return {x0:cx-22,x1:cx+22,w:19};},
   yard:(B)=>{const {K,C,cx,steel,dark,L,P}=B;
     for(const s of [-1,1])K.box(cx-32,cx+32,s*24-1.6,s*24+1.6,-2,4,.4,C(steel),3,.5);   /* рельсы стапеля */
-    for(const x of [cx-30,cx-10,cx+10,cx+30])K.box(x-1,x+1,-25.6,25.6,-3,-1,.2,C(dark),3,.4);
-    K.box(cx+6,cx+9,-27,27,6,9,.4,C([196,150,60]),3,.6);   /* балка крана */
-    K.box(cx+4,cx+11,15,22,4,11,.6,C(B.base),3,.5);B.wins(cx+5,cx+10,16,21,11.1,1);
+    /* одна рама: два рельса и две торцевые балки; внутри — только корпус, будка — на углу снаружи */
+    for(const x of [cx-33,cx+31])K.box(x,x+2,-25.6,25.6,-2,4,.3,C(steel),3,.5);
+    K.box(cx+24,cx+31,26,32,-1,7,.6,C(B.base),3,.5);B.wins(cx+25,cx+30,27,31,7.1,1);
     for(const s of [-1,1]){L.push({x:cx-30,y:s*24,c:BODY_WARM,r:.9,k:0,ph:0});P.push([cx-26,s*18,1]);}
-    B.slip={x:cx,y:0};return {x0:cx-32,x1:cx+32,w:6};},
+    B.slip={x:cx,y:0};return {x0:cx-33,x1:cx+33,w:6};},
   sci:(B)=>{const {K,C,cx,base,steel,L,P}=B,Sp=[];
     for(let k=0;k<=10;k++){const ph=-Math.PI/2+Math.PI*k/10;Sp.push([15*Math.sin(ph),Math.max(15*Math.cos(ph),.01)]);}
     K.lathe(cx,0,0,Sp,C(mixc(base,[230,236,244],.35)),3,-.7,0,20,null,null);
@@ -61,9 +61,11 @@ function bodyStRing(B,cloth){
   const r=rng(hashi(B.seed,0x71D,1));
   for(let i=0;i<N;i++){if(r()<.35)continue;const t=(i+.5)/N*TAU,c=Math.cos(t),s=Math.sin(t),a=.55,b=.8;
     B.win4([[cx+c*(R-a)-s*b,s*(R-a)+c*b],[cx+c*(R+a)-s*b,s*(R+a)+c*b],[cx+c*(R+a)+s*b,s*(R+a)-c*b],[cx+c*(R-a)+s*b,s*(R-a)-c*b]],4.65,r()*.8);}
-  if(cloth){const CL=[[170,62,50],[196,150,60],[58,138,136]];
-    for(let i=0;i<12;i++){const t=i/12*TAU+.13,c=Math.cos(t),s=Math.sin(t),col=C(CL[i%3]),w=2.6;
-      K.face([[cx+c*(R+4)-s*w,s*(R+4)+c*w,1],[cx+c*(R+12)-s*w*1.3,s*(R+12)+c*w*1.3,.6],[cx+c*(R+12)+s*w*1.3,s*(R+12)-c*w*1.3,.6],[cx+c*(R+4)+s*w,s*(R+4)-c*w,1]],
+  /* ткань одного ряда: акцент завода, приглушённый, в три тона — полотно, а не пластик */
+  if(cloth){const a=mixc(B.acc,[150,120,90],.3),CL=[mixc(a,[196,182,156],.55),a,mixc(a,[26,22,20],.5)],q=rng(hashi(B.seed,0xC10F,2));
+    /* навесы рядов: шаг и длина неровные (ряды ставили разные люди), тон — полотно, акцент, тень */
+    let t=q()*TAU;for(let i=0;i<10;i++){t+=TAU/10*(.6+q()*.8);const c=Math.cos(t),s=Math.sin(t),col=C(CL[q()<.45?0:q()<.6?1:2]),w=1.8+q()*1.6,o=R+8+q()*6;
+      K.face([[cx+c*(R+4)-s*w,s*(R+4)+c*w,1],[cx+c*o-s*w*1.2,s*o+c*w*1.2,.6],[cx+c*o+s*w*1.2,s*o-c*w*1.2,.6],[cx+c*(R+4)+s*w,s*(R+4)-c*w,1]],
         [cx+c*(R+8),s*(R+8),-3],col,3,.15,0);}
     for(let i=0;i<8;i++){const t=i/8*TAU;L.push({x:cx+Math.cos(t)*(R+4.6),y:Math.sin(t)*(R+4.6),c:BODY_WARM,r:.8,k:0,ph:0});}}
   else for(let i=0;i<4;i++){const t=i/4*TAU;L.push({x:cx+Math.cos(t)*(R+4.6),y:Math.sin(t)*(R+4.6),c:BODY_WARM,r:.8,k:0,ph:0});}
@@ -109,8 +111,9 @@ function h3dStationMesh(S,ty,by,seed){
       for(let i=0;i<12;i++){const t=i/12*TAU;Q.push([x+Math.cos(t)*rr,y+Math.sin(t)*rr,z1]);}K.face(Q,[x,y,z1-1],C(cap||col),3,sp,em||0);};
     /* хребет и мачта причала */
     const xa=ty==="outpost"?-34:-60,xb=ty==="outpost"?34:50;
-    K.lathe(xa,0,0,[[0,4.6],[xb-xa,4.6]],C(mixc(base,iron,.45)),3,-.5,0,14,[C(iron),-.3,0],[C(iron),-.3,0]);
-    for(let x=xa+8;x<xb;x+=12)K.box(x-.5,x+.5,-5.2,5.2,-4.6,5.1,.1,C(dark),3,.4);   /* обручи хребта */
+    const SG=ty==="yard"?[[xa,B.cx-33],[B.cx+33,xb]]:[[xa,xb]];   /* у верфи хребет упирается в раму, а не идёт сквозь корпус */
+    for(const [a0,a1] of SG)K.lathe(a0,0,0,[[0,4.6],[a1-a0,4.6]],C(mixc(base,iron,.45)),3,-.5,0,14,[C(iron),-.3,0],[C(iron),-.3,0]);
+    for(let x=xa+8;x<xb;x+=12)if(ty!=="yard"||x<B.cx-34||x>B.cx+34)K.box(x-.5,x+.5,-5.2,5.2,-4.6,5.1,.1,C(dark),3,.4);   /* обручи хребта */
     K.box(xb,xb+16,-1.3,1.3,-1.3,1.8,.3,C(steel),3,.5);
     for(const [mx,my] of [[xb+5,-3.4],[xb+5,3.4],[xb+14,-3.4],[xb+14,3.4]]){
       K.box(mx-.9,mx+.9,my-.9,my+.9,-.5,2.8,.2,C(iron),3,.5);L.push({x:mx,y:my,c:BODY_WARM,r:.95,k:0,ph:0});}

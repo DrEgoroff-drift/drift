@@ -12,15 +12,16 @@ function helmDrawMarks(zx,zy,Z){
   G.marks.forEach((p,i)=>{
     const x=zx(p.x),y=zy(p.y);
     if(x<-40||x>W+40||y<-40||y>H+40)return;
-    const r=clamp(Z,.55,1.6)*(i?16:20),g=r*.45;
+    /* с телами (M820) рамка — по габариту корпуса на экране плюс 4 px, а не квадрат на вырост */
+    const bm=BODY.on?bodyMarkBox(p,Z):null,r=bm?bm[0]:clamp(Z,.55,1.6)*(i?16:20),ry=bm?bm[1]:r,g=Math.min(r,ry)*.45;
     if(pass){const c=i?[255,157,122,.5]:[255,107,87,.92],hw=(i?1:1.4)/2;
-      for(const k of [[-1,-1],[1,-1],[1,1],[-1,1]]){const cx=x+k[0]*r,cy=y+k[1]*r;
-        SH.push([2,cx,y+k[1]*(r-g),cx,cy,hw,0,c[0],c[1],c[2],c[3]],[2,cx,cy,x+k[0]*(r-g),cy,hw,0,c[0],c[1],c[2],c[3]]);}
+      for(const k of [[-1,-1],[1,-1],[1,1],[-1,1]]){const cx=x+k[0]*r,cy=y+k[1]*ry;
+        SH.push([2,cx,y+k[1]*(ry-g),cx,cy,hw,0,c[0],c[1],c[2],c[3]],[2,cx,cy,x+k[0]*(r-g),cy,hw,0,c[0],c[1],c[2],c[3]]);}
       return;}
     ctx.strokeStyle=i?"rgba(255,157,122,.5)":"rgba(255,107,87,.92)";ctx.lineWidth=i?1:1.4;
     ctx.beginPath();
     for(const c of [[-1,-1],[1,-1],[1,1],[-1,1]]){
-      ctx.moveTo(x+c[0]*r,y+c[1]*(r-g));ctx.lineTo(x+c[0]*r,y+c[1]*r);ctx.lineTo(x+c[0]*(r-g),y+c[1]*r);
+      ctx.moveTo(x+c[0]*r,y+c[1]*(ry-g));ctx.lineTo(x+c[0]*r,y+c[1]*ry);ctx.lineTo(x+c[0]*(r-g),y+c[1]*ry);
     }
     ctx.stroke();
   });

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 524 · top-level symbols: 7796
+Files: 525 · top-level symbols: 7797
 
 ## SYMBOLS
 
@@ -608,7 +608,7 @@ GAL_STAR_RED                 src/17z3-map-gpu.js:164
 GAL_STAR_SCREEN              src/17z1-galaxy.js:82
 GAL_VER                      src/17z1-galaxy.js:18
 GAL_WGSL                     src/17z3-map-gpu.js:25
-GATE2D                       tests/91zzzzzzy3-gate2d.js:27-246
+GATE2D                       tests/91zzzzzzy3-gate2d.js:27-249
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
 GBM                          src/13z-gpu-combat.js:126
@@ -2596,6 +2596,7 @@ bodyFleetHull                src/17c2e-body-kit.js:71-77
 bodyGpu                      src/17c2e-body-kit.js:25
 bodyInSystem                 src/16-flight.js:103-112
 bodyLights                   src/17c2e-body-kit.js:41-49
+bodyMarkBox                  src/17c2h-body-pirate.js:59-67
 bodyMesh                     src/17c2e-body-kit.js:57-64
 bodyPirDress                 src/17c2h-body-pirate.js:12-36
 bodyPirFlame                 src/17c2h-body-pirate.js:56
@@ -2605,9 +2606,9 @@ bodyPowerOn                  src/17c2h-body-pirate.js:45
 bodyRun                      src/17c2e-body-kit.js:34-39
 bodyShuttle                  src/17c2e-body-kit.js:106-112
 bodyShuttleMesh              src/17c2e-body-kit.js:90-104
-bodyStModules                src/17c2g-body-station.js:74-94
-bodyStRing                   src/17c2g-body-station.js:51-72
-bodyStation                  src/17c2g-body-station.js:128-138
+bodyStModules                src/17c2g-body-station.js:76-96
+bodyStRing                   src/17c2g-body-station.js:51-74
+bodyStation                  src/17c2g-body-station.js:131-141
 bodyT0                       src/17c2e-body-kit.js:29-32
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
@@ -4292,7 +4293,7 @@ h3dParts                     src/17c2b-parts3d.js:158-353
 h3dPirMesh                   src/17c2a-hull3d.js:447-503
 h3dPirate                    src/17c2a-hull3d.js:505-508
 h3dRun                       src/17c2a-hull3d.js:369-427
-h3dStationMesh               src/17c2g-body-station.js:95-126
+h3dStationMesh               src/17c2g-body-station.js:97-129
 h3dStockGear                 src/17c2b-parts3d.js:374-383
 h3dStudioPt                  src/17c2a-hull3d.js:363-367
 h3dStudioRT                  src/17c2a-hull3d.js:430-440
@@ -4384,28 +4385,28 @@ heatHazeFrom                 src/18d-postfx.js:52-67
 heatTick                     src/13a-guns.js:54-62
 held                         src/08-state.js:367
 helmApply                    src/15a-helm.js:450-548
-helmBand                     src/15b-helm-draw.js:150-153
+helmBand                     src/15b-helm-draw.js:151-154
 helmBeamGpu                  src/22c-cave-gpu.js:446-452
-helmCamOff                   src/15b-helm-draw.js:135-148
+helmCamOff                   src/15b-helm-draw.js:136-149
 helmCanvasXY                 src/15a-helm.js:153
 helmDrag                     src/15a-helm.js:205-208
-helmDrawMarks                src/15b-helm-draw.js:8-28
-helmDrawSticks               src/15b-helm-draw.js:162-231
-helmDry                      src/15b-helm-draw.js:155
-helmDryLabel                 src/15b-helm-draw.js:156-158
+helmDrawMarks                src/15b-helm-draw.js:8-29
+helmDrawSticks               src/15b-helm-draw.js:163-232
+helmDry                      src/15b-helm-draw.js:156
+helmDryLabel                 src/15b-helm-draw.js:157-159
 helmEdgeInput                src/15a-helm.js:349-361
-helmHome                     src/15b-helm-draw.js:59-72
-helmLift                     src/15b-helm-draw.js:76-121
+helmHome                     src/15b-helm-draw.js:60-73
+helmLift                     src/15b-helm-draw.js:77-122
 helmLock                     src/15a-helm.js:282-290
 helmLockNext                 src/15a-helm.js:292-309
-helmMarkTop                  src/15b-helm-draw.js:124-129
+helmMarkTop                  src/15b-helm-draw.js:125-130
 helmMarksClean               src/15a-helm.js:273-281
 helmPinchBlocked             src/15a-helm.js:260
 helmPtrEnd                   src/15a-helm.js:247-252
 helmScreenOpen               src/15a-helm.js:257
 helmShotAt                   src/15a-helm.js:325-328
-helmStickFoot                src/15b-helm-draw.js:45-53
-helmStickShape               src/15b-helm-draw.js:36-42
+helmStickFoot                src/15b-helm-draw.js:46-54
+helmStickShape               src/15b-helm-draw.js:37-43
 helmSyncPointer              src/15a-helm.js:179-199
 helmTake                     src/15a-helm.js:222-230
 helmTap                      src/15a-helm.js:311-323
@@ -8586,9 +8587,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/17c2f-body-barge.js · 8 KB
 
-## src/17c2g-body-station.js · 12 KB
+## src/17c2g-body-station.js · 13 KB
 
-## src/17c2h-body-pirate.js · 5 KB
+## src/17c2h-body-pirate.js · 6 KB
 
 ## src/17c3-station-live.js · 11 KB
 
@@ -9405,6 +9406,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91qb-rig-card.js · 4 KB
   · один астронавт везде: риг в карточке (M801):1
 
+## tests/91qd-bodies.js · 4 KB
+  · тела под звездой (M820):1
+
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1
 
@@ -9456,7 +9460,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzw-travel.js · 8 KB
   · вечер не по времени, а по дороге (M359):1
 
-## tests/91zzzzzzy3-gate2d.js · 25 KB
+## tests/91zzzzzzy3-gate2d.js · 26 KB
   · ворота «0 вызовов 2D» у перенесённых печей (GPU-3, DESIGN-gpu §G):1
 
 ## tests/91zzzzzzy4-pipes.js · 12 KB
