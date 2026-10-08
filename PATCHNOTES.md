@@ -8,6 +8,14 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M630b — the halls, pass 5: light.** The roof rises into domes where something is — the middle of
+  each hall, the mouth, the lake, amber, the far arch — and never stays flat for more than twelve metres;
+  you walk under a dome, it does not follow you. The lamp's warmth fades over the first eight metres
+  into the cool grey of the stone, and its beam now hangs in the air as a wedge from the helmet, thicker
+  by water and among dripstone. Daylight does more than fall in a column: it bounces off the floor
+  under the mouth and under the arch and lights the walls around, and catches the upper edges of
+  ledges with a thin cool line. The cut page is darker, so the stone behind it stands apart. The far
+  view slides to keep two lights in frame when it can.
 - **M630b — the halls, pass 4: what lies in the stone, the vault, the lamp.** Where the cut goes
   through stone it now shows what lies in it, flat and quiet: the bones of a swimmer and shells on
   sedimentary worlds, gas bubbles in volcanic stone, strings of bubbles in ice, roots coming down from

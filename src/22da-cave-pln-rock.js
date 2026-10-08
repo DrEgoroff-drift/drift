@@ -119,7 +119,8 @@ function cave3Field(C){
   let mx=0,mn=0;
   for(let x=0;x<NX&&x<60;x++)if(!g[2*NX+x]){mx+=x;mn++;}
   const mouthX=mn?(mx/mn+.5)*CAVE_CS/CAVE_PPM:60/CAVE_PPM;
-  C.f3={g,raw,sd,hl,sty,lay,col,mouthX,surfY:-CAVE_Y0/CAVE_PPM,seed:C.seed};
+  C.f3={g,raw,sd,hl,sty,lay,col,mouthX,surfY:-CAVE_Y0/CAVE_PPM,seed:C.seed,vault:null};
+  C.f3.vault=cave3VaultPlan(C,C.f3);
   return C.f3;
 }
 /* билинейная выборка поля по центрам клеток; x, y — px игры */
@@ -134,15 +135,47 @@ function cave3Sd(F,x,y){
   const s=cave3Samp(F.sd,x,Math.max(y,CAVE_Y0+CAVE_CS*.5));
   return Math.min(s,(y-CAVE_Y0)/CAVE_PPM);
 }
-/* купол над линией ходьбы (M630b проход 4): на сколько метров свод может уйти выше потолка сетки.
+/* купол над линией ходьбы (M630b проходы 4–5): на сколько метров свод может уйти выше потолка сетки.
    Только вверх: пол, стены и толща — по сетке, на линии ходьбы картинка с ней согласна (ходьба, бур,
-   caveSolidAt). Свод — свободен: до трёх метров, пятнами вдоль галереи (купола, между ними — карнизы
-   прежней высоты); у разреза чуть ниже, чем в глубине, — сечение купола на листе. Ранец упирается
-   в потолок сетки — картинка над ним выше, это принятое отступление */
-const CAVE3_VAULT={lift:3,cut:.75,sc:.075};
-function cave3VaultLift(X,Z){
-  const K=CAVE3_VAULT,n=plnSmooth(-.3,.4,cave3N3(X*K.sc,1.7,.3,131));
-  return n>0?K.lift*n*lerp(K.cut,1,plnSmooth(0,2.5,Z)):0;
+   caveSolidAt). Купола стоят у мест, а не по шуму и не у объектива: середина каждого зала, озеро,
+   залежь янтаря, арка дальнего зала, устье, находка — по одному на место, высота и ширина сеяны
+   местом. Между местами — малые купола, пока на любом окне линии ходьбы в 12 м свод не поднимется
+   хоть на полтора метра. Человек приходит под купол; свод за ним не едет. У разреза чуть ниже, чем
+   в глубине, — сечение купола на листе. Ранец упирается в потолок сетки — принятое отступление */
+const CAVE3_VAULT={lift:3,cut:.75,min:1.5,win:12,gap:9};
+function cave3VaultCut(Z){const K=CAVE3_VAULT;return lerp(K.cut,1,plnSmooth(0,2.5,Z));}
+function cave3VaultPlan(C,F){
+  const P=CAVE_PPM,K=CAVE3_VAULT,out=[],r=x=>rng(hashi(Math.round(x*4),F.seed,0x7A17));
+  const add=(x,big)=>{
+    if(!(x>=0)||out.some(d=>Math.abs(d.x-x)<4))return;
+    const q=r(x);out.push(big?{x,h:K.lift*(.8+.2*q()),w:5.5+3*q()}:{x,h:K.lift*(.74+.1*q()),w:4.2+.8*q()});
+  };
+  add(F.mouthX,true);
+  for(const z of caveZones(C))add((z.x0+z.x1)/2/P,true);
+  if(C.findX!=null)add(C.findX/P,true);
+  for(const p of caveProps(C))if(p.k==="amber")add(p.x/P,true);
+  const S=typeof cave3FarSite==="function"?cave3FarSite(C,F):null;
+  if(S)add(S.ax,true);
+  /* малые купола: длинные пролёты без подъёма делятся, пока каждый короче gap */
+  const lift=X=>{let m=0;for(const d of out)m=Math.max(m,d.h*(1-plnSmooth(d.w*.35,d.w,Math.abs(X-d.x))));return m;};
+  const W=CAVE_W/P,f=cave3VaultCut(CAVE3_Z);
+  for(let it=0;it<60;it++){
+    let run=0,best=null;
+    for(let X=0;X<=W+.25;X+=.5){
+      if(X<=W&&lift(X)*f<K.min){run+=.5;continue;}
+      if(run>K.gap&&(!best||run>best.n))best={n:run,x:X-run/2};
+      run=0;
+    }
+    if(!best)break;
+    const n=out.length;add(best.x,false);
+    if(out.length===n)out.push({x:best.x+2,h:K.lift*.8,w:4.6});
+  }
+  return out;
+}
+function cave3VaultLift(F,X,Z){
+  const V=F.vault;if(!V||!V.length)return 0;
+  let m=0;for(const d of V){const e=Math.abs(X-d.x);if(e<d.w)m=Math.max(m,d.h*(1-plnSmooth(d.w*.35,d.w,e)));}
+  return m>0?m*cave3VaultCut(Z):0;
 }
 /* плотность в метрах мира: > 0 — камень */
 function cave3Den(F,X,Y,Z){
@@ -156,7 +189,7 @@ function cave3Den(F,X,Y,Z){
   if(S.ter>0){const sh=(.5-(sb-L))*S.ter*S.bed*am/(1+.532*Math.cos(s0*1.9+.7));ys=y-sh*CAVE_PPM;D=cave3Sd(F,x,ys);}
   /* свод за линией ходьбы поднимается куполом: пустота сетки тянется вверх, не вниз и не вбок; у самой
      поверхности и над другим ходом камень остаётся (купол не пробивает ни небо, ни пол галереи выше) */
-  const A=cave3VaultLift(X,Z);
+  const A=cave3VaultLift(F,X,Z);
   if(A>.02&&D>0&&(y-CAVE_Y0)/CAVE_PPM>1.6){const Du=cave3Sd(F,x,ys+A*CAVE_PPM);if(Du<D&&cave3Sd(F,x,ys-1.2*CAVE_PPM)>.3)D=Du;}
   const hl=cave3Samp(F.hl,x,Math.max(y,CAVE_Y0)),zd=Math.min(CAVE3_CH.zcap-4,hl*lerp(2.4,4,plnSmooth(3,6,hl))+.6),t=Z/zd;
   let d=D+(t<1?hl*(1-Math.sqrt(1-t*t)):hl+(Z-zd));
