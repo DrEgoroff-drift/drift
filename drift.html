@@ -115468,6 +115468,15 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
   /* выбранный и наведённый: контур акцентом по краю силуэта; .y — приглушить (кино, чужие при выборе) */
   let ot=u.ot[i.ob];
   c+=u.acc.rgb*pow(1.-ndv,2.5)*ot.x*1.4;
+  /* планка света людей (M814): последняя часть экземпляра — его паспорт (x, z опоры, радиус пятна, контур).
+     Контур — холодный отсвет зала по кромке силуэта, сверху сильнее (свет дока и окна сверху-сзади);
+     пятно — контактная тень на полу под человеком: тело закрывает рассеянный, ноги стоят, а не висят */
+  let io=u.ot[(i.ob/${R3_PART}u)*${R3_PART}u+${R3_PART-1}u];
+  if(io.w>0.){c+=(mix(u.gnd.rgb,u.sky.rgb,.8)*u.sky.w+vec3f(.03,.036,.05))*io.w*pow(1.-ndv,3.5)*smoothstep(-.4,.5,n.y);}
+  if(n.y>.7&&W.y<.08){var cs=1.;
+    for(var k=0u;k<${R3_MAXI}u;k++){let q=u.ot[k*${R3_PART}u+${R3_PART-1}u];if(q.z<=0.){continue;}
+      let d=length(W.xz-q.xy)/q.z;cs*=1.-.62*exp(-d*d*2.2);}
+    c*=cs;}
   c*=1.-ot.y;
   /* ── воздух: дым по лучу, в конусах ламп — с тенью (лучи сквозь людей) ── */
   let ro=u.cam.xyz;let rv=W-ro;let tm=length(rv);let rd=rv/tm;
@@ -115799,14 +115808,16 @@ function cpBand(K,TA,pts,k,w,t,M,n){
 }
 /* одежда роли — читается раньше лица: командир — жилет с подсумками и наплечник; смотритель — комбинезон
    с лямками, светоотражающими полосами и поясом инструмента; фактор — пальто с лацканами и шарф;
-   исследователь — светлый китель со стойкой, карман с ручками и светящийся пропуск */
+   исследователь — светлый китель со стойкой, карман с ручками и светящийся пропуск;
+   клерк стойки (M814) — светлая рубашка, тёмный жилет с вырезом и пуговицами, галстук и бирка в цвет зала
+   (m.acc), резинки на рукавах, карандаш в кармане жилета */
 /* краска — холоднее и глуше, чем кажется: под тёплыми лампами коричневое становится деревом, серо-синее — сукном */
 const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,coll:1},fact:{jac:[86,40,46],mix:.1,coll:0},
-  sci:{jac:[176,182,190],mix:.12,coll:2}};
+  sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[158,156,146],mix:.04,coll:1,vest:[40,44,52]}};
 function cpBody(m,lod,poseK){
   const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=cpPose(poseK);
   const wB=.86+(g.build-.7)*.36,hs=g.hs,pel=[0,J.pel,0],ln=J.lean;
-  const ai=g.ai,rc=g.role?hex2rgb(g.role.col):[150,160,170],rk=!ai&&m.role&&CP_KIT[m.role]?m.role:"",KT=rk?CP_KIT[rk]:null;
+  const ai=g.ai,rc=m.acc||(g.role?hex2rgb(g.role.col):[150,160,170]),rk=!ai&&m.role&&CP_KIT[m.role]?m.role:"",KT=rk?CP_KIT[rk]:null;
   if(KT)cl.jacket=mixc(KT.jac,rc,KT.mix);
   if(m.jac)cl.jacket=m.jac;   /* свой цвет куртки (пилот зала — цвет людей «Сцены») */
   /* сукно матовое: широкий блик на рукаве делает из ткани лакированное дерево */
@@ -115883,6 +115894,17 @@ function cpBody(m,lod,poseK){
       const e0=TA(.3,.93,1.1);K.push([e0[0],e0[1],e0[2]+.012],0,.12,0,1);
       K.surf(4,lod?8:4,(u,w)=>{const x=(u-.5)*.07*(1-.15*w),y=-w*.2,z=.012*Math.sin(u*Math.PI)+.006*Math.sin(w*5);return [[x+.006*w,y,z]];},Msc);K.pop();
       if(lod)for(let i=0;i<3;i++){const p=TA(-.14,.32+i*.11,1.05);K.ell([p[0],p[1],p[2]+.006],[.008,.008,.004],Mm,4,8);}
+    }else if(rk==="clerk"){   /* жилет поверх рубашки: проймы открыты, вырез мысом, пуговицы; галстук в вырезе */
+      const Mv=K.mt(mixc(KT.vest,rc,.12),.22,6,P.cloth),Mbt=K.mt(mixc(KT.vest,[200,190,160],.5),.6,10,P.brushed);
+      K.surf(NU,Math.max(6,Math.round(NV*.6)),(u,w)=>[TA(u*TAU,.15+w*.67,1.075)],Mv,
+        {wrap:1,keep:(u,w)=>{const v=.15+w*.67,a=Math.abs(Math.sin(u*TAU/2));return !(v>.64&&Math.abs(Math.sin(u*TAU))>.8)&&!(a<.06+(v-.5)*.5&&v>.5);}});
+      const ty=[];for(let i=0;i<=6;i++){const v=.52+i/6*.44;ty.push([0,yf(v),zf(v)+.006+.004*(1-i/6)]);}
+      K.tube(ty,[.008,.009,.01,.011,.012,.01,.007],K.mt(mixc(rc,[0,0,0],.35),.3,6,P.cloth),4);
+      if(lod){for(let i=0;i<4;i++){const p=TA(.06,.24+i*.085,1.085);K.ell([p[0],p[1],p[2]+.004],[.007,.007,.003],Mbt,4,6);}
+        const pk=TA(.42,.52,1.08);K.box([pk[0],pk[1],pk[2]+.004],[.03,.004,.004],Mv,.002);
+        K.tube([[pk[0]-.008,pk[1]-.01,pk[2]+.006],[pk[0]-.008,pk[1]+.07,pk[2]+.004]],.0035,K.mt([196,150,40],.4,8,0),5);
+        const id=TA(-.42,.5,1.08);K.box([id[0],id[1],id[2]+.005],[.022,.014,.003],K.mt([226,224,216],.4,8,0),.003);
+        K.box([id[0],id[1]+.007,id[2]+.0085],[.018,.004,.001],K.mt(rc,.3,8,0,2.2,true),.001);}
     }else if(rk==="sci"){   /* китель: карман с ручками, светящийся пропуск */
       const pk=TA(.42,.6,1.01);K.box([pk[0],pk[1],pk[2]+.006],[.036,.032,.006],K.mt(mixc(jac,[0,0,0],.08),.3,5,P.cloth),.004);
       if(lod)for(const [dx,c] of [[-.012,[30,60,140]],[.006,[20,20,22]]]){K.tube([[pk[0]+dx,pk[1]+.01,pk[2]+.01],[pk[0]+dx,pk[1]+.062,pk[2]+.008]],.0035,K.mt(c,.6,10,0),5);}
@@ -115892,7 +115914,7 @@ function cpBody(m,lod,poseK){
   }else{
     for(const s of [-1,1]){const sp=[];for(let i=0;i<=8;i++){const v=.2+i/8*.62;sp.push([s*TA(Math.PI/2,v)[0]*.97,yf(v),.0]);}K.tube(sp,.003,K.mt(rc,.3,8,0,2.4,true),4);}
   }
-  if(rk!=="fact"&&rk!=="keep")K.box([0,.16*TL,zf(.16)+.008],[.022,.016,.006],Mm,.003);   /* пряжка */
+  if(rk!=="fact"&&rk!=="keep"&&rk!=="clerk")K.box([0,.16*TL,zf(.16)+.008],[.022,.016,.006],Mm,.003);   /* пряжка */
   {const bp=TA(.55,.78,rk==="cmd"?1.08:1.01);K.box([bp[0],bp[1],bp[2]+.004],[.014,.009,.003],K.mt(rc,.3,8,0,g.lv>=6?2.2:.6,true),.002);}   /* нашивка роли; с 6-го уровня светится */
   const shW=.205*wB,shY=.458*TL;
   K.pop();
@@ -115907,6 +115929,8 @@ function cpBody(m,lod,poseK){
     if(rk==="cmd"&&k===0){K.push([S[0]+.006,S[1]+.014,S[2]],0,0,-.4);K.ell([0,0,0],[.06*wB,.02,.062],K.mt(mixc([44,48,42],rc,.1),.35,7,P.cloth),lod?6:4,lod?12:8);K.pop();}   /* наплечник */
     const mid1=[(S[0]+E[0])/2+s*.008,(S[1]+E[1])/2,(S[2]+E[2])/2],mid2=[(E[0]+W[0])/2,(E[1]+W[1])/2,(E[2]+W[2])/2];
     K.tube([S,mid1,E,mid2,W],[.05*wB,.047*wB,.043,.041,.035],Mj,TN);
+    if(rk==="clerk"){const a=[E[0]-S[0],E[1]-S[1],E[2]-S[2]],al=Math.hypot(...a)||1,q=t=>[S[0]+a[0]*t,S[1]+a[1]*t,S[2]+a[2]*t];
+      K.tube([q(.56-.018/al),q(.56+.018/al)],.0475*wB,K.mt(mixc(rc,[20,20,24],.55),.3,6,P.cloth),TN);}   /* резинка на рукаве */
     /* нашивки уровня на левом плече: сколько — по уровню */
     if(k===0&&!ai&&g.role){const nn=Math.min(4,Math.floor(g.lv/2));
       for(let i=0;i<nn;i++){const t=.3+i*.09,p=[S[0]+(E[0]-S[0])*t+.048*wB,S[1]+(E[1]-S[1])*t,S[2]+(E[2]-S[2])*t];K.box(p,[.003,.005,.014],K.mt(rc,.3,8,0,1.8,true),.001);}}
@@ -115950,7 +115974,7 @@ function cpBody(m,lod,poseK){
    играет cpRig */
 const CP_MESH=new Map();
 function cpMesh(m,pose,lod){
-  const key=(m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age);
+  const key=(m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age);
   let M=CP_MESH.get(key);
   if(M){CP_MESH.delete(key);CP_MESH.set(key,M);return M;}
   M=cpBody(m,lod,pose);
@@ -116986,8 +117010,8 @@ function hallLayout(st){
   const T=hallT(st),seed=((G.sys&&G.sys.seed)^0x4A11)>>>0,CS=CANT_STYLE[st]||CANT_STYLE.trade;
   const acc=hex2rgb(CS.acc),bar=hallHasBar(st),R=rng(seed^0x77);
   const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st)};
-  /* хозяин стойки: в комбинезоне смотрителя, стоит за стойкой лицом в зал */
-  const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"keep",loy:64,xp:0,traits:[]};
+  /* хозяин стойки: клерк (M814) — рубашка, жилет, галстук и бирка в цвет зала; стоит за стойкой лицом в зал */
+  const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"clerk",acc,loy:64,xp:0,traits:[]};
   /* волосы, а не бритая голова, и тёмные на коже не светлее средней: светлые на светлом рядом с пилотом читались манекеном */
   const keepOk=g=>[0,4,5].indexOf(g.style)<0&&hallLum(g.hair)<110&&hallLum(g.skin)<205;
   for(let i=2;i<40&&!keepOk(cpGene(keep));i++)keep.seed=hashi(seed,0xC0E,i)>>>0;
@@ -117058,10 +117082,12 @@ function hallScene(L,cam,t){
       M.set(rA,(ii*R3_PART+2+k)*16);}
     const dm=HALL.place==="folk"&&P.kind==="crowd"?.32:(P.dim||0);   /* у бара один герой: завсегдатаи за столиками тише */
     for(let p=0;p<R3_PART;p++)OT[(ii*R3_PART+p)*4+1]=dm;
+    hallManMark(ii,P.x,P.z,P.kind==="keep"?.34:.3,dm>.2?.35:1.15);   /* притушенным за столиками — вполсилы */
     draws.push([P.mesh,ii,1]);P.ii=ii;ii++;}
   /* пилот: у места раздела, стоит, дышит; голова — к вещи места, не к камере */
   const pa=hallPilotAt(HALL.place);
   if(pa&&ii<R3_MAXI){hallRigPose(M,ii*R3_PART,r3Xf([pa[0],0,pa[1]],pa[2]),pa[3],t);   /* M814: пилот — риг планеты (27f4j) */
+    hallManMark(ii,pa[0],pa[1],HALL_RIG_SEAT[pa[3]]!=null?.4:.32,.5);
     draws.push([hallRigMesh(),ii,1]);ii++;}
   /* свет смены. ДЕНЬ: ключ — окно и свет дока: холодное небо заливает зал (стены 25–35 % тона, потолок
      отсветом пола 15–20 %), луч окна с пылью кладёт пятно и тени людей; лампы — вторые.
@@ -117132,6 +117158,9 @@ function hallScene(L,cam,t){
     sgn:[HALL_XB+HALL_SGN[0],HALL_SGN[2],HALL_XB+HALL_SGN[1],HALL_SGN[3]],sgn2:[HALL_B,.32+.25*nk,0,0],
     flm:pl?pl.flm:[0,0,1,0],flm2:[HALL_B,0,pl?1:0,hallSiteW(L)],tsg:L.bar?C3.sign:null,tfl:pl?{view:HALL.orbTex.view}:null,M,ot:OT};
 }
+/* планка света людей (M814): паспорт экземпляра в его последней части — опора (x, z), радиус контактной тени,
+   сила контура (ночью втрое: рассеянного мало, а тёмная одежда без кромки сливается со стеной). Последнюю часть ни человек 27f3, ни риг не занимают (их части 0–12) */
+function hallManMark(ii,x,z,r,rim){HALL_OT.set([x,z,r,rim*(1+2.2*hallNight())],(ii*R3_PART+R3_PART-1)*4);}
 /* окно: проём по x и высоте (подоконник 1.2 м — мерило человека) */
 const HALL_WIN=[-1.4,3.6];
 function hallWinY(T){return [1.2,Math.min(T.hc-.38,3.25)];}
