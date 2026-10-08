@@ -320,7 +320,22 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
     the left 40 % of the 1920 frames, day is 2.1–3.4x night. The suite checks the keeper's hair,
     that the lamp is not over his head, and two sitters at each bar table.
 - **M811 The counter (ТОРГОВЛЯ)** — the keeper (`27f3`) behind it, goods as crates on the
-  counter; the table as a plate. **M812 The yard (ВЕРФЬ)** — hulls on the hangar studio at
+  counter; the table as a plate. *Done:* a new module, `27f4e-hall-goods`, lays one shallow
+  crate per market row (`hallGoodsKeys`: the trade keys, then the far keys in the hold, the
+  same order as `stTabMarket`) in two rows on the counter's near end (`hallGoodsAt`). A crate
+  is a tray .13 m deep, because the counter camera looks almost along the top and a deep box
+  hid its goods. Goods in the hold fill it to the rim with a heap whose height is the amount;
+  an empty crate shows its bottom. A label in the goods' table colour faces the hall. The rows
+  carry `data-k`; pointing at one (`pointerover`/`pointerdown` on the plate) sets
+  `HALL_GOODS.hot`, which gives its crate a rim in the plate's accent (`--c-acc`, the colour
+  of the row highlight) and a small lamp in the goods' colour, second in the light list so the
+  limit never cuts it. A colour glow alone washed light goods to white. The crates are their
+  own mesh, keyed by type, hold and hot row, drawn on the hall's instance 0; the trade
+  dressing's sacks and crate left the counter for them. In the hall, the market's prose line
+  is gone (an empty hold keeps one short line), the table is a plate (`#station.hall .mk`),
+  and the СТОЙКА tag moved to the counter's front panel. `91qc-hall` checks the row order,
+  the slots on the top, a full crate, the hot rim and that its lamp reaches the frame.
+  **M812 The yard (ВЕРФЬ)** — hulls on the hangar studio at
   ≥160 px, the class as a tag. **M813 ПРИБОРЫ** — the five dials as objects with their drift
   on a plate; prose gone. **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
   cantina as the hall itself (M725 composed anew: poses, one hero, the sign off centre), the

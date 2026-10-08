@@ -182,6 +182,7 @@ function hallScene(L,cam,t){
   const hx=T.weld?3.6:2.4,hz=T.weld?-.6:.4;
   M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29)),16);
   const draws=[[L.room,0,1]];let ii=1;
+  const gm=hallGoodsUp(L);if(gm)draws.push([gm,0,1]);   /* товар ящиками на стойке (M811) — тот же экземпляр, что зал */
   for(const P of L.people){if(ii>=R3_MAXI)break;
     const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw);
     const B=r3Mul(A,[1,0,0,0, 0,br,0,0, 0,0,1,0, 0,0,0,1]),at=P.mesh.at;
@@ -213,6 +214,7 @@ function hallScene(L,cam,t){
   /* лампа над стойкой: лицо и столешница в одном луче; ночью — ключ зала */
   lights.push({p:[HALL_KEYX,ky,.62],range:6.5,c:r3Sc(key,(dk?9:7.5)*(1+.25*nk)),spot:1,d:[0,-1,0],cosO:Math.cos(.62),cosI:Math.cos(.3),shadow:1,vol:dk?.3:.15});
   bulbs.push([HALL_KEYX,ky,.62,dk?1.1:.9]);
+  {const gl=hallGoodsLight();if(gl)lights.push(gl);}   /* строка таблицы под мышью — её ящик горит */
   /* окно: высоко под проёмом и круто вниз — пятно до середины зала, тени людей к камере; конус не
      достаёт пола у камеры (глянец зеркалил его там пятном). Пыль в луче — днём */
   const wy=hallWinY(T),wx=(HALL_WIN[0]+HALL_WIN[1])/2,dock=hallMix3(hallMix3(fill,r3Lin([170,200,255]),.7),[.04,.07,.2],nk);
@@ -268,7 +270,7 @@ function hallLimits(S){
 function hallTagList(L,place){
   const out=[];
   if(place==="board")out.push({p:[-3.4,2.5,HALL_B+.05],t:"ДОСКА",s:"объявления станции"});
-  if(place==="trade"){const ty=ST_TYPES.find(x=>x.id===L.st);out.push({p:[-4.9,1.02,2.2],t:"СТОЙКА",s:ty?ty.ru:"Блошиный ряд",dn:1});}
+  if(place==="trade"){const ty=ST_TYPES.find(x=>x.id===L.st);out.push({p:[-4.77,.62,1.7],t:"СТОЙКА",s:ty?ty.ru:"Блошиный ряд",dn:1});}
   if((place==="ship"||place==="site")&&HALL.orb&&HALL.orb.p){const f=HALL.orb.flm;
     out.push({p:[f[0]+f[2]*.62,f[1]+f[2]*.62,HALL_B-40],t:HALL.orb.p.name||"Планета",s:"за окном"});}
   if(place==="know")out.push({p:[1.0,1.12,-2.25],t:"ВЕРСТАК",s:"приборы"});
@@ -315,7 +317,7 @@ function hallOpen(){
   $body.querySelectorAll(".cant-stage").forEach(n=>n.remove());
   if(!$body.__hallScroll){$body.__hallScroll=1;
     $body.addEventListener("scroll",()=>{if(HALL.open)$st.classList.toggle("up",$body.scrollTop>8);},{passive:true});}
-  hallGo(hallPlaceOf(tab),true);hallSize(cn);
+  hallGo(hallPlaceOf(tab),true);hallSize(cn);hallGoodsWire();
   if(!HALL.raf&&typeof requestAnimationFrame==="function")HALL.raf=requestAnimationFrame(hallLoop);
 }
 function hallClose(){
@@ -323,7 +325,7 @@ function hallClose(){
   if(typeof document==="undefined"||!$st)return;
   $st.classList.remove("hall","up");
   if(HALL.tags){HALL.tags.textContent="";HALL.tags.__key="";}
-  if(HALL.cn){r3Free(HALL.cn);}r3Drop(HALL.room);HALL.room=null;HALL.rkey="";
+  if(HALL.cn){r3Free(HALL.cn);}r3Drop(HALL.room);HALL.room=null;HALL.rkey="";hallGoodsDrop();
   if(HALL.orbTex&&HALL.orbTex.dev===GPU.dev)GPU.trash.push(HALL.orbTex.tex);HALL.orbTex=null;HALL.orb=null;
 }
 /* вкладка сменилась: камера — к месту раздела; полоса кантины не нужна — бар рисует зал */

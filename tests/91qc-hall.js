@@ -69,6 +69,20 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     ok(Math.abs(K0.x-HALL_KEYX)>.4,"«"+id+"»: лампа над стойкой не над головой хозяина");
     if(L.bar)for(const T2 of HALL_BAR_TABLES){const n=L.people.filter(P=>T2.seats.some(s=>Math.hypot(P.x-HALL_XB-s[0],P.z-s[1])<.05)).length;
       eq(n,2,"«"+id+"»: за столиком x="+T2.x+" сидят двое");}}
+  /* M811: что в таблице рынка — то ящиками на стойке; строка под мышью зажигает свой ящик */
+  {const L=hallLayout("trade"),keys=hallGoodsKeys(),c0=Object.assign({},G.cargo);
+    ok(keys.join()===TRADE_KEYS.concat(FAR_KEYS.filter(k=>(G.cargo[k]||0)>0)).join(),"ящики идут в порядке строк таблицы");
+    ok(keys.slice(0,12).every((k,i)=>{const p=hallGoodsAt(i);return p[0]-.15>-5.62&&p[0]+.15<-4.78&&p[2]+.15<2.5&&p[2]-.15>.5;}),
+      "ящики лежат на столешнице, ближе к камере, чем гроссбух и руки хозяина");
+    HALL_GOODS.hot=null;G.cargo.iron=0;hallGoodsDrop();const n0=hallGoodsUp(L).n;
+    G.cargo.iron=18;const n1=hallGoodsUp(L).n;
+    ok(n1>n0,"железо в трюме — его ящик полон ("+n0+" → "+n1+" вершин)");
+    ok(hallGoodsLight()===null,"без наведения ни один ящик не горит");
+    HALL_GOODS.hot="iron";const n2=hallGoodsUp(L).n,gl=hallGoodsLight();
+    ok(n2>n1&&gl&&gl.goods==="iron","строка «Железо» под мышью — обвязка и свет над её ящиком");
+    const cm=hallCam(HALL_CAMS.trade,1920,1080,true);L.room=hallRoomMesh(L);
+    ok(hallScene(L,cm,1).lights.some(l=>l.goods==="iron"),"свет горящего ящика попадает в кадр (не срезан пределом ламп)");
+    HALL_GOODS.hot=null;hallGoodsDrop();G.cargo=c0;}
 
   /* наезд: от двери к месту, к концу — ровно цель */
   hallGo("board",true);
