@@ -309,10 +309,16 @@ function hangSurface(){
 const HANG_MSG_AT={system:"ship",scoop:"scoop",surface:"man",map:"you"};
 function hangMsg(Q){
   HANG.msgQ=false;HANG.msgJoin=null;
-  if(!(G.msgT>0&&G.msg)||(typeof msgHeld==="function"&&msgHeld()))return;
-  /* на грунте при подсказке сообщение — не вещь: оно строкой ниже в её табличке (одна вещь — одна табличка) */
-  if(G.mode==="surface"&&!(typeof MSG_OBJ!=="undefined"&&MSG_OBJ)&&HANG.hint&&HANG.hint.f===OVL.fno){
-    HANG.msgJoin=String(G.msg).split("\n").map(hangCase);HANG.msgQ=true;return;}
+  if(!(G.msgT>0&&G.msg)){HANG.msgEther=null;return;}
+  if(typeof msgHeld==="function"&&msgHeld())return;
+  /* на грунте сообщение — не вещь (одна вещь — одна табличка): при подсказке оно строкой ниже в её
+     табличке; без подсказки — в полосу эфира внизу, один раз на сообщение (M826c: история посадки
+     встала своей табличкой в ряд с табличкой залежи) */
+  if(G.mode==="surface"&&!(typeof MSG_OBJ!=="undefined"&&MSG_OBJ)){
+    const L=String(G.msg).split("\n").map(hangCase);
+    if(HANG.hint&&HANG.hint.f===OVL.fno){HANG.msgJoin=L;HANG.msgQ=true;return;}
+    if(HANG.msgEther!==G.msg){HANG.msgEther=G.msg;consoleHeard(L.join(" · "));}
+    HANG.msgEtherF=OVL.fno;HANG.msgQ=true;return;}
   let a=null;
   const b=typeof MSG_OBJ!=="undefined"?MSG_OBJ:null,S=HANG.at.sys;
   if(b&&G.mode==="system"&&S&&S.f===OVL.fno){
@@ -327,7 +333,8 @@ function hangMsg(Q){
   Q.push({id:"hud.msg",lines:String(G.msg).split("\n").map(hangCase),x:a.x,y:a.y,o:{r:a.r,al:clamp(G.msgT/40,0,1)}});
   HANG.msgQ=true;
 }
-function hangMsgHung(){return HANG.last.some(e=>e.id==="hud.msg"||e.m)||OVL.fno-(HANG.msgTagF==null?-9:HANG.msgTagF)<=1;}
+function hangMsgHung(){return HANG.last.some(e=>e.id==="hud.msg"||e.m)||OVL.fno-(HANG.msgTagF==null?-9:HANG.msgTagF)<=1
+  ||OVL.fno-(HANG.msgEtherF==null?-9:HANG.msgEtherF)<=1;}   /* ушла в эфир — DOM-строка молчит */
 /* капс строки — в регистр предложения; имена системы, её тел и корабля, «ГЛАВТРАССА» — как пишутся */
 function hangCase(s){
   s=String(s);

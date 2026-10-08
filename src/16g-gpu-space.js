@@ -202,7 +202,8 @@ function gpuSpaceSys(sys,cx0,cy0,Z){
   GPU.sceneBg=SPACE_BG;
   /* туманность объёмом (16gb) считается своим проходом — до прохода сцены */
   GSP.star=gnbStar(sys,W/2-cx0*Z,H/2-cy0*Z,sys.radius*Z);
-  const neb=gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star,Z);
+  /* GPU.kill.neb — кадр без туманности (M823: полотно мерят разностью с ним) */
+  const neb=!GPU.kill.neb&&gpuNebulaGen(sys,cx0*Z,cy0*Z,GSP.star,Z);
   /* с туманностью цвет космоса кладёт её проход EMI (16gb): очистка — в чёрное */
   if(neb)GPU.sceneBg=SPACE_BLACK;
   let pass=gpuScene();if(!pass)return;
