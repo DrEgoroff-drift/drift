@@ -181,6 +181,9 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let q=p-b.xy;let rw=floor(b.w);let dn=fract(b.w)/.99;
     let al=dot(q,tn)/b.z;let ac=(dot(q,vec2f(tn.y,-tn.x)))/max(rw,1.);
     m=m+dn*exp(-al*al-ac*ac);}
+  /* край сгустка рваный, а не гауссов: порог плотности гуляет шумом мира */
+  let ne=sbf(d/Z/30.+vec2f(2.,7.))*.65+sbn(d/Z/8.+vec2f(5.,1.))*.35;
+  m=m*smoothstep(.05,.3,m*1.3-(ne-.45)*1.2)*(.6+.8*sbf(d/Z/13.+vec2f(9.,4.)));
   let a1=atan2(d.y,d.x);let a2=atan2(-d.y,-d.x);
   let s1=a1*c.z/Z;let s2=a2*c.z/Z+fu.v[2].w;
   let w2=smoothstep(.3,.8,-cos(a1));
@@ -192,7 +195,9 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let wq=d/Z/260.+vec2f(fu.v[2].w*.0001,3.);
   let pf=smoothstep(.2,.55,sbf(wq+vec2f(sbn(wq*1.7)*.8,sbn(wq*1.7+vec2f(4.,9.))*.8)));
   let dd=clamp(m,0.,1.3)*(.08+1.5*smoothstep(.25,.65,n)*pf)*(.8+.4*g);
-  let a=clamp(dd*fu.v[1].w,0.,.5);
+  /* зерно пыли 2–4 px, ±.05 по яркости — дымка не разлита ровной заливкой */
+  let gr=sbn(d/3.1)*.6+sbn(d/1.8+vec2f(7.,2.))*.4;
+  let a0=clamp(dd*fu.v[1].w,0.,.5);let a=clamp(a0+.16*(gr-.5)*smoothstep(.0,.06,a0),0.,.5);
   return vec4f(fu.v[1].rgb*a,a);}`;
 const SBELT_U=new Float32Array(60);
 function gsyBeltHaze(pass,sys,ox,oy,Z){
@@ -200,7 +205,7 @@ function gsyBeltHaze(pass,sys,ox,oy,Z){
   U[0]=ox;U[1]=oy;U[2]=B.orbit*Z;U[3]=Z;
   const sc=hex2rgb(sys.cls.col);
   for(let i=0;i<3;i++)U[4+i]=(118*.62+sc[i]*.38)/255;
-  U[7]=.55;U[11]=TAU*B.orbit*.5;
+  U[7]=.40;U[11]=TAU*B.orbit*.5;
   /* сгустки в кадре — ближние к центру первыми */
   const pick=SBELT_PICK;pick.length=0;
   for(const c of K.c){if(!c.on)continue;

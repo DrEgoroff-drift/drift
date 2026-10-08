@@ -114,13 +114,20 @@ fn vor(q: vec3f) -> V {
 struct C { h: f32, g: vec3f, rim: f32, fl: f32 };
 fn crat(p: vec3f, sc: f32, dens: f32, dep: f32, fw: f32) -> C {
   var r: C; r.h = 0.; r.g = vec3f(0.); r.rim = 0.; r.fl = 0.;
-  let v = vor(p*sc);
-  if (fract(v.id.z*13.7) > dens) { return r; }
-  let rc = mix(.2, .44, v.id.y);
-  let d = v.f1; let x = d/rc;
+  /* кратер — ближайший по d/rc среди живых ячеек (M825): ближайшая точка Вороного резала большой кратер
+     прямым швом по границе соседней ячейки */
+  let q = p*sc; let i0 = floor(q); let f = q - i0;
+  var x = 9.; var rc = 1.; var dv = vec3f(0.);
+  for (var z = -1; z <= 1; z++) { for (var y = -1; y <= 1; y++) { for (var xx = -1; xx <= 1; xx++) {
+    let o = vec3f(f32(xx), f32(y), f32(z)); let hh = h3(i0 + o);
+    if (fract(hh.z*13.7) > dens) { continue; }
+    let c = o + .15 + .7*hh - f; let r0 = mix(.2, .44, hh.y); let xc = length(c)/r0;
+    if (xc < x) { x = xc; rc = r0; dv = c; }
+  } } }
   if (x > 1.6) { return r; }
+  let d = x*rc;
   let fade = 1. - smoothstep(.3, .9, fw*sc/rc);
-  let dir = -v.c/max(d, 1e-4);
+  let dir = -dv/max(d, 1e-4);
   var h = 0.; var dh = 0.;
   if (x < 1.) { h = max(x*x - 1., -.75); dh = select(2.*x, 0., x*x - 1. < -.75); }
   let e = (x - 1.)/.2; let rh = .3*exp(-e*e); h += rh; dh += rh*(-2.*e/.2);
@@ -161,15 +168,29 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
       o.spec = .7; o.rough = .3;
     }
     o.alb = ramp(k, tone);
+    if (k == 0) {
+      /* камень не нейтрально-серый (M825): материки теплее (окислы — охра или ржавь, по зерну мира),
+         моря — холодный базальт; тон гуляет медленным полем, а не заливкой */
+      let mn = smoothstep(-.25, .3, fbm(p*2.1 + s + 11., 3, fw));
+      let hw = fract(s.x*.37);
+      let warm = mix(vec3f(1.45, 1.02, .62), vec3f(1.55, .9, .56), smoothstep(.55, .85, hw));
+      o.alb = o.alb*mix(vec3f(.9, .95, 1.05), warm, clamp(.35 + .65*mn - .45*mar, 0., 1.));
+    }
     o.b = c1.g + c2.g + c3.g + .15*vec3f(fbm(p*5. + 1., 3, fw), fbm(p*5. + 2., 3, fw), fbm(p*5. + 3., 3, fw));
-  } else if (k == 1) {                          // crystal: tilted facets, pale seams
-    let v = vor(p*3.2 + s); let v2 = vor(p*8.5 + s + 4.);
-    let seam = 1. - smoothstep(.0, .035 + fw*3.2, v.f2 - v.f1);
-    let seam2 = 1. - smoothstep(.0, .03 + fw*8.5, v2.f2 - v2.f1);
-    o.alb = ramp(k, .3 + .3*v.id.x + .08*v2.id.x + .3*seam*step(.55, fract(v.id.z*7.)) + .06*seam2*(1. - smoothstep(.2, .6, fw*8.5)));
-    o.b = (v.id - .5)*1.1 + (v2.id - .5)*.35;
-    o.spec = .6; o.rough = .22;
-    o.glow = vec3f(.55, .45, 1.)*.06*seam*step(.55, fract(v.id.z*7.));
+  } else if (k == 1) {                          // crystal: big flat facets, druses, violet light inside
+    /* грань — плоская и наклонена сильно: каждая ловит свет по-своему, часть вспыхивает бликом (M825);
+       мелкие кристаллы — щётками-друзами местами, а не мостовой по всему шару */
+    let v = vor(p*3.2 + s); let v2 = vor(p*9.5 + s + 4.);
+    let dz = smoothstep(.05, .35, fbm(p*1.6 + s + 3., 3, fw));
+    let seam = 1. - smoothstep(.0, .025 + fw*3.2, v.f2 - v.f1);
+    let seam2 = (1. - smoothstep(.0, .02 + fw*9.5, v2.f2 - v2.f1))*dz*(1. - smoothstep(.2, .6, fw*9.5));
+    /* стекло: цвет у граней почти один (тёмная фиалка), грань читается светом — наклоном и бликом */
+    let hue = mix(vec3f(1.04, .84, 1.2), vec3f(.82, .88, 1.28), v.id.y);
+    o.alb = ramp(k, .3 + .12*v.id.x + .08*dz*v2.id.x)*hue*(1. - .35*seam2);
+    o.alb = mix(o.alb, ramp(k, .9), .5*seam*step(.6, fract(v.id.z*7.)));
+    o.b = (v.id - .5)*1.7 + (v2.id - .5)*.5*dz;
+    o.spec = 1.; o.rough = .16;
+    o.glow = vec3f(.5, .3, 1.)*(.03 + .05*v.id.z + .09*seam*step(.6, fract(v.id.z*7.)));
   } else if (k == 2) {                          // ruin: dead continents, a city grid on the land
     let n = fbm(warp(p*1.2 + s, .5, fw), 5, fw);
     let land = smoothstep(-.04, .04, n);
@@ -256,15 +277,29 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     var cv = .5; if (k == 4) { cv = .6; } if (k == 7) { cv = .55; }
     let cf = fbm(cw*1.3, 5, fw); o.cloud = smoothstep(.05, .5, cf + cv - .55)*(.55 + .3*smoothstep(.1, .5, cf))*smoothstep(.0, .25, abs(p.y) + .15);
     o.b = .5*mtn*vec3f(n3(p*20.), n3(p*20. + 3.), n3(p*20. + 6.));
-  } else if (k == 5) {                          // ice: white shell, long rust cracks
-    let l1 = 1. - smoothstep(.0, .02 + fw*3., abs(n3(warp(p*2.2 + s, .3, fw))));
-    let l2 = 1. - smoothstep(.0, .015 + fw*7., abs(n3(p*6.5 + s + 5.)));
+  } else if (k == 5) {                          // ice: a pale shell cut by long lineae, brown chaos
+    /* линеи (M825): длинные дуги больших кругов, чуть извитые, — двойной тёмный хребет со светлой серединкой
+       и рыжая кайма вокруг; дуги пересекают друг друга и тают к концам. Мелкие трещины — фоном */
     let mot = fbm(p*4. + s, 4, fw);
-    let chaos = smoothstep(.25, .45, fbm(p*1.8 + s + 8., 3, fw));
-    var alb = ramp(k, .82 + .1*mot - .3*chaos);
-    let rust = vec3f(.28, .16, .1);
-    alb = mix(alb, rust, .75*l1 + .5*l2*(1. - smoothstep(.2, .6, fw*7.)));
-    o.alb = alb; o.spec = .4; o.rough = .35;
+    let chaos = smoothstep(.28, .48, fbm(p*1.8 + s + 8., 3, fw));
+    var alb = ramp(k, .6 + .1*mot - .14*chaos);
+    let rust = vec3f(.3, .21, .16);
+    var dl = 0.; var hl = 0.;
+    for (var j = 0; j < 13; j++) {
+      let hj = h3(vec3f(s.x, f32(j), 9.));
+      let z0 = hj.x*2. - 1.; let a0 = hj.y*6.2832; let c0 = sqrt(1. - z0*z0);
+      let ax = vec3f(cos(a0)*c0, z0, sin(a0)*c0);
+      let wob = .05*n3(p*2.3 + f32(j)*7.1 + s) + .015*n3(p*9. + f32(j)*3.7 + s);
+      let dd = abs(dot(p, ax) - (hj.z - .5)*.5 + wob);
+      let along = smoothstep(.15, .45, n3(p*1.1 + vec3f(f32(j)*3.3, 0., 1.) + s) + .35);
+      let wd = (.006 + .016*pow(fract(hj.z*13.), 2.)) + fw*.7;
+      dl = max(dl, (1. - smoothstep(wd*.15, wd*.6, abs(dd - wd)))*along);
+      hl = max(hl, (1. - smoothstep(wd*1.5, wd*6., dd))*along);
+    }
+    let l2 = 1. - smoothstep(.0, .012 + fw*7., abs(n3(p*6.5 + s + 5.)));
+    alb = mix(alb, alb*vec3f(.8, .7, .62), .6*hl + .5*chaos*smoothstep(.4, .7, mot));
+    alb = mix(alb, rust, .7*dl + .25*l2*(1. - smoothstep(.2, .6, fw*7.)));
+    o.alb = alb; o.spec = .35; o.rough = .3;
   } else if (k == 6) {                          // toxic: Venus-like haze, soft bands, chevrons
     let lon = atan2(p.z, p.x);
     let ch = p.y*4. + .6*abs(sin(lon*1.)) + .5*fbm(vec3f(p.x*3., p.y*9., p.z*3.) + s, 4, fw);
@@ -302,7 +337,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
   let q = i.p.xy/u.b.x; let r = v0.z; let d = (q - v0.xy)/r; let px = 1./(u.b.x*r);
   let k = i32(v0.w); let L = normalize(v1.xyz);
   let spin = v1.w*6.2831853; let tilt = v6.z;
-  let air = chromaCap(v2.rgb, .09); let thick = v2.w;
+  let air = chromaCap(v2.rgb, select(.09, .055, k == 4)); let thick = v2.w;
   let sun = v3.rgb*v6.y;
   let seed = v3.w; let s = vec3f(seed*1.37, seed*.71, seed*2.13);
   let len = length(d);
@@ -317,7 +352,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     let Vo = toObj(vec3f(0., 0., 1.), tilt, spin);
     let fwp = fw/max(nz, .15);
     var sf = surf(k, p, s, fwp);
-    sf.alb = chromaCap(sf.alb, .1);
+    sf.alb = chromaCap(sf.alb, select(.1, .065, k == 4));   /* джунгли — под потолком насыщенности (M825) */
     let gv = toObj(vec3f(dpdx(sf.hs), dpdy(sf.hs), 0.)/px, tilt, spin)*nz;
     let n = normalize(p - tang(sf.b + gv, p)*.9);
     let mu0 = dot(n, Lo); let mu = max(dot(n, Vo), .02); let m0g = dot(p, Lo);
@@ -337,7 +372,9 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     let fillC = mix(vec3f(.05, .062, .09), chromaCap(air*1.5, .12), airK);
     sc += sf.alb*fillC*nightK*.32*sun;
     let termB = exp(-m0g*m0g/mix(.003, .011, airK))*(.2 + .8*airK)*smoothstep(-.2, .04, m0g);
-    sc += (sf.alb*.6 + .1)*vec3f(1., .55, .3)*termB*sun;
+    /* тёплая кайма — только у воздуха (M825): на голом камне она ложилась бурой полосой, терминатор
+       безвоздушного тела резкий */
+    sc += (sf.alb*.6 + .1)*vec3f(1., .55, .3)*termB*airK*sun;
     let H = normalize(Lo + Vo);
     let sp = pow(max(dot(n, H), 0.), 2./(sf.rough*sf.rough*sf.rough + .002))*sf.spec*smoothstep(.0, .1, mu0);
     sc += sun*sp*(.04 + .5*pow(1. - mu, 5.))*select(1., 3., sf.rough < .32);
@@ -375,11 +412,16 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     if (k == 3 || k == 6) { sc *= .55 + .45*pow(nz, .35); }
     /* тень кольца на диске: луч к звезде пересекает плоскость кольца */
     if (v4.w > 0.) {
-      let tt = v4.w; let RN = vec3f(0., sqrt(1. - tt*tt), -tt); let dq = dot(L, RN);
+      /* тень кольца (M825): высокое светило клало тень на скрытую сторону, светило в плоскости — ниткой
+         у самого кольца; для тени высота светила над плоскостью кольца сжата (×.3, не меньше .25) —
+         тень ложится на освещённый диск полосой за кольцом */
+      let tt = v4.w; let RN = vec3f(0., sqrt(1. - tt*tt), -tt); let d0 = dot(L, RN);
+      var el = d0*.3; if (abs(el) < .25) { el = select(-.25, .25, d0 >= 0.); }
+      let Ls = normalize(L - RN*(d0 - el)); let dq = dot(Ls, RN);
       if (abs(dq) > 1e-3) {
         let sh = -dot(N, RN)/dq;
-        let rh = length(N + L*sh);
-        if (sh > 0.) { let rg = ring(rh, v4, v5, max(px*3., .004)); sc *= 1. - rg.a*.85; }
+        let rh = length(N + Ls*sh);
+        if (sh > 0.) { let rg = ring(rh, v4, v5, max(px*3., .004)); let ta = 1. - pow(1. - min(rg.a, .95), 1./max(abs(dq), .12)); sc *= 1. - ta*.9; }   /* луч к звезде идёт сквозь кольцо косо — тень плотнее самого кольца (M825) */
       }
     }
     cov = clamp((1. - len)/px + .5, 0., 1.);

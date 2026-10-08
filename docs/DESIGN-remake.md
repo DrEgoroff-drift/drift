@@ -457,6 +457,24 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   of a warped field, distance in px by finite difference (no `fwidth` in that branch), dark side
   sharp at 1.6 px, light side soft over 5 px, two scales under slow masks; a tone drift toward
   blue by a slow field and toward warm with a lighter knot where the gas is brightest.
+  *M825 (08.10), the orbs:* `17gab` — crystal: `vor` facets ×3.2 with a druse mask (fbm ×1.6)
+  adding facets ×9.5, seams pale, one facet in ~2.5 glints (`glow` .09·seam), hue between rose
+  and blue-violet by facet id, spec 1/rough .16. Ice: 13 great circles, offset ±.25, wobble two
+  octaves (.05/.015), cut along their length by noise, width .006–.022 squared toward thin, a
+  double ridge (dark core, umber `rust` .3/.21/.16) over a pale halo. Jungle: chroma cap .1/.065
+  on land, .09/.055 on air. Rocky: warm regolith (two hues by seed) against cool maria. `crat`
+  walks the 27 cells and takes the smallest d/rc among live cells — the nearest Voronoi point
+  had cut big craters along a straight seam. The terminator's warm rim is multiplied by `airK`:
+  airless bodies keep a hard terminator. Ring shadow: the shadow ray uses the sun with its
+  elevation over the ring plane squeezed (×.3, at least .25) — a cheat: the true high sun casts
+  it on the hidden side and a sun in the plane casts a thread under the ring; the band on the
+  lit disc is what reads. `17g` star: limb `1−(.52..62)μ'−(.2..28)μ'²`, Voronoi granulation
+  (`gcell`, drifting centres, cells ×1.4–2.4 of the old grain, fade under 2–6 px per cell),
+  all gated by `near` = smoothstep(20,70) of the disc radius in px; the lens streaks and the
+  white core in `08b` shrink by the same `near`. Nebula tails: lanes two-octave (×2.63) and cut
+  to 60–200 px by noise, a second lane set under its own mask, lanes gated by `fl`
+  (smoothstep(.15,.45) of the star distance) instead of the far law. Belt haze: two-scale torn
+  edge, mottling, grain 2–4 px at ±.08 alpha, strength .40.
 
 ### Stage D — the way down (M830–M839)
 

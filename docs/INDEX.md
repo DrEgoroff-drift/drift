@@ -748,16 +748,16 @@ GNB_STAR_ABS                 src/16gb-gpu-nebula.js:407
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
 GNB_TONE                     src/16gay-gpu-nebula-look.js:47
-GNB_VOL                      src/16gay-gpu-nebula-look.js:125
+GNB_VOL                      src/16gay-gpu-nebula-look.js:134
 GNB_WC                       src/16gay-gpu-nebula-look.js:70
 GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
-GOR_FAM                      src/17gab-gpu-orb.js:420
-GOR_GAS                      src/17gab-gpu-orb.js:443-477
+GOR_FAM                      src/17gab-gpu-orb.js:462
+GOR_GAS                      src/17gab-gpu-orb.js:485-519
 GOR_LIT                      src/17gab-gpu-orb.js:18
 GOR_LZ                       src/17gab-gpu-orb.js:16
-GOR_MOON                     src/17gab-gpu-orb.js:494
-GOR_MOONPAL                  src/17gab-gpu-orb.js:495
+GOR_MOON                     src/17gab-gpu-orb.js:536
+GOR_MOONPAL                  src/17gab-gpu-orb.js:537
 GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
@@ -1879,9 +1879,9 @@ SBELT_BAS                    src/17gc-sys-belt.js:55
 SBELT_HAZE_WGSL              src/17gc-sys-belt.js:169
 SBELT_LAY                    src/17gc-sys-belt.js:54
 SBELT_LIST                   src/17gc-sys-belt.js:153
-SBELT_PICK                   src/17gc-sys-belt.js:214
+SBELT_PICK                   src/17gc-sys-belt.js:219
 SBELT_TINT                   src/17gc-sys-belt.js:155
-SBELT_U                      src/17gc-sys-belt.js:197
+SBELT_U                      src/17gc-sys-belt.js:202
 SCALES                       src/10-music.js:5-24
 SCALE_KEYS                   src/10-music.js:25
 SCAR_KEYS                    src/05b2-scars.js:14
@@ -4233,11 +4233,11 @@ gnbStars                     src/16gb-gpu-nebula.js:420-427
 gnbTarget                    src/16gb-gpu-nebula.js:516-523
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
-gorBody                      src/17gab-gpu-orb.js:453-477
-gorCode                      src/17gab-gpu-orb.js:421-431
-gorLin                       src/17gab-gpu-orb.js:411
-gorMoonPal                   src/17gab-gpu-orb.js:496-503
-gorPipe                      src/17gab-gpu-orb.js:433-440
+gorBody                      src/17gab-gpu-orb.js:495-519
+gorCode                      src/17gab-gpu-orb.js:463-473
+gorLin                       src/17gab-gpu-orb.js:453
+gorMoonPal                   src/17gab-gpu-orb.js:538-545
+gorPipe                      src/17gab-gpu-orb.js:475-482
 gosBbLine                    src/17k1-gosplan.js:25-28
 gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
@@ -4317,8 +4317,8 @@ gpuNebulaGen                 src/16gb-gpu-nebula.js:596-650
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
-gpuOrb                       src/17gab-gpu-orb.js:479-491
-gpuOrbMoon                   src/17gab-gpu-orb.js:504-510
+gpuOrb                       src/17gab-gpu-orb.js:521-533
+gpuOrbMoon                   src/17gab-gpu-orb.js:546-552
 gpuOvFrontView               src/08bi-gpu-ovl.js:284
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
@@ -4351,7 +4351,7 @@ gpuSpaceTitle                src/16g-gpu-space.js:222-233
 gpuStationDraw               src/17c3-station-live.js:119-125
 gpuStationFlare              src/17c3-station-live.js:128-143
 gpuStoreDrop                 src/18c-chunks.js:191
-gpuSysUnder                  src/17g-gpu-system.js:416-422
+gpuSysUnder                  src/17g-gpu-system.js:431-437
 gpuTakeSnap                  src/08b-gpu.js:27-33
 gpuTileAt                    src/18c-chunks.js:228-234
 gpuTileStore                 src/18c-chunks.js:223-227
@@ -4432,14 +4432,14 @@ gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:369
-gsyBeltDots                  src/17g-gpu-system.js:359-367
-gsyBeltHaze                  src/17gc-sys-belt.js:198-213
-gsyEll                       src/17g-gpu-system.js:328-337
-gsyMean                      src/17g-gpu-system.js:338-341
-gsyOrb                       src/17g-gpu-system.js:320-326
-gsyOrbits                    src/17g-gpu-system.js:342-357
-gsyStar                      src/17g-gpu-system.js:368-414
-gsyUni                       src/17g-gpu-system.js:314-318
+gsyBeltDots                  src/17g-gpu-system.js:373-381
+gsyBeltHaze                  src/17gc-sys-belt.js:203-218
+gsyEll                       src/17g-gpu-system.js:342-351
+gsyMean                      src/17g-gpu-system.js:352-355
+gsyOrb                       src/17g-gpu-system.js:334-340
+gsyOrbits                    src/17g-gpu-system.js:356-371
+gsyStar                      src/17g-gpu-system.js:382-429
+gsyUni                       src/17g-gpu-system.js:328-332
 gtrDraw                      src/16ga-gpu-trail.js:43-51
 gtrLane                      src/16ga-gpu-trail.js:37-42
 gtrPush                      src/16ga-gpu-trail.js:31-35
@@ -8846,7 +8846,7 @@ zoomTo                       src/15-input.js:358
 ## src/16ga-gpu-trail.js · 20 KB
   · шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
-## src/16gay-gpu-nebula-look.js · 13 KB
+## src/16gay-gpu-nebula-look.js · 14 KB
   · облик туманности «смело» (26.09, docs/DESIGN-gpu.md):1
 
 ## src/16gaz-gpu-noise.js · 3 KB
@@ -8911,7 +8911,7 @@ zoomTo                       src/15-input.js:358
 ## src/17f-sys-traffic.js · 9 KB
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 30 KB
+## src/17g-gpu-system.js · 31 KB
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 15 KB
@@ -8920,13 +8920,13 @@ zoomTo                       src/15-input.js:358
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
-## src/17gab-gpu-orb.js · 32 KB
+## src/17gab-gpu-orb.js · 36 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
 
 ## src/17gb-gpu-planet-strip.js · 7 KB
   · развёртка планеты — шейдером на видеокарте (GPU-3, DESIGN-gpu §G, 25.09):1
 
-## src/17gc-sys-belt.js · 13 KB
+## src/17gc-sys-belt.js · 14 KB
   · пояс в кадре системы (M824):1
 
 ## src/17h-sys-gesture.js · 14 KB

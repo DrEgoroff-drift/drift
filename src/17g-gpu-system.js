@@ -64,6 +64,12 @@ fn lrot(d:vec2f,a:f32)->vec2f{let c=cos(a);let s=sin(a);return vec2f(c*d.x+s*d.y
 fn edist(l:vec2f,A:f32,B:f32)->f32{let f=l.x*l.x/(A*A)+l.y*l.y/(B*B)-1.;
   return abs(f)/max(length(2.*vec2f(l.x/(A*A),l.y/(B*B))),1e-6);}
 fn over(acc:vec4f,s:vec4f)->vec4f{return s+acc*(1.-s.a);}
+/* гранулы (M825): ячейки с тёмными межгранульными дорожками; центры ячеек плывут — узор кипит */
+fn gcell(q:vec2f,t:f32)->vec2f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;
+  for(var j=-1;j<=1;j++){for(var k=-1;k<=1;k++){let g=vec2f(f32(j),f32(k));
+    let h=vec2f(sh(i+g),sh(i+g+vec2f(17.,31.)));let o=vec2f(.5)+.38*sin(vec2f(t*.0021,t*.0017)+6.2832*h);
+    let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;}else if(dd<f2){f2=dd;}}}
+  return vec2f(f1,f2);}
 /* одно светило: фотосфера (закрывает фон), корона со стримерами, ореол, четыре луча */
 fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   let d=p-sv.xy;let R=sv.z;let heat=sv.w;let col=cv.rgb;let rr=length(d);let r=rr/R;
@@ -143,16 +149,22 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   /* белое горячее ядро и блик: источник — самое яркое в кадре, и на ярком газе тоже */
   let rc=r/(Rd*.16);e=e+vec3f(1.,.97,.93)*1.6*exp(-rc*rc);
   var photo=vec4f(0.);var gl=1.;
+  /* M825: диск крупнее ~20 px радиуса — смотрим на поверхность, а не на точку света */
+  let near=smoothstep(20.,70.,Rd*R);
   if(vv<4.&&r<Rd+.06){
     let rn=min(r/Rd,1.);let mu=sqrt(max(0.,1.-rn*rn));
     /* белизна — от жара: гигант холодный и остаётся оранжевым, карлик — добела */
     let wh=mix(.12,.85,clamp((heat-.7)/.3,0.,1.));
     /* у горячей потемнение слабее и лимб чуть голубой: диск — самое яркое в кадре, ярче короны */
-    let lk=1.-mu;let limb=1.-((.37+.15*big)*lk+(.16+.1*big)*lk*lk)*(1.-.45*wh);
+    let lk=1.-mu;let limb=1.-((.52+.1*big)*lk+(.2+.08*big)*lk*lk)*(1.-.25*wh);
     let gs=(5.+6.*(1.-big))/Rd;
     /* G2: грануляция кипит — ячейки гнёт медленный вихрь, за пару секунд узор другой */
     let q=d/R*gs;let wq=vec2f(sf(q*.5+vec2f(t*.004,1.3)),sf(q*.5+vec2f(4.1,-t*.0035)));
     let ga=.7+.2*big;let gr=1.-ga*.5+ga*sf(q+wq*1.6+vec2f(t*.0015,-t*.001));
+    /* M825: на близком зуме — ячейки; к лимбу сжаты по лучу (дуга по шару), мельче двух px — в среднее */
+    let gm=mix(1.4,2.4,big);let qa=dir*asin(rn)*Rd*gs*gm+wq*1.3;let gc=gcell(qa,t);
+    let gcl=(mix(.84,.93,wh)+mix(.2,.09,wh)*smoothstep(.0,.5,gc.y-gc.x))*(1.04-.16*gc.x);
+    let cpx=R/(gs*gm);let gk=smoothstep(2.,6.,cpx);
     let hot=mix(mix(col,vec3f(1.,.82,.55),.35*(1.-wh)),vec3f(1.,.99,.965),wh*mu*mu*mu*mu);
     /* L2: кромка фотосферы мягкая (последние 8% радиуса) — диск переходит в корону,
        а не обрезан кругом: жёсткий край читался стеклянным шаром с каймой */
@@ -164,13 +176,15 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
     /* пятна — вне ядра (от ~.35 радиуса): тёмная гранула в центре читалась зрачком,
        а самая яркая точка кадра должна быть самой яркой. В ядре гранулы только светлее */
     let gg=mix(max(gr,1.),gr,smoothstep(.2,.38,rn));
-    let I=hot*lc*mix(1.,gg,mu)*mix(1.4,1.,big)*(1.+.35*wh);
+    let gn=mix(gg,mix(1.,gcl,gk)*mix(1.,gr,.35),near);
+    let I=hot*lc*mix(1.,gn,sqrt(mu))*mix(1.4,1.,big)*(1.+.35*wh);
     /* L2: фотосфера светит поверх газа, а не вырезает его: закрытый газ делал диск
-       тусклее кольца за краем — затмение вместо звезды */
+       тусклее кольца за краем — затмение вместо звезды. M825: вблизи диск — своей выдержкой, без
+       экспоненты тона (она плющила лимб и гранулы в белое) */
     photo=vec4f(I*cov,cov*.6);
     /* засветка над серединой — как была (центр — самая яркая точка кадра, блум берёт его),
-       над лимбом срезана: там она делала горб */
-    gl=1.-cov*mix(.8,.5,mu*mu);
+       над лимбом срезана: там она делала горб; вблизи корона с диска снята почти вся */
+    gl=1.-cov*mix(mix(.8,.5,mu*mu),.94,near);
   }
   /* тон — один на диск и корону: 1−exp(−x) вместо обрезки на единице. Середина
      белая, к лимбу видно потемнение и цвет звезды, плоского пересвеченного блина
@@ -178,11 +192,11 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   /* L2: сцена — rgba16f, и то, что светит много выше единицы, остаётся выше неё: ядро
      звезды — самое яркое в кадре во столько раз, во сколько светит; на экран его
      сводит общее плечо, а широкое свечение берёт от него силу */
-  let raw=photo.rgb+e*1.15*gl;
-  let tone=vec3f(1.)-exp(-raw)+max(raw-vec3f(1.6),vec3f(0.))*.6;
+  let raw=photo.rgb*(1.-near)+e*1.15*gl;
+  let tone=vec3f(1.)-exp(-raw)+max(raw-vec3f(1.6),vec3f(0.))*.6+photo.rgb*near*.5;
   /* сверх тона — горячая середина: одна она светит далеко выше газа, и лестница
      свечения даёт ей широкий тёплый ореол; диск вокруг остаётся своего цвета */
-  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat);
+  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-.9*near);
   return vec4f(tone+hc,photo.a);
 }
 fn bleed(p:vec2f,bv:vec4f,col:vec3f)->vec3f{
@@ -409,7 +423,8 @@ function gsyStar(pass,sys,ox,oy,R){
      в кадре (08b fsFinal). Дыра не светит — ни грейда, ни бликов */
   if(!kind){const g=st.kind==="giant"?[.6,"#ff7448",.8]:st.kind==="dwarf"?[1.6,"#e8f4ff",1]:[sys.cls.t||1,sys.cls.col,1];
     const q=hex2rgb(g[1]),r0=S[2]||R,m=Math.min(ox,W-ox,oy,H-oy);
-    GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1),r:r0*(big?.42:.24)*.16,cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
+    const nr=sbss(20,70,r0*(big?.42:.24));   /* M825: вблизи диск — поверхность, ядро линзы его не прожигает */
+    GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1)*(1-.85*nr),r:r0*(big?.42:.24)*.16*(1-nr),cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
   gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
 }
 /* всё под планетами — в проход сцены, сразу за фоном (16g) */
