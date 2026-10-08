@@ -70,7 +70,8 @@ TEST_SUITES.push(()=>suite("сквозной: панели не наслаива
     resetWorld();
     try{if(sc.set()===false||G.mode==="none")continue;drawWorld();hud();}catch(e){continue;}
     scenes++;
-    const boxes=SEL.map(s=>({s,r:vis(document.querySelector(s))})).filter(b=>b.r);
+    /* показания спуска, поставленные в ряд пэдов (21pza, M830), — часть ряда, не отдельная панель */
+    const boxes=SEL.map(s=>({s,r:vis(document.querySelector(s))})).filter(b=>b.r&&!(b.s==="#prompt"&&document.querySelector(".pads #prompt")));
     for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){
       const h=hit(boxes[i].r,boxes[j].r);
       if(h)overlaps.push(sc.id+": "+boxes[i].s+" ∩ "+boxes[j].s+" "+h);

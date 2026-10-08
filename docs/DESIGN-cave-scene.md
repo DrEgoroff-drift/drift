@@ -49,13 +49,18 @@ depth is 1.2 × the local height (a gallery 4 m high is a tube 4.8 m deep), hall
 
 | | broad (≥ 900 px, 16:9) | tall (phone) | far |
 |---|---|---|---|
-| eye from the walk line | 50 m, 3.6 m up | 30 m, 3.6 m up | 100 m |
+| eye from the walk line | 36 m, 3.2 m up | 18 m, 3.2 m up | 100 m |
 | lens | 24° | 46° | 24° |
-| frame at the cut | 36 × 20 m | 10.8 × 23 m | 72 × 40 m |
-| the man | 8.5 % of the height | 7.7 % | 4.2 % |
+| frame at the cut | 26 × 14.5 m | 6.6 × 14.5 m | 72 × 40 m |
+| the man | 12 % of the height | 12 % | 4.2 % |
 | walk line from the bottom | .34 | .29 | .40 |
 | when | walking, by default | the phone, always | the map key / the lift of the rope; never on the phone |
 
+A gallery of 3–5.5 m takes about .28 of the frame's height in both lenses; the rest of the
+page is stone (10–15 % value, the strata, the cool fill from the mouth), never black. At a
+thing the lens comes ×1.6 nearer (`plnGlide`), on the phone always. (The first table asked
+36 × 20 m and 10.8 × 23 m; M630a pass 1 showed the gallery at 15–25 % and two thirds of the
+frame void — changed 08.10.)
 The lens follows the man eased (`plnGlide`'s curve, .45 s in, .7 s out); the floor is raked
 and the ceiling falls as §11.8 asks, so both are seen. The phone keeps dark rock under its
 chips and over its pads. **The man's head never touches a far line**: the lens may drop or
@@ -118,10 +123,20 @@ the glide out. No frame is black and no frame is a different picture. `enterCave
   the cut face, the broad and tall lenses with the eased follow, the rig in 3D with the lamp
   as key (shadows, cone, pool), the day at the mouth, the way in and out without a cut.
   Gate: the gallery past the mouth at 1920 and 390 on two worlds (sedimentary, volcanic);
-  the mesh agrees with `caveSolidAt`; share ≥ .08 broad, ≥ .07 tall; `errs 0`; vision clean.
+  the mesh agrees with `caveSolidAt`; share ≥ .11 broad and tall, the gallery ≥ .25 of the
+  height, no black above or below it; `errs 0`; vision clean.
 - **M630b The halls** — `22dc`: dripstone, the lake mirror, crystals, veins, moss, the amber
   crawl in section, the far lane's arch and its day shaft, the far lens. Gate: the five
   zones each at the broad lens, the far lens at 1920.
+  **The bar for every pass from here on (the designer, 08.10):** the stand's key frame
+  `docs/look/cave.html` is the measure — the AAA level, not «it works and isn't black». Each game
+  frame is set beside it on six points: (1) the cut page is stone with content — strata, fossils,
+  roots, an ore vein, soil; (2) the day shaft — beam, moss, dust; (3) the arch with its own day
+  and a cap stack, measured against the stand's right hall; (4) a dome over the man and the lamp's
+  cone in the air; (5) the palette — dark-blue stone, amber dripstone, green at the mouth, lilac
+  only as an accent; (6) a dark lake, teal only at the shore. A frame that reads as «a tube in
+  haze» beside the stand fails and is reworked before it is reported. Shaders and light come from
+  `cv-wgsl`/`cv-scene`/`cv-render`, not reinvented; density comes from the game's grid (`C.g`).
 - **M630c Life and things** — beasts and plants as bodies, worms and fish, props, the wall
   decal, plates on things. Gate: a contact sheet of the props and the beast in the lamp.
 - **M630d Cost and the phone** — the cave ≤ the surface frame at the same window
@@ -132,7 +147,7 @@ the glide out. No frame is black and no frame is a different picture. `enterCave
 A Node suite `91qg-cave`: at 400 sampled points the density's sign equals `caveSolidAt`
 (the picture is the play); the first cave frame's lens equals the surface lens at the arch
 and the first surface frame on exit equals the last cave lens; the broad lens holds the man
-at ≥ .08 and the tall at ≥ .07; the far lens is refused on a phone window; the lamp's reach
+at ≥ .11 and the tall at ≥ .11; the far lens is refused on a phone window; the lamp's reach
 is within 12–27 m for every `kitStat().lamp`; only the day and the lamp own shadow maps;
 `?cave=0` leaves the old path and `rigCardCave` alive. The detectors (`90b/90c`) judge the
 cave after every gesture as today.

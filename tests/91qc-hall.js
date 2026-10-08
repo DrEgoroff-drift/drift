@@ -1,0 +1,113 @@
+/* ══════════════ зал за экранами (M810) ══════════════ */
+/* Каждый тип станции (и блошинец) имеет зал и убранство; у каждого раздела есть место камеры;
+   сцена любого типа укладывается в пределы движка (экземпляры, части, лампы, тени) и держит
+   ключ над хозяином первым; наезд камеры приходит к цели; ?hall=0 не трогает DOM.
+   Настоящий G, настоящая раскладка и сетка зала — видеокарта не нужна. */
+TEST_SUITES.push(()=>suite("зал станции",()=>{
+  resetWorld();
+  const types=ST_TYPES.map(t=>t.id).concat(["bazaar"]);
+  for(const id of types){
+    ok(!!HALL_TYPES[id],"у типа «"+id+"» есть зал");
+    ok(!!HALL_DRESS[id],"у типа «"+id+"» есть убранство");
+  }
+  for(const g of ST_GROUPS.map(x=>x.id).concat(["site"]))ok(!!HALL_CAMS[g],"у раздела «"+g+"» есть место камеры");
+  /* стройка — своё место у окна (участок), остальные вкладки — к месту своего раздела */
+  for(const g of ST_GROUPS)for(const t of g.tabs)eq(hallPlaceOf(t),t==="site"?"site":g.id,"вкладка «"+t+"» ведёт камеру к своему месту");
+
+  const cam=hallCam(HALL_CAMS.trade,1280,720,true);
+  for(const id of types){
+    const L=hallLayout(id);L.room=hallRoomMesh(L);
+    ok(L.room&&L.room.v&&L.room.v.length>0,"«"+id+"»: сетка зала собрана");
+    const S=hallScene(L,cam,1.5),lim=hallLimits(S);
+    ok(lim.inst<=R3_MAXI,"«"+id+"»: экземпляров "+lim.inst+" ≤ "+R3_MAXI);
+    ok(lim.parts<=R3_PART,"«"+id+"»: частей "+lim.parts+" ≤ "+R3_PART);
+    ok(lim.lamps<=R3_MAXL,"«"+id+"»: ламп "+lim.lamps+" ≤ "+R3_MAXL);
+    ok(lim.shadow<=R3_SH,"«"+id+"»: теней "+lim.shadow+" ≤ "+R3_SH);
+    const k=S.lights[0];
+    ok(k&&k.shadow&&Math.abs(k.p[0]-HALL_KEYX)<1e-6,"«"+id+"»: первый свет — ключ над хозяином, с тенью");
+    eq(L.people[0].kind,"keep","«"+id+"»: хозяин стоит за стойкой");
+    ok(S.lights.every(l=>l.c.every(Number.isFinite)&&l.p.every(Number.isFinite)),"«"+id+"»: свет без NaN");
+  }
+
+  /* мерило «Сцены»: человек на месте раздела — .18–.23 высоты кадра ПК; поле одно на любой ширине */
+  for(const p of Object.keys(HALL_CAMS)){
+    const c=HALL_CAMS[p],pa=HALL_PILOT_AT[p];
+    ok(c.fy>.8&&c.fy<=1.35,"место «"+p+"»: поле "+c.fy+" рад");
+    if(!pa)continue;
+    const k=hallManK(hallCam(c,1920,1080,true),pa[0],pa[1],1080),k2=hallManK(hallCam(c,2560,1080,true),pa[0],pa[1],1080);
+    ok(k>=.18&&k<=.23,"место «"+p+"»: пилот "+k.toFixed(3)+" высоты кадра");
+    ok(Math.abs(k-k2)<.005,"место «"+p+"»: доля человека не зависит от ширины окна");
+  }
+  {const L=hallLayout("trade"),k0=L.people[0],k=hallManK(hallCam(HALL_CAMS.trade,1920,1080,true),k0.x,k0.z,1080);
+    ok(k>=.18&&k<=.23,"хозяин стойки — "+k.toFixed(3)+" высоты кадра");}
+  /* пилот занимает место в пределах движка; ночь слушается стенда */
+  {const was=HALL.place;HALL.place="trade";
+    for(const id of types){const L=hallLayout(id);L.room=hallRoomMesh(L);
+      const lim=hallLimits(hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5));
+      ok(lim.inst<=R3_MAXI,"«"+id+"» с пилотом: экземпляров "+lim.inst+" ≤ "+R3_MAXI);}
+    HALL.place=was;}
+  {const was=HALL.night;HALL.night=1;eq(hallNight(),1,"?hallnight=1 — ночь");HALL.night=0;eq(hallNight(),0,"?hallnight=0 — день");HALL.night=was;}
+  /* день ≠ ночь: днём рассеянный свет дока вдвое сильнее ночного, окно ярче; ночью ключ — лампы людей */
+  {const was=HALL.night,L=hallLayout("trade");L.room=hallRoomMesh(L);const cm=hallCam(HALL_CAMS.trade,1920,1080,true);
+    HALL.night=0;const D=hallScene(L,cm,1.5);HALL.night=1;const N=hallScene(L,cm,1.5);HALL.night=was;
+    ok(D.sky[3]>=2*N.sky[3],"днём рассеянный "+D.sky[3].toFixed(2)+" ≥ 2× ночного "+N.sky[3].toFixed(2));
+    ok(D.win2[3]>N.win2[3]*1.8,"ночью окно гаснет: "+D.win2[3].toFixed(2)+" → "+N.win2[3].toFixed(2));
+    ok(N.lights[0].c[0]>D.lights[0].c[0],"ночью лампа над стойкой сильнее дневной");
+    /* бар — дальний конец того же зала: не больше трёх тёплых ламп, без конусов в дыму */
+    const bl=D.lights.filter(l=>l.p[0]>HALL_XB-4.6);
+    ok(hallLamps(L).length<=3,"над баром ламп "+hallLamps(L).length+" ≤ 3");
+    ok(bl.length>0&&bl.every(l=>(l.vol||0)<=.3),"у света бара нет конусов в дыму (vol ≤ .3)");
+    /* сидящие у стойки — на табуретах лицом к стойке, не к камере */
+    const cand=L.people.filter(P=>P.kind==="cand");
+    ok(cand.every(P=>/^stool/.test(P.pose)&&Math.cos(P.yaw)<-.5),"кандидаты бара ("+cand.length+") сидят лицом к стойке");
+    ok(cand.every(P=>P.x<HALL_XB+HALL_SEAT_PILOT-.3),"табурет пилота у правого конца стойки свободен");}
+  /* зал не пуст: кроме хозяина и пилота — ещё люди в работе */
+  ok(hallLayout("trade").people.filter(P=>P.kind==="crowd"&&P.x<HALL_XB-4.6).length>=2,"в зале, кроме хозяина, ещё двое");
+  /* хозяин — человек, не манекен: волосы тёмные, лампа не бьёт в макушку; за каждым столиком бара по двое */
+  for(const id of ["trade","yard","outpost","bazaar"]){const L=hallLayout(id),K0=L.people.find(P=>P.kind==="keep"),g=cpGene(K0.m);
+    ok([0,4,5].indexOf(g.style)<0&&hallLum(g.hair)<110,"«"+id+"»: у хозяина волосы (стиль "+g.style+", тон "+hallLum(g.hair).toFixed(0)+")");
+    ok(Math.abs(K0.x-HALL_KEYX)>.4,"«"+id+"»: лампа над стойкой не над головой хозяина");
+    if(L.bar)for(const T2 of HALL_BAR_TABLES){const n=L.people.filter(P=>T2.seats.some(s=>Math.hypot(P.x-HALL_XB-s[0],P.z-s[1])<.05)).length;
+      eq(n,2,"«"+id+"»: за столиком x="+T2.x+" сидят двое");}}
+  /* M811: что в таблице рынка — то ящиками на стойке; строка под мышью зажигает свой ящик */
+  {const L=hallLayout("trade"),keys=hallGoodsKeys(),c0=Object.assign({},G.cargo);
+    ok(keys.join()===TRADE_KEYS.concat(FAR_KEYS.filter(k=>(G.cargo[k]||0)>0)).join(),"ящики идут в порядке строк таблицы");
+    ok(keys.slice(0,12).every((k,i)=>{const p=hallGoodsAt(i);return p[0]-.15>-5.62&&p[0]+.15<-4.78&&p[2]+.15<2.5&&p[2]-.15>.5;}),
+      "ящики лежат на столешнице, ближе к камере, чем гроссбух и руки хозяина");
+    HALL_GOODS.hot=null;G.cargo.iron=0;hallGoodsDrop();const n0=hallGoodsUp(L).n;
+    G.cargo.iron=18;const n1=hallGoodsUp(L).n;
+    ok(n1>n0,"железо в трюме — его ящик полон ("+n0+" → "+n1+" вершин)");
+    ok(hallGoodsLight()===null,"без наведения ни один ящик не горит");
+    HALL_GOODS.hot="iron";const n2=hallGoodsUp(L).n,gl=hallGoodsLight();
+    ok(n2>n1&&gl&&gl.goods==="iron","строка «Железо» под мышью — обвязка и свет над её ящиком");
+    const cm=hallCam(HALL_CAMS.trade,1920,1080,true);L.room=hallRoomMesh(L);
+    ok(hallScene(L,cm,1).lights.some(l=>l.goods==="iron"),"свет горящего ящика попадает в кадр (не срезан пределом ламп)");
+    HALL_GOODS.hot=null;hallGoodsDrop();G.cargo=c0;}
+
+  /* наезд: от двери к месту, к концу — ровно цель */
+  hallGo("board",true);
+  const end=hallGlideAt(HALL.g0+HALL.gd+50),c=HALL_CAMS.board;
+  eq(end.k,1,"наезд доходит до конца");
+  ok(end.eye.every((v,i)=>Math.abs(v-c.eye[i])<1e-9)&&end.tgt.every((v,i)=>Math.abs(v-c.tgt[i])<1e-9),"и стоит ровно на месте доски");
+  const mid=hallGlideAt(HALL.g0+HALL.gd/2);
+  ok(mid.k>0&&mid.k<1,"в середине наезда камера в пути (k="+mid.k.toFixed(2)+")");
+  HALL.from=HALL.to=null;
+
+  /* ?hall=0: прежний стол — ни класса, ни холста */
+  const was=HALL.on;HALL.on=false;HALL.cn=null;
+  hallOpen();
+  ok(!HALL.open&&!HALL.cn,"с выключенным залом hallOpen ничего не открывает");
+  HALL.on=was;
+}));
+
+/* подсказка say() в зале на ПК — плашкой на плите, не полосой через зал (окно ≥ 900) */
+TEST_SUITES.push(()=>suite("зал станции: подсказка не ложится на зал",{tier:"browser"},()=>{
+  const m=document.getElementById("msg"),st=document.getElementById("station");
+  ok(!!m&&!!st,"есть #msg и #station");if(!m||!st)return;
+  const was=st.className,txt=m.textContent;
+  st.classList.add("scr","hall","open");m.textContent="Отметка: система отмечена на карте";
+  const r=m.getBoundingClientRect(),w=innerWidth;
+  if(w>=900)ok(r.left>=w*hallHero(w)-1,"плашка левее края зала нет: "+r.left.toFixed(0)+" ≥ "+(w*hallHero(w)).toFixed(0));
+  ok(r.width<w*.62,"плашка, не полоса: "+r.width.toFixed(0)+" из "+w);
+  st.className=was;m.textContent=txt;
+}));

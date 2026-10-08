@@ -87,6 +87,8 @@ function drawSurfaceHud(camx,camy,K){
     const hx=homeSpotX(S.p,S.tr);
     if(hx!=null)marks.push({x:hx,ru:"ДОМ",col:"rgba(255,206,138,.95)"});
   }
+  /* база телом (M628a): вход у ворот, а не у корабля — к воротам свой маркер */
+  {const gx=plnOwnMark(S);if(gx!=null)marks.push({x:gx,ru:"БАЗА",col:"rgba(242,178,92,.9)"});}
   /* достопримечательность ведут отдельно от пещеры: до неё далеко, и без
      маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
   const poi=nearestPOI(S.tr,S.x);
@@ -100,7 +102,12 @@ function drawSurfaceHud(camx,camy,K){
      у самого края ложилась текстом поперёк второй фишки того же столбика
      («ОСТОВ КОРАБЛЯ» поверх «ПЕЩЕРА 5592 м»), потому что считала ряды сама */
   const far=[],near=[];
-  for(const m of marks){const ad=Math.abs(m.x-S.x);(ad*K>W*.45?far:near).push(m);}
+  /* под движком планеты (21pzb, M830 tail) засечки на месте не ставим: их x — камеры 2D, а вещь в кадре
+     стоит объективом 3D, и «КОРАБЛЬ» висел в небе мимо корабля; вещь в кадре подписывает слой слов.
+     Пока человек сходит с трапа, нет и фишек у кромок: первый кадр поверхности — последний кадр спуска */
+  const pw=typeof plnWordsOn==="function"&&plnWordsOn();
+  if(pw&&plnMsgHush())marks.length=0;
+  for(const m of marks){const ad=Math.abs(m.x-S.x);if(ad*K>W*.45)far.push(m);else if(!pw)near.push(m);}
   for(const m of far.concat(near)){
     const d=m.x-S.x, ad=Math.abs(d);
     if(ad*K>W*.45){                       // цель за краем — фишка у своей кромки

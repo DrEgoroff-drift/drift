@@ -125,6 +125,34 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
   return 1.0;
 }
 
+/* фонарь двора бросает тень (M628b, 21pig): заслонки — капсулы в хвосте blobs, по два vec4 с конца:
+   (a, радиус) и (b, сила); их число — blobs.n.y, чья лампа — blobs.n.z − 1. Луч от точки к лампе
+   проходит мимо капсулы ближе радиуса — тень; полутень шире, чем дальше точка от заслонки */
+fn segSeg(p1: vec3f, q1: vec3f, p2: vec3f, q2: vec3f) -> f32 {
+  let d1 = q1 - p1; let d2 = q2 - p2; let r = p1 - p2;
+  let a = dot(d1, d1); let e = max(dot(d2, d2), 1e-6); let f = dot(d2, r);
+  let c = dot(d1, r); let b = dot(d1, d2);
+  var s = clamp((b * f - c * e) / max(a * e - b * b, 1e-6), 0.0, 1.0);
+  var t = (b * s + f) / e;
+  if (t < 0.0) { t = 0.0; s = clamp(-c / max(a, 1e-6), 0.0, 1.0); }
+  else if (t > 1.0) { t = 1.0; s = clamp((b - c) / max(a, 1e-6), 0.0, 1.0); }
+  return length(p1 + d1 * s - p2 - d2 * t);
+}
+fn lampShade(w: vec3f, lp: vec3f) -> f32 {
+  var k = 1.0;
+  let n = min(i32(blobs.n.y), 8);
+  for (var i = 0; i < n; i++) {
+    let a = blobs.b[63 - 2 * i]; let b = blobs.b[62 - 2 * i];
+    let ab = b.xyz - a.xyz;
+    let h = clamp(dot(w - a.xyz, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+    let far = length(w - a.xyz - ab * h);
+    if (far < a.w * 1.15) { continue; }   /* своя капсула себя не затеняет */
+    let d = segSeg(w, lp, a.xyz, b.xyz);
+    k *= 1.0 - b.w * (1.0 - smoothstep(a.w * 0.5, a.w * 1.1 + 0.06 * far, d));
+  }
+  return k;
+}
+
 @fragment fn fs_sky(in: FOut) -> @location(0) vec4f {
   let ndc = vec2f(in.uv.x * 2.0 - 1.0, 1.0 - in.uv.y * 2.0);
   let pn = g.invViewProj * vec4f(ndc, 1.0, 1.0);
@@ -259,7 +287,9 @@ fn shadowAt(wpos: vec3f, n: vec3f, fragXY: vec2f) -> f32 {
     let hood = 1.0 - smoothstep(0.2, 1.6, in.wpos.y - lp.y);
     let att = pow(clamp(1.0 - dl / lp.w, 0.0, 1.0), 2.0) * hood;
     let nl = clamp(dot(N, d / dl) * 0.7 + 0.3, 0.0, 1.0);
-    c += alb * lc.rgb * (lc.w * att * nl);
+    var ls = 1.0;
+    if (att > 0.0 && f32(i) == blobs.n.z - 1.0) { ls = lampShade(in.wpos, lp.xyz); }
+    c += alb * lc.rgb * (lc.w * att * nl * ls);
   }
   /* цветок, лист, руда светятся отражённым: днём это запас яркости, ночью его почти нет.
      Лист, что светится сам (вид игры, свечение от .45), светится и ночью */

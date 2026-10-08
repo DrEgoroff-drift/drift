@@ -155,7 +155,7 @@ function openStationBody(){
   syncTabs();
   /* новая стыковка — новый экран: высоту прошлого захода не помним */
   renderTab._tab=null;
-  $st.classList.add("open");renderTab();saveGame(true);
+  $st.classList.add("open");renderTab();hallOpen();saveGame(true);   /* зал за экранами (M810, 27f4a) */
 }
 /* ── навигация станции: раздел, потом вкладка ──
    Десять вкладок в один ряд сжимались до полусотни пикселей и обрезали подписи.
@@ -234,7 +234,7 @@ function closeStation(){
      на прилавке — и тогда его покупает кто-то другой */
   if(typeof fleaLeave==="function")fleaLeave(G.sys);
   if(typeof traineeFind==="function")traineeFind();   /* заяц в трюме после блошинца (M163) */
-  $st.classList.remove("open");G.mode="system";
+  $st.classList.remove("open");hallClose();G.mode="system";
   /* ── дверь обязана открываться всегда (M331) ──
      Стыковку могут отпустить под открытым экраном: загрузка сейва (своя или
      приехавшая из облака) ставит `G.st=null`, а экран остаётся. Раньше
@@ -534,6 +534,7 @@ function renderTab(){
   repairBtns();   /* цена ремонта на кнопках (R5b) */
   secTidy($body);   /* заголовки по закону §1a (M299) */
   if(typeof addrify==="function")addrify($body);   /* всякий адрес — на карту (M347) */
+  hallTab();   /* камера зала — к месту раздела (M810) */
   if(keep>0){
     const put=()=>{$body.scrollTop=Math.min(keep,Math.max(0,$body.scrollHeight-$body.clientHeight));};
     put();requestAnimationFrame(put);

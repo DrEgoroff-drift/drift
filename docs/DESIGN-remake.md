@@ -257,8 +257,100 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   counter, the yard window, the board wall, the cantina door, the office. The camera glides to
   the section's place; the screen is a plate over the hall at 60 % of the width, the hall and
   the station body (through the window) always visible. Gate: the dock pair at 1920 and 390.
+  - *Done (three passes, remake-a3):* `27f4a-hall` (layout, light, camera stations, the loop),
+    `27f4b-hall-dress` (the bones and the seven dressings: trade, combine, yard, science,
+    outpost, fuel, bazaar), `27f4c-hall-sky` (the planet bake through `17gab`); three hooks in
+    `26-ui-station` (open, close, tab). The counter runs to the back wall with the keeper at the
+    bar (pose `bar`, hands on the wood) under one key lamp with a real shade, rim and cord; the
+    back shelf carries goods and a sconce, the board stands right of the counter, the window
+    shows the system's planet and the dock (a hull with a bow and portholes, `27f2`). The bar is
+    the cantina scene shifted 10 m down the hall, with at most three lamps. The camera glides
+    on the real clock (`wallMs`: the game clock stands still in a pause and on the stand),
+    700–900 ms. The plate takes the right 60 % on a PC but never leaves the layout under 880 px
+    (`hallHero`, same rule in CSS); below 900 px the hall is a 36 % strip that the plate
+    overruns to 24 % on scroll. `?hall=0` keeps the old desk. Removed on the way: the door
+    fill (a lamp behind the camera mirrored as a moon in the window glass), the girder columns
+    (they fell on the board), the weld's air glow (a point light 8 cm above the plate burned a
+    white ball; it is now a spot aimed down). Suite `91qc-hall`; frames `hall_*` in the
+    scratchpad.
+    *Pass 2:* the camera stations carry a vertical field (`fy`) instead of a half-width, so a
+    person at the station's place is .21 of the frame at any PC width (the suite checks
+    .18–.23 and the width independence); the phone narrows the field (`HALL_PH_FY`). The
+    pilot is a `27f3` person (cmd kit, seed `HALL_PILOT_M`) at `HALL_PILOT_AT[place]`, one
+    instance slot kept for him; his jacket is the stand's suit colour `#ee7326` through a new
+    optional `m.jac` in `cpBody` (one line). Judged beside `night.html`/`planet.html` the hall
+    was brown in black: the sky term is now a cool fill (.8 of the ambient, mixed .55 toward
+    blue-grey) against the warm lamps, the floor bounce is warm, the wall wash is stronger, and
+    the trade wall turned neutral-cool so the lamp and goods are the warm notes. The night shift (`hallNight`, a 24 game-minute day, or
+    `?hallnight`) dims the window, the wall wash and the ambient and lifts the sconce; the bar
+    does not change (it lives at night). A wall wash (three shadowless spots, last in the
+    list so a type with many lamps drops it first) puts people on a lit wall instead of
+    black; its spots stand off the window, whose glass mirrored the middle one as a sun on the
+    planet. The cantina camera is wider (people .19 seated). The window light is aimed steeply down: aimed at the camera, the polished floor
+    mirrored it as a blob at the frame's foot. Tags (`hallTagsDraw`) are DOM plates over the
+    hall canvas, projected from the thing, hidden while the camera moves and on the phone.
+    *Pass 3 (the designer's seven points):* day and night are two lightings, not one dimmed.
+    By day the sky term is the dock light (1.25 of the ambient, cool) and the ground term is a
+    light floor bounce, so the ceiling and beams read; the window key hangs high under the
+    opening with dust in its beam (`vol` by day). At night the ambient falls to .18, the window
+    to .38 and deep blue, and the counter lamp, board light, sconce, the pilasters' cage lamps
+    (night only, last in the list) and the bar carry the room. Measured on the left 40 % of the
+    1920 frames, day is 2.3–3.5x night on every type and place; the suite checks the sky term is
+    at least 2x. The three wash spots are gone, and the light over the key lamp's open top puts
+    a pool on the ceiling. `gnd.w` is the renderer's fog density, not the bounce weight; it was
+    back at .03. A new module, `27f4d-hall-props`, holds the shared dressing in the `21pie`
+    colours: steel, rust, soot, orange and concrete pipes with brackets and bands; a cable tray;
+    a vent duct in tall halls; enamel and hazard plates; cage lamps; an extinguisher; a crate
+    stack with a painted container at the counter end; drums; floor lines. Two working people
+    join the keeper: a visitor at the board and a loader at the bench. Three poses join `27f3`
+    (`elbow`, `hips`, `frame`), and `HALL_PILOT_AT` uses them, plus `folk`, a stool at the
+    bar's right end. The window and site cameras are `fy` 1.0, so the pilot by the glass stays
+    .20. The cantina is recomposed as the hall's far end:
+    - candidates sit on plain four-legged stools (`hallStool`, no round base) and turn to the
+      counter at three quarters;
+    - the table with two sitting moved into the bar camera's foreground (`HALL_BAR_TABLE`);
+    - three lamps aim down at the counter with `vol` .08, not cones in smoke;
+    - the sign sits over the bar door, dimmed (`HALL_SGN`, `sgn2.y`);
+    - by day, a fill from the bar window reaches it.
+    The dock view in `27f2 outside` (kinds 0 and 2) is rewritten: a hull at the berth lit from
+    above, with panel seams, a lit top edge and warm portholes (the yard adds open ribs and a
+    weld flash); a truss tower and boom with the lit chord toward the floodlight; a floodlight
+    cone in the dock haze; slow beacons; berth lights. The truss grid on black is gone. The
+    planet is placed lower and capped at r 3.1, so it sits whole in the opening with its
+    terminator; science stays big. Window glass reflects .2. A `say()` toast in the hall on a
+    PC is a plate at the right edge of the screens (≤ 420 px), checked by a browser suite in
+    `91qc-hall`.
+    *Pass 4 (polish):* the day tone stays; colour comes from warm notes of things. The trade
+    counter wood is `[120,62,32]`; shelf goods take the `GOODS` palette (crates with stencil
+    plates, tins with label bands, cloth rolls); the loader wears orange (`m.jac`); the sky term
+    is a bluer dock light and the ground term a warm bounce (cold key, warm bounce). The key lamp
+    moved to the counter's front edge (`HALL_KEYX` -5.2): straight over the keeper it burned his
+    head white and he read as a mannequin. The keeper's seed is re-rolled until he has hair
+    (style not 0/4/5), dark hair and skin no paler than middle (`hallLum`). The bar has two
+    tables (`HALL_BAR_TABLES`), the second in the middle ground right, both always with two
+    sitting. The sign moved over the door and dimmed (`sgn2.y` .32). The floor in
+    `27f4d-hall-props` has tile joints every 1.2 m and soft patches (`hallSmudge`: a flat fan
+    in the floor material, the centre its own colour, the rim exactly the floor colour, so
+    there is no edge): a worn path along the counter and to the board, oil stains. Measured on
+    the left 40 % of the 1920 frames, day is 2.1–3.4x night. The suite checks the keeper's hair,
+    that the lamp is not over his head, and two sitters at each bar table.
 - **M811 The counter (ТОРГОВЛЯ)** — the keeper (`27f3`) behind it, goods as crates on the
-  counter; the table as a plate. **M812 The yard (ВЕРФЬ)** — hulls on the hangar studio at
+  counter; the table as a plate. *Done:* a new module, `27f4e-hall-goods`, lays one shallow
+  crate per market row (`hallGoodsKeys`: the trade keys, then the far keys in the hold, the
+  same order as `stTabMarket`) in two rows on the counter's near end (`hallGoodsAt`). A crate
+  is a tray .13 m deep, because the counter camera looks almost along the top and a deep box
+  hid its goods. Goods in the hold fill it to the rim with a heap whose height is the amount;
+  an empty crate shows its bottom. A label in the goods' table colour faces the hall. The rows
+  carry `data-k`; pointing at one (`pointerover`/`pointerdown` on the plate) sets
+  `HALL_GOODS.hot`, which gives its crate a rim in the plate's accent (`--c-acc`, the colour
+  of the row highlight) and a small lamp in the goods' colour, second in the light list so the
+  limit never cuts it. A colour glow alone washed light goods to white. The crates are their
+  own mesh, keyed by type, hold and hot row, drawn on the hall's instance 0; the trade
+  dressing's sacks and crate left the counter for them. In the hall, the market's prose line
+  is gone (an empty hold keeps one short line), the table is a plate (`#station.hall .mk`),
+  and the СТОЙКА tag moved to the counter's front panel. `91qc-hall` checks the row order,
+  the slots on the top, a full crate, the hot rim and that its lamp reaches the frame.
+  **M812 The yard (ВЕРФЬ)** — hulls on the hangar studio at
   ≥160 px, the class as a tag. **M813 ПРИБОРЫ** — the five dials as objects with their drift
   on a plate; prose gone. **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
   cantina as the hall itself (M725 composed anew: poses, one hero, the sign off centre), the
@@ -328,6 +420,50 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   then the strata slab, the lollipop trees, the landing bake and the 2D sky (`19b/19e/19c*`)
   switched off for good; whatever they did that the planet's sky lacks is built in `21pz`,
   not kept. The autoland rule and controls stay. Gate: the landing pair; the S23 budget.
+  - *Done (M830 pass 1, `21pza`/`21pz`):* the touchdown is one shot — the descent's lens
+    (`plnDescLens`) stores its window centre, ground line, ruler and near share in `PLN.hand`;
+    the first surface frame takes them whole and `plnHandAge`/`plnHandWin` ease centre, ground
+    line and ruler to the walk lens over `PLN_HAND_S` (1.2 s of wall clock from the first surface
+    frame, not from the touch, so the touchdown count does not eat it), and `PLN.glide` starts
+    from the descent's near share. The descent's lens closes in near the ground (`o.near`,
+    0.6 · smooth(30 m → 6 m)). The pad is a body (`plnPadFrame`, by `o.extra` on the descent and
+    in the surface branch): a slab with a rounded edge (superquadric, `PLN_LPAD`), top 0.35 m
+    over the levelled ground or over the water (`plnPadTop`), its foot 3.2 m deep as a berm, a
+    metre behind the ship so its near edge stays off the walk line's slope; 32 amber dashes on the
+    edge, two lamps on posts at the far corners (lamps light it only at dusk, `PLN.sun.night`);
+    to `PLN_TO.all`, so it casts. The ship is set on its top on the descent and on the surface
+    (`plnPadLift`), its feet find the slab (`o.floor` in `plnShipFrame`), the flora clears it
+    (`plnPlantThings`). The approach wave (`plnPadGlow`) runs the dashes and dies over the
+    touchdown count. The exhaust's wash is a lamp on the ground under the nozzles from 24 m down;
+    at dusk a landing flood stands 4.5 m before the ship toward the lens (the pad lamps light its
+    back). The overlap net of `91zzzb-land` counts the readout in the row as part of the row.
+    Words on things (L5): the say line under the descent is a plate over the ship
+    (`plnDescOver`, in window pixels like 21pj's plates) and `#msg` is hidden (`body.plnland`);
+    the readout (`plnLandRead`, wrapping `updateLanding`) speaks metres and m/s in two lines and
+    is moved into the pads row before ТОРМОЗ on a plate (`plnLandUi`, wrapping `hud`; on a phone
+    it stays above the row). The landing's place line gets the weather (`27z`, one line, as on
+    the surface). The zenith darkens with height (`o.zen`, up to a third at 70 m). Everything
+    else the old approach did the planet frame already does (the haze, the far ranges, the
+    stars), and with `PLN.on` the 2D sky, strata, trees and lander bake are not called at all —
+    the wrapper of `drawLanding` falls back to them only without the GPU or after three failures.
+    Cost (desktop, pc 1600×900, GPU ms per frame): desert surface 2.54 → 2.55, desert descent 2.43 → 2.45, ocean surface 4.05 → 4.06, ocean descent 3.70 → 3.72 (the slab, its dashes and lamps cost about 0.02 ms). Tests `91qc-descent` (Node):
+    the first surface lens equals the last descent lens to 1e-6 and the near share carries over,
+    the pad is in frame at touchdown, the ship stands on the slab (land, water, off the pad), the
+    readout's units, the dashes and lamps never go dark, and `?pln=0` draws the old approach while
+    `PLN.on` never touches it. Tools: `cost.py js=` measures a descent snippet; `descent.py fn=`
+    shoots the n-th surface frame.
+  - *Done (M830 tail, `21pza`/`21pzb`/`21e`/`style.css`):* the dashes go to the frame only at dusk
+    (`PLN.sun.night`), at `PLN_LPAD_DASH` = 0.4 of the wave's glow; the wave's share is
+    smooth(2.5 → 3.5 m) of altitude, zero after the touch. The post bulbs are the key (`plnPadBulb`
+    4.8 ± 0.9, radius 0.21, lamps r 10, k 2.2 · dusk, pushed before the flood) and two glint streaks
+    lie on the far edge under them in the dash batch. `plnDescOver` hangs the approach lines with
+    `ovHang("land", …)` at the ship's middle (window px = `plnOverAt` × `G.viewK`). `21pzb-pln-words`
+    wraps `msgHeld` (silent while `PLN.hand` and `PLN_WORDS_HUSH` s after it — the message's clock
+    waits), `enterSurface` (the «залежей: n» line moves into the tip plate), `surfaceHint` (the tip
+    leaves the band) and `hangSurface` (the tip at the nearest deposit in frame; an action line
+    nobody hung goes to the ship within `shipZoneR`, else to the man), and toggles `body.plnwords`
+    (hides `#prompt`) and `body.plnhush` (hides `#msg`). `21e` skips near ticks under the planet
+    frame and all chips during the hush. Test: the third suite of `91qc-descent`.
 - **M831 Scoop**: a dark near plume, warm light on the ship, the prompt on the ship.
 - **M832 Postcard from the frame**: the card is the live engine frame through the album's
   filters; the painter deleted.
@@ -342,6 +478,134 @@ queue by the same builder, in this order after Stage D: base and home → cave �
 Design for the first two steps: `docs/DESIGN-base-scene.md` (09.10) — own things as bodies of the people's grammar on the engine's land (M628a/b), the section as the rock kit cut by a plane with lit rooms and two lenses (M632a–c), entry by the gate without a cut; the base's game (`DESIGN-base.md`) untouched.
 The third step: `docs/DESIGN-cave-scene.md` (09.10) — the stand's M601 scene fed by the game's grid (one density from `C.g`, the cut face as a page, the lamp as the key with shadows and a cone, the day by a second map, three lenses), the way in as a push through the arch without a cut; `CAVE3.on`/`?cave=0` (M630a–d).
 The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section on the cave's kit, dug cells as rooms each under one source, ore bodies as three or four large forms, the planet's sky whole at the top, the way in as a pan down; `DIG3.on`/`?dig=0` (M631a–c). The last: `docs/DESIGN-raid-scene.md` (09.10) — the raid on the interior renderer `27f2` (one key with shadows per room, materials and palette per room kind), foes by the generator in a hostile kit with walk/aim, the rig ported to `r3Kit`, the push through the gate; `RAID3.on`/`?raid=0` (**M633a–c**, a planet-range number so the same builder's queue reads in order).
+
+  - *Done (M628a pass 1, `21pig-pln-own` — the design's `21pif` was taken by the landmarks' acts):*
+    `OWN` (`?own=0`) builds the base and the home once per landing and per make-up (key: the
+    top row's kinds, battery, pennant; the beds' growth in eighths) through `plnGeo/plnInst/plnRec`
+    like `21pie`; `plnOwnFrame` beside `plnMarksFrame` culls by the lens, pushes the body, the light
+    (windows and the gate, warmer by night), the battery's charge light (`basePower.eff`) or the
+    home's breathing beacon, the grow light and the pennant, two blots each, and at night the porch
+    and pier lamps (a lamp beyond the frame's edge gives its slot up). `plnOwnBaseX` re-measures
+    `builtSpot`'s seed in metres: 28 seeded places, the flattest footprint, ≥ 33 m from the pad and
+    clear of the yard, the POIs, the settlement and the shaft, cached on the profile. The deck rides
+    1.2 m over the footprint's highest ground (or 1.6 m over water); the yard by the landmarks' rule
+    but tighter (sole ≥ crest − 1 m, a rock mound takes the rest). Entry: `updateSurface` is wrapped
+    — the ship branch's `enterBase` is refused away from the gate and its line becomes a pointer;
+    within 40 units of the gate «ДЕЙСТВИЕ — ВОЙТИ В БАЗУ» (it beats the mine's founding); `enterDig`
+    is refused at the gate, under the deck and in the yard. `plnAtThing` → 1 at the gate and the
+    porch, and always on a phone except on the jet. `21pj` draws `drawBuilt`/`drawHomeOut` only with
+    `?own=0`; `21pga` clears the flora under the deck and the yard (`plnOwnPads`); `21e` adds the
+    «БАЗА» chip at the gate; `21pzb` hangs the gate and porch plates on the things. Test: `91qe-own`.
+  - *Done (M628b pass 1):* the porch lantern is the frame's one lamp with a shadow — capsule
+    occluders (the man within the lamp's reach, the porch posts, the front fence posts near the
+    door) go to the tail of `F.blobs` as two `vec4` each (`a, r` / `b, strength`), `blobs.n.y` their
+    count, `blobs.n.z` the lamp's slot + 1; `plnOwnOcc` writes them last in `21pz` (blots are capped
+    below the tail), and `21pc`'s lamp loop multiplies that lamp by `lampShade` (segment–segment
+    distance, the penumbra widening with the distance from the occluder, an occluder never shades
+    itself). Own lamps are wished per item and two are taken by rank: porch, pier, gate light, grow
+    lamp. The light record is `.12 + .6·night` (brighter glass the grade turns salmon); glass colours
+    `OWN_WIN` are given lighter because vertex colours are read as sRGB. Test: `91qe-own`
+    (two own lamps of three wished, the lantern's occluders, none by day).
+  - *Done (M630a pass 1, `22d`/`22da`/`22db`/`22dbw` — the scene file took `22d` so `22dc` stays
+    free for the halls' dress):* `CAVE3` (`?cave=0` keeps the old painter, play untouched) wraps
+    `drawCave`. One density `cave3Den` from `C.g`: the grid's signed distance (`C.f3.sd`), the
+    gallery's half-height `hl` (clamped .6–4.5) as a tube's depth `zd ≤ zcap−4`, strata ledges and
+    joints by the world's style (`CAVE3_STY` sed/volc/rock/ice/sand), grit, and lumps deeper than
+    1–3 m behind the cut so the lamp has form to rake (the cut itself stays on the grid). Chunks of
+    8 m, voxel .25, built lazily around the window (≤ 8 ms a frame, the rest next frame), cached on
+    the cave; the chunk's skip test is an exact scan of the grid's cells under it. The cut face is a
+    sheet at z=0 (strata, soil under the surface, the lip that takes the void's light). The lens of
+    §3: the window lies on the walk plane, x eased (.45 s) with the tap corrected by the ease's lag;
+    the share is .085 broad / .077 tall. The man is the rig with the lamp as key: a 128° shadow map
+    from the helmet, the cone and its falloff by the kit (`cave3Reach` 12–27 m), a second ortho map
+    for the day under the mouth (shafts by `dayK`), air scattering at half size, bloom, the engine's
+    grade into `gpuScene()`. Plants, fauna and the find marker stay 2D over the frame until M630c. A
+    pipeline that fails validation drops the cave to the old painter with the reason in `CAVE3.err`.
+    Leaving the cave starts the surface's glide. Test `91qg-cave` (density vs `caveSolidAt` on 400
+    cells, the cut sheet on the grid's rock, rock at the grid's faces, shares, feet on the walk line,
+    reach, the switch); stand tools `cave.py` + `eval-cave.js`.
+    *Pass 2:* the lens to §3's variant B (26 × 14.5 m broad, 6.6 × 14.5 m tall, the man .124;
+    ×1.6 nearer while `G.prompt` calls ДЕЙСТВИЕ, .45 s in / .7 s out); the cut page is stone
+    (`CAVE3_CUT` lifted to 14–18 % value, the edge dim to .7, a cool fill from the mouth by
+    `dayK`); bedding lines off the back wall (a soft tone per bed only), ledges thrown out further
+    behind the cut (×1.8 by depth) and the lamp turned to 19° into the depth so they cast. Words:
+    `22d` wraps `hangSurface`/`enterCave`/`hud` — the action line hangs at the mouth, the wall, the
+    find, the plant, the shaft (the walk help only by a shaft or the mouth in frame), else at the
+    man; the entry hint at the shaft in frame; `#prompt` and that `#msg` hide under
+    `body.cavewords`/`cavehush`.
+  - *Done (M630b pass 1, `22dc`):* the dress keyed to `caveDeco` — `tips` (hang / mite / column),
+    `curtains`, `crystals`, `veins` — plus wall items every 26 px by the zone's `drip`; each is
+    placed behind the walk line (z 1.5 … zd−1.1) by `cave3Up`/`cave3Down` on the density and
+    skipped under a shaft. Builders `cave3Band/Caps/Bells/Flute/Hang/Mite/Column/Veil/Cluster`
+    (the stand's `cv*`, rims `cave3Lobes`, ≥ 7 ring sides a lobe); clumps of 2–6 around each hanging
+    tip. Crystals mauve, light r 8+5·size; lights sorted by distance into the frame's twelve.
+    Veins are flat tubes and grains at z −.03 (material 5, dimmed with the face). Shader: material
+    15 (veil), moss on rock with `dayMask`, back-wall fluting for rock facing the lens deeper than
+    1 m. Bins of 16 m on `C.dr3`, ≤ 14 kept, freed with the device. Gate frames: five zones at the
+    broad lens on sed and volc, errs 0. The lake mirror, the amber crawl, the far lane and the far
+    lens follow in the next passes.
+  - *Done (M630b pass 2, `22dd`):* the lake — `cave3LakeGeo` per water zone from `cavePool`: a surface
+    grid (0.5 m, material 13, depth from the density in the spare slot, quads only where a corner is in
+    air by > 3 cm) and the body pane at z .04 (material 14, depth 0 at the top, water − bed at the
+    bottom); cached on `C.lk3`. `22db`: the scene layout gains `reflTex`/`linSamp` (bindings 4–5), a
+    half-frame mirror target, `bodyR` (no MSAA) drawing the draws marked `refl` (rock, man, dress) with
+    `VP·mirrorY(water)` and the clip `misc.xy = [water + .02, 1]`, and `water` (alpha blend, no depth
+    write) after the body; `sunDir.w` carries the water level. Globals grew to 280 floats: `zone[4]` =
+    the halls in frame `[x0, x1, finish]` for the rock shader (0 ribs, 1 druse, 2 plain, 3 polished).
+    Dripstone by world: `CAVE3_DRIP` (sed/volc/rock/ice/sand → light, dark, oxide, wet, material;
+    ice uses the veil material 15); drip ambient × .45, rim × .1. Crystal lights reach ≤ 4 m, halo
+    k .55, width .8 + .25·size.
+  - *Done (M630b pass 3, `22de`):* the far lane — `cave3FarSite` picks one spot in the first
+    dripstone / vein / crystal hall (20–80 % along it, ≥ 25 m from the mouth, clear of shafts, the
+    floor ≥ 6 px over the pool, the highest gap); `cave3FarVoid` = an arch tunnel widening ×1.2 into
+    the depth, a chamber ellipsoid (R 12/9/9 at z 27, strata ledges of the world's style, flat floor)
+    and a skylight cylinder; `cave3Den` and `cave3Field` are wrapped, chunks at the arch run the full
+    depth (`zcap`). The chamber is one surface-nets mesh (vox .35, box ax ± 18.5 m, z ≥ 15.4) cached on
+    `C.far3`, with a 7-tier cap stack under its day and two small ones. Its day is analytic (no shadow
+    map — the window is its shadow): `farDay`/`farK` in the globals (288 floats), lit on rock, moss and
+    a beam in the air pass. The far lens (100 m, 24°, 75.6 × 42.5 m, the man 4.2 %, walk line .40)
+    eases in on the map key in the cave on a wide window (`cave3FarOk`), .8 s in / .7 s out, with 160
+    chunks kept. Amber (`cave3AmberGeo`): a honey body lit from inside (crystal material, glow 2.2),
+    grains about it, 2–3 drops on threads from a roof within 5 m (the stand's `cvAmber`: glow 3.2), the
+    stand's light r 3.8 [.5,.27,.07] and halo k .35 s 1.1. The lake body takes the stand's section
+    shader (ambient × 2 into it, teal under the surface, a pale meniscus) so the far lens reads water,
+    not a hole. Light is never negative: `fs_main` clamps before the haze and the bloom's first step
+    drops negatives and non-numbers — one negative pixel on a sliver had bloomed into a dark ball at
+    the arch. Stand: `cave.py` x = `arch` / `amber`, `far=0|1`.
+  - *Done (M630b pass 4, `22df`):* the cut page holds the stand's `cvInk` by the world's stone —
+    swimmer bones and shells in sedimentary (6 + 16) and sandstone (3 + 9), gas vesicles in volcanic
+    (24 clusters), bubble strings in ice (18), nodules in bedrock (14), placed 1–4.5 m under a
+    gallery floor or over the upper ceiling and only where the whole piece lies in stone; roots come
+    down from the surface every 4–12 m on worlds with flora and stop where the stone opens. Veins are
+    a dark seam (r .034 + .012·w, its width wandering by the metre, not by the run) with rare dim
+    grains (1.6 per metre, ore × .05–.25), never a chain of dots. The vault (`cave3VaultLift`) may rise
+    up to 3 m above the grid's ceiling, in patches along the gallery (×.75 at the cut, full from 2.5 m
+    in): the grid's void is pulled straight up, never sideways or down, never within 1.6 m of the world's
+    top and never into a void 1.2 m above; floor, walls and the walk line stay the grid's (91qg: the
+    sign at z 0 and z .7 off the vault, the floor at the walk line, nothing laid, nothing over +3 m).
+    The lamp is warm only near: `lampTint` turns its light on stone to a cool grey of the same strength
+    between 4 and 8.5 m (`farK.yz`), the shadowless spill is cool grey (r 17), the warm part is a pool
+    on the floor 2.6 m ahead (r 4.2) and a touch on the man (r 1.9); a cool fill over the man (r 9) and
+    behind him (r 18); the beam tilts down (−.24). Measured on the gallery frame: the page hue 208°, the
+    stone outside the near circle 208–215°, the pool 35°. In the far lens the flat surface brushes (life,
+    the find) are not drawn until M630c. The scan label hangs at the plant the game picked and is
+    silent when that plant is not in frame (never at the man). Amber's threads reach 8 m; a higher roof
+    leaves the honey alone.
+  - *Done (M630b pass 5, light; `22dbx`):* domes stand at places, not by noise: one per hall centre,
+    the mouth, the find, each amber deposit and the far lane's arch (height 2.4–3 m, half-width 5.5–8.5 m,
+    seeded by place), and small domes split every stretch until any 12 m of the walk line rises ≥ 1.5 m
+    (91qg measures it where the roof leaves room). The lamp's warm falls from 2.6 to 8.5 m into a cool
+    grey of the same strength; the lamp's reach is `(1 + d/3.2)^-1.55`. The page is the darkest thing in
+    frame (×.55, the mouth's cool fill on it short — e-fold 6.5 m): page .11–.12 (HSV value), stone off
+    the cone .17–.19, walls in the cone .31–.34 (the stand's key: .12 / .13–.25 / .36). A thin cool rim
+    of the day on the shoulders of upper faces (24 m from the mouth, 18 m from the arch) parts far stone
+    from the page by an edge. The cone in air: core wider (.82–.97), slower fade (14 m), denser by the
+    helmet and ×(1 + 1.3·wet) — wet is 1 near the lake, .6 in a water hall, .45 in a dripstone hall
+    (`farK.w`). The day's second half: a cool bounce at the foot of the shaft (r 13) and under the arch
+    (r 12) — walls there .21–.24. The far lens keeps two light events in its 72 m (mouth, arch, lake,
+    crystal clusters parted by > 12 m, amber), sliding up to .6 of a half frame; where no two are
+    within reach it leans to the nearest light (91qg counts both cases). The post shaders moved to
+    `22dbx` (22dbw had reached 38.7 KB).
 
 ### Stage F — rooms and people (M850–M859)
 

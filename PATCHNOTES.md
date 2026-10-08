@@ -8,6 +8,126 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M630b — the halls, pass 5: light.** The roof rises into domes where something is — the middle of
+  each hall, the mouth, the lake, amber, the far arch — and never stays flat for more than twelve metres;
+  you walk under a dome, it does not follow you. The lamp's warmth fades over the first eight metres
+  into the cool grey of the stone, and its beam now hangs in the air as a wedge from the helmet, thicker
+  by water and among dripstone. Daylight does more than fall in a column: it bounces off the floor
+  under the mouth and under the arch and lights the walls around, and catches the upper edges of
+  ledges with a thin cool line. The cut page is darker, so the stone behind it stands apart. The far
+  view slides to keep two lights in frame when it can.
+- **M630b — the halls, pass 4: what lies in the stone, the vault, the lamp.** Where the cut goes
+  through stone it now shows what lies in it, flat and quiet: the bones of a swimmer and shells on
+  sedimentary worlds, gas bubbles in volcanic stone, strings of bubbles in ice, roots coming down from
+  the surface where something grows above. A vein is a dark seam with a few dim grains of ore, no
+  longer a dotted orange line. The roof over a gallery may rise into a vault up to three metres above
+  the old ceiling, in patches; the floor, the walls and where you walk are exactly as before. The lamp
+  is warm only close by — a pool on the floor ahead and the near wall; past that the stone keeps the
+  cool grey of the cut. In the far view the flat sprites of life are hidden until they are redrawn.
+  The «scan» label hangs at the plant itself, never over the man. Amber's threads reach eight metres;
+  under a higher roof the amber glows alone.
+- **M630b — the halls, pass 3: the far lane, amber and the far lens.** Where a hall has the room, it opens an
+  arch in its back wall into a far chamber with its own day: a tunnel that widens into the depth, a
+  chamber of the world's stone with ledges, a window in its vault, and under the window's beam a tall
+  stack of caps with moss at its foot. The map key in the cave now pulls the view back a hundred
+  metres (on a wide window), so the cave reads as a whole — galleries, halls, the lake, the surface
+  line — and eases back in when pressed again. Amber glows like honey from inside, with drops hanging
+  on threads from a low roof above it and a warm light about it, so a deposit is seen from across the
+  hall. The water's body in the cut reads as dark water, teal under the surface with a pale meniscus,
+  not as a hole. A dark ball that hung at the arch's edge is gone: it was one pixel of negative light
+  on a sliver of rock, blown up by the bloom; light is now never negative.
+- **M630b — the halls, pass 2: the lake and the stone.** `22dd` lays the water where `cavePool` keeps it:
+  a surface sheet at the water level running back behind the cut (the shore clear, the deep dark,
+  rings where drops fall, a cell of 3 m each with its own drop) and the body of the water in the cut,
+  from the surface to the bed, light going down in slow blades. The surface takes its reflection from
+  a mirror pass at half the frame: the scene mirrored in the water level, without the cut and without
+  what lies under the water; one mirror a frame, at the lake nearest the man. Dripstone is now the
+  stone of its world (one table, like the cut's rock): cream calcite on sedimentary worlds, dark
+  glassy basalt with rust oxides on volcanic ones, blue ice that lets the lamp through on icy ones;
+  matte, streaked downwards, dirtier on top, dark at the foot, and darker than the wall behind it in
+  shadow. Crystals are an accent, not the key: their light reaches four metres at most, their halo is
+  narrow, and the grotto's rock keeps its own colour. The wall's finish follows the hall: ribs in the
+  galleries and dripstone halls, a faceted druse (Voronoi cells) in the grotto, plain by the vein,
+  smooth and water-polished by the lake.
+- **M630b — the halls, pass 1.** `22dc` dresses the cave where the game's `caveDeco` puts things:
+  dripstone ported from the stand onto the engine's kit — stacks of caps from the floor, bells from
+  the roof, a column with its neck where they meet, scalloped rims; what hangs comes in clumps (one
+  long member, shorter ones about it, bare roof between); curtains as banded sheets the lamp shines
+  through (material 15); mauve crystal clusters from the floor or the roof, the big ones lighting
+  the hall (four nearest lights, three glows); ore veins on the cut face as a dark seam with dim
+  orange grains. Flowstone mounds and teeth by the back wall, and the back wall itself fluted in
+  the shader (ribs of uneven width in bunches, each ending at its own height), so the lamp rakes
+  ribs instead of a plane. In full day, rock facing up near the mouth wears moss. Built lazily in
+  16 m bins (≤ 5 ms a frame), cached on the cave. Stand: `cave.py` takes `zone:<kind>[:<frac>]`
+  and `near=0|1`.
+- **M630a — the cave on the engine, pass 1.** The cave is drawn as rock in section: one density
+  from the game's grid (the rock stands where `caveSolidAt` says rock), cut at the walk plane,
+  with strata, ledges and lumps by the world's kind. The helmet lamp is the key light with shadows
+  and a cone whose reach follows the kit; daylight falls through the mouth in shafts and goes with
+  the sun. The lens follows the man softly at an eighth of the frame's height, and comes 1.6×
+  nearer at a thing to act on; the stone of the cut fills the frame around the gallery, cool near
+  the mouth, never black. Hints and the action line hang as plates where they point — at the mouth,
+  the find, the plant, the shaft — instead of a band over the void. `?cave=0` keeps the old
+  painter; the game's walking, digging and finds are unchanged.
+- **M830 — landing by the planet's descent.** The touchdown no longer cuts: the descent remembers
+  its window and ruler (`PLN.hand`), the first surface frame stands in it and eases over 1.2 s to
+  the walk lens — the man by the ramp and the near lens by the ship (before, the frame jumped to
+  twice the scale centred on the man). Near the ground the lens comes closer (×1.6 from 30 m to
+  6 m), and the surface's near lens carries on from there. The pad is a body: a slab 13 × 8.5 m
+  with a rounded edge, 35 cm over the levelled ground (over water — out of the water), its foot
+  buried as a berm, amber dashes along the edge and two lamps on posts at the far corners; it
+  casts its shadow, the ship lands and stands on it, the grass keeps off it. On the approach a
+  wave runs along the dashes from the ends to the middle; the touchdown stills it. The exhaust
+  lights the ground under the nozzles; at dusk a landing flood lights the ship from the lens
+  side. Words are on things: the approach line («Заход на …,
+  тяготение») is a plate over the ship, not capitals in the sky, and the readout stands in the
+  pads row by ТОРМОЗ on a plate (on a phone, above the row) and speaks metres — altitude,
+  descent and drift in m/s, the pad's side and distance (it was in game units, «ВЫСОТА 549» for
+  forty metres). The landing's place line names the weather as the surface's does; the zenith
+  darkens with height. With `PLN.on` the old approach (the 2D sky, the slab and trees, the lander
+  bake) is never drawn; `?pln=0` keeps it.
+
+- **M830 tail — the pad's night and the words after touchdown.** By day the pad has no dashes; at
+  dusk and at night they burn at 40 %, a hint of the edge rather than a neon frame, and the «сюда»
+  wave runs only while the ship is above three metres. The pad's key light is the two post lamps —
+  brighter, each with a glint on the edge below it; the ship's flood is the second light. The
+  approach line («Заход на …», autopilot, gravity) is a «Борт» plate with a leader at the ship (the
+  M803 hang layer), and the readout by ТОРМОЗ wears the pads' plate with cut corners. The first
+  surface frame is the last descent frame: `#msg` waits until the hand-off is over and the man has
+  stepped off the ramp; the deposits tip is a plate at the nearest deposit in frame, carrying the
+  landing's deposit count; the action line is a plate at the ship (away from it, at the man) — no
+  bare orange text on the sand; the near «КОРАБЛЬ» tick, placed by the 2D camera and hanging in the
+  sky beside the ship, is gone under the planet frame.
+- **M628b — the night by the home and the base.** The porch lantern is the yard's key and now casts
+  shadows: the fence posts and the porch posts lay their strokes over the trodden ground, and the
+  man by the porch is an occluder too, though his own chest light mostly fills that shadow. The
+  greenhouse's cold grow lamp is the yard's second light, without a shadow; at the
+  base the pier lamp keeps its end and a small light over the gate warms the stairs and the belt.
+  The own things never take more than two lamps, and the frame's four hold with the man's. The
+  glass is the stand's: the home's windows and door amber (#ffc990), the base's paler (#f6dcb6) —
+  before they burned salmon. The mast's red light is steady and red, the home's beacon breathes,
+  and the travelling pennant flies under the home's beacon when the home is on this planet. By day
+  the home is a lit body with one dark face: lighter walls, rounder edges, a roof that takes the sun.
+  When a scan wins the action line by the gate, the gate keeps its own plate with the distance
+  («ВОРОТА БАЗЫ · 1 М ▶»), so the player still sees where to step.
+- **M628a — the base and the home as bodies.** The base is no longer a sticker over the frame: a
+  deck 40 × 11 m stands 1.2 m over the shallows (over the ground where there is no water) on piles,
+  behind the walk line, on the flattest stretch of the engine's land clear of the pad, the yard, the
+  settlement, the landmarks and the shaft. On it one module per built top-row cell, round ends to
+  the lens, an orange belt and a window each; a solar cell is a row of panel frames, an empty cell a
+  span with a rail, so the base outside says what is built inside. A dome at the end towards the
+  pad, the battery as four cans with a cable and a green charge light (when the base has a battery),
+  a lattice mast 12 m with a steady red light, a pier 10 m out with a lamp on a post, and the
+  travelling pennant on the mast while it is this base's. The base is entered at its **gate** — a
+  lit door in the module nearest the pad with stairs down to the walk line, the action plate hung
+  on it; by the ship the line points the way («БАЗА «…» · ВОРОТА n М ▶»), and founding a base by the
+  ship still goes straight in. The home stands on a terrace in its yard behind a wire fence open at
+  the path: a body with a band of wheelhouse glass, a porch under a lantern, a vaulted garage, a
+  lattice mast 9 m with a breathing beacon, and the greenhouse — a vault of ribs over the beds of
+  `21g`, each growing as its plant does, under a cold grow light. At the gate and at the porch the
+  lens glides closer; on a phone the near lens holds all the time on foot (the far lens made the
+  ship and the man specks). Under the deck and in the yard no shaft is founded, and the porch and
+  the bed prompts are no longer written over by «ЗАЛОЖИТЬ ШАХТУ». `?own=0` keeps the stickers.
 - **M826 The HUD trimmed.** The receiver is a chip in the bottom row: a dot and the band's name,
   a ticker row only while something is heard; a tap opens the full set for a few seconds.
   «Фото» moved into the menu. The chapter title and the message line (#msg) hang as plates at
@@ -69,6 +189,36 @@ could ever save.
 - **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
   the scoop and belt briefings and the surface «what» line are plates on their object with a
   leader (`08bj` `ovHang`); the centre 40 % of the frame stays empty, the vision checks it.
+- **M810 — the hall behind the station screens.** Docking now opens a room, not a panel: one
+  engine interior per station type (trade, combine, yard, science, outpost, fuel, bazaar) with a
+  counter, its keeper with hands on the wood under one shaded lamp, shelves of goods, the board,
+  a window on the system's planet and the dock, and the cantina's bar at the far end. The
+  camera glides to the place of each section; the screens sit on a graphite plate over the
+  right 60 % on a PC (never narrower than 880 px of layout) and under a 36 % strip on a phone.
+  Your pilot stands in the hall at the place of the open section in the orange of «Сцена»'s
+  people, posed for the place: leaning on an elbow at the counter, hands on hips at the board,
+  a palm on the window frame, on a stool at the bar; people are a fifth of the frame. The hall
+  is lived in: a visitor reads the board, a loader works by the bench, pipes and a cable tray run
+  under the ceiling, crates and sacks stand by the counter, drums, plates, cage lamps and floor
+  lines. The window shows the dock (a hull at the berth under a floodlight, a truss tower and
+  boom, beacons) and the system's planet whole in the frame. The hall keeps a shift clock: by
+  day the dock light through the window is the key and the hall reads to the ceiling; at night
+  the window is deep blue and the lamps of people carry the room. The bar is the far end of the
+  same hall: a counter with people on stools facing it, a table with two sitting, three warm
+  lamps and the sign at the side. A message in the hall is a small plate on the screens, not a
+  strip across the room. By day the hall takes its colour from things, not from a lighter tone:
+  red-brown counter wood, coloured tins, crates with stencil plates and rolls of cloth on the
+  shelves, a loader in orange overalls, a warm lamp over the counter, a warm bounce off the floor
+  under the blue dock light. The keeper has hair and a face. The floor has tile joints, a worn
+  path along the counter and oil stains. The bar has a second table with two people in the
+  middle of the room.
+  At the counter, the market lies in front of you: one open crate per row of the price table,
+  heaped with the goods you carry (the heap grows with the amount) and empty for what you do
+  not. Point at a row and its crate lights up with an orange rim and a small lamp in the
+  goods' colour. In the hall the table is a plate without its line of explanation.
+  The things are named by small plates with a leader line beside them (ДОСКА, СТОЙКА, the
+  planet, ВЕРСТАК, КОНТОРА). `?hall=0` keeps the old desk; `?hallnight=0|1` and
+  `?hallpilot=0` are for the stand.
 - **M804 — the night side of the orbs.** The dark half of every planet is filled by its own
   sky (cold blue where there is no air, the air's hue where there is) so it reads as a shape;
   the terminator is a warm rim whose width follows the air; polar caps are grain with cracks

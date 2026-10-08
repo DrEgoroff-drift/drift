@@ -267,19 +267,45 @@ function plnGlide(S,p,fly){
   return v;
 }
 
+/* ── передача объектива со спуска (M830) ──
+   Первый кадр поверхности — последний кадр спуска: то же окно (середина и линия земли) и та же
+   мерка, что запомнил спуск (PLN.hand, 21pza); дальше за PLN_HAND_S секунд по часам стены окно и
+   мерка плавно уходят к объективу ходьбы — к человеку у трапа и к ближнему объективу у корабля.
+   Часы передачи идут с первого кадра поверхности, а не с касания: отсчёт касания их не съедает */
+const PLN_HAND_S=1.2;
+function plnHandAge(S){
+  const h=PLN.hand;
+  if(!h)return null;
+  if(h.tr!==S.tr){PLN.hand=null;return null;}
+  const t=wallMs();
+  if(!h.t0){h.t0=t;PLN.glide=h.g||0;PLN.glideT=t;}
+  const u=(t-h.t0)/1000/PLN_HAND_S;
+  if(u>=1){PLN.hand=null;return null;}
+  h.w=1-plnSmooth(0,1,u);
+  return h;
+}
+/* окно на доле передачи h.w: 1 — окно спуска, 0 — окно ходьбы */
+function plnHandWin(S,ws,hs,f,h){
+  const co=camOffset(S),cx=lerp(S.cam.x+co.x,h.cx,h.w),fy=lerp(S.cam.y+10+co.y,h.fy,h.w);
+  return {vx:cx-ws/2,vy:fy-hs*(1-f)};
+}
+
 /* ── кадр ── */
 function plnSurface(S,o){
   /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
      S — состояние поверхности (без него G.surf); o — спуск (21pza): {lens(ws,hs) → {vx,vy},
-     ship:{x,alt,gear,sq,thr,hot,tilt,yaw,down}} — корабль в воздухе, людей и вещей в кадре нет */
+     ship:{x,alt,gear,sq,thr,hot,tilt,yaw,down}, zen — зенит темнее, extra(F,L,C) — площадка} — корабль
+     в воздухе, людей и вещей в кадре нет */
   const t0=wallMs(),fly=!!(o&&o.ship),Q=PLN_FRAME;
   S=S||G.surf;
-  const tr=S.tr,p=S.p,K=surfScale()*(1+clamp(fly?0:Math.max(PLN.near||0,plnGlide(S,p,fly)),0,1));
+  const tr=S.tr,p=S.p,hd=fly?null:plnHandAge(S);
+  let K=surfScale()*(1+clamp(fly?(o.near||0):Math.max(PLN.near||0,plnGlide(S,p,fly)),0,1));
+  if(hd)K=lerp(K,hd.K,hd.w);
   /* то, что старый кадр делал попутно и на что опирается игра: свет 2D, ветер, камера */
   tr.p=p;sunDirSet(p);WIND=windOf(p);
   if(!S.cam)S.cam={x:S.x,y:S.y};
   PLN.y0=tr.padY;
-  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,o&&o.lens),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):null),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
   const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
@@ -295,6 +321,8 @@ function plnSurface(S,o){
   for(let i=0;i<3;i++){look.ambGnd[i]*=wl.gnd[i];look.bounce[i]*=wl.gnd[i];look.airNear[i]=lerp(look.airNear[i],wl.air[i],.7);}
   look.bands=Q.bands;
   look.world=[L.sd%1000,clamp(WIND*1.4,-1.2,1.2),0,0];
+  /* спуск с высоты: зенит темнее (21pza, M830) */
+  if(fly&&o.zen>0)for(let i=0;i<3;i++){look.skyZen[i]*=1-o.zen;look.skyZenS[i]*=1-o.zen;}
   const F={vp:C.vp,vpMirror:plnM4mul(C.vp,plnM4mirrorY(wy)),eye:C.eye,t:(G.t/60)%7200,sun:Hr.dir,key:Hr.key,expo:1,waterY:wy,
     L0:plnLightBox(Hr.dir,[C.ex-58,C.ex+58,span.lo-8,span.hi+17,-50,24],PLN_GPU.shn),
     L1:plnLightBox(Hr.dir,[C.ex-250,C.ex+250,Math.min(ride-12,span.lo-8),Math.max(ride+60,span.hi+20),-50,460],PLN_GPU.shn),
@@ -309,14 +337,20 @@ function plnSurface(S,o){
   let man=[S.x/PLN_M,plnY(S.y+10)-PLN_CAST.sink*swim,0];
   if(fly){
     /* спуск: корабль игры висит над точкой касания; пятно героя — под ним */
-    const q=o.ship,sp=[q.x,plnLandRibAt(L,q.x,L.shipZ)+q.alt,L.shipZ];
-    plnShipFrame(F,sp,q.yaw==null?L.shipYaw:q.yaw,Object.assign({L},q));
+    /* корабль садится на плиту площадки (21pza): его земля — её верх */
+    const q=o.ship,lift=plnPadLift(L,tr,wy,q.x),sp=[q.x,plnLandRibAt(L,q.x,L.shipZ)+q.alt+lift,L.shipZ];
+    plnShipFrame(F,sp,q.yaw==null?L.shipYaw:q.yaw,Object.assign({L,floor:lift>0?plnPadTop(L,tr,wy):null},q));
+    if(o.extra)o.extra(F,L,C,sp);
     man=[sp[0],sp[1]-q.alt,sp[2]];
   }else{
-    const ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ),L.shipZ];
-    plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L});
+    /* корабль стоит на плите площадки (21pza); плита — тело и на поверхности */
+    const lift=plnPadLift(L,tr,wy,L.shipX),ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ)+lift,L.shipZ];
+    PLN.shipW=ship;   /* табличка строки действия у корабля (21pzb) */
+    plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L,floor:lift>0?plnPadTop(L,tr,wy):null});
+    plnPadFrame(F,L,tr,0);
     plnThingsFrame(L,F,S,p,C.ex,V);
     plnMarksFrame(L,F,S,p,C.ex,V,lampK);
+    plnOwnFrame(L,F,S,p,C.ex,V,lampK);   /* база и дом телами (21pig, M628a) */
     plnDrillFrame(F,S,L);plnTracksFrame(L,F,S,C.ex,V);
     plnBeastFrame(L,F,S,p,C.ex,V);
     plnHerbFrame(L,F,S,p,C.ex,V);
@@ -329,6 +363,7 @@ function plnSurface(S,o){
   /* герой стоит в пятне света: пятно лежит там, куда его тень падает на уровень сцены */
   const hk=(man[1]-ride)/Math.max(Hr.dir[1],.08);
   F.hero[0]=man[0]-Hr.dir[0]*hk;F.hero[1]=man[2]-Hr.dir[2]*hk;
+  plnOwnOcc(F);   /* заслонки фонаря крыльца — в хвост пятен (21pig, M628b) */
   PLN.cam=C;PLN.sun=Hr;
   PLN.stat.cpu=+(wallMs()-t0).toFixed(2);
   return plnGpuFrame(F);
@@ -351,6 +386,7 @@ drawSurface=function(){
   }
   /* свечение у нового вида своё; движку оставлено только зерно */
   BLOOM_K.surface=ok?0:PLN_FRAME.bloom;
+  PLN_FRAME.live=ok;
   if(!ok){PLN_OLD_SURFACE();return;}
   withScale(G.viewK,plnOver);
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
