@@ -8923,7 +8923,7 @@ zoomTo                       src/15-input.js:358
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
-## src/17gab-gpu-orb.js · 35 KB
+## src/17gab-gpu-orb.js · 36 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
 
 ## src/17gab1-gpu-orb-draw.js · 8 KB

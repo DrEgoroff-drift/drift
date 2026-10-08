@@ -313,14 +313,19 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     ground = mix(ground, rp(k, 4)*.8, mtn*select(.6, .0, k == 4));
     var alb = mix(sea, ground, land);
     if (k == 4) {
-      /* реки: нулевые линии искривлённого поля, рвутся по длине, только в глубине суши */
-      let rf = fbm(warp(p*3.2 + s + 7., .6, fw), 3, fw);
+      /* реки: нулевые линии искривлённого поля, рвутся по длине, только в глубине суши; два семейства —
+         русла (5) и притоки (9.5, тоньше), иначе на материк выходила одна извилина */
       let t1 = normalize(cross(p, vec3f(.01, 1., .02))); let t2 = cross(p, t1); let he = .004;
-      let rg = vec2f(fbm(warp((p + t1*he)*3.2 + s + 7., .6, fw), 3, fw) - rf, fbm(warp((p + t2*he)*3.2 + s + 7., .6, fw), 3, fw) - rf)/he;
-      let rd = abs(rf)/max(length(rg), 1e-3); let rhw = max(.0042, fw*.75);
-      let rv = (1. - smoothstep(rhw, rhw + fw*.6, rd))*smoothstep(lv + .02, lv + .08, n)
-        *smoothstep(-.05, .2, n3(p*2.4 + s + 1.))*(1. - smoothstep(.2, .6, fw*20.));
-      alb = mix(alb, rp(k, 0)*.4, rv*.95);
+      var rv = 0.;
+      for (var ri = 0; ri < 2; ri++) {
+        let fq = select(5., 9.5, ri == 1); let ro = s + 7. + f32(ri)*13.;
+        let rf = fbm(warp(p*fq + ro, .6, fw), 3, fw);
+        let rg = vec2f(fbm(warp((p + t1*he)*fq + ro, .6, fw), 3, fw) - rf, fbm(warp((p + t2*he)*fq + ro, .6, fw), 3, fw) - rf)/he;
+        let rd = abs(rf)/max(length(rg), 1e-3); let rhw = max(select(.005, .0035, ri == 1), fw*.75);
+        rv = max(rv, (1. - smoothstep(rhw, rhw + fw*.6, rd))*smoothstep(select(-.1, .3, ri == 1), select(.15, .5, ri == 1), n3(p*select(2.4, 4.1, ri == 1) + s + 1. + f32(ri)*5.)));
+      }
+      rv *= smoothstep(lv + .02, lv + .08, n)*(1. - smoothstep(.2, .6, fw*20.));
+      alb = mix(alb, rp(k, 0)*.22, rv);
       rb = rb*smoothstep(lv, lv + .1, n);   /* рельеф растёт от берега */
       /* тень облаков — облако со стороны звезды, сдвиг ~1.5 % диска */
       let Lt = tang(gLo, p);
@@ -360,10 +365,13 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     alb = mix(alb, alb*vec3f(.82, .74, .68), .45*chaos*smoothstep(.4, .7, mot));
     let rust = vec3f(.24, .18, .14);
     var fl = 0.; var wl = 0.; var rim = 0.; var tor = 0.; var gb = vec3f(0.);
-    for (var j = 0; j < 7; j++) {
+    /* четыре трещины по осям тетраэдра, повёрнутого зерном: оси всегда далеко друг от друга — не пучок */
+    let hr = h3(vec3f(s.x, s.y, 13.)); let ra = hr.x*6.2832; let rb = (hr.y - .5)*3.1416;
+    for (var j = 0; j < 4; j++) {
       let hj = h3(vec3f(s.x, f32(j), 9.));
-      let z0 = hj.x*2. - 1.; let a0 = hj.y*6.2832; let c0 = sqrt(1. - z0*z0);
-      let ax = vec3f(cos(a0)*c0, z0, sin(a0)*c0);
+      let tv = vec3f(select(-1., 1., j == 0 || j == 1), select(-1., 1., j == 0 || j == 2), select(-1., 1., j == 0 || j == 3));
+      let t1 = vec3f(tv.x*cos(ra) - tv.z*sin(ra), tv.y, tv.x*sin(ra) + tv.z*cos(ra));
+      let ax = normalize(vec3f(t1.x, t1.y*cos(rb) - t1.z*sin(rb), t1.y*sin(rb) + t1.z*cos(rb)) + (hj - .5)*.3);
       let wob = .05*n3(p*2.3 + f32(j)*7.1 + s) + .012*n3(p*9. + f32(j)*3.7 + s);
       let sd = dot(p, ax) - (hj.z - .5)*.5 + wob;
       let along = smoothstep(.2, .5, n3(p*1.1 + vec3f(f32(j)*3.3, 0., 1.) + s) + .35);
@@ -373,13 +381,13 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
       let flK = 1. - smoothstep(hw*.45, hw*.8, ad);
       let le = (ad - hw*1.3)/(hw*.35); let lev = exp(-le*le);
       let g = tang(ax, p)*select(-1., 1., sd >= 0.);
-      gb += g*(1.5*inC*(1. - flK) - .3*le*lev)*along;
+      gb += g*(1.1*inC*(1. - flK) - .3*le*lev)*along;
       fl = max(fl, flK*along); wl = max(wl, inC*(1. - flK)*along); rim = max(rim, lev*along);
       tor = max(tor, (1. - smoothstep(hw*1.6, hw*5., ad))*along);
     }
     let tq = p*26. + s;
     let tfade = 1. - smoothstep(.2, .6, fw*26.);
-    gb += tor*(1. - wl)*.5*tfade*vec3f(n3(tq), n3(tq + 3.), n3(tq + 6.));
+    gb += tor*(1. - wl)*.25*tfade*vec3f(n3(tq), n3(tq + 3.), n3(tq + 6.));
     alb = alb*mix(1., .88 + .2*n3(tq*1.3 + 2.), tor*tfade);
     let l2 = 1. - smoothstep(.0, .01 + fw*7., abs(n3(p*6.5 + s + 5.)));
     alb = mix(alb, alb*vec3f(.8, .74, .7), .2*l2*(1. - smoothstep(.2, .6, fw*7.)));
