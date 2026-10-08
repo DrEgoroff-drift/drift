@@ -9,9 +9,9 @@ TEST_SUITES.push(()=>suite("пещера на движке: порода по с
   const C=G.cave;
   if(!ok(G.mode==="cave"&&!!C&&!!C.g,"пещера поднята"))return;
   const F=cave3Field(C),cell=CAVE_CS/CAVE_PPM;
-  /* купол (M630b проход 4): свод может уйти выше потолка сетки до трёх метров — камень сетки под таким
+  /* купол (M630b проходы 4–5): свод может уйти выше потолка сетки до трёх метров — камень сетки под таким
      сводом картинке не указ; всё остальное (пол, стены, толща) — по сетке */
-  const vaultAt=(x,y)=>{const A=cave3VaultLift(x/CAVE_PPM,0);if(A<=0)return false;
+  const vaultAt=(x,y)=>{const A=cave3VaultLift(F,x/CAVE_PPM,0);if(A<=0)return false;
     for(let d=.2;d<=A+cell;d+=.2)if(!caveSolidAt(C,x,y+d*CAVE_PPM))return true;return false;};
   /* ── плотность на разрезе и на линии ходьбы: знак — тот же, что у сетки, где до грани больше клетки ── */
   for(const Z of [0,CAVE3_Z]){
@@ -40,13 +40,13 @@ TEST_SUITES.push(()=>suite("пещера на движке: порода по с
       fn++;if(!(cave3Den(F,X,Yf-.3,CAVE3_Z)>0&&cave3Den(F,X,Yf+.3,CAVE3_Z)<0))fb++;
     }
     for(const Z of [0,CAVE3_Z,2,3.5]){
-      const A=cave3VaultLift(X,Z),Yt=Yc+A+1.6;
+      const A=cave3VaultLift(F,X,Z),Yt=Yc+A+1.6;
       if(caveSolidAt(C,x,-Yt*CAVE_PPM)&&caveSolidAt(C,x,-(Yt+1)*CAVE_PPM)&&-Yt*CAVE_PPM>CAVE_Y0+2*CAVE_PPM&&cave3Den(F,X,Yt,Z)<=0)high++;
       if(A>1&&cave3Den(F,X,Yc+A*.5,Z)<0)up++;
       for(const dy of [-.3,.4,A*.5,A+.3]){
-        const d1=cave3Den(F,X,Yc+dy,Z),L0=CAVE3_VAULT.lift;
-        CAVE3_VAULT.lift=0;
-        try{if(d1>cave3Den(F,X,Yc+dy,Z)+1e-6)low++;}finally{CAVE3_VAULT.lift=L0;}
+        const d1=cave3Den(F,X,Yc+dy,Z),V0=F.vault;
+        F.vault=null;
+        try{if(d1>cave3Den(F,X,Yc+dy,Z)+1e-6)low++;}finally{F.vault=V0;}
       }
     }
   }
@@ -54,6 +54,38 @@ TEST_SUITES.push(()=>suite("пещера на движке: порода по с
   ok(high===0,"свод не выше потолка сетки плюс купол: дыр выше "+high);
   ok(up>0,"купол есть: точек под поднятым сводом "+up);
   ok(low===0,"купол не опускает свод и не кладёт камня: "+low);
+  /* ── купола у мест (проход 5): у каждого зала и у устья свой; на любом окне линии ходьбы в 12 м свод
+     поднимается хоть на полтора метра — там, где над ходом есть толща под купол ── */
+  const hasDome=X=>F.vault.some(d=>Math.abs(d.x-X)<4);
+  ok(hasDome(F.mouthX)&&caveZones(C).every(z=>hasDome((z.x0+z.x1)/2/CAVE_PPM)),"купол у устья и у середины каждого зала: "+F.vault.length);
+  const rise=[];
+  for(let X=1;X<CAVE_W/CAVE_PPM-1;X+=.5){
+    const x=X*CAVE_PPM,c=caveCeil(C,x),f=caveFloor(C,x),Yc=-c/CAVE_PPM;
+    let room=f-c>3*CAVE_CS;
+    for(let d=.25;room&&d<=4;d+=.25)if(!caveSolidAt(C,x,c-d*CAVE_PPM)||c-d*CAVE_PPM<CAVE_Y0+1.7*CAVE_PPM)room=false;
+    if(!room){rise.push(null);continue;}
+    let t=Yc-.6;while(t<Yc+3.5&&cave3Den(F,X,t+.1,CAVE3_Z)<0)t+=.1;
+    rise.push(t-Yc);
+  }
+  let win=0,flat=0,worst=9;
+  for(let i=0;i+24<=rise.length;i+=2){
+    const w=rise.slice(i,i+24);if(w.some(v=>v==null))continue;
+    win++;const m=Math.max(...w);worst=Math.min(worst,m);if(m<1.5)flat++;
+  }
+  ok(win>20&&flat===0,"в каждом окне 12 м свод поднят на 1,5 м: окон "+win+", плоских "+flat+", худшее "+worst.toFixed(2));
+  /* ── дальний объектив (проход 5): в кадре 72 м хоть два световых события — устье, арка, озеро, кристаллы;
+     иначе он отходит к ближайшему месту, где они есть, и человек остаётся в кадре ── */
+  {
+    const hw=CAVE3_LENS.fH*16/9/2,Ev=cave3Events(C,F),seen=c=>cave3FarSeen(Ev,c,hw);
+    let n=0,bad=0,sparse=0;const why=[];
+    for(let X=10;X<CAVE_W/CAVE_PPM-10;X+=7){
+      const s=cave3FarShift(C,F,X,hw);n++;
+      let can=false;for(let t=-hw*.6;t<=hw*.6&&!can;t+=1)can=seen(X+t)>=2;
+      if(!can){sparse++;continue;}
+      if(seen(X+s)<2||Math.abs(s)>hw*.6+1e-6){bad++;if(why.length<3)why.push([X,s,seen(X+s)]);}
+    }
+    ok(Ev.length>=3&&n>15&&bad===0&&sparse<n/3,"дальний кадр держит два световых события, где они достижимы: событий "+Ev.length+", мест "+n+", без двух "+bad+", пролётов без огней "+sparse+" "+JSON.stringify(why));
+  }
   /* ── сетка куска: лист разреза лежит на камне сетки, порода — у её граней ── */
   const ci=Math.floor(F.mouthX/CAVE3_CH.s)+1,cj=Math.floor((-caveGalY(C,(ci+.5)*CAVE3_CH.s*CAVE_PPM)/CAVE_PPM)/CAVE3_CH.s);
   const m=cave3Chunk(F,ci,cj),V=m.v;

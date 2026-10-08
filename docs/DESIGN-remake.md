@@ -536,6 +536,21 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     the find) are not drawn until M630c. The scan label hangs at the plant the game picked and is
     silent when that plant is not in frame (never at the man). Amber's threads reach 8 m; a higher roof
     leaves the honey alone.
+  - *Done (M630b pass 5, light; `22dbx`):* domes stand at places, not by noise: one per hall centre,
+    the mouth, the find, each amber deposit and the far lane's arch (height 2.4–3 m, half-width 5.5–8.5 m,
+    seeded by place), and small domes split every stretch until any 12 m of the walk line rises ≥ 1.5 m
+    (91qg measures it where the roof leaves room). The lamp's warm falls from 2.6 to 8.5 m into a cool
+    grey of the same strength; the lamp's reach is `(1 + d/3.2)^-1.55`. The page is the darkest thing in
+    frame (×.55, the mouth's cool fill on it short — e-fold 6.5 m): page .11–.12 (HSV value), stone off
+    the cone .17–.19, walls in the cone .31–.34 (the stand's key: .12 / .13–.25 / .36). A thin cool rim
+    of the day on the shoulders of upper faces (24 m from the mouth, 18 m from the arch) parts far stone
+    from the page by an edge. The cone in air: core wider (.82–.97), slower fade (14 m), denser by the
+    helmet and ×(1 + 1.3·wet) — wet is 1 near the lake, .6 in a water hall, .45 in a dripstone hall
+    (`farK.w`). The day's second half: a cool bounce at the foot of the shaft (r 13) and under the arch
+    (r 12) — walls there .21–.24. The far lens keeps two light events in its 72 m (mouth, arch, lake,
+    crystal clusters parted by > 12 m, amber), sliding up to .6 of a half frame; where no two are
+    within reach it leans to the nearest light (91qg counts both cases). The post shaders moved to
+    `22dbx` (22dbw had reached 38.7 KB).
 
 ### Stage F — rooms and people (M850–M859)
 

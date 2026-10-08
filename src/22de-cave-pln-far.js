@@ -134,7 +134,8 @@ function cave3FarFrame(C,F,Fd,x0,x1,cx,dayK){
   /* свой рассеянный свет: даль светлее неосвещённого ближнего камня и ночью; днём — отсвет у подножия луча */
   const n=.4+.6*dayK;
   F.lights.push({p:[S.cx,S.fy+3.5,S.cz-4],r:15,c:[.055*n,.08*n,.105*n]});
-  if(dayK>.01)F.lights.push({p:[S.fx,S.fy+1.5,S.fz-1.5],r:8,c:[.16*dayK,.19*dayK,.2*dayK]});
+  /* под аркой холодный отскок дня заливает стены на 10–12 м, не только луч столбом (проход 5) */
+  if(dayK>.01)F.lights.push({p:[S.fx,S.fy+1.8,S.fz-1.5],r:12,c:[.19*dayK,.24*dayK,.27*dayK]});
   CAVE3.stat.far={ax:+S.ax.toFixed(1),fy:+S.fy.toFixed(1),zone:S.zone,tris:Math.round(Q.tris),ms:Q.ms};
   return Q.tris;
 }
