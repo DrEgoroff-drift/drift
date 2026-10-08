@@ -421,6 +421,15 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   waves, widens and breaks. `GNB_FILC` (`16gay`) lets the strands into bright gas far away and
   darkens between them. `GPU.kill.neb` skips `gpuNebulaGen` for a frame without the nebula: the
   diff is how the pass was judged (the nebula a correction to the field, not a fill).
+  *M823b (08.10):* the four gaps. `GNB_FARC` (`16gay`, full resolution, far only) — dust lanes
+  as ridges of a warped field darken bright gas ×.5, a sharper ridge lifts the strands; on thin
+  gas (`l0<.25`) a two-level warped ridge field turns the rim into wisps (rotated strands alias
+  into hatching — rejected). Rim octave drop `.45*far`. Ion tail: three Gaussian strands round
+  a parabola `bend*xp²` that part with `xp`, flicker by noise, bright at the head. The centre
+  law in `GNB_EMI`: the ship's screen point rides `c[53..54]`; within `R=.37·min(W,H)` with a
+  noise-ragged radius and a wide fade the light is pulled toward a floor `.3·.05/(cy+.05)`,
+  near the star only to .75. Measured cover>24 in r400 round the ship: 0–14 % on 1920, ≤ 2 %
+  on 390; mass value spread .27–.39.
 
 ### Stage D — the way down (M830–M839)
 

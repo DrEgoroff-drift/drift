@@ -54287,6 +54287,19 @@ fn filE(p:vec2f,uv:vec2f)->f32{
 const GNB_FILC=`
   let bw=smoothstep(.06,.3,l0);if(bw>0.){let sdc=length(p-fu.v[1].xy)/H-fu.v[1].z;let fz=smoothstep(.8,1.6,sdc);
     c=c*mix(1.,filE(p,uv)*(1.-.25*fz),bw*.9*(1.-smoothstep(.45,.85,max(c.r,max(c.g,c.b)))*(1.-.75*fz))*smoothstep(.1,.35,sdc));}`;
+/* сведение вдали от звезды (M823): тёмные прожилки пыли перед газом — тонкие, извитые, value ×.55;
+   гребни внутри массы; на кромке газ не размыт, а истончается в рваные пряди и гаснет без ступеньки */
+const GNB_FARC=`
+  {let sdc=length(p-fu.v[1].xy)/H-fu.v[1].z;let fz=smoothstep(.8,1.6,sdc);
+   if(fz>0.&&l0>.001){
+    let qd=((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*3.6+fu.v[0].w+vec2f(2.,13.);
+    let wv=vec2f(gnt(qd*.5),gnt(qd*.5+vec2f(7.,3.)))*1.8;
+    let rl=1.-abs(2.*fbt(qd*1.7+wv,3)-1.);let rf=1.-abs(2.*fbt(qd*2.3+wv*1.4+vec2f(5.,1.),3)-1.);
+    let bm=smoothstep(.03,.18,l0);
+    c=c*(1.-.5*smoothstep(.9,.985,rl)*bm*fz)*(1.+.55*pow(rf,6.)*bm*fz);
+    let q0=qd*6.+wv*3.;let w2=vec2f(gnt(q0*.4+vec2f(1.,5.)),gnt(q0*.4+vec2f(8.,2.)))*4.;let qs=q0+w2+vec2f(9.,2.);let rr=1.-abs(2.*fbt(qs,3)-1.);
+    let rw=fz*(1.-smoothstep(.06,.25,l0));
+    c=c*mix(1.,.15+1.7*pow(rr,4.),rw);}}`;
 /* сведение: объём — отношение плотностей к звезде и здесь, а не разность: одинаково для тусклого
    и яркого газа; подсветка гаснет у звезды и у белого */
 const GNB_VOL=`
@@ -54545,16 +54558,18 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
        Ионный хвост — прямой узкий голубой луч (1–2 px у головы, ~8 px к концу, длина
        ~.4 ширины кадра); пылевой — широкий изогнутый тёплый веер, отходит на ~20° */
     let x=d.x;let r=length(d);let xp=max(x,0.);
-    /* ионный хвост — мягкий: гаусс 2→10 px, слабые продольные струи поперёк ширины */
-    /* M823: не луч — хвост вьётся и рвётся струями, к концу шире и тает (прямая через кадр
-       читалась лучом наведения) */
-    let wi=.004+.02*min(xp/.6,1.);
-    let yi=d.y-(fbt(vec2f(x*2.4+ls,3.),2)-.5)*.06*xp;
-    let st=.35+.65*smoothstep(.3,.75,fbt(vec2f(x*5.-u.b.z*2.,yi/wi*.8+ls),3));
-    let ion=exp(-sq(yi/wi))*smoothstep(-.004,.02,x)*(1.-smoothstep(.2,.65,x))*st;
+    /* ионный хвост (M823): не луч — ветер звезды гнёт его дугой (изгиб растёт с квадратом длины),
+       хвост рвётся на три жгута, к концу они расходятся, тоньше и гаснут; ярко только у головы */
+    let bend=select(-1.1,1.1,fract(ls*7.31)>.5);var ion=0.;
+    for(var k=0;k<3;k++){let fk=f32(k)-1.;
+      let yk=d.y-bend*xp*xp-fk*.13*xp-(fbt(vec2f(x*2.4+ls+fk*3.,3.+fk),2)-.5)*.05*xp;
+      let wk=.0035+.011*min(xp/.45,1.);
+      let sk=.3+.7*smoothstep(.3,.75,fbt(vec2f(x*5.-u.b.z*2.+fk*5.,ls+fk*2.),3));
+      ion=ion+exp(-sq(yk/wk))*sk*select(.6,1.,k==1);}
+    ion=ion*smoothstep(-.004,.02,x)*exp(-xp/.22)*(1.-smoothstep(.25,.55,x));
     let yc=lcy(d,u.i);let wd=.006+.11*xp;
     let dst=exp(-sq(yc/wd))*smoothstep(0.,.08,x)*exp(-xp/.35)*(.7+.3*fbt(vec2f(x*3.,yc*8.)+ls,2));
-    e=vec3f(.12,.5,1.)*ion*.3+vec3f(1.,.86,.62)*dst*.85
+    e=vec3f(.12,.5,1.)*ion*.55+vec3f(1.,.86,.62)*dst*.85
       +vec3f(1.,.95,.86)*(8.*exp(-sq(r/.0035))+.5*exp(-sq(r/.014)));
   } else if(ty<2.5){
     let g=vec2f(d.x,d.y/u.i.y);let r=length(g);let th=atan2(g.y,g.x);
@@ -54638,7 +54653,7 @@ fn lmk(p:vec2f,W:f32,H:f32,sp:vec2f)->LK{
     let w2=vec2f(fbt(q+1.9*w+vec2f(1.7,9.2),4),fbt(q+1.9*w+vec2f(8.3,2.8)+vec2f(0.,tt*.5),4));
     /* вдали край мягкий: у кромки без двух верхних октав газ не рвётся в резкую бахрому (автор видит
        «лужу»); внутри массы детали остаются — иначе мягкое пятно без нутра */
-    let d0=fbt(q+2.1*w2,5);let d=select(d0,mix(d0,fbt(q+2.1*w2,3),.7*far*(1.-smoothstep(.5,.72,d0))),far>0.);
+    let d0=fbt(q+2.1*w2,5);let d=select(d0,mix(d0,fbt(q+2.1*w2,3),.45*far*(1.-smoothstep(.5,.72,d0))),far>0.);
     let amp=select(select(.55,.95,L==1),.6,L==2)*densE;
     /* дальний слой мягче (широкий порог), ближний контрастнее */
     /* вдали у каждого плана свой силуэт: дальний шире и мягче, ближний — клочьями. Одна маска на три
@@ -54811,7 +54826,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   /* волокна: гребни в полном разрешении режут тело газа */
   let body=smoothstep(.015,.14,l0);
   /* деталь — только где её вес не ноль: вне газа шум не считается */
-  if(body>0.){c=c*mix(1.,fineE(p),body*.85);}${GNB_FILC}
+  if(body>0.){c=c*mix(1.,fineE(p),body*.85);}${GNB_FILC}${GNB_FARC}
   /* фронт ионизации: где газ густеет прочь от звезды — это его кромка к звезде */
   let ts=1./vec2f(textureDimensions(t0));
   let lx=textureSampleLevel(t0,smp,uv+vec2f(ts.x*1.5,0.),0.).rgb-textureSampleLevel(t0,smp,uv-vec2f(ts.x*1.5,0.),0.).rgb;
@@ -54874,7 +54889,12 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
      пыль гасит его так же, как звёзды */
   let Tb=pow(vec3f(fineT(p,clamp(1.-g0.a,0.,1.))),vec3f(.72,1.,1.42));
   /* неон ушёл: насыщенность и яркость газа ниже, туманность остаётся цветной (автор, 24.09) */
-  let co=c*(1.-exp(-mm*1.25))/(mm*1.25)*1.12;let cy=dot(co,vec3f(.2126,.7152,.0722));
+  var co=c*(1.-exp(-mm*1.25))/(mm*1.25)*1.12;var cy=dot(co,vec3f(.2126,.7152,.0722));
+  /* закон «центр» (M823): вокруг корабля газ мягкой дырой — тело и его огни читаются на любом
+     фоне; яркое гаснет сильнее тусклого, края дыры нет */
+  {let R=.37*min(fu.res.z,fu.res.w);let hn=gnt(((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*2.4+vec2f(4.,1.))*.65+gnt(((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*6.+vec2f(2.,8.))*.35;
+   let hw=(1.-smoothstep(.75,1.6,length(p-fu.v[13].yz)/(R*(.8+.45*hn))))*step(-9e4,fu.v[13].y)*mix(.75,1.,smoothstep(.1,.4,sd));
+   co=co*mix(1.,.3*.05/(cy+.05),hw);cy=dot(co,vec3f(.2126,.7152,.0722));}
   /* далёкие галактики — за газом: густой газ их закрывает, пыль гасит, как космос */
   return vec4f(mix(vec3f(cy),co,.66)*mix(1.,.72,smoothstep(.12,.6,cy))+(vec3f(5.,7.,12.)/255.)*Tb+fgal(p)*(1.-.8*body)*mix(.4,1.,Tb.g),0.);}`;
 function gnbTarget(){
@@ -54969,6 +54989,8 @@ function gpuNebulaGen(sys,camx,camy,st,Z){
   /* громадина — и сведению: окно гасит туман */
   const lm=pl.lm;
   c[44]=lm.x;c[45]=lm.y;c[46]=lm.s;c[47]=lm.t;c[48]=lm.a;c[49]=lm.p;c[50]=lm.l;c[51]=lm.k;c[55]=.006;
+  /* корабль на экране — дыра закона «центр» в сведении (только в системе) */
+  if(Z&&G.mode==="system"&&G.ship){c[53]=W/2+G.ship.x*Z-camx;c[54]=H/2+G.ship.y*Z-camy;}else{c[53]=-1e5;c[54]=-1e5;}
   const lq=gnbLfr(lm,camx,camy,st);c[52]=lq[4];for(let k=0;k<4;k++)c[56+k]=lq[k];
   c[11]=pl.sw||.1;c[12]=pl.c[0]/255;c[13]=pl.c[1]/255;c[14]=pl.c[2]/255;
   /* пыль (L1b) в полярных координатах звезды: сдвиг угла и ln r копится по кадрам так, чтобы

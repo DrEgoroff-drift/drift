@@ -91,6 +91,19 @@ fn filE(p:vec2f,uv:vec2f)->f32{
 const GNB_FILC=`
   let bw=smoothstep(.06,.3,l0);if(bw>0.){let sdc=length(p-fu.v[1].xy)/H-fu.v[1].z;let fz=smoothstep(.8,1.6,sdc);
     c=c*mix(1.,filE(p,uv)*(1.-.25*fz),bw*.9*(1.-smoothstep(.45,.85,max(c.r,max(c.g,c.b)))*(1.-.75*fz))*smoothstep(.1,.35,sdc));}`;
+/* сведение вдали от звезды (M823): тёмные прожилки пыли перед газом — тонкие, извитые, value ×.55;
+   гребни внутри массы; на кромке газ не размыт, а истончается в рваные пряди и гаснет без ступеньки */
+const GNB_FARC=`
+  {let sdc=length(p-fu.v[1].xy)/H-fu.v[1].z;let fz=smoothstep(.8,1.6,sdc);
+   if(fz>0.&&l0>.001){
+    let qd=((p-fu.res.zw*.5)+fu.v[0].xy*.09)/H*3.6+fu.v[0].w+vec2f(2.,13.);
+    let wv=vec2f(gnt(qd*.5),gnt(qd*.5+vec2f(7.,3.)))*1.8;
+    let rl=1.-abs(2.*fbt(qd*1.7+wv,3)-1.);let rf=1.-abs(2.*fbt(qd*2.3+wv*1.4+vec2f(5.,1.),3)-1.);
+    let bm=smoothstep(.03,.18,l0);
+    c=c*(1.-.5*smoothstep(.9,.985,rl)*bm*fz)*(1.+.55*pow(rf,6.)*bm*fz);
+    let q0=qd*6.+wv*3.;let w2=vec2f(gnt(q0*.4+vec2f(1.,5.)),gnt(q0*.4+vec2f(8.,2.)))*4.;let qs=q0+w2+vec2f(9.,2.);let rr=1.-abs(2.*fbt(qs,3)-1.);
+    let rw=fz*(1.-smoothstep(.06,.25,l0));
+    c=c*mix(1.,.15+1.7*pow(rr,4.),rw);}}`;
 /* сведение: объём — отношение плотностей к звезде и здесь, а не разность: одинаково для тусклого
    и яркого газа; подсветка гаснет у звезды и у белого */
 const GNB_VOL=`
