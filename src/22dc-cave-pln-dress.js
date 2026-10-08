@@ -11,7 +11,22 @@ const CAVE3_DR={s:16,ms:5,first:300,keep:14};
 const CAVE3_DC={cream:plnHex("#e6dfcf"),creamD:plnHex("#aaa090"),rust:plnHex("#b4703c"),
   mauve:[plnHex("#6a3a9a"),plnHex("#e2a0e6")],seam:plnHex("#2a1c14"),ore:plnHex("#d2742a")};
 const CAVE3_DOME=[0,.1,.25,.42,.6,.78,.92,1];
+/* отделка стены по залу (шейдер 22dbw): 0 рёбра, 1 друза, 2 шов, 3 гладь */
+const CAVE3_ZK={gallery:0,dripstone:0,crystal:1,vein:2,water:3};
 Object.assign(CAVE3_MAT,{veil:15});
+/* натёк — камень своего мира: светлый тон, тёмный, окисел потёками; мокрость; материал
+   (лёд — плёнка, свет сквозь). Альбедо держится у тона породы: в тени натёк темнее стены */
+const CAVE3_DRIP={
+  sed:{a:"#a89d86",d:"#6f6555",ox:"#7e5634",wet:.16,mat:11,mix:.25},
+  volc:{a:"#4a3b31",d:"#1f1915",ox:"#8a4322",wet:.55,mat:11,mix:.15},
+  rock:{a:"#948e82",d:"#5e5a52",ox:"#7a5236",wet:.2,mat:11,mix:.25},
+  ice:{a:"#9cc4dc",d:"#5f8fb0",ox:"#cfe6f2",wet:.75,mat:15,mix:.1},
+  sand:{a:"#ad9472",d:"#77604a",ox:"#97542c",wet:.14,mat:11,mix:.25}};
+let CAVE3_DS=null;
+function cave3DripSty(F){
+  const k=cave3StyKind(G.surf&&G.surf.p&&G.surf.p.type),t=CAVE3_DRIP[k];
+  return {k,a:plnHex(t.a),d:plnHex(t.d),ox:plnHex(t.ox),wet:t.wet,mat:t.mat,mix:t.mix};
+}
 
 /* свод над точкой воздуха (м) — зеркало cave3Down */
 function cave3Up(F,X,Y,Z){
@@ -32,10 +47,14 @@ function cave3Zd(F,x,y){
   return Math.min(CAVE3_CH.zcap-4,hl*lerp(2.4,4,plnSmooth(3,6,hl))+.6);
 }
 
-/* натёк бледный и мокрый, с тёмными кольцами, где стояла вода; чуть берёт тон породы мира */
+/* натёк: тон своего мира, кольца, где стояла вода, потёки окисла сверху вниз; берёт тон породы */
 function cave3Cream(B,a,p){
-  const n=cave3N3(p[0]*1.1,p[1]*.5,p[2]*1.1,61),K=CAVE3_DC;
-  return plnMix3(plnMix3(K.creamD,K.cream,clamp(.55+.35*n+.12*Math.cos(a*3+p[1]*2),0,1)),B.F.col.a,.18);
+  const n=cave3N3(p[0]*1.1,p[1]*.5,p[2]*1.1,61),D=B.D;
+  let c=plnMix3(D.d,D.a,clamp(.55+.35*n+.12*Math.cos(a*3+p[1]*2),0,1));
+  const st=cave3N3(p[0]*6+Math.cos(a)*.6,p[1]*.35,p[2]*6+Math.sin(a)*.6,63);
+  c=plnMix3(c,D.ox,plnSmooth(.25,.8,st)*.45);
+  c=plnMix3(c,D.d,plnSmooth(-.3,-.75,st)*.4);
+  return plnMix3(c,B.F.col.a,D.mix);
 }
 /* пояс тела вращения. o: c (y)→[x,z] ось, rings [[y,r,u]…], sides, mod (a,u)→множитель радиуса,
    dy (a,u)→насколько ниже, nup — куда смотрит ровная грань пояса, col (u,a,p), x (u,a,p)|число, mat, glow */
@@ -57,7 +76,7 @@ function cave3Band(m,o){
       const l=Math.hypot(nr[0],nr[1],nr[2]),ref=[Math.cos(a),o.nup||0,Math.sin(a)];
       nr=l<1e-9?plnNorm(ref):plnMul(nr,1/l);
       if(plnDot(nr,ref)<0)nr=plnMul(nr,-1);
-      plnVert(m,p,nr,o.col(u,a,p),o.mat==null?CAVE3_MAT.drip:o.mat,0,o.glow||0,typeof o.x==="function"?o.x(u,a,p):(o.x==null?1:o.x));
+      plnVert(m,p,nr,o.col(u,a,p),o.mat==null?CAVE3_DS.mat:o.mat,0,(o.glow||0)*CAVE3_DS.wet/.6,typeof o.x==="function"?o.x(u,a,p):(o.x==null?1:o.x));
     }
   }
   for(let k=0;k+1<n;k++)for(let s=0;s<S;s++){
@@ -84,7 +103,8 @@ function cave3Caps(B,o){
     const rings=[];
     for(const f of CAVE3_DOME)rings.push([y-droop+(h+droop)*f,rTop+(R-rTop)*Math.sqrt(1-f*f),f]);
     cave3Band(m,{c,sides:S,nup:.7,glow:.6,rings,mod,dy,
-      col:(f,a,p)=>plnMul(cave3Cream(B,a,p),tone*lerp(.9,1.05,f)),x:f=>next||o.tipR!=null?lerp(1,.3,plnSmooth(.62,1,f)):1});
+      col:(f,a,p)=>plnMul(cave3Cream(B,a,p),tone*lerp(.9,1.05,f)),
+      x:f=>(next||o.tipR!=null?lerp(1,.3,plnSmooth(.62,1,f)):1)*(i?1:lerp(.3,1,plnSmooth(0,.4,f)))});
     y+=h;prevTop=rTop;
   });
   return y;
@@ -183,13 +203,13 @@ function cave3Veil(B,ax,az,bx,bz,probe,drop){
       P.push([x0+px/pl*sw,top-len*v,z0+pz/pl*sw]);U.push([u,v,len]);
     }
   }
-  const m=B.m,base=m.nv,Wn=rows+1,K=CAVE3_DC,pale=plnMix3(plnMix3(K.cream,K.creamD,.3),F.col.a,.18);
+  const m=B.m,base=m.nv,Wn=rows+1,D=B.D,pale=plnMix3(plnMix3(D.a,D.d,.2),F.col.a,D.mix);
   for(let i=0;i<=n;i++)for(let j=0;j<=rows;j++){
     const k=i*Wn+j,p=P[k],a=P[Math.min(i+1,n)*Wn+j],b=P[Math.max(i-1,0)*Wn+j],c=P[i*Wn+Math.min(j+1,rows)],d=P[i*Wn+Math.max(j-1,0)];
     let nr=plnNorm(plnCross(plnSub(a,b),plnSub(c,d)));
     if(nr[2]>0)nr=plnMul(nr,-1);
     const [u,v,len]=U[k],band=.5+.5*Math.sin((1-v)*len*7+u*2.5+ph);
-    plnVert(m,p,nr,plnMix3(pale,K.rust,plnSmooth(.5,.95,band)*.6),CAVE3_MAT.veil,0,.6,lerp(.35,1,plnSmooth(0,.3,v)));
+    plnVert(m,p,nr,plnMix3(pale,D.ox,plnSmooth(.5,.95,band)*.6),CAVE3_MAT.veil,0,.6*D.wet/.6+.2,lerp(.35,1,plnSmooth(0,.3,v)));
   }
   for(let i=0;i<n;i++)for(let j=0;j<rows;j++)plnQuad(m,base+i*Wn+j,base+(i+1)*Wn+j,base+(i+1)*Wn+j+1,base+i*Wn+j+1);
   return true;
@@ -231,7 +251,7 @@ function cave3DressItems(C,F){
 
 /* одна полоса: тело убранства, чернила разреза, огни кристаллов */
 function cave3DressBin(C,F,items){
-  const m=plnMesh(1<<14),ink=plnMesh(1<<10),B={F,m,r:null},lights=[],glows=[],P=CAVE_PPM;
+  const m=plnMesh(1<<14),ink=plnMesh(1<<10),B={F,m,r:null,D:CAVE3_DS=cave3DripSty(F)},lights=[],glows=[],P=CAVE_PPM;
   const air=(X,Y,Z,e)=>cave3Den(F,X,Y,Z)<-(e==null?.4:e);
   /* место в глубине за линией ходьбы; не нашлось — ближе к разрезу */
   const deep=(q,X,u)=>{
@@ -306,9 +326,10 @@ function cave3DressCryst(B,q,lights,glows){
     const nn=(k?3:c.spikes.length*2)+4+(r()*4|0),glow=2.6+r()*.8;
     cave3Cluster(B,[x-nrm[0]*.1,py-nrm[1]*.1,z-nrm[2]*.1],nrm,nn,size,glow);
     if(size>.9){
-      const p=plnAdd([x,py,z],plnMul(nrm,size*.5)),kk=clamp(size/3.2,.3,1)*.75;
-      lights.push({p,r:8+size*5,c:[.8*kk,.39*kk,1.05*kk]});
-      if(!k)glows.push({p,c:[.62,.30,.85],k:1.3*kk,s:2.2+size*.5});
+      /* кристалл — акцент, ключ остаётся фонарю: досягаемость до 4 м, ореол узкий */
+      const p=plnAdd([x,py,z],plnMul(nrm,size*.35)),kk=clamp(size/3.2,.35,1)*.9;
+      lights.push({p,r:Math.min(4,2.2+size*.8),c:[.8*kk,.39*kk,1.05*kk]});
+      if(!k)glows.push({p,c:[.62,.30,.85],k:.55*kk,s:.8+size*.25});
     }
   }
 }
@@ -368,7 +389,7 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first){
   let tris=0;
   const L=[],Gl=[];
   for(const k of vis){
-    if(k.m)F.draw.push({geo:k.m,lamp:true,sun:true});
+    if(k.m)F.draw.push({geo:k.m,lamp:true,sun:true,refl:true});
     if(k.ink)F.draw.push({geo:k.ink,lamp:false,sun:false});
     tris+=k.tris;L.push(...k.lights);Gl.push(...k.glows);
   }
@@ -377,6 +398,9 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first){
   Gl.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
   F.lights.push(...L.slice(0,Math.max(0,Math.min(4,12-F.lights.length))));
   F.glows.push(...Gl.slice(0,Math.max(0,Math.min(3,6-F.glows.length))));
+  /* залы в кадре — шейдеру: стена галереи и натёчного зала в рёбрах, грота — друзой, у озера гладкая */
+  F.zones=caveZones(C).filter(z=>z.x1/CAVE_PPM>x0-4&&z.x0/CAVE_PPM<x1+4).slice(0,4)
+    .map(z=>[z.x0/CAVE_PPM,z.x1/CAVE_PPM,CAVE3_ZK[z.kind]==null?0:CAVE3_ZK[z.kind]]);
   CAVE3.stat.dress=Q.m.size;CAVE3.stat.dtris=Math.round(tris);
   return tris;
 }

@@ -8,6 +8,19 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M630b — the halls, pass 2: the lake and the stone.** `22dd` lays the water where `cavePool` keeps it:
+  a surface sheet at the water level running back behind the cut (the shore clear, the deep dark,
+  rings where drops fall, a cell of 3 m each with its own drop) and the body of the water in the cut,
+  from the surface to the bed, light going down in slow blades. The surface takes its reflection from
+  a mirror pass at half the frame: the scene mirrored in the water level, without the cut and without
+  what lies under the water; one mirror a frame, at the lake nearest the man. Dripstone is now the
+  stone of its world (one table, like the cut's rock): cream calcite on sedimentary worlds, dark
+  glassy basalt with rust oxides on volcanic ones, blue ice that lets the lamp through on icy ones;
+  matte, streaked downwards, dirtier on top, dark at the foot, and darker than the wall behind it in
+  shadow. Crystals are an accent, not the key: their light reaches four metres at most, their halo is
+  narrow, and the grotto's rock keeps its own colour. The wall's finish follows the hall: ribs in the
+  galleries and dripstone halls, a faceted druse (Voronoi cells) in the grotto, plain by the vein,
+  smooth and water-polished by the lake.
 - **M630b — the halls, pass 1.** `22dc` dresses the cave where the game's `caveDeco` puts things:
   dripstone ported from the stand onto the engine's kit — stacks of caps from the floor, bells from
   the roof, a column with its neck where they meet, scalloped rims; what hangs comes in clumps (one

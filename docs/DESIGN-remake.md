@@ -415,6 +415,17 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     1 m. Bins of 16 m on `C.dr3`, ≤ 14 kept, freed with the device. Gate frames: five zones at the
     broad lens on sed and volc, errs 0. The lake mirror, the amber crawl, the far lane and the far
     lens follow in the next passes.
+  - *Done (M630b pass 2, `22dd`):* the lake — `cave3LakeGeo` per water zone from `cavePool`: a surface
+    grid (0.5 m, material 13, depth from the density in the spare slot, quads only where a corner is in
+    air by > 3 cm) and the body pane at z .04 (material 14, depth 0 at the top, water − bed at the
+    bottom); cached on `C.lk3`. `22db`: the scene layout gains `reflTex`/`linSamp` (bindings 4–5), a
+    half-frame mirror target, `bodyR` (no MSAA) drawing the draws marked `refl` (rock, man, dress) with
+    `VP·mirrorY(water)` and the clip `misc.xy = [water + .02, 1]`, and `water` (alpha blend, no depth
+    write) after the body; `sunDir.w` carries the water level. Globals grew to 280 floats: `zone[4]` =
+    the halls in frame `[x0, x1, finish]` for the rock shader (0 ribs, 1 druse, 2 plain, 3 polished).
+    Dripstone by world: `CAVE3_DRIP` (sed/volc/rock/ice/sand → light, dark, oxide, wet, material;
+    ice uses the veil material 15); drip ambient × .45, rim × .1. Crystal lights reach ≤ 4 m, halo
+    k .55, width .8 + .25·size.
 
 ### Stage F — rooms and people (M850–M859)
 
