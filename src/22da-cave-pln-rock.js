@@ -134,6 +134,16 @@ function cave3Sd(F,x,y){
   const s=cave3Samp(F.sd,x,Math.max(y,CAVE_Y0+CAVE_CS*.5));
   return Math.min(s,(y-CAVE_Y0)/CAVE_PPM);
 }
+/* купол над линией ходьбы (M630b проход 4): на сколько метров свод может уйти выше потолка сетки.
+   Только вверх: пол, стены и толща — по сетке, на линии ходьбы картинка с ней согласна (ходьба, бур,
+   caveSolidAt). Свод — свободен: до трёх метров, пятнами вдоль галереи (купола, между ними — карнизы
+   прежней высоты); у разреза чуть ниже, чем в глубине, — сечение купола на листе. Ранец упирается
+   в потолок сетки — картинка над ним выше, это принятое отступление */
+const CAVE3_VAULT={lift:3,cut:.75,sc:.075};
+function cave3VaultLift(X,Z){
+  const K=CAVE3_VAULT,n=plnSmooth(-.3,.4,cave3N3(X*K.sc,1.7,.3,131));
+  return n>0?K.lift*n*lerp(K.cut,1,plnSmooth(0,2.5,Z)):0;
+}
 /* плотность в метрах мира: > 0 — камень */
 function cave3Den(F,X,Y,Z){
   const x=X*CAVE_PPM,y=-Y*CAVE_PPM;
@@ -142,7 +152,12 @@ function cave3Den(F,X,Y,Z){
   const S=F.sty,am=.35+.65*plnSmooth(0,1.2,Z);
   const s0=Y-.06*X+.25*Math.sin(X*.09+Z*.05),sb=(s0+.28*Math.sin(s0*1.9+.7))/S.bed,L=Math.floor(sb);
   /* уступ: внутри пласта грань стоит, между пластами лежит — выборка сдвигается вверх-вниз */
-  if(S.ter>0){const sh=(.5-(sb-L))*S.ter*S.bed*am/(1+.532*Math.cos(s0*1.9+.7));D=cave3Sd(F,x,y-sh*CAVE_PPM);}
+  let ys=y;
+  if(S.ter>0){const sh=(.5-(sb-L))*S.ter*S.bed*am/(1+.532*Math.cos(s0*1.9+.7));ys=y-sh*CAVE_PPM;D=cave3Sd(F,x,ys);}
+  /* свод за линией ходьбы поднимается куполом: пустота сетки тянется вверх, не вниз и не вбок; у самой
+     поверхности и над другим ходом камень остаётся (купол не пробивает ни небо, ни пол галереи выше) */
+  const A=cave3VaultLift(X,Z);
+  if(A>.02&&D>0&&(y-CAVE_Y0)/CAVE_PPM>1.6){const Du=cave3Sd(F,x,ys+A*CAVE_PPM);if(Du<D&&cave3Sd(F,x,ys-1.2*CAVE_PPM)>.3)D=Du;}
   const hl=cave3Samp(F.hl,x,Math.max(y,CAVE_Y0)),zd=Math.min(CAVE3_CH.zcap-4,hl*lerp(2.4,4,plnSmooth(3,6,hl))+.6),t=Z/zd;
   let d=D+(t<1?hl*(1-Math.sqrt(1-t*t)):hl+(Z-zd));
   if(d>2.2||d<-2.2)return d;

@@ -8,6 +8,16 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M630b — the halls, pass 4: what lies in the stone, the vault, the lamp.** Where the cut goes
+  through stone it now shows what lies in it, flat and quiet: the bones of a swimmer and shells on
+  sedimentary worlds, gas bubbles in volcanic stone, strings of bubbles in ice, roots coming down from
+  the surface where something grows above. A vein is a dark seam with a few dim grains of ore, no
+  longer a dotted orange line. The roof over a gallery may rise into a vault up to three metres above
+  the old ceiling, in patches; the floor, the walls and where you walk are exactly as before. The lamp
+  is warm only close by — a pool on the floor ahead and the near wall; past that the stone keeps the
+  cool grey of the cut. In the far view the flat sprites of life are hidden until they are redrawn.
+  The «scan» label hangs at the plant itself, never over the man. Amber's threads reach eight metres;
+  under a higher roof the amber glows alone.
 - **M630b — the halls, pass 3: the far lane, amber and the far lens.** Where a hall has the room, it opens an
   arch in its back wall into a far chamber with its own day: a tunnel that widens into the depth, a
   chamber of the world's stone with ledges, a window in its vault, and under the window's beam a tall

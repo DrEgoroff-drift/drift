@@ -81,6 +81,13 @@ fn lampAt(p: vec3f) -> vec4f {
   let hot = 1.0 + 0.7 * smoothstep(0.86, 1.0, cs);
   return vec4f(L, cone * att * hot);
 }
+/* цвет фонаря на камне: тёплый вблизи (лужа, ближняя стена), дальше — холодный серый той же силы,
+   чтобы камень вне ближнего круга держал тон страницы; farK.yz — где тепло кончается */
+fn lampTint(p: vec3f) -> vec3f {
+  let w = 1.0 - smoothstep(g.farK.y, g.farK.z, length(p - g.lampPos.xyz));
+  let l = dot(g.lampCol.rgb, vec3f(0.3, 0.5, 0.2));
+  return mix(l * vec3f(0.62, 0.8, 1.12), g.lampCol.rgb, w);
+}
 /* лист разреза и то, что на нём, темнеют к краям кадра: сцена в середине */
 fn faceDim(fragXY: vec2f) -> f32 {
   let q = (fragXY * g.screen.zw - 0.5) * vec2f(1.0, 0.85);
@@ -307,7 +314,7 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
       let q = in.wpos + Ni * (ex + 0.22) + vec3f(0.0, 0.0, 0.30);
       var light = g.amb.rgb * 0.8;
       let ll = lampAt(q);
-      light += g.lampCol.rgb * (ll.w * clamp(dot(Nr, ll.xyz) * 0.6 + 0.4, 0.0, 1.0) * lampShade(q, Nr, in.pos.xy));
+      light += lampTint(q) * (ll.w * clamp(dot(Nr, ll.xyz) * 0.6 + 0.4, 0.0, 1.0) * lampShade(q, Nr, in.pos.xy));
       let dm = dayMask(q);
       if (dm > 0.001) { light += g.sunCol.rgb * (dm * clamp(dot(Nr, normalize(g.sunDir.xyz)) * 0.6 + 0.4, 0.0, 1.0) * sunShade(q, Nr, in.pos.xy)); }
       light += points(q, Nr, 0.3);
@@ -406,7 +413,7 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     let ndl = dot(N, ll.xyz);
     var lit = smoothstep(-0.08 - wrap, 0.5, ndl);
     if (mat == 7 || mat == 2) { lit = smoothstep(-0.5, 0.5, ndl); }
-    let e = g.lampCol.rgb * (ll.w * lampShade(in.wpos, N, in.pos.xy));
+    let e = lampTint(in.wpos) * (ll.w * lampShade(in.wpos, N, in.pos.xy));
     c += alb * e * (lit * mix(1.0, ao, 0.6));
     let hv = normalize(ll.xyz + V);
     c += e * (pow(clamp(dot(N, hv), 0.0, 1.0), mix(18.0, 80.0, wet)) * wet * lit * 0.9);
