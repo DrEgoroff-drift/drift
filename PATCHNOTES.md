@@ -8,23 +8,6 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
-- **M820 Bodies for everyone.** The barge, its wreck, the station, shuttles, line and lane
-  ships are meshes under the system's star (`17c2e` kit, `17c2f` barge, `17c2g` station,
-  `17c2h` pirates): own paint, the light from the star with no top-left fallback, a dot under
-  14 px. The station is a spine and a core per type (ring, smouldering works, one-frame
-  slip with a hull, sphere and dish, turret, tank farm, cloth ring) with modules by the
-  maker's assembly and small dim windows. A pirate reads hostile without a bar: a ram on
-  one flank, an outrigger turret, rust, two unpaired dirty orange lights and a longer
-  orange-brown flame; a power ship is a clean hull of its maker with white lights. The red
-  bar is drawn only for the targeted and the hurt (< 70 %), never for a friendly power
-  ship; the target frame hugs the body. `?body=0` brings the old sprites back. Suite
-  `91qd-bodies`.
-
-- **M803b Plates stay near their thing.** The leader is at most a quarter of the frame height; a plate may stand beside its body inside the centre band when its middle is in the middle third (the vision knows it); lines wrap to fit; a landmark plate drops the name when the world label is within 200 px. Debt found: the surface hint band of `21e` draws at U² instead of U (left as is).
-
-- **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
-  the scoop and belt briefings and the surface «what» line are plates on their object with a
-  leader (`08bj` `ovHang`); the centre 40 % of the frame stays empty, the vision checks it.
 - **M830 — landing by the planet's descent.** The touchdown no longer cuts: the descent remembers
   its window and ruler (`PLN.hand`), the first surface frame stands in it and eases over 1.2 s to
   the walk lens — the man by the ramp and the near lens by the ship (before, the frame jumped to
@@ -42,6 +25,35 @@ could ever save.
   forty metres). The landing's place line names the weather as the surface's does; the zenith
   darkens with height. With `PLN.on` the old approach (the 2D sky, the slab and trees, the lander
   bake) is never drawn; `?pln=0` keeps it.
+
+- **M830 tail — the pad's night and the words after touchdown.** By day the pad has no dashes; at
+  dusk and at night they burn at 40 %, a hint of the edge rather than a neon frame, and the «сюда»
+  wave runs only while the ship is above three metres. The pad's key light is the two post lamps —
+  brighter, each with a glint on the edge below it; the ship's flood is the second light. The
+  approach line («Заход на …», autopilot, gravity) is a «Борт» plate with a leader at the ship (the
+  M803 hang layer), and the readout by ТОРМОЗ wears the pads' plate with cut corners. The first
+  surface frame is the last descent frame: `#msg` waits until the hand-off is over and the man has
+  stepped off the ramp; the deposits tip is a plate at the nearest deposit in frame, carrying the
+  landing's deposit count; the action line is a plate at the ship (away from it, at the man) — no
+  bare orange text on the sand; the near «КОРАБЛЬ» tick, placed by the 2D camera and hanging in the
+  sky beside the ship, is gone under the planet frame.
+- **M820 Bodies for everyone.** The barge, its wreck, the station, shuttles, line and lane
+  ships are meshes under the system's star (`17c2e` kit, `17c2f` barge, `17c2g` station,
+  `17c2h` pirates): own paint, the light from the star with no top-left fallback, a dot under
+  14 px. The station is a spine and a core per type (ring, smouldering works, one-frame
+  slip with a hull, sphere and dish, turret, tank farm, cloth ring) with modules by the
+  maker's assembly and small dim windows. A pirate reads hostile without a bar: a ram on
+  one flank, an outrigger turret, rust, two unpaired dirty orange lights and a longer
+  orange-brown flame; a power ship is a clean hull of its maker with white lights. The red
+  bar is drawn only for the targeted and the hurt (< 70 %), never for a friendly power
+  ship; the target frame hugs the body. `?body=0` brings the old sprites back. Suite
+  `91qd-bodies`.
+
+- **M803b Plates stay near their thing.** The leader is at most a quarter of the frame height; a plate may stand beside its body inside the centre band when its middle is in the middle third (the vision knows it); lines wrap to fit; a landmark plate drops the name when the world label is within 200 px. Debt found: the surface hint band of `21e` draws at U² instead of U (left as is).
+
+- **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
+  the scoop and belt briefings and the surface «what» line are plates on their object with a
+  leader (`08bj` `ovHang`); the centre 40 % of the frame stays empty, the vision checks it.
 - **M804 — the night side of the orbs.** The dark half of every planet is filled by its own
   sky (cold blue where there is no air, the air's hue where there is) so it reads as a shape;
   the terminator is a warm rim whose width follows the air; polar caps are grain with cracks

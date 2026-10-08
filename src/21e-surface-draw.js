@@ -93,7 +93,12 @@ function drawSurfaceHud(camx,camy,K){
      у самого края ложилась текстом поперёк второй фишки того же столбика
      («ОСТОВ КОРАБЛЯ» поверх «ПЕЩЕРА 5592 м»), потому что считала ряды сама */
   const far=[],near=[];
-  for(const m of marks){const ad=Math.abs(m.x-S.x);(ad*K>W*.45?far:near).push(m);}
+  /* под движком планеты (21pzb, M830 tail) засечки на месте не ставим: их x — камеры 2D, а вещь в кадре
+     стоит объективом 3D, и «КОРАБЛЬ» висел в небе мимо корабля; вещь в кадре подписывает слой слов.
+     Пока человек сходит с трапа, нет и фишек у кромок: первый кадр поверхности — последний кадр спуска */
+  const pw=typeof plnWordsOn==="function"&&plnWordsOn();
+  if(pw&&plnMsgHush())marks.length=0;
+  for(const m of marks){const ad=Math.abs(m.x-S.x);if(ad*K>W*.45)far.push(m);else if(!pw)near.push(m);}
   for(const m of far.concat(near)){
     const d=m.x-S.x, ad=Math.abs(d);
     if(ad*K>W*.45){                       // цель за краем — фишка у своей кромки

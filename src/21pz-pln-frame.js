@@ -345,6 +345,7 @@ function plnSurface(S,o){
   }else{
     /* корабль стоит на плите площадки (21pza); плита — тело и на поверхности */
     const lift=plnPadLift(L,tr,wy,L.shipX),ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ)+lift,L.shipZ];
+    PLN.shipW=ship;   /* табличка строки действия у корабля (21pzb) */
     plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L,floor:lift>0?plnPadTop(L,tr,wy):null});
     plnPadFrame(F,L,tr,0);
     plnThingsFrame(L,F,S,p,C.ex,V);
@@ -383,6 +384,7 @@ drawSurface=function(){
   }
   /* свечение у нового вида своё; движку оставлено только зерно */
   BLOOM_K.surface=ok?0:PLN_FRAME.bloom;
+  PLN_FRAME.live=ok;
   if(!ok){PLN_OLD_SURFACE();return;}
   withScale(G.viewK,plnOver);
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
