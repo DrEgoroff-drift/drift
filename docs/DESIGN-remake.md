@@ -295,6 +295,7 @@ veins as three or four large forms), the raid's light: these are built in `DESIG
 queue by the same builder, in this order after Stage D: base and home → cave → dig → raid.
 Design for the first two steps: `docs/DESIGN-base-scene.md` (09.10) — own things as bodies of the people's grammar on the engine's land (M628a/b), the section as the rock kit cut by a plane with lit rooms and two lenses (M632a–c), entry by the gate without a cut; the base's game (`DESIGN-base.md`) untouched.
 The third step: `docs/DESIGN-cave-scene.md` (09.10) — the stand's M601 scene fed by the game's grid (one density from `C.g`, the cut face as a page, the lamp as the key with shadows and a cone, the day by a second map, three lenses), the way in as a push through the arch without a cut; `CAVE3.on`/`?cave=0` (M630a–d).
+The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section on the cave's kit, dug cells as rooms each under one source, ore bodies as three or four large forms, the planet's sky whole at the top, the way in as a pan down; `DIG3.on`/`?dig=0` (M631a–c). The last: `docs/DESIGN-raid-scene.md` (09.10) — the raid on the interior renderer `27f2` (one key with shadows per room, materials and palette per room kind), foes by the generator in a hostile kit with walk/aim, the rig ported to `r3Kit`, the push through the gate; `RAID3.on`/`?raid=0` (**M633a–c**, a planet-range number so the same builder's queue reads in order).
 
 ### Stage F — rooms and people (M850–M859)
 
