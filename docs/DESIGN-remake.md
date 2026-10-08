@@ -308,6 +308,8 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
 - **M853 The cantina composed**: three or four seated poses, hands on the counter, the lamp on
   the hero's face, the depth ramp on the bar.
 
+Design for M850–M851: `docs/DESIGN-rooms.md` (09.10) — the four rooms as scenes of `27f2` drawn full-bleed under the HUD the hall's way (one module `29r-rooms-r3.js`, camera stations, the breath and the glide, hit rectangles published for `15-input`), one key with shadows per room and the room's second light as the fill, the pilot as one person (`CP_KIT.pilot`, a saved gene, clothes by room, the live face by the room's state), new window kinds `planet`/`snow`/`sea`/`yard`, poses `lie`/`recline`/`walk`; «Сорока» keeps its room and gets the keeper's body and face, the road the 3D hull; `ROOM3.on`/`?room=0` (M850a–d, M851).
+
 ### Stage G — the phone and the cost (M870–M879)
 
 After every stage: the P1 gate (`PLAN.md` §1) on the S23 by A/B/A; a stage that costs is not
