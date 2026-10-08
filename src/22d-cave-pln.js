@@ -13,15 +13,18 @@ const CAVE3={on:true,rush:false,bad:0,err:"",live:false,c:null,cx:0,dx:0,wt:null
 try{if(typeof location!=="undefined"&&/[?&]cave=0\b/.test(location.search))CAVE3.on=false;}catch(e){}
 const CAVE3_Z=.7;
 /* доля роста человека в высоте кадра: высокий — широкий; линия ходьбы от низа; даль объектива */
-const CAVE3_LENS={man:[.124,.124],walk:[.29,.34],dist:[18,36],eye:3.2,tau:.45,inS:1.2,inK:.42,near:1.6,nIn:.45,nOut:.7};
+const CAVE3_LENS={man:[.124,.124],walk:[.29,.34],dist:[18,36],eye:3.2,tau:.45,inS:1.2,inK:.42,near:1.6,nIn:.45,nOut:.7,
+  /* у озера: глаз выше и ближе — гладь и зеркало ложатся полосой, а не ребром */
+  lkEye:2.6,lkD:.55,lkS:.8};
 
 /* объектив по доле сторон: k = 0 — высокий кадр, 1 — широкий */
 /* near — у вещи: 0..1, объектив подходит в near раз ближе */
-function cave3Lens(asp,cx,floorY,zoom,near){
+function cave3Lens(asp,cx,floorY,zoom,near,lk){
   const L=CAVE3_LENS,k=plnSmooth(.6,1.5,asp);
-  const Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k);
+  lk=lk||0;
+  const Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k)*lerp(1,L.lkD,lk);
   const w=Hf*asp,l=cx-w/2,r=cx+w/2,b=floorY-f*Hf,t=b+Hf;
-  const ex=cx,ey=floorY+L.eye,ez=CAVE3_Z-D;
+  const ex=cx,ey=floorY+L.eye+L.lkEye*lk,ez=CAVE3_Z-D;
   const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,4,600),plnM4move(-ex,-ey,-ez));
   return {k,Hf,f,D,w,l,r,b,t,vp,eye:[ex,ey,ez]};
 }
@@ -51,11 +54,14 @@ function cave3Frame(){
   const want=/^ДЕЙСТВИЕ/.test(String(G.prompt||""))?1:0;
   M.near=M.near==null?want:M.near+(want-M.near)*(1-Math.exp(-dt/(want>M.near?Ln.nIn:Ln.nOut)));
   if(M.nearPin!=null)M.near=M.nearPin;   /* стенд держит объектив (cave.py near=) */
+  /* у озера (прошлый кадр знает, далеко ли оно) объектив опускает взгляд на воду */
+  const lw=M.lakeD==null?0:1-plnSmooth(2,9,M.lakeD);
+  M.lk=first||M.lk==null||M.rush?lw:M.lk+(lw-M.lk)*(1-Math.exp(-dt/Ln.lkS));
   /* тычок пришёл от прошлого кадра: его цель — в окне, которое было показано */
   if(C.walkTarget!=null&&C.walkTarget!==M.wt){C.walkTarget=clamp(C.walkTarget+M.dx,0,CAVE_W);}
   M.cx+=(C.x/CAVE_PPM-M.cx)*(1-Math.exp(-dt/Ln.tau));
   if(Math.abs(M.cx-C.x/CAVE_PPM)>40)M.cx=C.x/CAVE_PPM;
-  const asp=W/H,floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,M.cx,floorY,zoom,plnSmooth(0,1,M.near)),K=H/(Ls.Hf*CAVE_PPM);
+  const asp=W/H,floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,M.cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk)),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=M.cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=M.cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
   M.lens=Ls;
