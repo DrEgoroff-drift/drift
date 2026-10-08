@@ -46,10 +46,10 @@ function hallHoldDress(){
 
 /* печатная карта: бумага, рамка, сетка, звёзды, роза, штамп; маршруты и круг «вы здесь» — карандашом и чернилом */
 function hallHoldChart(K,v,pins){
-  const M=HALL_MAP,y=M.y,ink=K.mt([62,58,54],.05,2,0),grid=K.mt([150,160,150],.05,2,0),pen=K.mt([96,90,82],.05,2,0);
+  const M=HALL_MAP,y=M.y,ink=K.mt([62,58,54],.05,2,0),grid=K.mt([118,126,116],.05,2,0),pen=K.mt([96,90,82],.05,2,0);
   const ln=(x0,z0,x1,z1,t,Mt,dy)=>{const dx=x1-x0,dz=z1-z0,l=Math.hypot(dx,dz);if(l<1e-4)return;
     K.push([(x0+x1)/2,y+(dy||.0006),(z0+z1)/2],Math.atan2(-dz,dx));K.box([0,0,0],[l/2,.0002,t],Mt,0);K.pop();};
-  K.box([M.x,y-.001,M.z],[M.w,.0012,M.h],K.mt([214,204,172],.08,3,0),.0005);   /* лист */
+  K.box([M.x,y-.001,M.z],[M.w,.0012,M.h],K.mt([148,138,112],.08,3,0),.0005);   /* лист: старая бумага под лампой не выгорает (медиана ≤ .8) */
   for(const e of [.012,.02])for(const s of [-1,1]){ln(M.x-M.w+e,M.z+s*(M.h-e),M.x+M.w-e,M.z+s*(M.h-e),e>.015?.0012:.0007,ink);
     ln(M.x+s*(M.w-e),M.z-M.h+e,M.x+s*(M.w-e),M.z+M.h-e,e>.015?.0012:.0007,ink);}
   /* сетка: шаг 1, 2, 5, 10… секторов — клетка не мельче 3 см */

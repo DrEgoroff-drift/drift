@@ -42,6 +42,21 @@ could ever save.
   moment it settles back to the whole hall. In the hall the table is a plate without its line
   of explanation. The ceiling's cable tray is warm and matte now, so by day it no longer
   competes with the lamp over the counter.
+- **M814 — the board, the cantina, your holdings and the station's site, and the people.**
+  The board is the wall itself: every offer is a sheet pinned to the cork, laid out so they
+  never spill past the frame however many there are, and the board takes the whole hero zone.
+  The cantina is the bar end of the hall composed anew: you sit on the last stool under a lamp
+  of your own, the regulars at the tables stay quieter and out of the line of sight. ВЛАДЕНИЯ
+  lie on the office desk as a printed sector chart under a brass edge: your home is a red
+  token, each base a pennant on a puck, routes in pencil, «you are here» in ink; point at a row
+  and its token lifts under a small lamp while the lens leans in. Outside the window the
+  station's own site now stands in front of the stars — a truss spine, a crane, three cradles
+  that show free, under construction (ribs, welding, the crane's cable) or built (windows by
+  level, a beacon); dark against the hull by day, under its own floodlights at night. Your
+  pilot in the hall is the same suited man as on the planet. The keeper of the counter wears a
+  clerk's kit — light shirt, dark waistcoat, a tie and badge in the hall's colour, sleeve
+  garters, a pencil in the pocket — and every person in the hall stands under one light: a cool
+  rim along the silhouette, stronger at night, and a soft contact shadow on the floor.
 - **M814 — light on the instruments.** The dials on the plate are lit now, not flat colour:
   one key from the top left darkens every body towards its foot, a soft contact shadow sits
   under it, the glass of each scale carries an arc of light, and each material shines its own
