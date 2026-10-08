@@ -323,6 +323,18 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
     readout's units, the dashes and lamps never go dark, and `?pln=0` draws the old approach while
     `PLN.on` never touches it. Tools: `cost.py js=` measures a descent snippet; `descent.py fn=`
     shoots the n-th surface frame.
+  - *Done (M830 tail, `21pza`/`21pzb`/`21e`/`style.css`):* the dashes go to the frame only at dusk
+    (`PLN.sun.night`), at `PLN_LPAD_DASH` = 0.4 of the wave's glow; the wave's share is
+    smooth(2.5 → 3.5 m) of altitude, zero after the touch. The post bulbs are the key (`plnPadBulb`
+    4.8 ± 0.9, radius 0.21, lamps r 10, k 2.2 · dusk, pushed before the flood) and two glint streaks
+    lie on the far edge under them in the dash batch. `plnDescOver` hangs the approach lines with
+    `ovHang("land", …)` at the ship's middle (window px = `plnOverAt` × `G.viewK`). `21pzb-pln-words`
+    wraps `msgHeld` (silent while `PLN.hand` and `PLN_WORDS_HUSH` s after it — the message's clock
+    waits), `enterSurface` (the «залежей: n» line moves into the tip plate), `surfaceHint` (the tip
+    leaves the band) and `hangSurface` (the tip at the nearest deposit in frame; an action line
+    nobody hung goes to the ship within `shipZoneR`, else to the man), and toggles `body.plnwords`
+    (hides `#prompt`) and `body.plnhush` (hides `#msg`). `21e` skips near ticks under the planet
+    frame and all chips during the hush. Test: the third suite of `91qc-descent`.
 - **M831 Scoop**: a dark near plume, warm light on the ship, the prompt on the ship.
 - **M832 Postcard from the frame**: the card is the live engine frame through the album's
   filters; the painter deleted.

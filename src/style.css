@@ -233,11 +233,16 @@ body:not(.inflight) .ipod{display:none}
   white-space:pre-line;line-height:1.85;max-width:90%}
 /* спуск в новом виде (21pza, M830): показания встают в ряд пэдов перед ТОРМОЗ — у рук, не в кадре;
    строка захода — плашкой у корабля на канве, #msg молчит */
-body.plnland #prompt{margin-bottom:12px;padding:4px 10px;border-radius:4px;background:rgba(8,12,18,.62);backdrop-filter:blur(8px);text-shadow:none}
+/* показания — плашка семьи пэдов «Борт» (M830 tail): графит, срезанные углы, кремовые чернила */
+body.plnland #prompt{margin-bottom:12px;padding:5px 12px;border:0;border-radius:0;background:var(--pl-bg);
+  -webkit-backdrop-filter:var(--pl-blur);backdrop-filter:var(--pl-blur);box-shadow:inset 0 0 0 1px var(--pl-edge);
+  clip-path:var(--pl-cutp);color:#f1ebde;text-shadow:none}
 .pads #prompt.inrow{position:static;transform:none;zoom:1;align-self:center;text-align:right;max-width:none;
   margin:0 6px 0 0;font-size:11px;line-height:1.7;pointer-events:none}
 body.plnland #prompt:empty{display:none}
 body.plnland #msg{visibility:hidden}
+/* поверхность под движком (21pzb): строка действия — табличкой у корабля, #msg молчит, пока человек выходит */
+body.plnwords #prompt,body.plnhush #msg{visibility:hidden}
 
 /* ══════════════ пэды ══════════════ */
 .pads{position:fixed;left:0;right:0;bottom:0;padding:0 14px calc(env(safe-area-inset-bottom) + 16px);

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 526 · top-level symbols: 7818
+Files: 527 · top-level symbols: 7830
 
 ## SYMBOLS
 
@@ -1426,7 +1426,7 @@ PLN_DEG                      src/21p-pln.js:31
 PLN_DESC                     src/21pza-pln-descent.js:10
 PLN_DRESS                    src/21pge-pln-dress.js:6-20
 PLN_DRILL                    src/21pic-pln-drill.js:8
-PLN_DUI                      src/21pza-pln-descent.js:179
+PLN_DUI                      src/21pza-pln-descent.js:191
 PLN_FAR                      src/21pfa-pln-worlds.js:74-99
 PLN_FL                       src/21pfa-pln-worlds.js:212
 PLN_FLORA                    src/21pg-pln-flora.js:23
@@ -1442,8 +1442,9 @@ PLN_ICO                      src/21pa-pln-mesh.js:40
 PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LOOK                     src/21pz-pln-frame.js:29-51
-PLN_LPAD                     src/21pza-pln-descent.js:69
-PLN_LPAD_SPOTS               src/21pza-pln-descent.js:102
+PLN_LPAD                     src/21pza-pln-descent.js:74
+PLN_LPAD_DASH                src/21pza-pln-descent.js:116
+PLN_LPAD_SPOTS               src/21pza-pln-descent.js:107
 PLN_M                        src/21p-pln.js:14
 PLN_MAN                      src/21pha-pln-man.js:23
 PLN_MAN_BONES                src/21pha-pln-man.js:32-56
@@ -1452,10 +1453,15 @@ PLN_MAN_POSE                 src/21pha-pln-man.js:39-56
 PLN_MARK                     src/21pie-pln-marks.js:20
 PLN_MARK_COL                 src/21pie-pln-marks.js:33
 PLN_MAT                      src/21pa-pln-mesh.js:9
-PLN_OLD_HUD                  src/21pza-pln-descent.js:189
-PLN_OLD_LANDING              src/21pza-pln-descent.js:202
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:370
-PLN_OLD_ULAND                src/21pza-pln-descent.js:194
+PLN_OLD_ENTER                src/21pzb-pln-words.js:28
+PLN_OLD_HELD                 src/21pzb-pln-words.js:25
+PLN_OLD_HINT                 src/21pzb-pln-words.js:38
+PLN_OLD_HSURF                src/21pzb-pln-words.js:59
+PLN_OLD_HUD                  src/21pza-pln-descent.js:201
+PLN_OLD_HUD2                 src/21pzb-pln-words.js:89
+PLN_OLD_LANDING              src/21pza-pln-descent.js:214
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:371
+PLN_OLD_ULAND                src/21pza-pln-descent.js:206
 PLN_OVER                     src/21pj-pln-over.js:16
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:38-62
@@ -1479,6 +1485,8 @@ PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
 PLN_WGSL_WX                  src/21pk-pln-weather.js:73
 PLN_WILD                     src/21pgd-pln-wild.js:10-35
 PLN_WING                     src/21pgc-pln-wing.js:23
+PLN_WORDS                    src/21pzb-pln-words.js:12
+PLN_WORDS_HUSH               src/21pzb-pln-words.js:13
 PLN_WORLDS                   src/21pfa-pln-worlds.js:20-66
 PLN_WRECK_END                src/21pif-pln-marks-act.js:284-305
 PLN_WX                       src/21pk-pln-weather.js:26
@@ -1954,7 +1962,7 @@ SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
-SURF_BASE                    src/21e-surface-draw.js:143
+SURF_BASE                    src/21e-surface-draw.js:148
 SURF_HOR                     src/19c-light.js:202
 SURF_LND                     src/21e3-surface-stand-gpu.js:187
 SURF_NEAR                    src/21e2-surface-gpu.js:505
@@ -2119,7 +2127,7 @@ WAR_API                      src/14b-war-net.js:19
 WAR_BUSY                     src/14b-war-net.js:21
 WAR_LED_CACHE                src/14b-war-net.js:45
 WAR_PULL_MS                  src/14b-war-net.js:20
-WATER_MIN_SPAN               src/21e-surface-draw.js:161
+WATER_MIN_SPAN               src/21e-surface-draw.js:166
 WEAR_BASE                    src/21a9-base-laws.js:72
 WEAR_FULL                    src/12s-wear.js:16
 WEAR_RATE                    src/12s-wear.js:18
@@ -3526,8 +3534,8 @@ drawStationBody              src/17c-system-draw.js:168-371
 drawStationMods              src/17a-station-mod.js:220-223
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
-drawSurface                  src/21e-surface-draw.js:295-309
-drawSurfaceHud               src/21e-surface-draw.js:39-126
+drawSurface                  src/21e-surface-draw.js:300-314
+drawSurfaceHud               src/21e-surface-draw.js:39-131
 drawSurfaceWorld             src/21e1-surface-world.js:10-539
 drawSurvey                   src/12w-survey.js:63-83
 drawSysHud                   src/17-mode-system.js:734-1060
@@ -3549,7 +3557,7 @@ drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
 drawWanderRoom               src/24c-mode-wanderer-draw.js:134-155
 drawWanderer                 src/12v-wander.js:339-443
-drawWater                    src/21e-surface-draw.js:205-293
+drawWater                    src/21e-surface-draw.js:210-298
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-318
 drawWinter                   src/29g-winter-draw.js:365-386
@@ -5895,8 +5903,8 @@ plnCastResample              src/21ph-pln-cast.js:12-21
 plnCastRingMesh              src/21ph-pln-cast.js:24-29
 plnCross                     src/21p-pln.js:38
 plnDescLens                  src/21pza-pln-descent.js:13-19
-plnDescOver                  src/21pza-pln-descent.js:164-176
-plnDescent                   src/21pza-pln-descent.js:21-59
+plnDescOver                  src/21pza-pln-descent.js:179-188
+plnDescent                   src/21pza-pln-descent.js:21-62
 plnDot                       src/21p-pln.js:37
 plnDressBodies               src/21pge-pln-dress.js:30-43
 plnDressPath                 src/21pge-pln-dress.js:12-20
@@ -5979,7 +5987,7 @@ plnLandPondLine              src/21pf-pln-land.js:211-222
 plnLandPondMesh              src/21pf-pln-land.js:641-655
 plnLandPondZ                 src/21pf-pln-land.js:224-230
 plnLandRake                  src/21pf-pln-land.js:88
-plnLandRead                  src/21pza-pln-descent.js:154-162
+plnLandRead                  src/21pza-pln-descent.js:167-175
 plnLandRibAt                 src/21pf-pln-land.js:277-284
 plnLandRibH                  src/21pf-pln-land.js:259-275
 plnLandRibMesh               src/21pf-pln-land.js:551-588
@@ -5989,7 +5997,7 @@ plnLandSees                  src/21pf-pln-land.js:469-476
 plnLandSpan                  src/21pf-pln-land.js:292-297
 plnLandStep                  src/21pf-pln-land.js:488-507
 plnLandTab                   src/21pf-pln-land.js:286-289
-plnLandUi                    src/21pza-pln-descent.js:180-188
+plnLandUi                    src/21pza-pln-descent.js:192-200
 plnLandWaterMesh             src/21pf-pln-land.js:626-639
 plnLeg                       src/21piba-pln-gait.js:33-41
 plnLegPhase                  src/21piba-pln-gait.js:30
@@ -6035,6 +6043,7 @@ plnMix3                      src/21p-pln.js:33
 plnMonoKnown                 src/21pifa-pln-marks-act-stone.js:15
 plnMonoLine                  src/21pifa-pln-marks-act-stone.js:18
 plnMonoWords                 src/21pifa-pln-marks-act-stone.js:10-14
+plnMsgHush                   src/21pzb-pln-words.js:19-24
 plnMul                       src/21p-pln.js:36
 plnNoise                     src/21p-pln.js:60-67
 plnNorm                      src/21p-pln.js:40
@@ -6043,13 +6052,13 @@ plnOver                      src/21pj-pln-over.js:45-119
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:29-44
 plnOverPlate                 src/21pj-pln-over.js:23-27
-plnPadBulb                   src/21pza-pln-descent.js:109
-plnPadFrame                  src/21pza-pln-descent.js:121-145
-plnPadGeo                    src/21pza-pln-descent.js:72-94
-plnPadGlow                   src/21pza-pln-descent.js:104-107
-plnPadLift                   src/21pza-pln-descent.js:116-120
-plnPadSpots                  src/21pza-pln-descent.js:96-101
-plnPadTop                    src/21pza-pln-descent.js:111-114
+plnPadBulb                   src/21pza-pln-descent.js:114
+plnPadFrame                  src/21pza-pln-descent.js:128-158
+plnPadGeo                    src/21pza-pln-descent.js:77-99
+plnPadGlow                   src/21pza-pln-descent.js:109-112
+plnPadLift                   src/21pza-pln-descent.js:123-127
+plnPadSpots                  src/21pza-pln-descent.js:101-106
+plnPadTop                    src/21pza-pln-descent.js:118-121
 plnPalSet                    src/21pfa-pln-worlds.js:57-66
 plnPlantBatches              src/21pga-pln-plant.js:570-587
 plnPlantBodies               src/21pga-pln-plant.js:127-359
@@ -6100,7 +6109,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:89
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:294-367
+plnSurface                   src/21pz-pln-frame.js:294-368
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -6158,6 +6167,9 @@ plnWingLeaves                src/21pgc-pln-wing.js:140-151
 plnWingPath                  src/21pgc-pln-wing.js:39-51
 plnWingRamp                  src/21pgc-pln-wing.js:33
 plnWingRibbon                src/21pgc-pln-wing.js:57-71
+plnWordsAt                   src/21pzb-pln-words.js:53-58
+plnWordsOn                   src/21pzb-pln-words.js:15-17
+plnWordsPj                   src/21pzb-pln-words.js:47-51
 plnWreckBeacon               src/21pif-pln-marks-act.js:306
 plnX                         src/21p-pln.js:26
 plnXu                        src/21p-pln.js:28
@@ -7335,7 +7347,7 @@ surfNight                    src/06a-celest.js:43-50
 surfNightGpu                 src/21e4-surface-night-gpu.js:59-80
 surfRelightGpu               src/21e2-surface-gpu.js:394-406
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
-surfScale                    src/21e-surface-draw.js:294
+surfScale                    src/21e-surface-draw.js:299
 surfShadeGpu                 src/21e2-surface-gpu.js:224-230
 surfShadowShapes             src/21e3-surface-stand-gpu.js:175-180
 surfSnap                     src/21e2-surface-gpu.js:507-516
@@ -7727,10 +7739,10 @@ warrantyRegVoid              src/05b1-warranty.js:16
 warrantyShift                src/05b1-warranty.js:13
 wasBlurred                   src/15-input.js:215
 watchCrew                    src/27b-ui-crew.js:34-44
-waterAlga                    src/21e-surface-draw.js:194-198
-waterAlgae                   src/21e-surface-draw.js:187-193
-waterDeepAt                  src/21e-surface-draw.js:200-204
-waterOf                      src/21e-surface-draw.js:162-182
+waterAlga                    src/21e-surface-draw.js:199-203
+waterAlgae                   src/21e-surface-draw.js:192-198
+waterDeepAt                  src/21e-surface-draw.js:205-209
+waterOf                      src/21e-surface-draw.js:167-187
 waveBlock                    src/12pa-beacon.js:146-175
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
@@ -8944,7 +8956,7 @@ zoomTo                       src/15-input.js:358
 ## src/21d-battery.js · 4 KB
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 20 KB
+## src/21e-surface-draw.js · 21 KB
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21e1-surface-world.js · 48 KB
@@ -9079,8 +9091,11 @@ zoomTo                       src/15-input.js:358
 ## src/21pz-pln-frame.js · 30 KB
   · планета: кадр нового вида (M610):1
 
-## src/21pza-pln-descent.js · 15 KB
+## src/21pza-pln-descent.js · 16 KB
   · планета: спуск в новом виде (M621):1
+
+## src/21pzb-pln-words.js · 6 KB
+  · поверхность под движком планеты: слова только на вещах (M830 tail):1
 
 ## src/22-mode-cave.js · 45 KB
   · пещера: поле породы в двух измерениях:1
@@ -9427,7 +9442,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qb-rig-card.js · 4 KB
   · один астронавт везде: риг в карточке (M801):1
 
-## tests/91qc-descent.js · 8 KB
+## tests/91qc-descent.js · 12 KB
   · спуск планеты: касание без склейки, площадка, старый путь (M830):1
 
 ## tests/91qd-bodies.js · 4 KB

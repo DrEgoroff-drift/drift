@@ -26,6 +26,17 @@ could ever save.
   darkens with height. With `PLN.on` the old approach (the 2D sky, the slab and trees, the lander
   bake) is never drawn; `?pln=0` keeps it.
 
+- **M830 tail — the pad's night and the words after touchdown.** By day the pad has no dashes; at
+  dusk and at night they burn at 40 %, a hint of the edge rather than a neon frame, and the «сюда»
+  wave runs only while the ship is above three metres. The pad's key light is the two post lamps —
+  brighter, each with a glint on the edge below it; the ship's flood is the second light. The
+  approach line («Заход на …», autopilot, gravity) is a «Борт» plate with a leader at the ship (the
+  M803 hang layer), and the readout by ТОРМОЗ wears the pads' plate with cut corners. The first
+  surface frame is the last descent frame: `#msg` waits until the hand-off is over and the man has
+  stepped off the ramp; the deposits tip is a plate at the nearest deposit in frame, carrying the
+  landing's deposit count; the action line is a plate at the ship (away from it, at the man) — no
+  bare orange text on the sand; the near «КОРАБЛЬ» tick, placed by the 2D camera and hanging in the
+  sky beside the ship, is gone under the planet frame.
 - **M820 Bodies for everyone.** The barge, its wreck, the station, shuttles, line and lane
   ships are meshes under the system's star (`17c2e` kit, `17c2f` barge, `17c2g` station,
   `17c2h` pirates): own paint, the light from the star with no top-left fallback, a dot under

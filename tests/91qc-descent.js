@@ -112,3 +112,44 @@ TEST_SUITES.push(()=>suite("спуск: показания в метрах, ог
   }
   resetWorld();
 }));
+TEST_SUITES.push(()=>suite("спуск: ночная плита, тишина после касания, подсказка залежей у залежи (M830 tail)",()=>{
+  const pOn=PLN.on,pLive=PLN_FRAME.live,pSun=PLN.sun,pHand=PLN.hand,kOk=hangOk,kGeo=plnPadGeo,kRec=plnRec,kSet=plnInstSet,kRib=plnLandRibAt;
+  /* плита по свету: днём штрихов нет и ламп нет; ночью штрихи на 40 % — ярче огней они не бывают */
+  const Q={dash:{},body:{},bulb:{},ib:{},id:{},iu:{},a:[0],d:[1],u:[2],hx:PLN_LPAD.hx,hz:PLN_LPAD.hz,dz:PLN_LPAD.dz,post:PLN_LPAD.post,col:PLN_LPAD.col};
+  const cols=[];
+  plnPadGeo=()=>Q;plnInstSet=()=>{};plnLandRibAt=()=>0;
+  plnRec=(a,k,p,sc,yw,hk,sd,ca)=>{if(a===Q.d)cols.push(Math.max(ca[0],ca[1],ca[2]));};
+  try{
+    const run=night=>{PLN.sun={night};cols.length=0;const F={batches:[],lamps:[],waterY:-1e9};plnPadFrame(F,{shipZ:7,shipYaw:0},{padX:0},1);return F;};
+    const day=run(0);
+    eq(day.batches.filter(b=>b.geo===Q.dash).length,0,"днём разметки на плите нет");
+    eq(day.lamps.length,0,"днём огни стоек не светят на плиту");
+    const nt=run(1);
+    eq(nt.batches.filter(b=>b.geo===Q.dash).length,1,"ночью разметка есть");
+    eq(nt.lamps.length,2,"ночью ключ плиты — два огня на стойках");
+    eq(cols.length,PLN_LPAD_SPOTS.length+2,"штрихи и два блика на кромке под огнями");
+    const dm=Math.max(...cols.slice(0,PLN_LPAD_SPOTS.length));
+    ok(dm<=PLN_LPAD_DASH*4+1e-9,"ночью штрих не ярче 40 % волны: "+dm.toFixed(2));
+    ok(dm<plnPadBulb(0,0)*.5,"огни стоек ярче разметки: "+dm.toFixed(2)+" против "+plnPadBulb(0,0).toFixed(2));
+  }finally{plnPadGeo=kGeo;plnRec=kRec;plnInstSet=kSet;plnLandRibAt=kRib;PLN.sun=pSun;}
+  /* первый кадр поверхности: «залежей: n» уходит в табличку, #msg молчит, пока идёт передача объектива */
+  dcWorld();
+  hangOk=()=>true;PLN.on=true;PLN_FRAME.live=true;
+  try{
+    enterSurface();
+    const S=G.surf;
+    ok(!/^залежей/.test(String(G.msg||"")),"счёт залежей не сообщение: "+JSON.stringify(G.msg));
+    eq(PLN_WORDS.cnt,S.deposits.length,"счёт залежей — в табличке у залежи");
+    PLN.hand={tr:S.tr};
+    ok(plnMsgHush()&&msgHeld(),"пока идёт передача объектива, #msg молчит и его срок стоит");
+    PLN.hand=null;PLN_WORDS.end=wallMs()-(PLN_WORDS_HUSH*1000+50);
+    ok(!plnMsgHush()&&!msgHeld(),"человек вышел — #msg говорит");
+    /* подсказка залежей: не полосой сверху, а табличкой у залежи */
+    S.x=S.shipX+9999;S.cave=null;G.surfTipShown=0;
+    eq(surfaceHint(),null,"под слоем слов полосы с подсказкой залежей нет");
+    eq(PLN_WORDS.tip,G.t,"подсказка залежей отдана табличке этого кадра");
+    PLN_FRAME.live=false;G.surfTipShown=0;
+    ok(/^ЦВЕТНЫЕ КРИСТАЛЛЫ/.test(String(surfaceHint())),"без кадра движка подсказка — прежней полосой");
+  }finally{hangOk=kOk;PLN.on=pOn;PLN_FRAME.live=pLive;PLN.hand=pHand;}
+  resetWorld();
+}));

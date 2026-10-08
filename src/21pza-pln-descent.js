@@ -51,11 +51,14 @@ function plnDescent(){
       /* посадочная фара в сумерках и ночью: свет перед кораблём, к объективу — огни площадки светят
          ему в спину, и без неё у плиты ночью виден только силуэт */
       const dusk=plnSmooth(.1,.6,(PLN.sun&&PLN.sun.night)||0);
+      /* ключ плиты — огни на стойках: их лампы первыми, фара — второй свет. Волна «сюда» — только
+         пока корабль выше трёх метров: у самой плиты она уже ничего не говорит */
+      PLN_DESC.alt=alt;
+      plnPadFrame(F,Ld,tr,touched?0:plnSmooth(2.5,3.5,alt));
       if(dusk>.05&&F.lamps.length<4)F.lamps.push({p:[sp[0],sp[1]+.8,sp[2]-4.5],r:10,c:[.95,.9,.8],k:1.6*dusk});
       /* выхлоп бьёт в землю: пятно света на грунте под соплами — трава и брюхо в его отсвете */
       const wk=thr*plnSmooth(24,2,alt);
-      if(wk>.02&&F.lamps.length<4)F.lamps.push({p:[sp[0],sp[1]-alt+.6,sp[2]],r:3+.22*alt,c:[1,.58,.25],k:2.6*wk});
-      plnPadFrame(F,Ld,tr,touched?clamp(L.over/70,0,1):1);}});
+      if(wk>.02&&F.lamps.length<4)F.lamps.push({p:[sp[0],sp[1]-alt+.6,sp[2]],r:3+.22*alt,c:[1,.58,.25],k:2.6*wk});}});
 }
 
 /* ── площадка (M830) ──
@@ -64,10 +67,12 @@ function plnDescent(){
    грунт насыпью (на метр дальше корабля: ближняя кромка не ложится на склон линии ходьбы); по кромке — янтарные штрихи разметки, на дальних углах — два огня на стойках
    (1.7 м), за кораблём, чтобы его не закрывать. Тень плиты и стоек — от того же солнца. Корабль
    стоит на плите: и на спуске, и на поверхности его ставят на её верх (plnPadLift). На заходе по
-   штрихам от концов к середине бежит волна — «сюда»; касание её гасит, разметка и огни остаются.
-   Всё — движение, не мигание: огни дышат вразнобой и не гаснут */
+   штрихам от концов к середине бежит волна — «сюда», пока корабль выше трёх метров.
+   Свет плиты (M830 tail): ключ — два огня на стойках, ярко, с бликом на кромке под каждым; разметка
+   — только в сумерках и ночью и на 40 % яркости: днём её нет вовсе, ночью она не неоновая рама, а
+   намёк на край. Всё — движение, не мигание: огни дышат вразнобой и не гаснут */
 const PLN_LPAD={gen:-1,body:null,dash:null,bulb:null,ib:null,id:null,iu:null,
-  a:new Float32Array(16),d:new Float32Array(16*32),u:new Float32Array(16*2),
+  a:new Float32Array(16),d:new Float32Array(16*34),u:new Float32Array(16*2),
   hx:6.6,hz:4.2,dz:1,rim:.35,deep:3.2,post:1.7,cyc:2.6,col:[1,.6,.27]};
 function plnPadGeo(){
   const Q=PLN_LPAD;
@@ -89,7 +94,7 @@ function plnPadGeo(){
   const g=plnMesh(256);
   plnBlob(g,{c:[0,0,0],r:[1,1,1],sub:1,col:[1,1,1],mat:PLN_MAT.glow,glow:1});
   Q.bulb=plnGeo(plnMeshDone(g));
-  Q.ib=plnInst(Q.a,0,1);Q.id=plnInst(Q.d,0,32);Q.iu=plnInst(Q.u,0,2);
+  Q.ib=plnInst(Q.a,0,1);Q.id=plnInst(Q.d,0,34);Q.iu=plnInst(Q.u,0,2);
   return Q;
 }
 /* штрихи кромки в плите: [x, z, поворот, фаза волны 0…1 (0 — конец ряда)] */
@@ -105,8 +110,10 @@ function plnPadGlow(s,t,kw){
   const ph=((t/PLN_LPAD.cyc)-s[3]*.6)%1,wv=Math.exp(-Math.pow((ph<0?ph+1:ph)*9,2));
   return .45+kw*(.7+2.8*wv);
 }
-/* огни на стойках: дышат вразнобой, не гаснут */
-function plnPadBulb(i,t){return 3+.7*Math.sin(t*1.3+i*2.4);}
+/* огни на стойках — ключ плиты: дышат вразнобой, не гаснут */
+function plnPadBulb(i,t){return 4.8+.9*Math.sin(t*1.3+i*2.4);}
+/* доля яркости разметки ночью (днём её нет) */
+const PLN_LPAD_DASH=.4;
 /* верх плиты: над грунтом площадки, над водой — над водой */
 function plnPadTop(Ld,tr,wy){
   const px=tr.padX/PLN_M,pz=Ld.shipZ+PLN_LPAD.dz;
@@ -127,20 +134,26 @@ function plnPadFrame(F,Ld,tr,kw){
   plnRec(Q.a,0,[px,top,pz],1,yaw,1,0,null,0);
   plnInstSet(Q.ib,Q.a,1);
   F.batches.push({geo:Q.body,inst:Q.ib,kind:PLN_KIND.body,to:PLN_TO.all});
-  let n=0;
-  for(const s of PLN_LPAD_SPOTS){
-    const g=plnPadGlow(s,t,kw);
-    plnRec(Q.d,n++,at(s[0],.012,s[1]),1,yaw+s[2],1,0,[c[0]*g,c[1]*g,c[2]*g],0);
+  if(dusk>.05){
+    const kd=PLN_LPAD_DASH*dusk;let n=0;
+    for(const s of PLN_LPAD_SPOTS){
+      const g=plnPadGlow(s,t,kw)*kd;
+      plnRec(Q.d,n++,at(s[0],.012,s[1]),1,yaw+s[2],1,0,[c[0]*g,c[1]*g,c[2]*g],0);
+    }
+    /* блик ключа: свет огня лёг на скруглённую кромку под стойкой — светлая черта вдоль кромки */
+    const b=2.4*dusk;
+    for(const s of [-1,1])plnRec(Q.d,n++,at(s*(Q.hx-1.15),.014,Q.hz-.14),1.9,yaw,.6,0,[b,b*.82,b*.62],0);
+    plnInstSet(Q.id,Q.d,n);
+    F.batches.push({geo:Q.dash,inst:Q.id,kind:PLN_KIND.body,to:PLN_TO.main|PLN_TO.mirror});
   }
-  plnInstSet(Q.id,Q.d,n);
-  F.batches.push({geo:Q.dash,inst:Q.id,kind:PLN_KIND.body,to:PLN_TO.main|PLN_TO.mirror});
+  let nu=0;
   for(let i=0;i<2;i++){
     const s=i?1:-1,p=at(s*(Q.hx-.45),Q.post+.1,Q.hz-.45),g=plnPadBulb(i,t);
-    plnRec(Q.u,i,p,.15,0,1,0,[c[0]*g,c[1]*g,c[2]*g],0);
+    plnRec(Q.u,nu++,p,.21,0,1,0,[c[0]*g,c[1]*g,c[2]*g],0);
     /* светят на плиту в сумерках и ночью; днём их свет тонет в солнце, место лампы — другим */
-    if(dusk>.05&&F.lamps.length<4)F.lamps.push({p,r:8,c:[1,.62,.3],k:1.2*dusk});
+    if(dusk>.05&&F.lamps.length<4)F.lamps.push({p,r:10,c:[1,.66,.34],k:2.2*dusk});
   }
-  plnInstSet(Q.iu,Q.u,2);
+  plnInstSet(Q.iu,Q.u,nu);
   F.batches.push({geo:Q.bulb,inst:Q.iu,kind:PLN_KIND.body,to:PLN_TO.main|PLN_TO.mirror});
 }
 
@@ -160,19 +173,18 @@ function plnLandRead(L){
   const vy=L.vy*60/PLN_M,vx=Math.abs(L.vx)*60/PLN_M;
   return "высота "+am+" · "+(vy<0?"подъём ":"снижение ")+decRu(Math.abs(vy),1)+" м/с\nснос "+decRu(vx,1)+" м/с · "+pad;
 }
-/* строка захода плашкой над кораблём: в пикселях окна, как подписи поверхности (21pj) */
+/* строка захода — табличкой «Борта» у корабля (слой слов на вещах, 08bj): те же строки, что вешает
+   прежний заход (19-mode-landing, M803) — имя мира, автопосадка с высотой, тяготение первые 2,5 с.
+   Точка — середина корабля в пикселях окна (plnOverAt даёт мерку вида, ×G.viewK), r — его полувысота */
 function plnDescOver(){
-  const C=PLN.cam,sp=PLN_DESC.sp;
-  if(!C||!sp||!(G.msgT>0)||!G.msg||msgHeld())return;
-  const u=surfScale()/(G.viewK||1)*UIK,ln=String(G.msg).split("\n"),q=plnOverAt(C,[sp[0],sp[1]+3.6,sp[2]]);
-  const f0=(9*u).toFixed(2)+"px ui-monospace,monospace",f1=(8*u).toFixed(2)+"px ui-monospace,monospace";
-  let tw=0;
-  for(let i=0;i<ln.length;i++){ctx.font=i?f1:f0;tw=Math.max(tw,ctx.measureText(ln[i]).width);}
-  const lh=13*u,pw=tw+14*u,ph=ln.length*lh+6*u,x=clamp(q[0],pw/2+8*u,C.ws-pw/2-8*u),y0=Math.max(8*u,q[1]-ph);
-  ctx.save();ctx.globalAlpha=clamp(G.msgT/40,0,1);ctx.textAlign="center";
-  ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(x-pw/2,y0,pw,ph);
-  for(let i=0;i<ln.length;i++){ctx.font=i?f1:f0;ctx.fillStyle=i?"rgba(176,196,208,.78)":"rgba(214,226,232,.96)";ctx.fillText(ln[i],x,y0+3*u+lh*(i+.78));}
-  ctx.restore();
+  const C=PLN.cam,sp=PLN_DESC.sp,L=G.land,p=L&&L.p;
+  if(!C||!sp||!p||L.over>0||!hangIn())return;
+  const ln=[(L.auto?"Автоматический заход на ":"Заход на ")+p.name];
+  if(L.auto)ln.push("автопосадка · "+Math.round(PLN_DESC.alt||0)+" м");
+  if(L.hi>0){L.hi--;ln.push("тяготение "+p.T.grav.toFixed(2)+"g");}
+  if(ln.length<2)return;
+  const k=G.viewK||1,a=plnOverAt(C,[sp[0],sp[1]+1.6,sp[2]]),b=plnOverAt(C,[sp[0],sp[1]+4.2,sp[2]]);
+  ovHang("land",ln,a[0]*k,a[1]*k,{r:Math.max(12,Math.abs(a[1]-b[1])*k)});
 }
 /* пока виден спуск, строка #msg спрятана (её слово — на плашке), а показания (#prompt) встают в ряд
    пэдов перед ТОРМОЗ; уходя со спуска, всё возвращается на места */
@@ -215,5 +227,5 @@ drawLanding=function(){
   BLOOM_K.landing=ok?0:PLN_DESC.bloom;
   PLN_DESC.live=ok;
   if(!ok){PLN_OLD_LANDING.apply(this,arguments);return;}
-  withScale(G.viewK,plnDescOver);
+  plnDescOver();
 };
