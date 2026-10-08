@@ -11,8 +11,15 @@
    Рисует ovHangFlush из ovFlush (08bi) — после мира, до прохода слоя. Без видеокарты слоя нет:
    hangSay тогда говорит прежним say(), ovHang молчит.
    Очередь — интерфейс (OVL.uq); пока рисуется табличка, OVL.hangOn — её первая строка: зрение
-   (90b2) метит этим её буквы и плашку, и закон «центр» судит только их, не подписи мира. */
-const HANG={on:true,q:[],t:[],at:{},mem:{},w:new Map(),st:new Map(),last:[],k:1,
+   (90b2) метит этим её буквы и плашку, и закон «центр» судит только их, не подписи мира.
+   Срочное берёт середину (M826b): тревожная табличка (o.urg — баржа под обстрелом, нападение, SOS,
+   всё «сейчас или никогда») встаёт и в средней полосе — на время тревоги середина её по праву; на
+   саму вещь она не ложится, выноска к телу остаётся. Спокойные слова (глава, сообщение) на это время
+   уходят к краю — в левую треть, без права на полосу даже сбоку — и возвращаются через 45 кадров после
+   тревоги (HANG_ALARM_HOLD, тот же гистерезис, что у rackBodies). Зрение: одна тревога в полосе — чисто,
+   две — «центр» (OVL.hangUrg метит её буквы и плашку). */
+const HANG_ALARM_HOLD=45;
+const HANG={on:true,q:[],t:[],at:{},mem:{},w:new Map(),st:new Map(),last:[],k:1,alarmF:-1e9,
   FACE:"Bahnschrift,'Roboto Condensed','Arial Narrow',sans-serif",
   INK:"#f1ebde",INK2:"#a59d8f",VERB:"#ff6a2b",BODY:"rgb(18,17,16)",EDGE:"rgb(232,220,196)"};
 /* восемь сторон: вправо, вправо-вверх, вверх, … — с ценой; up — для вещей на земле (поверхность) */
@@ -121,12 +128,13 @@ function hangPlace(P,k,C){
     for(let d=r+C.g;d<C.maxD;d+=C.step){
       const R=hangRectAt(P,D[0],D[1],d,S.w,S.h);
       if(R.x0<8||R.x1>W-8||R.y0<C.top||R.y1>C.bot)continue;
+      if(C.xMax&&!P.o.urg&&R.x1>C.xMax)continue;   /* тревога: спокойное — в левой трети */
       const nx=clamp(P.x,R.x0,R.x1),ny=clamp(P.y,R.y0,R.y1),L=Math.hypot(nx-P.x,ny-P.y);
-      if(L-r>C.Lmax)break;   /* дальше по этой стороне только длиннее */
+      if(L-r>(C.xMax?Infinity:C.Lmax))break;   /* дальше по этой стороне только длиннее; у края в тревогу — без предела */
       let side=0;
-      if(hangHit(R,C.band,2*k)){   /* кайма шире рамки на 1k, плюс сетка устройства */
+      if(!P.o.urg&&hangHit(R,C.band,2*k)){   /* кайма шире рамки на 1k, плюс сетка устройства */
         const cy=(R.y0+R.y1)/2;
-        if(D[1]!==0||cy<H/3||cy>H*2/3)continue;
+        if(C.calm||D[1]!==0||cy<H/3||cy>H*2/3)continue;
         side=cy;
       }
       /* не на самой вещи: ближняя точка таблички дальше её радиуса */
@@ -174,8 +182,18 @@ function hangLayout(Q,k){
   const bot=((typeof HUD_FLOOR==="number"&&HUD_FLOOR>0)?Math.min(H,HUD_FLOOR):H)-6;
   const C={band:{x0:W*.3,y0:H*.3,x1:W*.7,y1:H*.7},top,bot,O:hangObstacles(bot+6),placed:[],
     g:12*k,step:4*k,maxD:Math.max(W,H)*.7,Lmax:H*.25};
+  /* тревога ставится первой; пока она идёт и 45 кадров после — спокойные у края */
+  if(Q.some(P=>P.o.urg))HANG.alarmF=OVL.fno;
+  const alarm=OVL.fno-HANG.alarmF<HANG_ALARM_HOLD;
+  Q.sort((a,b)=>(b.o.urg?1:0)-(a.o.urg?1:0));
   for(const P of Q){
+    /* спокойное в тревогу: сперва в левой трети, потом где угодно, но не в полосе */
+    C.calm=alarm&&!P.o.urg;C.xMax=C.calm?W/3:0;
     let best=hangPlace(P,k,C);
+    const edge=!!best;
+    if(!best&&C.xMax){C.xMax=0;best=hangPlace(P,k,C);}
+    /* у края дальше четверти высоты — заметка ждёт без поводка: нитка через полкадра тревогу бы резала */
+    if(best&&edge&&Math.hypot(best.nx-P.x,best.ny-P.y)-best.r>C.Lmax)P.o=Object.assign({},P.o,{free:true});
     if(!best){
       const r=Math.max(4,P.o.r||10),room=Math.max(P.x-r-C.g-8,W-8-P.x-r-C.g),Z=hangWrap(P,k,room);
       if(Z){const l0=P.lines,v0=P.o.verb;P.lines=Z.lines;P.o=Object.assign({},P.o,{verb:Z.verb});
@@ -214,7 +232,7 @@ function hangDraw(P,k){
     ovCap(ax,ay,P.nx-ux*2*k,P.ny-uy*2*k,1*k,ink||HANG.INK,.42*al);
     ovEll(ax,ay,2*k,2*k,0,ink||HANG.INK,.85*al);
   }
-  OVL.hangOn=P.lines[0]||"·";OVL.hangSide=P.side||0;   /* сбоку от тела: середина по высоте — для зрения */
+  OVL.hangOn=P.lines[0]||"·";OVL.hangSide=P.side||0;OVL.hangUrg=P.o.urg?1:0;   /* сбоку от тела, тревога — для зрения */
   const e=ink?1.5*k:1*k;
   hangHex(sn(x0-e),sn(y0-e),sn(x1+e),sn(y1+e),sn(c+e*.42),ink||HANG.EDGE,(ink?.62:.17)*al);
   hangHex(x0,y0,x1,y1,c,HANG.BODY,.86*al);
@@ -223,7 +241,7 @@ function hangDraw(P,k){
     const col=ink||(i===P.o.verb?HANG.VERB:i===0?HANG.INK:HANG.INK2);
     ovText(OVL.uq,tx,y0+(17+i*14)*k-(i?1*k:0),P.lines[i],hangFont(i,P),col,"left","alphabetic",al,k);
   }
-  OVL.hangOn=0;OVL.hangSide=0;
+  OVL.hangOn=0;OVL.hangSide=0;OVL.hangUrg=0;
 }
 /* ── слив: зовёт ovFlush (08bi) первым делом ── */
 function ovHangFlush(){
@@ -241,7 +259,7 @@ function ovHangFlush(){
   if(!Q.length||OVL.hush||!hangIn()){Q.length=0;return;}
   const k=Math.max(1,uiK());HANG.k=k;
   hangLayout(Q,k);
-  for(const P of Q)if(!P.hide){hangDraw(P,k);HANG.last.push({id:P.id,s:P.lines[0],r:P.R});}
+  for(const P of Q)if(!P.hide){hangDraw(P,k);HANG.last.push({id:P.id,s:P.lines[0],r:P.R,m:!!P.msg});}
   Q.length=0;
 }
 /* ── поверхность под движком планеты: «что» у вещи, одной строкой ──
@@ -290,21 +308,26 @@ function hangSurface(){
    переводится в регистр предложения: иерархия таблички — кегль и цвет, не капитель */
 const HANG_MSG_AT={system:"ship",scoop:"scoop",surface:"man",map:"you"};
 function hangMsg(Q){
-  HANG.msgQ=false;
+  HANG.msgQ=false;HANG.msgJoin=null;
   if(!(G.msgT>0&&G.msg)||(typeof msgHeld==="function"&&msgHeld()))return;
+  /* на грунте при подсказке сообщение — не вещь: оно строкой ниже в её табличке (одна вещь — одна табличка) */
+  if(G.mode==="surface"&&!(typeof MSG_OBJ!=="undefined"&&MSG_OBJ)&&HANG.hint&&HANG.hint.f===OVL.fno){
+    HANG.msgJoin=String(G.msg).split("\n").map(hangCase);HANG.msgQ=true;return;}
   let a=null;
   const b=typeof MSG_OBJ!=="undefined"?MSG_OBJ:null,S=HANG.at.sys;
   if(b&&G.mode==="system"&&S&&S.f===OVL.fno){
     const x=W/2+(b.x-S.x)*S.z,y=H/2+(b.y-S.y)*S.z;
     if(x>W*.06&&x<W*.94&&y>H*.08&&y<H*.92)a={x,y,r:Math.max(8,(b.radius||6)*S.z)};
   }
-  const kd=HANG_MSG_AT[G.mode],q=kd&&HANG.at[kd];
+  /* карта: строка — в плашке «ВЫ» (18), иначе у дальней трети курса, иначе у вашей звезды */
+  if(G.mode==="map"&&HANG.msgTagF===OVL.fno){HANG.msgQ=true;return;}
+  const cs=HANG.at.course,kd=G.mode==="map"&&cs&&cs.f===OVL.fno?"course":HANG_MSG_AT[G.mode],q=kd&&HANG.at[kd];
   if(!a&&q&&q.f===OVL.fno&&!q.z)a=q;
   if(!a)return;
   Q.push({id:"hud.msg",lines:String(G.msg).split("\n").map(hangCase),x:a.x,y:a.y,o:{r:a.r,al:clamp(G.msgT/40,0,1)}});
   HANG.msgQ=true;
 }
-function hangMsgHung(){return HANG.last.some(e=>e.id==="hud.msg");}
+function hangMsgHung(){return HANG.last.some(e=>e.id==="hud.msg"||e.m)||OVL.fno-(HANG.msgTagF==null?-9:HANG.msgTagF)<=1;}
 /* капс строки — в регистр предложения; имена системы, её тел и корабля, «ГЛАВТРАССА» — как пишутся */
 function hangCase(s){
   s=String(s);
@@ -332,6 +355,7 @@ function hangCue(Q){
     if(i>=0){let h=(L[0].slice(0,i)+L[0].slice(i+nm.length)).replace(/^[\s·]+|[\s·]+$/g,"");
       h=h.charAt(0).toUpperCase()+h.slice(1);
       if(h){o.name=A.name;o.alt=[h].concat(L.slice(1));o.altVerb=o.verb;}}}
+  if(A.urg)o.urg=true;
   Q.push({id:"cue."+A.id,lines:L,x,y,o});
 }
 function hangCueHung(){return HANG.last.some(e=>e.id.indexOf("cue.")===0);}
@@ -342,10 +366,12 @@ function hangHint(Q){
   const h=HANG.hint,a=HANG.at.man;
   if(!h||h.f!==OVL.fno||G.mode!=="surface"||!a||a.f!==OVL.fno)return;
   const L=String(h.s).split(" · ").map(hangCase),v=L.findIndex(t=>/действие/i.test(t));
-  const o={r:a.r,up:true,verb:v>=0?v:undefined};
+  const o={r:a.r,up:true,verb:v>=0?v:undefined},J=HANG.msgJoin;
+  /* сообщение грунта (hangMsg) — последней строкой: «Залежь отмечена» говорит о том же месте */
+  if(J){for(const t of J)L.push(t);}
   if(W<=760){
     /* фишки стрелок (21e) держат своё место hangBlock — табличка встаёт под ними */
     const y=Math.max(8,(typeof HUD_BAND==="number"?HUD_BAND:0)+6);
-    Q.push({id:"pln.hint",lines:L,x:W/2,y,o:Object.assign(o,{r:4,up:false,free:true})});return;}
-  Q.push({id:"pln.hint",lines:L,x:a.x,y:a.y,o});
+    Q.push({id:"pln.hint",lines:L,x:W/2,y,o:Object.assign(o,{r:4,up:false,free:true}),msg:!!J});return;}
+  Q.push({id:"pln.hint",lines:L,x:a.x,y:a.y,o,msg:!!J});
 }

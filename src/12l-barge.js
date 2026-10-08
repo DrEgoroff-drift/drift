@@ -289,7 +289,7 @@ function bargeInteract(sh){
     /* тревога, а не действие (ревью 11.09); висит табличкой у позывного баржи (M826, 08bj) */
     const nm="БАРЖА «"+near.capName.toUpperCase()+"»";
     if(cue(nm+" ПОД ОБСТРЕЛОМ · "+Math.round(clamp(near.hp/near.hullMax,0,1)*100)+"%\n"+
-      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN))cueAt("barge",near,nm);
+      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN))cueAt("barge",near,nm,0,true);
     return false;
   }
   if(cue("ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+

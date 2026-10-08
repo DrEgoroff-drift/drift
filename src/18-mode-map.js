@@ -393,11 +393,23 @@ function drawMapIn(){
          голый бирюзовый на нём не читался. Плашка кончается у носика стрелки — метка и указатель одно */
       const youS=W<=760?"ВЫ":"ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),   /* телефон: имя — в шапке, у звезды табличке выбора нужно место */
             youU=mapU(),youW=mapTW(youS);
-      const by=youDn?y+rr+24+10*youU:y-rr-28;   /* основание строки: над звездой или под ней */
-      mpPlate(x-youW/2-6*youU,by-10*youU,youW+12*youU,14*youU);
-      mapInkBox(x-youW/2-6*youU,by-10*youU,youW+12*youU,14*youU);
-      youR={x0:x-youW/2-8*youU,y0:by-12*youU,x1:x+youW/2+8*youU,y1:by+6*youU};
-      mpText(youS,x,by,"#7fe6d8");
+      /* сообщение без курса (M826b) — строками под «ВЫ» в той же плашке: на карте оно говорит о вас, а не о
+         вещи. Курс есть — сообщение висит у его дальней трети (08bj hangMsg, «course»); на телефоне курс
+         стоит в пустой середине, и табличка у него ушла бы на длинном поводке — там тоже сюда */
+      const mL=(dsel>0&&W>760)||!(G.msgT>0&&G.msg)||(typeof msgHeld==="function"&&msgHeld())?[]:String(G.msg).split("\n").map(hangCase);
+      let mW=0;if(mL.length){mapFace(10);for(const t of mL)mW=Math.max(mW,mapTW(t));mapFace(10,true);}
+      const rh=14*youU;
+      let n=mL.length,pw=Math.max(youW,mW),by=youDn?y+rr+24+10*youU:y-rr-28-n*rh;   /* над звездой плашка растёт вверх */
+      /* строки не лезут под линейку и шире листа — тогда сообщение висит табличкой (08bj), плашка — одна «ВЫ» */
+      if(n&&(by-10*youU<FR.y0||by+4*youU+n*rh>H-8||pw+12*youU>FR.x1-FR.x0)){n=0;pw=youW;by=youDn?y+rr+24+10*youU:y-rr-28;}
+      /* плашка — в листе, носик — у звезды */
+      const cx=n?Math.max(FR.x0+pw/2+6*youU,Math.min(FR.x1-pw/2-6*youU,x)):x;
+      mpPlate(cx-pw/2-6*youU,by-10*youU,pw+12*youU,14*youU+n*rh);
+      mapInkBox(cx-pw/2-6*youU,by-10*youU,pw+12*youU,14*youU+n*rh);
+      youR={x0:cx-pw/2-8*youU,y0:by-12*youU,x1:cx+pw/2+8*youU,y1:by+6*youU+n*rh};
+      mpText(youS,cx,by,"#7fe6d8");
+      if(n){mapFace(10);for(let i=0;i<n;i++)mpText(mL[i],cx,by+(i+1)*rh,i?HANG.INK2:HANG.INK);HANG.msgTagF=OVL.fno;
+        if(youDn)tagDn+=n*rh;else tagUp-=n*rh;}   /* стопка меток системы — за плашкой */
       hangAt("you",x,y,rr+16);   /* строка сообщения на карте — у вашей звезды (M826, 08bj) */
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
@@ -543,6 +555,7 @@ function drawMapIn(){
     const col=far?"rgba(255,107,87,.5)":poor?"rgba(255,107,87,.75)":"rgba(242,178,92,.8)";
     ctx.save();
     mapCourseDash(cur,sel,youR,far,col);   /* от кромки вашего кольца и из-за вашей плашки (18l) */
+    hangAt("course",x0+(x1-x0)*2/3,y0+(y1-y0)*2/3,5);   /* строка сообщения — у дальней трети курса (M826b) */
     /* точки прыжков по курсу (M299): сколько раз придётся прыгать — видно по
        линии, а не по цифре в подвале */
     if(far&&st.jump>.5){
