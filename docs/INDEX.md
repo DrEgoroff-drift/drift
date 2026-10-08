@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 520 · top-level symbols: 7758
+Files: 520 · top-level symbols: 7762
 
 ## SYMBOLS
 
@@ -645,7 +645,7 @@ GEN_MINE                     src/13z-gpu-combat.js:63
 GEN_WGSL                     src/13z-gpu-combat.js:17
 GEO                          tests/90b2-geom.js:24
 GEO_CC                       tests/90b2-geom.js:69
-GEO_CTL                      tests/90b2-geom.js:372
+GEO_CTL                      tests/90b2-geom.js:374
 GEO_DANGER                   tests/90b2-geom.js:28
 GEO_FAULT                    src/18b-geology.js:91
 GEO_JUNK                     tests/90b2-geom.js:27
@@ -3885,58 +3885,59 @@ genUniqueShip                src/03-ships.js:16-27
 geoAnd                       tests/90b2-geom.js:34
 geoArea                      tests/90b2-geom.js:33
 geoAt                        src/18b-geology.js:73-77
-geoBoxy                      tests/90b2-geom.js:345-351
-geoBtns                      tests/90b2-geom.js:819
-geoCalm                      tests/90b2-geom.js:829-917
+geoBoxy                      tests/90b2-geom.js:347-353
+geoBtns                      tests/90b2-geom.js:824
+geoCalm                      tests/90b2-geom.js:834-922
 geoClipPoly                  tests/90b2-geom.js:41
 geoCol                       tests/90b2-geom.js:70-81
-geoCompose                   tests/90b2-geom.js:655-680
+geoCompose                   tests/90b2-geom.js:658-683
 geoContrast                  tests/90b2-geom.js:84
 geoD                         tests/90b2-geom.js:32
-geoDom                       tests/90b2-geom.js:373-425
+geoDom                       tests/90b2-geom.js:375-427
 geoEdge                      tests/90b2-geom.js:65
 geoExtra                     tests/90b2-geom.js:220-242
 geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geoFin                       tests/90b2-geom.js:55
-geoFontProbe                 tests/90b2-geom.js:919-928
-geoFrame                     tests/90b2-geom.js:302-305
-geoFrame1                    tests/90b2-geom.js:306-322
+geoFontProbe                 tests/90b2-geom.js:924-933
+geoFrame                     tests/90b2-geom.js:304-307
+geoFrame1                    tests/90b2-geom.js:308-324
 geoHang                      tests/90b2-geom.js:249
+geoHangSide                  tests/90b2-geom.js:251
 geoHookAll                   tests/90b2-geom.js:150-161
 geoHookBake                  tests/90b2-geom.js:165-173
 geoHookCtx                   tests/90b2-geom.js:91-123
-geoHookOvl                   tests/90b2-geom.js:251-296
+geoHookOvl                   tests/90b2-geom.js:253-298
 geoIn                        tests/90b2-geom.js:57
-geoLaws                      tests/90b2-geom.js:428-647
-geoLbl                       tests/90b2-geom.js:818
+geoLaws                      tests/90b2-geom.js:430-650
+geoLbl                       tests/90b2-geom.js:823
 geoLum                       tests/90b2-geom.js:82
 geoMin                       tests/90b2-geom.js:56
-geoOpaque                    tests/90b2-geom.js:352-359
+geoOpaque                    tests/90b2-geom.js:354-361
 geoOut                       tests/90b2-geom.js:59-63
-geoOvQ                       tests/90b2-geom.js:250
+geoOvQ                       tests/90b2-geom.js:252
 geoOver                      tests/90b2-geom.js:83
 geoPArea                     tests/90b2-geom.js:39
-geoPad                       tests/90b2-geom.js:360
+geoPad                       tests/90b2-geom.js:362
 geoPoly                      tests/90b2-geom.js:38
 geoR                         tests/90b2-geom.js:31
 geoRec                       tests/90b2-geom.js:175-215
-geoRich                      tests/90b2-geom.js:785
-geoRoadFrame                 tests/90b2-geom.js:326-341
+geoRich                      tests/90b2-geom.js:790
+geoRoadFrame                 tests/90b2-geom.js:328-343
 geoRs                        tests/90b2-geom.js:66
-geoRun                       tests/90b2-geom.js:839-917
+geoRun                       tests/90b2-geom.js:844-922
 geoSat                       tests/90b2-geom.js:48
-geoScreens                   tests/90b2-geom.js:791-817
-geoSelf                      tests/90b2-geom.js:683-781
-geoSettle                    tests/90b2-geom.js:837
+geoScreens                   tests/90b2-geom.js:796-822
+geoSelf                      tests/90b2-geom.js:686-786
+geoSettle                    tests/90b2-geom.js:842
 geoShape                     tests/90b2-geom.js:125-129
-geoShut                      tests/90b2-geom.js:828
-geoSig                       tests/90b2-geom.js:821-824
-geoStation                   tests/90b2-geom.js:786
-geoSty                       tests/90b2-geom.js:344
-geoTable                     tests/90b2-geom.js:790
+geoShut                      tests/90b2-geom.js:833
+geoSig                       tests/90b2-geom.js:826-829
+geoStation                   tests/90b2-geom.js:791
+geoSty                       tests/90b2-geom.js:346
+geoTable                     tests/90b2-geom.js:795
 geoText                      tests/90b2-geom.js:130-144
-geoWho                       tests/90b2-geom.js:362-371
+geoWho                       tests/90b2-geom.js:364-373
 geoWob                       src/18b-geology.js:80-82
 geologyOf                    src/18b-geology.js:45-71
 gestAge                      src/17h-sys-gesture.js:44
@@ -4280,21 +4281,24 @@ handBtnTick                  src/12td-settle-hand.js:123-134
 hangAt                       src/08bj-ovl-hang.js:34-38
 hangBlock                    src/08bj-ovl-hang.js:41-45
 hangCut                      src/08bj-ovl-hang.js:76-79
-hangDraw                     src/08bj-ovl-hang.js:154-174
+hangDraw                     src/08bj-ovl-hang.js:205-225
 hangFont                     src/08bj-ovl-hang.js:65
-hangHex                      src/08bj-ovl-hang.js:148-153
+hangHex                      src/08bj-ovl-hang.js:199-204
 hangHit                      src/08bj-ovl-hang.js:74
 hangIn                       src/08bj-ovl-hang.js:23
-hangLayout                   src/08bj-ovl-hang.js:109-139
+hangLayout                   src/08bj-ovl-hang.js:170-190
+hangNamed                    src/08bj-ovl-hang.js:160-169
 hangObstacles                src/08bj-ovl-hang.js:86-107
 hangOk                       src/08bj-ovl-hang.js:22
+hangPlace                    src/08bj-ovl-hang.js:114-143
 hangRectAt                   src/08bj-ovl-hang.js:80-84
 hangSay                      src/08bj-ovl-hang.js:47-54
 hangSize                     src/08bj-ovl-hang.js:67-72
 hangSt                       src/08bj-ovl-hang.js:56
-hangSurface                  src/08bj-ovl-hang.js:197-225
+hangSurface                  src/08bj-ovl-hang.js:248-279
 hangTW                       src/08bj-ovl-hang.js:57-64
-hangTri                      src/08bj-ovl-hang.js:141-144
+hangTri                      src/08bj-ovl-hang.js:192-195
+hangWrap                     src/08bj-ovl-hang.js:145-158
 hasEpisode                   src/03-ships.js:139-142
 hasSave                      src/14a-cloud.js:60
 hashi                        src/01-core.js:23-27
@@ -5497,7 +5501,7 @@ ovEll                        src/08bi-gpu-ovl.js:338-341
 ovFlush                      src/08bi-gpu-ovl.js:224-240
 ovGraph                      src/08bi-gpu-ovl.js:359-363
 ovHang                       src/08bj-ovl-hang.js:27-31
-ovHangFlush                  src/08bj-ovl-hang.js:176-192
+ovHangFlush                  src/08bj-ovl-hang.js:227-243
 ovImage                      src/08bi-gpu-ovl.js:287-293
 ovInto                       src/08bi-gpu-ovl.js:90-93
 ovNd                         src/08bi-gpu-ovl.js:88
@@ -7917,7 +7921,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bi-gpu-ovl.js · 30 KB
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
-## src/08bj-ovl-hang.js · 15 KB
+## src/08bj-ovl-hang.js · 19 KB
   · Слова на вещах (M803): табличка у вещи, центр кадра пуст:1
 
 ## src/08c-gpu-kit.js · 33 KB

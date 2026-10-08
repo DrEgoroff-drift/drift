@@ -247,6 +247,8 @@ function geoExtra(vp,root){
    кадра счётной видеокарты (view.__cv); с настоящей видеокартой цели не видны ── */
 /* табличка слов на вещи (08bj, M803): пока она рисуется, OVL.hangOn — её первая строка */
 function geoHang(){return (typeof OVL!=="undefined"&&OVL.hangOn)||0;}
+/* табличка сбоку от тела (08bj, M803b): середина по высоте, иначе 0 */
+function geoHangSide(){return (typeof OVL!=="undefined"&&OVL.hangSide)||0;}
 function geoOvQ(Q){return GEO.into?"dock":(typeof OVL==="undefined")?null:Q===OVL.lq?"lab":Q===OVL.cq?"chip":Q===OVL.uq?"ui":null;}
 function geoHookOvl(){
   geoHookBake();
@@ -275,14 +277,14 @@ function geoHookOvl(){
     try{const P=tgt(),q=!P&&GEO.on&&geoOvQ(Q);
       if(r&&(P||q)){const f=/(\d*\.?\d+)px/.exec(font);
         (P||GEO.ov[q]).push({L:q||"dock",k:"t",s:String(text),r:geoR(r.x0,r.y0,r.x1,r.y1),px:f?+f[1]*(sc||1):0,col:geoCol(col),a:al==null?1:al,sq:1,an:[x,y],
-          z:q?GEO_Z[q]:3,g:0,hang:geoHang(),n:P?++GEO.xn:GEO.n++});}}catch(e){}
+          z:q?GEO_Z[q]:3,g:0,hang:geoHang(),hside:geoHangSide(),n:P?++GEO.xn:GEO.n++});}}catch(e){}
     return r;};
   ovText.__g=true;
   ovPush=function(Q,x0,y0,x1,y1,c,m){
     try{if(m===0){const P=tgt(),q=!P&&GEO.on&&geoOvQ(Q);
       if(P||q){const s=ovNd(),a=c[3]||0;
         (P||GEO.ov[q]).push({L:q||"dock",k:"b",r:geoR(x0/s,y0/s,x1/s,y1/s),col:a?[c[0]/a*255,c[1]/a*255,c[2]/a*255,a]:[0,0,0,0],a:1,fill:true,
-          z:q?GEO_Z[q]:3,g:0,hang:geoHang(),n:P?++GEO.xn:GEO.n++});}}}catch(e){}
+          z:q?GEO_Z[q]:3,g:0,hang:geoHang(),hside:geoHangSide(),n:P?++GEO.xn:GEO.n++});}}}catch(e){}
     return oP.apply(this,arguments);};
   if(typeof ovPass==="function"){const oS=ovPass;
     ovPass=function(T,view,w,h){const r=oS.apply(this,arguments);
@@ -536,7 +538,8 @@ function geoLaws(D,C,O,vp,where,opt){
   const cBand={x0:vp.w*.3,y0:vp.h*.3,x1:vp.w*.7,y1:vp.h*.7};
   for(const [nm,A] of layers)for(let i=0;i<A.length;i++){const t=A[i];
     if(t.k==="x"){add("мусор",nm,0,{s:t.s});continue;}
-    if(t.hang&&geoFin(t.r)){const o=geoAnd(t.r,cBand);
+    /* сбоку от тела можно в полосу, если середина таблички в средней трети высоты */
+    if(t.hang&&geoFin(t.r)&&!(t.hside>vp.h/3&&t.hside<vp.h*2/3)){const o=geoAnd(t.r,cBand);
       if(o)add("центр",nm+(t.k==="t"?" «"+t.s.slice(0,28)+"»":" плашка «"+String(t.hang).slice(0,28)+"»"),geoMin(o),{r:geoRs(t.r)});}
     if(t.k!=="t")continue;
     const who=nm+" «"+t.s.slice(0,28)+"»",f=[],tx={px:t.px,n:t.s.length};
@@ -758,9 +761,11 @@ function geoSelf(vp){
   /* слова на вещи (08bj): табличка посреди кадра — «центр», такая же у края — чисто. Рисует та же
      hangDraw, что в игре, через крючки слоя; очередь слоя после — как была */
   if(bk){const u0=OVL.uq.length;GEO.ov.ui.length=0;GEO.on=true;
-    try{for(const [s,x,y] of [["ВИСИТ В ЦЕНТРЕ",vp.w/2,vp.h/2],["ЧИСТО У КРАЯ",16,16]]){
+    /* сбоку от тела: в средней трети высоты — чисто, ниже неё — «центр» */
+    try{for(const [s,x,y,sd] of [["ВИСИТ В ЦЕНТРЕ",vp.w/2,vp.h/2,0],["ЧИСТО У КРАЯ",16,16,0],
+        ["СБОКУ НИЗКО",vp.w/2,vp.h*.69,vp.h*.69],["ЧИСТО СБОКУ",vp.w/2,vp.h*.45,vp.h*.45]]){
         const P={lines:[s],o:{}},S=hangSize(P,1),x0=x===16?x:x-S.w/2,y0=y===16?y:y-S.h/2;
-        Object.assign(P,{R:{x0,y0,x1:x0+S.w,y1:y0+S.h},x:x0,y:y0,nx:x0,ny:y0,r:4});hangDraw(P,1);}
+        Object.assign(P,{R:{x0,y0,x1:x0+S.w,y1:y0+S.h},x:x0,y:y0,nx:x0,ny:y0,r:4,side:sd});hangDraw(P,1);}
       F=F.concat(geoLaws(D0,[],{lab:[],chip:[],ui:GEO.ov.ui.slice(),dock:[]},vp,"тест теста",{noCover:true}));}
     catch(e){}finally{GEO.on=false;OVL.hangOn=0;GEO.ov.ui.length=0;OVL.uq.length=u0;}}
   const has=(law,re)=>F.some(f=>f.law===law&&re.test(f.who+" "+(f.with||"")+" "+(f.s||"")));
@@ -768,7 +773,7 @@ function geoSelf(vp){
     ["мусор",/NaN/],["накрыта",/ПОД ПЛАШКОЙ/],["вылет",/ПЛАШКА С ДЛИННЫМ/],["наезд",/СТРОКА ОДИН|СТРОКА ДВА/],["наезд",/КОСАЯ ЛИНИЯ|ПОПЕРЁК/],["мусор",/НЕ ЧИСЛО/],["сжатие",/СЖАТО/],
     ["поверх",/ЧУЖАЯ/],["сквозь",/ПОДЛОЖКА/],["поверх",/ПРИШЕЛЕЦ/],["накрыта",/ПОД ВИДЖЕТОМ/],["кегль",/МЕЛКО/],["вылет",/ХОЛСТ ВЫЛЕТ/]];
   if(vp.touch)need.push(["цель",/button/]);
-  if(bk)need.push(["вылет",/ВЫПЕЧКА ВЫЛЕТ/],["вылет",/СЛОЙ ВЫЛЕТ/],["центр",/ВИСИТ В ЦЕНТРЕ/]);
+  if(bk)need.push(["вылет",/ВЫПЕЧКА ВЫЛЕТ/],["вылет",/СЛОЙ ВЫЛЕТ/],["центр",/ВИСИТ В ЦЕНТРЕ/],["центр",/СБОКУ НИЗКО/]);
   const miss=need.filter(([l,re])=>!has(l,re)).map(([l,re])=>l+" "+re.source);
   /* композиция: два соседа столбцом, левые края врозь на 2 px — заметка «ровно»; ровная пара рядом — без заметки */
   const cx=document.createElement("div");cx.style.cssText="position:fixed;left:140px;top:150px;width:150px;height:60px";

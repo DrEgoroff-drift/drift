@@ -8,6 +8,11 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M803b Plates stay near their thing.** The leader is at most a quarter of the frame height; a plate may stand beside its body inside the centre band when its middle is in the middle third (the vision knows it); lines wrap to fit; a landmark plate drops the name when the world label is within 200 px. Debt found: the surface hint band of `21e` draws at U² instead of U (left as is).
+
+- **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
+  the scoop and belt briefings and the surface «what» line are plates on their object with a
+  leader (`08bj` `ovHang`); the centre 40 % of the frame stays empty, the vision checks it.
 - **M804 — the night side of the orbs.** The dark half of every planet is filled by its own
   sky (cold blue where there is no air, the air's hue where there is) so it reads as a shape;
   the terminator is a warm rim whose width follows the air; polar caps are grain with cracks
@@ -23,9 +28,6 @@ could ever save.
   (a soft halo on the sphere) with a two-scale city pattern that averages, rather than vanishes,
   once a scale is under two pixels; only land, only past the terminator, dimmed under cloud.
   The per-pixel land test per city is gone, so the loop is cheaper too.
-- **M803 Words hang on things.** Discovery, arrival, the border stamp, the landing readout,
-  the scoop and belt briefings and the surface «what» line are plates on their object with a
-  leader (`08bj` `ovHang`); the centre 40 % of the frame stays empty, the vision checks it.
 - **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
   texture in any pose of its book, any facing and the caller's light; the base, the cave and the
   raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).
