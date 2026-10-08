@@ -73311,14 +73311,7 @@ function drawAstronaut(o){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const f=(o.face||1);
     /* lamp:"gpu" — луч уже лёг сложением по сцене (helmBeamGpu, 22c): шахта и пещера флота */
-    if(o.lamp!=="gpu"){
-      const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
-      g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
-      ctx.fillStyle=g;
-      ctx.beginPath();ctx.moveTo(f*2,-8.6);
-      ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
-      ctx.closePath();ctx.fill();
-    }
+    if(o.lamp!=="gpu")astroBeam(f);
     /* фонарь освещает И САМОГО ходока (M232): грудь и ближняя рука ловят
        отражённый свет — ночью человек не должен быть чёрным под своим лучом */
     const gs=ctx.createRadialGradient(f*2.4,-6.6,.5,f*2.4,-6.6,7.5);
@@ -73326,6 +73319,19 @@ function drawAstronaut(o){
     ctx.fillStyle=gs;ctx.beginPath();ctx.arc(f*1.6,-3.6,7,0,TAU);ctx.fill();
     ctx.restore();
   }
+}
+
+/* луч налобника в 2D (вынесен из drawAstronaut, M801b): кладётся и после карточки рига (21phc),
+   когда сложением по сцене луч не лёг — начало ctx у ног ходока, как у drawAstronaut */
+function astroBeam(f){
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
+  g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.moveTo(f*2,-8.6);
+  ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
+  ctx.closePath();ctx.fill();
+  ctx.restore();
 }
 
 /* ══════════════ флора ══════════════ */
@@ -93447,7 +93453,7 @@ const RIG_CARD={on:true,cap:24,
   dev:null,P:null,ub:null,bg:null,U:new Float32Array(48),
   W:[],                                 /* свои кости позы */
   made:0,                               /* сколько карточек нарисовано */
-  by:{base:0,cave:0,raid:0},            /* сколько раз режимы положили карточку */
+  by:{base:0,cave:0,raid:0,dig:0},            /* сколько раз режимы положили карточку */
   q:[],baseQ:false,walk:0,face:{base:1},
   last:{}};                             /* последняя карточка режима: ноги, мерка, рост в пикселях — для отчёта и набора */
 /* рамка карточки в метрах, ноги на нуле: ранец и факел сзади, руки вперёд, круг — ноги назад */
@@ -93735,14 +93741,15 @@ function rigCardFlush(){
   }
   L.length=0;
 }
-/* пещера: игрок. Мерка пещеры — та же, что у грунта (M217): PLN_M единиц на метр, ×K кадра */
-function rigCardCave(ao){
+/* пещера и шахта (M801b): игрок. Мерка — та же, что у грунта (M217): PLN_M единиц на метр, ×K кадра;
+   свет — свой налобник; в шахте под резаком поза бура */
+function rigCardCave(ao,tag){
   if(!RIG_CARD.on||!GPU.on||!GPU.enc)return false;
-  const f=lifeHere(0,11.9),ppm=PLN_M*f.s;
+  const f=lifeHere(0,11.9),ppm=PLN_M*f.s,m=tag||"cave";
   const C=rigCard({pose:rigPoseOf(ao),phase:ao.phase,face:ao.face,ppm,light:rigLightCave(ao.face),pal:"own",low:!!ao.suitLow});
   if(!C)return false;
   const pass=gpuNext();if(!pass)return false;
-  RIG_CARD.by.cave++;RIG_CARD.last.cave={x:f.x,y:f.y,ppm,h:RIG_H*ppm};
+  RIG_CARD.by[m]++;RIG_CARD.last[m]={x:f.x,y:f.y,ppm,h:RIG_H*ppm};
   return rigCardDraw(pass,C,f.x,f.y,ppm,ao.air?0:1);
 }
 /* абордаж: игрок. Камера всегда сзади и выше (24aa drawRaid), поэтому карточка — спиной к нам,
@@ -103493,11 +103500,13 @@ function drawDigWorld(){
     if(TP)gpuShapes(TP,TS,{blend:"over"});
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
-  const helm=helmBeamGpu(sx,sy+4,D.face||1)?"gpu":true;
+  /* риг карточкой (21phc, M801b): карточка вклеивает 2D-темноту в сцену (gpuOver), поэтому луч
+     кладётся после неё в 2D — 2D ложится выше слоя карточки */
   ctx.save();ctx.translate(sx,sy+4);
   const ao={face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
-    mining:!!D.target,suitLow:suit<25,lamp:helm};
-  if(!lifeAstroAt(ao))drawAstronaut(ao);   /* двойник 20fa (G15) */
+    mining:!!D.target,suitLow:suit<25,lamp:true};
+  if(rigCardCave(ao,"dig"))astroBeam(ao.face);
+  else{ao.lamp=helmBeamGpu(sx,sy+4,ao.face)?"gpu":true;if(!lifeAstroAt(ao))drawAstronaut(ao);}
   ctx.restore();
   /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
      сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —

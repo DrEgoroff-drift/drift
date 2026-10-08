@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 551 · top-level symbols: 8106
+Files: 551 · top-level symbols: 8107
 
 ## SYMBOLS
 
@@ -1469,10 +1469,10 @@ PLANET_FULL                  src/12n-planet.js:14
 PLANET_RATE                  src/12n-planet.js:15
 PLANET_RES                   src/07-planet.js:68
 PLANET_SPIN                  src/07-planet.js:32
-PLANT_BAKE                   src/20-life.js:211
+PLANT_BAKE                   src/20-life.js:217
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
-PLANT_KINDS                  src/20-life.js:166
+PLANT_KINDS                  src/20-life.js:172
 PLANT_UXQ                    src/20fa-life-gpu.js:398
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
@@ -2344,6 +2344,7 @@ artPut                       src/08ca-gpu-canvas.js:551-696
 asMap                        src/14-save.js:209-215
 askText                      src/11u-names.js:59-77
 assignToBase                 src/12a-crew.js:181-190
+astroBeam                    src/20-life.js:144-153
 audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
@@ -3567,7 +3568,7 @@ drawAccel                    src/20aa-poi-shapes.js:142-162
 drawAccountShelf             src/12w-survey.js:93-109
 drawAllies                   src/12a-crew.js:678-698
 drawAnomaly                  src/20aa-poi-shapes.js:164-187
-drawAstronaut                src/20-life.js:4-147
+drawAstronaut                src/20-life.js:4-140
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-651
 drawBargesMap                src/12l-barge.js:653-672
@@ -3602,10 +3603,10 @@ drawCrystalForest            src/20aa-poi-shapes.js:114-140
 drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:166-216
 drawDeposit                  src/21b-surface-deco.js:405-559
-drawDig                      src/23a-dig-draw.js:592-596
+drawDig                      src/23a-dig-draw.js:594-598
 drawDigFauna                 src/23-mode-dig.js:336-345
 drawDigLight                 src/23b-dig-gpu.js:152-164
-drawDigWorld                 src/23a-dig-draw.js:456-544
+drawDigWorld                 src/23a-dig-draw.js:456-546
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:180-194
@@ -3669,8 +3670,8 @@ drawPirateBase               src/24a-mode-raid.js:187-218
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-173
 drawPlanetWorks              src/17e-station-body.js:71-116
-drawPlant                    src/20-life.js:417-425
-drawPlantAlien               src/20-life.js:221-388
+drawPlant                    src/20-life.js:423-431
+drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
 drawPostcard                 src/25g-postcard.js:171-612
 drawRaid                     src/24aa-raid-draw.js:14-650
@@ -4092,7 +4093,7 @@ genMgr                       src/12c-mgr-core.js:237-256
 genName                      src/01-core.js:186
 genPOI                       src/20a-poi.js:32-75
 genPart                      src/05-parts.js:144-217
-genPlant                     src/20-life.js:195-197
+genPlant                     src/20-life.js:201-203
 genPush                      src/13z-gpu-combat.js:57-62
 genRaid                      src/24a-mode-raid.js:30-72
 genTerrain                   src/07a-terrain.js:73-198
@@ -5483,15 +5484,15 @@ mgrWorkFact                  src/12c-mgr-core.js:609-665
 mgrWorkKeep                  src/12c-mgr-core.js:555-564
 mgrWorkSci                   src/12c-mgr-core.js:690-745
 midiHz                       src/10-music.js:106
-mineDeep                     src/23a-dig-draw.js:562-565
-mineKey                      src/23a-dig-draw.js:551
+mineDeep                     src/23a-dig-draw.js:564-567
+mineKey                      src/23a-dig-draw.js:553
 mineLay                      src/13a-guns.js:267-275
-mineLoad                     src/23a-dig-draw.js:566-575
+mineLoad                     src/23a-dig-draw.js:568-577
 mineMul                      src/21e1-surface-world.js:596-614
 mineOver                     src/21e1-surface-world.js:615-644
 mineRopeGpu                  src/21e1-surface-world.js:646-652
-mineSave                     src/23a-dig-draw.js:576-585
-mineSpotX                    src/23a-dig-draw.js:558-561
+mineSave                     src/23a-dig-draw.js:578-587
+mineSpotX                    src/23a-dig-draw.js:560-563
 minedUnit                    src/11-log.js:171-179
 minesTick                    src/13a-guns.js:276-320
 mirrorAck                    src/11f-mirror.js:33-40
@@ -5980,7 +5981,7 @@ pgSave                       src/12y1-parrot-gpu.js:105
 pgScl                        src/12y1-parrot-gpu.js:110
 pgTr                         src/12y1-parrot-gpu.js:107
 pick                         src/01-core.js:31
-pickKindByBias               src/20-life.js:186-190
+pickKindByBias               src/20-life.js:192-196
 pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 pinch0                       src/15-input.js:404
@@ -6046,7 +6047,7 @@ planPtIn                     src/05e-plan.js:22-29
 planTook                     src/11r-plan.js:59-63
 planetBargeLoad              src/12n-planet.js:108-121
 planetBargeRow               src/12n-planet.js:145-151
-planetBiome                  src/20-life.js:167-185
+planetBiome                  src/20-life.js:173-191
 planetGrant                  src/12n-planet.js:25-40
 planetHasLife                src/07a-terrain.js:61-64
 planetHaul                   src/12n-planet.js:67-86
@@ -6075,14 +6076,14 @@ planetSunRot                 src/07-planet.js:85-89
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
-plantBend                    src/20-life.js:212-220
-plantGrad                    src/20-life.js:400-406
+plantBend                    src/20-life.js:218-226
+plantGrad                    src/20-life.js:406-412
 plantLitter                  src/20e-species.js:196-210
-plantPaint                   src/20-life.js:432-631
+plantPaint                   src/20-life.js:438-637
 plantSpeciesName             src/20e-species.js:86-89
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29-37
-plantUx                      src/20-life.js:427-431
+plantUx                      src/20-life.js:433-437
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
@@ -6965,7 +6966,7 @@ ridged                       src/18a-material.js:30
 rigCard                      src/21phc-pln-rig-card.js:197-245
 rigCardBase                  src/21phc-pln-rig-card.js:284-295
 rigCardBounds                src/21phc-pln-rig-card.js:111-119
-rigCardCave                  src/21phc-pln-rig-card.js:316-324
+rigCardCave                  src/21phc-pln-rig-card.js:317-325
 rigCardDesc                  src/21phc-pln-rig-card.js:160-167
 rigCardDev                   src/21phc-pln-rig-card.js:169-175
 rigCardDraw                  src/21phc-pln-rig-card.js:248-254
@@ -6975,7 +6976,7 @@ rigCardMS                    src/21phc-pln-rig-card.js:176-185
 rigCardMesh                  src/21phc-pln-rig-card.js:47-57
 rigCardPal                   src/21phc-pln-rig-card.js:39-46
 rigCardPose                  src/21phc-pln-rig-card.js:81-102
-rigCardRaid                  src/21phc-pln-rig-card.js:328-336
+rigCardRaid                  src/21phc-pln-rig-card.js:329-337
 rigCardRot                   src/21phc-pln-rig-card.js:106-109
 rigCardState                 src/21phc-pln-rig-card.js:69-79
 rigCardWorker                src/21phc-pln-rig-card.js:298-304
@@ -9095,9 +9096,9 @@ zoomTo                       src/15-input.js:358
 ## src/19g-landing-gpu.js · 31 KB
   · посадка на видеокарте (G6, флот «landing»):1
 
-## src/20-life.js · 37 KB
+## src/20-life.js · 38 KB
   · астронавт:1
-  · флора:149
+  · флора:155
 
 ## src/20a-poi.js · 16 KB
   · точки интереса:1
@@ -9434,7 +9435,7 @@ zoomTo                       src/15-input.js:358
 ## src/23-mode-dig.js · 20 KB
   · шахта: спуск вглубь планеты:1
 
-## src/23a-dig-draw.js · 38 KB
+## src/23a-dig-draw.js · 39 KB
   · шахта: отрисовка:1
 
 ## src/23aa-dig-rock.js · 39 KB
