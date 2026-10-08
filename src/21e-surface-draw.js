@@ -63,6 +63,7 @@ function drawSurfaceHud(camx,camy,K){
     pen.rect(cx-w/2,TOP,w,20,"rgba(5,7,12,.72)");
     pen.frame(cx-w/2,TOP,w,20,"rgba(127,230,216,.28)",1);
     pen.text(ht,cx,TOP+14,"rgba(190,235,240,.92)","center");
+    if(typeof hangBlock==="function"){const k=ovNd()*U;hangBlock((cx-w/2)*k,TOP*k,(cx+w/2)*k,(TOP+20)*k);}   /* слова на вещах её обходят (08bj, M803) */
   }
   /* навигатор: маркеры цели у верхней кромки — корабль и пещера */
   const marks=[];

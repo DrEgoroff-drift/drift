@@ -417,6 +417,8 @@ function fleetShipGpu(f,art){
 function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
   const pass=gpuScene();if(!pass||!art||!art.cn)return false;
   const s=Math.hypot(ma,mb);
+  /* борт линии телом (M820, 17c2e): корпус класса — hullGpuDraw, мельче 14 px — огонёк */
+  if(BODY.on&&G.mode==="system"&&G.viewCX!==undefined&&bodyFleet(f,me,mf,Math.atan2(mb,ma),s,al))return true;
   const T=(lx,ly)=>[ma*lx+mc*ly+me,mb*lx+md*ly+mf],[x,y]=T(0,0),w=art.rad*2*s;
   const rot=Math.atan2(mb,ma);
   /* светом звезды (Ships a): свет корпуса (GST, −1) по своей выпечке — краска как есть,

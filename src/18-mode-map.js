@@ -693,7 +693,11 @@ function arriveSystem(sx,sy,o){
   saveGame(true);
   logAdd("dim",(o.rail?"Поезд прибыл: "+G.sys.name+" ("+G.sx+":"+G.sy+")":"Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+o.cost+" топлива")+
     (G.pirates.length?" · чужих сигнатур: "+G.pirates.length:""));
-  say((o.rail?"Поезд прибыл: ":"Прибытие: ")+G.sys.name+"\n"+G.sys.cls.ru+
+  /* прибытие — табличкой на корабле (M803, 08bj): имя, род и что здесь есть одной строкой, чужие */
+  if(hangOk())hangSay("arrive",[(o.rail?"Поезд прибыл: ":"Прибытие: ")+G.sys.name,
+    [G.sys.cls.ru,G.sys.station?"станция":"",G.sys.belt?"пояс астероидов":""].filter(Boolean).join(" · "),
+    G.pirates.length?"чужие сигнатуры: "+G.pirates.length:""].filter(Boolean),"ship",150);
+  else say((o.rail?"Поезд прибыл: ":"Прибытие: ")+G.sys.name+"\n"+G.sys.cls.ru+
     (G.sys.station?"\nстанция":"")+(G.sys.belt?"\nпояс астероидов":"")+
     (G.pirates.length?"\nчужие сигнатуры: "+G.pirates.length:""));
 }

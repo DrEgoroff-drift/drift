@@ -85,14 +85,15 @@ TEST_SUITES.push(()=>suite("мастер станции: сброс атласа
     G.sx=x;G.sy=y;G.sys=s;G.ap=null;G.orbit=null;S=s.station;}
   if(!ok(S,"станция нашлась"))return;
   G.ship.x=S.x+140;G.ship.y=S.y+90;G.ship.vx=G.ship.vy=0;G.zoom=1.2;G.zoomT=null;
-  const J0=stMasterJob,D=GPUDevice.prototype,cbg=D.createBindGroup;let A=null,dead=0;
+  /* мастер станции — путь ?body=0 (M820): там его и ловим */
+  const J0=stMasterJob,D=GPUDevice.prototype,cbg=D.createBindGroup,b0=BODY.on;let A=null,dead=0;BODY.on=false;
   for(const M of ST_MASTER.values())stMasterDrop(M);ST_MASTER.clear();
   for(const k of [...PB.keys()])if(k.startsWith("st|"))prebakeDrop(k);
   try{
     stMasterJob=function(){A=Array.from(arguments);return J0.apply(null,arguments);};
     gpuManual(()=>drawSystem());
   }finally{stMasterJob=J0;}
-  if(!ok(A,"кадр системы заказал мастер станции"))return;
+  if(!ok(A,"кадр системы заказал мастер станции")){BODY.on=b0;return;}
   D.createBindGroup=function(d){for(const e of (d&&d.entries)||[])if(e.resource&&e.resource.__dead)dead++;return cbg.apply(this,arguments);};
   let R=null;
   try{
@@ -105,7 +106,7 @@ TEST_SUITES.push(()=>suite("мастер станции: сброс атласа
     eq(drop()>0,true,"атлас сброшен между записью и первым слоем");
     let st;for(let i=0;i<32&&!(st=it.next()).done;i++);
     R=st&&st.done?st.value:null;
-  }finally{D.createBindGroup=cbg;}
+  }finally{D.createBindGroup=cbg;BODY.on=b0;}
   eq(dead,0,"ни одна выпечка слоя не связала уничтоженную страницу атласа");
   ok(R&&R.Ly.length>0&&R.Ly.every(B=>!!B.tex),"мастер испечён: слоёв "+(R?R.Ly.length:0));
   if(R)stMasterDrop(R);

@@ -220,6 +220,14 @@ the player meets first and by what one reinvention gives to the next.
   the arrival line are leader-lined plates on their object (`OVL`), the centre of the frame
   kept empty; the tutorial banner finds a free band. Gate: `test-geom` asserts no prompt box
   intersects the centre 40 % of the frame in any scene.
+  *Done (08.10, remake-a2):* `08bj` `ovHang()` / `hangSay()` — M720 plates (graphite, cut
+  corner, cream ink, the verb in accent) laid out per frame off the centre band, the HUD, the
+  rail, world labels, chips, the #msg line, the surface hint and the man; leader when stood
+  off; hidden when nothing fits. Takers: discovery (on the planet), arrival and stamp (on the
+  ship, stamp in its power's ink), landing readout and gravity, scoop in/out, belt in (on the
+  target rock), the surface «what» line of a landmark or a deposit. Without WebGPU the old
+  `say()`. Vision law «центр» in `90b2-geom` with a planted plate. Open: the old
+  tutorial banner and `G.prompt` stay as they were (brief); only the wreck has act lines.
 - **M804 The night side.** Sky fill and a warm terminator on every orb; caps as grain; moons
   from the parent's palette. Gate: a pair of five worlds at 760.
   - *Done (four passes, `17gab`):* the night side is filled by its own sky — a cold blue
@@ -256,6 +264,12 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
 - **M820 Bodies for everyone.** Pirates, barges, traffic and the station as meshes of the hull
   kit with a maker grammar; hostile forms that read without the bar; the station with lamps
   (the only warm light of people) and a cast shadow. Gate: the foes pair at 760.
+  *Done (08.10, remake-a2):* `17c2e` kit (`BODY.on`, `sysLightDir`, `bodyBar`, fleet by
+  class, shuttle), `17c2f` barge 3–6 frames and the broken wreck, `17c2g` station per
+  `ST_TYPES` and maker assembly, `17c2h` hostile dressing, the clean power ship and the
+  target frame by the body; seams in `12l` `13` `17f` `12ai1` `17c` `12i` `15b`; suite
+  `91qd-bodies`. Not here: drones (unchanged), the fleet `node`/`derelict` and ships fading
+  at dock keep the bake; the barge distress cue still speaks from the centre (a cue, M826).
 - **M821 The rack** as a side plate of the pod's dials, chart paper dimmed, the centre free.
 - **M822 The map** with three weights, plates for the status lines, the hint on the selected
   object.
@@ -263,7 +277,10 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,
   the ring's shadow, the star's limb. **M826 The HUD trimmed**: the receiver folded to a chip,
-  «Фото» into the menu, the camera's body-in-frame rule aware of the rail.
+  «Фото» into the menu, the camera's body-in-frame rule aware of the rail; the barge's distress
+  cue as a plate at its callsign (the cue stays the source of the action button, only its place
+  moves); on the phone the lens glides to the target in a fight (the planet's `plnGlide` rule),
+  so a pirate is never a 40 px spot (decided 08.10 after M820).
 
 ### Stage D — the way down (M830–M839)
 
@@ -317,6 +334,9 @@ people's grammar of `21pie` for modules and props, the rig for the figures. M628
 home, M630+ the cave, the dig as lit rooms (one source through air only,
 veins as three or four large forms), the raid's light: these are built in `DESIGN-planet.md`'s
 queue by the same builder, in this order after Stage D: base and home → cave → dig → raid.
+Design for the first two steps: `docs/DESIGN-base-scene.md` (09.10) — own things as bodies of the people's grammar on the engine's land (M628a/b), the section as the rock kit cut by a plane with lit rooms and two lenses (M632a–c), entry by the gate without a cut; the base's game (`DESIGN-base.md`) untouched.
+The third step: `docs/DESIGN-cave-scene.md` (09.10) — the stand's M601 scene fed by the game's grid (one density from `C.g`, the cut face as a page, the lamp as the key with shadows and a cone, the day by a second map, three lenses), the way in as a push through the arch without a cut; `CAVE3.on`/`?cave=0` (M630a–d).
+The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section on the cave's kit, dug cells as rooms each under one source, ore bodies as three or four large forms, the planet's sky whole at the top, the way in as a pan down; `DIG3.on`/`?dig=0` (M631a–c). The last: `docs/DESIGN-raid-scene.md` (09.10) — the raid on the interior renderer `27f2` (one key with shadows per room, materials and palette per room kind), foes by the generator in a hostile kit with walk/aim, the rig ported to `r3Kit`, the push through the gate; `RAID3.on`/`?raid=0` (**M633a–c**, a planet-range number so the same builder's queue reads in order).
 
 ### Stage F — rooms and people (M850–M859)
 
@@ -328,6 +348,8 @@ queue by the same builder, in this order after Stage D: base and home → cave �
   corners, the beard grown from the jaw; the wardrobe of M729.
 - **M853 The cantina composed**: three or four seated poses, hands on the counter, the lamp on
   the hero's face, the depth ramp on the bar.
+
+Design for M850–M851: `docs/DESIGN-rooms.md` (09.10) — the four rooms as scenes of `27f2` drawn full-bleed under the HUD the hall's way (one module `29r-rooms-r3.js`, camera stations, the breath and the glide, hit rectangles published for `15-input`), one key with shadows per room and the room's second light as the fill, the pilot as one person (`CP_KIT.pilot`, a saved gene, clothes by room, the live face by the room's state), new window kinds `planet`/`snow`/`sea`/`yard`, poses `lie`/`recline`/`walk`; «Сорока» keeps its room and gets the keeper's body and face, the road the 3D hull; `ROOM3.on`/`?room=0` (M850a–d, M851).
 
 ### Stage G — the phone and the cost (M870–M879)
 
