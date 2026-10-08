@@ -76,7 +76,7 @@ function hallLensAim(L){
   if(k[0]==="g"){const i=hallGoodsKeys().indexOf(k.slice(2)),k0=L.people[0];if(i<0||i>=12||!k0)return null;
     const p=hallGoodsAt(i);return [[k0.x,1.45,k0.z],[p[0],p[1]+.08,p[2]]];}
   const i=INSTR_KEYS.indexOf(k.slice(2)),P=hallPilotAt(HALL.place)||HALL_PILOT_AT.ship;if(i<0)return null;
-  const p=hallInstrAt(i),c=HALL_INSTR_C;return [[P[0],1.45,P[1]],[p[0]+c[0],p[1]+c[1],p[2]+c[2]]];
+  return [[P[0],1.45,P[1]],hallInstrFace(i)];
 }
 /* место камеры с объективом: глаз тот же, цель — к середине человек↔вещь, поле уже в m раз; g — доля пути */
 function hallLens(c,L,g){
