@@ -42,6 +42,11 @@ could ever save.
   moment it settles back to the whole hall. In the hall the table is a plate without its line
   of explanation. The ceiling's cable tray is warm and matte now, so by day it no longer
   competes with the lamp over the counter.
+- **M815 — the hall on the phone.** On a narrow screen the row of sections now brings the
+  section you are in under the eye: before, a section without second-level tabs left the row
+  where it was, and ВЛАДЕНИЯ stood cut off at the right edge. The hall can measure its own frame
+  (`hallCost`): on a desktop card it costs 1.0–1.6 ms of GPU and under 1 ms of CPU at every
+  place, day or night, at phone and desktop sizes alike.
 - **M814 — the board, the cantina, your holdings and the station's site, and the people.**
   The board is the wall itself: every offer is a sheet pinned to the cork, laid out so they
   never spill past the frame however many there are, and the board takes the whole hero zone.

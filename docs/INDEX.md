@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 527 · top-level symbols: 7877
+Files: 529 · top-level symbols: 7881
 
 ## SYMBOLS
 
@@ -842,6 +842,7 @@ HALL_BOARD_MAX               src/27f4h-hall-board.js:12
 HALL_BOARD_SKIP              src/27f4h-hall-board.js:15
 HALL_CA                      src/27f4a-hall.js:91
 HALL_CAMS                    src/27f4a-hall.js:70-78
+HALL_COST                    src/27f4k-hall-phone.js:26
 HALL_COUNTER                 src/27f4b-hall-dress.js:168-176
 HALL_DAY_MS                  src/27f4a-hall.js:53
 HALL_DIAL_BOX                src/27f4g-hall-instr.js:25
@@ -4340,6 +4341,7 @@ hallBones                    src/27f4b-hall-dress.js:70-166
 hallCage                     src/27f4d-hall-props.js:38-47
 hallCam                      src/27f4a-hall.js:110-116
 hallCanvas                   src/27f4a-hall.js:331-337
+hallClk                      src/27f4k-hall-phone.js:25
 hallClose                    src/27f4a-hall.js:366-373
 hallClutter                  src/27f4d-hall-props.js:56-109
 hallCord                     src/27f4b-hall-dress.js:43
@@ -4404,6 +4406,8 @@ hallManMark                  src/27f4a-hall.js:293
 hallMix3                     src/27f4a-hall.js:81
 hallMoving                   src/27f4a-hall.js:129
 hallMsgEther                 src/27f4a-hall.js:383-387
+hallNavOn                    src/27f4k-hall-phone.js:6-9
+hallNavSync                  src/27f4k-hall-phone.js:10-16
 hallNight                    src/27f4a-hall.js:84-88
 hallOpen                     src/27f4a-hall.js:356-365
 hallOrbBake                  src/27f4c-hall-sky.js:37-59
@@ -9351,6 +9355,8 @@ zoomTo                       src/15-input.js:358
 
 ## src/27f4j-hall-pilot.js · 4 KB
 
+## src/27f4k-hall-phone.js · 4 KB
+
 ## src/27f5-portrait3d.js · 7 KB
   · портрет в объёме (M725):1
 
@@ -9489,6 +9495,8 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qc-hall.js · 37 KB
   · зал за экранами (M810):1
+
+## tests/91qd-hall-phone.js · 2 KB
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1
