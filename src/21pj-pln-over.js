@@ -29,8 +29,11 @@ function plnOverPlate(txt,x,y,plate,ink,u){
 function plnOverOld(tr,camx,camy,p){
   if(!tr.mat)tr.mat=planetMat(p);
   if(!PLN_MARK.on)drawPOI(tr,camx,camy,p);
-  drawBuilt(tr,camx,camy,p);
-  if(typeof drawHomeOut==="function"&&typeof homeHereP==="function"&&homeHereP(p))drawHomeOut(tr,camx,camy,p);
+  /* база и дом — тела движка (21pig, M628a); наклейки — только со старым видом ?own=0 */
+  if(!OWN.on){
+    drawBuilt(tr,camx,camy,p);
+    if(typeof drawHomeOut==="function"&&typeof homeHereP==="function"&&homeHereP(p))drawHomeOut(tr,camx,camy,p);
+  }
   if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);
   if(tinCanLive(p))tinDraw(tinAt(G.sx,G.sy),tr,camx,camy,p);
   if(typeof traceDraw==="function")traceDraw(tr,camx,camy,p);

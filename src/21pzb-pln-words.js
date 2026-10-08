@@ -82,7 +82,9 @@ hangSurface=function(){
   const pr=String(G.prompt||"");
   if(hung||!pr||!PLN.shipW)return;
   const ln=pr.split("\n"),vi=ln.findIndex(s=>/^(УДЕРЖИВАЙТЕ |КНОПКА |НЕТ ТОПЛИВА|ДЕЙСТВИЕ|▲)/.test(s)),o={verb:vi<0?undefined:vi};
-  if(Math.abs(S.x-S.shipX)<shipZoneR()){const s=PLN.shipW;plnWordsAt(pj,[s[0],s[1]+2,s[2]],4,"pln.ship",ln,o);}
+  const ow=plnOwnWordsAt(S);   /* у ворот базы и у крыльца дома (21pig, M628a) */
+  if(ow)plnWordsAt(pj,ow.c,ow.h,ow.id,ln,o);
+  else if(Math.abs(S.x-S.shipX)<shipZoneR()){const s=PLN.shipW;plnWordsAt(pj,[s[0],s[1]+2,s[2]],4,"pln.ship",ln,o);}
   else{const mx=S.x/PLN_M,my=plnY(S.y+10);plnWordsAt(pj,[mx,my+1,0],1.9,"pln.man",ln,Object.assign({up:true},o));}
 };
 /* #prompt и #msg под слоем — классами тела; переключаются только на перемене */

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 527 · top-level symbols: 7830
+Files: 529 · top-level symbols: 7862
 
 ## SYMBOLS
 
@@ -1300,6 +1300,7 @@ OVL_WGSL                     src/08bi-gpu-ovl.js:21
 OVR                          src/08bi-gpu-ovl.js:320
 OV_CV                        src/08bi-gpu-ovl.js:301
 OV_EYE                       src/08bi-gpu-ovl.js:297
+OWN                          src/21pig-pln-own.js:26
 OX                           src/21ad-base-gpu.js:149
 P3                           src/17c2b-parts3d.js:18
 P3T                          src/17c2d-parts-thumb.js:21
@@ -1458,11 +1459,18 @@ PLN_OLD_HELD                 src/21pzb-pln-words.js:25
 PLN_OLD_HINT                 src/21pzb-pln-words.js:38
 PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:201
-PLN_OLD_HUD2                 src/21pzb-pln-words.js:89
+PLN_OLD_HUD2                 src/21pzb-pln-words.js:91
 PLN_OLD_LANDING              src/21pza-pln-descent.js:214
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:371
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:372
 PLN_OLD_ULAND                src/21pza-pln-descent.js:206
 PLN_OVER                     src/21pj-pln-over.js:16
+PLN_OWN_GATE_R               src/21pig-pln-own.js:367
+PLN_OWN_OLD_AT               src/21pig-pln-own.js:440
+PLN_OWN_OLD_DIG              src/21pig-pln-own.js:406
+PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:384
+PLN_OWN_OLD_HINT             src/21pig-pln-own.js:433
+PLN_OWN_OLD_UPD              src/21pig-pln-own.js:411
+PLN_OWN_UPD                  src/21pig-pln-own.js:383
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:38-62
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
@@ -1962,7 +1970,7 @@ SUITE_TIERS                  tests/90-harness.js:88
 SUITE_WINS                   tests/90-harness.js:89
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
-SURF_BASE                    src/21e-surface-draw.js:148
+SURF_BASE                    src/21e-surface-draw.js:150
 SURF_HOR                     src/19c-light.js:202
 SURF_LND                     src/21e3-surface-stand-gpu.js:187
 SURF_NEAR                    src/21e2-surface-gpu.js:505
@@ -2127,7 +2135,7 @@ WAR_API                      src/14b-war-net.js:19
 WAR_BUSY                     src/14b-war-net.js:21
 WAR_LED_CACHE                src/14b-war-net.js:45
 WAR_PULL_MS                  src/14b-war-net.js:20
-WATER_MIN_SPAN               src/21e-surface-draw.js:166
+WATER_MIN_SPAN               src/21e-surface-draw.js:168
 WEAR_BASE                    src/21a9-base-laws.js:72
 WEAR_FULL                    src/12s-wear.js:16
 WEAR_RATE                    src/12s-wear.js:18
@@ -3534,8 +3542,8 @@ drawStationBody              src/17c-system-draw.js:168-371
 drawStationMods              src/17a-station-mod.js:220-223
 drawStencils                 src/03d-hull-marks.js:1-90
 drawStrata                   src/18b-geology.js:103-249
-drawSurface                  src/21e-surface-draw.js:300-314
-drawSurfaceHud               src/21e-surface-draw.js:39-131
+drawSurface                  src/21e-surface-draw.js:302-316
+drawSurfaceHud               src/21e-surface-draw.js:39-133
 drawSurfaceWorld             src/21e1-surface-world.js:10-539
 drawSurvey                   src/12w-survey.js:63-83
 drawSysHud                   src/17-mode-system.js:734-1060
@@ -3557,7 +3565,7 @@ drawWallPaper                src/11ae-concert.js:39-71
 drawWanderMap                src/12v-wander.js:159-175
 drawWanderRoom               src/24c-mode-wanderer-draw.js:134-155
 drawWanderer                 src/12v-wander.js:339-443
-drawWater                    src/21e-surface-draw.js:210-298
+drawWater                    src/21e-surface-draw.js:212-300
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-318
 drawWinter                   src/29g-winter-draw.js:365-386
@@ -5567,6 +5575,9 @@ ovTarget                     src/08bi-gpu-ovl.js:95
 ovText                       src/08bi-gpu-ovl.js:154-180
 ovTextRot                    src/08bi-gpu-ovl.js:183-191
 ovlDesc                      src/08bi-gpu-ovl.js:221
+owAt                         tests/91qe-own.js:16-22
+owFound                      tests/91qe-own.js:23
+owWorld                      tests/91qe-own.js:5-13
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
 ownerSign                    src/12al1-toponym.js:20-23
@@ -6048,10 +6059,31 @@ plnMul                       src/21p-pln.js:36
 plnNoise                     src/21p-pln.js:60-67
 plnNorm                      src/21p-pln.js:40
 plnObsSky                    src/21pifa-pln-marks-act-stone.js:233-248
-plnOver                      src/21pj-pln-over.js:45-119
+plnOver                      src/21pj-pln-over.js:48-122
 plnOverAt                    src/21pj-pln-over.js:19-22
-plnOverOld                   src/21pj-pln-over.js:29-44
+plnOverOld                   src/21pj-pln-over.js:29-47
 plnOverPlate                 src/21pj-pln-over.js:23-27
+plnOwnAtGate                 src/21pig-pln-own.js:368
+plnOwnBaseAt                 src/21pig-pln-own.js:83-98
+plnOwnBaseMesh               src/21pig-pln-own.js:109-202
+plnOwnBaseX                  src/21pig-pln-own.js:54-79
+plnOwnBattOf                 src/21pig-pln-own.js:100-105
+plnOwnFrame                  src/21pig-pln-own.js:317-350
+plnOwnFree                   src/21pig-pln-own.js:284-288
+plnOwnGateX                  src/21pig-pln-own.js:362-366
+plnOwnHomeAt                 src/21pig-pln-own.js:205-220
+plnOwnHomeMesh               src/21pig-pln-own.js:221-281
+plnOwnInYard                 src/21pig-pln-own.js:391-394
+plnOwnItem                   src/21pig-pln-own.js:289-296
+plnOwnKit                    src/21pig-pln-own.js:38-48
+plnOwnMark                   src/21pig-pln-own.js:370
+plnOwnPads                   src/21pig-pln-own.js:352-359
+plnOwnPennHere               src/21pig-pln-own.js:106-108
+plnOwnSteel                  src/21pig-pln-own.js:31-36
+plnOwnStep                   src/21pig-pln-own.js:297-315
+plnOwnUnder                  src/21pig-pln-own.js:395-398
+plnOwnWordsAt                src/21pig-pln-own.js:372-377
+plnOwnYardPrompt             src/21pig-pln-own.js:399-405
 plnPadBulb                   src/21pza-pln-descent.js:114
 plnPadFrame                  src/21pza-pln-descent.js:128-158
 plnPadGeo                    src/21pza-pln-descent.js:77-99
@@ -6060,25 +6092,25 @@ plnPadLift                   src/21pza-pln-descent.js:123-127
 plnPadSpots                  src/21pza-pln-descent.js:101-106
 plnPadTop                    src/21pza-pln-descent.js:118-121
 plnPalSet                    src/21pfa-pln-worlds.js:57-66
-plnPlantBatches              src/21pga-pln-plant.js:570-587
-plnPlantBodies               src/21pga-pln-plant.js:127-359
+plnPlantBatches              src/21pga-pln-plant.js:571-588
+plnPlantBodies               src/21pga-pln-plant.js:128-360
 plnPlantBucket               src/21pga-pln-plant.js:45
-plnPlantChunk                src/21pga-pln-plant.js:420-428
-plnPlantCrest                src/21pga-pln-plant.js:443-447
-plnPlantDrop                 src/21pga-pln-plant.js:609-615
-plnPlantFar                  src/21pga-pln-plant.js:448-529
-plnPlantFree                 src/21pga-pln-plant.js:120-123
-plnPlantGrass                src/21pga-pln-plant.js:361-419
+plnPlantChunk                src/21pga-pln-plant.js:421-429
+plnPlantCrest                src/21pga-pln-plant.js:444-448
+plnPlantDrop                 src/21pga-pln-plant.js:610-616
+plnPlantFar                  src/21pga-pln-plant.js:449-530
+plnPlantFree                 src/21pga-pln-plant.js:121-124
+plnPlantGrass                src/21pga-pln-plant.js:362-420
 plnPlantGrid                 src/21pga-pln-plant.js:68-84
 plnPlantGroup                src/21pga-pln-plant.js:51-66
 plnPlantInit                 src/21pga-pln-plant.js:87-94
 plnPlantPut                  src/21pga-pln-plant.js:46-49
-plnPlantRefit                src/21pga-pln-plant.js:590-608
+plnPlantRefit                src/21pga-pln-plant.js:591-609
 plnPlantSeed                 src/21pga-pln-plant.js:43
-plnPlantSees                 src/21pga-pln-plant.js:532-535
-plnPlantShore                src/21pga-pln-plant.js:432-441
-plnPlantStep                 src/21pga-pln-plant.js:540-568
-plnPlantThings               src/21pga-pln-plant.js:97-118
+plnPlantSees                 src/21pga-pln-plant.js:533-536
+plnPlantShore                src/21pga-pln-plant.js:433-442
+plnPlantStep                 src/21pga-pln-plant.js:541-569
+plnPlantThings               src/21pga-pln-plant.js:97-119
 plnPortalOpen                src/21pifa-pln-marks-act-stone.js:188
 plnQuad                      src/21pa-pln-mesh.js:27
 plnQualAuto                  src/21pe-pln-gpu.js:56-65
@@ -6109,7 +6141,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:89
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:294-368
+plnSurface                   src/21pz-pln-frame.js:294-369
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -7347,7 +7379,7 @@ surfNight                    src/06a-celest.js:43-50
 surfNightGpu                 src/21e4-surface-night-gpu.js:59-80
 surfRelightGpu               src/21e2-surface-gpu.js:394-406
 surfRidgesGpu                src/21e2-surface-gpu.js:96-119
-surfScale                    src/21e-surface-draw.js:299
+surfScale                    src/21e-surface-draw.js:301
 surfShadeGpu                 src/21e2-surface-gpu.js:224-230
 surfShadowShapes             src/21e3-surface-stand-gpu.js:175-180
 surfSnap                     src/21e2-surface-gpu.js:507-516
@@ -7739,10 +7771,10 @@ warrantyRegVoid              src/05b1-warranty.js:16
 warrantyShift                src/05b1-warranty.js:13
 wasBlurred                   src/15-input.js:215
 watchCrew                    src/27b-ui-crew.js:34-44
-waterAlga                    src/21e-surface-draw.js:199-203
-waterAlgae                   src/21e-surface-draw.js:192-198
-waterDeepAt                  src/21e-surface-draw.js:205-209
-waterOf                      src/21e-surface-draw.js:167-187
+waterAlga                    src/21e-surface-draw.js:201-205
+waterAlgae                   src/21e-surface-draw.js:194-200
+waterDeepAt                  src/21e-surface-draw.js:207-211
+waterOf                      src/21e-surface-draw.js:169-189
 waveBlock                    src/12pa-beacon.js:146-175
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
@@ -9082,6 +9114,9 @@ zoomTo                       src/15-input.js:358
   · врата (§4.9):184
   · обсерватория (§4.10):228
 
+## src/21pig-pln-own.js · 31 KB
+  · планета: свои вещи телами — база, дом, двор (M628a):1
+
 ## src/21pj-pln-over.js · 7 KB
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
 
@@ -9447,6 +9482,8 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qd-bodies.js · 4 KB
   · тела под звездой (M820):1
+
+## tests/91qe-own.js · 10 KB
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1

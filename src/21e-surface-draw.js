@@ -80,6 +80,8 @@ function drawSurfaceHud(camx,camy,K){
     const hx=homeSpotX(S.p,S.tr);
     if(hx!=null)marks.push({x:hx,ru:"ДОМ",col:"rgba(255,206,138,.95)"});
   }
+  /* база телом (M628a): вход у ворот, а не у корабля — к воротам свой маркер */
+  {const gx=plnOwnMark(S);if(gx!=null)marks.push({x:gx,ru:"БАЗА",col:"rgba(242,178,92,.9)"});}
   /* достопримечательность ведут отдельно от пещеры: до неё далеко, и без
      маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
   const poi=nearestPOI(S.tr,S.x);
