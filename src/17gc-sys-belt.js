@@ -48,45 +48,63 @@ const ROCK_SHAPES=(function(){
 })();
 /* камни по ячейкам сетки мира: у каждой ячейки свой порог, камень есть, где плотность
    (с прибавкой у корабля) его перешла — с мягким краем, это и есть его прозрачность */
-const ROCK_CELL=34;
+/* три слоя по глубине (M825): камень лежит на своей глубине под камерой сверху — ближний крупнее и
+   бежит быстрее, дальний мельче и отстаёт; параллакс настоящий, его даёт проекция. Слой — своя
+   сетка и своё зерно: [глубина в долях D, клетка, наименьший радиус, тон] */
+const SBELT_LAY=[[.2,28,1.6,.7],[0,34,2.2,1],[-.16,64,3.4,1.08]];
 const SBELT_BAS={right:[1,0,0],up:[0,-1,0],fwd:[0,0,1]};
+/* скол и выемка у крупных: вершины за плоскостью скола ложатся на неё (ровная грань), у выемки — внутрь */
+function sbeltChip(m,seed){
+  const r=rng(seed),V=m.verts,dir=()=>{const z=r()*2-1,t=r()*TAU,c=Math.sqrt(1-z*z);return [Math.cos(t)*c,Math.sin(t)*c,z];};
+  let mr=0;for(const v of V)mr=Math.max(mr,Math.hypot(v[0],v[1],v[2]));
+  for(let k=0;k<2;k++){const n=dir(),d=(.58+.18*r())*mr;
+    for(const v of V){const t=v[0]*n[0]+v[1]*n[1]+v[2]*n[2];if(t>d){v[0]-=n[0]*(t-d);v[1]-=n[1]*(t-d);v[2]-=n[2]*(t-d);}}}
+  const u=dir();
+  for(const v of V){const l=Math.hypot(v[0],v[1],v[2])||1,c=(v[0]*u[0]+v[1]*u[1]+v[2]*u[2])/l,k=1-.24*sbss(.8,1,c);
+    v[0]*=k;v[1]*=k;v[2]*=k;}
+  return m;
+}
 function drawBeltRocks(ox,oy,B,Z,shx,shy){
   if(Z<.24)return;
   const zf=clamp((Z-.24)/.1,0,1);
-  const half=(Math.max(W,H)/2/Z)*G.opts.gfx.draw+ROCK_CELL;
   const cx0=(W/2-ox)/Z,cy0=(H/2-oy)/Z;
-  const c0x=Math.floor((cx0-half)/ROCK_CELL), c1x=Math.floor((cx0+half)/ROCK_CELL);
-  const c0y=Math.floor((cy0-half)/ROCK_CELL), c1y=Math.floor((cy0+half)/ROCK_CELL);
   const M=Math.min(W,H),sx=ox+shx*Z,sy=oy+shy*Z;
-  const cap=Math.round(260*G.opts.gfx.draw);
+  const cap=Math.round(320*G.opts.gfx.draw);
   const p3ok=GPU.on&&GPU.enc&&!GPU.overPass;
-  /* тела: камера сверху, на высоте D над плоскостью; F=Z·D — мир ложится на экран ровно как 2D */
   let cam=null,ub=null,ms=1,nf=0;const LIST=SBELT_LIST;LIST.length=0;
-  for(let cx=c0x;cx<=c1x;cx++)for(let cy=c0y;cy<=c1y;cy++){
-    if(LIST.length>=cap)break;
-    const mx=(cx+.5)*ROCK_CELL,my=(cy+.5)*ROCK_CELL;
-    if(Math.abs(Math.hypot(mx,my)-B.orbit)>200)continue;
-    const hh=hashi(cx,cy,B.seed),r=rng(hh);
-    const wx=(cx+r())*ROCK_CELL, wy=(cy+r())*ROCK_CELL;
-    const x=ox+wx*Z, y=oy+wy*Z;
-    if(x<-100||x>W+100||y<-100||y>H+100)continue;
-    const den=sbeltDens(B,wx,wy);if(den<.02)continue;
-    /* у корабля гуще: кольцо сгущения вокруг него, под самим кораблём — просвет */
-    const dk=Math.hypot(x-sx,y-sy)/M;
-    const act=(.55+1.1*Math.exp(-((dk-.24)/.2)*((dk-.24)/.2)))*(.35+.65*sbss(.03,.09,dk));
-    /* и само кольцо у корабля — камни вокруг него, даже если он между сгустками */
-    const dr=(Math.hypot(wx,wy)-B.orbit)/85,nr=Math.exp(-((dk-.2)/.17)*((dk-.2)/.17))*sbss(.03,.09,dk);
-    const t=r(),v=den*act+.55*Math.exp(-dr*dr)*nr;
-    const al=sbss(t*.9+.05,t*.9+.17,v)*zf;
-    if(al<.01)continue;
-    const big=den>.7&&r()<.05;
-    const rad=big?24+r()*20:2.2+r()*r()*14;
-    if(rad*Z<.9)continue;
-    LIST.push({x,y,wx,wy,rad,al,hh,r1:r(),r2:r(),r3:r(),ore:r()<.2});
+  for(let L=0;L<3;L++){
+    const [dz,C,r0,tone]=SBELT_LAY[L],sc=1/(1+dz),zs=Z*sc;   /* zs — масштаб слоя на экране */
+    const half=(Math.max(W,H)/2/zs)*G.opts.gfx.draw+C;
+    const c0x=Math.floor((cx0-half)/C), c1x=Math.floor((cx0+half)/C);
+    const c0y=Math.floor((cy0-half)/C), c1y=Math.floor((cy0+half)/C);
+    for(let cx=c0x;cx<=c1x;cx++)for(let cy=c0y;cy<=c1y;cy++){
+      if(LIST.length>=cap)break;
+      const mx=(cx+.5)*C,my=(cy+.5)*C;
+      if(Math.abs(Math.hypot(mx,my)-B.orbit)>200)continue;
+      const hh=hashi(cx,cy,B.seed+L*7919),r=rng(hh);
+      const wx=(cx+r())*C, wy=(cy+r())*C;
+      const x=W/2+(wx-cx0)*zs, y=H/2+(wy-cy0)*zs;
+      if(x<-120||x>W+120||y<-120||y>H+120)continue;
+      /* к оси полосы гуще: сгустки плюс ровная подложка у средней орбиты */
+      const dr=(Math.hypot(wx,wy)-B.orbit)/85;
+      const den=sbeltDens(B,wx,wy)+.2*Math.exp(-dr*dr*1.6);if(den<.02)continue;
+      /* у корабля гуще: кольцо сгущения вокруг него, под самим кораблём — просвет */
+      const dk=Math.hypot(x-sx,y-sy)/M;
+      const act=(.55+1.3*Math.exp(-((dk-.22)/.18)*((dk-.22)/.18)))*(.3+.7*sbss(.03,.09,dk));
+      const nr=Math.exp(-((dk-.2)/.17)*((dk-.2)/.17))*sbss(.03,.09,dk);
+      const t=r(),v=den*act+Math.exp(-dr*dr/1.7)*nr;
+      const al=sbss(t*.9+.05,t*.9+.17,v)*zf;
+      if(al<.01)continue;
+      /* размеры — степенной закон: на 8–12 мелких один крупный; в густом сгустке изредка глыба */
+      const big=den>.7&&r()<.05;
+      const rad=big?24+r()*20:Math.min(26,r0*Math.pow(1-r()*.985,-.55));
+      if(rad*zs<.9)continue;
+      LIST.push({x,y,wx,wy,wz:0,L,rad,al,hh,big,tone,r1:r(),r2:r(),r3:r(),r4:r(),ore:r()<.2});
+    }
   }
   if(!LIST.length)return;
   if(p3ok){
-    if(!B.rm){B.rm=[];for(let k=0;k<12;k++)B.rm.push(makeRock(hashi(B.seed,k,0x50C),1));}
+    if(!B.rm){B.rm=[];for(let k=0;k<12;k++){const m=makeRock(hashi(B.seed,k,0x50C),1);B.rm.push(k>=8?sbeltChip(m,hashi(B.seed,k,0xC41)):m);}}
     const D=2400/Z;
     cam=B.cam3||(B.cam3={x:0,y:0,z:0});cam.x=cx0;cam.y=cy0;cam.z=-D;
     const sys=G.sys,stl=sysStyle(sys),sc0=hex2rgb(sys.cls.col),scol=[sc0[0]*.6+92,sc0[1]*.6+90,sc0[2]*.6+88];
@@ -96,10 +114,15 @@ function drawBeltRocks(ox,oy,B,Z,shx,shy){
     ms=brockMs();BROCK.ni=0;
     for(let pass=0;pass<2;pass++)for(const o of LIST){
       if((o.al>=.99)===(pass===1))continue;
-      const m=B.rm[o.hh%12],tn=SBELT_TINT[(o.hh>>>8)%SBELT_TINT.length],rk=SBELT_RK;
-      for(let j=0;j<3;j++)rk[j]=m.rock[j]*tn[j];
+      const m=B.rm[o.big||o.rad>9?8+o.hh%4:o.hh%8],tn=SBELT_TINT[(o.hh>>>8)%SBELT_TINT.length],rk=SBELT_RK;
+      for(let j=0;j<3;j++)rk[j]=m.rock[j]*tn[j]*o.tone;
       const ore=o.ore?[150+o.r1*80,110+o.r2*60,64+o.r3*34]:rk;
-      brockPut(cam,m,o.wx,o.wy,0,o.rad,1,o.r1*TAU,o.r2*TAU+G.t*(o.r3-.5)*.004,o.al>=.99?1:o.al,rk,ore,false);
+      /* ближние вертятся с периодом 20–60 с, средние втрое, дальние вшестеро медленнее */
+      const w=(o.r3<.5?-1:1)*TAU/(60*(20+40*o.r4))/[6,3,1][o.L];
+      brockPut(cam,m,o.wx,o.wy,SBELT_LAY[o.L][0]*D,o.rad,1,o.r1*TAU,o.r2*TAU+G.t*w,o.al>=.99?1:o.al,rk,ore,false);
+      /* треть камней вытянута 1:1.6–1:2.5 — столбцы поворота умножаются на оси масштаба */
+      if((o.hh>>>4)%3===0){const e=1.6+.9*o.r4,ex=Math.pow(e,.6),ey=Math.pow(e,-.4),I=BROCK.I,k=(BROCK.ni-1)*28;
+        for(const q of [4,8,12]){I[k+q]*=ex;I[k+q+1]*=ey;I[k+q+2]*=ey;}}
       if(pass)nf++;
     }
     const p3=brockBegin(ms),n1=BROCK.ni-nf;
@@ -167,8 +190,8 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let g=mix(sbn(vec2f(s1/28.,dr/11.)),sbn(vec2f(s2/28.,dr/11.)),w2);
   /* клочья: маска в координатах мира, круглая — дымка рвётся, а не тянется лентой */
   let wq=d/Z/260.+vec2f(fu.v[2].w*.0001,3.);
-  let pf=smoothstep(.3,.62,sbf(wq+vec2f(sbn(wq*1.7)*.8,sbn(wq*1.7+vec2f(4.,9.))*.8)));
-  let dd=clamp(m,0.,1.3)*(.05+1.5*smoothstep(.3,.75,n)*pf)*(.8+.4*g);
+  let pf=smoothstep(.2,.55,sbf(wq+vec2f(sbn(wq*1.7)*.8,sbn(wq*1.7+vec2f(4.,9.))*.8)));
+  let dd=clamp(m,0.,1.3)*(.08+1.5*smoothstep(.25,.65,n)*pf)*(.8+.4*g);
   let a=clamp(dd*fu.v[1].w,0.,.5);
   return vec4f(fu.v[1].rgb*a,a);}`;
 const SBELT_U=new Float32Array(60);
@@ -177,7 +200,7 @@ function gsyBeltHaze(pass,sys,ox,oy,Z){
   U[0]=ox;U[1]=oy;U[2]=B.orbit*Z;U[3]=Z;
   const sc=hex2rgb(sys.cls.col);
   for(let i=0;i<3;i++)U[4+i]=(118*.62+sc[i]*.38)/255;
-  U[7]=.45;U[11]=TAU*B.orbit*.5;
+  U[7]=.55;U[11]=TAU*B.orbit*.5;
   /* сгустки в кадре — ближние к центру первыми */
   const pick=SBELT_PICK;pick.length=0;
   for(const c of K.c){if(!c.on)continue;

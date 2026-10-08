@@ -146,6 +146,16 @@ could ever save.
   until the alarm has been quiet for 45 frames. On the map the message hangs at the far third of
   the course line; with no course (and always on the phone) it is a second line under «ВЫ».
   On the ground a message joins the hint plate as one more line — one thing, one plate.
+- **M825a Five gaps after the belt.** Round the ship the nebula is quiet rather than gone: its
+  light is pressed down near you, strands and lanes kept, and comes back to full strength further
+  out — no more black pocket. The far comet rides with the gas instead of standing nailed to the
+  screen. The belt is three layers deep: near rocks bigger and quicker, far ones small and slow,
+  thicker toward the middle of the band, one big rock among many small, a third of them long
+  rather than round, the big ones chipped and dented, the near ones turning slowly; the dust in
+  the clumps shows. Inside the far gas thin dust lanes twist, hard on the dark side and soft on
+  the light, and the colour drifts across a cloud — toward blue in places, warm and brighter at
+  the core.
+
 - **M824 The belt.** The asteroid belt in the system view is no longer a straight lighter band
   with rocks sprayed evenly across it. It gathers into clumps along the ring, each its own length,
   width and density, with thin stretches between; the rocks are real bodies lit by the star from
