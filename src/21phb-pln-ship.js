@@ -277,11 +277,11 @@ function plnShipFrame(F,pos,yaw,o){
   const g=o.gear==null?1:clamp(o.gear,0,1),sq=clamp(o.sq||0,0,1),thr=clamp(o.thr||0,0,1),hot=clamp(o.hot||0,0,1);
   const tilt=o.tilt||0,alt=Math.max(0,o.alt||0),ct=Math.cos(tilt),st=Math.sin(tilt);
   const at=(x,y,z)=>{const xr=x*ct-y*st,yr=x*st+y*ct;return [pos[0]+xr*c+z*s,pos[1]+yr,pos[2]-xr*s+z*c];};
-  /* опоры: грунт под каждой пятой — по земле, если она есть и корабль на ней */
+  /* опоры: грунт под каждой пятой — по земле, если она есть и корабль на ней; на площадке — её плита (floor) */
   const feet=[],L=o.L,rzT=D.rz(-D.lenM*.26),air=alt>.25;
   for(const q of [[D.lenM*.40,0],[-D.lenM*.33,-(rzT*.72+.95)],[-D.lenM*.33,rzT*.72+.95]]){
     const w=at(q[0],0,q[1]);
-    feet.push(!air&&L&&typeof plnLandRibAt==="function"?clamp(plnLandRibAt(L,w[0],w[2])-pos[1],-1.2,1.2):0);
+    feet.push(!air&&L&&typeof plnLandRibAt==="function"?clamp(Math.max(plnLandRibAt(L,w[0],w[2]),o.floor==null?-1e9:o.floor)-pos[1],-1.2,1.2):0);
   }
   const drop=.32*sq;
   const lk=g.toFixed(2)+"|"+sq.toFixed(2)+"|"+feet.map(v=>v.toFixed(2)).join(",");

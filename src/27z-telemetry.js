@@ -331,7 +331,9 @@ function hud(){
   else if(G.mode==="wanderer"){a="На борту «Сороки»";b=(typeof wanderLeftRu==="function")?wanderLeftRu():"";}
   else if(G.mode==="map"){a="Навигация";b="радиус "+decRu(st.jump,1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name;
-    b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
+    b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;
+    /* погода — та же, что встретит на земле (M830): захода и поверхности одна строка */
+    {const wn=typeof weatherName==="function"?weatherName(G.land.p):"";if(wn)b+=" · "+wn;}}
   /* ── строка места не повторяет шкалы (A2) ──
      Пока приборы висели наверху, а «где мы» — рядом с ними, сводка дублировала
      трюм и скафандр текстом: два раза одно и то же в одном углу кадра. Теперь

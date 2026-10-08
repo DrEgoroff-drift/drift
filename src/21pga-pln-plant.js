@@ -101,6 +101,8 @@ function plnPlantThings(L,p){
   const shipL=typeof plnShipLenM==="function"?plnShipLenM():8.5;   /* расчистка под корабль — по его длине */
   add(L.shipX*M,7,shipL*.62+1.6,shipL*.42+1.8,shipL*1.1+2);
   T.push([L.rampX,L.rampZ+1.2,1.2,2.2,0]);
+  /* плита площадки (21pza, M830): трава не прорастает сквозь неё */
+  if(tr.padX!=null&&typeof PLN_LPAD==="object")add(tr.padX,7+PLN_LPAD.dz,PLN_LPAD.hx*1.2+.4,PLN_LPAD.hz*1.2+.4,PLN_LPAD.hx+3);
   for(const q of tr.poi||[]){const mk=plnMarkPad(q);if(mk)T.push(mk);}   /* площадки памятников (21pie, M627) */
   if(!S)return T;
   const TH=PLN_THINGS;

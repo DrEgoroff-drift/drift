@@ -8,6 +8,23 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M830 — landing by the planet's descent.** The touchdown no longer cuts: the descent remembers
+  its window and ruler (`PLN.hand`), the first surface frame stands in it and eases over 1.2 s to
+  the walk lens — the man by the ramp and the near lens by the ship (before, the frame jumped to
+  twice the scale centred on the man). Near the ground the lens comes closer (×1.6 from 30 m to
+  6 m), and the surface's near lens carries on from there. The pad is a body: a slab 13 × 8.5 m
+  with a rounded edge, 35 cm over the levelled ground (over water — out of the water), its foot
+  buried as a berm, amber dashes along the edge and two lamps on posts at the far corners; it
+  casts its shadow, the ship lands and stands on it, the grass keeps off it. On the approach a
+  wave runs along the dashes from the ends to the middle; the touchdown stills it. The exhaust
+  lights the ground under the nozzles; at dusk a landing flood lights the ship from the lens
+  side. Words are on things: the approach line («Заход на …,
+  тяготение») is a plate over the ship, not capitals in the sky, and the readout stands in the
+  pads row by ТОРМОЗ on a plate (on a phone, above the row) and speaks metres — altitude,
+  descent and drift in m/s, the pad's side and distance (it was in game units, «ВЫСОТА 549» for
+  forty metres). The landing's place line names the weather as the surface's does; the zenith
+  darkens with height. With `PLN.on` the old approach (the 2D sky, the slab and trees, the lander
+  bake) is never drawn; `?pln=0` keeps it.
 - **M804 — the night side of the orbs.** The dark half of every planet is filled by its own
   sky (cold blue where there is no air, the air's hue where there is) so it reads as a shape;
   the terminator is a warm rim whose width follows the air; polar caps are grain with cracks

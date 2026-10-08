@@ -19,7 +19,8 @@ sizes: a comma list of pc (1600×900), 2k (2560×1440), 4k (3840×2160), s23 (39
 the cap the game puts on a phone, PHONE_DPR), phone (390×844 at 2.625, the S23's own pixels;
 both emulate its pixels on this GPU, not its chip), tab (1024×1366 at 2). q= is JavaScript run
 before the landing, to try a cut: q="PLN_GPU.shn=2048" or q="plnQualSet('low')"; tag= names the
-frames and the snippet of the try.
+frames and the snippet of the try; js= measures another snippet in place of the landing (a descent from
+descent.py: js=g_desc_<name>.js; then CPU reads plnSurface, which the descent calls too).
 """
 import json
 import os
@@ -53,9 +54,9 @@ def parse(txt):
     return None
 
 
-def run(ty, size, q, wait, sec, tag):
+def run(ty, size, q, wait, sec, tag, snip=""):
     w, h, dpr = SIZES[size]
-    land = find("g_w_%s_1_lake.js" % ty)
+    land = find(snip or ("g_w_%s_1_lake.js" % ty))
     if not land:
         raise SystemExit("no landing snippet for %s: run world.py %s 1 lake .125 first" % (ty, ty))
     src = open(land, encoding="utf-8").read().strip()
@@ -86,7 +87,7 @@ def main():
     built = None
     cpu = None
     for s in sizes:
-        e = run(ty, s, q, wait, sec, tag)
+        e = run(ty, s, q, wait, sec, tag, kv.get("js", ""))
         g = e.get("gpu") or {}
         if not g or g.get("none"):
             print("%-6s  no GPU marks (tsOk=%s, err=%s)" % (s, e.get("tsOk"), e.get("err")))
