@@ -335,8 +335,24 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   is gone (an empty hold keeps one short line), the table is a plate (`#station.hall .mk`),
   and the СТОЙКА tag moved to the counter's front panel. `91qc-hall` checks the row order,
   the slots on the top, a full crate, the hot rim and that its lamp reaches the frame.
+  *M811 follow-up (in the M812 pass):* the lens (`hallLens` in `27f4e`): the general plan is
+  never zoomed; a hot row eases the target to the midpoint of the keeper and its crate and
+  narrows the field ×1.31 (the keeper .27 of the frame, measured by `91qc-hall`), with
+  plnGlide's constants (.45 s in, .7 s out) and a 750 ms (45-frame) hold after release; on a
+  phone `pointerleave` from a lifted finger no longer clears the row, so a tap holds it. The
+  shelf goods are by material, one note to a shelf, the top shelf dustier. The crate stencil
+  is the diamond colour capped at 45 % HSV saturation (`hallStencil`), no glow. The cable
+  tray went warm and matte: by day it measures .41 of the shade's brightness, was .58 and
+  blue-white.
   **M812 The yard (ВЕРФЬ)** — hulls on the hangar studio at
-  ≥160 px, the class as a tag. **M813 ПРИБОРЫ** — the five dials as objects with their drift
+  ≥160 px, the class as a tag. *Done:* `27f4f-hall-yard` turns `shipRow` into a card in the
+  hall (`hallShipList` wraps every yard loop of `26e`); its `.yth.big` place is 170 px high,
+  and `hallYardFit` gives places ≥120 px the 3D hull of `17c2a` in the hangar's view (yaw .5,
+  tilt .98) framed by the hull's own bounds (`hgUnits`), small places keep the top view.
+  Every stock hull measures ≥160 px along its long side. The hall gets a work lamp over the
+  window bench (`HALL_WORK`, a two-thirds copy of the counter's shade, .7 m nearer the camera
+  than the heads): third in the light list so the limit never cuts it, the night key of the
+  КОРАБЛЬ and СТРОЙКА places. **M813 ПРИБОРЫ** — the five dials as objects with their drift
   on a plate; prose gone. **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
   cantina as the hall itself (M725 composed anew: poses, one hero, the sign off centre), the
   site's silhouette. **M815 The phone reflow** of all of the above.

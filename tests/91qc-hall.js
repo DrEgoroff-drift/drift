@@ -82,7 +82,33 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     ok(n2>n1&&gl&&gl.goods==="iron","строка «Железо» под мышью — обвязка и свет над её ящиком");
     const cm=hallCam(HALL_CAMS.trade,1920,1080,true);L.room=hallRoomMesh(L);
     ok(hallScene(L,cm,1).lights.some(l=>l.goods==="iron"),"свет горящего ящика попадает в кадр (не срезан пределом ламп)");
-    HALL_GOODS.hot=null;hallGoodsDrop();G.cargo=c0;}
+    /* объектив: общий план не увеличен; горящая строка ведёт его к ящику (хозяин .26–.28 кадра), отпустил — 45 кадров ждёт */
+    const k0=L.people[0],c=HALL_CAMS.trade,wp=HALL.place;HALL.place="trade";
+    eq(hallLens(c,L,0),c,"без горящей строки объектив — общий план");
+    const kl=hallManK(hallCam(hallLens(c,L,1),1920,1080,true),k0.x,k0.z,1080);
+    ok(kl>=.26&&kl<=.28,"объектив у ящика: хозяин "+kl.toFixed(3)+" высоты кадра");
+    const pg=r3Proj(hallCam(hallLens(c,L,1),1920,1080,true).vp,hallGoodsAt(hallGoodsKeys().indexOf("iron")),1920,1080);
+    ok(pg&&pg[0]>0&&pg[0]<1920*hallHero(1920)&&pg[1]>0&&pg[1]<1080,"ящик «Железо» в кадре зала при объективе");
+    HALL_LENS.last=0;eq(hallLensWant(1e6),1,"горит строка — объектив хочет к ящику");HALL_GOODS.hot=null;
+    eq(hallLensWant(1e6+700),1,"отпустил: 700 мс объектив ещё держит");eq(hallLensWant(1e6+760),0,"после 45 кадров — назад к общему плану");
+    HALL.place=wp;HALL_GOODS.hot=null;hallGoodsDrop();G.cargo=c0;}
+
+  /* M812: у окна ночью свой ключ — рабочая лампа над верстаком, не над головой пилота, и предел ламп её не срезает */
+  {const was=HALL.night,wp=HALL.place,L=hallLayout("yard");L.room=hallRoomMesh(L);HALL.place="ship";HALL.night=1;
+    const pa=HALL_PILOT_AT.ship,N=hallScene(L,hallCam(HALL_CAMS.ship,1920,1080,true),1.5),wl=N.lights.find(l=>l.work);
+    ok(!!wl,"ночью у окна горит рабочая лампа");
+    ok(Math.hypot(HALL_WORK[0]-pa[0],HALL_WORK[1]-pa[1])>=.4&&HALL_WORK[1]-pa[1]>=.4,"рабочая лампа ближе к камере, чем голова пилота");
+    const near=N.lights.filter(l=>!l.work&&Math.hypot(l.p[0]-HALL_WORK[0],l.p[2]-HALL_WORK[1])<3.2);
+    ok(!!wl&&near.length>0&&near.every(l=>l.c[0]<wl.c[0]),"у окна ночью она — ключ: ярче "+near.length+" ламп рядом");
+    HALL.night=was;HALL.place=wp;}
+
+  /* M812: в месте карточки (≥120 px) корпус — объём ангара, длинная сторона не меньше 160 px; в малом — прежний вид сверху */
+  {const wo=H3D.on;H3D.on=true;
+    for(const id of SHIP_KEYS){const S={},f=hallYardFit(S,id,400,HALL_YARD_H),m=h3dMesh(hullOf(id),S.v3&&S.v3.gear),U=hgUnits(m,S.v3.tilt,S.v3.persp,[S.v3.yaw]);
+      const lw=f[2]*Math.max(U.hu1-U.hu0,U.hv1-U.hv0);
+      ok(!!S.v3&&lw>=160&&f[2]*(U.hv1-U.hv0)<=HALL_YARD_H,"корпус «"+id+"» в карточке — объём, "+lw.toFixed(0)+" px по длинной стороне, в высоту места");}
+    const S0={};hallYardFit(S0,SHIP_KEYS[0],120,64);ok(S0.v3===null,"в малом месте — вид сверху, как раньше");
+    H3D.on=wo;}
 
   /* наезд: от двери к месту, к концу — ровно цель */
   hallGo("board",true);
@@ -110,4 +136,15 @@ TEST_SUITES.push(()=>suite("зал станции: подсказка не ло�
   if(w>=900)ok(r.left>=w*hallHero(w)-1,"плашка левее края зала нет: "+r.left.toFixed(0)+" ≥ "+(w*hallHero(w)).toFixed(0));
   ok(r.width<w*.62,"плашка, не полоса: "+r.width.toFixed(0)+" из "+w);
   st.className=was;m.textContent=txt;
+}));
+
+/* верфь в зале (M812): корпус — карточка, место под корабль ≥160 px, класс — тегом у имени */
+TEST_SUITES.push(()=>suite("зал станции: карточки верфи",{tier:"browser"},()=>{
+  resetWorld();const st=document.getElementById("station");ok(!!st,"есть #station");if(!st)return;
+  const was=st.className,id=SHIP_KEYS[1]||SHIP_KEYS[0],box=el("div","hcards");
+  st.classList.add("scr","hall","open");const card=hallShipCard(id,SHIPS[id]);box.appendChild(card);st.appendChild(box);
+  const th=card.querySelector(".yth.big"),tag=card.querySelector(".cls");
+  ok(!!th&&th.getBoundingClientRect().height>=160,"место под корабль "+(th?th.getBoundingClientRect().height.toFixed(0):"—")+" px ≥ 160");
+  ok(!!tag&&tag.textContent===SHIPS[id].cls,"класс — тегом у имени");
+  box.remove();st.className=was;
 }));
