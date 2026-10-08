@@ -8,6 +8,17 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M630b — the halls, pass 1.** `22dc` dresses the cave where the game's `caveDeco` puts things:
+  dripstone ported from the stand onto the engine's kit — stacks of caps from the floor, bells from
+  the roof, a column with its neck where they meet, scalloped rims; what hangs comes in clumps (one
+  long member, shorter ones about it, bare roof between); curtains as banded sheets the lamp shines
+  through (material 15); mauve crystal clusters from the floor or the roof, the big ones lighting
+  the hall (four nearest lights, three glows); ore veins on the cut face as a dark seam with dim
+  orange grains. Flowstone mounds and teeth by the back wall, and the back wall itself fluted in
+  the shader (ribs of uneven width in bunches, each ending at its own height), so the lamp rakes
+  ribs instead of a plane. In full day, rock facing up near the mouth wears moss. Built lazily in
+  16 m bins (≤ 5 ms a frame), cached on the cave. Stand: `cave.py` takes `zone:<kind>[:<frac>]`
+  and `near=0|1`.
 - **M630a — the cave on the engine, pass 1.** The cave is drawn as rock in section: one density
   from the game's grid (the rock stands where `caveSolidAt` says rock), cut at the walk plane,
   with strata, ledges and lumps by the world's kind. The helmet lamp is the key light with shadows

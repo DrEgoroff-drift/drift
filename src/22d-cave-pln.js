@@ -50,6 +50,7 @@ function cave3Frame(){
   /* у вещи (строка зовёт ДЕЙСТВИЕ) объектив подходит ближе: .45 с туда, .7 с обратно */
   const want=/^ДЕЙСТВИЕ/.test(String(G.prompt||""))?1:0;
   M.near=M.near==null?want:M.near+(want-M.near)*(1-Math.exp(-dt/(want>M.near?Ln.nIn:Ln.nOut)));
+  if(M.nearPin!=null)M.near=M.nearPin;   /* стенд держит объектив (cave.py near=) */
   /* тычок пришёл от прошлого кадра: его цель — в окне, которое было показано */
   if(C.walkTarget!=null&&C.walkTarget!==M.wt){C.walkTarget=clamp(C.walkTarget+M.dx,0,CAVE_W);}
   M.cx+=(C.x/CAVE_PPM-M.cx)*(1-Math.exp(-dt/Ln.tau));
@@ -101,6 +102,8 @@ function cave3Frame(){
     tris+=g.n/3;
   }
   for(const b of F.batches)F.draw.push({geo:b.geo,inst:b.inst,lamp:false,sun:true});
+  /* убранство залов (22dc): натёки, завесы, кристаллы, жилы на разрезе */
+  tris+=cave3DressFrame(C,F,Fd,M.cx-hw-3,M.cx+hw+3,M.cx,first||CAVE3.rush);
   Object.assign(F,{vp:Ls.vp,eye:Ls.eye,t:(G.t/60)%7200,lamp:{p:lp,d:ld,k:1},lampVP,reach,near:reach*.45,
     sun,sunVP:day.m,sunRange:day.range,dayK,mouth,lean,surfY:sY,skyLo,skyHi,expo:1,cutZ:0,bed:Fd.sty.bed});
   M.stat.chunks=list.length;M.stat.left=C.ch3?C.ch3.left:0;M.stat.tris=Math.round(tris);

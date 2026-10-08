@@ -302,14 +302,40 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     let gr = (gb * 0.30 + gq * 0.12) / 0.07;
     N = normalize(N - (gr - N * dot(gr, N)));
     ao *= 0.72 + 0.28 * smoothstep(0.2, 0.65, b0);
+    /* натёчные борозды на стене, что смотрит на нас: пятнами, сверху вниз; фонарь ловит рёбра, не плоскость */
+    let wf = smoothstep(0.25, 0.7, -N.z) * smoothstep(0.6, 1.6, in.wpos.z);
+    if (wf > 0.001) {
+      /* ребро к ребру разной ширины; пучками, между ними гладко; каждое кончается на своей высоте */
+      let u = in.wpos.x * 1.7 + 1.8 * vn3(in.wpos * vec3f(0.5, 0.1, 0.5), 45u);
+      let id = floor(u); let fu = u - id;
+      let rh = hash2(vec2i(i32(id), 7), 51u);
+      let run = smoothstep(0.35, 0.6, vn3(vec3f(id * 1.37, in.wpos.y * 0.5, in.wpos.z * 0.3), 53u));
+      let mk = wf * run * step(0.3, rh) * (0.5 + 0.5 * rh) * smoothstep(0.3, 0.55, vn3(in.wpos * vec3f(0.25, 0.4, 0.25) + vec3f(7.0, 0.0, 3.0), 43u));
+      let sr = sin(3.14159 * fu); let cr = cos(3.14159 * fu);
+      N = normalize(N + vec3f(-cr * 0.7 * mk, 0.0, 0.0));
+      ao *= 1.0 - 0.3 * mk * (1.0 - sr);
+      alb *= 1.0 + 0.08 * mk * (sr - 0.5);
+    }
     let b = strat(in.wpos); let f = fract(b);
     let wall = 1.0 - smoothstep(0.5, 0.9, abs(N.y));
     /* пласты — только на разрезе; на стене пласт лишь чуть меняет тон, без линии */
     alb *= 0.9 + 0.12 * sin(3.14159 * f) * wall;
+    /* в полном дне камень носит мох: на том, что смотрит вверх, пятнами */
+    let dmm = dayMask(in.wpos);
+    if (dmm > 0.001) {
+      let mn = vn3(in.wpos * 0.7 + vec3f(3.0, 0.0, 1.0), 41u);
+      let mk = dmm * smoothstep(0.35, 0.9, N.y) * smoothstep(0.4, 0.65, mn) * 0.85;
+      alb = mix(alb, mix(vec3f(0.05, 0.19, 0.12), vec3f(0.16, 0.30, 0.05), n2), mk);
+    }
   }
   if (mat == 11) {
     ao = ex; wet = glow; wrap = 0.45;
     alb *= 0.85 + 0.3 * vn3(in.wpos * vec3f(3.0, 0.7, 3.0), 9u);
+  }
+  if (mat == 15) {
+    /* завеса: тонкий лист, свет идёт сквозь него */
+    ao = ex; wet = glow; wrap = 0.5;
+    alb *= 0.9 + 0.2 * vn3(in.wpos * vec3f(2.0, 5.0, 2.0), 11u);
   }
   /* человек и звери: свечение в запасе (стекло шлема, огни ранца) */
   if (mat == 4 || mat == 8) { wet = 0.35; emis = glow; }
@@ -328,6 +354,7 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     c += e * (pow(clamp(dot(N, hv), 0.0, 1.0), mix(18.0, 80.0, wet)) * wet * lit * 0.9);
     /* натёк пускает свет в свои края */
     if (mat == 11) { c += alb * e * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0) * 0.35 * smoothstep(-0.6, 0.2, ndl)); }
+    if (mat == 15) { c += alb * vec3f(1.25, 0.8, 0.45) * e * (clamp(-ndl, 0.0, 1.0) * 0.7 + 0.12); }
   }
   let Ls = normalize(g.sunDir.xyz);
   let dm = dayMask(in.wpos);
@@ -343,7 +370,7 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     c += e * (pow(clamp(dot(N, hv), 0.0, 1.0), mix(18.0, 80.0, wet)) * wet * lit * 0.5);
   }
   var even = 0.0;
-  if (mat == 11) { even = 0.35; }
+  if (mat == 11 || mat == 15) { even = 0.35; }
   c += alb * points(in.wpos, N, even) * mix(0.5, 1.0, ao);
   c += alb * emis;
   return vec4f(haze(c, in.wpos, 1.0), 1.0);
