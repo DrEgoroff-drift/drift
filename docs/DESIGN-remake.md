@@ -373,6 +373,17 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   fringe takes an optical centre and strength in `v[12]` (default unchanged for the cantina and
   portraits); the hall puts the centre on the lens target, `HALL_CA` .004. The plate's backdrop
   is opaque. Night planes are measured with the vignette's corner cells masked: min .08.
+  **M814a** (first pass of M814, the designer's three gaps of M813b) *Done:* the plate's
+  bodies take one key (`HALL_DIAL_KEY`, a copy of each body fill on top, top − bottom ≥ .12
+  value per maker), a highlight by material (`HALL_INSTR_HL`) masked to the body, a radial
+  contact shadow and glass arcs. On a PC the hall's canvas is the hero zone only
+  (`hallDrawW`; `hallCrop` squeezes the full-frame projection, vignette and fringe use the
+  full-frame uv through `v[13]`), its density is the screen's up to 2 within 3.2 Mpx
+  (`hallDpr`), and the post pass sharpens (`HALL_SHARP` .8, clamped to the four neighbours,
+  `v[13].z`; off for the cantina). Bench edge / plate edge on a DPR 2 frame: 1.13 (≤ 1.2).
+  At night the work lamp's inner cone takes all five dials and a cold rim light sits behind
+  the row under the sill (`rim:1`, ship and know places only). People: the pilot goes to the
+  rig 21pha (L2), the keeper and the crowd stay 27f3 (L3) under the same light bar.
   **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
   cantina as the hall itself (M725 composed anew: poses, one hero, the sign off centre), the
   site's silhouette. **M815 The phone reflow** of all of the above.

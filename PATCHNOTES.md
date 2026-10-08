@@ -42,6 +42,15 @@ could ever save.
   moment it settles back to the whole hall. In the hall the table is a plate without its line
   of explanation. The ceiling's cable tray is warm and matte now, so by day it no longer
   competes with the lamp over the counter.
+- **M814 — light on the instruments.** The dials on the plate are lit now, not flat colour:
+  one key from the top left darkens every body towards its foot, a soft contact shadow sits
+  under it, the glass of each scale carries an arc of light, and each material shines its own
+  way — enamel with a point, walnut and brass with a band, chrome with the window and a black
+  slit, bakelite with a narrow edge, raw aluminium matte with its rivets. At night the work
+  lamp's full beam covers the whole row, and a cold glow from under the sill rims the bodies,
+  so the black receiver reads as a silhouette rather than sinking into the bench. The hall
+  draws only what shows beside the plate, at the screen's own density, and a light sharpening
+  keeps the bench as crisp as the plate.
 - **M813 — the instruments.** The five dials stand on the bench under the window, each in its
   maker's housing with a brass bezel, as many ticks as it can tell apart, a red true mark and a
   needle that wanders the way that instrument lies: wear and the maker's drift pull it off the

@@ -86,6 +86,8 @@ function hallNight(){
 /* пилот виден, если место раздела его знает и он не выключен (?hallpilot=0) */
 /* сила хроматики зала (M814): сдвиг каналов = r·|r|·HALL_CA от цели объектива; в фокусе ~0, в углу героя ~1 px на канал при 1080 */
 const HALL_CA=.004;
+/* резкость зала (M814): сила нерезкой маски в посте — вещь на верстаке не мягче вещи на плите (край ≤ 1.2 края плиты на DPR 2) */
+const HALL_SHARP=.8;   /* HALL.sharp — подмена для пары A/B на стенде */
 function hallPilotAt(place){return HALL.pilot===false?null:(HALL_PILOT_AT[place]||null);}
 /* доля высоты кадра под человеком (1.78 м) в точке x,z — мерило «Сцены» (.18–.22 на ПК) */
 function hallManK(cam,x,z,ch){const a=r3Proj(cam.vp,[x,0,z],1,ch),b=r3Proj(cam.vp,[x,1.78,z],1,ch);return a&&b?(a[1]-b[1])/ch:0;}
@@ -223,8 +225,13 @@ function hallScene(L,cam,t){
   bulbs.push([HALL_KEYX,ky,.62,dk?1.1:.9]);
   {const gl=hallGoodsLight();if(gl)lights.push(gl);}   /* строка таблицы под мышью — её ящик горит */
   /* рабочая лампа у окна: днём вторая после окна, ночью — ключ места у верстака; третьей в списке — предел ламп её не срежет */
-  {const wy0=hallWorkY(T);lights.push({p:[HALL_WORK[0],wy0,HALL_WORK[1]],range:5.2,c:r3Sc(key,(dk?2.6:3.2)*(.4+1.6*nk)),spot:1,d:[0,-.91,-.41],
-    cosO:Math.cos(.9),cosI:Math.cos(.32),shadow:nk>.5?1:0,vol:.06,work:1});bulbs.push([HALL_WORK[0],wy0,HALL_WORK[1],.45+.3*nk]);}
+  /* ночью (M814) полный луч лампы — на весь ряд приборов: внутренний конус шире, ось — в передний край верстака */
+  {const wy0=hallWorkY(T);lights.push({p:[HALL_WORK[0],wy0,HALL_WORK[1]],range:5.2,c:r3Sc(key,(dk?2.6:3.2)*(.4+1.6*nk)),spot:1,
+    d:nk>.5?[0,-.96,-.28]:[0,-.91,-.41],cosO:Math.cos(.9),cosI:Math.cos(.32+.26*nk),shadow:nk>.5?1:0,vol:.06,work:1});bulbs.push([HALL_WORK[0],wy0,HALL_WORK[1],.45+.3*nk]);
+    /* контр ночью у верстака: холодный отсвет окна низко, под подоконником (верх подоконника не горит) — тела ряда читаются силуэтами против света,
+       а не против столешницы; мал и без тени, только где верстак в кадре */
+    if(nk>.05&&typeof HALL_INSTR_PLACES!=="undefined"&&HALL_INSTR_PLACES.includes(HALL.place))
+      lights.push({p:[1.3,.98,HALL_B+.26],range:1.5,c:r3Sc(r3Lin([150,182,235]),1.5*nk),vol:0,rim:1});}
   /* окно: высоко под проёмом и круто вниз — пятно до середины зала, тени людей к камере; конус не
      достаёт пола у камеры (глянец зеркалил его там пятном). Пыль в луче — днём */
   /* день: свет дока с третью тона планеты за стеклом (охра пустыни, бирюза льда) — зал берёт цвет окна.
@@ -315,16 +322,24 @@ function hallCanvas(){
   if(!tg){tg=document.createElement("div");tg.id="stHallTags";tg.setAttribute("aria-hidden","true");cn.after(tg);}
   HALL.cn=cn;HALL.tags=tg;return cn;
 }
-/* размер: на ПК — весь экран, на телефоне — полоса; плотность — не выше 1.25 на ПК (зал за плитой) */
+/* плотность холста зала: экранная, но не выше 2 и в бюджете 3.2 Мп — столько зал тратил и до среза
+   (весь экран × 1.25²); на 1920×1080 при DPR 2 зал рисуется в 2 без растяжки браузером */
+const HALL_PX=3.2e6;
+function hallDpr(rw,ch,dev){return Math.min(dev||1,2,Math.sqrt(HALL_PX/Math.max(1,rw*ch)));}
+/* ширина, которую зал рисует: на ПК — зона героя и кромка под тенью плиты (плита сплошная, под ней рисовать
+   нечего, M814 — сэкономленное ушло в плотность: вещи на верстаке резки, как корпуса на плите); телефон — вся полоса */
+function hallDrawW(cw,wide){const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;return wide?Math.min(cw,Math.ceil(hallHero(cw)*cw+8*ui)):cw;}
+/* размер: на ПК кадр — весь экран, холст — его левая часть (rw); на телефоне — полоса */
 function hallSize(cn){
   const wide=hallWide(),vw=innerWidth,vh=innerHeight,ui=(typeof UIK==="number"&&UIK>0)?UIK:1;
-  const cw=vw,ch=wide?vh:Math.round(vh*HALL_STRIP);
-  let dpr=Math.min(window.devicePixelRatio||1,wide?1.25:2);dpr=Math.min(dpr,Math.sqrt(2.6e6/Math.max(1,cw*ch)));
-  const pw=Math.max(2,Math.round(cw*dpr)),ph=Math.max(2,Math.round(ch*dpr));
+  const cw=vw,ch=wide?vh:Math.round(vh*HALL_STRIP),rw=hallDrawW(cw,wide),dpr=hallDpr(rw,ch,window.devicePixelRatio);
+  const pw=Math.max(2,Math.round(rw*dpr)),ph=Math.max(2,Math.round(ch*dpr));
   if(cn.width!==pw||cn.height!==ph){cn.width=pw;cn.height=ph;}
-  cn.__dpr=pw/cw;cn.style.width=(cw/ui)+"px";cn.style.height=(ch/ui)+"px";
-  return {cw,ch,wide};
+  cn.__dpr=pw/rw;cn.style.width=(rw/ui)+"px";cn.style.height=(ch/ui)+"px";
+  return {cw,ch,wide,rw};
 }
+/* срез кадра: проекция всего экрана, сжатая по x на левую долю h — холст видит ровно то, что видно из-под плиты */
+function hallCrop(vp,h){if(h>=1)return vp;const C=[1/h,0,0,0, 0,1,0,0, 0,0,1,0, 1/h-1,0,0,1];return r3Mul(C,vp);}
 function hallOpen(){
   if(!HALL.on||typeof document==="undefined"||!$st)return;
   const cn=hallCanvas();$st.classList.add("hall");$st.classList.remove("up");
@@ -376,7 +391,7 @@ function hallFrame(){
   if(L.bar)c3SignTex(L.S);
   hallOrbUp(L);
   const c=hallLens(hallGlideAt(wallMs())||HALL_CAMS.trade,L,hallLensStep(wallMs())),cam=hallCam(c,sz.cw,sz.ch,sz.wide),t=wallMs()/1000;
-  const S=hallScene(L,cam,t);
+  const S=hallScene(L,cam,t);S.vp=hallCrop(cam.vp,sz.rw/sz.cw);
   const lab=rpgBake(R,"r3lab","hall|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
   const U=new Float32Array(60);
   S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
@@ -385,7 +400,9 @@ function hallFrame(){
   U[43]=t;U[44]=1;U[47]=1;
   /* оптический центр — куда смотрит объектив (цель камеры на экране), сила хроматики под планку: ≤ 1 px у центра */
   const oq=r3Proj(cam.vp,c.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
-  HALL.frames++;HALL.stat=hallLimits(S);
+  /* холст — левая доля кадра: виньетка и хроматика считаются по всему кадру, как до среза */
+  U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL.sharp==null?HALL_SHARP:HALL.sharp,1],52);
+  HALL.frames++;HALL.stat=hallLimits(S);HALL.vp=cam.vp;
   const k0=L.people[0],pa=hallPilotAt(HALL.place),f=sz.wide?sz.ch:sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};
   hallTagsDraw(L,cam,sz);

@@ -18,6 +18,13 @@ const HALL_INSTR_MAT={
   gorn:{c:[30,28,27],s:.15,g:16,p:0,trim:"steel",mark:"gloss",sv:["#34312e","#121110"]},
   trofey:{c:[196,200,206],s:.95,g:18,p:0,trim:"steel",mark:"label",sv:["#e6eaf0","#8a8e96","#d2d6dc"]},
   vekha:{c:[46,58,82],s:.25,g:10,p:0,trim:"brass",mark:"",sv:["#43547a","#26324a"]}};
+/* блик плиты по материалу (M814): эмаль — точка, латунь — полоса, хром — полоса окна с чёрной щелью,
+   бакелит — глубокий узкий по кромке, алюминий — матовый, без блика, заклёпки */
+const HALL_INSTR_HL={kazenny:"spot",sirin:"band",artel:"matte",gorn:"gloss",trofey:"window",vekha:"spot"};
+/* рамка тела рисунком (viewBox 120×92): x0,x1,y0,y1 — по ней блик, тень и проверка света */
+const HALL_DIAL_BOX={chrono:[22,98,6,88],course:[8,112,8,87],mass:[4,116,27,84],radio:[22,94,14,88],actino:[20,100,8,88]};
+/* ключ плиты сверху-слева: верх тела светлее (белый .28), низ темнее (чёрный .42) — эти же числа меряет тест */
+const HALL_DIAL_KEY={hi:.28,lo:.42};
 /* тела: ширина и высота силуэта (м), передняя грань (полуглубина), точка шкалы — её ловит объектив */
 const HALL_INSTR_BODY={chrono:{w:.24,h:.25,d:.07,f:[0,.15,.04]},course:{w:.26,h:.21,d:.11,f:[0,.105,0]},
   mass:{w:.36,h:.13,d:.05,f:[0,.07,.05]},radio:{w:.17,h:.38,d:.06,f:[0,.14,.06]},actino:{w:.2,h:.27,d:.06,f:[0,.13,.02]}};
@@ -155,7 +162,7 @@ function hallInstrDrop(){r3Drop(HALL_INSTR.mesh);HALL_INSTR.mesh=null;HALL_INSTR
 /* ── плита: то же тело рисунком (SVG) на настиле карточки; стрелка гуляет (CSS), у курсографа — лента пером ── */
 function hallDialSvg(D){
   const id=D.id,M=HALL_INSTR_MAT[D.mk],g="hg"+(++HALL_INSTR.svgN),deg=a=>(a*180/Math.PI).toFixed(1);
-  const tr=M.trim==="brass"?"#b8914e":"#b4b8bc",fc="#e4ddc9",ink="#26231f",red="#c4362a",F="url(#"+g+")' stroke='rgba(255,255,255,.18)' stroke-width='.8";   /* кромка: чёрный бакелит не тонет в настиле */
+  const tr=M.trim==="brass"?"#b8914e":"#b4b8bc",TR="url(#"+g+"t)",fc="#e4ddc9",ink="#26231f",red="#c4362a",F="url(#"+g+")' stroke='rgba(255,255,255,.18)' stroke-width='.8";   /* кромка: чёрный бакелит не тонет в настиле */
   const n=D.ticks,tk=k=>-.95+1.9*k/(n-1),big=k=>k%Math.max(1,Math.round((n-1)/4))===0;
   const at=(cx,cy,a,r)=>(cx+Math.sin(a)*r).toFixed(1)+","+(cy-Math.cos(a)*r).toFixed(1);
   const L=(a,b,c,w)=>"<line x1='"+a.split(",")[0]+"' y1='"+a.split(",")[1]+"' x2='"+b.split(",")[0]+"' y2='"+b.split(",")[1]+"' stroke='"+c+"' stroke-width='"+w+"'/>";
@@ -168,24 +175,33 @@ function hallDialSvg(D){
   const slide=(run,body)=>"<g class='hslide' style='--d:"+(d/.95*run).toFixed(1)+"px;--a:"+Math.max(.6,amp/.95*run).toFixed(1)+"px;animation-duration:"+dur+"'>"+body+"</g>";
   let s="<svg class='hdial-svg' data-kind='"+id+"' viewBox='0 0 120 92' aria-hidden='true'><defs><linearGradient id='"+g+"' x1='0' y1='0' x2='0' y2='1'>";
   M.sv.forEach((c,k)=>{s+="<stop offset='"+(k/(M.sv.length-1))+"' stop-color='"+c+"'/>";});
-  s+="</linearGradient></defs><ellipse cx='60' cy='88' rx='46' ry='3.5' fill='rgba(0,0,0,.4)'/>";
+  const st=(o,c,a)=>"<stop offset='"+o+"' stop-color='"+c+"' stop-opacity='"+a+"'/>",[bx0,bx1,by0,by1]=HALL_DIAL_BOX[id],bw=bx1-bx0,bh=by1-by0;
+  const TS=M.trim==="brass"?["#f0d595","#b8914e","#664a20"]:["#f0f3f6","#a8acb0","#565a5e"];
+  s+="</linearGradient><linearGradient id='"+g+"t' x1='0' y1='0' x2='0' y2='1'>"+st(0,TS[0],1)+st(.45,TS[1],1)+st(1,TS[2],1)+"</linearGradient>";
+  s+="<linearGradient id='"+g+"k' x1='.15' y1='0' x2='.45' y2='1'>"+st(0,"#fff",HALL_DIAL_KEY.hi)+st(.42,"#fff",0)+st(.58,"#000",0)+st(1,"#000",HALL_DIAL_KEY.lo)+"</linearGradient>";
+  s+="<radialGradient id='"+g+"s'>"+st(0,"#000",.62)+st(.7,"#000",.25)+st(1,"#000",0)+"</radialGradient>";
+  s+="<radialGradient id='"+g+"h'>"+st(0,"#fff",.9)+st(.35,"#fff",.45)+st(1,"#fff",0)+"</radialGradient>";
+  s+="<linearGradient id='"+g+"b' x1='0' y1='0' x2='1' y2='0'>"+st(0,"#fff",0)+st(.5,"#fff",.42)+st(1,"#fff",0)+"</linearGradient>";
+  /* контактная тень: мягкая, под основанием, высотой ≤ четверти тела */
+  s+="</defs><ellipse cx='"+((bx0+bx1)/2)+"' cy='"+(by1+.5)+"' rx='"+(bw/2+3)+"' ry='3.4' fill='url(#"+g+"s)'/>";
   let fr;
   if(id==="chrono"){
-    s+="<rect x='14' y='62' width='92' height='26' rx='4' fill='"+F+"'/><rect x='56' y='1' width='8' height='6' rx='2' fill='"+tr+"'/>";
-    s+="<circle cx='60' cy='44' r='38' fill='"+F+"'/><circle cx='60' cy='44' r='34' fill='"+tr+"'/><circle cx='60' cy='44' r='30' fill='"+fc+"'/>"+arc(60,44,22,28);
+    s+="<rect x='14' y='62' width='92' height='26' rx='4' fill='"+F+"'/><rect x='56' y='1' width='8' height='6' rx='2' fill='"+TR+"'/>";
+    s+="<circle cx='60' cy='44' r='38' fill='"+F+"'/><circle cx='60' cy='44' r='34' fill='"+TR+"'/><circle cx='60' cy='44' r='30' fill='"+fc+"'/>"+arc(60,44,22,28);
     for(const x of [50,70])s+="<circle cx='"+x+"' cy='54' r='6' fill='#d3c9ad' stroke='"+ink+"' stroke-width='.6'/>"+L(x+",54",(x+(x<60?-3:3))+",50",ink,.8);
     s+=rot(60,44,"<line x1='60' y1='50' x2='60' y2='17' stroke='#1d1b19' stroke-width='1.6' stroke-linecap='round'/>")+"<circle cx='60' cy='44' r='2.6' fill='#8e2a20'/>";
     s+="<path d='M38 30 A26 26 0 0 1 52 20' fill='none' stroke='rgba(255,255,255,.55)' stroke-width='2' stroke-linecap='round'/>";
     fr=[14,106,62,88];
   }else if(id==="course"){
-    s+="<rect x='12' y='80' width='96' height='7' rx='2' fill='"+F+"'/><rect x='8' y='26' width='6' height='56' rx='2' fill='"+tr+"'/><rect x='106' y='26' width='6' height='56' rx='2' fill='"+tr+"'/>";
-    s+="<ellipse cx='60' cy='42' rx='46' ry='34' fill='"+F+"'/><ellipse cx='60' cy='42' rx='42' ry='30' fill='"+tr+"'/><ellipse cx='60' cy='42' rx='38' ry='27' fill='"+fc+"'/>";
+    s+="<rect x='12' y='80' width='96' height='7' rx='2' fill='"+F+"'/><rect x='8' y='26' width='6' height='56' rx='2' fill='"+TR+"'/><rect x='106' y='26' width='6' height='56' rx='2' fill='"+TR+"'/>";
+    s+="<ellipse cx='60' cy='42' rx='46' ry='34' fill='"+F+"'/><ellipse cx='60' cy='42' rx='42' ry='30' fill='"+TR+"'/><ellipse cx='60' cy='42' rx='38' ry='27' fill='"+fc+"'/>";
     let r="";for(let j=0;j<8;j++){const a=j*Math.PI/4,l=j%2?17:28,w=j%2?3:4.5,p1=at(0,0,a,l),pl=at(0,0,a-Math.PI/2,w),pr=at(0,0,a+Math.PI/2,w);
       r+="<polygon points='"+p1+" "+pl+" "+pr+"' fill='"+(j===0?red:ink)+"'/>";}
     for(let k=0;k<n;k++)r+=L(at(0,0,tk(k),big(k)?29:31),at(0,0,tk(k),35),ink,big(k)?1.4:.9);
     r+=L(at(0,0,D.mark,35.5),at(0,0,D.mark,38),red,3);
     s+="<g transform='translate(60 42) scale(1 .72)'>"+r+rot(0,0,"<line x1='0' y1='4' x2='0' y2='-33' stroke='#1d1b19' stroke-width='1.8' stroke-linecap='round'/>")+"<circle r='3' fill='#8e2a20'/></g>";
     let pl="";for(let k=0;k<=16;k++){const x=40+k*2.5,y=78+Math.sin(k*1.9+D.i)*Math.min(3,.8+D.T.jit*1.2*(1+D.w))*((k*7+D.i*3)%5/5+.3);pl+=x.toFixed(1)+","+y.toFixed(1)+" ";}
+    s+="<path class='glass' d='M24 36 A38 27 0 0 1 44 18' fill='none' stroke='rgba(255,255,255,.5)' stroke-width='2' stroke-linecap='round'/>";
     s+="<rect x='34' y='70' width='52' height='16' rx='3' fill='"+F+"'/><rect x='38' y='73' width='44' height='10' rx='1.5' fill='#d9d2bd'/>";
     s+="<polyline points='"+pl+"' fill='none' stroke='#2c3a5a' stroke-width='"+(.5+D.pen*.7).toFixed(2)+"'/>";
     fr=[34,86,70,86];
@@ -193,36 +209,52 @@ function hallDialSvg(D){
     s+="<rect x='4' y='44' width='112' height='40' rx='5' fill='"+F+"'/><rect x='14' y='51' width='92' height='20' rx='2' fill='"+fc+"'/>";
     for(let k=0;k<n;k++){const x=(60+44*tk(k)/.95).toFixed(1);s+=L(x+",53",x+","+(big(k)?67:62),ink,big(k)?1.3:.9);}
     const mx=(60+44*D.mark/.95).toFixed(1);s+=L(mx+",71",mx+",75",red,3);
-    s+="<polygon points='60,30 53,44 67,44' fill='"+tr+"'/><rect x='6' y='27' width='108' height='3.5' rx='1.5' fill='"+tr+"'/>";
-    for(const x of [9,111])s+="<circle cx='"+x+"' cy='35' r='6' fill='"+tr+"'/>";
+    s+="<polygon points='60,30 53,44 67,44' fill='"+TR+"'/><rect x='6' y='27' width='108' height='3.5' rx='1.5' fill='"+TR+"'/>";
+    for(const x of [9,111])s+="<circle cx='"+x+"' cy='35' r='6' fill='"+TR+"'/>";
     s+=slide(44,"<rect x='55' y='19' width='10' height='9' rx='2' fill='#2a2826'/><line x1='60' y1='28' x2='60' y2='68' stroke='#d22c20' stroke-width='1.6'/>");
+    s+="<polygon class='glass' points='16,52 34,52 24,70 16,70' fill='rgba(255,255,255,.22)'/>";
     fr=[4,116,44,84];
   }else if(id==="radio"){
-    s+=L("90,18","112,1",tr,2)+"<circle cx='112' cy='1.5' r='2' fill='"+tr+"'/>";
-    s+="<rect x='22' y='14' width='72' height='74' rx='6' fill='"+F+"'/><rect x='26' y='19' width='56' height='17' rx='2' fill='"+tr+"'/><rect x='28' y='21' width='52' height='13' rx='1.5' fill='"+fc+"'/>";
+    s+=L("90,18","112,1",tr,2)+"<circle cx='112' cy='1.5' r='2' fill='"+TR+"'/>";
+    s+="<rect x='22' y='14' width='72' height='74' rx='6' fill='"+F+"'/><rect x='26' y='19' width='56' height='17' rx='2' fill='"+TR+"'/><rect x='28' y='21' width='52' height='13' rx='1.5' fill='"+fc+"'/>";
     for(let k=0;k<n;k++){const x=(54+22*tk(k)/.95).toFixed(1);s+=L(x+",22",x+","+(big(k)?30:27),ink,big(k)?1.2:.8);}
     const mx=(54+22*D.mark/.95).toFixed(1);s+=L(mx+",21",mx+",19",red,3);
     for(let j=0;j<6;j++)s+="<rect x='28' y='"+(44+j*6.5)+"' width='46' height='2.4' rx='1' fill='rgba(0,0,0,.45)'/>";
     const lit=Math.round(1+clamp(D.q,0,1.5)*2.6);
     for(let j=0;j<5;j++)s+="<rect x='80' y='"+(76-j*8)+"' width='9' height='5.5' rx='1' fill='"+(j<lit?"#ffaa3c":"rgba(0,0,0,.45)")+"'/>";
     s+=slide(22,"<rect x='53' y='20' width='2.2' height='15' fill='#d22c20'/>");
+    s+="<rect class='glass' x='29' y='22' width='50' height='2' rx='1' fill='rgba(255,255,255,.4)'/>";
     fr=[22,94,14,88];
   }else{
     s+="<rect x='24' y='74' width='72' height='14' rx='3' fill='"+F+"'/><rect x='56' y='46' width='8' height='30' fill='"+F+"'/>";
     let band="";for(let k=0;k<=20;k++){const a=-1.02+2.04*k/20;band+=(k?" L":"M")+at(60,46,a,40);}for(let k=20;k>=0;k--){const a=-1.02+2.04*k/20;band+=" L"+at(60,46,a,30);}
     s+="<path d='"+band+" Z' fill='"+fc+"' stroke='"+tr+"' stroke-width='1'/>"+arc(60,46,32,38);
     s+="<polygon points='60,56 66,62 60,68 54,62' fill='#dfe5ec' stroke='#9aa0a8' stroke-width='.6'/>";
-    s+=rot(60,46,"<rect x='57' y='12' width='6' height='36' rx='2' fill='#4a4c52' stroke='#a4a8b0' stroke-width='.7'/><rect x='56.5' y='10' width='7' height='5' rx='1.5' fill='#b8914e'/>")+"<circle cx='60' cy='46' r='4' fill='"+tr+"'/>";
+    s+="<path class='glass' d='M"+at(60,46,-.92,41)+" A41 41 0 0 1 "+at(60,46,-.5,41)+"' fill='none' stroke='rgba(255,255,255,.55)' stroke-width='1.8' stroke-linecap='round'/>";
+    s+=rot(60,46,"<rect x='57' y='12' width='6' height='36' rx='2' fill='#4a4c52' stroke='#a4a8b0' stroke-width='.7'/><rect x='56.5' y='10' width='7' height='5' rx='1.5' fill='#b8914e'/>")+"<circle cx='60' cy='46' r='4' fill='"+TR+"'/>";
     fr=[24,96,74,88];
   }
   const [x0,x1,y0,y1]=fr;
   if(M.mark==="stamp")s+="<rect x='"+(x0+4)+"' y='"+(y1-9)+"' width='11' height='6' rx='1' fill='#963028'/><rect x='"+(x0+6)+"' y='"+(y1-6.6)+"' width='7' height='1' fill='#e6d2be'/>";
-  else if(M.mark==="rivets"){for(const x of [x0+3.5,x1-3.5])for(const y of [y0+3.5,y1-3.5])s+="<circle cx='"+x+"' cy='"+y+"' r='1.5' fill='#dcdedf' stroke='#6c6e6e' stroke-width='.4'/>";}
+  else if(M.mark==="rivets"){for(const x of [x0+3.5,x1-3.5])for(const y of [y0+3.5,y1-3.5])
+    s+="<circle cx='"+(x+.5)+"' cy='"+(y+.6)+"' r='2.1' fill='rgba(0,0,0,.45)'/><circle cx='"+x+"' cy='"+y+"' r='2' fill='#c8caca' stroke='#5c5e5e' stroke-width='.5'/><circle cx='"+(x-.6)+"' cy='"+(y-.6)+"' r='.7' fill='#f4f5f5'/>";}
   else if(M.mark==="label")s+="<rect x='"+(x1-20)+"' y='"+(y1-10)+"' width='16' height='7' rx='1' fill='#e2d6b4'/><rect x='"+(x1-18)+"' y='"+(y1-8)+"' width='9' height='1' fill='"+ink+"'/><rect x='"+(x1-18)+"' y='"+(y1-5.6)+"' width='12' height='1' fill='"+ink+"'/>";
   else if(M.mark==="band")s+="<rect x='"+x0+"' y='"+(y1-3)+"' width='"+(x1-x0)+"' height='2.5' fill='#b8914e'/>";
-  else if(M.mark==="gloss")s+="<rect x='"+(x0+3)+"' y='"+(y0+2)+"' width='"+(x1-x0-6)+"' height='2' rx='1' fill='rgba(255,255,255,.18)'/>";
   /* разбитый (износ ≥ .6) — трещина по стеклу шкалы: износ читается раньше слова */
   if(D.w>=.6)s+="<polyline points='40,30 50,36 56,46 70,50' fill='none' stroke='rgba(40,36,30,.6)' stroke-width='.8'/>";
+  /* ключ сверху-слева: копия каждого тела поверх него тем же контуром — верх светлее, низ темнее; контуры тел — маска блика */
+  const fe=new RegExp("<(rect|circle|ellipse|path|polygon)\\b[^>]*fill='url\\(#"+g+"\\)'[^>]*/>","g"),bare=m=>m.replace(/ stroke='[^']*' stroke-width='[^']*'/,"");
+  const bodies=s.match(fe)||[];
+  s=s.replace(fe,m=>m+bare(m).replace("url(#"+g+")","url(#"+g+"k)"));
+  s=s.replace("</defs>","<clipPath id='"+g+"c'>"+bodies.map(bare).join("")+"</clipPath></defs>");
+  const hk=HALL_INSTR_HL[D.mk]||"spot";let hl="";
+  if(hk==="spot")hl="<circle cx='"+(bx0+bw*.27).toFixed(1)+"' cy='"+(by0+bh*.18).toFixed(1)+"' r='7' fill='url(#"+g+"h)'/>";
+  else if(hk==="band")hl="<rect x='"+(bx0+bw*.18).toFixed(1)+"' y='"+by0+"' width='9' height='"+bh+"' fill='url(#"+g+"b)'/>";
+  else if(hk==="window"){const y=by0+bh*.2;hl="<rect x='"+bx0+"' y='"+y.toFixed(1)+"' width='"+bw+"' height='7' fill='rgba(255,255,255,.5)'/><rect x='"+bx0+"' y='"+(y+7).toFixed(1)+"' width='"+bw+"' height='2.4' fill='rgba(0,0,0,.6)'/>"
+    +"<rect x='"+bx0+"' y='"+(y+12).toFixed(1)+"' width='"+bw+"' height='1.4' fill='rgba(255,255,255,.35)'/>";}
+  else if(hk==="gloss")hl="<polyline points='"+(bx0+3)+","+(by0+bh*.42).toFixed(1)+" "+(bx0+3)+","+(by0+5)+" "+(bx0+6)+","+(by0+3)+" "+(bx0+bw*.55).toFixed(1)+","+(by0+3)+"' fill='none' stroke='rgba(255,255,255,.78)' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/>"
+    +"<circle cx='"+(bx0+6)+"' cy='"+(by0+5)+"' r='1.6' fill='#fff'/>";
+  s+="<g class='hl' data-hl='"+hk+"' clip-path='url(#"+g+"c)'>"+hl+"</g>";
   return s+"</svg>";
 }
 /* строки 26b → карточки: гнёзда сеткой по пять, прилавок — тоже телами; проза строки — в теги */
