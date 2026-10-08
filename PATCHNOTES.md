@@ -165,6 +165,16 @@ could ever save.
   until the alarm has been quiet for 45 frames. On the map the message hangs at the far third of
   the course line; with no course (and always on the phone) it is a second line under «ВЫ».
   On the ground a message joins the hint plate as one more line — one thing, one plate.
+- **M825 The orbs and the star up close.** Each planet type now holds at full zoom. Crystal
+  worlds are dark violet glass: big facets with pale seams, druse patches of small facets, a few
+  glinting edges. Ice worlds are crossed by umber lineae of uneven width that wander and break,
+  over chaos terrain. Jungle colour is held back so it reads as forest, not paint. Bare rock is
+  warm regolith with cool maria; craters are whole (a neighbour no longer cuts them with a
+  straight seam) and an airless terminator is clean, with no brown rim. A ringed giant shows the
+  ring's shadow as a band on the lit disc. The star, close in, has a darkened limb and slow
+  granulation, and the lens flare steps back as the disc grows. On the way: the marble in the
+  nebula's dark lanes is broken into short strands, the turquoise gas carries more of them, and
+  the belt's dust haze is grainy with a torn edge instead of a smooth beige spill.
 - **M825a Five gaps after the belt.** Round the ship the nebula is quiet rather than gone: its
   light is pressed down near you, strands and lanes kept, and comes back to full strength further
   out — no more black pocket. The far comet rides with the gas instead of standing nailed to the
