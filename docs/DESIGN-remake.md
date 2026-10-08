@@ -404,6 +404,17 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     find, the plant, the shaft (the walk help only by a shaft or the mouth in frame), else at the
     man; the entry hint at the shaft in frame; `#prompt` and that `#msg` hide under
     `body.cavewords`/`cavehush`.
+  - *Done (M630b pass 1, `22dc`):* the dress keyed to `caveDeco` — `tips` (hang / mite / column),
+    `curtains`, `crystals`, `veins` — plus wall items every 26 px by the zone's `drip`; each is
+    placed behind the walk line (z 1.5 … zd−1.1) by `cave3Up`/`cave3Down` on the density and
+    skipped under a shaft. Builders `cave3Band/Caps/Bells/Flute/Hang/Mite/Column/Veil/Cluster`
+    (the stand's `cv*`, rims `cave3Lobes`, ≥ 7 ring sides a lobe); clumps of 2–6 around each hanging
+    tip. Crystals mauve, light r 8+5·size; lights sorted by distance into the frame's twelve.
+    Veins are flat tubes and grains at z −.03 (material 5, dimmed with the face). Shader: material
+    15 (veil), moss on rock with `dayMask`, back-wall fluting for rock facing the lens deeper than
+    1 m. Bins of 16 m on `C.dr3`, ≤ 14 kept, freed with the device. Gate frames: five zones at the
+    broad lens on sed and volc, errs 0. The lake mirror, the amber crawl, the far lane and the far
+    lens follow in the next passes.
 
 ### Stage F — rooms and people (M850–M859)
 
