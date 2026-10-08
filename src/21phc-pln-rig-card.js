@@ -237,7 +237,7 @@ function rigCard(o){
   p.setPipeline(R.P);p.setBindGroup(0,R.bg);p.setVertexBuffer(0,M.vb);p.setIndexBuffer(M.ib,"uint32");p.drawIndexed(M.ni);p.end();
   d.queue.submit([enc.finish()]);
   R.made++;
-  C={tex,view,w:(B.x1-B.x0)*ppm,h:(B.y1-B.y0)*ppm,ppm,pose,key};
+  C={tex,view,dev:d,w:(B.x1-B.x0)*ppm,h:(B.y1-B.y0)*ppm,ppm,pose,key};   /* dev — для ovImage (ovBind), M801b */
   /* правило 4: старшая по спросу уходит, пока живых не больше потолка */
   while(R.M.size>=R.cap){const k0=R.M.keys().next().value,o0=R.M.get(k0);R.M.delete(k0);GPU.trash.push(o0.tex);}
   R.M.set(key,C);

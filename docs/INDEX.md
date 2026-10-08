@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 551 · top-level symbols: 8107
+Files: 551 · top-level symbols: 8112
 
 ## SYMBOLS
 
@@ -65,7 +65,7 @@ AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
 ALBUM_FX                     src/25g1-album-fx.js:14-21
-ALBUM_MAX                    src/25g-postcard.js:628
+ALBUM_MAX                    src/25g-postcard.js:629
 ALBUM_VIG                    src/25g1-album-fx.js:28
 ALLY_THR                     src/12a-crew.js:702
 ALL_NAMES                    tests/90-harness.js:93
@@ -1432,6 +1432,7 @@ PB_K                         src/24a-mode-raid.js:110
 PB_MS                        src/17a0-prebake.js:18
 PC_GRAIN                     src/25g-post-craft.js:7
 PC_GRAIN_B                   src/25g-post-craft.js:21
+PC_RIG                       src/25g1-album-fx.js:40
 PEACE_TUG                    src/17m-peace-fleet.js:164
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
@@ -2295,17 +2296,18 @@ aiFace                       src/12d-mgr-face.js:229-263
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
-albumAll                     src/25g-postcard.js:629
-albumBake                    src/25g1-album-fx.js:36
-albumCanvas                  src/25g1-album-fx.js:48-55
-albumClose                   src/25g1-album-fx.js:57
-albumDpr                     src/25g1-album-fx.js:56
+albumAll                     src/25g-postcard.js:630
+albumBake                    src/25g1-album-fx.js:57
+albumCanvas                  src/25g1-album-fx.js:79-86
+albumClose                   src/25g1-album-fx.js:88
+albumDpr                     src/25g1-album-fx.js:87
 albumL                       src/25g1-album-fx.js:23
-albumLightbox                src/25g1-album-fx.js:59-104
+albumLightbox                src/25g1-album-fx.js:90-135
 albumM                       src/25g1-album-fx.js:25
-albumOpen                    src/25g-postcard.js:678
-albumPut                     src/25g1-album-fx.js:40-46
-albumSave                    src/25g1-album-fx.js:108-144
+albumOpen                    src/25g-postcard.js:679
+albumPut                     src/25g1-album-fx.js:71-77
+albumRig                     src/25g1-album-fx.js:63-69
+albumSave                    src/25g1-album-fx.js:139-175
 albumVig                     src/25g1-album-fx.js:29-34
 allyHullGpu                  src/12a-crew.js:703-712
 allyOf                       src/27b-ui-crew.js:8
@@ -2791,7 +2793,7 @@ c3StoryProp                  src/27f4-cant3d.js:229-241
 c3TableMesh                  src/27f4-cant3d.js:298-306
 c3Tree                       src/27f4-cant3d.js:221-227
 camBody                      src/17-mode-system.js:82-91
-camBtnTick                   src/25g-postcard.js:667-671
+camBtnTick                   src/25g-postcard.js:668-672
 camFree                      src/17p-cam-frame.js:11-23
 camOffset                    src/19c-light.js:155-162
 camReach                     src/17p-cam-frame.js:25-30
@@ -3673,7 +3675,7 @@ drawPlanetWorks              src/17e-station-body.js:71-116
 drawPlant                    src/20-life.js:423-431
 drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
-drawPostcard                 src/25g-postcard.js:171-612
+drawPostcard                 src/25g-postcard.js:171-613
 drawRaid                     src/24aa-raid-draw.js:14-650
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
@@ -5930,20 +5932,23 @@ pbOnScreen                   src/17a0-prebake.js:41
 pcA                          src/25g-postcard.js:150
 pcBelt                       src/25g-post-void.js:58-221
 pcC                          src/25g-postcard.js:147
-pcCave                       src/25g-post-under.js:129-232
+pcCave                       src/25g-post-under.js:131-234
 pcDeform                     src/25g-post-craft.js:34-46
 pcGrainBake                  src/25g-post-craft.js:22-26
 pcGrainTile                  src/25g-post-craft.js:8-19
-pcMan                        src/25g-post-under.js:33-61
-pcMine                       src/25g-post-under.js:249-398
+pcMan                        src/25g-post-under.js:33-63
+pcMine                       src/25g-post-under.js:251-400
 pcMix                        src/25g-postcard.js:149
 pcNebula                     src/25g-post-craft.js:68-80
-pcOre                        src/25g-post-under.js:102-112
+pcOre                        src/25g-post-under.js:104-114
 pcPrint                      src/25g-postcard.js:130-145
+pcRigAt                      src/25g1-album-fx.js:41-44
+pcRigSky                     src/25g1-album-fx.js:46-50
+pcRigUnder                   src/25g1-album-fx.js:52-55
 pcScoop                      src/25g-post-void.js:399-526
 pcShip                       src/25g-post-void.js:23-47
 pcStar                       src/25g-postcard.js:152-155
-pcStrata                     src/25g-post-under.js:68-99
+pcStrata                     src/25g-post-under.js:70-101
 pcSystem                     src/25g-post-void.js:231-389
 pcTestPlanet                 tests/90a-tools.js:743-750
 pcTestSnap                   tests/90a-tools.js:753-757
@@ -6478,7 +6483,7 @@ poiTone                      src/20a-poi.js:176-180
 postAddrs                    src/11e-post.js:47-71
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113-142
-postCanShoot                 src/25g-postcard.js:633-650
+postCanShoot                 src/25g-postcard.js:634-651
 postCaption                  src/25g-postcard.js:114-124
 postChoose                   src/25i-post-back.js:48-51
 postDock                     src/11e-post.js:80-97
@@ -6496,7 +6501,7 @@ postSetForm                  src/25i-post-back.js:44-47
 postSign                     src/25i-post-back.js:35-41
 postSigned                   src/25i-post-back.js:32
 postSnap                     src/25g-postcard.js:65-108
-postTake                     src/25g-postcard.js:651-665
+postTake                     src/25g-postcard.js:652-666
 postTerrain                  src/25g-postcard.js:41-47
 postWorld                    src/25g-postcard.js:49-54
 powCoupOn                    src/12b0-fx-pow.js:26-29
@@ -6876,7 +6881,7 @@ relicRoll                    src/12h-relic.js:104-110
 relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
-renderAlbum                  src/25g-postcard.js:679-703
+renderAlbum                  src/25g-postcard.js:680-704
 renderBarge                  src/12l-barge.js:712-803
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-332
@@ -9517,8 +9522,8 @@ zoomTo                       src/15-input.js:358
 
 ## src/25g-post-under.js · 24 KB
   · открытка: два места под землёй:1
-  · пещера:114
-  · шахта:233
+  · пещера:116
+  · шахта:235
 
 ## src/25g-post-void.js · 32 KB
   · открытка: три места в пустоте:1
@@ -9526,11 +9531,11 @@ zoomTo                       src/15-input.js:358
   · орбита:223
   · атмосфера газового гиганта:391
 
-## src/25g-postcard.js · 43 KB
+## src/25g-postcard.js · 44 KB
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:614
+  · камера и альбом:615
 
-## src/25g1-album-fx.js · 11 KB
+## src/25g1-album-fx.js · 13 KB
   · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1
 
 ## src/25h-post-forms.js · 20 KB

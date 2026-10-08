@@ -288,6 +288,9 @@ could ever save.
 - **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
   texture in any pose of its book, any facing and the caller's light; the base, the cave and the
   raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).
+  The dig and the postcard follow: the mine's walker is the card with the headlamp, its 2D beam
+  laid after the card; the postcard's brush records where the man stands and the album lays the
+  card over the bake, backlit by the star on the ground and by the drift's far end below.
 
 ## 0.492.1 - the world no longer dies after a jump
 

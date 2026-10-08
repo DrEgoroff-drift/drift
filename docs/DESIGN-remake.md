@@ -213,6 +213,18 @@ the player meets first and by what one reinvention gives to the next.
   tilted to the camera). The man is 1.8 m everywhere; frame share at 1080: base .022, cave .042,
   raid .209 — base and cave under .05 by the modes' own scales. Open: dig, home, winter, spa,
   postcard; the old painters stay until M890. Suite `91qb-rig-card`.
+  *Done, second part (09.10):* the dig walks the rig card (`rigCardCave(ao,"dig")`, the cave's
+  scale and headlamp, the drill pose under the cutter; .042 of the frame at 1080). The 2D
+  headlamp beam left `drawAstronaut` for `astroBeam(f)`, laid after the card: the card's layer
+  pastes the 2D darkness over anything laid before it, the GPU beam included. The postcard's
+  man is the rig too: the brush (`25g`, `pcMan` of `25g-post-under`) only records where he
+  stands (`pcRigAt`: feet, height in card units, light) and the album lays the card over the
+  bake under the same filter (`albumRig`, `25g1`, in `albumPut` and `albumSave`). His light is
+  the old silhouette's backlight: on the ground the star from behind and aside, its colour
+  (`pcRigSky`); underground the bright end of the drift behind him, the vault cooling the rim,
+  the headlamp lit (`pcRigUnder`). The lander's figure stays the brush's (it sits in a hatch).
+  Open: home (the head of `homeFigure` is null), winter and spa — the rig cannot sit, take the
+  helmet off or wear clothes; the designer chooses between growing the rig and the 27f3 people.
 - **M802 One person generator everywhere.** `npcMake(seed, brief)` of `27f3` for the HQ, crew
   lists, story figures, the keeper of «Сорока», the road's voices. Gate: no `mgrFace` 2D call
   left.
