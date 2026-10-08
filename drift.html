@@ -444,7 +444,7 @@ body.sosopen #hailwin{bottom:auto;top:calc(env(safe-area-inset-top) + 96px)}   /
 #sos button.lose{color:#ff7a66;margin-top:10px;border-top:1px solid rgba(255,110,90,.45)}
 .sosnone{color:var(--dim);font-size:10px;padding:12px;line-height:1.5}
 body.sosopen .rail{opacity:.12;pointer-events:none}
-body.sosopen #console,body.sosopen #camBtn,body.hailopen #console,body.hailopen #camBtn{opacity:.12;pointer-events:none}   /* под окном — только окно */
+body.sosopen #console,body.hailopen #console{opacity:.12;pointer-events:none}   /* под окном — только окно */
 /* окно оклика (блокер надзора 12.09): над падами, в нижней трети — корабль и
    пикет видны; вопрос, отсчёт, два больших ответа. Подсказка под ним молчит */
 #hailwin{position:fixed;left:50%;transform:translateX(-50%);z-index:24;   /* поверх экранов (.scr 20) и стола (22): R0 */
@@ -799,7 +799,7 @@ body.inbelt .pads button[data-k=brake],
 body.inbelt .pads button[data-k=fire]{font-size:8px}
 /* в вагоне (M473): руля нет, остаётся одно ДЕЙСТВИЕ — ВЫЙТИ на остановке */
 body.inrail .pads button:not([data-k=act]){visibility:hidden;pointer-events:none}
-body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
+body.inrail .rail{opacity:.25;pointer-events:none}
 
 /* узкий экран: поля панелей уже. Строки приборов (.v, .locus u) отсюда ушли
    (проход по каскаду 11.09): телефонный блок ≤760 стоит в файле ниже и
@@ -952,12 +952,6 @@ body.screen #console{opacity:1}
 #seat canvas{width:56px;height:56px}
 #seatOut b{display:block;font-weight:400;color:var(--amber);font-size:10px;letter-spacing:.12em}
 #seatOut s{display:block;text-decoration:none;color:var(--dim);font-size:9px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* ФОТО (M188): собственная кнопка пульта, стеклом и высотой как жёрдочка —
-   на пульте не должно быть двух разных языков у соседних кнопок */
-#camBtn{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);
-  border-radius:var(--rad-p);color:var(--amber);font:inherit;font-size:9px;letter-spacing:.16em;
-  min-height:52px;padding:0 14px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);
-  box-shadow:var(--lift),var(--glass-hi)}
 #perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
@@ -1252,7 +1246,6 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(var(--c-a
   #rxOut b{flex:0 0 auto;white-space:nowrap}
   #rxOut s{flex:1}
   #rxRec{min-height:36px;padding:0 10px}
-  #camBtn{min-height:40px;padding:0 12px}
   #seat{padding:2px 8px 2px 2px;min-height:40px}
   #seat canvas{width:36px;height:36px}
   #seatOut s{max-width:70px}
@@ -2354,8 +2347,6 @@ body.onmap #msg{background:rgba(11,11,11,.45);-webkit-backdrop-filter:blur(8px);
 
 #rx,#seat,#perch{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
 #rxOut b{font-size:9px;letter-spacing:0}
-#camBtn{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);
-  color:var(--text);font-size:10px;letter-spacing:0}
 
 .hud{top:calc(env(safe-area-inset-top) + 12px);
   padding:0 calc(env(safe-area-inset-right) + 14px) 0 calc(env(safe-area-inset-left) + 14px)}
@@ -2364,7 +2355,6 @@ body.onmap #msg{background:rgba(11,11,11,.45);-webkit-backdrop-filter:blur(8px);
     padding:0 calc(env(safe-area-inset-right) + 12px) 0 calc(env(safe-area-inset-left) + 12px)}
   .v.big u{font-size:18px}
   .locus u{font-size:12px}
-  #camBtn{min-height:44px}
 }
 
 /* ══════════════ короткое окно и палец шире 760 ══════════════
@@ -2519,8 +2509,26 @@ body:not(.mobile):not(.screen) #rxRec{grid-column:1/-1;grid-row:3;min-height:36p
 #rxScale i{font-size:9px;letter-spacing:.14em;color:var(--ink2)}
 #rxOut b{font-size:10px;letter-spacing:.2em;color:var(--ink2);text-transform:uppercase}
 #rxOut s{font-size:13px;color:var(--ink)}
-#camBtn{min-width:62px;min-height:44px;color:var(--ink);font-size:11px;letter-spacing:.06em}
-body:not(.mobile):not(.screen) #camBtn{height:auto}
+/* ══ приёмник — фишка (M826) ══
+   Полной плашкой со шкалой и мёртвой строкой «ШУМ» он висел над миром на каждом кадре. Теперь в покое
+   это фишка: точка и имя диапазона. Пришла строка (fresh) или звучит Кольцо (live) — тикер, строка без
+   ручки. Тап по фишке — ручка и шкала (sheet) на несколько секунд. Экраны станции не трогаем: там
+   приёмник — строка в шапке. */
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet){display:flex;flex-direction:row;align-items:center;gap:9px;
+  width:auto;flex:0 0 auto;min-height:44px;padding:0 15px 0 13px;cursor:pointer}
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet) :is(#rxKnob,#rxScale,#rxLine){display:none}
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet) #rxOut{display:block;border:0;padding:0}
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet)::before{content:"";flex:0 0 auto;width:5px;height:5px;border-radius:50%;
+  background:rgba(var(--c-phos),.65)}
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet) #rxOut b{font-size:11px;letter-spacing:.12em;color:var(--ink)}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet){display:flex;flex-direction:row;align-items:center;gap:12px;
+  min-height:44px;padding:0 16px;cursor:pointer}
+body:not(.screen):not(.mobile) #console #rx:is(.fresh,.live):not(.sheet){width:min(460px,calc(100vw / var(--ui,1) - 130px))}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet) :is(#rxKnob,#rxScale){display:none}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet) #rxOut{flex:1;min-width:0;display:flex;flex-direction:row;
+  align-items:baseline;gap:12px;border:0;padding:0}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet) #rxOut b{flex:0 0 auto;white-space:nowrap}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet) #rxOut s{flex:1;min-width:0}
 
 body:not(.mobile) .pads{padding:0 calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 16px) 16px}
 body:not(.mobile) .pads>div{gap:10px}
@@ -2933,10 +2941,6 @@ body.rackon #prompt{opacity:0}
 <div id="console">
   <div id="rx"><input id="rxKnob" type="range" min="0" max="1" step="0.005" aria-label="приёмник"><div id="rxScale"><i id="rxNight" style="left:6%;display:none">ночная почта</i><i style="left:21%">слухи</i><i style="left:49%">цены</i><i style="left:73%">погода</i><i style="left:94%">эфир</i></div><div id="rxOut"><b id="rxBand">ШУМ</b><s id="rxLine">…шшш…</s></div><button id="rxRec" style="display:none">ЗАПИСАТЬ</button></div>
   <div id="seat" style="display:none"><canvas id="seatcv" width="56" height="56"></canvas><div id="seatOut"><b id="seatName">—</b><s id="seatLine"></s></div></div>
-  <!-- ФОТО: появляется только там, где есть что снять — на грунте, на заходе,
-       в пещере, в шахте, в поясе, в атмосфере и в системе (M188, M208).
-       Кнопка, которая висит всегда, перестаёт быть поводом. -->
-  <button id="camBtn" style="display:none" aria-label="снимок">Фото</button>
   <button id="perch" style="display:none" aria-label="трепло"><canvas id="perchcv" width="44" height="44"></canvas></button>
 </div>
 
@@ -2975,6 +2979,9 @@ body.rackon #prompt{opacity:0}
   <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>ОПИСЬ</em><s>трюм, комплект, части, вещи</s></span></button>
   <button id="dealbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="5.4" cy="5" r="2.1"/><path d="M1.6 13c0-2.2 1.7-3.6 3.8-3.6S9.2 10.8 9.2 13"/><circle cx="11.6" cy="4.2" r="1.5"/><path d="M11.6 7.2v5.6M9.4 9.4h4.4"/></svg><span class="tx"><em>ДЕЛО</em><s>кто и что на вас работает</s></span></button>
   <button id="tablebtn"><svg viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7"/><path d="M5 3.5h6l1 2.5H4z"/></svg><span class="tx"><em>СТОЛ</em><s>тетрадь, ленты, письма, вещи</s></span></button>
+  <!-- ФОТО (M188, M208): только там, где есть что снять. С пульта ушла в ящик (M826): кнопка над
+       миром на каждом кадре — не повод, а шум; снимок — дверь, как стол и опись -->
+  <button id="camBtn" style="display:none"><svg viewBox="0 0 16 16"><rect x="2" y="4.5" width="12" height="8.5" rx="1.5"/><circle cx="8" cy="8.7" r="2.4"/><path d="M5.6 4.5 6.6 2.8h2.8l1 1.7"/></svg><span class="tx"><em>ФОТО</em><s>снимок того, что за бортом</s></span></button>
   <button id="roadbtn"><svg viewBox="0 0 16 16"><path d="M2 12c3-1 5-6 12-7"/><circle cx="13" cy="5" r="1.6"/><path d="M2.5 14h11"/></svg><span class="tx"><em>В ДОРОГУ</em><s>едете? корабль полетит с вами</s></span></button>
   <button id="callbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M8 2v5"/><path d="M4.2 4.6a5 5 0 1 0 7.6 0"/></svg><span class="tx"><em>ДОМОЙ</em><s>прыжок к дому откуда угодно · за деньги</s></span></button>
   <button id="optbtn"><svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.9"/><circle cx="10.5" cy="11" r="1.9"/></svg><span class="tx"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></span></button>
@@ -11286,7 +11293,10 @@ const held=()=>RES_KEYS.reduce((a,k)=>a+(G.cargo[k]||0)*((typeof resW==="functio
    ошибкой (проверено 18.09, 0b). Голос мира из таймера, если появится, пусть
    скажет say() и поставит MSG_WORLD=true сам. */
 let FRAME_IN=false,MSG_WORLD=false,MSG_HOLD=0;   /* MSG_HOLD — сколько кадров голос мира ждал за экраном */
-function say(s,d){G.msg=s;G.msgT=d||150;MSG_WORLD=FRAME_IN;MSG_HOLD=0;}
+/* obj — вещь, о которой строка (M826): тело системы {x,y,radius} в мире; табличка встаёт у неё, пока та в
+   кадре, иначе у корабля (08bj). Ссылка живёт вне G: в хэш и в сейв вещь не идёт */
+let MSG_OBJ=null;
+function say(s,d,obj){G.msg=s;G.msgT=d||150;MSG_OBJ=obj||null;MSG_WORLD=FRAME_IN;MSG_HOLD=0;}
 try{["pointerdown","keydown","click"].forEach(t=>addEventListener(t,()=>{FRAME_IN=false;},true));}catch(e){}
 /* подсказка кадра — одна (ревью 11.09). Её пишут два десятка модулей, и прежде
    побеждал тот, кто успел первым («if(!G.prompt)»): край системы глушил «БАК
@@ -11306,7 +11316,13 @@ function cueLvl(){
   if(G.prompt===CUE_TXT)return CUE_LVL;
   return !G.prompt?0:(/ДЕЙСТВИЕ/.test(G.prompt)?CUE_ACT:CUE_INFO);
 }
-function cueReset(){CUE_LVL=0;CUE_TXT="";G.prompt="";}
+function cueReset(){CUE_LVL=0;CUE_TXT="";G.prompt="";CUE_AT=null;}
+/* подсказка у вещи (M826): писатель, чья строка на экране, называет её вещь — тело системы {x,y} — и имя
+   её подписи в мире. Строка остаётся источником кнопки ДЕЙСТВИЯ; меняется только место: 08bj вешает её
+   табличкой у вещи, #prompt молчит. Чужая строка поверх (txt не тот) — вещь забыта. dy — точка таблички
+   ниже тела на столько пикселей экрана: там стоит подпись вещи, и табличка встаёт на её место */
+let CUE_AT=null;
+function cueAt(id,obj,name,dy){CUE_AT={id,obj,name:name||"",dy:dy||0,txt:G.prompt};}
 /* действие — первое (R1, надзор 12.09): у ДЕЙСТВИЯ равный уровень слот не
    отдаёт. Цепочка кадра идёт по порядку, и первый предложивший первым же ловит
    нажатие; «равный — последний» показывал ПОСАДКУ, а жал пояс, стоявший раньше.
@@ -12777,8 +12793,9 @@ function hangObstacles(bot){
   }
   if(HANG.blk&&HANG.blkF===OVL.fno){const s=1/ovNd();for(const b of HANG.blk)O.push({x0:b.x0*s,y0:b.y0*s,x1:b.x1*s,y1:b.y1*s});}
   /* строка сообщения #msg (DOM, style.css): по центру на четверти высоты, капсом, разрядка .14em.
-     DOM в кадре не читаем — рамка считается по тексту теми же глифами, с запасом */
-  if(G.msgT>0&&G.msg&&!(typeof msgHeld==="function"&&msgHeld())){
+     DOM в кадре не читаем — рамка считается по тексту теми же глифами, с запасом. Висит табличкой
+     (HANG.msgQ, M826) — DOM-строки нет, держать её место некому */
+  if(!HANG.msgQ&&G.msgT>0&&G.msg&&!(typeof msgHeld==="function"&&msgHeld())){
     /* телефон (max-width:760px): верх 20 %, кегль 11, строка 1.4, ширина до краёв без 24, перенос до трёх строк */
     const ph=W<=760,k=Math.max(1,uiK()),L=String(G.msg).toUpperCase().split("\n"),fs=ph?11:12,f=fs+"px "+HANG.FACE;
     const mw=Math.min(ph?W-24:W*.84,W/2);let w=0,n=0;   /* left:50% — блок сжимается до половины окна */
@@ -12794,7 +12811,8 @@ function hangObstacles(bot){
    уже поставленную табличку. Сбоку от тела (вправо, влево) табличке можно в центральную полосу,
    если её середина в средней трети высоты: она стоит при вещи, а не посреди кадра. Не встала —
    строки переносятся по словам до ширины, что помещается сбоку. Рядом с подписью мира того же тела
-   (ближе 200 px) имя не повторяется: o.alt — строки без имени */
+   (ближе 200 px) имя не повторяется: o.alt — строки без имени. o.free — табличка не при вещи,
+   а при месте кадра: без поводка */
 function hangPlace(P,k,C){
   const S=hangSize(P,k),r=Math.max(4,P.o.r||10),mem=HANG.mem[P.id];
   let best=null;
@@ -12891,7 +12909,7 @@ function hangDraw(P,k){
   const x0=sn(R.x0),y0=sn(R.y0),x1=sn(R.x1),y1=sn(R.y1),c=sn(6*k),ink=P.o.ink||null;
   /* поводок: от кромки вещи к ближней точке таблички, если та отошла */
   const dx=P.nx-P.x,dy=P.ny-P.y,dl=Math.hypot(dx,dy);
-  if(dl>P.r+16*k){
+  if(!P.o.free&&dl>P.r+16*k){
     const ux=dx/dl,uy=dy/dl,ax=P.x+ux*(P.r+3*k),ay=P.y+uy*(P.r+3*k);
     ovCap(ax,ay,P.nx-ux*2*k,P.ny-uy*2*k,1*k,ink||HANG.INK,.42*al);
     ovEll(ax,ay,2*k,2*k,0,ink||HANG.INK,.85*al);
@@ -12918,6 +12936,7 @@ function ovHangFlush(){
     if(a.z&&b)Q.push({id:e.id,lines:e.lines,x:W/2+(b.x-a.x)*a.z,y:H/2+(b.y-a.y)*a.z,o:Object.assign({},e.o,{r:Math.max(6,(b.radius||4)*a.z),al})});
     else if(!a.z)Q.push({id:e.id,lines:e.lines,x:a.x,y:a.y,o:Object.assign({},e.o,{r:a.r,al})});}
   hangSurface();
+  hangCue(Q);hangMsg(Q);hangHint(Q);   /* тревога у вещи раньше сообщения: её место — у позывного, сообщение подвинется */
   HANG.last.length=0;
   if(!Q.length||OVL.hush||!hangIn()){Q.length=0;return;}
   const k=Math.max(1,uiK());HANG.k=k;
@@ -12932,7 +12951,14 @@ function ovHangFlush(){
 function hangSurface(){
   if(G.mode!=="surface"||typeof PLN==="undefined"||!PLN.on||!hangIn())return;
   const S=G.surf,pr=String(G.prompt||"");
-  if(!S||!S.tr||!pr||G.viewK==null)return;
+  if(!S||G.viewK==null)return;
+  const C=plnLens(S,G.viewK,{vx:G.viewX,vy:G.viewY}),m=C.vp;
+  const pj=v=>{const cw=m[3]*v[0]+m[7]*v[1]+m[11]*v[2]+m[15];if(!(cw>0))return null;
+    return [((m[0]*v[0]+m[4]*v[1]+m[8]*v[2]+m[12])/cw*.5+.5)*W,(.5-(m[1]*v[0]+m[5]*v[1]+m[9]*v[2]+m[13])/cw*.5)*H];};
+  /* человек — вещь строки сообщения на грунте (M826): точка — середина роста, радиус — полроста */
+  const mx=S.x/PLN_M,my=plnY(S.y+10),f=pj([mx,my,0]),h=pj([mx,my+1.9,0]);
+  if(f&&h){const t=Math.abs(f[1]-h[1]);hangAt("man",f[0],(f[1]+h[1])/2,Math.max(10,t*.6));}
+  if(!S.tr||!pr)return;
   let w=null,line=null,id,o=null;
   if(typeof PLN_ACT!=="undefined"&&PLN_ACT.wrote&&pr===PLN_ACT.wrote){
     const q=poiNear(S,S.tr),L=PLN_LAND.cur,M=L&&L.marks,it=q&&M&&M.items.find(i=>i.q===q);
@@ -12952,14 +12978,76 @@ function hangSurface(){
     w=[x,(L?plnThingGround(L,x,z).h:(PLN.y0-dep.y)/PLN_M)+1.6,z];id="pln.dep";
   }
   if(!line||!w)return;
-  const C=plnLens(S,G.viewK,{vx:G.viewX,vy:G.viewY}),m=C.vp;
-  const pj=v=>{const cw=m[3]*v[0]+m[7]*v[1]+m[11]*v[2]+m[15];if(!(cw>0))return null;
-    return [((m[0]*v[0]+m[4]*v[1]+m[8]*v[2]+m[12])/cw*.5+.5)*W,(.5-(m[1]*v[0]+m[5]*v[1]+m[9]*v[2]+m[13])/cw*.5)*H];};
   const a=pj(w);if(!a)return;
   /* человек — не подставка для таблички: его рост от ступней до макушки с запасом в полроста по бокам */
-  const mx=S.x/PLN_M,my=plnY(S.y+10),f=pj([mx,my,0]),h=pj([mx,my+1.9,0]);
   if(f&&h){const t=Math.abs(f[1]-h[1]),n=ovNd();hangBlock((f[0]-t*.45)*n,(h[1]-t*.1)*n,(f[0]+t*.45)*n,(f[1]+t*.05)*n);}
   ovHang(id,line,a[0],a[1],Object.assign({r:6,up:true},o));
+}
+/* ── строка сообщения (say, #msg) — табличкой у вещи (M826) ──
+   Прежде она вставала капсом посреди кадра на четверти высоты. Теперь вещь строки: тело, которое назвал
+   say(s,d,obj), пока оно в кадре; иначе — вещь режима (корабль в системе, ковш, человек на грунте, ваша
+   звезда на карте). Вещи нет (режим без точки, слоя нет) — строка остаётся прежним #msg. Капс строки
+   переводится в регистр предложения: иерархия таблички — кегль и цвет, не капитель */
+const HANG_MSG_AT={system:"ship",scoop:"scoop",surface:"man",map:"you"};
+function hangMsg(Q){
+  HANG.msgQ=false;
+  if(!(G.msgT>0&&G.msg)||(typeof msgHeld==="function"&&msgHeld()))return;
+  let a=null;
+  const b=typeof MSG_OBJ!=="undefined"?MSG_OBJ:null,S=HANG.at.sys;
+  if(b&&G.mode==="system"&&S&&S.f===OVL.fno){
+    const x=W/2+(b.x-S.x)*S.z,y=H/2+(b.y-S.y)*S.z;
+    if(x>W*.06&&x<W*.94&&y>H*.08&&y<H*.92)a={x,y,r:Math.max(8,(b.radius||6)*S.z)};
+  }
+  const kd=HANG_MSG_AT[G.mode],q=kd&&HANG.at[kd];
+  if(!a&&q&&q.f===OVL.fno&&!q.z)a=q;
+  if(!a)return;
+  Q.push({id:"hud.msg",lines:String(G.msg).split("\n").map(hangCase),x:a.x,y:a.y,o:{r:a.r,al:clamp(G.msgT/40,0,1)}});
+  HANG.msgQ=true;
+}
+function hangMsgHung(){return HANG.last.some(e=>e.id==="hud.msg");}
+/* капс строки — в регистр предложения; имена системы, её тел и корабля, «ГЛАВТРАССА» — как пишутся */
+function hangCase(s){
+  s=String(s);
+  if(/[а-яёa-z]/.test(s))return s;
+  let t=s.toLowerCase().replace(/(^|[«"(]|[.!?]\s+)([а-яёa-z])/g,(m,p,c)=>p+c.toUpperCase());
+  const N=[];const Y=G.sys;
+  if(Y){if(Y.name)N.push(Y.name);for(const p of Y.planets||[])if(p&&p.name)N.push(p.name);}
+  for(const n of N){const lo=String(n).toLowerCase();if(lo.length<3)continue;
+    for(let i=t.indexOf(lo);i>=0;i=t.indexOf(lo,i+lo.length))t=t.slice(0,i)+n+t.slice(i+lo.length);}
+  return t.replace(/главтрасс[а-яё]*/g,w=>w.toUpperCase());
+}
+/* ── подсказка у вещи (cueAt, 08-state; M826) ──
+   Строка G.prompt, которую писатель привязал к телу системы, висит у этого тела. Имя его подписи в мире
+   (o.name) — первая строка без имени (o.alt), когда подпись рядом: табличка стоит у позывного и его не
+   повторяет. Глагол — вторая строка */
+function hangCue(Q){
+  const A=typeof CUE_AT!=="undefined"?CUE_AT:null,S=HANG.at.sys;
+  if(!A||!G.prompt||A.txt!==G.prompt||G.mode!=="system"||!S||S.f!==OVL.fno)return;
+  const b=A.obj,x=W/2+(b.x-S.x)*S.z,y=H/2+(b.y-S.y)*S.z+A.dy;
+  if(!(x>8&&x<W-8&&y>8&&y<H-8))return;
+  /* точка у подписи (dy) — табличка встаёт на её место, вплотную; у самого тела — от его кромки, не ближе
+     40 px: над корпусом баржи полоса прочности, и выноска не идёт ни через неё, ни через корпус */
+  const L=String(G.prompt).split("\n").map(hangCase),o={r:A.dy?6:Math.max(40,(b.radius||36)*S.z),verb:L.length>1?1:undefined};
+  if(A.name){const nm=hangCase(A.name),i=L[0].indexOf(nm);
+    if(i>=0){let h=(L[0].slice(0,i)+L[0].slice(i+nm.length)).replace(/^[\s·]+|[\s·]+$/g,"");
+      h=h.charAt(0).toUpperCase()+h.slice(1);
+      if(h){o.name=A.name;o.alt=[h].concat(L.slice(1));o.altVerb=o.verb;}}}
+  Q.push({id:"cue."+A.id,lines:L,x,y,o});
+}
+function hangCueHung(){return HANG.last.some(e=>e.id.indexOf("cue.")===0);}
+/* подсказка грунта (surfaceHint, 21e) — у человека: части через « · » — строки, «ДЕЙСТВИЕ» — глагол.
+   Телефон: человек стоит в средней полосе, а она пуста (M803) — табличка сверху, под стрелками КОРАБЛЬ /
+   ПЕЩЕРА, о которых она чаще всего и говорит; без поводка */
+function hangHint(Q){
+  const h=HANG.hint,a=HANG.at.man;
+  if(!h||h.f!==OVL.fno||G.mode!=="surface"||!a||a.f!==OVL.fno)return;
+  const L=String(h.s).split(" · ").map(hangCase),v=L.findIndex(t=>/действие/i.test(t));
+  const o={r:a.r,up:true,verb:v>=0?v:undefined};
+  if(W<=760){
+    /* фишки стрелок (21e) держат своё место hangBlock — табличка встаёт под ними */
+    const y=Math.max(8,(typeof HUD_BAND==="number"?HUD_BAND:0)+6);
+    Q.push({id:"pln.hint",lines:L,x:W/2,y,o:Object.assign(o,{r:4,up:false,free:true})});return;}
+  Q.push({id:"pln.hint",lines:L,x:a.x,y:a.y,o});
 }
 
 /* ══════════════ набор для слоёв видеокарты (docs/DESIGN-gpu.md §4) ══════════════
@@ -37310,11 +37398,10 @@ function bargeInteract(sh){
   /* под обстрелом не торгуют: баржу надо сперва отбить у пиратов. Прилавок
      закрыт, зато видно, что помочь можно огнём — или добить самому. */
   if(near.distress){
-    /* тревога, а не действие: кадр идёт дальше — сесть на планету рядом с
-       чужим боем можно, и пустой бак под ним тоже слышно (ревью 11.09) */
-    cue("БАРЖА «"+near.capName.toUpperCase()+"» ПОД ОБСТРЕЛОМ · "+
-      Math.round(clamp(near.hp/near.hullMax,0,1)*100)+"%\n"+
-      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN);
+    /* тревога, а не действие (ревью 11.09); висит табличкой у позывного баржи (M826, 08bj) */
+    const nm="БАРЖА «"+near.capName.toUpperCase()+"»";
+    if(cue(nm+" ПОД ОБСТРЕЛОМ · "+Math.round(clamp(near.hp/near.hullMax,0,1)*100)+"%\n"+
+      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN))cueAt("barge",near,nm);
     return false;
   }
   if(cue("ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+
@@ -37647,7 +37734,11 @@ function drawBarges(zx,zy,Z){
         const hp=clamp(b.hp/b.hullMax,0,1);
         if(hp<.999)SH.push([0,x-24,y-30,x+24,y-27,0,0,255,255,255,.14],[0,x-24,y-30,x-24+48*hp,y-27,0,0,143,208,138,1]);
         ctx.textAlign="center";
-        domLabel("bg"+domLabelId(b),x,y+30,"БАРЖА «"+b.capName.toUpperCase()+"»","8px ui-monospace,monospace","rgba(143,208,138,.8)","center");
+        /* тревога висит табличкой у баржи (M826, 08bj), позывной молчит: он — её первая строка; корпус
+           и полоса прочности — не подставка для неё */
+        const sos=typeof CUE_AT!=="undefined"&&CUE_AT&&CUE_AT.obj===b;
+        if(sos){const n=ovNd();hangBlock((x-32*s)*n,(y-33)*n,(x+32*s)*n,(y+20*s)*n);}
+        if(!(sos&&hangCueHung()))domLabel("bg"+domLabelId(b),x,y+30,"БАРЖА «"+b.capName.toUpperCase()+"»","8px ui-monospace,monospace","rgba(143,208,138,.8)","center");
         continue;}
       ctx.save();ctx.translate(x,y);ctx.rotate(b.a);ctx.scale(s,s);
       drawBarge(b,lit);
@@ -43275,8 +43366,11 @@ function smenaOpenHere(p){
   smenaAct(n,title);
   return n;
 }
-/* акт: слово через экран, дольше штампа */
+/* акт: заголовок главы, дольше штампа. С M826 — табличка у вещи (у человека на грунте, у корабля в
+   системе), а не слово через экран посреди кадра; без слоя или без вещи в режиме — прежний DOM */
 function smenaAct(n,title){
+  const at=typeof HANG_MSG_AT!=="undefined"&&HANG_MSG_AT[G.mode];
+  if(at&&hangOk()&&(G.mode!=="surface"||(typeof PLN!=="undefined"&&PLN.on))&&hangSay("smena",["Глава "+n+" · «"+title+"»","«Смена» · на столе"],at,200))return;
   if(typeof document==="undefined"||!document.body)return;
   const old=document.getElementById("smenaAct");if(old)old.remove();
   const d=document.createElement("div");d.id="smenaAct";
@@ -48007,7 +48101,7 @@ function npcEnvoy(){
   const c=Math.atan2(-p.y,-p.x)+(r()-.5)*.6;
   p.a=c;p.vx=Math.cos(c)*2.2;p.vy=Math.sin(c)*2.2;
   G.pirates.push(p);
-  say("ПОСОЛЬСТВО В СИСТЕМЕ · ЕГО МОЖНО ПРОВЕСТИ",140);
+  say("ПОСОЛЬСТВО В СИСТЕМЕ · ЕГО МОЖНО ПРОВЕСТИ",140,p);
 }
 /* ── «Ялта» (M372, §16.6) ──
    Шесть посольств на рейде, шесть волн разом, ярмарка. Никто не стреляет:
@@ -55122,6 +55216,7 @@ function updateSystem(dt){
      мимо: его корабли помечены iff и в счёт не входят, иначе строка пугала бы
      игрока восемью преследователями, которые о нём даже не знают */
   const hostile=G.pirates.filter(p=>p.aware&&!p.iff).length;
+  fightLens(hostile);   /* телефон: объектив подъезжает к цели боя (M826, 17p) */
   const bystand=G.pirates.filter(p=>p.iff&&p.pw).length;
   /* подсказка боя переписана под новое управление (M360a): пэда ОГОНЬ в
      системе больше нет, огонь — это захват. Две мысли — две строки, а не
@@ -55395,14 +55490,17 @@ function drawSystem(){
      целиком. Теперь, когда корабль на орбите или у поверхности (ближе 250),
      кадр уводится к телу ровно настолько, чтобы его ближняя кромка осталась
      на экране — а корабль тоже; если оба не влезают, середина между ними.
-     Догоняет плавно, как сдвиг троса: это вид, не мир */
+     Догоняет плавно, как сдвиг троса: это вид, не мир. С M826 «на экране» — в окне кадра (camFree,
+     17p): место меряется до борта, стойки и плит, а не до кромки стекла, и корабль, уходя от тела,
+     не заходит за обратную кромку окна */
   let bx=0,by=0;
   if(!wA&&!(G.haul&&G.haul.ph!=="free")){
     const B=camBody(sh,sys);
     if(B){
       const dx=B.x-sh.x,dy=B.y-sh.y,d=Math.hypot(dx,dy)||1,surf=Math.max(0,d-B.radius);
-      const room=Math.max(40,Math.min(W,H)*.5-48)/Z;
-      const shift=Math.min(surf-room,surf*.5);
+      const F=camFree(),ux=dx/d,uy=dy/d;
+      const room=Math.max(40,camReach(F,ux,uy)-48)/Z,back=Math.max(0,camReach(F,-ux,-uy)-36)/Z;
+      const shift=Math.min(surf-room,surf*.5,back);
       if(shift>0){bx=dx/d*shift;by=dy/d*shift;}
     }
   }
@@ -61966,6 +62064,8 @@ function drawBillboard(zx,zy,Z){
   }
   const pass=gpuScene();if(!pass)return;   /* 2D-пути у щита нет (без видеокарты щита не видно) */
   bbDrawGpu(pass,B,x,y,s,col,rd,Z);
+  /* щит — вещь мира с буквами: табличка у вещи (08bj) на него не ложится (M826) */
+  if(rd>0&&typeof hangBlock==="function"){const n=ovNd();hangBlock((x-64*s)*n,(y-24*s)*n,(x+64*s)*n,(y+24*s)*n);}
 }
 
 /* ══════════════ неон: буква — трубка (16/n, DESIGN-gpu §L.S «Glow») ══════════════
@@ -63515,6 +63615,67 @@ function giantOpen(g){
   const bn=w.querySelector(".gi-night");if(bn)bn.onclick=()=>{if(giantNight()){giantOpen(g);if(typeof saveGame==="function")saveGame(true);}};
 }
 
+/* ══════════════ камера системы: окно кадра и объектив боя (M826) ══════════════
+   Окно кадра — та часть экрана, которую не закрывают приборы: верхний ряд плит (HUD_BAND), пол
+   (HUD_FLOOR), правый борт (HUD_RAIL) и открытая стойка (25d: сбоку на ПК, полкой сверху на
+   телефоне). Правило «тело в кадре» (17-mode-system) меряет место до кромки этого окна, а не до
+   кромки экрана: тело, к которому идёт корабль, не уводится под борт или под стойку.
+   Объектив боя — правило plnGlide планеты (21pz) для космоса: на телефоне в бою камера сама
+   подъезжает, пока корабль и цель влезают в окно кадра, — пират не остаётся пятном в 40 px. Это зум
+   игры (G.zoomT, 15-input), а не второй масштаб вида: тычок, захват и автопилот считают через ту же
+   G.zoom. Игрок крутанул зум сам — объектив руки убирает до конца боя; бой кончился — зум прежний. */
+
+function camFree(){
+  let x0=8,y0=8,x1=W-8,y1=H-8;
+  if(typeof HUD_BAND==="number"&&HUD_BAND>0)y0=Math.max(y0,HUD_BAND+6);
+  if(typeof HUD_FLOOR==="number"&&HUD_FLOOR>0)y1=Math.min(y1,HUD_FLOOR-6);
+  /* борт телефона — кнопки у пэдов внизу справа, в высоту кадра он не встаёт: режет только на ПК */
+  if(W>760&&typeof HUD_RAIL==="number"&&HUD_RAIL>0&&HUD_RAIL<W)x1=Math.min(x1,HUD_RAIL-8);
+  const g=typeof rackOpen==="function"&&rackOpen()&&typeof RACK!=="undefined"?RACK.geo:null;
+  if(g&&!g.hide){const k=typeof RACK_K==="number"?RACK_K:1;
+    if(g.mode==="shelf")y0=Math.max(y0,(g.y+g.h)*k+6);else x1=Math.min(x1,g.x*k-8);}
+  if(x1-x0<120){x0=8;x1=W-8;}
+  if(y1-y0<120){y0=8;y1=H-8;}
+  return {x0,y0,x1,y1};
+}
+/* от середины экрана по направлению (ux,uy) до кромки окна кадра, px */
+function camReach(F,ux,uy){
+  let t=1e9;
+  if(ux>1e-6)t=Math.min(t,(F.x1-W/2)/ux);else if(ux<-1e-6)t=Math.min(t,(F.x0-W/2)/ux);
+  if(uy>1e-6)t=Math.min(t,(F.y1-H/2)/uy);else if(uy<-1e-6)t=Math.min(t,(F.y0-H/2)/uy);
+  return Math.max(0,t);
+}
+
+const FIGHT_LENS={on:false,zu:1,zw:0,off:false};
+const FIGHT_LENS_MAX=3.4;   /* дальше пират и корабль растут медленнее мира (shipScaleCap) — смысла нет */
+/* цель боя: взятая (G.marks[0]), если это пират; иначе ближний, кто вас преследует */
+function fightTarget(sh){
+  const M=G.marks&&G.marks[0];
+  if(M&&G.pirates.indexOf(M)>=0)return M;
+  let b=null,bd=1e9;
+  for(const p of G.pirates){if(!p.aware||p.iff)continue;const d=Math.hypot(p.x-sh.x,p.y-sh.y);if(d<bd){bd=d;b=p;}}
+  return b;
+}
+function fightLens(hostile){
+  const L=FIGHT_LENS,sh=G.ship;
+  const want=hostile>0&&W<=760&&!G.watch&&!(G.haul&&G.haul.ph!=="free");
+  if(!want){
+    if(L.on&&!L.off&&typeof zoomTo==="function")zoomTo(L.zu);   /* бой кончился — зум, какой был */
+    L.on=false;L.off=false;return;
+  }
+  if(!L.on){L.on=true;L.off=false;L.zu=G.zoom;L.zw=0;}
+  /* зум взял кто-то другой (щипок, колесо, ступени) — объектив руки убирает */
+  if(L.zw&&(G.zoomT!=null&&G.zoomT!==L.zw||G.zoomT==null&&Math.abs(G.zoom-L.zw)>.01))L.off=true;
+  if(L.off)return;
+  const T=fightTarget(sh);if(!T)return;
+  const dx=T.x-sh.x,dy=T.y-sh.y,d=Math.hypot(dx,dy)||1,F=camFree();
+  /* цель с полем в 48 px внутри окна кадра; корабль — в середине экрана */
+  const fit=(camReach(F,dx/d,dy/d)-48)/d;
+  const z=clamp(Math.min(fit,FIGHT_LENS_MAX),Math.min(L.zu,FIGHT_LENS_MAX),FIGHT_LENS_MAX);
+  if(Math.abs(z-G.zoom)<.01&&G.zoomT==null){L.zw=G.zoom;return;}
+  L.zw=clamp(z,ZOOM_MIN,ZOOM_MAX);G.zoomT=L.zw;
+}
+
 /* ДРЕЙФ — фон звёздной карты: туманность, полоса Галактики, пеленги (M436).
  *
  * Три слоя, которые делают карту космосом, а не листом в клетку. Жили внутри
@@ -63861,8 +64022,8 @@ function drawGalaxyNames(V,cell){
    Проход: небо — первый слой кадра, под всем 2D (gpuScene). Если зовущий уже
    что-то нарисовал на #c (вагон 18g заливает фон), небо ложится поверх этого
    (gpuOver) — порядок остаётся тем, каким его написали. */
-/* lamp — круг прыжка карты на этот кадр (drawMap ставит, drawGalaxy съедает): небо в
-   досягаемости светлее, за кромкой гаснет — закон тьмы карты теперь и у неба */
+/* lamp — круг прыжка карты на этот кадр (drawMap ставит, drawGalaxy съедает): за кромкой небо
+   чуть гаснет (≤ 4 %, M826) — закон тьмы карты и у неба, но без светлого диска */
 const MAPGPU={lamp:null,U:new Float32Array(12),bk:new Map(),key:""};
 /* проход подложки карты (звёзды, дороги): открытый верхний, иначе — сцена под всем 2D.
    sky — само небо: если #c уже не чист, оно ложится поверх нарисованного */
@@ -63969,13 +64130,13 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
     let nc=mix(core,edge,smoothstep(.25,.9,1.-nm+n2*.4));
     c=c*(1.-clamp(glob,0.,.7))+nc*gas*.4*(1.-glob);
   }
-  /* круг прыжка: внутри — чуть светлее и бирюзовая подсветка к кромке, снаружи небо гаснет */
+  /* круг прыжка (M826): за кромкой небо гаснет на долю L.w (не больше 4 %), внутри не светлеет и не
+     красится — светлый диск в 700 px был самым громким пятном листа, громче «вас» и цели, а тёплое ядро
+     под ним уходило в сепию. Сам круг — кольцо пером карты весом маршрута (18-mode-map) */
   let L=fu.v[2];
   if(L.w>0.){
     let dl=length(p-L.xy);let ins=1.-smoothstep(L.z-1.5,L.z+1.5,dl);
-    c*=mix(1.-L.w,1.+L.w*.4,ins);
-    let ta=.05*smoothstep(L.z*.72,L.z,dl)*ins;
-    c=mix(c,vec3f(127.,230.,216.)/255.,ta);
+    c*=mix(1.-L.w,1.,ins);
   }
   /* пустое небо — холодное, не чёрное (#03040a); там, где светит, тень не синит тёплое ядро */
   c+=vec3f(3.,4.,10.)/255.*(1.-clamp(glow*4.,0.,1.));
@@ -63991,7 +64152,7 @@ function galaxyGpu(pass,V,cell){
   U[4]=W/2;U[5]=H/2;U[6]=0;U[7]=0;
   const L=MAPGPU.lamp;MAPGPU.lamp=null;
   /* гаснет лишь вблизи: на отъезде круг мал, и тёмная галактика не читалась бы спиралью */
-  if(L){U[8]=L.x;U[9]=L.y;U[10]=L.r;U[11]=.3*clamp((cell-18)/30,0,1)+.0001;}else U[8]=U[9]=U[10]=U[11]=0;
+  if(L){U[8]=L.x;U[9]=L.y;U[10]=L.r;U[11]=.04*clamp((cell-18)/30,0,1)+.0001;}else U[8]=U[9]=U[10]=U[11]=0;
   /* ── неподвижный лист — выпечка, а не сотня хэшей на пиксель ──
      Во времени поле не живёт: всё, от чего оно зависит, — в U и размере кадра. Считать
      его каждый кадр стоило 5.7 мс видеокарты на 1920×1080 и 1.1 мс на 760 (замер 26.09,
@@ -64504,10 +64665,10 @@ function drawMapIn(){
   if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);   /* рукава и туманности по имени (M449) */
   if(typeof drawRailMap==="function")drawRailMap(V,cell);   /* железная дорога бледно, 1:1 с листом (M470) */
   if(typeof drawGiantsMap==="function")drawGiantsMap(V,cell);   /* великаны — ориентиры (M464) */
-  /* круг прыжка: не окружность-волосок, а освещённая область — сразу видно,
-     докуда рука дотягивается. Свет — в поле неба (MAPGPU.lamp), здесь — кромка */
+  /* круг прыжка (M826): кольцо весом маршрута — докуда рука дотягивается, читается кромкой, а не
+     светлым диском; небо за кромкой гаснет едва (MAPGPU.lamp, ≤ 4 %) */
   mpWeight(MAP_W.route);
-  mpCircle(px,py,jr,1,"rgba(127,230,216,.22)");
+  mpCircle(px,py,jr,1.4,"rgba(127,230,216,.5)");
   /* круг поиска по слуху: где смотреть, а не что нашли */
   const srch=G.mapSearch||(G.course&&G.course.rad?G.course:null);
   if(srch){
@@ -64657,6 +64818,7 @@ function drawMapIn(){
       mapInkBox(x-youW/2-6*youU,by-10*youU,youW+12*youU,14*youU);
       youR={x0:x-youW/2-8*youU,y0:by-12*youU,x1:x+youW/2+8*youU,y1:by+6*youU};
       mpText(youS,x,by,"#7fe6d8");
+      hangAt("you",x,y,rr+16);   /* строка сообщения на карте — у вашей звезды (M826, 08bj) */
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
        которые поставил не мир, а сам игрок. Без них до них не долететь. */
@@ -64762,6 +64924,9 @@ function drawMapIn(){
        плашки и серое .85 давало контраст 2.3 (M443, детектор текста) */
     Rr.push([HANG.INK2,"ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
       Math.round(G.credits).toLocaleString("ru")+" кр"]);
+    /* станция выбора без виденных цен: в маршрут её не поставить — строка слоя цен, не кнопка (M826) */
+    if(ss&&ss.station&&typeof routeNoteFor==="function"&&!routeNoteFor(G.sel.x,G.sel.y)&&!(typeof routeHas==="function"&&routeHas(G.sel.x,G.sel.y)))
+      Rr.push([HANG.INK2,"цен станции не видели · в маршрут — после стыковки"]);
     const occN=G.occ?Object.keys(G.occ).length:0;
     if(occN||(G.freed|0))
       Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
@@ -64896,9 +65061,9 @@ function drawMapIn(){
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
    if(typeof mapRulersDraw==="function"){mapRulersDraw(V,cell,foot);mapRoseDraw(foot);}
   }
-  const n0=hung?mapSelInk():0;   /* подписи мира уступают табличке у выбора (18l) */
+  const n0=hung?mapSelInk():MAP_INK.length;   /* подписи мира уступают табличке у выбора (18l) */
   mapLateFlush();   /* подписи мира — последними и на свободное место */
-  if(hung)mapSelBlock(n0);
+  mapSelBlock(n0,hung);   /* и табличка сообщения у «вы» (M826) обходит то же */
 }
 /* ── расклад прыжка: расстояние, цена, можно ли ──
    Один на кадр и на шаг мира: кадр рисует цену и красит курс, шаг мира по
@@ -66315,9 +66480,10 @@ function mapHoldingsDraw(vis,cell,V,st){
     if(x0>W||y0>H||x0+cell<0||y0+cell<0)continue;
     const d=Math.hypot(gx-G.sx,gy-G.sy),fade=clamp(1.1-d/(st.jump*2.2),.25,1);
     const ids=P[k];
-    mpRect(x0,y0,cell,cell,rgba(hex2rgb(HOUSE_BY_ID[ids[0]].col),(.10*fade).toFixed(3)));
+    /* заливка дома — шёпотом (M826): у «вас» fade=1, и 10 % песка «lask» и штрих .28 под кругом прыжка читались сепией; дом держат кромки (mapBorderEdge) */
+    mpRect(x0,y0,cell,cell,rgba(hex2rgb(HOUSE_BY_ID[ids[0]].col),(.05*fade).toFixed(3)));
     /* второй дом — штриховкой своего цвета: там принимают обе боны */
-    if(ids.length>1)mpHatch(x0,y0,cell,cell,6,-1,1,rgba(hex2rgb(HOUSE_BY_ID[ids[1]].col),(.28*fade).toFixed(3)));
+    if(ids.length>1)mpHatch(x0,y0,cell,cell,6,-1,1,rgba(hex2rgb(HOUSE_BY_ID[ids[1]].col),(.14*fade).toFixed(3)));
   }
   /* полоса трассы под линией: сектора «под трассой» */
   const pairs=mapTrassaPairs(vis,cell);
@@ -68275,11 +68441,13 @@ function mapSelInk(){
   if(HL&&HL.r)mapInkBox(HL.r.x0-4,HL.r.y0-4,HL.r.x1-HL.r.x0+8,HL.r.y1-HL.r.y0+8);
   return n0;
 }
-function mapSelBlock(n0){
+/* hung — табличка у выбора висит: её запасные (подвал выбора, подпись курса, #prompt) не держат места.
+   Не висит (M826: на карте висит только сообщение) — держат: они на листе */
+function mapSelBlock(n0,hung){
   const n=ovNd(),B=(x0,y0,x1,y1)=>hangBlock(x0*n,y0*n,x1*n,y1*n);
-  for(let i=0;i<n0;i++){const Q=MAP_INK[i];if(!Q.fb)B(Q.x0,Q.y0,Q.x1,Q.y1);}
-  for(const b of MAP_BOX)if(b.s!=="подвал слева · выбор")B(b.x,b.y,b.x+b.w,b.y+b.h);
-  for(const d of MAP_DOMR)if(d.sel!=="#prompt")B(d.r.left,d.r.top,d.r.right,d.r.bottom);
+  for(let i=0;i<n0;i++){const Q=MAP_INK[i];if(!hung||!Q.fb)B(Q.x0,Q.y0,Q.x1,Q.y1);}
+  for(const b of MAP_BOX)if(!hung||b.s!=="подвал слева · выбор")B(b.x,b.y,b.x+b.w,b.y+b.h);
+  for(const d of MAP_DOMR)if(!hung||d.sel!=="#prompt")B(d.r.left,d.r.top,d.r.right,d.r.bottom);
 }
 
 /* ══════════════ посадка: разрез грунта ══════════════
@@ -85636,7 +85804,14 @@ function drawSurfaceHud(camx,camy,K){
      рисуем в UI-мерке, поэтому его надо в неё же и перевести (M221) */
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
   const TOP=Math.max(58,(typeof HUD_BAND==="number"?HUD_BAND/U:58)+10), RIGHT_PAD=118, pen=surfHudPen(U);
-  const hint=surfaceHint();
+  let hint=surfaceHint();
+  /* под движком планеты подсказка — табличка у человека (M826, 08bj hangHint), а не полоса капсом
+     поперёк неба. Полоса остаётся запасной: табличке прошлого кадра не нашлось места */
+  if(hint&&typeof PLN!=="undefined"&&PLN.on&&hangIn()){
+    const was=HANG.hint&&HANG.hint.f===OVL.fno-1&&HANG.hint.s===hint,hung=HANG.last.some(e=>e.id==="pln.hint");
+    HANG.hint={s:hint,f:OVL.fno};
+    if(!was||hung)hint=null;
+  }
   if(hint){
     ctx.font="10px ui-monospace,monospace";
     /* длинная подсказка не вылезает за плашку — ужимается с многоточием (M167) */
@@ -85693,6 +85868,7 @@ function drawSurfaceHud(camx,camy,K){
       const ax=dir>0?rx+cw-7:rx+7;
       pen.tri([ax+dir*4,ry+ch/2,ax-dir*3,ry+ch/2-4,ax-dir*3,ry+ch/2+4],m.col);
       pen.text(label,dir>0?rx+cw-14:rx+14,ry+11,m.col,dir>0?"right":"left");
+      if(typeof hangBlock==="function"){const k=ovNd()*U;hangBlock(rx*k,ry*k,(rx+cw)*k,(ry+ch)*k);}   /* таблички их обходят (M826) */
     }else{
       const sx=clamp((m.x-camx)*K,64,W-RIGHT_PAD-14);
       if(rowY<Math.max(leftY,rightY)-6)rowY=Math.max(leftY,rightY)-6;   // ниже столбиков фишек
@@ -85704,7 +85880,8 @@ function drawSurfaceHud(camx,camy,K){
          читалась с контрастом 1.2 — оранжевое «КОРАБЛЬ» по светлой дымке
          (M443, детектор текста) */
       {const tw=ctx.measureText(m.ru).width;
-       pen.rect(right?sx-tw-4:sx-4,rowY+7,tw+8,12,"rgba(5,7,12,.72)");}
+       pen.rect(right?sx-tw-4:sx-4,rowY+7,tw+8,12,"rgba(5,7,12,.72)");
+       if(typeof hangBlock==="function"){const k=ovNd()*U,x0=right?sx-tw-4:sx-4;hangBlock(x0*k,(rowY-5)*k,(x0+tw+8)*k,(rowY+19)*k);}}
       pen.text(m.ru,sx,rowY+16,m.col,right?"right":"left");
     }
   }
@@ -105486,8 +105663,9 @@ function tapeStrip(P,FS,part){
    M720 (06.10): колодка — кусок стойки (25d), а не её эскиз. Автор: «когда
    разворачиваешь хорошо, когда нет плохо». Прежняя колодка была пятью тонкими
    дугами на тёмной вуали и полоской ленты — схема прибора, а не прибор. Теперь
-   это планка того же матового металла, что и стойка: пять кремовых циферблатов
-   под стеклом, янтарные стрелки, код прибора и точка цвета его пера на
+   это планка того же материала, что и стойка: с M826 — графитовая плашка
+   табличек (металл, винты и стекло ушли), пять графитовых циферблатов с
+   кремовыми делениями, стрелки стойки, код прибора и точка цвета его пера на
    самописце, справа окно невязки и клавиша «I», которая раскрывает стойку.
    Лента ушла в стойку: на планке она была полоской шума.
 
@@ -105515,8 +105693,7 @@ function instrPodSig(R){
    кодируется в кадровый энкодер и уходит тем же submit: hud() идёт до gpuPresent. Кадр без
    перемен прохода не просит — холст WebGPU держит последнее показанное. IPOD.n — сколько
    проходов было (наборы 91zk). */
-/* подписи — шрифтом строки приборов (--face, style.css); цифры счётчика — моноширинные */
-const IPOD_FACE="Bahnschrift,'DIN Alternate','Roboto Condensed','Arial Narrow',sans-serif";
+/* подписи — гарнитурой табличек (HANG.FACE, 08bj); цифры счётчика — моноширинные */
 const IPOD={cx:null,dev:null,T:null,M:null,mk:"",n:0};
 const IPOD_A0=Math.PI*.78,IPOD_A1=Math.PI*2.22;   /* рабочий сектор — как у стойки */
 /* мерки колодки в пикселях вёрстки: слева пять гнёзд, справа колонка невязки */
@@ -105524,66 +105701,56 @@ function instrPodGeo(w,h,nR){
   const rw=w>=300?78:60,cw=(w-rw-10)/nR,r=Math.max(6,Math.min(cw*.34,(h-30)*.5));
   return {rw,cw,r,x0:8,cy:10+r*1.22,ly:h-10,key:w>=300};
 }
-/* циферблат колодки: корпус, кремовое поле, деления без цифр (на таком радиусе цифры шкалы
-   были бы мельче закона кегля — значение читается в стойке), дуга шкалы */
+/* циферблат колодки (M826): графитовое поле стойки, кремовые деления без цифр (на таком радиусе цифры
+   шкалы были бы мельче закона кегля — значение читается в стойке), дуга шкалы */
 function instrPodDial(c,cx,cy,r){
-  const bez=c.createLinearGradient(cx,cy-r*1.4,cx,cy+r*1.4);
-  bez.addColorStop(0,"#3c4043");bez.addColorStop(.5,"#25292c");bez.addColorStop(1,"#121518");
-  c.fillStyle=bez;c.beginPath();c.arc(cx,cy,r*1.22,0,TAU);c.fill();
-  c.strokeStyle="rgba(6,8,10,.9)";c.lineWidth=1.4;c.stroke();
-  const face=c.createRadialGradient(cx,cy+r*.35,r*.1,cx,cy,r*1.05);
-  face.addColorStop(0,"#f1e5c8");face.addColorStop(.62,"#dccdaa");face.addColorStop(1,"#a99a7e");
-  c.fillStyle=face;c.beginPath();c.arc(cx,cy,r,0,TAU);c.fill();
+  c.fillStyle=RACK_FACE;c.beginPath();c.arc(cx,cy,r,0,TAU);c.fill();
+  c.strokeStyle=rackCr(.30);c.lineWidth=1.2;c.stroke();
   const N=5,S=2;
   for(let i=0;i<=N*S;i++){
-    const a=IPOD_A0+(IPOD_A1-IPOD_A0)*i/(N*S),big=i%S===0,r1=r*.9,r2=r*(big?.66:.78);
-    c.strokeStyle=big?"rgba(38,30,18,.92)":"rgba(58,48,32,.6)";c.lineWidth=big?1.5:.9;
+    const a=IPOD_A0+(IPOD_A1-IPOD_A0)*i/(N*S),big=i%S===0,r1=r*.92,r2=r*(big?.70:.82);
+    c.strokeStyle=rackCr(big?.62:.26);c.lineWidth=big?1.4:1;
     c.beginPath();c.moveTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1);c.lineTo(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2);c.stroke();
   }
-  c.strokeStyle="rgba(46,36,20,.5)";c.lineWidth=1;
-  c.beginPath();c.arc(cx,cy,r*.9,IPOD_A0,IPOD_A1);c.stroke();
+  c.strokeStyle=rackCr(.16);c.lineWidth=1;
+  c.beginPath();c.arc(cx,cy,r*.92,IPOD_A0,IPOD_A1);c.stroke();
 }
-/* неподвижное — в мастер */
+/* неподвижное — в мастер. M826: колодка — плашка того же материала, что стойка и таблички: графит
+   без металла, винтов и стекла, срезанные углы, волосяной обвод кремом (метки роли нет: шапки у колодки
+   нет, черта у пустого края читалась соринкой). Прибор над миром
+   не должен быть единственной вещью другого языка */
 function instrPodPaint(c,w,h,R){
-  const g=instrPodGeo(w,h,R.length);
-  /* матовый металл стойки: свет сверху, зерно, тёмная кромка снизу */
-  const body=c.createLinearGradient(0,0,0,h);
-  body.addColorStop(0,"#2c3134");body.addColorStop(.35,"#1f2427");body.addColorStop(1,"#121518");
-  c.fillStyle=body;c.fillRect(0,0,w,h);
-  rackGrain(c,0,0,w,h,Math.round(w*h*.012),.06,["rgba(0,0,0,","rgba(220,235,240,"]);
-  c.fillStyle="rgba(0,0,0,.55)";c.fillRect(0,h-1,w,1);
-  for(const sx of [8,w-8])rackScrew(c,sx,8,3);
+  const g=instrPodGeo(w,h,R.length),cu=7;
+  c.beginPath();c.moveTo(0,0);c.lineTo(w-cu,0);c.lineTo(w,cu);c.lineTo(w,h);c.lineTo(cu,h);c.lineTo(0,h-cu);c.closePath();
+  c.fillStyle="rgb(18,17,16)";c.fill();
+  c.beginPath();c.moveTo(.5,.5);c.lineTo(w-cu,.5);c.lineTo(w-.5,cu);c.lineTo(w-.5,h-.5);c.lineTo(cu,h-.5);c.lineTo(.5,h-cu);c.closePath();
+  c.strokeStyle=rackCr(.17);c.lineWidth=1;c.stroke();
   for(let i=0;i<R.length;i++){
     const cx=g.x0+g.cw*(i+.5);
     instrPodDial(c,cx,g.cy,g.r);
-    rackGlass(c,cx,g.cy,g.r);
     /* код прибора и точка цвета его пера: тот же канал на бумаге стойки */
-    c.font="600 10px "+IPOD_FACE;c.textAlign="center";c.textBaseline="alphabetic";
+    c.font="10px "+HANG.FACE;c.textAlign="center";c.textBaseline="alphabetic";
     const tw=c.measureText(R[i].ab).width;
     c.fillStyle=RACK_CH[i]?RACK_CH[i].col:"#888";
     c.beginPath();c.arc(cx-tw/2-5,g.ly-3,2.4,0,TAU);c.fill();
-    c.fillStyle="rgba(204,214,218,.82)";c.fillText(R[i].ab,cx+2,g.ly);
+    c.fillStyle=HANG.INK2;c.fillText(R[i].ab,cx+2,g.ly);
   }
-  /* колонка невязки: паз отделяет её от гнёзд */
+  /* колонка невязки: волосяная черта отделяет её от гнёзд */
   const x0=w-g.rw;
-  c.fillStyle="rgba(0,0,0,.5)";c.fillRect(x0,10,1,h-20);
-  c.fillStyle="rgba(210,226,232,.07)";c.fillRect(x0+1,10,1,h-20);
-  c.fillStyle="rgba(196,206,210,.62)";c.font="600 9px "+IPOD_FACE;c.textAlign="center";c.textBaseline="alphabetic";
+  c.fillStyle=rackCr(.10);c.fillRect(x0,10,1,h-20);
+  c.fillStyle=HANG.INK2;c.font="10px "+HANG.FACE;c.textAlign="center";c.textBaseline="alphabetic";
   c.fillText("НЕВЯЗКА",x0+g.rw/2,22);
-  /* окно счётчика: утоплено в металл, цифры светятся в нём (живое) */
+  /* окно счётчика: темнее плашки, цифры кремом в нём (живое) */
   const wx=x0+7,wy=27,ww=g.rw-14,wh=20;
-  c.fillStyle="#0a0d0f";c.beginPath();c.roundRect(wx,wy,ww,wh,3);c.fill();
-  c.strokeStyle="rgba(0,0,0,.8)";c.lineWidth=1;c.stroke();
-  c.fillStyle="rgba(210,226,232,.09)";c.fillRect(wx+2,wy+wh,ww-4,1);
+  c.fillStyle="rgb(10,10,9)";c.beginPath();c.roundRect(wx,wy,ww,wh,2);c.fill();
+  c.strokeStyle=rackCr(.12);c.lineWidth=1;c.stroke();
   /* клавиша стойки: колпачок «I» — та же ручка, что и щелчок по колодке */
   const kx=g.key?x0+8:x0+(g.rw-18)/2,ky=h-26;
-  const kg=c.createLinearGradient(0,ky,0,ky+18);
-  kg.addColorStop(0,"#5b6266");kg.addColorStop(1,"#2a2f32");
-  c.fillStyle=kg;c.beginPath();c.roundRect(kx,ky,18,18,3);c.fill();
-  c.strokeStyle="rgba(0,0,0,.7)";c.stroke();
-  c.fillStyle="rgba(240,244,246,.92)";c.font="600 10px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+  c.fillStyle="rgb(32,30,27)";c.beginPath();c.roundRect(kx,ky,18,18,2);c.fill();
+  c.strokeStyle=rackCr(.30);c.stroke();
+  c.fillStyle=HANG.INK;c.font="600 10px "+HANG.FACE;c.textAlign="center";c.textBaseline="middle";
   c.fillText("I",kx+9,ky+9.5);
-  if(g.key){c.fillStyle="rgba(196,206,210,.7)";c.font="600 10px "+IPOD_FACE;c.textAlign="left";
+  if(g.key){c.fillStyle=HANG.INK2;c.font="10px "+HANG.FACE;c.textAlign="left";
     c.fillText("СТОЙКА",kx+23,ky+9.5);}
 }
 /* живое — примитивами в очередь колодки: мастер, стрелки, втулки, невязка */
@@ -105594,12 +105761,12 @@ function instrPodLive(R,w,h){
     const cx=g.x0+g.cw*(i+.5),cy=g.cy;
     const a=IPOD_A0+(IPOD_A1-IPOD_A0)*instrTrack(R[i]),c=Math.cos(a),s=Math.sin(a);
     /* тень стрелки на поле — стрелка над шкалой, а не нарисована на ней */
-    ckLine(cx-c*r*.2+.7,cy-s*r*.2+1.1,cx+c*r*.84+.7,cy+s*r*.84+1.1,1.8,"rgba(58,40,16,.28)");
-    ckLine(cx-c*r*.2,cy-s*r*.2,cx+c*r*.86,cy+s*r*.86,1.6,"rgba(220,128,44,.98)");
-    ovEll(cx,cy,2.6,2.6,0,"rgba(92,98,102,1)");
-    ovEll(cx-.5,cy-.5,1.1,1.1,0,"rgba(200,204,206,1)");
+    ckLine(cx-c*r*.2+.7,cy-s*r*.2+1.1,cx+c*r*.84+.7,cy+s*r*.84+1.1,1.8,"rgba(0,0,0,.35)");
+    ckLine(cx-c*r*.2,cy-s*r*.2,cx+c*r*.86,cy+s*r*.86,1.6,"rgba(236,158,82,.96)");   /* стрелка стойки */
+    ovEll(cx,cy,2.6,2.6,0,"rgba(44,40,36,1)");
+    ovEll(cx,cy,1.1,1.1,0,"rgba(232,220,196,.5)");
   }
-  ovText(OVL.uq,w-g.rw/2,41.5,decRu(instrMisclose(),3),"600 12px ui-monospace,monospace","rgba(255,192,112,.96)","center","alphabetic",1,1);
+  ovText(OVL.uq,w-g.rw/2,41.5,decRu(instrMisclose(),3),"600 12px ui-monospace,monospace","rgba(241,235,222,.96)","center","alphabetic",1,1);
 }
 function instrPodDraw(){
   if(!$ipod||!GPU.on||!GPU.enc||!GPU.dev)return;
@@ -105669,41 +105836,6 @@ if($ipod){
     e.preventDefault();
     if(typeof rackToggle==="function")rackToggle();
   });
-}
-/* металл колодки: винт, зерно, стекло (до M821 жили в стойке 25d; стойка теперь графитовая плашка) */
-function rackScrew(c,x,y,r){
-  const g=c.createRadialGradient(x-r*.4,y-r*.4,r*.1,x,y,r);
-  g.addColorStop(0,"#6b6f72");g.addColorStop(.6,"#3c4043");g.addColorStop(1,"#16191c");
-  c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();
-  c.strokeStyle="rgba(10,12,14,.85)";c.lineWidth=Math.max(1,r*.3);
-  c.beginPath();c.moveTo(x-r*.62,y-r*.2);c.lineTo(x+r*.62,y+r*.2);c.stroke();
-  c.strokeStyle="rgba(190,200,205,.16)";c.lineWidth=1;
-  c.beginPath();c.arc(x,y,r,Math.PI*1.05,Math.PI*1.75);c.stroke();
-}
-/* зерно металла и бумаги: редкие точки, посеянные раз и навсегда */
-function rackGrain(c,x,y,w,h,n,a,tone){
-  const r=rng(0x9a37^(w|0)^((h|0)<<8));
-  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();
-  for(let i=0;i<n;i++){
-    const px=x+r()*w, py=y+r()*h, s=r()<.85?1:2;
-    c.fillStyle=(r()<.5?tone[0]:tone[1])+(a*(.4+r()*.6)).toFixed(3)+")";
-    c.fillRect(px,py,s,s);
-  }
-  c.restore();
-}
-/* стекло: одна широкая полоса отражения и лёгкое затемнение к краю */
-function rackGlass(c,cx,cy,r){
-  c.save();
-  c.beginPath();c.arc(cx,cy,r,0,TAU);c.clip();
-  const gl=c.createLinearGradient(cx-r,cy-r,cx+r*.4,cy+r);
-  gl.addColorStop(0,"rgba(255,255,255,.16)");
-  gl.addColorStop(.38,"rgba(255,255,255,.05)");
-  gl.addColorStop(.55,"rgba(255,255,255,0)");
-  c.fillStyle=gl;c.fillRect(cx-r,cy-r,r*2,r*2);
-  const vg=c.createRadialGradient(cx,cy,r*.55,cx,cy,r);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.35)");
-  c.fillStyle=vg;c.fillRect(cx-r,cy-r,r*2,r*2);
-  c.restore();
 }
 
 /* ══════════════ приборная стойка: стрелочные приборы и самописец ══════════════
@@ -119517,6 +119649,7 @@ function consoleTick(dt){
       if(nb.textContent!==want)nb.textContent=want;
     }
   }
+  if(rx)rx.classList.toggle("live",!!(RN&&line));   /* Кольцо звучит — приёмник тикером, не фишкой (M826) */
   if(RN&&line){band.textContent=padCase(RN.ru);line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
@@ -119524,7 +119657,9 @@ function consoleTick(dt){
     const R=radioTune(f);
     /* у стойки ловит лучше: слова не выпадают */
     if(G.mode==="dock"&&R.q>0&&R.q<.55)R.text=radioTune(Math.min(1,f+.001)).text;
-    band.textContent=padCase(R.ru||"ШУМ");
+    /* фишка в шуме зовётся прибором, а не «ШУМ»: мёртвое слово над миром не висит (M826) */
+    const chip=rx&&!rx.matches(".fresh,.live,.sheet");
+    band.textContent=padCase(chip&&R.k==="noise"?"ПРИЁМНИК":(R.ru||"ШУМ"));
     line.textContent=R.text;
     /* задержался на волне — тетрадь запомнит строку, один раз на строку */
     if(R.q>.55&&R.text!==conHeld){conDwell+=1;if(conDwell>=3){conHeld=R.text;conDwell=0;logAdd("ether",R.ru+" · "+R.text);}}
@@ -119605,14 +119740,16 @@ function consoleTick(dt){
       const con=document.getElementById("console");if(con)con.classList.remove("quiet");
     };
     knob.addEventListener("input",tune);
-    /* телефон (M167): тикер открывает ручку по тапу и прячет через пару секунд */
+    /* тап по фишке открывает ручку и прячет через несколько секунд — на телефоне (M167) и, с M826, везде:
+       в покое приёмник — фишка, ручка над миром не висит */
     const rx=document.getElementById("rx");let sheetT=0;
-    const sheetHide=()=>{if(rx)rx.classList.remove("sheet");};
+    const sheetHide=()=>{if(rx)rx.classList.remove("sheet");conT=0;};
     if(rx)rx.addEventListener("click",e=>{
-      if(!document.body.classList.contains("mobile")||e.target===knob)return;
-      rx.classList.toggle("sheet");clearTimeout(sheetT);sheetT=setTimeout(sheetHide,2500);
+      if(e.target===knob||e.target.id==="rxRec")return;
+      rx.classList.toggle("sheet");conT=0;clearTimeout(sheetT);
+      sheetT=setTimeout(sheetHide,document.body.classList.contains("mobile")?2500:6000);
     });
-    knob.addEventListener("input",()=>{clearTimeout(sheetT);sheetT=setTimeout(sheetHide,2000);});
+    knob.addEventListener("input",()=>{clearTimeout(sheetT);sheetT=setTimeout(sheetHide,document.body.classList.contains("mobile")?2000:6000);});
     /* колесо на ручке — тоже ручка */
     knob.addEventListener("wheel",e=>{knob.value=clamp(+knob.value-Math.sign(e.deltaY)*.01,0,1);tune();e.preventDefault();},{passive:false});
   }
@@ -124206,10 +124343,11 @@ function hud(){
   const rbtn=document.getElementById("routebtn");
   if(G.mode==="map"&&typeof routeHas==="function"){
     const ss=getSystem(G.sel.x,G.sel.y),inR=routeHas(G.sel.x,G.sel.y);
-    setSt(rbtn,"display",(ss&&ss.station)||inR?"":"none");
-    /* плечо ставится по виденным ценам (R1): кнопка говорит это до нажатия */
+    /* плечо ставится по виденным ценам (R1). Не видели — кнопки нет: «Цен не видели» висело рамкой
+       в пустоте и ничего не делало; это слово о слое цен, оно — строка подвала у «ТЕЛ · ВИДОВ» (M826) */
     const seen=typeof routeNoteFor==="function"&&!!routeNoteFor(G.sel.x,G.sel.y);
-    setTx(rbtn,inR?"Из маршрута":(seen?"В маршрут":"Цен не видели"));
+    setSt(rbtn,"display",(ss&&ss.station&&seen)||inR?"":"none");
+    setTx(rbtn,inR?"Из маршрута":"В маршрут");
   }else setSt(rbtn,"display","none");
   /* «К СЕБЕ» — когда лист уехал от вас; «НАЗВАТЬ» — на раскрытой карточке (M299) */
   const mb=document.getElementById("mebtn"),nb=document.getElementById("namebtn");
@@ -124243,13 +124381,18 @@ function hud(){
      не грязная и пересчитывать её браузеру не приходится. */
   /* полоса, пол и правый борт — одной меркой и только по грязной вёрстке (0.3) */
   hudFloorMeasure();
-  const msgOn=G.msgT>0&&!msgHeld();
+  const msgOn=G.msgT>0&&!msgHeld()&&!hangMsgHung();   /* висит табличкой у вещи — DOM молчит (M826, 08bj) */
   setTx($msg,msgOn?G.msg:"");
   setSt($msg,"opacity",msgOn?clamp(G.msgT/40,0,1):0);
   /* зимовка: под строкой — мягкая подложка (style.css #msg.dim) */
   $msg.classList.toggle("dim",G.mode==="winter");
   hudMsgPlace();
-  setTx($prompt,G.mode==="dock"||mapHintHung()?"":G.prompt);   /* на карте подсказка висит табличкой у выбора (M822) */
+  /* на карте подсказка висит табличкой у выбора (M822), в системе — у вещи, которую назвал cueAt (M826) */
+  /* подсказка — один глагол, и кнопка ДЕЙСТВИЯ называет его целиком (два слова и число): строка над
+     кнопкой повторяла бы её оранжевым капсом (M826). «УДЕРЖИВАЙТЕ…», хвост через «·» — новое, остаются */
+  const pv=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)$/.exec(String(G.prompt||"").trim());
+  const pDup=!!pv&&pv[1].replace(/\s*\(?\d+\)?\s*$/,"").trim().split(/\s+/).length<=2;
+  setTx($prompt,G.mode==="dock"||mapHintHung()||hangCueHung()||pDup?"":G.prompt);
   /* на тяге значок, на грунте и в шахте — слово. Слову, как подписям прочих пэдов, свой <span>,
      регистр предложения и кегль (.word): ПРЫЖОК капителью в 17 px был шире круга на телефоне в 320 */
   if($bThr){const w=G.mode==="surface"?"Прыжок":(G.mode==="dig"?"Вверх":"");

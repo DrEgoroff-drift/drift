@@ -286,11 +286,10 @@ function bargeInteract(sh){
   /* под обстрелом не торгуют: баржу надо сперва отбить у пиратов. Прилавок
      закрыт, зато видно, что помочь можно огнём — или добить самому. */
   if(near.distress){
-    /* тревога, а не действие: кадр идёт дальше — сесть на планету рядом с
-       чужим боем можно, и пустой бак под ним тоже слышно (ревью 11.09) */
-    cue("БАРЖА «"+near.capName.toUpperCase()+"» ПОД ОБСТРЕЛОМ · "+
-      Math.round(clamp(near.hp/near.hullMax,0,1)*100)+"%\n"+
-      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN);
+    /* тревога, а не действие (ревью 11.09); висит табличкой у позывного баржи (M826, 08bj) */
+    const nm="БАРЖА «"+near.capName.toUpperCase()+"»";
+    if(cue(nm+" ПОД ОБСТРЕЛОМ · "+Math.round(clamp(near.hp/near.hullMax,0,1)*100)+"%\n"+
+      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN))cueAt("barge",near,nm);
     return false;
   }
   if(cue("ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+
@@ -623,7 +622,11 @@ function drawBarges(zx,zy,Z){
         const hp=clamp(b.hp/b.hullMax,0,1);
         if(hp<.999)SH.push([0,x-24,y-30,x+24,y-27,0,0,255,255,255,.14],[0,x-24,y-30,x-24+48*hp,y-27,0,0,143,208,138,1]);
         ctx.textAlign="center";
-        domLabel("bg"+domLabelId(b),x,y+30,"БАРЖА «"+b.capName.toUpperCase()+"»","8px ui-monospace,monospace","rgba(143,208,138,.8)","center");
+        /* тревога висит табличкой у баржи (M826, 08bj), позывной молчит: он — её первая строка; корпус
+           и полоса прочности — не подставка для неё */
+        const sos=typeof CUE_AT!=="undefined"&&CUE_AT&&CUE_AT.obj===b;
+        if(sos){const n=ovNd();hangBlock((x-32*s)*n,(y-33)*n,(x+32*s)*n,(y+20*s)*n);}
+        if(!(sos&&hangCueHung()))domLabel("bg"+domLabelId(b),x,y+30,"БАРЖА «"+b.capName.toUpperCase()+"»","8px ui-monospace,monospace","rgba(143,208,138,.8)","center");
         continue;}
       ctx.save();ctx.translate(x,y);ctx.rotate(b.a);ctx.scale(s,s);
       drawBarge(b,lit);

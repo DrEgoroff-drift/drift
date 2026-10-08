@@ -7,8 +7,9 @@
    M720 (06.10): колодка — кусок стойки (25d), а не её эскиз. Автор: «когда
    разворачиваешь хорошо, когда нет плохо». Прежняя колодка была пятью тонкими
    дугами на тёмной вуали и полоской ленты — схема прибора, а не прибор. Теперь
-   это планка того же матового металла, что и стойка: пять кремовых циферблатов
-   под стеклом, янтарные стрелки, код прибора и точка цвета его пера на
+   это планка того же материала, что и стойка: с M826 — графитовая плашка
+   табличек (металл, винты и стекло ушли), пять графитовых циферблатов с
+   кремовыми делениями, стрелки стойки, код прибора и точка цвета его пера на
    самописце, справа окно невязки и клавиша «I», которая раскрывает стойку.
    Лента ушла в стойку: на планке она была полоской шума.
 
@@ -36,8 +37,7 @@ function instrPodSig(R){
    кодируется в кадровый энкодер и уходит тем же submit: hud() идёт до gpuPresent. Кадр без
    перемен прохода не просит — холст WebGPU держит последнее показанное. IPOD.n — сколько
    проходов было (наборы 91zk). */
-/* подписи — шрифтом строки приборов (--face, style.css); цифры счётчика — моноширинные */
-const IPOD_FACE="Bahnschrift,'DIN Alternate','Roboto Condensed','Arial Narrow',sans-serif";
+/* подписи — гарнитурой табличек (HANG.FACE, 08bj); цифры счётчика — моноширинные */
 const IPOD={cx:null,dev:null,T:null,M:null,mk:"",n:0};
 const IPOD_A0=Math.PI*.78,IPOD_A1=Math.PI*2.22;   /* рабочий сектор — как у стойки */
 /* мерки колодки в пикселях вёрстки: слева пять гнёзд, справа колонка невязки */
@@ -45,66 +45,56 @@ function instrPodGeo(w,h,nR){
   const rw=w>=300?78:60,cw=(w-rw-10)/nR,r=Math.max(6,Math.min(cw*.34,(h-30)*.5));
   return {rw,cw,r,x0:8,cy:10+r*1.22,ly:h-10,key:w>=300};
 }
-/* циферблат колодки: корпус, кремовое поле, деления без цифр (на таком радиусе цифры шкалы
-   были бы мельче закона кегля — значение читается в стойке), дуга шкалы */
+/* циферблат колодки (M826): графитовое поле стойки, кремовые деления без цифр (на таком радиусе цифры
+   шкалы были бы мельче закона кегля — значение читается в стойке), дуга шкалы */
 function instrPodDial(c,cx,cy,r){
-  const bez=c.createLinearGradient(cx,cy-r*1.4,cx,cy+r*1.4);
-  bez.addColorStop(0,"#3c4043");bez.addColorStop(.5,"#25292c");bez.addColorStop(1,"#121518");
-  c.fillStyle=bez;c.beginPath();c.arc(cx,cy,r*1.22,0,TAU);c.fill();
-  c.strokeStyle="rgba(6,8,10,.9)";c.lineWidth=1.4;c.stroke();
-  const face=c.createRadialGradient(cx,cy+r*.35,r*.1,cx,cy,r*1.05);
-  face.addColorStop(0,"#f1e5c8");face.addColorStop(.62,"#dccdaa");face.addColorStop(1,"#a99a7e");
-  c.fillStyle=face;c.beginPath();c.arc(cx,cy,r,0,TAU);c.fill();
+  c.fillStyle=RACK_FACE;c.beginPath();c.arc(cx,cy,r,0,TAU);c.fill();
+  c.strokeStyle=rackCr(.30);c.lineWidth=1.2;c.stroke();
   const N=5,S=2;
   for(let i=0;i<=N*S;i++){
-    const a=IPOD_A0+(IPOD_A1-IPOD_A0)*i/(N*S),big=i%S===0,r1=r*.9,r2=r*(big?.66:.78);
-    c.strokeStyle=big?"rgba(38,30,18,.92)":"rgba(58,48,32,.6)";c.lineWidth=big?1.5:.9;
+    const a=IPOD_A0+(IPOD_A1-IPOD_A0)*i/(N*S),big=i%S===0,r1=r*.92,r2=r*(big?.70:.82);
+    c.strokeStyle=rackCr(big?.62:.26);c.lineWidth=big?1.4:1;
     c.beginPath();c.moveTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1);c.lineTo(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2);c.stroke();
   }
-  c.strokeStyle="rgba(46,36,20,.5)";c.lineWidth=1;
-  c.beginPath();c.arc(cx,cy,r*.9,IPOD_A0,IPOD_A1);c.stroke();
+  c.strokeStyle=rackCr(.16);c.lineWidth=1;
+  c.beginPath();c.arc(cx,cy,r*.92,IPOD_A0,IPOD_A1);c.stroke();
 }
-/* неподвижное — в мастер */
+/* неподвижное — в мастер. M826: колодка — плашка того же материала, что стойка и таблички: графит
+   без металла, винтов и стекла, срезанные углы, волосяной обвод кремом (метки роли нет: шапки у колодки
+   нет, черта у пустого края читалась соринкой). Прибор над миром
+   не должен быть единственной вещью другого языка */
 function instrPodPaint(c,w,h,R){
-  const g=instrPodGeo(w,h,R.length);
-  /* матовый металл стойки: свет сверху, зерно, тёмная кромка снизу */
-  const body=c.createLinearGradient(0,0,0,h);
-  body.addColorStop(0,"#2c3134");body.addColorStop(.35,"#1f2427");body.addColorStop(1,"#121518");
-  c.fillStyle=body;c.fillRect(0,0,w,h);
-  rackGrain(c,0,0,w,h,Math.round(w*h*.012),.06,["rgba(0,0,0,","rgba(220,235,240,"]);
-  c.fillStyle="rgba(0,0,0,.55)";c.fillRect(0,h-1,w,1);
-  for(const sx of [8,w-8])rackScrew(c,sx,8,3);
+  const g=instrPodGeo(w,h,R.length),cu=7;
+  c.beginPath();c.moveTo(0,0);c.lineTo(w-cu,0);c.lineTo(w,cu);c.lineTo(w,h);c.lineTo(cu,h);c.lineTo(0,h-cu);c.closePath();
+  c.fillStyle="rgb(18,17,16)";c.fill();
+  c.beginPath();c.moveTo(.5,.5);c.lineTo(w-cu,.5);c.lineTo(w-.5,cu);c.lineTo(w-.5,h-.5);c.lineTo(cu,h-.5);c.lineTo(.5,h-cu);c.closePath();
+  c.strokeStyle=rackCr(.17);c.lineWidth=1;c.stroke();
   for(let i=0;i<R.length;i++){
     const cx=g.x0+g.cw*(i+.5);
     instrPodDial(c,cx,g.cy,g.r);
-    rackGlass(c,cx,g.cy,g.r);
     /* код прибора и точка цвета его пера: тот же канал на бумаге стойки */
-    c.font="600 10px "+IPOD_FACE;c.textAlign="center";c.textBaseline="alphabetic";
+    c.font="10px "+HANG.FACE;c.textAlign="center";c.textBaseline="alphabetic";
     const tw=c.measureText(R[i].ab).width;
     c.fillStyle=RACK_CH[i]?RACK_CH[i].col:"#888";
     c.beginPath();c.arc(cx-tw/2-5,g.ly-3,2.4,0,TAU);c.fill();
-    c.fillStyle="rgba(204,214,218,.82)";c.fillText(R[i].ab,cx+2,g.ly);
+    c.fillStyle=HANG.INK2;c.fillText(R[i].ab,cx+2,g.ly);
   }
-  /* колонка невязки: паз отделяет её от гнёзд */
+  /* колонка невязки: волосяная черта отделяет её от гнёзд */
   const x0=w-g.rw;
-  c.fillStyle="rgba(0,0,0,.5)";c.fillRect(x0,10,1,h-20);
-  c.fillStyle="rgba(210,226,232,.07)";c.fillRect(x0+1,10,1,h-20);
-  c.fillStyle="rgba(196,206,210,.62)";c.font="600 9px "+IPOD_FACE;c.textAlign="center";c.textBaseline="alphabetic";
+  c.fillStyle=rackCr(.10);c.fillRect(x0,10,1,h-20);
+  c.fillStyle=HANG.INK2;c.font="10px "+HANG.FACE;c.textAlign="center";c.textBaseline="alphabetic";
   c.fillText("НЕВЯЗКА",x0+g.rw/2,22);
-  /* окно счётчика: утоплено в металл, цифры светятся в нём (живое) */
+  /* окно счётчика: темнее плашки, цифры кремом в нём (живое) */
   const wx=x0+7,wy=27,ww=g.rw-14,wh=20;
-  c.fillStyle="#0a0d0f";c.beginPath();c.roundRect(wx,wy,ww,wh,3);c.fill();
-  c.strokeStyle="rgba(0,0,0,.8)";c.lineWidth=1;c.stroke();
-  c.fillStyle="rgba(210,226,232,.09)";c.fillRect(wx+2,wy+wh,ww-4,1);
+  c.fillStyle="rgb(10,10,9)";c.beginPath();c.roundRect(wx,wy,ww,wh,2);c.fill();
+  c.strokeStyle=rackCr(.12);c.lineWidth=1;c.stroke();
   /* клавиша стойки: колпачок «I» — та же ручка, что и щелчок по колодке */
   const kx=g.key?x0+8:x0+(g.rw-18)/2,ky=h-26;
-  const kg=c.createLinearGradient(0,ky,0,ky+18);
-  kg.addColorStop(0,"#5b6266");kg.addColorStop(1,"#2a2f32");
-  c.fillStyle=kg;c.beginPath();c.roundRect(kx,ky,18,18,3);c.fill();
-  c.strokeStyle="rgba(0,0,0,.7)";c.stroke();
-  c.fillStyle="rgba(240,244,246,.92)";c.font="600 10px ui-monospace,monospace";c.textAlign="center";c.textBaseline="middle";
+  c.fillStyle="rgb(32,30,27)";c.beginPath();c.roundRect(kx,ky,18,18,2);c.fill();
+  c.strokeStyle=rackCr(.30);c.stroke();
+  c.fillStyle=HANG.INK;c.font="600 10px "+HANG.FACE;c.textAlign="center";c.textBaseline="middle";
   c.fillText("I",kx+9,ky+9.5);
-  if(g.key){c.fillStyle="rgba(196,206,210,.7)";c.font="600 10px "+IPOD_FACE;c.textAlign="left";
+  if(g.key){c.fillStyle=HANG.INK2;c.font="10px "+HANG.FACE;c.textAlign="left";
     c.fillText("СТОЙКА",kx+23,ky+9.5);}
 }
 /* живое — примитивами в очередь колодки: мастер, стрелки, втулки, невязка */
@@ -115,12 +105,12 @@ function instrPodLive(R,w,h){
     const cx=g.x0+g.cw*(i+.5),cy=g.cy;
     const a=IPOD_A0+(IPOD_A1-IPOD_A0)*instrTrack(R[i]),c=Math.cos(a),s=Math.sin(a);
     /* тень стрелки на поле — стрелка над шкалой, а не нарисована на ней */
-    ckLine(cx-c*r*.2+.7,cy-s*r*.2+1.1,cx+c*r*.84+.7,cy+s*r*.84+1.1,1.8,"rgba(58,40,16,.28)");
-    ckLine(cx-c*r*.2,cy-s*r*.2,cx+c*r*.86,cy+s*r*.86,1.6,"rgba(220,128,44,.98)");
-    ovEll(cx,cy,2.6,2.6,0,"rgba(92,98,102,1)");
-    ovEll(cx-.5,cy-.5,1.1,1.1,0,"rgba(200,204,206,1)");
+    ckLine(cx-c*r*.2+.7,cy-s*r*.2+1.1,cx+c*r*.84+.7,cy+s*r*.84+1.1,1.8,"rgba(0,0,0,.35)");
+    ckLine(cx-c*r*.2,cy-s*r*.2,cx+c*r*.86,cy+s*r*.86,1.6,"rgba(236,158,82,.96)");   /* стрелка стойки */
+    ovEll(cx,cy,2.6,2.6,0,"rgba(44,40,36,1)");
+    ovEll(cx,cy,1.1,1.1,0,"rgba(232,220,196,.5)");
   }
-  ovText(OVL.uq,w-g.rw/2,41.5,decRu(instrMisclose(),3),"600 12px ui-monospace,monospace","rgba(255,192,112,.96)","center","alphabetic",1,1);
+  ovText(OVL.uq,w-g.rw/2,41.5,decRu(instrMisclose(),3),"600 12px ui-monospace,monospace","rgba(241,235,222,.96)","center","alphabetic",1,1);
 }
 function instrPodDraw(){
   if(!$ipod||!GPU.on||!GPU.enc||!GPU.dev)return;
@@ -190,39 +180,4 @@ if($ipod){
     e.preventDefault();
     if(typeof rackToggle==="function")rackToggle();
   });
-}
-/* металл колодки: винт, зерно, стекло (до M821 жили в стойке 25d; стойка теперь графитовая плашка) */
-function rackScrew(c,x,y,r){
-  const g=c.createRadialGradient(x-r*.4,y-r*.4,r*.1,x,y,r);
-  g.addColorStop(0,"#6b6f72");g.addColorStop(.6,"#3c4043");g.addColorStop(1,"#16191c");
-  c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();
-  c.strokeStyle="rgba(10,12,14,.85)";c.lineWidth=Math.max(1,r*.3);
-  c.beginPath();c.moveTo(x-r*.62,y-r*.2);c.lineTo(x+r*.62,y+r*.2);c.stroke();
-  c.strokeStyle="rgba(190,200,205,.16)";c.lineWidth=1;
-  c.beginPath();c.arc(x,y,r,Math.PI*1.05,Math.PI*1.75);c.stroke();
-}
-/* зерно металла и бумаги: редкие точки, посеянные раз и навсегда */
-function rackGrain(c,x,y,w,h,n,a,tone){
-  const r=rng(0x9a37^(w|0)^((h|0)<<8));
-  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();
-  for(let i=0;i<n;i++){
-    const px=x+r()*w, py=y+r()*h, s=r()<.85?1:2;
-    c.fillStyle=(r()<.5?tone[0]:tone[1])+(a*(.4+r()*.6)).toFixed(3)+")";
-    c.fillRect(px,py,s,s);
-  }
-  c.restore();
-}
-/* стекло: одна широкая полоса отражения и лёгкое затемнение к краю */
-function rackGlass(c,cx,cy,r){
-  c.save();
-  c.beginPath();c.arc(cx,cy,r,0,TAU);c.clip();
-  const gl=c.createLinearGradient(cx-r,cy-r,cx+r*.4,cy+r);
-  gl.addColorStop(0,"rgba(255,255,255,.16)");
-  gl.addColorStop(.38,"rgba(255,255,255,.05)");
-  gl.addColorStop(.55,"rgba(255,255,255,0)");
-  c.fillStyle=gl;c.fillRect(cx-r,cy-r,r*2,r*2);
-  const vg=c.createRadialGradient(cx,cy,r*.55,cx,cy,r);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.35)");
-  c.fillStyle=vg;c.fillRect(cx-r,cy-r,r*2,r*2);
-  c.restore();
 }

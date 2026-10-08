@@ -56,9 +56,11 @@ function mapSelInk(){
   if(HL&&HL.r)mapInkBox(HL.r.x0-4,HL.r.y0-4,HL.r.x1-HL.r.x0+8,HL.r.y1-HL.r.y0+8);
   return n0;
 }
-function mapSelBlock(n0){
+/* hung — табличка у выбора висит: её запасные (подвал выбора, подпись курса, #prompt) не держат места.
+   Не висит (M826: на карте висит только сообщение) — держат: они на листе */
+function mapSelBlock(n0,hung){
   const n=ovNd(),B=(x0,y0,x1,y1)=>hangBlock(x0*n,y0*n,x1*n,y1*n);
-  for(let i=0;i<n0;i++){const Q=MAP_INK[i];if(!Q.fb)B(Q.x0,Q.y0,Q.x1,Q.y1);}
-  for(const b of MAP_BOX)if(b.s!=="подвал слева · выбор")B(b.x,b.y,b.x+b.w,b.y+b.h);
-  for(const d of MAP_DOMR)if(d.sel!=="#prompt")B(d.r.left,d.r.top,d.r.right,d.r.bottom);
+  for(let i=0;i<n0;i++){const Q=MAP_INK[i];if(!hung||!Q.fb)B(Q.x0,Q.y0,Q.x1,Q.y1);}
+  for(const b of MAP_BOX)if(!hung||b.s!=="подвал слева · выбор")B(b.x,b.y,b.x+b.w,b.y+b.h);
+  for(const d of MAP_DOMR)if(!hung||d.sel!=="#prompt")B(d.r.left,d.r.top,d.r.right,d.r.bottom);
 }

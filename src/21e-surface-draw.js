@@ -51,7 +51,14 @@ function drawSurfaceHud(camx,camy,K){
      рисуем в UI-мерке, поэтому его надо в неё же и перевести (M221) */
   const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
   const TOP=Math.max(58,(typeof HUD_BAND==="number"?HUD_BAND/U:58)+10), RIGHT_PAD=118, pen=surfHudPen(U);
-  const hint=surfaceHint();
+  let hint=surfaceHint();
+  /* под движком планеты подсказка — табличка у человека (M826, 08bj hangHint), а не полоса капсом
+     поперёк неба. Полоса остаётся запасной: табличке прошлого кадра не нашлось места */
+  if(hint&&typeof PLN!=="undefined"&&PLN.on&&hangIn()){
+    const was=HANG.hint&&HANG.hint.f===OVL.fno-1&&HANG.hint.s===hint,hung=HANG.last.some(e=>e.id==="pln.hint");
+    HANG.hint={s:hint,f:OVL.fno};
+    if(!was||hung)hint=null;
+  }
   if(hint){
     ctx.font="10px ui-monospace,monospace";
     /* длинная подсказка не вылезает за плашку — ужимается с многоточием (M167) */
@@ -108,6 +115,7 @@ function drawSurfaceHud(camx,camy,K){
       const ax=dir>0?rx+cw-7:rx+7;
       pen.tri([ax+dir*4,ry+ch/2,ax-dir*3,ry+ch/2-4,ax-dir*3,ry+ch/2+4],m.col);
       pen.text(label,dir>0?rx+cw-14:rx+14,ry+11,m.col,dir>0?"right":"left");
+      if(typeof hangBlock==="function"){const k=ovNd()*U;hangBlock(rx*k,ry*k,(rx+cw)*k,(ry+ch)*k);}   /* таблички их обходят (M826) */
     }else{
       const sx=clamp((m.x-camx)*K,64,W-RIGHT_PAD-14);
       if(rowY<Math.max(leftY,rightY)-6)rowY=Math.max(leftY,rightY)-6;   // ниже столбиков фишек
@@ -119,7 +127,8 @@ function drawSurfaceHud(camx,camy,K){
          читалась с контрастом 1.2 — оранжевое «КОРАБЛЬ» по светлой дымке
          (M443, детектор текста) */
       {const tw=ctx.measureText(m.ru).width;
-       pen.rect(right?sx-tw-4:sx-4,rowY+7,tw+8,12,"rgba(5,7,12,.72)");}
+       pen.rect(right?sx-tw-4:sx-4,rowY+7,tw+8,12,"rgba(5,7,12,.72)");
+       if(typeof hangBlock==="function"){const k=ovNd()*U,x0=right?sx-tw-4:sx-4;hangBlock(x0*k,(rowY-5)*k,(x0+tw+8)*k,(rowY+19)*k);}}
       pen.text(m.ru,sx,rowY+16,m.col,right?"right":"left");
     }
   }

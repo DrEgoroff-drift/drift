@@ -430,7 +430,7 @@ body.sosopen #hailwin{bottom:auto;top:calc(env(safe-area-inset-top) + 96px)}   /
 #sos button.lose{color:#ff7a66;margin-top:10px;border-top:1px solid rgba(255,110,90,.45)}
 .sosnone{color:var(--dim);font-size:10px;padding:12px;line-height:1.5}
 body.sosopen .rail{opacity:.12;pointer-events:none}
-body.sosopen #console,body.sosopen #camBtn,body.hailopen #console,body.hailopen #camBtn{opacity:.12;pointer-events:none}   /* под окном — только окно */
+body.sosopen #console,body.hailopen #console{opacity:.12;pointer-events:none}   /* под окном — только окно */
 /* окно оклика (блокер надзора 12.09): над падами, в нижней трети — корабль и
    пикет видны; вопрос, отсчёт, два больших ответа. Подсказка под ним молчит */
 #hailwin{position:fixed;left:50%;transform:translateX(-50%);z-index:24;   /* поверх экранов (.scr 20) и стола (22): R0 */
@@ -785,7 +785,7 @@ body.inbelt .pads button[data-k=brake],
 body.inbelt .pads button[data-k=fire]{font-size:8px}
 /* в вагоне (M473): руля нет, остаётся одно ДЕЙСТВИЕ — ВЫЙТИ на остановке */
 body.inrail .pads button:not([data-k=act]){visibility:hidden;pointer-events:none}
-body.inrail #camBtn,body.inrail .rail{opacity:.25;pointer-events:none}
+body.inrail .rail{opacity:.25;pointer-events:none}
 
 /* узкий экран: поля панелей уже. Строки приборов (.v, .locus u) отсюда ушли
    (проход по каскаду 11.09): телефонный блок ≤760 стоит в файле ниже и
@@ -938,12 +938,6 @@ body.screen #console{opacity:1}
 #seat canvas{width:56px;height:56px}
 #seatOut b{display:block;font-weight:400;color:var(--amber);font-size:10px;letter-spacing:.12em}
 #seatOut s{display:block;text-decoration:none;color:var(--dim);font-size:9px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* ФОТО (M188): собственная кнопка пульта, стеклом и высотой как жёрдочка —
-   на пульте не должно быть двух разных языков у соседних кнопок */
-#camBtn{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);
-  border-radius:var(--rad-p);color:var(--amber);font:inherit;font-size:9px;letter-spacing:.16em;
-  min-height:52px;padding:0 14px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);
-  box-shadow:var(--lift),var(--glass-hi)}
 #perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
@@ -1238,7 +1232,6 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(var(--c-a
   #rxOut b{flex:0 0 auto;white-space:nowrap}
   #rxOut s{flex:1}
   #rxRec{min-height:36px;padding:0 10px}
-  #camBtn{min-height:40px;padding:0 12px}
   #seat{padding:2px 8px 2px 2px;min-height:40px}
   #seat canvas{width:36px;height:36px}
   #seatOut s{max-width:70px}
@@ -2340,8 +2333,6 @@ body.onmap #msg{background:rgba(11,11,11,.45);-webkit-backdrop-filter:blur(8px);
 
 #rx,#seat,#perch{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift)}
 #rxOut b{font-size:9px;letter-spacing:0}
-#camBtn{background:var(--plate);border-color:var(--hair);box-shadow:var(--plate-lift);
-  color:var(--text);font-size:10px;letter-spacing:0}
 
 .hud{top:calc(env(safe-area-inset-top) + 12px);
   padding:0 calc(env(safe-area-inset-right) + 14px) 0 calc(env(safe-area-inset-left) + 14px)}
@@ -2350,7 +2341,6 @@ body.onmap #msg{background:rgba(11,11,11,.45);-webkit-backdrop-filter:blur(8px);
     padding:0 calc(env(safe-area-inset-right) + 12px) 0 calc(env(safe-area-inset-left) + 12px)}
   .v.big u{font-size:18px}
   .locus u{font-size:12px}
-  #camBtn{min-height:44px}
 }
 
 /* ══════════════ короткое окно и палец шире 760 ══════════════
@@ -2505,8 +2495,26 @@ body:not(.mobile):not(.screen) #rxRec{grid-column:1/-1;grid-row:3;min-height:36p
 #rxScale i{font-size:9px;letter-spacing:.14em;color:var(--ink2)}
 #rxOut b{font-size:10px;letter-spacing:.2em;color:var(--ink2);text-transform:uppercase}
 #rxOut s{font-size:13px;color:var(--ink)}
-#camBtn{min-width:62px;min-height:44px;color:var(--ink);font-size:11px;letter-spacing:.06em}
-body:not(.mobile):not(.screen) #camBtn{height:auto}
+/* ══ приёмник — фишка (M826) ══
+   Полной плашкой со шкалой и мёртвой строкой «ШУМ» он висел над миром на каждом кадре. Теперь в покое
+   это фишка: точка и имя диапазона. Пришла строка (fresh) или звучит Кольцо (live) — тикер, строка без
+   ручки. Тап по фишке — ручка и шкала (sheet) на несколько секунд. Экраны станции не трогаем: там
+   приёмник — строка в шапке. */
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet){display:flex;flex-direction:row;align-items:center;gap:9px;
+  width:auto;flex:0 0 auto;min-height:44px;padding:0 15px 0 13px;cursor:pointer}
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet) :is(#rxKnob,#rxScale,#rxLine){display:none}
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet) #rxOut{display:block;border:0;padding:0}
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet)::before{content:"";flex:0 0 auto;width:5px;height:5px;border-radius:50%;
+  background:rgba(var(--c-phos),.65)}
+body:not(.screen) #console #rx:not(.fresh,.live,.sheet) #rxOut b{font-size:11px;letter-spacing:.12em;color:var(--ink)}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet){display:flex;flex-direction:row;align-items:center;gap:12px;
+  min-height:44px;padding:0 16px;cursor:pointer}
+body:not(.screen):not(.mobile) #console #rx:is(.fresh,.live):not(.sheet){width:min(460px,calc(100vw / var(--ui,1) - 130px))}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet) :is(#rxKnob,#rxScale){display:none}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet) #rxOut{flex:1;min-width:0;display:flex;flex-direction:row;
+  align-items:baseline;gap:12px;border:0;padding:0}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet) #rxOut b{flex:0 0 auto;white-space:nowrap}
+body:not(.screen) #console #rx:is(.fresh,.live):not(.sheet) #rxOut s{flex:1;min-width:0}
 
 body:not(.mobile) .pads{padding:0 calc(env(safe-area-inset-right) + 16px) calc(env(safe-area-inset-bottom) + 16px) 16px}
 body:not(.mobile) .pads>div{gap:10px}

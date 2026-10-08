@@ -193,4 +193,6 @@ function drawBillboard(zx,zy,Z){
   }
   const pass=gpuScene();if(!pass)return;   /* 2D-пути у щита нет (без видеокарты щита не видно) */
   bbDrawGpu(pass,B,x,y,s,col,rd,Z);
+  /* щит — вещь мира с буквами: табличка у вещи (08bj) на него не ложится (M826) */
+  if(rd>0&&typeof hangBlock==="function"){const n=ovNd();hangBlock((x-64*s)*n,(y-24*s)*n,(x+64*s)*n,(y+24*s)*n);}
 }

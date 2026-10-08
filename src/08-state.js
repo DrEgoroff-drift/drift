@@ -376,7 +376,10 @@ const held=()=>RES_KEYS.reduce((a,k)=>a+(G.cargo[k]||0)*((typeof resW==="functio
    ошибкой (проверено 18.09, 0b). Голос мира из таймера, если появится, пусть
    скажет say() и поставит MSG_WORLD=true сам. */
 let FRAME_IN=false,MSG_WORLD=false,MSG_HOLD=0;   /* MSG_HOLD — сколько кадров голос мира ждал за экраном */
-function say(s,d){G.msg=s;G.msgT=d||150;MSG_WORLD=FRAME_IN;MSG_HOLD=0;}
+/* obj — вещь, о которой строка (M826): тело системы {x,y,radius} в мире; табличка встаёт у неё, пока та в
+   кадре, иначе у корабля (08bj). Ссылка живёт вне G: в хэш и в сейв вещь не идёт */
+let MSG_OBJ=null;
+function say(s,d,obj){G.msg=s;G.msgT=d||150;MSG_OBJ=obj||null;MSG_WORLD=FRAME_IN;MSG_HOLD=0;}
 try{["pointerdown","keydown","click"].forEach(t=>addEventListener(t,()=>{FRAME_IN=false;},true));}catch(e){}
 /* подсказка кадра — одна (ревью 11.09). Её пишут два десятка модулей, и прежде
    побеждал тот, кто успел первым («if(!G.prompt)»): край системы глушил «БАК
@@ -396,7 +399,13 @@ function cueLvl(){
   if(G.prompt===CUE_TXT)return CUE_LVL;
   return !G.prompt?0:(/ДЕЙСТВИЕ/.test(G.prompt)?CUE_ACT:CUE_INFO);
 }
-function cueReset(){CUE_LVL=0;CUE_TXT="";G.prompt="";}
+function cueReset(){CUE_LVL=0;CUE_TXT="";G.prompt="";CUE_AT=null;}
+/* подсказка у вещи (M826): писатель, чья строка на экране, называет её вещь — тело системы {x,y} — и имя
+   её подписи в мире. Строка остаётся источником кнопки ДЕЙСТВИЯ; меняется только место: 08bj вешает её
+   табличкой у вещи, #prompt молчит. Чужая строка поверх (txt не тот) — вещь забыта. dy — точка таблички
+   ниже тела на столько пикселей экрана: там стоит подпись вещи, и табличка встаёт на её место */
+let CUE_AT=null;
+function cueAt(id,obj,name,dy){CUE_AT={id,obj,name:name||"",dy:dy||0,txt:G.prompt};}
 /* действие — первое (R1, надзор 12.09): у ДЕЙСТВИЯ равный уровень слот не
    отдаёт. Цепочка кадра идёт по порядку, и первый предложивший первым же ловит
    нажатие; «равный — последний» показывал ПОСАДКУ, а жал пояс, стоявший раньше.

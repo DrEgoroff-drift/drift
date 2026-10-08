@@ -8,6 +8,20 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M826 The HUD trimmed.** The receiver is a chip in the bottom row: a dot and the band's name,
+  a ticker row only while something is heard; a tap opens the full set for a few seconds.
+  «Фото» moved into the menu. The chapter title and the message line (#msg) hang as plates at
+  the thing they speak of — the ship, the station named in the message, the astronaut on the
+  ground, your star on the map — instead of caps across the sky; the ground hint does the same
+  (on the phone under the top arrows). A barge under fire is a plate at the barge with its
+  name in the first line; its callsign steps aside, and the action button still takes its verb
+  from the cue. The prompt line above the action button is silent when it only repeats the
+  button's verb. The instrument pod is graphite like the other plates. The camera keeps a body
+  in the free part of the frame, not behind the rail or the rack; on the phone it zooms in on a
+  fight and gives the zoom back after. On the map the jump circle is a thin ring with no fill,
+  holdings are half as loud, and «цен не видели» is a line on the footer plate instead of a
+  button that did nothing.
+
 - **M822 The map in three weights.** You, the selected system and the course to it are the
   brightest things on the sheet; the jump circle, the lanes inside it and your own route are
   one step down; the grid, the rings, the holdings, rumours, the fleet, giants and the rail lines

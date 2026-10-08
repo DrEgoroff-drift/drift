@@ -71,6 +71,12 @@ real adapter (the counting one is the default and is what the self-test expects)
 **A new law** goes into `geoLaws` (or `geoCompose` for a note), and its plant into `geoSelf` in
 the same commit — a law without a plant is not proven to see anything.
 
+**Known rare red (noted 08.10.2026, M822/M826, not chased).** The vision under `test.ps1 -Full`
+(`test-geom.js` → `tests/90b2-geom.js`, all 17 windows) went red once in about eight runs with a
+single defect; the same build was green on rerun and green under `-NoBuild`. The defect text was
+not kept. If it shows again, rerun with `--json=out.json` and keep the finding (law, scene, who ×
+with whom, window) before rerunning — a second sighting is what makes it worth hunting.
+
 ## Tiers and suites
 
 **Three tiers (0.359.3).** The Node tier (`test-node.js` — the page's scripts under DOM/canvas

@@ -174,9 +174,10 @@ function mapHoldingsDraw(vis,cell,V,st){
     if(x0>W||y0>H||x0+cell<0||y0+cell<0)continue;
     const d=Math.hypot(gx-G.sx,gy-G.sy),fade=clamp(1.1-d/(st.jump*2.2),.25,1);
     const ids=P[k];
-    mpRect(x0,y0,cell,cell,rgba(hex2rgb(HOUSE_BY_ID[ids[0]].col),(.10*fade).toFixed(3)));
+    /* заливка дома — шёпотом (M826): у «вас» fade=1, и 10 % песка «lask» и штрих .28 под кругом прыжка читались сепией; дом держат кромки (mapBorderEdge) */
+    mpRect(x0,y0,cell,cell,rgba(hex2rgb(HOUSE_BY_ID[ids[0]].col),(.05*fade).toFixed(3)));
     /* второй дом — штриховкой своего цвета: там принимают обе боны */
-    if(ids.length>1)mpHatch(x0,y0,cell,cell,6,-1,1,rgba(hex2rgb(HOUSE_BY_ID[ids[1]].col),(.28*fade).toFixed(3)));
+    if(ids.length>1)mpHatch(x0,y0,cell,cell,6,-1,1,rgba(hex2rgb(HOUSE_BY_ID[ids[1]].col),(.14*fade).toFixed(3)));
   }
   /* полоса трассы под линией: сектора «под трассой» */
   const pairs=mapTrassaPairs(vis,cell);

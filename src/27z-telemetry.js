@@ -398,10 +398,11 @@ function hud(){
   const rbtn=document.getElementById("routebtn");
   if(G.mode==="map"&&typeof routeHas==="function"){
     const ss=getSystem(G.sel.x,G.sel.y),inR=routeHas(G.sel.x,G.sel.y);
-    setSt(rbtn,"display",(ss&&ss.station)||inR?"":"none");
-    /* плечо ставится по виденным ценам (R1): кнопка говорит это до нажатия */
+    /* плечо ставится по виденным ценам (R1). Не видели — кнопки нет: «Цен не видели» висело рамкой
+       в пустоте и ничего не делало; это слово о слое цен, оно — строка подвала у «ТЕЛ · ВИДОВ» (M826) */
     const seen=typeof routeNoteFor==="function"&&!!routeNoteFor(G.sel.x,G.sel.y);
-    setTx(rbtn,inR?"Из маршрута":(seen?"В маршрут":"Цен не видели"));
+    setSt(rbtn,"display",(ss&&ss.station&&seen)||inR?"":"none");
+    setTx(rbtn,inR?"Из маршрута":"В маршрут");
   }else setSt(rbtn,"display","none");
   /* «К СЕБЕ» — когда лист уехал от вас; «НАЗВАТЬ» — на раскрытой карточке (M299) */
   const mb=document.getElementById("mebtn"),nb=document.getElementById("namebtn");
@@ -435,13 +436,18 @@ function hud(){
      не грязная и пересчитывать её браузеру не приходится. */
   /* полоса, пол и правый борт — одной меркой и только по грязной вёрстке (0.3) */
   hudFloorMeasure();
-  const msgOn=G.msgT>0&&!msgHeld();
+  const msgOn=G.msgT>0&&!msgHeld()&&!hangMsgHung();   /* висит табличкой у вещи — DOM молчит (M826, 08bj) */
   setTx($msg,msgOn?G.msg:"");
   setSt($msg,"opacity",msgOn?clamp(G.msgT/40,0,1):0);
   /* зимовка: под строкой — мягкая подложка (style.css #msg.dim) */
   $msg.classList.toggle("dim",G.mode==="winter");
   hudMsgPlace();
-  setTx($prompt,G.mode==="dock"||mapHintHung()?"":G.prompt);   /* на карте подсказка висит табличкой у выбора (M822) */
+  /* на карте подсказка висит табличкой у выбора (M822), в системе — у вещи, которую назвал cueAt (M826) */
+  /* подсказка — один глагол, и кнопка ДЕЙСТВИЯ называет его целиком (два слова и число): строка над
+     кнопкой повторяла бы её оранжевым капсом (M826). «УДЕРЖИВАЙТЕ…», хвост через «·» — новое, остаются */
+  const pv=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)$/.exec(String(G.prompt||"").trim());
+  const pDup=!!pv&&pv[1].replace(/\s*\(?\d+\)?\s*$/,"").trim().split(/\s+/).length<=2;
+  setTx($prompt,G.mode==="dock"||mapHintHung()||hangCueHung()||pDup?"":G.prompt);
   /* на тяге значок, на грунте и в шахте — слово. Слову, как подписям прочих пэдов, свой <span>,
      регистр предложения и кегль (.word): ПРЫЖОК капителью в 17 px был шире круга на телефоне в 320 */
   if($bThr){const w=G.mode==="surface"?"Прыжок":(G.mode==="dig"?"Вверх":"");

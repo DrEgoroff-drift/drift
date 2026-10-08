@@ -53,8 +53,11 @@ function smenaOpenHere(p){
   smenaAct(n,title);
   return n;
 }
-/* акт: слово через экран, дольше штампа */
+/* акт: заголовок главы, дольше штампа. С M826 — табличка у вещи (у человека на грунте, у корабля в
+   системе), а не слово через экран посреди кадра; без слоя или без вещи в режиме — прежний DOM */
 function smenaAct(n,title){
+  const at=typeof HANG_MSG_AT!=="undefined"&&HANG_MSG_AT[G.mode];
+  if(at&&hangOk()&&(G.mode!=="surface"||(typeof PLN!=="undefined"&&PLN.on))&&hangSay("smena",["Глава "+n+" · «"+title+"»","«Смена» · на столе"],at,200))return;
   if(typeof document==="undefined"||!document.body)return;
   const old=document.getElementById("smenaAct");if(old)old.remove();
   const d=document.createElement("div");d.id="smenaAct";

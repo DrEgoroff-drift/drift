@@ -245,10 +245,10 @@ function drawMapIn(){
   if(typeof drawGalaxyNames==="function")drawGalaxyNames(V,cell);   /* рукава и туманности по имени (M449) */
   if(typeof drawRailMap==="function")drawRailMap(V,cell);   /* железная дорога бледно, 1:1 с листом (M470) */
   if(typeof drawGiantsMap==="function")drawGiantsMap(V,cell);   /* великаны — ориентиры (M464) */
-  /* круг прыжка: не окружность-волосок, а освещённая область — сразу видно,
-     докуда рука дотягивается. Свет — в поле неба (MAPGPU.lamp), здесь — кромка */
+  /* круг прыжка (M826): кольцо весом маршрута — докуда рука дотягивается, читается кромкой, а не
+     светлым диском; небо за кромкой гаснет едва (MAPGPU.lamp, ≤ 4 %) */
   mpWeight(MAP_W.route);
-  mpCircle(px,py,jr,1,"rgba(127,230,216,.22)");
+  mpCircle(px,py,jr,1.4,"rgba(127,230,216,.5)");
   /* круг поиска по слуху: где смотреть, а не что нашли */
   const srch=G.mapSearch||(G.course&&G.course.rad?G.course:null);
   if(srch){
@@ -398,6 +398,7 @@ function drawMapIn(){
       mapInkBox(x-youW/2-6*youU,by-10*youU,youW+12*youU,14*youU);
       youR={x0:x-youW/2-8*youU,y0:by-12*youU,x1:x+youW/2+8*youU,y1:by+6*youU};
       mpText(youS,x,by,"#7fe6d8");
+      hangAt("you",x,y,rr+16);   /* строка сообщения на карте — у вашей звезды (M826, 08bj) */
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
        которые поставил не мир, а сам игрок. Без них до них не долететь. */
@@ -503,6 +504,9 @@ function drawMapIn(){
        плашки и серое .85 давало контраст 2.3 (M443, детектор текста) */
     Rr.push([HANG.INK2,"ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
       Math.round(G.credits).toLocaleString("ru")+" кр"]);
+    /* станция выбора без виденных цен: в маршрут её не поставить — строка слоя цен, не кнопка (M826) */
+    if(ss&&ss.station&&typeof routeNoteFor==="function"&&!routeNoteFor(G.sel.x,G.sel.y)&&!(typeof routeHas==="function"&&routeHas(G.sel.x,G.sel.y)))
+      Rr.push([HANG.INK2,"цен станции не видели · в маршрут — после стыковки"]);
     const occN=G.occ?Object.keys(G.occ).length:0;
     if(occN||(G.freed|0))
       Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
@@ -637,9 +641,9 @@ function drawMapIn(){
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
    if(typeof mapRulersDraw==="function"){mapRulersDraw(V,cell,foot);mapRoseDraw(foot);}
   }
-  const n0=hung?mapSelInk():0;   /* подписи мира уступают табличке у выбора (18l) */
+  const n0=hung?mapSelInk():MAP_INK.length;   /* подписи мира уступают табличке у выбора (18l) */
   mapLateFlush();   /* подписи мира — последними и на свободное место */
-  if(hung)mapSelBlock(n0);
+  mapSelBlock(n0,hung);   /* и табличка сообщения у «вы» (M826) обходит то же */
 }
 /* ── расклад прыжка: расстояние, цена, можно ли ──
    Один на кадр и на шаг мира: кадр рисует цену и красит курс, шаг мира по
