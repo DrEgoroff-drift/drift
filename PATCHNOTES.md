@@ -42,6 +42,17 @@ could ever save.
   moment it settles back to the whole hall. In the hall the table is a plate without its line
   of explanation. The ceiling's cable tray is warm and matte now, so by day it no longer
   competes with the lamp over the counter.
+- **M813 — the instruments.** The five dials stand on the bench under the window, each in its
+  maker's housing with a brass bezel, as many ticks as it can tell apart, a red true mark and a
+  needle that wanders the way that instrument lies: wear and the maker's drift pull it off the
+  mark in a slow swell, a nervous needle trembles on top. On the plate the five sockets and the
+  counter are cards with the same dial drawn (a cracked glass once it is broken), the maker as a
+  tag, wear in one word, and «лучше»/«хуже» against yours on the counter; the prose is gone.
+  Pointing at a card lights its dial on the bench and the lens glides there. Along the way: the
+  yard reads the planet's ochre by day and a cold bounce from the window by night, the hangar
+  card has a floor, a lamp pool and a soft shadow and renders at twice the density, the window
+  mullions are thin and the glass carries the work lamp's faint reflection, and on a phone a
+  message goes to the ether strip instead of a toast over the cards.
 - **M812 — the yard.** In the hall, every hull for sale is a card: the ship itself in the
   hangar's three-quarter view on a lit floor across the card's top, its name with the class as
   a tag, the numbers and the price below; two cards to a row on a PC, one on a phone. At night

@@ -2881,14 +2881,42 @@ body.rackon #prompt{opacity:0}
 #station.hall .hcards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:4px 0 18px}
 #station.hall .row.hcard{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:0 0 14px;min-height:0;
   background:rgba(255,255,255,.025);border:1px solid var(--pl-edge);border-radius:6px;overflow:hidden}
+/* место корабля — настил ангара, не чёрный квадрат: тёмная оцинковка зала, лёгкая сетка, пятно лампы и мягкая тень под корпусом (M813) */
 #station.hall .row.hcard .yth.big{width:100%;height:170px;flex:0 0 auto;border-bottom:1px solid rgba(var(--c-edge),.08);
-  background:radial-gradient(ellipse 58% 30% at 50% 74%,rgba(255,232,196,.13),rgba(255,232,196,0) 72%),linear-gradient(180deg,#19181c,#0f0f12)}
+  background:radial-gradient(ellipse 34% 13% at 50% 71%,rgba(0,0,0,.42),rgba(0,0,0,0) 100%),
+    radial-gradient(ellipse 62% 44% at 50% 64%,rgba(236,226,206,.17),rgba(236,226,206,0) 75%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.028) 0 1px,transparent 1px 28px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.024) 0 1px,transparent 1px 28px),
+    linear-gradient(180deg,#24262a,#2b2d30 55%,#202225)}
 #station.hall .row.hcard .nm{padding:12px 14px 0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
 #station.hall .row.hcard .nm>s{flex:1 0 100%}
 #station.hall .row.hcard .cls{font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);
   padding:3px 8px;border:1px solid var(--pl-edge);border-radius:3px;white-space:nowrap}
 #station.hall .row.hcard>:is(.act,.qt){margin:12px 14px 0;align-self:flex-start}
 @media (max-width:760px){#station.hall .hcards{grid-template-columns:minmax(0,1fr)}}
+/* приборы в зале (M813): строки — карточками со шкалой рисунком; стрелка гуляет по уводу прибора, без мигания */
+#station.hall .hdials{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:4px 0 18px;align-items:start}
+#station.hall .row.hdial{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:0 0 12px;min-height:0;
+  background:rgba(255,255,255,.025);border:1px solid var(--pl-edge);border-radius:6px;overflow:hidden}
+#station.hall .row.hdial:hover,#station.hall .row.hdial.hot{border-color:rgba(var(--c-acc),.55)}
+#station.hall .hdial-svg{display:block;width:100%;height:auto;aspect-ratio:120/92;flex:0 0 auto;
+  background:linear-gradient(180deg,#24262a,#2b2d30 55%,#202225);border-bottom:1px solid rgba(var(--c-edge),.08)}
+#station.hall .hneedle{transform-origin:60px 54px;transform:rotate(var(--d));animation:hneedle 3s ease-in-out infinite alternate}
+@keyframes hneedle{from{transform:rotate(calc(var(--d) - var(--a)))}to{transform:rotate(calc(var(--d) + var(--a)))}}
+@media (prefers-reduced-motion:reduce){#station.hall .hneedle{animation:none}}
+#station.hall .row.hdial .nm{flex:0 0 auto;min-height:0;padding:10px 10px 0;display:flex;flex-wrap:wrap;align-items:baseline;align-content:flex-start;gap:6px 8px}
+#station.hall .row.hdial .nm>b{flex:1 0 100%}
+#station.hall .row.hdial .nm>s{flex:1 0 100%}
+#station.hall .row.hdial :is(.cls,.cmp){font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);
+  padding:3px 8px;border:1px solid var(--pl-edge);border-radius:3px;white-space:nowrap}
+#station.hall .row.hdial .cmp.up{color:rgb(150,204,150);border-color:currentColor}
+#station.hall .row.hdial .cmp.dn{color:rgb(var(--c-acc));border-color:currentColor}
+#station.hall .row.hdial>.act{margin:10px 12px 0;align-self:flex-start}
+#station.hall .row.hdial>.nm+.nm{padding-top:6px}
+#station.hall .row.hdial .nm>b{font-size:12.5px;letter-spacing:.02em}
+@media (max-width:760px){#station.hall .hdials{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
+/* телефон: сообщение say() в зале — строкой в полосе эфира (закон M826), не плашкой поверх карточек */
+@media (max-width:899.98px){body:has(#station.hall.open) #msg{display:none}}
 #station.hall #stHall{display:block;position:absolute;left:0;top:0;z-index:-2;pointer-events:none}
 /* основа — сплошная: зал (z -2) и плита (z -1) рисуются над ней в своём слое (isolation); если видеокарта
    не нарисовала зал, под экраном темнота, а не мир с его фишками */

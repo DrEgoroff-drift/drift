@@ -55,7 +55,7 @@ const HALL_SCONCE=[-7.0,2.2,-.9];   /* бра на левой стене над 
 const HALL_TYPES={
   trade:  {hc:3.2, win:0, fill:[255,186,118],fp:1.25,key:[255,214,160],wall:[66,64,70],bar:3},
   indust: {hc:5.6, win:1, fill:[255,128,52], fp:2.1, key:[255,200,140],wall:[74,68,60],bar:2,tube:[196,218,255]},
-  yard:   {hc:4.6, win:2, fill:[214,232,255],fp:1.5, key:[255,220,170],wall:[62,70,74],bar:3,weld:1},
+  yard:   {hc:4.6, win:2, fill:[226,228,232],fp:1.5, key:[255,220,170],wall:[68,69,70],bar:3,weld:1,day:[186,182,174]},   /* день верфи — цвет вещей: оцинковка, планета, жёлтое ограждение (M813) */
   sci:    {hc:3.6, win:3, fill:[188,214,255],fp:1.45,key:[255,226,190],wall:[70,80,96],bar:3,big:1},
   outpost:{hc:2.8, win:5, fill:[120,140,205],fp:.55, key:[255,182,120],wall:[54,57,66],bar:1,dark:1},
   fuel:   {hc:2.9, win:6, fill:[255,170,64], fp:1.35,key:[255,200,120],wall:[80,72,58],bar:0},
@@ -187,6 +187,7 @@ function hallScene(L,cam,t){
   M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29)),16);
   const draws=[[L.room,0,1]];let ii=1;
   const gm=hallGoodsUp(L);if(gm)draws.push([gm,0,1]);   /* товар ящиками на стойке (M811) — тот же экземпляр, что зал */
+  if(ii<R3_MAXI){hallInstrPose(M,ii,t);draws.push([hallInstrUp(),ii,1]);ii++;}   /* пять приборов на верстаке (M813): стрелки — части 1–5 */
   for(const P of L.people){if(ii>=R3_MAXI)break;
     const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw);
     const B=r3Mul(A,[1,0,0,0, 0,br,0,0, 0,0,1,0, 0,0,0,1]),at=P.mesh.at;
@@ -224,9 +225,13 @@ function hallScene(L,cam,t){
     cosO:Math.cos(.9),cosI:Math.cos(.32),shadow:nk>.5?1:0,vol:.06,work:1});bulbs.push([HALL_WORK[0],wy0,HALL_WORK[1],.45+.3*nk]);}
   /* окно: высоко под проёмом и круто вниз — пятно до середины зала, тени людей к камере; конус не
      достаёт пола у камеры (глянец зеркалил его там пятном). Пыль в луче — днём */
-  const wy=hallWinY(T),wx=(HALL_WIN[0]+HALL_WIN[1])/2,dock=hallMix3(hallMix3(fill,r3Lin([170,200,255]),.7),[.04,.07,.2],nk);
-  lights.push({p:[wx,Math.min(hc-.2,wy[1]+.15),HALL_B+.3],range:T.big?11:10,c:r3Sc(dock,T.fp*(dk?3:4.2)*(.06+.94*day)),spot:1,
-    d:[0,-.82,.57],cosO:Math.cos(.5),cosI:Math.cos(.18),shadow:1,vol:(T.win===1?.6:.4)*day});
+  /* день: свет дока с третью тона планеты за стеклом (охра пустыни, бирюза льда) — зал берёт цвет окна.
+     Ночь: тот же проём — холодный отскок планеты и дока, широким конусом: пол и ближняя стена держат форму */
+  const pt=r3Lin(hallPlanetTone()),wy=hallWinY(T),wx=(HALL_WIN[0]+HALL_WIN[1])/2;
+  const dock=hallMix3(hallMix3(hallMix3(fill,r3Lin([170,200,255]),.55),pt,.68),hallMix3([.05,.08,.2],r3Sc(pt,.3),.35),nk);
+  {const dy=-.82+.62*nk,dz=.57+.43*nk,dl=Math.hypot(dy,dz);
+  lights.push({p:[wx,Math.min(hc-.2,wy[1]+.15),HALL_B+.3],range:(T.big?11:10)+4*nk,c:r3Sc(dock,T.fp*(dk?3:4.2)*(.06+.94*day+.6*nk)),spot:1,
+    d:[0,dy/dl,dz/dl],cosO:Math.cos(.5+1.0*nk),cosI:Math.cos(.18+.7*nk),shadow:1,vol:(T.win===1?.6:.4)*day});}
   /* бар: не больше трёх тёплых ламп, луч — на стойку (лужи света на полу и конусы в дыму не нужны);
      ночью бар ярче зала, днём до него доходит окно */
   if(L.bar){const LT=CANT_LIGHT[L.st]||CANT_LIGHT.trade,tone=r3Lin(mixc(mixc(LT.tone,acc,.2),[255,196,130],.35));
@@ -252,8 +257,9 @@ function hallScene(L,cam,t){
   if(L.bar&&day>.05)lights.push({p:[HALL_XB+2.2,2.3,HALL_B+.4],range:6,c:r3Sc(dock,T.fp*1.6*day),spot:1,d:[0,-.6,.8],cosO:Math.cos(.8),cosI:Math.cos(.35),vol:0});
   if(nk>.05)for(const x of [HALL_WIN[0]-.45,HALL_WIN[1]+.45])lights.push({p:[x,Math.min(hc-.5,2.3)-.02,HALL_B+.32],range:3.4,c:r3Sc(r3Lin([255,196,130]),(dk?.9:1.4)*nk),vol:0});
   /* рассеянный: небо — свет дока сквозь окна (сверху и со стен), земля — отсвет пола (потолок, низы балок) */
-  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.18+.82*day);
-  const sky=mx(mixc(T.wall,[146,178,232],.62),mixc(T.wall,[60,78,140],.55)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[62,54,48],.4));
+  /* ночью рассеянный не падает в черноту: value ≥ .08 на всех плоскостях (потолок, дальняя стена, пол) */
+  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day),ptc=hallPlanetTone();
+  const sky=mx(mixc(mixc(T.wall,T.day||[146,178,232],.62),ptc,.08),mixc(T.wall,[66,84,140],.5)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[92,106,140],.58));
   const fog=mx(mixc(T.wall,[150,165,190],.4),[30,38,64]);
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
@@ -342,10 +348,17 @@ function hallTab(){
   const p=hallPlaceOf(tab);if(p!==HALL.place)hallGo(p,false);
   if(HALL.L&&HALL.L.st!==((G.st&&G.st.stype)||"trade"))HALL.L=null;
 }
+/* телефон: сообщение (say) уходит в полосу эфира — там его место (M826); то же сообщение второй раз не идёт,
+   пока не погасло. На ПК плашка #msg остаётся (весь слой сообщений — M815) */
+function hallMsgEther(wide){
+  if(!(G.msgT>0)||!G.msg){HALL.msgLast=null;return false;}
+  if(!HALL.open||wide||G.msg===HALL.msgLast)return false;
+  HALL.msgLast=G.msg;consoleHeard(String(G.msg).replace(/\s*\n\s*/g," · "),"");return true;
+}
 function hallLoop(){
   HALL.raf=0;
   if(!HALL.open||!HALL.cn||!HALL.cn.isConnected)return;
-  const tw=wallMs();
+  const tw=wallMs();hallMsgEther(hallWide());
   if(hallMoving()||hallLensMoving()||tw-HALL.last>=1000/12-2){HALL.last=tw;
     try{hallFrame();}catch(e){HALL.err++;HALL.open=false;console.error("зал станции: кадр упал",e);return;}}
   HALL.raf=requestAnimationFrame(hallLoop);

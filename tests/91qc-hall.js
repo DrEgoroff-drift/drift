@@ -93,6 +93,31 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     eq(hallLensWant(1e6+700),1,"отпустил: 700 мс объектив ещё держит");eq(hallLensWant(1e6+760),0,"после 45 кадров — назад к общему плану");
     HALL.place=wp;HALL_GOODS.hot=null;hallGoodsDrop();G.cargo=c0;}
 
+  /* M813: пять приборов на верстаке — один экземпляр, стрелки частями 1–5; стрелка не уходит за шкалу ни у какого
+     завода и износа; горящая строка прибора ведёт объектив к его шкале с места КОРАБЛЬ */
+  {const K=instrKit(),k0=JSON.stringify(K),L=hallLayout("yard"),wp=HALL.place;L.room=hallRoomMesh(L);
+    const m=hallInstrUp();ok(m&&m.n>0,"приборы на верстаке собраны ("+(m?m.n:0)+" вершин)");
+    ok(INSTR_KEYS.length+1<=R3_PART,"стрелки помещаются в части экземпляра");
+    let worst=0;for(const w of Object.keys(INSTR_WORKS))for(const wear of [0,.5,1]){
+      for(const id of INSTR_KEYS){K[id]={w,s:7,wear};for(const t of [0,3.7,41,977])worst=Math.max(worst,Math.abs(hallInstrNeedle(id,t)));}}
+    ok(worst<=.95,"стрелка в пределах шкалы при любом заводе и износе (|θ| "+worst.toFixed(3)+" ≤ .95)");
+    K.mass={w:"artel",s:9,wear:1};const a1=hallInstrNeedle("mass",10),a2=hallInstrNeedle("mass",14);
+    K.mass={w:"vekha",s:9,wear:0};const b1=hallInstrNeedle("mass",10),b2=hallInstrNeedle("mass",14);
+    ok(Math.abs(a1-a2)>Math.abs(b1-b2),"разбитый артельный гуляет шире новой «Вехи»");
+    const cm=hallCam(HALL_CAMS.ship,1920,1080,true);
+    for(let i=0;i<INSTR_KEYS.length;i++){const p=hallInstrAt(i),q=r3Proj(cm.vp,[p[0],p[1]+.1,p[2]+.06],1920,1080);
+      ok(q&&q[0]>0&&q[0]<1920*hallHero(1920)&&q[1]>0&&q[1]<1080,"прибор "+INSTR_KEYS[i]+" в кадре места КОРАБЛЬ");}
+    HALL.place="ship";HALL_INSTR.hot="mass";HALL_LENS.k=null;HALL_LENS.last=0;
+    eq(hallLensWant(2e6),1,"строка прибора горит у окна — объектив хочет к шкале");
+    const c=HALL_CAMS.ship,cl=hallLens(c,L,1),pd=hallInstrAt(INSTR_KEYS.indexOf("mass"));
+    const d0=Math.hypot(c.tgt[0]-pd[0],c.tgt[2]-pd[2]),d1=Math.hypot(cl.tgt[0]-pd[0],cl.tgt[2]-pd[2]);
+    ok(d1<d0&&cl.fy<c.fy,"объектив идёт к шкале и сужает поле");
+    const pq=r3Proj(hallCam(cl,1920,1080,true).vp,[pd[0],pd[1]+.1,pd[2]+.06],1920,1080);
+    ok(pq&&pq[0]>0&&pq[0]<1920*hallHero(1920)&&pq[1]>0&&pq[1]<1080,"горящий прибор в кадре при объективе");
+    const sc=hallScene(L,cm,1);ok(sc.draws.some(d=>d[0]===HALL_INSTR.mesh),"приборы в кадре зала");
+    HALL.place=wp;HALL_LENS.last=0;HALL_LENS.k=null;hallInstrDrop();hallGoodsDrop();
+    for(const k in K)delete K[k];Object.assign(K,JSON.parse(k0));}
+
   /* M812: у окна ночью свой ключ — рабочая лампа над верстаком, не над головой пилота, и предел ламп её не срезает */
   {const was=HALL.night,wp=HALL.place,L=hallLayout("yard");L.room=hallRoomMesh(L);HALL.place="ship";HALL.night=1;
     const pa=HALL_PILOT_AT.ship,N=hallScene(L,hallCam(HALL_CAMS.ship,1920,1080,true),1.5),wl=N.lights.find(l=>l.work);
@@ -101,6 +126,22 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     const near=N.lights.filter(l=>!l.work&&Math.hypot(l.p[0]-HALL_WORK[0],l.p[2]-HALL_WORK[1])<3.2);
     ok(!!wl&&near.length>0&&near.every(l=>l.c[0]<wl.c[0]),"у окна ночью она — ключ: ярче "+near.length+" ламп рядом");
     HALL.night=was;HALL.place=wp;}
+
+  /* M813: со стойки рабочая лампа у окна — второй дальний слой, не второй ключ: её вклад в голову хозяина ≤ 1/3 ключа.
+     Затухание — как в шейдере 27f2: (1 − d⁴/r⁴)/(d² + .2), у прожектора — плавный край конуса */
+  {const att=(l,q)=>{const v=[q[0]-l.p[0],q[1]-l.p[1],q[2]-l.p[2]],d2=v[0]*v[0]+v[1]*v[1]+v[2]*v[2],d=Math.sqrt(d2);
+      let a=clamp(1-d2*d2/Math.pow(l.range,4),0,1)/(d2+.2);
+      if(l.spot){const c=(v[0]*l.d[0]+v[1]*l.d[1]+v[2]*l.d[2])/Math.max(1e-6,d),x=clamp((c-l.cosO)/Math.max(1e-6,l.cosI-l.cosO),0,1);a*=x*x*(3-2*x);}
+      return a*hallLum(l.c.map(v2=>v2*255));};
+    const wp=HALL.place,wn=HALL.night,L=hallLayout("trade");L.room=hallRoomMesh(L);HALL.place="trade";
+    for(const nk of [0,1]){HALL.night=nk;const S=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5),k0=L.people[0],q=[k0.x,1.6,k0.z];
+      const kw=att(S.lights.find(l=>l.work),q),kk=att(S.lights[0],q);
+      ok(kw<=kk/3,(nk?"ночью":"днём")+" со стойки рабочая лампа у окна — "+(kk>0?(kw/kk).toFixed(3):"—")+" ключа (≤ 1/3)");}
+    HALL.place=wp;HALL.night=wn;}
+  /* M813: переплёт окна с места КОРАБЛЬ — не толще 3 px на 1920 */
+  {const cm=hallCam(HALL_CAMS.ship,1920,1080,true),wx=(HALL_WIN[0]+HALL_WIN[1])/2,y=1.9,
+      a=r3Proj(cm.vp,[wx-HALL_WIN_FW,y,HALL_B+.05],1920,1080),b=r3Proj(cm.vp,[wx+HALL_WIN_FW,y,HALL_B+.05],1920,1080);
+    ok(a&&b&&Math.abs(b[0]-a[0])<=3,"переплёт окна "+(a&&b?Math.abs(b[0]-a[0]).toFixed(1):"—")+" px ≤ 3");}
 
   /* M812: в месте карточки (≥120 px) корпус — объём ангара, длинная сторона не меньше 160 px; в малом — прежний вид сверху */
   {const wo=H3D.on;H3D.on=true;
@@ -147,4 +188,29 @@ TEST_SUITES.push(()=>suite("зал станции: карточки верфи",
   ok(!!th&&th.getBoundingClientRect().height>=160,"место под корабль "+(th?th.getBoundingClientRect().height.toFixed(0):"—")+" px ≥ 160");
   ok(!!tag&&tag.textContent===SHIPS[id].cls,"класс — тегом у имени");
   box.remove();st.className=was;
+}));
+
+/* приборы в зале (M813): пять гнёзд — карточки со шкалой рисунком, проза ушла, прилавок — тоже шкалами */
+TEST_SUITES.push(()=>suite("зал станции: приборы карточками",{tier:"browser"},()=>{
+  resetWorld();const st=document.getElementById("station");ok(!!st&&!!$body,"есть #station и плита");if(!st||!$body)return;
+  const was=st.className,wo=HALL.open,html=$body.innerHTML;st.classList.add("scr","hall","open");HALL.open=true;$body.innerHTML="";
+  stTabInstr();
+  const cards=$body.querySelectorAll(".hdials .row.hdial[data-instr]");
+  eq(cards.length,INSTR_KEYS.length,"пять гнёзд — пять карточек");
+  ok([...cards].every(r=>r.querySelector("svg.hdial-svg .hneedle")&&r.querySelector(".cls")),"у каждой шкала со стрелкой и завод тегом");
+  ok(![...$body.querySelectorAll(".hdial .nm")].some(n=>/различает|стрелка|перо/.test(n.textContent)),"проза про разрешение и перо ушла");
+  ok([...$body.querySelectorAll(".sec")].every(s=>s.textContent.indexOf("·")<0||!/ГНЁЗД|ПРИЛАВОК/.test(s.textContent)),"заголовки без пояснений");
+  const h=cards[0]&&cards[0].getBoundingClientRect().height;ok(h>0&&h<480,"карточка не растянута ("+(h|0)+" px)");
+  $body.innerHTML=html;HALL.open=wo;st.className=was;
+}));
+
+/* телефон (M813): сообщение say() в зале идёт строкой в полосу эфира, на ПК — нет; одно и то же — один раз */
+TEST_SUITES.push(()=>suite("зал станции: сообщение на телефоне — в эфир",{tier:"browser"},()=>{
+  resetWorld();const line=document.getElementById("rxLine");ok(!!line,"есть строка эфира #rxLine");if(!line)return;
+  const wo=HALL.open,txt=line.textContent;HALL.open=true;HALL.msgLast=null;
+  say("Отметка: система\nотмечена на карте",120);
+  eq(hallMsgEther(true),false,"на ПК сообщение остаётся плашкой");
+  ok(hallMsgEther(false)&&line.textContent==="Отметка: система · отмечена на карте","на телефоне — в полосу эфира одной строкой");
+  eq(hallMsgEther(false),false,"то же сообщение второй раз не идёт");
+  G.msgT=0;hallMsgEther(false);HALL.open=wo;line.textContent=txt;
 }));

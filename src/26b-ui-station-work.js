@@ -251,6 +251,7 @@ function stTabInstr(){
          одинаково, и в лавке ей не место (03f учитывается на панели) */
       const q=T.res*(1-clamp(u.wear||0,0,1)*.45), fix=instrFixCost(id);
       const r=el("div","row"+((typeof subOff==="function"&&subOff(u))?" sub-off":""));   /* печать «ЗАБЛОКИРОВАНО» (D19) */
+      r.dataset.instr=id;   /* зал (M813) кладёт строку карточкой со шкалой и зажигает прибор на верстаке */
       r.appendChild(el("div","nm","<b>"+I.ru+"</b><s>"+T.ru+" · "+instrWearRu(u.wear||0)+
         " · "+T.note+"</s><s>различает "+(q>=1.25?"тонко":q>=.95?"как положено":
         q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+
@@ -280,7 +281,8 @@ function stTabInstr(){
       const cu=instrUnit(off.id),ct=instrTraits(cu);
       const cur=ct.res*(1-clamp(cu.wear||0,0,1)*.45);
       const would=T.res*(1-clamp(off.u.wear||0,0,1)*.45);
-      const r=el("div","row");
+      const r=el("div","row");r.dataset.offer=off.id;r.__u=off.u;
+      r.dataset.cmp=would>cur*1.08?"лучше вашего":would<cur*.92?"хуже вашего":"как ваш";
       r.appendChild(el("div","nm","<b>"+I.ru+" · "+T.ru+"</b><s>"+instrWearRu(off.u.wear||0)+
         " · "+T.note+"</s><s>"+(would>cur*1.08?"различает лучше вашего":
         would<cur*.92?"различает хуже вашего":"как ваш")+"</s>"));
@@ -313,6 +315,7 @@ function stTabInstr(){
         r.appendChild(b);$body.appendChild(r);
       });
     }
+    if(typeof HALL!=="undefined"&&HALL.open)hallInstrDress();   /* зал: строки — карточки со шкалой (27f4g) */
   }
 function stTabLab(){
     /* наборы узлов идут первыми: это долгая цель, а наука — текущая работа */
