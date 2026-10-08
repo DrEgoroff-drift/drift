@@ -12511,10 +12511,14 @@ function ovTextRot(Q,x,y,text,font,col,align,base,al,ang){
 function domLabel(k,x,y,text,font,col,align,al){
   if(al==null)al=1;
   if(!GPU.ok||!GPU.on){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align;ctx.globalAlpha=al;ctx.fillText(text,x,y);ctx.globalAlpha=1;return;}
-  const r=ovText(OVL.lq,x,y,text,font,col,align,ctx.textBaseline,al,1);
+  const n0=OVL.lq.length,r=ovText(OVL.lq,x,y,text,font,col,align,ctx.textBaseline,al,1);
+  if(ovHushed(r.x0,r.y0,r.x1,r.y1)){OVL.lq.length=n0;return;}
   let e=OVL.lab.get(k);if(!e)OVL.lab.set(k,e={on:false});
   Object.assign(e,r,{fr:OVL.fno,A:al,s:text});
 }
+/* OVL.hushR — рамка вещи интерфейса поверх мира (открытая стойка, 25d) в пикселях кадра: подписи и фишки
+   мира лежат выше интерфейса и легли бы на неё — те, что её задевают, в этом кадре не кладутся */
+function ovHushed(x0,y0,x1,y1){const R=OVL.hushR;return !!R&&x1>R.x0&&x0<R.x1&&y1>R.y0&&y0<R.y1;}
 /* фишка k: место (rx,ry) и размер (cw,ch) в мерке U, прозрачность, цвет, подпись, сторона подписи,
    угол стрелки. Рисунок — как у 2D: плашка, волосяной обвод, подпись, стрелка */
 const OVL_PLATE=[5/255*.72,7/255*.72,12/255*.72,.72];
@@ -12522,6 +12526,7 @@ function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
   /* без видеокарты мира нет, и фишкам не над чем висеть (Node-ярус, Chrome без WebGPU) */
   if(!GPU.ok||!GPU.on)return;
   const nd=ovNd(),s=U*nd,X=Math.round(rx*s),Y=Math.round(ry*s),X1=X+cw*s,Y1=Y+ch*s,Q=OVL.cq;
+  if(ovHushed(X/nd,Y/nd,X1/nd,Y1/nd))return;
   const c=gcColor(col),ca=c[3]*A,pm=[c[0]*ca,c[1]*ca,c[2]*ca,ca],hb=pm.map(v=>v*.5);
   ovPush(Q,X,Y,X1,Y1,OVL_PLATE.map(v=>v*A),0,0,0,0,null);
   ovPush(Q,X,Y,X1,Y+s,hb,0,0,0,0,null);ovPush(Q,X,Y1-s,X1,Y1,hb,0,0,0,0,null);
@@ -12541,13 +12546,11 @@ function ovlDesc(){const m=gpuShader(OVL_WGSL);return {layout:"auto",vertex:{mod
 function ovFlush(){
   OVL.fl=true;
   ovHangFlush();   /* слова на вещах (08bj, M803): таблички кадра — в OVL.uq, до счёта */
+  if(typeof rackLate==="function")rackLate();   /* стойка (25d) — последней в интерфейсе: поверх всего, что положил мир */
   const n=(OVL.uq.length+OVL.lq.length+OVL.cq.length)/OVL_N;
   for(const M of [OVL.lab,OVL.chip])for(const [k,e] of M){e.on=e.fr===OVL.fno;if(OVL.fno-e.fr>600)M.delete(k);}
   OVL.fno++;
-  /* OVL.hush — кадр отдан одной вещи поверх мира (открытая стойка, 25d): подписи и фишки мира
-     лежат выше интерфейса и легли бы на неё — их слои в этом кадре сброшены. Картинки (прогоны
-     T.ur) живут только в OVL.uq, поэтому сброс не сдвигает ни одного прогона */
-  if(OVL.hush){OVL.hush=false;OVL.lq.length=OVL.cq.length=0;}
+  OVL.hushR=null;
   const cv=n&&GPU.enc?ovCanvas():null;
   if(!cv){OVL.uq.length=OVL.lq.length=OVL.cq.length=OVL.ur.length=OVL.gd.length=0;if(OVL.on){OVL.on=false;OVL.cv.style.display="none";}return;}
   OVL.nu=OVL.uq.length/OVL_N;OVL.nl=OVL.lq.length/OVL_N;   /* сколько примитивов интерфейса и подписей (наборы: порядок слоёв) */
@@ -105658,29 +105661,57 @@ function rackGeo(){
   const flo=(typeof HUD_FLOOR==="number"&&HUD_FLOOR>0?HUD_FLOOR/k:LH-80)-10;
   const rail=(typeof HUD_RAIL==="number"&&HUD_RAIL>0)?HUD_RAIL/k:LW;
   if(LW<640){
-    /* телефон: полка во всю ширину под верхним рядом плит, низ — у трети высоты; правый борт,
-       поднявшийся выше низа полки, её укорачивает — полка кончается у него, а не на «Карте» */
-    const y0=top-4,y1=Math.max(y0+170,LH*.3-4);
+    /* телефон: полка во всю ширину под верхним рядом плит — пять циферблатов и шапка. Ленты нет:
+       полоса в 50 px с пятью прямыми не читается, лента — дело экрана, на котором есть место. Правый
+       борт, поднявшийся выше низа полки, её укорачивает — полка кончается у него, а не на «Карте» */
+    const y0=top-4,y1=y0+120;
     const x1=(rail<LW&&typeof HUD_RAILTOP==="number"&&HUD_RAILTOP>0&&HUD_RAILTOP/k<y1+6)?rail-6:LW-10;
-    return rackLay({mode:"shelf",x:10,y:y0,w:x1-10,h:y1-y0});
+    return rackLay({mode:"shelf",x:10,y:y0,w:x1-10,h:y1-y0,tape:false});
   }
   /* ПК: последняя треть ширины, у правого борта. Узкое окно (меньше 250 там не встаёт) отдаёт
      плашке кусок середины — она всё равно сбоку, а не поперёк */
   const x1=Math.min(rail-10,LW-10);
   let x0=Math.max(LW*.7+8,x1-380);
   if(x1-x0<250)x0=x1-Math.min(320,LW*.45);
-  return rackLay({mode:"side",x:x0,y:top,w:x1-x0,h:Math.max(200,flo-top)});
+  /* плашка никогда не поверх тела: звезда, планета, луна, станция или цель под ней — сперва уходит
+     лента (плашка короче), потом плашка встаёт под тело, если ниже есть место; не нашлось — плашка
+     отступает целиком (гаснет), пока тело не пройдёт. Лента возвращается не сразу: тело у кромки
+     не дёргает печь кадр через кадр */
+  const B=rackBodies(k),mk=(tape,y)=>rackLay({mode:"side",x:x0,y,w:x1-x0,h:Math.max(200,flo-y),tape});
+  const hit=g=>B.some(b=>b.x1>g.x&&b.x0<g.x+g.w&&b.y1>g.y&&b.y0<g.y+g.h);
+  const full=mk(true,top),fno=(typeof OVL!=="undefined"&&OVL.fno)|0;
+  if(hit(full))RACK.hitF=fno;
+  else if(!(fno-(RACK.hitF==null?-1e9:RACK.hitF)<45))return full;
+  const dl=mk(false,top);if(!hit(dl))return dl;
+  const lo=B.filter(b=>b.x1>dl.x&&b.x0<dl.x+dl.w&&b.y1>dl.y&&b.y0<dl.y+dl.h).reduce((m,b)=>Math.max(m,b.y1),top)+10;
+  for(const g of [mk(true,lo),mk(false,lo)])if(g.y+g.h<=flo&&!hit(g))return g;
+  dl.hide=true;return dl;
+}
+/* тела кадра системы в пикселях вёрстки: круг тела с запасом 6 px, цель — рамкой захвата (bodyMarkBox).
+   Камера — та, что поставил прошлый кадр системы (G.viewCX/CY, G.zoom): стойка рисуется до мира */
+function rackBodies(k){
+  const O=[];
+  if(G.mode!=="system"||!G.sys||G.viewCX==null)return O;
+  const Z=G.zoom||1,cx=G.viewCX,cy=G.viewCY;
+  const box=(sx,sy,rx,ry)=>{if(sx+rx<0||sx-rx>W||sy+ry<0||sy-ry>H)return;
+    O.push({x0:(sx-rx)/k,y0:(sy-ry)/k,x1:(sx+rx)/k,y1:(sy+ry)/k});};
+  const put=(x,y,r)=>{const q=r*Z+6;box(W/2+(x-cx)*Z,H/2+(y-cy)*Z,q,q);};
+  put(0,0,G.sys.radius||60);
+  for(const p of G.sys.planets||[]){put(p.x,p.y,p.radius);for(const m of p.moons||[])put(m.x,m.y,m.radius);}
+  const st=G.sys.station;if(st&&isFinite(st.x))put(st.x,st.y,60);
+  const T=G.marks&&G.marks[0];
+  if(T&&isFinite(T.x)){const b=BODY.on&&typeof bodyMarkBox==="function"?bodyMarkBox(T,Z):null;
+    box(W/2+(T.x-cx)*Z,H/2+(T.y-cy)*Z,b?b[0]:24,b?b[1]:24);}
+  return O;
 }
 /* раскладка внутри плашки: шапка (роль корпуса, невязка), ячейки приборов, лента. На ПК шестая
    ячейка — «Глобус» (25f), три в ряд; низкое окно ставит все шесть в один ряд. Полка телефона —
    пять приборов в ряд, без «Глобуса», радиус — сколько даёт высота */
 function rackLay(g){
-  const sh=g.mode==="shelf",P=sh?8:RACK_PAD,n=sh?5:6,head=sh?24:46,gap=sh?6:10,tm=sh?0:16;
-  const tmin=sh?52:96;
+  const sh=g.mode==="shelf",P=sh?8:RACK_PAD,n=sh?5:6,head=sh?24:46,tp=g.tape!==false;
+  const gap=tp?10:0,tm=tp?16:0,tmin=tp?96:0;
   const fit=cols=>{const cw=(g.w-P*2)/cols,rows=Math.ceil(n/cols);
-    let r=Math.min(cw*.36,sh?28:42);
-    if(sh)r=Math.min(r,(g.h-P*2-head-gap-tmin-20)/2);
-    r=Math.max(8,r);const ch=r*2+20;
+    const r=Math.max(8,Math.min(cw*.36,sh?28:42)),ch=r*2+20;
     return {cols,rows,cw,r,ch,need:P+head+rows*ch+gap+tmin+tm+P};};
   let L=fit(sh?5:3);
   if(!sh&&L.need>g.h)L=fit(6);
@@ -105691,10 +105722,10 @@ function rackLay(g){
     cells.push({cx,cy:y0+4+r,r,glob,x0:P+L.cw*col,x1:P+L.cw*(col+1),y0,y1:y0+L.ch,cw:L.cw});
   }
   const ty=P+head+L.rows*L.ch+gap;
-  const th=sh?Math.max(40,g.h-ty-P):clamp(g.h-ty-tm-P,tmin,200);
+  const th=tp?clamp(g.h-ty-tm-P,tmin,200):0;
   const rec={x:P,y:ty,w:g.w-P*2,h:th};
-  const lw=sh?30:36;
-  g.P=P;g.head=head;g.cells=cells;g.r=L.r;g.rec=rec;
+  const lw=36;
+  g.tape=tp;g.P=P;g.head=head;g.cells=cells;g.r=L.r;g.rec=rec;
   g.pap={x:rec.x+lw,y:rec.y,w:rec.w-lw-8,h:rec.h};
   g.h=ty+th+tm+P;
   g.x=Math.round(g.x);g.y=Math.round(g.y);
@@ -105738,11 +105769,7 @@ function rackGlobe(c,cx,cy,r){
   for(let i=0;i<12;i++){const a=i/12*TAU,l=(i%3===0)?r*.10:r*.06;
     c.beginPath();c.moveTo(cx+Math.cos(a)*r*.88,cy+Math.sin(a)*r*.88);
     c.lineTo(cx+Math.cos(a)*(r*.88-l),cy+Math.sin(a)*(r*.88-l));c.stroke();}
-  const gr=r*.54;
-  c.strokeStyle=rackCr(.14);
-  c.beginPath();c.arc(cx,cy,gr,0,TAU);c.stroke();
-  c.beginPath();c.ellipse(cx,cy,gr,gr*.72,0,0,TAU);c.stroke();
-  c.beginPath();c.moveTo(cx-gr,cy);c.lineTo(cx+gr,cy);c.stroke();
+  c.strokeStyle=rackCr(.10);c.beginPath();c.arc(cx,cy,r*.54,0,TAU);c.stroke();
   c.fillStyle=HANG.INK2;c.font="9px "+HANG.FACE;c.textAlign="center";c.textBaseline="top";
   c.fillText("ГЛОБУС",cx,cy+r+Math.max(11,r*.2));
   c.restore();
@@ -105793,7 +105820,7 @@ function* rackBakeJob(g0,nd){
 function rackTex(){
   const g0=rackGeo(),nd=ovNd();
   const key=g0.mode+"|"+Math.round(g0.w)+"x"+Math.round(g0.h)+"|"+nd.toFixed(2);
-  if(RACK.key===key&&RACK.P&&RACK.P[0].B.dev===GPU.dev){RACK.geo.x=g0.x;RACK.geo.y=g0.y;return RACK;}   /* ряд плит сдвинулся — сдвигается и стойка, без перепечки */
+  if(RACK.key===key&&RACK.P&&RACK.P[0].B.dev===GPU.dev){RACK.geo.x=g0.x;RACK.geo.y=g0.y;RACK.geo.hide=g0.hide;return RACK;}   /* ряд плит сдвинулся — сдвигается и стойка, без перепечки */
   const jk="rack|"+key;
   if(RACK.P||RACK.jk&&RACK.jk!==jk)rackDrop();
   RACK.jk=jk;RACK.w=g0.w;RACK.h=g0.h;RACK.geo=g0;RACK.nd=nd;
@@ -105811,7 +105838,7 @@ function rackPaint(c,g0,part){
     /* плашка: срезы справа сверху и слева снизу, как у табличек и плит борта */
     const cu=8;
     c.beginPath();c.moveTo(0,0);c.lineTo(w-cu,0);c.lineTo(w,cu);c.lineTo(w,h);c.lineTo(cu,h);c.lineTo(0,h-cu);c.closePath();
-    c.fillStyle="rgba(18,17,16,.86)";c.fill();
+    c.fillStyle="rgba(18,17,16,.97)";c.fill();   /* плотнее табличек: поверхность для чтения, щит мира сквозь неё не читается */
     c.beginPath();c.moveTo(.5,.5);c.lineTo(w-cu,.5);c.lineTo(w-.5,cu);c.lineTo(w-.5,h-.5);c.lineTo(cu,h-.5);c.lineTo(.5,h-cu);c.closePath();
     c.strokeStyle=rackCr(.17);c.lineWidth=1;c.stroke();
     /* метка роли у шапки: кремовая черта, с неё начинается чтение */
@@ -105828,6 +105855,7 @@ function rackPaint(c,g0,part){
     for(let i=0;i<RACK_G.length;i++){const C=g0.cells[i],g=RACK_G[i];
       const s=!sh&&rackTextW(c.font,g.ru)<=C.cw-6?g.ru:g.ab;c.fillText(s,C.cx,C.cy+C.r+13);}
     /* бумага: тёмный лист в плашке, сетка кремом в полтона, пять дорожек с нулевой линией */
+    if(g0.tape){
     const R=g0.rec,Pp=g0.pap;
     c.fillStyle=RACK_PAPER;c.fillRect(Pp.x,Pp.y,Pp.w,Pp.h);
     const cell=Math.max(7,Pp.h/26);c.lineWidth=1;
@@ -105842,11 +105870,12 @@ function rackPaint(c,g0,part){
       c.beginPath();c.moveTo(Pp.x,Math.round(cy)+.5);c.lineTo(Pp.x+Pp.w,Math.round(cy)+.5);c.stroke();c.setLineDash([]);
       /* код дорожки слева от листа: точка краски пера и три буквы */
       c.fillStyle=RACK_PEN[i];c.beginPath();c.arc(R.x+4,cy,2.6,0,TAU);c.fill();
-      c.fillStyle=HANG.INK2;c.font=(sh&&th<11?"8px ":"9px ")+HANG.FACE;c.textAlign="left";c.textBaseline="middle";
+      c.fillStyle=HANG.INK2;c.font="9px "+HANG.FACE;c.textAlign="left";c.textBaseline="middle";
       c.fillText(RACK_CH[i].ab,R.x+10,cy);
     }
     /* направляющая кареток у правого края листа */
     c.fillStyle=rackCr(.16);c.fillRect(Pp.x+Pp.w+4,Pp.y,1,Pp.h);
+    }
   }
   for(let i=0;i<g0.cells.length;i++){
     if(part&&part!=="d"+Math.floor(i*RACK_DQ/g0.cells.length))continue;
@@ -105900,23 +105929,39 @@ function rackBottom(on){
   document.documentElement.style.setProperty("--rackbot",rb+"px");
   document.body.classList.toggle("rackon",rb>0);
 }
+/* до мира: место плашки (печь, раскладка) и её рамка — препятствие табличкам (08bj hangBlock) и запрет
+   подписям и фишкам мира (08bi OVL.hushR). Сама плашка рисуется последней в интерфейсе — rackLate из
+   ovFlush: щит, табличка или прицел, положенные миром позже, иначе ложились бы на неё */
 function rackDraw(){
   RACK_K=Math.max(1,(typeof UIK==="number"&&UIK>0)?UIK:1);
   rackBottom(rackOpen()&&G.running&&!scrOpen());
+  RACK.late=false;
   if(!rackOpen()||!G.running){RACK.fade=0;return;}
   if(scrOpen())return;
+  RACK.late=true;
   /* кадр стойки — в пикселях вёрстки: плотность слоя на это время умножена на UIK (все ov* множат
      координаты на ovNd), печь берёт ту же плотность — мастер ложится текстель в пиксель */
-  OVL.hush=true;   /* подписи и фишки мира — не поверх стойки (08bi ovFlush) */
+  const nd0=OVL.nd,K=RACK_K;OVL.nd=ovNd()*K;
+  try{
+    const T=rackTex(),g=RACK.geo;
+    if(T.P&&T.S&&g&&!g.hide){
+      const R={x0:g.x*K,y0:g.y*K,x1:(g.x+g.w)*K,y1:(g.y+g.h)*K};OVL.hushR=R;
+      const d=nd0||ovNd()/K;
+      if(typeof hangBlock==="function")hangBlock(R.x0*d,R.y0*d,R.x1*d,R.y1*d);
+    }
+  }finally{OVL.nd=nd0;}
+}
+function rackLate(){
+  if(!RACK.late)return;RACK.late=false;
   const nd0=OVL.nd;OVL.nd=ovNd()*RACK_K;
   try{rackDrawK();}finally{OVL.nd=nd0;}
 }
 function rackDrawK(){
   const T=rackTex(), g0=RACK.geo;
   if(!T.P||!T.S)return;   /* печь ещё печёт: мир не притушен, плашка встанет готовой */
-  /* открытие: плашка наплывает за четыре кадра */
-  RACK.fade=Math.min(1,RACK.fade+.25);
-  rackFrame(T,g0);
+  /* открытие: плашка наплывает за четыре кадра; тело под ней — так же гаснет */
+  RACK.fade=g0.hide?Math.max(0,RACK.fade-.25):Math.min(1,RACK.fade+.25);
+  if(RACK.fade>0)rackFrame(T,g0);
 }
 /* прогрев — кадр стойки вхолостую последним шагом печи: глифы живых надписей растрятся там, а не в
    первом кадре открытой стойки; очереди #ovl срезаются обратно */
@@ -105966,7 +106011,7 @@ function rackFrame(T,g0){
 
   /* ── бумага: пять перьев пишут по-настоящему ── */
   const P0=g0.pap,P={x:X+P0.x,y:Y+P0.y,w:P0.w,h:P0.h}, Tp=tapeInit();
-  if(Tp.n>1){
+  if(g0.tape&&Tp.n>1){
     const cols=Math.min(Tp.n-1,Math.floor(P.w)),pen=[],sc=P.w/cols,th=P.h/TAPE_PENS;
     for(let i=0;i<TAPE_PENS;i++){
       const top=P.y+th*i+2, hh=th-4;
@@ -105995,15 +106040,41 @@ function rackFrame(T,g0){
     }
     /* отметки времени под листом (ПК): сколько минут ленты видно. Считаются от такта пера, а не
        от часов — это ЕГО время, и оно у ядра области идёт быстрее */
-    if(!sh&&wk!==1){
-      const span=cols*tapeRate()/60;
-      for(let m=0;m<=4;m++){const x=P.x+P.w-P.w*m/4;
-        ovText(Q,x,P.y+P.h+4,m?"-"+(span*m/4).toFixed(1)+" мин":"сейчас","9px "+F,HANG.INK2,m===4?"left":m?"center":"right","top",.8,1);}
+    /* целые минуты: дробь «-5.3» никто не читает. Шаг — чтобы метки не сходились ближе 34 px; у кромки
+       листа метка не ставится; единица — одна, под колонкой кодов, в строку меток */
+    if(wk!==1){
+      const span=cols*tapeRate()/60,pm=P.w/Math.max(1e-6,span),st=Math.max(1,Math.ceil(34/pm));
+      for(let m=0;m<=span+1e-6;m+=st){const x=P.x+P.w-pm*m;if(m&&x-P.x<10)break;
+        ovText(Q,x,P.y+P.h+4,m?"-"+m:"сейчас","9px "+F,HANG.INK2,m?"center":"right","top",.8,1);}
+      ovText(Q,X+g0.rec.x+10,P.y+P.h+4,"мин","9px "+F,HANG.INK2,"left","top",.8,1);
     }
   }
   /* ── «Глобус» (25f) ── единственный прибор стойки, что показывает не число, а место: где ты и
      где окажешься, если затормозить прямо сейчас. Стоит своей ячейкой — он другого рода */
-  if(wk!==1&&typeof globusDraw==="function")for(const C of g0.cells)if(C.glob)globusDraw(X+C.cx,Y+C.cy,C.r);
+  if(wk!==1)for(const C of g0.cells)if(C.glob)rackGlobeLive(X+C.cx,Y+C.cy,C.r);
+}
+/* живое «Глобуса» на плашке — пеленги, а не пустой шар: светлая точка — станция системы, янтарная
+   стрелка — цель захвата (G.marks), тонкая черта — курс на ходу; шар щёлкает раз в секунду (25f), под
+   прибором — имя того, во что упрёшься, если не тормозить */
+function rackGlobeLive(cx,cy,r){
+  const aim=typeof globusTick==="function"?globusTick():null,sh=G.ship,gr=r*.54;
+  if(typeof GLOB!=="undefined")ovEll(cx,cy,Math.max(1,Math.abs(Math.cos(GLOB.turn))*gr),gr,1,rackCr(.16));
+  if(sh){
+    const sp=Math.hypot(sh.vx||0,sh.vy||0);
+    if(sp>.05){const a=Math.atan2(sh.vy,sh.vx),c=Math.cos(a),s=Math.sin(a);
+      ovCap(cx+c*r*.2,cy+s*r*.2,cx+c*r*.84,cy+s*r*.84,1,rackCr(.55));}
+    const st=G.sys&&G.sys.station;
+    if(st&&isFinite(st.x)){const a=Math.atan2(st.y-sh.y,st.x-sh.x);
+      ovEll(cx+Math.cos(a)*r*.7,cy+Math.sin(a)*r*.7,2.8,2.8,0,HANG.INK);}
+    const T=G.marks&&G.marks[0];
+    if(T&&isFinite(T.x)){const a=Math.atan2(T.y-sh.y,T.x-sh.x),c=Math.cos(a),s=Math.sin(a),L=r*.8,w=Math.max(1.6,r*.05);
+      const tx=cx+c*L,ty=cy+s*L,col="rgba(236,158,82,.95)";
+      ovCap(cx,cy,tx,ty,w,col);
+      for(const d of [2.6,-2.6])ovCap(tx,ty,tx+Math.cos(a+d)*r*.2,ty+Math.sin(a+d)*r*.2,w,col);}
+  }
+  ovEll(cx,cy,2.2,2.2,0,HANG.INK2);
+  ovText(OVL.uq,cx,cy+r+Math.max(23,r*.38),aim?aim.ru.toUpperCase():"— — —","9px "+HANG.FACE,
+    aim?"rgba(236,158,82,.95)":HANG.INK2,"center","top",aim?1:.6,1);
 }
 
 /* ══════════════ приёмник: частота крутится рукой ══════════════

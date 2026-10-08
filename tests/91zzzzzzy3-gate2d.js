@@ -132,7 +132,7 @@ const GATE2D=[
      return null;},
    probe:["drawBillboard"]},
   {name:"приборная стойка (25d) и «Глобус» (25f): мастер, стрелки, перья",
-   painters:["rackDraw","rackFrame","rackWarm","rackBakeJob","rackTex","rackPaint","rackSprites","rackSpr","rackDial","rackGlobe","rackFit",
+   painters:["rackDraw","rackLate","rackFrame","rackWarm","rackBakeJob","rackTex","rackPaint","rackSprites","rackSpr","rackDial","rackGlobe","rackGlobeLive","rackFit",
              "globusDraw","globusPaint"],
    place(first){
      if(first){rackDrop();for(let i=0;i<40;i++)tapeSample();}

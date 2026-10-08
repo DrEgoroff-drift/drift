@@ -11,11 +11,16 @@ could ever save.
 - **M821 The rack as a side plate.** The instrument rack (I) is a plate of the M720
   material — graphite, a cream edge, cut corners, the plates' face — standing at the right
   between the top and bottom rows of plates, in the last third of the width: the centre
-  stays free and the world is no longer dimmed. On the phone it is a shelf under the top
-  plates. Five instruments of the region (fuel, hull and hold live on the БОРТ plate), graphite
+  stays free and the world is no longer dimmed. On the phone it is a shelf of five dials under
+  the top plates, without the tape. The plate never covers a body: the star, a planet, a moon,
+  the station or the target under it first takes the tape away, then the plate moves below the
+  body, else it fades until the body passes (suite `91qe-rack`); it is drawn last in the
+  interface, world labels and chips that touch it are skipped, hang plates walk round it.
+  Five instruments of the region (fuel, hull and hold live on the БОРТ plate), graphite
   dials with cream ticks and an amber needle, «Глобус» in its own cell, the hull's role and
   the misclose in the header; the chart paper is dark with a half-tone grid and pens
-  lightened toward the ink.
+  lightened toward the ink, whole minutes under it. The globe shows bearings: a light dot for
+  the station, an amber arrow to the target, a thin line for the course.
 
 - **M820 Bodies for everyone.** The barge, its wreck, the station, shuttles, line and lane
   ships are meshes under the system's star (`17c2e` kit, `17c2f` barge, `17c2g` station,

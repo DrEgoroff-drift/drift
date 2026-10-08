@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 525 · top-level symbols: 7797
+Files: 526 · top-level symbols: 7801
 
 ## SYMBOLS
 
@@ -1293,13 +1293,13 @@ ORE_KEYS                     src/02-world.js:145
 ORE_NODE_W                   src/23-mode-dig.js:12
 OVL                          src/08bi-gpu-ovl.js:17
 OVL_N                        src/08bi-gpu-ovl.js:20
-OVL_PLATE                    src/08bi-gpu-ovl.js:203
+OVL_PLATE                    src/08bi-gpu-ovl.js:207
 OVL_RUN                      src/08bi-gpu-ovl.js:136
-OVL_UF                       src/08bi-gpu-ovl.js:243
+OVL_UF                       src/08bi-gpu-ovl.js:246
 OVL_WGSL                     src/08bi-gpu-ovl.js:21
-OVR                          src/08bi-gpu-ovl.js:320
-OV_CV                        src/08bi-gpu-ovl.js:301
-OV_EYE                       src/08bi-gpu-ovl.js:297
+OVR                          src/08bi-gpu-ovl.js:323
+OV_CV                        src/08bi-gpu-ovl.js:304
+OV_EYE                       src/08bi-gpu-ovl.js:300
 OX                           src/21ad-base-gpu.js:149
 P3                           src/17c2b-parts3d.js:18
 P3T                          src/17c2d-parts-thumb.js:21
@@ -1551,14 +1551,14 @@ R3_UN                        src/27f2-room3d.js:28
 R3_WGSL                      src/27f2-room3d.js:154
 RACK                         src/25d-instr-rack.js:44
 RACK_CH                      src/25d-instr-rack.js:26-32
-RACK_DQ                      src/25d-instr-rack.js:165
+RACK_DQ                      src/25d-instr-rack.js:189
 RACK_FACE                    src/25d-instr-rack.js:57
-RACK_FIT                     src/25d-instr-rack.js:294
+RACK_FIT                     src/25d-instr-rack.js:320
 RACK_G                       src/25d-instr-rack.js:37-43
 RACK_K                       src/25d-instr-rack.js:62
 RACK_PAD                     src/25d-instr-rack.js:24
 RACK_PEN                     src/25d-instr-rack.js:34
-RACK_SH                      src/25d-instr-rack.js:164
+RACK_SH                      src/25d-instr-rack.js:188
 RADIO                        src/10a-radio.js:119
 RADIO_ARCH                   src/10a-radio.js:24-40
 RADIO_BANDS                  src/25e-receiver.js:13-18
@@ -2843,7 +2843,7 @@ chessPaint                   src/25n-chess.js:256-316
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
 chipDist                     src/17-mode-system.js:727-733
-chipDom                      src/08bi-gpu-ovl.js:204-219
+chipDom                      src/08bi-gpu-ovl.js:208-224
 chipDomSnap                  src/08bh-gpu-hud.js:10-12
 chipDomSweep                 src/08bh-gpu-hud.js:20-23
 chronAgentMove               src/12am-chron-agents.js:78-209
@@ -3352,7 +3352,7 @@ dkPaper                      src/27ia-desk-top.js:37-45
 dkRule                       src/27ia-desk-top.js:46-52
 dkShadow                     src/27ia-desk-top.js:30-35
 dmgMul                       src/05c-arms.js:36-39
-domLabel                     src/08bi-gpu-ovl.js:194-200
+domLabel                     src/08bi-gpu-ovl.js:194-201
 domLabelId                   src/08bh-gpu-hud.js:17
 domReadCount                 src/15d-domread.js:19
 domReadWatch                 src/15d-domread.js:21-56
@@ -4136,7 +4136,7 @@ gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOrb                       src/17gab-gpu-orb.js:479-491
 gpuOrbMoon                   src/17gab-gpu-orb.js:504-510
-gpuOvFrontView               src/08bi-gpu-ovl.js:281
+gpuOvFrontView               src/08bi-gpu-ovl.js:284
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
 gpuPipe                      src/08c-gpu-kit.js:20-24
@@ -5527,32 +5527,33 @@ orderTake                    src/12aa-need.js:103-114
 orderTick                    src/12aa-need.js:136-142
 orderWin                     src/12aa-need.js:77
 oreNode                      src/23-mode-dig.js:13-29
-ovArc                        src/08bi-gpu-ovl.js:348-351
+ovArc                        src/08bi-gpu-ovl.js:351-354
 ovAtlas                      src/08bi-gpu-ovl.js:112-131
-ovBind                       src/08bi-gpu-ovl.js:272-280
+ovBind                       src/08bi-gpu-ovl.js:275-283
 ovCanvas                     src/08bi-gpu-ovl.js:97-109
-ovCap                        src/08bi-gpu-ovl.js:332-335
-ovCap3                       src/08bi-gpu-ovl.js:343-346
-ovEll                        src/08bi-gpu-ovl.js:338-341
-ovFlush                      src/08bi-gpu-ovl.js:224-240
-ovGraph                      src/08bi-gpu-ovl.js:359-363
+ovCap                        src/08bi-gpu-ovl.js:335-338
+ovCap3                       src/08bi-gpu-ovl.js:346-349
+ovEll                        src/08bi-gpu-ovl.js:341-344
+ovFlush                      src/08bi-gpu-ovl.js:229-243
+ovGraph                      src/08bi-gpu-ovl.js:362-366
 ovHang                       src/08bj-ovl-hang.js:27-31
 ovHangFlush                  src/08bj-ovl-hang.js:227-243
-ovImage                      src/08bi-gpu-ovl.js:287-293
+ovHushed                     src/08bi-gpu-ovl.js:204
+ovImage                      src/08bi-gpu-ovl.js:290-296
 ovInto                       src/08bi-gpu-ovl.js:90-93
 ovNd                         src/08bi-gpu-ovl.js:88
-ovPaint                      src/08bi-gpu-ovl.js:302-317
-ovPass                       src/08bi-gpu-ovl.js:244-270
-ovPm                         src/08bi-gpu-ovl.js:283
+ovPaint                      src/08bi-gpu-ovl.js:305-320
+ovPass                       src/08bi-gpu-ovl.js:247-273
+ovPm                         src/08bi-gpu-ovl.js:286
 ovPush                       src/08bi-gpu-ovl.js:132-135
-ovQuad                       src/08bi-gpu-ovl.js:354-357
-ovRead                       src/08bi-gpu-ovl.js:321-330
-ovRect                       src/08bi-gpu-ovl.js:284
+ovQuad                       src/08bi-gpu-ovl.js:357-360
+ovRead                       src/08bi-gpu-ovl.js:324-333
+ovRect                       src/08bi-gpu-ovl.js:287
 ovRuns                       src/08bi-gpu-ovl.js:140-151
 ovTarget                     src/08bi-gpu-ovl.js:95
 ovText                       src/08bi-gpu-ovl.js:154-180
 ovTextRot                    src/08bi-gpu-ovl.js:183-191
-ovlDesc                      src/08bi-gpu-ovl.js:221
+ovlDesc                      src/08bi-gpu-ovl.js:226
 ownerName                    src/12al1-toponym.js:14-18
 ownerOf                      src/13-combat.js:13
 ownerSign                    src/12al1-toponym.js:20-23
@@ -6302,30 +6303,33 @@ r3Step                       src/27f2-room3d.js:36
 r3Up                         src/27f2-room3d.js:414-418
 r3VB                         src/27f2-room3d.js:384
 r3Xf                         src/27f2-room3d.js:47-151
-rackBakeJob                  src/25d-instr-rack.js:184-200
-rackBottom                   src/25d-instr-rack.js:305-310
+rackBakeJob                  src/25d-instr-rack.js:208-224
+rackBodies                   src/25d-instr-rack.js:97-111
+rackBottom                   src/25d-instr-rack.js:331-336
 rackCr                       src/25d-instr-rack.js:56
-rackDial                     src/25d-instr-rack.js:112-138
-rackDraw                     src/25d-instr-rack.js:311-321
-rackDrawK                    src/25d-instr-rack.js:322-328
-rackDrop                     src/25d-instr-rack.js:166-181
-rackFit                      src/25d-instr-rack.js:295-299
-rackFrame                    src/25d-instr-rack.js:335-415
-rackGeo                      src/25d-instr-rack.js:63-81
+rackDial                     src/25d-instr-rack.js:140-166
+rackDraw                     src/25d-instr-rack.js:340-358
+rackDrawK                    src/25d-instr-rack.js:364-370
+rackDrop                     src/25d-instr-rack.js:190-205
+rackFit                      src/25d-instr-rack.js:321-325
+rackFrame                    src/25d-instr-rack.js:377-460
+rackGeo                      src/25d-instr-rack.js:63-94
 rackGlass                    src/25c-instr-hud.js:216-228
-rackGlobe                    src/25d-instr-rack.js:140-157
+rackGlobe                    src/25d-instr-rack.js:168-181
+rackGlobeLive                src/25d-instr-rack.js:464-483
 rackGrain                    src/25c-instr-hud.js:205-214
-rackLay                      src/25d-instr-rack.js:85-110
+rackLate                     src/25d-instr-rack.js:359-363
+rackLay                      src/25d-instr-rack.js:115-138
 rackOpen                     src/25d-instr-rack.js:45
-rackPaint                    src/25d-instr-rack.js:216-264
-rackParts                    src/25d-instr-rack.js:171-181
+rackPaint                    src/25d-instr-rack.js:240-290
+rackParts                    src/25d-instr-rack.js:195-205
 rackScrew                    src/25c-instr-hud.js:195-203
-rackSpr                      src/25d-instr-rack.js:289-292
-rackSprites                  src/25d-instr-rack.js:267-287
-rackTex                      src/25d-instr-rack.js:201-211
-rackTextW                    src/25d-instr-rack.js:214
+rackSpr                      src/25d-instr-rack.js:315-318
+rackSprites                  src/25d-instr-rack.js:293-313
+rackTex                      src/25d-instr-rack.js:225-235
+rackTextW                    src/25d-instr-rack.js:238
 rackToggle                   src/25d-instr-rack.js:46-49
-rackWarm                     src/25d-instr-rack.js:331-334
+rackWarm                     src/25d-instr-rack.js:373-376
 radioA                       src/10a-radio.js:128
 radioAdvance                 src/10a-radio.js:238-241
 radioArp                     src/10a-radio.js:635-657
@@ -7953,7 +7957,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bh-gpu-hud.js · 2 KB
   · слой приборов: фишки у кромки и подписи мира (ступень 1, docs/DESIGN-gpu.md §L.S):1
 
-## src/08bi-gpu-ovl.js · 30 KB
+## src/08bi-gpu-ovl.js · 31 KB
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
 ## src/08bj-ovl-hang.js · 19 KB
@@ -9145,7 +9149,7 @@ zoomTo                       src/15-input.js:358
 ## src/25c-instr-hud.js · 16 KB
   · приборная колодка: те же приборы, но всегда под рукой:1
 
-## src/25d-instr-rack.js · 28 KB
+## src/25d-instr-rack.js · 33 KB
   · приборная стойка: стрелочные приборы и самописец:1
 
 ## src/25e-receiver.js · 7 KB
@@ -9408,6 +9412,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qd-bodies.js · 4 KB
   · тела под звездой (M820):1
+
+## tests/91qe-rack.js · 4 KB
+  · стойка уступает телу (M821):1
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1
