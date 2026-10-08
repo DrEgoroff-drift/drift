@@ -140,6 +140,18 @@ TEST_SUITES.push(()=>suite("база и дом телами: тела на зе�
     eq(full.lamps.length,4,"ламп не больше четырёх");
     const far=run(1,[lp(10),lp(500),lp(14),lp(16)]);
     ok(far.lamps.length===4&&!far.lamps.some(l=>l.p[0]===500),"лампа за кромкой кадра уступает место своей");
+    /* ночь (M628b): своих ламп две, хоть просятся три; у фонаря крыльца — заслонки в хвосте пятен */
+    OWN.home.lampAt.grow=[6.6,2,2];OWN.home.occ=[[[1,0,-6],[1,1,-6],.07,.9]];
+    S.x=20*PLN_M;
+    const F2=run(1,[]);
+    eq(F2.lamps.length,2,"своих ламп ночью две: крыльцо, пирс, теплица — третья ждёт");
+    ok(F2.lamps.some(l=>l.r===12),"фонарь крыльца в кадре первым");
+    plnOwnOcc(F2);
+    ok(F2.blobs[1]>=2,"у фонаря заслонки — человек у крыльца и столб забора: "+F2.blobs[1]);
+    eq(F2.lamps[(F2.blobs[2]|0)-1]&&F2.lamps[(F2.blobs[2]|0)-1].r,12,"заслонки — у фонаря крыльца");
+    ok((F2.blobs[0]|0)<=64-2*F2.blobs[1],"пятна не залезают в хвост заслонок");
+    const D2=run(0,[]);plnOwnOcc(D2);
+    eq(D2.blobs[1]+D2.blobs[2],0,"днём заслонок нет — фонарь не горит");
   }finally{plnLandRibAt=kRib;plnLandLift=kLift;plnOwnStep=kStep;plnInstSet=kSet;OWN.base=oB;OWN.home=oH;OWN.on=on;}
   resetWorld();
 }));

@@ -37,6 +37,18 @@ could ever save.
   landing's deposit count; the action line is a plate at the ship (away from it, at the man) — no
   bare orange text on the sand; the near «КОРАБЛЬ» tick, placed by the 2D camera and hanging in the
   sky beside the ship, is gone under the planet frame.
+- **M628b — the night by the home and the base.** The porch lantern is the yard's key and now casts
+  shadows: the fence posts and the porch posts lay their strokes over the trodden ground, and the
+  man by the porch is an occluder too, though his own chest light mostly fills that shadow. The
+  greenhouse's cold grow lamp is the yard's second light, without a shadow; at the
+  base the pier lamp keeps its end and a small light over the gate warms the stairs and the belt.
+  The own things never take more than two lamps, and the frame's four hold with the man's. The
+  glass is the stand's: the home's windows and door amber (#ffc990), the base's paler (#f6dcb6) —
+  before they burned salmon. The mast's red light is steady and red, the home's beacon breathes,
+  and the travelling pennant flies under the home's beacon when the home is on this planet. By day
+  the home is a lit body with one dark face: lighter walls, rounder edges, a roof that takes the sun.
+  When a scan wins the action line by the gate, the gate keeps its own plate with the distance
+  («ВОРОТА БАЗЫ · 1 М ▶»), so the player still sees where to step.
 - **M628a — the base and the home as bodies.** The base is no longer a sticker over the frame: a
   deck 40 × 11 m stands 1.2 m over the shallows (over the ground where there is no water) on piles,
   behind the walk line, on the flattest stretch of the engine's land clear of the pad, the yard, the
