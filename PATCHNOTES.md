@@ -8,6 +8,16 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M630b — the halls, pass 3: the far lane, amber and the far lens.** Where a hall has the room, it opens an
+  arch in its back wall into a far chamber with its own day: a tunnel that widens into the depth, a
+  chamber of the world's stone with ledges, a window in its vault, and under the window's beam a tall
+  stack of caps with moss at its foot. The map key in the cave now pulls the view back a hundred
+  metres (on a wide window), so the cave reads as a whole — galleries, halls, the lake, the surface
+  line — and eases back in when pressed again. Amber glows like honey from inside, with drops hanging
+  on threads from a low roof above it and a warm light about it, so a deposit is seen from across the
+  hall. The water's body in the cut reads as dark water, teal under the surface with a pale meniscus,
+  not as a hole. A dark ball that hung at the arch's edge is gone: it was one pixel of negative light
+  on a sliver of rock, blown up by the bloom; light is now never negative.
 - **M630b — the halls, pass 2: the lake and the stone.** `22dd` lays the water where `cavePool` keeps it:
   a surface sheet at the water level running back behind the cut (the shore clear, the deep dark,
   rings where drops fall, a cell of 3 m each with its own drop) and the body of the water in the cut,

@@ -18,7 +18,7 @@ Object.assign(CAVE3_MAT,{veil:15});
    (лёд — плёнка, свет сквозь). Альбедо держится у тона породы: в тени натёк темнее стены */
 const CAVE3_DRIP={
   sed:{a:"#a89d86",d:"#6f6555",ox:"#7e5634",wet:.16,mat:11,mix:.25},
-  volc:{a:"#4a3b31",d:"#1f1915",ox:"#8a4322",wet:.55,mat:11,mix:.15},
+  volc:{a:"#4a3b31",d:"#1f1915",ox:"#8a4322",wet:.95,mat:11,mix:.15},
   rock:{a:"#948e82",d:"#5e5a52",ox:"#7a5236",wet:.2,mat:11,mix:.25},
   ice:{a:"#9cc4dc",d:"#5f8fb0",ox:"#cfe6f2",wet:.75,mat:15,mix:.1},
   sand:{a:"#ad9472",d:"#77604a",ox:"#97542c",wet:.14,mat:11,mix:.25}};

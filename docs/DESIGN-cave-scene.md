@@ -128,6 +128,15 @@ the glide out. No frame is black and no frame is a different picture. `enterCave
 - **M630b The halls** — `22dc`: dripstone, the lake mirror, crystals, veins, moss, the amber
   crawl in section, the far lane's arch and its day shaft, the far lens. Gate: the five
   zones each at the broad lens, the far lens at 1920.
+  **The bar for every pass from here on (the designer, 08.10):** the stand's key frame
+  `docs/look/cave.html` is the measure — the AAA level, not «it works and isn't black». Each game
+  frame is set beside it on six points: (1) the cut page is stone with content — strata, fossils,
+  roots, an ore vein, soil; (2) the day shaft — beam, moss, dust; (3) the arch with its own day
+  and a cap stack, measured against the stand's right hall; (4) a dome over the man and the lamp's
+  cone in the air; (5) the palette — dark-blue stone, amber dripstone, green at the mouth, lilac
+  only as an accent; (6) a dark lake, teal only at the shore. A frame that reads as «a tube in
+  haze» beside the stand fails and is reworked before it is reported. Shaders and light come from
+  `cv-wgsl`/`cv-scene`/`cv-render`, not reinvented; density comes from the game's grid (`C.g`).
 - **M630c Life and things** — beasts and plants as bodies, worms and fish, props, the wall
   decal, plates on things. Gate: a contact sheet of the props and the beast in the lamp.
 - **M630d Cost and the phone** — the cave ≤ the surface frame at the same window

@@ -9,7 +9,12 @@ Object.assign(CAVE3_MAT,{water:13,body:14});
 function cave3LakeGeo(C,F,z){
   const pool=cavePool(C,z);
   if(!pool)return null;
-  const P=CAVE_PPM,Yw=-pool.y/P,xa=pool.x0/P,xb=pool.x1/P,m=plnMesh(1<<12),col=[1,1,1];
+  const P=CAVE_PPM,Yw=-pool.y/P,m=plnMesh(1<<12),col=[1,1,1];
+  /* вода не кончается стенкой на границе зала: идёт к берегу, пока пол ниже уровня (до 3 м) */
+  const wet=X=>cave3Den(F,X,Yw-.12,.1)<0;
+  let xa=pool.x0/P,xb=pool.x1/P;
+  for(let k=0;k<12&&wet(xa-.25);k++)xa-=.25;
+  for(let k=0;k<12&&wet(xb+.25);k++)xb+=.25;
   /* гладь: шаг полметра, квадрат — если хоть один угол заметно в воздухе (у берега пол не перекрывать) */
   const st=.5,nx=Math.ceil((xb-xa)/st),zs=[.04];
   for(let k=1;k*st<CAVE3_CH.zcap;k++)zs.push(k*st);
@@ -45,7 +50,7 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
   const Q=C.lk3||(C.lk3={m:new Map(),gen:-1});
   if(Q.gen!==PLN_GPU.gen){for(const k of Q.m.values())if(k)plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;}
   F.water=[];F.lake=null;
-  let best=1e9,tris=0;
+  let best=1e9,tris=0,near=1e9;
   caveZones(C).forEach((z,i)=>{
     if(!z.Z.water)return;
     if(z.x1/CAVE_PPM<x0-2||z.x0/CAVE_PPM>x1+2)return;
@@ -54,8 +59,10 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
     if(!k)return;
     F.water.push(k.geo);tris+=k.geo.n/3;
     const d=cx<k.x0?k.x0-cx:cx>k.x1?cx-k.x1:0;
+    if(d<near)near=d;
     if(d<best){best=d;F.lake={y:k.y};}
   });
   CAVE3.stat.lake=F.lake?+F.lake.y.toFixed(2):null;
+  CAVE3.lakeD=near<1e9?near:null;
   return tris;
 }
