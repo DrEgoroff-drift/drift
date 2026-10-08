@@ -368,7 +368,20 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   window bench (`HALL_WORK`, a two-thirds copy of the counter's shade, .7 m nearer the camera
   than the heads): third in the light list so the limit never cuts it, the night key of the
   КОРАБЛЬ and СТРОЙКА places. **M813 ПРИБОРЫ** — the five dials as objects with their drift
-  on a plate; prose gone. **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
+  on a plate; prose gone. *Done:* `27f4g-hall-instr` puts five housings on the window bench
+  (`hallInstrAt`, all five clear of the people from the КОРАБЛЬ eye, which is where the ПРИБОРЫ
+  tab lives) as one instance whose parts 1–5 are needles; `hallInstrNeedle` = true mark + a slow
+  swell of `(.04+.3·wear)·drift` + a tremble of `.01·jit·(1+wear)`, never past ±.95 rad; ticks
+  follow the resolution. `hallInstrDress` (hooked at the end of `stTabInstr`) turns the rows into
+  cards with an SVG dial whose needle is a CSS swing (off under reduced motion); the counter's
+  rows get «лучше»/«хуже»/«как ваш» as a tag, the subscription prose moves to the button's title.
+  The lens is general now (`hallLensAim`): a hot instrument row glides it to the dial, midway
+  with the pilot. Yard gaps closed with it: night planes ≥ .08 except the vignette's four corner
+  cells (.07), a cold bounce from the window; day ceiling and floor take the planet's ochre
+  (h 23–28) on a neutral wall; the hull card's place is a lit galvanised floor rendered at 2×;
+  mullions 1.2 cm (≤ 3 px at 1920) with the work lamp mirrored faintly in the glass; the work
+  lamp is out of the counter's range (0 of its key); on a phone `say()` goes to the ether strip
+  (`hallMsgEther`). **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
   cantina as the hall itself (M725 composed anew: poses, one hero, the sign off centre), the
   site's silhouette. **M815 The phone reflow** of all of the above.
 

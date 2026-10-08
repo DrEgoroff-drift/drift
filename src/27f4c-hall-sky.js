@@ -19,6 +19,13 @@ function hallPlanet(){
   for(const p of G.sys.planets){const d=Math.hypot(p.x-S.x,p.y-S.y)-(p.radius||0);if(d<bd){bd=d;best=p;}}
   return best?{p:best,d:Math.max(1,bd)}:null;
 }
+/* тон планеты за стеклом: середина её палитры (газовый — своя палитра по зерну); нет планеты — охра дока.
+   Им день зала берёт цвет окна, ночью — холодный отскок (M813, «день цветом вещей») */
+function hallPlanetTone(){
+  const n=hallPlanet(),p=n&&n.p;if(!p)return [196,150,104];
+  const pal=p.type==="gas"?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:(p.T&&p.T.pal);
+  return pal&&pal.length>3?mixc(pal[2],pal[3],.5):[196,150,104];
+}
 /* место шара на дальней плоскости окна (м): из глаза места КОРАБЛЬ через левый верх проёма; радиус — по
    угловому размеру, на научной станции — большой всегда */
 function hallOrbPlace(n,st){

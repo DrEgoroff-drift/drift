@@ -43,10 +43,11 @@ function hallGoodsLight(){
 /* строка таблицы ↔ ящик: наведение мыши или касание пальцем; ушёл с плиты — ящик гаснет */
 function hallGoodsWire(){
   if($body.__hallGoods)return;$body.__hallGoods=1;
-  const set=e=>{const r=e.target&&e.target.closest&&e.target.closest(".mk-r[data-k]");HALL_GOODS.hot=r?r.dataset.k:null;};
+  const set=e=>{const c=e.target&&e.target.closest?e.target:null,r=c&&c.closest(".mk-r[data-k]"),q=c&&c.closest(".row[data-instr],.row[data-offer]");
+    HALL_GOODS.hot=r?r.dataset.k:null;HALL_INSTR.hot=q?(q.dataset.instr||q.dataset.offer):null;};   /* строка прибора (M813) зажигает его шкалу на верстаке */
   $body.addEventListener("pointerover",set,{passive:true});$body.addEventListener("pointerdown",set,{passive:true});
   /* палец уходит с экрана — это не «ушёл с плиты»: на телефоне ящик горит до следующего касания */
-  $body.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch")HALL_GOODS.hot=null;},{passive:true});
+  $body.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"){HALL_GOODS.hot=null;HALL_INSTR.hot=null;}},{passive:true});
 }
 function hallGoodsDrop(){r3Drop(HALL_GOODS.mesh);HALL_GOODS.mesh=null;HALL_GOODS.key="";HALL_GOODS.hot=null;HALL_LENS.g=0;HALL_LENS.last=0;HALL_LENS.t=0;}
 
@@ -57,6 +58,7 @@ const HALL_LENS={g:0,t:0,last:0,m:1.31,hold:750};
 /* хочет ли объектив к ящику в момент tm: горит строка на месте стойки или горела меньше hold назад */
 function hallLensWant(tm){
   if(HALL_GOODS.hot&&HALL.place==="trade"&&hallGoodsKeys().indexOf(HALL_GOODS.hot)>=0)HALL_LENS.last=tm;
+  if(HALL_INSTR.hot&&HALL_INSTR_PLACES.includes(HALL.place)&&INSTR_KEYS.indexOf(HALL_INSTR.hot)>=0)HALL_LENS.last=tm;   /* и прибор на верстаке (M813) */
   return HALL_LENS.last>0&&tm-HALL_LENS.last<HALL_LENS.hold?1:0;
 }
 /* шаг скольжения: туда .45 с, обратно .7 с — те же постоянные, что у plnGlide */
@@ -66,10 +68,20 @@ function hallLensStep(tm){
   return HALL_LENS.g=v;
 }
 function hallLensMoving(){return HALL_LENS.g>0&&HALL_LENS.g<1;}
-/* место камеры с объективом: глаз тот же, цель — к середине хозяин↔ящик, поле уже в m раз; g — доля пути */
+/* к чему тянется объектив: у стойки — хозяин и ящик, у верстака — пилот и шкала прибора (M813). Ключ помнит
+   последнюю вещь, чтобы отпущенная строка возвращала объектив от неё, а не скачком */
+function hallLensAim(L){
+  const at=HALL_INSTR_PLACES.includes(HALL.place),g=at?"":HALL_GOODS.hot,n=at?HALL_INSTR.hot:"";
+  const k=g?"g:"+g:n?"i:"+n:HALL_LENS.k;if(!k)return null;HALL_LENS.k=k;
+  if(k[0]==="g"){const i=hallGoodsKeys().indexOf(k.slice(2)),k0=L.people[0];if(i<0||i>=12||!k0)return null;
+    const p=hallGoodsAt(i);return [[k0.x,1.45,k0.z],[p[0],p[1]+.08,p[2]]];}
+  const i=INSTR_KEYS.indexOf(k.slice(2)),P=hallPilotAt(HALL.place)||HALL_PILOT_AT.ship;if(i<0)return null;
+  const p=hallInstrAt(i),c=HALL_INSTR_C;return [[P[0],1.45,P[1]],[p[0]+c[0],p[1]+c[1],p[2]+c[2]]];
+}
+/* место камеры с объективом: глаз тот же, цель — к середине человек↔вещь, поле уже в m раз; g — доля пути */
 function hallLens(c,L,g){
   if(!(g>0)||!L)return c;
-  const k=HALL_GOODS.hot||HALL_LENS.k,i=k?hallGoodsKeys().indexOf(k):-1,k0=L.people[0];if(i<0||i>=12||!k0)return c;
-  HALL_LENS.k=k;const p=hallGoodsAt(i),mid=[(k0.x+p[0])/2,(1.45+p[1]+.08)/2,(k0.z+p[2])/2],m=1+(HALL_LENS.m-1)*g;
+  const A=hallLensAim(L);if(!A)return c;
+  const mid=[(A[0][0]+A[1][0])/2,(A[0][1]+A[1][1])/2,(A[0][2]+A[1][2])/2],m=1+(HALL_LENS.m-1)*g;
   return {eye:c.eye,tgt:hallMix3(c.tgt,mid,g),fy:2*Math.atan(Math.tan(c.fy/2)/m),k:c.k};
 }

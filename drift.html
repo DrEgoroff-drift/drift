@@ -2917,14 +2917,42 @@ body.rackon #prompt{opacity:0}
 #station.hall .hcards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:4px 0 18px}
 #station.hall .row.hcard{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:0 0 14px;min-height:0;
   background:rgba(255,255,255,.025);border:1px solid var(--pl-edge);border-radius:6px;overflow:hidden}
+/* место корабля — настил ангара, не чёрный квадрат: тёмная оцинковка зала, лёгкая сетка, пятно лампы и мягкая тень под корпусом (M813) */
 #station.hall .row.hcard .yth.big{width:100%;height:170px;flex:0 0 auto;border-bottom:1px solid rgba(var(--c-edge),.08);
-  background:radial-gradient(ellipse 58% 30% at 50% 74%,rgba(255,232,196,.13),rgba(255,232,196,0) 72%),linear-gradient(180deg,#19181c,#0f0f12)}
+  background:radial-gradient(ellipse 34% 13% at 50% 71%,rgba(0,0,0,.42),rgba(0,0,0,0) 100%),
+    radial-gradient(ellipse 62% 44% at 50% 64%,rgba(236,226,206,.17),rgba(236,226,206,0) 75%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.028) 0 1px,transparent 1px 28px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.024) 0 1px,transparent 1px 28px),
+    linear-gradient(180deg,#24262a,#2b2d30 55%,#202225)}
 #station.hall .row.hcard .nm{padding:12px 14px 0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
 #station.hall .row.hcard .nm>s{flex:1 0 100%}
 #station.hall .row.hcard .cls{font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);
   padding:3px 8px;border:1px solid var(--pl-edge);border-radius:3px;white-space:nowrap}
 #station.hall .row.hcard>:is(.act,.qt){margin:12px 14px 0;align-self:flex-start}
 @media (max-width:760px){#station.hall .hcards{grid-template-columns:minmax(0,1fr)}}
+/* приборы в зале (M813): строки — карточками со шкалой рисунком; стрелка гуляет по уводу прибора, без мигания */
+#station.hall .hdials{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:4px 0 18px;align-items:start}
+#station.hall .row.hdial{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:0 0 12px;min-height:0;
+  background:rgba(255,255,255,.025);border:1px solid var(--pl-edge);border-radius:6px;overflow:hidden}
+#station.hall .row.hdial:hover,#station.hall .row.hdial.hot{border-color:rgba(var(--c-acc),.55)}
+#station.hall .hdial-svg{display:block;width:100%;height:auto;aspect-ratio:120/92;flex:0 0 auto;
+  background:linear-gradient(180deg,#24262a,#2b2d30 55%,#202225);border-bottom:1px solid rgba(var(--c-edge),.08)}
+#station.hall .hneedle{transform-origin:60px 54px;transform:rotate(var(--d));animation:hneedle 3s ease-in-out infinite alternate}
+@keyframes hneedle{from{transform:rotate(calc(var(--d) - var(--a)))}to{transform:rotate(calc(var(--d) + var(--a)))}}
+@media (prefers-reduced-motion:reduce){#station.hall .hneedle{animation:none}}
+#station.hall .row.hdial .nm{flex:0 0 auto;min-height:0;padding:10px 10px 0;display:flex;flex-wrap:wrap;align-items:baseline;align-content:flex-start;gap:6px 8px}
+#station.hall .row.hdial .nm>b{flex:1 0 100%}
+#station.hall .row.hdial .nm>s{flex:1 0 100%}
+#station.hall .row.hdial :is(.cls,.cmp){font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);
+  padding:3px 8px;border:1px solid var(--pl-edge);border-radius:3px;white-space:nowrap}
+#station.hall .row.hdial .cmp.up{color:rgb(150,204,150);border-color:currentColor}
+#station.hall .row.hdial .cmp.dn{color:rgb(var(--c-acc));border-color:currentColor}
+#station.hall .row.hdial>.act{margin:10px 12px 0;align-self:flex-start}
+#station.hall .row.hdial>.nm+.nm{padding-top:6px}
+#station.hall .row.hdial .nm>b{font-size:12.5px;letter-spacing:.02em}
+@media (max-width:760px){#station.hall .hdials{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}}
+/* телефон: сообщение say() в зале — строкой в полосе эфира (закон M826), не плашкой поверх карточек */
+@media (max-width:899.98px){body:has(#station.hall.open) #msg{display:none}}
 #station.hall #stHall{display:block;position:absolute;left:0;top:0;z-index:-2;pointer-events:none}
 /* основа — сплошная: зал (z -2) и плита (z -1) рисуются над ней в своём слое (isolation); если видеокарта
    не нарисовала зал, под экраном темнота, а не мир с его фишками */
@@ -115231,6 +115259,7 @@ function stTabInstr(){
          одинаково, и в лавке ей не место (03f учитывается на панели) */
       const q=T.res*(1-clamp(u.wear||0,0,1)*.45), fix=instrFixCost(id);
       const r=el("div","row"+((typeof subOff==="function"&&subOff(u))?" sub-off":""));   /* печать «ЗАБЛОКИРОВАНО» (D19) */
+      r.dataset.instr=id;   /* зал (M813) кладёт строку карточкой со шкалой и зажигает прибор на верстаке */
       r.appendChild(el("div","nm","<b>"+I.ru+"</b><s>"+T.ru+" · "+instrWearRu(u.wear||0)+
         " · "+T.note+"</s><s>различает "+(q>=1.25?"тонко":q>=.95?"как положено":
         q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+
@@ -115260,7 +115289,8 @@ function stTabInstr(){
       const cu=instrUnit(off.id),ct=instrTraits(cu);
       const cur=ct.res*(1-clamp(cu.wear||0,0,1)*.45);
       const would=T.res*(1-clamp(off.u.wear||0,0,1)*.45);
-      const r=el("div","row");
+      const r=el("div","row");r.dataset.offer=off.id;r.__u=off.u;
+      r.dataset.cmp=would>cur*1.08?"лучше вашего":would<cur*.92?"хуже вашего":"как ваш";
       r.appendChild(el("div","nm","<b>"+I.ru+" · "+T.ru+"</b><s>"+instrWearRu(off.u.wear||0)+
         " · "+T.note+"</s><s>"+(would>cur*1.08?"различает лучше вашего":
         would<cur*.92?"различает хуже вашего":"как ваш")+"</s>"));
@@ -115293,6 +115323,7 @@ function stTabInstr(){
         r.appendChild(b);$body.appendChild(r);
       });
     }
+    if(typeof HALL!=="undefined"&&HALL.open)hallInstrDress();   /* зал: строки — карточки со шкалой (27f4g) */
   }
 function stTabLab(){
     /* наборы узлов идут первыми: это долгая цель, а наука — текущая работа */
@@ -116897,7 +116928,7 @@ function yardDraw(vis,x0,nd,pw,ph){
     const key=id+"|"+w+"x"+h+"|"+nd+"|"+hullBakeKey(id,1);let S=YARD.S.get(id+"|"+w+"x"+h);
     if(!S){S={};YARD.S.set(id+"|"+w+"x"+h,S);}
     if(S.key!==key){const f=hallYardFit(S,id,w,h);   /* большое место (карточка зала, M812) — объём ангара, малое — сверху */
-      if(!hullStudio(S,id,w,h,nd,f[0],f[1],f[2],0))continue;S.key=key;}
+      if(!hullStudio(S,id,w,h,nd*(S.v3?2:1),f[0],f[1],f[2],0))continue;S.key=key;}   /* объём — вдвое плотнее: сведение вниз сглаживает кромку */
     put.push([S,x-x0,y,w,h]);}
   const T=YARD.T;
   ovInto(T,nd,()=>{for(const [S,x,y,w,h] of put)ovImage({tex:S.tex,view:S.view,dev:S.dev,inv:true},x+w/2,y+h/2,w,h,0,0,0,1,1,1);});
@@ -122085,7 +122116,7 @@ const HALL_SCONCE=[-7.0,2.2,-.9];   /* бра на левой стене над 
 const HALL_TYPES={
   trade:  {hc:3.2, win:0, fill:[255,186,118],fp:1.25,key:[255,214,160],wall:[66,64,70],bar:3},
   indust: {hc:5.6, win:1, fill:[255,128,52], fp:2.1, key:[255,200,140],wall:[74,68,60],bar:2,tube:[196,218,255]},
-  yard:   {hc:4.6, win:2, fill:[214,232,255],fp:1.5, key:[255,220,170],wall:[62,70,74],bar:3,weld:1},
+  yard:   {hc:4.6, win:2, fill:[226,228,232],fp:1.5, key:[255,220,170],wall:[68,69,70],bar:3,weld:1,day:[186,182,174]},   /* день верфи — цвет вещей: оцинковка, планета, жёлтое ограждение (M813) */
   sci:    {hc:3.6, win:3, fill:[188,214,255],fp:1.45,key:[255,226,190],wall:[70,80,96],bar:3,big:1},
   outpost:{hc:2.8, win:5, fill:[120,140,205],fp:.55, key:[255,182,120],wall:[54,57,66],bar:1,dark:1},
   fuel:   {hc:2.9, win:6, fill:[255,170,64], fp:1.35,key:[255,200,120],wall:[80,72,58],bar:0},
@@ -122217,6 +122248,7 @@ function hallScene(L,cam,t){
   M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29)),16);
   const draws=[[L.room,0,1]];let ii=1;
   const gm=hallGoodsUp(L);if(gm)draws.push([gm,0,1]);   /* товар ящиками на стойке (M811) — тот же экземпляр, что зал */
+  if(ii<R3_MAXI){hallInstrPose(M,ii,t);draws.push([hallInstrUp(),ii,1]);ii++;}   /* пять приборов на верстаке (M813): стрелки — части 1–5 */
   for(const P of L.people){if(ii>=R3_MAXI)break;
     const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw);
     const B=r3Mul(A,[1,0,0,0, 0,br,0,0, 0,0,1,0, 0,0,0,1]),at=P.mesh.at;
@@ -122254,9 +122286,13 @@ function hallScene(L,cam,t){
     cosO:Math.cos(.9),cosI:Math.cos(.32),shadow:nk>.5?1:0,vol:.06,work:1});bulbs.push([HALL_WORK[0],wy0,HALL_WORK[1],.45+.3*nk]);}
   /* окно: высоко под проёмом и круто вниз — пятно до середины зала, тени людей к камере; конус не
      достаёт пола у камеры (глянец зеркалил его там пятном). Пыль в луче — днём */
-  const wy=hallWinY(T),wx=(HALL_WIN[0]+HALL_WIN[1])/2,dock=hallMix3(hallMix3(fill,r3Lin([170,200,255]),.7),[.04,.07,.2],nk);
-  lights.push({p:[wx,Math.min(hc-.2,wy[1]+.15),HALL_B+.3],range:T.big?11:10,c:r3Sc(dock,T.fp*(dk?3:4.2)*(.06+.94*day)),spot:1,
-    d:[0,-.82,.57],cosO:Math.cos(.5),cosI:Math.cos(.18),shadow:1,vol:(T.win===1?.6:.4)*day});
+  /* день: свет дока с третью тона планеты за стеклом (охра пустыни, бирюза льда) — зал берёт цвет окна.
+     Ночь: тот же проём — холодный отскок планеты и дока, широким конусом: пол и ближняя стена держат форму */
+  const pt=r3Lin(hallPlanetTone()),wy=hallWinY(T),wx=(HALL_WIN[0]+HALL_WIN[1])/2;
+  const dock=hallMix3(hallMix3(hallMix3(fill,r3Lin([170,200,255]),.55),pt,.68),hallMix3([.05,.08,.2],r3Sc(pt,.3),.35),nk);
+  {const dy=-.82+.62*nk,dz=.57+.43*nk,dl=Math.hypot(dy,dz);
+  lights.push({p:[wx,Math.min(hc-.2,wy[1]+.15),HALL_B+.3],range:(T.big?11:10)+4*nk,c:r3Sc(dock,T.fp*(dk?3:4.2)*(.06+.94*day+.6*nk)),spot:1,
+    d:[0,dy/dl,dz/dl],cosO:Math.cos(.5+1.0*nk),cosI:Math.cos(.18+.7*nk),shadow:1,vol:(T.win===1?.6:.4)*day});}
   /* бар: не больше трёх тёплых ламп, луч — на стойку (лужи света на полу и конусы в дыму не нужны);
      ночью бар ярче зала, днём до него доходит окно */
   if(L.bar){const LT=CANT_LIGHT[L.st]||CANT_LIGHT.trade,tone=r3Lin(mixc(mixc(LT.tone,acc,.2),[255,196,130],.35));
@@ -122282,8 +122318,9 @@ function hallScene(L,cam,t){
   if(L.bar&&day>.05)lights.push({p:[HALL_XB+2.2,2.3,HALL_B+.4],range:6,c:r3Sc(dock,T.fp*1.6*day),spot:1,d:[0,-.6,.8],cosO:Math.cos(.8),cosI:Math.cos(.35),vol:0});
   if(nk>.05)for(const x of [HALL_WIN[0]-.45,HALL_WIN[1]+.45])lights.push({p:[x,Math.min(hc-.5,2.3)-.02,HALL_B+.32],range:3.4,c:r3Sc(r3Lin([255,196,130]),(dk?.9:1.4)*nk),vol:0});
   /* рассеянный: небо — свет дока сквозь окна (сверху и со стен), земля — отсвет пола (потолок, низы балок) */
-  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.18+.82*day);
-  const sky=mx(mixc(T.wall,[146,178,232],.62),mixc(T.wall,[60,78,140],.55)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[62,54,48],.4));
+  /* ночью рассеянный не падает в черноту: value ≥ .08 на всех плоскостях (потолок, дальняя стена, пол) */
+  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day),ptc=hallPlanetTone();
+  const sky=mx(mixc(mixc(T.wall,T.day||[146,178,232],.62),ptc,.08),mixc(T.wall,[66,84,140],.5)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[92,106,140],.58));
   const fog=mx(mixc(T.wall,[150,165,190],.4),[30,38,64]);
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
@@ -122372,10 +122409,17 @@ function hallTab(){
   const p=hallPlaceOf(tab);if(p!==HALL.place)hallGo(p,false);
   if(HALL.L&&HALL.L.st!==((G.st&&G.st.stype)||"trade"))HALL.L=null;
 }
+/* телефон: сообщение (say) уходит в полосу эфира — там его место (M826); то же сообщение второй раз не идёт,
+   пока не погасло. На ПК плашка #msg остаётся (весь слой сообщений — M815) */
+function hallMsgEther(wide){
+  if(!(G.msgT>0)||!G.msg){HALL.msgLast=null;return false;}
+  if(!HALL.open||wide||G.msg===HALL.msgLast)return false;
+  HALL.msgLast=G.msg;consoleHeard(String(G.msg).replace(/\s*\n\s*/g," · "),"");return true;
+}
 function hallLoop(){
   HALL.raf=0;
   if(!HALL.open||!HALL.cn||!HALL.cn.isConnected)return;
-  const tw=wallMs();
+  const tw=wallMs();hallMsgEther(hallWide());
   if(hallMoving()||hallLensMoving()||tw-HALL.last>=1000/12-2){HALL.last=tw;
     try{hallFrame();}catch(e){HALL.err++;HALL.open=false;console.error("зал станции: кадр упал",e);return;}}
   HALL.raf=requestAnimationFrame(hallLoop);
@@ -122426,14 +122470,25 @@ function hallWall(K,x0,x1,y0,y1,z,holes,M){
   for(const h of hs){if(h[0]>x)q(x,h[0],y0,y1);q(h[0],h[1],y0,h[2]);if(h[3]<y1)q(h[0],h[1],h[3],y1);x=h[1];}
   if(x<x1)q(x,x1,y0,y1);
 }
-/* окно: проём узора window, рама, подоконник, переплёт на n частей */
+/* окно: проём узора window, рама, подоконник, переплёт на n частей. Переплёт тонкий (M813): с места КОРАБЛЬ
+   (~8.4 м) профиль 2.4 см — не больше 3 px на 1920; глубина та же, тени и кромка держат его форму */
+const HALL_WIN_FW=.012;   /* полпрофиля переплёта, м */
 function hallWindow(K,x0,x1,y0,y1,n,Fr){
-  const z=HALL_B;
+  const z=HALL_B,fw=HALL_WIN_FW;
   K.quad([x0,y0,z+.01],[x1,y0,z+.01],[x1,y1,z+.01],[x0,y1,z+.01],K.mt([3,3,3],.2,70,R3P.window,0,true),[0,0,1]);
   K.box([(x0+x1)/2,y0-.035,z+.09],[(x1-x0)/2+.08,.035,.1],Fr,.012);
-  K.box([(x0+x1)/2,y1+.03,z+.05],[(x1-x0)/2+.08,.03,.05],Fr,.01);
-  for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n+(i===0?-.035:i===n?.035:0);K.box([x,(y0+y1)/2,z+.05],[i%n?.025:.035,(y1-y0)/2+.03,.05],Fr,.008);}
-  if(y1-y0>1.4)K.box([(x0+x1)/2,y0+(y1-y0)*.62,z+.04],[(x1-x0)/2,.02,.04],Fr,.006);
+  K.box([(x0+x1)/2,y1+fw,z+.05],[(x1-x0)/2+.02,fw,.05],Fr,.004);
+  for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n+(i===0?-fw:i===n?fw:0);K.box([x,(y0+y1)/2,z+.05],[fw,(y1-y0)/2+fw,.05],Fr,.004);}
+  if(y1-y0>1.4)K.box([(x0+x1)/2,y0+(y1-y0)*.62,z+.04],[(x1-x0)/2,fw*.85,.04],Fr,.003);
+}
+/* блик рабочей лампы в стекле: зеркало лампы в плоскости окна, на луче из глаза места КОРАБЛЬ — еле заметное
+   тёплое пятно с ореолом (стекло не зеркало: свечение .2 и .05) */
+function hallGlint(K,T){
+  const E=HALL_CAMS.ship.eye,z=HALL_B,W=[HALL_WORK[0],hallWorkY(T),2*z-HALL_WORK[1]],t=(z-E[2])/(W[2]-E[2]);
+  const p=[E[0]+(W[0]-E[0])*t,E[1]+(W[1]-E[1])*t,z+.013];
+  if(p[0]<HALL_WIN[0]||p[0]>HALL_WIN[1])return;
+  K.ell(p,[.035,.03,.002],K.mt(mixc(T.key,[255,200,140],.3),.1,3,0,.2,true),4,10);
+  K.ell([p[0],p[1],p[2]-.001],[.12,.1,.002],K.mt(mixc(T.key,[90,70,50],.5),.1,3,0,.05,true),4,12);
 }
 /* шнур лампы до потолка: c3Lamp висит со своей высоты, в высоком зале шнур длиннее */
 function hallCord(K,x,y,z,hc){if(hc>y+.02)K.tube([[x,hc,z],[x,y,z]],.005,K.mt([20,20,22],.2,4,0),4);}
@@ -122499,7 +122554,7 @@ function hallBones(K,L,R){
   for(const x of [HALL_WIN[0]-.45,HALL_WIN[1]+.45].concat(L.bar?[HALL_XB-4.55]:[]))K.box([x,hc/2,B+.1],[.12,hc/2,.1],Be,.02);
   if(L.bar){K.quad([HALL_XB-4.55,.004,B],[X1,.004,B],[X1,.004,F],[HALL_XB-4.55,.004,F],K.mt(mixc(wall,[118,92,70],.5),.4,8,P.wood),[0,1,0]);
     if(hc>3.4)K.box([HALL_XB-4.55,3.3,(B+F)/2],[.1,.1,(F-B)/2],Be,.02);}
-  hallWindow(K,HALL_WIN[0],HALL_WIN[1],wy[0],wy[1],wy[1]-wy[0]>1.6?4:3,Fr);
+  hallWindow(K,HALL_WIN[0],HALL_WIN[1],wy[0],wy[1],wy[1]-wy[0]>1.6?4:3,Fr);hallGlint(K,T);
   /* доска: пробковое поле в раме, листы, лента «срочно» акцентом */
   const bx0=-4.7,bx1=-2.1,by0=.95,by1=2.45,bz=B+.02;
   K.box([(bx0+bx1)/2,(by0+by1)/2,bz+.02],[(bx1-bx0)/2+.06,(by1-by0)/2+.06,.02],K.mt([58,46,34],.4,8,P.wood),.012);
@@ -122555,10 +122610,7 @@ function hallBones(K,L,R){
   for(const x of [-.5,2.5])for(const z of [-2.5,-2.0])K.box([x,.43,z],[.03,.43,.03],Wb,.006);
   K.box([1.95,.6,-2.3],[.45,.22,.27],Wb,.01);for(const y of [.5,.7])K.box([1.95,y,-2.02],[.08,.008,.01],K.mt([190,194,200],.8,11,P.brushed),.003);
   K.box([1.0,.12,-2.25],[1.55,.012,.3],Wb,.004);
-  /* прибор на верстаке у всех: шкала в латунном ободе (стрелка — акцент) */
-  K.push([.1,.91,-2.3]);K.box([0,.1,0],[.13,.1,.08],K.mt([60,62,66],.6,9,P.brushed),.012);
-  K.push([0,.12,.081],0,Math.PI/2);K.lathe([[0,.07],[.012,.075],[.014,0]],18,K.mt([196,156,84],.9,12,P.brushed));K.pop();
-  K.box([0,.12,.096],[.06,.06,.002],K.mt([226,222,206],.2,4,0,.05),.001);K.box([.02,.135,.1],[.03,.004,.002],K.mt(L.acc,.3,6,0,.15),.001);K.pop();
+  /* приборы на верстаке — свой экземпляр со стрелками (27f4g, M813) */
   /* контора: стол, стул, настольная лампа (её свет ставит сцена), карта под стеклом, папки */
   const dx=4.9,dz=-1.7,Dw=K.mt([74,54,38],.45,9,P.wood);
   K.box([dx,.745,dz],[.75,.025,.38],Dw,.01);
@@ -122767,6 +122819,13 @@ function hallPlanet(){
   for(const p of G.sys.planets){const d=Math.hypot(p.x-S.x,p.y-S.y)-(p.radius||0);if(d<bd){bd=d;best=p;}}
   return best?{p:best,d:Math.max(1,bd)}:null;
 }
+/* тон планеты за стеклом: середина её палитры (газовый — своя палитра по зерну); нет планеты — охра дока.
+   Им день зала берёт цвет окна, ночью — холодный отскок (M813, «день цветом вещей») */
+function hallPlanetTone(){
+  const n=hallPlanet(),p=n&&n.p;if(!p)return [196,150,104];
+  const pal=p.type==="gas"?GOR_GAS[(h01(p.seed|0,3,0x6A5)*GOR_GAS.length)|0]:(p.T&&p.T.pal);
+  return pal&&pal.length>3?mixc(pal[2],pal[3],.5):[196,150,104];
+}
 /* место шара на дальней плоскости окна (м): из глаза места КОРАБЛЬ через левый верх проёма; радиус — по
    угловому размеру, на научной станции — большой всегда */
 function hallOrbPlace(n,st){
@@ -122967,10 +123026,11 @@ function hallGoodsLight(){
 /* строка таблицы ↔ ящик: наведение мыши или касание пальцем; ушёл с плиты — ящик гаснет */
 function hallGoodsWire(){
   if($body.__hallGoods)return;$body.__hallGoods=1;
-  const set=e=>{const r=e.target&&e.target.closest&&e.target.closest(".mk-r[data-k]");HALL_GOODS.hot=r?r.dataset.k:null;};
+  const set=e=>{const c=e.target&&e.target.closest?e.target:null,r=c&&c.closest(".mk-r[data-k]"),q=c&&c.closest(".row[data-instr],.row[data-offer]");
+    HALL_GOODS.hot=r?r.dataset.k:null;HALL_INSTR.hot=q?(q.dataset.instr||q.dataset.offer):null;};   /* строка прибора (M813) зажигает его шкалу на верстаке */
   $body.addEventListener("pointerover",set,{passive:true});$body.addEventListener("pointerdown",set,{passive:true});
   /* палец уходит с экрана — это не «ушёл с плиты»: на телефоне ящик горит до следующего касания */
-  $body.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch")HALL_GOODS.hot=null;},{passive:true});
+  $body.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"){HALL_GOODS.hot=null;HALL_INSTR.hot=null;}},{passive:true});
 }
 function hallGoodsDrop(){r3Drop(HALL_GOODS.mesh);HALL_GOODS.mesh=null;HALL_GOODS.key="";HALL_GOODS.hot=null;HALL_LENS.g=0;HALL_LENS.last=0;HALL_LENS.t=0;}
 
@@ -122981,6 +123041,7 @@ const HALL_LENS={g:0,t:0,last:0,m:1.31,hold:750};
 /* хочет ли объектив к ящику в момент tm: горит строка на месте стойки или горела меньше hold назад */
 function hallLensWant(tm){
   if(HALL_GOODS.hot&&HALL.place==="trade"&&hallGoodsKeys().indexOf(HALL_GOODS.hot)>=0)HALL_LENS.last=tm;
+  if(HALL_INSTR.hot&&HALL_INSTR_PLACES.includes(HALL.place)&&INSTR_KEYS.indexOf(HALL_INSTR.hot)>=0)HALL_LENS.last=tm;   /* и прибор на верстаке (M813) */
   return HALL_LENS.last>0&&tm-HALL_LENS.last<HALL_LENS.hold?1:0;
 }
 /* шаг скольжения: туда .45 с, обратно .7 с — те же постоянные, что у plnGlide */
@@ -122990,11 +123051,21 @@ function hallLensStep(tm){
   return HALL_LENS.g=v;
 }
 function hallLensMoving(){return HALL_LENS.g>0&&HALL_LENS.g<1;}
-/* место камеры с объективом: глаз тот же, цель — к середине хозяин↔ящик, поле уже в m раз; g — доля пути */
+/* к чему тянется объектив: у стойки — хозяин и ящик, у верстака — пилот и шкала прибора (M813). Ключ помнит
+   последнюю вещь, чтобы отпущенная строка возвращала объектив от неё, а не скачком */
+function hallLensAim(L){
+  const at=HALL_INSTR_PLACES.includes(HALL.place),g=at?"":HALL_GOODS.hot,n=at?HALL_INSTR.hot:"";
+  const k=g?"g:"+g:n?"i:"+n:HALL_LENS.k;if(!k)return null;HALL_LENS.k=k;
+  if(k[0]==="g"){const i=hallGoodsKeys().indexOf(k.slice(2)),k0=L.people[0];if(i<0||i>=12||!k0)return null;
+    const p=hallGoodsAt(i);return [[k0.x,1.45,k0.z],[p[0],p[1]+.08,p[2]]];}
+  const i=INSTR_KEYS.indexOf(k.slice(2)),P=hallPilotAt(HALL.place)||HALL_PILOT_AT.ship;if(i<0)return null;
+  const p=hallInstrAt(i),c=HALL_INSTR_C;return [[P[0],1.45,P[1]],[p[0]+c[0],p[1]+c[1],p[2]+c[2]]];
+}
+/* место камеры с объективом: глаз тот же, цель — к середине человек↔вещь, поле уже в m раз; g — доля пути */
 function hallLens(c,L,g){
   if(!(g>0)||!L)return c;
-  const k=HALL_GOODS.hot||HALL_LENS.k,i=k?hallGoodsKeys().indexOf(k):-1,k0=L.people[0];if(i<0||i>=12||!k0)return c;
-  HALL_LENS.k=k;const p=hallGoodsAt(i),mid=[(k0.x+p[0])/2,(1.45+p[1]+.08)/2,(k0.z+p[2])/2],m=1+(HALL_LENS.m-1)*g;
+  const A=hallLensAim(L);if(!A)return c;
+  const mid=[(A[0][0]+A[1][0])/2,(A[0][1]+A[1][1])/2,(A[0][2]+A[1][2])/2],m=1+(HALL_LENS.m-1)*g;
   return {eye:c.eye,tgt:hallMix3(c.tgt,mid,g),fy:2*Math.atan(Math.tan(c.fy/2)/m),k:c.k};
 }
 
@@ -123030,6 +123101,115 @@ function hallYardFit(S,id,w,h){
     S.v3=v3;return [w/2-(U.hu0+U.hu1)/2*sc,h*.47-(U.hv0+U.hv1)/2*sc,sc];}
   S.v3=null;const sc=Math.min(w/(hl.len+14),h/(hl.halfW*2+10));
   return [w/2-(hl.nose+hl.tail)*.5*sc,h/2,sc];
+}
+
+/* ══════════════ приборы: пять шкал на верстаке (M813, docs/DESIGN-hall.md §8) ══════════════
+   Пять гнёзд панели — пять вещей на верстаке у окна, под рабочей лампой: корпус цвета завода, латунный
+   обод, кремовая шкала (делений столько, сколько прибор различает), красная метка верного показания и
+   стрелка, которая гуляет. Гуляет так, как прибор врёт: износ и завод (drift) уводят её от метки
+   медленной волной, нервная стрелка (jit) дрожит поверх. На плите строки становятся карточками с той же
+   шкалой рисунком — проза уходит, остаются имя, завод тегом, износ и кнопки (26b строит их, здесь
+   только переложено, как карточки верфи 27f4f). Строка под мышью зажигает свою шкалу и ведёт объектив. */
+const HALL_INSTR={mesh:null,key:"",hot:null};
+/* цвет корпуса по заводу (INSTR_WORKS, 05b) — по имени, как его пишет instrTraits */
+const HALL_INSTR_HOUSE={"Казённый":[92,96,84],"«Горн»":[54,52,50],"«Сирин»":[196,186,158],"«Веха»":[46,58,80],
+  "Артельный":[124,92,62],"Трофейный":[98,50,42]};
+/* место i-го прибора на столешнице верстака (кости 27f4b: верх .91, передний край z −1.92); пятый — левее
+   пилота у окна (x 2.62), первый — правее человека у левого края верстака: с места КОРАБЛЬ видны все пять */
+function hallInstrAt(i){return [.3+.36*i,.91,-2.06];}
+/* места зала, где верстак с приборами в кадре: вкладка ПРИБОРЫ живёт у окна (группа КОРАБЛЬ), знания — у верстака */
+const HALL_INSTR_PLACES=["ship","know"];
+const HALL_INSTR_C=[0,.1,.062];   /* центр шкалы в корпусе: высота, вынос к залу */
+/* что прибор показывает рисунком: деления, где верная метка, насколько и как гуляет стрелка, перо */
+function hallInstrLook(id){
+  const u=instrUnit(id),T=instrTraits(u),w=clamp(u.wear||0,0,1),q=T.res*(1-w*.45),i=INSTR_KEYS.indexOf(id);
+  const off=typeof subOff==="function"&&subOff(u);
+  return {u,T,w,q,i,off,ticks:Math.round(clamp(4+9*q,5,21)),mark:((hashi(i,0x1D5)>>>0)%7-3)*.09,
+    drift:(.04+.3*w)*T.drift,jit:.01*T.jit*(1+w),pen:T.pen,house:HALL_INSTR_HOUSE[T.ru]||[92,96,84]};
+}
+/* угол стрелки (рад, по часовой от верха) в момент t: метка + медленный увод + дрожь; отключённый — лежит на упоре */
+function hallInstrNeedle(id,t){
+  const D=hallInstrLook(id),ph=D.i*1.7;
+  if(D.off)return -.95;
+  return D.mark+D.drift*(.6+.4*Math.sin(t*.11+ph))*Math.sin(t*.23+ph*.5)+D.jit*Math.sin(t*5.1+ph)*(.6+.4*Math.sin(t*.7));
+}
+function hallInstrMesh(){
+  const K=r3Kit(),P=R3P,Br=K.mt([196,156,84],.9,12,P.brushed),Fc=K.mt([228,222,204],.2,4,0,.04),Ink=K.mt([34,32,30],.2,4,0);
+  INSTR_KEYS.forEach((id,i)=>{const D=hallInstrLook(id),[x,y,z]=hallInstrAt(i),hot=HALL_INSTR.hot===id,c=HALL_INSTR_C;
+    K.part=0;K.push([x,y,z]);
+    K.box([0,.085,0],[.11,.085,.06],K.mt(D.house,.5,8,P.brushed),.014);   /* корпус */
+    K.box([0,.004,0],[.115,.004,.065],K.mt(mixc(D.house,[0,0,0],.4),.4,7,P.brushed),.003);   /* цоколь */
+    K.push(c,0,Math.PI/2);K.lathe([[-.004,.074],[.006,.078],[.012,.07],[.013,0]],20,hot?K.mt(HALL_GOODS_ACC,.3,6,0,1.1,true):Br);K.pop();   /* обод: горящий — акцент плиты */
+    K.push([c[0],c[1],c[2]+.0135],0,Math.PI/2);K.lathe([[0,.066],[.001,0]],20,Fc);K.pop();   /* шкала */
+    for(let k=0;k<D.ticks;k++){const a=-.95+1.9*k/(D.ticks-1),big=k%Math.max(1,Math.round((D.ticks-1)/4))===0,r0=big?.044:.05;
+      K.push([c[0],c[1],c[2]+.0155],0,0,-a);K.box([0,(r0+.058)/2,0],[.0018,(.058-r0)/2,.001],Ink,0);K.pop();}
+    K.push([c[0],c[1],c[2]+.0156],0,0,-D.mark);K.box([0,.061,0],[.004,.005,.001],K.mt([196,52,38],.2,4,0,.15),0);K.pop();   /* верная метка */
+    K.box([.072,.03,.061],[.02,.008,.004],K.mt([24,24,26],.4,8,P.brushed),.002);   /* ручка выверки */
+    K.pop();
+    /* стрелка — своя часть: её поворачивает кадр (hallInstrPose) вокруг центра шкалы */
+    K.part=i+1;K.box([0,.022,.0175],[.0022,.036,.0012],K.mt([30,28,26],.3,6,0,0,true),0);
+    K.box([0,-.008,.0175],[.004,.008,.0012],K.mt([30,28,26],.3,6,0,0,true),0);
+    K.push([0,0,.019],0,Math.PI/2);K.lathe([[0,.006],[.003,0]],8,K.mt([150,40,30],.4,8,0,0,true));K.pop();});
+  K.part=0;
+  return K.pack();
+}
+/* сетка по ключу: завод, износ, деления, отключённые, горящий */
+function hallInstrUp(){
+  const key=INSTR_KEYS.map(id=>{const D=hallInstrLook(id);return D.T.ru+":"+D.ticks+":"+(D.off?1:0);}).join(",")+"|"+HALL_INSTR.hot;
+  if(!HALL_INSTR.mesh||HALL_INSTR.key!==key){r3Drop(HALL_INSTR.mesh);HALL_INSTR.mesh=hallInstrMesh();HALL_INSTR.key=key;}
+  return HALL_INSTR.mesh;
+}
+/* стрелки в кадре: часть i+1 экземпляра ii — центр шкалы i-го прибора и поворот по часовой */
+function hallInstrPose(M,ii,t){
+  INSTR_KEYS.forEach((id,i)=>{const p=hallInstrAt(i),c=HALL_INSTR_C;
+    M.set(r3Xf([p[0]+c[0],p[1]+c[1],p[2]+c[2]],0,0,-hallInstrNeedle(id,t)),(ii*R3_PART+i+1)*16);});
+}
+function hallInstrDrop(){r3Drop(HALL_INSTR.mesh);HALL_INSTR.mesh=null;HALL_INSTR.key="";HALL_INSTR.hot=null;}
+
+/* ── плита: шкала рисунком (SVG) — деления, метка, стрелка гуляет (CSS), лента самописца пером прибора ── */
+function hallDialSvg(D,mini){
+  const cx=60,cy=54,R=40,deg=a=>a*180/Math.PI,pt=(a,r)=>[(cx+Math.sin(a)*r).toFixed(1),(cy-Math.cos(a)*r).toFixed(1)];
+  let s="<svg class='hdial-svg"+(mini?" mini":"")+"' viewBox='0 0 120 92' aria-hidden='true'>";
+  s+="<rect x='8' y='6' width='104' height='82' rx='9' fill='rgb("+D.house.join(",")+")'/>";
+  s+="<circle cx='"+cx+"' cy='"+cy+"' r='"+(R+3)+"' fill='#b8914e'/><circle cx='"+cx+"' cy='"+cy+"' r='"+R+"' fill='#e4ddc9'/>";
+  for(let k=0;k<D.ticks;k++){const a=-.95+1.9*k/(D.ticks-1),big=k%Math.max(1,Math.round((D.ticks-1)/4))===0,p0=pt(a,big?26:30),p1=pt(a,35);
+    s+="<line x1='"+p0[0]+"' y1='"+p0[1]+"' x2='"+p1[0]+"' y2='"+p1[1]+"' stroke='#26231f' stroke-width='"+(big?1.6:1)+"'/>";}
+  /* разбитый (износ ≥ .6) — трещина по стеклу: износ читается с карточки раньше слова */
+  if(D.w>=.6)s+="<polyline points='"+(cx-30)+","+(cy-14)+" "+(cx-12)+","+(cy-6)+" "+(cx-4)+","+(cy+6)+" "+(cx+18)+","+(cy+12)+"' fill='none' stroke='rgba(40,36,30,.55)' stroke-width='.8'/>";
+  const m0=pt(D.mark,36),m1=pt(D.mark,40);
+  s+="<line x1='"+m0[0]+"' y1='"+m0[1]+"' x2='"+m1[0]+"' y2='"+m1[1]+"' stroke='#c4362a' stroke-width='3'/>";
+  /* стрелка: стоит на уводе от метки (износ), гуляет по нему (drift) и дрожит (jit) — анимация CSS, без мигания */
+  const d=D.off?-.95:D.mark+D.drift*.7*((D.i&1)?1:-1),amp=D.off?0:Math.max(.6,deg(D.drift)*.5+deg(D.jit)*1.5);
+  const dur=D.off?0:clamp(3.2/(D.T.jit*(1+D.w)),.9,6);
+  s+="<g class='hneedle' style='--d:"+deg(d).toFixed(1)+"deg;--a:"+amp.toFixed(1)+"deg;animation-duration:"+dur.toFixed(2)+"s'>";
+  s+="<line x1='"+cx+"' y1='"+(cy+7)+"' x2='"+cx+"' y2='"+(cy-33)+"' stroke='#1d1b19' stroke-width='1.6' stroke-linecap='round'/></g>";
+  s+="<circle cx='"+cx+"' cy='"+cy+"' r='3.2' fill='#8e2a20'/>";
+  /* лента самописца под шкалой: толщина — перо, размах — дрожь стрелки */
+  let pl="";for(let k=0;k<=24;k++){const x=22+k*3.2,y=80+Math.sin(k*1.9+D.i)*Math.min(5,1+D.T.jit*1.6*(1+D.w))*((k*7+D.i*3)%5/5+.3);pl+=x.toFixed(1)+","+y.toFixed(1)+" ";}
+  s+="<rect x='18' y='72' width='84' height='14' rx='2' fill='#d9d2bd'/><polyline points='"+pl+"' fill='none' stroke='#2c3a5a' stroke-width='"+(.6+D.pen*.9).toFixed(2)+"'/>";
+  return s+"</svg>";
+}
+/* строки 26b → карточки: гнёзда сеткой по пять, прилавок — тоже шкалами; проза строки — в теги */
+function hallInstrDress(){
+  if(!HALL.open)return;
+  const secs=[...$body.querySelectorAll(".sec")];
+  for(const s of secs){if(/^ПЯТЬ ГНЁЗД/.test(s.textContent))s.textContent="ПЯТЬ ГНЁЗД ПАНЕЛИ";else if(/^ПРИЛАВОК/.test(s.textContent))s.textContent="ПРИЛАВОК";}
+  /* карточка: шкала, имя, завод тегом, износ словом; сравнение с вашим — тегом; вторая строка-проза (подписка) уходит в подсказку кнопки */
+  const card=(r,D,name,cmp)=>{r.classList.add("hdial");
+    const ns=[...r.querySelectorAll(":scope>.nm")],nm=ns[0];
+    /* сравнение тегом в одно слово (карточка узкая), полная фраза — в подсказке */
+    if(nm)nm.innerHTML="<b>"+name+"</b><i class='cls'>"+D.T.ru+"</i>"+(cmp?"<i class='cmp "+(cmp[0]==="л"?"up":cmp[0]==="х"?"dn":"eq")+"' title='различает "+cmp+"'>"+(cmp[0]==="л"?"лучше":cmp[0]==="х"?"хуже":"как ваш")+"</i>":"")+"<s>"+instrWearRu(D.w)+"</s>";
+    for(const x of ns.slice(1))if(x.textContent.length>24){const b=r.querySelector("button:last-of-type");if(b)b.title=x.textContent;x.remove();}
+    r.insertAdjacentHTML("afterbegin",hallDialSvg(D,false));};
+  const sock=[...$body.querySelectorAll(".row[data-instr]")];
+  if(sock.length){const box=el("div","hdials");sock[0].before(box);
+    for(const r of sock){const D=hallInstrLook(r.dataset.instr);card(r,D,INSTR_BY_ID[r.dataset.instr].ru,"");box.appendChild(r);}}
+  const offs=[...$body.querySelectorAll(".row[data-offer]")];
+  if(offs.length){const box=el("div","hdials");offs[0].before(box);
+    for(const r of offs){const u=r.__u,T=instrTraits(u),w=clamp(u.wear||0,0,1),D=Object.assign(hallInstrLook(r.dataset.offer),{u,T,w,
+        ticks:Math.round(clamp(4+9*T.res*(1-w*.45),5,21)),drift:(.04+.3*w)*T.drift,jit:.01*T.jit*(1+w),pen:T.pen,house:HALL_INSTR_HOUSE[T.ru]||[92,96,84],off:false});
+      card(r,D,INSTR_BY_ID[r.dataset.offer].ru,r.dataset.cmp||"");box.appendChild(r);}}
+  if(HALL_INSTR.hot)for(const r of $body.querySelectorAll(".row.hdial"))r.classList.toggle("hot",(r.dataset.instr||r.dataset.offer)===HALL_INSTR.hot);
 }
 
 /* ══════════════ портрет в объёме (M725) ══════════════
