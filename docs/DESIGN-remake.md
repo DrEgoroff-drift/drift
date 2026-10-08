@@ -390,7 +390,7 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     the share is .085 broad / .077 tall. The man is the rig with the lamp as key: a 128° shadow map
     from the helmet, the cone and its falloff by the kit (`cave3Reach` 12–27 m), a second ortho map
     for the day under the mouth (shafts by `dayK`), air scattering at half size, bloom, the engine's
-    grade into `gpuScene()`. Plants, fauna and the find marker stay 2D over the frame until M630c. A
+    grade into `gpuScene()`. Plants and fauna are bodies in the scene (M630c); the find marker stays 2D. A
     pipeline that fails validation drops the cave to the old painter with the reason in `CAVE3.err`.
     Leaving the cave starts the surface's glide. Test `91qg-cave` (density vs `caveSolidAt` on 400
     cells, the cut sheet on the grid's rock, rock at the grid's faces, shares, feet on the walk line,
@@ -458,8 +458,8 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     between 4 and 8.5 m (`farK.yz`), the shadowless spill is cool grey (r 17), the warm part is a pool
     on the floor 2.6 m ahead (r 4.2) and a touch on the man (r 1.9); a cool fill over the man (r 9) and
     behind him (r 18); the beam tilts down (−.24). Measured on the gallery frame: the page hue 208°, the
-    stone outside the near circle 208–215°, the pool 35°. In the far lens the flat surface brushes (life,
-    the find) are not drawn until M630c. The scan label hangs at the plant the game picked and is
+    stone outside the near circle 208–215°, the pool 35°. In the far lens the find's flat glint is not
+    drawn (life is drawn as bodies since M630c). The scan label hangs at the plant the game picked and is
     silent when that plant is not in frame (never at the man). Amber's threads reach 8 m; a higher roof
     leaves the honey alone.
   - *Done (M630b pass 5, light; `22dbx`):* domes stand at places, not by noise: one per hall centre,
@@ -477,6 +477,21 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     crystal clusters parted by > 12 m, amber), sliding up to .6 of a half frame; where no two are
     within reach it leans to the nearest light (91qg counts both cases). The post shaders moved to
     `22dbx` (22dbw had reached 38.7 KB).
+  - *Done (M630c, life as bodies; `22dg`, `22dh`):* plants and beasts are bodies in the 22d scene —
+    the surface's own meshes (`plnHerbMesh`, `plnBeastMesh` with its pose book), one instance buffer per
+    book, at the cave map's scale (a plant of `q.h` map px stands `q.h/CAVE_PPM` m; a beast's radius is
+    `b.r/CAVE_PPM`, at least .28 m). Plants stand 1.25–2.05 m deep on the picture's floor (nearer to the
+    cut where the rock leaves no room); a beast's `y` is its floor, fliers hang `hover` map px above it.
+    The 2D brushes for life are gone from `cave3Over` (the find's glint stays). The near lens (×1.6)
+    looks at the midpoint between the man and the thing that calls ДЕЙСТВИЕ (unscanned plant, stunned
+    beast, find, amber). **Light in every gap:** any 30 m of the walk line holds a light event; where
+    the events of pass 5 leave a longer gap, `22dh` puts one in its middle by the world's stone —
+    glowworm threads off the roof (sedimentary), a warm vent crack in the back wall (volcanic), a day
+    window through thin ice high in the back wall (ice), a wet wall that catches the lamp (any other;
+    the quietest). Their softness is light close to the stone, never a flat halo mesh — those read as
+    cut-outs. **The wedge:** air glows only inside the inner cone with a crisp edge, ×(1 + .6·wet):
+    air in the wedge .25–.39, beside it ≤ .22, stone through it keeps a luma spread ≥ .068. Twelve
+    lights by rank: the lamp's seven always, the rest by strength × reach over distance to the frame.
 
 ### Stage F — rooms and people (M850–M859)
 

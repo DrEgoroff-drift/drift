@@ -86,6 +86,47 @@ TEST_SUITES.push(()=>suite("пещера на движке: порода по с
     }
     ok(Ev.length>=3&&n>15&&bad===0&&sparse<n/3,"дальний кадр держит два световых события, где они достижимы: событий "+Ev.length+", мест "+n+", без двух "+bad+", пролётов без огней "+sparse+" "+JSON.stringify(why));
   }
+  /* ── световые события (M630c): на любых 30 м линии ходьбы что-то светит; пролёт получает тело по породе,
+     и оно встаёт в каждой породе: светляки, продух, окно во льду, мокрая стена ── */
+  {
+    const Ev=cave3Events(C,F),E=CAVE_W/CAVE_PPM,K=CAVE3_GAP;
+    let dark=0;const why=[];
+    for(let X=0;X+K.win<=E;X+=1)if(!Ev.some(e=>e[1]>X&&e[0]<X+K.win)){dark++;if(why.length<3)why.push(X);}
+    ok(C.ev3.gaps.length>0&&dark===0,"на любых 30 м есть световое событие: событий в пролётах "+C.ev3.gaps.length+", тёмных окон "+dark+" "+JSON.stringify(why));
+    const items=cave3GapItems(C,F),p=G.surf.p,t0=p.type,res=[];
+    try{
+      for(const t of ["terran","volcanic","ice","rocky"]){
+        p.type=t;let made=0,bodies=0;
+        for(const q of items){
+          const B={F,m:plnMesh(1<<14),r:rng(q.seed^0x5EED),D:cave3DripSty(F)},L=[],Gl=[];
+          cave3GapBuild(B,q,L,Gl);
+          if(L.length&&Gl.length)made++;
+          if(B.m.ni>=60)bodies++;
+        }
+        res.push(t+" "+made+"/"+bodies+"/"+items.length);
+        ok(items.length>0&&made===items.length&&bodies===items.length,"событие в пролёте встаёт телом и светит: "+t+" "+made+"/"+bodies+" из "+items.length);
+      }
+    }finally{p.type=t0;}
+  }
+  /* ── жизнь телами (M630c): растение стоит на полу картинки рядом с полом игры, в мерке карты; ближний
+     объектив смотрит на середину между человеком и вещью; кистей поверх кадра для жизни больше нет ── */
+  {
+    const P=CAVE_PPM,K=CAVE3_LIFE;let n=0,on=0,far=0;const why=[];
+    for(const q of C.plants){
+      n++;
+      const X=q.x/P,Y=-q.y/P,ft=cave3LifeFoot(F,X,Y,[K.plantZ[0]+.4,K.plantZ[0],CAVE3_Z+.25]);
+      if(!ft)continue;on++;
+      if(Math.abs(ft[0]-Y)>.8||ft[1]<CAVE3_Z){far++;if(why.length<3)why.push([q.x|0,q.y|0,+ft[0].toFixed(2),+Y.toFixed(2),ft[1]]);}
+    }
+    ok(n>5&&on>=n*.8&&far===0,"растения встают на пол картинки за линией ходьбы: растений "+n+", встали "+on+", далеко от пола игры "+far+" "+JSON.stringify(why));
+    const q=C.plants[0],x0=C.x,y0=C.y,sc=q.scanned;
+    try{
+      q.scanned=false;C.x=q.x-20;C.y=q.y;
+      const s=cave3NearShift(C);
+      ok(Math.abs(s-10/P)<1e-6,"ближний объектив — на середину между человеком и растением: сдвиг "+s.toFixed(3)+" м");
+    }finally{C.x=x0;C.y=y0;q.scanned=sc;}
+    ok(!/drawPlant|drawBeast|lifePlantGpu|lifeBeastGpu/.test(String(cave3Over)),"растения и звери не рисуются кистью поверх кадра");
+  }
   /* ── сетка куска: лист разреза лежит на камне сетки, порода — у её граней ── */
   const ci=Math.floor(F.mouthX/CAVE3_CH.s)+1,cj=Math.floor((-caveGalY(C,(ci+.5)*CAVE3_CH.s*CAVE_PPM)/CAVE_PPM)/CAVE3_CH.s);
   const m=cave3Chunk(F,ci,cj),V=m.v;

@@ -89,14 +89,15 @@ fn bad3(c: vec3f) -> bool {
         let uv = q.xy * vec2f(0.5, -0.5) + 0.5;
         if (uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0) {
           let sh = textureSampleCompareLevel(lampTex, cmpSamp, uv, q.z - 0.004 / (lp.w * lp.w));
-          /* свет, что бежит к объективу, виден ярче бокового; воздух показывает сердце конуса и
-             отпускает его за несколько метров, иначе весь зал стоит в молоке */
+          /* свет, что бежит к объективу, виден ярче бокового; воздух показывает клин, а не облако:
+             у клина чёткая внешняя кромка по внутреннему конусу, за ней воздух пуст, и клин
+             отпускает свет за несколько метров, иначе весь зал стоит в молоке */
           let cs = dot(ll.xyz, rd);
           let ax = dot(-ll.xyz, g.lampDir.xyz);
-          let core = 0.45 * smoothstep(g.lampDir.w, g.lampCol.w, ax) + smoothstep(0.82, 0.97, ax);
+          let core = smoothstep(g.lampCol.w - 0.015, g.lampCol.w + 0.015, ax) * (0.55 + 0.45 * smoothstep(0.9, 0.98, ax));
           let dl = length(p - g.lampPos.xyz);
           /* клин идёт от шлема: у самого фонаря воздух светится гуще */
-          let wet = (1.0 + 1.3 * g.farK.w) * (1.0 + 1.6 * exp(-dl / 2.2));
+          let wet = (1.0 + 0.6 * g.farK.w) * (1.0 + 1.6 * exp(-dl / 2.2));
           let du = 0.7 + 0.6 * vn3(p * 0.7 + vec3f(g.camPos.w * 0.02, 0.0, 0.0), 45u);
           accL += ll.w * core * exp(-dl / 14.0) * wet * sh * du * (0.55 + 0.9 * pow(max(cs, 0.0), 3.0) + 0.2 * cs * cs);
         }
