@@ -97,13 +97,15 @@ function cave3Frame(){
   let tris=0;
   for(const c of list){
     const g=c.geo;
-    if(c.nRock>0)F.draw.push({geo:g,first:0,n:c.nRock,lamp:true,sun:true});
+    if(c.nRock>0)F.draw.push({geo:g,first:0,n:c.nRock,lamp:true,sun:true,refl:true});
     if(g.n>c.nRock)F.draw.push({geo:g,first:c.nRock,n:g.n-c.nRock,lamp:false,sun:true});
     tris+=g.n/3;
   }
-  for(const b of F.batches)F.draw.push({geo:b.geo,inst:b.inst,lamp:false,sun:true});
+  for(const b of F.batches)F.draw.push({geo:b.geo,inst:b.inst,lamp:false,sun:true,refl:true});
   /* убранство залов (22dc): натёки, завесы, кристаллы, жилы на разрезе */
   tris+=cave3DressFrame(C,F,Fd,M.cx-hw-3,M.cx+hw+3,M.cx,first||CAVE3.rush);
+  /* озеро (22dd): гладь с зеркалом и тело воды в разрезе */
+  tris+=cave3LakeFrame(C,F,Fd,M.cx-hw-3,M.cx+hw+3,M.cx);
   Object.assign(F,{vp:Ls.vp,eye:Ls.eye,t:(G.t/60)%7200,lamp:{p:lp,d:ld,k:1},lampVP,reach,near:reach*.45,
     sun,sunVP:day.m,sunRange:day.range,dayK,mouth,lean,surfY:sY,skyLo,skyHi,expo:1,cutZ:0,bed:Fd.sty.bed});
   M.stat.chunks=list.length;M.stat.left=C.ch3?C.ch3.left:0;M.stat.tris=Math.round(tris);

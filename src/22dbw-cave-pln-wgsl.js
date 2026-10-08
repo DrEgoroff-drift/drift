@@ -29,6 +29,7 @@ struct Globals {
   dayP: vec4f,        // наклон дня по x и z на метр высоты, высота поверхности, досягаемость фонаря
   skyLo: vec4f,       // небо у горизонта, сила дня
   skyHi: vec4f,       // небо в зените, где фонарь начинает слабеть
+  zone: array<vec4f, 4>,      // залы в кадре: x0, x1 (м), отделка стены (0 рёбра, 1 друза, 2 шов, 3 гладь)
 };
 @group(0) @binding(0) var<uniform> g: Globals;
 
@@ -105,6 +106,8 @@ const CAVE3_WGSL_SCENE=CAVE3_WGSL_COMMON+/* wgsl */`
 @group(0) @binding(1) var lampTex: texture_depth_2d;
 @group(0) @binding(2) var sunTex: texture_depth_2d;
 @group(0) @binding(3) var cmpSamp: sampler_comparison;
+@group(0) @binding(4) var reflTex: texture_2d<f32>;
+@group(0) @binding(5) var linSamp: sampler;
 
 struct VIn {
   @location(0) pos: vec3f,
@@ -213,6 +216,20 @@ fn strat(p: vec3f) -> f32 {
   let s = p.y - 0.06 * p.x + 0.25 * sin(p.x * 0.09 + p.z * 0.05);
   return (s + 0.28 * sin(s * 1.9 + 0.7)) / g.amb.w;
 }
+/* отделка стены там, где точка: рёбра, друза, гладь — с мягким переходом на стыке залов */
+fn finish(x: f32) -> vec3f {
+  var f = vec3f(0.0); var any = 0.0;
+  for (var i = 0; i < 4; i++) {
+    let z = g.zone[i];
+    if (z.y <= z.x) { continue; }
+    let w = smoothstep(z.x - 2.5, z.x + 2.5, x) * (1.0 - smoothstep(z.y - 2.5, z.y + 2.5, x));
+    let k = i32(round(z.z));
+    if (k == 0) { f.x += w; } else if (k == 1) { f.y += w; } else if (k == 3) { f.z += w; }
+    any += w;
+  }
+  if (any < 0.001) { return vec3f(1.0, 0.0, 0.0); }
+  return f;
+}
 /* огни без теней */
 fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   var c = vec3f(0.0);
@@ -229,6 +246,8 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
 
 @fragment fn fs_main(in: VOut) -> @location(0) vec4f {
   let fx = dpdx(in.wpos); let fy = dpdy(in.wpos);
+  /* в зеркале озера то, что под водой, не отражается */
+  if (g.misc.y > 0.5 && in.wpos.y < g.misc.x) { discard; }
   let mat = i32(round(in.par.x));
   let glow = in.par.z; let ex = in.par.w;
   let V = normalize(g.camPos.xyz - in.wpos);
@@ -299,11 +318,31 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     let b0 = vn3(bp, 31u); let q0 = vn3(bq, 33u);
     let gb = vec3f(vn3(bp + vec3f(0.07, 0.0, 0.0), 31u), vn3(bp + vec3f(0.0, 0.07, 0.0), 31u), vn3(bp + vec3f(0.0, 0.0, 0.07), 31u)) - b0;
     let gq = vec3f(vn3(bq + vec3f(0.07, 0.0, 0.0), 33u), vn3(bq + vec3f(0.0, 0.07, 0.0), 33u), vn3(bq + vec3f(0.0, 0.0, 0.07), 33u)) - q0;
-    let gr = (gb * 0.30 + gq * 0.12) / 0.07;
+    let fin = finish(in.wpos.x);
+    let gr = (gb * 0.30 + gq * 0.12) / 0.07 * (1.0 - 0.7 * fin.z);
     N = normalize(N - (gr - N * dot(gr, N)));
+    wet = mix(wet, max(wet, 0.45), fin.z);
+    /* грот: стены друзой — грани в ладонь, у каждой свой наклон, иные ловят фонарь */
+    if (fin.y > 0.01) {
+      /* ячейки Вороного: грань — ближайшее зерно, без сетки */
+      let dp = in.wpos * 2.6;
+      let b = vec3i(floor(dp));
+      var best = 9.0; var id = b;
+      for (var k = 0; k < 27; k++) {
+        let o = vec3i(k % 3 - 1, (k / 3) % 3 - 1, k / 9 - 1);
+        let c = b + o;
+        let q = vec3f(c) + vec3f(hash3(c, 91u), hash3(c, 93u), hash3(c, 95u));
+        let d = dot(dp - q, dp - q);
+        if (d < best) { best = d; id = c; }
+      }
+      let dn = vec3f(hash3(id, 81u), hash3(id, 83u), hash3(id, 85u)) - 0.5;
+      N = normalize(N + dn * (0.9 * fin.y));
+      alb *= 1.0 - 0.3 * fin.y * hash3(id, 87u);
+      wet = mix(wet, 0.75, fin.y * step(0.65, hash3(id, 89u)));
+    }
     ao *= 0.72 + 0.28 * smoothstep(0.2, 0.65, b0);
     /* натёчные борозды на стене, что смотрит на нас: пятнами, сверху вниз; фонарь ловит рёбра, не плоскость */
-    let wf = smoothstep(0.25, 0.7, -N.z) * smoothstep(0.6, 1.6, in.wpos.z);
+    let wf = smoothstep(0.25, 0.7, -N.z) * smoothstep(0.6, 1.6, in.wpos.z) * fin.x;
     if (wf > 0.001) {
       /* ребро к ребру разной ширины; пучками, между ними гладко; каждое кончается на своей высоте */
       let u = in.wpos.x * 1.7 + 1.8 * vn3(in.wpos * vec3f(0.5, 0.1, 0.5), 45u);
@@ -329,20 +368,25 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     }
   }
   if (mat == 11) {
-    ao = ex; wet = glow; wrap = 0.45;
+    ao = ex; wet = glow; wrap = 0.3;
     alb *= 0.85 + 0.3 * vn3(in.wpos * vec3f(3.0, 0.7, 3.0), 9u);
+    alb *= 0.8 + 0.3 * vn3(in.wpos * vec3f(9.0, 0.6, 9.0), 13u);
+    alb *= 1.0 - 0.3 * smoothstep(0.45, 0.95, N.y) * smoothstep(-0.2, 0.4, vn3(in.wpos * 2.5, 15u));
   }
   if (mat == 15) {
     /* завеса: тонкий лист, свет идёт сквозь него */
     ao = ex; wet = glow; wrap = 0.5;
     alb *= 0.9 + 0.2 * vn3(in.wpos * vec3f(2.0, 5.0, 2.0), 11u);
   }
+  /* натёк — не светится сам: окклюзия рядом стоящих держит его в тени темнее стены */
+  var ambK = 1.0;
+  if (mat == 11) { ambK = 0.45; }
   /* человек и звери: свечение в запасе (стекло шлема, огни ранца) */
   if (mat == 4 || mat == 8) { wet = 0.35; emis = glow; }
   if (mat == 7) { ao = mix(0.5, 1.0, smoothstep(0.0, 0.7, ex)); emis = glow; }
   if (mat == 2) { emis = glow; }
 
-  var c = alb * g.amb.rgb * (ao * mix(0.6, 1.25, N.y * 0.5 + 0.5));
+  var c = alb * g.amb.rgb * (ao * ambK * mix(0.6, 1.25, N.y * 0.5 + 0.5));
   let ll = lampAt(in.wpos);
   if (ll.w > 0.0005) {
     let ndl = dot(N, ll.xyz);
@@ -353,8 +397,12 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     let hv = normalize(ll.xyz + V);
     c += e * (pow(clamp(dot(N, hv), 0.0, 1.0), mix(18.0, 80.0, wet)) * wet * lit * 0.9);
     /* натёк пускает свет в свои края */
-    if (mat == 11) { c += alb * e * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0) * 0.35 * smoothstep(-0.6, 0.2, ndl)); }
-    if (mat == 15) { c += alb * vec3f(1.25, 0.8, 0.45) * e * (clamp(-ndl, 0.0, 1.0) * 0.7 + 0.12); }
+    if (mat == 11) { c += alb * e * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0) * 0.1 * smoothstep(-0.6, 0.2, ndl)); }
+    /* сквозь лист: кальцит теплеет, лёд остаётся своим */
+    if (mat == 15) {
+      let tn = mix(vec3f(1.25, 0.8, 0.45), vec3f(0.9, 1.05, 1.2), smoothstep(0.02, 0.15, alb.b - alb.r));
+      c += alb * tn * e * (clamp(-ndl, 0.0, 1.0) * 0.7 + 0.12);
+    }
   }
   let Ls = normalize(g.sunDir.xyz);
   let dm = dayMask(in.wpos);
@@ -374,6 +422,59 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   c += alb * points(in.wpos, N, even) * mix(0.5, 1.0, ao);
   c += alb * emis;
   return vec4f(haze(c, in.wpos, 1.0), 1.0);
+}
+
+/* вода (22dd): гладь с отражением и тело в разрезе */
+@fragment fn fs_water(in: VOut) -> @location(0) vec4f {
+  let mat = i32(round(in.par.x));
+  let V = normalize(g.camPos.xyz - in.wpos);
+  let t = g.camPos.w;
+  /* свет, что доходит сюда, куда бы вода ни смотрела */
+  var light = g.amb.rgb * 2.0 + points(in.wpos, vec3f(0.0, 1.0, 0.0), 1.0) * 0.6;
+  let up = vec3f(0.0, 1.0, 0.0);
+  let ll = lampAt(in.wpos);
+  light += g.lampCol.rgb * (ll.w * lampShade(in.wpos + vec3f(0.0, 0.06, 0.0), up, in.pos.xy) * 0.5);
+  let dm = dayMask(in.wpos);
+  if (dm > 0.001) { light += g.sunCol.rgb * (dm * 0.5 * sunShade(in.wpos + vec3f(0.0, 0.06, 0.0), up, in.pos.xy)); }
+  if (mat == 14) {
+    /* тело воды там, где через неё идёт разрез: свет уходит вниз медленными лопастями и гаснет */
+    let d = in.par.w;
+    let s1 = vnoise(vec2f(in.wpos.x * 1.7 + d * 0.30 + t * 0.03, 0.5), 47u);
+    let s2 = vnoise(vec2f(in.wpos.x * 4.3 - d * 0.20 - t * 0.05, 1.5), 49u);
+    let blade = pow(s1 * 0.7 + s2 * 0.3, 3.0) * exp(-d * 0.8);
+    let body = mix(vec3f(0.11, 0.37, 0.36), vec3f(0.008, 0.04, 0.075), smoothstep(0.0, 2.6, d));
+    var c = body * light * (1.0 + 2.4 * blade) + vec3f(0.002, 0.006, 0.009);
+    c += vec3f(0.6, 0.8, 0.82) * light * ((1.0 - smoothstep(0.0, 0.05, d)) * 0.8);
+    return vec4f(haze(c, in.wpos, 1.0), mix(0.60, 0.95, smoothstep(0.0, 2.0, d)));
+  }
+  let depth = in.par.w;
+  let p = in.wpos.xz;
+  let n1 = vnoise(vec2f(p.x * 0.9 + t * 0.10, p.y * 2.6 - t * 0.06), 3u) - 0.5;
+  let n2 = vnoise(vec2f(p.x * 2.3 - t * 0.08, p.y * 6.0 + t * 0.12), 5u) - 0.5;
+  /* круги, где падают капли с зубьев свода: в клетке 3 м своя капля и своё время */
+  var ring = vec2f(0.0);
+  let cb = vec2i(floor(p / 3.0));
+  for (var k = 0; k < 4; k++) {
+    let cc = cb + vec2i(k % 2, k / 2);
+    let on = hash2(cc, 97u);
+    if (on < 0.45) { continue; }
+    let c0 = (vec2f(cc) + vec2f(hash2(cc, 91u), hash2(cc, 93u))) * 3.0;
+    let dv = p - c0; let r = max(length(dv), 0.001);
+    let ph = fract(t * (0.12 + 0.1 * on) + hash2(cc, 95u));
+    let w = sin((r - ph * 3.2) * 11.0) * exp(-r * 0.8) * (1.0 - smoothstep(ph * 3.2 - 0.2, ph * 3.2 + 0.5, r)) * (1.0 - ph);
+    ring += dv / r * w;
+  }
+  let N = normalize(vec3f((n1 + n2 * 0.5) * 0.02 + ring.x * 0.05, 1.0, (n1 * 0.5 + n2) * 0.035 + ring.y * 0.05));
+  let uv = in.pos.xy * g.screen.zw + vec2f(N.x * 0.08, N.z * 0.30);
+  let refl = textureSampleLevel(reflTex, linSamp, clamp(uv, vec2f(0.002), vec2f(0.998)), 0.0).rgb;
+  let nv = clamp(dot(N, V), 0.0, 1.0);
+  let fr = 0.04 + 0.96 * pow(1.0 - nv, 5.0);
+  let deep = smoothstep(0.0, 1.6, depth);
+  let body = mix(vec3f(0.10, 0.30, 0.28), vec3f(0.015, 0.07, 0.10), deep) * light;
+  var c = mix(body, refl * vec3f(0.86, 0.93, 0.95), clamp(fr * 1.15, 0.0, 1.0));
+  c = mix(c, vec3f(0.7, 0.85, 0.85) * light, (1.0 - smoothstep(0.02, 0.12, depth)) * 0.3);
+  let alpha = smoothstep(-0.03, 0.22, depth) * mix(0.72, 1.0, max(fr, deep));
+  return vec4f(haze(c, in.wpos, 1.0), alpha);
 }
 `;
 
