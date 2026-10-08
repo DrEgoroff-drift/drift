@@ -2867,3 +2867,46 @@ body.rackon #prompt{opacity:0}
   #station .ch-face.big{height:190px}
   #station .ch-fig{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* ── зал за экранами (M810, docs/DESIGN-hall.md §3) ──
+   Экран станции во весь экран: позади всего холст зала #stHall, справа на 60 % — плита (один материал,
+   графит), слева 40 % — место раздела. Телефон: зал — полоса 36 % сверху, плита под ней, при прокрутке
+   плита наезжает на нижнюю треть полосы. DOM разделов не меняется: меняется только рамка. ?hall=0 —
+   класса нет, всё как было. */
+#stHall{display:none}
+#station.hall #stHall{display:block;position:absolute;left:0;top:0;z-index:-2;pointer-events:none}
+/* основа — сплошная: зал (z -2) и плита (z -1) рисуются над ней в своём слое (isolation); если видеокарта
+   не нарисовала зал, под экраном темнота, а не мир с его фишками */
+#station.hall{isolation:isolate;background:#0d0c0b;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;border-radius:0;box-shadow:none}
+#station.hall::before{content:"";position:absolute;right:0;bottom:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(24,23,22,.965),rgba(17,16,15,.975) 60%,rgba(14,13,12,.985));
+  box-shadow:-1px 0 0 rgba(255,236,200,.07),-28px 0 60px rgba(0,0,0,.45)}
+/* доля зала: 40 %, но вёрстке справа не меньше 880 px (в её же пикселях, с --ui) и залу не меньше 30 %;
+   то же правило у камеры — hallHero() */
+@media (min-width:900px){
+  #station.hall{inset:0;padding-left:clamp(30%,calc(100% - 880px),40%)}
+  body.screen #station.hall.open{padding-top:0}
+  #station.hall::before{left:clamp(30%,calc(100% - 880px),40%);top:0}
+  /* эфир — над залом, а не поперёк шапки плиты */
+  body.screen:not(.mobile):has(#station.hall.open) #console{left:calc(clamp(30%,calc(100% - 880px),40%) / 2);top:18px}
+}
+@media (pointer:fine) and (min-width:1150px) and (min-aspect-ratio:1150/760){
+  body:not(.mobile) #station.hall{inset:0}
+  body:not(.mobile) #station.hall.open{grid-template-columns:minmax(0,1fr) 268px;grid-template-rows:auto auto minmax(0,1fr);
+    grid-template-areas:"head head" "nav nav" "body ship"}
+  body:not(.mobile) #station.hall #stGroups{flex-direction:row;align-items:stretch;overflow-x:auto;overflow-y:hidden;
+    border-right:0;border-bottom:1px solid var(--pl-edge);padding:0 12px}
+  body:not(.mobile) #station.hall #stGroups>button{padding:0 16px}
+  body:not(.mobile) #station.hall #stGroups>button:is(.on,.open)::after{left:12px;right:12px;top:auto;bottom:0;width:auto;height:2px}
+  body:not(.mobile) #station.hall #stTabs{flex-direction:row;padding:0 8px 0 0}
+  body:not(.mobile) #station.hall #stTabs button{min-height:46px;padding:0 12px 0 24px}
+  body:not(.mobile) #station.hall #stTabs button.on::after{left:10px}
+  body:not(.mobile) #station.hall>footer{padding:16px 18px 18px}
+}
+@media (max-width:899.98px){
+  #station.hall{padding-top:36vh;transition:padding-top .25s var(--ease)}
+  body.screen #station.hall.open{padding-top:36vh}
+  body.screen #station.hall.open.up{padding-top:24vh}
+  #station.hall::before{left:0;top:36vh;transition:top .25s var(--ease)}
+  #station.hall.up::before{top:24vh}
+}
