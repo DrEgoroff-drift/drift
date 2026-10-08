@@ -293,6 +293,7 @@ people's grammar of `21pie` for modules and props, the rig for the figures. M628
 home, M630+ the cave, the dig as lit rooms (one source through air only,
 veins as three or four large forms), the raid's light: these are built in `DESIGN-planet.md`'s
 queue by the same builder, in this order after Stage D: base and home → cave → dig → raid.
+Design for the first two steps: `docs/DESIGN-base-scene.md` (09.10) — own things as bodies of the people's grammar on the engine's land (M628a/b), the section as the rock kit cut by a plane with lit rooms and two lenses (M632a–c), entry by the gate without a cut; the base's game (`DESIGN-base.md`) untouched.
 
 ### Stage F — rooms and people (M850–M859)
 
