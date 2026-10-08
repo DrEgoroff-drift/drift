@@ -1600,14 +1600,16 @@ R3_MAXI                      src/27f2-room3d.js:23
 R3_POST_WGSL                 src/27f2-room3d.js:503
 R3_UN                        src/27f2-room3d.js:28
 R3_WGSL                      src/27f2-room3d.js:154
-RACK                         src/25d-instr-rack.js:54
-RACK_CH                      src/25d-instr-rack.js:27-33
-RACK_DQ                      src/25d-instr-rack.js:187
-RACK_G                       src/25d-instr-rack.js:36-53
-RACK_K                       src/25d-instr-rack.js:69
-RACK_LEG_FONT                src/25d-instr-rack.js:424
-RACK_PAD                     src/25d-instr-rack.js:25
-RACK_SH                      src/25d-instr-rack.js:186
+RACK                         src/25d-instr-rack.js:44
+RACK_CH                      src/25d-instr-rack.js:26-32
+RACK_DQ                      src/25d-instr-rack.js:165
+RACK_FACE                    src/25d-instr-rack.js:57
+RACK_FIT                     src/25d-instr-rack.js:294
+RACK_G                       src/25d-instr-rack.js:37-43
+RACK_K                       src/25d-instr-rack.js:62
+RACK_PAD                     src/25d-instr-rack.js:24
+RACK_PEN                     src/25d-instr-rack.js:34
+RACK_SH                      src/25d-instr-rack.js:164
 RADIO                        src/10a-radio.js:119
 RADIO_ARCH                   src/10a-radio.js:24-40
 RADIO_BANDS                  src/25e-receiver.js:13-18
@@ -6451,32 +6453,30 @@ r3Step                       src/27f2-room3d.js:36
 r3Up                         src/27f2-room3d.js:414-418
 r3VB                         src/27f2-room3d.js:384
 r3Xf                         src/27f2-room3d.js:47-151
-rackBakeJob                  src/25d-instr-rack.js:220-236
-rackBottom                   src/25d-instr-rack.js:477-482
-rackCell                     src/25d-instr-rack.js:193-197
-rackDial                     src/25d-instr-rack.js:116-160
-rackDraw                     src/25d-instr-rack.js:483-493
-rackDrawK                    src/25d-instr-rack.js:494-500
-rackDrop                     src/25d-instr-rack.js:198-216
-rackFrame                    src/25d-instr-rack.js:507-605
-rackGeo                      src/25d-instr-rack.js:70-91
-rackGlass                    src/25d-instr-rack.js:162-174
-rackGrain                    src/25d-instr-rack.js:105-114
-rackLegend                   src/25d-instr-rack.js:425-438
-rackOpen                     src/25d-instr-rack.js:55
-rackPaint                    src/25d-instr-rack.js:249-379
-rackPaperBox                 src/25d-instr-rack.js:415-419
-rackParts                    src/25d-instr-rack.js:203-216
-rackR                        src/25d-instr-rack.js:191
-rackRoller                   src/25d-instr-rack.js:442-471
-rackRows                     src/25d-instr-rack.js:190
-rackScrew                    src/25d-instr-rack.js:95-103
-rackSpr                      src/25d-instr-rack.js:410-413
-rackSprites                  src/25d-instr-rack.js:382-408
-rackTex                      src/25d-instr-rack.js:237-247
-rackTextW                    src/25d-instr-rack.js:440
-rackToggle                   src/25d-instr-rack.js:56-59
-rackWarm                     src/25d-instr-rack.js:503-506
+rackBakeJob                  src/25d-instr-rack.js:184-200
+rackBottom                   src/25d-instr-rack.js:305-310
+rackCr                       src/25d-instr-rack.js:56
+rackDial                     src/25d-instr-rack.js:112-138
+rackDraw                     src/25d-instr-rack.js:311-321
+rackDrawK                    src/25d-instr-rack.js:322-328
+rackDrop                     src/25d-instr-rack.js:166-181
+rackFit                      src/25d-instr-rack.js:295-299
+rackFrame                    src/25d-instr-rack.js:335-415
+rackGeo                      src/25d-instr-rack.js:63-81
+rackGlass                    src/25c-instr-hud.js:216-228
+rackGlobe                    src/25d-instr-rack.js:140-157
+rackGrain                    src/25c-instr-hud.js:205-214
+rackLay                      src/25d-instr-rack.js:85-110
+rackOpen                     src/25d-instr-rack.js:45
+rackPaint                    src/25d-instr-rack.js:216-264
+rackParts                    src/25d-instr-rack.js:171-181
+rackScrew                    src/25c-instr-hud.js:195-203
+rackSpr                      src/25d-instr-rack.js:289-292
+rackSprites                  src/25d-instr-rack.js:267-287
+rackTex                      src/25d-instr-rack.js:201-211
+rackTextW                    src/25d-instr-rack.js:214
+rackToggle                   src/25d-instr-rack.js:46-49
+rackWarm                     src/25d-instr-rack.js:331-334
 radioA                       src/10a-radio.js:128
 radioAdvance                 src/10a-radio.js:238-241
 radioArp                     src/10a-radio.js:635-657
@@ -9317,11 +9317,11 @@ zoomTo                       src/15-input.js:358
 ## src/25b-tape.js · 14 KB
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 14 KB
+## src/25c-instr-hud.js · 16 KB
   · приборная колодка: те же приборы, но всегда под рукой:1
 
-## src/25d-instr-rack.js · 39 KB
-  · приборная стойка: настоящие стрелочные приборы и самописец:1
+## src/25d-instr-rack.js · 28 KB
+  · приборная стойка: стрелочные приборы и самописец:1
 
 ## src/25e-receiver.js · 7 KB
   · приёмник: частота крутится рукой:1
