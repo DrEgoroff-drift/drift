@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 529 · top-level symbols: 7862
+Files: 529 · top-level symbols: 7865
 
 ## SYMBOLS
 
@@ -1301,6 +1301,7 @@ OVR                          src/08bi-gpu-ovl.js:320
 OV_CV                        src/08bi-gpu-ovl.js:301
 OV_EYE                       src/08bi-gpu-ovl.js:297
 OWN                          src/21pig-pln-own.js:26
+OWN_WIN                      src/21pig-pln-own.js:31
 OX                           src/21ad-base-gpu.js:149
 P3                           src/17c2b-parts3d.js:18
 P3T                          src/17c2d-parts-thumb.js:21
@@ -1459,18 +1460,18 @@ PLN_OLD_HELD                 src/21pzb-pln-words.js:25
 PLN_OLD_HINT                 src/21pzb-pln-words.js:38
 PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:201
-PLN_OLD_HUD2                 src/21pzb-pln-words.js:91
+PLN_OLD_HUD2                 src/21pzb-pln-words.js:94
 PLN_OLD_LANDING              src/21pza-pln-descent.js:214
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:372
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:373
 PLN_OLD_ULAND                src/21pza-pln-descent.js:206
 PLN_OVER                     src/21pj-pln-over.js:16
-PLN_OWN_GATE_R               src/21pig-pln-own.js:367
-PLN_OWN_OLD_AT               src/21pig-pln-own.js:440
-PLN_OWN_OLD_DIG              src/21pig-pln-own.js:406
-PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:384
-PLN_OWN_OLD_HINT             src/21pig-pln-own.js:433
-PLN_OWN_OLD_UPD              src/21pig-pln-own.js:411
-PLN_OWN_UPD                  src/21pig-pln-own.js:383
+PLN_OWN_GATE_R               src/21pig-pln-own.js:405
+PLN_OWN_OLD_AT               src/21pig-pln-own.js:487
+PLN_OWN_OLD_DIG              src/21pig-pln-own.js:453
+PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:431
+PLN_OWN_OLD_HINT             src/21pig-pln-own.js:480
+PLN_OWN_OLD_UPD              src/21pig-pln-own.js:458
+PLN_OWN_UPD                  src/21pig-pln-own.js:430
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:38-62
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
@@ -6063,27 +6064,29 @@ plnOver                      src/21pj-pln-over.js:48-122
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:29-47
 plnOverPlate                 src/21pj-pln-over.js:23-27
-plnOwnAtGate                 src/21pig-pln-own.js:368
-plnOwnBaseAt                 src/21pig-pln-own.js:83-98
-plnOwnBaseMesh               src/21pig-pln-own.js:109-202
-plnOwnBaseX                  src/21pig-pln-own.js:54-79
-plnOwnBattOf                 src/21pig-pln-own.js:100-105
-plnOwnFrame                  src/21pig-pln-own.js:317-350
-plnOwnFree                   src/21pig-pln-own.js:284-288
-plnOwnGateX                  src/21pig-pln-own.js:362-366
-plnOwnHomeAt                 src/21pig-pln-own.js:205-220
-plnOwnHomeMesh               src/21pig-pln-own.js:221-281
-plnOwnInYard                 src/21pig-pln-own.js:391-394
-plnOwnItem                   src/21pig-pln-own.js:289-296
-plnOwnKit                    src/21pig-pln-own.js:38-48
-plnOwnMark                   src/21pig-pln-own.js:370
-plnOwnPads                   src/21pig-pln-own.js:352-359
-plnOwnPennHere               src/21pig-pln-own.js:106-108
-plnOwnSteel                  src/21pig-pln-own.js:31-36
-plnOwnStep                   src/21pig-pln-own.js:297-315
-plnOwnUnder                  src/21pig-pln-own.js:395-398
-plnOwnWordsAt                src/21pig-pln-own.js:372-377
-plnOwnYardPrompt             src/21pig-pln-own.js:399-405
+plnOwnAtGate                 src/21pig-pln-own.js:406
+plnOwnBaseAt                 src/21pig-pln-own.js:86-101
+plnOwnBaseMesh               src/21pig-pln-own.js:112-205
+plnOwnBaseX                  src/21pig-pln-own.js:57-82
+plnOwnBattOf                 src/21pig-pln-own.js:103-108
+plnOwnFrame                  src/21pig-pln-own.js:329-376
+plnOwnFree                   src/21pig-pln-own.js:296-300
+plnOwnGateNote               src/21pig-pln-own.js:418-424
+plnOwnGateX                  src/21pig-pln-own.js:400-404
+plnOwnHomeAt                 src/21pig-pln-own.js:208-223
+plnOwnHomeMesh               src/21pig-pln-own.js:224-293
+plnOwnInYard                 src/21pig-pln-own.js:438-441
+plnOwnItem                   src/21pig-pln-own.js:301-308
+plnOwnKit                    src/21pig-pln-own.js:41-51
+plnOwnMark                   src/21pig-pln-own.js:408
+plnOwnOcc                    src/21pig-pln-own.js:379-388
+plnOwnPads                   src/21pig-pln-own.js:390-397
+plnOwnPennHere               src/21pig-pln-own.js:109-111
+plnOwnSteel                  src/21pig-pln-own.js:34-39
+plnOwnStep                   src/21pig-pln-own.js:309-327
+plnOwnUnder                  src/21pig-pln-own.js:442-445
+plnOwnWordsAt                src/21pig-pln-own.js:410-415
+plnOwnYardPrompt             src/21pig-pln-own.js:446-452
 plnPadBulb                   src/21pza-pln-descent.js:114
 plnPadFrame                  src/21pza-pln-descent.js:128-158
 plnPadGeo                    src/21pza-pln-descent.js:77-99
@@ -6141,7 +6144,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:89
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:294-369
+plnSurface                   src/21pz-pln-frame.js:294-370
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -9030,7 +9033,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pb-pln-wgsl-air.js · 24 KB
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 18 KB
+## src/21pc-pln-wgsl-scene.js · 19 KB
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 8 KB
@@ -9114,7 +9117,7 @@ zoomTo                       src/15-input.js:358
   · врата (§4.9):184
   · обсерватория (§4.10):228
 
-## src/21pig-pln-own.js · 31 KB
+## src/21pig-pln-own.js · 35 KB
   · планета: свои вещи телами — база, дом, двор (M628a):1
 
 ## src/21pj-pln-over.js · 7 KB
@@ -9483,7 +9486,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qd-bodies.js · 4 KB
   · тела под звездой (M820):1
 
-## tests/91qe-own.js · 10 KB
+## tests/91qe-own.js · 11 KB
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1

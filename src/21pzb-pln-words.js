@@ -78,6 +78,9 @@ hangSurface=function(){
       plnWordsAt(pj,[dep.x,plnThingGround(L,dep.x,dep.z).h+.6,dep.z],1.2,"pln.tip",ln,{up:true});
     }
   }
+  /* ворота базы держат свою плашку, когда строку у них забрал скан (21pig, M628b) */
+  const gn=plnOwnGateNote(S);
+  if(gn)plnWordsAt(pj,gn.c,gn.h,gn.id,gn.lines,{});
   /* строка действия — у корабля или у человека */
   const pr=String(G.prompt||"");
   if(hung||!pr||!PLN.shipW)return;

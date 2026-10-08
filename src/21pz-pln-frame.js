@@ -363,6 +363,7 @@ function plnSurface(S,o){
   /* герой стоит в пятне света: пятно лежит там, куда его тень падает на уровень сцены */
   const hk=(man[1]-ride)/Math.max(Hr.dir[1],.08);
   F.hero[0]=man[0]-Hr.dir[0]*hk;F.hero[1]=man[2]-Hr.dir[2]*hk;
+  plnOwnOcc(F);   /* заслонки фонаря крыльца — в хвост пятен (21pig, M628b) */
   PLN.cam=C;PLN.sun=Hr;
   PLN.stat.cpu=+(wallMs()-t0).toFixed(2);
   return plnGpuFrame(F);

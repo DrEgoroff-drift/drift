@@ -367,6 +367,16 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     porch, and always on a phone except on the jet. `21pj` draws `drawBuilt`/`drawHomeOut` only with
     `?own=0`; `21pga` clears the flora under the deck and the yard (`plnOwnPads`); `21e` adds the
     «БАЗА» chip at the gate; `21pzb` hangs the gate and porch plates on the things. Test: `91qe-own`.
+  - *Done (M628b pass 1):* the porch lantern is the frame's one lamp with a shadow — capsule
+    occluders (the man within the lamp's reach, the porch posts, the front fence posts near the
+    door) go to the tail of `F.blobs` as two `vec4` each (`a, r` / `b, strength`), `blobs.n.y` their
+    count, `blobs.n.z` the lamp's slot + 1; `plnOwnOcc` writes them last in `21pz` (blots are capped
+    below the tail), and `21pc`'s lamp loop multiplies that lamp by `lampShade` (segment–segment
+    distance, the penumbra widening with the distance from the occluder, an occluder never shades
+    itself). Own lamps are wished per item and two are taken by rank: porch, pier, gate light, grow
+    lamp. The light record is `.12 + .6·night` (brighter glass the grade turns salmon); glass colours
+    `OWN_WIN` are given lighter because vertex colours are read as sRGB. Test: `91qe-own`
+    (two own lamps of three wished, the lantern's occluders, none by day).
 
 ### Stage F — rooms and people (M850–M859)
 
