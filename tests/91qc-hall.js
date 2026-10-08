@@ -93,6 +93,33 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     eq(hallLensWant(1e6+700),1,"отпустил: 700 мс объектив ещё держит");eq(hallLensWant(1e6+760),0,"после 45 кадров — назад к общему плану");
     HALL.place=wp;HALL_GOODS.hot=null;hallGoodsDrop();G.cargo=c0;}
 
+  /* M814: холст зала на ПК — только видимое из-под плиты; срез проекции не сдвигает ни одной точки кадра,
+     плотность — экранная до 2 в бюджете (на 1920×1080 при DPR 2 — ровно 2, без растяжки) */
+  {const rw=hallDrawW(1920,true);ok(rw<1920*.45&&rw>=1920*hallHero(1920),"холст зала — зона героя ("+rw+" из 1920)");
+    eq(hallDrawW(390,false),390,"на телефоне — вся полоса");
+    ok(hallDpr(681,1080,2)===2&&hallDpr(681,1080,1)===1,"плотность экранная: DPR 2 → 2, DPR 1 → 1 (зона героя 1920×1080 при --ui 1.42)");
+    ok(hallDpr(1920,1080,2)*hallDpr(1920,1080,2)*1920*1080<=HALL_PX+1,"во весь экран — в бюджете пикселей");
+    const vp=hallCam(HALL_CAMS.ship,1920,1080,true).vp,h=rw/1920,cv=hallCrop(vp,h);let worst=0;
+    for(let i=0;i<INSTR_KEYS.length;i++){const p=hallInstrFace(i),a=r3Proj(vp,p,1920,1080),b=r3Proj(cv,p,rw,1080);worst=Math.max(worst,Math.abs(a[0]-b[0]),Math.abs(a[1]-b[1]));}
+    ok(worst<.01,"срез кадра не сдвигает точки ("+worst.toFixed(4)+" px)");}
+
+  /* M814: ночью рабочая лампа держит весь ряд полным лучом; контр у верстака — за рядом, ниже подоконника, тусклее лампы */
+  {const wp=HALL.place,wn=HALL.night,L=hallLayout("yard");L.room=hallRoomMesh(L);HALL.place="ship";HALL.night=1;
+    const S=hallScene(L,hallCam(HALL_CAMS.ship,1920,1080,true),1.5),wl=S.lights.find(l=>l.work),rim=S.lights.find(l=>l.rim);
+    ok(!!wl&&INSTR_KEYS.every((id,i)=>{const p=hallInstrFace(i),v=[p[0]-wl.p[0],p[1]-wl.p[1],p[2]-wl.p[2]],d=Math.hypot(...v);
+      return (v[0]*wl.d[0]+v[1]*wl.d[1]+v[2]*wl.d[2])/d>=wl.cosI;}),"ночью все пять шкал — в полном луче рабочей лампы");
+    ok(!!rim&&rim.p[2]<hallInstrAt(0)[2]&&rim.p[1]<1.05&&!rim.shadow,"контр — за рядом приборов, ниже подоконника, без тени");
+    ok(!!rim&&!!wl&&hallLum(rim.c.map(v=>v*255))<hallLum(wl.c.map(v=>v*255)),"контр тусклее рабочей лампы");
+    HALL.night=0;const D=hallScene(L,hallCam(HALL_CAMS.ship,1920,1080,true),1.5);ok(!D.lights.some(l=>l.rim),"днём контра нет");
+    HALL.place="trade";HALL.night=1;const Tn=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5);ok(!Tn.lights.some(l=>l.rim),"у стойки контра нет");
+    HALL.place=wp;HALL.night=wn;}
+
+  /* M814: плита — один ключ сверху-слева: верх тела светлее низа на ≥ .12 value у каждого завода */
+  {const val=h=>{const n=parseInt(h.slice(1),16);return Math.max(n>>16,(n>>8)&255,n&255)/255;},K=HALL_DIAL_KEY;
+    for(const w of Object.keys(HALL_INSTR_MAT)){const sv=HALL_INSTR_MAT[w].sv,top=val(sv[0])*(1-K.hi)+K.hi,bot=val(sv[sv.length-1])*(1-K.lo);
+      ok(top-bot>=.12,w+": верх тела светлее низа на "+(top-bot).toFixed(2)+" ≥ .12");}
+    ok(Object.keys(HALL_INSTR_MAT).every(w=>HALL_INSTR_HL[w]),"у каждого завода свой блик");}
+
   /* M813: пять приборов на верстаке — один экземпляр, стрелки частями 1–5; стрелка не уходит за шкалу ни у какого
      завода и износа; горящая строка прибора ведёт объектив к его шкале с места КОРАБЛЬ */
   {const K=instrKit(),k0=JSON.stringify(K),L=hallLayout("yard"),wp=HALL.place;L.room=hallRoomMesh(L);
@@ -212,6 +239,12 @@ TEST_SUITES.push(()=>suite("зал станции: приборы карточк
   ok([...cards].every(r=>r.querySelector("svg.hdial-svg :is(.hneedle,.hslide)")&&r.querySelector(".cls")),"у каждой тело со стрелкой и завод тегом");
   eq(new Set([...cards].map(r=>r.querySelector("svg.hdial-svg").dataset.kind)).size,INSTR_KEYS.length,"пять приборов — пять разных тел рисунком");
   ok(![...$body.querySelectorAll(".hdial .nm")].some(n=>/различает|стрелка|перо/.test(n.textContent)),"проза про разрешение и перо ушла");
+  /* M814: на теле свет — копия ключа поверх каждой заливки, блик по материалу под маской тела, контактная тень, стекло шкалы */
+  for(const r of cards){const sv=r.querySelector("svg.hdial-svg"),id=sv.dataset.kind,hl=sv.querySelector("g.hl[data-hl]");
+    ok(sv.querySelectorAll("[fill$='k)']").length>0,id+": ключ лежит на теле");
+    ok(!!hl&&(hl.dataset.hl==="matte"?sv.querySelectorAll("circle").length>=12:hl.children.length>0),id+": блик «"+(hl?hl.dataset.hl:"—")+"» есть");
+    ok(!!sv.querySelector("ellipse[fill$='s)']"),id+": контактная тень");
+    ok(id==="chrono"||!!sv.querySelector(".glass"),id+": блик стекла шкалы");}
   ok([...$body.querySelectorAll(".sec")].every(s=>s.textContent.indexOf("·")<0||!/ГНЁЗД|ПРИЛАВОК/.test(s.textContent)),"заголовки без пояснений");
   const h=cards[0]&&cards[0].getBoundingClientRect().height;ok(h>0&&h<480,"карточка не растянута ("+(h|0)+" px)");
   $body.innerHTML=html;HALL.open=wo;st.className=was;

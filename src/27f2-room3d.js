@@ -552,9 +552,17 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let rs=fu.res.xy;let px=1./rs;let k=fu.res.x/max(fu.res.z,1.);
   /* хроматика растёт от оптического центра: по умолчанию середина холста; v[12] (w>0) — свой центр и сила:
      зал (M814) ставит центр в цель объектива — вещь в фокусе без каймы, у края кадра ≤ пары пикселей */
+  /* v[13] (w>0): холст — левая доля x кадра (зал под плитой): uv кадра — vu, его сторона — ar */
+  let fw=fu.v[13].w>0.;let ax=select(1.,fu.v[13].x,fw);let vu=vec2f(uv.x*ax,uv.y);let ar=select(fu.res.w/fu.res.z,fu.v[13].y,fw);
   let oc=select(vec2f(.5),fu.v[12].xy,fu.v[12].w>0.);let cs=select(.006,fu.v[12].z,fu.v[12].w>0.);
-  let ca=(uv-oc)*length(uv-oc)*cs;
+  let c0=(vu-oc)*length(vu-oc)*cs;let ca=vec2f(c0.x/ax,c0.y);
   var c=vec3f(textureSampleLevel(t0,smp,uv+ca,0.).r,textureSampleLevel(t0,smp,uv,0.).g,textureSampleLevel(t0,smp,uv-ca,0.).b);
+  /* резкость (v[13].z > 0 — зал, M814): четыре соседа, нерезкая маска зажата в их же размах — ступень силуэта и деления
+     круче, ореола нет; кантина и портреты без неё */
+  if(fu.v[13].z>0.){let g0=textureSampleLevel(t0,smp,uv+vec2f(px.x,0.),0.).rgb;let g1=textureSampleLevel(t0,smp,uv-vec2f(px.x,0.),0.).rgb;
+    let g2=textureSampleLevel(t0,smp,uv+vec2f(0.,px.y),0.).rgb;let g3=textureSampleLevel(t0,smp,uv-vec2f(0.,px.y),0.).rgb;
+    let mn=min(min(min(g0,g1),min(g2,g3)),c);let mx=max(max(max(g0,g1),max(g2,g3)),c);
+    c=clamp(c+(c-(g0+g1+g2+g3)*.25)*fu.v[13].z,mn,mx);}
   /* дым в лучах: половинный слой палаткой из четырёх — шум шагов уходит, тени людей в луче остаются */
   let vq=.75/vec2f(textureDimensions(t2));
   c+=(textureSampleLevel(t2,smp,uv+vq*vec2f(-1.,-1.),0.).rgb+textureSampleLevel(t2,smp,uv+vq*vec2f(1.,-1.),0.).rgb
@@ -571,7 +579,7 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   for(var i=0;i<6;i++){let L=fu.v[i];if(L.w<=0.){continue;}let d=(p-L.xy)/max(L.z,1.);
     c+=fu.v[6].rgb*L.w*(.55/(1.+dot(d,d)*9.)+.18/(1.+dot(d,d)));}
   c=pow(acesP(c*fu.v[6].w),vec3f(1./2.2));
-  let vd=length((uv-.5)*vec2f(1.,fu.res.w/fu.res.z)*1.6);
+  let vd=length((vu-.5)*vec2f(1.,ar)*1.6);
   c*=1.-.42*smoothstep(.45,1.15,vd);
   let gp=floor(p*k);let t=fu.v[10].w;
   let gr=fract(sin(dot(gp+vec2f(fract(t*.37)*91.,fract(t*.53)*57.),vec2f(127.1,311.7)))*43758.5453)-.5;
