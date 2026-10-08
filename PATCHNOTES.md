@@ -6,7 +6,28 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
-## Unreleased (planet-main)
+## 0.493.0 - the remake on the engine: the hall, the orbs, the cave; the duel probe
+
+Everything the three builders and the designer put on `planet-main` since 0.492.1 (147 commits,
+M800–M830 stage work, M627b–M634 planet work), pushed as one release on the author's word
+(09.10: «собери все от всех агентов, заливай в мейн»). Not every item below has passed the
+AAA judgement yet; the open gaps stay in `PLAN.md` and `docs/DESIGN-remake.md`.
+
+- **M901/M902 — the duel measured, three combat bugs.** `tests/91zzzw-fightsim.js` («проба ·
+  дуэль», probe tier) fights the real helm, guns and pirate roles under Node: four builds, four
+  sets, three dangers, six player scripts, one markdown table. It found (a) the pirate speed cap
+  `ROLE_LIM` never held — the nose-blend block rewrote the clamped velocity with the old
+  magnitude, so a fleeing jackal reached 21 px/frame against a cap of 5.2 and left for ever;
+  (b) the flee jump lived inside the role tick, which runs only while the pirate sees you — he
+  left sight before the clock and never jumped (`roleJumpDue` now fires from `13-pirates`
+  whether he sees you or not; a jackal alone flees under a third, not a quarter); (c) the
+  captain's jammer removed the lock entirely within 600 px, so nobody aiming by mark could
+  shoot him at all — now the mark holds and the aim slips (no lead, ±7° wander, «ПОМЕХА ·
+  НАВОДКА ПЛЫВЁТ»). The captain also turns at .022 instead of .05. Measured after the fix: a
+  stock «Стриж» makes a jackal flee in 9–17 s, two jackals cost 22–69 % hull depending on how
+  you fly, a veteran kills a standing ship and loses to a flanking one; the captain still kills
+  every build that stays — the open item of M902. `docs/DESIGN-game.md` is the game-logic draft
+  behind this (the shift, the bill, the dispatcher, loss, the three rails, combat targets).
 
 - **M634 — one water everywhere.** Lakes, ponds, the ocean and the cave lake are one water: ripple along the wind, calm patches, a swell far off on the sea, Fresnel, shallows, a wet edge with a bright thread, murk. Ocean worlds now have a sea to the horizon with islands rising from it and a sun path when the sun stands ahead. By night the water keeps its wind patches and its reflections instead of going flat under the mist.
 
