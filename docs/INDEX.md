@@ -6,13 +6,13 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 520 · top-level symbols: 7762
+Files: 522 · top-level symbols: 7783
 
 ## SYMBOLS
 
 $actBtn                      src/27z-telemetry.js:68
 $bThr                        src/27z-telemetry.js:77
-$bg                          src/12l-barge.js:670
+$bg                          src/12l-barge.js:672
 $cv                          src/27b-ui-crew.js:6
 $dl                          src/27n-ui-deal.js:18
 $en                          src/27z-telemetry.js:9
@@ -89,13 +89,13 @@ AVR_KINDS                    src/21a6-base-avral.js:24-28
 AVR_NEAR                     src/21a6-base-avral.js:22
 AVR_TIME                     src/21a6-base-avral.js:20
 BANYA_EVERY                  src/21ac1-base-banya.js:19
-BARGE_ART                    src/12l-barge.js:414
+BARGE_ART                    src/12l-barge.js:415
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
 BARGE_ESCORT_T               src/12l-barge.js:309
 BARGE_NAMES                  src/12af-barge.js:20
 BARGE_PERIOD                 src/12l-barge.js:12
-BARGE_SS                     src/12l-barge.js:413
+BARGE_SS                     src/12l-barge.js:414
 BARGE_TEMPER                 src/12l-barge.js:17-21
 BARGE_TKEYS                  src/12l-barge.js:22
 BARTER                       src/04-mods.js:70-76
@@ -164,7 +164,10 @@ BMGR_SAY_ASK                 src/21b2-base-mgr.js:72-77
 BMGR_SAY_FLAT                src/21b2-base-mgr.js:66-71
 BMGR_SEV                     src/21b2-base-mgr.js:33
 BM_WARM                      src/21aa-base-rooms.js:20
+BODY                         src/17c2e-body-kit.js:7
+BODY_BARGE_KEEP              src/17c2f-body-barge.js:8
 BODY_CAM                     src/17-mode-system.js:79
+BODY_FCLS                    src/17c2e-body-kit.js:67
 BODY_LABELS                  src/17-mode-system.js:25
 BOOKS                        src/12ub-books.js:23-120
 BOOKS_BY                     src/12ub-books.js:121
@@ -1832,7 +1835,7 @@ SHOT_CLEAN                   src/28-loop.js:370
 SHOVE_V                      src/13a-guns.js:36
 SHUT_LINES                   src/11ah-offer.js:302-307
 SHUT_N                       src/17f-sys-traffic.js:70
-SHUT_SW                      src/17f-sys-traffic.js:119
+SHUT_SW                      src/17f-sys-traffic.js:121
 SH_DX                        src/03b-hull-paint.js:175
 SIG                          src/22c-cave-gpu.js:37
 SIGN_HOLD                    src/21-mode-surface.js:199
@@ -2270,15 +2273,15 @@ banyaRested                  src/21ac1-base-banya.js:64
 banyaSpirit                  src/21ac1-base-banya.js:47
 banyaStep                    src/21ac1-base-banya.js:49-62
 banyaWarm                    src/21ac1-base-banya.js:42-46
-bargeArtOf                   src/12l-barge.js:415-558
+bargeArtOf                   src/12l-barge.js:416-559
 bargeAttackers               src/12l-barge.js:167-169
 bargeAutoLoad                src/12ag-holdfx.js:35-55
 bargeBuyPrice                src/12l-barge.js:102-104
 bargeCrewRow                 src/12af-barge.js:148-169
-bargeCur                     src/12l-barge.js:671
+bargeCur                     src/12l-barge.js:673
 bargeDealList                src/12af-barge.js:133-146
 bargeDestPrice               src/12l-barge.js:82-91
-bargeElRow                   src/12l-barge.js:697-706
+bargeElRow                   src/12l-barge.js:699-708
 bargeEscortAccept            src/12l-barge.js:312-327
 bargeEscortAdvance           src/12l-barge.js:310
 bargeEscortEnd               src/12l-barge.js:328-342
@@ -2287,7 +2290,7 @@ bargeHullOk                  src/12af-barge.js:21-24
 bargeInteract                src/12l-barge.js:278-299
 bargeLegs                    src/12l-barge.js:43-67
 bargeLine                    src/12af-barge.js:127-131
-bargeLiveGpu                 src/12l-barge.js:570-580
+bargeLiveGpu                 src/12l-barge.js:571-581
 bargeLoad                    src/12af-barge.js:96-109
 bargeMarkup                  src/12l-barge.js:95-98
 bargeMineHit                 src/12l-barge.js:205-215
@@ -2298,7 +2301,7 @@ bargePaxDeliver              src/12l-barge.js:266-276
 bargePilot                   src/12af-barge.js:31
 bargePilotQ                  src/12af-barge.js:30
 bargePilotTag                src/12af-barge.js:32
-bargeRepNudge                src/12l-barge.js:693-696
+bargeRepNudge                src/12l-barge.js:695-698
 bargeRescued                 src/12l-barge.js:219-237
 bargeSellPrice               src/12l-barge.js:99-101
 bargeStart                   src/12af-barge.js:44-54
@@ -2578,7 +2581,22 @@ bmgrSilent                   src/21b2-base-mgr.js:184-187
 bmgrStep                     src/21b2-base-mgr.js:140-178
 bmgrWorkMul                  src/21b2-base-mgr.js:129-132
 boardLanes                   src/26-ui-station.js:442-468
+bodyBar                      src/17c2e-body-kit.js:15-22
+bodyBarge                    src/17c2f-body-barge.js:92-98
+bodyBargeFrames              src/17c2f-body-barge.js:9
+bodyBargeParts               src/17c2f-body-barge.js:11-56
+bodyBargeWreck               src/17c2f-body-barge.js:100-105
+bodyDot                      src/17c2e-body-kit.js:49-53
+bodyFleet                    src/17c2e-body-kit.js:77-85
+bodyFleetHull                src/17c2e-body-kit.js:69-75
+bodyGpu                      src/17c2e-body-kit.js:25
 bodyInSystem                 src/16-flight.js:103-112
+bodyLights                   src/17c2e-body-kit.js:39-47
+bodyMesh                     src/17c2e-body-kit.js:55-62
+bodyRun                      src/17c2e-body-kit.js:32-37
+bodyShuttle                  src/17c2e-body-kit.js:104-110
+bodyShuttleMesh              src/17c2e-body-kit.js:88-102
+bodyT0                       src/17c2e-body-kit.js:27-30
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
 bookFind                     src/12ub-books.js:129-147
@@ -2931,7 +2949,7 @@ clockPush                    src/11d-clocks.js:69-75
 clockSeg                     src/11d-clocks.js:79-83
 clockSet                     src/01-core.js:92
 clockWhy                     src/11d-clocks.js:94-100
-closeBarge                   src/12l-barge.js:682-689
+closeBarge                   src/12l-barge.js:684-691
 closeDeal                    src/27n-ui-deal.js:204
 closeStation                 src/26-ui-station.js:229-254
 cloudBoot                    src/14a-cloud.js:172-183
@@ -3355,9 +3373,9 @@ drawAccountShelf             src/12w-survey.js:93-109
 drawAllies                   src/12a-crew.js:678-698
 drawAnomaly                  src/20aa-poi-shapes.js:164-187
 drawAstronaut                src/20-life.js:4-147
-drawBarge                    src/12l-barge.js:581-610
-drawBarges                   src/12l-barge.js:611-646
-drawBargesMap                src/12l-barge.js:648-667
+drawBarge                    src/12l-barge.js:582-611
+drawBarges                   src/12l-barge.js:612-648
+drawBargesMap                src/12l-barge.js:650-669
 drawBase                     src/21ac-base-draw.js:372-689
 drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
@@ -3382,7 +3400,7 @@ drawCaveWorld                src/22-mode-cave.js:647-723
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
 drawCockpit                  src/25-cockpit.js:405-680
-drawCombat                   src/13-pirates.js:366-468
+drawCombat                   src/13-pirates.js:366-471
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:114-140
@@ -3405,7 +3423,7 @@ drawFindsSystem              src/17b-finds.js:240-288
 drawFlame                    src/03b-hull-paint.js:10-56
 drawFleet                    src/12ai-fleet.js:135-155
 drawFleetMap                 src/12ai-fleet.js:325-358
-drawFleetShip                src/12ai1-fleet-art.js:448
+drawFleetShip                src/12ai1-fleet-art.js:450
 drawFoeBody                  src/24ab-raid-foe.js:11-131
 drawForeground               src/21b-surface-deco.js:276-289
 drawGalaxy                   src/17z1-galaxy.js:64-67
@@ -3474,7 +3492,7 @@ drawScars                    src/03e-hull-draw.js:5-42
 drawScoop                    src/19a-mode-scoop.js:185-241
 drawSeal                     src/03e-hull-draw.js:47-58
 drawSeams                    src/12s-wear.js:184-199
-drawShuttleArc               src/17f-sys-traffic.js:71-111
+drawShuttleArc               src/17f-sys-traffic.js:71-113
 drawSkyBase                  src/19c-light.js:318
 drawSkyLayer                 src/19-mode-landing.js:175-178
 drawSpa                      src/29i-spa-draw.js:62-80
@@ -3517,7 +3535,7 @@ drawWinter                   src/29g-winter-draw.js:365-386
 drawWorld                    src/28-loop.js:401-404
 drawWorldIn                  src/28-loop.js:405-428
 drawWreck                    src/20aa-poi-shapes.js:8-47
-drawWrecksSystem             src/12l-barge.js:379-405
+drawWrecksSystem             src/12l-barge.js:379-406
 drawYardMark                 src/03e-hull-draw.js:73-116
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
@@ -3761,7 +3779,7 @@ fleetPos                     src/12ai-fleet.js:89-98
 fleetPromptRect              src/12ai-fleet.js:112-115
 fleetRung                    src/12ai-fleet.js:48
 fleetScale                   src/12ai-fleet.js:105
-fleetShipAt                  src/12ai1-fleet-art.js:417-446
+fleetShipAt                  src/12ai1-fleet-art.js:417-448
 fleetShipGpu                 src/12ai1-fleet-art.js:411-415
 fleetUniqueName              src/04b-fleet.js:100-105
 flightCam                    src/16a-space.js:281-314
@@ -4053,7 +4071,7 @@ gpuBakeLive                  src/08ca-gpu-canvas.js:547
 gpuBakeRedo                  src/08ca-gpu-canvas.js:561
 gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
-gpuBargeBody                 src/12l-barge.js:560-567
+gpuBargeBody                 src/12l-barge.js:561-568
 gpuBind                      src/08c-gpu-kit.js:40-46
 gpuBloom                     src/08b-gpu.js:666-671
 gpuBooms                     src/13z-gpu-combat.js:149-167
@@ -4248,6 +4266,8 @@ gunSpecs                     src/05c-arms.js:207-218
 gunTotals                    src/05c-arms.js:336-350
 gunsInGroup                  src/05c-arms.js:230-233
 h01                          src/01-core.js:28
+h3dBargeMesh                 src/17c2f-body-barge.js:58-66
+h3dBargeWreck                src/17c2f-body-barge.js:68-90
 h3dCls                       src/17c2a-hull3d.js:334-344
 h3dDesc                      src/17c2a-hull3d.js:316-324
 h3dDev                       src/17c2a-hull3d.js:326-332
@@ -5422,7 +5442,7 @@ ok                           tests/90-harness.js:188-192
 oldMasterCan                 src/05b1-warranty.js:130
 oldMasterHere                src/05b1-warranty.js:123-129
 oldMasterSeam                src/05b1-warranty.js:131-136
-openBarge                    src/12l-barge.js:672-681
+openBarge                    src/12l-barge.js:674-683
 openCrewView                 src/27b-ui-crew.js:230-236
 openDeal                     src/27n-ui-deal.js:198-203
 openHq                       src/27c-ui-hq.js:582-587
@@ -6537,7 +6557,7 @@ relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
 renderAlbum                  src/25g-postcard.js:679-703
-renderBarge                  src/12l-barge.js:707-798
+renderBarge                  src/12l-barge.js:709-800
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-332
 renderBooks                  src/12ub-books.js:157-186
@@ -6973,8 +6993,8 @@ shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:232
 shipZoneR                    src/19f-lander.js:14
 shuttleAt                    src/17f-sys-traffic.js:45-64
-shuttleBody                  src/17f-sys-traffic.js:112-116
-shuttleSprite                src/17f-sys-traffic.js:120-125
+shuttleBody                  src/17f-sys-traffic.js:114-118
+shuttleSprite                src/17f-sys-traffic.js:122-127
 sirenHeard                   src/16c-abil.js:47-64
 sixthGone                    src/12k-stories-d.js:77
 sizeIdx                      src/05d-mounts.js:69
@@ -7298,6 +7318,7 @@ sysEntry                     src/17g-sys-lane.js:20-23
 sysHasFauna                  src/12ad-site.js:114-117
 sysJitter                    src/01-core.js:191-195
 sysLane                      src/17g-sys-lane.js:32-67
+sysLightDir                  src/17c2e-body-kit.js:11
 sysMakes                     src/12ad-site.js:134-140
 sysNebComp                   src/16a-space.js:209-234
 sysNebulaTex                 src/16a-space.js:53-101
@@ -8299,8 +8320,8 @@ zoomTo                       src/15-input.js:358
   · торговые баржи:1
   · контракт охраны:301
   · остовы погибших барж:348
-  · корпус баржи:407
-  · торг с баржой:669
+  · корпус баржи:408
+  · торг с баржой:671
 
 ## src/12m-rare.js · 13 KB
   · редкости: сто адресов, а не рулетка:1
@@ -8548,6 +8569,10 @@ zoomTo                       src/15-input.js:358
 ## src/17c2d-parts-thumb.js · 9 KB
   · миниатюры частей (M724):1
 
+## src/17c2e-body-kit.js · 8 KB
+
+## src/17c2f-body-barge.js · 8 KB
+
 ## src/17c3-station-live.js · 11 KB
 
 ## src/17d-house-shapes.js · 7 KB
@@ -8556,7 +8581,7 @@ zoomTo                       src/15-input.js:358
 ## src/17e-station-body.js · 9 KB
   · тело станции и планеты: что построил игрок, видно:1
 
-## src/17f-sys-traffic.js · 8 KB
+## src/17f-sys-traffic.js · 9 KB
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
 ## src/17g-gpu-system.js · 30 KB

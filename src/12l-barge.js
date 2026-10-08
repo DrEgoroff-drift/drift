@@ -382,6 +382,7 @@ function drawWrecksSystem(zx,zy,Z){
     const x=zx(w.x),y=zy(w.y);
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
     /* тёмный переломленный корпус: тело, обвод, тусклый аварийный маяк */
+    if(!(BODY.on&&bodyBargeWreck(w,x,y,shipScaleAt(Z)*.8))){   /* тело остова (M820, 17c2f) */
     ctx.save();ctx.translate(x,y);
     const s=clamp(Z,.5,1.4);ctx.scale(s,s);ctx.rotate((w.seed%628)/100);
     ctx.fillStyle="rgba(24,26,32,.96)";ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.8;
@@ -393,7 +394,7 @@ function drawWrecksSystem(zx,zy,Z){
     /* отломанная секция рядом */
     ctx.fillStyle="rgba(20,22,28,.95)";
     ctx.beginPath();ctx.moveTo(40,4);ctx.lineTo(52,-2);ctx.lineTo(50,8);ctx.closePath();ctx.fill();
-    ctx.restore();
+    ctx.restore();}
     if(!w.seen){
       const bl=Math.pow(Math.max(0,Math.sin(G.t*.05+w.seed)),8);
       if(bl>.02){ctx.fillStyle="rgba(255,110,90,"+(.9*bl).toFixed(2)+")";
@@ -614,10 +615,11 @@ function drawBarges(zx,zy,Z){
     const x=zx(b.x),y=zy(b.y);
     if(x>-80&&x<W+80&&y>-80&&y<H+80){
       const s=shipScaleAt(Z)*.8;   /* один потолок с кораблём (16c, п. 2) */
-      const lit=gpuBargeBody(b,x,y,s);
+      /* тело (M820, 17c2f): сетка со своими огнями; без него — выпечка и живой слой, как было */
+      const bd=BODY.on&&bodyBarge(b,x,y,s),lit=bd||gpuBargeBody(b,x,y,s);
       if(pass&&lit){
         /* с видеокарты (ступень 1): огни — фигурами, полоса — прямоугольниками, имя — подписью */
-        bargeLiveGpu(pass,b,x,y,s,b.a);
+        if(!bd)bargeLiveGpu(pass,b,x,y,s,b.a);
         const hp=clamp(b.hp/b.hullMax,0,1);
         if(hp<.999)SH.push([0,x-24,y-30,x+24,y-27,0,0,255,255,255,.14],[0,x-24,y-30,x-24+48*hp,y-27,0,0,143,208,138,1]);
         ctx.textAlign="center";
