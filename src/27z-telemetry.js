@@ -443,7 +443,7 @@ function hud(){
   /* зимовка: под строкой — мягкая подложка (style.css #msg.dim) */
   $msg.classList.toggle("dim",G.mode==="winter");
   hudMsgPlace();
-  setTx($prompt,G.mode==="dock"?"":G.prompt);
+  setTx($prompt,G.mode==="dock"||mapHintHung()?"":G.prompt);   /* на карте подсказка висит табличкой у выбора (M822) */
   /* на тяге значок, на грунте и в шахте — слово. Слову, как подписям прочих пэдов, свой <span>,
      регистр предложения и кегль (.word): ПРЫЖОК капителью в 17 px был шире круга на телефоне в 320 */
   if($bThr){const w=G.mode==="surface"?"Прыжок":(G.mode==="dig"?"Вверх":"");

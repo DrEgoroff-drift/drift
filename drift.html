@@ -44058,7 +44058,7 @@ function drawWanderMap(vis,cell){
   const glyph=(sx,sy,a)=>{
     const v=vis.find(q=>q.gx===sx&&q.gy===sy);if(!v)return;
     /* перо карты (17z4): парус — треугольник с обводом, второй — две черты */
-    const ox=v.x+9,oy=v.y-10,a0=MPN.al,ln="rgba(255,230,168,.9)";
+    const ox=v.x+9,oy=v.y-10,a0=MPN.a0,ln="rgba(255,230,168,.9)";
     if(!MPN.gpu)ctx.save();mpAlpha(a0*a);
     mpTri(ox-4,oy+4,ox-1,oy-5,ox-1,oy+4,"#c9922e");
     mpPath([ox-4,oy+4,ox-1,oy-5,ox-1,oy+4],.8,ln,true);
@@ -64161,13 +64161,17 @@ function mapStarsGpu(pass,vis,gk){
    Без видеокарты (Node-ярус, Chrome без WebGPU) каждое движение пера — тот же
    вызов на ctx, что был. Прозрачность пера — mpAlpha (без видеокарты она же
    ctx.globalAlpha). Цвет — строкой, как у 2D */
-const MPN={q:[],lay:"u",gpu:false,al:1};
-function mpBegin(){MPN.gpu=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.on&&!!GPU.enc;MPN.lay="u";MPN.q.length=0;MPN.al=1;}
-function mpEnd(){mpFlush();MPN.gpu=false;MPN.al=1;}
+const MPN={q:[],lay:"u",gpu:false,al:1,a0:1,w:1};
+function mpBegin(){MPN.gpu=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.on&&!!GPU.enc;MPN.lay="u";MPN.q.length=0;MPN.al=MPN.a0=MPN.w=1;}
+function mpEnd(){mpFlush();MPN.gpu=false;MPN.al=MPN.a0=MPN.w=1;if(typeof ctx!=="undefined"&&ctx)ctx.globalAlpha=1;}
 /* слой: с "u" на "o" — сначала сброс фигур под звёздами */
 function mpLay(l){if(MPN.lay==="u"&&l!=="u")mpFlush();MPN.lay=l;}
 function mpFlush(){const q=MPN.q;if(q.length&&MPN.gpu){const p=gpuNext();if(p)gpuShapes(p,q,{blend:"over"});}q.length=0;}
-function mpAlpha(a){MPN.al=a;if(!MPN.gpu)ctx.globalAlpha=a;}
+function mpAlpha(a){MPN.a0=a;MPN.al=a*MPN.w;if(!MPN.gpu)ctx.globalAlpha=MPN.al;}
+/* вес слоя (M822): у карты три веса — «вы» (вы, выбор, курс), путь (круг прыжка, связи, свой
+   маршрут) и всё остальное. Вес множит прозрачность каждого движения пера, mpAlpha слоя — внутри
+   него: слой, который сам гасит дальнее, гасит его от своего веса */
+function mpWeight(w){MPN.w=w;mpAlpha(MPN.a0);}
 /* рисунок без видеокарты на время fn (выпечка в чужой холст: ctx подменён) */
 function mp2d(fn){const g=MPN.gpu,a=MPN.al;MPN.gpu=false;MPN.al=1;try{return fn();}finally{MPN.gpu=g;MPN.al=a;}}
 function mpU(){return MPN.gpu&&MPN.lay==="u";}
@@ -64307,6 +64311,15 @@ function mpRhumb(ox,oy){
     mpLine(ox,oy,ox+Math.cos(a)*L,oy+Math.sin(a)*L,(i%4===0)?1:.7,"rgba(150,182,212,"+((i%4===0)?.075:.04)+")");}
   mpCircle(ox,oy,Math.min(W,H)*.42,1,"rgba(150,182,212,.05)");
 }
+/* плашка материалом «Борта» (M720, 08bj): графит, кайма, срезы справа сверху и слева снизу. Над
+   звёздами (слой "o") — тем же шестиугольником, что табличка у вещи; без видеокарты — прямоугольником */
+function mpPlate(x,y,w,h){
+  const U=(typeof mapU==="function")?mapU():1;
+  if(!MPN.gpu||MPN.lay==="u"){mpRect(x,y,w,h,HANG.BODY);return;}
+  const nd=ovNd(),sn=v=>Math.round(v*nd)/nd,x0=sn(x),y0=sn(y),x1=sn(x+w),y1=sn(y+h),c=sn(5*U),e=1*U;
+  hangHex(sn(x0-e),sn(y0-e),sn(x1+e),sn(y1+e),sn(c+e*.42),HANG.EDGE,.17*MPN.al);
+  hangHex(x0,y0,x1,y1,c,HANG.BODY,.94*MPN.al);
+}
 /* подпись: шрифт, выравнивание и линия — нынешние ctx (mapFont, textAlign, textBaseline) */
 function mpText(t,x,y,col){
   if(!MPN.gpu){ctx.fillStyle=col;ctx.fillText(t,x,y);return;}
@@ -64365,6 +64378,7 @@ function mapFont(px){ctx.font=Math.max(8,px*mapU()).toFixed(1)+"px ui-monospace,
    выпуклые четырёхугольники в пикселях листа: наклонная подпись — своим наклоном. */
 const MAP_INK=[],MAP_LATE=[];
 const MAP_DOM=["#mapaddr","#ipod",".rail","#console","#prompt",".vitals",".locus",".pads"];   /* DOM поверх листа */
+const MAP_DOMR=[];   /* их рамки этого кадра — для таблички у выбора (M822) */
 function mapInkPoly(P){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of P){if(p[0]<x0)x0=p[0];if(p[0]>x1)x1=p[0];if(p[1]<y0)y0=p[1];if(p[1]>y1)y1=p[1];}
   MAP_INK.push({P,x0,y0,x1,y1});}
 function mapInkBox(x,y,w,h){mapInkPoly([[x,y],[x+w,y],[x+w,y+h],[x,y+h]]);}
@@ -64384,10 +64398,12 @@ function mapHit(P,Q,pad){
     if(p1+pad<=q0||q1+pad<=p0)return false;}
   return true;}
 function mapLateFlush(){
-  for(const sel of MAP_DOM){const e=document.querySelector(sel);if(!e)continue;const r=e.getBoundingClientRect();if(r.width>0&&r.height>0)mapInkBox(r.left,r.top,r.width,r.height);}
+  MAP_DOMR.length=0;
+  for(const sel of MAP_DOM){const e=document.querySelector(sel);if(!e)continue;const r=e.getBoundingClientRect();if(r.width>0&&r.height>0){mapInkBox(r.left,r.top,r.width,r.height);MAP_DOMR.push({sel,r});}}
   for(const b of MAP_BOX)mapInkBox(b.x,b.y,b.w,b.h);
   MAP_LATE.sort((a,b)=>b.prio-a.prio||a.n-b.n);
   ctx.save();
+  mpWeight(1);   /* q.alpha уже взвешена своим слоем */
   for(const q of MAP_LATE){
     ctx.font=q.font;ctx.textAlign=q.align;ctx.textBaseline=q.base;
     const m=ctx.measureText(q.s),pl=q.plate;
@@ -64547,6 +64563,7 @@ function drawMapIn(){
   const jr=(st.jump+.02)*cell;
   MAPGPU.lamp={x:px,y:py,r:jr};   /* круг прыжка светит в самом небе (17z3) */
   drawGalaxy(V,cell);
+  mpWeight(MAP_W.rest);
   mpRhumb(px,py);
   mpFlush();   /* дальше рисуют и сами (звёзды галактики, железная дорога) — пеленги под ними */
   if(mapOverOn()){   /* обзор: весь диск, лист погашен (M450) */
@@ -64559,6 +64576,7 @@ function drawMapIn(){
   if(typeof drawGiantsMap==="function")drawGiantsMap(V,cell);   /* великаны — ориентиры (M464) */
   /* круг прыжка: не окружность-волосок, а освещённая область — сразу видно,
      докуда рука дотягивается. Свет — в поле неба (MAPGPU.lamp), здесь — кромка */
+  mpWeight(MAP_W.route);
   mpCircle(px,py,jr,1,"rgba(127,230,216,.22)");
   /* круг поиска по слуху: где смотреть, а не что нашли */
   const srch=G.mapSearch||(G.course&&G.course.rad?G.course:null);
@@ -64570,6 +64588,7 @@ function drawMapIn(){
     mapLate("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),[[sxp,syp-sr-6],[sxp,syp+sr+14],[sxp,syp+4]],5);
   }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
+  mpWeight(MAP_W.rest);
   /* адреса (M347): сетка клеток под законом тьмы и кольца прыжков — под звёздами */
   if(typeof mapGridDraw==="function"&&!G.mapClean){mapGridDraw(V,cell,R,st);mapRingsDraw(px,py,cell,st);}
   const vis=[];
@@ -64586,6 +64605,7 @@ function drawMapIn(){
   /* связи только между достижимыми: паутина «каждый к двум соседям» тянулась
      через весь экран и складывалась в решётку, которой в мире нет */
   const drawnLane=new Set();
+  mpWeight(MAP_W.route);
   for(const a of vis){
     if(!a.near)continue;
     for(const b of vis){
@@ -64596,6 +64616,7 @@ function drawMapIn(){
       mpLine(a.x,a.y,b.x,b.y,1,"rgba(127,230,216,.13)");
     }
   }
+  mpWeight(MAP_W.rest);
   /* засечки «Долгого Хода» (12q-lore) — поверх линий, но под звёздами: адрес,
      до которого сегодня не дотянуться, обязан читаться и за краем листа */
   if(typeof drawLoreMarks==="function")drawLoreMarks(cell);
@@ -64610,12 +64631,15 @@ function drawMapIn(){
   if(typeof mapHoldingsDraw==="function"&&!G.mapClean)mapHoldingsDraw(vis,cell,V,st);
   /* области слухов и спички на клетках (M347) — над сеткой, под звёздами; слухи — своим слоем */
   if(typeof mapRumoursDraw==="function"&&!G.mapClean){if(typeof mapLayerOn!=="function"||mapLayerOn("rumours"))mapRumoursDraw(V,cell);mapMarksDraw(V,cell);}
-  let sel=null,cur=null;
+  let sel=null,cur=null,youR=null;   /* youR — плашка «ВЫ · …»: курс под неё не заходит */
   /* значок системы уступает галактике на отъезде (D11, телефон 18.09): на ×5
      клетка 9 px, а знак — ядро, лучи, кольцо станции — оставался размером
      с ×1, и тысяча знаков топила спираль в серой каше. Знак ужимается с
      клеткой (до .35) и бледнеет; кольца станции и пояса ниже 16 px не нужны */
   const gk=clamp(cell/45,.35,1);
+  /* метка «ВЫ» встаёт по ту сторону вашей звезды, что дальше от выбора (M822): курс и поводок таблички
+     у выбора уходят от вас к нему и через метку не идут */
+  const selV=vis.find(q=>q.gx===G.sel.x&&q.gy===G.sel.y);
   for(const v of vis){
     /* глубина тьмой: дальний сектор тусклее, недостижимый — вполовину */
     v.fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
@@ -64633,10 +64657,13 @@ function drawMapIn(){
   for(const v of vis){
     const{gx,gy,s,x,y,fade,rr}=v;
     const here=gx===G.sx&&gy===G.sy;
+    /* метки своей и выбранной системы — весом «вы», фронт (блокада и выше) — весом пути, прочие — фоном */
+    mpWeight(here||(gx===G.sel.x&&gy===G.sel.y)?MAP_W.you:occLvl(gx,gy)>=2?MAP_W.route:MAP_W.rest);
     /* строки при системе — стопкой: над ней «ВЫ» с носиком, ренегат, след артефакта; под ней фронт,
        слух, расхождение. Каждая — в свою строку, а не в общую точку («СЛЕД АРТЕФАКТА» ложился
        на «ВЫ · ОТРАДНОЕ», зрение 06.10.2026). tagUp/tagDn — основание следующей строки */
-    let tagUp=here?y-rr-28-9*mapU()-4:y-rr-21,tagDn=y+rr+13;
+    const youDn=here&&!!selV&&selV!==v&&selV.y<y-4;
+    let tagUp=here&&!youDn?y-rr-28-9*mapU()-4:y-rr-21,tagDn=youDn?y+rr+30+8*mapU():y+rr+13;
     /* строка в стопку: над системой — пока не уходит под линейку X, иначе под неё, зеркально: так же
        далеко от звезды, как стояла над ней, — снаружи своего кольца. Вбок сдвигается с линейки Y и
        с борта. Строки стопки — по центру (textAlign center); цвет — нынешний ctx.fillStyle, пером */
@@ -64688,16 +64715,18 @@ function drawMapIn(){
        кольца в пиксель друг от друга читались одним, и на карте не было «где я» */
     if(here){
       mpCircle(x,y,rr+14,1.4,"rgba(127,230,216,"+(.6+.3*Math.sin(G.t*.06)).toFixed(2)+")");
-      mpTri(x,y-rr-24,x-4,y-rr-17,x+4,y-rr-17,"#7fe6d8");
-      mapFont(8);ctx.textAlign="center";
-      /* своя подложка, как у подписи курса: дом стоит в светлом ядре галактики (поле
-         карты, G10), и голый бирюзовый на нём читался с контрастом 2.6–2.8 (детектор
-         текста, флот 26.09). Плашка кончается у носика стрелки — метка и указатель одно */
-      const youS="ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),
-            youU=mapU(),youW=ctx.measureText(youS).width;
-      mpRect(x-youW/2-4*youU,y-rr-28-9*youU,youW+8*youU,13*youU,"rgba(6,10,16,.66)");
-      mapInkBox(x-youW/2-4*youU,y-rr-28-9*youU,youW+8*youU,13*youU);
-      mpText(youS,x,y-rr-28,"#7fe6d8");
+      if(youDn)mpTri(x,y+rr+24,x-4,y+rr+17,x+4,y+rr+17,"#7fe6d8");
+      else mpTri(x,y-rr-24,x-4,y-rr-17,x+4,y-rr-17,"#7fe6d8");
+      mapFace(10,true);ctx.textAlign="center";
+      /* своя плашка материалом «Борта» (M822): дом стоит в светлом ядре галактики (поле карты, G10),
+         голый бирюзовый на нём не читался. Плашка кончается у носика стрелки — метка и указатель одно */
+      const youS=W<=760?"ВЫ":"ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),   /* телефон: имя — в шапке, у звезды табличке выбора нужно место */
+            youU=mapU(),youW=mapTW(youS);
+      const by=youDn?y+rr+24+10*youU:y-rr-28;   /* основание строки: над звездой или под ней */
+      mpPlate(x-youW/2-6*youU,by-10*youU,youW+12*youU,14*youU);
+      mapInkBox(x-youW/2-6*youU,by-10*youU,youW+12*youU,14*youU);
+      youR={x0:x-youW/2-8*youU,y0:by-12*youU,x1:x+youW/2+8*youU,y1:by+6*youU};
+      mpText(youS,x,by,"#7fe6d8");
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
        которые поставил не мир, а сам игрок. Без них до них не долететь. */
@@ -64740,6 +64769,7 @@ function drawMapIn(){
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
     if(here)cur=v;
   }
+  mpWeight(MAP_W.you);
   /* вы за краем листа (M299): стрелка у кромки говорит, откуда лететь, пока
      окно уехало к слуху или протянуто пальцем; курс считается от вас всегда */
   if(!cur){
@@ -64752,16 +64782,24 @@ function drawMapIn(){
     mpText("ВЫ",ex-ca*16,ey-sa*16+3,"#7fe6d8");mapInkText("ВЫ",ex-ca*16,ey-sa*16+3);
   }
   /* имя трассы, бирки перемен и ценники (M348) — над звёздами */
+  mpWeight(MAP_W.rest);
   if(typeof mapHoldingsTop==="function"&&!G.mapClean)mapHoldingsTop(vis,cell,V,st);
   /* маршрут домена — под курсом игрока: мир под намерением, а не наоборот */
   drawFactRoute(vis);
   /* свой маршрут — поверх маршрута домена: это намерение игрока, и оно главнее */
+  mpWeight(MAP_W.route);
   if(typeof drawRouteMap==="function")drawRouteMap(vis);
+  mpWeight(MAP_W.rest);
   if(typeof drawBargesMap==="function")drawBargesMap(vis);
   /* сколько машин работает на тебя в этой системе (M237) */
   if(typeof drawDronesMap==="function")drawDronesMap(vis);
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
   const {cost,bad}=mapJump();   /* один расклад на кадр и на шаг мира (updateMap) */
+  mpWeight(MAP_W.you);
+  /* табличка у выбранной системы этого кадра (M822): строки о ней — у неё, подвал их не повторяет */
+  const hung=!!sel&&!G.mapClean&&!mapOverOn()&&hangIn();
+  /* встала ли она (прошлый кадр): не встала — строки о выборе остаются в подвале и на курсе */
+  const shown=hung&&mapHintHung();
   /* ── подвал карты: сначала расклад, потом рисование ──
      Слева — про прыжок (цена, расстояние, маршрут), справа — итоги (тела,
      виды, деньги, фронт). На широком экране это две колонки в одну строку;
@@ -64776,29 +64814,29 @@ function drawMapIn(){
     /* выбрана станция следующего плеча — прыжок так и называется (M289, R2) */
     const NX=(typeof routeNext==="function"&&routeOf().legs.length>=2)?routeNext():null;
     const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
-    L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
+    if(!shown)L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
       (dsel>st.jump+.02?"ВНЕ РАДИУСА · примерно "+Math.ceil(dsel/Math.max(.5,st.jump))+" "+pl3(Math.ceil(dsel/Math.max(.5,st.jump)),"прыжок","прыжка","прыжков"):
-       (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
+       (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":"")),1]);
     /* карточка стала строкой (M298): первый вопрос — «что это и дотянусь ли» — отвечается тут;
        описание — вторым тапом по той же звезде. На телефоне 31.7% экрана было интерфейсом */
     const ss=sel?sel.s:null;
-    L.push(["rgba(127,230,216,.55)",
+    if(!shown)L.push([HANG.INK2,
       (ss?((typeof nameOf==="function")?nameOf(ss):ss.name).toUpperCase()+" · "+ss.cls.ru+" · "+ss.planets.length+" "+pl3(ss.planets.length,"планета","планеты","планет")+
           (ss.station?" · станция":"")+(ss.belt?" · пояс":"")+((typeof galPlaceName==="function")?" · "+galPlaceName(G.sel.x,G.sel.y):"")+" · ":"СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   ")+
       dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"+
-      ((typeof rungFootTxt==="function")?rungFootTxt(G.sel.x,G.sel.y):"")]);   /* пятилетка римской цифрой (M292) */
+      ((typeof rungFootTxt==="function")?rungFootTxt(G.sel.x,G.sel.y):""),1]);   /* пятилетка римской цифрой (M292); 1 — строка о выборе, запасная к табличке */
     if(typeof routeOf==="function"&&routeOf().legs.length>=1)
-      L.push(["rgba(127,230,216,.75)",routeLine()]);
+      L.push([HANG.INK,routeLine()]);
     /* счёт открытий — второй ряд, но читаемый: на телефоне строка ложится ниже
        плашки и серое .85 давало контраст 2.3 (M443, детектор текста) */
-    Rr.push(["rgba(128,152,168,.9)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
+    Rr.push([HANG.INK2,"ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
       Math.round(G.credits).toLocaleString("ru")+" кр"]);
     const occN=G.occ?Object.keys(G.occ).length:0;
     if(occN||(G.freed|0))
       Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
     /* влезут ли рядом: меряем самые длинные из обеих колонок */
-    mapFont(10);
+    mapFace(11);
     /* строка длиннее борта делится по « · » (M300): на телефоне описание
        системы уходило под кнопки КАРТА и МЕНЮ и обрывалось на «10.82 из 3.0» */
     const avail=RX-32;
@@ -64807,9 +64845,9 @@ function drawMapIn(){
       const segs=L[i][1].split(" · "),rows=[];let cur0="";
       for(const sg of segs){const t=cur0?cur0+" · "+sg:sg;if(cur0&&ctx.measureText(t).width>avail){rows.push(cur0);cur0=sg;}else cur0=t;}
       if(cur0)rows.push(cur0);
-      L.splice(i,1,...rows.map(t=>[L[i][0],t]));i+=rows.length-1;
+      L.splice(i,1,...rows.map(t=>[L[i][0],t,L[i][2]]));i+=rows.length-1;
     }
-    const wid=a=>a.reduce((m,r)=>Math.max(m,ctx.measureText(r[1]).width),0);
+    const wid=a=>a.reduce((m,r)=>Math.max(m,mapTW(r[1])),0);
     const side=wid(L)+wid(Rr)+24<=RX-16-16;
     const rows=[];
     if(side)for(let i=0;i<Math.max(L.length,Rr.length);i++)rows.push([L[i]||null,Rr[i]||null]);
@@ -64829,7 +64867,7 @@ function drawMapIn(){
     const far=dsel>st.jump+.02, poor=!far&&cost>G.fuel;
     const col=far?"rgba(255,107,87,.5)":poor?"rgba(255,107,87,.75)":"rgba(242,178,92,.8)";
     ctx.save();
-    mpDash(x0,y0,x1,y1,far?1:1.4,col,far?[2,6]:[7,5]);
+    mapCourseDash(cur,sel,youR,far,col);   /* от кромки вашего кольца и из-за вашей плашки (18l) */
     /* точки прыжков по курсу (M299): сколько раз придётся прыгать — видно по
        линии, а не по цифре в подвале */
     if(far&&st.jump>.5){
@@ -64842,6 +64880,8 @@ function drawMapIn(){
     /* подпись на середине курса, на своей подложке — поверх звёзд и туманности
        голый текст не читается */
     const mx=(x0+x1)/2,my=(y0+y1)/2;
+    if(!shown){
+    const c0=MAP_INK.length;
     const label=far?"ВНЕ РАДИУСА":(cost+" ТОПЛИВА"+(poor?" · НЕ ХВАТАЕТ":""));
     const U=mapU();
     mapFont(10);ctx.textAlign="center";ctx.textBaseline="middle";
@@ -64857,6 +64897,8 @@ function drawMapIn(){
       mpRect(mx-w2/2-4*U,my+12*U,w2+8*U,12*U,"rgba(6,10,16,.72)");mapInkBox(mx-w2/2-4*U,my+12*U,w2+8*U,12*U);
       mpText(L2,mx,my+18*U,"rgba(170,192,202,.9)");
     }
+    for(let i=c0;i<MAP_INK.length;i++)MAP_INK[i].fb=1;   /* запасная к табличке: её раскладку не держит */
+    }
     ctx.restore();
     ctx.textBaseline="alphabetic";
   }
@@ -64871,6 +64913,7 @@ function drawMapIn(){
       const a=Math.PI/4+i*Math.PI/2, r0=rr+13, r1=rr+20;
       mpLine(x+Math.cos(a)*r0,y+Math.sin(a)*r0,x+Math.cos(a)*r1,y+Math.sin(a)*r1,1.2,"#f2b25c");
     }
+    if(hung)mapSelHang(sel,dsel,cost,st);
     /* ширину карточка берёт до правого борта, а не до края экрана: кнопки
        КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */
     /* карточка — только по второму тапу (M298) */
@@ -64880,49 +64923,52 @@ function drawMapIn(){
        прямо на полосу с номерами секторов и закрывала их собой */
     const cx=Math.round((typeof MAP_RUL==="number"?MAP_RUL*U:26)+6);
     const cw=Math.min(300*U,mapRail()-cx-16);
-    mapFont(9);
+    mapFace(10.5);
     /* высота — по числу строк описания, а не константой 104: у длинного
        описания четвёртая строка вылезала за плашку */
     const dn=wrapCount(s.desc,cw-24*U);
     /* виденные цены этой станции — на карточке, где выбирают, куда лететь (M341):
        свой груз светлым, лучшая по товару жирным, услышанное помечено */
     const PR=mapPriceRows(s,cw-24*U);
-    const ch=(54+dn*11+8+(PR.length?PR.length*11+6:0))*U;
+    const ch=(56+dn*14+10+(PR.length?PR.length*11+6:0))*U;
     const cy=Math.round(mapDeck()-16*U*(foot.rows.length-1)-12*U-ch);
-    mpRect(cx,cy,cw,ch,"rgba(6,10,16,.62)");
-    mpFrame(cx+.5,cy+.5,cw,ch,1.2,"rgba(127,230,216,.18)");
+    /* карточка — табличкой «Борта» (M822): графит, кайма, срезы; имя цветом прицела, строки лицом табличек */
+    mpPlate(cx,cy,cw,ch);
     mapBox("карточка системы",cx,cy,cw,ch);
     ctx.textAlign="left";
-    mapFont(13);
-    mpText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12*U,cy+22*U,"#f2b25c");   /* ваше имя (11u) */
-    mapFont(9);
-    mpText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12*U,cy+38*U,"rgba(127,230,216,.65)");
-    ctx.fillStyle="rgba(160,182,192,.62)";
-    wrapLeft(s.desc,cx+12*U,cy+54*U,cw-24*U,11*U);
-    if(PR.length)mapPriceDraw(PR,cx+12*U,cy+(54+dn*11+8)*U);
+    mapFace(15,true);
+    mpText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12*U,cy+24*U,"#f2b25c");   /* ваше имя (11u) */
+    mapFace(10.5);
+    mpText(s.cls.ru+" · "+s.planets.length+" "+pl3(s.planets.length,"планета","планеты","планет")+(s.station?" · станция":"")+(s.belt?" · пояс":""),cx+12*U,cy+41*U,HANG.INK);
+    ctx.fillStyle=HANG.INK2;
+    wrapLeft(s.desc,cx+12*U,cy+58*U,cw-24*U,14*U);
+    if(PR.length)mapPriceDraw(PR,cx+12*U,cy+(56+dn*14+10)*U);
     }
   }
   /* ── подвал: одним циклом, снизу вверх ── */
   if(!G.mapClean){const deck=mapDeck(),U=mapU();
-   mapFont(10);
+   mapFace(11);
    /* подвал — интерфейс поверх листа: под каждой колонкой своя подложка, иначе подпись мира под строкой
       читалась сквозь неё (зрение 06.10.2026: туманность под «ТЕЛ · ВИДОВ», «ВЫ ·» под строкой системы) */
    {let wl=0,wr=0,nl=0,nr=0;
-    foot.rows.forEach((row,i)=>{if(row[0]){wl=Math.max(wl,ctx.measureText(row[0][1]).width);nl=i+1;}if(row[1]){wr=Math.max(wr,ctx.measureText(row[1][1]).width);nr=i+1;}});
-    if(nl)mpRect(16-5*U,deck-(nl-1)*16*U-12*U,wl+10*U,(nl-1)*16*U+16*U,"rgba(6,10,16,.9)");
-    if(nr)mpRect(foot.RX-wr-5*U,deck-(nr-1)*16*U-12*U,wr+10*U,(nr-1)*16*U+16*U,"rgba(6,10,16,.9)");}
+    foot.rows.forEach((row,i)=>{if(row[0]){wl=Math.max(wl,mapTW(row[0][1]));nl=i+1;}if(row[1]){wr=Math.max(wr,mapTW(row[1][1]));nr=i+1;}});
+    /* плашки материалом «Борта» (M822): графит с каймой и срезами, строки — лицом табличек */
+    if(nl)mpPlate(16-9*U,deck-(nl-1)*16*U-15*U,wl+18*U,(nl-1)*16*U+21*U);
+    if(nr)mpPlate(foot.RX-wr-9*U,deck-(nr-1)*16*U-15*U,wr+18*U,(nr-1)*16*U+21*U);}
    foot.rows.forEach((row,i)=>{
      const y=deck-i*16*U;
      if(row[0]){ctx.textAlign="left";mpText(row[0][1],16,y,row[0][0]);
-       mapBox("подвал слева",16,y-9*U,ctx.measureText(row[0][1]).width,12*U);}
+       mapBox(row[0][2]?"подвал слева · выбор":"подвал слева",16,y-9*U,mapTW(row[0][1]),12*U);}
      if(row[1]){ctx.textAlign="right";mpText(row[1][1],foot.RX,y,row[1][0]);
-       const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9*U,w,12*U);}
+       const w=mapTW(row[1][1]);mapBox("подвал справа",foot.RX-w,y-9*U,w,12*U);}
    });
    ctx.textAlign="right";
    /* линейки, шапка и роза (M347): интерфейс поверх листа, сообщает свои прямоугольники */
    if(typeof mapRulersDraw==="function"){mapRulersDraw(V,cell,foot);mapRoseDraw(foot);}
   }
+  const n0=hung?mapSelInk():0;   /* подписи мира уступают табличке у выбора (18l) */
   mapLateFlush();   /* подписи мира — последними и на свободное место */
+  if(hung)mapSelBlock(n0);
 }
 /* ── расклад прыжка: расстояние, цена, можно ли ──
    Один на кадр и на шаг мира: кадр рисует цену и красит курс, шаг мира по
@@ -65173,7 +65219,7 @@ function mapRulersDraw(V,cell,foot){
     if(me||sel)mpRect(xL-8*U-String(gy).length*5*U,y+5*U,String(gy).length*5*U,1,col);
   }
   /* шапка: где вы и что выбрано */
-  ctx.textAlign="left";mapFont(9);
+  ctx.textAlign="left";mapFace(11);
   const nm=(G.sys&&typeof nameOf==="function")?nameOf(G.sys):(G.sys?G.sys.name:"");
   const l1="ВЫ · сектор "+G.sx+":"+G.sy+(nm?" · «"+nm+"»":"");
   const dch=Math.max(Math.abs(G.sel.x-G.sx),Math.abs(G.sel.y-G.sy));
@@ -65186,14 +65232,17 @@ function mapRulersDraw(V,cell,foot){
   const hx=T?T.hx:xL+8*U,hy=T?T.hy:y0+30*U;
   const avail=T?T.hw:RX-hx-4;
   /* строка длиннее места теряет хвост по « · », а не лезет под поле адреса */
-  const trim=t=>{let s2=t;while(s2&&ctx.measureText(s2).width>avail-10&&s2.indexOf(" · ")>0)s2=s2.slice(0,s2.lastIndexOf(" · "));return s2;};
+  const trim=t=>{let s2=t;while(s2&&mapTW(s2)>avail-18*U&&s2.indexOf(" · ")>0)s2=s2.slice(0,s2.lastIndexOf(" · "));return s2;};
   const L1=trim(l1),L2=trim(l2);
-  const w1=ctx.measureText(L1).width,w2=L2?ctx.measureText(L2).width:0,wmax=Math.min(avail,Math.max(w1,w2)+10*U);
-  /* подложка сплошная: подпись листа под полупрозрачной шапкой читалась сквозь неё (зрение 06.10.2026) */
-  mpRect(hx-4*U,hy-10*U,wmax,(l2?26:14)*U,"rgba(6,10,16,.9)");
-  mapBox("шапка карты",hx-4*U,hy-10*U,wmax,(l2?26:14)*U);
-  mpText(L1,hx,hy,"#7fe6d8");
-  if(L2)mpText(L2,hx,hy+12*U,"#f2b25c");
+  const w1=mapTW(L1),w2=L2?mapTW(L2):0,wmax=Math.min(avail,Math.max(w1,w2)+18*U);
+  /* плашка материалом «Борта» (M822): графит с каймой, слева риска «вы» его цветом; строка выбора —
+     цветом прицела. Подложка сплошная: подпись листа под шапкой сквозь неё не читается */
+  const hh=(L2?33:19)*U;
+  mpPlate(hx-9*U,hy-13*U,wmax,hh);
+  mpRect(hx-9*U,hy-13*U+5*U,2*U,hh-10*U,"#7fe6d8");
+  mapBox("шапка карты",hx-9*U,hy-13*U,wmax,hh);
+  mpText(L1,hx,hy,HANG.INK);
+  if(L2)mpText(L2,hx,hy+14*U,"#f2b25c");
   /* обводка найденной клетки — три секунды после поиска */
   if(G.mapOutline&&now()-G.mapOutline.t<3000){
     const c=mapCellXY(G.mapOutline.sx,G.mapOutline.sy,V,cell);
@@ -66248,7 +66297,7 @@ const MAP_BORDER_NB=[[1,0,1,0,1,1],[-1,0,0,0,0,1],[0,1,0,1,1,1],[0,-1,0,0,1,0]];
 function mapBorderEdge(key,ax,ay,bx,by,a,cell,nx,ny){   /* nx,ny — внутрь своей клетки */
   const P=powerOf(key),col=rgba(hex2rgb(P.col),a.toFixed(3));
   const L=Math.hypot(bx-ax,by-ay);if(L<1)return;
-  const ux=(bx-ax)/L,uy=(by-ay)/L,g=!MPN.gpu,al=MPN.al;
+  const ux=(bx-ax)/L,uy=(by-ay)/L,g=!MPN.gpu,al=MPN.a0;
   if(g)ctx.save();
   const along=(step,fn)=>{const n=Math.max(1,Math.round(L/step));for(let i=0;i<n;i++){const t=(i+.5)/n*L;fn(ax+ux*t,ay+uy*t,i);}};
   if(cell<24){mpAlpha(al*.7);mpLine(ax,ay,bx,by,1,col);mpAlpha(al);if(g)ctx.restore();return;}
@@ -67128,15 +67177,14 @@ function drawRailMap(V,cell,pale){
   for(let i=0;i<L.length;i++){
     const l=L[i],c=RAIL_COL[l.kind],r=l.kind==="radial",hw=((r?1:1.4)+k*(r?.6:1))/2,my=mine(l);
     for(const q of R[i]){
+      /* вес карты (M822): своя линия — весом пути, без отсвета через полкарты; чужие — фоном */
       if(my){
-        /* горящий путь: широкий отсвет сложением, лента цвета линии, белёсая сердцевина */
-        mapRibbon(GL,q,hw+3+k*4,[c[0],c[1],c[2],.07+.06*k]);
-        mapRibbon(GL,q,hw+1,[c[0],c[1],c[2],.16]);
-        mapRibbon(SH,q,hw*1.2,[c[0],c[1],c[2],.55+.35*k]);
-        mapRibbon(GL,q,Math.max(.35,hw*.35),[255,250,240,.35]);
+        /* горящий путь: узкий отсвет сложением, лента цвета линии, белёсая сердцевина */
+        mapRibbon(GL,q,hw+1.5+k*1.5,[c[0],c[1],c[2],.035+.03*k]);
+        mapRibbon(SH,q,hw,[c[0],c[1],c[2],.22+.12*k]);
+        mapRibbon(GL,q,Math.max(.3,hw*.3),[255,250,240,.12]);
       }else{
-        mapRibbon(SH,q,hw,[c[0],c[1],c[2],(r?.10:.13)+k*(r?.2:.26)]);
-        if(!r)mapRibbon(GL,q,hw+2+k*2,[c[0],c[1],c[2],.02+.025*k]);
+        mapRibbon(SH,q,hw,[c[0],c[1],c[2],((r?.10:.13)+k*(r?.2:.26))*.5]);
       }
     }
   }
@@ -68237,6 +68285,71 @@ function railSchemeDraw(g,cw,ch){
   g.fillStyle="#5a4a30";g.textAlign="left";
   L.forEach((e,i)=>{const y=ch-10-i*10;g.strokeStyle="rgba("+SCHEME_INK[e[0]].join(",")+",.9)";g.lineWidth=e[0]==="radial"?1.6:3;g.beginPath();g.moveTo(10,y);g.lineTo(30,y);g.stroke();g.fillText(e[1],36,y);});
   g.textAlign="right";rows.forEach((s,i)=>g.fillText(s,cw-10,ch-10-(rows.length-1-i)*10));
+}
+
+/* ══════════════ карта: веса и таблички (M822) ══════════════
+   Вынесено из 18-mode-map: три веса пера, лицо и мера строк состояния, табличка у выбранной
+   системы. Всё здесь зовётся из кадра, на верхнем уровне никто не читает — порядок склейки
+   после 18-mode-map ничего не ломает. */
+/* три веса карты (M822): «вы» — вы, выбранная система и курс к ней; путь — круг прыжка, связи в его
+   пределах, свой маршрут; остальное — сетка, кольца, владения, слухи, флот, чужие линии, бирки.
+   Вес — множитель пера (mpWeight, 17z4): остальное читается фоном, на котором видно вас и выбор */
+const MAP_W={you:1,route:.8,rest:.42};
+/* лицо строк состояния — то же, что у табличек у вещи (HANG.FACE, M720), а не моноширинный */
+/* ширина строки так, как её положит перо: на видеокарте слой ставит цифры моноширинно по «0» (hangTW,
+   08bj) — строка из цифр шире, чем мерит ctx, и вылетала из своей плашки на 7 px (зрение, 390) */
+function mapTW(t){return MPN.gpu?hangTW(ctx.font,String(t)):ctx.measureText(t).width;}
+function mapFace(px,b){ctx.font=(b?"600 ":"")+Math.max(8,px*mapU()).toFixed(1)+"px "+HANG.FACE;}
+/* ── табличка у выбранной системы (M822, закон L5: слова висят на вещи) ──
+   Что это, дотянусь ли и что будет по ДЕЙСТВИЮ — у самой звезды, материалом «Борта», глагол акцентом.
+   Подсказка внизу кадра и подпись на середине курса этим кадром не нужны: строка #prompt гаснет, пока
+   табличка висит (27z, mapHintHung), а кнопка ДЕЙСТВИЯ берёт глагол из G.prompt, как прежде */
+function mapSelHang(sel,dsel,cost,st){
+  const s=sel.s,rr=1.8+s.cls.t*2.2,far=dsel>st.jump+.02,poor=!far&&cost>G.fuel;
+  const nm=((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase();
+  const what=s.cls.ru+" · "+s.planets.length+" "+pl3(s.planets.length,"планета","планеты","планет")+(s.station?" · станция":"")+(s.belt?" · пояс":"");
+  const NX=(typeof routeNext==="function"&&routeOf().legs.length>=2)?routeNext():null;
+  const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
+  const pk=dsel.toFixed(1).replace(".",",")+" пк",more=G.mapMore?"":" · ещё тап — подробнее";
+  let L,verb;
+  if(dsel===0){L=["ВЫ ЗДЕСЬ · "+nm,what,"тап по звезде — курс"];verb=undefined;}
+  else if(far){const n=Math.ceil(dsel/Math.max(.5,st.jump));
+    L=[nm,what,"ВНЕ РАДИУСА · "+n+" "+pl3(n,"прыжок","прыжка","прыжков"),pk+more];verb=2;}
+  else if(poor)L=[nm,what,"НЕ ХВАТАЕТ ТОПЛИВА · "+cost,"в баке "+Math.round(G.fuel)+" · "+pk+more],verb=2;
+  else L=[nm,what,(onRoute?"ПРЫЖОК ПО МАРШРУТУ · ":"ПРЫЖОК · ")+cost+" топлива","останется "+Math.round(G.fuel-cost)+" · "+pk+more],verb=2;
+  /* телефон: имя и глагол с ценой — две строки встают сбоку от выбора; подробности — в подвале нет,
+     во второй тап (карточка) */
+  if(W<=760&&L.length>2){L=[L[0],L[verb==null?1:verb]];verb=verb==null?undefined:1;}
+  ovHang("map.sel",L,sel.x,sel.y,{r:rr+21,verb});
+}
+/* табличка у выбора висела в прошлом кадре — подсказке внизу молчать (27z) */
+function mapHintHung(){return G.mode==="map"&&HANG.last.some(e=>e.id==="map.sel");}
+/* пунктир курса — от кромки вашего кольца и из-за вашей плашки до кольца прицела: линия не протыкает
+   ни кольца, ни слова */
+function mapCourseDash(cur,sel,youR,far,col){
+  const x0=cur.x,y0=cur.y,x1=sel.x,y1=sel.y,L=Math.hypot(x1-x0,y1-y0),cr=cur.edge?0:(cur.rr||4)+16,sr=1.8+sel.s.cls.t*2.2+11;
+  let t0=Math.min(.5,cr/L);const t1=Math.max(t0,1-sr/L);
+  if(youR&&!cur.edge){let last=-1;
+    for(let t=t0;t<t1;t+=1/128){const qx=x0+(x1-x0)*t,qy=y0+(y1-y0)*t;if(qx>=youR.x0&&qx<=youR.x1&&qy>=youR.y0&&qy<=youR.y1)last=t;}
+    if(last>=0)t0=last+1/128;}
+  if(t1>t0)mpDash(x0+(x1-x0)*t0,y0+(y1-y0)*t0,x0+(x1-x0)*t1,y0+(y1-y0)*t1,far?1:1.4,col,far?[2,6]:[7,5]);
+}
+/* табличка у выбора главнее подписей мира: те встают после неё, на её рамку прошлого кадра. Сама она
+   обходит только то, что останется, когда она висит: свои метки, линейки, шапку, вёрстку поверх листа, —
+   но не запасные к ней строки (подсказку #prompt, строки выбора в подвале, подпись на курсе): они гаснут,
+   едва она встала, и держать её место им нельзя — иначе на тесном кадре табличка не встаёт никогда,
+   потому что её не пускают её же запасные. mapSelInk — до слива подписей (возвращает, сколько чернил
+   было своих), mapSelBlock — после */
+function mapSelInk(){
+  const n0=MAP_INK.length,HL=HANG.last.find(e=>e.id==="map.sel");
+  if(HL&&HL.r)mapInkBox(HL.r.x0-4,HL.r.y0-4,HL.r.x1-HL.r.x0+8,HL.r.y1-HL.r.y0+8);
+  return n0;
+}
+function mapSelBlock(n0){
+  const n=ovNd(),B=(x0,y0,x1,y1)=>hangBlock(x0*n,y0*n,x1*n,y1*n);
+  for(let i=0;i<n0;i++){const Q=MAP_INK[i];if(!Q.fb)B(Q.x0,Q.y0,Q.x1,Q.y1);}
+  for(const b of MAP_BOX)if(b.s!=="подвал слева · выбор")B(b.x,b.y,b.x+b.w,b.y+b.h);
+  for(const d of MAP_DOMR)if(d.sel!=="#prompt")B(d.r.left,d.r.top,d.r.right,d.r.bottom);
 }
 
 /* ══════════════ посадка: разрез грунта ══════════════
@@ -108966,7 +109079,7 @@ function rackPaint(c,g0,part){
     /* плашка: срезы справа сверху и слева снизу, как у табличек и плит борта */
     const cu=8;
     c.beginPath();c.moveTo(0,0);c.lineTo(w-cu,0);c.lineTo(w,cu);c.lineTo(w,h);c.lineTo(cu,h);c.lineTo(0,h-cu);c.closePath();
-    c.fillStyle="rgba(18,17,16,.97)";c.fill();   /* плотнее табличек: поверхность для чтения, щит мира сквозь неё не читается */
+    c.fillStyle="rgb(18,17,16)";c.fill();   /* непрозрачна: плашка — вещь, сквозь неё ни щит, ни плакат мира не светят */
     c.beginPath();c.moveTo(.5,.5);c.lineTo(w-cu,.5);c.lineTo(w-.5,cu);c.lineTo(w-.5,h-.5);c.lineTo(cu,h-.5);c.lineTo(.5,h-cu);c.closePath();
     c.strokeStyle=rackCr(.17);c.lineWidth=1;c.stroke();
     /* метка роли у шапки: кремовая черта, с неё начинается чтение */
@@ -128016,7 +128129,7 @@ function hud(){
   /* зимовка: под строкой — мягкая подложка (style.css #msg.dim) */
   $msg.classList.toggle("dim",G.mode==="winter");
   hudMsgPlace();
-  setTx($prompt,G.mode==="dock"?"":G.prompt);
+  setTx($prompt,G.mode==="dock"||mapHintHung()?"":G.prompt);   /* на карте подсказка висит табличкой у выбора (M822) */
   /* на тяге значок, на грунте и в шахте — слово. Слову, как подписям прочих пэдов, свой <span>,
      регистр предложения и кегль (.word): ПРЫЖОК капителью в 17 px был шире круга на телефоне в 320 */
   if($bThr){const w=G.mode==="surface"?"Прыжок":(G.mode==="dig"?"Вверх":"");

@@ -311,7 +311,11 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   never over a body, suite `91qe-rack`), `rackLate` from `ovFlush` (drawn last; `OVL.hushR`
   skips world labels and chips on it), the globe's bearings, whole minutes.
 - **M822 The map** with three weights, plates for the status lines, the hint on the selected
-  object.
+  object. Done 08.10: `MAP_W` and `mpWeight` (17z4) weigh every pen stroke; `mapSelHang` (new module `18l-map-plate`) hangs
+  the selection plate (`ovHang`, id `map.sel`), `mapHintHung` silences `#prompt`; the plate avoids
+  only what stays while it hangs (its fallbacks — the prompt, the footer's selection rows, the
+  course label — do not hold its place) and world labels yield to it; `mpPlate`, `mapFace` and
+  `mapTW` (widths as the layer draws digits) for the header, footer, tag and card.
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,
