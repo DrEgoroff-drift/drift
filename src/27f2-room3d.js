@@ -276,6 +276,53 @@ fn outside(w:vec3f)->vec3f{
     let bl=fract(q.x*12.)-.5;c+=vec3f(1.,.78,.45)*exp(-length(vec2f(bl,(q.y+.012)*3.))*70.)*1.2*step(-.5,q.x);
     if(kind==2){let wp=vec2f(.5+.12*sin(tt*.07),.03);let wf=.75+.25*sin(tt*9.3);   /* сварка на рёбрах: вспышка и отсвет на корпусе */
       c+=vec3f(.6,.8,1.)*exp(-length(q-wp)*160.)*4.*wf+vec3f(.3,.45,.7)*exp(-length(q-wp)*18.)*.12*wf*hm;}}
+  /* стройка станции (M814): ближний план за окном, на 20 м ближе звёзд, — ферма-хребет, кран и люльки площадок
+     под ним. flm2.w — три цифры по шесть, по площадке: 0 нет, 1 свободна (голая рама, вехи), 2 строится (рёбра,
+     сварка, трос крана), 3–5 построена (цех, ряды окон по ступени, маяк акцента); 216 — мест ещё нет, только вехи */
+  let sw=u.flm2.w;
+  if(sw>.5){
+    let t2=(u.win2.x-20.-u.cam.z)/min(rd.z,-1e-3);let P=(u.cam.xyz+rd*t2).xy-vec2f(2.3,3.);
+    let dk=vec3f(.06,.065,.075);let lt=vec3f(.42,.45,.5);let nos=sw>215.;
+    var ext=-1.;var bld=-9.;
+    for(var i=0;i<3;i++){let d=floor(sw/pow(6.,f32(i)))%6.;if(d>.5&&!nos){ext=f32(i);if(d>1.5&&d<2.5){bld=f32(i);}}}
+    let x0=select(-3.6,-1.2,nos);let x1=select(ext*1.9-1.9+.95,1.2,nos);
+    /* хребет: два пояса и раскос, верхний пояс к звезде светлее */
+    let inS=step(x0,P.x)*step(P.x,x1)*step(abs(P.y),.12);
+    let sm=inS*max(step(abs(abs(P.y)-.095),.028),step(abs(P.y-.095*(2.*abs(2.*fract(P.x*2.2)-1.)-1.)),.026));
+    c=mix(c,mix(dk,lt,step(0.,P.y)*.8),sm);
+    if(nos){for(var j=0;j<2;j++){let b=P-vec2f(f32(j)*2.4-1.2,-.55);
+      c=mix(c,dk*1.4,step(abs(b.x)+abs(b.y),.12));c+=vec3f(1.,.62,.25)*exp(-length(b-vec2f(0.,.14))*28.)*(1.+.7*sin(tt*.9+f32(j)*2.5));}}
+    else{
+      /* кран у левого края: башня-ферма и стрела над площадками; трос — к той, что строится */
+      let cx=P.x+3.45;let inT=step(abs(cx),.13)*step(-2.4,P.y)*step(P.y,1.15);
+      let tm=inT*max(step(abs(abs(cx)-.11),.026),step(abs(cx-.11*(2.*abs(2.*fract(P.y*2.6)-1.)-1.)),.024));
+      let jy=P.y-1.08;let jx1=select(-1.0,bld*1.9-1.9+.2,bld>-1.);let inJ=step(abs(jy),.07)*step(-3.6,P.x)*step(P.x,jx1+.3);
+      let jm=inJ*max(step(abs(abs(jy)-.055),.022),step(abs(jy-.055*(2.*abs(2.*fract(P.x*3.)-1.)-1.)),.02));
+      c=mix(c,mix(dk,lt,step(0.,cx)*.7),clamp(tm+jm,0.,1.));
+      c+=vec3f(1.,.2,.12)*exp(-length(P-vec2f(-3.45,1.2))*30.)*(1.2+sin(tt*1.1));
+      for(var i=0;i<3;i++){
+        let d=floor(sw/pow(6.,f32(i)))%6.;if(d<.5){continue;}
+        let p=P-vec2f((f32(i)-1.)*1.9,0.);
+        /* прожектор площадки под хребтом: колба и тёплый конус вниз — люлька читается и на тёмном небе */
+        c+=vec3f(1.,.86,.62)*(exp(-length(p-vec2f(0.,-.16))*40.)*3.+exp(-pow(p.x/(.08+.45*max(-p.y-.16,0.)),2.))*smoothstep(.16,.4,-p.y)*(1.-smoothstep(1.2,1.9,-p.y))*.08);
+        /* люлька: рама под хребтом */
+        let fr=step(abs(p.x),.84)*step(-1.78,p.y)*step(p.y,-.1);
+        c=mix(c,mix(dk,lt,step(0.,p.x)*.55),fr*max(step(.79,abs(p.x)),step(p.y,-1.73)));
+        if(d<1.5){c+=vec3f(1.,.62,.25)*exp(-length(vec2f(abs(p.x)-.8,p.y+1.76))*28.)*(1.+.6*sin(tt*.9+f32(i)*2.));continue;}
+        let lv=max(d-2.,0.);let top=select(-.95,-1.7+.5+.4*lv,d>2.5);
+        var inB=step(abs(p.x),.66)*step(-1.7,p.y)*step(p.y,top);
+        if(d<2.5){inB*=max(step(fract(p.x*4.+.5),.3),step(p.y,-1.42));}   /* строится: низ обшит, выше — рёбра */
+        var hs=vec3f(.06,.068,.08)*(.6+.6*smoothstep(-1.7,top,p.y))+vec3f(.012,.014,.018)*fb2(p*9.);
+        hs+=vec3f(.42,.46,.52)*smoothstep(top-.07,top,p.y)+vec3f(.2,.22,.25)*smoothstep(.56,.66,p.x);
+        hs*=1.-.4*step(fract(p.x*3.2),.07);
+        if(d>2.5){let wr=(p.y+1.42)/.4;let rw=floor(wr);let cl=floor(p.x*4.4);
+          hs+=vec3f(1.,.72,.38)*1.3*step(rw,lv-1.)*step(0.,rw)*step(abs(fract(wr)-.5),.13)*step(abs(fract(p.x*4.4)-.5),.22)*step(.35,h2(vec2f(cl+f32(i)*9.,rw)));}
+        c=mix(c,hs,inB);
+        if(d>2.5){c+=ac*exp(-length(p-vec2f(.5,top+.06))*30.)*(1.2+sin(tt*.8+f32(i)*1.7));}
+        else{let wp=vec2f(.45*sin(tt*.13+f32(i)),top);let wf=.75+.25*sin(tt*9.3+f32(i));
+          c+=vec3f(.6,.8,1.)*exp(-length(p-wp)*30.)*3.*wf+vec3f(.3,.45,.7)*exp(-length(p-wp)*5.)*.1*wf;
+          c=mix(c,dk,step(abs(p.x-.2),.012)*step(top,p.y)*step(p.y,1.05));}}}
+  }
   return c*u.win2.w;}
 fn aces(x:vec3f)->vec3f{return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),vec3f(0.),vec3f(1.));}
 /* два слоя: цвет и дым отдельно — дым шумит по шагам и размывается в последнем проходе, не задевая контуры */
