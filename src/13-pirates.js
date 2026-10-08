@@ -249,6 +249,10 @@ function updateCombat(dt){
         p.shield=Math.min(p.shieldMax,p.shield+p.shieldMax*.0016*dt);
     }
     const pa0=p.a;
+    /* уходящий прыгает по часам, видит он вас или уже нет: прежде прыжок
+       жил только внутри роли, роль — только пока aware, а беглец выходил
+       из зоны видимости раньше срока и летел вечно (проба · дуэль, 09.10) */
+    if(p.jumpT&&!p.aware&&roleJumpDue(p))continue;
     if(p.aware){
       /* ── чужая война — не ваша (M372/M373, разбор 0.409.1) ──
          Роль брала курс НА ИГРОКА для любого борта, и `roleFire` стрелял без
@@ -271,8 +275,12 @@ function updateCombat(dt){
       /* поведение — по рангу (13c-roles): бросок, борт, дистанция, очереди; бегство */
       if(go&&pirateRoleTick(p,dt,td,want))continue;
     }
-    const sp=Math.hypot(p.vx,p.vy),lim=ROLE_LIM[p.rank|0]||4.4;
-    if(sp>lim){p.vx*=lim/sp;p.vy*=lim/sp;}
+    /* потолок по рангу. Довод вектора к носу ниже переписывает скорость
+       старой величиной — потому потолок берётся ПОСЛЕ зажима: до 09.10 он
+       не держал вовсе, и шакал на отходе разгонялся до 21 px/кадр при
+       потолке 5.2 (проба · дуэль) */
+    const sp0=Math.hypot(p.vx,p.vy),lim=ROLE_LIM[p.rank|0]||4.4,sp=Math.min(sp0,lim);
+    if(sp0>lim){p.vx*=lim/sp0;p.vy*=lim/sp0;}
     if(sp>.08){   // тот же довод вектора к носу, что и у игрока
       const cur=Math.atan2(p.vy,p.vx);
       const na=cur+clamp(angDiff(p.a,cur),-.05,.05)*.05*dt;

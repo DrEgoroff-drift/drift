@@ -177,6 +177,9 @@ function gunAimTick(g,sh,mk,dt,key){
   if(!isFinite(G.aim[k]))G.aim[k]=sh.a;
   let want=sh.a;
   if(mk&&mk.hull>0)want=gunLeadAngle(sh.x,sh.y,mk,g.speed);
+  /* под помехой (M902) упреждения нет и наводка плывёт на ±7°: по стоящему
+     попасть можно, по идущему — через раз */
+  if(G.jamT>0&&mk&&mk.hull>0)want=Math.atan2(mk.y-sh.y,mk.x-sh.x)+Math.sin(G.t*.11)*.12;
   /* внутрь конуса: за его край ствол не выходит ни при каком упреждении */
   const off=clamp(angDiff(want,sh.a),-g.cone,g.cone);
   const goal=angWrap(sh.a+off);

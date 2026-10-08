@@ -9271,6 +9271,9 @@ function gunAimTick(g,sh,mk,dt,key){
   if(!isFinite(G.aim[k]))G.aim[k]=sh.a;
   let want=sh.a;
   if(mk&&mk.hull>0)want=gunLeadAngle(sh.x,sh.y,mk,g.speed);
+  /* под помехой (M902) упреждения нет и наводка плывёт на ±7°: по стоящему
+     попасть можно, по идущему — через раз */
+  if(G.jamT>0&&mk&&mk.hull>0)want=Math.atan2(mk.y-sh.y,mk.x-sh.x)+Math.sin(G.t*.11)*.12;
   /* внутрь конуса: за его край ствол не выходит ни при каком упреждении */
   const off=clamp(angDiff(want,sh.a),-g.cone,g.cone);
   const goal=angWrap(sh.a+off);
@@ -46750,6 +46753,10 @@ function updateCombat(dt){
         p.shield=Math.min(p.shieldMax,p.shield+p.shieldMax*.0016*dt);
     }
     const pa0=p.a;
+    /* уходящий прыгает по часам, видит он вас или уже нет: прежде прыжок
+       жил только внутри роли, роль — только пока aware, а беглец выходил
+       из зоны видимости раньше срока и летел вечно (проба · дуэль, 09.10) */
+    if(p.jumpT&&!p.aware&&roleJumpDue(p))continue;
     if(p.aware){
       /* ── чужая война — не ваша (M372/M373, разбор 0.409.1) ──
          Роль брала курс НА ИГРОКА для любого борта, и `roleFire` стрелял без
@@ -46772,8 +46779,12 @@ function updateCombat(dt){
       /* поведение — по рангу (13c-roles): бросок, борт, дистанция, очереди; бегство */
       if(go&&pirateRoleTick(p,dt,td,want))continue;
     }
-    const sp=Math.hypot(p.vx,p.vy),lim=ROLE_LIM[p.rank|0]||4.4;
-    if(sp>lim){p.vx*=lim/sp;p.vy*=lim/sp;}
+    /* потолок по рангу. Довод вектора к носу ниже переписывает скорость
+       старой величиной — потому потолок берётся ПОСЛЕ зажима: до 09.10 он
+       не держал вовсе, и шакал на отходе разгонялся до 21 px/кадр при
+       потолке 5.2 (проба · дуэль) */
+    const sp0=Math.hypot(p.vx,p.vy),lim=ROLE_LIM[p.rank|0]||4.4,sp=Math.min(sp0,lim);
+    if(sp0>lim){p.vx*=lim/sp0;p.vy*=lim/sp0;}
     if(sp>.08){   // тот же довод вектора к носу, что и у игрока
       const cur=Math.atan2(p.vy,p.vx);
       const na=cur+clamp(angDiff(p.a,cur),-.05,.05)*.05*dt;
@@ -47857,26 +47868,31 @@ function roleAllyNear(p){
   return false;
 }
 /* бегство и прыжок: true — запись уже снята */
+function roleJumpDue(p){
+  if(!(p.jumpT&&G.t>=p.jumpT))return false;
+  logAdd("kill","«"+p.name+"» ушёл в прыжок · награда потеряна");
+  if(typeof sfx==="function")sfx("ui",{f:180,to:90,d:.3,v:.3});
+  p.hull=0;p.fled=1;
+  return true;
+}
 function roleFlee(p,dt,want){
   roleSteer(p,want+Math.PI,dt,.05);roleThrust(p,dt,.07);
   if(!p.jumpT){
     p.jumpT=G.t+180+rnd()*60;
     say("«"+p.name+"» уходит",70);
-  }else if(G.t>=p.jumpT){
-    logAdd("kill","«"+p.name+"» ушёл в прыжок · награда потеряна");
-    if(typeof sfx==="function")sfx("ui",{f:180,to:90,d:.3,v:.3});
-    p.hull=0;p.fled=1;
-    return true;
+    return false;
   }
-  return false;
+  return roleJumpDue(p);   /* по часам — и из 13-pirates, когда вас уже не видно */
 }
 /* один шаг роли; d — до игрока, want — курс на игрока */
 function pirateRoleTick(p,dt,d,want){
   const st=p.rs||(p.rs={st:"dash",t:0,spin:(p.seed&1)?1:-1,burst:0});
   const hp=p.hull/Math.max(1,p.hullMax);
   p.cool-=dt;
-  /* под четвертью и один — в прыжок */
-  if(hp<.25&&!roleAllyNear(p))return roleFlee(p,dt,want);
+  /* под четвертью и один — в прыжок. Шакал — под третью: его отход начинается
+     на .3, и между .25 и .3 он прежде уходил в бесконечность — ни боя, ни
+     прыжка, ни награды (проба · дуэль, 09.10: 58 000 px за две минуты) */
+  if(hp<((p.rank|0)===0?.3:.25)&&!roleAllyNear(p))return roleFlee(p,dt,want);
   const rank=p.rank|0;
   if(rank===0){
     /* шакал: бросок — залп — отход; под тридцатью процентами разрывает дистанцию */
@@ -47891,7 +47907,9 @@ function pirateRoleTick(p,dt,d,want){
       st.t-=dt;if(st.t<=0){st.st="break";st.t=90;}
     }else{
       roleSteer(p,want+Math.PI+.6*st.spin,dt,.05);roleThrust(p,dt,.06);
-      st.t-=dt;if((d>650||st.t<=0)&&hp>=.3){st.st="dash";}
+      /* отошёл — снова бросок, и битый тоже: одинокий битый уже ушёл выше,
+         а прикрытый дерётся до конца */
+      st.t-=dt;if(d>650||st.t<=0){st.st="dash";}
     }
   }else if(rank===1){
     /* ветеран: держит 400–600, ходит бортом, нос на вас */
@@ -47912,9 +47930,13 @@ function pirateRoleTick(p,dt,d,want){
     roleFire(p,d,want,760,60);
   }else if(rank===2){
     /* капитан: никогда ближе семисот, редкий тяжёлый огонь */
-    if(d<700){roleSteer(p,want,dt,.05);const k=.06*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
-    else if(d>950){roleSteer(p,want,dt);roleThrust(p,dt,.045);}
-    else{roleSteer(p,want,dt,.05);roleDamp(p,dt,.96);}
+    /* тяжёлый корабль ворочается медленно (.022 — 75°/с против 170°/с): «Стриж»
+       на трёхстах обходит его быстрее, чем он поворачивает лоб, — иначе лобовое
+       поле не обойти никому, и капитан убивал любой корпус вплоть до «Топора»
+       (проба · дуэль, 09.10) */
+    if(d<700){roleSteer(p,want,dt,.022);const k=.04*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
+    else if(d>950){roleSteer(p,want,dt,.022);roleThrust(p,dt,.045);}
+    else{roleSteer(p,want,dt,.022);roleDamp(p,dt,.96);}
     if(d<1100&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
       /* пусковая — по таблице §5 у капитана (M367/M368): раз в несколько
@@ -48052,6 +48074,7 @@ function foeArmFire(p,fam,d){
   if(fam==="jam"){
     /* помеховая не стреляет вовсе: рядом с капитаном захват не держится */
     if(d>JAM_R)return false;
+    if(!(G.jamT>0))say("ПОМЕХА · НАВОДКА ПЛЫВЁТ",80);
     G.jamT=JAM_TIME;
     return true;
   }
@@ -51068,15 +51091,16 @@ function helmTargetable(p){
 function helmTargets(){return (G.pirates||[]).filter(helmTargetable);}
 function helmMarksClean(){
   if(!G.marks)G.marks=[];
-  /* помеховая капитана (M368, §5): рядом с ним захват не держится вовсе —
-     ни ваш палец, ни автозахват стрелявшего его не вернут, пока не отойти */
-  if(G.jamT>0){G.marks.length=0;return;}
+  /* помеховая капитана (M368, §5) прежде снимала захват вовсе — и рядом с
+     ним нельзя было стрелять никому, кто целится меткой: ни палец, ни стик.
+     С 09.10 (M902) помеха — плывущая наводка: метка держится, ствол теряет
+     упреждение и гуляет (05c-arms gunAimTick); «уйти или заплатить» — но
+     заплатить можно, а не только умереть (проба · дуэль: «Топор» w3 — 0 из 10) */
   const alive=new Set(G.pirates||[]);
   for(let i=G.marks.length-1;i>=0;i--)if(!alive.has(G.marks[i])||!helmTargetable(G.marks[i]))G.marks.splice(i,1);
   if(G.marks.length>HELM_MARKS)G.marks.length=HELM_MARKS;
 }
 function helmLock(p){
-  if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return;}
   helmMarksClean();
   const i=G.marks.indexOf(p);
   if(i>=0)G.marks.splice(i,1);
@@ -51094,7 +51118,6 @@ function helmLockNext(){
   /* у чужой вещи ЦЕЛЬ объявляет благодарность (M377) — единственный обратный
      канал во всей игре, и он число */
   if(typeof leftThankNear==="function"&&G.mode==="system"&&leftThankNear())return false;
-  if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return false;}
   helmMarksClean();
   const sh=G.ship;
   const list=helmTargets().filter(p=>p.aware).sort((a,b)=>Math.hypot(a.x-sh.x,a.y-sh.y)-Math.hypot(b.x-sh.x,b.y-sh.y));

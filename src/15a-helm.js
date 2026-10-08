@@ -272,15 +272,16 @@ function helmTargetable(p){
 function helmTargets(){return (G.pirates||[]).filter(helmTargetable);}
 function helmMarksClean(){
   if(!G.marks)G.marks=[];
-  /* помеховая капитана (M368, §5): рядом с ним захват не держится вовсе —
-     ни ваш палец, ни автозахват стрелявшего его не вернут, пока не отойти */
-  if(G.jamT>0){G.marks.length=0;return;}
+  /* помеховая капитана (M368, §5) прежде снимала захват вовсе — и рядом с
+     ним нельзя было стрелять никому, кто целится меткой: ни палец, ни стик.
+     С 09.10 (M902) помеха — плывущая наводка: метка держится, ствол теряет
+     упреждение и гуляет (05c-arms gunAimTick); «уйти или заплатить» — но
+     заплатить можно, а не только умереть (проба · дуэль: «Топор» w3 — 0 из 10) */
   const alive=new Set(G.pirates||[]);
   for(let i=G.marks.length-1;i>=0;i--)if(!alive.has(G.marks[i])||!helmTargetable(G.marks[i]))G.marks.splice(i,1);
   if(G.marks.length>HELM_MARKS)G.marks.length=HELM_MARKS;
 }
 function helmLock(p){
-  if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return;}
   helmMarksClean();
   const i=G.marks.indexOf(p);
   if(i>=0)G.marks.splice(i,1);
@@ -298,7 +299,6 @@ function helmLockNext(){
   /* у чужой вещи ЦЕЛЬ объявляет благодарность (M377) — единственный обратный
      канал во всей игре, и он число */
   if(typeof leftThankNear==="function"&&G.mode==="system"&&leftThankNear())return false;
-  if(G.jamT>0){say("ПОМЕХА · ЗАХВАТА НЕТ",70);return false;}
   helmMarksClean();
   const sh=G.ship;
   const list=helmTargets().filter(p=>p.aware).sort((a,b)=>Math.hypot(a.x-sh.x,a.y-sh.y)-Math.hypot(b.x-sh.x,b.y-sh.y));
