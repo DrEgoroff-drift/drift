@@ -204,6 +204,9 @@ after it pass by §5.4.
 - M630 the cave: rock, lamp light, water, moss and amber, props, life; the way in without a cut
 - M631 the mine
 - M632 the base in cross-section and the rooms entered from the planet
+- M634 one water everywhere (author, 08.10): the stand's water as one module `21pw-pln-water`
+  — planet lakes, the ocean worlds' sea to the horizon with swell and a hazed horizon, the
+  cave lake, later the flat modes through the engine; DESIGN-remake L7
 
 **Stage 4 — the worlds.**
 - M640 eleven identities: colour script and shape per type; acceptance by contact sheet —

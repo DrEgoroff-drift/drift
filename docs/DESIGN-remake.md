@@ -36,11 +36,10 @@ Six laws that carry «Сцена» beyond the planet (new, 08.10):
 - **L2 One astronaut everywhere.** The man is the planet's rig (`21pha`), rendered to the frame
   in 3D or to a card where the mode is flat. No second painter of the man anywhere: not in the
   base, the cave, the dig, the raid, the home, the postcard.
-  *Author, 08.10, pointing at the stand's man by the lake: «this one, everywhere, as on your
-  design».* So not only the rig but its look: lit by the scene's key (sun, lamp, headlamp),
-  a contact shadow under the feet, a rim from the sky or the lamp, a body gradient of
-  >= .12 value — never a flat fill; sized by the scene's human measure (1.8 m). The hall's
-  people and pilot are this rig too (M814), the flat modes take the card (M801, second part).
+  Not only the rig but its look: lit by the scene's key (sun, lamp, headlamp), a contact
+  shadow under the feet, a rim from the sky or the lamp, a body gradient of >= .12 value —
+  never a flat fill; sized by the scene's human measure (1.8 m). The hall's people and
+  pilot are this rig too (M814), the flat modes take the card (M801, second part).
 - **L3 One person generator everywhere.** Every face and body of an NPC is `27f3`/`27f3a`
   (the space branch's people). The HQ's 2D dolls, the crew lists, the story figures, the road's
   keeper all take it.
@@ -51,6 +50,15 @@ Six laws that carry «Сцена» beyond the planet (new, 08.10):
 - **L5 Words hang on things.** A prompt, a discovery, an arrival line sit on the object they
   are about, with a leader line if the object is small; nothing stands in the centre of the
   frame; no text over text.
+- **L7 One water everywhere.** *Author, 08.10, pointing at the lake of the planet stand:
+  «make the water module itself like that, and put it everywhere».* The stand's water
+  (`fs_water` of `21pc`, the mirror pass of `21pe`: the sky and the near things mirrored
+  and broken by ripples, Fresnel between the body and the mirror, the shallows and the
+  wet rim, mist on it at night) becomes one module, `21pw-pln-water`, with one call per
+  scene — level, murk, wind, bottom colours, mist — and every water of the game is drawn
+  by it: planet lakes and the ocean worlds' sea to the horizon, the cave lake, the base's
+  water, the spa's sea, the postcard. No second painter of water anywhere; a flat tinted
+  plane is a defect (M634).
 - **L6 The frame has one hero.** The brightest, sharpest, most saturated spot is the thing the
   player is about to act on. The hero stands against air (a value and hue gap), never against
   its own colour.
