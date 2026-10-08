@@ -194,10 +194,14 @@ function ovTextRot(Q,x,y,text,font,col,align,base,al,ang){
 function domLabel(k,x,y,text,font,col,align,al){
   if(al==null)al=1;
   if(!GPU.ok||!GPU.on){ctx.fillStyle=col;ctx.font=font;ctx.textAlign=align;ctx.globalAlpha=al;ctx.fillText(text,x,y);ctx.globalAlpha=1;return;}
-  const r=ovText(OVL.lq,x,y,text,font,col,align,ctx.textBaseline,al,1);
+  const n0=OVL.lq.length,r=ovText(OVL.lq,x,y,text,font,col,align,ctx.textBaseline,al,1);
+  if(ovHushed(r.x0,r.y0,r.x1,r.y1)){OVL.lq.length=n0;return;}
   let e=OVL.lab.get(k);if(!e)OVL.lab.set(k,e={on:false});
   Object.assign(e,r,{fr:OVL.fno,A:al,s:text});
 }
+/* OVL.hushR — рамка вещи интерфейса поверх мира (открытая стойка, 25d) в пикселях кадра: подписи и фишки
+   мира лежат выше интерфейса и легли бы на неё — те, что её задевают, в этом кадре не кладутся */
+function ovHushed(x0,y0,x1,y1){const R=OVL.hushR;return !!R&&x1>R.x0&&x0<R.x1&&y1>R.y0&&y0<R.y1;}
 /* фишка k: место (rx,ry) и размер (cw,ch) в мерке U, прозрачность, цвет, подпись, сторона подписи,
    угол стрелки. Рисунок — как у 2D: плашка, волосяной обвод, подпись, стрелка */
 const OVL_PLATE=[5/255*.72,7/255*.72,12/255*.72,.72];
@@ -205,6 +209,7 @@ function chipDom(k,rx,ry,cw,ch,A,col,label,onRight,ang,U){
   /* без видеокарты мира нет, и фишкам не над чем висеть (Node-ярус, Chrome без WebGPU) */
   if(!GPU.ok||!GPU.on)return;
   const nd=ovNd(),s=U*nd,X=Math.round(rx*s),Y=Math.round(ry*s),X1=X+cw*s,Y1=Y+ch*s,Q=OVL.cq;
+  if(ovHushed(X/nd,Y/nd,X1/nd,Y1/nd))return;
   const c=gcColor(col),ca=c[3]*A,pm=[c[0]*ca,c[1]*ca,c[2]*ca,ca],hb=pm.map(v=>v*.5);
   ovPush(Q,X,Y,X1,Y1,OVL_PLATE.map(v=>v*A),0,0,0,0,null);
   ovPush(Q,X,Y,X1,Y+s,hb,0,0,0,0,null);ovPush(Q,X,Y1-s,X1,Y1,hb,0,0,0,0,null);
@@ -224,13 +229,11 @@ function ovlDesc(){const m=gpuShader(OVL_WGSL);return {layout:"auto",vertex:{mod
 function ovFlush(){
   OVL.fl=true;
   ovHangFlush();   /* слова на вещах (08bj, M803): таблички кадра — в OVL.uq, до счёта */
+  if(typeof rackLate==="function")rackLate();   /* стойка (25d) — последней в интерфейсе: поверх всего, что положил мир */
   const n=(OVL.uq.length+OVL.lq.length+OVL.cq.length)/OVL_N;
   for(const M of [OVL.lab,OVL.chip])for(const [k,e] of M){e.on=e.fr===OVL.fno;if(OVL.fno-e.fr>600)M.delete(k);}
   OVL.fno++;
-  /* OVL.hush — кадр отдан одной вещи поверх мира (открытая стойка, 25d): подписи и фишки мира
-     лежат выше интерфейса и легли бы на неё — их слои в этом кадре сброшены. Картинки (прогоны
-     T.ur) живут только в OVL.uq, поэтому сброс не сдвигает ни одного прогона */
-  if(OVL.hush){OVL.hush=false;OVL.lq.length=OVL.cq.length=0;}
+  OVL.hushR=null;
   const cv=n&&GPU.enc?ovCanvas():null;
   if(!cv){OVL.uq.length=OVL.lq.length=OVL.cq.length=OVL.ur.length=OVL.gd.length=0;if(OVL.on){OVL.on=false;OVL.cv.style.display="none";}return;}
   OVL.nu=OVL.uq.length/OVL_N;OVL.nl=OVL.lq.length/OVL_N;   /* сколько примитивов интерфейса и подписей (наборы: порядок слоёв) */

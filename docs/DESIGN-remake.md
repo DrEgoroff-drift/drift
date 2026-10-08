@@ -275,7 +275,9 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   between `HUD_BAND` and `HUD_FLOOR`, left of `HUD_RAIL`; a narrow window gives up part of
   the middle) or shelf (phone, down to ~30 % height, `body.rackon` only there); five dials,
   the globe cell (`rackGlobe`, live parts still `globusDraw`), no screen dimming, no shadow.
-  The pod's metal helpers moved to `25c`.
+  The pod's metal helpers moved to `25c`. Pass 2: the shelf without tape, `rackBodies` (the plate
+  never over a body, suite `91qe-rack`), `rackLate` from `ovFlush` (drawn last; `OVL.hushR`
+  skips world labels and chips on it), the globe's bearings, whole minutes.
 - **M822 The map** with three weights, plates for the status lines, the hint on the selected
   object.
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
