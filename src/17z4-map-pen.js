@@ -11,13 +11,17 @@
    Без видеокарты (Node-ярус, Chrome без WebGPU) каждое движение пера — тот же
    вызов на ctx, что был. Прозрачность пера — mpAlpha (без видеокарты она же
    ctx.globalAlpha). Цвет — строкой, как у 2D */
-const MPN={q:[],lay:"u",gpu:false,al:1};
-function mpBegin(){MPN.gpu=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.on&&!!GPU.enc;MPN.lay="u";MPN.q.length=0;MPN.al=1;}
-function mpEnd(){mpFlush();MPN.gpu=false;MPN.al=1;}
+const MPN={q:[],lay:"u",gpu:false,al:1,a0:1,w:1};
+function mpBegin(){MPN.gpu=typeof GPU!=="undefined"&&!!GPU.ok&&!!GPU.on&&!!GPU.enc;MPN.lay="u";MPN.q.length=0;MPN.al=MPN.a0=MPN.w=1;}
+function mpEnd(){mpFlush();MPN.gpu=false;MPN.al=MPN.a0=MPN.w=1;if(typeof ctx!=="undefined"&&ctx)ctx.globalAlpha=1;}
 /* слой: с "u" на "o" — сначала сброс фигур под звёздами */
 function mpLay(l){if(MPN.lay==="u"&&l!=="u")mpFlush();MPN.lay=l;}
 function mpFlush(){const q=MPN.q;if(q.length&&MPN.gpu){const p=gpuNext();if(p)gpuShapes(p,q,{blend:"over"});}q.length=0;}
-function mpAlpha(a){MPN.al=a;if(!MPN.gpu)ctx.globalAlpha=a;}
+function mpAlpha(a){MPN.a0=a;MPN.al=a*MPN.w;if(!MPN.gpu)ctx.globalAlpha=MPN.al;}
+/* вес слоя (M822): у карты три веса — «вы» (вы, выбор, курс), путь (круг прыжка, связи, свой
+   маршрут) и всё остальное. Вес множит прозрачность каждого движения пера, mpAlpha слоя — внутри
+   него: слой, который сам гасит дальнее, гасит его от своего веса */
+function mpWeight(w){MPN.w=w;mpAlpha(MPN.a0);}
 /* рисунок без видеокарты на время fn (выпечка в чужой холст: ctx подменён) */
 function mp2d(fn){const g=MPN.gpu,a=MPN.al;MPN.gpu=false;MPN.al=1;try{return fn();}finally{MPN.gpu=g;MPN.al=a;}}
 function mpU(){return MPN.gpu&&MPN.lay==="u";}
@@ -156,6 +160,15 @@ function mpRhumb(ox,oy){
   for(let i=0;i<16;i++){const a=i/16*TAU;
     mpLine(ox,oy,ox+Math.cos(a)*L,oy+Math.sin(a)*L,(i%4===0)?1:.7,"rgba(150,182,212,"+((i%4===0)?.075:.04)+")");}
   mpCircle(ox,oy,Math.min(W,H)*.42,1,"rgba(150,182,212,.05)");
+}
+/* плашка материалом «Борта» (M720, 08bj): графит, кайма, срезы справа сверху и слева снизу. Над
+   звёздами (слой "o") — тем же шестиугольником, что табличка у вещи; без видеокарты — прямоугольником */
+function mpPlate(x,y,w,h){
+  const U=(typeof mapU==="function")?mapU():1;
+  if(!MPN.gpu||MPN.lay==="u"){mpRect(x,y,w,h,HANG.BODY);return;}
+  const nd=ovNd(),sn=v=>Math.round(v*nd)/nd,x0=sn(x),y0=sn(y),x1=sn(x+w),y1=sn(y+h),c=sn(5*U),e=1*U;
+  hangHex(sn(x0-e),sn(y0-e),sn(x1+e),sn(y1+e),sn(c+e*.42),HANG.EDGE,.17*MPN.al);
+  hangHex(x0,y0,x1,y1,c,HANG.BODY,.94*MPN.al);
 }
 /* подпись: шрифт, выравнивание и линия — нынешние ctx (mapFont, textAlign, textBaseline) */
 function mpText(t,x,y,col){

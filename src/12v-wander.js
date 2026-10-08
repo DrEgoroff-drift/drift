@@ -162,7 +162,7 @@ function drawWanderMap(vis,cell){
   const glyph=(sx,sy,a)=>{
     const v=vis.find(q=>q.gx===sx&&q.gy===sy);if(!v)return;
     /* перо карты (17z4): парус — треугольник с обводом, второй — две черты */
-    const ox=v.x+9,oy=v.y-10,a0=MPN.al,ln="rgba(255,230,168,.9)";
+    const ox=v.x+9,oy=v.y-10,a0=MPN.a0,ln="rgba(255,230,168,.9)";
     if(!MPN.gpu)ctx.save();mpAlpha(a0*a);
     mpTri(ox-4,oy+4,ox-1,oy-5,ox-1,oy+4,"#c9922e");
     mpPath([ox-4,oy+4,ox-1,oy-5,ox-1,oy+4],.8,ln,true);

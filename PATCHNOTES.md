@@ -8,6 +8,17 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M822 The map in three weights.** You, the selected system and the course to it are the
+  brightest things on the sheet; the jump circle, the lanes inside it and your own route are
+  one step down; the grid, the rings, the holdings, rumours, the fleet, giants and the rail lines
+  are the background (the map pen's `mpWeight`). What the selected system is, whether you reach
+  it and what the jump costs now hang at the star itself, on a plate of the M720 material with
+  the verb in the accent; the hint line at the bottom of the frame and the cost label in the
+  middle of the course are gone while the plate hangs (the action button still takes its verb
+  from the prompt). On the phone the plate is two lines and the tag at your star is just «ВЫ».
+  The header, the footer, the «ВЫ» tag and the system card stand on the same plates in the plates'
+  face; the course starts outside your ring and your tag.
+
 - **M821 The rack as a side plate.** The instrument rack (I) is a plate of the M720
   material — graphite, a cream edge, cut corners, the plates' face — standing at the right
   between the top and bottom rows of plates, in the last third of the width: the centre

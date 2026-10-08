@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 526 · top-level symbols: 7801
+Files: 527 · top-level symbols: 7812
 
 ## SYMBOLS
 
@@ -1165,12 +1165,14 @@ MAPGPU                       src/17z3-map-gpu.js:17
 MAP_BORDER_NB                src/18b-map-hold.js:81
 MAP_BOX                      src/18-mode-map.js:28
 MAP_DOM                      src/18-mode-map.js:51
+MAP_DOMR                     src/18-mode-map.js:52
 MAP_INK                      src/18-mode-map.js:50
 MAP_LAYERS                   src/18b-map-hold.js:25
 MAP_MARKS_MAX                src/18a-map-addr.js:29
-MAP_OVER                     src/18-mode-map.js:143
+MAP_OVER                     src/18-mode-map.js:146
 MAP_SPIKE_N                  src/17z3-map-gpu.js:201
-MAP_TOP                      src/18a-map-addr.js:250
+MAP_TOP                      src/18a-map-addr.js:253
+MAP_W                        src/18l-map-plate.js:8
 MATCH_BOX                    src/12uc-matches.js:21
 MATCH_BY_TIER                src/12uc-matches.js:20
 MAT_CAP                      src/18a-material.js:96
@@ -2179,7 +2181,7 @@ addPart                      src/05-parts.js:365-380
 addPath                      src/25-cockpit.js:154-158
 addRes                       src/11-log.js:161-168
 addrForm                     src/11b-speech.js:96-99
-addrify                      src/18a-map-addr.js:280-303
+addrify                      src/18a-map-addr.js:283-306
 adjTo                        src/05-parts.js:26-29
 affLabel                     src/05-parts.js:95-99
 affVal                       src/05-parts.js:89-94
@@ -2234,7 +2236,7 @@ applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
 arrive                       src/16-flight.js:172-210
-arriveSystem                 src/18-mode-map.js:652-703
+arriveSystem                 src/18-mode-map.js:685-736
 artGet                       src/08ca-gpu-canvas.js:550
 artPut                       src/08ca-gpu-canvas.js:551-696
 asMap                        src/14-save.js:209-215
@@ -3471,8 +3473,8 @@ drawLawRing                  src/12al2-laws.js:136-162
 drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
-drawMap                      src/18-mode-map.js:215-218
-drawMapIn                    src/18-mode-map.js:219-610
+drawMap                      src/18-mode-map.js:218-221
+drawMapIn                    src/18-mode-map.js:222-643
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModuleBody               src/21aa-base-rooms.js:494-502
 drawModuleFloor              src/21aa-base-rooms.js:547-573
@@ -3496,7 +3498,7 @@ drawPostcard                 src/25g-postcard.js:171-612
 drawRaid                     src/24aa-raid-draw.js:14-650
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
-drawRailMap                  src/18e-rail-net.js:223-272
+drawRailMap                  src/18e-rail-net.js:223-271
 drawRingTape                 src/11x-ring.js:107-118
 drawRoad                     src/27l-road-draw.js:88-631
 drawRocks                    src/19-mode-landing-ground.js:323-415
@@ -4757,7 +4759,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:639-647
+jump                         src/18-mode-map.js:672-680
 jumpToBase                   src/21a-mode-base.js:386-403
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
@@ -5076,32 +5078,35 @@ makerStand                   src/28y-look.js:391-397
 makerTicks                   src/03a-hull-maker.js:236-239
 makerWear                    src/03a-hull-maker.js:456
 makerWidth                   src/03a-hull-maker.js:426-453
-mapAddrBox                   src/18a-map-addr.js:225-241
-mapBack                      src/18-mode-map.js:169-180
+mapAddrBox                   src/18a-map-addr.js:228-244
+mapBack                      src/18-mode-map.js:172-183
 mapBandPaint                 src/17z-map-backdrop.js:36-77
 mapBorderEdge                src/18b-map-hold.js:86-108
 mapBox                       src/18-mode-map.js:29
-mapCell                      src/18-mode-map.js:146
+mapCell                      src/18-mode-map.js:149
 mapCellXY                    src/18a-map-addr.js:52
-mapCleanSet                  src/18-mode-map.js:183
+mapCleanSet                  src/18-mode-map.js:186
+mapCourseDash                src/18l-map-plate.js:40-47
 mapDeck                      src/18-mode-map.js:13-17
-mapFit                       src/18-mode-map.js:151-156
+mapFace                      src/18l-map-plate.js:13
+mapFit                       src/18-mode-map.js:154-159
 mapFont                      src/18-mode-map.js:42
-mapGoAddr                    src/18a-map-addr.js:213-220
+mapGoAddr                    src/18a-map-addr.js:216-223
 mapGpuOver                   src/17z3-map-gpu.js:191-194
 mapGpuPass                   src/17z3-map-gpu.js:20-24
 mapGridDraw                  src/18a-map-addr.js:55-66
 mapGridPaint                 src/17z-map-backdrop.js:108-120
-mapHit                       src/18-mode-map.js:63-101
+mapHintHung                  src/18l-map-plate.js:37
+mapHit                       src/18-mode-map.js:64-104
 mapHoldingsDraw              src/18b-map-hold.js:109-205
 mapHoldingsTop               src/18b-map-hold.js:207-247
 mapHousePatch                src/18b-map-hold.js:31-45
-mapInkBox                    src/18-mode-map.js:54
-mapInkPoly                   src/18-mode-map.js:52
-mapInkText                   src/18-mode-map.js:56
-mapJump                      src/18-mode-map.js:616-624
-mapLate                      src/18-mode-map.js:60
-mapLateFlush                 src/18-mode-map.js:70-101
+mapInkBox                    src/18-mode-map.js:55
+mapInkPoly                   src/18-mode-map.js:53
+mapInkText                   src/18-mode-map.js:57
+mapJump                      src/18-mode-map.js:649-657
+mapLate                      src/18-mode-map.js:61
+mapLateFlush                 src/18-mode-map.js:71-104
 mapLayer                     src/18b-map-hold.js:26
 mapLayerNext                 src/18b-map-hold.js:28
 mapLayerOn                   src/18b-map-hold.js:27
@@ -5111,34 +5116,38 @@ mapMarkToggle                src/18a-map-addr.js:33-41
 mapMarks                     src/18a-map-addr.js:30
 mapMarksDraw                 src/18a-map-addr.js:98-113
 mapNebula                    src/17z-map-backdrop.js:15-33
-mapOverOn                    src/18-mode-map.js:145
-mapOverTap                   src/18-mode-map.js:210-214
-mapOverview                  src/18-mode-map.js:188-209
+mapOverOn                    src/18-mode-map.js:148
+mapOverTap                   src/18-mode-map.js:213-217
+mapOverview                  src/18-mode-map.js:191-212
 mapOwnHere                   src/18b-map-hold.js:64-69
-mapParseAddr                 src/18a-map-addr.js:221-224
-mapPeek                      src/18-mode-map.js:162-168
+mapParseAddr                 src/18a-map-addr.js:224-227
+mapPeek                      src/18-mode-map.js:165-171
 mapPriceDraw                 src/12aa-need.js:336-346
 mapPriceRows                 src/12aa-need.js:311-335
 mapRail                      src/18-mode-map.js:18-21
-mapRange                     src/18-mode-map.js:147
-mapReset                     src/18-mode-map.js:181
+mapRange                     src/18-mode-map.js:150
+mapReset                     src/18-mode-map.js:184
 mapRhumbPaint                src/17z-map-backdrop.js:82-101
 mapRibbon                    src/17z3-map-gpu.js:181-189
 mapRingsDraw                 src/18a-map-addr.js:68-80
-mapRoseDraw                  src/18a-map-addr.js:188-211
+mapRoseDraw                  src/18a-map-addr.js:191-214
 mapRulerTop                  src/18a-map-addr.js:53
-mapRulersDraw                src/18a-map-addr.js:115-186
+mapRulersDraw                src/18a-map-addr.js:115-189
 mapRumoursDraw               src/18a-map-addr.js:82-96
+mapSelBlock                  src/18l-map-plate.js:59-64
+mapSelHang                   src/18l-map-plate.js:18-35
+mapSelInk                    src/18l-map-plate.js:54-58
 mapStarPaint                 src/17z-map-backdrop.js:126-146
 mapStarsGpu                  src/17z3-map-gpu.js:202-230
+mapTW                        src/18l-map-plate.js:12
 mapTagAt                     src/18b-map-hold.js:71-78
-mapTopPlace                  src/18a-map-addr.js:251-278
+mapTopPlace                  src/18a-map-addr.js:254-281
 mapTrassaPairs               src/18b-map-hold.js:47-59
 mapU                         src/18-mode-map.js:41
 mapUnderTrassa               src/18b-map-hold.js:60-63
-mapViewC                     src/18-mode-map.js:135
-mapZoomK                     src/18-mode-map.js:144
-mapZoomSet                   src/18-mode-map.js:148
+mapViewC                     src/18-mode-map.js:138
+mapZoomK                     src/18-mode-map.js:147
+mapZoomSet                   src/18-mode-map.js:151
 marketCtx                    src/12-economy.js:110-120
 marketFor                    src/12-economy.js:2-24
 marketPrice                  src/12-economy.js:151-154
@@ -5270,32 +5279,34 @@ mountTakes                   src/05d-mounts.js:71-76
 mountWhyNot                  src/05d-mounts.js:78-84
 mountsOf                     src/05d-mounts.js:29-45
 mouseWalkAt                  src/15-input.js:447-476
-mp2d                         src/17z4-map-pen.js:22
+mp2d                         src/17z4-map-pen.js:26
 mpAlpha                      src/17z4-map-pen.js:20
-mpArc                        src/17z4-map-pen.js:62-69
+mpArc                        src/17z4-map-pen.js:66-73
 mpBegin                      src/17z4-map-pen.js:15
-mpCircle                     src/17z4-map-pen.js:57-60
-mpDash                       src/17z4-map-pen.js:48-55
-mpDashCircle                 src/17z4-map-pen.js:71-79
-mpDashFrame                  src/17z4-map-pen.js:117-121
-mpDisc                       src/17z4-map-pen.js:81-84
-mpEll                        src/17z4-map-pen.js:86-90
+mpCircle                     src/17z4-map-pen.js:61-64
+mpDash                       src/17z4-map-pen.js:52-59
+mpDashCircle                 src/17z4-map-pen.js:75-83
+mpDashFrame                  src/17z4-map-pen.js:121-125
+mpDisc                       src/17z4-map-pen.js:85-88
+mpEll                        src/17z4-map-pen.js:90-94
 mpEnd                        src/17z4-map-pen.js:16
 mpFlush                      src/17z4-map-pen.js:19
-mpFrame                      src/17z4-map-pen.js:110-115
-mpGlow                       src/17z4-map-pen.js:98-103
-mpHatch                      src/17z4-map-pen.js:130-140
+mpFrame                      src/17z4-map-pen.js:114-119
+mpGlow                       src/17z4-map-pen.js:102-107
+mpHatch                      src/17z4-map-pen.js:134-144
 mpLay                        src/17z4-map-pen.js:18
-mpLine                       src/17z4-map-pen.js:27-34
-mpPath                       src/17z4-map-pen.js:36-46
-mpQuad                       src/17z4-map-pen.js:92-96
-mpRect                       src/17z4-map-pen.js:105-108
-mpRhumb                      src/17z4-map-pen.js:152-159
-mpS                          src/17z4-map-pen.js:24
-mpText                       src/17z4-map-pen.js:161-165
-mpTextAlong                  src/17z4-map-pen.js:143-149
-mpTri                        src/17z4-map-pen.js:123-128
-mpU                          src/17z4-map-pen.js:23
+mpLine                       src/17z4-map-pen.js:31-38
+mpPath                       src/17z4-map-pen.js:40-50
+mpPlate                      src/17z4-map-pen.js:166-172
+mpQuad                       src/17z4-map-pen.js:96-100
+mpRect                       src/17z4-map-pen.js:109-112
+mpRhumb                      src/17z4-map-pen.js:156-163
+mpS                          src/17z4-map-pen.js:28
+mpText                       src/17z4-map-pen.js:174-178
+mpTextAlong                  src/17z4-map-pen.js:147-153
+mpTri                        src/17z4-map-pen.js:127-132
+mpU                          src/17z4-map-pen.js:27
+mpWeight                     src/17z4-map-pen.js:24
 msgHeld                      src/08-state.js:422
 mslBoom                      src/16b-missile.js:154-167
 mslCheck                     src/16b-missile.js:114-120
@@ -7510,7 +7521,7 @@ updateCombat                 src/13-pirates.js:119-304
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:71-141
-updateMap                    src/18-mode-map.js:625-638
+updateMap                    src/18-mode-map.js:658-671
 updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
@@ -7773,8 +7784,8 @@ worldCovered                 src/08-state.js:426
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
-wrapCount                    src/18-mode-map.js:115-123
-wrapLeft                     src/18-mode-map.js:102-111
+wrapCount                    src/18-mode-map.js:118-126
+wrapLeft                     src/18-mode-map.js:105-114
 wreck                        src/28-loop.js:16-44
 wreckInteract                src/12l-barge.js:352-378
 wrecksHere                   src/12l-barge.js:349
@@ -8671,13 +8682,13 @@ zoomTo                       src/15-input.js:358
 ## src/17z3-map-gpu.js · 17 KB
   · небо карты на видеокарте (G10, docs/DESIGN-gpu.md §5):1
 
-## src/17z4-map-pen.js · 12 KB
+## src/17z4-map-pen.js · 13 KB
   · перо карты (G15: карта с #c на видеокарту):1
 
-## src/18-mode-map.js · 54 KB
+## src/18-mode-map.js · 56 KB
   · карта:1
   · где у карты пол и где правый борт:3
-  · карта: ночное небо, а не схема молекулы:124
+  · карта: ночное небо, а не схема молекулы:127
 
 ## src/18a-map-addr.js · 20 KB
   · карта говорит адресами (M347):1
@@ -8728,6 +8739,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/18k-rail-scheme.js · 19 KB
   · пересадка и схема на бумаге (M472 хвост, 18.09):1
+
+## src/18l-map-plate.js · 6 KB
+  · карта: веса и таблички (M822):1
 
 ## src/19-mode-landing-ground.js · 27 KB
   · посадка: разрез грунта:1

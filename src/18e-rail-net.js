@@ -245,15 +245,14 @@ function drawRailMap(V,cell,pale){
   for(let i=0;i<L.length;i++){
     const l=L[i],c=RAIL_COL[l.kind],r=l.kind==="radial",hw=((r?1:1.4)+k*(r?.6:1))/2,my=mine(l);
     for(const q of R[i]){
+      /* вес карты (M822): своя линия — весом пути, без отсвета через полкарты; чужие — фоном */
       if(my){
-        /* горящий путь: широкий отсвет сложением, лента цвета линии, белёсая сердцевина */
-        mapRibbon(GL,q,hw+3+k*4,[c[0],c[1],c[2],.07+.06*k]);
-        mapRibbon(GL,q,hw+1,[c[0],c[1],c[2],.16]);
-        mapRibbon(SH,q,hw*1.2,[c[0],c[1],c[2],.55+.35*k]);
-        mapRibbon(GL,q,Math.max(.35,hw*.35),[255,250,240,.35]);
+        /* горящий путь: узкий отсвет сложением, лента цвета линии, белёсая сердцевина */
+        mapRibbon(GL,q,hw+1.5+k*1.5,[c[0],c[1],c[2],.035+.03*k]);
+        mapRibbon(SH,q,hw,[c[0],c[1],c[2],.22+.12*k]);
+        mapRibbon(GL,q,Math.max(.3,hw*.3),[255,250,240,.12]);
       }else{
-        mapRibbon(SH,q,hw,[c[0],c[1],c[2],(r?.10:.13)+k*(r?.2:.26)]);
-        if(!r)mapRibbon(GL,q,hw+2+k*2,[c[0],c[1],c[2],.02+.025*k]);
+        mapRibbon(SH,q,hw,[c[0],c[1],c[2],((r?.10:.13)+k*(r?.2:.26))*.5]);
       }
     }
   }

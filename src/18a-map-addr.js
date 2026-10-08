@@ -153,7 +153,7 @@ function mapRulersDraw(V,cell,foot){
     if(me||sel)mpRect(xL-8*U-String(gy).length*5*U,y+5*U,String(gy).length*5*U,1,col);
   }
   /* шапка: где вы и что выбрано */
-  ctx.textAlign="left";mapFont(9);
+  ctx.textAlign="left";mapFace(11);
   const nm=(G.sys&&typeof nameOf==="function")?nameOf(G.sys):(G.sys?G.sys.name:"");
   const l1="ВЫ · сектор "+G.sx+":"+G.sy+(nm?" · «"+nm+"»":"");
   const dch=Math.max(Math.abs(G.sel.x-G.sx),Math.abs(G.sel.y-G.sy));
@@ -166,14 +166,17 @@ function mapRulersDraw(V,cell,foot){
   const hx=T?T.hx:xL+8*U,hy=T?T.hy:y0+30*U;
   const avail=T?T.hw:RX-hx-4;
   /* строка длиннее места теряет хвост по « · », а не лезет под поле адреса */
-  const trim=t=>{let s2=t;while(s2&&ctx.measureText(s2).width>avail-10&&s2.indexOf(" · ")>0)s2=s2.slice(0,s2.lastIndexOf(" · "));return s2;};
+  const trim=t=>{let s2=t;while(s2&&mapTW(s2)>avail-18*U&&s2.indexOf(" · ")>0)s2=s2.slice(0,s2.lastIndexOf(" · "));return s2;};
   const L1=trim(l1),L2=trim(l2);
-  const w1=ctx.measureText(L1).width,w2=L2?ctx.measureText(L2).width:0,wmax=Math.min(avail,Math.max(w1,w2)+10*U);
-  /* подложка сплошная: подпись листа под полупрозрачной шапкой читалась сквозь неё (зрение 06.10.2026) */
-  mpRect(hx-4*U,hy-10*U,wmax,(l2?26:14)*U,"rgba(6,10,16,.9)");
-  mapBox("шапка карты",hx-4*U,hy-10*U,wmax,(l2?26:14)*U);
-  mpText(L1,hx,hy,"#7fe6d8");
-  if(L2)mpText(L2,hx,hy+12*U,"#f2b25c");
+  const w1=mapTW(L1),w2=L2?mapTW(L2):0,wmax=Math.min(avail,Math.max(w1,w2)+18*U);
+  /* плашка материалом «Борта» (M822): графит с каймой, слева риска «вы» его цветом; строка выбора —
+     цветом прицела. Подложка сплошная: подпись листа под шапкой сквозь неё не читается */
+  const hh=(L2?33:19)*U;
+  mpPlate(hx-9*U,hy-13*U,wmax,hh);
+  mpRect(hx-9*U,hy-13*U+5*U,2*U,hh-10*U,"#7fe6d8");
+  mapBox("шапка карты",hx-9*U,hy-13*U,wmax,hh);
+  mpText(L1,hx,hy,HANG.INK);
+  if(L2)mpText(L2,hx,hy+14*U,"#f2b25c");
   /* обводка найденной клетки — три секунды после поиска */
   if(G.mapOutline&&now()-G.mapOutline.t<3000){
     const c=mapCellXY(G.mapOutline.sx,G.mapOutline.sy,V,cell);

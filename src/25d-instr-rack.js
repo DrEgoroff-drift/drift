@@ -243,7 +243,7 @@ function rackPaint(c,g0,part){
     /* плашка: срезы справа сверху и слева снизу, как у табличек и плит борта */
     const cu=8;
     c.beginPath();c.moveTo(0,0);c.lineTo(w-cu,0);c.lineTo(w,cu);c.lineTo(w,h);c.lineTo(cu,h);c.lineTo(0,h-cu);c.closePath();
-    c.fillStyle="rgba(18,17,16,.97)";c.fill();   /* плотнее табличек: поверхность для чтения, щит мира сквозь неё не читается */
+    c.fillStyle="rgb(18,17,16)";c.fill();   /* непрозрачна: плашка — вещь, сквозь неё ни щит, ни плакат мира не светят */
     c.beginPath();c.moveTo(.5,.5);c.lineTo(w-cu,.5);c.lineTo(w-.5,cu);c.lineTo(w-.5,h-.5);c.lineTo(cu,h-.5);c.lineTo(.5,h-cu);c.closePath();
     c.strokeStyle=rackCr(.17);c.lineWidth=1;c.stroke();
     /* метка роли у шапки: кремовая черта, с неё начинается чтение */

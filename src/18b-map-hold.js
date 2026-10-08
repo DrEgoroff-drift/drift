@@ -86,7 +86,7 @@ const MAP_BORDER_NB=[[1,0,1,0,1,1],[-1,0,0,0,0,1],[0,1,0,1,1,1],[0,-1,0,0,1,0]];
 function mapBorderEdge(key,ax,ay,bx,by,a,cell,nx,ny){   /* nx,ny — внутрь своей клетки */
   const P=powerOf(key),col=rgba(hex2rgb(P.col),a.toFixed(3));
   const L=Math.hypot(bx-ax,by-ay);if(L<1)return;
-  const ux=(bx-ax)/L,uy=(by-ay)/L,g=!MPN.gpu,al=MPN.al;
+  const ux=(bx-ax)/L,uy=(by-ay)/L,g=!MPN.gpu,al=MPN.a0;
   if(g)ctx.save();
   const along=(step,fn)=>{const n=Math.max(1,Math.round(L/step));for(let i=0;i<n;i++){const t=(i+.5)/n*L;fn(ax+ux*t,ay+uy*t,i);}};
   if(cell<24){mpAlpha(al*.7);mpLine(ax,ay,bx,by,1,col);mpAlpha(al);if(g)ctx.restore();return;}
