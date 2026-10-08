@@ -42,6 +42,7 @@ const GPU_PIPE_KEYS=[
   "pipe:fld.gew|over",
   "pipe:fld.gnb.emi|add",
   "pipe:fld.gst|hull",
+  "pipe:fld.gsy.belt|over",
   "pipe:fld.gsy.star|over",
   "pipe:fld.hgflame|add",
   "pipe:gen|over",

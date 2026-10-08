@@ -430,6 +430,21 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   noise-ragged radius and a wide fade the light is pulled toward a floor `.3·.05/(cy+.05)`,
   near the star only to .75. Measured cover>24 in r400 round the ship: 0–14 % on 1920, ≤ 2 %
   on 390; mass value spread .27–.39.
+  *M824 done (08.10, remake-a2):* `17gc-sys-belt` (the belt left `17c`). Clumps are derived from
+  the belt seed per arc cell of 560 (55 % on, σ 70–180 along the arc, radial width 34–64, offset
+  ±40, density .45–1), cached on the belt; `sbeltDens` adds a thin ring floor. Rocks: a world grid
+  of 34, a per-cell threshold against density × an actor term (a ring of extra density at
+  ≈ .2·min(W,H) round the ship, a clearing under it, plus the bare ring there) — the soft edge of
+  that threshold is the alpha, so nothing pops. Bodies go through the `24be` pool: camera
+  straight down at `D=2400/Z`, `F=Z·D` (the world lands on screen exactly as 2D), basis right
+  (1,0,0) up (0,−1,0) fwd (0,0,1); `brockCam` gained `lz` (the star lifted toward the camera,
+  `.2·dist+150`, so a terminator shows) and `fogD`; 12 `makeRock` meshes per belt, six tints
+  round the wheel, the star colour softened 40 % toward white for rocks; faded rocks in the
+  `rockf` pipe. The 2D path keeps `ROCK_SHAPES` for no GPU. The orbit band in `gsyOrbits` is
+  gone; the haze is the field `gsy.belt`: the ring floor (.035) and up to 12 on-screen clumps as
+  arc-stretched blobs, arc-space noise (the `atan2` seam hidden by blending two unwrappings), torn
+  by a round world-space puff mask — a first try without it read as the very band it replaced.
+  Belt dots carry their density in alpha.
 
 ### Stage D — the way down (M830–M839)
 
