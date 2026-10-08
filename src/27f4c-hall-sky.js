@@ -22,9 +22,9 @@ function hallPlanet(){
 /* место шара на дальней плоскости окна (м): из глаза места КОРАБЛЬ через левый верх проёма; радиус — по
    угловому размеру, на научной станции — большой всегда */
 function hallOrbPlace(n,st){
-  const c=HALL_CAMS.ship,e=c.eye,pt=[HALL_WIN[0]+1.55,2.55,HALL_B],k=(HALL_B-40-e[2])/(HALL_B-e[2]);
+  const c=HALL_CAMS.ship,e=c.eye,pt=[HALL_WIN[0]+1.3,2.2,HALL_B],k=(HALL_B-40-e[2])/(HALL_B-e[2]);
   const ang=(n.p.radius||40)/Math.max(n.d,(n.p.radius||40)*1.2);
-  let r=clamp(2.6+9*ang,2.6,7);if(hallT(st).big)r=Math.max(r,7.4);
+  let r=clamp(2.3+6*ang,2.3,3.1);if(hallT(st).big)r=Math.max(r,7.4);   /* шар целиком в проёме: терминатор читается */
   return [e[0]+(pt[0]-e[0])*k,e[1]+(pt[1]-e[1])*k,r,1.0];
 }
 function hallOrbBake(n){

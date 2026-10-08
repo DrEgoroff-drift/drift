@@ -47,6 +47,22 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
       ok(lim.inst<=R3_MAXI,"«"+id+"» с пилотом: экземпляров "+lim.inst+" ≤ "+R3_MAXI);}
     HALL.place=was;}
   {const was=HALL.night;HALL.night=1;eq(hallNight(),1,"?hallnight=1 — ночь");HALL.night=0;eq(hallNight(),0,"?hallnight=0 — день");HALL.night=was;}
+  /* день ≠ ночь: днём рассеянный свет дока вдвое сильнее ночного, окно ярче; ночью ключ — лампы людей */
+  {const was=HALL.night,L=hallLayout("trade");L.room=hallRoomMesh(L);const cm=hallCam(HALL_CAMS.trade,1920,1080,true);
+    HALL.night=0;const D=hallScene(L,cm,1.5);HALL.night=1;const N=hallScene(L,cm,1.5);HALL.night=was;
+    ok(D.sky[3]>=2*N.sky[3],"днём рассеянный "+D.sky[3].toFixed(2)+" ≥ 2× ночного "+N.sky[3].toFixed(2));
+    ok(D.win2[3]>N.win2[3]*1.8,"ночью окно гаснет: "+D.win2[3].toFixed(2)+" → "+N.win2[3].toFixed(2));
+    ok(N.lights[0].c[0]>D.lights[0].c[0],"ночью лампа над стойкой сильнее дневной");
+    /* бар — дальний конец того же зала: не больше трёх тёплых ламп, без конусов в дыму */
+    const bl=D.lights.filter(l=>l.p[0]>HALL_XB-4.6);
+    ok(hallLamps(L).length<=3,"над баром ламп "+hallLamps(L).length+" ≤ 3");
+    ok(bl.length>0&&bl.every(l=>(l.vol||0)<=.3),"у света бара нет конусов в дыму (vol ≤ .3)");
+    /* сидящие у стойки — на табуретах лицом к стойке, не к камере */
+    const cand=L.people.filter(P=>P.kind==="cand");
+    ok(cand.every(P=>/^stool/.test(P.pose)&&Math.cos(P.yaw)<-.5),"кандидаты бара ("+cand.length+") сидят лицом к стойке");
+    ok(cand.every(P=>P.x<HALL_XB+HALL_SEAT_PILOT-.3),"табурет пилота у правого конца стойки свободен");}
+  /* зал не пуст: кроме хозяина и пилота — ещё люди в работе */
+  ok(hallLayout("trade").people.filter(P=>P.kind==="crowd"&&P.x<HALL_XB-4.6).length>=2,"в зале, кроме хозяина, ещё двое");
 
   /* наезд: от двери к месту, к концу — ровно цель */
   hallGo("board",true);
@@ -62,4 +78,16 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
   hallOpen();
   ok(!HALL.open&&!HALL.cn,"с выключенным залом hallOpen ничего не открывает");
   HALL.on=was;
+}));
+
+/* подсказка say() в зале на ПК — плашкой на плите, не полосой через зал (окно ≥ 900) */
+TEST_SUITES.push(()=>suite("зал станции: подсказка не ложится на зал",{tier:"browser"},()=>{
+  const m=document.getElementById("msg"),st=document.getElementById("station");
+  ok(!!m&&!!st,"есть #msg и #station");if(!m||!st)return;
+  const was=st.className,txt=m.textContent;
+  st.classList.add("scr","hall","open");m.textContent="Отметка: система отмечена на карте";
+  const r=m.getBoundingClientRect(),w=innerWidth;
+  if(w>=900)ok(r.left>=w*hallHero(w)-1,"плашка левее края зала нет: "+r.left.toFixed(0)+" ≥ "+(w*hallHero(w)).toFixed(0));
+  ok(r.width<w*.62,"плашка, не полоса: "+r.width.toFixed(0)+" из "+w);
+  st.className=was;m.textContent=txt;
 }));

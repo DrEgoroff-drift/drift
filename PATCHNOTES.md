@@ -168,9 +168,18 @@ could ever save.
   a window on the system's planet and the dock, and the cantina's bar at the far end. The
   camera glides to the place of each section; the screens sit on a graphite plate over the
   right 60 % on a PC (never narrower than 880 px of layout) and under a 36 % strip on a phone.
-  Your pilot stands in the hall at the place of the open section (at the counter, at the board,
-  at the window) in the orange of «Сцена»'s people; people are a fifth of the frame. The hall keeps a shift clock:
-  at night the window goes dark, the wall wash fades and the sconce and lamps carry the room.
+  Your pilot stands in the hall at the place of the open section in the orange of «Сцена»'s
+  people, posed for the place: leaning on an elbow at the counter, hands on hips at the board,
+  a palm on the window frame, on a stool at the bar; people are a fifth of the frame. The hall
+  is lived in: a visitor reads the board, a loader works by the bench, pipes and a cable tray run
+  under the ceiling, crates and sacks stand by the counter, drums, plates, cage lamps and floor
+  lines. The window shows the dock (a hull at the berth under a floodlight, a truss tower and
+  boom, beacons) and the system's planet whole in the frame. The hall keeps a shift clock: by
+  day the dock light through the window is the key and the hall reads to the ceiling; at night
+  the window is deep blue and the lamps of people carry the room. The bar is the far end of the
+  same hall: a counter with people on stools facing it, a table with two sitting, three warm
+  lamps and the sign at the side. A message in the hall is a small plate on the screens, not a
+  strip across the room.
   The things are named by small plates with a leader line beside them (ДОСКА, СТОЙКА, the
   planet, ВЕРСТАК, КОНТОРА). `?hall=0` keeps the old desk; `?hallnight=0|1` and
   `?hallpilot=0` are for the stand.

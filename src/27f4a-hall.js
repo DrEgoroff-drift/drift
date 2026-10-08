@@ -33,8 +33,14 @@ const HALL_STRIP=.36;      /* телефон: доля высоты под по�
 /* пилот — сам игрок у места раздела, первым планом спиной на три четверти: мерило человека в кадре.
    Риг планеты (21pha) живёт в своём движке, в зале — человек 27f3 в лётной куртке, один на всех */
 const HALL_PILOT_M={seed:0x9117D,role:"cmd",loy:70,xp:0,traits:[],jac:[238,115,38]};
-const HALL_PILOT_AT={board:[-2.9,-1.2,Math.PI-.35,"stand"],trade:[-4.62,-.2,-Math.PI/2,"bar"],
-  ship:[2.15,-.95,Math.PI+.3,"stand"],site:[2.15,-.95,Math.PI+.3,"stand"],know:[1.75,-1.25,Math.PI+.5,"stand"],hold:[4.0,-1.35,Math.PI*.78,"stand"]};
+/* поза — по месту: у стойки на локте, у доски руки в боки и голова к листам, у окна ладонь на раме, в баре — на табурете */
+const HALL_PILOT_AT={board:[-2.85,-1.25,Math.PI-.3,"hips"],trade:[-4.45,-.15,-Math.PI/2,"elbow"],
+  ship:[2.62,-2.27,Math.PI+.22,"frame"],site:[2.62,-2.27,Math.PI+.22,"frame"],know:[1.75,-1.25,Math.PI+.5,"hips"],hold:[4.0,-1.35,Math.PI*.78,"hips"],
+  folk:[HALL_XB+1.72,.36,Math.PI-.5,"stool1"]};
+const HALL_SEAT_PILOT=1.72;
+/* столик бара — первым планом слева, перед пустым концом стойки: двое сидят (x, z относительно бара) */
+const HALL_BAR_TABLE={x:-1.75,z:2.25,seats:[[-2.3,1.95],[-1.3,1.8]]};
+const HALL_SGN=[-4.4,-2.3,2.32,2.62];   /* вывеска бара — сбоку, над дверью кантины (x относительно бара) */   /* табурет пилота у правого конца стойки бара (x относительно бара) */
 /* смена станции: сутки — 24 мин игрового часа; ночью окно гаснет до звёзд, держат лампы людей */
 const HALL_DAY_MS=24*60e3;
 const HALL_KEYX=-5.72;
@@ -56,11 +62,11 @@ const HALL_TYPES={
 const HALL_CAMS={
   board:{eye:[-1.9,1.6,5.4],   tgt:[-3.2,1.45,HALL_B],fy:1.1},
   trade:{eye:[-1.0,1.65,5.6],  tgt:[-5.3,1.3,.3],     fy:1.1},
-  ship: {eye:[.6,1.55,5.8],    tgt:[1.3,1.95,HALL_B], fy:1.1},
+  ship: {eye:[.6,1.55,5.8],    tgt:[1.5,1.85,HALL_B], fy:1.0},
   know: {eye:[-.2,1.6,4.6],    tgt:[1.2,1.0,-2.2],    fy:1.2},
   folk: {eye:[HALL_XB-.4,1.55,6.0],tgt:[HALL_XB-.2,1.2,-.6],fy:1.3},
   hold: {eye:[1.6,1.65,5.0],   tgt:[4.7,1.0,-1.6],    fy:1.05},
-  site: {eye:[1.6,1.55,5.8],   tgt:[3.0,1.95,HALL_B], fy:1.1}
+  site: {eye:[1.6,1.55,5.8],   tgt:[2.6,1.85,HALL_B], fy:1.0}
 };
 /* телефон: полоса шире, чем высока, — поле уже, ширина та же, что у героя на ПК (человек ~.33 полосы) */
 const HALL_PH_FY=.62;
@@ -124,15 +130,28 @@ function hallLayout(st){
   /* хозяин стойки: в комбинезоне смотрителя, стоит за стойкой лицом в зал */
   const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"keep",loy:64,xp:0,traits:[]};
   L.people.push({id:"hallkeep",m:keep,pose:"bar",x:-5.86,z:.62,yaw:Math.PI/2-.12,lod:1,kind:"keep"});
+  /* зал не пуст: посетитель читает доску, грузчик у бочек под окном (стоят в работе, не в строю) */
+  L.people.push({id:null,m:{seed:hashi(seed,0xB0A,2)>>>0,loy:50,traits:[]},pose:"mug",x:-4.05,z:-1.9,yaw:Math.PI-.15,lod:1,kind:"crowd"});
+  if(!T.stalls)L.people.push({id:null,m:{seed:hashi(seed,0x10AD,3)>>>0,loy:50,traits:[]},pose:"hips",x:-.05,z:-1.55,yaw:-2.3,lod:1,kind:"crowd"});
   /* бар: люди кантины на своих местах, сдвинутые в конец зала; кино и столики дел — забота M814 */
   if(bar&&typeof c3Layout==="function"){
     const cl=(G.cantina&&G.cantina.key===G.sys.key)?G.cantina.list:stationMgrs(G.sys);
     const free=cl.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
     const folk=(typeof folkShown==="function")?folkShown():null;
     const CL=c3Layout(1280,400,free,[],folk);
-    L.seats=CL.seats;L.bx=CL.bx;L.stories=CL.stories;
+    /* табуреты — левее табурета пилота; сидящие лицом к стойке на три четверти, парами друг к другу */
+    const n=CL.seats.length,a=C3_CL+.4,b2=HALL_SEAT_PILOT-.6,stp=n?Math.min(.8,(b2-a)/n):0;
+    L.seats=CL.seats.map((_,i)=>b2-stp*(n-1-i)-stp/2);L.bx=CL.bx;L.stories=CL.stories;
+    let ci=0,ti=0;
     for(const P of CL.people){if(P.kind==="kino"||P.z<HALL_B+.35)continue;
-      L.people.push(Object.assign({},P,{x:P.x+HALL_XB,id:P.id&&("bar:"+P.id)}));}
+      const Q=Object.assign({},P,{x:P.x+HALL_XB,id:P.id&&("bar:"+P.id)});
+      if(P.kind==="cand"){Q.x=HALL_XB+L.seats[ci];Q.yaw=Math.PI+(ci%2?.5:-.5);ci++;}
+      if(P.kind==="crowd"&&P.pose==="table"){const s=HALL_BAR_TABLE.seats[ti++];if(!s)continue;const T2=HALL_BAR_TABLE;
+        Q.x=HALL_XB+s[0];Q.z=s[1];Q.yaw=Math.atan2(T2.x-s[0],T2.z-s[1]);}
+      L.people.push(Q);}
+    /* за столиком всегда двое: недостающих — из завсегдатаев */
+    for(const T2=HALL_BAR_TABLE;ti<T2.seats.length;ti++){const s=T2.seats[ti];
+      L.people.push({id:null,m:{seed:hashi(seed,ti,0x7AB1)>>>0,loy:50,traits:[]},pose:"table",x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
   }
   /* блошинец: у прилавков покупатели, дальняя толпа (LOD 0) */
   if(T.stalls){const n=3+((seed>>>3)%3);
@@ -180,49 +199,54 @@ function hallScene(L,cam,t){
     M.set(B,(ii*R3_PART)*16);M.set(Mh,(ii*R3_PART+1)*16);cpRig(M,ii*R3_PART,Mh,pm,cpFace(HALL_PILOT_M,null));
     for(let k=0;k<2;k++)M.set(B,(ii*R3_PART+2+k)*16);
     draws.push([pm,ii,1]);ii++;}
-  /* свет: ключ над стойкой, заливка окна, (тени — у них), потом отсвет и своё у типа;
-     ночью смены окно гаснет до звёзд, рассеянный падает, бра и ключ — люди работают — держат зал */
+  /* свет смены. ДЕНЬ: ключ — окно и свет дока: холодное небо заливает зал (стены 25–35 % тона, потолок
+     отсветом пола 15–20 %), луч окна с пылью кладёт пятно и тени людей; лампы — вторые.
+     НОЧЬ: окно тёмно-синее, рассеянный падает вчетверо, ключ — лампы людей: стойка, бра, бар */
   const nk=hallNight(),day=1-nk;
   const lights=[],bulbs=[],key=r3Lin(T.key),fill=r3Lin(T.fill),dk=T.dark?1:0;
   const ky=hallKeyY(T);
-  /* ключ: над краем стойки со стороны хозяина — лицо и столешница в одном луче */
-  lights.push({p:[HALL_KEYX,ky,.62],range:6.5,c:r3Sc(key,dk?9:7.5),spot:1,d:[0,-1,0],cosO:Math.cos(.62),cosI:Math.cos(.3),shadow:1,vol:dk?.45:.22});
+  /* лампа над стойкой: лицо и столешница в одном луче; ночью — ключ зала */
+  lights.push({p:[HALL_KEYX,ky,.62],range:6.5,c:r3Sc(key,(dk?9:7.5)*(1+.25*nk)),spot:1,d:[0,-1,0],cosO:Math.cos(.62),cosI:Math.cos(.3),shadow:1,vol:dk?.3:.15});
   bulbs.push([HALL_KEYX,ky,.62,dk?1.1:.9]);
-  const wy=hallWinY(T),wc=[(HALL_WIN[0]+HALL_WIN[1])/2,(wy[0]+wy[1])/2+.25,HALL_B-.7];
-  lights.push({p:wc,range:T.big?10:9,c:r3Sc(hallMix3(fill,[.35,.45,.9],nk),T.fp*2.2*(.04+.96*day)),spot:1,d:[0,-.8,.6],cosO:Math.cos(.52),cosI:Math.cos(.22),shadow:1,vol:T.win===1?.45*day:0});
-  /* бар: лампы кантины, тень у двух ближних */
-  if(L.bar){const LT=CANT_LIGHT[L.st]||CANT_LIGHT.trade,tone=r3Lin(mixc(LT.tone,acc,.25));
-    hallLamps(L).forEach((x,i)=>{lights.push({p:[x,2.03+C3_LH,.12],range:5,c:r3Sc(tone,(L.st==="sci"?4.6:7.5)*LT.pow),spot:1,d:[0,-.97,.24],
-      cosO:Math.cos(Math.min(1.35,.8*LT.cone)),cosI:Math.cos(Math.min(1.2,.42*LT.cone)),shadow:i<3?1:0,vol:L.st==="sci"?.25:.9});
+  /* окно: высоко под проёмом и круто вниз — пятно до середины зала, тени людей к камере; конус не
+     достаёт пола у камеры (глянец зеркалил его там пятном). Пыль в луче — днём */
+  const wy=hallWinY(T),wx=(HALL_WIN[0]+HALL_WIN[1])/2,dock=hallMix3(hallMix3(fill,r3Lin([205,222,255]),.6),[.04,.07,.2],nk);
+  lights.push({p:[wx,Math.min(hc-.2,wy[1]+.15),HALL_B+.3],range:T.big?11:10,c:r3Sc(dock,T.fp*(dk?3:4.2)*(.06+.94*day)),spot:1,
+    d:[0,-.82,.57],cosO:Math.cos(.5),cosI:Math.cos(.18),shadow:1,vol:(T.win===1?.6:.4)*day});
+  /* бар: не больше трёх тёплых ламп, луч — на стойку (лужи света на полу и конусы в дыму не нужны);
+     ночью бар ярче зала, днём до него доходит окно */
+  if(L.bar){const LT=CANT_LIGHT[L.st]||CANT_LIGHT.trade,tone=r3Lin(mixc(mixc(LT.tone,acc,.2),[255,196,130],.35));
+    hallLamps(L).forEach((x,i)=>{lights.push({p:[x,2.03+C3_LH,.12],range:4.2,c:r3Sc(tone,(L.st==="sci"?4.2:6)*LT.pow*(.8+.45*nk)),spot:1,d:[0,-1,-.12],
+      cosO:Math.cos(.78),cosI:Math.cos(.3),shadow:i<2?1:0,vol:.08});
       bulbs.push([x,2.03+C3_LH,.12,LT.pow*(L.st==="sci"?.4:1)]);});
     const fl=(Math.sin(t*.31+L.seed%7)>-.92)?1:.35;
-    lights.push({p:[HALL_XB-1.55,2.26,HALL_B+.35],range:2.6,c:r3Sc(r3Lin(acc),1.5*fl),vol:.2});}
+    lights.push({p:[HALL_XB+(HALL_SGN[0]+HALL_SGN[1])/2,2.3,HALL_B+.35],range:2.2,c:r3Sc(r3Lin(acc),.7*fl),vol:0});}
   /* доска — холодная полоса над ней; контора — настольная лампа (тёплая, малая) */
-  lights.push({p:[-3.4,Math.min(hc-.3,2.85),HALL_B+.75],range:3.6,c:r3Sc(r3Lin(dk?[200,190,170]:[214,224,240]),(dk?.7:1.5)*(1-.45*nk)),spot:1,d:[0,-.8,-.6],cosO:Math.cos(1.05),cosI:Math.cos(.6),vol:0});
-  /* бра над полкой за хозяином: второй слой — стена и товар за спиной, иначе хозяин висит в черноте.
-     Стоит так, что в стекле окна его не видно ни с одного места камеры */
+  lights.push({p:[-3.4,Math.min(hc-.3,2.85),HALL_B+.75],range:3.6,c:r3Sc(r3Lin(dk?[200,190,170]:[214,224,240]),(dk?.8:1.4)*(1+.35*nk)),spot:1,d:[0,-.8,-.6],cosO:Math.cos(1.05),cosI:Math.cos(.6),vol:0});
+  /* бра над полкой за хозяином: второй слой — стена и товар за спиной */
   if(!dk){lights.push({p:HALL_SCONCE,range:3.4+.8*nk,c:r3Sc(r3Lin(mixc(T.key,[255,190,120],.4)),1.5+1.1*nk),vol:0});bulbs.push([...HALL_SCONCE,.3+.2*nk]);}
-  lights.push({p:[5.45,1.22,-1.95],range:2.4,c:r3Sc(key,dk?.8:1.15),vol:.15});bulbs.push([5.45,1.22,-1.95,.35]);
-  /* отсвета от двери нет: лампа за спиной камеры зеркалилась в стекле окна «луной», а лицо выходило
-     плоским, спереди. Стены держит небо (рассеянный свет), лица — один ключ сверху */
+  lights.push({p:[5.45,1.22,-1.95],range:2.4,c:r3Sc(key,dk?.8:1.15),vol:.1});bulbs.push([5.45,1.22,-1.95,.35]);
+  /* над тарелкой ключа: открытый верх абажура — пятно на потолке и балках вокруг шнура (тела, а не чернота) */
+  lights.push({p:[HALL_KEYX+.15,Math.min(hc-.14,ky+.5),.62],range:2.9,c:r3Sc(key,(dk?1.1:.8)*(1+.6*nk)),vol:0});
   /* своё у типа: трубчатые лампы комбината, сварка верфи (идёт по шву — движение, не мигание), лампы рядов */
-  if(T.tube)for(const x of [-2.5,4.5])lights.push({p:[x,hc-.7,.9],range:8,c:r3Sc(r3Lin(T.tube),2.4),vol:.5});
+  if(T.tube)for(const x of [-2.5,4.5])lights.push({p:[x,hc-.7,.9],range:8,c:r3Sc(r3Lin(T.tube),2.4),vol:.4});
   if(T.weld){const s=(t*.06)%1,x=2.8+1.6*s;lights.push({p:[x,1.75,.05],range:3.2,spot:1,d:[0,-.97,-.24],cosO:Math.cos(1.0),cosI:Math.cos(.5),
     c:r3Sc(r3Lin([170,205,255]),.75*(.85+.15*Math.sin(t*9.3))),vol:0});bulbs.push([x,1.31,-.27,.08]);}
   if(T.stalls)HALL_STALLS.slice(0,3).forEach((s,i)=>{const c=[[255,170,90],[120,220,190],[255,120,150]][i];
-    lights.push({p:[s[0],2.25,s[1]],range:3,c:r3Sc(r3Lin(c),1.6),vol:.3});bulbs.push([s[0],2.25,s[1],.3]);});
-  /* смыв задней стены: общий план — люди силуэтом на светлом, не в черноте; без тени, последним —
-     если ламп у типа много, уходит он, а не ключ. Ночью гаснет вместе с окном */
-  {const wt=r3Lin(mixc(T.key,[205,212,228],.55)),wp=(dk?1.25:2.4)*(.1+.9*day);
-    for(const x of [-4.6,-2.2,5.0])lights.push({p:[x,hc-.25,HALL_B+1.5],range:6.5,c:r3Sc(wt,wp),spot:1,d:[0,-.5,-.87],
-      cosO:Math.cos(1.25),cosI:Math.cos(.35),vol:0});}
-  const fog=r3Lin(mixc(mixc(T.wall,T.key,.25),[40,48,70],.5*nk)),amb=(dk?.32:(T.win===1?.55:.62))*(1-.78*nk);
+    lights.push({p:[s[0],2.25,s[1]],range:3,c:r3Sc(r3Lin(c),1.6),vol:.2});bulbs.push([s[0],2.25,s[1],.3]);});
+  /* последние (их первыми срежет предел ламп): днём — свет второго окна до бара; ночью — бра-клетки пилястр окна */
+  if(L.bar&&day>.05)lights.push({p:[HALL_XB+2.2,2.3,HALL_B+.4],range:6,c:r3Sc(dock,T.fp*1.6*day),spot:1,d:[0,-.6,.8],cosO:Math.cos(.8),cosI:Math.cos(.35),vol:0});
+  if(nk>.05)for(const x of [HALL_WIN[0]-.45,HALL_WIN[1]+.45])lights.push({p:[x,Math.min(hc-.5,2.3)-.02,HALL_B+.32],range:3.4,c:r3Sc(r3Lin([255,196,130]),(dk?.9:1.4)*nk),vol:0});
+  /* рассеянный: небо — свет дока сквозь окна (сверху и со стен), земля — отсвет пола (потолок, низы балок) */
+  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.18+.82*day);
+  const sky=mx(mixc(T.wall,[176,194,226],.6),mixc(T.wall,[60,78,140],.55)),gnd=mx(mixc(T.wall,[178,170,158],.6),mixc(T.wall,[62,54,48],.4));
+  const fog=mx(mixc(T.wall,[150,165,190],.4),[30,38,64]);
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
-    sky:[...r3Lin(mixc(T.wall,mixc([150,172,214],[80,100,170],nk),.55)),.8*amb],gnd:[...r3Lin(mixc(T.wall,[150,105,70],.45)),.08*(1-.6*nk)],
-    fog:[...r3Sc(fog,.25),T.win===1?.055:dk?.04:.03],acc:[...r3Lin(acc),1],
-    win:[HALL_WIN[0],wy[0],HALL_WIN[1],wy[1]],win2:[HALL_B,T.win,L.seed%47,T.win===1?1.15:1],
-    sgn:[HALL_XB-2.6,2.1,HALL_XB-.5,2.42],sgn2:[HALL_B,1,0,0],
+    sky:[...sky,amb],gnd:[...gnd,T.win===1?.045:dk?.04:.03],
+    fog:[...r3Sc(fog,.25),T.win===1?.055:dk?.04:.035],acc:[...r3Lin(acc),1],
+    win:[HALL_WIN[0],wy[0],HALL_WIN[1],wy[1]],win2:[HALL_B,T.win,L.seed%47,(T.win===1?1.15:1)*(.38+.62*day)],
+    sgn:[HALL_XB+HALL_SGN[0],HALL_SGN[2],HALL_XB+HALL_SGN[1],HALL_SGN[3]],sgn2:[HALL_B,.5+.3*nk,0,0],
     flm:pl?pl.flm:[0,0,1,0],flm2:[HALL_B,0,pl?1:0,0],tsg:L.bar?C3.sign:null,tfl:pl?{view:HALL.orbTex.view}:null,M,ot:OT};
 }
 /* окно: проём по x и высоте (подоконник 1.2 м — мерило человека) */

@@ -241,18 +241,39 @@ fn outside(w:vec3f)->vec3f{
   else if(kind==4){   /* пыль: бурая мгла и тусклое солнце */
     let sm=fb2(q*2.2+vec2f(tt*.004,0.));c=mix(vec3f(.16,.09,.05),vec3f(.42,.26,.14),sm)*(.8-q.y*.3);
     c+=vec3f(1.,.7,.4)*exp(-length(q-vec2f(.7,.45))*9.)*1.6;}
-  else{   /* док и стапель: ферма, корпус у причала, огни */
-    let pl=length(q-vec2f(-.2,-1.9))-1.6;c=mix(c,vec3f(.05,.07,.1)+vec3f(.1,.14,.2)*clamp(q.y+.6,0.,1.),step(pl,0.));
-    c+=vec3f(.25,.4,.7)*exp(-abs(pl)*30.)*.6;
-    /* корпус у причала: силуэт с заострённым носом, кромка ловит огни дока, ряд иллюминаторов */
-    let hq=q-vec2f(.15,.05);let hh=.08*(1.-smoothstep(.3,.56,hq.x));let hull=step(max(abs(hq.x)-.56,abs(hq.y)-hh),0.);
-    let hs=vec3f(.008,.009,.012)+vec3f(.012,.014,.02)*fb2(q*30.)+vec3f(.05,.06,.08)*smoothstep(hh-.012,hh,hq.y);
-    let pw=step(.55,h2(floor(vec2f(hq.x*70.,3.))))*step(abs(hq.y-.012),.004)*step(.5,fract(hq.x*70.));
-    c=mix(c,hs+mix(vec3f(1.,.75,.4),ac,.3)*pw*.9,hull);
-    let tr=abs(fract(q.x*6.)-.5);let fr=step(tr,.025)*step(abs(q.y-.32),.3)+step(abs(q.y-.62),.012);
-    c=mix(c,vec3f(.02,.025,.03),clamp(fr*f32(kind==2||kind==0),0.,1.));
-    let li=floor(q*vec2f(18.,9.));let bl=step(.94,h2(li))*(.5+.5*sin(tt*.05+h2(li+2.)*40.));
-    c+=mix(vec3f(1.,.75,.4),ac,.4)*bl*(1.-smoothstep(.0,.05,length(fract(q*vec2f(18.,9.))-.5)))*3.;}
+  else{   /* док и стапель: корпус у причала в прожекторах, фермы с освещённой кромкой, маяки — тело дока, не сетка */
+    c+=vec3f(.035,.05,.08)*(1.-smoothstep(-.05,.5,q.y))*1.6;   /* дымка дока снизу: свет причала в пыли */
+    if(!pon){   /* планета без своей текстуры: диск с терминатором и кромкой воздуха */
+      let pc=q-vec2f(-.12,.27);let pd=length(pc)-.13;let nn=pc/.13;let lm=clamp(dot(nn,vec2f(-.7,.55))*1.1+.15,0.,1.);
+      c=mix(c,mix(vec3f(.006,.008,.014),vec3f(.32,.4,.52),lm),step(pd,0.));c+=vec3f(.3,.5,.9)*exp(-abs(pd)*70.)*.5*lm;}
+    /* корпус у причала: нос влево, верх ловит прожекторы, панели, ряд тёплых иллюминаторов */
+    let hq=q-vec2f(.5,.05);let hh=.068*sqrt(clamp((hq.x+.46)/.22,0.,1.));
+    var hm=step(abs(hq.y),hh)*step(-.46,hq.x)*step(hq.x,.62);
+    if(kind==2){hm*=max(step(fract(hq.x*36.),.4),1.-step(-.14,hq.x)*step(hq.x,.16));}   /* стапель: недошитый отсек — рёбра */
+    let ny=hq.y/max(hh,1e-3);let fl=exp(-pow((q.x-.55)/.2,2.));
+    var hs=vec3f(.075,.085,.1)*(.35+.65*smoothstep(-.7,1.,ny))*(.55+1.6*fl)+vec3f(.012,.014,.018)*fb2(q*40.);
+    hs+=vec3f(.45,.5,.56)*smoothstep(hh-.007,hh,hq.y)*(.35+.9*fl);
+    hs*=1.-.5*max(step(fract(hq.x*15.),.03),step(abs(hq.y+.014),.0016));
+    let pw=step(.45,h2(floor(vec2f(hq.x*60.,3.))))*step(abs(hq.y-.02),.0045)*step(.45,fract(hq.x*60.));
+    c=mix(c,hs+vec3f(1.,.72,.38)*pw*1.4,hm);
+    /* ферма-башня у причала и стрела над ним: пояса, раскосы; кромка к прожектору светлее */
+    let dx=q.x-.56;let tw=.024;let inT=step(abs(dx),tw+.003)*step(q.y,.43);
+    let tm=inT*max(step(abs(abs(dx)-tw),.0035),step(abs(dx-tw*(2.*abs(2.*fract(q.y*18.)-1.)-1.)),.0028));
+    let by=q.y-.41;let inB=step(abs(by),.019)*step(.08,q.x)*step(q.x,1.1);
+    let bm=inB*max(step(abs(abs(by)-.016),.0032),step(abs(by-.016*(2.*abs(2.*fract(q.x*22.)-1.)-1.)),.0026));
+    let dx2=q.x+.43;let tm2=step(abs(dx2),.014)*step(q.y,.36)*max(step(abs(abs(dx2)-.012),.0025),step(abs(dx2-.012*(2.*abs(2.*fract(q.y*26.)-1.)-1.)),.002));
+    let lit=clamp(step(0.,dx)*inT+step(0.,by)*inB,0.,1.);
+    c=mix(c,mix(vec3f(.05,.055,.065),vec3f(.34,.36,.4),lit),clamp(tm+bm,0.,1.));
+    c=mix(c,vec3f(.04,.045,.055),tm2*.9);
+    /* прожектор под стрелой: колба и конус в пыли вниз, на корпус */
+    let lp=q-vec2f(.5,.388);c+=vec3f(1.,.96,.88)*exp(-length(lp)*320.)*5.;
+    let cw=.03+.42*max(-lp.y,0.);c+=vec3f(.7,.78,.9)*exp(-pow(lp.x/cw,2.))*smoothstep(0.,.06,-lp.y)*(1.-smoothstep(.2,.4,-lp.y))*.07;
+    /* маяки: красный на башне, акцент на конце стрелы — медленное дыхание, не мигание; огни кромки причала */
+    c+=vec3f(1.,.2,.12)*exp(-length(q-vec2f(.56,.437))*260.)*(1.4+1.2*sin(tt*1.1));
+    c+=ac*exp(-length(q-vec2f(1.08,.41))*260.)*(1.2+1.*sin(tt*.8+1.7));
+    let bl=fract(q.x*12.)-.5;c+=vec3f(1.,.78,.45)*exp(-length(vec2f(bl,(q.y+.012)*3.))*70.)*1.2*step(-.5,q.x);
+    if(kind==2){let wp=vec2f(.5+.12*sin(tt*.07),.03);let wf=.75+.25*sin(tt*9.3);   /* сварка на рёбрах: вспышка и отсвет на корпусе */
+      c+=vec3f(.6,.8,1.)*exp(-length(q-wp)*160.)*4.*wf+vec3f(.3,.45,.7)*exp(-length(q-wp)*18.)*.12*wf*hm;}}
   return c*u.win2.w;}
 fn aces(x:vec3f)->vec3f{return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),vec3f(0.),vec3f(1.));}
 /* два слоя: цвет и дым отдельно — дым шумит по шагам и размывается в последнем проходе, не задевая контуры */
