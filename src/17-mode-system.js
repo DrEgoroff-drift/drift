@@ -290,6 +290,7 @@ function updateSystem(dt){
      мимо: его корабли помечены iff и в счёт не входят, иначе строка пугала бы
      игрока восемью преследователями, которые о нём даже не знают */
   const hostile=G.pirates.filter(p=>p.aware&&!p.iff).length;
+  fightLens(hostile);   /* телефон: объектив подъезжает к цели боя (M826, 17p) */
   const bystand=G.pirates.filter(p=>p.iff&&p.pw).length;
   /* подсказка боя переписана под новое управление (M360a): пэда ОГОНЬ в
      системе больше нет, огонь — это захват. Две мысли — две строки, а не
@@ -563,14 +564,17 @@ function drawSystem(){
      целиком. Теперь, когда корабль на орбите или у поверхности (ближе 250),
      кадр уводится к телу ровно настолько, чтобы его ближняя кромка осталась
      на экране — а корабль тоже; если оба не влезают, середина между ними.
-     Догоняет плавно, как сдвиг троса: это вид, не мир */
+     Догоняет плавно, как сдвиг троса: это вид, не мир. С M826 «на экране» — в окне кадра (camFree,
+     17p): место меряется до борта, стойки и плит, а не до кромки стекла, и корабль, уходя от тела,
+     не заходит за обратную кромку окна */
   let bx=0,by=0;
   if(!wA&&!(G.haul&&G.haul.ph!=="free")){
     const B=camBody(sh,sys);
     if(B){
       const dx=B.x-sh.x,dy=B.y-sh.y,d=Math.hypot(dx,dy)||1,surf=Math.max(0,d-B.radius);
-      const room=Math.max(40,Math.min(W,H)*.5-48)/Z;
-      const shift=Math.min(surf-room,surf*.5);
+      const F=camFree(),ux=dx/d,uy=dy/d;
+      const room=Math.max(40,camReach(F,ux,uy)-48)/Z,back=Math.max(0,camReach(F,-ux,-uy)-36)/Z;
+      const shift=Math.min(surf-room,surf*.5,back);
       if(shift>0){bx=dx/d*shift;by=dy/d*shift;}
     }
   }

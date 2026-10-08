@@ -88,6 +88,7 @@ function consoleTick(dt){
       if(nb.textContent!==want)nb.textContent=want;
     }
   }
+  if(rx)rx.classList.toggle("live",!!(RN&&line));   /* Кольцо звучит — приёмник тикером, не фишкой (M826) */
   if(RN&&line){band.textContent=padCase(RN.ru);line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
@@ -95,7 +96,9 @@ function consoleTick(dt){
     const R=radioTune(f);
     /* у стойки ловит лучше: слова не выпадают */
     if(G.mode==="dock"&&R.q>0&&R.q<.55)R.text=radioTune(Math.min(1,f+.001)).text;
-    band.textContent=padCase(R.ru||"ШУМ");
+    /* фишка в шуме зовётся прибором, а не «ШУМ»: мёртвое слово над миром не висит (M826) */
+    const chip=rx&&!rx.matches(".fresh,.live,.sheet");
+    band.textContent=padCase(chip&&R.k==="noise"?"ПРИЁМНИК":(R.ru||"ШУМ"));
     line.textContent=R.text;
     /* задержался на волне — тетрадь запомнит строку, один раз на строку */
     if(R.q>.55&&R.text!==conHeld){conDwell+=1;if(conDwell>=3){conHeld=R.text;conDwell=0;logAdd("ether",R.ru+" · "+R.text);}}
@@ -176,14 +179,16 @@ function consoleTick(dt){
       const con=document.getElementById("console");if(con)con.classList.remove("quiet");
     };
     knob.addEventListener("input",tune);
-    /* телефон (M167): тикер открывает ручку по тапу и прячет через пару секунд */
+    /* тап по фишке открывает ручку и прячет через несколько секунд — на телефоне (M167) и, с M826, везде:
+       в покое приёмник — фишка, ручка над миром не висит */
     const rx=document.getElementById("rx");let sheetT=0;
-    const sheetHide=()=>{if(rx)rx.classList.remove("sheet");};
+    const sheetHide=()=>{if(rx)rx.classList.remove("sheet");conT=0;};
     if(rx)rx.addEventListener("click",e=>{
-      if(!document.body.classList.contains("mobile")||e.target===knob)return;
-      rx.classList.toggle("sheet");clearTimeout(sheetT);sheetT=setTimeout(sheetHide,2500);
+      if(e.target===knob||e.target.id==="rxRec")return;
+      rx.classList.toggle("sheet");conT=0;clearTimeout(sheetT);
+      sheetT=setTimeout(sheetHide,document.body.classList.contains("mobile")?2500:6000);
     });
-    knob.addEventListener("input",()=>{clearTimeout(sheetT);sheetT=setTimeout(sheetHide,2000);});
+    knob.addEventListener("input",()=>{clearTimeout(sheetT);sheetT=setTimeout(sheetHide,document.body.classList.contains("mobile")?2000:6000);});
     /* колесо на ручке — тоже ручка */
     knob.addEventListener("wheel",e=>{knob.value=clamp(+knob.value-Math.sign(e.deltaY)*.01,0,1);tune();e.preventDefault();},{passive:false});
   }

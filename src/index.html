@@ -64,10 +64,6 @@
 <div id="console">
   <div id="rx"><input id="rxKnob" type="range" min="0" max="1" step="0.005" aria-label="приёмник"><div id="rxScale"><i id="rxNight" style="left:6%;display:none">ночная почта</i><i style="left:21%">слухи</i><i style="left:49%">цены</i><i style="left:73%">погода</i><i style="left:94%">эфир</i></div><div id="rxOut"><b id="rxBand">ШУМ</b><s id="rxLine">…шшш…</s></div><button id="rxRec" style="display:none">ЗАПИСАТЬ</button></div>
   <div id="seat" style="display:none"><canvas id="seatcv" width="56" height="56"></canvas><div id="seatOut"><b id="seatName">—</b><s id="seatLine"></s></div></div>
-  <!-- ФОТО: появляется только там, где есть что снять — на грунте, на заходе,
-       в пещере, в шахте, в поясе, в атмосфере и в системе (M188, M208).
-       Кнопка, которая висит всегда, перестаёт быть поводом. -->
-  <button id="camBtn" style="display:none" aria-label="снимок">Фото</button>
   <button id="perch" style="display:none" aria-label="трепло"><canvas id="perchcv" width="44" height="44"></canvas></button>
 </div>
 
@@ -106,6 +102,9 @@
   <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>ОПИСЬ</em><s>трюм, комплект, части, вещи</s></span></button>
   <button id="dealbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="5.4" cy="5" r="2.1"/><path d="M1.6 13c0-2.2 1.7-3.6 3.8-3.6S9.2 10.8 9.2 13"/><circle cx="11.6" cy="4.2" r="1.5"/><path d="M11.6 7.2v5.6M9.4 9.4h4.4"/></svg><span class="tx"><em>ДЕЛО</em><s>кто и что на вас работает</s></span></button>
   <button id="tablebtn"><svg viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7"/><path d="M5 3.5h6l1 2.5H4z"/></svg><span class="tx"><em>СТОЛ</em><s>тетрадь, ленты, письма, вещи</s></span></button>
+  <!-- ФОТО (M188, M208): только там, где есть что снять. С пульта ушла в ящик (M826): кнопка над
+       миром на каждом кадре — не повод, а шум; снимок — дверь, как стол и опись -->
+  <button id="camBtn" style="display:none"><svg viewBox="0 0 16 16"><rect x="2" y="4.5" width="12" height="8.5" rx="1.5"/><circle cx="8" cy="8.7" r="2.4"/><path d="M5.6 4.5 6.6 2.8h2.8l1 1.7"/></svg><span class="tx"><em>ФОТО</em><s>снимок того, что за бортом</s></span></button>
   <button id="roadbtn"><svg viewBox="0 0 16 16"><path d="M2 12c3-1 5-6 12-7"/><circle cx="13" cy="5" r="1.6"/><path d="M2.5 14h11"/></svg><span class="tx"><em>В ДОРОГУ</em><s>едете? корабль полетит с вами</s></span></button>
   <button id="callbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M8 2v5"/><path d="M4.2 4.6a5 5 0 1 0 7.6 0"/></svg><span class="tx"><em>ДОМОЙ</em><s>прыжок к дому откуда угодно · за деньги</s></span></button>
   <button id="optbtn"><svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.9"/><circle cx="10.5" cy="11" r="1.9"/></svg><span class="tx"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></span></button>

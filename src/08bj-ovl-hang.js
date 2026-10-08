@@ -93,8 +93,9 @@ function hangObstacles(bot){
   }
   if(HANG.blk&&HANG.blkF===OVL.fno){const s=1/ovNd();for(const b of HANG.blk)O.push({x0:b.x0*s,y0:b.y0*s,x1:b.x1*s,y1:b.y1*s});}
   /* строка сообщения #msg (DOM, style.css): по центру на четверти высоты, капсом, разрядка .14em.
-     DOM в кадре не читаем — рамка считается по тексту теми же глифами, с запасом */
-  if(G.msgT>0&&G.msg&&!(typeof msgHeld==="function"&&msgHeld())){
+     DOM в кадре не читаем — рамка считается по тексту теми же глифами, с запасом. Висит табличкой
+     (HANG.msgQ, M826) — DOM-строки нет, держать её место некому */
+  if(!HANG.msgQ&&G.msgT>0&&G.msg&&!(typeof msgHeld==="function"&&msgHeld())){
     /* телефон (max-width:760px): верх 20 %, кегль 11, строка 1.4, ширина до краёв без 24, перенос до трёх строк */
     const ph=W<=760,k=Math.max(1,uiK()),L=String(G.msg).toUpperCase().split("\n"),fs=ph?11:12,f=fs+"px "+HANG.FACE;
     const mw=Math.min(ph?W-24:W*.84,W/2);let w=0,n=0;   /* left:50% — блок сжимается до половины окна */
@@ -110,7 +111,8 @@ function hangObstacles(bot){
    уже поставленную табличку. Сбоку от тела (вправо, влево) табличке можно в центральную полосу,
    если её середина в средней трети высоты: она стоит при вещи, а не посреди кадра. Не встала —
    строки переносятся по словам до ширины, что помещается сбоку. Рядом с подписью мира того же тела
-   (ближе 200 px) имя не повторяется: o.alt — строки без имени */
+   (ближе 200 px) имя не повторяется: o.alt — строки без имени. o.free — табличка не при вещи,
+   а при месте кадра: без поводка */
 function hangPlace(P,k,C){
   const S=hangSize(P,k),r=Math.max(4,P.o.r||10),mem=HANG.mem[P.id];
   let best=null;
@@ -207,7 +209,7 @@ function hangDraw(P,k){
   const x0=sn(R.x0),y0=sn(R.y0),x1=sn(R.x1),y1=sn(R.y1),c=sn(6*k),ink=P.o.ink||null;
   /* поводок: от кромки вещи к ближней точке таблички, если та отошла */
   const dx=P.nx-P.x,dy=P.ny-P.y,dl=Math.hypot(dx,dy);
-  if(dl>P.r+16*k){
+  if(!P.o.free&&dl>P.r+16*k){
     const ux=dx/dl,uy=dy/dl,ax=P.x+ux*(P.r+3*k),ay=P.y+uy*(P.r+3*k);
     ovCap(ax,ay,P.nx-ux*2*k,P.ny-uy*2*k,1*k,ink||HANG.INK,.42*al);
     ovEll(ax,ay,2*k,2*k,0,ink||HANG.INK,.85*al);
@@ -234,6 +236,7 @@ function ovHangFlush(){
     if(a.z&&b)Q.push({id:e.id,lines:e.lines,x:W/2+(b.x-a.x)*a.z,y:H/2+(b.y-a.y)*a.z,o:Object.assign({},e.o,{r:Math.max(6,(b.radius||4)*a.z),al})});
     else if(!a.z)Q.push({id:e.id,lines:e.lines,x:a.x,y:a.y,o:Object.assign({},e.o,{r:a.r,al})});}
   hangSurface();
+  hangCue(Q);hangMsg(Q);hangHint(Q);   /* тревога у вещи раньше сообщения: её место — у позывного, сообщение подвинется */
   HANG.last.length=0;
   if(!Q.length||OVL.hush||!hangIn()){Q.length=0;return;}
   const k=Math.max(1,uiK());HANG.k=k;
@@ -248,7 +251,14 @@ function ovHangFlush(){
 function hangSurface(){
   if(G.mode!=="surface"||typeof PLN==="undefined"||!PLN.on||!hangIn())return;
   const S=G.surf,pr=String(G.prompt||"");
-  if(!S||!S.tr||!pr||G.viewK==null)return;
+  if(!S||G.viewK==null)return;
+  const C=plnLens(S,G.viewK,{vx:G.viewX,vy:G.viewY}),m=C.vp;
+  const pj=v=>{const cw=m[3]*v[0]+m[7]*v[1]+m[11]*v[2]+m[15];if(!(cw>0))return null;
+    return [((m[0]*v[0]+m[4]*v[1]+m[8]*v[2]+m[12])/cw*.5+.5)*W,(.5-(m[1]*v[0]+m[5]*v[1]+m[9]*v[2]+m[13])/cw*.5)*H];};
+  /* человек — вещь строки сообщения на грунте (M826): точка — середина роста, радиус — полроста */
+  const mx=S.x/PLN_M,my=plnY(S.y+10),f=pj([mx,my,0]),h=pj([mx,my+1.9,0]);
+  if(f&&h){const t=Math.abs(f[1]-h[1]);hangAt("man",f[0],(f[1]+h[1])/2,Math.max(10,t*.6));}
+  if(!S.tr||!pr)return;
   let w=null,line=null,id,o=null;
   if(typeof PLN_ACT!=="undefined"&&PLN_ACT.wrote&&pr===PLN_ACT.wrote){
     const q=poiNear(S,S.tr),L=PLN_LAND.cur,M=L&&L.marks,it=q&&M&&M.items.find(i=>i.q===q);
@@ -268,12 +278,74 @@ function hangSurface(){
     w=[x,(L?plnThingGround(L,x,z).h:(PLN.y0-dep.y)/PLN_M)+1.6,z];id="pln.dep";
   }
   if(!line||!w)return;
-  const C=plnLens(S,G.viewK,{vx:G.viewX,vy:G.viewY}),m=C.vp;
-  const pj=v=>{const cw=m[3]*v[0]+m[7]*v[1]+m[11]*v[2]+m[15];if(!(cw>0))return null;
-    return [((m[0]*v[0]+m[4]*v[1]+m[8]*v[2]+m[12])/cw*.5+.5)*W,(.5-(m[1]*v[0]+m[5]*v[1]+m[9]*v[2]+m[13])/cw*.5)*H];};
   const a=pj(w);if(!a)return;
   /* человек — не подставка для таблички: его рост от ступней до макушки с запасом в полроста по бокам */
-  const mx=S.x/PLN_M,my=plnY(S.y+10),f=pj([mx,my,0]),h=pj([mx,my+1.9,0]);
   if(f&&h){const t=Math.abs(f[1]-h[1]),n=ovNd();hangBlock((f[0]-t*.45)*n,(h[1]-t*.1)*n,(f[0]+t*.45)*n,(f[1]+t*.05)*n);}
   ovHang(id,line,a[0],a[1],Object.assign({r:6,up:true},o));
+}
+/* ── строка сообщения (say, #msg) — табличкой у вещи (M826) ──
+   Прежде она вставала капсом посреди кадра на четверти высоты. Теперь вещь строки: тело, которое назвал
+   say(s,d,obj), пока оно в кадре; иначе — вещь режима (корабль в системе, ковш, человек на грунте, ваша
+   звезда на карте). Вещи нет (режим без точки, слоя нет) — строка остаётся прежним #msg. Капс строки
+   переводится в регистр предложения: иерархия таблички — кегль и цвет, не капитель */
+const HANG_MSG_AT={system:"ship",scoop:"scoop",surface:"man",map:"you"};
+function hangMsg(Q){
+  HANG.msgQ=false;
+  if(!(G.msgT>0&&G.msg)||(typeof msgHeld==="function"&&msgHeld()))return;
+  let a=null;
+  const b=typeof MSG_OBJ!=="undefined"?MSG_OBJ:null,S=HANG.at.sys;
+  if(b&&G.mode==="system"&&S&&S.f===OVL.fno){
+    const x=W/2+(b.x-S.x)*S.z,y=H/2+(b.y-S.y)*S.z;
+    if(x>W*.06&&x<W*.94&&y>H*.08&&y<H*.92)a={x,y,r:Math.max(8,(b.radius||6)*S.z)};
+  }
+  const kd=HANG_MSG_AT[G.mode],q=kd&&HANG.at[kd];
+  if(!a&&q&&q.f===OVL.fno&&!q.z)a=q;
+  if(!a)return;
+  Q.push({id:"hud.msg",lines:String(G.msg).split("\n").map(hangCase),x:a.x,y:a.y,o:{r:a.r,al:clamp(G.msgT/40,0,1)}});
+  HANG.msgQ=true;
+}
+function hangMsgHung(){return HANG.last.some(e=>e.id==="hud.msg");}
+/* капс строки — в регистр предложения; имена системы, её тел и корабля, «ГЛАВТРАССА» — как пишутся */
+function hangCase(s){
+  s=String(s);
+  if(/[а-яёa-z]/.test(s))return s;
+  let t=s.toLowerCase().replace(/(^|[«"(]|[.!?]\s+)([а-яёa-z])/g,(m,p,c)=>p+c.toUpperCase());
+  const N=[];const Y=G.sys;
+  if(Y){if(Y.name)N.push(Y.name);for(const p of Y.planets||[])if(p&&p.name)N.push(p.name);}
+  for(const n of N){const lo=String(n).toLowerCase();if(lo.length<3)continue;
+    for(let i=t.indexOf(lo);i>=0;i=t.indexOf(lo,i+lo.length))t=t.slice(0,i)+n+t.slice(i+lo.length);}
+  return t.replace(/главтрасс[а-яё]*/g,w=>w.toUpperCase());
+}
+/* ── подсказка у вещи (cueAt, 08-state; M826) ──
+   Строка G.prompt, которую писатель привязал к телу системы, висит у этого тела. Имя его подписи в мире
+   (o.name) — первая строка без имени (o.alt), когда подпись рядом: табличка стоит у позывного и его не
+   повторяет. Глагол — вторая строка */
+function hangCue(Q){
+  const A=typeof CUE_AT!=="undefined"?CUE_AT:null,S=HANG.at.sys;
+  if(!A||!G.prompt||A.txt!==G.prompt||G.mode!=="system"||!S||S.f!==OVL.fno)return;
+  const b=A.obj,x=W/2+(b.x-S.x)*S.z,y=H/2+(b.y-S.y)*S.z+A.dy;
+  if(!(x>8&&x<W-8&&y>8&&y<H-8))return;
+  /* точка у подписи (dy) — табличка встаёт на её место, вплотную; у самого тела — от его кромки, не ближе
+     40 px: над корпусом баржи полоса прочности, и выноска не идёт ни через неё, ни через корпус */
+  const L=String(G.prompt).split("\n").map(hangCase),o={r:A.dy?6:Math.max(40,(b.radius||36)*S.z),verb:L.length>1?1:undefined};
+  if(A.name){const nm=hangCase(A.name),i=L[0].indexOf(nm);
+    if(i>=0){let h=(L[0].slice(0,i)+L[0].slice(i+nm.length)).replace(/^[\s·]+|[\s·]+$/g,"");
+      h=h.charAt(0).toUpperCase()+h.slice(1);
+      if(h){o.name=A.name;o.alt=[h].concat(L.slice(1));o.altVerb=o.verb;}}}
+  Q.push({id:"cue."+A.id,lines:L,x,y,o});
+}
+function hangCueHung(){return HANG.last.some(e=>e.id.indexOf("cue.")===0);}
+/* подсказка грунта (surfaceHint, 21e) — у человека: части через « · » — строки, «ДЕЙСТВИЕ» — глагол.
+   Телефон: человек стоит в средней полосе, а она пуста (M803) — табличка сверху, под стрелками КОРАБЛЬ /
+   ПЕЩЕРА, о которых она чаще всего и говорит; без поводка */
+function hangHint(Q){
+  const h=HANG.hint,a=HANG.at.man;
+  if(!h||h.f!==OVL.fno||G.mode!=="surface"||!a||a.f!==OVL.fno)return;
+  const L=String(h.s).split(" · ").map(hangCase),v=L.findIndex(t=>/действие/i.test(t));
+  const o={r:a.r,up:true,verb:v>=0?v:undefined};
+  if(W<=760){
+    /* фишки стрелок (21e) держат своё место hangBlock — табличка встаёт под ними */
+    const y=Math.max(8,(typeof HUD_BAND==="number"?HUD_BAND:0)+6);
+    Q.push({id:"pln.hint",lines:L,x:W/2,y,o:Object.assign(o,{r:4,up:false,free:true})});return;}
+  Q.push({id:"pln.hint",lines:L,x:a.x,y:a.y,o});
 }

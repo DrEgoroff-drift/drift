@@ -369,6 +369,18 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   cue as a plate at its callsign (the cue stays the source of the action button, only its place
   moves); on the phone the lens glides to the target in a fight (the planet's `plnGlide` rule),
   so a pirate is never a 40 px spot (decided 08.10 after M820).
+  *M826 done (08.10, remake-a2):* `#rx` chip/ticker/sheet states (style.css, `27j`); `#camBtn` in
+  `#menu`; `25c` pod in plate graphite (`rackCr`, `HANG.FACE`). Plates at things (`08bj`):
+  `say(s,d,obj)` → `hangMsg` (anchor `MSG_OBJ`, else `HANG_MSG_AT[mode]`: ship / scoop / man /
+  you), `smenaAct` → `hangSay("smena")`, `cueAt(id,obj,name,dy)` → `hangCue` (laid out before the
+  message; barge r ≥ 40 px clears the hull bar; the callsign label is skipped while it hangs),
+  `HANG.hint` → `hangHint` (phone: top centre, `o.free`, no leash; edge chips in `21e` hold
+  `hangBlock`); `#prompt` silent when it is `ДЕЙСТВИЕ — <two words>`. New module `17p-cam-frame`:
+  `camFree`/`camReach` (body rule in `17` minus rail and rack), `fightLens` (phone only, drives
+  `G.zoomT`, steps back if the player zooms). Map: jump ring `mpCircle` .5 teal, lamp shader
+  darkens outside only (`U[11]` ≤ .04), holdings fill .05 / hatch .14 (`18b`), `mapSelBlock(n0,
+  hung)` blocks always, the price line on `Rr`. The centre law (M803) holds: a barge beside you on
+  the PC hangs its plate below the band on a long leash; an exemption is the designer's call.
 
 ### Stage D — the way down (M830–M839)
 
