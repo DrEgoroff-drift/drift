@@ -532,11 +532,13 @@ function drawDigWorld(){
     if(TP)gpuShapes(TP,TS,{blend:"over"});
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
-  const helm=helmBeamGpu(sx,sy+4,D.face||1)?"gpu":true;
+  /* риг карточкой (21phc, M801b): карточка вклеивает 2D-темноту в сцену (gpuOver), поэтому луч
+     кладётся после неё в 2D — 2D ложится выше слоя карточки */
   ctx.save();ctx.translate(sx,sy+4);
   const ao={face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
-    mining:!!D.target,suitLow:suit<25,lamp:helm};
-  if(!lifeAstroAt(ao))drawAstronaut(ao);   /* двойник 20fa (G15) */
+    mining:!!D.target,suitLow:suit<25,lamp:true};
+  if(rigCardCave(ao,"dig"))astroBeam(ao.face);
+  else{ao.lamp=helmBeamGpu(sx,sy+4,ao.face)?"gpu":true;if(!lifeAstroAt(ao))drawAstronaut(ao);}
   ctx.restore();
   /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
      сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —

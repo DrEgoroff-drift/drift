@@ -24,7 +24,7 @@ const RIG_CARD={on:true,cap:24,
   dev:null,P:null,ub:null,bg:null,U:new Float32Array(48),
   W:[],                                 /* свои кости позы */
   made:0,                               /* сколько карточек нарисовано */
-  by:{base:0,cave:0,raid:0},            /* сколько раз режимы положили карточку */
+  by:{base:0,cave:0,raid:0,dig:0},            /* сколько раз режимы положили карточку */
   q:[],baseQ:false,walk:0,face:{base:1},
   last:{}};                             /* последняя карточка режима: ноги, мерка, рост в пикселях — для отчёта и набора */
 /* рамка карточки в метрах, ноги на нуле: ранец и факел сзади, руки вперёд, круг — ноги назад */
@@ -237,7 +237,7 @@ function rigCard(o){
   p.setPipeline(R.P);p.setBindGroup(0,R.bg);p.setVertexBuffer(0,M.vb);p.setIndexBuffer(M.ib,"uint32");p.drawIndexed(M.ni);p.end();
   d.queue.submit([enc.finish()]);
   R.made++;
-  C={tex,view,w:(B.x1-B.x0)*ppm,h:(B.y1-B.y0)*ppm,ppm,pose,key};
+  C={tex,view,dev:d,w:(B.x1-B.x0)*ppm,h:(B.y1-B.y0)*ppm,ppm,pose,key};   /* dev — для ovImage (ovBind), M801b */
   /* правило 4: старшая по спросу уходит, пока живых не больше потолка */
   while(R.M.size>=R.cap){const k0=R.M.keys().next().value,o0=R.M.get(k0);R.M.delete(k0);GPU.trash.push(o0.tex);}
   R.M.set(key,C);
@@ -312,14 +312,15 @@ function rigCardFlush(){
   }
   L.length=0;
 }
-/* пещера: игрок. Мерка пещеры — та же, что у грунта (M217): PLN_M единиц на метр, ×K кадра */
-function rigCardCave(ao){
+/* пещера и шахта (M801b): игрок. Мерка — та же, что у грунта (M217): PLN_M единиц на метр, ×K кадра;
+   свет — свой налобник; в шахте под резаком поза бура */
+function rigCardCave(ao,tag){
   if(!RIG_CARD.on||!GPU.on||!GPU.enc)return false;
-  const f=lifeHere(0,11.9),ppm=PLN_M*f.s;
+  const f=lifeHere(0,11.9),ppm=PLN_M*f.s,m=tag||"cave";
   const C=rigCard({pose:rigPoseOf(ao),phase:ao.phase,face:ao.face,ppm,light:rigLightCave(ao.face),pal:"own",low:!!ao.suitLow});
   if(!C)return false;
   const pass=gpuNext();if(!pass)return false;
-  RIG_CARD.by.cave++;RIG_CARD.last.cave={x:f.x,y:f.y,ppm,h:RIG_H*ppm};
+  RIG_CARD.by[m]++;RIG_CARD.last[m]={x:f.x,y:f.y,ppm,h:RIG_H*ppm};
   return rigCardDraw(pass,C,f.x,f.y,ppm,ao.air?0:1);
 }
 /* абордаж: игрок. Камера всегда сзади и выше (24aa drawRaid), поэтому карточка — спиной к нам,

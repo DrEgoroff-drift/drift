@@ -169,6 +169,15 @@ could ever save.
   until the alarm has been quiet for 45 frames. On the map the message hangs at the far third of
   the course line; with no course (and always on the phone) it is a second line under «ВЫ».
   On the ground a message joins the hint plate as one more line — one thing, one plate.
+- **M825c The orbs' second pass.** Crystal worlds are violet glass whatever the star: big
+  fields, medium facets and druse patches, chipped steps between fields with a lit lip and a
+  shadow below, and only the facets turned to the star glow along their seams. Ice worlds show
+  plates of snow, bare ice and frost, cut by a few wide cracks with a dark floor, a lit wall on
+  the star side and ridges of pressure ice beside them. Jungle worlds have valleys and ridges,
+  dark rivers that read at full screen, and clouds as their own layer, ragged at the edge and
+  casting a shadow; the second limb on the night side is gone. Close to a star its rays stop at
+  a third of the screen and the hint plate keeps off the disc. A red giant's surface is soft
+  cells of mixed size, smaller and darker toward the limb, with bright faculae.
 - **M825 The orbs and the star up close.** Each planet type now holds at full zoom. Crystal
   worlds are dark violet glass: big facets with pale seams, druse patches of small facets, a few
   glinting edges. Ice worlds are crossed by umber lineae of uneven width that wander and break,
@@ -360,6 +369,9 @@ could ever save.
 - **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
   texture in any pose of its book, any facing and the caller's light; the base, the cave and the
   raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).
+  The dig and the postcard follow: the mine's walker is the card with the headlamp, its 2D beam
+  laid after the card; the postcard's brush records where the man stands and the album lays the
+  card over the bake, backlit by the star on the ground and by the drift's far end below.
 
 ## 0.492.1 - the world no longer dies after a jump
 

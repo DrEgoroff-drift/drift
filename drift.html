@@ -54858,6 +54858,11 @@ ${GNB_WC}
   /* громадина — за всеми слоями: её свет прошёл сквозь их пыль (T), её пыль гасит звёзды */
   C=C+LM.e*mix(T,1.,.5);T=T*exp(-LM.a*2.);
   return vec4f(C,1.-T);}`;
+
+/* ══════════════ туманность системы: сведение и связка (разрез 16gb, M825) ══════════════
+   Объём, шум и GNB_GEN — в 16gb-gpu-nebula.js; здесь — сведение в полном разрешении
+   (GNB_FINE, поглощение в шейдере звезды, GNB_EMI), палитра, достопримечательность,
+   пересчёт gpuNebulaGen и проход gpuNebulaComp. */
 /* сведение в полном разрешении. Общая часть: мелкие гребни по течению (волокна и
    зерно), резкие края пыли */
 const GNB_FINE=GNB_NOISE+GNB_TILE+`
@@ -59910,11 +59915,11 @@ fn edist(l:vec2f,A:f32,B:f32)->f32{let f=l.x*l.x/(A*A)+l.y*l.y/(B*B)-1.;
   return abs(f)/max(length(2.*vec2f(l.x/(A*A),l.y/(B*B))),1e-6);}
 fn over(acc:vec4f,s:vec4f)->vec4f{return s+acc*(1.-s.a);}
 /* гранулы (M825): ячейки с тёмными межгранульными дорожками; центры ячеек плывут — узор кипит */
-fn gcell(q:vec2f,t:f32)->vec2f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;
+fn gcell(q:vec2f,t:f32)->vec3f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;var id=0.;
   for(var j=-1;j<=1;j++){for(var k=-1;k<=1;k++){let g=vec2f(f32(j),f32(k));
     let h=vec2f(sh(i+g),sh(i+g+vec2f(17.,31.)));let o=vec2f(.5)+.38*sin(vec2f(t*.0021,t*.0017)+6.2832*h);
-    let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;}else if(dd<f2){f2=dd;}}}
-  return vec2f(f1,f2);}
+    let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;id=sh(i+g+vec2f(5.,9.));}else if(dd<f2){f2=dd;}}}
+  return vec3f(f1,f2,id);}
 /* одно светило: фотосфера (закрывает фон), корона со стримерами, ореол, четыре луча */
 fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   let d=p-sv.xy;let R=sv.z;let heat=sv.w;let col=cv.rgb;let rr=length(d);let r=rr/R;
@@ -60008,7 +60013,18 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
     let ga=.7+.2*big;let gr=1.-ga*.5+ga*sf(q+wq*1.6+vec2f(t*.0015,-t*.001));
     /* M825: на близком зуме — ячейки; к лимбу сжаты по лучу (дуга по шару), мельче двух px — в среднее */
     let gm=mix(1.4,2.4,big);let qa=dir*asin(rn)*Rd*gs*gm+wq*1.3;let gc=gcell(qa,t);
-    let gcl=(mix(.84,.93,wh)+mix(.2,.09,wh)*smoothstep(.0,.5,gc.y-gc.x))*(1.04-.16*gc.x);
+    var gcl=(mix(.84,.93,wh)+mix(.2,.09,wh)*smoothstep(.0,.5,gc.y-gc.x))*(1.04-.16*gc.x);
+    if(big>.5){
+      /* M825c: у гиганта ячейки двух размеров (×2.8) пятнами, край мягкий — шире трети ячейки, у каждой
+         своя яркость (±.08), к лимбу мельче и темнее; поверх — факелы, у лимба ярче */
+      let qb=qa*(1.+.8*lk*lk);
+      let m3=smoothstep(.35,.65,sf(qa*.25+vec2f(3.,8.)));
+      let g1=gcell(qb*.62,t);let g2=gcell(qb*1.75+vec2f(9.,4.),t);
+      let b1=.88+.12*smoothstep(.0,1.2,g1.y-g1.x)+.16*(g1.z-.5)*smoothstep(.0,.6,g1.y-g1.x);
+      let b2=.88+.12*smoothstep(.0,1.2,g2.y-g2.x)+.16*(g2.z-.5)*smoothstep(.0,.6,g2.y-g2.x);
+      let fac=smoothstep(.6,.8,sf(qa*.16+vec2f(7.,1.)))*(.3+.7*lk);
+      gcl=mix(b1,b2,m3)*(1.-.1*lk)+.16*fac;
+    }
     let cpx=R/(gs*gm);let gk=smoothstep(2.,6.,cpx);
     let hot=mix(mix(col,vec3f(1.,.82,.55),.35*(1.-wh)),vec3f(1.,.99,.965),wh*mu*mu*mu*mu);
     /* L2: кромка фотосферы мягкая (последние 8% радиуса) — диск переходит в корону,
@@ -60041,7 +60057,7 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   let tone=vec3f(1.)-exp(-raw)+max(raw-vec3f(1.6),vec3f(0.))*.6+photo.rgb*near*.5;
   /* сверх тона — горячая середина: одна она светит далеко выше газа, и лестница
      свечения даёт ей широкий тёплый ореол; диск вокруг остаётся своего цвета */
-  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-.9*near);
+  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-near);
   return vec4f(tone+hc,photo.a);
 }
 fn bleed(p:vec2f,bv:vec4f,col:vec3f)->vec3f{
@@ -60254,7 +60270,9 @@ function gsyStar(pass,sys,ox,oy,R){
     S[40]=Math.cos(t*.0006);S[41]=Math.sin(t*.0006);
     const fc=t/720+(ph*.37-Math.floor(ph*.37)),fp=fc-Math.floor(fc),sm=clamp(fp/.012,0,1);
     S[42]=sm*sm*(3-2*sm)*Math.exp(-fp*7);S[43]=Math.floor(fc);
-    for(let i=0;i<4;i++)S[44+i]=4.2+1.2*Math.sin(t*.02+i);S[48]=GSY.v||0;
+    /* M825c: луч на экране не длиннее .35 меньшей стороны кадра — на близком зуме лучи шли через весь кадр */
+    const rcap=.35*Math.min(W,H)/Math.max(1,(S[2]||R)*(S[3]||1));
+    for(let i=0;i<4;i++)S[44+i]=Math.min(4.2+1.2*Math.sin(t*.02+i),rcap);S[48]=GSY.v||0;
     const zk=clamp((G.zoom-.75)/.25,0,1);S[49]=1-zk*zk*(3-2*zk);}
   if(!kind)S[31]=GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys?1:0;
   /* зарево в мировых координатах: вокруг звезды, без порога по краю кадра */
@@ -60269,6 +60287,9 @@ function gsyStar(pass,sys,ox,oy,R){
   if(!kind){const g=st.kind==="giant"?[.6,"#ff7448",.8]:st.kind==="dwarf"?[1.6,"#e8f4ff",1]:[sys.cls.t||1,sys.cls.col,1];
     const q=hex2rgb(g[1]),r0=S[2]||R,m=Math.min(ox,W-ox,oy,H-oy);
     const nr=sbss(20,70,r0*(big?.42:.24));   /* M825: вблизи диск — поверхность, ядро линзы его не прожигает */
+    /* M825c: крупный диск — препятствие для табличек: подсказка встаёт у его кромки снаружи, как у планет */
+    const rd=r0*(big?.42:.24)*1.12;
+    if(rd>16){const n=ovNd();hangBlock((ox-rd)*n,(oy-rd)*n,(ox+rd)*n,(oy+rd)*n);}
     GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1)*(1-.85*nr),r:r0*(big?.42:.24)*.16*(1-nr),cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
   gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
 }
@@ -61026,17 +61047,19 @@ fn ramp(k: i32, t: f32) -> vec3f {
   return mix(rp(k, i), rp(k, min(i + 1, i32(n))), x - floor(x));
 }
 
-struct V { f1: f32, f2: f32, c: vec3f, id: vec3f };
+struct V { f1: f32, f2: f32, c: vec3f, id: vec3f, c2: vec3f, id2: vec3f };
 fn vor(q: vec3f) -> V {
   let i = floor(q); let f = q - i;
-  var r: V; r.f1 = 9.; r.f2 = 9.; r.c = vec3f(0.); r.id = vec3f(0.);
+  var r: V; r.f1 = 9.; r.f2 = 9.; r.c = vec3f(0.); r.id = vec3f(0.); r.c2 = vec3f(0.); r.id2 = vec3f(0.);
   for (var z = -1; z <= 1; z++) { for (var y = -1; y <= 1; y++) { for (var x = -1; x <= 1; x++) {
     let o = vec3f(f32(x), f32(y), f32(z)); let hh = h3(i + o);
     let c = o + .15 + .7*hh - f; let d = length(c);
-    if (d < r.f1) { r.f2 = r.f1; r.f1 = d; r.c = c; r.id = hh; } else if (d < r.f2) { r.f2 = d; }
+    if (d < r.f1) { r.f2 = r.f1; r.c2 = r.c; r.id2 = r.id; r.f1 = d; r.c = c; r.id = hh; } else if (d < r.f2) { r.f2 = d; r.c2 = c; r.id2 = hh; }
   } } }
   return r;
 }
+
+fn vedge(v: V) -> f32 { return (dot(v.c2, v.c2) - dot(v.c, v.c))/(2.*max(length(v.c2 - v.c), 1e-4)); }
 
 // a crater field: height, slope (object space) and the rim's brightness
 struct C { h: f32, g: vec3f, rim: f32, fl: f32 };
@@ -61082,6 +61105,13 @@ fn chromaCap(c: vec3f, cmax: f32) -> vec3f {
 }
 fn tang(g: vec3f, n: vec3f) -> vec3f { return g - n*dot(g, n); }
 
+var<private> gLo: vec3f;
+/* облака джунглей (M825c): рваный край — эрозия мелким шумом, без вихревых лент */
+fn cloudJ(p: vec3f, s: vec3f, t: f32, fw: f32) -> f32 {
+  let q = p*vec3f(1.8, 2.6, 1.8) + s + vec3f(t*.003, 0., 0.);
+  let base = fbm(warp(q, .35, fw), 4, fw); let er = fbm(q*4.3 + 11., 3, fw);
+  return smoothstep(.02, .2, base + .3*er - .1)*smoothstep(.0, .25, abs(p.y) + .15);
+}
 fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
   var o: S; o.hs = 0.; o.b = vec3f(0.); o.spec = 0.; o.rough = .5; o.emit = vec3f(0.); o.glow = vec3f(0.); o.cloud = 0.; o.ccol = vec3f(.9); o.land = 1.;
   let t = u.b.y;
@@ -61105,20 +61135,52 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
       o.alb = o.alb*mix(vec3f(.9, .95, 1.05), warm, clamp(.35 + .65*mn - .45*mar, 0., 1.));
     }
     o.b = c1.g + c2.g + c3.g + .15*vec3f(fbm(p*5. + 1., 3, fw), fbm(p*5. + 2., 3, fw), fbm(p*5. + 3., 3, fw));
-  } else if (k == 1) {                          // crystal: big flat facets, druses, violet light inside
-    /* грань — плоская и наклонена сильно: каждая ловит свет по-своему, часть вспыхивает бликом (M825);
-       мелкие кристаллы — щётками-друзами местами, а не мостовой по всему шару */
-    let v = vor(p*3.2 + s); let v2 = vor(p*9.5 + s + 4.);
-    let dz = smoothstep(.05, .35, fbm(p*1.6 + s + 3., 3, fw));
-    let seam = 1. - smoothstep(.0, .025 + fw*3.2, v.f2 - v.f1);
-    let seam2 = (1. - smoothstep(.0, .02 + fw*9.5, v2.f2 - v2.f1))*dz*(1. - smoothstep(.2, .6, fw*9.5));
-    /* стекло: цвет у граней почти один (тёмная фиалка), грань читается светом — наклоном и бликом */
-    let hue = mix(vec3f(1.04, .84, 1.2), vec3f(.82, .88, 1.28), v.id.y);
-    o.alb = ramp(k, .3 + .12*v.id.x + .08*dz*v2.id.x)*hue*(1. - .35*seam2);
-    o.alb = mix(o.alb, ramp(k, .9), .5*seam*step(.6, fract(v.id.z*7.)));
-    o.b = (v.id - .5)*1.7 + (v2.id - .5)*.5*dz;
+  } else if (k == 1) {                          // crystal: fields of three sizes, chipped steps, light inside
+    /* M825c: поля трёх размеров пятнами — крупные плоские грани (×1.5), средние (×4.5), друзы (×13.5); размер
+       выбирает крупная ячейка по своему центру, так что поле не режется маской. Между крупными полями — скол
+       ступенью: у верхнего светлая кромка, у нижнего тень со стороны от звезды и тёмная стенка. Швы светятся
+       изнутри только у граней, повёрнутых к звезде, и не у всех */
+    let qL = p*2.3 + s; let vL = vor(qL);
+    let pc = (qL + vL.c - s)/2.3;
+    let lv = h3(vL.id + 2.).x*.55 + .45*smoothstep(-.3, .35, fbm(pc*1.1 + s + 3., 3, fw));
+    let dF = 1. - smoothstep(.2, .5, fw*15.);
+    let med = step(.3, lv); let dru = step(.62, lv)*dF;
+    let vM = vor(p*6. + s + 4.); let vD = vor(p*15. + s + 9.);
+    var fid = vL.id; var fb = (vL.id - .5)*1.3;
+    if (med > 0.) { fid = vM.id; fb = (vM.id - .5)*1.5; }
+    if (dru > .5) { fid = vD.id; fb = (vD.id - .5)*1.3; }
+    let eL = vedge(vL)/2.3; let eM = vedge(vM)/6.; let eD = vedge(vD)/15.;
+    let sL = 1. - smoothstep(.0, .006 + fw, eL);
+    let sM = (1. - smoothstep(.0, .004 + fw, eM))*med;
+    let sD = (1. - smoothstep(.0, .003 + fw, eD))*dru;
+    /* стекло фиолетовое при любой палитре мира: от палитры берётся только яркость; внутри грани — вуаль
+       (грань не заливка) */
+    let hue = mix(vec3f(.78, .6, 1.3), vec3f(.62, .64, 1.36), fid.y);
+    let rv = ramp(k, .26 + .13*fid.x);
+    let veil = fbm(p*7. + fid*13., 3, fw);
+    var alb = vec3f(dot(rv, vec3f(.2126, .7152, .0722)))*hue*(.78 + .5*veil)*(1. - .45*sM - .4*sD);
+    /* скол: ступень между крупными полями разной высоты */
+    let hL = h3(vL.id + 5.).y; let hN = h3(vL.id2 + 5.).y;
+    let stepK = smoothstep(.1, .3, abs(hL - hN))*(1. - med);   /* скол — у крупного поля; сквозь средние грани он шёл дугой-проволокой */
+    let tdir = normalize(tang(vL.c2 - vL.c, p) + vec3f(1e-5));
+    let bw = .014 + fw;
+    if (hL > hN) {
+      let lip = (1. - smoothstep(.0, bw, eL))*stepK;
+      fb -= tdir*1.1*lip;
+      alb = mix(alb, vec3f(dot(ramp(k, .9), vec3f(.2126, .7152, .0722)))*vec3f(.9, .86, 1.1), .45*lip);
+    } else {
+      let Lt = tang(gLo, p); let lt = length(Lt);
+      let toward = max(dot(Lt, tdir)/max(lt, 1e-4), 0.);
+      let ws = (hN - hL)*.07*toward*lt/max(dot(p, gLo), .08);
+      let sh = (1. - smoothstep(ws*.6, ws + fw, eL))*step(.001, ws)*stepK;
+      let wall = (1. - smoothstep(.0, .004 + fw, eL))*stepK;
+      alb = alb*(1. - .7*sh)*(1. - .5*wall);
+    }
+    let nf = normalize(p - tang(fb, p)*.9);
+    let face = smoothstep(.35, .75, dot(nf, gLo))*step(.55, fract(fid.z*7.));
+    o.alb = alb; o.b = fb;
     o.spec = 1.; o.rough = .16;
-    o.glow = vec3f(.5, .3, 1.)*(.03 + .05*v.id.z + .09*seam*step(.6, fract(v.id.z*7.)));
+    o.glow = vec3f(.5, .3, 1.)*(.02 + .03*fid.z + .16*clamp(sL*(1. - med)*(1. - stepK*.5) + sM + .6*sD, 0., 1.)*face);
   } else if (k == 2) {                          // ruin: dead continents, a city grid on the land
     let n = fbm(warp(p*1.2 + s, .5, fw), 5, fw);
     let land = smoothstep(-.04, .04, n);
@@ -61171,7 +61233,7 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     if (k == 4) { lv = -.06; sc = 1.4; }
     if (k == 7) { lv = .34; sc = 2.3; }
     let n = fbm(warp(p*sc + s, .55, fw), 6, fw) + select(0., .12*n3(p*9. + s), k == 7);
-    let land = smoothstep(lv, lv + .012, n);
+    let land = smoothstep(lv, lv + .012 + fw*3., n);   /* берег — с поправкой на пиксель: без неё лесенка (M825c) */
     let shelf = smoothstep(lv - .14, lv, n);
     var sea = mix(rp(k, 0), rp(k, 1), shelf*shelf);
     if (k == 7) { sea = mix(rp(k, 0), rp(k, 3), shelf*shelf*.8); }
@@ -61179,6 +61241,17 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     let rid = 1. - abs(n3(p*7. + s)); let mtn = smoothstep(.75, .95, rid)*smoothstep(lv + .04, lv + .2, n);
     var gr = ramp(k, .5 + .1*fbm(p*7. + s, 3, fw));
     if (k == 4) { gr = mix(mix(rp(k, 2), rp(k, 1), smoothstep(-.2, .3, fbm(p*5. + s, 4, fw))), rp(k, 3), (1.-smoothstep(lv + .01,lv + .06, n))*.6); }
+    /* рельеф джунглей (M825c): хребты светлее, долины темнее, высота — через hs, свет её читает */
+    var rel = 0.; var rb = vec3f(0.);
+    if (k == 4) {
+      rel = 1. - abs(fbm(p*4.2 + s + 2., 4, fw)*1.8); rel = rel*rel;
+      /* наклон — разностями по телу, не dpdx: производная по квадам 2×2 клала лесенку по гребням и берегу */
+      let u1 = normalize(cross(p, vec3f(.01, 1., .02))); let u2 = cross(p, u1); let ue = .006;
+      var r1 = 1. - abs(fbm((p + u1*ue)*4.2 + s + 2., 4, fw)*1.8); r1 = r1*r1;
+      var r2 = 1. - abs(fbm((p + u2*ue)*4.2 + s + 2., 4, fw)*1.8); r2 = r2*r2;
+      rb = .035*(u1*(r1 - rel) + u2*(r2 - rel))/ue;
+      gr = gr*mix(.68, 1.18, rel)*mix(vec3f(1.), vec3f(1.08, 1.04, .9), smoothstep(.6, .9, rel));
+    }
     if (k == 7) { gr = mix(rp(k, 4), rp(k, 5), .3); }
     var ground = gr;
     if (k == 9) {
@@ -61188,6 +61261,26 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     }
     ground = mix(ground, rp(k, 4)*.8, mtn*select(.6, .0, k == 4));
     var alb = mix(sea, ground, land);
+    if (k == 4) {
+      /* реки: нулевые линии искривлённого поля, рвутся по длине, только в глубине суши; два семейства —
+         русла (5) и притоки (9.5, тоньше), иначе на материк выходила одна извилина */
+      let t1 = normalize(cross(p, vec3f(.01, 1., .02))); let t2 = cross(p, t1); let he = .004;
+      var rv = 0.;
+      for (var ri = 0; ri < 2; ri++) {
+        let fq = select(5., 9.5, ri == 1); let ro = s + 7. + f32(ri)*13.;
+        let rf = fbm(warp(p*fq + ro, .6, fw), 3, fw);
+        let rg = vec2f(fbm(warp((p + t1*he)*fq + ro, .6, fw), 3, fw) - rf, fbm(warp((p + t2*he)*fq + ro, .6, fw), 3, fw) - rf)/he;
+        let rd = abs(rf)/max(length(rg), 1e-3); let rhw = max(select(.005, .0035, ri == 1), fw*.75);
+        rv = max(rv, (1. - smoothstep(rhw, rhw + fw*.6, rd))*smoothstep(select(-.1, .3, ri == 1), select(.15, .5, ri == 1), n3(p*select(2.4, 4.1, ri == 1) + s + 1. + f32(ri)*5.)));
+      }
+      rv *= smoothstep(lv + .02, lv + .08, n)*(1. - smoothstep(.2, .6, fw*20.));
+      alb = mix(alb, rp(k, 0)*.22, rv);
+      rb = rb*smoothstep(lv, lv + .1, n);   /* рельеф растёт от берега */
+      /* тень облаков — облако со стороны звезды, сдвиг ~1.5 % диска */
+      let Lt = tang(gLo, p);
+      let csh = cloudJ(normalize(p + Lt/max(length(Lt), 1e-4)*.03), s, t, fw);
+      alb = alb*(1. - .55*csh);
+    }
     if (k != 4) {
       /* шапка — зерно, не заливка (M804): рваный край двумя масштабами, крупа льда и голубые трещины */
       let cap = smoothstep(.93, .975, lat + .04*n3(p*6. + s) + .02*n3(p*21. + s));
@@ -61204,30 +61297,53 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     let cw = warp(p*vec3f(1.4, 4.2, 1.4) + s + vec3f(0., 0., t*.004), 1.1, fw);
     var cv = .5; if (k == 4) { cv = .6; } if (k == 7) { cv = .55; }
     let cf = fbm(cw*1.3, 5, fw); o.cloud = smoothstep(.05, .5, cf + cv - .55)*(.55 + .3*smoothstep(.1, .5, cf))*smoothstep(.0, .25, abs(p.y) + .15);
-    o.b = .5*mtn*vec3f(n3(p*20.), n3(p*20. + 3.), n3(p*20. + 6.));
-  } else if (k == 5) {                          // ice: a pale shell cut by long lineae, brown chaos
-    /* линеи (M825): длинные дуги больших кругов, чуть извитые, — двойной тёмный хребет со светлой серединкой
-       и рыжая кайма вокруг; дуги пересекают друг друга и тают к концам. Мелкие трещины — фоном */
+    if (k == 4) { o.cloud = cloudJ(p, s, t, fw)*.88; }
+    o.b = .5*mtn*vec3f(n3(p*20.), n3(p*20. + 3.), n3(p*20. + 6.)) + rb;
+  } else if (k == 5) {                          // ice: plates of snow, bare ice and frost, cut by deep cracks
+    /* M825c: поля разного альбедо — наст, голый лёд, иней — пятнами с рваной кромкой; трещин немного, они
+       широкие (.024–.07 радиуса) и глубокие: тёмное дно, стенки наклонены — к звезде светлая, дальняя в тени,
+       по бокам валы; у трещин торосы */
     let mot = fbm(p*4. + s, 4, fw);
-    let chaos = smoothstep(.28, .48, fbm(p*1.8 + s + 8., 3, fw));
-    var alb = ramp(k, .6 + .1*mot - .14*chaos);
-    let rust = vec3f(.3, .21, .16);
-    var dl = 0.; var hl = 0.;
-    for (var j = 0; j < 13; j++) {
+    let pf = fbm(warp(p*1.7 + s + 2., .5, fw), 4, fw);
+    let pg = fbm(p*2.6 + s + 6., 3, fw) + .15*n3(p*11. + s) + .07*n3(p*31. + s)*(1. - smoothstep(.2, .6, fw*31.));
+    let snow = smoothstep(.02, .07, pf + .05*n3(p*23. + s)); let bare = smoothstep(.05, .085, pg)*(1. - snow);
+    var alb = mix(ramp(k, .64 + .05*mot)*(.95 + .1*n3(p*40. + s)*(1. - smoothstep(.2, .6, fw*40.))),
+                  mix(vec3f(dot(ramp(k, .44 + .05*mot), vec3f(.2126, .7152, .0722))), ramp(k, .44 + .05*mot), .55)*(.9 + .14*fbm(p*14. + s, 2, fw)), bare);
+    alb = mix(alb, ramp(k, .82 + .04*mot), snow);
+    let chaos = smoothstep(.3, .5, fbm(p*1.8 + s + 8., 3, fw));
+    alb = mix(alb, alb*vec3f(.82, .74, .68), .45*chaos*smoothstep(.4, .7, mot));
+    let rust = vec3f(.24, .18, .14);
+    var fl = 0.; var wl = 0.; var rim = 0.; var tor = 0.; var gb = vec3f(0.);
+    /* четыре трещины по осям тетраэдра, повёрнутого зерном: оси всегда далеко друг от друга — не пучок */
+    let hr = h3(vec3f(s.x, s.y, 13.)); let ra = hr.x*6.2832; let rb = (hr.y - .5)*3.1416;
+    for (var j = 0; j < 4; j++) {
       let hj = h3(vec3f(s.x, f32(j), 9.));
-      let z0 = hj.x*2. - 1.; let a0 = hj.y*6.2832; let c0 = sqrt(1. - z0*z0);
-      let ax = vec3f(cos(a0)*c0, z0, sin(a0)*c0);
-      let wob = .05*n3(p*2.3 + f32(j)*7.1 + s) + .015*n3(p*9. + f32(j)*3.7 + s);
-      let dd = abs(dot(p, ax) - (hj.z - .5)*.5 + wob);
-      let along = smoothstep(.15, .45, n3(p*1.1 + vec3f(f32(j)*3.3, 0., 1.) + s) + .35);
-      let wd = (.006 + .016*pow(fract(hj.z*13.), 2.)) + fw*.7;
-      dl = max(dl, (1. - smoothstep(wd*.15, wd*.6, abs(dd - wd)))*along);
-      hl = max(hl, (1. - smoothstep(wd*1.5, wd*6., dd))*along);
+      let tv = vec3f(select(-1., 1., j == 0 || j == 1), select(-1., 1., j == 0 || j == 2), select(-1., 1., j == 0 || j == 3));
+      let t1 = vec3f(tv.x*cos(ra) - tv.z*sin(ra), tv.y, tv.x*sin(ra) + tv.z*cos(ra));
+      let ax = normalize(vec3f(t1.x, t1.y*cos(rb) - t1.z*sin(rb), t1.y*sin(rb) + t1.z*cos(rb)) + (hj - .5)*.3);
+      let wob = .05*n3(p*2.3 + f32(j)*7.1 + s) + .012*n3(p*9. + f32(j)*3.7 + s);
+      let sd = dot(p, ax) - (hj.z - .5)*.5 + wob;
+      let along = smoothstep(.2, .5, n3(p*1.1 + vec3f(f32(j)*3.3, 0., 1.) + s) + .35);
+      let hw = .012 + .023*fract(hj.z*13.)*(.6 + .4*n3(p*3. + f32(j) + s)) + fw*.5;
+      let ad = abs(sd);
+      let inC = 1. - smoothstep(hw*.85, hw + fw, ad);
+      let flK = 1. - smoothstep(hw*.45, hw*.8, ad);
+      let le = (ad - hw*1.3)/(hw*.35); let lev = exp(-le*le);
+      let g = tang(ax, p)*select(-1., 1., sd >= 0.);
+      gb += g*(1.1*inC*(1. - flK) - .3*le*lev)*along;
+      fl = max(fl, flK*along); wl = max(wl, inC*(1. - flK)*along); rim = max(rim, lev*along);
+      tor = max(tor, (1. - smoothstep(hw*1.6, hw*5., ad))*along);
     }
-    let l2 = 1. - smoothstep(.0, .012 + fw*7., abs(n3(p*6.5 + s + 5.)));
-    alb = mix(alb, alb*vec3f(.8, .7, .62), .6*hl + .5*chaos*smoothstep(.4, .7, mot));
-    alb = mix(alb, rust, .7*dl + .25*l2*(1. - smoothstep(.2, .6, fw*7.)));
-    o.alb = alb; o.spec = .35; o.rough = .3;
+    let tq = p*26. + s;
+    let tfade = 1. - smoothstep(.2, .6, fw*26.);
+    gb += tor*(1. - wl)*.25*tfade*vec3f(n3(tq), n3(tq + 3.), n3(tq + 6.));
+    alb = alb*mix(1., .88 + .2*n3(tq*1.3 + 2.), tor*tfade);
+    let l2 = 1. - smoothstep(.0, .01 + fw*7., abs(n3(p*6.5 + s + 5.)));
+    alb = mix(alb, alb*vec3f(.8, .74, .7), .2*l2*(1. - smoothstep(.2, .6, fw*7.)));
+    alb = mix(alb, ramp(k, .88), .12*rim);
+    alb = mix(alb, alb*vec3f(.7, .8, .92), .5*wl);
+    alb = mix(alb, rust, .85*fl);
+    o.alb = alb; o.b = gb; o.spec = .35; o.rough = .3;
   } else if (k == 6) {                          // toxic: Venus-like haze, soft bands, chevrons
     let lon = atan2(p.z, p.x);
     let ch = p.y*4. + .6*abs(sin(lon*1.)) + .5*fbm(vec3f(p.x*3., p.y*9., p.z*3.) + s, 4, fw);
@@ -61265,7 +61381,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
   let q = i.p.xy/u.b.x; let r = v0.z; let d = (q - v0.xy)/r; let px = 1./(u.b.x*r);
   let k = i32(v0.w); let L = normalize(v1.xyz);
   let spin = v1.w*6.2831853; let tilt = v6.z;
-  let air = chromaCap(v2.rgb, select(.09, .055, k == 4)); let thick = v2.w;
+  let air = chromaCap(v2.rgb, select(select(.09, .055, k == 4), .02, k == 1)); let thick = v2.w;   /* у кристалла воздух почти серый: небо системы красило стекло (M825c) */
   let sun = v3.rgb*v6.y;
   let seed = v3.w; let s = vec3f(seed*1.37, seed*.71, seed*2.13);
   let len = length(d);
@@ -61279,6 +61395,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     let Lo = toObj(L, tilt, spin);
     let Vo = toObj(vec3f(0., 0., 1.), tilt, spin);
     let fwp = fw/max(nz, .15);
+    gLo = Lo;
     var sf = surf(k, p, s, fwp);
     sf.alb = chromaCap(sf.alb, select(.1, .065, k == 4));   /* джунгли — под потолком насыщенности (M825) */
     let gv = toObj(vec3f(dpdx(sf.hs), dpdy(sf.hs), 0.)/px, tilt, spin)*nz;
@@ -61292,17 +61409,20 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
       let w = thick*3.;
       dif = clamp((mu0 + w)/(1. + w), 0., 1.)*smoothstep(-w, .05, m0g);
     }
-    var sc = sf.alb*dif*sun;
+    /* стекло кристалла держит свой тон (M825c): тело освещено светом без его оттенка (8 % оттенка
+       остаётся), цвет звезды — в блике и кромке */
+    let sunB = select(sun, mix(vec3f(dot(sun, vec3f(.2126, .7152, .0722))), sun, .08), k == 1);
+    var sc = sf.alb*dif*sunB;
     /* ночная сторона не чёрная (M804): пыль неба кладёт холодную заливку, воздух — свою, и у
        самого терминатора свет тёплый — в воздухе шире и краснее, на голом камне узкой кромкой */
     let airK = min(thick*3., 1.);
     let nightK = 1. - smoothstep(-.3, .12, m0g);
     let fillC = mix(vec3f(.05, .062, .09), chromaCap(air*1.5, .12), airK);
     sc += sf.alb*fillC*nightK*.32*sun;
-    let termB = exp(-m0g*m0g/mix(.003, .011, airK))*(.2 + .8*airK)*smoothstep(-.2, .04, m0g);
-    /* тёплая кайма — только у воздуха (M825): на голом камне она ложилась бурой полосой, терминатор
-       безвоздушного тела резкий */
-    sc += (sf.alb*.6 + .1)*vec3f(1., .55, .3)*termB*airK*sun;
+    /* тёплый терминатор — только у воздуха (M825) и тоном освещённой стороны (M825c): прибавка полосой
+       читалась вторым лимбом внутри ночной стороны */
+    let warmT = airK*(1. - smoothstep(.0, .3, m0g))*smoothstep(-.04, .04, m0g);
+    sc *= mix(vec3f(1.), vec3f(1.25, .85, .62), warmT*.6);
     let H = normalize(Lo + Vo);
     let sp = pow(max(dot(n, H), 0.), 2./(sf.rough*sf.rough*sf.rough + .002))*sf.spec*smoothstep(.0, .1, mu0);
     sc += sun*sp*(.04 + .5*pow(1. - mu, 5.))*select(1., 3., sf.rough < .32);
@@ -61332,7 +61452,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
     }
     if (thick > 0.) {
       let path = min(thick*3./max(nz, .04), 3.);
-      let litA = smoothstep(-.25, .35, m0g);
+      let litA = smoothstep(-.06, .3, m0g);   /* воздух светит от терминатора к свету (M825c) */
       let warm = (1.-smoothstep(-.05,.4, m0g))*litA;
       let tint = mix(air, air*vec3f(1.6, .75, .45), warm);
       sc = sc*exp(-path*.3) + tint*(1. - exp(-path))*litA*sun*.6;
@@ -61359,7 +61479,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
   if (thick > 0. && len > 1. - 2.*px) {
     let h = max(len - 1., 0.)/thick;
     let n2 = vec3f(d/max(len, 1e-4), 0.);
-    let litA = smoothstep(-.35, .45, dot(n2, L));
+    let litA = smoothstep(-.12, .4, dot(n2, L));
     let warm = (1.-smoothstep(-.1,.35, dot(n2, L)))*litA;
     let tint = mix(air, air*vec3f(1.6, .75, .45), warm);
     lin += tint*exp(-h*2.2)*smoothstep(1. - 2.*px, 1., len)*litA*sun*.9;
@@ -61378,6 +61498,10 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
   }
   return acc;
 }`;
+
+/* ══════════════ планета с орбиты: конвейеры и рисование (разрез 17gab, M825c) ══════════════
+   Шейдер GOR_WGSL и константы — в 17gab-gpu-orb.js; здесь — семьи конвейеров (gorCode, gorPipe),
+   тело (gorBody), вход gpuOrb и луны. */
 const gorLin=c=>Math.pow(Math.max(0,c)/255,2.2);
 /* ── один конвейер на семью миров ──
    Все двенадцать миров в одной `surf` компилировались 3.1–3.5 с (Blackwell, D3D12): прогрев
@@ -73252,14 +73376,7 @@ function drawAstronaut(o){
     ctx.save();ctx.globalCompositeOperation="lighter";
     const f=(o.face||1);
     /* lamp:"gpu" — луч уже лёг сложением по сцене (helmBeamGpu, 22c): шахта и пещера флота */
-    if(o.lamp!=="gpu"){
-      const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
-      g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
-      ctx.fillStyle=g;
-      ctx.beginPath();ctx.moveTo(f*2,-8.6);
-      ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
-      ctx.closePath();ctx.fill();
-    }
+    if(o.lamp!=="gpu")astroBeam(f);
     /* фонарь освещает И САМОГО ходока (M232): грудь и ближняя рука ловят
        отражённый свет — ночью человек не должен быть чёрным под своим лучом */
     const gs=ctx.createRadialGradient(f*2.4,-6.6,.5,f*2.4,-6.6,7.5);
@@ -73267,6 +73384,19 @@ function drawAstronaut(o){
     ctx.fillStyle=gs;ctx.beginPath();ctx.arc(f*1.6,-3.6,7,0,TAU);ctx.fill();
     ctx.restore();
   }
+}
+
+/* луч налобника в 2D (вынесен из drawAstronaut, M801b): кладётся и после карточки рига (21phc),
+   когда сложением по сцене луч не лёг — начало ctx у ног ходока, как у drawAstronaut */
+function astroBeam(f){
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
+  g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.moveTo(f*2,-8.6);
+  ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
+  ctx.closePath();ctx.fill();
+  ctx.restore();
 }
 
 /* ══════════════ флора ══════════════ */
@@ -93333,7 +93463,7 @@ const RIG_CARD={on:true,cap:24,
   dev:null,P:null,ub:null,bg:null,U:new Float32Array(48),
   W:[],                                 /* свои кости позы */
   made:0,                               /* сколько карточек нарисовано */
-  by:{base:0,cave:0,raid:0},            /* сколько раз режимы положили карточку */
+  by:{base:0,cave:0,raid:0,dig:0},            /* сколько раз режимы положили карточку */
   q:[],baseQ:false,walk:0,face:{base:1},
   last:{}};                             /* последняя карточка режима: ноги, мерка, рост в пикселях — для отчёта и набора */
 /* рамка карточки в метрах, ноги на нуле: ранец и факел сзади, руки вперёд, круг — ноги назад */
@@ -93546,7 +93676,7 @@ function rigCard(o){
   p.setPipeline(R.P);p.setBindGroup(0,R.bg);p.setVertexBuffer(0,M.vb);p.setIndexBuffer(M.ib,"uint32");p.drawIndexed(M.ni);p.end();
   d.queue.submit([enc.finish()]);
   R.made++;
-  C={tex,view,w:(B.x1-B.x0)*ppm,h:(B.y1-B.y0)*ppm,ppm,pose,key};
+  C={tex,view,dev:d,w:(B.x1-B.x0)*ppm,h:(B.y1-B.y0)*ppm,ppm,pose,key};   /* dev — для ovImage (ovBind), M801b */
   /* правило 4: старшая по спросу уходит, пока живых не больше потолка */
   while(R.M.size>=R.cap){const k0=R.M.keys().next().value,o0=R.M.get(k0);R.M.delete(k0);GPU.trash.push(o0.tex);}
   R.M.set(key,C);
@@ -93621,14 +93751,15 @@ function rigCardFlush(){
   }
   L.length=0;
 }
-/* пещера: игрок. Мерка пещеры — та же, что у грунта (M217): PLN_M единиц на метр, ×K кадра */
-function rigCardCave(ao){
+/* пещера и шахта (M801b): игрок. Мерка — та же, что у грунта (M217): PLN_M единиц на метр, ×K кадра;
+   свет — свой налобник; в шахте под резаком поза бура */
+function rigCardCave(ao,tag){
   if(!RIG_CARD.on||!GPU.on||!GPU.enc)return false;
-  const f=lifeHere(0,11.9),ppm=PLN_M*f.s;
+  const f=lifeHere(0,11.9),ppm=PLN_M*f.s,m=tag||"cave";
   const C=rigCard({pose:rigPoseOf(ao),phase:ao.phase,face:ao.face,ppm,light:rigLightCave(ao.face),pal:"own",low:!!ao.suitLow});
   if(!C)return false;
   const pass=gpuNext();if(!pass)return false;
-  RIG_CARD.by.cave++;RIG_CARD.last.cave={x:f.x,y:f.y,ppm,h:RIG_H*ppm};
+  RIG_CARD.by[m]++;RIG_CARD.last[m]={x:f.x,y:f.y,ppm,h:RIG_H*ppm};
   return rigCardDraw(pass,C,f.x,f.y,ppm,ao.air?0:1);
 }
 /* абордаж: игрок. Камера всегда сзади и выше (24aa drawRaid), поэтому карточка — спиной к нам,
@@ -104148,11 +104279,13 @@ function drawDigWorld(){
     if(TP)gpuShapes(TP,TS,{blend:"over"});
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
-  const helm=helmBeamGpu(sx,sy+4,D.face||1)?"gpu":true;
+  /* риг карточкой (21phc, M801b): карточка вклеивает 2D-темноту в сцену (gpuOver), поэтому луч
+     кладётся после неё в 2D — 2D ложится выше слоя карточки */
   ctx.save();ctx.translate(sx,sy+4);
   const ao={face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
-    mining:!!D.target,suitLow:suit<25,lamp:helm};
-  if(!lifeAstroAt(ao))drawAstronaut(ao);   /* двойник 20fa (G15) */
+    mining:!!D.target,suitLow:suit<25,lamp:true};
+  if(rigCardCave(ao,"dig"))astroBeam(ao.face);
+  else{ao.lamp=helmBeamGpu(sx,sy+4,ao.face)?"gpu":true;if(!lifeAstroAt(ao))drawAstronaut(ao);}
   ctx.restore();
   /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
      сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —
@@ -111183,7 +111316,9 @@ function pcNebula(c,seed,w,h){
    ОДНОГО человека, иначе альбом рассыпается. Рост `hh` в пикселях кадра. */
 function pcMan(c,x,y,hh,col,lamp){
   const b=hh*.42;                      /* низ корпуса */
+  const rig=pcRigAt(x,y,hh,pcRigUnder(lamp),1);   /* риг поверх выпечки (25g1, M801b): здесь — только ореол фонаря */
   c.save();c.translate(x,y);
+  if(!rig){
   c.fillStyle=col;
   /* ноги врозь — стоящий человек, а не столбик */
   c.beginPath();
@@ -111196,7 +111331,7 @@ function pcMan(c,x,y,hh,col,lamp){
   c.lineTo(hh*.10,-hh*.78);c.lineTo(hh*.16,-hh*.66);c.lineTo(hh*.15,-b*.85);
   c.closePath();c.fill();
   /* шлем */
-  c.beginPath();c.arc(0,-hh*.86,hh*.145,0,TAU);c.fill();
+  c.beginPath();c.arc(0,-hh*.86,hh*.145,0,TAU);c.fill();}
   c.restore();
   /* фонарь на шлеме. Ставится ПОСЛЕ фигуры и аддитивно — иначе он вырезает
      в ней дыру, а не освещает вокруг неё */
@@ -112611,7 +112746,7 @@ function drawPostcard(c,s,w,h){
      одновременно. Рост взят от кадра, а не от мира: на снимке человек всегда
      примерно одной величины, как на всякой фотографии */
   {
-    const x=w*.5, y=gy(w*.5), H0=h*.075;
+    const x=w*.5, y=gy(w*.5);let H0=h*.075;
     const dark=pcMix([8,10,16],T.pal[0],.30);
     /* тень под ногами: без неё фигура висит над слоями, а не стоит на них */
     c.fillStyle="rgba(0,0,0,.30)";
@@ -112645,12 +112780,13 @@ function drawPostcard(c,s,w,h){
       }
       c.restore();
     };
+    if(s.m!=="l"&&pcRigAt(x,y,H0,pcRigSky(star,sunX>x?1:-1,up),sunX>x?1:-1))H0=0;   /* риг поверх (25g1, M801b) */
     const rim=pcA(pcMix(star,[255,255,255],.40),up?.55:.34);
     const off=Math.max(1.2,H0*.075);
-    c.fillStyle=rim;c.strokeStyle=rim;
+    if(H0>0){c.fillStyle=rim;c.strokeStyle=rim;
     body(sunX>x?off:-off,-off*.7);
     c.fillStyle=pcA(dark,.94);c.strokeStyle=pcA(dark,.94);
-    body(0,0);
+    body(0,0);}
   }
 
   /* ── 9. погода ──
@@ -112813,16 +112949,47 @@ function albumVig(night){
     g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,night?"rgba(0,10,0,.7)":"rgba(0,0,0,.45)");
     c.fillStyle=g;c.fillRect(0,0,128,80);},{mips:false,ss:1});
 }
-/* кисть карточки в выпечку cw×ch при плотности nd; снимок не читается — null */
+/* ── человек на карточке — риг (M801b, закон L2) ──
+   Кисть карточки (25g) человека не рисует: pcRigAt записывает, где он стоит — ноги (x, y) в единицах
+   карточки, рост в тех же единицах, свет, — а альбом кладёт карточку рига (21phc) поверх выпечки тем же
+   фильтром. Свет — контровой, как у прежнего силуэта: на грунте со стороны звезды, под землёй — от
+   светлого конца штрека; лицевая сторона в тени, читается обвод. Без рига — false, кисть рисует сама */
+const PC_RIG=[];
+function pcRigAt(x,y,hh,L,face){
+  if(!RIG_CARD.on||!GPU.dev)return false;
+  PC_RIG.push({x,y,ppm:hh/RIG_H,L,face:face<0?-1:1});return true;
+}
+/* грунт: звезда сбоку и за спиной, её цвет; up — звезда над горизонтом */
+function pcRigSky(star,sx,up){
+  const k=up?1.25:.55,c=star.map(v=>v/255*k);
+  return {key:[.62*sx,.42,.66],col:c,fill:up?[.07,.075,.09]:[.025,.03,.045],gnd:[.04,.035,.03],
+    acc:{d:[-.5*sx,.3,-.4],col:[.04,.05,.07]},lamp:0,exp:1};
+}
+/* пещера и шахта: свет светлого конца штрека за спиной, свод холодит контур; налобник горит */
+function pcRigUnder(lamp){
+  return {key:[.25,.30,.92],col:[.95,.80,.58],fill:[.018,.02,.026],gnd:[.03,.024,.018],
+    acc:{d:[-.3,.8,.4],col:[.10,.14,.22]},lamp:lamp?1:0,exp:1};
+}
+/* кисть карточки в выпечку cw×ch при плотности nd; снимок не читается — null. B.rig — люди карточки */
 function albumBake(s,cw,ch,nd){let ok=false;
-  const B=gpuBake(cw*nd,ch*nd,c=>{c.setTransform(nd,0,0,nd,0,0);ok=drawPostcard(c,s,cw,ch);},{once:true,mips:false});
-  if(B&&!ok){gpuBakeDrop(B);return null;}return B;}
+  const B=gpuBake(cw*nd,ch*nd,c=>{PC_RIG.length=0;c.setTransform(nd,0,0,nd,0,0);ok=drawPostcard(c,s,cw,ch);},{once:true,mips:false});
+  if(B&&!ok){gpuBakeDrop(B);return null;}
+  if(B)B.rig=PC_RIG.slice();
+  return B;}
+/* люди выпечки — карточками рига поверх неё, фильтр M тот же */
+function albumRig(B,M){
+  for(const r of (B&&B.rig)||[]){
+    const C=rigCard({pose:"stand",face:r.face,ppm:r.ppm,light:r.L,pal:"own"});if(!C)continue;
+    const X=RIG_BOX,w=(X.x1-X.x0)*r.ppm,h=(X.y1-X.y0)*r.ppm;
+    ovImage(C,r.x+(X.x0+X.x1)/2*r.ppm,r.y-(X.y0+X.y1)/2*r.ppm,w,h,0,0,0,1,1,1,M);
+  }
+}
 /* выпечку B — в канву cv с фильтром k; без выпечки — пустой бланк */
 function albumPut(cv,s,cw,ch,nd,B,k){
   const M=B&&albumM(s,k);
   return ovPaint(cv,nd,()=>{
     if(!B){ovRect(0,0,cw,ch,"#12161d");return;}
-    ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);
+    ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);albumRig(B,M);
     if(M)ovImage(albumVig(k==="night"),cw/2,ch/2,cw,ch,0,0,0,1,1,1);});
 }
 /* одна карточка на своей канве: перерисовка + фильтр */
@@ -112890,7 +113057,7 @@ function albumSave(s){
   const cw=1200,ch=750,m=16,pad=64,capH=118,PW=cw+2*(pad+m),PH=ch+2*m+pad+capH;
   /* карточка — с видеокарты тем же путём, что в игре; страница вокруг — 2D: это файл PNG */
   const B=albumBake(s,cw,ch,1),M=B&&albumM(s,s.fx);let px=null;
-  try{px=ovRead(cw,ch,()=>{if(!B){ovRect(0,0,cw,ch,"#12161d");return;}ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);
+  try{px=ovRead(cw,ch,()=>{if(!B){ovRect(0,0,cw,ch,"#12161d");return;}ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);albumRig(B,M);
     if(M)ovImage(albumVig(s.fx==="night"),cw/2,ch/2,cw,ch,0,0,0,1,1,1);});}finally{gpuBakeDrop(B);}
   if(!px)return false;
   const cv=document.createElement("canvas");cv.width=PW;cv.height=PH;

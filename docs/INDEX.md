@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 561 · top-level symbols: 8231
+Files: 563 · top-level symbols: 8237
 
 ## SYMBOLS
 
@@ -65,7 +65,7 @@ AI_COST                      src/12f-mgr-ai.js:8
 AI_NAMES                     src/12f-mgr-ai.js:9
 AI_STAGES                    src/12f-mgr-ai.js:12-18
 ALBUM_FX                     src/25g1-album-fx.js:14-21
-ALBUM_MAX                    src/25g-postcard.js:628
+ALBUM_MAX                    src/25g-postcard.js:629
 ALBUM_VIG                    src/25g1-album-fx.js:28
 ALLY_THR                     src/12a-crew.js:702
 ALL_NAMES                    tests/90-harness.js:93
@@ -734,21 +734,21 @@ GLOW_TIERS                   src/11i-glow.js:128
 GLT_H                        src/08b-gpu.js:462
 GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:10
-GNB_EMI                      src/16gb-gpu-nebula.js:430
+GNB_EMI                      src/16gba-gpu-nebula-comp.js:52
 GNB_FADE                     src/16gc-gpu-nebfade.js:11
 GNB_FAR                      src/16gay-gpu-nebula-look.js:60
 GNB_FARC                     src/16gay-gpu-nebula-look.js:96
 GNB_FGAL                     src/16gaza-gpu-fargal.js:7
 GNB_FIL                      src/16gay-gpu-nebula-look.js:75
 GNB_FILC                     src/16gay-gpu-nebula-look.js:91
-GNB_FINE                     src/16gb-gpu-nebula.js:385
+GNB_FINE                     src/16gba-gpu-nebula-comp.js:7
 GNB_GEN                      src/16gb-gpu-nebula.js:44
 GNB_HTO                      src/16gay-gpu-nebula-look.js:24
-GNB_LM_COL                   src/16gb-gpu-nebula.js:551
+GNB_LM_COL                   src/16gba-gpu-nebula-comp.js:173
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gb-gpu-nebula.js:534-549
+GNB_PAL                      src/16gba-gpu-nebula-comp.js:156-171
 GNB_SS                       src/16gay-gpu-nebula-look.js:17
-GNB_STAR_ABS                 src/16gb-gpu-nebula.js:407
+GNB_STAR_ABS                 src/16gba-gpu-nebula-comp.js:29
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
 GNB_TONE                     src/16gay-gpu-nebula-look.js:47
@@ -756,12 +756,12 @@ GNB_VOL                      src/16gay-gpu-nebula-look.js:134
 GNB_WC                       src/16gay-gpu-nebula-look.js:70
 GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
-GOR_FAM                      src/17gab-gpu-orb.js:462
-GOR_GAS                      src/17gab-gpu-orb.js:485-519
+GOR_FAM                      src/17gab1-gpu-orb-draw.js:13
+GOR_GAS                      src/17gab1-gpu-orb-draw.js:36-70
 GOR_LIT                      src/17gab-gpu-orb.js:18
 GOR_LZ                       src/17gab-gpu-orb.js:16
-GOR_MOON                     src/17gab-gpu-orb.js:536
-GOR_MOONPAL                  src/17gab-gpu-orb.js:537
+GOR_MOON                     src/17gab1-gpu-orb-draw.js:87
+GOR_MOONPAL                  src/17gab1-gpu-orb-draw.js:88
 GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
@@ -1464,6 +1464,7 @@ PB_K                         src/24a-mode-raid.js:110
 PB_MS                        src/17a0-prebake.js:18
 PC_GRAIN                     src/25g-post-craft.js:7
 PC_GRAIN_B                   src/25g-post-craft.js:21
+PC_RIG                       src/25g1-album-fx.js:40
 PEACE_TUG                    src/17m-peace-fleet.js:164
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
@@ -1501,10 +1502,10 @@ PLANET_FULL                  src/12n-planet.js:14
 PLANET_RATE                  src/12n-planet.js:15
 PLANET_RES                   src/07-planet.js:68
 PLANET_SPIN                  src/07-planet.js:32
-PLANT_BAKE                   src/20-life.js:211
+PLANT_BAKE                   src/20-life.js:217
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
-PLANT_KINDS                  src/20-life.js:166
+PLANT_KINDS                  src/20-life.js:172
 PLANT_UXQ                    src/20fa-life-gpu.js:398
 PLAN_CACHE                   src/05e-plan.js:20
 PLAN_COL                     src/05e-plan.js:131
@@ -2331,17 +2332,18 @@ aiFace                       src/12d-mgr-face.js:229-263
 aiLearn                      src/12f-mgr-ai.js:108-125
 aiStage                      src/12f-mgr-ai.js:19-23
 aiUpkeep                     src/12f-mgr-ai.js:128-130
-albumAll                     src/25g-postcard.js:629
-albumBake                    src/25g1-album-fx.js:36
-albumCanvas                  src/25g1-album-fx.js:48-55
-albumClose                   src/25g1-album-fx.js:57
-albumDpr                     src/25g1-album-fx.js:56
+albumAll                     src/25g-postcard.js:630
+albumBake                    src/25g1-album-fx.js:57
+albumCanvas                  src/25g1-album-fx.js:79-86
+albumClose                   src/25g1-album-fx.js:88
+albumDpr                     src/25g1-album-fx.js:87
 albumL                       src/25g1-album-fx.js:23
-albumLightbox                src/25g1-album-fx.js:59-104
+albumLightbox                src/25g1-album-fx.js:90-135
 albumM                       src/25g1-album-fx.js:25
-albumOpen                    src/25g-postcard.js:678
-albumPut                     src/25g1-album-fx.js:40-46
-albumSave                    src/25g1-album-fx.js:108-144
+albumOpen                    src/25g-postcard.js:679
+albumPut                     src/25g1-album-fx.js:71-77
+albumRig                     src/25g1-album-fx.js:63-69
+albumSave                    src/25g1-album-fx.js:139-175
 albumVig                     src/25g1-album-fx.js:29-34
 allyHullGpu                  src/12a-crew.js:703-712
 allyOf                       src/27b-ui-crew.js:8
@@ -2380,6 +2382,7 @@ artPut                       src/08ca-gpu-canvas.js:551-696
 asMap                        src/14-save.js:209-215
 askText                      src/11u-names.js:59-77
 assignToBase                 src/12a-crew.js:181-190
+astroBeam                    src/20-life.js:144-153
 audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
@@ -2826,7 +2829,7 @@ c3StoryProp                  src/27f4-cant3d.js:229-241
 c3TableMesh                  src/27f4-cant3d.js:298-306
 c3Tree                       src/27f4-cant3d.js:221-227
 camBody                      src/17-mode-system.js:82-91
-camBtnTick                   src/25g-postcard.js:667-671
+camBtnTick                   src/25g-postcard.js:668-672
 camFree                      src/17p-cam-frame.js:11-23
 camOffset                    src/19c-light.js:155-162
 camReach                     src/17p-cam-frame.js:25-30
@@ -3619,7 +3622,7 @@ drawAccel                    src/20aa-poi-shapes.js:142-162
 drawAccountShelf             src/12w-survey.js:93-109
 drawAllies                   src/12a-crew.js:678-698
 drawAnomaly                  src/20aa-poi-shapes.js:164-187
-drawAstronaut                src/20-life.js:4-147
+drawAstronaut                src/20-life.js:4-140
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-651
 drawBargesMap                src/12l-barge.js:653-672
@@ -3654,10 +3657,10 @@ drawCrystalForest            src/20aa-poi-shapes.js:114-140
 drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:166-216
 drawDeposit                  src/21b-surface-deco.js:405-559
-drawDig                      src/23a-dig-draw.js:592-596
+drawDig                      src/23a-dig-draw.js:594-598
 drawDigFauna                 src/23-mode-dig.js:336-345
 drawDigLight                 src/23b-dig-gpu.js:152-164
-drawDigWorld                 src/23a-dig-draw.js:456-544
+drawDigWorld                 src/23a-dig-draw.js:456-546
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:180-194
@@ -3721,10 +3724,10 @@ drawPirateBase               src/24a-mode-raid.js:187-218
 drawPirateSkin               src/03d-hull-marks.js:99-126
 drawPlan                     src/05e-plan.js:137-173
 drawPlanetWorks              src/17e-station-body.js:71-116
-drawPlant                    src/20-life.js:417-425
-drawPlantAlien               src/20-life.js:221-388
+drawPlant                    src/20-life.js:423-431
+drawPlantAlien               src/20-life.js:227-394
 drawPortal                   src/20aa-poi-shapes.js:459-483
-drawPostcard                 src/25g-postcard.js:171-612
+drawPostcard                 src/25g-postcard.js:171-613
 drawRaid                     src/24aa-raid-draw.js:14-650
 drawRail                     src/18g-rail-ride.js:127-182
 drawRailArrive               src/18g-rail-ride.js:32-35
@@ -4144,7 +4147,7 @@ genMgr                       src/12c-mgr-core.js:237-256
 genName                      src/01-core.js:186
 genPOI                       src/20a-poi.js:32-75
 genPart                      src/05-parts.js:144-217
-genPlant                     src/20-life.js:195-197
+genPlant                     src/20-life.js:201-203
 genPush                      src/13z-gpu-combat.js:57-62
 genRaid                      src/24a-mode-raid.js:30-72
 genTerrain                   src/07a-terrain.js:73-198
@@ -4272,24 +4275,24 @@ glyphNodes                   src/12t-settle.js:92-102
 gnbDeep                      src/16gay-gpu-nebula-look.js:44
 gnbFade                      src/16gc-gpu-nebfade.js:37-42
 gnbFadeDesc                  src/16gc-gpu-nebfade.js:16-20
-gnbGenDesc                   src/16gb-gpu-nebula.js:525
+gnbGenDesc                   src/16gba-gpu-nebula-comp.js:147
 gnbGenView                   src/16gc-gpu-nebfade.js:22-35
-gnbLandmark                  src/16gb-gpu-nebula.js:552-567
-gnbLfr                       src/16gb-gpu-nebula.js:570-586
+gnbLandmark                  src/16gba-gpu-nebula-comp.js:174-189
+gnbLfr                       src/16gba-gpu-nebula-comp.js:192-208
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:541-549
-gnbPipe                      src/16gb-gpu-nebula.js:524
-gnbStar                      src/16gb-gpu-nebula.js:588-593
-gnbStars                     src/16gb-gpu-nebula.js:420-427
-gnbTarget                    src/16gb-gpu-nebula.js:516-523
+gnbPalette                   src/16gba-gpu-nebula-comp.js:163-171
+gnbPipe                      src/16gba-gpu-nebula-comp.js:146
+gnbStar                      src/16gba-gpu-nebula-comp.js:210-215
+gnbStars                     src/16gba-gpu-nebula-comp.js:42-49
+gnbTarget                    src/16gba-gpu-nebula-comp.js:138-145
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
-gorBody                      src/17gab-gpu-orb.js:495-519
-gorCode                      src/17gab-gpu-orb.js:463-473
-gorLin                       src/17gab-gpu-orb.js:453
-gorMoonPal                   src/17gab-gpu-orb.js:538-545
-gorPipe                      src/17gab-gpu-orb.js:475-482
+gorBody                      src/17gab1-gpu-orb-draw.js:46-70
+gorCode                      src/17gab1-gpu-orb-draw.js:14-24
+gorLin                       src/17gab1-gpu-orb-draw.js:4
+gorMoonPal                   src/17gab1-gpu-orb-draw.js:89-96
+gorPipe                      src/17gab1-gpu-orb-draw.js:26-33
 gosBbLine                    src/17k1-gosplan.js:25-28
 gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
@@ -4364,13 +4367,13 @@ gpuMipDrop                   src/08c-gpu-kit.js:112
 gpuMipSmp                    src/08c-gpu-kit.js:113
 gpuMipTex                    src/08c-gpu-kit.js:99-111
 gpuMoon                      src/17ga-gpu-planets.js:441-447
-gpuNebulaComp                src/16gb-gpu-nebula.js:653-663
-gpuNebulaGen                 src/16gb-gpu-nebula.js:596-650
+gpuNebulaComp                src/16gba-gpu-nebula-comp.js:275-285
+gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:218-272
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
-gpuOrb                       src/17gab-gpu-orb.js:521-533
-gpuOrbMoon                   src/17gab-gpu-orb.js:546-552
+gpuOrb                       src/17gab1-gpu-orb-draw.js:72-84
+gpuOrbMoon                   src/17gab1-gpu-orb-draw.js:97-103
 gpuOvFrontView               src/08bi-gpu-ovl.js:284
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
@@ -4403,7 +4406,7 @@ gpuSpaceTitle                src/16g-gpu-space.js:222-233
 gpuStationDraw               src/17c3-station-live.js:119-125
 gpuStationFlare              src/17c3-station-live.js:128-143
 gpuStoreDrop                 src/18c-chunks.js:191
-gpuSysUnder                  src/17g-gpu-system.js:431-437
+gpuSysUnder                  src/17g-gpu-system.js:447-453
 gpuTakeSnap                  src/08b-gpu.js:27-33
 gpuTileAt                    src/18c-chunks.js:228-234
 gpuTileStore                 src/18c-chunks.js:223-227
@@ -4484,14 +4487,14 @@ gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:369
-gsyBeltDots                  src/17g-gpu-system.js:373-381
+gsyBeltDots                  src/17g-gpu-system.js:384-392
 gsyBeltHaze                  src/17gc-sys-belt.js:203-218
-gsyEll                       src/17g-gpu-system.js:342-351
-gsyMean                      src/17g-gpu-system.js:352-355
-gsyOrb                       src/17g-gpu-system.js:334-340
-gsyOrbits                    src/17g-gpu-system.js:356-371
-gsyStar                      src/17g-gpu-system.js:382-429
-gsyUni                       src/17g-gpu-system.js:328-332
+gsyEll                       src/17g-gpu-system.js:353-362
+gsyMean                      src/17g-gpu-system.js:363-366
+gsyOrb                       src/17g-gpu-system.js:345-351
+gsyOrbits                    src/17g-gpu-system.js:367-382
+gsyStar                      src/17g-gpu-system.js:393-445
+gsyUni                       src/17g-gpu-system.js:339-343
 gtrDraw                      src/16ga-gpu-trail.js:43-51
 gtrLane                      src/16ga-gpu-trail.js:37-42
 gtrPush                      src/16ga-gpu-trail.js:31-35
@@ -5596,15 +5599,15 @@ mgrWorkFact                  src/12c-mgr-core.js:609-665
 mgrWorkKeep                  src/12c-mgr-core.js:555-564
 mgrWorkSci                   src/12c-mgr-core.js:690-745
 midiHz                       src/10-music.js:106
-mineDeep                     src/23a-dig-draw.js:562-565
-mineKey                      src/23a-dig-draw.js:551
+mineDeep                     src/23a-dig-draw.js:564-567
+mineKey                      src/23a-dig-draw.js:553
 mineLay                      src/13a-guns.js:267-275
-mineLoad                     src/23a-dig-draw.js:566-575
+mineLoad                     src/23a-dig-draw.js:568-577
 mineMul                      src/21e1-surface-world.js:596-614
 mineOver                     src/21e1-surface-world.js:615-644
 mineRopeGpu                  src/21e1-surface-world.js:646-652
-mineSave                     src/23a-dig-draw.js:576-585
-mineSpotX                    src/23a-dig-draw.js:558-561
+mineSave                     src/23a-dig-draw.js:578-587
+mineSpotX                    src/23a-dig-draw.js:560-563
 minedUnit                    src/11-log.js:171-179
 minesTick                    src/13a-guns.js:276-320
 mirrorAck                    src/11f-mirror.js:33-40
@@ -6042,20 +6045,23 @@ pbOnScreen                   src/17a0-prebake.js:41
 pcA                          src/25g-postcard.js:150
 pcBelt                       src/25g-post-void.js:58-221
 pcC                          src/25g-postcard.js:147
-pcCave                       src/25g-post-under.js:129-232
+pcCave                       src/25g-post-under.js:131-234
 pcDeform                     src/25g-post-craft.js:34-46
 pcGrainBake                  src/25g-post-craft.js:22-26
 pcGrainTile                  src/25g-post-craft.js:8-19
-pcMan                        src/25g-post-under.js:33-61
-pcMine                       src/25g-post-under.js:249-398
+pcMan                        src/25g-post-under.js:33-63
+pcMine                       src/25g-post-under.js:251-400
 pcMix                        src/25g-postcard.js:149
 pcNebula                     src/25g-post-craft.js:68-80
-pcOre                        src/25g-post-under.js:102-112
+pcOre                        src/25g-post-under.js:104-114
 pcPrint                      src/25g-postcard.js:130-145
+pcRigAt                      src/25g1-album-fx.js:41-44
+pcRigSky                     src/25g1-album-fx.js:46-50
+pcRigUnder                   src/25g1-album-fx.js:52-55
 pcScoop                      src/25g-post-void.js:399-526
 pcShip                       src/25g-post-void.js:23-47
 pcStar                       src/25g-postcard.js:152-155
-pcStrata                     src/25g-post-under.js:68-99
+pcStrata                     src/25g-post-under.js:70-101
 pcSystem                     src/25g-post-void.js:231-389
 pcTestPlanet                 tests/90a-tools.js:743-750
 pcTestSnap                   tests/90a-tools.js:753-757
@@ -6093,7 +6099,7 @@ pgSave                       src/12y1-parrot-gpu.js:105
 pgScl                        src/12y1-parrot-gpu.js:110
 pgTr                         src/12y1-parrot-gpu.js:107
 pick                         src/01-core.js:31
-pickKindByBias               src/20-life.js:186-190
+pickKindByBias               src/20-life.js:192-196
 pickShare                    src/20e-species.js:125-130
 pickStType                   src/06-galaxy.js:72-78
 pinch0                       src/15-input.js:404
@@ -6159,7 +6165,7 @@ planPtIn                     src/05e-plan.js:22-29
 planTook                     src/11r-plan.js:59-63
 planetBargeLoad              src/12n-planet.js:108-121
 planetBargeRow               src/12n-planet.js:145-151
-planetBiome                  src/20-life.js:167-185
+planetBiome                  src/20-life.js:173-191
 planetGrant                  src/12n-planet.js:25-40
 planetHasLife                src/07a-terrain.js:61-64
 planetHaul                   src/12n-planet.js:67-86
@@ -6188,14 +6194,14 @@ planetSunRot                 src/07-planet.js:85-89
 planetTakeLoad               src/12n-planet.js:126-143
 planetTick                   src/12n-planet.js:44-54
 planetWetAt                  src/07a-terrain.js:56-60
-plantBend                    src/20-life.js:212-220
-plantGrad                    src/20-life.js:400-406
+plantBend                    src/20-life.js:218-226
+plantGrad                    src/20-life.js:406-412
 plantLitter                  src/20e-species.js:196-210
-plantPaint                   src/20-life.js:432-631
+plantPaint                   src/20-life.js:438-637
 plantSpeciesName             src/20e-species.js:86-89
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29-37
-plantUx                      src/20-life.js:427-431
+plantUx                      src/20-life.js:433-437
 plate                        src/25-cockpit.js:160-164
 playerFlag                   src/12al-powers.js:93
 playerHit                    src/13-combat.js:37-73
@@ -6600,7 +6606,7 @@ poiTone                      src/20a-poi.js:176-180
 postAddrs                    src/11e-post.js:47-71
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113-142
-postCanShoot                 src/25g-postcard.js:633-650
+postCanShoot                 src/25g-postcard.js:634-651
 postCaption                  src/25g-postcard.js:114-124
 postChoose                   src/25i-post-back.js:48-51
 postDock                     src/11e-post.js:80-97
@@ -6618,7 +6624,7 @@ postSetForm                  src/25i-post-back.js:44-47
 postSign                     src/25i-post-back.js:35-41
 postSigned                   src/25i-post-back.js:32
 postSnap                     src/25g-postcard.js:65-108
-postTake                     src/25g-postcard.js:651-665
+postTake                     src/25g-postcard.js:652-666
 postTerrain                  src/25g-postcard.js:41-47
 postWorld                    src/25g-postcard.js:49-54
 powCoupOn                    src/12b0-fx-pow.js:26-29
@@ -6998,7 +7004,7 @@ relicRoll                    src/12h-relic.js:104-110
 relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113-121
 relicUnequip                 src/12h-relic.js:87
-renderAlbum                  src/25g-postcard.js:679-703
+renderAlbum                  src/25g-postcard.js:680-704
 renderBarge                  src/12l-barge.js:712-803
 renderBaseLink               src/21a2-base-link.js:137-163
 renderBasesTab               src/26a-ui-station-home.js:4-333
@@ -7088,7 +7094,7 @@ ridged                       src/18a-material.js:30
 rigCard                      src/21phc-pln-rig-card.js:197-245
 rigCardBase                  src/21phc-pln-rig-card.js:284-295
 rigCardBounds                src/21phc-pln-rig-card.js:111-119
-rigCardCave                  src/21phc-pln-rig-card.js:316-324
+rigCardCave                  src/21phc-pln-rig-card.js:317-325
 rigCardDesc                  src/21phc-pln-rig-card.js:160-167
 rigCardDev                   src/21phc-pln-rig-card.js:169-175
 rigCardDraw                  src/21phc-pln-rig-card.js:248-254
@@ -7098,7 +7104,7 @@ rigCardMS                    src/21phc-pln-rig-card.js:176-185
 rigCardMesh                  src/21phc-pln-rig-card.js:47-57
 rigCardPal                   src/21phc-pln-rig-card.js:39-46
 rigCardPose                  src/21phc-pln-rig-card.js:81-102
-rigCardRaid                  src/21phc-pln-rig-card.js:328-336
+rigCardRaid                  src/21phc-pln-rig-card.js:329-337
 rigCardRot                   src/21phc-pln-rig-card.js:106-109
 rigCardState                 src/21phc-pln-rig-card.js:69-79
 rigCardWorker                src/21phc-pln-rig-card.js:298-304
@@ -8979,8 +8985,11 @@ zoomTo                       src/15-input.js:358
 
 ## src/16gaza-gpu-fargal.js · 3 KB
 
-## src/16gb-gpu-nebula.js · 56 KB
+## src/16gb-gpu-nebula.js · 32 KB
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
+
+## src/16gba-gpu-nebula-comp.js · 24 KB
+  · туманность системы: сведение и связка (разрез 16gb, M825):1
 
 ## src/16gc-gpu-nebfade.js · 3 KB
 
@@ -9036,7 +9045,7 @@ zoomTo                       src/15-input.js:358
 ## src/17f-sys-traffic.js · 9 KB
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 31 KB
+## src/17g-gpu-system.js · 33 KB
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 15 KB
@@ -9047,6 +9056,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/17gab-gpu-orb.js · 36 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
+
+## src/17gab1-gpu-orb-draw.js · 8 KB
+  · планета с орбиты: конвейеры и рисование (разрез 17gab, M825c):1
 
 ## src/17gb-gpu-planet-strip.js · 7 KB
   · развёртка планеты — шейдером на видеокарте (GPU-3, DESIGN-gpu §G, 25.09):1
@@ -9214,9 +9226,9 @@ zoomTo                       src/15-input.js:358
 ## src/19g-landing-gpu.js · 31 KB
   · посадка на видеокарте (G6, флот «landing»):1
 
-## src/20-life.js · 37 KB
+## src/20-life.js · 38 KB
   · астронавт:1
-  · флора:149
+  · флора:155
 
 ## src/20a-poi.js · 16 KB
   · точки интереса:1
@@ -9560,7 +9572,7 @@ zoomTo                       src/15-input.js:358
 ## src/23-mode-dig.js · 20 KB
   · шахта: спуск вглубь планеты:1
 
-## src/23a-dig-draw.js · 38 KB
+## src/23a-dig-draw.js · 39 KB
   · шахта: отрисовка:1
 
 ## src/23aa-dig-rock.js · 39 KB
@@ -9642,8 +9654,8 @@ zoomTo                       src/15-input.js:358
 
 ## src/25g-post-under.js · 24 KB
   · открытка: два места под землёй:1
-  · пещера:114
-  · шахта:233
+  · пещера:116
+  · шахта:235
 
 ## src/25g-post-void.js · 32 KB
   · открытка: три места в пустоте:1
@@ -9651,11 +9663,11 @@ zoomTo                       src/15-input.js:358
   · орбита:223
   · атмосфера газового гиганта:391
 
-## src/25g-postcard.js · 43 KB
+## src/25g-postcard.js · 44 KB
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:614
+  · камера и альбом:615
 
-## src/25g1-album-fx.js · 11 KB
+## src/25g1-album-fx.js · 13 KB
   · альбом: большая карточка, фильтры, снимок себе (P13, плейтест §4.3):1
 
 ## src/25h-post-forms.js · 20 KB

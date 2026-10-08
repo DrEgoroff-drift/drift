@@ -65,11 +65,11 @@ fn edist(l:vec2f,A:f32,B:f32)->f32{let f=l.x*l.x/(A*A)+l.y*l.y/(B*B)-1.;
   return abs(f)/max(length(2.*vec2f(l.x/(A*A),l.y/(B*B))),1e-6);}
 fn over(acc:vec4f,s:vec4f)->vec4f{return s+acc*(1.-s.a);}
 /* гранулы (M825): ячейки с тёмными межгранульными дорожками; центры ячеек плывут — узор кипит */
-fn gcell(q:vec2f,t:f32)->vec2f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;
+fn gcell(q:vec2f,t:f32)->vec3f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;var id=0.;
   for(var j=-1;j<=1;j++){for(var k=-1;k<=1;k++){let g=vec2f(f32(j),f32(k));
     let h=vec2f(sh(i+g),sh(i+g+vec2f(17.,31.)));let o=vec2f(.5)+.38*sin(vec2f(t*.0021,t*.0017)+6.2832*h);
-    let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;}else if(dd<f2){f2=dd;}}}
-  return vec2f(f1,f2);}
+    let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;id=sh(i+g+vec2f(5.,9.));}else if(dd<f2){f2=dd;}}}
+  return vec3f(f1,f2,id);}
 /* одно светило: фотосфера (закрывает фон), корона со стримерами, ореол, четыре луча */
 fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   let d=p-sv.xy;let R=sv.z;let heat=sv.w;let col=cv.rgb;let rr=length(d);let r=rr/R;
@@ -163,7 +163,18 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
     let ga=.7+.2*big;let gr=1.-ga*.5+ga*sf(q+wq*1.6+vec2f(t*.0015,-t*.001));
     /* M825: на близком зуме — ячейки; к лимбу сжаты по лучу (дуга по шару), мельче двух px — в среднее */
     let gm=mix(1.4,2.4,big);let qa=dir*asin(rn)*Rd*gs*gm+wq*1.3;let gc=gcell(qa,t);
-    let gcl=(mix(.84,.93,wh)+mix(.2,.09,wh)*smoothstep(.0,.5,gc.y-gc.x))*(1.04-.16*gc.x);
+    var gcl=(mix(.84,.93,wh)+mix(.2,.09,wh)*smoothstep(.0,.5,gc.y-gc.x))*(1.04-.16*gc.x);
+    if(big>.5){
+      /* M825c: у гиганта ячейки двух размеров (×2.8) пятнами, край мягкий — шире трети ячейки, у каждой
+         своя яркость (±.08), к лимбу мельче и темнее; поверх — факелы, у лимба ярче */
+      let qb=qa*(1.+.8*lk*lk);
+      let m3=smoothstep(.35,.65,sf(qa*.25+vec2f(3.,8.)));
+      let g1=gcell(qb*.62,t);let g2=gcell(qb*1.75+vec2f(9.,4.),t);
+      let b1=.88+.12*smoothstep(.0,1.2,g1.y-g1.x)+.16*(g1.z-.5)*smoothstep(.0,.6,g1.y-g1.x);
+      let b2=.88+.12*smoothstep(.0,1.2,g2.y-g2.x)+.16*(g2.z-.5)*smoothstep(.0,.6,g2.y-g2.x);
+      let fac=smoothstep(.6,.8,sf(qa*.16+vec2f(7.,1.)))*(.3+.7*lk);
+      gcl=mix(b1,b2,m3)*(1.-.1*lk)+.16*fac;
+    }
     let cpx=R/(gs*gm);let gk=smoothstep(2.,6.,cpx);
     let hot=mix(mix(col,vec3f(1.,.82,.55),.35*(1.-wh)),vec3f(1.,.99,.965),wh*mu*mu*mu*mu);
     /* L2: кромка фотосферы мягкая (последние 8% радиуса) — диск переходит в корону,
@@ -196,7 +207,7 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   let tone=vec3f(1.)-exp(-raw)+max(raw-vec3f(1.6),vec3f(0.))*.6+photo.rgb*near*.5;
   /* сверх тона — горячая середина: одна она светит далеко выше газа, и лестница
      свечения даёт ей широкий тёплый ореол; диск вокруг остаётся своего цвета */
-  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-.9*near);
+  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-near);
   return vec4f(tone+hc,photo.a);
 }
 fn bleed(p:vec2f,bv:vec4f,col:vec3f)->vec3f{
@@ -409,7 +420,9 @@ function gsyStar(pass,sys,ox,oy,R){
     S[40]=Math.cos(t*.0006);S[41]=Math.sin(t*.0006);
     const fc=t/720+(ph*.37-Math.floor(ph*.37)),fp=fc-Math.floor(fc),sm=clamp(fp/.012,0,1);
     S[42]=sm*sm*(3-2*sm)*Math.exp(-fp*7);S[43]=Math.floor(fc);
-    for(let i=0;i<4;i++)S[44+i]=4.2+1.2*Math.sin(t*.02+i);S[48]=GSY.v||0;
+    /* M825c: луч на экране не длиннее .35 меньшей стороны кадра — на близком зуме лучи шли через весь кадр */
+    const rcap=.35*Math.min(W,H)/Math.max(1,(S[2]||R)*(S[3]||1));
+    for(let i=0;i<4;i++)S[44+i]=Math.min(4.2+1.2*Math.sin(t*.02+i),rcap);S[48]=GSY.v||0;
     const zk=clamp((G.zoom-.75)/.25,0,1);S[49]=1-zk*zk*(3-2*zk);}
   if(!kind)S[31]=GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys?1:0;
   /* зарево в мировых координатах: вокруг звезды, без порога по краю кадра */
@@ -424,6 +437,9 @@ function gsyStar(pass,sys,ox,oy,R){
   if(!kind){const g=st.kind==="giant"?[.6,"#ff7448",.8]:st.kind==="dwarf"?[1.6,"#e8f4ff",1]:[sys.cls.t||1,sys.cls.col,1];
     const q=hex2rgb(g[1]),r0=S[2]||R,m=Math.min(ox,W-ox,oy,H-oy);
     const nr=sbss(20,70,r0*(big?.42:.24));   /* M825: вблизи диск — поверхность, ядро линзы его не прожигает */
+    /* M825c: крупный диск — препятствие для табличек: подсказка встаёт у его кромки снаружи, как у планет */
+    const rd=r0*(big?.42:.24)*1.12;
+    if(rd>16){const n=ovNd();hangBlock((ox-rd)*n,(oy-rd)*n,(ox+rd)*n,(oy+rd)*n);}
     GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1)*(1-.85*nr),r:r0*(big?.42:.24)*.16*(1-nr),cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
   gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
 }

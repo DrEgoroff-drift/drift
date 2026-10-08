@@ -226,6 +226,18 @@ the player meets first and by what one reinvention gives to the next.
   tilted to the camera). The man is 1.8 m everywhere; frame share at 1080: base .022, cave .042,
   raid .209 — base and cave under .05 by the modes' own scales. Open: dig, home, winter, spa,
   postcard; the old painters stay until M890. Suite `91qb-rig-card`.
+  *Done, second part (09.10):* the dig walks the rig card (`rigCardCave(ao,"dig")`, the cave's
+  scale and headlamp, the drill pose under the cutter; .042 of the frame at 1080). The 2D
+  headlamp beam left `drawAstronaut` for `astroBeam(f)`, laid after the card: the card's layer
+  pastes the 2D darkness over anything laid before it, the GPU beam included. The postcard's
+  man is the rig too: the brush (`25g`, `pcMan` of `25g-post-under`) only records where he
+  stands (`pcRigAt`: feet, height in card units, light) and the album lays the card over the
+  bake under the same filter (`albumRig`, `25g1`, in `albumPut` and `albumSave`). His light is
+  the old silhouette's backlight: on the ground the star from behind and aside, its colour
+  (`pcRigSky`); underground the bright end of the drift behind him, the vault cooling the rim,
+  the headlamp lit (`pcRigUnder`). The lander's figure stays the brush's (it sits in a hatch).
+  Open: home (the head of `homeFigure` is null), winter and spa — the rig cannot sit, take the
+  helmet off or wear clothes; the designer chooses between growing the rig and the 27f3 people.
 - **M802 One person generator everywhere.** `npcMake(seed, brief)` of `27f3` for the HQ, crew
   lists, story figures, the keeper of «Сорока», the road's voices. Gate: no `mgrFace` 2D call
   left.
@@ -567,6 +579,30 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   to 60–200 px by noise, a second lane set under its own mask, lanes gated by `fl`
   (smoothstep(.15,.45) of the star distance) instead of the far law. Belt haze: two-scale torn
   edge, mottling, grain 2–4 px at ±.08 alpha, strength .40.
+  *M825c (09.10), the orbs' second pass:* `17gab` — crystal: three facet scales by field level
+  (`vor` ×2.3 large, ×6 medium where level > .3, ×15 druse where > .62, faded by `fw`), tilt per
+  facet id; a chipped step between large fields whose heights (`h3(id).y`) differ by > .1: the
+  higher side gets a lit lip, the lower a shadow of width ∝ height gap ÷ sun elevation; glow only
+  on facets facing the star (`dot(nf,L)` .35–.75) and one in ~2.2 by id; glass hue from palette
+  luminance × violet (.78,.6,1.3)–(.62,.64,1.36), the lit body takes 8 % of the star's hue
+  (`sunB`) and the crystal's air is chroma-capped at .02 — measured hue −60.4° against the glass
+  −62…−78° (OKLab). The fracture planes are gone (they drew arcs across many facets). Ice:
+  albedo fields snow/bare/frost by two warped fields, value spread > .10; four cracks on a
+  seed-rotated tetrahedron's axes (seven random axes bunched into rope bundles), half-width
+  .012–.035, dark `rust` floor, walls tilted by `o.b` (×1.1), levees, pressure ridges ×26 at
+  .25. Jungle: relief `(1−|fbm×1.8|)²` with its gradient by finite differences (`dpdx` on `hs`
+  is per 2×2 quad and laid a staircase on ridges and coasts); coast width +3`fw`; rivers are
+  zero lines of two warped fields (×5 main, ×9.5 tributaries, half-width .005/.0035 or .75`fw`)
+  torn by their own masks, albedo .22 × deep sea — measured on lit land (V ≥ .25) at 1920:
+  contrast .086 value (median), width 3 px; clouds `cloudJ` with a ragged edge and a shadow
+  offset 3 % of the radius toward the star; the warm terminator is a tone on the lit side
+  (`warmT`, air only) instead of an added band, which read as a second limb. `17g` star: rays
+  capped at .35·min(W,H) (measured ends ≈ 380 px at 1080); the disc (r·1.12) is a
+  `hangBlock` obstacle when > 16 px, so the hint plate sits outside its rim. Giant: two
+  granule scales (×.62 and ×1.75) mixed by a mask, lanes soft over 1.2 of the cell, brightness
+  ±.08 by id ramped in from the lane, cells smaller and darker toward the limb (`1+.8·lk²`),
+  faculae toward the limb. Splits: `16gb`→`16gba` (the comp pass), `17gab`→`17gab1` (pipelines
+  and drawing).
 
 ### Stage D — the way down (M830–M839)
 
