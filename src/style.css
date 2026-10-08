@@ -2896,6 +2896,9 @@ body.rackon #prompt{opacity:0}
    плита наезжает на нижнюю треть полосы. DOM разделов не меняется: меняется только рамка. ?hall=0 —
    класса нет, всё как было. */
 #stHall{display:none}
+/* таблица рынка в зале — плашка (M811): графит на графите, строка под мышью — та, чей ящик горит на стойке */
+#station.hall .mk{background:rgba(255,255,255,.025);border:1px solid var(--pl-edge);border-radius:6px;padding:10px 0 4px}
+#station.hall .mk-r[data-k]:hover{background:rgba(var(--c-acc),.12)}
 #station.hall #stHall{display:block;position:absolute;left:0;top:0;z-index:-2;pointer-events:none}
 /* основа — сплошная: зал (z -2) и плита (z -1) рисуются над ней в своём слое (isolation); если видеокарта
    не нарисовала зал, под экраном темнота, а не мир с его фишками */

@@ -207,6 +207,10 @@ could ever save.
   under the blue dock light. The keeper has hair and a face. The floor has tile joints, a worn
   path along the counter and oil stains. The bar has a second table with two people in the
   middle of the room.
+  At the counter, the market lies in front of you: one open crate per row of the price table,
+  heaped with the goods you carry (the heap grows with the amount) and empty for what you do
+  not. Point at a row and its crate lights up with an orange rim and a small lamp in the
+  goods' colour. In the hall the table is a plate without its line of explanation.
   The things are named by small plates with a leader line beside them (ДОСКА, СТОЙКА, the
   planet, ВЕРСТАК, КОНТОРА). `?hall=0` keeps the old desk; `?hallnight=0|1` and
   `?hallpilot=0` are for the stand.

@@ -48,6 +48,15 @@ the window — never the empty middle).
 the fill is the window (cold or hot by the type); everything else is bounce. Six shadowed lamps
 at most (`R3P` limits: 32 instances, 16 parts, 12 lamps, 6 shadowed).
 
+**A key never hangs straight over a head.** A spot right above a person burns the crown white
+and the face falls into shadow: the keeper read as a mannequin until the counter lamp moved
+.66 m toward the camera (M810 pass 4). Any key lamp sits at least .4 m off a person's head,
+toward the camera; `91qc-hall` checks the keeper.
+
+**A warm bounce, a cold day.** By day the floor bounce may warm the ceiling, but the ceiling's
+hue stays within 15° of the wall's, and the tops of the walls by the second window stay cold,
+so the day still reads as day.
+
 ## 4. The hall's bones and the seven dressings
 
 Every hall has the same bones so the camera stations are the same: a floor, a back wall with
