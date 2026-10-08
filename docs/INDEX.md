@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 525 · top-level symbols: 7797
+Files: 526 · top-level symbols: 7818
 
 ## SYMBOLS
 
@@ -1426,6 +1426,7 @@ PLN_DEG                      src/21p-pln.js:31
 PLN_DESC                     src/21pza-pln-descent.js:10
 PLN_DRESS                    src/21pge-pln-dress.js:6-20
 PLN_DRILL                    src/21pic-pln-drill.js:8
+PLN_DUI                      src/21pza-pln-descent.js:179
 PLN_FAR                      src/21pfa-pln-worlds.js:74-99
 PLN_FL                       src/21pfa-pln-worlds.js:212
 PLN_FLORA                    src/21pg-pln-flora.js:23
@@ -1433,6 +1434,7 @@ PLN_FRAME                    src/21pz-pln-frame.js:18
 PLN_G                        src/21pe-pln-gpu.js:67
 PLN_GAIT                     src/21piba-pln-gait.js:12
 PLN_GPU                      src/21pe-pln-gpu.js:27
+PLN_HAND_S                   src/21pz-pln-frame.js:275
 PLN_HDR                      src/21pe-pln-gpu.js:23
 PLN_HERB                     src/21pia-pln-herb.js:30
 PLN_HERB_MAKE                src/21pia-pln-herb.js:124-334
@@ -1440,6 +1442,8 @@ PLN_ICO                      src/21pa-pln-mesh.js:40
 PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_LAND                     src/21pf-pln-land.js:22
 PLN_LOOK                     src/21pz-pln-frame.js:29-51
+PLN_LPAD                     src/21pza-pln-descent.js:69
+PLN_LPAD_SPOTS               src/21pza-pln-descent.js:102
 PLN_M                        src/21p-pln.js:14
 PLN_MAN                      src/21pha-pln-man.js:23
 PLN_MAN_BONES                src/21pha-pln-man.js:32-56
@@ -1448,8 +1452,10 @@ PLN_MAN_POSE                 src/21pha-pln-man.js:39-56
 PLN_MARK                     src/21pie-pln-marks.js:20
 PLN_MARK_COL                 src/21pie-pln-marks.js:33
 PLN_MAT                      src/21pa-pln-mesh.js:9
-PLN_OLD_LANDING              src/21pza-pln-descent.js:35
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:338
+PLN_OLD_HUD                  src/21pza-pln-descent.js:189
+PLN_OLD_LANDING              src/21pza-pln-descent.js:202
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:370
+PLN_OLD_ULAND                src/21pza-pln-descent.js:194
 PLN_OVER                     src/21pj-pln-over.js:16
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:38-62
@@ -3180,6 +3186,8 @@ cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
 dbg                          src/28-loop.js:732-802
+dcLensEq                     tests/91qc-descent.js:15-18
+dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
 dealAnswer                   src/27g-deals.js:163-196
 dealBtnTick                  src/27n-ui-deal.js:38-44
@@ -4636,7 +4644,7 @@ hqWallProps                  src/27f-hq-room.js:426-472
 hqWindowView                 src/27f-hq-room.js:783-806
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
-hud                          src/27z-telemetry.js:226-598
+hud                          src/27z-telemetry.js:226-600
 hudFloorMeasure              src/27z-telemetry.js:175-223
 hudMsgPlace                  src/27z-telemetry.js:43-64
 hudNumDirty                  src/08-state.js:101
@@ -5886,7 +5894,9 @@ plnCastFrame                 src/21ph-pln-cast.js:42-55
 plnCastResample              src/21ph-pln-cast.js:12-21
 plnCastRingMesh              src/21ph-pln-cast.js:24-29
 plnCross                     src/21p-pln.js:38
-plnDescent                   src/21pza-pln-descent.js:12-32
+plnDescLens                  src/21pza-pln-descent.js:13-19
+plnDescOver                  src/21pza-pln-descent.js:164-176
+plnDescent                   src/21pza-pln-descent.js:21-59
 plnDot                       src/21p-pln.js:37
 plnDressBodies               src/21pge-pln-dress.js:30-43
 plnDressPath                 src/21pge-pln-dress.js:12-20
@@ -5921,6 +5931,8 @@ plnGpuReady                  src/21pe-pln-gpu.js:251-255
 plnGpuSize                   src/21pe-pln-gpu.js:196-250
 plnGpuTier                   src/21pe-pln-gpu.js:144-161
 plnGpuWrite                  src/21pe-pln-gpu.js:284-297
+plnHandAge                   src/21pz-pln-frame.js:276-286
+plnHandWin                   src/21pz-pln-frame.js:288-291
 plnHash                      src/21p-pln.js:55-59
 plnHerbAlgaMesh              src/21pia-pln-herb.js:389-413
 plnHerbAlgae                 src/21pia-pln-herb.js:414-439
@@ -5967,6 +5979,7 @@ plnLandPondLine              src/21pf-pln-land.js:211-222
 plnLandPondMesh              src/21pf-pln-land.js:641-655
 plnLandPondZ                 src/21pf-pln-land.js:224-230
 plnLandRake                  src/21pf-pln-land.js:88
+plnLandRead                  src/21pza-pln-descent.js:154-162
 plnLandRibAt                 src/21pf-pln-land.js:277-284
 plnLandRibH                  src/21pf-pln-land.js:259-275
 plnLandRibMesh               src/21pf-pln-land.js:551-588
@@ -5976,6 +5989,7 @@ plnLandSees                  src/21pf-pln-land.js:469-476
 plnLandSpan                  src/21pf-pln-land.js:292-297
 plnLandStep                  src/21pf-pln-land.js:488-507
 plnLandTab                   src/21pf-pln-land.js:286-289
+plnLandUi                    src/21pza-pln-descent.js:180-188
 plnLandWaterMesh             src/21pf-pln-land.js:626-639
 plnLeg                       src/21piba-pln-gait.js:33-41
 plnLegPhase                  src/21piba-pln-gait.js:30
@@ -6029,26 +6043,33 @@ plnOver                      src/21pj-pln-over.js:45-119
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:29-44
 plnOverPlate                 src/21pj-pln-over.js:23-27
+plnPadBulb                   src/21pza-pln-descent.js:109
+plnPadFrame                  src/21pza-pln-descent.js:121-145
+plnPadGeo                    src/21pza-pln-descent.js:72-94
+plnPadGlow                   src/21pza-pln-descent.js:104-107
+plnPadLift                   src/21pza-pln-descent.js:116-120
+plnPadSpots                  src/21pza-pln-descent.js:96-101
+plnPadTop                    src/21pza-pln-descent.js:111-114
 plnPalSet                    src/21pfa-pln-worlds.js:57-66
-plnPlantBatches              src/21pga-pln-plant.js:568-585
-plnPlantBodies               src/21pga-pln-plant.js:125-357
+plnPlantBatches              src/21pga-pln-plant.js:570-587
+plnPlantBodies               src/21pga-pln-plant.js:127-359
 plnPlantBucket               src/21pga-pln-plant.js:45
-plnPlantChunk                src/21pga-pln-plant.js:418-426
-plnPlantCrest                src/21pga-pln-plant.js:441-445
-plnPlantDrop                 src/21pga-pln-plant.js:607-613
-plnPlantFar                  src/21pga-pln-plant.js:446-527
-plnPlantFree                 src/21pga-pln-plant.js:118-121
-plnPlantGrass                src/21pga-pln-plant.js:359-417
+plnPlantChunk                src/21pga-pln-plant.js:420-428
+plnPlantCrest                src/21pga-pln-plant.js:443-447
+plnPlantDrop                 src/21pga-pln-plant.js:609-615
+plnPlantFar                  src/21pga-pln-plant.js:448-529
+plnPlantFree                 src/21pga-pln-plant.js:120-123
+plnPlantGrass                src/21pga-pln-plant.js:361-419
 plnPlantGrid                 src/21pga-pln-plant.js:68-84
 plnPlantGroup                src/21pga-pln-plant.js:51-66
 plnPlantInit                 src/21pga-pln-plant.js:87-94
 plnPlantPut                  src/21pga-pln-plant.js:46-49
-plnPlantRefit                src/21pga-pln-plant.js:588-606
+plnPlantRefit                src/21pga-pln-plant.js:590-608
 plnPlantSeed                 src/21pga-pln-plant.js:43
-plnPlantSees                 src/21pga-pln-plant.js:530-533
-plnPlantShore                src/21pga-pln-plant.js:430-439
-plnPlantStep                 src/21pga-pln-plant.js:538-566
-plnPlantThings               src/21pga-pln-plant.js:97-116
+plnPlantSees                 src/21pga-pln-plant.js:532-535
+plnPlantShore                src/21pga-pln-plant.js:432-441
+plnPlantStep                 src/21pga-pln-plant.js:540-568
+plnPlantThings               src/21pga-pln-plant.js:97-118
 plnPortalOpen                src/21pifa-pln-marks-act-stone.js:188
 plnQuad                      src/21pa-pln-mesh.js:27
 plnQualAuto                  src/21pe-pln-gpu.js:56-65
@@ -6079,7 +6100,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:89
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:271-335
+plnSurface                   src/21pz-pln-frame.js:294-367
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -8983,7 +9004,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pg-pln-flora.js · 16 KB
   · планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611):1
 
-## src/21pga-pln-plant.js · 38 KB
+## src/21pga-pln-plant.js · 39 KB
   · планета: что где растёт и лежит (M611):1
 
 ## src/21pgb-pln-trees.js · 17 KB
@@ -9055,10 +9076,10 @@ zoomTo                       src/15-input.js:358
 ## src/21pk-pln-weather.js · 20 KB
   · осадки в воздухе сцены (M626):1
 
-## src/21pz-pln-frame.js · 28 KB
+## src/21pz-pln-frame.js · 30 KB
   · планета: кадр нового вида (M610):1
 
-## src/21pza-pln-descent.js · 4 KB
+## src/21pza-pln-descent.js · 15 KB
   · планета: спуск в новом виде (M621):1
 
 ## src/22-mode-cave.js · 45 KB
@@ -9405,6 +9426,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qb-rig-card.js · 4 KB
   · один астронавт везде: риг в карточке (M801):1
+
+## tests/91qc-descent.js · 8 KB
+  · спуск планеты: касание без склейки, площадка, старый путь (M830):1
 
 ## tests/91qd-bodies.js · 4 KB
   · тела под звездой (M820):1

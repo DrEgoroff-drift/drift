@@ -231,6 +231,13 @@ body:not(.inflight) .ipod{display:none}
   /* то же и для подсказки: она висит над грунтом, а грунт бывает светлым */
   text-shadow:0 1px 3px rgba(5,5,5,.95),0 0 10px rgba(5,5,5,.75),0 0 14px rgba(var(--c-acc),.4);
   white-space:pre-line;line-height:1.85;max-width:90%}
+/* спуск в новом виде (21pza, M830): показания встают в ряд пэдов перед ТОРМОЗ — у рук, не в кадре;
+   строка захода — плашкой у корабля на канве, #msg молчит */
+body.plnland #prompt{margin-bottom:12px;padding:4px 10px;border-radius:4px;background:rgba(8,12,18,.62);backdrop-filter:blur(8px);text-shadow:none}
+.pads #prompt.inrow{position:static;transform:none;zoom:1;align-self:center;text-align:right;max-width:none;
+  margin:0 6px 0 0;font-size:11px;line-height:1.7;pointer-events:none}
+body.plnland #prompt:empty{display:none}
+body.plnland #msg{visibility:hidden}
 
 /* ══════════════ пэды ══════════════ */
 .pads{position:fixed;left:0;right:0;bottom:0;padding:0 14px calc(env(safe-area-inset-bottom) + 16px);

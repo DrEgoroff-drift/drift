@@ -291,6 +291,38 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   then the strata slab, the lollipop trees, the landing bake and the 2D sky (`19b/19e/19c*`)
   switched off for good; whatever they did that the planet's sky lacks is built in `21pz`,
   not kept. The autoland rule and controls stay. Gate: the landing pair; the S23 budget.
+  - *Done (M830 pass 1, `21pza`/`21pz`):* the touchdown is one shot — the descent's lens
+    (`plnDescLens`) stores its window centre, ground line, ruler and near share in `PLN.hand`;
+    the first surface frame takes them whole and `plnHandAge`/`plnHandWin` ease centre, ground
+    line and ruler to the walk lens over `PLN_HAND_S` (1.2 s of wall clock from the first surface
+    frame, not from the touch, so the touchdown count does not eat it), and `PLN.glide` starts
+    from the descent's near share. The descent's lens closes in near the ground (`o.near`,
+    0.6 · smooth(30 m → 6 m)). The pad is a body (`plnPadFrame`, by `o.extra` on the descent and
+    in the surface branch): a slab with a rounded edge (superquadric, `PLN_LPAD`), top 0.35 m
+    over the levelled ground or over the water (`plnPadTop`), its foot 3.2 m deep as a berm, a
+    metre behind the ship so its near edge stays off the walk line's slope; 32 amber dashes on the
+    edge, two lamps on posts at the far corners (lamps light it only at dusk, `PLN.sun.night`);
+    to `PLN_TO.all`, so it casts. The ship is set on its top on the descent and on the surface
+    (`plnPadLift`), its feet find the slab (`o.floor` in `plnShipFrame`), the flora clears it
+    (`plnPlantThings`). The approach wave (`plnPadGlow`) runs the dashes and dies over the
+    touchdown count. The exhaust's wash is a lamp on the ground under the nozzles from 24 m down;
+    at dusk a landing flood stands 4.5 m before the ship toward the lens (the pad lamps light its
+    back). The overlap net of `91zzzb-land` counts the readout in the row as part of the row.
+    Words on things (L5): the say line under the descent is a plate over the ship
+    (`plnDescOver`, in window pixels like 21pj's plates) and `#msg` is hidden (`body.plnland`);
+    the readout (`plnLandRead`, wrapping `updateLanding`) speaks metres and m/s in two lines and
+    is moved into the pads row before ТОРМОЗ on a plate (`plnLandUi`, wrapping `hud`; on a phone
+    it stays above the row). The landing's place line gets the weather (`27z`, one line, as on
+    the surface). The zenith darkens with height (`o.zen`, up to a third at 70 m). Everything
+    else the old approach did the planet frame already does (the haze, the far ranges, the
+    stars), and with `PLN.on` the 2D sky, strata, trees and lander bake are not called at all —
+    the wrapper of `drawLanding` falls back to them only without the GPU or after three failures.
+    Cost (desktop, pc 1600×900, GPU ms per frame): desert surface 2.54 → 2.55, desert descent 2.43 → 2.45, ocean surface 4.05 → 4.06, ocean descent 3.70 → 3.72 (the slab, its dashes and lamps cost about 0.02 ms). Tests `91qc-descent` (Node):
+    the first surface lens equals the last descent lens to 1e-6 and the near share carries over,
+    the pad is in frame at touchdown, the ship stands on the slab (land, water, off the pad), the
+    readout's units, the dashes and lamps never go dark, and `?pln=0` draws the old approach while
+    `PLN.on` never touches it. Tools: `cost.py js=` measures a descent snippet; `descent.py fn=`
+    shoots the n-th surface frame.
 - **M831 Scoop**: a dark near plume, warm light on the ship, the prompt on the ship.
 - **M832 Postcard from the frame**: the card is the live engine frame through the album's
   filters; the painter deleted.

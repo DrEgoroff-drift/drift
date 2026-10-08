@@ -42,7 +42,7 @@ function plnCast(){
 function plnCastFrame(F,man,face,ship,yaw,swim,o){
   const Q=plnCast(),B=PLN_KIND.body;
   plnManFrame(F,man,face,swim,o);
-  plnShipFrame(F,ship,yaw,{L:o&&o.L,gear:1,sq:0,thr:0,open:true});
+  plnShipFrame(F,ship,yaw,{L:o&&o.L,floor:o&&o.floor,gear:1,sq:0,thr:0,open:true});
   if(swim>0){
     plnRec(Q.ra,0,[man[0],man[1]+Q.belt,man[2]],.3+.7*swim,0,1,3);
     plnInstSet(Q.ringI,Q.ra,1);
