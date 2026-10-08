@@ -25,10 +25,13 @@ function cave3LakeGeo(C,F,z){
     if(id[k]<0){id[k]=m.nv;plnVert(m,[xa+i*st,Yw,zs[j]],[0,1,0],col,CAVE3_MAT.water,0,0,clamp(-D[k],-.5,4));}
     return id[k];
   };
+  /* урез по x — где гладь и правда легла (у зала бывает пол выше уровня игры) */
+  let ga=1e9,gb=-1e9;
   for(let i=0;i<nx;i++)for(let j=0;j+1<nz;j++){
     const a=i*nz+j;
     if(Math.min(D[a],D[a+1],D[a+nz],D[a+nz+1])>-.03)continue;
     plnQuad(m,vid(i,j),vid(i+1,j),vid(i+1,j+1),vid(i,j+1));
+    if(j<8&&Math.max(D[a],D[a+1],D[a+nz],D[a+nz+1])<-.03){ga=Math.min(ga,xa+i*st);gb=Math.max(gb,xa+(i+1)*st);}
   }
   /* тело в разрезе: от глади до дна за разрезом; камень разреза лежит перед ним и закрывает лишнее */
   const sx=.25,ns=Math.ceil((xb-xa)/sx);
@@ -42,7 +45,7 @@ function cave3LakeGeo(C,F,z){
     if(prev>=0)plnQuad(m,prev,a,a+1,prev+1);
     prev=a;
   }
-  return m.ni?{geo:plnGeo(m),y:Yw,x0:xa,x1:xb}:null;
+  return m.ni?{geo:plnGeo(m),y:Yw,x0:xa,x1:xb,g0:ga<gb?ga:null,g1:gb}:null;
 }
 
 /* кадр: озёра в окне строятся раз и лежат на пещере; зеркало — у ближнего */
@@ -63,10 +66,14 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
     const d=cx<k.x0?k.x0-cx:cx>k.x1?cx-k.x1:0;
     if(d<near)near=d;
     if(d<best){best=d;F.lake={y:k.y};}
-    /* урез от человека (M631, нырок объектива): точка глади под ним — ближайшая по x */
-    const e=mx<k.x0?k.x0-mx:mx>k.x1?mx-k.x1:0;
-    if(e<md){md=e;CAVE3.lakeM={d:e,x:clamp(mx,k.x0+.5,k.x1-.5),y:k.y};}
+    /* урез от человека (M631, нырок объектива): точка глади под ним — ближайшая по x; на уступе
+       высоко над водой урез далёк, хоть и под ногами */
+    if(k.g0==null)return;
+    const e=Math.hypot(mx<k.g0?k.g0-mx:mx>k.g1?mx-k.g1:0,Math.max(0,-C.y/CAVE_PPM-k.y));
+    if(e<md){md=e;CAVE3.lakeM={d:e,x:clamp(mx,k.g0+.5,k.g1-.5),y:k.y,g0:k.g0,g1:k.g1};}
   });
+  /* нырок: зеркало — у озера, к которому нырнули */
+  if(CAVE3.lakeM&&md<3.6)F.lake={y:CAVE3.lakeM.y};
   CAVE3.stat.lake=F.lake?+F.lake.y.toFixed(2):null;
   CAVE3.lakeD=near<1e9?near:null;
   return tris;

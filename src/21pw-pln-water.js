@@ -217,9 +217,10 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
      и кольца капель отсветом — гладь в нижней галерее, куда фонарь не достаёт, читается ими */
   let own = g.amb.rgb * 0.18 + points(in.wpos + vec3f(0.0, 0.05, 0.0), S.n, 1.0) * 0.1;
   let edge = vec3f(0.6, 0.8, 0.82) * (g.amb.rgb * 0.9 + lit * 0.12);
-  var o = waterLook(S, V, depth, 0.0, teal * 0.75, teal * 0.15, lit, own, refl * 1.07,
+  var o = waterLook(S, V, depth, 0.0, teal * 0.75, teal * 0.15, lit, own, refl * 1.3,
     ll.xyz, g.lampCol.rgb * (ll.w * lsh * 0.5), edge, 0.18);
-  return vec4f(haze(o.rgb, in.wpos, 1.0), o.a * mix(0.8, 1.0, smoothstep(0.0, 1.0, depth)));
+  /* мель прозрачна, но не до пола: зеркало держит гладь и над песком в конусе (нырок M631) */
+  return vec4f(haze(o.rgb, in.wpos, 1.0), o.a * mix(0.9, 1.0, smoothstep(0.0, 1.0, depth)));
 }
 `;
 
