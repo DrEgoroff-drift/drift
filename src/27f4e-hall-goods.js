@@ -14,7 +14,7 @@ const HALL_GOODS_ACC=[255,106,43];   /* --c-acc плиты: подсветка �
 function hallStencil(c,s){const mx=Math.max(c[0],c[1],c[2]),mn=Math.min(c[0],c[1],c[2]),sat=mx>0?(mx-mn)/mx:0,k=sat>s?s/sat:1;
   return c.map(v=>Math.round((mx-(mx-v)*k)*.82));}
 function hallGoodsMesh(keys){
-  const K=r3Kit(),P=R3P,c=(G&&G.cargo)||{},w=.15,h=.065;   /* мелкий лоток: камера смотрит на стойку почти вдоль, глубокий ящик прятал товар */
+  const K=r3Kit(),P=R3P,c=(G&&G.cargo)||{},w=.15,h=.065;K.flags=2;   /* ящики — тела под резкостью */   /* мелкий лоток: камера смотрит на стойку почти вдоль, глубокий ящик прятал товар */
   const Wd=K.mt([136,94,56],.3,6,P.wood),In=K.mt([70,50,34],.15,4,P.wood);
   keys.slice(0,12).forEach((k,i)=>{const [x,y,z]=hallGoodsAt(i),q=c[k]||0,col=hallGoodsCol(k),hot=HALL_GOODS.hot===k;
     K.box([x,y+.008,z],[w,.008,w],In,.002);   /* дно */

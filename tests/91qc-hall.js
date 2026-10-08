@@ -114,6 +114,13 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     HALL.place="trade";HALL.night=1;const Tn=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5);ok(!Tn.lights.some(l=>l.rim),"у стойки контра нет");
     HALL.place=wp;HALL.night=wn;}
 
+  /* M814b: резкость — по маске тел: у приборов и ящиков бит 2²³, у комнаты нет; часть читается точно (round, не +.5) */
+  {const flags=m=>{const s=new Set();for(let i=11;i<m.v.length;i+=12)s.add(m.v[i]);return [...s];},im=hallInstrMesh(),L=hallLayout("yard"),rm=hallRoomMesh(L);
+    ok(flags(im).every(f=>f>=8388608),"все вершины приборов — под маской резкости");
+    ok(flags(rm).every(f=>f<8388608),"комната (рейки, стена) — без маски: муара нет");
+    ok(flags(im).every(f=>Math.round(f)%16<=INSTR_KEYS.length&&Math.round(f)===f),"флаги приборов — целые, часть ≤ "+INSTR_KEYS.length);
+    const sh=R3_WGSL;ok(!/u32\(i\.m\.z\+\.5\)/.test(sh),"шейдер читает флаги round(): у 2²³ +.5 уводило часть");}
+
   /* M814: плита — один ключ сверху-слева: верх тела светлее низа на ≥ .12 value у каждого завода */
   {const val=h=>{const n=parseInt(h.slice(1),16);return Math.max(n>>16,(n>>8)&255,n&255)/255;},K=HALL_DIAL_KEY;
     for(const w of Object.keys(HALL_INSTR_MAT)){const sv=HALL_INSTR_MAT[w].sv,top=val(sv[0])*(1-K.hi)+K.hi,bot=val(sv[sv.length-1])*(1-K.lo);
