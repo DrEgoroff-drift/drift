@@ -6,6 +6,22 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.493.1 - the captain can be fought; 0.493.0 never reached the site
+
+0.493.0 went red on the runner's Node tier: the probe read its environment through `typeof
+process` guards, and the net that refuses `typeof` sentries in suites caught it — the local gate
+had not (`test.ps1` prints ALL GREEN while `node test-node.js` alone reports the net; noted in
+`docs/GOTCHAS.md`). Nothing was deployed; this release carries 0.493.0 whole.
+
+- **M902b — the captain.** Measured before: no build could touch him and he killed every build
+  that stayed, because he backed away for ever with his nose on you (reverse thrust under 700 px)
+  while turning at 170°/s — there was no side to reach. Now he turns at 41°/s, backs off only under
+  400 px and holds ground between 400 and 700, and the jammer keeps half the lead with a ±4°
+  wander. Measured after (`проба · дуэль`, danger .5): a stock «Стриж» flanking him makes him
+  flee in 35 s at 67 % hull; a «Топор» w3 kills him in 21 s at 87 %; a «Вьюк» still dies if it
+  stays, and leaving costs one missile (10 s, −20…−50 % hull). Standing still against him is
+  death on every build, as it should be.
+
 ## 0.493.0 - the remake on the engine: the hall, the orbs, the cave; the duel probe
 
 Everything the three builders and the designer put on `planet-main` since 0.492.1 (147 commits,

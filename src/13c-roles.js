@@ -96,13 +96,17 @@ function pirateRoleTick(p,dt,d,want){
     roleFire(p,d,want,760,60);
   }else if(rank===2){
     /* капитан: никогда ближе семисот, редкий тяжёлый огонь */
-    /* тяжёлый корабль ворочается медленно (.022 — 75°/с против 170°/с): «Стриж»
+    /* тяжёлый корабль ворочается медленно (.012 — 41°/с против 170°/с): «Стриж»
        на трёхстах обходит его быстрее, чем он поворачивает лоб, — иначе лобовое
        поле не обойти никому, и капитан убивал любой корпус вплоть до «Топора»
        (проба · дуэль, 09.10) */
-    if(d<700){roleSteer(p,want,dt,.022);const k=.04*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
-    else if(d>950){roleSteer(p,want,dt,.022);roleThrust(p,dt,.045);}
-    else{roleSteer(p,want,dt,.022);roleDamp(p,dt,.96);}
+    /* ближе семисот он не пятится без конца (прежде — задним ходом .04 с лицом к вам,
+       и обойти его было некуда: он отъезжал и доворачивал): под четырьмястами
+       отходит, между — стоит и ворочает лоб. Обойти лоб — вся дуэль с ним */
+    if(d<400){roleSteer(p,want,dt,.012);const k=.04*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
+    else if(d<700){roleSteer(p,want,dt,.012);roleDamp(p,dt,.94);}
+    else if(d>950){roleSteer(p,want,dt,.012);roleThrust(p,dt,.045);}
+    else{roleSteer(p,want,dt,.012);roleDamp(p,dt,.96);}
     if(d<1100&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
       /* пусковая — по таблице §5 у капитана (M367/M368): раз в несколько

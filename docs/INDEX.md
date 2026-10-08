@@ -6113,7 +6113,7 @@ pirateClass                  src/12i-pirate-hull.js:47-52
 pirateFellTo                 src/13-combat.js:76-84
 pirateHas                    src/13d-loadout.js:34-37
 pirateLoadout                src/13d-loadout.js:33
-pirateRoleTick               src/13c-roles.js:54-138
+pirateRoleTick               src/13c-roles.js:54-142
 pirateShipId                 src/13-pirates.js:20-27
 pl3                          src/01-core.js:109-115
 plLand                       tests/90a-tools.js:735-741
@@ -8900,7 +8900,7 @@ zoomTo                       src/15-input.js:358
 ## src/13b1-blockade.js · 2 KB
   · голос блокады (M498, PLAN):1
 
-## src/13c-roles.js · 9 KB
+## src/13c-roles.js · 10 KB
   · роли пиратов по рангу (M361, §5):1
 
 ## src/13d-loadout.js · 9 KB
