@@ -46,6 +46,13 @@ function hallCage(K,x,y,z,e){
   K.box([x,y,z+.04],[.008,.008,.04],Md,.003);
 }
 
+function hallSmudge(K,x,z,rx,rz,Mf,c){
+  const n=18,ci=r3Lin(c),cm=r3Lin(mixc(c,Mf.c.map(v=>Math.pow(v,1/2.2)*255),.45)),co=Mf.c,N=[0,1,0],y=.0016;
+  const at=(i,k)=>{const a=i/n*TAU,w=1+.18*Math.sin(a*3+x*7);return [x+Math.cos(a)*rx*k*w,y,z+Math.sin(a)*rz*k*w];};
+  for(let i=0;i<n;i++){const a0=at(i,.5),a1=at(i+1,.5),b0=at(i,1),b1=at(i+1,1);
+    K.vx([x,y,z],N,Mf,ci);K.vx(a1,N,Mf,cm);K.vx(a0,N,Mf,cm);
+    K.vx(a0,N,Mf,cm);K.vx(a1,N,Mf,cm);K.vx(b1,N,Mf,co);K.vx(a0,N,Mf,cm);K.vx(b1,N,Mf,co);K.vx(b0,N,Mf,co);}
+}
 function hallClutter(K,L,R){
   const T=L.T,P=R3P,hc=T.hc,B=HALL_B,X0=HALL_L,X1=L.R,C=HALL_PROP_C,dk=!!T.dark;
   const xEnd=L.bar?HALL_XB-4.6:X1;   /* общая одежда — до бара; у бара своя */
@@ -86,6 +93,15 @@ function hallClutter(K,L,R){
   /* бочки: ржавая и стальная у правой пилястры (если там не бар), ещё одна у левой стены */
   if(!L.bar&&L.st!=="fuel"){hallDrum(K,X1-.55,-2.3,C.orange,C.rust);hallDrum(K,X1-1.15,-2.35,C.orange,C.steel);}
   hallDrum(K,X0+.5,-1.55,C.orange,C.paint);
+  /* пол — тоже тело: швы плит, затёртая дорожка у стойки и к доске, пятна масла у бочек и под верстаком */
+  {const Js=K.mt([46,46,48],.1,3,0),x1=xEnd-.05;
+    for(let z=B+1.2;z<HALL_F;z+=1.2)K.box([(X0+x1)/2,.0012,z],[(x1-X0)/2,.0008,.006],Js,0);
+    for(let x=X0+1.2;x<x1;x+=1.2)K.box([x,.0012,(B+HALL_F)/2],[.006,.0008,(HALL_F-B)/2],Js,0);
+    /* пятна — плоский веер в материале пола: середина своей краски, край ровно в цвет пола (без кромки) */
+    const rough=T.win===1||T.weld||T.dark,fc=rough?[92,90,86]:mixc(T.wall,[100,92,82],.5),Mf=K.mt(fc,rough?.25:.32,rough?6:7,P.floor);
+    hallSmudge(K,-4.25,.5,.42,2.3,Mf,mixc(fc,[176,170,158],.3));hallSmudge(K,-3.0,-.7,.6,.45,Mf,mixc(fc,[176,170,158],.25));
+    for(const s of [[X0+.7,-1.2,.5,.36,.5],[-.9,-1.9,.36,.26,.45],[1.6,-1.7,.3,.42,.3],[-2.2,2.7,.6,.38,.3],[.4,1.1,.24,.18,.4]])
+      hallSmudge(K,s[0],s[1],s[2],s[3],Mf,mixc(fc,[26,24,22],s[4]));}
   /* разметка: линия прохода вдоль стойки, «зебра» у окна */
   const Hz=K.mt([200,150,40],.35,7,P.hazard),Ln=K.mt([132,120,84],.15,4,0);
   K.box([-3.95,.0025,1.2],[.03,.002,3.6],Ln,0);

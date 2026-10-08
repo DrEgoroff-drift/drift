@@ -37,13 +37,14 @@ const HALL_PILOT_M={seed:0x9117D,role:"cmd",loy:70,xp:0,traits:[],jac:[238,115,3
 const HALL_PILOT_AT={board:[-2.85,-1.25,Math.PI-.3,"hips"],trade:[-4.45,-.15,-Math.PI/2,"elbow"],
   ship:[2.62,-2.27,Math.PI+.22,"frame"],site:[2.62,-2.27,Math.PI+.22,"frame"],know:[1.75,-1.25,Math.PI+.5,"hips"],hold:[4.0,-1.35,Math.PI*.78,"hips"],
   folk:[HALL_XB+1.72,.36,Math.PI-.5,"stool1"]};
-const HALL_SEAT_PILOT=1.72;
-/* столик бара — первым планом слева, перед пустым концом стойки: двое сидят (x, z относительно бара) */
-const HALL_BAR_TABLE={x:-1.75,z:2.25,seats:[[-2.3,1.95],[-1.3,1.8]]};
-const HALL_SGN=[-4.4,-2.3,2.32,2.62];   /* вывеска бара — сбоку, над дверью кантины (x относительно бара) */   /* табурет пилота у правого конца стойки бара (x относительно бара) */
+const HALL_SEAT_PILOT=1.72;   /* табурет пилота у правого конца стойки бара (x относительно бара) */
+/* столики бара: слева перед пустым концом стойки и справа на полу среднего плана; за каждым двое (x, z относительно бара) */
+const HALL_BAR_TABLES=[{x:-1.75,z:2.25,seats:[[-2.3,1.95],[-1.3,1.8]]},{x:.6,z:2.55,seats:[[.1,2.72],[1.05,2.3]]}];
+const HALL_BAR_SEATS=HALL_BAR_TABLES.flatMap(T2=>T2.seats.map(s=>({s,T2})));
+const HALL_SGN=[-4.42,-3.32,2.36,2.6];   /* вывеска бара — сбоку, над дверью кантины, не над стойкой (x относительно бара) */
 /* смена станции: сутки — 24 мин игрового часа; ночью окно гаснет до звёзд, держат лампы людей */
 const HALL_DAY_MS=24*60e3;
-const HALL_KEYX=-5.72;
+const HALL_KEYX=-5.2;
 const HALL_SCONCE=[-7.0,2.2,-.9];   /* бра на левой стене над полкой */      /* лампа-ключ: x над стойкой со стороны хозяина */
 /* типы: высота потолка, вид в окно (S.win2.y: 0 док, 1 литейка, 2 стапель, 3 звёзды науки, 5 звёзды и
    патруль, 6 резервуары), заливка окна (цвет, сила), тон ключа, стены, сколько ламп над баром */
@@ -123,16 +124,20 @@ function hallGo(place,first){
 }
 
 /* ── раскладка: кто где стоит (чистый JS, без видеокарты) ── */
+function hallLum(c){return .3*c[0]+.59*c[1]+.11*c[2];}
 function hallLayout(st){
   const T=hallT(st),seed=((G.sys&&G.sys.seed)^0x4A11)>>>0,CS=CANT_STYLE[st]||CANT_STYLE.trade;
   const acc=hex2rgb(CS.acc),bar=hallHasBar(st),R=rng(seed^0x77);
   const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st)};
   /* хозяин стойки: в комбинезоне смотрителя, стоит за стойкой лицом в зал */
   const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"keep",loy:64,xp:0,traits:[]};
+  /* волосы, а не бритая голова, и тёмные на коже не светлее средней: светлые на светлом рядом с пилотом читались манекеном */
+  const keepOk=g=>[0,4,5].indexOf(g.style)<0&&hallLum(g.hair)<110&&hallLum(g.skin)<205;
+  for(let i=2;i<40&&!keepOk(cpGene(keep));i++)keep.seed=hashi(seed,0xC0E,i)>>>0;
   L.people.push({id:"hallkeep",m:keep,pose:"bar",x:-5.86,z:.62,yaw:Math.PI/2-.12,lod:1,kind:"keep"});
   /* зал не пуст: посетитель читает доску, грузчик у бочек под окном (стоят в работе, не в строю) */
   L.people.push({id:null,m:{seed:hashi(seed,0xB0A,2)>>>0,loy:50,traits:[]},pose:"mug",x:-4.05,z:-1.9,yaw:Math.PI-.15,lod:1,kind:"crowd"});
-  if(!T.stalls)L.people.push({id:null,m:{seed:hashi(seed,0x10AD,3)>>>0,loy:50,traits:[]},pose:"hips",x:-.05,z:-1.55,yaw:-2.3,lod:1,kind:"crowd"});
+  if(!T.stalls)L.people.push({id:null,m:{seed:hashi(seed,0x10AD,3)>>>0,loy:50,traits:[],jac:[204,98,38]},pose:"hips",x:-.05,z:-1.55,yaw:-2.3,lod:1,kind:"crowd"});
   /* бар: люди кантины на своих местах, сдвинутые в конец зала; кино и столики дел — забота M814 */
   if(bar&&typeof c3Layout==="function"){
     const cl=(G.cantina&&G.cantina.key===G.sys.key)?G.cantina.list:stationMgrs(G.sys);
@@ -146,11 +151,11 @@ function hallLayout(st){
     for(const P of CL.people){if(P.kind==="kino"||P.z<HALL_B+.35)continue;
       const Q=Object.assign({},P,{x:P.x+HALL_XB,id:P.id&&("bar:"+P.id)});
       if(P.kind==="cand"){Q.x=HALL_XB+L.seats[ci];Q.yaw=Math.PI+(ci%2?.5:-.5);ci++;}
-      if(P.kind==="crowd"&&P.pose==="table"){const s=HALL_BAR_TABLE.seats[ti++];if(!s)continue;const T2=HALL_BAR_TABLE;
+      if(P.kind==="crowd"&&P.pose==="table"){const S2=HALL_BAR_SEATS[ti++];if(!S2)continue;const s=S2.s,T2=S2.T2;
         Q.x=HALL_XB+s[0];Q.z=s[1];Q.yaw=Math.atan2(T2.x-s[0],T2.z-s[1]);}
       L.people.push(Q);}
-    /* за столиком всегда двое: недостающих — из завсегдатаев */
-    for(const T2=HALL_BAR_TABLE;ti<T2.seats.length;ti++){const s=T2.seats[ti];
+    /* за столиками всегда по двое: недостающих — из завсегдатаев */
+    for(;ti<HALL_BAR_SEATS.length;ti++){const s=HALL_BAR_SEATS[ti].s,T2=HALL_BAR_SEATS[ti].T2;
       L.people.push({id:null,m:{seed:hashi(seed,ti,0x7AB1)>>>0,loy:50,traits:[]},pose:"table",x:HALL_XB+s[0],z:s[1],yaw:Math.atan2(T2.x-s[0],T2.z-s[1]),lod:0,kind:"crowd"});}
   }
   /* блошинец: у прилавков покупатели, дальняя толпа (LOD 0) */
@@ -210,7 +215,7 @@ function hallScene(L,cam,t){
   bulbs.push([HALL_KEYX,ky,.62,dk?1.1:.9]);
   /* окно: высоко под проёмом и круто вниз — пятно до середины зала, тени людей к камере; конус не
      достаёт пола у камеры (глянец зеркалил его там пятном). Пыль в луче — днём */
-  const wy=hallWinY(T),wx=(HALL_WIN[0]+HALL_WIN[1])/2,dock=hallMix3(hallMix3(fill,r3Lin([205,222,255]),.6),[.04,.07,.2],nk);
+  const wy=hallWinY(T),wx=(HALL_WIN[0]+HALL_WIN[1])/2,dock=hallMix3(hallMix3(fill,r3Lin([170,200,255]),.7),[.04,.07,.2],nk);
   lights.push({p:[wx,Math.min(hc-.2,wy[1]+.15),HALL_B+.3],range:T.big?11:10,c:r3Sc(dock,T.fp*(dk?3:4.2)*(.06+.94*day)),spot:1,
     d:[0,-.82,.57],cosO:Math.cos(.5),cosI:Math.cos(.18),shadow:1,vol:(T.win===1?.6:.4)*day});
   /* бар: не больше трёх тёплых ламп, луч — на стойку (лужи света на полу и конусы в дыму не нужны);
@@ -239,14 +244,14 @@ function hallScene(L,cam,t){
   if(nk>.05)for(const x of [HALL_WIN[0]-.45,HALL_WIN[1]+.45])lights.push({p:[x,Math.min(hc-.5,2.3)-.02,HALL_B+.32],range:3.4,c:r3Sc(r3Lin([255,196,130]),(dk?.9:1.4)*nk),vol:0});
   /* рассеянный: небо — свет дока сквозь окна (сверху и со стен), земля — отсвет пола (потолок, низы балок) */
   const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.18+.82*day);
-  const sky=mx(mixc(T.wall,[176,194,226],.6),mixc(T.wall,[60,78,140],.55)),gnd=mx(mixc(T.wall,[178,170,158],.6),mixc(T.wall,[62,54,48],.4));
+  const sky=mx(mixc(T.wall,[146,178,232],.62),mixc(T.wall,[60,78,140],.55)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[62,54,48],.4));
   const fog=mx(mixc(T.wall,[150,165,190],.4),[30,38,64]);
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
     sky:[...sky,amb],gnd:[...gnd,T.win===1?.045:dk?.04:.03],
     fog:[...r3Sc(fog,.25),T.win===1?.055:dk?.04:.035],acc:[...r3Lin(acc),1],
     win:[HALL_WIN[0],wy[0],HALL_WIN[1],wy[1]],win2:[HALL_B,T.win,L.seed%47,(T.win===1?1.15:1)*(.38+.62*day)],
-    sgn:[HALL_XB+HALL_SGN[0],HALL_SGN[2],HALL_XB+HALL_SGN[1],HALL_SGN[3]],sgn2:[HALL_B,.5+.3*nk,0,0],
+    sgn:[HALL_XB+HALL_SGN[0],HALL_SGN[2],HALL_XB+HALL_SGN[1],HALL_SGN[3]],sgn2:[HALL_B,.32+.25*nk,0,0],
     flm:pl?pl.flm:[0,0,1,0],flm2:[HALL_B,0,pl?1:0,0],tsg:L.bar?C3.sign:null,tfl:pl?{view:HALL.orbTex.view}:null,M,ot:OT};
 }
 /* окно: проём по x и высоте (подоконник 1.2 м — мерило человека) */

@@ -25,7 +25,12 @@ could ever save.
   the window is deep blue and the lamps of people carry the room. The bar is the far end of the
   same hall: a counter with people on stools facing it, a table with two sitting, three warm
   lamps and the sign at the side. A message in the hall is a small plate on the screens, not a
-  strip across the room.
+  strip across the room. By day the hall takes its colour from things, not from a lighter tone:
+  red-brown counter wood, coloured tins, crates with stencil plates and rolls of cloth on the
+  shelves, a loader in orange overalls, a warm lamp over the counter, a warm bounce off the floor
+  under the blue dock light. The keeper has hair and a face. The floor has tile joints, a worn
+  path along the counter and oil stains. The bar has a second table with two people in the
+  middle of the room.
   The things are named by small plates with a leader line beside them (ДОСКА, СТОЙКА, the
   planet, ВЕРСТАК, КОНТОРА). `?hall=0` keeps the old desk; `?hallnight=0|1` and
   `?hallpilot=0` are for the stand.

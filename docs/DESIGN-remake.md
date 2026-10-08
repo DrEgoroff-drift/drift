@@ -305,6 +305,20 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
     terminator; science stays big. Window glass reflects .2. A `say()` toast in the hall on a
     PC is a plate at the right edge of the screens (≤ 420 px), checked by a browser suite in
     `91qc-hall`.
+    *Pass 4 (polish):* the day tone stays; colour comes from warm notes of things. The trade
+    counter wood is `[120,62,32]`; shelf goods take the `GOODS` palette (crates with stencil
+    plates, tins with label bands, cloth rolls); the loader wears orange (`m.jac`); the sky term
+    is a bluer dock light and the ground term a warm bounce (cold key, warm bounce). The key lamp
+    moved to the counter's front edge (`HALL_KEYX` -5.2): straight over the keeper it burned his
+    head white and he read as a mannequin. The keeper's seed is re-rolled until he has hair
+    (style not 0/4/5), dark hair and skin no paler than middle (`hallLum`). The bar has two
+    tables (`HALL_BAR_TABLES`), the second in the middle ground right, both always with two
+    sitting. The sign moved over the door and dimmed (`sgn2.y` .32). The floor in
+    `27f4d-hall-props` has tile joints every 1.2 m and soft patches (`hallSmudge`: a flat fan
+    in the floor material, the centre its own colour, the rim exactly the floor colour, so
+    there is no edge): a worn path along the counter and to the board, oil stains. Measured on
+    the left 40 % of the 1920 frames, day is 2.1–3.4x night. The suite checks the keeper's hair,
+    that the lamp is not over his head, and two sitters at each bar table.
 - **M811 The counter (ТОРГОВЛЯ)** — the keeper (`27f3`) behind it, goods as crates on the
   counter; the table as a plate. **M812 The yard (ВЕРФЬ)** — hulls on the hangar studio at
   ≥160 px, the class as a tag. **M813 ПРИБОРЫ** — the five dials as objects with their drift
