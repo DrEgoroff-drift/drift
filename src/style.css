@@ -2889,6 +2889,8 @@ body.rackon #prompt{opacity:0}
   #station.hall::before{left:clamp(30%,calc(100% - 880px),40%);top:0}
   /* эфир — над залом, а не поперёк шапки плиты */
   body.screen:not(.mobile):has(#station.hall.open) #console{left:calc(clamp(30%,calc(100% - 880px),40%) / 2);top:18px}
+  /* подсказка say() в зале — плашкой на плите у правого края, не полосой через зал и плиту */
+  body:has(#station.hall.open) #msg{left:auto;right:12px;width:max-content;max-width:min(420px,calc(50vw / var(--ui,1)))}
 }
 @media (pointer:fine) and (min-width:1150px) and (min-aspect-ratio:1150/760){
   body:not(.mobile) #station.hall{inset:0}

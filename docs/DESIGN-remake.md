@@ -274,6 +274,37 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
     planet. The cantina camera is wider (people .19 seated). The window light is aimed steeply down: aimed at the camera, the polished floor
     mirrored it as a blob at the frame's foot. Tags (`hallTagsDraw`) are DOM plates over the
     hall canvas, projected from the thing, hidden while the camera moves and on the phone.
+    *Pass 3 (the designer's seven points):* day and night are two lightings, not one dimmed.
+    By day the sky term is the dock light (1.25 of the ambient, cool) and the ground term is a
+    light floor bounce, so the ceiling and beams read; the window key hangs high under the
+    opening with dust in its beam (`vol` by day). At night the ambient falls to .18, the window
+    to .38 and deep blue, and the counter lamp, board light, sconce, the pilasters' cage lamps
+    (night only, last in the list) and the bar carry the room. Measured on the left 40 % of the
+    1920 frames, day is 2.3–3.5x night on every type and place; the suite checks the sky term is
+    at least 2x. The three wash spots are gone, and the light over the key lamp's open top puts
+    a pool on the ceiling. `gnd.w` is the renderer's fog density, not the bounce weight; it was
+    back at .03. A new module, `27f4d-hall-props`, holds the shared dressing in the `21pie`
+    colours: steel, rust, soot, orange and concrete pipes with brackets and bands; a cable tray;
+    a vent duct in tall halls; enamel and hazard plates; cage lamps; an extinguisher; a crate
+    stack with a painted container at the counter end; drums; floor lines. Two working people
+    join the keeper: a visitor at the board and a loader at the bench. Three poses join `27f3`
+    (`elbow`, `hips`, `frame`), and `HALL_PILOT_AT` uses them, plus `folk`, a stool at the
+    bar's right end. The window and site cameras are `fy` 1.0, so the pilot by the glass stays
+    .20. The cantina is recomposed as the hall's far end:
+    - candidates sit on plain four-legged stools (`hallStool`, no round base) and turn to the
+      counter at three quarters;
+    - the table with two sitting moved into the bar camera's foreground (`HALL_BAR_TABLE`);
+    - three lamps aim down at the counter with `vol` .08, not cones in smoke;
+    - the sign sits over the bar door, dimmed (`HALL_SGN`, `sgn2.y`);
+    - by day, a fill from the bar window reaches it.
+    The dock view in `27f2 outside` (kinds 0 and 2) is rewritten: a hull at the berth lit from
+    above, with panel seams, a lit top edge and warm portholes (the yard adds open ribs and a
+    weld flash); a truss tower and boom with the lit chord toward the floodlight; a floodlight
+    cone in the dock haze; slow beacons; berth lights. The truss grid on black is gone. The
+    planet is placed lower and capped at r 3.1, so it sits whole in the opening with its
+    terminator; science stays big. Window glass reflects .2. A `say()` toast in the hall on a
+    PC is a plate at the right edge of the screens (≤ 420 px), checked by a browser suite in
+    `91qc-hall`.
 - **M811 The counter (ТОРГОВЛЯ)** — the keeper (`27f3`) behind it, goods as crates on the
   counter; the table as a plate. **M812 The yard (ВЕРФЬ)** — hulls on the hangar studio at
   ≥160 px, the class as a tag. **M813 ПРИБОРЫ** — the five dials as objects with their drift

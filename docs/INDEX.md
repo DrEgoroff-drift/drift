@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 520 · top-level symbols: 7770
+Files: 521 · top-level symbols: 7779
 
 ## SYMBOLS
 
@@ -337,10 +337,10 @@ CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_KIT                       src/27f3-person3d.js:104
-CP_MESH                      src/27f3-person3d.js:251
+CP_KIT                       src/27f3-person3d.js:108
+CP_MESH                      src/27f3-person3d.js:255
 CP_TEMPER                    src/27f6-face-live.js:25
-CP_TORSO                     src/27f3-person3d.js:77
+CP_TORSO                     src/27f3-person3d.js:81
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
@@ -833,26 +833,30 @@ HAIL_RANGE                   src/12ar-hail.js:25
 HAIL_START_FLOOR             src/12ar-hail.js:71
 HALL                         src/27f4a-hall.js:22
 HALL_B                       src/27f4a-hall.js:28
-HALL_CAMS                    src/27f4a-hall.js:56-64
+HALL_BAR_TABLE               src/27f4a-hall.js:42
+HALL_CAMS                    src/27f4a-hall.js:62-70
 HALL_COUNTER                 src/27f4b-hall-dress.js:151-159
-HALL_DAY_MS                  src/27f4a-hall.js:39
-HALL_DRESS                   src/27f4b-hall-dress.js:203-309
+HALL_DAY_MS                  src/27f4a-hall.js:45
+HALL_DRESS                   src/27f4b-hall-dress.js:205-311
 HALL_F                       src/27f4a-hall.js:30
 HALL_HERO                    src/27f4a-hall.js:31
-HALL_KEYX                    src/27f4a-hall.js:40
+HALL_KEYX                    src/27f4a-hall.js:46
 HALL_L                       src/27f4a-hall.js:29
-HALL_M                       src/27f4a-hall.js:151
+HALL_M                       src/27f4a-hall.js:170
 HALL_N                       src/21a4-base-adj.js:28
 HALL_ORB_N                   src/27f4c-hall-sky.js:14
-HALL_PH_FY                   src/27f4a-hall.js:66
-HALL_PILOT_AT                src/27f4a-hall.js:36
+HALL_PH_FY                   src/27f4a-hall.js:72
+HALL_PILOT_AT                src/27f4a-hall.js:37
 HALL_PILOT_M                 src/27f4a-hall.js:35
 HALL_POWER                   src/21a4-base-adj.js:29
-HALL_SCONCE                  src/27f4a-hall.js:41
-HALL_STALLS                  src/27f4a-hall.js:148
+HALL_PROP_C                  src/27f4d-hall-props.js:7
+HALL_SCONCE                  src/27f4a-hall.js:47
+HALL_SEAT_PILOT              src/27f4a-hall.js:40
+HALL_SGN                     src/27f4a-hall.js:43
+HALL_STALLS                  src/27f4a-hall.js:167
 HALL_STRIP                   src/27f4a-hall.js:32
-HALL_TYPES                   src/27f4a-hall.js:44-52
-HALL_WIN                     src/27f4a-hall.js:229
+HALL_TYPES                   src/27f4a-hall.js:50-58
+HALL_WIN                     src/27f4a-hall.js:253
 HALL_XB                      src/27f4a-hall.js:27
 HAND_LINE                    src/12td-settle-hand.js:31-34
 HAND_STEP                    src/12td-settle-hand.js:27
@@ -1548,12 +1552,12 @@ QUANT_MAX                    src/28-loop.js:163
 QUANT_MS                     src/28-loop.js:161
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:395
+R3                           src/27f2-room3d.js:416
 R3P                          src/27f2-room3d.js:30
 R3U                          src/27f2-room3d.js:26
-R3_DOWN_WGSL                 src/27f2-room3d.js:374
+R3_DOWN_WGSL                 src/27f2-room3d.js:395
 R3_MAXI                      src/27f2-room3d.js:23
-R3_POST_WGSL                 src/27f2-room3d.js:528
+R3_POST_WGSL                 src/27f2-room3d.js:549
 R3_UN                        src/27f2-room3d.js:28
 R3_WGSL                      src/27f2-room3d.js:154
 RACK                         src/25d-instr-rack.js:54
@@ -3031,10 +3035,10 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:91-99
-cpBasis                      src/27f3-person3d.js:69-73
+cpBand                       src/27f3-person3d.js:95-103
+cpBasis                      src/27f3-person3d.js:73-77
 cpBeard                      src/27f3a-face3d.js:373-388
-cpBody                       src/27f3-person3d.js:106-248
+cpBody                       src/27f3-person3d.js:110-252
 cpCloth                      src/27f3-person3d.js:45-50
 cpClump                      src/27f3a-face3d.js:364-371
 cpEmoMix                     src/27f6-face-live.js:56-58
@@ -3049,16 +3053,16 @@ cpHairline                   src/27f3a-face3d.js:279-285
 cpHead                       src/27f3a-face3d.js:182-277
 cpHeadAI                     src/27f3a-face3d.js:390-400
 cpHeadFn                     src/27f3a-face3d.js:18-52
-cpMesh                       src/27f3-person3d.js:252-259
+cpMesh                       src/27f3-person3d.js:256-263
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:16-22
-cpPose                       src/27f3-person3d.js:52-67
+cpPose                       src/27f3-person3d.js:52-71
 cpRig                        src/27f3a-face3d.js:404-426
 cpSculpt                     src/27f3a-face3d.js:81-158
 cpSkin                       src/27f3a-face3d.js:160-163
 cpSkinZ                      src/27f3a-face3d.js:165
 cpTeeth                      src/27f3a-face3d.js:168-180
-cpTorsoAt                    src/27f3-person3d.js:80-89
+cpTorsoAt                    src/27f3-person3d.js:84-93
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
 cpWarpTh                     src/27f3a-face3d.js:68
@@ -4287,52 +4291,57 @@ hailStartSys                 src/12ar-hail.js:70
 hailTick                     src/12ar-hail.js:121-175
 hailWarnVolley               src/12ar-hail.js:81-90
 hailWinSync                  src/12ar-hail.js:221-266
-hallBar                      src/27f4b-hall-dress.js:162-200
+hallBar                      src/27f4b-hall-dress.js:162-202
 hallBones                    src/27f4b-hall-dress.js:66-149
-hallCam                      src/27f4a-hall.js:92-98
-hallCanvas                   src/27f4a-hall.js:265-271
-hallClose                    src/27f4a-hall.js:292-299
+hallCage                     src/27f4d-hall-props.js:38-47
+hallCam                      src/27f4a-hall.js:98-104
+hallCanvas                   src/27f4a-hall.js:289-295
+hallClose                    src/27f4a-hall.js:316-323
+hallClutter                  src/27f4d-hall-props.js:49-93
 hallCord                     src/27f4b-hall-dress.js:32
 hallCrate                    src/27f4b-hall-dress.js:60
-hallDoor                     src/27f4a-hall.js:100-103
+hallDoor                     src/27f4a-hall.js:106-109
 hallDrum                     src/27f4b-hall-dress.js:62
-hallEase                     src/27f4a-hall.js:104
-hallFrame                    src/27f4a-hall.js:316-338
-hallGlideAt                  src/27f4a-hall.js:106-110
-hallGo                       src/27f4a-hall.js:113-117
-hallHasBar                   src/27f4a-hall.js:82
-hallHero                     src/27f4a-hall.js:88
-hallKeyY                     src/27f4a-hall.js:80
-hallLamps                    src/27f4a-hall.js:152-227
-hallLayout                   src/27f4a-hall.js:120-146
-hallLimits                   src/27f4a-hall.js:232-235
-hallLoop                     src/27f4a-hall.js:307-314
-hallManK                     src/27f4a-hall.js:78
-hallMix3                     src/27f4a-hall.js:67
-hallMoving                   src/27f4a-hall.js:111
-hallNight                    src/27f4a-hall.js:70-74
-hallOpen                     src/27f4a-hall.js:282-291
+hallEase                     src/27f4a-hall.js:110
+hallFrame                    src/27f4a-hall.js:340-362
+hallGlideAt                  src/27f4a-hall.js:112-116
+hallGo                       src/27f4a-hall.js:119-123
+hallHasBar                   src/27f4a-hall.js:88
+hallHero                     src/27f4a-hall.js:94
+hallKeyY                     src/27f4a-hall.js:86
+hallLamps                    src/27f4a-hall.js:171-251
+hallLayout                   src/27f4a-hall.js:126-165
+hallLimits                   src/27f4a-hall.js:256-259
+hallLoop                     src/27f4a-hall.js:331-338
+hallManK                     src/27f4a-hall.js:84
+hallMix3                     src/27f4a-hall.js:73
+hallMoving                   src/27f4a-hall.js:117
+hallNight                    src/27f4a-hall.js:76-80
+hallOpen                     src/27f4a-hall.js:306-315
 hallOrbBake                  src/27f4c-hall-sky.js:30-52
 hallOrbPlace                 src/27f4c-hall-sky.js:24-29
 hallOrbUp                    src/27f4c-hall-sky.js:54-65
 hallPaper                    src/27f4b-hall-dress.js:48-53
-hallPilotAt                  src/27f4a-hall.js:76
-hallPlaceOf                  src/27f4a-hall.js:86
+hallPilotAt                  src/27f4a-hall.js:82
+hallPipe                     src/27f4d-hall-props.js:21-28
+hallPlaceOf                  src/27f4a-hall.js:92
 hallPlanet                   src/27f4c-hall-sky.js:16-21
-hallR                        src/27f4a-hall.js:84
-hallRoomMesh                 src/27f4b-hall-dress.js:311-317
+hallPlate                    src/27f4d-hall-props.js:31-35
+hallR                        src/27f4a-hall.js:90
+hallRoomMesh                 src/27f4b-hall-dress.js:313-320
 hallSack                     src/27f4b-hall-dress.js:55
-hallScene                    src/27f4a-hall.js:154-227
+hallScene                    src/27f4a-hall.js:173-251
 hallShade                    src/27f4b-hall-dress.js:35-46
-hallSize                     src/27f4a-hall.js:273-281
-hallSm                       src/27f4a-hall.js:68
-hallT                        src/27f4a-hall.js:81
-hallTab                      src/27f4a-hall.js:301-306
-hallTagList                  src/27f4a-hall.js:239-248
-hallTagsDraw                 src/27f4a-hall.js:249-262
+hallSize                     src/27f4a-hall.js:297-305
+hallSm                       src/27f4a-hall.js:74
+hallStool                    src/27f4d-hall-props.js:10-18
+hallT                        src/27f4a-hall.js:87
+hallTab                      src/27f4a-hall.js:325-330
+hallTagList                  src/27f4a-hall.js:263-272
+hallTagsDraw                 src/27f4a-hall.js:273-286
 hallWall                     src/27f4b-hall-dress.js:16-21
-hallWide                     src/27f4a-hall.js:89
-hallWinY                     src/27f4a-hall.js:230
+hallWide                     src/27f4a-hall.js:95
+hallWinY                     src/27f4a-hall.js:254
 hallWindow                   src/27f4b-hall-dress.js:23-30
 handBtnTick                  src/12td-settle-hand.js:123-134
 hasEpisode                   src/03-ships.js:139-142
@@ -6252,12 +6261,12 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:396-402
-r3Dev                        src/27f2-room3d.js:419-437
-r3DownDesc                   src/27f2-room3d.js:411-415
-r3Drop                       src/27f2-room3d.js:444
-r3Frame                      src/27f2-room3d.js:459-525
-r3Free                       src/27f2-room3d.js:446
+r3Desc                       src/27f2-room3d.js:417-423
+r3Dev                        src/27f2-room3d.js:440-458
+r3DownDesc                   src/27f2-room3d.js:432-436
+r3Drop                       src/27f2-room3d.js:465
+r3Frame                      src/27f2-room3d.js:480-546
+r3Free                       src/27f2-room3d.js:467
 r3Kit                        src/27f2-room3d.js:64-151
 r3Lin                        src/27f2-room3d.js:33
 r3Look                       src/27f2-room3d.js:41-151
@@ -6268,11 +6277,11 @@ r3Pivot                      src/27f2-room3d.js:55
 r3Proj                       src/27f2-room3d.js:58-151
 r3Pt                         src/27f2-room3d.js:56
 r3Sc                         src/27f2-room3d.js:35
-r3ShDesc                     src/27f2-room3d.js:403-408
-r3ShadowVP                   src/27f2-room3d.js:448-453
+r3ShDesc                     src/27f2-room3d.js:424-429
+r3ShadowVP                   src/27f2-room3d.js:469-474
 r3Step                       src/27f2-room3d.js:36
-r3Up                         src/27f2-room3d.js:439-443
-r3VB                         src/27f2-room3d.js:409
+r3Up                         src/27f2-room3d.js:460-464
+r3VB                         src/27f2-room3d.js:430
 r3Xf                         src/27f2-room3d.js:47-151
 rackBakeJob                  src/25d-instr-rack.js:220-236
 rackBottom                   src/25d-instr-rack.js:477-482
@@ -9205,10 +9214,10 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 11 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 45 KB
+## src/27f2-room3d.js · 47 KB
   · комната в объёме (M725):1
 
-## src/27f3-person3d.js · 22 KB
+## src/27f3-person3d.js · 23 KB
   · человек в объёме (M725):1
 
 ## src/27f3a-face3d.js · 37 KB
@@ -9217,7 +9226,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f4-cant3d.js · 37 KB
   · кантина в объёме (M725):1
 
-## src/27f4a-hall.js · 28 KB
+## src/27f4a-hall.js · 31 KB
   · зал за экранами (M810, docs/DESIGN-hall.md):1
 
 ## src/27f4b-hall-dress.js · 30 KB
@@ -9225,6 +9234,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/27f4c-hall-sky.js · 5 KB
   · планета в окне зала (M810):1
+
+## src/27f4d-hall-props.js · 8 KB
+  · зал за экранами: обжитость (M810, проход 3):1
 
 ## src/27f5-portrait3d.js · 7 KB
   · портрет в объёме (M725):1
@@ -9362,7 +9374,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qb-rig-card.js · 4 KB
   · один астронавт везде: риг в карточке (M801):1
 
-## tests/91qc-hall.js · 5 KB
+## tests/91qc-hall.js · 8 KB
   · зал за экранами (M810):1
 
 ## tests/91zzza-e2e.js · 7 KB
