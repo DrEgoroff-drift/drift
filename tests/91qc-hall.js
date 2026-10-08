@@ -114,6 +114,17 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     HALL.place="trade";HALL.night=1;const Tn=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5);ok(!Tn.lights.some(l=>l.rim),"у стойки контра нет");
     HALL.place=wp;HALL.night=wn;}
 
+  /* M814: у бара один герой — своя лампа только там, где он сидит; столики не стоят между камерой и им */
+  {const wp=HALL.place,L=hallLayout("trade");L.room=hallRoomMesh(L);
+    HALL.place="folk";const F=hallScene(L,hallCam(HALL_CAMS.folk,1920,1080,true),1.5);
+    HALL.place="trade";const Tr=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5);HALL.place=wp;
+    ok(!L.bar||F.lights.some(l=>l.hero),"у бара — лампа героя");
+    ok(!Tr.lights.some(l=>l.hero),"у стойки лампы героя нет");
+    ok(F.lights.length<=R3_MAXL,"у бара ламп "+F.lights.length+" ≤ "+R3_MAXL);
+    const e=HALL_CAMS.folk.eye,h=hallPilotAt("folk"),dx=h[0]-e[0],dz=h[1]-e[2],dd=dx*dx+dz*dz;
+    for(const t of HALL_BAR_TABLES){const ax=HALL_XB+t.x,u=Math.max(0,Math.min(1,((ax-e[0])*dx+(t.z-e[2])*dz)/dd));
+      const d=Math.hypot(e[0]+u*dx-ax,e[2]+u*dz-t.z);ok(d>.6,"столик x="+t.x+" — "+d.toFixed(2)+" м от луча к герою");}}
+
   /* M814: доска — листы на пробке: раскладка не вылезает за пробку при любом числе, потолок HALL_BOARD_MAX;
      чужая станция — обезличенные листы, а не объявления прошлой */
   {const B=HALL_BOARD_BOX,inBox=lay=>lay.every(s=>s.c[0]-s.w/2>=B.x0-.01&&s.c[0]+s.w/2<=B.x1+.01&&s.c[1]+s.h/2<=B.y1+.001&&s.c[1]-s.h/2>=B.y0-.005);
