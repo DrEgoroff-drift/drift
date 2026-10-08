@@ -2901,9 +2901,11 @@ body.rackon #prompt{opacity:0}
 #station.hall .row.hdial:hover,#station.hall .row.hdial.hot{border-color:rgba(var(--c-acc),.55)}
 #station.hall .hdial-svg{display:block;width:100%;height:auto;aspect-ratio:120/92;flex:0 0 auto;
   background:linear-gradient(180deg,#24262a,#2b2d30 55%,#202225);border-bottom:1px solid rgba(var(--c-edge),.08)}
-#station.hall .hneedle{transform-origin:60px 54px;transform:rotate(var(--d));animation:hneedle 3s ease-in-out infinite alternate}
+#station.hall .hneedle{transform:rotate(var(--d));animation:hneedle 3s ease-in-out infinite alternate}
+#station.hall .hslide{transform:translateX(var(--d));animation:hslide 3s ease-in-out infinite alternate}
 @keyframes hneedle{from{transform:rotate(calc(var(--d) - var(--a)))}to{transform:rotate(calc(var(--d) + var(--a)))}}
-@media (prefers-reduced-motion:reduce){#station.hall .hneedle{animation:none}}
+@keyframes hslide{from{transform:translateX(calc(var(--d) - var(--a)))}to{transform:translateX(calc(var(--d) + var(--a)))}}
+@media (prefers-reduced-motion:reduce){#station.hall :is(.hneedle,.hslide){animation:none}}
 #station.hall .row.hdial .nm{flex:0 0 auto;min-height:0;padding:10px 10px 0;display:flex;flex-wrap:wrap;align-items:baseline;align-content:flex-start;gap:6px 8px}
 #station.hall .row.hdial .nm>b{flex:1 0 100%}
 #station.hall .row.hdial .nm>s{flex:1 0 100%}
@@ -2922,7 +2924,7 @@ body.rackon #prompt{opacity:0}
    не нарисовала зал, под экраном темнота, а не мир с его фишками */
 #station.hall{isolation:isolate;background:#0d0c0b;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;border-radius:0;box-shadow:none}
 #station.hall::before{content:"";position:absolute;right:0;bottom:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(180deg,rgba(24,23,22,.965),rgba(17,16,15,.975) 60%,rgba(14,13,12,.985));
+  background:linear-gradient(180deg,rgb(24,23,22),rgb(17,16,15) 60%,rgb(14,13,12));   /* сплошная (M814): холст зала во всю ширину, вывеска бара под плитой просвечивала призраком */
   box-shadow:-1px 0 0 rgba(255,236,200,.07),-28px 0 60px rgba(0,0,0,.45)}
 /* доля зала: 40 %, но вёрстке справа не меньше 880 px (в её же пикселях, с --ui) и залу не меньше 30 %;
    то же правило у камеры — hallHero() */

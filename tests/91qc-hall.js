@@ -105,14 +105,26 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     K.mass={w:"vekha",s:9,wear:0};const b1=hallInstrNeedle("mass",10),b2=hallInstrNeedle("mass",14);
     ok(Math.abs(a1-a2)>Math.abs(b1-b2),"разбитый артельный гуляет шире новой «Вехи»");
     const cm=hallCam(HALL_CAMS.ship,1920,1080,true);
-    for(let i=0;i<INSTR_KEYS.length;i++){const p=hallInstrAt(i),q=r3Proj(cm.vp,[p[0],p[1]+.1,p[2]+.06],1920,1080);
+    for(let i=0;i<INSTR_KEYS.length;i++){const q=r3Proj(cm.vp,hallInstrFace(i),1920,1080);
       ok(q&&q[0]>0&&q[0]<1920*hallHero(1920)&&q[1]>0&&q[1]<1080,"прибор "+INSTR_KEYS[i]+" в кадре места КОРАБЛЬ");}
+    /* M814: продаваемую вещь не заслоняет продавец — лучи от глаза места КОРАБЛЬ к передней грани каждого тела
+       (сетка 7×6) не задевают людей зала и пилота (цилиндр r .3, рост 1.85): видно ≥ 90 % */
+    const E=HALL_CAMS.ship.eye,PA=hallPilotAt("ship"),men=L.people.map(P=>[P.x,P.z]).concat(PA?[[PA[0],PA[1]]]:[]);
+    const hit=(a,b)=>men.some(([mx,mz])=>{const dx=b[0]-a[0],dz=b[2]-a[2],fx=a[0]-mx,fz=a[2]-mz,A=dx*dx+dz*dz,Bq=2*(fx*dx+fz*dz),C=fx*fx+fz*fz-.09,disc=Bq*Bq-4*A*C;
+      if(disc<0)return false;const s=(-Bq-Math.sqrt(disc))/(2*A);if(s<0||s>1)return false;const y=a[1]+(b[1]-a[1])*s;return y>=0&&y<=1.85;});
+    for(let i=0;i<INSTR_KEYS.length;i++){const id=INSTR_KEYS[i],B=HALL_INSTR_BODY[id],p=hallInstrAt(i);let seen=0,all=0;
+      for(let u=0;u<7;u++)for(let v=0;v<6;v++){all++;if(!hit(E,[p[0]-B.w/2+B.w*(u+.5)/7,p[1]+B.h*(v+.5)/6,p[2]+B.d]))seen++;}
+      ok(seen/all>=.9,id+" виден с глаза на "+(100*seen/all|0)+" % ≥ 90");}
+    /* пять тел — пять силуэтов: пропорции попарно разнятся ≥ 12 % */
+    const asp=INSTR_KEYS.map(id=>HALL_INSTR_BODY[id].w/HALL_INSTR_BODY[id].h);let close=0;
+    for(let a=0;a<asp.length;a++)for(let b=a+1;b<asp.length;b++)if(Math.abs(asp[a]-asp[b])/Math.max(asp[a],asp[b])<.12)close++;
+    eq(close,0,"пропорции пяти тел различимы");
     HALL.place="ship";HALL_INSTR.hot="mass";HALL_LENS.k=null;HALL_LENS.last=0;
     eq(hallLensWant(2e6),1,"строка прибора горит у окна — объектив хочет к шкале");
-    const c=HALL_CAMS.ship,cl=hallLens(c,L,1),pd=hallInstrAt(INSTR_KEYS.indexOf("mass"));
+    const c=HALL_CAMS.ship,cl=hallLens(c,L,1),pd=hallInstrFace(INSTR_KEYS.indexOf("mass"));
     const d0=Math.hypot(c.tgt[0]-pd[0],c.tgt[2]-pd[2]),d1=Math.hypot(cl.tgt[0]-pd[0],cl.tgt[2]-pd[2]);
     ok(d1<d0&&cl.fy<c.fy,"объектив идёт к шкале и сужает поле");
-    const pq=r3Proj(hallCam(cl,1920,1080,true).vp,[pd[0],pd[1]+.1,pd[2]+.06],1920,1080);
+    const pq=r3Proj(hallCam(cl,1920,1080,true).vp,pd,1920,1080);
     ok(pq&&pq[0]>0&&pq[0]<1920*hallHero(1920)&&pq[1]>0&&pq[1]<1080,"горящий прибор в кадре при объективе");
     const sc=hallScene(L,cm,1);ok(sc.draws.some(d=>d[0]===HALL_INSTR.mesh),"приборы в кадре зала");
     HALL.place=wp;HALL_LENS.last=0;HALL_LENS.k=null;hallInstrDrop();hallGoodsDrop();
@@ -197,7 +209,8 @@ TEST_SUITES.push(()=>suite("зал станции: приборы карточк
   stTabInstr();
   const cards=$body.querySelectorAll(".hdials .row.hdial[data-instr]");
   eq(cards.length,INSTR_KEYS.length,"пять гнёзд — пять карточек");
-  ok([...cards].every(r=>r.querySelector("svg.hdial-svg .hneedle")&&r.querySelector(".cls")),"у каждой шкала со стрелкой и завод тегом");
+  ok([...cards].every(r=>r.querySelector("svg.hdial-svg :is(.hneedle,.hslide)")&&r.querySelector(".cls")),"у каждой тело со стрелкой и завод тегом");
+  eq(new Set([...cards].map(r=>r.querySelector("svg.hdial-svg").dataset.kind)).size,INSTR_KEYS.length,"пять приборов — пять разных тел рисунком");
   ok(![...$body.querySelectorAll(".hdial .nm")].some(n=>/различает|стрелка|перо/.test(n.textContent)),"проза про разрешение и перо ушла");
   ok([...$body.querySelectorAll(".sec")].every(s=>s.textContent.indexOf("·")<0||!/ГНЁЗД|ПРИЛАВОК/.test(s.textContent)),"заголовки без пояснений");
   const h=cards[0]&&cards[0].getBoundingClientRect().height;ok(h>0&&h<480,"карточка не растянута ("+(h|0)+" px)");

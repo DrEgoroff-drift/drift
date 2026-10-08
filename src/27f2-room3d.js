@@ -550,7 +550,10 @@ const R3_POST_WGSL=`
 fn acesP(x:vec3f)->vec3f{return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),vec3f(0.),vec3f(1.));}
 fn field(p:vec2f,uv:vec2f)->vec4f{
   let rs=fu.res.xy;let px=1./rs;let k=fu.res.x/max(fu.res.z,1.);
-  let ca=(uv-.5)*length(uv-.5)*.006;
+  /* хроматика растёт от оптического центра: по умолчанию середина холста; v[12] (w>0) — свой центр и сила:
+     зал (M814) ставит центр в цель объектива — вещь в фокусе без каймы, у края кадра ≤ пары пикселей */
+  let oc=select(vec2f(.5),fu.v[12].xy,fu.v[12].w>0.);let cs=select(.006,fu.v[12].z,fu.v[12].w>0.);
+  let ca=(uv-oc)*length(uv-oc)*cs;
   var c=vec3f(textureSampleLevel(t0,smp,uv+ca,0.).r,textureSampleLevel(t0,smp,uv,0.).g,textureSampleLevel(t0,smp,uv-ca,0.).b);
   /* дым в лучах: половинный слой палаткой из четырёх — шум шагов уходит, тени людей в луче остаются */
   let vq=.75/vec2f(textureDimensions(t2));

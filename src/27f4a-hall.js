@@ -84,6 +84,8 @@ function hallNight(){
   return hallSm(.6,.68,s)*(1-hallSm(.94,1,s));
 }
 /* пилот виден, если место раздела его знает и он не выключен (?hallpilot=0) */
+/* сила хроматики зала (M814): сдвиг каналов = r·|r|·HALL_CA от цели объектива; в фокусе ~0, в углу героя ~1 px на канал при 1080 */
+const HALL_CA=.004;
 function hallPilotAt(place){return HALL.pilot===false?null:(HALL_PILOT_AT[place]||null);}
 /* доля высоты кадра под человеком (1.78 м) в точке x,z — мерило «Сцены» (.18–.22 на ПК) */
 function hallManK(cam,x,z,ch){const a=r3Proj(cam.vp,[x,0,z],1,ch),b=r3Proj(cam.vp,[x,1.78,z],1,ch);return a&&b?(a[1]-b[1])/ch:0;}
@@ -381,6 +383,8 @@ function hallFrame(){
     if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
   const tl=r3Lin(L.T.key);U.set([tl[0],tl[1],tl[2],1.0],24);
   U[43]=t;U[44]=1;U[47]=1;
+  /* оптический центр — куда смотрит объектив (цель камеры на экране), сила хроматики под планку: ≤ 1 px у центра */
+  const oq=r3Proj(cam.vp,c.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   HALL.frames++;HALL.stat=hallLimits(S);
   const k0=L.people[0],pa=hallPilotAt(HALL.place),f=sz.wide?sz.ch:sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};

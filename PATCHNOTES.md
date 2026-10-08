@@ -53,6 +53,16 @@ could ever save.
   card has a floor, a lamp pool and a soft shadow and renders at twice the density, the window
   mullions are thin and the glass carries the work lamp's faint reflection, and on a phone a
   message goes to the ether strip instead of a toast over the cards.
+  Then each instrument got its own body, so five things read on the bench rather than five
+  alarm clocks: the chronometer is a dial with two small circles under a domed bezel and a
+  winding crown, the course recorder a tilted drum with a compass rose in a yoke over its tape
+  window, the mass detector a long scale under a beam with a sliding rider, the receiver an
+  upright box with a frequency strip, a signal column and a whip aerial, the actinometer an arc
+  on a post with a sensor tube and a little mirror. The maker is the material: grey enamel with
+  a stamp, walnut and brass, raw aluminium with rivets, black bakelite, chrome with a foreign
+  label, blue enamel. The plate draws the same bodies. The hall camera's colour fringe now grows
+  from where the lens looks, so the thing in focus has none, and the plate is solid, so the bar
+  sign no longer ghosts through it.
 - **M812 — the yard.** In the hall, every hull for sale is a card: the ship itself in the
   hangar's three-quarter view on a lit floor across the card's top, its name with the class as
   a tag, the numbers and the price below; two cards to a row on a PC, one on a phone. At night

@@ -366,7 +366,14 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   (h 23–28) on a neutral wall; the hull card's place is a lit galvanised floor rendered at 2×;
   mullions 1.2 cm (≤ 3 px at 1920) with the work lamp mirrored faintly in the glass; the work
   lamp is out of the counter's range (0 of its key); on a phone `say()` goes to the ether strip
-  (`hallMsgEther`). **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
+  (`hallMsgEther`). *Follow-up:* five bodies (`HALL_INSTR_BODY`, silhouette proportions differ
+  ≥ 12 % pairwise) in the maker's material (`HALL_INSTR_MAT`), needles as rotation (dial, rose,
+  arc) or a slide (rider, frequency mark) through `hallInstrXf`; the row starts at x .5 and every
+  body is ≥ 90 % visible from the КОРАБЛЬ eye past the people (ray test, r .3). The post pass's
+  fringe takes an optical centre and strength in `v[12]` (default unchanged for the cantina and
+  portraits); the hall puts the centre on the lens target, `HALL_CA` .004. The plate's backdrop
+  is opaque. Night planes are measured with the vignette's corner cells masked: min .08.
+  **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
   cantina as the hall itself (M725 composed anew: poses, one hero, the sign off centre), the
   site's silhouette. **M815 The phone reflow** of all of the above.
 
