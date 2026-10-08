@@ -350,6 +350,21 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     }
     return vec4f(c, 1.0);
   }
+  if (mat == 13) {
+    /* жила руды (M631) лежит на листе разреза, куда фонарь не достаёт: светлая минеральная полоса
+       на тёмном листе, зерно по ней, гребень берёт верхний свет пустоты, мокрое ребро — блик фонаря.
+       Читается формой (светлый гребень, тёмный подбой), не цветом */
+    let nl = length(in.nrm);
+    var Nv = select(fN, in.nrm / max(nl, 0.0001), nl > 0.5);
+    if (dot(Nv, V) < 0.0) { Nv = -Nv; }
+    let gr = 0.8 + 0.4 * vn3(in.wpos * vec3f(9.0, 9.0, 4.0), 29u);
+    let top = clamp(dot(Nv, normalize(vec3f(-0.25, 0.75, -0.6))), 0.0, 1.0);
+    var c = in.col * gr * (0.06 + 0.08 * top + 0.26 * pow(top, 8.0));
+    let ll = lampAt(in.wpos);
+    let hv = normalize(ll.xyz + V);
+    c += lampTint(in.wpos) * ll.w * (in.col * 0.35 * clamp(dot(Nv, ll.xyz), 0.0, 1.0) + vec3f(glow * 0.8 * pow(clamp(dot(Nv, hv), 0.0, 1.0), 40.0)));
+    return vec4f(c * faceDim(in.pos.xy), 1.0);
+  }
   /* нормаль на тонком стыке граней сходится в ноль: normalize дал бы NaN, а размытие свечения
      раздуло бы одну битую точку в чёрный шар */
   let nl = dot(in.nrm, in.nrm);
@@ -465,7 +480,15 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     var lit = smoothstep(-0.08 - wrap, 0.5, ndl);
     if (mat == 7 || mat == 2) { lit = smoothstep(-0.5, 0.5, ndl); }
     let e = lampTint(in.wpos) * (ll.w * lampShade(in.wpos, N, in.pos.xy));
-    c += alb * e * (lit * mix(1.0, ao, 0.6));
+    /* зверь лепится фонарём (M631): переход света резче, спина темнее; брюхо берёт тёплый отсвет конуса
+       с пола — тело читается объёмом, а не светлым картоном */
+    var kb = 1.0;
+    if (mat == 8) {
+      lit = smoothstep(0.0, 0.65, ndl);
+      kb = 0.6 * mix(1.0, 0.45, smoothstep(0.1, 0.8, N.y));
+      c += alb * e * (0.22 * smoothstep(0.1, -0.7, N.y));
+    }
+    c += alb * e * (lit * mix(1.0, ao, 0.6) * kb);
     let hv = normalize(ll.xyz + V);
     c += e * (pow(clamp(dot(N, hv), 0.0, 1.0), mix(18.0, 80.0, wet)) * wet * lit * 0.9);
     /* натёк пускает свет в свои края */
@@ -501,7 +524,8 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
   }
   var even = 0.0;
   if (mat == 11 || mat == 15) { even = 0.35; }
-  c += alb * points(in.wpos, N, even) * mix(0.5, 1.0, ao);
+  /* огни фонаря у человека (пятно, свод, бок) светят зверя со всех сторон и плющат его — ему половина */
+  c += alb * points(in.wpos, N, even) * (mix(0.5, 1.0, ao) * select(1.0, 0.5, mat == 8));
   if (wet > 0.3 && mat != 4) { c += pointSpec(in.wpos, N, V, wet) * (wet * 0.8); }
   /* зверь отделяется от тьмы кромкой: свет события обводит край тела */
   if (mat == 8) { c += points(in.wpos, N, 1.0) * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.5) * 0.7); }

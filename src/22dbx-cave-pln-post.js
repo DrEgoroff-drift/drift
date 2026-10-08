@@ -99,7 +99,7 @@ fn bad3(c: vec3f) -> bool {
           let dl = length(p - g.lampPos.xyz);
           /* клин идёт от шлема и гаснет по квадрату дали: ярче всего у фонаря; сырость держит свет */
           let fall = 3.2 / (1.0 + dl * dl / 3.0);
-          let wet = 0.7 + 0.9 * g.farK.w;
+          let wet = 0.58 + 1.02 * g.farK.w;   // сухой коридор .28–.32, сырой зал и озеро .35–.39 (M631)
           let du = 0.62 + 0.76 * vn3(p * vec3f(0.8, 0.45, 0.8) + vec3f(g.camPos.w * 0.02, -g.camPos.w * 0.012, 0.0), 45u);
           accL += ll.w * core * fall * wet * sh * du * (0.55 + 0.9 * pow(max(cs, 0.0), 3.0) + 0.2 * cs * cs);
         }
