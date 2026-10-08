@@ -191,3 +191,38 @@ if($ipod){
     if(typeof rackToggle==="function")rackToggle();
   });
 }
+/* металл колодки: винт, зерно, стекло (до M821 жили в стойке 25d; стойка теперь графитовая плашка) */
+function rackScrew(c,x,y,r){
+  const g=c.createRadialGradient(x-r*.4,y-r*.4,r*.1,x,y,r);
+  g.addColorStop(0,"#6b6f72");g.addColorStop(.6,"#3c4043");g.addColorStop(1,"#16191c");
+  c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();
+  c.strokeStyle="rgba(10,12,14,.85)";c.lineWidth=Math.max(1,r*.3);
+  c.beginPath();c.moveTo(x-r*.62,y-r*.2);c.lineTo(x+r*.62,y+r*.2);c.stroke();
+  c.strokeStyle="rgba(190,200,205,.16)";c.lineWidth=1;
+  c.beginPath();c.arc(x,y,r,Math.PI*1.05,Math.PI*1.75);c.stroke();
+}
+/* зерно металла и бумаги: редкие точки, посеянные раз и навсегда */
+function rackGrain(c,x,y,w,h,n,a,tone){
+  const r=rng(0x9a37^(w|0)^((h|0)<<8));
+  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();
+  for(let i=0;i<n;i++){
+    const px=x+r()*w, py=y+r()*h, s=r()<.85?1:2;
+    c.fillStyle=(r()<.5?tone[0]:tone[1])+(a*(.4+r()*.6)).toFixed(3)+")";
+    c.fillRect(px,py,s,s);
+  }
+  c.restore();
+}
+/* стекло: одна широкая полоса отражения и лёгкое затемнение к краю */
+function rackGlass(c,cx,cy,r){
+  c.save();
+  c.beginPath();c.arc(cx,cy,r,0,TAU);c.clip();
+  const gl=c.createLinearGradient(cx-r,cy-r,cx+r*.4,cy+r);
+  gl.addColorStop(0,"rgba(255,255,255,.16)");
+  gl.addColorStop(.38,"rgba(255,255,255,.05)");
+  gl.addColorStop(.55,"rgba(255,255,255,0)");
+  c.fillStyle=gl;c.fillRect(cx-r,cy-r,r*2,r*2);
+  const vg=c.createRadialGradient(cx,cy,r*.55,cx,cy,r);
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.35)");
+  c.fillStyle=vg;c.fillRect(cx-r,cy-r,r*2,r*2);
+  c.restore();
+}

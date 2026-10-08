@@ -8,6 +8,15 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M821 The rack as a side plate.** The instrument rack (I) is a plate of the M720
+  material — graphite, a cream edge, cut corners, the plates' face — standing at the right
+  between the top and bottom rows of plates, in the last third of the width: the centre
+  stays free and the world is no longer dimmed. On the phone it is a shelf under the top
+  plates. Five instruments of the region (fuel, hull and hold live on the БОРТ plate), graphite
+  dials with cream ticks and an amber needle, «Глобус» in its own cell, the hull's role and
+  the misclose in the header; the chart paper is dark with a half-tone grid and pens
+  lightened toward the ink.
+
 - **M820 Bodies for everyone.** The barge, its wreck, the station, shuttles, line and lane
   ships are meshes under the system's star (`17c2e` kit, `17c2f` barge, `17c2g` station,
   `17c2h` pirates): own paint, the light from the star with no top-left fallback, a dot under

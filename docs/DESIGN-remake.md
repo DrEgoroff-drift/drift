@@ -271,6 +271,11 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   `91qd-bodies`. Not here: drones (unchanged), the fleet `node`/`derelict` and ships fading
   at dock keep the bake; the barge distress cue still speaks from the centre (a cue, M826).
 - **M821 The rack** as a side plate of the pod's dials, chart paper dimmed, the centre free.
+  *Done (08.10, remake-a2):* `25d` rewritten: `rackGeo` side (PC, x ≥ 70 % of the width,
+  between `HUD_BAND` and `HUD_FLOOR`, left of `HUD_RAIL`; a narrow window gives up part of
+  the middle) or shelf (phone, down to ~30 % height, `body.rackon` only there); five dials,
+  the globe cell (`rackGlobe`, live parts still `globusDraw`), no screen dimming, no shadow.
+  The pod's metal helpers moved to `25c`.
 - **M822 The map** with three weights, plates for the status lines, the hint on the selected
   object.
 - **M823 The nebula far from the star**: inner structure and a depth ramp, no straight streaks
