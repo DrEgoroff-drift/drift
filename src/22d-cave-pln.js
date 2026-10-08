@@ -15,14 +15,19 @@ const CAVE3_Z=.7;
 /* доля роста человека в высоте кадра: высокий — широкий; линия ходьбы от низа; даль объектива */
 const CAVE3_LENS={man:[.124,.124],walk:[.29,.34],dist:[18,36],eye:3.2,tau:.45,inS:1.2,inK:.42,near:1.6,nIn:.45,nOut:.7,
   /* у озера: глаз выше и ближе — гладь и зеркало ложатся полосой, а не ребром */
-  lkEye:2.6,lkD:.55,lkS:.8};
+  lkEye:2.6,lkD:.55,lkS:.8,
+  /* дальний: глаз за 100 м, 24°, линия ходьбы на .40 — по клавише карты; на телефоне нет */
+  fD:100,fH:42.5,fWalk:.40,fIn:.8,fOut:.7};
+/* дальний объектив — только на широком окне */
+function cave3FarOk(){return W>760&&W>=H;}
 
 /* объектив по доле сторон: k = 0 — высокий кадр, 1 — широкий */
 /* near — у вещи: 0..1, объектив подходит в near раз ближе */
-function cave3Lens(asp,cx,floorY,zoom,near,lk){
+function cave3Lens(asp,cx,floorY,zoom,near,lk,far){
   const L=CAVE3_LENS,k=plnSmooth(.6,1.5,asp);
-  lk=lk||0;
-  const Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k)*lerp(1,L.lkD,lk);
+  far=far||0;lk=(lk||0)*(1-far);
+  let Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k)*lerp(1,L.lkD,lk);
+  if(far){Hf=lerp(Hf,L.fH,far);f=lerp(f,L.fWalk,far);D=lerp(D,L.fD,far);}
   const w=Hf*asp,l=cx-w/2,r=cx+w/2,b=floorY-f*Hf,t=b+Hf;
   const ex=cx,ey=floorY+L.eye+L.lkEye*lk,ez=CAVE3_Z-D;
   const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,4,600),plnM4move(-ex,-ey,-ez));
@@ -47,7 +52,7 @@ function cave3Frame(){
   const first=M.c!==C,t=wallMs(),dt=first?0:Math.min(.1,Math.max(0,(t-M.t)/1000));
   M.t=t;
   /* вход: кадр начинает с ближнего у устья и уходит в широкий */
-  if(first){M.c=C;M.cx=C.x/CAVE_PPM;M.wt=C.walkTarget;M.zoom=1;M.dx=0;M.near=0;}
+  if(first){M.c=C;M.cx=C.x/CAVE_PPM;M.wt=C.walkTarget;M.zoom=1;M.dx=0;M.near=0;M.farOn=false;}
   else M.zoom=Math.max(0,M.zoom-dt/Ln.inS);
   const zoom=plnSmooth(0,1,M.zoom);
   /* у вещи (строка зовёт ДЕЙСТВИЕ) объектив подходит ближе: .45 с туда, .7 с обратно */
@@ -57,11 +62,17 @@ function cave3Frame(){
   /* у озера (прошлый кадр знает, далеко ли оно) объектив опускает взгляд на воду */
   const lw=M.lakeD==null?0:1-plnSmooth(2,9,M.lakeD);
   M.lk=first||M.lk==null||M.rush?lw:M.lk+(lw-M.lk)*(1-Math.exp(-dt/Ln.lkS));
+  /* дальний: просили карту — кадр отходит на сто метров; стенд держит его (cave.py far=) */
+  const fw=M.farPin!=null?M.farPin:(M.farOn&&cave3FarOk()?1:0);
+  M.far=first||M.far==null||M.rush?fw:M.far+(fw-M.far)*(1-Math.exp(-dt/(fw>M.far?Ln.fIn:Ln.fOut)));
+  if(Math.abs(M.far-fw)<.002)M.far=fw;
+  /* в дальнем кадре кусков втрое больше: держим их и строим быстрее, пока объектив едет */
+  CAVE3_CH.keep=M.far>.01?160:64;CAVE3_CH.ms=M.far>.01&&M.far<1?16:8;
   /* тычок пришёл от прошлого кадра: его цель — в окне, которое было показано */
   if(C.walkTarget!=null&&C.walkTarget!==M.wt){C.walkTarget=clamp(C.walkTarget+M.dx,0,CAVE_W);}
   M.cx+=(C.x/CAVE_PPM-M.cx)*(1-Math.exp(-dt/Ln.tau));
   if(Math.abs(M.cx-C.x/CAVE_PPM)>40)M.cx=C.x/CAVE_PPM;
-  const asp=W/H,floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,M.cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk)),K=H/(Ls.Hf*CAVE_PPM);
+  const asp=W/H,floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,M.cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far)),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=M.cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=M.cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
   M.lens=Ls;
@@ -108,6 +119,9 @@ function cave3Frame(){
     tris+=g.n/3;
   }
   for(const b of F.batches)F.draw.push({geo:b.geo,inst:b.inst,lamp:false,sun:true,refl:true});
+  /* дальний зал и янтарь (22de) — раньше кристаллов: огней двенадцать, их свет важнее */
+  tris+=cave3FarFrame(C,F,Fd,M.cx-hw-3,M.cx+hw+3,M.cx,dayK);
+  tris+=cave3AmberFrame(C,F,Fd,M.cx-hw-3,M.cx+hw+3,M.cx);
   /* убранство залов (22dc): натёки, завесы, кристаллы, жилы на разрезе */
   tris+=cave3DressFrame(C,F,Fd,M.cx-hw-3,M.cx+hw+3,M.cx,first||CAVE3.rush);
   /* озеро (22dd): гладь с зеркалом и тело воды в разрезе */
@@ -167,6 +181,12 @@ drawCave=function(){
   withScale(G.viewK,cave3Over);
 };
 const CAVE3_BLOOM=BLOOM_K.cave;
+/* клавиша карты в пещере: дальний объектив туда и обратно (раньше она здесь молчала) */
+const CAVE3_OLD_NAV=navAction;
+navAction=function(){
+  if(G.mode==="cave"&&CAVE3.live&&cave3FarOk()){CAVE3.farOn=!CAVE3.farOn;return;}
+  return CAVE3_OLD_NAV.apply(this,arguments);
+};
 /* выход без среза: поверхность начинает с ближнего объектива и уходит в свой (21pz plnGlide) */
 const CAVE3_OLD_EXIT=exitCave;
 exitCave=function(){

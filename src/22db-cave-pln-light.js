@@ -6,7 +6,7 @@
    Кадр F собирает 22dc: vp, eye, t, lamp {p,d}, reach, near, sun, dayK, mouth, lean, surfY,
    lights [{p,r,c}], glows [{p,c,k,s}], skyLo, skyHi, draw [{geo,inst?,first,n,lamp,sun}]. */
 const CAVE3_GPU={dev:null,gen:-1,tier:-1,w:0,h:0,shn:0,ms:1,L:null,P:{},U:null,S:null,D:null,T:null,V:null,B:null,pp:null,
-  ga:[0,1,2,3].map(()=>new Float32Array(280)),stat:{tris:0,calls:0}};
+  ga:[0,1,2,3].map(()=>new Float32Array(288)),stat:{tris:0,calls:0}};
 /* числа стенда (docs/look/cv-render.js): тьма, воздух, фонарь, день */
 const CAVE3_K={amb:[.036,.054,.083],fogC:[.045,.08,.12],fog:.022,
   lampCol:[4,3.1,1.95],inner:32*PLN_DEG,outer:58*PLN_DEG,fall:3.2,fov:128*PLN_DEG,day:[1.3,1.42,1.4],
@@ -45,7 +45,7 @@ function cave3GpuDev(){
     shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]}),post:null};
   Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
     cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
-  const ub=()=>d.createBuffer({size:1120,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  const ub=()=>d.createBuffer({size:1152,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   Q.U={main:ub(),shL:ub(),shS:ub(),refl:ub()};
 }
 /* ── то, что живёт с ярусом: карты теней, привязка свёртки, конвейеры ── */
@@ -141,7 +141,7 @@ function cave3GpuReady(){
   return true;
 }
 
-/* ── числа кадра: блок Globals (22dbw), 280 чисел ── */
+/* ── числа кадра: блок Globals (22dbw), 288 чисел ── */
 function cave3Globals(a,F,vp,lamp,w,h){
   const K=CAVE3_K,l=F.lamp,dk=F.dayK;
   a.fill(0);
@@ -163,6 +163,7 @@ function cave3Globals(a,F,vp,lamp,w,h){
   a.set([F.skyLo[0],F.skyLo[1],F.skyLo[2],dk],256);
   a.set([F.skyHi[0],F.skyHi[1],F.skyHi[2],F.near],260);
   if(F.zones)F.zones.forEach((z,k)=>a.set([z[0],z[1],z[2],0],264+k*4));
+  a.set(F.farDay||[0,0,1,0],280);a.set([F.farK||0,0,0,0],284);
   return a;
 }
 

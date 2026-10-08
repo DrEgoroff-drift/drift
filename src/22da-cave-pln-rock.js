@@ -210,7 +210,9 @@ function cave3Chunk(F,ci,cj){
       if(F.hl[i]>hm&&F.sd[i]<2)hm=F.hl[i];
     }
   }
-  const zmax=dmin>4?v*2:Math.min(CAVE3_CH.zcap,hm*4+3),NK=Math.max(3,Math.ceil(zmax/v)+2);
+  const Sf=F.far,arch=Sf&&X0+s>Sf.ax-Sf.w*1.3-1&&X0-v<Sf.ax+Sf.w*1.3+1&&Y0+s>Sf.fy-1&&Y0-v<Sf.fy+Sf.h+1;
+  /* у дальней арки (22de) кусок идёт на всю глубину: туннель уходит за его заднюю стену */
+  const zmax=arch?CAVE3_CH.zcap:dmin>4?v*2:Math.min(CAVE3_CH.zcap,hm*4+3),NK=Math.max(3,Math.ceil(zmax/v)+2);
   const zk=k=>(k-.5)*v,sJ=NI,sK=NI*NJ,V=new Float32Array(NI*NJ*NK).fill(NaN);
   /* блоки 4×4×4: далёкий от грани блок — одним числом */
   const BI=Math.ceil((NI-1)/4),BJ=BI,BK=Math.ceil((NK-2)/4);

@@ -30,6 +30,8 @@ struct Globals {
   skyLo: vec4f,       // небо у горизонта, сила дня
   skyHi: vec4f,       // небо в зените, где фонарь начинает слабеть
   zone: array<vec4f, 4>,      // залы в кадре: x0, x1 (м), отделка стены (0 рёбра, 1 друза, 2 шов, 3 гладь)
+  farDay: vec4f,      // дальний зал (22de): окно свода x, z, радиус луча, высота окна
+  farK: vec4f,        // сила дальнего дня (0 — зала в кадре нет)
 };
 @group(0) @binding(0) var<uniform> g: Globals;
 
@@ -100,6 +102,15 @@ fn shaftOf(o: vec2f) -> f32 { return length((o - g.mouth.xy) / g.mouth.zw); }
 /* день ярче всего там, где ложится: к верху кадра он придержан, иначе глаз уходит в угол */
 fn dayTop(y: f32) -> f32 { return mix(1.0, 0.42, smoothstep(g.dayP.z - 6.0, g.dayP.z + 0.5, y)); }
 fn dayMask(p: vec3f) -> f32 { return (1.0 - smoothstep(1.25, 1.7, shaftOf(dayPlan(p)))) * dayTop(p.y) * g.skyLo.w; }
+/* дальний зал: свой столб дня сквозь окно свода; карты тени нет — окно и есть тень */
+fn farOf(p: vec3f) -> f32 {
+  let k = g.farDay.w - p.y;
+  return length(vec2f(p.x - g.dayP.x * k, p.z + g.dayP.y * k) - g.farDay.xy) / g.farDay.z;
+}
+fn farDay(p: vec3f) -> f32 {
+  if (g.farK.x <= 0.0) { return 0.0; }
+  return (1.0 - smoothstep(0.7, 1.15, farOf(p))) * g.skyLo.w * g.farK.x * step(g.farDay.w - 30.0, p.y);
+}
 `;
 
 const CAVE3_WGSL_SCENE=CAVE3_WGSL_COMMON+/* wgsl */`
@@ -305,7 +316,10 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     }
     return vec4f(c, 1.0);
   }
-  var N = normalize(in.nrm);
+  /* нормаль на тонком стыке граней сходится в ноль: normalize дал бы NaN, а размытие свечения
+     раздуло бы одну битую точку в чёрный шар */
+  let nl = dot(in.nrm, in.nrm);
+  var N = select(vec3f(0.0, 0.0, -1.0), in.nrm * inverseSqrt(max(nl, 1e-20)), nl > 1e-12);
   if ((mat == 7 || mat == 2) && dot(N, V) < 0.0) { N = -N; }
   var alb = in.col; var ao = 1.0; var wet = 0.0; var emis = 0.0; var wrap = 0.0;
   if (mat == 1) {
@@ -360,7 +374,7 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     /* пласты — только на разрезе; на стене пласт лишь чуть меняет тон, без линии */
     alb *= 0.9 + 0.12 * sin(3.14159 * f) * wall;
     /* в полном дне камень носит мох: на том, что смотрит вверх, пятнами */
-    let dmm = dayMask(in.wpos);
+    let dmm = dayMask(in.wpos) + farDay(in.wpos);
     if (dmm > 0.001) {
       let mn = vn3(in.wpos * 0.7 + vec3f(3.0, 0.0, 1.0), 41u);
       let mk = dmm * smoothstep(0.35, 0.9, N.y) * smoothstep(0.4, 0.65, mn) * 0.85;
@@ -408,6 +422,7 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   let dm = dayMask(in.wpos);
   var ss = 0.0;
   if (dm > 0.001) { ss = dm * sunShade(in.wpos, N, in.pos.xy); }
+  ss += farDay(in.wpos);
   if (ss > 0.0) {
     let nds = dot(N, Ls);
     var lit = smoothstep(-0.05, 0.4, nds);
@@ -421,7 +436,8 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   if (mat == 11 || mat == 15) { even = 0.35; }
   c += alb * points(in.wpos, N, even) * mix(0.5, 1.0, ao);
   c += alb * emis;
-  return vec4f(haze(c, in.wpos, 1.0), 1.0);
+  /* на тонком стыке граней сумма света бывает меньше нуля — свет не бывает отрицательным */
+  return vec4f(haze(max(c, vec3f(0.0)), in.wpos, 1.0), 1.0);
 }
 
 /* вода (22dd): в тёмной пещере вода — не свет. Гладь тёмная, как тень стены, и читается тем, что
@@ -450,9 +466,14 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     let lt = lampAt(top);
     let down = g.lampCol.rgb * (lt.w * lampShade(top + vec3f(0.0, 0.06, 0.0), up, in.pos.xy)) + lit * 0.3;
     let fade = pow(1.0 - smoothstep(0.0, 2.0, d), 2.0);
-    var c = dark * 0.6 + teal * down * (0.12 * fade + 0.9 * blade);
-    c += teal * down * ((1.0 - smoothstep(0.0, 0.06, d)) * 0.6);
-    return vec4f(haze(c, in.wpos, 1.0), mix(0.82, 0.96, smoothstep(0.0, 1.5, d)));
+    /* как у стенда: пустота над водой всегда даёт телу немного света — оно читается водой, а не
+       дырой; бирюза у глади, в глубине тёмная синь; кромка глади светлая и без фонаря */
+    let amb2 = g.amb.rgb * 2.0 + points(top, up, 1.0) * 0.6;
+    let body = mix(vec3f(0.11, 0.37, 0.36), vec3f(0.008, 0.04, 0.075), smoothstep(0.0, 2.6, d));
+    var c = body * amb2 * (1.0 + 2.4 * blade) + vec3f(0.002, 0.006, 0.009);
+    c += teal * down * (0.12 * fade + 0.9 * blade);
+    c += vec3f(0.6, 0.8, 0.82) * (amb2 + down * 0.5) * ((1.0 - smoothstep(0.0, 0.05, d)) * 0.8);
+    return vec4f(haze(c, in.wpos, 1.0), mix(0.60, 0.95, smoothstep(0.0, 2.0, d)));
   }
   let depth = in.par.w;
   let p = in.wpos.xz;
@@ -508,6 +529,10 @@ struct FOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
   o.uv = vec2f(p.x, 1.0 - p.y);
   return o;
 }
+/* не число (NaN, бесконечность) — по битам: сравнение x != x компилятор вправе выбросить */
+fn bad3(c: vec3f) -> bool {
+  return any((bitcast<vec3u>(c) & vec3u(0x7f800000u)) == vec3u(0x7f800000u));
+}
 /* a = (шаг по x, шаг по y) в uv */
 @fragment fn fs_blur(in: FOut) -> @location(0) vec4f {
   let d = pp.a.xy;
@@ -524,7 +549,9 @@ struct FOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
   c += textureSampleLevel(texA, samp, in.uv + vec2f(d.x, -d.y), 0.0);
   c += textureSampleLevel(texA, samp, in.uv + vec2f(-d.x, d.y), 0.0);
   c += textureSampleLevel(texA, samp, in.uv + vec2f(d.x, d.y), 0.0);
-  return vec4f(min(c.rgb / 8.0, vec3f(24.0)), 1.0);
+  /* свечение не берёт ни отрицательного, ни не-числа: одна такая точка расползлась бы чёрным шаром */
+  let o = clamp(c.rgb / 8.0, vec3f(0.0), vec3f(24.0));
+  return vec4f(select(o, vec3f(0.0), bad3(o)), 1.0);
 }
 /* texA — меньшая ступень, texB — ступень этого размера */
 @fragment fn fs_up(in: FOut) -> @location(0) vec4f {
@@ -579,6 +606,15 @@ struct FOut { @builtin(position) pos: vec4f, @location(0) uv: vec2f };
           let du = 0.7 + 0.6 * vn3(p * 0.7 + vec3f(g.camPos.w * 0.02, 0.0, 0.0), 45u);
           accL += ll.w * core * exp(-dl / 9.0) * sh * du * (0.55 + 0.9 * pow(max(cs, 0.0), 3.0) + 0.2 * cs * cs);
         }
+      }
+    }
+    if (g.farK.x > 0.0 && g.skyLo.w > 0.01) {
+      /* луч дальнего зала: те же лезвия, без карты тени */
+      let ef = farOf(p);
+      if (ef < 1.2 && p.y > g.farDay.w - 16.0 && p.y < g.farDay.w + 1.0) {
+        let u2 = (p.x - g.camPos.x) / max(p.z - g.camPos.z, 1.0);
+        let f1 = vnoise(vec2f(u2 * 70.0 + g.camPos.w * 0.010, 2.5), 43u);
+        accS += (1.0 - smoothstep(0.3, 1.15, ef)) * (0.30 + 1.5 * f1 * f1) * g.skyLo.w * g.farK.x * 0.8;
       }
     }
     let o = dayPlan(p);

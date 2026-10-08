@@ -426,6 +426,23 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     Dripstone by world: `CAVE3_DRIP` (sed/volc/rock/ice/sand → light, dark, oxide, wet, material;
     ice uses the veil material 15); drip ambient × .45, rim × .1. Crystal lights reach ≤ 4 m, halo
     k .55, width .8 + .25·size.
+  - *Done (M630b pass 3, `22de`):* the far lane — `cave3FarSite` picks one spot in the first
+    dripstone / vein / crystal hall (20–80 % along it, ≥ 25 m from the mouth, clear of shafts, the
+    floor ≥ 6 px over the pool, the highest gap); `cave3FarVoid` = an arch tunnel widening ×1.2 into
+    the depth, a chamber ellipsoid (R 12/9/9 at z 27, strata ledges of the world's style, flat floor)
+    and a skylight cylinder; `cave3Den` and `cave3Field` are wrapped, chunks at the arch run the full
+    depth (`zcap`). The chamber is one surface-nets mesh (vox .35, box ax ± 18.5 m, z ≥ 15.4) cached on
+    `C.far3`, with a 7-tier cap stack under its day and two small ones. Its day is analytic (no shadow
+    map — the window is its shadow): `farDay`/`farK` in the globals (288 floats), lit on rock, moss and
+    a beam in the air pass. The far lens (100 m, 24°, 75.6 × 42.5 m, the man 4.2 %, walk line .40)
+    eases in on the map key in the cave on a wide window (`cave3FarOk`), .8 s in / .7 s out, with 160
+    chunks kept. Amber (`cave3AmberGeo`): a honey body lit from inside (crystal material, glow 2.2),
+    grains about it, 2–3 drops on threads from a roof within 5 m (the stand's `cvAmber`: glow 3.2), the
+    stand's light r 3.8 [.5,.27,.07] and halo k .35 s 1.1. The lake body takes the stand's section
+    shader (ambient × 2 into it, teal under the surface, a pale meniscus) so the far lens reads water,
+    not a hole. Light is never negative: `fs_main` clamps before the haze and the bloom's first step
+    drops negatives and non-numbers — one negative pixel on a sliver had bloomed into a dark ball at
+    the arch. Stand: `cave.py` x = `arch` / `amber`, `far=0|1`.
 
 ### Stage F — rooms and people (M850–M859)
 
