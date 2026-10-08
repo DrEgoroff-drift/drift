@@ -163,7 +163,7 @@ function cave3Globals(a,F,vp,lamp,w,h){
   a.set([F.skyLo[0],F.skyLo[1],F.skyLo[2],dk],256);
   a.set([F.skyHi[0],F.skyHi[1],F.skyHi[2],F.near],260);
   if(F.zones)F.zones.forEach((z,k)=>a.set([z[0],z[1],z[2],0],264+k*4));
-  a.set(F.farDay||[0,0,1,0],280);a.set([F.farK||0,0,0,0],284);
+  a.set(F.farDay||[0,0,1,0],280);a.set([F.farK||0,CAVE3_LAMP.warm0,CAVE3_LAMP.warm1,0],284);
   return a;
 }
 

@@ -237,6 +237,8 @@ function cave3DressItems(C,F){
   for(const c of D.curtains)out.push({k:"veil",X:(c.x0+c.w/2)/P,t:c,g:gal(c.x0+c.w/2,false),seed:c.seed});
   D.crystals.forEach((c,i)=>out.push({k:"cryst",X:c.x/P,t:c,g:gal(c.x,c.low),seed:hashi(i,C.seed,0xC1A5),zone:caveZoneAt(C,c.x).kind}));
   D.veins.forEach((v,i)=>out.push({k:"vein",X:v.pts[0][0]/P,t:v,seed:hashi(i,C.seed,0x7E1)}));
+  /* что лежит в камне разреза (22df) */
+  for(const q of cave3InkItems(C,F))out.push(q);
   /* наплывы у задней стены: шаг по обеим галереям, зал решает густоту */
   for(let x=30;x<2*CAVE_W-30;x+=26){
     const low=x>=CAVE_W;
@@ -262,6 +264,7 @@ function cave3DressBin(C,F,items){
   for(const q of items){
     const r=B.r=rng(q.seed^0x5EED),g=q.g;
     if(q.k==="vein"){cave3VeinInk(C,F,ink,q.t,r);continue;}
+    if(q.k==="ink"){cave3InkBuild(F,ink,q,r);continue;}
     if(q.k==="veil"){
       const c=q.t,ax=c.x0/P,bx=(c.x0+c.w)/P,z1=Math.max(2,g.zd-1.2);
       cave3Veil(B,ax,lerp(1.6,z1,r()),bx,lerp(1.6,z1,r()),g.ym+g.gap*.2,Math.min(c.d/P*1.3,g.gap*.55));
@@ -346,18 +349,21 @@ function cave3VeinInk(C,F,m,v,r){
   const seam=rad=>{
     if(run.length<3){run=[];return;}
     const d=plnSub(run[run.length-1],run[0]),l=Math.hypot(d[0],d[1])||1;
-    plnTube(m,{path:run,rad:t=>rad*(.6+.4*Math.sin(t*40)*Math.sin(t*7)),sides:6,flat:.2,up:[-d[1]/l,d[0]/l,0],col:K.seam,mat:PLN_MAT.glow,glow:1,cap:true});
+    /* толщина гуляет по метрам, не по доле отрезка: короткий шов не рвётся в бусы */
+    let L=0;for(let i=1;i<run.length;i++)L+=Math.hypot(run[i][0]-run[i-1][0],run[i][1]-run[i-1][1]);
+    plnTube(m,{path:run,rad:t=>rad*(.62+.38*Math.sin(t*L*3.1)*Math.sin(t*L*.55+1)),sides:6,flat:.2,up:[-d[1]/l,d[0]/l,0],col:K.seam,mat:PLN_MAT.glow,glow:1,cap:true});
     run=[];
   };
-  const rad=.018+.014*v.w;
+  const rad=.034+.012*v.w;
   for(const p of pts){if(solid(p[0],p[1]))run.push(p);else seam(rad);}
   seam(rad);
-  /* зёрна: рыжие, но тусклые — в десятую-четыре десятых */
-  const n=Math.round(pts.length*2.5);
+  /* зёрна: редкие (как в стенде — три с половиной на метр шва), рыжие, но тусклые */
+  let len=0;for(let i=1;i<pts.length;i++)len+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
+  const n=Math.round(len*1.6);
   for(let k=0;k<n;k++){
-    const p=pts[r()*pts.length|0],x=p[0]+(r()-.5)*.6,y=p[1]+(r()-.5)*.34,s=.018+Math.pow(r(),2)*.05;
+    const p=pts[r()*pts.length|0],x=p[0]+(r()-.5)*.3,y=p[1]+(r()-.5)*.3,s=.025+Math.pow(r(),2)*.05;
     if(!solid(x,y))continue;
-    plnBlob(m,{c:[x,y,z-.01],r:[s*(1+r()*1.5),s*(.5+r()*.5),.015],sub:0,box:.6,lean:r()*3,col:plnMul(K.ore,.1+Math.pow(r(),2)*.3),mat:PLN_MAT.glow,glow:1});
+    plnBlob(m,{c:[x,y,z-.01],r:[s*(1+r()*.8),s*(.7+r()*.3),.015],sub:1,lean:r()*3,col:plnMul(K.ore,.05+Math.pow(r(),3)*.2),mat:PLN_MAT.glow,glow:1});
   }
 }
 

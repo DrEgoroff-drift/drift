@@ -140,6 +140,7 @@ function cave3FarFrame(C,F,Fd,x0,x1,cx,dayK){
 }
 
 /* ── янтарь ── */
+const CAVE3_AMB_THREAD=8;
 function cave3AmberGeo(F,p){
   const r=rng(p.seed^0xA3B),X=p.x/CAVE_PPM,Y=-p.y/CAVE_PPM,m=plnMesh(1<<10);
   let z=1.3;if(cave3Den(F,X,Y+.4,z)>-.1)z=.95;
@@ -152,11 +153,12 @@ function cave3AmberGeo(F,p){
     const y=cave3Down(F,x,fy+.4,zz);
     plnBlob(m,{c:[x,y+s*.55,zz],r:[s*1.2,s*.75,s],sub:1,bump:.2,seed:(p.seed+k)%89,cut:-s*.4,col:u=>col(.25+.6*u[1]),mat:CAVE3_MAT.crystal,glow:1.8});
   }
-  /* над залежью — капли на нитях из свода, как на стенде: залежь видна издали по тому, что над ней горит */
+  /* над залежью — капли на нитях из свода, как на стенде: залежь видна издали по тому, что над ней горит.
+     Нить до 8 м; свод выше — нитей нет, остаётся мёд со своим светом (проход 4) */
   for(let k=0,n=2+(r()*2|0);k<n;k++){
     const x=X+(r()-.5)*1.4,zz=clamp(z+(r()-.5)*.5,.8,z+.4),top=cave3Up(F,x,fy+.5,zz);
-    if(top-fy>5||top-fy<1.2)continue;
-    const len=.25+r()*Math.min(1.2,(top-fy)*.3),c=[x,top-len,zz];
+    if(top-fy>CAVE3_AMB_THREAD||top-fy<1.2)continue;
+    const len=clamp(lerp(.3,top-fy-.7,.35+.65*r()),.25,CAVE3_AMB_THREAD),c=[x,top-len,zz];
     plnTube(m,{path:[[x,top+.1,zz],[x,top-len+.05,zz]],rad:.008,sides:4,col:[.5,.29,.08],mat:PLN_MAT.glow,glow:.5});
     plnBlob(m,{c,r:[.05,.085,.05],sub:1,col:[1,.58,.16],mat:PLN_MAT.glow,glow:3.2});
   }

@@ -443,6 +443,25 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     not a hole. Light is never negative: `fs_main` clamps before the haze and the bloom's first step
     drops negatives and non-numbers — one negative pixel on a sliver had bloomed into a dark ball at
     the arch. Stand: `cave.py` x = `arch` / `amber`, `far=0|1`.
+  - *Done (M630b pass 4, `22df`):* the cut page holds the stand's `cvInk` by the world's stone —
+    swimmer bones and shells in sedimentary (6 + 16) and sandstone (3 + 9), gas vesicles in volcanic
+    (24 clusters), bubble strings in ice (18), nodules in bedrock (14), placed 1–4.5 m under a
+    gallery floor or over the upper ceiling and only where the whole piece lies in stone; roots come
+    down from the surface every 4–12 m on worlds with flora and stop where the stone opens. Veins are
+    a dark seam (r .034 + .012·w, its width wandering by the metre, not by the run) with rare dim
+    grains (1.6 per metre, ore × .05–.25), never a chain of dots. The vault (`cave3VaultLift`) may rise
+    up to 3 m above the grid's ceiling, in patches along the gallery (×.75 at the cut, full from 2.5 m
+    in): the grid's void is pulled straight up, never sideways or down, never within 1.6 m of the world's
+    top and never into a void 1.2 m above; floor, walls and the walk line stay the grid's (91qg: the
+    sign at z 0 and z .7 off the vault, the floor at the walk line, nothing laid, nothing over +3 m).
+    The lamp is warm only near: `lampTint` turns its light on stone to a cool grey of the same strength
+    between 4 and 8.5 m (`farK.yz`), the shadowless spill is cool grey (r 17), the warm part is a pool
+    on the floor 2.6 m ahead (r 4.2) and a touch on the man (r 1.9); a cool fill over the man (r 9) and
+    behind him (r 18); the beam tilts down (−.24). Measured on the gallery frame: the page hue 208°, the
+    stone outside the near circle 208–215°, the pool 35°. In the far lens the flat surface brushes (life,
+    the find) are not drawn until M630c. The scan label hangs at the plant the game picked and is
+    silent when that plant is not in frame (never at the man). Amber's threads reach 8 m; a higher roof
+    leaves the honey alone.
 
 ### Stage F — rooms and people (M850–M859)
 

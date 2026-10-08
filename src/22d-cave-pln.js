@@ -88,7 +88,7 @@ function cave3Frame(){
   plnManFrame(F,[mx,my,CAVE3_Z],face,0,{S,lamp:0});
   /* фонарь на шлеме: смотрит туда, куда идёт человек, и немного в глубину */
   const kit=typeof kitStat==="function"?kitStat():{lamp:1},reach=cave3Reach(kit.lamp);
-  const lp=[mx+.2*face,my+1.71,CAVE3_Z-.17],ld=plnNorm([face,-.15,.34]);
+  const lp=[mx+.2*face,my+1.71,CAVE3_Z-.17],ld=plnNorm([face,CAVE3_LAMP.tilt,.34]);
   const lampVP=plnM4mul(cave3Persp(CAVE3_K.fov,1,.12,140),plnM4look(lp,[lp[0]+ld[0],lp[1]+ld[1],lp[2]+ld[2]],[0,1,0]));
   /* день: час мира наверху (последний кадр поверхности), луч чуть вдоль галереи и к объективу */
   const Hr=PLN.sun,night=Hr?clamp(Hr.night||0,0,1):0,dayK=1-plnSmooth(.2,.9,night);
@@ -98,8 +98,14 @@ function cave3Frame(){
   const lk=Hr&&Hr.look,skyLo=lk?lk.skyHor:[.62,.78,.95],skyHi=lk?lk.skyZen:[.13,.33,.78];
   /* огни без теней: что разливает фонарь, что отдают освещённые места, чужая лампа, ранец */
   const Lt=(p,r,c)=>F.lights.push({p,r,c}),lc=CAVE3_K.lampCol;
-  Lt(lp,12,[lc[0]*.34,lc[1]*.34,lc[2]*.34]);
-  Lt([mx+3.6*face,my+.7,CAVE3_Z+.6],9,[.22,.15,.08]);
+  /* разлив фонаря без тени — холодный: тёплое только в луже на полу и на ближней стене в конусе
+     (M630b проход 4: вне конуса камень того же тона, что страница разреза) */
+  const LL=CAVE3_LAMP;
+  Lt(lp,LL.spillR,LL.spill);
+  Lt([mx+LL.poolX*face,my+.25,CAVE3_Z+.5],LL.poolR,LL.pool);
+  Lt([mx+.55*face,my+1.05,CAVE3_Z-.9],1.9,LL.man);   /* отсвет лужи на самом человеке */
+  Lt([mx+.5*face,my+5,CAVE3_Z+1.6],9,LL.vault);   /* свод над человеком: купол читается холодным серым */
+  Lt([mx-5*face,my+2.5,CAVE3_Z+7],18,LL.back);   /* задняя стена за спиной: серый камень, не туман */
   Lt([mx-3.4*face,my+2.4,CAVE3_Z-1.3],7.5,[.085,.125,.15]);
   if(dayK>.01)Lt([mouth[0],sY-3,mouth[1]],13,[.30*dayK,.38*dayK,.44*dayK]);
   Lt([mx+14*face,my+3.5,CAVE3_Z+6],22,[.05,.07,.105]);
@@ -133,11 +139,16 @@ function cave3Frame(){
   return cave3GpuFrame(F);
 }
 
+/* фонарь кадра: наклон луча, холодный разлив, тёплая лужа на полу (числа — у CAVE3_K в 22db) */
+const CAVE3_LAMP={tilt:-.24,spillR:17,spill:[.30,.33,.38],poolX:2.6,poolR:4.2,pool:[.34,.22,.10],warm0:4,warm1:8.5,man:[.26,.19,.11],vault:[.13,.15,.18],back:[.10,.11,.13]};
+
 /* ── поверх кадра: то, что ещё не перерисовано (жизнь и находка — M630c) ──
    Те же кисти, что у старого кадра, в той же мерке: окно на линии ходьбы — окно кадра */
 function cave3Over(){
   const C=G.cave,Ls=CAVE3.lens;
   if(!Ls)return;
+  /* в дальнем объективе плоские кисти поверхности не в своём масштабе: до M630c их нет вовсе */
+  if(CAVE3.far>.01)return;
   const camx=G.viewX,camy=G.viewY;
   const LP=GPU.on?gpuNext():null;
   for(const pl of C.plants){
@@ -243,7 +254,9 @@ hangSurface=function(){
   else if(/^ДЕЙСТВИЕ — СКАНИРОВАТЬ/.test(pr)){
     /* то же растение, что выбрала игра (22-mode-cave): последнее несканированное рядом */
     let pl=null;for(const q of C.plants)if(!q.scanned&&Math.abs(q.x-C.x)<30&&Math.abs(q.y-C.y)<40)pl=q;
-    at(pl?[pl.x/CAVE_PPM,-pl.y/CAVE_PPM+.8,CAVE3_Z]:P.man,1.4,"cave.act",ln,o);
+    /* табличка — только у самого организма; его нет рядом (строка устарела) — молчит, у человека не висит */
+    const v=pl&&[pl.x/CAVE_PPM,-pl.y/CAVE_PPM+.8,CAVE3_Z];
+    if(v&&cave3InFrame(pj,v))at(v,1.4,"cave.act",ln,o);
   }
   else if(/ — ИДТИ · /.test(pr)&&!/НИЖНЕЙ ГАЛЕРЕИ/.test(pr)){
     /* справка ходьбы — у шахты или у устья в кадре; нет их — молчит: стрелки и так на пэдах */

@@ -9,21 +9,51 @@ TEST_SUITES.push(()=>suite("пещера на движке: порода по с
   const C=G.cave;
   if(!ok(G.mode==="cave"&&!!C&&!!C.g,"пещера поднята"))return;
   const F=cave3Field(C),cell=CAVE_CS/CAVE_PPM;
-  /* ── плотность на разрезе: знак — тот же, что у сетки, где до грани больше клетки ── */
-  let n=0,bad=0,seen=0,rocks=0;const why=[];
-  for(let k=0;n<400&&k<40000;k++){
-    const cx=2+((k*7919)%(CAVE_NX-4)),cy=1+((k*104729)%(CAVE_NY-2)),i=cy*CAVE_NX+cx;
-    if(Math.abs(F.raw[i])<cell)continue;
-    seen++;
-    const x=(cx+.5)*CAVE_CS,y=CAVE_Y0+(cy+.5)*CAVE_CS,solid=caveSolidAt(C,x,y);
-    if(solid)rocks++;
-    const d=cave3Den(F,x/CAVE_PPM,-y/CAVE_PPM,0);
-    if((d>0)!==solid){bad++;if(why.length<4)why.push([x|0,y|0,solid,+d.toFixed(2)]);}
-    n++;
+  /* купол (M630b проход 4): свод может уйти выше потолка сетки до трёх метров — камень сетки под таким
+     сводом картинке не указ; всё остальное (пол, стены, толща) — по сетке */
+  const vaultAt=(x,y)=>{const A=cave3VaultLift(x/CAVE_PPM,0);if(A<=0)return false;
+    for(let d=.2;d<=A+cell;d+=.2)if(!caveSolidAt(C,x,y+d*CAVE_PPM))return true;return false;};
+  /* ── плотность на разрезе и на линии ходьбы: знак — тот же, что у сетки, где до грани больше клетки ── */
+  for(const Z of [0,CAVE3_Z]){
+    let n=0,bad=0,rocks=0;const why=[];
+    for(let k=0;n<400&&k<40000;k++){
+      const cx=2+((k*7919)%(CAVE_NX-4)),cy=1+((k*104729)%(CAVE_NY-2)),i=cy*CAVE_NX+cx;
+      if(Math.abs(F.raw[i])<cell)continue;
+      const x=(cx+.5)*CAVE_CS,y=CAVE_Y0+(cy+.5)*CAVE_CS,solid=caveSolidAt(C,x,y);
+      if(solid&&vaultAt(x,y))continue;
+      if(solid)rocks++;
+      const d=cave3Den(F,x/CAVE_PPM,-y/CAVE_PPM,Z);
+      if((d>0)!==solid){bad++;if(why.length<4)why.push([x|0,y|0,solid,+d.toFixed(2)]);}
+      n++;
+    }
+    eq(n,400,"z "+Z+": четыреста клеток дальше клетки от грани");
+    ok(rocks>40&&rocks<n-40,"z "+Z+": среди них и камень, и пустота: камня "+rocks);
+    ok(bad<=4,"z "+Z+": плотность согласна с caveSolidAt: расходятся "+bad+" из "+n+" "+JSON.stringify(why));
   }
-  eq(n,400,"четыреста клеток дальше клетки от грани");
-  ok(rocks>40&&rocks<n-40,"среди них и камень, и пустота: камня "+rocks);
-  ok(bad<=4,"плотность на разрезе согласна с caveSolidAt: расходятся "+bad+" из "+n+" "+JSON.stringify(why));
+  /* ── линия ходьбы: пол картинки — пол сетки; свод — не ниже потолка сетки и не выше трёх метров над ним ── */
+  let fb=0,fn=0,high=0,up=0,low=0;
+  for(let cx=4;cx<CAVE_NX-4;cx+=3){
+    const x=(cx+.5)*CAVE_CS,X=x/CAVE_PPM,c=caveCeil(C,x),f=caveFloor(C,x);
+    if(!(f-c>3*CAVE_CS))continue;
+    const Yf=-f/CAVE_PPM,Yc=-c/CAVE_PPM;
+    if(caveSolidAt(C,x,f+.3*CAVE_PPM)&&caveSolidAt(C,x,f+.6*CAVE_PPM)){
+      fn++;if(!(cave3Den(F,X,Yf-.3,CAVE3_Z)>0&&cave3Den(F,X,Yf+.3,CAVE3_Z)<0))fb++;
+    }
+    for(const Z of [0,CAVE3_Z,2,3.5]){
+      const A=cave3VaultLift(X,Z),Yt=Yc+A+1.6;
+      if(caveSolidAt(C,x,-Yt*CAVE_PPM)&&caveSolidAt(C,x,-(Yt+1)*CAVE_PPM)&&-Yt*CAVE_PPM>CAVE_Y0+2*CAVE_PPM&&cave3Den(F,X,Yt,Z)<=0)high++;
+      if(A>1&&cave3Den(F,X,Yc+A*.5,Z)<0)up++;
+      for(const dy of [-.3,.4,A*.5,A+.3]){
+        const d1=cave3Den(F,X,Yc+dy,Z),L0=CAVE3_VAULT.lift;
+        CAVE3_VAULT.lift=0;
+        try{if(d1>cave3Den(F,X,Yc+dy,Z)+1e-6)low++;}finally{CAVE3_VAULT.lift=L0;}
+      }
+    }
+  }
+  ok(fn>20&&fb<=fn*.03,"на линии ходьбы пол картинки — пол сетки: расходятся "+fb+" из "+fn);
+  ok(high===0,"свод не выше потолка сетки плюс купол: дыр выше "+high);
+  ok(up>0,"купол есть: точек под поднятым сводом "+up);
+  ok(low===0,"купол не опускает свод и не кладёт камня: "+low);
   /* ── сетка куска: лист разреза лежит на камне сетки, порода — у её граней ── */
   const ci=Math.floor(F.mouthX/CAVE3_CH.s)+1,cj=Math.floor((-caveGalY(C,(ci+.5)*CAVE3_CH.s*CAVE_PPM)/CAVE_PPM)/CAVE3_CH.s);
   const m=cave3Chunk(F,ci,cj),V=m.v;
@@ -38,6 +68,7 @@ TEST_SUITES.push(()=>suite("пещера на движке: порода по с
   let far=0,rv=0;
   for(let k=0;k<m.nRock;k+=3){
     const o=m.i[k]*PLN_VS;if(V[o+2]>.5)continue;
+    if(vaultAt(V[o]*CAVE_PPM,-V[o+1]*CAVE_PPM))continue;
     rv++;if(Math.abs(at(V[o]*CAVE_PPM,-V[o+1]*CAVE_PPM))>3*cell)far++;
   }
   ok(rv>0&&far<=rv*.03,"порода у разреза стоит на гранях сетки: дальше трёх клеток "+far+" из "+rv);
