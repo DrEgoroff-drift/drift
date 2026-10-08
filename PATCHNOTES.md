@@ -8,6 +8,8 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M634 — one water everywhere.** Lakes, ponds, the ocean and the cave lake are one water: ripple along the wind, calm patches, a swell far off on the sea, Fresnel, shallows, a wet edge with a bright thread, murk. Ocean worlds now have a sea to the horizon with islands rising from it and a sun path when the sun stands ahead. By night the water keeps its wind patches and its reflections instead of going flat under the mist.
+
 - **M631 (first pass) — the cave's last five.** Stalagmites are no longer lathe-turned: each tier wanders ±20 % round its ring, leans toward the side the water dripped from, overhangs only there and flows into the tier below on the dry side; tier heights vary. The manta's wings are cambered, so the lamp lays a gradient across them, with a lighter leading edge. A vent crack burns in three layers — dark-red rim, orange body, a white-yellow core that flares and smoulders along its length — with a narrow halo. Corridor air is thinner (the wedge reads .30, stone spread .15); wet halls keep theirs. Ore veins are bodies on the section page: a pale mineral seam with a lit ridge, pressed against the floor or roof edge until it sits in stone; no orange strokes.
 
 - **M630d — the cave looks like stone.** The lamp's beam is brightest at the lamp and fades with

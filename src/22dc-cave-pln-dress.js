@@ -13,7 +13,7 @@ const CAVE3_DC={cream:plnHex("#e6dfcf"),creamD:plnHex("#aaa090"),rust:plnHex("#b
 const CAVE3_DOME=[0,.1,.25,.42,.6,.78,.92,1];
 /* отделка стены по залу (шейдер 22dbw): 0 рёбра, 1 друза, 2 шов, 3 гладь */
 const CAVE3_ZK={gallery:0,dripstone:0,crystal:1,vein:2,water:3};
-Object.assign(CAVE3_MAT,{veil:15,vein:13});
+Object.assign(CAVE3_MAT,{veil:15,vein:16});
 /* натёк — камень своего мира: светлый тон, тёмный, окисел потёками; мокрость; материал
    (лёд — плёнка, свет сквозь). Альбедо держится у тона породы: в тени натёк темнее стены */
 const CAVE3_DRIP={

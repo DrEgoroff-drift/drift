@@ -115,11 +115,12 @@ function plnFarLane(Fw,lane,sub,L,x,z,az,pass){
     return R(zc,y,lane===3?.10:.2,lane===3?.06:.1,lane===3?14:lane===4?20:50)+det;}
   case "isles":{ /* океан: острова на морской равнине — редкие, крутые, между ними пусто; у ориентира одинокий вулканический остров */
     const nn=fb(lane===3?.006:lane===4?.0025:lane===5?.0009:.0004,1,50+lane,3)*.5+.5;
-    if(lane===3)return R(zc,(8+14*nn)*pk*H,.10,.06,14)+det;
+    /* между островами — море: где маска гаснет, гребень уходит под воду (−10 м), а не ложится сушей */
+    if(lane===3){const m3=plnSmooth(.52,.62,fb(.0045,7,59,2)*.5+.5);return R(zc,((8+14*nn)*pk*H+10)*m3-10,.10,.06,14)+det*m3;}
     const m=plnSmooth(.50,.60,fb(lane===4?.003:lane===5?.0011:.0005,4,52+lane,2)*.5+.5),r=rid(lane===5?.003:.0012,5,57+lane+sub,3);
-    if(lane===4){y=(16+50*nn*nn)*m*pk*H;return R(zc,y,.3,.2,20)+det*.5;}
-    if(lane===5){y=((90+260*r)*m*env+170*g(PLN_AZ_PEAK,.05))*pk*H;return R(zc,y,.9,.7,40)+det*.5;}
-    y=(sub?260+420*r:200+360*r)*m*pk*H;return R(zc,y,.6,.5,70)+det*.5;}
+    if(lane===4){y=((16+50*nn*nn)*pk*H+10)*m-10;return R(zc,y,.3,.2,20)+det*.5*m;}
+    if(lane===5){const v=g(PLN_AZ_PEAK,.05),mv=Math.max(m,v);y=((90+260*r)*m*env+170*v)*pk*H+10*mv-10;return R(zc,y,.9,.7,40)+det*.5*mv;}
+    y=((sub?260+420*r:200+360*r)*pk*H+10)*m-10;return R(zc,y,.6,.5,70)+det*.5*m;}
   case "mesa":{ /* дюны, столовые горы, уступы */
     if(lane===3){const s=Math.pow(.5+.5*Math.sin(x*.02+3*fb(.003,1,51)),1.6);return R(zc,(5+9*s)*pk*H,.06,.12,10)+det*.3;}
     const m=plnSmooth(.5,.6,fb(lane===4?.0035:lane===5?.0012:.0005,2,52+lane)*.5+.5),hh=fb(.001,5,53+lane)*.5+.5;

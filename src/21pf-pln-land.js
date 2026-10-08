@@ -124,7 +124,8 @@ function plnLandMake(tr,p,sx){
   const liquid=!!(p&&p.T&&p.T.atm!=="отсутствует")&&(ty==="terran"||ty==="jungle"||ty==="ocean"||ty==="toxic"||ty==="ruin"||ty==="rocky");
   const lake=Wt?{x0:Wt.x0/PLN_M,x1:Wt.x1/PLN_M,level:(y0-Wt.y)/PLN_M,acid:!!Wt.acid}:null;
   const shipU=sx==null?tr.padX:sx,shipX=shipU/PLN_M,yaw=.2,padH=(y0-groundAt(tr,shipU))/PLN_M;
-  const L={tr,sx,gen:PLN_GPU.gen,y0,dx,x0,N,NT,E,len:N*dx,P,lake,wet:liquid&&((tr.wet||0)>=.2||!!lake),
+  const sea=liquid&&wl.far.shape==="isles";   /* океанский мир: за дальним берегом море до горизонта (M634) */
+  const L={tr,sx,gen:PLN_GPU.gen,y0,dx,x0,N,NT,E,len:N*dx,P,lake,wet:sea||liquid&&((tr.wet||0)>=.2||!!lake),sea,
     sd:Math.floor(plnHash((p&&p.seed)|0,tr.sseed|0,7)*900000)+17,
     /* точка композиции: от площадки, если спуск её запомнил (tr.plnCx, M621), иначе от корабля */
     shipX,shipZ:7,shipYaw:yaw,padH,cx0:tr.plnCx!=null?tr.plnCx:shipX+12.8,
@@ -306,6 +307,8 @@ function plnLandFarH(L,xw,z){
   if(L.lake){const a=L.lake.x0-L.cx0,b=L.lake.x1-L.cx0;dl=Math.min(dl,x<a?a-x:(x>b?x-b:0));}
   dl+=14*plnFbm(x*.03+1.7,z*.06+4.2,2,sd+74);   /* урез ложбины — бухтами и косами, не по линейке (M623) */
   let h=-6.4+.6*plnFbm(x*.02+3,z*.02+8,2,sd+7)+7*plnSmooth(70,130,dl),k=1,k2=1,w2=0;
+  /* океанский мир: за дальним берегом дно уходит под море (M634) */
+  if(L.sea)h-=11*plnSmooth(150,215,z);
   /* кулиса красится своим цветом; у стыка двух — оба, долями: граница цвета идёт мимо узлов сетки
      и без этого рисуется лесенкой. Полоса стыка — в метрах высоты, шире с расстоянием */
   const mg=.5+.004*(z+100);
@@ -317,11 +320,12 @@ function plnLandFarH(L,xw,z){
   const n1=plnFbm(x*.008+5,.5,2,sd+21),n1b=plnFbm(x*.012+9,1.5,3,sd+22);
   /* дальний урез воды рисуется бухтами и косами */
   const bay=17*plnFbm(x*.034+1.3,2.5,2,sd+47);
-  take(plnRidge(z,136+20*n1+bay*(1-plnSmooth(122,140,z)),(5+4*n1b)*(1-.35*pass),.26,.10,6)+plnFbm(x*.03+2,z*.03+5,3,sd+31)*.9,2,3);
+  /* у океанского мира дальний берег — низкая коса с прорывами: за ней видно море */
+  take(plnRidge(z,136+20*n1+bay*(1-plnSmooth(122,140,z)),(L.sea?1+5*n1b:5+4*n1b)*(1-.35*pass),.26,.10,6)+plnFbm(x*.03+2,z*.03+5,3,sd+31)*.9,2,3);
   /* кулисы по типу мира (21pfa): где форма мира отвечает — берётся она, где null — землеподобная,
      умноженная на её рост Hk */
   if(z>110){
-    take(lerp(-60,3+z*.003,plnSmooth(120,230,z))+(Fw.crater?plnFarCrater(L,x,z):0),6,6);
+    if(!L.sea)take(lerp(-60,3+z*.003,plnSmooth(120,230,z))+(Fw.crater?plnFarCrater(L,x,z):0),6,6);
     const v3=plnFarLane(Fw,3,0,L,x,z,az,pass);
     if(v3!==null)take(v3,3,8);
     else{
@@ -352,7 +356,7 @@ function plnLandFarH(L,xw,z){
         const ribs=(plnRidged(x*.0030+8+.5*plnFbm(z*.001,x*.001,2,sd+38),z*.0006+4,5,sd+34)-.5)*.62*y4;
         take(plnRidge(z,3700+600*n4,y4,.5,.35,50)+ribs,5,40);
       }
-      take(25+12*plnFbm(x*.0002,z*.0002,2,sd+29)-.5*Math.max(0,4800-z),6,30);
+      if(!L.sea)take(25+12*plnFbm(x*.0002,z*.0002,2,sd+29)-.5*Math.max(0,4800-z),6,30);
     }
     if(z>5000){
       /* две дальние гряды: долина — не чаша, а склон за склоном, каждый бледнее */
@@ -462,6 +466,8 @@ function plnLandJobs(L){
     }
     for(const s of sp)J.push({t:"water",xa:s[0],xb:s[1],kind:PLN_KIND.water,to:TO.main,ride:true,geo:null,done:false});
     if(L.lake)J.push({t:"pond",xa:L.lake.x0-2,xb:L.lake.x1+2,kind:PLN_KIND.water,to:TO.main,ride:false,geo:null,done:false});
+    /* море до горизонта: лентами по глубине, ближняя первой (21pw) */
+    if(L.sea)for(const s of [[136,600],[600,4000],[4000,30000]])J.push({t:"sea",za:s[0],zb:s[1],xa:L.cx0,xb:L.cx0,kind:PLN_KIND.water,to:TO.main,ride:true,geo:null,done:false});
   }
   L.left=J.length;
 }
@@ -471,11 +477,12 @@ function plnLandSees(J,ex,V,m){
     const ha=V.hw*(1+J.za/V.D)+8+m+(J.za<460?60:0),hb=V.hw*(1+J.zb/V.D)+8+m+(J.za<460?60:0);
     return !((J.xb<ex-ha&&J.xb1<ex-hb)||(J.xa>ex+ha&&J.xa1>ex+hb));
   }
+  if(J.t==="sea")return true;
   const z=J.t==="water"?136:PLN_LAND.zBack,h=V.hw*(1+z/V.D)+12+m;
   return J.xb>ex-h&&J.xa<ex+h;
 }
 function plnLandBuild(L,J){
-  const m=J.t==="rib"?plnLandRibMesh(L,J.c):J.t==="far"?plnLandFarMesh(L,J):J.t==="water"?plnLandWaterMesh(L,J):plnLandPondMesh(L,J);
+  const m=J.t==="rib"?plnLandRibMesh(L,J.c):J.t==="far"?plnLandFarMesh(L,J):J.t==="water"?plnWaterSheet(L,J):J.t==="sea"?plnWaterSea(L,J):plnWaterPond(L,J);
   J.geo=m.ni?plnGeo(m):null;J.done=true;L.left--;
   /* сетку куска ленты ждёт расстановка (21pga): трава встаёт на неё и отпускает */
   if(J.t==="rib")J.grid=m;
@@ -621,35 +628,4 @@ function plnLandFarMesh(L,J){
   }
   return m;
 }
-/* Вода ложбины едет с дальним миром. Дно лежит в цвете вершины: высота ленты (мировая) и дна
-   ложбины (на её уровне) — глубину считает шейдер, потому что уровень воды в кадре свой */
-function plnLandWaterMesh(L,J){
-  const C=PLN_LAND,sx=2,sz=1,z0=4,z1=136,nx=Math.ceil((J.xb-J.xa)/sx),nz=(z1-z0)/sz,m=plnMesh((nx+1)*(nz+1)*2);
-  const keep=new Uint8Array((nx+1)*(nz+1));
-  for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){
-    const x=J.xa+i*sx,z=z0+j*sz,f=plnLandFarH(L,x,z),hr=z<=C.zBack?plnLandRibAt(L,x,z):-1e3;
-    plnVert(m,[x,C.wRel,z],[0,1,0],[hr,f,0],PLN_MAT.water,0,0,0);
-    keep[j*(nx+1)+i]=(C.wRel-f>-.4&&plnLandTab(L,L.liftHi,x)+C.wRel-hr>-.4)?1:0;
-  }
-  for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){
-    const a=j*(nx+1)+i,b=a+1,c=a+nx+2,d=a+nx+1;
-    if(keep[a]|keep[b]|keep[c]|keep[d])plnQuad(m,a,b,c,d);
-  }
-  return m;
-}
-/* пруд стоит в мире, на уровне озера игры */
-function plnLandPondMesh(L,J){
-  const k=L.lake,sx=L.dx*2,sz=.6,z0=k.zn-2.4,z1=k.zf+2,nx=Math.ceil((J.xb-J.xa)/sx),nz=Math.ceil((z1-z0)/sz),m=plnMesh((nx+1)*(nz+1)*2);
-  const keep=new Uint8Array((nx+1)*(nz+1));
-  for(let j=0;j<=nz;j++)for(let i=0;i<=nx;i++){
-    const x=J.xa+i*sx,z=z0+j*sz,hr=plnLandRibAt(L,x,z);
-    plnVert(m,[x,k.level,z],[0,1,0],[hr,-1e3,0],PLN_MAT.water,0,0,0);
-    /* вода — только в чаше: за валом бугры склона уходят ниже её уровня, и там она легла бы лужами */
-    keep[j*(nx+1)+i]=k.level-hr>-.4&&(Math.abs(z)<2.5||plnLandPond(L,x,z)<1.2)?1:0;
-  }
-  for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){
-    const a=j*(nx+1)+i,b=a+1,c=a+nx+2,d=a+nx+1;
-    if(keep[a]|keep[b]|keep[c]|keep[d])plnQuad(m,a,b,c,d);
-  }
-  return m;
-}
+/* сетки воды — в 21pw */
