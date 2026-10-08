@@ -45,7 +45,11 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     for(const id of types){const L=hallLayout(id);L.room=hallRoomMesh(L);
       const lim=hallLimits(hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5));
       ok(lim.inst<=R3_MAXI,"«"+id+"» с пилотом: экземпляров "+lim.inst+" ≤ "+R3_MAXI);}
-    HALL.place=was;}
+    /* M814: пилот — тот же человек, что на планете: риг 21pha, кости в пределе частей движка */
+    const L=hallLayout("trade");L.room=hallRoomMesh(L);
+    ok(hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5).draws.some(d=>d[0]&&d[0].rig),"пилот зала — риг планеты, не человек 27f3");
+    ok(PLN_MAN_BONES.length<=R3_PART,"костей рига "+PLN_MAN_BONES.length+" ≤ "+R3_PART+" частей");
+    HALL.place=was;hallRigDrop();}
   {const was=HALL.night;HALL.night=1;eq(hallNight(),1,"?hallnight=1 — ночь");HALL.night=0;eq(hallNight(),0,"?hallnight=0 — день");HALL.night=was;}
   /* день ≠ ночь: днём рассеянный свет дока вдвое сильнее ночного, окно ярче; ночью ключ — лампы людей */
   {const was=HALL.night,L=hallLayout("trade");L.room=hallRoomMesh(L);const cm=hallCam(HALL_CAMS.trade,1920,1080,true);
