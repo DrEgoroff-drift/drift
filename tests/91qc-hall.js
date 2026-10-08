@@ -29,6 +29,25 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     ok(S.lights.every(l=>l.c.every(Number.isFinite)&&l.p.every(Number.isFinite)),"«"+id+"»: свет без NaN");
   }
 
+  /* мерило «Сцены»: человек на месте раздела — .18–.23 высоты кадра ПК; поле одно на любой ширине */
+  for(const p of Object.keys(HALL_CAMS)){
+    const c=HALL_CAMS[p],pa=HALL_PILOT_AT[p];
+    ok(c.fy>.8&&c.fy<=1.35,"место «"+p+"»: поле "+c.fy+" рад");
+    if(!pa)continue;
+    const k=hallManK(hallCam(c,1920,1080,true),pa[0],pa[1],1080),k2=hallManK(hallCam(c,2560,1080,true),pa[0],pa[1],1080);
+    ok(k>=.18&&k<=.23,"место «"+p+"»: пилот "+k.toFixed(3)+" высоты кадра");
+    ok(Math.abs(k-k2)<.005,"место «"+p+"»: доля человека не зависит от ширины окна");
+  }
+  {const L=hallLayout("trade"),k0=L.people[0],k=hallManK(hallCam(HALL_CAMS.trade,1920,1080,true),k0.x,k0.z,1080);
+    ok(k>=.18&&k<=.23,"хозяин стойки — "+k.toFixed(3)+" высоты кадра");}
+  /* пилот занимает место в пределах движка; ночь слушается стенда */
+  {const was=HALL.place;HALL.place="trade";
+    for(const id of types){const L=hallLayout(id);L.room=hallRoomMesh(L);
+      const lim=hallLimits(hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5));
+      ok(lim.inst<=R3_MAXI,"«"+id+"» с пилотом: экземпляров "+lim.inst+" ≤ "+R3_MAXI);}
+    HALL.place=was;}
+  {const was=HALL.night;HALL.night=1;eq(hallNight(),1,"?hallnight=1 — ночь");HALL.night=0;eq(hallNight(),0,"?hallnight=0 — день");HALL.night=was;}
+
   /* наезд: от двери к месту, к концу — ровно цель */
   hallGo("board",true);
   const end=hallGlideAt(HALL.g0+HALL.gd+50),c=HALL_CAMS.board;

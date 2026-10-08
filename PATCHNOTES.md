@@ -8,6 +8,18 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M810 — the hall behind the station screens.** Docking now opens a room, not a panel: one
+  engine interior per station type (trade, combine, yard, science, outpost, fuel, bazaar) with a
+  counter, its keeper with hands on the wood under one shaded lamp, shelves of goods, the board,
+  a window on the system's planet and the dock, and the cantina's bar at the far end. The
+  camera glides to the place of each section; the screens sit on a graphite plate over the
+  right 60 % on a PC (never narrower than 880 px of layout) and under a 36 % strip on a phone.
+  Your pilot stands in the hall at the place of the open section (at the counter, at the board,
+  at the window) in the orange of «Сцена»'s people; people are a fifth of the frame. The hall keeps a shift clock:
+  at night the window goes dark, the wall wash fades and the sconce and lamps carry the room.
+  The things are named by small plates with a leader line beside them (ДОСКА, СТОЙКА, the
+  planet, ВЕРСТАК, КОНТОРА). `?hall=0` keeps the old desk; `?hallnight=0|1` and
+  `?hallpilot=0` are for the stand.
 - **M804 — the night side of the orbs.** The dark half of every planet is filled by its own
   sky (cold blue where there is no air, the air's hue where there is) so it reads as a shape;
   the terminator is a warm rim whose width follows the air; polar caps are grain with cracks

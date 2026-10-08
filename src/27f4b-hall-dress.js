@@ -67,7 +67,7 @@ function hallBones(K,L,R){
   const T=L.T,P=R3P,hc=T.hc,X0=HALL_L,X1=L.R,B=HALL_B,F=HALL_F,wall=T.wall,wy=hallWinY(T);
   const rough=T.win===1||T.weld||T.dark;   /* литейка, верфь, застава — бетон и сталь, не плитка */
   const Mw=K.mt(wall.map(v=>v*1.25),.25,6,P.wall),Mw2=K.mt(mixc(wall,[12,10,10],.35),.3,6,P.wall);
-  const Mf=K.mt(rough?[92,90,86]:mixc(wall,[100,92,82],.5),rough?.35:.55,rough?8:11,P.floor);
+  const Mf=K.mt(rough?[92,90,86]:mixc(wall,[100,92,82],.5),rough?.25:.32,rough?6:7,P.floor);   /* блеск мягкий: точечный свет окна в полу у камеры горел «пламенем» */
   const Tr=K.mt(mixc(wall,[30,26,22],.5),.4,8,P.brushed),Be=K.mt(mixc(wall,[0,0,0],.3),.4,8,P.brushed);
   const Fr=K.mt([120,130,142],.7,11,P.brushed);
   K.part=0;
