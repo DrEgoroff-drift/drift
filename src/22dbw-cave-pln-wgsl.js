@@ -81,7 +81,7 @@ fn lampAt(p: vec3f) -> vec4f {
 /* лист разреза и то, что на нём, темнеют к краям кадра: сцена в середине */
 fn faceDim(fragXY: vec2f) -> f32 {
   let q = (fragXY * g.screen.zw - 0.5) * vec2f(1.0, 0.85);
-  return mix(1.0, 0.55, smoothstep(0.22, 0.62, length(q)));
+  return mix(1.0, 0.7, smoothstep(0.22, 0.62, length(q)));
 }
 /* дымка: чем дальше за разрезом, тем больше цвета тёмного воздуха */
 fn haze(c: vec3f, wpos: vec3f, cap: f32) -> vec3f {
@@ -269,6 +269,9 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     let lip = pow(1.0 - smoothstep(0.0, 0.5, ex), 2.0);
     let wash = pow(1.0 - smoothstep(0.0, 3.6, ex), 2.0) * sure;
     c *= faceDim(in.pos.xy);
+    /* холодная заливка от устья: днём страница у входа светлее и голубее, вглубь гаснет */
+    let md = length(vec2f(in.wpos.x - g.mouth.x, (g.dayP.z - in.wpos.y) * 0.8));
+    c += in.col * vec3f(0.55, 0.78, 1.05) * (g.skyLo.w * 1.1 * exp(-md / 16.0) * (1.0 - soil));
     if (wash + lip > 0.002) {
       let Nr = normalize(Ni + vec3f(0.0, 0.0, -0.6));
       let q = in.wpos + Ni * (ex + 0.22) + vec3f(0.0, 0.0, 0.30);
@@ -301,10 +304,8 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     ao *= 0.72 + 0.28 * smoothstep(0.2, 0.65, b0);
     let b = strat(in.wpos); let f = fract(b);
     let wall = 1.0 - smoothstep(0.5, 0.9, abs(N.y));
-    let ln = 1.0 - smoothstep(0.0, 0.05, min(f, 1.0 - f));
-    let lam = fract(b * 5.0 + n1 * 1.2);
-    let l2 = 1.0 - smoothstep(0.0, 0.14, min(lam, 1.0 - lam));
-    alb *= 1.0 - (ln * 0.4 + l2 * 0.07) * wall;
+    /* пласты — только на разрезе; на стене пласт лишь чуть меняет тон, без линии */
+    alb *= 0.9 + 0.12 * sin(3.14159 * f) * wall;
   }
   if (mat == 11) {
     ao = ex; wet = glow; wrap = 0.45;
