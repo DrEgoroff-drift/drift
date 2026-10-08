@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 523 · top-level symbols: 7790
+Files: 524 · top-level symbols: 7796
 
 ## SYMBOLS
 
@@ -169,6 +169,7 @@ BODY_BARGE_KEEP              src/17c2f-body-barge.js:8
 BODY_CAM                     src/17-mode-system.js:79
 BODY_FCLS                    src/17c2e-body-kit.js:69
 BODY_LABELS                  src/17-mode-system.js:25
+BODY_PIR                     src/17c2h-body-pirate.js:8
 BODY_ST_CORE                 src/17c2g-body-station.js:11-49
 BODY_ST_KEEP                 src/17c2g-body-station.js:8
 BODY_WARM                    src/17c2g-body-station.js:9
@@ -1366,7 +1367,7 @@ PENN_DAYS                    src/21h-pennant.js:22
 PEOPLE_GAP_MS                src/12a-crew.js:384
 PERCH_AT                     src/27j-console.js:24
 PERCH_EVERY                  src/27j-console.js:25
-PGX                          src/12i-pirate-hull.js:441
+PGX                          src/12i-pirate-hull.js:442
 PHONE_DPR                    src/08-state.js:12
 PI                           src/21pb-pln-wgsl-air.js:54
 PICKUPS                      src/24a-mode-raid.js:24-28
@@ -2596,6 +2597,11 @@ bodyGpu                      src/17c2e-body-kit.js:25
 bodyInSystem                 src/16-flight.js:103-112
 bodyLights                   src/17c2e-body-kit.js:41-49
 bodyMesh                     src/17c2e-body-kit.js:57-64
+bodyPirDress                 src/17c2h-body-pirate.js:12-36
+bodyPirFlame                 src/17c2h-body-pirate.js:56
+bodyPirate                   src/17c2h-body-pirate.js:38-43
+bodyPower                    src/17c2h-body-pirate.js:47-54
+bodyPowerOn                  src/17c2h-body-pirate.js:45
 bodyRun                      src/17c2e-body-kit.js:34-39
 bodyShuttle                  src/17c2e-body-kit.js:106-112
 bodyShuttleMesh              src/17c2e-body-kit.js:90-104
@@ -4137,8 +4143,8 @@ gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:362-383
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesWarm                 src/08b0-gpu-pipe.js:60-72
-gpuPirateBody                src/12i-pirate-hull.js:425-435
-gpuPirateLive                src/12i-pirate-hull.js:442-486
+gpuPirateBody                src/12i-pirate-hull.js:425-436
+gpuPirateLive                src/12i-pirate-hull.js:443-489
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
 gpuPresent                   src/08b-gpu.js:673-686
 gpuQuad                      src/08c-gpu-kit.js:318-322
@@ -8581,6 +8587,8 @@ zoomTo                       src/15-input.js:358
 ## src/17c2f-body-barge.js · 8 KB
 
 ## src/17c2g-body-station.js · 12 KB
+
+## src/17c2h-body-pirate.js · 5 KB
 
 ## src/17c3-station-live.js · 11 KB
 
