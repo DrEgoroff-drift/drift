@@ -395,6 +395,15 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     Leaving the cave starts the surface's glide. Test `91qg-cave` (density vs `caveSolidAt` on 400
     cells, the cut sheet on the grid's rock, rock at the grid's faces, shares, feet on the walk line,
     reach, the switch); stand tools `cave.py` + `eval-cave.js`.
+    *Pass 2:* the lens to §3's variant B (26 × 14.5 m broad, 6.6 × 14.5 m tall, the man .124;
+    ×1.6 nearer while `G.prompt` calls ДЕЙСТВИЕ, .45 s in / .7 s out); the cut page is stone
+    (`CAVE3_CUT` lifted to 14–18 % value, the edge dim to .7, a cool fill from the mouth by
+    `dayK`); bedding lines off the back wall (a soft tone per bed only), ledges thrown out further
+    behind the cut (×1.8 by depth) and the lamp turned to 19° into the depth so they cast. Words:
+    `22d` wraps `hangSurface`/`enterCave`/`hud` — the action line hangs at the mouth, the wall, the
+    find, the plant, the shaft (the walk help only by a shaft or the mouth in frame), else at the
+    man; the entry hint at the shaft in frame; `#prompt` and that `#msg` hide under
+    `body.cavewords`/`cavehush`.
 
 ### Stage F — rooms and people (M850–M859)
 

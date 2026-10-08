@@ -29,7 +29,7 @@ function cave3StyKind(t){
 /* цвет вершины линейный, как у движка (21p) */
 const cave3Hex=plnHex;
 /* лист разреза: сланец почти чёрный, пласты — тёмные, бледные чуть светлее */
-const CAVE3_CUT={lo:plnHex("#06080c"),mid:plnHex("#0a0e15"),hi:plnHex("#111822")};
+const CAVE3_CUT={lo:plnHex("#171b21"),mid:plnHex("#1f252d"),hi:plnHex("#2a313a")};
 
 /* шум в пространстве −1…1 (тот же, что у стенда docs/look/cv-rock.js) */
 function cave3H3(ix,iy,iz,s){
@@ -148,10 +148,11 @@ function cave3Den(F,X,Y,Z){
   if(d>2.2||d<-2.2)return d;
   /* карниз бежит несколько метров и гаснет; швы рубят пласт на блоки; камень шершав */
   const jx=Math.floor((X+L*1.7)/3.4),jz=Math.floor((Z+L*2.3)/4.2),rn=.15+.85*plnSmooth(-.3,.3,cave3N3(X*.11+L*.7,L*.37,Z*.11,115));
-  d-=(F.lay.off[(L+64)&127]*S.off*rn+(cave3H3(jx,L,jz,77)-.5)*S.joint)*am;
+  /* глубже разреза карнизы выносит сильнее: на стене форму дают они и их тень от фонаря */
+  const lz=plnSmooth(.9,3.2,Z);
+  d-=(F.lay.off[(L+64)&127]*S.off*rn*(1+.8*lz)+(cave3H3(jx,L,jz,77)-.5)*S.joint)*am;
   d+=(.10*cave3N3(X*.9,Y*.9,Z*.9,5)+.045*cave3N3(X*2.3,Y*2.3,Z*2.3,9))*S.grit*am;
   /* глубже разреза стена бугрится: натёки и глыбы, по которым скользит фонарь; у разреза — гладко, сетка игры цела */
-  const lz=plnSmooth(.9,3.2,Z);
   if(lz>0)d+=(.62*cave3N3(X*.34,Y*.5,Z*.34,21)+.3*cave3N3(X*.9,Y*1.2,Z*.9,23))*S.lump*lz;
   return d;
 }

@@ -243,6 +243,8 @@ body.plnland #prompt:empty{display:none}
 body.plnland #msg{visibility:hidden}
 /* поверхность под движком (21pzb): строка действия — табличкой у корабля, #msg молчит, пока человек выходит */
 body.plnwords #prompt,body.plnhush #msg{visibility:hidden}
+/* пещера на движке (22d): строка действия и подсказка входа — табличками у вещи, устья, шахты */
+body.cavewords #prompt,body.cavehush #msg{visibility:hidden}
 
 /* ══════════════ пэды ══════════════ */
 .pads{position:fixed;left:0;right:0;bottom:0;padding:0 14px calc(env(safe-area-inset-bottom) + 16px);

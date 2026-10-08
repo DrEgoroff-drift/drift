@@ -12,8 +12,11 @@ could ever save.
   from the game's grid (the rock stands where `caveSolidAt` says rock), cut at the walk plane,
   with strata, ledges and lumps by the world's kind. The helmet lamp is the key light with shadows
   and a cone whose reach follows the kit; daylight falls through the mouth in shafts and goes with
-  the sun. The lens follows the man softly and keeps him at least .08 of the frame (.07 on a
-  phone). `?cave=0` keeps the old painter; the game's walking, digging and finds are unchanged.
+  the sun. The lens follows the man softly at an eighth of the frame's height, and comes 1.6×
+  nearer at a thing to act on; the stone of the cut fills the frame around the gallery, cool near
+  the mouth, never black. Hints and the action line hang as plates where they point — at the mouth,
+  the find, the plant, the shaft — instead of a band over the void. `?cave=0` keeps the old
+  painter; the game's walking, digging and finds are unchanged.
 - **M830 — landing by the planet's descent.** The touchdown no longer cuts: the descent remembers
   its window and ruler (`PLN.hand`), the first surface frame stands in it and eases over 1.2 s to
   the walk lens — the man by the ramp and the near lens by the ship (before, the frame jumped to
