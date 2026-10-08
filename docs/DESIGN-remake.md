@@ -514,6 +514,18 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   arc-stretched blobs, arc-space noise (the `atan2` seam hidden by blending two unwrappings), torn
   by a round world-space puff mask — a first try without it read as the very band it replaced.
   Belt dots carry their density in alpha.
+  *M825a (08.10), the designer's five gaps:* (1) the centre law is now value ≤ .18 inside r400
+  with structure kept, full beyond r700: `GNB_EMI` compresses luminance by a soft knee
+  `.1·(1−e^(−y/.1))` (order kept) under `1−smoothstep(.37,.65,d/min(W,H))`, the star keeps .6;
+  measured p90 .169, spread .11 inside on s0 ×1. (2) The comet landmark rides parallax .09 (the
+  gas plane), its axis from the rest place so it does not turn with the camera. (3–4) Belt layers
+  `SBELT_LAY` at depth .2/0/−.16·D under the top camera — the projection gives the parallax;
+  an axis floor in density, power-law radii `r0·(1−u)^−.55`, a third stretched by scaling the
+  rotation columns (1:1.6–2.5), meshes 8–11 chipped (`sbeltChip`: two planar cuts and a dent),
+  spin period 20–60 s near, ×3 and ×6 slower behind. (5) `GNB_FARC`: lanes are the zero contour
+  of a warped field, distance in px by finite difference (no `fwidth` in that branch), dark side
+  sharp at 1.6 px, light side soft over 5 px, two scales under slow masks; a tone drift toward
+  blue by a slow field and toward warm with a lighter knot where the gas is brightest.
 
 ### Stage D — the way down (M830–M839)
 

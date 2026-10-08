@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 553 · top-level symbols: 8168
+Files: 553 · top-level symbols: 8169
 
 ## SYMBOLS
 
@@ -744,15 +744,15 @@ GNB_FILC                     src/16gay-gpu-nebula-look.js:91
 GNB_FINE                     src/16gb-gpu-nebula.js:385
 GNB_GEN                      src/16gb-gpu-nebula.js:44
 GNB_HTO                      src/16gay-gpu-nebula-look.js:24
-GNB_LM_COL                   src/16gb-gpu-nebula.js:548
+GNB_LM_COL                   src/16gb-gpu-nebula.js:551
 GNB_NOISE                    src/16gb-gpu-nebula.js:18
-GNB_PAL                      src/16gb-gpu-nebula.js:531-546
+GNB_PAL                      src/16gb-gpu-nebula.js:534-549
 GNB_SS                       src/16gay-gpu-nebula-look.js:17
 GNB_STAR_ABS                 src/16gb-gpu-nebula.js:407
 GNB_TILE                     src/16gaz-gpu-noise.js:10
 GNB_TILE_BAKE                src/16gaz-gpu-noise.js:19
 GNB_TONE                     src/16gay-gpu-nebula-look.js:47
-GNB_VOL                      src/16gay-gpu-nebula-look.js:109
+GNB_VOL                      src/16gay-gpu-nebula-look.js:125
 GNB_WC                       src/16gay-gpu-nebula-look.js:70
 GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
@@ -1858,7 +1858,6 @@ ROAD_XOFF_OUT                src/27k-road.js:132
 ROAD_YAW_MAX                 src/27k-road.js:125
 ROAD_ZERO_HOLD_A             src/27k-road.js:127
 ROAD_ZERO_TAU                src/27k-road.js:126
-ROCK_CELL                    src/17gc-sys-belt.js:51
 ROCK_SHAPES                  src/17gc-sys-belt.js:37-48
 ROGUE_CAP                    src/12g-mgr-rogue.js:11
 ROLE_BY_HULL                 src/03f-hull-role.js:33
@@ -1897,12 +1896,13 @@ SAVE_BUDGET                  src/14-save.js:126
 SAVE_EPHEMERAL               src/14a2-save-ephemeral.js:29-57
 SAVE_KEY                     src/14-save.js:6
 SBELT_ARC                    src/17gc-sys-belt.js:9
-SBELT_BAS                    src/17gc-sys-belt.js:52
-SBELT_HAZE_WGSL              src/17gc-sys-belt.js:146
-SBELT_LIST                   src/17gc-sys-belt.js:130
-SBELT_PICK                   src/17gc-sys-belt.js:191
-SBELT_TINT                   src/17gc-sys-belt.js:132
-SBELT_U                      src/17gc-sys-belt.js:174
+SBELT_BAS                    src/17gc-sys-belt.js:55
+SBELT_HAZE_WGSL              src/17gc-sys-belt.js:169
+SBELT_LAY                    src/17gc-sys-belt.js:54
+SBELT_LIST                   src/17gc-sys-belt.js:153
+SBELT_PICK                   src/17gc-sys-belt.js:214
+SBELT_TINT                   src/17gc-sys-belt.js:155
+SBELT_U                      src/17gc-sys-belt.js:197
 SCALES                       src/10-music.js:5-24
 SCALE_KEYS                   src/10-music.js:25
 SCAR_KEYS                    src/05b2-scars.js:14
@@ -2645,7 +2645,7 @@ beastFormWord                src/20e-species.js:215-223
 beastTake                    src/21ac2-base-farm.js:47-53
 beastTraitWord               src/20e-species.js:224-233
 beltBasis                    src/24-mode-belt.js:150-160
-beltDots                     src/17gc-sys-belt.js:136-142
+beltDots                     src/17gc-sys-belt.js:159-165
 beltDust                     src/24ba-belt-gpu.js:237-259
 beltFwd                      src/24-mode-belt.js:145-148
 beltGpuDraw                  src/24ba-belt-gpu.js:91-233
@@ -3611,7 +3611,7 @@ drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
 drawBeastAlien               src/20f-fauna.js:68-238
 drawBelt                     src/24-mode-belt.js:363
-drawBeltRocks                src/17gc-sys-belt.js:53-129
+drawBeltRocks                src/17gc-sys-belt.js:67-152
 drawBillboard                src/17k-billboard.js:182-198
 drawBuildMenu                src/21aa-base-rooms.js:577-593
 drawBuilt                    src/21c-built.js:64-102
@@ -4254,17 +4254,17 @@ glyphNodes                   src/12t-settle.js:92-102
 gnbDeep                      src/16gay-gpu-nebula-look.js:44
 gnbFade                      src/16gc-gpu-nebfade.js:37-42
 gnbFadeDesc                  src/16gc-gpu-nebfade.js:16-20
-gnbGenDesc                   src/16gb-gpu-nebula.js:522
+gnbGenDesc                   src/16gb-gpu-nebula.js:525
 gnbGenView                   src/16gc-gpu-nebfade.js:22-35
-gnbLandmark                  src/16gb-gpu-nebula.js:549-564
-gnbLfr                       src/16gb-gpu-nebula.js:567-580
+gnbLandmark                  src/16gb-gpu-nebula.js:552-567
+gnbLfr                       src/16gb-gpu-nebula.js:570-586
 gnbNoiseDesc                 src/16gaz-gpu-noise.js:24
 gnbNoiseTile                 src/16gaz-gpu-noise.js:26-35
-gnbPalette                   src/16gb-gpu-nebula.js:538-546
-gnbPipe                      src/16gb-gpu-nebula.js:521
-gnbStar                      src/16gb-gpu-nebula.js:582-587
+gnbPalette                   src/16gb-gpu-nebula.js:541-549
+gnbPipe                      src/16gb-gpu-nebula.js:524
+gnbStar                      src/16gb-gpu-nebula.js:588-593
 gnbStars                     src/16gb-gpu-nebula.js:420-427
-gnbTarget                    src/16gb-gpu-nebula.js:513-520
+gnbTarget                    src/16gb-gpu-nebula.js:516-523
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
 gorBody                      src/17gab-gpu-orb.js:453-477
@@ -4346,8 +4346,8 @@ gpuMipDrop                   src/08c-gpu-kit.js:112
 gpuMipSmp                    src/08c-gpu-kit.js:113
 gpuMipTex                    src/08c-gpu-kit.js:99-111
 gpuMoon                      src/17ga-gpu-planets.js:441-447
-gpuNebulaComp                src/16gb-gpu-nebula.js:647-657
-gpuNebulaGen                 src/16gb-gpu-nebula.js:590-644
+gpuNebulaComp                src/16gb-gpu-nebula.js:653-663
+gpuNebulaGen                 src/16gb-gpu-nebula.js:596-650
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
@@ -4467,7 +4467,7 @@ gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:369
 gsyBeltDots                  src/17g-gpu-system.js:359-367
-gsyBeltHaze                  src/17gc-sys-belt.js:175-190
+gsyBeltHaze                  src/17gc-sys-belt.js:198-213
 gsyEll                       src/17g-gpu-system.js:328-337
 gsyMean                      src/17g-gpu-system.js:338-341
 gsyOrb                       src/17g-gpu-system.js:320-326
@@ -7220,6 +7220,7 @@ saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
 say                          src/08-state.js:382
+sbeltChip                    src/17gc-sys-belt.js:57-66
 sbeltClumps                  src/17gc-sys-belt.js:11-20
 sbeltDens                    src/17gc-sys-belt.js:22-35
 sbss                         src/17gc-sys-belt.js:10
@@ -8908,7 +8909,7 @@ zoomTo                       src/15-input.js:358
 ## src/16ga-gpu-trail.js · 20 KB
   · шлейф и факел корабля на видеокарте (G4, docs/DESIGN-gpu.md):1
 
-## src/16gay-gpu-nebula-look.js · 12 KB
+## src/16gay-gpu-nebula-look.js · 13 KB
   · облик туманности «смело» (26.09, docs/DESIGN-gpu.md):1
 
 ## src/16gaz-gpu-noise.js · 3 KB
@@ -8916,7 +8917,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/16gaza-gpu-fargal.js · 3 KB
 
-## src/16gb-gpu-nebula.js · 55 KB
+## src/16gb-gpu-nebula.js · 56 KB
   · туманность системы объёмом (L1, docs/DESIGN-gpu.md):1
 
 ## src/16gc-gpu-nebfade.js · 3 KB
@@ -8988,7 +8989,7 @@ zoomTo                       src/15-input.js:358
 ## src/17gb-gpu-planet-strip.js · 7 KB
   · развёртка планеты — шейдером на видеокарте (GPU-3, DESIGN-gpu §G, 25.09):1
 
-## src/17gc-sys-belt.js · 11 KB
+## src/17gc-sys-belt.js · 13 KB
   · пояс в кадре системы (M824):1
 
 ## src/17h-sys-gesture.js · 14 KB
