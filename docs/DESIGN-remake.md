@@ -426,6 +426,17 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   in the «ВЫ» tag (`HANG.msgTagF`; inside the sheet frame, pushes the tag stack, falls back to a
   plate when it does not fit). Ground: `HANG.msgJoin` appends the message to the hint plate.
   Vision `90b2`: `hurg` per item, «две тревоги», law «ряд», plants for each.
+  *M823 done (08.10, remake-a2):* everything rides one weight `far=smoothstep(.8,1.6,sd)` in
+  `GNB_GEN` (`16gb`), so the frame near the star is the author's to the pixel (diff 0 against
+  the frame before). Far: `fillE`/`densE` thin a fill system; per plane a silhouette `mL` from the
+  mass field with its own noise, threshold softer and wider; `d` drops two octaves only at the rim
+  (`1-smoothstep(.5,.72,d0)`); core `cr` (mass × density) whitens and brightens, filaments `fil`
+  (ridged noise); hue: `lav` toward the shadow hue, then `hto` turns the gas's own YIQ angle away
+  from green by a region field `hz` (warm → rose, cool → blue, ≤ .72 rad, chroma held). The
+  cavity glow and ion rim of `dustAt` (the «peach shards») and `dk` fade far; the comet's ion tail
+  waves, widens and breaks. `GNB_FILC` (`16gay`) lets the strands into bright gas far away and
+  darkens between them. `GPU.kill.neb` skips `gpuNebulaGen` for a frame without the nebula: the
+  diff is how the pass was judged (the nebula a correction to the field, not a fill).
 
 ### Stage D — the way down (M830–M839)
 

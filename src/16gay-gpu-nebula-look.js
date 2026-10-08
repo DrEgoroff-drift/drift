@@ -53,6 +53,19 @@ const GNB_TONE=`
     col=hto(col,yan(az),iz,(1.-.2*iz)*(1.-.15*4.*iz*(1.-iz)),.785)*(1.+.1*iz+.25*4.*iz*(1.-iz));
     col=lav(col,clamp(u.j.w,2.3,2.6),clamp(son*(1.-smoothstep(.05,.65,sd))*.85,0.,1.)*1.15*(1.-.7*fill)*(1.-.5*max(cld(A),cld(B)))*(1.-cld(mix(A,B,.5))));
     col=hto(col,yan(aw),clamp(son*smoothstep(.35,1.1,sd)*.45*${GNB_S},0.,1.)*cw,1.+.15*${GNB_S},.785);`;
+/* вдали от звезды (M823, far — вес): ядро там, где масса и плотность гуще всего — газ светит сам,
+   светлее и к тёплому белому своего тона; волокна — гребни, закрученные тем же течением, кривые, не
+   штрихи. Тон: дальний план к тени палитры (lav), затем области hz поворачивают свой тон в сторону от
+   зелени (тёплое — к розовому, холодное — к синему); повёрнутое тише по хроме — без неона */
+const GNB_FAR=`
+    let cr=smoothstep(.55,.78,Mv)*smoothstep(.6,.86,d)*far;
+    let fil=pow(1.-abs(2.*fbt(q*2.3+w2*1.7+vec2f(6.,2.),4)-1.),4.)*smoothstep(.4,.7,d)*(.4+.3*fl)*far;
+    let hz=smoothstep(.42,.58,fbt(qm*2.3+wm*.9+vec2f(31.,7.)+fl*.13,3));
+    col=lav(col,u.j.w,far*clamp(.42-.2*fl,0.,1.)*(1.-.6*cr));
+    let a0=yan(col);
+    let wm0=cos(a0)>0.;let rt=select(-1.,1.,wm0)*mix(select(0.,-.35,wm0),.72,hz);
+    col=hto(col,a0+rt,far*(.55+.4*hz)*(1.-.5*cr)*(1.-.3*fil),1.-.2*far*abs(rt),1.);
+    col=mix(col,vec3f(1.,.9,.82)*max(col.r,max(col.g,col.b)),cr*.35);`;
 /* пересчёт: широкое зарево звезды — той же зоны, у звезды — к холодному своему */
 const GNB_WC=`
   let izw=clamp(son*(1.-smoothstep(.08,.7*sqrt(${GNB_S}),sd))*.85,0.,1.);
@@ -73,9 +86,11 @@ fn filE(p:vec2f,uv:vec2f)->f32{
   for(var k=-7;k<=7;k++){let w=1.-abs(f32(k))/8.;a=a+w*gnt(q+dq*f32(k)+vec2f(gnt(q*.07),gnt(q*.07+4.))*3.);}
   a=a/8.;let v=clamp((a-.5)*2.6+.5,0.,1.);
   return 1.+.45*${GNB_S}*pow(v,3.)*s;}`;
-/* сведение: пряди только в ярком газе, не у самой звезды и не у белого */
+/* сведение: пряди только в ярком газе, не у самой звезды и не у белого. Вдали от звезды (M823) белого нет —
+   пряди идут и по яркому, а между ними газ темнее: масса читается волокнами, а не ровным пятном */
 const GNB_FILC=`
-  let bw=smoothstep(.06,.3,l0);if(bw>0.){c=c*mix(1.,filE(p,uv),bw*.9*(1.-smoothstep(.45,.85,max(c.r,max(c.g,c.b))))*smoothstep(.1,.35,length(p-fu.v[1].xy)/H-fu.v[1].z));}`;
+  let bw=smoothstep(.06,.3,l0);if(bw>0.){let sdc=length(p-fu.v[1].xy)/H-fu.v[1].z;let fz=smoothstep(.8,1.6,sdc);
+    c=c*mix(1.,filE(p,uv)*(1.-.25*fz),bw*.9*(1.-smoothstep(.45,.85,max(c.r,max(c.g,c.b)))*(1.-.75*fz))*smoothstep(.1,.35,sdc));}`;
 /* сведение: объём — отношение плотностей к звезде и здесь, а не разность: одинаково для тусклого
    и яркого газа; подсветка гаснет у звезды и у белого */
 const GNB_VOL=`

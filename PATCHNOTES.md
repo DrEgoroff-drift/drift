@@ -154,6 +154,15 @@ could ever save.
   until the alarm has been quiet for 45 frames. On the map the message hangs at the far third of
   the course line; with no course (and always on the phone) it is a second line under «ВЫ».
   On the ground a message joins the hint plate as one more line — one thing, one plate.
+- **M823 The nebula far from the star.** Out where the star no longer lights it the gas is no
+  longer one even patch: a core where the mass is densest, filaments running through the bright
+  gas with darker gas between them, and three planes that each keep their own silhouette, so the
+  far one is dimmer and softer than the near one. The rim of the gas is soft — the fine octaves
+  fade only at the edge, the inside keeps its detail. The colour walks round the wheel inside
+  one cloud (coral, rose and plum in an amber system, violet into magenta, blue beside teal)
+  instead of settling into green. The flat peach shards that the cavity walls cast far from the
+  star are gone, and the comet's ion tail waves and breaks instead of drawing a ruled line. A
+  fill system thins out far away. Near the star nothing changed.
 
 - **M822 The map in three weights.** You, the selected system and the course to it are the
   brightest things on the sheet; the jump circle, the lanes inside it and your own route are
