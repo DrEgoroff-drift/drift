@@ -237,11 +237,12 @@ function brockReset(b){
     B.idx=GPU.dev.createBuffer({size:a.byteLength,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST});
     GPU.dev.queue.writeBuffer(B.idx,0,a);}
 }
-/* камера и свет кадра: базис, фокус, светило (от камеры), цвета — один равномерный буфер */
-function brockCam(b,bas,F,scol,neb0,neb1){
+/* камера и свет кадра: базис, фокус, светило (от камеры), цвета — один равномерный буфер;
+   lz — светило над плоскостью (к камере), fogD — дальность тумана (пояс системы смотрит сверху издалека) */
+function brockCam(b,bas,F,scol,neb0,neb1,lz,fogD){
   const u=BROCK.U,r=bas.right,up=bas.up,f=bas.fwd;
   u[0]=r[0];u[1]=r[1];u[2]=r[2];u[3]=F;u[4]=up[0];u[5]=up[1];u[6]=up[2];u[7]=W;
-  u[8]=f[0];u[9]=f[1];u[10]=f[2];u[11]=H;u[12]=-b.x;u[13]=-b.y;u[14]=-b.z;u[15]=2800;
+  u[8]=f[0];u[9]=f[1];u[10]=f[2];u[11]=H;u[12]=-b.x;u[13]=-b.y;u[14]=-b.z-(lz||0);u[15]=fogD||2800;
   u[16]=scol[0]/255;u[17]=scol[1]/255;u[18]=scol[2]/255;u[19]=0;
   u[20]=neb0[0]/255;u[21]=neb0[1]/255;u[22]=neb0[2]/255;u[23]=G.t||0;
   u[24]=neb1[0]/255;u[25]=neb1[1]/255;u[26]=neb1[2]/255;u[27]=DPR;

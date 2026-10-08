@@ -165,6 +165,13 @@ could ever save.
   until the alarm has been quiet for 45 frames. On the map the message hangs at the far third of
   the course line; with no course (and always on the phone) it is a second line under «ВЫ».
   On the ground a message joins the hint plate as one more line — one thing, one plate.
+- **M824 The belt.** The asteroid belt in the system view is no longer a straight lighter band
+  with rocks sprayed evenly across it. It gathers into clumps along the ring, each its own length,
+  width and density, with thin stretches between; the rocks are real bodies lit by the star from
+  just above the plane, in greys, browns and dusty olives, now and then a big one in a clump. They
+  thicken round your ship, leaving a little room right under it, and come and go by fading, never
+  popping. Between and behind them the dust hangs as torn puffs of haze, not a ribbon.
+
 - **M823 The nebula far from the star.** Out where the star no longer lights it the gas is no
   longer one even patch: a core where the mass is densest, filaments running through the bright
   gas with darker gas between them, and three planes that each keep their own silhouette, so the
@@ -174,6 +181,12 @@ could ever save.
   instead of settling into green. The flat peach shards that the cavity walls cast far from the
   star are gone, and the comet's ion tail waves and breaks instead of drawing a ruled line. A
   fill system thins out far away. Near the star nothing changed.
+  Then four gaps closed: inside the mass the core is a step lighter and whiter, thin dark dust
+  lanes twist through it in front of the gas and the strands read inside; the rim frays into
+  smoky wisps that fade into black without a step; the comet's ion tail bends in an arc, splits
+  into three strands that spread and die toward the end and is brightest at the head; and round
+  the ship the gas opens a soft, ragged pocket, so the middle of the frame is never filled —
+  in every system, a fill system included.
 
 - **M822 The map in three weights.** You, the selected system and the course to it are the
   brightest things on the sheet; the jump circle, the lanes inside it and your own route are

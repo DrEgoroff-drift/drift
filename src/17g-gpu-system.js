@@ -349,21 +349,19 @@ function gsyOrbits(pass,sys,ox,oy,Z){
   }
   if(sys.station){const st=sys.station;
     n=gsyOrb(n,ox,oy,st.orbit*Z,st.orbit*Z,1,0,1,0,Math.atan2(st.y,st.x),.9,.04,.15,242,178,92,.5,0);}
-  if(sys.belt){const hw=Math.max(.5,30*Z);
-    n=gsyOrb(n,ox,oy,sys.belt.orbit*Z,sys.belt.orbit*Z,1,0,1,0,0,0,.09,0,200,200,210,hw,hw*.8);}
   if(!n)return;
   const U=GPUBufferUsage,ob=gpuBuf("gsy.o",GSY.OA.byteLength,U.STORAGE|U.COPY_DST);
   GPU.dev.queue.writeBuffer(ob,0,GSY.OA,0,n*20);
   const P=gpuPipe("gsy.orb",GSY_ORB_WGSL,"over");
   pass.setPipeline(P);pass.setBindGroup(0,gpuBind("gsy.orb",P,[gsyUni(),ob]));pass.draw(960,n);
 }
-/* точки пояса — круглые той же площади, что квадрат 1.4 px у 2D */
+/* точки пояса — круглые той же площади, что квадрат 1.4 px у 2D; гуще и ярче в сгустках (M824) */
 function gsyBeltDots(pass,B,ox,oy,Z){
   const t=beltDots(B),L=GSY.belt;let n=0;
   for(let i=0;i<190;i++){
-    const a=t[i*2],rr=(B.orbit+t[i*2+1])*Z,x=ox+Math.cos(a)*rr,y=oy+Math.sin(a)*rr;
+    const a=t[i*3],rr=(B.orbit+t[i*3+1])*Z,x=ox+Math.cos(a)*rr,y=oy+Math.sin(a)*rr;
     if(x<-2||x>W+2||y<-2||y>H+2)continue;
-    const it=L[n]||(L[n]=[1,0,0,.79,0,0,0,170,180,190,.5]);it[1]=x+.7;it[2]=y+.7;n++;
+    const it=L[n]||(L[n]=[1,0,0,.79,0,0,0,170,180,190,.5]);it[1]=x+.7;it[2]=y+.7;it[10]=.08+.5*Math.min(1,t[i*3+2]);n++;
   }
   L.length=n;if(n)gpuShapes(pass,L);
 }
@@ -419,6 +417,6 @@ function gpuSysUnder(sys,ox,oy,R,Z){
   /* три куска под своими метками пробы (28z gpuSeg): без пробы это один проход */
   gpuSeg("orbits");let pass=gpuScene();if(!pass)return;
   gsyOrbits(pass,sys,ox,oy,Z);
-  if(sys.belt){gpuSeg("belt");pass=gpuScene();gsyBeltDots(pass,sys.belt,ox,oy,Z);}
+  if(sys.belt){gpuSeg("belt");pass=gpuScene();gsyBeltHaze(pass,sys,ox,oy,Z);gsyBeltDots(pass,sys.belt,ox,oy,Z);}
   gpuSeg("star");pass=gpuScene();gsyStar(pass,sys,ox,oy,R);
 }
