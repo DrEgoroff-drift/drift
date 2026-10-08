@@ -50,7 +50,9 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
   const Q=C.lk3||(C.lk3={m:new Map(),gen:-1});
   if(Q.gen!==PLN_GPU.gen){for(const k of Q.m.values())if(k)plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;}
   F.water=[];F.lake=null;
-  let best=1e9,tris=0,near=1e9;
+  let best=1e9,tris=0,near=1e9,md=1e9;
+  const mx=C.x/CAVE_PPM;
+  CAVE3.lakeM=null;
   caveZones(C).forEach((z,i)=>{
     if(!z.Z.water)return;
     if(z.x1/CAVE_PPM<x0-2||z.x0/CAVE_PPM>x1+2)return;
@@ -61,6 +63,9 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
     const d=cx<k.x0?k.x0-cx:cx>k.x1?cx-k.x1:0;
     if(d<near)near=d;
     if(d<best){best=d;F.lake={y:k.y};}
+    /* урез от человека (M631, нырок объектива): точка глади под ним — ближайшая по x */
+    const e=mx<k.x0?k.x0-mx:mx>k.x1?mx-k.x1:0;
+    if(e<md){md=e;CAVE3.lakeM={d:e,x:clamp(mx,k.x0+.5,k.x1-.5),y:k.y};}
   });
   CAVE3.stat.lake=F.lake?+F.lake.y.toFixed(2):null;
   CAVE3.lakeD=near<1e9?near:null;

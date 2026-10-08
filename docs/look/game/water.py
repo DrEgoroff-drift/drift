@@ -18,6 +18,11 @@ the frames in numbers:
            saturates on a bright sea, the path is white on blue
   nopath   the same measure on the key frame without the aim stays low (< .15): the gate
            sees the path, not any bright row
+  stairs   horizontal stair edges in the mirror (M631 tail): runs longer than 4 frame px
+           (12 at x3) where value jumps .08 or more between rows, per 10 000 px (< 20). The
+           ripple used to cut the reflection into slices where its cells shrank under two
+           pixels in depth (42 on the lake); the real horizontal edges that remain — the
+           bottoms of crowns, the far shore — read about 12
 
 shoot=0 measures frames already shot with the prefix. Prints one line per gate and
 ALL GREEN or FAILED N. Frames are 1600 x 900; the boxes are where the water stands on
@@ -37,6 +42,8 @@ AIM = "PLN.sunAim=[-0.02,0.06,1];\n"
 NM = "PLN.noMirror=true;\n"
 LAKE = (900, 555, 1440, 665)
 SEA = (600, 375, 1100, 450)
+RIPPLE = (1000, 560, 1400, 660)
+GLINT = (620, 375, 960, 560)
 JOBS = [
     ("lake_day", ["terran", "1", "lake", ".125"], ""),
     ("lake_night", ["terran", "1", "lake", ".75"], ""),
@@ -54,6 +61,7 @@ GATES = [
     ("mirror", "lake_day", LAKE, .20), ("mirror", "lake_night", LAKE, .20),
     ("mirror", "ocean_day", SEA, .20), ("mirror", "ocean_night", SEA, .20),
     ("path", "ocean_glint", SEA, .35), ("nopath", "ocean_day", SEA, .15),
+    ("stairs", "lake_day", RIPPLE, 20), ("stairs", "ocean_glint", GLINT, 20),
 ]
 
 opt = dict(a.split("=", 1) for a in sys.argv[1:] if "=" in a)
@@ -100,6 +108,26 @@ def mirror(name, box):
     return sum(1 for i in range(0, len(d), 3) if max(d[i:i + 3]) > 6) / n
 
 
+def stairs(name, box):
+    """Horizontal stair edges in the mirror: runs of more than 4 frame px (12 at x3) where the value
+    jumps by .08 or more from one row to the next; returns the count per 10 000 px."""
+    im = frame(name, box).convert("RGB")
+    w, h = im.size
+    b = im.tobytes()
+    v = [[max(b[3 * (y * w + x):3 * (y * w + x) + 3]) / 255 for x in range(w)] for y in range(h)]
+    n = 0
+    for y in range(h - 1):
+        run = 0
+        for x in range(w):
+            if abs(v[y + 1][x] - v[y][x]) >= .08:
+                run += 1
+            else:
+                n += run > 4
+                run = 0
+        n += run > 4
+    return n * 1e4 / (w * h)
+
+
 def path(name, box):
     im = frame(name, box).convert("L")
     w, h = im.size
@@ -127,13 +155,14 @@ for kind, name, box, lim in GATES:
     if only and name not in only:
         continue
     try:
-        v = {"spread": spread, "mirror": mirror, "path": path, "nopath": path}[kind](name, box)
+        v = {"spread": spread, "mirror": mirror, "path": path, "nopath": path, "stairs": stairs}[kind](name, box)
     except OSError as e:
         print("FAIL %-6s %-12s no frame (%s)" % (kind, name, e))
         fail += 1
         continue
-    ok = v < lim if kind == "nopath" else v >= lim
+    low = kind in ("nopath", "stairs")
+    ok = v < lim if low else v >= lim
     fail += not ok
-    print("%s %-6s %-12s %.3f %s %.2f" % ("ok  " if ok else "FAIL", kind, name, v, "<" if kind == "nopath" else ">=", lim))
+    print("%s %-6s %-12s %.3f %s %.2f" % ("ok  " if ok else "FAIL", kind, name, v, "<" if low else ">=", lim))
 print("next port", port)
 print("ALL GREEN" if not fail else "FAILED %d" % fail)
