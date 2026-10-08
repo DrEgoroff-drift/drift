@@ -338,7 +338,7 @@ CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
 CP_KIT                       src/27f3-person3d.js:110
-CP_MESH                      src/27f3-person3d.js:270
+CP_MESH                      src/27f3-person3d.js:273
 CP_TEMPER                    src/27f6-face-live.js:25
 CP_TORSO                     src/27f3-person3d.js:81
 CP_WARP                      src/27f3a-face3d.js:60
@@ -3068,7 +3068,7 @@ countyPoiK                   src/11l-county.js:36
 cpBand                       src/27f3-person3d.js:95-103
 cpBasis                      src/27f3-person3d.js:73-77
 cpBeard                      src/27f3a-face3d.js:373-388
-cpBody                       src/27f3-person3d.js:112-267
+cpBody                       src/27f3-person3d.js:112-270
 cpCloth                      src/27f3-person3d.js:45-50
 cpClump                      src/27f3a-face3d.js:364-371
 cpEmoMix                     src/27f6-face-live.js:56-58
@@ -3083,7 +3083,7 @@ cpHairline                   src/27f3a-face3d.js:279-285
 cpHead                       src/27f3a-face3d.js:182-277
 cpHeadAI                     src/27f3a-face3d.js:390-400
 cpHeadFn                     src/27f3a-face3d.js:18-52
-cpMesh                       src/27f3-person3d.js:271-278
+cpMesh                       src/27f3-person3d.js:274-281
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:16-22
 cpPose                       src/27f3-person3d.js:52-71
@@ -9487,7 +9487,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qb-rig-card.js · 4 KB
   · один астронавт везде: риг в карточке (M801):1
 
-## tests/91qc-hall.js · 36 KB
+## tests/91qc-hall.js · 37 KB
   · зал за экранами (M810):1
 
 ## tests/91zzza-e2e.js · 7 KB

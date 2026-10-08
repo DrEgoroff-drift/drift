@@ -49,6 +49,11 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     const L=hallLayout("trade");L.room=hallRoomMesh(L);
     ok(hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5).draws.some(d=>d[0]&&d[0].rig),"пилот зала — риг планеты, не человек 27f3");
     ok(PLN_MAN_BONES.length<=R3_PART,"костей рига "+PLN_MAN_BONES.length+" ≤ "+R3_PART+" частей");
+    /* M814: планка света людей — у каждого человека в кадре паспорт: опора под ним, пятно контактной тени, контур */
+    {const S=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5),O=S.ot;
+      ok(S.draws.every(([m,ii])=>!(m.rig||L.people.some(P=>P.ii===ii))||O[(ii*R3_PART+R3_PART-1)*4+2]>0&&O[(ii*R3_PART+R3_PART-1)*4+3]>0),"у всех людей — контактная тень и контур");
+      const k=L.people[0].ii;ok(Math.hypot(O[(k*R3_PART+R3_PART-1)*4]-L.people[0].x,O[(k*R3_PART+R3_PART-1)*4+1]-L.people[0].z)<1e-6,"пятно хозяина — под ним");}
+    eq(L.people[0].m.role,"clerk","хозяин стойки — в комплекте клерка");ok(CP_KIT.clerk&&L.people[0].m.acc===L.acc,"галстук и бирка клерка — в цвет зала");
     HALL.place=was;hallRigDrop();}
   {const was=HALL.night;HALL.night=1;eq(hallNight(),1,"?hallnight=1 — ночь");HALL.night=0;eq(hallNight(),0,"?hallnight=0 — день");HALL.night=was;}
   /* день ≠ ночь: днём рассеянный свет дока вдвое сильнее ночного, окно ярче; ночью ключ — лампы людей */

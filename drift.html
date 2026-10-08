@@ -115813,7 +115813,7 @@ function cpBand(K,TA,pts,k,w,t,M,n){
    (m.acc), резинки на рукавах, карандаш в кармане жилета */
 /* краска — холоднее и глуше, чем кажется: под тёплыми лампами коричневое становится деревом, серо-синее — сукном */
 const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,coll:1},fact:{jac:[86,40,46],mix:.1,coll:0},
-  sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[158,156,146],mix:.04,coll:1,vest:[40,44,52]}};
+  sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[142,140,132],mix:.04,coll:1,vest:[40,44,52]}};
 function cpBody(m,lod,poseK){
   const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=cpPose(poseK);
   const wB=.86+(g.build-.7)*.36,hs=g.hs,pel=[0,J.pel,0],ln=J.lean;
@@ -115845,7 +115845,7 @@ function cpBody(m,lod,poseK){
     const ao=1-.25*(Math.abs(sn)>.85&&v>.55&&v<.86?1:0)-.15*r3Step(.25,.0,v);
     return [TA(th,v),r3Sc(col,ao)];},Mj);
   if(!ai){
-    const sc=rk==="fact"?[226,220,206]:cl.shirt,Msh=K.mt(sc,.2,4,P.cloth),ed=[[],[]];
+    const sc=rk==="fact"?[226,220,206]:rk==="clerk"?mixc(KT.jac,[255,255,255],.25):cl.shirt,Msh=K.mt(sc,.2,4,P.cloth),ed=[[],[]];
     K.surf(8,lod?6:3,(u,w)=>{const v=.79+w*.205,h=vh(v)*1.08;return [TA((u*2-1)*h,v,.968)];},Msh);
     /* кант выреза — по тем же рядам, что и куртка: иначе хорда ряда и кант расходятся ступенькой */
     for(let j=Math.ceil(.8*NV);j<=NV;j++){const v=j/NV,h=vh(v);ed[0].push(TA(h,v,1.004));ed[1].push(TA(-h,v,1.004));}
@@ -115860,8 +115860,8 @@ function cpBody(m,lod,poseK){
       K.surf(lod>1?28:14,3,(u,v)=>[cp(gap+u*(TAU-2*gap),v)],Mc);
       if(lod){for(let i=0;i<=20;i++)eg.push(cp(gap+i/20*(TAU-2*gap),1));K.tube(eg,.0042,Mc,4);}
     }
-    if(lod&&rk!=="fact"){const zp=[];for(let i=0;i<=8;i++){const v=.2+i/8*.6;zp.push([0,yf(v),zf(v)+.003]);}K.tube(zp,.0028,Mm,4);
-      if(rk!=="cmd")for(const s of [-1,1])K.box([s*.075*wB,.33*TL,zf(.66)+.004],[.032,.026,.006],K.mt(mixc(jac,[0,0,0],.18),.2,5,P.cloth),.004);}
+    if(lod&&rk!=="fact"&&rk!=="clerk"){const zp=[];for(let i=0;i<=8;i++){const v=.2+i/8*.6;zp.push([0,yf(v),zf(v)+.003]);}K.tube(zp,.0028,Mm,4);
+      if(rk!=="cmd"&&rk!=="clerk")for(const s of [-1,1])K.box([s*.075*wB,.33*TL,zf(.66)+.004],[.032,.026,.006],K.mt(mixc(jac,[0,0,0],.18),.2,5,P.cloth),.004);}
     if(rk==="cmd"){   /* жилет поверх куртки: проймы открыты, подсумки на поясе, рация на груди, лямки через плечи */
       const Mv=K.mt(mixc([44,48,42],rc,.1),.25,6,P.cloth),Mpo=K.mt(mixc([36,40,34],rc,.08),.2,5,P.cloth);
       K.surf(NU,Math.max(6,Math.round(NV*.6)),(u,w)=>[TA(u*TAU,.22+w*.6,1.07)],Mv,
@@ -115896,14 +115896,17 @@ function cpBody(m,lod,poseK){
       if(lod)for(let i=0;i<3;i++){const p=TA(-.14,.32+i*.11,1.05);K.ell([p[0],p[1],p[2]+.006],[.008,.008,.004],Mm,4,8);}
     }else if(rk==="clerk"){   /* жилет поверх рубашки: проймы открыты, вырез мысом, пуговицы; галстук в вырезе */
       const Mv=K.mt(mixc(KT.vest,rc,.12),.22,6,P.cloth),Mbt=K.mt(mixc(KT.vest,[200,190,160],.5),.6,10,P.brushed);
-      K.surf(NU,Math.max(6,Math.round(NV*.6)),(u,w)=>[TA(u*TAU,.15+w*.67,1.075)],Mv,
-        {wrap:1,keep:(u,w)=>{const v=.15+w*.67,a=Math.abs(Math.sin(u*TAU/2));return !(v>.64&&Math.abs(Math.sin(u*TAU))>.8)&&!(a<.06+(v-.5)*.5&&v>.5);}});
-      const ty=[];for(let i=0;i<=6;i++){const v=.52+i/6*.44;ty.push([0,yf(v),zf(v)+.006+.004*(1-i/6)]);}
-      K.tube(ty,[.008,.009,.01,.011,.012,.01,.007],K.mt(mixc(rc,[0,0,0],.35),.3,6,P.cloth),4);
-      if(lod){for(let i=0;i<4;i++){const p=TA(.06,.24+i*.085,1.085);K.ell([p[0],p[1],p[2]+.004],[.007,.007,.003],Mbt,4,6);}
-        const pk=TA(.42,.52,1.08);K.box([pk[0],pk[1],pk[2]+.004],[.03,.004,.004],Mv,.002);
+      /* до ключиц: проймы открыты, вырез мысом от середины груди — галстук и рубашка в нём */
+      /* вырез — геометрией, как у куртки: ряд начинается у кромки мыса, иначе кромка идёт ступеньками клеток */
+      const vv=w=>.15+w*.8,vn=v=>v>.5?(v-.5)*1.25:0,vt=(u,v)=>vn(v)+u*(TAU-2*vn(v));
+      K.surf(NU*2,Math.max(10,NV),(u,w)=>[TA(vt(u,vv(w)),vv(w),1.1)],Mv,
+        {keep:(u,w)=>!(vv(w)>.62&&Math.abs(Math.sin(vt(u,vv(w))))>.8)});
+      const ty=[];for(let i=0;i<=6;i++){const v=.5+i/6*.46;ty.push([0,yf(v),zf(v)+.008+.006*(1-i/6)]);}
+      K.tube(ty,[.006,.014,.016,.015,.013,.011,.008],K.mt(mixc(rc,[0,0,0],.55),.3,6,P.cloth),4);
+      if(lod){for(let i=0;i<4;i++){const p=TA(.04,.24+i*.085,1.12);K.ell([p[0],p[1],p[2]+.004],[.007,.007,.003],Mbt,4,6);}
+        const pk=TA(.42,.52,1.11);K.box([pk[0],pk[1],pk[2]+.004],[.03,.004,.004],Mv,.002);
         K.tube([[pk[0]-.008,pk[1]-.01,pk[2]+.006],[pk[0]-.008,pk[1]+.07,pk[2]+.004]],.0035,K.mt([196,150,40],.4,8,0),5);
-        const id=TA(-.42,.5,1.08);K.box([id[0],id[1],id[2]+.005],[.022,.014,.003],K.mt([226,224,216],.4,8,0),.003);
+        const id=TA(-.42,.5,1.11);K.box([id[0],id[1],id[2]+.005],[.022,.014,.003],K.mt([226,224,216],.4,8,0),.003);
         K.box([id[0],id[1]+.007,id[2]+.0085],[.018,.004,.001],K.mt(rc,.3,8,0,2.2,true),.001);}
     }else if(rk==="sci"){   /* китель: карман с ручками, светящийся пропуск */
       const pk=TA(.42,.6,1.01);K.box([pk[0],pk[1],pk[2]+.006],[.036,.032,.006],K.mt(mixc(jac,[0,0,0],.08),.3,5,P.cloth),.004);
