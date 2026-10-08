@@ -98,7 +98,15 @@ fn skyBase(rd: vec3f) -> vec3f {
   let zen = mix(g.skyZen.rgb, g.skyZenS.rgb, sunSide(rd));
   var c = mix(horizonCol(rd), zen, t);
   let cs = max(dot(rd, normalize(g.sunDir.xyz)), 0.0);
-  c += g.sunGlow.rgb * ((pow(cs, 6.0) * 0.18 + pow(cs, 60.0) * 1.2) * g.sunGlow.w);
+  /* зарево широкое и мягкое; у самого светила — ореол, который гаснет по экспоненте угла (узкий
+     объектив не должен видеть края у зарева), и сам диск в полградуса, почти белый: в кадр он входит
+     только в час блика (21pw) */
+  let ang = acos(clamp(dot(rd, normalize(g.sunDir.xyz)), -1.0, 1.0));
+  let halo = exp(-ang / 0.045) * 0.55 + exp(-ang / 0.16) * 0.22;
+  let disc = 1.0 - smoothstep(0.0075, 0.0105, ang);
+  let core = 1.0 - smoothstep(0.0, 0.0085, ang);
+  c += g.sunGlow.rgb * ((pow(cs, 6.0) * 0.18 + halo) * g.sunGlow.w);
+  c += mix(g.sunGlow.rgb, vec3f(1.0, 0.92, 0.78), 0.85) * ((disc * 8.0 + core * 10.0) * min(g.sunGlow.w, 1.0));
   /* затмение: небо гаснет (это делает час), а по всему кругу горизонта встаёт закатное кольцо —
      свет из-за края тени */
   let ek = g.sunTrue.w;

@@ -315,8 +315,11 @@ function plnSurface(S,o){
   if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
   plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
-  /* стенд: светило в объектив — мерить дорожку на воде (по закону круга в кадр оно не входит) */
+  /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
+     перед объективом со своей стороны — дорожка по воде становится героем кадра; выше часа закон
+     круга прежний. Стенд: PLN.sunAim ставит светило куда скажут */
   if(PLN.sunAim)Hr.dir=plnNorm(PLN.sunAim);
+  else if(L.wet){const k=plnGlintHour(look.sunTrue[1]);if(k>0)Hr.dir=plnGlintDir(Hr.dir,look.sunTrue,k);}
   /* вода, отсвет земли и ближний воздух — от листа мира (M613) */
   const wl=L.wl,wa=wl.water[0],wb=wl.water[1];
   look.thru=Q.thru;look.waterA=[wa[0],wa[1],wa[2],wl.murk||0];look.waterB=[wb[0],wb[1],wb[2],ride];

@@ -42,8 +42,10 @@ fn waterSurf(p: vec2f, t: f32, wind: vec3f, dist: f32, foot: f32, swell: f32, dr
      крупнее, иначе они мельче пикселя */
   let cq = vec2f(q.x * 0.02 + 1.0, q.y * 0.06 + t * 0.01);
   o.calm = smoothstep(0.35, 0.65, mix(wFbm(cq, 9u), wFbm(cq * vec2f(0.12, 0.04) + 5.0, 11u), smoothstep(60.0, 600.0, dist)));
-  let f1 = 1.0 - smoothstep(0.25, 0.7, foot);
-  let f2 = 1.0 - smoothstep(0.1, 0.28, foot);
+  /* слой гаснет, пока на его ячейку по глубине (1/1.5 и 1/3.9 м) приходится больше двух пикселей:
+     дальше он рвал бы отражение ломтями-ступенями, а не рябил */
+  let f1 = 1.0 - smoothstep(0.14, 0.32, foot);
+  let f2 = 1.0 - smoothstep(0.05, 0.125, foot);
   let k = mix(0.35, 1.0, o.calm) * rip;
   var sl = vec2f((n1 * f1 + n2 * 0.5 * f2) * 0.10, (n1 * 0.5 * f1 + n2 * f2) * 0.16) * k;
   var rough = 0.025 + 0.05 * k * ((1.0 - f1) + 0.5 * (1.0 - f2));
@@ -85,6 +87,18 @@ fn waterSurf(p: vec2f, t: f32, wind: vec3f, dist: f32, foot: f32, swell: f32, dr
   o.thr = n2;
   return o;
 }
+/* Выборка зеркала. Зеркало — в полкадра и без сглаживания: сдвиг рябью растягивает его лесенку в
+   горизонтальные ступени. Пять отсчётов поперёк ряби (вверх-вниз на полтора пикселя кадра, вбок на
+   три четверти) их сводят, а рисунок отражения остаётся. px — размер пикселя кадра в долях */
+fn mirrorTap(uv: vec2f, px: vec2f) -> vec3f {
+  let lo = vec2f(0.002); let hi = vec2f(0.998);
+  var c = textureSampleLevel(reflTex, linSamp, clamp(uv, lo, hi), 0.0).rgb * 0.4;
+  c += textureSampleLevel(reflTex, linSamp, clamp(uv + vec2f(0.0, 1.5 * px.y), lo, hi), 0.0).rgb * 0.2;
+  c += textureSampleLevel(reflTex, linSamp, clamp(uv - vec2f(0.0, 1.5 * px.y), lo, hi), 0.0).rgb * 0.2;
+  c += textureSampleLevel(reflTex, linSamp, clamp(uv + vec2f(0.75 * px.x, 0.0), lo, hi), 0.0).rgb * 0.1;
+  c += textureSampleLevel(reflTex, linSamp, clamp(uv - vec2f(0.75 * px.x, 0.0), lo, hi), 0.0).rgb * 0.1;
+  return c;
+}
 /* Вид глади. A — мель, B — глубина (свои цвета сцены), lit — свет, что входит в тело, own — свечение
    тела (муть), refl — зеркало, ld/lc — светило или фонарь: направление и цвет блика, edge — мокрая
    кромка (уже со светом), aD — с какой глубины гладь непрозрачна */
@@ -112,7 +126,10 @@ fn waterLook(S: WSurf, V: vec3f, depth: f32, murk: f32, A: vec3f, B: vec3f, lit:
   var da = atan2(R.x, R.z) - atan2(ld.x, ld.z);
   da -= 6.2832 * round(da / 6.2832);
   let lobe = exp(-(de * de) / (se * se) - (da * da) / (sa * sa));
-  c += lc * (lobe * min(0.05 / (se * sa), 60.0) * fr * (1.0 - 0.7 * murk));
+  /* сила сжата мягко (до 9): иначе дорожка насыщается плато и читается лужей; горячая середина белеет */
+  let gl = lobe * min(0.05 / (se * sa), 60.0) * fr * (1.0 - 0.7 * murk);
+  let gs = 9.0 * gl / (9.0 + gl);
+  c += mix(lc, vec3f(dot(lc, vec3f(0.3333))) * vec3f(1.05, 1.0, 0.92), smoothstep(0.6, 3.0, gs) * 0.6) * gs;
   /* мягкая полоса у берега и тонкая светлая нитка по самому урезу, рваная рябью */
   let shore = (1.0 - smoothstep(0.02, 0.16, depth)) * 0.30 + (1.0 - smoothstep(0.0, 0.06, depth + S.thr * 0.03)) * 0.35;
   c = mix(c, edge, clamp(shore, 0.0, 1.0));
@@ -137,8 +154,7 @@ const PLN_WGSL_WATER=PLN_WGSL_WATER_CORE+/* wgsl */`
   /* грань, повёрнутая к объективу, отражает небо выше горизонта, а оно темнее — ночью вчетверо:
      пятна ветра ночью читаются тёмными по светлой глади у горизонта. Видимые грани зеркало уже
      отразило верно; темнит только рябь мельче пикселя — её шероховатость */
-  let refl = textureSampleLevel(reflTex, linSamp, clamp(uv, vec2f(0.002), vec2f(0.998)), 0.0).rgb
-    * (1.0 - mix(0.25, 0.7, night) * smoothstep(0.03, 0.2, S.rough));
+  let refl = mirrorTap(uv, g.screen.zw) * (1.0 - mix(0.25, 0.7, night) * smoothstep(0.03, 0.2, S.rough));
   let cl = cloudLight(in.wpos);
   let nv = clamp(dot(S.n, V), 0.0, 1.0);
   let lit = g.sunCol.rgb * (0.55 * cl) + g.ambSky.rgb * 0.91;
@@ -196,14 +212,15 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
   let dist = length(g.camPos.xyz - in.wpos);
   let S = waterSurf(in.wpos.xz, t, vec3f(1.0, 0.3, 0.0), dist, foot, 0.0, 1.0, 0.22);
   let uv = in.pos.xy * g.screen.zw + vec2f(S.n.x * 0.08, S.n.z * 0.30);
-  let refl = textureSampleLevel(reflTex, linSamp, clamp(uv, vec2f(0.002), vec2f(0.998)), 0.0).rgb;
+  let refl = mirrorTap(uv, g.screen.zw);
   /* под гладью темно: бирюза — где светит фонарь, у берега больше; огни событий ложатся на рябь
      и кольца капель отсветом — гладь в нижней галерее, куда фонарь не достаёт, читается ими */
   let own = g.amb.rgb * 0.18 + points(in.wpos + vec3f(0.0, 0.05, 0.0), S.n, 1.0) * 0.1;
   let edge = vec3f(0.6, 0.8, 0.82) * (g.amb.rgb * 0.9 + lit * 0.12);
-  var o = waterLook(S, V, depth, 0.0, teal * 0.75, teal * 0.15, lit, own, refl * 1.07,
+  var o = waterLook(S, V, depth, 0.0, teal * 0.75, teal * 0.15, lit, own, refl * 1.3,
     ll.xyz, g.lampCol.rgb * (ll.w * lsh * 0.5), edge, 0.18);
-  return vec4f(haze(o.rgb, in.wpos, 1.0), o.a * mix(0.8, 1.0, smoothstep(0.0, 1.0, depth)));
+  /* мель прозрачна, но не до пола: зеркало держит гладь и над песком в конусе (нырок M631) */
+  return vec4f(haze(o.rgb, in.wpos, 1.0), o.a * mix(0.9, 1.0, smoothstep(0.0, 1.0, depth)));
 }
 `;
 
@@ -285,6 +302,14 @@ function plnWaterSea(L,J){
     if(keep[a]|keep[b]|keep[c]|keep[d])plnQuad(m,a,b,c,d);
   }
   return m;
+}
+/* Час блика (M634, 08.10). Светило за час проходит по кругу 15°, и высота sy от 0 до .16: окно —
+   этот час над горизонтом, края мягкие. Направление тянется к оси объектива со стороны светила
+   (x .05 — дорожка у середины, мимо человека) и остаётся низким; k — доля поворота 0…1 */
+const plnGlintHour=sy=>plnSmooth(-.02,.02,sy)*(1-plnSmooth(.13,.19,sy));
+function plnGlintDir(dir,sun,k){
+  const y=Math.max(.04,Math.min(sun[1],.16)),x=(sun[0]<0?-1:1)*.05;
+  return plnNorm([lerp(dir[0],x,k),lerp(dir[1],y,k),lerp(dir[2],Math.sqrt(1-x*x-y*y),k)]);
 }
 /* у какого мира море до горизонта и сколько в нём зыби */
 const plnWaterSwell=L=>L.sea?1:(L.lake||L.wet?.15:0);

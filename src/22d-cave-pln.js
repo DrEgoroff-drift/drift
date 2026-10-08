@@ -40,6 +40,10 @@ function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky){
   const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,4,600),plnM4move(-ex,-ey,-ez));
   return {k,Hf,f,D,w,l,r,b,t,vp,eye:[ex,ey,ez]};
 }
+/* нырок к озеру (M631): вес — человек ближе 3 м к урезу (lakeM от прошлого кадра), под водой глубже
+   метра — нет; пол кадра — уровень воды без метра, но не ниже 3.5 м под человеком (он в кадре) */
+function cave3DiveW(Lm,floorY){return !Lm||floorY<Lm.y-1?0:1-plnSmooth(3,3.6,Lm.d);}
+function cave3DiveFloor(floorY,wy,k){return k?lerp(floorY,Math.max(wy-1,floorY-3.5),k):floorY;}
 /* доля человека в высоте кадра (для набора и ворот) */
 function cave3ManShare(asp){return 1.8/cave3Lens(asp,0,0,0).Hf;}
 /* досягаемость фонаря по снаряжению: I класс — 18 м */
@@ -103,6 +107,11 @@ function cave3Frame(){
   /* у озера (прошлый кадр знает, далеко ли оно) объектив опускает взгляд на воду */
   const lw=M.lakeD==null?0:1-plnSmooth(2,9,M.lakeD);
   M.lk=first||M.lk==null||M.rush?lw:M.lk+(lw-M.lk)*(1-Math.exp(-dt/Ln.lkS));
+  /* нырок (M631): объектив на середину между человеком и гладью под ним, ближе в 1.6 раза (как у вещи)
+     и вниз (cave3DiveW/cave3DiveFloor); стенд держит его (divePin) */
+  const Lm=M.lakeM,dw0=cave3DiveW(Lm,-C.y/CAVE_PPM),dw=dw0&&M.divePin!=null?M.divePin:dw0;
+  M.dv=first||M.dv==null||M.rush?dw:M.dv+(dw-M.dv)*(1-Math.exp(-dt/Ln.lkS));
+  if(Lm){M.dvX=Lm.x;M.dvY=Lm.y;}
   /* дальний: просили карту — кадр отходит на сто метров; стенд держит его (cave.py far=) */
   const fw=M.farPin!=null?M.farPin:(M.farOn&&cave3FarOk()?1:0);
   M.far=first||M.far==null||M.rush?fw:M.far+(fw-M.far)*(1-Math.exp(-dt/(fw>M.far?Ln.fIn:Ln.fOut)));
@@ -117,8 +126,10 @@ function cave3Frame(){
      иначе отходит к ближайшему месту, где они есть, — человек остаётся в кадре (проход 5) */
   const asp=W/H,fK=plnSmooth(0,1,M.far),fs=fK>.001?cave3FarShift(C,Fd,M.cx,CAVE3_LENS.fH*asp/2):0;
   M.fs=first||M.fs==null||M.rush?fs:M.fs+(fs-M.fs)*(1-Math.exp(-dt/.6));
-  const cx=M.cx+M.fs*fK+M.ns*plnSmooth(0,1,M.near)*(1-fK);
-  const floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY),K=H/(Ls.Hf*CAVE_PPM);
+  const dK=M.dvX==null?0:plnSmooth(0,1,M.dv)*(1-fK),nK=plnSmooth(0,1,M.near);
+  const cx=M.cx+M.fs*fK+M.ns*nK*(1-fK)*(1-dK)+(dK?(M.dvX-C.x/CAVE_PPM)/2*dK:0);
+  const floorY=-C.cy/CAVE_PPM,fy=cave3DiveFloor(floorY,M.dvY,dK);
+  const Ls=cave3Lens(asp,cx,fy,zoom,Math.max(nK,dK),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
   M.lens=Ls;
