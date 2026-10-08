@@ -479,6 +479,15 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   noise-ragged radius and a wide fade the light is pulled toward a floor `.3·.05/(cy+.05)`,
   near the star only to .75. Measured cover>24 in r400 round the ship: 0–14 % on 1920, ≤ 2 %
   on 390; mass value spread .27–.39.
+  *Judged 08.10:* the pocket reads as a black cavity round the ship with the nebula pushed
+  into a ring (s0 at ×1 and ×0.5). The centre law is rewritten for M825: not a cover cap but a
+  value cap — inside r 400 px the nebula keeps its lanes and strands at value ≤ .18, full
+  strength from r 700, a smooth ramp between; the ship stands on quiet gas, never on black.
+  Also for M825: the comet's dust tail is screen-locked (a beige smear top right of s0) — it
+  goes to world coordinates at the comet's head; the belt at ×1 is two dotted strands — three
+  depth layers, density toward the axis, a power law of sizes, clump haze ≥ .10; rocks are
+  round potatoes — a third elongated 1:1.6–2.5 with chips, slow tumbling near; the core's
+  lanes are wide and soft — 2–6 px twisting dark lanes, a hue drift, a knot ≥ .15 brighter.
   *M824 done (08.10, remake-a2):* `17gc-sys-belt` (the belt left `17c`). Clumps are derived from
   the belt seed per arc cell of 560 (55 % on, σ 70–180 along the arc, radial width 34–64, offset
   ±40, density .45–1), cached on the belt; `sbeltDens` adds a thin ring floor. Rocks: a world grid
