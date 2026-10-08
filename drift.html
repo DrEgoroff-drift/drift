@@ -110511,6 +110511,7 @@ function stTabBoard(){
        читалось как имя капитана, и туда вписывали позывной */
     boardLanes(0);
     $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
+    if(typeof HALL!=="undefined"&&HALL.open)hallBoardDress();   /* зал: строки — листы на пробке (27f4h, M814) */
 }
 function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
@@ -116830,7 +116831,8 @@ const HALL_STRIP=.36;      /* телефон: доля высоты под по�
    Риг планеты (21pha) живёт в своём движке, в зале — человек 27f3 в лётной куртке, один на всех */
 const HALL_PILOT_M={seed:0x9117D,role:"cmd",loy:70,xp:0,traits:[],jac:[238,115,38]};
 /* поза — по месту: у стойки на локте, у доски руки в боки и голова к листам, у окна ладонь на раме, в баре — на табурете */
-const HALL_PILOT_AT={board:[-2.85,-1.25,Math.PI-.3,"hips"],trade:[-4.45,-.15,-Math.PI/2,"elbow"],
+/* у доски пилота нет (M814): доска на всю зону героя — это 4 м до стены, а человек там был бы вдвое больше мерила .18–.23 */
+const HALL_PILOT_AT={trade:[-4.45,-.15,-Math.PI/2,"elbow"],
   ship:[2.62,-2.27,Math.PI+.22,"frame"],site:[2.62,-2.27,Math.PI+.22,"frame"],know:[1.75,-1.25,Math.PI+.5,"hips"],hold:[4.0,-1.35,Math.PI*.78,"hips"],
   folk:[HALL_XB+1.72,.36,Math.PI-.5,"stool1"]};
 /* рабочая лампа над верстаком у окна (M812): ключ места КОРАБЛЬ и СТРОЙКА ночью — тарелка поменьше, чем над
@@ -116861,7 +116863,7 @@ const HALL_TYPES={
    от глаза — .18–.22 высоты кадра; глаз — у передней стены, место — общим планом, не портретом.
    Ключи — разделы ST_GROUPS и «site» */
 const HALL_CAMS={
-  board:{eye:[-1.9,1.6,5.4],   tgt:[-3.2,1.45,HALL_B],fy:1.1},
+  board:{eye:[-1.15,1.62,.35], tgt:[-3.0,1.6,HALL_B], fy:.93},   /* M814: доска на всю ширину зоны героя, на три четверти справа; пилот у правого края */
   trade:{eye:[-1.0,1.65,5.6],  tgt:[-5.3,1.3,.3],     fy:1.1},
   ship: {eye:[.6,1.55,5.8],    tgt:[1.5,1.85,HALL_B], fy:1.0},
   know: {eye:[-.2,1.6,4.6],    tgt:[1.2,1.0,-2.2],    fy:1.2},
@@ -116987,6 +116989,7 @@ function hallScene(L,cam,t){
   M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29)),16);
   const draws=[[L.room,0,1]];let ii=1;
   const gm=hallGoodsUp(L);if(gm)draws.push([gm,0,1]);   /* товар ящиками на стойке (M811) — тот же экземпляр, что зал */
+  draws.push([hallBoardUp(L),0,1]);   /* листы доски — объявления плиты (M814) */
   if(ii<R3_MAXI){hallInstrPose(M,ii,t);draws.push([hallInstrUp(),ii,1]);ii++;}   /* пять приборов на верстаке (M813): стрелки — части 1–5 */
   for(const P of L.people){if(ii>=R3_MAXI)break;
     const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw);
@@ -117020,6 +117023,7 @@ function hallScene(L,cam,t){
   lights.push({p:[HALL_KEYX,ky,.62],range:6.5,c:r3Sc(key,(dk?9:7.5)*(1+.25*nk)),spot:1,d:[0,-1,0],cosO:Math.cos(.62),cosI:Math.cos(.3),shadow:1,vol:dk?.3:.15});
   bulbs.push([HALL_KEYX,ky,.62,dk?1.1:.9]);
   {const gl=hallGoodsLight();if(gl)lights.push(gl);}   /* строка таблицы под мышью — её ящик горит */
+  {const bl=hallBoardLight();if(bl)lights.push(bl);}   /* и строка доски — её лист (M814) */
   /* рабочая лампа у окна: днём вторая после окна, ночью — ключ места у верстака; третьей в списке — предел ламп её не срежет */
   /* ночью (M814) полный луч лампы — на весь ряд приборов: внутренний конус шире, ось — в передний край верстака */
   {const wy0=hallWorkY(T);lights.push({p:[HALL_WORK[0],wy0,HALL_WORK[1]],range:5.2,c:r3Sc(key,(dk?2.6:3.2)*(.4+1.6*nk)),spot:1,
@@ -117151,7 +117155,7 @@ function hallClose(){
   if(typeof document==="undefined"||!$st)return;
   $st.classList.remove("hall","up");
   if(HALL.tags){HALL.tags.textContent="";HALL.tags.__key="";}
-  if(HALL.cn){r3Free(HALL.cn);}r3Drop(HALL.room);HALL.room=null;HALL.rkey="";hallGoodsDrop();
+  if(HALL.cn){r3Free(HALL.cn);}r3Drop(HALL.room);HALL.room=null;HALL.rkey="";hallGoodsDrop();hallInstrDrop();hallBoardDrop();
   if(HALL.orbTex&&HALL.orbTex.dev===GPU.dev)GPU.trash.push(HALL.orbTex.tex);HALL.orbTex=null;HALL.orb=null;
 }
 /* вкладка сменилась: камера — к месту раздела; полоса кантины не нужна — бар рисует зал */
@@ -117262,13 +117266,6 @@ function hallShade(K,x,y,z,tone,hc){
   K.ell([0,-.01,0],[.045,.055,.045],K.mt(tone,.2,4,0,9,true),6,10);
   K.pop();
 }
-/* бумага на стене: лист, строки — тёмные полосы (буквы не читаются, читается «объявление») */
-function hallPaper(K,x,y,z,w,h,R,col){
-  K.box([x,y,z],[w,h,.002],K.mt(col||[226,220,200],.08,3,0),.001);
-  const n=Math.max(2,Math.round(h/.035));for(let i=1;i<n;i++){const ww=w*(.45+R()*.4);
-    K.box([x-w+.02+ww,y+h-.04-i*(2*h-.06)/n,z+.003],[ww-.02,.004,.001],K.mt([70,66,60],.05,2,0),0);}
-  K.ell([x,y+h-.02,z+.006],[.008,.008,.006],K.mt([190,40,32],.5,8,0),3,6);
-}
 /* мешок (эллипсоид, осевший), ящик с рейками */
 function hallSack(K,x,y,z,s,R){const M=K.mt([138,130,112],.1,3,R3P.cloth),a=R()*TAU;
   /* мешок: тело шире у дна, перехват, вихор горловины — не шар */
@@ -117311,13 +117308,12 @@ function hallBones(K,L,R){
   if(L.bar){K.quad([HALL_XB-4.55,.004,B],[X1,.004,B],[X1,.004,F],[HALL_XB-4.55,.004,F],K.mt(mixc(wall,[118,92,70],.5),.4,8,P.wood),[0,1,0]);
     if(hc>3.4)K.box([HALL_XB-4.55,3.3,(B+F)/2],[.1,.1,(F-B)/2],Be,.02);}
   hallWindow(K,HALL_WIN[0],HALL_WIN[1],wy[0],wy[1],wy[1]-wy[0]>1.6?4:3,Fr);hallGlint(K,T);
-  /* доска: пробковое поле в раме, листы, лента «срочно» акцентом */
-  const bx0=-4.7,bx1=-2.1,by0=.95,by1=2.45,bz=B+.02;
+  /* доска: пробковое поле в раме; листы на ней — объявления плиты (27f4h, M814), своей сеткой */
+  {const D=HALL_BOARD_BOX,bx0=D.x0,bx1=D.x1,by0=D.y0,by1=D.y1,bz=B+.02;
   K.box([(bx0+bx1)/2,(by0+by1)/2,bz+.02],[(bx1-bx0)/2+.06,(by1-by0)/2+.06,.02],K.mt([58,46,34],.4,8,P.wood),.012);
   K.box([(bx0+bx1)/2,(by0+by1)/2,bz+.042],[(bx1-bx0)/2,(by1-by0)/2,.004],K.mt([128,98,66],.08,3,P.cloth),.002);
-  for(let i=0;i<9;i++){const w=.13+R()*.08,h=.16+R()*.08,x=bx0+.25+(i%5)*.52+(R()-.5)*.1,y=by1-.32-((i/5)|0)*.62-(R()-.5)*.1;
-    hallPaper(K,x,y,bz+.05,w,h,R,i===2?mixc(L.acc,[240,230,200],.5):null);}
-  K.box([bx0+.5,by1-.08,bz+.052],[.32,.025,.002],K.mt(L.acc,.3,6,0,.25),.001);
+  K.box([(bx0+bx1)/2,by1+.16,bz+.03],[.34,.055,.012],K.mt([40,38,36],.4,8,0),.006);   /* табличка «ДОСКА» над рамой — тёмная плашка */
+  K.box([(bx0+bx1)/2,by1+.16,bz+.043],[.28,.012,.001],K.mt(L.acc,.3,6,0,.35),0);}
   /* стойка вдоль левой стены: корпус, столешница, полка за спиной хозяина */
   const cx=-5.2,cz0=-2.74,cz1=2.5,cm=(cz0+cz1)/2,ch=(cz1-cz0)/2,Ms=HALL_COUNTER[L.st]||HALL_COUNTER.trade;
   const Mb=K.mt(Ms[0],.4,8,Ms[2]),Mt=K.mt(Ms[1],.55,10,Ms[3]);
@@ -117798,6 +117794,7 @@ const HALL_LENS={g:0,t:0,last:0,m:1.31,hold:750};
 function hallLensWant(tm){
   if(HALL_GOODS.hot&&HALL.place==="trade"&&hallGoodsKeys().indexOf(HALL_GOODS.hot)>=0)HALL_LENS.last=tm;
   if(HALL_INSTR.hot&&HALL_INSTR_PLACES.includes(HALL.place)&&INSTR_KEYS.indexOf(HALL_INSTR.hot)>=0)HALL_LENS.last=tm;   /* и прибор на верстаке (M813) */
+  if(HALL.place==="board"&&HALL_BOARD.hot>=0&&hallBoardSheet(HALL_BOARD.hot))HALL_LENS.last=tm;   /* и лист на доске (M814) */
   return HALL_LENS.last>0&&tm-HALL_LENS.last<HALL_LENS.hold?1:0;
 }
 /* шаг скольжения: туда .45 с, обратно .7 с — те же постоянные, что у plnGlide */
@@ -117810,8 +117807,10 @@ function hallLensMoving(){return HALL_LENS.g>0&&HALL_LENS.g<1;}
 /* к чему тянется объектив: у стойки — хозяин и ящик, у верстака — пилот и шкала прибора (M813). Ключ помнит
    последнюю вещь, чтобы отпущенная строка возвращала объектив от неё, а не скачком */
 function hallLensAim(L){
-  const at=HALL_INSTR_PLACES.includes(HALL.place),g=at?"":HALL_GOODS.hot,n=at?HALL_INSTR.hot:"";
-  const k=g?"g:"+g:n?"i:"+n:HALL_LENS.k;if(!k)return null;HALL_LENS.k=k;
+  const at=HALL_INSTR_PLACES.includes(HALL.place),bd=HALL.place==="board",g=at||bd?"":HALL_GOODS.hot,n=at?HALL_INSTR.hot:"",b=bd?HALL_BOARD.hot:-1;
+  const k=g?"g:"+g:n?"i:"+n:b>=0?"b:"+b:HALL_LENS.k;if(!k)return null;HALL_LENS.k=k;
+  if(k[0]==="b"){const s=hallBoardSheet(+k.slice(2)),B=HALL_BOARD_BOX;   /* у доски — лист и середина доски: кадр не задирается к верхнему листу */
+    return s?[[(B.x0+B.x1)/2,(B.y0+B.y1)/2,s.c[2]],s.c]:null;}
   if(k[0]==="g"){const i=hallGoodsKeys().indexOf(k.slice(2)),k0=L.people[0];if(i<0||i>=12||!k0)return null;
     const p=hallGoodsAt(i);return [[k0.x,1.45,k0.z],[p[0],p[1]+.08,p[2]]];}
   const i=INSTR_KEYS.indexOf(k.slice(2)),P=hallPilotAt(HALL.place)||HALL_PILOT_AT.ship;if(i<0)return null;
@@ -118138,6 +118137,151 @@ function hallInstrDress(){
     for(const r of offs){card(r,hallInstrLook(r.dataset.offer,r.__u),INSTR_BY_ID[r.dataset.offer].ru,r.dataset.cmp||"");box.appendChild(r);}}
   if(HALL_INSTR.hot)for(const r of $body.querySelectorAll(".row.hdial"))r.classList.toggle("hot",(r.dataset.instr||r.dataset.offer)===HALL_INSTR.hot);
 }
+
+/* ── M814 ДОСКА: объявления плиты — листы на пробке ──
+   Строка доски на плите ↔ лист на стене: сколько объявлений, столько листов (до HALL_BOARD_MAX). Род листа — по
+   строке: дело с кнопкой — бланк с отрывными язычками и булавкой, «Вам» (кнопка золотом) — тот же бланк с лентой
+   акцента, стенгазета — широкий лист с шапкой и колонками, сводка дня — полоса телетайпа, слух — клочок на гвозде,
+   прочее — записка. Порядок плиты (К ВАМ → ЗДЕСЬ → ДАЛЕКО) — порядок чтения доски: лист ложится в самую короткую
+   из трёх колонок, первые — слева вверху. Колонка длиннее доски — листы налезают друг на друга, как на настоящей.
+   Наведение на строку (или касание) — лист приподнят, выпрямлен и под своим светом, объектив скользит к нему
+   (правило M624, тот же HALL_LENS, что у ящиков и приборов). Пока плита доски не открывалась на этой станции,
+   на пробке — обезличенные листы (как видна чужая доска издали) */
+const HALL_BOARD={mesh:null,key:"",hot:-1,rows:[],st:"",lay:null,lk:""};
+const HALL_BOARD_BOX={x0:-4.45,x1:-2.25,y0:.92,y1:2.38};   /* пробка: x, высота, м; плоскость — HALL_B */
+const HALL_BOARD_MAX=21;
+const HALL_BOARD_COLS=3;
+/* люди говорят, а не вешают бумагу: очередь у стойки и голоса зала — не листы */
+const HALL_BOARD_SKIP=/^(ОЧЕРЕДЬ|У СТОЙКИ|В ЗАЛЕ|ПРИЁМНИК)/;
+/* род листа: ширина, высота (м), бумага */
+const HALL_SHEET={
+  form:  {w:.24,h:.32,c:[234,228,210]},
+  gold:  {w:.25,h:.33,c:[244,236,214]},
+  paper: {w:.46,h:.34,c:[226,218,196]},
+  strip: {w:.34,h:.085,c:[232,222,170]},
+  scrap: {w:.15,h:.12,c:[206,198,180]},
+  slip:  {w:.2, h:.15,c:[220,222,214]}
+};
+function hallBoardZ(){return HALL_B+.068;}   /* над лицом пробки (27f4b: HALL_B+.066) — тень листа ложится между */
+function hallBoardHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+
+/* плита доски → строки-листы; каждая строка с листом получает data-sheet (по нему наведение находит лист) */
+function hallBoardDress(){
+  if(typeof $body==="undefined"||!$body)return;
+  const rows=[];let lane=0,sec="",first=0;
+  for(const x of $body.children){
+    if(x.classList.contains("sec")){const t=((x.querySelector("span")||x).textContent||"").trim();
+      if(x.classList.contains("lane")){lane=/^К ВАМ/.test(t)?0:/^ДАЛЕКО/.test(t)?2:1;continue;}
+      if(!x.classList.contains("note")){sec=t;first=1;}continue;}
+    if(!x.classList.contains("row"))continue;
+    if(HALL_BOARD_SKIP.test(sec)){first=0;continue;}
+    const txt=(x.textContent||"").replace(/\s+/g," ").trim(),btn=x.querySelector("button"),gold=!!x.querySelector("button.gold");
+    const kind=/^(НА СТЕНЕ|СТЕНГАЗ)/.test(sec)&&first?"paper":/^СЕГОДНЯ/.test(sec)?"strip":gold?"gold":btn?"form":lane===2?"scrap":"slip";
+    first=0;
+    if(rows.length>=HALL_BOARD_MAX){delete x.dataset.sheet;continue;}
+    x.dataset.sheet=rows.length;rows.push({lane,kind,h:hallBoardHash(sec+"|"+txt)});
+  }
+  HALL_BOARD.rows=rows;HALL_BOARD.st=(G&&G.sys&&G.sys.key)||"";
+  hallBoardWire();
+}
+function hallBoardWire(){
+  if($body.__hallBoard)return;$body.__hallBoard=1;
+  const set=e=>{const c=e.target&&e.target.closest?e.target:null,r=c&&c.closest(".row[data-sheet]");HALL_BOARD.hot=r?+r.dataset.sheet:-1;};
+  $body.addEventListener("pointerover",set,{passive:true});$body.addEventListener("pointerdown",set,{passive:true});
+  $body.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch")HALL_BOARD.hot=-1;},{passive:true});
+}
+/* строки этой станции; чужие (с прошлой станции) не годятся — тогда обезличенные листы */
+function hallBoardRows(){
+  const k=(G&&G.sys&&G.sys.key)||"";
+  if(HALL_BOARD.st===k&&HALL_BOARD.rows.length)return HALL_BOARD.rows;
+  const R=rng(hallBoardHash(k)^0xB0A2D),n=7+((R()*5)|0),out=[];
+  for(let i=0;i<n;i++)out.push({lane:1,kind:["form","slip","slip","strip","scrap"][(R()*5)|0],h:(R()*4294967296)>>>0,anon:1});
+  return out;
+}
+
+/* раскладка: лист — в самую короткую колонку; колонка выше пробки — шаг сжат, листы налезают сверху вниз */
+function hallBoardLayout(rows){
+  const B=HALL_BOARD_BOX,m=.07,cw=(B.x1-B.x0-2*m)/HALL_BOARD_COLS,top=B.y1-m,av=B.y1-B.y0-2*m,gap=.035;
+  const cols=[...Array(HALL_BOARD_COLS)].map(()=>({h:0,s:[]}));
+  rows.forEach((r,i)=>{const S=HALL_SHEET[r.kind]||HALL_SHEET.slip;let ci=0;
+    for(let c=1;c<cols.length;c++)if(cols[c].h<cols[ci].h-.02)ci=c;
+    cols[ci].s.push({i,r,S});cols[ci].h+=S.h+gap;});
+  const out=[];
+  cols.forEach((C,ci)=>{const need=C.h-gap,k=need>av&&C.s.length>1?(av-C.s[C.s.length-1].S.h)/(need-C.s[C.s.length-1].S.h):1;
+    let y=top;
+    for(const s of C.s){const R=rng(s.r.h^0x5EE7),j=(R()-.5),w=Math.min(s.S.w,cw-.02);
+      const x=B.x0+m+cw*(ci+.5)+j*(cw-w)*.7,cy=y-s.S.h/2;
+      out[s.i]={i:s.i,kind:s.r.kind,anon:!!s.r.anon,w,h:s.S.h,col:s.S.c,c:[x,cy,hallBoardZ()],rot:(R()-.5)*(s.r.kind==="scrap"?.2:.08),hs:s.r.h};
+      y-=(s.S.h+gap)*k;}});
+  return out;
+}
+function hallBoardLay(){const rows=hallBoardRows(),lk=rows.map(r=>r.kind[0]+r.h.toString(36)).join(",");
+  if(HALL_BOARD.lk!==lk){HALL_BOARD.lay=hallBoardLayout(rows);HALL_BOARD.lk=lk;}return HALL_BOARD.lay;}
+function hallBoardSheet(i){const L=hallBoardLay();return L&&L[i]||null;}
+
+/* лист: тело, строки текста, род — свои знаки; z — от лица пробки, в своих осях */
+function hallBoardSheetMesh(K,s,acc,hot){
+  const P=R3P,w=s.w/2,h=s.h/2,R=rng((s.hs^0x77)>>>0),ink=K.mt([58,54,50],.05,2,0),
+    paper=K.mt(hot?mixc(s.col,[255,252,240],.35):s.col,.08,3,0,hot?.06:0);
+  /* лист приколот сверху и отходит от пробки низом (наклон по x): свет доски сверху ложится на него иначе,
+     чем на пробку, а под ним — тень, сдвинутая вниз тем больше, чем дальше отошёл низ */
+  const tilt=hot?-.16:-(.03+.06*R()),lift=hot?.02:0;
+  K.push([s.c[0],s.c[1],s.c[2]-.001],0,0,hot?0:s.rot);
+  K.box([.004,-.006-(hot?.02:0),0],[w+.003,h+.002,.0004],K.mt([62,46,32],.05,2,0,0,true),0);   /* тень на пробке */
+  K.pop();
+  K.push([s.c[0],s.c[1]+h,s.c[2]+lift],0,tilt,hot?0:s.rot);K.push([0,-h,0]);
+  K.box([0,0,.001],[w,h,.0009],paper,.0006);
+  const line=(x0,x1,y,t,M)=>K.box([(x0+x1)/2,y,.0024],[(x1-x0)/2,t||.0032,.0004],M||ink,0);
+  const lines=(x0,x1,y0,y1,n)=>{for(let k=0;k<n;k++){const y=y0-(y0-y1)*k/Math.max(1,n-1);line(x0,x0+(x1-x0)*(k===n-1?.45+R()*.3:.75+R()*.25),y);}};
+  const pin=(x,y,c)=>{K.ell([x,y,.008],[.009,.009,.007],K.mt(c,.6,10,0),3,7);};
+  if(s.kind==="form"||s.kind==="gold"){
+    if(s.kind==="gold")K.box([0,h-.025,.0018],[w,.025,.0005],K.mt(acc,.3,6,0,.12),0);   /* лента «Вам» — акцент плиты */
+    line(-w+.025,w*.4,h-.07,.006);lines(-w+.025,w-.025,h-.105,-h+.095,5);
+    const n=6,tw=(2*w-.02)/n;for(let k=0;k<n;k++){const x=-w+.01+tw*(k+.5);   /* отрывные язычки: «возьмите» */
+      K.box([x,-h+.035,.0022],[tw/2-.0035,.03,.0005],K.mt(mixc(s.col,[255,255,255],.25),.08,3,0),0);
+      K.box([x,-h+.035,.003],[.0014,.02,.0003],ink,0);}
+    pin(0,h-.012,s.kind==="gold"?acc:[190,40,32]);
+  }else if(s.kind==="paper"){
+    K.box([0,h-.035,.0018],[w-.012,.026,.0005],K.mt([150,40,32],.15,4,0),0);   /* шапка стенгазеты */
+    K.box([-w*.42,h*.05,.0018],[w*.4,h*.32,.0005],K.mt([150,146,136],.1,3,0),0);   /* снимок */
+    lines(-w+.02,-.01,-h*.4,-h+.03,3);lines(.02,w-.02,h-.09,-h+.03,8);
+    pin(-w+.02,h-.012,[60,90,170]);pin(w-.02,h-.012,[60,90,170]);
+  }else if(s.kind==="strip"){
+    lines(-w+.015,w-.015,h-.022,-h+.022,2);pin(-w+.014,0,[40,40,44]);
+  }else if(s.kind==="scrap"){
+    lines(-w+.015,w-.02,h-.03,-h+.025,3);
+    K.ell([0,h-.014,.006],[.004,.004,.006],K.mt([150,150,156],.8,12,P.brushed),3,6);   /* гвоздь */
+  }else{
+    line(-w+.02,w*.3,h-.03,.005);lines(-w+.02,w-.02,h-.058,-h+.025,3);pin(0,h-.012,[214,170,40]);
+  }
+  K.pop();K.pop();
+}
+/* следы снятых объявлений: уголки бумаги под булавками и выцветшие пятна — пробка прожита, но это не листы
+   (в цвет пробки, без строк, не считаются) */
+function hallBoardTrace(K,seed){
+  const B=HALL_BOARD_BOX,R=rng(seed^0x7ACE),z=hallBoardZ()-.0015,fade=K.mt([140,109,75],.06,2,0,0,true);
+  for(let i=0;i<5;i++){const x=B.x0+.1+R()*(B.x1-B.x0-.2),y=B.y0+.1+R()*(B.y1-B.y0-.2),w=.04+R()*.06,h=.04+R()*.08;
+    K.push([x,y,z],0,0,(R()-.5)*.3);K.box([0,0,0],[w,h,.0004],fade,0);K.pop();}
+  for(let i=0;i<5;i++){const x=B.x0+.08+R()*(B.x1-B.x0-.16),y=B.y0+.15+R()*(B.y1-B.y0-.2);
+    K.push([x,y,z+.001],0,0,R()*TAU);K.tri([0,0,0],[.022,0,0],[0,.016,0],K.mt([214,206,186],.06,2,0,0,true),[0,0,1]);K.pop();}
+}
+function hallBoardMesh(lay,acc,seed){
+  const K=r3Kit();K.flags=2;   /* листы — тела под резкостью поста: строки бланков не мылятся */
+  hallBoardTrace(K,seed||0);
+  for(const s of lay)if(s)hallBoardSheetMesh(K,s,acc,s.i===HALL_BOARD.hot&&!s.anon);
+  return K.pack();
+}
+function hallBoardUp(L){
+  hallBoardLay();const key=L.st+"|"+HALL_BOARD.lk+"|"+HALL_BOARD.hot;
+  if(!HALL_BOARD.mesh||HALL_BOARD.key!==key){r3Drop(HALL_BOARD.mesh);HALL_BOARD.mesh=hallBoardMesh(HALL_BOARD.lay,L.acc,L.seed);HALL_BOARD.key=key;}
+  return HALL_BOARD.mesh;
+}
+/* горящий лист: малый тёплый свет спереди-сверху, без тени — бумага светлеет, соседи нет */
+function hallBoardLight(){
+  const s=HALL_BOARD.hot>=0?hallBoardSheet(HALL_BOARD.hot):null;if(!s||s.anon)return null;
+  return {p:[s.c[0]+.05,s.c[1]+.3,s.c[2]+.5],range:1.2,c:r3Sc(r3Lin([255,236,206]),1.4),vol:0,board:s.i};
+}
+function hallBoardDrop(){r3Drop(HALL_BOARD.mesh);HALL_BOARD.mesh=null;HALL_BOARD.key="";HALL_BOARD.hot=-1;}
 
 /* ══════════════ портрет в объёме (M725) ══════════════
    Тот же человек, что в зале (27f3 cpMesh), крупно: бюст в нише цвета роли, свет студии — тёплый ключ
