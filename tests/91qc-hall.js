@@ -63,6 +63,12 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     ok(cand.every(P=>P.x<HALL_XB+HALL_SEAT_PILOT-.3),"табурет пилота у правого конца стойки свободен");}
   /* зал не пуст: кроме хозяина и пилота — ещё люди в работе */
   ok(hallLayout("trade").people.filter(P=>P.kind==="crowd"&&P.x<HALL_XB-4.6).length>=2,"в зале, кроме хозяина, ещё двое");
+  /* хозяин — человек, не манекен: волосы тёмные, лампа не бьёт в макушку; за каждым столиком бара по двое */
+  for(const id of ["trade","yard","outpost","bazaar"]){const L=hallLayout(id),K0=L.people.find(P=>P.kind==="keep"),g=cpGene(K0.m);
+    ok([0,4,5].indexOf(g.style)<0&&hallLum(g.hair)<110,"«"+id+"»: у хозяина волосы (стиль "+g.style+", тон "+hallLum(g.hair).toFixed(0)+")");
+    ok(Math.abs(K0.x-HALL_KEYX)>.4,"«"+id+"»: лампа над стойкой не над головой хозяина");
+    if(L.bar)for(const T2 of HALL_BAR_TABLES){const n=L.people.filter(P=>T2.seats.some(s=>Math.hypot(P.x-HALL_XB-s[0],P.z-s[1])<.05)).length;
+      eq(n,2,"«"+id+"»: за столиком x="+T2.x+" сидят двое");}}
 
   /* наезд: от двери к месту, к концу — ровно цель */
   hallGo("board",true);
