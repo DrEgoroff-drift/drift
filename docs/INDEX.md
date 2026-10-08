@@ -752,12 +752,12 @@ GNB_VOL                      src/16gay-gpu-nebula-look.js:134
 GNB_WC                       src/16gay-gpu-nebula-look.js:70
 GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
-GOR_FAM                      src/17gab-gpu-orb.js:462
-GOR_GAS                      src/17gab-gpu-orb.js:485-519
+GOR_FAM                      src/17gab-gpu-orb.js:547
+GOR_GAS                      src/17gab-gpu-orb.js:570-604
 GOR_LIT                      src/17gab-gpu-orb.js:18
 GOR_LZ                       src/17gab-gpu-orb.js:16
-GOR_MOON                     src/17gab-gpu-orb.js:536
-GOR_MOONPAL                  src/17gab-gpu-orb.js:537
+GOR_MOON                     src/17gab-gpu-orb.js:621
+GOR_MOONPAL                  src/17gab-gpu-orb.js:622
 GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
@@ -4233,11 +4233,11 @@ gnbStars                     src/16gba-gpu-nebula-comp.js:42-49
 gnbTarget                    src/16gba-gpu-nebula-comp.js:138-145
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
-gorBody                      src/17gab-gpu-orb.js:495-519
-gorCode                      src/17gab-gpu-orb.js:463-473
-gorLin                       src/17gab-gpu-orb.js:453
-gorMoonPal                   src/17gab-gpu-orb.js:538-545
-gorPipe                      src/17gab-gpu-orb.js:475-482
+gorBody                      src/17gab-gpu-orb.js:580-604
+gorCode                      src/17gab-gpu-orb.js:548-558
+gorLin                       src/17gab-gpu-orb.js:538
+gorMoonPal                   src/17gab-gpu-orb.js:623-630
+gorPipe                      src/17gab-gpu-orb.js:560-567
 gosBbLine                    src/17k1-gosplan.js:25-28
 gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
@@ -4317,8 +4317,8 @@ gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:218-272
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
-gpuOrb                       src/17gab-gpu-orb.js:521-533
-gpuOrbMoon                   src/17gab-gpu-orb.js:546-552
+gpuOrb                       src/17gab-gpu-orb.js:606-618
+gpuOrbMoon                   src/17gab-gpu-orb.js:631-637
 gpuOvFrontView               src/08bi-gpu-ovl.js:284
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
@@ -8923,7 +8923,7 @@ zoomTo                       src/15-input.js:358
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
-## src/17gab-gpu-orb.js · 36 KB
+## src/17gab-gpu-orb.js · 42 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
 
 ## src/17gb-gpu-planet-strip.js · 7 KB
