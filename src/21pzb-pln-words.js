@@ -88,7 +88,13 @@ hangSurface=function(){
   const ow=plnOwnWordsAt(S);   /* у ворот базы и у крыльца дома (21pig, M628a) */
   if(ow)plnWordsAt(pj,ow.c,ow.h,ow.id,ln,o);
   else if(Math.abs(S.x-S.shipX)<shipZoneR()){const s=PLN.shipW;plnWordsAt(pj,[s[0],s[1]+2,s[2]],4,"pln.ship",ln,o);}
-  else{const mx=S.x/PLN_M,my=plnY(S.y+10);plnWordsAt(pj,[mx,my+1,0],1.9,"pln.man",ln,Object.assign({up:true},o));}
+  else{
+    /* у человека нет вещи: глагол говорит кнопка ДЕЙСТВИЯ, табличка его не дублирует (M826); остаётся
+       то, что сверх глагола, — нет его, молчит */
+    const rest=ln.filter(s=>!/^ДЕЙСТВИЕ — /.test(s));
+    if(rest.length){const mx=S.x/PLN_M,my=plnY(S.y+10),v=rest.findIndex(s=>/^(УДЕРЖИВАЙТЕ |КНОПКА |НЕТ ТОПЛИВА|▲)/.test(s));
+      plnWordsAt(pj,[mx,my+1,0],1.9,"pln.man",rest,{up:true,verb:v<0?undefined:v});}
+  }
 };
 /* #prompt и #msg под слоем — классами тела; переключаются только на перемене */
 const PLN_OLD_HUD2=hud;

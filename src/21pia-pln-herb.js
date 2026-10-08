@@ -326,8 +326,18 @@ function plnHerbMesh(sp,si,ac,T){
       const y=.12+i*.085,a=i*2.4;
       plnTube(m,{path:[[0,y,0],[Math.cos(a)*.06,y+.03,Math.sin(a)*.06]],rad:t=>lerp(.008,.001,t),sides:4,col:plnMul(stem,1.3),mat:PLN_MAT.bark});
     }
-    if(old)for(let i=0;i<2+(r()<.5?1:0);i++)
-      plnHerbBranch(m,[0,.3+r()*.5,0],(i&1?1:-1)*(.7+r()*.8),r()*TAU,sp.branchLen*(1+r()*.6)+.1,A.rad*.5,plnRgb([122,106,84]));
+    /* сухая ветвь растёт из ствола, а не над кроной (у папоротника ствол — пень на трети роста), коротка
+       и никнет, с отростком: торчащая вверх прямая палка читалась мусором */
+    if(old){
+      const sh=[.84,.55,.38,.84,0,.68][sp.kind%12]||.5,dry=plnRgb([122,106,84]);
+      for(let i=0;i<2+(r()<.5?1:0);i++){
+        const az=r()*TAU,cx=Math.cos(az),cz=Math.sin(az)*.8,len=Math.min(.3,sp.branchLen*.8+.1)*(.8+r()*.4),a=[0,sh*(.3+r()*.45),0];
+        const e=[a[0]+cx*len,a[1]-len*.32,a[2]+cz*len],mid=[a[0]+cx*len*.5,a[1]+len*.06,a[2]+cz*len*.5];
+        plnTube(m,{path:plnBez(a,mid,e,4),rad:t=>lerp(A.rad*.45,A.rad*.15,t),sides:4,col:dry,mat:PLN_MAT.bark,wind:.04});
+        const f=plnBez(a,mid,e,4)[2],fz=az+(r()<.5?.7:-.7);
+        plnTube(m,{path:[f,[f[0]+Math.cos(fz)*len*.35,f[1]+len*.05,f[2]+Math.sin(fz)*len*.28]],rad:A.rad*.15,sides:3,col:dry,mat:PLN_MAT.bark,wind:.04});
+      }
+    }
   }
   if(tip&&sp.bloom&&!young)plnBlob(m,{c:tip,r:[.035,.035,.035],sub:1,col:C.bloom,mat:PLN_MAT.bark,wind:.12,glow:.3});
   return m;

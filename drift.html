@@ -93719,8 +93719,18 @@ function plnHerbMesh(sp,si,ac,T){
       const y=.12+i*.085,a=i*2.4;
       plnTube(m,{path:[[0,y,0],[Math.cos(a)*.06,y+.03,Math.sin(a)*.06]],rad:t=>lerp(.008,.001,t),sides:4,col:plnMul(stem,1.3),mat:PLN_MAT.bark});
     }
-    if(old)for(let i=0;i<2+(r()<.5?1:0);i++)
-      plnHerbBranch(m,[0,.3+r()*.5,0],(i&1?1:-1)*(.7+r()*.8),r()*TAU,sp.branchLen*(1+r()*.6)+.1,A.rad*.5,plnRgb([122,106,84]));
+    /* сухая ветвь растёт из ствола, а не над кроной (у папоротника ствол — пень на трети роста), коротка
+       и никнет, с отростком: торчащая вверх прямая палка читалась мусором */
+    if(old){
+      const sh=[.84,.55,.38,.84,0,.68][sp.kind%12]||.5,dry=plnRgb([122,106,84]);
+      for(let i=0;i<2+(r()<.5?1:0);i++){
+        const az=r()*TAU,cx=Math.cos(az),cz=Math.sin(az)*.8,len=Math.min(.3,sp.branchLen*.8+.1)*(.8+r()*.4),a=[0,sh*(.3+r()*.45),0];
+        const e=[a[0]+cx*len,a[1]-len*.32,a[2]+cz*len],mid=[a[0]+cx*len*.5,a[1]+len*.06,a[2]+cz*len*.5];
+        plnTube(m,{path:plnBez(a,mid,e,4),rad:t=>lerp(A.rad*.45,A.rad*.15,t),sides:4,col:dry,mat:PLN_MAT.bark,wind:.04});
+        const f=plnBez(a,mid,e,4)[2],fz=az+(r()<.5?.7:-.7);
+        plnTube(m,{path:[f,[f[0]+Math.cos(fz)*len*.35,f[1]+len*.05,f[2]+Math.sin(fz)*len*.28]],rad:A.rad*.15,sides:3,col:dry,mat:PLN_MAT.bark,wind:.04});
+      }
+    }
   }
   if(tip&&sp.bloom&&!young)plnBlob(m,{c:tip,r:[.035,.035,.035],sub:1,col:C.bloom,mat:PLN_MAT.bark,wind:.12,glow:.3});
   return m;
@@ -97431,7 +97441,13 @@ hangSurface=function(){
   const ow=plnOwnWordsAt(S);   /* у ворот базы и у крыльца дома (21pig, M628a) */
   if(ow)plnWordsAt(pj,ow.c,ow.h,ow.id,ln,o);
   else if(Math.abs(S.x-S.shipX)<shipZoneR()){const s=PLN.shipW;plnWordsAt(pj,[s[0],s[1]+2,s[2]],4,"pln.ship",ln,o);}
-  else{const mx=S.x/PLN_M,my=plnY(S.y+10);plnWordsAt(pj,[mx,my+1,0],1.9,"pln.man",ln,Object.assign({up:true},o));}
+  else{
+    /* у человека нет вещи: глагол говорит кнопка ДЕЙСТВИЯ, табличка его не дублирует (M826); остаётся
+       то, что сверх глагола, — нет его, молчит */
+    const rest=ln.filter(s=>!/^ДЕЙСТВИЕ — /.test(s));
+    if(rest.length){const mx=S.x/PLN_M,my=plnY(S.y+10),v=rest.findIndex(s=>/^(УДЕРЖИВАЙТЕ |КНОПКА |НЕТ ТОПЛИВА|▲)/.test(s));
+      plnWordsAt(pj,[mx,my+1,0],1.9,"pln.man",rest,{up:true,verb:v<0?undefined:v});}
+  }
 };
 /* #prompt и #msg под слоем — классами тела; переключаются только на перемене */
 const PLN_OLD_HUD2=hud;
@@ -99348,17 +99364,24 @@ const CAVE3_LENS={man:[.124,.124],walk:[.29,.34],dist:[18,36],eye:3.2,tau:.45,in
   /* у озера: глаз выше и ближе — гладь и зеркало ложатся полосой, а не ребром */
   lkEye:2.6,lkD:.55,lkS:.8,
   /* дальний: глаз за 100 м, 24°, линия ходьбы на .40 — по клавише карты; на телефоне нет */
-  fD:100,fH:42.5,fWalk:.40,fIn:.8,fOut:.7};
+  fD:100,fH:42.5,fWalk:.40,fIn:.8,fOut:.7,fBack:15,fWalkMax:.5};
 /* дальний объектив — только на широком окне */
 function cave3FarOk(){return W>760&&W>=H;}
 
 /* объектив по доле сторон: k = 0 — высокий кадр, 1 — широкий */
 /* near — у вещи: 0..1, объектив подходит в near раз ближе */
-function cave3Lens(asp,cx,floorY,zoom,near,lk,far){
+/* sky — высота поверхности (м): дальний кадр не поднимается выше неё даже на задней стене (за 15 м от
+   линии ходьбы) — над пещерой камень, небо только в устье. Не влезает — линия ходьбы поднимается в
+   кадре до середины, потом кадр сжимается: объектив жмётся к полу, а не отходит в небо */
+function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky){
   const L=CAVE3_LENS,k=plnSmooth(.6,1.5,asp);
   far=far||0;lk=(lk||0)*(1-far);
   let Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k)*lerp(1,L.lkD,lk);
   if(far){Hf=lerp(Hf,L.fH,far);f=lerp(f,L.fWalk,far);D=lerp(D,L.fD,far);}
+  if(far&&sky!=null){
+    const ey=floorY+L.eye,top=ey+(sky-ey)/(1+L.fBack/D)-floorY;
+    if((1-f)*Hf>top){f=Math.max(f,Math.min(L.fWalkMax,1-top/Hf));if((1-f)*Hf>top)Hf=Math.max(4,top/(1-f));}
+  }
   const w=Hf*asp,l=cx-w/2,r=cx+w/2,b=floorY-f*Hf,t=b+Hf;
   const ex=cx,ey=floorY+L.eye+L.lkEye*lk,ez=CAVE3_Z-D;
   const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,4,600),plnM4move(-ex,-ey,-ez));
@@ -99442,7 +99465,7 @@ function cave3Frame(){
   const asp=W/H,fK=plnSmooth(0,1,M.far),fs=fK>.001?cave3FarShift(C,Fd,M.cx,CAVE3_LENS.fH*asp/2):0;
   M.fs=first||M.fs==null||M.rush?fs:M.fs+(fs-M.fs)*(1-Math.exp(-dt/.6));
   const cx=M.cx+M.fs*fK+M.ns*plnSmooth(0,1,M.near)*(1-fK);
-  const floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far)),K=H/(Ls.Hf*CAVE_PPM);
+  const floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
   M.lens=Ls;
@@ -99509,16 +99532,17 @@ function cave3Frame(){
   tris+=cave3AmberFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);
   /* убранство залов (22dc): натёки, завесы, кристаллы, жилы на разрезе */
   const l0=F.lights.length;
-  tris+=cave3DressFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx,first||CAVE3.rush);
+  tris+=cave3DressFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx,first||CAVE3.rush,mid);
   M.stat.ldress=F.lights.length-l0;
   /* озеро (22dd): гладь с зеркалом и тело воды в разрезе */
   tris+=cave3LakeFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);
   /* растения и звери телами (22dg) */
   tris+=cave3LifeFrame(C,F,Fd,cx-hw-3,cx+hw+3);
   /* огней двенадцать: фонарь держит свои семь, остальные места — тем, кто сильнее и ближе к кадру
-     (устье, даль, янтарь, кристаллы, события в пролётах — 22dh) */
+     (устье, даль, янтарь, кристаллы, события в пролётах — 22dh); даль — по x и по y: огонь галереи
+     ниже кадра ничего в нём не светит */
   if(F.lights.length>12){
-    const w=q=>Math.max(q.c[0],q.c[1],q.c[2])*q.r/(1+Math.abs(q.p[0]-cx)/8);
+    const w=q=>Math.max(q.c[0],q.c[1],q.c[2])*q.r/(1+Math.hypot(q.p[0]-cx,Math.max(0,Math.abs(q.p[1]-mid)-Ls.Hf/2))/8);
     const core=F.lights.filter(q=>q.core),rest=F.lights.filter(q=>!q.core).sort((a,b)=>w(b)-w(a));
     F.lights=core.concat(rest.slice(0,12-core.length));
   }
@@ -99589,10 +99613,11 @@ exitCave=function(){
 };
 
 /* ── слова на вещах (как 21pzb на поверхности) ──
-   Строка действия — табличкой там, куда зовёт: у устья, у находки, у растения, у шахты; иначе — у
-   человека. Подсказка входа «ищите проход · шахты ведут вниз» — у шахты в кадре (нет её — у устья,
-   нет и его — у человека). Оранжевый глагол — только на плашке: #prompt и эта строка #msg под слоем
-   (body.cavewords / cavehush), кнопка ДЕЙСТВИЯ берёт глагол из G.prompt как прежде. */
+   Строка действия — табличкой там, куда зовёт: у устья, у находки, у растения, у шахты, у зверя.
+   Подсказка входа «ищите проход · шахты ведут вниз» — у шахты в кадре, нет её — у устья, нет и его —
+   молчит. Слово без вещи не висит посреди кадра (M826): вещи в кадре нет — таблички нет. Глагол
+   ДЕЙСТВИЯ говорит кнопка (она берёт его из G.prompt); табличка его не повторяет — несёт только то,
+   что сверх глагола, а без этого молчит. #prompt и строка #msg под слоем (body.cavewords / cavehush). */
 const CAVE3_W={on:false,hush:false,tip:null};
 function cave3WordsOn(){return G.mode==="cave"&&CAVE3.live&&!!CAVE3.lens&&!!G.cave&&hangOk();}
 /* точка мира (м) → пиксели окна тем же объективом, что у кадра */
@@ -99619,16 +99644,31 @@ hangSurface=function(){
     ovHang(id,ln,a[0],a[1],Object.assign({r:Math.max(8,Math.abs(a[1]-b[1]))},o));};
   const sh=P.sh.filter(v=>cave3InFrame(pj,v)).sort((a,b)=>Math.abs(a[0]-P.man[0])-Math.abs(b[0]-P.man[0]))[0]||null;
   const mouthIn=cave3InFrame(pj,P.mouth);
+  /* событие пролёта — само вещь кадра: табличка не закрывает его светлую часть (жар и мокрое — у пола,
+     нити светляков — под сводом); остальной пролёт открыт, иначе табличке зверя рядом негде встать */
+  {const n=ovNd(),Pm=CAVE_PPM,kd=cave3StyKind(G.surf&&G.surf.p&&G.surf.p.type);
+    for(const X of (C.ev3&&C.ev3.gaps)||[]){
+      const x=X*Pm,c0=-caveCeilOf(C,x,false)/Pm,f0=-caveFloorOf(C,x,false)/Pm;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+      const f=kd==="sed"?Math.max(f0,c0-4):f0,c=kd==="sed"?c0:Math.min(c0,f0+3.5);
+      for(const v of [[X-.8,f,0],[X+.8,c,0],[X-.8,c,3],[X+.8,f,3]]){const s=pj([v[0],v[1],CAVE3_Z+v[2]]);if(!s)continue;
+        x0=Math.min(x0,s[0]);x1=Math.max(x1,s[0]);y0=Math.min(y0,s[1]);y1=Math.max(y1,s[1]);}
+      if(x1>x0&&x1>0&&x0<W)hangBlock(x0*n,y0*n,x1*n,y1*n);
+    }
+    /* и человек: табличка зверя рядом не садится ему на шлем */
+    const mx=C.x/Pm,my=-C.y/Pm,a=pj([mx-.5,my+2.1,CAVE3_Z]),b=pj([mx+.5,my-1,CAVE3_Z]);
+    if(a&&b)hangBlock(Math.min(a[0],b[0])*n,Math.min(a[1],b[1])*n,Math.max(a[0],b[0])*n,Math.max(a[1],b[1])*n);
+  }
   /* подсказка входа */
   const T=CAVE3_W.tip;
   if(T&&G.msg===T&&G.msgT>0){
     const L=T.split("\n"),ln=L[0].split(" · ").concat(L.slice(1));
     if(sh)at(sh,3,"cave.tip",ln,{});
     else if(mouthIn&&!/^ДЕЙСТВИЕ — (НАЗАД|ОСТАВИТЬ)/.test(pr))at(P.mouth,2.4,"cave.tip",ln,{up:true});
-    else at(P.man,1.9,"cave.tip",ln,{up:true});
   }
   if(!pr)return;
-  const ln=pr.split("\n"),vi=ln.findIndex(s=>/^ДЕЙСТВИЕ/.test(s)),o={verb:vi<0?undefined:vi};
+  /* глагол — у кнопки; на табличке то, что сверх него */
+  const ln=pr.split("\n").filter(s=>!/^ДЕЙСТВИЕ — /.test(s)),o={};
+  if(!ln.length)return;
   if(/^ДЕЙСТВИЕ — НАЗАД/.test(pr))at(P.mouth,2.4,"cave.act",ln,o);
   else if(/^ДЕЙСТВИЕ — ОСТАВИТЬ|^УСТЬЕ · /.test(pr))at(P.wall,2,"cave.act",ln,o);
   else if(/^ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ/.test(pr))at(P.find,1,"cave.act",ln,o);
@@ -99645,14 +99685,41 @@ hangSurface=function(){
     if(sh)at(sh,3,"cave.act",L2,{});
     else if(mouthIn)at(P.mouth,2.4,"cave.act",L2,{up:true});
   }
-  else at(P.man,1.9,"cave.act",ln,Object.assign({up:true},o));
+  else if(/^КУСАЧИЕ/.test(pr)){
+    /* предупреждение — у ближнего злого зверя в кадре, над ним: сбоку оно ложилось на событие пролёта */
+    const b=cave3Biter(C,pj);
+    if(b)at(b,1.2,"cave.act",ln,{up:true});
+  }
 };
+/* ближний к человеку злой зверь в кадре: точка над спиной, м; нет — null */
+function cave3Biter(C,pj){
+  const P=CAVE_PPM;let best=null,bd=1e9;
+  for(const b of C.fauna||[]){
+    if(!b||b.caught||!b.hostile||!isFinite(b.x))continue;
+    const R=Math.max(CAVE3_LIFE.rMin,b.r/P),v=[b.x/P,-b.y/P+R*1.6+(b.hover||0)/P,CAVE3_Z+(b.r<7?CAVE3_LIFE.beastZ[0]:CAVE3_LIFE.beastZ[1])];
+    if(!cave3InFrame(pj,v))continue;
+    const d=Math.abs(b.x-C.x);if(d<bd){bd=d;best=v;}
+  }
+  return best;
+}
 /* вход: подсказку запоминаем, чтобы повесить её табличкой, а не полосой посреди пустоты */
 const CAVE3_OLD_ENTER=enterCave;
 enterCave=function(){
   const r=CAVE3_OLD_ENTER.apply(this,arguments);
   CAVE3_W.tip=G.mode==="cave"?String(G.msg||""):null;
   return r;
+};
+/* плашки приборов сверху (борт слева, место справа): свечение под ними гаснет (22dbw hudDim) — вещь не
+   стоит под плашкой. Мерим только тогда, когда 27z перемеряет вёрстку, а не каждый кадр */
+const CAVE3_HUD={l:[0,0],r:[0,0]};
+const CAVE3_OLD_FLOOR=hudFloorMeasure;
+hudFloorMeasure=function(force){
+  const go=!!force||(typeof LAYOUT_DIRTY!=="undefined"&&LAYOUT_DIRTY);
+  CAVE3_OLD_FLOOR.apply(this,arguments);
+  if(!go||typeof $vitals==="undefined"||!$vitals||!$locusEl)return;
+  const a=$vitals.getBoundingClientRect(),b=$locusEl.getBoundingClientRect();
+  CAVE3_HUD.l=a.width>0?[a.right,a.bottom]:[0,0];
+  CAVE3_HUD.r=b.width>0?[b.left,b.bottom]:[0,0];
 };
 const CAVE3_OLD_HUD=hud;
 hud=function(){
@@ -100062,7 +100129,7 @@ const CAVE3_GPU={dev:null,gen:-1,tier:-1,w:0,h:0,shn:0,ms:1,L:null,P:{},U:null,S
 /* числа стенда (docs/look/cv-render.js): тьма, воздух, фонарь, день */
 const CAVE3_K={amb:[.036,.054,.083],fogC:[.045,.08,.12],fog:.022,
   lampCol:[4,3.1,1.95],inner:32*PLN_DEG,outer:58*PLN_DEG,fall:3.2,fov:128*PLN_DEG,day:[1.3,1.42,1.4],
-  air:[.039,.02,.065],airReach:140,comp:[.10,.36,1,0]};
+  air:[.036,.02,.065],airReach:140,comp:[.10,.36,1,0]};
 
 function cave3Log(s){plnLog("пещера: "+s);}
 function cave3Persp(fovy,asp,n,f){
@@ -100215,6 +100282,8 @@ function cave3Globals(a,F,vp,lamp,w,h){
   a.set([F.skyLo[0],F.skyLo[1],F.skyLo[2],dk],256);
   a.set([F.skyHi[0],F.skyHi[1],F.skyHi[2],F.near],260);
   if(F.zones)F.zones.forEach((z,k)=>a.set([z[0],z[1],z[2],0],264+k*4));
+  /* рамки плашек приборов в пикселях кадра — в пустые четвёртые числа залов */
+  {const s=w/Math.max(1,W),U=CAVE3_HUD;a[267]=U.l[0]*s;a[271]=U.l[1]*s;a[275]=U.r[1]>0?U.r[0]*s:w+1;a[279]=U.r[1]*s;}
   a.set(F.farDay||[0,0,1,0],280);a.set([F.farK||0,CAVE3_LAMP.warm0,CAVE3_LAMP.warm1,F.wet||0],284);
   return a;
 }
@@ -100371,6 +100440,14 @@ fn lampTint(p: vec3f) -> vec3f {
   let w = 1.0 - smoothstep(g.farK.y, g.farK.z, length(p - g.lampPos.xyz));
   let l = dot(g.lampCol.rgb, vec3f(0.3, 0.5, 0.2));
   return mix(l * vec3f(0.62, 0.8, 1.12), g.lampCol.rgb, w);
+}
+/* под плашками приборов свечение гаснет: вещь не стоит под плашкой (рамки — в zone[i].w, пиксели кадра:
+   правый край и низ борта слева, левый край и низ места справа); гасит до 8 %: свечение втрое выше белого,
+   четверть после тонмапа ещё светится) */
+fn hudDim(xy: vec2f) -> f32 {
+  let l = (1.0 - smoothstep(g.zone[0].w, g.zone[0].w + 40.0, xy.x)) * (1.0 - smoothstep(g.zone[1].w, g.zone[1].w + 40.0, xy.y));
+  let r = smoothstep(g.zone[2].w - 40.0, g.zone[2].w, xy.x) * (1.0 - smoothstep(g.zone[3].w, g.zone[3].w + 40.0, xy.y));
+  return 1.0 - 0.92 * max(l, r);
 }
 /* лист разреза и то, что на нём, темнеют к краям кадра: сцена в середине */
 fn faceDim(fragXY: vec2f) -> f32 {
@@ -100545,6 +100622,19 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   }
   return c;
 }
+/* блик огней на мокром: мокрая стена ловит свет событий и кристаллов, а не только фонарь */
+fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
+  var c = vec3f(0.0);
+  for (var i = 0; i < 12; i++) {
+    let lp = g.ptPos[i];
+    if (lp.w <= 0.0) { continue; }
+    let d = lp.xyz - wpos; let dl = max(length(d), 0.001);
+    let att = pow(clamp(1.0 - dl / lp.w, 0.0, 1.0), 2.0);
+    let h = normalize(d / dl + V);
+    c += g.ptCol[i].rgb * (att * pow(clamp(dot(N, h), 0.0, 1.0), mix(18.0, 80.0, wet)) * step(0.0, dot(N, d)));
+  }
+  return c;
+}
 
 @fragment fn fs_main(in: VOut) -> @location(0) vec4f {
   let fx = dpdx(in.wpos); let fy = dpdy(in.wpos);
@@ -100556,15 +100646,20 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   var fN = normalize(cross(fx, fy));
   if (dot(fN, V) < 0.0) { fN = -fN; }
   if (mat == 5) {
-    var c5 = in.col * glow;
+    var c5 = in.col * glow * hudDim(in.pos.xy);
     if (in.wpos.z < g.misc.z) { c5 *= faceDim(in.pos.xy); }
     return vec4f(haze(c5, in.wpos, 0.7), 1.0);
   }
   if (mat == 12) {
-    /* кристалл светит изнутри: грани разные, рёбра горят */
-    let fac = 0.40 + 0.60 * clamp(dot(fN, normalize(vec3f(-0.35, 0.8, -0.5))), 0.0, 1.0);
-    let rim = pow(1.0 - clamp(dot(fN, V), 0.0, 1.0), 2.0);
-    return vec4f(haze(in.col * glow * (fac + rim * 0.9), in.wpos, 0.55), 1.0);
+    /* кристалл светит изнутри: сердце ярче края; грани делит свет — своя доля неба и фонаря на каждой */
+    let nv = clamp(dot(fN, V), 0.0, 1.0);
+    let fac = 0.25 + 0.45 * clamp(dot(fN, normalize(vec3f(-0.35, 0.8, -0.5))), 0.0, 1.0);
+    let ll = lampAt(in.wpos);
+    let lmp = ll.w * clamp(dot(fN, ll.xyz), 0.0, 1.0);
+    let hv = normalize(ll.xyz + V);
+    var cc = in.col * glow * (fac + 1.1 * pow(nv, 1.6) + 0.15 * pow(1.0 - nv, 3.0));
+    cc += lampTint(in.wpos) * (in.col * lmp * 0.5 + vec3f(ll.w * pow(clamp(dot(fN, hv), 0.0, 1.0), 60.0) * 1.2));
+    return vec4f(haze(cc * hudDim(in.pos.xy), in.wpos, 0.55), 1.0);
   }
   if (mat == 10) {
     /* лист разреза: пласты и их прослои на тёмном и кромка, что берёт свет пустоты */
@@ -100625,26 +100720,35 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     let gb = vec3f(vn3(bp + vec3f(0.07, 0.0, 0.0), 31u), vn3(bp + vec3f(0.0, 0.07, 0.0), 31u), vn3(bp + vec3f(0.0, 0.0, 0.07), 31u)) - b0;
     let gq = vec3f(vn3(bq + vec3f(0.07, 0.0, 0.0), 33u), vn3(bq + vec3f(0.0, 0.07, 0.0), 33u), vn3(bq + vec3f(0.0, 0.0, 0.07), 33u)) - q0;
     let fin = finish(in.wpos.x);
-    let gr = (gb * 0.30 + gq * 0.12) / 0.07 * (1.0 - 0.7 * fin.z);
+    let gr = (gb * 0.10 + gq * 0.10) / 0.07 * (1.0 - 0.7 * fin.z);
     N = normalize(N - (gr - N * dot(gr, N)));
     wet = mix(wet, max(wet, 0.45), fin.z);
-    /* грот: стены друзой — грани в ладонь, у каждой свой наклон, иные ловят фонарь */
-    if (fin.y > 0.01) {
-      /* ячейки Вороного: грань — ближайшее зерно, без сетки */
-      let dp = in.wpos * 2.6;
+    /* камень колется гранями (M623: грани делит свет): плиты по пластам — шире, чем выше; у каждой
+       свой наклон, фонарь кладёт на них разный тон; шов между плитами — тёмная трещина. В гроте —
+       друза: грани в ладонь и круче. Шов гаснет, когда тоньше пикселя, иначе даль рябит */
+    {
+      let fsc = mix(vec3f(1.1, 2.0, 1.1), vec3f(2.6, 2.6, 2.6), fin.y);
+      let wq = in.wpos * vec3f(0.45, 0.6, 0.45);
+      let dp = in.wpos * fsc + vec3f(vn3(wq, 61u), vn3(wq + 3.0, 63u), vn3(wq + 7.0, 65u)) * 1.1;
       let b = vec3i(floor(dp));
-      var best = 9.0; var id = b;
+      var d1 = 9.0; var d2 = 9.0; var id = b;
       for (var k = 0; k < 27; k++) {
         let o = vec3i(k % 3 - 1, (k / 3) % 3 - 1, k / 9 - 1);
         let c = b + o;
         let q = vec3f(c) + vec3f(hash3(c, 91u), hash3(c, 93u), hash3(c, 95u));
         let d = dot(dp - q, dp - q);
-        if (d < best) { best = d; id = c; }
+        if (d < d1) { d2 = d1; d1 = d; id = c; } else if (d < d2) { d2 = d; }
       }
-      let dn = vec3f(hash3(id, 81u), hash3(id, 83u), hash3(id, 85u)) - 0.5;
-      N = normalize(N + dn * (0.9 * fin.y));
-      alb *= 1.0 - 0.3 * fin.y * hash3(id, 87u);
+      let dn = vec3f(hash3(id, 81u), hash3(id, 83u) * 0.7, hash3(id, 85u)) - vec3f(0.5, 0.35, 0.5);
+      N = normalize(N + dn * mix(0.75 * (1.0 - 0.6 * fin.z), 0.9, fin.y));
+      alb *= 1.0 - mix(0.10, 0.3, fin.y) * hash3(id, 87u);
       wet = mix(wet, 0.75, fin.y * step(0.65, hash3(id, 89u)));
+      /* трещина — не у каждой плиты: пучками, где камень колется, и тоньше к краю пучка */
+      let e = sqrt(d2) - sqrt(d1);
+      let pw = length((abs(fx) + abs(fy)) * fsc);
+      let crk = smoothstep(0.5, 0.75, vn3(in.wpos * vec3f(0.6, 0.9, 0.6) + 11.0, 67u));
+      let seam = (1.0 - smoothstep(0.0, max(0.05 * crk, pw * 1.2), e)) * crk * (1.0 - smoothstep(0.12, 0.35, pw));
+      ao *= 1.0 - mix(0.4, 0.55, fin.y) * seam;
     }
     ao *= 0.72 + 0.28 * smoothstep(0.2, 0.65, b0);
     /* натёчные борозды на стене, что смотрит на нас: пятнами, сверху вниз; фонарь ловит рёбра, не плоскость */
@@ -100675,9 +100779,24 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   }
   if (mat == 11) {
     ao = ex; wet = glow; wrap = 0.3;
+    /* натёк тоже гранён (M623): плоскость сетки и наклон по ячейкам в ладонь — фонарь кладёт на грани
+       разный тон, гладкой свечи нет */
+    N = normalize(mix(N, fN, 0.5));
+    let fc = vec3i(floor(in.wpos * vec3f(2.4, 1.6, 2.4) + 0.6 * vn3(in.wpos * 0.8, 19u)));
+    N = normalize(N + (vec3f(hash3(fc, 21u), hash3(fc, 23u) * 0.5, hash3(fc, 25u)) - vec3f(0.5, 0.25, 0.5)) * 0.45);
+    alb *= 0.88 + 0.2 * hash3(fc, 27u);
     alb *= 0.85 + 0.3 * vn3(in.wpos * vec3f(3.0, 0.7, 3.0), 9u);
     alb *= 0.8 + 0.3 * vn3(in.wpos * vec3f(9.0, 0.6, 9.0), 13u);
     alb *= 1.0 - 0.3 * smoothstep(0.45, 0.95, N.y) * smoothstep(-0.2, 0.4, vn3(in.wpos * 2.5, 15u));
+    /* натёк ребрист: борозды сверху вниз, гребень мокрый и ловит фонарь, ложбина в тени */
+    let rp = in.wpos * vec3f(7.0, 0.35, 7.0);
+    let r0 = vn3(rp, 17u);
+    let rg = vec3f(vn3(rp + vec3f(0.08, 0.0, 0.0), 17u) - r0, 0.0, vn3(rp + vec3f(0.0, 0.0, 0.08), 17u) - r0) / 0.08 * 7.0;
+    let side = 1.0 - smoothstep(0.55, 0.9, abs(N.y));
+    N = normalize(N - (rg - N * dot(rg, N)) * (0.09 * side));
+    let crest = smoothstep(0.55, 0.8, r0) * side;
+    ao *= 1.0 - 0.35 * (1.0 - smoothstep(0.25, 0.5, r0)) * side;
+    wet = mix(wet, max(wet, 0.8), crest);
   }
   if (mat == 15) {
     /* завеса: тонкий лист, свет идёт сквозь него */
@@ -100736,6 +100855,9 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   var even = 0.0;
   if (mat == 11 || mat == 15) { even = 0.35; }
   c += alb * points(in.wpos, N, even) * mix(0.5, 1.0, ao);
+  if (wet > 0.3 && mat != 4) { c += pointSpec(in.wpos, N, V, wet) * (wet * 0.8); }
+  /* зверь отделяется от тьмы кромкой: свет события обводит край тела */
+  if (mat == 8) { c += points(in.wpos, N, 1.0) * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.5) * 0.7); }
   c += alb * emis;
   /* на тонком стыке граней сумма света бывает меньше нуля — свет не бывает отрицательным */
   return vec4f(haze(max(c, vec3f(0.0)), in.wpos, 1.0), 1.0);
@@ -100906,12 +101028,14 @@ fn bad3(c: vec3f) -> bool {
              отпускает свет за несколько метров, иначе весь зал стоит в молоке */
           let cs = dot(ll.xyz, rd);
           let ax = dot(-ll.xyz, g.lampDir.xyz);
-          let core = smoothstep(g.lampCol.w - 0.015, g.lampCol.w + 0.015, ax) * (0.55 + 0.45 * smoothstep(0.9, 0.98, ax));
+          /* кромка мягкая, ±2.5° около внутреннего конуса; к оси клин гуще */
+          let core = smoothstep(g.lampCol.w - 0.024, g.lampCol.w + 0.022, ax) * (0.45 + 0.55 * smoothstep(0.88, 0.985, ax));
           let dl = length(p - g.lampPos.xyz);
-          /* клин идёт от шлема: у самого фонаря воздух светится гуще */
-          let wet = (1.0 + 0.6 * g.farK.w) * (1.0 + 1.6 * exp(-dl / 2.2));
-          let du = 0.7 + 0.6 * vn3(p * 0.7 + vec3f(g.camPos.w * 0.02, 0.0, 0.0), 45u);
-          accL += ll.w * core * exp(-dl / 14.0) * wet * sh * du * (0.55 + 0.9 * pow(max(cs, 0.0), 3.0) + 0.2 * cs * cs);
+          /* клин идёт от шлема и гаснет по квадрату дали: ярче всего у фонаря; сырость держит свет */
+          let fall = 3.2 / (1.0 + dl * dl / 3.0);
+          let wet = 0.7 + 0.9 * g.farK.w;
+          let du = 0.62 + 0.76 * vn3(p * vec3f(0.8, 0.45, 0.8) + vec3f(g.camPos.w * 0.02, -g.camPos.w * 0.012, 0.0), 45u);
+          accL += ll.w * core * fall * wet * sh * du * (0.55 + 0.9 * pow(max(cs, 0.0), 3.0) + 0.2 * cs * cs);
         }
       }
     }
@@ -101008,7 +101132,7 @@ fn unshoulder(d: vec3f) -> vec3f {
    (C.dr3), пока жива видеокарта; ничего не сохраняется — всё от C.seed. */
 const CAVE3_DR={s:16,ms:5,first:300,keep:14};
 const CAVE3_DC={cream:plnHex("#e6dfcf"),creamD:plnHex("#aaa090"),rust:plnHex("#b4703c"),
-  mauve:[plnHex("#6a3a9a"),plnHex("#e2a0e6")],seam:plnHex("#2a1c14"),ore:plnHex("#d2742a")};
+  mauve:[plnHex("#6a3a9a"),plnHex("#e2a0e6")]};
 const CAVE3_DOME=[0,.1,.25,.42,.6,.78,.92,1];
 /* отделка стены по залу (шейдер 22dbw): 0 рёбра, 1 друза, 2 шов, 3 гладь */
 const CAVE3_ZK={gallery:0,dripstone:0,crystal:1,vein:2,water:3};
@@ -101235,7 +101359,6 @@ function cave3DressItems(C,F){
   for(const t of D.tips)out.push({k:t.col?"col":t.up?"hang":"mite",X:t.x/P,t,g:gal(t.x,t.low),seed:t.seed});
   for(const c of D.curtains)out.push({k:"veil",X:(c.x0+c.w/2)/P,t:c,g:gal(c.x0+c.w/2,false),seed:c.seed});
   D.crystals.forEach((c,i)=>out.push({k:"cryst",X:c.x/P,t:c,g:gal(c.x,c.low),seed:hashi(i,C.seed,0xC1A5),zone:caveZoneAt(C,c.x).kind}));
-  D.veins.forEach((v,i)=>out.push({k:"vein",X:v.pts[0][0]/P,t:v,seed:hashi(i,C.seed,0x7E1)}));
   /* что лежит в камне разреза (22df) */
   for(const q of cave3InkItems(C,F))out.push(q);
   /* световые события в пролётах (22dh) */
@@ -101264,7 +101387,6 @@ function cave3DressBin(C,F,items){
   };
   for(const q of items){
     const r=B.r=rng(q.seed^0x5EED),g=q.g;
-    if(q.k==="vein"){cave3VeinInk(C,F,ink,q.t,r);continue;}
     if(q.k==="ink"){cave3InkBuild(F,ink,q,r);continue;}
     if(q.k==="veil"){
       const c=q.t,ax=c.x0/P,bx=(c.x0+c.w)/P,z1=Math.max(2,g.zd-1.2);
@@ -101331,46 +101453,15 @@ function cave3DressCryst(B,q,lights,glows){
     const nn=(k?3:c.spikes.length*2)+4+(r()*4|0),glow=2.6+r()*.8;
     cave3Cluster(B,[x-nrm[0]*.1,py-nrm[1]*.1,z-nrm[2]*.1],nrm,nn,size,glow);
     if(size>.9){
-      /* кристалл — акцент, ключ остаётся фонарю: досягаемость до 4 м, ореол узкий */
+      /* кристалл — акцент, ключ остаётся фонарю: фиолетовый отсвет ложится на камень в 2–3 м, ореол узкий */
       const p=plnAdd([x,py,z],plnMul(nrm,size*.35)),kk=clamp(size/3.2,.35,1)*.9;
-      lights.push({p,r:Math.min(4,2.2+size*.8),c:[.8*kk,.39*kk,1.05*kk]});
+      lights.push({p,r:clamp(2.6+size*.4,3,3.8),c:[2.3*kk,1.05*kk,3.1*kk]});
       if(!k)glows.push({p,c:[.62,.30,.85],k:.55*kk,s:.8+size*.25});
     }
   }
 }
-/* жила в плоскости разреза: тёмный шов и рыжие зёрна руды, только там, где разрез — камень */
-function cave3VeinInk(C,F,m,v,r){
-  const P=CAVE_PPM,z=-.03,K=CAVE3_DC,solid=(X,Y)=>cave3Den(F,X,Y,.1)>.3;
-  const base=x=>(v.up?caveCeilOf(C,x,v.low):caveFloorOf(C,x,v.low));
-  const pts=[];
-  for(let i=0;i+1<v.pts.length;i++){
-    const [xa,oa]=v.pts[i],[xb,ob]=v.pts[i+1];
-    for(let s=0;s<4;s++){const t=s/4,x=lerp(xa,xb,t),o=lerp(oa,ob,t);pts.push([x/P,-(base(x)+o)/P,z]);}
-  }
-  let run=[];
-  const seam=rad=>{
-    if(run.length<3){run=[];return;}
-    const d=plnSub(run[run.length-1],run[0]),l=Math.hypot(d[0],d[1])||1;
-    /* толщина гуляет по метрам, не по доле отрезка: короткий шов не рвётся в бусы */
-    let L=0;for(let i=1;i<run.length;i++)L+=Math.hypot(run[i][0]-run[i-1][0],run[i][1]-run[i-1][1]);
-    plnTube(m,{path:run,rad:t=>rad*(.62+.38*Math.sin(t*L*3.1)*Math.sin(t*L*.55+1)),sides:6,flat:.2,up:[-d[1]/l,d[0]/l,0],col:K.seam,mat:PLN_MAT.glow,glow:1,cap:true});
-    run=[];
-  };
-  const rad=.034+.012*v.w;
-  for(const p of pts){if(solid(p[0],p[1]))run.push(p);else seam(rad);}
-  seam(rad);
-  /* зёрна: редкие (как в стенде — три с половиной на метр шва), рыжие, но тусклые */
-  let len=0;for(let i=1;i<pts.length;i++)len+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
-  const n=Math.round(len*1.6);
-  for(let k=0;k<n;k++){
-    const p=pts[r()*pts.length|0],x=p[0]+(r()-.5)*.3,y=p[1]+(r()-.5)*.3,s=.025+Math.pow(r(),2)*.05;
-    if(!solid(x,y))continue;
-    plnBlob(m,{c:[x,y,z-.01],r:[s*(1+r()*.8),s*(.7+r()*.3),.015],sub:1,lean:r()*3,col:plnMul(K.ore,.05+Math.pow(r(),3)*.2),mat:PLN_MAT.glow,glow:1});
-  }
-}
-
 /* ── кадр: полосы, что видны, строятся по бюджету; огни ближних кристаллов — в кадр ── */
-function cave3DressFrame(C,F,Fd,x0,x1,cx,first){
+function cave3DressFrame(C,F,Fd,x0,x1,cx,first,cy){
   const Q=C.dr3||(C.dr3={m:new Map(),gen:-1,t:0,items:null,by:null});
   if(Q.gen!==PLN_GPU.gen){for(const b of Q.m.values()){plnGeoFree(b.m);plnGeoFree(b.ink);}Q.m.clear();Q.gen=PLN_GPU.gen;}
   if(!Q.items){
@@ -101402,8 +101493,10 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first){
     tris+=k.tris;L.push(...k.lights);Gl.push(...k.glows);
   }
   /* огней в кадре двенадцать: убранству — до пяти ближних (кадр потом отберёт по силе), свечений — до трёх */
-  L.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
-  Gl.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
+  /* ближние — по x и по y: куст галереей ниже светит не в этот кадр */
+  const dd=q=>Math.hypot(q.p[0]-cx,cy==null?0:q.p[1]-cy);
+  L.sort((a,b)=>dd(a)-dd(b));
+  Gl.sort((a,b)=>dd(a)-dd(b));
   F.lights.push(...L.slice(0,5));
   F.glows.push(...Gl.slice(0,Math.max(0,Math.min(3,6-F.glows.length))));
   /* залы в кадре — шейдеру: стена галереи и натёчного зала в рёбрах, грота — друзой, у озера гладкая */
@@ -101679,7 +101772,7 @@ function cave3AmberFrame(C,F,Fd,x0,x1,cx){
    кости пловца того моря, что положило пласты, и раковины; в песчанике — раковины и редкая кость;
    в изверженном — пузыри газа гроздьями; во льду — цепочки пузырьков; в коренном — желваки.
    Корни сверху — где на поверхности что-то растёт: спускаются и кончаются там, где камень
-   открывается. Жила руды — своя (22dc cave3VeinInk). Всё строится полосами убранства (22dc), по
+   открывается. Жил руды на разрезе нет (M630d: штрих без тела читался царапиной). Всё строится полосами убранства (22dc), по
    записи на штуку; место штуки подбирается так, чтобы она целиком лежала в камне */
 const CAVE3_INKS={z:-.03,bone:plnHex("#333d4b"),dim:plnHex("#222a35"),bark:plnHex("#2f2a25"),barkD:plnHex("#1d1a18"),
   gas:plnHex("#11141a"),gasRim:plnHex("#2b333e"),ice:plnHex("#3c4c5c"),fl:.2};
@@ -101825,7 +101918,7 @@ function cave3InkBuild(F,m,q,r){
    пещеры: растение в q.h пикселей карты стоит в q.h/CAVE_PPM метров, зверь — в b.r/CAVE_PPM.
    Стоят за линией ходьбы, на полу картинки; свет фонаря и дня ложится на них, как на камень.
    У каждой книжки свой буфер записей: кадр пещеры рисует запись с нуля (22db). */
-const CAVE3_LIFE={plantZ:[1.25,.8],beastZ:[.35,.9],rMin:.28,cap:24};
+const CAVE3_LIFE={plantZ:[1.25,.8],beastZ:[.35,.9],rMin:.28,cap:24,fur:[.36,.33,.31]};
 
 function cave3LifeDrop(Q){
   for(const k in Q.geo)plnGeoFree(Q.geo[k]);
@@ -101896,7 +101989,8 @@ function cave3LifeFrame(C,F,Fd,x0,x1){
           :(e.go?(b.hop?Math.abs(Math.sin(e.t))*R*.35:Math.sin(e.t)*R*.08+R*.08):0);
         const y=f+up;
         const yaw=b.alien==="manta"?PLN_BEAST.mantaYaw:PLN_BEAST.yaw;
-        plnRec(a,m++,[X,y,z],R,b.face<0?Math.PI-yaw:yaw,1,m,b.scanned?[.72,1.08,1.04]:null,0);
+        /* шкура у поверхности поднята под контровой свет дня; в пещере тело темнее — его лепит фонарь */
+        plnRec(a,m++,[X,y,z],R,b.face<0?Math.PI-yaw:yaw,1,m,b.scanned?[.42,.62,.6]:K.fur,0);
       }
     }
     let I=Q.inst[key];
@@ -101933,10 +102027,10 @@ function cave3NearShift(C){
    окно дня сквозь тонкий лёд свода, в прочих — мокрая стена, что ловит фонарь (тише всех).
    Событие — тело, подписи ему не нужно. */
 const CAVE3_GAP={win:30,step:28,w:4,
-  worm:{thread:[.05,.11,.10],bead:[.30,1.0,.84],light:[.15,.45,.40],glow:[.25,.85,.72]},
-  vent:{hot:[1.0,.40,.10],ember:[.9,.28,.06],lip:[5,1.9,.45],light:[1.4,.55,.15],glow:[.95,.40,.10]},
+  worm:{thread:[.05,.11,.10],bead:[.30,1.0,.84],light:[.15,.45,.40],floor:[.35,1.1,.95],glow:[.25,.85,.72]},
+  vent:{hot:[1.0,.40,.10],ember:[.9,.28,.06],spark:[1.0,.62,.22],lip:[7,2.6,.6],light:[1.4,.55,.15],glow:[.95,.40,.10]},
   ice:{win:[.70,.87,1.0],mid:[.40,.55,.70],lip:[1.8,2.3,2.8],light:[.6,.8,1.0],glow:[.52,.70,.90]},
-  wet:{run:[.50,.52,.53],light:[.35,.38,.42],glow:[.30,.36,.42]}};
+  wet:{run:[.50,.52,.53],light:[1.1,1.2,1.35],glow:[.30,.36,.42]}};
 
 /* куда встают события: середины пролётов между огнями (и краями хода), каждое ±2 м;
    на месте без воздуха сдвигается до 3 м к залу, где свод выше */
@@ -101995,17 +102089,20 @@ function cave3GapWorm(B,q,lights,glows){
   if(z0<0)return false;
   const t0=cave3Up(F,q.X,g.ym,z0);
   if(t0-g.ym>g.gap*1.2+2)return false;
-  let n=0;
-  for(let i=0;i<46;i++){
-    const x=q.X+(r()-.5)*(r()<.7?2.6:4.4),z=clamp(z0+(r()-.5)*1.6,1.3,Math.max(1.5,g.zd-.4));
+  let n=0,lg=0;const nl=3+(r()*3|0);
+  for(let i=0;i<40;i++){
+    /* первые — длинные нити в 2–4 м, по ним колонию видно издали; вокруг — короткая бахрома */
+    const long=lg<nl,x=q.X+(r()-.5)*(long?2.2:(r()<.7?2.6:4.4)),z=clamp(z0+(r()-.5)*(long?1:1.6),1.3,Math.max(1.5,g.zd-.4));
     if(cave3Den(F,x,g.ym,z)>-.3)continue;
     const tp=cave3Up(F,x,g.ym,z);
     if(tp-g.ym>g.gap*1.2+2)continue;
-    const bot=cave3Down(F,x,g.ym,z),l=Math.min(.12+Math.pow(r(),1.7)*1.1,(tp-bot)*.45),sw=(r()-.5)*.06;
-    if(l<.08)continue;
+    const bot=cave3Down(F,x,g.ym,z),sw=(r()-.5)*(long?.14:.06);
+    const l=long?Math.min(2+r()*2,(tp-bot)*.75):Math.min(.12+Math.pow(r(),1.7)*1.1,(tp-bot)*.45);
+    if(l<(long?1.2:.08))continue;
+    if(long)lg++;
     const top=[x,tp+.03,z],end=[x+sw,tp-l,z+sw*.5];
-    plnTube(B.m,{path:[top,end],rad:.005,sides:3,col:K.thread,mat:PLN_MAT.glow,glow:1});
-    const nb=1+(l/.22|0);
+    plnTube(B.m,{path:[top,end],rad:long?.007:.005,sides:3,col:K.thread,mat:PLN_MAT.glow,glow:1});
+    const nb=1+(l/(long?.16:.22)|0);
     for(let b=0;b<nb;b++){
       const t=b===nb-1?1:(b+.5+r()*.4)/nb,p=[lerp(top[0],end[0],t),lerp(top[1],end[1],t),lerp(top[2],end[2],t)],s=(b===nb-1?.022:.013)*(.8+r()*.5);
       plnBlob(B.m,{c:p,r:[s,s*1.3,s],sub:0,col:K.bead,mat:PLN_MAT.glow,glow:(b===nb-1?2.4:1.4)*(.7+r()*.5)});
@@ -102013,8 +102110,10 @@ function cave3GapWorm(B,q,lights,glows){
     n++;
   }
   if(n<8)return false;
-  const p=[q.X,t0-.7,z0];
+  const p=[q.X,t0-.7,z0],fl=cave3Down(F,q.X,g.ym,z0);
   lights.push({p,r:5.5,c:K.light});
+  /* свет колонии ложится на камень под ней: пол под нитями бирюзовый */
+  if(t0-fl>2)lights.push({p:[q.X,fl+.9,z0-.4],r:3.2,c:K.floor});
   glows.push({p:[q.X,t0-.35,z0],c:K.glow,k:.42,s:1.7});
   return true;
 }
@@ -102038,19 +102137,26 @@ function cave3GapVent(B,q,lights,glows){
     }
     return pts;
   };
-  const main=crack(q.X,bot+.05,h,(r()-.5)*.2,.05);
+  const main=crack(q.X,bot+.05,h,(r()-.5)*.2,.13+r()*.05);
   if(main.length<4)return false;
   for(let k=0,n=2+(r()*2|0);k<n;k++){
     const p=main[1+(r()*(main.length-2)|0)];
-    crack(p[0],p[1],.3+r()*.5,(r()<.5?-1:1)*(.6+r()*.5),.028);
+    crack(p[0],p[1],.4+r()*.6,(r()<.5?-1:1)*(.6+r()*.5),.05);
   }
   const ft=main[0];
   for(let k=0;k<7;k++){
     const s=.03+r()*.04,x=ft[0]+(r()-.5)*.8,zz=ft[2]-.15-r()*.5,y=cave3Down(F,x,ft[1]+.4,zz);
     plnBlob(B.m,{c:[x,y+s*.3,zz],r:[s*1.4,s*.6,s],sub:0,col:K.ember,mat:PLN_MAT.glow,glow:1+r()*1.2});
   }
+  /* искры: от щели вверх, реже и мельче к высоте */
+  const tp=main[main.length-1];
+  for(let k=0;k<14;k++){
+    const u=Math.pow(r(),1.6),p=main[r()*main.length|0],y=p[1]+.15+u*1.6,s=.012+(1-u)*.014;
+    plnBlob(B.m,{c:[p[0]+(r()-.5)*(.2+u*.8),Math.min(y,tp[1]+1.4),p[2]-.12-r()*.5],r:[s,s*1.8,s],sub:0,col:K.spark,mat:PLN_MAT.glow,glow:2+r()*1.5});
+  }
   const mid=main[main.length>>1],lo=main[main.length>>2];
-  lights.push({p:[lo[0],lo[1],lo[2]-.3],r:2.2,c:K.lip});
+  /* жар на камне в 2 м вокруг: свет вплотную к стене, грани берут его рыжим */
+  lights.push({p:[lo[0],lo[1],lo[2]-.3],r:2.8,c:K.lip});
   lights.push({p:[mid[0],mid[1],mid[2]-.9],r:5.5,c:K.light});
   glows.push({p:[mid[0],mid[1]-.2,mid[2]-.25],c:K.glow,k:.48,s:1.1});
   return true;
@@ -102102,7 +102208,7 @@ function cave3GapWet(B,q,lights,glows){
       pts.push([x,y,zw-.02]);
     }
     if(pts.length<4)continue;
-    plnTube(B.m,{path:pts,rad:t=>.08+.05*Math.sin(t*7+k),sides:6,flat:.35,up:[1,0,0],col:K.run,mat:PLN_MAT.rock,glow:1});
+    plnTube(B.m,{path:pts,rad:t=>.11+.06*Math.sin(t*7+k),sides:6,flat:.35,up:[1,0,0],col:K.run,mat:PLN_MAT.rock,glow:1});
     n++;
   }
   if(!n)return false;

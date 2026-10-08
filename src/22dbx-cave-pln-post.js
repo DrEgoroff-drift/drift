@@ -94,12 +94,14 @@ fn bad3(c: vec3f) -> bool {
              отпускает свет за несколько метров, иначе весь зал стоит в молоке */
           let cs = dot(ll.xyz, rd);
           let ax = dot(-ll.xyz, g.lampDir.xyz);
-          let core = smoothstep(g.lampCol.w - 0.015, g.lampCol.w + 0.015, ax) * (0.55 + 0.45 * smoothstep(0.9, 0.98, ax));
+          /* кромка мягкая, ±2.5° около внутреннего конуса; к оси клин гуще */
+          let core = smoothstep(g.lampCol.w - 0.024, g.lampCol.w + 0.022, ax) * (0.45 + 0.55 * smoothstep(0.88, 0.985, ax));
           let dl = length(p - g.lampPos.xyz);
-          /* клин идёт от шлема: у самого фонаря воздух светится гуще */
-          let wet = (1.0 + 0.6 * g.farK.w) * (1.0 + 1.6 * exp(-dl / 2.2));
-          let du = 0.7 + 0.6 * vn3(p * 0.7 + vec3f(g.camPos.w * 0.02, 0.0, 0.0), 45u);
-          accL += ll.w * core * exp(-dl / 14.0) * wet * sh * du * (0.55 + 0.9 * pow(max(cs, 0.0), 3.0) + 0.2 * cs * cs);
+          /* клин идёт от шлема и гаснет по квадрату дали: ярче всего у фонаря; сырость держит свет */
+          let fall = 3.2 / (1.0 + dl * dl / 3.0);
+          let wet = 0.7 + 0.9 * g.farK.w;
+          let du = 0.62 + 0.76 * vn3(p * vec3f(0.8, 0.45, 0.8) + vec3f(g.camPos.w * 0.02, -g.camPos.w * 0.012, 0.0), 45u);
+          accL += ll.w * core * fall * wet * sh * du * (0.55 + 0.9 * pow(max(cs, 0.0), 3.0) + 0.2 * cs * cs);
         }
       }
     }

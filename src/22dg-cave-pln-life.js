@@ -3,7 +3,7 @@
    пещеры: растение в q.h пикселей карты стоит в q.h/CAVE_PPM метров, зверь — в b.r/CAVE_PPM.
    Стоят за линией ходьбы, на полу картинки; свет фонаря и дня ложится на них, как на камень.
    У каждой книжки свой буфер записей: кадр пещеры рисует запись с нуля (22db). */
-const CAVE3_LIFE={plantZ:[1.25,.8],beastZ:[.35,.9],rMin:.28,cap:24};
+const CAVE3_LIFE={plantZ:[1.25,.8],beastZ:[.35,.9],rMin:.28,cap:24,fur:[.36,.33,.31]};
 
 function cave3LifeDrop(Q){
   for(const k in Q.geo)plnGeoFree(Q.geo[k]);
@@ -74,7 +74,8 @@ function cave3LifeFrame(C,F,Fd,x0,x1){
           :(e.go?(b.hop?Math.abs(Math.sin(e.t))*R*.35:Math.sin(e.t)*R*.08+R*.08):0);
         const y=f+up;
         const yaw=b.alien==="manta"?PLN_BEAST.mantaYaw:PLN_BEAST.yaw;
-        plnRec(a,m++,[X,y,z],R,b.face<0?Math.PI-yaw:yaw,1,m,b.scanned?[.72,1.08,1.04]:null,0);
+        /* шкура у поверхности поднята под контровой свет дня; в пещере тело темнее — его лепит фонарь */
+        plnRec(a,m++,[X,y,z],R,b.face<0?Math.PI-yaw:yaw,1,m,b.scanned?[.42,.62,.6]:K.fur,0);
       }
     }
     let I=Q.inst[key];

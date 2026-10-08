@@ -9,7 +9,7 @@
    (C.dr3), пока жива видеокарта; ничего не сохраняется — всё от C.seed. */
 const CAVE3_DR={s:16,ms:5,first:300,keep:14};
 const CAVE3_DC={cream:plnHex("#e6dfcf"),creamD:plnHex("#aaa090"),rust:plnHex("#b4703c"),
-  mauve:[plnHex("#6a3a9a"),plnHex("#e2a0e6")],seam:plnHex("#2a1c14"),ore:plnHex("#d2742a")};
+  mauve:[plnHex("#6a3a9a"),plnHex("#e2a0e6")]};
 const CAVE3_DOME=[0,.1,.25,.42,.6,.78,.92,1];
 /* отделка стены по залу (шейдер 22dbw): 0 рёбра, 1 друза, 2 шов, 3 гладь */
 const CAVE3_ZK={gallery:0,dripstone:0,crystal:1,vein:2,water:3};
@@ -236,7 +236,6 @@ function cave3DressItems(C,F){
   for(const t of D.tips)out.push({k:t.col?"col":t.up?"hang":"mite",X:t.x/P,t,g:gal(t.x,t.low),seed:t.seed});
   for(const c of D.curtains)out.push({k:"veil",X:(c.x0+c.w/2)/P,t:c,g:gal(c.x0+c.w/2,false),seed:c.seed});
   D.crystals.forEach((c,i)=>out.push({k:"cryst",X:c.x/P,t:c,g:gal(c.x,c.low),seed:hashi(i,C.seed,0xC1A5),zone:caveZoneAt(C,c.x).kind}));
-  D.veins.forEach((v,i)=>out.push({k:"vein",X:v.pts[0][0]/P,t:v,seed:hashi(i,C.seed,0x7E1)}));
   /* что лежит в камне разреза (22df) */
   for(const q of cave3InkItems(C,F))out.push(q);
   /* световые события в пролётах (22dh) */
@@ -265,7 +264,6 @@ function cave3DressBin(C,F,items){
   };
   for(const q of items){
     const r=B.r=rng(q.seed^0x5EED),g=q.g;
-    if(q.k==="vein"){cave3VeinInk(C,F,ink,q.t,r);continue;}
     if(q.k==="ink"){cave3InkBuild(F,ink,q,r);continue;}
     if(q.k==="veil"){
       const c=q.t,ax=c.x0/P,bx=(c.x0+c.w)/P,z1=Math.max(2,g.zd-1.2);
@@ -332,46 +330,15 @@ function cave3DressCryst(B,q,lights,glows){
     const nn=(k?3:c.spikes.length*2)+4+(r()*4|0),glow=2.6+r()*.8;
     cave3Cluster(B,[x-nrm[0]*.1,py-nrm[1]*.1,z-nrm[2]*.1],nrm,nn,size,glow);
     if(size>.9){
-      /* кристалл — акцент, ключ остаётся фонарю: досягаемость до 4 м, ореол узкий */
+      /* кристалл — акцент, ключ остаётся фонарю: фиолетовый отсвет ложится на камень в 2–3 м, ореол узкий */
       const p=plnAdd([x,py,z],plnMul(nrm,size*.35)),kk=clamp(size/3.2,.35,1)*.9;
-      lights.push({p,r:Math.min(4,2.2+size*.8),c:[.8*kk,.39*kk,1.05*kk]});
+      lights.push({p,r:clamp(2.6+size*.4,3,3.8),c:[2.3*kk,1.05*kk,3.1*kk]});
       if(!k)glows.push({p,c:[.62,.30,.85],k:.55*kk,s:.8+size*.25});
     }
   }
 }
-/* жила в плоскости разреза: тёмный шов и рыжие зёрна руды, только там, где разрез — камень */
-function cave3VeinInk(C,F,m,v,r){
-  const P=CAVE_PPM,z=-.03,K=CAVE3_DC,solid=(X,Y)=>cave3Den(F,X,Y,.1)>.3;
-  const base=x=>(v.up?caveCeilOf(C,x,v.low):caveFloorOf(C,x,v.low));
-  const pts=[];
-  for(let i=0;i+1<v.pts.length;i++){
-    const [xa,oa]=v.pts[i],[xb,ob]=v.pts[i+1];
-    for(let s=0;s<4;s++){const t=s/4,x=lerp(xa,xb,t),o=lerp(oa,ob,t);pts.push([x/P,-(base(x)+o)/P,z]);}
-  }
-  let run=[];
-  const seam=rad=>{
-    if(run.length<3){run=[];return;}
-    const d=plnSub(run[run.length-1],run[0]),l=Math.hypot(d[0],d[1])||1;
-    /* толщина гуляет по метрам, не по доле отрезка: короткий шов не рвётся в бусы */
-    let L=0;for(let i=1;i<run.length;i++)L+=Math.hypot(run[i][0]-run[i-1][0],run[i][1]-run[i-1][1]);
-    plnTube(m,{path:run,rad:t=>rad*(.62+.38*Math.sin(t*L*3.1)*Math.sin(t*L*.55+1)),sides:6,flat:.2,up:[-d[1]/l,d[0]/l,0],col:K.seam,mat:PLN_MAT.glow,glow:1,cap:true});
-    run=[];
-  };
-  const rad=.034+.012*v.w;
-  for(const p of pts){if(solid(p[0],p[1]))run.push(p);else seam(rad);}
-  seam(rad);
-  /* зёрна: редкие (как в стенде — три с половиной на метр шва), рыжие, но тусклые */
-  let len=0;for(let i=1;i<pts.length;i++)len+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
-  const n=Math.round(len*1.6);
-  for(let k=0;k<n;k++){
-    const p=pts[r()*pts.length|0],x=p[0]+(r()-.5)*.3,y=p[1]+(r()-.5)*.3,s=.025+Math.pow(r(),2)*.05;
-    if(!solid(x,y))continue;
-    plnBlob(m,{c:[x,y,z-.01],r:[s*(1+r()*.8),s*(.7+r()*.3),.015],sub:1,lean:r()*3,col:plnMul(K.ore,.05+Math.pow(r(),3)*.2),mat:PLN_MAT.glow,glow:1});
-  }
-}
-
 /* ── кадр: полосы, что видны, строятся по бюджету; огни ближних кристаллов — в кадр ── */
-function cave3DressFrame(C,F,Fd,x0,x1,cx,first){
+function cave3DressFrame(C,F,Fd,x0,x1,cx,first,cy){
   const Q=C.dr3||(C.dr3={m:new Map(),gen:-1,t:0,items:null,by:null});
   if(Q.gen!==PLN_GPU.gen){for(const b of Q.m.values()){plnGeoFree(b.m);plnGeoFree(b.ink);}Q.m.clear();Q.gen=PLN_GPU.gen;}
   if(!Q.items){
@@ -403,8 +370,10 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first){
     tris+=k.tris;L.push(...k.lights);Gl.push(...k.glows);
   }
   /* огней в кадре двенадцать: убранству — до пяти ближних (кадр потом отберёт по силе), свечений — до трёх */
-  L.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
-  Gl.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
+  /* ближние — по x и по y: куст галереей ниже светит не в этот кадр */
+  const dd=q=>Math.hypot(q.p[0]-cx,cy==null?0:q.p[1]-cy);
+  L.sort((a,b)=>dd(a)-dd(b));
+  Gl.sort((a,b)=>dd(a)-dd(b));
   F.lights.push(...L.slice(0,5));
   F.glows.push(...Gl.slice(0,Math.max(0,Math.min(3,6-F.glows.length))));
   /* залы в кадре — шейдеру: стена галереи и натёчного зала в рёбрах, грота — друзой, у озера гладкая */
