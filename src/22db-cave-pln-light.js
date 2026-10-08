@@ -69,7 +69,7 @@ function cave3GpuTier(){
     sh:[Q.U.shL,Q.U.shS].map(u=>d.createBindGroup({layout:L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
   /* глубина сцены при сглаживании многовыборочная: воздух читает её первую выборку */
   const post=Q.ms>1?CAVE3_WGSL_POST.replace("var depthTex: texture_depth_2d;","var depthTex: texture_depth_multisampled_2d;"):CAVE3_WGSL_POST;
-  const mS=gpuShader(CAVE3_WGSL_SCENE),mP=gpuShader(post);
+  const mS=gpuShader(CAVE3_WGSL_SCENE+PLN_WGSL_WATER_CAVE),mP=gpuShader(post);
   for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
     for(const x of i.messages)if(x.type==="error")cave3Log("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
   const lS=d.createPipelineLayout({bindGroupLayouts:[L.scene]}),lH=d.createPipelineLayout({bindGroupLayouts:[L.shadow]}),
@@ -85,9 +85,7 @@ function cave3GpuTier(){
   /* зеркало: та же сцена в полкадра без сглаживания; вода — поверх породы, глубину не пишет */
   mk("bodyR",{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",targets:[{format:PLN_HDR}]},
     primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"}});
-  mk("water",{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_water",targets:[{format:PLN_HDR,
-      blend:{color:{srcFactor:"src-alpha",dstFactor:"one-minus-src-alpha",operation:"add"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha",operation:"add"}}}]},
-    primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater"},multisample:mu});
+  mk("water",plnWaterPipe(lS,mS,mu));   /* вода — одна на все сцены (21pw) */
   const pp=(fs,tg)=>({layout:lP,vertex:{module:mP,entryPoint:"vs_full"},fragment:{module:mP,entryPoint:fs,targets:[tg||{format:PLN_HDR}]},primitive:prim});
   mk("blur",pp("fs_blur"));mk("down",pp("fs_down"));mk("up",pp("fs_up"));mk("air",pp("fs_air"));
   /* свёртка пишет в сцену движка; её альфу не трогаем */
@@ -201,11 +199,9 @@ function cave3GpuFrame(F){
   const bg={r:CAVE3_K.fogC[0],g:CAVE3_K.fogC[1],b:CAVE3_K.fogC[2],a:1},lake=F.lake&&F.water&&F.water.length;
   /* зеркало озера: сцена, отражённая в уровне воды, в полкадра; что под водой — отрезано */
   if(lake){
-    const y=F.lake.y,Fm=Object.assign({},F,{eye:[F.eye[0],2*y-F.eye[1],F.eye[2]],clipY:y+.02,clip:1});
-    d.queue.writeBuffer(Q.U.refl,0,cave3Globals(ga[3],Fm,plnM4mul(F.vp,plnM4mirrorY(y)),null,Q.T.refl.width,Q.T.refl.height));
-    const p=e.beginRenderPass({colorAttachments:[{view:V.refl,clearValue:bg,loadOp:"clear",storeOp:"store"}],timestampWrites:gpuTs("cave3.refl"),
-      depthStencilAttachment:{view:V.reflD,depthClearValue:0,depthLoadOp:"clear",depthStoreOp:"discard"}});
-    p.setBindGroup(0,Q.B0.refl);p.setPipeline(P.bodyR);run(p,b=>b.refl);p.end();
+    const y=F.lake.y,Fm=Object.assign({},F,{eye:plnWaterEye(F.eye,y),clipY:y+.02,clip:1});
+    d.queue.writeBuffer(Q.U.refl,0,cave3Globals(ga[3],Fm,plnWaterVP(F.vp,y),null,Q.T.refl.width,Q.T.refl.height));
+    plnWaterMirror(e,{view:V.refl,depth:V.reflD,bg,ts:"cave3.refl",bind:Q.B0.refl,sky:null,body:P.bodyR,draw:p=>run(p,b=>b.refl)});
   }
   {
     const col=ms>1?{view:V.ms,resolveTarget:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"discard"}:{view:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"store"};

@@ -63,7 +63,7 @@ function plnWeatherFrame(F,p,Hr,C,L){
   F.look.wxBox=[nS,nL,nLamps,nB];
   /* земля линии хода под героем: по ней стелются ближние полосы тумана */
   const gy=L&&L.P?plnLandTab(L,L.P,F.hero[0]):F.waterY;
-  F.look.wxSpare=[fl,bseed,gy,0];
+  F.look.wxSpare=[fl,bseed,gy,L?plnWaterSwell(L)*(.7+.6*Math.min(1,Math.abs(WIND))):0];   /* w — зыбь открытой воды (21pw) */
   F.wx={n:nP+nS+nL+nB};
   PLN_WX.drawn=on;
   PLN.stat.wx={kind:kind||null,wp:+wp.toFixed(2),n:nP,sheets:nS,lamp:nL,bolt:nB,fl:+fl.toFixed(2),wet:+PLN_WX.wet.toFixed(2)};

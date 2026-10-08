@@ -163,7 +163,7 @@ function plnGpuTier(){
    а держим сами — воронка непрогретое не хранит */
 function plnGpuPipes(){
   const Q=PLN_GPU,d=GPU.dev,L=Q.L,ms=Q.ms;
-  const mS=gpuShader(PLN_WGSL_SCENE+PLN_WGSL_WX),mP=gpuShader(plnWgslPost(ms));   /* осадки — в шейдере сцены (21pk) */
+  const mS=gpuShader(PLN_WGSL_SCENE+PLN_WGSL_WX+PLN_WGSL_WATER),mP=gpuShader(plnWgslPost(ms));   /* осадки — в шейдере сцены (21pk) */
   for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
     for(const x of i.messages)if(x.type==="error")plnLog("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
   const lS=d.createPipelineLayout({bindGroupLayouts:[L.scene]}),lH=d.createPipelineLayout({bindGroupLayouts:[L.shadow]}),
@@ -179,9 +179,7 @@ function plnGpuPipes(){
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"always"},multisample:mu});
     mk("body"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},fragment:{module:mS,entryPoint:"fs_main",targets:[{format:PLN_HDR}]},
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"greater"},multisample:mu});
-    mk("water"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_main",buffers:PLN_VB},
-      fragment:{module:mS,entryPoint:"fs_water",targets:[{format:PLN_HDR,blend}]},
-      primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater"},multisample:mu});
+    mk("water"+n,plnWaterPipe(lS,mS,mu));   /* вода — одна на все сцены (21pw) */
     /* осадки: карточки без буферов, по шесть вершин на штуку; глубину читают, не пишут (M626) */
     mk("wx"+n,{layout:lS,vertex:{module:mS,entryPoint:"vs_wx"},fragment:{module:mS,entryPoint:"fs_wx",targets:[{format:PLN_HDR,blend}]},
       primitive:prim,depthStencil:{format:PLN_DEP,depthWriteEnabled:false,depthCompare:"greater"},multisample:mu});
@@ -323,12 +321,8 @@ function plnGpuFrame(F){
     p.setPipeline(P.shadow);p.setBindGroup(0,B.sh[l]);some(p,l?PLN_TO.sh1:PLN_TO.sh0,PLN_KIND.body);p.end();
   }
   const bg={r:.42,g:.5,b:.55,a:1};
-  if(F.mirror){
-    const p=e.beginRenderPass({colorAttachments:[{view:V.refl,clearValue:bg,loadOp:"clear",storeOp:"store"}],timestampWrites:gpuTs("pln.mirror"),
-      depthStencilAttachment:{view:V.reflD,depthClearValue:0,depthLoadOp:"clear",depthStoreOp:"discard"}});
-    p.setBindGroup(0,B.refl);p.setPipeline(P.sky1);p.draw(3);
-    p.setPipeline(P.body1);some(p,PLN_TO.mirror,PLN_KIND.body);p.end();
-  }
+  if(F.mirror)plnWaterMirror(e,{view:V.refl,depth:V.reflD,bg,ts:"pln.mirror",bind:B.refl,sky:P.sky1,body:P.body1,
+    draw:p=>some(p,PLN_TO.mirror,PLN_KIND.body)});
   {
     const col=ms>1?{view:V.ms,resolveTarget:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"discard"}
       :{view:V.hdr,clearValue:bg,loadOp:"clear",storeOp:"store"};

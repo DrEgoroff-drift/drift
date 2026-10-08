@@ -108,7 +108,9 @@ function plnBeastMesh(b,k,flip){
       for(let j=0;j<=NS;j++)for(let i=0;i<=NC;i++){
         const v=j/NS,q=i/NC,x0=lerp(-.5,-.75,v),x1=lerp(.6,-.2,v*v),x=lerp(x0,x1,q)*(1-.25*v);
         const y=cy+(stun?-.3*v:Math.sin(t2+v*1.7+(side>0?0:.9))*.55*v*(.5+.5*v))+.06*Math.sin(q*Math.PI);
-        ids.push(plnVert(m,[x,y,side*(.2+v*S)],plnNorm([0,1,-.15*side]),plnMul(c,lerp(1.05,.55,v)*lerp(.85,1.1,q)),B,0,gl,0));
+        /* крыло выгнуто по хорде (M631): нормаль катится от заднего края к переднему, свет фонаря ложится
+           градиентом, не ровной заливкой; спина темнее у корня и к концу, передняя кромка светлее — обвод */
+        ids.push(plnVert(m,[x,y,side*(.2+v*S)],plnNorm([(q-.5)*1.5,1,-.15*side-.5*side*v]),plnMul(c,lerp(1.05,.45,v)*lerp(.55,1.15,q*q)*(i===NC?1.3:1)),B,0,gl,0));
       }
       for(let j=0;j<NS;j++)for(let i=0;i<NC;i++){
         const o=j*(NC+1)+i;

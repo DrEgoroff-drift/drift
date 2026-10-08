@@ -40,6 +40,7 @@ every shot lie there too.
 | `ship.py` | writes a pad snippet with a synthetic hull of a given form and class (`<form> [class] [colour] [hour]`; forms swept/delta/xwing/twin/slab/boxed/disc/trident), so the planet's ship (21phb) can be looked at across the fleet; shoot it with `pose.py base=g_ship_<form>_<class>.js` |
 | `descent.py` | writes a snippet that holds the landing still at a height: `<name>:alt=;dx=;a=;gear=;thr=;touched=;flow=;fn=;hour=;t=;n=` — the descent frame of 21pza; `flow=N` switches to the surface after N frames, shoot it with `until=window.__FLOW==="ok"`, which turns `fn` surface frames later (default 6; `fn=1` is the first surface frame, the hand-over of the lens, M830); the stubbed update writes the readout (`plnLandRead`) |
 | `herb.py` | lines the twelve plant forms up along the walk line: `<name>:forms=;ages=;gap=;x=;near=;hour=;seed=;wet=;walk=` — one species per form, the row's species become the planet's for the frame; shoot with `dpr=3` (the plant's pixel size comes from the device ratio) |
+| `water.py` | the water's gate (M634): the lake and the ocean by day and night, each also with `PLN.noMirror`, and the ocean with `PLN.sunAim`; measures the spread of value across the water band, the mirror's share and the sun's path; `port= pfx= only= shoot=0`; prints ALL GREEN / FAILED N |
 | `where.py` | where the frames go |
 
 ```bash

@@ -822,3 +822,26 @@ label of a deposit.
 placement keeps its measures apart from the GPU (`K.ledge[v].top/rx/rz/low`, `F.crags`),
 so a suite of the Node tier can check that no body in front rises over the line and no
 body hangs over the slope.
+
+**M634** (one water everywhere) moved the stand's water into its own module,
+`src/21pw-pln-water.js`: the surface (`waterSurf`: two ripple layers along the signed wind,
+calm patches that grow with distance, a swell of three crests 3, 5.5 and 8 m whose resolved
+part bends the normal and whose lost part turns into roughness, drip rings), the look
+(`waterLook`: shallows, Fresnel that roughness lowers at grazing, the mirror, an anisotropic
+glitter that stretches into a path, the wet edge and its thread), the mirror pass
+(`plnWaterMirror`), the pipeline and the meshes (the valley sheet, the pond, the sea). The
+planet (`PLN_WGSL_WATER`) and the cave (`PLN_WGSL_WATER_CAVE`) each keep only an entry point
+on that core; `fs_water` exists nowhere else (`tests/91qi-water.js`). An ocean world
+(`far.shape === "isles"`) lays the sea in three bands to 30 km; isles rise through it where
+the far land tops the level, and the open sea's floor sinks ten metres so the body is dark
+there. `wxSpare.w` is the swell (1 at sea, .15 on a lake, scaled by the wind). By night the
+water mirrors the horizon, which is bright and even: what keeps it from a flat sheet is the
+roughness reflecting higher, darker sky (up to 70 % by night), mist that lies in banks past
+60 m and air over open water a little clearer by night up to 1.5 km. The sun's path never
+enters the lens by itself — the sun's law keeps the light behind the scene and to one side —
+so it is shot with the stand hook `PLN.sunAim`; `PLN.noMirror` empties the mirror for the
+mirror-share gate. The gate is `docs/look/game/water.py` (spread of value across the water
+band, mirror share, the path and its control): lake .329 / .090 and sea .212 / .082 by day /
+night, mirror .68–.97, path .40 against .05 without the aim. The cave lake runs the same
+module but lies 2–7 m under the walk line in the seeds tried, so from the walk it shows as a
+dark strip; that is the designer's fork.

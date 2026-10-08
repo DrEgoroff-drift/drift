@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 553 · top-level symbols: 8169
+Files: 555 · top-level symbols: 8183
 
 ## SYMBOLS
 
@@ -1524,7 +1524,7 @@ PLN_DRESS                    src/21pge-pln-dress.js:6-20
 PLN_DRILL                    src/21pic-pln-drill.js:8
 PLN_DUI                      src/21pza-pln-descent.js:191
 PLN_FAR                      src/21pfa-pln-worlds.js:74-99
-PLN_FL                       src/21pfa-pln-worlds.js:212
+PLN_FL                       src/21pfa-pln-worlds.js:213
 PLN_FLORA                    src/21pg-pln-flora.js:23
 PLN_FRAME                    src/21pz-pln-frame.js:18
 PLN_G                        src/21pe-pln-gpu.js:67
@@ -1556,7 +1556,7 @@ PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:201
 PLN_OLD_HUD2                 src/21pzb-pln-words.js:100
 PLN_OLD_LANDING              src/21pza-pln-descent.js:214
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:373
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:375
 PLN_OLD_ULAND                src/21pza-pln-descent.js:206
 PLN_OVER                     src/21pj-pln-over.js:16
 PLN_OWN_GATE_R               src/21pig-pln-own.js:405
@@ -1582,9 +1582,13 @@ PLN_TREE_MAKE                src/21pgb-pln-trees.js:239
 PLN_TREE_ORDER               src/21pgb-pln-trees.js:28
 PLN_VB                       src/21pe-pln-gpu.js:70-86
 PLN_VS                       src/21pa-pln-mesh.js:10
-PLN_WFLORA                   src/21pfa-pln-worlds.js:177-222
+PLN_WATER_BLEND              src/21pw-pln-water.js:211
+PLN_WFLORA                   src/21pfa-pln-worlds.js:178-223
 PLN_WGSL_AIR                 src/21pb-pln-wgsl-air.js:8
 PLN_WGSL_SCENE               src/21pc-pln-wgsl-scene.js:11
+PLN_WGSL_WATER               src/21pw-pln-water.js:124
+PLN_WGSL_WATER_CAVE          src/21pw-pln-water.js:165
+PLN_WGSL_WATER_CORE          src/21pw-pln-water.js:13
 PLN_WGSL_WX                  src/21pk-pln-weather.js:73
 PLN_WILD                     src/21pgd-pln-wild.js:10-35
 PLN_WING                     src/21pgc-pln-wing.js:23
@@ -2852,22 +2856,22 @@ castShadeAt                  src/19c1-cast.js:64-76
 cave3AmberFrame              src/22de-cave-pln-far.js:168-190
 cave3AmberGeo                src/22de-cave-pln-far.js:145-167
 cave3Band                    src/22dc-cave-pln-dress.js:61-86
-cave3Bells                   src/22dc-cave-pln-dress.js:114-146
+cave3Bells                   src/22dc-cave-pln-dress.js:130-164
 cave3Biter                   src/22d-cave-pln.js:348-357
-cave3Caps                    src/22dc-cave-pln-dress.js:91-111
+cave3Caps                    src/22dc-cave-pln-dress.js:91-127
 cave3Chunk                   src/22da-cave-pln-rock.js:244-355
 cave3Chunks                  src/22da-cave-pln-rock.js:360-386
-cave3Cluster                 src/22dc-cave-pln-dress.js:222-230
-cave3Column                  src/22dc-cave-pln-dress.js:180-191
+cave3Cluster                 src/22dc-cave-pln-dress.js:241-249
+cave3Column                  src/22dc-cave-pln-dress.js:199-210
 cave3Cream                   src/22dc-cave-pln-dress.js:51-58
-cave3Crystal                 src/22dc-cave-pln-dress.js:218-221
+cave3Crystal                 src/22dc-cave-pln-dress.js:237-240
 cave3DayBox                  src/22db-cave-pln-light.js:22-33
 cave3Den                     src/22da-cave-pln-rock.js:181-206
 cave3Down                    src/22da-cave-pln-rock.js:208-214
-cave3DressBin                src/22dc-cave-pln-dress.js:256-318
-cave3DressCryst              src/22dc-cave-pln-dress.js:320-339
-cave3DressFrame              src/22dc-cave-pln-dress.js:341-384
-cave3DressItems              src/22dc-cave-pln-dress.js:233-253
+cave3DressBin                src/22dc-cave-pln-dress.js:309-372
+cave3DressCryst              src/22dc-cave-pln-dress.js:374-393
+cave3DressFrame              src/22dc-cave-pln-dress.js:395-438
+cave3DressItems              src/22dc-cave-pln-dress.js:252-274
 cave3DripSty                 src/22dc-cave-pln-dress.js:26-29
 cave3Events                  src/22d-cave-pln.js:50-63
 cave3FarDress                src/22de-cave-pln-far.js:109-119
@@ -2879,24 +2883,24 @@ cave3FarShift                src/22d-cave-pln.js:68-77
 cave3FarSite                 src/22de-cave-pln-far.js:12-31
 cave3FarVoid                 src/22de-cave-pln-far.js:34-48
 cave3Field                   src/22da-cave-pln-rock.js:50-125
-cave3Flute                   src/22dc-cave-pln-dress.js:148-160
+cave3Flute                   src/22dc-cave-pln-dress.js:166-178
 cave3Frame                   src/22d-cave-pln.js:87-207
 cave3GapBuild                src/22dh-cave-pln-gap.js:52-57
 cave3GapDeep                 src/22dh-cave-pln-gap.js:59-63
-cave3GapIce                  src/22dh-cave-pln-gap.js:144-171
+cave3GapIce                  src/22dh-cave-pln-gap.js:152-179
 cave3GapItems                src/22dh-cave-pln-gap.js:34-42
 cave3GapPlan                 src/22dh-cave-pln-gap.js:15-32
-cave3GapVent                 src/22dh-cave-pln-gap.js:99-141
-cave3GapWet                  src/22dh-cave-pln-gap.js:173-196
+cave3GapVent                 src/22dh-cave-pln-gap.js:99-149
+cave3GapWet                  src/22dh-cave-pln-gap.js:181-204
 cave3GapWorm                 src/22dh-cave-pln-gap.js:65-97
-cave3Globals                 src/22db-cave-pln-light.js:145-170
+cave3Globals                 src/22db-cave-pln-light.js:143-168
 cave3GpuDev                  src/22db-cave-pln-light.js:36-50
-cave3GpuFrame                src/22db-cave-pln-light.js:173-233
-cave3GpuReady                src/22db-cave-pln-light.js:133-142
-cave3GpuSize                 src/22db-cave-pln-light.js:97-132
-cave3GpuTier                 src/22db-cave-pln-light.js:52-95
+cave3GpuFrame                src/22db-cave-pln-light.js:171-229
+cave3GpuReady                src/22db-cave-pln-light.js:131-140
+cave3GpuSize                 src/22db-cave-pln-light.js:95-130
+cave3GpuTier                 src/22db-cave-pln-light.js:52-93
 cave3H3                      src/22da-cave-pln-rock.js:35-39
-cave3Hang                    src/22dc-cave-pln-dress.js:162-170
+cave3Hang                    src/22dc-cave-pln-dress.js:180-188
 cave3Hex                     src/22da-cave-pln-rock.js:30
 cave3InFrame                 src/22d-cave-pln.js:282
 cave3InkBuild                src/22df-cave-pln-ink.js:61-146
@@ -2911,7 +2915,7 @@ cave3LifeFrame               src/22dg-cave-pln-life.js:18-93
 cave3Lobes                   src/22dc-cave-pln-dress.js:88
 cave3Log                     src/22db-cave-pln-light.js:15
 cave3ManShare                src/22d-cave-pln.js:44
-cave3Mite                    src/22dc-cave-pln-dress.js:172-178
+cave3Mite                    src/22dc-cave-pln-dress.js:190-197
 cave3Mouth                   src/22d-cave-pln.js:80-85
 cave3N3                      src/22da-cave-pln-rock.js:40-47
 cave3NearShift               src/22dg-cave-pln-life.js:97-106
@@ -2929,7 +2933,8 @@ cave3Up                      src/22dc-cave-pln-dress.js:32-38
 cave3VaultCut                src/22da-cave-pln-rock.js:146
 cave3VaultLift               src/22da-cave-pln-rock.js:175-179
 cave3VaultPlan               src/22da-cave-pln-rock.js:147-174
-cave3Veil                    src/22dc-cave-pln-dress.js:194-216
+cave3Veil                    src/22dc-cave-pln-dress.js:213-235
+cave3VeinBody                src/22dc-cave-pln-dress.js:279-307
 cave3WallZ                   src/22dh-cave-pln-gap.js:44-50
 cave3WordsOn                 src/22d-cave-pln.js:275
 cave3Zd                      src/22dc-cave-pln-dress.js:45-48
@@ -6188,16 +6193,16 @@ plnActVerb                   src/21pif-pln-marks-act.js:97
 plnAdd                       src/21p-pln.js:34
 plnAtThing                   src/21pi-pln-things.js:423-436
 plnBeastCapsule              src/21piba-pln-gait.js:76-101
-plnBeastDrop                 src/21pib-pln-beast.js:246-252
+plnBeastDrop                 src/21pib-pln-beast.js:248-254
 plnBeastEarth                src/21piba-pln-gait.js:185-198
 plnBeastEyes                 src/21pib-pln-beast.js:48-51
-plnBeastFarKit               src/21pib-pln-beast.js:229-245
-plnBeastFrame                src/21pib-pln-beast.js:149-226
+plnBeastFarKit               src/21pib-pln-beast.js:231-247
+plnBeastFrame                src/21pib-pln-beast.js:151-228
 plnBeastFur                  src/21pib-pln-beast.js:32-35
 plnBeastJaw                  src/21piba-pln-gait.js:70-73
 plnBeastLay                  src/21piba-pln-gait.js:64-68
 plnBeastLong                 src/21piba-pln-gait.js:103-119
-plnBeastMesh                 src/21pib-pln-beast.js:53-147
+plnBeastMesh                 src/21pib-pln-beast.js:53-149
 plnBeastR                    src/21pib-pln-beast.js:24
 plnBeastSegment              src/21piba-pln-gait.js:160-183
 plnBeastSpId                 src/21piba-pln-gait.js:16-21
@@ -6227,7 +6232,7 @@ plnDrillFrame                src/21pic-pln-drill.js:40-66
 plnDrillTool                 src/21pic-pln-drill.js:15-23
 plnDrillWrite                src/21pic-pln-drill.js:26-37
 plnFarCrater                 src/21pfa-pln-worlds.js:89-99
-plnFarLane                   src/21pfa-pln-worlds.js:102-168
+plnFarLane                   src/21pfa-pln-worlds.js:102-169
 plnFarMesa                   src/21pfa-pln-worlds.js:87
 plnFbm                       src/21p-pln.js:68-72
 plnFloraBloom                src/21pg-pln-flora.js:124-133
@@ -6239,20 +6244,20 @@ plnFloraLedge                src/21pg-pln-flora.js:94-99
 plnFloraPad                  src/21pg-pln-flora.js:140-150
 plnFloraRock                 src/21pg-pln-flora.js:51-59
 plnFloraRosette              src/21pg-pln-flora.js:102-122
-plnFloraSheet                src/21pfa-pln-worlds.js:214-222
+plnFloraSheet                src/21pfa-pln-worlds.js:215-223
 plnFloraTuft                 src/21pg-pln-flora.js:32-49
 plnFoot                      src/21piba-pln-gait.js:43-45
 plnGeo                       src/21pe-pln-gpu.js:79-86
 plnGeoFree                   src/21pe-pln-gpu.js:87
 plnGlide                     src/21pz-pln-frame.js:260-268
-plnGlobals                   src/21pe-pln-gpu.js:260-283
+plnGlobals                   src/21pe-pln-gpu.js:258-281
 plnGpuDev                    src/21pe-pln-gpu.js:112-142
-plnGpuFrame                  src/21pe-pln-gpu.js:303-363
-plnGpuPipes                  src/21pe-pln-gpu.js:164-193
-plnGpuReady                  src/21pe-pln-gpu.js:251-255
-plnGpuSize                   src/21pe-pln-gpu.js:196-250
+plnGpuFrame                  src/21pe-pln-gpu.js:301-357
+plnGpuPipes                  src/21pe-pln-gpu.js:164-191
+plnGpuReady                  src/21pe-pln-gpu.js:249-253
+plnGpuSize                   src/21pe-pln-gpu.js:194-248
 plnGpuTier                   src/21pe-pln-gpu.js:144-161
-plnGpuWrite                  src/21pe-pln-gpu.js:284-297
+plnGpuWrite                  src/21pe-pln-gpu.js:282-295
 plnHandAge                   src/21pz-pln-frame.js:276-286
 plnHandWin                   src/21pz-pln-frame.js:288-291
 plnHash                      src/21p-pln.js:55-59
@@ -6279,40 +6284,38 @@ plnIco                       src/21pa-pln-mesh.js:41-58
 plnInst                      src/21pe-pln-gpu.js:89-94
 plnInstFree                  src/21pe-pln-gpu.js:100
 plnInstSet                   src/21pe-pln-gpu.js:95-99
-plnLand                      src/21pf-pln-land.js:520-531
-plnLandBare                  src/21pf-pln-land.js:252-255
-plnLandBatches               src/21pf-pln-land.js:508-510
-plnLandBuild                 src/21pf-pln-land.js:477-483
-plnLandCol                   src/21pf-pln-land.js:394-433
+plnLand                      src/21pf-pln-land.js:527-538
+plnLandBare                  src/21pf-pln-land.js:253-256
+plnLandBatches               src/21pf-pln-land.js:515-517
+plnLandBuild                 src/21pf-pln-land.js:484-490
+plnLandCol                   src/21pf-pln-land.js:398-437
 plnLandCols                  src/21pf-pln-land.js:113
 plnLandE                     src/21pf-pln-land.js:115
-plnLandFarH                  src/21pf-pln-land.js:301-378
-plnLandFarMesh               src/21pf-pln-land.js:589-623
+plnLandFarH                  src/21pf-pln-land.js:302-382
+plnLandFarMesh               src/21pf-pln-land.js:596-630
 plnLandFarRows               src/21pf-pln-land.js:106-111
-plnLandFree                  src/21pf-pln-land.js:511-518
-plnLandJobs                  src/21pf-pln-land.js:436-467
-plnLandLift                  src/21pf-pln-land.js:290
-plnLandMake                  src/21pf-pln-land.js:118-207
-plnLandMove                  src/21pf-pln-land.js:533-539
-plnLandNode                  src/21pf-pln-land.js:544-550
-plnLandPath                  src/21pf-pln-land.js:382-391
-plnLandPond                  src/21pf-pln-land.js:232-243
-plnLandPondLine              src/21pf-pln-land.js:211-222
-plnLandPondMesh              src/21pf-pln-land.js:641-655
-plnLandPondZ                 src/21pf-pln-land.js:224-230
+plnLandFree                  src/21pf-pln-land.js:518-525
+plnLandJobs                  src/21pf-pln-land.js:440-473
+plnLandLift                  src/21pf-pln-land.js:291
+plnLandMake                  src/21pf-pln-land.js:118-208
+plnLandMove                  src/21pf-pln-land.js:540-546
+plnLandNode                  src/21pf-pln-land.js:551-557
+plnLandPath                  src/21pf-pln-land.js:386-395
+plnLandPond                  src/21pf-pln-land.js:233-244
+plnLandPondLine              src/21pf-pln-land.js:212-223
+plnLandPondZ                 src/21pf-pln-land.js:225-231
 plnLandRake                  src/21pf-pln-land.js:88
 plnLandRead                  src/21pza-pln-descent.js:167-175
-plnLandRibAt                 src/21pf-pln-land.js:277-284
-plnLandRibH                  src/21pf-pln-land.js:259-275
-plnLandRibMesh               src/21pf-pln-land.js:551-588
-plnLandRim                   src/21pf-pln-land.js:246-249
+plnLandRibAt                 src/21pf-pln-land.js:278-285
+plnLandRibH                  src/21pf-pln-land.js:260-276
+plnLandRibMesh               src/21pf-pln-land.js:558-595
+plnLandRim                   src/21pf-pln-land.js:247-250
 plnLandRows                  src/21pf-pln-land.js:92-104
-plnLandSees                  src/21pf-pln-land.js:469-476
-plnLandSpan                  src/21pf-pln-land.js:292-297
-plnLandStep                  src/21pf-pln-land.js:488-507
-plnLandTab                   src/21pf-pln-land.js:286-289
+plnLandSees                  src/21pf-pln-land.js:475-483
+plnLandSpan                  src/21pf-pln-land.js:293-298
+plnLandStep                  src/21pf-pln-land.js:495-514
+plnLandTab                   src/21pf-pln-land.js:287-290
 plnLandUi                    src/21pza-pln-descent.js:192-200
-plnLandWaterMesh             src/21pf-pln-land.js:626-639
 plnLeg                       src/21piba-pln-gait.js:33-41
 plnLegPhase                  src/21piba-pln-gait.js:30
 plnLegs                      src/21piba-pln-gait.js:49-62
@@ -6446,7 +6449,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:89
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:294-370
+plnSurface                   src/21pz-pln-frame.js:294-372
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -6482,6 +6485,16 @@ plnTreeWorldW                src/21pgd-pln-wild.js:81
 plnTri                       src/21pa-pln-mesh.js:23-26
 plnTube                      src/21pa-pln-mesh.js:100-131
 plnVert                      src/21pa-pln-mesh.js:16-22
+plnWaterEye                  src/21pw-pln-water.js:230
+plnWaterGrid                 src/21pw-pln-water.js:236-244
+plnWaterMirror               src/21pw-pln-water.js:218-228
+plnWaterPipe                 src/21pw-pln-water.js:212-216
+plnWaterPond                 src/21pw-pln-water.js:258-265
+plnWaterRows                 src/21pw-pln-water.js:245
+plnWaterSea                  src/21pw-pln-water.js:270-288
+plnWaterSheet                src/21pw-pln-water.js:248-255
+plnWaterSwell                src/21pw-pln-water.js:290
+plnWaterVP                   src/21pw-pln-water.js:231
 plnWeatherFrame              src/21pk-pln-weather.js:34-70
 plnWeatherLook               src/21pz-pln-frame.js:120-169
 plnWgslPost                  src/21pd-pln-wgsl-post.js:10-30
@@ -8141,6 +8154,7 @@ worldCovered                 src/08-state.js:435
 worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119-126
 worldTables                  src/02a-worldmix.js:86-117
+wq634World                   tests/91qi-water.js:6-16
 wrapCount                    src/18-mode-map.js:118-126
 wrapLeft                     src/18-mode-map.js:105-114
 wreck                        src/28-loop.js:16-44
@@ -9346,7 +9360,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pb-pln-wgsl-air.js · 24 KB
   · планета: небо, воздух и свет облаков — общее для всех шейдеров (M610):1
 
-## src/21pc-pln-wgsl-scene.js · 19 KB
+## src/21pc-pln-wgsl-scene.js · 17 KB
   · планета: шейдер тел, земли, воды и тени (M610):1
 
 ## src/21pd-pln-wgsl-post.js · 8 KB
@@ -9355,7 +9369,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pe-pln-gpu.js · 25 KB
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
-## src/21pf-pln-land.js · 39 KB
+## src/21pf-pln-land.js · 38 KB
   · планета: земля (M610):1
 
 ## src/21pfa-pln-worlds.js · 22 KB
@@ -9439,6 +9453,9 @@ zoomTo                       src/15-input.js:358
 ## src/21pk-pln-weather.js · 20 KB
   · осадки в воздухе сцены (M626):1
 
+## src/21pw-pln-water.js · 20 KB
+  · вода на движке: одна на все сцены (M634):1
+
 ## src/21pz-pln-frame.js · 30 KB
   · планета: кадр нового вида (M610):1
 
@@ -9470,13 +9487,13 @@ zoomTo                       src/15-input.js:358
 ## src/22db-cave-pln-light.js · 16 KB
   · пещера на движке: рендер (M630a):1
 
-## src/22dbw-cave-pln-wgsl.js · 34 KB
+## src/22dbw-cave-pln-wgsl.js · 31 KB
   · пещера на движке: шейдеры (M630a):1
 
 ## src/22dbx-cave-pln-post.js · 10 KB
   · пещера на движке: шейдеры после сцены (M630b проход 5):1
 
-## src/22dc-cave-pln-dress.js · 22 KB
+## src/22dc-cave-pln-dress.js · 26 KB
   · пещера на движке: убранство залов (M630b):1
 
 ## src/22dd-cave-pln-lake.js · 4 KB
@@ -9490,7 +9507,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/22dg-cave-pln-life.js · 6 KB
 
-## src/22dh-cave-pln-gap.js · 10 KB
+## src/22dh-cave-pln-gap.js · 11 KB
 
 ## src/23-mode-dig.js · 20 KB
   · шахта: спуск вглубь планеты:1
@@ -9861,6 +9878,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qg-cave.js · 13 KB
   · пещера на движке (M630a):1
+
+## tests/91qi-water.js · 4 KB
+  · одна вода везде (M634):1
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1

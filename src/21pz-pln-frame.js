@@ -315,6 +315,8 @@ function plnSurface(S,o){
   if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
   plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
+  /* стенд: светило в объектив — мерить дорожку на воде (по закону круга в кадр оно не входит) */
+  if(PLN.sunAim)Hr.dir=plnNorm(PLN.sunAim);
   /* вода, отсвет земли и ближний воздух — от листа мира (M613) */
   const wl=L.wl,wa=wl.water[0],wb=wl.water[1];
   look.thru=Q.thru;look.waterA=[wa[0],wa[1],wa[2],wl.murk||0];look.waterB=[wb[0],wb[1],wb[2],ride];
@@ -323,7 +325,7 @@ function plnSurface(S,o){
   look.world=[L.sd%1000,clamp(WIND*1.4,-1.2,1.2),0,0];
   /* спуск с высоты: зенит темнее (21pza, M830) */
   if(fly&&o.zen>0)for(let i=0;i<3;i++){look.skyZen[i]*=1-o.zen;look.skyZenS[i]*=1-o.zen;}
-  const F={vp:C.vp,vpMirror:plnM4mul(C.vp,plnM4mirrorY(wy)),eye:C.eye,t:(G.t/60)%7200,sun:Hr.dir,key:Hr.key,expo:1,waterY:wy,
+  const F={vp:C.vp,vpMirror:plnWaterVP(C.vp,wy),eye:C.eye,t:(G.t/60)%7200,sun:Hr.dir,key:Hr.key,expo:1,waterY:wy,
     L0:plnLightBox(Hr.dir,[C.ex-58,C.ex+58,span.lo-8,span.hi+17,-50,24],PLN_GPU.shn),
     L1:plnLightBox(Hr.dir,[C.ex-250,C.ex+250,Math.min(ride-12,span.lo-8),Math.max(ride+60,span.hi+20),-50,460],PLN_GPU.shn),
     hero:[0,0,15,36],lamps:[],look,clouds:Hr.clouds,blobs:Q.blobs,batches:[],

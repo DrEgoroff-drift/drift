@@ -350,6 +350,21 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     }
     return vec4f(c, 1.0);
   }
+  if (mat == 16) {
+    /* жила руды (M631) лежит на листе разреза, куда фонарь не достаёт: светлая минеральная полоса
+       на тёмном листе, зерно по ней, гребень берёт верхний свет пустоты, мокрое ребро — блик фонаря.
+       Читается формой (светлый гребень, тёмный подбой), не цветом */
+    let nl = length(in.nrm);
+    var Nv = select(fN, in.nrm / max(nl, 0.0001), nl > 0.5);
+    if (dot(Nv, V) < 0.0) { Nv = -Nv; }
+    let gr = 0.8 + 0.4 * vn3(in.wpos * vec3f(9.0, 9.0, 4.0), 29u);
+    let top = clamp(dot(Nv, normalize(vec3f(-0.25, 0.75, -0.6))), 0.0, 1.0);
+    var c = in.col * gr * (0.06 + 0.08 * top + 0.26 * pow(top, 8.0));
+    let ll = lampAt(in.wpos);
+    let hv = normalize(ll.xyz + V);
+    c += lampTint(in.wpos) * ll.w * (in.col * 0.35 * clamp(dot(Nv, ll.xyz), 0.0, 1.0) + vec3f(glow * 0.8 * pow(clamp(dot(Nv, hv), 0.0, 1.0), 40.0)));
+    return vec4f(c * faceDim(in.pos.xy), 1.0);
+  }
   /* нормаль на тонком стыке граней сходится в ноль: normalize дал бы NaN, а размытие свечения
      раздуло бы одну битую точку в чёрный шар */
   let nl = dot(in.nrm, in.nrm);
@@ -465,7 +480,15 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     var lit = smoothstep(-0.08 - wrap, 0.5, ndl);
     if (mat == 7 || mat == 2) { lit = smoothstep(-0.5, 0.5, ndl); }
     let e = lampTint(in.wpos) * (ll.w * lampShade(in.wpos, N, in.pos.xy));
-    c += alb * e * (lit * mix(1.0, ao, 0.6));
+    /* зверь лепится фонарём (M631): переход света резче, спина темнее; брюхо берёт тёплый отсвет конуса
+       с пола — тело читается объёмом, а не светлым картоном */
+    var kb = 1.0;
+    if (mat == 8) {
+      lit = smoothstep(0.0, 0.65, ndl);
+      kb = 0.6 * mix(1.0, 0.45, smoothstep(0.1, 0.8, N.y));
+      c += alb * e * (0.22 * smoothstep(0.1, -0.7, N.y));
+    }
+    c += alb * e * (lit * mix(1.0, ao, 0.6) * kb);
     let hv = normalize(ll.xyz + V);
     c += e * (pow(clamp(dot(N, hv), 0.0, 1.0), mix(18.0, 80.0, wet)) * wet * lit * 0.9);
     /* натёк пускает свет в свои края */
@@ -501,7 +524,8 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
   }
   var even = 0.0;
   if (mat == 11 || mat == 15) { even = 0.35; }
-  c += alb * points(in.wpos, N, even) * mix(0.5, 1.0, ao);
+  /* огни фонаря у человека (пятно, свод, бок) светят зверя со всех сторон и плющат его — ему половина */
+  c += alb * points(in.wpos, N, even) * (mix(0.5, 1.0, ao) * select(1.0, 0.5, mat == 8));
   if (wet > 0.3 && mat != 4) { c += pointSpec(in.wpos, N, V, wet) * (wet * 0.8); }
   /* зверь отделяется от тьмы кромкой: свет события обводит край тела */
   if (mat == 8) { c += points(in.wpos, N, 1.0) * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.5) * 0.7); }
@@ -510,71 +534,4 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
   return vec4f(haze(max(c, vec3f(0.0)), in.wpos, 1.0), 1.0);
 }
 
-/* вода (22dd): в тёмной пещере вода — не свет. Гладь тёмная, как тень стены, и читается тем, что
-   отражает; бирюза — только в конусе фонаря и у берега; блик фонаря — узкая дорожка к объективу.
-   Тело в разрезе — тёмное стекло, лопасти света фонаря гаснут за два метра */
-@fragment fn fs_water(in: VOut) -> @location(0) vec4f {
-  let mat = i32(round(in.par.x));
-  let V = normalize(g.camPos.xyz - in.wpos);
-  let t = g.camPos.w;
-  let up = vec3f(0.0, 1.0, 0.0);
-  let ll = lampAt(in.wpos);
-  let lsh = lampShade(in.wpos + vec3f(0.0, 0.06, 0.0), up, in.pos.xy);
-  /* свет, что проходит в воду: фонарь (квадратичный спад уже в нём), огни слабо, день в столбе */
-  var lit = g.lampCol.rgb * (ll.w * lsh) + points(in.wpos, up, 1.0) * 0.25;
-  let dm = dayMask(in.wpos);
-  if (dm > 0.001) { lit += g.sunCol.rgb * (dm * 0.6 * sunShade(in.wpos + vec3f(0.0, 0.06, 0.0), up, in.pos.xy)); }
-  let dark = g.amb.rgb * 0.18;
-  let teal = vec3f(0.035, 0.12, 0.115);
-  if (mat == 14) {
-    let d = in.par.w;
-    let s1 = vnoise(vec2f(in.wpos.x * 1.7 + d * 0.30 + t * 0.03, 0.5), 47u);
-    let s2 = vnoise(vec2f(in.wpos.x * 4.3 - d * 0.20 - t * 0.05, 1.5), 49u);
-    let blade = pow(s1 * 0.7 + s2 * 0.3, 3.0) * (1.0 - smoothstep(0.0, 2.0, d));
-    /* свет сверху: фонарь над водой, у глади; чем глубже, тем меньше */
-    let top = vec3f(in.wpos.x, in.wpos.y + d, in.wpos.z);
-    let lt = lampAt(top);
-    let down = g.lampCol.rgb * (lt.w * lampShade(top + vec3f(0.0, 0.06, 0.0), up, in.pos.xy)) + lit * 0.3;
-    let fade = pow(1.0 - smoothstep(0.0, 2.0, d), 2.0);
-    /* как у стенда: пустота над водой всегда даёт телу немного света — оно читается водой, а не
-       дырой; бирюза у глади, в глубине тёмная синь; кромка глади светлая и без фонаря */
-    let amb2 = g.amb.rgb * 2.0 + points(top, up, 1.0) * 0.6;
-    let body = mix(vec3f(0.11, 0.37, 0.36), vec3f(0.008, 0.04, 0.075), smoothstep(0.0, 2.6, d));
-    var c = body * amb2 * (1.0 + 2.4 * blade) + vec3f(0.002, 0.006, 0.009);
-    c += teal * down * (0.12 * fade + 0.9 * blade);
-    c += vec3f(0.6, 0.8, 0.82) * (amb2 + down * 0.5) * ((1.0 - smoothstep(0.0, 0.05, d)) * 0.8);
-    return vec4f(haze(c, in.wpos, 1.0), mix(0.60, 0.95, smoothstep(0.0, 2.0, d)));
-  }
-  let depth = in.par.w;
-  let p = in.wpos.xz;
-  let n1 = vnoise(vec2f(p.x * 0.9 + t * 0.10, p.y * 2.6 - t * 0.06), 3u) - 0.5;
-  let n2 = vnoise(vec2f(p.x * 2.3 - t * 0.08, p.y * 6.0 + t * 0.12), 5u) - 0.5;
-  /* круги, где падают капли с зубьев свода: в клетке 3 м своя капля и своё время */
-  var ring = vec2f(0.0);
-  let cb = vec2i(floor(p / 3.0));
-  for (var k = 0; k < 4; k++) {
-    let cc = cb + vec2i(k % 2, k / 2);
-    let on = hash2(cc, 97u);
-    if (on < 0.45) { continue; }
-    let c0 = (vec2f(cc) + vec2f(hash2(cc, 91u), hash2(cc, 93u))) * 3.0;
-    let dv = p - c0; let r = max(length(dv), 0.001);
-    let ph = fract(t * (0.12 + 0.1 * on) + hash2(cc, 95u));
-    let w = sin((r - ph * 3.2) * 11.0) * exp(-r * 0.8) * (1.0 - smoothstep(ph * 3.2 - 0.2, ph * 3.2 + 0.5, r)) * (1.0 - ph);
-    ring += dv / r * w;
-  }
-  let N = normalize(vec3f((n1 + n2 * 0.5) * 0.02 + ring.x * 0.05, 1.0, (n1 * 0.5 + n2) * 0.035 + ring.y * 0.05));
-  let uv = in.pos.xy * g.screen.zw + vec2f(N.x * 0.08, N.z * 0.30);
-  let refl = textureSampleLevel(reflTex, linSamp, clamp(uv, vec2f(0.002), vec2f(0.998)), 0.0).rgb;
-  let nv = clamp(dot(N, V), 0.0, 1.0);
-  let fr = 0.04 + 0.96 * pow(1.0 - nv, 5.0);
-  /* под гладью: темно; бирюза — где светит фонарь, и у берега, где толща меньше 30 см */
-  let shore = 1.0 - smoothstep(0.05, 0.3, depth);
-  let body = dark + teal * lit * (0.15 + 0.6 * shore);
-  var c = mix(body, refl * 0.9, clamp(fr * 1.1, 0.0, 1.0));
-  /* блик фонаря: узкая дорожка к объективу, рябь её рвёт */
-  let hv = normalize(ll.xyz + V);
-  c += g.lampCol.rgb * (ll.w * lsh * pow(clamp(dot(N, hv), 0.0, 1.0), 260.0) * 2.2);
-  let alpha = smoothstep(-0.03, 0.18, depth) * mix(0.8, 1.0, max(fr, smoothstep(0.0, 1.0, depth)));
-  return vec4f(haze(c, in.wpos, 1.0), alpha);
-}
 `;
