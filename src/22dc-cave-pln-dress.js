@@ -239,6 +239,8 @@ function cave3DressItems(C,F){
   D.veins.forEach((v,i)=>out.push({k:"vein",X:v.pts[0][0]/P,t:v,seed:hashi(i,C.seed,0x7E1)}));
   /* что лежит в камне разреза (22df) */
   for(const q of cave3InkItems(C,F))out.push(q);
+  /* световые события в пролётах (22dh) */
+  for(const q of cave3GapItems(C,F))out.push(q);
   /* наплывы у задней стены: шаг по обеим галереям, зал решает густоту */
   for(let x=30;x<2*CAVE_W-30;x+=26){
     const low=x>=CAVE_W;
@@ -271,6 +273,7 @@ function cave3DressBin(C,F,items){
       continue;
     }
     if(q.k==="cryst"){cave3DressCryst(B,q,lights,glows);continue;}
+    if(q.k==="gap"){cave3GapBuild(B,q,lights,glows);continue;}
     const X=q.X,u=r();
     if(q.k==="wall"){
       /* у задней стены: наплыв с пола или кустик зубьев со свода */
@@ -399,10 +402,10 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first){
     if(k.ink)F.draw.push({geo:k.ink,lamp:false,sun:false});
     tris+=k.tris;L.push(...k.lights);Gl.push(...k.glows);
   }
-  /* огней в кадре двенадцать: кристаллам — до четырёх ближних, свечений — до трёх */
+  /* огней в кадре двенадцать: убранству — до пяти ближних (кадр потом отберёт по силе), свечений — до трёх */
   L.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
   Gl.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
-  F.lights.push(...L.slice(0,Math.max(0,Math.min(4,12-F.lights.length))));
+  F.lights.push(...L.slice(0,5));
   F.glows.push(...Gl.slice(0,Math.max(0,Math.min(3,6-F.glows.length))));
   /* залы в кадре — шейдеру: стена галереи и натёчного зала в рёбрах, грота — друзой, у озера гладкая */
   F.zones=caveZones(C).filter(z=>z.x1/CAVE_PPM>x0-4&&z.x0/CAVE_PPM<x1+4).slice(0,4)

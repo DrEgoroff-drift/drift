@@ -99772,7 +99772,10 @@ function cave3Events(C,F){
   const xs=caveDeco(C,G.surf&&G.surf.p).crystals.map(c=>c.x/P).sort((a,b)=>a-b);
   for(let i=0;i<xs.length;){let j=i;while(j+1<xs.length&&xs[j+1]-xs[j]<12)j++;l.push([xs[i]-1,xs[j]+1]);i=j+1;}
   for(const p of caveProps(C))if(p.k==="amber")l.push([p.x/P-2,p.x/P+2]);
-  C.ev3={f:F,l};
+  /* пролёты длиннее 28 м получают своё событие по породе (22dh) */
+  const gaps=cave3GapPlan(C,l),w=CAVE3_GAP.w/2;
+  for(const X of gaps)l.push([X-w,X+w]);
+  C.ev3={f:F,l,gaps};
   return l;
 }
 /* на сколько сдвинуть дальний кадр: событие видно, если хоть 6 м его (или всё) лежит в средних
@@ -99811,6 +99814,9 @@ function cave3Frame(){
   const want=/^ДЕЙСТВИЕ/.test(String(G.prompt||""))?1:0;
   M.near=M.near==null?want:M.near+(want-M.near)*(1-Math.exp(-dt/(want>M.near?Ln.nIn:Ln.nOut)));
   if(M.nearPin!=null)M.near=M.nearPin;   /* стенд держит объектив (cave.py near=) */
+  /* ближний смотрит на середину между человеком и вещью (22dg), а не на одного человека */
+  const ns=want||M.nearPin?cave3NearShift(C):0;
+  M.ns=first||M.ns==null||M.rush?ns:M.ns+(ns-M.ns)*(1-Math.exp(-dt/Ln.nIn));
   /* у озера (прошлый кадр знает, далеко ли оно) объектив опускает взгляд на воду */
   const lw=M.lakeD==null?0:1-plnSmooth(2,9,M.lakeD);
   M.lk=first||M.lk==null||M.rush?lw:M.lk+(lw-M.lk)*(1-Math.exp(-dt/Ln.lkS));
@@ -99828,7 +99834,7 @@ function cave3Frame(){
      иначе отходит к ближайшему месту, где они есть, — человек остаётся в кадре (проход 5) */
   const asp=W/H,fK=plnSmooth(0,1,M.far),fs=fK>.001?cave3FarShift(C,Fd,M.cx,CAVE3_LENS.fH*asp/2):0;
   M.fs=first||M.fs==null||M.rush?fs:M.fs+(fs-M.fs)*(1-Math.exp(-dt/.6));
-  const cx=M.cx+M.fs*fK;
+  const cx=M.cx+M.fs*fK+M.ns*plnSmooth(0,1,M.near)*(1-fK);
   const floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far)),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
@@ -99857,16 +99863,16 @@ function cave3Frame(){
   const day=cave3DayBox(sun,[mouth[0]-16,mouth[0]+16,sY-24,sY+2,-2,18]);
   const lk=Hr&&Hr.look,skyLo=lk?lk.skyHor:[.62,.78,.95],skyHi=lk?lk.skyZen:[.13,.33,.78];
   /* огни без теней: что разливает фонарь, что отдают освещённые места, чужая лампа, ранец */
-  const Lt=(p,r,c)=>F.lights.push({p,r,c}),lc=CAVE3_K.lampCol;
+  const Lt=(p,r,c,core)=>F.lights.push({p,r,c,core}),lc=CAVE3_K.lampCol;
   /* разлив фонаря без тени — холодный: тёплое только в луже на полу и на ближней стене в конусе
      (M630b проход 4: вне конуса камень того же тона, что страница разреза) */
   const LL=CAVE3_LAMP;
-  Lt(lp,LL.spillR,LL.spill);
-  Lt([mx+LL.poolX*face,my+.25,CAVE3_Z+.5],LL.poolR,LL.pool);
-  Lt([mx+.55*face,my+1.05,CAVE3_Z-.9],1.9,LL.man);   /* отсвет лужи на самом человеке */
-  Lt([mx+.5*face,my+5,CAVE3_Z+1.6],9,LL.vault);   /* свод над человеком: купол читается холодным серым */
-  Lt([mx-5*face,my+2.5,CAVE3_Z+7],18,LL.back);   /* задняя стена за спиной: серый камень, не туман */
-  Lt([mx-3.4*face,my+2.4,CAVE3_Z-1.3],7.5,[.085,.125,.15]);
+  Lt(lp,LL.spillR,LL.spill,1);
+  Lt([mx+LL.poolX*face,my+.25,CAVE3_Z+.5],LL.poolR,LL.pool,1);
+  Lt([mx+.55*face,my+1.05,CAVE3_Z-.9],1.9,LL.man,1);   /* отсвет лужи на самом человеке */
+  Lt([mx+.5*face,my+5,CAVE3_Z+1.6],9,LL.vault,1);   /* свод над человеком: купол читается холодным серым */
+  Lt([mx-5*face,my+2.5,CAVE3_Z+7],18,LL.back,1);   /* задняя стена за спиной: серый камень, не туман */
+  Lt([mx-3.4*face,my+2.4,CAVE3_Z-1.3],7.5,[.085,.125,.15],1);
   /* день у устья — вторая половина света: столб сверху и холодный отскок от пола под ним на 10–12 м
      (проход 5); далеко от устья оба огня не тратятся — их двенадцать */
   if(dayK>.01&&Math.abs(mouth[0]-cx)<Ls.w*.5+LL.bounceR){
@@ -99874,7 +99880,7 @@ function cave3Frame(){
     Lt([mouth[0],sY-3,mouth[1]],13,[.30*dayK,.38*dayK,.44*dayK]);
     Lt([mouth[0]+1.5,fy+2.2,mouth[1]+.8],LL.bounceR,[b[0]*dayK,b[1]*dayK,b[2]*dayK]);
   }
-  Lt([mx+14*face,my+3.5,CAVE3_Z+6],22,LL.ahead);
+  Lt([mx+14*face,my+3.5,CAVE3_Z+6],22,LL.ahead,1);
   for(const q of F.lamps)Lt(q.p,q.r,[q.c[0]*q.k*.3,q.c[1]*q.k*.3,q.c[2]*q.k*.3]);
   const sl=typeof caveLampSpot==="function"?caveLampSpot(C):null;
   if(sl&&Math.abs(sl.x/CAVE_PPM-cx)<Ls.w){
@@ -99895,12 +99901,23 @@ function cave3Frame(){
   tris+=cave3FarFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx,dayK);
   tris+=cave3AmberFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);
   /* убранство залов (22dc): натёки, завесы, кристаллы, жилы на разрезе */
+  const l0=F.lights.length;
   tris+=cave3DressFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx,first||CAVE3.rush);
+  M.stat.ldress=F.lights.length-l0;
   /* озеро (22dd): гладь с зеркалом и тело воды в разрезе */
   tris+=cave3LakeFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);
+  /* растения и звери телами (22dg) */
+  tris+=cave3LifeFrame(C,F,Fd,cx-hw-3,cx+hw+3);
+  /* огней двенадцать: фонарь держит свои семь, остальные места — тем, кто сильнее и ближе к кадру
+     (устье, даль, янтарь, кристаллы, события в пролётах — 22dh) */
+  if(F.lights.length>12){
+    const w=q=>Math.max(q.c[0],q.c[1],q.c[2])*q.r/(1+Math.abs(q.p[0]-cx)/8);
+    const core=F.lights.filter(q=>q.core),rest=F.lights.filter(q=>!q.core).sort((a,b)=>w(b)-w(a));
+    F.lights=core.concat(rest.slice(0,12-core.length));
+  }
   Object.assign(F,{vp:Ls.vp,eye:Ls.eye,t:(G.t/60)%7200,lamp:{p:lp,d:ld,k:1},lampVP,reach,near:reach*.45,
     sun,sunVP:day.m,sunRange:day.range,dayK,mouth,lean,surfY:sY,skyLo,skyHi,expo:1,cutZ:0,bed:Fd.sty.bed});
-  M.stat.chunks=list.length;M.stat.left=C.ch3?C.ch3.left:0;M.stat.tris=Math.round(tris);
+  M.stat.chunks=list.length;M.stat.left=C.ch3?C.ch3.left:0;M.stat.tris=Math.round(tris);M.stat.lights=F.lights.length;
   M.stat.cpu=+(wallMs()-t0).toFixed(2);
   return cave3GpuFrame(F);
 }
@@ -99909,25 +99926,15 @@ function cave3Frame(){
 const CAVE3_LAMP={tilt:-.24,spillR:17,spill:[.30,.33,.38],poolX:2.6,poolR:4.2,pool:[.27,.175,.08],warm0:2.6,warm1:8.5,man:[.26,.19,.11],vault:[.13,.15,.18],back:[.12,.135,.16],
   ahead:[.065,.09,.13],bounce:[.34,.42,.48],bounceR:13};
 
-/* ── поверх кадра: то, что ещё не перерисовано (жизнь и находка — M630c) ──
-   Те же кисти, что у старого кадра, в той же мерке: окно на линии ходьбы — окно кадра */
+/* ── поверх кадра: то, что ещё не перерисовано (находка) ──
+   Та же кисть, что у старого кадра, в той же мерке: окно на линии ходьбы — окно кадра.
+   Растения и звери с M630c — тела в сцене (22dg) */
 function cave3Over(){
   const C=G.cave,Ls=CAVE3.lens;
   if(!Ls)return;
-  /* в дальнем объективе плоские кисти поверхности не в своём масштабе: до M630c их нет вовсе */
   if(CAVE3.far>.01)return;
   const camx=G.viewX,camy=G.viewY;
   const LP=GPU.on?gpuNext():null;
-  for(const pl of C.plants){
-    const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
-    if(LP){const h=lifeHere(x,y);if(lifePlantGpu(LP,pl,h.x,h.y,0,{s:h.s}))continue;}
-    drawPlant(pl,x,y);
-  }
-  for(const b of C.fauna){
-    const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
-    if(LP){const h=lifeHere(x,y+b.r*.9);if(lifeBeastGpu(LP,b,h.x,h.y,true,b.stun,{s:h.s}))continue;}
-    drawBeast(b,x,y+b.r*.9,true,b.stun);
-  }
   if(!C.found){
     const x=C.findX-camx,y=C.findY-camy;
     if(x>-40&&x<W+40&&y>-40&&y<H+40){
@@ -100448,7 +100455,7 @@ const CAVE3_GPU={dev:null,gen:-1,tier:-1,w:0,h:0,shn:0,ms:1,L:null,P:{},U:null,S
 /* числа стенда (docs/look/cv-render.js): тьма, воздух, фонарь, день */
 const CAVE3_K={amb:[.036,.054,.083],fogC:[.045,.08,.12],fog:.022,
   lampCol:[4,3.1,1.95],inner:32*PLN_DEG,outer:58*PLN_DEG,fall:3.2,fov:128*PLN_DEG,day:[1.3,1.42,1.4],
-  air:[.036,.02,.065],airReach:140,comp:[.10,.36,1,0]};
+  air:[.039,.02,.065],airReach:140,comp:[.10,.36,1,0]};
 
 function cave3Log(s){plnLog("пещера: "+s);}
 function cave3Persp(fovy,asp,n,f){
@@ -101287,14 +101294,15 @@ fn bad3(c: vec3f) -> bool {
         let uv = q.xy * vec2f(0.5, -0.5) + 0.5;
         if (uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0) {
           let sh = textureSampleCompareLevel(lampTex, cmpSamp, uv, q.z - 0.004 / (lp.w * lp.w));
-          /* свет, что бежит к объективу, виден ярче бокового; воздух показывает сердце конуса и
-             отпускает его за несколько метров, иначе весь зал стоит в молоке */
+          /* свет, что бежит к объективу, виден ярче бокового; воздух показывает клин, а не облако:
+             у клина чёткая внешняя кромка по внутреннему конусу, за ней воздух пуст, и клин
+             отпускает свет за несколько метров, иначе весь зал стоит в молоке */
           let cs = dot(ll.xyz, rd);
           let ax = dot(-ll.xyz, g.lampDir.xyz);
-          let core = 0.45 * smoothstep(g.lampDir.w, g.lampCol.w, ax) + smoothstep(0.82, 0.97, ax);
+          let core = smoothstep(g.lampCol.w - 0.015, g.lampCol.w + 0.015, ax) * (0.55 + 0.45 * smoothstep(0.9, 0.98, ax));
           let dl = length(p - g.lampPos.xyz);
           /* клин идёт от шлема: у самого фонаря воздух светится гуще */
-          let wet = (1.0 + 1.3 * g.farK.w) * (1.0 + 1.6 * exp(-dl / 2.2));
+          let wet = (1.0 + 0.6 * g.farK.w) * (1.0 + 1.6 * exp(-dl / 2.2));
           let du = 0.7 + 0.6 * vn3(p * 0.7 + vec3f(g.camPos.w * 0.02, 0.0, 0.0), 45u);
           accL += ll.w * core * exp(-dl / 14.0) * wet * sh * du * (0.55 + 0.9 * pow(max(cs, 0.0), 3.0) + 0.2 * cs * cs);
         }
@@ -101623,6 +101631,8 @@ function cave3DressItems(C,F){
   D.veins.forEach((v,i)=>out.push({k:"vein",X:v.pts[0][0]/P,t:v,seed:hashi(i,C.seed,0x7E1)}));
   /* что лежит в камне разреза (22df) */
   for(const q of cave3InkItems(C,F))out.push(q);
+  /* световые события в пролётах (22dh) */
+  for(const q of cave3GapItems(C,F))out.push(q);
   /* наплывы у задней стены: шаг по обеим галереям, зал решает густоту */
   for(let x=30;x<2*CAVE_W-30;x+=26){
     const low=x>=CAVE_W;
@@ -101655,6 +101665,7 @@ function cave3DressBin(C,F,items){
       continue;
     }
     if(q.k==="cryst"){cave3DressCryst(B,q,lights,glows);continue;}
+    if(q.k==="gap"){cave3GapBuild(B,q,lights,glows);continue;}
     const X=q.X,u=r();
     if(q.k==="wall"){
       /* у задней стены: наплыв с пола или кустик зубьев со свода */
@@ -101783,10 +101794,10 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first){
     if(k.ink)F.draw.push({geo:k.ink,lamp:false,sun:false});
     tris+=k.tris;L.push(...k.lights);Gl.push(...k.glows);
   }
-  /* огней в кадре двенадцать: кристаллам — до четырёх ближних, свечений — до трёх */
+  /* огней в кадре двенадцать: убранству — до пяти ближних (кадр потом отберёт по силе), свечений — до трёх */
   L.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
   Gl.sort((a,b)=>Math.abs(a.p[0]-cx)-Math.abs(b.p[0]-cx));
-  F.lights.push(...L.slice(0,Math.max(0,Math.min(4,12-F.lights.length))));
+  F.lights.push(...L.slice(0,5));
   F.glows.push(...Gl.slice(0,Math.max(0,Math.min(3,6-F.glows.length))));
   /* залы в кадре — шейдеру: стена галереи и натёчного зала в рёбрах, грота — друзой, у озера гладкая */
   F.zones=caveZones(C).filter(z=>z.x1/CAVE_PPM>x0-4&&z.x0/CAVE_PPM<x1+4).slice(0,4)
@@ -102200,6 +102211,297 @@ function cave3InkBuild(F,m,q,r){
     plnBlob(m,{c:[q.X,q.Y,z],r:[q.R*1.5,q.R,.02],sub:2,col:(u,p)=>ink(p),mat:PLN_MAT.glow,glow:1});
     plnBlob(m,{c:[q.X,q.Y,z-.02],r:[q.R*1.2,q.R*.72,.02],sub:2,col:K.dim,mat:PLN_MAT.glow,glow:1});
   }
+}
+
+/* ── жизнь пещеры телами (M630c): растения и звери — в сцене 22d, не кистью поверх ──
+   Тела те же, что у поверхности (21pia — растение, 21pib — зверь с книжкой поз), мерка — карта
+   пещеры: растение в q.h пикселей карты стоит в q.h/CAVE_PPM метров, зверь — в b.r/CAVE_PPM.
+   Стоят за линией ходьбы, на полу картинки; свет фонаря и дня ложится на них, как на камень.
+   У каждой книжки свой буфер записей: кадр пещеры рисует запись с нуля (22db). */
+const CAVE3_LIFE={plantZ:[1.25,.8],beastZ:[.35,.9],rMin:.28,cap:24};
+
+function cave3LifeDrop(Q){
+  for(const k in Q.geo)plnGeoFree(Q.geo[k]);
+  for(const k in Q.inst)plnInstFree(Q.inst[k]);
+  Q.geo={};Q.inst={};
+}
+/* пол картинки под точкой на глубине z: где воздух — на нём, иначе ближе к разрезу */
+function cave3LifeFoot(F,X,Y,zs){
+  for(const z of zs)if(cave3Den(F,X,Y+.5,z)<-.15)return [cave3Down(F,X,Y+.5,z),z];
+  return null;
+}
+function cave3LifeFrame(C,F,Fd,x0,x1){
+  const Q=C.life3||(C.life3={gen:-1,geo:{},inst:{},a:{},foot:new Map()});
+  if(Q.gen!==PLN_GPU.gen){cave3LifeDrop(Q);Q.gen=PLN_GPU.gen;}
+  if(Q.F!==Fd){Q.foot.clear();Q.F=Fd;}
+  const P=CAVE_PPM,K=CAVE3_LIFE,p=G.surf&&G.surf.p,by={};
+  let tris=0,n=0;
+  /* растения: вид — по списку пещерных (caveFloraOf), возраст — в книжку; тон — краска мира, как наверху */
+  const sps=p?caveFloraOf(p):[],T=plnRgb(PLN_HERB.teal);
+  for(const q of C.plants||[]){
+    if(!q||!q.sp||!isFinite(q.x))continue;
+    const X=q.x/P;if(X<x0-3||X>x1+3)continue;
+    const hh=hashi(Math.round(q.x),Math.round(q.h||0),0x9E11);
+    let ft=Q.foot.get(q);
+    if(ft===undefined){
+      const u=((hh>>>5)&255)/255,z=K.plantZ[0]+u*K.plantZ[1];
+      ft=cave3LifeFoot(Fd,X,-q.y/P,[z,z*.75,CAVE3_Z+.25]);Q.foot.set(q,ft);
+    }
+    if(!ft)continue;
+    const si=Math.max(0,sps.indexOf(q.sp)),key="p"+si+"."+(q.age<.3?0:(q.age>.82?2:1));
+    (by[key]=by[key]||{plant:q,si,list:[]}).list.push({q,ft,hh});
+  }
+  /* звери: кадр книжки — как наверху: оглушён, злой, идёт, стоит, а стоя пасётся в свой час */
+  const N=PLN_BEAST.N;
+  for(const b of C.fauna||[]){
+    if(!b||!isFinite(b.x)||b.caught)continue;
+    const X=b.x/P;if(X<x0-3||X>x1+3)continue;
+    const t=G.t*(b.spd||0)+(b.phase||0),air=b.alien==="jelly"||b.alien==="manta",go=air||Math.abs(b.vx||0)>.02;
+    const w=b.alien?PLN_BEAST.w[b.alien]||2:2,kw=Math.floor((((t*w/TAU)%1)+1)%1*N)%N;
+    const k=(b.stun>0||b.stunT>0)?N+3:(b.hostile?N+2:(go?kw:(Math.sin(t*.37+(b.phase||0)*3)>.35?N+1:N)));
+    const flip=b.face<0,key="b"+plnBeastSpId(b.sp)+"."+(b.tail?1:0)+(b.crest?1:0)+Math.round((b.headSize||0)*100)+(b.alien==="manta"&&flip?"f":"")+"."+k;
+    (by[key]=by[key]||{beast:b,k,flip,list:[]}).list.push({b,t,go,air,k});
+  }
+  for(const key in by){
+    const g=by[key];
+    if(!Q.geo[key]){
+      Q.geo[key]=plnGeo(g.plant?plnHerbMesh(g.plant.sp,g.si,+key.slice(-1)):plnBeastMesh(g.beast,g.k,g.flip));
+    }
+    const a=Q.a[key]||(Q.a[key]=new Float32Array(16*K.cap));
+    let m=0;
+    for(const e of g.list){
+      if(m>=K.cap)break;
+      if(g.plant){
+        const q=e.q,h=Math.max(4,q.h||20)/P,jt=1+(((e.hh>>>9)&255)/255-.5)*.24;
+        const Tn=plnHerbTone(PLN_TINTS[PLN_HERB.tints[g.si%3]],q.leaf||q.sp.leaf);
+        let top=plnMul(Tn.top,jt),under=plnMul(Tn.under,jt);
+        if(q.scanned){top=plnMix3(top,T,.5);under=plnMix3(under,plnMul(T,.3),.5);}
+        const pos=[q.x/P,e.ft[0]-.03,e.ft[1]],yaw=((e.hh>>>3)&255)/255*TAU;
+        if(q.sp.kind===4)plnRec(a,m++,pos,h,yaw,1,m,q.scanned?[.6,1.1,1.05]:[jt,jt,jt],0);
+        else plnRec(a,m++,pos,h,yaw,1,m,under,2,top);
+      }else{
+        const b=e.b,X=b.x/P,R=Math.max(K.rMin,b.r/P),z=CAVE3_Z+(b.r<7?K.beastZ[0]:K.beastZ[1]);
+        /* y зверя у игры — пол под ним; летун висит на hover пикселей карты выше, пасясь — ниже, оглушённый лёг */
+        const fk=Math.round(X*4)+"|"+Math.round(-b.y/P*2);
+        let f=Q.foot.get(fk);
+        if(f===undefined){const v=cave3LifeFoot(Fd,X,-b.y/P,[z,CAVE3_Z+.2]);f=v?v[0]:-b.y/P;Q.foot.set(fk,f);}
+        const k=e.k,up=b.alien?(b.hover&&k!==N+3?b.hover*(k===N+1?.35:1)*(1+.16*Math.sin(e.t*.6))/P:0)
+          :(e.go?(b.hop?Math.abs(Math.sin(e.t))*R*.35:Math.sin(e.t)*R*.08+R*.08):0);
+        const y=f+up;
+        const yaw=b.alien==="manta"?PLN_BEAST.mantaYaw:PLN_BEAST.yaw;
+        plnRec(a,m++,[X,y,z],R,b.face<0?Math.PI-yaw:yaw,1,m,b.scanned?[.72,1.08,1.04]:null,0);
+      }
+    }
+    let I=Q.inst[key];
+    if(!I)I=Q.inst[key]=plnInst(a,m,K.cap);else plnInstSet(I,a,m);
+    if(!m)continue;
+    F.draw.push({geo:Q.geo[key],inst:I,lamp:true,sun:true,refl:true});
+    tris+=Q.geo[key].n/3*m;n+=m;
+  }
+  /* книжек не больше сорока: старые уходят вместе с буферами */
+  const ks=Object.keys(Q.geo);
+  if(ks.length>40)for(const k of ks)if(!by[k]){plnGeoFree(Q.geo[k]);plnInstFree(Q.inst[k]);delete Q.geo[k];delete Q.inst[k];delete Q.a[k];}
+  if(Q.foot.size>600)Q.foot.clear();
+  CAVE3.stat.life=n;
+  return tris;
+}
+
+/* у вещи объектив смотрит на середину между человеком и ею (м, сдвиг от человека; 0 — вещи нет):
+   то, что зовёт ДЕЙСТВИЕ, — растение для скана, оглушённый зверь, находка, янтарь */
+function cave3NearShift(C){
+  const P=CAVE_PPM,near=(x,y,dx,dy)=>Math.abs(x-C.x)<dx&&Math.abs(y-C.y)<dy;
+  let best=null,bd=1e9;
+  const take=x=>{const d=Math.abs(x-C.x);if(d<bd){bd=d;best=x;}};
+  for(const q of C.plants||[])if(!q.scanned&&near(q.x,q.y,30,40))take(q.x);
+  for(const b of C.fauna||[])if(!b.caught&&(b.stun>0||b.stunT>0)&&near(b.x,b.y,30,40))take(b.x);
+  if(!C.found&&C.findX!=null&&near(C.findX,C.findY,30,40))take(C.findX);
+  for(const q of caveProps(C))if(q.k==="amber"&&!q.took&&near(q.x,q.y,40,50))take(q.x);
+  return best==null?0:(best-C.x)/2/P;
+}
+
+/* ── световые события в пролётах (M630c): на любых 30 м линии ходьбы что-то светит ──
+   22d знает огни, что горят сами: устье, арка, озеро, кристаллы, янтарь. Где между ними
+   пролёт длиннее, сюда, в его середину, встаёт тело по породе мира: в осадочной — нити
+   светляков со свода, в вулканической — тёплая трещина продуха в задней стене, во льду —
+   окно дня сквозь тонкий лёд свода, в прочих — мокрая стена, что ловит фонарь (тише всех).
+   Событие — тело, подписи ему не нужно. */
+const CAVE3_GAP={win:30,step:28,w:4,
+  worm:{thread:[.05,.11,.10],bead:[.30,1.0,.84],light:[.15,.45,.40],glow:[.25,.85,.72]},
+  vent:{hot:[1.0,.40,.10],ember:[.9,.28,.06],lip:[5,1.9,.45],light:[1.4,.55,.15],glow:[.95,.40,.10]},
+  ice:{win:[.70,.87,1.0],mid:[.40,.55,.70],lip:[1.8,2.3,2.8],light:[.6,.8,1.0],glow:[.52,.70,.90]},
+  wet:{run:[.50,.52,.53],light:[.35,.38,.42],glow:[.30,.36,.42]}};
+
+/* куда встают события: середины пролётов между огнями (и краями хода), каждое ±2 м;
+   на месте без воздуха сдвигается до 3 м к залу, где свод выше */
+function cave3GapPlan(C,base){
+  const P=CAVE_PPM,K=CAVE3_GAP,E=CAVE_W/P,L=base.map(e=>[e[0],e[1]]).sort((a,b)=>a[0]-b[0]),ed=[[-1e9,0]];
+  for(const e of L){const t=ed[ed.length-1];if(e[0]<=t[1])t[1]=Math.max(t[1],e[1]);else ed.push(e);}
+  ed.push([E,1e9]);
+  const out=[],room=X=>{const x=clamp(X,1,E-1)*P;return caveFloorOf(C,x,false)-caveCeilOf(C,x,false);};
+  for(let i=0;i+1<ed.length;i++){
+    const a=Math.max(0,ed[i][1]),b=Math.min(E,ed[i+1][0]),len=b-a;
+    if(len<K.step)continue;
+    const n=Math.ceil(len/(K.step-2))-1;
+    for(let k=1;k<=n;k++){
+      const m=a+len*k/(n+1);
+      let best=m,bv=room(m);
+      for(let d=-3;d<=3;d+=.5){const v=room(m+d);if(v>bv*1.15+P*.3){bv=v;best=m+d;}}
+      out.push(clamp(best,1,E-1));
+    }
+  }
+  return out;
+}
+/* те же события как записи убранства (22dc) */
+function cave3GapItems(C,F){
+  cave3Events(C,F);
+  const P=CAVE_PPM,out=[];
+  for(const X of C.ev3.gaps){
+    const x=X*P,c=caveCeilOf(C,x,false),f=caveFloorOf(C,x,false);
+    out.push({k:"gap",X,g:{c,f,ym:-(c+f)/2/P,gap:(f-c)/P,zd:cave3Zd(F,x,(c+f)/2)},seed:hashi(Math.round(X*10),C.seed,0x6A9)});
+  }
+  return out;
+}
+/* задняя стена на высоте Y: от z0 вглубь до камня */
+function cave3WallZ(F,X,Y,z0){
+  let a=z0;
+  for(let n=0;n<60&&cave3Den(F,X,Y,a+.15)<=0;n++)a+=.15;
+  let lo=a,hi=a+.15;
+  for(let n=0;n<8;n++){const m=(lo+hi)/2;if(cave3Den(F,X,Y,m)>0)hi=m;else lo=m;}
+  return (lo+hi)/2;
+}
+/* тело события по породе; ничего не встало — мокрая стена, она встанет почти везде */
+function cave3GapBuild(B,q,lights,glows){
+  const k=cave3StyKind(G.surf&&G.surf.p&&G.surf.p.type);
+  const f=k==="sed"?cave3GapWorm:k==="volc"?cave3GapVent:k==="ice"?cave3GapIce:null;
+  if(f&&f(B,q,lights,glows))return true;
+  return cave3GapWet(B,q,lights,glows);
+}
+/* место в глубине за линией ходьбы, где есть воздух */
+function cave3GapDeep(B,q,u){
+  const F=B.F,g=q.g,z1=Math.max(1.9,g.zd-1);
+  for(const z of [lerp(1.6,z1,u),lerp(1.6,z1,u*.5),1.6])if(cave3Den(F,q.X,g.ym,z)<-.4)return z;
+  return -1;
+}
+/* светляки: колония нитей со свода, на каждой бусины; бусины горят бирюзой, нити едва видны */
+function cave3GapWorm(B,q,lights,glows){
+  const F=B.F,r=B.r,g=q.g,K=CAVE3_GAP.worm,z0=cave3GapDeep(B,q,.55);
+  if(z0<0)return false;
+  const t0=cave3Up(F,q.X,g.ym,z0);
+  if(t0-g.ym>g.gap*1.2+2)return false;
+  let n=0;
+  for(let i=0;i<46;i++){
+    const x=q.X+(r()-.5)*(r()<.7?2.6:4.4),z=clamp(z0+(r()-.5)*1.6,1.3,Math.max(1.5,g.zd-.4));
+    if(cave3Den(F,x,g.ym,z)>-.3)continue;
+    const tp=cave3Up(F,x,g.ym,z);
+    if(tp-g.ym>g.gap*1.2+2)continue;
+    const bot=cave3Down(F,x,g.ym,z),l=Math.min(.12+Math.pow(r(),1.7)*1.1,(tp-bot)*.45),sw=(r()-.5)*.06;
+    if(l<.08)continue;
+    const top=[x,tp+.03,z],end=[x+sw,tp-l,z+sw*.5];
+    plnTube(B.m,{path:[top,end],rad:.005,sides:3,col:K.thread,mat:PLN_MAT.glow,glow:1});
+    const nb=1+(l/.22|0);
+    for(let b=0;b<nb;b++){
+      const t=b===nb-1?1:(b+.5+r()*.4)/nb,p=[lerp(top[0],end[0],t),lerp(top[1],end[1],t),lerp(top[2],end[2],t)],s=(b===nb-1?.022:.013)*(.8+r()*.5);
+      plnBlob(B.m,{c:p,r:[s,s*1.3,s],sub:0,col:K.bead,mat:PLN_MAT.glow,glow:(b===nb-1?2.4:1.4)*(.7+r()*.5)});
+    }
+    n++;
+  }
+  if(n<8)return false;
+  const p=[q.X,t0-.7,z0];
+  lights.push({p,r:5.5,c:K.light});
+  glows.push({p:[q.X,t0-.35,z0],c:K.glow,k:.42,s:1.7});
+  return true;
+}
+/* продух: трещина в задней стене от пола вверх, ломаная, с отростками; дышит тёплым */
+function cave3GapVent(B,q,lights,glows){
+  const F=B.F,r=B.r,g=q.g,K=CAVE3_GAP.vent,z0=cave3GapDeep(B,q,.8);
+  if(z0<0)return false;
+  const bot=cave3Down(F,q.X,g.ym,z0),top=cave3Up(F,q.X,g.ym,z0),h=Math.min(1.4+r()*1.4,(top-bot)*.7);
+  if(h<.9)return false;
+  const crack=(x0,y0,len,dx,rad)=>{
+    const pts=[];let x=x0;
+    for(let y=y0;y<=y0+len;y+=.14){
+      x+=dx*.14+(r()-.5)*.12;
+      const zw=cave3WallZ(F,x,y,Math.max(1.3,z0-1));
+      if(zw-z0>6)break;
+      pts.push([x,y,zw-.015]);
+    }
+    if(pts.length>=3){
+      /* жар в щели; тлеющий камень вокруг — это свет вплотную к стене, не лента: лента читается вырезкой */
+      plnTube(B.m,{path:pts,rad:t=>rad*(1-.75*t)*(.75+.25*Math.sin(t*19+x0)),sides:5,flat:.5,up:[1,0,0],col:K.hot,mat:PLN_MAT.glow,glow:2.3,cap:true});
+    }
+    return pts;
+  };
+  const main=crack(q.X,bot+.05,h,(r()-.5)*.2,.05);
+  if(main.length<4)return false;
+  for(let k=0,n=2+(r()*2|0);k<n;k++){
+    const p=main[1+(r()*(main.length-2)|0)];
+    crack(p[0],p[1],.3+r()*.5,(r()<.5?-1:1)*(.6+r()*.5),.028);
+  }
+  const ft=main[0];
+  for(let k=0;k<7;k++){
+    const s=.03+r()*.04,x=ft[0]+(r()-.5)*.8,zz=ft[2]-.15-r()*.5,y=cave3Down(F,x,ft[1]+.4,zz);
+    plnBlob(B.m,{c:[x,y+s*.3,zz],r:[s*1.4,s*.6,s],sub:0,col:K.ember,mat:PLN_MAT.glow,glow:1+r()*1.2});
+  }
+  const mid=main[main.length>>1],lo=main[main.length>>2];
+  lights.push({p:[lo[0],lo[1],lo[2]-.3],r:2.2,c:K.lip});
+  lights.push({p:[mid[0],mid[1],mid[2]-.9],r:5.5,c:K.light});
+  glows.push({p:[mid[0],mid[1]-.2,mid[2]-.25],c:K.glow,k:.48,s:1.1});
+  return true;
+}
+/* окно дня: высоко в задней стене лёд истончён и светится холодным пятном с неровной каймой;
+   пятно лежит в стене и смотрит на нас, под ним — холодный свет на полу */
+function cave3GapIce(B,q,lights,glows){
+  const F=B.F,r=B.r,g=q.g,K=CAVE3_GAP.ice,z0=cave3GapDeep(B,q,.7);
+  if(z0<0)return false;
+  const bot=cave3Down(F,q.X,g.ym,z0),top=cave3Up(F,q.X,g.ym,z0),h=top-bot;
+  if(h<1.6)return false;
+  const cy=bot+h*.72;
+  /* стекло — внахлёст: по краю тусклее, к середине светлее, ни одной щели; кайму даёт свет на камне */
+  let n=0,zs=0;
+  const pane=(m,rx,ry,s0,s1,col,gl)=>{
+    for(let i=0;i<m;i++){
+      const a=r()*TAU,d=Math.sqrt(r()),x=q.X+Math.cos(a)*d*rx,y=cy+Math.sin(a)*d*ry;
+      const zw=cave3WallZ(F,x,y,Math.max(1.3,z0-1));
+      if(zw-z0>5)continue;
+      const s=lerp(s0,s1,d)*(.85+r()*.3);
+      plnBlob(B.m,{c:[x,y,zw-.01-(gl>1.2?.01:0)],r:[s,s*.8,.04],sub:1,lean:r()*TAU,col,mat:PLN_MAT.glow,glow:gl});
+      n++;zs+=zw;
+    }
+  };
+  const ry=Math.min(.75,h*.2);
+  pane(12,.85,ry*.85,.4,.26,K.mid,1.2);
+  pane(10,.5,ry*.5,.36,.24,K.win,1.8);
+  if(n<10)return false;
+  const zw=zs/n;
+  lights.push({p:[q.X,cy,zw-.35],r:2.6,c:K.lip});
+  lights.push({p:[q.X,cy-.4,zw-1.3],r:7,c:K.light});
+  glows.push({p:[q.X,cy,zw-.3],c:K.glow,k:.5,s:1.3});
+  return true;
+}
+/* мокрая стена: ленты натёка, по которым бежит вода — мокрые до блеска, фонарь ловит их издали */
+function cave3GapWet(B,q,lights,glows){
+  const F=B.F,r=B.r,g=q.g,K=CAVE3_GAP.wet,z0=cave3GapDeep(B,q,.85);
+  if(z0<0)return false;
+  const bot=cave3Down(F,q.X,g.ym,z0),top=cave3Up(F,q.X,g.ym,z0),h=Math.min(top-bot,4);
+  if(h<1)return false;
+  let n=0;
+  for(let k=0;k<9;k++){
+    const pts=[];let x=q.X+(r()-.5)*3;
+    const y1=bot+h*(.55+r()*.4),y0=bot+h*r()*.25;
+    for(let y=y1;y>=y0;y-=.18){
+      x+=(r()-.5)*.05;
+      const zw=cave3WallZ(F,x,y,Math.max(1.3,z0-1));
+      if(zw-z0>6)break;
+      pts.push([x,y,zw-.02]);
+    }
+    if(pts.length<4)continue;
+    plnTube(B.m,{path:pts,rad:t=>.08+.05*Math.sin(t*7+k),sides:6,flat:.35,up:[1,0,0],col:K.run,mat:PLN_MAT.rock,glow:1});
+    n++;
+  }
+  if(!n)return false;
+  lights.push({p:[q.X,bot+h*.5,z0-1],r:4,c:K.light});
+  glows.push({p:[q.X,bot+h*.5,z0],c:K.glow,k:.3,s:1.6});
+  return true;
 }
 
 /* ══════════════ шахта: спуск вглубь планеты ══════════════ */

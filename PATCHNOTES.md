@@ -8,6 +8,14 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M630c — life in the halls.** Plants and creatures of the cave are now part of the scene, not
+  pictures over it: they stand on the cave floor at their true size beside you, catch your lamp and the
+  daylight like the stone does, and the creatures walk, graze and hover in their own poses. When you
+  stop by something to scan, the view settles between you and it. Nowhere in a cave is it dark for
+  more than thirty metres: where nothing else glows, the stone itself offers a light — glowworms on
+  threads under the roof, a warm crack breathing in a volcanic wall, a pane of daylight through thin
+  ice, or a wet wall shining in your lamp. The lamp's beam hangs in the air as a clean wedge, and the
+  stone stays readable through it.
 - **M630b — the halls, pass 5: light.** The roof rises into domes where something is — the middle of
   each hall, the mouth, the lake, amber, the far arch — and never stays flat for more than twelve metres;
   you walk under a dome, it does not follow you. The lamp's warmth fades over the first eight metres

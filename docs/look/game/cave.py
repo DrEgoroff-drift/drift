@@ -7,7 +7,7 @@
       x      metres from the mouth along the upper gallery (default 9: just past the mouth),
              or zone:<kind>[:<frac>] — the first hall of that kind (gallery dripstone crystal water vein),
              at frac of its length (default .5); arch — beside the far lane's arch (22de);
-             amber — beside the first amber the game laid
+             amber — beside the first amber the game laid; gap[:i] — 3.5 m before the i-th light event in a gap
       phase  hour of the day up top, 0..1 (default .30)
       face   1 / -1 (default 1)
       near=0|1  holds the lens: 0 the broad (the gate), 1 the near lens of a thing (default: as the play asks)
@@ -40,6 +40,8 @@ T = """(function(){
   if(Zk)x=Zk.x0+(Zk.x1-Zk.x0)*zf;
   var yy=null;
   if(xs==="arch"&&F.far)x=(F.far.ax-3.5*F.far.s)*CAVE_PPM;
+  cave3Events(C,F);
+  if(xs.indexOf("gap")===0&&C.ev3.gaps.length){var gi=Math.min(+(xs.split(":")[1]||0),C.ev3.gaps.length-1);x=(C.ev3.gaps[gi]-3.5)*CAVE_PPM;}
   /* в этой системе залежи янтаря может не быть: стенд кладёт одну каплю туда, куда её кладёт игра — в конец ответвления */
   if(xs==="amber"&&!caveProps(C).some(function(q){return q.k==="amber";})){var be=C.branchEnds[0];caveProps(C).push({k:"amber",x:be.x,y:caveScanDown(C,be.x,be.y-30),u:6,res:"amber",seed:4242});}
   if(xs==="amber"){var am=caveProps(C).filter(function(q){return q.k==="amber";})[0];if(am){x=am.x-4.2*CAVE_PPM*face;yy=caveScanDown(C,x,am.y-30);}}
@@ -47,7 +49,7 @@ T = """(function(){
   /* поверхность сверху — её час: один кадр поверхности в часах дня (PLN.sun) */
   var c=celSun(p);PLN.sun={night:clamp(-Math.sin(c.ph*TAU)*3,0,1),dir:[-Math.cos(c.ph*TAU),Math.sin(c.ph*TAU),0],look:null};
   CAVE3.c=C;CAVE3.cx=x/CAVE_PPM;CAVE3.zoom=0;CAVE3.t=wallMs();CAVE3.wt=null;CAVE3.rush=true;CAVE3.nearPin=%(near)s;CAVE3.farPin=%(far)s;
-  window.__EXTRA={type:p.type,kind:cave3StyKind(p.type),mouthX:+F.mouthX.toFixed(2),x:Math.round(x),zone:caveZoneAt(C,x).kind,zones:Zs.map(function(z){return z.kind+":"+z.x0+"-"+z.x1;}).join(" ")};
+  window.__EXTRA={type:p.type,kind:cave3StyKind(p.type),mouthX:+F.mouthX.toFixed(2),x:Math.round(x),zone:caveZoneAt(C,x).kind,zones:Zs.map(function(z){return z.kind+":"+z.x0+"-"+z.x1;}).join(" "),gaps:C.ev3.gaps.map(function(g){return Math.round(g);}).join(" ")};
 })();
 PLN.on=true;
 """
@@ -61,7 +63,7 @@ def main():
     typ, n = a[0], int(a[1])
     x = a[2] if len(a) > 2 else "9"
     xs = x
-    if x in ("arch", "amber"):
+    if x in ("arch", "amber") or x.startswith("gap"):
         x = "9"
     zk, zf = "null", ".5"
     if x.startswith("zone:"):

@@ -10,7 +10,7 @@ const CAVE3_GPU={dev:null,gen:-1,tier:-1,w:0,h:0,shn:0,ms:1,L:null,P:{},U:null,S
 /* числа стенда (docs/look/cv-render.js): тьма, воздух, фонарь, день */
 const CAVE3_K={amb:[.036,.054,.083],fogC:[.045,.08,.12],fog:.022,
   lampCol:[4,3.1,1.95],inner:32*PLN_DEG,outer:58*PLN_DEG,fall:3.2,fov:128*PLN_DEG,day:[1.3,1.42,1.4],
-  air:[.036,.02,.065],airReach:140,comp:[.10,.36,1,0]};
+  air:[.039,.02,.065],airReach:140,comp:[.10,.36,1,0]};
 
 function cave3Log(s){plnLog("пещера: "+s);}
 function cave3Persp(fovy,asp,n,f){
