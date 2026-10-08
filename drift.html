@@ -59850,11 +59850,11 @@ fn edist(l:vec2f,A:f32,B:f32)->f32{let f=l.x*l.x/(A*A)+l.y*l.y/(B*B)-1.;
   return abs(f)/max(length(2.*vec2f(l.x/(A*A),l.y/(B*B))),1e-6);}
 fn over(acc:vec4f,s:vec4f)->vec4f{return s+acc*(1.-s.a);}
 /* гранулы (M825): ячейки с тёмными межгранульными дорожками; центры ячеек плывут — узор кипит */
-fn gcell(q:vec2f,t:f32)->vec2f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;
+fn gcell(q:vec2f,t:f32)->vec3f{let i=floor(q);let f=q-i;var f1=9.;var f2=9.;var id=0.;
   for(var j=-1;j<=1;j++){for(var k=-1;k<=1;k++){let g=vec2f(f32(j),f32(k));
     let h=vec2f(sh(i+g),sh(i+g+vec2f(17.,31.)));let o=vec2f(.5)+.38*sin(vec2f(t*.0021,t*.0017)+6.2832*h);
-    let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;}else if(dd<f2){f2=dd;}}}
-  return vec2f(f1,f2);}
+    let dd=length(g+o-f);if(dd<f1){f2=f1;f1=dd;id=sh(i+g+vec2f(5.,9.));}else if(dd<f2){f2=dd;}}}
+  return vec3f(f1,f2,id);}
 /* одно светило: фотосфера (закрывает фон), корона со стримерами, ореол, четыре луча */
 fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   let d=p-sv.xy;let R=sv.z;let heat=sv.w;let col=cv.rgb;let rr=length(d);let r=rr/R;
@@ -59948,7 +59948,18 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
     let ga=.7+.2*big;let gr=1.-ga*.5+ga*sf(q+wq*1.6+vec2f(t*.0015,-t*.001));
     /* M825: на близком зуме — ячейки; к лимбу сжаты по лучу (дуга по шару), мельче двух px — в среднее */
     let gm=mix(1.4,2.4,big);let qa=dir*asin(rn)*Rd*gs*gm+wq*1.3;let gc=gcell(qa,t);
-    let gcl=(mix(.84,.93,wh)+mix(.2,.09,wh)*smoothstep(.0,.5,gc.y-gc.x))*(1.04-.16*gc.x);
+    var gcl=(mix(.84,.93,wh)+mix(.2,.09,wh)*smoothstep(.0,.5,gc.y-gc.x))*(1.04-.16*gc.x);
+    if(big>.5){
+      /* M825c: у гиганта ячейки двух размеров (×2.8) пятнами, край мягкий — шире трети ячейки, у каждой
+         своя яркость (±.08), к лимбу мельче и темнее; поверх — факелы, у лимба ярче */
+      let qb=qa*(1.+.8*lk*lk);
+      let m3=smoothstep(.35,.65,sf(qa*.25+vec2f(3.,8.)));
+      let g1=gcell(qb*.62,t);let g2=gcell(qb*1.75+vec2f(9.,4.),t);
+      let b1=.88+.12*smoothstep(.0,1.2,g1.y-g1.x)+.16*(g1.z-.5)*smoothstep(.0,.6,g1.y-g1.x);
+      let b2=.88+.12*smoothstep(.0,1.2,g2.y-g2.x)+.16*(g2.z-.5)*smoothstep(.0,.6,g2.y-g2.x);
+      let fac=smoothstep(.6,.8,sf(qa*.16+vec2f(7.,1.)))*(.3+.7*lk);
+      gcl=mix(b1,b2,m3)*(1.-.1*lk)+.16*fac;
+    }
     let cpx=R/(gs*gm);let gk=smoothstep(2.,6.,cpx);
     let hot=mix(mix(col,vec3f(1.,.82,.55),.35*(1.-wh)),vec3f(1.,.99,.965),wh*mu*mu*mu*mu);
     /* L2: кромка фотосферы мягкая (последние 8% радиуса) — диск переходит в корону,
@@ -59981,7 +59992,7 @@ fn star(p:vec2f,sv:vec4f,cv:vec4f,t:f32,big:f32,px:f32,hz:f32,ph:f32)->vec4f{
   let tone=vec3f(1.)-exp(-raw)+max(raw-vec3f(1.6),vec3f(0.))*.6+photo.rgb*near*.5;
   /* сверх тона — горячая середина: одна она светит далеко выше газа, и лестница
      свечения даёт ей широкий тёплый ореол; диск вокруг остаётся своего цвета */
-  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-.9*near);
+  let rh=r/(Rd*.11);let hc=vec3f(1.,.96,.9)*4.*exp(-rh*rh)*(.4+.6*heat)*(1.-near);
   return vec4f(tone+hc,photo.a);
 }
 fn bleed(p:vec2f,bv:vec4f,col:vec3f)->vec3f{
@@ -60194,7 +60205,9 @@ function gsyStar(pass,sys,ox,oy,R){
     S[40]=Math.cos(t*.0006);S[41]=Math.sin(t*.0006);
     const fc=t/720+(ph*.37-Math.floor(ph*.37)),fp=fc-Math.floor(fc),sm=clamp(fp/.012,0,1);
     S[42]=sm*sm*(3-2*sm)*Math.exp(-fp*7);S[43]=Math.floor(fc);
-    for(let i=0;i<4;i++)S[44+i]=4.2+1.2*Math.sin(t*.02+i);S[48]=GSY.v||0;
+    /* M825c: луч на экране не длиннее .35 меньшей стороны кадра — на близком зуме лучи шли через весь кадр */
+    const rcap=.35*Math.min(W,H)/Math.max(1,(S[2]||R)*(S[3]||1));
+    for(let i=0;i<4;i++)S[44+i]=Math.min(4.2+1.2*Math.sin(t*.02+i),rcap);S[48]=GSY.v||0;
     const zk=clamp((G.zoom-.75)/.25,0,1);S[49]=1-zk*zk*(3-2*zk);}
   if(!kind)S[31]=GNB.view&&GNB.dev===GPU.dev&&GNB.sys===sys?1:0;
   /* зарево в мировых координатах: вокруг звезды, без порога по краю кадра */
@@ -60209,6 +60222,9 @@ function gsyStar(pass,sys,ox,oy,R){
   if(!kind){const g=st.kind==="giant"?[.6,"#ff7448",.8]:st.kind==="dwarf"?[1.6,"#e8f4ff",1]:[sys.cls.t||1,sys.cls.col,1];
     const q=hex2rgb(g[1]),r0=S[2]||R,m=Math.min(ox,W-ox,oy,H-oy);
     const nr=sbss(20,70,r0*(big?.42:.24));   /* M825: вблизи диск — поверхность, ядро линзы его не прожигает */
+    /* M825c: крупный диск — препятствие для табличек: подсказка встаёт у его кромки снаружи, как у планет */
+    const rd=r0*(big?.42:.24)*1.12;
+    if(rd>16){const n=ovNd();hangBlock((ox-rd)*n,(oy-rd)*n,(ox+rd)*n,(oy+rd)*n);}
     GPU.lens={x:ox/W,y:oy/H,k:g[2]*clamp(m/(r0+60),0,1)*(1-.85*nr),r:r0*(big?.42:.24)*.16*(1-nr),cr:q[0]/255,cg:q[1]/255,cb:q[2]/255,t:g[0]};}
   gpuField(pass,"gsy.star",GSY_STAR_WGSL,S,tex?[tex]:[]);
 }
@@ -61065,24 +61081,22 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     let dF = 1. - smoothstep(.2, .5, fw*15.);
     let med = step(.3, lv); let dru = step(.62, lv)*dF;
     let vM = vor(p*6. + s + 4.); let vD = vor(p*15. + s + 9.);
-    var fid = vL.id; var fb = (vL.id - .5)*1.3; var fcv = vL.c/2.3; var fsz = 1./2.3;
-    if (med > 0.) { fid = vM.id; fb = (vM.id - .5)*1.5; fcv = vM.c/6.; fsz = 1./6.; }
-    if (dru > .5) { fid = vD.id; fb = (vD.id - .5)*1.3; fcv = vD.c/15.; fsz = 1./15.; }
+    var fid = vL.id; var fb = (vL.id - .5)*1.3;
+    if (med > 0.) { fid = vM.id; fb = (vM.id - .5)*1.5; }
+    if (dru > .5) { fid = vD.id; fb = (vD.id - .5)*1.3; }
     let eL = vedge(vL)/2.3; let eM = vedge(vM)/6.; let eD = vedge(vD)/15.;
     let sL = 1. - smoothstep(.0, .006 + fw, eL);
     let sM = (1. - smoothstep(.0, .004 + fw, eM))*med;
     let sD = (1. - smoothstep(.0, .003 + fw, eD))*dru;
     /* стекло фиолетовое при любой палитре мира: от палитры берётся только яркость; внутри грани — вуаль
-       и волоски трещин, грань не заливка */
+       (грань не заливка) */
     let hue = mix(vec3f(.78, .6, 1.3), vec3f(.62, .64, 1.36), fid.y);
     let rv = ramp(k, .26 + .13*fid.x);
     let veil = fbm(p*7. + fid*13., 3, fw);
-    let fpl = normalize(fid - .5 + vec3f(1e-3)); let fpo = dot(-fcv, fpl) - (fract(fid.z*5.3) - .5)*.5*fsz;
-    let frc = (1. - smoothstep(.0, .003 + fw, abs(fpo)))*step(.5, fract(fid.x*3.7))*(1. - smoothstep(.3, .8, fw/fsz));
-    var alb = vec3f(dot(rv, vec3f(.2126, .7152, .0722)))*hue*(.78 + .5*veil)*(1. - .45*sM - .4*sD) + vec3f(.05, .04, .09)*frc;
+    var alb = vec3f(dot(rv, vec3f(.2126, .7152, .0722)))*hue*(.78 + .5*veil)*(1. - .45*sM - .4*sD);
     /* скол: ступень между крупными полями разной высоты */
     let hL = h3(vL.id + 5.).y; let hN = h3(vL.id2 + 5.).y;
-    let stepK = smoothstep(.1, .3, abs(hL - hN));
+    let stepK = smoothstep(.1, .3, abs(hL - hN))*(1. - med);   /* скол — у крупного поля; сквозь средние грани он шёл дугой-проволокой */
     let tdir = normalize(tang(vL.c2 - vL.c, p) + vec3f(1e-5));
     let bw = .014 + fw;
     if (hL > hN) {
@@ -61101,7 +61115,7 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     let face = smoothstep(.35, .75, dot(nf, gLo))*step(.55, fract(fid.z*7.));
     o.alb = alb; o.b = fb;
     o.spec = 1.; o.rough = .16;
-    o.glow = vec3f(.5, .3, 1.)*(.02 + .03*fid.z + .16*clamp(sL*(1. - stepK*.5) + sM + .6*sD, 0., 1.)*face);
+    o.glow = vec3f(.5, .3, 1.)*(.02 + .03*fid.z + .16*clamp(sL*(1. - med)*(1. - stepK*.5) + sM + .6*sD, 0., 1.)*face);
   } else if (k == 2) {                          // ruin: dead continents, a city grid on the land
     let n = fbm(warp(p*1.2 + s, .5, fw), 5, fw);
     let land = smoothstep(-.04, .04, n);
@@ -61154,7 +61168,7 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     if (k == 4) { lv = -.06; sc = 1.4; }
     if (k == 7) { lv = .34; sc = 2.3; }
     let n = fbm(warp(p*sc + s, .55, fw), 6, fw) + select(0., .12*n3(p*9. + s), k == 7);
-    let land = smoothstep(lv, lv + .012, n);
+    let land = smoothstep(lv, lv + .012 + fw*3., n);   /* берег — с поправкой на пиксель: без неё лесенка (M825c) */
     let shelf = smoothstep(lv - .14, lv, n);
     var sea = mix(rp(k, 0), rp(k, 1), shelf*shelf);
     if (k == 7) { sea = mix(rp(k, 0), rp(k, 3), shelf*shelf*.8); }
@@ -61163,9 +61177,14 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     var gr = ramp(k, .5 + .1*fbm(p*7. + s, 3, fw));
     if (k == 4) { gr = mix(mix(rp(k, 2), rp(k, 1), smoothstep(-.2, .3, fbm(p*5. + s, 4, fw))), rp(k, 3), (1.-smoothstep(lv + .01,lv + .06, n))*.6); }
     /* рельеф джунглей (M825c): хребты светлее, долины темнее, высота — через hs, свет её читает */
-    var rel = 0.;
+    var rel = 0.; var rb = vec3f(0.);
     if (k == 4) {
       rel = 1. - abs(fbm(p*4.2 + s + 2., 4, fw)*1.8); rel = rel*rel;
+      /* наклон — разностями по телу, не dpdx: производная по квадам 2×2 клала лесенку по гребням и берегу */
+      let u1 = normalize(cross(p, vec3f(.01, 1., .02))); let u2 = cross(p, u1); let ue = .006;
+      var r1 = 1. - abs(fbm((p + u1*ue)*4.2 + s + 2., 4, fw)*1.8); r1 = r1*r1;
+      var r2 = 1. - abs(fbm((p + u2*ue)*4.2 + s + 2., 4, fw)*1.8); r2 = r2*r2;
+      rb = .035*(u1*(r1 - rel) + u2*(r2 - rel))/ue;
       gr = gr*mix(.68, 1.18, rel)*mix(vec3f(1.), vec3f(1.08, 1.04, .9), smoothstep(.6, .9, rel));
     }
     if (k == 7) { gr = mix(rp(k, 4), rp(k, 5), .3); }
@@ -61179,11 +61198,14 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     var alb = mix(sea, ground, land);
     if (k == 4) {
       /* реки: нулевые линии искривлённого поля, рвутся по длине, только в глубине суши */
-      let rq = warp(p*3.2 + s + 7., .6, fw);
-      let rv = (1. - smoothstep(.0, .005 + fw*1.5, abs(fbm(rq, 3, fw))))*smoothstep(lv + .02, lv + .08, n)
+      let rf = fbm(warp(p*3.2 + s + 7., .6, fw), 3, fw);
+      let t1 = normalize(cross(p, vec3f(.01, 1., .02))); let t2 = cross(p, t1); let he = .004;
+      let rg = vec2f(fbm(warp((p + t1*he)*3.2 + s + 7., .6, fw), 3, fw) - rf, fbm(warp((p + t2*he)*3.2 + s + 7., .6, fw), 3, fw) - rf)/he;
+      let rd = abs(rf)/max(length(rg), 1e-3); let rhw = max(.0042, fw*.75);
+      let rv = (1. - smoothstep(rhw, rhw + fw*.6, rd))*smoothstep(lv + .02, lv + .08, n)
         *smoothstep(-.05, .2, n3(p*2.4 + s + 1.))*(1. - smoothstep(.2, .6, fw*20.));
-      alb = mix(alb, rp(k, 0)*.9, rv*.85);
-      o.hs = .035*rel*land;
+      alb = mix(alb, rp(k, 0)*.4, rv*.95);
+      rb = rb*smoothstep(lv, lv + .1, n);   /* рельеф растёт от берега */
       /* тень облаков — облако со стороны звезды, сдвиг ~1.5 % диска */
       let Lt = tang(gLo, p);
       let csh = cloudJ(normalize(p + Lt/max(length(Lt), 1e-4)*.03), s, t, fw);
@@ -61206,7 +61228,7 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     var cv = .5; if (k == 4) { cv = .6; } if (k == 7) { cv = .55; }
     let cf = fbm(cw*1.3, 5, fw); o.cloud = smoothstep(.05, .5, cf + cv - .55)*(.55 + .3*smoothstep(.1, .5, cf))*smoothstep(.0, .25, abs(p.y) + .15);
     if (k == 4) { o.cloud = cloudJ(p, s, t, fw)*.88; }
-    o.b = .5*mtn*vec3f(n3(p*20.), n3(p*20. + 3.), n3(p*20. + 6.));
+    o.b = .5*mtn*vec3f(n3(p*20.), n3(p*20. + 3.), n3(p*20. + 6.)) + rb;
   } else if (k == 5) {                          // ice: plates of snow, bare ice and frost, cut by deep cracks
     /* M825c: поля разного альбедо — наст, голый лёд, иней — пятнами с рваной кромкой; трещин немного, они
        широкие (.024–.07 радиуса) и глубокие: тёмное дно, стенки наклонены — к звезде светлая, дальняя в тени,
@@ -61232,10 +61254,10 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
       let hw = .012 + .023*fract(hj.z*13.)*(.6 + .4*n3(p*3. + f32(j) + s)) + fw*.5;
       let ad = abs(sd);
       let inC = 1. - smoothstep(hw*.85, hw + fw, ad);
-      let flK = 1. - smoothstep(hw*.25, hw*.6, ad);
+      let flK = 1. - smoothstep(hw*.45, hw*.8, ad);
       let le = (ad - hw*1.3)/(hw*.35); let lev = exp(-le*le);
       let g = tang(ax, p)*select(-1., 1., sd >= 0.);
-      gb += g*(1.5*inC*(1. - flK) - .9*le*lev)*along;
+      gb += g*(1.5*inC*(1. - flK) - .3*le*lev)*along;
       fl = max(fl, flK*along); wl = max(wl, inC*(1. - flK)*along); rim = max(rim, lev*along);
       tor = max(tor, (1. - smoothstep(hw*1.6, hw*5., ad))*along);
     }
@@ -61245,7 +61267,7 @@ fn surf(k: i32, p: vec3f, s: vec3f, fw: f32) -> S {
     alb = alb*mix(1., .88 + .2*n3(tq*1.3 + 2.), tor*tfade);
     let l2 = 1. - smoothstep(.0, .01 + fw*7., abs(n3(p*6.5 + s + 5.)));
     alb = mix(alb, alb*vec3f(.8, .74, .7), .2*l2*(1. - smoothstep(.2, .6, fw*7.)));
-    alb = mix(alb, ramp(k, .88), .25*rim);
+    alb = mix(alb, ramp(k, .88), .12*rim);
     alb = mix(alb, alb*vec3f(.7, .8, .92), .5*wl);
     alb = mix(alb, rust, .85*fl);
     o.alb = alb; o.b = gb; o.spec = .35; o.rough = .3;
@@ -61286,7 +61308,7 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
   let q = i.p.xy/u.b.x; let r = v0.z; let d = (q - v0.xy)/r; let px = 1./(u.b.x*r);
   let k = i32(v0.w); let L = normalize(v1.xyz);
   let spin = v1.w*6.2831853; let tilt = v6.z;
-  let air = chromaCap(v2.rgb, select(.09, .055, k == 4)); let thick = v2.w;
+  let air = chromaCap(v2.rgb, select(select(.09, .055, k == 4), .02, k == 1)); let thick = v2.w;   /* у кристалла воздух почти серый: небо системы красило стекло (M825c) */
   let sun = v3.rgb*v6.y;
   let seed = v3.w; let s = vec3f(seed*1.37, seed*.71, seed*2.13);
   let len = length(d);
@@ -61314,9 +61336,9 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
       let w = thick*3.;
       dif = clamp((mu0 + w)/(1. + w), 0., 1.)*smoothstep(-w, .05, m0g);
     }
-    /* стекло кристалла держит свой тон (M825c): тело освещено светом без его оттенка (20 % оттенка
+    /* стекло кристалла держит свой тон (M825c): тело освещено светом без его оттенка (8 % оттенка
        остаётся), цвет звезды — в блике и кромке */
-    let sunB = select(sun, mix(vec3f(dot(sun, vec3f(.2126, .7152, .0722))), sun, .2), k == 1);
+    let sunB = select(sun, mix(vec3f(dot(sun, vec3f(.2126, .7152, .0722))), sun, .08), k == 1);
     var sc = sf.alb*dif*sunB;
     /* ночная сторона не чёрная (M804): пыль неба кладёт холодную заливку, воздух — свою, и у
        самого терминатора свет тёплый — в воздухе шире и краснее, на голом камне узкой кромкой */
@@ -61403,6 +61425,10 @@ fn toView(v: vec3f, tilt: f32, spin: f32) -> vec3f { return rx(ry(v, spin), tilt
   }
   return acc;
 }`;
+
+/* ══════════════ планета с орбиты: конвейеры и рисование (разрез 17gab, M825c) ══════════════
+   Шейдер GOR_WGSL и константы — в 17gab-gpu-orb.js; здесь — семьи конвейеров (gorCode, gorPipe),
+   тело (gorBody), вход gpuOrb и луны. */
 const gorLin=c=>Math.pow(Math.max(0,c)/255,2.2);
 /* ── один конвейер на семью миров ──
    Все двенадцать миров в одной `surf` компилировались 3.1–3.5 с (Blackwell, D3D12): прогрев

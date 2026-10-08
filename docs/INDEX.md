@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 550 · top-level symbols: 8106
+Files: 551 · top-level symbols: 8106
 
 ## SYMBOLS
 
@@ -752,12 +752,12 @@ GNB_VOL                      src/16gay-gpu-nebula-look.js:134
 GNB_WC                       src/16gay-gpu-nebula-look.js:70
 GOR                          src/17gab-gpu-orb.js:11
 GOR_AIR                      src/17gab-gpu-orb.js:14
-GOR_FAM                      src/17gab-gpu-orb.js:547
-GOR_GAS                      src/17gab-gpu-orb.js:570-604
+GOR_FAM                      src/17gab1-gpu-orb-draw.js:13
+GOR_GAS                      src/17gab1-gpu-orb-draw.js:36-70
 GOR_LIT                      src/17gab-gpu-orb.js:18
 GOR_LZ                       src/17gab-gpu-orb.js:16
-GOR_MOON                     src/17gab-gpu-orb.js:621
-GOR_MOONPAL                  src/17gab-gpu-orb.js:622
+GOR_MOON                     src/17gab1-gpu-orb-draw.js:87
+GOR_MOONPAL                  src/17gab1-gpu-orb-draw.js:88
 GOR_WGSL                     src/17gab-gpu-orb.js:19
 GOS_SHIFTS                   src/17k1-gosplan.js:7
 GOT                          src/27jb-ui-got.js:12
@@ -4233,11 +4233,11 @@ gnbStars                     src/16gba-gpu-nebula-comp.js:42-49
 gnbTarget                    src/16gba-gpu-nebula-comp.js:138-145
 goalCard                     src/13b-occupy.js:232-261
 goalOwnYacht                 src/13b-occupy.js:225-231
-gorBody                      src/17gab-gpu-orb.js:580-604
-gorCode                      src/17gab-gpu-orb.js:548-558
-gorLin                       src/17gab-gpu-orb.js:538
-gorMoonPal                   src/17gab-gpu-orb.js:623-630
-gorPipe                      src/17gab-gpu-orb.js:560-567
+gorBody                      src/17gab1-gpu-orb-draw.js:46-70
+gorCode                      src/17gab1-gpu-orb-draw.js:14-24
+gorLin                       src/17gab1-gpu-orb-draw.js:4
+gorMoonPal                   src/17gab1-gpu-orb-draw.js:89-96
+gorPipe                      src/17gab1-gpu-orb-draw.js:26-33
 gosBbLine                    src/17k1-gosplan.js:25-28
 gosBbPlan                    src/17k1-gosplan.js:21-24
 gosBucket                    src/17k1-gosplan.js:8
@@ -4317,8 +4317,8 @@ gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:218-272
 gpuNext                      src/08b-gpu.js:622-631
 gpuNoise                     src/08b-gpu.js:386-391
 gpuNone                      src/08b2-gpu-loss.js:6-14
-gpuOrb                       src/17gab-gpu-orb.js:606-618
-gpuOrbMoon                   src/17gab-gpu-orb.js:631-637
+gpuOrb                       src/17gab1-gpu-orb-draw.js:72-84
+gpuOrbMoon                   src/17gab1-gpu-orb-draw.js:97-103
 gpuOvFrontView               src/08bi-gpu-ovl.js:284
 gpuOver                      src/08b-gpu.js:597-617
 gpuPass                      src/08b-gpu.js:447-450
@@ -4351,7 +4351,7 @@ gpuSpaceTitle                src/16g-gpu-space.js:222-233
 gpuStationDraw               src/17c3-station-live.js:119-125
 gpuStationFlare              src/17c3-station-live.js:128-143
 gpuStoreDrop                 src/18c-chunks.js:191
-gpuSysUnder                  src/17g-gpu-system.js:431-437
+gpuSysUnder                  src/17g-gpu-system.js:447-453
 gpuTakeSnap                  src/08b-gpu.js:27-33
 gpuTileAt                    src/18c-chunks.js:228-234
 gpuTileStore                 src/18c-chunks.js:223-227
@@ -4432,14 +4432,14 @@ gspStarBuf                   src/16g-gpu-space.js:142-152
 gspStarsDust                 src/16g-gpu-space.js:188-196
 gspUni                       src/16g-gpu-space.js:168-176
 gss                          src/17ga-gpu-planets.js:369
-gsyBeltDots                  src/17g-gpu-system.js:373-381
+gsyBeltDots                  src/17g-gpu-system.js:384-392
 gsyBeltHaze                  src/17gc-sys-belt.js:203-218
-gsyEll                       src/17g-gpu-system.js:342-351
-gsyMean                      src/17g-gpu-system.js:352-355
-gsyOrb                       src/17g-gpu-system.js:334-340
-gsyOrbits                    src/17g-gpu-system.js:356-371
-gsyStar                      src/17g-gpu-system.js:382-429
-gsyUni                       src/17g-gpu-system.js:328-332
+gsyEll                       src/17g-gpu-system.js:353-362
+gsyMean                      src/17g-gpu-system.js:363-366
+gsyOrb                       src/17g-gpu-system.js:345-351
+gsyOrbits                    src/17g-gpu-system.js:367-382
+gsyStar                      src/17g-gpu-system.js:393-445
+gsyUni                       src/17g-gpu-system.js:339-343
 gtrDraw                      src/16ga-gpu-trail.js:43-51
 gtrLane                      src/16ga-gpu-trail.js:37-42
 gtrPush                      src/16ga-gpu-trail.js:31-35
@@ -8914,7 +8914,7 @@ zoomTo                       src/15-input.js:358
 ## src/17f-sys-traffic.js · 9 KB
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17g-gpu-system.js · 31 KB
+## src/17g-gpu-system.js · 33 KB
   · система под планетами на видеокарте (G2, docs/DESIGN-gpu.md):1
 
 ## src/17g-sys-lane.js · 15 KB
@@ -8923,8 +8923,11 @@ zoomTo                       src/15-input.js:358
 ## src/17ga-gpu-planets.js · 30 KB
   · планеты и луны на видеокарте (G3, docs/DESIGN-gpu.md):1
 
-## src/17gab-gpu-orb.js · 42 KB
+## src/17gab-gpu-orb.js · 35 KB
   · планета с орбиты, заново (M700, docs/DESIGN-space.md):1
+
+## src/17gab1-gpu-orb-draw.js · 8 KB
+  · планета с орбиты: конвейеры и рисование (разрез 17gab, M825c):1
 
 ## src/17gb-gpu-planet-strip.js · 7 KB
   · развёртка планеты — шейдером на видеокарте (GPU-3, DESIGN-gpu §G, 25.09):1
