@@ -17,17 +17,24 @@ const CAVE3_LENS={man:[.124,.124],walk:[.29,.34],dist:[18,36],eye:3.2,tau:.45,in
   /* у озера: глаз выше и ближе — гладь и зеркало ложатся полосой, а не ребром */
   lkEye:2.6,lkD:.55,lkS:.8,
   /* дальний: глаз за 100 м, 24°, линия ходьбы на .40 — по клавише карты; на телефоне нет */
-  fD:100,fH:42.5,fWalk:.40,fIn:.8,fOut:.7};
+  fD:100,fH:42.5,fWalk:.40,fIn:.8,fOut:.7,fBack:15,fWalkMax:.5};
 /* дальний объектив — только на широком окне */
 function cave3FarOk(){return W>760&&W>=H;}
 
 /* объектив по доле сторон: k = 0 — высокий кадр, 1 — широкий */
 /* near — у вещи: 0..1, объектив подходит в near раз ближе */
-function cave3Lens(asp,cx,floorY,zoom,near,lk,far){
+/* sky — высота поверхности (м): дальний кадр не поднимается выше неё даже на задней стене (за 15 м от
+   линии ходьбы) — над пещерой камень, небо только в устье. Не влезает — линия ходьбы поднимается в
+   кадре до середины, потом кадр сжимается: объектив жмётся к полу, а не отходит в небо */
+function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky){
   const L=CAVE3_LENS,k=plnSmooth(.6,1.5,asp);
   far=far||0;lk=(lk||0)*(1-far);
   let Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k)*lerp(1,L.lkD,lk);
   if(far){Hf=lerp(Hf,L.fH,far);f=lerp(f,L.fWalk,far);D=lerp(D,L.fD,far);}
+  if(far&&sky!=null){
+    const ey=floorY+L.eye,top=ey+(sky-ey)/(1+L.fBack/D)-floorY;
+    if((1-f)*Hf>top){f=Math.max(f,Math.min(L.fWalkMax,1-top/Hf));if((1-f)*Hf>top)Hf=Math.max(4,top/(1-f));}
+  }
   const w=Hf*asp,l=cx-w/2,r=cx+w/2,b=floorY-f*Hf,t=b+Hf;
   const ex=cx,ey=floorY+L.eye+L.lkEye*lk,ez=CAVE3_Z-D;
   const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,4,600),plnM4move(-ex,-ey,-ez));
@@ -111,7 +118,7 @@ function cave3Frame(){
   const asp=W/H,fK=plnSmooth(0,1,M.far),fs=fK>.001?cave3FarShift(C,Fd,M.cx,CAVE3_LENS.fH*asp/2):0;
   M.fs=first||M.fs==null||M.rush?fs:M.fs+(fs-M.fs)*(1-Math.exp(-dt/.6));
   const cx=M.cx+M.fs*fK+M.ns*plnSmooth(0,1,M.near)*(1-fK);
-  const floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far)),K=H/(Ls.Hf*CAVE_PPM);
+  const floorY=-C.cy/CAVE_PPM,Ls=cave3Lens(asp,cx,floorY,zoom,plnSmooth(0,1,M.near),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
   M.lens=Ls;
@@ -178,16 +185,17 @@ function cave3Frame(){
   tris+=cave3AmberFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);
   /* убранство залов (22dc): натёки, завесы, кристаллы, жилы на разрезе */
   const l0=F.lights.length;
-  tris+=cave3DressFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx,first||CAVE3.rush);
+  tris+=cave3DressFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx,first||CAVE3.rush,mid);
   M.stat.ldress=F.lights.length-l0;
   /* озеро (22dd): гладь с зеркалом и тело воды в разрезе */
   tris+=cave3LakeFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);
   /* растения и звери телами (22dg) */
   tris+=cave3LifeFrame(C,F,Fd,cx-hw-3,cx+hw+3);
   /* огней двенадцать: фонарь держит свои семь, остальные места — тем, кто сильнее и ближе к кадру
-     (устье, даль, янтарь, кристаллы, события в пролётах — 22dh) */
+     (устье, даль, янтарь, кристаллы, события в пролётах — 22dh); даль — по x и по y: огонь галереи
+     ниже кадра ничего в нём не светит */
   if(F.lights.length>12){
-    const w=q=>Math.max(q.c[0],q.c[1],q.c[2])*q.r/(1+Math.abs(q.p[0]-cx)/8);
+    const w=q=>Math.max(q.c[0],q.c[1],q.c[2])*q.r/(1+Math.hypot(q.p[0]-cx,Math.max(0,Math.abs(q.p[1]-mid)-Ls.Hf/2))/8);
     const core=F.lights.filter(q=>q.core),rest=F.lights.filter(q=>!q.core).sort((a,b)=>w(b)-w(a));
     F.lights=core.concat(rest.slice(0,12-core.length));
   }
@@ -258,10 +266,11 @@ exitCave=function(){
 };
 
 /* ── слова на вещах (как 21pzb на поверхности) ──
-   Строка действия — табличкой там, куда зовёт: у устья, у находки, у растения, у шахты; иначе — у
-   человека. Подсказка входа «ищите проход · шахты ведут вниз» — у шахты в кадре (нет её — у устья,
-   нет и его — у человека). Оранжевый глагол — только на плашке: #prompt и эта строка #msg под слоем
-   (body.cavewords / cavehush), кнопка ДЕЙСТВИЯ берёт глагол из G.prompt как прежде. */
+   Строка действия — табличкой там, куда зовёт: у устья, у находки, у растения, у шахты, у зверя.
+   Подсказка входа «ищите проход · шахты ведут вниз» — у шахты в кадре, нет её — у устья, нет и его —
+   молчит. Слово без вещи не висит посреди кадра (M826): вещи в кадре нет — таблички нет. Глагол
+   ДЕЙСТВИЯ говорит кнопка (она берёт его из G.prompt); табличка его не повторяет — несёт только то,
+   что сверх глагола, а без этого молчит. #prompt и строка #msg под слоем (body.cavewords / cavehush). */
 const CAVE3_W={on:false,hush:false,tip:null};
 function cave3WordsOn(){return G.mode==="cave"&&CAVE3.live&&!!CAVE3.lens&&!!G.cave&&hangOk();}
 /* точка мира (м) → пиксели окна тем же объективом, что у кадра */
@@ -288,16 +297,31 @@ hangSurface=function(){
     ovHang(id,ln,a[0],a[1],Object.assign({r:Math.max(8,Math.abs(a[1]-b[1]))},o));};
   const sh=P.sh.filter(v=>cave3InFrame(pj,v)).sort((a,b)=>Math.abs(a[0]-P.man[0])-Math.abs(b[0]-P.man[0]))[0]||null;
   const mouthIn=cave3InFrame(pj,P.mouth);
+  /* событие пролёта — само вещь кадра: табличка не закрывает его светлую часть (жар и мокрое — у пола,
+     нити светляков — под сводом); остальной пролёт открыт, иначе табличке зверя рядом негде встать */
+  {const n=ovNd(),Pm=CAVE_PPM,kd=cave3StyKind(G.surf&&G.surf.p&&G.surf.p.type);
+    for(const X of (C.ev3&&C.ev3.gaps)||[]){
+      const x=X*Pm,c0=-caveCeilOf(C,x,false)/Pm,f0=-caveFloorOf(C,x,false)/Pm;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+      const f=kd==="sed"?Math.max(f0,c0-4):f0,c=kd==="sed"?c0:Math.min(c0,f0+3.5);
+      for(const v of [[X-.8,f,0],[X+.8,c,0],[X-.8,c,3],[X+.8,f,3]]){const s=pj([v[0],v[1],CAVE3_Z+v[2]]);if(!s)continue;
+        x0=Math.min(x0,s[0]);x1=Math.max(x1,s[0]);y0=Math.min(y0,s[1]);y1=Math.max(y1,s[1]);}
+      if(x1>x0&&x1>0&&x0<W)hangBlock(x0*n,y0*n,x1*n,y1*n);
+    }
+    /* и человек: табличка зверя рядом не садится ему на шлем */
+    const mx=C.x/Pm,my=-C.y/Pm,a=pj([mx-.5,my+2.1,CAVE3_Z]),b=pj([mx+.5,my-1,CAVE3_Z]);
+    if(a&&b)hangBlock(Math.min(a[0],b[0])*n,Math.min(a[1],b[1])*n,Math.max(a[0],b[0])*n,Math.max(a[1],b[1])*n);
+  }
   /* подсказка входа */
   const T=CAVE3_W.tip;
   if(T&&G.msg===T&&G.msgT>0){
     const L=T.split("\n"),ln=L[0].split(" · ").concat(L.slice(1));
     if(sh)at(sh,3,"cave.tip",ln,{});
     else if(mouthIn&&!/^ДЕЙСТВИЕ — (НАЗАД|ОСТАВИТЬ)/.test(pr))at(P.mouth,2.4,"cave.tip",ln,{up:true});
-    else at(P.man,1.9,"cave.tip",ln,{up:true});
   }
   if(!pr)return;
-  const ln=pr.split("\n"),vi=ln.findIndex(s=>/^ДЕЙСТВИЕ/.test(s)),o={verb:vi<0?undefined:vi};
+  /* глагол — у кнопки; на табличке то, что сверх него */
+  const ln=pr.split("\n").filter(s=>!/^ДЕЙСТВИЕ — /.test(s)),o={};
+  if(!ln.length)return;
   if(/^ДЕЙСТВИЕ — НАЗАД/.test(pr))at(P.mouth,2.4,"cave.act",ln,o);
   else if(/^ДЕЙСТВИЕ — ОСТАВИТЬ|^УСТЬЕ · /.test(pr))at(P.wall,2,"cave.act",ln,o);
   else if(/^ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ/.test(pr))at(P.find,1,"cave.act",ln,o);
@@ -314,14 +338,41 @@ hangSurface=function(){
     if(sh)at(sh,3,"cave.act",L2,{});
     else if(mouthIn)at(P.mouth,2.4,"cave.act",L2,{up:true});
   }
-  else at(P.man,1.9,"cave.act",ln,Object.assign({up:true},o));
+  else if(/^КУСАЧИЕ/.test(pr)){
+    /* предупреждение — у ближнего злого зверя в кадре, над ним: сбоку оно ложилось на событие пролёта */
+    const b=cave3Biter(C,pj);
+    if(b)at(b,1.2,"cave.act",ln,{up:true});
+  }
 };
+/* ближний к человеку злой зверь в кадре: точка над спиной, м; нет — null */
+function cave3Biter(C,pj){
+  const P=CAVE_PPM;let best=null,bd=1e9;
+  for(const b of C.fauna||[]){
+    if(!b||b.caught||!b.hostile||!isFinite(b.x))continue;
+    const R=Math.max(CAVE3_LIFE.rMin,b.r/P),v=[b.x/P,-b.y/P+R*1.6+(b.hover||0)/P,CAVE3_Z+(b.r<7?CAVE3_LIFE.beastZ[0]:CAVE3_LIFE.beastZ[1])];
+    if(!cave3InFrame(pj,v))continue;
+    const d=Math.abs(b.x-C.x);if(d<bd){bd=d;best=v;}
+  }
+  return best;
+}
 /* вход: подсказку запоминаем, чтобы повесить её табличкой, а не полосой посреди пустоты */
 const CAVE3_OLD_ENTER=enterCave;
 enterCave=function(){
   const r=CAVE3_OLD_ENTER.apply(this,arguments);
   CAVE3_W.tip=G.mode==="cave"?String(G.msg||""):null;
   return r;
+};
+/* плашки приборов сверху (борт слева, место справа): свечение под ними гаснет (22dbw hudDim) — вещь не
+   стоит под плашкой. Мерим только тогда, когда 27z перемеряет вёрстку, а не каждый кадр */
+const CAVE3_HUD={l:[0,0],r:[0,0]};
+const CAVE3_OLD_FLOOR=hudFloorMeasure;
+hudFloorMeasure=function(force){
+  const go=!!force||(typeof LAYOUT_DIRTY!=="undefined"&&LAYOUT_DIRTY);
+  CAVE3_OLD_FLOOR.apply(this,arguments);
+  if(!go||typeof $vitals==="undefined"||!$vitals||!$locusEl)return;
+  const a=$vitals.getBoundingClientRect(),b=$locusEl.getBoundingClientRect();
+  CAVE3_HUD.l=a.width>0?[a.right,a.bottom]:[0,0];
+  CAVE3_HUD.r=b.width>0?[b.left,b.bottom]:[0,0];
 };
 const CAVE3_OLD_HUD=hud;
 hud=function(){

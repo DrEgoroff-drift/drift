@@ -661,6 +661,20 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     cut-outs. **The wedge:** air glows only inside the inner cone with a crisp edge, ×(1 + .6·wet):
     air in the wedge .25–.39, beside it ≤ .22, stone through it keeps a luma spread ≥ .068. Twelve
     lights by rank: the lamp's seven always, the rest by strength × reach over distance to the frame.
+  - *Done (M630d, the designer's eight gaps):* the wedge is a correction to the stone, not a layer —
+    brightest at the lamp, `3.2/(1+d²/3)`, ×(.7+.9·wet), dust-modulated, a 2–3° soft edge (air .33–.35,
+    stone spread through it .14–.20). Stone is faceted by a warped Voronoi in `22dbw` mat 1 (slabs by
+    strata, a druse in the grotto, sparse cracks fading below a pixel); dripstone (mat 11) is faceted,
+    ribbed, wet on the crests; `pointSpec` gives every point light a glint on wet stone. Beasts: hide
+    `.36/.33/.31`, a rim from point lights. Crystals: core > edge, a violet point light of 3–3.8 m;
+    lights and dress ranked by x **and** y distance. `hudDim` (zone[i].w carry the HUD plates in frame
+    px, measured in a `hudFloorMeasure` wrapper) dims glow to 8 % under the plates. Gap events grew:
+    glowworm threads 2–4 m with beads and a floor light, a vent crack .26–.36 m with branches, sparks
+    and a lip light, wet runs. Words: the tip at the shaft or mouth, «КУСАЧИЕ» above the nearest hostile
+    beast (`cave3Biter`), the lit part of a gap event is a `hangBlock`; a line equal to the action
+    button's verb is dropped (cave and `21pzb`). The far lens caps the top at the surface even on the
+    back wall 15 m behind (`fBack`, walk line ≤ .5 of the frame). Ore strokes on the cut removed. Old
+    plants' dry twigs start on the stem and droop (`21pia`).
 
 ### Stage F — rooms and people (M850–M859)
 

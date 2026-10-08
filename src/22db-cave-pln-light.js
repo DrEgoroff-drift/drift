@@ -10,7 +10,7 @@ const CAVE3_GPU={dev:null,gen:-1,tier:-1,w:0,h:0,shn:0,ms:1,L:null,P:{},U:null,S
 /* числа стенда (docs/look/cv-render.js): тьма, воздух, фонарь, день */
 const CAVE3_K={amb:[.036,.054,.083],fogC:[.045,.08,.12],fog:.022,
   lampCol:[4,3.1,1.95],inner:32*PLN_DEG,outer:58*PLN_DEG,fall:3.2,fov:128*PLN_DEG,day:[1.3,1.42,1.4],
-  air:[.039,.02,.065],airReach:140,comp:[.10,.36,1,0]};
+  air:[.036,.02,.065],airReach:140,comp:[.10,.36,1,0]};
 
 function cave3Log(s){plnLog("пещера: "+s);}
 function cave3Persp(fovy,asp,n,f){
@@ -163,6 +163,8 @@ function cave3Globals(a,F,vp,lamp,w,h){
   a.set([F.skyLo[0],F.skyLo[1],F.skyLo[2],dk],256);
   a.set([F.skyHi[0],F.skyHi[1],F.skyHi[2],F.near],260);
   if(F.zones)F.zones.forEach((z,k)=>a.set([z[0],z[1],z[2],0],264+k*4));
+  /* рамки плашек приборов в пикселях кадра — в пустые четвёртые числа залов */
+  {const s=w/Math.max(1,W),U=CAVE3_HUD;a[267]=U.l[0]*s;a[271]=U.l[1]*s;a[275]=U.r[1]>0?U.r[0]*s:w+1;a[279]=U.r[1]*s;}
   a.set(F.farDay||[0,0,1,0],280);a.set([F.farK||0,CAVE3_LAMP.warm0,CAVE3_LAMP.warm1,F.wet||0],284);
   return a;
 }

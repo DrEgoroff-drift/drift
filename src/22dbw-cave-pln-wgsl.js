@@ -88,6 +88,14 @@ fn lampTint(p: vec3f) -> vec3f {
   let l = dot(g.lampCol.rgb, vec3f(0.3, 0.5, 0.2));
   return mix(l * vec3f(0.62, 0.8, 1.12), g.lampCol.rgb, w);
 }
+/* под плашками приборов свечение гаснет: вещь не стоит под плашкой (рамки — в zone[i].w, пиксели кадра:
+   правый край и низ борта слева, левый край и низ места справа); гасит до 8 %: свечение втрое выше белого,
+   четверть после тонмапа ещё светится) */
+fn hudDim(xy: vec2f) -> f32 {
+  let l = (1.0 - smoothstep(g.zone[0].w, g.zone[0].w + 40.0, xy.x)) * (1.0 - smoothstep(g.zone[1].w, g.zone[1].w + 40.0, xy.y));
+  let r = smoothstep(g.zone[2].w - 40.0, g.zone[2].w, xy.x) * (1.0 - smoothstep(g.zone[3].w, g.zone[3].w + 40.0, xy.y));
+  return 1.0 - 0.92 * max(l, r);
+}
 /* лист разреза и то, что на нём, темнеют к краям кадра: сцена в середине */
 fn faceDim(fragXY: vec2f) -> f32 {
   let q = (fragXY * g.screen.zw - 0.5) * vec2f(1.0, 0.85);
@@ -261,6 +269,19 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   }
   return c;
 }
+/* блик огней на мокром: мокрая стена ловит свет событий и кристаллов, а не только фонарь */
+fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
+  var c = vec3f(0.0);
+  for (var i = 0; i < 12; i++) {
+    let lp = g.ptPos[i];
+    if (lp.w <= 0.0) { continue; }
+    let d = lp.xyz - wpos; let dl = max(length(d), 0.001);
+    let att = pow(clamp(1.0 - dl / lp.w, 0.0, 1.0), 2.0);
+    let h = normalize(d / dl + V);
+    c += g.ptCol[i].rgb * (att * pow(clamp(dot(N, h), 0.0, 1.0), mix(18.0, 80.0, wet)) * step(0.0, dot(N, d)));
+  }
+  return c;
+}
 
 @fragment fn fs_main(in: VOut) -> @location(0) vec4f {
   let fx = dpdx(in.wpos); let fy = dpdy(in.wpos);
@@ -272,15 +293,20 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   var fN = normalize(cross(fx, fy));
   if (dot(fN, V) < 0.0) { fN = -fN; }
   if (mat == 5) {
-    var c5 = in.col * glow;
+    var c5 = in.col * glow * hudDim(in.pos.xy);
     if (in.wpos.z < g.misc.z) { c5 *= faceDim(in.pos.xy); }
     return vec4f(haze(c5, in.wpos, 0.7), 1.0);
   }
   if (mat == 12) {
-    /* кристалл светит изнутри: грани разные, рёбра горят */
-    let fac = 0.40 + 0.60 * clamp(dot(fN, normalize(vec3f(-0.35, 0.8, -0.5))), 0.0, 1.0);
-    let rim = pow(1.0 - clamp(dot(fN, V), 0.0, 1.0), 2.0);
-    return vec4f(haze(in.col * glow * (fac + rim * 0.9), in.wpos, 0.55), 1.0);
+    /* кристалл светит изнутри: сердце ярче края; грани делит свет — своя доля неба и фонаря на каждой */
+    let nv = clamp(dot(fN, V), 0.0, 1.0);
+    let fac = 0.25 + 0.45 * clamp(dot(fN, normalize(vec3f(-0.35, 0.8, -0.5))), 0.0, 1.0);
+    let ll = lampAt(in.wpos);
+    let lmp = ll.w * clamp(dot(fN, ll.xyz), 0.0, 1.0);
+    let hv = normalize(ll.xyz + V);
+    var cc = in.col * glow * (fac + 1.1 * pow(nv, 1.6) + 0.15 * pow(1.0 - nv, 3.0));
+    cc += lampTint(in.wpos) * (in.col * lmp * 0.5 + vec3f(ll.w * pow(clamp(dot(fN, hv), 0.0, 1.0), 60.0) * 1.2));
+    return vec4f(haze(cc * hudDim(in.pos.xy), in.wpos, 0.55), 1.0);
   }
   if (mat == 10) {
     /* лист разреза: пласты и их прослои на тёмном и кромка, что берёт свет пустоты */
@@ -341,26 +367,35 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
     let gb = vec3f(vn3(bp + vec3f(0.07, 0.0, 0.0), 31u), vn3(bp + vec3f(0.0, 0.07, 0.0), 31u), vn3(bp + vec3f(0.0, 0.0, 0.07), 31u)) - b0;
     let gq = vec3f(vn3(bq + vec3f(0.07, 0.0, 0.0), 33u), vn3(bq + vec3f(0.0, 0.07, 0.0), 33u), vn3(bq + vec3f(0.0, 0.0, 0.07), 33u)) - q0;
     let fin = finish(in.wpos.x);
-    let gr = (gb * 0.30 + gq * 0.12) / 0.07 * (1.0 - 0.7 * fin.z);
+    let gr = (gb * 0.10 + gq * 0.10) / 0.07 * (1.0 - 0.7 * fin.z);
     N = normalize(N - (gr - N * dot(gr, N)));
     wet = mix(wet, max(wet, 0.45), fin.z);
-    /* грот: стены друзой — грани в ладонь, у каждой свой наклон, иные ловят фонарь */
-    if (fin.y > 0.01) {
-      /* ячейки Вороного: грань — ближайшее зерно, без сетки */
-      let dp = in.wpos * 2.6;
+    /* камень колется гранями (M623: грани делит свет): плиты по пластам — шире, чем выше; у каждой
+       свой наклон, фонарь кладёт на них разный тон; шов между плитами — тёмная трещина. В гроте —
+       друза: грани в ладонь и круче. Шов гаснет, когда тоньше пикселя, иначе даль рябит */
+    {
+      let fsc = mix(vec3f(1.1, 2.0, 1.1), vec3f(2.6, 2.6, 2.6), fin.y);
+      let wq = in.wpos * vec3f(0.45, 0.6, 0.45);
+      let dp = in.wpos * fsc + vec3f(vn3(wq, 61u), vn3(wq + 3.0, 63u), vn3(wq + 7.0, 65u)) * 1.1;
       let b = vec3i(floor(dp));
-      var best = 9.0; var id = b;
+      var d1 = 9.0; var d2 = 9.0; var id = b;
       for (var k = 0; k < 27; k++) {
         let o = vec3i(k % 3 - 1, (k / 3) % 3 - 1, k / 9 - 1);
         let c = b + o;
         let q = vec3f(c) + vec3f(hash3(c, 91u), hash3(c, 93u), hash3(c, 95u));
         let d = dot(dp - q, dp - q);
-        if (d < best) { best = d; id = c; }
+        if (d < d1) { d2 = d1; d1 = d; id = c; } else if (d < d2) { d2 = d; }
       }
-      let dn = vec3f(hash3(id, 81u), hash3(id, 83u), hash3(id, 85u)) - 0.5;
-      N = normalize(N + dn * (0.9 * fin.y));
-      alb *= 1.0 - 0.3 * fin.y * hash3(id, 87u);
+      let dn = vec3f(hash3(id, 81u), hash3(id, 83u) * 0.7, hash3(id, 85u)) - vec3f(0.5, 0.35, 0.5);
+      N = normalize(N + dn * mix(0.75 * (1.0 - 0.6 * fin.z), 0.9, fin.y));
+      alb *= 1.0 - mix(0.10, 0.3, fin.y) * hash3(id, 87u);
       wet = mix(wet, 0.75, fin.y * step(0.65, hash3(id, 89u)));
+      /* трещина — не у каждой плиты: пучками, где камень колется, и тоньше к краю пучка */
+      let e = sqrt(d2) - sqrt(d1);
+      let pw = length((abs(fx) + abs(fy)) * fsc);
+      let crk = smoothstep(0.5, 0.75, vn3(in.wpos * vec3f(0.6, 0.9, 0.6) + 11.0, 67u));
+      let seam = (1.0 - smoothstep(0.0, max(0.05 * crk, pw * 1.2), e)) * crk * (1.0 - smoothstep(0.12, 0.35, pw));
+      ao *= 1.0 - mix(0.4, 0.55, fin.y) * seam;
     }
     ao *= 0.72 + 0.28 * smoothstep(0.2, 0.65, b0);
     /* натёчные борозды на стене, что смотрит на нас: пятнами, сверху вниз; фонарь ловит рёбра, не плоскость */
@@ -391,9 +426,24 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   }
   if (mat == 11) {
     ao = ex; wet = glow; wrap = 0.3;
+    /* натёк тоже гранён (M623): плоскость сетки и наклон по ячейкам в ладонь — фонарь кладёт на грани
+       разный тон, гладкой свечи нет */
+    N = normalize(mix(N, fN, 0.5));
+    let fc = vec3i(floor(in.wpos * vec3f(2.4, 1.6, 2.4) + 0.6 * vn3(in.wpos * 0.8, 19u)));
+    N = normalize(N + (vec3f(hash3(fc, 21u), hash3(fc, 23u) * 0.5, hash3(fc, 25u)) - vec3f(0.5, 0.25, 0.5)) * 0.45);
+    alb *= 0.88 + 0.2 * hash3(fc, 27u);
     alb *= 0.85 + 0.3 * vn3(in.wpos * vec3f(3.0, 0.7, 3.0), 9u);
     alb *= 0.8 + 0.3 * vn3(in.wpos * vec3f(9.0, 0.6, 9.0), 13u);
     alb *= 1.0 - 0.3 * smoothstep(0.45, 0.95, N.y) * smoothstep(-0.2, 0.4, vn3(in.wpos * 2.5, 15u));
+    /* натёк ребрист: борозды сверху вниз, гребень мокрый и ловит фонарь, ложбина в тени */
+    let rp = in.wpos * vec3f(7.0, 0.35, 7.0);
+    let r0 = vn3(rp, 17u);
+    let rg = vec3f(vn3(rp + vec3f(0.08, 0.0, 0.0), 17u) - r0, 0.0, vn3(rp + vec3f(0.0, 0.0, 0.08), 17u) - r0) / 0.08 * 7.0;
+    let side = 1.0 - smoothstep(0.55, 0.9, abs(N.y));
+    N = normalize(N - (rg - N * dot(rg, N)) * (0.09 * side));
+    let crest = smoothstep(0.55, 0.8, r0) * side;
+    ao *= 1.0 - 0.35 * (1.0 - smoothstep(0.25, 0.5, r0)) * side;
+    wet = mix(wet, max(wet, 0.8), crest);
   }
   if (mat == 15) {
     /* завеса: тонкий лист, свет идёт сквозь него */
@@ -452,6 +502,9 @@ fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
   var even = 0.0;
   if (mat == 11 || mat == 15) { even = 0.35; }
   c += alb * points(in.wpos, N, even) * mix(0.5, 1.0, ao);
+  if (wet > 0.3 && mat != 4) { c += pointSpec(in.wpos, N, V, wet) * (wet * 0.8); }
+  /* зверь отделяется от тьмы кромкой: свет события обводит край тела */
+  if (mat == 8) { c += points(in.wpos, N, 1.0) * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.5) * 0.7); }
   c += alb * emis;
   /* на тонком стыке граней сумма света бывает меньше нуля — свет не бывает отрицательным */
   return vec4f(haze(max(c, vec3f(0.0)), in.wpos, 1.0), 1.0);

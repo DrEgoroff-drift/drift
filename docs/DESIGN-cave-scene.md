@@ -139,6 +139,19 @@ the glide out. No frame is black and no frame is a different picture. `enterCave
   `cv-wgsl`/`cv-scene`/`cv-render`, not reinvented; density comes from the game's grid (`C.g`).
 - **M630c Life and things** — beasts and plants as bodies, worms and fish, props, the wall
   decal, plates on things. Gate: a contact sheet of the props and the beast in the lamp.
+  **Lights by rank (M630c, the rule):** the frame uploads twelve point lights. The lamp's seven
+  (spill, pool, man, vault, back, side, ahead) are *core* and always ride; the rest — events, dress,
+  crystals, gap lights — are ranked by `max(colour) × reach / (1 + |x − frame centre| / 8 m)` and
+  cut at twelve. Dress offers its five nearest, never more. A light that loses the rank is gone for
+  that frame, so an event that must read gives its key light strength and reach, not count.
+- **The M630d visual pass (the designer's list, 08.10)** — the wedge as a correction to the stone
+  (brightest at the lamp, falling by r², a soft 2–3° edge, scattered by wetness); stone broken into
+  facets that the light splits, with sparse cracks, and ribbed wet dripstone; beasts with a darker
+  hide the lamp models, a rim from event light; crystals lit from the core with a violet bounce in
+  2–3 m; bigger events (long glowworm threads with light on the floor, a wide vent crack with a heat
+  halo and sparks, wet runs that catch every light); a word only on its thing, and never the verb
+  the action button already says; no ore strokes on the cut; glow dims under the HUD plates; the
+  far lens never rises above the surface (sky only through the mouth).
 - **M630d Cost and the phone** — the cave ≤ the surface frame at the same window
   (`docs/look/game/cost.py`); chunk cache ≤ 20 like the tiles; the S23 gate is the designer's.
 

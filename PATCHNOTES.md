@@ -8,6 +8,17 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M630d — the cave looks like stone.** The lamp's beam is brightest at the lamp and fades with
+  distance, thicker in wet halls, with a soft edge; through it the wall is still the wall. Stone breaks
+  into faces that take the light differently, with cracks in places; dripstone is faceted and ribbed
+  and its wet crests catch every light. Creatures have a darker hide your lamp shapes, and a rim of
+  light from whatever glows nearby. Crystals glow from the core and tint the stone violet around
+  them; anything glowing fades out under the instrument plates. Glowworms hang in long beaded
+  threads and light the floor below; a vent is a wide glowing crack with a heat haze and sparks; wet
+  walls shine. Words sit on things: «ищите проход» at the shaft or the mouth, the biters' warning
+  above the beast — and a plate never repeats what the action button already says (on the surface
+  too). The far view never shows sky over the cave; old plants' dry twigs grow from the stem and droop
+  instead of sticking out of the crown; the ore strokes on the cut are gone.
 - **M630c — life in the halls.** Plants and creatures of the cave are now part of the scene, not
   pictures over it: they stand on the cave floor at their true size beside you, catch your lamp and the
   daylight like the stone does, and the creatures walk, graze and hover in their own poses. When you

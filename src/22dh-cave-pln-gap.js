@@ -5,10 +5,10 @@
    окно дня сквозь тонкий лёд свода, в прочих — мокрая стена, что ловит фонарь (тише всех).
    Событие — тело, подписи ему не нужно. */
 const CAVE3_GAP={win:30,step:28,w:4,
-  worm:{thread:[.05,.11,.10],bead:[.30,1.0,.84],light:[.15,.45,.40],glow:[.25,.85,.72]},
-  vent:{hot:[1.0,.40,.10],ember:[.9,.28,.06],lip:[5,1.9,.45],light:[1.4,.55,.15],glow:[.95,.40,.10]},
+  worm:{thread:[.05,.11,.10],bead:[.30,1.0,.84],light:[.15,.45,.40],floor:[.35,1.1,.95],glow:[.25,.85,.72]},
+  vent:{hot:[1.0,.40,.10],ember:[.9,.28,.06],spark:[1.0,.62,.22],lip:[7,2.6,.6],light:[1.4,.55,.15],glow:[.95,.40,.10]},
   ice:{win:[.70,.87,1.0],mid:[.40,.55,.70],lip:[1.8,2.3,2.8],light:[.6,.8,1.0],glow:[.52,.70,.90]},
-  wet:{run:[.50,.52,.53],light:[.35,.38,.42],glow:[.30,.36,.42]}};
+  wet:{run:[.50,.52,.53],light:[1.1,1.2,1.35],glow:[.30,.36,.42]}};
 
 /* куда встают события: середины пролётов между огнями (и краями хода), каждое ±2 м;
    на месте без воздуха сдвигается до 3 м к залу, где свод выше */
@@ -67,17 +67,20 @@ function cave3GapWorm(B,q,lights,glows){
   if(z0<0)return false;
   const t0=cave3Up(F,q.X,g.ym,z0);
   if(t0-g.ym>g.gap*1.2+2)return false;
-  let n=0;
-  for(let i=0;i<46;i++){
-    const x=q.X+(r()-.5)*(r()<.7?2.6:4.4),z=clamp(z0+(r()-.5)*1.6,1.3,Math.max(1.5,g.zd-.4));
+  let n=0,lg=0;const nl=3+(r()*3|0);
+  for(let i=0;i<40;i++){
+    /* первые — длинные нити в 2–4 м, по ним колонию видно издали; вокруг — короткая бахрома */
+    const long=lg<nl,x=q.X+(r()-.5)*(long?2.2:(r()<.7?2.6:4.4)),z=clamp(z0+(r()-.5)*(long?1:1.6),1.3,Math.max(1.5,g.zd-.4));
     if(cave3Den(F,x,g.ym,z)>-.3)continue;
     const tp=cave3Up(F,x,g.ym,z);
     if(tp-g.ym>g.gap*1.2+2)continue;
-    const bot=cave3Down(F,x,g.ym,z),l=Math.min(.12+Math.pow(r(),1.7)*1.1,(tp-bot)*.45),sw=(r()-.5)*.06;
-    if(l<.08)continue;
+    const bot=cave3Down(F,x,g.ym,z),sw=(r()-.5)*(long?.14:.06);
+    const l=long?Math.min(2+r()*2,(tp-bot)*.75):Math.min(.12+Math.pow(r(),1.7)*1.1,(tp-bot)*.45);
+    if(l<(long?1.2:.08))continue;
+    if(long)lg++;
     const top=[x,tp+.03,z],end=[x+sw,tp-l,z+sw*.5];
-    plnTube(B.m,{path:[top,end],rad:.005,sides:3,col:K.thread,mat:PLN_MAT.glow,glow:1});
-    const nb=1+(l/.22|0);
+    plnTube(B.m,{path:[top,end],rad:long?.007:.005,sides:3,col:K.thread,mat:PLN_MAT.glow,glow:1});
+    const nb=1+(l/(long?.16:.22)|0);
     for(let b=0;b<nb;b++){
       const t=b===nb-1?1:(b+.5+r()*.4)/nb,p=[lerp(top[0],end[0],t),lerp(top[1],end[1],t),lerp(top[2],end[2],t)],s=(b===nb-1?.022:.013)*(.8+r()*.5);
       plnBlob(B.m,{c:p,r:[s,s*1.3,s],sub:0,col:K.bead,mat:PLN_MAT.glow,glow:(b===nb-1?2.4:1.4)*(.7+r()*.5)});
@@ -85,8 +88,10 @@ function cave3GapWorm(B,q,lights,glows){
     n++;
   }
   if(n<8)return false;
-  const p=[q.X,t0-.7,z0];
+  const p=[q.X,t0-.7,z0],fl=cave3Down(F,q.X,g.ym,z0);
   lights.push({p,r:5.5,c:K.light});
+  /* свет колонии ложится на камень под ней: пол под нитями бирюзовый */
+  if(t0-fl>2)lights.push({p:[q.X,fl+.9,z0-.4],r:3.2,c:K.floor});
   glows.push({p:[q.X,t0-.35,z0],c:K.glow,k:.42,s:1.7});
   return true;
 }
@@ -110,19 +115,26 @@ function cave3GapVent(B,q,lights,glows){
     }
     return pts;
   };
-  const main=crack(q.X,bot+.05,h,(r()-.5)*.2,.05);
+  const main=crack(q.X,bot+.05,h,(r()-.5)*.2,.13+r()*.05);
   if(main.length<4)return false;
   for(let k=0,n=2+(r()*2|0);k<n;k++){
     const p=main[1+(r()*(main.length-2)|0)];
-    crack(p[0],p[1],.3+r()*.5,(r()<.5?-1:1)*(.6+r()*.5),.028);
+    crack(p[0],p[1],.4+r()*.6,(r()<.5?-1:1)*(.6+r()*.5),.05);
   }
   const ft=main[0];
   for(let k=0;k<7;k++){
     const s=.03+r()*.04,x=ft[0]+(r()-.5)*.8,zz=ft[2]-.15-r()*.5,y=cave3Down(F,x,ft[1]+.4,zz);
     plnBlob(B.m,{c:[x,y+s*.3,zz],r:[s*1.4,s*.6,s],sub:0,col:K.ember,mat:PLN_MAT.glow,glow:1+r()*1.2});
   }
+  /* искры: от щели вверх, реже и мельче к высоте */
+  const tp=main[main.length-1];
+  for(let k=0;k<14;k++){
+    const u=Math.pow(r(),1.6),p=main[r()*main.length|0],y=p[1]+.15+u*1.6,s=.012+(1-u)*.014;
+    plnBlob(B.m,{c:[p[0]+(r()-.5)*(.2+u*.8),Math.min(y,tp[1]+1.4),p[2]-.12-r()*.5],r:[s,s*1.8,s],sub:0,col:K.spark,mat:PLN_MAT.glow,glow:2+r()*1.5});
+  }
   const mid=main[main.length>>1],lo=main[main.length>>2];
-  lights.push({p:[lo[0],lo[1],lo[2]-.3],r:2.2,c:K.lip});
+  /* жар на камне в 2 м вокруг: свет вплотную к стене, грани берут его рыжим */
+  lights.push({p:[lo[0],lo[1],lo[2]-.3],r:2.8,c:K.lip});
   lights.push({p:[mid[0],mid[1],mid[2]-.9],r:5.5,c:K.light});
   glows.push({p:[mid[0],mid[1]-.2,mid[2]-.25],c:K.glow,k:.48,s:1.1});
   return true;
@@ -174,7 +186,7 @@ function cave3GapWet(B,q,lights,glows){
       pts.push([x,y,zw-.02]);
     }
     if(pts.length<4)continue;
-    plnTube(B.m,{path:pts,rad:t=>.08+.05*Math.sin(t*7+k),sides:6,flat:.35,up:[1,0,0],col:K.run,mat:PLN_MAT.rock,glow:1});
+    plnTube(B.m,{path:pts,rad:t=>.11+.06*Math.sin(t*7+k),sides:6,flat:.35,up:[1,0,0],col:K.run,mat:PLN_MAT.rock,glow:1});
     n++;
   }
   if(!n)return false;
