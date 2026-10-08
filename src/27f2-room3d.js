@@ -279,10 +279,10 @@ fn outside(w:vec3f)->vec3f{
   /* стройка станции (M814): ближний план за окном, на 20 м ближе звёзд, — ферма-хребет, кран и люльки площадок
      под ним. flm2.w — три цифры по шесть, по площадке: 0 нет, 1 свободна (голая рама, вехи), 2 строится (рёбра,
      сварка, трос крана), 3–5 построена (цех, ряды окон по ступени, маяк акцента); 216 — мест ещё нет, только вехи */
-  let sw=u.flm2.w;
+  let sw=u.flm2.w;var se=vec3f(0.);let nk=clamp((1.-u.win2.w)/.62,0.,1.);   /* se — свои огни стройки: ночь окна их не гасит */
   if(sw>.5){
     let t2=(u.win2.x-20.-u.cam.z)/min(rd.z,-1e-3);let P=(u.cam.xyz+rd*t2).xy-vec2f(2.3,3.);
-    let dk=vec3f(.06,.065,.075);let lt=vec3f(.42,.45,.5);let nos=sw>215.;
+    let dk=vec3f(.03,.033,.04);let lt=vec3f(.52,.55,.6);let nos=sw>215.;
     var ext=-1.;var bld=-9.;
     for(var i=0;i<3;i++){let d=floor(sw/pow(6.,f32(i)))%6.;if(d>.5&&!nos){ext=f32(i);if(d>1.5&&d<2.5){bld=f32(i);}}}
     let x0=select(-3.6,-1.2,nos);let x1=select(ext*1.9-1.9+.95,1.2,nos);
@@ -312,18 +312,19 @@ fn outside(w:vec3f)->vec3f{
         let lv=max(d-2.,0.);let top=select(-.95,-1.7+.5+.4*lv,d>2.5);
         var inB=step(abs(p.x),.66)*step(-1.7,p.y)*step(p.y,top);
         if(d<2.5){inB*=max(step(fract(p.x*4.+.5),.3),step(p.y,-1.42));}   /* строится: низ обшит, выше — рёбра */
-        var hs=vec3f(.06,.068,.08)*(.6+.6*smoothstep(-1.7,top,p.y))+vec3f(.012,.014,.018)*fb2(p*9.);
+        var hs=vec3f(.035,.04,.048)*(.7+.5*smoothstep(-1.7,top,p.y))+vec3f(.012,.014,.018)*fb2(p*9.);
         hs+=vec3f(.42,.46,.52)*smoothstep(top-.07,top,p.y)+vec3f(.2,.22,.25)*smoothstep(.56,.66,p.x);
         hs*=1.-.4*step(fract(p.x*3.2),.07);
         if(d>2.5){let wr=(p.y+1.42)/.4;let rw=floor(wr);let cl=floor(p.x*4.4);
           hs+=vec3f(1.,.72,.38)*1.3*step(rw,lv-1.)*step(0.,rw)*step(abs(fract(wr)-.5),.13)*step(abs(fract(p.x*4.4)-.5),.22)*step(.35,h2(vec2f(cl+f32(i)*9.,rw)));}
         c=mix(c,hs,inB);
+        se+=vec3f(.5,.45,.38)*(.35+.65*smoothstep(-1.7,top,p.y))*.3*nk*inB;   /* ночью цех в своих прожекторах — светлее погасшего корпуса */
         if(d>2.5){c+=ac*exp(-length(p-vec2f(.5,top+.06))*30.)*(1.2+sin(tt*.8+f32(i)*1.7));}
         else{let wp=vec2f(.45*sin(tt*.13+f32(i)),top);let wf=.75+.25*sin(tt*9.3+f32(i));
           c+=vec3f(.6,.8,1.)*exp(-length(p-wp)*30.)*3.*wf+vec3f(.3,.45,.7)*exp(-length(p-wp)*5.)*.1*wf;
           c=mix(c,dk,step(abs(p.x-.2),.012)*step(top,p.y)*step(p.y,1.05));}}}
   }
-  return c*u.win2.w;}
+  return c*u.win2.w+se;}
 fn aces(x:vec3f)->vec3f{return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),vec3f(0.),vec3f(1.));}
 /* два слоя: цвет и дым отдельно — дым шумит по шагам и размывается в последнем проходе, не задевая контуры */
 struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
