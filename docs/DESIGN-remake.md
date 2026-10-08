@@ -277,7 +277,10 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   (the look near the star is the author's and stays). **M824 Belt**: rocks clustered round the
   actor, haze instead of the band. **M825 The orbs' second pass**: crystal, ice, jungle, rocky,
   the ring's shadow, the star's limb. **M826 The HUD trimmed**: the receiver folded to a chip,
-  «Фото» into the menu, the camera's body-in-frame rule aware of the rail.
+  «Фото» into the menu, the camera's body-in-frame rule aware of the rail; the barge's distress
+  cue as a plate at its callsign (the cue stays the source of the action button, only its place
+  moves); on the phone the lens glides to the target in a fight (the planet's `plnGlide` rule),
+  so a pirate is never a 40 px spot (decided 08.10 after M820).
 
 ### Stage D — the way down (M830–M839)
 
