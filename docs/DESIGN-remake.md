@@ -250,6 +250,38 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   counter, the yard window, the board wall, the cantina door, the office. The camera glides to
   the section's place; the screen is a plate over the hall at 60 % of the width, the hall and
   the station body (through the window) always visible. Gate: the dock pair at 1920 and 390.
+  - *Done (three passes, remake-a3):* `27f4a-hall` (layout, light, camera stations, the loop),
+    `27f4b-hall-dress` (the bones and the seven dressings: trade, combine, yard, science,
+    outpost, fuel, bazaar), `27f4c-hall-sky` (the planet bake through `17gab`); three hooks in
+    `26-ui-station` (open, close, tab). The counter runs to the back wall with the keeper at the
+    bar (pose `bar`, hands on the wood) under one key lamp with a real shade, rim and cord; the
+    back shelf carries goods and a sconce, the board stands right of the counter, the window
+    shows the system's planet and the dock (a hull with a bow and portholes, `27f2`). The bar is
+    the cantina scene shifted 10 m down the hall, with at most three lamps. The camera glides
+    on the real clock (`wallMs`: the game clock stands still in a pause and on the stand),
+    700–900 ms. The plate takes the right 60 % on a PC but never leaves the layout under 880 px
+    (`hallHero`, same rule in CSS); below 900 px the hall is a 36 % strip that the plate
+    overruns to 24 % on scroll. `?hall=0` keeps the old desk. Removed on the way: the door
+    fill (a lamp behind the camera mirrored as a moon in the window glass), the girder columns
+    (they fell on the board), the weld's air glow (a point light 8 cm above the plate burned a
+    white ball; it is now a spot aimed down). Suite `91qc-hall`; frames `hall_*` in the
+    scratchpad.
+    *Pass 2:* the camera stations carry a vertical field (`fy`) instead of a half-width, so a
+    person at the station's place is .21 of the frame at any PC width (the suite checks
+    .18–.23 and the width independence); the phone narrows the field (`HALL_PH_FY`). The
+    pilot is a `27f3` person (cmd kit, seed `HALL_PILOT_M`) at `HALL_PILOT_AT[place]`, one
+    instance slot kept for him; his jacket is the stand's suit colour `#ee7326` through a new
+    optional `m.jac` in `cpBody` (one line). Judged beside `night.html`/`planet.html` the hall
+    was brown in black: the sky term is now a cool fill (.8 of the ambient, mixed .55 toward
+    blue-grey) against the warm lamps, the floor bounce is warm, the wall wash is stronger, and
+    the trade wall turned neutral-cool so the lamp and goods are the warm notes. The night shift (`hallNight`, a 24 game-minute day, or
+    `?hallnight`) dims the window, the wall wash and the ambient and lifts the sconce; the bar
+    does not change (it lives at night). A wall wash (three shadowless spots, last in the
+    list so a type with many lamps drops it first) puts people on a lit wall instead of
+    black; its spots stand off the window, whose glass mirrored the middle one as a sun on the
+    planet. The cantina camera is wider (people .19 seated). The window light is aimed steeply down: aimed at the camera, the polished floor
+    mirrored it as a blob at the frame's foot. Tags (`hallTagsDraw`) are DOM plates over the
+    hall canvas, projected from the thing, hidden while the camera moves and on the phone.
 - **M811 The counter (ТОРГОВЛЯ)** — the keeper (`27f3`) behind it, goods as crates on the
   counter; the table as a plate. **M812 The yard (ВЕРФЬ)** — hulls on the hangar studio at
   ≥160 px, the class as a tag. **M813 ПРИБОРЫ** — the five dials as objects with their drift

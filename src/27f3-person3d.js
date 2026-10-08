@@ -108,6 +108,7 @@ function cpBody(m,lod,poseK){
   const wB=.86+(g.build-.7)*.36,hs=g.hs,pel=[0,J.pel,0],ln=J.lean;
   const ai=g.ai,rc=g.role?hex2rgb(g.role.col):[150,160,170],rk=!ai&&m.role&&CP_KIT[m.role]?m.role:"",KT=rk?CP_KIT[rk]:null;
   if(KT)cl.jacket=mixc(KT.jac,rc,KT.mix);
+  if(m.jac)cl.jacket=m.jac;   /* свой цвет куртки (пилот зала — цвет людей «Сцены») */
   /* сукно матовое: широкий блик на рукаве делает из ткани лакированное дерево */
   const jac=ai?[44,50,60]:cl.jacket,Mj=K.mt(jac,ai?.7:rk==="sci"?.14:.08,ai?11:3,ai?P.brushed:P.cloth);
   const Mp=K.mt(cl.pants,.07,3,P.cloth),Mb=K.mt(cl.boot,.45,8,P.leather),Mbelt=K.mt(cl.belt,.4,8,P.leather);
