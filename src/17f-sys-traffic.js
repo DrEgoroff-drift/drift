@@ -102,6 +102,8 @@ function drawShuttleArc(t,zx,zy,Z){
   if(pass){
     /* корпус — выпечка на цвет завода, один раз; поворот и масштаб — в шейдере */
     const sk=s*t.k;
+    /* тело (M820, 17c2e): корпус, гондолы, окно; мельче 14 px — огонёк */
+    if(BODY.on&&bodyShuttle(x,y,a,sk,t.mk?mixc([35,43,54],makerGround(t.mk),.7):[35,43,54],P.wx,P.wy))return;
     gpuImage(pass,shuttleSprite(gr),[{x,y,w:SHUT_SW*sk,h:SHUT_SH*sk,rot:a}],{sharp:true});
     return;
   }

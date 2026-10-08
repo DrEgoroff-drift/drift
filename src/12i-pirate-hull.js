@@ -430,7 +430,8 @@ function gpuPirateBody(p,x,y,s){
      поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
   if(!art.cn)return false;
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
-  if(H3D.on&&h3dPirate(art,p,x,y,s,lx,ly))return true;   /* объём (17c2a, M710) */
+  if(BODY.on&&bodyPower(p,x,y,s,lx,ly))return true;   /* борт державы — чистый корпус завода (M820, 17c2h) */
+  if(H3D.on&&h3dPirate(art,p,x,y,s,lx,ly)){if(BODY.on)bodyPirate(art,p,x,y,s,lx,ly);return true;}   /* объём (17c2a, M710); накладка M820 */
   return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,-1,0,lod,null,"dark");   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх
@@ -443,6 +444,8 @@ function gpuPirateLive(pass,list,over){
   const D=[],E=[];PGX.n=0;
   for(const q of list){
     const p=q.p,s=q.s,ca=Math.cos(p.a),sa=Math.sin(p.a);
+    if(BODY.on&&bodyPowerOn(p))continue;   /* у борта державы свой факел — hullGpuDraw (M820) */
+    const FX=bodyPirFlame(p),XL=FX?PGX_L*FX.X:PGX_L,XC=FX?FX.C:PGX_C;
     const T=(lx,ly)=>[q.x+(lx*ca-ly*sa)*s,q.y+(lx*sa+ly*ca)*s];
     const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
     const B=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0).B;
@@ -450,10 +453,10 @@ function gpuPirateLive(pass,list,over){
       for(const e of B.eng){
         const [ex,ey]=T(e.x,e.y);
         if(p.thrust){const pw=.8+Math.sin(G.t*.2+e.ph)*.2,R=Math.max(1.2,e.r*1.3*s);
-          gexPush(ex,ey,ca,sa,R*PGX_L*pw,R,1,pw,PGX_C[0],PGX_C[1],PGX_C[2],G.t*.05+e.ph,false,PGX);
+          gexPush(ex,ey,ca,sa,R*XL*pw,R,1,pw,XC[0],XC[1],XC[2],G.t*.05+e.ph,false,PGX);
           /* ореол сопла — тот же, что у кисти (радиальный .34 на 1.15 длины пера) */
           const f=e.r*.9*s*3.25*pw;E.push([1,ex-ca*f*.25,ey-sa*f*.25,f*.1,0,0,f*1.05,255,180,110,.34]);}
-        if(e.dirty||hp<.6){
+        if(e.dirty||hp<.6||(FX&&p.thrust)){
           const puffs=(e.dirty===2?5:3);
           for(let i=0;i<puffs;i++){
             const t=((G.t*.03+i*.7+e.ph)%3),a=(e.dirty===2?.38:.28)-t*.09;if(a<=0)continue;

@@ -422,7 +422,9 @@ function drawCombat(zx,zy,Z){
       /* полоса и имя — над тем, кто знает о вас или взят в захват (M361):
          мирно висящий вдали пират подписи не носит */
       const marked=G.marks&&G.marks.includes(p);
-      if(!(p.aware||marked||p.rogue))continue;
+      /* полоса — только раненому ниже 70 % и взятому в захват (M820, bodyBar 17c2e); имя — как было */
+      const bar=bodyBar(p);
+      if(!(p.aware||marked||p.rogue||(BODY.on&&bar)))continue;
       const w=p.rogue?54:(marked&&G.marks[0]===p?42:34),hp=clamp(p.hull/p.hullMax,0,1);
       /* полоска встаёт ВЫШЕ скобки захвата (M360a): на 26 px верхняя грань
          скобки ложилась ровно на неё, и корпус цели было не видно */
@@ -434,7 +436,8 @@ function drawCombat(zx,zy,Z){
          втёмную (M364): горящий корпус подписан огнём поверх полосы,
          перегретый вместо имени носит «ПЕРЕГРЕВ» на те секунды, пока молчит */
       const brn=p.burnT>0?clamp(p.burnT/BURN_TIME,0,1):0,ba=.5+.35*Math.abs(Math.sin(G.t*.35+p.seed));
-      if(pass){
+      if(!bar){}
+      else if(pass){
         SH.push([0,x-w/2,by,x+w/2,by+bh,0,0,255,255,255,.14]);
         const hc=p.rogue?[197,138,224]:[255,107,87];SH.push([0,x-w/2,by,x-w/2+w*hp,by+bh,0,0,hc[0],hc[1],hc[2],1]);
         if(shf)SH.push([0,x-w/2,by-3,x-w/2+w*shf,by-1,0,0,159,216,255,.85]);

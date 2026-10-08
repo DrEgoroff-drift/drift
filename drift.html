@@ -27338,6 +27338,8 @@ function fleetShipGpu(f,art){
 function fleetShipAt(f,art,ma,mb,mc,md,me,mf,al){
   const pass=gpuScene();if(!pass||!art||!art.cn)return false;
   const s=Math.hypot(ma,mb);
+  /* борт линии телом (M820, 17c2e): корпус класса — hullGpuDraw, мельче 14 px — огонёк */
+  if(BODY.on&&G.mode==="system"&&G.viewCX!==undefined&&bodyFleet(f,me,mf,Math.atan2(mb,ma),s,al))return true;
   const T=(lx,ly)=>[ma*lx+mc*ly+me,mb*lx+md*ly+mf],[x,y]=T(0,0),w=art.rad*2*s;
   const rot=Math.atan2(mb,ma);
   /* светом звезды (Ships a): свет корпуса (GST, −1) по своей выпечке — краска как есть,
@@ -35292,7 +35294,8 @@ function gpuPirateBody(p,x,y,s){
      поднимает маска шейдера (sharp) с первого кадра — мастера по кадрам больше нет */
   if(!art.cn)return false;
   const R=art.rad*s,lod=Math.max(0,Math.log2(art.cn.w/(2*R*GPU.bw/W))+PIR_LOD);
-  if(H3D.on&&h3dPirate(art,p,x,y,s,lx,ly))return true;   /* объём (17c2a, M710) */
+  if(BODY.on&&bodyPower(p,x,y,s,lx,ly))return true;   /* борт державы — чистый корпус завода (M820, 17c2h) */
+  if(H3D.on&&h3dPirate(art,p,x,y,s,lx,ly)){if(BODY.on)bodyPirate(art,p,x,y,s,lx,ly);return true;}   /* объём (17c2a, M710); накладка M820 */
   return gpuLitSprite(art.cn,x,y,R,s,p.a,lx,ly,-1,0,lod,null,"dark");   /* -1: свет корпуса корабля (17c, §L.S) */
 }
 /* живой слой пирата на видеокарте (бой, ступень 1): то, что меняется каждый кадр поверх
@@ -35305,6 +35308,8 @@ function gpuPirateLive(pass,list,over){
   const D=[],E=[];PGX.n=0;
   for(const q of list){
     const p=q.p,s=q.s,ca=Math.cos(p.a),sa=Math.sin(p.a);
+    if(BODY.on&&bodyPowerOn(p))continue;   /* у борта державы свой факел — hullGpuDraw (M820) */
+    const FX=bodyPirFlame(p),XL=FX?PGX_L*FX.X:PGX_L,XC=FX?FX.C:PGX_C;
     const T=(lx,ly)=>[q.x+(lx*ca-ly*sa)*s,q.y+(lx*sa+ly*ca)*s];
     const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
     const B=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5,p.rank|0,p.deserter?1:0).B;
@@ -35312,10 +35317,10 @@ function gpuPirateLive(pass,list,over){
       for(const e of B.eng){
         const [ex,ey]=T(e.x,e.y);
         if(p.thrust){const pw=.8+Math.sin(G.t*.2+e.ph)*.2,R=Math.max(1.2,e.r*1.3*s);
-          gexPush(ex,ey,ca,sa,R*PGX_L*pw,R,1,pw,PGX_C[0],PGX_C[1],PGX_C[2],G.t*.05+e.ph,false,PGX);
+          gexPush(ex,ey,ca,sa,R*XL*pw,R,1,pw,XC[0],XC[1],XC[2],G.t*.05+e.ph,false,PGX);
           /* ореол сопла — тот же, что у кисти (радиальный .34 на 1.15 длины пера) */
           const f=e.r*.9*s*3.25*pw;E.push([1,ex-ca*f*.25,ey-sa*f*.25,f*.1,0,0,f*1.05,255,180,110,.34]);}
-        if(e.dirty||hp<.6){
+        if(e.dirty||hp<.6||(FX&&p.thrust)){
           const puffs=(e.dirty===2?5:3);
           for(let i=0;i<puffs;i++){
             const t=((G.t*.03+i*.7+e.ph)%3),a=(e.dirty===2?.38:.28)-t*.09;if(a<=0)continue;
@@ -37398,6 +37403,7 @@ function drawWrecksSystem(zx,zy,Z){
     const x=zx(w.x),y=zy(w.y);
     if(x<-60||x>W+60||y<-60||y>H+60)continue;
     /* тёмный переломленный корпус: тело, обвод, тусклый аварийный маяк */
+    if(!(BODY.on&&bodyBargeWreck(w,x,y,shipScaleAt(Z)*.8))){   /* тело остова (M820, 17c2f) */
     ctx.save();ctx.translate(x,y);
     const s=clamp(Z,.5,1.4);ctx.scale(s,s);ctx.rotate((w.seed%628)/100);
     ctx.fillStyle="rgba(24,26,32,.96)";ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.8;
@@ -37409,7 +37415,7 @@ function drawWrecksSystem(zx,zy,Z){
     /* отломанная секция рядом */
     ctx.fillStyle="rgba(20,22,28,.95)";
     ctx.beginPath();ctx.moveTo(40,4);ctx.lineTo(52,-2);ctx.lineTo(50,8);ctx.closePath();ctx.fill();
-    ctx.restore();
+    ctx.restore();}
     if(!w.seen){
       const bl=Math.pow(Math.max(0,Math.sin(G.t*.05+w.seed)),8);
       if(bl>.02){ctx.fillStyle="rgba(255,110,90,"+(.9*bl).toFixed(2)+")";
@@ -37630,10 +37636,11 @@ function drawBarges(zx,zy,Z){
     const x=zx(b.x),y=zy(b.y);
     if(x>-80&&x<W+80&&y>-80&&y<H+80){
       const s=shipScaleAt(Z)*.8;   /* один потолок с кораблём (16c, п. 2) */
-      const lit=gpuBargeBody(b,x,y,s);
+      /* тело (M820, 17c2f): сетка со своими огнями; без него — выпечка и живой слой, как было */
+      const bd=BODY.on&&bodyBarge(b,x,y,s),lit=bd||gpuBargeBody(b,x,y,s);
       if(pass&&lit){
         /* с видеокарты (ступень 1): огни — фигурами, полоса — прямоугольниками, имя — подписью */
-        bargeLiveGpu(pass,b,x,y,s,b.a);
+        if(!bd)bargeLiveGpu(pass,b,x,y,s,b.a);
         const hp=clamp(b.hp/b.hullMax,0,1);
         if(hp<.999)SH.push([0,x-24,y-30,x+24,y-27,0,0,255,255,255,.14],[0,x-24,y-30,x-24+48*hp,y-27,0,0,143,208,138,1]);
         ctx.textAlign="center";
@@ -46668,7 +46675,9 @@ function drawCombat(zx,zy,Z){
       /* полоса и имя — над тем, кто знает о вас или взят в захват (M361):
          мирно висящий вдали пират подписи не носит */
       const marked=G.marks&&G.marks.includes(p);
-      if(!(p.aware||marked||p.rogue))continue;
+      /* полоса — только раненому ниже 70 % и взятому в захват (M820, bodyBar 17c2e); имя — как было */
+      const bar=bodyBar(p);
+      if(!(p.aware||marked||p.rogue||(BODY.on&&bar)))continue;
       const w=p.rogue?54:(marked&&G.marks[0]===p?42:34),hp=clamp(p.hull/p.hullMax,0,1);
       /* полоска встаёт ВЫШЕ скобки захвата (M360a): на 26 px верхняя грань
          скобки ложилась ровно на неё, и корпус цели было не видно */
@@ -46680,7 +46689,8 @@ function drawCombat(zx,zy,Z){
          втёмную (M364): горящий корпус подписан огнём поверх полосы,
          перегретый вместо имени носит «ПЕРЕГРЕВ» на те секунды, пока молчит */
       const brn=p.burnT>0?clamp(p.burnT/BURN_TIME,0,1):0,ba=.5+.35*Math.abs(Math.sin(G.t*.35+p.seed));
-      if(pass){
+      if(!bar){}
+      else if(pass){
         SH.push([0,x-w/2,by,x+w/2,by+bh,0,0,255,255,255,.14]);
         const hc=p.rogue?[197,138,224]:[255,107,87];SH.push([0,x-w/2,by,x-w/2+w*hp,by+bh,0,0,hc[0],hc[1],hc[2],1]);
         if(shf)SH.push([0,x-w/2,by-3,x-w/2+w*shf,by-1,0,0,159,216,255,.85]);
@@ -51099,15 +51109,16 @@ function helmDrawMarks(zx,zy,Z){
   G.marks.forEach((p,i)=>{
     const x=zx(p.x),y=zy(p.y);
     if(x<-40||x>W+40||y<-40||y>H+40)return;
-    const r=clamp(Z,.55,1.6)*(i?16:20),g=r*.45;
+    /* с телами (M820) рамка — по габариту корпуса на экране плюс 4 px, а не квадрат на вырост */
+    const bm=BODY.on?bodyMarkBox(p,Z):null,r=bm?bm[0]:clamp(Z,.55,1.6)*(i?16:20),ry=bm?bm[1]:r,g=Math.min(r,ry)*.45;
     if(pass){const c=i?[255,157,122,.5]:[255,107,87,.92],hw=(i?1:1.4)/2;
-      for(const k of [[-1,-1],[1,-1],[1,1],[-1,1]]){const cx=x+k[0]*r,cy=y+k[1]*r;
-        SH.push([2,cx,y+k[1]*(r-g),cx,cy,hw,0,c[0],c[1],c[2],c[3]],[2,cx,cy,x+k[0]*(r-g),cy,hw,0,c[0],c[1],c[2],c[3]]);}
+      for(const k of [[-1,-1],[1,-1],[1,1],[-1,1]]){const cx=x+k[0]*r,cy=y+k[1]*ry;
+        SH.push([2,cx,y+k[1]*(ry-g),cx,cy,hw,0,c[0],c[1],c[2],c[3]],[2,cx,cy,x+k[0]*(r-g),cy,hw,0,c[0],c[1],c[2],c[3]]);}
       return;}
     ctx.strokeStyle=i?"rgba(255,157,122,.5)":"rgba(255,107,87,.92)";ctx.lineWidth=i?1:1.4;
     ctx.beginPath();
     for(const c of [[-1,-1],[1,-1],[1,1],[-1,1]]){
-      ctx.moveTo(x+c[0]*r,y+c[1]*(r-g));ctx.lineTo(x+c[0]*r,y+c[1]*r);ctx.lineTo(x+c[0]*(r-g),y+c[1]*r);
+      ctx.moveTo(x+c[0]*r,y+c[1]*(ry-g));ctx.lineTo(x+c[0]*r,y+c[1]*ry);ctx.lineTo(x+c[0]*(r-g),y+c[1]*ry);
     }
     ctx.stroke();
   });
@@ -57017,7 +57028,10 @@ function drawStation(x,y,Z){
   if(ln<1e-6){lx=-.86;ly=-.51;}else{lx/=ln;ly/=ln;}   /* пока станция не встала на орбиту — свет слева сверху */
   const nb=(typeof bldBuiltHere==="function")?bldBuiltHere(G.sys).length:0;
   const pass=gpuScene();
-  if(pass){
+  /* тело (M820, 17c2g): хребет, ядро по типу, модули по заводу, тёплые окна, фонари причала */
+  const bd=!!pass&&BODY.on&&bodyStation(S,x,y,s,ty);
+  if(pass&&bd){GPU.oc.push([x,y,Math.max(24,80*s)*.5]);gpuLight(x,y,x,y,1,.84,.59,Math.max(24,80*s)*.9,.7);}
+  else if(pass){
     /* мастер: плотность — предел зума на экране, по четверть-октавы (как у корпусов) */
     const dk=GPU.bw/W,sb=Math.pow(2,Math.ceil(Math.log2(1.5*1.7*dk)*4)/4);
     const M=stationMaster((G.sys.key||"?")+"|"+ty+"|"+nb+"|"+SCK,sb,V,S,ty,pbOnScreen(x-80*s,y-80*s,160*s,160*s,0)),R=Math.max(24,80*s);
@@ -57028,7 +57042,7 @@ function drawStation(x,y,Z){
   }
   /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
      18 тактов, а факел — единственное на станции, что обязано плясать */
-  if(ty==="indust"&&pass){
+  if(ty==="indust"&&pass&&!bd){
     const t=G.t*.045+V.ph,fl=6.2+Math.sin(t*1.7)*1.6+Math.sin(t*2.9+1.3)*.9,lean=Math.sin(t*1.1+.7)*1.4+Math.sin(t*2.3)*.6;
     gpuStationFlare(pass,x,y,s,t,fl,lean,V);
   }
@@ -58632,6 +58646,435 @@ function p3tFlush(){
   for(const [cv,q,w,h] of J)p3tPaint(cv,q,w,h);
 }
 
+/* ══ тела для всех (M820, docs/DESIGN-bodies.md) ══
+   Всё, что летает и стоит в системе, — тело под одной звездой: сетка набора h3dKit, свет звезды,
+   тень тела на себя, свои огни. Здесь общее: выключатель (?body=0 — прежние спрайты до M890),
+   сторона звезды без запасного «слева сверху», порог 14 px (мельче — огонёк, а не сетка),
+   полоса угрозы только у раненого и у взятого в захват, пустая выпечка для сеток своей краски,
+   корпус флота по классу ГЛАВТРАССЫ и тело челнока. Баржа — 17c2f, станция — 17c2g */
+const BODY={on:typeof location==="undefined"||!/[?&]body=0\b/.test(location.search),LOD:14,T0:null,M:new Map()};
+
+/* сторона света от точки системы к звезде (0,0); на самой звезде света сбоку нет — [0,0],
+   и h3dRun кладёт свой ровный верхний */
+function sysLightDir(x,y){const l=Math.hypot(x||0,y||0);return l>1e-6?[-x/l,-y/l]:[0,0];}
+
+/* полоса корпуса над чужим (13-pirates): только раненый ниже 70 % и взятый в захват; ренегат — как был;
+   борт державы, что числится своим (iff), полосы не носит. Выключено — прежнее правило (всем, кто видит) */
+function bodyBar(p){
+  if(!BODY.on)return true;
+  if(!p||(p.hull||0)<=0)return false;
+  if(p.rogue)return true;
+  if(p.pw&&p.iff)return false;
+  if(G.marks&&G.marks.includes(p))return true;
+  return (p.hull||0)/(p.hullMax||1)<.7;
+}
+
+/* можно ли телу на видеокарту сейчас */
+function bodyGpu(){return BODY.on&&typeof H3D!=="undefined"&&H3D.on&&GPU.on&&!!GPU.dev&&!!GPU.enc;}
+/* пустая выпечка: у сеток тел краска своя — доля 3, как у части 17c2b: своя краска без швов корпуса
+   (у доли 2 шов через 2.4 по длине ложился косой штриховкой на кольцо станции); плоскость краски
+   отбрасывается по альфе */
+function bodyT0(){
+  if(!BODY.T0||BODY.T0.dev!==GPU.dev)BODY.T0=gpuBake(4,4,()=>{},{mips:false});
+  return BODY.T0;
+}
+/* сетка на экран: m — h3dPack, x,y — экран, a — курс, sc — масштаб; свет — к звезде из мира (wx,wy) */
+function bodyRun(m,x,y,a,sc,wx,wy,ember){
+  if(!bodyGpu()||!m)return false;
+  const T=bodyT0();if(!T)return false;
+  const [lx,ly]=sysLightDir(wx,wy);
+  return h3dRun(m,T,x,y,a,sc,0,lx,ly,null,ember||0);
+}
+/* огни сетки (m.L: x,y — в осях корпуса, c — цвет, r — радиус, k — мигание) поверх тела, в проходе сцены */
+function bodyLights(m,x,y,a,sc,al){
+  const pass=gpuScene();if(!pass||!m.L||!m.L.length)return;
+  const c=Math.cos(a),s=Math.sin(a),D=[],A=[];al=al==null?1:al;
+  for(const q of m.L){const px=x+(q.x*c-q.y*s)*sc,py=y+(q.x*s+q.y*c)*sc;
+    const on=q.k?(Math.sin(G.t*q.k+q.ph)>0?.95:.22):.9,r=Math.max(.7,q.r*sc);
+    D.push([1,px,py,r,0,0,0,q.c[0],q.c[1],q.c[2],on*al]);
+    if(on>.5)A.push([1,px,py,r*.5,0,0,r*1.8,q.c[0],q.c[1],q.c[2],.45*al]);}
+  gpuShapes(pass,D);if(A.length)gpuShapes(pass,A,{blend:"add"});
+}
+/* мельче порога — огонёк: точка цвета корпуса, освещённая со стороны звезды, и ходовой огонь */
+function bodyDot(x,y,col,wx,wy,al){
+  const pass=gpuScene();if(!pass)return;
+  const [lx,ly]=sysLightDir(wx,wy),k=al==null?1:al;
+  gpuShapes(pass,[[1,x,y,1.3,0,0,.6,col[0]*.45,col[1]*.45,col[2]*.45,.9*k],[1,x+lx*.5,y+ly*.5,.8,0,0,.4,col[0],col[1],col[2],.9*k]]);
+}
+/* кэш сеток по ключу: последние cap, старая отдаёт буфер вершин */
+function bodyMesh(key,cap,make){
+  let m=BODY.M.get(key);if(m){BODY.M.delete(key);BODY.M.set(key,m);return m;}
+  m=make();BODY.M.set(key,m);
+  const pre=key.split(":")[0];let n=0;for(const k of BODY.M.keys())if(k.split(":")[0]===pre)n++;
+  for(const k of BODY.M.keys()){if(n<=cap)break;if(k.split(":")[0]!==pre)continue;
+    const o=BODY.M.get(k);if(o&&o.buf&&o.dev===GPU.dev)GPU.trash.push(o.buf);BODY.M.delete(k);n--;}
+  return m;
+}
+
+/* ── корабль ГЛАВТРАССЫ (12ai1 fleetShipAt): класс линии → класс корпуса, корпус — hullGpuDraw ──
+   Три варианта на класс и завод (зерно по модулю 3): кэш корпусов не растёт с каждым бортом.
+   Узел трасс и чёрный дерелик — не корабли, им прежняя выпечка */
+const BODY_FCLS={post:"courier",tanker:"hauler",tug:"miner",fridge:"hauler",ore:"miner",lighter:"hauler",
+  ferry:"courier",patrol:"warship",rescue:"survey",hosp:"survey",school:"scout",exped:"survey",base:"hauler"};
+function bodyFleetHull(f){
+  const hc=f&&BODY_FCLS[f.k];if(!hc)return null;
+  const by=(f.by&&typeof HULL_MAKER!=="undefined"&&HULL_MAKER[f.by])?f.by:"gt",v=(f.seed>>>0)%3,id="b"+f.k+v+by;
+  if(!NPC_SHIPS[id])NPC_SHIPS[id]={name:id,seed:hashi(0xB0D7,v,f.k.length*131+by.charCodeAt(0)),hcls:hc,by,
+    col:"#c9c9d4",hull:120,cargo:120,fuel:120,thr:1,cls:"линия"};
+  return id;
+}
+/* борт линии на месте спрайта: s — масштаб экрана, al — прозрачность (гаснущий у дока остаётся выпечкой) */
+function bodyFleet(f,x,y,a,s,al){
+  if(!bodyGpu()||al<.95)return false;
+  const id=bodyFleetHull(f);if(!id)return false;
+  const h=hullOf(id),len=(h.nose-h.tail)*s*.85;
+  const wx=G.viewCX+(x-W/2)/G.zoom,wy=G.viewCY+(y-H/2)/G.zoom;
+  if(len<BODY.LOD){bodyDot(x,y,makerGround(h.by||"gt"),wx,wy,al);return true;}
+  const [lx,ly]=sysLightDir(wx,wy);
+  return hullGpuDraw(id,x,y,a,s*.85,f.k!=="base",false,0,0,lx,ly);
+}
+
+/* ── челнок (17f): корпус-ящик с носом, две гондолы, окно кабины тёплое; мерка челнока 10×6 ── */
+function bodyShuttleMesh(gr){
+  return bodyMesh("sh:"+gr.join(","),8,()=>{
+    const {V,C,face,lathe,box}=h3dKit(),g=C(gr),dk=C(mixc(gr,[0,0,0],.55)),ir=C([46,50,58]);
+    /* блик со знаком «−» — тело: своя тень и затенение у борта ему не считаются (как у h3dMesh) */
+    box(-3,2.2,-1.05,1.05,-.6,.75,.35,g,3,-.5);                        /* корпус */
+    face([[2.2,-1.05,-.6],[2.2,1.05,-.6],[4.1,.25,-.2],[4.1,-.25,-.2]],[2,0,0],g,3,-.5,0);
+    face([[2.2,-1.05,.75],[4.1,-.25,.15],[4.1,.25,.15],[2.2,1.05,.75]],[2,0,0],g,3,-.5,0);
+    face([[2.2,-1.05,-.6],[4.1,-.25,-.2],[4.1,-.25,.15],[2.2,-1.05,.75]],[2,0,0],g,3,-.5,0);
+    face([[2.2,1.05,-.6],[2.2,1.05,.75],[4.1,.25,.15],[4.1,.25,-.2]],[2,0,0],g,3,-.5,0);
+    face([[2.3,-.6,.78],[3.3,-.3,.5],[3.3,.3,.5],[2.3,.6,.78]],[2.6,0,0],C([255,206,140]),3,-.2,1.7);   /* окно кабины */
+    for(const s of [-1,1])lathe(-3.6,s*1.55,-.05,[[0,.32],[.3,.55],[3.6,.55],[4.4,.3]],dk,3,.6,0,10,[ir,.3,0],null);
+    const m=h3dPack(V,4.6,{st:[[4,.6],[2.2,1.05],[-3,1.05]],ne:2.2,kh:.7,gl:.4});
+    m.L=[{x:-1.5,y:-1.9,c:[255,90,80],r:.35,k:.07,ph:0},{x:-1.5,y:1.9,c:[120,240,150],r:.35,k:.07,ph:1.6}];
+    return m;});
+}
+/* челнок на месте спрайта; false — пусть рисует прежняя выпечка */
+function bodyShuttle(x,y,a,sk,gr,wx,wy){
+  if(!bodyGpu())return false;
+  if(8.6*sk<BODY.LOD){bodyDot(x,y,gr,wx,wy,1);return true;}
+  const m=bodyShuttleMesh(gr);
+  if(!bodyRun(m,x,y,a,sk,wx,wy,.25))return false;
+  bodyLights(m,x,y,a,sk,1);return true;
+}
+
+/* ══ баржа телом (M820 §3) ══
+   Хребет-труба, на нём 3–6 грузовых рам (по вместимости): в раме два короба тары разной высоты,
+   по торцам — рёбра-переборки; у носа буксирная голова завода с рубкой и тёплым окном, у кормы
+   блок с тихоходными соплами. Краска своя (доля 3, 17c2e): грунт завода в голове, тара приглушённая,
+   железо тёмное — баржа тяжёлая и медленная, а не полоса цветных ящиков. Остов — та же баржа,
+   переломленная надвое, рамы раскиданы в полторы длины, всё в копоти. Длина и полуширина — те же,
+   что у выпечки 12l (то же зерно): подпись и полоса стоят на своих местах */
+const BODY_BARGE_KEEP=12;
+function bodyBargeFrames(cap){return clamp(3+Math.floor(((cap||90)-90)/35),3,6);}
+/* части баржи в осях корпуса: каждая — функция (kit, копоть) → кусок сетки; общий размер L, hw */
+function bodyBargeParts(seed,by,cap){
+  const r=rng(hashi(seed,0x5A19,9)),L=104+r()*40,hw=L*(.14+r()*.04);
+  const q=rng(hashi(seed,0xB0D2,5)),nose=L*.52,tail=-L*.48,MR=makerRow(by);
+  const gnd=mixc([62,70,84],makerGround(by),.5),iron=[44,48,56],rib=[112,116,122];
+  const stripe=MR.stripe?mixc(makerLightCol(by),[30,26,22],.35):null;
+  const n=bodyBargeFrames(cap),z0=tail+L*.17,z1=nose-L*.25,step=(z1-z0)/n,fl=step*.88;
+  const cargo=[];for(let i=0;i<n;i++){const A=[];
+    for(const s of [-1,1]){if(q()<.14)continue;   /* пустое место в раме: виден хребет — груз снимали */
+      A.push({s,h:hw*(.4+q()*.42),h2:hw*(.4+q()*.42),c:mixc(H3D_CARGO[(q()*H3D_CARGO.length)|0],gnd,.22)});}
+    cargo.push(A);}
+  const sootK=k=>c=>mixc(c,[14,12,10],k);
+  const P={L,hw,nose,tail,n,
+    /* хребет: труба от кормового блока до головы */
+    spine:(K,sk,xa,xb)=>{xa=xa==null?tail+L*.12:xa;xb=xb==null?nose-L*.2:xb;
+      K.lathe(xa,0,0,[[0,hw*.3],[xb-xa,hw*.3]],K.C(sk(iron)),3,.4,0,12,null,null);},
+    xAt:i=>z0+i*step,
+    /* рама i: два ребра и тара; x0 — её начало по длине */
+    /* рама — П из светлой стали выше тары (стойки по бортам и балка поверху) и продольные балки:
+       конструкция читается раньше коробов; тара — по два короба на сторону со щелью, это масштаб */
+    frame:(K,sk,i,ox)=>{const x0=(ox==null?z0+i*step:ox),x1=x0+fl,rb=Math.max(.9,fl*.07),top=hw*.98,st=K.C(sk(rib)),y2=hw*1.17,y1=hw*1.03;
+      for(const xx of [x0,x1-rb]){K.box(xx,xx+rb,-y2,-y1,-hw*.62,top,.12,st,3,.55);K.box(xx,xx+rb,y1,y2,-hw*.62,top,.12,st,3,.55);
+        K.box(xx,xx+rb,-y2,y2,top-hw*.13,top,.1,st,3,.55);}
+      for(const s of [-1,1])K.box(x0,x1,s<0?-y2:y1,s<0?-y1:y2,top-hw*.11,top-hw*.02,.1,st,3,.55);
+      const xm=(x0+x1)/2,g=Math.max(.35,fl*.025);
+      for(const c of cargo[i]){const ya=c.s<0?-hw*1.0:hw*.05,yb=c.s<0?-hw*.05:hw*1.0,col=K.C(sk(c.c));
+        K.box(x0+rb,xm-g,ya,yb,-hw*.55,c.h,hw*.07,col,3,.25);K.box(xm+g,x1-rb,ya,yb,-hw*.55,c.h2,hw*.07,col,3,.25);}},
+    /* голова: короткий лофт грунта завода, полоса, рубка с окном */
+    head:(K,sk,ox,oy)=>{const xa=nose-L*.22,N=16,ring=(x,w)=>{const R=[];for(let i=0;i<=N;i++){const t=i/N*TAU,c=Math.cos(t),s=Math.sin(t);
+        R.push([x,w*Math.sign(c)*Math.pow(Math.abs(c),.8),w*(s>=0?.82:.55)*Math.sign(s)*Math.pow(Math.abs(s),.8)]);}return R;};
+      const R=[ring(xa,hw*.88),ring(nose-L*.07,hw*.9),ring(nose,hw*.42)];
+      K.loft(R,K.C(sk(gnd)),3,-.5,0);K.face(R[0].slice(0,N),[xa+1,0,0],K.C(sk(iron)),3,-.3,0);
+      K.face(R[2].slice(0,N),[nose-1,0,0],K.C(sk(mixc(gnd,[0,0,0],.25))),3,-.4,0);
+      if(stripe)K.box(nose-L*.17,nose-L*.145,-hw*.93,hw*.93,-hw*.5,hw*.76,.3,K.C(sk(stripe)),3,.3);
+      const bx=nose-L*.13,bt=hw*1.12;
+      K.box(bx-L*.05,bx+L*.03,-hw*.42,hw*.42,hw*.4,bt,hw*.08,K.C(sk(mixc(gnd,[255,255,255],.12))),3,.5);
+      if(!sk.dead)K.face([[bx+L*.031,-hw*.3,bt*.82],[bx+L*.031,hw*.3,bt*.82],[bx+L*.031,hw*.3,bt*.62],[bx+L*.031,-hw*.3,bt*.62]],
+        [bx,0,bt*.7],K.C([255,210,150]),3,-.1,1.9);},
+    /* корма: блок и сопла с тлеющим зевом */
+    stern:(K,sk)=>{K.box(tail+L*.02,tail+L*.15,-hw*.98,hw*.98,-hw*.5,hw*.62,hw*.1,K.C(sk(mixc(gnd,iron,.55))),3,-.4);
+      const ne=2+(seed%2),em=K.C(sk([90,40,22]));
+      for(let i=0;i<ne;i++){const ey=(i-(ne-1)/2)*hw*.9;
+        K.lathe(tail+L*.03,ey,0,[[0,hw*.34],[-L*.035,hw*.4],[-L*.07,hw*.44]],K.C(sk(iron)),3,.6,0,12,null,sk.dead?null:[em,0,1]);}}};
+  P.lights=[{x:nose-L*.1,y:-hw*.95,c:[255,90,80],r:1.4,k:.08,ph:0},{x:nose-L*.1,y:hw*.95,c:[120,240,150],r:1.4,k:.08,ph:1.6},
+    {x:nose-L*.1,y:0,c:[255,214,150],r:1.1,k:0,ph:0},{x:tail+L*.08,y:0,c:[230,236,255],r:1,k:.05,ph:.7}];
+  P.soot=sootK;return P;
+}
+/* сетка баржи: по заводу, зерну и вместимости (кэш 12) */
+function h3dBargeMesh(seed,by,cap){
+  return bodyMesh("bg:"+seed+by+bodyBargeFrames(cap),BODY_BARGE_KEEP,()=>{
+    const P=bodyBargeParts(seed,by,cap),K=h3dKit(),sk=c=>c;
+    P.spine(K,sk);for(let i=0;i<P.n;i++)P.frame(K,sk,i);P.head(K,sk);P.stern(K,sk);
+    const L=P.L,hw=P.hw;
+    const m=h3dPack(K.V,L*.62,{st:[[P.nose,hw*.4],[P.nose-L*.07,hw*.9],[P.nose-L*.22,hw*.88],[P.nose-L*.23,hw*.3],
+      [P.tail+L*.16,hw*.3],[P.tail+L*.15,hw*.98],[P.tail+L*.02,hw*.98]],ne:2.6,kh:.7,gl:.35});
+    m.L=P.lights;m.len=L;m.frames=P.n;return m;});
+}
+/* остов: две половины врозь, рамы раскиданы, всё в копоти; огней нет */
+function h3dBargeWreck(seed){
+  const by=makerBySeed(seed),cap=90+(seed>>>3)%140;
+  return bodyMesh("bw:"+seed,4,()=>{
+    const P=bodyBargeParts(seed,by,cap),L=P.L,q=rng(hashi(seed,0xDEAD,3)),V=[];
+    const sk=P.soot(.55);sk.dead=1;
+    /* кусок в своих осях → повернуть вокруг z и сдвинуть в общую сетку */
+    const put=(build,ang,dx,dy)=>{const K=h3dKit();build(K);const c=Math.cos(ang),s=Math.sin(ang),A=K.V;
+      for(let i=0;i<A.length;i+=12){const x=A[i],y=A[i+1],nx=A[i+3],ny=A[i+4];
+        A[i]=x*c-y*s+dx;A[i+1]=x*s+y*c+dy;A[i+3]=nx*c-ny*s;A[i+4]=nx*s+ny*c;}
+      for(const v of A)V.push(v);};
+    const half=Math.max(1,Math.floor(P.n/2)),gap=L*(.12+q()*.1);
+    /* перелом — по стыку рам half-1 и half: нос с хребтом до стыка, корма — от блока до стыка */
+    const xs=P.xAt(half),keep=[];for(let i=0;i<half;i++)keep.push(q()<.5);
+    put(K=>{P.head(K,sk);P.spine(K,sk,xs,null);for(let i=half;i<P.n;i++)P.frame(K,sk,i);},
+      .2+q()*.25,gap*.5,-L*.03);
+    put(K=>{P.stern(K,sk);P.spine(K,sk,null,xs-L*.02);for(let i=0;i<half;i++)if(keep[i])P.frame(K,sk,i);},
+      -.15-q()*.2,-gap*.5,L*.04);
+    /* рамы, что сорвало с кормы: рядом, в полутора длинах; одну-две унесло совсем */
+    for(let i=0;i<half;i++)if(!keep[i]&&q()<.75){const a=q()*TAU,d=L*(.35+q()*.4);
+      put(K=>P.frame(K,sk,i,-P.hw),q()*TAU,Math.cos(a)*d,Math.sin(a)*d*.6);}
+    const m=h3dPack(V,L*1.1,{st:[[L*.6,P.hw*.3],[-L*.6,P.hw*.3]],ne:2.6,kh:.7,gl:.2});
+    m.len=L;return m;});
+}
+/* баржа на месте выпечки 12l: тело, огни; false — пусть рисует прежняя */
+function bodyBarge(b,x,y,s){
+  if(!bodyGpu())return false;
+  const by=b.by||(b.by=makerBySeed(b.seed)),m=h3dBargeMesh(b.seed,by,b.cap);
+  if(m.len*s<BODY.LOD){bodyDot(x,y,makerGround(by),b.x,b.y,1);return true;}
+  if(!bodyRun(m,x,y,b.a,s,b.x,b.y,.3))return false;
+  bodyLights(m,x,y,b.a,s,1);return true;
+}
+/* остов баржи (12l drawWrecksSystem): w — {x,y,seed}; поворот по зерну, как у прежнего рисунка */
+function bodyBargeWreck(w,x,y,s){
+  if(!bodyGpu())return false;
+  const m=h3dBargeWreck(w.seed>>>0);
+  if(m.len*s<BODY.LOD){bodyDot(x,y,[60,56,52],w.x,w.y,1);return true;}
+  return bodyRun(m,x,y,(w.seed%628)/100,s,w.x,w.y,0);
+}
+
+/* ══ станция телом (M820 §5) ══
+   Самое большое тело системы. Кости у всех одни: хребет вдоль оси, на ближнем конце мачта причала
+   с четырьмя тёплыми фонарями (туда смотрит причал 17e: баржа стоит в st+(96,58), отсюда и разворот
+   BODY_ST_A). Ядро — по типу станции, модули вдоль хребта — по сборке завода (makerAssembly),
+   окна — тёплые панели на крышах: единственный тёплый свет людей в темноте. Холодные трубки ламп —
+   только у комбината и научной. 2–4 точки gpuLight (мачта, ангар) светят пришвартованным.
+   Мерка — та же, что у выпечки 17c: 160 единиц на сторону, масштаб s, на зуме 1 — 272 px */
+const BODY_ST_KEEP=4,BODY_ST_A=Math.atan2(34,56);
+const BODY_WARM=[255,194,118],BODY_COLD=[170,214,255];
+/* ядро по типу: строит в K, отдаёт {x0,x1,w} — пролёт ядра по хребту и полуширину для поля тени */
+const BODY_ST_CORE={
+  trade:(B)=>bodyStRing(B,false),
+  bazaar:(B)=>bodyStRing(B,true),
+  indust:(B)=>{const {K,C,cx,base,dark,L,P}=B;
+    K.box(cx-22,cx+22,-19,19,-5,6,1.2,C(mixc(base,[0,0,0],.12)),3,-.5);
+    for(let i=-2;i<=2;i++)K.box(cx+i*8-.6,cx+i*8+.6,-19.3,19.3,5,6.6,.1,C(dark),3,.5);   /* рёбра крыши */
+    for(const s of [-1,1]){B.cyl(cx+10,s*9,6,19,3.4,[64,58,54],.5,[30,26,24],0);   /* трубы: жерло в копоти, жар — малым кругом в глубине */
+      const Q=[];for(let i=0;i<10;i++){const t=i/10*TAU;Q.push([cx+10+Math.cos(t)*1.3,s*9+Math.sin(t)*1.3,19.05]);}
+      K.face(Q,[cx+10,s*9,18],C([196,84,36]),3,-.1,1.35);
+      B.cold(cx-20,cx-4,s*17.6,6.7);}
+    K.face([[cx-13,-4,6.7],[cx-5,-4,6.7],[cx-5,4,6.7],[cx-13,4,6.7]],[cx-9,0,5],C([132,62,34]),3,-.1,1.25);   /* продух — тлеет под решёткой */
+    for(let i=0;i<4;i++)K.box(cx-12.6+i*2.2,cx-11.8+i*2.2,-4.3,4.3,6.6,7.1,.05,C(dark),3,.4);
+    B.wins(cx+14,cx+21,-17,17,6.7,3);P.push([cx,0,.8]);return {x0:cx-22,x1:cx+22,w:19};},
+  yard:(B)=>{const {K,C,cx,steel,dark,L,P}=B;
+    for(const s of [-1,1])K.box(cx-32,cx+32,s*24-1.6,s*24+1.6,-2,4,.4,C(steel),3,.5);   /* рельсы стапеля */
+    /* одна рама: два рельса и две торцевые балки; внутри — только корпус, будка — на углу снаружи */
+    for(const x of [cx-33,cx+31])K.box(x,x+2,-25.6,25.6,-2,4,.3,C(steel),3,.5);
+    K.box(cx+24,cx+31,26,32,-1,7,.6,C(B.base),3,.5);B.wins(cx+25,cx+30,27,31,7.1,1);
+    for(const s of [-1,1]){L.push({x:cx-30,y:s*24,c:BODY_WARM,r:.9,k:0,ph:0});P.push([cx-26,s*18,1]);}
+    B.slip={x:cx,y:0};return {x0:cx-33,x1:cx+33,w:6};},
+  sci:(B)=>{const {K,C,cx,base,steel,L,P}=B,Sp=[];
+    for(let k=0;k<=10;k++){const ph=-Math.PI/2+Math.PI*k/10;Sp.push([15*Math.sin(ph),Math.max(15*Math.cos(ph),.01)]);}
+    K.lathe(cx,0,0,Sp,C(mixc(base,[230,236,244],.35)),3,-.7,0,20,null,null);
+    for(let k=0;k<6;k++){const t=k/6*TAU+.3;B.win1(cx+Math.cos(t)*9,Math.sin(t)*9,13.5);}
+    K.tube([[cx-4,8,8],[cx-6,24,10]],1,C(steel),3,.5,6);
+    K.lathe(cx-12,26,10,[[0,.8],[3,5],[5,9]],C([214,220,228]),3,.9,0,18,null,null);   /* тарелка */
+    B.cold(cx-30,cx-18,-5.2,3.8);B.cold(cx+18,cx+30,5.2,3.8);P.push([cx,0,.7]);return {x0:cx-15,x1:cx+15,w:15};},
+  outpost:(B)=>{const {K,C,cx,dark,steel,L,P}=B,Sp=[];
+    K.box(cx-10,cx+10,-10,10,-3,4,1,C(B.base),3,-.5);
+    for(let k=0;k<=6;k++){const ph=-Math.PI/2+Math.PI*k/6;Sp.push([5.5*Math.sin(ph),Math.max(5.5*Math.cos(ph),.01)]);}
+    K.lathe(cx,0,8,Sp,C(dark),3,.7,0,12,null,null);   /* башня орудия */
+    K.tube([[cx+2,-2,9],[cx+8,-17,9]],1.1,C(steel),3,.6,6);K.tube([[cx-2,-2,9],[cx+3,-17,9]],1.1,C(steel),3,.6,6);
+    L.push({x:cx-8,y:8,c:[255,96,80],r:1,k:.06,ph:0});B.wins(cx-8,cx-2,4,9,4.1,1);P.push([cx,0,.6]);return {x0:cx-10,x1:cx+10,w:10};},
+  fuel:(B)=>{const {K,C,cx,steel,L,P}=B,tk=[[0,1],[2,5.6],[5,7],[25,7],[28,5.6],[30,1]];
+    for(const y of [-11,11,-26,26])K.lathe(cx-15,y,0,tk,C(mixc(B.base,[200,206,214],.62)),3,.8,0,16,null,null);
+    for(const y of [-18.5,18.5])K.box(cx-12,cx+12,y-.8,y+.8,-1,1.5,.2,C(steel),3,.5);
+    K.tube([[cx+10,26,7],[cx+16,36,8],[cx+26,40,6]],1,C([160,120,60]),3,.5,6);   /* рукав заправки */
+    L.push({x:cx+26,y:40,c:BODY_WARM,r:.9,k:.05,ph:.4});P.push([cx+14,30,.7]);return {x0:cx-15,x1:cx+15,w:28};},
+};
+/* кольцо торгового узла (и базара — с тканью трёх цветов и двойными фонарями) */
+function bodyStRing(B,cloth){
+  const {K,C,cx,base,steel,dark,L,P}=B,R=34,N=40,Q=[];
+  for(let i=0;i<=N;i++){const t=i/N*TAU;Q.push([cx+Math.cos(t)*R,Math.sin(t)*R,0]);}
+  K.tube(Q,4.6,C(mixc(base,[220,222,226],.18)),3,.6,12);
+  /* палуба — второе кольцо внутри, ниже и темнее: обод читается обжитым, а не обручем */
+  K.tube(Q.map(q=>[cx+(q[0]-cx)*.84,q[1]*.84,-1.2]),2.4,C(dark),3,.4,8);
+  /* две спицы поперёк хребта: вдоль него спицей служит сам хребет, четверти свободны под модули */
+  for(const s of [-1,1])K.tube([[cx,s*5,0],[cx,s*(R-3),0]],1.4,C(steel),3,.5,6);
+  K.box(cx-7,cx+7,-7,7,-4,5,1,C(dark),3,-.5);
+  /* окна полосой по верху кольца: часть погашена — люди спят */
+  const r=rng(hashi(B.seed,0x71D,1));
+  for(let i=0;i<N;i++){if(r()<.35)continue;const t=(i+.5)/N*TAU,c=Math.cos(t),s=Math.sin(t),a=.55,b=.8;
+    B.win4([[cx+c*(R-a)-s*b,s*(R-a)+c*b],[cx+c*(R+a)-s*b,s*(R+a)+c*b],[cx+c*(R+a)+s*b,s*(R+a)-c*b],[cx+c*(R-a)+s*b,s*(R-a)-c*b]],4.65,r()*.8);}
+  /* ткань одного ряда: акцент завода, приглушённый, в три тона — полотно, а не пластик */
+  if(cloth){const a=mixc(B.acc,[150,120,90],.3),CL=[mixc(a,[196,182,156],.55),a,mixc(a,[26,22,20],.5)],q=rng(hashi(B.seed,0xC10F,2));
+    /* навесы рядов: шаг и длина неровные (ряды ставили разные люди), тон — полотно, акцент, тень */
+    let t=q()*TAU;for(let i=0;i<10;i++){t+=TAU/10*(.6+q()*.8);const c=Math.cos(t),s=Math.sin(t),col=C(CL[q()<.45?0:q()<.6?1:2]),w=1.8+q()*1.6,o=R+8+q()*6;
+      K.face([[cx+c*(R+4)-s*w,s*(R+4)+c*w,1],[cx+c*o-s*w*1.2,s*o+c*w*1.2,.6],[cx+c*o+s*w*1.2,s*o-c*w*1.2,.6],[cx+c*(R+4)+s*w,s*(R+4)-c*w,1]],
+        [cx+c*(R+8),s*(R+8),-3],col,3,.15,0);}
+    for(let i=0;i<8;i++){const t=i/8*TAU;L.push({x:cx+Math.cos(t)*(R+4.6),y:Math.sin(t)*(R+4.6),c:BODY_WARM,r:.8,k:0,ph:0});}}
+  else for(let i=0;i<4;i++){const t=i/4*TAU;L.push({x:cx+Math.cos(t)*(R+4.6),y:Math.sin(t)*(R+4.6),c:BODY_WARM,r:.8,k:0,ph:0});}
+  P.push([cx,0,.9]);
+  return {x0:cx-8,x1:cx+8,w:0};   /* модулям закрыта только ступица */
+}
+/* модули вдоль хребта по сборке завода: стойка и барабан, блок, ряд, кольцевые барабаны, лоскут, игла */
+function bodyStModules(B,cr,xa,xb){
+  const {K,C,base,dark,acc,steel,seed}=B,asm=makerAssembly(B.by),r=rng(hashi(seed,0x40D,7));
+  const n=asm==="block"?4:asm==="stack"?8:4+Math.floor(r()*6),same=asm==="stack",free=[];
+  /* места: по обе стороны хребта, вне ядра; ряд — одинаковым шагом */
+  for(let x=xa+4;x<xb-6;x+=same?11:9+r()*6)if(x+10<cr.x0-2||x>cr.x1+2)free.push(x);
+  let k=0;
+  for(const x of free)for(const s of [-1,1]){
+    if(k>=n*2||(!same&&r()<.15))continue;k++;
+    const len=same?9:asm==="block"?14+r()*4:asm==="spine"?12+r()*6:9+r()*7,wd=same?9:asm==="block"?13:asm==="spine"?4+r()*2:7+r()*9,ht=same?6:5+r()*5;
+    const y0=s<0?-5-wd:5,y1=s<0?-5:5+wd,col=asm==="patch"?mixc(base,[[196,150,74],[150,82,52],[120,126,96]][(r()*3)|0],.45):(r()<.2?acc:base);
+    if(asm==="rack"&&k%2||asm==="ring"){   /* барабан вдоль оси */
+      const rr=wd/2,yc=(y0+y1)/2;K.lathe(x,yc,0,[[0,rr*.7],[1,rr],[len-1,rr],[len,rr*.7]],C(col),3,.55,0,14,[C(dark),.3,0],[C(dark),.3,0]);
+      B.win1(x+len/2,yc,rr+.05);continue;}
+    K.box(x,x+len,y0,y1,-ht*.6,ht,Math.min(1.2,ht*.2),C(col),3,asm==="block"?.9:.45);
+    if(asm!=="block")for(let i=1;i<3;i++){const xx=x+len*i/3;K.box(xx-.35,xx+.35,y0-.2,y1+.2,ht-.4,ht+.5,.1,C(dark),3,.4);}
+    const nw=asm==="block"?3:1+((r()*3)|0);B.wins(x+1.2,x+len-1.2,Math.min(y0,y1)+1.2,Math.max(y0,y1)-1.2,ht+.06,nw);
+    if(asm==="spine"&&r()<.5)K.tube([[x+len/2,s*(wd+5),ht],[x+len/2,s*(wd+15),ht]],.4,C(steel),3,.5,5);   /* мачта иглы */
+    if(asm==="block"&&r()<.6){const Sp=[];for(let j=0;j<=5;j++){const ph=-Math.PI/2+Math.PI*j/5;Sp.push([3*Math.sin(ph),Math.max(3*Math.cos(ph),.01)]);}
+      K.lathe(x+len/2,s*(wd+8.5),0,Sp,C([236,238,242]),3,1,0,10,null,null);}   /* под Компании */
+  }
+}
+function h3dStationMesh(S,ty,by,seed){
+  return bodyMesh("st:"+seed+ty+by,BODY_ST_KEEP,()=>{
+    const K=h3dKit(),C=K.C,MR=makerRow(by),gnd=makerGround(by),r=rng(hashi(seed,0x57A7,3));
+    /* основа тёмная: в темноте читаются освещённые грани и окна, а не ровная заливка */
+    const base=mixc([42,46,54],gnd,.26),dark=mixc(base,[10,12,16],.5),iron=[48,52,60],steel=[118,122,128];
+    const acc=MR.stripe?mixc(makerLightCol(by),[40,34,30],.58):mixc(gnd,[255,255,255],.1),L=[],P=[];
+    const B={K,C,seed,by,base,dark,iron,steel,acc,L,P,cx:-6};
+    /* окно — панель своей краски с огнём сверх 1: светит само, в тени тоже */
+    B.win4=(Q,z,k)=>K.face(Q.map(q=>[q[0],q[1],z]),[Q[0][0],Q[0][1],z-2],C(BODY_WARM),3,-.1,1.2+k*.55);
+    B.win1=(x,y,z)=>B.win4([[x-.9,y-.9],[x+.9,y-.9],[x+.9,y+.9],[x-.9,y+.9]],z,.6);
+    B.wins=(x0,x1,y0,y1,z,n)=>{for(let i=0;i<n;i++){const x=x0+(x1-x0)*(r()*.8+.1),y=y0+(y1-y0)*(r()*.8+.1),w=.45+r()*.5,h=.4+r()*.3;
+      if(r()<.25)continue;B.win4([[x-w,y-h],[x+w,y-h],[x+w,y+h],[x-w,y+h]],z,r()*.9);}};
+    B.cold=(x0,x1,y,z)=>K.face([[x0,y-.45,z],[x1,y-.45,z],[x1,y+.45,z],[x0,y+.45,z]],[(x0+x1)/2,y,z-2],C(BODY_COLD),3,-.1,1.7);
+    B.cyl=(x,y,z0,z1,rr,col,sp,cap,em)=>{K.tube([[x,y,z0],[x,y,z1]],rr,C(col),3,sp,12);const Q=[];
+      for(let i=0;i<12;i++){const t=i/12*TAU;Q.push([x+Math.cos(t)*rr,y+Math.sin(t)*rr,z1]);}K.face(Q,[x,y,z1-1],C(cap||col),3,sp,em||0);};
+    /* хребет и мачта причала */
+    const xa=ty==="outpost"?-34:-60,xb=ty==="outpost"?34:50;
+    const SG=ty==="yard"?[[xa,B.cx-33],[B.cx+33,xb]]:[[xa,xb]];   /* у верфи хребет упирается в раму, а не идёт сквозь корпус */
+    for(const [a0,a1] of SG)K.lathe(a0,0,0,[[0,4.6],[a1-a0,4.6]],C(mixc(base,iron,.45)),3,-.5,0,14,[C(iron),-.3,0],[C(iron),-.3,0]);
+    for(let x=xa+8;x<xb;x+=12)if(ty!=="yard"||x<B.cx-34||x>B.cx+34)K.box(x-.5,x+.5,-5.2,5.2,-4.6,5.1,.1,C(dark),3,.4);   /* обручи хребта */
+    K.box(xb,xb+16,-1.3,1.3,-1.3,1.8,.3,C(steel),3,.5);
+    for(const [mx,my] of [[xb+5,-3.4],[xb+5,3.4],[xb+14,-3.4],[xb+14,3.4]]){
+      K.box(mx-.9,mx+.9,my-.9,my+.9,-.5,2.8,.2,C(iron),3,.5);L.push({x:mx,y:my,c:BODY_WARM,r:.95,k:0,ph:0});}
+    P.push([xb+12,0,.8]);
+    const cr=(BODY_ST_CORE[ty]||BODY_ST_CORE.trade)(B);
+    bodyStModules(B,cr,xa,xb);
+    /* поле тени: хребет, ядро — своей полушириной */
+    const st=[[xb+16,1.3],[xb,4.6]];
+    if(cr.w>5){st.push([cr.x1+.1,4.6],[cr.x1,cr.w],[cr.x0,cr.w],[cr.x0-.1,4.6]);}
+    st.push([xa,4.6]);
+    const m=h3dPack(K.V,80,{st,ne:2.2,kh:.45,gl:.4});
+    m.L=L;m.P=P;m.slip=B.slip||null;return m;});
+}
+/* станция на месте выпечки 17c: тело, фонари, точки света; стапель верфи — корпус флота поверх */
+function bodyStation(S,x,y,s,ty){
+  if(!bodyGpu())return false;
+  const by=S.by||"gt",seed=hashi((G.sys&&G.sys.seed)|0,0x57B0,ty.length),m=h3dStationMesh(S,ty,by,seed),a=BODY_ST_A;
+  const c=Math.cos(a),n=Math.sin(a),T=(u,v)=>[x+(u*c-v*n)*s,y+(u*n+v*c)*s];
+  for(const p of m.P){const [px,py]=T(p[0],p[1]);gpuLight(px,py,px,py,1,.8,.55,40*s,p[2]);}
+  if(!bodyRun(m,x,y,a,s,S.x||0,S.y||0,0))return false;
+  bodyLights(m,x,y,a,s,1);
+  if(m.slip){const id="f"+(seed%92),h=hullOf(id),[hx,hy]=T(m.slip.x,m.slip.y),[lx,ly]=sysLightDir(S.x||0,S.y||0);
+    hullGpuDraw(id,hx,hy,a,s*Math.min(.9,50/Math.max(1,h.nose-h.tail)),false,false,0,0,lx,ly);}
+  return true;
+}
+
+/* ══ чужой и мирный (M820 §4) ══
+   Пират читается врагом без полосы: поверх сварного кома (17c2a) — накладка злой формы. Один шип-таран
+   с борта, вдвое длиннее огрызка с другого; шар турели не на оси, а на свесе; оранжевый — единственный
+   акцент (окалина на остриях, пояс турели), синего игрока нет. Ходовые огни грязно-рыжие, два и не
+   в пару: разные борта, разная высота, разный ритм. Выхлоп рыже-бурый и длиннее мирного (12i).
+   Борт державы — чистый: корпус генератором своего завода (hullGpuDraw), белые ходовые огни,
+   цвет державы на киле — записью NPC_SHIPS (13d), факел штатный, бело-голубой */
+const BODY_PIR={keep:16,n:0,X:1.7,
+  C:[[255,226,180],[226,128,60],[120,54,28]],   /* лестница факела пирата: жёлтое ядро, рыжее, бурое */
+  RUST:[118,56,30],IRON:[50,45,42],LT:[232,124,52]};
+/* накладка по выпечке пирата: art — 12i (B — обвод, rad), сторона шипа по зерну корпуса */
+function bodyPirDress(art){
+  if(!art.dk)art.dk=++BODY_PIR.n;
+  return bodyMesh("pd:"+art.dk,BODY_PIR.keep,()=>{
+    const B=art.B,L=B.L,hw=B.hw,r=rng(hashi(art.dk*977+(B.kills|0),0x5B1E,(L*10)|0));
+    const sg=r()<.5?-1:1,{V,C,lathe,tube,box}=h3dKit();
+    const iron=C(BODY_PIR.IRON),rust=C(BODY_PIR.RUST),dk=C(mixc(art.cols[0],[0,0,0],.2));
+    const cone=(x0,y,z,len,r0,col)=>lathe(x0,y,z,[[0,r0],[len*.55,r0*.62],[len*.92,r0*.16],[len,.02]],col,3,.7,0,8,null,null);
+    /* таран: длинный с одного борта, огрызок с другого; остриё в окалине */
+    const sx=B.nose*.72,lg=L*(.34+r()*.12),sh=L*(.1+r()*.05),sy=sg*hw*(.34+r()*.12),r0=hw*.15;
+    cone(sx,sy,.25,lg*.82,r0,iron);cone(sx+lg*.8,sy,.25,lg*.2,r0*.2,rust);
+    cone(sx,-sy*.8,.2,sh,r0*.8,dk);
+    box(sx-L*.05,sx+L*.02,Math.min(sy,0)-r0*1.3,Math.max(sy,0)+r0*1.3,-.4,.75,.15,dk,3,.5);   /* хомут на борту */
+    /* турель на свесе другого борта: шар, пояс окалины, ствол вперёд и наружу */
+    const tx=lerp(B.tail*.3,B.nose*.25,r()),ty=-sg*hw*(.92+r()*.2),tr=hw*(.26+r()*.08),tz=tr*.5,Sp=[];
+    for(let k=0;k<=7;k++){const ph=-Math.PI/2+Math.PI*k/7;Sp.push([tr*Math.sin(ph),Math.max(tr*Math.cos(ph),.01)]);}
+    lathe(tx,ty,tz,Sp,dk,3,.8,0,12,null,null);
+    lathe(tx-tr*.12,ty,tz,[[0,tr*1.03],[tr*.24,tr*1.03]],rust,3,.6,0,12,null,null);
+    tube([[tx,ty,tz+tr*.4],[tx+L*.24,ty-sg*hw*.12,tz+tr*.5]],tr*.16,iron,3,.6,6);
+    box(tx-tr*.5,tx+tr*.5,Math.min(ty,-sg*hw*.55),Math.max(ty,-sg*hw*.55),-.3,tz,.1,dk,3,.5);   /* кронштейн к телу */
+    const m=h3dPack(V,art.rad*1.25,{st:[[B.nose,hw*.3],[B.tail,hw*.3]],ne:2.3,kh:.5,gl:.35});
+    /* огни не в пару: рыжий у тарана, второй — у кормы с другого борта, ниже и в другом ритме */
+    m.L=[{x:sx+lg*.25,y:sy+sg*r0*1.6,c:BODY_PIR.LT,r:hw*.14,k:.07,ph:0},
+      {x:B.tail*.72,y:-sg*hw*(.62+r()*.2),c:mixc(BODY_PIR.LT,[150,90,60],.35),r:hw*.1,k:.043,ph:1.3}];
+    return m;});
+}
+/* накладка поверх тела пирата (12i gpuPirateBody, после h3dPirate): та же поза и крен */
+function bodyPirate(art,p,x,y,s,lx,ly){
+  if(!bodyGpu()||!art.B||p.wreck)return;
+  const T=bodyT0();if(!T)return;
+  const m=bodyPirDress(art);
+  if(h3dRun(m,T,x,y,p.a,s,(p.bank||0)*.6,lx,ly,null,0))bodyLights(m,x,y,p.a,s,1);
+}
+/* борт державы рисуется телом (тогда живой слой 12i его пропускает) */
+function bodyPowerOn(p){return !!(p&&p.pw&&!p.wreck&&NPC_SHIPS[p.shipId]&&bodyGpu());}
+/* мирный борт державы: свой корпус завода, белые ходовые огни; false — пусть рисует сварной */
+function bodyPower(p,x,y,s,lx,ly){
+  if(!bodyPowerOn(p))return false;
+  if(!hullGpuDraw(p.shipId,x,y,p.a,s,!!p.thrust,false,0,(p.bank||0)*.6,lx,ly))return false;
+  const h=hullOf(p.shipId),len=h.nose-h.tail,wy=len*.2;
+  bodyLights({L:[{x:h.tail+len*.3,y:-wy,c:[255,250,240],r:len*.035,k:.06,ph:0},{x:h.tail+len*.3,y:wy,c:[255,250,240],r:len*.035,k:.06,ph:0},
+    {x:h.tail+len*.05,y:0,c:[230,240,255],r:len*.03,k:0,ph:0}]},x,y,p.a,s,1);
+  return true;
+}
+/* факел пирата (12i gpuPirateLive): длина и лестница; у прочих — прежние */
+function bodyPirFlame(p){return BODY.on&&!p.pw&&!p.wreck?BODY_PIR:null;}
+/* габарит цели на экране для рамки захвата (15b): полуширина и полувысота повёрнутого корпуса + 4 px;
+   null — не корабль с корпусом, рамка прежняя */
+function bodyMarkBox(p,Z){
+  if(!p||!p.shipId||typeof shipScaleAt!=="function")return null;
+  let nose,tail,hw,s=shipScaleAt(Z)*.82;
+  if(bodyPowerOn(p)){const h=hullOf(p.shipId);nose=h.nose;tail=h.tail;hw=(nose-tail)*.22;}
+  else{const hp=clamp((p.hull||0)/(p.hullMax||1),0,1),B=pirateArtOf(p.shipId,p.rogue||p.hunter,p.wreck?2:hp<.5,p.rank|0,p.deserter?1:0).B;
+    if(!B)return null;nose=B.nose+(BODY.on&&!p.pw?B.L*.2:0);tail=B.tail;hw=B.hw*1.2;}
+  const c=Math.abs(Math.cos(p.a||0)),n=Math.abs(Math.sin(p.a||0)),hl=(nose-tail)/2;
+  return [(hl*c+hw*n)*s+4,(hl*n+hw*c)*s+4];
+}
+
 /* ── станция на видеокарте, ступень 1 (DESIGN-gpu «station master») ──
    Тело станции (17c drawStationBody) печётся мастером с мипами раз на плотность
    экрана; живое записывается stLive и кладётся поверх каждый кадр. В 2D stLive
@@ -59097,6 +59540,8 @@ function drawShuttleArc(t,zx,zy,Z){
   if(pass){
     /* корпус — выпечка на цвет завода, один раз; поворот и масштаб — в шейдере */
     const sk=s*t.k;
+    /* тело (M820, 17c2e): корпус, гондолы, окно; мельче 14 px — огонёк */
+    if(BODY.on&&bodyShuttle(x,y,a,sk,t.mk?mixc([35,43,54],makerGround(t.mk),.7):[35,43,54],P.wx,P.wy))return;
     gpuImage(pass,shuttleSprite(gr),[{x,y,w:SHUT_SW*sk,h:SHUT_SH*sk,rot:a}],{sharp:true});
     return;
   }

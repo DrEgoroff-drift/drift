@@ -79,7 +79,10 @@ const GATE2D=[
      кольцо — выпечки GPU-холста; мастера и кольца сбрасываем, чтобы выпечка шла под записью */
   {name:"станция (17c3): мастер слоями, кольцо, огни",
    painters:["drawStation","stationMaster","stMasterJob","prebake","drawStationBody","stSpinCv","gpuStationDraw","stEmFlush","gpuLitSprite"],
+   /* мастер живёт на пути ?body=0 (M820: станция — тело 17c2g); его печи сторожим там */
+   done(){if(this.b0!=null){BODY.on=this.b0;this.b0=null;}},
    place(first){
+     if(first){this.b0=BODY.on;BODY.on=false;}
      for(let r=0;r<=14;r++)for(let x=-r;x<=r;x++)for(let y=-r;y<=r;y++){
        if(Math.max(Math.abs(x),Math.abs(y))!==r)continue;const s=getSystem(x,y);
        if(!s.station||(s.station.stype||"trade")!=="trade")continue;

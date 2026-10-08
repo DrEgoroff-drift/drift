@@ -264,6 +264,12 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
 - **M820 Bodies for everyone.** Pirates, barges, traffic and the station as meshes of the hull
   kit with a maker grammar; hostile forms that read without the bar; the station with lamps
   (the only warm light of people) and a cast shadow. Gate: the foes pair at 760.
+  *Done (08.10, remake-a2):* `17c2e` kit (`BODY.on`, `sysLightDir`, `bodyBar`, fleet by
+  class, shuttle), `17c2f` barge 3–6 frames and the broken wreck, `17c2g` station per
+  `ST_TYPES` and maker assembly, `17c2h` hostile dressing, the clean power ship and the
+  target frame by the body; seams in `12l` `13` `17f` `12ai1` `17c` `12i` `15b`; suite
+  `91qd-bodies`. Not here: drones (unchanged), the fleet `node`/`derelict` and ships fading
+  at dock keep the bake; the barge distress cue still speaks from the centre (a cue, M826).
 - **M821 The rack** as a side plate of the pod's dials, chart paper dimmed, the centre free.
 - **M822 The map** with three weights, plates for the status lines, the hint on the selected
   object.

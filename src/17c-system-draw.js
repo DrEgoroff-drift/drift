@@ -582,7 +582,10 @@ function drawStation(x,y,Z){
   if(ln<1e-6){lx=-.86;ly=-.51;}else{lx/=ln;ly/=ln;}   /* пока станция не встала на орбиту — свет слева сверху */
   const nb=(typeof bldBuiltHere==="function")?bldBuiltHere(G.sys).length:0;
   const pass=gpuScene();
-  if(pass){
+  /* тело (M820, 17c2g): хребет, ядро по типу, модули по заводу, тёплые окна, фонари причала */
+  const bd=!!pass&&BODY.on&&bodyStation(S,x,y,s,ty);
+  if(pass&&bd){GPU.oc.push([x,y,Math.max(24,80*s)*.5]);gpuLight(x,y,x,y,1,.84,.59,Math.max(24,80*s)*.9,.7);}
+  else if(pass){
     /* мастер: плотность — предел зума на экране, по четверть-октавы (как у корпусов) */
     const dk=GPU.bw/W,sb=Math.pow(2,Math.ceil(Math.log2(1.5*1.7*dk)*4)/4);
     const M=stationMaster((G.sys.key||"?")+"|"+ty+"|"+nb+"|"+SCK,sb,V,S,ty,pbOnScreen(x-80*s,y-80*s,160*s,160*s,0)),R=Math.max(24,80*s);
@@ -593,7 +596,7 @@ function drawStation(x,y,Z){
   }
   /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
      18 тактов, а факел — единственное на станции, что обязано плясать */
-  if(ty==="indust"&&pass){
+  if(ty==="indust"&&pass&&!bd){
     const t=G.t*.045+V.ph,fl=6.2+Math.sin(t*1.7)*1.6+Math.sin(t*2.9+1.3)*.9,lean=Math.sin(t*1.1+.7)*1.4+Math.sin(t*2.3)*.6;
     gpuStationFlare(pass,x,y,s,t,fl,lean,V);
   }
