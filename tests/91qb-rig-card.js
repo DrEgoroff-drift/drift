@@ -22,7 +22,8 @@ function rcRaid(){
 TEST_SUITES.push(()=>suite("риг карточкой: позы, потолок кэша, три режима",{tier:"browser"},()=>{
   resetWorld();
   if(!ok(GPU.ok&&!!GPU.dev,"видеокарта поднялась"))return;
-  const R=RIG_CARD,on0=R.on,cap0=R.cap;
+  /* пещера на движке (M630a) рисует риг телом: карточку кладёт старая рисовалка, её и проверяем */
+  const R=RIG_CARD,on0=R.on,cap0=R.cap,cv0=CAVE3.on;CAVE3.on=false;
   try{
     R.on=true;
     /* ── каждая поза книги: карточка есть, тело в рамке ── */
@@ -58,5 +59,5 @@ TEST_SUITES.push(()=>suite("риг карточкой: позы, потолок 
       R.on=false;const b1=R.by[m];drawWorld();
       eq(R.by[m],b1,"«"+m+"»: при RIG_CARD.off карточки нет — старая кисть");
     }
-  }finally{R.on=on0;R.cap=cap0;}
+  }finally{R.on=on0;R.cap=cap0;CAVE3.on=cv0;}
 }));

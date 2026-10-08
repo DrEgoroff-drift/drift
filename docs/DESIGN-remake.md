@@ -377,6 +377,24 @@ The fourth: `docs/DESIGN-dig-scene.md` (09.10) — the dig as a vertical section
     lamp. The light record is `.12 + .6·night` (brighter glass the grade turns salmon); glass colours
     `OWN_WIN` are given lighter because vertex colours are read as sRGB. Test: `91qe-own`
     (two own lamps of three wished, the lantern's occluders, none by day).
+  - *Done (M630a pass 1, `22d`/`22da`/`22db`/`22dbw` — the scene file took `22d` so `22dc` stays
+    free for the halls' dress):* `CAVE3` (`?cave=0` keeps the old painter, play untouched) wraps
+    `drawCave`. One density `cave3Den` from `C.g`: the grid's signed distance (`C.f3.sd`), the
+    gallery's half-height `hl` (clamped .6–4.5) as a tube's depth `zd ≤ zcap−4`, strata ledges and
+    joints by the world's style (`CAVE3_STY` sed/volc/rock/ice/sand), grit, and lumps deeper than
+    1–3 m behind the cut so the lamp has form to rake (the cut itself stays on the grid). Chunks of
+    8 m, voxel .25, built lazily around the window (≤ 8 ms a frame, the rest next frame), cached on
+    the cave; the chunk's skip test is an exact scan of the grid's cells under it. The cut face is a
+    sheet at z=0 (strata, soil under the surface, the lip that takes the void's light). The lens of
+    §3: the window lies on the walk plane, x eased (.45 s) with the tap corrected by the ease's lag;
+    the share is .085 broad / .077 tall. The man is the rig with the lamp as key: a 128° shadow map
+    from the helmet, the cone and its falloff by the kit (`cave3Reach` 12–27 m), a second ortho map
+    for the day under the mouth (shafts by `dayK`), air scattering at half size, bloom, the engine's
+    grade into `gpuScene()`. Plants, fauna and the find marker stay 2D over the frame until M630c. A
+    pipeline that fails validation drops the cave to the old painter with the reason in `CAVE3.err`.
+    Leaving the cave starts the surface's glide. Test `91qg-cave` (density vs `caveSolidAt` on 400
+    cells, the cut sheet on the grid's rock, rock at the grid's faces, shares, feet on the walk line,
+    reach, the switch); stand tools `cave.py` + `eval-cave.js`.
 
 ### Stage F — rooms and people (M850–M859)
 

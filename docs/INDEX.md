@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 529 · top-level symbols: 7865
+Files: 534 · top-level symbols: 7911
 
 ## SYMBOLS
 
@@ -227,6 +227,22 @@ CAST_LIVE                    src/19c1-cast.js:48
 CAST_MAXD                    src/19c1-cast.js:44
 CAST_MIN_ALT                 src/19c1-cast.js:46
 CAST_SOFT                    src/19c1-cast.js:45
+CAVE3                        src/22d-cave-pln.js:12
+CAVE3_BLOOM                  src/22d-cave-pln.js:154
+CAVE3_CH                     src/22da-cave-pln-rock.js:17
+CAVE3_CUT                    src/22da-cave-pln-rock.js:32
+CAVE3_GPU                    src/22db-cave-pln-light.js:8
+CAVE3_INK                    src/22da-cave-pln-rock.js:167
+CAVE3_K                      src/22db-cave-pln-light.js:11
+CAVE3_LENS                   src/22d-cave-pln.js:16
+CAVE3_MAT                    src/22da-cave-pln-rock.js:306
+CAVE3_OLD_DRAW               src/22d-cave-pln.js:135
+CAVE3_OLD_EXIT               src/22d-cave-pln.js:156
+CAVE3_STY                    src/22da-cave-pln-rock.js:20-28
+CAVE3_WGSL_COMMON            src/22dbw-cave-pln-wgsl.js:8
+CAVE3_WGSL_POST              src/22dbw-cave-pln-wgsl.js:352
+CAVE3_WGSL_SCENE             src/22dbw-cave-pln-wgsl.js:104
+CAVE3_Z                      src/22d-cave-pln.js:14
 CAVE_ADD_S                   src/22c-cave-gpu.js:309
 CAVE_ADD_WGSL                src/22c-cave-gpu.js:85
 CAVE_CONE_U                  src/22c-cave-gpu.js:429
@@ -242,6 +258,7 @@ CAVE_MOUTH_WGSL              src/22c-cave-gpu.js:287
 CAVE_MUL_WGSL                src/22c-cave-gpu.js:68
 CAVE_NX                      src/22-mode-cave.js:14
 CAVE_OWN_WGSL                src/22c-cave-gpu.js:116
+CAVE_PPM                     src/22da-cave-pln-rock.js:16
 CAVE_W                       src/22-mode-cave.js:11
 CAVE_WALL_X0                 src/22-mode-cave.js:13
 CAVE_ZONE                    src/22a-cave-deco.js:17-23
@@ -1372,6 +1389,7 @@ PERCH_EVERY                  src/27j-console.js:25
 PGX                          src/12i-pirate-hull.js:442
 PHONE_DPR                    src/08-state.js:12
 PI                           src/21pb-pln-wgsl-air.js:54
+PI                           src/22dbw-cave-pln-wgsl.js:35
 PICKUPS                      src/24a-mode-raid.js:24-28
 PIPE_SCENES                  tests/91zzzzzzy4-pipes.js:10-53
 PIPE_SUITE                   tests/91zzzzzzy4-pipes.js:61-91
@@ -2008,6 +2026,7 @@ TAPE_PRICE                   src/12s1-tape.js:8
 TAU                          src/01-core.js:14
 TAU                          src/19a1-scoop-gpu.js:160
 TAU                          src/19a1-scoop-gpu.js:271
+TAU                          src/22dbw-cave-pln-wgsl.js:36
 TECH                         src/04-mods.js:14-49
 TELL_SFX                     src/11-log.js:62
 TEST                         tests/90-harness.js:10
@@ -2743,6 +2762,33 @@ castMap                      src/19c1-cast.js:81-100
 castMapFor                   src/19c1-cast.js:103-108
 castOccH                     src/19c1-cast.js:53-62
 castShadeAt                  src/19c1-cast.js:64-76
+cave3Chunk                   src/22da-cave-pln-rock.js:195-304
+cave3Chunks                  src/22da-cave-pln-rock.js:309-335
+cave3DayBox                  src/22db-cave-pln-light.js:22-33
+cave3Den                     src/22da-cave-pln-rock.js:138-157
+cave3Down                    src/22da-cave-pln-rock.js:159-165
+cave3Field                   src/22da-cave-pln-rock.js:50-124
+cave3Frame                   src/22d-cave-pln.js:40-105
+cave3Globals                 src/22db-cave-pln-light.js:134-155
+cave3GpuDev                  src/22db-cave-pln-light.js:36-49
+cave3GpuFrame                src/22db-cave-pln-light.js:158-202
+cave3GpuReady                src/22db-cave-pln-light.js:122-131
+cave3GpuSize                 src/22db-cave-pln-light.js:90-121
+cave3GpuTier                 src/22db-cave-pln-light.js:51-88
+cave3H3                      src/22da-cave-pln-rock.js:35-39
+cave3Hex                     src/22da-cave-pln-rock.js:30
+cave3Lens                    src/22d-cave-pln.js:19-26
+cave3Log                     src/22db-cave-pln-light.js:15
+cave3ManShare                src/22d-cave-pln.js:28
+cave3Mouth                   src/22d-cave-pln.js:33-38
+cave3N3                      src/22da-cave-pln-rock.js:40-47
+cave3Over                    src/22d-cave-pln.js:109-132
+cave3Paint                   src/22da-cave-pln-rock.js:168-188
+cave3Persp                   src/22db-cave-pln-light.js:16-20
+cave3Reach                   src/22d-cave-pln.js:30
+cave3Samp                    src/22da-cave-pln-rock.js:126-131
+cave3Sd                      src/22da-cave-pln-rock.js:133-136
+cave3StyKind                 src/22da-cave-pln-rock.js:26-28
 caveBody                     src/21e1-surface-world.js:543-592
 caveBoxFree                  src/22-mode-cave.js:239-243
 caveBuild                    src/22-mode-cave.js:105-174
@@ -9148,6 +9194,18 @@ zoomTo                       src/15-input.js:358
 ## src/22c-cave-gpu.js · 29 KB
   · пещера на видеокарте: темнота, фонарь, тени, пыль (G7):1
 
+## src/22d-cave-pln.js · 10 KB
+  · пещера на движке: кадр и переключатель (M630a):1
+
+## src/22da-cave-pln-rock.js · 22 KB
+  · пещера на движке: порода из сетки игры (M630a):1
+
+## src/22db-cave-pln-light.js · 14 KB
+  · пещера на движке: рендер (M630a):1
+
+## src/22dbw-cave-pln-wgsl.js · 26 KB
+  · пещера на движке: шейдеры (M630a):1
+
 ## src/23-mode-dig.js · 20 KB
   · шахта: спуск вглубь планеты:1
 
@@ -9477,7 +9535,7 @@ zoomTo                       src/15-input.js:358
   · ориентиры как места действия (M627b):1
   · тихая пятёрка и правила движка (M627b, проход 2):159
 
-## tests/91qb-rig-card.js · 4 KB
+## tests/91qb-rig-card.js · 5 KB
   · один астронавт везде: риг в карточке (M801):1
 
 ## tests/91qc-descent.js · 12 KB
@@ -9487,6 +9545,9 @@ zoomTo                       src/15-input.js:358
   · тела под звездой (M820):1
 
 ## tests/91qe-own.js · 11 KB
+
+## tests/91qg-cave.js · 4 KB
+  · пещера на движке (M630a):1
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1
