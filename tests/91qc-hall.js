@@ -45,7 +45,16 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     for(const id of types){const L=hallLayout(id);L.room=hallRoomMesh(L);
       const lim=hallLimits(hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5));
       ok(lim.inst<=R3_MAXI,"«"+id+"» с пилотом: экземпляров "+lim.inst+" ≤ "+R3_MAXI);}
-    HALL.place=was;}
+    /* M814: пилот — тот же человек, что на планете: риг 21pha, кости в пределе частей движка */
+    const L=hallLayout("trade");L.room=hallRoomMesh(L);
+    ok(hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5).draws.some(d=>d[0]&&d[0].rig),"пилот зала — риг планеты, не человек 27f3");
+    ok(PLN_MAN_BONES.length<=R3_PART,"костей рига "+PLN_MAN_BONES.length+" ≤ "+R3_PART+" частей");
+    /* M814: планка света людей — у каждого человека в кадре паспорт: опора под ним, пятно контактной тени, контур */
+    {const S=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5),O=S.ot;
+      ok(S.draws.every(([m,ii])=>!(m.rig||L.people.some(P=>P.ii===ii))||O[(ii*R3_PART+R3_PART-1)*4+2]>0&&O[(ii*R3_PART+R3_PART-1)*4+3]>0),"у всех людей — контактная тень и контур");
+      const k=L.people[0].ii;ok(Math.hypot(O[(k*R3_PART+R3_PART-1)*4]-L.people[0].x,O[(k*R3_PART+R3_PART-1)*4+1]-L.people[0].z)<1e-6,"пятно хозяина — под ним");}
+    eq(L.people[0].m.role,"clerk","хозяин стойки — в комплекте клерка");ok(CP_KIT.clerk&&L.people[0].m.acc===L.acc,"галстук и бирка клерка — в цвет зала");
+    HALL.place=was;hallRigDrop();}
   {const was=HALL.night;HALL.night=1;eq(hallNight(),1,"?hallnight=1 — ночь");HALL.night=0;eq(hallNight(),0,"?hallnight=0 — день");HALL.night=was;}
   /* день ≠ ночь: днём рассеянный свет дока вдвое сильнее ночного, окно ярче; ночью ключ — лампы людей */
   {const was=HALL.night,L=hallLayout("trade");L.room=hallRoomMesh(L);const cm=hallCam(HALL_CAMS.trade,1920,1080,true);
@@ -113,6 +122,54 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
     HALL.night=0;const D=hallScene(L,hallCam(HALL_CAMS.ship,1920,1080,true),1.5);ok(!D.lights.some(l=>l.rim),"днём контра нет");
     HALL.place="trade";HALL.night=1;const Tn=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5);ok(!Tn.lights.some(l=>l.rim),"у стойки контра нет");
     HALL.place=wp;HALL.night=wn;}
+
+  /* M814: у бара один герой — своя лампа только там, где он сидит; столики не стоят между камерой и им */
+  {const wp=HALL.place,L=hallLayout("trade");L.room=hallRoomMesh(L);
+    HALL.place="folk";const F=hallScene(L,hallCam(HALL_CAMS.folk,1920,1080,true),1.5);
+    HALL.place="trade";const Tr=hallScene(L,hallCam(HALL_CAMS.trade,1920,1080,true),1.5);HALL.place=wp;
+    ok(!L.bar||F.lights.some(l=>l.hero),"у бара — лампа героя");
+    ok(!Tr.lights.some(l=>l.hero),"у стойки лампы героя нет");
+    ok(F.lights.length<=R3_MAXL,"у бара ламп "+F.lights.length+" ≤ "+R3_MAXL);
+    const e=HALL_CAMS.folk.eye,h=hallPilotAt("folk"),dx=h[0]-e[0],dz=h[1]-e[2],dd=dx*dx+dz*dz;
+    for(const t of HALL_BAR_TABLES){const ax=HALL_XB+t.x,u=Math.max(0,Math.min(1,((ax-e[0])*dx+(t.z-e[2])*dz)/dd));
+      const d=Math.hypot(e[0]+u*dx-ax,e[2]+u*dz-t.z);ok(d>.6,"столик x="+t.x+" — "+d.toFixed(2)+" м от луча к герою");}}
+
+  /* M814: владения — дом и базы фишками на карте конторы: все на листе при любом разбросе; горящая — под своим
+     светом, и предел ламп его не срезает; объектив — к ней */
+  {const wb=G.bases,wh=G.home,wp=HALL.place,wt=HALL_HOLD.hot;G.bases={};
+    const mk=(dx,dy,i)=>{G.bases["t"+i]={sx:G.sx+dx,sy:G.sy+dy,idx:i,name:"Т"+i,built:i,cells:[],pool:{}};};
+    mk(-9,4,0);mk(12,-6,1);mk(1,1,2);G.home=homeInit();G.home.tier=1;G.home.sx=G.sx+3;G.home.sy=G.sy-2;
+    const pins=hallHoldPins(),v=hallHoldView(pins),M=HALL_MAP;
+    eq(pins.map(p=>p.k).join(","),"home,b0,b1,b2","дом и три базы — четыре фишки, базы в порядке плиты");
+    ok(pins.every(p=>{const a=hallHoldAt(v,p.sx,p.sy);return Math.abs(a[0]-M.x)<M.w-.02&&Math.abs(a[2]-M.z)<M.h-.02;}),"все фишки — на листе");
+    const L=hallLayout("trade");L.room=hallRoomMesh(L);HALL.place="hold";HALL_HOLD.hot="b1";
+    const S=hallScene(L,hallCam(HALL_CAMS.hold,1920,1080,true),1.5);
+    ok(S.lights.some(l=>l.hold==="b1"),"горящая фишка под своим светом в пределе "+R3_MAXL+" ламп");
+    const A=hallLensAim(L);ok(!!A&&A[1][0]===hallHoldPin("b1")[0],"объектив к фишке");
+    ok(!HALL_PILOT_AT.hold,"у стола конторы пилота нет: карта на всю зону героя");
+    G.bases=wb;G.home=wh;HALL.place=wp;HALL_HOLD.hot=wt;hallHoldDrop();}
+  /* M814: стройка за окном — три площадки цифрами по шесть; мест нет — вехи (216), заправка — ничего */
+  {const ws=bldSitesAt,wh=G.hold,k=G.sys.key;G.hold={};
+    eq(hallSiteW({st:"trade"}),216,"мест нет — вехи");eq(hallSiteW({st:"fuel"}),0,"заправка стройки не держит");
+    bldSitesAt=()=>3;const ids=Object.keys(BLD);G.hold[k]={bld:{}};G.hold[k].bld[ids[0]]={lvl:2,ready:0};G.hold[k].bld[ids[5]]={lvl:1,ready:1e15};
+    eq(hallSiteW({st:"trade"}),4+2*6+1*36,"построена ×2, строится, свободна");
+    bldSitesAt=ws;G.hold=wh;}
+
+  /* M814: доска — листы на пробке: раскладка не вылезает за пробку при любом числе, потолок HALL_BOARD_MAX;
+     чужая станция — обезличенные листы, а не объявления прошлой */
+  {const B=HALL_BOARD_BOX,inBox=lay=>lay.every(s=>s.c[0]-s.w/2>=B.x0-.01&&s.c[0]+s.w/2<=B.x1+.01&&s.c[1]+s.h/2<=B.y1+.001&&s.c[1]-s.h/2>=B.y0-.005);
+    for(const n of [1,6,HALL_BOARD_MAX]){const rows=[...Array(n)].map((_,i)=>({lane:i%3,kind:["gold","form","paper","strip","scrap","slip"][i%6],h:i*7919+1}));
+      const lay=hallBoardLayout(rows);eq(lay.filter(Boolean).length,n,n+" строк — "+n+" листов");ok(inBox(lay),n+" листов — все на пробке");}
+    const ws=HALL_BOARD.st,wr=HALL_BOARD.rows;HALL_BOARD.st="чужая";HALL_BOARD.rows=[{lane:0,kind:"gold",h:1}];
+    ok(hallBoardRows().every(r=>r.anon),"объявления прошлой станции не висят на этой");HALL_BOARD.st=ws;HALL_BOARD.rows=wr;
+    ok(!HALL_PILOT_AT.board,"у доски пилота нет: доска на всю зону героя");}
+
+  /* M814b: резкость — по маске тел: у приборов и ящиков бит 2²³, у комнаты нет; часть читается точно (round, не +.5) */
+  {const flags=m=>{const s=new Set();for(let i=11;i<m.v.length;i+=12)s.add(m.v[i]);return [...s];},im=hallInstrMesh(),L=hallLayout("yard"),rm=hallRoomMesh(L);
+    ok(flags(im).every(f=>f>=8388608),"все вершины приборов — под маской резкости");
+    ok(flags(rm).every(f=>f<8388608),"комната (рейки, стена) — без маски: муара нет");
+    ok(flags(im).every(f=>Math.round(f)%16<=INSTR_KEYS.length&&Math.round(f)===f),"флаги приборов — целые, часть ≤ "+INSTR_KEYS.length);
+    const sh=R3_WGSL;ok(!/u32\(i\.m\.z\+\.5\)/.test(sh),"шейдер читает флаги round(): у 2²³ +.5 уводило часть");}
 
   /* M814: плита — один ключ сверху-слева: верх тела светлее низа на ≥ .12 value у каждого завода */
   {const val=h=>{const n=parseInt(h.slice(1),16);return Math.max(n>>16,(n>>8)&255,n&255)/255;},K=HALL_DIAL_KEY;
@@ -251,6 +308,46 @@ TEST_SUITES.push(()=>suite("зал станции: приборы карточк
 }));
 
 /* телефон (M813): сообщение say() в зале идёт строкой в полосу эфира, на ПК — нет; одно и то же — один раз */
+/* M814: строки доски — листы на пробке: сколько объявлений (кроме очереди у стойки), столько листов; «Вам» — лист
+   с лентой акцента; наведение на строку — лист горит, объектив к нему */
+/* M814: строки ВЛАДЕНИЙ — фишки на карте конторы: строка дома и строки баз получают фишку; наведение — фишка горит */
+TEST_SUITES.push(()=>suite("зал станции: владения фишками",{tier:"browser"},()=>{
+  resetWorld();const st=document.getElementById("station");ok(!!st&&!!$body,"есть #station и плита");if(!st||!$body)return;
+  const was=st.className,wo=HALL.open,html=$body.innerHTML;st.classList.add("scr","hall","open");HALL.open=true;$body.innerHTML="";$body.__hallHold=0;
+  G.st=G.sys.station;
+  const mk=(dx,dy,i)=>{const c=[];for(let j=0;j<BASE_COLS*BASE_ROWS;j++)c.push(null);c[Math.floor(BASE_COLS/2)]={k:"reactor",hp:1};
+    G.bases[baseKey(G.sx+dx,G.sy+dy,i)]={sx:G.sx+dx,sy:G.sy+dy,idx:i,name:"Т"+i,type:"rock",res:["ore"],cells:c,pool:{},tMs:now(),built:now()+i};};
+  mk(-3,1,0);mk(2,-2,1);G.home=homeInit();G.home.tier=1;G.home.sx=G.sx-1;G.home.sy=G.sy+2;
+  renderBasesTab(G.st);
+  const rows=[...$body.querySelectorAll(".row[data-pin]")];
+  eq(rows.map(r=>r.dataset.pin).join(","),hallHoldPins().map(p=>p.k).join(","),"строки с фишкой — те же, что фишки на карте");
+  const r1=rows.find(r=>r.dataset.pin==="b1");ok(!!r1&&/Т1/.test(r1.textContent),"строка второй базы — её фишка");
+  if(r1){r1.dispatchEvent(new PointerEvent("pointerover",{bubbles:true}));eq(HALL_HOLD.hot,"b1","наведение на строку — её фишка");
+    ok(!!hallHoldLight(),"горящая фишка под своим светом");}
+  $body.dispatchEvent(new PointerEvent("pointerleave",{pointerType:"mouse"}));eq(HALL_HOLD.hot,"","ушёл с плиты — фишка гаснет");
+  $body.innerHTML=html;HALL.open=wo;st.className=was;$body.__hallHold=0;G.st=null;hallHoldDrop();
+}));
+
+TEST_SUITES.push(()=>suite("зал станции: доска листами",{tier:"browser"},()=>{
+  resetWorld();const st=document.getElementById("station");ok(!!st&&!!$body,"есть #station и плита");if(!st||!$body)return;
+  const was=st.className,wo=HALL.open,wp=HALL.place,html=$body.innerHTML;st.classList.add("scr","hall","open");HALL.open=true;$body.innerHTML="";$body.__hallBoard=0;
+  G.st=G.sys.station;ok(!!G.st,"у системы есть станция");if(!G.st){$body.innerHTML=html;HALL.open=wo;st.className=was;return;}
+  stTabBoard();
+  const rows=[...$body.querySelectorAll(".row[data-sheet]")];
+  ok(rows.length>0,"на доске есть объявления ("+rows.length+")");
+  eq(rows.length,HALL_BOARD.rows.length,"строк с листом — столько же, сколько листов");
+  ok(rows.every((r,i)=>+r.dataset.sheet===i),"листы — в порядке плиты");
+  const lay=hallBoardLayout(hallBoardRows());eq(lay.filter(Boolean).length,rows.length,"в раскладке — те же листы");
+  rows.forEach((r,i)=>{if(r.querySelector("button.gold"))eq(HALL_BOARD.rows[i].kind,"gold","«"+r.textContent.slice(0,20)+"» — лист с лентой акцента");});
+  rows[0].dispatchEvent(new PointerEvent("pointerover",{bubbles:true}));
+  eq(HALL_BOARD.hot,0,"наведение на строку — её лист");
+  ok(!!hallBoardLight(),"горящий лист под своим светом");
+  HALL.place="board";const A=hallLensAim(hallLayout("trade"));
+  ok(!!A&&A[1].join()===lay[0].c.join(),"объектив к листу");
+  $body.dispatchEvent(new PointerEvent("pointerleave",{pointerType:"mouse"}));eq(HALL_BOARD.hot,-1,"ушёл с плиты — лист гаснет");
+  $body.innerHTML=html;HALL.open=wo;HALL.place=wp;st.className=was;$body.__hallBoard=0;G.st=null;
+}));
+
 TEST_SUITES.push(()=>suite("зал станции: сообщение на телефоне — в эфир",{tier:"browser"},()=>{
   resetWorld();const line=document.getElementById("rxLine");ok(!!line,"есть строка эфира #rxLine");if(!line)return;
   const wo=HALL.open,txt=line.textContent;HALL.open=true;HALL.msgLast=null;

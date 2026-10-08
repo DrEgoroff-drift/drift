@@ -31,21 +31,24 @@ const HALL_F=6.5;          /* передняя стена — за камеро�
 const HALL_HERO=.4;        /* доля ширины кадра под зал на ПК: остальное — плита */
 const HALL_STRIP=.36;      /* телефон: доля высоты под полосу зала */
 /* пилот — сам игрок у места раздела, первым планом спиной на три четверти: мерило человека в кадре.
-   Риг планеты (21pha) живёт в своём движке, в зале — человек 27f3 в лётной куртке, один на всех */
-const HALL_PILOT_M={seed:0x9117D,role:"cmd",loy:70,xp:0,traits:[],jac:[238,115,38]};
+   С M814 это риг планеты (21pha, переложен 27f4j): тот же «Орлан», что на планете; хозяин и толпа — люди 27f3 */
 /* поза — по месту: у стойки на локте, у доски руки в боки и голова к листам, у окна ладонь на раме, в баре — на табурете */
-const HALL_PILOT_AT={board:[-2.85,-1.25,Math.PI-.3,"hips"],trade:[-4.45,-.15,-Math.PI/2,"elbow"],
-  ship:[2.62,-2.27,Math.PI+.22,"frame"],site:[2.62,-2.27,Math.PI+.22,"frame"],know:[1.75,-1.25,Math.PI+.5,"hips"],hold:[4.0,-1.35,Math.PI*.78,"hips"],
-  folk:[HALL_XB+1.72,.36,Math.PI-.5,"stool1"]};
+/* у доски и у стола конторы пилота нет (M814): доска и карта на всю зону героя — человек там был бы вдвое больше мерила .18–.23 */
+const HALL_PILOT_AT={trade:[-4.45,-.15,-Math.PI/2,"elbow"],
+  ship:[2.62,-2.27,Math.PI+.22,"frame"],site:[3.25,-2.27,Math.PI-.35,"frame"],know:[1.75,-1.25,Math.PI+.5,"hips"],
+  folk:[HALL_XB+1.72,.36,-1.05,"stool1"]};   /* герой бара (M814): на табурете у правого конца спиной к стойке, локти на ней, лицом в зал на три четверти */
 /* рабочая лампа над верстаком у окна (M812): ключ места КОРАБЛЬ и СТРОЙКА ночью — тарелка поменьше, чем над
    стойкой, на .7 м ближе к камере, чем головы у верстака (ключ не над головой) */
 const HALL_WORK=[1.25,-1.55];
 function hallWorkY(T){return Math.min(T.hc-.6,2.35);}
 const HALL_SEAT_PILOT=1.72;   /* табурет пилота у правого конца стойки бара (x относительно бара) */
 /* столики бара: слева перед пустым концом стойки и справа на полу среднего плана; за каждым двое (x, z относительно бара) */
-const HALL_BAR_TABLES=[{x:-1.75,z:2.25,seats:[[-2.3,1.95],[-1.3,1.8]]},{x:.6,z:2.55,seats:[[.1,2.72],[1.05,2.3]]}];
+/* M814: столики разведены от луча камеры к герою: левый — передний план слева, правый — за кадром справа */
+const HALL_BAR_TABLES=[{x:-.9,z:2.7,seats:[[-1.45,2.4],[-.45,2.25]]},{x:2.3,z:2.85,seats:[[1.8,3.02],[2.75,2.6]]}];
 const HALL_BAR_SEATS=HALL_BAR_TABLES.flatMap(T2=>T2.seats.map(s=>({s,T2})));
-const HALL_SGN=[-4.42,-3.32,2.36,2.6];   /* вывеска бара — сбоку, над дверью кантины, не над стойкой (x относительно бара) */
+/* вывеска бара (x относительно бара): над левым краем полки, в левой трети кадра ЛЮДИ — не посередине и не над героем;
+   крупнее прежней (1.4 × .32 м), чтобы буквы читались с места камеры */
+const HALL_SGN=[-2.0,-.6,2.4,2.72];
 /* смена станции: сутки — 24 мин игрового часа; ночью окно гаснет до звёзд, держат лампы людей */
 const HALL_DAY_MS=24*60e3;
 const HALL_KEYX=-5.2;
@@ -65,13 +68,13 @@ const HALL_TYPES={
    от глаза — .18–.22 высоты кадра; глаз — у передней стены, место — общим планом, не портретом.
    Ключи — разделы ST_GROUPS и «site» */
 const HALL_CAMS={
-  board:{eye:[-1.9,1.6,5.4],   tgt:[-3.2,1.45,HALL_B],fy:1.1},
+  board:{eye:[-1.15,1.62,.35], tgt:[-3.0,1.6,HALL_B], fy:.93},   /* M814: доска на всю ширину зоны героя, на три четверти справа; пилот у правого края */
   trade:{eye:[-1.0,1.65,5.6],  tgt:[-5.3,1.3,.3],     fy:1.1},
   ship: {eye:[.6,1.55,5.8],    tgt:[1.5,1.85,HALL_B], fy:1.0},
   know: {eye:[-.2,1.6,4.6],    tgt:[1.2,1.0,-2.2],    fy:1.2},
-  folk: {eye:[HALL_XB-.4,1.55,6.0],tgt:[HALL_XB-.2,1.2,-.6],fy:1.3},
-  hold: {eye:[1.6,1.65,5.0],   tgt:[4.7,1.0,-1.6],    fy:1.05},
-  site: {eye:[1.6,1.55,5.8],   tgt:[2.6,1.85,HALL_B], fy:1.0}
+  folk: {eye:[HALL_XB-.4,1.45,6.0],tgt:[HALL_XB+.68,1.15,.1],fy:1.3},   /* M814: вывеска в левой трети, герой на ~.7 зоны */
+  hold: {eye:[5.6,1.6,-.65],  tgt:[4.85,.78,-1.75],  fy:.95},   /* M814: над столом конторы справа: карта на всю зону героя, окно в углу */
+  site: {eye:[1.6,1.55,5.8],   tgt:[2.1,1.9,HALL_B],  fy:1.0}   /* M814: как КОРАБЛЬ, но правее — к силуэту стройки в окне */
 };
 /* телефон: полоса шире, чем высока, — поле уже, ширина та же, что у героя на ПК (человек ~.33 полосы) */
 const HALL_PH_FY=.62;
@@ -137,8 +140,8 @@ function hallLayout(st){
   const T=hallT(st),seed=((G.sys&&G.sys.seed)^0x4A11)>>>0,CS=CANT_STYLE[st]||CANT_STYLE.trade;
   const acc=hex2rgb(CS.acc),bar=hallHasBar(st),R=rng(seed^0x77);
   const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st)};
-  /* хозяин стойки: в комбинезоне смотрителя, стоит за стойкой лицом в зал */
-  const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"keep",loy:64,xp:0,traits:[]};
+  /* хозяин стойки: клерк (M814) — рубашка, жилет, галстук и бирка в цвет зала; стоит за стойкой лицом в зал */
+  const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"clerk",acc,loy:64,xp:0,traits:[]};
   /* волосы, а не бритая голова, и тёмные на коже не светлее средней: светлые на светлом рядом с пилотом читались манекеном */
   const keepOk=g=>[0,4,5].indexOf(g.style)<0&&hallLum(g.hair)<110&&hallLum(g.skin)<205;
   for(let i=2;i<40&&!keepOk(cpGene(keep));i++)keep.seed=hashi(seed,0xC0E,i)>>>0;
@@ -191,6 +194,8 @@ function hallScene(L,cam,t){
   M.set(r3Pivot(I,[hx,hc,hz],0,.035*Math.sin(t*.37),.05*Math.sin(t*.29)),16);
   const draws=[[L.room,0,1]];let ii=1;
   const gm=hallGoodsUp(L);if(gm)draws.push([gm,0,1]);   /* товар ящиками на стойке (M811) — тот же экземпляр, что зал */
+  draws.push([hallBoardUp(L),0,1]);   /* листы доски — объявления плиты (M814) */
+  draws.push([hallHoldUp(L),0,1]);   /* карта под стеклом конторы — дом и базы фишками (M814) */
   if(ii<R3_MAXI){hallInstrPose(M,ii,t);draws.push([hallInstrUp(),ii,1]);ii++;}   /* пять приборов на верстаке (M813): стрелки — части 1–5 */
   for(const P of L.people){if(ii>=R3_MAXI)break;
     const ph=(P.m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph),A=r3Xf([P.x,0,P.z],P.yaw);
@@ -205,15 +210,15 @@ function hallScene(L,cam,t){
     cpRig(M,ii*R3_PART,Mh,P.mesh,cpFace(P.m,null));
     for(let k=0;k<2;k++){let rA=B;if(P.kind==="keep"&&k===1)rA=r3Pivot(B,at.sh[1],.05*Math.sin(t*.7+ph),0,.02*Math.sin(t*1.3));
       M.set(rA,(ii*R3_PART+2+k)*16);}
-    for(let p=0;p<R3_PART;p++)OT[(ii*R3_PART+p)*4+1]=P.dim||0;
+    const dm=HALL.place==="folk"&&P.kind==="crowd"?.32:(P.dim||0);   /* у бара один герой: завсегдатаи за столиками тише */
+    for(let p=0;p<R3_PART;p++)OT[(ii*R3_PART+p)*4+1]=dm;
+    hallManMark(ii,P.x,P.z,P.kind==="keep"?.34:.3,dm>.2?.35:1.15);   /* притушенным за столиками — вполсилы */
     draws.push([P.mesh,ii,1]);P.ii=ii;ii++;}
   /* пилот: у места раздела, стоит, дышит; голова — к вещи места, не к камере */
   const pa=hallPilotAt(HALL.place);
-  if(pa&&ii<R3_MAXI){const pm=cpMesh(HALL_PILOT_M,pa[3],1),A=r3Xf([pa[0],0,pa[1]],pa[2]),br=1+.006*Math.sin(t*1.5);
-    const B=r3Mul(A,[1,0,0,0, 0,br,0,0, 0,0,1,0, 0,0,0,1]),Mh=r3Pivot(B,pm.at.neck,.06*Math.sin(t*.19),-.06+.03*Math.sin(t*.13),0);
-    M.set(B,(ii*R3_PART)*16);M.set(Mh,(ii*R3_PART+1)*16);cpRig(M,ii*R3_PART,Mh,pm,cpFace(HALL_PILOT_M,null));
-    for(let k=0;k<2;k++)M.set(B,(ii*R3_PART+2+k)*16);
-    draws.push([pm,ii,1]);ii++;}
+  if(pa&&ii<R3_MAXI){hallRigPose(M,ii*R3_PART,r3Xf([pa[0],0,pa[1]],pa[2]),pa[3],t);   /* M814: пилот — риг планеты (27f4j) */
+    hallManMark(ii,pa[0],pa[1],HALL_RIG_SEAT[pa[3]]!=null?.4:.32,.5);
+    draws.push([hallRigMesh(),ii,1]);ii++;}
   /* свет смены. ДЕНЬ: ключ — окно и свет дока: холодное небо заливает зал (стены 25–35 % тона, потолок
      отсветом пола 15–20 %), луч окна с пылью кладёт пятно и тени людей; лампы — вторые.
      НОЧЬ: окно тёмно-синее, рассеянный падает вчетверо, ключ — лампы людей: стойка, бра, бар */
@@ -223,7 +228,12 @@ function hallScene(L,cam,t){
   /* лампа над стойкой: лицо и столешница в одном луче; ночью — ключ зала */
   lights.push({p:[HALL_KEYX,ky,.62],range:6.5,c:r3Sc(key,(dk?9:7.5)*(1+.25*nk)),spot:1,d:[0,-1,0],cosO:Math.cos(.62),cosI:Math.cos(.3),shadow:1,vol:dk?.3:.15});
   bulbs.push([HALL_KEYX,ky,.62,dk?1.1:.9]);
+  /* герой бара (M814): своя лампа спереди-сверху-слева — лицо и плечо в свету, ярче соседей; второй в списке — предел не срежет */
+  if(HALL.place==="folk"&&L.bar){const pf=hallPilotAt("folk");if(pf)lights.push({p:[pf[0]-.55,2.4,pf[1]+1.1],range:3.2,
+    c:r3Sc(r3Lin([255,214,170]),3.2*(.8+.4*nk)),spot:1,d:[.38,-.62,-.69],cosO:Math.cos(.42),cosI:Math.cos(.2),vol:0,hero:1});}
   {const gl=hallGoodsLight();if(gl)lights.push(gl);}   /* строка таблицы под мышью — её ящик горит */
+  {const bl=hallBoardLight();if(bl)lights.push(bl);}   /* и строка доски — её лист (M814) */
+  {const hl=hallHoldLight();if(hl)lights.push(hl);}   /* и строка ВЛАДЕНИЙ — её фишка на карте (M814) */
   /* рабочая лампа у окна: днём вторая после окна, ночью — ключ места у верстака; третьей в списке — предел ламп её не срежет */
   /* ночью (M814) полный луч лампы — на весь ряд приборов: внутренний конус шире, ось — в передний край верстака */
   {const wy0=hallWorkY(T);lights.push({p:[HALL_WORK[0],wy0,HALL_WORK[1]],range:5.2,c:r3Sc(key,(dk?2.6:3.2)*(.4+1.6*nk)),spot:1,
@@ -276,8 +286,11 @@ function hallScene(L,cam,t){
     fog:[...r3Sc(fog,.25),T.win===1?.055:dk?.04:.035],acc:[...r3Lin(acc),1],
     win:[HALL_WIN[0],wy[0],HALL_WIN[1],wy[1]],win2:[HALL_B,T.win,L.seed%47,(T.win===1?1.15:1)*(.38+.62*day)],
     sgn:[HALL_XB+HALL_SGN[0],HALL_SGN[2],HALL_XB+HALL_SGN[1],HALL_SGN[3]],sgn2:[HALL_B,.32+.25*nk,0,0],
-    flm:pl?pl.flm:[0,0,1,0],flm2:[HALL_B,0,pl?1:0,0],tsg:L.bar?C3.sign:null,tfl:pl?{view:HALL.orbTex.view}:null,M,ot:OT};
+    flm:pl?pl.flm:[0,0,1,0],flm2:[HALL_B,0,pl?1:0,hallSiteW(L)],tsg:L.bar?C3.sign:null,tfl:pl?{view:HALL.orbTex.view}:null,M,ot:OT};
 }
+/* планка света людей (M814): паспорт экземпляра в его последней части — опора (x, z), радиус контактной тени,
+   сила контура (ночью втрое: рассеянного мало, а тёмная одежда без кромки сливается со стеной). Последнюю часть ни человек 27f3, ни риг не занимают (их части 0–12) */
+function hallManMark(ii,x,z,r,rim){HALL_OT.set([x,z,r,rim*(1+2.2*hallNight())],(ii*R3_PART+R3_PART-1)*4);}
 /* окно: проём по x и высоте (подоконник 1.2 м — мерило человека) */
 const HALL_WIN=[-1.4,3.6];
 function hallWinY(T){return [1.2,Math.min(T.hc-.38,3.25)];}
@@ -355,7 +368,7 @@ function hallClose(){
   if(typeof document==="undefined"||!$st)return;
   $st.classList.remove("hall","up");
   if(HALL.tags){HALL.tags.textContent="";HALL.tags.__key="";}
-  if(HALL.cn){r3Free(HALL.cn);}r3Drop(HALL.room);HALL.room=null;HALL.rkey="";hallGoodsDrop();
+  if(HALL.cn){r3Free(HALL.cn);}r3Drop(HALL.room);HALL.room=null;HALL.rkey="";hallGoodsDrop();hallInstrDrop();hallBoardDrop();hallHoldDrop();hallRigDrop();
   if(HALL.orbTex&&HALL.orbTex.dev===GPU.dev)GPU.trash.push(HALL.orbTex.tex);HALL.orbTex=null;HALL.orb=null;
 }
 /* вкладка сменилась: камера — к месту раздела; полоса кантины не нужна — бар рисует зал */

@@ -412,6 +412,29 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   At night the work lamp's inner cone takes all five dials and a cold rim light sits behind
   the row under the sill (`rim:1`, ship and know places only). People: the pilot goes to the
   rig 21pha (L2), the keeper and the crowd stay 27f3 (L3) under the same light bar.
+  **M814b** *Done:* the board as sheets on cork (no pilot there, `HALL_BOARD_MAX`); the cantina
+  with a hero lamp and tables off the sightline; ВЛАДЕНИЯ as a chart on the office desk
+  (`27f4i`: `hallHoldPins` home + bases, rows `data-pin` ↔ tokens, the hot token's lamp kept
+  inside the 12-lamp cap, lens to the pin, paper albedo held so the lamp's pool stays ≤ .81
+  median value); the site as a near layer in `outside()` (`flm2.w` = three base-6 digits per
+  cradle, 216 = no sites yet, fuel stations none; value contrast against the hull ≥ .13 day
+  and night, own floodlights not scaled by day). The pilot is rig 21pha remapped to hall axes
+  (`27f4j`, bones as parts, poses per place). Light bar: the last part of each person
+  instance carries a passport (footing x/z, contact radius, rim; `hallManMark`); the shader
+  adds a rim from the room's sky term plus a floor, ×3.2 at night, and darkens the floor under
+  the feet. Measured p90 − p10 value: keeper .42 day / .48 night, the dark-clad visitor at the
+  board .137 / .122. The counter keeper wears `CP_KIT.clerk` (waistcoat with a geometric V,
+  tie and badge in `m.acc`, sleeve garters). Night bench edge / plate edge on DPR 2: 1.14.
+  **M815** *Done (PC part):* the strip and the plate stand since M810 (`#station.hall` 36vh / 24vh
+  `.up`, `HALL_STRIP` .36); every target in view at 390 is ≥ 44 px. `27f4k`: `hallNavSync` after
+  `syncTabs` scrolls `#stGroups` to the *visible* active button (`tabsSync` measured the hidden
+  `.on` tab of a single-tab section, rect 0). `hallCost(sec)` wraps `hallFrame` with two empty
+  timestamped compute passes, each in its own submit (the hall's own encoder bypasses `gpuTs`);
+  CPU on the shooter's real clock. `hallDpr` caps the hall at DPR 2 and `HALL_PX`, so at 390 the
+  strip renders 780 × 608 at DPR 2 and at 2.625 alike. RTX (Blackwell), GPU median / p90 ms:
+  390 @ 2.625 — market 1.36 / 1.61, cantina 1.50 / 1.76, board 1.35 / 1.69; 1920 — 1.16 / 1.80,
+  1.03 / 1.26, 0.95 / 1.16; night the same within .2; CPU ≈ 0.9. *Open:* the P1 gate itself
+  (≤ 4 ms on the S23) needs the phone over adb — run `hallCost(3)` in the hall there.
   **M814 ДОСКА, ЛЮДИ, ВЛАДЕНИЯ, СТРОЙКА** — the board on the wall, the
   cantina as the hall itself (M725 composed anew: poses, one hero, the sign off centre), the
   site's silhouette. **M815 The phone reflow** of all of the above.

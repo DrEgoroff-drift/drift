@@ -144,6 +144,7 @@ function stTabBoard(){
        читалось как имя капитана, и туда вписывали позывной */
     boardLanes(0);
     $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
+    if(typeof HALL!=="undefined"&&HALL.open)hallBoardDress();   /* зал: строки — листы на пробке (27f4h, M814) */
 }
 function stTabMarket(st){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
