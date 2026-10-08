@@ -10,6 +10,9 @@ function hallGoodsKeys(){const c=(G&&G.cargo)||{};return TRADE_KEYS.concat(FAR_K
 function hallGoodsAt(i){return [i&1?-4.97:-5.4,1.02,2.32-.33*(i>>1)];}
 function hallGoodsCol(k){return hex2rgb(RES[k].col);}
 const HALL_GOODS_ACC=[255,106,43];   /* --c-acc плиты: подсветка строки и обвязка её ящика — один цвет */
+/* трафарет на доске: цвет ромба таблицы, приглушённый до насыщенности s (HSV) и чуть темнее — краска впиталась */
+function hallStencil(c,s){const mx=Math.max(c[0],c[1],c[2]),mn=Math.min(c[0],c[1],c[2]),sat=mx>0?(mx-mn)/mx:0,k=sat>s?s/sat:1;
+  return c.map(v=>Math.round((mx-(mx-v)*k)*.82));}
 function hallGoodsMesh(keys){
   const K=r3Kit(),P=R3P,c=(G&&G.cargo)||{},w=.15,h=.065;   /* мелкий лоток: камера смотрит на стойку почти вдоль, глубокий ящик прятал товар */
   const Wd=K.mt([136,94,56],.3,6,P.wood),In=K.mt([70,50,34],.15,4,P.wood);
@@ -21,8 +24,9 @@ function hallGoodsMesh(keys){
       K.box([x,y+.016+hh/2,z],[w-.016,hh/2,w-.016],Mg,.01);K.ell([x,y+.016+hh,z],[w-.026,.02+.05*f,w-.026],Mg,5,10);}   /* горка над краем — сколько в трюме */
     /* горящий: по краю ящика — обвязка акцента плиты, тот же цвет, что подсветка строки */
     if(hot){const Ac=K.mt(HALL_GOODS_ACC,.2,4,0,1.1,true);for(const s of [-1,1]){K.box([x+s*(w-.006),y+2*h+.004,z],[.009,.006,w],Ac,0);K.box([x,y+2*h+.004,z+s*(w-.006)],[w,.006,.009],Ac,0);}}
-    /* плашка товара на боку к залу: цвет ромба из таблицы; горящая — светится */
-    K.box([x+w+.004,y+h*.85,z],[.003,h*.42,w*.62],hot?K.mt(col,.2,4,0,.45,true):K.mt(mixc(col,[214,206,186],.3),.2,4,0),0);});
+    /* трафарет товара на боку к залу: цвет ромба из таблицы, приглушённый (≤45 %), матовой краской по доске,
+       без свечения — горит только обвязка */
+    K.box([x+w+.0015,y+h*.85,z],[.0008,h*.36,w*.58],K.mt(hallStencil(col,.45),.08,3,P.wood),0);});
   return K.pack();
 }
 /* сетка по ключу; вне торгового места и без таблицы — тот же ящик, стойка одна на все разделы */
@@ -41,6 +45,31 @@ function hallGoodsWire(){
   if($body.__hallGoods)return;$body.__hallGoods=1;
   const set=e=>{const r=e.target&&e.target.closest&&e.target.closest(".mk-r[data-k]");HALL_GOODS.hot=r?r.dataset.k:null;};
   $body.addEventListener("pointerover",set,{passive:true});$body.addEventListener("pointerdown",set,{passive:true});
-  $body.addEventListener("pointerleave",()=>{HALL_GOODS.hot=null;},{passive:true});
+  /* палец уходит с экрана — это не «ушёл с плиты»: на телефоне ящик горит до следующего касания */
+  $body.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch")HALL_GOODS.hot=null;},{passive:true});
 }
-function hallGoodsDrop(){r3Drop(HALL_GOODS.mesh);HALL_GOODS.mesh=null;HALL_GOODS.key="";HALL_GOODS.hot=null;}
+function hallGoodsDrop(){r3Drop(HALL_GOODS.mesh);HALL_GOODS.mesh=null;HALL_GOODS.key="";HALL_GOODS.hot=null;HALL_LENS.g=0;HALL_LENS.last=0;HALL_LENS.t=0;}
+
+/* ── объектив к ящику (правило M624, plnGlide): общий план не увеличен; горит строка — объектив
+   скользит к ящикам, цель — середина между хозяином и ящиком, хозяин ~.27 кадра. Отпустил — ждёт
+   45 кадров (750 мс: мышь переходит между строками через щель) и возвращается. Постоянного зума нет ── */
+const HALL_LENS={g:0,t:0,last:0,m:1.31,hold:750};
+/* хочет ли объектив к ящику в момент tm: горит строка на месте стойки или горела меньше hold назад */
+function hallLensWant(tm){
+  if(HALL_GOODS.hot&&HALL.place==="trade"&&hallGoodsKeys().indexOf(HALL_GOODS.hot)>=0)HALL_LENS.last=tm;
+  return HALL_LENS.last>0&&tm-HALL_LENS.last<HALL_LENS.hold?1:0;
+}
+/* шаг скольжения: туда .45 с, обратно .7 с — те же постоянные, что у plnGlide */
+function hallLensStep(tm){
+  const dt=Math.min(.1,Math.max(0,(tm-(HALL_LENS.t||tm))/1000)),want=hallLensWant(tm),g=HALL_LENS.g;HALL_LENS.t=tm;
+  let v=g+(want-g)*(1-Math.exp(-dt/(want>g?.45:.7)));if(Math.abs(v-want)<.002)v=want;
+  return HALL_LENS.g=v;
+}
+function hallLensMoving(){return HALL_LENS.g>0&&HALL_LENS.g<1;}
+/* место камеры с объективом: глаз тот же, цель — к середине хозяин↔ящик, поле уже в m раз; g — доля пути */
+function hallLens(c,L,g){
+  if(!(g>0)||!L)return c;
+  const k=HALL_GOODS.hot||HALL_LENS.k,i=k?hallGoodsKeys().indexOf(k):-1,k0=L.people[0];if(i<0||i>=12||!k0)return c;
+  HALL_LENS.k=k;const p=hallGoodsAt(i),mid=[(k0.x+p[0])/2,(1.45+p[1]+.08)/2,(k0.z+p[2])/2],m=1+(HALL_LENS.m-1)*g;
+  return {eye:c.eye,tgt:hallMix3(c.tgt,mid,g),fy:2*Math.atan(Math.tan(c.fy/2)/m),k:c.k};
+}

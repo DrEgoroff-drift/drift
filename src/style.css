@@ -2899,6 +2899,18 @@ body.rackon #prompt{opacity:0}
 /* таблица рынка в зале — плашка (M811): графит на графите, строка под мышью — та, чей ящик горит на стойке */
 #station.hall .mk{background:rgba(255,255,255,.025);border:1px solid var(--pl-edge);border-radius:6px;padding:10px 0 4px}
 #station.hall .mk-r[data-k]:hover{background:rgba(var(--c-acc),.12)}
+/* верфь в зале (M812): корпуса карточками — корабль в ангаре сверху (≥160 px), имя и класс тегом, числа, кнопка */
+#station.hall .hcards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:4px 0 18px}
+#station.hall .row.hcard{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:0 0 14px;min-height:0;
+  background:rgba(255,255,255,.025);border:1px solid var(--pl-edge);border-radius:6px;overflow:hidden}
+#station.hall .row.hcard .yth.big{width:100%;height:170px;flex:0 0 auto;border-bottom:1px solid rgba(var(--c-edge),.08);
+  background:radial-gradient(ellipse 58% 30% at 50% 74%,rgba(255,232,196,.13),rgba(255,232,196,0) 72%),linear-gradient(180deg,#19181c,#0f0f12)}
+#station.hall .row.hcard .nm{padding:12px 14px 0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
+#station.hall .row.hcard .nm>s{flex:1 0 100%}
+#station.hall .row.hcard .cls{font-style:normal;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);
+  padding:3px 8px;border:1px solid var(--pl-edge);border-radius:3px;white-space:nowrap}
+#station.hall .row.hcard>:is(.act,.qt){margin:12px 14px 0;align-self:flex-start}
+@media (max-width:760px){#station.hall .hcards{grid-template-columns:minmax(0,1fr)}}
 #station.hall #stHall{display:block;position:absolute;left:0;top:0;z-index:-2;pointer-events:none}
 /* основа — сплошная: зал (z -2) и плита (z -1) рисуются над ней в своём слое (isolation); если видеокарта
    не нарисовала зал, под экраном темнота, а не мир с его фишками */

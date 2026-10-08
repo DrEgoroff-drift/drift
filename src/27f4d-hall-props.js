@@ -67,7 +67,7 @@ function hallClutter(K,L,R){
     const wh=[];for(let i=0;i<=18;i++){const a=i/18*TAU;wh.push([X0+.35+Math.cos(a)*.12,1.35+Math.sin(a)*.12,B+.3]);}
     K.tube(wh,.012,K.mt([170,44,34],.4,7,0),5);K.tube([[X0+.35,1.35,B+.16],[X0+.35,1.35,B+.3]],.015,St,5);}
   /* кабельный лоток поперёк зала: полка, борта, пучок кабелей (чёрный, серый, оранжевый) */
-  {const y=Math.min(hc-.32,3.6),z=.75,len=(xEnd-X0)/2,cx=(X0+xEnd)/2,Tr=K.mt(mixc(C.steel,[255,255,255],.1),.6,10,P.brushed);
+  {const y=Math.min(hc-.32,3.6),z=.75,len=(xEnd-X0)/2,cx=(X0+xEnd)/2,Tr=K.mt(mixc(C.steel,[96,80,62],.55),.3,8,P.brushed);   /* тёплая оцинковка, матово: днём лоток не спорит с лампой-ключом */
     K.box([cx,y,z],[len,.006,.15],Tr,.002);for(const s of [-1,1])K.box([cx,y+.035,z+s*.15],[len,.035,.005],Tr,.002);
     [[22,22,24],[90,92,96],C.orange].forEach((c,i)=>K.tube([[X0,y+.025,z-.07+i*.06],[xEnd,y+.025,z-.07+i*.06]],.014+.004*(i===0),K.mt(c,.3,6,P.leather),6));
     for(let x=X0+.8;x<xEnd;x+=2.0)for(const s of [-1,1])K.tube([[x,y,z+s*.16],[x,hc,z+s*.16]],.006,K.mt(C.soot,.5,8,P.brushed),4);}

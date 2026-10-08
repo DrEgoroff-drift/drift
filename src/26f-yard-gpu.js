@@ -44,8 +44,8 @@ function yardDraw(vis,x0,nd,pw,ph){
   for(const [id,x,y,w,h] of vis){
     const key=id+"|"+w+"x"+h+"|"+nd+"|"+hullBakeKey(id,1);let S=YARD.S.get(id+"|"+w+"x"+h);
     if(!S){S={};YARD.S.set(id+"|"+w+"x"+h,S);}
-    if(S.key!==key){const hl=hullOf(id),sc=Math.min(w/(hl.len+14),h/(hl.halfW*2+10));
-      if(!hullStudio(S,id,w,h,nd,w/2-(hl.nose+hl.tail)*.5*sc,h/2,sc,0))continue;S.key=key;}
+    if(S.key!==key){const f=hallYardFit(S,id,w,h);   /* большое место (карточка зала, M812) — объём ангара, малое — сверху */
+      if(!hullStudio(S,id,w,h,nd,f[0],f[1],f[2],0))continue;S.key=key;}
     put.push([S,x-x0,y,w,h]);}
   const T=YARD.T;
   ovInto(T,nd,()=>{for(const [S,x,y,w,h] of put)ovImage({tex:S.tex,view:S.view,dev:S.dev,inv:true},x+w/2,y+h/2,w,h,0,0,0,1,1,1);});

@@ -322,20 +322,20 @@ function stTabYard(st){
     }
     const yard=stationFleet(G.sys);
     $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
-    for(const id of yard)$body.appendChild(shipRow(id,shipData(id)));
+    hallShipList(yard.map(id=>[id,shipData(id)]));   /* в зале — карточки с кораблём в ангаре (M812) */
     /* верфь державы (M714): своя линия у своей станции, в «Ялте» — от всех пяти, вдвое дороже */
     const yl=(typeof stationYard==="function")?stationYard(G.sys):[];
     if(yl.length){
       const yal=(typeof yaltaIs==="function")&&yaltaIs(G.sx,G.sy),by=G.sys.station.by;
       $body.appendChild(el("div","sec",yal?"ЯЛТА · ВЕРФИ ВСЕХ ДЕРЖАВ · ВДВОЕ ДОРОЖЕ":
         "ВЕРФЬ ДЕРЖАВЫ · "+makerRu(by).toUpperCase()+(hasEpisode(by)?" · РАЗРЕШЕНИЕ ЕСТЬ":" · ПРОДАЮТ ТОЛЬКО ПО ДЕЛУ С НЕЙ")));
-      for(const id of yl)if(yard.indexOf(id)<0)$body.appendChild(shipRow(id,shipData(id)));
+      hallShipList(yl.filter(id=>yard.indexOf(id)<0).map(id=>[id,shipData(id)]));
     }
     /* Свои корпуса из ангара показываем всегда: пересесть обратно можно везде */
     const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0&&yl.indexOf(id)<0);
     if(own.length){
       $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
-      for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}
+      hallShipList(own.map(id=>[id,shipData(id)]));
     }
     /* ── восстановление притащенного корпуса (M369b, §19.3 «tow») ──
        Чёрный корпус на тросе становится вашим не даром и не сразу: док берёт
@@ -376,7 +376,7 @@ function stTabYard(st){
       $body.appendChild(rr);
     }
     $body.appendChild(el("div","sec","СЕРИЙНЫЙ РЯД · ЕСТЬ В ЛЮБОМ ДОКЕ"));
-    for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
+    hallShipList(SHIP_KEYS.map(id=>[id,SHIPS[id]]));
     /* уникальный корпус строят только на верфи — у торгового узла док слабый */
     /* «Ключ от верфи» открывает единственный экземпляр в любом доке, а не
        только на верфи: это его первая строка и есть */
@@ -386,7 +386,7 @@ function stTabYard(st){
       G.uniqueShips[uid]=offer;
       $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"+
         (relicDeep("key")?" · УЖЕ С ЧАСТЯМИ В СЛОТАХ":"")));
-      $body.appendChild(shipRow(uid,offer));
+      hallShipList([[uid,offer]]);
     }
     const dr=DRONES.miner;
     $body.appendChild(el("div","sec","ДРОНЫ · РАЗМЕЩАЮТСЯ НА ЗАЛЕЖИ ИЛИ АСТЕРОИДЕ · САМИ ВОЗЯТ И ПРОДАЮТ РУДУ"));

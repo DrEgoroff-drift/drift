@@ -215,18 +215,26 @@ could ever save.
   same hall: a counter with people on stools facing it, a table with two sitting, three warm
   lamps and the sign at the side. A message in the hall is a small plate on the screens, not a
   strip across the room. By day the hall takes its colour from things, not from a lighter tone:
-  red-brown counter wood, coloured tins, crates with stencil plates and rolls of cloth on the
-  shelves, a loader in orange overalls, a warm lamp over the counter, a warm bounce off the floor
+  red-brown counter wood, goods on the shelves by their material (tins, kraft boxes with paper
+  labels, tied sacks, canisters, dark glass, one coloured box to a shelf), a loader in orange overalls, a warm lamp over the counter, a warm bounce off the floor
   under the blue dock light. The keeper has hair and a face. The floor has tile joints, a worn
   path along the counter and oil stains. The bar has a second table with two people in the
   middle of the room.
-  At the counter, the market lies in front of you: one open crate per row of the price table,
-  heaped with the goods you carry (the heap grows with the amount) and empty for what you do
-  not. Point at a row and its crate lights up with an orange rim and a small lamp in the
-  goods' colour. In the hall the table is a plate without its line of explanation.
   The things are named by small plates with a leader line beside them (ДОСКА, СТОЙКА, the
   planet, ВЕРСТАК, КОНТОРА). `?hall=0` keeps the old desk; `?hallnight=0|1` and
   `?hallpilot=0` are for the stand.
+- **M811 — the counter's market.** The market lies on the counter in front of you: one open
+  crate per row of the price table, heaped with the goods you carry (the heap grows with the
+  amount) and empty for what you do not, each with the goods' mark stencilled on its side in a
+  quiet tone. Point at a row (or tap it on a phone) and its crate lights up with an orange rim
+  and a small lamp, and the view leans in to the crates and the keeper; let go and after a
+  moment it settles back to the whole hall. In the hall the table is a plate without its line
+  of explanation. The ceiling's cable tray is warm and matte now, so by day it no longer
+  competes with the lamp over the counter.
+- **M812 — the yard.** In the hall, every hull for sale is a card: the ship itself in the
+  hangar's three-quarter view on a lit floor across the card's top, its name with the class as
+  a tag, the numbers and the price below; two cards to a row on a PC, one on a phone. At night
+  a work lamp over the bench by the window lights the people there.
 - **M804 — the night side of the orbs.** The dark half of every planet is filled by its own
   sky (cold blue where there is no air, the air's hue where there is) so it reads as a shape;
   the terminator is a warm rim whose width follows the air; polar caps are grain with cracks
