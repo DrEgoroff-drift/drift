@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 522 · top-level symbols: 7783
+Files: 523 · top-level symbols: 7790
 
 ## SYMBOLS
 
@@ -167,8 +167,11 @@ BM_WARM                      src/21aa-base-rooms.js:20
 BODY                         src/17c2e-body-kit.js:7
 BODY_BARGE_KEEP              src/17c2f-body-barge.js:8
 BODY_CAM                     src/17-mode-system.js:79
-BODY_FCLS                    src/17c2e-body-kit.js:67
+BODY_FCLS                    src/17c2e-body-kit.js:69
 BODY_LABELS                  src/17-mode-system.js:25
+BODY_ST_CORE                 src/17c2g-body-station.js:11-49
+BODY_ST_KEEP                 src/17c2g-body-station.js:8
+BODY_WARM                    src/17c2g-body-station.js:9
 BOOKS                        src/12ub-books.js:23-120
 BOOKS_BY                     src/12ub-books.js:121
 BOOT_GPU_MS                  tests/99-run.js:47
@@ -2586,17 +2589,20 @@ bodyBarge                    src/17c2f-body-barge.js:92-98
 bodyBargeFrames              src/17c2f-body-barge.js:9
 bodyBargeParts               src/17c2f-body-barge.js:11-56
 bodyBargeWreck               src/17c2f-body-barge.js:100-105
-bodyDot                      src/17c2e-body-kit.js:49-53
-bodyFleet                    src/17c2e-body-kit.js:77-85
-bodyFleetHull                src/17c2e-body-kit.js:69-75
+bodyDot                      src/17c2e-body-kit.js:51-55
+bodyFleet                    src/17c2e-body-kit.js:79-87
+bodyFleetHull                src/17c2e-body-kit.js:71-77
 bodyGpu                      src/17c2e-body-kit.js:25
 bodyInSystem                 src/16-flight.js:103-112
-bodyLights                   src/17c2e-body-kit.js:39-47
-bodyMesh                     src/17c2e-body-kit.js:55-62
-bodyRun                      src/17c2e-body-kit.js:32-37
-bodyShuttle                  src/17c2e-body-kit.js:104-110
-bodyShuttleMesh              src/17c2e-body-kit.js:88-102
-bodyT0                       src/17c2e-body-kit.js:27-30
+bodyLights                   src/17c2e-body-kit.js:41-49
+bodyMesh                     src/17c2e-body-kit.js:57-64
+bodyRun                      src/17c2e-body-kit.js:34-39
+bodyShuttle                  src/17c2e-body-kit.js:106-112
+bodyShuttleMesh              src/17c2e-body-kit.js:90-104
+bodyStModules                src/17c2g-body-station.js:74-94
+bodyStRing                   src/17c2g-body-station.js:51-72
+bodyStation                  src/17c2g-body-station.js:128-138
+bodyT0                       src/17c2e-body-kit.js:29-32
 bookAll                      src/12ub-books.js:122
 bookCount                    src/12ub-books.js:124
 bookFind                     src/12ub-books.js:129-147
@@ -3500,7 +3506,7 @@ drawStModule                 src/17a-station-mod.js:105-216
 drawStRod                    src/17a-station-mod.js:97-104
 drawStRods                   src/17a-station-mod.js:219
 drawStars                    src/16-flight.js:40-79
-drawStation                  src/17c-system-draw.js:570-605
+drawStation                  src/17c-system-draw.js:570-608
 drawStationBody              src/17c-system-draw.js:168-371
 drawStationMods              src/17a-station-mod.js:220-223
 drawStencils                 src/03d-hull-marks.js:1-90
@@ -4280,6 +4286,7 @@ h3dParts                     src/17c2b-parts3d.js:158-353
 h3dPirMesh                   src/17c2a-hull3d.js:447-503
 h3dPirate                    src/17c2a-hull3d.js:505-508
 h3dRun                       src/17c2a-hull3d.js:369-427
+h3dStationMesh               src/17c2g-body-station.js:95-126
 h3dStockGear                 src/17c2b-parts3d.js:374-383
 h3dStudioPt                  src/17c2a-hull3d.js:363-367
 h3dStudioRT                  src/17c2a-hull3d.js:430-440
@@ -8548,7 +8555,7 @@ zoomTo                       src/15-input.js:358
 ## src/17b-finds.js · 19 KB
   · находки в полёте:1
 
-## src/17c-system-draw.js · 43 KB
+## src/17c-system-draw.js · 44 KB
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17c1-station-dress.js · 8 KB
@@ -8572,6 +8579,8 @@ zoomTo                       src/15-input.js:358
 ## src/17c2e-body-kit.js · 8 KB
 
 ## src/17c2f-body-barge.js · 8 KB
+
+## src/17c2g-body-station.js · 12 KB
 
 ## src/17c3-station-live.js · 11 KB
 

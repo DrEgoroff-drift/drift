@@ -1,7 +1,7 @@
 /* ══ баржа телом (M820 §3) ══
    Хребет-труба, на нём 3–6 грузовых рам (по вместимости): в раме два короба тары разной высоты,
    по торцам — рёбра-переборки; у носа буксирная голова завода с рубкой и тёплым окном, у кормы
-   блок с тихоходными соплами. Краска своя (доля 2): грунт завода в голове, тара приглушённая,
+   блок с тихоходными соплами. Краска своя (доля 3, 17c2e): грунт завода в голове, тара приглушённая,
    железо тёмное — баржа тяжёлая и медленная, а не полоса цветных ящиков. Остов — та же баржа,
    переломленная надвое, рамы раскиданы в полторы длины, всё в копоти. Длина и полуширина — те же,
    что у выпечки 12l (то же зерно): подпись и полоса стоят на своих местах */
@@ -22,34 +22,34 @@ function bodyBargeParts(seed,by,cap){
   const P={L,hw,nose,tail,n,
     /* хребет: труба от кормового блока до головы */
     spine:(K,sk,xa,xb)=>{xa=xa==null?tail+L*.12:xa;xb=xb==null?nose-L*.2:xb;
-      K.lathe(xa,0,0,[[0,hw*.3],[xb-xa,hw*.3]],K.C(sk(iron)),2,.4,0,12,null,null);},
+      K.lathe(xa,0,0,[[0,hw*.3],[xb-xa,hw*.3]],K.C(sk(iron)),3,.4,0,12,null,null);},
     xAt:i=>z0+i*step,
     /* рама i: два ребра и тара; x0 — её начало по длине */
     /* рама — П из светлой стали выше тары (стойки по бортам и балка поверху) и продольные балки:
        конструкция читается раньше коробов; тара — по два короба на сторону со щелью, это масштаб */
     frame:(K,sk,i,ox)=>{const x0=(ox==null?z0+i*step:ox),x1=x0+fl,rb=Math.max(.9,fl*.07),top=hw*.98,st=K.C(sk(rib)),y2=hw*1.17,y1=hw*1.03;
-      for(const xx of [x0,x1-rb]){K.box(xx,xx+rb,-y2,-y1,-hw*.62,top,.12,st,2,.55);K.box(xx,xx+rb,y1,y2,-hw*.62,top,.12,st,2,.55);
-        K.box(xx,xx+rb,-y2,y2,top-hw*.13,top,.1,st,2,.55);}
-      for(const s of [-1,1])K.box(x0,x1,s<0?-y2:y1,s<0?-y1:y2,top-hw*.11,top-hw*.02,.1,st,2,.55);
+      for(const xx of [x0,x1-rb]){K.box(xx,xx+rb,-y2,-y1,-hw*.62,top,.12,st,3,.55);K.box(xx,xx+rb,y1,y2,-hw*.62,top,.12,st,3,.55);
+        K.box(xx,xx+rb,-y2,y2,top-hw*.13,top,.1,st,3,.55);}
+      for(const s of [-1,1])K.box(x0,x1,s<0?-y2:y1,s<0?-y1:y2,top-hw*.11,top-hw*.02,.1,st,3,.55);
       const xm=(x0+x1)/2,g=Math.max(.35,fl*.025);
       for(const c of cargo[i]){const ya=c.s<0?-hw*1.0:hw*.05,yb=c.s<0?-hw*.05:hw*1.0,col=K.C(sk(c.c));
-        K.box(x0+rb,xm-g,ya,yb,-hw*.55,c.h,hw*.07,col,2,.25);K.box(xm+g,x1-rb,ya,yb,-hw*.55,c.h2,hw*.07,col,2,.25);}},
+        K.box(x0+rb,xm-g,ya,yb,-hw*.55,c.h,hw*.07,col,3,.25);K.box(xm+g,x1-rb,ya,yb,-hw*.55,c.h2,hw*.07,col,3,.25);}},
     /* голова: короткий лофт грунта завода, полоса, рубка с окном */
     head:(K,sk,ox,oy)=>{const xa=nose-L*.22,N=16,ring=(x,w)=>{const R=[];for(let i=0;i<=N;i++){const t=i/N*TAU,c=Math.cos(t),s=Math.sin(t);
         R.push([x,w*Math.sign(c)*Math.pow(Math.abs(c),.8),w*(s>=0?.82:.55)*Math.sign(s)*Math.pow(Math.abs(s),.8)]);}return R;};
       const R=[ring(xa,hw*.88),ring(nose-L*.07,hw*.9),ring(nose,hw*.42)];
-      K.loft(R,K.C(sk(gnd)),2,-.5,0);K.face(R[0].slice(0,N),[xa+1,0,0],K.C(sk(iron)),2,-.3,0);
-      K.face(R[2].slice(0,N),[nose-1,0,0],K.C(sk(mixc(gnd,[0,0,0],.25))),2,-.4,0);
-      if(stripe)K.box(nose-L*.17,nose-L*.145,-hw*.93,hw*.93,-hw*.5,hw*.76,.3,K.C(sk(stripe)),2,.3);
+      K.loft(R,K.C(sk(gnd)),3,-.5,0);K.face(R[0].slice(0,N),[xa+1,0,0],K.C(sk(iron)),3,-.3,0);
+      K.face(R[2].slice(0,N),[nose-1,0,0],K.C(sk(mixc(gnd,[0,0,0],.25))),3,-.4,0);
+      if(stripe)K.box(nose-L*.17,nose-L*.145,-hw*.93,hw*.93,-hw*.5,hw*.76,.3,K.C(sk(stripe)),3,.3);
       const bx=nose-L*.13,bt=hw*1.12;
-      K.box(bx-L*.05,bx+L*.03,-hw*.42,hw*.42,hw*.4,bt,hw*.08,K.C(sk(mixc(gnd,[255,255,255],.12))),2,.5);
+      K.box(bx-L*.05,bx+L*.03,-hw*.42,hw*.42,hw*.4,bt,hw*.08,K.C(sk(mixc(gnd,[255,255,255],.12))),3,.5);
       if(!sk.dead)K.face([[bx+L*.031,-hw*.3,bt*.82],[bx+L*.031,hw*.3,bt*.82],[bx+L*.031,hw*.3,bt*.62],[bx+L*.031,-hw*.3,bt*.62]],
-        [bx,0,bt*.7],K.C([255,210,150]),2,-.1,1.9);},
+        [bx,0,bt*.7],K.C([255,210,150]),3,-.1,1.9);},
     /* корма: блок и сопла с тлеющим зевом */
-    stern:(K,sk)=>{K.box(tail+L*.02,tail+L*.15,-hw*.98,hw*.98,-hw*.5,hw*.62,hw*.1,K.C(sk(mixc(gnd,iron,.55))),2,-.4);
+    stern:(K,sk)=>{K.box(tail+L*.02,tail+L*.15,-hw*.98,hw*.98,-hw*.5,hw*.62,hw*.1,K.C(sk(mixc(gnd,iron,.55))),3,-.4);
       const ne=2+(seed%2),em=K.C(sk([90,40,22]));
       for(let i=0;i<ne;i++){const ey=(i-(ne-1)/2)*hw*.9;
-        K.lathe(tail+L*.03,ey,0,[[0,hw*.34],[-L*.035,hw*.4],[-L*.07,hw*.44]],K.C(sk(iron)),2,.6,0,12,null,sk.dead?null:[em,0,1]);}}};
+        K.lathe(tail+L*.03,ey,0,[[0,hw*.34],[-L*.035,hw*.4],[-L*.07,hw*.44]],K.C(sk(iron)),3,.6,0,12,null,sk.dead?null:[em,0,1]);}}};
   P.lights=[{x:nose-L*.1,y:-hw*.95,c:[255,90,80],r:1.4,k:.08,ph:0},{x:nose-L*.1,y:hw*.95,c:[120,240,150],r:1.4,k:.08,ph:1.6},
     {x:nose-L*.1,y:0,c:[255,214,150],r:1.1,k:0,ph:0},{x:tail+L*.08,y:0,c:[230,236,255],r:1,k:.05,ph:.7}];
   P.soot=sootK;return P;
