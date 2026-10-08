@@ -207,6 +207,18 @@ after it pass by §5.4.
 - M634 one water everywhere (author, 08.10): the stand's water as one module `21pw-pln-water`
   — planet lakes, the ocean worlds' sea to the horizon with swell and a hazed horizon, the
   cave lake, later the flat modes through the engine; DESIGN-remake L7
+  — done 08.10 (planet 2eaf51f1): `21pw-pln-water` (waterSurf, waterLook, plnWaterMirror,
+  meshes for the hollow sheet, the pond and the sea), the sea in three bands to 30 km with
+  islands where the far land rises, the night water (rough water reflects the sky above the
+  horizon, mist in banks past 60 m), the gate `docs/look/game/water.py`, suite `91qi-water`.
+  Decided 08.10: **the cave lake** lies 2–7 m under the walking line, so the lens dives —
+  within 3 m of the shore the target is the midpoint of the man and the water under him,
+  down to the water level minus 1 m; the lake levels stay the game's. **The glint hour**: on
+  worlds with water, an hour before sunset and after sunrise the low sun may stand in front
+  of the lens (`PLN.sunAim` by the hour) and the sun path is the frame's hero, the HUD off
+  it; the rest of the day the light law holds. Tail into M631: horizontal stair bands in the
+  mirror at ×3 (the UV warp against a half-frame mirror) — mirror ≥ .75 of the frame or a
+  1.5 px blur across the ripple.
 
 **Stage 4 — the worlds.**
 - M640 eleven identities: colour script and shape per type; acceptance by contact sheet —
