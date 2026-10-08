@@ -294,6 +294,7 @@ home, M630+ the cave, the dig as lit rooms (one source through air only,
 veins as three or four large forms), the raid's light: these are built in `DESIGN-planet.md`'s
 queue by the same builder, in this order after Stage D: base and home → cave → dig → raid.
 Design for the first two steps: `docs/DESIGN-base-scene.md` (09.10) — own things as bodies of the people's grammar on the engine's land (M628a/b), the section as the rock kit cut by a plane with lit rooms and two lenses (M632a–c), entry by the gate without a cut; the base's game (`DESIGN-base.md`) untouched.
+The third step: `docs/DESIGN-cave-scene.md` (09.10) — the stand's M601 scene fed by the game's grid (one density from `C.g`, the cut face as a page, the lamp as the key with shadows and a cone, the day by a second map, three lenses), the way in as a push through the arch without a cut; `CAVE3.on`/`?cave=0` (M630a–d).
 
 ### Stage F — rooms and people (M850–M859)
 
