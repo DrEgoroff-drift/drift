@@ -21,6 +21,11 @@ could ever save.
   fight and gives the zoom back after. On the map the jump circle is a thin ring with no fill,
   holdings are half as loud, and «цен не видели» is a line on the footer plate instead of a
   button that did nothing.
+  An alarm takes the middle: a barge under fire hangs its plate right beside the barge, inside
+  the centre of the frame, while the chapter title and the calm lines step to the left third
+  until the alarm has been quiet for 45 frames. On the map the message hangs at the far third of
+  the course line; with no course (and always on the phone) it is a second line under «ВЫ».
+  On the ground a message joins the hint plate as one more line — one thing, one plate.
 
 - **M822 The map in three weights.** You, the selected system and the course to it are the
   brightest things on the sheet; the jump circle, the lanes inside it and your own route are

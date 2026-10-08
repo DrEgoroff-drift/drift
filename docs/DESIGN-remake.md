@@ -228,6 +228,13 @@ the player meets first and by what one reinvention gives to the next.
   target rock), the surface «what» line of a landmark or a deposit. Without WebGPU the old
   `say()`. Vision law «центр» in `90b2-geom` with a planted plate. Open: the old
   tutorial banner and `G.prompt` stay as they were (brief); only the wreck has act lines.
+  *Urgent takes the middle (designer, 08.10, M826b):* one alarm plate (barge under fire, attack,
+  SOS — any «now or never») may stand in the centre band while the alarm lasts, beside its body
+  with a leader, never on it; calm plates go to the left third meanwhile and come back 45 frames
+  after the alarm ends (`HANG_ALARM_HOLD`, as `rackBodies`). Squeezing the chapter or seating the
+  alarm by the shield are rejected. Vision: one urgent plate in the band is clean, two are
+  «центр» («две тревоги»); two plates sharing a row (vertical overlap ≥ 60 % of the smaller,
+  gap < 120 px) are «ряд».
 - **M804 The night side.** Sky fill and a warm terminator on every orb; caps as grain; moons
   from the parent's palette. Gate: a pair of five worlds at 760.
   - *Done (four passes, `17gab`):* the night side is filled by its own sky — a cold blue
@@ -304,6 +311,13 @@ Design: `docs/DESIGN-bodies.md` (09.10) — pirates are already bodies (M710, ki
   darkens outside only (`U[11]` ≤ .04), holdings fill .05 / hatch .14 (`18b`), `mapSelBlock(n0,
   hung)` blocks always, the price line on `Rr`. The centre law (M803) holds: a barge beside you on
   the PC hangs its plate below the band on a long leash; an exemption is the designer's call.
+  *M826b (08.10):* the exemption granted — `cueAt(...,urg)` → `o.urg` skips the band;
+  `hangLayout` sorts urgent first, keeps `HANG.alarmF`, and gives calm plates `C.xMax=W/3` with no
+  leash limit (a far one hangs `free`); fallback anywhere but the band. Map: `hangAt("course")` at
+  the far third of the course; without a course or on the phone `18` writes the message as rows
+  in the «ВЫ» tag (`HANG.msgTagF`; inside the sheet frame, pushes the tag stack, falls back to a
+  plate when it does not fit). Ground: `HANG.msgJoin` appends the message to the hint plate.
+  Vision `90b2`: `hurg` per item, «две тревоги», law «ряд», plants for each.
 
 ### Stage D — the way down (M830–M839)
 

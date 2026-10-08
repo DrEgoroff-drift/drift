@@ -11322,7 +11322,7 @@ function cueReset(){CUE_LVL=0;CUE_TXT="";G.prompt="";CUE_AT=null;}
    табличкой у вещи, #prompt молчит. Чужая строка поверх (txt не тот) — вещь забыта. dy — точка таблички
    ниже тела на столько пикселей экрана: там стоит подпись вещи, и табличка встаёт на её место */
 let CUE_AT=null;
-function cueAt(id,obj,name,dy){CUE_AT={id,obj,name:name||"",dy:dy||0,txt:G.prompt};}
+function cueAt(id,obj,name,dy,urg){CUE_AT={id,obj,name:name||"",dy:dy||0,urg:!!urg,txt:G.prompt};}   /* urg — тревога: середина её (08bj) */
 /* действие — первое (R1, надзор 12.09): у ДЕЙСТВИЯ равный уровень слот не
    отдаёт. Цепочка кадра идёт по порядку, и первый предложивший первым же ловит
    нажатие; «равный — последний» показывал ПОСАДКУ, а жал пояс, стоявший раньше.
@@ -12711,8 +12711,15 @@ function ovGraph(x0,y0,x1,y1,gx,st,ys,w,col,al){
    Рисует ovHangFlush из ovFlush (08bi) — после мира, до прохода слоя. Без видеокарты слоя нет:
    hangSay тогда говорит прежним say(), ovHang молчит.
    Очередь — интерфейс (OVL.uq); пока рисуется табличка, OVL.hangOn — её первая строка: зрение
-   (90b2) метит этим её буквы и плашку, и закон «центр» судит только их, не подписи мира. */
-const HANG={on:true,q:[],t:[],at:{},mem:{},w:new Map(),st:new Map(),last:[],k:1,
+   (90b2) метит этим её буквы и плашку, и закон «центр» судит только их, не подписи мира.
+   Срочное берёт середину (M826b): тревожная табличка (o.urg — баржа под обстрелом, нападение, SOS,
+   всё «сейчас или никогда») встаёт и в средней полосе — на время тревоги середина её по праву; на
+   саму вещь она не ложится, выноска к телу остаётся. Спокойные слова (глава, сообщение) на это время
+   уходят к краю — в левую треть, без права на полосу даже сбоку — и возвращаются через 45 кадров после
+   тревоги (HANG_ALARM_HOLD, тот же гистерезис, что у rackBodies). Зрение: одна тревога в полосе — чисто,
+   две — «центр» (OVL.hangUrg метит её буквы и плашку). */
+const HANG_ALARM_HOLD=45;
+const HANG={on:true,q:[],t:[],at:{},mem:{},w:new Map(),st:new Map(),last:[],k:1,alarmF:-1e9,
   FACE:"Bahnschrift,'Roboto Condensed','Arial Narrow',sans-serif",
   INK:"#f1ebde",INK2:"#a59d8f",VERB:"#ff6a2b",BODY:"rgb(18,17,16)",EDGE:"rgb(232,220,196)"};
 /* восемь сторон: вправо, вправо-вверх, вверх, … — с ценой; up — для вещей на земле (поверхность) */
@@ -12821,12 +12828,13 @@ function hangPlace(P,k,C){
     for(let d=r+C.g;d<C.maxD;d+=C.step){
       const R=hangRectAt(P,D[0],D[1],d,S.w,S.h);
       if(R.x0<8||R.x1>W-8||R.y0<C.top||R.y1>C.bot)continue;
+      if(C.xMax&&!P.o.urg&&R.x1>C.xMax)continue;   /* тревога: спокойное — в левой трети */
       const nx=clamp(P.x,R.x0,R.x1),ny=clamp(P.y,R.y0,R.y1),L=Math.hypot(nx-P.x,ny-P.y);
-      if(L-r>C.Lmax)break;   /* дальше по этой стороне только длиннее */
+      if(L-r>(C.xMax?Infinity:C.Lmax))break;   /* дальше по этой стороне только длиннее; у края в тревогу — без предела */
       let side=0;
-      if(hangHit(R,C.band,2*k)){   /* кайма шире рамки на 1k, плюс сетка устройства */
+      if(!P.o.urg&&hangHit(R,C.band,2*k)){   /* кайма шире рамки на 1k, плюс сетка устройства */
         const cy=(R.y0+R.y1)/2;
-        if(D[1]!==0||cy<H/3||cy>H*2/3)continue;
+        if(C.calm||D[1]!==0||cy<H/3||cy>H*2/3)continue;
         side=cy;
       }
       /* не на самой вещи: ближняя точка таблички дальше её радиуса */
@@ -12874,8 +12882,18 @@ function hangLayout(Q,k){
   const bot=((typeof HUD_FLOOR==="number"&&HUD_FLOOR>0)?Math.min(H,HUD_FLOOR):H)-6;
   const C={band:{x0:W*.3,y0:H*.3,x1:W*.7,y1:H*.7},top,bot,O:hangObstacles(bot+6),placed:[],
     g:12*k,step:4*k,maxD:Math.max(W,H)*.7,Lmax:H*.25};
+  /* тревога ставится первой; пока она идёт и 45 кадров после — спокойные у края */
+  if(Q.some(P=>P.o.urg))HANG.alarmF=OVL.fno;
+  const alarm=OVL.fno-HANG.alarmF<HANG_ALARM_HOLD;
+  Q.sort((a,b)=>(b.o.urg?1:0)-(a.o.urg?1:0));
   for(const P of Q){
+    /* спокойное в тревогу: сперва в левой трети, потом где угодно, но не в полосе */
+    C.calm=alarm&&!P.o.urg;C.xMax=C.calm?W/3:0;
     let best=hangPlace(P,k,C);
+    const edge=!!best;
+    if(!best&&C.xMax){C.xMax=0;best=hangPlace(P,k,C);}
+    /* у края дальше четверти высоты — заметка ждёт без поводка: нитка через полкадра тревогу бы резала */
+    if(best&&edge&&Math.hypot(best.nx-P.x,best.ny-P.y)-best.r>C.Lmax)P.o=Object.assign({},P.o,{free:true});
     if(!best){
       const r=Math.max(4,P.o.r||10),room=Math.max(P.x-r-C.g-8,W-8-P.x-r-C.g),Z=hangWrap(P,k,room);
       if(Z){const l0=P.lines,v0=P.o.verb;P.lines=Z.lines;P.o=Object.assign({},P.o,{verb:Z.verb});
@@ -12914,7 +12932,7 @@ function hangDraw(P,k){
     ovCap(ax,ay,P.nx-ux*2*k,P.ny-uy*2*k,1*k,ink||HANG.INK,.42*al);
     ovEll(ax,ay,2*k,2*k,0,ink||HANG.INK,.85*al);
   }
-  OVL.hangOn=P.lines[0]||"·";OVL.hangSide=P.side||0;   /* сбоку от тела: середина по высоте — для зрения */
+  OVL.hangOn=P.lines[0]||"·";OVL.hangSide=P.side||0;OVL.hangUrg=P.o.urg?1:0;   /* сбоку от тела, тревога — для зрения */
   const e=ink?1.5*k:1*k;
   hangHex(sn(x0-e),sn(y0-e),sn(x1+e),sn(y1+e),sn(c+e*.42),ink||HANG.EDGE,(ink?.62:.17)*al);
   hangHex(x0,y0,x1,y1,c,HANG.BODY,.86*al);
@@ -12923,7 +12941,7 @@ function hangDraw(P,k){
     const col=ink||(i===P.o.verb?HANG.VERB:i===0?HANG.INK:HANG.INK2);
     ovText(OVL.uq,tx,y0+(17+i*14)*k-(i?1*k:0),P.lines[i],hangFont(i,P),col,"left","alphabetic",al,k);
   }
-  OVL.hangOn=0;OVL.hangSide=0;
+  OVL.hangOn=0;OVL.hangSide=0;OVL.hangUrg=0;
 }
 /* ── слив: зовёт ovFlush (08bi) первым делом ── */
 function ovHangFlush(){
@@ -12941,7 +12959,7 @@ function ovHangFlush(){
   if(!Q.length||OVL.hush||!hangIn()){Q.length=0;return;}
   const k=Math.max(1,uiK());HANG.k=k;
   hangLayout(Q,k);
-  for(const P of Q)if(!P.hide){hangDraw(P,k);HANG.last.push({id:P.id,s:P.lines[0],r:P.R});}
+  for(const P of Q)if(!P.hide){hangDraw(P,k);HANG.last.push({id:P.id,s:P.lines[0],r:P.R,m:!!P.msg});}
   Q.length=0;
 }
 /* ── поверхность под движком планеты: «что» у вещи, одной строкой ──
@@ -12990,21 +13008,26 @@ function hangSurface(){
    переводится в регистр предложения: иерархия таблички — кегль и цвет, не капитель */
 const HANG_MSG_AT={system:"ship",scoop:"scoop",surface:"man",map:"you"};
 function hangMsg(Q){
-  HANG.msgQ=false;
+  HANG.msgQ=false;HANG.msgJoin=null;
   if(!(G.msgT>0&&G.msg)||(typeof msgHeld==="function"&&msgHeld()))return;
+  /* на грунте при подсказке сообщение — не вещь: оно строкой ниже в её табличке (одна вещь — одна табличка) */
+  if(G.mode==="surface"&&!(typeof MSG_OBJ!=="undefined"&&MSG_OBJ)&&HANG.hint&&HANG.hint.f===OVL.fno){
+    HANG.msgJoin=String(G.msg).split("\n").map(hangCase);HANG.msgQ=true;return;}
   let a=null;
   const b=typeof MSG_OBJ!=="undefined"?MSG_OBJ:null,S=HANG.at.sys;
   if(b&&G.mode==="system"&&S&&S.f===OVL.fno){
     const x=W/2+(b.x-S.x)*S.z,y=H/2+(b.y-S.y)*S.z;
     if(x>W*.06&&x<W*.94&&y>H*.08&&y<H*.92)a={x,y,r:Math.max(8,(b.radius||6)*S.z)};
   }
-  const kd=HANG_MSG_AT[G.mode],q=kd&&HANG.at[kd];
+  /* карта: строка — в плашке «ВЫ» (18), иначе у дальней трети курса, иначе у вашей звезды */
+  if(G.mode==="map"&&HANG.msgTagF===OVL.fno){HANG.msgQ=true;return;}
+  const cs=HANG.at.course,kd=G.mode==="map"&&cs&&cs.f===OVL.fno?"course":HANG_MSG_AT[G.mode],q=kd&&HANG.at[kd];
   if(!a&&q&&q.f===OVL.fno&&!q.z)a=q;
   if(!a)return;
   Q.push({id:"hud.msg",lines:String(G.msg).split("\n").map(hangCase),x:a.x,y:a.y,o:{r:a.r,al:clamp(G.msgT/40,0,1)}});
   HANG.msgQ=true;
 }
-function hangMsgHung(){return HANG.last.some(e=>e.id==="hud.msg");}
+function hangMsgHung(){return HANG.last.some(e=>e.id==="hud.msg"||e.m)||OVL.fno-(HANG.msgTagF==null?-9:HANG.msgTagF)<=1;}
 /* капс строки — в регистр предложения; имена системы, её тел и корабля, «ГЛАВТРАССА» — как пишутся */
 function hangCase(s){
   s=String(s);
@@ -13032,6 +13055,7 @@ function hangCue(Q){
     if(i>=0){let h=(L[0].slice(0,i)+L[0].slice(i+nm.length)).replace(/^[\s·]+|[\s·]+$/g,"");
       h=h.charAt(0).toUpperCase()+h.slice(1);
       if(h){o.name=A.name;o.alt=[h].concat(L.slice(1));o.altVerb=o.verb;}}}
+  if(A.urg)o.urg=true;
   Q.push({id:"cue."+A.id,lines:L,x,y,o});
 }
 function hangCueHung(){return HANG.last.some(e=>e.id.indexOf("cue.")===0);}
@@ -13042,12 +13066,14 @@ function hangHint(Q){
   const h=HANG.hint,a=HANG.at.man;
   if(!h||h.f!==OVL.fno||G.mode!=="surface"||!a||a.f!==OVL.fno)return;
   const L=String(h.s).split(" · ").map(hangCase),v=L.findIndex(t=>/действие/i.test(t));
-  const o={r:a.r,up:true,verb:v>=0?v:undefined};
+  const o={r:a.r,up:true,verb:v>=0?v:undefined},J=HANG.msgJoin;
+  /* сообщение грунта (hangMsg) — последней строкой: «Залежь отмечена» говорит о том же месте */
+  if(J){for(const t of J)L.push(t);}
   if(W<=760){
     /* фишки стрелок (21e) держат своё место hangBlock — табличка встаёт под ними */
     const y=Math.max(8,(typeof HUD_BAND==="number"?HUD_BAND:0)+6);
-    Q.push({id:"pln.hint",lines:L,x:W/2,y,o:Object.assign(o,{r:4,up:false,free:true})});return;}
-  Q.push({id:"pln.hint",lines:L,x:a.x,y:a.y,o});
+    Q.push({id:"pln.hint",lines:L,x:W/2,y,o:Object.assign(o,{r:4,up:false,free:true}),msg:!!J});return;}
+  Q.push({id:"pln.hint",lines:L,x:a.x,y:a.y,o,msg:!!J});
 }
 
 /* ══════════════ набор для слоёв видеокарты (docs/DESIGN-gpu.md §4) ══════════════
@@ -37401,7 +37427,7 @@ function bargeInteract(sh){
     /* тревога, а не действие (ревью 11.09); висит табличкой у позывного баржи (M826, 08bj) */
     const nm="БАРЖА «"+near.capName.toUpperCase()+"»";
     if(cue(nm+" ПОД ОБСТРЕЛОМ · "+Math.round(clamp(near.hp/near.hullMax,0,1)*100)+"%\n"+
-      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN))cueAt("barge",near,nm);
+      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ",CUE_WARN))cueAt("barge",near,nm,0,true);
     return false;
   }
   if(cue("ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+
@@ -64813,11 +64839,23 @@ function drawMapIn(){
          голый бирюзовый на нём не читался. Плашка кончается у носика стрелки — метка и указатель одно */
       const youS=W<=760?"ВЫ":"ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),   /* телефон: имя — в шапке, у звезды табличке выбора нужно место */
             youU=mapU(),youW=mapTW(youS);
-      const by=youDn?y+rr+24+10*youU:y-rr-28;   /* основание строки: над звездой или под ней */
-      mpPlate(x-youW/2-6*youU,by-10*youU,youW+12*youU,14*youU);
-      mapInkBox(x-youW/2-6*youU,by-10*youU,youW+12*youU,14*youU);
-      youR={x0:x-youW/2-8*youU,y0:by-12*youU,x1:x+youW/2+8*youU,y1:by+6*youU};
-      mpText(youS,x,by,"#7fe6d8");
+      /* сообщение без курса (M826b) — строками под «ВЫ» в той же плашке: на карте оно говорит о вас, а не о
+         вещи. Курс есть — сообщение висит у его дальней трети (08bj hangMsg, «course»); на телефоне курс
+         стоит в пустой середине, и табличка у него ушла бы на длинном поводке — там тоже сюда */
+      const mL=(dsel>0&&W>760)||!(G.msgT>0&&G.msg)||(typeof msgHeld==="function"&&msgHeld())?[]:String(G.msg).split("\n").map(hangCase);
+      let mW=0;if(mL.length){mapFace(10);for(const t of mL)mW=Math.max(mW,mapTW(t));mapFace(10,true);}
+      const rh=14*youU;
+      let n=mL.length,pw=Math.max(youW,mW),by=youDn?y+rr+24+10*youU:y-rr-28-n*rh;   /* над звездой плашка растёт вверх */
+      /* строки не лезут под линейку и шире листа — тогда сообщение висит табличкой (08bj), плашка — одна «ВЫ» */
+      if(n&&(by-10*youU<FR.y0||by+4*youU+n*rh>H-8||pw+12*youU>FR.x1-FR.x0)){n=0;pw=youW;by=youDn?y+rr+24+10*youU:y-rr-28;}
+      /* плашка — в листе, носик — у звезды */
+      const cx=n?Math.max(FR.x0+pw/2+6*youU,Math.min(FR.x1-pw/2-6*youU,x)):x;
+      mpPlate(cx-pw/2-6*youU,by-10*youU,pw+12*youU,14*youU+n*rh);
+      mapInkBox(cx-pw/2-6*youU,by-10*youU,pw+12*youU,14*youU+n*rh);
+      youR={x0:cx-pw/2-8*youU,y0:by-12*youU,x1:cx+pw/2+8*youU,y1:by+6*youU+n*rh};
+      mpText(youS,cx,by,"#7fe6d8");
+      if(n){mapFace(10);for(let i=0;i<n;i++)mpText(mL[i],cx,by+(i+1)*rh,i?HANG.INK2:HANG.INK);HANG.msgTagF=OVL.fno;
+        if(youDn)tagDn+=n*rh;else tagUp-=n*rh;}   /* стопка меток системы — за плашкой */
       hangAt("you",x,y,rr+16);   /* строка сообщения на карте — у вашей звезды (M826, 08bj) */
     }
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
@@ -64963,6 +65001,7 @@ function drawMapIn(){
     const col=far?"rgba(255,107,87,.5)":poor?"rgba(255,107,87,.75)":"rgba(242,178,92,.8)";
     ctx.save();
     mapCourseDash(cur,sel,youR,far,col);   /* от кромки вашего кольца и из-за вашей плашки (18l) */
+    hangAt("course",x0+(x1-x0)*2/3,y0+(y1-y0)*2/3,5);   /* строка сообщения — у дальней трети курса (M826b) */
     /* точки прыжков по курсу (M299): сколько раз придётся прыгать — видно по
        линии, а не по цифре в подвале */
     if(far&&st.jump>.5){
