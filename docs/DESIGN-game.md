@@ -397,6 +397,50 @@ is what the something was.
 
 ---
 
+### 7.4 The story as it will be played — the eight parts on the watch (second pass, 09.10)
+
+§7.3 changed triggers. The author said «сюжет нужен, посмотри наш который есть» — so this is
+the existing story (`docs/saga/КНИГА.md`, 72 chapters in eight parts, the value **НАЗВАН / НЕ
+НАЗВАН**, the two ledgers «вселенная прощает, люди помнят», the four turns, the lamp) laid
+over the shift of §2–§5, part by part. Nothing new is written; the shift is what makes each
+part *playable* instead of *read on a landing*. The rule that binds every row: the player is
+never told the value's name. He is named, or he is not, and the work is the same either way.
+
+| part (chapters) | what the book does | what the watch does — and which M builds it |
+|---|---|---|
+| **I. Подряд** (1–9) | he learns the work; his name is said once; the first line in the ledger nobody keeps | the first watch (§10.7, M909): two addressed items by minute 2, the urgent one by minute 6, the first «Сдать смену?» on the first quit. The one number per chapter the book demands is the shift's: the bill of the first hour is *one line* (fuel), and the dispatcher reads it aloud. Chapter 3 «Почтовый круг» is the mail circle (`11e-post`) — the first *named* offer, and the one place where the ledger shows for a second (the old man writes your call sign under his). Door for II: a norm ≥ 90 % on any сводка |
+| **II. Плечо** (10–18) | he is good; the people who stay appear | the four (`12u-folk`: Гуся, Рыба, Гвоздь, Птица) are *on your participation* — they take your orders as hands (M911: the fork «take / send a hand»), and the bill's people-lines (§10.1) are *their* lines. Гуся never flies: his order is the one you must carry yourself. Door for III: a hand ransomed, or a named offer taken |
+| **III. Соседи** (19–27) | the first big opportunity and the first real failure; nobody is angry | an order lapses into a face (§3.2 G2): the first time the dispatcher's line is «ничего для вас нет» after a missed clock — and he greets you as warmly as before. The three просёры (`27d` cantina hours, Птица, `11t` rumours) close doors the same way: the named offers from that person stop, nothing else changes. Door for IV: a door shut in your face |
+| **IV. Счёт** (28–36) | doors close one by one; none slams | the bill (M904) and the ledger (§5.2): the first negative hour is this part. The debt floor is voiced by the dispatcher in the book's register — no «долг», one line about the Касса. Chapter 35 «Счёт» *is* the bill's first full paper. Door for V: a срыв survived |
+| **V. Прибой** (37–45) | he compares logs and sees what he missed for years | the misclosure of act 2 (M155): the norm's сводка and the ledger disagree in one region — the tapes against the sky. Chapter 36 «Своя невязка» is the player's own: the bill says one thing, the plan says another, and the Глобус's second hand points at nothing. Door for VI: a notch found (§7.2) |
+| **VI. Раскол** (46–54) | **the Blade**: he goes for Гуся knowing the fuel will not bring him back; nobody asked; Рыба comes, who does not sleep | §5.1 is what makes the Blade possible at all: the hull can be lost, so the run is real. Once per game: Гуся is stranded on a world past your fuel; no order, no plate, one line from Рыба on the receiver. If you go and the fuel runs out, Рыба tows you — the one rescue the game ever hands you, and the «Стриж» по разнарядке is *not* offered that time. The captain (§8) is this part's pirate: you cannot kill him, you leave or you pay. Door for VII: the Blade taken, either way |
+| **VII. Тишина** (55–63) | the expedition leaves; nobody names him; the work is the same | the dispatcher goes with the expedition (§10.3): no more addressed items from him, the board still fills by arithmetic (§4.3), the norm still counts. «Есть место» (chapter 61) is the ending the participation offers after a year of ≥ 90 % — leaving is a door, not a reward. Solitude is allowed *only here*, and it is made of the absence of one voice, not of empty systems |
+| **VIII. Тихоня** (64–72) | debts return in the wrong order; he stops being the named one and becomes the one who names | the handover (§3.4): the player's сменщик is one of the four, named by the player; «По списку восьмой» is said *at his side* to someone else (turn 3). Тихоня's hundred notches are the obelisk grammar (§7.2): the eighth column, «кто принял», is empty until the player leaves his mark for a stranger (Q12). The record book is written by others (M161); the board grounds him — he signs it. The finale is the nights-at-home counter (Q11): the game has counted them from minute one and nearly everyone's is zero |
+
+**Three laws this pass adds to the shift** (they come from the book, and §2–§5 must obey them):
+
+1. **The dispatcher is not one more voice — he is the watch's «я тебя назвал».** Every addressed
+   item on К ВАМ is him naming you; every lapse is him *not* naming you next time, in the same
+   warm tone. He must be one of the book's registers, not a fifth type: he is the clerk of the
+   regional plan (§10.3), he leaves in VII, and his 72 lines are the chapters' plates. His name
+   is never asked; the player learns it from the record book in VIII, the way the player's own
+   name is learned.
+2. **The bill is never the story's villain.** The book's cruelty is that nobody reproaches; so a
+   negative hour, a lost hull, a lapsed order get one line of weather, never a sermon. The
+   «ПОМЕХА» and «ЗАКРЫТО» voices of §3 are the book's «ничего для тебя нет» and must sound like it.
+3. **The ledger nobody keeps is the kindness ledger (`11ai`), and it stays invisible.** The
+   shift adds deeds to it (a stranger's bill paid, the Blade, a hand given away before the
+   norm) and never shows a number. Turn 2 of the book — «к полётам не допущен» is his eighth
+   column — is the one time it is read back, in VIII, by the board.
+
+**What this costs the queue (§10.8):** M905 (the dispatcher) gets the rule that his lines are
+drawn from the chapter table (`12ud-smena-text`, `SMENA_TITLE`) by part, not written new; M909
+(the first watch) owns chapters 1–9; M910 becomes «parts II–VIII on the watch» with the door
+table above as its test (a save at part N opens N+1 only through the named door, and the probe
+drives the deed); M911 adds the Blade as a scripted once-per-game run. Nothing else grows.
+
+---
+
 ## 8. Combat — measured, fixed, and what «good» means
 
 The design of `DESIGN-war.md` §1–§5 is right and most of it is built (M360–M388). The author
