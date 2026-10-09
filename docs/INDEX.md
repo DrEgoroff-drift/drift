@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 563 · top-level symbols: 8237
+Files: 564 · top-level symbols: 8239
 
 ## SYMBOLS
 
@@ -1328,10 +1328,12 @@ MUS_WET                      src/10-music.js:105
 NAME_MAX                     src/11u-names.js:14
 NAT_DRAIN                    src/12az-fx-nat.js:12
 NAT_FIND                     src/12az-fx-nat.js:13
+NAT_STAND                    src/12az-fx-nat.js:49
 NAT_STORM                    src/12az-fx-nat.js:10
 NAT_SWARM                    src/12az-fx-nat.js:11
 NAT_SWARM_DMG                src/12az-fx-nat.js:14
 NAT_SWARM_SP                 src/12az-fx-nat.js:15
+NAT_SWARM_WARN               src/12az-fx-nat.js:48
 NEBULA                       src/16-flight.js:81
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
@@ -5701,18 +5703,18 @@ namesEtherLine               src/11u-names.js:45-54
 namesFor                     src/11u-names.js:17
 namesMangle                  src/11u-names.js:39-43
 namesToldAll                 src/11u-names.js:16
-natDrainHere                 src/12az-fx-nat.js:55
-natFindHere                  src/12az-fx-nat.js:63
+natDrainHere                 src/12az-fx-nat.js:69
+natFindHere                  src/12az-fx-nat.js:77
 natInc                       src/12az-fx-nat.js:16
-natLandMul                   src/12az-fx-nat.js:64
-natLine                      src/12az-fx-nat.js:66-73
+natLandMul                   src/12az-fx-nat.js:78
+natLine                      src/12az-fx-nat.js:80-87
 natMine                      src/12az-fx-nat.js:17-22
 natNoPickets                 src/12az-fx-nat.js:35
-natOreMul                    src/12az-fx-nat.js:56-59
+natOreMul                    src/12az-fx-nat.js:70-73
 natStormHere                 src/12az-fx-nat.js:27
 natStormTick                 src/12az-fx-nat.js:28-33
 natSwarmHere                 src/12az-fx-nat.js:39
-natSwarmTick                 src/12az-fx-nat.js:40-51
+natSwarmTick                 src/12az-fx-nat.js:50-65
 navAction                    src/15-input.js:286-303
 near                         tests/90-harness.js:195
 nearestPOI                   src/20a-poi.js:243-248
@@ -8693,7 +8695,7 @@ zoomTo                       src/15-input.js:358
 ## src/12ay-fx-soc.js · 6 KB
   · семья механик: ОБЩЕСТВО (M383, §15.1):1
 
-## src/12az-fx-nat.js · 5 KB
+## src/12az-fx-nat.js · 6 KB
   · семья механик: ПРИРОДА (M384, §15.1):1
 
 ## src/12b-crew-events.js · 18 KB
@@ -9963,6 +9965,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw-fightsim.js · 9 KB
   · проба · дуэль (M901):1
+
+## tests/91zzzw3-swarm.js · 3 KB
+  · рой: слово раньше укуса, авария не петля (0.493.3):1
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

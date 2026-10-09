@@ -37,16 +37,30 @@ function natNoPickets(){return natStormHere();}
    Астероиды идут через систему. Достаётся тому, кто стоит: правило простое,
    видно заранее и лечится движением. */
 function natSwarmHere(sx,sy){return !!natMine("swarm",NAT_SWARM,sx,sy);}
+/* «видно заранее и есть управа» — значит сперва слово, потом укус. До 0.493.3
+   рой кусал с первого кадра: «Лёгкий старт» ставит корабль неподвижно, в
+   секторе 0:0 шёл рой, авария возвращала корабль в ту же систему стоящим —
+   и игра убивала свежий сейв каждые 0.85 с (живой сайт, 09.10). Теперь:
+   стоящему — предупреждение через секунду, укус с пятой секунды и в полную
+   силу к десятой; любое движение сбрасывает счёт; после аварии счёт тоже с
+   нуля. Первые десять минут свежего сейва рой не кусает вовсе: первый час —
+   без убийц (DESIGN-first-hour). */
+const NAT_SWARM_WARN=60,NAT_SWARM_BITE=300,NAT_SWARM_FULL=600,NAT_SWARM_GRACE=10*CEL_DAY;
+let NAT_STAND=0;
 function natSwarmTick(dt){
-  if(G.mode!=="system"||!natSwarmHere())return false;
+  if(G.mode!=="system"||!natSwarmHere()){NAT_STAND=0;return false;}
   const sh=G.ship,st=stat();
   const sp=Math.hypot(sh.vx,sh.vy);
   /* `st.maxSp` в игре нет вовсе (разбор 0.409.1): работал запасной шестёрка, и
      работал случайно. Крейсерская считается везде одинаково */
-  if(sp>=(6.4+st.thr*1.6)*NAT_SWARM_SP)return false;
-  G.hull=Math.max(0,G.hull-NAT_SWARM_DMG*dt);
+  if(sp>=(6.4+st.thr*1.6)*NAT_SWARM_SP){NAT_STAND=0;return false;}
+  const was=NAT_STAND;NAT_STAND+=dt;
+  if(was<NAT_SWARM_WARN&&NAT_STAND>=NAT_SWARM_WARN)say("РОЙ · НЕ СТОЙТЕ НА МЕСТЕ",120);
+  if(NAT_STAND<NAT_SWARM_BITE||G.t<NAT_SWARM_GRACE)return true;
+  const k=Math.min(1,(NAT_STAND-NAT_SWARM_BITE)/(NAT_SWARM_FULL-NAT_SWARM_BITE));
+  G.hull=Math.max(0,G.hull-NAT_SWARM_DMG*k*dt);
   if((G.t|0)%90===0)say("РОЙ · НЕ СТОЙТЕ НА МЕСТЕ",90);
-  if(G.hull<=0&&typeof wreck==="function")wreck("стихия");
+  if(G.hull<=0&&typeof wreck==="function"){NAT_STAND=0;wreck("стихия");}
   return true;
 }
 /* ── истощение ──

@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.493.3 - the swarm warns before it bites; no wreck loop on a fresh save
+
+- **Hotfix, live 09.10.** A fresh save in sector 0:0 died every 0.85 s: the chronicle had an asteroid swarm (M384) running there, the swarm bit a standing ship from the first frame at .9 hull per frame, the easy start leaves the ship standing, and the emergency repair put it back standing in the same system. `natSwarmTick` now says «РОЙ · НЕ СТОЙТЕ НА МЕСТЕ» after one second of standing, bites from the fifth second and ramps to full by the tenth; any motion or a wreck resets the count; the first ten minutes of a fresh save are never bitten. Suite `91zzzw3-swarm`.
+
 ## 0.493.2 - the man in the cave's light (M631 pass 2)
 
 - **M631 (second pass) — the man in the cave's light.** The cave can finally reach white: the engine's last pass no longer caps it at 91 %. The spaceman is lit like a body — the lamp's key on chest and helmet, the warm side turned to a vent or crystal near him, legs darker than the chest, a soft contact shadow under his boots. The manta's belly takes the warm bounce of the cone off the floor while its back stays dark. The vent crack burns white-yellow at the core, orange round it, dark red at the edge, and flickers unevenly along its length. Ore seams sit deeper in stone with a ridge that catches the lamp. The lamp's cone no longer cuts a hard vertical into the rock section under the man's feet.
