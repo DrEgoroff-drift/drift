@@ -845,3 +845,21 @@ band, mirror share, the path and its control): lake .329 / .090 and sea .212 / .
 night, mirror .68–.97, path .40 against .05 without the aim. The cave lake runs the same
 module but lies 2–7 m under the walk line in the seeds tried, so from the walk it shows as a
 dark strip; that is the designer's fork.
+
+**M631 (second pass).** The cave's final pass no longer caps at white: `fsFinal` in `08b`
+clamped every front-like mode at 1 before the tone, so `tone(1) = .908` was the brightest any
+cave pixel could get. The cave comp sets `GPU.hiScene` (reset each frame), the uniform `dn.z`
+reads 2, and the clamp and the bloom weight skip it; other modes are untouched. Lights now
+carry `ptCol.w = 1` when they are not the lamp's own (events: vents, crystals, threads), and
+`points()` takes a start index so the man is not lit twice by his own spill. The man (L2) is
+found in the shader by his feet (`lampPos + (−.2·face, −1.71, .17)`): a lamp key on chest and
+helmet, the warm side toward an event (`eventRim`, events only), a body gradient (shins .62 of
+the chest), a contact shadow on the floor under his feet. The manta's ambient comes from below
+(belly lit, back dark) and its belly takes the cone's floor bounce unshadowed. The crack burns
+in three tubes — dark-red rim 1.55× at glow .35, orange body .85×, white-yellow core that
+mixes to the core colour from heat .1–.55 — core value .983, hue 45.9°, luma .77–.98 along
+it. The section page's void wash asks a wide-penumbra lamp (`lampWide`, cone widened by .45
+in cosine, shadow floored at .35), so the cone's edge no longer cuts the page under the
+man's feet into a vertical. Measured in `m631_*`: corridor wedge median .32, spread .161;
+water hall .36; man chest front/back/shin .53/.38/.21, by a vent .54/.36/.22; vein band .37
+against page .19. The cave lake gate (`cavewater.py`) is green on four scenes.

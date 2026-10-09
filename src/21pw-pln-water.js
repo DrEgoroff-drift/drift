@@ -188,7 +188,7 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
   let ll = lampAt(in.wpos);
   let lsh = lampShade(in.wpos + vec3f(0.0, 0.06, 0.0), up, in.pos.xy);
   /* свет, что проходит в воду: фонарь (квадратичный спад уже в нём), огни слабо, день в столбе */
-  var lit = g.lampCol.rgb * (ll.w * lsh) + points(in.wpos, up, 1.0) * 0.25;
+  var lit = g.lampCol.rgb * (ll.w * lsh) + points(in.wpos, up, 1.0, 0) * 0.25;
   let dm = dayMask(in.wpos);
   if (dm > 0.001) { lit += g.sunCol.rgb * (dm * 0.6 * sunShade(in.wpos + vec3f(0.0, 0.06, 0.0), up, in.pos.xy)); }
   let teal = vec3f(0.035, 0.12, 0.115);
@@ -201,7 +201,7 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
     let lt = lampAt(top);
     let down = g.lampCol.rgb * (lt.w * lampShade(top + vec3f(0.0, 0.06, 0.0), up, in.pos.xy)) + lit * 0.3;
     let fade = pow(1.0 - smoothstep(0.0, 2.0, d), 2.0);
-    let amb2 = g.amb.rgb * 2.0 + points(top, up, 1.0) * 0.6;
+    let amb2 = g.amb.rgb * 2.0 + points(top, up, 1.0, 0) * 0.6;
     let body = mix(vec3f(0.11, 0.37, 0.36), vec3f(0.008, 0.04, 0.075), smoothstep(0.0, 2.6, d));
     var c = body * amb2 * (1.0 + 2.4 * blade) + vec3f(0.002, 0.006, 0.009);
     c += teal * down * (0.12 * fade + 0.9 * blade);
@@ -215,7 +215,7 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
   let refl = mirrorTap(uv, g.screen.zw);
   /* под гладью темно: бирюза — где светит фонарь, у берега больше; огни событий ложатся на рябь
      и кольца капель отсветом — гладь в нижней галерее, куда фонарь не достаёт, читается ими */
-  let own = g.amb.rgb * 0.18 + points(in.wpos + vec3f(0.0, 0.05, 0.0), S.n, 1.0) * 0.1;
+  let own = g.amb.rgb * 0.18 + points(in.wpos + vec3f(0.0, 0.05, 0.0), S.n, 1.0, 0) * 0.1;
   let edge = vec3f(0.6, 0.8, 0.82) * (g.amb.rgb * 0.9 + lit * 0.12);
   var o = waterLook(S, V, depth, 0.0, teal * 0.75, teal * 0.15, lit, own, refl * 1.3,
     ll.xyz, g.lampCol.rgb * (ll.w * lsh * 0.5), edge, 0.18);
