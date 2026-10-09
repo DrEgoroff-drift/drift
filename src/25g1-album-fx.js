@@ -32,16 +32,47 @@ function albumVig(night){
     g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,night?"rgba(0,10,0,.7)":"rgba(0,0,0,.45)");
     c.fillStyle=g;c.fillRect(0,0,128,80);},{mips:false,ss:1});
 }
-/* кисть карточки в выпечку cw×ch при плотности nd; снимок не читается — null */
+/* ── человек на карточке — риг (M801b, закон L2) ──
+   Кисть карточки (25g) человека не рисует: pcRigAt записывает, где он стоит — ноги (x, y) в единицах
+   карточки, рост в тех же единицах, свет, — а альбом кладёт карточку рига (21phc) поверх выпечки тем же
+   фильтром. Свет — контровой, как у прежнего силуэта: на грунте со стороны звезды, под землёй — от
+   светлого конца штрека; лицевая сторона в тени, читается обвод. Без рига — false, кисть рисует сама */
+const PC_RIG=[];
+function pcRigAt(x,y,hh,L,face){
+  if(!RIG_CARD.on||!GPU.dev)return false;
+  PC_RIG.push({x,y,ppm:hh/RIG_H,L,face:face<0?-1:1});return true;
+}
+/* грунт: звезда сбоку и за спиной, её цвет; up — звезда над горизонтом */
+function pcRigSky(star,sx,up){
+  const k=up?1.25:.55,c=star.map(v=>v/255*k);
+  return {key:[.62*sx,.42,.66],col:c,fill:up?[.07,.075,.09]:[.025,.03,.045],gnd:[.04,.035,.03],
+    acc:{d:[-.5*sx,.3,-.4],col:[.04,.05,.07]},lamp:0,exp:1};
+}
+/* пещера и шахта: свет светлого конца штрека за спиной, свод холодит контур; налобник горит */
+function pcRigUnder(lamp){
+  return {key:[.25,.30,.92],col:[.95,.80,.58],fill:[.018,.02,.026],gnd:[.03,.024,.018],
+    acc:{d:[-.3,.8,.4],col:[.10,.14,.22]},lamp:lamp?1:0,exp:1};
+}
+/* кисть карточки в выпечку cw×ch при плотности nd; снимок не читается — null. B.rig — люди карточки */
 function albumBake(s,cw,ch,nd){let ok=false;
-  const B=gpuBake(cw*nd,ch*nd,c=>{c.setTransform(nd,0,0,nd,0,0);ok=drawPostcard(c,s,cw,ch);},{once:true,mips:false});
-  if(B&&!ok){gpuBakeDrop(B);return null;}return B;}
+  const B=gpuBake(cw*nd,ch*nd,c=>{PC_RIG.length=0;c.setTransform(nd,0,0,nd,0,0);ok=drawPostcard(c,s,cw,ch);},{once:true,mips:false});
+  if(B&&!ok){gpuBakeDrop(B);return null;}
+  if(B)B.rig=PC_RIG.slice();
+  return B;}
+/* люди выпечки — карточками рига поверх неё, фильтр M тот же */
+function albumRig(B,M){
+  for(const r of (B&&B.rig)||[]){
+    const C=rigCard({pose:"stand",face:r.face,ppm:r.ppm,light:r.L,pal:"own"});if(!C)continue;
+    const X=RIG_BOX,w=(X.x1-X.x0)*r.ppm,h=(X.y1-X.y0)*r.ppm;
+    ovImage(C,r.x+(X.x0+X.x1)/2*r.ppm,r.y-(X.y0+X.y1)/2*r.ppm,w,h,0,0,0,1,1,1,M);
+  }
+}
 /* выпечку B — в канву cv с фильтром k; без выпечки — пустой бланк */
 function albumPut(cv,s,cw,ch,nd,B,k){
   const M=B&&albumM(s,k);
   return ovPaint(cv,nd,()=>{
     if(!B){ovRect(0,0,cw,ch,"#12161d");return;}
-    ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);
+    ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);albumRig(B,M);
     if(M)ovImage(albumVig(k==="night"),cw/2,ch/2,cw,ch,0,0,0,1,1,1);});
 }
 /* одна карточка на своей канве: перерисовка + фильтр */
@@ -109,7 +140,7 @@ function albumSave(s){
   const cw=1200,ch=750,m=16,pad=64,capH=118,PW=cw+2*(pad+m),PH=ch+2*m+pad+capH;
   /* карточка — с видеокарты тем же путём, что в игре; страница вокруг — 2D: это файл PNG */
   const B=albumBake(s,cw,ch,1),M=B&&albumM(s,s.fx);let px=null;
-  try{px=ovRead(cw,ch,()=>{if(!B){ovRect(0,0,cw,ch,"#12161d");return;}ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);
+  try{px=ovRead(cw,ch,()=>{if(!B){ovRect(0,0,cw,ch,"#12161d");return;}ovImage(B,cw/2,ch/2,cw,ch,0,0,0,1,1,1,M);albumRig(B,M);
     if(M)ovImage(albumVig(s.fx==="night"),cw/2,ch/2,cw,ch,0,0,0,1,1,1);});}finally{gpuBakeDrop(B);}
   if(!px)return false;
   const cv=document.createElement("canvas");cv.width=PW;cv.height=PH;

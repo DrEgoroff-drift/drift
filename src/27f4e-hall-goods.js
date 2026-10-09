@@ -14,7 +14,7 @@ const HALL_GOODS_ACC=[255,106,43];   /* --c-acc плиты: подсветка �
 function hallStencil(c,s){const mx=Math.max(c[0],c[1],c[2]),mn=Math.min(c[0],c[1],c[2]),sat=mx>0?(mx-mn)/mx:0,k=sat>s?s/sat:1;
   return c.map(v=>Math.round((mx-(mx-v)*k)*.82));}
 function hallGoodsMesh(keys){
-  const K=r3Kit(),P=R3P,c=(G&&G.cargo)||{},w=.15,h=.065;   /* мелкий лоток: камера смотрит на стойку почти вдоль, глубокий ящик прятал товар */
+  const K=r3Kit(),P=R3P,c=(G&&G.cargo)||{},w=.15,h=.065;K.flags=2;   /* ящики — тела под резкостью */   /* мелкий лоток: камера смотрит на стойку почти вдоль, глубокий ящик прятал товар */
   const Wd=K.mt([136,94,56],.3,6,P.wood),In=K.mt([70,50,34],.15,4,P.wood);
   keys.slice(0,12).forEach((k,i)=>{const [x,y,z]=hallGoodsAt(i),q=c[k]||0,col=hallGoodsCol(k),hot=HALL_GOODS.hot===k;
     K.box([x,y+.008,z],[w,.008,w],In,.002);   /* дно */
@@ -59,6 +59,8 @@ const HALL_LENS={g:0,t:0,last:0,m:1.31,hold:750};
 function hallLensWant(tm){
   if(HALL_GOODS.hot&&HALL.place==="trade"&&hallGoodsKeys().indexOf(HALL_GOODS.hot)>=0)HALL_LENS.last=tm;
   if(HALL_INSTR.hot&&HALL_INSTR_PLACES.includes(HALL.place)&&INSTR_KEYS.indexOf(HALL_INSTR.hot)>=0)HALL_LENS.last=tm;   /* и прибор на верстаке (M813) */
+  if(HALL.place==="board"&&HALL_BOARD.hot>=0&&hallBoardSheet(HALL_BOARD.hot))HALL_LENS.last=tm;   /* и лист на доске (M814) */
+  if(HALL.place==="hold"&&HALL_HOLD.hot&&hallHoldPin(HALL_HOLD.hot))HALL_LENS.last=tm;   /* и фишка на карте конторы (M814) */
   return HALL_LENS.last>0&&tm-HALL_LENS.last<HALL_LENS.hold?1:0;
 }
 /* шаг скольжения: туда .45 с, обратно .7 с — те же постоянные, что у plnGlide */
@@ -71,8 +73,12 @@ function hallLensMoving(){return HALL_LENS.g>0&&HALL_LENS.g<1;}
 /* к чему тянется объектив: у стойки — хозяин и ящик, у верстака — пилот и шкала прибора (M813). Ключ помнит
    последнюю вещь, чтобы отпущенная строка возвращала объектив от неё, а не скачком */
 function hallLensAim(L){
-  const at=HALL_INSTR_PLACES.includes(HALL.place),g=at?"":HALL_GOODS.hot,n=at?HALL_INSTR.hot:"";
-  const k=g?"g:"+g:n?"i:"+n:HALL_LENS.k;if(!k)return null;HALL_LENS.k=k;
+  const at=HALL_INSTR_PLACES.includes(HALL.place),bd=HALL.place==="board",hd=HALL.place==="hold",g=at||bd||hd?"":HALL_GOODS.hot,
+    n=at?HALL_INSTR.hot:"",b=bd?HALL_BOARD.hot:-1,h=hd?HALL_HOLD.hot:"";
+  const k=g?"g:"+g:n?"i:"+n:b>=0?"b:"+b:h?"h:"+h:HALL_LENS.k;if(!k)return null;HALL_LENS.k=k;
+  if(k[0]==="h"){const p=hallHoldPin(k.slice(2)),M=HALL_MAP;return p?[[M.x,M.y,M.z],p]:null;}   /* у стола — фишка и середина карты */
+  if(k[0]==="b"){const s=hallBoardSheet(+k.slice(2)),B=HALL_BOARD_BOX;   /* у доски — лист и середина доски: кадр не задирается к верхнему листу */
+    return s?[[(B.x0+B.x1)/2,(B.y0+B.y1)/2,s.c[2]],s.c]:null;}
   if(k[0]==="g"){const i=hallGoodsKeys().indexOf(k.slice(2)),k0=L.people[0];if(i<0||i>=12||!k0)return null;
     const p=hallGoodsAt(i);return [[k0.x,1.45,k0.z],[p[0],p[1]+.08,p[2]]];}
   const i=INSTR_KEYS.indexOf(k.slice(2)),P=hallPilotAt(HALL.place)||HALL_PILOT_AT.ship;if(i<0)return null;

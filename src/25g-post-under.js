@@ -32,7 +32,9 @@
    ОДНОГО человека, иначе альбом рассыпается. Рост `hh` в пикселях кадра. */
 function pcMan(c,x,y,hh,col,lamp){
   const b=hh*.42;                      /* низ корпуса */
+  const rig=pcRigAt(x,y,hh,pcRigUnder(lamp),1);   /* риг поверх выпечки (25g1, M801b): здесь — только ореол фонаря */
   c.save();c.translate(x,y);
+  if(!rig){
   c.fillStyle=col;
   /* ноги врозь — стоящий человек, а не столбик */
   c.beginPath();
@@ -45,7 +47,7 @@ function pcMan(c,x,y,hh,col,lamp){
   c.lineTo(hh*.10,-hh*.78);c.lineTo(hh*.16,-hh*.66);c.lineTo(hh*.15,-b*.85);
   c.closePath();c.fill();
   /* шлем */
-  c.beginPath();c.arc(0,-hh*.86,hh*.145,0,TAU);c.fill();
+  c.beginPath();c.arc(0,-hh*.86,hh*.145,0,TAU);c.fill();}
   c.restore();
   /* фонарь на шлеме. Ставится ПОСЛЕ фигуры и аддитивно — иначе он вырезает
      в ней дыру, а не освещает вокруг неё */

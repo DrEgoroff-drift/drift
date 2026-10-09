@@ -12,6 +12,8 @@
       до переноса; так губы улыбаются и кривятся без морфов (27f3 cpRig).
       Кожа (M729): вершина может держаться за вторую часть с весом — флаги + 2048·часть₂ + 32768·вес(0..255);
       матрица — смесь двух (как скиннинг в два кости): веко тянет кожу над глазом, нижняя губа — подбородок.
+      Бит 2²³ (M814) — тело под резкостью поста (K.flags 2). Флаги читаются round(), не +.5: у 2²³ шаг float32 — 1,
+      и +.5 округлялось бы к чётному — нечётная часть уезжала на соседнюю матрицу.
    2. Тени — до R3_SH ламп, слой карты глубины на каждую (перспектива из лампы вниз), 4 выборки.
       Флаг 1 — «не бросает тени»: колба внутри абажура иначе гасила бы свою же лампу.
    3. Узоры (pat) — подробность без текстур: обшивка, плитка, дерево, шлифованный металл, ткань,
@@ -63,7 +65,7 @@ function r3Proj(vp,p,w,h){
 /* ── инструменты сетки ── всё в метрах; T — текущая матрица (стек push/pop) */
 function r3Kit(){
   const V=[];let T=r3Xf([0,0,0]);const ST=[];
-  const K={V,part:0,flags:0,q:1};   /* q — множитель граней: портрет крупным планом гуще */
+  const K={V,part:0,flags:0,q:1};   /* q — множитель граней: портрет крупным планом гуще; flags: 1 — не бросает тени, 2 — тело под резкостью */
   const P=p=>[T[0]*p[0]+T[4]*p[1]+T[8]*p[2]+T[12],T[1]*p[0]+T[5]*p[1]+T[9]*p[2]+T[13],T[2]*p[0]+T[6]*p[1]+T[10]*p[2]+T[14]];
   const N=n=>{const x=T[0]*n[0]+T[4]*n[1]+T[8]*n[2],y=T[1]*n[0]+T[5]*n[1]+T[9]*n[2],z=T[2]*n[0]+T[6]*n[1]+T[10]*n[2],l=Math.hypot(x,y,z)||1;return [x/l,y/l,z/l];};
   const nz=v=>{const l=Math.hypot(v[0],v[1],v[2]);return l>1e-12?[v[0]/l,v[1]/l,v[2]/l]:[0,1,0];};
@@ -78,7 +80,7 @@ function r3Kit(){
   /* вершина: p, n — местные (через T); col — своя краска вершины (иначе материал) */
   K.vx=(p,n,M,col,sk)=>{const q=P(p),m=N(n),c=col||M.c,wq=sk?Math.round(clamp(sk[1],0,1)*255):0;
     V.push(q[0],q[1],q[2],m[0],m[1],m[2],c[0],c[1],c[2],Math.round(M.g)+Math.min(M.s,.99),M.e,
-      K.part+16*M.p+1024*((M.ns||K.flags&1)?1:0)+(wq?2048*sk[0]+32768*wq:0));};
+      K.part+16*M.p+1024*((M.ns||K.flags&1)?1:0)+(wq?2048*sk[0]+32768*wq:0)+(K.flags&2?8388608:0));};
   K.tri=(a,b,c,M,n)=>{n=n||nz(cr(sub(b,a),sub(c,a)));K.vx(a,n,M);K.vx(b,n,M);K.vx(c,n,M);};
   K.quad=(a,b,c,d,M,n)=>{n=n||nz(cr(sub(b,a),sub(d,a)));K.vx(a,n,M);K.vx(b,n,M);K.vx(c,n,M);K.vx(a,n,M);K.vx(c,n,M);K.vx(d,n,M);};
   /* ящик со скошенными рёбрами: c — середина, h — полуразмеры, b — фаска (ловит блик, как у настоящей вещи) */
@@ -171,12 +173,12 @@ fn bend(p:vec3f,M:mat4x4f)->vec3f{return vec3f(p.x,p.y+M[0].w*p.x*p.x+M[1].w*p.x
 fn skinM(ii:u32,f:u32)->mat4x4f{let b=ii*${R3_PART}u;let M=u.M[b+(f&15u)];let w=f32((f>>15u)&255u)/255.;
   if(w<=0.){return M;}return M*(1.-w)+u.M[b+((f>>11u)&15u)]*w;}
 @vertex fn vs(i:VI,@builtin(instance_index) ii:u32)->VO{
-  var o:VO;let f=u32(i.m.z+.5);let ob=ii*${R3_PART}u+(f&15u);let M=skinM(ii,f);
+  var o:VO;let f=u32(round(i.m.z));let ob=ii*${R3_PART}u+(f&15u);let M=skinM(ii,f);
   let w=(M*vec4f(bend(i.p,M),1.)).xyz;
   o.q=u.vp*vec4f(w,1.);o.w=w;o.n=(M*vec4f(i.n,0.)).xyz;o.c=i.c;o.m=i.m;o.l=i.p;o.ob=ob;return o;}
 /* тень: глубина из лампы sk.x; «не бросает» — за дальнюю плоскость */
 @vertex fn vsh(i:VI,@builtin(instance_index) ii:u32)->@builtin(position) vec4f{
-  let f=u32(i.m.z+.5);
+  let f=u32(round(i.m.z));
   if(((f>>10u)&1u)==1u){return vec4f(0.,0.,2.,1.);}
   let M=skinM(ii,f);
   return u.sv[sk.x]*vec4f((M*vec4f(bend(i.p,M),1.)).xyz,1.);}
@@ -274,16 +276,66 @@ fn outside(w:vec3f)->vec3f{
     let bl=fract(q.x*12.)-.5;c+=vec3f(1.,.78,.45)*exp(-length(vec2f(bl,(q.y+.012)*3.))*70.)*1.2*step(-.5,q.x);
     if(kind==2){let wp=vec2f(.5+.12*sin(tt*.07),.03);let wf=.75+.25*sin(tt*9.3);   /* сварка на рёбрах: вспышка и отсвет на корпусе */
       c+=vec3f(.6,.8,1.)*exp(-length(q-wp)*160.)*4.*wf+vec3f(.3,.45,.7)*exp(-length(q-wp)*18.)*.12*wf*hm;}}
-  return c*u.win2.w;}
+  /* стройка станции (M814): ближний план за окном, на 20 м ближе звёзд, — ферма-хребет, кран и люльки площадок
+     под ним. flm2.w — три цифры по шесть, по площадке: 0 нет, 1 свободна (голая рама, вехи), 2 строится (рёбра,
+     сварка, трос крана), 3–5 построена (цех, ряды окон по ступени, маяк акцента); 216 — мест ещё нет, только вехи */
+  let sw=u.flm2.w;var se=vec3f(0.);let nk=clamp((1.-u.win2.w)/.62,0.,1.);   /* se — свои огни стройки: ночь окна их не гасит */
+  if(sw>.5){
+    let t2=(u.win2.x-20.-u.cam.z)/min(rd.z,-1e-3);let P=(u.cam.xyz+rd*t2).xy-vec2f(2.3,3.);
+    let dk=vec3f(.03,.033,.04);let lt=vec3f(.52,.55,.6);let nos=sw>215.;
+    var ext=-1.;var bld=-9.;
+    for(var i=0;i<3;i++){let d=floor(sw/pow(6.,f32(i)))%6.;if(d>.5&&!nos){ext=f32(i);if(d>1.5&&d<2.5){bld=f32(i);}}}
+    let x0=select(-3.6,-1.2,nos);let x1=select(ext*1.9-1.9+.95,1.2,nos);
+    /* хребет: два пояса и раскос, верхний пояс к звезде светлее */
+    let inS=step(x0,P.x)*step(P.x,x1)*step(abs(P.y),.12);
+    let sm=inS*max(step(abs(abs(P.y)-.095),.028),step(abs(P.y-.095*(2.*abs(2.*fract(P.x*2.2)-1.)-1.)),.026));
+    c=mix(c,mix(dk,lt,step(0.,P.y)*.8),sm);
+    if(nos){for(var j=0;j<2;j++){let b=P-vec2f(f32(j)*2.4-1.2,-.55);
+      c=mix(c,dk*1.4,step(abs(b.x)+abs(b.y),.12));c+=vec3f(1.,.62,.25)*exp(-length(b-vec2f(0.,.14))*28.)*(1.+.7*sin(tt*.9+f32(j)*2.5));}}
+    else{
+      /* кран у левого края: башня-ферма и стрела над площадками; трос — к той, что строится */
+      let cx=P.x+3.45;let inT=step(abs(cx),.13)*step(-2.4,P.y)*step(P.y,1.15);
+      let tm=inT*max(step(abs(abs(cx)-.11),.026),step(abs(cx-.11*(2.*abs(2.*fract(P.y*2.6)-1.)-1.)),.024));
+      let jy=P.y-1.08;let jx1=select(-1.0,bld*1.9-1.9+.2,bld>-1.);let inJ=step(abs(jy),.07)*step(-3.6,P.x)*step(P.x,jx1+.3);
+      let jm=inJ*max(step(abs(abs(jy)-.055),.022),step(abs(jy-.055*(2.*abs(2.*fract(P.x*3.)-1.)-1.)),.02));
+      c=mix(c,mix(dk,lt,step(0.,cx)*.7),clamp(tm+jm,0.,1.));
+      c+=vec3f(1.,.2,.12)*exp(-length(P-vec2f(-3.45,1.2))*30.)*(1.2+sin(tt*1.1));
+      for(var i=0;i<3;i++){
+        let d=floor(sw/pow(6.,f32(i)))%6.;if(d<.5){continue;}
+        let p=P-vec2f((f32(i)-1.)*1.9,0.);
+        /* прожектор площадки под хребтом: колба и тёплый конус вниз — люлька читается и на тёмном небе */
+        c+=vec3f(1.,.86,.62)*(exp(-length(p-vec2f(0.,-.16))*40.)*3.+exp(-pow(p.x/(.08+.45*max(-p.y-.16,0.)),2.))*smoothstep(.16,.4,-p.y)*(1.-smoothstep(1.2,1.9,-p.y))*.08);
+        /* люлька: рама под хребтом */
+        let fr=step(abs(p.x),.84)*step(-1.78,p.y)*step(p.y,-.1);
+        c=mix(c,mix(dk,lt,step(0.,p.x)*.55),fr*max(step(.79,abs(p.x)),step(p.y,-1.73)));
+        if(d<1.5){c+=vec3f(1.,.62,.25)*exp(-length(vec2f(abs(p.x)-.8,p.y+1.76))*28.)*(1.+.6*sin(tt*.9+f32(i)*2.));continue;}
+        let lv=max(d-2.,0.);let top=select(-.95,-1.7+.5+.4*lv,d>2.5);
+        var inB=step(abs(p.x),.66)*step(-1.7,p.y)*step(p.y,top);
+        if(d<2.5){inB*=max(step(fract(p.x*4.+.5),.3),step(p.y,-1.42));}   /* строится: низ обшит, выше — рёбра */
+        var hs=vec3f(.035,.04,.048)*(.7+.5*smoothstep(-1.7,top,p.y))+vec3f(.012,.014,.018)*fb2(p*9.);
+        hs+=vec3f(.42,.46,.52)*smoothstep(top-.07,top,p.y)+vec3f(.2,.22,.25)*smoothstep(.56,.66,p.x);
+        hs*=1.-.4*step(fract(p.x*3.2),.07);
+        if(d>2.5){let wr=(p.y+1.42)/.4;let rw=floor(wr);let cl=floor(p.x*4.4);
+          hs+=vec3f(1.,.72,.38)*1.3*step(rw,lv-1.)*step(0.,rw)*step(abs(fract(wr)-.5),.13)*step(abs(fract(p.x*4.4)-.5),.22)*step(.35,h2(vec2f(cl+f32(i)*9.,rw)));}
+        c=mix(c,hs,inB);
+        se+=vec3f(.5,.45,.38)*(.35+.65*smoothstep(-1.7,top,p.y))*.3*nk*inB;   /* ночью цех в своих прожекторах — светлее погасшего корпуса */
+        if(d>2.5){c+=ac*exp(-length(p-vec2f(.5,top+.06))*30.)*(1.2+sin(tt*.8+f32(i)*1.7));}
+        else{let wp=vec2f(.45*sin(tt*.13+f32(i)),top);let wf=.75+.25*sin(tt*9.3+f32(i));
+          c+=vec3f(.6,.8,1.)*exp(-length(p-wp)*30.)*3.*wf+vec3f(.3,.45,.7)*exp(-length(p-wp)*5.)*.1*wf;
+          c=mix(c,dk,step(abs(p.x-.2),.012)*step(top,p.y)*step(p.y,1.05));}}}
+  }
+  return c*u.win2.w+se;}
 fn aces(x:vec3f)->vec3f{return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),vec3f(0.),vec3f(1.));}
 /* два слоя: цвет и дым отдельно — дым шумит по шагам и размывается в последнем проходе, не задевая контуры */
 struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
 @fragment fn fs(i:VO,@builtin(front_facing) ff:bool)->FO2{
-  let f=u32(i.m.z+.5);let pat=(f>>4u)&63u;
+  let f=u32(round(i.m.z));let pat=(f>>4u)&63u;
   /* сторона нормали — по грани, а не по обходу: у трубок, лент и тел обход разный, а грань к зрителю всегда своя.
      Нормаль, что смотрит против видимой грани, — изнанка: перевернуть */
   let W=i.w;let V=normalize(u.cam.xyz-W);
   var gn=cross(dpdx(W),dpdy(W));if(dot(gn,V)<0.){gn=-gn;}
+  /* след пикселя в метрах: мелкий узор тише, когда его период подходит к пикселю, — иначе муар (M814b) */
+  let fpW=max(length(dpdx(W)),length(dpdy(W)));
   var n=normalize(i.n);if(dot(n,gn)<0.){n=-n;}
   let ndv=max(dot(n,V),0.);
   var a=i.c;var sp=fract(i.m.x);var gl=floor(i.m.x);var em=i.m.y;var wrap=0.;var fres=.04;var ao=1.;var ex3=vec3f(0.);var tg=vec3f(0.);
@@ -304,7 +356,7 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
   else if(pat==3u){   /* дерево под лаком: волокно вдоль x */
     let g=sin(W.z*90.+fb3(W*vec3f(1.2,6.,30.))*9.+W.x*.6);a*=.82+.16*g+.1*(fb3(W*vec3f(.5,8.,8.))-.5);}
   else if(pat==4u){   /* шлифованный металл: риски вдоль x */
-    let s=vn3(W*vec3f(2.,420.,420.));a*=.9+.2*s;sp*=.7+.6*s;}
+    let s=(vn3(W*vec3f(2.,420.,420.))-.5)*clamp(1.6-fpW*420.*2.,0.,1.)+.5;a*=.9+.2*s;sp*=.7+.6*s;}
   else if(pat==5u){   /* окно: вид наружу своим светом, сверху — стекло ловит лампы */
     a=vec3f(.012);ex3=outside(W);fres=.08;sp=.9;gl=14.;}
   else if(pat==6u){   /* вывеска: неон по маске текста, фон — тёмная плата */
@@ -366,6 +418,15 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
   /* выбранный и наведённый: контур акцентом по краю силуэта; .y — приглушить (кино, чужие при выборе) */
   let ot=u.ot[i.ob];
   c+=u.acc.rgb*pow(1.-ndv,2.5)*ot.x*1.4;
+  /* планка света людей (M814): последняя часть экземпляра — его паспорт (x, z опоры, радиус пятна, контур).
+     Контур — холодный отсвет зала по кромке силуэта, сверху сильнее (свет дока и окна сверху-сзади);
+     пятно — контактная тень на полу под человеком: тело закрывает рассеянный, ноги стоят, а не висят */
+  let io=u.ot[(i.ob/${R3_PART}u)*${R3_PART}u+${R3_PART-1}u];
+  if(io.w>0.){c+=(mix(u.gnd.rgb,u.sky.rgb,.8)*u.sky.w+vec3f(.03,.036,.05))*io.w*pow(1.-ndv,3.5)*smoothstep(-.4,.5,n.y);}
+  if(n.y>.7&&W.y<.08){var cs=1.;
+    for(var k=0u;k<${R3_MAXI}u;k++){let q=u.ot[k*${R3_PART}u+${R3_PART-1}u];if(q.z<=0.){continue;}
+      let d=length(W.xz-q.xy)/q.z;cs*=1.-.62*exp(-d*d*2.2);}
+    c*=cs;}
   c*=1.-ot.y;
   /* ── воздух: дым по лучу, в конусах ламп — с тенью (лучи сквозь людей) ── */
   let ro=u.cam.xyz;let rv=W-ro;let tm=length(rv);let rd=rv/tm;
@@ -389,7 +450,8 @@ struct FO2{@location(0) c:vec4f,@location(1) v:vec4f};
       vol+=L.c.rgb*at*s*dn*ph*dt*L.s.z;}
   }
   c=mix(c,u.fog.rgb,1.-exp(-tm*u.gnd.w));
-  var o:FO2;o.c=vec4f(c,1.);o.v=vec4f(vol*u.fog.w,1.);return o;}`;
+  /* альфа кадра — маска резкости (бит 23): тела под ней, фон — нет; после сведения MSAA край тела — доля */
+  var o:FO2;o.c=vec4f(c,f32((f>>23u)&1u));o.v=vec4f(vol*u.fog.w,1.);return o;}`;
 /* уменьшение вдвое на 13 выборок (как в больших движках): ступени отсвета и размытый дым.
    tx — шаг выборки источника и режим (1 — порог отсвета с мягким коленом) */
 const R3_DOWN_WGSL=`
@@ -558,11 +620,14 @@ fn field(p:vec2f,uv:vec2f)->vec4f{
   let c0=(vu-oc)*length(vu-oc)*cs;let ca=vec2f(c0.x/ax,c0.y);
   var c=vec3f(textureSampleLevel(t0,smp,uv+ca,0.).r,textureSampleLevel(t0,smp,uv,0.).g,textureSampleLevel(t0,smp,uv-ca,0.).b);
   /* резкость (v[13].z > 0 — зал, M814): четыре соседа, нерезкая маска зажата в их же размах — ступень силуэта и деления
-     круче, ореола нет; кантина и портреты без неё */
-  if(fu.v[13].z>0.){let g0=textureSampleLevel(t0,smp,uv+vec2f(px.x,0.),0.).rgb;let g1=textureSampleLevel(t0,smp,uv-vec2f(px.x,0.),0.).rgb;
-    let g2=textureSampleLevel(t0,smp,uv+vec2f(0.,px.y),0.).rgb;let g3=textureSampleLevel(t0,smp,uv-vec2f(0.,px.y),0.).rgb;
+     круче, ореола нет; только по маске тел (альфа кадра, раздвинутая на пиксель — силуэт резок с обеих сторон):
+     рейки и швы стены за рядом не точатся в муар. Кантина и портреты без неё */
+  if(fu.v[13].z>0.){let h0=textureSampleLevel(t0,smp,uv+vec2f(px.x,0.),0.);let h1=textureSampleLevel(t0,smp,uv-vec2f(px.x,0.),0.);
+    let h2=textureSampleLevel(t0,smp,uv+vec2f(0.,px.y),0.);let h3=textureSampleLevel(t0,smp,uv-vec2f(0.,px.y),0.);
+    let g0=h0.rgb;let g1=h1.rgb;let g2=h2.rgb;let g3=h3.rgb;
+    let sm=max(max(max(h0.a,h1.a),max(h2.a,h3.a)),textureSampleLevel(t0,smp,uv,0.).a);
     let mn=min(min(min(g0,g1),min(g2,g3)),c);let mx=max(max(max(g0,g1),max(g2,g3)),c);
-    c=clamp(c+(c-(g0+g1+g2+g3)*.25)*fu.v[13].z,mn,mx);}
+    c=clamp(c+(c-(g0+g1+g2+g3)*.25)*fu.v[13].z*sm,mn,mx);}
   /* дым в лучах: половинный слой палаткой из четырёх — шум шагов уходит, тени людей в луче остаются */
   let vq=.75/vec2f(textureDimensions(t2));
   c+=(textureSampleLevel(t2,smp,uv+vq*vec2f(-1.,-1.),0.).rgb+textureSampleLevel(t2,smp,uv+vq*vec2f(1.,-1.),0.).rgb

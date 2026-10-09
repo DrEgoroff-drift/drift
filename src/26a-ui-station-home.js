@@ -329,4 +329,5 @@ function renderBasesTab(st){
         $body.appendChild(row);
       }
     }
+    if(typeof HALL!=="undefined"&&HALL.open)hallHoldDress();   /* строки дома и баз — фишки на карте конторы (M814) */
 }

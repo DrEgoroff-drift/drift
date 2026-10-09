@@ -34,25 +34,31 @@ function roleAllyNear(p){
   return false;
 }
 /* бегство и прыжок: true — запись уже снята */
+function roleJumpDue(p){
+  if(!(p.jumpT&&G.t>=p.jumpT))return false;
+  logAdd("kill","«"+p.name+"» ушёл в прыжок · награда потеряна");
+  if(typeof sfx==="function")sfx("ui",{f:180,to:90,d:.3,v:.3});
+  p.hull=0;p.fled=1;
+  return true;
+}
 function roleFlee(p,dt,want){
   roleSteer(p,want+Math.PI,dt,.05);roleThrust(p,dt,.07);
   if(!p.jumpT){
     p.jumpT=G.t+180+rnd()*60;
     say("«"+p.name+"» уходит",70);
-  }else if(G.t>=p.jumpT){
-    logAdd("kill","«"+p.name+"» ушёл в прыжок · награда потеряна");
-    if(typeof sfx==="function")sfx("ui",{f:180,to:90,d:.3,v:.3});
-    p.hull=0;p.fled=1;
-    return true;
+    return false;
   }
-  return false;
+  return roleJumpDue(p);   /* по часам — и из 13-pirates, когда вас уже не видно */
 }
 /* один шаг роли; d — до игрока, want — курс на игрока */
 function pirateRoleTick(p,dt,d,want){
   const st=p.rs||(p.rs={st:"dash",t:0,spin:(p.seed&1)?1:-1,burst:0});
   const hp=p.hull/Math.max(1,p.hullMax);
   p.cool-=dt;
-  /* под четвертью и один — в прыжок */
+  /* под четвертью и один — в прыжок. (Между .25 и .3 шакал прежде уходил в
+     бесконечность — отход без возврата в бросок; с 09.10 отход возвращает в
+     бросок всегда, и порог один на всех: под третью стоковый ствол его
+     ещё догоняет, под четвертью — уже добыча за три секунды бега) */
   if(hp<.25&&!roleAllyNear(p))return roleFlee(p,dt,want);
   const rank=p.rank|0;
   if(rank===0){
@@ -68,7 +74,9 @@ function pirateRoleTick(p,dt,d,want){
       st.t-=dt;if(st.t<=0){st.st="break";st.t=90;}
     }else{
       roleSteer(p,want+Math.PI+.6*st.spin,dt,.05);roleThrust(p,dt,.06);
-      st.t-=dt;if((d>650||st.t<=0)&&hp>=.3){st.st="dash";}
+      /* отошёл — снова бросок, и битый тоже: одинокий битый уже ушёл выше,
+         а прикрытый дерётся до конца */
+      st.t-=dt;if(d>650||st.t<=0){st.st="dash";}
     }
   }else if(rank===1){
     /* ветеран: держит 400–600, ходит бортом, нос на вас */
@@ -89,9 +97,17 @@ function pirateRoleTick(p,dt,d,want){
     roleFire(p,d,want,760,60);
   }else if(rank===2){
     /* капитан: никогда ближе семисот, редкий тяжёлый огонь */
-    if(d<700){roleSteer(p,want,dt,.05);const k=.06*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
-    else if(d>950){roleSteer(p,want,dt);roleThrust(p,dt,.045);}
-    else{roleSteer(p,want,dt,.05);roleDamp(p,dt,.96);}
+    /* тяжёлый корабль ворочается медленно (.012 — 41°/с против 170°/с): «Стриж»
+       на трёхстах обходит его быстрее, чем он поворачивает лоб, — иначе лобовое
+       поле не обойти никому, и капитан убивал любой корпус вплоть до «Топора»
+       (проба · дуэль, 09.10) */
+    /* ближе семисот он не пятится без конца (прежде — задним ходом .04 с лицом к вам,
+       и обойти его было некуда: он отъезжал и доворачивал): под четырьмястами
+       отходит, между — стоит и ворочает лоб. Обойти лоб — вся дуэль с ним */
+    if(d<400){roleSteer(p,want,dt,.012);const k=.04*dt;p.vx-=Math.cos(want)*k;p.vy-=Math.sin(want)*k;p.thrust=true;}
+    else if(d<700){roleSteer(p,want,dt,.012);roleDamp(p,dt,.94);}
+    else if(d>950){roleSteer(p,want,dt,.012);roleThrust(p,dt,.045);}
+    else{roleSteer(p,want,dt,.012);roleDamp(p,dt,.96);}
     if(d<1100&&p.cool<=0&&!(p.stunT>0)&&Math.abs(angDiff(want,p.a))<.3){
       fireShot(p.x,p.y,p.a,9,(p.dmg||3.5+sysDanger(G.sx,G.sy)*5)*1.6,p.owner||"pirate");
       /* пусковая — по таблице §5 у капитана (M367/M368): раз в несколько

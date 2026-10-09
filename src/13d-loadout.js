@@ -101,6 +101,7 @@ function foeArmFire(p,fam,d){
   if(fam==="jam"){
     /* помеховая не стреляет вовсе: рядом с капитаном захват не держится */
     if(d>JAM_R)return false;
+    if(!(G.jamT>0))say("ПОМЕХА · НАВОДКА ПЛЫВЁТ",80);
     G.jamT=JAM_TIME;
     return true;
   }

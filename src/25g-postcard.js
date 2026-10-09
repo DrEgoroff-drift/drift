@@ -534,7 +534,7 @@ function drawPostcard(c,s,w,h){
      одновременно. Рост взят от кадра, а не от мира: на снимке человек всегда
      примерно одной величины, как на всякой фотографии */
   {
-    const x=w*.5, y=gy(w*.5), H0=h*.075;
+    const x=w*.5, y=gy(w*.5);let H0=h*.075;
     const dark=pcMix([8,10,16],T.pal[0],.30);
     /* тень под ногами: без неё фигура висит над слоями, а не стоит на них */
     c.fillStyle="rgba(0,0,0,.30)";
@@ -568,12 +568,13 @@ function drawPostcard(c,s,w,h){
       }
       c.restore();
     };
+    if(s.m!=="l"&&pcRigAt(x,y,H0,pcRigSky(star,sunX>x?1:-1,up),sunX>x?1:-1))H0=0;   /* риг поверх (25g1, M801b) */
     const rim=pcA(pcMix(star,[255,255,255],.40),up?.55:.34);
     const off=Math.max(1.2,H0*.075);
-    c.fillStyle=rim;c.strokeStyle=rim;
+    if(H0>0){c.fillStyle=rim;c.strokeStyle=rim;
     body(sunX>x?off:-off,-off*.7);
     c.fillStyle=pcA(dark,.94);c.strokeStyle=pcA(dark,.94);
-    body(0,0);
+    body(0,0);}
   }
 
   /* ── 9. погода ──

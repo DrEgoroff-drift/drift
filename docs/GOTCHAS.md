@@ -206,3 +206,8 @@ down, because the sprite is baked at one size and stretched. Before baking anyth
 questions: what share of the bounding box does the ink cover, and how far will the finished picture
 be stretched at the largest zoom (the sprite gives `GLOW_SP/2` pixels per unit radius — compare that
 against the shape's biggest on-screen size). Bake discs, glows and bodies; leave slivers alone.
+
+- **`test.ps1` ALL GREEN is not the runner's Node tier.** 0.493.0 (09.10.2026) was green through
+  `test.ps1` and `test.ps1 -Full` and red on the runner at `node test-node.js`: the `typeof`-sentry net
+  («сеть: в наборах нет ok(true и typeof-сторожей») reports there and not through the gate. Before a push
+  run `node test-node.js` bare and read its first line.

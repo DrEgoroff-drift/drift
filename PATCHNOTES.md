@@ -8,11 +8,50 @@ older entries below are left as they were written — translating history would 
 could ever save.
 ## Unreleased (planet-main)
 
+- **M631 (second pass) — the man in the cave's light.** The cave can finally reach white: the engine's last pass no longer caps it at 91 %. The spaceman is lit like a body — the lamp's key on chest and helmet, the warm side turned to a vent or crystal near him, legs darker than the chest, a soft contact shadow under his boots. The manta's belly takes the warm bounce of the cone off the floor while its back stays dark. The vent crack burns white-yellow at the core, orange round it, dark red at the edge, and flickers unevenly along its length. Ore seams sit deeper in stone with a ridge that catches the lamp. The lamp's cone no longer cuts a hard vertical into the rock section under the man's feet.
+
+## 0.493.1 - the captain can be fought; 0.493.0 never reached the site
+
+0.493.0 went red on the runner's Node tier: the probe read its environment through `typeof
+process` guards, and the net that refuses `typeof` sentries in suites caught it — the local gate
+had not (`test.ps1` prints ALL GREEN while `node test-node.js` alone reports the net; noted in
+`docs/GOTCHAS.md`). Nothing was deployed; this release carries 0.493.0 whole.
+
+- **M902b — the captain.** Measured before: no build could touch him and he killed every build
+  that stayed, because he backed away for ever with his nose on you (reverse thrust under 700 px)
+  while turning at 170°/s — there was no side to reach. Now he turns at 41°/s, backs off only under
+  400 px and holds ground between 400 and 700, and the jammer keeps half the lead with a ±4°
+  wander. Measured after (`проба · дуэль`, danger .5): a stock «Стриж» flanking him makes him
+  flee in 35 s at 67 % hull; a «Топор» w3 kills him in 21 s at 87 %; a «Вьюк» still dies if it
+  stays, and leaving costs one missile (10 s, −20…−50 % hull). Standing still against him is
+  death on every build, as it should be.
+
+## 0.493.0 - the remake on the engine: the hall, the orbs, the cave; the duel probe
+
+Everything the three builders and the designer put on `planet-main` since 0.492.1 (147 commits,
+M800–M830 stage work, M627b–M634 planet work), pushed as one release on the author's word
+(09.10: «собери все от всех агентов, заливай в мейн»). Not every item below has passed the
+AAA judgement yet; the open gaps stay in `PLAN.md` and `docs/DESIGN-remake.md`.
+
+- **M901/M902 — the duel measured, three combat bugs.** `tests/91zzzw-fightsim.js` («проба ·
+  дуэль», probe tier) fights the real helm, guns and pirate roles under Node: four builds, four
+  sets, three dangers, six player scripts, one markdown table. It found (a) the pirate speed cap
+  `ROLE_LIM` never held — the nose-blend block rewrote the clamped velocity with the old
+  magnitude, so a fleeing jackal reached 21 px/frame against a cap of 5.2 and left for ever;
+  (b) the flee jump lived inside the role tick, which runs only while the pirate sees you — he
+  left sight before the clock and never jumped (`roleJumpDue` now fires from `13-pirates`
+  whether he sees you or not; a jackal alone flees under a third, not a quarter); (c) the
+  captain's jammer removed the lock entirely within 600 px, so nobody aiming by mark could
+  shoot him at all — now the mark holds and the aim slips (no lead, ±7° wander, «ПОМЕХА ·
+  НАВОДКА ПЛЫВЁТ»). The captain also turns at .022 instead of .05. Measured after the fix: a
+  stock «Стриж» makes a jackal flee in 9–17 s, two jackals cost 22–69 % hull depending on how
+  you fly, a veteran kills a standing ship and loses to a flanking one; the captain still kills
+  every build that stays — the open item of M902. `docs/DESIGN-game.md` is the game-logic draft
+  behind this (the shift, the bill, the dispatcher, loss, the three rails, combat targets).
+
 - **M634 — one water everywhere.** Lakes, ponds, the ocean and the cave lake are one water: ripple along the wind, calm patches, a swell far off on the sea, Fresnel, shallows, a wet edge with a bright thread, murk. Ocean worlds now have a sea to the horizon with islands rising from it and a sun path when the sun stands ahead. By night the water keeps its wind patches and its reflections instead of going flat under the mist.
 
 - **M631 (first pass) — the cave's last five.** Stalagmites are no longer lathe-turned: each tier wanders ±20 % round its ring, leans toward the side the water dripped from, overhangs only there and flows into the tier below on the dry side; tier heights vary. The manta's wings are cambered, so the lamp lays a gradient across them, with a lighter leading edge. A vent crack burns in three layers — dark-red rim, orange body, a white-yellow core that flares and smoulders along its length — with a narrow halo. Corridor air is thinner (the wedge reads .30, stone spread .15); wet halls keep theirs. Ore veins are bodies on the section page: a pale mineral seam with a lit ridge, pressed against the floor or roof edge until it sits in stone; no orange strokes.
-
-- **M631 (second pass) — the man in the cave's light.** The cave can finally reach white: the engine's last pass no longer caps it at 91 %. The spaceman is lit like a body — the lamp's key on chest and helmet, the warm side turned to a vent or crystal near him, legs darker than the chest, a soft contact shadow under his boots. The manta's belly takes the warm bounce of the cone off the floor while its back stays dark. The vent crack burns white-yellow at the core, orange round it, dark red at the edge, and flickers unevenly along its length. Ore seams sit deeper in stone with a ridge that catches the lamp. The lamp's cone no longer cuts a hard vertical into the rock section under the man's feet.
 
 - **M630d — the cave looks like stone.** The lamp's beam is brightest at the lamp and fades with
   distance, thicker in wet halls, with a soft edge; through it the wall is still the wall. Stone breaks
@@ -171,6 +210,15 @@ could ever save.
   until the alarm has been quiet for 45 frames. On the map the message hangs at the far third of
   the course line; with no course (and always on the phone) it is a second line under «ВЫ».
   On the ground a message joins the hint plate as one more line — one thing, one plate.
+- **M825c The orbs' second pass.** Crystal worlds are violet glass whatever the star: big
+  fields, medium facets and druse patches, chipped steps between fields with a lit lip and a
+  shadow below, and only the facets turned to the star glow along their seams. Ice worlds show
+  plates of snow, bare ice and frost, cut by a few wide cracks with a dark floor, a lit wall on
+  the star side and ridges of pressure ice beside them. Jungle worlds have valleys and ridges,
+  dark rivers that read at full screen, and clouds as their own layer, ragged at the edge and
+  casting a shadow; the second limb on the night side is gone. Close to a star its rays stop at
+  a third of the screen and the hint plate keeps off the disc. A red giant's surface is soft
+  cells of mixed size, smaller and darker toward the limb, with bright faculae.
 - **M825 The orbs and the star up close.** Each planet type now holds at full zoom. Crystal
   worlds are dark violet glass: big facets with pale seams, druse patches of small facets, a few
   glinting edges. Ice worlds are crossed by umber lineae of uneven width that wander and break,
@@ -290,6 +338,26 @@ could ever save.
   moment it settles back to the whole hall. In the hall the table is a plate without its line
   of explanation. The ceiling's cable tray is warm and matte now, so by day it no longer
   competes with the lamp over the counter.
+- **M815 — the hall on the phone.** On a narrow screen the row of sections now brings the
+  section you are in under the eye: before, a section without second-level tabs left the row
+  where it was, and ВЛАДЕНИЯ stood cut off at the right edge. The hall can measure its own frame
+  (`hallCost`): on a desktop card it costs 1.0–1.6 ms of GPU and under 1 ms of CPU at every
+  place, day or night, at phone and desktop sizes alike.
+- **M814 — the board, the cantina, your holdings and the station's site, and the people.**
+  The board is the wall itself: every offer is a sheet pinned to the cork, laid out so they
+  never spill past the frame however many there are, and the board takes the whole hero zone.
+  The cantina is the bar end of the hall composed anew: you sit on the last stool under a lamp
+  of your own, the regulars at the tables stay quieter and out of the line of sight. ВЛАДЕНИЯ
+  lie on the office desk as a printed sector chart under a brass edge: your home is a red
+  token, each base a pennant on a puck, routes in pencil, «you are here» in ink; point at a row
+  and its token lifts under a small lamp while the lens leans in. Outside the window the
+  station's own site now stands in front of the stars — a truss spine, a crane, three cradles
+  that show free, under construction (ribs, welding, the crane's cable) or built (windows by
+  level, a beacon); dark against the hull by day, under its own floodlights at night. Your
+  pilot in the hall is the same suited man as on the planet. The keeper of the counter wears a
+  clerk's kit — light shirt, dark waistcoat, a tie and badge in the hall's colour, sleeve
+  garters, a pencil in the pocket — and every person in the hall stands under one light: a cool
+  rim along the silhouette, stronger at night, and a soft contact shadow on the floor.
 - **M814 — light on the instruments.** The dials on the plate are lit now, not flat colour:
   one key from the top left darkens every body towards its foot, a soft contact shadow sits
   under it, the glass of each scale carries an arc of light, and each material shines its own
@@ -342,6 +410,9 @@ could ever save.
 - **M801 One astronaut: the rig card.** `rigCard()` (`21phc`) draws the planet's man rig to a
   texture in any pose of its book, any facing and the caller's light; the base, the cave and the
   raid lay it in place of their own figure (`RIG_CARD.on`, the old brush stays until M890).
+  The dig and the postcard follow: the mine's walker is the card with the headlamp, its 2D beam
+  laid after the card; the postcard's brush records where the man stands and the album lays the
+  card over the bake, backlit by the star on the ground and by the drift's far end below.
 
 ## 0.492.1 - the world no longer dies after a jump
 
