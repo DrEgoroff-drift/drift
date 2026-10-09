@@ -102,20 +102,23 @@ function cave3Caps(B,o){
   };
   const c=y=>{const t=clamp((y-o.foot)/H,0,1),s=sh(y);return [o.x+s[0]+bend*Math.sin(t*2.2+ph),o.z+s[1]+bend*.6*Math.sin(t*1.7+ph*2)];};
   let y=o.foot-.35,prevTop=0;
+  /* какие ярусы слились с нижним (каждый третий): под ними шейка толще, шва почти нет */
+  const fz=o.tiers.map((t,i)=>i>0&&r()<.35);
   o.tiers.forEach(([h,R],i)=>{
-    const next=o.tiers[i+1],rTop=next?next[1]*.58:(o.tipR==null?.02:o.tipR);
+    const next=o.tiers[i+1],rTop=next?next[1]*(fz[i+1]?.9:.72):(o.tipR==null?.02:o.tipR);
     const nf=cave3Lobes(S,r),fp=r()*TAU,amp=.05+r()*.06,droop=i?h*.16:0,tone=.9+r()*.2,lip=h*.1;
     const p1=r()*TAU,p2=r()*TAU;
     const sc=a=>Math.abs(Math.sin(a*nf*.5+fp));
     /* кольцо не точёное: радиус гуляет по углу до ±20 %, со стороны капели ярус толще */
     const an=a=>.09*Math.sin(2*a+p1)+.06*Math.sin(3*a+p2)+.06*Math.cos(a-ds);
     /* с сухой стороны ярус не нависает — стекает в нижний одним телом; навес только там, где капало */
-    const mg=a=>i?1-.5*plnSmooth(-.4,.6,-Math.cos(a-ds))*(.6+.4*Math.sin(a+p2)):1;
+    /* каждый третий ярус слился с нижним кругом: навеса нет нигде, одно тело */
+    const fuse=fz[i],mg=a=>!i?1:fuse?.5:1-.5*plnSmooth(-.4,.6,-Math.cos(a-ds))*(.6+.4*Math.sin(a+p2));
     const mod=(a,f)=>(1+amp*Math.pow(1-f,1.5)*(sc(a)-.6))*(1+an(a)*(1-.4*f))*(1-(1-mg(a))*Math.pow(1-f,1.5));
     const lp=a=>lip*(.3+1.6*Math.max(0,Math.cos(a-ds)));
     const dy=(a,f)=>i&&f<.3?-lp(a)*(1-f/.3)*Math.max(0,sc(a)-.4)/.6:0;
     if(i)cave3Band(m,{c,sides:S,nup:-1,glow:.5,rings:[[y+h*.05,prevTop,1],[y-droop*.5,(prevTop+R)*.55,.5],[y-droop,R*.985,0]],
-      mod:(a,f)=>f<.25?mod(a,0):1,dy,col:(f,a,p)=>plnMul(cave3Cream(B,a,p),.55*tone),x:f=>lerp(.45,.2,f)});
+      mod:(a,f)=>f<.25?mod(a,0):1,dy,col:(f,a,p)=>plnMul(cave3Cream(B,a,p),lerp(.88,.55,(mg(a)-.5)*2)*tone),x:f=>lerp(.45,.2,f)});
     const rings=[];
     for(const f of CAVE3_DOME)rings.push([y-droop+(h+droop)*f,rTop+(R-rTop)*Math.sqrt(1-f*f),f]);
     cave3Band(m,{c,sides:S,nup:.7,glow:.6,rings,mod,dy,
@@ -200,8 +203,9 @@ function cave3Column(B,x,z,bot,top,rad){
   const r=B.r,H=top-bot,hs=H*(.38+r()*.1),hb=H*(.34+r()*.08);
   const N=5+(r()*2|0),M=4+(r()*2|0),tiers=[],bells=[],w=[],v=[];
   let sum=0;
-  for(let i=0;i<N;i++){w.push(1.25-.5*i/N+r()*.3);sum+=w[i];}
-  for(let i=0;i<N;i++)tiers.push([hs*w[i]/sum,rad*lerp(3,1.3,Math.pow(i/(N-1),.75))*(.92+r()*.16)]);
+  /* ярусы колонны тоже не по линейке: высота гуляет вдвое, радиус на треть */
+  for(let i=0;i<N;i++){w.push(1.25-.5*i/N+r()*.9);sum+=w[i];}
+  for(let i=0;i<N;i++)tiers.push([hs*w[i]/sum,rad*lerp(3,1.3,Math.pow(i/(N-1),.75))*(.84+r()*.32)]);
   const yTop=cave3Caps(B,{x,z,foot:bot,tiers,tipR:rad,sides:35});
   sum=0;
   for(let i=0;i<M;i++){v.push(1.3-.5*i/M+r()*.3);sum+=v[i];}
@@ -296,7 +300,10 @@ function cave3VeinBody(C,F,m,v,r){
       const d=plnSub(run[run.length-1],run[0]),l=Math.hypot(d[0],d[1])||1;
       let L=0;for(let i=1;i<run.length;i++)L+=Math.hypot(run[i][0]-run[i-1][0],run[i][1]-run[i-1][1]);
       /* толщина гуляет по метрам: шов то раздут линзой, то сжат */
-      plnTube(m,{path:run,rad:t=>rad*(.7+.3*Math.sin(t*L*2.3)*Math.sin(t*L*.5+1)),sides:7,flat:.45,up:[d[1]/l,-d[0]/l,0],col,mat:CAVE3_MAT.vein,glow:.9,x:1,cap:true});
+      const rw=t=>rad*(.7+.3*Math.sin(t*L*2.3)*Math.sin(t*L*.5+1));
+      /* подбой: камень под швом выбран, полоса нависает над тёмной бороздой — рельеф, не мазок */
+      plnTube(m,{path:run.map(p=>[p[0],p[1]-rad*.6,p[2]+.09]),rad:t=>rw(t)*1.15,sides:7,flat:.4,up:[d[1]/l,-d[0]/l,0],col:plnMul(col,.12),mat:CAVE3_MAT.vein,glow:0,x:1,cap:true});
+      plnTube(m,{path:run,rad:rw,sides:7,flat:.45,up:[d[1]/l,-d[0]/l,0],col,mat:CAVE3_MAT.vein,glow:.9,x:1,cap:true});
       n++;
     }
     run=[];

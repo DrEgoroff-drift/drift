@@ -6,6 +6,10 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## Unreleased (planet-main)
+
+- **M631 (second pass) — the man in the cave's light.** The cave can finally reach white: the engine's last pass no longer caps it at 91 %. The spaceman is lit like a body — the lamp's key on chest and helmet, the warm side turned to a vent or crystal near him, legs darker than the chest, a soft contact shadow under his boots. The manta's belly takes the warm bounce of the cone off the floor while its back stays dark. The vent crack burns white-yellow at the core, orange round it, dark red at the edge, and flickers unevenly along its length. Ore seams sit deeper in stone with a ridge that catches the lamp. The lamp's cone no longer cuts a hard vertical into the rock section under the man's feet.
+
 ## 0.493.1 - the captain can be fought; 0.493.0 never reached the site
 
 0.493.0 went red on the runner's Node tier: the probe read its environment through `typeof

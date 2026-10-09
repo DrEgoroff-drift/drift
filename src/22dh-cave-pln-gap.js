@@ -6,7 +6,7 @@
    Событие — тело, подписи ему не нужно. */
 const CAVE3_GAP={win:30,step:28,w:4,
   worm:{thread:[.05,.11,.10],bead:[.30,1.0,.84],light:[.15,.45,.40],floor:[.35,1.1,.95],glow:[.25,.85,.72]},
-  vent:{core:[1.0,.84,.46],hot:[1.0,.40,.10],rim:[.5,.07,.02],ember:[.9,.28,.06],spark:[1.0,.62,.22],lip:[7,2.6,.6],light:[1.4,.55,.15],glow:[.95,.40,.10]},
+  vent:{core:[1.0,.97,.55],hot:[1.0,.40,.10],rim:[.5,.07,.02],ember:[.9,.28,.06],spark:[1.0,.62,.22],lip:[7,2.6,.6],light:[1.4,.55,.15],glow:[.95,.40,.10]},
   ice:{win:[.70,.87,1.0],mid:[.40,.55,.70],lip:[1.8,2.3,2.8],light:[.6,.8,1.0],glow:[.52,.70,.90]},
   wet:{run:[.50,.52,.53],light:[1.1,1.2,1.35],glow:[.30,.36,.42]}};
 
@@ -115,10 +115,10 @@ function cave3GapVent(B,q,lights,glows){
          то тлеет по длине — ровной яркости во всю щель нет */
       const w=t=>(1-.75*t)*(.75+.25*Math.sin(t*19+x0)),heat=t=>clamp(.25+.75*Math.sin(t*9.3+x0*3.1)*Math.sin(t*4.1+x0+1.3)+.35,0,1);
       const at=dz=>pts.map(p=>[p[0],p[1],p[2]-dz]);
-      plnTube(B.m,{path:pts,rad:t=>rad*1.4*w(t),sides:5,flat:.5,up:[1,0,0],col:K.rim,mat:PLN_MAT.glow,glow:1,cap:true});
-      plnTube(B.m,{path:at(.008),rad:t=>rad*w(t),sides:5,flat:.5,up:[1,0,0],col:t=>plnMul(K.hot,.7+.3*heat(t)),mat:PLN_MAT.glow,glow:1.8,cap:true});
+      plnTube(B.m,{path:pts,rad:t=>rad*1.55*w(t),sides:5,flat:.5,up:[1,0,0],col:K.rim,mat:PLN_MAT.glow,glow:.35,cap:true});
+      plnTube(B.m,{path:at(.008),rad:t=>rad*.85*w(t),sides:5,flat:.5,up:[1,0,0],col:t=>plnMul(K.hot,.7+.3*heat(t)),mat:PLN_MAT.glow,glow:1.8,cap:true});
       /* ядро выведено вперёд тела на его радиус — иначе тело его прячет */
-      plnTube(B.m,{path:at(.02+.6*rad),rad:t=>Math.max(.002,rad*.55*w(t)*(.3+.7*plnSmooth(.2,.7,heat(t)))),sides:5,flat:.5,up:[1,0,0],col:t=>plnMul(K.core,.6+.4*heat(t)),mat:PLN_MAT.glow,glow:3.4,cap:true});
+      plnTube(B.m,{path:at(.02+.6*rad),rad:t=>Math.max(.002,rad*.55*w(t)*(.3+.7*plnSmooth(.2,.7,heat(t)))),sides:5,flat:.5,up:[1,0,0],col:t=>{const e=heat(t);return plnMul(plnMix3(K.hot,K.core,plnSmooth(.1,.55,e)),.22+.78*e*e*e);},mat:PLN_MAT.glow,glow:6,cap:true});
     }
     return pts;
   };
