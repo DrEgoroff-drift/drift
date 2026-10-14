@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 575 · top-level symbols: 8255
+Files: 577 · top-level symbols: 8273
 
 ## SYMBOLS
 
@@ -145,6 +145,15 @@ BGPU_U                       src/24ba-belt-gpu.js:90
 BG_BRIGHT                    src/16-flight.js:17
 BG_GROUP                     src/16-flight.js:11
 BHUD                         src/24bc-belt-hud.js:13
+BILL_LINES                   src/27ib-bill.js:17-23
+BILL_OLD_APPLY               src/27ib-bill.js:131
+BILL_OLD_BOARD               src/27ib-bill.js:126
+BILL_OLD_CREW                src/27ib-bill.js:77
+BILL_OLD_OPEN                src/27ib-bill.js:69
+BILL_OLD_PAYROLL             src/27ib-bill.js:89
+BILL_OLD_REPAIR              src/27ib-bill.js:75
+BILL_OLD_SNAP                src/27ib-bill.js:129
+BILL_SHIFT_MS                src/27ib-bill.js:16
 BK_AT                        src/20ab-poi-gpu.js:147
 BLD                          src/12ac-bld.js:29
 BLD_FAM                      src/12ac-bld.js:16-26
@@ -2681,6 +2690,15 @@ beltIcy                      src/24-mode-belt.js:70
 beltImpactDmg                src/24-mode-belt.js:172
 beltMaw                      src/24be-belt-rock-gpu.js:279-284
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:25-101
+billClose                    src/27ib-bill.js:42-57
+billDue                      src/27ib-bill.js:36
+billLate                     src/27ib-bill.js:40
+billLeft                     src/27ib-bill.js:38
+billOn                       src/27ib-bill.js:34
+billPaid                     src/27ib-bill.js:35
+billPay                      src/27ib-bill.js:59-67
+billSection                  src/27ib-bill.js:106-125
+billSt                       src/27ib-bill.js:24-33
 bioMark                      src/20e-species.js:310-314
 bioScan                      src/20e-species.js:315-329
 bldAdd                       src/12ac-bld.js:30-33
@@ -9835,6 +9853,9 @@ zoomTo                       src/15-input.js:358
 ## src/27ia-desk-top.js · 21 KB
   · стол как стол: предметы, а не тринадцать закладок:1
 
+## src/27ib-bill.js · 9 KB
+  · счёт за смену (M904a · DESIGN-game §3.1, §10.1):1
+
 ## src/27j-console.js · 14 KB
   · пульт: приёмник, подсказка, кресло:1
 
@@ -10000,7 +10021,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim.js · 18 KB
+## tests/91zzzw4-ecosim.js · 19 KB
   · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
@@ -10009,6 +10030,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw6-dep-room.js · 3 KB
 
 ## tests/91zzzw7-drone-ticks.js · 2 KB
+
+## tests/91zzzw8-bill.js · 4 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

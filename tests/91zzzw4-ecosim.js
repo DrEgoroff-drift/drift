@@ -185,6 +185,9 @@ suite("проба · экономика",{tier:"probe"},()=>{
     {const q=repairQuote(1);let units=q.units,cost=q.cost;
      if(G.credits<cost){units=Math.min(units,Math.floor(G.credits/q.per));cost=units*q.per;}
      if(units>0){G.credits-=cost;G.hull+=units;}}
+    /* счёт за смену (M904a): бумага закрывается на стыковке — бот платит её сразу */
+    PHASE="счёт";
+    billPay();
     PHASE="tick";
     return {frames:G.t-t0,mined};
   }
@@ -197,6 +200,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
     invalidateParts();
     const st=stat();G.hull=st.hullMax;G.fuel=st.fuelMax;
     G.droneInventory=tier.drones;
+    /* налёт под стендом не идёт (clrTick — в кадре): ярус — уже не первый час, счёт за смену работает */
+    G.flownMs=2*FIRST_HOUR_MS;G.bill=null;
     /* старт по оракулу: касса яруса — два часа чистого, чтобы было чем платить */
     G.credits=600+Math.round((ORACLE[tier.name].net||0)*2);
     if(tier.mgrs>0)for(let i=0;i<tier.mgrs;i++){

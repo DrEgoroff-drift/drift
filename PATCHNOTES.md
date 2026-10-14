@@ -6,6 +6,33 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.494.0 - the bill for the shift (M904a): the paper at the dock, managers paid by the player
+
+DESIGN-game §3.1/§10.1, fork F2. The economy probe (M903) measured upkeep at a fifth of the band:
+fuel and repair were paid at the pump and never seen as a sum, and a manager's wage came out of his
+own cut. Now (`src/27ib-bill.js`):
+
+- **The paper.** A shift closes at the dock after ten minutes of game clock; the paper lies first on
+  ДОСКА — fuel, hull service and hands as «paid on the spot», each with its voice, and what is due.
+  One tap «ОПЛАТИТЬ» pays what the till holds; the rest stays on the paper.
+- **Managers are the player's (F2).** The wage goes to the bill, not out of the cut; the cut stays his
+  money. While last shift's paper hangs unpaid, managers sit without pay and loyalty thaws — the same
+  rule as the old «голый процент», with its own line. The AI core and rented managers are unchanged.
+- **Carry-over.** Unpaid money moves into the next paper at 1 % a shift, as its own line.
+- **The first hour has no paper**: a novice's first paper carries the стажёр line («Первая смена за счёт
+  управления. Дальше — сами.»). Offline catch-up writes at most one hour of wages (§10.5).
+- The paper persists (wrapped into the snapshot, the 14-save whitelist untouched).
+
+Measured by the probe, one hour per tier (the bot pays at every dock):
+
+| tier | bill/h | upkeep/h | net/h | U/G before → after |
+|---|---|---|---|---|
+| T2 Обод, 2 managers | 7 680 | 10 988 | 39 513 | .07 → .22 |
+| T3 Мамонт, 4 managers | 14 914 | 17 984 | 32 009 | .07 → .36 |
+
+Still under the band (.65/.70): debt (F1), Страхкасса and hull loss (F3), and the gross levers are the
+rest of M904. Suite 91zzzw8 (14 asserts).
+
 ## 0.493.5 - the GPU off 100 %: live portraits only when seen, the dock at 30 frames; a smaller interface with its own setting; calmer faces and lens; deposits clear of walls; drones fly again
 
 The author on a 2000×1000 PC: buttons half the screen, faces racing, the planet's background flying,
