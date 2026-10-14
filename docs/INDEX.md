@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 568 · top-level symbols: 8242
+Files: 569 · top-level symbols: 8242
 
 ## SYMBOLS
 
@@ -9935,6 +9935,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91a3-beltimpact.js · 2 KB
 
 ## tests/91a4-delayclamp.js · 1 KB
+
+## tests/91a5-tapstation.js · 1 KB
 
 ## tests/91qa-marks-act.js · 31 KB
   · ориентиры как места действия (M627b):1
