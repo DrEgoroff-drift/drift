@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 590 · top-level symbols: 8485
+Files: 591 · top-level symbols: 8493
 
 ## SYMBOLS
 
@@ -1087,7 +1087,9 @@ HOL_BY                       src/11am-holiday.js:26
 HOL_ETHER                    src/11am-holiday.js:28-43
 HOL_GREET                    src/11am-holiday.js:45-58
 HOME3                        src/29rb-home-r3.js:16
-HOME3_JAC                    src/29rb-home-r3.js:34
+HOME3_C                      src/29rba-home-shell.js:8
+HOME3_GY                     src/29rba-home-shell.js:6
+HOME3_JAC                    src/29rb-home-r3.js:37
 HOME3_LAMP                   src/29rb-home-r3.js:22
 HOME3_M                      src/29rb-home-r3.js:18
 HOME3_RW                     src/29rb-home-r3.js:17
@@ -1192,6 +1194,7 @@ JAM_TIME                     src/13a-guns.js:35
 JET_BURN                     src/20d-jetpack.js:17
 JET_KICK                     src/20d-jetpack.js:19
 JOB_ROLE                     src/21a3-base-people.js:21-29
+K3n                          src/29rba-home-shell.js:7
 KB                           src/27jb-kb.js:23
 KB_CELL_FEE                  src/27jb-kb.js:30
 KB_DELTA                     src/27jb-kb.js:109
@@ -5037,28 +5040,33 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdUklad                    src/12ah-holdnews.js:19-24
 holdWorth                    src/27j-ui-opis.js:596-604
-home3Cam                     src/29rb-home-r3.js:399-410
-home3Canvas                  src/29rb-home-r3.js:382-389
-home3Cost                    src/29rb-home-r3.js:446
-home3FolkM                   src/29rb-home-r3.js:36
-home3Frame                   src/29rb-home-r3.js:412-430
-home3Hide                    src/29rb-home-r3.js:439-444
-home3LookAt                  src/29rb-home-r3.js:376
+home3Arc                     src/29rba-home-shell.js:11
+home3Cam                     src/29rb-home-r3.js:403-414
+home3Canvas                  src/29rb-home-r3.js:386-393
+home3Cost                    src/29rb-home-r3.js:450
+home3FolkM                   src/29rb-home-r3.js:39
+home3Frame                   src/29rb-home-r3.js:416-434
+home3Hide                    src/29rb-home-r3.js:443-448
+home3LookAt                  src/29rb-home-r3.js:380
 home3Man                     src/29rb-home-r3.js:322-333
-home3Mesh                    src/29rb-home-r3.js:40-139
-home3Night                   src/29rb-home-r3.js:374
-home3Ok                      src/29rb-home-r3.js:411
-home3PilotM                  src/29rb-home-r3.js:32
+home3Mesh                    src/29rb-home-r3.js:43-139
+home3Night                   src/29rb-home-r3.js:378
+home3Ok                      src/29rb-home-r3.js:415
+home3PilotM                  src/29rb-home-r3.js:33
 home3Pose                    src/29rb-home-r3.js:320
-home3Scene                   src/29rb-home-r3.js:335-372
-home3Size                    src/29rb-home-r3.js:390-396
+home3Scene                   src/29rb-home-r3.js:335-376
+home3Size                    src/29rb-home-r3.js:394-400
+home3Skin                    src/29rba-home-shell.js:37-45
 home3StoolMesh               src/29rb-home-r3.js:314
-home3Str                     src/29rb-home-r3.js:35
+home3Str                     src/29rb-home-r3.js:38
 home3Stuff                   src/29rb-home-r3.js:141-312
-home3Tags                    src/29rb-home-r3.js:433
+home3Tags                    src/29rb-home-r3.js:437
+home3Under                   src/29rba-home-shell.js:47-64
 home3Up                      src/29rb-home-r3.js:30
-home3UpRooms                 src/29rb-home-r3.js:373
+home3UpRooms                 src/29rb-home-r3.js:377
+home3Vault                   src/29rba-home-shell.js:14-35
 home3X                       src/29rb-home-r3.js:27
+home3Yard                    src/29rba-home-shell.js:66-104
 homeBeacon                   src/12j-home.js:180-186
 homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
@@ -10006,7 +10014,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 11 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 58 KB
+## src/27f2-room3d.js · 59 KB
   · комната в объёме (M725):1
 
 ## src/27f3-person3d.js · 26 KB
@@ -10178,6 +10186,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/29rb-home-r3.js · 38 KB
   · дом на движке (M850b, docs/DESIGN-rooms.md §4):1
+
+## src/29rba-home-shell.js · 10 KB
+  · дом снаружи: тело людской грамматики и двор (M850b, стенд M602 — docs/look/nt-home.js):1
 
 ## src/29rc-winter-r3.js · 21 KB
   · зимовка на движке (M850c, docs/DESIGN-rooms.md §4):1

@@ -29,7 +29,10 @@ function home3X(x){const R=hinGroundRooms();if(!R.length)return 0;
   return r.i*HOME3_RW+clamp((x-r.x)/r.w,0,1)*HOME3_RW;}
 function home3Up(){return !!(G.hin&&G.hin.up);}
 /* зерно хозяина: от дома, не из сохранения (сохранение не трогаем) — один и тот же человек, пока дом стоит */
-function home3PilotM(){const H=G.home||{};return {seed:hashi((H.sx|0)+7,(H.sy|0)+3,0x9170)>>>0,loy:72,traits:[]};}
+/* хозяин — лицо игрока: из палитры генератора только тёплая человеческая кожа (R>G); сизую и серо-зелёную шагом зерна пропускаем */
+function home3PilotM(){const H=G.home||{};let s=hashi((H.sx|0)+7,(H.sy|0)+3,0x9170)>>>0;
+  for(let i=0;i<12;i++){const k=cpGene({seed:s,loy:72,traits:[]}).skin;if(k&&k[0]>k[1])break;s=(Math.imul(s,1103515245)+12345)>>>0;}
+  return {seed:s,loy:72,traits:[]};}
 /* дома — домашняя куртка среднего тона (DESIGN-rooms §4): чёрный лётный костюм ночью у лампы читался вырезкой */
 const HOME3_JAC=[112,98,78];
 function home3Str(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);return h>>>0;}
@@ -41,17 +44,13 @@ function home3Mesh(up){
   const K=r3Kit(),P=R3P,R=hinGroundRooms(),U=up?hinUpRooms():[],B=HOME3_B,F=HOME3_F,H=HOME3_H,RW=HOME3_RW;
   const X1=R.length*RW,A={};HOME3.anch=A;
   const Mwd=K.mt([96,68,46],.3,7,P.wood),Mbm=K.mt([66,50,38],.25,6,P.wood),Mfr=K.mt([84,62,44],.35,8,P.wood);
-  const Mfl=K.mt([124,90,60],.1,4,P.wood),Mcc=K.mt([104,102,98],.2,5,P.floor),Mst=K.mt([70,74,80],.55,10,P.brushed);
+  const Mfl=K.mt([124,90,60],.03,3,P.wood),Mcc=K.mt([104,102,98],.2,5,P.floor),Mst=K.mt([70,74,80],.55,10,P.brushed);
   const Mdk=K.mt([34,30,28],.3,5,0),Mslab=K.mt([44,40,36],.2,4,P.floor);
   K.part=0;
-  /* земля двора перед разрезом и по бокам: дом стоит на ней, а не висит в черноте */
-  K.quad([-8,-.34,F+.02],[X1+8,-.34,F+.02],[X1+8,-.34,F+16],[-8,-.34,F+16],K.mt([96,90,64],.02,2,0,0,true),[0,1,0]);
-  K.quad([-8,-.34,B-1],[-.25,-.34,B-1],[-.25,-.34,F+.02],[-8,-.34,F+.02],K.mt([96,90,64],.02,2,0,0,true),[0,1,0]);
-  K.quad([X1+.25,-.34,B-1],[X1+8,-.34,B-1],[X1+8,-.34,F+.02],[X1+.25,-.34,F+.02],K.mt([96,90,64],.02,2,0,0,true),[0,1,0]);
+  /* дом снаружи — тело со стенда: ноги, полозья, плита с поясом, крыльцо; двор — кочки кулисы, забор, мачта, фонарь (29rba) */
+  home3Under(K,X1);home3Yard(K,X1,hashi((G.home&&G.home.sx)|0,(G.home&&G.home.sy)|0,0x77));
   /* двор за домом: над стенами и по бокам — тот же вид, что в окнах (небо планеты, поле, мачта), а не чернота */
-  K.quad([-30,-.34,B-.6],[X1+30,-.34,B-.6],[X1+30,26,B-.6],[-30,26,B-.6],K.mt([3,3,3],.2,70,P.window,0,true),[0,0,1]);
-  /* плита пола разрезом: торец спереди тёмный — по нему видно, что это срез */
-  K.box([X1/2,-.17,(B+F)/2],[X1/2+.25,.17,(F-B)/2+.02],Mslab,.01);
+  K.quad([-40,HOME3_GY-.02,B-8],[X1+40,HOME3_GY-.02,B-8],[X1+40,30,B-8],[-40,30,B-8],K.mt([3,3,3],.2,70,P.window,0,true),[0,0,1]);
   /* полоса стены с дырами, обрезанными по полосе (иначе соседние квады встают в одну плоскость) */
   const band=(x0,x1,y0,y1,z,holes,M)=>hallWall(K,x0,x1,y0,y1,z,holes.filter(h=>h[2]<y1&&h[3]>y0).map(h=>[h[0],h[1],Math.max(h[2],y0),Math.min(h[3],y1)]),M);
   /* окно узора window: проём, рама, подоконник, переплёт */
@@ -62,14 +61,14 @@ function home3Mesh(up){
     for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n;K.box([x,(y0+y1)/2,z+.05],[fw*(i%n?1:2.2),(y1-y0)/2,.05],Mfr,.004);}
     K.box([(x0+x1)/2,y0+(y1-y0)*.58,z+.04],[(x1-x0)/2,fw*.8,.04],Mfr,.003);};
   /* перегородка в плоскости x с дверным проёмом под линией хода (z −.45….85) */
-  const part=(x,y0,M)=>{const h=H;
+  const part=(x,y0,M,hh)=>{const h=hh||H;
     K.box([x,y0+h/2,(B-.45)/2],[.07,h/2,(-.45-B)/2],M,.01);
     K.box([x,y0+h/2,(.85+F)/2],[.07,h/2,(F-.85)/2],M,.01);
-    K.box([x,y0+(2.1+h)/2,.2],[.07,(h-2.1)/2,.65],M,.01);
+    if(h>2.15)K.box([x,y0+(2.1+h)/2,.2],[.07,(h-2.1)/2,.65],M,.01);
     for(const z of [-.45,.85])K.box([x,y0+1.05,z],[.09,1.05,.04],Mfr,.01);
     K.box([x,y0+2.13,.2],[.09,.04,.69],Mfr,.01);};
   /* торцевая стена с дверью: s=+1 — левый торец (смотрит в +x), −1 — правый; закрытая дверь — полотно с доской */
-  const endWall=(x,s,y0,M,door)=>{const h=H,o=x-s*.1;
+  const endWall=(x,s,y0,M,door,hh)=>{const h=hh||H,o=x-s*.1;home3Skin(K,x,s,y0,h,door);
     if(!door){K.box([o,y0+h/2,(B+F)/2],[.1,h/2,(F-B)/2],M,.01);return;}
     K.box([o,y0+h/2,(B-.3)/2],[.1,h/2,(-.3-B)/2],M,.01);
     K.box([o,y0+h/2,(.8+F)/2],[.1,h/2,(F-.8)/2],M,.01);
@@ -109,6 +108,10 @@ function home3Mesh(up){
   endWall(0,1,0,K.mt(HOME3_TONE[R[0].key],.12,4,0),"out");
   endWall(X1,-1,0,K.mt(HOME3_TONE[R[R.length-1].key],.12,4,0),R.length<HOME_TIERS.length?"shut":null);
   A.out=[.12,2.0,.25];if(R.length<HOME_TIERS.length)A.shut=[X1-.14,2.0,.25];
+  /* свод над первым этажом — там, где над ним нет второго; торцы — сечение арки */
+  {const ux=U.length?(()=>{const b=hinGroundRooms(),xs=U.map(u=>{const g=b.find(q=>q.x===u.x);return g?g.i*RW:0;});return [Math.min(...xs),Math.max(...xs)+RW];})():null;
+    if(!ux)home3Vault(K,-.2,X1+.2,H,[[0,1],[X1,-1]]);
+    else{if(ux[0]>0)home3Vault(K,-.2,ux[0],H,[[0,1]]);if(ux[1]<X1)home3Vault(K,ux[1],X1+.2,H,[[X1,-1]]);}}
   /* ── второй этаж: светёлка над кабинетом, спальня над жилой частью; крыша — стропилами ── */
   if(U.length){const y0=HOME3_UP,base=hinGroundRooms(),xs=U.map(u=>{const b=base.find(g=>g.x===u.x);return b?b.i*RW:0;});
     const ux0=Math.min(...xs),ux1=Math.max(...xs)+RW;
@@ -127,14 +130,11 @@ function home3Mesh(up){
       const W=HOME3_WIN[k],wx=x0+W[0]*RW,holes=[[wx-W[1]/2,wx+W[1]/2,y0+.7,y0+1.72]];
       band(x0,x1,y0,y0+kh,B,holes,Mw);win(wx-W[1]/2,wx+W[1]/2,y0+.7,y0+1.72,B,2);
       K.box([(x0+x1)/2,y0+.05,B+.015],[RW/2,.05,.015],Mfr,.006);
-      /* стропила: от верха задней стенки вверх к коньку над головой — крыша наверху видна, внизу её нет */
-      const ry0=y0+kh,ry1=y0+3.6,rz1=F-.6,L=Math.hypot(rz1-B,ry1-ry0),ang=Math.atan2(ry1-ry0,rz1-B);
-      for(let x=x0+.45;x<x1;x+=1.0){K.push([x,(ry0+ry1)/2,(B+rz1)/2],0,-ang);K.box([0,0,0],[.05,.08,L/2],Mbm,.01);K.pop();}
-      K.box([(x0+x1)/2,ry0,B+.05],[RW/2,.06,.08],Mbm,.008);
-      if(j<U.length-1)part(x1,y0,Mw);
+      if(j<U.length-1)part(x1,y0,Mw,kh);
       home3Stuff(K,k,x0,y0,A,u);});
-    endWall(ux0,1,y0,K.mt(HOME3_TONE[U[0].key],.12,4,0),null);
-    endWall(ux1,-1,y0,K.mt(HOME3_TONE[U[U.length-1].key],.12,4,0),null);}
+    home3Vault(K,ux0-.2,ux1+.2,y0+2.0,[[ux0,1],[ux1,-1]]);
+    endWall(ux0,1,y0,K.mt(HOME3_TONE[U[0].key],.12,4,0),null,2.0);
+    endWall(ux1,-1,y0,K.mt(HOME3_TONE[U[U.length-1].key],.12,4,0),null,2.0);}
   return K.pack();
 }
 /* вещи комнаты: места — доли HIN_THINGS (29c), высота и глубина — здесь; A — точки табличек «рассмотреть» */
@@ -355,19 +355,23 @@ function home3Scene(cam,t){
   const cur=Math.max(0,rooms.findIndex(r=>mx>=r.x0&&mx<r.x0+RW));
   rooms.forEach((r,j)=>{const d=Math.abs(j-cur);if(d>2)return;const lx=r.x0+(HOME3_LAMP[r.key]||.5)*RW,key=d===0;
     const ly=r.key==="bed"?y0+.75:y0+H-.72,lz=r.key==="bed"?B+.3:-.9;
-    lights.push({p:[lx,ly,lz],range:(key?6.5:4.5)*(1+.3*nk),c:r3Sc(warm,(key?6.2:d===1?2.6:1.2)*(1+1.3*nk)),spot:r.key==="bed"?0:1,d:[0,-1,-.15],
+    lights.push({p:[lx,ly,lz],range:(key?6.5:4.5)*(1+.3*nk),c:r3Sc(warm,(key?6.2:d===1?1.2:.6)*(1+.8*nk)),spot:r.key==="bed"?0:1,d:[0,-1,-.15],
       cosO:Math.cos(1.02+.1*nk),cosI:Math.cos(.22),shadow:key?1:0,vol:key?.08:.03,key:key?1:0});
     if(d<=1)bulbs.push([lx,ly-.05,lz,key?.9:.4]);
     const W=HOME3_WIN[r.key]||[.5,1.2],wx=r.x0+W[0]*RW,wy=y0+(up?1.6:2.0);
     if(d===0)lights.push({p:[wx,wy,B+.15],range:9,c:r3Sc(r3Lin(mixc([255,226,180],[96,124,180],nk)),2.6*day+.5*nk),spot:1,
       d:day>.5?[-.3,-.85,.42]:[0,-.5,.86],cosO:Math.cos(.85),cosI:Math.cos(.15),shadow:day>.5?1:0,vol:0});
-    else if(d===1)lights.push({p:[wx,wy-.4,B+.4],range:3.5,c:r3Sc(r3Lin(mixc([255,230,190],[90,116,170],nk)),1.4*day+.2*nk),vol:0});});
-  lights.push({p:[mx+.9,y0+2.5,HOME3_F+1.5],range:8,c:r3Sc(r3Lin(mixc([226,220,206],[170,160,170],nk)),1.1*day+4.0*nk),spot:1,d:[-.15,-.1,-.98],cosO:Math.cos(.95),cosI:Math.cos(.35),vol:0});
-  const sky=r3Lin(mixc([146,136,122],[62,56,60],nk)),gnd=r3Lin(mixc([128,100,72],[56,46,40],nk)),fog=r3Lin(mixc([60,58,54],[18,22,36],nk));
+    else if(d===1)lights.push({p:[wx,wy-.2,B+.3],range:3.0,c:r3Sc(r3Lin(mixc([255,230,190],[90,116,170],nk)),.8*day+.12*nk),vol:0});});
+  /* солнце двора днём, луна ночью: сверху-спереди-слева, без тени — двор и кулиса в свете мира (стенд: ключ — звезда) */
+  if(!up)lights.splice(Math.min(lights.length,3),0,{p:[mx-7,14,HOME3_F+9],range:40,c:r3Sc(r3Lin(mixc([255,236,200],[120,132,190],nk)),300*day+120*nk),spot:1,
+    d:K3n([5,-12.5,-9]),cosO:Math.cos(.7),cosI:Math.cos(.45),vol:0});
+  if(HOME3.lantern&&!up)lights.splice(Math.min(lights.length,4),0,{p:HOME3.lantern,range:9,c:r3Sc(warm,.3*day+9*nk),vol:.06*nk});
+  lights.push({p:[mx+.7,y0+1.9,HOME3_F+1.2],range:8,c:r3Sc(r3Lin(mixc([236,214,190],[230,176,130],nk)),1.6*day+6.0*nk),spot:1,d:[-.12,-.05,-.99],cosO:Math.cos(.95),cosI:Math.cos(.35),vol:0});
+  const sky=r3Lin(mixc([146,136,122],[62,56,60],nk)),gnd=r3Lin(mixc([128,100,72],[56,46,40],nk)),fog=r3Lin(mixc([150,164,180],[34,40,74],nk));
   const W0=rooms[cur]?(HOME3_WIN[rooms[cur].key]||[.5,1.2]):[.5,1.2],wx0=(rooms[cur]?rooms[cur].x0:0)+W0[0]*RW;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
-    sky:[...sky,1.5-.85*nk],gnd:[...gnd,.13-.04*nk],fog:[...r3Sc(fog,.2),.03],acc:[...r3Lin([255,170,90]),1],
-    win:[wx0-W0[1]/2,y0+1.05,wx0+W0[1]/2,y0+2.15],win2:[B,7,7+Math.min(.999,nk),.8*(.4+.6*day)],sgn:[0,0,0,0],sgn2:[B,0,0,0],
+    sky:[...sky,1.5-.85*nk],gnd:[...gnd,.016-.002*nk],fog:[...r3Sc(fog,.7-.1*nk),.03],acc:[...r3Lin([255,170,90]),1],
+    win:[wx0-W0[1]/2,y0+1.05,wx0+W0[1]/2,y0+2.15],win2:[B,7,7+Math.min(.999,nk),.85],sgn:[0,0,0,0],sgn2:[B,0,0,0],
     flm:[0,0,1,0],flm2:[B,0,0,0],tsg:null,tfl:null,M,ot:OT};
 }
 function home3UpRooms(){const base=hinGroundRooms();return hinUpRooms().map(u=>{const b=base.find(g=>g.x===u.x);return {key:u.key,x0:b?b.i*HOME3_RW:0};});}
