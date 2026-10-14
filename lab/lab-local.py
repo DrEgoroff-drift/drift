@@ -16,7 +16,7 @@ Data: %USERPROFILE%\\drift-data\\lab (LAB_DATA); the page: %USERPROFILE%\\drift-
 served by --serve PORT at http://127.0.0.1:PORT/lab/ (the page fetches /lab/data.json).
 """
 import argparse, os, re, shutil, subprocess, sys, time, threading, urllib.parse
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -76,6 +76,27 @@ def peak_mem(pid, stop, box):
         except Exception: return
         stop.wait(1)
 
+# ── живой лог: время в начале строки, копия в файл (--log) ──
+class Tee:
+    def __init__(self, out, path):
+        self.out, self.f, self.bol = out, (open(path, "a", encoding="utf-8") if path else None), True
+        self.lock = threading.Lock()
+    def write(self, s):
+        with self.lock:
+            for part in s.splitlines(True):
+                if self.bol: part = time.strftime("%H:%M:%S ") + part
+                self.bol = part.endswith("\n")
+                self.out.write(part)
+                if self.f: self.f.write(part)
+            self.out.flush()
+            if self.f: self.f.flush()
+    def flush(self):
+        self.out.flush()
+        if self.f: self.f.flush()
+
+RUNNING = {}    # pid → профиль: по Ctrl+C гасим всё своё, чужой Chrome не трогаем
+STOP = threading.Event()
+
 def run_unit(u, ctx):
     """→ (unit, out_path, secs, mem_mb, rc, err_path); out is the report file lab.py reads"""
     kind, arg, cmd, prof, text = u["kind"], u["arg"], u["cmd"], u.get("prof"), u.get("text")
@@ -84,14 +105,18 @@ def run_unit(u, ctx):
         try: os.remove(f)
         except Exception: pass
     t0 = time.time(); rc = 0; box = [0]; stop = threading.Event()
+    if STOP.is_set(): return u, out, 0, 0, 130, err
+    print("  → %s %s" % (kind, arg))
     with open(err if text else os.devnull, "w", encoding="utf-8") as ef, open(out if text else os.devnull, "w", encoding="utf-8") as of:
         p = subprocess.Popen(cmd, cwd=ctx["src"], stdout=of, stderr=ef, creationflags=BELOW | NOWIN)
+        RUNNING[p.pid] = prof
         th = threading.Thread(target=peak_mem, args=(p.pid, stop, box), daemon=True); th.start()
         try: rc = p.wait(timeout=TMO[kind])
         except subprocess.TimeoutExpired:
             rc = 124
             kill_tree(p.pid)
         stop.set()
+        RUNNING.pop(p.pid, None)
     if prof:
         kill_profile(prof)
         shutil.rmtree(prof, ignore_errors=True)
@@ -150,9 +175,13 @@ def main():
     ap.add_argument("--no-build", action="store_true")
     ap.add_argument("--hunt-only", action="store_true", help="only the hunt, seed after seed")
     ap.add_argument("--serve", type=int, default=0, help="only serve the page on 127.0.0.1:PORT")
+    ap.add_argument("--log", default="", help="also append the log to this file")
     a = ap.parse_args()
     try: sys.stdout.reconfigure(encoding="utf-8")   # консоль cp437/cp1252: русские строки lab.py
     except Exception: pass
+    if a.log:
+        os.makedirs(os.path.dirname(os.path.abspath(a.log)), exist_ok=True)
+    sys.stdout = Tee(sys.stdout, a.log or None)
     web = os.environ["LAB_WEB"]
     if a.serve:
         site = os.path.dirname(web)
@@ -213,22 +242,41 @@ def main():
         seeds[0] += 1
         return page_unit(ctx, "hunt", str(seed), "only=%s&fseed=%d&hsteps=%d" % (urllib.parse.quote("охота"), seed, a.steps), "1280,800")
 
-    counts = {}
-    with ThreadPoolExecutor(max_workers=a.jobs) as ex:
-        live = {ex.submit(run_unit, u, ctx) for u in units}
-        def fill():
-            # охота добирает свободные места, пока бюджет позволяет зерно целиком
-            while (not a.quick or a.hunt_only) and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
-                live.add(ex.submit(run_unit, next_hunt(), ctx))
+    counts = {}; fresh = []
+    print("lab: прогонов в круге %d, потом охота до конца бюджета · Ctrl+C — остановить" % len(units))
+    ex = ThreadPoolExecutor(max_workers=a.jobs)
+    live = {ex.submit(run_unit, u, ctx) for u in units}
+    def fill():
+        # охота добирает свободные места, пока бюджет позволяет зерно целиком
+        while not STOP.is_set() and (not a.quick or a.hunt_only) and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
+            live.add(ex.submit(run_unit, next_hunt(), ctx))
+    try:
         fill()
         while live:
-            done = next(as_completed(live)); live.discard(done)
+            # ждём с секундным шагом: бесконечное ожидание на Windows глухо к Ctrl+C
+            ready, _ = wait(live, timeout=1, return_when=FIRST_COMPLETED)
+            if not ready: continue
+            done = ready.pop(); live.discard(done)
             u, out, secs, mem, rc, err = done.result()
             if u["kind"] == "hunt": seeds[0] -= 1   # зерно учтено в state — счётчик в полёте убывает
-            lab.report(u["kind"], u["arg"], out, secs, mem, rc, ver, sid, err, 0)
+            if rc == 130: continue                  # не начат: остановка
+            new = lab.report(u["kind"], u["arg"], out, secs, mem, rc, ver, sid, err, 0) or []
+            for e in new:
+                fresh.append(e)
+                print("  !! НОВАЯ ОШИБКА · %s · %s" % (e.get("suite", "")[:60], e.get("msg", "")[:160]))
             counts[u["kind"]] = counts.get(u["kind"], 0) + 1
             lab.publish()
             fill()
+            left = max(0, int((deadline - time.time()) // 60))
+            print("  · готово %d · в работе %d · осталось %d мин · новых ошибок за сессию %d" % (sum(counts.values()), len(live), left, len(fresh)))
+    except KeyboardInterrupt:
+        STOP.set()
+        print("lab: остановка — гашу свои прогоны (%d)" % len(RUNNING))
+        for pid, prof in list(RUNNING.items()):
+            kill_tree(pid)
+            if prof: kill_profile(prof)
+        for f in live: f.cancel()
+    ex.shutdown(wait=True)
 
     lab.session("end", sid, ver, a.budget)
     lab.publish()

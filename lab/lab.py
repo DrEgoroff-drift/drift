@@ -190,6 +190,7 @@ def report(kind, arg, path, secs, mem, rc, ver, session, errfile="", oom=0):
                   "secs": secs, "rss": mem, "pass": passed, "suites": suites, "fails": len(fails),
                   "new": new, "known": known, "head": (head or "")[:160], "hung": hung})
     print("%s · %s · %d с · %d МБ · провалов %d · новых %d · известных %d%s" % (uid, verdict, secs, mem, len(fails), len(new), len(known), (" · повис: " + hung) if hung else ""))
+    return [errs[k] for k in new]
 
 def fuzz_next(ver):
     st = jload(STATE, {})
