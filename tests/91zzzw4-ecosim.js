@@ -138,7 +138,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       const dep=nearestDep();if(!dep){DONE.add(G.surf.p.key);break;}
       if(!walkTo(dep.x,14)){note("walk: до залежи не дошёл");break;}
       r=T.bot("mine");if(!r.ok){if(!/трюм полон|залежей/.test(r.why)){note("mine: "+r.why);
-        if(ENV.ECO_TRACE)console.log("  след mine: x "+Math.round(x0)+"→"+Math.round(S0.x)+" за "+(G.t-t1)+" кадров · корабль "+Math.round(S0.shipX)+" · W "+(S0.tr&&S0.tr.W)+" · залежи "+(S0.deposits||[]).map(d=>Math.round(d.x)+":"+d.res+":"+d.left).join(" ")+" · режим "+G.mode+" · "+G.prompt.split("\n")[0]+" · ближняя "+JSON.stringify(nearestDep())+" · S.x "+S0.x.toFixed(2)+" on "+S0.on+" swim "+S0.swim+" walkTarget "+S0.walkTarget);const xa=S0.x;keys.right=true;stepWorld(1);G.t+=1;keys.right=false;console.log("    шаг вправо: "+xa.toFixed(2)+"→"+S0.x.toFixed(2)+" · подсказка «"+G.prompt.split("\n")[0]+"» · G.surf===S0 "+(G.surf===S0)+" · mode "+G.mode);const pr=G.prompt;G.prompt="";updateSurface(1);console.log("    прямой updateSurface: «"+G.prompt.split("\n")[0]+"» · S.x "+S0.x.toFixed(2)+" · paused "+G.paused+" · modal "+(typeof modalOpen==="function"?modalOpen():"?"));G.prompt=pr;}
+        if(ENV.ECO_TRACE)console.log("  след mine: x "+Math.round(x0)+"→"+Math.round(S0.x)+" за "+(G.t-t1)+" кадров · корабль "+Math.round(S0.shipX)+" · W "+(S0.tr&&S0.tr.W)+" · залежи "+(S0.deposits||[]).map(d=>Math.round(d.x)+":"+d.res+":"+d.left).join(" ")+" · режим "+G.mode+" · "+G.prompt.split("\n")[0]+" · ближняя "+JSON.stringify(nearestDep())+" · S.x "+S0.x.toFixed(2)+" on "+S0.on+" swim "+S0.swim+" walkTarget "+S0.walkTarget);}
         break;}
       mined++;
     }
