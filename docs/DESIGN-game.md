@@ -205,6 +205,28 @@ workshops 2.3 h into T2; the garage (70 000 turnover) at ~4 h; an uninsured hull
 (Обод 15 000 + mods 8 000) is 1.6 h of T2 net. The designed curve of `DESIGN-economy.md:62`
 (first mod 10 min, Вьюк 20 min, hire 1 h, manager 2–3 h, garage 5–6 h) survives within an hour.
 
+### 4.1a Measured — M903, 14.10 (`tests/91zzzw4-ecosim.js`, one hour per tier under Node)
+
+The probe plays the mining loop with the real `G`: lands, drills, sells, refuels, repairs, books
+every credit by phase. Numbers after the three bugs it found were fixed (deposits under the
+settlement wall, the silent wall branch, drones that never finished a trip — all in 0.493.5).
+
+| tier | gross cr/h | upkeep cr/h | net cr/h | U/G | oracle net | drones cr/h |
+|---|---|---|---|---|---|---|
+| T0 Стриж, 14 laps | 15 275 | 3 607 | 11 668 | .24 | 4 400 | — |
+| T1 | — | — | 43 498 | — | 13 900 | ≈500 (42 trips) |
+| T2 | — | — | 47 193 | .06–.07 | 14 200 | — |
+| T3 | — | — | 46 923 | .06–.07 | 12 700 | ≈1 860 |
+
+Read it: **the loop pays 2.6–3.7× the oracle and the pressure is a fifth of the band.** Fuel
+(≈2–2.6 k/h) and repair (≈0.5–1 k/h) are not pressure at any tier. The flattening after T1 is
+there — but at three times the height. A hired hand ran 3 trips and lost 655, as designed.
+
+The levers, in order of honesty: the lap (≈4.3 min at T0 — the oracle wants ≈8), deposit size
+and the sale price of the first raw tier, then the bill of §10.1. Upkeep alone cannot close a gap
+of 3× without making the T0 hour negative. This is M904's input: the bill is built against
+**these** grosses, not the model's.
+
 ### 4.2 Stations have three gauges, and they fall
 
 Every station gets three numbers, lazy, saved as three bytes: **склад** (stock, 0–1), **люди**
@@ -640,7 +662,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 |---|---|---|
 | M901 | `tests/91zzzw-fightsim.js` — the duel measured under Node — **done 09.10** | the table of TTK / hits / hull by hull × gun × rank × danger |
 | M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
-| M903 | `tests/ecosim.js` — three hours per tier under Node, gross/upkeep/net | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
+| M903 | the economy probe `tests/91zzzw4-ecosim.js` — **measured 14.10, §4.1a**: net 2.6–3.7× the oracle, U/G .06–.24 | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
 | M904 | the bill (§10.1), manager wages to the player, insurance, the ledger (§5.2), hull loss (§5.1) | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
 | M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) | the bot's norm moves with filled needs; handover stops every clock |
 | M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
