@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 572 · top-level symbols: 8245
+Files: 574 · top-level symbols: 8251
 
 ## SYMBOLS
 
@@ -430,6 +430,9 @@ DECO_LIT                     src/21b-surface-deco.js:154
 DECO_ROT                     src/21bc-deco-gpu.js:8
 DEEDS                        src/11ai-ledger.js:25-35
 DEPTH_TIERS                  src/04-mods.js:57-61
+DEP_ROOM_OLD_ENTER           src/21pih-dep-room.js:35
+DEP_ROOM_OLD_UPD             src/21pih-dep-room.js:43
+DEP_ROOM_PAD                 src/21pih-dep-room.js:10
 DESC_MOOD                    src/01-core.js:196-201
 DESC_TAIL                    src/01-core.js:202
 DESK_DRAW                    src/27ia-desk-top.js:58-293
@@ -3469,6 +3472,9 @@ decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 depKind                      src/21b-surface-deco.js:395-404
+depRoom                      src/21pih-dep-room.js:25-34
+depRoomBlockers              src/21pih-dep-room.js:11-17
+depRoomSpans                 src/21pih-dep-room.js:20-24
 deployDrone                  src/12-economy.js:329-346
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
@@ -9515,6 +9521,9 @@ zoomTo                       src/15-input.js:358
 ## src/21pig-pln-own.js · 35 KB
   · планета: свои вещи телами — база, дом, двор (M628a):1
 
+## src/21pih-dep-room.js · 3 KB
+  · залежи не под стеной и не под ориентиром (0.493.5):1
+
 ## src/21pj-pln-over.js · 7 KB
   · планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611):1
 
@@ -9992,6 +10001,8 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
   · причальная полоса не перебивает посадку (0.493.4):1
+
+## tests/91zzzw6-dep-room.js · 3 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
