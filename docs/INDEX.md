@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 564 · top-level symbols: 8243
+Files: 566 · top-level symbols: 8249
 
 ## SYMBOLS
 
@@ -1527,11 +1527,11 @@ PLN_ACT_MAN_STATE            src/21pif-pln-marks-act.js:266
 PLN_ACT_NEAREST              src/21pif-pln-marks-act.js:258
 PLN_ACT_POI_MEMO             src/21pif-pln-marks-act.js:245
 PLN_ACT_POI_NEAR             src/21pif-pln-marks-act.js:230
-PLN_AZ_ELEV                  src/21pf-pln-land.js:43
+PLN_AZ_ELEV                  src/21pf-pln-land.js:46
 PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:16
 PLN_BEAST_IDS                src/21piba-pln-gait.js:13
-PLN_BUILD                    src/21pf-pln-land.js:35
+PLN_BUILD                    src/21pf-pln-land.js:38
 PLN_CAST                     src/21ph-pln-cast.js:6
 PLN_DEG                      src/21p-pln.js:31
 PLN_DESC                     src/21pza-pln-descent.js:10
@@ -1571,7 +1571,7 @@ PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:201
 PLN_OLD_HUD2                 src/21pzb-pln-words.js:100
 PLN_OLD_LANDING              src/21pza-pln-descent.js:214
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:378
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:383
 PLN_OLD_ULAND                src/21pza-pln-descent.js:206
 PLN_OVER                     src/21pj-pln-over.js:16
 PLN_OWN_GATE_R               src/21pig-pln-own.js:405
@@ -1582,7 +1582,7 @@ PLN_OWN_OLD_HINT             src/21pig-pln-own.js:480
 PLN_OWN_OLD_UPD              src/21pig-pln-own.js:458
 PLN_OWN_UPD                  src/21pig-pln-own.js:430
 PLN_PAD                      src/21pga-pln-plant.js:27
-PLN_PAL                      src/21pf-pln-land.js:38-62
+PLN_PAL                      src/21pf-pln-land.js:41-65
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
 PLN_PLANT                    src/21pga-pln-plant.js:21
 PLN_QUAL                     src/21pe-pln-gpu.js:43-52
@@ -2785,6 +2785,7 @@ bpMul                        src/12c-mgr-core.js:680-684
 bpRecheck                    src/12c-mgr-core.js:747-760
 bpState                      src/12c-mgr-core.js:677
 bpoiLit                      src/24bb-belt-poi-gpu.js:13-24
+bq630Same                    tests/91qj-build.js:6-11
 brockBegin                   src/24be-belt-rock-gpu.js:176-184
 brockCam                     src/24be-belt-rock-gpu.js:242-251
 brockDesc                    src/24be-belt-rock-gpu.js:131-137
@@ -6270,8 +6271,8 @@ plnBeastZ                    src/21pib-pln-beast.js:26-29
 plnBez                       src/21pa-pln-mesh.js:175-179
 plnBlob                      src/21pa-pln-mesh.js:66-95
 plnBodies                    src/21pz-pln-frame.js:84-110
-plnBox                       src/21pf-pln-land.js:64-71
-plnBoxF                      src/21pf-pln-land.js:79-84
+plnBox                       src/21pf-pln-land.js:67-74
+plnBoxF                      src/21pf-pln-land.js:82-87
 plnCard                      src/21pa-pln-mesh.js:168-173
 plnCast                      src/21ph-pln-cast.js:31-38
 plnCastFrame                 src/21ph-pln-cast.js:42-55
@@ -6282,6 +6283,7 @@ plnDescLens                  src/21pza-pln-descent.js:13-19
 plnDescOver                  src/21pza-pln-descent.js:179-188
 plnDescent                   src/21pza-pln-descent.js:21-62
 plnDot                       src/21p-pln.js:37
+plnDrain                     src/21pfb-pln-land-mesh.js:91
 plnDressBodies               src/21pge-pln-dress.js:30-43
 plnDressPath                 src/21pge-pln-dress.js:12-20
 plnDressShore                src/21pge-pln-dress.js:22-27
@@ -6307,8 +6309,8 @@ plnFoot                      src/21piba-pln-gait.js:43-45
 plnGeo                       src/21pe-pln-gpu.js:79-86
 plnGeoFree                   src/21pe-pln-gpu.js:87
 plnGlide                     src/21pz-pln-frame.js:260-268
-plnGlintDir                  src/21pw-pln-water.js:310-313
-plnGlintHour                 src/21pw-pln-water.js:309
+plnGlintDir                  src/21pw-pln-water.js:313-316
+plnGlintHour                 src/21pw-pln-water.js:312
 plnGlobals                   src/21pe-pln-gpu.js:258-281
 plnGpuDev                    src/21pe-pln-gpu.js:112-142
 plnGpuFrame                  src/21pe-pln-gpu.js:301-357
@@ -6343,37 +6345,40 @@ plnIco                       src/21pa-pln-mesh.js:41-58
 plnInst                      src/21pe-pln-gpu.js:89-94
 plnInstFree                  src/21pe-pln-gpu.js:100
 plnInstSet                   src/21pe-pln-gpu.js:95-99
-plnLand                      src/21pf-pln-land.js:527-538
-plnLandBare                  src/21pf-pln-land.js:253-256
-plnLandBatches               src/21pf-pln-land.js:515-517
-plnLandBuild                 src/21pf-pln-land.js:484-490
-plnLandCol                   src/21pf-pln-land.js:398-437
-plnLandCols                  src/21pf-pln-land.js:113
-plnLandE                     src/21pf-pln-land.js:115
-plnLandFarH                  src/21pf-pln-land.js:302-382
-plnLandFarMesh               src/21pf-pln-land.js:596-630
-plnLandFarRows               src/21pf-pln-land.js:106-111
-plnLandFree                  src/21pf-pln-land.js:518-525
-plnLandJobs                  src/21pf-pln-land.js:440-473
-plnLandLift                  src/21pf-pln-land.js:291
-plnLandMake                  src/21pf-pln-land.js:118-208
-plnLandMove                  src/21pf-pln-land.js:540-546
-plnLandNode                  src/21pf-pln-land.js:551-557
-plnLandPath                  src/21pf-pln-land.js:386-395
-plnLandPond                  src/21pf-pln-land.js:233-244
-plnLandPondLine              src/21pf-pln-land.js:212-223
-plnLandPondZ                 src/21pf-pln-land.js:225-231
-plnLandRake                  src/21pf-pln-land.js:88
+plnLand                      src/21pf-pln-land.js:547-558
+plnLandBare                  src/21pf-pln-land.js:256-259
+plnLandBatches               src/21pf-pln-land.js:535-537
+plnLandBuild                 src/21pf-pln-land.js:493-499
+plnLandCol                   src/21pf-pln-land.js:401-440
+plnLandCols                  src/21pf-pln-land.js:116
+plnLandE                     src/21pf-pln-land.js:118
+plnLandFarGen                src/21pfb-pln-land-mesh.js:55-90
+plnLandFarH                  src/21pf-pln-land.js:305-385
+plnLandFarMesh               src/21pfb-pln-land-mesh.js:93
+plnLandFarRows               src/21pf-pln-land.js:109-114
+plnLandFree                  src/21pf-pln-land.js:538-545
+plnLandGen                   src/21pf-pln-land.js:488-492
+plnLandJobs                  src/21pf-pln-land.js:443-476
+plnLandLift                  src/21pf-pln-land.js:294
+plnLandMake                  src/21pf-pln-land.js:121-211
+plnLandMove                  src/21pf-pln-land.js:560-566
+plnLandNode                  src/21pfb-pln-land-mesh.js:9-15
+plnLandPath                  src/21pf-pln-land.js:389-398
+plnLandPond                  src/21pf-pln-land.js:236-247
+plnLandPondLine              src/21pf-pln-land.js:215-226
+plnLandPondZ                 src/21pf-pln-land.js:228-234
+plnLandRake                  src/21pf-pln-land.js:91
 plnLandRead                  src/21pza-pln-descent.js:167-175
-plnLandRibAt                 src/21pf-pln-land.js:278-285
-plnLandRibH                  src/21pf-pln-land.js:260-276
-plnLandRibMesh               src/21pf-pln-land.js:558-595
-plnLandRim                   src/21pf-pln-land.js:247-250
-plnLandRows                  src/21pf-pln-land.js:92-104
-plnLandSees                  src/21pf-pln-land.js:475-483
-plnLandSpan                  src/21pf-pln-land.js:293-298
-plnLandStep                  src/21pf-pln-land.js:495-514
-plnLandTab                   src/21pf-pln-land.js:287-290
+plnLandRibAt                 src/21pf-pln-land.js:281-288
+plnLandRibGen                src/21pfb-pln-land-mesh.js:16-54
+plnLandRibH                  src/21pf-pln-land.js:263-279
+plnLandRibMesh               src/21pfb-pln-land-mesh.js:92
+plnLandRim                   src/21pf-pln-land.js:250-253
+plnLandRows                  src/21pf-pln-land.js:95-107
+plnLandSees                  src/21pf-pln-land.js:478-486
+plnLandSpan                  src/21pf-pln-land.js:296-301
+plnLandStep                  src/21pf-pln-land.js:504-534
+plnLandTab                   src/21pf-pln-land.js:290-293
 plnLandUi                    src/21pza-pln-descent.js:192-200
 plnLeg                       src/21piba-pln-gait.js:33-41
 plnLegPhase                  src/21piba-pln-gait.js:30
@@ -6484,7 +6489,7 @@ plnQualAuto                  src/21pe-pln-gpu.js:56-65
 plnQualSet                   src/21pe-pln-gpu.js:47-52
 plnRec                       src/21pe-pln-gpu.js:103-109
 plnRgb                       src/21p-pln.js:50
-plnRidge                     src/21pf-pln-land.js:90
+plnRidge                     src/21pf-pln-land.js:93
 plnRidged                    src/21p-pln.js:74-81
 plnRotX                      src/21p-pln.js:43
 plnRotY                      src/21p-pln.js:41
@@ -6501,14 +6506,14 @@ plnShipOpen                  src/21phb-pln-ship.js:193-210
 plnShipPlate                 src/21phb-pln-ship.js:61-78
 plnShipRgb                   src/21phb-pln-ship.js:20
 plnShipWrite                 src/21phb-pln-ship.js:262-267
-plnSlide                     src/21pf-pln-land.js:47-62
-plnSlideF                    src/21pf-pln-land.js:73-78
+plnSlide                     src/21pf-pln-land.js:50-65
+plnSlideF                    src/21pf-pln-land.js:76-81
 plnSmax                      src/21p-pln.js:83
 plnSmooth                    src/21p-pln.js:32
-plnSoftp                     src/21pf-pln-land.js:89
+plnSoftp                     src/21pf-pln-land.js:92
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:294-375
+plnSurface                   src/21pz-pln-frame.js:294-380
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -6545,14 +6550,15 @@ plnTri                       src/21pa-pln-mesh.js:23-26
 plnTube                      src/21pa-pln-mesh.js:100-131
 plnVert                      src/21pa-pln-mesh.js:16-22
 plnWaterEye                  src/21pw-pln-water.js:247
-plnWaterGrid                 src/21pw-pln-water.js:253-261
+plnWaterGrid                 src/21pw-pln-water.js:254-262
 plnWaterMirror               src/21pw-pln-water.js:235-245
 plnWaterPipe                 src/21pw-pln-water.js:229-233
-plnWaterPond                 src/21pw-pln-water.js:275-282
-plnWaterRows                 src/21pw-pln-water.js:262
-plnWaterSea                  src/21pw-pln-water.js:287-305
-plnWaterSheet                src/21pw-pln-water.js:265-272
-plnWaterSwell                src/21pw-pln-water.js:315
+plnWaterPond                 src/21pw-pln-water.js:276-283
+plnWaterRows                 src/21pw-pln-water.js:263
+plnWaterSea                  src/21pw-pln-water.js:288
+plnWaterSeaGen               src/21pw-pln-water.js:289-308
+plnWaterSheet                src/21pw-pln-water.js:266-273
+plnWaterSwell                src/21pw-pln-water.js:318
 plnWaterVP                   src/21pw-pln-water.js:248
 plnWeatherFrame              src/21pk-pln-weather.js:34-70
 plnWeatherLook               src/21pz-pln-frame.js:120-169
@@ -9435,11 +9441,13 @@ zoomTo                       src/15-input.js:358
 ## src/21pe-pln-gpu.js · 25 KB
   · планета: цели, конвейеры и проходы одного кадра (M610):1
 
-## src/21pf-pln-land.js · 38 KB
+## src/21pf-pln-land.js · 34 KB
   · планета: земля (M610):1
 
 ## src/21pfa-pln-worlds.js · 22 KB
   · планета: листы миров (M613):1
+
+## src/21pfb-pln-land-mesh.js · 6 KB
 
 ## src/21pg-pln-flora.js · 16 KB
   · планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611):1
@@ -9519,7 +9527,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pk-pln-weather.js · 20 KB
   · осадки в воздухе сцены (M626):1
 
-## src/21pw-pln-water.js · 22 KB
+## src/21pw-pln-water.js · 23 KB
   · вода на движке: одна на все сцены (M634):1
 
 ## src/21pz-pln-frame.js · 31 KB
@@ -9957,6 +9965,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qi-water.js · 4 KB
   · одна вода везде (M634):1
+
+## tests/91qj-build.js · 3 KB
+  · стройка земли по рядам (M630f):1
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1
