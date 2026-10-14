@@ -3302,7 +3302,7 @@ body.rackon #prompt{opacity:0}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.498.1";
+const VER="0.498.2";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -90649,8 +90649,11 @@ const PLN_LAND={ext:180,               /* на сколько образцов �
    sliceFirst — первому вызову: он поднимает землю у корабля; piece — проб травы между сверками с
    часами (проба ~3 мкс); farV — вершин в куске дальнего мира: кусок в 9000 стоил 33 мс на ПК, в
    бюджет ложится один в 1200 (~8 мс: большая часть — запас высот по краям куска). До касания
-   стройки нет: сцена складывается вокруг точки касания (L.cx0), а корабль садится, где остановился */
-const PLN_BUILD={ms:8,first:40,n:2,nFirst:6,slice:6000,sliceFirst:12000,piece:1200,farV:1200};
+   стройки нет: сцена складывается вокруг точки касания (L.cx0), а корабль садится, где остановился.
+   frame (M630f) — весь JS кадра вместе со стройкой: стройке достаётся frame минус средний кадр без
+   неё, но не меньше low и не больше ms; сетки куска режутся по рядам (21pfb), и бюджет держится.
+   frame 5, а не 6: кусок травы и тела ленты перебирают бюджет на ~1 мс, а потолок кадра — 6 */
+const PLN_BUILD={ms:8,first:40,n:2,nFirst:6,slice:6000,sliceFirst:12000,piece:300,farV:1200,frame:5,low:1};
 /* зелень меняет тон с глубиной: оливковая вблизи, холоднее на дальнем берегу, сине-зелёная на холмах.
    Это рабочий лист: перед стройкой земли в него ложится лист типа мира (21pfa, plnPalSet) */
 const PLN_PAL={
@@ -91099,8 +91102,14 @@ function plnLandSees(J,ex,V,m){
   const z=J.t==="water"?136:PLN_LAND.zBack,h=V.hw*(1+z/V.D)+12+m;
   return J.xb>ex-h&&J.xa<ex+h;
 }
-function plnLandBuild(L,J){
-  const m=J.t==="rib"?plnLandRibMesh(L,J.c):J.t==="far"?plnLandFarMesh(L,J):J.t==="water"?plnWaterSheet(L,J):J.t==="sea"?plnWaterSea(L,J):plnWaterPond(L,J);
+/* сетка куска генератором: уступает стройке по рядам (21pfb, 21pw) */
+function* plnLandGen(L,J){
+  if(J.t==="rib")return yield* plnLandRibGen(L,J.c);
+  if(J.t==="far")return yield* plnLandFarGen(L,J);
+  return yield* J.t==="water"?plnWaterSheet(L,J):J.t==="sea"?plnWaterSeaGen(L,J):plnWaterPond(L,J);
+}
+function plnLandBuild(L,J,m){
+  if(!m)m=plnDrain(plnLandGen(L,J));
   J.geo=m.ni?plnGeo(m):null;J.done=true;L.left--;
   /* сетку куска ленты ждёт расстановка (21pga): трава встаёт на неё и отпускает */
   if(J.t==="rib")J.grid=m;
@@ -91117,6 +91126,16 @@ function plnLandStep(L,ex,V,n,lim){
   let k=0;
   L.first=true;
   for(;;){
+    /* начатая сетка доводится первой: ряд за рядом, пока есть время кадра (M630f) */
+    const W=L.gj;
+    if(W){
+      if(W.J.done){L.gj=null;continue;}
+      let r;
+      do r=W.g.next();while(!r.done&&(all||wallMs()-t0<ms));
+      if(!r.done)break;
+      L.gj=null;plnLandBuild(L,W.J,r.value);k++;
+      continue;
+    }
     let best=null,bp=1e9;
     for(const J of L.jobs){
       if(J.done)continue;
@@ -91124,7 +91143,8 @@ function plnLandStep(L,ex,V,n,lim){
       if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
     }
     if(!best||(!all&&(k>=cap||wallMs()-t0>=ms)))break;
-    plnLandBuild(L,best);k++;
+    if(all){plnLandBuild(L,best);k++;continue;}
+    L.gj={J:best,g:plnLandGen(L,best)};
   }
   L.ms+=wallMs()-t0;
   PLN.stat.land={jobs:L.jobs.length,left:L.left,ms:Math.round(L.ms)};
@@ -91163,89 +91183,6 @@ function plnLandMove(L,sx){
   return L;
 }
 
-/* ── сетки ── */
-/* Узел сетки из высот соседей: нормаль и то, как глубоко он сидит ниже тех, кто в трёх клетках
-   (ложбины темнее). Высоты лежат с запасом в три клетки, поэтому швов между кусками нет */
-function plnLandNode(H,o,gw,dux,dvz,span3){
-  const duy=H[o+1]-H[o-1],dvy=H[o+gw]-H[o-gw];
-  const n=plnNorm([-dvz*duy,dvz*dux,-dvy*dux]);
-  const av=(H[o+3]+H[o-3]+H[o+3*gw]+H[o-3*gw])/4;
-  const sp=Math.max(1,Math.hypot(span3,H[o+3*gw]-H[o]));
-  return {n,ao:clamp(1-Math.max(0,av-H[o])/sp*2.2,.55,1)};
-}
-function plnLandRibMesh(L,c){
-  const C=PLN_LAND,NT=L.NT,R=L.R,MG=3,i0=c*C.chunk,i1=Math.min(i0+C.chunk,NT-1),nc=i1-i0+1,gw=nc+2*MG,gh=R+2*MG;
-  const H=new Float32Array(gw*gh),PAL=PLN_PAL;
-  for(let r=0;r<gh;r++){
-    const rr=clamp(r-MG,0,R-1);
-    for(let i=0;i<gw;i++)H[r*gw+i]=plnLandRibH(L,rr,clamp(i0+i-MG,0,NT-1));
-  }
-  const X=i=>L.x0+clamp(i0+i-MG,0,NT-1)*L.dx,Z=r=>L.zr[clamp(r-MG,0,R-1)];
-  const m=plnMesh((nc*(R+1))*2+16);
-  for(let r=0;r<R;r++)for(let i=0;i<nc;i++){
-    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X(gi),z=Z(gr);
-    const q=plnLandNode(H,o,gw,Math.max(1e-3,X(gi+1)-X(gi-1)),Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z),slope=1-q.n[1];
-    let col=plnLandCol(L,x,z,h,q.n,0);
-    /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
-    if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
-    if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>L.lake.zn-4&&z<L.lake.zf+4){
-      col=plnDressShore(L,x,z,h,col);   /* голый берег, отмель, ил (21pge) */
-    }
-    /* ступень линии — скала: камень там, где земля под ней и за ней сама идёт круто */
-    const st=Math.max(plnSmooth(.5,.7,slope),plnLandTab(L,L.crag,x)*plnSmooth(.16,.34,slope)*plnSmooth(9,5,Math.abs(z)));
-    if(st>0)col=plnMix3(col,plnMul(plnMix3(PAL.rockWarm,PAL.rockCool,plnFbm(x*.05+9,z*.05+2,3,L.sd+41)*.5+.5),.74+.26*plnHash(i0+i,r,L.sd+92)),
-      (st-plnSmooth(.5,.7,slope))*.8);
-    /* в гнезде свечения у земли лежит доля камня */
-    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st*.85,q.ao);
-  }
-  for(let r=0;r+1<R;r++)for(let i=0;i+1<nc;i++){
-    const a=r*nc+i;
-    plnQuad(m,a,a+1,a+nc+1,a+nc);
-  }
-  /* юбка под ближним краем: снизу в кадр не заглянуть */
-  const sk=m.nv,nk=plnNorm([0,.25,-1]);
-  for(let i=0;i<nc;i++){
-    const o=i*PLN_VS,v=m.v;
-    plnVert(m,[v[o],v[o+1]-60,v[o+2]],nk,[v[o+6]*.7,v[o+7]*.7,v[o+8]*.7],PLN_MAT.ground,0,0,.6);
-  }
-  for(let i=0;i+1<nc;i++)plnQuad(m,sk+i,sk+i+1,i+1,i);
-  return m;
-}
-function plnLandFarMesh(L,J){
-  const C=PLN_LAND,NC=plnLandCols(J.b),fz=L.fz,RF=fz.length,MG=3,nc=J.c1-J.c0+1,nr=J.rb-J.ra+1,gw=nc+2*MG,gh=nr+2*MG;
-  const H=new Float32Array(gw*gh),K=new Uint8Array(gw*gh),K2=new Uint8Array(gw*gh),W2=new Float32Array(gw*gh),X=new Float32Array(gw*gh);
-  /* высоты полосы считаются раз на посадку (M614): куски делят края (запас MG с каждой стороны —
-     до двух третей высот куска), и без общей памяти каждая крайняя высота считалась бы по два-четыре
-     раза. Память полосы — по рядам, ряд заводится, когда его впервые трогают; пустая высота — NaN */
-  const FC=L.farC[J.b]||(L.farC[J.b]=[]),CW=NC+2*MG+1;
-  for(let r=0;r<gh;r++){
-    const rr=clamp(J.ra+r-MG,0,RF-1),z=fz[rr],e=plnLandE(z);
-    let R=FC[rr];
-    if(!R)R=FC[rr]={h:new Float32Array(CW).fill(NaN),k:new Uint8Array(CW),k2:new Uint8Array(CW),w2:new Float32Array(CW)};
-    for(let i=0;i<gw;i++){
-      const o=r*gw+i,ci=J.c0+i,x=-e+(L.len+2*e)*(ci-MG)/NC;
-      let h=R.h[ci];
-      if(h!==h){h=R.h[ci]=plnLandFarH(L,x,z);R.k[ci]=L.gk;R.k2[ci]=L.gk2;R.w2[ci]=L.gw;}
-      X[o]=x;H[o]=h;K[o]=R.k[ci];K2[o]=R.k2[ci];W2[o]=R.w2[ci];
-    }
-  }
-  const Z=r=>fz[clamp(J.ra+r-MG,0,RF-1)];
-  /* горы и дальние гряды — камень, хребет — наполовину */
-  const stone=k=>k===5||k===7?1:(k===4?.6:0);
-  const m=plnMesh(nc*nr*2+16);
-  for(let r=0;r<nr;r++)for(let i=0;i<nc;i++){
-    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X[o],z=Z(gr),k=K[o],w2=W2[o];
-    const q=plnLandNode(H,o,gw,X[o+1]-X[o-1],Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z);
-    let col=plnLandCol(L,x-L.cx0,z,h,q.n,k),st=stone(k);
-    if(w2>.01&&K2[o]!==k){col=plnMix3(col,plnLandCol(L,x-L.cx0,z,h,q.n,K2[o]),w2);st=lerp(st,stone(K2[o]),w2);}
-    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st,q.ao);
-  }
-  for(let r=0;r+1<nr;r++)for(let i=0;i+1<nc;i++){
-    const a=r*nc+i;
-    plnQuad(m,a,a+1,a+nc+1,a+nc);
-  }
-  return m;
-}
 /* сетки воды — в 21pw */
 
 /* ══════════════ планета: листы миров (M613) ══════════════
@@ -91472,6 +91409,100 @@ function plnFloraSheet(p,w){
   for(let i=0;i<5;i++)FL.bloom[i]=cv(A.bloom[i],B&&B.bloom[i]);
 }
 plnFloraSheet(null,0);
+
+/* ── сетки земли (M630f): вынесены из 21pf и режутся по рядам ──
+   Кусок ленты или дальней полосы строился одним вызовом в 9–14 мс — бюджет кадра его не резал, и
+   после посадки кадр стоил 16 мс JS. Теперь сетка — генератор: уступает после каждого ряда высот
+   и каждого ряда вершин, стройка (21pf, plnLandStep) ведёт его по часам кадра и доводит в следующих.
+   plnLandRibMesh/plnLandFarMesh — те же сетки разом (стенд, PLN.rush) */
+/* ── сетки ── */
+/* Узел сетки из высот соседей: нормаль и то, как глубоко он сидит ниже тех, кто в трёх клетках
+   (ложбины темнее). Высоты лежат с запасом в три клетки, поэтому швов между кусками нет */
+function plnLandNode(H,o,gw,dux,dvz,span3){
+  const duy=H[o+1]-H[o-1],dvy=H[o+gw]-H[o-gw];
+  const n=plnNorm([-dvz*duy,dvz*dux,-dvy*dux]);
+  const av=(H[o+3]+H[o-3]+H[o+3*gw]+H[o-3*gw])/4;
+  const sp=Math.max(1,Math.hypot(span3,H[o+3*gw]-H[o]));
+  return {n,ao:clamp(1-Math.max(0,av-H[o])/sp*2.2,.55,1)};
+}
+function* plnLandRibGen(L,c){
+  const C=PLN_LAND,NT=L.NT,R=L.R,MG=3,i0=c*C.chunk,i1=Math.min(i0+C.chunk,NT-1),nc=i1-i0+1,gw=nc+2*MG,gh=R+2*MG;
+  const H=new Float32Array(gw*gh),PAL=PLN_PAL;
+  for(let r=0;r<gh;r++){
+    const rr=clamp(r-MG,0,R-1);
+    for(let i=0;i<gw;i++)H[r*gw+i]=plnLandRibH(L,rr,clamp(i0+i-MG,0,NT-1));
+    yield;
+  }
+  const X=i=>L.x0+clamp(i0+i-MG,0,NT-1)*L.dx,Z=r=>L.zr[clamp(r-MG,0,R-1)];
+  const m=plnMesh((nc*(R+1))*2+16);
+  for(let r=0;r<R;r++){if(r)yield;for(let i=0;i<nc;i++){
+    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X(gi),z=Z(gr);
+    const q=plnLandNode(H,o,gw,Math.max(1e-3,X(gi+1)-X(gi-1)),Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z),slope=1-q.n[1];
+    let col=plnLandCol(L,x,z,h,q.n,0);
+    /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
+    if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
+    if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>L.lake.zn-4&&z<L.lake.zf+4){
+      col=plnDressShore(L,x,z,h,col);   /* голый берег, отмель, ил (21pge) */
+    }
+    /* ступень линии — скала: камень там, где земля под ней и за ней сама идёт круто */
+    const st=Math.max(plnSmooth(.5,.7,slope),plnLandTab(L,L.crag,x)*plnSmooth(.16,.34,slope)*plnSmooth(9,5,Math.abs(z)));
+    if(st>0)col=plnMix3(col,plnMul(plnMix3(PAL.rockWarm,PAL.rockCool,plnFbm(x*.05+9,z*.05+2,3,L.sd+41)*.5+.5),.74+.26*plnHash(i0+i,r,L.sd+92)),
+      (st-plnSmooth(.5,.7,slope))*.8);
+    /* в гнезде свечения у земли лежит доля камня */
+    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st*.85,q.ao);
+  }}
+  for(let r=0;r+1<R;r++)for(let i=0;i+1<nc;i++){
+    const a=r*nc+i;
+    plnQuad(m,a,a+1,a+nc+1,a+nc);
+  }
+  /* юбка под ближним краем: снизу в кадр не заглянуть */
+  const sk=m.nv,nk=plnNorm([0,.25,-1]);
+  for(let i=0;i<nc;i++){
+    const o=i*PLN_VS,v=m.v;
+    plnVert(m,[v[o],v[o+1]-60,v[o+2]],nk,[v[o+6]*.7,v[o+7]*.7,v[o+8]*.7],PLN_MAT.ground,0,0,.6);
+  }
+  for(let i=0;i+1<nc;i++)plnQuad(m,sk+i,sk+i+1,i+1,i);
+  return m;
+}
+function* plnLandFarGen(L,J){
+  const C=PLN_LAND,NC=plnLandCols(J.b),fz=L.fz,RF=fz.length,MG=3,nc=J.c1-J.c0+1,nr=J.rb-J.ra+1,gw=nc+2*MG,gh=nr+2*MG;
+  const H=new Float32Array(gw*gh),K=new Uint8Array(gw*gh),K2=new Uint8Array(gw*gh),W2=new Float32Array(gw*gh),X=new Float32Array(gw*gh);
+  /* высоты полосы считаются раз на посадку (M614): куски делят края (запас MG с каждой стороны —
+     до двух третей высот куска), и без общей памяти каждая крайняя высота считалась бы по два-четыре
+     раза. Память полосы — по рядам, ряд заводится, когда его впервые трогают; пустая высота — NaN */
+  const FC=L.farC[J.b]||(L.farC[J.b]=[]),CW=NC+2*MG+1;
+  for(let r=0;r<gh;r++){
+    const rr=clamp(J.ra+r-MG,0,RF-1),z=fz[rr],e=plnLandE(z);
+    let R=FC[rr];
+    if(!R)R=FC[rr]={h:new Float32Array(CW).fill(NaN),k:new Uint8Array(CW),k2:new Uint8Array(CW),w2:new Float32Array(CW)};
+    for(let i=0;i<gw;i++){
+      const o=r*gw+i,ci=J.c0+i,x=-e+(L.len+2*e)*(ci-MG)/NC;
+      let h=R.h[ci];
+      if(h!==h){h=R.h[ci]=plnLandFarH(L,x,z);R.k[ci]=L.gk;R.k2[ci]=L.gk2;R.w2[ci]=L.gw;}
+      X[o]=x;H[o]=h;K[o]=R.k[ci];K2[o]=R.k2[ci];W2[o]=R.w2[ci];
+    }
+    yield;
+  }
+  const Z=r=>fz[clamp(J.ra+r-MG,0,RF-1)];
+  /* горы и дальние гряды — камень, хребет — наполовину */
+  const stone=k=>k===5||k===7?1:(k===4?.6:0);
+  const m=plnMesh(nc*nr*2+16);
+  for(let r=0;r<nr;r++){if(r)yield;for(let i=0;i<nc;i++){
+    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X[o],z=Z(gr),k=K[o],w2=W2[o];
+    const q=plnLandNode(H,o,gw,X[o+1]-X[o-1],Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z);
+    let col=plnLandCol(L,x-L.cx0,z,h,q.n,k),st=stone(k);
+    if(w2>.01&&K2[o]!==k){col=plnMix3(col,plnLandCol(L,x-L.cx0,z,h,q.n,K2[o]),w2);st=lerp(st,stone(K2[o]),w2);}
+    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st,q.ao);
+  }}
+  for(let r=0;r+1<nr;r++)for(let i=0;i+1<nc;i++){
+    const a=r*nc+i;
+    plnQuad(m,a,a+1,a+nc+1,a+nc);
+  }
+  return m;
+}
+function plnDrain(g){for(;;){const r=g.next();if(r.done)return r.value;}}
+function plnLandRibMesh(L,c){return plnDrain(plnLandRibGen(L,c));}
+function plnLandFarMesh(L,J){return plnDrain(plnLandFarGen(L,J));}
 
 /* ══════════════ планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611) ══════════════
    Всё, что растёт и лежит на земле, — из одного набора. Тело строится раз на
@@ -97944,9 +97975,10 @@ const plnWaterVP=(vp,y)=>plnM4mul(vp,plnM4mirrorY(y));
 /* ── сетки глади ──
    Решётка: xs — шаг по x от xa, zs — ряды в глубину; at(x,z) кладёт вершину и говорит, держит ли
    она воду; квадрат — если воду держит хоть один угол (у берега гладь уходит под землю, а не рвётся) */
-function plnWaterGrid(m,xa,nx,sx,zs,at){
+/* генераторы (M630f): уступают стройке (21pf plnLandStep) после каждого ряда глубины */
+function* plnWaterGrid(m,xa,nx,sx,zs,at){
   const nz=zs.length,keep=new Uint8Array((nx+1)*nz);
-  for(let j=0;j<nz;j++)for(let i=0;i<=nx;i++)keep[j*(nx+1)+i]=at(xa+i*sx,zs[j])?1:0;
+  for(let j=0;j<nz;j++){for(let i=0;i<=nx;i++)keep[j*(nx+1)+i]=at(xa+i*sx,zs[j])?1:0;yield;}
   for(let j=0;j+1<nz;j++)for(let i=0;i<nx;i++){
     const a=j*(nx+1)+i,b=a+1,c=a+nx+2,d=a+nx+1;
     if(keep[a]|keep[b]|keep[c]|keep[d])plnQuad(m,a,b,c,d);
@@ -97956,9 +97988,9 @@ function plnWaterGrid(m,xa,nx,sx,zs,at){
 const plnWaterRows=(z0,z1,s)=>{const z=[],n=Math.ceil((z1-z0)/s-1e-9);for(let k=0;k<=n;k++)z.push(z0+k*s);return z;};
 /* Вода ложбины едет с дальним миром. Дно лежит в цвете вершины: высота ленты (мировая) и дна
    ложбины (на её уровне) — глубину считает шейдер, потому что уровень воды в кадре свой */
-function plnWaterSheet(L,J){
+function* plnWaterSheet(L,J){
   const C=PLN_LAND,sx=2,zs=plnWaterRows(4,136,1),nx=Math.ceil((J.xb-J.xa)/sx),m=plnMesh((nx+1)*zs.length*2);
-  return plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
+  return yield* plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
     const f=plnLandFarH(L,x,z),hr=z<=C.zBack?plnLandRibAt(L,x,z):-1e3;
     plnVert(m,[x,C.wRel,z],[0,1,0],[hr,f,0],PLN_MAT.water,0,0,0);
     return C.wRel-f>-.4&&plnLandTab(L,L.liftHi,x)+C.wRel-hr>-.4;
@@ -97966,9 +97998,9 @@ function plnWaterSheet(L,J){
 }
 /* пруд стоит в мире, на уровне озера игры; вода — только в чаше: за валом бугры склона уходят ниже
    её уровня, и там она легла бы лужами */
-function plnWaterPond(L,J){
+function* plnWaterPond(L,J){
   const k=L.lake,sx=L.dx*2,zs=plnWaterRows(k.zn-2.4,k.zf+2,.6),nx=Math.ceil((J.xb-J.xa)/sx),m=plnMesh((nx+1)*zs.length*2);
-  return plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
+  return yield* plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
     const hr=plnLandRibAt(L,x,z);
     plnVert(m,[x,k.level,z],[0,1,0],[hr,-1e3,0],PLN_MAT.water,0,0,0);
     return k.level-hr>-.4&&(Math.abs(z)<2.5||plnLandPond(L,x,z)<1.2);
@@ -97978,12 +98010,14 @@ function plnWaterPond(L,J){
    ширина — как у дальнего мира на этой глубине. Острова встают из него сами: суша выше воды
    закрывает лист глубиной. Дно — дальняя суша под листом: мель и мокрая кромка там, где она
    подходит к уровню, — у островов и у ложбины; в открытом море дно на десять метров ниже, тело тёмное */
-function plnWaterSea(L,J){
+function plnWaterSea(L,J){return plnDrain(plnWaterSeaGen(L,J));}
+function* plnWaterSeaGen(L,J){
   const C=PLN_LAND,zs=[];
   for(let z=J.za;z<J.zb;z*=1.06)zs.push(z);
   zs.push(J.zb);
   const NC=96,m=plnMesh((NC+1)*zs.length*2),keep=new Uint8Array((NC+1)*zs.length);
   for(let j=0;j<zs.length;j++){
+    if(j)yield;
     const z=zs[j],e=plnLandE(z);
     for(let i=0;i<=NC;i++){
       const x=-e+(L.len+2*e)*i/NC,f=plnLandFarH(L,x,z);
@@ -98319,13 +98353,18 @@ function plnSurface(S,o){
   PLN.y0=tr.padY;
   const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):null),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
-  /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
-  const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
+  /* стройка по бюджету кадра (M614, M630f): кадр без стройки — среднее FRAME_JS прошлых кадров за
+     вычетом их стройки; стройке — что остаётся до PLN_BUILD.frame. Земля берёт своё первой,
+     посадкам — остаток, но не меньше половины low */
+  const B=PLN_BUILD,tb=wallMs(),bs=PLN.bld||(PLN.bld={base:3,ms:0});
+  if(FRAME_JS>0)bs.base+=(Math.max(0,FRAME_JS-bs.ms)-bs.base)*.1;
+  const lim=L.first?clamp(B.frame-bs.base,B.low,B.ms):B.first;
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
   if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
-  plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
+  plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));
+  bs.ms=wallMs()-tb;
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
      перед объективом со своей стороны — дорожка по воде становится героем кадра; выше часа закон
@@ -100700,6 +100739,8 @@ const CAVE3_Z=.7;
 const CAVE3_LENS={man:[.124,.124],walk:[.29,.34],dist:[18,36],eye:3.2,tau:.45,inS:1.2,inK:.42,near:1.6,nIn:.45,nOut:.7,
   /* у озера: глаз выше и ближе — гладь и зеркало ложатся полосой, а не ребром */
   lkEye:2.6,lkD:.55,lkS:.8,
+  /* нырок (M630e): человек у воды — ближняя стоянка, в кадре не мельче .22 высоты (dvN раз ближе широкого) */
+  dvN:1.9,
   /* дальний: глаз за 100 м, 24°, линия ходьбы на .40 — по клавише карты; на телефоне нет */
   fD:100,fH:42.5,fWalk:.40,fIn:.8,fOut:.7,fBack:15,fWalkMax:.5};
 /* дальний объектив — только на широком окне */
@@ -100710,10 +100751,11 @@ function cave3FarOk(){return W>760&&W>=H;}
 /* sky — высота поверхности (м): дальний кадр не поднимается выше неё даже на задней стене (за 15 м от
    линии ходьбы) — над пещерой камень, небо только в устье. Не влезает — линия ходьбы поднимается в
    кадре до середины, потом кадр сжимается: объектив жмётся к полу, а не отходит в небо */
-function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky){
+function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky,dv,hd){
   const L=CAVE3_LENS,k=plnSmooth(.6,1.5,asp);
   far=far||0;lk=(lk||0)*(1-far);
   let Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k)*lerp(1,L.lkD,lk);
+  if(dv&&hd)Hf=lerp(Hf,Math.min(Hf,hd),dv);
   if(far){Hf=lerp(Hf,L.fH,far);f=lerp(f,L.fWalk,far);D=lerp(D,L.fD,far);}
   if(far&&sky!=null){
     const ey=floorY+L.eye,top=ey+(sky-ey)/(1+L.fBack/D)-floorY;
@@ -100725,9 +100767,16 @@ function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky){
   return {k,Hf,f,D,w,l,r,b,t,vp,eye:[ex,ey,ez]};
 }
 /* нырок к озеру (M631): вес — человек ближе 3 м к урезу (lakeM от прошлого кадра), под водой глубже
-   метра — нет; пол кадра — уровень воды без метра, но не ниже 3.5 м под человеком (он в кадре) */
+   метра — нет */
 function cave3DiveW(Lm,floorY){return !Lm||floorY<Lm.y-1?0:1-plnSmooth(3,3.6,Lm.d);}
-function cave3DiveFloor(floorY,wy,k){return k?lerp(floorY,Math.max(wy-1,floorY-3.5),k):floorY;}
+/* окно нырка (M630e): от воды без 0.9 м до макушки с запасом; высота — ближняя стоянка (человек .236
+   кадра), а если вода с макушкой не влезают — сколько нужно. Лишнее — над головой (свод в кадре).
+   fy — пол кадра для объектива (линия ходьбы окна), hd — высота окна */
+function cave3DiveFrame(floorY,wy,k,asp){
+  const L=CAVE3_LENS,kk=plnSmooth(.6,1.5,asp),f=lerp(L.walk[0],L.walk[1],kk),man=lerp(L.man[0],L.man[1],kk);
+  const lo=Math.min(wy,floorY)-.9,hi=floorY+2.25,hd=Math.max(1.8/(man*L.dvN),hi-lo),b=lo-(hd-(hi-lo))*.3;
+  return {fy:k?lerp(floorY,b+f*hd,k):floorY,hd};
+}
 /* доля человека в высоте кадра (для набора и ворот) */
 function cave3ManShare(asp){return 1.8/cave3Lens(asp,0,0,0).Hf;}
 /* досягаемость фонаря по снаряжению: I класс — 18 м */
@@ -100812,8 +100861,8 @@ function cave3Frame(){
   M.fs=first||M.fs==null||M.rush?fs:M.fs+(fs-M.fs)*(1-Math.exp(-dt/.6));
   const dK=M.dvX==null?0:plnSmooth(0,1,M.dv)*(1-fK),nK=plnSmooth(0,1,M.near);
   const cx=M.cx+M.fs*fK+M.ns*nK*(1-fK)*(1-dK)+(dK?(M.dvX-C.x/CAVE_PPM)/2*dK:0);
-  const floorY=-C.cy/CAVE_PPM,fy=cave3DiveFloor(floorY,M.dvY,dK);
-  const Ls=cave3Lens(asp,cx,fy,zoom,Math.max(nK,dK),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY),K=H/(Ls.Hf*CAVE_PPM);
+  const floorY=-C.cy/CAVE_PPM,dF=cave3DiveFrame(floorY,M.dvY,dK,asp),fy=dF.fy;
+  const Ls=cave3Lens(asp,cx,fy,zoom,nK*(1-dK),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY,dK,dF.hd),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
   M.lens=Ls;
@@ -100823,7 +100872,7 @@ function cave3Frame(){
   /* человек: ноги — на полу картинки, но не дальше четверти метра от пола игры */
   const face=C.face<0?-1:1,mx=C.x/CAVE_PPM,gy=-C.y/CAVE_PPM;
   let my=gy;
-  if(C.on){const v=cave3Down(Fd,mx,gy+.5,CAVE3_Z);my=gy+clamp(v-gy,-.25,.25);}
+  if(C.on){const v=cave3Floor(Fd,mx,gy+.5,CAVE3_Z,1.2);if(v!=null)my=gy+clamp(v-gy,-.25,.25);}
   const F={batches:[],lamps:[],draw:[],lights:[],glows:[]};
   /* сырость воздуха: у воды и в натёчном зале конус в воздухе гуще */
   const zn=caveZoneAt(C,C.x);
@@ -101290,6 +101339,18 @@ function cave3Down(F,X,Y,Z){
   for(let n=0;n<40&&cave3Den(F,X,a-.1,Z)<=0;n++)a-=.1;
   let lo=a-.1,hi=a;
   for(let n=0;n<10;n++){const m=(lo+hi)/2;if(cave3Den(F,X,m,Z)>0)lo=m;else hi=m;}
+  return (lo+hi)/2;
+}
+/* то же, но честно: null, если пола нет на глубину lim метров (или точка уже в камне) — тогда
+   стоять не на чем, и вещь не ставят над пустотой */
+function cave3Floor(F,X,Y,Z,lim){
+  if(cave3Den(F,X,Y,Z)>0)return null;
+  const n=Math.round((lim||4)/.1);
+  let a=Y,k=0;
+  for(;k<n&&cave3Den(F,X,a-.1,Z)<=0;k++)a-=.1;
+  if(k>=n)return null;
+  let lo=a-.1,hi=a;
+  for(let m=0;m<10;m++){const c=(lo+hi)/2;if(cave3Den(F,X,c,Z)>0)lo=c;else hi=c;}
   return (lo+hi)/2;
 }
 /* цвет камня в точке: rgb и мокрость; ny — куда смотрит грань */
@@ -103347,18 +103408,24 @@ function cave3LifeDrop(Q){
   for(const k in Q.inst)plnInstFree(Q.inst[k]);
   Q.geo={};Q.inst={};
 }
-/* пол картинки под точкой на глубине z: где воздух — на нём, иначе ближе к разрезу */
-/* ноги вещи: не дальше .25 м от пола игры (как у человека, 22d-cave-pln) — иначе растение вмуровано в породу
-   или висит над провалом, а зверь зарыт (плейтест 09.10.2026) */
-function cave3FootY(gy,v){return gy+clamp(v-gy,-.25,.25);}
+/* пол картинки под точкой на глубине z: вещь стоит на камне, который видно, и не дальше четверти
+   метра от пола игры (Y). Первая глубина, где так, — её; нет среди своих — ищут на запасных, от
+   разреза вглубь; нет и там — вещи в кадре нет: над пустотой и в камне не ставят */
+const CAVE3_FOOT_Z=[CAVE3_Z+.1,CAVE3_Z+.45,1.5,1.9,2.4];
 function cave3LifeFoot(F,X,Y,zs){
-  for(const z of zs)if(cave3Den(F,X,Y+.5,z)<-.15){
-    const v=cave3Down(F,X,Y+.5,z);
-    /* cave3Down на пределе поиска (4 м) отдаёт «пол» в воздухе: под ним должна быть порода */
-    if(cave3Den(F,X,v-.12,z)>0)return [cave3FootY(Y,v),z];
+  for(const z of zs.concat(CAVE3_FOOT_Z)){
+    if(cave3Den(F,X,Y+.5,z)>=-.15)continue;
+    const v=cave3Floor(F,X,Y+.5,z,1.2);
+    if(v!=null&&Math.abs(v-Y)<=.25)return [v,z];
   }
   return null;
 }
+/* глубины, на которых ищут пол: растение — за линией ходьбы, зверь — у неё (те же, что берёт кадр) */
+function cave3PlantZs(q){
+  const u=((hashi(Math.round(q.x),Math.round(q.h||0),0x9E11)>>>5)&255)/255,z=CAVE3_LIFE.plantZ[0]+u*CAVE3_LIFE.plantZ[1];
+  return [z,z*.75,CAVE3_Z+.25];
+}
+function cave3BeastZ(b){return CAVE3_Z+(b.r<7?CAVE3_LIFE.beastZ[0]:CAVE3_LIFE.beastZ[1]);}
 function cave3LifeFrame(C,F,Fd,x0,x1){
   const Q=C.life3||(C.life3={gen:-1,geo:{},inst:{},a:{},foot:new Map()});
   if(Q.gen!==PLN_GPU.gen){cave3LifeDrop(Q);Q.gen=PLN_GPU.gen;}
@@ -103372,10 +103439,7 @@ function cave3LifeFrame(C,F,Fd,x0,x1){
     const X=q.x/P;if(X<x0-3||X>x1+3)continue;
     const hh=hashi(Math.round(q.x),Math.round(q.h||0),0x9E11);
     let ft=Q.foot.get(q);
-    if(ft===undefined){
-      const u=((hh>>>5)&255)/255,z=K.plantZ[0]+u*K.plantZ[1];
-      ft=cave3LifeFoot(Fd,X,-q.y/P,[z,z*.75,CAVE3_Z+.25]);Q.foot.set(q,ft);
-    }
+    if(ft===undefined){ft=cave3LifeFoot(Fd,X,-q.y/P,cave3PlantZs(q));Q.foot.set(q,ft);}
     if(!ft)continue;
     const si=Math.max(0,sps.indexOf(q.sp)),key="p"+si+"."+(q.age<.3?0:(q.age>.82?2:1));
     (by[key]=by[key]||{plant:q,si,list:[]}).list.push({q,ft,hh});
@@ -103409,14 +103473,16 @@ function cave3LifeFrame(C,F,Fd,x0,x1){
         if(q.sp.kind===4)plnRec(a,m++,pos,h,yaw,1,m,q.scanned?[.6,1.1,1.05]:[jt,jt,jt],0);
         else plnRec(a,m++,pos,h,yaw,1,m,under,2,top);
       }else{
-        const b=e.b,X=b.x/P,R=Math.max(K.rMin,b.r/P),z=CAVE3_Z+(b.r<7?K.beastZ[0]:K.beastZ[1]);
-        /* y зверя у игры — пол под ним; летун висит на hover пикселей карты выше, пасясь — ниже, оглушённый лёг */
+        const b=e.b,X=b.x/P,R=Math.max(K.rMin,b.r/P);
+        /* y зверя у игры — пол под ним; летун висит на hover пикселей карты выше, пасясь — ниже, оглушённый лёг.
+           Пол ищут там, где зверь стоит в кадре: на своей глубине, иначе у разреза (тогда и сам зверь там) */
         const fk=Math.round(X*4)+"|"+Math.round(-b.y/P*2);
         let f=Q.foot.get(fk);
-        if(f===undefined){const v=cave3LifeFoot(Fd,X,-b.y/P,[z,CAVE3_Z+.2]);f=v?v[0]:-b.y/P;Q.foot.set(fk,f);}
+        if(f===undefined){f=cave3LifeFoot(Fd,X,-b.y/P,[cave3BeastZ(b),CAVE3_Z+.2])||[-b.y/P,CAVE3_Z+.2];Q.foot.set(fk,f);}
+        const z=f[1];
         const k=e.k,up=b.alien?(b.hover&&k!==N+3?b.hover*(k===N+1?.35:1)*(1+.16*Math.sin(e.t*.6))/P:0)
           :(e.go?(b.hop?Math.abs(Math.sin(e.t))*R*.35:Math.sin(e.t)*R*.08+R*.08):0);
-        const y=f+up;
+        const y=f[0]+up;
         const yaw=b.alien==="manta"?PLN_BEAST.mantaYaw:PLN_BEAST.yaw;
         /* шкура у поверхности поднята под контровой свет дня; в пещере тело темнее — его лепит фонарь */
         plnRec(a,m++,[X,y,z],R,b.face<0?Math.PI-yaw:yaw,1,m,b.scanned?[.42,.62,.6]:K.fur,0);

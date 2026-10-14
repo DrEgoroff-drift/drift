@@ -309,13 +309,18 @@ function plnSurface(S,o){
   PLN.y0=tr.padY;
   const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):null),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
-  /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
-  const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
+  /* стройка по бюджету кадра (M614, M630f): кадр без стройки — среднее FRAME_JS прошлых кадров за
+     вычетом их стройки; стройке — что остаётся до PLN_BUILD.frame. Земля берёт своё первой,
+     посадкам — остаток, но не меньше половины low */
+  const B=PLN_BUILD,tb=wallMs(),bs=PLN.bld||(PLN.bld={base:3,ms:0});
+  if(FRAME_JS>0)bs.base+=(Math.max(0,FRAME_JS-bs.ms)-bs.base)*.1;
+  const lim=L.first?clamp(B.frame-bs.base,B.low,B.ms):B.first;
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
   if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
-  plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
+  plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));
+  bs.ms=wallMs()-tb;
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
      перед объективом со своей стороны — дорожка по воде становится героем кадра; выше часа закон
