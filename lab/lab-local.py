@@ -28,7 +28,7 @@ NOWIN = 0x08000000          # CREATE_NO_WINDOW
 TMP = os.path.join(os.environ.get("TEMP", HOMED), "drift-lab")
 LIGHT_N, WIN_N = 6, 4
 TMO = {"node": 300, "vision": 300, "light": 300, "mobile": 420, "tall": 420, "wide": 420,
-       "heavy": 600, "solo": 900, "tour": 900, "frames": 600, "hunt": 300}
+       "heavy": 600, "solo": 900, "tour": 900, "frames": 900, "hunt": 300}
 
 def sh(cmd, cwd=None, timeout=None):
     return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace",

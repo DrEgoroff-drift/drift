@@ -154,12 +154,17 @@ def laws():
     for f in glob.glob(os.path.join(src, "tests", "*.js")):   # файлы, а не git: подложенные лабой законы не в индексе
         try: blob += open(f, encoding="utf-8", errors="replace").read()
         except OSError: pass
-    have = {L["match"] for L in cat if L["match"] in blob}
+    # законы живого кадра живут в самом jank.py — он гоняется из lab/, а не из копии
+    for f in ("jank.py",):
+        try: blob += open(os.path.join(HERE, f), encoding="utf-8", errors="replace").read()
+        except OSError: pass
+    alts = lambda L: L["match"].split("|")   # match может перечислять варианты через «|»
+    hit = lambda L, text: any(m in text for m in alts(L))
     out = []
     for L in cat:
         units = set(L["unit"].split(","))
-        red = [errs[k] for k in keys if k in errs and L["match"] in (errs[k].get("suite", "") + " " + errs[k].get("msg", ""))]
-        here = L["match"] in have or units <= {"frames", "tour", "hunt", "vision"} and L["match"] in ("кадры ·", "тур полёта", "охота:", "зрение ·")
+        red = [errs[k] for k in keys if k in errs and hit(L, errs[k].get("suite", "") + " " + errs[k].get("msg", ""))]
+        here = hit(L, blob) or units <= {"frames", "tour", "hunt", "vision"} and L["match"] in ("кадры ·", "тур полёта", "охота:", "зрение ·")
         st = "red" if red else ("absent" if not here else "green" if units & kinds else "idle")
         out.append(dict(L, status=st, msg=red[0]["msg"] if red else "", n=len(red)))
     return {"session": s, "laws": out}

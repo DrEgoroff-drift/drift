@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 592 · top-level symbols: 8406
+Files: 593 · top-level symbols: 8408
 
 ## SYMBOLS
 
@@ -7533,6 +7533,8 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:412-431
+seedLand                     tests/91qm-seeds.js:24-30
+seedWorlds                   tests/91qm-seeds.js:11-23
 sellCargo                    src/12-economy.js:181-207
 sellDroneYield               src/12-economy.js:208-216
 sellQuote                    src/12ab-hold.js:109-124
@@ -10165,6 +10167,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91ql-light.js · 3 KB
   · свет без рывков (Зрение 2.0, закон «свет»):1
+
+## tests/91qm-seeds.js · 6 KB
+  · сиды: законы земли на многих мирах (лаборатория, 15.10):1
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1

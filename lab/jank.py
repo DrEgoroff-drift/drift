@@ -25,7 +25,9 @@ SCENES = ["surface", "landing", "things", "night", "cave", "dig", "shaft", "map"
 ENTRY_MS, RUN_MAX, LONG, LONG_SHARE, ENTRY_MAX = 2000, 100, 33.4, .02, 250
 
 REC = """<script>
-window.__J={on:false,t0:0,f:[]};
+window.__J={on:false,t0:0,f:[],lt:[]};
+/* долгие задачи между кадрами — подгрузка, компиляция, мусор: rAF их не видит, если они легли между кадрами */
+try{new PerformanceObserver(function(l){if(__J.on)l.getEntries().forEach(function(e){__J.lt.push([e.startTime-__J.t0,e.duration]);});}).observe({type:"longtask",buffered:false});}catch(e){}
 (function(){var lt=0;function tick(t){requestAnimationFrame(tick);
   if(lt&&__J.on){var js=-1;try{js=FRAME_JS;}catch(e){}
     var r={t:t-__J.t0,d:t-lt,js:js,m:(typeof G!=="undefined"&&G.mode)||"?",g:-1};__J.f.push(r);
@@ -61,9 +63,29 @@ def who(fr):
     return "ни JS (%d), ни видеокарта (%d) — сборка мусора или ожидание" % (max(js, 0), max(g, 0))
 
 
-def judge(sc, F, out):
+def judge(sc, F, out, pz=None):
     entry = [f for f in F if f["t"] < ENTRY_MS]
     run = [f for f in F if f["t"] >= ENTRY_MS]
+    segs = None
+    if pz is not None:
+        # кадр, что проспал заморозку, — не кадр игры: из законов времени кадра он выходит, а сам судится
+        # законом паузы — сколько мира он догнал разом и куда за это время уехали герой и камера
+        i = next((i for i, f in enumerate(run) if f["t"] > pz and f["d"] > 1000), None)
+        if i is None:
+            aft = [f for f in run if f["t"] > pz]
+            out.append(("кадры · " + sc, "пауза: разрыва после заморозки не видно — кадров после %d, худший %.0f мс, G.t прошло %s" % (
+                len(aft), max([f["d"] for f in aft] or [0]), (aft[-1].get("gt") - aft[0].get("gt")) if len(aft) > 1 and aft[0].get("gt") is not None else "?")))
+        else:
+            a, b = run[i - 1], run[i]
+            dg = (b.get("gt") or 0) - (a.get("gt") or 0)
+            if dg > 30:
+                out.append(("кадры · " + sc, "пауза: мир догнал %.0f тактов (%.1f с) одним кадром — телепорт после возврата во вкладку" % (dg, dg / 60)))
+            for k, nm in (("hx", "герой"), ("vx", "камера")):
+                if a.get(k) is not None and b.get(k) is not None and abs(b[k] - a[k]) > 60:
+                    out.append(("кадры · " + sc, "пауза: %s прыгнул на %.0f за кадр возврата" % (nm, abs(b[k] - a[k]))))
+            # плавность судят по обе стороны разрыва; полсекунды догонки (камера доплывает за героем) — эхо паузы
+            segs = [run[:i], [f for f in run[i + 1:] if f["t"] > b["t"] + 500]]
+            run = run[:i] + run[i + 1:]
     if len(run) < 30:
         out.append(("кадры · " + sc, "кадров почти нет: %d за ход — сцена не крутится" % len(run))); return
     ds = sorted(f["d"] for f in run)
@@ -81,32 +103,40 @@ def judge(sc, F, out):
                     ", ".join(sorted({who(f).split(" ")[0] for f in longs})))))
     if ew and ew["d"] > ENTRY_MAX:
         out.append(("кадры · " + sc, "вход: кадр %d мс в режиме %s — съел: %s" % (ew["d"], ew["m"], who(ew))))
-    smooth(sc, run, out)
+    for s in segs or [run]:
+        got = []; smooth(sc, s, got)
+        for x in got:
+            if x not in out: out.append(x)
 
 
 def smooth(sc, run, out):
     """законы живого кадра — по кадрам, где мир сдвинулся (G.t вырос): rAF бывает чаще такта игры"""
     import math
     W = [f for i, f in enumerate(run) if i and f.get("gt") is not None and f["gt"] != run[i - 1].get("gt")]
-    if len(W) < 30: return
+    if len(W) < 100: return   # на коротком отрезке один кадр — уже процент
     med = lambda A: sorted(A)[len(A) // 2] if A else 0
     def jumps(key, lim_abs):
         # скорость на тик мира, а не сдвиг за кадр: на 240 Гц кадр несёт то .5, то 1.5 тика (квант 28-loop),
         # и сдвиг за кадр «прыгает» без всякого рывка на экране мира
-        d = [(b[key] - a[key]) / (b["gt"] - a["gt"]) for a, b in zip(W, W[1:])
+        P = [(b, (b[key] - a[key]) / (b["gt"] - a["gt"])) for a, b in zip(W, W[1:])
              if a.get(key) is not None and b.get(key) is not None and b["gt"] > a["gt"]]
-        if len(d) < 10: return 0, 0, 0
-        dd = [abs(b - a) for a, b in zip(d, d[1:])]
-        m = med([abs(x) for x in d])
-        bad = [x for x in dd if x > max(lim_abs, 3 * m)]
-        return len(bad), max(dd), m
-    n, mx, m = jumps("vx", 2.0)
-    if n > .01 * len(W): out.append(("кадры · " + sc, "камера рывком: %d из %d кадров (скачок %.1f при обычном шаге %.2f)" % (n, len(W), mx, m)))
-    n, mx, m = jumps("hx", 2.0)
-    if n > .01 * len(W): out.append(("кадры · " + sc, "герой рывком: %d из %d кадров (скачок %.1f при шаге %.2f)" % (n, len(W), mx, m)))
-    ks = [f.get("k") for f in W if f.get("k")]
-    kj = [abs(b / a - 1) for a, b in zip(ks, ks[1:]) if a]
-    if kj and max(kj) > .02: out.append(("кадры · " + sc, "зум рывком: за кадр %.1f %%" % (100 * max(kj))))
+        if len(P) < 10: return 0, 0, 0, ""
+        dd = [(f, abs(v2 - v1)) for (_, v1), (f, v2) in zip(P, P[1:])]
+        m = med([abs(v) for _, v in P])
+        bad = [(f, x) for f, x in dd if x > max(lim_abs, 3 * m)]
+        f, mx = max(dd, key=lambda z: z[1])
+        # где: секунда записи и место героя — чтобы рывок искали у вещи, а не по всему ходу
+        at = " — на %.1f с, x героя %s" % (f["t"] / 1000, "%.0f" % f["hx"] if f.get("hx") is not None else "?")
+        return len(bad), mx, m, at
+    n, mx, m, at = jumps("vx", 2.0)
+    if n >= 2 and n > .01 * len(W): out.append(("кадры · " + sc, "камера рывком: %d из %d кадров (скачок %.1f при обычном шаге %.2f)%s" % (n, len(W), mx, m, at)))
+    n, mx, m, at = jumps("hx", 2.0)
+    if n >= 2 and n > .01 * len(W): out.append(("кадры · " + sc, "герой рывком: %d из %d кадров (скачок %.1f при шаге %.2f)%s" % (n, len(W), mx, m, at)))
+    # зум — по скачку его СКОРОСТИ за такт (log k): плавный быстрый наезд не рывок, рывок — когда скорость
+    # ломается (стоял — и за кадр сорвался); и потолок: больше 5 % за такт — щелчок, как ни крути
+    for f in W: f["lk"] = math.log(f["k"]) if f.get("k") else None
+    n, mx, m, at = jumps("lk", .004)
+    if (n >= 2 and n > .01 * len(W)) or mx > .05: out.append(("кадры · " + sc, "зум рывком: %d из %d кадров (скачок %.1f %%/такт при обычном %.2f %%)%s" % (n, len(W), 100 * mx, 100 * m, at)))
     S = [f["sun"] for f in W if f.get("sun")]
     if len(S) > 20:
         ang = [math.degrees(math.acos(max(-1, min(1, sum(x * y for x, y in zip(a, b)))))) for a, b in zip(S, S[1:])]
@@ -116,11 +146,81 @@ def smooth(sc, run, out):
     ge = [f.get("ge", 0) for f in run]
     if ge and ge[-1] > ge[0]: out.append(("кадры · " + sc, "ошибки видеокарты на ходу: +%d" % (ge[-1] - ge[0])))
     M = [(f["t"], f["mem"]) for f in run if f.get("mem")]
-    if len(M) > 60:
+    if len(M) > 60 and M[-1][0] - M[0][0] >= 12000:   # память судит долгий ход: на коротком отрезке пила мусора не успевает сойти
         q = len(M) // 4
         lo = [min(v for _, v in M[i * q:(i + 1) * q]) for i in range(4)]   # нижняя кромка по четвертям: пила мусора её не двигает
-        a, b = lo[0], lo[3]
-        if b - a > 8e6 and lo[0] < lo[1] < lo[2] < lo[3]: out.append(("кадры · " + sc, "память растёт: +%.1f МБ за %.0f с хода (по нижней кромке)" % ((b - a) / 1e6, (M[-1][0] - M[0][0]) / 1000)))
+        a, b = lo[1], lo[3]                       # первая четверть — прогрев: кеши сцены набираются, пока её открывают
+        if b - a > 6e6 and lo[1] < lo[2] < lo[3]: out.append(("кадры · " + sc, "память растёт: +%.1f МБ за %.0f с хода (по нижней кромке)" % ((b - a) / 1e6, (M[-1][0] - M[0][0]) / 1000)))
+
+
+# ── тяжесть: бюджеты на этой машине (RTX, 1280×800). Шире живого вдвое — ловят регресс, а не шум ──
+FPS_MIN, LOW1_MS, DROP_SHARE, LONGTASK_MS, MAIN_BUSY, GPU_PROC, GPU_FRAME_MS = 55, 25, .01, 50, .45, .6, 6
+
+
+def metrics(ws):
+    try: return {m["name"]: m["value"] for m in ws.call("Performance.getMetrics")["metrics"]}
+    except Exception: return {}
+
+
+def procs(a):
+    """процессорное время процессов браузера, с: тип → сумма (gpu — процесс видеокарты)"""
+    try:
+        if not getattr(a, "bws", None):
+            v = json.load(urllib.request.urlopen("http://127.0.0.1:%d/json/version" % a.port, timeout=5))
+            a.bws = shot.WS(v["webSocketDebuggerUrl"], 30)
+        out = {}
+        for p in a.bws.call("SystemInfo.getProcessInfo")["processInfo"]:
+            out[p["type"]] = out.get(p["type"], 0) + p["cpuTime"]
+        return out
+    except Exception:
+        return {}
+
+
+def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
+    """тяжесть кадра и хода: пропуск кадров, просадка FPS, долгие задачи, поток, процессор видеокарты, мс видеокарты"""
+    pz = d.get("pz") or 1e12
+    F = [f for f in d["f"] if ENTRY_MS <= f["t"] < pz]
+    W = [f for i, f in enumerate(F) if i and f.get("gt") is not None and f["gt"] != F[i - 1].get("gt")]
+    tag = "кадры · " + sc
+    row = {}
+    if len(W) > 60:
+        iv = [b["t"] - a["t"] for a, b in zip(W, W[1:])]
+        drop = [x for x in iv if x > 25]
+        low1 = sorted(iv)[int(len(iv) * .99)]
+        # FPS по секундам: сколько кадров мира в каждом окне в 1 с
+        t0, t1 = W[0]["t"], W[-1]["t"]
+        fps = [sum(1 for f in W if s <= f["t"] < s + 1000) for s in range(int(t0), int(t1) - 999, 500)]
+        row.update(fps=min(fps) if fps else 0, low1=low1, drop=len(drop))
+        if len(drop) > DROP_SHARE * len(iv):
+            out.append((tag, "пропуск кадров: %d из %d кадров мира позже 25 мс (худший %.0f мс)" % (len(drop), len(iv), max(drop))))
+        if fps and min(fps) < FPS_MIN:
+            out.append((tag, "просадка FPS: худшая секунда %d кадров (порог %d)" % (min(fps), FPS_MIN)))
+        if low1 > LOW1_MS:
+            out.append((tag, "1%% low: %.1f мс на кадр (порог %d) — подтормаживает" % (low1, LOW1_MS)))
+    lt = [x for x in d.get("lt") or [] if ENTRY_MS <= x[0] < pz - 50]
+    if lt: row["long"] = max(x[1] for x in lt)
+    big = [x for x in lt if x[1] > LONGTASK_MS]
+    if big:
+        out.append((tag, "долгие задачи на ходу: %d, худшая %.0f мс на %.1f с — подгрузка или компиляция в потоке" % (len(big), max(x[1] for x in big), big[0][0] / 1000)))
+    if r0 and r1 and wall > 1:
+        busy = (r1.get("TaskDuration", 0) - r0.get("TaskDuration", 0)) / wall
+        row["main"] = busy
+        if busy > MAIN_BUSY: out.append((tag, "главный поток занят %.0f %% хода (порог %.0f %%)" % (100 * busy, 100 * MAIN_BUSY)))
+    if p0 and p1 and wall > 1:
+        g = (p1.get("gpu", 0) - p0.get("gpu", 0)) / wall
+        row["gpuproc"] = g
+        if g > GPU_PROC: out.append((tag, "процесс видеокарты ест %.0f %% ядра (порог %.0f %%)" % (100 * g, 100 * GPU_PROC)))
+    try: G = json.loads(gms) if isinstance(gms, str) else None
+    except Exception: G = None
+    if G and G.get("frame"):
+        row["gpums"] = G["frame"]["ms"]
+        if G["frame"]["ms"] > GPU_FRAME_MS:
+            top = sorted(((k, v["pf"]) for k, v in G.items() if k not in ("frame", "sum")), key=lambda z: -z[1])[:3]
+            out.append((tag, "видеокарта %.1f мс на кадр (порог %d): %s" % (G["frame"]["ms"], GPU_FRAME_MS, ", ".join("%s %.1f" % z for z in top))))
+    print("         тяжесть  FPS мин %s  1%% low %s мс  пропусков %s  долгая задача %s мс  поток %s  проц. видеокарты %s  видеокарта %s мс/кадр" % (
+        row.get("fps", "?"), "%.1f" % row["low1"] if "low1" in row else "?", row.get("drop", "?"), "%.0f" % row["long"] if "long" in row else "-",
+        "%.0f%%" % (100 * row["main"]) if "main" in row else "?", "%.0f%%" % (100 * row["gpuproc"]) if "gpuproc" in row else "?",
+        "%.2f" % row["gpums"] if "gpums" in row else "?"))
 
 
 def run_scene(a, pg, sc, bad, plant=None):
@@ -154,10 +254,23 @@ def run_scene(a, pg, sc, bad, plant=None):
         shot.ev(ws, "__J.t0=performance.now();__J.on=true;")
         time.sleep(ENTRY_MS / 1000)
         half = a.secs / 2
+        # ресурсы хода: главный поток (CDP), процессы браузера (процесс видеокарты), мс видеокарты на кадр
+        ws.call("Performance.enable")
+        res0, p0, w0 = metrics(ws), procs(a), time.time()
+        shot.ev(ws, "__J.gpu=null;if(typeof g11GpuMs==='function')g11GpuMs(%.1f).then(function(o){__J.gpu=o;});" % max(2, half - 1))
         key(ws, "ArrowRight", True); time.sleep(half); key(ws, "ArrowRight", False)
-        key(ws, "ArrowLeft", True); time.sleep(half); key(ws, "ArrowLeft", False)
-        time.sleep(.3)
-        st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
+        key(ws, "ArrowLeft", True); time.sleep(half)
+        res1, p1, w1 = metrics(ws), procs(a), time.time()
+        gms = shot.ev(ws, "JSON.stringify(__J.gpu)")
+        # скачок времени посреди хода: главный поток встал на три секунды (ноутбук уснул, ОС подвисла,
+        # долгий мусор) — мир не должен догонять их одним кадром (телепорт), падать или терять героя.
+        # Заморозка вкладки через CDP в headless не возвращает видимость — поэтому стоим в самом потоке
+        if a.pause:
+            shot.ev(ws, "__J.pz=performance.now()-__J.t0;var __e=performance.now()+%d;while(performance.now()<__e){}" % int(a.pause * 1000))
+            time.sleep(3)   # после разрыва — ещё ход: хвосту нужна длина, чтобы законы плавности судили его
+        key(ws, "ArrowLeft", False)
+        time.sleep(2)   # остановка — тоже кадр игры: герой встал, камера тормозит, зум доезжает (рывок 15.10 жил тут)
+        st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,lt:__J.lt,pz:__J.pz,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
                          "errs:(window.__errs||[]).filter(function(e){return e[0]!=='W'}).slice(0,4)})")
         if not isinstance(st, str):
             bad.append(("кадры · " + sc, "запись не прочиталась: %s" % st)); return
@@ -165,7 +278,8 @@ def run_scene(a, pg, sc, bad, plant=None):
         if not gpu: bad.append(("кадры · " + sc, "видеокарты нет — замер на 2D не годится"))
         if d["crash"]: bad.append(("кадры · " + sc, "СБОЙ на экране"))
         for e in d["errs"]: bad.append(("кадры · " + sc, "ошибка страницы: " + re.sub(r"\s+", " ", e)[:160]))
-        judge(sc, d["f"], bad)
+        judge(sc, d["f"], bad, d.get("pz"))
+        heavy(sc, d, res0, res1, p0, p1, w1 - w0, gms, bad)
     finally:
         try: urllib.request.urlopen("http://127.0.0.1:%d/json/close/%s" % (a.port, t["id"]), timeout=5)
         except Exception: pass
@@ -174,10 +288,11 @@ def run_scene(a, pg, sc, bad, plant=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-plant", action="store_true", help="skip the planted-defect run that proves the live-frame laws see")
+    ap.add_argument("--pause", type=float, default=3, help="seconds the tab is frozen mid-walk (0 = no pause)")
     ap.add_argument("--scenes", default=",".join(SCENES))
     ap.add_argument("--w", type=int, default=1280)
     ap.add_argument("--h", type=int, default=800)
-    ap.add_argument("--secs", type=float, default=8)
+    ap.add_argument("--secs", type=float, default=16)
     ap.add_argument("--port", type=int, default=9692)
     ap.add_argument("--root", default=ROOT, help="the checkout whose drift.html and stand scenes are measured")
     a = ap.parse_args()
@@ -200,14 +315,14 @@ def main():
         for sc in [s for s in a.scenes.split(",") if s]:
             n0 = len(bad); run_scene(a, pg, sc, bad)
             if len(bad) == n0: ok += 1
-        # подсадка: поверхность, где герой раз в полсекунды прыгает на 40 и видеокарта «ошибается» — оба закона
+        # подсадка: поверхность, где герой раз в полсекунды прыгает на 40, видеокарта «ошибается» и куча течёт по 8 МБ/с — все три закона
         # обязаны это увидеть, иначе законы живого кадра слепы (как подсадки зрения)
         if not a.no_plant:
             pb = []
-            run_scene(a, pg, "surface", pb, plant="setInterval(function(){try{G.surf.x+=40;GPU.errs=(GPU.errs||0)+1;}catch(e){}},500);")
+            run_scene(a, pg, "surface", pb, plant="setInterval(function(){try{G.surf.x+=40;GPU.errs=(GPU.errs||0)+1;}catch(e){}},500);window.__leak=[];setInterval(function(){__leak.push(new Float64Array(1e5))},100);")
             got = " ".join(m for _, m in pb)
             print("подсадка: " + ("; ".join(m[:60] for _, m in pb) or "ничего не поймано"))
-            for law in ("герой рывком", "ошибки видеокарты"):
+            for law in ("герой рывком", "ошибки видеокарты", "память растёт"):
                 if law not in got: bad.append(("кадры · подсадка", "СЛЕПО: закон «%s» не поймал подсаженный брак" % law))
     finally:
         proc.kill()
