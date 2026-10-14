@@ -4,7 +4,7 @@ $Desk = [Environment]::GetFolderPath("Desktop")
 $W = New-Object -ComObject WScript.Shell
 # WScript.Shell не сохраняет кириллицу в имени: пишем латиницей и переименовываем
 $Tmp = Join-Path $Desk "drift-lab.lnk"
-$Fin = Join-Path $Desk "Лаборатория Дрейфа.lnk"
+$Fin = Join-Path $Desk "Drift Lab.lnk"
 $L = $W.CreateShortcut($Tmp)
 $L.TargetPath = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
 $L.Arguments = "-NoLogo -ExecutionPolicy Bypass -File `"$(Join-Path $Here 'lab-start.ps1')`""
