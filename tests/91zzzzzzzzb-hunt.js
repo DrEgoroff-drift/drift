@@ -108,8 +108,13 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
   }
   note("зерно "+seed+" · шагов "+steps+" · отказов бота "+refused+" · тропа: "+path.join(" | "));
   ok(steps>=Math.min(HUNT_N,10),"зерно "+seed+": шагов под детекторами "+steps+" из "+HUNT_N);
-  eq(bad.join(" ;; "),"","зерно "+seed+": ни исключений, ни порчи кошелька, ни чужой записи"+(bad.length?" · тропа: "+path.join(" | "):""));
-  const lines=V.map(v=>"шаг "+v.at+" · "+v.scene+" · "+v.gesture+" · ["+v.det+"] "+v.what+(v.where?" @"+v.where:"")+(v.n>1?" (×"+v.n+")":""));
-  for(const L of lines)TEST.lines.push("    · "+L);
-  eq(lines.slice(0,12).join(" ;; "),"","зерно "+seed+": ни один детектор не нашёл нарушения"+(lines.length?" (всего "+lines.length+")":""));
+  /* по строке на находку, находка — в начале: лаборатория ключует провал по тексту без чисел
+     (lab.py norm), и одна и та же поломка из разных зёрен и шагов ложится в один ключ */
+  for(const b of bad){ok(false,b.replace(/^шаг \d+ /,"")+" · зерно "+seed);TEST.lines.push("    · "+b);TEST.lines.push("    · тропа: "+path.join(" | "));}
+  for(const v of V.slice(0,12)){
+    ok(false,"["+v.det+"] "+v.what+" · зерно "+seed);
+    TEST.lines.push("    · шаг "+v.at+" · "+v.scene+" · "+v.gesture+(v.where?" @"+v.where:"")+(v.n>1?" (×"+v.n+")":""));
+    TEST.lines.push("    · тропа до него: "+path.slice(0,v.at).join(" | "));
+  }
+  ok(!bad.length&&!V.length,"зерно "+seed+": тропа чистая — ни исключений, ни порчи кошелька, ни чужой записи, ни находок детекторов");
 }));
