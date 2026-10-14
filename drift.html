@@ -3302,7 +3302,7 @@ body.rackon #prompt{opacity:0}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.498.0";
+const VER="0.498.1";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -13528,6 +13528,23 @@ function gpuQuad(SH,a,b,c,d,C,hard){
   const h=hard|0,al=C[3]==null?1:C[3];
   SH.push([5,a[0],a[1],b[0],b[1],c[0],c[1],C[0],C[1],C[2],al,4|(h&1)|(h&2)],
     [5,a[0],a[1],c[0],c[1],d[0],d[1],C[0],C[1],C[2],al,1|(h&4?2:0)|(h&8?4:0)]);
+}
+/* фигуры в координатах 2D-холста → в пиксели CSS: o = lifeHere(0,0) (перенос и масштаб ctx).
+   Режим в withScale(K) считает в мировых пикселях; без перевода фигуры ложатся в K раз мельче
+   в левый верхний угол — так шахта на большом экране рисовала ствол в небе (автор, 15.10) */
+function gpuShpAt(L,o){
+  if(!o||(o.s===1&&!o.x&&!o.y))return L;
+  const s=o.s,X=o.x,Y=o.y;
+  for(const t of L){const k=t[0];
+    t[1]=X+t[1]*s;t[2]=Y+t[2]*s;
+    if(k===5){t[3]=X+t[3]*s;t[4]=Y+t[4]*s;t[5]=X+t[5]*s;t[6]=Y+t[6]*s;continue;}
+    if(k===1||k===3)t[3]*=s;
+    else if(k===4){t[3]*=s;t[4]*=s;}
+    else{t[3]=X+t[3]*s;t[4]=Y+t[4]*s;}
+    if(k!==4&&k!==8&&t[5])t[5]*=s;
+    if(t[6])t[6]*=s;
+  }
+  return L;
 }
 /* приёмник фигур (G15): живые мелочи 2D-рисовальщиков (верёвка, ткань, дым, огонёк)
    пишутся сюда фигурами gpuShapes в пикселях CSS вместо ctx. {o:lifeHere(0,0),SH:[]}:
@@ -94995,8 +95012,10 @@ function plnBeastFarKit(sps){
     groups.push({sp,list,off,dir,v,x0:r()*400,air:isAir});
   };
   const gs=ground.find(s=>s.herd)||ground[0];
-  if(gs)mk(gs,3,.9,false);
-  if(air[0])mk(air[0],5,2.4,true);
+  /* v — метры за кадр G.t (60 в секунду): было .9 и 2.4 — стадо шло 54 м/с, стайка 144 (автор 15.10:
+     «звери, птицы очень быстро»). Шаг стада 1.8 м/с, стайка 12 м/с */
+  if(gs)mk(gs,3,.03,false);
+  if(air[0])mk(air[0],5,.2,true);
   return {sps,groups};
 }
 function plnBeastDrop(L){
@@ -97512,7 +97531,7 @@ fn wxRay(ndc: vec2f) -> vec3f {
     let W = (xr - xl) * 1.2; let Hh = (yt - yb) * 1.3;
     let x0 = xl - (W - (xr - xl)) * 0.5; let y1 = yt + (Hh - (yt - yb)) * 0.5;
     /* род осадка: скорость (м/с), длина штриха (px) или хлопок, снос ветром, покачивание */
-    var spd = 10.0; var len = 34.0; var dr = 0.12; var flake = 0.0; var sway = 0.0; var thick = 1.0;
+    var spd = 6.0; var len = 34.0;   /* было 10 м/с: у объектива струи мелькали (автор 15.10) */ var dr = 0.12; var flake = 0.0; var sway = 0.0; var thick = 1.0;
     if (kind == 2) { spd = 1.0; flake = 1.0; sway = 1.0; }
     else if (kind == 3) { spd = 0.9; flake = 1.0; sway = 0.8; }
     else if (kind == 4) { spd = 5.0; len = 14.0; dr = 0.35; thick = 1.4; }
@@ -98166,9 +98185,11 @@ function plnWeatherLook(p,look){
    Выше двадцати градусов круг прежний, кадр M600 (ph = .125) стоит на нём, как стоял.
    Ночью ключ — самое сильное тело над горизонтом (plnBodies): луна или родитель; ключ гаснет
    в ноль между светилом и им, и смены стороны не видно. Тел нет — ночь без ключа: землю держат
-   звёзды, воздух и лампы. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
+   звёзды, воздух и лампы. Круг без шага: шаг в пятую долю градуса при дне в 6–9 минут прыгал
+   4–5 раз в секунду, и длинные тени низкого солнца дёргались (автор 15.10: «рывками свет»).
+   Карты теней и так пишутся каждый кадр (21pe) */
 function plnHour(p,wl){
-  const c=celSun(p),q=.0035,th=Math.round(c.ph*TAU/q)*q,tilt=52*PLN_DEG,A=PLN_LOOK;
+  const c=celSun(p),th=c.ph*TAU,tilt=52*PLN_DEG,A=PLN_LOOK;
   const s0=Math.sin(th)*Math.cos(tilt),back=.55*(1-plnSmooth(.05,.38,s0));
   const sun=plnNorm([-Math.cos(th),s0,Math.sin(th)*Math.sin(tilt)+back]),sy=sun[1],rise=Math.cos(th)>0;
   const atm=(p.T&&p.T.atm)||"",air=atm==="отсутствует"?0:(atm.indexOf("разреженная")>=0?.5:1);
@@ -104510,7 +104531,7 @@ function drawDigWorld(){
       ctx.fillRect(x+3,y+DIG_CELL-8,k,4);
       /* искры из-под резака — выше единицы, на видеокарте (23b digEmit) */
     }
-    if(TP)gpuShapes(TP,TS,{blend:"over"});
+    if(TP)gpuShapes(TP,gpuShpAt(TS,lifeHere(0,0)),{blend:"over"});   /* мир → CSS (08c) */
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
   /* риг карточкой (21phc, M801b): карточка вклеивает 2D-темноту в сцену (gpuOver), поэтому луч
@@ -105455,14 +105476,16 @@ function digMidGpu(D,p,camx,camy,px,py,scanAll,r0,r1){
       rect(S,L,ry,R-L+1.8,1.7,164,124,74,.9);rect(S,L,ry+1.7,R-L+1.8,.9,0,0,0,.3);}
     if(row%4===0)rect(S,L-1.4,y+1.5,R-L+4.6,2.2,96,104,112,.8);
   }
-  gpuShapes(pass,O,{blend:"over"});
-  gpuShapes(pass,A,{blend:"add"});
-  gpuShapes(pass,S,{blend:"over"});
+  /* кадр шахты стоит в withScale: мировые пиксели → пиксели CSS (08c gpuShpAt) */
+  const o=lifeHere(0,0);
+  gpuShapes(pass,gpuShpAt(O,o),{blend:"over"});
+  gpuShapes(pass,gpuShpAt(A,o),{blend:"add"});
+  gpuShapes(pass,gpuShpAt(S,o),{blend:"over"});
   /* табличка глубины: число — выпечка GPU-холста, одна на число */
-  for(const [t,x,y] of TX){
+  for(const [t,x0,y0] of TX){const x=o.x+x0*o.s,y=o.y+y0*o.s;
     const B=gpuBaked(DIG_TXT,t,48,24,g=>{g.setTransform(4,0,0,4,0,0);g.fillStyle="rgba(255,228,170,.75)";
       g.font="5px ui-monospace,monospace";g.textAlign="center";g.fillText(t,6,5);},{mips:false,ss:1,keep:64});
-    if(B)gpuImage(pass,B,[{x,y,w:12,h:6}]);
+    if(B)gpuImage(pass,B,[{x,y,w:12*o.s,h:6*o.s}]);
   }
   return true;
 }
@@ -105505,7 +105528,7 @@ function digSurfFringeGpu(p,camx,camy){
              [0,x-rr*1.3,y,x+rr*1.3,y+1,0,0,0,0,0,.25]);
     }
   }
-  gpuShapes(pass,S,{blend:"over"});
+  gpuShapes(pass,gpuShpAt(S,lifeHere(0,0)),{blend:"over"});
   return true;
 }
 
@@ -105625,7 +105648,11 @@ function digLights(D,camx,camy,early){
 function digLitU(D,p,camx,camy,lamp,early){
   const U=CAVE_LIT_U,lk=kitStat().lamp,M=digMask(D,p);
   U.fill(0);
-  U[0]=camx;U[1]=camy;U[2]=G.viewK||1;U[3]=G.t;
+  /* U[2] — пикселей поля на пиксель мира. Кадр шахты стоит в withScale(K): W,H там уже
+     поделены на K (18c), и пиксель поля — пиксель мира (на том же стоит небо, 19ca).
+     Было G.viewK: K применялся дважды, и на большом экране светлый крест хода с конусом
+     уезжал вправо-вниз в K раз (автор, 15.10) */
+  U[0]=camx;U[1]=camy;U[2]=(G.viewK||1)*W/(GPU.cw||W);U[3]=G.t;
   U[4]=M.x0;U[5]=M.y0;U[6]=1/M.w;U[7]=1/M.h;
   const a=.12;
   U[8]=lamp.x;U[9]=lamp.y;U[10]=lamp.f*Math.cos(a);U[11]=Math.sin(a);
@@ -105650,7 +105677,7 @@ function digShade(D,p,camx,camy,lamp){
   gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,CAVE_LIT_U,[{view:gpuMipTex(M.cv).view}],{blend:"mul",smp:gpuMipSmp()});
   /* тёплое у налобника — «digwarm» main: .20·(1−t)^2.2 на .34·R0 у человека, сложением по породе;
      заливка хода и небо (2D) ложатся поверх и его закрывают, как у main */
-  const K=G.viewK||1,R=Math.max(W,H)*.62*.34;
+  const K=CAVE_LIT_U[2],R=Math.max(W,H)*.62*.34;   /* в пикселях поля, как U[2] */
   warmGlow(pass,(lamp.x-camx)*K,(lamp.y+12-camy)*K,R*K,R*K,[1,.776,.502],.20,0);
 }
 /* темнота main поверх всего нарисованного, небо не трогает */

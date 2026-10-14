@@ -529,7 +529,7 @@ function drawDigWorld(){
       ctx.fillRect(x+3,y+DIG_CELL-8,k,4);
       /* искры из-под резака — выше единицы, на видеокарте (23b digEmit) */
     }
-    if(TP)gpuShapes(TP,TS,{blend:"over"});
+    if(TP)gpuShapes(TP,gpuShpAt(TS,lifeHere(0,0)),{blend:"over"});   /* мир → CSS (08c) */
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
   /* риг карточкой (21phc, M801b): карточка вклеивает 2D-темноту в сцену (gpuOver), поэтому луч

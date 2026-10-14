@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 587 · top-level symbols: 8397
+Files: 587 · top-level symbols: 8398
 
 ## SYMBOLS
 
@@ -479,8 +479,8 @@ DIAL_KEYS                    src/21a8-base-world.js:25
 DIAL_RU                      src/21a8-base-world.js:26
 DIAL_WORLD                   src/21a8-base-world.js:14-24
 DIG_CELL                     src/23-mode-dig.js:3
-DIG_DARK_WGSL                src/23b-dig-gpu.js:146
-DIG_EMIT                     src/23b-dig-gpu.js:172
+DIG_DARK_WGSL                src/23b-dig-gpu.js:150
+DIG_EMIT                     src/23b-dig-gpu.js:176
 DIG_GEO_K                    src/23-mode-dig.js:9
 DIG_LIT_C                    src/23b-dig-gpu.js:88
 DIG_MSK                      src/23b-dig-gpu.js:18
@@ -818,7 +818,7 @@ GPU_CH_R                     src/18c-chunks.js:185
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:68
 GPU_DROP_WHY                 tests/90-harness.js:104
 GPU_FLD                      src/08b0-gpu-pipe.js:33
-GPU_FLD_HEAD                 src/08c-gpu-kit.js:348
+GPU_FLD_HEAD                 src/08c-gpu-kit.js:365
 GPU_FRONT_LIKE               src/08b-gpu.js:527
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:193
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
@@ -1589,7 +1589,7 @@ PLN_FRAME                    src/21pz-pln-frame.js:18
 PLN_G                        src/21pe-pln-gpu.js:67
 PLN_GAIT                     src/21piba-pln-gait.js:12
 PLN_GPU                      src/21pe-pln-gpu.js:27
-PLN_HAND_S                   src/21pz-pln-frame.js:275
+PLN_HAND_S                   src/21pz-pln-frame.js:277
 PLN_HDR                      src/21pe-pln-gpu.js:23
 PLN_HERB                     src/21pia-pln-herb.js:30
 PLN_HERB_MAKE                src/21pia-pln-herb.js:124-344
@@ -1615,7 +1615,7 @@ PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:201
 PLN_OLD_HUD2                 src/21pzb-pln-words.js:100
 PLN_OLD_LANDING              src/21pza-pln-descent.js:214
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:378
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:380
 PLN_OLD_ULAND                src/21pza-pln-descent.js:206
 PLN_OVER                     src/21pj-pln-over.js:16
 PLN_OWN_GATE_R               src/21pig-pln-own.js:405
@@ -2264,7 +2264,7 @@ VOL_DOCS                     src/12al5-vol.js:16-25
 VOL_FAST                     src/12al5-vol.js:26
 VOTE_MONTH                   src/12at-vote.js:15
 VOTE_Q                       src/12at-vote.js:16-20
-VSINK                        src/08c-gpu-kit.js:326
+VSINK                        src/08c-gpu-kit.js:343
 W                            src/08-state.js:7
 W3                           src/08cd-gpu-mat.js:33
 WAKE                         src/16-flight.js:292
@@ -3637,25 +3637,25 @@ dialWords                    src/21a8-base-world.js:125-130
 digBedding                   src/23aa-dig-rock.js:118-145
 digCell                      src/23-mode-dig.js:30-50
 digCun                       src/23aa-dig-rock.js:158-182
-digEmit                      src/23b-dig-gpu.js:173-192
+digEmit                      src/23b-dig-gpu.js:177-196
 digFauna                     src/23-mode-dig.js:259-335
-digLampsKeep                 src/23b-dig-gpu.js:166-169
+digLampsKeep                 src/23b-dig-gpu.js:170-173
 digLights                    src/23b-dig-gpu.js:90-112
-digLitU                      src/23b-dig-gpu.js:114-132
+digLitU                      src/23b-dig-gpu.js:114-136
 digMask                      src/23b-dig-gpu.js:69-87
 digMid                       src/23a-dig-draw.js:58-455
-digMidGpu                    src/23ac-dig-mid-gpu.js:14-236
+digMidGpu                    src/23ac-dig-mid-gpu.js:14-238
 digRGB                       src/23aa-dig-rock.js:465
 digRockBelow                 src/23a-dig-draw.js:48-55
 digRockMass                  src/23aa-dig-rock.js:183-446
 digRockPass                  src/23aa-dig-rock.js:26-101
 digSMix                      src/23aa-dig-rock.js:464
-digShade                     src/23b-dig-gpu.js:135-144
+digShade                     src/23b-dig-gpu.js:139-148
 digSoil                      src/23aa-dig-rock.js:499-599
 digSoilBand                  src/23aa-dig-rock.js:492-498
 digSoilCols                  src/23aa-dig-rock.js:473-490
 digSurfFringe                src/23aa-dig-rock.js:610-651
-digSurfFringeGpu             src/23ac-dig-mid-gpu.js:241-278
+digSurfFringeGpu             src/23ac-dig-mid-gpu.js:243-280
 digSurfY                     src/23aa-dig-rock.js:469-472
 digVoidPath                  src/23a-dig-draw.js:5-45
 dipBlock                     src/12b1-fx-dip.js:165-203
@@ -3754,7 +3754,7 @@ drawDeco                     src/21b-surface-deco.js:166-216
 drawDeposit                  src/21b-surface-deco.js:405-559
 drawDig                      src/23a-dig-draw.js:594-598
 drawDigFauna                 src/23-mode-dig.js:336-345
-drawDigLight                 src/23b-dig-gpu.js:152-164
+drawDigLight                 src/23b-dig-gpu.js:156-168
 drawDigWorld                 src/23a-dig-draw.js:456-546
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
@@ -4468,9 +4468,9 @@ gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:276-302
 gpuFail                      src/08b2-gpu-loss.js:26-30
-gpuField                     src/08c-gpu-kit.js:370-397
-gpuFieldBaked                src/08c-gpu-kit.js:405-415
-gpuFieldLayout               src/08c-gpu-kit.js:363-369
+gpuField                     src/08c-gpu-kit.js:387-414
+gpuFieldBaked                src/08c-gpu-kit.js:422-432
+gpuFieldLayout               src/08c-gpu-kit.js:380-386
 gpuFrame                     src/08b-gpu.js:546-559
 gpuFrontClean                src/08c-gpu-kit.js:128-133
 gpuFrontCopy                 src/08b-gpu.js:596-598
@@ -4519,8 +4519,9 @@ gpuScr                       src/08c-gpu-kit.js:175
 gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
-gpuShapes                    src/08c-gpu-kit.js:332-343
+gpuShapes                    src/08c-gpu-kit.js:349-360
 gpuShock                     src/08b-gpu.js:462
+gpuShpAt                     src/08c-gpu-kit.js:326-339
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
 gpuSnapshot                  src/08b-gpu.js:22-26
@@ -6380,10 +6381,10 @@ plnActVerb                   src/21pif-pln-marks-act.js:97
 plnAdd                       src/21p-pln.js:34
 plnAtThing                   src/21pi-pln-things.js:423-436
 plnBeastCapsule              src/21piba-pln-gait.js:76-101
-plnBeastDrop                 src/21pib-pln-beast.js:248-254
+plnBeastDrop                 src/21pib-pln-beast.js:250-256
 plnBeastEarth                src/21piba-pln-gait.js:185-198
 plnBeastEyes                 src/21pib-pln-beast.js:48-51
-plnBeastFarKit               src/21pib-pln-beast.js:231-247
+plnBeastFarKit               src/21pib-pln-beast.js:231-249
 plnBeastFrame                src/21pib-pln-beast.js:151-228
 plnBeastFur                  src/21pib-pln-beast.js:32-35
 plnBeastJaw                  src/21piba-pln-gait.js:70-73
@@ -6436,7 +6437,7 @@ plnFloraTuft                 src/21pg-pln-flora.js:32-49
 plnFoot                      src/21piba-pln-gait.js:43-45
 plnGeo                       src/21pe-pln-gpu.js:79-86
 plnGeoFree                   src/21pe-pln-gpu.js:87
-plnGlide                     src/21pz-pln-frame.js:260-268
+plnGlide                     src/21pz-pln-frame.js:262-270
 plnGlintDir                  src/21pw-pln-water.js:310-313
 plnGlintHour                 src/21pw-pln-water.js:309
 plnGlobals                   src/21pe-pln-gpu.js:258-281
@@ -6447,8 +6448,8 @@ plnGpuReady                  src/21pe-pln-gpu.js:249-253
 plnGpuSize                   src/21pe-pln-gpu.js:194-248
 plnGpuTier                   src/21pe-pln-gpu.js:144-161
 plnGpuWrite                  src/21pe-pln-gpu.js:282-295
-plnHandAge                   src/21pz-pln-frame.js:276-286
-plnHandWin                   src/21pz-pln-frame.js:288-291
+plnHandAge                   src/21pz-pln-frame.js:278-288
+plnHandWin                   src/21pz-pln-frame.js:290-293
 plnHash                      src/21p-pln.js:55-59
 plnHerbAlgaMesh              src/21pia-pln-herb.js:399-423
 plnHerbAlgae                 src/21pia-pln-herb.js:424-449
@@ -6468,7 +6469,7 @@ plnHerbTone                  src/21pia-pln-herb.js:41-44
 plnHerbZ                     src/21pia-pln-herb.js:35
 plnHerbs                     src/21pia-pln-herb.js:347-394
 plnHex                       src/21p-pln.js:46-49
-plnHour                      src/21pz-pln-frame.js:179-239
+plnHour                      src/21pz-pln-frame.js:181-241
 plnIco                       src/21pa-pln-mesh.js:41-58
 plnInst                      src/21pe-pln-gpu.js:89-94
 plnInstFree                  src/21pe-pln-gpu.js:100
@@ -6510,7 +6511,7 @@ plnLegPhase                  src/21piba-pln-gait.js:30
 plnLegs                      src/21piba-pln-gait.js:49-62
 plnLen                       src/21p-pln.js:39
 plnLens                      src/21pz-pln-frame.js:62-72
-plnLightBox                  src/21pz-pln-frame.js:244-254
+plnLightBox                  src/21pz-pln-frame.js:246-256
 plnLoft                      src/21pa-pln-mesh.js:135-165
 plnLog                       src/21p-pln.js:25
 plnLookAt                    src/21pz-pln-frame.js:52-56
@@ -6638,7 +6639,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:89
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:294-375
+plnSurface                   src/21pz-pln-frame.js:296-377
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -8173,8 +8174,8 @@ voteMonth                    src/12at-vote.js:21
 voteQuestion                 src/12at-vote.js:23-28
 voteTally                    src/12at-vote.js:32-42
 voteWinner                   src/12at-vote.js:43-50
-vsinkCol                     src/08c-gpu-kit.js:327
-vsinkDisc                    src/08c-gpu-kit.js:328-331
+vsinkCol                     src/08c-gpu-kit.js:344
+vsinkDisc                    src/08c-gpu-kit.js:345-348
 wakeBurst                    src/16-flight.js:297
 wakeLanes                    src/16-flight.js:357
 wakeStep                     src/16-flight.js:326-354
@@ -8559,7 +8560,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bj-ovl-hang.js · 28 KB
   · Слова на вещах (M803): табличка у вещи, центр кадра пуст:1
 
-## src/08c-gpu-kit.js · 33 KB
+## src/08c-gpu-kit.js · 34 KB
   · набор для слоёв видеокарты (docs/DESIGN-gpu.md §4):1
 
 ## src/08ca-gpu-canvas.js · 60 KB

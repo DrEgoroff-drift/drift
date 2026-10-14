@@ -6,6 +6,33 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.498.1 - the mine on a big screen; beasts and rain slowed
+
+The author, 15.10: on a big screen the mine drew its shaft «в небе», and beasts, birds and rain
+went far too fast.
+
+- **The shaft in the sky.** Past 1280 px the mine's frame is scaled (`withScale`, 18c). The GPU
+  shapes of its middle layer (ore, the shaft fill, timbering, the depth plate) were handed to a
+  CSS-pixel pass in world pixels, so the shaft came out smaller and up in the top-left corner.
+  `gpuShpAt` (08c) maps them by the canvas transform; `23ac` uses it. Found and fixed by the
+  playtest session.
+- **The light that floated away.** The mine's light fields (the darkness, the lamp cone, the warm
+  glow at the helmet) applied the scale twice: under `withScale` W and H are already divided by K,
+  so a field's pixel is a world pixel, and the field divided by K again. The lit cross of the shaft
+  with its lamp cone sat right and down by K, a dark rectangle edge showed at 2000 px. The scale
+  uniform is now field pixels per world pixel (`23b digLitU`); the sky already lived by that rule.
+  The cut cell's plate is mapped like the middle layer. Measured: only the mine draws fields under
+  `withScale`; the planet and the cave do not.
+- **Beasts and rain.** The herd went 54 m/s and the flock 144 m/s: their speeds were metres per
+  frame read as per second. Now 1.8 and 12 m/s (`21pib`). Rain falls at 6 m/s, not 10 (`21pk`).
+- **The sun moved in steps** (the author: «рывками свет»). `plnHour` (`21pz`) snapped its angle to a fifth
+  of a degree so shadows would not creep every frame; with a 6–9 minute day that was four or five jumps
+  a second, and long low-sun shadows hopped. The angle is continuous now; shadow maps are drawn every
+  frame anyway. Found by the playtest session's law `91ql-light` (lab-local, not merged yet).
+- **Disputed.** The speeds are picked from the author's words, not measured against anything. The
+  sun still crosses the sky in an hour: the day's length is the sky calendar's and moves the war
+  chronicle's hashes, so it waits (plan §11).
+
 ## 0.498.0 - station gauges and the cascade (M906)
 
 DESIGN-game §4.2, §7.1. Stations had prices and nothing else: a need nobody filled just rolled
