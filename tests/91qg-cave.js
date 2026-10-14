@@ -193,6 +193,22 @@ TEST_SUITES.push(()=>suite("пещера на движке: порода по с
     const d=cave3DiveFrame(fy,wy,1,asp),L2=cave3Lens(asp,0,d.fy,0,0,1,0,null,1,d.hd),sh=1.8/L2.Hf;
     ok(L2.b<wy-.3&&wy<L2.t&&fy+2<L2.t,"нырок с пола "+fy+" к воде "+wy+": гладь и человек в кадре ["+L2.b.toFixed(2)+", "+L2.t.toFixed(2)+"]");
     ok(fy-wy>4.5||sh>=.22,"нырок с пола "+fy+" к воде "+wy+" ("+asp.toFixed(2)+"): человек "+sh.toFixed(3)+" высоты кадра");
+    /* глаз на нырке ниже, чем у озера без нырка: гладь вскользь, зеркало берёт больше; с высокого уступа — вполовину */
+    const L0=cave3Lens(asp,0,d.fy,0,0,1,0,null,0,d.hd);
+    ok(L2.eye[1]<L0.eye[1]-1.5,"нырок с пола "+fy+": глаз ниже ("+L2.eye[1].toFixed(2)+" < "+L0.eye[1].toFixed(2)+")");
+    ok(d.drop>=CAVE3_LENS.dvDrop*.5-1e-9&&d.drop<=CAVE3_LENS.dvDrop+1e-9,"нырок с пола "+fy+": опускание глаза "+d.drop.toFixed(2)+" в пределах");
+  }
+  /* ── кулисы (M630e): шаг ~9 м по обеим галереям, у устья нет ── */
+  {
+    const W=CAVE3_WG,it=cave3WingItems(C,F);
+    for(const lo of [false,true]){
+      const xs=it.filter(q=>q.low===lo).map(q=>q.X).sort((a,b)=>a-b);
+      let gmin=1e9,gmax=0;
+      for(let i=1;i<xs.length;i++){const g=xs[i]-xs[i-1];gmin=Math.min(gmin,g);gmax=Math.max(gmax,g);}
+      ok(xs.length>=CAVE_W/CAVE_PPM/(W.step+W.jit)-3,"кулисы "+(lo?"нижней":"верхней")+" галереи: "+xs.length+" мест");
+      ok(gmin>=W.step-W.jit-1e-6,"кулисы "+(lo?"нижней":"верхней")+" галереи: не теснее "+(W.step-W.jit)+" м ("+gmin.toFixed(2)+")");
+    }
+    ok(!it.some(q=>!q.low&&Math.abs(q.X-F.mouthX)<W.mouth),"у устья кулис нет: там столб дня");
   }
   /* ── фонарь: досягаемость по снаряжению в пределах ── */
   eq(cave3Reach(1),18,"фонарь I класса — 18 м");

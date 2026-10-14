@@ -97919,8 +97919,9 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
   let teal = vec3f(0.035, 0.12, 0.115);
   if (mat == 14) {
     let d = in.par.w;
-    let s1 = wNoise(vec2f(in.wpos.x * 1.7 + d * 0.30 + t * 0.03, 0.5), 47u);
-    let s2 = wNoise(vec2f(in.wpos.x * 4.3 - d * 0.20 - t * 0.05, 1.5), 49u);
+    /* лопасти света под гладью идут за волной (M630e): вода живая, не плита */
+    let s1 = wNoise(vec2f(in.wpos.x * 1.7 + d * 0.30 + t * 0.32, 0.5 + t * 0.05), 47u);
+    let s2 = wNoise(vec2f(in.wpos.x * 4.3 - d * 0.20 - t * 0.55, 1.5 + t * 0.08), 49u);
     let blade = pow(s1 * 0.7 + s2 * 0.3, 3.0) * (1.0 - smoothstep(0.0, 2.0, d));
     let top = vec3f(in.wpos.x, in.wpos.y + d, in.wpos.z);
     let lt = lampAt(top);
@@ -97930,7 +97931,9 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
     let body = mix(vec3f(0.11, 0.37, 0.36), vec3f(0.008, 0.04, 0.075), smoothstep(0.0, 2.6, d));
     var c = body * amb2 * (1.0 + 2.4 * blade) + vec3f(0.002, 0.006, 0.009);
     c += teal * down * (0.12 * fade + 0.9 * blade);
-    c += vec3f(0.6, 0.8, 0.82) * (amb2 + down * 0.5) * ((1.0 - smoothstep(0.0, 0.05, d)) * 0.8);
+    /* нитка уреза: светлая кромка гуляет с волной и рвётся бликами, бегущими по ней */
+    let thr = 0.6 + 0.55 * sin(in.wpos.x * 5.3 - t * 2.4) * sin(in.wpos.x * 1.9 + t * 0.9);
+    c += vec3f(0.6, 0.8, 0.82) * (amb2 + down * 0.5) * ((1.0 - smoothstep(0.0, 0.06, d)) * 0.8 * thr);
     return vec4f(haze(c, in.wpos, 1.0), mix(0.60, 0.95, smoothstep(0.0, 2.0, d)));
   }
   let depth = in.par.w;
@@ -100740,7 +100743,7 @@ const CAVE3_LENS={man:[.124,.124],walk:[.29,.34],dist:[18,36],eye:3.2,tau:.45,in
   /* у озера: глаз выше и ближе — гладь и зеркало ложатся полосой, а не ребром */
   lkEye:2.6,lkD:.55,lkS:.8,
   /* нырок (M630e): человек у воды — ближняя стоянка, в кадре не мельче .22 высоты (dvN раз ближе широкого) */
-  dvN:1.9,
+  dvN:1.9,dvS:.45,dvDrop:1.6,
   /* дальний: глаз за 100 м, 24°, линия ходьбы на .40 — по клавише карты; на телефоне нет */
   fD:100,fH:42.5,fWalk:.40,fIn:.8,fOut:.7,fBack:15,fWalkMax:.5};
 /* дальний объектив — только на широком окне */
@@ -100751,7 +100754,7 @@ function cave3FarOk(){return W>760&&W>=H;}
 /* sky — высота поверхности (м): дальний кадр не поднимается выше неё даже на задней стене (за 15 м от
    линии ходьбы) — над пещерой камень, небо только в устье. Не влезает — линия ходьбы поднимается в
    кадре до середины, потом кадр сжимается: объектив жмётся к полу, а не отходит в небо */
-function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky,dv,hd){
+function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky,dv,hd,drop){
   const L=CAVE3_LENS,k=plnSmooth(.6,1.5,asp);
   far=far||0;lk=(lk||0)*(1-far);
   let Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k)*lerp(1,L.lkD,lk);
@@ -100762,7 +100765,8 @@ function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky,dv,hd){
     if((1-f)*Hf>top){f=Math.max(f,Math.min(L.fWalkMax,1-top/Hf));if((1-f)*Hf>top)Hf=Math.max(4,top/(1-f));}
   }
   const w=Hf*asp,l=cx-w/2,r=cx+w/2,b=floorY-f*Hf,t=b+Hf;
-  const ex=cx,ey=floorY+L.eye+L.lkEye*lk,ez=CAVE3_Z-D;
+  /* нырок: глаз ниже — взгляд по воде вскользь, зеркало берёт больше (Френель) */
+  const ex=cx,ey=floorY+L.eye+L.lkEye*lk*(1-(dv||0))-(drop==null?L.dvDrop:drop)*(dv||0),ez=CAVE3_Z-D;
   const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,4,600),plnM4move(-ex,-ey,-ez));
   return {k,Hf,f,D,w,l,r,b,t,vp,eye:[ex,ey,ez]};
 }
@@ -100775,7 +100779,8 @@ function cave3DiveW(Lm,floorY){return !Lm||floorY<Lm.y-1?0:1-plnSmooth(3,3.6,Lm.
 function cave3DiveFrame(floorY,wy,k,asp){
   const L=CAVE3_LENS,kk=plnSmooth(.6,1.5,asp),f=lerp(L.walk[0],L.walk[1],kk),man=lerp(L.man[0],L.man[1],kk);
   const lo=Math.min(wy,floorY)-.9,hi=floorY+2.25,hd=Math.max(1.8/(man*L.dvN),hi-lo),b=lo-(hd-(hi-lo))*.3;
-  return {fy:k?lerp(floorY,b+f*hd,k):floorY,hd};
+  /* глаз ниже на нырке; с высокого уступа — вполовину: снизу гладь под навесом видна ровной */
+  return {fy:k?lerp(floorY,b+f*hd,k):floorY,hd,drop:L.dvDrop*(1-.5*plnSmooth(1.5,3.5,floorY-wy))};
 }
 /* доля человека в высоте кадра (для набора и ворот) */
 function cave3ManShare(asp){return 1.8/cave3Lens(asp,0,0,0).Hf;}
@@ -100844,7 +100849,7 @@ function cave3Frame(){
      и вниз (cave3DiveW/cave3DiveFloor); стенд держит его (divePin) */
   const Lm=M.lakeM,dw0=cave3DiveW(Lm,-C.y/CAVE_PPM),dw=dw0&&M.divePin!=null?M.divePin:dw0;
   M.dv=first||M.dv==null||M.rush?dw:M.dv+(dw-M.dv)*(1-Math.exp(-dt/Ln.lkS));
-  if(Lm){M.dvX=Lm.x;M.dvY=Lm.y;}
+  if(Lm){M.dvX=Lm.x;M.dvY=Lm.y;M.dvG=[Lm.g0,Lm.g1];}
   /* дальний: просили карту — кадр отходит на сто метров; стенд держит его (cave.py far=) */
   const fw=M.farPin!=null?M.farPin:(M.farOn&&cave3FarOk()?1:0);
   M.far=first||M.far==null||M.rush?fw:M.far+(fw-M.far)*(1-Math.exp(-dt/(fw>M.far?Ln.fIn:Ln.fOut)));
@@ -100860,9 +100865,17 @@ function cave3Frame(){
   const asp=W/H,fK=plnSmooth(0,1,M.far),fs=fK>.001?cave3FarShift(C,Fd,M.cx,CAVE3_LENS.fH*asp/2):0;
   M.fs=first||M.fs==null||M.rush?fs:M.fs+(fs-M.fs)*(1-Math.exp(-dt/.6));
   const dK=M.dvX==null?0:plnSmooth(0,1,M.dv)*(1-fK),nK=plnSmooth(0,1,M.near);
-  const cx=M.cx+M.fs*fK+M.ns*nK*(1-fK)*(1-dK)+(dK?(M.dvX-C.x/CAVE_PPM)/2*dK:0);
   const floorY=-C.cy/CAVE_PPM,dF=cave3DiveFrame(floorY,M.dvY,dK,asp),fy=dF.fy;
-  const Ls=cave3Lens(asp,cx,fy,zoom,nK*(1-dK),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY,dK,dF.hd),K=H/(Ls.Hf*CAVE_PPM);
+  /* нырок держит воду в кадре: середина уходит к озеру на .45 полуширины кадра (M630e), не дальше
+     середины глади — человек у края, гладь на две трети кадра */
+  let dS=0;
+  if(dK){
+    const mx=C.x/CAVE_PPM,o=M.dvX-mx,sg=Math.abs(o)>.05?Math.sign(o):0,G0=M.dvG?M.dvG[0]:M.dvX,G1=M.dvG?M.dvG[1]:M.dvX;
+    const lim=Math.max(Math.abs(o),Math.abs((G0+G1)/2-mx));
+    dS=sg*Math.min(Math.max(Math.abs(o)/2,dF.hd*asp/2*CAVE3_LENS.dvS),lim)*dK;
+  }
+  const cx=M.cx+M.fs*fK+M.ns*nK*(1-fK)*(1-dK)+dS;
+  const Ls=cave3Lens(asp,cx,fy,zoom,nK*(1-dK),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY,dK,dF.hd,dF.drop),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
   M.lens=Ls;
@@ -100935,6 +100948,8 @@ function cave3Frame(){
   tris+=cave3LakeFrame(C,F,Fd,cx-hw-3,cx+hw+3,cx);
   /* растения и звери телами (22dg) */
   tris+=cave3LifeFrame(C,F,Fd,cx-hw-3,cx+hw+3);
+  /* кулисы перед разрезом (22di): первый план кадра */
+  tris+=cave3WingFrame(C,F,Fd,cx-hw-3,cx+hw+3,mid,Math.max(dK,nK*(1-fK)));
   /* огней двенадцать: фонарь держит свои семь, остальные места — тем, кто сильнее и ближе к кадру
      (устье, даль, янтарь, кристаллы, события в пролётах — 22dh); даль — по x и по y: огонь галереи
      ниже кадра ничего в нём не светит */
@@ -101536,7 +101551,7 @@ function cave3Chunks(C,box,mx,my,first){
 const CAVE3_GPU={dev:null,gen:-1,tier:-1,w:0,h:0,shn:0,ms:1,L:null,P:{},U:null,S:null,D:null,T:null,V:null,B:null,pp:null,
   ga:[0,1,2,3].map(()=>new Float32Array(288)),stat:{tris:0,calls:0}};
 /* числа стенда (docs/look/cv-render.js): тьма, воздух, фонарь, день */
-const CAVE3_K={amb:[.036,.054,.083],fogC:[.045,.08,.12],fog:.022,
+const CAVE3_K={amb:[.036,.054,.083],fogC:[.06,.1,.155],fog:.03,
   lampCol:[4,3.1,1.95],inner:32*PLN_DEG,outer:58*PLN_DEG,fall:3.2,fov:128*PLN_DEG,day:[1.3,1.42,1.4],
   air:[.036,.02,.065],airReach:140,comp:[.10,.36,1,0]};
 
@@ -101937,9 +101952,19 @@ fn turnBy(n: vec3f, i0: vec4f, i1: vec4f) -> vec3f {
   return normalize(vec3f(q.x * i1.x + q.z * i1.y, q.y, q.z * i1.x - q.x * i1.y)) * m;
 }
 
+/* волна пещерной воды (M630e): три бегущих гребня разной длины, вместе сантиметров пять; одна на гладь
+   и на кромку тела в разрезе — нитка уреза ходит вместе с гладью */
+fn caveWave(p: vec2f, t: f32) -> f32 {
+  return 0.045 * sin(p.x * 1.3 - t * 1.1 + p.y * 0.7)
+       + 0.026 * sin(p.x * 2.9 + t * 1.7 - p.y * 1.3)
+       + 0.011 * sin(p.x * 6.1 - t * 2.9 + p.y * 2.1);
+}
 @vertex fn vs_main(in: VIn) -> VOut {
   var o: VOut;
-  let p = placeAt(in.pos, in.i0, in.i1);
+  var p = placeAt(in.pos, in.i0, in.i1);
+  /* гладь (13) — кроме берега, где она под камнем; тело (14) — только верхняя кромка (глубина 0) */
+  if (in.par.x > 12.5 && in.par.x < 13.5) { p.y += caveWave(p.xz, g.camPos.w) * smoothstep(-0.1, 0.4, in.par.w); }
+  if (in.par.x > 13.5 && in.par.x < 14.5 && in.par.w < 0.001) { p.y += caveWave(p.xz, g.camPos.w); }
   o.pos = g.viewProj * vec4f(p, 1.0);
   o.wpos = p;
   /* лист разреза несёт в нормали путь к пустоте вместе с уверенностью — её длину не трогаем */
@@ -102075,6 +102100,27 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     var c5 = in.col * glow * hudDim(in.pos.xy);
     if (in.wpos.z < g.misc.z) { c5 *= faceDim(in.pos.xy); }
     return vec4f(haze(c5, in.wpos, 0.7), 1.0);
+  }
+  if (mat == 17) {
+    /* кулиса (22di): ближний камень перед разрезом — силуэт; холодная кромка от воздуха, верх светлее
+       низа, фонарь лишь трогает. Где за ней человек (точка, сведённая лучом на его плоскость), кулиса
+       прорезана мягким растром */
+    let fc = select(-1.0, 1.0, g.lampDir.x >= 0.0);
+    let ft = g.lampPos.xyz + vec3f(-0.2 * fc, -1.71, 0.17);
+    let pk = (ft.z - g.camPos.z) / max(in.wpos.z - g.camPos.z, 0.05);
+    let pr = g.camPos.xyz + (in.wpos - g.camPos.xyz) * pk - ft;
+    let cut = (1.0 - smoothstep(0.75, 1.35, abs(pr.x))) * (1.0 - smoothstep(2.0, 2.7, pr.y)) * smoothstep(-0.8, -0.2, pr.y);
+    /* на ближней стоянке объектив у самой кулисы — она раздулась бы на полкадра: растворяется */
+    let gone = max(cut, 1.0 - smoothstep(10.0, 13.5, in.wpos.z - g.camPos.z));
+    if (gone > ign(in.pos.xy)) { discard; }
+    var nS = normalize(in.nrm);
+    if (dot(nS, V) < 0.0) { nS = -nS; }
+    let nv = clamp(dot(nS, V), 0.0, 1.0);
+    let ll17 = lampAt(in.wpos);
+    var c17 = in.col * (0.55 + 0.45 * nv) * mix(0.8, 1.2, nS.y * 0.5 + 0.5);
+    c17 += g.fogCol.rgb * (pow(1.0 - nv, 5.0) * mix(0.2, 0.6, smoothstep(-0.3, 0.6, nS.y)));
+    c17 += in.col * lampTint(in.wpos) * (ll17.w * clamp(dot(nS, ll17.xyz), 0.0, 1.0) * 0.3);
+    return vec4f(c17 * hudDim(in.pos.xy), 1.0);
   }
   if (mat == 12) {
     /* кристалл светит изнутри: сердце ярче края; грани делит свет — своя доля неба и фонаря на каждой */
@@ -102984,6 +103030,8 @@ function cave3DressFrame(C,F,Fd,x0,x1,cx,first,cy){
    Гладь берёт отражение из зеркального прохода в полкадра (22db): сцена, отражённая в уровне воды,
    без разреза и без того, что под водой. Зеркало одно на кадр — у ближнего к человеку озера. */
 Object.assign(CAVE3_MAT,{water:13,body:14});
+/* светило озера: высота над гладью, глубина за разрезом, дальность, цвет огня и ореола */
+const CAVE3_LAKE={lh:.6,lz:2.5,lr:7,lc:[.45,1.6,1.45],gc:[.25,.75,.7]};
 
 function cave3LakeGeo(C,F,z){
   const pool=cavePool(C,z);
@@ -103013,7 +103061,8 @@ function cave3LakeGeo(C,F,z){
     if(j<8&&Math.max(D[a],D[a+1],D[a+nz],D[a+nz+1])<-.03){ga=Math.min(ga,xa+i*st);gb=Math.max(gb,xa+(i+1)*st);}
   }
   /* тело в разрезе: от глади до дна за разрезом; камень разреза лежит перед ним и закрывает лишнее */
-  const sx=.25,ns=Math.ceil((xb-xa)/sx);
+  /* шаг тела 12.5 см: кромка гуляет волной (вершинный шейдер), а не ломаной */
+  const sx=.125,ns=Math.ceil((xb-xa)/sx);
   let prev=-1;
   for(let i=0;i<=ns;i++){
     const X=xa+i*sx;
@@ -103032,7 +103081,7 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
   const Q=C.lk3||(C.lk3={m:new Map(),gen:-1});
   if(Q.gen!==PLN_GPU.gen){for(const k of Q.m.values())if(k)plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;}
   F.water=[];F.lake=null;
-  let best=1e9,tris=0,near=1e9,md=1e9;
+  let best=1e9,tris=0,near=1e9,md=1e9,lit=null;
   const mx=C.x/CAVE_PPM;
   CAVE3.lakeM=null;
   caveZones(C).forEach((z,i)=>{
@@ -103044,7 +103093,7 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
     F.water.push(k.geo);tris+=k.geo.n/3;
     const d=cx<k.x0?k.x0-cx:cx>k.x1?cx-k.x1:0;
     if(d<near)near=d;
-    if(d<best){best=d;F.lake={y:k.y};}
+    if(d<best){best=d;F.lake={y:k.y};lit=k;}
     /* урез от человека (M631, нырок объектива): точка глади под ним — ближайшая по x; на уступе
        высоко над водой урез далёк, хоть и под ногами */
     if(k.g0==null)return;
@@ -103053,6 +103102,18 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
   });
   /* нырок: зеркало — у озера, к которому нырнули */
   if(CAVE3.lakeM&&md<3.6)F.lake={y:CAVE3.lakeM.y};
+  /* своё светило озера (M630e): холодная бирюза из глуби над серединой глади — вода читается в темноте
+     сама, без фонаря; сила по ширине озера, гаснет, когда озеро уходит из кадра */
+  if(lit&&best<14){
+    /* гладь — g0…g1; тело воды (x0…x1) тянется под берег */
+    const a=lit.g0!=null?lit.g0:lit.x0,b=lit.g0!=null?lit.g1:lit.x1,w=()=>b-a,s=clamp(w()/12,.5,1)*(1-plnSmooth(6,14,best)),L=CAVE3_LAKE;
+    if(s>.02){
+      const p=[(a+b)/2,lit.y+L.lh,L.lz];
+      F.lights.push({p,r:clamp(w()*.55,4,L.lr),c:plnMul(L.lc,s)});
+      CAVE3.stat.lakeL=p[0].toFixed(1)+" "+p[1].toFixed(1)+" "+s.toFixed(2);
+      if(F.glows.length<6)F.glows.push({p:[p[0],lit.y+.1,L.lz],c:L.gc,k:.45*s,s:clamp(w()*.18,1.2,2.6)});
+    }
+  }
   CAVE3.stat.lake=F.lake?+F.lake.y.toFixed(2):null;
   CAVE3.lakeD=near<1e9?near:null;
   return tris;
@@ -103718,6 +103779,127 @@ function cave3GapWet(B,q,lights,glows){
   lights.push({p:[q.X,bot+h*.5,z0-1],r:4,c:K.light});
   glows.push({p:[q.X,bot+h*.5,z0],c:K.glow,k:.3,s:1.6});
   return true;
+}
+
+/* ══════════════ пещера на движке: кулисы (M630e) ══════════════
+   Ближний камень перед разрезом (z < 0): натёки с пола и со свода в 2–3.4 м перед линией ходьбы,
+   тёмным силуэтом с холодной кромкой (шейдер, mat 17). Дают кадру первый план и держат его края;
+   человека не закрывают — шейдер прорезает кулису там, где за ней человек. Шаг ~9 м, по обеим
+   галереям; в кадр идёт та галерея, где середина кадра. Строятся раз на полосу CAVE3_DR.s. */
+const CAVE3_WG={step:9,jit:3.5,z:[-2,-3.4],keep:8,col:[.007,.009,.013],mouth:6,sink:6};
+Object.assign(CAVE3_MAT,{wing:17});
+
+/* где стоят: x в метрах, галерея, зерно; у устья — нет (там столб дня) */
+function cave3WingItems(C,Fd){
+  const P=CAVE_PPM,W=CAVE3_WG,out=[],end=CAVE_W/P-6;
+  for(const low of [false,true]){
+    let x=6+(hashi(1,C.seed,low?0x1A6:0x1A7)&1023)/1023*W.step;
+    for(let i=0;x<end;i++){
+      const h=hashi(i,C.seed,low?0x1A61:0x1A71),X=x;
+      x+=W.step+((h>>>3&1023)/1023-.5)*2*W.jit;
+      if(!low&&Fd.mouthX!=null&&Math.abs(X-Fd.mouthX)<W.mouth)continue;
+      out.push({X,low,seed:h,b:Math.floor(X/CAVE3_DR.s)});
+    }
+  }
+  return out;
+}
+/* натёк-силуэт: конус из-за кромки кадра, бугристый; dir +1 — с пола вверх, -1 — со свода вниз.
+   from — где корень (за кадром), at — где камень галереи, len — сколько выходит в воздух */
+function cave3WingCone(m,r,x,z,from,at,len,R,dir,col,dome){
+  /* кольца корня гуще у камня галереи (там осыпь видна), в воздухе — ровно */
+  const nR=6,nA=10,N=nR+nA,path=[],rr=[],ph=r()*TAU,lean=(r()-.5)*.6*len,nb=1.5+r()*2,tip=dome?R*.45:.04;
+  for(let k=0;k<N;k++){
+    const root=k<nR,s=root?k/nR:0,u=root?0:(k-nR+1)/nA,y=root?at+(from-at)*Math.pow(1-s,2):at+dir*len*u;
+    path.push([x+lean*u*u,y,z+(r()-.5)*.08]);
+    /* тело, не шип: бугры по высоте, пол — купол наплыва, свод — колокол */
+    const lump=1+.22*Math.sin(u*nb*TAU+ph)*(1-u*.7),prof=dome?Math.sqrt(Math.max(0,1-u*u)):Math.pow(1-u,1.3);
+    /* корень расходится осыпью: к кромке кадра тело шире */
+    rr.push(root?R*(1+plnSmooth(0,2.6,Math.abs(y-at))*(dome?2.4:.7)):Math.max(tip,R*prof*lump));
+  }
+  plnTube(m,{path,sides:14,mat:CAVE3_MAT.wing,glow:0,rad:t=>rr[Math.min(N-1,Math.round(t*(N-1)))],col:()=>col,x:1,cap:true});
+}
+function cave3WingBin(C,list){
+  /* пол и свод — порознь: на ближней стоянке они расходятся из кадра в разные стороны */
+  const md=plnMesh(1<<12),mu=plnMesh(1<<12),P=CAVE_PPM,W=CAVE3_WG;
+  let m=md;
+  let ys=0,n=0;
+  for(const q of list){
+    const r=rng(q.seed^0x317C),fl=-caveFloorOf(C,q.X*P,q.low)/P,ce=-caveCeilOf(C,q.X*P,q.low)/P,gap=ce-fl;
+    if(!(gap>1.6))continue;
+    ys+=(fl+ce)/2;n++;
+    const kind=q.seed&3,col=plnMul(W.col,.85+.3*r()),z0=lerp(W.z[0],W.z[1],r());
+    /* с пола: гряда — бугры разной высоты вразброс, низкие по краям; тонкий натёк, если есть, — сбоку,
+       не на макушке (купол с шипом наверху читается фигурой в капюшоне) */
+    m=md;
+    if(kind!==1){
+      /* верх гряды — не выше пола в кадре: то, что ходит по полу, видно поверх неё */
+      const H=lerp(.45,.85,r()),c=3+(r()*3|0),span=lerp(2.4,4,r());
+      for(let k=0;k<c;k++){
+        const u=c>1?k/(c-1)-.5:0,x=q.X+u*span+(r()-.5)*.5,z=z0+(r()-.5)*.7;
+        const h=H*(1-Math.abs(u)*1.1)*lerp(.6,1.05,r())+.1;
+        cave3WingCone(m,r,x,z,fl-6,fl-.3,h,lerp(.7,1.15,r())*(1-Math.abs(u)*.5),1,plnMul(col,.95+.15*r()),true);
+      }
+      if(r()<.5){
+        const x=q.X+(r()<.5?-1:1)*span*lerp(.35,.55,r());
+        cave3WingCone(m,r,x,z0+.3,fl-6,fl-.3,H*lerp(1.3,1.9,r()),lerp(.32,.48,r()),1,plnMul(col,1.1),false);
+      }
+    }
+    /* со свода: зубья, длинный посередине */
+    m=mu;
+    if(kind!==0&&kind!==3||kind===3&&r()<.4){
+      const L=Math.min(lerp(1.1,2.8,r()),gap*.42),x1=q.X+(kind===2?(r()-.5)*3:0);
+      for(let k=0,c=2+(r()*3|0);k<c;k++){
+        const x=x1+(k?(r()-.5)*2.4:0),z=z0+(k?(r()-.5)*.8:0),l=k?L*lerp(.3,.7,r()):L;
+        cave3WingCone(m,r,x,z,ce+6,ce+.2,l,lerp(.45,.8,r())*(k?.7:1)*(.8+l*.15),-1,plnMul(col,k?1.1:1),false);
+      }
+    }
+  }
+  return {gd:md.ni?plnGeo(md):null,gu:mu.ni?plnGeo(mu):null,ym:n?ys/n:null,tris:(md.ni+mu.ni)/3,t:0};
+}
+const cave3WingFree=k=>{plnGeoFree(k.gd);plnGeoFree(k.gu);};
+/* кадр: полосы в окне строятся сразу (конусов мало), рисуются той галереи, где середина кадра.
+   go — ближняя стоянка (нырок, у вещи), 0..1: объектив подошёл, кулисы раздулись бы — гряда уходит
+   вниз за кромку кадра, зубья свода вверх (сдвиг записью расстановки, без пересборки) */
+function cave3WingFrame(C,F,Fd,x0,x1,cy,go){
+  const Q=C.wg3||(C.wg3={m:new Map(),gen:-1,t:0,by:null,I:null,a:new Float32Array(32)});
+  if(Q.gen!==PLN_GPU.gen){for(const k of Q.m.values())cave3WingFree(k);Q.m.clear();Q.I=null;Q.gen=PLN_GPU.gen;}
+  const sk=CAVE3_WG.sink*plnSmooth(0,1,go||0);
+  plnRec(Q.a,0,[0,-sk,0],1,0,1,0);plnRec(Q.a,1,[0,sk,0],1,0,1,0);
+  if(!Q.I)Q.I=[plnInst(Q.a.subarray(0,16),1,1),plnInst(Q.a.subarray(16,32),1,1)];
+  else{plnInstSet(Q.I[0],Q.a.subarray(0,16),1);plnInstSet(Q.I[1],Q.a.subarray(16,32),1);}
+  if(!Q.by){
+    Q.by=new Map();
+    for(const q of cave3WingItems(C,Fd)){const key=q.b*2+(q.low?1:0);let a=Q.by.get(key);if(!a)Q.by.set(key,a=[]);a.push(q);}
+  }
+  Q.t++;
+  const s=CAVE3_DR.s,vis=[];
+  for(let b=Math.floor(x0/s);b<=Math.floor(x1/s);b++)for(const lo of [0,1]){
+    const key=b*2+lo;
+    if(!Q.by.has(key))continue;
+    let k=Q.m.get(key);
+    if(!k){k=cave3WingBin(C,Q.by.get(key));Q.m.set(key,k);}
+    k.t=Q.t;
+    if((k.gd||k.gu)&&k.ym!=null)vis.push([lo,k]);
+  }
+  if(Q.m.size>CAVE3_WG.keep*2){
+    const old=[...Q.m.entries()].filter(e=>e[1].t!==Q.t).sort((a,b)=>a[1].t-b[1].t);
+    for(const [key,k] of old.slice(0,Q.m.size-CAVE3_WG.keep*2)){cave3WingFree(k);Q.m.delete(key);}
+  }
+  /* галерея кадра: чья середина ближе к середине кадра */
+  let lo=0;
+  if(cy!=null){
+    let best=1e9;
+    for(const [l,k] of vis){const d=Math.abs(k.ym-cy);if(d<best){best=d;lo=l;}}
+  }
+  let tris=0,n=0;
+  /* ушли целиком (сдвиг больше высоты кадра) — не рисуем */
+  for(const [l,k] of vis)if(l===lo&&go<.999){
+    if(k.gd)F.draw.push({geo:k.gd,inst:Q.I[0],lamp:false,sun:false});
+    if(k.gu)F.draw.push({geo:k.gu,inst:Q.I[1],lamp:false,sun:false});
+    tris+=k.tris;n++;
+  }
+  CAVE3.stat.wings=n;
+  return tris;
 }
 
 /* ══════════════ шахта: спуск вглубь планеты ══════════════ */
