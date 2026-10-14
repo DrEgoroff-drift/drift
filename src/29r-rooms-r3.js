@@ -229,10 +229,11 @@ function hq3Tags(L,tx){const out=[];let hi=-1;
   if(hi>=0&&L.sel<0){const C=hq3Chair(hi);out.push({p:[C.x,.42,C.z],t:"ПУСТОЕ КРЕСЛО",s:"управляющих нанимают в кантине станции",c:"dn"});}
   return out;}
 /* таблички — DOM над холстом, в зоне героя; пока камера едет, их нет (как в зале, hallTagsDraw) */
-function room3TagsDraw(list,cam,sz){
-  const box=ROOM3.tags;if(!box)return;
-  const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;if(room3Moving())list=[];
-  const xr=sz.wide?hallHero(sz.cw)*sz.cw-12*ui:sz.cw-12,yr=sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8,key=list.map(x=>x.t+"/"+x.s+"/"+x.c).join("|");
+/* box, mv, sz.xr/yr — для чужой комнаты (дом 29rb): свой слой табличек, своя граница поля */
+function room3TagsDraw(list,cam,sz,box,mv){
+  box=box||ROOM3.tags;if(!box)return;
+  const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;if(mv==null?room3Moving():mv)list=[];
+  const xr=sz.xr!=null?sz.xr:sz.wide?hallHero(sz.cw)*sz.cw-12*ui:sz.cw-12,yr=sz.yr!=null?sz.yr:sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8,key=list.map(x=>x.t+"/"+x.s+"/"+x.c).join("|");
   if(box.__key!==key){box.__key=key;box.textContent="";
     for(const g of list){const e=document.createElement("i"),b=document.createElement("b");e.className=g.c?"ht "+g.c:"ht";b.textContent=g.t;e.appendChild(b);
       if(g.s){const s=document.createElement("s");s.textContent=g.s;e.appendChild(s);}box.appendChild(e);}}

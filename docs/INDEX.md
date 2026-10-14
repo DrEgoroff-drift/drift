@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 565 · top-level symbols: 8269
+Files: 566 · top-level symbols: 8297
 
 ## SYMBOLS
 
@@ -383,10 +383,10 @@ CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_KIT                       src/27f3-person3d.js:110
-CP_MESH                      src/27f3-person3d.js:273
+CP_KIT                       src/27f3-person3d.js:115
+CP_MESH                      src/27f3-person3d.js:278
 CP_TEMPER                    src/27f6-face-live.js:25
-CP_TORSO                     src/27f3-person3d.js:81
+CP_TORSO                     src/27f3-person3d.js:86
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
@@ -1050,6 +1050,12 @@ HOLIDAYS                     src/11am-holiday.js:22-25
 HOL_BY                       src/11am-holiday.js:26
 HOL_ETHER                    src/11am-holiday.js:28-43
 HOL_GREET                    src/11am-holiday.js:45-58
+HOME3                        src/29rb-home-r3.js:16
+HOME3_LAMP                   src/29rb-home-r3.js:22
+HOME3_M                      src/29rb-home-r3.js:18
+HOME3_RW                     src/29rb-home-r3.js:17
+HOME3_TONE                   src/29rb-home-r3.js:20
+HOME3_WIN                    src/29rb-home-r3.js:24
 HOME_BAKING                  src/21f-home-out.js:56
 HOME_BK                      src/27e-ui-home.js:48
 HOME_COOL_MS                 src/16c-rescue.js:45
@@ -1680,12 +1686,12 @@ QUANT_MAX                    src/28-loop.js:163
 QUANT_MS                     src/28-loop.js:161
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:478
+R3                           src/27f2-room3d.js:499
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:457
+R3_DOWN_WGSL                 src/27f2-room3d.js:478
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:611
+R3_POST_WGSL                 src/27f2-room3d.js:632
 R3_UN                        src/27f2-room3d.js:30
 R3_WGSL                      src/27f2-room3d.js:156
 RACK                         src/25d-instr-rack.js:44
@@ -3292,10 +3298,10 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:95-103
-cpBasis                      src/27f3-person3d.js:73-77
+cpBand                       src/27f3-person3d.js:100-108
+cpBasis                      src/27f3-person3d.js:78-82
 cpBeard                      src/27f3a-face3d.js:373-388
-cpBody                       src/27f3-person3d.js:112-270
+cpBody                       src/27f3-person3d.js:117-275
 cpCloth                      src/27f3-person3d.js:45-50
 cpClump                      src/27f3a-face3d.js:364-371
 cpEmoMix                     src/27f6-face-live.js:56-58
@@ -3310,16 +3316,16 @@ cpHairline                   src/27f3a-face3d.js:279-285
 cpHead                       src/27f3a-face3d.js:182-277
 cpHeadAI                     src/27f3a-face3d.js:390-400
 cpHeadFn                     src/27f3a-face3d.js:18-52
-cpMesh                       src/27f3-person3d.js:274-281
+cpMesh                       src/27f3-person3d.js:279-286
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:16-22
-cpPose                       src/27f3-person3d.js:52-71
+cpPose                       src/27f3-person3d.js:52-76
 cpRig                        src/27f3a-face3d.js:404-426
 cpSculpt                     src/27f3a-face3d.js:81-158
 cpSkin                       src/27f3a-face3d.js:160-163
 cpSkinZ                      src/27f3a-face3d.js:165
 cpTeeth                      src/27f3a-face3d.js:168-180
-cpTorsoAt                    src/27f3-person3d.js:84-93
+cpTorsoAt                    src/27f3-person3d.js:89-98
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
 cpWarpTh                     src/27f3a-face3d.js:68
@@ -4900,6 +4906,28 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdUklad                    src/12ah-holdnews.js:19-24
 holdWorth                    src/27j-ui-opis.js:596-604
+home3Cam                     src/29rb-home-r3.js:397-408
+home3Canvas                  src/29rb-home-r3.js:380-387
+home3Cost                    src/29rb-home-r3.js:444
+home3FolkM                   src/29rb-home-r3.js:34
+home3Frame                   src/29rb-home-r3.js:410-428
+home3Hide                    src/29rb-home-r3.js:437-442
+home3LookAt                  src/29rb-home-r3.js:374
+home3Man                     src/29rb-home-r3.js:320-331
+home3Mesh                    src/29rb-home-r3.js:38-137
+home3Night                   src/29rb-home-r3.js:372
+home3Ok                      src/29rb-home-r3.js:409
+home3PilotM                  src/29rb-home-r3.js:32
+home3Pose                    src/29rb-home-r3.js:318
+home3Scene                   src/29rb-home-r3.js:333-370
+home3Size                    src/29rb-home-r3.js:388-394
+home3StoolMesh               src/29rb-home-r3.js:312
+home3Str                     src/29rb-home-r3.js:33
+home3Stuff                   src/29rb-home-r3.js:139-310
+home3Tags                    src/29rb-home-r3.js:431
+home3Up                      src/29rb-home-r3.js:30
+home3UpRooms                 src/29rb-home-r3.js:371
+home3X                       src/29rb-home-r3.js:27
 homeBeacon                   src/12j-home.js:180-186
 homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
@@ -6729,12 +6757,12 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:479-485
-r3Dev                        src/27f2-room3d.js:502-520
-r3DownDesc                   src/27f2-room3d.js:494-498
-r3Drop                       src/27f2-room3d.js:527
-r3Frame                      src/27f2-room3d.js:542-608
-r3Free                       src/27f2-room3d.js:529
+r3Desc                       src/27f2-room3d.js:500-506
+r3Dev                        src/27f2-room3d.js:523-541
+r3DownDesc                   src/27f2-room3d.js:515-519
+r3Drop                       src/27f2-room3d.js:548
+r3Frame                      src/27f2-room3d.js:563-629
+r3Free                       src/27f2-room3d.js:550
 r3Kit                        src/27f2-room3d.js:66-153
 r3Lin                        src/27f2-room3d.js:35
 r3Look                       src/27f2-room3d.js:43-153
@@ -6745,11 +6773,11 @@ r3Pivot                      src/27f2-room3d.js:57
 r3Proj                       src/27f2-room3d.js:60-153
 r3Pt                         src/27f2-room3d.js:58
 r3Sc                         src/27f2-room3d.js:37
-r3ShDesc                     src/27f2-room3d.js:486-491
-r3ShadowVP                   src/27f2-room3d.js:531-536
+r3ShDesc                     src/27f2-room3d.js:507-512
+r3ShadowVP                   src/27f2-room3d.js:552-557
 r3Step                       src/27f2-room3d.js:38
-r3Up                         src/27f2-room3d.js:522-526
-r3VB                         src/27f2-room3d.js:492
+r3Up                         src/27f2-room3d.js:543-547
+r3VB                         src/27f2-room3d.js:513
 r3Xf                         src/27f2-room3d.js:49-153
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -7233,7 +7261,7 @@ room3Breath                  src/29r-rooms-r3.js:176
 room3Cams                    src/29r-rooms-r3.js:162
 room3Canvas                  src/29r-rooms-r3.js:145-153
 room3Close                   src/29r-rooms-r3.js:188-194
-room3Cost                    src/29r-rooms-r3.js:248
+room3Cost                    src/29r-rooms-r3.js:249
 room3Frame                   src/29r-rooms-r3.js:203-222
 room3GlideAt                 src/29r-rooms-r3.js:163-167
 room3Go                      src/29r-rooms-r3.js:170-174
@@ -7242,10 +7270,10 @@ room3Moving                  src/29r-rooms-r3.js:168
 room3Night                   src/29r-rooms-r3.js:177
 room3Ok                      src/29r-rooms-r3.js:178
 room3Open                    src/29r-rooms-r3.js:179-186
-room3PickHq                  src/29r-rooms-r3.js:251-257
+room3PickHq                  src/29r-rooms-r3.js:252-258
 room3Place                   src/29r-rooms-r3.js:187
 room3Size                    src/29r-rooms-r3.js:154-161
-room3TagsDraw                src/29r-rooms-r3.js:232-245
+room3TagsDraw                src/29r-rooms-r3.js:233-246
 roomBake                     src/29c0-rooms-gpu.js:8-14
 roomSz                       src/29c0-rooms-gpu.js:16
 roomToneTick                 src/09a-roomtone.js:79-99
@@ -9784,10 +9812,10 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 11 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 55 KB
+## src/27f2-room3d.js · 57 KB
   · комната в объёме (M725):1
 
-## src/27f3-person3d.js · 25 KB
+## src/27f3-person3d.js · 26 KB
   · человек в объёме (M725):1
 
 ## src/27f3a-face3d.js · 37 KB
@@ -9938,6 +9966,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/29r-rooms-r3.js · 22 KB
   · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
+
+## src/29rb-home-r3.js · 37 KB
+  · дом на движке (M850b, docs/DESIGN-rooms.md §4):1
 
 ## tests/90-harness.js · 54 KB
   · автотесты: каркас:1

@@ -243,6 +243,27 @@ fn outside(w:vec3f)->vec3f{
   else if(kind==4){   /* пыль: бурая мгла и тусклое солнце */
     let sm=fb2(q*2.2+vec2f(tt*.004,0.));c=mix(vec3f(.16,.09,.05),vec3f(.42,.26,.14),sm)*(.8-q.y*.3);
     c+=vec3f(1.,.7,.4)*exp(-length(q-vec2f(.7,.45))*9.)*1.6;}
+  else if(kind==7){   /* двор дома (M850b): поле, дальние холмы, забор, мачта маяка с дыханием огня; днём небо планеты,
+                        ночью звёзды и великан серпом; ночь — дробная часть win2.z */
+    let nt=fract(u.win2.z);let e=rd.y/max(length(rd.xz),.05);let hz=-.085+.018*fb2(vec2f(q.x*1.6,7.));
+    let ds=mix(vec3f(.8,.74,.6),vec3f(.26,.42,.7),clamp((e-hz)*2.2,0.,1.));
+    let gp=vec2f(q.x*.5+.06,e-.16);let gl=length(gp)/.075;
+    var nsk=c+vec3f(.01,.016,.034)*(1.-clamp((e-hz)*4.,0.,1.));
+    if(gl<1.){let lm=clamp(dot(gp/.075,vec2f(.8,.45))*1.2,0.,1.);nsk=mix(nsk,vec3f(.03,.03,.04)+vec3f(.5,.42,.32)*lm*fb2(gp*90.+3.),1.);}
+    nsk+=vec3f(.25,.3,.4)*exp(-abs(gl-1.)*30.)*.25;
+    var col=mix(ds*1.25+vec3f(1.,.86,.6)*exp(-length(vec2f(q.x*.5-.5,e-.05))*14.)*.8,nsk,nt);
+    let hl=hz+.035*fb2(vec2f(q.x*2.4,1.))+.01;let hill=step(e,hl);
+    col=mix(col,mix(mix(vec3f(.36,.42,.4),vec3f(.62,.64,.6),.4),vec3f(.012,.014,.02),nt),hill*(1.-step(e,hz)));
+    let gd=clamp((hz-e)*6.,0.,1.);let gn=fb2(vec2f(q.x*9.,e*60.));
+    col=mix(col,mix(mix(vec3f(.42,.38,.22),vec3f(.24,.28,.14),gn)*(1.-.4*gd),vec3f(.014,.014,.012)*(1.+gn),nt),step(e,hz));
+    let ft=hz-.012;let fb=hz-.05;let fx=fract(q.x*7.);
+    let fen=step(fb,e)*step(e,ft)*max(step(fx,.07),max(step(abs(e-ft+.008),.003),step(abs(e-fb-.012),.003)));
+    col=mix(col,mix(vec3f(.16,.12,.08),vec3f(.004,.004,.004),nt),fen);
+    let mx=q.x*.5-.31;let mt=step(abs(mx),.0012+.0022*clamp((hz+.13-e)/.14,0.,1.))*step(hz-.01,e)*step(e,hz+.13);
+    col=mix(col,mix(vec3f(.12,.12,.13),vec3f(.006,.006,.008),nt),mt);
+    let bp=vec2f(mx,e-hz-.135);col+=vec3f(1.,.3,.16)*exp(-length(bp)*420.)*(1.6+1.2*sin(tt*.9))*(.4+.6*nt);
+    col+=vec3f(1.,.3,.16)*exp(-length(bp)*40.)*.08*nt*(1.+.6*sin(tt*.9));
+    c=col;}
   else{   /* док и стапель: корпус у причала в прожекторах, фермы с освещённой кромкой, маяки — тело дока, не сетка */
     c+=vec3f(.035,.05,.08)*(1.-smoothstep(-.05,.5,q.y))*1.6;   /* дымка дока снизу: свет причала в пыли */
     if(!pon){   /* планета без своей текстуры: диск с терминатором и кромкой воздуха */
