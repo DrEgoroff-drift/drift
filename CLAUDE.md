@@ -153,7 +153,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
   right now hangs over the world. Two permanent buttons on the right edge, the rest lives in
   `#menu` or arrives when there's a reason. An action button names the action, and takes its verb
   from the prompt rather than a second table. Autotests guard all of this.
-- **The interface has one ruler, and it is the frame** (M221). `--ui` = `clamp(H/760,1,1.75)` is set
+- **The interface has one ruler, and it is the frame** (M221). `--ui` = `clamp(min(H/940,W/1500),1,1.4)` (0.493.5; the player may fix it in OPTIONS) is set
   by `resize()` and applied with `zoom` — never `transform: scale`, which would move the picture and
   leave layout and hit-testing behind. Sizes in `style.css` stay in the pixels the layout was drawn
   in; they are multiplied at display time. Two consequences for new code: a raster baked inside a

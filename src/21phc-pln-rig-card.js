@@ -165,6 +165,9 @@ function rigCardDesc(){
     depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"},
     multisample:{count:4}};
 }
+/* рецепт для прогрева (08b0): карточка рига теперь рисуется и в полёте — альбом печатает людей
+   открытки (25g1), и без рецепта конвейер собирался лениво посреди кадра (0.493.5) */
+GPU_PIPE_ONE["rig.card"]=()=>rigCardDesc();
 /* всё, что живёт с устройством: сменилось — кэш пуст (правило 3) */
 function rigCardDev(){
   const R=RIG_CARD,d=GPU.dev;

@@ -112,7 +112,8 @@ function occTick(){
   if(!(G.freed|0))return;
   /* сперва укрепляются там, где уже стоят, и только потом ползут дальше:
      иначе фронт расплывался пятном в один уровень на всю галактику */
-  if(o.lvl<OCC_MAX&&r()<.45){
+  /* плохой порядок у станции (M906, 28l-gauge) — пираты крепнут в полтора раза смелее */
+  if(o.lvl<OCC_MAX&&r()<.45*gaugeSpread(from[0],from[1])){
     occSet(from[0],from[1],o.lvl+1);
     const sys=getSystem(from[0],from[1]);
     logAdd("warn","«"+(sys.name||"")+"»: пираты усилились — "+occInfo(o.lvl).ru);
@@ -126,7 +127,7 @@ function occTick(){
     if(!starAt(nx,ny)||occLvl(nx,ny))continue;
     /* обжитое сопротивляется: рядом со станцией захват идёт вдвое реже */
     const sys=getSystem(nx,ny);
-    if(sys.station&&r()<.5)continue;
+    if(sys.station&&r()<1-.5*gaugeSpread(nx,ny))continue;   /* плохой порядок держит хуже (M906) */
     if(typeof mapUnderTrassa==="function"&&mapUnderTrassa(nx,ny))continue;   /* под трассой не занимают (M348) */
     occSet(nx,ny,1);
     logAdd("warn","Пираты пришли в «"+(sys.name||(nx+":"+ny))+"»");
