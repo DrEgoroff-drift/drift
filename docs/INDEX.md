@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 580 · top-level symbols: 8308
+Files: 585 · top-level symbols: 8355
 
 ## SYMBOLS
 
@@ -524,12 +524,12 @@ DOOM_WARN                    src/12v-doom.js:22
 DRILL_EAT                    src/13a-guns.js:37
 DRONES                       src/04-mods.js:63-69
 DRONE_BREAK_P                src/12e-drone-flight.js:21
-DRONE_FAR_MUL                src/12-economy.js:299
+DRONE_FAR_MUL                src/12-economy.js:300
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
 DRONE_NAMES                  src/12e-drone-flight.js:43
 DRONE_QUIRKS                 src/12e-drone-flight.js:44-51
-DRONE_SEEN_DAYS              src/12-economy.js:290
+DRONE_SEEN_DAYS              src/12-economy.js:291
 DRONE_SEG                    src/16ga-gpu-trail.js:147
 DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
@@ -589,6 +589,7 @@ FAR_UNITS                    src/06d-far.js:23
 FAR_VOICE                    src/12-economy.js:47-59
 FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
+FAUCET_FLOOR                 src/12ab-hold.js:126
 FAUNA_RES                    src/02-world.js:137
 FG_BK                        src/21e3-surface-stand-gpu.js:115
 FG_MAN                       src/21b-surface-deco.js:268
@@ -1406,6 +1407,10 @@ OFFER_KIND                   src/11ah-offer.js:41-48
 OFFER_NAMED_K                src/11ah-offer.js:52
 OFFER_SHIFT                  src/11ah-offer.js:73
 OFFER_TTL                    src/11ah-offer.js:61
+OFF_MUL                      src/28k-offline.js:14
+OFF_OLD_EARN                 src/28k-offline.js:23
+OFF_OLD_TICK                 src/28k-offline.js:34
+OFF_POOL                     src/28k-offline.js:15
 ONE_BEAR_ERR                 src/21b3-base-hunt.js:26
 ONE_ID                       src/21b3-base-hunt.js:34
 ONE_JOB                      src/21b3-base-hunt.js:25
@@ -2284,6 +2289,23 @@ WAR_API                      src/14b-war-net.js:19
 WAR_BUSY                     src/14b-war-net.js:21
 WAR_LED_CACHE                src/14b-war-net.js:45
 WAR_PULL_MS                  src/14b-war-net.js:20
+WATCH_DISP                   src/28j-watch.js:32
+WATCH_DISP_F                 src/28j-watch.js:30
+WATCH_DISP_M                 src/28j-watch.js:31
+WATCH_LET                    src/28j-watch.js:27
+WATCH_OLD_APPLY              src/28j-watch.js:275
+WATCH_OLD_BOARD              src/28j-watch.js:270
+WATCH_OLD_CREW               src/28j-watch.js:208
+WATCH_OLD_DRONES             src/28j-watch.js:206
+WATCH_OLD_INSON              src/28j-watch.js:216
+WATCH_OLD_MENU               src/28j-watch.js:331
+WATCH_OLD_MGR                src/28j-watch.js:210
+WATCH_OLD_NEED               src/28j-watch.js:222
+WATCH_OLD_OPEN               src/28j-watch.js:219
+WATCH_OLD_ORDER              src/28j-watch.js:232
+WATCH_OLD_SNAP               src/28j-watch.js:273
+WATCH_R                      src/28j-watch.js:26
+WATCH_RELIEF                 src/28j-watch.js:33
 WATER_MIN_SPAN               src/21e-surface-draw.js:177
 WEAR_BASE                    src/21a9-base-laws.js:72
 WEAR_FULL                    src/12s-wear.js:16
@@ -2386,13 +2408,13 @@ angDiff                      src/01-core.js:180
 angWrap                      src/01-core.js:179
 apVel                        src/16-flight.js:126
 appetiteAte                  src/12ab-hold.js:46-50
-appetiteBlock                src/12ab-hold.js:128-139
+appetiteBlock                src/12ab-hold.js:140-151
 appetiteBought               src/12ab-hold.js:72-76
 appetiteEat                  src/12ab-hold.js:83-90
-appetiteEtherLine            src/12ab-hold.js:141-155
+appetiteEtherLine            src/12ab-hold.js:153-167
 appetiteGotHere              src/12ab-hold.js:59-63
 appetiteLeft                 src/12ab-hold.js:77-81
-appetiteLine                 src/12ab-hold.js:120-126
+appetiteLine                 src/12ab-hold.js:132-138
 appetiteOf                   src/12ab-hold.js:38-44
 appetitePrice                src/12ab-hold.js:92
 applyCrewEvent               src/12b-crew-events.js:227-236
@@ -3521,7 +3543,7 @@ depRoomBlockers              src/21pih-dep-room.js:11-17
 depRoomSpans                 src/21pih-dep-room.js:20-24
 depValue                     src/21pzc-dep-value.js:28-39
 depValueF                    src/21pzc-dep-value.js:18-21
-deployDrone                  src/12-economy.js:329-346
+deployDrone                  src/12-economy.js:330-347
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 detBgShift                   tests/90b-detect.js:150-164
@@ -3846,32 +3868,32 @@ drawWrecksSystem             src/12l-barge.js:378-405
 drawYardMark                 src/03e-hull-draw.js:73-116
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
-droneCapacity                src/12-economy.js:324-327
+droneCapacity                src/12-economy.js:325-328
 droneFar                     src/12e-drone-flight.js:102
 droneFixMs                   src/12e-drone-flight.js:177-186
 droneGuestPos                src/12e-drone-flight.js:239-251
 droneHome                    src/12e-drone-flight.js:103-115
-droneMarket                  src/12-economy.js:261-285
-droneMayMine                 src/12-economy.js:300
+droneMarket                  src/12-economy.js:262-286
+droneMayMine                 src/12-economy.js:301
 droneName                    src/12e-drone-flight.js:54
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNick                    src/12e-drone-flight.js:53
 droneNormalize               src/12e-drone-flight.js:70-86
-dronePaybackH                src/12-economy.js:238
+dronePaybackH                src/12-economy.js:239
 dronePhase                   src/12e-drone-flight.js:130-139
 dronePoint                   src/12e-drone-flight.js:94-101
 dronePos                     src/12e-drone-flight.js:142-158
-dronePrice                   src/12-economy.js:233-236
+dronePrice                   src/12-economy.js:234-237
 droneQuirk                   src/12e-drone-flight.js:52
-droneRecall                  src/12-economy.js:219-227
+droneRecall                  src/12-economy.js:220-228
 droneRoutes                  src/12e-drone-flight.js:203-225
-droneSellPrice               src/12-economy.js:291-295
-droneShopHas                 src/12-economy.js:240-246
-droneShopTake                src/12-economy.js:247-251
+droneSellPrice               src/12-economy.js:292-296
+droneShopHas                 src/12-economy.js:241-247
+droneShopTake                src/12-economy.js:248-252
 droneStateRu                 src/12e-drone-flight.js:188-198
 droneSys                     src/12e-drone-flight.js:91-93
 droneTag                     src/12e-drone-flight.js:58-64
-droneTarget                  src/12-economy.js:328
+droneTarget                  src/12-economy.js:329
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
 dsTick                       src/12p1-doublespeak.js:33-42
@@ -4018,6 +4040,7 @@ farmOf                       src/21ac2-base-farm.js:54
 farmStep                     src/21ac2-base-farm.js:95-117
 farmTalk                     src/21ac2-base-farm.js:77-80
 farmWanted                   src/21ac2-base-farm.js:42-45
+faucetPrice                  src/12ab-hold.js:127-130
 faunaOf                      src/20e-species.js:268-284
 fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
@@ -4214,8 +4237,8 @@ geoAnd                       tests/90b2-geom.js:37
 geoArea                      tests/90b2-geom.js:36
 geoAt                        src/18b-geology.js:73-77
 geoBoxy                      tests/90b2-geom.js:352-358
-geoBtns                      tests/90b2-geom.js:858
-geoCalm                      tests/90b2-geom.js:868-956
+geoBtns                      tests/90b2-geom.js:860
+geoCalm                      tests/90b2-geom.js:870-958
 geoClipPoly                  tests/90b2-geom.js:44
 geoCol                       tests/90b2-geom.js:73-84
 geoCompose                   tests/90b2-geom.js:679-704
@@ -4227,7 +4250,7 @@ geoExtra                     tests/90b2-geom.js:223-245
 geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geoFin                       tests/90b2-geom.js:58
-geoFontProbe                 tests/90b2-geom.js:958-967
+geoFontProbe                 tests/90b2-geom.js:960-969
 geoFrame                     tests/90b2-geom.js:309-312
 geoFrame1                    tests/90b2-geom.js:313-329
 geoHang                      tests/90b2-geom.js:252
@@ -4239,7 +4262,7 @@ geoHookCtx                   tests/90b2-geom.js:94-126
 geoHookOvl                   tests/90b2-geom.js:258-303
 geoIn                        tests/90b2-geom.js:60
 geoLaws                      tests/90b2-geom.js:435-671
-geoLbl                       tests/90b2-geom.js:857
+geoLbl                       tests/90b2-geom.js:859
 geoLum                       tests/90b2-geom.js:85
 geoMin                       tests/90b2-geom.js:59
 geoOpaque                    tests/90b2-geom.js:359-366
@@ -4254,14 +4277,14 @@ geoRec                       tests/90b2-geom.js:178-218
 geoRich                      tests/90b2-geom.js:824
 geoRoadFrame                 tests/90b2-geom.js:333-348
 geoRs                        tests/90b2-geom.js:69
-geoRun                       tests/90b2-geom.js:878-956
+geoRun                       tests/90b2-geom.js:880-958
 geoSat                       tests/90b2-geom.js:51
-geoScreens                   tests/90b2-geom.js:830-856
+geoScreens                   tests/90b2-geom.js:830-858
 geoSelf                      tests/90b2-geom.js:707-820
-geoSettle                    tests/90b2-geom.js:876
+geoSettle                    tests/90b2-geom.js:878
 geoShape                     tests/90b2-geom.js:128-132
-geoShut                      tests/90b2-geom.js:867
-geoSig                       tests/90b2-geom.js:860-863
+geoShut                      tests/90b2-geom.js:869
+geoSig                       tests/90b2-geom.js:862-865
 geoStation                   tests/90b2-geom.js:825
 geoSty                       tests/90b2-geom.js:351
 geoTable                     tests/90b2-geom.js:829
@@ -5784,7 +5807,7 @@ natSwarmTick                 src/12az-fx-nat.js:50-65
 navAction                    src/15-input.js:286-303
 near                         tests/90-harness.js:195
 nearestPOI                   src/20a-poi.js:243-248
-nearestStation               src/12-economy.js:301-316
+nearestStation               src/12-economy.js:302-317
 nebula                       src/16-flight.js:82-96
 needAll                      src/12aa-need.js:25
 needBlock                    src/12aa-need.js:144-172
@@ -5880,6 +5903,9 @@ occTick                      src/13b-occupy.js:77-135
 odo                          src/11d-place.js:24
 odoAdd                       src/11d-place.js:26
 odoSum                       src/11d-place.js:25
+offCap                       src/28k-offline.js:16
+offSay                       src/28k-offline.js:55-59
+offSpan                      src/28k-offline.js:17-22
 offerAdd                     src/11ah-offer.js:113-127
 offerAge                     src/11ah-offer.js:69
 offerCaravDone               src/11ah-offer.js:350-358
@@ -7457,9 +7483,9 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:412-431
-sellCargo                    src/12-economy.js:181-206
-sellDroneYield               src/12-economy.js:207-215
-sellQuote                    src/12ab-hold.js:109-118
+sellCargo                    src/12-economy.js:181-207
+sellDroneYield               src/12-economy.js:208-216
+sellQuote                    src/12ab-hold.js:109-124
 setBig                       src/27z-telemetry.js:145-151
 setPair                      src/27z-telemetry.js:160-165
 setPct                       src/27z-telemetry.js:135-141
@@ -7680,9 +7706,9 @@ stTabBoard                   src/26e-ui-station-trade.js:11-148
 stTabFuse                    src/26b-ui-station-work.js:389
 stTabInstr                   src/26b-ui-station-work.js:231-388
 stTabLab                     src/26b-ui-station-work.js:320-388
-stTabMarket                  src/26e-ui-station-trade.js:149-276
+stTabMarket                  src/26e-ui-station-trade.js:149-277
 stTabMods                    src/26b-ui-station-work.js:105-388
-stTabYard                    src/26e-ui-station-trade.js:277-430
+stTabYard                    src/26e-ui-station-trade.js:278-431
 stTabsHere                   src/26-ui-station.js:175
 stTypeOf                     src/06-galaxy.js:69
 stackSmoke                   src/17c-system-draw.js:298-311
@@ -7909,7 +7935,7 @@ theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:355-449
+tickDrones                   src/12-economy.js:356-450
 tickLaunchHold               src/21-mode-surface.js:660-673
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
@@ -8215,7 +8241,28 @@ warrantyOn                   src/05b1-warranty.js:14
 warrantyRegVoid              src/05b1-warranty.js:16
 warrantyShift                src/05b1-warranty.js:13
 wasBlurred                   src/15-input.js:215
+watchAllot                   src/28j-watch.js:139-169
+watchBack                    src/28j-watch.js:181-195
 watchCrew                    src/27b-ui-crew.js:34-44
+watchDisp                    src/28j-watch.js:51-57
+watchFreeze                  src/28j-watch.js:197-205
+watchHand                    src/28j-watch.js:171-180
+watchHanded                  src/28j-watch.js:82
+watchHas                     src/28j-watch.js:68
+watchIn                      src/28j-watch.js:58
+watchJudge                   src/28j-watch.js:98-126
+watchMenuSync                src/28j-watch.js:298-308
+watchMenuTap                 src/28j-watch.js:309-320
+watchName                    src/28j-watch.js:49
+watchNeedAt                  src/28j-watch.js:70-76
+watchNpc                     src/28j-watch.js:81
+watchNpcRate                 src/28j-watch.js:77-80
+watchReassign                src/28j-watch.js:128-137
+watchSection                 src/28j-watch.js:239-268
+watchSeed                    src/28j-watch.js:48
+watchSt                      src/28j-watch.js:34-47
+watchStations                src/28j-watch.js:59-67
+watchTick                    src/28j-watch.js:84-97
 waterAlga                    src/21e-surface-draw.js:210-214
 waterAlgae                   src/21e-surface-draw.js:203-209
 waterDeepAt                  src/21e-surface-draw.js:216-220
@@ -8657,7 +8704,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/12-economy.js · 32 KB
   · живой рынок:1
-  · дроны:217
+  · дроны:218
 
 ## src/12a-crew.js · 46 KB
   · наёмники: флот, которым не управляешь напрямую:1
@@ -8670,7 +8717,7 @@ zoomTo                       src/15-input.js:358
 ## src/12aa-need.js · 21 KB
   · нужда станции и наряд:1
 
-## src/12ab-hold.js · 10 KB
+## src/12ab-hold.js · 11 KB
   · холдинг · часы слоя и «БЕРЁТ»:1
 
 ## src/12ac-bld.js · 18 KB
@@ -9788,7 +9835,7 @@ zoomTo                       src/15-input.js:358
 ## src/26d-ui-wanderer.js · 5 KB
   · пульт «Сороки»: карточка витрины перед вами (M343):1
 
-## src/26e-ui-station-trade.js · 32 KB
+## src/26e-ui-station-trade.js · 33 KB
   · станция: доска, рынок и док (выделено из 26, M415):1
 
 ## src/26e1-stapel.js · 15 KB
@@ -9955,6 +10002,12 @@ zoomTo                       src/15-input.js:358
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
 
+## src/28j-watch.js · 20 KB
+  · участок, норма, сдача смены (M905 · DESIGN-game §3.2, §3.4, §10.2, §10.3, §10.5):1
+
+## src/28k-offline.js · 4 KB
+  · без присмотра: дроны на 60 %, не больше часа яруса (M905 · DESIGN-game §10.5):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10075,6 +10128,12 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw8-bill.js · 9 KB
 
 ## tests/91zzzw9-dep.js · 2 KB
+
+## tests/91zzzw9a-faucet.js · 3 KB
+
+## tests/91zzzw9b-watch.js · 8 KB
+
+## tests/91zzzw9c-offline.js · 3 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

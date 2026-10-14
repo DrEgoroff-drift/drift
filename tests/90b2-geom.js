@@ -836,7 +836,9 @@ function geoScreens(){
   for(const t of st)L.push({name:"станция/"+t,open:()=>{geoRich();return geoStation(t);},restore:()=>geoStation(t),body:"#stBody",dd:"st/"+t});
   for(const t of tb)L.push({name:"стол/"+t,open:()=>{geoRich();return geoTable(t);},restore:()=>geoTable(t),body:"#tableBody",dd:"tb/"+t});
   const menu=()=>{toggleMenu(true);return true;};
-  L.push({name:"меню",open:()=>{geoRich();return menu();},restore:menu,body:"#menu",dd:"menu"});
+  L.push({name:"меню",open:()=>{geoRich();G.flownMs=2*FIRST_HOUR_MS;return menu();},restore:menu,body:"#menu",dd:"menu"});
+  /* сданная смена (M905, 28j): у пункта меню самая длинная подпись — кто держит и где принять */
+  L.push({name:"меню · смена сдана",open:()=>{geoRich();G.flownMs=2*FIRST_HOUR_MS;watchHand();return menu();},restore:menu,body:"#menu",dd:"menu"});
   /* окна .scr, куда не ведут ни вкладки, ни тычки: открыватели по имени (typeof — сборка без
      окна обход не роняет). Окно, которого зрение так и не видело открытым, — слепое пятно (geoRun) */
   const fn=(n,...a)=>typeof window[n]==="function"&&window[n](...a)!==false;

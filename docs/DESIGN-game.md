@@ -650,12 +650,24 @@ now; **every unit past it pays −35 % at once** (today's pressure floor, reache
 instead of over 70 units), recovering with the 3 h half-life. Oracle: a «Вьюк» opening lap
 ≤ 900 cr/min; a «Стриж» lap unchanged (its 40 units sit inside appetite).
 
+**Built 14.10 (0.497.0).** The faucet applies to the goods a station eats; what it does not eat
+keeps the old half-percent pressure, so the surplus is carried to where nobody ate it. Measured:
+−5…6 % gross on every tier (the probe's bulk iron and silicon already sell where nobody eats
+them), a «Вьюк» lap 350 cr/min. The §4.5 seasons were never built; nothing was cut.
+
 ### 10.5 Offline and quitting
 
 Offline drain is capped at **one hour of tier net** regardless of time away; passive income
 (drones, workshops) runs at 60 % to the same cap. On every quit, the menu's one tap is
 «СДАТЬ СМЕНУ» (default) or «ОСТАВИТЬ ЗА СОБОЙ»; handed over, nothing runs and nothing is owed.
 Taking the watch back costs a shift's minute at any counter and the диспетчер's line.
+
+**Built 14.10 (0.497.0).** People were already online-only (`12a-crew`, the author 11.09) and the
+bill caps its offline lines at an hour, so the drain cap holds by construction. Drones were the
+one passive income with a day's catch-up at full pay: a catch-up now pays 60 % up to one hour of
+tier net (`28k-offline`). A browser game has no quit to hook, so СДАТЬ СМЕНУ is a menu item from
+the paper hour; the relief (сменщик) holds the watch, not the диспетчер. The norm is judged only
+over played need windows: a сводка lived offline is not judged at all.
 
 ### 10.6 Combat gets its second verb
 
@@ -686,7 +698,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
 | M903 | the economy probe `tests/91zzzw4-ecosim.js` — **measured 14.10, §4.1a**: net 2.6–3.7× the oracle, U/G .06–.24 | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
 | M904 | the bill (§10.1) and manager wages to the player — **a done 14.10 (0.494.0, T2 U/G .22, T3 .36)**; b the ledger (§5.2) and c Страхкасса with hull loss (§5.1) **done 14.10 (0.495.0)** — debt is its own number, not credits below zero (twenty `min(credits, x)` sites); d the gross lever and the bad hour **done 14.10 (0.496.0, §4.1a): good T2 hour +14 900, uninsured wreck −14 500** | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
-| M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) | the bot's norm moves with filled needs; handover stops every clock |
+| M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) **done 14.10 (0.497.0)**: `28j-watch`, `28k-offline`, the faucet in `12ab-hold` | the bot's norm moves with filled needs; handover stops every clock |
 | M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
 | M907 | the dispatcher generator (§4.3) | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |
 | M908 | access gates and the 30 rungs (§4.4) | no rung silent; «Мамонт» refused without clearance III + sponsor |

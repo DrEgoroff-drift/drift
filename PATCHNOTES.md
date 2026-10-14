@@ -6,6 +6,56 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.497.0 - the watch (M905): participation, norm, handover, the faucet
+
+DESIGN-game §3.2–3.4, §10.2–10.5. Until now nothing at the top of the game said what to do next:
+a player who had everything had no business left.
+
+- **The participation (`src/28j-watch.js`).** The player's участок is the 5×5 systems around the
+  place the trassa took them on (the home, for old saves): a name like «55-Ж» and its stations.
+  Every сводка (6 h) the plan writes the norm — the share of needs on those stations filled in
+  time: by the player's sales, by barges (their share falls with the system's danger, none under
+  blockade), plus orders delivered there. Only played need windows count, at least two per
+  сводка, so time offline never spoils the norm. One line on the board and in the record book.
+- **Two thresholds, one consequence each (§10.2).** Below 60 %: a срыв line in ГЛАВТРАССА's
+  voice. Three running: the farthest station goes to a neighbour's watch and its people stop
+  naming the player (the 11ah door). At 90 % or more three running: an allocation — the lost
+  station back first, else the next hull up (list price ≤ 15 000, worn .55), else a module step.
+  Credits never.
+- **The dispatcher (§10.3).** One person per participation, a face from the person generator and
+  a name that fits it (a bearded face never gets a woman's name). The plate «УЧАСТОК» stands first
+  in the К ВАМ lane: the first meeting, the last norm, the past сводки, the handover.
+- **Handing the watch over (§3.4, §10.5).** One tap in the menu, СДАТЬ СМЕНУ, from the paper hour
+  on, or on the plate. While handed over nothing runs and nothing is owed: no bill, wages, hands,
+  managers, drones or norm, and only «Стриж» is insured. A named relief holds the watch; taking it
+  back is at any counter, with his line about what he found.
+- **Unattended drones (`src/28k-offline.js`, §10.5).** A drone tick after more than a minute
+  without one is a catch-up without the player: the same trips, but 60 % of the takings and at
+  most one hour of the tier's net (half the mutual-fund floor). One line says what was sold and
+  what came in. People were online-only already, and the bill caps its offline lines at an hour.
+- **The faucet (§10.4, `src/12ab-hold.js`).** What a station eats, past the shift's norm, sells at
+  the pressure floor at once (−35 % instead of after seventy units), and the pressure stays there,
+  resting with the 3 h half-life. Goods a station does not eat keep the old half-percent step. The
+  hold row and the board say what the surplus fetches. The seasons of §4.5 were never built, so
+  there was nothing to cut.
+- **Fixed before it shipped:** the participation first lived in `G.watch`, which is the camera
+  following a hired hand (`27b`, `27n`) and wipes anything that is not a hand's id.
+
+Measured, one hour per tier (gross / upkeep / net, cr/h):
+
+| tier | 0.496.0 | now | oracle §4.1 |
+|---|---|---|---|
+| T0 Стриж | 10 429 / 3 607 / 6 822 | 9 853 / 3 607 / 6 246 | 7 200 / 2 800 / 4 400 |
+| T1 Вьюк | 24 458 / 3 246 / 21 212 | 23 145 / 3 246 / 19 898 | 21 300 / 7 400 / 13 900 |
+| T2 Обод, insured | 26 805 / 11 933 / 14 871 | 25 328 / 11 933 / 13 394 | 37 200 / 23 000 / 14 200 |
+| T3 Мамонт, insured | 26 365 / 19 448 / 6 917 | 24 962 / 19 448 / 5 514 | net 12 700 |
+| T2, uninsured wreck | 20 235 / 34 771 / −14 535 | 19 586 / 34 771 / −15 185 | negative |
+
+The faucet bit only ice and organics at a trade station; the probe's bulk iron and silicon go
+where nobody eats them. Every tier lost 5–6 % of gross, and a «Вьюк» lap pays 350 cr/min against
+the §10.4 ceiling of 900. Suites: «участок» (11), «сдача смены» (17), «кран аппетита» (6),
+«без присмотра» (7); the vision walks the menu with the watch handed over and not.
+
 ## 0.496.0 - the dear vein is a find (M904d): the gross lever and the bad hour
 
 DESIGN-game §4.1a. The probe (M903) found the mining loop paying 2.6–3.7× the model, and the money
