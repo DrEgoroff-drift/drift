@@ -154,7 +154,7 @@ function cave3Globals(a,F,vp,lamp,w,h){
   a.set([F.clipY||0,F.clip||0,F.cutZ,K.fog],92);
   a.set([K.amb[0],K.amb[1],K.amb[2],F.bed],96);
   a.set([K.fogC[0],K.fogC[1],K.fogC[2],.08/F.sunRange],100);
-  F.lights.slice(0,12).forEach((q,k)=>{a.set([q.p[0],q.p[1],q.p[2],q.r],104+k*4);a.set([q.c[0],q.c[1],q.c[2],0],152+k*4);});
+  F.lights.slice(0,12).forEach((q,k)=>{a.set([q.p[0],q.p[1],q.p[2],q.r],104+k*4);a.set([q.c[0],q.c[1],q.c[2],q.core?0:1],152+k*4);});   /* w: огонь события, не фонаря */
   F.glows.slice(0,6).forEach((q,k)=>{a.set([q.p[0],q.p[1],q.p[2],q.k],200+k*4);a.set([q.c[0],q.c[1],q.c[2],q.s||1.4],224+k*4);});
   a.set(F.mouth,248);
   a.set([F.lean[0],F.lean[1],F.surfY,F.reach],252);
@@ -225,5 +225,6 @@ function cave3GpuFrame(F){
   const sp=gpuScene();
   if(!sp)return false;
   sp.setPipeline(P.comp);sp.setBindGroup(0,B.comp);sp.draw(3);
+  GPU.hiScene=true;   /* финал движка не режет кадр на единице (08b dn.z = 2) */
   return true;
 }

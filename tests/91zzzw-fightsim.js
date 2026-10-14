@@ -12,9 +12,9 @@
    Штурвал подменяется на время набора: сценарий пишет G.ctl сам, как писал бы
    стик (assist = «лети туда») или клавиши; нос с меткой идёт за меткой (D07). */
 suite("проба · дуэль",{tier:"probe"},()=>{
-  const QUICK=(typeof process!=="undefined"&&process.env&&process.env.FIGHT_QUICK)?1:0;
-  const TRACE=(typeof process!=="undefined"&&process.env&&process.env.FIGHT_TRACE)?1:0;
-  const PICK=(typeof process!=="undefined"&&process.env&&process.env.FIGHT_PICK)?new RegExp(process.env.FIGHT_PICK):null;
+  const QUICK=(globalThis.process&&globalThis.process.env&&globalThis.process.env.FIGHT_QUICK)?1:0;
+  const TRACE=(globalThis.process&&globalThis.process.env&&globalThis.process.env.FIGHT_TRACE)?1:0;
+  const PICK=(globalThis.process&&globalThis.process.env&&globalThis.process.env.FIGHT_PICK)?new RegExp(process.env.FIGHT_PICK):null;
   const FR=60,MAXF=120*FR;
   const helm0=helmTick,fire0=fireShot,hit0=hitShip,phit0=playerHit,wreck0=wreck,kill0=killPirate;
   let M=null,SCRIPT=null;

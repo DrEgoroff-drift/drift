@@ -397,44 +397,107 @@ is what the something was.
 
 ---
 
-## 8. Combat — what is wrong and what «good» means
+### 7.4 The story as it will be played — the eight parts on the watch (second pass, 09.10)
 
-The design of `DESIGN-war.md` §1–§5 is right and most of it is built (M360–M388: helm on three
-inputs, seven-number guns, roles by rank, energy, three shields, owners on shots). The author
-still says «херовая». The code says why: `PLAN.md:262` — «six duels against a rank-2 pirate
-(160 hp) kill nothing in 60 s at any yard, and the damage taken does not follow hull size»; the
-0.409.1 review — the layer shot at the wrong targets. So the fault is not design; it is that
-**nobody has measured a fight.** `tests/fightsim.js` (M901, in work) runs the real helm, guns
-and roles under Node for scripted players (dummy / turret / kiter / flanker) and prints time to
-kill, hits/shots, hull left, by hull × gun × rank × danger. The numbers come first; the targets
-below are what they must meet.
+§7.3 changed triggers. The author said «сюжет нужен, посмотри наш который есть» — so this is
+the existing story (`docs/saga/КНИГА.md`, 72 chapters in eight parts, the value **НАЗВАН / НЕ
+НАЗВАН**, the two ledgers «вселенная прощает, люди помнят», the four turns, the lamp) laid
+over the shift of §2–§5, part by part. Nothing new is written; the shift is what makes each
+part *playable* instead of *read on a landing*. The rule that binds every row: the player is
+never told the value's name. He is named, or he is not, and the work is the same either way.
 
-**What a good fight is here** (one sky, phone first, no Starsector): a jackal at danger .3 dies
-to a stock «Стриж» in **8–14 s** of firing with the nose on him; the player loses **≤ 25 %** hull
-in that 1v1 if he turns, **≥ 60 %** if he sits (the turret script); two jackals are survivable only
-by flanking (the flanker script wins ≥ 70 %, the turret loses ≥ 70 %); a veteran needs the rear
-rule — from the front the fight is 40 s+, from behind 15 s; a captain cannot be caught by a
-«Стриж» and should not be (he leaves; the bounty is gone); a baron is a crowd's job. A T2 hull
-with a tier-2 gun halves every number. Hit rate of the autofire on a crossing jackal **35–55 %**
-(not 10, not 90). Energy empties in a 1v1 at most once.
+| part (chapters) | what the book does | what the watch does — and which M builds it |
+|---|---|---|
+| **I. Подряд** (1–9) | he learns the work; his name is said once; the first line in the ledger nobody keeps | the first watch (§10.7, M909): two addressed items by minute 2, the urgent one by minute 6, the first «Сдать смену?» on the first quit. The one number per chapter the book demands is the shift's: the bill of the first hour is *one line* (fuel), and the dispatcher reads it aloud. Chapter 3 «Почтовый круг» is the mail circle (`11e-post`) — the first *named* offer, and the one place where the ledger shows for a second (the old man writes your call sign under his). Door for II: a norm ≥ 90 % on any сводка |
+| **II. Плечо** (10–18) | he is good; the people who stay appear | the four (`12u-folk`: Гуся, Рыба, Гвоздь, Птица) are *on your participation* — they take your orders as hands (M911: the fork «take / send a hand»), and the bill's people-lines (§10.1) are *their* lines. Гуся never flies: his order is the one you must carry yourself. Door for III: a hand ransomed, or a named offer taken |
+| **III. Соседи** (19–27) | the first big opportunity and the first real failure; nobody is angry | an order lapses into a face (§3.2 G2): the first time the dispatcher's line is «ничего для вас нет» after a missed clock — and he greets you as warmly as before. The three просёры (`27d` cantina hours, Птица, `11t` rumours) close doors the same way: the named offers from that person stop, nothing else changes. Door for IV: a door shut in your face |
+| **IV. Счёт** (28–36) | doors close one by one; none slams | the bill (M904) and the ledger (§5.2): the first negative hour is this part. The debt floor is voiced by the dispatcher in the book's register — no «долг», one line about the Касса. Chapter 35 «Счёт» *is* the bill's first full paper. Door for V: a срыв survived |
+| **V. Прибой** (37–45) | he compares logs and sees what he missed for years | the misclosure of act 2 (M155): the norm's сводка and the ledger disagree in one region — the tapes against the sky. Chapter 36 «Своя невязка» is the player's own: the bill says one thing, the plan says another, and the Глобус's second hand points at nothing. Door for VI: a notch found (§7.2) |
+| **VI. Раскол** (46–54) | **the Blade**: he goes for Гуся knowing the fuel will not bring him back; nobody asked; Рыба comes, who does not sleep | §5.1 is what makes the Blade possible at all: the hull can be lost, so the run is real. Once per game: Гуся is stranded on a world past your fuel; no order, no plate, one line from Рыба on the receiver. If you go and the fuel runs out, Рыба tows you — the one rescue the game ever hands you, and the «Стриж» по разнарядке is *not* offered that time. The captain (§8) is this part's pirate: you cannot kill him, you leave or you pay. Door for VII: the Blade taken, either way |
+| **VII. Тишина** (55–63) | the expedition leaves; nobody names him; the work is the same | the dispatcher goes with the expedition (§10.3): no more addressed items from him, the board still fills by arithmetic (§4.3), the norm still counts. «Есть место» (chapter 61) is the ending the participation offers after a year of ≥ 90 % — leaving is a door, not a reward. Solitude is allowed *only here*, and it is made of the absence of one voice, not of empty systems |
+| **VIII. Тихоня** (64–72) | debts return in the wrong order; he stops being the named one and becomes the one who names | the handover (§3.4): the player's сменщик is one of the four, named by the player; «По списку восьмой» is said *at his side* to someone else (turn 3). Тихоня's hundred notches are the obelisk grammar (§7.2): the eighth column, «кто принял», is empty until the player leaves his mark for a stranger (Q12). The record book is written by others (M161); the board grounds him — he signs it. The finale is the nights-at-home counter (Q11): the game has counted them from minute one and nearly everyone's is zero |
 
-**Five things to do after the numbers** (M902, briefed from the sim):
+**Three laws this pass adds to the shift** (they come from the book, and §2–§5 must obey them):
 
-1. **TTK.** Pirate HP `(26+70·danger)·rank` against stock dmg — find the pair of numbers that
-   gives 8–14 s; the fix is in `dmg`/`cool` of the stock gun and the weapon mod tiers, not in
-   pirate HP (the roles depend on HP shares).
-2. **Aim.** The barrel inside the cone leads at «скорость наводки»; the crossing-target miss
-   function `f(angular velocity)` is where 10 % hit rates hide. Measure, then set the stock gun's
-   cone/track so a jackal's dash is hittable on the way in and out.
-3. **Readability.** The rank on the hull before the fight (L7 of the war laws: 8 px, half a
-   second); the shield type by where it glows; the rear-hit ×1.6 shown as a brighter hit; the
-   jackal's break-off telegraphed by his burn. The fight should be readable with the HUD off.
-4. **The duel room.** The стрельбище at yards becomes the test: every yard sells a 60-second
-   duel against each rank for 50 cr; the sim's targets are its pass marks; the bot runs it in
-   CI (`91zzzw-duel`).
-5. **Stakes.** With §5.1 the fight has a cost. The rank on the hull is G1; the «Стриж» по
-   разнарядке is G3; the bounty stays small, the salvage (the tow after a kill, `17-mode-system.js:380`)
-   is the money — a captured hull is access (§4.4), not credits.
+1. **The dispatcher is not one more voice — he is the watch's «я тебя назвал».** Every addressed
+   item on К ВАМ is him naming you; every lapse is him *not* naming you next time, in the same
+   warm tone. He must be one of the book's registers, not a fifth type: he is the clerk of the
+   regional plan (§10.3), he leaves in VII, and his 72 lines are the chapters' plates. His name
+   is never asked; the player learns it from the record book in VIII, the way the player's own
+   name is learned.
+2. **The bill is never the story's villain.** The book's cruelty is that nobody reproaches; so a
+   negative hour, a lost hull, a lapsed order get one line of weather, never a sermon. The
+   «ПОМЕХА» and «ЗАКРЫТО» voices of §3 are the book's «ничего для тебя нет» and must sound like it.
+3. **The ledger nobody keeps is the kindness ledger (`11ai`), and it stays invisible.** The
+   shift adds deeds to it (a stranger's bill paid, the Blade, a hand given away before the
+   norm) and never shows a number. Turn 2 of the book — «к полётам не допущен» is his eighth
+   column — is the one time it is read back, in VIII, by the board.
+
+**What this costs the queue (§10.8):** M905 (the dispatcher) gets the rule that his lines are
+drawn from the chapter table (`12ud-smena-text`, `SMENA_TITLE`) by part, not written new; M909
+(the first watch) owns chapters 1–9; M910 becomes «parts II–VIII on the watch» with the door
+table above as its test (a save at part N opens N+1 only through the named door, and the probe
+drives the deed); M911 adds the Blade as a scripted once-per-game run. Nothing else grows.
+
+---
+
+## 8. Combat — measured, fixed, and what «good» means
+
+The design of `DESIGN-war.md` §1–§5 is right and most of it is built (M360–M388). The author
+still said «херовая». The fault was not design; it was that **nobody had measured a fight**.
+`tests/91zzzw-fightsim.js` («проба · дуэль», M901, 09.10) runs the real helm, guns, roles and
+shot loop under Node for six scripted players (dummy / turret / kiter / flanker / orbiter /
+leaver) against four sets (one jackal, two, a veteran, a captain) on three dangers and four
+builds («Стриж» w1, «Стриж» w2, «Вьюк» w2, «Топор» w3), 257 rows in 40 s. Run it after a
+build: `node test-node.js --only="проба · дуэль"` (`FIGHT_QUICK=1`, `FIGHT_TRACE=1`,
+`FIGHT_PICK="topor w3 капитан 0.5 flanker"`).
+
+**What the probe found on the first run (all fixed in 0.493.0–0.493.1, M902a/b):**
+
+1. **The pirate speed cap never held.** `ROLE_LIM` was applied and then overwritten by the
+   nose-blend block with the old magnitude. A fleeing jackal reached 21 px/frame against a cap
+   of 5.2 — 58 000 px in two minutes — and nobody noticed because nobody measured.
+2. **The flee jump never fired.** It lived inside the role tick, which runs only while the
+   pirate sees you; the runner left sight before his clock and flew for ever. `roleJumpDue` now
+   fires from `13-pirates` whether he sees you or not.
+3. **The captain could not be fought by anyone.** His jammer removed the lock within 600 px
+   (nobody aiming by mark could shoot at all), he turned at 170°/s with a front shield, and he
+   backed away for ever under 700 px — there was no side to reach. Every build from «Стриж» to
+   «Топор» w3 died in 120 s with 0 hits. Now: the jammer keeps the mark and slips the aim (half
+   lead, ±4°, «ПОМЕХА · НАВОДКА ПЛЫВЁТ»), he turns at 41°/s, backs off only under 400 px and
+   holds ground between 400 and 700.
+
+**Measured after the fixes (danger .5 unless said; «Стриж» w1 = stock):**
+
+| fight | stand still | flank / orbit | leave |
+|---|---|---|---|
+| 1 jackal | 5–9 s, −27 % hull; at .5 he flees under a quarter | 9–17 s, −1…−14 % | clear in 16 s, −27 % |
+| 2 jackals | −69 % at .5, dead at .8 | 19–28 s, −3…−22 % | clear in 17 s, 0 % |
+| veteran | dead at .5 and .8; −66 % at .2 | 10–18 s from behind, −0…−6 % | clear in 8 s, 0 % |
+| captain | dead on every build | «Стриж» drives him off in 30–38 s at −28…−38 %; «Топор» w3 kills in 15–25 s at −11…−27 %; «Вьюк» dies | clear in 10 s, one missile: −20…−50 % |
+
+Hit rate of the autofire 30–60 % on crossing targets, 75–100 % on a dummy; the energy bar
+never emptied in any row. Kiting (nose on him, flying away) fires almost nothing and is the
+wrong verb — leaving is the verb, and it works.
+
+**What «good» means, re-stated against the table:** a stock ship *wins by flying*, not by
+sitting — met on every set but the captain, and the captain is a «leave or pay» encounter for
+a «Стриж» and a kill for a warship, as §2 wanted. The remaining gaps:
+
+- **TTK at danger .2 for a slow hull.** A «Вьюк» w2 at .2 against one jackal reaches neither a
+  kill nor a flight in 120 s when it flies (the jackal breaks past 650 px and the slow hull never
+  closes); the same rows at .5 resolve in 10–17 s. Wanted: the jackal's break returns to a dash
+  within 3 s wherever he is — measure after M902c.
+- **The bounty.** Under a quarter a lone pirate runs and jumps in 3–4 s; a stock gun at 19 dmg/s
+  catches him about half the time. That is by design (the chase is the last 4 s of every
+  fight), but the player must *see* the jump coming: his burn, and «уходит» on the plate (G2).
+- **Readability** (unchanged from the first draft): rank on the hull before the fight (L7:
+  8 px, half a second), shield type by where it glows, the rear-hit ×1.6 as a brighter hit, the
+  jackal's break telegraphed by his burn. Readable with the HUD off.
+- **The duel room.** The стрельбище at yards becomes the test the player can buy: a 60-second
+  duel against each rank for 50 cr, the probe's rows as its pass marks.
+- **Stakes.** With §5.1 the fight has a cost; the salvage (the tow after a kill) is the money, a
+  captured hull is access (§4.4), the bounty stays small.
 
 ---
 
@@ -552,7 +615,7 @@ Taking the watch back costs a shift's minute at any counter and the диспет
 
 ### 10.6 Combat gets its second verb
 
-Everything in §8 stands, plus **«ОТПУСТИТЬ»** (phone: the ЦЕЛЬ button held; keyboard: X):
+Everything in §8 stands (the three bugs are fixed and the table is measured), plus **«ОТПУСТИТЬ»** (phone: the ЦЕЛЬ button held; keyboard: X):
 drop one chosen hold slot as a pod, the locked pirate takes it and jumps, the fight is over,
 one line in КНИЖКА in his voice. A jackal takes any pod; a veteran wants the dearest; a captain
 takes the pod *and* a hand if you carry one; a baron does not deal. The pod is the fight's
@@ -575,8 +638,8 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 
 | M | what | gate |
 |---|---|---|
-| M901 | `tests/fightsim.js` — the duel measured under Node (in work) | the table of TTK / hits / hull by hull × gun × rank × danger |
-| M902 | combat tuning + readability + «ОТПУСТИТЬ» (§8, §10.6) | the §8 targets as `91zzzw-duel`; the стрельбище sells the duel |
+| M901 | `tests/91zzzw-fightsim.js` — the duel measured under Node — **done 09.10** | the table of TTK / hits / hull by hull × gun × rank × danger |
+| M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
 | M903 | `tests/ecosim.js` — three hours per tier under Node, gross/upkeep/net | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
 | M904 | the bill (§10.1), manager wages to the player, insurance, the ledger (§5.2), hull loss (§5.1) | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
 | M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) | the bot's norm moves with filled needs; handover stops every clock |

@@ -265,9 +265,11 @@ fn overlay(b:vec3f,s:vec3f)->vec3f{return select(1.-2.*(1.-b)*(1.-s),2.*b*s,b<ve
     f=sil(v.uv,f,tone(hs),tone(sceneAt(v.uv+rn.xy*6./u.css)),rn.z,hk);}}
   /* шахта и пещера — передний 2D-слой main: канал упирается в единицу сам по себе, и тёплое
      поверх холодного луча желтеет, а не белеет (GPU_FRONT_LIKE; свечение берёт сцену целиком) */
-  if(u.dn.z>.5){hs=min(hs,vec3f(1.));}
+  /* dn.z = 2: пещера на движке (22db) — сцена сведена своим плечом с обратным (unshoulder),
+     единица ей не потолок: ядро трещины и блики идут к белому */
+  if(u.dn.z>.5&&u.dn.z<1.5){hs=min(hs,vec3f(1.));}
   var h=hs*(1.-f.a)+f.rgb;
-  if(u.k>0.){h=h+u.k*.8*bloomAt(v.uv)*(1.-.6*max(f.a,u.dn.z));}
+  if(u.k>0.){h=h+u.k*.8*bloomAt(v.uv)*(1.-.6*max(f.a,min(u.dn.z,1.)));}
   /* засветка ядра: мелочь перед ядром звезды тонет в его свете, как в камере, — тёмная
      точка в центре читалась зрачком. max, не сумма: открытая звезда не меняется, крупный
      корпус держит силуэт за пределами ядра */
@@ -534,7 +536,7 @@ function gpuUni(){
   a[60]=Q?Q.cr:0;a[61]=Q?Q.cg:0;a[62]=Q?Q.cb:0;a[63]=Q?Q.t:0;
   const D=GPU.dz,nd=Math.min(8,D.length);a[64]=nd;a[65]=gpuHueFor(G.mode);
   /* кадр дороги открывается поверх любого режима: G.mode под ним — не его сцена */
-  a[66]=!P.clip&&GPU_FRONT_LIKE.has(G.mode)?1:0;a[67]=P.clip||0;
+  a[66]=!P.clip&&GPU_FRONT_LIKE.has(G.mode)?(GPU.hiScene?2:1):0;a[67]=P.clip||0;
   for(let i=0;i<8;i++)for(let j=0;j<8;j++)a[68+i*8+j]=i<nd?D[i][j]:0;
   GPU.dev.queue.writeBuffer(GPU.U,0,a);
 }
@@ -552,7 +554,7 @@ function gpuFrame(){
   ctx.setTransform(1,0,0,1,0,0);if(GPU.cState!==0)ctx.clearRect(0,0,GPU.bw,GPU.bh);ctx.setTransform(DPR,0,0,DPR,0,0);
   chipDomSweep();   /* слой #ovl — 08bh */
   GPU.on=true;GPU.wDone=false;
-  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
+  GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.overPass=null;GPU.sceneOn=false;GPU.emitOn=false;GPU.scene3D=false;GPU.hitK=0;GPU.hiScene=false;GPU.shaft=null;GPU.lens=null;GPU.lt.length=0;GPU.oc.length=0;GPU.dz.length=0;GPU.sep=0;GPU.sepH.length=0;
   return true;
 }
 /* проход сцены видеокарты: его открывает первый слой кадра, закрывает сборка.

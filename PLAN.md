@@ -17,6 +17,12 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 - **A fork in the design:** take the cautious variant and list it under «Disputed» in the stage's patchnote, so
   the author can overturn it.
 
+**Two programmes above the stages (09.10).** The remake of every picture on the engine is
+`docs/DESIGN-remake.md` (M800+, built by the three builder sessions, judged by the designer); the
+game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
+`docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
+and one of those two differ, the programme wins; M901 and M902a/b are done (0.493.x).
+
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
 optimise without losing quality, the ship stays under the finger.

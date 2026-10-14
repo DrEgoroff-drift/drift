@@ -81,6 +81,14 @@ fn lampAt(p: vec3f) -> vec4f {
   let hot = 1.0 + 0.7 * smoothstep(0.86, 1.0, cs);
   return vec4f(L, cone * att * hot);
 }
+/* то же для отсвета на листе разреза: свет пустоты рассеян, у конуса широкий полутон — иначе край
+   конуса режет лист под ногами вертикалью */
+fn lampWide(p: vec3f) -> vec4f {
+  let d = g.lampPos.xyz - p; let dl = max(length(d), 0.001); let L = d / dl;
+  let cone = smoothstep(g.lampDir.w - 0.45, g.lampCol.w, dot(-L, g.lampDir.xyz));
+  let att = pow(1.0 + dl / g.lampPos.w, -1.55) * (1.0 - smoothstep(g.skyHi.w, g.dayP.w, dl));
+  return vec4f(L, cone * cone * att);
+}
 /* цвет фонаря на камне: тёплый вблизи (лужа, ближняя стена), дальше — холодный серый той же силы,
    чтобы камень вне ближнего круга держал тон страницы; farK.yz — где тепло кончается */
 fn lampTint(p: vec3f) -> vec3f {
@@ -257,15 +265,27 @@ fn finish(x: f32) -> vec3f {
   return f;
 }
 /* огни без теней */
-fn points(wpos: vec3f, N: vec3f, even: f32) -> vec3f {
+fn points(wpos: vec3f, N: vec3f, even: f32, i0: i32) -> vec3f {
   var c = vec3f(0.0);
-  for (var i = 0; i < 12; i++) {
+  for (var i = i0; i < 12; i++) {
     let lp = g.ptPos[i];
     if (lp.w <= 0.0) { continue; }
     let d = lp.xyz - wpos; let dl = max(length(d), 0.001);
     let att = pow(clamp(1.0 - dl / lp.w, 0.0, 1.0), 2.0);
     let nl = mix(clamp(dot(N, d / dl) * 0.7 + 0.3, 0.0, 1.0), 1.0, even);
     c += g.ptCol[i].rgb * (att * nl);
+  }
+  return c;
+}
+/* только огни событий (ptCol.w = 1, 22db): кромка на человеке со стороны события */
+fn eventRim(wpos: vec3f, N: vec3f) -> vec3f {
+  var c = vec3f(0.0);
+  for (var i = 0; i < 12; i++) {
+    let lp = g.ptPos[i];
+    if (lp.w <= 0.0 || g.ptCol[i].w < 0.5) { continue; }
+    let d = lp.xyz - wpos; let dl = max(length(d), 0.001);
+    let att = pow(clamp(1.0 - dl / (lp.w * 1.6), 0.0, 1.0), 1.5);
+    c += g.ptCol[i].rgb * (att * smoothstep(-0.2, 0.6, dot(N, d / dl)));
   }
   return c;
 }
@@ -340,11 +360,11 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
       let Nr = normalize(Ni + vec3f(0.0, 0.0, -0.6));
       let q = in.wpos + Ni * (ex + 0.22) + vec3f(0.0, 0.0, 0.30);
       var light = g.amb.rgb * 0.8;
-      let ll = lampAt(q);
-      light += lampTint(q) * (ll.w * clamp(dot(Nr, ll.xyz) * 0.6 + 0.4, 0.0, 1.0) * lampShade(q, Nr, in.pos.xy));
+      let ll = lampWide(q);
+      light += lampTint(q) * (ll.w * clamp(dot(Nr, ll.xyz) * 0.6 + 0.4, 0.0, 1.0) * mix(0.35, 1.0, lampShade(q, Nr, in.pos.xy)));
       let dm = dayMask(q);
       if (dm > 0.001) { light += g.sunCol.rgb * (dm * clamp(dot(Nr, normalize(g.sunDir.xyz)) * 0.6 + 0.4, 0.0, 1.0) * sunShade(q, Nr, in.pos.xy)); }
-      light += points(q, Nr, 0.3);
+      light += points(q, Nr, 0.3, 0);
       c += vec3f(0.34, 0.31, 0.27) * light * (lip * 0.9 + wash * 0.10);
       c += in.col * light * (wash * 0.7);
     }
@@ -359,10 +379,13 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     if (dot(Nv, V) < 0.0) { Nv = -Nv; }
     let gr = 0.8 + 0.4 * vn3(in.wpos * vec3f(9.0, 9.0, 4.0), 29u);
     let top = clamp(dot(Nv, normalize(vec3f(-0.25, 0.75, -0.6))), 0.0, 1.0);
-    var c = in.col * gr * (0.06 + 0.08 * top + 0.26 * pow(top, 8.0));
+    var c = in.col * gr * (0.06 + 0.1 * top + 0.5 * pow(top, 10.0));
+    /* исподний бок шва уходит в тень подбоя: светлое только сверху, форма читается перепадом */
+    c *= mix(0.3, 1.0, smoothstep(-0.55, 0.25, Nv.y));
     let ll = lampAt(in.wpos);
     let hv = normalize(ll.xyz + V);
-    c += lampTint(in.wpos) * ll.w * (in.col * 0.35 * clamp(dot(Nv, ll.xyz), 0.0, 1.0) + vec3f(glow * 0.8 * pow(clamp(dot(Nv, hv), 0.0, 1.0), 40.0)));
+    /* блик гребня: фонарь до разреза доходит слабым — гребню дано больше, чем камню, он мокрый */
+    c += lampTint(in.wpos) * ll.w * (in.col * 0.35 * clamp(dot(Nv, ll.xyz), 0.0, 1.0) + vec3f(glow * 3.0 * pow(clamp(dot(Nv, hv), 0.0, 1.0), 30.0)));
     return vec4f(c * faceDim(in.pos.xy), 1.0);
   }
   /* нормаль на тонком стыке граней сходится в ноль: normalize дал бы NaN, а размытие свечения
@@ -473,7 +496,10 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
   if (mat == 7) { ao = mix(0.5, 1.0, smoothstep(0.0, 0.7, ex)); emis = glow; }
   if (mat == 2) { emis = glow; }
 
-  var c = alb * g.amb.rgb * (ao * ambK * mix(0.6, 1.25, N.y * 0.5 + 0.5));
+  /* зверю тьма пещеры светит снизу (отсвет пола), не сверху: спина темна, брюхо светлее */
+  var ambY = mix(0.6, 1.25, N.y * 0.5 + 0.5);
+  if (mat == 8) { ambY = mix(1.05, 0.5, N.y * 0.5 + 0.5); }
+  var c = alb * g.amb.rgb * (ao * ambK * ambY);
   let ll = lampAt(in.wpos);
   if (ll.w > 0.0005) {
     let ndl = dot(N, ll.xyz);
@@ -485,8 +511,9 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     var kb = 1.0;
     if (mat == 8) {
       lit = smoothstep(0.0, 0.65, ndl);
-      kb = 0.6 * mix(1.0, 0.45, smoothstep(0.1, 0.8, N.y));
-      c += alb * e * (0.22 * smoothstep(0.1, -0.7, N.y));
+      kb = 0.6 * mix(1.0, 0.18, smoothstep(0.05, 0.7, N.y));
+      /* отсвет идёт от пола, не от фонаря: тень тела его не гасит */
+      c += alb * lampTint(in.wpos) * vec3f(1.1, 0.95, 0.75) * (ll.w * 0.5 * smoothstep(0.2, -0.6, N.y));
     }
     c += alb * e * (lit * mix(1.0, ao, 0.6) * kb);
     let hv = normalize(ll.xyz + V);
@@ -524,11 +551,31 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
   }
   var even = 0.0;
   if (mat == 11 || mat == 15) { even = 0.35; }
-  /* огни фонаря у человека (пятно, свод, бок) светят зверя со всех сторон и плющат его — ему половина */
-  c += alb * points(in.wpos, N, even) * (mix(0.5, 1.0, ao) * select(1.0, 0.5, mat == 8));
+  /* человек (L2, M631): ноги — под шлемом (22d: фонарь в 1.71 м над полом, на .2 м вперёд) */
+  let face = select(-1.0, 1.0, g.lampDir.x >= 0.0);
+  let foot = g.lampPos.xyz + vec3f(-0.2 * face, -1.71, 0.17);
+  let fd = in.wpos - foot;
+  let isMan = mat == 4 && abs(fd.x) < 0.75 && abs(fd.z) < 0.7 && fd.y > -0.2 && fd.y < 2.1;
+  /* огни фонаря у человека (пятно, свод, бок) светят зверя со всех сторон и плющат его — ему половина.
+     Человеку разлив (первый огонь, он в шлеме) не светит: свет из головы плющил костюм в ровный оранжевый */
+  c += alb * points(in.wpos, N, even, select(0, 1, isMan)) * (mix(0.5, 1.0, ao) * select(1.0, 0.5, mat == 8));
   if (wet > 0.3 && mat != 4) { c += pointSpec(in.wpos, N, V, wet) * (wet * 0.8); }
   /* зверь отделяется от тьмы кромкой: свет события обводит край тела */
-  if (mat == 8) { c += points(in.wpos, N, 1.0) * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.5) * 0.7); }
+  if (mat == 8) { c += points(in.wpos, N, 1.0, 0) * (pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.5) * 0.7); }
+  if (isMan) {
+    /* бок к событию теплеет (или зеленеет у нитей), край костюма с той стороны горит его цветом */
+    let ev = eventRim(in.wpos, N);
+    c += alb * ev * 0.6 + ev * (pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 2.0) * 1.8);
+    /* ключ — отсвет конуса: грудь и шлем со стороны луча светлее, спина в тени; ноги темнее у пола */
+    let kd = normalize(vec3f(face, 0.15, -0.35));
+    c += alb * lampTint(g.lampPos.xyz) * (0.07 * smoothstep(-0.1, 0.8, dot(N, kd)) * smoothstep(0.6, 1.6, fd.y));
+    c *= mix(0.62, 1.0, smoothstep(0.05, 1.25, fd.y));
+  }
+  /* контактная тень человека: пол под ногами и в ладони вокруг темнеет */
+  if (mat != 4 && mat != 8) {
+    let ck = exp(-(fd.x * fd.x) / 0.12 - (fd.z * fd.z) / 0.09) * (1.0 - smoothstep(0.02, 0.4, abs(fd.y)));
+    c *= 1.0 - 0.7 * ck;
+  }
   c += alb * emis;
   /* на тонком стыке граней сумма света бывает меньше нуля — свет не бывает отрицательным */
   return vec4f(haze(max(c, vec3f(0.0)), in.wpos, 1.0), 1.0);
