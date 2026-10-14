@@ -461,7 +461,7 @@ function hud(){
   const $act=$actBtn||($actBtn=document.querySelector("[data-k=act]"));
   let actLbl="ДЕЙСТВИЕ", hasAct=false;
   if(G.mode==="belt"){actLbl="РЕЗАК";hasAct=true;}
-  else if(G.mode==="dig"){actLbl="ВНИЗ";hasAct=true;}   // в шахте копают в четыре стороны, вниз — на большой кнопке
+  else if(G.mode==="dig"){actLbl=(typeof mineActWord==="function"&&mineActWord())||"ВНИЗ";hasAct=true;}   // рудник (23cc): слово по месту — вниз, углубить, бурить, клеть
   else{
     /* «УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — БУРЕНИЕ» кнопка раньше не разбирала: образец
        требовал, чтобы строка НАЧИНАЛАСЬ со слова ДЕЙСТВИЕ. У залежи кнопка

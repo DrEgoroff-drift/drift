@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 588 · top-level symbols: 8407
+Files: 592 · top-level symbols: 8465
 
 ## SYMBOLS
 
@@ -479,6 +479,19 @@ DEV_KEEP                     src/21b4-base-build.js:19
 DIAL_KEYS                    src/21a8-base-world.js:25
 DIAL_RU                      src/21a8-base-world.js:26
 DIAL_WORLD                   src/21a8-base-world.js:14-24
+DIG3                         src/23c-dig-pln.js:13
+DIG3_BLOOM                   src/23c-dig-pln.js:195
+DIG3_CH                      src/23ca-dig-pln-rock.js:20
+DIG3_CM                      src/23ca-dig-pln-rock.js:17
+DIG3_DR                      src/23cb-dig-pln-dress.js:8
+DIG3_HF                      src/23c-dig-pln.js:46
+DIG3_LENS                    src/23c-dig-pln.js:18
+DIG3_OLD_DRAW                src/23c-dig-pln.js:194
+DIG3_OLD_WALK                src/23c-dig-pln.js:215
+DIG3_PPM                     src/23ca-dig-pln-rock.js:16
+DIG3_ROOM                    src/23ca-dig-pln-rock.js:19
+DIG3_VZ                      src/23ca-dig-pln-rock.js:67
+DIG3_Z                       src/23c-dig-pln.js:15
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_DARK_WGSL                src/23b-dig-gpu.js:150
 DIG_EMIT                     src/23b-dig-gpu.js:176
@@ -1336,10 +1349,14 @@ MGR_ROLE_KEYS                src/12c-mgr-core.js:19
 MGR_RULES                    src/12c-mgr-core.js:378-407
 MGR_TRAITS                   src/12c-mgr-core.js:23-46
 MGR_XP                       src/12c-mgr-core.js:138
+MINE                         src/23cc-mine-play.js:17
 MINERAL                      src/18a-material.js:32
+MINE_HALF                    src/23cc-mine-play.js:20
 MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
+MINE_OLD_UPDATE              src/23cc-mine-play.js:264
 MINE_R                       src/13a-guns.js:32
+MINE_V                       src/23cc-mine-play.js:22
 MIRROR_CORE                  src/11f-mirror.js:22-29
 MIRROR_DELAY                 src/11f-mirror.js:21
 MIX_KIN                      src/02a-worldmix.js:19-31
@@ -3638,6 +3655,34 @@ dialOreMul                   src/21a8-base-world.js:157
 dialQuake                    src/21a8-base-world.js:155
 dialWind                     src/21a8-base-world.js:154
 dialWords                    src/21a8-base-world.js:125-130
+dig3CageMesh                 src/23cb-dig-pln-dress.js:69-88
+dig3Chunk                    src/23ca-dig-pln-rock.js:173-268
+dig3Chunks                   src/23ca-dig-pln-rock.js:272-312
+dig3Den                      src/23ca-dig-pln-rock.js:87-106
+dig3Dir                      src/23c-dig-pln.js:38-42
+dig3DressFrame               src/23cb-dig-pln-dress.js:106-125
+dig3DressMesh                src/23cb-dig-pln-dress.js:13-66
+dig3Dug                      src/23ca-dig-pln-rock.js:23
+dig3Field                    src/23ca-dig-pln-rock.js:30-56
+dig3Floor                    src/23cb-dig-pln-dress.js:12
+dig3Frame                    src/23c-dig-pln.js:70-170
+dig3Ground                   src/23ca-dig-pln-rock.js:58
+dig3Hall                     src/23ca-dig-pln-rock.js:25
+dig3Hash                     src/23ca-dig-pln-rock.js:22
+dig3HeadMesh                 src/23c-dig-pln.js:47-68
+dig3Land                     src/23ca-dig-pln-rock.js:60-65
+dig3Lens                     src/23c-dig-pln.js:20-27
+dig3ManShare                 src/23c-dig-pln.js:29
+dig3Nodes                    src/23ca-dig-pln-rock.js:108-119
+dig3Over                     src/23c-dig-pln.js:174-191
+dig3Paint                    src/23ca-dig-pln-rock.js:121-160
+dig3PanX                     src/23c-dig-pln.js:32-36
+dig3RopeMesh                 src/23cb-dig-pln-dress.js:90-95
+dig3RopeSet                  src/23cb-dig-pln-dress.js:96-103
+dig3Smax                     src/23ca-dig-pln-rock.js:27
+dig3Smin                     src/23ca-dig-pln-rock.js:26
+dig3Span                     src/23ca-dig-pln-rock.js:162-171
+dig3Void                     src/23ca-dig-pln-rock.js:68-85
 digBedding                   src/23aa-dig-rock.js:118-145
 digCell                      src/23-mode-dig.js:30-50
 digCun                       src/23aa-dig-rock.js:158-182
@@ -5737,15 +5782,28 @@ mgrWorkFact                  src/12c-mgr-core.js:609-665
 mgrWorkKeep                  src/12c-mgr-core.js:555-564
 mgrWorkSci                   src/12c-mgr-core.js:690-745
 midiHz                       src/10-music.js:106
+mineActWord                  src/23cc-mine-play.js:258-261
+mineBite                     src/23cc-mine-play.js:48-83
 mineDeep                     src/23a-dig-draw.js:564-567
+mineDug                      src/23cc-mine-play.js:26
+mineIsLevel                  src/23cc-mine-play.js:24
 mineKey                      src/23a-dig-draw.js:553
+mineKeys                     src/23cc-mine-play.js:86-90
 mineLay                      src/13a-guns.js:267-275
+mineLevelNo                  src/23cc-mine-play.js:25
 mineLoad                     src/23a-dig-draw.js:568-577
 mineMul                      src/21e1-surface-world.js:596-614
+mineOre                      src/23cc-mine-play.js:40
 mineOver                     src/21e1-surface-world.js:615-644
 mineRopeGpu                  src/21e1-surface-world.js:646-652
+mineRowOf                    src/23cc-mine-play.js:38
 mineSave                     src/23a-dig-draw.js:578-587
 mineSpotX                    src/23a-dig-draw.js:560-563
+mineState                    src/23cc-mine-play.js:41-44
+mineStopY                    src/23cc-mine-play.js:30
+mineStops                    src/23cc-mine-play.js:32-37
+mineSump                     src/23cc-mine-play.js:28
+mineUpdate                   src/23cc-mine-play.js:92-256
 minedUnit                    src/11-log.js:171-179
 minesTick                    src/13a-guns.js:276-320
 mirrorAck                    src/11f-mirror.js:33-40
@@ -9762,6 +9820,18 @@ zoomTo                       src/15-input.js:358
 
 ## src/23b-dig-gpu.js · 13 KB
   · шахта на видеокарте: свет, день в стволе, руда, пыль (G7):1
+
+## src/23c-dig-pln.js · 15 KB
+  · шахта на движке: кадр и переключатель (M631a):1
+
+## src/23ca-dig-pln-rock.js · 20 KB
+  · шахта на движке: порода из выработки (M631a):1
+
+## src/23cb-dig-pln-dress.js · 9 KB
+  · рудник на движке: убранство выработки (M631):1
+
+## src/23cc-mine-play.js · 16 KB
+  · рудник: ствол, клеть, горизонты, забой (M631, docs/DESIGN-mine.md):1
 
 ## src/24-mode-belt.js · 23 KB
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
