@@ -3303,7 +3303,7 @@ body.rackon #prompt{opacity:0}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.494.0";
+const VER="0.495.0";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -46575,6 +46575,10 @@ function spawnPirates(){
   /* пиратский король (M387): бароны сговорились, и в его области их вдвое */
   if(typeof secPirateMul==="function")n=Math.floor(n*secPirateMul(G.sx,G.sy));
   if(typeof railSealPirates==="function")n=railSealPirates(n);   /* пломба Орднунга (M508) */
+  /* торговец без орудия (так задумано: оружие 1150 кр при 600 на старте) в тихом
+     кольце вокруг дома не встречает налётчиков: драться нечем, и подсказки к бою
+     нет. Заставы держав (npcSpawn) — не налётчики и ниже не трогаются */
+  if(!stat().armed&&danger<.1)n=0;
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
@@ -65062,6 +65066,7 @@ function mpText(t,x,y,col){
 
 /* ══════════════ карта ══════════════ */
 const PAD_SAFE=104;   // полоса экранных кнопок снизу: запасной ответ, см. mapDeck
+const MAP_DRY_INK="rgba(176,188,198,.92)";   /* серый «не хватит топлива»: цель по радиусу есть, по баку нет (красный — вне радиуса) */
 /* ══════════════ где у карты пол и где правый борт ══════════════
    Карта рисует карточку системы и строки прыжка на канве, а подсказка,
    эфирная строка, пульт и правый борт — это DOM со своей вёрсткой. Пока карта
@@ -65375,7 +65380,8 @@ function drawMapIn(){
   const selV=vis.find(q=>q.gx===G.sel.x&&q.gy===G.sel.y);
   for(const v of vis){
     /* глубина тьмой: дальний сектор тусклее, недостижимый — вполовину */
-    v.fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near?1:.5);
+    const dryV=v.near&&(v.gx!==G.sx||v.gy!==G.sy)&&mapJumpCost(Math.hypot(v.gx-G.sx,v.gy-G.sy))>G.fuel;   /* дотягивается радиус, не бак — как недостижимый */
+    v.fade=clamp(1-v.d/(R*1.15),.18,1)*(v.near&&!dryV?1:.5);
     v.rr=(1.8+v.s.cls.t*2.2)*gk;
     /* под пиратами: заливка изнутри — свет под звездой, не поверх неё */
     const ol=occLvl(v.gx,v.gy);
@@ -65540,7 +65546,7 @@ function drawMapIn(){
   /* сколько машин работает на тебя в этой системе (M237) */
   if(typeof drawDronesMap==="function")drawDronesMap(vis);
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
-  const {cost,bad}=mapJump();   /* один расклад на кадр и на шаг мира (updateMap) */
+  const {cost,bad,dry}=mapJump();   /* один расклад на кадр и на шаг мира (updateMap) */
   mpWeight(MAP_W.you);
   /* табличка у выбранной системы этого кадра (M822): строки о ней — у неё, подвал их не повторяет */
   const hung=!!sel&&!G.mapClean&&!mapOverOn()&&hangIn();
@@ -65560,10 +65566,10 @@ function drawMapIn(){
     /* выбрана станция следующего плеча — прыжок так и называется (M289, R2) */
     const NX=(typeof routeNext==="function"&&routeOf().legs.length>=2)?routeNext():null;
     const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
-    if(!shown)L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
+    if(!shown)L.push([dry?MAP_DRY_INK:bad?"rgba(255,107,87,.85)":"#f2b25c",
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
       (dsel>st.jump+.02?"ВНЕ РАДИУСА · примерно "+Math.ceil(dsel/Math.max(.5,st.jump))+" "+pl3(Math.ceil(dsel/Math.max(.5,st.jump)),"прыжок","прыжка","прыжков"):
-       (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":"")),1]);
+       (dry?mapDryWord(cost):(onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива")),1]);
     /* карточка стала строкой (M298): первый вопрос — «что это и дотянусь ли» — отвечается тут;
        описание — вторым тапом по той же звезде. На телефоне 31.7% экрана было интерфейсом */
     const ss=sel?sel.s:null;
@@ -65614,7 +65620,7 @@ function drawMapIn(){
   if(cur&&sel&&dsel>0){
     const x0=cur.x,y0=cur.y,x1=sel.x,y1=sel.y;
     const far=dsel>st.jump+.02, poor=!far&&cost>G.fuel;
-    const col=far?"rgba(255,107,87,.5)":poor?"rgba(255,107,87,.75)":"rgba(242,178,92,.8)";
+    const col=far?"rgba(255,107,87,.5)":poor?"rgba(176,188,198,.7)":"rgba(242,178,92,.8)";
     ctx.save();
     mapCourseDash(cur,sel,youR,far,col);   /* от кромки вашего кольца и из-за вашей плашки (18l) */
     hangAt("course",x0+(x1-x0)*2/3,y0+(y1-y0)*2/3,5);   /* строка сообщения — у дальней трети курса (M826b) */
@@ -65632,13 +65638,13 @@ function drawMapIn(){
     const mx=(x0+x1)/2,my=(y0+y1)/2;
     if(!shown){
     const c0=MAP_INK.length;
-    const label=far?"ВНЕ РАДИУСА":(cost+" ТОПЛИВА"+(poor?" · НЕ ХВАТАЕТ":""));
+    const label=far?"ВНЕ РАДИУСА":(poor?mapDryWord(cost):cost+" ТОПЛИВА");
     const U=mapU();
     mapFont(10);ctx.textAlign="center";ctx.textBaseline="middle";
     const tw=ctx.measureText(label).width;
     mpRect(mx-tw/2-7*U,my-9*U,tw+14*U,18*U,"rgba(6,10,16,.82)");mapInkBox(mx-tw/2-7*U,my-9*U,tw+14*U,18*U);
     mpFrame(mx-tw/2-6.5*U,my-8.5*U,tw+13*U,17*U,1,col);
-    mpText(label,mx,my+.5,far||poor?"rgba(255,150,135,.95)":"#f2b25c");
+    mpText(label,mx,my+.5,far?"rgba(255,150,135,.95)":poor?MAP_DRY_INK:"#f2b25c");
     /* сколько останется в баке — вторая строка, мельче: это уже подробность */
     if(!far&&!poor){
       mapFont(8);
@@ -65725,22 +65731,31 @@ function drawMapIn(){
    ДЕЙСТВИЮ прыгает. Прежде прыжок жил внутри drawMap — мир менялся в
    рисовании, и без кадра (свёрнутая вкладка, набор без картинки, бот) карта
    не прыгала вовсе (0.438.0) */
+/* цена прыжка на расстояние в секторах — одна формула и для курса, и для каждой звезды листа */
+function mapJumpCost(dsel){
+  /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
+  return Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
+}
+/* причина словами, с числами: видно, сколько не дотянуть (развилка 3, 14.10) */
+function mapDryWord(cost){return "НЕ ХВАТИТ ТОПЛИВА: "+cost+" из "+Math.floor(G.fuel);}
 function mapJump(){
   const st=stat();
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
-  /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
-  const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
+  const cost=mapJumpCost(dsel);
+  /* радиус дотягивается, а бак — нет: цель серая, в подписи причина, прыжок не начинается */
+  const dry=dsel>0&&dsel<=st.jump+.02&&cost>G.fuel;
   /* в пустую клетку курса нет (M347): выбрать можно, прыгнуть — некуда */
   const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0||!starAt(G.sel.x,G.sel.y);
-  return {dsel,cost,bad};
+  return {dsel,cost,bad,dry};
 }
 function updateMap(dt){
   if(!G.sel)return;
   G.prompt=G.mapClean?"":mapOverOn()?"ОБЗОР ГАЛАКТИКИ · ТАП — ТУДА · ЩИПОК — БЛИЖЕ":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
-    const {dsel,cost,bad}=mapJump();
+    const {dsel,cost,bad,dry}=mapJump();
     if(G.mapPeek)say("Сначала отстыкуйтесь");
     else if(!bad)jump(cost);
+    else if(dry)say(mapDryWord(cost));
     else if(dsel>0)say("Прыжок невозможен");
     /* выбран свой же сектор: подсказка обещает ПРЫЖОК, и молчать в ответ нельзя —
        у отказа есть голос (нашёл набор подсказки, когда карта стала шагать
@@ -69066,7 +69081,7 @@ function mapSelHang(sel,dsel,cost,st){
   if(dsel===0){L=["ВЫ ЗДЕСЬ · "+nm,what,"тап по звезде — курс"];verb=undefined;}
   else if(far){const n=Math.ceil(dsel/Math.max(.5,st.jump));
     L=[nm,what,"ВНЕ РАДИУСА · "+n+" "+pl3(n,"прыжок","прыжка","прыжков"),pk+more];verb=2;}
-  else if(poor)L=[nm,what,"НЕ ХВАТАЕТ ТОПЛИВА · "+cost,"в баке "+Math.round(G.fuel)+" · "+pk+more],verb=2;
+  else if(poor)L=[nm,what,mapDryWord(cost),pk+more],verb=2;   /* «НЕ ХВАТИТ ТОПЛИВА: 48 из 30» — числа в самой причине */
   else L=[nm,what,(onRoute?"ПРЫЖОК ПО МАРШРУТУ · ":"ПРЫЖОК · ")+cost+" топлива","останется "+Math.round(G.fuel-cost)+" · "+pk+more],verb=2;
   /* телефон: имя и глагол с ценой — две строки встают сбоку от выбора; подробности — в подвале нет,
      во второй тап (карточка) */
@@ -69551,6 +69566,8 @@ function startLanding(p){
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
+  /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
+  G.land.pre=surfGen(tr,p);
   G.mode="landing";
   /* заход и тяготение — табличкой на корабле (M803, drawLanding), без слоя — строкой #msg */
   G.land.hi=150;
@@ -76567,8 +76584,13 @@ function lifePeepGpu(pass,camx,camy,o){
 const MINE_MOUTH_R=40;
 /* сколько живёт след: полминуты держится, полминуты гаснет (21e рисует) */
 const TRACK_LIFE=2400;
-function enterSurface(){
-  const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
+/* ── что лежит на земле: залежи, куртины, зверьё, устье, подглядка ──
+   Всё из зерна планеты и полосы, без места корабля, поэтому считается в начале захода
+   (startLanding → G.land.pre): спуск строит землю уже с этими вещами, и на касании
+   сцена ничего не пересаживает — планета встречает готовой. enterSurface берёт
+   готовое; без него (стенды, пробы) считает сам — тот же результат */
+function surfGen(tr,p){
+  const r=rng(p.seed^0x1234);
   /* залежи берутся из профиля ПЛАНЕТЫ (у смешанного мира он свой), а не из
      таблицы типа: иначе на «ледяной, с вулканами» лежало бы то же, что на
      чистой ледяной, и смесь осталась бы одной раскраской */
@@ -76726,6 +76748,12 @@ function enterSurface(){
   /* и крупную форму: стена или друза перед устьем закрывала сам вход, к
      которому ведёт стрелка навигатора */
   if(tr.deco)clearNear(tr.deco,90);
+  return {tr,deposits,plants,fauna,cave:caveMouth,peep};
+}
+function enterSurface(){
+  const L=G.land,tr=L.tr,p=L.p;
+  const g=L.pre&&L.pre.tr===tr?L.pre:surfGen(tr,p);
+  const {deposits,plants,fauna,peep}=g,caveMouth=g.cave;
   const offX=L.x+shipZoneR()+26;
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:offX,y:groundAt(tr,offX)-10,t0:G.t,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
@@ -82544,6 +82572,21 @@ function drawBase(){
       }
     }
   }
+  /* ── переходящий вымпел (M206; переделка M413) ──
+     Разбор: «флаг ГЛАВТРАССЫ — самое яркое пятно кадра». Так и было: сто
+     процентов красного размером в пол-отсека, висящие посреди породы, в
+     сцене, где всё остальное — коричневое и бирюзовое под общим светом.
+     Вымпел ничего не даёт и не должен ничего требовать: он ВЕЩЬ НА СТЕНЕ у
+     ворот, вчетверо меньше, и живёт в том же свете, что и порода.
+     Стоит рядом с астронавтом: оба кладутся слоем видеокарты, и между ними
+     нет 2D, а значит нет и второго шва кадра (раньше вымпел шёл последним —
+     после курсора и патрубков — и стоил отдельной склейки холста). */
+  if(!SHOT_CLEAN&&typeof pennHere==="function"&&pennHere()&&typeof pennDraw==="function"){
+    ctx.save();
+    ctx.globalAlpha=.42+lit*.42;
+    pennDraw(X(BASE_OX+BCELL_W*.42),Y(BASE_OY-34),BCELL_W*0.24,BCELL_H*0.20);
+    ctx.restore();
+  }
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   {const ao={phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false};
@@ -82722,18 +82765,6 @@ function drawBase(){
   });
   /* аврал (M398): отсек, в котором беда, видно раньше всякого текста */
   if(typeof avrDraw==="function")avrDraw(S,X,Y,lit);
-  /* ── переходящий вымпел (M206; переделка M413) ──
-     Разбор: «флаг ГЛАВТРАССЫ — самое яркое пятно кадра». Так и было: сто
-     процентов красного размером в пол-отсека, висящие посреди породы, в
-     сцене, где всё остальное — коричневое и бирюзовое под общим светом.
-     Вымпел ничего не даёт и не должен ничего требовать: он ВЕЩЬ НА СТЕНЕ у
-     ворот, вчетверо меньше, и живёт в том же свете, что и порода. */
-  if(typeof pennHere==="function"&&pennHere()&&typeof pennDraw==="function"){
-    ctx.save();
-    ctx.globalAlpha=.42+lit*.42;
-    pennDraw(X(BASE_OX+BCELL_W*.42),Y(BASE_OY-34),BCELL_W*0.24,BCELL_H*0.20);
-    ctx.restore();
-  }
   if(S.menu)drawBuildMenu(S);
 }
 
@@ -83500,7 +83531,7 @@ function baseGpuUnder(S,B,pl,lit,camx,camy){
 /* ── над 2D: передний план, иней, свет, воздух ── */
 const BASE_FU=new Float32Array(60);
 function baseGpuOver(S,B,pl,lit,camx,camy){
-  const pass=gpuOver();if(!pass)return;
+  const pass=gpuNext();   /* смена карточек только что склеила 2D: проход открыт, второй шов не нужен */if(!pass)return;
   const k=baseBakeK(),lq=Math.round(lit*40)/40,R=baseWorldRect(B),sig=baseSig(B);
   const up=k<(DPR||1);
   const Rf={x0:BASE_GATE_X+60,y0:BASE_OY-4,x1:BASE_OX+BASE_COLS*BCELL_W+10,y1:BASE_OY+baseRows(B)*BCELL_H+8};
@@ -91780,13 +91811,20 @@ function plnPlantInit(L,p){
   const D={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
   const g0=G.opts&&G.opts.gfx?G.opts.gfx.plants:1,gp=clamp(g0==null?1:g0,.25,1.5)*(PLN_GPU.plK||1);   /* ярус (21pe) режет густоту */
   return L.flora={lush:flora?clamp((D[ty]||1.2)/1.9*(.25+wet*1.85),.25,1.3)*gp:0,
-    p,type:ty,things:plnPlantThings(L,p),src:G.surf&&G.surf.tr===L.tr?G.surf:null,groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0,wild:null};
+    p,type:ty,things:plnPlantThings(L,p),src:plnThingsSrc(L),groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0,wild:null};
 }
 /* Вещи игры, вокруг которых держится поляна: [x, z, полуоси поляны, насколько близко могут стоять
    высокие тела]. Места — из состояния посадки; вещь, что появится позже, встанет в траву */
+/* вещи поверхности — только если она эта: на спуске G.surf ещё прошлая или её нет, и тогда
+   берутся вещи, посчитанные в начале захода (G.land.pre, 21-mode-surface surfGen) — те же массивы,
+   что станут G.surf; касание поэтому ничего не пересаживает */
+function plnThingsSrc(L){
+  if(G.surf&&G.surf.tr===L.tr)return G.surf;
+  const pre=G.land&&G.land.pre;
+  return pre&&pre.tr===L.tr?pre:null;
+}
 function plnPlantThings(L,p){
-  /* вещи поверхности — только если она эта: на спуске G.surf ещё прошлая или её нет */
-  const S=G.surf&&G.surf.tr===L.tr?G.surf:null,tr=L.tr,T=[],M=PLN_M;
+  const S=plnThingsSrc(L),tr=L.tr,T=[],M=PLN_M;
   const add=(xu,z,rx,rz,tall)=>{if(xu!=null&&isFinite(xu))T.push([xu/M,z,rx,rz,tall]);};
   const shipL=typeof plnShipLenM==="function"?plnShipLenM():8.5;   /* расчистка под корабль — по его длине */
   add(L.shipX*M,7,shipL*.62+1.6,shipL*.42+1.8,shipL*1.1+2);
@@ -92281,7 +92319,7 @@ function plnPlantBatches(L,F0,ex,V){
 function plnPlantRefit(L,x0,x1){
   const F=L.flora;
   if(!F)return;
-  F.src=G.surf&&G.surf.tr===L.tr?G.surf:null;
+  F.src=plnThingsSrc(L);
   F.things=plnPlantThings(L,L.tr.p);
   for(const J of L.jobs){
     if(J.t!=="rib"||!J.planted||!J.grid||J.xb<x0||J.xa>x1)continue;
@@ -98305,7 +98343,8 @@ function plnSurface(S,o){
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
-  if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
+  /* с заходом, посчитанным заранее (G.land.pre), массивы те же — пересадки нет */
+  if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,-1e9,1e9);
   plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
@@ -98340,6 +98379,15 @@ function plnSurface(S,o){
     plnShipFrame(F,sp,q.yaw==null?L.shipYaw:q.yaw,Object.assign({L,floor:lift>0?plnPadTop(L,tr,wy):null},q));
     if(o.extra)o.extra(F,L,C,sp);
     man=[sp[0],sp[1]-q.alt,sp[2]];
+    /* планета встречает готовой: вещи земли (G.land.pre) стоят уже в спуске и строятся здесь,
+       а не на первом кадре поверхности; человека, бура и следов ещё нет */
+    if(S.deposits){
+      plnThingsFrame(L,F,S,p,C.ex,V);
+      plnMarksFrame(L,F,S,p,C.ex,V,lampK);
+      plnOwnFrame(L,F,S,p,C.ex,V,lampK);
+      plnBeastFrame(L,F,S,p,C.ex,V);
+      plnHerbFrame(L,F,S,p,C.ex,V);
+    }
   }else{
     /* корабль стоит на плите площадки (21pza); плита — тело и на поверхности */
     const lift=plnPadLift(L,tr,wy,L.shipX),ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ)+lift,L.shipZ];
@@ -98418,7 +98466,13 @@ function plnDescent(){
   if(tr.plnCx==null)tr.plnCx=tr.padX/PLN_M+12.8;
   const touched=L.over>0,sx=touched?L.x:tr.padX;
   let S=PLN_DESC.S;
-  if(!S||S.tr!==tr)S=PLN_DESC.S={tr,p,cam:{x:0,y:0},face:1,swim:0,shake:0};
+  if(!S||S.tr!==tr){
+    /* вещи земли посчитаны в начале захода (G.land.pre): залежи, травы, зверьё и устье стоят
+       уже в спуске, и первый кадр поверхности берёт их сборки из кэша, а не строит заново */
+    const pre=L.pre&&L.pre.tr===tr?L.pre:null;
+    S=PLN_DESC.S={tr,p,cam:{x:0,y:0},face:1,swim:0,shake:0};
+    if(pre){S.deposits=pre.deposits;S.plants=pre.plants;S.fauna=pre.fauna;S.cave=pre.cave;S.peep=pre.peep;}
+  }
   S.shipX=sx;S.x=L.x;S.y=L.y;S.cam.x=L.x;S.cam.y=L.y;
   const gyw=groundAt(tr,L.x),alt=Math.max(0,gyw-L.y-LAND_GY)/PLN_M;
   /* тяга набирает и гаснет не рывком: факел растёт за несколько кадров */
@@ -126360,17 +126414,26 @@ function renderDeskTop(box){
       игрок, доля остаётся его деньгами и его верностью).
    2. Смена закрывается на стыковке, не раньше BILL_SHIFT_MS по часам игры от прошлой бумаги.
       Первый час — без бумаги: стажёр за счёт ГЛАВТРАССЫ; первая бумага несёт эту строку.
-   3. Неоплаченное переходит в следующую бумагу с процентом за смену. Пока висит прошлая
-      бумага, управляющие без оклада — верность тает (как прежний «голый процент»).
+   3. Неоплаченное уходит в Кассу взаимопомощи (M904b, развилка F1, §5.2) и растёт на процент за
+      смену. Пока там лежит неоплаченная бумага, управляющие без оклада — верность тает.
    4. Офлайн (догон mgrTick до 240 мин) пишет в счёт не больше часа — §10.5.
-   Долг ниже нуля (F1), Страхкасса и потеря корпуса (F3) — следующие шаги M904. */
+   5. Долг — отдельное число, а не кредиты ниже нуля: два десятка мест в коде берут
+      min(G.credits, сумма), и на минусе они печатали бы деньги. Для игрока это одно и то же:
+      касса даёт на бак и ремонт, когда своих не хватает, до пола — двух часов чистого своего
+      яруса. У пола садится взыскатель и со следующей смены берёт: дроны, потом корпус.
+   Страхкасса и потеря корпуса (F3) — в 28i-insure. */
 const BILL_SHIFT_MS=10*60000,BILL_RATE=.01,BILL_OFF_MIN=60;
+/* пол долга по ярусу (§5.2: два часа чистого яруса — правило в отношении, числа модели) */
+const BILL_FLOOR_T=[9000,28000,28000,25000];
+const BILL_COLL_NAMES=["Захар Ильич","Герман Осипович","Савва Петрович","Лука Матвеевич","Тимофей Карпович","Аристарх Фомич"];
 const BILL_LINES={
   fuel:{ru:"топливо",voice:"Норма расхода. Перерасход — ваш."},
   yard:{ru:"обслуживание корпуса",voice:"Прошли бы ТО вовремя — было бы дешевле."},
   crew:{ru:"наёмные руки",voice:"За работу, не за простой."},
   mgr:{ru:"управляющие",voice:"Оклад — ваш. Доля — наша."},
-  late:{ru:"с прошлой смены",voice:"Один процент за смену. Не задерживайте."}
+  late:{ru:"с прошлой смены",voice:"Один процент за смену. Не задерживайте."},
+  debt:{ru:"касса взаимопомощи",voice:"Один процент за смену. Касса не торопит — пока."},
+  ins:{ru:"Страхкасса",voice:"Взнос за смену. Не задерживайте."}
 };
 function billSt(){
   if(!G.bill||typeof G.bill!=="object")G.bill={};
@@ -126380,59 +126443,169 @@ function billSt(){
   /* смена — по часам игры (now): налёт G.flownMs идёт только в полёте, а смена — и на грунте */
   if(!(B.from>=0))B.from=now();
   B.n=B.n|0;
+  B.debt=Math.max(0,+B.debt||0);
   return B;
+}
+/* ── касса взаимопомощи (M904b) ── */
+/* ярус — по самому дорогому корпусу во владении: долг меряется тем, что игрок держит */
+function billTier(){
+  let p=0;for(const id in G.owned)if(G.owned[id]){const S=shipData(id);if(S&&S.price>p)p=S.price;}
+  return p<5000?0:p<12000?1:p<20000?2:3;
+}
+function billFloor(){return BILL_FLOOR_T[billTier()];}
+function billDebt(){return Math.round(billSt().debt);}
+function billRoom(){return Math.max(0,billFloor()-billDebt());}
+/* касса даёт недостающее на нужное (бак, ремонт): кредиты растут ровно на долг */
+function billLend(want){
+  if(!billOn())return 0;
+  const x=Math.max(0,Math.min(Math.ceil(want),billRoom()));
+  if(x>0){billSt().debt+=x;G.credits+=x;}
+  return x;
+}
+/* недотраченное из займа — обратно в кассу, долг не висит за то, что не купили */
+function billUnlend(lent,c0){
+  const back=Math.max(0,Math.min(lent,G.credits-c0));
+  if(back>0){billSt().debt-=back;G.credits-=back;}
+  return lent-back;
 }
 function billOn(){return !firstHour();}
 function billPaid(k,sum){if(sum>0&&billOn()){const B=billSt();B.cur[k]=(B.cur[k]||0)+sum;}}
 function billDue(k,sum){if(sum>0&&billOn()){const B=billSt();B.due[k]=(B.due[k]||0)+sum;}}
 /* сколько осталось по последней бумаге */
 function billLeft(){const P=billSt().paper;return P?Math.max(0,Math.round(P.total-P.paid)):0;}
-/* прошлая смена не оплачена — бумагу закрыли поверх неоплаченной */
-function billLate(){return !!billSt().late&&billLeft()>0;}
-/* закрыть смену: строки из накопленного, долг прошлой — отдельной строкой с процентом */
+/* неоплаченная бумага ушла в кассу и ещё там — управляющие без оклада */
+function billLate(){return !!billSt().late&&billDebt()>0;}
+/* всё, что игрок должен: остаток бумаги и касса */
+function billOwed(){return billLeft()+billDebt();}
+/* корпус уходит со всем, что на нём (как «Сброс» в 16c-rescue): поставленные ступени модулей,
+   части из описи; если на нём летали — пересадка на «Стриж», лишний груз за борт (людей — нет) */
+function hullTake(id){
+  if(!id||id==="strizh"||!G.owned[id])return false;
+  delete G.owned[id];
+  const lostFit=G.fit[id]||{};
+  for(const k in lostFit){const p=partById(lostFit[k]);const i=p?G.inv.indexOf(p):-1;if(i>=0)G.inv.splice(i,1);}
+  delete G.fit[id];
+  if(G.shipId===id){
+    for(const k in G.mods){G.modsOwned[k]=Math.max(0,(G.modsOwned[k]|0)-(G.mods[k]|0));G.mods[k]=0;}
+    G.shipId="strizh";G.owned.strizh=true;invalidateParts();
+    const ns=stat();G.fuel=Math.min(G.fuel,ns.fuelMax);G.hull=Math.min(G.hull,ns.hullMax);
+    let over=held()-ns.cargoMax;
+    for(const k of RES_KEYS){if(over<=0)break;if(PAX_KEYS.indexOf(k)>=0)continue;
+      const t=Math.min(over,G.cargo[k]);G.cargo[k]-=t;over-=t;}
+  }
+  return true;
+}
+/* что взыскатель возьмёт первым (§5.2: дроны, потом корпус) и во что он это ставит — в полцены */
+function billNext(){
+  if((G.droneInventory|0)>0)return {k:"inv",ru:"дрон из запаса",v:Math.round(DRONES.miner.price*.5)};
+  if(G.drones&&G.drones.length){const d=G.drones[G.drones.length-1];
+    return {k:"drone",d,ru:"дрон «"+droneName(d)+"»",v:Math.round(DRONES.miner.price*.5)};}
+  let id=null,p=0;
+  for(const k in G.owned)if(G.owned[k]&&k!=="strizh"){const S=shipData(k);if(S&&S.price>p){p=S.price;id=k;}}
+  if(id)return {k:"hull",id,ru:"корпус «"+shipData(id).ru+"»",v:Math.round(p*.5)};
+  return null;
+}
+function billSeize(B){
+  const X=billNext();if(!X)return null;
+  if(X.k==="inv")G.droneInventory--;
+  else if(X.k==="drone"){const i=G.drones.indexOf(X.d);if(i>=0)G.drones.splice(i,1);}
+  else hullTake(X.id);
+  B.debt=Math.max(0,B.debt-X.v);B.coll.took=(B.coll.took|0)+1;
+  logAdd("bad","Взыскатель "+B.coll.nm+" забрал "+X.ru+" · в счёт долга −"+X.v.toLocaleString("ru")+" кр");
+  say("Взыскатель забрал "+X.ru+"\nв счёт долга −"+X.v.toLocaleString("ru")+" кр",220);
+  return X;
+}
+/* у пола: первая смена — садится и ждёт, каждая следующая у пола — берёт одно */
+function billCollector(B){
+  if(B.debt<billFloor())return null;
+  if(!B.coll){
+    const r=rng(hashi(B.n|0,B.debt|0,0xC011));
+    B.coll={nm:pick(BILL_COLL_NAMES,r),at:now(),took:0,seed:Math.floor(r()*1e9)};
+    const X=billNext();
+    logAdd("bad","Касса взаимопомощи на пределе · в кантине сел взыскатель "+B.coll.nm);
+    say("Взыскатель "+B.coll.nm+":\nЯ подожду смену."+(X?"\nПотом — "+X.ru+".":""),220);
+    return null;
+  }
+  return billSeize(B);
+}
+function billCollLeave(B){
+  if(!B.coll)return;
+  logAdd("good","Взыскатель "+B.coll.nm+" встал из-за стола: «Касса вами довольна. Пока.»");
+  B.coll=null;
+}
+/* закрыть смену: строки из накопленного; неоплаченное прошлой — в кассу, касса — с процентом */
 function billClose(){
   const B=billSt(),L=[];
+  insAccrue(B);   /* Страхкасса (28i): взнос за прожитые смены */
   for(const k of ["fuel","yard","crew"]){const v=Math.round(B.cur[k]||0);if(v>0)L.push({k,sum:v,paid:true});}
-  for(const k of ["mgr"]){const v=Math.round(B.due[k]||0);if(v>0)L.push({k,sum:v,paid:false});}
+  for(const k of ["mgr","ins"]){const v=Math.round(B.due[k]||0);if(v>0)L.push({k,sum:v,paid:false});}
   const prev=billLeft();
-  if(prev>0)L.push({k:"late",sum:Math.ceil(prev*(1+BILL_RATE)),paid:false});
+  if(prev>0){B.debt+=prev;B.late=true;if(B.paper)B.paper.paid=B.paper.total;}
+  if(B.debt>0)B.debt=Math.ceil(B.debt*(1+BILL_RATE));else B.late=false;
   const first=!B.n&&(G.flownMs||0)<2*FIRST_HOUR_MS;   /* стажёр — только у новичка, не у старой записи */
   B.cur={};B.due={};B.from=now();
-  if(!L.length&&!first){B.paper=null;B.late=false;return null;}
+  billCollector(B);
+  if(!L.length&&!first){B.paper=null;return null;}
   B.n++;
   const total=L.filter(x=>!x.paid).reduce((a,x)=>a+x.sum,0);
-  B.late=prev>0;
   B.paper={n:B.n,lines:L,total,paid:0,first,at:G.flownMs||0,st:G.sys?G.sys.key:""};
-  if(total>0)logAdd("warn","Счёт за смену № "+B.n+" · к оплате "+total.toLocaleString("ru")+" кр"+(B.late?" · прошлая не оплачена":""));
+  if(total>0||B.debt>0)logAdd("warn","Счёт за смену № "+B.n+" · к оплате "+total.toLocaleString("ru")+" кр"+
+    (B.debt>0?" · в кассе взаимопомощи "+billDebt().toLocaleString("ru"):""));
   return B.paper;
 }
-/* одно касание: платится сколько есть, остаток остаётся на бумаге */
+/* одно касание: сперва бумага, потом касса; платится сколько есть */
 function billPay(){
-  const B=billSt(),P=B.paper;if(!P)return 0;
-  const x=Math.min(billLeft(),Math.max(0,Math.floor(G.credits)));
-  if(x<=0){if(billLeft()>0)say("Не хватает кредитов");return 0;}
-  G.credits-=x;P.paid+=x;
-  if(billLeft()<=0){B.late=false;say("Счёт за смену оплачен\n−"+x.toLocaleString("ru")+" кр");}
-  else say("Оплачено на что хватило\n−"+x.toLocaleString("ru")+" кр · осталось "+billLeft().toLocaleString("ru"));
+  const B=billSt(),P=B.paper,owe=billOwed();if(owe<=0)return 0;
+  const x=Math.min(owe,Math.max(0,Math.floor(G.credits)));
+  if(x<=0){say("Не хватает кредитов");return 0;}
+  G.credits-=x;
+  const a=P?Math.min(x,billLeft()):0;if(P)P.paid+=a;
+  B.debt=Math.max(0,B.debt-(x-a));
+  if(B.debt<=0){B.late=false;billCollLeave(B);}
+  if(billOwed()<=0)say("Счёт за смену оплачен\n−"+x.toLocaleString("ru")+" кр");
+  else say("Оплачено на что хватило\n−"+x.toLocaleString("ru")+" кр · осталось "+billOwed().toLocaleString("ru"));
   return x;
 }
 /* ── где счёт берёт строки ── */
 const BILL_OLD_OPEN=openStation;
 openStation=function(){
   const r=BILL_OLD_OPEN.apply(this,arguments);
-  if(billOn()&&(now()-billSt().from>=BILL_SHIFT_MS||now()<billSt().from))billClose();
+  if(billOn()&&(now()-billSt().from>=BILL_SHIFT_MS||now()<billSt().from)){
+    billClose();
+    if(G.mode==="dock"&&typeof renderTab==="function")renderTab();   /* бумага и взыскатель — на этой же доске */
+  }
   return r;
 };
+/* ремонт: своих не хватает — касса даёт недостающее до пола; недотраченное возвращается */
 const BILL_OLD_REPAIR=repairDo;
-repairDo=function(){const c0=G.credits,r=BILL_OLD_REPAIR.apply(this,arguments);billPaid("yard",c0-G.credits);return r;};
+repairDo=function(frac){
+  const q=repairQuote(frac),c0=G.credits;
+  const lent=(q.units&&G.credits<q.cost)?billLend(q.cost-G.credits):0;
+  const c1=G.credits,r=BILL_OLD_REPAIR.apply(this,arguments);
+  billPaid("yard",c1-G.credits);
+  const kept=lent?billUnlend(lent,c0):0;
+  if(kept>0)say("Касса взаимопомощи\nна ремонт в долг "+kept.toLocaleString("ru")+" кр",160);
+  return r;
+};
 const BILL_OLD_CREW=crewPayroll;
 crewPayroll=function(){const c0=G.credits,r=BILL_OLD_CREW.apply(this,arguments);billPaid("crew",c0-G.credits);return r;};
-/* бак: обработчик кнопки безымянный — до него касса запоминается на погружении, после — на всплытии */
+/* бак: обработчик кнопки безымянный — до него касса запоминается (и даёт в долг недостающее)
+   на погружении, после — на всплытии */
 {
-  const b=document.getElementById("bRefuel");let c0=null;
+  const b=document.getElementById("bRefuel");let c0=null,c1=null,lent=0;
   if(b){
-    b.addEventListener("click",()=>{c0=G.credits;},true);
-    b.addEventListener("click",()=>{if(c0!=null)billPaid("fuel",c0-G.credits);c0=null;});
+    b.addEventListener("click",()=>{
+      c0=G.credits;lent=0;
+      const need=Math.ceil(stat().fuelMax-G.fuel),cost=need>0?need*fuelPriceHere():0;
+      if(cost>G.credits)lent=billLend(cost-G.credits);
+      c1=G.credits;
+    },true);
+    b.addEventListener("click",()=>{
+      if(c1!=null)billPaid("fuel",c1-G.credits);
+      const kept=lent?billUnlend(lent,c0):0;
+      if(kept>0){say("Касса взаимопомощи\nна бак в долг "+kept.toLocaleString("ru")+" кр",160);renderTab();}
+      c0=c1=null;lent=0;
+    });
   }
 }
 /* F2: оклад управляющего — из кассы игрока через счёт, а не из его доли. Машина (ai) и аренда
@@ -126455,27 +126628,69 @@ mgrPayroll=function(m,min){
 };
 /* ── бумага на доске: первой, раньше новостей ── */
 function billSection(){
-  const B=billSt(),P=B.paper;if(!P)return;
-  const left=billLeft();
-  if(!left&&P.st!==(G.sys&&G.sys.key))return;   /* оплаченная бумага видна только там, где её дали */
-  secHead("СЧЁТ ЗА СМЕНУ № "+P.n,{count:left?left.toLocaleString("ru")+" кр":"оплачено"});
-  if(P.first)$body.appendChild(el("div","row","<div class='nm'><b>стажёр</b><s>«Первая смена за счёт управления. Дальше — сами.»</s></div>"));
-  for(const x of P.lines){
-    const D=BILL_LINES[x.k]||{ru:x.k,voice:""};
-    $body.appendChild(el("div","row","<div class='nm'><b>"+D.ru+" · "+x.sum.toLocaleString("ru")+" кр</b><s>"+
-      (x.paid?"оплачено на месте · ":"")+"«"+D.voice+"»</s></div>"));
+  const B=billSt(),P=B.paper,left=billLeft(),debt=billDebt(),owe=left+debt;
+  const showP=!!P&&(left>0||P.st===(G.sys&&G.sys.key));   /* оплаченная бумага видна только там, где её дали */
+  if(!showP&&!debt)return;
+  secHead(showP?"СЧЁТ ЗА СМЕНУ № "+P.n:"КАССА ВЗАИМОПОМОЩИ",{count:owe?owe.toLocaleString("ru")+" кр":"оплачено"});
+  if(showP){
+    if(P.first)$body.appendChild(el("div","row","<div class='nm'><b>стажёр</b><s>«Первая смена за счёт управления. Дальше — сами.»</s></div>"));
+    for(const x of P.lines){
+      const D=BILL_LINES[x.k]||{ru:x.k,voice:""};
+      $body.appendChild(el("div","row","<div class='nm'><b>"+D.ru+" · "+x.sum.toLocaleString("ru")+" кр</b><s>"+
+        (x.paid?"оплачено на месте · ":"")+"«"+D.voice+"»</s></div>"));
+    }
   }
-  if(left>0){
+  if(debt>0){
+    const D=BILL_LINES.debt;
+    $body.appendChild(el("div","row","<div class='nm'><b>"+D.ru+" · долг "+debt.toLocaleString("ru")+" кр</b><s>«"+D.voice+
+      "» · предел "+billFloor().toLocaleString("ru")+" кр</s></div>"));
+  }
+  if(B.coll){
+    const X=billNext();
+    $body.appendChild(el("div","row","<div class='nm'><b>взыскатель "+B.coll.nm+" · в кантине</b><s>"+
+      (X?"у предела следующей сменой возьмёт: "+X.ru:"брать больше нечего — ждёт денег")+"</s></div>"));
+  }
+  if(owe>0){
     const r=el("div","row");
-    r.appendChild(el("div","nm","<b>к оплате "+left.toLocaleString("ru")+" кр</b><s>"+
-      (B.late?"прошлая смена не оплачена — управляющие без оклада":"не оплатите — перейдёт в следующую смену с процентом")+"</s></div>"));
+    r.appendChild(el("div","nm","<b>к оплате "+owe.toLocaleString("ru")+" кр</b><s>"+
+      (B.late?"прошлая смена в кассе — управляющие без оклада":"не оплатите — уйдёт в кассу взаимопомощи с процентом")+"</s></div>"));
     const b=el("button","act gold","ОПЛАТИТЬ");
     b.onclick=()=>{sfx("ui");billPay();renderTab();};
     r.appendChild(b);$body.appendChild(r);
   }
 }
+/* бумага и касса — в полосе «К ВАМ» (доска раскладывает секции по заголовку): это обращено к вам */
+LANE_RX.unshift([/^(СЧЁТ ЗА СМЕНУ|КАССА ВЗАИМОПОМОЩИ)/i,"you"]);
 const BILL_OLD_BOARD=stTabBoard;
-stTabBoard=function(){billSection();return BILL_OLD_BOARD.apply(this,arguments);};
+stTabBoard=function(){billSection();insSection();return BILL_OLD_BOARD.apply(this,arguments);};
+/* взыскатель сидит в кантине (§5.2): карточка в зале — кто он, сколько, что возьмёт следующим */
+const BILL_OLD_HALL=cantHall;
+cantHall=function(){
+  const r=BILL_OLD_HALL.apply(this,arguments),B=billSt();
+  if(!B.coll)return r;
+  const gs=$body.querySelectorAll(".ch-grid"),grid=gs[gs.length-1];if(!grid)return r;
+  const e=grid.querySelector(".ch-empty");if(e)e.remove();
+  const X=billNext(),c=el("div","ch-card hire");
+  c.style.setProperty("--k","#c8644f");
+  const f=el("div","ch-face","<i class='ch-role'>ВЗЫСКАТЕЛЬ</i>");
+  /* лицо — из того же генератора людей (L3): седой, в тёмном, с красной нитью */
+  f.appendChild(cantFace({seed:B.coll.seed>>>0,acc:[168,72,58],age:58,name:B.coll.nm},124));
+  c.appendChild(f);
+  c.appendChild(el("div","ch-id","<b>"+B.coll.nm+"</b><s>за вашим столом · долг "+billDebt().toLocaleString("ru")+" кр"+
+    (X?" · следующим возьмёт "+X.ru:"")+"</s>"));
+  const go=el("div","ch-go"),b=el("button","act gold","ОПЛАТИТЬ");
+  b.onclick=()=>{sfx("ui");billPay();renderTab();};
+  go.appendChild(b);c.appendChild(go);grid.insertBefore(c,grid.firstChild);   /* первым: он здесь из-за вас */
+  return r;
+};
+/* касса в шапке станции: долг рядом с кредитами, а не только на доске */
+const BILL_OLD_TABBODY=renderTabBody;
+renderTabBody=function(){
+  const r=BILL_OLD_TABBODY.apply(this,arguments);
+  const d=billDebt(),c=document.getElementById("wCr");
+  if(d>0&&c)c.textContent=G.credits.toLocaleString("ru")+" кр · долг "+d.toLocaleString("ru");
+  return r;
+};
 /* запись: поле G.bill — в снимок и обратно (белый список 14-save не трогаем — обёртка) */
 const BILL_OLD_SNAP=snapshot;
 snapshot=function(){const s=BILL_OLD_SNAP.apply(this,arguments);s.bill=G.bill||null;return s;};
@@ -126484,7 +126699,9 @@ applySave=function(s){
   const r=BILL_OLD_APPLY.apply(this,arguments);
   const b=s&&s.bill;
   G.bill=(b&&typeof b==="object")?{cur:(b.cur&&typeof b.cur==="object")?b.cur:{},due:(b.due&&typeof b.due==="object")?b.due:{},
-    from:+b.from||0,n:b.n|0,late:!!b.late,paper:(b.paper&&Array.isArray(b.paper.lines))?b.paper:null}:null;
+    from:+b.from||0,n:b.n|0,late:!!b.late,paper:(b.paper&&Array.isArray(b.paper.lines))?b.paper:null,
+    debt:Math.max(0,+b.debt||0),
+    coll:(b.coll&&typeof b.coll.nm==="string")?{nm:b.coll.nm,at:+b.coll.at||0,took:b.coll.took|0,seed:(b.coll.seed>>>0)||b.coll.nm.length*7919}:null}:null;
   return r;
 };
 
@@ -132298,6 +132515,128 @@ function dbg(){
   });
 }
 window.dbg=dbg;
+
+/* ══════════════ Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3) ══════════════
+   Авария (wreck, 28-loop) стоила только груза: корпус собирали наспех и летели дальше, и у боя
+   не было ставки. Теперь корпус, разбитый после первого часа, уходит — с модулями на нём и с
+   трюмом; игрок пересаживается на «Стриж» по разнарядке. Остаётся всё, что не на корабле:
+   кредиты, гараж, хозяйство, управляющие, дроны, знакомые.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Первый час корпус не отнимает (§5.1: защита новичка стоит). «Стриж» застрахован всегда, даром.
+   2. Страхкасса — по желанию, на любой верфи (плашка на ДОСКЕ): взнос 1 % цены корпуса за смену
+      счёта — десять минут (в модели §3.1 это 2 % за двадцатиминутную смену), строкой «Страхкасса»
+      в бумаге. Между бумагами — по прожитым сменам, но не больше шести: час, как офлайн (§10.5).
+   3. Застрахованный корпус возвращается через смену: износ 55 %, модули и части целы, трюм пуст.
+      Незастрахованный уходит насовсем, со ступенями модулей и частями (hullTake, 27ib).
+   4. У каждой потери — строка в трудовой книжке: это событие жизни, а не строка журнала. */
+const INS_RATE=.01,INS_WEAR=.55,INS_MAX_SH=6;
+function insAll(){
+  if(!G.ins||typeof G.ins!=="object")G.ins={};
+  const I=G.ins;
+  if(!I.on||typeof I.on!=="object")I.on={};
+  if(!Array.isArray(I.back))I.back=[];
+  return I;
+}
+function insOn(id){return id==="strizh"||!!insAll().on[id];}
+function insFee(id){const S=shipData(id);return (id==="strizh"||!S)?0:Math.round((S.price|0)*INS_RATE);}
+function insSet(id,on){
+  if(id==="strizh"||!G.owned[id])return false;
+  const I=insAll();if(on)I.on[id]=1;else delete I.on[id];
+  return true;
+}
+/* взнос за прожитые смены — в счёт; корпус в Страхкассе (не во владении) взноса не платит */
+function insAccrue(B){
+  const I=insAll();let fee=0;
+  for(const id in I.on)if(G.owned[id])fee+=insFee(id);
+  if(fee<=0)return 0;
+  const sh=clamp((now()-B.from)/BILL_SHIFT_MS,1,INS_MAX_SH);
+  const v=Math.round(fee*sh);
+  B.due.ins=(B.due.ins||0)+v;
+  return v;
+}
+/* «Стриж» по разнарядке: новый, с полным баком */
+function insStrizh(){
+  G.shipId="strizh";G.owned.strizh=true;invalidateParts();
+  const ns=stat();G.fuel=ns.fuelMax;G.hull=ns.hullMax;
+  const HH=hullHeld();HH.v=G.hull;HH.last=G.hull;HH.at=now();
+}
+function hullLost(id,why){
+  const S=shipData(id)||{ru:"корабль"},ru="«"+S.ru+"»",w=why?" ("+why+")":"";
+  if(insOn(id)){
+    delete G.owned[id];
+    insAll().back.push({id,at:now()+BILL_SHIFT_MS});
+    insStrizh();
+    logAdd("warn",ru+" разбит"+w+" · Страхкасса вернёт его через смену · пока — «Стриж» по разнарядке");
+    say(ru+" разбит\nСтрахкасса вернёт через смену\nпока — «Стриж» по разнарядке",220);
+    recordAdd("Страхкасса",ru+" разбит"+w+". Застрахован: вернётся через смену.");
+  }else{
+    hullTake(id);insStrizh();
+    logAdd("bad",ru+" потерян"+w+" · не застрахован · выдан «Стриж» по разнарядке");
+    say(ru+" потерян\nне застрахован · вы на «Стриже»",220);
+    recordAdd("ГЛАВТРАССА",ru+" потерян"+w+". Выдан «Стриж» по разнарядке.");
+  }
+  saveGame(true);
+}
+const INS_OLD_WRECK=wreck;
+wreck=function(why){
+  const id=G.shipId;
+  const r=INS_OLD_WRECK.apply(this,arguments);
+  if(id&&id!=="strizh"&&G.owned[id]&&!firstHour())hullLost(id,why);
+  return r;
+};
+/* застрахованный корпус вернулся: во владение, с износом; пересесть — на верфи */
+function insReturnTick(){
+  const I=insAll(),t=now();let n=0;
+  I.back=I.back.filter(x=>{
+    if(t<x.at)return true;
+    const S=shipData(x.id);
+    if(S){G.owned[x.id]=true;wearAll()[x.id]=INS_WEAR*WEAR_FULL;n++;
+      logAdd("good","Страхкасса вернула «"+S.ru+"» · износ 55 % · пересесть можно на верфи");}
+    return false;
+  });
+  return n;
+}
+const INS_OLD_OPEN=openStation;
+openStation=function(){
+  const r=INS_OLD_OPEN.apply(this,arguments);
+  if(insReturnTick()&&G.mode==="dock"&&typeof renderTab==="function")renderTab();
+  return r;
+};
+/* плашка на ДОСКЕ верфи: каждый свой корпус — застрахован или нет, взнос и кнопка */
+function insSection(){
+  if(!G.st||G.st.stype!=="yard")return;
+  const I=insAll(),ids=Object.keys(G.owned).filter(id=>G.owned[id]&&id!=="strizh"&&shipData(id));
+  if(!ids.length&&!I.back.length)return;
+  secHead("СТРАХКАССА ГЛАВТРАССЫ",{count:ids.filter(insOn).length+" из "+(ids.length+I.back.length)});
+  for(const id of ids){
+    const S=shipData(id),on=insOn(id),r=el("div","row");
+    r.appendChild(el("div","nm","<b>«"+S.ru+"» · "+(on?"застрахован":"не застрахован")+"</b><s>взнос "+
+      insFee(id).toLocaleString("ru")+" кр за смену · разбит — "+(on?"вернётся через смену, износ 55 %":"уйдёт насовсем, с модулями")+"</s>"));
+    const b=el("button","act"+(on?"":" gold"),on?"СНЯТЬ":"ЗАСТРАХОВАТЬ");
+    b.onclick=()=>{sfx("ui");insSet(id,!on);renderTab();};
+    r.appendChild(b);$body.appendChild(r);
+  }
+  for(const x of I.back){
+    const S=shipData(x.id);if(!S)continue;
+    $body.appendChild(el("div","row","<div class='nm'><b>«"+S.ru+"» · в Страхкассе</b><s>вернут через "+
+      Math.max(1,Math.ceil((x.at-now())/60000))+" мин · «Взнос за смену. Не задерживайте.»</s></div>"));
+  }
+}
+/* запись: G.ins — в снимок и обратно (белый список 14-save не трогаем — обёртка) */
+const INS_OLD_SNAP=snapshot;
+snapshot=function(){const s=INS_OLD_SNAP.apply(this,arguments);s.ins=G.ins||null;return s;};
+const INS_OLD_APPLY=applySave;
+applySave=function(s){
+  const r=INS_OLD_APPLY.apply(this,arguments);
+  const b=s&&s.ins;G.ins=null;
+  if(b&&typeof b==="object"){
+    const I=insAll();
+    if(b.on&&typeof b.on==="object")for(const id in b.on)if(b.on[id])I.on[id]=1;
+    if(Array.isArray(b.back))for(const x of b.back)if(x&&typeof x.id==="string"&&shipData(x.id))I.back.push({id:x.id,at:+x.at||0});
+  }
+  return r;
+};
 
 /* ══════════════ look() — прибор кадра ══════════════
    `prof()` отвечает, во что обходится кадр. `look()` отвечает, ЧТО в нём.

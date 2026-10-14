@@ -15,8 +15,8 @@ below-normal priority. Reports go through lab.py: keys, dedup, quiet/gone, the p
 Data: %USERPROFILE%\\drift-data\\lab (LAB_DATA); the page: %USERPROFILE%\\drift-data\\site\\lab —
 served by --serve PORT at http://127.0.0.1:PORT/lab/ (the page fetches /lab/data.json).
 """
-import argparse, os, re, shutil, subprocess, sys, time, threading, urllib.parse
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import argparse, json, os, re, shutil, subprocess, sys, time, threading, urllib.parse
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -56,6 +56,13 @@ def kill_profile(prof):
     try: sh(["powershell", "-NoProfile", "-Command", ps], timeout=60)
     except Exception: pass
 
+def kill_tree(pid):
+    """зависший прогон: гасим его и всех потомков по PID — только своё дерево, без taskkill"""
+    ps = ("function K($i){ Get-CimInstance Win32_Process -Filter \"ParentProcessId=$i\" | ForEach-Object { K $_.ProcessId }; "
+          "Stop-Process -Id $i -Force -ErrorAction SilentlyContinue }; K %d") % pid
+    try: sh(["powershell", "-NoProfile", "-Command", ps], timeout=60)
+    except Exception: pass
+
 def peak_mem(pid, stop, box):
     try: import psutil
     except Exception: return
@@ -69,6 +76,55 @@ def peak_mem(pid, stop, box):
         except Exception: return
         stop.wait(1)
 
+# ── живой лог: время в начале строки, копия в файл (--log) ──
+class Tee:
+    def __init__(self, out, path):
+        self.out, self.f, self.bol = out, (open(path, "a", encoding="utf-8") if path else None), True
+        self.lock = threading.Lock()
+    def write(self, s):
+        # print пишет текст и «\n» двумя вызовами: строка копится у своего потока и уходит целиком,
+        # иначе два потока склеивали «→ light 4/6 → light 0/6» в одну строку
+        tl = self.__dict__.setdefault("tl", threading.local())
+        buf = getattr(tl, "buf", "") + s
+        *whole, tl.buf = buf.split("\n")
+        if not whole: return
+        with self.lock:
+            for line in whole:
+                part = time.strftime("%H:%M:%S ") + line + "\n"
+                self.out.write(part)
+                if self.f: self.f.write(part)
+            self.out.flush()
+            if self.f: self.f.flush()
+    def flush(self):
+        self.out.flush()
+        if self.f: self.f.flush()
+
+RUNNING = {}    # pid → профиль: по Ctrl+C гасим всё своё, чужой Chrome не трогаем
+STOP = threading.Event()
+NOW = {}        # pid → {kind, arg, t0}: что идёт сейчас — для пульта (lab-ui.py)
+# пульт и консоль видят одно: run.json — что идёт и сколько готово, stop.flag — просьба остановиться
+RUNF = os.path.join(os.environ["LAB_DATA"], "run.json")
+STOPF = os.path.join(os.environ["LAB_DATA"], "stop.flag")
+LIVE = {}
+
+def pid_alive(pid):
+    import ctypes
+    k = ctypes.windll.kernel32
+    h = k.OpenProcess(0x1000, False, int(pid))   # PROCESS_QUERY_LIMITED_INFORMATION
+    if not h: return False
+    code = ctypes.c_ulong(); k.GetExitCodeProcess(h, ctypes.byref(code)); k.CloseHandle(h)
+    return code.value == 259                        # STILL_ACTIVE
+
+def live_write(**kw):
+    LIVE.update(kw)
+    LIVE["now"] = [dict(v) for v in list(NOW.values())]
+    LIVE["beat"] = time.time()
+    try:
+        tmp = RUNF + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f: json.dump(LIVE, f, ensure_ascii=False)
+        os.replace(tmp, RUNF)
+    except Exception: pass
+
 def run_unit(u, ctx):
     """→ (unit, out_path, secs, mem_mb, rc, err_path); out is the report file lab.py reads"""
     kind, arg, cmd, prof, text = u["kind"], u["arg"], u["cmd"], u.get("prof"), u.get("text")
@@ -77,14 +133,19 @@ def run_unit(u, ctx):
         try: os.remove(f)
         except Exception: pass
     t0 = time.time(); rc = 0; box = [0]; stop = threading.Event()
+    if STOP.is_set(): return u, out, 0, 0, 130, err
+    print("  → %s %s" % (kind, arg))
     with open(err if text else os.devnull, "w", encoding="utf-8") as ef, open(out if text else os.devnull, "w", encoding="utf-8") as of:
         p = subprocess.Popen(cmd, cwd=ctx["src"], stdout=of, stderr=ef, creationflags=BELOW | NOWIN)
+        RUNNING[p.pid] = prof
+        NOW[p.pid] = {"kind": kind, "arg": arg, "t0": t0}; live_write()
         th = threading.Thread(target=peak_mem, args=(p.pid, stop, box), daemon=True); th.start()
         try: rc = p.wait(timeout=TMO[kind])
         except subprocess.TimeoutExpired:
             rc = 124
-            sh(["taskkill", "/T", "/F", "/PID", str(p.pid)])
+            kill_tree(p.pid)
         stop.set()
+        RUNNING.pop(p.pid, None); NOW.pop(p.pid, None)
     if prof:
         kill_profile(prof)
         shutil.rmtree(prof, ignore_errors=True)
@@ -143,9 +204,13 @@ def main():
     ap.add_argument("--no-build", action="store_true")
     ap.add_argument("--hunt-only", action="store_true", help="only the hunt, seed after seed")
     ap.add_argument("--serve", type=int, default=0, help="only serve the page on 127.0.0.1:PORT")
+    ap.add_argument("--log", default="", help="also append the log to this file")
     a = ap.parse_args()
     try: sys.stdout.reconfigure(encoding="utf-8")   # консоль cp437/cp1252: русские строки lab.py
     except Exception: pass
+    if a.log:
+        os.makedirs(os.path.dirname(os.path.abspath(a.log)), exist_ok=True)
+    sys.stdout = Tee(sys.stdout, a.log or None)
     web = os.environ["LAB_WEB"]
     if a.serve:
         site = os.path.dirname(web)
@@ -154,6 +219,18 @@ def main():
 
     T0 = time.time(); deadline = T0 + a.budget * 60
     src = os.path.abspath(a.src)
+    os.makedirs(os.environ["LAB_DATA"], exist_ok=True)
+    try:
+        old = json.load(open(RUNF, encoding="utf-8"))
+        if old.get("phase") not in ("done", "stopped", "failed") and old.get("pid") and old["pid"] != os.getpid() and pid_alive(old["pid"]):
+            sys.exit("lab: уже идёт другая сессия (pid %s) — остановите её сначала" % old["pid"])
+    except (OSError, ValueError): pass
+    try: os.remove(STOPF)
+    except OSError: pass
+    mode = "hunt" if a.hunt_only else ("quick" if a.quick else "full")
+    live_write(pid=os.getpid(), phase="build", ref=a.ref, jobs=a.jobs, budget=a.budget, mode=mode, steps=a.steps,
+               log=os.path.abspath(a.log) if a.log else "", t0=T0, deadline=deadline, done=0, ahead=0, green=0, red=0,
+               fresh=[], sid="", ver="", total=0)
     # ── своя копия: отсоединённая голова нужного ref, сборка в ней (артефакты сборки — её дело) ──
     if not a.no_build:
         if not os.path.exists(os.path.join(src, ".git")):
@@ -165,7 +242,9 @@ def main():
         head = sh(["git", "-C", src, "log", "-1", "--format=%h %s"]).stdout.strip()
         print("lab: %s at %s" % (a.ref, head))
         r = sh(["powershell", "-ExecutionPolicy", "Bypass", "-File", os.path.join(src, "build.ps1")], cwd=src, timeout=600)
-        if r.returncode: sys.exit("lab: build failed\n" + (r.stdout + r.stderr)[-2000:])
+        if r.returncode:
+            live_write(phase="failed", why="сборка упала")
+            sys.exit("lab: build failed\n" + (r.stdout + r.stderr)[-2000:])
     os.environ["LAB_BUILD"] = src
     sys.path.insert(0, HERE)
     import lab   # пути берёт из окружения выше
@@ -206,26 +285,56 @@ def main():
         seeds[0] += 1
         return page_unit(ctx, "hunt", str(seed), "only=%s&fseed=%d&hsteps=%d" % (urllib.parse.quote("охота"), seed, a.steps), "1280,800")
 
-    counts = {}
-    with ThreadPoolExecutor(max_workers=a.jobs) as ex:
-        live = {ex.submit(run_unit, u, ctx) for u in units}
-        def fill():
-            # охота добирает свободные места, пока бюджет позволяет зерно целиком
-            while (not a.quick or a.hunt_only) and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
-                live.add(ex.submit(run_unit, next_hunt(), ctx))
+    counts = {}; fresh = []
+    print("lab: прогонов в круге %d, потом охота до конца бюджета · Ctrl+C — остановить" % len(units))
+    ex = ThreadPoolExecutor(max_workers=a.jobs)
+    live = {ex.submit(run_unit, u, ctx) for u in units}
+    live_write(phase="run", sid=sid, ver=ver, total=len(units), ahead=len(live))
+    def fill():
+        # охота добирает свободные места, пока бюджет позволяет зерно целиком
+        while not STOP.is_set() and (not a.quick or a.hunt_only) and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
+            live.add(ex.submit(run_unit, next_hunt(), ctx))
+    try:
         fill()
         while live:
-            done = next(as_completed(live)); live.discard(done)
+            # ждём с секундным шагом: бесконечное ожидание на Windows глухо к Ctrl+C
+            ready, _ = wait(live, timeout=1, return_when=FIRST_COMPLETED)
+            if os.path.exists(STOPF):               # пульт попросил остановиться
+                try: os.remove(STOPF)
+                except OSError: pass
+                raise KeyboardInterrupt
+            if not ready: continue
+            done = ready.pop(); live.discard(done)
             u, out, secs, mem, rc, err = done.result()
             if u["kind"] == "hunt": seeds[0] -= 1   # зерно учтено в state — счётчик в полёте убывает
-            lab.report(u["kind"], u["arg"], out, secs, mem, rc, ver, sid, err, 0)
+            if rc == 130: continue                  # не начат: остановка
+            new = lab.report(u["kind"], u["arg"], out, secs, mem, rc, ver, sid, err, 0) or []
+            for e in new:
+                fresh.append(e)
+                print("  !! НОВАЯ ОШИБКА · %s · %s" % (e.get("suite", "")[:60], e.get("msg", "")[:160]))
             counts[u["kind"]] = counts.get(u["kind"], 0) + 1
+            vk = "green" if getattr(lab, "LAST_VERDICT", "") == "green" else "red"
+            live_write(done=sum(counts.values()), **{vk: LIVE.get(vk, 0) + 1},
+                       fresh=[{"suite": e.get("suite", ""), "msg": e.get("msg", "")} for e in fresh][-50:])
             lab.publish()
             fill()
+            left = max(0, int((deadline - time.time()) // 60))
+            print("  · готово %d · впереди %d · осталось %d мин · новых ошибок за сессию %d" % (sum(counts.values()), len(live), left, len(fresh)))
+            live_write(ahead=len(live))
+    except KeyboardInterrupt:
+        STOP.set()
+        live_write(phase="stopping")
+        print("lab: остановка — гашу свои прогоны (%d)" % len(RUNNING))
+        for pid, prof in list(RUNNING.items()):
+            kill_tree(pid)
+            if prof: kill_profile(prof)
+        for f in live: f.cancel()
+    ex.shutdown(wait=True)
 
     lab.session("end", sid, ver, a.budget)
     lab.publish()
     shutil.rmtree(tmp, ignore_errors=True)
+    live_write(phase="stopped" if STOP.is_set() else "done", t1=time.time(), ahead=0)
     print("lab: session %s done in %d min · units %s" % (sid, (time.time() - T0) // 60, " ".join("%s %d" % kv for kv in sorted(counts.items()))))
     print("lab: open errors — %s ; page — python lab/lab-local.py --serve 8790" % os.path.join(web, "errors.txt"))
 

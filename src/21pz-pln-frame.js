@@ -312,7 +312,8 @@ function plnSurface(S,o){
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
-  if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
+  /* с заходом, посчитанным заранее (G.land.pre), массивы те же — пересадки нет */
+  if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,-1e9,1e9);
   plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
@@ -347,6 +348,15 @@ function plnSurface(S,o){
     plnShipFrame(F,sp,q.yaw==null?L.shipYaw:q.yaw,Object.assign({L,floor:lift>0?plnPadTop(L,tr,wy):null},q));
     if(o.extra)o.extra(F,L,C,sp);
     man=[sp[0],sp[1]-q.alt,sp[2]];
+    /* планета встречает готовой: вещи земли (G.land.pre) стоят уже в спуске и строятся здесь,
+       а не на первом кадре поверхности; человека, бура и следов ещё нет */
+    if(S.deposits){
+      plnThingsFrame(L,F,S,p,C.ex,V);
+      plnMarksFrame(L,F,S,p,C.ex,V,lampK);
+      plnOwnFrame(L,F,S,p,C.ex,V,lampK);
+      plnBeastFrame(L,F,S,p,C.ex,V);
+      plnHerbFrame(L,F,S,p,C.ex,V);
+    }
   }else{
     /* корабль стоит на плите площадки (21pza); плита — тело и на поверхности */
     const lift=plnPadLift(L,tr,wy,L.shipX),ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ)+lift,L.shipZ];
