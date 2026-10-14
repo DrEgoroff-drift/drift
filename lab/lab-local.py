@@ -268,7 +268,7 @@ def main():
             lab.publish()
             fill()
             left = max(0, int((deadline - time.time()) // 60))
-            print("  · готово %d · в работе %d · осталось %d мин · новых ошибок за сессию %d" % (sum(counts.values()), len(live), left, len(fresh)))
+            print("  · готово %d · впереди %d · осталось %d мин · новых ошибок за сессию %d" % (sum(counts.values()), len(live), left, len(fresh)))
     except KeyboardInterrupt:
         STOP.set()
         print("lab: остановка — гашу свои прогоны (%d)" % len(RUNNING))
