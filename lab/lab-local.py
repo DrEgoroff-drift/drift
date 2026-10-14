@@ -15,7 +15,7 @@ below-normal priority. Reports go through lab.py: keys, dedup, quiet/gone, the p
 Data: %USERPROFILE%\\drift-data\\lab (LAB_DATA); the page: %USERPROFILE%\\drift-data\\site\\lab —
 served by --serve PORT at http://127.0.0.1:PORT/lab/ (the page fetches /lab/data.json).
 """
-import argparse, os, re, shutil, subprocess, sys, time, threading, urllib.parse
+import argparse, json, os, re, shutil, subprocess, sys, time, threading, urllib.parse
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -82,10 +82,15 @@ class Tee:
         self.out, self.f, self.bol = out, (open(path, "a", encoding="utf-8") if path else None), True
         self.lock = threading.Lock()
     def write(self, s):
+        # print пишет текст и «\n» двумя вызовами: строка копится у своего потока и уходит целиком,
+        # иначе два потока склеивали «→ light 4/6 → light 0/6» в одну строку
+        tl = self.__dict__.setdefault("tl", threading.local())
+        buf = getattr(tl, "buf", "") + s
+        *whole, tl.buf = buf.split("\n")
+        if not whole: return
         with self.lock:
-            for part in s.splitlines(True):
-                if self.bol: part = time.strftime("%H:%M:%S ") + part
-                self.bol = part.endswith("\n")
+            for line in whole:
+                part = time.strftime("%H:%M:%S ") + line + "\n"
                 self.out.write(part)
                 if self.f: self.f.write(part)
             self.out.flush()
@@ -96,6 +101,29 @@ class Tee:
 
 RUNNING = {}    # pid → профиль: по Ctrl+C гасим всё своё, чужой Chrome не трогаем
 STOP = threading.Event()
+NOW = {}        # pid → {kind, arg, t0}: что идёт сейчас — для пульта (lab-ui.py)
+# пульт и консоль видят одно: run.json — что идёт и сколько готово, stop.flag — просьба остановиться
+RUNF = os.path.join(os.environ["LAB_DATA"], "run.json")
+STOPF = os.path.join(os.environ["LAB_DATA"], "stop.flag")
+LIVE = {}
+
+def pid_alive(pid):
+    import ctypes
+    k = ctypes.windll.kernel32
+    h = k.OpenProcess(0x1000, False, int(pid))   # PROCESS_QUERY_LIMITED_INFORMATION
+    if not h: return False
+    code = ctypes.c_ulong(); k.GetExitCodeProcess(h, ctypes.byref(code)); k.CloseHandle(h)
+    return code.value == 259                        # STILL_ACTIVE
+
+def live_write(**kw):
+    LIVE.update(kw)
+    LIVE["now"] = [dict(v) for v in list(NOW.values())]
+    LIVE["beat"] = time.time()
+    try:
+        tmp = RUNF + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f: json.dump(LIVE, f, ensure_ascii=False)
+        os.replace(tmp, RUNF)
+    except Exception: pass
 
 def run_unit(u, ctx):
     """→ (unit, out_path, secs, mem_mb, rc, err_path); out is the report file lab.py reads"""
@@ -110,13 +138,14 @@ def run_unit(u, ctx):
     with open(err if text else os.devnull, "w", encoding="utf-8") as ef, open(out if text else os.devnull, "w", encoding="utf-8") as of:
         p = subprocess.Popen(cmd, cwd=ctx["src"], stdout=of, stderr=ef, creationflags=BELOW | NOWIN)
         RUNNING[p.pid] = prof
+        NOW[p.pid] = {"kind": kind, "arg": arg, "t0": t0}; live_write()
         th = threading.Thread(target=peak_mem, args=(p.pid, stop, box), daemon=True); th.start()
         try: rc = p.wait(timeout=TMO[kind])
         except subprocess.TimeoutExpired:
             rc = 124
             kill_tree(p.pid)
         stop.set()
-        RUNNING.pop(p.pid, None)
+        RUNNING.pop(p.pid, None); NOW.pop(p.pid, None)
     if prof:
         kill_profile(prof)
         shutil.rmtree(prof, ignore_errors=True)
@@ -190,6 +219,18 @@ def main():
 
     T0 = time.time(); deadline = T0 + a.budget * 60
     src = os.path.abspath(a.src)
+    os.makedirs(os.environ["LAB_DATA"], exist_ok=True)
+    try:
+        old = json.load(open(RUNF, encoding="utf-8"))
+        if old.get("phase") not in ("done", "stopped", "failed") and old.get("pid") and old["pid"] != os.getpid() and pid_alive(old["pid"]):
+            sys.exit("lab: уже идёт другая сессия (pid %s) — остановите её сначала" % old["pid"])
+    except (OSError, ValueError): pass
+    try: os.remove(STOPF)
+    except OSError: pass
+    mode = "hunt" if a.hunt_only else ("quick" if a.quick else "full")
+    live_write(pid=os.getpid(), phase="build", ref=a.ref, jobs=a.jobs, budget=a.budget, mode=mode, steps=a.steps,
+               log=os.path.abspath(a.log) if a.log else "", t0=T0, deadline=deadline, done=0, ahead=0, green=0, red=0,
+               fresh=[], sid="", ver="", total=0)
     # ── своя копия: отсоединённая голова нужного ref, сборка в ней (артефакты сборки — её дело) ──
     if not a.no_build:
         if not os.path.exists(os.path.join(src, ".git")):
@@ -201,7 +242,9 @@ def main():
         head = sh(["git", "-C", src, "log", "-1", "--format=%h %s"]).stdout.strip()
         print("lab: %s at %s" % (a.ref, head))
         r = sh(["powershell", "-ExecutionPolicy", "Bypass", "-File", os.path.join(src, "build.ps1")], cwd=src, timeout=600)
-        if r.returncode: sys.exit("lab: build failed\n" + (r.stdout + r.stderr)[-2000:])
+        if r.returncode:
+            live_write(phase="failed", why="сборка упала")
+            sys.exit("lab: build failed\n" + (r.stdout + r.stderr)[-2000:])
     os.environ["LAB_BUILD"] = src
     sys.path.insert(0, HERE)
     import lab   # пути берёт из окружения выше
@@ -246,6 +289,7 @@ def main():
     print("lab: прогонов в круге %d, потом охота до конца бюджета · Ctrl+C — остановить" % len(units))
     ex = ThreadPoolExecutor(max_workers=a.jobs)
     live = {ex.submit(run_unit, u, ctx) for u in units}
+    live_write(phase="run", sid=sid, ver=ver, total=len(units), ahead=len(live))
     def fill():
         # охота добирает свободные места, пока бюджет позволяет зерно целиком
         while not STOP.is_set() and (not a.quick or a.hunt_only) and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
@@ -255,6 +299,10 @@ def main():
         while live:
             # ждём с секундным шагом: бесконечное ожидание на Windows глухо к Ctrl+C
             ready, _ = wait(live, timeout=1, return_when=FIRST_COMPLETED)
+            if os.path.exists(STOPF):               # пульт попросил остановиться
+                try: os.remove(STOPF)
+                except OSError: pass
+                raise KeyboardInterrupt
             if not ready: continue
             done = ready.pop(); live.discard(done)
             u, out, secs, mem, rc, err = done.result()
@@ -265,12 +313,17 @@ def main():
                 fresh.append(e)
                 print("  !! НОВАЯ ОШИБКА · %s · %s" % (e.get("suite", "")[:60], e.get("msg", "")[:160]))
             counts[u["kind"]] = counts.get(u["kind"], 0) + 1
+            vk = "green" if getattr(lab, "LAST_VERDICT", "") == "green" else "red"
+            live_write(done=sum(counts.values()), **{vk: LIVE.get(vk, 0) + 1},
+                       fresh=[{"suite": e.get("suite", ""), "msg": e.get("msg", "")} for e in fresh][-50:])
             lab.publish()
             fill()
             left = max(0, int((deadline - time.time()) // 60))
             print("  · готово %d · впереди %d · осталось %d мин · новых ошибок за сессию %d" % (sum(counts.values()), len(live), left, len(fresh)))
+            live_write(ahead=len(live))
     except KeyboardInterrupt:
         STOP.set()
+        live_write(phase="stopping")
         print("lab: остановка — гашу свои прогоны (%d)" % len(RUNNING))
         for pid, prof in list(RUNNING.items()):
             kill_tree(pid)
@@ -281,6 +334,7 @@ def main():
     lab.session("end", sid, ver, a.budget)
     lab.publish()
     shutil.rmtree(tmp, ignore_errors=True)
+    live_write(phase="stopped" if STOP.is_set() else "done", t1=time.time(), ahead=0)
     print("lab: session %s done in %d min · units %s" % (sid, (time.time() - T0) // 60, " ".join("%s %d" % kv for kv in sorted(counts.items()))))
     print("lab: open errors — %s ; page — python lab/lab-local.py --serve 8790" % os.path.join(web, "errors.txt"))
 

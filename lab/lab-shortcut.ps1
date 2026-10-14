@@ -1,4 +1,4 @@
-﻿# Кладёт на рабочий стол ярлык «Лаборатория Дрейфа» → lab\lab-start.ps1.
+﻿# Кладёт на рабочий стол ярлык «Лаборатория Дрейфа» → пульт lab\lab-ui.py (консольное меню — lab\lab-start.ps1).
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Desk = [Environment]::GetFolderPath("Desktop")
 $W = New-Object -ComObject WScript.Shell
@@ -6,12 +6,14 @@ $W = New-Object -ComObject WScript.Shell
 $Tmp = Join-Path $Desk "drift-lab.lnk"
 $Fin = Join-Path $Desk "Drift Lab.lnk"
 $L = $W.CreateShortcut($Tmp)
-$L.TargetPath = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
-$L.Arguments = "-NoLogo -ExecutionPolicy Bypass -File `"$(Join-Path $Here 'lab-start.ps1')`""
+$Pyw = (Get-Command pythonw -ErrorAction SilentlyContinue).Source
+if (-not $Pyw) { $Pyw = Join-Path $env:LOCALAPPDATA "Programs\Python\Python312\pythonw.exe" }
+$L.TargetPath = $Pyw
+$L.Arguments = "`"$(Join-Path $Here 'lab-ui.py')`""
 $L.WorkingDirectory = $Here
 $L.IconLocation = "$env:WINDIR\System32\imageres.dll,144"
 $L.Description = "Лаборатория Дрейфа: тесты и охота ботом"
 $L.Save()
 if (Test-Path -LiteralPath $Fin) { Remove-Item -LiteralPath $Fin }
 Rename-Item -LiteralPath $Tmp -NewName (Split-Path $Fin -Leaf)
-Write-Host "Ярлык: $(Join-Path $Desk 'Лаборатория Дрейфа.lnk')"
+Write-Host "Ярлык: $Fin"
