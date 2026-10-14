@@ -75,8 +75,12 @@ function plnManPalette(){
 }
 
 /* части рига: сетка в системе своей кости. dyn — что переписать в вершинах по состоянию
-   кадра: материал и свечение (линза фонаря горит только ночью, факел — только с тягой) */
-function plnManBuild(P,low){
+   кадра: материал и свечение (линза фонаря горит только ночью, факел — только с тягой).
+   D — платье (M801b, 21pha1): нет или suit — скафандр; bare — скафандр без шлема и ранца
+   (смена в жилом отсеке); остальное — одежда без скафандра (plnManCloth) */
+function plnManBuild(P,low,D){
+  const bare=!!(D&&D.dress==="bare");
+  if(D&&D.dress&&D.dress!=="suit"&&!bare)return plnManCloth(P,low,D);
   const M=PLN_MAT.man,parts=[],white=plnHex("#efe9dc");
   const suit=plnHex("#ee7326"),suitD=plnHex("#c4581c"),joint=plnHex("#8a8f96"),glass=plnHex("#0e1a22"),dark=plnHex("#3a3d42");
   const lit=c=>plnMix3(c,white,.45);
@@ -96,18 +100,22 @@ function plnManBuild(P,low){
     plnBlob(m,{c:[0,.30,0],r:[.24,.29,.21],box:.5,sub:2,col:u=>u[1]<-.6?suitD:suit,mat:M,x:.3});
     belt(m,.55,.16,.035,joint,.35);
     plnBlob(m,{c:[.22,.32,0],r:[.05,.09,.08],box:.4,sub:2,col:P.torso.main,mat:M,x:.35});
+    if(!bare){
     plnBlob(m,{c:[-.31,.28,0],r:[.14,.26,.19],box:.45,sub:2,col:u=>u[0]<-.6?P.pack.dark:lit(P.pack.main),mat:M,x:.25});
     for(const z of [-.09,.09])plnTube(m,{path:[[-.46,.04,z],[-.46,.52,z]],rad:.062,sides:10,col:P.pack.dark,mat:M,x:.45,cap:true});
     plnBlob(m,{c:[-.46,.57,0],r:[.034,.028,.034],sub:1,col:P.pack.acc,mat:M,x:.5});
     for(const z of [-.17,.17])plnTube(m,{path:[[-.26,.50,z],[0,.56,z*1.1],[.21,.42,z*.9]],rad:.018,sides:6,col:dark,mat:M,x:.15});
-    plnTube(m,{path:[[-.39,.54,.11],[-.405,.90,.11]],rad:.008,sides:5,col:dark,mat:M,x:.3});
+    plnTube(m,{path:[[-.39,.54,.11],[-.405,.90,.11]],rad:.008,sides:5,col:dark,mat:M,x:.3});}
   });
   /* огонёк антенны дышит (закон 6) */
-  part(1,m=>plnBlob(m,{c:[-.405,.915,.11],r:[.014,.014,.014],sub:1,col:[.5,.9,.85],mat:PLN_MAT.glow,glow:1}),
+  if(!bare)part(1,m=>plnBlob(m,{c:[-.405,.915,.11],r:[.014,.014,.014],sub:1,col:[.5,.9,.85],mat:PLN_MAT.glow,glow:1}),
     st=>({glow:.35+.35*Math.sin(st.t*.03)}));
   /* индикатор нагрудника: бирюза, красный при малом заряде */
   part(1,m=>plnBlob(m,{c:[.272,.35,0],r:[.008,.014,.014],sub:1,col:low?[1,.25,.18]:[.45,.9,.85],mat:PLN_MAT.glow,glow:1.4}));
-  /* голова: шлем (шлем) с забралом и ободком, наушники, фонарь (фонарь) с линзой */
+  /* голова: шлем (шлем) с забралом и ободком, наушники, фонарь (фонарь) с линзой; без шлема —
+     голова человека над воротником (21pha1) */
+  if(bare)part(2,m=>plnManHead(m,D,M));
+  else{
   part(2,m=>{
     const shell=lit(P.helmet.main),band=P.helmet.acc,vis=u=>u[0]>.14&&u[1]<.46&&u[1]>-.50,rim=u=>u[0]>.05&&u[1]<.54&&u[1]>-.58;
     plnBlob(m,{c:[0,.19,0],r:[.235,.235,.235],sub:3,col:u=>vis(u)?glass:(rim(u)?band:shell),mat:M,x:u=>vis(u)?1:(rim(u)?.4:.35)});
@@ -118,7 +126,7 @@ function plnManBuild(P,low){
     plnBlob(m,{c:[.165,.32,-.075],r:[.03,.016,.012],sub:1,lean:-.5,col:[1,1,1],mat:PLN_MAT.glow,glow:1.1});
   });
   part(2,m=>plnBlob(m,{c:[.222,.40,0],r:[.016,.046,.046],sub:1,col:[1,.86,.62],mat:PLN_MAT.glow,glow:1}),
-    st=>({mat:st.lamp>.02?PLN_MAT.glow:PLN_MAT.man,glow:6*st.lamp,x:1}));
+    st=>({mat:st.lamp>.02?PLN_MAT.glow:PLN_MAT.man,glow:6*st.lamp,x:1}));}
   /* ноги: бедро, колено-гофра, голень, ботинок с подошвой и манжетой (ботинки) */
   for(const [th,sh,ft] of [[3,4,5],[6,7,8]]){
     part(th,m=>plnTube(m,{path:[[0,.02,0],[0,-.20,0],[0,-.40,0]],rad:t=>lerp(.13,.105,t),sides:10,col:suit,mat:M,x:.12,cap:true}));
@@ -153,7 +161,10 @@ function plnManBuild(P,low){
     for(let k=0;k<=R;k++)for(let s=0;s<S;s++)ids.push(plnVert(m,[-.31,.0,0],[0,-1,0],[1,.6,.2],PLN_MAT.glow,0,0,0));
     for(let k=0;k<R;k++)for(let s=0;s<S;s++){const s2=(s+1)%S;plnQuad(m,ids[k*S+s],ids[k*S+s2],ids[(k+1)*S+s2],ids[(k+1)*S+s]);}
   },"flame");
-  /* один буфер: вершины подряд, указатели со смещением */
+  return plnManPack(parts);
+}
+/* один буфер: вершины подряд, указатели со смещением */
+function plnManPack(parts){
   let nv=0,ni=0;
   for(const q of parts){q.off=nv;nv+=q.m.nv;ni+=q.m.ni;}
   const V=new Float32Array(nv*PLN_VS),I=new Uint32Array(ni);
@@ -184,7 +195,9 @@ function plnManPose(st){
   }
   /* бур в руках дрожит: плечи и чуть корпус (M624) */
   if(K.drill>.02){const vb=K.drill*.022*Math.sin(t*2.7);A[9]+=vb;A[11]+=vb*.9;A[1]+=vb*.25;}
-  const bob=a*.028*Math.cos(2*ph)+(1-a)*.006*breath-PLN_MAN_SIT*K.sit,W=Q.W;
+  /* поза карточки (21phc, M801b): углы целиком и таз ниже — сидя */
+  if(st.over)for(let i=0;i<13;i++)A[i]=st.over[i];
+  const bob=a*.028*Math.cos(2*ph)+(1-a)*.006*breath-PLN_MAN_SIT*K.sit-(st.drop||0),W=Q.W;
   for(let k=0;k<13;k++){
     const B=PLN_MAN_BONES[k],o=B.o,P=B.p<0?null:W[B.p],w=W[k]||(W[k]={c:1,s:0,x:0,y:0,z:0,a:0});
     if(P){w.a=P.a+A[k];w.x=P.x+P.c*o[0]-P.s*o[1];w.y=P.y+P.s*o[0]+P.c*o[1];w.z=P.z+o[2];}

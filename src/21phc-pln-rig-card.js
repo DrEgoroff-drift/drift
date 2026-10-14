@@ -6,9 +6,9 @@
    сбоку, поворот к объективу, наклон), свой свет (свет зовущего режима) и своя цель.
 
    ПРАВИЛА ФАЙЛА:
-   1. Поз не выдумываем: стоя, шаг (фаза по восьми ступеням), и всё, что лежит в книге рига
-      (PLN_MAN_POSE: воздух, факел, падение, круг, бур). Сидеть и снять шлем риг не умеет — такие
-      фигуры режим пока рисует старой кистью (база: сидящие и жилой отсек).
+   1. Позы: стоя, шаг (фаза по восьми ступеням), всё, что лежит в книге рига (PLN_MAN_POSE:
+      воздух, факел, падение, круг, бур), и три позы карточки (RIG_POSE_X: сидя, у верстака, на
+      поручне). Платье — D (21pha1): скафандр, без шлема, домашнее, рубаха, ватник (M801b).
    2. Живой человек грунта не трогается: сглаженные доли поз (PLN_MAN.k), кости (PLN_MAN.W) и
       PLN_DRILL.on подменяются на время позы и возвращаются; вершины пишутся в свою копию.
    3. Карточка рисуется своим кодировщиком и отправляется сразу (как студия h3dRun): кадр, что
@@ -25,12 +25,20 @@ const RIG_CARD={on:true,cap:24,
   W:[],                                 /* свои кости позы */
   made:0,                               /* сколько карточек нарисовано */
   by:{base:0,cave:0,raid:0,dig:0},            /* сколько раз режимы положили карточку */
+  q:[],baseQ:false,walk:0,face:{base:1},
   last:{}};                             /* последняя карточка режима: ноги, мерка, рост в пикселях — для отчёта и набора */
 /* рамка карточки в метрах, ноги на нуле: ранец и факел сзади, руки вперёд, круг — ноги назад */
 const RIG_BOX={x0:-.95,x1:.95,y0:-.32,y1:2.12};
 const RIG_H=1.8;                        /* рост человека, м (DESIGN-planet-style §4.1) */
 /* позы карточки: стоя и шаг — из походки рига, остальные — ключи его книги */
-const RIG_POSES=["stand","walk"].concat(Object.keys(PLN_MAN_POSE));
+/* позы карточки, которых нет на грунте: углы 13 костей целиком (вперёд — плюс) и насколько ниже таз.
+   Сидя — бёдра вперёд, голени вниз, руки на коленях; у верстака — руки перед собой на высоте пояса;
+   на поручне — корпус вперёд, предплечья лежат на перекладине */
+const RIG_POSE_X={
+  sit: {a:[0,-.10,.06, 1.50,-1.50,0, 1.42,-1.42,0, .35,.80, .28,.85],drop:.36},
+  work:{a:[0,.10,.12, .04,-.08,0, -.06,-.08,0, .75,.80, .62,.88],drop:0},
+  rail:{a:[0,.16,.02, .02,-.05,0, -.14,-.06,0, 1.05,.35, 1.0,.40],drop:.01}};
+const RIG_POSES=["stand","walk"].concat(Object.keys(PLN_MAN_POSE),Object.keys(RIG_POSE_X));
 const RIG_ALIAS={jump:"air"};
 
 /* краска гнёзд: «own» — комплект игрока (plnManPalette), «issue» — выдача смены базы (семейство I,
@@ -43,12 +51,19 @@ function rigCardPal(pal){
   out.visor=null;
   return out;
 }
-function rigCardMesh(pal,low){
-  const P=rigCardPal(pal),key=pal+(low?"L":"")+JSON.stringify(P),id=pal+(low?"L":"");
+/* платье карточки: строка (вид) или {dress, top, bot, skin, hair, shoe} — в объект и ключ */
+function rigDress(d){
+  if(!d||d==="suit")return null;
+  const D=typeof d==="string"?{dress:d}:d,o={dress:D.dress};
+  for(const k of ["top","bot","skin","hair","shoe","fur"])if(D[k])o[k]=D[k].map(v=>Math.round(v/4)*4);
+  return o;
+}
+function rigCardMesh(pal,low,D){
+  const dk=D?JSON.stringify(D):"",P=rigCardPal(pal),key=pal+(low?"L":"")+JSON.stringify(P)+dk,id=pal+(low?"L":"")+dk;
   let M=RIG_CARD.mesh[id];
   if(!M||M.key!==key){
     if(M&&M.vb&&M.dev===GPU.dev)GPU.trash.push(M.vb,M.ib);
-    const b=plnManBuild(P,!!low);
+    const b=plnManBuild(P,!!low,D);
     if(pal==="issue")rigCardIssueTint(b.parts);
     M=RIG_CARD.mesh[id]={key,parts:b.parts,V:new Float32Array(b.V),nv:b.nv,ni:b.ni,I:b.I,dev:null,vb:null,ib:null};
   }
@@ -75,6 +90,7 @@ function rigCardState(pose,phase,lamp){
   else if(pose==="fall"){st.on=false;st.vy=1;K.air=1;K.fall=1;}
   else if(pose==="swim")st.swim=1;
   else if(pose==="drill"){st.drill=true;K.drill=1;}
+  else if(RIG_POSE_X[pose]){st.over=RIG_POSE_X[pose].a;st.drop=RIG_POSE_X[pose].drop;}
   return {st,K};
 }
 /* поза в вершины M.V (система рига: x вперёд, y вверх, z вглубь, ноги на нуле) — правило 2 */
@@ -195,7 +211,7 @@ function rigLightKey(L){
 function rigPpmQ(ppm){return Math.round(Math.log(Math.max(1,ppm))/Math.log(1.06));}
 
 /* Карточка: o = {pose, phase, face (±1), yaw (поворот к объективу; по умолчанию .30 к нам),
-   tilt, ppm (пикселей CSS на метр), light, pal ("own"|"issue"), low}. Возвращает
+   tilt, ppm (пикселей CSS на метр), light, pal ("own"|"issue"), low, dress (rigDress)}. Возвращает
    {view, w, h, ppm} — текстуру и её размер в CSS при мерке ppm, или null (нет видеокарты) */
 function rigCard(o){
   if(!GPU.dev)return null;
@@ -209,8 +225,8 @@ function rigCard(o){
   const mq=rigPpmQ(o.ppm||13.1),ppm=Math.pow(1.06,mq);
   const nd=Math.max(1,Math.min(4,W>0?GPU.bw/W:1)),L=o.light||rigLightBase(1);
   const hdev=RIG_H*ppm*nd,ss=hdev<140?2:1;
-  const pal=o.pal==="issue"?"issue":"own",low=!!o.low;
-  const key=[pal,low?1:0,pose,pq,yq,tq,mq,nd.toFixed(2),ss,rigLightKey(L)].join("~");
+  const pal=o.pal==="issue"?"issue":"own",low=!!o.low,D=rigDress(o.dress);
+  const key=[pal,low?1:0,pose,pq,yq,tq,mq,nd.toFixed(2),ss,rigLightKey(L),D?JSON.stringify(D):""].join("~");
   let C=R.M.get(key);
   if(C){R.M.delete(key);R.M.set(key,C);return C;}
   const B=RIG_BOX,k=ppm*nd*ss;
@@ -218,7 +234,7 @@ function rigCard(o){
   const d=GPU.dev;
   if(!R.P)R.P=gpuPipeline("rig.card",rigCardDesc);
   if(!R.bg)R.bg=d.createBindGroup({layout:R.P.getBindGroupLayout(0),entries:[{binding:0,resource:{buffer:R.ub}}]});
-  const M=rigCardPose(rigCardMesh(pal,low),pose,pq/8*TAU,L.lamp||0);
+  const M=rigCardPose(rigCardMesh(pal,low,D),pose,pq/8*TAU,L.lamp||0);
   if(M.dev!==d){
     M.vb=d.createBuffer({size:M.nv*52,usage:GPUBufferUsage.VERTEX|GPUBufferUsage.COPY_DST});
     M.ib=d.createBuffer({size:Math.max(12,M.ni*4),usage:GPUBufferUsage.INDEX|GPUBufferUsage.COPY_DST});
