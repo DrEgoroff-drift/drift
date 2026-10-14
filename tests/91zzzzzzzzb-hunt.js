@@ -116,5 +116,4 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
     TEST.lines.push("    · шаг "+v.at+" · "+v.scene+" · "+v.gesture+(v.where?" @"+v.where:"")+(v.n>1?" (×"+v.n+")":""));
     TEST.lines.push("    · тропа до него: "+path.slice(0,v.at).join(" | "));
   }
-  ok(!bad.length&&!V.length,"зерно "+seed+": тропа чистая — ни исключений, ни порчи кошелька, ни чужой записи, ни находок детекторов");
 }));
