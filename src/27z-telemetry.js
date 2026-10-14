@@ -289,6 +289,8 @@ function hud(){
      обмен места в кадре не занимает (docs/DESIGN-online-risks.md, A1). */
   const cl=(typeof cloudLine==="function")?cloudLine():"";
   setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));
+  /* кошелёк шапки станции: экран может стоять открытым, когда мир меняет цифры (загрузка под ним, M331) — пишем при смене */
+  if(HUD_NUM.wc!==G.credits||HUD_NUM.wd!==G.data){HUD_NUM.wc=G.credits;HUD_NUM.wd=G.data;if(typeof stWalletSync==="function")stWalletSync();}
   /* масштаб — служебная цифра, и место ей в шапке под кассой (R6, 12.09), а не
      плашкой посреди мира; на буксире и под окнами её нет, как и было */
   if($zl){

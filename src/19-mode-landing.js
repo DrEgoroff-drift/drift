@@ -136,6 +136,8 @@ function updateLanding(dt){
       G.hull=Math.max(0,G.hull-dmg);
       if(typeof hitFx==="function")hitFx(1);
       say((soft?"Жёсткая посадка":"Крушение")+"\nкорпус −"+Math.round(dmg));
+      /* что было в момент касания — строкой журнала: по ней видно, на чём именно сорвалась посадка */
+      logAdd("warn",(soft?"Жёсткая посадка":"Крушение")+" · вертикаль "+L.touch.vy+", вбок "+L.touch.vx+", крен "+L.touch.a+", склон "+L.touch.slope+" · допуск ×"+L.touch.tol.toFixed(1));
     }
   }
 }

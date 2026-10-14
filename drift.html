@@ -69659,6 +69659,8 @@ function updateLanding(dt){
       G.hull=Math.max(0,G.hull-dmg);
       if(typeof hitFx==="function")hitFx(1);
       say((soft?"Жёсткая посадка":"Крушение")+"\nкорпус −"+Math.round(dmg));
+      /* что было в момент касания — строкой журнала: по ней видно, на чём именно сорвалась посадка */
+      logAdd("warn",(soft?"Жёсткая посадка":"Крушение")+" · вертикаль "+L.touch.vy+", вбок "+L.touch.vx+", крен "+L.touch.a+", склон "+L.touch.slope+" · допуск ×"+L.touch.tol.toFixed(1));
     }
   }
 }
@@ -115513,10 +115515,14 @@ function renderTab(){
     put();requestAnimationFrame(put);
   }
 }
-function renderTabBody(){
-  const st=stat();
+/* кошелёк шапки: экран может остаться открытым под загрузкой сейва (M331), а цифры в нём обновлял только отрисовщик вкладки */
+function stWalletSync(){
   document.getElementById("wCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("wDt").textContent=G.data+" данных";
+}
+function renderTabBody(){
+  const st=stat();
+  stWalletSync();
   $body.innerHTML="";
   if(tab==="none"){
     /* заправочная: вкладок нет вовсе, но экран не должен выглядеть сломанным */
@@ -131152,6 +131158,8 @@ function hud(){
      обмен места в кадре не занимает (docs/DESIGN-online-risks.md, A1). */
   const cl=(typeof cloudLine==="function")?cloudLine():"";
   setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));
+  /* кошелёк шапки станции: экран может стоять открытым, когда мир меняет цифры (загрузка под ним, M331) — пишем при смене */
+  if(HUD_NUM.wc!==G.credits||HUD_NUM.wd!==G.data){HUD_NUM.wc=G.credits;HUD_NUM.wd=G.data;if(typeof stWalletSync==="function")stWalletSync();}
   /* масштаб — служебная цифра, и место ей в шапке под кассой (R6, 12.09), а не
      плашкой посреди мира; на буксире и под окнами её нет, как и было */
   if($zl){

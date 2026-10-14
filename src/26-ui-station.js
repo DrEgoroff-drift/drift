@@ -540,10 +540,14 @@ function renderTab(){
     put();requestAnimationFrame(put);
   }
 }
-function renderTabBody(){
-  const st=stat();
+/* кошелёк шапки: экран может остаться открытым под загрузкой сейва (M331), а цифры в нём обновлял только отрисовщик вкладки */
+function stWalletSync(){
   document.getElementById("wCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("wDt").textContent=G.data+" данных";
+}
+function renderTabBody(){
+  const st=stat();
+  stWalletSync();
   $body.innerHTML="";
   if(tab==="none"){
     /* заправочная: вкладок нет вовсе, но экран не должен выглядеть сломанным */
