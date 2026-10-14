@@ -105721,6 +105721,8 @@ function exitBelt(){
   hangSay("belt.out",["Выход из пояса","в трюме: "+held()],"ship",150);   /* на корабле (M803) */
 }
 const CUT_RANGE=340;   // резак достаёт только вблизи, захват — издалека
+/* урон касания камня: медленное касание — мелочь, потолок — 20 (M-плейтест 09.10.2026) */
+function beltImpactDmg(closing){return Math.min(20,Math.max(0,3*closing));}
 function updateBelt(dt){
   const b=G.belt,st=stat();
   const yd=G.opts.invYaw?-1:1;
@@ -105779,10 +105781,17 @@ function updateBelt(dt){
     if(clear<b.near)b.near=clear;
     if(d<a.r+12&&d>0&&a.grove){b.vx+=dx/d*.3;b.vy+=dy/d*.3;b.vz+=dz/d*.3;continue;}   /* роща не бьёт (11j) */
     if(d<a.r+12&&d>0){
-      const dmg=Math.min(26,sp2*5+2);
-      G.hull=Math.max(0,G.hull-dmg*dt*.5);
-      if(typeof hitFx==="function")hitFx(.55);
-      b.vx-=dx/d*.6;b.vy-=dy/d*.6;b.vz-=dz/d*.6;
+      /* урон — от скорости СБЛИЖЕНИЯ, один раз на касание (было: sp2*5+2 каждый кадр, пока борт
+         в 12 ед. от камня — новичок терял весь корпус за пару десятых секунды; плейтест 09.10.2026) */
+      const closing=(b.vx*dx+b.vy*dy+b.vz*dz)/d;
+      if(closing>.2&&G.t-(b.impactT===undefined?-1e9:b.impactT)>45){
+        b.impactT=G.t;
+        const dmg=beltImpactDmg(closing);
+        G.hull=Math.max(0,G.hull-dmg);
+        if(typeof hitFx==="function")hitFx(.55);
+        say("УДАР · КОРПУС "+Math.round(G.hull),90);
+        b.vx-=dx/d*(closing+.5);b.vy-=dy/d*(closing+.5);b.vz-=dz/d*(closing+.5);
+      }else{b.vx-=dx/d*.2;b.vy-=dy/d*.2;b.vz-=dz/d*.2;}
       b.hit=14;
       /* касание слышно: вспышка на .22 альфы — единственный сигнал, и корпус
          стирался о камень молча, 45→28 мелкими тычками (плейтест 30.08.2026) */

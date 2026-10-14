@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 566 · top-level symbols: 8240
+Files: 567 · top-level symbols: 8241
 
 ## SYMBOLS
 
@@ -2672,6 +2672,7 @@ beltGpuDraw                  src/24ba-belt-gpu.js:91-233
 beltHangAt                   src/24bc-belt-hud.js:437-445
 beltHudPush                  src/24bc-belt-hud.js:447-461
 beltIcy                      src/24-mode-belt.js:70
+beltImpactDmg                src/24-mode-belt.js:172
 beltMaw                      src/24be-belt-rock-gpu.js:279-284
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:25-101
 bioMark                      src/20e-species.js:310-314
@@ -3633,7 +3634,7 @@ drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
 drawBeastAlien               src/20f-fauna.js:68-238
-drawBelt                     src/24-mode-belt.js:363
+drawBelt                     src/24-mode-belt.js:372
 drawBeltRocks                src/17gc-sys-belt.js:67-152
 drawBillboard                src/17k-billboard.js:182-198
 drawBuildMenu                src/21aa-base-rooms.js:577-593
@@ -3686,7 +3687,7 @@ drawGesture                  src/17h-sys-gesture.js:92-144
 drawGestureTop               src/17h-sys-gesture.js:148-177
 drawGiant                    src/17o-giants.js:183-212
 drawGiantsMap                src/17o-giants.js:70-82
-drawGlassHUD                 src/24-mode-belt.js:365-452
+drawGlassHUD                 src/24-mode-belt.js:374-461
 drawGlyph                    src/12t-settle.js:59-77
 drawGround                   src/19-mode-landing-ground.js:11-232
 drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
@@ -7941,7 +7942,7 @@ unpackPart                   src/05-parts.js:473-479
 updateAllies                 src/12a-crew.js:644-677
 updateBarges                 src/12l-barge.js:170-203
 updateBase                   src/21a-mode-base.js:405-563
-updateBelt                   src/24-mode-belt.js:171-361
+updateBelt                   src/24-mode-belt.js:173-370
 updateCave                   src/22-mode-cave.js:251-436
 updateCaveDeco               src/22a-cave-deco.js:205-228
 updateCombat                 src/13-pirates.js:119-312
@@ -9588,7 +9589,7 @@ zoomTo                       src/15-input.js:358
 ## src/23b-dig-gpu.js · 13 KB
   · шахта на видеокарте: свет, день в стволе, руда, пыль (G7):1
 
-## src/24-mode-belt.js · 22 KB
+## src/24-mode-belt.js · 23 KB
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
 ## src/24a-mode-raid.js · 27 KB
@@ -9929,6 +9930,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91a1-quant.js · 1 KB
 
 ## tests/91a2-tablock.js · 1 KB
+
+## tests/91a3-beltimpact.js · 2 KB
 
 ## tests/91qa-marks-act.js · 31 KB
   · ориентиры как места действия (M627b):1
