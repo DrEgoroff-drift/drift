@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 567 · top-level symbols: 8241
+Files: 568 · top-level symbols: 8242
 
 ## SYMBOLS
 
@@ -1697,11 +1697,11 @@ RACK_SH                      src/25d-instr-rack.js:188
 RADIO                        src/10a-radio.js:119
 RADIO_ARCH                   src/10a-radio.js:24-40
 RADIO_BANDS                  src/25e-receiver.js:13-18
-RADIO_BASS                   src/10a-radio.js:524-545
-RADIO_BASS_POOL              src/10a-radio.js:546-552
+RADIO_BASS                   src/10a-radio.js:526-547
+RADIO_BASS_POOL              src/10a-radio.js:548-554
 RADIO_CHORD_GRAPH            src/10a-radio.js:177
 RADIO_DRIFT_MODES            src/10a-radio.js:118
-RADIO_EN                     src/10a-radio.js:382
+RADIO_EN                     src/10a-radio.js:384
 RADIO_GEN_A                  src/10a-radio.js:114
 RADIO_GEN_B                  src/10a-radio.js:115
 RADIO_GEN_C                  src/10a-radio.js:178
@@ -1710,7 +1710,7 @@ RADIO_MODES                  src/10a-radio.js:88-91
 RADIO_MOOD                   src/10a-radio.js:105-113
 RADIO_PROGS                  src/10a-radio.js:102
 RADIO_PROG_SETS              src/10a-radio.js:93-101
-RADIO_RH                     src/10a-radio.js:375-381
+RADIO_RH                     src/10a-radio.js:377-383
 RADIO_TRACKS                 src/10a-radio.js:41-87
 RAID_FOE_BK                  src/24ab-raid-foe.js:137
 RAID_GPU_WGSL                src/24aa1-raid-gpu.js:124
@@ -6766,52 +6766,53 @@ rackToggle                   src/25d-instr-rack.js:46-49
 rackWarm                     src/25d-instr-rack.js:373-376
 radioA                       src/10a-radio.js:128
 radioAdvance                 src/10a-radio.js:238-241
-radioArp                     src/10a-radio.js:635-657
+radioArp                     src/10a-radio.js:637-659
 radioBand                    src/25e-receiver.js:19-27
 radioBar                     src/10a-radio.js:275
-radioBass                    src/10a-radio.js:559-585
-radioBassPick                src/10a-radio.js:554-558
-radioBassVoice               src/10a-radio.js:587-631
-radioBeacon                  src/10a-radio.js:797-818
-radioBell                    src/10a-radio.js:819-821
-radioBellVoice               src/10a-radio.js:783-792
+radioBass                    src/10a-radio.js:561-587
+radioBassPick                src/10a-radio.js:556-560
+radioBassVoice               src/10a-radio.js:589-633
+radioBeacon                  src/10a-radio.js:799-820
+radioBell                    src/10a-radio.js:821-823
+radioBellVoice               src/10a-radio.js:785-794
 radioBpm                     src/10a-radio.js:276
 radioBuild                   src/10a-radio.js:131-168
-radioCap                     src/10a-radio.js:435-440
-radioCapRel                  src/10a-radio.js:442-446
-radioDeg                     src/10a-radio.js:282
+radioCap                     src/10a-radio.js:437-442
+radioCapRel                  src/10a-radio.js:444-448
+radioDeg                     src/10a-radio.js:284
+radioDelayS                  src/10a-radio.js:278
 radioDrumStyle               src/10a-radio.js:255
-radioDrums                   src/10a-radio.js:699-737
-radioEnv                     src/10a-radio.js:447-452
+radioDrums                   src/10a-radio.js:701-739
+radioEnv                     src/10a-radio.js:449-454
 radioForm                    src/10a-radio.js:209-218
 radioGenTrack                src/10a-radio.js:179-208
-radioHat                     src/10a-radio.js:777-782
-radioKick                    src/10a-radio.js:753-759
-radioLead                    src/10a-radio.js:661-697
+radioHat                     src/10a-radio.js:779-784
+radioKick                    src/10a-radio.js:755-761
+radioLead                    src/10a-radio.js:663-699
 radioLoad                    src/10a-radio.js:219-236
-radioMelody                  src/10a-radio.js:400-429
+radioMelody                  src/10a-radio.js:402-431
 radioMix                     src/10a-radio.js:256-274
 radioMoodNow                 src/10a-radio.js:248-254
 radioNow                     src/10a-radio.js:126
 radioOn                      src/10a-radio.js:125
-radioPad                     src/10a-radio.js:455-515
-radioPhrase                  src/10a-radio.js:383-399
-radioRim                     src/10a-radio.js:771-776
-radioS16                     src/10a-radio.js:277
-radioScale                   src/10a-radio.js:278-281
+radioPad                     src/10a-radio.js:457-517
+radioPhrase                  src/10a-radio.js:385-401
+radioRim                     src/10a-radio.js:773-778
+radioS16                     src/10a-radio.js:279
+radioScale                   src/10a-radio.js:280-283
 radioSkip                    src/10a-radio.js:242-246
-radioSnare                   src/10a-radio.js:760-769
-radioSpectral                src/10a-radio.js:829-846
+radioSnare                   src/10a-radio.js:762-771
+radioSpectral                src/10a-radio.js:831-848
 radioSrc                     src/10a-radio.js:124
-radioStep                    src/10a-radio.js:307-372
-radioStop                    src/10a-radio.js:872-877
-radioSweep                   src/10a-radio.js:859-871
-radioTabla                   src/10a-radio.js:738-743
-radioTick                    src/10a-radio.js:285-301
-radioTimp                    src/10a-radio.js:744-752
+radioStep                    src/10a-radio.js:309-374
+radioStop                    src/10a-radio.js:874-879
+radioSweep                   src/10a-radio.js:861-873
+radioTabla                   src/10a-radio.js:740-745
+radioTick                    src/10a-radio.js:287-303
+radioTimp                    src/10a-radio.js:746-754
 radioTune                    src/25e-receiver.js:29-85
-radioWave                    src/10a-radio.js:848-855
-radioWhere                   src/10a-radio.js:302-306
+radioWave                    src/10a-radio.js:850-857
+radioWhere                   src/10a-radio.js:304-308
 raidFloorAt                  src/24a-mode-raid.js:77
 raidFloorH                   src/24a-mode-raid.js:73-76
 raidFoeSprite                src/24ab-raid-foe.js:138-144
@@ -9932,6 +9933,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91a2-tablock.js · 1 KB
 
 ## tests/91a3-beltimpact.js · 2 KB
+
+## tests/91a4-delayclamp.js · 1 KB
 
 ## tests/91qa-marks-act.js · 31 KB
   · ориентиры как места действия (M627b):1
