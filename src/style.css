@@ -3010,3 +3010,11 @@ body.rackon #prompt{opacity:0}
 }
 :is(#stHallTags,#room3Tags) .ht b{display:block;font-size:12px;font-weight:600;letter-spacing:.14em;color:#f3e7d2;line-height:1.2}
 :is(#stHallTags,#room3Tags) .ht s{display:block;text-decoration:none;font-size:11px;color:rgba(243,231,210,.66);line-height:1.25;margin-top:2px}
+/* надпись на тёмном экране пустого пульта (M850a): без плашки и выноски — свет экрана, которого нет */
+#room3Tags .ht.lf{border-left:1px solid rgba(255,236,200,.1);border-right:2px solid var(--amber);text-align:right}
+#room3Tags .ht.lf::after{left:auto;right:-2px}
+#room3Tags .ht.lf::before{left:auto;right:-5px}
+#room3Tags .ht.sg{padding:0;background:none;border:0;box-shadow:none}
+#room3Tags .ht.sg::before,#room3Tags .ht.sg::after{display:none}
+#room3Tags .ht.sg b{font-size:11px;font-weight:500;letter-spacing:.2em;color:rgba(168,178,192,.62)}
+#room3Tags .ht.sg s{font-size:10px;color:rgba(168,178,192,.42)}

@@ -3024,6 +3024,14 @@ body.rackon #prompt{opacity:0}
 }
 :is(#stHallTags,#room3Tags) .ht b{display:block;font-size:12px;font-weight:600;letter-spacing:.14em;color:#f3e7d2;line-height:1.2}
 :is(#stHallTags,#room3Tags) .ht s{display:block;text-decoration:none;font-size:11px;color:rgba(243,231,210,.66);line-height:1.25;margin-top:2px}
+/* надпись на тёмном экране пустого пульта (M850a): без плашки и выноски — свет экрана, которого нет */
+#room3Tags .ht.lf{border-left:1px solid rgba(255,236,200,.1);border-right:2px solid var(--amber);text-align:right}
+#room3Tags .ht.lf::after{left:auto;right:-2px}
+#room3Tags .ht.lf::before{left:auto;right:-5px}
+#room3Tags .ht.sg{padding:0;background:none;border:0;box-shadow:none}
+#room3Tags .ht.sg::before,#room3Tags .ht.sg::after{display:none}
+#room3Tags .ht.sg b{font-size:11px;font-weight:500;letter-spacing:.2em;color:rgba(168,178,192,.62)}
+#room3Tags .ht.sg s{font-size:10px;color:rgba(168,178,192,.42)}
 
 </style>
 </head>
@@ -123571,8 +123579,8 @@ function hallGlint(K,T){
 function hallCord(K,x,y,z,hc){if(hc>y+.02)K.tube([[x,hc,z],[x,y,z]],.005,K.mt([20,20,22],.2,4,0),4);}
 /* лампа-ключ: глубокая эмалевая тарелка с завёрнутым ободом, патрон, колпачок и шнур до потолка.
    y — высота колбы (там же свет сцены); снаружи тарелка тёмная, изнутри светлая эмаль */
-function hallShade(K,x,y,z,tone,hc){
-  const Md=K.mt([104,126,112],.55,10,R3P.brushed),Me=K.mt([232,224,206],.3,6,0,.4),Mr=K.mt([26,28,30],.65,11,R3P.brushed);
+function hallShade(K,x,y,z,tone,hc,off){
+  const Md=K.mt([104,126,112],.55,10,R3P.brushed),Me=K.mt([232,224,206],.3,6,0,off?0:.4),Mr=K.mt([26,28,30],.65,11,R3P.brushed);
   K.tube([[x,hc,z],[x,y+.29,z]],.007,K.mt([20,20,22],.2,4,0),5);
   K.push([x,y,z]);
   K.lathe([[-.085,.29],[-.07,.282],[.0,.22],[.09,.13],[.15,.07],[.18,.045],[.19,0]],24,Md);
@@ -124791,18 +124799,20 @@ function hallNavSync(){
    страницы шагают руками — CPU тогда по настоящим часам съёмщика (__STEP.real). Без замера ничего не создаётся */
 function hallClk(){return (typeof window!=="undefined"&&window.__STEP&&window.__STEP.real)?window.__STEP.real():wallMs();}
 const HALL_COST={on:false,qs:null,res:null,rb:[],acc:null};
-async function hallCost(sec){
-  const d=GPU.dev;if(!d||!GPU.tsOk||!HALL.open)return null;
+/* fn/cn — чужой кадр на том же движке (комнаты 29r); без них — зал */
+async function hallCost(sec,fn,cn){
+  const d=GPU.dev;if(!d||!GPU.tsOk||(!fn&&!HALL.open))return null;
+  fn=fn||(()=>hallFrame());
   const C=HALL_COST;
   if(!C.qs){C.qs=d.createQuerySet({type:"timestamp",count:3});C.res=d.createBuffer({size:24,usage:GPUBufferUsage.QUERY_RESOLVE|GPUBufferUsage.COPY_SRC});}
   C.acc={gpu:[],cpu:[]};C.on=true;
-  try{for(let i=Math.round(sec*60);i>0;i--){await new Promise(r=>requestAnimationFrame(r));hallFrame();}}
+  try{for(let i=Math.round(sec*60);i>0;i--){await new Promise(r=>requestAnimationFrame(r));fn();}}
   finally{C.on=false;}
   await new Promise(r=>setTimeout(r,300));
   const q=a=>{const s=a.slice().sort((x,y)=>x-y);return s.length?{med:+s[s.length>>1].toFixed(2),p90:+s[Math.floor(s.length*.9)].toFixed(2),n:s.length}:null;};
-  return {gpu:q(C.acc.gpu),cpu:q(C.acc.cpu),px:HALL.cn?[HALL.cn.width,HALL.cn.height]:null};
+  return {gpu:q(C.acc.gpu),cpu:q(C.acc.cpu),px:(cn=cn||HALL.cn)?[cn.width,cn.height]:null};
 }
-{const f0=hallFrame;hallFrame=function(){
+function hallCostWrap(f0){return function(){
   const C=HALL_COST;if(!C.on)return f0();
   const d=GPU.dev,qu=d.queue,sub=w=>{const e=d.createCommandEncoder();e.beginComputePass({timestampWrites:w}).end();
     if(w.endOfPassWriteIndex===2){const rb=C.rb.find(b=>b.mapState==="unmapped")||(C.rb.length<6?(C.rb.push(d.createBuffer({size:24,usage:GPUBufferUsage.MAP_READ|GPUBufferUsage.COPY_DST})),C.rb[C.rb.length-1]):null);
@@ -124813,6 +124823,7 @@ async function hallCost(sec){
   const t0=hallClk();const r=f0();C.acc.cpu.push(hallClk()-t0);
   sub({querySet:C.qs,beginningOfPassWriteIndex:1,endOfPassWriteIndex:2});
   return r;};}
+hallFrame=hallCostWrap(hallFrame);
 
 /* ══════════════ портрет в объёме (M725) ══════════════
    Тот же человек, что в зале (27f3 cpMesh), крупно: бюст в нише цвета роли, свет студии — тёплый ключ
@@ -136513,7 +136524,7 @@ function hq3Mesh(L){
     if(on)for(let k=0;k<7;k++){const h=.08+.32*((((i*7+k)*2654435761)>>>0)%100)/100;
       K.box([x-.6+k*.2,1.2+h/2,B+.222],[.035,h/2,.004],K.mt(mixc(sc,[40,40,40],.25),.2,4,0,sel?.8:.5,true),0);}
     /* плашка домена над экраном: тёмная, у занятого — тонкая полоса акцента */
-    hallShade(K,on&&L.sel===i?x-Math.sign(x)*.35:x,hc-.3,B+1.25,on?[255,206,150]:[40,40,44],hc);
+    hallShade(K,on&&L.sel===i?x-Math.sign(x)*.35:x,hc-.3,B+1.25,on?[255,206,150]:[40,40,44],hc,!on);
     K.box([x,1.92,B+.18],[.36,.05,.012],Mdk,.006);
     if(on)K.box([x,1.92,B+.193],[.3,.008,.001],K.mt(sc,.3,6,0,.6,true),0);
     /* кресло: колонна, крестовина, сиденье, спинка — развёрнуто к голо-столу */
@@ -136562,20 +136573,24 @@ function hq3Scene(L,cam,t){
     OT.set([P.x,P.z,P.on?.34:.3,(P.on?1.15:.6)],(ii*R3_PART+R3_PART-1)*4);
     draws.push([P.mesh,ii,1]);P.ii=ii;ii++;}
   const lights=[],bulbs=[],B=HQ3.B,hc=HQ3.hc,cold=r3Lin([130,196,255]),warm=r3Lin([255,200,140]);
-  lights.push({p:[0,1.15,.75],range:7.5,c:r3Sc(cold,3.4),spot:1,d:[0,.12,-.99],cosO:Math.cos(1.05),cosI:Math.cos(.45),shadow:1,vol:.12,key:1});
+  /* смена: днём окно дока — вторая заливка сверху, ночью окно гаснет до звёзд, комнату держат лампы доменов и голо-стол */
+  const nk=room3Night(),day=1-nk;
+  lights.push({p:[0,1.15,.75],range:7.5,c:r3Sc(cold,3.4*(1+.2*nk)),spot:1,d:[0,.12,-.99],cosO:Math.cos(1.05),cosI:Math.cos(.45),shadow:1,vol:.12,key:1});
   HQ3_X.forEach((x,i)=>{if(!L.occ[i])return;const sel=L.sel===i;
-    const lx=sel?x-Math.sign(x)*.35:x;lights.push({p:[lx,hc-.3,B+1.25],range:4.6,c:r3Sc(warm,sel?7.5:2.4),spot:1,d:sel?[0,-.96,.28]:[0,-1,-.12],cosO:Math.cos(.66),cosI:Math.cos(.3),shadow:sel?1:0,vol:sel?.1:.04});
+    const lx=sel?x-Math.sign(x)*.35:x;lights.push({p:[lx,hc-.3,B+1.25],range:4.6,c:r3Sc(warm,(sel?7.5:2.4)*(1+.3*nk)),spot:1,d:sel?[0,-.96,.28]:[0,-1,-.12],cosO:Math.cos(.66),cosI:Math.cos(.3),shadow:sel?1:0,vol:sel?.1:.04});
     bulbs.push([x,hc-.3,B+1.05,sel?.9:.4]);});
   HQ3_X.forEach((x,i)=>{if(!L.occ[i])return;lights.push({p:[x,1.0,B+1.0],range:2.8,c:r3Sc(r3Lin(mixc(HQ3_SCR[HQ_ORDER[i]],[255,190,130],.4)),L.sel===i?1.1:.7),vol:0});});
   /* голо-стол светит и вниз: пятно холода на полу вокруг тумбы — передний план держит форму */
   lights.push({p:[0,1.3,.2],range:4.2,c:r3Sc(cold,1.6),vol:0});
-  const W=HQ3.win;lights.push({p:[0,W[3]-.1,B+.3],range:7,c:r3Sc(r3Lin([150,176,220]),1.3),spot:1,d:[0,-.8,.6],cosO:Math.cos(.8),cosI:Math.cos(.35),vol:.05});
+  const W=HQ3.win;lights.push({p:[0,W[3]-.1,B+.3],range:7+3*nk,c:r3Sc(r3Lin(mixc([170,192,226],[60,84,150],nk)),4.2*day+.45*nk),spot:1,
+    d:[0,-.8+.4*nk,.6+.3*nk],cosO:Math.cos(.8+.5*nk),cosI:Math.cos(.35+.4*nk),vol:.06*day});
   lights.push({p:[HQ3.R-.3,2.2,2.2],range:2.6,c:r3Sc(warm,.9),vol:0});
-  const sky=r3Lin([56,66,86]),gnd=r3Lin([66,62,58]),fog=r3Lin([34,42,58]);
+  /* рассеянный ночью не падает в черноту: синее небо дока, value стен ≥ .08 */
+  const sky=r3Lin(mixc([60,70,88],[40,52,86],nk)),gnd=r3Lin(mixc([70,64,58],[52,56,70],nk)),fog=r3Lin(mixc([34,42,58],[22,30,52],nk));
   const kind=L.st&&typeof hallT==="function"?hallT(L.st).win:5;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
-    sky:[...sky,1.6],gnd:[...gnd,.065],fog:[...r3Sc(fog,.25),.04],acc:[...r3Lin([255,170,90]),1],
-    win:[W[0],W[2],W[1],W[3]],win2:[B,kind,7,.7],sgn:[0,0,0,0],sgn2:[B,0,0,0],
+    sky:[...sky,2.0-1.25*nk],gnd:[...gnd,.075-.03*nk],fog:[...r3Sc(fog,.25),.04],acc:[...r3Lin([255,170,90]),1],
+    win:[W[0],W[2],W[1],W[3]],win2:[B,kind,7,.7*(.38+.62*day)],sgn:[0,0,0,0],sgn2:[B,0,0,0],
     flm:[0,0,1,0],flm2:[B,0,0,0],tsg:null,tfl:null,M,ot:OT};
 }
 
@@ -136612,6 +136627,7 @@ function room3Go(place,first){
 }
 /* дыхание камеры: 2 см в секунду по кругу — комната живая, когда никто не двигается */
 function room3Breath(c,t){return {eye:[c.eye[0]+.02*Math.sin(t*.31),c.eye[1]+.012*Math.sin(t*.23),c.eye[2]],tgt:c.tgt,fy:c.fy};}
+function room3Night(){return ROOM3.night!=null?ROOM3.night:hallNight();}
 function room3Ok(){return ROOM3.on&&typeof document!=="undefined"&&!!(GPU&&GPU.dev)&&!(typeof HALL!=="undefined"&&HALL.err);}
 function room3Open(id,host){
   const first=ROOM3.open!==id;
@@ -136621,7 +136637,7 @@ function room3Open(id,host){
   ROOM3.L=null;
   if(!ROOM3.raf&&typeof requestAnimationFrame==="function")ROOM3.raf=requestAnimationFrame(room3Loop);
 }
-function room3Place(){if(ROOM3.open==="hq"){const i=HQ_ORDER.findIndex((r,k)=>{const m=hqMgrAt(k);return m&&m.id===hqSel;});return i>=0?"d"+i:"all";}return "all";}
+function room3Place(){if(ROOM3.open==="hq"){const i=HQ_ORDER.findIndex((r,k)=>{const m=hqMgrAt(k);return m&&m.id===hqSel;});return i>=0?"d"+i:G.mgrs&&G.mgrs.length?"all":"d0";}return "all";}
 function room3Close(){
   if(ROOM3.raf&&typeof cancelAnimationFrame==="function")cancelAnimationFrame(ROOM3.raf);ROOM3.raf=0;
   if(ROOM3.host)ROOM3.host.classList.remove("room3");
@@ -136654,25 +136670,35 @@ function room3Frame(){
   const oq=r3Proj(cam.vp,c0.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL_SHARP,1],52);
   ROOM3.frames++;ROOM3.stat=hallLimits(S);ROOM3.vp=cam.vp;ROOM3.sz=sz;
-  room3TagsDraw(hq3Tags(L),cam,sz);
+  room3TagsDraw(hq3Tags(L,c0.tgt[0]),cam,sz);
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }
-/* слова на вещах (L5): пустой пульт — «ДОМЕН СВОБОДЕН» с названием домена; занятый говорит плитой, не табличкой */
-function hq3Tags(L){const out=[];HQ3_X.forEach((x,i)=>{if(L.occ[i])return;const R=MGR_ROLES[HQ_ORDER[i]];
-  out.push({p:[x,1.82,HQ3.B+.25],t:"ДОМЕН СВОБОДЕН",s:R?R.dom:""});});return out;}
+/* слова на вещах (L5): пустой пульт — тусклая надпись в углу его тёмного экрана (не табличка, не заглавные по центру);
+   подсказка — одна, на пустом кресле ближе к цели объектива; занятый пульт говорит плитой */
+function hq3Tags(L,tx){const out=[];let hi=-1;
+  HQ3_X.forEach((x,i)=>{if(L.occ[i])return;const R=MGR_ROLES[HQ_ORDER[i]];
+    out.push({p:[x-.7,1.22,HQ3.B+.22],t:"ДОМЕН СВОБОДЕН",s:R?R.dom:"",c:"sg"});
+    if(hi<0||Math.abs(x-tx)<Math.abs(HQ3_X[hi]-tx))hi=i;});
+  if(hi>=0&&L.sel<0){const C=hq3Chair(hi);out.push({p:[C.x,.42,C.z],t:"ПУСТОЕ КРЕСЛО",s:"управляющих нанимают в кантине станции",c:"dn"});}
+  return out;}
 /* таблички — DOM над холстом, в зоне героя; пока камера едет, их нет (как в зале, hallTagsDraw) */
 function room3TagsDraw(list,cam,sz){
   const box=ROOM3.tags;if(!box)return;
   const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;if(room3Moving())list=[];
-  const xr=sz.wide?hallHero(sz.cw)*sz.cw-200*ui:sz.cw-170,yr=sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8,key=list.map(x=>x.t+"/"+x.s).join("|");
+  const xr=sz.wide?hallHero(sz.cw)*sz.cw-12*ui:sz.cw-12,yr=sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8,key=list.map(x=>x.t+"/"+x.s+"/"+x.c).join("|");
   if(box.__key!==key){box.__key=key;box.textContent="";
-    for(const g of list){const e=document.createElement("i"),b=document.createElement("b");e.className="ht";b.textContent=g.t;e.appendChild(b);
+    for(const g of list){const e=document.createElement("i"),b=document.createElement("b");e.className=g.c?"ht "+g.c:"ht";b.textContent=g.t;e.appendChild(b);
       if(g.s){const s=document.createElement("s");s.textContent=g.s;e.appendChild(s);}box.appendChild(e);}}
-  list.forEach((g,i)=>{const e=box.children[i],q=r3Proj(cam.vp,g.p,sz.cw,sz.ch);
-    const ok=!!q&&q[0]>16*ui&&q[0]<xr&&q[1]>110*ui&&q[1]<yr;
-    e.style.visibility=ok?"":"hidden";
-    if(ok)e.style.transform="translate("+(q[0]/ui).toFixed(1)+"px,"+(q[1]/ui).toFixed(1)+"px) translate(-1px,calc(-100% - 28px))";});
+  list.forEach((g,i)=>{const e=box.children[i],q=r3Proj(cam.vp,g.p,sz.cw,sz.ch),sg=g.c==="sg";
+    const w=(sg?Math.max(g.t.length*9,(g.s||"").length*6.2):Math.max(g.t.length*11+24,(g.s||"").length*7+24))*ui;
+    const lf=!sg&&!!q&&q[0]+w>xr&&q[0]-w>16*ui;
+    const dn=g.c==="dn",ok=!!q&&(lf?q[0]-w>16*ui:q[0]>16*ui&&q[0]+w<xr)&&q[1]>110*ui&&q[1]+(dn?96*ui:0)<yr;
+    e.style.visibility=ok?"":"hidden";e.classList.toggle("lf",lf);
+    if(ok)e.style.transform="translate("+(q[0]/ui).toFixed(1)+"px,"+(q[1]/ui).toFixed(1)+"px) "+(sg?"translate(0,-100%)":(lf?"translate(calc(1px - 100%),":"translate(-1px,")+(dn?"28px)":"calc(-100% - 28px))"));});
 }
+/* цена кадра комнаты — тем же замером, что зал (27f4k): кадры подряд, GPU меткой времени, CPU часами */
+room3Frame=hallCostWrap(room3Frame);
+function room3Cost(sec){return ROOM3.open?hallCost(sec,()=>room3Frame(),ROOM3.cn):Promise.resolve(null);}
 /* по человеку тыкают: точка его головы на экране — ближайшая в 70 px из зоны героя (холст пальцев не ловит,
    щелчок приходит на поле экрана под плитой) */
 function room3PickHq(x,y){

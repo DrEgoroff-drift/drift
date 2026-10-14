@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 565 · top-level symbols: 8266
+Files: 565 · top-level symbols: 8269
 
 ## SYMBOLS
 
@@ -4583,6 +4583,7 @@ hallClk                      src/27f4k-hall-phone.js:25
 hallClose                    src/27f4a-hall.js:366-373
 hallClutter                  src/27f4d-hall-props.js:56-109
 hallCord                     src/27f4b-hall-dress.js:43
+hallCostWrap                 src/27f4k-hall-phone.js:40
 hallCrate                    src/27f4b-hall-dress.js:64
 hallCrop                     src/27f4a-hall.js:355
 hallDialSvg                  src/27f4g-hall-instr.js:164-260
@@ -4989,9 +4990,9 @@ houseWallMark                src/17d-house-shapes.js:72-94
 hq3Chair                     src/29r-rooms-r3.js:27
 hq3Layout                    src/29r-rooms-r3.js:29-38
 hq3Mesh                      src/29r-rooms-r3.js:40-102
-hq3Scene                     src/29r-rooms-r3.js:105-138
+hq3Scene                     src/29r-rooms-r3.js:105-142
 hq3Stand                     src/29r-rooms-r3.js:28
-hq3Tags                      src/29r-rooms-r3.js:219
+hq3Tags                      src/29r-rooms-r3.js:225
 hqAiOffer                    src/27c-ui-hq.js:440-460
 hqBack                       src/27f-hq-room.js:294-365
 hqBtnTick                    src/27c-ui-hq.js:271-277
@@ -7228,21 +7229,23 @@ roleSteer                    src/13c-roles.js:8
 roleThrust                   src/13c-roles.js:9
 rollCrewEvent                src/12b-crew-events.js:70-96
 rollWorld                    src/02a-worldmix.js:67-76
-room3Breath                  src/29r-rooms-r3.js:172
-room3Cams                    src/29r-rooms-r3.js:158
-room3Canvas                  src/29r-rooms-r3.js:141-149
-room3Close                   src/29r-rooms-r3.js:183-189
-room3Frame                   src/29r-rooms-r3.js:198-217
-room3GlideAt                 src/29r-rooms-r3.js:159-163
-room3Go                      src/29r-rooms-r3.js:166-170
-room3Loop                    src/29r-rooms-r3.js:190-197
-room3Moving                  src/29r-rooms-r3.js:164
-room3Ok                      src/29r-rooms-r3.js:173
-room3Open                    src/29r-rooms-r3.js:174-181
-room3PickHq                  src/29r-rooms-r3.js:236-242
-room3Place                   src/29r-rooms-r3.js:182
-room3Size                    src/29r-rooms-r3.js:150-157
-room3TagsDraw                src/29r-rooms-r3.js:222-233
+room3Breath                  src/29r-rooms-r3.js:176
+room3Cams                    src/29r-rooms-r3.js:162
+room3Canvas                  src/29r-rooms-r3.js:145-153
+room3Close                   src/29r-rooms-r3.js:188-194
+room3Cost                    src/29r-rooms-r3.js:248
+room3Frame                   src/29r-rooms-r3.js:203-222
+room3GlideAt                 src/29r-rooms-r3.js:163-167
+room3Go                      src/29r-rooms-r3.js:170-174
+room3Loop                    src/29r-rooms-r3.js:195-202
+room3Moving                  src/29r-rooms-r3.js:168
+room3Night                   src/29r-rooms-r3.js:177
+room3Ok                      src/29r-rooms-r3.js:178
+room3Open                    src/29r-rooms-r3.js:179-186
+room3PickHq                  src/29r-rooms-r3.js:251-257
+room3Place                   src/29r-rooms-r3.js:187
+room3Size                    src/29r-rooms-r3.js:154-161
+room3TagsDraw                src/29r-rooms-r3.js:232-245
 roomBake                     src/29c0-rooms-gpu.js:8-14
 roomSz                       src/29c0-rooms-gpu.js:16
 roomToneTick                 src/09a-roomtone.js:79-99
@@ -9933,7 +9936,7 @@ zoomTo                       src/15-input.js:358
 ## src/29i-spa-draw.js · 31 KB
   · санаторий: веранда:1
 
-## src/29r-rooms-r3.js · 20 KB
+## src/29r-rooms-r3.js · 22 KB
   · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
 
 ## tests/90-harness.js · 54 KB
