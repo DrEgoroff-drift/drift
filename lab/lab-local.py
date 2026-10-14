@@ -56,6 +56,13 @@ def kill_profile(prof):
     try: sh(["powershell", "-NoProfile", "-Command", ps], timeout=60)
     except Exception: pass
 
+def kill_tree(pid):
+    """зависший прогон: гасим его и всех потомков по PID — только своё дерево, без taskkill"""
+    ps = ("function K($i){ Get-CimInstance Win32_Process -Filter \"ParentProcessId=$i\" | ForEach-Object { K $_.ProcessId }; "
+          "Stop-Process -Id $i -Force -ErrorAction SilentlyContinue }; K %d") % pid
+    try: sh(["powershell", "-NoProfile", "-Command", ps], timeout=60)
+    except Exception: pass
+
 def peak_mem(pid, stop, box):
     try: import psutil
     except Exception: return
@@ -83,7 +90,7 @@ def run_unit(u, ctx):
         try: rc = p.wait(timeout=TMO[kind])
         except subprocess.TimeoutExpired:
             rc = 124
-            sh(["taskkill", "/T", "/F", "/PID", str(p.pid)])
+            kill_tree(p.pid)
         stop.set()
     if prof:
         kill_profile(prof)
