@@ -520,6 +520,7 @@ function frameBody(now){
      ещё подсказка, которую игрок видел в миг нажатия */
   if(G.mode==="system"&&typeof abilTick==="function")abilTick();
   if(G.mode==="system")hallPrepTick();   /* зал станции — заранее, по шагу (27f4a) */
+  if(G.mode==="system")plnKitTick();   /* набор флоры планеты — заранее, по шагу (21pg) */
   if(G.running){
     G.t+=dt;
     /* налёт для допуска (M363, 05e): настоящими миллисекундами и только в
