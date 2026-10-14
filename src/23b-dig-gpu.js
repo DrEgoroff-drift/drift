@@ -114,7 +114,11 @@ function digLights(D,camx,camy,early){
 function digLitU(D,p,camx,camy,lamp,early){
   const U=CAVE_LIT_U,lk=kitStat().lamp,M=digMask(D,p);
   U.fill(0);
-  U[0]=camx;U[1]=camy;U[2]=G.viewK||1;U[3]=G.t;
+  /* U[2] — пикселей поля на пиксель мира. Кадр шахты стоит в withScale(K): W,H там уже
+     поделены на K (18c), и пиксель поля — пиксель мира (на том же стоит небо, 19ca).
+     Было G.viewK: K применялся дважды, и на большом экране светлый крест хода с конусом
+     уезжал вправо-вниз в K раз (автор, 15.10) */
+  U[0]=camx;U[1]=camy;U[2]=(G.viewK||1)*W/(GPU.cw||W);U[3]=G.t;
   U[4]=M.x0;U[5]=M.y0;U[6]=1/M.w;U[7]=1/M.h;
   const a=.12;
   U[8]=lamp.x;U[9]=lamp.y;U[10]=lamp.f*Math.cos(a);U[11]=Math.sin(a);
@@ -139,7 +143,7 @@ function digShade(D,p,camx,camy,lamp){
   gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,CAVE_LIT_U,[{view:gpuMipTex(M.cv).view}],{blend:"mul",smp:gpuMipSmp()});
   /* тёплое у налобника — «digwarm» main: .20·(1−t)^2.2 на .34·R0 у человека, сложением по породе;
      заливка хода и небо (2D) ложатся поверх и его закрывают, как у main */
-  const K=G.viewK||1,R=Math.max(W,H)*.62*.34;
+  const K=CAVE_LIT_U[2],R=Math.max(W,H)*.62*.34;   /* в пикселях поля, как U[2] */
   warmGlow(pass,(lamp.x-camx)*K,(lamp.y+12-camy)*K,R*K,R*K,[1,.776,.502],.20,0);
 }
 /* темнота main поверх всего нарисованного, небо не трогает */

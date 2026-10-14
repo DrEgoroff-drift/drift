@@ -11,7 +11,14 @@
    5. Портрет живой (M729): холсты на странице перерисовываются таймером — дыхание, моргание, взгляд, эмоция
       (27f6 cpFace). Не больше CPP_LIVE за такт, по кругу; скрытая вкладка и отцепленные холсты не рисуются. */
 const CPP={q:[],t:0,hid:new Map(),bd:new Map(),M:null,OT:null,n:0,live:[],lt:0,rr:0};
-const CPP_LIVE=6,CPP_MS=50;
+/* 0.493.5: было шесть портретов каждые 50 мс, и не глядя, видны ли они — холст в скрытой панели
+   (display:none) или за прокруткой «подключён» и рисовался: на грунте ~90 полных кадров движка в
+   секунду впустую, у автора видеокарта 100 %. Теперь живут только видимые (IntersectionObserver),
+   не больше четырёх за такт в 66 мс */
+const CPP_LIVE=4,CPP_MS=66;
+const CPP_IO=(typeof IntersectionObserver==="function")?
+  new IntersectionObserver(es=>{for(const e of es)e.target.__cppVis=e.isIntersecting;}):null;
+function cppVisible(cv){return cv.__cppVis!==false;}
 /* холст портрета css×css (CSS-пиксели), плотность панели; cut — крупнее, одна голова (бармен в реплике) */
 function cpPortrait(m,css,cut){
   const cv=document.createElement("canvas");cv.className="cp3";
@@ -23,18 +30,19 @@ function cpPortrait(m,css,cut){
 function cppFlush(){
   CPP.t=0;const L=CPP.q.splice(0);
   if(GPU.enc){CPP.q.push(...L);CPP.t=setTimeout(cppFlush,0);return;}   /* кадр ещё открыт — следующим таймером */
-  for(const it of L)if(it[0].isConnected){cppPaint(it[0],it[1],it[2],it[3]);CPP.live.push(it);}
+  for(const it of L)if(it[0].isConnected){cppPaint(it[0],it[1],it[2],it[3]);CPP.live.push(it);if(CPP_IO)CPP_IO.observe(it[0]);}
   if(CPP.live.length&&!CPP.lt)CPP.lt=setTimeout(cppTick,CPP_MS);
 }
 /* такт живых портретов: отцепленные — вон; рисуются по кругу не больше CPP_LIVE за раз */
 function cppTick(){
   CPP.lt=0;
-  CPP.live=CPP.live.filter(it=>it[0].isConnected);
+  CPP.live=CPP.live.filter(it=>{if(it[0].isConnected)return true;if(CPP_IO)CPP_IO.unobserve(it[0]);return false;});
   if(!CPP.live.length)return;
   const hid=typeof document!=="undefined"&&document.hidden;
-  if(!hid&&!GPU.enc){const n=Math.min(CPP_LIVE,CPP.live.length);
-    for(let k=0;k<n;k++){const it=CPP.live[(CPP.rr+k)%CPP.live.length];cppPaint(it[0],it[1],it[2],it[3]);}
-    CPP.rr=(CPP.rr+n)%CPP.live.length;}
+  const V=CPP.live.filter(it=>cppVisible(it[0]));
+  if(!hid&&!GPU.enc&&V.length){const n=Math.min(CPP_LIVE,V.length);
+    for(let k=0;k<n;k++){const it=V[(CPP.rr+k)%V.length];cppPaint(it[0],it[1],it[2],it[3]);}
+    CPP.rr=(CPP.rr+n)%V.length;}
   CPP.lt=setTimeout(cppTick,hid?500:CPP_MS);
 }
 /* задник: полукруглая ниша за спиной, тёмная в цвет роли */

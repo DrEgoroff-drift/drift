@@ -202,6 +202,7 @@ function sellCargo(sys,k,qty){
   if(typeof mayakSold==="function")mayakSold(sys,k,qty,revenue);   /* маяк: сдано за смену (M349) */
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-Math.max(0,qty-Q.nA-Q.nB)*.005,-.35,0);
+  if(Q.nF>0)m.pressure[k]=FAUCET_FLOOR;   /* кран (M905, 12ab-hold): сверх нормы — дно сразу, отдых тем же полупериодом */
   return revenue;
 }
 function sellDroneYield(sys,k,qty){
@@ -375,8 +376,12 @@ function tickDrones(){
     const T=droneTripMs(d);
     /* «Авто-сбыт» смотрителя: тот же множитель, что и был — быстрее оборот */
     const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1)*droneQuirk(d).rate;   /* причуда машины (M485) */
-    const capMs=Math.max(0,Math.min(now-(d.lastMs||now),cap));
-    const from=now-capMs;                 /* дальше суток не догоняем */
+    /* дальше суток не догоняем — от СЕЙЧАС, а не от прошлого такта: раньше
+       from=lastMs, такт живого кадра идёт каждые 3 с, и начало круга каждый
+       раз подтягивалось к такту — круг в 25+ с не кончался никогда, дрон
+       не возил ни единицы (проба · экономика, 0.493.5; суть «дроны никуда
+       не летали» 30.08 была и в этом, не только в блокаде) */
+    const from=now-cap;
     if(d.t0<from)d.t0=from;
     if(d.down&&d.down<from)d.down=0;
     let guard=DRONE_MAX_CATCHUP,fixed=false,oldBreaks=0;

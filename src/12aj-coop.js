@@ -215,6 +215,7 @@ function coopCounterBlock(){
   $body.appendChild(el("div","sec","ПРИЛАВОК · КООПЕРАТИВ «"+C.name.toUpperCase()+"» · "+R.ru.toUpperCase()+(R.cap?" · ДО "+R.cap+" ЕДИНИЦ ТОВАРА ЗА ЗАХОД":" · БЕЗ ПОТОЛКА")+" · ЦЕНА ЛОМТЯМИ ПО ДЕСЯТЬ"));
   for(const k of TRADE_KEYS){
     if(!prices[k])continue;
+    if(gaugeStopped(G.sys,k)){$body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>цех стоит: склад пуст, не делают</s></div>"));continue;}   /* M906 */
     const left=coopCapLeft(k),free=Math.max(0,stat().cargoMax-held());
     const maxN=Math.min(left,free);
     const q0=coopBuyQuote(G.sys,k,10);

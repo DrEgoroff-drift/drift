@@ -205,6 +205,51 @@ workshops 2.3 h into T2; the garage (70 000 turnover) at ~4 h; an uninsured hull
 (Обод 15 000 + mods 8 000) is 1.6 h of T2 net. The designed curve of `DESIGN-economy.md:62`
 (first mod 10 min, Вьюк 20 min, hire 1 h, manager 2–3 h, garage 5–6 h) survives within an hour.
 
+### 4.1a Measured — M903, 14.10 (`tests/91zzzw4-ecosim.js`, one hour per tier under Node)
+
+The probe plays the mining loop with the real `G`: lands, drills, sells, refuels, repairs, books
+every credit by phase. Numbers after the three bugs it found were fixed (deposits under the
+settlement wall, the silent wall branch, drones that never finished a trip — all in 0.493.5).
+
+| tier | gross cr/h | upkeep cr/h | net cr/h | U/G | oracle net | drones cr/h |
+|---|---|---|---|---|---|---|
+| T0 Стриж, 14 laps | 15 275 | 3 607 | 11 668 | .24 | 4 400 | — |
+| T1 | — | — | 43 498 | — | 13 900 | ≈500 (42 trips) |
+| T2 | — | — | 47 193 | .06–.07 | 14 200 | — |
+| T3 | — | — | 46 923 | .06–.07 | 12 700 | ≈1 860 |
+
+Read it: **the loop pays 2.6–3.7× the oracle and the pressure is a fifth of the band.** Fuel
+(≈2–2.6 k/h) and repair (≈0.5–1 k/h) are not pressure at any tier. The flattening after T1 is
+there — but at three times the height. A hired hand ran 3 trips and lost 655, as designed.
+
+The levers, in order of honesty: the lap (≈4.3 min at T0 — the oracle wants ≈8), deposit size
+and the sale price of the first raw tier, then the bill of §10.1. Upkeep alone cannot close a gap
+of 3× without making the T0 hour negative. This is M904's input: the bill is built against
+**these** grosses, not the model's.
+
+**After M904d (0.496.0, 14.10).** The lever that worked is the deposit's type, not its size: a dear
+ore keeps its deposit with weight 17 / price, else the profile's cheapest ore (`21pzc-dep-value.js`).
+Thinner dear veins were tried first and made T0 *richer* (the bot reached cheap deposits sooner). T2
+and T3 now insure; two rows crash the T2 hull at 30 min.
+
+| tier | gross | upkeep | net | U/G | oracle net |
+|---|---|---|---|---|---|
+| T0 Стриж, 14 laps of 4.3 min | 10 429 | 3 607 | 6 822 | .35 | 4 400 |
+| T1 Вьюк, 1 hand, 1 drone | 24 458 | 3 246 | 21 212 | .13 | 13 900 |
+| T2 Обод, insured | 26 805 | 11 933 | 14 871 | .45 | 14 200 |
+| T3 Мамонт, insured | 26 365 | 19 448 | 6 917 | .74 | 12 700 |
+| T2, uninsured wreck at 30 min | 20 235 | 34 771 | −14 535 | — | negative |
+| T2, insured wreck at 30 min | 23 438 | 11 762 | 11 676 | — | — |
+
+Read it: hand mining is walk-bound — every hull from Вьюк up grosses ≈25 000, because the bot visits
+about ten deposits a lap whatever the hold; the tiers differ by what they own, as §4.1 wants. Three
+gaps stay, each with an owner: **T0** nets 1.5× the oracle on a 4.3-min lap a human will not fly
+(M909 measures the first watch with its own oracle); **T1** has nothing to pay but fuel and one hand
+(U/G .13 against .50 — the drone's parts line of §3.1 would make a 500 cr/h drone worthless, so it
+waits for a drone that earns); **T3**'s managers cost 3 700 cr/h each and produce nothing in the
+probe, which builds no workshops and no base. M905/M906 did not give them work the probe can count
+(the gauges have nothing for a manager either): open, for M907.
+
 ### 4.2 Stations have three gauges, and they fall
 
 Every station gets three numbers, lazy, saved as three bytes: **склад** (stock, 0–1), **люди**
@@ -225,6 +270,15 @@ is order, the keeper's episodes are mood.
 The three gauges are **what the walkable hall shows** (§7): crates on the counter are stock,
 the number of people in the hall is mood, the lights and the picket at the door are order. No
 number is printed; the hall is the gauge.
+
+**Built 15.10 (0.498.0, `28l-gauge`).** Three changes from the text. Needs roll every 15 minutes
+of play and a сводка is six hours of wall clock, so per-need stops and a .05-per-сводка heal
+stopped every station around the player within an evening. The workshop stops only when an
+unfilled need takes stock below .25; the heal is a two-hour time constant toward .6 (order toward
+.6 − .15 × occupation level); a stop and its cascade last an hour. Judged: the participation's
+stations and two jumps around the player, per played window; barge-filled needs count neither way.
+The cascade need goes ahead of the neighbour's own (the own one is then judged by nobody). Not
+built: rumours a sector further, crates and lights in the hall, the keeper's face.
 
 ### 4.3 The dispatcher — always something to do, by arithmetic
 
@@ -355,6 +409,11 @@ Walking adds no verb. It adds **where people are**, and that becomes the logic:
   you wait a shift's minute or you have standing (a named offer skips the queue, by name).
 
 The hall never prints a number. The three gauges are read by looking (crates, people, lights).
+
+**Built 15.10 (0.498.0).** The crowd follows people in the cantina (`c3Layout`) and in the
+walkable hall (`hallLayout`): the type's crowd at .6, up to nine at .9, one at .3. The board says
+the rest in words (ПОЛОЖЕНИЕ). The keeper's face, the clerk's paper, the queue and the crates wait
+for the hall's next pass.
 
 ### 7.2 Landmarks and obelisks — the grammar goes everywhere
 
@@ -606,12 +665,24 @@ now; **every unit past it pays −35 % at once** (today's pressure floor, reache
 instead of over 70 units), recovering with the 3 h half-life. Oracle: a «Вьюк» opening lap
 ≤ 900 cr/min; a «Стриж» lap unchanged (its 40 units sit inside appetite).
 
+**Built 14.10 (0.497.0).** The faucet applies to the goods a station eats; what it does not eat
+keeps the old half-percent pressure, so the surplus is carried to where nobody ate it. Measured:
+−5…6 % gross on every tier (the probe's bulk iron and silicon already sell where nobody eats
+them), a «Вьюк» lap 350 cr/min. The §4.5 seasons were never built; nothing was cut.
+
 ### 10.5 Offline and quitting
 
 Offline drain is capped at **one hour of tier net** regardless of time away; passive income
 (drones, workshops) runs at 60 % to the same cap. On every quit, the menu's one tap is
 «СДАТЬ СМЕНУ» (default) or «ОСТАВИТЬ ЗА СОБОЙ»; handed over, nothing runs and nothing is owed.
 Taking the watch back costs a shift's minute at any counter and the диспетчер's line.
+
+**Built 14.10 (0.497.0).** People were already online-only (`12a-crew`, the author 11.09) and the
+bill caps its offline lines at an hour, so the drain cap holds by construction. Drones were the
+one passive income with a day's catch-up at full pay: a catch-up now pays 60 % up to one hour of
+tier net (`28k-offline`). A browser game has no quit to hook, so СДАТЬ СМЕНУ is a menu item from
+the paper hour; the relief (сменщик) holds the watch, not the диспетчер. The norm is judged only
+over played need windows: a сводка lived offline is not judged at all.
 
 ### 10.6 Combat gets its second verb
 
@@ -640,10 +711,10 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 |---|---|---|
 | M901 | `tests/91zzzw-fightsim.js` — the duel measured under Node — **done 09.10** | the table of TTK / hits / hull by hull × gun × rank × danger |
 | M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
-| M903 | `tests/ecosim.js` — three hours per tier under Node, gross/upkeep/net | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
-| M904 | the bill (§10.1), manager wages to the player, insurance, the ledger (§5.2), hull loss (§5.1) | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
-| M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) | the bot's norm moves with filled needs; handover stops every clock |
-| M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
+| M903 | the economy probe `tests/91zzzw4-ecosim.js` — **measured 14.10, §4.1a**: net 2.6–3.7× the oracle, U/G .06–.24 | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
+| M904 | the bill (§10.1) and manager wages to the player — **a done 14.10 (0.494.0, T2 U/G .22, T3 .36)**; b the ledger (§5.2) and c Страхкасса with hull loss (§5.1) **done 14.10 (0.495.0)** — debt is its own number, not credits below zero (twenty `min(credits, x)` sites); d the gross lever and the bad hour **done 14.10 (0.496.0, §4.1a): good T2 hour +14 900, uninsured wreck −14 500** | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
+| M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) **done 14.10 (0.497.0)**: `28j-watch`, `28k-offline`, the faucet in `12ab-hold` | the bot's norm moves with filled needs; handover stops every clock |
+| M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) **done 15.10 (0.498.0)**: `28l-gauge` | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
 | M907 | the dispatcher generator (§4.3) | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |
 | M908 | access gates and the 30 rungs (§4.4) | no rung silent; «Мамонт» refused without clearance III + sponsor |
 | M909 | the first watch (§10.7) | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |

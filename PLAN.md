@@ -21,7 +21,7 @@ deleted from this file in the commit that finishes it; its story goes to the pat
 `docs/DESIGN-remake.md` (M800+, built by the three builder sessions, judged by the designer); the
 game's logic — the shift, the bill, the dispatcher, loss, the three rails, combat — is
 `docs/DESIGN-game.md` (M900+; queue in its §10.8, the author's forks in §10.9). Where a stage below
-and one of those two differ, the programme wins; M901 and M902a/b are done (0.493.x).
+and one of those two differ, the programme wins; M901–M906 are done (0.493.x–0.498.0); next is M907.
 
 Where an item and a design document differ, `docs/DESIGN-review-2026-09-14.md` wins. The phone playtest's rules
 bind every item: a screen never loses its scroll, every screen answers «чтобы что?» before it is redesigned,
@@ -306,6 +306,12 @@ Check each against the code before building — some may already hold.
 
 ## 11. Small things seen on the way (23.09)
 
+- [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). The day is
+  `CEL_DAY` of the sky calendar (`06a-celest`), copied in `21pifa` and `25m-probe`; a longer day moves
+  the war chronicle's hashes and the need windows. Decide together with the chronicle, reshoot hashes.
+- [ ] **The headframe stands on a slope or in a dip** (the playtest session, 15.10): the mine's mouth is
+  where the player stood and the land (`plnLandMake`) does not know it. Under its four legs the drop
+  reaches 5.5 m. Level a circle of ~3 mine units round `mineSpotX`, as the ship's pad is levelled.
 - [ ] **`03e-hull-draw.js` grew to 49 KB** with the yard marks: move the hull's marks (scars, transit plate,
   seal, yard mark) to their own module along that seam.
 - [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,

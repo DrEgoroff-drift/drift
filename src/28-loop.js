@@ -160,7 +160,14 @@ const FRAME_MS=16.667;
    совсем: догонка стоит кадра, и из такой спирали игра не выбирается. */
 const QUANT_MS=1000/120;               /* квант мира — половина кадра шестидесяти герц */
 const QUANT_DT=QUANT_MS/FRAME_MS;      /* тот же квант в единицах dt (= .5) */
-const QUANT_MAX=6;                     /* дальше не догоняем */
+const QUANT_MAX=12;                    /* до 100 мс мира за кадр: мир идёт в реальном времени до 10 кадров/с */
+/* Делит накопленное время на кванты. Раньше при переполнении остаток ОБНУЛЯЛСЯ — на 15 кадрах/с мир шёл вполовину,
+   на 5 — на четверть. Теперь остаток переносится, а потолок накопления не даёт спирали смерти. */
+function quantSplit(acc){
+  let steps=Math.round(acc/QUANT_MS);
+  if(steps>QUANT_MAX)steps=QUANT_MAX;
+  return{steps,acc:clamp(acc-steps*QUANT_MS,-QUANT_MS*.5,QUANT_MS*QUANT_MAX)};
+}
 let quantAcc=0;                        /* недошаганный остаток, мс */
 function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;quantAcc=0;tactGood=0;tactBad=0;
   lastFuelWarn=0;lastHullWarn=0;sndWalk=0;
@@ -236,8 +243,17 @@ let resWait=0,resHeld=0,resWaitNext=RES_WAIT0,resSaid=false;
 /* целевой кадр: шестьдесят герц, но если игрок поставил потолок ниже — его.
    Без этого потолок в тридцать кадров сам же ронял разрешение: ровные 33 мс
    стояли выше порога спуска, и игра считала свой же потолок просадкой. */
-function resTarget(){
+/* потолок кадра сейчас: выбор игрока, а в доке — не выше тридцати (0.493.5). Под экраном
+   станции мир почти не виден, а видеокарта рисовала его по шестьдесят раз в секунду рядом с залом
+   и портретами — у автора 100 % загрузки. Одно правило и для полки, и для цели разрешения:
+   иначе ровные 33 мс дока читались бы просадкой и роняли чёткость */
+function frameCapNow(){
   let cap=0;try{cap=G.opts.gfx.fps|0;}catch(e){}
+  if(G.mode==="dock"&&G.st)cap=cap>0?Math.min(cap,30):30;
+  return cap;
+}
+function resTarget(){
+  const cap=frameCapNow();
   return cap>0?Math.max(FRAME_MS,1000/cap):FRAME_MS;
 }
 function resSay(t){
@@ -463,7 +479,7 @@ function frameBody(now){
      на дрожащем 120 Гц съезжает на 7.6 мс вместо 8.33 — и ceil давал шаг в ТРИ
      кадра развёртки, то есть 40 кадров вместо шестидесяти (замер: промежутки 24–27 мс
      вместо 16.7). Из двух шагов берём БОЛЬШИЙ: потолок нельзя превышать. */
-  const capOpt=G.opts.gfx.fps|0;
+  const capOpt=frameCapNow();
   /* ПОЛКА 60 (автор 19.09: «оставь принудительно просто 60 кадров и все, не считай»).
      Не оценка развёртки, а расписание: кадр идёт, когда подошёл его срок (раз в
      1000/60 мс, допуск 4 мс на дрожание). Опоздавший кадр не сдвигает сетку —
@@ -486,9 +502,7 @@ function frameBody(now){
      (взяли вперёд и отдадим следующим кадром). С полом на 120 Гц возвращалось
      то же чередование, только в мире: интервал дрожит вокруг 8.33, и 8.1 давал ноль
      шагов, а 8.5 — два. Округление даёт 8.33±1 → шаг, 16.6 → два, 25 → три. */
-  steps=Math.round(quantAcc/QUANT_MS);
-  if(steps>QUANT_MAX){steps=QUANT_MAX;quantAcc=0;}
-  else quantAcc=clamp(quantAcc-steps*QUANT_MS,-QUANT_MS*.5,QUANT_MS*QUANT_MAX);
+  {const q=quantSplit(quantAcc);steps=q.steps;quantAcc=q.acc;}
   /* кадр короче половины кванта не рисуем — но флаг голоса снимаем сами:
      frameBody зовут не только из frame() (стенды, пробники), и там его никто не чистит */
   if(!steps){FRAME_DREW=false;FRAME_IN=false;return;}

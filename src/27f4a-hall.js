@@ -174,7 +174,7 @@ function hallLayout(st){
     for(let i=0;i<n;i++){const s=HALL_STALLS[i%HALL_STALLS.length],side=i<HALL_STALLS.length?1:-1;
       L.people.push({id:null,m:{seed:hashi(seed,i,0xBA2)>>>0,loy:45+i*7,traits:[]},pose:i%2?"mug":"stand",
         x:s[0]+(R()-.5)*.5,z:s[1]+side*.95,yaw:side>0?Math.PI+(R()-.5)*.6:(R()-.5)*.6,lod:0,kind:"crowd"});}}
-  L.people=L.people.slice(0,R3_MAXI-2);   /* последний экземпляр — пилот */
+  L.people=gaugeHallCrowd(L.people).slice(0,R3_MAXI-2);   /* последний экземпляр — пилот; толпа — по людям станции (M906) */
   for(const P of L.people)if(!P.mesh)P.mesh=cpMesh(P.m,P.pose,P.lod);
   L.rkey=st+"|"+seed+"|"+L.seats.length+"|"+L.bx.toFixed(2)+"|"+L.stories.map(s=>(s.props||[]).join(",")+":"+s.seat).join(";");
   return L;

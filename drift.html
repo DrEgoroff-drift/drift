@@ -3330,7 +3330,7 @@ body.rackon #prompt{opacity:0}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.493.3";
+const VER="0.498.1";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -12424,7 +12424,8 @@ const GPU_PIPE_KEYS=[
   "pipe:kit.img|hull",
   "pipe:kit.img|over",
   "pipe:kit.shp|add",
-  "pipe:kit.shp|over"
+  "pipe:kit.shp|over",
+  "rig.card"
 ];
 
 /* ══════════════ отказ видеокарты: потеря, сбой кадра, нет WebGPU (DESIGN-gpu §G) ══════════════
@@ -13555,6 +13556,23 @@ function gpuQuad(SH,a,b,c,d,C,hard){
   const h=hard|0,al=C[3]==null?1:C[3];
   SH.push([5,a[0],a[1],b[0],b[1],c[0],c[1],C[0],C[1],C[2],al,4|(h&1)|(h&2)],
     [5,a[0],a[1],c[0],c[1],d[0],d[1],C[0],C[1],C[2],al,1|(h&4?2:0)|(h&8?4:0)]);
+}
+/* фигуры в координатах 2D-холста → в пиксели CSS: o = lifeHere(0,0) (перенос и масштаб ctx).
+   Режим в withScale(K) считает в мировых пикселях; без перевода фигуры ложатся в K раз мельче
+   в левый верхний угол — так шахта на большом экране рисовала ствол в небе (автор, 15.10) */
+function gpuShpAt(L,o){
+  if(!o||(o.s===1&&!o.x&&!o.y))return L;
+  const s=o.s,X=o.x,Y=o.y;
+  for(const t of L){const k=t[0];
+    t[1]=X+t[1]*s;t[2]=Y+t[2]*s;
+    if(k===5){t[3]=X+t[3]*s;t[4]=Y+t[4]*s;t[5]=X+t[5]*s;t[6]=Y+t[6]*s;continue;}
+    if(k===1||k===3)t[3]*=s;
+    else if(k===4){t[3]*=s;t[4]*=s;}
+    else{t[3]=X+t[3]*s;t[4]=Y+t[4]*s;}
+    if(k!==4&&k!==8&&t[5])t[5]*=s;
+    if(t[6])t[6]*=s;
+  }
+  return L;
 }
 /* приёмник фигур (G15): живые мелочи 2D-рисовальщиков (верёвка, ткань, дым, огонёк)
    пишутся сюда фигурами gpuShapes в пикселях CSS вместо ctx. {o:lifeHere(0,0),SH:[]}:
@@ -15967,10 +15985,12 @@ function radioMix(t,instant){
   const glide=(p,v,tc)=>{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+(instant?.05:tc));};
   for(const k of RADIO_LAYERS)glide(RADIO.layers[k].gain,L[k],1.5);
   glide(RADIO.lp.frequency,Math.min(9000,radioA("cut")*m.cut*.8),2);
-  RADIO.dly.delayTime.setValueAtTime(radioS16()*(radioA("dlyMul")||3),t);
+  RADIO.dly.delayTime.setValueAtTime(radioDelayS(radioS16(),radioA("dlyMul")||3),t);   /* createDelay(2): больше 2 с браузер клампит и ругается */
 }
 function radioBar(){return radioA("bar")===12?12:16;}   // вальс — три четверти
 function radioBpm(){return RADIO.trk.bpm*.5*RADIO.tempoK*((RADIO_MOOD[RADIO.mood]||{}).k||1);}   // вдвое медленнее таблицы: время здесь тянется
+/* линия задержки создана на 2 с: больше браузер клампит и пишет предупреждение (плейтест 09.10.2026) */
+function radioDelayS(s16,mul){return Math.min(1.99,Math.max(0,s16*mul));}
 function radioS16(){return 60/radioBpm()/4;}
 function radioScale(){
   const m=RADIO_MOOD[RADIO.mood];
@@ -24290,6 +24310,7 @@ function sellCargo(sys,k,qty){
   if(typeof mayakSold==="function")mayakSold(sys,k,qty,revenue);   /* маяк: сдано за смену (M349) */
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-Math.max(0,qty-Q.nA-Q.nB)*.005,-.35,0);
+  if(Q.nF>0)m.pressure[k]=FAUCET_FLOOR;   /* кран (M905, 12ab-hold): сверх нормы — дно сразу, отдых тем же полупериодом */
   return revenue;
 }
 function sellDroneYield(sys,k,qty){
@@ -24463,8 +24484,12 @@ function tickDrones(){
     const T=droneTripMs(d);
     /* «Авто-сбыт» смотрителя: тот же множитель, что и был — быстрее оборот */
     const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1)*droneQuirk(d).rate;   /* причуда машины (M485) */
-    const capMs=Math.max(0,Math.min(now-(d.lastMs||now),cap));
-    const from=now-capMs;                 /* дальше суток не догоняем */
+    /* дальше суток не догоняем — от СЕЙЧАС, а не от прошлого такта: раньше
+       from=lastMs, такт живого кадра идёт каждые 3 с, и начало круга каждый
+       раз подтягивалось к такту — круг в 25+ с не кончался никогда, дрон
+       не возил ни единицы (проба · экономика, 0.493.5; суть «дроны никуда
+       не летали» 30.08 была и в этом, не только в блокаде) */
+    const from=now-cap;
     if(d.t0<from)d.t0=from;
     if(d.down&&d.down<from)d.down=0;
     let guard=DRONE_MAX_CATCHUP,fixed=false,oldBreaks=0;
@@ -25394,7 +25419,7 @@ function needBlock(){
   const near=needsNear(7).filter(n=>n.sys!==G.sys).slice(0,3);
   if(N||near.length){
     $body.appendChild(el("div","sec","НУЖДА · ПРИВОЗ ВДВОЕ, ОДИН РАЗ"));
-    if(N)$body.appendChild(el("div","row","<div class='nm'><b>Здесь кончилось: "+N.ru+"</b><s>берут "+marketFor(G.sys)[N.k]+" кр за единицу — пока не привезут</s></div>"));
+    if(N)$body.appendChild(el("div","row","<div class='nm'><b>Здесь кончилось: "+N.ru+"</b><s>берут "+marketFor(G.sys)[N.k]+" кр за единицу — пока не привезут"+(N.why?" · "+N.why:"")+"</s></div>"));
     for(const n of near)$body.appendChild(el("div","row","<div class='nm'><b>"+n.sys.station.name+" · "+n.need.ru+"</b><s>"+n.d+" "+pl3(n.d,"прыжок","прыжка","прыжков")+" · сектор "+n.sys.sx+":"+n.sys.sy+"</s></div>"));
   }
   const O=orderOf(G.sys),H=orderHere();
@@ -25707,8 +25732,20 @@ function sellQuote(sys,k,qty){
   const pA=nA?appetitePrice(sys,k):base;
   const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
   /* остаток без надбавки — ломтями (аудит A2, M351): каждые десять единиц на три процента дешевле, не ниже .7 */
-  const rest=(typeof coopSellSlice==="function")?coopSellSlice(base,qty-nA):(qty-nA)*base;
-  return{revenue:Math.round(nA*pA+rest),nA,nB,priceA:pA,base};
+  const sl=(p,n)=>(typeof coopSellSlice==="function")?coopSellSlice(p,n):n*p;
+  /* кран (M905, DESIGN-game §10.4): то, что станция ЕСТ, сверх нормы смены идёт сразу
+     по дну давления — минус 35 % к прейскуранту, а не за семьдесят единиц, как раньше.
+     Аппетит — кран, а не слив: излишек везут туда, где этот товар не ели. Чего станция
+     не ест — по-старому. Бункер своего цеха (nB) излишком не считается. */
+  const A=appetiteOf(sys),nF=(A&&A[k])?Math.max(0,qty-nA-nB):0,pF=nF?faucetPrice(sys,k):0;
+  const rest=nF?nB*base+sl(pF,nF):sl(base,qty-nA);
+  return{revenue:Math.round(nA*pA+rest),nA,nB,nF,priceA:pA,priceF:pF,base};
+}
+/* цена сверх нормы: тот же marketPrice, давление поставлено на дно */
+const FAUCET_FLOOR=-.35;
+function faucetPrice(sys,k){
+  marketFor(sys);const m=G.market[sys.key];
+  return marketPrice(sys,k,FAUCET_FLOOR-((m&&m.pressure&&m.pressure[k])||0));
 }
 /* ── строка «БЕРЁТ» для доски, эфира и ряда трюма ── */
 function appetiteLine(sys,k){
@@ -25728,7 +25765,7 @@ function appetiteBlock(){
     const ate=appetiteAte(G.sys,k),left=A[k]-ate,have=G.cargo[k]|0;
     $body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
       (left>0?"ещё "+left+" из "+A[k]+" по "+appetitePrice(G.sys,k)+" кр":"на эту смену взяли всё · через смену снова")+
-      " · обычная "+marketFor(G.sys)[k]+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
+      " · сверх нормы "+faucetPrice(G.sys,k)+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
   }
 }
 /* эфир (11b): раз из нескольких — о том, кто берёт с надбавкой поблизости */
@@ -27862,6 +27899,7 @@ function coopCounterBlock(){
   $body.appendChild(el("div","sec","ПРИЛАВОК · КООПЕРАТИВ «"+C.name.toUpperCase()+"» · "+R.ru.toUpperCase()+(R.cap?" · ДО "+R.cap+" ЕДИНИЦ ТОВАРА ЗА ЗАХОД":" · БЕЗ ПОТОЛКА")+" · ЦЕНА ЛОМТЯМИ ПО ДЕСЯТЬ"));
   for(const k of TRADE_KEYS){
     if(!prices[k])continue;
+    if(gaugeStopped(G.sys,k)){$body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>цех стоит: склад пуст, не делают</s></div>"));continue;}   /* M906 */
     const left=coopCapLeft(k),free=Math.max(0,stat().cargoMax-held());
     const maxN=Math.min(left,free);
     const q0=coopBuyQuote(G.sys,k,10);
@@ -47618,7 +47656,8 @@ function occTick(){
   if(!(G.freed|0))return;
   /* сперва укрепляются там, где уже стоят, и только потом ползут дальше:
      иначе фронт расплывался пятном в один уровень на всю галактику */
-  if(o.lvl<OCC_MAX&&r()<.45){
+  /* плохой порядок у станции (M906, 28l-gauge) — пираты крепнут в полтора раза смелее */
+  if(o.lvl<OCC_MAX&&r()<.45*gaugeSpread(from[0],from[1])){
     occSet(from[0],from[1],o.lvl+1);
     const sys=getSystem(from[0],from[1]);
     logAdd("warn","«"+(sys.name||"")+"»: пираты усилились — "+occInfo(o.lvl).ru);
@@ -47632,7 +47671,7 @@ function occTick(){
     if(!starAt(nx,ny)||occLvl(nx,ny))continue;
     /* обжитое сопротивляется: рядом со станцией захват идёт вдвое реже */
     const sys=getSystem(nx,ny);
-    if(sys.station&&r()<.5)continue;
+    if(sys.station&&r()<1-.5*gaugeSpread(nx,ny))continue;   /* плохой порядок держит хуже (M906) */
     if(typeof mapUnderTrassa==="function"&&mapUnderTrassa(nx,ny))continue;   /* под трассой не занимают (M348) */
     occSet(nx,ny,1);
     logAdd("warn","Пираты пришли в «"+(sys.name||(nx+":"+ny))+"»");
@@ -49411,7 +49450,7 @@ function applySave(s){
    понимал, в каком окне продолжать. Летать в ней по-прежнему можно. */
 let TAB_LIVE=true;
 const TAB_ID=uidRand().toString(36).slice(2)+wallNow().toString(36);
-let TAB_CH=null;
+let TAB_CH=null,TAB_TAKER=null;      /* TAB_TAKER — вкладка, которой мы уступили: уйдёт она — играть снова нам */
 try{
   TAB_CH=new BroadcastChannel("drift-tabs");
   TAB_CH.onmessage=e=>{
@@ -49419,12 +49458,19 @@ try{
     if(!d||d.id===TAB_ID)return;
     if(d.k==="hello"&&TAB_LIVE){
       /* пришла новая — уступаем место и замолкаем */
-      TAB_LIVE=false;
+      TAB_LIVE=false;TAB_TAKER=d.id;
       if(typeof say==="function")say("ИГРА ОТКРЫТА В ДРУГОЙ ВКЛАДКЕ\nздесь запись остановлена,\nчтобы не затереть ту",420);
       logShip("Игра открыта в другой вкладке — эта больше не сохраняется.");
     }
+    /* новая вкладка закрыта или перезагружена — место свободно: вернуть запись (раньше замолчавшая вкладка
+       молчала до конца сеанса, и вечер игры в ней не сохранялся) */
+    if(d.k==="bye"&&!TAB_LIVE&&d.id===TAB_TAKER){
+      TAB_LIVE=true;TAB_TAKER=null;
+      if(typeof say==="function")say("Запись возобновлена\nдругая вкладка закрыта",240);
+    }
   };
   TAB_CH.postMessage({k:"hello",id:TAB_ID});
+  addEventListener("pagehide",()=>{try{TAB_CH.postMessage({k:"bye",id:TAB_ID});}catch(e){}});
 }catch(e){TAB_CH=null;}          /* нет BroadcastChannel — работаем как раньше */
 function tabLive(){return TAB_LIVE;}
 
@@ -55328,6 +55374,20 @@ function camBody(sh,sys){
   }
   return near;
 }
+/* планета в зоне посадки главнее всего, что стоит у причальной полосы: полоса
+   (гостиница, чебуречная, базар, причал) живёт у станции, планета по орбите
+   проходит мимо — и их подсказки глушили ПОСАДКУ, сесть было нельзя, пока
+   планета рядом со станцией (проба · экономика, 0.493.4). Порог — тот же
+   SYS_LAND_R, что и у самой подсказки посадки ниже */
+const SYS_LAND_R=110;
+function sysLandNear(sh){
+  const sys=G.sys;if(!sys)return false;
+  for(const p of sys.planets||[]){
+    if(Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius<SYS_LAND_R)return true;
+    for(const m of p.moons||[])if(Math.hypot(sh.x-m.x,sh.y-m.y)-m.radius<SYS_LAND_R)return true;
+  }
+  return false;
+}
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
   if(typeof zoomEase==="function")zoomEase(dt);   /* щипок едет к цели (P9) */
@@ -55629,11 +55689,15 @@ function updateSystem(dt){
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
   /* кольцо железной дороги: стыковка и вестибюль (M471–M472) */
   if(typeof subFightOffer==="function"&&subFightOffer(actEdge))return;   /* ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 в бою (M487) */
+  const landNear=sysLandNear(sh);   /* планета в зоне посадки главнее полосы и встречных (0.493.4) */
+  if(!landNear){
   if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
   if(typeof hotelInteract==="function"&&hotelInteract(sh))return;
   if(typeof bazInteract==="function"&&bazInteract(sh))return;
   if(typeof giantInteract==="function"&&giantInteract(sh))return;   /* причал великана (M464) */   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
+  }
+  if(!landNear){
   if(typeof fleetInteract==="function"&&fleetInteract(sh))return;
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
@@ -55643,6 +55707,7 @@ function updateSystem(dt){
   if(typeof findInteract==="function"&&findInteract(sh))return;
   /* мачта приёмника: к ней подходят, ей везут новости (11ap, M220) */
   if(typeof relayInteract==="function"&&relayInteract(sh))return;
+  }
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
@@ -63066,6 +63131,7 @@ function hotelStar(c,x,y,r,fill){c.beginPath();for(let i=0;i<10;i++){const a=-Ma
 function hotelInteract(sh){
   const Ht=hotelHere();if(!Ht)return false;
   if(Math.hypot(sh.x-Ht.x,sh.y-Ht.y)>150)return false;
+  if(sysLandNear(sh))return false;   /* планета в зоне посадки главнее стойки (0.493.4) */
   const board=Ht.by==="gt"?" · МЕСТ НЕТ":"";
   const shop=(G.cargo.pearl|0)>0?" · ЛАВКА БЕРЁТ ЖЕМЧУГ":"";   /* лавка гостиницы — едок жемчуга (M469) */
   const shown=cue(Ht.name+board+"\nДЕЙСТВИЕ — К СТОЙКЕ"+shop,CUE_ACT);
@@ -93653,6 +93719,9 @@ function rigCardDesc(){
     depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"},
     multisample:{count:4}};
 }
+/* рецепт для прогрева (08b0): карточка рига теперь рисуется и в полёте — альбом печатает людей
+   открытки (25g1), и без рецепта конвейер собирался лениво посреди кадра (0.493.5) */
+GPU_PIPE_ONE["rig.card"]=()=>rigCardDesc();
 /* всё, что живёт с устройством: сменилось — кэш пуст (правило 3) */
 function rigCardDev(){
   const R=RIG_CARD,d=GPU.dev;
@@ -94971,8 +95040,10 @@ function plnBeastFarKit(sps){
     groups.push({sp,list,off,dir,v,x0:r()*400,air:isAir});
   };
   const gs=ground.find(s=>s.herd)||ground[0];
-  if(gs)mk(gs,3,.9,false);
-  if(air[0])mk(air[0],5,2.4,true);
+  /* v — метры за кадр G.t (60 в секунду): было .9 и 2.4 — стадо шло 54 м/с, стайка 144 (автор 15.10:
+     «звери, птицы очень быстро»). Шаг стада 1.8 м/с, стайка 12 м/с */
+  if(gs)mk(gs,3,.03,false);
+  if(air[0])mk(air[0],5,.2,true);
   return {sps,groups};
 }
 function plnBeastDrop(L){
@@ -97194,6 +97265,59 @@ plnAtThing=function(S,p){
   return 0;
 };
 
+/* ══════════════ залежи не под стеной и не под ориентиром (0.493.5) ══════════════
+   Проба экономики (M903) нашла: цепочка подсказок грунта (21-mode-surface) ставит
+   стену посёлка, место посёлка и точку осмотра РАНЬШЕ залежи. Залежь в их радиусе
+   не бурится никогда — а стена без подписи и без чужих рук вдобавок молчит: не
+   пишет ничего, и на экране висит прошлая подсказка («ЗАЛОЖИТЬ ШАХТУ» в 13 м от
+   кремния). Цепочку не трогаем — залежи отодвигаются при посадке, как уже
+   отодвигаются от устья пещеры и от двора дома (clearNear/clearHome в enterSurface),
+   только не выбрасываются, а сдвигаются: номер залежи (i) и остаток (G.mined) при
+   этом свои. Молчащая стена получает строку. */
+const DEP_ROOM_PAD=26;   /* радиус, с которого залежь ловит подсказку (21-mode-surface) */
+function depRoomBlockers(S){
+  const tr=S.tr,p=S.p,out=[];
+  const wx=settleWallHereX(p,tr);if(wx!=null)out.push({x:wx,r:30+DEP_ROOM_PAD});
+  const sx=settleSpotX(p,tr);if(sx!=null)out.push({x:sx,r:44+DEP_ROOM_PAD});
+  for(const q of (tr&&tr.poi)||[])out.push({x:q.x,r:Math.max(36,q.h*.22*(q.sc||1))+DEP_ROOM_PAD});
+  return out;
+}
+/* глушители сливаются в отрезки: стена и место посёлка стоят рядом и перекрываются,
+   и залежь, отодвинутая от одного, ложилась в другой — и так по кругу */
+function depRoomSpans(B){
+  const s=B.map(b=>[b.x-b.r,b.x+b.r]).sort((a,b)=>a[0]-b[0]),out=[];
+  for(const q of s){const l=out[out.length-1];if(l&&q[0]<=l[1])l[1]=Math.max(l[1],q[1]);else out.push([q[0],q[1]]);}
+  return out;
+}
+function depRoom(S){
+  if(!S||!S.deposits||!S.tr)return 0;
+  const SP=depRoomSpans(depRoomBlockers(S));let moved=0;
+  for(const d of S.deposits){
+    const sp=SP.find(q=>d.x>q[0]&&d.x<q[1]);if(!sp)continue;
+    d.x=clamp((d.x-sp[0]<sp[1]-d.x)?sp[0]:sp[1],120,S.tr.W-120);
+    d.y=groundAt(S.tr,d.x)-6;moved++;
+  }
+  return moved;
+}
+const DEP_ROOM_OLD_ENTER=enterSurface;
+enterSurface=function(){
+  const r=DEP_ROOM_OLD_ENTER.apply(this,arguments);
+  if(G.mode==="surface")depRoom(G.surf);
+  return r;
+};
+/* молчащая ветка: кадр начинается с пустой подсказки, и если цепочка не написала
+   ничего, строка ставится здесь — у стены своя, в остальном общая */
+const DEP_ROOM_OLD_UPD=updateSurface;
+updateSurface=function(dt){
+  G.prompt="";
+  const r=DEP_ROOM_OLD_UPD(dt);
+  if(G.prompt===""&&G.mode==="surface"&&G.surf){
+    const S=G.surf,wx=S._wallX;
+    G.prompt=(wx!=null&&Math.abs(S.x-wx)<30)?"СТЕНА ПОСЁЛКА · ПУСТА":"▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
+  }
+  return r;
+};
+
 /* ══════════════ планета: поверх кадра — подписи, луч, следы и то, что ещё не перерисовано (M611) ══════════════
    Кадр нового вида — тела в объёме. Поверх него, тем же 2D, что рисует
    приборы, ложится то, что телом не бывает: подписи вещей, полоса добычи, пыль
@@ -97435,7 +97559,7 @@ fn wxRay(ndc: vec2f) -> vec3f {
     let W = (xr - xl) * 1.2; let Hh = (yt - yb) * 1.3;
     let x0 = xl - (W - (xr - xl)) * 0.5; let y1 = yt + (Hh - (yt - yb)) * 0.5;
     /* род осадка: скорость (м/с), длина штриха (px) или хлопок, снос ветром, покачивание */
-    var spd = 10.0; var len = 34.0; var dr = 0.12; var flake = 0.0; var sway = 0.0; var thick = 1.0;
+    var spd = 6.0; var len = 34.0;   /* было 10 м/с: у объектива струи мелькали (автор 15.10) */ var dr = 0.12; var flake = 0.0; var sway = 0.0; var thick = 1.0;
     if (kind == 2) { spd = 1.0; flake = 1.0; sway = 1.0; }
     else if (kind == 3) { spd = 0.9; flake = 1.0; sway = 0.8; }
     else if (kind == 4) { spd = 5.0; len = 14.0; dr = 0.35; thick = 1.4; }
@@ -98089,9 +98213,11 @@ function plnWeatherLook(p,look){
    Выше двадцати градусов круг прежний, кадр M600 (ph = .125) стоит на нём, как стоял.
    Ночью ключ — самое сильное тело над горизонтом (plnBodies): луна или родитель; ключ гаснет
    в ноль между светилом и им, и смены стороны не видно. Тел нет — ночь без ключа: землю держат
-   звёзды, воздух и лампы. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
+   звёзды, воздух и лампы. Круг без шага: шаг в пятую долю градуса при дне в 6–9 минут прыгал
+   4–5 раз в секунду, и длинные тени низкого солнца дёргались (автор 15.10: «рывками свет»).
+   Карты теней и так пишутся каждый кадр (21pe) */
 function plnHour(p,wl){
-  const c=celSun(p),q=.0035,th=Math.round(c.ph*TAU/q)*q,tilt=52*PLN_DEG,A=PLN_LOOK;
+  const c=celSun(p),th=c.ph*TAU,tilt=52*PLN_DEG,A=PLN_LOOK;
   const s0=Math.sin(th)*Math.cos(tilt),back=.55*(1-plnSmooth(.05,.38,s0));
   const sun=plnNorm([-Math.cos(th),s0,Math.sin(th)*Math.sin(tilt)+back]),sy=sun[1],rise=Math.cos(th)>0;
   const atm=(p.T&&p.T.atm)||"",air=atm==="отсутствует"?0:(atm.indexOf("разреженная")>=0?.5:1);
@@ -98174,7 +98300,7 @@ function plnLightBox(dir,bx,n){
 function plnGlide(S,p,fly){
   const t=wallMs(),dt=Math.min(.1,Math.max(0,(t-(PLN.glideT||t))/1000));
   PLN.glideT=t;
-  const want=fly?0:plnAtThing(S,p),g=PLN.glide||0,tau=want>g?.45:.7;
+  const want=fly?0:plnAtThing(S,p),g=PLN.glide||0,tau=want>g?1.1:1.5;   /* было .45/.7: на каждом шаге у вещи весь задний план качался — «фон летит» (автор 14.10) */
   let v=g+(want-g)*(1-Math.exp(-dt/tau));
   if(Math.abs(v-want)<.002)v=want;
   PLN.glide=v;
@@ -98650,6 +98776,52 @@ hud=function(){
   const on=plnWordsOn(),hu=on&&plnMsgHush(),B=document.body.classList;
   if(on!==PLN_WORDS.on){PLN_WORDS.on=on;B.toggle("plnwords",on);}
   if(hu!==PLN_WORDS.hush){PLN_WORDS.hush=hu;B.toggle("plnhush",hu);}
+};
+
+/* ══════════════ дорогая жила — находка (M904d · DESIGN-game §4.1a) ══════════════
+   Замер экономики (M903) показал: круг добычи платит втрое против модели, и деньги дают не
+   объём, а дорогая руда — у яруса T1 кристаллы и иридий были 29 000 из 46 000 в час. Причина в
+   залежах: 22 на полосу, и тип берётся из профиля планеты поровну, так что кристалл на
+   вулканической планете лежал так же густо, как железо. Поверхность — для железа и кремния;
+   за дорогим идут вглубь (23-mode-dig: ярусы глубины), а дорогая жила наверху — удача часа.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Чем дороже руда, тем реже жила: свежая залежь дорогой руды остаётся собой с весом
+      DEP_REF/цена (кремний и дешевле — всегда), иначе это самая дешёвая руда того же профиля.
+      Кристалл — одна залежь из шести, иридий — из четырёх, титан — почти через раз.
+   2. Решает зерно залежи (система, планета, номер), не rnd: перезаход видит то же самое.
+   3. Тип решается и для выбранной залежи: генератор рождает её прежней, и без повтора она
+      «дорожала» бы второй посадкой. Остаток (G.mined) не трогается.
+   4. Генератор (21-mode-surface) и шахта (23-mode-dig) не тронуты: обёртка поверх входа на
+      грунт, после 21pih и 21pzb — до первого кадра, который рисует залежи (21pi). */
+const DEP_REF=17;
+function depValueF(k){
+  const p=RES[k]&&RES[k].price;
+  return p>0?Math.min(1,DEP_REF/p):1;
+}
+function depCheap(S){
+  const prof=(S.p&&(S.p.res||PROFILE[S.p.type]))||[];
+  let best=null;
+  for(const k of prof)if(RES[k]&&RES[k].price>0&&(!best||RES[k].price<RES[best].price))best=k;
+  return best;
+}
+function depValue(S){
+  if(!S||!Array.isArray(S.deposits)||!S.p)return 0;
+  const cheap=depCheap(S);
+  if(!cheap)return 0;
+  let n=0;
+  for(const d of S.deposits){
+    const f=depValueF(d.res);if(f>=1||d.res===cheap)continue;
+    const r=rng(hashi(G.sx|0,G.sy|0,0xDE9+(S.p.idx|0)*97+((d.i|0)*7919)));
+    if(r()>=f){d.res=cheap;n++;}
+  }
+  return n;
+}
+const DEP_VALUE_OLD_ENTER=enterSurface;
+enterSurface=function(){
+  const r=DEP_VALUE_OLD_ENTER.apply(this,arguments);
+  if(G.mode==="surface")depValue(G.surf);
+  return r;
 };
 
 /* ══════════════ пещера: поле породы в двух измерениях ══════════════ */
@@ -103204,8 +103376,15 @@ function cave3LifeDrop(Q){
   Q.geo={};Q.inst={};
 }
 /* пол картинки под точкой на глубине z: где воздух — на нём, иначе ближе к разрезу */
+/* ноги вещи: не дальше .25 м от пола игры (как у человека, 22d-cave-pln) — иначе растение вмуровано в породу
+   или висит над провалом, а зверь зарыт (плейтест 09.10.2026) */
+function cave3FootY(gy,v){return gy+clamp(v-gy,-.25,.25);}
 function cave3LifeFoot(F,X,Y,zs){
-  for(const z of zs)if(cave3Den(F,X,Y+.5,z)<-.15)return [cave3Down(F,X,Y+.5,z),z];
+  for(const z of zs)if(cave3Den(F,X,Y+.5,z)<-.15){
+    const v=cave3Down(F,X,Y+.5,z);
+    /* cave3Down на пределе поиска (4 м) отдаёт «пол» в воздухе: под ним должна быть порода */
+    if(cave3Den(F,X,v-.12,z)>0)return [cave3FootY(Y,v),z];
+  }
   return null;
 }
 function cave3LifeFrame(C,F,Fd,x0,x1){
@@ -104380,7 +104559,7 @@ function drawDigWorld(){
       ctx.fillRect(x+3,y+DIG_CELL-8,k,4);
       /* искры из-под резака — выше единицы, на видеокарте (23b digEmit) */
     }
-    if(TP)gpuShapes(TP,TS,{blend:"over"});
+    if(TP)gpuShapes(TP,gpuShpAt(TS,lifeHere(0,0)),{blend:"over"});   /* мир → CSS (08c) */
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
   /* риг карточкой (21phc, M801b): карточка вклеивает 2D-темноту в сцену (gpuOver), поэтому луч
@@ -105325,14 +105504,16 @@ function digMidGpu(D,p,camx,camy,px,py,scanAll,r0,r1){
       rect(S,L,ry,R-L+1.8,1.7,164,124,74,.9);rect(S,L,ry+1.7,R-L+1.8,.9,0,0,0,.3);}
     if(row%4===0)rect(S,L-1.4,y+1.5,R-L+4.6,2.2,96,104,112,.8);
   }
-  gpuShapes(pass,O,{blend:"over"});
-  gpuShapes(pass,A,{blend:"add"});
-  gpuShapes(pass,S,{blend:"over"});
+  /* кадр шахты стоит в withScale: мировые пиксели → пиксели CSS (08c gpuShpAt) */
+  const o=lifeHere(0,0);
+  gpuShapes(pass,gpuShpAt(O,o),{blend:"over"});
+  gpuShapes(pass,gpuShpAt(A,o),{blend:"add"});
+  gpuShapes(pass,gpuShpAt(S,o),{blend:"over"});
   /* табличка глубины: число — выпечка GPU-холста, одна на число */
-  for(const [t,x,y] of TX){
+  for(const [t,x0,y0] of TX){const x=o.x+x0*o.s,y=o.y+y0*o.s;
     const B=gpuBaked(DIG_TXT,t,48,24,g=>{g.setTransform(4,0,0,4,0,0);g.fillStyle="rgba(255,228,170,.75)";
       g.font="5px ui-monospace,monospace";g.textAlign="center";g.fillText(t,6,5);},{mips:false,ss:1,keep:64});
-    if(B)gpuImage(pass,B,[{x,y,w:12,h:6}]);
+    if(B)gpuImage(pass,B,[{x,y,w:12*o.s,h:6*o.s}]);
   }
   return true;
 }
@@ -105375,7 +105556,7 @@ function digSurfFringeGpu(p,camx,camy){
              [0,x-rr*1.3,y,x+rr*1.3,y+1,0,0,0,0,0,.25]);
     }
   }
-  gpuShapes(pass,S,{blend:"over"});
+  gpuShapes(pass,gpuShpAt(S,lifeHere(0,0)),{blend:"over"});
   return true;
 }
 
@@ -105495,7 +105676,11 @@ function digLights(D,camx,camy,early){
 function digLitU(D,p,camx,camy,lamp,early){
   const U=CAVE_LIT_U,lk=kitStat().lamp,M=digMask(D,p);
   U.fill(0);
-  U[0]=camx;U[1]=camy;U[2]=G.viewK||1;U[3]=G.t;
+  /* U[2] — пикселей поля на пиксель мира. Кадр шахты стоит в withScale(K): W,H там уже
+     поделены на K (18c), и пиксель поля — пиксель мира (на том же стоит небо, 19ca).
+     Было G.viewK: K применялся дважды, и на большом экране светлый крест хода с конусом
+     уезжал вправо-вниз в K раз (автор, 15.10) */
+  U[0]=camx;U[1]=camy;U[2]=(G.viewK||1)*W/(GPU.cw||W);U[3]=G.t;
   U[4]=M.x0;U[5]=M.y0;U[6]=1/M.w;U[7]=1/M.h;
   const a=.12;
   U[8]=lamp.x;U[9]=lamp.y;U[10]=lamp.f*Math.cos(a);U[11]=Math.sin(a);
@@ -105520,7 +105705,7 @@ function digShade(D,p,camx,camy,lamp){
   gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,CAVE_LIT_U,[{view:gpuMipTex(M.cv).view}],{blend:"mul",smp:gpuMipSmp()});
   /* тёплое у налобника — «digwarm» main: .20·(1−t)^2.2 на .34·R0 у человека, сложением по породе;
      заливка хода и небо (2D) ложатся поверх и его закрывают, как у main */
-  const K=G.viewK||1,R=Math.max(W,H)*.62*.34;
+  const K=CAVE_LIT_U[2],R=Math.max(W,H)*.62*.34;   /* в пикселях поля, как U[2] */
   warmGlow(pass,(lamp.x-camx)*K,(lamp.y+12-camy)*K,R*K,R*K,[1,.776,.502],.20,0);
 }
 /* темнота main поверх всего нарисованного, небо не трогает */
@@ -105742,6 +105927,8 @@ function exitBelt(){
   hangSay("belt.out",["Выход из пояса","в трюме: "+held()],"ship",150);   /* на корабле (M803) */
 }
 const CUT_RANGE=340;   // резак достаёт только вблизи, захват — издалека
+/* урон касания камня: медленное касание — мелочь, потолок — 20 (M-плейтест 09.10.2026) */
+function beltImpactDmg(closing){return Math.min(20,Math.max(0,3*closing));}
 function updateBelt(dt){
   const b=G.belt,st=stat();
   const yd=G.opts.invYaw?-1:1;
@@ -105800,10 +105987,17 @@ function updateBelt(dt){
     if(clear<b.near)b.near=clear;
     if(d<a.r+12&&d>0&&a.grove){b.vx+=dx/d*.3;b.vy+=dy/d*.3;b.vz+=dz/d*.3;continue;}   /* роща не бьёт (11j) */
     if(d<a.r+12&&d>0){
-      const dmg=Math.min(26,sp2*5+2);
-      G.hull=Math.max(0,G.hull-dmg*dt*.5);
-      if(typeof hitFx==="function")hitFx(.55);
-      b.vx-=dx/d*.6;b.vy-=dy/d*.6;b.vz-=dz/d*.6;
+      /* урон — от скорости СБЛИЖЕНИЯ, один раз на касание (было: sp2*5+2 каждый кадр, пока борт
+         в 12 ед. от камня — новичок терял весь корпус за пару десятых секунды; плейтест 09.10.2026) */
+      const closing=(b.vx*dx+b.vy*dy+b.vz*dz)/d;
+      if(closing>.2&&G.t-(b.impactT===undefined?-1e9:b.impactT)>45){
+        b.impactT=G.t;
+        const dmg=beltImpactDmg(closing);
+        G.hull=Math.max(0,G.hull-dmg);
+        if(typeof hitFx==="function")hitFx(.55);
+        say("УДАР · КОРПУС "+Math.round(G.hull),90);
+        b.vx-=dx/d*(closing+.5);b.vy-=dy/d*(closing+.5);b.vz-=dz/d*(closing+.5);
+      }else{b.vx-=dx/d*.2;b.vy-=dy/d*.2;b.vz-=dz/d*.2;}
       b.hit=14;
       /* касание слышно: вспышка на .22 альфы — единственный сигнал, и корпус
          стирался о камень молча, 45→28 мелкими тычками (плейтест 30.08.2026) */
@@ -116794,7 +116988,8 @@ function stTabMarket(st){
         Q=(typeof sellQuote==="function")?sellQuote(G.sys,k,q):{revenue:q*price,nA:0,priceA:price};
         tot+=Q.revenue;
         const tl=[];
-        if(Q.nA)tl.push("берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:""));
+        if(Q.nA)tl.push("берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+(Q.nF?Q.priceF:price):""));
+        else if(Q.nF)tl.push("норму смены взяли · сверх по "+Q.priceF+" кр");
         if((mkt.pressure[k]||0)<-.05)tl.push("недавно продавали здесь");
         /* дальний товар: едок говорит сам (M469), без едока — приёмщик про весы (review §3) */
         const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
@@ -118088,6 +118283,17 @@ function renderOpts(){
   const bres=el("button","act gold",RLV[jr][1]);
   bres.onclick=()=>{G.opts.gfx.res=RLV[(jr+1)%RLV.length][0];RES_AUTO=2;resize();renderOpts();};
   rres.appendChild(bres);$optBody.appendChild(rres);
+  /* Масштаб интерфейса (0.493.5): на экране 2000×1000 «авто» даёт ×1.3, и автор
+     увидел кнопки в полэкрана. «Авто» остаётся правилом кадра (uiScale), но
+     игрок может поставить своё: мельче — больше мира в кадре, крупнее — для
+     телевизора через всю комнату. Применяется той же resize(), что и зум. */
+  const ULV=[[0,"АВТО"],[.8,"МЕЛЬЧЕ"],[1,"100 %"],[1.25,"КРУПНЕЕ"]];
+  const rui=el("div","row");
+  rui.appendChild(el("div","nm","<b>Масштаб интерфейса</b><s>сейчас ×"+(typeof UIK==="number"?UIK.toFixed(2):"1")+"; авто — от высоты окна</s>"));
+  const ju=Math.max(0,ULV.findIndex(g=>g[0]===(G.opts.gfx.ui||0)));
+  const bui=el("button","act gold",ULV[ju][1]);
+  bui.onclick=()=>{G.opts.gfx.ui=ULV[(ju+1)%ULV.length][0];resize();renderOpts();};
+  rui.appendChild(bui);$optBody.appendChild(rui);
   const rpr=el("div","row");
   rpr.appendChild(el("div","nm","<b>Пресет</b><s>выставить всё сразу</s>"));
   const bpr=el("button","act","НИЗКИЕ / СРЕДНИЕ / ВЫСОКИЕ / МАКС");
@@ -118097,7 +118303,7 @@ function renderOpts(){
     const nv=GLV[((i0<0?1:i0)+1)%GLV.length][0];
     /* потолок кадров пресетом не трогается: это отдельное решение игрока
        про железо, а не про то, насколько подробен мир */
-    G.opts.gfx={draw:nv,detail:nv,particles:nv,plants:nv,fps:G.opts.gfx.fps};
+    G.opts.gfx=Object.assign({},G.opts.gfx,{draw:nv,detail:nv,particles:nv,plants:nv});   /* потолок, разрешение и масштаб — решения про железо и глаза, пресет их не трогает */
     renderOpts();
   };
   rpr.appendChild(bpr);$optBody.appendChild(rpr);
@@ -118238,6 +118444,21 @@ function optGroups(){
     n.style.display=(cur===optTab)?"":"none";
   }
 }
+/* масштаб интерфейса (0.493.5). Автор 14.10 на ПК 2000×1000: «всё огромное, кнопки в пол-экрана».
+   Авто было clamp(min(H/760, W/1150), 1, 1.75) — 1.32 на его экране, 1.42 на 1920×1080. Теперь
+   мерка мягче: min(H/940, W/1500) в пределах 1…1.4 — 1.06 у автора, 1.15 на 1080p, 1.4 только с
+   1440p. Ниже единицы авто не идёт: вёрстка нарисована в этих пикселях, цели пальца — от 44.
+   Игрок может выбрать сам (НАСТРОЙКИ → «Масштаб интерфейса»): 0 — авто, иначе множитель;
+   телефон (W<=760) всегда 1 */
+uiScale=function(w,h){
+  let k=0;try{k=+G.opts.gfx.ui||0;}catch(e){}
+  if(w<=760)return 1;
+  return k>0?clamp(k,.6,2):clamp(Math.min(h/940,w/1500),1,1.4);
+};
+/* выбор масштаба лежит в записи: после её загрузки рамка пересчитывается */
+const UI_SCALE_APPLY=applySave;
+applySave=function(){const r=UI_SCALE_APPLY.apply(this,arguments);resize();return r;};
+resize();
 
 /* ══════════════ экран экипажа ══════════════ */
 /* Наёмники раньше жили только во вкладке станции: нанял — и до следующей стыковки
@@ -122738,7 +122959,7 @@ function c3Layout(cssW,cssH,list,deals,folk){
     L.tables.push({id:"deal:"+d.key,d,x,z,seed:hashi(d.seed||1,i*97,0x7AB)>>>0});
     L.people.push({id:"deal:"+d.key,m:{seed:hashi(d.seed||1,i,0xDEA1)>>>0,loy:50,traits:[]},pose:"table",x,z:z-.46,yaw:0,lod:1,kind:"deal"});}
   /* толпа — или ряды зрителей на кино */
-  const cr=C3_CROWD[st]||C3_CROWD.trade;
+  const cr=gaugeCrowd(C3_CROWD[st]||C3_CROWD.trade);   /* толпа — это ЛЮДИ станции (M906, 28l-gauge) */
   if(K9){const n=Math.min(cr.length+2,9);
     for(let i=0;i<n;i++){const row=i<5?0:1,x=(i-(row?7:2))*.78+(row?.39:0);
       L.people.push({id:null,m:{seed:hashi(seed,i,0xC0D)>>>0,loy:50+i*5,traits:[]},pose:"chair",x,z:1.55+row*.85,yaw:Math.PI,lod:0,kind:"kino"});}
@@ -123314,7 +123535,7 @@ function hallLayout(st){
     for(let i=0;i<n;i++){const s=HALL_STALLS[i%HALL_STALLS.length],side=i<HALL_STALLS.length?1:-1;
       L.people.push({id:null,m:{seed:hashi(seed,i,0xBA2)>>>0,loy:45+i*7,traits:[]},pose:i%2?"mug":"stand",
         x:s[0]+(R()-.5)*.5,z:s[1]+side*.95,yaw:side>0?Math.PI+(R()-.5)*.6:(R()-.5)*.6,lod:0,kind:"crowd"});}}
-  L.people=L.people.slice(0,R3_MAXI-2);   /* последний экземпляр — пилот */
+  L.people=gaugeHallCrowd(L.people).slice(0,R3_MAXI-2);   /* последний экземпляр — пилот; толпа — по людям станции (M906) */
   for(const P of L.people)if(!P.mesh)P.mesh=cpMesh(P.m,P.pose,P.lod);
   L.rkey=st+"|"+seed+"|"+L.seats.length+"|"+L.bx.toFixed(2)+"|"+L.stories.map(s=>(s.props||[]).join(",")+":"+s.seat).join(";");
   return L;
@@ -124866,7 +125087,14 @@ hallFrame=hallCostWrap(hallFrame);
    5. Портрет живой (M729): холсты на странице перерисовываются таймером — дыхание, моргание, взгляд, эмоция
       (27f6 cpFace). Не больше CPP_LIVE за такт, по кругу; скрытая вкладка и отцепленные холсты не рисуются. */
 const CPP={q:[],t:0,hid:new Map(),bd:new Map(),M:null,OT:null,n:0,live:[],lt:0,rr:0};
-const CPP_LIVE=6,CPP_MS=50;
+/* 0.493.5: было шесть портретов каждые 50 мс, и не глядя, видны ли они — холст в скрытой панели
+   (display:none) или за прокруткой «подключён» и рисовался: на грунте ~90 полных кадров движка в
+   секунду впустую, у автора видеокарта 100 %. Теперь живут только видимые (IntersectionObserver),
+   не больше четырёх за такт в 66 мс */
+const CPP_LIVE=4,CPP_MS=66;
+const CPP_IO=(typeof IntersectionObserver==="function")?
+  new IntersectionObserver(es=>{for(const e of es)e.target.__cppVis=e.isIntersecting;}):null;
+function cppVisible(cv){return cv.__cppVis!==false;}
 /* холст портрета css×css (CSS-пиксели), плотность панели; cut — крупнее, одна голова (бармен в реплике) */
 function cpPortrait(m,css,cut){
   const cv=document.createElement("canvas");cv.className="cp3";
@@ -124878,18 +125106,19 @@ function cpPortrait(m,css,cut){
 function cppFlush(){
   CPP.t=0;const L=CPP.q.splice(0);
   if(GPU.enc){CPP.q.push(...L);CPP.t=setTimeout(cppFlush,0);return;}   /* кадр ещё открыт — следующим таймером */
-  for(const it of L)if(it[0].isConnected){cppPaint(it[0],it[1],it[2],it[3]);CPP.live.push(it);}
+  for(const it of L)if(it[0].isConnected){cppPaint(it[0],it[1],it[2],it[3]);CPP.live.push(it);if(CPP_IO)CPP_IO.observe(it[0]);}
   if(CPP.live.length&&!CPP.lt)CPP.lt=setTimeout(cppTick,CPP_MS);
 }
 /* такт живых портретов: отцепленные — вон; рисуются по кругу не больше CPP_LIVE за раз */
 function cppTick(){
   CPP.lt=0;
-  CPP.live=CPP.live.filter(it=>it[0].isConnected);
+  CPP.live=CPP.live.filter(it=>{if(it[0].isConnected)return true;if(CPP_IO)CPP_IO.unobserve(it[0]);return false;});
   if(!CPP.live.length)return;
   const hid=typeof document!=="undefined"&&document.hidden;
-  if(!hid&&!GPU.enc){const n=Math.min(CPP_LIVE,CPP.live.length);
-    for(let k=0;k<n;k++){const it=CPP.live[(CPP.rr+k)%CPP.live.length];cppPaint(it[0],it[1],it[2],it[3]);}
-    CPP.rr=(CPP.rr+n)%CPP.live.length;}
+  const V=CPP.live.filter(it=>cppVisible(it[0]));
+  if(!hid&&!GPU.enc&&V.length){const n=Math.min(CPP_LIVE,V.length);
+    for(let k=0;k<n;k++){const it=V[(CPP.rr+k)%V.length];cppPaint(it[0],it[1],it[2],it[3]);}
+    CPP.rr=(CPP.rr+n)%V.length;}
   CPP.lt=setTimeout(cppTick,hid?500:CPP_MS);
 }
 /* задник: полукруглая ниша за спиной, тёмная в цвет роли */
@@ -125020,7 +125249,7 @@ function cpFace(m,base){
   if(t>=F.ns){const r=F.r,aw=r()<.14*T.sac;
     F.away=aw?t+500+r()*700:0;
     F.sac=aw?[(r()<.5?-1:1)*(.18+r()*.14),(r()-.6)*.14]:[(r()-.5)*.08,(r()-.5)*.05];
-    F.ns=t+(aw?1300:(500+r()*1900)/T.sac);}
+    F.ns=t+(aw?1600:(1300+r()*3200)/Math.sqrt(T.sac));}   /* спокойнее (0.493.5): скачок раз в 1.3–4.5 с, а не в 0.5–2.4 — «лица очень быстро» (автор 14.10) */
   if(F.away&&t>F.away){F.sac=[0,0];F.away=0;}
   const bg=base||[0,0];
   tg.gz=[bg[0]+tg.gz[0]+F.sac[0],bg[1]+tg.gz[1]+F.sac[1]];
@@ -125030,7 +125259,7 @@ function cpFace(m,base){
   const bt2=bt-260,b2=F.b2&&bt2>0?(bt2<70?bt2/70:bt2<110?1:bt2<230?1-(bt2-110)/120:0):0;
   /* к цели — с запаздыванием: лицо 7/с, глаза 18/с (скачок), моргание — сразу */
   if(!F.X)F.X=cpEmoMix(tg,tg,0);
-  const kf=1-Math.exp(-7*dt),kg=1-Math.exp(-18*dt),X=F.X;
+  const kf=1-Math.exp(-4*dt),kg=1-Math.exp(-12*dt),X=F.X;
   for(const k of ["lu","ll","sm","sk","mo"])X[k]+=(tg[k]-X[k])*kf;
   for(let i=0;i<2;i++){X.br[i]+=(tg.br[i]-X.br[i])*kf;X.bi[i]+=(tg.bi[i]-X.bi[i])*kf;X.gz[i]+=(tg.gz[i]-X.gz[i])*kg;}
   /* лёгкая жизнь рта и бровей: дыхание чуть приоткрывает губы, брови вздрагивают при взгляде в сторону */
@@ -126244,6 +126473,308 @@ function renderDeskTop(box){
     box.appendChild(cell);
   }
 }
+
+/* ══════════════ счёт за смену (M904a · DESIGN-game §3.1, §10.1) ══════════════
+   На стыковке, раньше доски, — одна бумага: что смена стоила. Замер экономики (M903, §4.1a)
+   показал, что содержание не давит вовсе (U/G .06–.24 против полосы .40–.70): топливо и ТО
+   игрок платит у колонки и не видит суммой, а управляющие брали оклад из собственной доли.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Счёт ничего не сочиняет. Уже уплаченное (бак, ТО, руки) — строки «оплачено», чтобы смена
+      читалась целиком; к оплате — только новое: оклад управляющих (развилка F2: оклад платит
+      игрок, доля остаётся его деньгами и его верностью).
+   2. Смена закрывается на стыковке, не раньше BILL_SHIFT_MS по часам игры от прошлой бумаги.
+      Первый час — без бумаги: стажёр за счёт ГЛАВТРАССЫ; первая бумага несёт эту строку.
+   3. Неоплаченное уходит в Кассу взаимопомощи (M904b, развилка F1, §5.2) и растёт на процент за
+      смену. Пока там лежит неоплаченная бумага, управляющие без оклада — верность тает.
+   4. Офлайн (догон mgrTick до 240 мин) пишет в счёт не больше часа — §10.5.
+   5. Долг — отдельное число, а не кредиты ниже нуля: два десятка мест в коде берут
+      min(G.credits, сумма), и на минусе они печатали бы деньги. Для игрока это одно и то же:
+      касса даёт на бак и ремонт, когда своих не хватает, до пола — двух часов чистого своего
+      яруса. У пола садится взыскатель и со следующей смены берёт: дроны, потом корпус.
+   Страхкасса и потеря корпуса (F3) — в 28i-insure. */
+const BILL_SHIFT_MS=10*60000,BILL_RATE=.01,BILL_OFF_MIN=60;
+/* пол долга по ярусу (§5.2: два часа чистого яруса — правило в отношении, числа модели) */
+const BILL_FLOOR_T=[9000,28000,28000,25000];
+const BILL_COLL_NAMES=["Захар Ильич","Герман Осипович","Савва Петрович","Лука Матвеевич","Тимофей Карпович","Аристарх Фомич"];
+const BILL_LINES={
+  fuel:{ru:"топливо",voice:"Норма расхода. Перерасход — ваш."},
+  yard:{ru:"обслуживание корпуса",voice:"Прошли бы ТО вовремя — было бы дешевле."},
+  crew:{ru:"наёмные руки",voice:"За работу, не за простой."},
+  mgr:{ru:"управляющие",voice:"Оклад — ваш. Доля — наша."},
+  late:{ru:"с прошлой смены",voice:"Один процент за смену. Не задерживайте."},
+  debt:{ru:"касса взаимопомощи",voice:"Один процент за смену. Касса не торопит — пока."},
+  ins:{ru:"Страхкасса",voice:"Взнос за смену. Не задерживайте."}
+};
+function billSt(){
+  if(!G.bill||typeof G.bill!=="object")G.bill={};
+  const B=G.bill;
+  if(!B.cur||typeof B.cur!=="object")B.cur={};
+  if(!B.due||typeof B.due!=="object")B.due={};
+  /* смена — по часам игры (now): налёт G.flownMs идёт только в полёте, а смена — и на грунте */
+  if(!(B.from>=0))B.from=now();
+  B.n=B.n|0;
+  B.debt=Math.max(0,+B.debt||0);
+  return B;
+}
+/* ── касса взаимопомощи (M904b) ── */
+/* ярус — по самому дорогому корпусу во владении: долг меряется тем, что игрок держит */
+function billTier(){
+  let p=0;for(const id in G.owned)if(G.owned[id]){const S=shipData(id);if(S&&S.price>p)p=S.price;}
+  return p<5000?0:p<12000?1:p<20000?2:3;
+}
+function billFloor(){return BILL_FLOOR_T[billTier()];}
+function billDebt(){return Math.round(billSt().debt);}
+function billRoom(){return Math.max(0,billFloor()-billDebt());}
+/* касса даёт недостающее на нужное (бак, ремонт): кредиты растут ровно на долг */
+function billLend(want){
+  if(!billOn())return 0;
+  const x=Math.max(0,Math.min(Math.ceil(want),billRoom()));
+  if(x>0){billSt().debt+=x;G.credits+=x;}
+  return x;
+}
+/* недотраченное из займа — обратно в кассу, долг не висит за то, что не купили */
+function billUnlend(lent,c0){
+  const back=Math.max(0,Math.min(lent,G.credits-c0));
+  if(back>0){billSt().debt-=back;G.credits-=back;}
+  return lent-back;
+}
+function billOn(){return !firstHour();}
+function billPaid(k,sum){if(sum>0&&billOn()){const B=billSt();B.cur[k]=(B.cur[k]||0)+sum;}}
+function billDue(k,sum){if(sum>0&&billOn()){const B=billSt();B.due[k]=(B.due[k]||0)+sum;}}
+/* сколько осталось по последней бумаге */
+function billLeft(){const P=billSt().paper;return P?Math.max(0,Math.round(P.total-P.paid)):0;}
+/* неоплаченная бумага ушла в кассу и ещё там — управляющие без оклада */
+function billLate(){return !!billSt().late&&billDebt()>0;}
+/* всё, что игрок должен: остаток бумаги и касса */
+function billOwed(){return billLeft()+billDebt();}
+/* корпус уходит со всем, что на нём (как «Сброс» в 16c-rescue): поставленные ступени модулей,
+   части из описи; если на нём летали — пересадка на «Стриж», лишний груз за борт (людей — нет) */
+function hullTake(id){
+  if(!id||id==="strizh"||!G.owned[id])return false;
+  delete G.owned[id];
+  const lostFit=G.fit[id]||{};
+  for(const k in lostFit){const p=partById(lostFit[k]);const i=p?G.inv.indexOf(p):-1;if(i>=0)G.inv.splice(i,1);}
+  delete G.fit[id];
+  if(G.shipId===id){
+    for(const k in G.mods){G.modsOwned[k]=Math.max(0,(G.modsOwned[k]|0)-(G.mods[k]|0));G.mods[k]=0;}
+    G.shipId="strizh";G.owned.strizh=true;invalidateParts();
+    const ns=stat();G.fuel=Math.min(G.fuel,ns.fuelMax);G.hull=Math.min(G.hull,ns.hullMax);
+    let over=held()-ns.cargoMax;
+    for(const k of RES_KEYS){if(over<=0)break;if(PAX_KEYS.indexOf(k)>=0)continue;
+      const t=Math.min(over,G.cargo[k]);G.cargo[k]-=t;over-=t;}
+  }
+  return true;
+}
+/* что взыскатель возьмёт первым (§5.2: дроны, потом корпус) и во что он это ставит — в полцены */
+function billNext(){
+  if((G.droneInventory|0)>0)return {k:"inv",ru:"дрон из запаса",v:Math.round(DRONES.miner.price*.5)};
+  if(G.drones&&G.drones.length){const d=G.drones[G.drones.length-1];
+    return {k:"drone",d,ru:"дрон «"+droneName(d)+"»",v:Math.round(DRONES.miner.price*.5)};}
+  let id=null,p=0;
+  for(const k in G.owned)if(G.owned[k]&&k!=="strizh"){const S=shipData(k);if(S&&S.price>p){p=S.price;id=k;}}
+  if(id)return {k:"hull",id,ru:"корпус «"+shipData(id).ru+"»",v:Math.round(p*.5)};
+  return null;
+}
+function billSeize(B){
+  const X=billNext();if(!X)return null;
+  if(X.k==="inv")G.droneInventory--;
+  else if(X.k==="drone"){const i=G.drones.indexOf(X.d);if(i>=0)G.drones.splice(i,1);}
+  else hullTake(X.id);
+  B.debt=Math.max(0,B.debt-X.v);B.coll.took=(B.coll.took|0)+1;
+  logAdd("bad","Взыскатель "+B.coll.nm+" забрал "+X.ru+" · в счёт долга −"+X.v.toLocaleString("ru")+" кр");
+  say("Взыскатель забрал "+X.ru+"\nв счёт долга −"+X.v.toLocaleString("ru")+" кр",220);
+  return X;
+}
+/* у пола: первая смена — садится и ждёт, каждая следующая у пола — берёт одно */
+function billCollector(B){
+  if(B.debt<billFloor())return null;
+  if(!B.coll){
+    const r=rng(hashi(B.n|0,B.debt|0,0xC011));
+    B.coll={nm:pick(BILL_COLL_NAMES,r),at:now(),took:0,seed:Math.floor(r()*1e9)};
+    const X=billNext();
+    logAdd("bad","Касса взаимопомощи на пределе · в кантине сел взыскатель "+B.coll.nm);
+    say("Взыскатель "+B.coll.nm+":\nЯ подожду смену."+(X?"\nПотом — "+X.ru+".":""),220);
+    return null;
+  }
+  return billSeize(B);
+}
+function billCollLeave(B){
+  if(!B.coll)return;
+  logAdd("good","Взыскатель "+B.coll.nm+" встал из-за стола: «Касса вами довольна. Пока.»");
+  B.coll=null;
+}
+/* закрыть смену: строки из накопленного; неоплаченное прошлой — в кассу, касса — с процентом */
+function billClose(){
+  const B=billSt(),L=[];
+  insAccrue(B);   /* Страхкасса (28i): взнос за прожитые смены */
+  for(const k of ["fuel","yard","crew"]){const v=Math.round(B.cur[k]||0);if(v>0)L.push({k,sum:v,paid:true});}
+  for(const k of ["mgr","ins"]){const v=Math.round(B.due[k]||0);if(v>0)L.push({k,sum:v,paid:false});}
+  const prev=billLeft();
+  if(prev>0){B.debt+=prev;B.late=true;if(B.paper)B.paper.paid=B.paper.total;}
+  if(B.debt>0)B.debt=Math.ceil(B.debt*(1+BILL_RATE));else B.late=false;
+  const first=!B.n&&(G.flownMs||0)<2*FIRST_HOUR_MS;   /* стажёр — только у новичка, не у старой записи */
+  B.cur={};B.due={};B.from=now();
+  billCollector(B);
+  if(!L.length&&!first){B.paper=null;return null;}
+  B.n++;
+  const total=L.filter(x=>!x.paid).reduce((a,x)=>a+x.sum,0);
+  B.paper={n:B.n,lines:L,total,paid:0,first,at:G.flownMs||0,st:G.sys?G.sys.key:""};
+  if(total>0||B.debt>0)logAdd("warn","Счёт за смену № "+B.n+" · к оплате "+total.toLocaleString("ru")+" кр"+
+    (B.debt>0?" · в кассе взаимопомощи "+billDebt().toLocaleString("ru"):""));
+  return B.paper;
+}
+/* одно касание: сперва бумага, потом касса; платится сколько есть */
+function billPay(){
+  const B=billSt(),P=B.paper,owe=billOwed();if(owe<=0)return 0;
+  const x=Math.min(owe,Math.max(0,Math.floor(G.credits)));
+  if(x<=0){say("Не хватает кредитов");return 0;}
+  G.credits-=x;
+  const a=P?Math.min(x,billLeft()):0;if(P)P.paid+=a;
+  B.debt=Math.max(0,B.debt-(x-a));
+  if(B.debt<=0){B.late=false;billCollLeave(B);}
+  if(billOwed()<=0)say("Счёт за смену оплачен\n−"+x.toLocaleString("ru")+" кр");
+  else say("Оплачено на что хватило\n−"+x.toLocaleString("ru")+" кр · осталось "+billOwed().toLocaleString("ru"));
+  return x;
+}
+/* ── где счёт берёт строки ── */
+const BILL_OLD_OPEN=openStation;
+openStation=function(){
+  const r=BILL_OLD_OPEN.apply(this,arguments);
+  if(billOn()&&(now()-billSt().from>=BILL_SHIFT_MS||now()<billSt().from)){
+    billClose();
+    if(G.mode==="dock"&&typeof renderTab==="function")renderTab();   /* бумага и взыскатель — на этой же доске */
+  }
+  return r;
+};
+/* ремонт: своих не хватает — касса даёт недостающее до пола; недотраченное возвращается */
+const BILL_OLD_REPAIR=repairDo;
+repairDo=function(frac){
+  const q=repairQuote(frac),c0=G.credits;
+  const lent=(q.units&&G.credits<q.cost)?billLend(q.cost-G.credits):0;
+  const c1=G.credits,r=BILL_OLD_REPAIR.apply(this,arguments);
+  billPaid("yard",c1-G.credits);
+  const kept=lent?billUnlend(lent,c0):0;
+  if(kept>0)say("Касса взаимопомощи\nна ремонт в долг "+kept.toLocaleString("ru")+" кр",160);
+  return r;
+};
+const BILL_OLD_CREW=crewPayroll;
+crewPayroll=function(){const c0=G.credits,r=BILL_OLD_CREW.apply(this,arguments);billPaid("crew",c0-G.credits);return r;};
+/* бак: обработчик кнопки безымянный — до него касса запоминается (и даёт в долг недостающее)
+   на погружении, после — на всплытии */
+{
+  const b=document.getElementById("bRefuel");let c0=null,c1=null,lent=0;
+  if(b){
+    b.addEventListener("click",()=>{
+      c0=G.credits;lent=0;
+      const need=Math.ceil(stat().fuelMax-G.fuel),cost=need>0?need*fuelPriceHere():0;
+      if(cost>G.credits)lent=billLend(cost-G.credits);
+      c1=G.credits;
+    },true);
+    b.addEventListener("click",()=>{
+      if(c1!=null)billPaid("fuel",c1-G.credits);
+      const kept=lent?billUnlend(lent,c0):0;
+      if(kept>0){say("Касса взаимопомощи\nна бак в долг "+kept.toLocaleString("ru")+" кр",160);renderTab();}
+      c0=c1=null;lent=0;
+    });
+  }
+}
+/* F2: оклад управляющего — из кассы игрока через счёт, а не из его доли. Машина (ai) и аренда
+   — по-старому: у них обслуживание и тариф, не оклад */
+const BILL_OLD_PAYROLL=mgrPayroll;
+mgrPayroll=function(m,min){
+  if(m.ai||m.rent||!billOn())return BILL_OLD_PAYROLL(m,min);
+  const due=mgrPay(m)*Math.min(min,BILL_OFF_MIN);
+  billDue("mgr",due);m.spent=(m.spent||0)+Math.round(due);
+  const late=billLate();
+  if(late&&relicDeep("blank")){m.warnPay=0;return;}
+  const drop=mgrTraitMul(m,"loyDrop");
+  if(late){
+    m.loy=Math.max(0,m.loy-min*.5*drop*((typeof holdLoyaltyHold==="function"&&holdLoyaltyHold())?0:1));
+    if(!m.warnPay&&m.loy<45){
+      m.warnPay=1;mgrSay(m,"Счёт за смену не оплачен — сижу без оклада. Я это помню.","warn");
+      logAdd("warn",m.name+" без оклада: счёт за смену не оплачен — верность подтаивает");
+    }
+  }else{m.warnPay=0;m.loy=Math.min(100,m.loy+min*.35/drop);}
+};
+/* ── бумага на доске: первой, раньше новостей ── */
+function billSection(){
+  const B=billSt(),P=B.paper,left=billLeft(),debt=billDebt(),owe=left+debt;
+  const showP=!!P&&(left>0||P.st===(G.sys&&G.sys.key));   /* оплаченная бумага видна только там, где её дали */
+  if(!showP&&!debt)return;
+  secHead(showP?"СЧЁТ ЗА СМЕНУ № "+P.n:"КАССА ВЗАИМОПОМОЩИ",{count:owe?owe.toLocaleString("ru")+" кр":"оплачено"});
+  if(showP){
+    if(P.first)$body.appendChild(el("div","row","<div class='nm'><b>стажёр</b><s>«Первая смена за счёт управления. Дальше — сами.»</s></div>"));
+    for(const x of P.lines){
+      const D=BILL_LINES[x.k]||{ru:x.k,voice:""};
+      $body.appendChild(el("div","row","<div class='nm'><b>"+D.ru+" · "+x.sum.toLocaleString("ru")+" кр</b><s>"+
+        (x.paid?"оплачено на месте · ":"")+"«"+D.voice+"»</s></div>"));
+    }
+  }
+  if(debt>0){
+    const D=BILL_LINES.debt;
+    $body.appendChild(el("div","row","<div class='nm'><b>"+D.ru+" · долг "+debt.toLocaleString("ru")+" кр</b><s>«"+D.voice+
+      "» · предел "+billFloor().toLocaleString("ru")+" кр</s></div>"));
+  }
+  if(B.coll){
+    const X=billNext();
+    $body.appendChild(el("div","row","<div class='nm'><b>взыскатель "+B.coll.nm+" · в кантине</b><s>"+
+      (X?"у предела следующей сменой возьмёт: "+X.ru:"брать больше нечего — ждёт денег")+"</s></div>"));
+  }
+  if(owe>0){
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>к оплате "+owe.toLocaleString("ru")+" кр</b><s>"+
+      (B.late?"прошлая смена в кассе — управляющие без оклада":"не оплатите — уйдёт в кассу взаимопомощи с процентом")+"</s></div>"));
+    const b=el("button","act gold","ОПЛАТИТЬ");
+    b.onclick=()=>{sfx("ui");billPay();renderTab();};
+    r.appendChild(b);$body.appendChild(r);
+  }
+}
+/* бумага и касса — в полосе «К ВАМ» (доска раскладывает секции по заголовку): это обращено к вам */
+LANE_RX.unshift([/^(СЧЁТ ЗА СМЕНУ|КАССА ВЗАИМОПОМОЩИ)/i,"you"]);
+const BILL_OLD_BOARD=stTabBoard;
+stTabBoard=function(){billSection();insSection();return BILL_OLD_BOARD.apply(this,arguments);};
+/* взыскатель сидит в кантине (§5.2): карточка в зале — кто он, сколько, что возьмёт следующим */
+const BILL_OLD_HALL=cantHall;
+cantHall=function(){
+  const r=BILL_OLD_HALL.apply(this,arguments),B=billSt();
+  if(!B.coll)return r;
+  const gs=$body.querySelectorAll(".ch-grid"),grid=gs[gs.length-1];if(!grid)return r;
+  const e=grid.querySelector(".ch-empty");if(e)e.remove();
+  const X=billNext(),c=el("div","ch-card hire");
+  c.style.setProperty("--k","#c8644f");
+  const f=el("div","ch-face","<i class='ch-role'>ВЗЫСКАТЕЛЬ</i>");
+  /* лицо — из того же генератора людей (L3): седой, в тёмном, с красной нитью */
+  f.appendChild(cantFace({seed:B.coll.seed>>>0,acc:[168,72,58],age:58,name:B.coll.nm},124));
+  c.appendChild(f);
+  c.appendChild(el("div","ch-id","<b>"+B.coll.nm+"</b><s>за вашим столом · долг "+billDebt().toLocaleString("ru")+" кр"+
+    (X?" · следующим возьмёт "+X.ru:"")+"</s>"));
+  const go=el("div","ch-go"),b=el("button","act gold","ОПЛАТИТЬ");
+  b.onclick=()=>{sfx("ui");billPay();renderTab();};
+  go.appendChild(b);c.appendChild(go);grid.insertBefore(c,grid.firstChild);   /* первым: он здесь из-за вас */
+  return r;
+};
+/* касса в шапке станции: долг рядом с кредитами, а не только на доске */
+const BILL_OLD_TABBODY=renderTabBody;
+renderTabBody=function(){
+  const r=BILL_OLD_TABBODY.apply(this,arguments);
+  const d=billDebt(),c=document.getElementById("wCr");
+  if(d>0&&c)c.textContent=G.credits.toLocaleString("ru")+" кр · долг "+d.toLocaleString("ru");
+  return r;
+};
+/* запись: поле G.bill — в снимок и обратно (белый список 14-save не трогаем — обёртка) */
+const BILL_OLD_SNAP=snapshot;
+snapshot=function(){const s=BILL_OLD_SNAP.apply(this,arguments);s.bill=G.bill||null;return s;};
+const BILL_OLD_APPLY=applySave;
+applySave=function(s){
+  const r=BILL_OLD_APPLY.apply(this,arguments);
+  const b=s&&s.bill;
+  G.bill=(b&&typeof b==="object")?{cur:(b.cur&&typeof b.cur==="object")?b.cur:{},due:(b.due&&typeof b.due==="object")?b.due:{},
+    from:+b.from||0,n:b.n|0,late:!!b.late,paper:(b.paper&&Array.isArray(b.paper.lines))?b.paper:null,
+    debt:Math.max(0,+b.debt||0),
+    coll:(b.coll&&typeof b.coll.nm==="string")?{nm:b.coll.nm,at:+b.coll.at||0,took:b.coll.took|0,seed:(b.coll.seed>>>0)||b.coll.nm.length*7919}:null}:null;
+  return r;
+};
 
 /* ══════════════ пульт: приёмник, подсказка, кресло ══════════════
    M151a. Полоса по низу КАЖДОГО экрана — три вещи, по одной на голос.
@@ -131398,7 +131929,14 @@ const FRAME_MS=16.667;
    совсем: догонка стоит кадра, и из такой спирали игра не выбирается. */
 const QUANT_MS=1000/120;               /* квант мира — половина кадра шестидесяти герц */
 const QUANT_DT=QUANT_MS/FRAME_MS;      /* тот же квант в единицах dt (= .5) */
-const QUANT_MAX=6;                     /* дальше не догоняем */
+const QUANT_MAX=12;                    /* до 100 мс мира за кадр: мир идёт в реальном времени до 10 кадров/с */
+/* Делит накопленное время на кванты. Раньше при переполнении остаток ОБНУЛЯЛСЯ — на 15 кадрах/с мир шёл вполовину,
+   на 5 — на четверть. Теперь остаток переносится, а потолок накопления не даёт спирали смерти. */
+function quantSplit(acc){
+  let steps=Math.round(acc/QUANT_MS);
+  if(steps>QUANT_MAX)steps=QUANT_MAX;
+  return{steps,acc:clamp(acc-steps*QUANT_MS,-QUANT_MS*.5,QUANT_MS*QUANT_MAX)};
+}
 let quantAcc=0;                        /* недошаганный остаток, мс */
 function loopReset(){last=wallMs();lastDroneTick=0;capPrev=0;capN=0;quantAcc=0;tactGood=0;tactBad=0;
   lastFuelWarn=0;lastHullWarn=0;sndWalk=0;
@@ -131474,8 +132012,17 @@ let resWait=0,resHeld=0,resWaitNext=RES_WAIT0,resSaid=false;
 /* целевой кадр: шестьдесят герц, но если игрок поставил потолок ниже — его.
    Без этого потолок в тридцать кадров сам же ронял разрешение: ровные 33 мс
    стояли выше порога спуска, и игра считала свой же потолок просадкой. */
-function resTarget(){
+/* потолок кадра сейчас: выбор игрока, а в доке — не выше тридцати (0.493.5). Под экраном
+   станции мир почти не виден, а видеокарта рисовала его по шестьдесят раз в секунду рядом с залом
+   и портретами — у автора 100 % загрузки. Одно правило и для полки, и для цели разрешения:
+   иначе ровные 33 мс дока читались бы просадкой и роняли чёткость */
+function frameCapNow(){
   let cap=0;try{cap=G.opts.gfx.fps|0;}catch(e){}
+  if(G.mode==="dock"&&G.st)cap=cap>0?Math.min(cap,30):30;
+  return cap;
+}
+function resTarget(){
+  const cap=frameCapNow();
   return cap>0?Math.max(FRAME_MS,1000/cap):FRAME_MS;
 }
 function resSay(t){
@@ -131701,7 +132248,7 @@ function frameBody(now){
      на дрожащем 120 Гц съезжает на 7.6 мс вместо 8.33 — и ceil давал шаг в ТРИ
      кадра развёртки, то есть 40 кадров вместо шестидесяти (замер: промежутки 24–27 мс
      вместо 16.7). Из двух шагов берём БОЛЬШИЙ: потолок нельзя превышать. */
-  const capOpt=G.opts.gfx.fps|0;
+  const capOpt=frameCapNow();
   /* ПОЛКА 60 (автор 19.09: «оставь принудительно просто 60 кадров и все, не считай»).
      Не оценка развёртки, а расписание: кадр идёт, когда подошёл его срок (раз в
      1000/60 мс, допуск 4 мс на дрожание). Опоздавший кадр не сдвигает сетку —
@@ -131724,9 +132271,7 @@ function frameBody(now){
      (взяли вперёд и отдадим следующим кадром). С полом на 120 Гц возвращалось
      то же чередование, только в мире: интервал дрожит вокруг 8.33, и 8.1 давал ноль
      шагов, а 8.5 — два. Округление даёт 8.33±1 → шаг, 16.6 → два, 25 → три. */
-  steps=Math.round(quantAcc/QUANT_MS);
-  if(steps>QUANT_MAX){steps=QUANT_MAX;quantAcc=0;}
-  else quantAcc=clamp(quantAcc-steps*QUANT_MS,-QUANT_MS*.5,QUANT_MS*QUANT_MAX);
+  {const q=quantSplit(quantAcc);steps=q.steps;quantAcc=q.acc;}
   /* кадр короче половины кванта не рисуем — но флаг голоса снимаем сами:
      frameBody зовут не только из frame() (стенды, пробники), и там его никто не чистит */
   if(!steps){FRAME_DREW=false;FRAME_IN=false;return;}
@@ -132039,6 +132584,823 @@ function dbg(){
   });
 }
 window.dbg=dbg;
+
+/* ══════════════ Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3) ══════════════
+   Авария (wreck, 28-loop) стоила только груза: корпус собирали наспех и летели дальше, и у боя
+   не было ставки. Теперь корпус, разбитый после первого часа, уходит — с модулями на нём и с
+   трюмом; игрок пересаживается на «Стриж» по разнарядке. Остаётся всё, что не на корабле:
+   кредиты, гараж, хозяйство, управляющие, дроны, знакомые.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Первый час корпус не отнимает (§5.1: защита новичка стоит). «Стриж» застрахован всегда, даром.
+   2. Страхкасса — по желанию, на любой верфи (плашка на ДОСКЕ): взнос 1 % цены корпуса за смену
+      счёта — десять минут (в модели §3.1 это 2 % за двадцатиминутную смену), строкой «Страхкасса»
+      в бумаге. Между бумагами — по прожитым сменам, но не больше шести: час, как офлайн (§10.5).
+   3. Застрахованный корпус возвращается через смену: износ 55 %, модули и части целы, трюм пуст.
+      Незастрахованный уходит насовсем, со ступенями модулей и частями (hullTake, 27ib).
+   4. У каждой потери — строка в трудовой книжке: это событие жизни, а не строка журнала. */
+const INS_RATE=.01,INS_WEAR=.55,INS_MAX_SH=6;
+function insAll(){
+  if(!G.ins||typeof G.ins!=="object")G.ins={};
+  const I=G.ins;
+  if(!I.on||typeof I.on!=="object")I.on={};
+  if(!Array.isArray(I.back))I.back=[];
+  return I;
+}
+function insOn(id){return id==="strizh"||!!insAll().on[id];}
+function insFee(id){const S=shipData(id);return (id==="strizh"||!S)?0:Math.round((S.price|0)*INS_RATE);}
+function insSet(id,on){
+  if(id==="strizh"||!G.owned[id])return false;
+  const I=insAll();if(on)I.on[id]=1;else delete I.on[id];
+  return true;
+}
+/* взнос за прожитые смены — в счёт; корпус в Страхкассе (не во владении) взноса не платит */
+function insAccrue(B){
+  const I=insAll();let fee=0;
+  for(const id in I.on)if(G.owned[id])fee+=insFee(id);
+  if(fee<=0)return 0;
+  const sh=clamp((now()-B.from)/BILL_SHIFT_MS,1,INS_MAX_SH);
+  const v=Math.round(fee*sh);
+  B.due.ins=(B.due.ins||0)+v;
+  return v;
+}
+/* «Стриж» по разнарядке: новый, с полным баком */
+function insStrizh(){
+  G.shipId="strizh";G.owned.strizh=true;invalidateParts();
+  const ns=stat();G.fuel=ns.fuelMax;G.hull=ns.hullMax;
+  const HH=hullHeld();HH.v=G.hull;HH.last=G.hull;HH.at=now();
+}
+function hullLost(id,why){
+  const S=shipData(id)||{ru:"корабль"},ru="«"+S.ru+"»",w=why?" ("+why+")":"";
+  if(insOn(id)){
+    delete G.owned[id];
+    insAll().back.push({id,at:now()+BILL_SHIFT_MS});
+    insStrizh();
+    logAdd("warn",ru+" разбит"+w+" · Страхкасса вернёт его через смену · пока — «Стриж» по разнарядке");
+    say(ru+" разбит\nСтрахкасса вернёт через смену\nпока — «Стриж» по разнарядке",220);
+    recordAdd("Страхкасса",ru+" разбит"+w+". Застрахован: вернётся через смену.");
+  }else{
+    hullTake(id);insStrizh();
+    logAdd("bad",ru+" потерян"+w+" · не застрахован · выдан «Стриж» по разнарядке");
+    say(ru+" потерян\nне застрахован · вы на «Стриже»",220);
+    recordAdd("ГЛАВТРАССА",ru+" потерян"+w+". Выдан «Стриж» по разнарядке.");
+  }
+  saveGame(true);
+}
+const INS_OLD_WRECK=wreck;
+wreck=function(why){
+  const id=G.shipId;
+  const r=INS_OLD_WRECK.apply(this,arguments);
+  if(id&&id!=="strizh"&&G.owned[id]&&!firstHour())hullLost(id,why);
+  return r;
+};
+/* застрахованный корпус вернулся: во владение, с износом; пересесть — на верфи */
+function insReturnTick(){
+  const I=insAll(),t=now();let n=0;
+  I.back=I.back.filter(x=>{
+    if(t<x.at)return true;
+    const S=shipData(x.id);
+    if(S){G.owned[x.id]=true;wearAll()[x.id]=INS_WEAR*WEAR_FULL;n++;
+      logAdd("good","Страхкасса вернула «"+S.ru+"» · износ 55 % · пересесть можно на верфи");}
+    return false;
+  });
+  return n;
+}
+const INS_OLD_OPEN=openStation;
+openStation=function(){
+  const r=INS_OLD_OPEN.apply(this,arguments);
+  if(insReturnTick()&&G.mode==="dock"&&typeof renderTab==="function")renderTab();
+  return r;
+};
+/* плашка на ДОСКЕ верфи: каждый свой корпус — застрахован или нет, взнос и кнопка */
+function insSection(){
+  if(!G.st||G.st.stype!=="yard")return;
+  const I=insAll(),ids=Object.keys(G.owned).filter(id=>G.owned[id]&&id!=="strizh"&&shipData(id));
+  if(!ids.length&&!I.back.length)return;
+  secHead("СТРАХКАССА ГЛАВТРАССЫ",{count:ids.filter(insOn).length+" из "+(ids.length+I.back.length)});
+  for(const id of ids){
+    const S=shipData(id),on=insOn(id),r=el("div","row");
+    r.appendChild(el("div","nm","<b>«"+S.ru+"» · "+(on?"застрахован":"не застрахован")+"</b><s>взнос "+
+      insFee(id).toLocaleString("ru")+" кр за смену · разбит — "+(on?"вернётся через смену, износ 55 %":"уйдёт насовсем, с модулями")+"</s>"));
+    const b=el("button","act"+(on?"":" gold"),on?"СНЯТЬ":"ЗАСТРАХОВАТЬ");
+    b.onclick=()=>{sfx("ui");insSet(id,!on);renderTab();};
+    r.appendChild(b);$body.appendChild(r);
+  }
+  for(const x of I.back){
+    const S=shipData(x.id);if(!S)continue;
+    $body.appendChild(el("div","row","<div class='nm'><b>«"+S.ru+"» · в Страхкассе</b><s>вернут через "+
+      Math.max(1,Math.ceil((x.at-now())/60000))+" мин · «Взнос за смену. Не задерживайте.»</s></div>"));
+  }
+}
+/* запись: G.ins — в снимок и обратно (белый список 14-save не трогаем — обёртка) */
+const INS_OLD_SNAP=snapshot;
+snapshot=function(){const s=INS_OLD_SNAP.apply(this,arguments);s.ins=G.ins||null;return s;};
+const INS_OLD_APPLY=applySave;
+applySave=function(s){
+  const r=INS_OLD_APPLY.apply(this,arguments);
+  const b=s&&s.ins;G.ins=null;
+  if(b&&typeof b==="object"){
+    const I=insAll();
+    if(b.on&&typeof b.on==="object")for(const id in b.on)if(b.on[id])I.on[id]=1;
+    if(Array.isArray(b.back))for(const x of b.back)if(x&&typeof x.id==="string"&&shipData(x.id))I.back.push({id:x.id,at:+x.at||0});
+  }
+  return r;
+};
+
+/* ══════════════ участок, норма, сдача смены (M905 · DESIGN-game §3.2, §3.4, §10.2, §10.3, §10.5) ══════════════
+   Наверху игры не было ничего, что говорило бы «что дальше»: у того, у кого всё есть, нет и дела.
+   Теперь у игрока есть УЧАСТОК — квадрат 5×5 систем вокруг места, где его приняли на трассу, — и
+   раз в сводку (шесть часов, 12am) план пишет его НОРМУ: какую долю нужд на станциях участка
+   закрыли вовремя — баржи, артели, вы. Норма — бумага, а не полоса: строка на доске и в трудовой
+   книжке, раз в сводку, голосом диспетчера участка.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Судится только сыгранное: нужды считаются по окнам (12aa, четверть часа игры), прожитым в эту
+      сводку за игрой; меньше двух окон — сводка не судится. Офлайн норму не портит.
+   2. Нужда закрыта, если её закрыли вы (продажа, 12aa needClose) или чужие: доля чужих — от
+      опасности системы, под блокадой (13b) — ноль. Наряд, сданный на станцию участка, — плюс.
+   3. Порогов два, последствий — по одному (§10.2): ≥ 90 % три сводки подряд — разнарядка (станция
+      назад, иначе корпус ступенью выше — не дороже «Обода», иначе ступень модуля; кредитов —
+      никогда); < 60 % — строка срыва; три срыва подряд — станция уходит соседу, и люди этой
+      станции больше вас не называют (дверь 11ah — тихо и навсегда).
+   4. Диспетчер — один человек на участок (генератор людей, L3): встречает на первой стыковке,
+      читает норму, держит смену, пока вас нет.
+   5. Сдать смену — одно нажатие в меню (§10.5: уходя надолго) или на доске станции участка; пока
+      сдана — не идёт ничего: ни бумага, ни оклады, ни руки, ни управляющие, ни дроны, ни норма;
+      страхует только «Стриж». Метки времени тянутся за часами, и, приняв смену, вы не получаете
+      долг за время отсутствия. Принять — у стойки любой станции. Смену держит сменщик — он и
+      скажет, что застал.
+   6. Участок живёт в G.uch, а не в G.watch: G.watch — камера, что следит за наёмником (27b),
+      и она стирает всё, что не похоже на номер наёмника. */
+const WATCH_R=2,WATCH_MIN_W=2,WATCH_HI=90,WATCH_LO=60,WATCH_RUN=3,WATCH_ALLOT_MAX=15000;
+const WATCH_LET="АБВГДЕЖИКЛМНПРСТ";
+/* имена делятся на два списка: у лица нет пола, но бывает борода (cpGene, 27f3) — бородатому
+   женское имя не дают; гладкому — любое из восьми */
+const WATCH_DISP_F=["Нина Аркадьевна","Валентина Сергеевна","Зоя Павловна","Тамара Ильинична","Клавдия Петровна"];
+const WATCH_DISP_M=["Аркадий Львович","Семён Борисович","Илья Ефимович"];
+const WATCH_DISP=WATCH_DISP_F.concat(WATCH_DISP_M);
+const WATCH_RELIEF=["Пётр Кузьмич","Глеб Ильич","Остап Назарович","Фрол Демидович","Влас Никитич","Гордей Саввич"];
+function watchSt(){
+  if(!G.uch||typeof G.uch!=="object")G.uch={};
+  const W=G.uch;
+  if(!W.c||typeof W.c!=="object"){
+    const H=G.home&&G.home.tier?G.home:null;   /* старое сохранение: участок — там, где дом */
+    W.c={sx:H?H.sx|0:G.sx|0,sy:H?H.sy|0:G.sy|0};
+  }
+  if(!W.off||typeof W.off!=="object")W.off={};
+  if(!W.fill||typeof W.fill!=="object")W.fill={};
+  if(!Array.isArray(W.hist))W.hist=[];
+  if(!W.run||typeof W.run!=="object")W.run={hi:0,lo:0};
+  W.ord=W.ord|0;
+  return W;
+}
+function watchSeed(){const W=watchSt();return hashi(W.c.sx,W.c.sy,0x57A7)>>>0;}
+function watchName(){const s=watchSeed();return (10+s%90)+"-"+WATCH_LET[(s>>>8)%WATCH_LET.length];}
+/* диспетчер участка: лицо и имя — от зерна участка, один человек на всё (§10.3) */
+function watchDisp(){
+  const s=watchSeed();
+  const D={seed:hashi(s,0xD15,1)>>>0,role:"fact",acc:[78,112,150],age:38+s%22,loy:70,xp:0,traits:[]};
+  const L=cpGene(D).beard?WATCH_DISP_M:WATCH_DISP;
+  D.name=L[(s>>>4)%L.length];
+  return D;
+}
+function watchIn(sx,sy){const W=watchSt();return Math.max(Math.abs(sx-W.c.sx),Math.abs(sy-W.c.sy))<=WATCH_R;}
+function watchStations(){
+  const W=watchSt(),out=[];
+  for(let x=W.c.sx-WATCH_R;x<=W.c.sx+WATCH_R;x++)for(let y=W.c.sy-WATCH_R;y<=W.c.sy+WATCH_R;y++){
+    if(!starAt(x,y))continue;
+    const S=getSystem(x,y);
+    if(S&&S.station&&S.station.prices&&!(S.key in W.off))out.push(S);
+  }
+  return out;
+}
+function watchHas(S){return !!(S&&S.station&&watchIn(S.sx,S.sy)&&!(S.key in watchSt().off));}
+/* нужда станции в окне w — тот же расчёт, что needOf (12aa), без отметки «закрыта»: тест сверяет */
+function watchNeedAt(S,w){
+  const r=rng(hashi(S.sx,S.sy,0x4EED+w));
+  if(r()>=NEED_P)return null;
+  const keys=TRADE_KEYS.filter(k=>S.station.prices[k]);
+  if(!keys.length)return null;
+  return keys[Math.floor(r()*keys.length)];
+}
+function watchNpcRate(S){
+  if(typeof occLvl==="function"&&occLvl(S.sx,S.sy)>=2)return 0;   /* блокада: баржи не ходят */
+  return clamp(.66-.3*sysDanger(S.sx,S.sy),.3,.66);
+}
+function watchNpc(S,w){return rng(hashi(S.sx,S.sy,0x4F11+w))()<watchNpcRate(S);}
+function watchHanded(){const W=G.uch;return !!(W&&W.hand);}
+/* такт: окна этой сводки; новая сводка — суд над прошлой */
+function watchTick(){
+  const W=watchSt();
+  if(W.hand)return null;
+  const n=chronNow(),w=needWin();
+  if(W.n==null||W.w0==null){W.n=n;W.w0=w;W.w1=w;return null;}
+  if(n!==W.n){
+    const rec=watchJudge(W);
+    W.n=n;W.w0=w;W.w1=w;W.fill={};W.ord=0;
+    return rec;
+  }
+  if(w<W.w0)W.w0=w;
+  if(w>W.w1)W.w1=w;
+  return null;
+}
+function watchJudge(W){
+  W=W||watchSt();
+  const nW=(W.w1|0)-(W.w0|0)+1;
+  if(W.w0==null||nW<WATCH_MIN_W)return null;
+  let tot=0,got=0,mine=0;
+  for(const S of watchStations()){
+    const F=W.fill[S.key]||[];
+    for(let w=W.w0;w<=W.w1;w++){
+      if(!watchNeedAt(S,w))continue;
+      tot++;
+      const my=F.indexOf(w)>=0;if(my)mine++;
+      if(my||watchNpc(S,w))got++;
+    }
+  }
+  tot+=W.ord;got+=W.ord;
+  const norm=tot?Math.round(100*got/tot):100;
+  const rec={n:W.n,norm,tot,mine,ord:W.ord};
+  W.hist.push(rec);if(W.hist.length>8)W.hist.shift();
+  W.last=rec;W.seen=0;
+  const D=watchDisp(),nm=watchName();
+  recordAdd(D.name,"Участок "+nm+". Норма "+norm+" %.");
+  logAdd(norm<WATCH_LO?"warn":"dim","Сводка по участку "+nm+": норма "+norm+" %");
+  if(norm>=WATCH_HI){W.run.hi++;W.run.lo=0;}
+  else if(norm<WATCH_LO){W.run.lo++;W.run.hi=0;recordAdd("ГЛАВТРАССА","Участок "+nm+" не тянет. Отмечено.");}
+  else{W.run.hi=0;W.run.lo=0;}
+  if(W.run.lo>=WATCH_RUN){W.run.lo=0;rec.lost=watchReassign(W);}
+  if(W.run.hi>=WATCH_RUN){W.run.hi=0;rec.allot=watchAllot(W);}
+  return rec;
+}
+/* три срыва: дальняя от центра станция уходит соседу; последняя не уходит никогда */
+function watchReassign(W){
+  const L=watchStations();if(L.length<=1)return null;
+  L.sort((a,b)=>(Math.max(Math.abs(b.sx-W.c.sx),Math.abs(b.sy-W.c.sy))-Math.max(Math.abs(a.sx-W.c.sx),Math.abs(a.sy-W.c.sy)))||(a.key<b.key?-1:1));
+  const S=L[0];
+  W.off[S.key]=W.n|0;
+  if(typeof folkShut==="function")folkShut("st:"+S.key);
+  recordAdd("ГЛАВТРАССА","Станция «"+S.station.name+"» передана участку соседа.");
+  logAdd("bad","Три срыва подряд · станция «"+S.station.name+"» передана участку соседа");
+  return S.station.name;
+}
+/* разнарядка за три сводки ≥ 90 %: станция назад, иначе корпус ступенью выше, иначе ступень модуля */
+function watchAllot(W){
+  const back=Object.keys(W.off).sort((a,b)=>(W.off[b]|0)-(W.off[a]|0))[0];
+  if(back){
+    delete W.off[back];
+    const [sx,sy]=back.split(",").map(Number),S=getSystem(sx,sy),nm=S&&S.station?S.station.name:back;
+    recordAdd("ГЛАВТРАССА","Станция «"+nm+"» возвращена участку.");
+    logAdd("good","Норма три сводки подряд · станция «"+nm+"» снова ваша");
+    return "станция «"+nm+"»";
+  }
+  let top=0;for(const id in G.owned)if(G.owned[id]&&SHIPS[id])top=Math.max(top,SHIPS[id].price|0);
+  const next=Object.keys(SHIPS).filter(id=>!G.owned[id]&&(SHIPS[id].price|0)>top&&(SHIPS[id].price|0)<=WATCH_ALLOT_MAX)
+    .sort((a,b)=>SHIPS[a].price-SHIPS[b].price)[0];
+  if(next){
+    G.owned[next]=true;
+    if(typeof wearAll==="function")wearAll()[next]=Math.round(WEAR_FULL*.55);
+    const ru="«"+SHIPS[next].ru+"»";
+    recordAdd("ГЛАВТРАССА","Разнарядка: "+ru+" — за норму по участку.");
+    logAdd("good","Разнарядка за норму: "+ru+" · б/у, с чужим износом · пересесть можно на верфи");
+    if(typeof thingAdd==="function")thingAdd("paper","Разнарядка на "+ru,"за норму по участку "+watchName()+" · б/у, с чужим износом");
+    return ru;
+  }
+  const k=Object.keys(MODS).filter(k=>MODS[k].base&&(G.modsOwned[k]|0)<4)
+    .sort((a,b)=>modCost(a,G.modsOwned[a]|0)-modCost(b,G.modsOwned[b]|0))[0];
+  if(k){
+    G.modsOwned[k]=(G.modsOwned[k]|0)+1;
+    recordAdd("ГЛАВТРАССА","Разнарядка: «"+MODS[k].ru+"», ступень "+G.modsOwned[k]+" — за норму по участку.");
+    logAdd("good","Разнарядка за норму: «"+MODS[k].ru+"», ступень "+G.modsOwned[k]+" · ставится на ОСНАСТКЕ");
+    return "«"+MODS[k].ru+"»";
+  }
+  return null;
+}
+/* ── сдать и принять смену ── */
+function watchHand(){
+  const W=watchSt();if(W.hand)return false;
+  watchTick();   /* окна до сдачи — в сводку */
+  const s=watchSeed();
+  W.hand={at:now(),who:WATCH_RELIEF[(s>>>12)%WATCH_RELIEF.length],seen:now()};
+  watchFreeze();
+  recordAdd(watchDisp().name,"Смену по участку "+watchName()+" принял "+W.hand.who+".");
+  logAdd("dim","Смена сдана · участок держит "+W.hand.who+" · счёт, люди, дроны и норма стоят");
+  return true;
+}
+function watchBack(){
+  const W=watchSt();if(!W.hand)return null;
+  watchFreeze();
+  const h=(now()-W.hand.at)/3600000,who=W.hand.who;
+  const line=h<1?"Ничего не случилось. Даже чаю не успел."
+    :h<24?"Принимайте. Станции на месте, люди на месте."
+    :h<24*7?"Долго вас не было. Участок держал как мог."
+    :"Думал, вы уже не вернётесь. Принимайте, пока не передумали.";
+  W.hand=null;
+  const B=billSt();if(B.from!=null)B.from=now();
+  W.n=chronNow();W.w0=needWin();W.w1=W.w0;W.fill={};W.ord=0;   /* сводка возврата судится с этой минуты */
+  recordAdd(who,line);
+  logAdd("dim","Смена принята · "+who+": «"+line+"»");
+  return line;
+}
+/* пока смена сдана, часы стоят: метки тянутся за временем, долга за отсутствие нет */
+function watchFreeze(){
+  const W=G.uch;if(!W||!W.hand)return;
+  const t=clockNow(),dt=Math.max(0,t-(W.hand.seen||t));
+  W.hand.seen=t;
+  for(const c of G.crew||[]){if(c.tMs)c.tMs=t;if(c.ransomAt)c.ransomAt+=dt;}
+  for(const m of G.mgrs||[])if(m.tMs)m.tMs=t;
+  for(const d of G.drones||[]){d.lastMs=t;d.t0=(d.t0||t)+dt;}
+  const B=G.bill;if(B&&B.from!=null)B.from=now();
+}
+const WATCH_OLD_DRONES=tickDrones;
+tickDrones=function(){if(watchHanded()){watchFreeze();return;}return WATCH_OLD_DRONES.apply(this,arguments);};
+const WATCH_OLD_CREW=crewTick;
+crewTick=function(){if(watchHanded()){watchFreeze();return;}return WATCH_OLD_CREW.apply(this,arguments);};
+const WATCH_OLD_MGR=mgrTick;
+mgrTick=function(){
+  if(watchHanded()){watchFreeze();return;}
+  try{watchTick();}catch(e){logAdd("warn","СБОЙ · участок: "+(e&&e.message));}
+  return WATCH_OLD_MGR.apply(this,arguments);
+};
+const WATCH_OLD_INSON=insOn;
+insOn=function(id){return watchHanded()?id==="strizh":WATCH_OLD_INSON.apply(this,arguments);};
+/* бумага: пока смена сдана, смена счёта не закрывается (окно стоит на «сейчас») */
+const WATCH_OLD_OPEN=openStation;
+openStation=function(){watchFreeze();return WATCH_OLD_OPEN.apply(this,arguments);};
+/* закрытая вами нужда и сданный наряд — в норму участка */
+const WATCH_OLD_NEED=needClose;
+needClose=function(sys,k){
+  const r=WATCH_OLD_NEED.apply(this,arguments);
+  if(r&&!watchHanded()&&watchHas(sys)){
+    const W=watchSt();watchTick();
+    const N=needAll()[sys.key],w=N?N.win:needWin();
+    (W.fill[sys.key]=W.fill[sys.key]||[]).push(w);
+  }
+  return r;
+};
+const WATCH_OLD_ORDER=orderDeliver;
+orderDeliver=function(){
+  const sys=G.sys,r=WATCH_OLD_ORDER.apply(this,arguments);
+  if(r&&!watchHanded()&&watchHas(sys)){watchTick();watchSt().ord++;}
+  return r;
+};
+/* ── плашка на доске: участок, диспетчер, норма, смена ── */
+function watchSection(){
+  if(!G.sys||!G.sys.station)return;
+  const W=watchSt(),here=watchHas(G.sys);
+  if(!here&&!W.hand&&!(W.last&&!W.seen))return;
+  const D=watchDisp(),nm=watchName(),L=W.last;
+  secHead("УЧАСТОК "+nm,{count:L?"норма "+L.norm+" %":"станций "+watchStations().length});
+  const line=W.hand?"Смену держит "+W.hand.who+". Вернётесь — примете."
+    :!W.met?"Участок "+nm+" ваш: "+watchStations().length+" станций вокруг "+((starAt(W.c.sx,W.c.sy)&&getSystem(W.c.sx,W.c.sy).name)||"места приёма")+". Норму пишем раз в сводку — по всем, кто возит."
+    :L?"Участок "+nm+". Норма "+L.norm+" %."+(L.norm<WATCH_LO?" Не тянем.":L.norm>=WATCH_HI?" Так держать.":"")
+    :"Сводки по участку ещё не было. Нужды на станциях — ваши.";
+  W.met=1;W.seen=1;
+  const r=el("div","row");
+  r.appendChild(faceEl(D,56));
+  const past=W.hist.slice(-5).map(x=>x.norm+" %").join(" · ");
+  r.appendChild(el("div","nm","<b>"+D.name+" · диспетчер участка</b><s>«"+line+"»"+
+    (past&&W.hist.length>1?"<br>прошлые сводки: "+past:"")+
+    (!here?"<br>эта станция — не ваш участок":"")+"</s>"));
+  $body.appendChild(r);
+  if(L&&(L.lost||L.allot))$body.appendChild(el("div","row","<div class='nm'><b>"+(L.lost?"станция «"+L.lost+"» передана соседу":"разнарядка: "+L.allot)+
+    "</b><s>"+(L.lost?"три срыва подряд — участок меньше":"три сводки подряд не ниже 90 %")+"</s></div>"));
+  if(here||W.hand){
+    const s=el("div","row");
+    s.appendChild(el("div","nm",W.hand
+      ?"<b>смена сдана · "+Math.max(1,Math.round((now()-W.hand.at)/60000))+" мин</b><s>счёт, оклады, руки, дроны и норма стоят; страхует только «Стриж»</s>"
+      :"<b>уезжаете надолго?</b><s>сданная смена: ни бумаги, ни окладов, ни нормы; люди и дроны стоят; страхует только «Стриж»</s>"));
+    const b=el("button","act"+(W.hand?" gold":""),W.hand?"ПРИНЯТЬ СМЕНУ":"СДАТЬ СМЕНУ");
+    b.onclick=()=>{sfx("ui");if(watchHanded())watchBack();else watchHand();renderTab();};
+    s.appendChild(b);$body.appendChild(s);
+  }
+}
+LANE_RX.unshift([/^УЧАСТОК/i,"you"]);
+const WATCH_OLD_BOARD=stTabBoard;
+stTabBoard=function(){watchSection();return WATCH_OLD_BOARD.apply(this,arguments);};
+/* запись: G.uch — в снимок и обратно (белый список 14-save не трогаем — обёртка) */
+const WATCH_OLD_SNAP=snapshot;
+snapshot=function(){const s=WATCH_OLD_SNAP.apply(this,arguments);s.uch=G.uch||null;return s;};
+const WATCH_OLD_APPLY=applySave;
+applySave=function(s){
+  const r=WATCH_OLD_APPLY.apply(this,arguments);
+  const b=s&&s.uch;G.uch=null;
+  if(b&&typeof b==="object"){
+    const W=watchSt();
+    if(b.c&&isFinite(b.c.sx)&&isFinite(b.c.sy))W.c={sx:b.c.sx|0,sy:b.c.sy|0};
+    if(b.off&&typeof b.off==="object")for(const k in b.off)W.off[k]=b.off[k]|0;
+    if(b.fill&&typeof b.fill==="object")for(const k in b.fill)if(Array.isArray(b.fill[k]))W.fill[k]=b.fill[k].map(x=>x|0);
+    if(Array.isArray(b.hist))W.hist=b.hist.filter(x=>x&&isFinite(x.norm)).slice(-8);
+    if(b.run)W.run={hi:b.run.hi|0,lo:b.run.lo|0};
+    W.ord=b.ord|0;W.met=b.met?1:0;W.seen=b.seen?1:0;
+    if(b.n!=null)W.n=b.n|0;
+    if(b.w0!=null){W.w0=b.w0|0;W.w1=(b.w1!=null?b.w1:b.w0)|0;}
+    if(b.last&&isFinite(b.last.norm))W.last=b.last;
+    if(b.hand&&typeof b.hand==="object")W.hand={at:+b.hand.at||now(),who:String(b.hand.who||WATCH_RELIEF[0]),seen:+b.hand.seen||+b.hand.at||now()};
+  }
+  return r;
+};
+/* ── меню: СДАТЬ СМЕНУ (§10.5) ──
+   Выхода из браузерной игры нет — есть закрытая вкладка. Поэтому сдача — пункт меню рядом с
+   НАСТРОЙКАМИ, с бумажного часа (раньше нечему набегать). Пока смена сдана, пункт говорит, кто
+   держит, и у стойки принимает её обратно. */
+function watchMenuSync(){
+  const b=document.getElementById("watchbtn");if(!b)return;
+  const W=G.uch,h=!!(W&&W.hand);
+  const on=h||(G.flownMs||0)>=FIRST_HOUR_MS;
+  b.style.display=on?"":"none";
+  if(!on)return;
+  const dock=G.mode==="dock";
+  b.querySelector("em").textContent=h?(dock?"ПРИНЯТЬ СМЕНУ":"СМЕНА СДАНА"):"СДАТЬ СМЕНУ";
+  b.querySelector("s").textContent=h?("держит "+W.hand.who+(dock?"":" · принять — у стойки")):
+    "надолго? ничего не пойдёт и не набежит";
+}
+function watchMenuTap(){
+  toggleMenu(false);
+  if(!watchHanded()){
+    if(!watchHand())return;
+    say("Смену принял "+G.uch.hand.who+"\nничего не идёт, ничего не набегает",200);
+  }else if(G.mode==="dock"){
+    const who=G.uch.hand.who,line=watchBack();
+    if(line)say(who+":\n«"+line+"»",240);
+    if(typeof renderTab==="function")renderTab();
+  }else{say("Принять смену — у стойки\nлюбой станции",160);return;}
+  if(typeof saveGame==="function")saveGame(true);
+}
+{
+  const M=document.getElementById("menu"),opt=document.getElementById("optbtn");
+  if(M&&opt&&typeof M.insertBefore==="function"&&!document.getElementById("watchbtn")){
+    const b=document.createElement("button");b.id="watchbtn";b.style.display="none";
+    b.innerHTML="<svg viewBox='0 0 16 16'><path d='M6 2.5h4v3.2l2.2 2.1V10H3.8V7.8L6 5.7z'/><path d='M3 13h10'/></svg>"+
+      "<span class='tx'><em>СДАТЬ СМЕНУ</em><s></s></span>";
+    M.insertBefore(b,opt);
+    b.addEventListener("click",watchMenuTap);
+  }
+}
+const WATCH_OLD_MENU=toggleMenu;
+toggleMenu=function(on){
+  const r=WATCH_OLD_MENU.apply(this,arguments);
+  if($menu.classList.contains("open"))watchMenuSync();
+  return r;
+};
+
+/* ══════════════ без присмотра: дроны на 60 %, не больше часа яруса (M905 · DESIGN-game §10.5) ══════════════
+   Люди работают только онлайн (12a-crew: загрузка и спящая вкладка ставят их часы на «сейчас»),
+   Страхкасса и оклады в счёте догоняют не больше часа (27ib-bill, 28i-insure). Без присмотра
+   оставались дроны: суточный догон на полном доходе — ночь простоя давала больше часа игры.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Такт дронов после разрыва дольше минуты (тот же порог, что у людей, PEOPLE_GAP_MS) —
+      догон без игрока. Круги, поломки, давление рынка — всё как было; меняется только касса.
+   2. В догоне приходит 60 % выручки и не больше часа чистого своего яруса — половины пола
+      кассы взаимопомощи (BILL_FLOOR_T — это два часа). Остальное ушло на сторону: присмотра
+      не было.
+   3. Сколько пришло и из скольких — одной строкой. Доля, которую не показали, читается как кража.
+   4. Сданная смена (28j-watch) — другое: там не идёт ничего, и догона нет вовсе. */
+const OFF_MUL=.6;
+let OFF_POOL=null;   /* {left, full, paid} — только пока идёт догон */
+function offCap(){return Math.round(BILL_FLOOR_T[billTier()]/2);}
+function offSpan(ms){
+  const m=Math.round(ms/60000);
+  if(m<90)return m+" мин";
+  const h=Math.round(ms/3600000);
+  return h<48?h+" ч":Math.round(h/24)+" сут.";
+}
+const OFF_OLD_EARN=earn;
+earn=function(sum,why){
+  if(OFF_POOL&&why==="drone"){
+    const full=Math.round(sum);
+    if(!isFinite(full)||full<=0)return 0;
+    const pay=Math.max(0,Math.min(Math.round(full*OFF_MUL),OFF_POOL.left));
+    OFF_POOL.full+=full;OFF_POOL.left-=pay;OFF_POOL.paid+=pay;
+    return pay>0?OFF_OLD_EARN(pay,why):0;
+  }
+  return OFF_OLD_EARN.apply(this,arguments);
+};
+const OFF_OLD_TICK=tickDrones;
+tickDrones=function(){
+  if(OFF_POOL||!(G.drones&&G.drones.length)||watchHanded())return OFF_OLD_TICK.apply(this,arguments);
+  const t=clockNow();let gap=0;
+  for(const d of G.drones)if(d&&d.lastMs>0)gap=Math.max(gap,t-d.lastMs);
+  if(gap<=PEOPLE_GAP_MS)return OFF_OLD_TICK.apply(this,arguments);
+  const before=G.drones.map(d=>[d,d.earned|0]);
+  OFF_POOL={left:offCap(),full:0,paid:0};
+  let r;
+  try{r=OFF_OLD_TICK.apply(this,arguments);}
+  finally{
+    const P=OFF_POOL;OFF_POOL=null;
+    if(P.full>0){
+      /* счётчик машины — то, что дошло до кассы, а не то, что она сдала */
+      const k=P.paid/P.full;
+      for(const [d,e0] of before)d.earned=e0+Math.round(((d.earned|0)-e0)*k);
+      offSay(gap,P);
+    }
+  }
+  return r;
+};
+function offSay(gap,P){
+  const capped=P.paid<Math.round(P.full*OFF_MUL);
+  logAdd("money","Дроны без вас, "+offSpan(gap)+": сдали на "+P.full.toLocaleString("ru")+" кр, в кассу — "+
+    P.paid.toLocaleString("ru")+(capped?" · больше часа работы без присмотра не платят":" · шестьдесят процентов: присмотра не было"));
+}
+
+/* ══════════════ три шкалы станции и каскад (M906 · DESIGN-game §4.2, §7.1) ══════════════
+   У каждой станции три числа: СКЛАД, ЛЮДИ, ПОРЯДОК (0–1). Нужда, которую не закрыли, бьёт по
+   складу и людям; пустой склад останавливает цех, и то, что станция делала, становится нуждой
+   у соседей — каскад. Занятость бьёт по порядку, освобождение его поднимает. Всё само тянется
+   к середине: оставленный участок — посредственный, а не мёртвый.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Числа игроку не показываются. Их видно по залу (толпа в кантине — ЛЮДИ), по цене, по
+      прилавку (цех стоит) и словами на доске. Ни процентов, ни полосок.
+   2. Судят только сыгранные окна нужд (15 минут игры, 12aa) и только станции участка плюс два
+      прыжка вокруг игрока. Остальная галактика не считается — она лениво стоит на середине.
+   3. Хранится разреженно: G.gauge[key]=[склад,люди,порядок в сотых, минута записи]. Чтение
+      досчитывает возврат к середине по времени (постоянная два часа); запись, вернувшаяся
+      к середине, удаляется. Каскад — G.casc {s: остановленные цеха, n: нужды у соседей}.
+   4. Нужду, закрытую баржами (watchNpc, 28j), не судят ни в плюс, ни в минус: в плюс идёт
+      только ваш привоз. Нужда соседей по каскаду живёт час и не каскадирует дальше.
+   5. Каскадная нужда идёт ПЕРВОЙ: своя нужда соседа на это время спрятана и потому не судится
+      ни здесь, ни в норме участка (watchNeedAt молчит). Иначе каскад прятался бы за своей
+      нуждой — кадр 15.10: «Энтурикс · кремний», а изотопы, ради которых всё, не видны.
+      Закрытая каскадная идёт в норму участка как сданный наряд (W.ord).
+   6. Отступления от §4.2 — в DESIGN-game (Built 14.10): цех встаёт не от каждой нужды, а
+      когда склад падает ниже четверти; возврат к середине — по времени, а не шагом сводки. */
+const GAUGE_MID=.6,GAUGE_TAU=7200000,GAUGE_DRY=.25,GAUGE_LOW=.4,GAUGE_SOUR_MUL=.92;
+const GAUGE_NEAR=2,CASC_MS=3600000,CASC_N=2,CASC_R=3;
+let GAUGE_W=null;   /* последнее окно нужд, которое видел такт; G.t начинается заново каждый заход */
+function gaugeAll(){return G.gauge||(G.gauge={});}
+function gaugeCasc(){const C=G.casc||(G.casc={s:{},n:{}});C.s=C.s||{};C.n=C.n||{};return C;}
+function gaugeKeyXY(key){const p=String(key).split(",");return [p[0]|0,p[1]|0];}
+/* куда тянется порядок: занятость держит его ниже */
+function gaugeMidO(sx,sy){return Math.max(0,GAUGE_MID-.15*occLvl(sx,sy));}
+function gaugeRead(key){
+  const xy=gaugeKeyXY(key),tO=gaugeMidO(xy[0],xy[1]),A=gaugeAll()[key];
+  if(!A)return {s:GAUGE_MID,m:GAUGE_MID,o:tO};
+  const f=Math.exp(-Math.max(0,now()-A[3]*60000)/GAUGE_TAU);
+  return {s:GAUGE_MID+(A[0]/100-GAUGE_MID)*f,m:GAUGE_MID+(A[1]/100-GAUGE_MID)*f,o:tO+(A[2]/100-tO)*f};
+}
+function gaugeOf(sys){return gaugeRead(sys.key);}
+function gaugeAdd(sys,ds,dm,dO){
+  const g=gaugeOf(sys),p=x=>Math.round(clamp(x,0,1)*100);
+  const A=[p(g.s+ds),p(g.m+dm),p(g.o+dO),Math.floor(now()/60000)];
+  gaugeAll()[sys.key]=A;
+  if(dm&&G.sys&&G.sys.key===sys.key)HALL.L=null;   /* люди сменились при вас — зал перестроится */
+  return {s:A[0]/100,m:A[1]/100,o:A[2]/100};
+}
+/* для тестов и стенда: поставить шкалы как есть */
+function gaugeSet(sys,v){const g=gaugeOf(sys);return gaugeAdd(sys,(v.s!=null?v.s:g.s)-g.s,(v.m!=null?v.m:g.m)-g.m,(v.o!=null?v.o:g.o)-g.o);}
+function gaugeSour(sys){return !!(sys&&sys.station)&&gaugeOf(sys).m<GAUGE_LOW;}
+/* наступление пиратов в эту систему: при плохом порядке — в полтора раза смелее (13b) */
+function gaugeSpread(sx,sy){
+  if(!starAt(sx,sy))return 1;
+  const S=getSystem(sx,sy);
+  return S&&S.station&&gaugeOf(S).o<GAUGE_LOW?1.5:1;
+}
+/* ── цех и каскад ── */
+function gaugeStopOf(sys){const C=G.casc&&G.casc.s&&G.casc.s[sys.key];return C&&C.u>now()?C:null;}
+function gaugeStopped(sys,k){const C=sys&&gaugeStopOf(sys);return !!(C&&C.k===k);}
+/* что станция делает сама: товар, который у неё дешевле всего против базовой цены */
+function gaugeMade(sys){
+  let best=null,bv=1e9;
+  for(const k of ORE_KEYS){const p=sys.station.prices[k];if(!p)continue;const v=p/RES[k].price;if(v<bv){bv=v;best=k;}}
+  return best;
+}
+function gaugeStop(S){
+  const k=gaugeMade(S);if(!k)return null;
+  const C=gaugeCasc(),u=now()+CASC_MS,nb=[];
+  C.s[S.key]={k,u};
+  for(let x=S.sx-CASC_R;x<=S.sx+CASC_R;x++)for(let y=S.sy-CASC_R;y<=S.sy+CASC_R;y++){
+    if((x===S.sx&&y===S.sy)||!starAt(x,y))continue;
+    const N=getSystem(x,y);
+    if(!N||!N.station||!N.station.prices||!N.station.prices[k])continue;
+    const c=C.n[N.key];if(c&&!c.d&&c.u>now())continue;
+    nb.push({N,d:Math.max(Math.abs(x-S.sx),Math.abs(y-S.sy))});
+  }
+  nb.sort((a,b)=>(a.d-b.d)||(a.N.key<b.N.key?-1:1));
+  const to=nb.slice(0,CASC_N).map(x=>x.N);
+  for(const N of to)C.n[N.key]={k,f:S.key,u,d:0};
+  logAdd("warn","«"+S.station.name+"»: склад пуст, встал цех — "+RES[k].ru.toLowerCase()+
+    (to.length?" ждут у "+gaugeNames(to.map(N=>N.key)):" здесь не купить"));
+  return {k,to:to.map(N=>N.key)};
+}
+/* ── суд над окном нужд ── */
+function gaugeJudgeSet(){
+  const out=new Map();
+  for(const S of watchStations())out.set(S.key,S);
+  for(let x=G.sx-GAUGE_NEAR;x<=G.sx+GAUGE_NEAR;x++)for(let y=G.sy-GAUGE_NEAR;y<=G.sy+GAUGE_NEAR;y++){
+    if(!starAt(x,y))continue;
+    const S=getSystem(x,y);
+    if(S&&S.station&&S.station.prices&&!out.has(S.key))out.set(S.key,S);
+  }
+  return [...out.values()];
+}
+function gaugeCascAt(sys){
+  const C=G.casc&&G.casc.n&&G.casc.n[sys.key];
+  return C&&!C.d&&C.u>now()&&sys.station&&sys.station.prices&&sys.station.prices[C.k]&&RES[C.k]?C:null;
+}
+function gaugeJudge(w){
+  const out=[];
+  for(const S of gaugeJudgeSet()){
+    const k=watchNeedAt(S,w);if(!k)continue;
+    const c=needAll()[S.key];
+    if(c&&c.win===w)continue;   /* закрыли вы (нужду соседей закрывают только после своей) */
+    if(watchNpc(S,w))continue;  /* закрыли баржи */
+    const g=gaugeAdd(S,-.2,-.1,0);
+    const stop=(g.s<GAUGE_DRY&&!gaugeStopOf(S))?gaugeStop(S):null;
+    out.push({key:S.key,k,stop});
+  }
+  return out;
+}
+function gaugePrune(){
+  const A=gaugeAll(),t=now();
+  for(const key in A){
+    const g=gaugeRead(key),xy=gaugeKeyXY(key);
+    if(Math.abs(g.s-GAUGE_MID)<.02&&Math.abs(g.m-GAUGE_MID)<.02&&Math.abs(g.o-gaugeMidO(xy[0],xy[1]))<.02)delete A[key];
+  }
+  if(G.casc){
+    for(const k in G.casc.s||{})if(!(G.casc.s[k].u>t))delete G.casc.s[k];
+    for(const k in G.casc.n||{})if(!(G.casc.n[k].u>t))delete G.casc.n[k];
+  }
+}
+function gaugeTick(){
+  const w=needWin();
+  if(GAUGE_W==null||w<GAUGE_W){GAUGE_W=w;return null;}
+  if(w===GAUGE_W)return null;
+  let out=[];
+  for(let v=Math.max(GAUGE_W,w-4);v<w;v++)out=out.concat(gaugeJudge(v));
+  GAUGE_W=w;
+  gaugePrune();
+  return out;
+}
+/* такт — вместе с участком (сданная смена его останавливает: 28j возвращается раньше) */
+const GAUGE_OLD_MGR=mgrTick;
+mgrTick=function(){
+  if(!watchHanded()){try{gaugeTick();}catch(e){logAdd("warn","СБОЙ · шкалы станций: "+(e&&e.message));}}
+  return GAUGE_OLD_MGR.apply(this,arguments);
+};
+/* нужда соседей идёт первой (правило 5); своя на это время молчит и в суде участка */
+const GAUGE_OLD_NEEDOF=needOf;
+needOf=function(sys){
+  const C=sys&&sys.station?gaugeCascAt(sys):null;
+  if(!C)return GAUGE_OLD_NEEDOF.apply(this,arguments);
+  const xy=gaugeKeyXY(C.f),F=starAt(xy[0],xy[1])?getSystem(xy[0],xy[1]):null;
+  return {k:C.k,win:needWin(),ru:RES[C.k].ru.toLowerCase(),casc:C.f,
+    why:"встал цех"+(F&&F.station?" у «"+F.station.name+"»":"")};
+};
+const GAUGE_OLD_NEEDAT=watchNeedAt;
+watchNeedAt=function(S,w){return gaugeCascAt(S)?null:GAUGE_OLD_NEEDAT.apply(this,arguments);};
+/* ваш привоз: склад +.3, люди +.05. Каскадную закрывают здесь же, мимо отметки окна (G.need):
+   иначе один привоз закрыл бы заодно и свою нужду станции в этом окне */
+const GAUGE_OLD_CLOSE=needClose;
+needClose=function(sys,k){
+  const N=needOf(sys);
+  if(N&&N.casc){
+    if(N.k!==k)return false;
+    G.casc.n[sys.key].d=1;
+    gaugeAdd(sys,.3,.05,0);
+    repAdd(2,sys);
+    recordAdd(sys.station.name,"благодарность: привёз "+N.ru+", когда "+N.why);
+    peopleLine("привезли "+N.ru+", когда "+N.why+". Это помнят.",sys.station.name,true);
+    sfx("ok",{v:.4});
+    if(!watchHanded()&&watchHas(sys)){watchTick();watchSt().ord++;}
+    return true;
+  }
+  const r=GAUGE_OLD_CLOSE.apply(this,arguments);
+  if(r&&sys&&sys.station)gaugeAdd(sys,.3,.05,0);
+  return r;
+};
+/* порядок: заняли — минус, отбили — плюс */
+const GAUGE_OLD_OCCSET=occSet;
+occSet=function(sx,sy,lvl){
+  const was=occLvl(sx,sy);
+  const r=GAUGE_OLD_OCCSET.apply(this,arguments);
+  const now_=occLvl(sx,sy);
+  if(now_!==was&&starAt(sx,sy)){
+    const S=getSystem(sx,sy);
+    if(S&&S.station){
+      if(now_>was)gaugeAdd(S,0,0,-.3*(now_-was));
+      else if(!now_)gaugeAdd(S,0,0,.5);
+    }
+  }
+  return r;
+};
+/* люди хмурые: скупщик берёт на восемь процентов дешевле; ваша покупка — по обычной цене */
+const GAUGE_OLD_CTX=marketCtx;
+marketCtx=function(sys,m){
+  const C=GAUGE_OLD_CTX.apply(this,arguments);
+  if(gaugeSour(sys))C.occ*=GAUGE_SOUR_MUL;
+  return C;
+};
+const GAUGE_OLD_BUYP=buyPriceFor;
+buyPriceFor=function(sys,k){
+  const p=GAUGE_OLD_BUYP.apply(this,arguments);
+  return gaugeSour(sys)?Math.max(p,Math.round(p/GAUGE_SOUR_MUL)):p;
+};
+/* и именного от хмурой станции не будет */
+const GAUGE_OLD_OFFER=offerAdd;
+offerAdd=function(kind,who,named){
+  const sour=G.sys&&who==="st:"+G.sys.key&&gaugeSour(G.sys);
+  if(!sour)return GAUGE_OLD_OFFER.apply(this,arguments);
+  const f=folkOf(who),w0=f.warm,n0=f.named;
+  const o=GAUGE_OLD_OFFER.call(this,kind,who,false);
+  if(o&&o.named){o.named=0;f.warm=w0;f.named=n0;}
+  return o;
+};
+/* цех стоит: сделанного здесь не купить */
+const GAUGE_OLD_BUY=buyCargo;
+buyCargo=function(sys,k,qty){
+  if(gaugeStopped(sys,k)){say("Цех стоит\n"+RES[k].ru.toLowerCase()+" здесь не делают",120);return 0;}
+  return GAUGE_OLD_BUY.apply(this,arguments);
+};
+const GAUGE_OLD_COOPBUY=coopBuy;
+coopBuy=function(sys,k,qty){
+  if(gaugeStopped(sys,k)){say("Цех стоит\n"+RES[k].ru.toLowerCase()+" здесь не делают",120);return 0;}
+  return GAUGE_OLD_COOPBUY.apply(this,arguments);
+};
+/* ── толпа в зале — это ЛЮДИ (§7.1): у середины столько, сколько у типа станции; выше — больше,
+   до девяти; к трети — один у стойки ── */
+function gaugeCrowd(list){
+  if(!G.sys||!G.sys.station)return list;
+  const m=gaugeOf(G.sys).m,b=list.length;
+  let n=m>=GAUGE_MID?Math.round(b*(1+(m-GAUGE_MID)/.3*.5)):Math.round(1+(b-1)*clamp((m-.3)/.3,0,1));
+  n=clamp(n,1,C3_SLOT.length);
+  if(n<=b)return list.slice(0,n);
+  const out=list.slice();
+  for(let k=0;k<C3_SLOT.length&&out.length<n;k++)if(out.indexOf(k)<0)out.push(k);
+  return out;
+}
+/* ходячий зал (27f4a): посетитель у доски, грузчик, пары за столиками стоят всегда — ниже
+   середины их становится меньше, к трети остаётся один; выше середины зал полнее за счёт кантины */
+function gaugeHallCrowd(P){
+  if(!G.sys||!G.sys.station)return P;
+  const m=gaugeOf(G.sys).m;if(m>=GAUGE_MID)return P;
+  const n=P.filter(p=>p.kind==="crowd").length,keep=Math.round(1+(n-1)*clamp((m-.3)/.3,0,1));
+  let i=0;return P.filter(p=>p.kind!=="crowd"||i++<keep);
+}
+/* ── доска: положение станции словами ── */
+function gaugeNames(keys){
+  const L=keys.map(k=>{const xy=gaugeKeyXY(k);return {n:getSystem(xy[0],xy[1]).station.name,xy};});
+  return L.map(x=>"«"+x.n+"»"+(L.filter(y=>y.n===x.n).length>1?" "+x.xy[0]+":"+x.xy[1]:"")).join(", ");
+}
+function gaugeRows(){
+  const rows=[],S=G.sys;
+  if(!S||!S.station||!S.station.prices)return rows;
+  const g=gaugeOf(S),st=gaugeStopOf(S);
+  if(st){
+    const c=G.casc.n,to=Object.keys(c).filter(k=>c[k].f===S.key&&!c[k].d&&c[k].u>now());
+    rows.push(["Цех стоит: "+RES[st.k].ru.toLowerCase()+" не делают","склад пуст — нужду не закрыли вовремя"+
+      (to.length?". Ждут у "+gaugeNames(to):"")+" · снова через "+Math.max(1,Math.round((st.u-now())/60000))+" мин"]);
+  }
+  if(g.m<GAUGE_LOW)rows.push(["Люди хмурые","скупщик сбавляет цену, именного не предложат. Привезёте, чего нет, — оттают"]);
+  if(g.o<GAUGE_LOW&&occLvl(S.sx,S.sy))rows.push(["Отбить «"+S.name+"»","порядка нет: пираты крепнут быстрее. Считаются сбитые в этой системе"]);
+  const W=G.uch;
+  if(W&&watchHas(S)){
+    let n=0;
+    for(const T of watchStations()){
+      if(T===S||n>=2)continue;
+      const ts=gaugeStopOf(T),lo=gaugeOf(T).o<GAUGE_LOW&&occLvl(T.sx,T.sy);
+      if(!ts&&!lo)continue;
+      const d=Math.max(Math.abs(T.sx-S.sx),Math.abs(T.sy-S.sy));
+      rows.push(["«"+T.station.name+"»: "+(ts?"цех стоит":"отбить"),(ts?"нет "+RES[ts.k].ru.toLowerCase():"пираты крепнут")+" · "+d+" "+pl3(d,"прыжок","прыжка","прыжков")]);
+      n++;
+    }
+  }
+  return rows;
+}
+function gaugeSection(){
+  const rows=gaugeRows();if(!rows.length)return;
+  secHead("ПОЛОЖЕНИЕ");
+  for(const [b,s] of rows)$body.appendChild(el("div","row","<div class='nm'><b>"+b+"</b><s>"+s+"</s></div>"));
+}
+const GAUGE_OLD_WSEC=watchSection;
+watchSection=function(){const r=GAUGE_OLD_WSEC.apply(this,arguments);gaugeSection();return r;};
+/* ── запись ── */
+const GAUGE_OLD_SNAP=snapshot;
+snapshot=function(){
+  const s=GAUGE_OLD_SNAP.apply(this,arguments);
+  s.gauge=G.gauge&&Object.keys(G.gauge).length?G.gauge:null;
+  s.casc=G.casc&&(Object.keys(G.casc.s||{}).length||Object.keys(G.casc.n||{}).length)?G.casc:null;
+  return s;
+};
+const GAUGE_OLD_APPLY=applySave;
+applySave=function(s){
+  const r=GAUGE_OLD_APPLY.apply(this,arguments);
+  G.gauge={};G.casc=null;GAUGE_W=null;
+  const g=s&&s.gauge;
+  if(g&&typeof g==="object")for(const k in g){
+    const A=g[k];
+    if(/^-?\d+,-?\d+$/.test(k)&&Array.isArray(A)&&A.length===4&&A.every(x=>isFinite(x)))
+      G.gauge[k]=[clamp(A[0]|0,0,100),clamp(A[1]|0,0,100),clamp(A[2]|0,0,100),A[3]|0];
+  }
+  const c=s&&s.casc;
+  if(c&&typeof c==="object"){
+    const C=gaugeCasc();
+    for(const k in c.s||{}){const x=c.s[k];if(x&&RES[x.k]&&isFinite(x.u))C.s[k]={k:x.k,u:+x.u};}
+    for(const k in c.n||{}){const x=c.n[k];if(x&&RES[x.k]&&isFinite(x.u))C.n[k]={k:x.k,f:String(x.f||""),u:+x.u,d:x.d?1:0};}
+  }
+  return r;
+};
 
 /* ══════════════ look() — прибор кадра ══════════════
    `prof()` отвечает, во что обходится кадр. `look()` отвечает, ЧТО в нём.

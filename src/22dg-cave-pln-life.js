@@ -11,8 +11,15 @@ function cave3LifeDrop(Q){
   Q.geo={};Q.inst={};
 }
 /* пол картинки под точкой на глубине z: где воздух — на нём, иначе ближе к разрезу */
+/* ноги вещи: не дальше .25 м от пола игры (как у человека, 22d-cave-pln) — иначе растение вмуровано в породу
+   или висит над провалом, а зверь зарыт (плейтест 09.10.2026) */
+function cave3FootY(gy,v){return gy+clamp(v-gy,-.25,.25);}
 function cave3LifeFoot(F,X,Y,zs){
-  for(const z of zs)if(cave3Den(F,X,Y+.5,z)<-.15)return [cave3Down(F,X,Y+.5,z),z];
+  for(const z of zs)if(cave3Den(F,X,Y+.5,z)<-.15){
+    const v=cave3Down(F,X,Y+.5,z);
+    /* cave3Down на пределе поиска (4 м) отдаёт «пол» в воздухе: под ним должна быть порода */
+    if(cave3Den(F,X,v-.12,z)>0)return [cave3FootY(Y,v),z];
+  }
   return null;
 }
 function cave3LifeFrame(C,F,Fd,x0,x1){
