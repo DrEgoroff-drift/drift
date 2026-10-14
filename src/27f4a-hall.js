@@ -136,7 +136,7 @@ function hallGo(place,first){
 
 /* ── раскладка: кто где стоит (чистый JS, без видеокарты) ── */
 function hallLum(c){return .3*c[0]+.59*c[1]+.11*c[2];}
-function hallLayout(st){
+function hallLayout(st,lazy){
   const T=hallT(st),seed=((G.sys&&G.sys.seed)^0x4A11)>>>0,CS=CANT_STYLE[st]||CANT_STYLE.trade;
   const acc=hex2rgb(CS.acc),bar=hallHasBar(st),R=rng(seed^0x77);
   const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st)};
@@ -175,9 +175,64 @@ function hallLayout(st){
       L.people.push({id:null,m:{seed:hashi(seed,i,0xBA2)>>>0,loy:45+i*7,traits:[]},pose:i%2?"mug":"stand",
         x:s[0]+(R()-.5)*.5,z:s[1]+side*.95,yaw:side>0?Math.PI+(R()-.5)*.6:(R()-.5)*.6,lod:0,kind:"crowd"});}}
   L.people=L.people.slice(0,R3_MAXI-2);   /* последний экземпляр — пилот */
-  for(const P of L.people)if(!P.mesh)P.mesh=cpMesh(P.m,P.pose,P.lod);
+  if(!lazy)for(const P of L.people)if(!P.mesh)P.mesh=cpMesh(P.m,P.pose,P.lod);   /* lazy — заготовка (hallPrepStep) мешает по одному */
   L.rkey=st+"|"+seed+"|"+L.seats.length+"|"+L.bx.toFixed(2)+"|"+L.stories.map(s=>(s.props||[]).join(",")+":"+s.seat).join(";");
   return L;
+}
+/* ── заготовка зала ──
+   Первый вход в док строил раскладку, тела людей, комнату и их выгрузку на одном кадре: 0,9 с
+   (QA 14.10, ПК). Пока корабль в системе со станцией, это делается по шагу раз в несколько кадров:
+   тела (cpMesh — по человеку), выгрузка сеток и комната. Раскладка при входе строится заново — она
+   дёшева и зависит от состояния дел, — но тела берутся из кэша, сетки уже на видеокарте, комната готова */
+const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:null,ci:0,cdone:true};
+function hallPrepStep(){
+  const sys=G.sys,S=sys&&sys.station,P=HALL_PRE;
+  if(G.mode!=="system"||!S||HALL.open||!GPU.ok||!GPU.dev||!HALL.on)return;
+  const st=S.stype||"trade",key=st+"|"+sys.key;
+  if(P.key!==key){P.key=key;P.L=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;if(P.room){r3Drop(P.room);P.room=null;}}
+  if(P.done){if(!P.cdone)hallCantPrep(S,sys);return;}
+  if(!P.L){P.L=hallLayout(st,true);return;}
+  const pe=P.L.people;
+  if(P.i<pe.length){
+    const q=pe[P.i];
+    if(!q.mesh){q.mesh=cpMesh(q.m,q.pose,q.lod);return;}   /* тело — шаг, выгрузка — следующий */
+    r3Up(q.mesh);P.i++;return;
+  }
+  if(!P.room){P.room=hallRoomMesh(P.L);P.rkey=P.L.rkey;return;}
+  if(!P.up){r3Up(P.room);P.up=true;}
+  P.done=true;
+}
+/* люди кантины (вкладка «Кантина» дока): тела кандидатов, столиков, толпы — по одному на шаг.
+   Вкладка при первом открытии лепила их все разом: 0,35 с. Раскладка считается так же, как её
+   считает renderCantina, и с тем же G.st (в системе его нет — на время шага он станция) */
+function hallCantPrep(S,sys){
+  const P=HALL_PRE;
+  if(!P.cl){
+    const keep=G.st;G.st=S;
+    try{
+      const list=G.cantina&&G.cantina.key===sys.key?G.cantina.list:stationMgrs(sys);
+      const free=list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
+      const deals=stationDeals(sys).filter(d=>!dealTaken(d.key));
+      P.cl=c3Layout(980,320,free,deals,typeof folkShown==="function"?folkShown():null,true);
+      /* портреты карточек (27f5): тело «stand» второго уровня — отдельный ключ кэша, его лепил таймер портретов */
+      for(const m of free)P.cl.people.push({m,pose:"stand",lod:2});
+      P.cl.people.push({m:cantKeeper(),pose:"stand",lod:2});
+    }finally{G.st=keep;}
+    return;
+  }
+  const pe=P.cl.people;
+  if(P.ci<pe.length){
+    const q=pe[P.ci];
+    if(!q.mesh){q.mesh=cpMesh(q.m,q.pose,q.lod);return;}
+    r3Up(q.mesh);P.ci++;return;
+  }
+  P.cdone=true;
+}
+/* из кадра раз в восемь кадров: шаг — не больше кадра работы (тело ~20 мс), остальное — между */
+function hallPrepTick(){
+  if(HALL_PRE.done&&HALL_PRE.cdone&&HALL_PRE.key===((G.sys&&G.sys.station&&((G.sys.station.stype||"trade")+"|"+G.sys.key))||""))return;
+  if((++HALL_PRE.n&7)!==0)return;
+  try{hallPrepStep();}catch(e){HALL_PRE.done=true;HALL_PRE.cdone=true;console.error("заготовка зала",e);}
 }
 /* прилавки блошинца: x, z (перед окном — низкие, навес выше луча к окну) */
 const HALL_STALLS=[[-1.25,.55],[1.15,.55],[3.45,.55],[4.6,2.0],[6.5,2.0]];
@@ -399,7 +454,12 @@ function hallFrame(){
   if(!HALL.L||HALL.L.st!==st)HALL.L=hallLayout(st);
   const L=HALL.L,R=rpgGet(cn);if(!R)return false;
   R.dpr=cn.__dpr;
-  if(!HALL.room||HALL.rkey!==L.rkey){r3Drop(HALL.room);HALL.room=hallRoomMesh(L);HALL.rkey=L.rkey;}
+  if(!HALL.room||HALL.rkey!==L.rkey){
+    r3Drop(HALL.room);const pr=HALL_PRE;
+    if(pr.room&&pr.rkey===L.rkey){HALL.room=pr.room;pr.room=null;pr.done=false;pr.up=false;}   /* заготовка отдана: следующая — на обратном пути */
+    else HALL.room=hallRoomMesh(L);
+    HALL.rkey=L.rkey;
+  }
   L.room=HALL.room;
   if(L.bar)c3SignTex(L.S);
   hallOrbUp(L);

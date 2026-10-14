@@ -36,7 +36,7 @@ function c3Cam(cssW,cssH){
 function c3Seats(n){const step=Math.min(.8,(C3_CR-C3_CL-1)/Math.max(1,n)),c0=-.35,out=[];
   for(let i=0;i<n;i++)out.push(c0+(i-(n-1)/2)*step);return out;}
 /* раскладка зала: где кто сидит и стоит; чистый JS — попадания считаются и без видеокарты */
-function c3Layout(cssW,cssH,list,deals,folk){
+function c3Layout(cssW,cssH,list,deals,folk,lazy){
   const st=(G.st&&G.st.stype)||"trade",S=cantStyle(),seed=(G.sys.seed^0xCA47)>>>0,cam=c3Cam(cssW,cssH);
   const K9=(typeof kinoHere==="function")?kinoHere():null,tree=typeof holTreeUp==="function"&&holTreeUp();
   if(!C3.story||now()-C3.sT>3000||now()<C3.sT){C3.story=(typeof storyCantScene==="function")?storyCantScene():[];C3.sT=now();}
@@ -68,7 +68,7 @@ function c3Layout(cssW,cssH,list,deals,folk){
     L.people.push({id:null,m:{seed:hashi(seed,(sc.seat||"x").length*31,0x5707)>>>0,loy:50,traits:[]},pose:p[2],x:p[0],z:p[1],yaw:Math.atan2(-p[0]*.3,2),lod:0,kind:"story",dim:sc.dim?.55:.15});}
   L.people=L.people.slice(0,R3_MAXI-1-L.tables.length);
   /* сетки людей (кэш 27f3) */
-  for(const p of L.people)p.mesh=cpMesh(p.m,p.pose,p.lod);
+  if(!lazy)for(const p of L.people)p.mesh=cpMesh(p.m,p.pose,p.lod);   /* lazy — заготовка зала (27f4a) мешает по одному */
   L.rkey=st+"|"+seed+"|"+L.seats.length+"|"+(K9?1:0)+"|"+(tree?1:0)+"|"+L.bx.toFixed(2)+"|"+L.stories.map(s=>(s.props||[]).join(",")+":"+s.seat).join(";");
   return L;
 }
