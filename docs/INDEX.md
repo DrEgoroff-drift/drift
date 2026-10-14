@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 564 · top-level symbols: 8239
+Files: 566 · top-level symbols: 8241
 
 ## SYMBOLS
 
@@ -1077,7 +1077,7 @@ HOTEL_LIT                    src/17l-hotel.js:123
 HOTEL_LOD                    src/17l-hotel.js:51
 HOTEL_NIGHT                  src/17l-hotel.js:16
 HOTEL_RIM                    src/17l-hotel.js:182
-HOTEL_SHOP_N                 src/17l-hotel.js:297
+HOTEL_SHOP_N                 src/17l-hotel.js:298
 HOTEL_SIGN                   src/17l-hotel.js:12
 HOTEL_SIGN_FULL              src/17l-hotel.js:13
 HOTEL_T                      src/17l-hotel.js:17
@@ -2109,6 +2109,7 @@ SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14-20
 SYS_HOME_KEY                 src/06-galaxy.js:22
 SYS_K_ORBIT                  src/06-galaxy.js:94
+SYS_LAND_R                   src/17-mode-system.js:97
 SYS_LRU                      src/06-galaxy.js:21
 T                            tests/90a-tools.js:54-611
 TABLE_REPLY                  src/11b-speech.js:158-187
@@ -3076,7 +3077,7 @@ chessMyTurn                  src/25n-chess.js:212-216
 chessPaint                   src/25n-chess.js:256-316
 chessStart                   src/25n-chess.js:205-210
 chessTake                    src/25n-chess.js:228-237
-chipDist                     src/17-mode-system.js:731-737
+chipDist                     src/17-mode-system.js:750-756
 chipDom                      src/08bi-gpu-ovl.js:208-224
 chipDomSnap                  src/08bh-gpu-hud.js:10-12
 chipDomSweep                 src/08bh-gpu-hud.js:20-23
@@ -3761,12 +3762,12 @@ drawSurface                  src/21e-surface-draw.js:311-325
 drawSurfaceHud               src/21e-surface-draw.js:39-142
 drawSurfaceWorld             src/21e1-surface-world.js:10-539
 drawSurvey                   src/12w-survey.js:63-83
-drawSysHud                   src/17-mode-system.js:738-1064
+drawSysHud                   src/17-mode-system.js:757-1083
 drawSysLane                  src/17g-sys-lane.js:112-138
 drawSysLaneShips             src/17g-sys-lane.js:168-196
 drawSysRail                  src/18f-rail-station.js:79-115
 drawSysTraffic               src/17f-sys-traffic.js:39-43
-drawSystem                   src/17-mode-system.js:535-726
+drawSystem                   src/17-mode-system.js:554-745
 drawTapes                    src/12s1-tape.js:51-66
 drawTemple                   src/20aa-poi-shapes.js:49-88
 drawThingIcon                src/27i-ui-table.js:409-487
@@ -4935,12 +4936,12 @@ homeWash                     src/21f-home-out.js:300-325
 homingStep                   src/13a-guns.js:470-477
 hotelAngD                    src/17l-hotel.js:85
 hotelArc                     src/17l-hotel.js:179
-hotelDesk                    src/17l-hotel.js:275-293
+hotelDesk                    src/17l-hotel.js:276-294
 hotelDock                    src/17l-hotel.js:212-255
 hotelDrop                    src/17l-hotel.js:60
 hotelGet                     src/17l-hotel.js:113-121
 hotelHere                    src/17l-hotel.js:18-23
-hotelInteract                src/17l-hotel.js:260-268
+hotelInteract                src/17l-hotel.js:260-269
 hotelJob                     src/17l-hotel.js:86-111
 hotelLamp                    src/17l-hotel.js:186-190
 hotelLampOf                  src/17l-hotel.js:47
@@ -4952,10 +4953,10 @@ hotelN                       src/17l-hotel.js:83
 hotelName                    src/17l-hotel.js:15
 hotelNeon                    src/17l-hotel.js:134-142
 hotelNeonDraw                src/17l-hotel.js:143-146
-hotelNightPrice              src/17l-hotel.js:271-274
+hotelNightPrice              src/17l-hotel.js:272-275
 hotelPoly                    src/17l-hotel.js:177
 hotelRim                     src/17l-hotel.js:183
-hotelShop                    src/17l-hotel.js:298-304
+hotelShop                    src/17l-hotel.js:299-305
 hotelStar                    src/17l-hotel.js:257
 hotelType                    src/17l-hotel.js:24
 hotelUp                      src/17l-hotel.js:84
@@ -5898,7 +5899,7 @@ opisWear                     src/27j-ui-opis.js:247-251
 optGroups                    src/27-ui-ship.js:326-343
 optTab                       src/27-ui-ship.js:325
 optsNumify                   src/14a2-save-ephemeral.js:23-28
-orbPathOf                    src/17-mode-system.js:498-508
+orbPathOf                    src/17-mode-system.js:517-527
 orderDeliver                 src/12aa-need.js:119-134
 orderHere                    src/12aa-need.js:115-118
 orderOf                      src/12aa-need.js:78-102
@@ -7772,18 +7773,19 @@ sysEdge                      src/17-mode-system.js:34-40
 sysEntry                     src/17g-sys-lane.js:20-23
 sysHasFauna                  src/12ad-site.js:114-117
 sysJitter                    src/01-core.js:191-195
+sysLandNear                  src/17-mode-system.js:98-105
 sysLane                      src/17g-sys-lane.js:32-67
 sysLightDir                  src/17c2e-body-kit.js:11
 sysMakes                     src/12ad-site.js:134-140
 sysNebComp                   src/16a-space.js:209-234
 sysNebulaTex                 src/16a-space.js:53-101
-sysOcPush                    src/17-mode-system.js:526-534
+sysOcPush                    src/17-mode-system.js:545-553
 sysPirateBase                src/24a-mode-raid.js:98-102
 sysRasterDrop                src/06-galaxy.js:23-31
 sysRasterTick                src/06-galaxy.js:33-45
 sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
-sysWatchLabel                src/17-mode-system.js:513-521
+sysWatchLabel                src/17-mode-system.js:532-540
 tab                          src/26-ui-station.js:3
 tabLive                      src/14a-cloud.js:36
 tableBake                    src/27i-ui-table.js:145-155
@@ -7953,7 +7955,7 @@ updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29i-spa-draw.js:599-604
 updateSurface                src/21-mode-surface.js:200-658
-updateSystem                 src/17-mode-system.js:92-494
+updateSystem                 src/17-mode-system.js:106-513
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:942-951
 useBeacon                    src/23-mode-dig.js:91-116
@@ -8995,7 +8997,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/16gc-gpu-nebfade.js · 3 KB
 
-## src/17-mode-system.js · 83 KB
+## src/17-mode-system.js · 84 KB
   · режим: система:1
 
 ## src/17a-station-mod.js · 14 KB
@@ -9968,6 +9970,12 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
+
+## tests/91zzzw4-ecosim.js · 17 KB
+  · проба · экономика (M903):1
+
+## tests/91zzzw5-hotel-land.js · 2 KB
+  · причальная полоса не перебивает посадку (0.493.4):1
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

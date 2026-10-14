@@ -260,6 +260,7 @@ function hotelStar(c,x,y,r,fill){c.beginPath();for(let i=0;i<10;i++){const a=-Ma
 function hotelInteract(sh){
   const Ht=hotelHere();if(!Ht)return false;
   if(Math.hypot(sh.x-Ht.x,sh.y-Ht.y)>150)return false;
+  if(sysLandNear(sh))return false;   /* планета в зоне посадки главнее стойки (0.493.4) */
   const board=Ht.by==="gt"?" · МЕСТ НЕТ":"";
   const shop=(G.cargo.pearl|0)>0?" · ЛАВКА БЕРЁТ ЖЕМЧУГ":"";   /* лавка гостиницы — едок жемчуга (M469) */
   const shown=cue(Ht.name+board+"\nДЕЙСТВИЕ — К СТОЙКЕ"+shop,CUE_ACT);

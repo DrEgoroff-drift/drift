@@ -89,6 +89,20 @@ function camBody(sh,sys){
   }
   return near;
 }
+/* планета в зоне посадки главнее всего, что стоит у причальной полосы: полоса
+   (гостиница, чебуречная, базар, причал) живёт у станции, планета по орбите
+   проходит мимо — и их подсказки глушили ПОСАДКУ, сесть было нельзя, пока
+   планета рядом со станцией (проба · экономика, 0.493.4). Порог — тот же
+   SYS_LAND_R, что и у самой подсказки посадки ниже */
+const SYS_LAND_R=110;
+function sysLandNear(sh){
+  const sys=G.sys;if(!sys)return false;
+  for(const p of sys.planets||[]){
+    if(Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius<SYS_LAND_R)return true;
+    for(const m of p.moons||[])if(Math.hypot(sh.x-m.x,sh.y-m.y)-m.radius<SYS_LAND_R)return true;
+  }
+  return false;
+}
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
   if(typeof zoomEase==="function")zoomEase(dt);   /* щипок едет к цели (P9) */
@@ -390,11 +404,15 @@ function updateSystem(dt){
   /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
   /* кольцо железной дороги: стыковка и вестибюль (M471–M472) */
   if(typeof subFightOffer==="function"&&subFightOffer(actEdge))return;   /* ЭКСТРЕННОЕ ПРОДЛЕНИЕ · ×3 в бою (M487) */
+  const landNear=sysLandNear(sh);   /* планета в зоне посадки главнее полосы и встречных (0.493.4) */
+  if(!landNear){
   if(typeof railInteract==="function"&&railInteract(sh))return;
   if(typeof chebInteract==="function"&&chebInteract(sh))return;   /* «Чебуречная» на подъезде (M462) */
   if(typeof hotelInteract==="function"&&hotelInteract(sh))return;
   if(typeof bazInteract==="function"&&bazInteract(sh))return;
   if(typeof giantInteract==="function"&&giantInteract(sh))return;   /* причал великана (M464) */   /* барахолка у пояса (M463) */   /* гостиница у станции (M461) */
+  }
+  if(!landNear){
   if(typeof fleetInteract==="function"&&fleetInteract(sh))return;
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
@@ -404,6 +422,7 @@ function updateSystem(dt){
   if(typeof findInteract==="function"&&findInteract(sh))return;
   /* мачта приёмника: к ней подходят, ей везут новости (11ap, M220) */
   if(typeof relayInteract==="function"&&relayInteract(sh))return;
+  }
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
