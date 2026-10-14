@@ -6,6 +6,25 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.493.4 - the station lane yields to landing; five playtest fixes; the economy measured (M903)
+
+- **Landing beside the station.** A planet passing the station lane could not be landed on: the hotel, the
+  «Чебуречная», the bazaar, the giant's pier and the fleet/barge/wreck/find/relay cues took the prompt
+  before «ПОСАДКА» was computed (`updateSystem`). `sysLandNear` (17-mode-system) now mutes all of them
+  while a planet or moon is inside the landing radius (`SYS_LAND_R` 110). Suite `91zzzw5-hotel-land`.
+- **Playtest fixes (branch bugs, 09.10 playtest).** Radio delay time clamped to the 2 s delay line
+  (`radioDelayS`); a tab that yielded the save lock gets it back when the taker closes (`TAB_TAKER`,
+  pagehide «bye»); belt rock contact costs hull by closing speed once per touch, cap 20 (was per frame in
+  the contact zone — a newbie lost the whole hull in .2 s); the world quantiser carries the remainder and
+  allows 100 ms per frame (`quantSplit`, `QUANT_MAX` 12) so a 10–15 fps phone no longer runs at half speed;
+  cave plants and beasts stand on the visible floor (`cave3FootY`). Suites `91a1`–`91a6`.
+- **M903 economy probe.** `проба · экономика` (`91zzzw4-ecosim`): one hour per tier T0–T3 of the mining
+  loop with the real bot, booking credits, fuel and hull by lap phase against the §4.1 oracle. First
+  numbers (bot, full holds): T0 net ≈18.5k/h, T1–T3 ≈41–44k/h against the oracle's 4.4k/14k — upkeep is
+  7–20 % of gross; the pressure levers are lap time and deposit size, not fuel. Two surface bugs found: the
+  settlement wall and a POI beside a deposit take the prompt chain and leave it silent, so that deposit
+  can never be drilled (open, M904). Drones never fly under the stand (open).
+
 ## 0.493.3 - the swarm warns before it bites; no wreck loop on a fresh save
 
 - **Hotfix, live 09.10.** A fresh save in sector 0:0 died every 0.85 s: the chronicle had an asteroid swarm (M384) running there, the swarm bit a standing ship from the first frame at .9 hull per frame, the easy start leaves the ship standing, and the emergency repair put it back standing in the same system. `natSwarmTick` now says «РОЙ · НЕ СТОЙТЕ НА МЕСТЕ» after one second of standing, bites from the fifth second and ramps to full by the tenth; any motion or a wreck resets the count; the first ten minutes of a fresh save are never bitten. Suite `91zzzw3-swarm`.

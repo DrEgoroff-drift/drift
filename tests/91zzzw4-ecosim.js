@@ -36,13 +36,13 @@ suite("проба · экономика",{tier:"probe"},()=>{
   /* часы идут с кадром: под стендом они прибиты, и дроны, руки и жалованье
      (всё на now()) за час игры не делали ни рейса */
   const sw0=stepWorld;
-  let TICKN=0;
+  let TICKN=0,TICKS=0;
   stepWorld=function(n){
     clockAdvance((n||1)*1000/60);
     const r=sw0(n);
     /* дроны, руки, управляющие и сделки в игре идут по таймеру кадра (28-loop),
        под стендом — раз в десять секунд игры отсюда; все они ленивые по времени */
-    if(++TICKN%600===0){tickDrones();crewTick();mgrTick();occTick();}
+    if(++TICKN%600===0){TICKS++;tickDrones();crewTick();mgrTick();occTick();}
     return r;
   };
   /* книжка: аксессор на кредитах — каждая копейка под именем фазы */
@@ -94,7 +94,17 @@ suite("проба · экономика",{tier:"probe"},()=>{
     }
     return null;
   }
-  const nearestDep=()=>{const S=G.surf;return (S.deposits||[]).filter(d=>d.left>0).sort((a,b)=>Math.abs(a.x-S.x)-Math.abs(b.x-S.x))[0];};
+  /* залежь под стеной посёлка или у его места в игре не бурится: цепочка подсказок
+     берёт ветку стены/посёлка и молчит (21-mode-surface 495/511, стена без подписи
+     и без рук — подсказка вовсе не ставится, на экране висит старая). Проба такие
+     залежи обходит; починка — у тестировщика (стена не на залежи) */
+  const depBlocked=d=>{const S=G.surf;
+    if(S._wallX!=null&&Math.abs(d.x-S._wallX)<30+26)return true;
+    if(settleCanLive(S.p)){const sx=settleSpotX(S.p,S.tr);if(sx!=null&&Math.abs(d.x-sx)<44+26)return true;}
+    /* точка осмотра (poiNear) стоит в цепочке раньше залежи — с неё тоже не бурят */
+    if(poiNear(Object.assign({},S,{x:d.x}),S.tr))return true;
+    return false;};
+  const nearestDep=()=>{const S=G.surf;return (S.deposits||[]).filter(d=>d.left>0&&!depBlocked(d)).sort((a,b)=>Math.abs(a.x-S.x)-Math.abs(b.x-S.x))[0];};
   /* ── один круг ── */
   function lap(tier){
     const t0=G.t;
@@ -138,7 +148,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       const dep=nearestDep();if(!dep){DONE.add(G.surf.p.key);break;}
       if(!walkTo(dep.x,14)){note("walk: до залежи не дошёл");break;}
       r=T.bot("mine");if(!r.ok){if(!/трюм полон|залежей/.test(r.why)){note("mine: "+r.why);
-        if(ENV.ECO_TRACE)console.log("  след mine: x "+Math.round(x0)+"→"+Math.round(S0.x)+" за "+(G.t-t1)+" кадров · корабль "+Math.round(S0.shipX)+" · W "+(S0.tr&&S0.tr.W)+" · залежи "+(S0.deposits||[]).map(d=>Math.round(d.x)+":"+d.res+":"+d.left).join(" ")+" · режим "+G.mode+" · "+G.prompt.split("\n")[0]+" · ближняя "+JSON.stringify(nearestDep())+" · S.x "+S0.x.toFixed(2)+" on "+S0.on+" swim "+S0.swim+" walkTarget "+S0.walkTarget);}
+        if(ENV.ECO_TRACE)console.log("  след mine: x "+Math.round(x0)+"→"+Math.round(S0.x)+" за "+(G.t-t1)+" кадров · корабль "+Math.round(S0.shipX)+" · W "+(S0.tr&&S0.tr.W)+" · залежи "+(S0.deposits||[]).map(d=>Math.round(d.x)+":"+d.res+":"+d.left).join(" ")+" · режим "+G.mode+" · "+G.prompt.split("\n")[0]+" · ближняя "+JSON.stringify(nearestDep())+" · S.x "+S0.x.toFixed(2)+" on "+S0.on+" swim "+S0.swim+" walkTarget "+S0.walkTarget);if(ENV.ECO_DBG){const pr=G.prompt;G.prompt="";PLN_OWN_OLD_UPD(1);console.log("    голый updateSurface: «"+String(G.prompt).split("\n")[0]+"» · cave "+JSON.stringify(S0.cave)+" · dShip "+Math.abs(S0.x-S0.shipX).toFixed(0)+" · zone "+shipZoneR()+" · jet "+S0.jetOn+" · held "+held()+"/"+stat().cargoMax+" · own "+OWN.on+" · plants "+(S0.plants||[]).filter(p=>Math.abs(p.x-S0.x)<40).length+" · fauna "+(S0.fauna||[]).filter(b=>Math.abs(b.x-S0.x)<40).length+" · poi "+JSON.stringify(poiNear(S0,S0.tr)));G.prompt=pr;}}
         break;}
       mined++;
     }
@@ -230,7 +240,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     const hrs=(G.t-t0)/HOUR,gross=sum(BOOK.gross),spend=sum(BOOK.spend);
     if(ENV.ECO_TRACE)console.log("  "+tier.name+": прыжков "+JUMPS+" · выработано планет "+DONE.size);
     DONE.clear();JUMPS=0;
-    if(ENV.ECO_TRACE)console.log("  "+tier.name+" итог: часов "+hrs.toFixed(2)+" · дроны "+G.drones.map(d=>d.res+" рейсов "+d.trips+" продано "+d.sold+" заработал "+d.earned).join("; ")+
+    if(ENV.ECO_TRACE)console.log("  "+tier.name+" итог: часов "+hrs.toFixed(2)+" · дроны "+G.drones.map(d=>d.res+" рейсов "+d.trips+" продано "+d.sold+" заработал "+d.earned+" [t0−now "+((clockNow()-d.t0)/1000).toFixed(0)+" с · круг "+(droneTripMs(d)/1000).toFixed(0)+" с · down "+(d.down|0)+" · stuck "+(d.stuck|0)+" · pool "+d.pool+" · occ "+occLvl(d.sx,d.sy)+" · тиков "+TICKS+"]").join("; ")+
       " · руки "+G.crew.map(c=>c.spec+" рейсов "+(c.trips|0)+" потрачено "+Math.round(c.spent||0)+" долг "+Math.round(c.debt||0)+" мораль "+(c.morale==null?"—":c.morale.toFixed(2))).join("; "));
     bookOff();
     const O=ORACLE[tier.name];
