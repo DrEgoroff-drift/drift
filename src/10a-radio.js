@@ -270,10 +270,12 @@ function radioMix(t,instant){
   const glide=(p,v,tc)=>{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+(instant?.05:tc));};
   for(const k of RADIO_LAYERS)glide(RADIO.layers[k].gain,L[k],1.5);
   glide(RADIO.lp.frequency,Math.min(9000,radioA("cut")*m.cut*.8),2);
-  RADIO.dly.delayTime.setValueAtTime(radioS16()*(radioA("dlyMul")||3),t);
+  RADIO.dly.delayTime.setValueAtTime(radioDelayS(radioS16(),radioA("dlyMul")||3),t);   /* createDelay(2): больше 2 с браузер клампит и ругается */
 }
 function radioBar(){return radioA("bar")===12?12:16;}   // вальс — три четверти
 function radioBpm(){return RADIO.trk.bpm*.5*RADIO.tempoK*((RADIO_MOOD[RADIO.mood]||{}).k||1);}   // вдвое медленнее таблицы: время здесь тянется
+/* линия задержки создана на 2 с: больше браузер клампит и пишет предупреждение (плейтест 09.10.2026) */
+function radioDelayS(s16,mul){return Math.min(1.99,Math.max(0,s16*mul));}
 function radioS16(){return 60/radioBpm()/4;}
 function radioScale(){
   const m=RADIO_MOOD[RADIO.mood];
