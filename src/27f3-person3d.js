@@ -277,7 +277,7 @@ function cpBody(m,lod,poseK){
    играет cpRig */
 const CP_MESH=new Map();
 function cpMesh(m,pose,lod){
-  const key=(m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age);
+  const key=(m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"");
   let M=CP_MESH.get(key);
   if(M){CP_MESH.delete(key);CP_MESH.set(key,M);return M;}
   M=cpBody(m,lod,pose);

@@ -30,6 +30,8 @@ function home3X(x){const R=hinGroundRooms();if(!R.length)return 0;
 function home3Up(){return !!(G.hin&&G.hin.up);}
 /* зерно хозяина: от дома, не из сохранения (сохранение не трогаем) — один и тот же человек, пока дом стоит */
 function home3PilotM(){const H=G.home||{};return {seed:hashi((H.sx|0)+7,(H.sy|0)+3,0x9170)>>>0,loy:72,traits:[]};}
+/* дома — домашняя куртка среднего тона (DESIGN-rooms §4): чёрный лётный костюм ночью у лампы читался вырезкой */
+const HOME3_JAC=[112,98,78];
 function home3Str(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);return h>>>0;}
 function home3FolkM(f){const base={vega:0x7E6A11,mate:0x3A7E21,trainee:0x51A9C3}[f.who];
   return {seed:base!=null?base:home3Str("crew|"+(f.name||"")),loy:f.who==="vega"?84:66,traits:[]};}
@@ -39,13 +41,13 @@ function home3Mesh(up){
   const K=r3Kit(),P=R3P,R=hinGroundRooms(),U=up?hinUpRooms():[],B=HOME3_B,F=HOME3_F,H=HOME3_H,RW=HOME3_RW;
   const X1=R.length*RW,A={};HOME3.anch=A;
   const Mwd=K.mt([96,68,46],.3,7,P.wood),Mbm=K.mt([66,50,38],.25,6,P.wood),Mfr=K.mt([84,62,44],.35,8,P.wood);
-  const Mfl=K.mt([124,90,60],.3,8,P.wood),Mcc=K.mt([104,102,98],.2,5,P.floor),Mst=K.mt([70,74,80],.55,10,P.brushed);
+  const Mfl=K.mt([124,90,60],.1,4,P.wood),Mcc=K.mt([104,102,98],.2,5,P.floor),Mst=K.mt([70,74,80],.55,10,P.brushed);
   const Mdk=K.mt([34,30,28],.3,5,0),Mslab=K.mt([44,40,36],.2,4,P.floor);
   K.part=0;
   /* земля двора перед разрезом и по бокам: дом стоит на ней, а не висит в черноте */
-  K.quad([-8,-.34,F+.02],[X1+8,-.34,F+.02],[X1+8,-.34,F+16],[-8,-.34,F+16],K.mt([58,58,42],.02,2,0,0,true),[0,1,0]);
-  K.quad([-8,-.34,B-1],[-.25,-.34,B-1],[-.25,-.34,F+.02],[-8,-.34,F+.02],K.mt([58,58,42],.02,2,0,0,true),[0,1,0]);
-  K.quad([X1+.25,-.34,B-1],[X1+8,-.34,B-1],[X1+8,-.34,F+.02],[X1+.25,-.34,F+.02],K.mt([58,58,42],.02,2,0,0,true),[0,1,0]);
+  K.quad([-8,-.34,F+.02],[X1+8,-.34,F+.02],[X1+8,-.34,F+16],[-8,-.34,F+16],K.mt([96,90,64],.02,2,0,0,true),[0,1,0]);
+  K.quad([-8,-.34,B-1],[-.25,-.34,B-1],[-.25,-.34,F+.02],[-8,-.34,F+.02],K.mt([96,90,64],.02,2,0,0,true),[0,1,0]);
+  K.quad([X1+.25,-.34,B-1],[X1+8,-.34,B-1],[X1+8,-.34,F+.02],[X1+.25,-.34,F+.02],K.mt([96,90,64],.02,2,0,0,true),[0,1,0]);
   /* двор за домом: над стенами и по бокам — тот же вид, что в окнах (небо планеты, поле, мачта), а не чернота */
   K.quad([-30,-.34,B-.6],[X1+30,-.34,B-.6],[X1+30,26,B-.6],[-30,26,B-.6],K.mt([3,3,3],.2,70,P.window,0,true),[0,0,1]);
   /* плита пола разрезом: торец спереди тёмный — по нему видно, что это срез */
@@ -334,7 +336,7 @@ function home3Scene(cam,t){
   const S0=G.hin,M=HOME3_M,OT=HOME3_OT,I=r3Xf([0,0,0]),up=home3Up(),y0=up?HOME3_UP:0,B=HOME3_B,H=HOME3_H,RW=HOME3_RW;
   for(let i=0;i<R3_MAXI*R3_PART;i++)M.set(I,i*16);OT.fill(0);
   const draws=[[HOME3.mesh,0,1]];let ii=1;
-  const mx=home3X(S0.x),walking=!!(keys.left||keys.right),pm=home3PilotM();
+  const mx=home3X(S0.x),walking=!!(keys.left||keys.right),pm=Object.assign(home3PilotM(),{jac:HOME3_JAC});
   const lookP=S0.look?home3LookAt(S0.look):null;
   /* хозяин: идёт — профилем, чуть к объективу; стоит — на три четверти к объективу или к вещи */
   const yaw=walking?S0.face*1.3:(lookP?Math.atan2(lookP[0]-mx,lookP[2]-HOME3_MZ)*.6+Math.atan2(cam.eye[0]-mx,cam.eye[2]-HOME3_MZ)*.4:S0.face*.9);
@@ -353,18 +355,18 @@ function home3Scene(cam,t){
   const cur=Math.max(0,rooms.findIndex(r=>mx>=r.x0&&mx<r.x0+RW));
   rooms.forEach((r,j)=>{const d=Math.abs(j-cur);if(d>2)return;const lx=r.x0+(HOME3_LAMP[r.key]||.5)*RW,key=d===0;
     const ly=r.key==="bed"?y0+.75:y0+H-.72,lz=r.key==="bed"?B+.3:-.9;
-    lights.push({p:[lx,ly,lz],range:(key?6.5:4.5)*(1+.3*nk),c:r3Sc(warm,(key?6.2:d===1?2.6:1.2)*(1+.9*nk)),spot:r.key==="bed"?0:1,d:[0,-1,.1],
-      cosO:Math.cos(1.1+.25*nk),cosI:Math.cos(.45),shadow:key?1:0,vol:key?.08:.03,key:key?1:0});
+    lights.push({p:[lx,ly,lz],range:(key?6.5:4.5)*(1+.3*nk),c:r3Sc(warm,(key?6.2:d===1?2.6:1.2)*(1+1.3*nk)),spot:r.key==="bed"?0:1,d:[0,-1,-.15],
+      cosO:Math.cos(1.02+.1*nk),cosI:Math.cos(.22),shadow:key?1:0,vol:key?.08:.03,key:key?1:0});
     if(d<=1)bulbs.push([lx,ly-.05,lz,key?.9:.4]);
     const W=HOME3_WIN[r.key]||[.5,1.2],wx=r.x0+W[0]*RW,wy=y0+(up?1.6:2.0);
-    if(d===0)lights.push({p:[wx,wy,B+.15],range:9,c:r3Sc(r3Lin(mixc([255,226,180],[96,124,180],nk)),4.6*day+.5*nk),spot:1,
-      d:day>.5?[-.35,-.62,.7]:[0,-.5,.86],cosO:Math.cos(.9),cosI:Math.cos(.4),shadow:day>.5?1:0,vol:.07*day});
+    if(d===0)lights.push({p:[wx,wy,B+.15],range:9,c:r3Sc(r3Lin(mixc([255,226,180],[96,124,180],nk)),2.6*day+.5*nk),spot:1,
+      d:day>.5?[-.3,-.85,.42]:[0,-.5,.86],cosO:Math.cos(.85),cosI:Math.cos(.15),shadow:day>.5?1:0,vol:0});
     else if(d===1)lights.push({p:[wx,wy-.4,B+.4],range:3.5,c:r3Sc(r3Lin(mixc([255,230,190],[90,116,170],nk)),1.4*day+.2*nk),vol:0});});
-  lights.push({p:[mx+1.2,y0+3.2,HOME3_F+3.4],range:12,c:r3Sc(r3Lin(mixc([214,220,226],[120,130,170],nk)),1.8*day+.4*nk),spot:1,d:[-.1,-.28,-.95],cosO:Math.cos(.75),cosI:Math.cos(.3),vol:0});
-  const sky=r3Lin(mixc([128,136,146],[38,48,80],nk)),gnd=r3Lin(mixc([96,82,64],[40,40,48],nk)),fog=r3Lin(mixc([60,58,54],[18,22,36],nk));
+  lights.push({p:[mx+.9,y0+2.5,HOME3_F+1.5],range:8,c:r3Sc(r3Lin(mixc([226,220,206],[170,160,170],nk)),1.1*day+4.0*nk),spot:1,d:[-.15,-.1,-.98],cosO:Math.cos(.95),cosI:Math.cos(.35),vol:0});
+  const sky=r3Lin(mixc([146,136,122],[62,56,60],nk)),gnd=r3Lin(mixc([128,100,72],[56,46,40],nk)),fog=r3Lin(mixc([60,58,54],[18,22,36],nk));
   const W0=rooms[cur]?(HOME3_WIN[rooms[cur].key]||[.5,1.2]):[.5,1.2],wx0=(rooms[cur]?rooms[cur].x0:0)+W0[0]*RW;
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
-    sky:[...sky,1.5-.85*nk],gnd:[...gnd,.07-.03*nk],fog:[...r3Sc(fog,.2),.03],acc:[...r3Lin([255,170,90]),1],
+    sky:[...sky,1.5-.85*nk],gnd:[...gnd,.13-.04*nk],fog:[...r3Sc(fog,.2),.03],acc:[...r3Lin([255,170,90]),1],
     win:[wx0-W0[1]/2,y0+1.05,wx0+W0[1]/2,y0+2.15],win2:[B,7,7+Math.min(.999,nk),.8*(.4+.6*day)],sgn:[0,0,0,0],sgn2:[B,0,0,0],
     flm:[0,0,1,0],flm2:[B,0,0,0],tsg:null,tfl:null,M,ot:OT};
 }
@@ -401,7 +403,7 @@ function home3Cam(sz,t){
   const k=1-Math.exp(-dt*(lp?4.2:2.6));
   if(HOME3.cx==null||dt>=1){HOME3.cx=cx;HOME3.cy=yy;}else{HOME3.cx+=(cx-HOME3.cx)*k;HOME3.cy+=(yy-HOME3.cy)*(1-Math.exp(-dt*3));}
   const x=HOME3.cx,y=HOME3.cy,ph=!sz.wide,zoom=lp?.88:1;
-  const c=ph?{eye:[x+.7,y+4.6,10.2*zoom],tgt:[x,y+.8,-.9],fy:.92}:{eye:[x+1.4,y+3.0,9.0*zoom],tgt:[x-.1,y+1.0,-1.0],fy:.8};
+  const c=ph?{eye:[x+.7,y+4.6,10.2*zoom],tgt:[x,y+.8,-.9],fy:.92}:{eye:[x+1.2,y+2.55,7.6*zoom],tgt:[x-.1,y+1.38,-1.0],fy:.8};
   const e=[c.eye[0]+.02*Math.sin(t*.31),c.eye[1]+.012*Math.sin(t*.23),c.eye[2]];
   const P=r3Persp(c.fy,sz.cw/Math.max(1,sz.ch),.1,90);
   return {eye:e,tgt:c.tgt,fy:c.fy,vp:r3Mul(P,r3Look(e,c.tgt,[0,1,0]))};
