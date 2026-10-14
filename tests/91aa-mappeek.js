@@ -23,7 +23,7 @@ TEST_SUITES.push(()=>suite("развилка 5: «НА КАРТУ» со ста�
   navAction();
   ok(G.mode==="dock","НАЗАД вернул на станцию: "+G.mode);
   ok(G.st===st&&!G.mapPeek,"станция та же, подгляд снят");
-  if(typeof $st!=="undefined"&&$st&&$st.classList)ok($st.classList.contains("open"),"экран станции снова открыт");
+  ok($st.classList.contains("open"),"экран станции снова открыт");
   /* без станции карта открывается и закрывается как раньше: в полёт */
   G.mode="system";G.st=null;
   rumourToMap({sx:G.sx+2,sy:G.sy+1,rad:3});
