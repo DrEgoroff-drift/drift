@@ -391,13 +391,16 @@ function plnLandPath(L,x,z,nw){
     const t=clamp((x-rx)/10,0,1),zl=lerp(L.rampZ,0,t*t*(3-2*t));
     w=Math.max(w,(1-plnSmooth(hw*.6,hw*1.4,Math.abs(z-zl)))*plnSmooth(rx-1,rx-.2,x));
   }
+  if(w<=0)return 0;   /* вне тропы шум не нужен: произведение всё равно нуль */
   return w*plnSmooth(.25,.6,plnFbm(x*.9,z*.9,2,L.sd+51)*.5+.5+w*.35);
 }
 /* поля цвета: крупные пятна, соседние — на тон друг от друга, и нигде не одна зелень.
    k — номер кулисы: 0 лента, 1 ложбина, 2 дальний берег, 3 холмы, 4 хребет, 5 и 7 горы, 6 равнина */
 function plnLandCol(L,x,z,h,n,k){
   const sd=L.sd,PAL=PLN_PAL,slope=1-n[1],wy=PLN_LAND.wRel,Fw=L.wl&&L.wl.far||PLN_FAR.terran,sn=Fw.snow,tl=Fw.tree;
-  const v1=plnFbm(x*.05+9,z*.05+2,3,sd+41)*.5+.5,v2=plnFbm(x*.011+4,z*.011+6,3,sd+42)*.5+.5;
+  /* поля шума — только те, что кулиса читает: v1 нужен всем, кроме равнины (6), v2 — холмам и дальше (3…7);
+     вершин на ленте тысячи, а три лишних шума на каждой — десятки миллисекунд на кадре захода */
+  const v1=k===6?0:plnFbm(x*.05+9,z*.05+2,3,sd+41)*.5+.5,v2=k>=3?plnFbm(x*.011+4,z*.011+6,3,sd+42)*.5+.5:0;
   let c;
   if(k===0){
     const va=plnFbm(x*.045+1,z*.07+7,3,sd+43)*.5+.5,vb=plnFbm(x*.09+5,z*.13+3,2,sd+44)*.5+.5;
