@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 569 · top-level symbols: 8242
+Files: 570 · top-level symbols: 8243
 
 ## SYMBOLS
 
@@ -2903,6 +2903,7 @@ cave3FarSite                 src/22de-cave-pln-far.js:12-31
 cave3FarVoid                 src/22de-cave-pln-far.js:34-48
 cave3Field                   src/22da-cave-pln-rock.js:50-125
 cave3Flute                   src/22dc-cave-pln-dress.js:169-181
+cave3FootY                   src/22dg-cave-pln-life.js:16
 cave3Frame                   src/22d-cave-pln.js:91-218
 cave3GapBuild                src/22dh-cave-pln-gap.js:52-57
 cave3GapDeep                 src/22dh-cave-pln-gap.js:59-63
@@ -2929,15 +2930,15 @@ cave3LakeFrame               src/22dd-cave-pln-lake.js:52-80
 cave3LakeGeo                 src/22dd-cave-pln-lake.js:9-49
 cave3Lens                    src/22d-cave-pln.js:29-42
 cave3LifeDrop                src/22dg-cave-pln-life.js:8-12
-cave3LifeFoot                src/22dg-cave-pln-life.js:14-17
-cave3LifeFrame               src/22dg-cave-pln-life.js:18-93
+cave3LifeFoot                src/22dg-cave-pln-life.js:17-24
+cave3LifeFrame               src/22dg-cave-pln-life.js:25-100
 cave3Lobes                   src/22dc-cave-pln-dress.js:88
 cave3Log                     src/22db-cave-pln-light.js:15
 cave3ManShare                src/22d-cave-pln.js:48
 cave3Mite                    src/22dc-cave-pln-dress.js:193-200
 cave3Mouth                   src/22d-cave-pln.js:84-89
 cave3N3                      src/22da-cave-pln-rock.js:40-47
-cave3NearShift               src/22dg-cave-pln-life.js:97-106
+cave3NearShift               src/22dg-cave-pln-life.js:104-113
 cave3Nrm                     src/22dc-cave-pln-dress.js:40-43
 cave3Over                    src/22d-cave-pln.js:227-241
 cave3Paint                   src/22da-cave-pln-rock.js:217-237
@@ -9570,7 +9571,7 @@ zoomTo                       src/15-input.js:358
 ## src/22df-cave-pln-ink.js · 9 KB
   · пещера на движке: что лежит в камне разреза (M630b, проход 4):1
 
-## src/22dg-cave-pln-life.js · 6 KB
+## src/22dg-cave-pln-life.js · 7 KB
 
 ## src/22dh-cave-pln-gap.js · 11 KB
 
@@ -9937,6 +9938,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91a4-delayclamp.js · 1 KB
 
 ## tests/91a5-tapstation.js · 1 KB
+
+## tests/91a6-cavefoot.js · 1 KB
 
 ## tests/91qa-marks-act.js · 31 KB
   · ориентиры как места действия (M627b):1
