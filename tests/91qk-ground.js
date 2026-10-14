@@ -31,3 +31,22 @@ TEST_SUITES.push(()=>suite("опора: копёр берёт склон ног�
   ok(!nb,"копёр не берёт склон: ноги "+bad.ноги+", распорка в грунте "+bad.распорка+", кольцо выше ствола "+bad.ствол+" из "+n+"; первое — "+worst);
   resetWorld();
 }));
+
+/* Человек на поверхности: ноги ставит 2D-земля (groundAt по таблице tr.h, 21-mode-surface), а рисует
+   3D-лента plnLandRibAt — с fbm, скалами, подъёмом и прудами поверх той же таблицы (21pf). Где они
+   разошлись, человек висит над травой или стоит по щиколотку в камне. Закон: при z=0 (там, где он
+   ходит) расхождение не больше 15 см — по всей ширине, кроме воды. */
+TEST_SUITES.push(()=>suite("опора: человек ступает по той земле, что нарисована",{tier:"node"},()=>{
+  resetWorld();
+  const p=landOnTestPlanet(),tr=G.surf.tr,L=plnLandMake(tr,p,G.sx),Wt=waterOf(tr,p);
+  let n=0,up=0,down=0,worst=0,where=0;
+  for(let xu=200;xu<tr.N*tr.step-200;xu+=37){
+    if(Wt&&xu>Wt.x0-40&&xu<Wt.x1+40)continue;
+    const feet=(tr.padY-groundAt(tr,xu))/PLN_M,rib=plnLandRibAt(L,xu/PLN_M,0),d=feet-rib;
+    n++;if(d>.15)up++;else if(d<-.15)down++;
+    if(Math.abs(d)>Math.abs(worst)){worst=d;where=xu;}
+  }
+  ok(n>=50,"мест проверено: "+n);
+  ok(!up&&!down,"человек висит в "+up+" и тонет в "+down+" местах из "+n+"; худшее — "+(worst>0?"висит":"в земле")+" на "+Math.abs(worst).toFixed(2)+" м у x="+where);
+  resetWorld();
+}));

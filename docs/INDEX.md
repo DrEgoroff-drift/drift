@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 579 · top-level symbols: 8306
+Files: 582 · top-level symbols: 8310
 
 ## SYMBOLS
 
@@ -718,6 +718,7 @@ GEO_JUNK                     tests/90b2-geom.js:30
 GEO_KIND                     src/18b-geology.js:13-29
 GEO_SIDE                     tests/90b2-geom.js:29
 GEO_TPL                      src/18b-geology.js:31-44
+GEO_WORLD                    tests/90b3-geom-world.js:9-15
 GEO_Z                        tests/90b2-geom.js:28
 GEST                         src/17h-sys-gesture.js:23
 GEST_POST                    src/17h-sys-gesture.js:21
@@ -4211,7 +4212,7 @@ geoArea                      tests/90b2-geom.js:36
 geoAt                        src/18b-geology.js:73-77
 geoBoxy                      tests/90b2-geom.js:352-358
 geoBtns                      tests/90b2-geom.js:858
-geoCalm                      tests/90b2-geom.js:868-956
+geoCalm                      tests/90b2-geom.js:868-958
 geoClipPoly                  tests/90b2-geom.js:44
 geoCol                       tests/90b2-geom.js:73-84
 geoCompose                   tests/90b2-geom.js:679-704
@@ -4223,7 +4224,7 @@ geoExtra                     tests/90b2-geom.js:223-245
 geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geoFin                       tests/90b2-geom.js:58
-geoFontProbe                 tests/90b2-geom.js:958-967
+geoFontProbe                 tests/90b2-geom.js:960-969
 geoFrame                     tests/90b2-geom.js:309-312
 geoFrame1                    tests/90b2-geom.js:313-329
 geoHang                      tests/90b2-geom.js:252
@@ -4250,7 +4251,7 @@ geoRec                       tests/90b2-geom.js:178-218
 geoRich                      tests/90b2-geom.js:824
 geoRoadFrame                 tests/90b2-geom.js:333-348
 geoRs                        tests/90b2-geom.js:69
-geoRun                       tests/90b2-geom.js:878-956
+geoRun                       tests/90b2-geom.js:878-958
 geoSat                       tests/90b2-geom.js:51
 geoScreens                   tests/90b2-geom.js:830-856
 geoSelf                      tests/90b2-geom.js:707-820
@@ -4264,6 +4265,9 @@ geoTable                     tests/90b2-geom.js:829
 geoText                      tests/90b2-geom.js:133-147
 geoWho                       tests/90b2-geom.js:369-378
 geoWob                       src/18b-geology.js:80-82
+geoWorld                     tests/90b3-geom-world.js:43-57
+geoWorldBox                  tests/90b3-geom-world.js:17-28
+geoWorldOne                  tests/90b3-geom-world.js:29-42
 geologyOf                    src/18b-geology.js:45-71
 gestAge                      src/17h-sys-gesture.js:44
 gestArrive                   src/17h-sys-gesture.js:32-40
@@ -9994,6 +9998,9 @@ zoomTo                       src/15-input.js:358
 ## tests/90b2-geom.js · 86 KB
   · Зрение: экран в числах и неравенствах (27.09.2026):1
 
+## tests/90b3-geom-world.js · 4 KB
+  · Зрение 2.0: мир (закон «масштаб»):1
+
 ## tests/90c-detect-laws.js · 23 KB
   · детекторы, часть вторая: законы (M443):1
   · сами детекторы: ctx → нарушения:91
@@ -10041,6 +10048,12 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qi-water.js · 4 KB
   · одна вода везде (M634):1
+
+## tests/91qj-pace.js · 2 KB
+  · темп мира: фон не носится (Зрение 2.0, закон «темп»):1
+
+## tests/91qk-ground.js · 4 KB
+  · тела на земле (Зрение 2.0, закон «опора»):1
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1

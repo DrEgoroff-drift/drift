@@ -28,7 +28,7 @@ NOWIN = 0x08000000          # CREATE_NO_WINDOW
 TMP = os.path.join(os.environ.get("TEMP", HOMED), "drift-lab")
 LIGHT_N, WIN_N = 6, 4
 TMO = {"node": 300, "vision": 300, "light": 300, "mobile": 420, "tall": 420, "wide": 420,
-       "heavy": 600, "solo": 900, "tour": 900, "hunt": 300}
+       "heavy": 600, "solo": 900, "tour": 900, "frames": 600, "hunt": 300}
 
 def sh(cmd, cwd=None, timeout=None):
     return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace",
@@ -275,6 +275,7 @@ def main():
         units += [page_unit(ctx, "solo", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in solo]
         units.append(text_unit(ctx, "tour", "", [sys.executable, os.path.join(src, "docs", "tour.py"), "--n", "600",
                                                   "--port", "9690", "--out", os.path.join(tmp, "tour.png")], tour_post))
+        units.append(text_unit(ctx, "frames", "", [sys.executable, os.path.join(HERE, "jank.py"), "--port", "9692", "--root", src]))   # длинные кадры на настоящей видеокарте
     units = [u for u in units if lab.unit_id(u["kind"], u["arg"]) not in skip]
     if a.hunt_only: units = []
 
