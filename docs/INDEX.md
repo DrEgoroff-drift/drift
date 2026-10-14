@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 574 · top-level symbols: 8251
+Files: 575 · top-level symbols: 8251
 
 ## SYMBOLS
 
@@ -7852,7 +7852,7 @@ theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:355-445
+tickDrones                   src/12-economy.js:355-449
 tickLaunchHold               src/21-mode-surface.js:660-673
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
@@ -8598,7 +8598,7 @@ zoomTo                       src/15-input.js:358
 ## src/11z-misclosure.js · 6 KB
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12-economy.js · 31 KB
+## src/12-economy.js · 32 KB
   · живой рынок:1
   · дроны:217
 
@@ -10003,6 +10003,8 @@ zoomTo                       src/15-input.js:358
   · причальная полоса не перебивает посадку (0.493.4):1
 
 ## tests/91zzzw6-dep-room.js · 3 KB
+
+## tests/91zzzw7-drone-ticks.js · 2 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

@@ -24437,8 +24437,12 @@ function tickDrones(){
     const T=droneTripMs(d);
     /* «Авто-сбыт» смотрителя: тот же множитель, что и был — быстрее оборот */
     const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1)*droneQuirk(d).rate;   /* причуда машины (M485) */
-    const capMs=Math.max(0,Math.min(now-(d.lastMs||now),cap));
-    const from=now-capMs;                 /* дальше суток не догоняем */
+    /* дальше суток не догоняем — от СЕЙЧАС, а не от прошлого такта: раньше
+       from=lastMs, такт живого кадра идёт каждые 3 с, и начало круга каждый
+       раз подтягивалось к такту — круг в 25+ с не кончался никогда, дрон
+       не возил ни единицы (проба · экономика, 0.493.5; суть «дроны никуда
+       не летали» 30.08 была и в этом, не только в блокаде) */
+    const from=now-cap;
     if(d.t0<from)d.t0=from;
     if(d.down&&d.down<from)d.down=0;
     let guard=DRONE_MAX_CATCHUP,fixed=false,oldBreaks=0;
