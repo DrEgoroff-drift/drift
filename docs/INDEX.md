@@ -229,7 +229,7 @@ CAST_MIN_ALT                 src/19c1-cast.js:46
 CAST_SOFT                    src/19c1-cast.js:45
 CAVE3                        src/22d-cave-pln.js:12
 CAVE3_AMB_THREAD             src/22de-cave-pln-far.js:144
-CAVE3_BLOOM                  src/22d-cave-pln.js:263
+CAVE3_BLOOM                  src/22d-cave-pln.js:273
 CAVE3_CH                     src/22da-cave-pln-rock.js:17
 CAVE3_CUT                    src/22da-cave-pln-rock.js:32
 CAVE3_DC                     src/22dc-cave-pln-dress.js:11
@@ -243,24 +243,24 @@ CAVE3_FIELD0                 src/22de-cave-pln-far.js:55
 CAVE3_FOOT_Z                 src/22dg-cave-pln-life.js:16
 CAVE3_GAP                    src/22dh-cave-pln-gap.js:7
 CAVE3_GPU                    src/22db-cave-pln-light.js:8
-CAVE3_HUD                    src/22d-cave-pln.js:378
+CAVE3_HUD                    src/22d-cave-pln.js:388
 CAVE3_INK                    src/22da-cave-pln-rock.js:228
 CAVE3_INKS                   src/22df-cave-pln-ink.js:9
 CAVE3_K                      src/22db-cave-pln-light.js:11
-CAVE3_LAMP                   src/22d-cave-pln.js:221
+CAVE3_LAMP                   src/22d-cave-pln.js:231
 CAVE3_LENS                   src/22d-cave-pln.js:16
 CAVE3_LIFE                   src/22dg-cave-pln-life.js:6
 CAVE3_MAT                    src/22da-cave-pln-rock.js:369
-CAVE3_OLD_DRAW               src/22d-cave-pln.js:244
-CAVE3_OLD_ENTER              src/22d-cave-pln.js:370
-CAVE3_OLD_EXIT               src/22d-cave-pln.js:271
-CAVE3_OLD_FLOOR              src/22d-cave-pln.js:379
-CAVE3_OLD_HSURF              src/22d-cave-pln.js:302
-CAVE3_OLD_HUD                src/22d-cave-pln.js:388
-CAVE3_OLD_NAV                src/22d-cave-pln.js:265
+CAVE3_OLD_DRAW               src/22d-cave-pln.js:254
+CAVE3_OLD_ENTER              src/22d-cave-pln.js:380
+CAVE3_OLD_EXIT               src/22d-cave-pln.js:281
+CAVE3_OLD_FLOOR              src/22d-cave-pln.js:389
+CAVE3_OLD_HSURF              src/22d-cave-pln.js:312
+CAVE3_OLD_HUD                src/22d-cave-pln.js:398
+CAVE3_OLD_NAV                src/22d-cave-pln.js:275
 CAVE3_STY                    src/22da-cave-pln-rock.js:20-28
 CAVE3_VAULT                  src/22da-cave-pln-rock.js:145
-CAVE3_W                      src/22d-cave-pln.js:285
+CAVE3_W                      src/22d-cave-pln.js:295
 CAVE3_WGSL_COMMON            src/22dbw-cave-pln-wgsl.js:8
 CAVE3_WGSL_POST              src/22dbx-cave-pln-post.js:4
 CAVE3_WGSL_SCENE             src/22dbw-cave-pln-wgsl.js:139
@@ -2876,7 +2876,7 @@ cave3AmberGeo                src/22de-cave-pln-far.js:145-167
 cave3Band                    src/22dc-cave-pln-dress.js:61-86
 cave3BeastZ                  src/22dg-cave-pln-life.js:30
 cave3Bells                   src/22dc-cave-pln-dress.js:133-167
-cave3Biter                   src/22d-cave-pln.js:359-368
+cave3Biter                   src/22d-cave-pln.js:369-378
 cave3Caps                    src/22dc-cave-pln-dress.js:91-130
 cave3Chunk                   src/22da-cave-pln-rock.js:256-367
 cave3Chunks                  src/22da-cave-pln-rock.js:372-398
@@ -2886,27 +2886,27 @@ cave3Cream                   src/22dc-cave-pln-dress.js:51-58
 cave3Crystal                 src/22dc-cave-pln-dress.js:241-244
 cave3DayBox                  src/22db-cave-pln-light.js:22-33
 cave3Den                     src/22da-cave-pln-rock.js:181-206
-cave3DiveFloor               src/22d-cave-pln.js:46
-cave3DiveW                   src/22d-cave-pln.js:45
+cave3DiveFrame               src/22d-cave-pln.js:52-56
+cave3DiveW                   src/22d-cave-pln.js:48
 cave3Down                    src/22da-cave-pln-rock.js:208-214
 cave3DressBin                src/22dc-cave-pln-dress.js:316-379
 cave3DressCryst              src/22dc-cave-pln-dress.js:381-400
 cave3DressFrame              src/22dc-cave-pln-dress.js:402-445
 cave3DressItems              src/22dc-cave-pln-dress.js:256-278
 cave3DripSty                 src/22dc-cave-pln-dress.js:26-29
-cave3Events                  src/22d-cave-pln.js:54-67
+cave3Events                  src/22d-cave-pln.js:64-77
 cave3FarDress                src/22de-cave-pln-far.js:109-119
 cave3FarFrame                src/22de-cave-pln-far.js:121-141
-cave3FarOk                   src/22d-cave-pln.js:22
+cave3FarOk                   src/22d-cave-pln.js:24
 cave3FarRock                 src/22de-cave-pln-far.js:64-107
-cave3FarSeen                 src/22d-cave-pln.js:71
-cave3FarShift                src/22d-cave-pln.js:72-81
+cave3FarSeen                 src/22d-cave-pln.js:81
+cave3FarShift                src/22d-cave-pln.js:82-91
 cave3FarSite                 src/22de-cave-pln-far.js:12-31
 cave3FarVoid                 src/22de-cave-pln-far.js:34-48
 cave3Field                   src/22da-cave-pln-rock.js:50-125
 cave3Floor                   src/22da-cave-pln-rock.js:217-226
 cave3Flute                   src/22dc-cave-pln-dress.js:169-181
-cave3Frame                   src/22d-cave-pln.js:91-218
+cave3Frame                   src/22d-cave-pln.js:101-228
 cave3GapBuild                src/22dh-cave-pln-gap.js:52-57
 cave3GapDeep                 src/22dh-cave-pln-gap.js:59-63
 cave3GapIce                  src/22dh-cave-pln-gap.js:152-179
@@ -2924,33 +2924,33 @@ cave3GpuTier                 src/22db-cave-pln-light.js:52-93
 cave3H3                      src/22da-cave-pln-rock.js:35-39
 cave3Hang                    src/22dc-cave-pln-dress.js:183-191
 cave3Hex                     src/22da-cave-pln-rock.js:30
-cave3InFrame                 src/22d-cave-pln.js:293
+cave3InFrame                 src/22d-cave-pln.js:303
 cave3InkBuild                src/22df-cave-pln-ink.js:61-146
 cave3InkItems                src/22df-cave-pln-ink.js:15-58
 cave3InkSolid                src/22df-cave-pln-ink.js:12
 cave3LakeFrame               src/22dd-cave-pln-lake.js:52-80
 cave3LakeGeo                 src/22dd-cave-pln-lake.js:9-49
-cave3Lens                    src/22d-cave-pln.js:29-42
+cave3Lens                    src/22d-cave-pln.js:31-45
 cave3LifeDrop                src/22dg-cave-pln-life.js:8-12
 cave3LifeFoot                src/22dg-cave-pln-life.js:17-24
 cave3LifeFrame               src/22dg-cave-pln-life.js:31-105
 cave3Lobes                   src/22dc-cave-pln-dress.js:88
 cave3Log                     src/22db-cave-pln-light.js:15
-cave3ManShare                src/22d-cave-pln.js:48
+cave3ManShare                src/22d-cave-pln.js:58
 cave3Mite                    src/22dc-cave-pln-dress.js:193-200
-cave3Mouth                   src/22d-cave-pln.js:84-89
+cave3Mouth                   src/22d-cave-pln.js:94-99
 cave3N3                      src/22da-cave-pln-rock.js:40-47
 cave3NearShift               src/22dg-cave-pln-life.js:109-118
 cave3Nrm                     src/22dc-cave-pln-dress.js:40-43
-cave3Over                    src/22d-cave-pln.js:227-241
+cave3Over                    src/22d-cave-pln.js:237-251
 cave3Paint                   src/22da-cave-pln-rock.js:229-249
 cave3Persp                   src/22db-cave-pln-light.js:16-20
-cave3Pj                      src/22d-cave-pln.js:288-292
+cave3Pj                      src/22d-cave-pln.js:298-302
 cave3PlantZs                 src/22dg-cave-pln-life.js:26-29
-cave3Reach                   src/22d-cave-pln.js:50
+cave3Reach                   src/22d-cave-pln.js:60
 cave3Samp                    src/22da-cave-pln-rock.js:127-132
 cave3Sd                      src/22da-cave-pln-rock.js:134-137
-cave3Spots                   src/22d-cave-pln.js:295-301
+cave3Spots                   src/22d-cave-pln.js:305-311
 cave3StyKind                 src/22da-cave-pln-rock.js:26-28
 cave3Up                      src/22dc-cave-pln-dress.js:32-38
 cave3VaultCut                src/22da-cave-pln-rock.js:146
@@ -2959,7 +2959,7 @@ cave3VaultPlan               src/22da-cave-pln-rock.js:147-174
 cave3Veil                    src/22dc-cave-pln-dress.js:217-239
 cave3VeinBody                src/22dc-cave-pln-dress.js:283-314
 cave3WallZ                   src/22dh-cave-pln-gap.js:44-50
-cave3WordsOn                 src/22d-cave-pln.js:286
+cave3WordsOn                 src/22d-cave-pln.js:296
 cave3Zd                      src/22dc-cave-pln-dress.js:45-48
 caveBody                     src/21e1-surface-world.js:543-592
 caveBoxFree                  src/22-mode-cave.js:239-243
@@ -9552,7 +9552,7 @@ zoomTo                       src/15-input.js:358
 ## src/22c-cave-gpu.js · 29 KB
   · пещера на видеокарте: темнота, фонарь, тени, пыль (G7):1
 
-## src/22d-cave-pln.js · 28 KB
+## src/22d-cave-pln.js · 29 KB
   · пещера на движке: кадр и переключатель (M630a):1
 
 ## src/22da-cave-pln-rock.js · 26 KB
