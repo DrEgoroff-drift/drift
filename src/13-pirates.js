@@ -47,6 +47,10 @@ function spawnPirates(){
   /* пиратский король (M387): бароны сговорились, и в его области их вдвое */
   if(typeof secPirateMul==="function")n=Math.floor(n*secPirateMul(G.sx,G.sy));
   if(typeof railSealPirates==="function")n=railSealPirates(n);   /* пломба Орднунга (M508) */
+  /* торговец без орудия (так задумано: оружие 1150 кр при 600 на старте) в тихом
+     кольце вокруг дома не встречает налётчиков: драться нечем, и подсказки к бою
+     нет. Заставы держав (npcSpawn) — не налётчики и ниже не трогаются */
+  if(!stat().armed&&danger<.1)n=0;
   n=Math.min(n,ARMED_CAP);   /* потолок вооружённых (§5, M361) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
