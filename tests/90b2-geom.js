@@ -949,6 +949,8 @@ function geoRun(o){
     /* слепые пятна: окна страницы, которых зрение ни разу не видело открытыми */
     const saw=new Set();for(const s of out.seen)for(const id of String(s[8]).split(","))if(id)saw.add(id);
     out.unseen=[...document.querySelectorAll(".scr[id]")].map(e=>e.id).filter(id=>!saw.has(id));
+    /* Зрение 2.0 (90b3): мир на ПК-окнах — шахта и пещера при K=1 и K=2 */
+    if(vp.w>=1280&&!vp.touch&&vp.dpr<=1.5){const t=performance.now();geoWorld(out);clk("world",t);}
   }catch(e){out.errs.push("обход: "+(e&&e.stack||e));}
   finally{Object.assign(window,keep);if(tout)tout.style.display=tdisp;}
   out.ms=Math.round(performance.now()-t0);if(GEO.tm)for(const k in GEO.tm)out.tm["f."+k]=GEO.tm[k];GEO.tm=null;
