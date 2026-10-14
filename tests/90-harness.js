@@ -44,6 +44,7 @@ let SHARD_H=0,SHARD_L=0,SKIPPED_SHARD=0,SHARD_FREE=false;   /* SHARD_FREE: на�
            "browser" пиксели, вёрстка, звук, живой кадр: только Хром;
            "heavy"   тяжёлые сети: только -Full (и лаборатория по одному);
            "probe"   стенд, печатает числа экономики: только -Probe.
+           "hunt"    охота лаборатории по зерну: только ?only=охота (lab/lab-local.py).
    win   — в каком окне набор вообще имеет смысл: "phone" (innerWidth ≤ 760,
            test.ps1 -Mobile), "wide" (не телефон), "ref" (окно эталона кадра,
            1280×800 → полотно ~1248×641). В чужом окне набор не идёт вовсе и
@@ -85,7 +86,7 @@ function suiteGroup(name){
    "node"; картинка, интерфейс и сквозные объявляют себя "browser" */
 const TEST_NODE=typeof globalThis.TEST_NODE!=="undefined"&&!!globalThis.TEST_NODE;
 let SKIPPED_NODE=0,SKIPPED_WIN=0;
-const SUITE_TIERS={node:1,browser:1,heavy:1,probe:1};
+const SUITE_TIERS={node:1,browser:1,heavy:1,probe:1,hunt:1};
 const SUITE_WINS={phone:1,wide:1,ref:1};
 const SUITE_KEYS={tier:1,win:1,stage:1};
 /* имя → опции, видно ДО всех отсевов: по нему сверяются опции и считается раздача */
@@ -117,6 +118,7 @@ function suite(name,a,b){
   if(TEST_ONLY&&!TEST_ONLY_ANY.some(s=>name.includes(s)))return;
   if(!TEST_FULL&&!sel&&tier==="heavy"){SKIPPED_SLOW++;return;}
   if(tier==="probe"&&!TEST_PROBE&&!sel){SKIPPED_PROBE++;return;}
+  if(tier==="hunt"&&!sel)return;   /* охота лаборатории (91zzzzzzzzb-hunt): только по ?only=охота, с зерном ?fseed */
   if(TEST_SHARD&&!SHARD_FREE){const idx=tier==="heavy"?SHARD_H++:SHARD_L++;
     if(idx%TEST_SHARD.n!==TEST_SHARD.i){SKIPPED_SHARD++;return;}}
   if(o.win&&!suiteWin(o.win)){SKIPPED_WIN++;return;}

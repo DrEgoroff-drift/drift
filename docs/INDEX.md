@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 577 · top-level symbols: 8273
+Files: 578 · top-level symbols: 8274
 
 ## SYMBOLS
 
@@ -68,7 +68,7 @@ ALBUM_FX                     src/25g1-album-fx.js:14-21
 ALBUM_MAX                    src/25g-postcard.js:629
 ALBUM_VIG                    src/25g1-album-fx.js:28
 ALLY_THR                     src/12a-crew.js:702
-ALL_NAMES                    tests/90-harness.js:93
+ALL_NAMES                    tests/90-harness.js:94
 AMMO_BATCH                   src/16b-missile.js:59
 AMMO_COST                    src/16b-missile.js:58
 AMMO_KEYS                    src/02-world.js:131
@@ -793,7 +793,7 @@ GPU                          src/08b-gpu.js:8
 GPU_BLEND                    src/08c-gpu-kit.js:12-24
 GPU_CH_R                     src/18c-chunks.js:185
 GPU_CVTEX_CAP                src/08c-gpu-kit.js:68
-GPU_DROP_WHY                 tests/90-harness.js:104
+GPU_DROP_WHY                 tests/90-harness.js:105
 GPU_FLD                      src/08b0-gpu-pipe.js:33
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:348
 GPU_FRONT_LIKE               src/08b-gpu.js:527
@@ -877,7 +877,7 @@ GUN_NICK                     src/05b-guns.js:107
 GUN_RANGE0                   src/05c-arms.js:67
 GWX                          src/19cc-gpu-air.js:215
 GWX_WGSL                     src/19cc-gpu-air.js:216
-G_BOOT_KEYS                  tests/90-harness.js:209
+G_BOOT_KEYS                  tests/90-harness.js:211
 GcCtx                        src/08ca-gpu-canvas.js:97-244
 GcGrad                       src/08ca-gpu-canvas.js:69-87
 GcPat                        src/08cab-gpu-pattern.js:11-14
@@ -1121,6 +1121,7 @@ HULL_HELD_MS                 src/28-loop.js:8
 HULL_MAKER                   src/03a-hull-maker.js:23-72
 HULL_PER_ALLOY               src/21b1-base-pay.js:116
 HULL_ROLE                    src/03f-hull-role.js:17-30
+HUNT_N                       tests/91zzzzzzzzb-hunt.js:14
 HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19-23
@@ -1353,7 +1354,7 @@ NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
 NEED_WIN                     src/12aa-need.js:23
 NEON                         src/17k0-neon.js:8
-NET_FROM                     tests/90-harness.js:479
+NET_FROM                     tests/90-harness.js:481
 NET_TEST                     src/01-core.js:10
 NEWS_ARC                     src/12an-chron-news.js:182-201
 NEWS_ARC_END                 src/12an-chron-news.js:222-242
@@ -1404,7 +1405,7 @@ OPIS_HW                      src/27j-ui-opis.js:70
 OPIS_KIT                     src/27j-ui-opis.js:62-69
 OPIS_SHIP                    src/27j-ui-opis.js:44-61
 OPIS_TABS                    src/27j-ui-opis.js:37
-OPTS_BOOT                    tests/90-harness.js:226
+OPTS_BOOT                    tests/90-harness.js:228
 OPT_TABS                     src/27-ui-ship.js:334
 ORDERS                       src/12a-crew.js:149-155
 ORDER_WIN                    src/12aa-need.js:76
@@ -1822,7 +1823,7 @@ RES                          src/02-world.js:2-88
 RESCUE_ASK_GAP               src/16c-rescue.js:25
 RESCUE_FUEL                  src/16c-rescue.js:22
 RESCUE_ICON                  src/16c-rescue.js:598-604
-RESET_ABIL0                  tests/90-harness.js:260
+RESET_ABIL0                  tests/90-harness.js:262
 RES_AUTO                     src/08-state.js:193
 RES_DOWN_K                   src/28-loop.js:233
 RES_DOWN_WIN                 src/28-loop.js:234
@@ -2000,10 +2001,10 @@ SHUT_SW                      src/17f-sys-traffic.js:121
 SH_DX                        src/03b-hull-paint.js:175
 SIG                          src/22c-cave-gpu.js:37
 SIGN_HOLD                    src/21-mode-surface.js:199
-SKIPPED_NODE                 tests/90-harness.js:87
-SKIPPED_PROBE                tests/90-harness.js:59
-SKIPPED_SKIP                 tests/90-harness.js:65
-SKIPPED_SLOW                 tests/90-harness.js:61
+SKIPPED_NODE                 tests/90-harness.js:88
+SKIPPED_PROBE                tests/90-harness.js:60
+SKIPPED_SKIP                 tests/90-harness.js:66
+SKIPPED_SLOW                 tests/90-harness.js:62
 SKY_BULL                     src/11ak-skywatch.js:27
 SKY_HOR                      src/11ak-skywatch.js:80
 SKY_KINDS                    src/11ak-skywatch.js:29-33
@@ -2098,11 +2099,11 @@ ST_SPIN                      src/17c3-station-live.js:54
 ST_TYPES                     src/06-galaxy.js:50-68
 SUB_FEATS                    src/05b3-sub.js:11
 SUB_UP                       src/05b3-sub.js:10
-SUITE_KEYS                   tests/90-harness.js:90
-SUITE_OPTS                   tests/90-harness.js:92
-SUITE_SEQ                    tests/90-harness.js:77
-SUITE_TIERS                  tests/90-harness.js:88
-SUITE_WINS                   tests/90-harness.js:89
+SUITE_KEYS                   tests/90-harness.js:91
+SUITE_OPTS                   tests/90-harness.js:93
+SUITE_SEQ                    tests/90-harness.js:78
+SUITE_TIERS                  tests/90-harness.js:89
+SUITE_WINS                   tests/90-harness.js:90
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:159
@@ -2147,21 +2148,21 @@ TAU                          src/22dbw-cave-pln-wgsl.js:39
 TECH                         src/04-mods.js:14-49
 TELL_SFX                     src/11-log.js:62
 TEST                         tests/90-harness.js:10
-TEST_CHRON                   tests/90-harness.js:257
+TEST_CHRON                   tests/90-harness.js:259
 TEST_FILES                   tests/90-harness.js:20
-TEST_FULL                    tests/90-harness.js:60
-TEST_HOUR                    tests/90-harness.js:236
-TEST_NODE                    tests/90-harness.js:86
+TEST_FULL                    tests/90-harness.js:61
+TEST_HOUR                    tests/90-harness.js:238
+TEST_NODE                    tests/90-harness.js:87
 TEST_ONLY                    tests/90-harness.js:14
 TEST_ONLY_ANY                tests/90-harness.js:16
-TEST_PICK                    tests/90-harness.js:76
-TEST_PROBE                   tests/90-harness.js:58
-TEST_SEED                    tests/90-harness.js:235
+TEST_PICK                    tests/90-harness.js:77
+TEST_PROBE                   tests/90-harness.js:59
+TEST_SEED                    tests/90-harness.js:237
 TEST_SHARD                   tests/90-harness.js:30
-TEST_SHUFFLE                 tests/90-harness.js:70
-TEST_SKIP                    tests/90-harness.js:64
-TEST_SUITES                  tests/90-harness.js:586
-TEST_T0                      tests/90-harness.js:237
+TEST_SHUFFLE                 tests/90-harness.js:71
+TEST_SKIP                    tests/90-harness.js:65
+TEST_SUITES                  tests/90-harness.js:588
+TEST_T0                      tests/90-harness.js:239
 TEST_TIMES                   tests/99-run.js:18
 TETHER_LIFE                  src/13a-guns.js:40
 TETHER_PULL                  src/13a-guns.js:41
@@ -2193,9 +2194,9 @@ TRAINEE_LINES                src/11ac-trainee.js:14-18
 TRAINEE_NAMES                src/11ac-trainee.js:13
 TYPES                        src/02-world.js:168-191
 UIK                          src/08-state.js:20
-UI_BOOT                      tests/90-harness.js:218
+UI_BOOT                      tests/90-harness.js:220
 UI_SCALE_APPLY               src/27-ui-ship.js:367
-UI_SEL_BOOT                  tests/90-harness.js:253
+UI_SEL_BOOT                  tests/90-harness.js:255
 UNIQ                         src/21b1-base-pay.js:35-44
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
@@ -2427,7 +2428,7 @@ bScreen                      src/21aa-base-rooms.js:280-295
 bWall                        src/21aa-base-rooms.js:211-266
 bWorker                      src/21aa-base-rooms.js:367-429
 bakeAt                       src/20ab-poi-gpu.js:148-153
-bakeIdle                     tests/90-harness.js:436-443
+bakeIdle                     tests/90-harness.js:438-445
 bakeKeep                     src/08c-gpu-kit.js:76-81
 bakePut                      src/20ab-poi-gpu.js:155
 bakeRect                     src/20ab-poi-gpu.js:154
@@ -3283,7 +3284,7 @@ coopSpirit                   src/12aj-coop.js:117
 coopSpiritAdd                src/12aj-coop.js:120-124
 coopSpiritRu                 src/12aj-coop.js:118
 coopSpread                   src/12aj-coop.js:70
-coopStamp                    tests/90-harness.js:591-594
+coopStamp                    tests/90-harness.js:593-596
 coopVisitReset               src/12aj-coop.js:62
 cosmChimeName                src/12va-wander-cosm.js:109
 cosmChimePlay                src/12va-wander-cosm.js:110
@@ -3893,7 +3894,7 @@ epiPerson                    src/12ap-notebook.js:50-54
 epiReached                   src/12ap-notebook.js:85-89
 epiWitness                   src/12ap-notebook.js:39-47
 episodeWith                  src/12ap-notebook.js:113-116
-eq                           tests/90-harness.js:194
+eq                           tests/90-harness.js:196
 ethBandAt                    src/25l-post-ether.js:53
 ethCard                      src/25l-post-ether.js:30
 ethOn                        src/25l-post-ether.js:52
@@ -5273,7 +5274,7 @@ labCount                     src/12h-relic.js:16-24
 labStaffed                   src/12h-relic.js:27-31
 labWorking                   src/12h-relic.js:32-42
 labelW                       src/12ai-fleet.js:134
-landOnTestPlanet             tests/90-harness.js:420-426
+landOnTestPlanet             tests/90-harness.js:422-428
 landStartY                   src/19-mode-landing.js:41-46
 landerGearTick               src/19f-lander.js:15-23
 landerLen                    src/19f-lander.js:11
@@ -5747,7 +5748,7 @@ natStormTick                 src/12az-fx-nat.js:28-33
 natSwarmHere                 src/12az-fx-nat.js:39
 natSwarmTick                 src/12az-fx-nat.js:50-65
 navAction                    src/15-input.js:286-303
-near                         tests/90-harness.js:195
+near                         tests/90-harness.js:197
 nearestPOI                   src/20a-poi.js:243-248
 nearestStation               src/12-economy.js:301-316
 nebula                       src/16-flight.js:82-96
@@ -5803,7 +5804,7 @@ noise2                       src/01-core.js:119-123
 noise3                       src/24ba-belt-gpu.js:23-31
 noiseBuf                     src/09-audio.js:78
 normsOf                      src/12ab-hold.js:97-105
-note                         tests/90-harness.js:102
+note                         tests/90-harness.js:103
 noteAll                      src/12ap-notebook.js:35
 noteAsk                      src/12ap-notebook.js:209-229
 noteAskable                  src/12ap-notebook.js:205-208
@@ -5864,7 +5865,7 @@ offerTick                    src/11ah-offer.js:189-208
 offerTtl                     src/11ah-offer.js:70
 offerVisit                   src/11ah-offer.js:134-163
 offersAll                    src/11ah-offer.js:75-78
-ok                           tests/90-harness.js:188-192
+ok                           tests/90-harness.js:190-194
 oldMasterCan                 src/05b1-warranty.js:130
 oldMasterHere                src/05b1-warranty.js:123-129
 oldMasterSeam                src/05b1-warranty.js:131-136
@@ -7113,7 +7114,7 @@ rescueSigNow                 src/16c-rescue.js:580
 rescueSync                   src/16c-rescue.js:582-595
 rescueTake                   src/16c-rescue.js:121-168
 resetArm                     src/26-ui-station.js:738
-resetWorld                   tests/90-harness.js:261-418
+resetWorld                   tests/90-harness.js:263-420
 resize                       src/08-state.js:29-66
 retAll                       src/11s-returners.js:32
 retBlock                     src/11s-returners.js:60-68
@@ -7296,7 +7297,7 @@ rumourWhere                  src/11t-rumours.js:61-66
 rumoursHere                  src/11t-rumours.js:73-119
 rumoursKnown                 src/18a-map-addr.js:43
 runAutopilot                 src/16-flight.js:127-171
-runTests                     tests/90-harness.js:496-585
+runTests                     tests/90-harness.js:498-587
 rungAddress                  src/12ad-site.js:94-97
 rungBoardBlock               src/12ae-ladder.js:111-121
 rungFootTxt                  src/12ae-ladder.js:67-70
@@ -7431,7 +7432,7 @@ setPct                       src/27z-telemetry.js:135-141
 setSt                        src/27z-telemetry.js:127
 setTx                        src/27z-telemetry.js:117-126
 setZoom                      src/15-input.js:348
-settle                       tests/90-harness.js:444-455
+settle                       tests/90-harness.js:446-457
 settleAsk                    src/12t-settle.js:263-292
 settleAt                     src/12t-settle.js:106
 settleCanHand                src/12td-settle-hand.js:36-39
@@ -7712,7 +7713,7 @@ stationUniqueOffer           src/03-ships.js:143-156
 stationViz                   src/17c-system-draw.js:18-23
 stationYard                  src/04c-yards.js:127-142
 stepWorld                    src/28-loop.js:394-414
-steps                        tests/90-harness.js:457
+steps                        tests/90-harness.js:459
 stopEngine                   src/09-audio.js:369-373
 storyAddrMatch               src/11c-stories.js:69-82
 storyAll                     src/11c-stories.js:32
@@ -7763,10 +7764,10 @@ subdivide                    src/24-mode-belt.js:16-31
 suitFailure                  src/23-mode-dig.js:138-146
 suitHit                      src/23-mode-dig.js:131-137
 suitMax                      src/12x-suit.js:89
-suite                        tests/90-harness.js:107-187
-suiteGroup                   tests/90-harness.js:79-83
-suiteOrder                   tests/90-harness.js:464-471
-suiteWin                     tests/90-harness.js:94-99
+suite                        tests/90-harness.js:108-189
+suiteGroup                   tests/90-harness.js:80-84
+suiteOrder                   tests/90-harness.js:466-473
+suiteWin                     tests/90-harness.js:95-100
 sunAzQ                       src/19c-light.js:26-29
 sunDirSet                    src/19c-light.js:30-37
 sunSpot                      src/19c-light.js:203-208
@@ -7865,8 +7866,8 @@ targetPos                    src/16-flight.js:115-123
 techCost                     src/04-mods.js:52-55
 techLv                       src/04-mods.js:51
 tell                         src/11-log.js:64-68
-testNetHits                  tests/90-harness.js:485-495
-testSource                   tests/90-harness.js:480-484
+testNetHits                  tests/90-harness.js:487-497
+testSource                   tests/90-harness.js:482-486
 tetherTick                   src/13a-guns.js:358-375
 tfbm                         src/18a-material.js:23-27
 theOne                       src/21b3-base-hunt.js:46
@@ -7966,7 +7967,7 @@ tvSizes                      tests/91zzzzzw-travel.js:17-34
 uiFont                       src/18c-chunks.js:54
 uiK                          src/18c-chunks.js:53
 uiScale                      src/08-state.js:28
-uiSelRestore                 tests/90-harness.js:255
+uiSelRestore                 tests/90-harness.js:257
 uidRand                      src/01-core.js:97-100
 unfitPart                    src/05-parts.js:385-388
 unlockAudio                  src/09-audio.js:48-57
@@ -10093,6 +10094,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzzzzzza-walks.js · 11 KB
   · прогоны: пути игрока под детекторами (M444, DESIGN-tests §3.3):1
+
+## tests/91zzzzzzzzb-hunt.js · 7 KB
+  · охота: случайная тропа ботом по зерну под всеми детекторами (лаборатория):1
 
 ## tests/91zzzzzzzzz-savenet.js · 4 KB
   · сеть сейва: каждое поле мира либо хранится, либо названо эфемерным (0.438.0):1
