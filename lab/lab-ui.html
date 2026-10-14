@@ -41,6 +41,8 @@ header{display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:
 /* ── раскладка ── */
 main{flex:1;display:grid;grid-template-columns:340px 1fr;gap:14px;padding:14px;min-height:0;position:relative;z-index:1}
 .col{display:flex;flex-direction:column;gap:14px;min-height:0}
+main>.col:first-child{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;padding-right:2px}
+main>.col:first-child>.card{flex:none}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:6px;position:relative}
 .card>h3{margin:0;padding:10px 14px;font:600 11px var(--mono);letter-spacing:.2em;color:var(--dim);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
 .card>h3 .sp{flex:1}
