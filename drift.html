@@ -49383,7 +49383,7 @@ function applySave(s){
    понимал, в каком окне продолжать. Летать в ней по-прежнему можно. */
 let TAB_LIVE=true;
 const TAB_ID=uidRand().toString(36).slice(2)+wallNow().toString(36);
-let TAB_CH=null;
+let TAB_CH=null,TAB_TAKER=null;      /* TAB_TAKER — вкладка, которой мы уступили: уйдёт она — играть снова нам */
 try{
   TAB_CH=new BroadcastChannel("drift-tabs");
   TAB_CH.onmessage=e=>{
@@ -49391,12 +49391,19 @@ try{
     if(!d||d.id===TAB_ID)return;
     if(d.k==="hello"&&TAB_LIVE){
       /* пришла новая — уступаем место и замолкаем */
-      TAB_LIVE=false;
+      TAB_LIVE=false;TAB_TAKER=d.id;
       if(typeof say==="function")say("ИГРА ОТКРЫТА В ДРУГОЙ ВКЛАДКЕ\nздесь запись остановлена,\nчтобы не затереть ту",420);
       logShip("Игра открыта в другой вкладке — эта больше не сохраняется.");
     }
+    /* новая вкладка закрыта или перезагружена — место свободно: вернуть запись (раньше замолчавшая вкладка
+       молчала до конца сеанса, и вечер игры в ней не сохранялся) */
+    if(d.k==="bye"&&!TAB_LIVE&&d.id===TAB_TAKER){
+      TAB_LIVE=true;TAB_TAKER=null;
+      if(typeof say==="function")say("Запись возобновлена\nдругая вкладка закрыта",240);
+    }
   };
   TAB_CH.postMessage({k:"hello",id:TAB_ID});
+  addEventListener("pagehide",()=>{try{TAB_CH.postMessage({k:"bye",id:TAB_ID});}catch(e){}});
 }catch(e){TAB_CH=null;}          /* нет BroadcastChannel — работаем как раньше */
 function tabLive(){return TAB_LIVE;}
 

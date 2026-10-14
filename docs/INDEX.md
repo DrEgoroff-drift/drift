@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 565 · top-level symbols: 8240
+Files: 566 · top-level symbols: 8240
 
 ## SYMBOLS
 
@@ -351,7 +351,7 @@ CLOUD_BASE                   src/19e-clouds.js:64
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:8-24
 CLOUD_LOW                    src/19cc-gpu-air.js:166
-CLOUD_ST                     src/14a-cloud.js:91
+CLOUD_ST                     src/14a-cloud.js:98
 CLOUD_TIER                   src/19e-clouds.js:49-62
 CLR_HOURS                    src/05e-clearance.js:29
 CLR_KILLS                    src/05e-clearance.js:28
@@ -2389,7 +2389,7 @@ audioHush                    src/09-audio.js:12-18
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:52-104
 autoLandInputs               src/19-mode-landing.js:47-70
-autosave                     src/14a-cloud.js:52-55
+autosave                     src/14a-cloud.js:59-62
 avrDraw                      src/21a6-base-avral.js:133-159
 avrHands                     src/21a6-base-avral.js:59-73
 avrLose                      src/21a6-base-avral.js:112-131
@@ -3201,20 +3201,20 @@ clockWhy                     src/11d-clocks.js:94-100
 closeBarge                   src/12l-barge.js:687-694
 closeDeal                    src/27n-ui-deal.js:204
 closeStation                 src/26-ui-station.js:229-254
-cloudBoot                    src/14a-cloud.js:172-183
-cloudBusy                    src/14a-cloud.js:79
-cloudCall                    src/14a-cloud.js:72-76
-cloudForget                  src/14a-cloud.js:77
-cloudHere                    src/14a-cloud.js:70
-cloudLine                    src/14a-cloud.js:107-116
+cloudBoot                    src/14a-cloud.js:179-190
+cloudBusy                    src/14a-cloud.js:86
+cloudCall                    src/14a-cloud.js:79-83
+cloudForget                  src/14a-cloud.js:84
+cloudHere                    src/14a-cloud.js:77
+cloudLine                    src/14a-cloud.js:114-123
 cloudLow                     src/19cc-gpu-air.js:169-182
-cloudMark                    src/14a-cloud.js:92-105
-cloudName                    src/14a-cloud.js:69
-cloudOn                      src/14a-cloud.js:71
-cloudPull                    src/14a-cloud.js:154-168
-cloudPush                    src/14a-cloud.js:132-153
-cloudRetry                   src/14a-cloud.js:120-125
-cloudTok                     src/14a-cloud.js:68
+cloudMark                    src/14a-cloud.js:99-112
+cloudName                    src/14a-cloud.js:76
+cloudOn                      src/14a-cloud.js:78
+cloudPull                    src/14a-cloud.js:161-175
+cloudPush                    src/14a-cloud.js:139-160
+cloudRetry                   src/14a-cloud.js:127-132
+cloudTok                     src/14a-cloud.js:75
 cloudsOf                     src/19e-clouds.js:34-43
 clrHours                     src/05e-clearance.js:30
 clrTick                      src/05e-clearance.js:97-106
@@ -3907,7 +3907,7 @@ expQuiet                     src/11x-expedition.js:187
 expReady                     src/11x-expedition.js:25-28
 expRelease                   src/11x-expedition.js:101-110
 expStart                     src/11x-expedition.js:29-38
-exportCode                   src/14a-cloud.js:61
+exportCode                   src/14a-cloud.js:68
 f16                          src/08b-gpu.js:465
 faceEl                       src/27c-ui-hq.js:6-12
 facePath                     src/12d-mgr-face.js:19-28
@@ -4706,7 +4706,7 @@ hangTW                       src/08bj-ovl-hang.js:64-71
 hangTri                      src/08bj-ovl-hang.js:212-215
 hangWrap                     src/08bj-ovl-hang.js:155-168
 hasEpisode                   src/03-ships.js:139-142
-hasSave                      src/14a-cloud.js:60
+hasSave                      src/14a-cloud.js:67
 hashi                        src/01-core.js:23-27
 hashi3                       src/24ba-belt-gpu.js:18-22
 haulAim                      src/16c-rescue.js:261-266
@@ -5051,7 +5051,7 @@ huntMark                     src/12o-hunter.js:32-53
 huntQuest                    src/12o-hunter.js:55-63
 huntSpawn                    src/12o-hunter.js:90-105
 huntTierOf                   src/12o-hunter.js:28
-importCode                   src/14a-cloud.js:62-64
+importCode                   src/14a-cloud.js:69-71
 indPrice                     src/12ac-bld.js:161-170
 initAudio                    src/09-audio.js:19-39
 instAll                      src/11ab-institute.js:25
@@ -5349,7 +5349,7 @@ lightsShutters               src/11g-lights.js:101-112
 linkWord                     src/21a2-base-link.js:64
 litRGB                       src/19c-light.js:125-135
 lkNodes                      tests/91zzzzzh-leak.js:14
-loadGame                     src/14a-cloud.js:56-59
+loadGame                     src/14a-cloud.js:63-66
 lockerFree                   src/12ak-locker.js:39
 lockerHandOver               src/12ak-locker.js:64-78
 lockerHere                   src/12ak-locker.js:33-36
@@ -7285,7 +7285,7 @@ rxRecord                     src/11x-ring.js:64-74
 sameRun                      tests/91zzzzzbb-samehash.js:22-39
 sameRunHands                 tests/91zzzzzbb-samehash.js:77-95
 saveFatSaid                  src/14-save.js:127
-saveGame                     src/14a-cloud.js:38-51
+saveGame                     src/14a-cloud.js:45-58
 saveText                     src/14-save.js:148-186
 saveTop                      src/14-save.js:142-145
 saveWeigh                    src/14-save.js:129-141
@@ -7786,7 +7786,7 @@ sysStyle                     src/16a-space.js:21-41
 sysTraffic                   src/17f-sys-traffic.js:11-38
 sysWatchLabel                src/17-mode-system.js:513-521
 tab                          src/26-ui-station.js:3
-tabLive                      src/14a-cloud.js:36
+tabLive                      src/14a-cloud.js:43
 tableBake                    src/27i-ui-table.js:145-155
 tableBlock                   src/27c-ui-hq.js:602-690
 tableHead                    src/27i-ui-table.js:193-200
@@ -8920,11 +8920,11 @@ zoomTo                       src/15-input.js:358
   · запись не имеет права убить полёт:110
   · пустая карта возвращается из облака СПИСКОМ:187
 
-## src/14a-cloud.js · 12 KB
+## src/14a-cloud.js · 13 KB
   · облако, вкладки и обмен:1
   · одна вкладка — одна игра:10
-  · облако:65
-  · видимое состояние обмена:80
+  · облако:72
+  · видимое состояние обмена:87
 
 ## src/14a1-save-rest.js · 30 KB
   · загрузка: вторая половина (выделено из 14, M415):1
@@ -9927,6 +9927,8 @@ zoomTo                       src/15-input.js:358
   · M234: сбой кадра не убивает игру:1
 
 ## tests/91a1-quant.js · 1 KB
+
+## tests/91a2-tablock.js · 1 KB
 
 ## tests/91qa-marks-act.js · 31 KB
   · ориентиры как места действия (M627b):1
