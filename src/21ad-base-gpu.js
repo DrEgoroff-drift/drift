@@ -91,7 +91,7 @@ function baseGpuUnder(S,B,pl,lit,camx,camy){
 /* ── над 2D: передний план, иней, свет, воздух ── */
 const BASE_FU=new Float32Array(60);
 function baseGpuOver(S,B,pl,lit,camx,camy){
-  const pass=gpuOver();if(!pass)return;
+  const pass=gpuNext();   /* смена карточек только что склеила 2D: проход открыт, второй шов не нужен */if(!pass)return;
   const k=baseBakeK(),lq=Math.round(lit*40)/40,R=baseWorldRect(B),sig=baseSig(B);
   const up=k<(DPR||1);
   const Rf={x0:BASE_GATE_X+60,y0:BASE_OY-4,x1:BASE_OX+BASE_COLS*BCELL_W+10,y1:BASE_OY+baseRows(B)*BCELL_H+8};
