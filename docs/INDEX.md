@@ -10095,7 +10095,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzzzza-walks.js · 11 KB
   · прогоны: пути игрока под детекторами (M444, DESIGN-tests §3.3):1
 
-## tests/91zzzzzzzzb-hunt.js · 7 KB
+## tests/91zzzzzzzzb-hunt.js · 8 KB
   · охота: случайная тропа ботом по зерну под всеми детекторами (лаборатория):1
 
 ## tests/91zzzzzzzzz-savenet.js · 4 KB
