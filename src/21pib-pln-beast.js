@@ -241,8 +241,10 @@ function plnBeastFarKit(sps){
     groups.push({sp,list,off,dir,v,x0:r()*400,air:isAir});
   };
   const gs=ground.find(s=>s.herd)||ground[0];
-  if(gs)mk(gs,3,.9,false);
-  if(air[0])mk(air[0],5,2.4,true);
+  /* v — метры за кадр G.t (60 в секунду): было .9 и 2.4 — стадо шло 54 м/с, стайка 144 (автор 15.10:
+     «звери, птицы очень быстро»). Шаг стада 1.8 м/с, стайка 12 м/с */
+  if(gs)mk(gs,3,.03,false);
+  if(air[0])mk(air[0],5,.2,true);
   return {sps,groups};
 }
 function plnBeastDrop(L){

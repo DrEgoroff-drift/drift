@@ -113,8 +113,20 @@ function sellQuote(sys,k,qty){
   const pA=nA?appetitePrice(sys,k):base;
   const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
   /* остаток без надбавки — ломтями (аудит A2, M351): каждые десять единиц на три процента дешевле, не ниже .7 */
-  const rest=(typeof coopSellSlice==="function")?coopSellSlice(base,qty-nA):(qty-nA)*base;
-  return{revenue:Math.round(nA*pA+rest),nA,nB,priceA:pA,base};
+  const sl=(p,n)=>(typeof coopSellSlice==="function")?coopSellSlice(p,n):n*p;
+  /* кран (M905, DESIGN-game §10.4): то, что станция ЕСТ, сверх нормы смены идёт сразу
+     по дну давления — минус 35 % к прейскуранту, а не за семьдесят единиц, как раньше.
+     Аппетит — кран, а не слив: излишек везут туда, где этот товар не ели. Чего станция
+     не ест — по-старому. Бункер своего цеха (nB) излишком не считается. */
+  const A=appetiteOf(sys),nF=(A&&A[k])?Math.max(0,qty-nA-nB):0,pF=nF?faucetPrice(sys,k):0;
+  const rest=nF?nB*base+sl(pF,nF):sl(base,qty-nA);
+  return{revenue:Math.round(nA*pA+rest),nA,nB,nF,priceA:pA,priceF:pF,base};
+}
+/* цена сверх нормы: тот же marketPrice, давление поставлено на дно */
+const FAUCET_FLOOR=-.35;
+function faucetPrice(sys,k){
+  marketFor(sys);const m=G.market[sys.key];
+  return marketPrice(sys,k,FAUCET_FLOOR-((m&&m.pressure&&m.pressure[k])||0));
 }
 /* ── строка «БЕРЁТ» для доски, эфира и ряда трюма ── */
 function appetiteLine(sys,k){
@@ -134,7 +146,7 @@ function appetiteBlock(){
     const ate=appetiteAte(G.sys,k),left=A[k]-ate,have=G.cargo[k]|0;
     $body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
       (left>0?"ещё "+left+" из "+A[k]+" по "+appetitePrice(G.sys,k)+" кр":"на эту смену взяли всё · через смену снова")+
-      " · обычная "+marketFor(G.sys)[k]+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
+      " · сверх нормы "+faucetPrice(G.sys,k)+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
   }
 }
 /* эфир (11b): раз из нескольких — о том, кто берёт с надбавкой поблизости */

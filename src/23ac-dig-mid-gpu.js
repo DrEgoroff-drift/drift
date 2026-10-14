@@ -223,14 +223,16 @@ function digMidGpu(D,p,camx,camy,px,py,scanAll,r0,r1){
       rect(S,L,ry,R-L+1.8,1.7,164,124,74,.9);rect(S,L,ry+1.7,R-L+1.8,.9,0,0,0,.3);}
     if(row%4===0)rect(S,L-1.4,y+1.5,R-L+4.6,2.2,96,104,112,.8);
   }
-  gpuShapes(pass,O,{blend:"over"});
-  gpuShapes(pass,A,{blend:"add"});
-  gpuShapes(pass,S,{blend:"over"});
+  /* кадр шахты стоит в withScale: мировые пиксели → пиксели CSS (08c gpuShpAt) */
+  const o=lifeHere(0,0);
+  gpuShapes(pass,gpuShpAt(O,o),{blend:"over"});
+  gpuShapes(pass,gpuShpAt(A,o),{blend:"add"});
+  gpuShapes(pass,gpuShpAt(S,o),{blend:"over"});
   /* табличка глубины: число — выпечка GPU-холста, одна на число */
-  for(const [t,x,y] of TX){
+  for(const [t,x0,y0] of TX){const x=o.x+x0*o.s,y=o.y+y0*o.s;
     const B=gpuBaked(DIG_TXT,t,48,24,g=>{g.setTransform(4,0,0,4,0,0);g.fillStyle="rgba(255,228,170,.75)";
       g.font="5px ui-monospace,monospace";g.textAlign="center";g.fillText(t,6,5);},{mips:false,ss:1,keep:64});
-    if(B)gpuImage(pass,B,[{x,y,w:12,h:6}]);
+    if(B)gpuImage(pass,B,[{x,y,w:12*o.s,h:6*o.s}]);
   }
   return true;
 }
@@ -273,6 +275,6 @@ function digSurfFringeGpu(p,camx,camy){
              [0,x-rr*1.3,y,x+rr*1.3,y+1,0,0,0,0,0,.25]);
     }
   }
-  gpuShapes(pass,S,{blend:"over"});
+  gpuShapes(pass,gpuShpAt(S,lifeHere(0,0)),{blend:"over"});
   return true;
 }

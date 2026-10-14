@@ -116,7 +116,7 @@ fn wxRay(ndc: vec2f) -> vec3f {
     let W = (xr - xl) * 1.2; let Hh = (yt - yb) * 1.3;
     let x0 = xl - (W - (xr - xl)) * 0.5; let y1 = yt + (Hh - (yt - yb)) * 0.5;
     /* род осадка: скорость (м/с), длина штриха (px) или хлопок, снос ветром, покачивание */
-    var spd = 10.0; var len = 34.0; var dr = 0.12; var flake = 0.0; var sway = 0.0; var thick = 1.0;
+    var spd = 6.0; var len = 34.0;   /* было 10 м/с: у объектива струи мелькали (автор 15.10) */ var dr = 0.12; var flake = 0.0; var sway = 0.0; var thick = 1.0;
     if (kind == 2) { spd = 1.0; flake = 1.0; sway = 1.0; }
     else if (kind == 3) { spd = 0.9; flake = 1.0; sway = 0.8; }
     else if (kind == 4) { spd = 5.0; len = 14.0; dr = 0.35; thick = 1.4; }

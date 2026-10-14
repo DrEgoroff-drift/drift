@@ -6,6 +6,153 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.498.1 - the mine on a big screen; beasts and rain slowed
+
+The author, 15.10: on a big screen the mine drew its shaft «в небе», and beasts, birds and rain
+went far too fast.
+
+- **The shaft in the sky.** Past 1280 px the mine's frame is scaled (`withScale`, 18c). The GPU
+  shapes of its middle layer (ore, the shaft fill, timbering, the depth plate) were handed to a
+  CSS-pixel pass in world pixels, so the shaft came out smaller and up in the top-left corner.
+  `gpuShpAt` (08c) maps them by the canvas transform; `23ac` uses it. Found and fixed by the
+  playtest session.
+- **The light that floated away.** The mine's light fields (the darkness, the lamp cone, the warm
+  glow at the helmet) applied the scale twice: under `withScale` W and H are already divided by K,
+  so a field's pixel is a world pixel, and the field divided by K again. The lit cross of the shaft
+  with its lamp cone sat right and down by K, a dark rectangle edge showed at 2000 px. The scale
+  uniform is now field pixels per world pixel (`23b digLitU`); the sky already lived by that rule.
+  The cut cell's plate is mapped like the middle layer. Measured: only the mine draws fields under
+  `withScale`; the planet and the cave do not.
+- **Beasts and rain.** The herd went 54 m/s and the flock 144 m/s: their speeds were metres per
+  frame read as per second. Now 1.8 and 12 m/s (`21pib`). Rain falls at 6 m/s, not 10 (`21pk`).
+- **The sun moved in steps** (the author: «рывками свет»). `plnHour` (`21pz`) snapped its angle to a fifth
+  of a degree so shadows would not creep every frame; with a 6–9 minute day that was four or five jumps
+  a second, and long low-sun shadows hopped. The angle is continuous now; shadow maps are drawn every
+  frame anyway. Found by the playtest session's law `91ql-light` (lab-local, not merged yet).
+- **Disputed.** The speeds are picked from the author's words, not measured against anything. The
+  sun still crosses the sky in an hour: the day's length is the sky calendar's and moves the war
+  chronicle's hashes, so it waits (plan §11).
+
+## 0.498.0 - station gauges and the cascade (M906)
+
+DESIGN-game §4.2, §7.1. Stations had prices and nothing else: a need nobody filled just rolled
+over, and the galaxy looked the same whatever the player did or did not do.
+
+- **Three gauges (`src/28l-gauge.js`).** Every station has stock, people and order, 0–1, saved
+  sparsely as three hundredths and a minute. Reading pulls each back toward the middle with a
+  two-hour time constant; order is pulled toward a lower middle while pirates hold the system.
+  Only the participation's stations and those within two jumps of the player are judged, once per
+  need window (15 minutes of play). The rest of the galaxy sits at the middle.
+- **A need nobody filled.** When a need window closes and neither the player nor the barges filled
+  it: stock −.2, people −.1. Filled by the player: stock +.3, people +.05. Barges count neither way.
+- **The cascade.** When stock falls below a quarter, the workshop stops for an hour. The good the
+  station makes cheapest, against its base price, leaves its counter, and the two nearest stations
+  within three jumps get it as a need (price ×2, one delivery). That need goes ahead of the
+  neighbour's own, so it is never hidden, and the hidden own need is judged by nobody. Filling it
+  counts in the participation's norm like a delivered order.
+- **People below .4.** The buyer pays 8 % less, buying stays at the old price, and the station
+  makes no named offers until it thaws; a warm word waits.
+- **Order.** An occupation step costs .3 and a freed system gains .5. Below .4 the pirates there
+  dig in and spread one and a half times bolder (`13b-occupy`), and the board says «Отбить».
+- **The hall shows it (§7.1).** The cantina's crowd and the walkable hall's visitors follow
+  people: the station type's crowd at .6, up to nine at the bar at .9, one at .3. The hall
+  rebuilds when people change while you are docked. The board's ПОЛОЖЕНИЕ section says it in words:
+  the stopped workshop and where its good is awaited, sullen people, «Отбить». No number is printed.
+- **Changed from §4.2, and why.** The text stops the workshop on every unfilled need and heals .05
+  per сводка. Needs roll every 15 minutes of play, and a сводка is six hours of wall clock: at that
+  rate every station around the player stood still within an evening. The workshop now stops when
+  the warehouse runs dry, the heal is a time constant, and the stop lasts an hour.
+- **Fixed before it shipped:** the cascade need first sat behind the neighbour's own need, and the
+  board listed «Энтурикс · кремний» while the isotopes that started it were nowhere. Two stations
+  with one name now carry their sector.
+
+Measured: the economy probe is unchanged to the credit on every tier. Its bot never lets a station
+go unfilled three times in an hour, so nothing it trades with turns sullen. Suites: «шкалы
+станции» ×3 (26 asserts); the vision walks the board with all three troubles and the counter with
+a stopped workshop. Open: crates on the counter for stock and lights for order need the hall's art
+pass; rumours travelling further from a sullen station; the keeper's face.
+
+## 0.497.0 - the watch (M905): participation, norm, handover, the faucet
+
+DESIGN-game §3.2–3.4, §10.2–10.5. Until now nothing at the top of the game said what to do next:
+a player who had everything had no business left.
+
+- **The participation (`src/28j-watch.js`).** The player's участок is the 5×5 systems around the
+  place the trassa took them on (the home, for old saves): a name like «55-Ж» and its stations.
+  Every сводка (6 h) the plan writes the norm — the share of needs on those stations filled in
+  time: by the player's sales, by barges (their share falls with the system's danger, none under
+  blockade), plus orders delivered there. Only played need windows count, at least two per
+  сводка, so time offline never spoils the norm. One line on the board and in the record book.
+- **Two thresholds, one consequence each (§10.2).** Below 60 %: a срыв line in ГЛАВТРАССА's
+  voice. Three running: the farthest station goes to a neighbour's watch and its people stop
+  naming the player (the 11ah door). At 90 % or more three running: an allocation — the lost
+  station back first, else the next hull up (list price ≤ 15 000, worn .55), else a module step.
+  Credits never.
+- **The dispatcher (§10.3).** One person per participation, a face from the person generator and
+  a name that fits it (a bearded face never gets a woman's name). The plate «УЧАСТОК» stands first
+  in the К ВАМ lane: the first meeting, the last norm, the past сводки, the handover.
+- **Handing the watch over (§3.4, §10.5).** One tap in the menu, СДАТЬ СМЕНУ, from the paper hour
+  on, or on the plate. While handed over nothing runs and nothing is owed: no bill, wages, hands,
+  managers, drones or norm, and only «Стриж» is insured. A named relief holds the watch; taking it
+  back is at any counter, with his line about what he found.
+- **Unattended drones (`src/28k-offline.js`, §10.5).** A drone tick after more than a minute
+  without one is a catch-up without the player: the same trips, but 60 % of the takings and at
+  most one hour of the tier's net (half the mutual-fund floor). One line says what was sold and
+  what came in. People were online-only already, and the bill caps its offline lines at an hour.
+- **The faucet (§10.4, `src/12ab-hold.js`).** What a station eats, past the shift's norm, sells at
+  the pressure floor at once (−35 % instead of after seventy units), and the pressure stays there,
+  resting with the 3 h half-life. Goods a station does not eat keep the old half-percent step. The
+  hold row and the board say what the surplus fetches. The seasons of §4.5 were never built, so
+  there was nothing to cut.
+- **Fixed before it shipped:** the participation first lived in `G.watch`, which is the camera
+  following a hired hand (`27b`, `27n`) and wipes anything that is not a hand's id.
+
+Measured, one hour per tier (gross / upkeep / net, cr/h):
+
+| tier | 0.496.0 | now | oracle §4.1 |
+|---|---|---|---|
+| T0 Стриж | 10 429 / 3 607 / 6 822 | 9 853 / 3 607 / 6 246 | 7 200 / 2 800 / 4 400 |
+| T1 Вьюк | 24 458 / 3 246 / 21 212 | 23 145 / 3 246 / 19 898 | 21 300 / 7 400 / 13 900 |
+| T2 Обод, insured | 26 805 / 11 933 / 14 871 | 25 328 / 11 933 / 13 394 | 37 200 / 23 000 / 14 200 |
+| T3 Мамонт, insured | 26 365 / 19 448 / 6 917 | 24 962 / 19 448 / 5 514 | net 12 700 |
+| T2, uninsured wreck | 20 235 / 34 771 / −14 535 | 19 586 / 34 771 / −15 185 | negative |
+
+The faucet bit only ice and organics at a trade station; the probe's bulk iron and silicon go
+where nobody eats them. Every tier lost 5–6 % of gross, and a «Вьюк» lap pays 350 cr/min against
+the §10.4 ceiling of 900. Suites: «участок» (11), «сдача смены» (17), «кран аппетита» (6),
+«без присмотра» (7); the vision walks the menu with the watch handed over and not.
+
+## 0.496.0 - the dear vein is a find (M904d): the gross lever and the bad hour
+
+DESIGN-game §4.1a. The probe (M903) found the mining loop paying 2.6–3.7× the model, and the money
+came from dear ore, not volume: a planet's deposits took their type from its profile in equal
+shares, so a volcanic world held crystal as densely as iron.
+
+- **The dear vein is rarer (`src/21pzc-dep-value.js`).** A deposit keeps a dear ore with weight
+  17 / its price (silicon and cheaper always), otherwise it is the profile's cheapest ore: crystal one
+  deposit in six, iridium one in four, titan about every other one. The deposit's own seed decides,
+  so landing again shows the same ground and cannot be rerolled. The surface is for iron and
+  silicon; dear ore lies deep (the shaft's depth tiers are untouched), and a crystal vein on top is
+  the hour's luck. Tried and dropped: thinner dear veins (T0 earned more — the bot moved on to
+  cheap deposits faster).
+- **The probe plays insured and plays a bad hour.** T2 and T3 insure the hull, as a careful player
+  would; two new rows crash the T2 hull at half an hour — uninsured (the hull and its module steps
+  are booked at price) and insured (back in a shift).
+
+Measured, one hour per tier (gross / upkeep / net, cr/h):
+
+| tier | before | now | oracle §4.1 |
+|---|---|---|---|
+| T0 Стриж | 15 275 / 3 607 / 11 668 | 10 429 / 3 607 / 6 822 | 7 200 / 2 800 / 4 400 |
+| T1 Вьюк | 46 695 / 3 197 / 43 498 | 24 458 / 3 246 / 21 212 | 21 300 / 7 400 / 13 900 |
+| T2 Обод, insured | 50 500 / 10 988 / 39 513 | 26 805 / 11 933 / 14 871 | 37 200 / 23 000 / 14 200 |
+| T2, uninsured wreck | — | 20 235 / 34 771 / −14 535 | negative |
+| T2, insured wreck | — | 23 438 / 11 762 / 11 676 | — |
+
+The M904 gate holds: a good T2 hour is +14 900, a bad one −14 500. Still open: T0 and T1 net run
+about 1.5× the oracle (the bot's lap is 4.3 min against a human's ≈8, and T1 has no estate to pay
+for), and T3 has no workshops or base in the probe. Suite «дорогая жила» (6 asserts).
+
 ## 0.495.0 - debt and the hull (M904b, M904c): the mutual-aid fund, the collector, Страхкасса
 
 DESIGN-game §5.1/§5.2, forks F1 and F3. After the bill (0.494.0) money could still not run out and

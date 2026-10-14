@@ -175,9 +175,11 @@ function plnWeatherLook(p,look){
    Выше двадцати градусов круг прежний, кадр M600 (ph = .125) стоит на нём, как стоял.
    Ночью ключ — самое сильное тело над горизонтом (plnBodies): луна или родитель; ключ гаснет
    в ноль между светилом и им, и смены стороны не видно. Тел нет — ночь без ключа: землю держат
-   звёзды, воздух и лампы. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
+   звёзды, воздух и лампы. Круг без шага: шаг в пятую долю градуса при дне в 6–9 минут прыгал
+   4–5 раз в секунду, и длинные тени низкого солнца дёргались (автор 15.10: «рывками свет»).
+   Карты теней и так пишутся каждый кадр (21pe) */
 function plnHour(p,wl){
-  const c=celSun(p),q=.0035,th=Math.round(c.ph*TAU/q)*q,tilt=52*PLN_DEG,A=PLN_LOOK;
+  const c=celSun(p),th=c.ph*TAU,tilt=52*PLN_DEG,A=PLN_LOOK;
   const s0=Math.sin(th)*Math.cos(tilt),back=.55*(1-plnSmooth(.05,.38,s0));
   const sun=plnNorm([-Math.cos(th),s0,Math.sin(th)*Math.sin(tilt)+back]),sy=sun[1],rise=Math.cos(th)>0;
   const atm=(p.T&&p.T.atm)||"",air=atm==="отсутствует"?0:(atm.indexOf("разреженная")>=0?.5:1);

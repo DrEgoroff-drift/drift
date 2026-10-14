@@ -29,9 +29,14 @@ suite("проба · экономика",{tier:"probe"},()=>{
   const TIERS=[
     {name:"T0",hull:"strizh",mods:{},hands:0,drones:0,mgrs:0},
     {name:"T1",hull:"vyuk",mods:{hold:1,drill:1},hands:1,drones:1,mgrs:0},
-    {name:"T2",hull:"obod",mods:{hold:2,drill:2,engine:1},hands:3,drones:2,mgrs:2},
-    {name:"T3",hull:"mamont",mods:{hold:3,drill:3,engine:2,tank:1},hands:5,drones:4,mgrs:4}
+    {name:"T2",hull:"obod",mods:{hold:2,drill:2,engine:1},hands:3,drones:2,mgrs:2,ins:true},
+    {name:"T3",hull:"mamont",mods:{hold:3,drill:3,engine:2,tank:1},hands:5,drones:4,mgrs:4,ins:true},
+    /* плохой час (M904d, §4.1): авария на середине часа — без страховки корпус уходит с модулями,
+       со страховкой возвращается через смену; потеря корпуса и модулей — строкой расхода по цене */
+    {name:"T2 авария",o:"T2",hull:"obod",mods:{hold:2,drill:2,engine:1},hands:3,drones:2,mgrs:2,crash:.5},
+    {name:"T2 авария, страховка",o:"T2",hull:"obod",mods:{hold:2,drill:2,engine:1},hands:3,drones:2,mgrs:2,crash:.5,ins:true}
   ];
+  let CRASH_AT=null;
   let PHASE="tick",BOOK=null;
   /* часы идут с кадром: под стендом они прибиты, и дроны, руки и жалованье
      (всё на now()) за час игры не делали ни рейса */
@@ -39,6 +44,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
   let TICKN=0,TICKS=0;
   stepWorld=function(n){
     clockAdvance((n||1)*1000/60);
+    if(BOOK)BOOK.time[PHASE]=(BOOK.time[PHASE]||0)+(n||1);   /* кадры по фазам: куда уходит круг */
     const r=sw0(n);
     /* дроны, руки, управляющие и сделки в игре идут по таймеру кадра (28-loop),
        под стендом — раз в десять секунд игры отсюда; все они ленивые по времени */
@@ -53,7 +59,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
       set(n){n=+n||0;const d=n-v;v=n;if(d<0)book[PHASE]=(book[PHASE]||0)-d;}});
   }
   function bookOn(){
-    let v=+G.credits||0;BOOK={gross:{},spend:{},v0:v,fuel:{},hull:{}};
+    let v=+G.credits||0;BOOK={gross:{},spend:{},v0:v,fuel:{},hull:{},time:{},sold:{}};
     meter("fuel",BOOK.fuel);meter("hull",BOOK.hull);
     Object.defineProperty(G,"credits",{configurable:true,enumerable:true,
       get(){return v;},
@@ -165,6 +171,14 @@ suite("проба · экономика",{tier:"probe"},()=>{
     r=T.bot("ship");if(!r.ok){note("ship: "+r.why);return false;}
     PHASE="взлёт";
     r=T.bot("launch");if(!r.ok){note("launch: "+r.why);return false;}
+    if(CRASH_AT!=null&&G.t>=CRASH_AT){
+      CRASH_AT=null;PHASE="авария";
+      const id=G.shipId;let v=0;
+      if(!insOn(id)){v+=(shipData(id).price|0);for(const k in G.mods)for(let l=0;l<(G.mods[k]|0);l++)v+=modCost(k,l);}
+      if(v)BOOK.spend["потеря корпуса"]=(BOOK.spend["потеря корпуса"]||0)+v;
+      G.hull=0;wreck("проба: авария");
+      return {frames:G.t-t0,mined};
+    }
     PHASE="к станции";
     /* станция: продать, заправить, починить */
     r=T.bot("station");if(!r.ok){note("station: "+r.why);return false;}
@@ -177,7 +191,9 @@ suite("проба · экономика",{tier:"probe"},()=>{
     }
     if(!r.ok){note("dock: "+r.why);return false;}
     PHASE="sell";
-    for(const k of TRADE_KEYS.concat(FAR_KEYS)){const q=G.cargo[k];if(q>0)sellCargo(G.sys,k,q);}
+    for(const k of TRADE_KEYS.concat(FAR_KEYS)){const q=G.cargo[k];if(q>0){const v=sellCargo(G.sys,k,q);
+      const b=BOOK.sold[k]||(BOOK.sold[k]=[0,0,{},0]);b[0]+=q;b[1]+=v||0;b[2][G.sys.key]=1;b[3]+=q*(G.sys.station.prices[k]||0);}}
+    if(G.shipId!==tier.hull&&G.owned[tier.hull]){G.shipId=tier.hull;invalidateParts();}
     PHASE="refuel";
     {const need=Math.ceil(stat().fuelMax-G.fuel);const per=fuelPriceHere();
      const can=Math.min(need,Math.floor(G.credits/per));if(can>0){G.credits-=can*per;G.fuel+=can;}}
@@ -203,7 +219,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
     /* налёт под стендом не идёт (clrTick — в кадре): ярус — уже не первый час, счёт за смену работает */
     G.flownMs=2*FIRST_HOUR_MS;G.bill=null;
     /* старт по оракулу: касса яруса — два часа чистого, чтобы было чем платить */
-    G.credits=600+Math.round((ORACLE[tier.name].net||0)*2);
+    G.credits=600+Math.round((ORACLE[tier.o||tier.name].net||0)*2);
+    if(tier.ins)insSet(tier.hull,true);
     if(tier.mgrs>0)for(let i=0;i<tier.mgrs;i++){
       const dom=MGR_ROLE_KEYS[i%MGR_ROLE_KEYS.length];
       const m=genMgr(1000+i*17,[dom]);if(m)try{hireMgr(m);}catch(e){note("mgr: "+(e&&e.message));}
@@ -235,6 +252,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     for(const k in fail)delete fail[k];
     bookOn();
     const t0=G.t,hull0=G.hull;let laps=0,lapF=0,mined=0,bad=0;
+    CRASH_AT=tier.crash?t0+tier.crash*HOURS*HOUR:null;
     try{
       while(G.t-t0<HOURS*HOUR&&bad<6){
         const L=lap(tier);
@@ -248,7 +266,7 @@ suite("проба · экономика",{tier:"probe"},()=>{
     if(ENV.ECO_TRACE)console.log("  "+tier.name+" итог: часов "+hrs.toFixed(2)+" · дроны "+G.drones.map(d=>d.res+" рейсов "+d.trips+" продано "+d.sold+" заработал "+d.earned+" [t0−now "+((clockNow()-d.t0)/1000).toFixed(0)+" с · круг "+(droneTripMs(d)/1000).toFixed(0)+" с · down "+(d.down|0)+" · stuck "+(d.stuck|0)+" · pool "+d.pool+" · occ "+occLvl(d.sx,d.sy)+" · тиков "+TICKS+"]").join("; ")+
       " · руки "+G.crew.map(c=>c.spec+" рейсов "+(c.trips|0)+" потрачено "+Math.round(c.spent||0)+" долг "+Math.round(c.debt||0)+" мораль "+(c.morale==null?"—":c.morale.toFixed(2))).join("; "));
     bookOff();
-    const O=ORACLE[tier.name];
+    const O=ORACLE[tier.o||tier.name];
     const pct=(a,b)=>b?Math.round((a/b-1)*100):0;
     rows.push({tier:tier.name,hull:tier.hull,laps,minLap:laps?(lapF/laps/FR/60):0,mined,hrs,
       gross:gross/hrs,spend:spend/hrs,net:(gross-spend)/hrs,press:gross?spend/gross:0,
@@ -258,6 +276,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
       fails:Object.entries(fail).map(([k,v])=>k+(v>1?" ×"+v:"")).join("; "),
       fuel:Object.entries(BOOK.fuel).map(([k,v])=>k+" "+(v/hrs).toFixed(0)).join(", "),
       hullLoss:Object.entries(BOOK.hull).map(([k,v])=>k+" "+(v/hrs).toFixed(0)).join(", "),
+      sold:Object.entries(BOOK.sold).sort((a,b)=>b[1][1]-a[1][1]).map(([k,v])=>k+" "+v[0]+"×"+(v[0]?Math.round(v[1]/v[0]):0)+" ("+Object.keys(v[2]).length+" ст., прейскурант "+(v[0]?Math.round(v[3]/v[0]):0)+")").join(", "),
+      time:Object.entries(BOOK.time).sort((a,b)=>b[1]-a[1]).map(([k,v])=>k+" "+(laps?v/laps/FR/60:0).toFixed(2)).join(", "),
       hull:tier.hull,credits:G.credits});
   }
   stepWorld=sw0;
@@ -266,6 +286,8 @@ suite("проба · экономика",{tier:"probe"},()=>{
   console.log("|---|---|---|---|---|---|---|---|---|---|---|---|");
   for(const r of rows)console.log("| "+r.tier+" | "+r.hull+" | "+r.laps+" | "+r.minLap.toFixed(1)+" | "+r.mined+" | "+Math.round(r.gross)+" | "+Math.round(r.spend)+" | "+Math.round(r.net)+" | "+r.press.toFixed(2)+" | "+r.dG+"% / "+r.dU+"% / "+r.dN+"% | "+r.gsrc+" | "+r.ssrc+" |");
   for(const r of rows)console.log("  "+r.tier+" топливо/ч: "+r.fuel+" · корпус/ч: "+r.hullLoss);
+  for(const r of rows)console.log("  "+r.tier+" мин на круг по фазам: "+r.time);
+  for(const r of rows)console.log("  "+r.tier+" продано (шт×кр): "+r.sold);
   for(const r of rows)if(r.fails)console.log("  "+r.tier+" сбои: "+r.fails);
   ok(rows.length>=1&&rows.every(r=>r.hrs>0),"экономика прогнана: "+rows.length+" ярусов");
 });
