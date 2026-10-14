@@ -113,6 +113,16 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
 .err:last-child{border-bottom:0}
 .err b{display:block;font:600 11px var(--mono);color:var(--am);letter-spacing:.04em;margin-bottom:2px}
 .err span{color:var(--ink)}
+.vers b.ok{color:var(--gr)}.vers b.old{color:var(--am)}
+.laws{max-height:none;overflow:auto;flex:1;min-height:0}main>.col:first-child{overflow:auto}main>.col:first-child>.card:last-child{flex:1 0 260px;display:flex;flex-direction:column;min-height:260px}
+.law{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:start;padding:7px 14px;border-bottom:1px solid var(--line);font-size:12px}
+.law i{width:8px;height:8px;border-radius:50%;margin-top:4px;background:var(--faint)}
+.law.green i{background:var(--gr)}.law.red i{background:var(--rd);box-shadow:0 0 6px var(--rd)}
+.law b{font-weight:600;color:var(--ink)}.law small{display:block;color:var(--dim);margin-top:1px}
+.law.red small.m{color:var(--rd)}.law em{font:10px var(--mono);color:var(--faint);font-style:normal}
+.area{padding:8px 14px 3px;font:600 10px var(--mono);letter-spacing:.2em;color:var(--cy)}
+.oerr{max-height:30vh;overflow:auto}
+.err.now b{color:var(--rd)}.err.past{opacity:.55}.err em{display:block;font:10.5px var(--mono);color:var(--faint);font-style:normal;margin-top:2px}
 .links{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--cy);color:var(--ink);padding:10px 18px;border-radius:5px;font:13px var(--mono);opacity:0;transition:.25s;z-index:5;pointer-events:none}
 .toast.on{opacity:1}
@@ -123,7 +133,7 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
 <header>
   <div class="brand"><i></i>DRIFT <b>LAB</b> CONTROL</div>
   <div id="pill" class="pill">ГОТОВ</div>
-  <div class="meta"><span>версия <b id="ver">—</b></span><span>сессия <b id="sid">—</b></span><span>ветка <b id="mref">—</b></span></div>
+  <div class="meta vers"><span>в ветке <b id="vBr">—</b></span><span>на сайте <b id="vProd">—</b></span><span>прогон был на <b id="ver">—</b></span><span>сессия <b id="sid">—</b></span><span>ветка <b id="mref">—</b></span></div>
   <div class="sp"></div>
   <div class="gauge">ЦП <div class="bar"><i id="cpuB"></i></div><b id="cpu">0%</b></div>
   <div class="gauge">ОЗУ <div class="bar"><i id="ramB"></i></div><b id="ram">0%</b></div>
@@ -180,6 +190,11 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
         <button class="btn sm" data-open="logs">ЛОГИ</button>
       </div>
     </section>
+
+    <section class="card">
+      <h3>ЗАКОНЫ<span class="sp"></span><span id="lawSum" style="letter-spacing:.05em"></span></h3>
+      <div class="laws" id="laws"><div class="empty" style="padding:10px 14px">загрузка…</div></div>
+    </section>
   </div>
 
   <div class="col">
@@ -204,6 +219,11 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
     <section class="card" id="freshCard" hidden>
       <h3>НОВЫЕ ОШИБКИ ЭТОЙ СЕССИИ</h3>
       <div id="fresh"></div>
+    </section>
+
+    <section class="card" id="oerrCard">
+      <h3>ОТКРЫТЫЕ ОШИБКИ<span class="sp"></span><span id="oerrSum" style="letter-spacing:.05em"></span></h3>
+      <div class="oerr" id="oerr"></div>
     </section>
 
     <section class="card logcard">
@@ -324,7 +344,22 @@ $("#q").oninput=e=>{q=e.target.value.trim();redraw()};
 $("#log").onscroll=()=>{const L=$("#log");if(L.scrollHeight-L.scrollTop-L.clientHeight>40)$("#follow").checked=false};
 
 api("/api/branches").then(r=>{const s=$("#ref");for(const b of r.branches)s.add(new Option(b,b));if(cfg.ref)paintCfg()});
-tick();pull();setInterval(tick,1000);setInterval(pull,700);
+/* ── версии, законы, открытые ошибки: раз в 10 с (законы меняются по итогам прогонов, не по секундам) ── */
+async function slow(){
+  try{const v=await api("/api/vers?ref="+encodeURIComponent(cfg.ref||""));
+    const e=$("#vBr");e.textContent=v.branch+" ("+v.head+")";e.className=v.branch===v.prod?"ok":"";
+    $("#vProd").textContent=v.prod;const r=$("#ver");r.className=S.run.ver&&S.run.ver!==v.branch?"old":"ok";
+    r.title=S.run.ver&&S.run.ver!==v.branch?"последний прогон шёл на старой версии — запусти заново":"";}catch(e){}
+  try{const L=await api("/api/laws");let html="",area="",g=0,rd=0,id=0;
+    for(const l of L.laws){if(l.area!==area){area=l.area;html+=`<div class="area">${esc(area)}</div>`}
+      if(l.status==="green")g++;else if(l.status==="red")rd++;else id++;const why={idle:"не гонялся",absent:"нет в ветке"}[l.status]||"";
+      html+=`<div class="law ${l.status}" title="${esc(l.catches)}"><i></i><div><b>${esc(l.name)}</b><small>${esc(l.catches)}</small>${l.msg?`<small class="m">${esc(l.msg)}</small>`:""}</div><em>${why||l.unit}</em></div>`}
+    $("#laws").innerHTML=html;$("#lawSum").innerHTML=`<span style="color:var(--gr)">${g}</span> · <span style="color:var(--rd)">${rd}</span> · <span style="color:var(--faint)">${id} не гонялись или нет в ветке</span>`;}catch(e){}
+  try{const E=await api("/api/errors"),n=E.errors.filter(e=>e.now).length;
+    $("#oerrSum").textContent=n+" в последнем прогоне · "+(E.errors.length-n)+" старых";
+    $("#oerr").innerHTML=E.errors.slice(0,60).map(e=>`<div class="err ${e.now?"now":"past"}"><b>${esc(e.suite)}</b><span>${esc(e.msg)}</span><em>${e.count}× · версии ${esc(e.versions.join(", "))} · прогонов ${e.sessions} · последний раз ${esc(e.last)}</em></div>`).join("")||'<div class="empty" style="padding:10px 14px">открытых нет</div>';}catch(e){}
+}
+tick();pull();setInterval(tick,1000);setInterval(pull,700);setTimeout(slow,300);setInterval(slow,10000);
 </script>
 </body>
 </html>

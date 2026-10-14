@@ -237,10 +237,17 @@ def main():
             r = sh(["git", "-C", REPO, "worktree", "add", "--detach", src, a.ref])
             if r.returncode: sys.exit("lab: worktree add failed: " + r.stderr.strip())
         else:
+            sh(["git", "-C", src, "clean", "-fq", "--", "tests"])   # подложенные прошлым прогоном законы — прочь до смены головы
             r = sh(["git", "-C", src, "checkout", "-f", "--detach", a.ref])
             if r.returncode: sys.exit("lab: checkout failed: " + r.stderr.strip())
         head = sh(["git", "-C", src, "log", "-1", "--format=%h %s"]).stdout.strip()
         print("lab: %s at %s" % (a.ref, head))
+        # законы лаборатории живут в lab-local раньше, чем их вольют в игру: новый файл набора, которого в ветке
+        # нет, подкладываем в её копию (только новые — свои наборы ветки не трогаем никогда)
+        mine = os.path.join(os.path.dirname(HERE), "tests")
+        add = [f for f in sorted(os.listdir(mine)) if f.endswith(".js") and not os.path.exists(os.path.join(src, "tests", f))]
+        for f in add: shutil.copyfile(os.path.join(mine, f), os.path.join(src, "tests", f))
+        if add: print("lab: законы лаборатории подложены в копию: " + ", ".join(add))
         r = sh(["powershell", "-ExecutionPolicy", "Bypass", "-File", os.path.join(src, "build.ps1")], cwd=src, timeout=600)
         if r.returncode:
             live_write(phase="failed", why="сборка упала")

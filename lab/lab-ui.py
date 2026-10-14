@@ -106,6 +106,77 @@ def stop(hard=False):
     except Exception: pass
     return {"ok": True}
 
+# ── версии: в ветке (голова ref), на сайте (play.html), в последнем прогоне — шапка не путает одно с другим ──
+_prod = [0, "?"]
+def vers(ref):
+    import re, urllib.request
+    r = LL.sh(["git", "-C", LL.REPO, "show", ref + ":src/01-core.js"])
+    m = re.search(r'VER\s*=\s*"([0-9.]+)"', r.stdout or "")
+    h = LL.sh(["git", "-C", LL.REPO, "log", "-1", "--format=%h", ref]).stdout.strip()
+    if time.time() - _prod[0] > 300:
+        _prod[0] = time.time()
+        try:
+            q = urllib.request.Request("https://drift-game.ru/play.html", headers={"Range": "bytes=0-400000"})
+            t = urllib.request.urlopen(q, timeout=15).read(400000).decode("utf-8", "replace")   # сервер Range не слушает — читаем голову сами
+            mm = re.search(r'VER="([0-9.]+)"', t); _prod[1] = mm.group(1) if mm else "?"
+        except Exception: _prod[1] = "нет связи"
+    return {"ref": ref, "branch": m.group(1) if m else "?", "head": h, "prod": _prod[1]}
+
+def _jl(p, d):
+    try: return json.load(open(p, encoding="utf-8"))
+    except Exception: return d
+
+def _last_session():
+    """последняя сессия по runs.jsonl: её id и какие виды прогонов в ней были"""
+    p = os.path.join(DATA, "runs.jsonl")
+    try:
+        with open(p, "rb") as f:
+            f.seek(0, 2); n = f.tell(); f.seek(max(0, n - 3000000)); tail = f.read().decode("utf-8", "replace")
+    except OSError: return "", set(), set()
+    rows = []
+    for l in tail.splitlines():
+        try: rows.append(json.loads(l))
+        except Exception: pass
+    if not rows: return "", set(), set()
+    s = rows[-1].get("s", ""); kinds, keys = set(), set()
+    for r in rows:
+        if r.get("s") == s:
+            kinds.add(r.get("kind")); keys.update(r.get("known") or []); keys.update(r.get("new") or [])
+    return s, kinds, keys
+
+def laws():
+    cat = _jl(os.path.join(HERE, "laws.json"), {}).get("laws", [])
+    errs = _jl(os.path.join(DATA, "errors.json"), {})
+    s, kinds, keys = _last_session()
+    # есть ли закон в той копии, что гоняла лаба (drift-labrun): иначе зелёный был бы враньём — его просто не гоняли
+    src = r"C:\Claude\drift-labrun"
+    blob = ""
+    for f in glob.glob(os.path.join(src, "tests", "*.js")):   # файлы, а не git: подложенные лабой законы не в индексе
+        try: blob += open(f, encoding="utf-8", errors="replace").read()
+        except OSError: pass
+    have = {L["match"] for L in cat if L["match"] in blob}
+    out = []
+    for L in cat:
+        units = set(L["unit"].split(","))
+        red = [errs[k] for k in keys if k in errs and L["match"] in (errs[k].get("suite", "") + " " + errs[k].get("msg", ""))]
+        here = L["match"] in have or units <= {"frames", "tour", "hunt", "vision"} and L["match"] in ("кадры ·", "тур полёта", "охота:", "зрение ·")
+        st = "red" if red else ("absent" if not here else "green" if units & kinds else "idle")
+        out.append(dict(L, status=st, msg=red[0]["msg"] if red else "", n=len(red)))
+    return {"session": s, "laws": out}
+
+def errors_open():
+    errs = _jl(os.path.join(DATA, "errors.json"), {})
+    s, kinds, keys = _last_session()
+    out = []
+    for k, e in errs.items():
+        if e.get("status") not in ("open", None): continue
+        out.append({"key": k, "suite": e.get("suite"), "msg": e.get("msg"), "count": e.get("count", 0), "last": e.get("last"),
+                    "versions": list((e.get("versions") or {}).keys()), "now": k in keys,
+                    "sessions": len(e.get("sessions") or [e.get("session")])})
+    out.sort(key=lambda e: (not e["now"], e["last"] or ""), reverse=False)
+    out.sort(key=lambda e: e["now"], reverse=True)
+    return {"session": s, "errors": out}
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def send(self, code, body, ctype="application/json; charset=utf-8"):
@@ -122,6 +193,12 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, {"run": r, "cfg": cfg_load(), "sys": machine(), "now": time.time()})
         if u.path == "/api/branches":
             return self.send(200, {"branches": branches()})
+        if u.path == "/api/vers":
+            return self.send(200, vers(q.get("ref", [cfg_load()["ref"]])[0]))
+        if u.path == "/api/laws":
+            return self.send(200, laws())
+        if u.path == "/api/errors":
+            return self.send(200, errors_open())
         if u.path == "/api/log":
             p = log_path(run_state()); pos = int(q.get("from", ["0"])[0]); name = os.path.basename(p)
             if not p: return self.send(200, {"text": "", "next": 0, "name": ""})
