@@ -6,6 +6,33 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.495.0 - debt and the hull (M904b, M904c): the mutual-aid fund, the collector, Страхкасса
+
+DESIGN-game §5.1/§5.2, forks F1 and F3. After the bill (0.494.0) money could still not run out and
+a wreck still cost only the hold. Now:
+
+- **Касса взаимопомощи (F1, `src/27ib-bill.js`).** Debt is its own number, not credits below zero:
+  about twenty places take `min(G.credits, sum)` and would print money on a negative balance. For the
+  player it is the same thing — when the till is short at the pump or the yard, the fund lends the
+  difference, down to a limit of two hours of the tier's net (9 000 / 28 000 / 28 000 / 25 000 by the
+  dearest hull owned); what the purchase did not spend goes straight back. An unpaid paper moves into
+  the fund at the next close, and the fund grows 1 % a shift. The header reads «кр · долг»; the paper
+  and the fund lead the К ВАМ lane; one tap pays the paper first, then the fund.
+- **The collector.** At the limit a named collector sits down in your cantina (a face from the person
+  generator, first in the hall, with the pay button). He waits one shift, then at every close still at
+  the limit takes one thing at half its price: drones first, then the dearest hull. Paid to zero, he
+  leaves a line.
+- **The hull can be lost (F3, `src/28i-insure.js`).** A wreck after the first hour takes the hull, the
+  module steps on it and its parts; the player gets a «Стриж» по разнарядке, new and full. Credits, the
+  garage, holdings, managers and drones stay. The first hour never takes a hull.
+- **Страхкасса.** Opt-in on the board of any yard, per hull: 1 % of list price per ten-minute shift
+  (the model's 2 % per twenty), a line on the paper, at most six shifts between papers. An insured hull
+  comes back after one shift, 55 % worn, modules and parts intact. «Стриж» is always insured, free.
+  Every loss is a line in the трудовая книжка.
+
+The bot does not crash or insure yet, so the probe is unchanged (T2 U/G .22, T3 .36). Suites:
+«касса взаимопомощи» (8 asserts) and «страхкасса и потеря корпуса» (11) beside the bill's 14.
+
 ## 0.494.0 - the bill for the shift (M904a): the paper at the dock, managers paid by the player
 
 DESIGN-game §3.1/§10.1, fork F2. The economy probe (M903) measured upkeep at a fifth of the band:
