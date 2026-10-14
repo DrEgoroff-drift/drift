@@ -484,18 +484,29 @@ function plnLandSees(J,ex,V,m){
   const z=J.t==="water"?136:PLN_LAND.zBack,h=V.hw*(1+z/V.D)+12+m;
   return J.xb>ex-h&&J.xa<ex+h;
 }
-function plnLandBuild(L,J){
-  const m=J.t==="rib"?plnLandRibMesh(L,J.c):J.t==="far"?plnLandFarMesh(L,J):J.t==="water"?plnWaterSheet(L,J):J.t==="sea"?plnWaterSea(L,J):plnWaterPond(L,J);
+function plnLandBuild(L,J,slice){
+  let m;
+  const gen=J.t==="rib"||J.t==="water"||(J.t!=="far"&&J.t!=="sea");
+  if(gen){
+    /* лента, лист воды и пруд — генераторы: по кадрам, ряд за рядом, пока бюджет шага не вышел
+       (кусок остаётся недостроенным до следующего вызова); без slice — до конца разом */
+    const g=J.gen||(J.gen=J.t==="rib"?plnLandRibGen(L,J.c):J.t==="water"?plnWaterSheetGen(L,J):plnWaterPondGen(L,J));
+    let r=g.next();
+    if(slice){if(!r.done)return false;}
+    else while(!r.done)r=g.next();
+    J.gen=null;m=r.value;
+  }else m=J.t==="far"?plnLandFarMesh(L,J):plnWaterSea(L,J);
   J.geo=m.ni?plnGeo(m):null;J.done=true;L.left--;
   /* сетку куска ленты ждёт расстановка (21pga): трава встаёт на неё и отпускает */
   if(J.t==="rib")J.grid=m;
   PLN.stat.verts=(PLN.stat.verts||0)+m.nv;
+  return true;
 }
 /* Строит куски по бюджету (M614): не больше n штук и не дольше lim мс стенного часа, видимые и
    ближние к объективу первыми; без n и lim — числа PLN_BUILD, первому вызову — его собственные.
    Первый вызов берёт только видимое у корабля, дальше очередь идёт до конца по кадрам, ближнее
    первым. PLN.rush — всё до конца разом, для стенда и съёмки */
-function plnLandStep(L,ex,V,n,lim){
+function plnLandStep(L,ex,V,n,lim,slice){
   if(L.left<=0)return 0;
   const t0=wallMs(),all=!!PLN.rush,first=!L.first,B=PLN_BUILD;
   const cap=n==null?(first?B.nFirst:B.n):n,ms=lim==null?(first?B.first:B.ms):lim;
@@ -509,7 +520,7 @@ function plnLandStep(L,ex,V,n,lim){
       if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
     }
     if(!best||(!all&&(k>=cap||wallMs()-t0>=ms)))break;
-    plnLandBuild(L,best);k++;
+    if(plnLandBuild(L,best,slice))k++;
   }
   L.ms+=wallMs()-t0;
   PLN.stat.land={jobs:L.jobs.length,left:L.left,ms:Math.round(L.ms)};
@@ -558,12 +569,15 @@ function plnLandNode(H,o,gw,dux,dvz,span3){
   const sp=Math.max(1,Math.hypot(span3,H[o+3*gw]-H[o]));
   return {n,ao:clamp(1-Math.max(0,av-H[o])/sp*2.2,.55,1)};
 }
-function plnLandRibMesh(L,c){
+/* кусок ленты — генератор: сетка считается рядами, и заход (plnLandStep с slice) делит её по кадрам;
+   plnLandRibMesh — тот же код, прогнанный до конца */
+function* plnLandRibGen(L,c){
   const C=PLN_LAND,NT=L.NT,R=L.R,MG=3,i0=c*C.chunk,i1=Math.min(i0+C.chunk,NT-1),nc=i1-i0+1,gw=nc+2*MG,gh=R+2*MG;
   const H=new Float32Array(gw*gh),PAL=PLN_PAL;
   for(let r=0;r<gh;r++){
     const rr=clamp(r-MG,0,R-1);
     for(let i=0;i<gw;i++)H[r*gw+i]=plnLandRibH(L,rr,clamp(i0+i-MG,0,NT-1));
+    yield;
   }
   const X=i=>L.x0+clamp(i0+i-MG,0,NT-1)*L.dx,Z=r=>L.zr[clamp(r-MG,0,R-1)];
   const m=plnMesh((nc*(R+1))*2+16);
@@ -582,6 +596,7 @@ function plnLandRibMesh(L,c){
       (st-plnSmooth(.5,.7,slope))*.8);
     /* в гнезде свечения у земли лежит доля камня */
     plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st*.85,q.ao);
+    if(i===nc-1)yield;
   }
   for(let r=0;r+1<R;r++)for(let i=0;i+1<nc;i++){
     const a=r*nc+i;
@@ -595,6 +610,10 @@ function plnLandRibMesh(L,c){
   }
   for(let i=0;i+1<nc;i++)plnQuad(m,sk+i,sk+i+1,i+1,i);
   return m;
+}
+function plnLandRibMesh(L,c){
+  const g=plnLandRibGen(L,c);
+  for(;;){const r=g.next();if(r.done)return r.value;}
 }
 function plnLandFarMesh(L,J){
   const C=PLN_LAND,NC=plnLandCols(J.b),fz=L.fz,RF=fz.length,MG=3,nc=J.c1-J.c0+1,nr=J.rb-J.ra+1,gw=nc+2*MG,gh=nr+2*MG;

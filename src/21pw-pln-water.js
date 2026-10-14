@@ -250,9 +250,10 @@ const plnWaterVP=(vp,y)=>plnM4mul(vp,plnM4mirrorY(y));
 /* ── сетки глади ──
    Решётка: xs — шаг по x от xa, zs — ряды в глубину; at(x,z) кладёт вершину и говорит, держит ли
    она воду; квадрат — если воду держит хоть один угол (у берега гладь уходит под землю, а не рвётся) */
-function plnWaterGrid(m,xa,nx,sx,zs,at){
+/* генератор: ряд за рядом, чтобы заход (plnLandStep с slice) делил листы по кадрам */
+function* plnWaterGrid(m,xa,nx,sx,zs,at){
   const nz=zs.length,keep=new Uint8Array((nx+1)*nz);
-  for(let j=0;j<nz;j++)for(let i=0;i<=nx;i++)keep[j*(nx+1)+i]=at(xa+i*sx,zs[j])?1:0;
+  for(let j=0;j<nz;j++){for(let i=0;i<=nx;i++)keep[j*(nx+1)+i]=at(xa+i*sx,zs[j])?1:0;yield;}
   for(let j=0;j+1<nz;j++)for(let i=0;i<nx;i++){
     const a=j*(nx+1)+i,b=a+1,c=a+nx+2,d=a+nx+1;
     if(keep[a]|keep[b]|keep[c]|keep[d])plnQuad(m,a,b,c,d);
@@ -262,9 +263,11 @@ function plnWaterGrid(m,xa,nx,sx,zs,at){
 const plnWaterRows=(z0,z1,s)=>{const z=[],n=Math.ceil((z1-z0)/s-1e-9);for(let k=0;k<=n;k++)z.push(z0+k*s);return z;};
 /* Вода ложбины едет с дальним миром. Дно лежит в цвете вершины: высота ленты (мировая) и дна
    ложбины (на её уровне) — глубину считает шейдер, потому что уровень воды в кадре свой */
-function plnWaterSheet(L,J){
+function plnRun(g){for(;;){const r=g.next();if(r.done)return r.value;}}
+function plnWaterSheet(L,J){return plnRun(plnWaterSheetGen(L,J));}
+function* plnWaterSheetGen(L,J){
   const C=PLN_LAND,sx=2,zs=plnWaterRows(4,136,1),nx=Math.ceil((J.xb-J.xa)/sx),m=plnMesh((nx+1)*zs.length*2);
-  return plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
+  return yield* plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
     const f=plnLandFarH(L,x,z),hr=z<=C.zBack?plnLandRibAt(L,x,z):-1e3;
     plnVert(m,[x,C.wRel,z],[0,1,0],[hr,f,0],PLN_MAT.water,0,0,0);
     return C.wRel-f>-.4&&plnLandTab(L,L.liftHi,x)+C.wRel-hr>-.4;
@@ -272,9 +275,10 @@ function plnWaterSheet(L,J){
 }
 /* пруд стоит в мире, на уровне озера игры; вода — только в чаше: за валом бугры склона уходят ниже
    её уровня, и там она легла бы лужами */
-function plnWaterPond(L,J){
+function plnWaterPond(L,J){return plnRun(plnWaterPondGen(L,J));}
+function* plnWaterPondGen(L,J){
   const k=L.lake,sx=L.dx*2,zs=plnWaterRows(k.zn-2.4,k.zf+2,.6),nx=Math.ceil((J.xb-J.xa)/sx),m=plnMesh((nx+1)*zs.length*2);
-  return plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
+  return yield* plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
     const hr=plnLandRibAt(L,x,z);
     plnVert(m,[x,k.level,z],[0,1,0],[hr,-1e3,0],PLN_MAT.water,0,0,0);
     return k.level-hr>-.4&&(Math.abs(z)<2.5||plnLandPond(L,x,z)<1.2);

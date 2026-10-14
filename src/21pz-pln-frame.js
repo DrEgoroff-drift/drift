@@ -291,6 +291,41 @@ function plnHandWin(S,ws,hs,f,h){
 }
 
 /* ── кадр ── */
+/* ── заход собирается за несколько кадров ──
+   Первый кадр спуска строил землю, расстановку, вещи, метки и травы разом: 90–150 мс. Пока идёт
+   сборка, на экране прежняя сцена (drawLanding рисует систему), спуск стоит; каждый кадр — не больше
+   7 мс работы. Этапы: куски ленты в окне (рядами), посадки, вещи земли, метки, своё, травы.
+   true — ещё собирается; страховка — 4 с (240 кадров) */
+function plnWarmStep(L,S,p,C,V){
+  if(!L.warm){L.warm={st:0,k:0,n:0};return true;}   /* кадр, где заведён лист мира (plnLand), — только он */
+  const w=L.warm;
+  if(++w.n>240){L.warmDone=true;return false;}
+  const B=7;
+  /* набор флоры строится из системы по шагу (plnKitTick); не успел — достраивается здесь, в бюджет кадра */
+  if(!(PLN_FLORA.kit&&PLN_FLORA.gen===PLN_GPU.gen)){
+    const t0=wallMs();
+    while(wallMs()-t0<B&&plnFloraKitStep());
+    return true;
+  }
+  if(w.st===0){
+    plnLandStep(L,C.ex,V,null,B,true);
+    if(!L.jobs.some(J=>!J.done&&plnLandSees(J,C.ex,V,20)))w.st=1;
+    return true;
+  }
+  if(w.st===1){
+    plnPlantStep(L,p,C.ex,V,B);
+    if(++w.k>=3){w.st=2;w.k=0;}
+    return true;
+  }
+  if(S.deposits){
+    if(w.st===2)plnThings(L,S,p);
+    else if(w.st===3){if(PLN_MARK.on&&S.tr&&S.tr.poi&&S.tr.poi.length)plnMarks(L,S);}
+    else if(w.st===4){if(OWN.on&&S.tr&&S.p)plnOwnStep(L,S);}
+    else if(w.st===5)plnHerbs(L,S,p);
+  }
+  if(++w.st>5){L.warmDone=true;return false;}
+  return true;
+}
 function plnSurface(S,o){
   /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
      S — состояние поверхности (без него G.surf); o — спуск (21pza): {lens(ws,hs) → {vx,vy},
@@ -309,6 +344,7 @@ function plnSurface(S,o){
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
   const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
+  if(fly&&o.warm&&!PLN.rush&&!L.warmDone&&plnWarmStep(L,S,p,C,V))return "warm";
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
