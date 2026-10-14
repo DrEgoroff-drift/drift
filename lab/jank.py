@@ -197,6 +197,12 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
             out.append((tag, "просадка FPS: худшая секунда %d кадров (порог %d)" % (min(fps), FPS_MIN)))
         if low1 > LOW1_MS:
             out.append((tag, "1%% low: %.1f мс на кадр (порог %d) — подтормаживает" % (low1, LOW1_MS)))
+        # заминка против соседей (FCAT/PCPer): кадр вдвое дольше медианы двадцати прошлых — глаз видит рывок,
+        # даже когда до 33 мс он не дотянул; лёгкая и тяжёлая сцены сравниваются каждая сама с собой
+        hz = [(W[i + 1]["t"], x) for i, x in enumerate(iv) if i >= 20 and x > 20 and x > 2 * sorted(iv[i - 20:i])[10]]
+        row["hitch"] = len(hz)
+        if len(hz) > 3:
+            out.append((tag, "заминки: %d кадров вдвое дольше соседей (худший %.0f мс на %.1f с)" % (len(hz), max(x for _, x in hz), hz[0][0] / 1000)))
     lt = [x for x in d.get("lt") or [] if ENTRY_MS <= x[0] < pz - 50]
     if lt: row["long"] = max(x[1] for x in lt)
     big = [x for x in lt if x[1] > LONGTASK_MS]
@@ -221,6 +227,37 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
         row.get("fps", "?"), "%.1f" % row["low1"] if "low1" in row else "?", row.get("drop", "?"), "%.0f" % row["long"] if "long" in row else "-",
         "%.0f%%" % (100 * row["main"]) if "main" in row else "?", "%.0f%%" % (100 * row["gpuproc"]) if "gpuproc" in row else "?",
         "%.2f" % row["gpums"] if "gpums" in row else "?"))
+    return row
+
+
+# ── регресс против прошлых прогонов на этой машине (BugNet/PerfGuard: p99 хуже базы на 10 % — красное).
+# Запас шире — 25 % и абсолютный порог: headless шумит; база — медиана пяти прошлых записей сцены ──
+FRAMES_LOG = os.path.join(os.environ.get("LAB_DATA") or os.path.join(os.path.expanduser("~"), "drift-data", "lab"), "frames.jsonl")
+REGRESS = {"low1": (1.25, 3, "1% low, мс"), "gpums": (1.25, .5, "видеокарта, мс/кадр"), "main": (1.25, .05, "поток, доля"),
+           "hitch": (2.0, 4, "заминки")}
+
+
+def regress(sc, row, out, ver):
+    hist = []
+    try:
+        for ln in open(FRAMES_LOG, encoding="utf-8"):
+            try: r = json.loads(ln)
+            except ValueError: continue
+            if r.get("scene") == sc: hist.append(r)
+    except OSError: pass
+    base = hist[-5:]
+    if len(base) >= 3:
+        for k, (mul, add, nm) in REGRESS.items():
+            vals = sorted(r[k] for r in base if r.get(k) is not None)
+            if len(vals) < 3 or row.get(k) is None: continue
+            b = vals[len(vals) // 2]
+            if row[k] > b * mul and row[k] - b > add:
+                out.append(("кадры · " + sc, "регресс: %s %.2f против базы %.2f (медиана %d прошлых прогонов)" % (nm, row[k], b, len(vals))))
+    try:
+        os.makedirs(os.path.dirname(FRAMES_LOG), exist_ok=True)
+        with open(FRAMES_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(dict(row, scene=sc, ver=ver, ts=int(time.time())), ensure_ascii=False) + "\n")
+    except OSError: pass
 
 
 def run_scene(a, pg, sc, bad, plant=None):
@@ -279,7 +316,8 @@ def run_scene(a, pg, sc, bad, plant=None):
         if d["crash"]: bad.append(("кадры · " + sc, "СБОЙ на экране"))
         for e in d["errs"]: bad.append(("кадры · " + sc, "ошибка страницы: " + re.sub(r"\s+", " ", e)[:160]))
         judge(sc, d["f"], bad, d.get("pz"))
-        heavy(sc, d, res0, res1, p0, p1, w1 - w0, gms, bad)
+        row = heavy(sc, d, res0, res1, p0, p1, w1 - w0, gms, bad)
+        if not plant: regress(sc, row, bad, shot.ev(ws, "typeof VER!=='undefined'?VER:'?'"))
     finally:
         try: urllib.request.urlopen("http://127.0.0.1:%d/json/close/%s" % (a.port, t["id"]), timeout=5)
         except Exception: pass
