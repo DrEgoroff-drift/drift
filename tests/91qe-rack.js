@@ -4,9 +4,12 @@
    а нет места — гасят её. Проверка — рамкой тела против рамки плашки, в пикселях вёрстки. */
 TEST_SUITES.push(()=>suite("стойка: плашка не поверх тела",()=>{
   resetWorld();
-  const W0=W,H0=H,K0=RACK_K,mode0=G.mode,cam0=[G.viewCX,G.viewCY,G.zoom],marks0=G.marks,hf0=RACK.hitF;
+  const hud0=[HUD_BAND,HUD_FLOOR,HUD_RAIL,HUD_RAILTOP],W0=W,H0=H,K0=RACK_K,mode0=G.mode,cam0=[G.viewCX,G.viewCY,G.zoom],marks0=G.marks,hf0=RACK.hitF;
   const cross=(g,b)=>b.x1>g.x&&b.x0<g.x+g.w&&b.y1>g.y&&b.y0<g.y+g.h;
   try{
+    /* рамку вёрстки (борт, пол, верхняя полоса) публикует DOM своего окна (27z): набор до этого
+       мог оставить борт окна поуже — x1 плашки встал бы у чужого борта (лаборатория, ?shuffle) */
+    HUD_BAND=72;HUD_FLOOR=0;HUD_RAIL=0;HUD_RAILTOP=0;
     W=1920;H=1080;RACK_K=1;G.mode="system";G.zoom=1;G.marks=[];RACK.hitF=null;
     const sys=G.sys,p=sys.planets[0];
     ok(!!p,"в стартовой системе есть планета");
@@ -50,5 +53,5 @@ TEST_SUITES.push(()=>suite("стойка: плашка не поверх тел�
     const s=rackGeo();
     eq(s.mode,"shelf","на телефоне — полка");
     ok(!s.tape&&s.h<=130,"полка — только циферблаты, без ленты: h="+(s.h|0));
-  }finally{W=W0;H=H0;RACK_K=K0;G.mode=mode0;[G.viewCX,G.viewCY,G.zoom]=cam0;G.marks=marks0;RACK.hitF=hf0;}
+  }finally{[HUD_BAND,HUD_FLOOR,HUD_RAIL,HUD_RAILTOP]=hud0;W=W0;H=H0;RACK_K=K0;G.mode=mode0;[G.viewCX,G.viewCY,G.zoom]=cam0;G.marks=marks0;RACK.hitF=hf0;}
 }));

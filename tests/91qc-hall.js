@@ -257,7 +257,8 @@ TEST_SUITES.push(()=>suite("зал станции",()=>{
   HALL.from=HALL.to=null;
 
   /* ?hall=0: прежний стол — ни класса, ни холста */
-  const was=HALL.on;HALL.on=false;HALL.cn=null;
+  /* зал мог остаться открытым от набора раньше (?shuffle): закрываем, иначе проверка видит чужое */
+  const was=HALL.on;hallClose();HALL.on=false;HALL.cn=null;
   hallOpen();
   ok(!HALL.open&&!HALL.cn,"с выключенным залом hallOpen ничего не открывает");
   HALL.on=was;
