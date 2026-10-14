@@ -6,6 +6,37 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.496.0 - the dear vein is a find (M904d): the gross lever and the bad hour
+
+DESIGN-game §4.1a. The probe (M903) found the mining loop paying 2.6–3.7× the model, and the money
+came from dear ore, not volume: a planet's deposits took their type from its profile in equal
+shares, so a volcanic world held crystal as densely as iron.
+
+- **The dear vein is rarer (`src/21pzc-dep-value.js`).** A deposit keeps a dear ore with weight
+  17 / its price (silicon and cheaper always), otherwise it is the profile's cheapest ore: crystal one
+  deposit in six, iridium one in four, titan about every other one. The deposit's own seed decides,
+  so landing again shows the same ground and cannot be rerolled. The surface is for iron and
+  silicon; dear ore lies deep (the shaft's depth tiers are untouched), and a crystal vein on top is
+  the hour's luck. Tried and dropped: thinner dear veins (T0 earned more — the bot moved on to
+  cheap deposits faster).
+- **The probe plays insured and plays a bad hour.** T2 and T3 insure the hull, as a careful player
+  would; two new rows crash the T2 hull at half an hour — uninsured (the hull and its module steps
+  are booked at price) and insured (back in a shift).
+
+Measured, one hour per tier (gross / upkeep / net, cr/h):
+
+| tier | before | now | oracle §4.1 |
+|---|---|---|---|
+| T0 Стриж | 15 275 / 3 607 / 11 668 | 10 429 / 3 607 / 6 822 | 7 200 / 2 800 / 4 400 |
+| T1 Вьюк | 46 695 / 3 197 / 43 498 | 24 458 / 3 246 / 21 212 | 21 300 / 7 400 / 13 900 |
+| T2 Обод, insured | 50 500 / 10 988 / 39 513 | 26 805 / 11 933 / 14 871 | 37 200 / 23 000 / 14 200 |
+| T2, uninsured wreck | — | 20 235 / 34 771 / −14 535 | negative |
+| T2, insured wreck | — | 23 438 / 11 762 / 11 676 | — |
+
+The M904 gate holds: a good T2 hour is +14 900, a bad one −14 500. Still open: T0 and T1 net run
+about 1.5× the oracle (the bot's lap is 4.3 min against a human's ≈8, and T1 has no estate to pay
+for), and T3 has no workshops or base in the probe. Suite «дорогая жила» (6 asserts).
+
 ## 0.495.0 - debt and the hull (M904b, M904c): the mutual-aid fund, the collector, Страхкасса
 
 DESIGN-game §5.1/§5.2, forks F1 and F3. After the bill (0.494.0) money could still not run out and

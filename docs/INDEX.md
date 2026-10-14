@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 578 · top-level symbols: 8303
+Files: 580 · top-level symbols: 8308
 
 ## SYMBOLS
 
@@ -444,9 +444,11 @@ DECO_LIT                     src/21b-surface-deco.js:154
 DECO_ROT                     src/21bc-deco-gpu.js:8
 DEEDS                        src/11ai-ledger.js:25-35
 DEPTH_TIERS                  src/04-mods.js:57-61
+DEP_REF                      src/21pzc-dep-value.js:17
 DEP_ROOM_OLD_ENTER           src/21pih-dep-room.js:35
 DEP_ROOM_OLD_UPD             src/21pih-dep-room.js:43
 DEP_ROOM_PAD                 src/21pih-dep-room.js:10
+DEP_VALUE_OLD_ENTER          src/21pzc-dep-value.js:40
 DESC_MOOD                    src/01-core.js:196-201
 DESC_TAIL                    src/01-core.js:202
 DESK_DRAW                    src/27ia-desk-top.js:58-293
@@ -3512,10 +3514,13 @@ decoTruss                    src/21ba-deco-shapes.js:101-143
 decoTwinCanopy               src/21bb-deco-biomes.js:328
 decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
+depCheap                     src/21pzc-dep-value.js:22-27
 depKind                      src/21b-surface-deco.js:395-404
 depRoom                      src/21pih-dep-room.js:25-34
 depRoomBlockers              src/21pih-dep-room.js:11-17
 depRoomSpans                 src/21pih-dep-room.js:20-24
+depValue                     src/21pzc-dep-value.js:28-39
+depValueF                    src/21pzc-dep-value.js:18-21
 deployDrone                  src/12-economy.js:329-346
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
@@ -9594,6 +9599,9 @@ zoomTo                       src/15-input.js:358
 ## src/21pzb-pln-words.js · 7 KB
   · поверхность под движком планеты: слова только на вещах (M830 tail):1
 
+## src/21pzc-dep-value.js · 3 KB
+  · дорогая жила — находка (M904d · DESIGN-game §4.1a):1
+
 ## src/22-mode-cave.js · 45 KB
   · пещера: поле породы в двух измерениях:1
 
@@ -10054,7 +10062,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw3-swarm.js · 3 KB
   · рой: слово раньше укуса, авария не петля (0.493.3):1
 
-## tests/91zzzw4-ecosim.js · 19 KB
+## tests/91zzzw4-ecosim.js · 21 KB
   · проба · экономика (M903):1
 
 ## tests/91zzzw5-hotel-land.js · 2 KB
@@ -10065,6 +10073,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw7-drone-ticks.js · 2 KB
 
 ## tests/91zzzw8-bill.js · 9 KB
+
+## tests/91zzzw9-dep.js · 2 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
