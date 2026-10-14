@@ -507,7 +507,7 @@ function updateSurface(dt){
      как у следа и у почты, и ни одного на посадки мимо посёлка */
   else if(typeof wallDraw==="function"&&settleCanLive(S.p)&&
           (S._wallX===undefined?(S._wallX=settleWallHereX(S.p,tr)):S._wallX)!=null&&
-          Math.abs(S.x-S._wallX)<30){
+          Math.abs(S.x-S._wallX)<30&&!(dep&&(wallAsk(WALL_S),!wallCanSign(WALL_S)))){   /* стена без дела уступает залежи рядом (плейтест экономики 09.10) */
     wallAsk(WALL_S);
     const n=wallCount(WALL_S);
     if(wallCanSign(WALL_S)){
@@ -519,7 +519,7 @@ function updateSurface(dt){
          строка есть: место должно уметь молчать, но не притворяться пустым */
       /* «1 РУК» — счёт без языка (плейтест 30.08.2026): числительное склоняется */
       G.prompt="СТЕНА ПОСЁЛКА · "+n+" "+pl3(n,"РУКА","РУКИ","РУК")+(wallHere(WALL_S)&&wallHere(WALL_S).mine?", СРЕДИ НИХ ВАША":"");
-    }
+    }else G.prompt="СТЕНА ПОСЁЛКА · ПУСТА";   /* ветка всегда пишет строку: прежняя подсказка не висит */
   }
   else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
     const V=settleTick(settleAt(G.sx,G.sy));
@@ -555,7 +555,7 @@ function updateSurface(dt){
       }
     }
   }
-  else if(poiNear(S,tr)){
+  else if(poiNear(S,tr)&&!(dep&&poiMemo(poiNear(S,tr).seed))){   /* осмотренное уступает залежи рядом */
     const q=poiNear(S,tr);
     /* Осмотр идёт единственной дорогой — через `poiInspect` (20a-poi). Здесь
        раньше стоял свой, урезанный осмотр: данные и узел, без ответа по типу
