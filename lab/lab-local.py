@@ -193,6 +193,12 @@ def text_unit(ctx, kind, arg, cmd, post=None):
     base = os.path.join(ctx["tmp"], "%s-%d" % (kind, n))
     return {"kind": kind, "arg": arg, "out": base + ".txt", "err": base + ".err", "cmd": cmd, "text": True, "post": post}
 
+# группы прогонов, из которых пульт собирает сессию; вид прогона → группа
+GROUPS = ["core", "vision", "light", "windows", "heavy", "tour", "frames", "hunt"]
+KIND_GROUP = {"node": "core", "vision": "vision", "light": "light", "mobile": "windows", "tall": "windows", "wide": "windows",
+              "heavy": "heavy", "solo": "heavy", "tour": "tour", "frames": "frames", "hunt": "hunt"}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--budget", type=int, default=60, help="minutes")
@@ -203,6 +209,7 @@ def main():
     ap.add_argument("--steps", type=int, default=60, help="hunt steps per seed")
     ap.add_argument("--no-build", action="store_true")
     ap.add_argument("--hunt-only", action="store_true", help="only the hunt, seed after seed")
+    ap.add_argument("--groups", default="", help="comma list of " + ",".join(GROUPS) + "; overrides --quick/--hunt-only")
     ap.add_argument("--serve", type=int, default=0, help="only serve the page on 127.0.0.1:PORT")
     ap.add_argument("--log", default="", help="also append the log to this file")
     a = ap.parse_args()
@@ -227,7 +234,9 @@ def main():
     except (OSError, ValueError): pass
     try: os.remove(STOPF)
     except OSError: pass
-    mode = "hunt" if a.hunt_only else ("quick" if a.quick else "full")
+    grp = set(g for g in a.groups.split(",") if g in GROUPS) if a.groups else \
+        ({"hunt"} if a.hunt_only else {"core", "vision", "light"} if a.quick else set(GROUPS))
+    mode = ",".join(g for g in GROUPS if g in grp)
     live_write(pid=os.getpid(), phase="build", ref=a.ref, jobs=a.jobs, budget=a.budget, mode=mode, steps=a.steps,
                log=os.path.abspath(a.log) if a.log else "", t0=T0, deadline=deadline, done=0, ahead=0, green=0, red=0,
                fresh=[], sid="", ver="", total=0)
@@ -275,16 +284,14 @@ def main():
     units = [text_unit(ctx, "node", "", [ctx["node"], os.path.join(src, "test-node.js"), "--full", "--shuffle=" + shuf]),
              text_unit(ctx, "vision", "", [ctx["node"], os.path.join(src, "test-geom.js"), "--page=" + tests], vision_post)]
     units += [page_unit(ctx, "light", "%d/%d" % (i, LIGHT_N), "shard=%d/%d&shuffle=%s%s" % (i, LIGHT_N, shuf, skq), "1280,800") for i in range(LIGHT_N)]
-    if not a.quick:
-        for kind, win in (("mobile", "390,844"), ("tall", "1440,1440"), ("wide", "2000,1000")):
-            units += [page_unit(ctx, kind, "%d/%d" % (i, WIN_N), "shard=%d/%d&shuffle=%s%s" % (i, WIN_N, shuf, skq), win) for i in range(WIN_N)]
-        units += [page_unit(ctx, "heavy", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in lab.heavy_names()]
-        units += [page_unit(ctx, "solo", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in solo]
-        units.append(text_unit(ctx, "tour", "", [sys.executable, os.path.join(src, "docs", "tour.py"), "--n", "600",
-                                                  "--port", "9690", "--out", os.path.join(tmp, "tour.png")], tour_post))
-        units.append(text_unit(ctx, "frames", "", [sys.executable, os.path.join(HERE, "jank.py"), "--port", "9692", "--root", src]))   # длинные кадры на настоящей видеокарте
-    units = [u for u in units if lab.unit_id(u["kind"], u["arg"]) not in skip]
-    if a.hunt_only: units = []
+    for kind, win in (("mobile", "390,844"), ("tall", "1440,1440"), ("wide", "2000,1000")):
+        units += [page_unit(ctx, kind, "%d/%d" % (i, WIN_N), "shard=%d/%d&shuffle=%s%s" % (i, WIN_N, shuf, skq), win) for i in range(WIN_N)]
+    units += [page_unit(ctx, "heavy", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in lab.heavy_names()]
+    units += [page_unit(ctx, "solo", n, "full=1&only=" + urllib.parse.quote(n), "1280,800") for n in solo]
+    units.append(text_unit(ctx, "tour", "", [sys.executable, os.path.join(src, "docs", "tour.py"), "--n", "600",
+                                              "--port", "9690", "--out", os.path.join(tmp, "tour.png")], tour_post))
+    units.append(text_unit(ctx, "frames", "", [sys.executable, os.path.join(HERE, "jank.py"), "--port", "9692", "--root", src]))   # длинные кадры на настоящей видеокарте
+    units = [u for u in units if lab.unit_id(u["kind"], u["arg"]) not in skip and KIND_GROUP[u["kind"]] in grp]
 
     seeds = [0]
     def next_hunt():
@@ -300,7 +307,7 @@ def main():
     live_write(phase="run", sid=sid, ver=ver, total=len(units), ahead=len(live))
     def fill():
         # охота добирает свободные места, пока бюджет позволяет зерно целиком
-        while not STOP.is_set() and (not a.quick or a.hunt_only) and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
+        while not STOP.is_set() and "hunt" in grp and deadline - time.time() > TMO["hunt"] and len(live) < a.jobs:
             live.add(ex.submit(run_unit, next_hunt(), ctx))
     try:
         fill()

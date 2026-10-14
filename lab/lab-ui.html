@@ -58,6 +58,15 @@ input[type=range]{width:100%;accent-color:var(--cy);height:20px}
 .seg button:last-child{border-right:0}
 .seg button.on{background:var(--cy2);color:#fff}
 .seg button:hover:not(.on){background:#ffffff08}
+.grp{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.grp button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:none;border:1px solid var(--line2);border-radius:4px;padding:7px 9px;min-height:44px;cursor:pointer;color:var(--dim)}
+.grp button b{font-size:12px;font-weight:600;color:inherit;display:flex;gap:6px;align-items:center;width:100%}
+.grp button b i{width:8px;height:8px;border-radius:2px;border:1px solid var(--line2);flex:none}
+.grp button em{font-style:normal;font-size:10px;color:var(--cy);opacity:.8;padding-left:14px}
+.grp button small{font-size:10.5px;line-height:1.3;opacity:.75;padding-left:14px}
+.grp button.on{border-color:var(--cy2);color:#e8f6ff;background:#1fa3d414}
+.grp button.on b i{background:var(--cy2);border-color:var(--cy2)}
+.grp button:hover:not(.on){background:#ffffff08}
 select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;min-height:36px;font-family:var(--mono);font-size:13px}
 .locked .f{opacity:.45;pointer-events:none}
 /* ── кнопки ── */
@@ -170,10 +179,11 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
           <small>после круга охота ботом добирает время до конца</small>
         </div>
         <div class="f">
-          <label>Режим</label>
-          <div class="seg" id="modeSeg">
-            <button data-v="full">Полный</button><button data-v="quick">Быстрый</button><button data-v="hunt">Охота</button>
+          <label>Что гонять <b id="grpV"></b></label>
+          <div class="seg" id="preSeg">
+            <button data-v="all">Всё</button><button data-v="quick">Быстро</button><button data-v="smooth">Плавность</button><button data-v="hunt">Охота</button>
           </div>
+          <div class="grp" id="grp"></div>
           <small id="modeHint"></small>
         </div>
         <div class="f">
@@ -258,8 +268,17 @@ const $=s=>document.querySelector(s);
 let S={run:{phase:"idle"},cfg:{}},cfg={},logPos=0,logName="",lines=[],flt="all",q="";
 const PH={idle:["ГОТОВ",""],build:["СБОРКА","build"],run:["ИДЁТ","run"],stopping:["ОСТАНОВКА","stop"],
   done:["ЗАВЕРШЕНО",""],stopped:["ОСТАНОВЛЕНО",""],failed:["СБОЙ","bad"],lost:["ПРОЦЕСС ПОТЕРЯН","bad"]};
-const MODE={full:"ядро, зрение, окна (телефон, высокое, широкое), тяжёлые наборы, тур полёта — потом охота",
-  quick:"ядро, зрение и лёгкие части; без окон, тяжёлых и охоты — минуты",hunt:"только бот по зёрнам: случайные тропы под детекторами"};
+/* группы прогонов: ключ = --groups в lab-local.py; units — виды из laws.json, чтобы считать законы группы */
+const GRP=[["core","Ядро","законы мира под Node: сиды, опоры, свет, кванты, сохранение","~1 м",["node"]],
+  ["vision","Зрение","интерфейс числами: вылет, срез, наезд, цель, кегль","~1 м",["vision"]],
+  ["light","Наборы","наборы в Chrome 1280: сценарии, облако, вкладки","~3 м",["light"]],
+  ["windows","Окна","те же наборы на телефоне, высоком и широком окне","~7 м",["mobile","tall","wide"]],
+  ["heavy","Тяжёлые","сети и наборы, которым нужен свой Chrome","~10 м",["heavy","solo"]],
+  ["tour","Тур полёта","полёт: лишние отправки, перепечка, загрузка","~5 м",["tour"]],
+  ["frames","Плавность","настоящая видеокарта: рывки, заминки, FPS, память, регресс","~6 м",["frames"]],
+  ["hunt","Охота","бот по зёрнам добирает время до конца бюджета","до конца",["hunt"]]];
+const PRE={all:GRP.map(g=>g[0]),quick:["core","vision","light"],smooth:["frames","tour"],hunt:["hunt"]};
+let LAWN={};
 const busy=()=>["build","run","stopping"].includes(S.run.phase);
 const fmt=s=>{s=Math.max(0,Math.round(s));const h=s/3600|0,m=(s%3600)/60|0,x=s%60;return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0")};
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.k);toast.k=setTimeout(()=>e.classList.remove("on"),2200)}
@@ -271,15 +290,21 @@ function paintCfg(){
   $("#steps").value=cfg.steps;$("#stepsV").textContent=cfg.steps;
   $("#minV").textContent=cfg.minutes>=60?(cfg.minutes/60)+" ч":cfg.minutes+" мин";
   for(const b of $("#minSeg").children)b.classList.toggle("on",+b.dataset.v===+cfg.minutes);
-  for(const b of $("#modeSeg").children)b.classList.toggle("on",b.dataset.v===cfg.mode);
-  $("#modeHint").textContent=MODE[cfg.mode]||"";
+  const gs=cfg.groups||[],same=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
+  for(const b of $("#preSeg").children)b.classList.toggle("on",same(gs,PRE[b.dataset.v]));
+  $("#grp").innerHTML=GRP.map(([k,n,d,t,u])=>{const c=u.reduce((s,x)=>s+(LAWN[x]||0),0);
+    return `<button data-g="${k}" class="${gs.includes(k)?"on":""}" title="${d}"><b><i></i>${n}</b><em>${c?c+" законов · ":""}${t}</em><small>${d}</small></button>`}).join("");
+  $("#grpV").textContent=gs.length+" из "+GRP.length;
+  $("#modeHint").textContent=!gs.length?"ничего не выбрано — пустой круг":gs.includes("hunt")?(gs.length>1?"сначала круг выбранного, потом охота до конца бюджета":"только бот по зёрнам до конца бюджета"):"круг выбранного и стоп — бюджет не добирается охотой";
   if($("#ref").value!==cfg.ref){if(![...$("#ref").options].some(o=>o.value===cfg.ref))$("#ref").add(new Option(cfg.ref,cfg.ref));$("#ref").value=cfg.ref}
 }
 let saveK;function save(){paintCfg();clearTimeout(saveK);saveK=setTimeout(()=>api("/api/cfg",cfg),300)}
 $("#jobs").oninput=e=>{cfg.jobs=+e.target.value;save()};
 $("#steps").oninput=e=>{cfg.steps=+e.target.value;save()};
 $("#minSeg").onclick=e=>{if(e.target.dataset.v){cfg.minutes=+e.target.dataset.v;save()}};
-$("#modeSeg").onclick=e=>{if(e.target.dataset.v){cfg.mode=e.target.dataset.v;save()}};
+$("#preSeg").onclick=e=>{const v=e.target.dataset.v;if(v){cfg.groups=PRE[v].slice();save()}};
+$("#grp").onclick=e=>{const b=e.target.closest("button");if(!b)return;const k=b.dataset.g,g=(cfg.groups||[]).filter(x=>x!==k);
+  if(g.length===(cfg.groups||[]).length)g.push(k);cfg.groups=GRP.map(x=>x[0]).filter(x=>g.includes(x));save()};
 $("#ref").onchange=e=>{cfg.ref=e.target.value;save()};
 
 /* ── кнопки ── */
@@ -292,7 +317,7 @@ document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>api("/api/open
 /* ── состояние ── */
 async function tick(){
   try{S=await api("/api/state")}catch(e){$("#pill").textContent="ПУЛЬТ НЕ ОТВЕЧАЕТ";$("#pill").className="pill bad";return}
-  if(!cfg.mode){cfg=S.cfg;$("#jobs").max=S.sys.cores;paintCfg()}
+  if(!cfg.groups){cfg=S.cfg;$("#jobs").max=S.sys.cores;paintCfg()}
   const r=S.run,ph=PH[r.phase]||[r.phase,""];
   $("#pill").textContent=ph[0];$("#pill").className="pill "+ph[1];
   $("#ver").textContent=r.ver||"—";$("#sid").textContent=r.sid||"—";$("#mref").textContent=r.ref||cfg.ref||"—";
@@ -309,7 +334,7 @@ async function tick(){
     const end=r.t1||S.now,el=end-r.t0,tot=(r.deadline||end)-r.t0;
     $("#pEl").textContent=fmt(el);$("#pLeft").textContent=b?fmt((r.deadline||end)-S.now):"—";
     $("#pBar").style.width=Math.min(100,100*el/Math.max(1,tot))+"%";
-    $("#pMid").textContent=(r.jobs||"?")+" копий · "+({full:"полный",quick:"быстрый",hunt:"охота"}[r.mode]||"")+" · "+(r.budget||"?")+" мин";
+    $("#pMid").textContent=(r.jobs||"?")+" копий · "+(r.mode?r.mode.split(",").map(k=>(GRP.find(g=>g[0]===k)||[,k])[1]).join(", "):"")+" · "+(r.budget||"?")+" мин";
     $("#phaseTxt").textContent=r.phase==="build"?"собираю игру из ветки…":r.phase==="stopping"?"гашу свои прогоны…":r.why||"";
   }
   $("#track").classList.toggle("stop",r.phase==="stopping");
@@ -363,7 +388,7 @@ async function slow(){
     const e=$("#vBr");e.textContent=v.branch+" ("+v.head+")";e.className=v.branch===v.prod?"ok":"";
     $("#vProd").textContent=v.prod;const r=$("#ver");r.className=S.run.ver&&S.run.ver!==v.branch?"old":"ok";
     r.title=S.run.ver&&S.run.ver!==v.branch?"последний прогон шёл на старой версии — запусти заново":"";}catch(e){}
-  try{const L=await api("/api/laws");let html="",area="",g=0,rd=0,id=0;
+  try{const L=await api("/api/laws");LAWN={};for(const l of L.laws)for(const u of (l.unit||"").split(","))LAWN[u]=(LAWN[u]||0)+1;paintCfg&&cfg.groups&&paintCfg();let html="",area="",g=0,rd=0,id=0;
     for(const l of L.laws){if(l.area!==area){area=l.area;html+=`<div class="area">${esc(area)}</div>`}
       if(l.status==="green")g++;else if(l.status==="red")rd++;else id++;const why={idle:"не гонялся",absent:"нет в ветке"}[l.status]||"";
       html+=`<div class="law ${l.status}" title="${esc(l.catches)}"><i></i><div><b>${esc(l.name)}</b><small>${esc(l.catches)}</small>${l.msg?`<small class="m">${esc(l.msg)}</small>`:""}</div><em>${why||l.unit}</em></div>`}

@@ -23,7 +23,7 @@ DATA = os.environ["LAB_DATA"]; WEB = os.environ["LAB_WEB"]
 LOGS = os.path.join(DATA, "logs"); CFG = os.path.join(DATA, "launcher.json")
 os.makedirs(LOGS, exist_ok=True)
 CORES = os.cpu_count() or 4
-DEF = {"jobs": max(2, CORES // 4), "minutes": 60, "mode": "full", "ref": "lab-local", "steps": 60}
+DEF = {"jobs": max(2, CORES // 4), "minutes": 60, "groups": ["core", "vision", "light", "windows", "heavy", "tour", "frames", "hunt"], "ref": "lab-local", "steps": 60}
 LAST = [time.time()]
 PROC = [None]
 
@@ -36,6 +36,9 @@ def cfg_load():
     c = dict(DEF)
     try: c.update(json.load(open(CFG, encoding="utf-8-sig")))
     except Exception: pass
+    if "mode" in c:   # старый пульт: три режима
+        c["groups"] = {"quick": ["core", "vision", "light"], "hunt": ["hunt"]}.get(c["mode"], DEF["groups"])
+    c.pop("mode", None)
     return c
 
 def cfg_save(c):
@@ -84,8 +87,7 @@ def start(c):
     log = os.path.join(LOGS, "lab-" + time.strftime("%Y-%m-%d_%H-%M-%S") + ".log")
     cmd = [py_exe(), "-u", os.path.join(HERE, "lab-local.py"), "--jobs", str(int(c2["jobs"])), "--budget", str(int(c2["minutes"])),
            "--ref", str(c2["ref"]), "--steps", str(int(c2["steps"])), "--log", log]
-    if c2["mode"] == "quick": cmd.append("--quick")
-    if c2["mode"] == "hunt": cmd.append("--hunt-only")
+    cmd += ["--groups", ",".join(c2["groups"]) or "core"]
     with open(log, "a", encoding="utf-8") as f: f.write(time.strftime("%H:%M:%S ") + "пульт: запуск · " + " ".join(cmd[2:]) + "\n")
     err = open(log, "a", encoding="utf-8")   # то, что пишется до лога (сборка упала, аргументы), — туда же
     env = dict(os.environ, PYTHONIOENCODING="utf-8")
