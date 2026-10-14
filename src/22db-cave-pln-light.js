@@ -32,50 +32,31 @@ function cave3DayBox(sun,b){
   return {m:plnM4mul(plnM4ortho(mn[0],mx[0],mn[1],mx[1],n,f),view),range:f-n};
 }
 
-/* ── то, что живёт с устройством ── */
-function cave3GpuDev(){
-  const Q=CAVE3_GPU,d=GPU.dev;
-  if(Q.dev===d&&Q.gen===PLN_GPU.gen)return;
-  Q.dev=d;Q.gen=PLN_GPU.gen;Q.tier=-1;Q.w=0;Q.h=0;Q.T=null;Q.P={};
+/* раскладки привязок: у устройства (cave3GpuDev, cave3GpuTier) и у позднего прогрева (08b0) — одни и те же */
+function cave3Layouts(d){
   const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
   const dep=b=>({binding:b,visibility:FR,texture:{sampleType:"depth"}});
-  Q.L={scene:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},dep(1),dep(2),
+  return {scene:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},dep(1),dep(2),
       {binding:3,visibility:FR,sampler:{type:"comparison"}},{binding:4,visibility:FR,texture:{sampleType:"float"}},
       {binding:5,visibility:FR,sampler:{type:"filtering"}}]}),
-    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]}),post:null};
-  Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
-    cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
-  const ub=()=>d.createBuffer({size:1152,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
-  Q.U={main:ub(),shL:ub(),shS:ub(),refl:ub()};
+    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]})};
 }
-/* ── то, что живёт с ярусом: карты теней, привязка свёртки, конвейеры ── */
-function cave3GpuTier(){
-  const Q=CAVE3_GPU,d=GPU.dev,Z=PLN_GPU;
-  if(Q.tier===Z.tier&&Q.P.comp)return;
-  Q.tier=Z.tier;Q.ms=Z.ms;Q.shn=Math.min(Z.shn,2048);Q.w=0;Q.h=0;
+function cave3LayPost(d,ms){
   const FR=GPUShaderStage.FRAGMENT,VF=GPUShaderStage.VERTEX|FR,tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
-  Q.L.post=d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
+  return d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
     tx(2),tx(3),tx(4),{binding:5,visibility:FR,sampler:{type:"filtering"}},
-    {binding:6,visibility:FR,texture:{sampleType:"depth",multisampled:Q.ms>1}},
+    {binding:6,visibility:FR,texture:{sampleType:"depth",multisampled:ms>1}},
     {binding:7,visibility:FR,texture:{sampleType:"depth"}},{binding:8,visibility:FR,texture:{sampleType:"depth"}},
     {binding:9,visibility:FR,sampler:{type:"comparison"}}]});
-  if(Q.D){Q.D.lamp.destroy();Q.D.sun.destroy();}
-  const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
-  const lamp=d.createTexture({size:[Q.shn,Q.shn,1],format:PLN_DEP,usage:RT}),sun=d.createTexture({size:[Q.shn,Q.shn,1],format:PLN_DEP,usage:RT});
-  Q.D={lamp,sun,lampV:lamp.createView(),sunV:sun.createView()};
-  const L=Q.L;
-  /* привязки сцены зависят от зеркала (размер кадра) — их собирает cave3GpuSize */
-  Q.B0={main:null,refl:null,
-    sh:[Q.U.shL,Q.U.shS].map(u=>d.createBindGroup({layout:L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
-  /* глубина сцены при сглаживании многовыборочная: воздух читает её первую выборку */
-  const post=Q.ms>1?CAVE3_WGSL_POST.replace("var depthTex: texture_depth_2d;","var depthTex: texture_depth_multisampled_2d;"):CAVE3_WGSL_POST;
-  const mS=gpuShader(CAVE3_WGSL_SCENE+PLN_WGSL_WATER_CAVE),mP=gpuShader(post);
-  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
-    for(const x of i.messages)if(x.type==="error")cave3Log("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
+}
+const cave3PostWgsl=ms=>ms>1?CAVE3_WGSL_POST.replace("var depthTex: texture_depth_2d;","var depthTex: texture_depth_multisampled_2d;"):CAVE3_WGSL_POST;
+/* дескрипторы конвейеров пещеры: [короткое имя, дескриптор]; ключ воронки несёт сглаживание у sky/body/water */
+function cave3PipeDescs(d,L,ms){
+  const mS=gpuShader(CAVE3_WGSL_SCENE+PLN_WGSL_WATER_CAVE),mP=gpuShader(cave3PostWgsl(ms));
   const lS=d.createPipelineLayout({bindGroupLayouts:[L.scene]}),lH=d.createPipelineLayout({bindGroupLayouts:[L.shadow]}),
     lP=d.createPipelineLayout({bindGroupLayouts:[L.post]});
-  const prim={topology:"triangle-list",cullMode:"none"},mu={count:Q.ms};
-  const mk=(key,desc)=>{Q.P[key]=gpuPipeline("cave3."+key+(/^(sky|body|water)$/.test(key)?Q.ms:""),()=>desc);};
+  const prim={topology:"triangle-list",cullMode:"none"},mu={count:ms},out=[];
+  const mk=(key,desc)=>out.push([key,desc]);
   mk("shadow",{layout:lH,vertex:{module:mS,entryPoint:"vs_shadow",buffers:PLN_VB},primitive:prim,
     depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"less",depthBias:2,depthBiasSlopeScale:2.2}});
   mk("sky",{layout:lS,vertex:{module:mS,entryPoint:"vs_full"},fragment:{module:mS,entryPoint:"fs_sky",targets:[{format:PLN_HDR}]},
@@ -90,7 +71,46 @@ function cave3GpuTier(){
   mk("blur",pp("fs_blur"));mk("down",pp("fs_down"));mk("up",pp("fs_up"));mk("air",pp("fs_air"));
   /* свёртка пишет в сцену движка; её альфу не трогаем */
   mk("comp",pp("fs_comp",{format:PLN_HDR,writeMask:GPUColorWrite.RED|GPUColorWrite.GREEN|GPUColorWrite.BLUE}));
+  return out;
 }
+const cave3PipeKey=(k,ms)=>"cave3."+k+(/^(sky|body|water)$/.test(k)?ms:"");
+/* ── то, что живёт с устройством ── */
+function cave3GpuDev(){
+  const Q=CAVE3_GPU,d=GPU.dev;
+  if(Q.dev===d&&Q.gen===PLN_GPU.gen)return;
+  Q.dev=d;Q.gen=PLN_GPU.gen;Q.tier=-1;Q.w=0;Q.h=0;Q.T=null;Q.P={};
+  Q.L=cave3Layouts(d);Q.L.post=null;
+  Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
+    cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
+  const ub=()=>d.createBuffer({size:1152,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  Q.U={main:ub(),shL:ub(),shS:ub(),refl:ub()};
+}
+/* ── то, что живёт с ярусом: карты теней, привязка свёртки, конвейеры ── */
+function cave3GpuTier(){
+  const Q=CAVE3_GPU,d=GPU.dev,Z=PLN_GPU;
+  if(Q.tier===Z.tier&&Q.P.comp)return;
+  Q.tier=Z.tier;Q.ms=Z.ms;Q.shn=Math.min(Z.shn,2048);Q.w=0;Q.h=0;
+  Q.L.post=cave3LayPost(d,Q.ms);
+  if(Q.D){Q.D.lamp.destroy();Q.D.sun.destroy();}
+  const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
+  const lamp=d.createTexture({size:[Q.shn,Q.shn,1],format:PLN_DEP,usage:RT}),sun=d.createTexture({size:[Q.shn,Q.shn,1],format:PLN_DEP,usage:RT});
+  Q.D={lamp,sun,lampV:lamp.createView(),sunV:sun.createView()};
+  const L=Q.L;
+  /* привязки сцены зависят от зеркала (размер кадра) — их собирает cave3GpuSize */
+  Q.B0={main:null,refl:null,
+    sh:[Q.U.shL,Q.U.shS].map(u=>d.createBindGroup({layout:L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
+  /* глубина сцены при сглаживании многовыборочная: воздух читает её первую выборку (cave3PipeDescs) */
+  const mS=gpuShader(CAVE3_WGSL_SCENE+PLN_WGSL_WATER_CAVE),mP=gpuShader(cave3PostWgsl(Q.ms));
+  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
+    for(const x of i.messages)if(x.type==="error")cave3Log("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
+  for(const [k,desc] of cave3PipeDescs(d,L,Q.ms))Q.P[k]=gpuPipeline(cave3PipeKey(k,Q.ms),()=>desc);
+}
+/* поздний прогрев (08b0): конвейеры пещеры яруса, что выберет ближайшая посадка */
+GPU_LATE_GROUPS.push(()=>{
+  const d=GPU.dev,ms=PLN_QUAL[plnQualWant()].ms,L=cave3Layouts(d);
+  L.post=cave3LayPost(d,ms);
+  return cave3PipeDescs(d,L,ms).map(([k,desc])=>[cave3PipeKey(k,ms),{desc}]);
+});
 /* ── то, что живёт с размером кадра ── */
 function cave3GpuSize(){
   const Q=CAVE3_GPU,d=GPU.dev,w=GPU.bw,h=GPU.bh,Z=PLN_GPU;
