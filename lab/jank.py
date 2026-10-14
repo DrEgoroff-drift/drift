@@ -29,6 +29,11 @@ window.__J={on:false,t0:0,f:[]};
 (function(){var lt=0;function tick(t){requestAnimationFrame(tick);
   if(lt&&__J.on){var js=-1;try{js=FRAME_JS;}catch(e){}
     var r={t:t-__J.t0,d:t-lt,js:js,m:(typeof G!=="undefined"&&G.mode)||"?",g:-1};__J.f.push(r);
+    /* живой кадр: камера, зум, герой, светило, ошибки видеокарты, память — для законов плавности */
+    try{r.gt=G.t;r.vx=G.viewX;r.vy=G.viewY;r.k=G.viewK;var H=G.mode==="surface"?G.surf:G.mode==="cave"?G.cave:G.mode==="dig"?G.dig:null;
+      if(H){r.hx=H.x;r.hy=H.y;}
+      if(G.mode==="surface"&&typeof PLN!=="undefined"&&PLN.sun&&PLN.sun.dir)r.sun=[PLN.sun.dir[0],PLN.sun.dir[1],PLN.sun.dir[2]];
+      r.ge=GPU.errs||0;if(performance.memory)r.mem=performance.memory.usedJSHeapSize;}catch(e){}
     try{if(typeof GPU!=="undefined"&&GPU.dev){var s=performance.now();GPU.dev.queue.onSubmittedWorkDone().then(function(){r.g=performance.now()-s;});}}catch(e){}}
   lt=t;}
 requestAnimationFrame(tick);})();
@@ -76,10 +81,99 @@ def judge(sc, F, out):
                     ", ".join(sorted({who(f).split(" ")[0] for f in longs})))))
     if ew and ew["d"] > ENTRY_MAX:
         out.append(("кадры · " + sc, "вход: кадр %d мс в режиме %s — съел: %s" % (ew["d"], ew["m"], who(ew))))
+    smooth(sc, run, out)
+
+
+def smooth(sc, run, out):
+    """законы живого кадра — по кадрам, где мир сдвинулся (G.t вырос): rAF бывает чаще такта игры"""
+    import math
+    W = [f for i, f in enumerate(run) if i and f.get("gt") is not None and f["gt"] != run[i - 1].get("gt")]
+    if len(W) < 30: return
+    med = lambda A: sorted(A)[len(A) // 2] if A else 0
+    def jumps(key, lim_abs):
+        # скорость на тик мира, а не сдвиг за кадр: на 240 Гц кадр несёт то .5, то 1.5 тика (квант 28-loop),
+        # и сдвиг за кадр «прыгает» без всякого рывка на экране мира
+        d = [(b[key] - a[key]) / (b["gt"] - a["gt"]) for a, b in zip(W, W[1:])
+             if a.get(key) is not None and b.get(key) is not None and b["gt"] > a["gt"]]
+        if len(d) < 10: return 0, 0, 0
+        dd = [abs(b - a) for a, b in zip(d, d[1:])]
+        m = med([abs(x) for x in d])
+        bad = [x for x in dd if x > max(lim_abs, 3 * m)]
+        return len(bad), max(dd), m
+    n, mx, m = jumps("vx", 2.0)
+    if n > .01 * len(W): out.append(("кадры · " + sc, "камера рывком: %d из %d кадров (скачок %.1f при обычном шаге %.2f)" % (n, len(W), mx, m)))
+    n, mx, m = jumps("hx", 2.0)
+    if n > .01 * len(W): out.append(("кадры · " + sc, "герой рывком: %d из %d кадров (скачок %.1f при шаге %.2f)" % (n, len(W), mx, m)))
+    ks = [f.get("k") for f in W if f.get("k")]
+    kj = [abs(b / a - 1) for a, b in zip(ks, ks[1:]) if a]
+    if kj and max(kj) > .02: out.append(("кадры · " + sc, "зум рывком: за кадр %.1f %%" % (100 * max(kj))))
+    S = [f["sun"] for f in W if f.get("sun")]
+    if len(S) > 20:
+        ang = [math.degrees(math.acos(max(-1, min(1, sum(x * y for x, y in zip(a, b)))))) for a, b in zip(S, S[1:])]
+        m = med([x for x in ang if x > 0]) or 0
+        bad = [x for x in ang if x > .05 and x > 5 * m]
+        if bad: out.append(("кадры · " + sc, "свет рывком на живом кадре: %d скачков до %.2f° (обычный шаг %.4f°)" % (len(bad), max(bad), m)))
+    ge = [f.get("ge", 0) for f in run]
+    if ge and ge[-1] > ge[0]: out.append(("кадры · " + sc, "ошибки видеокарты на ходу: +%d" % (ge[-1] - ge[0])))
+    M = [(f["t"], f["mem"]) for f in run if f.get("mem")]
+    if len(M) > 60:
+        q = len(M) // 4
+        lo = [min(v for _, v in M[i * q:(i + 1) * q]) for i in range(4)]   # нижняя кромка по четвертям: пила мусора её не двигает
+        a, b = lo[0], lo[3]
+        if b - a > 8e6 and lo[0] < lo[1] < lo[2] < lo[3]: out.append(("кадры · " + sc, "память растёт: +%.1f МБ за %.0f с хода (по нижней кромке)" % ((b - a) / 1e6, (M[-1][0] - M[0][0]) / 1000)))
+
+
+def run_scene(a, pg, sc, bad, plant=None):
+    """одна сцена в своей вкладке: поднять, дождаться ровного режима, записать вход и ход, рассудить"""
+    req = urllib.request.Request("http://127.0.0.1:%d/json/new?about:blank" % a.port, method="PUT")
+    t = json.load(urllib.request.urlopen(req, timeout=10))
+    ws = shot.WS(t["webSocketDebuggerUrl"], 120)
+    try:
+        ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=1, mobile=False)
+        ws.call("Network.enable"); ws.call("Network.setBlockedURLs", urls=shot.BLOCK)
+        ws.call("Page.enable"); ws.call("Page.addScriptToEvaluateOnNewDocument", source=shot.CATCH)
+        ws.call("Page.navigate", url="file:///" + pg.replace("\\", "/") + "?s=" + sc)
+        t0, up = time.time(), False
+        while time.time() - t0 < 30:
+            up = shot.ev(ws, "typeof G!=='undefined'&&G.running&&typeof GPU!=='undefined'&&(GPU.ok||GPU.none)&&"
+                             "document.documentElement.hasAttribute('data-alive')")
+            if up is True: break
+            time.sleep(.2)
+        if up is not True:
+            bad.append(("кадры · " + sc, "сцена не поднялась за 30 с")); return
+        # стенд ставит сцену своим таймером (land(): ландшафт, вход в режим) — это секунда стенда, а не
+        # игры; пишем с той поры, как режим держится 1 с
+        m0, ts = None, time.time()
+        while time.time() - t0 < 45:
+            m = shot.ev(ws, "G.mode")
+            if m != m0: m0, ts = m, time.time()
+            elif time.time() - ts >= 1: break
+            time.sleep(.1)
+        gpu = shot.ev(ws, "!!GPU.ok")
+        if plant: shot.ev(ws, plant)
+        shot.ev(ws, "__J.t0=performance.now();__J.on=true;")
+        time.sleep(ENTRY_MS / 1000)
+        half = a.secs / 2
+        key(ws, "ArrowRight", True); time.sleep(half); key(ws, "ArrowRight", False)
+        key(ws, "ArrowLeft", True); time.sleep(half); key(ws, "ArrowLeft", False)
+        time.sleep(.3)
+        st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
+                         "errs:(window.__errs||[]).filter(function(e){return e[0]!=='W'}).slice(0,4)})")
+        if not isinstance(st, str):
+            bad.append(("кадры · " + sc, "запись не прочиталась: %s" % st)); return
+        d = json.loads(st)
+        if not gpu: bad.append(("кадры · " + sc, "видеокарты нет — замер на 2D не годится"))
+        if d["crash"]: bad.append(("кадры · " + sc, "СБОЙ на экране"))
+        for e in d["errs"]: bad.append(("кадры · " + sc, "ошибка страницы: " + re.sub(r"\s+", " ", e)[:160]))
+        judge(sc, d["f"], bad)
+    finally:
+        try: urllib.request.urlopen("http://127.0.0.1:%d/json/close/%s" % (a.port, t["id"]), timeout=5)
+        except Exception: pass
 
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--no-plant", action="store_true", help="skip the planted-defect run that proves the live-frame laws see")
     ap.add_argument("--scenes", default=",".join(SCENES))
     ap.add_argument("--w", type=int, default=1280)
     ap.add_argument("--h", type=int, default=800)
@@ -96,7 +190,7 @@ def main():
     prof = os.path.join(tempfile.gettempdir(), "drift-jank-%d" % a.port)
     proc = subprocess.Popen([chrome, "--headless=new", "--remote-debugging-port=%d" % a.port, "--user-data-dir=" + prof,
                              "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "--mute-audio",
-                             "--enable-unsafe-webgpu", "--window-size=%d,%d" % (a.w, a.h), "about:blank"],
+                             "--enable-unsafe-webgpu", "--enable-precise-memory-info", "--window-size=%d,%d" % (a.w, a.h), "about:blank"],
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     bad, ok = [], 0
     try:
@@ -104,50 +198,17 @@ def main():
             try: urllib.request.urlopen("http://127.0.0.1:%d/json/version" % a.port, timeout=2); break
             except Exception: time.sleep(.25)
         for sc in [s for s in a.scenes.split(",") if s]:
-            req = urllib.request.Request("http://127.0.0.1:%d/json/new?about:blank" % a.port, method="PUT")
-            t = json.load(urllib.request.urlopen(req, timeout=10))
-            ws = shot.WS(t["webSocketDebuggerUrl"], 120)
-            try:
-                ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=1, mobile=False)
-                ws.call("Network.enable"); ws.call("Network.setBlockedURLs", urls=shot.BLOCK)
-                ws.call("Page.enable"); ws.call("Page.addScriptToEvaluateOnNewDocument", source=shot.CATCH)
-                ws.call("Page.navigate", url="file:///" + pg.replace("\\", "/") + "?s=" + sc)
-                t0, up = time.time(), False
-                while time.time() - t0 < 30:
-                    up = shot.ev(ws, "typeof G!=='undefined'&&G.running&&typeof GPU!=='undefined'&&(GPU.ok||GPU.none)&&"
-                                     "document.documentElement.hasAttribute('data-alive')")
-                    if up is True: break
-                    time.sleep(.2)
-                if up is not True:
-                    bad.append(("кадры · " + sc, "сцена не поднялась за 30 с")); continue
-                # стенд ставит сцену своим таймером (land(): ландшафт, вход в режим) — это секунда стенда, а не
-                # игры; пишем с той поры, как режим держится 1 с
-                m0, ts = None, time.time()
-                while time.time() - t0 < 45:
-                    m = shot.ev(ws, "G.mode")
-                    if m != m0: m0, ts = m, time.time()
-                    elif time.time() - ts >= 1: break
-                    time.sleep(.1)
-                gpu = shot.ev(ws, "!!GPU.ok")
-                shot.ev(ws, "__J.t0=performance.now();__J.on=true;")
-                time.sleep(ENTRY_MS / 1000)
-                half = a.secs / 2
-                key(ws, "ArrowRight", True); time.sleep(half); key(ws, "ArrowRight", False)
-                key(ws, "ArrowLeft", True); time.sleep(half); key(ws, "ArrowLeft", False)
-                time.sleep(.3)
-                st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
-                                 "errs:(window.__errs||[]).filter(function(e){return e[0]!=='W'}).slice(0,4)})")
-                if not isinstance(st, str):
-                    bad.append(("кадры · " + sc, "запись не прочиталась: %s" % st)); continue
-                d = json.loads(st)
-                if not gpu: bad.append(("кадры · " + sc, "видеокарты нет — замер на 2D не годится"))
-                if d["crash"]: bad.append(("кадры · " + sc, "СБОЙ на экране"))
-                for e in d["errs"]: bad.append(("кадры · " + sc, "ошибка страницы: " + re.sub(r"\s+", " ", e)[:160]))
-                n0 = len(bad); judge(sc, d["f"], bad)
-                if len(bad) == n0: ok += 1
-            finally:
-                try: urllib.request.urlopen("http://127.0.0.1:%d/json/close/%s" % (a.port, t["id"]), timeout=5)
-                except Exception: pass
+            n0 = len(bad); run_scene(a, pg, sc, bad)
+            if len(bad) == n0: ok += 1
+        # подсадка: поверхность, где герой раз в полсекунды прыгает на 40 и видеокарта «ошибается» — оба закона
+        # обязаны это увидеть, иначе законы живого кадра слепы (как подсадки зрения)
+        if not a.no_plant:
+            pb = []
+            run_scene(a, pg, "surface", pb, plant="setInterval(function(){try{G.surf.x+=40;GPU.errs=(GPU.errs||0)+1;}catch(e){}},500);")
+            got = " ".join(m for _, m in pb)
+            print("подсадка: " + ("; ".join(m[:60] for _, m in pb) or "ничего не поймано"))
+            for law in ("герой рывком", "ошибки видеокарты"):
+                if law not in got: bad.append(("кадры · подсадка", "СЛЕПО: закон «%s» не поймал подсаженный брак" % law))
     finally:
         proc.kill()
         import shutil; shutil.rmtree(tmp, ignore_errors=True)
