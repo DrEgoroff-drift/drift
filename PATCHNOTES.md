@@ -6,6 +6,45 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.498.0 - station gauges and the cascade (M906)
+
+DESIGN-game §4.2, §7.1. Stations had prices and nothing else: a need nobody filled just rolled
+over, and the galaxy looked the same whatever the player did or did not do.
+
+- **Three gauges (`src/28l-gauge.js`).** Every station has stock, people and order, 0–1, saved
+  sparsely as three hundredths and a minute. Reading pulls each back toward the middle with a
+  two-hour time constant; order is pulled toward a lower middle while pirates hold the system.
+  Only the participation's stations and those within two jumps of the player are judged, once per
+  need window (15 minutes of play). The rest of the galaxy sits at the middle.
+- **A need nobody filled.** When a need window closes and neither the player nor the barges filled
+  it: stock −.2, people −.1. Filled by the player: stock +.3, people +.05. Barges count neither way.
+- **The cascade.** When stock falls below a quarter, the workshop stops for an hour. The good the
+  station makes cheapest, against its base price, leaves its counter, and the two nearest stations
+  within three jumps get it as a need (price ×2, one delivery). That need goes ahead of the
+  neighbour's own, so it is never hidden, and the hidden own need is judged by nobody. Filling it
+  counts in the participation's norm like a delivered order.
+- **People below .4.** The buyer pays 8 % less, buying stays at the old price, and the station
+  makes no named offers until it thaws; a warm word waits.
+- **Order.** An occupation step costs .3 and a freed system gains .5. Below .4 the pirates there
+  dig in and spread one and a half times bolder (`13b-occupy`), and the board says «Отбить».
+- **The hall shows it (§7.1).** The cantina's crowd and the walkable hall's visitors follow
+  people: the station type's crowd at .6, up to nine at the bar at .9, one at .3. The hall
+  rebuilds when people change while you are docked. The board's ПОЛОЖЕНИЕ section says it in words:
+  the stopped workshop and where its good is awaited, sullen people, «Отбить». No number is printed.
+- **Changed from §4.2, and why.** The text stops the workshop on every unfilled need and heals .05
+  per сводка. Needs roll every 15 minutes of play, and a сводка is six hours of wall clock: at that
+  rate every station around the player stood still within an evening. The workshop now stops when
+  the warehouse runs dry, the heal is a time constant, and the stop lasts an hour.
+- **Fixed before it shipped:** the cascade need first sat behind the neighbour's own need, and the
+  board listed «Энтурикс · кремний» while the isotopes that started it were nowhere. Two stations
+  with one name now carry their sector.
+
+Measured: the economy probe is unchanged to the credit on every tier. Its bot never lets a station
+go unfilled three times in an hour, so nothing it trades with turns sullen. Suites: «шкалы
+станции» ×3 (26 asserts); the vision walks the board with all three troubles and the counter with
+a stopped workshop. Open: crates on the counter for stock and lights for order need the hall's art
+pass; rumours travelling further from a sullen station; the keeper's face.
+
 ## 0.497.0 - the watch (M905): participation, norm, handover, the faucet
 
 DESIGN-game §3.2–3.4, §10.2–10.5. Until now nothing at the top of the game said what to do next:

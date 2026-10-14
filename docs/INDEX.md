@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 585 · top-level symbols: 8355
+Files: 587 · top-level symbols: 8397
 
 ## SYMBOLS
 
@@ -673,6 +673,22 @@ GAL_WGSL                     src/17z3-map-gpu.js:25
 GATE2D                       tests/91zzzzzzy3-gate2d.js:27-249
 GATE2D_DYRY                  tests/91zzzzzzy3-gate2d.js:14
 GATE2D_TXT                   tests/91zzzzzzy3-gate2d.js:16
+GAUGE_MID                    src/28l-gauge.js:23
+GAUGE_NEAR                   src/28l-gauge.js:24
+GAUGE_OLD_APPLY              src/28l-gauge.js:280
+GAUGE_OLD_BUY                src/28l-gauge.js:205
+GAUGE_OLD_BUYP               src/28l-gauge.js:189
+GAUGE_OLD_CLOSE              src/28l-gauge.js:149
+GAUGE_OLD_COOPBUY            src/28l-gauge.js:210
+GAUGE_OLD_CTX                src/28l-gauge.js:183
+GAUGE_OLD_MGR                src/28l-gauge.js:131
+GAUGE_OLD_NEEDAT             src/28l-gauge.js:145
+GAUGE_OLD_NEEDOF             src/28l-gauge.js:137
+GAUGE_OLD_OCCSET             src/28l-gauge.js:168
+GAUGE_OLD_OFFER              src/28l-gauge.js:195
+GAUGE_OLD_SNAP               src/28l-gauge.js:273
+GAUGE_OLD_WSEC               src/28l-gauge.js:270
+GAUGE_W                      src/28l-gauge.js:25
 GBM                          src/13z-gpu-combat.js:126
 GBM_WGSL                     src/13z-gpu-combat.js:127
 GBX_WGSL                     src/13z-gpu-combat.js:181
@@ -1396,7 +1412,7 @@ NOTE_MAX                     src/12ap-notebook.js:32
 NPC_BATTLE                   src/13d-npc.js:14
 NPC_PICKET                   src/13d-npc.js:13
 NPC_SHIPS                    src/03-ships.js:201
-OCC_CALM_MS                  src/13b-occupy.js:267
+OCC_CALM_MS                  src/13b-occupy.js:268
 OCC_FRESH                    src/13b-occupy.js:41
 OCC_LVL                      src/13b-occupy.js:20-25
 OCC_MAX                      src/13b-occupy.js:19
@@ -3310,7 +3326,7 @@ coopBuyQuote                 src/12aj-coop.js:72-77
 coopCanRegister              src/12aj-coop.js:44
 coopCapLeft                  src/12aj-coop.js:63-68
 coopCost                     src/12aj-coop.js:112-115
-coopCounterBlock             src/12aj-coop.js:207-238
+coopCounterBlock             src/12aj-coop.js:207-239
 coopDayOff                   src/12aj-coop.js:173
 coopEarn                     src/12aj-coop.js:107-111
 coopGiveDayOff               src/12aj-coop.js:166-172
@@ -3320,7 +3336,7 @@ coopLedger                   src/12aj-coop.js:101-106
 coopMul                      src/12aj-coop.js:119
 coopRank                     src/12aj-coop.js:37-43
 coopRec                      src/12aj-coop.js:36
-coopRegBlock                 src/12aj-coop.js:239-252
+coopRegBlock                 src/12aj-coop.js:240-253
 coopRegister                 src/12aj-coop.js:47-60
 coopSellSlice                src/12aj-coop.js:79-82
 coopSpirit                   src/12aj-coop.js:117
@@ -3746,7 +3762,7 @@ drawDustMotes                src/19-mode-landing.js:180-194
 drawEdgeWall                 src/17-mode-system.js:69-78
 drawElevator                 src/20aa-poi-shapes.js:90-112
 drawExhaust                  src/16a-space.js:323
-drawFactRoute                src/13b-occupy.js:302-347
+drawFactRoute                src/13b-occupy.js:303-348
 drawFactory                  src/20aa-poi-shapes.js:374-457
 drawFindsSystem              src/17b-finds.js:240-288
 drawFlame                    src/03b-hull-paint.js:10-56
@@ -4174,6 +4190,32 @@ galaxyAt                     src/17z1-galaxy.js:30-60
 galaxyCell                   src/17z1-galaxy.js:72-77
 galaxyGpu                    src/17z3-map-gpu.js:139-159
 gate2dChips                  tests/91zzzzzzy3-gate2d.js:18-26
+gaugeAdd                     src/28l-gauge.js:38-44
+gaugeAll                     src/28l-gauge.js:26
+gaugeCasc                    src/28l-gauge.js:27
+gaugeCascAt                  src/28l-gauge.js:92-95
+gaugeCrowd                   src/28l-gauge.js:217-226
+gaugeHallCrowd               src/28l-gauge.js:229-234
+gaugeJudge                   src/28l-gauge.js:96-108
+gaugeJudgeSet                src/28l-gauge.js:82-91
+gaugeKeyXY                   src/28l-gauge.js:28
+gaugeMade                    src/28l-gauge.js:58-62
+gaugeMidO                    src/28l-gauge.js:30
+gaugeNames                   src/28l-gauge.js:236-239
+gaugeOf                      src/28l-gauge.js:37
+gaugePrune                   src/28l-gauge.js:109-119
+gaugeRead                    src/28l-gauge.js:31-36
+gaugeRows                    src/28l-gauge.js:240-264
+gaugeSection                 src/28l-gauge.js:265-269
+gaugeSet                     src/28l-gauge.js:46
+gaugeSour                    src/28l-gauge.js:47
+gaugeSpread                  src/28l-gauge.js:49-53
+gaugeStop                    src/28l-gauge.js:63-80
+gaugeStopOf                  src/28l-gauge.js:55
+gaugeStopped                 src/28l-gauge.js:56
+gaugeTestStation             tests/91zzzw9d-gauge.js:5-12
+gaugeTestWin                 tests/91zzzw9d-gauge.js:13
+gaugeTick                    src/28l-gauge.js:120-129
 gcAtlas                      src/08cb-gpu-text.js:57-71
 gcBack                       src/08ca-gpu-canvas.js:512
 gcBlurDesc                   src/08cc-gpu-shadow.js:38
@@ -4237,8 +4279,8 @@ geoAnd                       tests/90b2-geom.js:37
 geoArea                      tests/90b2-geom.js:36
 geoAt                        src/18b-geology.js:73-77
 geoBoxy                      tests/90b2-geom.js:352-358
-geoBtns                      tests/90b2-geom.js:860
-geoCalm                      tests/90b2-geom.js:870-958
+geoBtns                      tests/90b2-geom.js:864
+geoCalm                      tests/90b2-geom.js:874-962
 geoClipPoly                  tests/90b2-geom.js:44
 geoCol                       tests/90b2-geom.js:73-84
 geoCompose                   tests/90b2-geom.js:679-704
@@ -4250,7 +4292,7 @@ geoExtra                     tests/90b2-geom.js:223-245
 geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geoFin                       tests/90b2-geom.js:58
-geoFontProbe                 tests/90b2-geom.js:960-969
+geoFontProbe                 tests/90b2-geom.js:964-973
 geoFrame                     tests/90b2-geom.js:309-312
 geoFrame1                    tests/90b2-geom.js:313-329
 geoHang                      tests/90b2-geom.js:252
@@ -4262,7 +4304,7 @@ geoHookCtx                   tests/90b2-geom.js:94-126
 geoHookOvl                   tests/90b2-geom.js:258-303
 geoIn                        tests/90b2-geom.js:60
 geoLaws                      tests/90b2-geom.js:435-671
-geoLbl                       tests/90b2-geom.js:859
+geoLbl                       tests/90b2-geom.js:863
 geoLum                       tests/90b2-geom.js:85
 geoMin                       tests/90b2-geom.js:59
 geoOpaque                    tests/90b2-geom.js:359-366
@@ -4277,14 +4319,14 @@ geoRec                       tests/90b2-geom.js:178-218
 geoRich                      tests/90b2-geom.js:824
 geoRoadFrame                 tests/90b2-geom.js:333-348
 geoRs                        tests/90b2-geom.js:69
-geoRun                       tests/90b2-geom.js:880-958
+geoRun                       tests/90b2-geom.js:884-962
 geoSat                       tests/90b2-geom.js:51
-geoScreens                   tests/90b2-geom.js:830-858
+geoScreens                   tests/90b2-geom.js:830-862
 geoSelf                      tests/90b2-geom.js:707-820
-geoSettle                    tests/90b2-geom.js:878
+geoSettle                    tests/90b2-geom.js:882
 geoShape                     tests/90b2-geom.js:128-132
-geoShut                      tests/90b2-geom.js:869
-geoSig                       tests/90b2-geom.js:862-865
+geoShut                      tests/90b2-geom.js:873
+geoSig                       tests/90b2-geom.js:866-869
 geoStation                   tests/90b2-geom.js:825
 geoSty                       tests/90b2-geom.js:351
 geoTable                     tests/90b2-geom.js:829
@@ -4367,8 +4409,8 @@ gnbPipe                      src/16gba-gpu-nebula-comp.js:146
 gnbStar                      src/16gba-gpu-nebula-comp.js:210-215
 gnbStars                     src/16gba-gpu-nebula-comp.js:42-49
 gnbTarget                    src/16gba-gpu-nebula-comp.js:138-145
-goalCard                     src/13b-occupy.js:232-261
-goalOwnYacht                 src/13b-occupy.js:225-231
+goalCard                     src/13b-occupy.js:233-262
+goalOwnYacht                 src/13b-occupy.js:226-232
 gorBody                      src/17gab1-gpu-orb-draw.js:46-70
 gorCode                      src/17gab1-gpu-orb-draw.js:14-24
 gorLin                       src/17gab1-gpu-orb-draw.js:4
@@ -5879,27 +5921,27 @@ npcWreckNear                 src/13d-npc.js:213-221
 npcWreckPose                 src/13d-npc.js:225-229
 npcYalta                     src/13d-npc.js:127-137
 occAt                        src/13b-occupy.js:31-34
-occCalmNear                  src/13b-occupy.js:277-286
-occExtraPirates              src/13b-occupy.js:209-212
+occCalmNear                  src/13b-occupy.js:278-287
+occExtraPirates              src/13b-occupy.js:210-213
 occHere                      src/13b-occupy.js:53
 occInfo                      src/13b-occupy.js:54
 occInit                      src/13b-occupy.js:29
 occKey                       src/13b-occupy.js:30
-occKill                      src/13b-occupy.js:140-172
-occLairLevel                 src/13b-occupy.js:291
-occLairName                  src/13b-occupy.js:292-295
+occKill                      src/13b-occupy.js:141-173
+occLairLevel                 src/13b-occupy.js:292
+occLairName                  src/13b-occupy.js:293-296
 occLvl                       src/13b-occupy.js:35
 occNest                      src/13b-occupy.js:60-65
 occPowerAt                   src/13b-occupy.js:42-49
 occPowerHere                 src/13b-occupy.js:50
-occPriceMul                  src/13b-occupy.js:186-197
+occPriceMul                  src/13b-occupy.js:187-198
 occReqMul                    src/13b-occupy.js:52
-occService                   src/13b-occupy.js:199-207
+occService                   src/13b-occupy.js:200-208
 occSet                       src/13b-occupy.js:66-72
-occSummary                   src/13b-occupy.js:216-219
-occSuppress                  src/13b-occupy.js:268-276
-occThreat                    src/13b-occupy.js:175-184
-occTick                      src/13b-occupy.js:77-135
+occSummary                   src/13b-occupy.js:217-220
+occSuppress                  src/13b-occupy.js:269-277
+occThreat                    src/13b-occupy.js:176-185
+occTick                      src/13b-occupy.js:77-136
 odo                          src/11d-place.js:24
 odoAdd                       src/11d-place.js:26
 odoSum                       src/11d-place.js:25
@@ -10008,6 +10050,9 @@ zoomTo                       src/15-input.js:358
 ## src/28k-offline.js · 4 KB
   · без присмотра: дроны на 60 %, не больше часа яруса (M905 · DESIGN-game §10.5):1
 
+## src/28l-gauge.js · 16 KB
+  · три шкалы станции и каскад (M906 · DESIGN-game §4.2, §7.1):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10049,7 +10094,7 @@ zoomTo                       src/15-input.js:358
 ## tests/90b-detect.js · 27 KB
   · детекторы: законы, которые смотрят после каждого шага (M443):1
 
-## tests/90b2-geom.js · 86 KB
+## tests/90b2-geom.js · 87 KB
   · Зрение: экран в числах и неравенствах (27.09.2026):1
 
 ## tests/90c-detect-laws.js · 23 KB
@@ -10134,6 +10179,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9b-watch.js · 8 KB
 
 ## tests/91zzzw9c-offline.js · 3 KB
+
+## tests/91zzzw9d-gauge.js · 8 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

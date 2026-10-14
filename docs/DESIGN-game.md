@@ -247,7 +247,8 @@ gaps stay, each with an owner: **T0** nets 1.5× the oracle on a 4.3-min lap a h
 (M909 measures the first watch with its own oracle); **T1** has nothing to pay but fuel and one hand
 (U/G .13 against .50 — the drone's parts line of §3.1 would make a 500 cr/h drone worthless, so it
 waits for a drone that earns); **T3**'s managers cost 3 700 cr/h each and produce nothing in the
-probe, which builds no workshops and no base — M905/M906 must give them work the probe can count.
+probe, which builds no workshops and no base. M905/M906 did not give them work the probe can count
+(the gauges have nothing for a manager either): open, for M907.
 
 ### 4.2 Stations have three gauges, and they fall
 
@@ -269,6 +270,15 @@ is order, the keeper's episodes are mood.
 The three gauges are **what the walkable hall shows** (§7): crates on the counter are stock,
 the number of people in the hall is mood, the lights and the picket at the door are order. No
 number is printed; the hall is the gauge.
+
+**Built 15.10 (0.498.0, `28l-gauge`).** Three changes from the text. Needs roll every 15 minutes
+of play and a сводка is six hours of wall clock, so per-need stops and a .05-per-сводка heal
+stopped every station around the player within an evening. The workshop stops only when an
+unfilled need takes stock below .25; the heal is a two-hour time constant toward .6 (order toward
+.6 − .15 × occupation level); a stop and its cascade last an hour. Judged: the participation's
+stations and two jumps around the player, per played window; barge-filled needs count neither way.
+The cascade need goes ahead of the neighbour's own (the own one is then judged by nobody). Not
+built: rumours a sector further, crates and lights in the hall, the keeper's face.
 
 ### 4.3 The dispatcher — always something to do, by arithmetic
 
@@ -399,6 +409,11 @@ Walking adds no verb. It adds **where people are**, and that becomes the logic:
   you wait a shift's minute or you have standing (a named offer skips the queue, by name).
 
 The hall never prints a number. The three gauges are read by looking (crates, people, lights).
+
+**Built 15.10 (0.498.0).** The crowd follows people in the cantina (`c3Layout`) and in the
+walkable hall (`hallLayout`): the type's crowd at .6, up to nine at .9, one at .3. The board says
+the rest in words (ПОЛОЖЕНИЕ). The keeper's face, the clerk's paper, the queue and the crates wait
+for the hall's next pass.
 
 ### 7.2 Landmarks and obelisks — the grammar goes everywhere
 
@@ -699,7 +714,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M903 | the economy probe `tests/91zzzw4-ecosim.js` — **measured 14.10, §4.1a**: net 2.6–3.7× the oracle, U/G .06–.24 | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
 | M904 | the bill (§10.1) and manager wages to the player — **a done 14.10 (0.494.0, T2 U/G .22, T3 .36)**; b the ledger (§5.2) and c Страхкасса with hull loss (§5.1) **done 14.10 (0.495.0)** — debt is its own number, not credits below zero (twenty `min(credits, x)` sites); d the gross lever and the bad hour **done 14.10 (0.496.0, §4.1a): good T2 hour +14 900, uninsured wreck −14 500** | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
 | M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) **done 14.10 (0.497.0)**: `28j-watch`, `28k-offline`, the faucet in `12ab-hold` | the bot's norm moves with filled needs; handover stops every clock |
-| M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
+| M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) **done 15.10 (0.498.0)**: `28l-gauge` | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
 | M907 | the dispatcher generator (§4.3) | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |
 | M908 | access gates and the 30 rungs (§4.4) | no rung silent; «Мамонт» refused without clearance III + sponsor |
 | M909 | the first watch (§10.7) | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
