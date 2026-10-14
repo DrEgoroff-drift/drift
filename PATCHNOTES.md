@@ -33,6 +33,15 @@ Measured by the probe, one hour per tier (the bot pays at every dock):
 Still under the band (.65/.70): debt (F1), Страхкасса and hull loss (F3), and the gross levers are the
 rest of M904. Suite 91zzzw8 (14 asserts).
 
+### Disputed (playtest 14.10: six forks, decided by Контроль; cautious variants taken)
+
+- **No weapon at the start stays** (a merchant, by design). In systems with danger under .1 an unarmed ship meets no raiders (`spawnPirates`); power pickets are not raiders and stay. Suite 91a7.
+- **Endless drift stays** (physics untouched). The brake exists: S / ArrowDown / C on the keyboard and the ТОРМОЗ pad (56×56 px on a 390×844 phone, tap sets `keys.brake`). Nothing added.
+- **A jump over the tank is not offered.** Inside the radius but past the fuel, the star fades, the course and its label go grey and say «НЕ ХВАТИТ ТОПЛИВА: 48 из 30»; the action says the same and does not jump (player and bot). Consumption unchanged. Suite 91a8.
+- **The corona loop is no repair above 45 %.** `wreck()` already rebuilds to min(45 %, the hull held ten seconds), never under 10 %, and the corona only burns; pinned by suite 91a9. Still free: fuel to 30 and the move to radius 1600 — not asked, left.
+- **«НА КАРТУ» from the dock keeps the dock.** M299's peek does it for the board, cantina and ether: map on top, НАЗАД/M back to the same station tab, a jump from the peek refused; pinned by suite 91aa.
+- **The interface scale** stays in the menu only; on a phone `--ui` is always 1, no hint at 390. Not touched.
+
 ## 0.493.5 - the GPU off 100 %: live portraits only when seen, the dock at 30 frames; a smaller interface with its own setting; calmer faces and lens; deposits clear of walls; drones fly again
 
 The author on a 2000×1000 PC: buttons half the screen, faces racing, the planet's background flying,
