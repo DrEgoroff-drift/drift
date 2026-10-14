@@ -113,15 +113,26 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
 .err:last-child{border-bottom:0}
 .err b{display:block;font:600 11px var(--mono);color:var(--am);letter-spacing:.04em;margin-bottom:2px}
 .err span{color:var(--ink)}
-.vers b.ok{color:var(--gr)}.vers b.old{color:var(--am)}
-.laws{max-height:none;overflow:auto;flex:1;min-height:0}main>.col:first-child{overflow:auto}main>.col:first-child>.card:last-child{flex:1 0 260px;display:flex;flex-direction:column;min-height:260px}
+.meta span{white-space:nowrap}.meta{flex-wrap:wrap;row-gap:2px}.vers b.ok{color:var(--gr)}.vers b.old{color:var(--am)}
+.laws{flex:1;overflow:auto;min-height:0}
 .law{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:start;padding:7px 14px;border-bottom:1px solid var(--line);font-size:12px}
 .law i{width:8px;height:8px;border-radius:50%;margin-top:4px;background:var(--faint)}
 .law.green i{background:var(--gr)}.law.red i{background:var(--rd);box-shadow:0 0 6px var(--rd)}
 .law b{font-weight:600;color:var(--ink)}.law small{display:block;color:var(--dim);margin-top:1px}
 .law.red small.m{color:var(--rd)}.law em{font:10px var(--mono);color:var(--faint);font-style:normal}
 .area{padding:8px 14px 3px;font:600 10px var(--mono);letter-spacing:.2em;color:var(--cy)}
-.oerr{max-height:30vh;overflow:auto}
+.oerr{flex:1;overflow:auto;min-height:0}
+.tabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--dim);font:600 11px var(--mono);letter-spacing:.18em;padding:11px 14px 9px;cursor:pointer}
+.tabs button.on{color:var(--cy);border-bottom-color:var(--cy)}.tabs button em{font-style:normal;margin-left:6px;color:var(--faint)}
+.tabs button em.r{color:var(--rd)}
+.pane{flex:1;display:flex;flex-direction:column;min-height:0}.pane[hidden]{display:none}
+.pane>h3{margin:0;padding:8px 14px;font:600 11px var(--mono);letter-spacing:.1em;color:var(--dim);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.pane>h3 .sp{flex:1}
+*{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--cy2)}
+::-webkit-scrollbar-button{display:none;height:0;width:0}
 .err.now b{color:var(--rd)}.err.past{opacity:.55}.err em{display:block;font:10.5px var(--mono);color:var(--faint);font-style:normal;margin-top:2px}
 .links{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--cy);color:var(--ink);padding:10px 18px;border-radius:5px;font:13px var(--mono);opacity:0;transition:.25s;z-index:5;pointer-events:none}
@@ -191,10 +202,6 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
       </div>
     </section>
 
-    <section class="card">
-      <h3>ЗАКОНЫ<span class="sp"></span><span id="lawSum" style="letter-spacing:.05em"></span></h3>
-      <div class="laws" id="laws"><div class="empty" style="padding:10px 14px">загрузка…</div></div>
-    </section>
   </div>
 
   <div class="col">
@@ -221,13 +228,18 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
       <div id="fresh"></div>
     </section>
 
-    <section class="card" id="oerrCard">
-      <h3>ОТКРЫТЫЕ ОШИБКИ<span class="sp"></span><span id="oerrSum" style="letter-spacing:.05em"></span></h3>
-      <div class="oerr" id="oerr"></div>
-    </section>
-
     <section class="card logcard">
-      <h3>ЛОГ <span id="logName" style="color:var(--faint);letter-spacing:.03em;font-weight:400"></span><span class="sp"></span>
+      <div class="tabs" id="tabs"><button data-t="laws" class="on">ЗАКОНЫ<em id="tLaws"></em></button><button data-t="oerr">ОШИБКИ<em id="tErr"></em></button><button data-t="log">ЛОГ</button></div>
+      <div class="pane" id="p-laws">
+        <h3>что ловит лаборатория и как прошло в последнем прогоне<span class="sp"></span><span id="lawSum"></span></h3>
+        <div class="laws" id="laws"><div class="empty" style="padding:10px 14px">загрузка…</div></div>
+      </div>
+      <div class="pane" id="p-oerr" hidden>
+        <h3>открытые ошибки<span class="sp"></span><span id="oerrSum"></span></h3>
+        <div class="oerr" id="oerr"></div>
+      </div>
+      <div class="pane" id="p-log" hidden>
+      <h3><span id="logName" style="color:var(--faint);letter-spacing:.03em;font-weight:400"></span><span class="sp"></span>
         <span class="tools">
           <span class="seg" id="fltSeg"><button data-v="all" class="on">Всё</button><button data-v="bad">Провалы</button><button data-v="new">Новые</button></span>
           <input id="q" placeholder="поиск…">
@@ -235,6 +247,7 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
         </span>
       </h3>
       <pre id="log"></pre>
+      </div>
     </section>
   </div>
 </main>
@@ -354,11 +367,16 @@ async function slow(){
     for(const l of L.laws){if(l.area!==area){area=l.area;html+=`<div class="area">${esc(area)}</div>`}
       if(l.status==="green")g++;else if(l.status==="red")rd++;else id++;const why={idle:"не гонялся",absent:"нет в ветке"}[l.status]||"";
       html+=`<div class="law ${l.status}" title="${esc(l.catches)}"><i></i><div><b>${esc(l.name)}</b><small>${esc(l.catches)}</small>${l.msg?`<small class="m">${esc(l.msg)}</small>`:""}</div><em>${why||l.unit}</em></div>`}
-    $("#laws").innerHTML=html;$("#lawSum").innerHTML=`<span style="color:var(--gr)">${g}</span> · <span style="color:var(--rd)">${rd}</span> · <span style="color:var(--faint)">${id} не гонялись или нет в ветке</span>`;}catch(e){}
+    $("#laws").innerHTML=html;$("#tLaws").textContent=g+"/"+(g+rd+id);$("#tLaws").className=rd?"r":"";$("#lawSum").innerHTML=`<span style="color:var(--gr)">${g}</span> · <span style="color:var(--rd)">${rd}</span> · <span style="color:var(--faint)">${id} не гонялись или нет в ветке</span>`;}catch(e){}
   try{const E=await api("/api/errors"),n=E.errors.filter(e=>e.now).length;
-    $("#oerrSum").textContent=n+" в последнем прогоне · "+(E.errors.length-n)+" старых";
+    $("#tErr").textContent=n||"";$("#tErr").className=n?"r":"";$("#oerrSum").textContent=n+" в последнем прогоне · "+(E.errors.length-n)+" старых";
     $("#oerr").innerHTML=E.errors.slice(0,60).map(e=>`<div class="err ${e.now?"now":"past"}"><b>${esc(e.suite)}</b><span>${esc(e.msg)}</span><em>${e.count}× · версии ${esc(e.versions.join(", "))} · прогонов ${e.sessions} · последний раз ${esc(e.last)}</em></div>`).join("")||'<div class="empty" style="padding:10px 14px">открытых нет</div>';}catch(e){}
 }
+let tab="laws";try{tab=localStorage.getItem("labTab")||"laws"}catch(e){}
+function setTab(t){tab=t;for(const b of $("#tabs").children)b.classList.toggle("on",b.dataset.t===t);
+  for(const n of ["laws","oerr","log"])$("#p-"+n).hidden=n!==t;try{localStorage.setItem("labTab",t)}catch(e){}
+  if(t==="log"&&$("#follow").checked)$("#log").scrollTop=1e9}
+$("#tabs").onclick=e=>{const b=e.target.closest("button");if(b)setTab(b.dataset.t)};setTab(tab);
 tick();pull();setInterval(tick,1000);setInterval(pull,700);setTimeout(slow,300);setInterval(slow,10000);
 </script>
 </body>
