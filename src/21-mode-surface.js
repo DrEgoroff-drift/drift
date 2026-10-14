@@ -4,8 +4,13 @@
 const MINE_MOUTH_R=40;
 /* сколько живёт след: полминуты держится, полминуты гаснет (21e рисует) */
 const TRACK_LIFE=2400;
-function enterSurface(){
-  const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
+/* ── что лежит на земле: залежи, куртины, зверьё, устье, подглядка ──
+   Всё из зерна планеты и полосы, без места корабля, поэтому считается в начале захода
+   (startLanding → G.land.pre): спуск строит землю уже с этими вещами, и на касании
+   сцена ничего не пересаживает — планета встречает готовой. enterSurface берёт
+   готовое; без него (стенды, пробы) считает сам — тот же результат */
+function surfGen(tr,p){
+  const r=rng(p.seed^0x1234);
   /* залежи берутся из профиля ПЛАНЕТЫ (у смешанного мира он свой), а не из
      таблицы типа: иначе на «ледяной, с вулканами» лежало бы то же, что на
      чистой ледяной, и смесь осталась бы одной раскраской */
@@ -163,6 +168,12 @@ function enterSurface(){
   /* и крупную форму: стена или друза перед устьем закрывала сам вход, к
      которому ведёт стрелка навигатора */
   if(tr.deco)clearNear(tr.deco,90);
+  return {tr,deposits,plants,fauna,cave:caveMouth,peep};
+}
+function enterSurface(){
+  const L=G.land,tr=L.tr,p=L.p;
+  const g=L.pre&&L.pre.tr===tr?L.pre:surfGen(tr,p);
+  const {deposits,plants,fauna,peep}=g,caveMouth=g.cave;
   const offX=L.x+shipZoneR()+26;
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:offX,y:groundAt(tr,offX)-10,t0:G.t,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,

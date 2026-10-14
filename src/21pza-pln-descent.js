@@ -25,7 +25,13 @@ function plnDescent(){
   if(tr.plnCx==null)tr.plnCx=tr.padX/PLN_M+12.8;
   const touched=L.over>0,sx=touched?L.x:tr.padX;
   let S=PLN_DESC.S;
-  if(!S||S.tr!==tr)S=PLN_DESC.S={tr,p,cam:{x:0,y:0},face:1,swim:0,shake:0};
+  if(!S||S.tr!==tr){
+    /* вещи земли посчитаны в начале захода (G.land.pre): залежи, травы, зверьё и устье стоят
+       уже в спуске, и первый кадр поверхности берёт их сборки из кэша, а не строит заново */
+    const pre=L.pre&&L.pre.tr===tr?L.pre:null;
+    S=PLN_DESC.S={tr,p,cam:{x:0,y:0},face:1,swim:0,shake:0};
+    if(pre){S.deposits=pre.deposits;S.plants=pre.plants;S.fauna=pre.fauna;S.cave=pre.cave;S.peep=pre.peep;}
+  }
   S.shipX=sx;S.x=L.x;S.y=L.y;S.cam.x=L.x;S.cam.y=L.y;
   const gyw=groundAt(tr,L.x),alt=Math.max(0,gyw-L.y-LAND_GY)/PLN_M;
   /* тяга набирает и гаснет не рывком: факел растёт за несколько кадров */
