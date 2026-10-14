@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 564 · top-level symbols: 8239
+Files: 564 · top-level symbols: 8243
 
 ## SYMBOLS
 
@@ -240,16 +240,17 @@ CAVE3_DRIP                   src/22dc-cave-pln-dress.js:19-29
 CAVE3_DS                     src/22dc-cave-pln-dress.js:25
 CAVE3_FAR                    src/22de-cave-pln-far.js:9
 CAVE3_FIELD0                 src/22de-cave-pln-far.js:55
+CAVE3_FOOT_Z                 src/22dg-cave-pln-life.js:16
 CAVE3_GAP                    src/22dh-cave-pln-gap.js:7
 CAVE3_GPU                    src/22db-cave-pln-light.js:8
 CAVE3_HUD                    src/22d-cave-pln.js:378
-CAVE3_INK                    src/22da-cave-pln-rock.js:216
+CAVE3_INK                    src/22da-cave-pln-rock.js:228
 CAVE3_INKS                   src/22df-cave-pln-ink.js:9
 CAVE3_K                      src/22db-cave-pln-light.js:11
 CAVE3_LAMP                   src/22d-cave-pln.js:221
 CAVE3_LENS                   src/22d-cave-pln.js:16
 CAVE3_LIFE                   src/22dg-cave-pln-life.js:6
-CAVE3_MAT                    src/22da-cave-pln-rock.js:357
+CAVE3_MAT                    src/22da-cave-pln-rock.js:369
 CAVE3_OLD_DRAW               src/22d-cave-pln.js:244
 CAVE3_OLD_ENTER              src/22d-cave-pln.js:370
 CAVE3_OLD_EXIT               src/22d-cave-pln.js:271
@@ -2872,11 +2873,12 @@ castShadeAt                  src/19c1-cast.js:64-76
 cave3AmberFrame              src/22de-cave-pln-far.js:168-190
 cave3AmberGeo                src/22de-cave-pln-far.js:145-167
 cave3Band                    src/22dc-cave-pln-dress.js:61-86
+cave3BeastZ                  src/22dg-cave-pln-life.js:30
 cave3Bells                   src/22dc-cave-pln-dress.js:133-167
 cave3Biter                   src/22d-cave-pln.js:359-368
 cave3Caps                    src/22dc-cave-pln-dress.js:91-130
-cave3Chunk                   src/22da-cave-pln-rock.js:244-355
-cave3Chunks                  src/22da-cave-pln-rock.js:360-386
+cave3Chunk                   src/22da-cave-pln-rock.js:256-367
+cave3Chunks                  src/22da-cave-pln-rock.js:372-398
 cave3Cluster                 src/22dc-cave-pln-dress.js:245-253
 cave3Column                  src/22dc-cave-pln-dress.js:202-214
 cave3Cream                   src/22dc-cave-pln-dress.js:51-58
@@ -2901,6 +2903,7 @@ cave3FarShift                src/22d-cave-pln.js:72-81
 cave3FarSite                 src/22de-cave-pln-far.js:12-31
 cave3FarVoid                 src/22de-cave-pln-far.js:34-48
 cave3Field                   src/22da-cave-pln-rock.js:50-125
+cave3Floor                   src/22da-cave-pln-rock.js:217-226
 cave3Flute                   src/22dc-cave-pln-dress.js:169-181
 cave3Frame                   src/22d-cave-pln.js:91-218
 cave3GapBuild                src/22dh-cave-pln-gap.js:52-57
@@ -2928,20 +2931,21 @@ cave3LakeFrame               src/22dd-cave-pln-lake.js:52-80
 cave3LakeGeo                 src/22dd-cave-pln-lake.js:9-49
 cave3Lens                    src/22d-cave-pln.js:29-42
 cave3LifeDrop                src/22dg-cave-pln-life.js:8-12
-cave3LifeFoot                src/22dg-cave-pln-life.js:14-17
-cave3LifeFrame               src/22dg-cave-pln-life.js:18-93
+cave3LifeFoot                src/22dg-cave-pln-life.js:17-24
+cave3LifeFrame               src/22dg-cave-pln-life.js:31-105
 cave3Lobes                   src/22dc-cave-pln-dress.js:88
 cave3Log                     src/22db-cave-pln-light.js:15
 cave3ManShare                src/22d-cave-pln.js:48
 cave3Mite                    src/22dc-cave-pln-dress.js:193-200
 cave3Mouth                   src/22d-cave-pln.js:84-89
 cave3N3                      src/22da-cave-pln-rock.js:40-47
-cave3NearShift               src/22dg-cave-pln-life.js:97-106
+cave3NearShift               src/22dg-cave-pln-life.js:109-118
 cave3Nrm                     src/22dc-cave-pln-dress.js:40-43
 cave3Over                    src/22d-cave-pln.js:227-241
-cave3Paint                   src/22da-cave-pln-rock.js:217-237
+cave3Paint                   src/22da-cave-pln-rock.js:229-249
 cave3Persp                   src/22db-cave-pln-light.js:16-20
 cave3Pj                      src/22d-cave-pln.js:288-292
+cave3PlantZs                 src/22dg-cave-pln-life.js:26-29
 cave3Reach                   src/22d-cave-pln.js:50
 cave3Samp                    src/22da-cave-pln-rock.js:127-132
 cave3Sd                      src/22da-cave-pln-rock.js:134-137
@@ -9543,7 +9547,7 @@ zoomTo                       src/15-input.js:358
 ## src/22d-cave-pln.js · 28 KB
   · пещера на движке: кадр и переключатель (M630a):1
 
-## src/22da-cave-pln-rock.js · 25 KB
+## src/22da-cave-pln-rock.js · 26 KB
   · пещера на движке: порода из сетки игры (M630a):1
 
 ## src/22db-cave-pln-light.js · 16 KB
@@ -9567,7 +9571,7 @@ zoomTo                       src/15-input.js:358
 ## src/22df-cave-pln-ink.js · 9 KB
   · пещера на движке: что лежит в камне разреза (M630b, проход 4):1
 
-## src/22dg-cave-pln-life.js · 6 KB
+## src/22dg-cave-pln-life.js · 7 KB
 
 ## src/22dh-cave-pln-gap.js · 11 KB
 
@@ -9948,7 +9952,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qe-rack.js · 4 KB
   · стойка уступает телу (M821):1
 
-## tests/91qg-cave.js · 15 KB
+## tests/91qg-cave.js · 16 KB
   · пещера на движке (M630a):1
 
 ## tests/91qi-water.js · 4 KB

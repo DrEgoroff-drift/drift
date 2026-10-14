@@ -212,6 +212,18 @@ function cave3Down(F,X,Y,Z){
   for(let n=0;n<10;n++){const m=(lo+hi)/2;if(cave3Den(F,X,m,Z)>0)lo=m;else hi=m;}
   return (lo+hi)/2;
 }
+/* то же, но честно: null, если пола нет на глубину lim метров (или точка уже в камне) — тогда
+   стоять не на чем, и вещь не ставят над пустотой */
+function cave3Floor(F,X,Y,Z,lim){
+  if(cave3Den(F,X,Y,Z)>0)return null;
+  const n=Math.round((lim||4)/.1);
+  let a=Y,k=0;
+  for(;k<n&&cave3Den(F,X,a-.1,Z)<=0;k++)a-=.1;
+  if(k>=n)return null;
+  let lo=a-.1,hi=a;
+  for(let m=0;m<10;m++){const c=(lo+hi)/2;if(cave3Den(F,X,c,Z)>0)lo=c;else hi=c;}
+  return (lo+hi)/2;
+}
 /* цвет камня в точке: rgb и мокрость; ny — куда смотрит грань */
 const CAVE3_INK=new Float32Array(4);
 function cave3Paint(F,X,Y,Z,ny){

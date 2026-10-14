@@ -100651,7 +100651,7 @@ function cave3Frame(){
   /* человек: ноги — на полу картинки, но не дальше четверти метра от пола игры */
   const face=C.face<0?-1:1,mx=C.x/CAVE_PPM,gy=-C.y/CAVE_PPM;
   let my=gy;
-  if(C.on){const v=cave3Down(Fd,mx,gy+.5,CAVE3_Z);my=gy+clamp(v-gy,-.25,.25);}
+  if(C.on){const v=cave3Floor(Fd,mx,gy+.5,CAVE3_Z,1.2);if(v!=null)my=gy+clamp(v-gy,-.25,.25);}
   const F={batches:[],lamps:[],draw:[],lights:[],glows:[]};
   /* сырость воздуха: у воды и в натёчном зале конус в воздухе гуще */
   const zn=caveZoneAt(C,C.x);
@@ -101118,6 +101118,18 @@ function cave3Down(F,X,Y,Z){
   for(let n=0;n<40&&cave3Den(F,X,a-.1,Z)<=0;n++)a-=.1;
   let lo=a-.1,hi=a;
   for(let n=0;n<10;n++){const m=(lo+hi)/2;if(cave3Den(F,X,m,Z)>0)lo=m;else hi=m;}
+  return (lo+hi)/2;
+}
+/* то же, но честно: null, если пола нет на глубину lim метров (или точка уже в камне) — тогда
+   стоять не на чем, и вещь не ставят над пустотой */
+function cave3Floor(F,X,Y,Z,lim){
+  if(cave3Den(F,X,Y,Z)>0)return null;
+  const n=Math.round((lim||4)/.1);
+  let a=Y,k=0;
+  for(;k<n&&cave3Den(F,X,a-.1,Z)<=0;k++)a-=.1;
+  if(k>=n)return null;
+  let lo=a-.1,hi=a;
+  for(let m=0;m<10;m++){const c=(lo+hi)/2;if(cave3Den(F,X,c,Z)>0)lo=c;else hi=c;}
   return (lo+hi)/2;
 }
 /* цвет камня в точке: rgb и мокрость; ny — куда смотрит грань */
@@ -103175,11 +103187,24 @@ function cave3LifeDrop(Q){
   for(const k in Q.inst)plnInstFree(Q.inst[k]);
   Q.geo={};Q.inst={};
 }
-/* пол картинки под точкой на глубине z: где воздух — на нём, иначе ближе к разрезу */
+/* пол картинки под точкой на глубине z: вещь стоит на камне, который видно, и не дальше четверти
+   метра от пола игры (Y). Первая глубина, где так, — её; нет среди своих — ищут на запасных, от
+   разреза вглубь; нет и там — вещи в кадре нет: над пустотой и в камне не ставят */
+const CAVE3_FOOT_Z=[CAVE3_Z+.1,CAVE3_Z+.45,1.5,1.9,2.4];
 function cave3LifeFoot(F,X,Y,zs){
-  for(const z of zs)if(cave3Den(F,X,Y+.5,z)<-.15)return [cave3Down(F,X,Y+.5,z),z];
+  for(const z of zs.concat(CAVE3_FOOT_Z)){
+    if(cave3Den(F,X,Y+.5,z)>=-.15)continue;
+    const v=cave3Floor(F,X,Y+.5,z,1.2);
+    if(v!=null&&Math.abs(v-Y)<=.25)return [v,z];
+  }
   return null;
 }
+/* глубины, на которых ищут пол: растение — за линией ходьбы, зверь — у неё (те же, что берёт кадр) */
+function cave3PlantZs(q){
+  const u=((hashi(Math.round(q.x),Math.round(q.h||0),0x9E11)>>>5)&255)/255,z=CAVE3_LIFE.plantZ[0]+u*CAVE3_LIFE.plantZ[1];
+  return [z,z*.75,CAVE3_Z+.25];
+}
+function cave3BeastZ(b){return CAVE3_Z+(b.r<7?CAVE3_LIFE.beastZ[0]:CAVE3_LIFE.beastZ[1]);}
 function cave3LifeFrame(C,F,Fd,x0,x1){
   const Q=C.life3||(C.life3={gen:-1,geo:{},inst:{},a:{},foot:new Map()});
   if(Q.gen!==PLN_GPU.gen){cave3LifeDrop(Q);Q.gen=PLN_GPU.gen;}
@@ -103193,10 +103218,7 @@ function cave3LifeFrame(C,F,Fd,x0,x1){
     const X=q.x/P;if(X<x0-3||X>x1+3)continue;
     const hh=hashi(Math.round(q.x),Math.round(q.h||0),0x9E11);
     let ft=Q.foot.get(q);
-    if(ft===undefined){
-      const u=((hh>>>5)&255)/255,z=K.plantZ[0]+u*K.plantZ[1];
-      ft=cave3LifeFoot(Fd,X,-q.y/P,[z,z*.75,CAVE3_Z+.25]);Q.foot.set(q,ft);
-    }
+    if(ft===undefined){ft=cave3LifeFoot(Fd,X,-q.y/P,cave3PlantZs(q));Q.foot.set(q,ft);}
     if(!ft)continue;
     const si=Math.max(0,sps.indexOf(q.sp)),key="p"+si+"."+(q.age<.3?0:(q.age>.82?2:1));
     (by[key]=by[key]||{plant:q,si,list:[]}).list.push({q,ft,hh});
@@ -103230,14 +103252,16 @@ function cave3LifeFrame(C,F,Fd,x0,x1){
         if(q.sp.kind===4)plnRec(a,m++,pos,h,yaw,1,m,q.scanned?[.6,1.1,1.05]:[jt,jt,jt],0);
         else plnRec(a,m++,pos,h,yaw,1,m,under,2,top);
       }else{
-        const b=e.b,X=b.x/P,R=Math.max(K.rMin,b.r/P),z=CAVE3_Z+(b.r<7?K.beastZ[0]:K.beastZ[1]);
-        /* y зверя у игры — пол под ним; летун висит на hover пикселей карты выше, пасясь — ниже, оглушённый лёг */
+        const b=e.b,X=b.x/P,R=Math.max(K.rMin,b.r/P);
+        /* y зверя у игры — пол под ним; летун висит на hover пикселей карты выше, пасясь — ниже, оглушённый лёг.
+           Пол ищут там, где зверь стоит в кадре: на своей глубине, иначе у разреза (тогда и сам зверь там) */
         const fk=Math.round(X*4)+"|"+Math.round(-b.y/P*2);
         let f=Q.foot.get(fk);
-        if(f===undefined){const v=cave3LifeFoot(Fd,X,-b.y/P,[z,CAVE3_Z+.2]);f=v?v[0]:-b.y/P;Q.foot.set(fk,f);}
+        if(f===undefined){f=cave3LifeFoot(Fd,X,-b.y/P,[cave3BeastZ(b),CAVE3_Z+.2])||[-b.y/P,CAVE3_Z+.2];Q.foot.set(fk,f);}
+        const z=f[1];
         const k=e.k,up=b.alien?(b.hover&&k!==N+3?b.hover*(k===N+1?.35:1)*(1+.16*Math.sin(e.t*.6))/P:0)
           :(e.go?(b.hop?Math.abs(Math.sin(e.t))*R*.35:Math.sin(e.t)*R*.08+R*.08):0);
-        const y=f+up;
+        const y=f[0]+up;
         const yaw=b.alien==="manta"?PLN_BEAST.mantaYaw:PLN_BEAST.yaw;
         /* шкура у поверхности поднята под контровой свет дня; в пещере тело темнее — его лепит фонарь */
         plnRec(a,m++,[X,y,z],R,b.face<0?Math.PI-yaw:yaw,1,m,b.scanned?[.42,.62,.6]:K.fur,0);

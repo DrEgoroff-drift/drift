@@ -139,7 +139,7 @@ function cave3Frame(){
   /* человек: ноги — на полу картинки, но не дальше четверти метра от пола игры */
   const face=C.face<0?-1:1,mx=C.x/CAVE_PPM,gy=-C.y/CAVE_PPM;
   let my=gy;
-  if(C.on){const v=cave3Down(Fd,mx,gy+.5,CAVE3_Z);my=gy+clamp(v-gy,-.25,.25);}
+  if(C.on){const v=cave3Floor(Fd,mx,gy+.5,CAVE3_Z,1.2);if(v!=null)my=gy+clamp(v-gy,-.25,.25);}
   const F={batches:[],lamps:[],draw:[],lights:[],glows:[]};
   /* сырость воздуха: у воды и в натёчном зале конус в воздухе гуще */
   const zn=caveZoneAt(C,C.x);

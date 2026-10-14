@@ -129,14 +129,27 @@ TEST_SUITES.push(()=>suite("пещера на движке: порода по с
   /* ── жизнь телами (M630c): растение стоит на полу картинки рядом с полом игры, в мерке карты; ближний
      объектив смотрит на середину между человеком и вещью; кистей поверх кадра для жизни больше нет ── */
   {
-    const P=CAVE_PPM,K=CAVE3_LIFE;let n=0,on=0,far=0;const why=[];
-    for(const q of C.plants){
-      n++;
-      const X=q.x/P,Y=-q.y/P,ft=cave3LifeFoot(F,X,Y,[K.plantZ[0]+.4,K.plantZ[0],CAVE3_Z+.25]);
-      if(!ft)continue;on++;
-      if(Math.abs(ft[0]-Y)>.8||ft[1]<CAVE3_Z){far++;if(why.length<3)why.push([q.x|0,q.y|0,+ft[0].toFixed(2),+Y.toFixed(2),ft[1]]);}
+    const P=CAVE_PPM;let n=0,on=0,far=0,air=0;const why=[];
+    /* нога — та же, что берёт кадр (22dg); стоит на камне картинки (под ней камень, над ней воздух)
+       и не дальше четверти метра от пола игры (M630e: отчёт playtest cave-floating, растение над 4 м пустоты) */
+    const foot=(X,Y,zs,tag)=>{
+      const ft=cave3LifeFoot(F,X,Y,zs);if(!ft)return;on++;
+      const dz=ft[0]-Y;
+      if(Math.abs(dz)>.25){far++;if(why.length<4)why.push([tag,X.toFixed(1),+dz.toFixed(2),ft[1]]);}
+      if(!(cave3Den(F,X,ft[0]-.08,ft[1])>0&&cave3Den(F,X,ft[0]+.08,ft[1])<0)){air++;if(why.length<4)why.push([tag+"air",X.toFixed(1),ft[1]]);}
+    };
+    for(const q of C.plants){n++;foot(q.x/P,-q.y/P,cave3PlantZs(q),"p");}
+    let nb=0;
+    for(const b of C.fauna||[]){if(b.alien==="jelly"||b.alien==="manta")continue;n++;nb++;foot(b.x/P,-b.y/P,[cave3BeastZ(b),CAVE3_Z+.2],"b");}
+    ok(n>5&&on>=n*.8&&far===0&&air===0,"растения и звери стоят на полу картинки, |dz| ≤ .25 м от пола игры: всего "+n+" (зверей "+nb+"), встали "+on+", дальше "+far+", не на камне "+air+" "+JSON.stringify(why));
+    /* линия ходьбы: пол картинки у разреза есть всюду, где ходит человек, и не дальше .25 м от пола игры у 95 % точек */
+    let wn=0,wf=0,wx=0;
+    for(let cx=4;cx<CAVE_NX-4;cx+=4){
+      const x=(cx+.5)*CAVE_CS,f=caveFloor(C,x),c=caveCeil(C,x);if(!(f-c>3*CAVE_CS))continue;
+      const Y=-f/P,v=cave3Floor(F,x/P,Y+.5,CAVE3_Z,1.2);wn++;
+      if(v==null||Math.abs(v-Y)>.25){wf++;if(v!=null)wx=Math.max(wx,Math.abs(v-Y));}
     }
-    ok(n>5&&on>=n*.8&&far===0,"растения встают на пол картинки за линией ходьбы: растений "+n+", встали "+on+", далеко от пола игры "+far+" "+JSON.stringify(why));
+    ok(wn>20&&wf<=wn*.05,"линия ходьбы: пол картинки у пола игры: точек "+wn+", дальше .25 м "+wf+" (наибольшее "+wx.toFixed(2)+")");
     const q=C.plants[0],x0=C.x,y0=C.y,sc=q.scanned;
     try{
       q.scanned=false;C.x=q.x-20;C.y=q.y;
