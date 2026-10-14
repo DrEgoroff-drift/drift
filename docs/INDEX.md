@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 582 · top-level symbols: 8310
+Files: 583 · top-level symbols: 8311
 
 ## SYMBOLS
 
@@ -5395,6 +5395,7 @@ lifePlantGpu                 src/20fa-life-gpu.js:408-435
 lifeSprite                   src/20fa-life-gpu.js:146-183
 lifeTint                     src/20fa-life-gpu.js:284-291
 lightShafts                  src/19c-light.js:213-246
+lightWalk                    tests/91ql-light.js:8-21
 lightsAll                    src/11g-lights.js:24
 lightsArrive                 src/11g-lights.js:53-56
 lightsCaveFind               src/11g-lights.js:159-166
@@ -10054,6 +10055,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qk-ground.js · 4 KB
   · тела на земле (Зрение 2.0, закон «опора»):1
+
+## tests/91ql-light.js · 3 KB
+  · свет без рывков (Зрение 2.0, закон «свет»):1
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1
