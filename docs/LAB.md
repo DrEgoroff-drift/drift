@@ -123,6 +123,8 @@ new seeds every session.
 
 ## Local lab (14.10.2026)
 
+**Without Claude:** the desktop shortcut «Лаборатория Дрейфа» (made by `lab/lab-shortcut.ps1`) opens `lab/lab-start.ps1` — a menu for copies, minutes, mode (full / quick / hunt only), branch and hunt steps, remembered in `%USERPROFILE%\drift-data\lab\launcher.json`. Enter runs; the log scrolls with times, a line per finished unit and «!! НОВАЯ ОШИБКА» for each new key, and is appended to `drift-data\lab\logs\lab-<date>.log`. Ctrl+C kills only the lab's own runs. P opens the results page (serves it on 8790).
+
 The same lab on the author's machine (32 threads, 61 GB, RTX 5070): real GPU, no memory cap, no
 CPU tariff. `lab/lab-local.py` replaces `lab.sh`; `lab.py` is shared (its paths come from
 `LAB_DATA`, `LAB_WEB`, `LAB_BUILD` when set, the server defaults otherwise).
