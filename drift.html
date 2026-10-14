@@ -76885,6 +76885,8 @@ function updateSurface(dt){
   for(const pl of S.plants)if(!pl.scanned&&Math.abs(pl.x-S.x)<30*kitStat().scan)plant=pl;
   let beast=null;
   for(const b of S.fauna||[])if(!b.scanned&&Math.abs(b.x-S.x)<34*kitStat().scan)beast=b;
+  /* организм рядом с кораблём перебивает вход в базу в цепочке подсказок: скажем, что вход есть (плейтест 14.10) */
+  const baseHint=()=>(dShip<shipZoneR()&&baseAt(G.sx,G.sy,S.p.idx))?"\nВХОД В БАЗУ — ОТОЙДИТЕ ОТ ОРГАНИЗМА":"";
   S.mining=null;
   const dbtn=document.getElementById("dronebtn");
   if(dep&&G.droneInventory>0&&droneMayMine(dep.res)){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
@@ -77146,7 +77148,7 @@ function updateSurface(dt){
       }
     }
   }else if(beast){
-    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ЖИВОТНОЕ\n"+beast.name.toUpperCase();
+    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ЖИВОТНОЕ\n"+beast.name.toUpperCase()+baseHint();
     if(actEdge){
       /* существо подаёт голос: тембр из его же seed, у каждого свой */
       sfx("beast",{seed:beast.seed||hashi(beast.x|0,beast.r*100|0,7)});
@@ -77158,7 +77160,7 @@ function updateSurface(dt){
     G.prompt="ДЕЙСТВИЕ — ПОЙМАТЬ\n"+cb.name.toUpperCase()+" · КЛЕТКА: −1 СЛОТ ТРЮМА";
     if(actEdge){zooCatch(cb);return;}
   }else if(plant){
-    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
+    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ"+baseHint();
     if(actEdge){
       bioScan(plant,9);
       if(typeof glowScan==="function")glowScan(plant);   /* светящийся мох — товар (11i) */
@@ -82650,7 +82652,10 @@ function drawBase(){
      1920 её восьмипиксельные строки стояли рядом с раздутыми панелями
      (M443, детектор кегля). Как у системы и грунта — withScale(UIK) */
   if(typeof baseLife==="function"&&typeof baseSharp==="function")withScale(uiK(),()=>{
-    const L=baseLife(B),bx=14,by=64;
+    /* столбик шкал слева вверху растёт вместе с бортом: доска встаёт под ним, а не на фиксированной 64
+       (плейтест 14.10: строки жизни базы резались шкалами) */
+    const hr=(typeof hudRect==="function")?hudRect():null,U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+    const L=baseLife(B),bx=14,by=Math.max(64,(hr&&hr.height>0)?Math.ceil(hr.bottom/U)+10:0);
     const rows=[["ВОЗДУХ",L.air,LIFE_CAP,[150,220,255]],
                 ["ВОДА",  L.water,LIFE_CAP,[120,190,255]],
                 ["ХАРЧ",  L.food|0,LIFE_CAP,[190,220,140]],

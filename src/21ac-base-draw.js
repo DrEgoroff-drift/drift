@@ -606,7 +606,10 @@ function drawBase(){
      1920 её восьмипиксельные строки стояли рядом с раздутыми панелями
      (M443, детектор кегля). Как у системы и грунта — withScale(UIK) */
   if(typeof baseLife==="function"&&typeof baseSharp==="function")withScale(uiK(),()=>{
-    const L=baseLife(B),bx=14,by=64;
+    /* столбик шкал слева вверху растёт вместе с бортом: доска встаёт под ним, а не на фиксированной 64
+       (плейтест 14.10: строки жизни базы резались шкалами) */
+    const hr=(typeof hudRect==="function")?hudRect():null,U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+    const L=baseLife(B),bx=14,by=Math.max(64,(hr&&hr.height>0)?Math.ceil(hr.bottom/U)+10:0);
     const rows=[["ВОЗДУХ",L.air,LIFE_CAP,[150,220,255]],
                 ["ВОДА",  L.water,LIFE_CAP,[120,190,255]],
                 ["ХАРЧ",  L.food|0,LIFE_CAP,[190,220,140]],

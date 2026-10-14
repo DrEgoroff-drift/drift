@@ -322,6 +322,8 @@ function updateSurface(dt){
   for(const pl of S.plants)if(!pl.scanned&&Math.abs(pl.x-S.x)<30*kitStat().scan)plant=pl;
   let beast=null;
   for(const b of S.fauna||[])if(!b.scanned&&Math.abs(b.x-S.x)<34*kitStat().scan)beast=b;
+  /* организм рядом с кораблём перебивает вход в базу в цепочке подсказок: скажем, что вход есть (плейтест 14.10) */
+  const baseHint=()=>(dShip<shipZoneR()&&baseAt(G.sx,G.sy,S.p.idx))?"\nВХОД В БАЗУ — ОТОЙДИТЕ ОТ ОРГАНИЗМА":"";
   S.mining=null;
   const dbtn=document.getElementById("dronebtn");
   if(dep&&G.droneInventory>0&&droneMayMine(dep.res)){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
@@ -583,7 +585,7 @@ function updateSurface(dt){
       }
     }
   }else if(beast){
-    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ЖИВОТНОЕ\n"+beast.name.toUpperCase();
+    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ЖИВОТНОЕ\n"+beast.name.toUpperCase()+baseHint();
     if(actEdge){
       /* существо подаёт голос: тембр из его же seed, у каждого свой */
       sfx("beast",{seed:beast.seed||hashi(beast.x|0,beast.r*100|0,7)});
@@ -595,7 +597,7 @@ function updateSurface(dt){
     G.prompt="ДЕЙСТВИЕ — ПОЙМАТЬ\n"+cb.name.toUpperCase()+" · КЛЕТКА: −1 СЛОТ ТРЮМА";
     if(actEdge){zooCatch(cb);return;}
   }else if(plant){
-    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
+    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ"+baseHint();
     if(actEdge){
       bioScan(plant,9);
       if(typeof glowScan==="function")glowScan(plant);   /* светящийся мох — товар (11i) */

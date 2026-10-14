@@ -3659,7 +3659,7 @@ drawAstronaut                src/20-life.js:4-140
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-651
 drawBargesMap                src/12l-barge.js:653-672
-drawBase                     src/21ac-base-draw.js:372-689
+drawBase                     src/21ac-base-draw.js:372-692
 drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
@@ -3902,8 +3902,8 @@ ethTick                      src/25l-post-ether.js:59-104
 etherLine                    src/11-log.js:42-53
 etherTick                    src/11b-speech.js:39-82
 etherWho                     src/11-log.js:38-41
-evacCost                     src/21-mode-surface.js:679
-evacFrom                     src/21-mode-surface.js:680
+evacCost                     src/21-mode-surface.js:681
+evacFrom                     src/21-mode-surface.js:682
 exileCandidates              src/12g-mgr-rogue.js:123-130
 exitBase                     src/21a-mode-base.js:154-158
 exitBelt                     src/24-mode-belt.js:161-169
@@ -5292,8 +5292,8 @@ lateAll                      src/11aq-late.js:52-55
 lateBlock                    src/11aq-late.js:118-138
 lateLeft                     src/11aq-late.js:57-61
 lateSit                      src/11aq-late.js:65-113
-launch                       src/21-mode-surface.js:704-719
-launchHold                   src/21-mode-surface.js:659
+launch                       src/21-mode-surface.js:706-721
+launchHold                   src/21-mode-surface.js:661
 lawDock                      src/12al2-laws.js:19-31
 lawLunch                     src/12al2-laws.js:40-44
 lawLunchRow                  src/12al2-laws.js:46-49
@@ -7877,7 +7877,7 @@ thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
 tickDrones                   src/12-economy.js:355-449
-tickLaunchHold               src/21-mode-surface.js:660-673
+tickLaunchHold               src/21-mode-surface.js:662-675
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
 tierOf                       src/04b-fleet.js:157
@@ -7922,7 +7922,7 @@ toldOf                       src/11aj-told.js:36-39
 toldOffBlock                 src/11ar-doors.js:53-67
 toldWorked                   src/11aj-told.js:41-45
 toldWorth                    src/11aj-told.js:49-54
-totalLoss                    src/21-mode-surface.js:682-703
+totalLoss                    src/21-mode-surface.js:684-705
 towShare                     src/03f-hull-role.js:87-89
 traceAll                     src/11ag-trace.js:48
 traceAsk                     src/11ag-trace.js:88-103
@@ -7988,7 +7988,7 @@ updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
 updateSpa                    src/29i-spa-draw.js:599-604
-updateSurface                src/21-mode-surface.js:200-658
+updateSurface                src/21-mode-surface.js:200-660
 updateSystem                 src/17-mode-system.js:106-513
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
 updateWinter                 src/29g-winter-draw.js:942-951
@@ -9300,7 +9300,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/21-mode-surface.js · 50 KB
   · поверхность:1
-  · навигатор и подсказки сверху:720
+  · навигатор и подсказки сверху:722
 
 ## src/21a-mode-base.js · 39 KB
   · база на планете: вид в разрезе:1
