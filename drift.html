@@ -3302,7 +3302,7 @@ body.rackon #prompt{opacity:0}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.493.4";
+const VER="0.493.5";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -12396,7 +12396,8 @@ const GPU_PIPE_KEYS=[
   "pipe:kit.img|hull",
   "pipe:kit.img|over",
   "pipe:kit.shp|add",
-  "pipe:kit.shp|over"
+  "pipe:kit.shp|over",
+  "rig.card"
 ];
 
 /* ══════════════ отказ видеокарты: потеря, сбой кадра, нет WebGPU (DESIGN-gpu §G) ══════════════
@@ -93658,6 +93659,9 @@ function rigCardDesc(){
     depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"},
     multisample:{count:4}};
 }
+/* рецепт для прогрева (08b0): карточка рига теперь рисуется и в полёте — альбом печатает людей
+   открытки (25g1), и без рецепта конвейер собирался лениво посреди кадра (0.493.5) */
+GPU_PIPE_ONE["rig.card"]=()=>rigCardDesc();
 /* всё, что живёт с устройством: сменилось — кэш пуст (правило 3) */
 function rigCardDev(){
   const R=RIG_CARD,d=GPU.dev;
@@ -98232,7 +98236,7 @@ function plnLightBox(dir,bx,n){
 function plnGlide(S,p,fly){
   const t=wallMs(),dt=Math.min(.1,Math.max(0,(t-(PLN.glideT||t))/1000));
   PLN.glideT=t;
-  const want=fly?0:plnAtThing(S,p),g=PLN.glide||0,tau=want>g?.45:.7;
+  const want=fly?0:plnAtThing(S,p),g=PLN.glide||0,tau=want>g?1.1:1.5;   /* было .45/.7: на каждом шаге у вещи весь задний план качался — «фон летит» (автор 14.10) */
   let v=g+(want-g)*(1-Math.exp(-dt/tau));
   if(Math.abs(v-want)<.002)v=want;
   PLN.glide=v;
@@ -118162,6 +118166,17 @@ function renderOpts(){
   const bres=el("button","act gold",RLV[jr][1]);
   bres.onclick=()=>{G.opts.gfx.res=RLV[(jr+1)%RLV.length][0];RES_AUTO=2;resize();renderOpts();};
   rres.appendChild(bres);$optBody.appendChild(rres);
+  /* Масштаб интерфейса (0.493.5): на экране 2000×1000 «авто» даёт ×1.3, и автор
+     увидел кнопки в полэкрана. «Авто» остаётся правилом кадра (uiScale), но
+     игрок может поставить своё: мельче — больше мира в кадре, крупнее — для
+     телевизора через всю комнату. Применяется той же resize(), что и зум. */
+  const ULV=[[0,"АВТО"],[.8,"МЕЛЬЧЕ"],[1,"100 %"],[1.25,"КРУПНЕЕ"]];
+  const rui=el("div","row");
+  rui.appendChild(el("div","nm","<b>Масштаб интерфейса</b><s>сейчас ×"+(typeof UIK==="number"?UIK.toFixed(2):"1")+"; авто — от высоты окна</s>"));
+  const ju=Math.max(0,ULV.findIndex(g=>g[0]===(G.opts.gfx.ui||0)));
+  const bui=el("button","act gold",ULV[ju][1]);
+  bui.onclick=()=>{G.opts.gfx.ui=ULV[(ju+1)%ULV.length][0];resize();renderOpts();};
+  rui.appendChild(bui);$optBody.appendChild(rui);
   const rpr=el("div","row");
   rpr.appendChild(el("div","nm","<b>Пресет</b><s>выставить всё сразу</s>"));
   const bpr=el("button","act","НИЗКИЕ / СРЕДНИЕ / ВЫСОКИЕ / МАКС");
@@ -118171,7 +118186,7 @@ function renderOpts(){
     const nv=GLV[((i0<0?1:i0)+1)%GLV.length][0];
     /* потолок кадров пресетом не трогается: это отдельное решение игрока
        про железо, а не про то, насколько подробен мир */
-    G.opts.gfx={draw:nv,detail:nv,particles:nv,plants:nv,fps:G.opts.gfx.fps};
+    G.opts.gfx=Object.assign({},G.opts.gfx,{draw:nv,detail:nv,particles:nv,plants:nv});   /* потолок, разрешение и масштаб — решения про железо и глаза, пресет их не трогает */
     renderOpts();
   };
   rpr.appendChild(bpr);$optBody.appendChild(rpr);
@@ -118312,6 +118327,21 @@ function optGroups(){
     n.style.display=(cur===optTab)?"":"none";
   }
 }
+/* масштаб интерфейса (0.493.5). Автор 14.10 на ПК 2000×1000: «всё огромное, кнопки в пол-экрана».
+   Авто было clamp(min(H/760, W/1150), 1, 1.75) — 1.32 на его экране, 1.42 на 1920×1080. Теперь
+   мерка мягче: min(H/940, W/1500) в пределах 1…1.4 — 1.06 у автора, 1.15 на 1080p, 1.4 только с
+   1440p. Ниже единицы авто не идёт: вёрстка нарисована в этих пикселях, цели пальца — от 44.
+   Игрок может выбрать сам (НАСТРОЙКИ → «Масштаб интерфейса»): 0 — авто, иначе множитель;
+   телефон (W<=760) всегда 1 */
+uiScale=function(w,h){
+  let k=0;try{k=+G.opts.gfx.ui||0;}catch(e){}
+  if(w<=760)return 1;
+  return k>0?clamp(k,.6,2):clamp(Math.min(h/940,w/1500),1,1.4);
+};
+/* выбор масштаба лежит в записи: после её загрузки рамка пересчитывается */
+const UI_SCALE_APPLY=applySave;
+applySave=function(){const r=UI_SCALE_APPLY.apply(this,arguments);resize();return r;};
+resize();
 
 /* ══════════════ экран экипажа ══════════════ */
 /* Наёмники раньше жили только во вкладке станции: нанял — и до следующей стыковки
@@ -124911,7 +124941,14 @@ async function hallCost(sec){
    5. Портрет живой (M729): холсты на странице перерисовываются таймером — дыхание, моргание, взгляд, эмоция
       (27f6 cpFace). Не больше CPP_LIVE за такт, по кругу; скрытая вкладка и отцепленные холсты не рисуются. */
 const CPP={q:[],t:0,hid:new Map(),bd:new Map(),M:null,OT:null,n:0,live:[],lt:0,rr:0};
-const CPP_LIVE=6,CPP_MS=50;
+/* 0.493.5: было шесть портретов каждые 50 мс, и не глядя, видны ли они — холст в скрытой панели
+   (display:none) или за прокруткой «подключён» и рисовался: на грунте ~90 полных кадров движка в
+   секунду впустую, у автора видеокарта 100 %. Теперь живут только видимые (IntersectionObserver),
+   не больше четырёх за такт в 66 мс */
+const CPP_LIVE=4,CPP_MS=66;
+const CPP_IO=(typeof IntersectionObserver==="function")?
+  new IntersectionObserver(es=>{for(const e of es)e.target.__cppVis=e.isIntersecting;}):null;
+function cppVisible(cv){return cv.__cppVis!==false;}
 /* холст портрета css×css (CSS-пиксели), плотность панели; cut — крупнее, одна голова (бармен в реплике) */
 function cpPortrait(m,css,cut){
   const cv=document.createElement("canvas");cv.className="cp3";
@@ -124923,18 +124960,19 @@ function cpPortrait(m,css,cut){
 function cppFlush(){
   CPP.t=0;const L=CPP.q.splice(0);
   if(GPU.enc){CPP.q.push(...L);CPP.t=setTimeout(cppFlush,0);return;}   /* кадр ещё открыт — следующим таймером */
-  for(const it of L)if(it[0].isConnected){cppPaint(it[0],it[1],it[2],it[3]);CPP.live.push(it);}
+  for(const it of L)if(it[0].isConnected){cppPaint(it[0],it[1],it[2],it[3]);CPP.live.push(it);if(CPP_IO)CPP_IO.observe(it[0]);}
   if(CPP.live.length&&!CPP.lt)CPP.lt=setTimeout(cppTick,CPP_MS);
 }
 /* такт живых портретов: отцепленные — вон; рисуются по кругу не больше CPP_LIVE за раз */
 function cppTick(){
   CPP.lt=0;
-  CPP.live=CPP.live.filter(it=>it[0].isConnected);
+  CPP.live=CPP.live.filter(it=>{if(it[0].isConnected)return true;if(CPP_IO)CPP_IO.unobserve(it[0]);return false;});
   if(!CPP.live.length)return;
   const hid=typeof document!=="undefined"&&document.hidden;
-  if(!hid&&!GPU.enc){const n=Math.min(CPP_LIVE,CPP.live.length);
-    for(let k=0;k<n;k++){const it=CPP.live[(CPP.rr+k)%CPP.live.length];cppPaint(it[0],it[1],it[2],it[3]);}
-    CPP.rr=(CPP.rr+n)%CPP.live.length;}
+  const V=CPP.live.filter(it=>cppVisible(it[0]));
+  if(!hid&&!GPU.enc&&V.length){const n=Math.min(CPP_LIVE,V.length);
+    for(let k=0;k<n;k++){const it=V[(CPP.rr+k)%V.length];cppPaint(it[0],it[1],it[2],it[3]);}
+    CPP.rr=(CPP.rr+n)%V.length;}
   CPP.lt=setTimeout(cppTick,hid?500:CPP_MS);
 }
 /* задник: полукруглая ниша за спиной, тёмная в цвет роли */
@@ -125065,7 +125103,7 @@ function cpFace(m,base){
   if(t>=F.ns){const r=F.r,aw=r()<.14*T.sac;
     F.away=aw?t+500+r()*700:0;
     F.sac=aw?[(r()<.5?-1:1)*(.18+r()*.14),(r()-.6)*.14]:[(r()-.5)*.08,(r()-.5)*.05];
-    F.ns=t+(aw?1300:(500+r()*1900)/T.sac);}
+    F.ns=t+(aw?1600:(1300+r()*3200)/Math.sqrt(T.sac));}   /* спокойнее (0.493.5): скачок раз в 1.3–4.5 с, а не в 0.5–2.4 — «лица очень быстро» (автор 14.10) */
   if(F.away&&t>F.away){F.sac=[0,0];F.away=0;}
   const bg=base||[0,0];
   tg.gz=[bg[0]+tg.gz[0]+F.sac[0],bg[1]+tg.gz[1]+F.sac[1]];
@@ -125075,7 +125113,7 @@ function cpFace(m,base){
   const bt2=bt-260,b2=F.b2&&bt2>0?(bt2<70?bt2/70:bt2<110?1:bt2<230?1-(bt2-110)/120:0):0;
   /* к цели — с запаздыванием: лицо 7/с, глаза 18/с (скачок), моргание — сразу */
   if(!F.X)F.X=cpEmoMix(tg,tg,0);
-  const kf=1-Math.exp(-7*dt),kg=1-Math.exp(-18*dt),X=F.X;
+  const kf=1-Math.exp(-4*dt),kg=1-Math.exp(-12*dt),X=F.X;
   for(const k of ["lu","ll","sm","sk","mo"])X[k]+=(tg[k]-X[k])*kf;
   for(let i=0;i<2;i++){X.br[i]+=(tg.br[i]-X.br[i])*kf;X.bi[i]+=(tg.bi[i]-X.bi[i])*kf;X.gz[i]+=(tg.gz[i]-X.gz[i])*kg;}
   /* лёгкая жизнь рта и бровей: дыхание чуть приоткрывает губы, брови вздрагивают при взгляде в сторону */
@@ -131526,8 +131564,17 @@ let resWait=0,resHeld=0,resWaitNext=RES_WAIT0,resSaid=false;
 /* целевой кадр: шестьдесят герц, но если игрок поставил потолок ниже — его.
    Без этого потолок в тридцать кадров сам же ронял разрешение: ровные 33 мс
    стояли выше порога спуска, и игра считала свой же потолок просадкой. */
-function resTarget(){
+/* потолок кадра сейчас: выбор игрока, а в доке — не выше тридцати (0.493.5). Под экраном
+   станции мир почти не виден, а видеокарта рисовала его по шестьдесят раз в секунду рядом с залом
+   и портретами — у автора 100 % загрузки. Одно правило и для полки, и для цели разрешения:
+   иначе ровные 33 мс дока читались бы просадкой и роняли чёткость */
+function frameCapNow(){
   let cap=0;try{cap=G.opts.gfx.fps|0;}catch(e){}
+  if(G.mode==="dock"&&G.st)cap=cap>0?Math.min(cap,30):30;
+  return cap;
+}
+function resTarget(){
+  const cap=frameCapNow();
   return cap>0?Math.max(FRAME_MS,1000/cap):FRAME_MS;
 }
 function resSay(t){
@@ -131753,7 +131800,7 @@ function frameBody(now){
      на дрожащем 120 Гц съезжает на 7.6 мс вместо 8.33 — и ceil давал шаг в ТРИ
      кадра развёртки, то есть 40 кадров вместо шестидесяти (замер: промежутки 24–27 мс
      вместо 16.7). Из двух шагов берём БОЛЬШИЙ: потолок нельзя превышать. */
-  const capOpt=G.opts.gfx.fps|0;
+  const capOpt=frameCapNow();
   /* ПОЛКА 60 (автор 19.09: «оставь принудительно просто 60 кадров и все, не считай»).
      Не оценка развёртки, а расписание: кадр идёт, когда подошёл его срок (раз в
      1000/60 мс, допуск 4 мс на дрожание). Опоздавший кадр не сдвигает сетку —

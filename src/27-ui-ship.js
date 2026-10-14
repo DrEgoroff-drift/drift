@@ -191,6 +191,17 @@ function renderOpts(){
   const bres=el("button","act gold",RLV[jr][1]);
   bres.onclick=()=>{G.opts.gfx.res=RLV[(jr+1)%RLV.length][0];RES_AUTO=2;resize();renderOpts();};
   rres.appendChild(bres);$optBody.appendChild(rres);
+  /* Масштаб интерфейса (0.493.5): на экране 2000×1000 «авто» даёт ×1.3, и автор
+     увидел кнопки в полэкрана. «Авто» остаётся правилом кадра (uiScale), но
+     игрок может поставить своё: мельче — больше мира в кадре, крупнее — для
+     телевизора через всю комнату. Применяется той же resize(), что и зум. */
+  const ULV=[[0,"АВТО"],[.8,"МЕЛЬЧЕ"],[1,"100 %"],[1.25,"КРУПНЕЕ"]];
+  const rui=el("div","row");
+  rui.appendChild(el("div","nm","<b>Масштаб интерфейса</b><s>сейчас ×"+(typeof UIK==="number"?UIK.toFixed(2):"1")+"; авто — от высоты окна</s>"));
+  const ju=Math.max(0,ULV.findIndex(g=>g[0]===(G.opts.gfx.ui||0)));
+  const bui=el("button","act gold",ULV[ju][1]);
+  bui.onclick=()=>{G.opts.gfx.ui=ULV[(ju+1)%ULV.length][0];resize();renderOpts();};
+  rui.appendChild(bui);$optBody.appendChild(rui);
   const rpr=el("div","row");
   rpr.appendChild(el("div","nm","<b>Пресет</b><s>выставить всё сразу</s>"));
   const bpr=el("button","act","НИЗКИЕ / СРЕДНИЕ / ВЫСОКИЕ / МАКС");
@@ -200,7 +211,7 @@ function renderOpts(){
     const nv=GLV[((i0<0?1:i0)+1)%GLV.length][0];
     /* потолок кадров пресетом не трогается: это отдельное решение игрока
        про железо, а не про то, насколько подробен мир */
-    G.opts.gfx={draw:nv,detail:nv,particles:nv,plants:nv,fps:G.opts.gfx.fps};
+    G.opts.gfx=Object.assign({},G.opts.gfx,{draw:nv,detail:nv,particles:nv,plants:nv});   /* потолок, разрешение и масштаб — решения про железо и глаза, пресет их не трогает */
     renderOpts();
   };
   rpr.appendChild(bpr);$optBody.appendChild(rpr);
@@ -341,3 +352,18 @@ function optGroups(){
     n.style.display=(cur===optTab)?"":"none";
   }
 }
+/* масштаб интерфейса (0.493.5). Автор 14.10 на ПК 2000×1000: «всё огромное, кнопки в пол-экрана».
+   Авто было clamp(min(H/760, W/1150), 1, 1.75) — 1.32 на его экране, 1.42 на 1920×1080. Теперь
+   мерка мягче: min(H/940, W/1500) в пределах 1…1.4 — 1.06 у автора, 1.15 на 1080p, 1.4 только с
+   1440p. Ниже единицы авто не идёт: вёрстка нарисована в этих пикселях, цели пальца — от 44.
+   Игрок может выбрать сам (НАСТРОЙКИ → «Масштаб интерфейса»): 0 — авто, иначе множитель;
+   телефон (W<=760) всегда 1 */
+uiScale=function(w,h){
+  let k=0;try{k=+G.opts.gfx.ui||0;}catch(e){}
+  if(w<=760)return 1;
+  return k>0?clamp(k,.6,2):clamp(Math.min(h/940,w/1500),1,1.4);
+};
+/* выбор масштаба лежит в записи: после её загрузки рамка пересчитывается */
+const UI_SCALE_APPLY=applySave;
+applySave=function(){const r=UI_SCALE_APPLY.apply(this,arguments);resize();return r;};
+resize();

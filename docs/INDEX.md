@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 575 · top-level symbols: 8251
+Files: 575 · top-level symbols: 8255
 
 ## SYMBOLS
 
@@ -218,7 +218,7 @@ CANT_KEEP_LINE               src/27cb-ui-cantina-hall.js:23-29
 CANT_LIGHT                   src/27d-ui-cantina.js:36-42
 CANT_STYLE                   src/27d-ui-cantina.js:15-26
 CANT_TABLE_SVG               src/27cb-ui-cantina-hall.js:74
-CAP_RING                     src/28-loop.js:315
+CAP_RING                     src/28-loop.js:324
 CAST                         src/12k-stories-a.js:22-43
 CAST_B                       src/12k-stories-b.js:7-24
 CAST_C                       src/12k-stories-c.js:7-20
@@ -375,7 +375,8 @@ COSM_TRAIL                   src/12va-wander-cosm.js:32-37
 COSM_VISOR                   src/12va-wander-cosm.js:44-48
 COUNTY_LVL                   src/11l-county.js:20
 CPP                          src/27f5-portrait3d.js:13
-CPP_LIVE                     src/27f5-portrait3d.js:14
+CPP_IO                       src/27f5-portrait3d.js:19
+CPP_LIVE                     src/27f5-portrait3d.js:18
 CPR                          src/27f3a-face3d.js:57
 CP_CLOTH                     src/27f3-person3d.js:44
 CP_EMO                       src/27f6-face-live.js:15-22
@@ -795,7 +796,7 @@ GPU_LIT_SH                   src/17c-system-draw.js:318
 GPU_MIP                      src/08c-gpu-kit.js:98
 GPU_MIP_LOD                  src/08c-gpu-kit.js:192
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
-GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-66
+GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-67
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-57
 GPU_PL_WGSL                  src/08b-gpu.js:479
@@ -1242,7 +1243,7 @@ LOG_PAGE                     src/11-log.js:12
 LONG_HOD                     src/12b3-fx-cult.js:32-45
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
-LOOP_OFF                     src/28-loop.js:371
+LOOP_OFF                     src/28-loop.js:380
 LOOP_PHASE                   src/01-core.js:86
 LOOT_IC                      src/13-pirates.js:364
 LORE                         src/12q-lore.js:67
@@ -1395,7 +1396,7 @@ OPIS_KIT                     src/27j-ui-opis.js:62-69
 OPIS_SHIP                    src/27j-ui-opis.js:44-61
 OPIS_TABS                    src/27j-ui-opis.js:37
 OPTS_BOOT                    tests/90-harness.js:226
-OPT_TABS                     src/27-ui-ship.js:323
+OPT_TABS                     src/27-ui-ship.js:334
 ORDERS                       src/12a-crew.js:149-155
 ORDER_WIN                    src/12aa-need.js:76
 ORE_KEYS                     src/02-world.js:145
@@ -1982,7 +1983,7 @@ SHIPS                        src/03-ships.js:2-11
 SHIP_GUARD                   src/17-mode-system.js:20
 SHIP_KEYS                    src/03-ships.js:12
 SHIP_SCALE_MIN               src/16c-rescue.js:225
-SHOT_CLEAN                   src/28-loop.js:377
+SHOT_CLEAN                   src/28-loop.js:386
 SHOVE_V                      src/13a-guns.js:36
 SHUT_LINES                   src/11ah-offer.js:302-307
 SHUT_N                       src/17f-sys-traffic.js:70
@@ -2119,8 +2120,8 @@ TABLE_REPLY                  src/11b-speech.js:158-187
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
-TACT_LOW                     src/28-loop.js:341
-TACT_UP_WIN                  src/28-loop.js:342
+TACT_LOW                     src/28-loop.js:350
+TACT_UP_WIN                  src/28-loop.js:351
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
 TAPE_ADAPT                   src/25b-tape.js:26
@@ -2184,6 +2185,7 @@ TRAINEE_NAMES                src/11ac-trainee.js:13
 TYPES                        src/02-world.js:168-191
 UIK                          src/08-state.js:20
 UI_BOOT                      tests/90-harness.js:218
+UI_SCALE_APPLY               src/27-ui-ship.js:367
 UI_SEL_BOOT                  tests/90-harness.js:253
 UNIQ                         src/21b1-base-pay.js:35-44
 UNIQUE_COLS                  src/03-ships.js:14
@@ -2861,11 +2863,11 @@ cantSel                      src/27c-ui-hq.js:227
 cantStyle                    src/27d-ui-cantina.js:27-30
 cantinaPool                  src/12c-mgr-core.js:260-266
 cantinaScene                 src/27c-ui-hq.js:228-269
-capIv                        src/28-loop.js:307
+capIv                        src/28-loop.js:316
 capLum                       src/19e-clouds.js:28-33
 capOf                        src/05-parts.js:221-225
 capRu                        src/11t-rumours.js:58
-capSample                    src/28-loop.js:316-321
+capSample                    src/28-loop.js:325-330
 capUsed                      src/05-parts.js:357-362
 castAt                       src/19c1-cast.js:118-122
 castChunkMap                 src/19c1-cast.js:111-117
@@ -3312,7 +3314,7 @@ cpHeadAI                     src/27f3a-face3d.js:390-400
 cpHeadFn                     src/27f3a-face3d.js:18-52
 cpMesh                       src/27f3-person3d.js:274-281
 cpMood                       src/27f6-face-live.js:30-40
-cpPortrait                   src/27f5-portrait3d.js:16-22
+cpPortrait                   src/27f5-portrait3d.js:23-29
 cpPose                       src/27f3-person3d.js:52-71
 cpRig                        src/27f3a-face3d.js:404-426
 cpSculpt                     src/27f3a-face3d.js:81-158
@@ -3323,18 +3325,19 @@ cpTorsoAt                    src/27f3-person3d.js:84-93
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
 cpWarpTh                     src/27f3a-face3d.js:68
-cppBackdrop                  src/27f5-portrait3d.js:41-47
-cppFlush                     src/27f5-portrait3d.js:23-28
-cppPaint                     src/27f5-portrait3d.js:79-94
-cppScene                     src/27f5-portrait3d.js:48-76
-cppTick                      src/27f5-portrait3d.js:30-39
-cppX                         src/27f5-portrait3d.js:78
+cppBackdrop                  src/27f5-portrait3d.js:49-55
+cppFlush                     src/27f5-portrait3d.js:30-35
+cppPaint                     src/27f5-portrait3d.js:87-102
+cppScene                     src/27f5-portrait3d.js:56-84
+cppTick                      src/27f5-portrait3d.js:37-47
+cppVisible                   src/27f5-portrait3d.js:21
+cppX                         src/27f5-portrait3d.js:86
 craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
-crashAt                      src/28-loop.js:579-593
-crashN                       src/28-loop.js:574
-crashSay                     src/28-loop.js:600-629
+crashAt                      src/28-loop.js:588-602
+crashN                       src/28-loop.js:583
+crashSay                     src/28-loop.js:609-638
 crashShip                    src/01a-crashlog.js:20-37
 crashStack                   src/01a-crashlog.js:39-41
 crewAssignShip               src/12a-crew.js:252-260
@@ -3422,7 +3425,7 @@ cvs                          src/08-state.js:2
 cvsRect                      src/08-state.js:107-110
 dayK                         src/19c-light.js:68-73
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:737-807
+dbg                          src/28-loop.js:746-816
 dcLensEq                     tests/91qc-descent.js:15-18
 dcWorld                      tests/91qc-descent.js:6-14
 dcol                         src/21b-surface-deco.js:155-160
@@ -3793,8 +3796,8 @@ drawWater                    src/21e-surface-draw.js:221-309
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-318
 drawWinter                   src/29g-winter-draw.js:365-386
-drawWorld                    src/28-loop.js:408-411
-drawWorldIn                  src/28-loop.js:412-435
+drawWorld                    src/28-loop.js:417-420
+drawWorldIn                  src/28-loop.js:421-444
 drawWreck                    src/20aa-poi-shapes.js:8-47
 drawWrecksSystem             src/12l-barge.js:378-405
 drawYardMark                 src/03e-hull-draw.js:73-116
@@ -4065,9 +4068,10 @@ folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 foregroundGpu                src/21e3-surface-stand-gpu.js:116-145
 foundBase                    src/21a-mode-base.js:101-115
-frame                        src/28-loop.js:633-679
-frameBody                    src/28-loop.js:436-565
-frameLastAt                  src/28-loop.js:632
+frame                        src/28-loop.js:642-688
+frameBody                    src/28-loop.js:445-574
+frameCapNow                  src/28-loop.js:250-254
+frameLastAt                  src/28-loop.js:641
 freeVoice                    src/09-audio.js:104-108
 fridgeFee                    src/21ac4-base-fridge.js:19
 fridgeFirmAt                 src/21ac4-base-fridge.js:15-18
@@ -5904,8 +5908,8 @@ opisSlotOf                   src/27j-ui-opis.js:104-108
 opisTarget                   src/27j-ui-opis.js:89-103
 opisUnfit                    src/27j-ui-opis.js:218
 opisWear                     src/27j-ui-opis.js:247-251
-optGroups                    src/27-ui-ship.js:326-343
-optTab                       src/27-ui-ship.js:325
+optGroups                    src/27-ui-ship.js:337-354
+optTab                       src/27-ui-ship.js:336
 optsNumify                   src/14a2-save-ephemeral.js:23-28
 orbPathOf                    src/17-mode-system.js:517-527
 orderDeliver                 src/12aa-need.js:119-134
@@ -6682,7 +6686,7 @@ probeShot                    src/25m-probe.js:85-97
 probeSpeak                   src/25m-probe.js:100-121
 probeTarget                  src/25m-probe.js:38-46
 probeVoice                   src/25m-probe.js:75-83
-prof                         src/28-loop.js:699-726
+prof                         src/28-loop.js:708-735
 profW                        src/03-ships.js:205-214
 promptEl                     src/08-state.js:115-118
 promptRect                   src/08-state.js:119-125
@@ -7032,7 +7036,7 @@ renderHold                   src/27j-ui-hold.js:252
 renderLog                    src/11-log.js:94-117
 renderLoreBoard              src/27h-ui-lore.js:26-79
 renderMail                   src/25k-post-mail.js:32-105
-renderOpts                   src/27-ui-ship.js:21-318
+renderOpts                   src/27-ui-ship.js:21-329
 renderPrices                 src/12aa-need.js:265-292
 renderQsl                    src/11an-qsl.js:160-201
 renderRecord                 src/11aa-record.js:107-144
@@ -7064,11 +7068,11 @@ repairBtns                   src/26-ui-station.js:321-338
 repairCost                   src/26-ui-station.js:219-228
 repairDo                     src/26-ui-station.js:289-304
 repairQuote                  src/26-ui-station.js:283-288
-resAuto                      src/28-loop.js:270-306
+resAuto                      src/28-loop.js:279-315
 resEma                       src/28-loop.js:241
-resModeCap                   src/28-loop.js:264-269
-resSay                       src/28-loop.js:250-253
-resTarget                    src/28-loop.js:246-249
+resModeCap                   src/28-loop.js:273-278
+resSay                       src/28-loop.js:259-262
+resTarget                    src/28-loop.js:255-258
 resTxt                       src/02-world.js:94-105
 resW                         src/06f-far-props.js:12
 resWait                      src/28-loop.js:242
@@ -7104,29 +7108,29 @@ retGroundLine                src/11s-returners.js:44-46
 reticle                      src/17c-system-draw.js:4-12
 rgba                         src/01-core.js:225
 ridged                       src/18a-material.js:30
-rigCard                      src/21phc-pln-rig-card.js:197-245
-rigCardBase                  src/21phc-pln-rig-card.js:284-295
+rigCard                      src/21phc-pln-rig-card.js:200-248
+rigCardBase                  src/21phc-pln-rig-card.js:287-298
 rigCardBounds                src/21phc-pln-rig-card.js:111-119
-rigCardCave                  src/21phc-pln-rig-card.js:317-325
+rigCardCave                  src/21phc-pln-rig-card.js:320-328
 rigCardDesc                  src/21phc-pln-rig-card.js:160-167
-rigCardDev                   src/21phc-pln-rig-card.js:169-175
-rigCardDraw                  src/21phc-pln-rig-card.js:248-254
-rigCardFlush                 src/21phc-pln-rig-card.js:305-314
+rigCardDev                   src/21phc-pln-rig-card.js:172-178
+rigCardDraw                  src/21phc-pln-rig-card.js:251-257
+rigCardFlush                 src/21phc-pln-rig-card.js:308-317
 rigCardIssueTint             src/21phc-pln-rig-card.js:61-67
-rigCardMS                    src/21phc-pln-rig-card.js:176-185
+rigCardMS                    src/21phc-pln-rig-card.js:179-188
 rigCardMesh                  src/21phc-pln-rig-card.js:47-57
 rigCardPal                   src/21phc-pln-rig-card.js:39-46
 rigCardPose                  src/21phc-pln-rig-card.js:81-102
-rigCardRaid                  src/21phc-pln-rig-card.js:329-337
+rigCardRaid                  src/21phc-pln-rig-card.js:332-340
 rigCardRot                   src/21phc-pln-rig-card.js:106-109
 rigCardState                 src/21phc-pln-rig-card.js:69-79
-rigCardWorker                src/21phc-pln-rig-card.js:298-304
-rigLightBase                 src/21phc-pln-rig-card.js:266-269
-rigLightCave                 src/21phc-pln-rig-card.js:272-275
-rigLightKey                  src/21phc-pln-rig-card.js:187-190
-rigLightRaid                 src/21phc-pln-rig-card.js:277-279
-rigPoseOf                    src/21phc-pln-rig-card.js:256-262
-rigPpmQ                      src/21phc-pln-rig-card.js:192
+rigCardWorker                src/21phc-pln-rig-card.js:301-307
+rigLightBase                 src/21phc-pln-rig-card.js:269-272
+rigLightCave                 src/21phc-pln-rig-card.js:275-278
+rigLightKey                  src/21phc-pln-rig-card.js:190-193
+rigLightRaid                 src/21phc-pln-rig-card.js:280-282
+rigPoseOf                    src/21phc-pln-rig-card.js:259-265
+rigPpmQ                      src/21phc-pln-rig-card.js:195
 ringAll                      src/11x-ring.js:22-25
 ringBlock                    src/11x-ring.js:95-105
 ringDir                      src/11x-ring.js:26-29
@@ -7689,7 +7693,7 @@ stationParts                 src/03-ships.js:159-198
 stationUniqueOffer           src/03-ships.js:143-156
 stationViz                   src/17c-system-draw.js:18-23
 stationYard                  src/04c-yards.js:127-142
-stepWorld                    src/28-loop.js:385-405
+stepWorld                    src/28-loop.js:394-414
 steps                        tests/90-harness.js:457
 stopEngine                   src/09-audio.js:369-373
 storyAddrMatch               src/11c-stories.js:69-82
@@ -7816,9 +7820,9 @@ tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:119-140
 tableWasNew                  src/27i-ui-table.js:110
 tabsSync                     src/15-input.js:230-245
-tactHz                       src/28-loop.js:343
-tactTick                     src/28-loop.js:353-366
-tactWork                     src/28-loop.js:346
+tactHz                       src/28-loop.js:352
+tactTick                     src/28-loop.js:362-375
+tactWork                     src/28-loop.js:355
 tap                          src/15-input.js:478-603
 tapeBuy                      src/12s1-tape.js:37-42
 tapeCan                      src/12s1-tape.js:22
@@ -9742,7 +9746,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/26f-yard-gpu.js · 4 KB
 
-## src/27-ui-ship.js · 24 KB
+## src/27-ui-ship.js · 26 KB
   · вход в ОПИСЬ и настройки:1
 
 ## src/27b-ui-crew.js · 15 KB
@@ -9810,7 +9814,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/27f4k-hall-phone.js · 4 KB
 
-## src/27f5-portrait3d.js · 7 KB
+## src/27f5-portrait3d.js · 8 KB
   · портрет в объёме (M725):1
 
 ## src/27f6-face-live.js · 7 KB
@@ -9883,11 +9887,11 @@ zoomTo                       src/15-input.js:358
   · цикл:106
   · каденсия: мир шагает квантом (0.1):142
   · авторазрешение:195
-  · РОВНЫЙ ТАКТ (0.1b):322
-  · развилка режимов — одна на всех (M238):378
-  · кадр, который не убивает игру (M234):566
-  · prof() — на что уходит кадр:687
-  · dbg() — что держит корабль:728
+  · РОВНЫЙ ТАКТ (0.1b):331
+  · развилка режимов — одна на всех (M238):387
+  · кадр, который не убивает игру (M234):575
+  · prof() — на что уходит кадр:696
+  · dbg() — что держит корабль:737
 
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
@@ -10070,4 +10074,4 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzzzzzzz-savenet.js · 4 KB
   · сеть сейва: каждое поле мира либо хранится, либо названо эфемерным (0.438.0):1
 
-## tests/99-run.js · 8 KB
+## tests/99-run.js · 9 KB

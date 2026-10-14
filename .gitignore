@@ -52,3 +52,4 @@ docs/shots/*.png
 __pycache__/
 # Рабочие копии субагентов Claude Code (Agent с isolation: worktree) — не часть репозитория.
 /.claude/worktrees/
+/.claude/launch.json

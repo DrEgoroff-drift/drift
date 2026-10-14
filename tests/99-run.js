@@ -65,8 +65,10 @@ if(!TEST_TIMES&&!(typeof globalThis.TEST_NODE!=="undefined"&&globalThis.TEST_NOD
   if(!GPU.ok&&!GPU.none&&performance.now()-t0<14000){let s=0;for(let k=0;k<2e7;k++)s+=k&1;BOOT_SINK=s;BOOT_GPU_POLL++;setTimeout(()=>boot(t0),25);return;}
   /* и прогрева конвейеров (08b0): наборы видят кадры без компиляции, детектор — честные промахи.
      Компиляция идёт по настоящим часам (~2 с), а шаг в 50 мс виртуальных съедал потолок за полсекунды
-     настоящих — прогрев ждём шагом в 1 мс, потолок — 600 шагов по ~20 мс счёта */
-  if(GPU.ok&&!GPU_PIPES.done&&BOOT_PIPE_POLL++<600){let s=0;for(let k=0;k<2e7;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),1);return;}
+     настоящих — прогрев ждём шагом в 1 мс, потолок — 600 шагов по ~20 мс счёта.
+     14.10: на новой машине 2e7 шагов счёта — ~5 мс, и 600 опросов давали ~3 с настоящих; карточка рига
+     (rig.card, MSAA) в таблице не успевала — потолок 2400 опросов, это те же ~12 с */
+  if(GPU.ok&&!GPU_PIPES.done&&BOOT_PIPE_POLL++<2400){let s=0;for(let k=0;k<2e7;k++)s+=k&1;BOOT_SINK=s;setTimeout(()=>boot(t0),1);return;}
   const ready=frameN>=1||crashN>0;
   if(!ready&&performance.now()-t0<17000){setTimeout(()=>boot(t0),50);return;}
   G.running=false;

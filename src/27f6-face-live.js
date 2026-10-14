@@ -70,7 +70,7 @@ function cpFace(m,base){
   if(t>=F.ns){const r=F.r,aw=r()<.14*T.sac;
     F.away=aw?t+500+r()*700:0;
     F.sac=aw?[(r()<.5?-1:1)*(.18+r()*.14),(r()-.6)*.14]:[(r()-.5)*.08,(r()-.5)*.05];
-    F.ns=t+(aw?1300:(500+r()*1900)/T.sac);}
+    F.ns=t+(aw?1600:(1300+r()*3200)/Math.sqrt(T.sac));}   /* спокойнее (0.493.5): скачок раз в 1.3–4.5 с, а не в 0.5–2.4 — «лица очень быстро» (автор 14.10) */
   if(F.away&&t>F.away){F.sac=[0,0];F.away=0;}
   const bg=base||[0,0];
   tg.gz=[bg[0]+tg.gz[0]+F.sac[0],bg[1]+tg.gz[1]+F.sac[1]];
@@ -80,7 +80,7 @@ function cpFace(m,base){
   const bt2=bt-260,b2=F.b2&&bt2>0?(bt2<70?bt2/70:bt2<110?1:bt2<230?1-(bt2-110)/120:0):0;
   /* к цели — с запаздыванием: лицо 7/с, глаза 18/с (скачок), моргание — сразу */
   if(!F.X)F.X=cpEmoMix(tg,tg,0);
-  const kf=1-Math.exp(-7*dt),kg=1-Math.exp(-18*dt),X=F.X;
+  const kf=1-Math.exp(-4*dt),kg=1-Math.exp(-12*dt),X=F.X;
   for(const k of ["lu","ll","sm","sk","mo"])X[k]+=(tg[k]-X[k])*kf;
   for(let i=0;i<2;i++){X.br[i]+=(tg.br[i]-X.br[i])*kf;X.bi[i]+=(tg.bi[i]-X.bi[i])*kf;X.gz[i]+=(tg.gz[i]-X.gz[i])*kg;}
   /* лёгкая жизнь рта и бровей: дыхание чуть приоткрывает губы, брови вздрагивают при взгляде в сторону */

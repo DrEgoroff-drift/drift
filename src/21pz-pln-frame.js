@@ -260,7 +260,7 @@ function plnLightBox(dir,bx,n){
 function plnGlide(S,p,fly){
   const t=wallMs(),dt=Math.min(.1,Math.max(0,(t-(PLN.glideT||t))/1000));
   PLN.glideT=t;
-  const want=fly?0:plnAtThing(S,p),g=PLN.glide||0,tau=want>g?.45:.7;
+  const want=fly?0:plnAtThing(S,p),g=PLN.glide||0,tau=want>g?1.1:1.5;   /* было .45/.7: на каждом шаге у вещи весь задний план качался — «фон летит» (автор 14.10) */
   let v=g+(want-g)*(1-Math.exp(-dt/tau));
   if(Math.abs(v-want)<.002)v=want;
   PLN.glide=v;

@@ -6,6 +6,39 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.493.5 - the GPU off 100 %: live portraits only when seen, the dock at 30 frames; a smaller interface with its own setting; calmer faces and lens; deposits clear of walls; drones fly again
+
+The author on a 2000×1000 PC: buttons half the screen, faces racing, the planet's background flying,
+the video card at 100 %. Measured in a real Chrome with the real clock (calls per second per renderer,
+GPU submits by call stack), not guessed:
+
+| Scene | GPU submits/s before | after |
+|---|---|---|
+| surface | 150 | 60 |
+| cantina | 287 | 162 |
+| space | 243 | 243 (four passes × 60, unchanged) |
+
+- **Live portraits (27f5).** Six portraits every 50 ms, whether seen or not: a canvas in a hidden panel
+  is still «connected», so on the ground ~90 full engine frames a second went nowhere. Now an
+  IntersectionObserver keeps only visible portraits alive, at most four per 66 ms tick.
+- **The dock at 30 frames (28-loop `frameCapNow`).** Under the station screen the world is barely seen;
+  the frame cap and the resolution target share one rule, so steady 33 ms in the dock is not read as a
+  drop.
+- **The interface scale.** Auto was `clamp(min(H/760, W/1150), 1, 1.75)` — 1.32 on the author's screen,
+  1.42 at 1080p. Now `clamp(min(H/940, W/1500), 1, 1.4)`: 1.06 there, 1.15 at 1080p, 1.4 from 1440p.
+  OPTIONS has «Масштаб интерфейса»: auto, smaller (0.8), 100 %, larger (1.25); the save carries it and the
+  frame is recomputed after loading. The quality preset no longer resets the frame cap, resolution or scale.
+- **Faces (27f6).** Eye jumps every 1.3–4.5 s instead of 0.5–2.4; features settle at 4/s, eyes at 12/s.
+- **The planet lens (21pz).** The push-in at a thing and the pull-out on walking took 0.45/0.7 s and swung
+  the whole background on every step — that read as «the background flies». Now 1.1/1.5 s.
+- **Deposits keep clear of the settlement wall, its spot and POIs (21pih).** The hint chain takes those
+  branches first, so a deposit inside them could never be drilled, and a wall without a sign stayed silent
+  under a stale «ЗАЛОЖИТЬ ШАХТУ». Suite 91zzzw6.
+- **Drones complete trips again (12-economy).** The one-day catch-up cap was measured from the last tick,
+  so under the live 3 s tick a trip never ended. Suite 91zzzw7.
+- **Warm-up.** `rig.card` (cave, dig, raid, base, album) gets a recipe and a place in the warm-up table;
+  the test boot waits for warm-up 2400 polls — 600 were ~3 s on the new machine.
+
 ## 0.493.4 - the station lane yields to landing; five playtest fixes; the economy measured (M903)
 
 - **Landing beside the station.** A planet passing the station lane could not be landed on: the hotel, the
