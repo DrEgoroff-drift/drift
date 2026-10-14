@@ -663,7 +663,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M901 | `tests/91zzzw-fightsim.js` — the duel measured under Node — **done 09.10** | the table of TTK / hits / hull by hull × gun × rank × danger |
 | M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
 | M903 | the economy probe `tests/91zzzw4-ecosim.js` — **measured 14.10, §4.1a**: net 2.6–3.7× the oracle, U/G .06–.24 | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
-| M904 | the bill (§10.1) and manager wages to the player — **a done 14.10 (0.494.0, T2 U/G .22, T3 .36)**; insurance, the ledger (§5.2), hull loss (§5.1), the gross levers (§4.1a) | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
+| M904 | the bill (§10.1) and manager wages to the player — **a done 14.10 (0.494.0, T2 U/G .22, T3 .36)**; b the ledger (§5.2) and c Страхкасса with hull loss (§5.1) **done 14.10 (0.495.0)** — debt is its own number, not credits below zero (twenty `min(credits, x)` sites); d the gross levers (§4.1a) and the bot's bad hour | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
 | M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) | the bot's norm moves with filled needs; handover stops every clock |
 | M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
 | M907 | the dispatcher generator (§4.3) | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |

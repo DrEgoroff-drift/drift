@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 577 · top-level symbols: 8273
+Files: 578 · top-level symbols: 8303
 
 ## SYMBOLS
 
@@ -145,15 +145,19 @@ BGPU_U                       src/24ba-belt-gpu.js:90
 BG_BRIGHT                    src/16-flight.js:17
 BG_GROUP                     src/16-flight.js:11
 BHUD                         src/24bc-belt-hud.js:13
-BILL_LINES                   src/27ib-bill.js:17-23
-BILL_OLD_APPLY               src/27ib-bill.js:131
-BILL_OLD_BOARD               src/27ib-bill.js:126
-BILL_OLD_CREW                src/27ib-bill.js:77
-BILL_OLD_OPEN                src/27ib-bill.js:69
-BILL_OLD_PAYROLL             src/27ib-bill.js:89
-BILL_OLD_REPAIR              src/27ib-bill.js:75
-BILL_OLD_SNAP                src/27ib-bill.js:129
-BILL_SHIFT_MS                src/27ib-bill.js:16
+BILL_COLL_NAMES              src/27ib-bill.js:23
+BILL_FLOOR_T                 src/27ib-bill.js:22
+BILL_LINES                   src/27ib-bill.js:24-32
+BILL_OLD_APPLY               src/27ib-bill.js:292
+BILL_OLD_BOARD               src/27ib-bill.js:259
+BILL_OLD_CREW                src/27ib-bill.js:185
+BILL_OLD_HALL                src/27ib-bill.js:262
+BILL_OLD_OPEN                src/27ib-bill.js:165
+BILL_OLD_PAYROLL             src/27ib-bill.js:208
+BILL_OLD_REPAIR              src/27ib-bill.js:175
+BILL_OLD_SNAP                src/27ib-bill.js:290
+BILL_OLD_TABBODY             src/27ib-bill.js:282
+BILL_SHIFT_MS                src/27ib-bill.js:20
 BK_AT                        src/20ab-poi-gpu.js:147
 BLD                          src/12ac-bld.js:29
 BLD_FAM                      src/12ac-bld.js:16-26
@@ -1137,6 +1141,11 @@ INSTR_SHELF_MAX              src/05b-instr-kit.js:32
 INSTR_WEAR_RATE              src/05b-instr-kit.js:85
 INSTR_WORKS                  src/05b-instr-kit.js:18-31
 INST_TOPICS                  src/11ab-institute.js:17-24
+INS_OLD_APPLY                src/28i-insure.js:111
+INS_OLD_OPEN                 src/28i-insure.js:82
+INS_OLD_SNAP                 src/28i-insure.js:109
+INS_OLD_WRECK                src/28i-insure.js:63
+INS_RATE                     src/28i-insure.js:15
 IPOD                         src/25c-instr-hud.js:41
 IPOD_A0                      src/25c-instr-hud.js:42
 IPOD_FLY                     src/25c-instr-hud.js:164
@@ -2690,15 +2699,26 @@ beltIcy                      src/24-mode-belt.js:70
 beltImpactDmg                src/24-mode-belt.js:172
 beltMaw                      src/24be-belt-rock-gpu.js:279-284
 beltPoiGpu                   src/24bb-belt-poi-gpu.js:25-101
-billClose                    src/27ib-bill.js:42-57
-billDue                      src/27ib-bill.js:36
-billLate                     src/27ib-bill.js:40
-billLeft                     src/27ib-bill.js:38
-billOn                       src/27ib-bill.js:34
-billPaid                     src/27ib-bill.js:35
-billPay                      src/27ib-bill.js:59-67
-billSection                  src/27ib-bill.js:106-125
-billSt                       src/27ib-bill.js:24-33
+billClose                    src/27ib-bill.js:132-150
+billCollLeave                src/27ib-bill.js:126-130
+billCollector                src/27ib-bill.js:114-125
+billDebt                     src/27ib-bill.js:51
+billDue                      src/27ib-bill.js:68
+billFloor                    src/27ib-bill.js:50
+billLate                     src/27ib-bill.js:72
+billLeft                     src/27ib-bill.js:70
+billLend                     src/27ib-bill.js:54-59
+billNext                     src/27ib-bill.js:94-102
+billOn                       src/27ib-bill.js:66
+billOwed                     src/27ib-bill.js:74
+billPaid                     src/27ib-bill.js:67
+billPay                      src/27ib-bill.js:152-163
+billRoom                     src/27ib-bill.js:52
+billSection                  src/27ib-bill.js:225-256
+billSeize                    src/27ib-bill.js:103-112
+billSt                       src/27ib-bill.js:33-43
+billTier                     src/27ib-bill.js:46-49
+billUnlend                   src/27ib-bill.js:61-65
 bioMark                      src/20e-species.js:310-314
 bioScan                      src/20e-species.js:315-329
 bldAdd                       src/12ac-bld.js:30-33
@@ -5063,6 +5083,7 @@ hullHeld                     src/28-loop.js:9
 hullHeldTick                 src/28-loop.js:10-15
 hullInkBox                   src/03e1-hull-bake.js:120-131
 hullLiveInserts              src/03e1-hull-bake.js:38-42
+hullLost                     src/28i-insure.js:46-62
 hullOf                       src/03a-hull-gen.js:1-532
 hullPart1                    src/03e-hull-draw.js:201-679
 hullPart2                    src/03e-hull-draw.js:681-684
@@ -5072,6 +5093,7 @@ hullShade                    src/03b-hull-paint.js:176-183
 hullStudio                   src/17c2-hull-gpu.js:161-165
 hullStudioBake               src/17c2-hull-gpu.js:151-157
 hullStudioSb                 src/17c2-hull-gpu.js:150
+hullTake                     src/27ib-bill.js:77-92
 huntAll                      src/12o-hunter.js:27
 huntDefeated                 src/12o-hunter.js:109-125
 huntHere                     src/12o-hunter.js:66-75
@@ -5085,6 +5107,14 @@ huntTierOf                   src/12o-hunter.js:28
 importCode                   src/14a-cloud.js:69-71
 indPrice                     src/12ac-bld.js:161-170
 initAudio                    src/09-audio.js:19-39
+insAccrue                    src/28i-insure.js:31-39
+insAll                       src/28i-insure.js:16-22
+insFee                       src/28i-insure.js:24
+insOn                        src/28i-insure.js:23
+insReturnTick                src/28i-insure.js:71-81
+insSection                   src/28i-insure.js:89-107
+insSet                       src/28i-insure.js:25-29
+insStrizh                    src/28i-insure.js:41-45
 instAll                      src/11ab-institute.js:25
 instBlock                    src/11ab-institute.js:116-133
 instCanReport                src/11ab-institute.js:43-50
@@ -9853,7 +9883,7 @@ zoomTo                       src/15-input.js:358
 ## src/27ia-desk-top.js · 21 KB
   · стол как стол: предметы, а не тринадцать закладок:1
 
-## src/27ib-bill.js · 9 KB
+## src/27ib-bill.js · 19 KB
   · счёт за смену (M904a · DESIGN-game §3.1, §10.1):1
 
 ## src/27j-console.js · 14 KB
@@ -9913,6 +9943,9 @@ zoomTo                       src/15-input.js:358
   · кадр, который не убивает игру (M234):575
   · prof() — на что уходит кадр:696
   · dbg() — что держит корабль:737
+
+## src/28i-insure.js · 7 KB
+  · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
 
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
@@ -10031,7 +10064,7 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw7-drone-ticks.js · 2 KB
 
-## tests/91zzzw8-bill.js · 4 KB
+## tests/91zzzw8-bill.js · 9 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
