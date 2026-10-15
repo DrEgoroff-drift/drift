@@ -114,7 +114,8 @@ function cpBand(K,TA,pts,k,w,t,M,n){
 /* краска — холоднее и глуше, чем кажется: под тёплыми лампами коричневое становится деревом, серо-синее — сукном */
 const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,coll:1},fact:{jac:[86,40,46],mix:.1,coll:0},
   sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[142,140,132],mix:.04,coll:1,vest:[40,44,52]}};
-function cpBody(m,lod,poseK){
+function cpBody(m,lod,poseK){return cpRun(cpBodyGen(m,lod,poseK));}
+function* cpBodyGen(m,lod,poseK){
   const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=cpPose(poseK);
   const wB=.86+(g.build-.7)*.36,hs=g.hs,pel=[0,J.pel,0],ln=J.lean;
   const ai=g.ai,rc=m.acc||(g.role?hex2rgb(g.role.col):[150,160,170]),rk=!ai&&m.role&&CP_KIT[m.role]?m.role:"",KT=rk?CP_KIT[rk]:null;
@@ -263,7 +264,8 @@ function cpBody(m,lod,poseK){
   const hc=[neck[0],neck[1]+.155*hs,neck[2]+.022+Math.sin(ln)*.04];
   K.tube([[neck[0],neck[1]-.02,neck[2]-.005],[neck[0],neck[1]+.05,neck[2]+.004],[hc[0],hc[1]-.06,hc[2]-.012]],[.058,.054,.05],ai?Msk:K.mt(mixc(g.skin,[40,24,20],.2),.3,5,P.skin),TN);   /* шея темнее лица: под челюстью тень */
   K.push(hc,0,-ln*.6,0,hs);
-  const rig=cpHead(K,g,lod,cl,m.seed);
+  yield;
+  const rig=yield* cpHeadGen(K,g,lod,cl,m.seed);
   K.pop();
   K.part=0;
   const M=K.pack();
@@ -276,11 +278,32 @@ function cpBody(m,lod,poseK){
 /* кэш сеток людей: зерно, поза, подробность, уровень (нашивки), роль и наряд. Настроение в сетку не входит — его
    играет cpRig */
 const CP_MESH=new Map();
+function cpMeshKey(m,pose,lod){
+  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"");
+}
+function cpMeshPut(key,M){
+  if(CP_MESH.size>=48){const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
+  CP_MESH.set(key,M);
+}
 function cpMesh(m,pose,lod){
-  const key=(m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"");
+  const key=cpMeshKey(m,pose,lod);
   let M=CP_MESH.get(key);
   if(M){CP_MESH.delete(key);CP_MESH.set(key,M);return M;}
   M=cpBody(m,lod,pose);
-  if(CP_MESH.size>=48){const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
-  CP_MESH.set(key,M);return M;
+  cpMeshPut(key,M);return M;
+}
+/* то же по шагам: простой зала берёт тело частями, пока шаги укладываются в бюджет кадра. null — ещё строится */
+const CP_JOBS=new Map();
+function cpMeshPump(m,pose,lod,budget){
+  const key=cpMeshKey(m,pose,lod);
+  const M=CP_MESH.get(key);
+  if(M)return M;
+  let it=CP_JOBS.get(key);
+  if(!it){it=cpBodyGen(m,lod,pose);CP_JOBS.set(key,it);}
+  const t0=wallMs();
+  for(;;){
+    const r=it.next();
+    if(r.done){CP_JOBS.delete(key);cpMeshPut(key,r.value);return r.value;}
+    if(wallMs()-t0>=budget)return null;
+  }
 }

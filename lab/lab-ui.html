@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drift Lab</title>
+<style>
+:root{
+  --bg:#07090d;--panel:#0d1117;--panel2:#111821;--line:#1d2733;--line2:#2a3746;
+  --ink:#d6e2ee;--dim:#7b8a9b;--faint:#4a5868;
+  --cy:#3fd2ff;--cy2:#0f5d78;--gr:#3ee08f;--gr2:#0e4a32;--rd:#ff5468;--rd2:#5a1622;--am:#ffb648;--am2:#5a3d10;--vi:#a98bff;
+  --mono:"Cascadia Mono","JetBrains Mono",Consolas,monospace;--sans:"Segoe UI Variable","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 var(--sans)}
+body{background:radial-gradient(1200px 600px at 80% -10%,#0d2633 0,transparent 60%),
+     linear-gradient(var(--bg),var(--bg));display:flex;flex-direction:column;overflow:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;
+  background:linear-gradient(transparent 0 calc(100% - 1px),#ffffff08 0) 0 0/100% 32px,linear-gradient(90deg,transparent 0 calc(100% - 1px),#ffffff06 0) 0 0/32px 100%}
+button,input,select{font:inherit;color:inherit}
+.mono{font-family:var(--mono)}
+/* ── шапка ── */
+header{display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid var(--line);background:#090c11cc;backdrop-filter:blur(6px);position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:10px;font:600 13px var(--mono);letter-spacing:.22em;color:var(--cy)}
+.brand i{width:10px;height:10px;border:2px solid var(--cy);transform:rotate(45deg);display:inline-block}
+.brand b{color:var(--ink);font-weight:600}
+.pill{font:600 12px var(--mono);letter-spacing:.14em;padding:5px 12px;border-radius:3px;border:1px solid var(--line2);color:var(--dim);display:flex;align-items:center;gap:8px}
+.pill:before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.pill.run{color:var(--gr);border-color:var(--gr2)}.pill.run:before{animation:pulse 1.2s infinite}
+.pill.build{color:var(--cy);border-color:var(--cy2)}.pill.build:before{animation:pulse .6s infinite}
+.pill.stop{color:var(--am);border-color:var(--am2)}.pill.stop:before{animation:pulse .4s infinite}
+.pill.bad{color:var(--rd);border-color:var(--rd2)}
+@keyframes pulse{50%{opacity:.25}}
+.meta{font:12px var(--mono);color:var(--dim);display:flex;gap:16px}
+.meta span b{color:var(--ink);font-weight:500}
+.sp{flex:1}
+.gauge{display:flex;align-items:center;gap:8px;font:12px var(--mono);color:var(--dim)}
+.gauge .bar{width:90px;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.gauge .bar i{display:block;height:100%;background:var(--cy);transition:width .5s}
+.gauge b{color:var(--ink);font-weight:500;width:36px;text-align:right}
+/* ── раскладка ── */
+main{flex:1;display:grid;grid-template-columns:340px 1fr;gap:14px;padding:14px;min-height:0;position:relative;z-index:1}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:6px;position:relative}
+.card>h3{margin:0;padding:10px 14px;font:600 11px var(--mono);letter-spacing:.2em;color:var(--dim);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.card>h3 .sp{flex:1}
+.card .in{padding:14px}
+.card:after{content:"";position:absolute;top:-1px;left:-1px;width:14px;height:14px;border-top:2px solid var(--cy);border-left:2px solid var(--cy);border-radius:6px 0 0 0;opacity:.7}
+/* ── настройки ── */
+.f{margin-bottom:16px}
+.f:last-child{margin-bottom:0}
+.f label{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:7px}
+.f label b{font:600 13px var(--mono);color:var(--ink)}
+.f small{display:block;color:var(--faint);font-size:11px;margin-top:5px}
+input[type=range]{width:100%;accent-color:var(--cy);height:20px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line2);border-radius:4px;overflow:hidden}
+.seg button{background:none;border:0;border-right:1px solid var(--line2);padding:8px 4px;font-size:12px;color:var(--dim);cursor:pointer;min-height:36px}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--cy2);color:#fff}
+.seg button:hover:not(.on){background:#ffffff08}
+select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;min-height:36px;font-family:var(--mono);font-size:13px}
+.locked .f{opacity:.45;pointer-events:none}
+/* ── кнопки ── */
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:1px solid var(--line2);background:var(--panel2);border-radius:5px;padding:10px 12px;min-height:44px;cursor:pointer;font:600 13px var(--mono);letter-spacing:.08em;transition:.15s}
+.btn:hover{border-color:var(--cy);color:var(--cy)}
+.btn:disabled{opacity:.35;pointer-events:none}
+.btn.go{grid-column:1/-1;min-height:56px;font-size:15px;letter-spacing:.2em;background:linear-gradient(180deg,#14583d,#0c3a29);border-color:#1f8a5d;color:#c9ffe4}
+.btn.go:hover{background:linear-gradient(180deg,#19704d,#0f4a34);color:#fff;border-color:var(--gr)}
+.btn.st{grid-column:1/-1;min-height:56px;font-size:15px;letter-spacing:.2em;background:linear-gradient(180deg,#5b3c0d,#3b2708);border-color:#9a6a1f;color:#ffe2b0}
+.btn.st:hover{border-color:var(--am);color:#fff}
+.btn.kill{color:var(--rd);border-color:var(--rd2)}
+.btn.kill:hover{background:var(--rd2);color:#fff;border-color:var(--rd)}
+.btn.sm{min-height:36px;padding:6px 10px;font-size:11px;font-weight:500}
+/* ── приборы ── */
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:10px 12px}
+.tile span{display:block;font:600 10px var(--mono);letter-spacing:.18em;color:var(--dim)}
+.tile b{display:block;font:600 26px/1.15 var(--mono);margin-top:4px}
+.tile.g b{color:var(--gr)}.tile.r b{color:var(--rd)}.tile.n b{color:var(--am)}.tile.c b{color:var(--cy)}
+.prog{margin-top:14px}
+.prog .row{display:flex;justify-content:space-between;font:12px var(--mono);color:var(--dim);margin-bottom:6px}
+.prog .row b{color:var(--ink);font-weight:500}
+.track{height:10px;background:var(--bg);border:1px solid var(--line);border-radius:5px;overflow:hidden;position:relative}
+.track i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--cy2),var(--cy));box-shadow:0 0 14px var(--cy);transition:width 1s linear}
+.track.stop i{background:linear-gradient(90deg,var(--am2),var(--am));box-shadow:0 0 14px var(--am)}
+.now{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;min-height:34px}
+.chip{font:12px var(--mono);border:1px solid var(--line2);border-radius:4px;padding:6px 10px;display:flex;gap:8px;align-items:center;background:var(--bg)}
+.chip:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cy);animation:pulse 1s infinite}
+.chip em{font-style:normal;color:var(--dim)}
+.chip.hunt:before{background:var(--vi)}.chip.node:before,.chip.vision:before{background:var(--gr)}
+.empty{color:var(--faint);font:12px var(--mono);padding:6px 0}
+/* ── лог ── */
+.logcard{flex:1;display:flex;flex-direction:column;min-height:0}
+.tools{display:flex;gap:6px;align-items:center}
+.tools .seg button{padding:4px 10px;min-height:28px;font-size:11px}
+.tools input{background:var(--bg);border:1px solid var(--line2);border-radius:4px;padding:4px 8px;font:12px var(--mono);width:170px;min-height:28px}
+#log{flex:1;overflow:auto;margin:0;padding:10px 14px;font:12.5px/1.55 var(--mono);white-space:pre-wrap;word-break:break-word;background:#05070a;border-radius:0 0 6px 6px}
+#log div{padding:0 4px;border-left:2px solid transparent}
+#log .t{color:var(--faint)}
+#log .ok{color:var(--gr)}
+#log .bad{color:var(--rd)}
+#log .new{color:var(--am);background:#ffb64810;border-left-color:var(--am)}
+#log .go{color:#7fa3bf}
+#log .sum{color:var(--dim)}
+#log .hd{color:var(--cy)}
+#log mark{background:#3fd2ff33;color:inherit}
+.follow{font:11px var(--mono);color:var(--dim);display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none}
+.follow input{accent-color:var(--cy)}
+/* ── новые ошибки ── */
+#fresh{max-height:190px;overflow:auto}
+.err{padding:9px 14px;border-bottom:1px solid var(--line);font-size:12.5px}
+.err:last-child{border-bottom:0}
+.err b{display:block;font:600 11px var(--mono);color:var(--am);letter-spacing:.04em;margin-bottom:2px}
+.err span{color:var(--ink)}
+.links{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--cy);color:var(--ink);padding:10px 18px;border-radius:5px;font:13px var(--mono);opacity:0;transition:.25s;z-index:5;pointer-events:none}
+.toast.on{opacity:1}
+@media (max-width:980px){main{grid-template-columns:1fr;overflow:auto}.tiles{grid-template-columns:repeat(3,1fr)}body{overflow:auto}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><i></i>DRIFT <b>LAB</b> CONTROL</div>
+  <div id="pill" class="pill">ГОТОВ</div>
+  <div class="meta"><span>версия <b id="ver">—</b></span><span>сессия <b id="sid">—</b></span><span>ветка <b id="mref">—</b></span></div>
+  <div class="sp"></div>
+  <div class="gauge">ЦП <div class="bar"><i id="cpuB"></i></div><b id="cpu">0%</b></div>
+  <div class="gauge">ОЗУ <div class="bar"><i id="ramB"></i></div><b id="ram">0%</b></div>
+  <div class="gauge mono" id="clock">--:--:--</div>
+</header>
+
+<main>
+  <div class="col">
+    <section class="card" id="setCard">
+      <h3>НАСТРОЙКИ<span class="sp"></span><span id="lockNote" style="color:var(--faint);letter-spacing:.05em"></span></h3>
+      <div class="in">
+        <div class="f">
+          <label>Копий Chrome одновременно <b id="jobsV">8</b></label>
+          <input type="range" id="jobs" min="1" max="32" step="1">
+          <small id="jobsHint">больше — быстрее круг, но машина тяжелее</small>
+        </div>
+        <div class="f">
+          <label>Длительность <b id="minV">60 мин</b></label>
+          <div class="seg" id="minSeg">
+            <button data-v="15">15м</button><button data-v="30">30м</button><button data-v="60">1ч</button>
+            <button data-v="120">2ч</button><button data-v="240">4ч</button><button data-v="480">8ч</button>
+          </div>
+          <small>после круга охота ботом добирает время до конца</small>
+        </div>
+        <div class="f">
+          <label>Режим</label>
+          <div class="seg" id="modeSeg">
+            <button data-v="full">Полный</button><button data-v="quick">Быстрый</button><button data-v="hunt">Охота</button>
+          </div>
+          <small id="modeHint"></small>
+        </div>
+        <div class="f">
+          <label>Ветка</label>
+          <select id="ref"></select>
+        </div>
+        <div class="f">
+          <label>Шагов бота на зерно охоты <b id="stepsV">60</b></label>
+          <input type="range" id="steps" min="10" max="400" step="10">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>УПРАВЛЕНИЕ</h3>
+      <div class="in acts">
+        <button class="btn go" id="bGo">▶ ЗАПУСТИТЬ</button>
+        <button class="btn st" id="bStop" hidden>■ ОСТАНОВИТЬ</button>
+        <button class="btn kill sm" id="bKill" disabled title="Если «Остановить» не помогает за минуту">УБИТЬ СРАЗУ</button>
+        <button class="btn sm" id="bClear">ОЧИСТИТЬ ЭКРАН</button>
+      </div>
+      <div class="in links" style="padding-top:0">
+        <button class="btn sm" data-open="page">РЕЗУЛЬТАТЫ</button>
+        <button class="btn sm" data-open="errors">ОШИБКИ</button>
+        <button class="btn sm" data-open="logs">ЛОГИ</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="card">
+      <h3>ПРОГОН<span class="sp"></span><span id="phaseTxt" style="letter-spacing:.05em"></span></h3>
+      <div class="in">
+        <div class="tiles">
+          <div class="tile c"><span>ГОТОВО</span><b id="tDone">0</b></div>
+          <div class="tile"><span>ВПЕРЕДИ</span><b id="tAhead">0</b></div>
+          <div class="tile g"><span>ЗЕЛЁНЫХ</span><b id="tGreen">0</b></div>
+          <div class="tile r"><span>КРАСНЫХ</span><b id="tRed">0</b></div>
+          <div class="tile n"><span>НОВЫХ ОШИБОК</span><b id="tNew">0</b></div>
+        </div>
+        <div class="prog">
+          <div class="row"><span>прошло <b id="pEl">0:00</b></span><span id="pMid"></span><span>осталось <b id="pLeft">—</b></span></div>
+          <div class="track" id="track"><i id="pBar" style="width:0"></i></div>
+        </div>
+        <div class="now" id="now"><div class="empty">ничего не идёт</div></div>
+      </div>
+    </section>
+
+    <section class="card" id="freshCard" hidden>
+      <h3>НОВЫЕ ОШИБКИ ЭТОЙ СЕССИИ</h3>
+      <div id="fresh"></div>
+    </section>
+
+    <section class="card logcard">
+      <h3>ЛОГ <span id="logName" style="color:var(--faint);letter-spacing:.03em;font-weight:400"></span><span class="sp"></span>
+        <span class="tools">
+          <span class="seg" id="fltSeg"><button data-v="all" class="on">Всё</button><button data-v="bad">Провалы</button><button data-v="new">Новые</button></span>
+          <input id="q" placeholder="поиск…">
+          <label class="follow"><input type="checkbox" id="follow" checked>за хвостом</label>
+        </span>
+      </h3>
+      <pre id="log"></pre>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+let S={run:{phase:"idle"},cfg:{}},cfg={},logPos=0,logName="",lines=[],flt="all",q="";
+const PH={idle:["ГОТОВ",""],build:["СБОРКА","build"],run:["ИДЁТ","run"],stopping:["ОСТАНОВКА","stop"],
+  done:["ЗАВЕРШЕНО",""],stopped:["ОСТАНОВЛЕНО",""],failed:["СБОЙ","bad"],lost:["ПРОЦЕСС ПОТЕРЯН","bad"]};
+const MODE={full:"ядро, зрение, окна (телефон, высокое, широкое), тяжёлые наборы, тур полёта — потом охота",
+  quick:"ядро, зрение и лёгкие части; без окон, тяжёлых и охоты — минуты",hunt:"только бот по зёрнам: случайные тропы под детекторами"};
+const busy=()=>["build","run","stopping"].includes(S.run.phase);
+const fmt=s=>{s=Math.max(0,Math.round(s));const h=s/3600|0,m=(s%3600)/60|0,x=s%60;return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0")};
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.k);toast.k=setTimeout(()=>e.classList.remove("on"),2200)}
+async function api(p,b){const r=await fetch(p,b?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)}:{});return r.json()}
+
+/* ── настройки ── */
+function paintCfg(){
+  $("#jobs").value=cfg.jobs;$("#jobsV").textContent=cfg.jobs;
+  $("#steps").value=cfg.steps;$("#stepsV").textContent=cfg.steps;
+  $("#minV").textContent=cfg.minutes>=60?(cfg.minutes/60)+" ч":cfg.minutes+" мин";
+  for(const b of $("#minSeg").children)b.classList.toggle("on",+b.dataset.v===+cfg.minutes);
+  for(const b of $("#modeSeg").children)b.classList.toggle("on",b.dataset.v===cfg.mode);
+  $("#modeHint").textContent=MODE[cfg.mode]||"";
+  if($("#ref").value!==cfg.ref){if(![...$("#ref").options].some(o=>o.value===cfg.ref))$("#ref").add(new Option(cfg.ref,cfg.ref));$("#ref").value=cfg.ref}
+}
+let saveK;function save(){paintCfg();clearTimeout(saveK);saveK=setTimeout(()=>api("/api/cfg",cfg),300)}
+$("#jobs").oninput=e=>{cfg.jobs=+e.target.value;save()};
+$("#steps").oninput=e=>{cfg.steps=+e.target.value;save()};
+$("#minSeg").onclick=e=>{if(e.target.dataset.v){cfg.minutes=+e.target.dataset.v;save()}};
+$("#modeSeg").onclick=e=>{if(e.target.dataset.v){cfg.mode=e.target.dataset.v;save()}};
+$("#ref").onchange=e=>{cfg.ref=e.target.value;save()};
+
+/* ── кнопки ── */
+$("#bGo").onclick=async()=>{const r=await api("/api/start",cfg);if(r.ok){toast("запуск…");lines=[];logPos=0;logName="";$("#log").innerHTML=""}else toast(r.why||"не запустилось")};
+$("#bStop").onclick=async()=>{await api("/api/stop",{});toast("останавливаю — догорят текущие прогоны")};
+$("#bKill").onclick=async()=>{if(confirm("Убить лабораторию и все её Chrome сразу?")){await api("/api/kill",{});toast("убито")}};
+$("#bClear").onclick=()=>{lines=[];$("#log").innerHTML=""};
+document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>api("/api/open",{what:b.dataset.open}));
+
+/* ── состояние ── */
+async function tick(){
+  try{S=await api("/api/state")}catch(e){$("#pill").textContent="ПУЛЬТ НЕ ОТВЕЧАЕТ";$("#pill").className="pill bad";return}
+  if(!cfg.mode){cfg=S.cfg;$("#jobs").max=S.sys.cores;paintCfg()}
+  const r=S.run,ph=PH[r.phase]||[r.phase,""];
+  $("#pill").textContent=ph[0];$("#pill").className="pill "+ph[1];
+  $("#ver").textContent=r.ver||"—";$("#sid").textContent=r.sid||"—";$("#mref").textContent=r.ref||cfg.ref||"—";
+  $("#cpu").textContent=S.sys.cpu+"%";$("#cpuB").style.width=S.sys.cpu+"%";
+  $("#ram").textContent=S.sys.ram+"%";$("#ramB").style.width=S.sys.ram+"%";
+  $("#clock").textContent=new Date().toLocaleTimeString("ru-RU");
+  const b=busy();
+  $("#setCard").classList.toggle("locked",b);$("#lockNote").textContent=b?"заперто, пока идёт прогон":"";
+  $("#bGo").hidden=b;$("#bStop").hidden=!b;$("#bKill").disabled=!r.alive;
+  $("#bStop").disabled=r.phase==="stopping";$("#bStop").textContent=r.phase==="stopping"?"… ОСТАНАВЛИВАЮ":"■ ОСТАНОВИТЬ";
+  $("#tDone").textContent=r.done||0;$("#tAhead").textContent=r.ahead||0;$("#tGreen").textContent=r.green||0;
+  $("#tRed").textContent=r.red||0;$("#tNew").textContent=(r.fresh||[]).length;
+  if(r.t0){
+    const end=r.t1||S.now,el=end-r.t0,tot=(r.deadline||end)-r.t0;
+    $("#pEl").textContent=fmt(el);$("#pLeft").textContent=b?fmt((r.deadline||end)-S.now):"—";
+    $("#pBar").style.width=Math.min(100,100*el/Math.max(1,tot))+"%";
+    $("#pMid").textContent=(r.jobs||"?")+" копий · "+({full:"полный",quick:"быстрый",hunt:"охота"}[r.mode]||"")+" · "+(r.budget||"?")+" мин";
+    $("#phaseTxt").textContent=r.phase==="build"?"собираю игру из ветки…":r.phase==="stopping"?"гашу свои прогоны…":r.why||"";
+  }
+  $("#track").classList.toggle("stop",r.phase==="stopping");
+  const now=(r.now||[]).sort((a,c)=>a.t0-c.t0);
+  $("#now").innerHTML=now.length&&b?now.map(u=>`<div class="chip ${u.kind}">${u.kind}${u.arg?" "+u.arg:""}<em>${fmt(S.now-u.t0)}</em></div>`).join(""):'<div class="empty">'+(b?(r.phase==="build"?"идёт сборка":"ждём"):"ничего не идёт")+"</div>";
+  const fr=r.fresh||[];$("#freshCard").hidden=!fr.length;
+  $("#fresh").innerHTML=fr.slice().reverse().map(e=>`<div class="err"><b>${esc(e.suite)}</b><span>${esc(e.msg)}</span></div>`).join("");
+}
+const esc=s=>String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+/* ── лог ── */
+function cls(l){
+  if(/!! НОВАЯ/.test(l))return "new";
+  if(/ · (red|timeout|noreport|oom) · /.test(l)||/failed|упал|Traceback|Error/.test(l))return "bad";
+  if(/ · green · /.test(l))return "ok";
+  if(/ → /.test(l))return "go";
+  if(/ · готово \d+/.test(l)||/^.{9}published/.test(l))return "sum";
+  if(/lab:|пульт:/.test(l))return "hd";
+  return "";
+}
+function lineHtml(l){
+  const c=cls(l);let t=esc(l);
+  t=t.replace(/^(\d\d:\d\d:\d\d )/,'<span class="t">$1</span>');
+  if(q)t=t.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),m=>"<mark>"+m+"</mark>");
+  return `<div class="${c}">${t}</div>`;
+}
+const show=l=>{const c=cls(l);if(flt==="bad"&&c!=="bad"&&c!=="new")return false;if(flt==="new"&&c!=="new")return false;if(q&&l.toLowerCase().indexOf(q.toLowerCase())<0)return false;return true};
+function redraw(){$("#log").innerHTML=lines.filter(show).slice(-3000).map(lineHtml).join("");if($("#follow").checked)$("#log").scrollTop=1e9}
+let partial="";
+async function pull(){
+  let r;try{r=await api("/api/log?from="+logPos+"&name="+encodeURIComponent(logName))}catch(e){return}
+  if(r.name!==logName){logName=r.name;lines=[];partial="";$("#log").innerHTML="";$("#logName").textContent=r.name?"· "+r.name:""}
+  logPos=r.next;if(!r.text)return;
+  const parts=(partial+r.text).split(/\r?\n/);partial=parts.pop();
+  const add=parts.filter(l=>l.trim()&&!/published: sessions/.test(l));
+  if(!add.length)return;
+  lines.push(...add);if(lines.length>20000)lines=lines.slice(-15000);
+  const L=$("#log"),html=add.filter(show).map(lineHtml).join("");
+  L.insertAdjacentHTML("beforeend",html);
+  while(L.childElementCount>3000)L.firstElementChild.remove();
+  if($("#follow").checked)L.scrollTop=1e9;
+}
+$("#fltSeg").onclick=e=>{if(!e.target.dataset.v)return;flt=e.target.dataset.v;for(const b of $("#fltSeg").children)b.classList.toggle("on",b===e.target);redraw()};
+$("#q").oninput=e=>{q=e.target.value.trim();redraw()};
+$("#log").onscroll=()=>{const L=$("#log");if(L.scrollHeight-L.scrollTop-L.clientHeight>40)$("#follow").checked=false};
+
+api("/api/branches").then(r=>{const s=$("#ref");for(const b of r.branches)s.add(new Option(b,b));if(cfg.ref)paintCfg()});
+tick();pull();setInterval(tick,1000);setInterval(pull,700);
+</script>
+</body>
+</html>

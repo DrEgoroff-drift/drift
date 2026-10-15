@@ -22,14 +22,18 @@
       когда склад падает ниже четверти; возврат к середине — по времени, а не шагом сводки. */
 const GAUGE_MID=.6,GAUGE_TAU=7200000,GAUGE_DRY=.25,GAUGE_LOW=.4,GAUGE_SOUR_MUL=.92;
 const GAUGE_NEAR=2,CASC_MS=3600000,CASC_N=2,CASC_R=3;
-let GAUGE_W=null;   /* последнее окно нужд, которое видел такт; G.t начинается заново каждый заход */
+/* последнее окно нужд, которое видел такт, — в G.gaugeW (не в сейве; G.t начинается заново каждый заход).
+   Жило в модуле (let G.gaugeW) и переживало resetWorld: второй прогон на том же семени судил другие
+   окна — детерминизм краснел на G.gauge и G.storyPin (лаборатория 15.10) */
 function gaugeAll(){return G.gauge||(G.gauge={});}
 function gaugeCasc(){const C=G.casc||(G.casc={s:{},n:{}});C.s=C.s||{};C.n=C.n||{};return C;}
 function gaugeKeyXY(key){const p=String(key).split(",");return [p[0]|0,p[1]|0];}
 /* куда тянется порядок: занятость держит его ниже */
 function gaugeMidO(sx,sy){return Math.max(0,GAUGE_MID-.15*occLvl(sx,sy));}
 function gaugeRead(key){
-  const xy=gaugeKeyXY(key),tO=gaugeMidO(xy[0],xy[1]),A=gaugeAll()[key];
+  /* чтение не заводит G.gauge: заготовка зала (hallLayout → gaugeHallCrowd) читает шкалы из
+     простоя системы, и пустой {} от чтения менял хэш мира — детерминизм краснел */
+  const xy=gaugeKeyXY(key),tO=gaugeMidO(xy[0],xy[1]),A=(G.gauge||{})[key];
   if(!A)return {s:GAUGE_MID,m:GAUGE_MID,o:tO};
   const f=Math.exp(-Math.max(0,now()-A[3]*60000)/GAUGE_TAU);
   return {s:GAUGE_MID+(A[0]/100-GAUGE_MID)*f,m:GAUGE_MID+(A[1]/100-GAUGE_MID)*f,o:tO+(A[2]/100-tO)*f};
@@ -119,11 +123,11 @@ function gaugePrune(){
 }
 function gaugeTick(){
   const w=needWin();
-  if(GAUGE_W==null||w<GAUGE_W){GAUGE_W=w;return null;}
-  if(w===GAUGE_W)return null;
+  if(G.gaugeW==null||w<G.gaugeW){G.gaugeW=w;return null;}
+  if(w===G.gaugeW)return null;
   let out=[];
-  for(let v=Math.max(GAUGE_W,w-4);v<w;v++)out=out.concat(gaugeJudge(v));
-  GAUGE_W=w;
+  for(let v=Math.max(G.gaugeW,w-4);v<w;v++)out=out.concat(gaugeJudge(v));
+  G.gaugeW=w;
   gaugePrune();
   return out;
 }
@@ -281,7 +285,7 @@ const GAUGE_OLD_APPLY=applySave;
 applySave=function(s){
   const r=GAUGE_OLD_APPLY.apply(this,arguments);
   if(!r)return r;   /* отказ: мир не тронут (91qo) */
-  G.gauge={};G.casc=null;GAUGE_W=null;
+  G.gauge={};G.casc=null;G.gaugeW=null;
   const g=s&&s.gauge;
   if(g&&typeof g==="object")for(const k in g){
     const A=g[k];

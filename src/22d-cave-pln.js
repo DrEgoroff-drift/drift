@@ -100,6 +100,31 @@ function cave3Mouth(F){
   return F.mouth=[F.mouthX,zd*.5,Math.max(1.2,n*CAVE_CS/CAVE_PPM/2+.6),zd*.5+.5];
 }
 
+/* окно кусков первого кадра пещеры: те же числа, что в начале cave3Frame при входе (объектив
+   ближний, человек на месте устья); по нему caveTick лепит породу ещё на поверхности */
+function cave3EntryBox(C){
+  const Fd=cave3Field(C),asp=W/H,cx=C.x/CAVE_PPM,floorY=-C.y/CAVE_PPM;
+  const Ls=cave3Lens(asp,cx,floorY,1,0,0,0,Fd.surfY);
+  const sp=(10-Ls.eye[2])/Ls.D,hw=Ls.w/2*sp,hh=Ls.Hf/2*sp,mid=(Ls.b+Ls.t)/2;
+  return {box:[cx-hw-2,cx+hw+2,mid-hh-2,mid+hh+2],mx:cx,my:floorY};
+}
+/* из кадра поверхности раз в восемь кадров, когда устье в тысяче шагов: пещеру из зерна, потом по куску
+   породы за такт. Вход берёт готовую (enterCave) — первый кадр пещеры не лепит ни её, ни камень */
+let CAVE_PRE_N=0;
+function caveTick(){
+  if((++CAVE_PRE_N&7)!==0)return;
+  const S=G.surf;
+  if(G.mode!=="surface"||!S||!S.cave||!GPU.ok||!GPU.dev||Math.abs(S.cave.x-S.x)>1100)return;
+  let P=S.cavePre;
+  if(P&&P.done)return;
+  try{
+    plnGpuDev();
+    if(!P){S.cavePre={C:caveMake(S),done:false};return;}
+    const b=cave3EntryBox(P.C);
+    cave3Chunks(P.C,b.box,b.mx,b.my,false);
+    if(P.C.ch3&&P.C.ch3.left===0)P.done=true;
+  }catch(e){S.cavePre={C:null,done:true};console.error("пещера заранее",e);}
+}
 function cave3Frame(){
   const t0=wallMs(),C=G.cave,Fd=cave3Field(C),M=CAVE3,Ln=CAVE3_LENS;
   if(C.cy==null)C.cy=C.y;

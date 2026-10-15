@@ -28,6 +28,8 @@ function startLanding(p){
   G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
+  /* вещи земли — сразу, а не на касании (21-mode-surface surfGen): спуск строит планету целиком */
+  G.land.pre=surfGen(tr,p);
   G.mode="landing";
   /* заход и тяготение — табличкой на корабле (M803, drawLanding), без слоя — строкой #msg */
   G.land.hi=150;
@@ -136,6 +138,8 @@ function updateLanding(dt){
       G.hull=Math.max(0,G.hull-dmg);
       if(typeof hitFx==="function")hitFx(1);
       say((soft?"Жёсткая посадка":"Крушение")+"\nкорпус −"+Math.round(dmg));
+      /* что было в момент касания — строкой журнала: по ней видно, на чём именно сорвалась посадка */
+      logAdd("warn",(soft?"Жёсткая посадка":"Крушение")+" · вертикаль "+L.touch.vy+", вбок "+L.touch.vx+", крен "+L.touch.a+", склон "+L.touch.slope+" · допуск ×"+L.touch.tol.toFixed(1));
     }
   }
 }

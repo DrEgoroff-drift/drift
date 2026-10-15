@@ -69,7 +69,9 @@ async function gpuInit(){
     gpuPipes();
     GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];GPU.ar={};GPU.fL=null;GPU.nView=null;
     GPU.T={};GPU.bw=0;GPU.ok=true;
-    gpuResize();gcPool();gpuPipesWarm(GPU_PIPE_KEYS);   /* конвейеры полёта — за заставкой (08b0) */
+    gpuResize();gcPool();
+    /* конвейеры полёта — за заставкой (08b0); режимы — следом, фоном, ворота их не ждут */
+    gpuPipesWarm(GPU_PIPE_KEYS).then(()=>setTimeout(()=>{if(GPU.dev===dev)gpuPipesLate();},1500));
   }catch(e){
     GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}

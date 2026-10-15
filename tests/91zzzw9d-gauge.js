@@ -17,7 +17,7 @@ TEST_SUITES.push(()=>suite("шкалы станции: несделанная н
   ok(!!F,"станция с несделанной нуждой найдена: «"+(F&&F.S.station.name)+"» окно "+(F&&F.w));
   const S=F.S,w=F.w;
   G.sx=S.sx;G.sy=S.sy;
-  gaugeTestWin(w);GAUGE_W=null;gaugeTick();
+  gaugeTestWin(w);G.gaugeW=null;gaugeTick();
   gaugeSet(S,{s:.3,m:.6,o:.6});
   gaugeTestWin(w+1);
   const res=gaugeTick()||[];
@@ -56,7 +56,7 @@ TEST_SUITES.push(()=>suite("шкалы станции: закрытая вами
   const F=gaugeTestStation();
   const S=F.S,w=F.w,k=watchNeedAt(S,w);
   G.sx=S.sx;G.sy=S.sy;
-  gaugeTestWin(w);GAUGE_W=null;gaugeTick();
+  gaugeTestWin(w);G.gaugeW=null;gaugeTick();
   ok(needOf(S)&&needOf(S).k===k&&needClose(S,k),"нужду «"+S.station.name+"» закрыли: "+k);
   const a=gaugeOf(S);
   gaugeTestWin(w+1);gaugeTick();

@@ -202,6 +202,7 @@ function detStep(S,gesture){
   const g0=JSON.stringify([G.credits,G.fuel,G.zoom,G.mapZoom,G.mapView||0]);
   for(const k in keys)keys[k]=false;
   if(gesture==="покой"){
+    const fc0=G.fcam?[G.fcam.x,G.fcam.y]:null;   /* камера у причала ещё доезжает до корабля (flightCam) */
     detTick(c,1);detFrame(c,true);
     /* показания снимаются с того же кадра, с которого снят текст канвы */
     c.inst=detInstrRead(c.texts);c.hudText=detHudText();
@@ -211,6 +212,7 @@ function detStep(S,gesture){
     detCost("глаз",t1);
     detTick(c,1);detFrame(c,false);t1=performance.now();c.f2=detGrab();detCost("глаз",t1);
     detTick(c,1);detFrame(c,false);t1=performance.now();c.f3=detGrab();detCost("глаз",t1);
+    c.camPan=(fc0&&G.fcam?Math.hypot(G.fcam.x-fc0[0],G.fcam.y-fc0[1]):0)*(G.zoom||1);
     detTick(c,DET_N-3);detFrame(c,false);
     t1=performance.now();c.after=detGrab();detCost("глаз",t1);
     c.churn=S.churn=detDiff(c.before,c.after);
@@ -269,8 +271,10 @@ function detStep(S,gesture){
   /* камера едет за кораблём: у кромки кадра тела входят и выходят, и блок
      «выскочил» честно — это не мигание, а панорама. Сцены прибора стоят;
      прогоны (M444) после взлёта или прыжка летят, и там покой судится без
-     блоков (detPicture) */
-  c.camMove=G.mode==="system"&&Math.hypot(G.ship.vx,G.ship.vy)>.3;
+     блоков (detPicture). У причала корабль стоит, но камера ещё доезжает до
+     него (flightCam: полпикселя за кадр на шестнадцати процентах отставания) —
+     та же панорама; охота 287011 краснела на ней при каждой стыковке */
+  c.camMove=(G.mode==="system"&&Math.hypot(G.ship.vx,G.ship.vy)>.3)||(G.mode==="dock"&&c.camPan>.5);
   c.fieldMoved=JSON.stringify([G.credits,G.fuel,G.zoom,G.mapZoom,G.mapView||0])!==g0||c.sig1!==c.sig0;
   c.crash=crashN-crash0;
   try{c.sick=keyStateOK();}catch(e){c.sick="keyStateOK: "+e.message;}

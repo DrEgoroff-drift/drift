@@ -90,13 +90,20 @@ function plnPlantInit(L,p){
   const D={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
   const g0=G.opts&&G.opts.gfx?G.opts.gfx.plants:1,gp=clamp(g0==null?1:g0,.25,1.5)*(PLN_GPU.plK||1);   /* ярус (21pe) режет густоту */
   return L.flora={lush:flora?clamp((D[ty]||1.2)/1.9*(.25+wet*1.85),.25,1.3)*gp:0,
-    p,type:ty,things:plnPlantThings(L,p),src:G.surf&&G.surf.tr===L.tr?G.surf:null,groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0,wild:null};
+    p,type:ty,things:plnPlantThings(L,p),src:plnThingsSrc(L),groups:[],far:{},crags:[],first:false,ms:0,n:0,tufts:0,wild:null};
 }
 /* Вещи игры, вокруг которых держится поляна: [x, z, полуоси поляны, насколько близко могут стоять
    высокие тела]. Места — из состояния посадки; вещь, что появится позже, встанет в траву */
+/* вещи поверхности — только если она эта: на спуске G.surf ещё прошлая или её нет, и тогда
+   берутся вещи, посчитанные в начале захода (G.land.pre, 21-mode-surface surfGen) — те же массивы,
+   что станут G.surf; касание поэтому ничего не пересаживает */
+function plnThingsSrc(L){
+  if(G.surf&&G.surf.tr===L.tr)return G.surf;
+  const pre=G.land&&G.land.pre;
+  return pre&&pre.tr===L.tr?pre:null;
+}
 function plnPlantThings(L,p){
-  /* вещи поверхности — только если она эта: на спуске G.surf ещё прошлая или её нет */
-  const S=G.surf&&G.surf.tr===L.tr?G.surf:null,tr=L.tr,T=[],M=PLN_M;
+  const S=plnThingsSrc(L),tr=L.tr,T=[],M=PLN_M;
   const add=(xu,z,rx,rz,tall)=>{if(xu!=null&&isFinite(xu))T.push([xu/M,z,rx,rz,tall]);};
   const shipL=typeof plnShipLenM==="function"?plnShipLenM():8.5;   /* расчистка под корабль — по его длине */
   add(L.shipX*M,7,shipL*.62+1.6,shipL*.42+1.8,shipL*1.1+2);
@@ -591,7 +598,7 @@ function plnPlantBatches(L,F0,ex,V){
 function plnPlantRefit(L,x0,x1){
   const F=L.flora;
   if(!F)return;
-  F.src=G.surf&&G.surf.tr===L.tr?G.surf:null;
+  F.src=plnThingsSrc(L);
   F.things=plnPlantThings(L,L.tr.p);
   for(const J of L.jobs){
     if(J.t!=="rib"||!J.planted||!J.grid||J.xb<x0||J.xa>x1)continue;
