@@ -232,7 +232,11 @@ function hallCantPrep(S,sys){
 function hallPrepTick(){
   if(HALL_PRE.done&&HALL_PRE.cdone&&HALL_PRE.key===((G.sys&&G.sys.station&&((G.sys.station.stype||"trade")+"|"+G.sys.key))||""))return;
   if((++HALL_PRE.n&7)!==0)return;
+  /* заготовка смотрит на станцию за игрока, а первый взгляд якорит истории (11c storyPlace): из
+     простоя системы, да ещё только при живой видеокарте, мир не трогаем — якоря вернутся на место */
+  const pin=G.storyPin;G.storyPin=Object.assign({},pin||{});
   try{hallPrepStep();}catch(e){HALL_PRE.done=true;HALL_PRE.cdone=true;console.error("заготовка зала",e);}
+  finally{if(pin===undefined)delete G.storyPin;else G.storyPin=pin;}
 }
 /* прилавки блошинца: x, z (перед окном — низкие, навес выше луча к окну) */
 const HALL_STALLS=[[-1.25,.55],[1.15,.55],[3.45,.55],[4.6,2.0],[6.5,2.0]];
