@@ -44,7 +44,9 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
     /* составные цели — как игрок думает: одиночные шаги вразнобой не доходили до петли денег
        (12 зёрен 15.10: стыковка без подлёта, продажа с пустым трюмом, кошелёк не сдвинулся ни разу) */
     ["к станции и стыковка",()=>{const r=T.bot("station");return r.ok?T.bot("dock"):r;}],
-    ["к кораблю и взлёт",()=>{const r=T.bot("ship");return r.ok?T.bot("launch"):r;}],
+    ["к кораблю и взлёт",()=>{const r=T.bot("ship");if(!r.ok)return r;
+      /* топлива меньше 8 — удержание открывает окно буксира (rescueNoLaunch): так задумано, не провал */
+      if(G.fuel<8)return {ok:false,why:"топлива меньше 8 — взлёт ведёт к буксиру"};return T.bot("launch");}],
     ["отвезти груз",()=>{if(!(held()>0))return {ok:false,why:"трюм пуст"};
       let r=G.mode==="dock"?{ok:true}:T.bot("station");if(!r.ok)return r;
       if(G.mode!=="dock"){r=T.bot("dock");if(!r.ok)return r;}
