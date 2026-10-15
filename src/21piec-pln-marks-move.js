@@ -5,6 +5,8 @@
    вида из 21pifb, места — оттуда же. Батарея пересобрана: это пушка Долгого марша — башня на плите,
    длинный ствол задран в небо и раскрыт лепестками у среза, затвор сзади, стеллажи снарядов.
    T — набор рук plnMarkMesh (21pie). Возвращает true, если вид свой. */
+/* клеть лифта: где станция, подножие и верх — привод (21pifc) ведёт по ним клеть; ключ — зерно */
+const PLN_LIFT_GEO={};
 function plnMarkMove(kind,T){
   const {C,r,MAN,ROCK,GLOW,m,lm,mv,out,part,hand,steel,stone,box,rod,post,skirt,lamp,seam,pane,night,pulse,old,H,sd,gy,P}=T;
   const dx=id=>plnActSpotDx(kind,id,H);
@@ -237,6 +239,50 @@ function plnMarkMove(kind,T){
     for(let i=0;i<3;i++)plnBlob(part("s"+i,[0,ty,0],{glow:true,to:{x:.6*u,y:H*.9,z:.3*u}}),{c:[0,0,0],r:[.55*u,.45*u,.55*u],sub:2,bump:.22,seed:sd+90+i,col:plnMix3(plnMix3(C.soot,C.concrete,.65),C.warm,.12),mat:GLOW,glow:.3,x:1});
     out.lampAt.breechL=[0,ty,-1.6*u];
     skirt(3.8*u,6,.5);out.blots.push([0,0,3.6*u,.6]);out.blots.push([1.2*u,1.8*u,1.6*u,.8]);
+    return true;
+  }
+  if(kind==="elevator"){
+    /* башня: плита, конус, трос в небо с хомутами и красными огнями на растяжках. У линии — станция
+       (будка с дверью и пульт), от неё к подножию — рельс; клеть (часть) катится по рельсу к конусу и
+       поднимается по тросу; огонь в окне клети — своя часть, едет с ней */
+    const Rb=H*.06,hb=H*.035;
+    plnTube(m,{path:[[0,0,0],[0,hb,0]],rad:Rb,sides:18,col:steel(C.concrete,.2),mat:MAN,cap:true});
+    plnTube(m,{path:[[0,hb,0],[0,hb+H*.14,0]],rad:t=>lerp(Rb*.7,Rb*.2,t),sides:14,col:(t,a,p)=>steel(t>.3&&t<.4?C.orange:C.steel,.2)([0,0,0],p,[0,0,0]),mat:MAN});
+    plnTube(m,{path:[[0,hb+H*.12,0],[0,H*4,0]],rad:H*.004,sides:6,col:C.steelDk,mat:MAN});
+    for(let i=1;i<=8;i++){const y=hb+H*.12+i*H*.1;
+      plnTube(m,{path:[[0,y-.6,0],[0,y+.6,0]],rad:H*.011,sides:8,col:steel(C.steelLt,.1),mat:MAN,cap:true});
+      lamp([0,y+.9,0],[.35,.35,.35],C.red,2.6);}
+    for(let i=0;i<3;i++){const a=i/3*TAU+.5,d=Rb*2.6;
+      rod([0,hb+H*.11,0],[Math.cos(a)*d,gy(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d],H*.002,C.steelDk,{sides:5});}
+    box([-Rb*1.9,H*.02,Rb*.3],[Rb*.8,H*.02,Rb*.6],steel(C.steel,.3),{box:.25});
+    /* станция у линии: будка 2.5 м, дверь светится; пульт справа — по пояс, с экраном */
+    const [sx,sy,sz]=at(dx("call"),2.6),[fx,fz]=[0,-Rb*1.25],fy=gy(fx,fz);
+    box([sx,sy+1.25,sz+1.1],[1.25,1.25,1.0],steel(C.steel,.3),{box:.2});
+    box([sx,sy+2.56,sz+1.1],[1.4,.08,1.15],steel(C.steelDk,.3),{box:.3});
+    pane([sx-.45,sy+1.05,sz+.08],.42,.95,C.warm,1.6);
+    box([sx+1.75,sy+.5,sz+.2],[.3,.5,.22],steel(C.steelDk,.3),{box:.25});
+    pane([sx+1.75,sy+.88,sz-.03],.2,.1,[.5,1,.7],1.8);
+    box([sx+1.75,sy+1.02,sz+.2],[.34,.04,.26],C.orange,{box:.3});
+    /* рельс: два пути на шпалах от станции к подножию конуса */
+    const a0=[sx,sz+1.1],n=24,yaw=Math.atan2(fx-a0[0],fz-a0[1]),cx=Math.cos(yaw),snx=Math.sin(yaw),R2=[[],[]];
+    for(let i=0;i<=n;i++){const u=i/n,x=lerp(a0[0],fx,u),z=lerp(a0[1],fz,u),y=gy(x,z)+.22;
+      for(const s of [0,1]){const o=s?.8:-.8;R2[s].push([x+o*cx,y+.1,z-o*snx]);}
+      if(i%2===0)box([x,y-.08,z],[1.05,.06,.14],stone,{box:.3,mat:ROCK,yaw});}
+    for(const R of R2)plnTube(m,{path:R,rad:.09,sides:5,col:steel(C.steelLt,.3),mat:MAN});
+    /* клеть: стоит у станции (st 1) или наверху; привод двигает её по рельсу и тросу */
+    /* клеть 2.6×3.2 м: светлый короб, оранжевое днище и пояс, тёмная крыша с хватом троса; окно спереди */
+    const c0=[sx,sy+1.85,sz-.3],cab=part("cab",c0),cabL=part("cabL",c0,{glow:true});
+    plnBlob(cab,{c:[0,0,0],r:[1.3,1.6,1.2],sub:2,box:.2,col:steel(C.steelLt,.15),mat:MAN});
+    plnBlob(cab,{c:[0,1.68,0],r:[1.0,.14,.9],sub:1,box:.3,col:steel(C.steelDk,.3),mat:MAN});
+    plnBlob(cab,{c:[0,2.05,.3],r:[.22,.35,.22],sub:1,box:.3,col:steel(C.steelDk,.3),mat:MAN});
+    plnBlob(cab,{c:[0,-1.52,0],r:[1.2,.14,1.12],sub:1,box:.3,col:C.orange,mat:MAN});
+    plnBlob(cab,{c:[0,-.55,-1.18],r:[1.28,.08,.04],sub:1,box:.4,col:C.orange,mat:MAN});
+    plnBlob(cabL,{c:[0,.35,-1.2],r:[.8,.55,.04],sub:1,box:.4,col:C.warm,mat:GLOW,glow:2.4,x:1});
+    out.lift=PLN_LIFT_GEO[sd]={c0,foot:[fx,fy+1.85,fz],top:H*.88,hb,cone:hb+H*.14};
+    out.light=lm;out.pulse=night;
+    out.lamp={p:[sx-.45,sy+1.6,sz-1.4],r:H*.22,c:[1,.62,.3],k:3};
+    out.lampAt.door=[sx-.45,sy+1.8,sz-1.2];out.lampAt.cab=[0,0,-1.6];
+    skirt(Rb*2.6,6,.9);out.blots.push([0,0,Rb*2.2,.55]);out.blots.push([sx,sz+1.1,2,.5]);
     return true;
   }
   return false;

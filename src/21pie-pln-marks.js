@@ -98,27 +98,6 @@ function plnMarkMesh(kind,H,sd,gy,P,oldCol,W,mound,o){
   if(kind==="wreck")plnMarkWreck(T);
   else if(plnMarkStone(kind,T)){}
   else if(plnMarkMove(kind,T)){}   /* подвижная пятёрка (21piec) */
-  else if(kind==="elevator"){
-    /* станция, конус, трос в небо с хомутами и красными огнями; вагон ползёт вверх */
-    const Rb=H*.06,hb=H*.035;
-    plnTube(m,{path:[[0,0,0],[0,hb,0]],rad:Rb,sides:18,col:steel(C.concrete,.2),mat:MAN,cap:true});
-    plnTube(m,{path:[[0,hb,0],[0,hb+H*.14,0]],rad:t=>lerp(Rb*.7,Rb*.2,t),sides:14,col:(t,a,p)=>steel(t>.3&&t<.4?C.orange:C.steel,.2)([0,0,0],p,[0,0,0]),mat:MAN});
-    plnTube(m,{path:[[0,hb+H*.12,0],[0,H*4,0]],rad:H*.004,sides:6,col:C.steelDk,mat:MAN});
-    for(let i=1;i<=8;i++){const y=hb+H*.12+i*H*.1;
-      plnTube(m,{path:[[0,y-.6,0],[0,y+.6,0]],rad:H*.011,sides:8,col:steel(C.steelLt,.1),mat:MAN,cap:true});
-      lamp([0,y+.9,0],[.35,.35,.35],C.red,2.6);}
-    for(let i=0;i<3;i++){const a=i/3*TAU+.5,d=Rb*2.6;
-      rod([0,hb+H*.11,0],[Math.cos(a)*d,gy(Math.cos(a)*d,Math.sin(a)*d),Math.sin(a)*d],H*.002,C.steelDk,{sides:5});}
-    box([Rb*1.8,H*.03,-Rb*.4],[Rb*1.1,H*.03,Rb*.8],steel(C.steel,.2),{box:.25});
-    box([-Rb*1.9,H*.02,Rb*.3],[Rb*.8,H*.02,Rb*.6],steel(C.steel,.3),{box:.25});
-    pane([Rb*1.8,H*.035,-Rb*1.22],Rb*.5,H*.005,C.warm,1.6);
-    plnBlob(mv,{c:[0,0,0],r:[H*.014,H*.03,H*.014],sub:2,box:.3,col:steel(C.steelLt,.1),mat:MAN});
-    plnBlob(mv,{c:[0,-H*.02,-H*.012],r:[H*.004,H*.004,H*.004],sub:1,col:C.warm,mat:GLOW,glow:2.4,x:1});
-    out.move=mv;out.moveAt=t=>({y:hb+H*.15+H*.9*(.5-.5*Math.cos(((t*.012+sd*.01)%1)*TAU)),yaw:0});
-    out.light=lm;out.pulse=night;
-    out.lamp={p:[Rb*1.8,H*.05,-Rb*1.3],r:H*.22,c:[1,.62,.3],k:3};
-    skirt(Rb*2.6,6,.9);out.blots.push([0,0,Rb*2.2,.55]);
-  }
   if(out.light&&!lm.nv)out.light=null;
   return out;
 }

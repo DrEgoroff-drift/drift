@@ -40,8 +40,8 @@ function plnCast(){
    man и ship — места в метрах, face — куда человек смотрит, swim — насколько надут круг (0…1),
    o — состояние для рига и корабля: {S: G.surf, lamp: сила фонаря 0…1, L: земля} */
 function plnCastFrame(F,man,face,ship,yaw,swim,o){
-  const Q=plnCast(),B=PLN_KIND.body;
-  plnManFrame(F,man,face,swim,o);
+  const Q=plnCast(),B=PLN_KIND.body,hide=!!(o&&o.hide);   /* hide — человек в клети лифта (21pifc) */
+  if(!hide)plnManFrame(F,man,face,swim,o);
   plnShipFrame(F,ship,yaw,{L:o&&o.L,floor:o&&o.floor,gear:1,sq:0,thr:0,open:true});
   if(swim>0){
     plnRec(Q.ra,0,[man[0],man[1]+Q.belt,man[2]],.3+.7*swim,0,1,3);
@@ -50,6 +50,6 @@ function plnCastFrame(F,man,face,ship,yaw,swim,o){
   }
   const b=F.blobs;
   let n=b[0]|0;
-  if(n<64){b.set([man[0],man[2],.55,.5],4+n*4);n++;}
+  if(n<64&&!hide){b.set([man[0],man[2],.55,.5],4+n*4);n++;}
   b[0]=n;
 }

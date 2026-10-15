@@ -307,7 +307,9 @@ function plnSurface(S,o){
   tr.p=p;sunDirSet(p);WIND=windOf(p);
   if(!S.cam)S.cam={x:S.x,y:S.y};
   PLN.y0=tr.padY;
-  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):null),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
+  /* в клети лифта (21pifc) окно поднимается за клетью: земля уходит вниз */
+  const lw=!fly&&!hd?plnLiftWin(S):null;
+  const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):lw),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
   /* стройка по бюджету кадра (M614, M630f): кадр без стройки — среднее FRAME_JS прошлых кадров за
      вычетом их стройки; стройке — что остаётся до PLN_BUILD.frame. Земля берёт своё первой,
@@ -358,7 +360,7 @@ function plnSurface(S,o){
     /* корабль стоит на плите площадки (21pza); плита — тело и на поверхности */
     const lift=plnPadLift(L,tr,wy,L.shipX),ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ)+lift,L.shipZ];
     PLN.shipW=ship;   /* табличка строки действия у корабля (21pzb) */
-    plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L,floor:lift>0?plnPadTop(L,tr,wy):null});
+    plnCastFrame(F,man,S.face,ship,L.shipYaw,swim,{S,lamp:lampK,L,floor:lift>0?plnPadTop(L,tr,wy):null,hide:!!S.ride});
     plnPadFrame(F,L,tr,0);
     plnThingsFrame(L,F,S,p,C.ex,V);
     plnMarksFrame(L,F,S,p,C.ex,V,lampK);

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 593 · top-level symbols: 8434
+Files: 595 · top-level symbols: 8444
 
 ## SYMBOLS
 
@@ -1606,6 +1606,9 @@ PLN_HERB_MAKE                src/21pia-pln-herb.js:124-344
 PLN_ICO                      src/21pa-pln-mesh.js:40
 PLN_KIND                     src/21pe-pln-gpu.js:26
 PLN_LAND                     src/21pf-pln-land.js:22
+PLN_LIFT                     src/21pifc-pln-marks-act-lift.js:12
+PLN_LIFT_GEO                 src/21piec-pln-marks-move.js:9
+PLN_LIFT_OLD_UPD             src/21pifc-pln-marks-act-lift.js:148
 PLN_LOOK                     src/21pz-pln-frame.js:29-51
 PLN_LPAD                     src/21pza-pln-descent.js:74
 PLN_LPAD_DASH                src/21pza-pln-descent.js:116
@@ -1625,7 +1628,7 @@ PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:201
 PLN_OLD_HUD2                 src/21pzb-pln-words.js:100
 PLN_OLD_LANDING              src/21pza-pln-descent.js:214
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:385
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:387
 PLN_OLD_ULAND                src/21pza-pln-descent.js:206
 PLN_OVER                     src/21pj-pln-over.js:16
 PLN_OWN_GATE_R               src/21pig-pln-own.js:405
@@ -6543,6 +6546,13 @@ plnLegPhase                  src/21piba-pln-gait.js:30
 plnLegs                      src/21piba-pln-gait.js:49-62
 plnLen                       src/21p-pln.js:39
 plnLens                      src/21pz-pln-frame.js:62-72
+plnLiftAt                    src/21pifc-pln-marks-act-lift.js:47-55
+plnLiftPose                  src/21pifc-pln-marks-act-lift.js:28-45
+plnLiftRide                  src/21pifc-pln-marks-act-lift.js:13
+plnLiftStation               src/21pifc-pln-marks-act-lift.js:70
+plnLiftSurvey                src/21pifc-pln-marks-act-lift.js:57-69
+plnLiftWhere                 src/21pifc-pln-marks-act-lift.js:16-26
+plnLiftWin                   src/21pifc-pln-marks-act-lift.js:139-145
 plnLightBox                  src/21pz-pln-frame.js:246-256
 plnLoft                      src/21pa-pln-mesh.js:135-165
 plnLog                       src/21p-pln.js:25
@@ -6564,18 +6574,18 @@ plnManPalette                src/21pha-pln-man.js:58-70
 plnManPose                   src/21pha-pln-man.js:161-189
 plnManState                  src/21pha-pln-man.js:223-226
 plnMarkH                     src/21pie-pln-marks.js:40
-plnMarkMesh                  src/21pie-pln-marks.js:58-124
-plnMarkMove                  src/21piec-pln-marks-move.js:8-243
+plnMarkMesh                  src/21pie-pln-marks.js:58-103
+plnMarkMove                  src/21piec-pln-marks-move.js:10-289
 plnMarkPad                   src/21pie-pln-marks.js:44-49
-plnMarkSpark                 src/21pie-pln-marks.js:174-183
+plnMarkSpark                 src/21pie-pln-marks.js:153-162
 plnMarkState                 src/21pif-pln-marks-act.js:51
 plnMarkStone                 src/21pieb-pln-marks-stone.js:8-213
-plnMarkWorld                 src/21pie-pln-marks.js:169-172
+plnMarkWorld                 src/21pie-pln-marks.js:148-151
 plnMarkWreck                 src/21piea-pln-marks-wreck.js:12-209
 plnMarkZ                     src/21pie-pln-marks.js:42
-plnMarks                     src/21pie-pln-marks.js:127-167
-plnMarksDrop                 src/21pie-pln-marks.js:247-253
-plnMarksFrame                src/21pie-pln-marks.js:189-246
+plnMarks                     src/21pie-pln-marks.js:106-146
+plnMarksDrop                 src/21pie-pln-marks.js:226-232
+plnMarksFrame                src/21pie-pln-marks.js:168-225
 plnMesh                      src/21pa-pln-mesh.js:12-15
 plnMeshAdd                   src/21pa-pln-mesh.js:29-37
 plnMeshDone                  src/21pa-pln-mesh.js:38
@@ -6674,7 +6684,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:92
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:296-382
+plnSurface                   src/21pz-pln-frame.js:296-384
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -9682,7 +9692,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pid-pln-tracks.js · 3 KB
   · планета: следы — отпечатки на земле (M624):1
 
-## src/21pie-pln-marks.js · 20 KB
+## src/21pie-pln-marks.js · 19 KB
   · планета: ориентиры — двенадцать памятников игры (M627):1
 
 ## src/21piea-pln-marks-wreck.js · 18 KB
@@ -9691,7 +9701,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pieb-pln-marks-stone.js · 20 KB
   · планета: тихая пятёрка — тела и места под рукой (M627b, проход 2):1
 
-## src/21piec-pln-marks-move.js · 21 KB
+## src/21piec-pln-marks-move.js · 25 KB
   · планета: подвижная пятёрка — тела и места под рукой (M627b, проход 4):1
 
 ## src/21pif-pln-marks-act.js · 25 KB
@@ -9712,6 +9722,9 @@ zoomTo                       src/15-input.js:358
   · аномалия (§4.6):150
   · завод (§4.8):223
   · батарея — пушка Долгого марша (§4.12):277
+
+## src/21pifc-pln-marks-act-lift.js · 13 KB
+  · космический лифт (§4.3, M627b проход 5):1
 
 ## src/21pig-pln-own.js · 35 KB
   · планета: свои вещи телами — база, дом, двор (M628a):1
@@ -10175,6 +10188,9 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qaa-marks-move.js · 11 KB
   · подвижная пятёрка как места действия (M627b, проход 4):1
+
+## tests/91qab-marks-lift.js · 6 KB
+  · космический лифт как место действия (M627b, проход 5):1
 
 ## tests/91qb-rig-card.js · 5 KB
   · один астронавт везде: риг в карточке (M801):1
