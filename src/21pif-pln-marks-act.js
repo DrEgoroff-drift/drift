@@ -119,8 +119,9 @@ function plnActPrompt(q,m,R,holdP){
     if(!v){const n=plnActNote(s,m,R.D,st),up=plnActAirNear(q,K,m,R),alt=s.forkAlt?other(s):null;
       return name+" · "+n+(up?"\n"+up:alt?"\n"+alt:n!==st?"\n"+st:"");}
     const l1=s.hold?("УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — "+v+" · "+plnActBar(holdP/s.hold)):("ДЕЙСТВИЕ — "+v+(v.indexOf(String(s.ru).toUpperCase())>=0?"":" · "+String(s.ru).toUpperCase()));
-    /* развилка видна с места: второе живое место той же развилки названо с направлением */
-    return l1+"\n"+(other(s)||name+" · "+st);
+    /* развилка видна с места: второе живое место той же развилки названо с направлением; line2 —
+       своя вторая строка вида (у аномалии врут приборы) */
+    return l1+"\n"+(other(s)||(K.line2&&K.line2(m))||name+" · "+st);
   }
   const l1=name+" · "+st;
   if(R.near){const s=R.near.s,v=plnActVerb(s,m,R.D);
@@ -161,7 +162,7 @@ function plnActDo(q,id,ctx){
   const full=out.full?(out.full+(base?"\n+"+base+" данных":"")):(ru+"\n"+(out.short||m.got)+(base?"\n+"+base+" данных":""));
   tell("tech",head,full);
   if(base)logAdd("tech","Осмотр: "+ru.toLowerCase()+" · "+(out.short||m.got));
-  sfx(s.sfx||"ok");
+  sfx(out.sfx||s.sfx||"ok");   /* акт может сказать своим звуком: друза — не той нотой, кольцо — разрывом */
   return {id,msg:out.short||"",paid:base,st:m.st,way:m.way};
 }
 
@@ -190,7 +191,9 @@ function plnActFrame(it,S,p,nk,t){
   const D=K.dims(it.H);
   const age=plnActAge(m);
   const mm=m||{st:0,way:null,n:{},got:""};
-  const drive=K.drive?K.drive(mm,age,D,t,nk):{};
+  /* tick — то, что памятник держит в мире сам, пока на него смотрят (залежь слитка кольца) */
+  if(K.tick&&m)K.tick(q,m,S,D);
+  const drive=K.drive?K.drive(mm,age,D,t,nk,q):{};
   let prompt=null,H=PLN_ACT.hd;
   if(own){
     const I=PLN_ACT.inp,R=plnActReach(q,S,m),s=R.at&&R.at.s;

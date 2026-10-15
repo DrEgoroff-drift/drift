@@ -178,9 +178,19 @@ fn turnBy(n: vec3f, i0: vec4f, i1: vec4f) -> vec3f {
   return normalize(vec3f(q.x * i1.x + q.z * i1.y, q.y, q.z * i1.x - q.x * i1.y)) * m;
 }
 
+/* волна пещерной воды (M630e): три бегущих гребня разной длины, вместе сантиметров пять; одна на гладь
+   и на кромку тела в разрезе — нитка уреза ходит вместе с гладью */
+fn caveWave(p: vec2f, t: f32) -> f32 {
+  return 0.045 * sin(p.x * 1.3 - t * 1.1 + p.y * 0.7)
+       + 0.026 * sin(p.x * 2.9 + t * 1.7 - p.y * 1.3)
+       + 0.011 * sin(p.x * 6.1 - t * 2.9 + p.y * 2.1);
+}
 @vertex fn vs_main(in: VIn) -> VOut {
   var o: VOut;
-  let p = placeAt(in.pos, in.i0, in.i1);
+  var p = placeAt(in.pos, in.i0, in.i1);
+  /* гладь (13) — кроме берега, где она под камнем; тело (14) — только верхняя кромка (глубина 0) */
+  if (in.par.x > 12.5 && in.par.x < 13.5) { p.y += caveWave(p.xz, g.camPos.w) * smoothstep(-0.1, 0.4, in.par.w); }
+  if (in.par.x > 13.5 && in.par.x < 14.5 && in.par.w < 0.001) { p.y += caveWave(p.xz, g.camPos.w); }
   o.pos = g.viewProj * vec4f(p, 1.0);
   o.wpos = p;
   /* лист разреза несёт в нормали путь к пустоте вместе с уверенностью — её длину не трогаем */
@@ -316,6 +326,27 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
     var c5 = in.col * glow * hudDim(in.pos.xy);
     if (in.wpos.z < g.misc.z) { c5 *= faceDim(in.pos.xy); }
     return vec4f(haze(c5, in.wpos, 0.7), 1.0);
+  }
+  if (mat == 17) {
+    /* кулиса (22di): ближний камень перед разрезом — силуэт; холодная кромка от воздуха, верх светлее
+       низа, фонарь лишь трогает. Где за ней человек (точка, сведённая лучом на его плоскость), кулиса
+       прорезана мягким растром */
+    let fc = select(-1.0, 1.0, g.lampDir.x >= 0.0);
+    let ft = g.lampPos.xyz + vec3f(-0.2 * fc, -1.71, 0.17);
+    let pk = (ft.z - g.camPos.z) / max(in.wpos.z - g.camPos.z, 0.05);
+    let pr = g.camPos.xyz + (in.wpos - g.camPos.xyz) * pk - ft;
+    let cut = (1.0 - smoothstep(0.75, 1.35, abs(pr.x))) * (1.0 - smoothstep(2.0, 2.7, pr.y)) * smoothstep(-0.8, -0.2, pr.y);
+    /* на ближней стоянке объектив у самой кулисы — она раздулась бы на полкадра: растворяется */
+    let gone = max(cut, 1.0 - smoothstep(10.0, 13.5, in.wpos.z - g.camPos.z));
+    if (gone > ign(in.pos.xy)) { discard; }
+    var nS = normalize(in.nrm);
+    if (dot(nS, V) < 0.0) { nS = -nS; }
+    let nv = clamp(dot(nS, V), 0.0, 1.0);
+    let ll17 = lampAt(in.wpos);
+    var c17 = in.col * (0.55 + 0.45 * nv) * mix(0.8, 1.2, nS.y * 0.5 + 0.5);
+    c17 += g.fogCol.rgb * (pow(1.0 - nv, 5.0) * mix(0.2, 0.6, smoothstep(-0.3, 0.6, nS.y)));
+    c17 += in.col * lampTint(in.wpos) * (ll17.w * clamp(dot(nS, ll17.xyz), 0.0, 1.0) * 0.3);
+    return vec4f(c17 * hudDim(in.pos.xy), 1.0);
   }
   if (mat == 12) {
     /* кристалл светит изнутри: сердце ярче края; грани делит свет — своя доля неба и фонаря на каждой */
@@ -495,6 +526,8 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
   if (mat == 4 || mat == 8) { wet = 0.35; emis = glow; }
   if (mat == 7) { ao = mix(0.5, 1.0, smoothstep(0.0, 0.7, ex)); emis = glow; }
   if (mat == 2) { emis = glow; }
+  /* стена отсека базы (21ae): ровный запечённый свет подвесов — живые огни только добавляют */
+  if (mat == 18) { emis = glow; }
 
   /* зверю тьма пещеры светит снизу (отсвет пола), не сверху: спина темна, брюхо светлее */
   var ambY = mix(0.6, 1.25, N.y * 0.5 + 0.5);

@@ -181,6 +181,10 @@ function cloudBoot(then){
   cloudCall("pull")
     .then(d=>{
       if(!d||!d.ok||!d.save){then&&then(false);return;}
+      /* новее, но нечитаемая (без версии, чужая версия, время не числом) живую местную не стирает:
+         ворота те же, что у applySave (лаборатория 15.10, 91qp-cloudchaos) */
+      const v=d.save.v,ts=d.save.ts;
+      if((v!==4&&v!==5)||typeof ts!=="number"||!isFinite(ts)){then&&then(false);return;}
       let mine=0;
       try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
       if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}

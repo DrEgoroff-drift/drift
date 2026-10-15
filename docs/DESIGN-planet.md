@@ -196,13 +196,16 @@ after it pass by §5.4.
 - M627 landmarks: the twelve POI — done 07.10: bodies of the kit behind the crest with a
   mound to the ground (`21pie`), three grammars (people's steel, the ancients' stone lit
   in the world's accent, crystals), light and move records, the old sticker off;
-  `docs/DESIGN-planet-engine.md` §2.51–§2.54
+  `docs/DESIGN-planet-engine.md` §2.51–§2.54; M627b (15.10, five local passes): the twelve
+  as places to act — spots under the hand, a memo per landmark, seeded forks, the lift
+  you ride; `docs/DESIGN-marks.md` §7, engine §2.55
 - M628 own things: base above ground, home and fence, greenhouse, battery, pennant
 - M629 other people's things: settlement and wall, signs, the stone, «Жестянка»
 
 **Stage 3 — underground and inside.**
 - M630 the cave: rock, lamp light, water, moss and amber, props, life; the way in without a cut
-- M631 the mine
+- M631 the mine — done 15.10 (0.499.0): a working rudnik under the planet it is dug in, seamless
+  in and out, the planet's beasts as biters; `docs/DESIGN-mine.md`
 - M632 the base in cross-section and the rooms entered from the planet
 - M634 one water everywhere (author, 08.10): the stand's water as one module `21pw-pln-water`
   — planet lakes, the ocean worlds' sea to the horizon with swell and a hazed horizon, the

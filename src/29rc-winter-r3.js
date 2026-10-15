@@ -179,7 +179,8 @@ function win3Cam(sz,t){
   const P=r3Persp(c.fy,sz.cw/Math.max(1,sz.ch),.1,90);
   return {eye:e,tgt:c.tgt,fy:c.fy,vp:r3Mul(P,r3Look(e,c.tgt,[0,1,0]))};
 }
-function win3Ok(){return ROOM3.on&&typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok)&&!WIN3.err;}
+/* до проверки M850c — только по ?win3=1: иначе зимовка рисуется старым 2D */
+function win3Ok(){return typeof location!=="undefined"&&/[?&]win3=1/.test(location.search)&&ROOM3.on&&typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok)&&!WIN3.err;}
 function win3Frame(){
   const W=winAll(),cn=win3Canvas(),sz=home3Size(cn),R=rpgGet(cn);if(!R)return false;
   R.dpr=cn.__dpr;

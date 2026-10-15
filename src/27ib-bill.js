@@ -292,6 +292,7 @@ snapshot=function(){const s=BILL_OLD_SNAP.apply(this,arguments);s.bill=G.bill||n
 const BILL_OLD_APPLY=applySave;
 applySave=function(s){
   const r=BILL_OLD_APPLY.apply(this,arguments);
+  if(!r)return r;   /* отказ: мир не тронут — и счёт тоже (91qo) */
   const b=s&&s.bill;
   G.bill=(b&&typeof b==="object")?{cur:(b.cur&&typeof b.cur==="object")?b.cur:{},due:(b.due&&typeof b.due==="object")?b.due:{},
     from:+b.from||0,n:b.n|0,late:!!b.late,paper:(b.paper&&Array.isArray(b.paper.lines))?b.paper:null,
