@@ -46,12 +46,24 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
     system:["к звезде","к станции","стыковка","к планете","прыжок к соседу","бой","случайные руки","ждать","сохранить","запись туда и обратно"],
     dock:["продать","отстыковка","случайные руки","сохранить","запись туда и обратно"],
     surface:["бурение","к кораблю","взлёт","вниз на ярус","случайные руки","ждать"],
-    dig:["вниз на ярус","наверх","случайные руки"]
+    dig:["вниз на ярус","наверх","случайные руки"],
+    /* переходные режимы: заход руками начинается, а доводит его только время; карта
+       закрывается руками. Без своих целей бот отказывал здесь всем подряд — тупик бота, не игры */
+    landing:["ждать","случайные руки"],
+    map:["случайные руки","ждать"]
   };
   const opts0=G.opts;
   resetWorld();
   const snap=JSON.parse(JSON.stringify(snapshot()));
   const V=[],seenV={},path=[],bad=[];let steps=0,refused=0;
+  /* сторож тупика (Stuck Player, Wuji: «нет прогресса N шагов»): отказы подряд, а место, режим,
+     кошелёк и трюм не сдвинулись — бот заперт там, откуда игрок тоже не выйдет целями */
+  const STUCK_N=12;let stuckRun=0,stuckSig="";
+  const sig=()=>{let x=0,y=0;try{const H=G.mode==="surface"?G.surf:G.mode==="dig"?G.dig:G.mode==="cave"?G.cave:G.ship;x=Math.round((H&&H.x)/50);y=Math.round((H&&H.y)/50);}catch(e){}
+    return G.mode+"|"+x+","+y+"|"+Math.round(G.credits)+"|"+held();};
+  /* покрытие (EA SEED, King BAIT): какие переходы «режим → цель» тропа прошла удачно — лаборатория
+     складывает их по зёрнам и называет то, куда охота не дошла ни разу */
+  const cover={};
   const judge=(c,DS)=>{
     for(const D of DS){
       let got=[];
@@ -88,6 +100,10 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
       if(threw.length)bad.push("шаг "+(i+1)+" «"+name+"» бросил: "+threw[0]);
       else if(!okStep&&r&&r.hard)bad.push("шаг "+(i+1)+" «"+name+"»: "+r.why);
       else if(!okStep)refused++;
+      const ck=mode0+">"+name;cover[ck]=(cover[ck]|0)+(okStep?1:0);
+      if(okStep){stuckRun=0;stuckSig="";}
+      else{const s=sig();if(s===stuckSig)stuckRun++;else{stuckSig=s;stuckRun=1;}
+        if(stuckRun===STUCK_N)bad.push("шаг "+(i+1)+": тупик — "+STUCK_N+" отказов бота подряд, а место не сдвинулось ("+G.mode+")");}
       const pb=purseBad();if(pb.length)bad.push("шаг "+(i+1)+" «"+name+"»: кошелёк испорчен — "+pb.join(", "));
       detHook(true);
       detSettle(6,2);S.frame=detGrab();S.types=null;
@@ -106,6 +122,7 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
     resetWorld();
     G.opts=opts0;invalidateKeyMap();
   }
+  note("покрытие: "+Object.keys(cover).sort().map(k=>k+"="+cover[k]).join(";"));
   note("зерно "+seed+" · шагов "+steps+" · отказов бота "+refused+" · тропа: "+path.join(" | "));
   ok(steps>=Math.min(HUNT_N,10),"зерно "+seed+": шагов под детекторами "+steps+" из "+HUNT_N);
   /* по строке на находку, находка — в начале: лаборатория ключует провал по тексту без чисел
