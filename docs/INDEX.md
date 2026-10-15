@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 610 · top-level symbols: 8604
+Files: 615 · top-level symbols: 8700
 
 ## SYMBOLS
 
@@ -402,10 +402,10 @@ CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_KIT                       src/27f3-person3d.js:110
-CP_MESH                      src/27f3-person3d.js:273
+CP_KIT                       src/27f3-person3d.js:115
+CP_MESH                      src/27f3-person3d.js:278
 CP_TEMPER                    src/27f6-face-live.js:25
-CP_TORSO                     src/27f3-person3d.js:81
+CP_TORSO                     src/27f3-person3d.js:86
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
@@ -797,7 +797,7 @@ GLOW_CACHE                   src/16a0-glow.js:23
 GLOW_LAMP                    src/11i-glow.js:50
 GLOW_SP                      src/16a0-glow.js:22
 GLOW_TIERS                   src/11i-glow.js:128
-GLT_H                        src/08b-gpu.js:464
+GLT_H                        src/08b-gpu.js:468
 GNB                          src/16gb-gpu-nebula.js:17
 GNB_AGE                      src/16gc-gpu-nebfade.js:10
 GNB_EMI                      src/16gba-gpu-nebula-comp.js:52
@@ -849,7 +849,7 @@ GPU_CVTEX_CAP                src/08c-gpu-kit.js:68
 GPU_DROP_WHY                 tests/90-harness.js:104
 GPU_FLD                      src/08b0-gpu-pipe.js:33
 GPU_FLD_HEAD                 src/08c-gpu-kit.js:365
-GPU_FRONT_LIKE               src/08b-gpu.js:527
+GPU_FRONT_LIKE               src/08b-gpu.js:531
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:193
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:167
@@ -861,12 +861,13 @@ GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-67
 GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:44
 GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:36-57
-GPU_PL_WGSL                  src/08b-gpu.js:479
-GPU_POST_WGSL                src/08b-gpu.js:74
+GPU_PL_WGSL                  src/08b-gpu.js:483
+GPU_POST_WGSL                src/08b-gpu.js:78
 GPU_SCR                      src/08c-gpu-kit.js:174
 GPU_SCREEN_LAYERS            src/18c-chunks.js:193
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:264
-GPU_TONE_FILM                src/08b-gpu.js:515
+GPU_SNAP_OVER                src/08b-gpu.js:29
+GPU_TONE_FILM                src/08b-gpu.js:519
 GPU_WGSL_COMMON              src/08c-gpu-kit.js:136
 GRADE_U                      src/19c-light.js:263
 GRADE_WGSL                   src/19c-light.js:253
@@ -1116,6 +1117,15 @@ HOLIDAYS                     src/11am-holiday.js:22-25
 HOL_BY                       src/11am-holiday.js:26
 HOL_ETHER                    src/11am-holiday.js:28-43
 HOL_GREET                    src/11am-holiday.js:45-58
+HOME3                        src/29rb-home-r3.js:16
+HOME3_C                      src/29rba-home-shell.js:8
+HOME3_GY                     src/29rba-home-shell.js:6
+HOME3_JAC                    src/29rb-home-r3.js:37
+HOME3_LAMP                   src/29rb-home-r3.js:22
+HOME3_M                      src/29rb-home-r3.js:18
+HOME3_RW                     src/29rb-home-r3.js:17
+HOME3_TONE                   src/29rb-home-r3.js:20
+HOME3_WIN                    src/29rb-home-r3.js:24
 HOME_BAKING                  src/21f-home-out.js:56
 HOME_BK                      src/27e-ui-home.js:48
 HOME_COOL_MS                 src/16c-rescue.js:45
@@ -1151,6 +1161,10 @@ HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23-30
 HOUSES                       src/12u-scrip.js:21-26
 HOUSE_BY_ID                  src/12u-scrip.js:27
+HQ3                          src/29r-rooms-r3.js:18
+HQ3_CAMS                     src/29r-rooms-r3.js:23
+HQ3_SCR                      src/29r-rooms-r3.js:21
+HQ3_X                        src/29r-rooms-r3.js:19
 HQ_FACE_ID                   src/27f-hq-room.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_LIT_U                     src/27f-hq-room.js:109
@@ -1211,6 +1225,7 @@ JAM_TIME                     src/13a-guns.js:35
 JET_BURN                     src/20d-jetpack.js:17
 JET_KICK                     src/20d-jetpack.js:19
 JOB_ROLE                     src/21a3-base-people.js:21-29
+K3n                          src/29rba-home-shell.js:7
 KB                           src/27jb-kb.js:23
 KB_CELL_FEE                  src/27jb-kb.js:30
 KB_DELTA                     src/27jb-kb.js:109
@@ -1770,12 +1785,12 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:478
+R3                           src/27f2-room3d.js:512
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:457
+R3_DOWN_WGSL                 src/27f2-room3d.js:491
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:611
+R3_POST_WGSL                 src/27f2-room3d.js:645
 R3_UN                        src/27f2-room3d.js:30
 R3_WGSL                      src/27f2-room3d.js:156
 RACK                         src/25d-instr-rack.js:44
@@ -1976,6 +1991,8 @@ ROLE_BY_HULL                 src/03f-hull-role.js:33
 ROLE_KEYS                    src/12a-crew.js:169
 ROLE_LIM                     src/13c-roles.js:7
 ROMAN                        src/01-core.js:185
+ROOM3                        src/29r-rooms-r3.js:12
+ROOM3_M                      src/29r-rooms-r3.js:15
 ROOM_BAKE                    src/29c0-rooms-gpu.js:7
 ROOM_FIN                     src/21aa-base-rooms.js:70-80
 ROOM_WGSL_NOISE              src/29c0-rooms-gpu.js:17
@@ -2392,6 +2409,14 @@ WEAR_RU                      src/12s-wear.js:39
 WEATHER                      src/19d-weather.js:15-26
 WEATHER_BY_TYPE              src/19d-weather.js:28-47
 WEATHER_CAP                  src/19d-weather.js:52
+WIN3                         src/29rc-winter-r3.js:15
+WIN3_CAMS                    src/29rc-winter-r3.js:171
+WIN3_L                       src/29rc-winter-r3.js:16
+WIN3_LEV                     src/29rc-winter-r3.js:113
+WIN3_M                       src/29rc-winter-r3.js:17
+WIN3_PARKA                   src/29rc-winter-r3.js:21
+WIN3_PX                      src/29rc-winter-r3.js:19
+WIN3_SLEEP                   src/29rc-winter-r3.js:20
 WIND                         src/19c-light.js:41
 WIN_BAD                      src/29f-winter.js:32
 WIN_C                        src/29g-winter-draw.js:20-28
@@ -3452,10 +3477,10 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:95-103
-cpBasis                      src/27f3-person3d.js:73-77
+cpBand                       src/27f3-person3d.js:100-108
+cpBasis                      src/27f3-person3d.js:78-82
 cpBeard                      src/27f3a-face3d.js:373-388
-cpBody                       src/27f3-person3d.js:112-270
+cpBody                       src/27f3-person3d.js:117-275
 cpCloth                      src/27f3-person3d.js:45-50
 cpClump                      src/27f3a-face3d.js:364-371
 cpEmoMix                     src/27f6-face-live.js:56-58
@@ -3470,16 +3495,16 @@ cpHairline                   src/27f3a-face3d.js:279-285
 cpHead                       src/27f3a-face3d.js:182-277
 cpHeadAI                     src/27f3a-face3d.js:390-400
 cpHeadFn                     src/27f3a-face3d.js:18-52
-cpMesh                       src/27f3-person3d.js:274-281
+cpMesh                       src/27f3-person3d.js:279-286
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
-cpPose                       src/27f3-person3d.js:52-71
+cpPose                       src/27f3-person3d.js:52-76
 cpRig                        src/27f3a-face3d.js:404-426
 cpSculpt                     src/27f3a-face3d.js:81-158
 cpSkin                       src/27f3a-face3d.js:160-163
 cpSkinZ                      src/27f3a-face3d.js:165
 cpTeeth                      src/27f3a-face3d.js:168-180
-cpTorsoAt                    src/27f3-person3d.js:84-93
+cpTorsoAt                    src/27f3-person3d.js:89-98
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
 cpWarpTh                     src/27f3a-face3d.js:68
@@ -4138,7 +4163,7 @@ expReady                     src/11x-expedition.js:25-28
 expRelease                   src/11x-expedition.js:101-110
 expStart                     src/11x-expedition.js:29-38
 exportCode                   src/14a-cloud.js:68
-f16                          src/08b-gpu.js:465
+f16                          src/08b-gpu.js:469
 faceEl                       src/27c-ui-hq.js:6-12
 facePath                     src/12d-mgr-face.js:19-28
 faceRnd                      src/12d-mgr-face.js:16
@@ -4586,7 +4611,7 @@ gpuBakeRedo0                 src/08ca-gpu-canvas.js:563-696
 gpuBaked                     src/08ca-gpu-canvas.js:538-543
 gpuBargeBody                 src/12l-barge.js:560-567
 gpuBind                      src/08c-gpu-kit.js:40-46
-gpuBloom                     src/08b-gpu.js:668-673
+gpuBloom                     src/08b-gpu.js:672-677
 gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:31-36
 gpuBursts                    src/13z-gpu-combat.js:277-297
@@ -4597,7 +4622,7 @@ gpuChunkPut                  src/18c-chunks.js:186-190
 gpuChunkStore                src/18c-chunks.js:204-208
 gpuClouds                    src/19cc-gpu-air.js:118-165
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
-gpuCompNeb                   src/08b-gpu.js:438-448
+gpuCompNeb                   src/08b-gpu.js:442-452
 gpuCvLevel                   src/08c-gpu-kit.js:82-93
 gpuDrawChunks                src/18c-chunks.js:216-220
 gpuDrawTiles                 src/18c-chunks.js:235-240
@@ -4608,56 +4633,56 @@ gpuFail                      src/08b2-gpu-loss.js:26-30
 gpuField                     src/08c-gpu-kit.js:387-414
 gpuFieldBaked                src/08c-gpu-kit.js:422-432
 gpuFieldLayout               src/08c-gpu-kit.js:380-386
-gpuFrame                     src/08b-gpu.js:546-559
+gpuFrame                     src/08b-gpu.js:550-563
 gpuFrontClean                src/08c-gpu-kit.js:128-133
-gpuFrontCopy                 src/08b-gpu.js:596-598
+gpuFrontCopy                 src/08b-gpu.js:600-602
 gpuFrontHook                 src/08c-gpu-kit.js:117-126
-gpuHaze                      src/08b-gpu.js:461
+gpuHaze                      src/08b-gpu.js:465
 gpuHudDpr                    src/08bh-gpu-hud.js:7
-gpuHueFor                    src/08b-gpu.js:518
+gpuHueFor                    src/08b-gpu.js:522
 gpuImage                     src/08c-gpu-kit.js:238-251
 gpuImgBind                   src/08c-gpu-kit.js:231-237
 gpuImgLayout                 src/08c-gpu-kit.js:223-230
 gpuKitU                      src/08c-gpu-kit.js:176-181
-gpuLight                     src/08b-gpu.js:463
+gpuLight                     src/08b-gpu.js:467
 gpuLitSprite                 src/17c-system-draw.js:473-488
-gpuLtWrite                   src/08b-gpu.js:467-474
-gpuManual                    src/08b-gpu.js:637-642
+gpuLtWrite                   src/08b-gpu.js:471-478
+gpuManual                    src/08b-gpu.js:641-646
 gpuMipDrop                   src/08c-gpu-kit.js:112
 gpuMipSmp                    src/08c-gpu-kit.js:113
 gpuMipTex                    src/08c-gpu-kit.js:99-111
 gpuMoon                      src/17ga-gpu-planets.js:441-447
 gpuNebulaComp                src/16gba-gpu-nebula-comp.js:275-285
 gpuNebulaGen                 src/16gba-gpu-nebula-comp.js:218-272
-gpuNext                      src/08b-gpu.js:624-633
-gpuNoise                     src/08b-gpu.js:388-393
+gpuNext                      src/08b-gpu.js:628-637
+gpuNoise                     src/08b-gpu.js:392-397
 gpuNone                      src/08b2-gpu-loss.js:6-14
 gpuOrb                       src/17gab1-gpu-orb-draw.js:72-84
 gpuOrbMoon                   src/17gab1-gpu-orb-draw.js:97-103
 gpuOvFrontView               src/08bi-gpu-ovl.js:284
-gpuOver                      src/08b-gpu.js:599-619
-gpuPass                      src/08b-gpu.js:449-452
+gpuOver                      src/08b-gpu.js:603-623
+gpuPass                      src/08b-gpu.js:453-456
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
 gpuPipeRecipe                src/08b0-gpu-pipe.js:49-57
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
-gpuPipes                     src/08b-gpu.js:364-385
+gpuPipes                     src/08b-gpu.js:368-389
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
 gpuPipesWarm                 src/08b0-gpu-pipe.js:60-72
 gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
-gpuPresent                   src/08b-gpu.js:675-688
+gpuPresent                   src/08b-gpu.js:679-692
 gpuQuad                      src/08c-gpu-kit.js:318-322
-gpuResize                    src/08b-gpu.js:394-436
-gpuScene                     src/08b-gpu.js:563-576
-gpuScene3D                   src/08b-gpu.js:580-588
+gpuResize                    src/08b-gpu.js:398-440
+gpuScene                     src/08b-gpu.js:567-580
+gpuScene3D                   src/08b-gpu.js:584-592
 gpuScr                       src/08c-gpu-kit.js:175
 gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:349-360
-gpuShock                     src/08b-gpu.js:462
+gpuShock                     src/08b-gpu.js:466
 gpuShpAt                     src/08c-gpu-kit.js:326-339
 gpuSky                       src/19ca-gpu-sky.js:254-292
 gpuSkyBodies                 src/19cb-gpu-sky-bodies.js:324-415
@@ -4668,17 +4693,17 @@ gpuStationDraw               src/17c3-station-live.js:119-125
 gpuStationFlare              src/17c3-station-live.js:128-143
 gpuStoreDrop                 src/18c-chunks.js:191
 gpuSysUnder                  src/17g-gpu-system.js:447-453
-gpuTakeSnap                  src/08b-gpu.js:27-33
+gpuTakeSnap                  src/08b-gpu.js:30-37
 gpuTileAt                    src/18c-chunks.js:228-234
 gpuTileStore                 src/18c-chunks.js:223-227
 gpuTrail                     src/16ga-gpu-trail.js:53-98
 gpuTs                        src/28z-fps-probe.js:128-135
 gpuTsAround                  src/28z-fps-probe.js:145-149
 gpuTsResolve                 src/28z-fps-probe.js:151-169
-gpuUni                       src/08b-gpu.js:528-542
+gpuUni                       src/08b-gpu.js:532-546
 gpuWake                      src/16ga-gpu-trail.js:107-139
 gpuWeatherFar                src/19cc-gpu-air.js:265-293
-gpuWorld                     src/08b-gpu.js:645-666
+gpuWorld                     src/08b-gpu.js:649-670
 gradeGpu                     src/19c-light.js:264-275
 gradePass                    src/19c-light.js:276-314
 greenAll                     src/21g-greenhouse.js:26-30
@@ -4836,6 +4861,7 @@ hallClk                      src/27f4k-hall-phone.js:25
 hallClose                    src/27f4a-hall.js:366-373
 hallClutter                  src/27f4d-hall-props.js:56-109
 hallCord                     src/27f4b-hall-dress.js:43
+hallCostWrap                 src/27f4k-hall-phone.js:40
 hallCrate                    src/27f4b-hall-dress.js:64
 hallCrop                     src/27f4a-hall.js:355
 hallDialSvg                  src/27f4g-hall-instr.js:164-260
@@ -5152,6 +5178,33 @@ holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdUklad                    src/12ah-holdnews.js:19-24
 holdWorth                    src/27j-ui-opis.js:596-604
+home3Arc                     src/29rba-home-shell.js:11
+home3Cam                     src/29rb-home-r3.js:403-414
+home3Canvas                  src/29rb-home-r3.js:386-393
+home3Cost                    src/29rb-home-r3.js:450
+home3FolkM                   src/29rb-home-r3.js:39
+home3Frame                   src/29rb-home-r3.js:416-434
+home3Hide                    src/29rb-home-r3.js:443-448
+home3LookAt                  src/29rb-home-r3.js:380
+home3Man                     src/29rb-home-r3.js:322-333
+home3Mesh                    src/29rb-home-r3.js:43-139
+home3Night                   src/29rb-home-r3.js:378
+home3Ok                      src/29rb-home-r3.js:415
+home3PilotM                  src/29rb-home-r3.js:33
+home3Pose                    src/29rb-home-r3.js:320
+home3Scene                   src/29rb-home-r3.js:335-376
+home3Size                    src/29rb-home-r3.js:394-400
+home3Skin                    src/29rba-home-shell.js:37-45
+home3StoolMesh               src/29rb-home-r3.js:314
+home3Str                     src/29rb-home-r3.js:38
+home3Stuff                   src/29rb-home-r3.js:141-312
+home3Tags                    src/29rb-home-r3.js:437
+home3Under                   src/29rba-home-shell.js:47-64
+home3Up                      src/29rb-home-r3.js:30
+home3UpRooms                 src/29rb-home-r3.js:377
+home3Vault                   src/29rba-home-shell.js:14-35
+home3X                       src/29rb-home-r3.js:27
+home3Yard                    src/29rba-home-shell.js:66-104
 homeBeacon                   src/12j-home.js:180-186
 homeBeaconCost               src/12j-home.js:179
 homeCanRebuild               src/12j-home.js:226
@@ -5239,6 +5292,12 @@ housePennant                 src/17d-house-shapes.js:96-99
 housePlan                    src/12tb-settle-draw.js:61-70
 houseRGB                     src/17d-house-shapes.js:16
 houseWallMark                src/17d-house-shapes.js:72-94
+hq3Chair                     src/29r-rooms-r3.js:27
+hq3Layout                    src/29r-rooms-r3.js:29-38
+hq3Mesh                      src/29r-rooms-r3.js:40-102
+hq3Scene                     src/29r-rooms-r3.js:105-142
+hq3Stand                     src/29r-rooms-r3.js:28
+hq3Tags                      src/29r-rooms-r3.js:225
 hqAiOffer                    src/27c-ui-hq.js:440-460
 hqBack                       src/27f-hq-room.js:294-365
 hqBtnTick                    src/27c-ui-hq.js:271-277
@@ -7031,12 +7090,12 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:479-485
-r3Dev                        src/27f2-room3d.js:502-520
-r3DownDesc                   src/27f2-room3d.js:494-498
-r3Drop                       src/27f2-room3d.js:527
-r3Frame                      src/27f2-room3d.js:542-608
-r3Free                       src/27f2-room3d.js:529
+r3Desc                       src/27f2-room3d.js:513-519
+r3Dev                        src/27f2-room3d.js:536-554
+r3DownDesc                   src/27f2-room3d.js:528-532
+r3Drop                       src/27f2-room3d.js:561
+r3Frame                      src/27f2-room3d.js:576-642
+r3Free                       src/27f2-room3d.js:563
 r3Kit                        src/27f2-room3d.js:66-153
 r3Lin                        src/27f2-room3d.js:35
 r3Look                       src/27f2-room3d.js:43-153
@@ -7047,11 +7106,11 @@ r3Pivot                      src/27f2-room3d.js:57
 r3Proj                       src/27f2-room3d.js:60-153
 r3Pt                         src/27f2-room3d.js:58
 r3Sc                         src/27f2-room3d.js:37
-r3ShDesc                     src/27f2-room3d.js:486-491
-r3ShadowVP                   src/27f2-room3d.js:531-536
+r3ShDesc                     src/27f2-room3d.js:520-525
+r3ShadowVP                   src/27f2-room3d.js:565-570
 r3Step                       src/27f2-room3d.js:38
-r3Up                         src/27f2-room3d.js:522-526
-r3VB                         src/27f2-room3d.js:492
+r3Up                         src/27f2-room3d.js:556-560
+r3VB                         src/27f2-room3d.js:526
 r3Xf                         src/27f2-room3d.js:49-153
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -7532,6 +7591,23 @@ roleSteer                    src/13c-roles.js:8
 roleThrust                   src/13c-roles.js:9
 rollCrewEvent                src/12b-crew-events.js:70-96
 rollWorld                    src/02a-worldmix.js:67-76
+room3Breath                  src/29r-rooms-r3.js:176
+room3Cams                    src/29r-rooms-r3.js:162
+room3Canvas                  src/29r-rooms-r3.js:145-153
+room3Close                   src/29r-rooms-r3.js:188-194
+room3Cost                    src/29r-rooms-r3.js:249
+room3Frame                   src/29r-rooms-r3.js:203-222
+room3GlideAt                 src/29r-rooms-r3.js:163-167
+room3Go                      src/29r-rooms-r3.js:170-174
+room3Loop                    src/29r-rooms-r3.js:195-202
+room3Moving                  src/29r-rooms-r3.js:168
+room3Night                   src/29r-rooms-r3.js:177
+room3Ok                      src/29r-rooms-r3.js:178
+room3Open                    src/29r-rooms-r3.js:179-186
+room3PickHq                  src/29r-rooms-r3.js:252-258
+room3Place                   src/29r-rooms-r3.js:187
+room3Size                    src/29r-rooms-r3.js:154-161
+room3TagsDraw                src/29r-rooms-r3.js:233-246
 roomBake                     src/29c0-rooms-gpu.js:8-14
 roomSz                       src/29c0-rooms-gpu.js:16
 roomToneTick                 src/09a-roomtone.js:79-99
@@ -8535,6 +8611,26 @@ weatherGpu                   src/19d-weather.js:109-185
 weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
+win3Box                      src/29rc-winter-r3.js:212
+win3Cam                      src/29rc-winter-r3.js:173-181
+win3Canvas                   src/29rc-winter-r3.js:162-169
+win3Cost                     src/29rc-winter-r3.js:234
+win3Fade                     src/29rc-winter-r3.js:130
+win3Frame                    src/29rc-winter-r3.js:184-203
+win3Hide                     src/29rc-winter-r3.js:227-232
+win3Hit                      src/29rc-winter-r3.js:224
+win3Hits                     src/29rc-winter-r3.js:216
+win3LeverX                   src/29rc-winter-r3.js:23
+win3Man                      src/29rc-winter-r3.js:118-127
+win3Mesh                     src/29rc-winter-r3.js:29-112
+win3Ok                       src/29rc-winter-r3.js:183
+win3On                       src/29rc-winter-r3.js:235
+win3Pilot                    src/29rc-winter-r3.js:116
+win3Scene                    src/29rc-winter-r3.js:132-159
+win3SleepPh                  src/29rc-winter-r3.js:129
+win3Storm                    src/29rc-winter-r3.js:26
+win3Tags                     src/29rc-winter-r3.js:205
+win3Val                      src/29rc-winter-r3.js:24
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
 winBlock                     src/29f-winter.js:253-270
@@ -8745,7 +8841,7 @@ zoomTo                       src/15-input.js:358
 ## src/08a-statehash.js · 6 KB
   · хэш состояния (M441):1
 
-## src/08b-gpu.js · 53 KB
+## src/08b-gpu.js · 54 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
 ## src/08b0-gpu-pipe.js · 7 KB
@@ -10170,10 +10266,10 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 11 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 55 KB
+## src/27f2-room3d.js · 59 KB
   · комната в объёме (M725):1
 
-## src/27f3-person3d.js · 25 KB
+## src/27f3-person3d.js · 26 KB
   · человек в объёме (M725):1
 
 ## src/27f3a-face3d.js · 37 KB
@@ -10336,6 +10432,21 @@ zoomTo                       src/15-input.js:358
 
 ## src/29i-spa-draw.js · 31 KB
   · санаторий: веранда:1
+
+## src/29r-rooms-r3.js · 22 KB
+  · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
+
+## src/29rb-home-r3.js · 38 KB
+  · дом на движке (M850b, docs/DESIGN-rooms.md §4):1
+
+## src/29rba-home-shell.js · 10 KB
+  · дом снаружи: тело людской грамматики и двор (M850b, стенд M602 — docs/look/nt-home.js):1
+
+## src/29rc-winter-r3.js · 21 KB
+  · зимовка на движке (M850c, docs/DESIGN-rooms.md §4):1
+
+## src/29rz-snap-over.js · 1 KB
+  · дом на движке — в снимок кадра (Контроль, 15.10):1
 
 ## tests/90-harness.js · 54 KB
   · автотесты: каркас:1
