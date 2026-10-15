@@ -137,6 +137,9 @@ TEST_SUITES.push(()=>suite("охота: случайная тропа ботом
       steps++;
       if(bad.length>=3)break;
     }
+    /* корпус сейвов (Factorio, BugNet «save corpus»): раз в четыре зерна мир тропы уходит в лабораторию;
+       следующие версии обязаны его грузить (lab-local → 91zzzzzzzzc-corpus) */
+    if(seed%4===0){try{note("корпус: "+saveText());}catch(e){}}
   }finally{
     {const v=cv;delete G.credits;G.credits=v;}
     detHook(false);DET.on=false;DET.texts=null;DET.astro=null;

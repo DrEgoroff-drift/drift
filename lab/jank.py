@@ -101,6 +101,7 @@ def judge(sc, F, out, pz=None):
     longs = [f for f in run if f["d"] > LONG]
     worst = max(run, key=lambda f: f["d"])
     ew = max(entry, key=lambda f: f["d"]) if entry else None
+    ENTRY_SEEN[sc] = ew["d"] if ew else None   # худший кадр входа — в историю frames.jsonl (regress)
     print("%-8s %-8s кадров %4d  p50 %5.1f  p95 %5.1f  макс %6.1f  >33 мс %3d  вход макс %6.1f  JS p50 %4.1f" % (
         sc, worst["m"], len(run), p50, p95, mx, len(longs), ew["d"] if ew else 0,
         sorted(max(f["js"], 0) for f in run)[len(run) // 2]))
@@ -232,8 +233,12 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
         w = max(big, key=lambda x: x[1])
         out.append((tag, "долгие задачи на ходу: %d, худшая %.0f мс на %.1f с — подгрузка или компиляция в потоке%s" % (len(big), w[1], big[0][0] / 1000, blame(*w))))
     # сборка конвейера или шейдера после входа — рывок при первой встрече; всё должно собраться прогревом
-    pp = [x for x in d.get("pp") or [] if ENTRY_MS <= x[0] < pz - 50]
-    row["pipes"] = len(pp)
+    # судится только синхронная сборка конвейера — она держит кадр; Async-сборки и модули — фоновый
+    # прогрев (поздний прогрев qa 824f6ccd: по 0 мс на кадре), они идут строкой в вывод, не находкой
+    pp_all = [x for x in d.get("pp") or [] if ENTRY_MS <= x[0] < pz - 50]
+    pp = [x for x in pp_all if x[1] in ("createRenderPipeline", "createComputePipeline")]
+    row["pipes"] = len(pp); row["pipes_bg"] = len(pp_all) - len(pp)
+    if len(pp_all) > len(pp): print("  %s: фоновых сборок после входа %d (Async и модули) — не держат кадр" % (tag, len(pp_all) - len(pp)))
     if pp:
         kinds = {}
         for x in pp: kinds[x[1]] = kinds.get(x[1], 0) + 1
@@ -264,11 +269,13 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
 # ── регресс против прошлых прогонов на этой машине (BugNet/PerfGuard: p99 хуже базы на 10 % — красное).
 # Запас шире — 25 % и абсолютный порог: headless шумит; база — медиана пяти прошлых записей сцены ──
 FRAMES_LOG = os.path.join(os.environ.get("LAB_DATA") or os.path.join(os.path.expanduser("~"), "drift-data", "lab"), "frames.jsonl")
-REGRESS = {"low1": (1.25, 3, "1% low, мс"), "gpums": (1.25, .5, "видеокарта, мс/кадр"), "main": (1.25, .05, "поток, доля"),
+ENTRY_SEEN = {}
+REGRESS = {"entry": (1.5, 100, "вход в сцену, мс"), "low1": (1.25, 3, "1% low, мс"), "gpums": (1.25, .5, "видеокарта, мс/кадр"), "main": (1.25, .05, "поток, доля"),
            "hitch": (2.0, 4, "заминки")}
 
 
 def regress(sc, row, out, ver):
+    row.setdefault("entry", ENTRY_SEEN.get(sc))
     hist = []
     try:
         for ln in open(FRAMES_LOG, encoding="utf-8"):
@@ -411,7 +418,7 @@ def main():
         # обязаны это увидеть, иначе законы живого кадра слепы (как подсадки зрения)
         if not a.no_plant:
             pb = []
-            run_scene(a, pg, "surface", pb, plant="setInterval(function(){try{G.surf.x+=40;GPU.errs=(GPU.errs||0)+1;}catch(e){}},500);window.__leak=[];setInterval(function(){__leak.push(new Float64Array(1e5))},100);setTimeout(function(){try{GPU.dev.createShaderModule({code:\"@compute @workgroup_size(1) fn main(){}\"});}catch(e){}},4000);")
+            run_scene(a, pg, "surface", pb, plant="setInterval(function(){try{G.surf.x+=40;GPU.errs=(GPU.errs||0)+1;}catch(e){}},500);window.__leak=[];setInterval(function(){__leak.push(new Float64Array(1e5))},100);setTimeout(function(){try{GPU.dev.createComputePipeline({layout:\"auto\",compute:{module:GPU.dev.createShaderModule({code:\"@compute @workgroup_size(1) fn main(){}\"}),entryPoint:\"main\"}});}catch(e){}},4000);")
             got = " ".join(m for _, m in pb)
             print("подсадка: " + ("; ".join(m[:60] for _, m in pb) or "ничего не поймано"))
             for law in ("герой рывком", "ошибки видеокарты", "память растёт", "шейдер собирается на ходу"):

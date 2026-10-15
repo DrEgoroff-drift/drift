@@ -191,10 +191,61 @@ def hunt_post(u, rc):
     for k, key in (("кошелёк", "wallet"), ("покрытие", "cover"), ("отказы", "why")):
         m = re.search(r"· %s: ([^<\n]*)" % k, t)
         if m: row[key] = m.group(1).strip()
+    m = re.search(r"· корпус: (\{[^\n<]*\})", t)
+    if m and u.get("ver"):
+        try:
+            json.loads(m.group(1))
+            os.makedirs(CORPUS, exist_ok=True)
+            open(os.path.join(CORPUS, "%s-%s.json" % (u["ver"], u["arg"])), "w", encoding="utf-8").write(m.group(1))
+        except Exception: pass
     if len(row) < 4: return
     try:
         with open(HUNT_LOG, "a", encoding="utf-8") as f: f.write(json.dumps(row, ensure_ascii=False) + "\n")
     except Exception: pass
+
+CORPUS = os.path.join(os.path.dirname(HUNT_LOG), "corpus")
+CORPUS_SUITE = "91zzzzzzzzc-corpus.js"
+
+def corpus_suite(src):
+    """сейвы прошлых охот → набор в копии: каждая версия грузит миры всех прежних. По три последних
+    сейва на версию, не больше сорока; пустой корпус — набора нет (ok без проверки — пустышка)"""
+    try: files = [f for f in os.listdir(CORPUS) if f.endswith(".json")]
+    except Exception: return 0
+    by = {}
+    for f in sorted(files, key=lambda f: os.path.getmtime(os.path.join(CORPUS, f)), reverse=True):
+        v = f.rsplit("-", 1)[0]
+        if len(by.setdefault(v, [])) < 3: by[v].append(f)
+    pick = [f for v in sorted(by) for f in by[v]][-40:]
+    if not pick: return 0
+    rows = ",\n".join("  [%s,%s]" % (json.dumps(f[:-5]), json.dumps(open(os.path.join(CORPUS, f), encoding="utf-8").read(), ensure_ascii=False)) for f in pick)
+    js = r'''/* корпус сейвов (лаборатория 15.10, генерирует lab-local.py из LAB_DATA/corpus — в гит не идёт).
+   Миры, которые охота прошлых версий оставила по зерну: эта сборка обязана их грузить (жёсткое правило
+   CLAUDE.md — старые сейвы живут), не терять деньги, а пересохранённый мир читать тем же миром. */
+const LAB_CORPUS=[
+%s
+];
+TEST_SUITES.push(()=>suite("корпус сейвов: мир каждой прошлой версии грузится этой",{tier:"node"},()=>{
+  const bad=[];
+  for(const [id,raw] of LAB_CORPUS){
+    resetWorld();
+    let s=null;try{s=JSON.parse(raw);}catch(e){bad.push(id+": не JSON");continue;}
+    stSet(SAVE_KEY,raw);
+    let r;try{r=loadGame();}catch(e){bad.push(id+": loadGame бросил "+e.message);continue;}
+    if(!r){bad.push(id+": отказ");continue;}
+    if(isFinite(s.credits)&&Math.abs(G.credits-s.credits)>.5)bad.push(id+": деньги "+s.credits+"→"+G.credits);
+    let t;try{t=saveText();}catch(e){bad.push(id+": пересохранение бросило "+e.message);continue;}
+    const h1=stateHash();resetWorld();stSet(SAVE_KEY,t);
+    try{loadGame();}catch(e){bad.push(id+": пересохранённый бросил "+e.message);continue;}
+    if(stateHash()!==h1)bad.push(id+": пересохранённый мир читается другим");
+  }
+  note("сейвов в корпусе "+LAB_CORPUS.length+": "+LAB_CORPUS.map(x=>x[0]).join(", "));
+  ok(!bad.length,"корпус: "+bad.length+(bad.length?" — "+bad.slice(0,6).join("; "):""));
+  try{stDel(SAVE_KEY);}catch(e){}
+  resetWorld();
+}));
+''' % rows
+    open(os.path.join(src, "tests", CORPUS_SUITE), "w", encoding="utf-8", newline="\n").write(js)
+    return len(pick)
 
 def page_unit(ctx, kind, arg, query, win):
     n = ctx["n"] = ctx["n"] + 1
@@ -274,6 +325,8 @@ def main():
         add = [f for f in sorted(os.listdir(mine)) if f.endswith(".js") and not os.path.exists(os.path.join(src, "tests", f))]
         for f in add: shutil.copyfile(os.path.join(mine, f), os.path.join(src, "tests", f))
         if add: print("lab: законы лаборатории подложены в копию: " + ", ".join(add))
+        nc = corpus_suite(src)
+        if nc: print("lab: корпус сейвов — %d миров прошлых охот в %s" % (nc, CORPUS_SUITE))
         r = sh(["powershell", "-ExecutionPolicy", "Bypass", "-File", os.path.join(src, "build.ps1")], cwd=src, timeout=600)
         if r.returncode:
             live_write(phase="failed", why="сборка упала")
@@ -316,7 +369,7 @@ def main():
         seed = int(time.strftime("%j")) * 1000 + stf.get("seeds", 0) + seeds[0] + 1
         seeds[0] += 1
         u = page_unit(ctx, "hunt", str(seed), "only=%s&fseed=%d&hsteps=%d" % (urllib.parse.quote("охота"), seed, a.steps), "1280,800")
-        u["post"] = hunt_post
+        u["post"] = hunt_post; u["ver"] = ver
         return u
 
     counts = {}; fresh = []

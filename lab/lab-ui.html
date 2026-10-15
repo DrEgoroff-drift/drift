@@ -228,7 +228,7 @@ select,input[type=number]{width:100%;background:var(--bg);border:1px solid var(-
           <div class="tile n"><span>НОВЫХ ОШИБОК</span><b id="tNew">0</b></div>
         </div>
         <div class="prog">
-          <div class="row"><span>прошло <b id="pEl">0:00</b></span><span id="pMid"></span><span>осталось <b id="pLeft">—</b></span></div>
+          <div class="row"><span>прошло <b id="pEl">0:00</b></span><span id="pMid"></span><span id="pLeftL">осталось <b id="pLeft">—</b></span></div>
           <div class="track" id="track"><i id="pBar" style="width:0"></i></div>
         </div>
         <div class="now" id="now"><div class="empty">ничего не идёт</div></div>
@@ -334,8 +334,11 @@ async function tick(){
   $("#tRed").textContent=r.red||0;$("#tNew").textContent=(r.fresh||[]).length;
   if(r.t0){
     const end=r.t1||S.now,el=end-r.t0,tot=(r.deadline||end)-r.t0;
-    $("#pEl").textContent=fmt(el);$("#pLeft").textContent=b?fmt((r.deadline||end)-S.now):"—";
-    $("#pBar").style.width=Math.min(100,100*el/Math.max(1,tot))+"%";
+    $("#pEl").textContent=fmt(el);
+    /* кончилась раньше бюджета (охоте нужно 5 мин остатка, круг кончился) — полоса полная, а не застывшая */
+    if(b)$("#pLeftL").innerHTML="осталось <b>"+fmt((r.deadline||end)-S.now)+"</b>";
+    else $("#pLeftL").innerHTML=r.phase==="failed"?"<b>упал</b>":r.stopped||r.phase==="stopped"?"<b>остановлен</b>":"<b>закончен</b>";
+    $("#pBar").style.width=(b?Math.min(100,100*el/Math.max(1,tot)):100)+"%";
     $("#pMid").textContent=(r.jobs||"?")+" копий · "+(r.mode?r.mode.split(",").map(k=>(GRP.find(g=>g[0]===k)||[,k])[1]).join(", "):"")+" · "+(r.budget||"?")+" мин";
     $("#phaseTxt").textContent=r.phase==="build"?"собираю игру из ветки…":r.phase==="stopping"?"гашу свои прогоны…":r.why||"";
   }
