@@ -67,12 +67,13 @@ function dig3DressMesh(F){
 
 /* клеть: рама из уголка, крыша, сетка на задней стенке, оранжевый пояс; низ — в нуле (пол клети) */
 function dig3CageMesh(){
-  const m=plnMesh(1<<12),K=DIG3_DR,M=PLN_MAT,w=.9,h=2.45,z0=.3,z1=1.95;
-  const box=(x0,x1,y0,y1,za,zb,col)=>{
-    const P=[[x0,y0,za],[x1,y0,za],[x1,y1,za],[x0,y1,za],[x0,y0,zb],[x1,y0,zb],[x1,y1,zb],[x0,y1,zb]];
-    const F6=[[0,3,2,1,[0,0,-1]],[4,5,6,7,[0,0,1]],[0,4,7,3,[-1,0,0]],[1,2,6,5,[1,0,0]],[3,7,6,2,[0,1,0]],[0,1,5,4,[0,-1,0]]];
-    for(const f of F6){const n=f[4],a=plnVert(m,P[f[0]],n,col,M.bark),b=plnVert(m,P[f[1]],n,col,M.bark),c=plnVert(m,P[f[2]],n,col,M.bark),d=plnVert(m,P[f[3]],n,col,M.bark);plnQuad(m,a,b,c,d);}
-  };
+  const m=plnMesh(1<<12),top=dig3CageBody(m,[0,0,0]);
+  return {geo:plnGeo(plnMeshDone(m)),inst:plnInst(new Float32Array(16),0,1),a:new Float32Array(16),gen:PLN_GPU.gen,top};
+}
+/* клеть в меш m, пол клети в точке p (копёр поверхности ставит её у устья — 23c); отдаёт высоту серьги */
+function dig3CageBody(m,p){
+  const K=DIG3_DR,M=PLN_MAT,w=.9,h=2.45,z0=.3,z1=1.95;
+  const box=(x0,x1,y0,y1,za,zb,col)=>dig3Box(m,x0+p[0],x1+p[0],y0+p[1],y1+p[1],za+p[2],zb+p[2],col);
   /* пол и крыша */
   box(-w,w,-.1,0,z0,z1,K.steel);box(-w,w,h,h+.08,z0,z1,K.steel);
   /* стойки по углам */
@@ -83,8 +84,9 @@ function dig3CageMesh(){
   for(let x=-w+.15;x<w-.1;x+=.16)box(x,x+.02,0,h,z1-.04,z1-.02,K.steel);
   for(const x of [-w,w-.03])for(let z=z0+.15;z<z1-.1;z+=.16)box(x,x+.03,1.12,h,z,z+.02,K.steel);
   /* подвеска: дуга над крышей и серьга каната */
-  plnTube(m,{path:[[-w*.7,h+.08,(z0+z1)/2],[0,h+.55,(z0+z1)/2],[w*.7,h+.08,(z0+z1)/2]],rad:.04,sides:4,col:K.steel,mat:M.bark});
-  return {geo:plnGeo(plnMeshDone(m)),inst:plnInst(new Float32Array(16),0,1),a:new Float32Array(16),gen:PLN_GPU.gen,top:h+.55};
+  const zc=(z0+z1)/2+p[2];
+  plnTube(m,{path:[[p[0]-w*.7,p[1]+h+.08,zc],[p[0],p[1]+h+.55,zc],[p[0]+w*.7,p[1]+h+.08,zc]],rad:.04,sides:4,col:K.steel,mat:M.bark});
+  return h+.55;
 }
 /* канат: от серьги клети до шкива копра — два кольца по четыре вершины, верх и низ пишутся каждый кадр */
 function dig3RopeMesh(){

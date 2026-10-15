@@ -44,27 +44,52 @@ function dig3Dir(D){
 /* ── копёр над устьем: две А-ноги из бруса, верхняя балка, шкив, оранжевый пояс, лампа ──
    Свой, простой: тело планеты (plnThingMineMesh) просит землю мира, а у шахты своя линия */
 const DIG3_HF={h:5.4,foot:1.75,z0:.35,z1:2.45,wood:[.105,.07,.04],steel:[.07,.075,.08],band:[.62,.2,.03]};
+/* брус: шесть граней, нормали наружу */
+function dig3Box(m,x0,x1,y0,y1,z0,z1,col,mat){
+  const P=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]],M=mat==null?PLN_MAT.bark:mat;
+  const F6=[[0,3,2,1,[0,0,-1]],[4,5,6,7,[0,0,1]],[0,4,7,3,[-1,0,0]],[1,2,6,5,[1,0,0]],[3,7,6,2,[0,1,0]],[0,1,5,4,[0,-1,0]]];
+  for(const f of F6){const n=f[4],a=plnVert(m,P[f[0]],n,col,M),b=plnVert(m,P[f[1]],n,col,M),c=plnVert(m,P[f[2]],n,col,M),d=plnVert(m,P[f[3]],n,col,M);plnQuad(m,a,b,c,d);}
+}
 function dig3HeadMesh(F){
-  const m=plnMesh(1<<11),K=DIG3_HF,x0=DIG3_CM*.5,top=dig3Ground(F,x0)+K.h,M=PLN_MAT;
+  const m=plnMesh(1<<11),q=dig3HeadBody(m,F,[0,0],false);
+  return {geo:plnGeo(plnMeshDone(m)),lamp:q.lamp,rope:q.rope,gen:PLN_GPU.gen,f:F.gen};
+}
+/* копёр в меш m со сдвигом o = [x, y] (метры мира над рудником — 23cd); park — клеть стоит у устья
+   и канат к ней (копёр поверхности, вещь планеты) */
+function dig3HeadBody(m,F,o,park){
+  const K=DIG3_HF,CM=DIG3_CM,x0=CM*.5,g0=dig3Ground(F,x0),top=g0+K.h,M=PLN_MAT,P=(x,y,z)=>[x+o[0],y+o[1],z];
+  const tube=(a,b,rad,col,mat)=>plnTube(m,{path:[P(a[0],a[1],a[2]),P(b[0],b[1],b[2])],rad,sides:4,col,mat});
   for(const z of [K.z0,K.z1]){
     for(const s of [-1,1]){
       const fx=x0+s*K.foot,fy=dig3Ground(F,fx)-.25;
-      plnTube(m,{path:[[fx,fy,z],[x0+s*.18,top,z]],rad:.11,sides:4,col:K.wood,mat:M.bark});
+      tube([fx,fy,z],[x0+s*.18,top,z],.11,K.wood,M.bark);
     }
     /* пояс: ригель на трети высоты — единственное яркое пятно копра */
-    const by=lerp(dig3Ground(F,x0),top,.38),bw=K.foot*.62+.1;
-    plnTube(m,{path:[[x0-bw,by,z],[x0+bw,by,z]],rad:.075,sides:4,col:K.band,mat:M.rock});
-    plnTube(m,{path:[[x0-K.foot*.7,lerp(dig3Ground(F,x0),top,.1),z],[x0+K.foot*.35,lerp(dig3Ground(F,x0),top,.7),z]],rad:.05,sides:4,col:K.wood,mat:M.bark});
+    const by=lerp(g0,top,.38),bw=K.foot*.62+.1;
+    tube([x0-bw,by,z],[x0+bw,by,z],.075,K.band,M.rock);
+    tube([x0-K.foot*.7,lerp(g0,top,.1),z],[x0+K.foot*.35,lerp(g0,top,.7),z],.05,K.wood,M.bark);
   }
-  plnTube(m,{path:[[x0,top+.05,K.z0-.2],[x0,top+.05,K.z1+.2]],rad:.13,sides:4,col:K.steel,mat:M.rock});
+  tube([x0,top+.05,K.z0-.2],[x0,top+.05,K.z1+.2],.13,K.steel,M.rock);
   /* шкив: обод в плоскости x-y на середине глубины и ось */
   const zc=(K.z0+K.z1)/2,R=.62,ring=[];
-  for(let k=0;k<=18;k++){const a=k/18*TAU;ring.push([x0+Math.cos(a)*R,top+.62+Math.sin(a)*R,zc]);}
+  for(let k=0;k<=18;k++){const a=k/18*TAU;ring.push(P(x0+Math.cos(a)*R,top+.62+Math.sin(a)*R,zc));}
   plnTube(m,{path:ring,rad:.06,sides:5,col:K.steel,mat:M.rock});
   for(let k=0;k<3;k++){const a=k/3*Math.PI;
-    plnTube(m,{path:[[x0-Math.cos(a)*R,top+.62-Math.sin(a)*R,zc],[x0+Math.cos(a)*R,top+.62+Math.sin(a)*R,zc]],rad:.025,sides:4,col:K.steel,mat:M.rock});}
+    tube([x0-Math.cos(a)*R,top+.62-Math.sin(a)*R,zc],[x0+Math.cos(a)*R,top+.62+Math.sin(a)*R,zc],.025,K.steel,M.rock);}
+  /* оголовок: брус вокруг устья по земле — край земли планеты у ствола под ним */
+  const zd=DIG3_ROOM.zd,bw=.42,bd=(xa,xb,za,zb)=>{
+    const y=Math.max(dig3Ground(F,xa),dig3Ground(F,xb),dig3Ground(F,(xa+xb)/2))+.1;
+    dig3Box(m,xa+o[0],xb+o[0],y-.32+o[1],y+o[1],za,zb,K.wood);
+  };
+  bd(-bw,CM+bw,0,.3);bd(-bw,CM+bw,zd,zd+bw);bd(-bw,0,.3,zd);bd(CM,CM+bw,.3,zd);
+  const rope=[x0+R*.98,top+.62,zc];
+  if(park){
+    /* клеть у устья и канат к ней со шкива */
+    dig3CageBody(m,P(x0,g0,0));
+    tube([x0,g0+2.45+.55,zc],rope,.022,[.03,.03,.032],M.bark);
+  }
   /* канат идёт со шкива к клети — его тянет 23cb, здесь только точка схода с обода */
-  return {geo:plnGeo(plnMeshDone(m)),lamp:[x0,top+.1,K.z0-.25],rope:[x0+R*.98,top+.62,zc],gen:PLN_GPU.gen,f:F.gen};
+  return {lamp:P(x0,top+.1,K.z0-.25),rope};
 }
 
 function dig3Frame(){
@@ -86,9 +111,11 @@ function dig3Frame(){
   if(first){M.cx=wx;M.cy=wy;}
   else{const e=1-Math.exp(-dt/Ln.tau);M.cx+=(wx-M.cx)*e;M.cy+=(wy-M.cy)*e;}
   if(Math.abs(wy-M.cy)>L0.Hf*.6||Math.abs(wx-M.cx)>L0.w*.6){M.cx=wx;M.cy=wy;}   /* маяк, стенд: скачок — без догона */
-  const cx=M.cx,Ls=dig3Lens(asp,cx,M.cy),K=H/(Ls.Hf*DIG3_PPM);
-  G.viewK=K;G.viewX=cx*DIG3_PPM-W/(2*K);G.viewY=-Ls.t*DIG3_PPM;
+  const cx=M.cx,Ls=dig3TopLens(dig3Lens(asp,cx,M.cy)),K=H/(Ls.Hf*DIG3_PPM);   /* на входе объектив съезжает с поверхности (23cd) */
+  G.viewK=K;G.viewX=(Ls.l+Ls.r)*.5*DIG3_PPM-W/(2*K);G.viewY=-Ls.t*DIG3_PPM;
   M.lens=Ls;
+  /* планета над рудником: её кадр считается сейчас — час и солнце ниже берутся из него */
+  const Tp=dig3TopPre(D,Fd,Ls);
   /* линия земли у ствола — высота поверхности для неба и дня */
   const sY=dig3Ground(Fd,CM*.5),land=Ls.t>sY-4;
   /* куски: окно на глубине, до которой видно (у поверхности — до гряды) */
@@ -142,7 +169,7 @@ function dig3Frame(){
   /* копёр */
   if(land){
     if(!M.hf||M.hf.gen!==PLN_GPU.gen||M.hf.D!==D){if(M.hf)plnGeoFree(M.hf.geo);M.hf=dig3HeadMesh(Fd);M.hf.D=D;}
-    F.draw.push({geo:M.hf.geo,lamp:true,sun:true,refl:false});
+    if(!DIG3_TOP.live)F.draw.push({geo:M.hf.geo,lamp:true,sun:true,refl:false});   /* над рудником копёр — тело планеты */
     const q=M.hf.lamp,nk=1-plnSmooth(.1,.5,1-night);
     Lt([q[0],q[1]-.6,q[2]+.4],9,[.5*(.3+nk),.33*(.3+nk),.15*(.3+nk)]);
     F.glows.push({p:q,c:[1,.74,.42],k:.35+.5*nk,s:.5});
@@ -166,7 +193,7 @@ function dig3Frame(){
     sun,sunVP:day.m,sunRange:day.range,dayK,mouth,lean,surfY:sY,skyLo,skyHi,expo:1,cutZ:0,bed:Fd.bed});
   M.stat.chunks=list.length;M.stat.left=M.ch?M.ch.left:0;M.stat.tris=Math.round(tris);M.stat.lights=F.lights.length;
   M.stat.cpu=+(wallMs()-t0).toFixed(2);
-  return cave3GpuFrame(F);
+  return dig3TopPost(F,Tp);
 }
 
 /* ── поверх кадра: то, что ещё не перерисовано (звери-грызуны и полоса проходки) ──
