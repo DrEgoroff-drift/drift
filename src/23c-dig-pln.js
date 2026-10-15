@@ -177,6 +177,7 @@ function dig3Frame(){
   F.glows.push({p:lp,c:[1,.74,.42],k:.9,s:.42});
   /* убранство: рельсы, крепь, лампы штреков, лестницы, ствол; клеть на канате (23cb) */
   let tris=dig3DressFrame(F,Fd,D,{cy:Mm.cy,gy},cx-Ls.w*.6,cx+Ls.w*.6,Ls.b-2,Ls.t+2,Lt);
+  tris+=dig3BeastFrame(F,Fd,D,gy);   /* кусачие: звери планеты (23ce) */
   for(const c of list){
     const g=c.geo;
     if(c.nRock>0)F.draw.push({geo:g,first:0,n:c.nRock,lamp:true,sun:true,refl:true});
@@ -196,13 +197,13 @@ function dig3Frame(){
   return dig3TopPost(F,Tp);
 }
 
-/* ── поверх кадра: то, что ещё не перерисовано (звери-грызуны и полоса проходки) ──
+/* ── поверх кадра: то, что ещё не перерисовано (кольцо импульса и полоса проходки) ──
    Та же кисть, что у старого кадра, в той же мерке: окно на линии человека — окно кадра */
 function dig3Over(){
   const D=G.dig;
   if(!D||!DIG3.lens)return;
   const camx=G.viewX,camy=G.viewY;
-  drawDigFauna(camx,camy);
+  if(DIG3_BEAST.on)dig3ZapRing(camx,camy);else drawDigFauna(camx,camy);
   const t=D.target,dir=dig3Dir(D);
   if(!t||!dir)return;
   const col=D.col+dir[0],row=D.row+dir[1],x=col*DIG_CELL-camx,y=row*DIG_CELL-camy,k=(DIG_CELL-6)*clamp(t.prog/t.hard,0,1);

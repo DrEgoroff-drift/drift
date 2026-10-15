@@ -166,6 +166,12 @@ function mineUpdate(dt){
       }
       return;
     }
+    /* у устья клеть стоит на земле планеты: шаг в сторону — из клети на поверхность */
+    if(lr&&r===0&&here<=0){
+      exitDig();
+      if(G.mode==="surface"&&G.surf){G.surf.x+=lr*DIG_CELL*.8;G.surf.face=lr;}
+      return;
+    }
     if(lr&&r>0){
       if(mineDug(D,lr,r)){M.mode="walk";D.face=lr;M.x=DIG_CELL/2+lr*4;return;}
       if(mineIsLevel(r)){D.face=lr;mineBite(D,lr,r,dt,st,head,false);return;}
@@ -177,7 +183,7 @@ function mineUpdate(dt){
         :mineKeys("{brake:S} — УГЛУБИТЬ СТВОЛ · ДО ГОРИЗОНТА "+mineLevelNo(need)+": "+(need-sump)*3+" м","ВНИЗ — УГЛУБИТЬ СТВОЛ"))
       :mineKeys("{brake:S} — КЛЕТЬ ВНИЗ"+(nl?" (ГОРИЗОНТ "+mineLevelNo(nl)+")":""),"ВНИЗ — КЛЕТЬ"))+
       (r>0&&mineIsLevel(r)?mineKeys(" · {left:A} {right:D} — НА ГОРИЗОНТ"," · ◀ ▶ — НА ГОРИЗОНТ"):"")+
-      (r===0?mineKeys(" · {thrust:W} — НАВЕРХ"," · ВВЕРХ — НАВЕРХ"):"");
+      (r===0?mineKeys(" · {left:A} {right:D} {thrust:W} — ИЗ КЛЕТИ"," · ◀ ▶ ВВЕРХ — ИЗ КЛЕТИ"):"");
     return;
   }
 
