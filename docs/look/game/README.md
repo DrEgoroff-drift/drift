@@ -55,6 +55,8 @@ python docs/look/game/hours.py h1 3300
 python docs/look/game/weather.py 3300 .125 rain .8
 python docs/look/game/mark.py temple - .4
 python docs/look/game/gshot.py js=g_mark_temple_any_4.js eval=eval-marks.js out=m_temple.png tail=0
+python docs/look/game/mark.py elevator - .30 4 1 st=1 n={"last":"ride","stl":0} t=19
+python docs/look/game/cost.py terran pc,s23 js=g_mark_elevator_any_st1_t19.js tag=lift
 python docs/look/game/world.py toxic 1 lake .125
 python docs/look/game/gshot.py js=g_w_toxic_1_lake.js out=w_toxic.png tail=1500
 python docs/look/game/sheet.py w 3 960
