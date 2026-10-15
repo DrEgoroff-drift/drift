@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 595 · top-level symbols: 8444
+Files: 597 · top-level symbols: 8487
 
 ## SYMBOLS
 
@@ -1615,9 +1615,10 @@ PLN_LPAD_DASH                src/21pza-pln-descent.js:116
 PLN_LPAD_SPOTS               src/21pza-pln-descent.js:107
 PLN_M                        src/21p-pln.js:14
 PLN_MAN                      src/21pha-pln-man.js:23
-PLN_MAN_BONES                src/21pha-pln-man.js:32-56
-PLN_MAN_FLAME                src/21pha-pln-man.js:46
-PLN_MAN_POSE                 src/21pha-pln-man.js:39-56
+PLN_MAN_BONES                src/21pha-pln-man.js:32-60
+PLN_MAN_FLAME                src/21pha-pln-man.js:50
+PLN_MAN_POSE                 src/21pha-pln-man.js:39-60
+PLN_MAN_SIT                  src/21pha-pln-man.js:49
 PLN_MARK                     src/21pie-pln-marks.js:20
 PLN_MARK_COL                 src/21pie-pln-marks.js:33
 PLN_MAT                      src/21pa-pln-mesh.js:9
@@ -2004,6 +2005,18 @@ SD_KIND                      src/12tb-settle-draw.js:33-37
 SD_MAN                       src/12tb-settle-draw.js:31
 SD_SHSINK                    src/12tb-settle-draw.js:241
 SEAT                         src/27j-console.js:40
+SECT                         src/21ae-base-sect.js:16
+SECT_BLOOM                   src/21ae-base-sect.js:377
+SECT_COLD                    src/21ae-base-sect.js:25
+SECT_LIVE                    src/21ae-base-sect.js:27
+SECT_M                       src/21ae-base-sect.js:21
+SECT_MAT_WALL                src/21ae-base-sect.js:29
+SECT_OLD_DRAW                src/21ae-base-sect.js:378
+SECT_OLD_EXIT                src/21ae-base-sect.js:397
+SECT_OLD_HSURF               src/21ae-base-sect.js:418
+SECT_OLD_HUD                 src/21ae-base-sect.js:431
+SECT_SIT                     src/21ae-base-sect.js:23
+SECT_W                       src/21ae-base-sect.js:408
 SEC_CAP                      src/26-ui-station.js:411
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
@@ -2574,6 +2587,9 @@ baseDepth                    src/21a1a-base-heat.js:41-48
 baseDial                     src/21a8-base-world.js:33-58
 baseDialOf                   src/21a8-base-world.js:59
 baseDirStep                  src/21a5-base-dir.js:235-243
+baseDrawAdj                  src/21ac-base-draw.js:593-635
+baseDrawBoard                src/21ac-base-draw.js:636-674
+baseDrawNote                 src/21ac-base-draw.js:675-700
 baseDrinkMul                 src/21a9-base-laws.js:125-131
 baseDusty                    src/21a5-base-dir.js:222-225
 baseEarn                     src/21a1-base-life.js:195-211
@@ -3744,7 +3760,7 @@ drawAstronaut                src/20-life.js:4-140
 drawBarge                    src/12l-barge.js:581-610
 drawBarges                   src/12l-barge.js:611-651
 drawBargesMap                src/12l-barge.js:653-672
-drawBase                     src/21ac-base-draw.js:372-689
+drawBase                     src/21ac-base-draw.js:372-590
 drawBaseBuilding             src/21c-built.js:142-202
 drawBazaar                   src/17n-bazaar.js:118-172
 drawBeast                    src/20f-fauna.js:240-350
@@ -6565,14 +6581,14 @@ plnM4mirrorY                 src/21p-pln.js:104
 plnM4move                    src/21p-pln.js:138-140
 plnM4mul                     src/21p-pln.js:86-91
 plnM4ortho                   src/21p-pln.js:92-97
-plnMan                       src/21pha-pln-man.js:209-222
-plnManBuild                  src/21pha-pln-man.js:74-158
-plnManCss                    src/21pha-pln-man.js:49-56
-plnManFlame                  src/21pha-pln-man.js:192-206
-plnManFrame                  src/21pha-pln-man.js:229-259
-plnManPalette                src/21pha-pln-man.js:58-70
-plnManPose                   src/21pha-pln-man.js:161-189
-plnManState                  src/21pha-pln-man.js:223-226
+plnMan                       src/21pha-pln-man.js:214-227
+plnManBuild                  src/21pha-pln-man.js:78-162
+plnManCss                    src/21pha-pln-man.js:53-60
+plnManFlame                  src/21pha-pln-man.js:197-211
+plnManFrame                  src/21pha-pln-man.js:234-264
+plnManPalette                src/21pha-pln-man.js:62-74
+plnManPose                   src/21pha-pln-man.js:165-194
+plnManState                  src/21pha-pln-man.js:228-231
 plnMarkH                     src/21pie-pln-marks.js:40
 plnMarkMesh                  src/21pie-pln-marks.js:58-103
 plnMarkMove                  src/21piec-pln-marks-move.js:10-289
@@ -7572,6 +7588,33 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:412-431
+sectAvr                      src/21ae-base-sect.js:364-374
+sectBaseFix                  tests/91qf-sect.js:6-16
+sectBox                      src/21ae-base-sect.js:72-81
+sectBuild                    src/21ae-base-sect.js:102-196
+sectCageMesh                 src/21ae-base-sect.js:198-207
+sectCursor                   src/21ae-base-sect.js:347-363
+sectFarWin                   src/21ae-base-sect.js:50-54
+sectFloor                    src/21ae-base-sect.js:40
+sectFrame                    src/21ae-base-sect.js:241-316
+sectGeo                      src/21ae-base-sect.js:208-214
+sectLens                     src/21ae-base-sect.js:44-48
+sectLensAt                   tests/91qf-sect.js:21-30
+sectLensStep                 src/21ae-base-sect.js:218-240
+sectNearWin                  src/21ae-base-sect.js:56-61
+sectOver                     src/21ae-base-sect.js:325-345
+sectPal                      src/21ae-base-sect.js:30-37
+sectPj                       src/21ae-base-sect.js:320-324
+sectPlate                    src/21ae-base-sect.js:410-417
+sectQuad                     src/21ae-base-sect.js:66-70
+sectRoomX                    src/21ae-base-sect.js:41
+sectShare                    src/21ae-base-sect.js:63
+sectSty                      src/21ae-base-sect.js:98-101
+sectVoids                    src/21ae-base-sect.js:83-97
+sectWith                     tests/91qf-sect.js:17-20
+sectWordsOn                  src/21ae-base-sect.js:409
+sectX                        src/21ae-base-sect.js:38
+sectY                        src/21ae-base-sect.js:39
 sellCargo                    src/12-economy.js:181-207
 sellDroneYield               src/12-economy.js:208-216
 sellQuote                    src/12ab-hold.js:109-124
@@ -9527,7 +9570,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ab1-base-ground.js · 28 KB
   · база: небо, гора и порода (выделено из 21ac, M413):1
 
-## src/21ac-base-draw.js · 45 KB
+## src/21ac-base-draw.js · 46 KB
   · база: рисование разреза:1
 
 ## src/21ac1-base-banya.js · 15 KB
@@ -9544,6 +9587,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/21ad-base-gpu.js · 20 KB
   · база на видеокарте (G11):1
+
+## src/21ae-base-sect.js · 29 KB
+  · база в разрезе на движке (M632a):1
 
 ## src/21b-surface-deco.js · 34 KB
   · крупная форма на поверхности:1
@@ -9665,7 +9711,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ph-pln-cast.js · 3 KB
   · планета: состав в кадре — круг (M610), человек (M620), корабль (M621):1
 
-## src/21pha-pln-man.js · 17 KB
+## src/21pha-pln-man.js · 18 KB
   · планета: человек — риг (M620):1
 
 ## src/21phb-pln-ship.js · 22 KB
@@ -10210,6 +10256,8 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qe-rack.js · 4 KB
   · стойка уступает телу (M821):1
+
+## tests/91qf-sect.js · 6 KB
 
 ## tests/91qg-cave.js · 18 KB
   · пещера на движке (M630a):1

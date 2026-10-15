@@ -526,6 +526,8 @@ fn pointSpec(wpos: vec3f, N: vec3f, V: vec3f, wet: f32) -> vec3f {
   if (mat == 4 || mat == 8) { wet = 0.35; emis = glow; }
   if (mat == 7) { ao = mix(0.5, 1.0, smoothstep(0.0, 0.7, ex)); emis = glow; }
   if (mat == 2) { emis = glow; }
+  /* стена отсека базы (21ae): ровный запечённый свет подвесов — живые огни только добавляют */
+  if (mat == 18) { emis = glow; }
 
   /* зверю тьма пещеры светит снизу (отсвет пола), не сверху: спина темна, брюхо светлее */
   var ambY = mix(0.6, 1.25, N.y * 0.5 + 0.5);
