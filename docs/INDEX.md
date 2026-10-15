@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 594 · top-level symbols: 8509
+Files: 600 · top-level symbols: 8518
 
 ## SYMBOLS
 
@@ -550,12 +550,12 @@ DOOM_WARN                    src/12v-doom.js:22
 DRILL_EAT                    src/13a-guns.js:37
 DRONES                       src/04-mods.js:63-69
 DRONE_BREAK_P                src/12e-drone-flight.js:21
-DRONE_FAR_MUL                src/12-economy.js:300
+DRONE_FAR_MUL                src/12-economy.js:302
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
 DRONE_NAMES                  src/12e-drone-flight.js:43
 DRONE_QUIRKS                 src/12e-drone-flight.js:44-51
-DRONE_SEEN_DAYS              src/12-economy.js:291
+DRONE_SEEN_DAYS              src/12-economy.js:293
 DRONE_SEG                    src/16ga-gpu-trail.js:147
 DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
@@ -615,7 +615,7 @@ FAR_UNITS                    src/06d-far.js:23
 FAR_VOICE                    src/12-economy.js:47-59
 FAR_W                        src/06f-far-props.js:11
 FAR_Z                        src/06d-far.js:21
-FAUCET_FLOOR                 src/12ab-hold.js:126
+FAUCET_FLOOR                 src/12ab-hold.js:154
 FAUNA_RES                    src/02-world.js:137
 FG_BK                        src/21e3-surface-stand-gpu.js:115
 FG_MAN                       src/21b-surface-deco.js:268
@@ -1364,10 +1364,13 @@ MGR_XP                       src/12c-mgr-core.js:138
 MINE                         src/23cc-mine-play.js:17
 MINERAL                      src/18a-material.js:32
 MINE_HALF                    src/23cc-mine-play.js:20
+MINE_LAY                     src/23cc-mine-play.js:291
 MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
-MINE_OLD_POI                 src/23cc-mine-play.js:285
-MINE_OLD_UPDATE              src/23cc-mine-play.js:293
+MINE_OLD_ENTER               src/23cc-mine-play.js:318
+MINE_OLD_POI                 src/23cc-mine-play.js:338
+MINE_OLD_SURF                src/23cc-mine-play.js:328
+MINE_OLD_UPDATE              src/23cc-mine-play.js:346
 MINE_PAD                     src/23cc-mine-play.js:274
 MINE_R                       src/13a-guns.js:32
 MINE_V                       src/23cc-mine-play.js:22
@@ -2346,7 +2349,7 @@ WATCH_OLD_BOARD              src/28j-watch.js:270
 WATCH_OLD_CREW               src/28j-watch.js:208
 WATCH_OLD_DRONES             src/28j-watch.js:206
 WATCH_OLD_INSON              src/28j-watch.js:216
-WATCH_OLD_MENU               src/28j-watch.js:331
+WATCH_OLD_MENU               src/28j-watch.js:332
 WATCH_OLD_MGR                src/28j-watch.js:210
 WATCH_OLD_NEED               src/28j-watch.js:222
 WATCH_OLD_OPEN               src/28j-watch.js:219
@@ -2456,15 +2459,17 @@ angDiff                      src/01-core.js:180
 angWrap                      src/01-core.js:179
 apVel                        src/16-flight.js:126
 appetiteAte                  src/12ab-hold.js:46-50
-appetiteBlock                src/12ab-hold.js:140-151
-appetiteBought               src/12ab-hold.js:72-76
-appetiteEat                  src/12ab-hold.js:83-90
-appetiteEtherLine            src/12ab-hold.js:153-167
-appetiteGotHere              src/12ab-hold.js:59-63
-appetiteLeft                 src/12ab-hold.js:77-81
-appetiteLine                 src/12ab-hold.js:132-138
+appetiteBlock                src/12ab-hold.js:168-179
+appetiteBought               src/12ab-hold.js:93-100
+appetiteEat                  src/12ab-hold.js:108-115
+appetiteEtherLine            src/12ab-hold.js:181-195
+appetiteGotHere              src/12ab-hold.js:69-71
+appetiteHereRaw              src/12ab-hold.js:64-68
+appetiteHereUse              src/12ab-hold.js:74-84
+appetiteLeft                 src/12ab-hold.js:102-106
+appetiteLine                 src/12ab-hold.js:160-166
 appetiteOf                   src/12ab-hold.js:38-44
-appetitePrice                src/12ab-hold.js:92
+appetitePrice                src/12ab-hold.js:117
 applyCrewEvent               src/12b-crew-events.js:227-236
 applyPadMode                 src/15-input.js:72-75
 applyPadSize                 src/15-input.js:8
@@ -2890,7 +2895,7 @@ bossPressMul                 src/12av-boss.js:143-148
 bossShieldDown               src/12av-boss.js:100-105
 bossShip                     src/12av-boss.js:109-116
 bossWindow                   src/12av-boss.js:95-98
-boughtHereSplit              src/12ab-hold.js:68-71
+boughtHereSplit              src/12ab-hold.js:89-92
 boxAll                       src/12ue-boxes.js:39
 boxCount                     src/12ue-boxes.js:41
 boxFind                      src/12ue-boxes.js:43-58
@@ -3322,7 +3327,7 @@ clockWhy                     src/11d-clocks.js:94-100
 closeBarge                   src/12l-barge.js:687-694
 closeDeal                    src/27n-ui-deal.js:204
 closeStation                 src/26-ui-station.js:229-254
-cloudBoot                    src/14a-cloud.js:179-190
+cloudBoot                    src/14a-cloud.js:179-194
 cloudBusy                    src/14a-cloud.js:86
 cloudCall                    src/14a-cloud.js:79-83
 cloudForget                  src/14a-cloud.js:84
@@ -3594,7 +3599,7 @@ depRoomBlockers              src/21pih-dep-room.js:11-17
 depRoomSpans                 src/21pih-dep-room.js:20-24
 depValue                     src/21pzc-dep-value.js:28-39
 depValueF                    src/21pzc-dep-value.js:18-21
-deployDrone                  src/12-economy.js:330-347
+deployDrone                  src/12-economy.js:332-349
 deskItemNew                  src/27ia-desk-top.js:337-341
 deskItemOf                   src/27ia-desk-top.js:331-335
 detBgShift                   tests/90b-detect.js:150-164
@@ -3976,32 +3981,32 @@ drawWrecksSystem             src/12l-barge.js:378-405
 drawYardMark                 src/03e-hull-draw.js:73-116
 droneBreakP                  src/12e-drone-flight.js:171-175
 droneBreaks                  src/12e-drone-flight.js:176
-droneCapacity                src/12-economy.js:325-328
+droneCapacity                src/12-economy.js:327-330
 droneFar                     src/12e-drone-flight.js:102
 droneFixMs                   src/12e-drone-flight.js:177-186
 droneGuestPos                src/12e-drone-flight.js:239-251
 droneHome                    src/12e-drone-flight.js:103-115
-droneMarket                  src/12-economy.js:262-286
-droneMayMine                 src/12-economy.js:301
+droneMarket                  src/12-economy.js:264-288
+droneMayMine                 src/12-economy.js:303
 droneName                    src/12e-drone-flight.js:54
 droneNextId                  src/12e-drone-flight.js:32-37
 droneNick                    src/12e-drone-flight.js:53
 droneNormalize               src/12e-drone-flight.js:70-86
-dronePaybackH                src/12-economy.js:239
+dronePaybackH                src/12-economy.js:241
 dronePhase                   src/12e-drone-flight.js:130-139
 dronePoint                   src/12e-drone-flight.js:94-101
 dronePos                     src/12e-drone-flight.js:142-158
-dronePrice                   src/12-economy.js:234-237
+dronePrice                   src/12-economy.js:236-239
 droneQuirk                   src/12e-drone-flight.js:52
-droneRecall                  src/12-economy.js:220-228
+droneRecall                  src/12-economy.js:222-230
 droneRoutes                  src/12e-drone-flight.js:203-225
-droneSellPrice               src/12-economy.js:292-296
-droneShopHas                 src/12-economy.js:241-247
-droneShopTake                src/12-economy.js:248-252
+droneSellPrice               src/12-economy.js:294-298
+droneShopHas                 src/12-economy.js:243-249
+droneShopTake                src/12-economy.js:250-254
 droneStateRu                 src/12e-drone-flight.js:188-198
 droneSys                     src/12e-drone-flight.js:91-93
 droneTag                     src/12e-drone-flight.js:58-64
-droneTarget                  src/12-economy.js:329
+droneTarget                  src/12-economy.js:331
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
 dsTick                       src/12p1-doublespeak.js:33-42
@@ -4148,7 +4153,7 @@ farmOf                       src/21ac2-base-farm.js:54
 farmStep                     src/21ac2-base-farm.js:95-117
 farmTalk                     src/21ac2-base-farm.js:77-80
 farmWanted                   src/21ac2-base-farm.js:42-45
-faucetPrice                  src/12ab-hold.js:127-130
+faucetPrice                  src/12ab-hold.js:155-158
 faunaOf                      src/20e-species.js:268-284
 fbm1                         src/01-core.js:117
 fbm2                         src/01-core.js:124
@@ -5553,6 +5558,7 @@ lifePlantGpu                 src/20fa-life-gpu.js:408-435
 lifeSprite                   src/20fa-life-gpu.js:146-183
 lifeTint                     src/20fa-life-gpu.js:284-291
 lightShafts                  src/19c-light.js:213-246
+lightWalk                    tests/91ql-light.js:8-21
 lightsAll                    src/11g-lights.js:24
 lightsArrive                 src/11g-lights.js:53-56
 lightsCaveFind               src/11g-lights.js:159-166
@@ -5834,6 +5840,9 @@ mineIsLevel                  src/23cc-mine-play.js:24
 mineKey                      src/23a-dig-draw.js:553
 mineKeys                     src/23cc-mine-play.js:86-90
 mineLay                      src/13a-guns.js:267-275
+mineLayAt                    src/23cc-mine-play.js:311-317
+mineLayFits                  src/23cc-mine-play.js:292-303
+mineLaySpot                  src/23cc-mine-play.js:305-310
 mineLevelNo                  src/23cc-mine-play.js:25
 mineLoad                     src/23a-dig-draw.js:568-577
 mineMul                      src/21e1-surface-world.js:596-614
@@ -5956,7 +5965,7 @@ natSwarmTick                 src/12az-fx-nat.js:50-65
 navAction                    src/15-input.js:286-303
 near                         tests/90-harness.js:195
 nearestPOI                   src/20a-poi.js:243-248
-nearestStation               src/12-economy.js:302-317
+nearestStation               src/12-economy.js:304-319
 nebula                       src/16-flight.js:82-96
 needAll                      src/12aa-need.js:25
 needBlock                    src/12aa-need.js:144-172
@@ -6009,7 +6018,7 @@ noise1                       src/01-core.js:116
 noise2                       src/01-core.js:119-123
 noise3                       src/24ba-belt-gpu.js:23-31
 noiseBuf                     src/09-audio.js:78
-normsOf                      src/12ab-hold.js:97-105
+normsOf                      src/12ab-hold.js:122-130
 note                         tests/90-harness.js:102
 noteAll                      src/12ap-notebook.js:35
 noteAsk                      src/12ap-notebook.js:209-229
@@ -7637,9 +7646,9 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:412-431
-sellCargo                    src/12-economy.js:181-207
-sellDroneYield               src/12-economy.js:208-216
-sellQuote                    src/12ab-hold.js:109-124
+sellCargo                    src/12-economy.js:181-209
+sellDroneYield               src/12-economy.js:210-218
+sellQuote                    src/12ab-hold.js:134-152
 setBig                       src/27z-telemetry.js:145-151
 setPair                      src/27z-telemetry.js:160-165
 setPct                       src/27z-telemetry.js:135-141
@@ -8089,7 +8098,7 @@ theOneId                     src/21b3-base-hunt.js:35-45
 thingAdd                     src/27i-ui-table.js:72-79
 thingNd                      src/27i-ui-table.js:368
 thingsAll                    src/27i-ui-table.js:71
-tickDrones                   src/12-economy.js:356-450
+tickDrones                   src/12-economy.js:358-452
 tickLaunchHold               src/21-mode-surface.js:660-673
 tierAt                       src/04-mods.js:62
 tierFromDanger               src/05-parts.js:101-108
@@ -8405,8 +8414,8 @@ watchHanded                  src/28j-watch.js:82
 watchHas                     src/28j-watch.js:68
 watchIn                      src/28j-watch.js:58
 watchJudge                   src/28j-watch.js:98-126
-watchMenuSync                src/28j-watch.js:298-308
-watchMenuTap                 src/28j-watch.js:309-320
+watchMenuSync                src/28j-watch.js:299-309
+watchMenuTap                 src/28j-watch.js:310-321
 watchName                    src/28j-watch.js:49
 watchNeedAt                  src/28j-watch.js:70-76
 watchNpc                     src/28j-watch.js:81
@@ -8858,7 +8867,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/12-economy.js · 32 KB
   · живой рынок:1
-  · дроны:218
+  · дроны:220
 
 ## src/12a-crew.js · 46 KB
   · наёмники: флот, которым не управляешь напрямую:1
@@ -8871,7 +8880,7 @@ zoomTo                       src/15-input.js:358
 ## src/12aa-need.js · 21 KB
   · нужда станции и наряд:1
 
-## src/12ab-hold.js · 11 KB
+## src/12ab-hold.js · 14 KB
   · холдинг · часы слоя и «БЕРЁТ»:1
 
 ## src/12ac-bld.js · 18 KB
@@ -9874,7 +9883,7 @@ zoomTo                       src/15-input.js:358
 ## src/23cb-dig-pln-dress.js · 9 KB
   · рудник на движке: убранство выработки (M631):1
 
-## src/23cc-mine-play.js · 18 KB
+## src/23cc-mine-play.js · 21 KB
   · рудник: ствол, клеть, горизонты, забой (M631, docs/DESIGN-mine.md):1
 
 ## src/23cd-dig-pln-top.js · 22 KB
@@ -10277,6 +10286,21 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91qj-build.js · 3 KB
   · стройка земли по рядам (M630f):1
+
+## tests/91qj-pace.js · 2 KB
+  · темп мира: фон не носится (Зрение 2.0, закон «темп»):1
+
+## tests/91qk-ground.js · 5 KB
+  · тела на земле (Зрение 2.0, закон «опора»):1
+
+## tests/91ql-light.js · 3 KB
+  · свет без рывков (Зрение 2.0, закон «свет»):1
+
+## tests/91qn-arb.js · 3 KB
+
+## tests/91qo-savefuzz.js · 4 KB
+
+## tests/91qp-cloudchaos.js · 2 KB
 
 ## tests/91zzza-e2e.js · 7 KB
   · сквозной прогон: сцены, кнопки, факел и дым (M326):1

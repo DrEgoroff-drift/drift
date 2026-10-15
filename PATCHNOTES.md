@@ -6,6 +6,33 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.1 - no money from one counter; a refused save leaves the world alone; a new shaft where the headframe stands
+
+These come from the lab's new laws (15.10). Its suites `91qn-arb`, `91qo-savefuzz`, `91qp-cloudchaos`,
+`91qj-pace`, `91qk-ground` and `91ql-light` now run in the gate.
+
+- **Buy and sell at one counter printed money.** The lab tried every good at forty stations, three ways
+  each, and 284 of those loops ended in profit: +7 to +46 cr a round, buying ice and handing it straight
+  back. The shift's appetite norm was cut by what you bought here, but the bought goods themselves still
+  sold with the +35 % premium. Now goods bought at a counter sell back to it at the plain price, outside
+  the premium, the bunker and the blockade's double pay.
+  - The «bought here» book lasts while the goods are in the hold. A new shift no longer clears it, so
+    «buy, wait a shift, sell» is closed too.
+  - Any sale or delivery (sale, order, plan) writes it off, and a purchase at another counter trims it
+    to what the hold held.
+  - Goods brought from elsewhere get the full norm, as before (`12ab-hold`).
+- **A refused save half-loaded the world.** Four `applySave` wrappers (bill, watch, insurance, gauge) ran
+  their own part even when the save was refused, so a corrupt record left a mixed world behind. They
+  now step aside on refusal.
+- **A newer but unreadable cloud record overwrote a good local one.** This was a record without a
+  version, with a foreign version, or with a version as a string. `cloudBoot` now takes it only through
+  the same gate as `applySave`: `v` 4 or 5 and a numeric `ts`.
+- **A new shaft goes where the headframe stands.** The author: «если ноги у него одна короче другой на
+  перепаде — норм». The headframe now checks its legs, its brace and its shaft ring against the ground.
+  A new shaft is laid at the nearest spot within two steps where it fits. Where none is near, the
+  prompt says so and points to level ground, and a known mouth is levelled at landing (0.499.0). On the
+  lab's test world every one of 34 spots found its place.
+
 ## 0.499.0 - the mine is a working rudnik under the planet it is dug in
 
 - **M631, the rudnik.** The man no longer gnaws four ways and hangs in a tube. Column 0 is a shaft with a

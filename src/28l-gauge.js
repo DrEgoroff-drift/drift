@@ -280,6 +280,7 @@ snapshot=function(){
 const GAUGE_OLD_APPLY=applySave;
 applySave=function(s){
   const r=GAUGE_OLD_APPLY.apply(this,arguments);
+  if(!r)return r;   /* отказ: мир не тронут (91qo) */
   G.gauge={};G.casc=null;GAUGE_W=null;
   const g=s&&s.gauge;
   if(g&&typeof g==="object")for(const k in g){

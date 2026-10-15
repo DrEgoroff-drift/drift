@@ -123,7 +123,7 @@ function orderDeliver(){
      без надбавки и без платы за сектора (§12) */
   const S=boughtHereSplit(G.sys,O.k,O.qty);
   const pay=S.m?Math.round(O.pay*(O.qty-S.m)/O.qty+S.m*S.bid):O.pay;
-  G.cargo[O.k]-=O.qty;
+  G.cargo[O.k]-=O.qty;appetiteHereUse(G.sys,O.k,O.qty);
   earn(pay,"order");
   G.order=null;
   tell("money","Наряд закрыт: "+pay+" кр · "+O.to.name+(S.m?" · "+S.m+" куплено здесь":""),"НАРЯД ЗАКРЫТ\n+"+pay+" кр");

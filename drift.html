@@ -3302,7 +3302,7 @@ body.rackon #prompt{opacity:0}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.499.0";
+const VER="0.499.1";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -24270,12 +24270,14 @@ function sellCargo(sys,k,qty){
   if(Q.nA&&typeof appetiteEat==="function")appetiteEat(sys,k,Q.nA);
   /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
      двигает только то, чего никто не съел */
-  Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
-  Q.revenue=Math.round(Q.revenue*blockEff(sys,k));   /* блокада платит вдвое за еду, воду, топливо (M498) — не поверх нужды (§12) */
+  Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA-(Q.m|0)):0;
+  /* блокада платит вдвое за еду, воду, топливо (M498) — не поверх нужды (§12) и не за купленное здесь же */
+  Q.revenue=Math.round((Q.mRev||0)+(Q.revenue-(Q.mRev||0))*blockEff(sys,k));
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
   earn(revenue,"trade");G.cargo[k]-=qty;
+  if(typeof appetiteHereUse==="function")appetiteHereUse(sys,k,qty);   /* книга «куплено здесь» (12ab) */
   if(typeof routeEarn==="function")routeEarn(sys,k,qty,revenue,!!(N&&N.k===k));
   if(typeof needClose==="function")needClose(sys,k);   /* нужда закрыта этим привозом (M152e) */
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
@@ -25367,7 +25369,7 @@ function orderDeliver(){
      без надбавки и без платы за сектора (§12) */
   const S=boughtHereSplit(G.sys,O.k,O.qty);
   const pay=S.m?Math.round(O.pay*(O.qty-S.m)/O.qty+S.m*S.bid):O.pay;
-  G.cargo[O.k]-=O.qty;
+  G.cargo[O.k]-=O.qty;appetiteHereUse(G.sys,O.k,O.qty);
   earn(pay,"order");
   G.order=null;
   tell("money","Наряд закрыт: "+pay+" кр · "+O.to.name+(S.m?" · "+S.m+" куплено здесь":""),"НАРЯД ЗАКРЫТ\n+"+pay+" кр");
@@ -25646,11 +25648,32 @@ function appetiteAte(sys,k){
    повторялось каждую смену: тест намерил +46 кр за круг там, где по замыслу
    (M289) круг обязан быть в минус. Надбавка — плата за ПРИВОЗ, поэтому норма
    смены уменьшается ровно на то, что игрок здесь же и купил. Привезённое
-   издалека получает надбавку целиком, как и было. */
-function appetiteGotHere(sys,k){
-  const h=G.hold&&G.hold[sys.key];
+   издалека получает надбавку целиком, как и было.
+   Норма смены лишь уменьшалась на купленное — а сам купленный товар всё равно шёл с надбавкой, пока
+   норма не кончилась: перебор лаборатории (15.10, 91qn-arb) нашёл +7…+46 кр за «купил — сдал» на 284
+   кругах. Теперь купленное здесь сдаётся здесь по цене приёмки (sellQuote m), и книга живёт, пока товар
+   лежит в трюме: смена её не стирает («купил — подождал смену — сдал» было тем же краном), сдача где
+   угодно её списывает (appetiteHereUse), а покупка у другой стойки обрезает её до того, что было в трюме. */
+function appetiteHereRaw(key,k){
+  const h=G.hold&&G.hold[key];
   const a=h&&h.here&&h.here[k];
-  return (Array.isArray(a)&&a[1]===holdShift())?(a[0]|0):0;
+  return Array.isArray(a)?Math.max(0,a[0]|0):0;
+}
+function appetiteGotHere(sys,k){
+  return Math.min(appetiteHereRaw(sys.key,k),(G.cargo&&G.cargo[k])|0);
+}
+/* сдано qty товара k (у sys или по наряду): сначала списывается купленное у этой стойки, остаток —
+   с книг других стоек (товар в трюме один; в пользу игрока считается, что увезли купленное) */
+function appetiteHereUse(sys,k,qty){
+  const H=G.hold;let n=qty|0;
+  if(!H||n<=0)return;
+  const use=key=>{
+    const a=H[key]&&H[key].here&&H[key].here[k];
+    if(n<=0||!Array.isArray(a)||!(a[0]>0))return;
+    const d=Math.min(n,a[0]|0);a[0]-=d;n-=d;
+  };
+  if(sys)use(sys.key);
+  for(const key in H)if(!sys||key!==sys.key)use(key);
 }
 /* одна книга «куплено здесь в эту смену» на всех, кто платит за привоз (§12): аппетит,
    госзаказ, наряд. Купленное у этой же стойки идёт по цене приёмки, а не по надбавке —
@@ -25662,13 +25685,17 @@ function boughtHereSplit(sys,k,n){
 }
 function appetiteBought(sys,k,qty){
   if(!sys||!(qty>0))return;
+  /* до этой покупки в трюме лежало had: ни одна книга не помнит больше */
+  const H=holdAll(),had=Math.max(0,((G.cargo&&G.cargo[k])|0)-(qty|0));
+  for(const key in H){const a=H[key]&&H[key].here&&H[key].here[k];if(key!==sys.key&&Array.isArray(a)&&a[0]>had)a[0]=had;}
   const h=holdOf(sys.key);h.here=h.here||{};
-  h.here[k]=[appetiteGotHere(sys,k)+(qty|0),holdShift()];
+  h.here[k]=[Math.min(had,appetiteHereRaw(sys.key,k))+(qty|0),holdShift()];
 }
+/* норма смены: купленное здесь её больше не ест — оно сдаётся отдельно, по цене приёмки */
 function appetiteLeft(sys,k){
   const A=appetiteOf(sys);
   if(!A||!A[k])return 0;
-  return Math.max(0,A[k]-appetiteAte(sys,k)-appetiteGotHere(sys,k));
+  return Math.max(0,A[k]-appetiteAte(sys,k));
 }
 /* съесть: сколько из qty пойдёт с надбавкой — и запомнить это */
 function appetiteEat(sys,k,qty){
@@ -25700,18 +25727,21 @@ function normsOf(sys){
 function sellQuote(sys,k,qty){
   qty=Math.max(0,qty|0);
   const base=marketFor(sys)[k]||0;
-  const nA=Math.min(qty,appetiteLeft(sys,k));
+  /* купленное у этой же стойки и ещё лежащее в трюме — назад по цене приёмки: без надбавки и мимо
+     бункера; остальное q — привоз */
+  const m=Math.min(qty,appetiteGotHere(sys,k)),mRev=m*base,q=qty-m;
+  const nA=Math.min(q,appetiteLeft(sys,k));
   const pA=nA?appetitePrice(sys,k):base;
-  const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
+  const nB=(typeof bldWant==="function")?Math.min(q-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
   /* остаток без надбавки — ломтями (аудит A2, M351): каждые десять единиц на три процента дешевле, не ниже .7 */
   const sl=(p,n)=>(typeof coopSellSlice==="function")?coopSellSlice(p,n):n*p;
   /* кран (M905, DESIGN-game §10.4): то, что станция ЕСТ, сверх нормы смены идёт сразу
      по дну давления — минус 35 % к прейскуранту, а не за семьдесят единиц, как раньше.
      Аппетит — кран, а не слив: излишек везут туда, где этот товар не ели. Чего станция
      не ест — по-старому. Бункер своего цеха (nB) излишком не считается. */
-  const A=appetiteOf(sys),nF=(A&&A[k])?Math.max(0,qty-nA-nB):0,pF=nF?faucetPrice(sys,k):0;
-  const rest=nF?nB*base+sl(pF,nF):sl(base,qty-nA);
-  return{revenue:Math.round(nA*pA+rest),nA,nB,nF,priceA:pA,priceF:pF,base};
+  const A=appetiteOf(sys),nF=(A&&A[k])?Math.max(0,q-nA-nB):0,pF=nF?faucetPrice(sys,k):0;
+  const rest=nF?nB*base+sl(pF,nF):sl(base,q-nA);
+  return{revenue:Math.round(mRev+nA*pA+rest),nA,nB,nF,m,mRev,priceA:pA,priceF:pF,base};
 }
 /* цена сверх нормы: тот же marketPrice, давление поставлено на дно */
 const FAUCET_FLOOR=-.35;
@@ -49585,6 +49615,10 @@ function cloudBoot(then){
   cloudCall("pull")
     .then(d=>{
       if(!d||!d.ok||!d.save){then&&then(false);return;}
+      /* новее, но нечитаемая (без версии, чужая версия, время не числом) живую местную не стирает:
+         ворота те же, что у applySave (лаборатория 15.10, 91qp-cloudchaos) */
+      const v=d.save.v,ts=d.save.ts;
+      if((v!==4&&v!==5)||typeof ts!=="number"||!isFinite(ts)){then&&then(false);return;}
       let mine=0;
       try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
       if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}
@@ -62820,7 +62854,7 @@ function gosDeliver(){
   const P=gosPlan();if(!P||P.done)return false;
   if((G.cargo[P.k]|0)<P.n){say("Не хватает до плана\nнужно "+P.n+" ед.",90);return false;}
   const Y=gosPay(P);
-  G.cargo[P.k]-=P.n;
+  G.cargo[P.k]-=P.n;appetiteHereUse(G.sys,P.k,P.n);
   earn(Y.pay,"plan");
   if(!G.gosDone)G.gosDone={};G.gosDone[P.key]=1;
   const R=(typeof recordAll==="function")?recordAll():null;if(R)R.udar=(R.udar|0)+1;
@@ -106778,6 +106812,59 @@ function mineFlatten(tr,x){
   }
   if(tr.rocks)for(let i=tr.rocks.length-1;i>=0;i--)if(Math.abs(tr.rocks[i].x-x)<C.core)tr.rocks.splice(i,1);
 }
+/* ── где копёр встаёт (15.10, закон «опора», 91qk) ──
+   Автор: «если ноги у него одна короче другой на перепаде — норм». Ноги копра тянутся до земли (21pi),
+   верх ровный от центра; не встаёт он там, где нижняя нога вдвое длиннее верхней, распорка уходит в
+   гору или кольцо ствола лезет по склону выше, чем ствол глубок (.9 м). Новый ствол закладывается в
+   ближайшем месте, где копёр встаёт, в паре шагов от человека; нет такого рядом — отказ словами и
+   стрелка к ровному. Известное устье и так ровное — его ровняет посадка (mineFlatten). */
+const MINE_LAY={near:90,far:600,step:10,memo:null};
+function mineLayFits(L,xu){
+  const q=PLN_THINGS.mineQ,zf=PLN_THINGS.mineZ,xm=xu/PLN_M,gy=(x,z)=>plnLandRibAt(L,xm+x,z),g0=gy(0,zf),top=g0+2.15*q;
+  let lo=1e9,hi=0;
+  for(const sx of [-1,1])for(const sz of [-1,1]){
+    const dx=sx*1.05*q,dz=zf+sz*.85*q,len=top-gy(dx,dz);
+    if(gy(dx*.67,dz)>g0+1.1*q-.2)return false;
+    lo=Math.min(lo,len);hi=Math.max(hi,len);
+  }
+  if(hi>2*lo)return false;
+  for(let k=0;k<12;k++){const a=k/12*TAU;if(gy(Math.cos(a)*.95*q,zf+Math.sin(a)*.72*q)-g0>.9)return false;}
+  return true;
+}
+/* место устья для нового ствола от точки x (взгляд f): {x} — где встанет, {hint} — до ровного */
+function mineLaySpot(L,x,f){
+  const K=MINE_LAY;
+  for(let d=0;d<=K.near;d+=K.step)for(const s of d?[f,-f]:[f])if(mineLayFits(L,x+s*d))return {x:x+s*d,hint:0};
+  for(let d=K.near+K.step;d<=K.far;d+=2*K.step)for(const s of [f,-f])if(mineLayFits(L,x+s*d))return {x:null,hint:s*d};
+  return {x:null,hint:0};
+}
+function mineLayAt(S){
+  const L=typeof PLN_LAND==="object"&&PLN_LAND.cur;
+  if(!L||L.tr!==S.tr||!L.T)return {x:S.x,hint:0};   /* без земли планеты — как было */
+  const K=MINE_LAY,f=S.face<0?-1:1,key=Math.round(S.x/5)+":"+f;
+  if(!(K.memo&&K.memo.L===L&&K.memo.key===key))K.memo={L,key,r:mineLaySpot(L,S.x,f)};
+  return K.memo.r;
+}
+const MINE_OLD_ENTER=enterDig;
+enterDig=function(){
+  const S=G.surf;
+  if(MINE.on&&S&&S.p&&mineSpotX(S.p)==null){
+    const P=mineLayAt(S);
+    if(P.x==null){say("Здесь копёр не встанет\nкруто — ищите ровное место",120);return;}
+    S.x=P.x;
+  }
+  return MINE_OLD_ENTER.apply(this,arguments);
+};
+const MINE_OLD_SURF=updateSurface;
+updateSurface=function(dt){
+  const r=MINE_OLD_SURF.apply(this,arguments);
+  const S=G.surf;
+  if(MINE.on&&G.mode==="surface"&&S&&/^ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ/.test(G.prompt||"")){
+    const P=mineLayAt(S);
+    if(P.x==null)G.prompt="ЗДЕСЬ КОПЁР НЕ ВСТАНЕТ — КРУТО\n"+(P.hint?"РОВНОЕ МЕСТО — "+Math.abs(Math.round(P.hint))+" м "+(P.hint>0?"▶":"◀"):"ИЩИТЕ РОВНОЕ МЕСТО");
+  }
+  return r;
+};
 const MINE_OLD_POI=genPOI;
 genPOI=function(tr,p){
   const had=!!tr.poi,r=MINE_OLD_POI.apply(this,arguments);
@@ -128254,6 +128341,7 @@ snapshot=function(){const s=BILL_OLD_SNAP.apply(this,arguments);s.bill=G.bill||n
 const BILL_OLD_APPLY=applySave;
 applySave=function(s){
   const r=BILL_OLD_APPLY.apply(this,arguments);
+  if(!r)return r;   /* отказ: мир не тронут — и счёт тоже (91qo) */
   const b=s&&s.bill;
   G.bill=(b&&typeof b==="object")?{cur:(b.cur&&typeof b.cur==="object")?b.cur:{},due:(b.due&&typeof b.due==="object")?b.due:{},
     from:+b.from||0,n:b.n|0,late:!!b.late,paper:(b.paper&&Array.isArray(b.paper.lines))?b.paper:null,
@@ -134184,6 +134272,7 @@ snapshot=function(){const s=INS_OLD_SNAP.apply(this,arguments);s.ins=G.ins||null
 const INS_OLD_APPLY=applySave;
 applySave=function(s){
   const r=INS_OLD_APPLY.apply(this,arguments);
+  if(!r)return r;   /* отказ: мир не тронут (91qo) */
   const b=s&&s.ins;G.ins=null;
   if(b&&typeof b==="object"){
     const I=insAll();
@@ -134470,6 +134559,7 @@ snapshot=function(){const s=WATCH_OLD_SNAP.apply(this,arguments);s.uch=G.uch||nu
 const WATCH_OLD_APPLY=applySave;
 applySave=function(s){
   const r=WATCH_OLD_APPLY.apply(this,arguments);
+  if(!r)return r;   /* отказ: мир не тронут (91qo) */
   const b=s&&s.uch;G.uch=null;
   if(b&&typeof b==="object"){
     const W=watchSt();
@@ -134872,6 +134962,7 @@ snapshot=function(){
 const GAUGE_OLD_APPLY=applySave;
 applySave=function(s){
   const r=GAUGE_OLD_APPLY.apply(this,arguments);
+  if(!r)return r;   /* отказ: мир не тронут (91qo) */
   G.gauge={};G.casc=null;GAUGE_W=null;
   const g=s&&s.gauge;
   if(g&&typeof g==="object")for(const k in g){
