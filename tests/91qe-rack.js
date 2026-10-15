@@ -5,9 +5,11 @@
 TEST_SUITES.push(()=>suite("стойка: плашка не поверх тела",()=>{
   resetWorld();
   const W0=W,H0=H,K0=RACK_K,mode0=G.mode,cam0=[G.viewCX,G.viewCY,G.zoom],marks0=G.marks,hf0=RACK.hitF;
+  /* рамка HUD снята прошлым кадром с настоящего окна страницы; окно здесь своё — борта и полос нет */
+  const hud0=[HUD_BAND,HUD_FLOOR,HUD_RAIL,HUD_RAILTOP];
   const cross=(g,b)=>b.x1>g.x&&b.x0<g.x+g.w&&b.y1>g.y&&b.y0<g.y+g.h;
   try{
-    W=1920;H=1080;RACK_K=1;G.mode="system";G.zoom=1;G.marks=[];RACK.hitF=null;
+    W=1920;H=1080;RACK_K=1;HUD_BAND=HUD_FLOOR=HUD_RAIL=HUD_RAILTOP=0;G.mode="system";G.zoom=1;G.marks=[];RACK.hitF=null;
     const sys=G.sys,p=sys.planets[0];
     ok(!!p,"в стартовой системе есть планета");
     /* камера далеко от всего: плашка полная, с лентой */
@@ -50,5 +52,5 @@ TEST_SUITES.push(()=>suite("стойка: плашка не поверх тел�
     const s=rackGeo();
     eq(s.mode,"shelf","на телефоне — полка");
     ok(!s.tape&&s.h<=130,"полка — только циферблаты, без ленты: h="+(s.h|0));
-  }finally{W=W0;H=H0;RACK_K=K0;G.mode=mode0;[G.viewCX,G.viewCY,G.zoom]=cam0;G.marks=marks0;RACK.hitF=hf0;}
+  }finally{W=W0;H=H0;RACK_K=K0;[HUD_BAND,HUD_FLOOR,HUD_RAIL,HUD_RAILTOP]=hud0;G.mode=mode0;[G.viewCX,G.viewCY,G.zoom]=cam0;G.marks=marks0;RACK.hitF=hf0;}
 }));
