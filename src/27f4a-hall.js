@@ -195,7 +195,7 @@ function hallPrepStep(){
   const pe=P.L.people;
   if(P.i<pe.length){
     const q=pe[P.i];
-    if(!q.mesh){q.mesh=cpMesh(q.m,q.pose,q.lod);return;}   /* тело — шаг, выгрузка — следующий */
+    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,5);return;}   /* тело — шаг, выгрузка — следующий */
     r3Up(q.mesh);P.i++;return;
   }
   if(!P.room){P.room=hallRoomMesh(P.L);P.rkey=P.L.rkey;return;}
@@ -223,7 +223,7 @@ function hallCantPrep(S,sys){
   const pe=P.cl.people;
   if(P.ci<pe.length){
     const q=pe[P.ci];
-    if(!q.mesh){q.mesh=cpMesh(q.m,q.pose,q.lod);return;}
+    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,5);return;}
     r3Up(q.mesh);P.ci++;return;
   }
   P.cdone=true;
