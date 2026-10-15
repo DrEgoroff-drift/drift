@@ -322,7 +322,10 @@ def main():
         # законы лаборатории живут в lab-local раньше, чем их вольют в игру: новый файл набора, которого в ветке
         # нет, подкладываем в её копию (только новые — свои наборы ветки не трогаем никогда)
         mine = os.path.join(os.path.dirname(HERE), "tests")
-        add = [f for f in sorted(os.listdir(mine)) if f.endswith(".js") and not os.path.exists(os.path.join(src, "tests", f))]
+        # охота — инструмент самой лаборатории, а не закон игры: её копия в ветке (пришла слиянием lab-local)
+        # отстаёт, поэтому кладётся всегда свежая
+        LAB_OWNED = {"91zzzzzzzzb-hunt.js"}
+        add = [f for f in sorted(os.listdir(mine)) if f.endswith(".js") and (f in LAB_OWNED or not os.path.exists(os.path.join(src, "tests", f)))]
         for f in add: shutil.copyfile(os.path.join(mine, f), os.path.join(src, "tests", f))
         if add: print("lab: законы лаборатории подложены в копию: " + ", ".join(add))
         nc = corpus_suite(src)
