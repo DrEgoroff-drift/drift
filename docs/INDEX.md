@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 589 · top-level symbols: 8414
+Files: 593 · top-level symbols: 8434
 
 ## SYMBOLS
 
@@ -297,6 +297,7 @@ CAVE_MUL_WGSL                src/22c-cave-gpu.js:68
 CAVE_NX                      src/22-mode-cave.js:14
 CAVE_OWN_WGSL                src/22c-cave-gpu.js:116
 CAVE_PPM                     src/22da-cave-pln-rock.js:16
+CAVE_ROOM_OLD_ENTER          src/21pigz-cave-room.js:35
 CAVE_W                       src/22-mode-cave.js:11
 CAVE_WALL_X0                 src/22-mode-cave.js:13
 CAVE_ZONE                    src/22a-cave-deco.js:17-23
@@ -448,8 +449,8 @@ DECO_ROT                     src/21bc-deco-gpu.js:8
 DEEDS                        src/11ai-ledger.js:25-35
 DEPTH_TIERS                  src/04-mods.js:57-61
 DEP_REF                      src/21pzc-dep-value.js:17
-DEP_ROOM_OLD_ENTER           src/21pih-dep-room.js:35
-DEP_ROOM_OLD_UPD             src/21pih-dep-room.js:43
+DEP_ROOM_OLD_ENTER           src/21pih-dep-room.js:37
+DEP_ROOM_OLD_UPD             src/21pih-dep-room.js:45
 DEP_ROOM_PAD                 src/21pih-dep-room.js:10
 DEP_VALUE_OLD_ENTER          src/21pzc-dep-value.js:40
 DESC_MOOD                    src/01-core.js:196-201
@@ -1369,6 +1370,7 @@ MUS                          src/10-music.js:100
 MUSIC_SCENES                 src/10-music.js:27-36
 MUS_LAYERS                   src/10-music.js:102
 MUS_WET                      src/10-music.js:105
+MV_FIVE                      tests/91qaa-marks-move.js:7
 NAME_MAX                     src/11u-names.js:14
 NAT_DRAIN                    src/12az-fx-nat.js:12
 NAT_FIND                     src/12az-fx-nat.js:13
@@ -1569,11 +1571,13 @@ PLAN_WANT                    src/05e-plan.js:78
 PLN                          src/21p-pln.js:15
 PLN_ACT                      src/21pif-pln-marks-act.js:18
 PLN_ACTS                     src/21pz-pln-frame.js:46
-PLN_ACT_DRILL_WRITE          src/21pif-pln-marks-act.js:272
-PLN_ACT_MAN_STATE            src/21pif-pln-marks-act.js:266
-PLN_ACT_NEAREST              src/21pif-pln-marks-act.js:258
-PLN_ACT_POI_MEMO             src/21pif-pln-marks-act.js:245
-PLN_ACT_POI_NEAR             src/21pif-pln-marks-act.js:230
+PLN_ACT_DRILL_WRITE          src/21pif-pln-marks-act.js:275
+PLN_ACT_MAN_STATE            src/21pif-pln-marks-act.js:269
+PLN_ACT_NEAREST              src/21pif-pln-marks-act.js:261
+PLN_ACT_PH                   src/21pifb-pln-marks-act-move.js:215
+PLN_ACT_POI_MEMO             src/21pif-pln-marks-act.js:248
+PLN_ACT_POI_NEAR             src/21pif-pln-marks-act.js:233
+PLN_ANOM_GL                  src/21pifb-pln-marks-act-move.js:166
 PLN_AZ_ELEV                  src/21pf-pln-land.js:46
 PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:16
@@ -1584,6 +1588,8 @@ PLN_DEG                      src/21p-pln.js:31
 PLN_DESC                     src/21pza-pln-descent.js:10
 PLN_DRESS                    src/21pge-pln-dress.js:6-20
 PLN_DRILL                    src/21pic-pln-drill.js:8
+PLN_DRUSE_ORD                src/21pifb-pln-marks-act-move.js:9
+PLN_DRUSE_SFX                src/21pifb-pln-marks-act-move.js:12
 PLN_DUI                      src/21pza-pln-descent.js:191
 PLN_FAR                      src/21pfa-pln-worlds.js:74-99
 PLN_FL                       src/21pfa-pln-worlds.js:213
@@ -1592,6 +1598,7 @@ PLN_FRAME                    src/21pz-pln-frame.js:18
 PLN_G                        src/21pe-pln-gpu.js:67
 PLN_GAIT                     src/21piba-pln-gait.js:12
 PLN_GPU                      src/21pe-pln-gpu.js:27
+PLN_GUN                      src/21pifb-pln-marks-act-move.js:345
 PLN_HAND_S                   src/21pz-pln-frame.js:277
 PLN_HDR                      src/21pe-pln-gpu.js:23
 PLN_HERB                     src/21pia-pln-herb.js:30
@@ -1657,7 +1664,7 @@ PLN_WING                     src/21pgc-pln-wing.js:23
 PLN_WORDS                    src/21pzb-pln-words.js:12
 PLN_WORDS_HUSH               src/21pzb-pln-words.js:13
 PLN_WORLDS                   src/21pfa-pln-worlds.js:20-66
-PLN_WRECK_END                src/21pif-pln-marks-act.js:284-305
+PLN_WRECK_END                src/21pif-pln-marks-act.js:287-308
 PLN_WX                       src/21pk-pln-weather.js:26
 PLN_WX_COL                   src/21pz-pln-frame.js:119
 PL_GS                        src/11va-places-lit.js:19
@@ -3087,6 +3094,8 @@ caveMoveX                    src/22-mode-cave.js:245-250
 cavePool                     src/22a-cave-deco.js:76-86
 cavePoolInView               src/22c-cave-gpu.js:229-239
 caveProps                    src/22b-cave-props.js:105-141
+caveRoom                     src/21pigz-cave-room.js:22-34
+caveRoomSpans                src/21pigz-cave-room.js:9-21
 caveScanDown                 src/22-mode-cave.js:49-54
 caveScanUp                   src/22-mode-cave.js:55-60
 caveSmoothPath               src/22b-cave-props.js:27-102
@@ -3565,9 +3574,9 @@ decoWall                     src/21ba-deco-shapes.js:147-189
 deedAdd                      src/11ai-ledger.js:53-64
 depCheap                     src/21pzc-dep-value.js:22-27
 depKind                      src/21b-surface-deco.js:395-404
-depRoom                      src/21pih-dep-room.js:25-34
-depRoomBlockers              src/21pih-dep-room.js:11-17
-depRoomSpans                 src/21pih-dep-room.js:20-24
+depRoom                      src/21pih-dep-room.js:27-36
+depRoomBlockers              src/21pih-dep-room.js:11-19
+depRoomSpans                 src/21pih-dep-room.js:22-26
 depValue                     src/21pzc-dep-value.js:28-39
 depValueF                    src/21pzc-dep-value.js:18-21
 deployDrone                  src/12-economy.js:330-347
@@ -5836,6 +5845,8 @@ musicSceneNow                src/10-music.js:493-528
 musicSetScene                src/10-music.js:326-361
 musicStop                    src/10-music.js:529-535
 musicTick                    src/10-music.js:407-491
+mvExplore                    tests/91qaa-marks-move.js:12-29
+mvPrep                       tests/91qaa-marks-move.js:8-11
 nameAskSystem                src/11u-names.js:79-87
 nameLike                     src/27y-hud-words.js:25-30
 nameOf                       src/11u-names.js:19-22
@@ -6357,20 +6368,20 @@ plnActAge                    src/21pif-pln-marks-act.js:58
 plnActAir                    src/21pif-pln-marks-act.js:62
 plnActAirNear                src/21pif-pln-marks-act.js:100-104
 plnActBar                    src/21pif-pln-marks-act.js:96
-plnActBranch                 src/21pif-pln-marks-act.js:178-181
+plnActBranch                 src/21pif-pln-marks-act.js:179-182
 plnActDaily                  src/21pif-pln-marks-act.js:56
 plnActDailyReady             src/21pif-pln-marks-act.js:55
-plnActDepNear                src/21pif-pln-marks-act.js:223
+plnActDepNear                src/21pif-pln-marks-act.js:226
 plnActDims                   src/21pif-pln-marks-act.js:65
-plnActDo                     src/21pif-pln-marks-act.js:146-166
-plnActEase                   src/21pif-pln-marks-act.js:182
-plnActFrame                  src/21pif-pln-marks-act.js:185-219
+plnActDo                     src/21pif-pln-marks-act.js:147-167
+plnActEase                   src/21pif-pln-marks-act.js:183
+plnActFrame                  src/21pif-pln-marks-act.js:186-222
 plnActFuel                   src/21pifa-pln-marks-act-stone.js:48
 plnActFull                   src/21pifa-pln-marks-act-stone.js:46
 plnActGlyphs                 src/21pifa-pln-marks-act-stone.js:16
 plnActHint                   src/21pifa-pln-marks-act-stone.js:33-38
-plnActInput                  src/21pif-pln-marks-act.js:169-176
-plnActLifeNear               src/21pif-pln-marks-act.js:224-229
+plnActInput                  src/21pif-pln-marks-act.js:170-177
+plnActLifeNear               src/21pif-pln-marks-act.js:227-232
 plnActLive                   src/21pif-pln-marks-act.js:77
 plnActMemo                   src/21pif-pln-marks-act.js:29-49
 plnActNight                  src/21pif-pln-marks-act.js:60
@@ -6378,9 +6389,10 @@ plnActNotchLine              src/21pifa-pln-marks-act-stone.js:20-25
 plnActNotches                src/21pifa-pln-marks-act-stone.js:150
 plnActNote                   src/21pif-pln-marks-act.js:98
 plnActOn                     src/21pif-pln-marks-act.js:26
-plnActPay                    src/21pif-pln-marks-act.js:132-144
-plnActPriceLead              src/21pif-pln-marks-act.js:294-305
-plnActPrompt                 src/21pif-pln-marks-act.js:109-129
+plnActPay                    src/21pif-pln-marks-act.js:133-145
+plnActPhase                  src/21pifb-pln-marks-act-move.js:216-221
+plnActPriceLead              src/21pif-pln-marks-act.js:297-308
+plnActPrompt                 src/21pif-pln-marks-act.js:109-130
 plnActReach                  src/21pif-pln-marks-act.js:79-94
 plnActRelic                  src/21pifa-pln-marks-act-stone.js:40-44
 plnActRoll                   src/21pif-pln-marks-act.js:54
@@ -6390,6 +6402,8 @@ plnActSpotDx                 src/21pif-pln-marks-act.js:66-69
 plnActUp                     src/21pif-pln-marks-act.js:106
 plnActVerb                   src/21pif-pln-marks-act.js:97
 plnAdd                       src/21p-pln.js:34
+plnAnomFeed                  src/21pifb-pln-marks-act-move.js:162-165
+plnAnomTable                 src/21pifb-pln-marks-act-move.js:155-160
 plnAtThing                   src/21pi-pln-things.js:423-436
 plnBeastCapsule              src/21piba-pln-gait.js:76-101
 plnBeastDrop                 src/21pib-pln-beast.js:250-256
@@ -6431,6 +6445,8 @@ plnDressShore                src/21pge-pln-dress.js:22-27
 plnDrillFrame                src/21pic-pln-drill.js:40-66
 plnDrillTool                 src/21pic-pln-drill.js:15-23
 plnDrillWrite                src/21pic-pln-drill.js:26-37
+plnDruseKey                  src/21pifb-pln-marks-act-move.js:13-27
+plnDruseOrder                src/21pifb-pln-marks-act-move.js:10
 plnFarCrater                 src/21pfa-pln-worlds.js:89-99
 plnFarLane                   src/21pfa-pln-worlds.js:102-169
 plnFarMesa                   src/21pfa-pln-worlds.js:87
@@ -6460,6 +6476,7 @@ plnGpuReady                  src/21pe-pln-gpu.js:249-253
 plnGpuSize                   src/21pe-pln-gpu.js:194-248
 plnGpuTier                   src/21pe-pln-gpu.js:144-161
 plnGpuWrite                  src/21pe-pln-gpu.js:282-295
+plnGunLaid                   src/21pifb-pln-marks-act-move.js:281
 plnHandAge                   src/21pz-pln-frame.js:278-288
 plnHandWin                   src/21pz-pln-frame.js:290-293
 plnHash                      src/21p-pln.js:55-59
@@ -6547,17 +6564,18 @@ plnManPalette                src/21pha-pln-man.js:58-70
 plnManPose                   src/21pha-pln-man.js:161-189
 plnManState                  src/21pha-pln-man.js:223-226
 plnMarkH                     src/21pie-pln-marks.js:40
-plnMarkMesh                  src/21pie-pln-marks.js:58-200
+plnMarkMesh                  src/21pie-pln-marks.js:58-124
+plnMarkMove                  src/21piec-pln-marks-move.js:8-243
 plnMarkPad                   src/21pie-pln-marks.js:44-49
-plnMarkSpark                 src/21pie-pln-marks.js:250-259
+plnMarkSpark                 src/21pie-pln-marks.js:174-183
 plnMarkState                 src/21pif-pln-marks-act.js:51
 plnMarkStone                 src/21pieb-pln-marks-stone.js:8-213
-plnMarkWorld                 src/21pie-pln-marks.js:245-248
+plnMarkWorld                 src/21pie-pln-marks.js:169-172
 plnMarkWreck                 src/21piea-pln-marks-wreck.js:12-209
 plnMarkZ                     src/21pie-pln-marks.js:42
-plnMarks                     src/21pie-pln-marks.js:203-243
-plnMarksDrop                 src/21pie-pln-marks.js:316-322
-plnMarksFrame                src/21pie-pln-marks.js:265-315
+plnMarks                     src/21pie-pln-marks.js:127-167
+plnMarksDrop                 src/21pie-pln-marks.js:247-253
+plnMarksFrame                src/21pie-pln-marks.js:189-246
 plnMesh                      src/21pa-pln-mesh.js:12-15
 plnMeshAdd                   src/21pa-pln-mesh.js:29-37
 plnMeshDone                  src/21pa-pln-mesh.js:38
@@ -6632,6 +6650,8 @@ plnRec                       src/21pe-pln-gpu.js:103-109
 plnRgb                       src/21p-pln.js:50
 plnRidge                     src/21pf-pln-land.js:93
 plnRidged                    src/21p-pln.js:74-81
+plnRingDep                   src/21pifb-pln-marks-act-move.js:82
+plnRingDepPut                src/21pifb-pln-marks-act-move.js:141-148
 plnRotX                      src/21p-pln.js:43
 plnRotY                      src/21p-pln.js:41
 plnRotZ                      src/21p-pln.js:42
@@ -6726,7 +6746,7 @@ plnWingRibbon                src/21pgc-pln-wing.js:57-71
 plnWordsAt                   src/21pzb-pln-words.js:53-58
 plnWordsOn                   src/21pzb-pln-words.js:15-17
 plnWordsPj                   src/21pzb-pln-words.js:47-51
-plnWreckBeacon               src/21pif-pln-marks-act.js:306
+plnWreckBeacon               src/21pif-pln-marks-act.js:309
 plnX                         src/21p-pln.js:26
 plnXu                        src/21p-pln.js:28
 plnY                         src/21p-pln.js:27
@@ -9662,7 +9682,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pid-pln-tracks.js · 3 KB
   · планета: следы — отпечатки на земле (M624):1
 
-## src/21pie-pln-marks.js · 25 KB
+## src/21pie-pln-marks.js · 20 KB
   · планета: ориентиры — двенадцать памятников игры (M627):1
 
 ## src/21piea-pln-marks-wreck.js · 18 KB
@@ -9671,9 +9691,12 @@ zoomTo                       src/15-input.js:358
 ## src/21pieb-pln-marks-stone.js · 20 KB
   · планета: тихая пятёрка — тела и места под рукой (M627b, проход 2):1
 
+## src/21piec-pln-marks-move.js · 21 KB
+  · планета: подвижная пятёрка — тела и места под рукой (M627b, проход 4):1
+
 ## src/21pif-pln-marks-act.js · 25 KB
   · планета: ориентиры как места действия (M627b):1
-  · остов корабля (§4.1):279
+  · остов корабля (§4.1):282
 
 ## src/21pifa-pln-marks-act-stone.js · 23 KB
   · тихая пятёрка как места действия (M627b, проход 2):1
@@ -9683,8 +9706,18 @@ zoomTo                       src/15-input.js:358
   · врата (§4.9):184
   · обсерватория (§4.10):228
 
+## src/21pifb-pln-marks-act-move.js · 27 KB
+  · подвижная пятёрка как места действия (M627b, проход 4):1
+  · кольцо ускорителя (§4.5):77
+  · аномалия (§4.6):150
+  · завод (§4.8):223
+  · батарея — пушка Долгого марша (§4.12):277
+
 ## src/21pig-pln-own.js · 35 KB
   · планета: свои вещи телами — база, дом, двор (M628a):1
+
+## src/21pigz-cave-room.js · 3 KB
+  · устье пещеры не под ориентиром (M627b):1
 
 ## src/21pih-dep-room.js · 3 KB
   · залежи не под стеной и не под ориентиром (0.493.5):1
@@ -10139,6 +10172,9 @@ zoomTo                       src/15-input.js:358
 ## tests/91qa-marks-act.js · 31 KB
   · ориентиры как места действия (M627b):1
   · тихая пятёрка и правила движка (M627b, проход 2):159
+
+## tests/91qaa-marks-move.js · 11 KB
+  · подвижная пятёрка как места действия (M627b, проход 4):1
 
 ## tests/91qb-rig-card.js · 5 KB
   · один астронавт везде: риг в карточке (M801):1
