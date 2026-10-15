@@ -407,7 +407,7 @@ function home3Cam(sz,t){
   const k=1-Math.exp(-dt*(lp?4.2:2.6));
   if(HOME3.cx==null||dt>=1){HOME3.cx=cx;HOME3.cy=yy;}else{HOME3.cx+=(cx-HOME3.cx)*k;HOME3.cy+=(yy-HOME3.cy)*(1-Math.exp(-dt*3));}
   const x=HOME3.cx,y=HOME3.cy,ph=!sz.wide,zoom=lp?.88:1;
-  const c=ph?{eye:[x+.7,y+4.6,10.2*zoom],tgt:[x,y+.8,-.9],fy:.92}:{eye:[x+1.2,y+2.55,7.6*zoom],tgt:[x-.1,y+1.38,-1.0],fy:.8};
+  const c=ph?{eye:[x+.7,y+4.4,10.2*zoom],tgt:[x,y+1.0,-.9],fy:.8}:{eye:[x+1.2,y+2.55,7.6*zoom],tgt:[x-.1,y+1.38,-1.0],fy:.8};
   const e=[c.eye[0]+.02*Math.sin(t*.31),c.eye[1]+.012*Math.sin(t*.23),c.eye[2]];
   const P=r3Persp(c.fy,sz.cw/Math.max(1,sz.ch),.1,90);
   return {eye:e,tgt:c.tgt,fy:c.fy,vp:r3Mul(P,r3Look(e,c.tgt,[0,1,0]))};
