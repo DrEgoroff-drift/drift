@@ -179,6 +179,23 @@ def tour_post(u, rc):
         body = "FAILED 1 · passed 0 · suites 1 of 1\n\n  ✗ тур полёта · %s\n%s\n\n" % (msg, "\n".join("      " + l for l in t.strip().split("\n")[-14:]))
     open(u["out"], "w", encoding="utf-8").write(body + t)
 
+HUNT_LOG = os.path.join(os.environ.get("LAB_DATA") or os.path.join(os.path.expanduser("~"), "drift-data", "lab"), "hunt-notes.jsonl")
+
+def hunt_post(u, rc):
+    """заметки охоты «кошелёк:» и «покрытие:» — по строке на зерно в hunt-notes.jsonl; пульт
+    складывает их по зёрнам: какие краны денег живут и куда тропа не дошла ни разу"""
+    import html as H
+    try: t = H.unescape(open(u["out"], encoding="utf-8", errors="replace").read())
+    except Exception: return
+    row = {"t": time.strftime("%Y-%m-%d %H:%M:%S"), "seed": u["arg"], "rc": rc}
+    for k, key in (("кошелёк", "wallet"), ("покрытие", "cover"), ("отказы", "why")):
+        m = re.search(r"· %s: ([^<\n]*)" % k, t)
+        if m: row[key] = m.group(1).strip()
+    if len(row) < 4: return
+    try:
+        with open(HUNT_LOG, "a", encoding="utf-8") as f: f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except Exception: pass
+
 def page_unit(ctx, kind, arg, query, win):
     n = ctx["n"] = ctx["n"] + 1
     base = os.path.join(ctx["tmp"], "%s-%d" % (kind, n))
@@ -298,7 +315,9 @@ def main():
         stf = lab.jload(lab.STATE, {}).get("fuzz", {}).get(ver, {})
         seed = int(time.strftime("%j")) * 1000 + stf.get("seeds", 0) + seeds[0] + 1
         seeds[0] += 1
-        return page_unit(ctx, "hunt", str(seed), "only=%s&fseed=%d&hsteps=%d" % (urllib.parse.quote("охота"), seed, a.steps), "1280,800")
+        u = page_unit(ctx, "hunt", str(seed), "only=%s&fseed=%d&hsteps=%d" % (urllib.parse.quote("охота"), seed, a.steps), "1280,800")
+        u["post"] = hunt_post
+        return u
 
     counts = {}; fresh = []
     print("lab: прогонов в круге %d, потом охота до конца бюджета · Ctrl+C — остановить" % len(units))
