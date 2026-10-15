@@ -291,7 +291,7 @@ def regress(sc, row, out, ver):
     except OSError: pass
 
 
-def run_scene(a, pg, sc, bad, plant=None):
+def run_scene(a, pg, sc, bad, plant=None, cpu=1):
     """одна сцена в своей вкладке: поднять, дождаться ровного режима, записать вход и ход, рассудить"""
     req = urllib.request.Request("http://127.0.0.1:%d/json/new?about:blank" % a.port, method="PUT")
     t = json.load(urllib.request.urlopen(req, timeout=10))
@@ -318,6 +318,10 @@ def run_scene(a, pg, sc, bad, plant=None):
             elif time.time() - ts >= 1: break
             time.sleep(.1)
         gpu = shot.ev(ws, "!!GPU.ok")
+        tag = sc
+        if cpu > 1:
+            # слабый процессор (CDP: каждая задача потока в cpu раз дольше) — телефон послабее S23
+            ws.call("Emulation.setCPUThrottlingRate", rate=cpu); tag = "%s×cpu%d" % (sc, cpu)
         if plant: shot.ev(ws, plant)
         shot.ev(ws, "__J.t0=performance.now();__J.on=true;")
         time.sleep(ENTRY_MS / 1000)
@@ -346,6 +350,21 @@ def run_scene(a, pg, sc, bad, plant=None):
         if not gpu: bad.append(("кадры · " + sc, "видеокарты нет — замер на 2D не годится"))
         if d["crash"]: bad.append(("кадры · " + sc, "СБОЙ на экране"))
         for e in d["errs"]: bad.append(("кадры · " + sc, "ошибка страницы: " + re.sub(r"\s+", " ", e)[:160]))
+        if cpu > 1:
+            # на слабом процессоре кадров меньше — это честно; нечестно, когда мир отстаёт от часов
+            W = [f for f in d["f"] if ENTRY_MS <= f["t"] and f.get("gt") is not None]
+            if len(W) > 20:
+                pace = (W[-1]["gt"] - W[0]["gt"]) / 60 / ((W[-1]["t"] - W[0]["t"]) / 1000)
+                iv = sorted(y["t"] - x["t"] for x, y in zip(W, W[1:]))
+                print("%-8s процессор ×%d: темп мира %.0f %% часов, кадр p50 %.1f p95 %.1f мс" % (sc, cpu, 100 * pace, iv[len(iv) // 2], iv[int(len(iv) * .95)]))
+                if pace < .95: bad.append(("кадры · " + tag, "мир отстаёт от часов на слабом процессоре: %.0f %% темпа" % (100 * pace)))
+            # длинный кадр меряется тем же законом, но порог — в cpu раз шире: судим остановки, а не медленность
+            global RUN_MAX, LONG, ENTRY_MAX
+            keep = RUN_MAX, LONG, ENTRY_MAX
+            RUN_MAX, LONG, ENTRY_MAX = RUN_MAX * cpu, LONG * cpu, ENTRY_MAX * cpu
+            try: judge(tag, d["f"], bad, d.get("pz"))
+            finally: RUN_MAX, LONG, ENTRY_MAX = keep
+            return
         judge(sc, d["f"], bad, d.get("pz"))
         row = heavy(sc, d, res0, res1, p0, p1, w1 - w0, gms, bad)
         if not plant: regress(sc, row, bad, shot.ev(ws, "typeof VER!=='undefined'?VER:'?'"))
@@ -363,6 +382,7 @@ def main():
     ap.add_argument("--h", type=int, default=800)
     ap.add_argument("--secs", type=float, default=16)
     ap.add_argument("--port", type=int, default=9692)
+    ap.add_argument("--cpu", default="surface,cave", help="scenes walked again with the CPU throttled ×4 (empty = none)")
     ap.add_argument("--root", default=ROOT, help="the checkout whose drift.html and stand scenes are measured")
     a = ap.parse_args()
     shot.HERE = os.path.join(a.root, "docs")   # stand_tail() reads docs/mkview.ps1 of that checkout
@@ -383,6 +403,9 @@ def main():
             except Exception: time.sleep(.25)
         for sc in [s for s in a.scenes.split(",") if s]:
             n0 = len(bad); run_scene(a, pg, sc, bad)
+            if len(bad) == n0: ok += 1
+        for sc in [s for s in a.cpu.split(",") if s]:
+            n0 = len(bad); run_scene(a, pg, sc, bad, cpu=4)
             if len(bad) == n0: ok += 1
         # подсадка: поверхность, где герой раз в полсекунды прыгает на 40, видеокарта «ошибается» и куча течёт по 8 МБ/с — все три закона
         # обязаны это увидеть, иначе законы живого кадра слепы (как подсадки зрения)
