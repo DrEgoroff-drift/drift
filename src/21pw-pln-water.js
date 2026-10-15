@@ -194,8 +194,9 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
   let teal = vec3f(0.035, 0.12, 0.115);
   if (mat == 14) {
     let d = in.par.w;
-    let s1 = wNoise(vec2f(in.wpos.x * 1.7 + d * 0.30 + t * 0.03, 0.5), 47u);
-    let s2 = wNoise(vec2f(in.wpos.x * 4.3 - d * 0.20 - t * 0.05, 1.5), 49u);
+    /* лопасти света под гладью идут за волной (M630e): вода живая, не плита */
+    let s1 = wNoise(vec2f(in.wpos.x * 1.7 + d * 0.30 + t * 0.32, 0.5 + t * 0.05), 47u);
+    let s2 = wNoise(vec2f(in.wpos.x * 4.3 - d * 0.20 - t * 0.55, 1.5 + t * 0.08), 49u);
     let blade = pow(s1 * 0.7 + s2 * 0.3, 3.0) * (1.0 - smoothstep(0.0, 2.0, d));
     let top = vec3f(in.wpos.x, in.wpos.y + d, in.wpos.z);
     let lt = lampAt(top);
@@ -205,7 +206,9 @@ const PLN_WGSL_WATER_CAVE=PLN_WGSL_WATER_CORE+/* wgsl */`
     let body = mix(vec3f(0.11, 0.37, 0.36), vec3f(0.008, 0.04, 0.075), smoothstep(0.0, 2.6, d));
     var c = body * amb2 * (1.0 + 2.4 * blade) + vec3f(0.002, 0.006, 0.009);
     c += teal * down * (0.12 * fade + 0.9 * blade);
-    c += vec3f(0.6, 0.8, 0.82) * (amb2 + down * 0.5) * ((1.0 - smoothstep(0.0, 0.05, d)) * 0.8);
+    /* нитка уреза: светлая кромка гуляет с волной и рвётся бликами, бегущими по ней */
+    let thr = 0.6 + 0.55 * sin(in.wpos.x * 5.3 - t * 2.4) * sin(in.wpos.x * 1.9 + t * 0.9);
+    c += vec3f(0.6, 0.8, 0.82) * (amb2 + down * 0.5) * ((1.0 - smoothstep(0.0, 0.06, d)) * 0.8 * thr);
     return vec4f(haze(c, in.wpos, 1.0), mix(0.60, 0.95, smoothstep(0.0, 2.0, d)));
   }
   let depth = in.par.w;

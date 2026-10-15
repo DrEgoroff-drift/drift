@@ -10,6 +10,10 @@
 # time), or it genuinely does and you re-run with --no-verify once.
 WARN_KB=500
 BLOCK_KB=10000
+# drift.html is the built game, committed by rule (CLAUDE.md: it must open with a
+# double click) and text that git deltas well; it passed 10 MB on 15.10.2026
+# (0.499.2, 10014 KB). It keeps its own ceiling, every other file the old one.
+BUILD_KB=16000
 
 files=$(git diff --cached --name-only --diff-filter=ACM)
 [ -z "$files" ] && exit 0
@@ -23,9 +27,11 @@ for f in $files; do
   [ -f "$f" ] || continue
   size=$(git cat-file -s ":$f" 2>/dev/null) || continue
   kb=$((size / 1024))
-  if [ "$kb" -ge "$BLOCK_KB" ]; then
+  lim=$BLOCK_KB
+  [ "$f" = "drift.html" ] && lim=$BUILD_KB
+  if [ "$kb" -ge "$lim" ]; then
     mb=$((kb / 1024))
-    echo "pre-commit: BLOCKED - $f is ${mb} MB (limit ${BLOCK_KB}KB)." >&2
+    echo "pre-commit: BLOCKED - $f is ${mb} MB (limit ${lim}KB)." >&2
     echo "  If it belongs in git, commit with --no-verify once." >&2
     echo "  If it does not, git restore --staged $f and add it to .gitignore." >&2
     status=1

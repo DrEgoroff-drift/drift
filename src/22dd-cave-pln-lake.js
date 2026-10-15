@@ -5,6 +5,8 @@
    Гладь берёт отражение из зеркального прохода в полкадра (22db): сцена, отражённая в уровне воды,
    без разреза и без того, что под водой. Зеркало одно на кадр — у ближнего к человеку озера. */
 Object.assign(CAVE3_MAT,{water:13,body:14});
+/* светило озера: высота над гладью, глубина за разрезом, дальность, цвет огня и ореола */
+const CAVE3_LAKE={lh:.6,lz:2.5,lr:7,lc:[.45,1.6,1.45],gc:[.25,.75,.7]};
 
 function cave3LakeGeo(C,F,z){
   const pool=cavePool(C,z);
@@ -34,7 +36,8 @@ function cave3LakeGeo(C,F,z){
     if(j<8&&Math.max(D[a],D[a+1],D[a+nz],D[a+nz+1])<-.03){ga=Math.min(ga,xa+i*st);gb=Math.max(gb,xa+(i+1)*st);}
   }
   /* тело в разрезе: от глади до дна за разрезом; камень разреза лежит перед ним и закрывает лишнее */
-  const sx=.25,ns=Math.ceil((xb-xa)/sx);
+  /* шаг тела 12.5 см: кромка гуляет волной (вершинный шейдер), а не ломаной */
+  const sx=.125,ns=Math.ceil((xb-xa)/sx);
   let prev=-1;
   for(let i=0;i<=ns;i++){
     const X=xa+i*sx;
@@ -53,7 +56,7 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
   const Q=C.lk3||(C.lk3={m:new Map(),gen:-1});
   if(Q.gen!==PLN_GPU.gen){for(const k of Q.m.values())if(k)plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;}
   F.water=[];F.lake=null;
-  let best=1e9,tris=0,near=1e9,md=1e9;
+  let best=1e9,tris=0,near=1e9,md=1e9,lit=null;
   const mx=C.x/CAVE_PPM;
   CAVE3.lakeM=null;
   caveZones(C).forEach((z,i)=>{
@@ -65,7 +68,7 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
     F.water.push(k.geo);tris+=k.geo.n/3;
     const d=cx<k.x0?k.x0-cx:cx>k.x1?cx-k.x1:0;
     if(d<near)near=d;
-    if(d<best){best=d;F.lake={y:k.y};}
+    if(d<best){best=d;F.lake={y:k.y};lit=k;}
     /* урез от человека (M631, нырок объектива): точка глади под ним — ближайшая по x; на уступе
        высоко над водой урез далёк, хоть и под ногами */
     if(k.g0==null)return;
@@ -74,6 +77,18 @@ function cave3LakeFrame(C,F,Fd,x0,x1,cx){
   });
   /* нырок: зеркало — у озера, к которому нырнули */
   if(CAVE3.lakeM&&md<3.6)F.lake={y:CAVE3.lakeM.y};
+  /* своё светило озера (M630e): холодная бирюза из глуби над серединой глади — вода читается в темноте
+     сама, без фонаря; сила по ширине озера, гаснет, когда озеро уходит из кадра */
+  if(lit&&best<14){
+    /* гладь — g0…g1; тело воды (x0…x1) тянется под берег */
+    const a=lit.g0!=null?lit.g0:lit.x0,b=lit.g0!=null?lit.g1:lit.x1,w=()=>b-a,s=clamp(w()/12,.5,1)*(1-plnSmooth(6,14,best)),L=CAVE3_LAKE;
+    if(s>.02){
+      const p=[(a+b)/2,lit.y+L.lh,L.lz];
+      F.lights.push({p,r:clamp(w()*.55,4,L.lr),c:plnMul(L.lc,s)});
+      CAVE3.stat.lakeL=p[0].toFixed(1)+" "+p[1].toFixed(1)+" "+s.toFixed(2);
+      if(F.glows.length<6)F.glows.push({p:[p[0],lit.y+.1,L.lz],c:L.gc,k:.45*s,s:clamp(w()*.18,1.2,2.6)});
+    }
+  }
   CAVE3.stat.lake=F.lake?+F.lake.y.toFixed(2):null;
   CAVE3.lakeD=near<1e9?near:null;
   return tris;
