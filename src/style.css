@@ -3007,6 +3007,8 @@ body.rackon #prompt{opacity:0}
   .scr.room3{inset:0;border:0;border-radius:0;box-shadow:none;padding-left:clamp(30%,calc(100% - 880px),40%)}
   body.screen .scr.room3.open{padding-top:0}
   .scr.room3::before{left:clamp(30%,calc(100% - 880px),40%);top:0}
+  /* эфир — над комнатой, как над залом станции: без строки над шапкой он ложился на «ШТАБ» (Контроль 15.10) */
+  body.screen:not(.mobile):has(.scr.room3.open) #console{left:calc(clamp(30%,calc(100% - 880px),40%) / 2);top:18px}
 }
 @media (max-width:899.98px){
   .scr.room3,body.screen .scr.room3.open{padding-top:36vh}

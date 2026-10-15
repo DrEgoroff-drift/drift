@@ -24,10 +24,14 @@ function gpuSnapshot(){
   if(GPU.snapNo!==GPU.frameNo&&!GPU.on)drawWorld();
   return GPU.snap||cvs;
 }
+/* холсты движка поверх #g во всё окно (дом 29rb): их кадр отправлен той же задачей, снимок
+   кладёт их поверх мира — иначе look() и детекторы видят под домом пустоту. Функция отдаёт холст или null */
+const GPU_SNAP_OVER=[];
 function gpuTakeSnap(){
   const c=GPU.snap||(GPU.snap=document.createElement("canvas"));
   if(c.width!==GPU.cv.width||c.height!==GPU.cv.height){c.width=GPU.cv.width;c.height=GPU.cv.height;}
   const g=c.getContext("2d",{willReadFrequently:true});g.drawImage(GPU.cv,0,0);
+  for(const f of GPU_SNAP_OVER){const o=f();if(o&&o.isConnected&&o.width&&o.style.display!=="none")g.drawImage(o,0,0,c.width,c.height);}
   chipDomSnap(g,c.width/Math.max(1,W));
   GPU.snapNo=GPU.frameNo;
 }
