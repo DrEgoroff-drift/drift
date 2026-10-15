@@ -184,7 +184,7 @@ function room3Open(id,host){
   ROOM3.L=null;
   if(!ROOM3.raf&&typeof requestAnimationFrame==="function")ROOM3.raf=requestAnimationFrame(room3Loop);
 }
-function room3Place(){if(ROOM3.open==="hq"){const i=HQ_ORDER.findIndex((r,k)=>{const m=hqMgrAt(k);return m&&m.id===hqSel;});return i>=0?"d"+i:G.mgrs&&G.mgrs.length?"all":"d0";}return "all";}
+function room3Place(){if(ROOM3.open==="hq"){const i=HQ_ORDER.findIndex((r,k)=>{const m=hqMgrAt(k);return m&&m.id===hqSel;});return i>=0?"d"+i:"all";}return "all";}
 function room3Close(){
   if(ROOM3.raf&&typeof cancelAnimationFrame==="function")cancelAnimationFrame(ROOM3.raf);ROOM3.raf=0;
   if(ROOM3.host)ROOM3.host.classList.remove("room3");
