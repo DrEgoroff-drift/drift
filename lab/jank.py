@@ -25,7 +25,15 @@ SCENES = ["surface", "landing", "things", "night", "cave", "dig", "shaft", "map"
 ENTRY_MS, RUN_MAX, LONG, LONG_SHARE, ENTRY_MAX = 2000, 100, 33.4, .02, 250
 
 REC = """<script>
-window.__J={on:false,t0:0,f:[],lt:[]};
+window.__J={on:false,t0:0,f:[],lt:[],pp:[],la:[]};
+/* конвейер или шейдер, собранный на ходу, — рывок при первой встрече (shader stutter): считаем каждую сборку */
+try{["createRenderPipeline","createComputePipeline","createShaderModule","createRenderPipelineAsync","createComputePipelineAsync"].forEach(function(n){
+  var o=GPUDevice.prototype[n];if(!o)return;GPUDevice.prototype[n]=function(){var s=performance.now(),r=o.apply(this,arguments);
+    if(__J.on)__J.pp.push([s-__J.t0,n,performance.now()-s]);return r;};});}catch(e){}
+/* долгий кадр с виновником (Long Animation Frames): какая функция из какого файла съела кадр */
+try{new PerformanceObserver(function(l){if(__J.on)l.getEntries().forEach(function(e){
+  __J.la.push([e.startTime-__J.t0,e.duration,e.blockingDuration||0,(e.scripts||[]).slice().sort(function(a,b){return b.duration-a.duration;}).slice(0,3).map(function(s){
+    return [(s.sourceFunctionName||s.invoker||"?").slice(0,60),Math.round(s.duration),(s.sourceURL||"").split("/").pop().slice(0,40)+":"+(s.sourceCharPosition|0)];})]);});}).observe({type:"long-animation-frame",buffered:false});}catch(e){}
 /* долгие задачи между кадрами — подгрузка, компиляция, мусор: rAF их не видит, если они легли между кадрами */
 try{new PerformanceObserver(function(l){if(__J.on)l.getEntries().forEach(function(e){__J.lt.push([e.startTime-__J.t0,e.duration]);});}).observe({type:"longtask",buffered:false});}catch(e){}
 (function(){var lt=0;function tick(t){requestAnimationFrame(tick);
@@ -35,7 +43,7 @@ try{new PerformanceObserver(function(l){if(__J.on)l.getEntries().forEach(functio
     try{r.gt=G.t;r.vx=G.viewX;r.vy=G.viewY;r.k=G.viewK;var H=G.mode==="surface"?G.surf:G.mode==="cave"?G.cave:G.mode==="dig"?G.dig:null;
       if(H){r.hx=H.x;r.hy=H.y;}
       if(G.mode==="surface"&&typeof PLN!=="undefined"&&PLN.sun&&PLN.sun.dir)r.sun=[PLN.sun.dir[0],PLN.sun.dir[1],PLN.sun.dir[2]];
-      r.ge=GPU.errs||0;if(performance.memory)r.mem=performance.memory.usedJSHeapSize;}catch(e){}
+      r.ge=GPU.errs||0;try{r.cap=frameCapNow();}catch(e){}if(performance.memory)r.mem=performance.memory.usedJSHeapSize;}catch(e){}
     try{if(typeof GPU!=="undefined"&&GPU.dev){var s=performance.now();GPU.dev.queue.onSubmittedWorkDone().then(function(){r.g=performance.now()-s;});}}catch(e){}}
   lt=t;}
 requestAnimationFrame(tick);})();
@@ -185,18 +193,24 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
     row = {}
     if len(W) > 60:
         iv = [b["t"] - a["t"] for a, b in zip(W, W[1:])]
-        drop = [x for x in iv if x > 25]
+        # потолок сцены (станция — 30 по замыслу): пороги от него, а не от шестидесяти
+        caps = [f.get("cap") or 60 for f in W]
+        cap = min(60, max(set(caps), key=caps.count))
+        k = 60 / cap
+        drop_ms, fps_min, low1_ms = 25 * k, FPS_MIN / k, LOW1_MS * k
+        row["cap"] = cap
+        drop = [x for x in iv if x > drop_ms]
         low1 = sorted(iv)[int(len(iv) * .99)]
         # FPS по секундам: сколько кадров мира в каждом окне в 1 с
         t0, t1 = W[0]["t"], W[-1]["t"]
         fps = [sum(1 for f in W if s <= f["t"] < s + 1000) for s in range(int(t0), int(t1) - 999, 500)]
         row.update(fps=min(fps) if fps else 0, low1=low1, drop=len(drop))
         if len(drop) > DROP_SHARE * len(iv):
-            out.append((tag, "пропуск кадров: %d из %d кадров мира позже 25 мс (худший %.0f мс)" % (len(drop), len(iv), max(drop))))
-        if fps and min(fps) < FPS_MIN:
-            out.append((tag, "просадка FPS: худшая секунда %d кадров (порог %d)" % (min(fps), FPS_MIN)))
-        if low1 > LOW1_MS:
-            out.append((tag, "1%% low: %.1f мс на кадр (порог %d) — подтормаживает" % (low1, LOW1_MS)))
+            out.append((tag, "пропуск кадров: %d из %d кадров мира позже %.0f мс (худший %.0f мс)" % (len(drop), len(iv), drop_ms, max(drop))))
+        if fps and min(fps) < fps_min:
+            out.append((tag, "просадка FPS: худшая секунда %d кадров (порог %d при потолке %d)" % (min(fps), fps_min, cap)))
+        if low1 > low1_ms:
+            out.append((tag, "1%% low: %.1f мс на кадр (порог %.0f) — подтормаживает" % (low1, low1_ms)))
         # заминка против соседей (FCAT/PCPer): кадр вдвое дольше медианы двадцати прошлых — глаз видит рывок,
         # даже когда до 33 мс он не дотянул; лёгкая и тяжёлая сцены сравниваются каждая сама с собой
         hz = [(W[i + 1]["t"], x) for i, x in enumerate(iv) if i >= 20 and x > 20 and x > 2 * sorted(iv[i - 20:i])[10]]
@@ -206,8 +220,25 @@ def heavy(sc, d, r0, r1, p0, p1, wall, gms, out):
     lt = [x for x in d.get("lt") or [] if ENTRY_MS <= x[0] < pz - 50]
     if lt: row["long"] = max(x[1] for x in lt)
     big = [x for x in lt if x[1] > LONGTASK_MS]
+    la = [x for x in d.get("la") or [] if ENTRY_MS <= x[0] < pz - 50]
+    row["loaf"] = round(sum(x[2] for x in la))
+    def blame(t, dur):
+        # виновник из Long Animation Frames, перекрывающего задачу
+        hit = [x for x in la if x[0] <= t + dur and t <= x[0] + x[1] and x[3]]
+        if not hit: return ""
+        s = max(hit, key=lambda x: x[2])[3][0]
+        return " · виновник %s (%d мс, %s)" % (s[0], s[1], s[2])
     if big:
-        out.append((tag, "долгие задачи на ходу: %d, худшая %.0f мс на %.1f с — подгрузка или компиляция в потоке" % (len(big), max(x[1] for x in big), big[0][0] / 1000)))
+        w = max(big, key=lambda x: x[1])
+        out.append((tag, "долгие задачи на ходу: %d, худшая %.0f мс на %.1f с — подгрузка или компиляция в потоке%s" % (len(big), w[1], big[0][0] / 1000, blame(*w))))
+    # сборка конвейера или шейдера после входа — рывок при первой встрече; всё должно собраться прогревом
+    pp = [x for x in d.get("pp") or [] if ENTRY_MS <= x[0] < pz - 50]
+    row["pipes"] = len(pp)
+    if pp:
+        kinds = {}
+        for x in pp: kinds[x[1]] = kinds.get(x[1], 0) + 1
+        out.append((tag, "шейдер собирается на ходу: %d (%s), первая на %.1f с, дольше всех %.0f мс%s" % (
+            len(pp), ", ".join("%s %d" % kv for kv in sorted(kinds.items())), pp[0][0] / 1000, max(x[2] for x in pp), blame(pp[0][0], 1))))
     if r0 and r1 and wall > 1:
         busy = (r1.get("TaskDuration", 0) - r0.get("TaskDuration", 0)) / wall
         row["main"] = busy
@@ -307,7 +338,7 @@ def run_scene(a, pg, sc, bad, plant=None):
             time.sleep(3)   # после разрыва — ещё ход: хвосту нужна длина, чтобы законы плавности судили его
         key(ws, "ArrowLeft", False)
         time.sleep(2)   # остановка — тоже кадр игры: герой встал, камера тормозит, зум доезжает (рывок 15.10 жил тут)
-        st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,lt:__J.lt,pz:__J.pz,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
+        st = shot.ev(ws, "__J.on=false;JSON.stringify({f:__J.f,lt:__J.lt,pp:__J.pp,la:__J.la,pz:__J.pz,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
                          "errs:(window.__errs||[]).filter(function(e){return e[0]!=='W'}).slice(0,4)})")
         if not isinstance(st, str):
             bad.append(("кадры · " + sc, "запись не прочиталась: %s" % st)); return
@@ -357,10 +388,10 @@ def main():
         # обязаны это увидеть, иначе законы живого кадра слепы (как подсадки зрения)
         if not a.no_plant:
             pb = []
-            run_scene(a, pg, "surface", pb, plant="setInterval(function(){try{G.surf.x+=40;GPU.errs=(GPU.errs||0)+1;}catch(e){}},500);window.__leak=[];setInterval(function(){__leak.push(new Float64Array(1e5))},100);")
+            run_scene(a, pg, "surface", pb, plant="setInterval(function(){try{G.surf.x+=40;GPU.errs=(GPU.errs||0)+1;}catch(e){}},500);window.__leak=[];setInterval(function(){__leak.push(new Float64Array(1e5))},100);setTimeout(function(){try{GPU.dev.createShaderModule({code:\"@compute @workgroup_size(1) fn main(){}\"});}catch(e){}},4000);")
             got = " ".join(m for _, m in pb)
             print("подсадка: " + ("; ".join(m[:60] for _, m in pb) or "ничего не поймано"))
-            for law in ("герой рывком", "ошибки видеокарты", "память растёт"):
+            for law in ("герой рывком", "ошибки видеокарты", "память растёт", "шейдер собирается на ходу"):
                 if law not in got: bad.append(("кадры · подсадка", "СЛЕПО: закон «%s» не поймал подсаженный брак" % law))
     finally:
         proc.kill()
