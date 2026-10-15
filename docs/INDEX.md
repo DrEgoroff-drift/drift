@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 594 · top-level symbols: 8506
+Files: 594 · top-level symbols: 8509
 
 ## SYMBOLS
 
@@ -1366,7 +1366,9 @@ MINERAL                      src/18a-material.js:32
 MINE_HALF                    src/23cc-mine-play.js:20
 MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
-MINE_OLD_UPDATE              src/23cc-mine-play.js:270
+MINE_OLD_POI                 src/23cc-mine-play.js:285
+MINE_OLD_UPDATE              src/23cc-mine-play.js:293
+MINE_PAD                     src/23cc-mine-play.js:274
 MINE_R                       src/13a-guns.js:32
 MINE_V                       src/23cc-mine-play.js:22
 MIRROR_CORE                  src/11f-mirror.js:22-29
@@ -5827,6 +5829,7 @@ mineActWord                  src/23cc-mine-play.js:264-267
 mineBite                     src/23cc-mine-play.js:48-83
 mineDeep                     src/23a-dig-draw.js:564-567
 mineDug                      src/23cc-mine-play.js:26
+mineFlatten                  src/23cc-mine-play.js:275-284
 mineIsLevel                  src/23cc-mine-play.js:24
 mineKey                      src/23a-dig-draw.js:553
 mineKeys                     src/23cc-mine-play.js:86-90
@@ -9871,7 +9874,7 @@ zoomTo                       src/15-input.js:358
 ## src/23cb-dig-pln-dress.js · 9 KB
   · рудник на движке: убранство выработки (M631):1
 
-## src/23cc-mine-play.js · 17 KB
+## src/23cc-mine-play.js · 18 KB
   · рудник: ствол, клеть, горизонты, забой (M631, docs/DESIGN-mine.md):1
 
 ## src/23cd-dig-pln-top.js · 22 KB

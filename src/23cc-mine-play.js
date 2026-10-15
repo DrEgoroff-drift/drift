@@ -266,6 +266,29 @@ function mineActWord(){
   return D.mm.word;
 }
 
+/* ── устье на ровном (15.10) ──
+   Копёр стоял там, где встал человек, а рельеф о нём не знал: под ногами копра перепад доходил до 5.5 м.
+   Как под достопримечательностью (20a genPOI): у устья площадка ровная, к краям плавно возвращается к
+   профилю; валуны с площадки убраны, площадку корабля не трогаем. Ровняется при посадке — по этой линии
+   строится и земля планеты; первый спуск в новый ствол землю не перестраивает, ровно станет к следующей. */
+const MINE_PAD={core:84,edge:130};   /* px: ровная середина ±6.4 м, возврат к профилю ещё 10 м */
+function mineFlatten(tr,x){
+  if(x==null||!isFinite(x)||!tr||!tr.h)return;
+  const C=MINE_PAD,st=tr.step,base=groundAt(tr,x),pk=9*st;
+  const a=Math.max(0,Math.floor((x-C.core-C.edge)/st)),b=Math.min(tr.N-1,Math.ceil((x+C.core+C.edge)/st));
+  for(let j=a;j<=b;j++){
+    const u=clamp((Math.abs(j*st-x)-C.core)/C.edge,0,1),v=clamp((Math.abs(j*st-tr.padX)-pk)/pk,0,1);
+    tr.h[j]=lerp(tr.h[j],base,(1-u*u*(3-2*u))*v*v*(3-2*v));
+  }
+  if(tr.rocks)for(let i=tr.rocks.length-1;i>=0;i--)if(Math.abs(tr.rocks[i].x-x)<C.core)tr.rocks.splice(i,1);
+}
+const MINE_OLD_POI=genPOI;
+genPOI=function(tr,p){
+  const had=!!tr.poi,r=MINE_OLD_POI.apply(this,arguments);
+  if(!had&&MINE.on)mineFlatten(tr,mineSpotX(p));
+  return r;
+};
+
 /* ── переключатель ── */
 const MINE_OLD_UPDATE=updateDig;
 updateDig=function(dt){

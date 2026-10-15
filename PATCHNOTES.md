@@ -6,6 +6,28 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+## 0.499.0 - the mine is a working rudnik under the planet it is dug in
+
+- **M631, the rudnik.** The man no longer gnaws four ways and hangs in a tube. Column 0 is a shaft with a
+  cage on a rope (W/S between stops, W at the top is out). Levels come every five rows, with drifts up to
+  92 m each way whose floor he walks. Walking into a drift's end drills the face; S at the shaft's bottom
+  sinks it. He goes up and down off a drift only along ore, by ladders. Rails, timber sets, lamps and the
+  headframe dress it (`23cb`, `23cc`). Cells, ore, hardness, collapses, relics, the suit and the saved
+  workings are the old game's. `?dig=0` restores the old mine.
+- **The planet stays overhead.** The mine is a cross-section of the same world. The very surface frame
+  (land, grass, beasts, ship, sky, hour, weather) is drawn over the cut, and the two engine frames are
+  merged per sample by depth. The rock's top follows the planet's ground. On the way in the lens slides
+  down while the ground opens as a section, and on the way out the same move runs backwards. A/D at the
+  collar steps out of the cage onto the surface. `?digtop=0` turns this off (`23cd`).
+- **The biters are the planet's beasts.** The mine's biters are the planet's own species, drawn from the
+  surface's book of bodies at about half size: walking, hostile or stunned. In rock only their two
+  glowing eyes show, blinking; `?digbeast=0` brings back the flat brush (`23ce`).
+- **The headframe stands on level ground.** At landing the line around the mine spot is levelled like a
+  landmark's footing, and the ship's pad is left alone. The drop under its legs was 5.4 m; it is now
+  0.4 m. A first descent levels it from the next landing on.
+- Cost: on PC the collar is 1.1 ms CPU and 4.3 ms GPU a frame, and level 1 is 1.4 / 1.7 ms. At phone size
+  it is 1.2 / 1.0 ms. Design and disputed choices: `docs/DESIGN-mine.md`.
+
 ## 0.498.3 - the site redrawn around the game as it is now: full-bleed frames, the war page rebuilt
 
 - **Site.** The landing, the war page and «Как играть» are rewritten from scratch in one language: full-bleed frames of the current build (3D planets, the cave, flight, the station hall with people, six worlds without the HUD) with «Борт»-style instrument plates over them, Unbounded + Golos Text, a fixed top bar that turns to glass on scroll, one amber call to action. The landing is a sequence of five scenes (planet, on foot, underground, between stars, station), the live war map embedded, a gallery strip, the loop, the three side things (bird, bird in 3D, the road), install, the roadmap as it stands (3D done, the mine and the home still moving). `sky.js` honours `window.SKY_QUIET` (no painted planets where the frames are the picture). The night frame had a cave label baked in; patched out.
