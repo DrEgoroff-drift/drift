@@ -250,7 +250,7 @@ const plnWaterVP=(vp,y)=>plnM4mul(vp,plnM4mirrorY(y));
 /* ── сетки глади ──
    Решётка: xs — шаг по x от xa, zs — ряды в глубину; at(x,z) кладёт вершину и говорит, держит ли
    она воду; квадрат — если воду держит хоть один угол (у берега гладь уходит под землю, а не рвётся) */
-/* генератор: ряд за рядом, чтобы заход (plnLandStep с slice) делил листы по кадрам */
+/* генераторы (M630f): уступают стройке (21pf plnLandStep) после каждого ряда глубины */
 function* plnWaterGrid(m,xa,nx,sx,zs,at){
   const nz=zs.length,keep=new Uint8Array((nx+1)*nz);
   for(let j=0;j<nz;j++){for(let i=0;i<=nx;i++)keep[j*(nx+1)+i]=at(xa+i*sx,zs[j])?1:0;yield;}
@@ -263,9 +263,7 @@ function* plnWaterGrid(m,xa,nx,sx,zs,at){
 const plnWaterRows=(z0,z1,s)=>{const z=[],n=Math.ceil((z1-z0)/s-1e-9);for(let k=0;k<=n;k++)z.push(z0+k*s);return z;};
 /* Вода ложбины едет с дальним миром. Дно лежит в цвете вершины: высота ленты (мировая) и дна
    ложбины (на её уровне) — глубину считает шейдер, потому что уровень воды в кадре свой */
-function plnRun(g){for(;;){const r=g.next();if(r.done)return r.value;}}
-function plnWaterSheet(L,J){return plnRun(plnWaterSheetGen(L,J));}
-function* plnWaterSheetGen(L,J){
+function* plnWaterSheet(L,J){
   const C=PLN_LAND,sx=2,zs=plnWaterRows(4,136,1),nx=Math.ceil((J.xb-J.xa)/sx),m=plnMesh((nx+1)*zs.length*2);
   return yield* plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
     const f=plnLandFarH(L,x,z),hr=z<=C.zBack?plnLandRibAt(L,x,z):-1e3;
@@ -275,8 +273,7 @@ function* plnWaterSheetGen(L,J){
 }
 /* пруд стоит в мире, на уровне озера игры; вода — только в чаше: за валом бугры склона уходят ниже
    её уровня, и там она легла бы лужами */
-function plnWaterPond(L,J){return plnRun(plnWaterPondGen(L,J));}
-function* plnWaterPondGen(L,J){
+function* plnWaterPond(L,J){
   const k=L.lake,sx=L.dx*2,zs=plnWaterRows(k.zn-2.4,k.zf+2,.6),nx=Math.ceil((J.xb-J.xa)/sx),m=plnMesh((nx+1)*zs.length*2);
   return yield* plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
     const hr=plnLandRibAt(L,x,z);
@@ -288,12 +285,14 @@ function* plnWaterPondGen(L,J){
    ширина — как у дальнего мира на этой глубине. Острова встают из него сами: суша выше воды
    закрывает лист глубиной. Дно — дальняя суша под листом: мель и мокрая кромка там, где она
    подходит к уровню, — у островов и у ложбины; в открытом море дно на десять метров ниже, тело тёмное */
-function plnWaterSea(L,J){
+function plnWaterSea(L,J){return plnDrain(plnWaterSeaGen(L,J));}
+function* plnWaterSeaGen(L,J){
   const C=PLN_LAND,zs=[];
   for(let z=J.za;z<J.zb;z*=1.06)zs.push(z);
   zs.push(J.zb);
   const NC=96,m=plnMesh((NC+1)*zs.length*2),keep=new Uint8Array((NC+1)*zs.length);
   for(let j=0;j<zs.length;j++){
+    if(j)yield;
     const z=zs[j],e=plnLandE(z);
     for(let i=0;i<=NC;i++){
       const x=-e+(L.len+2*e)*i/NC,f=plnLandFarH(L,x,z);

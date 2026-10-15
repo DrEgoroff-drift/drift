@@ -57,7 +57,7 @@ function c3Layout(cssW,cssH,list,deals,folk,lazy){
     L.tables.push({id:"deal:"+d.key,d,x,z,seed:hashi(d.seed||1,i*97,0x7AB)>>>0});
     L.people.push({id:"deal:"+d.key,m:{seed:hashi(d.seed||1,i,0xDEA1)>>>0,loy:50,traits:[]},pose:"table",x,z:z-.46,yaw:0,lod:1,kind:"deal"});}
   /* толпа — или ряды зрителей на кино */
-  const cr=C3_CROWD[st]||C3_CROWD.trade;
+  const cr=gaugeCrowd(C3_CROWD[st]||C3_CROWD.trade);   /* толпа — это ЛЮДИ станции (M906, 28l-gauge) */
   if(K9){const n=Math.min(cr.length+2,9);
     for(let i=0;i<n;i++){const row=i<5?0:1,x=(i-(row?7:2))*.78+(row?.39:0);
       L.people.push({id:null,m:{seed:hashi(seed,i,0xC0D)>>>0,loy:50+i*5,traits:[]},pose:"chair",x,z:1.55+row*.85,yaw:Math.PI,lod:0,kind:"kino"});}

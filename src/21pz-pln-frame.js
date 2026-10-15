@@ -175,9 +175,11 @@ function plnWeatherLook(p,look){
    Выше двадцати градусов круг прежний, кадр M600 (ph = .125) стоит на нём, как стоял.
    Ночью ключ — самое сильное тело над горизонтом (plnBodies): луна или родитель; ключ гаснет
    в ноль между светилом и им, и смены стороны не видно. Тел нет — ночь без ключа: землю держат
-   звёзды, воздух и лампы. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
+   звёзды, воздух и лампы. Круг без шага: шаг в пятую долю градуса при дне в 6–9 минут прыгал
+   4–5 раз в секунду, и длинные тени низкого солнца дёргались (автор 15.10: «рывками свет»).
+   Карты теней и так пишутся каждый кадр (21pe) */
 function plnHour(p,wl){
-  const c=celSun(p),q=.0035,th=Math.round(c.ph*TAU/q)*q,tilt=52*PLN_DEG,A=PLN_LOOK;
+  const c=celSun(p),th=c.ph*TAU,tilt=52*PLN_DEG,A=PLN_LOOK;
   const s0=Math.sin(th)*Math.cos(tilt),back=.55*(1-plnSmooth(.05,.38,s0));
   const sun=plnNorm([-Math.cos(th),s0,Math.sin(th)*Math.sin(tilt)+back]),sy=sun[1],rise=Math.cos(th)>0;
   const atm=(p.T&&p.T.atm)||"",air=atm==="отсутствует"?0:(atm.indexOf("разреженная")>=0?.5:1);
@@ -342,15 +344,20 @@ function plnSurface(S,o){
   PLN.y0=tr.padY;
   const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):null),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
-  /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
-  const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
+  /* стройка по бюджету кадра (M614, M630f): кадр без стройки — среднее FRAME_JS прошлых кадров за
+     вычетом их стройки; стройке — что остаётся до PLN_BUILD.frame. Земля берёт своё первой,
+     посадкам — остаток, но не меньше половины low */
+  const B=PLN_BUILD,tb=wallMs(),bs=PLN.bld||(PLN.bld={base:3,ms:0});
+  if(FRAME_JS>0)bs.base+=(Math.max(0,FRAME_JS-bs.ms)-bs.base)*.1;
+  const lim=L.first?clamp(B.frame-bs.base,B.low,B.ms):B.first;
   if(fly&&o.warm&&!PLN.rush&&!L.warmDone&&plnWarmStep(L,S,p,C,V))return "warm";
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
   /* с заходом, посчитанным заранее (G.land.pre), массивы те же — пересадки нет */
   if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,-1e9,1e9);
-  plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
+  plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));
+  bs.ms=wallMs()-tb;
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
      перед объективом со своей стороны — дорожка по воде становится героем кадра; выше часа закон

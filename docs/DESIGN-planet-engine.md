@@ -667,6 +667,16 @@ own passes are a fixed .8; the shadow map matters there (the pass .16 → .05 at
 while the taps, the wing, the bloom and the density do not; at 1600 × 900 `low` is 3.3
 (−45 %).
 
+**M630f** (14.10) is the JS side of the same frame. With everything built it is ~2 ms, as
+with `?pln=0`; the tester's 15–19 ms were the build after touchdown, where one strip of
+near land or far hills was a single 9–14 ms call. The strips are generators now (yield per
+row, `21pfb`, the water in `21pw`), the strip in hand lives in `L.gj`, and the build's
+budget is `PLN_BUILD.frame` (5 ms) minus the frame's own JS. Measured by
+`perf_probe.js` (FRAME_JS on the real clock, no wrappers): build phase median/p90
+10.7/18.8 → 5.0/5.9, walking 3.5/6.2 → 2.6/3.0, standing unchanged at ~2.2; the land
+completes in ~11 s instead of ~4. Left: the touchdown frame (~210 ms, the flora kit
+~150 of it) — a kit built over the descent's frames would remove it.
+
 **M620** (the man) went in three passes, uncommitted between them. The rig costs nothing
 measurable: ~2.5k vertices posed on the CPU in well under a millisecond and one
 `writeBuffer` of 130 KB a frame. The frames of the passes are in the author's chat; the

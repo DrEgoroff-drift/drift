@@ -25,7 +25,9 @@ TEST_SUITES.push(()=>suite("развилка 5: «НА КАРТУ» со ста�
   ok(G.st===st&&!G.mapPeek,"станция та же, подгляд снят");
   ok($st.classList.contains("open"),"экран станции снова открыт");
   /* без станции карта открывается и закрывается как раньше: в полёт */
-  G.mode="system";G.st=null;
+  /* уходим дверью, а не присваиванием: G.mode="system" оставлял открытым зал (HALL.open), и «зал
+     станции» дальше по прогону видел его открытым */
+  closeStation();G.mode="system";G.st=null;
   rumourToMap({sx:G.sx+2,sy:G.sy+1,rad:3});
   ok(G.mode==="map"&&!G.mapPeek,"из полёта — обычная карта, без подгляда");
   navAction();

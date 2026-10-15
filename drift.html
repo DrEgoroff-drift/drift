@@ -3303,7 +3303,7 @@ body.rackon #prompt{opacity:0}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.495.0";
+const VER="0.498.2";
 /* ── стенд не пишет в живой мир (Контроль 12.09) ──
    dev.html и ?test=1 помечают каждый POST полем test:1; api.php, war.php и
    log.php такую запись в общие пулы (знаки, вещи, открытки, дорога, война,
@@ -11630,7 +11630,9 @@ async function gpuInit(){
     gpuPipes();
     GPU.lay={};GPU.bufs={};GPU.bgs={};GPU.cvTex=new Map();GPU.trash=[];GPU.ar={};GPU.fL=null;GPU.nView=null;
     GPU.T={};GPU.bw=0;GPU.ok=true;
-    gpuResize();gcPool();gpuPipesWarm(GPU_PIPE_KEYS);   /* конвейеры полёта — за заставкой (08b0) */
+    gpuResize();gcPool();
+    /* конвейеры полёта — за заставкой (08b0); режимы — следом, фоном, ворота их не ждут */
+    gpuPipesWarm(GPU_PIPE_KEYS).then(()=>setTimeout(()=>{if(GPU.dev===dev)gpuPipesLate();},1500));
   }catch(e){
     GPU.ok=false;gpuNone("init: "+((e&&e.message)||e));
   }finally{GPU.busy=false;}
@@ -12288,7 +12290,15 @@ function gpuPipeline(key,mk,code){
    шапку и раскладку добавляет рецепт. Где выражение длиннее константы, место вызова берёт его отсюда */
 const GPU_FLD={"fld.gbm":()=>GBM_WGSL,"fld.gbx":()=>GBX_WGSL,"fld.gnb.emi":()=>GNB_EMI,"fld.gew":()=>GEW_WGSL,
   "fld.gst":()=>GST_WGSL,"fld.hgflame":()=>HG_FLAME_WGSL,"fld.gsy.star":()=>GSY_STAR_WGSL,"fld.gsy.belt":()=>SBELT_HAZE_WGSL,"fld.gsky":()=>GSK_WGSL,"fld.belt.sky":()=>BGPU_SKY,
-  "fld.abil.cone":()=>ABIL_CONE_WGSL,"fld.belt.rocklay":()=>BROCK_LAY_WGSL};
+  "fld.abil.cone":()=>ABIL_CONE_WGSL,"fld.belt.rocklay":()=>BROCK_LAY_WGSL,
+  /* поля режимов (поздний прогрев, GPU_LATE_KEYS ниже): шахта, база, дом, черпак, карта, «Сорока», комната 3D */
+  "fld.gsky2":()=>GSK_WGSL,"fld.dig.mul":()=>CAVE_MUL_WGSL+DIG_OWN_WGSL,"fld.dig.add":()=>CAVE_ADD_WGSL+DIG_OWN_WGSL,
+  "fld.dig.dark":()=>DIG_DARK_WGSL+DIG_OWN_WGSL,"fld.warm.glow":()=>WARM_GLOW_WGSL,
+  "fld.baselight":()=>baseLightWgsl(),"fld.baseair":()=>baseAirWgsl(),
+  "fld.hin.light":()=>HIN_LIGHT_WGSL,"fld.hin.haze":()=>HIN_HAZE_WGSL,"fld.hin.air":()=>HIN_AIR_WGSL,"fld.hin.flit":()=>HIN_FLIT_WGSL,
+  "fld.scoop.air":()=>SCP_AIR,"fld.scoop.flow":()=>SCP_FLOW,"fld.scoop.obs":()=>SCP_OBS,
+  "fld.map.gal":()=>GAL_WGSL,"fld.wansky":()=>WAN_SKY_WGSL,"fld.wanlit":()=>WAN_LIT_WGSL,"fld.wanair":()=>WAN_AIR_WGSL,
+  "fld.r3post":()=>R3_POST_WGSL};
 const GPU_PIPE_SRC={
   "kit.img":()=>[GPU_IMG_WGSL,gpuImgLayout()],"kit.shp":()=>[GPU_SHP_WGSL],"wand.sail":()=>[WAND_SAIL_WGSL],gen:()=>[GEN_WGSL],
   gtr:()=>[GTR_WGSL],gex:()=>[GEX_WGSL],gor:()=>[GOR_WGSL],gor0:()=>[gorCode(0)],gor1:()=>[gorCode(1)],gor2:()=>[gorCode(2)],gor3:()=>[gorCode(3)],gor4:()=>[gorCode(4)],gor5:()=>[gorCode(5)],gor6:()=>[gorCode(6)],gor7:()=>[gorCode(7)],gor8:()=>[gorCode(8)],"gsy.orb":()=>[GSY_ORB_WGSL],gpl:()=>[GPL_WGSL],
@@ -12331,6 +12341,44 @@ function gpuAfterWarm(fn,ms){
   if(GPU_PIPES.done||GPU.none){fn();return;}
   let go=false;const run=()=>{if(!go){go=true;fn();}};
   GPU_PIPES.gate.then(run);setTimeout(run,ms||2500);
+}
+/* ══════════════ поздний прогрев: конвейеры режимов ══════════════
+   Таблица 08b1 — это полёт: её ждёт «Начать». Режимы, куда игрок входит позже (посадка, пещера,
+   шахта, база, дом, черпак, карта, «Сорока», док, рейд), создавали свои конвейеры на входе, и кадр
+   стоял, пока компилятор видеокарты доделывал три—четырнадцать штук: 130–480 мс на ПК при 15–30 мс
+   работы JS (замер QA 14.10, настоящие часы). Теперь после прогрева полёта они строятся фоном, по
+   одному, ворота их не ждут; готовые лежат в той же карте GPU_PIPES.warm, и место вызова не
+   меняется — воронка находит готовое. Список ведёт руками тот, кто добавил режим; сторож —
+   набор «входы в режимы не строят конвейеры» (tests/91zzzzzzy5-modepipes.js).
+   Ярусные группы (планета, пещера) приносят свои дескрипторы: GPU_LATE_GROUPS.push(() => [[ключ, {desc}]…]) */
+const GPU_LATE_KEYS=[
+  "pipe:fld.gsky2|over","pipe:fld.dig.mul|mul","pipe:fld.dig.add|add","pipe:fld.dig.dark|mul","pipe:fld.warm.glow|add",
+  "pipe:fld.baselight|mul","pipe:fld.baseair|add",
+  "pipe:fld.hin.light|mul","pipe:fld.hin.haze|add","pipe:fld.hin.air|add","pipe:fld.hin.flit|over",
+  "pipe:fld.scoop.air|over","pipe:fld.scoop.flow|over","pipe:fld.scoop.obs|over",
+  "pipe:fld.map.gal|over","pipe:fld.map.gal|bake",
+  "pipe:fld.wansky|over","pipe:fld.wanlit|mul","pipe:fld.wanair|add",
+  "r3.main","r3.shadow","r3.down","pipe:fld.r3post|over","raid3d","raid3d.spr"];
+const GPU_LATE_GROUPS=[];
+/* по одному ключу за шаг, 30 мс между шагами: компилятор не занят ничем другим, кадр не ждёт.
+   GPU_PIPES.late — {n, ms, done, bad} для детектора и лаборатории */
+function gpuPipesLate(){
+  const d=gpuPipesDev(),t0=wallMs(),L=GPU_PIPES.late={n:0,ms:0,done:false,bad:[],asked:0};
+  const todo=GPU_LATE_KEYS.map(k=>()=>{const r=gpuPipeRecipe(k);return r?[[k,r]]:(L.bad.push(k),[]);}).concat(
+    GPU_LATE_GROUPS.map(g=>()=>g()));
+  const flat=[];
+  const next=()=>{
+    if(GPU_PIPES.dev!==d)return;   /* устройство сменилось: прогрев нового начнёт свой */
+    while(!flat.length&&todo.length){try{for(const x of todo.shift()())flat.push(x);}catch(e){L.bad.push(String(e&&e.message||e).slice(0,60));}}
+    const it=flat.shift();
+    if(!it){L.done=true;L.ms=Math.round(wallMs()-t0);return;}
+    const key=it[0],r=it[1],c=GPU_PIPES.warm.get(key);
+    if(c&&c.p){next();return;}
+    const w={p:null,code:r.code};GPU_PIPES.warm.set(key,w);L.asked++;
+    d.createRenderPipelineAsync(r.desc).then(p=>{if(GPU_PIPES.dev===d){w.p=p;L.n++;}},()=>{L.bad.push(key);})
+      .then(()=>setTimeout(next,30));
+  };
+  next();
 }
 
 /* ══════════════ таблица ключей прогрева (08b0) — пишет детектор, руками не править ══════════════
@@ -13529,6 +13577,23 @@ function gpuQuad(SH,a,b,c,d,C,hard){
   const h=hard|0,al=C[3]==null?1:C[3];
   SH.push([5,a[0],a[1],b[0],b[1],c[0],c[1],C[0],C[1],C[2],al,4|(h&1)|(h&2)],
     [5,a[0],a[1],c[0],c[1],d[0],d[1],C[0],C[1],C[2],al,1|(h&4?2:0)|(h&8?4:0)]);
+}
+/* фигуры в координатах 2D-холста → в пиксели CSS: o = lifeHere(0,0) (перенос и масштаб ctx).
+   Режим в withScale(K) считает в мировых пикселях; без перевода фигуры ложатся в K раз мельче
+   в левый верхний угол — так шахта на большом экране рисовала ствол в небе (автор, 15.10) */
+function gpuShpAt(L,o){
+  if(!o||(o.s===1&&!o.x&&!o.y))return L;
+  const s=o.s,X=o.x,Y=o.y;
+  for(const t of L){const k=t[0];
+    t[1]=X+t[1]*s;t[2]=Y+t[2]*s;
+    if(k===5){t[3]=X+t[3]*s;t[4]=Y+t[4]*s;t[5]=X+t[5]*s;t[6]=Y+t[6]*s;continue;}
+    if(k===1||k===3)t[3]*=s;
+    else if(k===4){t[3]*=s;t[4]*=s;}
+    else{t[3]=X+t[3]*s;t[4]=Y+t[4]*s;}
+    if(k!==4&&k!==8&&t[5])t[5]*=s;
+    if(t[6])t[6]*=s;
+  }
+  return L;
 }
 /* приёмник фигур (G15): живые мелочи 2D-рисовальщиков (верёвка, ткань, дым, огонёк)
    пишутся сюда фигурами gpuShapes в пикселях CSS вместо ctx. {o:lifeHere(0,0),SH:[]}:
@@ -24266,6 +24331,7 @@ function sellCargo(sys,k,qty){
   if(typeof mayakSold==="function")mayakSold(sys,k,qty,revenue);   /* маяк: сдано за смену (M349) */
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-Math.max(0,qty-Q.nA-Q.nB)*.005,-.35,0);
+  if(Q.nF>0)m.pressure[k]=FAUCET_FLOOR;   /* кран (M905, 12ab-hold): сверх нормы — дно сразу, отдых тем же полупериодом */
   return revenue;
 }
 function sellDroneYield(sys,k,qty){
@@ -25374,7 +25440,7 @@ function needBlock(){
   const near=needsNear(7).filter(n=>n.sys!==G.sys).slice(0,3);
   if(N||near.length){
     $body.appendChild(el("div","sec","НУЖДА · ПРИВОЗ ВДВОЕ, ОДИН РАЗ"));
-    if(N)$body.appendChild(el("div","row","<div class='nm'><b>Здесь кончилось: "+N.ru+"</b><s>берут "+marketFor(G.sys)[N.k]+" кр за единицу — пока не привезут</s></div>"));
+    if(N)$body.appendChild(el("div","row","<div class='nm'><b>Здесь кончилось: "+N.ru+"</b><s>берут "+marketFor(G.sys)[N.k]+" кр за единицу — пока не привезут"+(N.why?" · "+N.why:"")+"</s></div>"));
     for(const n of near)$body.appendChild(el("div","row","<div class='nm'><b>"+n.sys.station.name+" · "+n.need.ru+"</b><s>"+n.d+" "+pl3(n.d,"прыжок","прыжка","прыжков")+" · сектор "+n.sys.sx+":"+n.sys.sy+"</s></div>"));
   }
   const O=orderOf(G.sys),H=orderHere();
@@ -25687,8 +25753,20 @@ function sellQuote(sys,k,qty){
   const pA=nA?appetitePrice(sys,k):base;
   const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
   /* остаток без надбавки — ломтями (аудит A2, M351): каждые десять единиц на три процента дешевле, не ниже .7 */
-  const rest=(typeof coopSellSlice==="function")?coopSellSlice(base,qty-nA):(qty-nA)*base;
-  return{revenue:Math.round(nA*pA+rest),nA,nB,priceA:pA,base};
+  const sl=(p,n)=>(typeof coopSellSlice==="function")?coopSellSlice(p,n):n*p;
+  /* кран (M905, DESIGN-game §10.4): то, что станция ЕСТ, сверх нормы смены идёт сразу
+     по дну давления — минус 35 % к прейскуранту, а не за семьдесят единиц, как раньше.
+     Аппетит — кран, а не слив: излишек везут туда, где этот товар не ели. Чего станция
+     не ест — по-старому. Бункер своего цеха (nB) излишком не считается. */
+  const A=appetiteOf(sys),nF=(A&&A[k])?Math.max(0,qty-nA-nB):0,pF=nF?faucetPrice(sys,k):0;
+  const rest=nF?nB*base+sl(pF,nF):sl(base,qty-nA);
+  return{revenue:Math.round(nA*pA+rest),nA,nB,nF,priceA:pA,priceF:pF,base};
+}
+/* цена сверх нормы: тот же marketPrice, давление поставлено на дно */
+const FAUCET_FLOOR=-.35;
+function faucetPrice(sys,k){
+  marketFor(sys);const m=G.market[sys.key];
+  return marketPrice(sys,k,FAUCET_FLOOR-((m&&m.pressure&&m.pressure[k])||0));
 }
 /* ── строка «БЕРЁТ» для доски, эфира и ряда трюма ── */
 function appetiteLine(sys,k){
@@ -25708,7 +25786,7 @@ function appetiteBlock(){
     const ate=appetiteAte(G.sys,k),left=A[k]-ate,have=G.cargo[k]|0;
     $body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>"+
       (left>0?"ещё "+left+" из "+A[k]+" по "+appetitePrice(G.sys,k)+" кр":"на эту смену взяли всё · через смену снова")+
-      " · обычная "+marketFor(G.sys)[k]+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
+      " · сверх нормы "+faucetPrice(G.sys,k)+" кр"+(have?" · в трюме "+have:"")+"</s></div>"));
   }
 }
 /* эфир (11b): раз из нескольких — о том, кто берёт с надбавкой поблизости */
@@ -27842,6 +27920,7 @@ function coopCounterBlock(){
   $body.appendChild(el("div","sec","ПРИЛАВОК · КООПЕРАТИВ «"+C.name.toUpperCase()+"» · "+R.ru.toUpperCase()+(R.cap?" · ДО "+R.cap+" ЕДИНИЦ ТОВАРА ЗА ЗАХОД":" · БЕЗ ПОТОЛКА")+" · ЦЕНА ЛОМТЯМИ ПО ДЕСЯТЬ"));
   for(const k of TRADE_KEYS){
     if(!prices[k])continue;
+    if(gaugeStopped(G.sys,k)){$body.appendChild(el("div","row","<div class='nm'><b style='color:"+resTxt(k)+"'>"+RES[k].ru+"</b><s>цех стоит: склад пуст, не делают</s></div>"));continue;}   /* M906 */
     const left=coopCapLeft(k),free=Math.max(0,stat().cargoMax-held());
     const maxN=Math.min(left,free);
     const q0=coopBuyQuote(G.sys,k,10);
@@ -47602,7 +47681,8 @@ function occTick(){
   if(!(G.freed|0))return;
   /* сперва укрепляются там, где уже стоят, и только потом ползут дальше:
      иначе фронт расплывался пятном в один уровень на всю галактику */
-  if(o.lvl<OCC_MAX&&r()<.45){
+  /* плохой порядок у станции (M906, 28l-gauge) — пираты крепнут в полтора раза смелее */
+  if(o.lvl<OCC_MAX&&r()<.45*gaugeSpread(from[0],from[1])){
     occSet(from[0],from[1],o.lvl+1);
     const sys=getSystem(from[0],from[1]);
     logAdd("warn","«"+(sys.name||"")+"»: пираты усилились — "+occInfo(o.lvl).ru);
@@ -47616,7 +47696,7 @@ function occTick(){
     if(!starAt(nx,ny)||occLvl(nx,ny))continue;
     /* обжитое сопротивляется: рядом со станцией захват идёт вдвое реже */
     const sys=getSystem(nx,ny);
-    if(sys.station&&r()<.5)continue;
+    if(sys.station&&r()<1-.5*gaugeSpread(nx,ny))continue;   /* плохой порядок держит хуже (M906) */
     if(typeof mapUnderTrassa==="function"&&mapUnderTrassa(nx,ny))continue;   /* под трассой не занимают (M348) */
     occSet(nx,ny,1);
     logAdd("warn","Пираты пришли в «"+(sys.name||(nx+":"+ny))+"»");
@@ -90329,13 +90409,17 @@ function plnQualSet(name){
 /* ярус по обстановке: явный выбор (G.opts.gfx.pln), иначе телефон — low, спущенное движком
    разрешение (28-loop: RES_AUTO<2 — кадр три секунды не укладывался) — mid, иначе high.
    Густота посадок (plK) берётся при посадке: смена яруса на ходу пересаживать не заставляет */
-function plnQualAuto(){
+function plnQualWant(){
   const Q=PLN_GPU;
   let want=null;try{want=G.opts.gfx.pln||null;}catch(e){}
   if(!PLN_QUAL[want]){
     if(Q.phone==null){Q.phone=false;try{Q.phone=Math.min(window.innerWidth,window.innerHeight)<=760&&matchMedia("(pointer:coarse)").matches;}catch(e){}}
     want=Q.phone?"low":(typeof RES_AUTO==="number"&&RES_AUTO<2)?"mid":"high";
   }
+  return want;
+}
+function plnQualAuto(){
+  const Q=PLN_GPU,want=plnQualWant();
   if(want!==Q.qual)plnQualSet(want);
   return Q.qual;
 }
@@ -90384,6 +90468,28 @@ function plnRec(a,k,p,scale,yaw,hk,seed,ca,mode,cb,ride){
   a[o+12]=cb?cb[0]:0;a[o+13]=cb?cb[1]:0;a[o+14]=cb?cb[2]:0;a[o+15]=ride?1:0;
 }
 
+/* раскладки привязок: те же и у устройства (plnGpuDev, plnGpuTier), и у позднего прогрева (08b0) —
+   конвейер, собранный по равной раскладке, годится любой привязке с ней: «group-equivalent» */
+function plnLayouts(d){
+  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
+  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
+  const sh={sampleType:"depth",viewDimension:"2d-array"};
+  return {scene:d.createBindGroupLayout({entries:[
+      {binding:0,visibility:VF,buffer:{type:"uniform"}},
+      {binding:1,visibility:FR,texture:sh},{binding:2,visibility:FR,sampler:{type:"comparison"}},
+      tx(3),{binding:4,visibility:FR,sampler:{type:"filtering"}},
+      {binding:5,visibility:FR,buffer:{type:"uniform"}}]}),
+    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]})};
+}
+function plnLayPost(d,ms){
+  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
+  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
+  return d.createBindGroupLayout({entries:[
+    {binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
+    tx(2),tx(3),tx(4),tx(5),{binding:6,visibility:FR,sampler:{type:"filtering"}},
+    {binding:7,visibility:FR,texture:{sampleType:"depth",multisampled:ms>1}},
+    {binding:8,visibility:FR,texture:{sampleType:"depth",viewDimension:"2d-array"}},{binding:9,visibility:FR,sampler:{type:"comparison"}}]});
+}
 /* ── то, что живёт с устройством ── */
 function plnGpuDev(){
   const Q=PLN_GPU,d=GPU.dev;
@@ -90391,16 +90497,8 @@ function plnGpuDev(){
   Q.dev=d;Q.gen++;Q.w=0;Q.h=0;Q.T=null;Q.V=null;Q.B=null;Q.pp=null;Q.P={};Q.D=null;Q.tierGen=-1;
   /* промах в шейдере или привязке виден здесь же, а не только в журнале сбоев движка */
   d.addEventListener("uncapturederror",e=>plnLog("gpu "+String((e.error&&e.error.message)||e.error)));
-  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
-  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
-  const sh={sampleType:"depth",viewDimension:"2d-array"};
-  Q.L={
-    scene:d.createBindGroupLayout({entries:[
-      {binding:0,visibility:VF,buffer:{type:"uniform"}},
-      {binding:1,visibility:FR,texture:sh},{binding:2,visibility:FR,sampler:{type:"comparison"}},
-      tx(3),{binding:4,visibility:FR,sampler:{type:"filtering"}},
-      {binding:5,visibility:FR,buffer:{type:"uniform"}}]}),
-    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]}),
+  const lay=plnLayouts(d);
+  Q.L={scene:lay.scene,shadow:lay.shadow,
     post:null};   /* привязка свёртки — в plnGpuTier: её глубина многовыборочная или нет по ярусу */
   Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
     cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
@@ -90419,13 +90517,7 @@ function plnGpuDev(){
 /* ── то, что живёт с ярусом: привязка свёртки, карта теней, конвейеры ── */
 function plnGpuTier(){
   const Q=PLN_GPU,d=GPU.dev;
-  const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
-  const tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
-  Q.L.post=d.createBindGroupLayout({entries:[
-    {binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
-    tx(2),tx(3),tx(4),tx(5),{binding:6,visibility:FR,sampler:{type:"filtering"}},
-    {binding:7,visibility:FR,texture:{sampleType:"depth",multisampled:Q.ms>1}},
-    {binding:8,visibility:FR,texture:{sampleType:"depth",viewDimension:"2d-array"}},{binding:9,visibility:FR,sampler:{type:"comparison"}}]});
+  Q.L.post=plnLayPost(d,Q.ms);
   if(Q.D&&Q.D.shadow)Q.D.shadow.destroy();
   const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
   const shadow=d.createTexture({size:[Q.shn,Q.shn,2],format:PLN_DEP,usage:RT});
@@ -90435,17 +90527,15 @@ function plnGpuTier(){
   /* цели и привязки — заново: они держат карту теней и размеры яруса */
   Q.tierGen=Q.tier;Q.w=0;Q.h=0;
 }
-/* конвейеры: через воронку движка (непрогретый ключ она строит на месте и пишет в GPU_PIPES.lazy),
-   а держим сами — воронка непрогретое не хранит */
-function plnGpuPipes(){
-  const Q=PLN_GPU,d=GPU.dev,L=Q.L,ms=Q.ms;
+/* дескрипторы конвейеров яруса: [ключ воронки, дескриптор]. Ключи несут сглаживание (sky1/sky4, blur4):
+   свёртка и её раскладка у яруса со сглаживанием другие. Тот же список строит поздний прогрев (08b0) —
+   до первой посадки, по раскладкам, равным тем, что заведёт устройство */
+function plnPipeDescs(d,L,ms){
   const mS=gpuShader(PLN_WGSL_SCENE+PLN_WGSL_WX+PLN_WGSL_WATER),mP=gpuShader(plnWgslPost(ms));   /* осадки — в шейдере сцены (21pk) */
-  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
-    for(const x of i.messages)if(x.type==="error")plnLog("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
   const lS=d.createPipelineLayout({bindGroupLayouts:[L.scene]}),lH=d.createPipelineLayout({bindGroupLayouts:[L.shadow]}),
     lP=d.createPipelineLayout({bindGroupLayouts:[L.post]});
-  const prim={topology:"triangle-list",cullMode:"none"};
-  const mk=(key,desc)=>{Q.P[key]=gpuPipeline("pln."+key,()=>desc);};
+  const prim={topology:"triangle-list",cullMode:"none"},out=[];
+  const mk=(key,desc)=>out.push([key,desc]);
   mk("shadow",{layout:lH,vertex:{module:mS,entryPoint:"vs_shadow",buffers:PLN_VB},primitive:prim,
     depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"less",depthBias:2,depthBiasSlopeScale:2.2}});
   const blend={color:{srcFactor:"src-alpha",dstFactor:"one-minus-src-alpha"},alpha:{srcFactor:"one",dstFactor:"one-minus-src-alpha"}};
@@ -90464,7 +90554,25 @@ function plnGpuPipes(){
   mk("blur",post("fs_blur"));mk("down",post("fs_down"));mk("up",post("fs_up"));mk("shafts",post("fs_shafts"));
   /* свёртка пишет в сцену движка; её альфу не трогаем */
   mk("comp",post("fs_comp",{format:PLN_HDR,writeMask:GPUColorWrite.RED|GPUColorWrite.GREEN|GPUColorWrite.BLUE}));
+  return out;
 }
+/* ключ воронки: свёртка и тень зависят от сглаживания яруса, сцена несёт его в имени (sky1/sky4) */
+const plnPipeKey=(k,ms)=>"pln."+k+(/^(shadow|sky|body|water|wx)/.test(k)?"":"."+ms);
+/* конвейеры: через воронку движка (непрогретый ключ она строит на месте и пишет в GPU_PIPES.lazy),
+   а держим сами — воронка непрогретое не хранит. Q.P — по короткому имени: shadow, sky1, body4, blur … */
+function plnGpuPipes(){
+  const Q=PLN_GPU,d=GPU.dev,ms=Q.ms;
+  const mS=gpuShader(PLN_WGSL_SCENE+PLN_WGSL_WX+PLN_WGSL_WATER),mP=gpuShader(plnWgslPost(ms));
+  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
+    for(const x of i.messages)if(x.type==="error")plnLog("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
+  for(const [k,desc] of plnPipeDescs(d,Q.L,ms))Q.P[k]=gpuPipeline(plnPipeKey(k,ms),()=>desc);
+}
+/* поздний прогрев (08b0): конвейеры того яруса, что выберет ближайшая посадка */
+GPU_LATE_GROUPS.push(()=>{
+  const d=GPU.dev,ms=PLN_QUAL[plnQualWant()].ms,lay=plnLayouts(d);
+  lay.post=plnLayPost(d,ms);
+  return plnPipeDescs(d,lay,ms).map(([k,desc])=>[plnPipeKey(k,ms),{desc}]);
+});
 
 /* ── то, что живёт с размером кадра ── */
 function plnGpuSize(){
@@ -90665,8 +90773,11 @@ const PLN_LAND={ext:180,               /* на сколько образцов �
    sliceFirst — первому вызову: он поднимает землю у корабля; piece — проб травы между сверками с
    часами (проба ~3 мкс); farV — вершин в куске дальнего мира: кусок в 9000 стоил 33 мс на ПК, в
    бюджет ложится один в 1200 (~8 мс: большая часть — запас высот по краям куска). До касания
-   стройки нет: сцена складывается вокруг точки касания (L.cx0), а корабль садится, где остановился */
-const PLN_BUILD={ms:8,first:40,n:2,nFirst:6,slice:6000,sliceFirst:12000,piece:1200,farV:1200};
+   стройки нет: сцена складывается вокруг точки касания (L.cx0), а корабль садится, где остановился.
+   frame (M630f) — весь JS кадра вместе со стройкой: стройке достаётся frame минус средний кадр без
+   неё, но не меньше low и не больше ms; сетки куска режутся по рядам (21pfb), и бюджет держится.
+   frame 5, а не 6: кусок травы и тела ленты перебирают бюджет на ~1 мс, а потолок кадра — 6 */
+const PLN_BUILD={ms:8,first:40,n:2,nFirst:6,slice:6000,sliceFirst:12000,piece:300,farV:1200,frame:5,low:1};
 /* зелень меняет тон с глубиной: оливковая вблизи, холоднее на дальнем берегу, сине-зелёная на холмах.
    Это рабочий лист: перед стройкой земли в него ложится лист типа мира (21pfa, plnPalSet) */
 const PLN_PAL={
@@ -91115,8 +91226,14 @@ function plnLandSees(J,ex,V,m){
   const z=J.t==="water"?136:PLN_LAND.zBack,h=V.hw*(1+z/V.D)+12+m;
   return J.xb>ex-h&&J.xa<ex+h;
 }
-function plnLandBuild(L,J){
-  const m=J.t==="rib"?plnLandRibMesh(L,J.c):J.t==="far"?plnLandFarMesh(L,J):J.t==="water"?plnWaterSheet(L,J):J.t==="sea"?plnWaterSea(L,J):plnWaterPond(L,J);
+/* сетка куска генератором: уступает стройке по рядам (21pfb, 21pw) */
+function* plnLandGen(L,J){
+  if(J.t==="rib")return yield* plnLandRibGen(L,J.c);
+  if(J.t==="far")return yield* plnLandFarGen(L,J);
+  return yield* J.t==="water"?plnWaterSheet(L,J):J.t==="sea"?plnWaterSeaGen(L,J):plnWaterPond(L,J);
+}
+function plnLandBuild(L,J,m){
+  if(!m)m=plnDrain(plnLandGen(L,J));
   J.geo=m.ni?plnGeo(m):null;J.done=true;L.left--;
   /* сетку куска ленты ждёт расстановка (21pga): трава встаёт на неё и отпускает */
   if(J.t==="rib")J.grid=m;
@@ -91133,6 +91250,16 @@ function plnLandStep(L,ex,V,n,lim){
   let k=0;
   L.first=true;
   for(;;){
+    /* начатая сетка доводится первой: ряд за рядом, пока есть время кадра (M630f) */
+    const W=L.gj;
+    if(W){
+      if(W.J.done){L.gj=null;continue;}
+      let r;
+      do r=W.g.next();while(!r.done&&(all||wallMs()-t0<ms));
+      if(!r.done)break;
+      L.gj=null;plnLandBuild(L,W.J,r.value);k++;
+      continue;
+    }
     let best=null,bp=1e9;
     for(const J of L.jobs){
       if(J.done)continue;
@@ -91140,7 +91267,8 @@ function plnLandStep(L,ex,V,n,lim){
       if(pr<bp&&(all||see||!first)){bp=pr;best=J;}
     }
     if(!best||(!all&&(k>=cap||wallMs()-t0>=ms)))break;
-    plnLandBuild(L,best);k++;
+    if(all){plnLandBuild(L,best);k++;continue;}
+    L.gj={J:best,g:plnLandGen(L,best)};
   }
   L.ms+=wallMs()-t0;
   PLN.stat.land={jobs:L.jobs.length,left:L.left,ms:Math.round(L.ms)};
@@ -91179,89 +91307,6 @@ function plnLandMove(L,sx){
   return L;
 }
 
-/* ── сетки ── */
-/* Узел сетки из высот соседей: нормаль и то, как глубоко он сидит ниже тех, кто в трёх клетках
-   (ложбины темнее). Высоты лежат с запасом в три клетки, поэтому швов между кусками нет */
-function plnLandNode(H,o,gw,dux,dvz,span3){
-  const duy=H[o+1]-H[o-1],dvy=H[o+gw]-H[o-gw];
-  const n=plnNorm([-dvz*duy,dvz*dux,-dvy*dux]);
-  const av=(H[o+3]+H[o-3]+H[o+3*gw]+H[o-3*gw])/4;
-  const sp=Math.max(1,Math.hypot(span3,H[o+3*gw]-H[o]));
-  return {n,ao:clamp(1-Math.max(0,av-H[o])/sp*2.2,.55,1)};
-}
-function plnLandRibMesh(L,c){
-  const C=PLN_LAND,NT=L.NT,R=L.R,MG=3,i0=c*C.chunk,i1=Math.min(i0+C.chunk,NT-1),nc=i1-i0+1,gw=nc+2*MG,gh=R+2*MG;
-  const H=new Float32Array(gw*gh),PAL=PLN_PAL;
-  for(let r=0;r<gh;r++){
-    const rr=clamp(r-MG,0,R-1);
-    for(let i=0;i<gw;i++)H[r*gw+i]=plnLandRibH(L,rr,clamp(i0+i-MG,0,NT-1));
-  }
-  const X=i=>L.x0+clamp(i0+i-MG,0,NT-1)*L.dx,Z=r=>L.zr[clamp(r-MG,0,R-1)];
-  const m=plnMesh((nc*(R+1))*2+16);
-  for(let r=0;r<R;r++)for(let i=0;i<nc;i++){
-    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X(gi),z=Z(gr);
-    const q=plnLandNode(H,o,gw,Math.max(1e-3,X(gi+1)-X(gi-1)),Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z),slope=1-q.n[1];
-    let col=plnLandCol(L,x,z,h,q.n,0);
-    /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
-    if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
-    if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>L.lake.zn-4&&z<L.lake.zf+4){
-      col=plnDressShore(L,x,z,h,col);   /* голый берег, отмель, ил (21pge) */
-    }
-    /* ступень линии — скала: камень там, где земля под ней и за ней сама идёт круто */
-    const st=Math.max(plnSmooth(.5,.7,slope),plnLandTab(L,L.crag,x)*plnSmooth(.16,.34,slope)*plnSmooth(9,5,Math.abs(z)));
-    if(st>0)col=plnMix3(col,plnMul(plnMix3(PAL.rockWarm,PAL.rockCool,plnFbm(x*.05+9,z*.05+2,3,L.sd+41)*.5+.5),.74+.26*plnHash(i0+i,r,L.sd+92)),
-      (st-plnSmooth(.5,.7,slope))*.8);
-    /* в гнезде свечения у земли лежит доля камня */
-    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st*.85,q.ao);
-  }
-  for(let r=0;r+1<R;r++)for(let i=0;i+1<nc;i++){
-    const a=r*nc+i;
-    plnQuad(m,a,a+1,a+nc+1,a+nc);
-  }
-  /* юбка под ближним краем: снизу в кадр не заглянуть */
-  const sk=m.nv,nk=plnNorm([0,.25,-1]);
-  for(let i=0;i<nc;i++){
-    const o=i*PLN_VS,v=m.v;
-    plnVert(m,[v[o],v[o+1]-60,v[o+2]],nk,[v[o+6]*.7,v[o+7]*.7,v[o+8]*.7],PLN_MAT.ground,0,0,.6);
-  }
-  for(let i=0;i+1<nc;i++)plnQuad(m,sk+i,sk+i+1,i+1,i);
-  return m;
-}
-function plnLandFarMesh(L,J){
-  const C=PLN_LAND,NC=plnLandCols(J.b),fz=L.fz,RF=fz.length,MG=3,nc=J.c1-J.c0+1,nr=J.rb-J.ra+1,gw=nc+2*MG,gh=nr+2*MG;
-  const H=new Float32Array(gw*gh),K=new Uint8Array(gw*gh),K2=new Uint8Array(gw*gh),W2=new Float32Array(gw*gh),X=new Float32Array(gw*gh);
-  /* высоты полосы считаются раз на посадку (M614): куски делят края (запас MG с каждой стороны —
-     до двух третей высот куска), и без общей памяти каждая крайняя высота считалась бы по два-четыре
-     раза. Память полосы — по рядам, ряд заводится, когда его впервые трогают; пустая высота — NaN */
-  const FC=L.farC[J.b]||(L.farC[J.b]=[]),CW=NC+2*MG+1;
-  for(let r=0;r<gh;r++){
-    const rr=clamp(J.ra+r-MG,0,RF-1),z=fz[rr],e=plnLandE(z);
-    let R=FC[rr];
-    if(!R)R=FC[rr]={h:new Float32Array(CW).fill(NaN),k:new Uint8Array(CW),k2:new Uint8Array(CW),w2:new Float32Array(CW)};
-    for(let i=0;i<gw;i++){
-      const o=r*gw+i,ci=J.c0+i,x=-e+(L.len+2*e)*(ci-MG)/NC;
-      let h=R.h[ci];
-      if(h!==h){h=R.h[ci]=plnLandFarH(L,x,z);R.k[ci]=L.gk;R.k2[ci]=L.gk2;R.w2[ci]=L.gw;}
-      X[o]=x;H[o]=h;K[o]=R.k[ci];K2[o]=R.k2[ci];W2[o]=R.w2[ci];
-    }
-  }
-  const Z=r=>fz[clamp(J.ra+r-MG,0,RF-1)];
-  /* горы и дальние гряды — камень, хребет — наполовину */
-  const stone=k=>k===5||k===7?1:(k===4?.6:0);
-  const m=plnMesh(nc*nr*2+16);
-  for(let r=0;r<nr;r++)for(let i=0;i<nc;i++){
-    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X[o],z=Z(gr),k=K[o],w2=W2[o];
-    const q=plnLandNode(H,o,gw,X[o+1]-X[o-1],Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z);
-    let col=plnLandCol(L,x-L.cx0,z,h,q.n,k),st=stone(k);
-    if(w2>.01&&K2[o]!==k){col=plnMix3(col,plnLandCol(L,x-L.cx0,z,h,q.n,K2[o]),w2);st=lerp(st,stone(K2[o]),w2);}
-    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st,q.ao);
-  }
-  for(let r=0;r+1<nr;r++)for(let i=0;i+1<nc;i++){
-    const a=r*nc+i;
-    plnQuad(m,a,a+1,a+nc+1,a+nc);
-  }
-  return m;
-}
 /* сетки воды — в 21pw */
 
 /* ══════════════ планета: листы миров (M613) ══════════════
@@ -91489,6 +91534,100 @@ function plnFloraSheet(p,w){
 }
 plnFloraSheet(null,0);
 
+/* ── сетки земли (M630f): вынесены из 21pf и режутся по рядам ──
+   Кусок ленты или дальней полосы строился одним вызовом в 9–14 мс — бюджет кадра его не резал, и
+   после посадки кадр стоил 16 мс JS. Теперь сетка — генератор: уступает после каждого ряда высот
+   и каждого ряда вершин, стройка (21pf, plnLandStep) ведёт его по часам кадра и доводит в следующих.
+   plnLandRibMesh/plnLandFarMesh — те же сетки разом (стенд, PLN.rush) */
+/* ── сетки ── */
+/* Узел сетки из высот соседей: нормаль и то, как глубоко он сидит ниже тех, кто в трёх клетках
+   (ложбины темнее). Высоты лежат с запасом в три клетки, поэтому швов между кусками нет */
+function plnLandNode(H,o,gw,dux,dvz,span3){
+  const duy=H[o+1]-H[o-1],dvy=H[o+gw]-H[o-gw];
+  const n=plnNorm([-dvz*duy,dvz*dux,-dvy*dux]);
+  const av=(H[o+3]+H[o-3]+H[o+3*gw]+H[o-3*gw])/4;
+  const sp=Math.max(1,Math.hypot(span3,H[o+3*gw]-H[o]));
+  return {n,ao:clamp(1-Math.max(0,av-H[o])/sp*2.2,.55,1)};
+}
+function* plnLandRibGen(L,c){
+  const C=PLN_LAND,NT=L.NT,R=L.R,MG=3,i0=c*C.chunk,i1=Math.min(i0+C.chunk,NT-1),nc=i1-i0+1,gw=nc+2*MG,gh=R+2*MG;
+  const H=new Float32Array(gw*gh),PAL=PLN_PAL;
+  for(let r=0;r<gh;r++){
+    const rr=clamp(r-MG,0,R-1);
+    for(let i=0;i<gw;i++)H[r*gw+i]=plnLandRibH(L,rr,clamp(i0+i-MG,0,NT-1));
+    yield;
+  }
+  const X=i=>L.x0+clamp(i0+i-MG,0,NT-1)*L.dx,Z=r=>L.zr[clamp(r-MG,0,R-1)];
+  const m=plnMesh((nc*(R+1))*2+16);
+  for(let r=0;r<R;r++){if(r)yield;for(let i=0;i<nc;i++){
+    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X(gi),z=Z(gr);
+    const q=plnLandNode(H,o,gw,Math.max(1e-3,X(gi+1)-X(gi-1)),Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z),slope=1-q.n[1];
+    let col=plnLandCol(L,x,z,h,q.n,0);
+    /* у воды земля сырая: за гребнем — по урезу ложбины, у пруда — по его уровню */
+    if(L.wet&&z>2){const wl=plnLandTab(L,L.lift,x)+C.wRel;col=plnMix3(col,plnMix3(PAL.grassCool,PAL.mud,.6),plnSmooth(wl+.6,wl-.5,h)*.8);}
+    if(L.lake&&x>L.lake.x0-8&&x<L.lake.x1+8&&z>L.lake.zn-4&&z<L.lake.zf+4){
+      col=plnDressShore(L,x,z,h,col);   /* голый берег, отмель, ил (21pge) */
+    }
+    /* ступень линии — скала: камень там, где земля под ней и за ней сама идёт круто */
+    const st=Math.max(plnSmooth(.5,.7,slope),plnLandTab(L,L.crag,x)*plnSmooth(.16,.34,slope)*plnSmooth(9,5,Math.abs(z)));
+    if(st>0)col=plnMix3(col,plnMul(plnMix3(PAL.rockWarm,PAL.rockCool,plnFbm(x*.05+9,z*.05+2,3,L.sd+41)*.5+.5),.74+.26*plnHash(i0+i,r,L.sd+92)),
+      (st-plnSmooth(.5,.7,slope))*.8);
+    /* в гнезде свечения у земли лежит доля камня */
+    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st*.85,q.ao);
+  }}
+  for(let r=0;r+1<R;r++)for(let i=0;i+1<nc;i++){
+    const a=r*nc+i;
+    plnQuad(m,a,a+1,a+nc+1,a+nc);
+  }
+  /* юбка под ближним краем: снизу в кадр не заглянуть */
+  const sk=m.nv,nk=plnNorm([0,.25,-1]);
+  for(let i=0;i<nc;i++){
+    const o=i*PLN_VS,v=m.v;
+    plnVert(m,[v[o],v[o+1]-60,v[o+2]],nk,[v[o+6]*.7,v[o+7]*.7,v[o+8]*.7],PLN_MAT.ground,0,0,.6);
+  }
+  for(let i=0;i+1<nc;i++)plnQuad(m,sk+i,sk+i+1,i+1,i);
+  return m;
+}
+function* plnLandFarGen(L,J){
+  const C=PLN_LAND,NC=plnLandCols(J.b),fz=L.fz,RF=fz.length,MG=3,nc=J.c1-J.c0+1,nr=J.rb-J.ra+1,gw=nc+2*MG,gh=nr+2*MG;
+  const H=new Float32Array(gw*gh),K=new Uint8Array(gw*gh),K2=new Uint8Array(gw*gh),W2=new Float32Array(gw*gh),X=new Float32Array(gw*gh);
+  /* высоты полосы считаются раз на посадку (M614): куски делят края (запас MG с каждой стороны —
+     до двух третей высот куска), и без общей памяти каждая крайняя высота считалась бы по два-четыре
+     раза. Память полосы — по рядам, ряд заводится, когда его впервые трогают; пустая высота — NaN */
+  const FC=L.farC[J.b]||(L.farC[J.b]=[]),CW=NC+2*MG+1;
+  for(let r=0;r<gh;r++){
+    const rr=clamp(J.ra+r-MG,0,RF-1),z=fz[rr],e=plnLandE(z);
+    let R=FC[rr];
+    if(!R)R=FC[rr]={h:new Float32Array(CW).fill(NaN),k:new Uint8Array(CW),k2:new Uint8Array(CW),w2:new Float32Array(CW)};
+    for(let i=0;i<gw;i++){
+      const o=r*gw+i,ci=J.c0+i,x=-e+(L.len+2*e)*(ci-MG)/NC;
+      let h=R.h[ci];
+      if(h!==h){h=R.h[ci]=plnLandFarH(L,x,z);R.k[ci]=L.gk;R.k2[ci]=L.gk2;R.w2[ci]=L.gw;}
+      X[o]=x;H[o]=h;K[o]=R.k[ci];K2[o]=R.k2[ci];W2[o]=R.w2[ci];
+    }
+    yield;
+  }
+  const Z=r=>fz[clamp(J.ra+r-MG,0,RF-1)];
+  /* горы и дальние гряды — камень, хребет — наполовину */
+  const stone=k=>k===5||k===7?1:(k===4?.6:0);
+  const m=plnMesh(nc*nr*2+16);
+  for(let r=0;r<nr;r++){if(r)yield;for(let i=0;i<nc;i++){
+    const gr=r+MG,gi=i+MG,o=gr*gw+gi,h=H[o],x=X[o],z=Z(gr),k=K[o],w2=W2[o];
+    const q=plnLandNode(H,o,gw,X[o+1]-X[o-1],Math.max(1e-3,Z(gr+1)-Z(gr-1)),Z(gr+3)-z);
+    let col=plnLandCol(L,x-L.cx0,z,h,q.n,k),st=stone(k);
+    if(w2>.01&&K2[o]!==k){col=plnMix3(col,plnLandCol(L,x-L.cx0,z,h,q.n,K2[o]),w2);st=lerp(st,stone(K2[o]),w2);}
+    plnVert(m,[x,h,z],q.n,col,PLN_MAT.ground,0,st,q.ao);
+  }}
+  for(let r=0;r+1<nr;r++)for(let i=0;i+1<nc;i++){
+    const a=r*nc+i;
+    plnQuad(m,a,a+1,a+nc+1,a+nc);
+  }
+  return m;
+}
+function plnDrain(g){for(;;){const r=g.next();if(r.done)return r.value;}}
+function plnLandRibMesh(L,c){return plnDrain(plnLandRibGen(L,c));}
+function plnLandFarMesh(L,J){return plnDrain(plnLandFarGen(L,J));}
+
 /* ══════════════ планета: набор тел — трава, цветок, камень, скала, розетка, куст, дерево (M611) ══════════════
    Всё, что растёт и лежит на земле, — из одного набора. Тело строится раз на
    устройство, в своей мерке (пучок и камень — метр, дерево — десять), а в мир
@@ -91649,41 +91788,42 @@ function plnFloraBush(m,r){
   return m;
 }
 
-/* набор этого поколения устройства. Кости у набора свои и всегда одни: набор — словарь стиля */
-function plnFloraKit(){
-  const Q=PLN_FLORA;
-  if(Q.kit&&Q.gen===PLN_GPU.gen)return Q.kit;
-  const t0=wallMs(),W=Q.wide,H=Q.treeH,K={};
-  let nv=0;
-  const geo=m=>{nv+=m.nv;return plnGeo(m);};
+/* набор этого поколения устройства. Кости у набора свои и всегда одни: набор — словарь стиля.
+   Собирается шагами (plnFloraKitJob): первая посадка строила его целиком на кадре захода — 80 мс.
+   Шаг — одна часть набора (дерево, горсть камней); их берёт простой (plnKitTick, из кадра системы),
+   а кто спросил набор раньше времени — достраивает остаток разом, как раньше */
+function plnFloraKitJob(){
+  const Q=PLN_FLORA,W=Q.wide,H=Q.treeH,K={},J={K,i:0,nv:0,ms:0,gen:PLN_GPU.gen,steps:[]},S=J.steps;
+  const geo=m=>{J.nv+=m.nv;return plnGeo(m);};
   /* дерево породы sp; rh — радиус кроны в долях роста, если он задан композицией */
   const tree=(sp,seed,sub,rich,o,rh)=>{
     const r=rng(seed),T=PLN_TREES[sp],R=H*(rh||(T.R[0]+r()*T.R[1]));
     return {geo:geo(PLN_TREE_MAKE[sp](r,H,R,sub,rich,o)),R,sp};
   };
   const add=(list,map,key,t)=>{(map[key]=map[key]||[]).push(list.length);list.push(t);};
-  K.tuft=[0,1,2,3,4,5].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7100+k),{rings:3,w0:.09*W,w1:.06*W,off:.4*W/Q.foot,lean:1.1,wk:.3})));
-  K.reed=[0,1,2].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7150+k),{rings:4,w0:.07,w1:.04,off:.17,lean:1.2,wk:.25})));
-  {const m=plnMesh(32);plnBlob(m,{c:[0,0,0],r:[1,.72,1],sub:0,col:[1.05,1.05,1.05],mat:PLN_MAT.grass,wind:1.1,x:1,glow:.18});K.flower=geo(m);}
+  S.push(()=>{K.tuft=[0,1,2,3,4,5].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7100+k),{rings:3,w0:.09*W,w1:.06*W,off:.4*W/Q.foot,lean:1.1,wk:.3})));});
+  S.push(()=>{K.reed=[0,1,2].map(k=>geo(plnFloraTuft(plnMesh(64),rng(7150+k),{rings:4,w0:.07,w1:.04,off:.17,lean:1.2,wk:.25})));
+    {const m=plnMesh(32);plnBlob(m,{c:[0,0,0],r:[1,.72,1],sub:0,col:[1.05,1.05,1.05],mat:PLN_MAT.grass,wind:1.1,x:1,glow:.18});K.flower=geo(m);}});
   /* камни: три малых и три больших */
-  K.rock=[[11,1,[1.2,.8,1]],[23,1,[1.35,.7,1]],[37,1,[1.05,.75,1.1]],[5,2,[1.2,.8,1]],[17,2,[1.25,.85,1]],[29,2,[1.15,.9,.95]]]
-    .map(q=>geo(plnFloraRock(plnMesh(256),q[0],q[1],q[2])));
+  S.push(()=>{K.rock=[[11,1,[1.2,.8,1]],[23,1,[1.35,.7,1]],[37,1,[1.05,.75,1.1]],[5,2,[1.2,.8,1]],[17,2,[1.25,.85,1]],[29,2,[1.15,.9,.95]]]
+    .map(q=>geo(plnFloraRock(plnMesh(256),q[0],q[1],q[2])));});
   /* скалы-тела для камня покрупнее: рублены гранями — валун-шар читался комом глины (M623).
      Подошва чуть ниже нуля, мерка — единица: запись даёт размер */
-  K.crag=[[41,[1.15,.95,.9],10,.7],[43,[1.0,1.15,.85],12,.6],[47,[1.3,.7,1.0],9,.8],[53,[.95,1.3,.8],13,.55]].map(q=>{
+  S.push(()=>{K.crag=[[41,[1.15,.95,.9],10,.7],[43,[1.0,1.15,.85],12,.6],[47,[1.3,.7,1.0],9,.8],[53,[.95,1.3,.8],13,.55]].map(q=>{
     const m=plnMesh(256),r=rng(q[0]);
     plnFloraCrag(m,r,{c:[0,-.12,0],r:[q[1][0],q[1][1]+.12,q[1][2]],chops:q[2],lean:(r()-.5)*.3,pitch:(r()-.5)*.2,yaw:0,thin:q[3],seed:q[0],ico:1,deep:.42});
     return geo(m);
-  });
+  });});
   /* уступы: зуб, двойня, столб — высокие, им стоять за тропой; гребень, глыба, плита — низкие, они
      лежат и перед ней. Мерки тела — для посадки на склон: top — макушка над нулём, rx и rz — полуоси
      подошвы, low — на сколько подошва ниже нуля */
-  K.ledge=[[[[0,0,.85,2.6,.75],[-.95,-.25,.6,1.3,.55],[.8,.2,.5,.9,.5]],.2],
+  K.ledge=[];
+  [[[[0,0,.85,2.6,.75],[-.95,-.25,.6,1.3,.55],[.8,.2,.5,.9,.5]],.2],
     [[[-.45,0,.7,2.1,.65],[.55,.15,.6,1.5,.6],[1.3,-.2,.45,.7,.45]],-.24],
     [[[0,0,.75,2.9,.65],[.7,.1,.5,1.4,.5]],.16],
     [[[-1.1,0,.7,1.2,.6],[0,.1,.8,1.7,.7],[1.0,-.1,.6,1.0,.55]],-.18],
     [[[0,0,1.2,1.3,.9],[.9,-.35,.5,.7,.45]],.22],
-    [[[0,0,1.4,.8,.9],[-.3,.1,.8,1.2,.6]],-.14]].map((q,k)=>{
+    [[[0,0,1.4,.8,.9],[-.3,.1,.8,1.2,.6]],-.14]].forEach((q,k)=>S.push(()=>{
     const m=plnFloraLedge(plnMesh(4096),7250+k*7,q[0],q[1]);
     let top=0,rx=0,rz=0;
     for(let i=0;i<m.nv;i++){
@@ -91691,32 +91831,55 @@ function plnFloraKit(){
       top=Math.max(top,m.v[o+1]);
       if(m.v[o+1]<.2){rx=Math.max(rx,Math.abs(m.v[o]));rz=Math.max(rz,Math.abs(m.v[o+2]));}
     }
-    return {geo:geo(m),top,rx,rz,low:.5};
-  });
-  K.ros=[0,1,2].map(k=>geo(plnFloraRosette(plnMesh(1024),rng(7300+k),56)));
-  K.bloom=[2,3].map(n=>geo(plnFloraBloom(plnMesh(256),rng(7350+n),n)));
-  K.bush=[0,1,2].map(k=>geo(plnFloraBush(plnMesh(512),rng(7500+k))));
-  K.pad=[0,1,2].map(k=>geo(plnFloraPad(plnMesh(32),rng(7550+k))));
+    K.ledge.push({geo:geo(m),top,rx,rz,low:.5});
+  }));
+  S.push(()=>{K.ros=[0,1,2].map(k=>geo(plnFloraRosette(plnMesh(1024),rng(7300+k),56)));
+    K.bloom=[2,3].map(n=>geo(plnFloraBloom(plnMesh(256),rng(7350+n),n)));});
+  S.push(()=>{K.bush=[0,1,2].map(k=>geo(plnFloraBush(plnMesh(512),rng(7500+k))));
+    K.pad=[0,1,2].map(k=>geo(plnFloraPad(plnMesh(32),rng(7550+k))));});
   /* деревья (породы — 21pgb). K.tree и K.far — тела подряд, K.sp и K.spFar — какие из них чьей
      породы. «hero» — зонт, что клонится над площадкой: он один и в рощах не растёт */
-  K.tree=[];K.sp={};K.far=[];K.spFar={};
-  add(K.tree,K.sp,"hero",tree("umb",7401,3,true,{lean:-.95,bend:-1.7,thin:.74},.54));
+  S.push(()=>{K.tree=[];K.sp={};K.far=[];K.spFar={};add(K.tree,K.sp,"hero",tree("umb",7401,3,true,{lean:-.95,bend:-1.7,thin:.74},.54));});
+  const T1=(sp,q)=>S.push(()=>add(K.tree,K.sp,sp,tree(sp,q[0],2,q[1],q[2],q[3])));
   [[7411,false],[7413,true],[7414,false,{lean:.55,bend:1.1,thin:.8}],[7415,false,{fork:.62,thin:.8,lean:-.3},.4],[7416,true,{fork:.27,lean:.25,bend:.6}]]
-    .forEach(q=>add(K.tree,K.sp,"umb",tree("umb",q[0],2,q[1],q[2],q[3])));
-  [[7421,false],[7422,true,{thin:.85,wide:.4}],[7423,false,{lean:.5,skirt:.26}]].forEach(q=>add(K.tree,K.sp,"col",tree("col",q[0],2,q[1],q[2])));
+    .forEach(q=>T1("umb",q));
+  [[7421,false],[7422,true,{thin:.85,wide:.4}],[7423,false,{lean:.5,skirt:.26}]].forEach(q=>T1("col",q));
   [[7431,false],[7432,true],[7433,false,{lean:-.6,bend:.9,hs:[.42,.66,.86],taper:.5}],[7434,false,{hs:[.3,.44,.57,.69,.8,.9],taper:.3,thin:.85},.3]]
-    .forEach(q=>add(K.tree,K.sp,"pag",tree("pag",q[0],2,q[1],q[2],q[3])));
-  [[7441,false],[7442,true,{thin:.85,tall:1.05}],[7443,false,{lean:.9,bend:1.4,tall:.72}]].forEach(q=>add(K.tree,K.sp,"orb",tree("orb",q[0],2,q[1],q[2])));
-  [[7451,false],[7452,true],[7453,false,{lean:-.8}]].forEach(q=>add(K.tree,K.sp,"fork",tree("fork",q[0],2,q[1],q[2])));
-  [7461,7462].forEach(s=>add(K.tree,K.sp,"snag",tree("snag",s,2,false)));
+    .forEach(q=>T1("pag",q));
+  [[7441,false],[7442,true,{thin:.85,tall:1.05}],[7443,false,{lean:.9,bend:1.4,tall:.72}]].forEach(q=>T1("orb",q));
+  [[7451,false],[7452,true],[7453,false,{lean:-.8}]].forEach(q=>T1("fork",q));
+  [7461,7462].forEach(sd=>S.push(()=>add(K.tree,K.sp,"snag",tree("snag",sd,2,false))));
   PLN_TREE_ORDER.forEach((sp,i)=>{
-    if(PLN_TREES[sp].far>0)for(let k=0;k<2;k++)add(K.far,K.spFar,sp,tree(sp,7600+i*10+k,1,false));
+    if(PLN_TREES[sp].far>0)for(let k=0;k<2;k++)S.push(()=>add(K.far,K.spFar,sp,tree(sp,7600+i*10+k,1,false)));
   });
   /* кулиса: свои тела, узнаваемые по одной макушке (21pgc) */
-  K.wing=plnWingKit(geo);
-  Q.gen=PLN_GPU.gen;Q.kit=K;
-  PLN.stat.kit={ms:Math.round(wallMs()-t0),verts:nv};
-  return K;
+  S.push(()=>{K.wing=plnWingKit(geo);});
+  return J;
+}
+/* один шаг набора; true — осталось ещё. Устройство — до первой геометрии: поколение берётся с него */
+function plnFloraKitStep(){
+  const Q=PLN_FLORA;
+  if(Q.kit&&Q.gen===PLN_GPU.gen)return false;
+  if(!GPU.ok||!GPU.dev)return false;
+  plnGpuDev();
+  let J=Q.job;if(!J||J.gen!==PLN_GPU.gen)J=Q.job=plnFloraKitJob();
+  const t0=wallMs();J.steps[J.i++]();J.ms+=wallMs()-t0;
+  if(J.i<J.steps.length)return true;
+  Q.gen=PLN_GPU.gen;Q.kit=J.K;Q.job=null;
+  PLN.stat.kit={ms:Math.round(J.ms),verts:J.nv};
+  return false;
+}
+function plnFloraKit(){
+  const Q=PLN_FLORA;
+  if(Q.kit&&Q.gen===PLN_GPU.gen)return Q.kit;
+  while(plnFloraKitStep());
+  return Q.kit;
+}
+/* из кадра системы, раз в восемь кадров: набор планеты готов к первой посадке (steps ~3 мс) */
+let PLN_KIT_N=0;
+function plnKitTick(){
+  if((++PLN_KIT_N&7)!==0)return;
+  try{plnFloraKitStep();}catch(e){PLN_FLORA.job=null;console.error("набор флоры заранее",e);}
 }
 
 /* ══════════════ планета: что где растёт и лежит (M611) ══════════════
@@ -95035,8 +95198,10 @@ function plnBeastFarKit(sps){
     groups.push({sp,list,off,dir,v,x0:r()*400,air:isAir});
   };
   const gs=ground.find(s=>s.herd)||ground[0];
-  if(gs)mk(gs,3,.9,false);
-  if(air[0])mk(air[0],5,2.4,true);
+  /* v — метры за кадр G.t (60 в секунду): было .9 и 2.4 — стадо шло 54 м/с, стайка 144 (автор 15.10:
+     «звери, птицы очень быстро»). Шаг стада 1.8 м/с, стайка 12 м/с */
+  if(gs)mk(gs,3,.03,false);
+  if(air[0])mk(air[0],5,.2,true);
   return {sps,groups};
 }
 function plnBeastDrop(L){
@@ -97552,7 +97717,7 @@ fn wxRay(ndc: vec2f) -> vec3f {
     let W = (xr - xl) * 1.2; let Hh = (yt - yb) * 1.3;
     let x0 = xl - (W - (xr - xl)) * 0.5; let y1 = yt + (Hh - (yt - yb)) * 0.5;
     /* род осадка: скорость (м/с), длина штриха (px) или хлопок, снос ветром, покачивание */
-    var spd = 10.0; var len = 34.0; var dr = 0.12; var flake = 0.0; var sway = 0.0; var thick = 1.0;
+    var spd = 6.0; var len = 34.0;   /* было 10 м/с: у объектива струи мелькали (автор 15.10) */ var dr = 0.12; var flake = 0.0; var sway = 0.0; var thick = 1.0;
     if (kind == 2) { spd = 1.0; flake = 1.0; sway = 1.0; }
     else if (kind == 3) { spd = 0.9; flake = 1.0; sway = 0.8; }
     else if (kind == 4) { spd = 5.0; len = 14.0; dr = 0.35; thick = 1.4; }
@@ -97965,9 +98130,10 @@ const plnWaterVP=(vp,y)=>plnM4mul(vp,plnM4mirrorY(y));
 /* ── сетки глади ──
    Решётка: xs — шаг по x от xa, zs — ряды в глубину; at(x,z) кладёт вершину и говорит, держит ли
    она воду; квадрат — если воду держит хоть один угол (у берега гладь уходит под землю, а не рвётся) */
-function plnWaterGrid(m,xa,nx,sx,zs,at){
+/* генераторы (M630f): уступают стройке (21pf plnLandStep) после каждого ряда глубины */
+function* plnWaterGrid(m,xa,nx,sx,zs,at){
   const nz=zs.length,keep=new Uint8Array((nx+1)*nz);
-  for(let j=0;j<nz;j++)for(let i=0;i<=nx;i++)keep[j*(nx+1)+i]=at(xa+i*sx,zs[j])?1:0;
+  for(let j=0;j<nz;j++){for(let i=0;i<=nx;i++)keep[j*(nx+1)+i]=at(xa+i*sx,zs[j])?1:0;yield;}
   for(let j=0;j+1<nz;j++)for(let i=0;i<nx;i++){
     const a=j*(nx+1)+i,b=a+1,c=a+nx+2,d=a+nx+1;
     if(keep[a]|keep[b]|keep[c]|keep[d])plnQuad(m,a,b,c,d);
@@ -97977,9 +98143,9 @@ function plnWaterGrid(m,xa,nx,sx,zs,at){
 const plnWaterRows=(z0,z1,s)=>{const z=[],n=Math.ceil((z1-z0)/s-1e-9);for(let k=0;k<=n;k++)z.push(z0+k*s);return z;};
 /* Вода ложбины едет с дальним миром. Дно лежит в цвете вершины: высота ленты (мировая) и дна
    ложбины (на её уровне) — глубину считает шейдер, потому что уровень воды в кадре свой */
-function plnWaterSheet(L,J){
+function* plnWaterSheet(L,J){
   const C=PLN_LAND,sx=2,zs=plnWaterRows(4,136,1),nx=Math.ceil((J.xb-J.xa)/sx),m=plnMesh((nx+1)*zs.length*2);
-  return plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
+  return yield* plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
     const f=plnLandFarH(L,x,z),hr=z<=C.zBack?plnLandRibAt(L,x,z):-1e3;
     plnVert(m,[x,C.wRel,z],[0,1,0],[hr,f,0],PLN_MAT.water,0,0,0);
     return C.wRel-f>-.4&&plnLandTab(L,L.liftHi,x)+C.wRel-hr>-.4;
@@ -97987,9 +98153,9 @@ function plnWaterSheet(L,J){
 }
 /* пруд стоит в мире, на уровне озера игры; вода — только в чаше: за валом бугры склона уходят ниже
    её уровня, и там она легла бы лужами */
-function plnWaterPond(L,J){
+function* plnWaterPond(L,J){
   const k=L.lake,sx=L.dx*2,zs=plnWaterRows(k.zn-2.4,k.zf+2,.6),nx=Math.ceil((J.xb-J.xa)/sx),m=plnMesh((nx+1)*zs.length*2);
-  return plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
+  return yield* plnWaterGrid(m,J.xa,nx,sx,zs,(x,z)=>{
     const hr=plnLandRibAt(L,x,z);
     plnVert(m,[x,k.level,z],[0,1,0],[hr,-1e3,0],PLN_MAT.water,0,0,0);
     return k.level-hr>-.4&&(Math.abs(z)<2.5||plnLandPond(L,x,z)<1.2);
@@ -97999,12 +98165,14 @@ function plnWaterPond(L,J){
    ширина — как у дальнего мира на этой глубине. Острова встают из него сами: суша выше воды
    закрывает лист глубиной. Дно — дальняя суша под листом: мель и мокрая кромка там, где она
    подходит к уровню, — у островов и у ложбины; в открытом море дно на десять метров ниже, тело тёмное */
-function plnWaterSea(L,J){
+function plnWaterSea(L,J){return plnDrain(plnWaterSeaGen(L,J));}
+function* plnWaterSeaGen(L,J){
   const C=PLN_LAND,zs=[];
   for(let z=J.za;z<J.zb;z*=1.06)zs.push(z);
   zs.push(J.zb);
   const NC=96,m=plnMesh((NC+1)*zs.length*2),keep=new Uint8Array((NC+1)*zs.length);
   for(let j=0;j<zs.length;j++){
+    if(j)yield;
     const z=zs[j],e=plnLandE(z);
     for(let i=0;i<=NC;i++){
       const x=-e+(L.len+2*e)*i/NC,f=plnLandFarH(L,x,z);
@@ -98206,9 +98374,11 @@ function plnWeatherLook(p,look){
    Выше двадцати градусов круг прежний, кадр M600 (ph = .125) стоит на нём, как стоял.
    Ночью ключ — самое сильное тело над горизонтом (plnBodies): луна или родитель; ключ гаснет
    в ноль между светилом и им, и смены стороны не видно. Тел нет — ночь без ключа: землю держат
-   звёзды, воздух и лампы. Шаг круга — пятая доля градуса: тени не ползут каждый кадр */
+   звёзды, воздух и лампы. Круг без шага: шаг в пятую долю градуса при дне в 6–9 минут прыгал
+   4–5 раз в секунду, и длинные тени низкого солнца дёргались (автор 15.10: «рывками свет»).
+   Карты теней и так пишутся каждый кадр (21pe) */
 function plnHour(p,wl){
-  const c=celSun(p),q=.0035,th=Math.round(c.ph*TAU/q)*q,tilt=52*PLN_DEG,A=PLN_LOOK;
+  const c=celSun(p),th=c.ph*TAU,tilt=52*PLN_DEG,A=PLN_LOOK;
   const s0=Math.sin(th)*Math.cos(tilt),back=.55*(1-plnSmooth(.05,.38,s0));
   const sun=plnNorm([-Math.cos(th),s0,Math.sin(th)*Math.sin(tilt)+back]),sy=sun[1],rise=Math.cos(th)>0;
   const atm=(p.T&&p.T.atm)||"",air=atm==="отсутствует"?0:(atm.indexOf("разреженная")>=0?.5:1);
@@ -98322,6 +98492,41 @@ function plnHandWin(S,ws,hs,f,h){
 }
 
 /* ── кадр ── */
+/* ── заход собирается за несколько кадров ──
+   Первый кадр спуска строил землю, расстановку, вещи, метки и травы разом: 90–150 мс. Пока идёт
+   сборка, на экране прежняя сцена (drawLanding рисует систему), спуск стоит; каждый кадр — не больше
+   7 мс работы. Этапы: куски ленты в окне (рядами), посадки, вещи земли, метки, своё, травы.
+   true — ещё собирается; страховка — 4 с (240 кадров) */
+function plnWarmStep(L,S,p,C,V){
+  if(!L.warm){L.warm={st:0,k:0,n:0};return true;}   /* кадр, где заведён лист мира (plnLand), — только он */
+  const w=L.warm;
+  if(++w.n>240){L.warmDone=true;return false;}
+  const B=7;
+  /* набор флоры строится из системы по шагу (plnKitTick); не успел — достраивается здесь, в бюджет кадра */
+  if(!(PLN_FLORA.kit&&PLN_FLORA.gen===PLN_GPU.gen)){
+    const t0=wallMs();
+    while(wallMs()-t0<B&&plnFloraKitStep());
+    return true;
+  }
+  if(w.st===0){
+    plnLandStep(L,C.ex,V,null,B,true);
+    if(!L.jobs.some(J=>!J.done&&plnLandSees(J,C.ex,V,20)))w.st=1;
+    return true;
+  }
+  if(w.st===1){
+    plnPlantStep(L,p,C.ex,V,B);
+    if(++w.k>=3){w.st=2;w.k=0;}
+    return true;
+  }
+  if(S.deposits){
+    if(w.st===2)plnThings(L,S,p);
+    else if(w.st===3){if(PLN_MARK.on&&S.tr&&S.tr.poi&&S.tr.poi.length)plnMarks(L,S);}
+    else if(w.st===4){if(OWN.on&&S.tr&&S.p)plnOwnStep(L,S);}
+    else if(w.st===5)plnHerbs(L,S,p);
+  }
+  if(++w.st>5){L.warmDone=true;return false;}
+  return true;
+}
 function plnSurface(S,o){
   /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
      S — состояние поверхности (без него G.surf); o — спуск (21pza): {lens(ws,hs) → {vx,vy},
@@ -98338,14 +98543,20 @@ function plnSurface(S,o){
   PLN.y0=tr.padY;
   const L=plnLand(tr,p,S.shipX),C=plnLens(S,K,fly?o.lens:hd?(ws,hs,f)=>plnHandWin(S,ws,hs,f,hd):null),V={hw:C.hw,D:C.D},ride=plnLandLift(L,C.ex),wy=ride+PLN_LAND.wRel;
   G.viewX=C.vx;G.viewY=C.vy;G.viewK=K;
-  /* стройка по бюджету кадра (M614): земля берёт своё первой, посадкам — остаток, но не меньше 2 мс */
-  const tb=wallMs(),lim=L.first?PLN_BUILD.ms:PLN_BUILD.first;
+  /* стройка по бюджету кадра (M614, M630f): кадр без стройки — среднее FRAME_JS прошлых кадров за
+     вычетом их стройки; стройке — что остаётся до PLN_BUILD.frame. Земля берёт своё первой,
+     посадкам — остаток, но не меньше половины low */
+  const B=PLN_BUILD,tb=wallMs(),bs=PLN.bld||(PLN.bld={base:3,ms:0});
+  if(FRAME_JS>0)bs.base+=(Math.max(0,FRAME_JS-bs.ms)-bs.base)*.1;
+  const lim=L.first?clamp(B.frame-bs.base,B.low,B.ms):B.first;
+  if(fly&&o.warm&&!PLN.rush&&!L.warmDone&&plnWarmStep(L,S,p,C,V))return "warm";
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
   /* с заходом, посчитанным заранее (G.land.pre), массивы те же — пересадки нет */
   if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,-1e9,1e9);
-  plnPlantStep(L,p,C.ex,V,Math.max(2,lim-(wallMs()-tb)));
+  plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));
+  bs.ms=wallMs()-tb;
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
   /* час блика (M634, 08.10): на мире с водой в час после восхода и до заката низкое светило встаёт
      перед объективом со своей стороны — дорожка по воде становится героем кадра; выше часа закон
@@ -98486,7 +98697,7 @@ function plnDescent(){
     /* окно: земля под кораблём на той же доле кадра, что и у поверхности (1−f от верха), пока корабль
        не поднялся до 24 % — выше окно идёт за ним; так касание и первый кадр поверхности — одно окно.
        Окно спуска запоминается (PLN.hand, M830): первый кадр поверхности стоит в нём же */
-    lens:plnDescLens(L,gyw,near),near,
+    warm:1,lens:plnDescLens(L,gyw,near),near,
     /* опоры выходят с четырнадцати метров и стоят к пяти; жар сопел гаснет с отсчётом касания */
     ship:{x:L.x/PLN_M,alt,gear:Math.max(L.gear||0,plnSmooth(14,5,alt)),sq:L.sq||0,thr,
       hot:(L.hot||0)*(touched?clamp(L.over/70,0,1):0),tilt:-(L.a||0),yaw:.2,down:true},
@@ -98652,6 +98863,7 @@ hud=function(){
 };
 const PLN_OLD_ULAND=updateLanding;
 updateLanding=function(){
+  if(PLN.on&&G.mode==="landing"&&G.land&&G.land.warm&&!G.land.warmDone)return;   /* заход ещё собирается (21pz) — спуск стоит */
   PLN_OLD_ULAND.apply(this,arguments);
   const L=G.land;
   if(PLN.on&&G.mode==="landing"&&L&&L.tr&&!(L.over>0))G.prompt=plnLandRead(L);
@@ -98660,16 +98872,24 @@ updateLanding=function(){
 /* ── переключатель ── */
 const PLN_OLD_LANDING=drawLanding;
 drawLanding=function(){
-  let ok=false;
+  let ok=false,warm=false;
   if(PLN.on&&PLN.bad<3&&G.land&&G.land.tr&&G.land.p){
     try{
       plnQualAuto();
-      ok=plnGpuReady()&&plnDescent();
-      if(ok)PLN.bad=0;
+      const r=plnGpuReady()&&plnDescent();
+      warm=r==="warm";ok=!!r&&!warm;
+      if(ok||warm)PLN.bad=0;
     }catch(e){
       PLN.bad++;PLN.err=String((e&&e.stack)||e).slice(0,600);plnLog("спуск: "+PLN.err);
       if(GPU.on&&GPU.dev){GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.scene3D=false;}
     }
+  }
+  if(warm){
+    /* пока собирается: прежняя сцена — система с кораблём, не пустой кадр */
+    BLOOM_K.landing=BLOOM_K.system||0;PLN_DESC.live=false;
+    const m=G.mode;G.mode="system";
+    try{drawSystem();}finally{G.mode=m;}
+    return;
   }
   BLOOM_K.landing=ok?0:PLN_DESC.bloom;
   PLN_DESC.live=ok;
@@ -98783,6 +99003,52 @@ hud=function(){
   const on=plnWordsOn(),hu=on&&plnMsgHush(),B=document.body.classList;
   if(on!==PLN_WORDS.on){PLN_WORDS.on=on;B.toggle("plnwords",on);}
   if(hu!==PLN_WORDS.hush){PLN_WORDS.hush=hu;B.toggle("plnhush",hu);}
+};
+
+/* ══════════════ дорогая жила — находка (M904d · DESIGN-game §4.1a) ══════════════
+   Замер экономики (M903) показал: круг добычи платит втрое против модели, и деньги дают не
+   объём, а дорогая руда — у яруса T1 кристаллы и иридий были 29 000 из 46 000 в час. Причина в
+   залежах: 22 на полосу, и тип берётся из профиля планеты поровну, так что кристалл на
+   вулканической планете лежал так же густо, как железо. Поверхность — для железа и кремния;
+   за дорогим идут вглубь (23-mode-dig: ярусы глубины), а дорогая жила наверху — удача часа.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Чем дороже руда, тем реже жила: свежая залежь дорогой руды остаётся собой с весом
+      DEP_REF/цена (кремний и дешевле — всегда), иначе это самая дешёвая руда того же профиля.
+      Кристалл — одна залежь из шести, иридий — из четырёх, титан — почти через раз.
+   2. Решает зерно залежи (система, планета, номер), не rnd: перезаход видит то же самое.
+   3. Тип решается и для выбранной залежи: генератор рождает её прежней, и без повтора она
+      «дорожала» бы второй посадкой. Остаток (G.mined) не трогается.
+   4. Генератор (21-mode-surface) и шахта (23-mode-dig) не тронуты: обёртка поверх входа на
+      грунт, после 21pih и 21pzb — до первого кадра, который рисует залежи (21pi). */
+const DEP_REF=17;
+function depValueF(k){
+  const p=RES[k]&&RES[k].price;
+  return p>0?Math.min(1,DEP_REF/p):1;
+}
+function depCheap(S){
+  const prof=(S.p&&(S.p.res||PROFILE[S.p.type]))||[];
+  let best=null;
+  for(const k of prof)if(RES[k]&&RES[k].price>0&&(!best||RES[k].price<RES[best].price))best=k;
+  return best;
+}
+function depValue(S){
+  if(!S||!Array.isArray(S.deposits)||!S.p)return 0;
+  const cheap=depCheap(S);
+  if(!cheap)return 0;
+  let n=0;
+  for(const d of S.deposits){
+    const f=depValueF(d.res);if(f>=1||d.res===cheap)continue;
+    const r=rng(hashi(G.sx|0,G.sy|0,0xDE9+(S.p.idx|0)*97+((d.i|0)*7919)));
+    if(r()>=f){d.res=cheap;n++;}
+  }
+  return n;
+}
+const DEP_VALUE_OLD_ENTER=enterSurface;
+enterSurface=function(){
+  const r=DEP_VALUE_OLD_ENTER.apply(this,arguments);
+  if(G.mode==="surface")depValue(G.surf);
+  return r;
 };
 
 /* ══════════════ пещера: поле породы в двух измерениях ══════════════ */
@@ -98959,8 +99225,10 @@ function caveBuild(C){
   for(let cy=0;cy<NY;cy++){g[cy*NX]=1;g[cy*NX+1]=1;g[cy*NX+NX-1]=1;g[cy*NX+NX-2]=1;}
   C.flo=new Float32Array(NX).fill(NaN);C.cei=new Float32Array(NX).fill(NaN);
 }
-function enterCave(){
-  const S=G.surf,p=S.p,r=rng(p.seed^0xCA5E);
+/* пещера из зерна планеты — всё, что делает вход до смены режима. Зерно у неё свое, от места
+   игрока не зависит; ждать касания устья незачем (caveTick считает её заранее и лепит куски) */
+function caveMake(S){
+  const p=S.p,r=rng(p.seed^0xCA5E);
   const plants=[],fauna=[];
   /* вход под третьим светом (11g): та же пещера с другим зерном, без кусачих */
   const ancient=!!S.ancient;
@@ -99007,6 +99275,14 @@ function enterCave(){
      обратно поднимаются ранцем */
   C.findX=340;C.findY=caveScanDown(C,340,caveLowY(C,340));
   caveDeco(C,p);
+  return C;
+}
+function enterCave(){
+  const S=G.surf,p=S.p,P=S.cavePre;
+  /* заготовка годится, если мир тот же: те же «древность» и дозор, что считались при её лепке */
+  const C=P&&P.C&&P.C.ancient===!!S.ancient&&P.C.watch===((typeof settleWatch==="function")?settleWatch(p):0)?P.C:caveMake(S);
+  S.cavePre=null;
+  const watch=C.watch;
   G.cave=C;G.mode="cave";
   const cl=(typeof storyGroundLine==="function")?storyGroundLine("cave"):null;
   if(cl)logAdd("dim",cl);
@@ -100689,6 +100965,8 @@ const CAVE3_Z=.7;
 const CAVE3_LENS={man:[.124,.124],walk:[.29,.34],dist:[18,36],eye:3.2,tau:.45,inS:1.2,inK:.42,near:1.6,nIn:.45,nOut:.7,
   /* у озера: глаз выше и ближе — гладь и зеркало ложатся полосой, а не ребром */
   lkEye:2.6,lkD:.55,lkS:.8,
+  /* нырок (M630e): человек у воды — ближняя стоянка, в кадре не мельче .22 высоты (dvN раз ближе широкого) */
+  dvN:1.9,
   /* дальний: глаз за 100 м, 24°, линия ходьбы на .40 — по клавише карты; на телефоне нет */
   fD:100,fH:42.5,fWalk:.40,fIn:.8,fOut:.7,fBack:15,fWalkMax:.5};
 /* дальний объектив — только на широком окне */
@@ -100699,10 +100977,11 @@ function cave3FarOk(){return W>760&&W>=H;}
 /* sky — высота поверхности (м): дальний кадр не поднимается выше неё даже на задней стене (за 15 м от
    линии ходьбы) — над пещерой камень, небо только в устье. Не влезает — линия ходьбы поднимается в
    кадре до середины, потом кадр сжимается: объектив жмётся к полу, а не отходит в небо */
-function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky){
+function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky,dv,hd){
   const L=CAVE3_LENS,k=plnSmooth(.6,1.5,asp);
   far=far||0;lk=(lk||0)*(1-far);
   let Hf=1.8/lerp(L.man[0],L.man[1],k)*(1-L.inK*(zoom||0))/lerp(1,L.near,near||0),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k)*lerp(1,L.lkD,lk);
+  if(dv&&hd)Hf=lerp(Hf,Math.min(Hf,hd),dv);
   if(far){Hf=lerp(Hf,L.fH,far);f=lerp(f,L.fWalk,far);D=lerp(D,L.fD,far);}
   if(far&&sky!=null){
     const ey=floorY+L.eye,top=ey+(sky-ey)/(1+L.fBack/D)-floorY;
@@ -100714,9 +100993,16 @@ function cave3Lens(asp,cx,floorY,zoom,near,lk,far,sky){
   return {k,Hf,f,D,w,l,r,b,t,vp,eye:[ex,ey,ez]};
 }
 /* нырок к озеру (M631): вес — человек ближе 3 м к урезу (lakeM от прошлого кадра), под водой глубже
-   метра — нет; пол кадра — уровень воды без метра, но не ниже 3.5 м под человеком (он в кадре) */
+   метра — нет */
 function cave3DiveW(Lm,floorY){return !Lm||floorY<Lm.y-1?0:1-plnSmooth(3,3.6,Lm.d);}
-function cave3DiveFloor(floorY,wy,k){return k?lerp(floorY,Math.max(wy-1,floorY-3.5),k):floorY;}
+/* окно нырка (M630e): от воды без 0.9 м до макушки с запасом; высота — ближняя стоянка (человек .236
+   кадра), а если вода с макушкой не влезают — сколько нужно. Лишнее — над головой (свод в кадре).
+   fy — пол кадра для объектива (линия ходьбы окна), hd — высота окна */
+function cave3DiveFrame(floorY,wy,k,asp){
+  const L=CAVE3_LENS,kk=plnSmooth(.6,1.5,asp),f=lerp(L.walk[0],L.walk[1],kk),man=lerp(L.man[0],L.man[1],kk);
+  const lo=Math.min(wy,floorY)-.9,hi=floorY+2.25,hd=Math.max(1.8/(man*L.dvN),hi-lo),b=lo-(hd-(hi-lo))*.3;
+  return {fy:k?lerp(floorY,b+f*hd,k):floorY,hd};
+}
 /* доля человека в высоте кадра (для набора и ворот) */
 function cave3ManShare(asp){return 1.8/cave3Lens(asp,0,0,0).Hf;}
 /* досягаемость фонаря по снаряжению: I класс — 18 м */
@@ -100761,6 +101047,31 @@ function cave3Mouth(F){
   return F.mouth=[F.mouthX,zd*.5,Math.max(1.2,n*CAVE_CS/CAVE_PPM/2+.6),zd*.5+.5];
 }
 
+/* окно кусков первого кадра пещеры: те же числа, что в начале cave3Frame при входе (объектив
+   ближний, человек на месте устья); по нему caveTick лепит породу ещё на поверхности */
+function cave3EntryBox(C){
+  const Fd=cave3Field(C),asp=W/H,cx=C.x/CAVE_PPM,floorY=-C.y/CAVE_PPM;
+  const Ls=cave3Lens(asp,cx,floorY,1,0,0,0,Fd.surfY);
+  const sp=(10-Ls.eye[2])/Ls.D,hw=Ls.w/2*sp,hh=Ls.Hf/2*sp,mid=(Ls.b+Ls.t)/2;
+  return {box:[cx-hw-2,cx+hw+2,mid-hh-2,mid+hh+2],mx:cx,my:floorY};
+}
+/* из кадра поверхности раз в восемь кадров, когда устье в тысяче шагов: пещеру из зерна, потом по куску
+   породы за такт. Вход берёт готовую (enterCave) — первый кадр пещеры не лепит ни её, ни камень */
+let CAVE_PRE_N=0;
+function caveTick(){
+  if((++CAVE_PRE_N&7)!==0)return;
+  const S=G.surf;
+  if(G.mode!=="surface"||!S||!S.cave||!GPU.ok||!GPU.dev||Math.abs(S.cave.x-S.x)>1100)return;
+  let P=S.cavePre;
+  if(P&&P.done)return;
+  try{
+    plnGpuDev();
+    if(!P){S.cavePre={C:caveMake(S),done:false};return;}
+    const b=cave3EntryBox(P.C);
+    cave3Chunks(P.C,b.box,b.mx,b.my,false);
+    if(P.C.ch3&&P.C.ch3.left===0)P.done=true;
+  }catch(e){S.cavePre={C:null,done:true};console.error("пещера заранее",e);}
+}
 function cave3Frame(){
   const t0=wallMs(),C=G.cave,Fd=cave3Field(C),M=CAVE3,Ln=CAVE3_LENS;
   if(C.cy==null)C.cy=C.y;
@@ -100801,8 +101112,8 @@ function cave3Frame(){
   M.fs=first||M.fs==null||M.rush?fs:M.fs+(fs-M.fs)*(1-Math.exp(-dt/.6));
   const dK=M.dvX==null?0:plnSmooth(0,1,M.dv)*(1-fK),nK=plnSmooth(0,1,M.near);
   const cx=M.cx+M.fs*fK+M.ns*nK*(1-fK)*(1-dK)+(dK?(M.dvX-C.x/CAVE_PPM)/2*dK:0);
-  const floorY=-C.cy/CAVE_PPM,fy=cave3DiveFloor(floorY,M.dvY,dK);
-  const Ls=cave3Lens(asp,cx,fy,zoom,Math.max(nK,dK),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY),K=H/(Ls.Hf*CAVE_PPM);
+  const floorY=-C.cy/CAVE_PPM,dF=cave3DiveFrame(floorY,M.dvY,dK,asp),fy=dF.fy;
+  const Ls=cave3Lens(asp,cx,fy,zoom,nK*(1-dK),plnSmooth(0,1,M.lk),plnSmooth(0,1,M.far),Fd.surfY,dK,dF.hd),K=H/(Ls.Hf*CAVE_PPM);
   G.viewK=K;G.viewX=cx*CAVE_PPM-W/(2*K);G.viewY=-Ls.t*CAVE_PPM;
   M.dx=cx*CAVE_PPM-C.x;M.wt=C.walkTarget;
   M.lens=Ls;
@@ -100812,7 +101123,7 @@ function cave3Frame(){
   /* человек: ноги — на полу картинки, но не дальше четверти метра от пола игры */
   const face=C.face<0?-1:1,mx=C.x/CAVE_PPM,gy=-C.y/CAVE_PPM;
   let my=gy;
-  if(C.on){const v=cave3Down(Fd,mx,gy+.5,CAVE3_Z);my=gy+clamp(v-gy,-.25,.25);}
+  if(C.on){const v=cave3Floor(Fd,mx,gy+.5,CAVE3_Z,1.2);if(v!=null)my=gy+clamp(v-gy,-.25,.25);}
   const F={batches:[],lamps:[],draw:[],lights:[],glows:[]};
   /* сырость воздуха: у воды и в натёчном зале конус в воздухе гуще */
   const zn=caveZoneAt(C,C.x);
@@ -101281,6 +101592,18 @@ function cave3Down(F,X,Y,Z){
   for(let n=0;n<10;n++){const m=(lo+hi)/2;if(cave3Den(F,X,m,Z)>0)lo=m;else hi=m;}
   return (lo+hi)/2;
 }
+/* то же, но честно: null, если пола нет на глубину lim метров (или точка уже в камне) — тогда
+   стоять не на чем, и вещь не ставят над пустотой */
+function cave3Floor(F,X,Y,Z,lim){
+  if(cave3Den(F,X,Y,Z)>0)return null;
+  const n=Math.round((lim||4)/.1);
+  let a=Y,k=0;
+  for(;k<n&&cave3Den(F,X,a-.1,Z)<=0;k++)a-=.1;
+  if(k>=n)return null;
+  let lo=a-.1,hi=a;
+  for(let m=0;m<10;m++){const c=(lo+hi)/2;if(cave3Den(F,X,c,Z)>0)lo=c;else hi=c;}
+  return (lo+hi)/2;
+}
 /* цвет камня в точке: rgb и мокрость; ny — куда смотрит грань */
 const CAVE3_INK=new Float32Array(4);
 function cave3Paint(F,X,Y,Z,ny){
@@ -101488,50 +101811,31 @@ function cave3DayBox(sun,b){
   return {m:plnM4mul(plnM4ortho(mn[0],mx[0],mn[1],mx[1],n,f),view),range:f-n};
 }
 
-/* ── то, что живёт с устройством ── */
-function cave3GpuDev(){
-  const Q=CAVE3_GPU,d=GPU.dev;
-  if(Q.dev===d&&Q.gen===PLN_GPU.gen)return;
-  Q.dev=d;Q.gen=PLN_GPU.gen;Q.tier=-1;Q.w=0;Q.h=0;Q.T=null;Q.P={};
+/* раскладки привязок: у устройства (cave3GpuDev, cave3GpuTier) и у позднего прогрева (08b0) — одни и те же */
+function cave3Layouts(d){
   const VF=GPUShaderStage.VERTEX|GPUShaderStage.FRAGMENT,FR=GPUShaderStage.FRAGMENT;
   const dep=b=>({binding:b,visibility:FR,texture:{sampleType:"depth"}});
-  Q.L={scene:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},dep(1),dep(2),
+  return {scene:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},dep(1),dep(2),
       {binding:3,visibility:FR,sampler:{type:"comparison"}},{binding:4,visibility:FR,texture:{sampleType:"float"}},
       {binding:5,visibility:FR,sampler:{type:"filtering"}}]}),
-    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]}),post:null};
-  Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
-    cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
-  const ub=()=>d.createBuffer({size:1152,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
-  Q.U={main:ub(),shL:ub(),shS:ub(),refl:ub()};
+    shadow:d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}}]})};
 }
-/* ── то, что живёт с ярусом: карты теней, привязка свёртки, конвейеры ── */
-function cave3GpuTier(){
-  const Q=CAVE3_GPU,d=GPU.dev,Z=PLN_GPU;
-  if(Q.tier===Z.tier&&Q.P.comp)return;
-  Q.tier=Z.tier;Q.ms=Z.ms;Q.shn=Math.min(Z.shn,2048);Q.w=0;Q.h=0;
+function cave3LayPost(d,ms){
   const FR=GPUShaderStage.FRAGMENT,VF=GPUShaderStage.VERTEX|FR,tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}});
-  Q.L.post=d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
+  return d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
     tx(2),tx(3),tx(4),{binding:5,visibility:FR,sampler:{type:"filtering"}},
-    {binding:6,visibility:FR,texture:{sampleType:"depth",multisampled:Q.ms>1}},
+    {binding:6,visibility:FR,texture:{sampleType:"depth",multisampled:ms>1}},
     {binding:7,visibility:FR,texture:{sampleType:"depth"}},{binding:8,visibility:FR,texture:{sampleType:"depth"}},
     {binding:9,visibility:FR,sampler:{type:"comparison"}}]});
-  if(Q.D){Q.D.lamp.destroy();Q.D.sun.destroy();}
-  const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
-  const lamp=d.createTexture({size:[Q.shn,Q.shn,1],format:PLN_DEP,usage:RT}),sun=d.createTexture({size:[Q.shn,Q.shn,1],format:PLN_DEP,usage:RT});
-  Q.D={lamp,sun,lampV:lamp.createView(),sunV:sun.createView()};
-  const L=Q.L;
-  /* привязки сцены зависят от зеркала (размер кадра) — их собирает cave3GpuSize */
-  Q.B0={main:null,refl:null,
-    sh:[Q.U.shL,Q.U.shS].map(u=>d.createBindGroup({layout:L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
-  /* глубина сцены при сглаживании многовыборочная: воздух читает её первую выборку */
-  const post=Q.ms>1?CAVE3_WGSL_POST.replace("var depthTex: texture_depth_2d;","var depthTex: texture_depth_multisampled_2d;"):CAVE3_WGSL_POST;
-  const mS=gpuShader(CAVE3_WGSL_SCENE+PLN_WGSL_WATER_CAVE),mP=gpuShader(post);
-  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
-    for(const x of i.messages)if(x.type==="error")cave3Log("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
+}
+const cave3PostWgsl=ms=>ms>1?CAVE3_WGSL_POST.replace("var depthTex: texture_depth_2d;","var depthTex: texture_depth_multisampled_2d;"):CAVE3_WGSL_POST;
+/* дескрипторы конвейеров пещеры: [короткое имя, дескриптор]; ключ воронки несёт сглаживание у sky/body/water */
+function cave3PipeDescs(d,L,ms){
+  const mS=gpuShader(CAVE3_WGSL_SCENE+PLN_WGSL_WATER_CAVE),mP=gpuShader(cave3PostWgsl(ms));
   const lS=d.createPipelineLayout({bindGroupLayouts:[L.scene]}),lH=d.createPipelineLayout({bindGroupLayouts:[L.shadow]}),
     lP=d.createPipelineLayout({bindGroupLayouts:[L.post]});
-  const prim={topology:"triangle-list",cullMode:"none"},mu={count:Q.ms};
-  const mk=(key,desc)=>{Q.P[key]=gpuPipeline("cave3."+key+(/^(sky|body|water)$/.test(key)?Q.ms:""),()=>desc);};
+  const prim={topology:"triangle-list",cullMode:"none"},mu={count:ms},out=[];
+  const mk=(key,desc)=>out.push([key,desc]);
   mk("shadow",{layout:lH,vertex:{module:mS,entryPoint:"vs_shadow",buffers:PLN_VB},primitive:prim,
     depthStencil:{format:PLN_DEP,depthWriteEnabled:true,depthCompare:"less",depthBias:2,depthBiasSlopeScale:2.2}});
   mk("sky",{layout:lS,vertex:{module:mS,entryPoint:"vs_full"},fragment:{module:mS,entryPoint:"fs_sky",targets:[{format:PLN_HDR}]},
@@ -101546,7 +101850,46 @@ function cave3GpuTier(){
   mk("blur",pp("fs_blur"));mk("down",pp("fs_down"));mk("up",pp("fs_up"));mk("air",pp("fs_air"));
   /* свёртка пишет в сцену движка; её альфу не трогаем */
   mk("comp",pp("fs_comp",{format:PLN_HDR,writeMask:GPUColorWrite.RED|GPUColorWrite.GREEN|GPUColorWrite.BLUE}));
+  return out;
 }
+const cave3PipeKey=(k,ms)=>"cave3."+k+(/^(sky|body|water)$/.test(k)?ms:"");
+/* ── то, что живёт с устройством ── */
+function cave3GpuDev(){
+  const Q=CAVE3_GPU,d=GPU.dev;
+  if(Q.dev===d&&Q.gen===PLN_GPU.gen)return;
+  Q.dev=d;Q.gen=PLN_GPU.gen;Q.tier=-1;Q.w=0;Q.h=0;Q.T=null;Q.P={};
+  Q.L=cave3Layouts(d);Q.L.post=null;
+  Q.S={lin:d.createSampler({magFilter:"linear",minFilter:"linear",addressModeU:"clamp-to-edge",addressModeV:"clamp-to-edge"}),
+    cmp:d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"})};
+  const ub=()=>d.createBuffer({size:1152,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
+  Q.U={main:ub(),shL:ub(),shS:ub(),refl:ub()};
+}
+/* ── то, что живёт с ярусом: карты теней, привязка свёртки, конвейеры ── */
+function cave3GpuTier(){
+  const Q=CAVE3_GPU,d=GPU.dev,Z=PLN_GPU;
+  if(Q.tier===Z.tier&&Q.P.comp)return;
+  Q.tier=Z.tier;Q.ms=Z.ms;Q.shn=Math.min(Z.shn,2048);Q.w=0;Q.h=0;
+  Q.L.post=cave3LayPost(d,Q.ms);
+  if(Q.D){Q.D.lamp.destroy();Q.D.sun.destroy();}
+  const RT=GPUTextureUsage.RENDER_ATTACHMENT|GPUTextureUsage.TEXTURE_BINDING;
+  const lamp=d.createTexture({size:[Q.shn,Q.shn,1],format:PLN_DEP,usage:RT}),sun=d.createTexture({size:[Q.shn,Q.shn,1],format:PLN_DEP,usage:RT});
+  Q.D={lamp,sun,lampV:lamp.createView(),sunV:sun.createView()};
+  const L=Q.L;
+  /* привязки сцены зависят от зеркала (размер кадра) — их собирает cave3GpuSize */
+  Q.B0={main:null,refl:null,
+    sh:[Q.U.shL,Q.U.shS].map(u=>d.createBindGroup({layout:L.shadow,entries:[{binding:0,resource:{buffer:u}}]}))};
+  /* глубина сцены при сглаживании многовыборочная: воздух читает её первую выборку (cave3PipeDescs) */
+  const mS=gpuShader(CAVE3_WGSL_SCENE+PLN_WGSL_WATER_CAVE),mP=gpuShader(cave3PostWgsl(Q.ms));
+  for(const [n,m] of [["сцена",mS],["свёртка",mP]])m.getCompilationInfo().then(i=>{
+    for(const x of i.messages)if(x.type==="error")cave3Log("wgsl "+n+" "+x.lineNum+":"+x.linePos+" "+x.message);}).catch(()=>{});
+  for(const [k,desc] of cave3PipeDescs(d,L,Q.ms))Q.P[k]=gpuPipeline(cave3PipeKey(k,Q.ms),()=>desc);
+}
+/* поздний прогрев (08b0): конвейеры пещеры яруса, что выберет ближайшая посадка */
+GPU_LATE_GROUPS.push(()=>{
+  const d=GPU.dev,ms=PLN_QUAL[plnQualWant()].ms,L=cave3Layouts(d);
+  L.post=cave3LayPost(d,ms);
+  return cave3PipeDescs(d,L,ms).map(([k,desc])=>[cave3PipeKey(k,ms),{desc}]);
+});
 /* ── то, что живёт с размером кадра ── */
 function cave3GpuSize(){
   const Q=CAVE3_GPU,d=GPU.dev,w=GPU.bw,h=GPU.bh,Z=PLN_GPU;
@@ -103336,18 +103679,24 @@ function cave3LifeDrop(Q){
   for(const k in Q.inst)plnInstFree(Q.inst[k]);
   Q.geo={};Q.inst={};
 }
-/* пол картинки под точкой на глубине z: где воздух — на нём, иначе ближе к разрезу */
-/* ноги вещи: не дальше .25 м от пола игры (как у человека, 22d-cave-pln) — иначе растение вмуровано в породу
-   или висит над провалом, а зверь зарыт (плейтест 09.10.2026) */
-function cave3FootY(gy,v){return gy+clamp(v-gy,-.25,.25);}
+/* пол картинки под точкой на глубине z: вещь стоит на камне, который видно, и не дальше четверти
+   метра от пола игры (Y). Первая глубина, где так, — её; нет среди своих — ищут на запасных, от
+   разреза вглубь; нет и там — вещи в кадре нет: над пустотой и в камне не ставят */
+const CAVE3_FOOT_Z=[CAVE3_Z+.1,CAVE3_Z+.45,1.5,1.9,2.4];
 function cave3LifeFoot(F,X,Y,zs){
-  for(const z of zs)if(cave3Den(F,X,Y+.5,z)<-.15){
-    const v=cave3Down(F,X,Y+.5,z);
-    /* cave3Down на пределе поиска (4 м) отдаёт «пол» в воздухе: под ним должна быть порода */
-    if(cave3Den(F,X,v-.12,z)>0)return [cave3FootY(Y,v),z];
+  for(const z of zs.concat(CAVE3_FOOT_Z)){
+    if(cave3Den(F,X,Y+.5,z)>=-.15)continue;
+    const v=cave3Floor(F,X,Y+.5,z,1.2);
+    if(v!=null&&Math.abs(v-Y)<=.25)return [v,z];
   }
   return null;
 }
+/* глубины, на которых ищут пол: растение — за линией ходьбы, зверь — у неё (те же, что берёт кадр) */
+function cave3PlantZs(q){
+  const u=((hashi(Math.round(q.x),Math.round(q.h||0),0x9E11)>>>5)&255)/255,z=CAVE3_LIFE.plantZ[0]+u*CAVE3_LIFE.plantZ[1];
+  return [z,z*.75,CAVE3_Z+.25];
+}
+function cave3BeastZ(b){return CAVE3_Z+(b.r<7?CAVE3_LIFE.beastZ[0]:CAVE3_LIFE.beastZ[1]);}
 function cave3LifeFrame(C,F,Fd,x0,x1){
   const Q=C.life3||(C.life3={gen:-1,geo:{},inst:{},a:{},foot:new Map()});
   if(Q.gen!==PLN_GPU.gen){cave3LifeDrop(Q);Q.gen=PLN_GPU.gen;}
@@ -103361,10 +103710,7 @@ function cave3LifeFrame(C,F,Fd,x0,x1){
     const X=q.x/P;if(X<x0-3||X>x1+3)continue;
     const hh=hashi(Math.round(q.x),Math.round(q.h||0),0x9E11);
     let ft=Q.foot.get(q);
-    if(ft===undefined){
-      const u=((hh>>>5)&255)/255,z=K.plantZ[0]+u*K.plantZ[1];
-      ft=cave3LifeFoot(Fd,X,-q.y/P,[z,z*.75,CAVE3_Z+.25]);Q.foot.set(q,ft);
-    }
+    if(ft===undefined){ft=cave3LifeFoot(Fd,X,-q.y/P,cave3PlantZs(q));Q.foot.set(q,ft);}
     if(!ft)continue;
     const si=Math.max(0,sps.indexOf(q.sp)),key="p"+si+"."+(q.age<.3?0:(q.age>.82?2:1));
     (by[key]=by[key]||{plant:q,si,list:[]}).list.push({q,ft,hh});
@@ -103398,14 +103744,16 @@ function cave3LifeFrame(C,F,Fd,x0,x1){
         if(q.sp.kind===4)plnRec(a,m++,pos,h,yaw,1,m,q.scanned?[.6,1.1,1.05]:[jt,jt,jt],0);
         else plnRec(a,m++,pos,h,yaw,1,m,under,2,top);
       }else{
-        const b=e.b,X=b.x/P,R=Math.max(K.rMin,b.r/P),z=CAVE3_Z+(b.r<7?K.beastZ[0]:K.beastZ[1]);
-        /* y зверя у игры — пол под ним; летун висит на hover пикселей карты выше, пасясь — ниже, оглушённый лёг */
+        const b=e.b,X=b.x/P,R=Math.max(K.rMin,b.r/P);
+        /* y зверя у игры — пол под ним; летун висит на hover пикселей карты выше, пасясь — ниже, оглушённый лёг.
+           Пол ищут там, где зверь стоит в кадре: на своей глубине, иначе у разреза (тогда и сам зверь там) */
         const fk=Math.round(X*4)+"|"+Math.round(-b.y/P*2);
         let f=Q.foot.get(fk);
-        if(f===undefined){const v=cave3LifeFoot(Fd,X,-b.y/P,[z,CAVE3_Z+.2]);f=v?v[0]:-b.y/P;Q.foot.set(fk,f);}
+        if(f===undefined){f=cave3LifeFoot(Fd,X,-b.y/P,[cave3BeastZ(b),CAVE3_Z+.2])||[-b.y/P,CAVE3_Z+.2];Q.foot.set(fk,f);}
+        const z=f[1];
         const k=e.k,up=b.alien?(b.hover&&k!==N+3?b.hover*(k===N+1?.35:1)*(1+.16*Math.sin(e.t*.6))/P:0)
           :(e.go?(b.hop?Math.abs(Math.sin(e.t))*R*.35:Math.sin(e.t)*R*.08+R*.08):0);
-        const y=f+up;
+        const y=f[0]+up;
         const yaw=b.alien==="manta"?PLN_BEAST.mantaYaw:PLN_BEAST.yaw;
         /* шкура у поверхности поднята под контровой свет дня; в пещере тело темнее — его лепит фонарь */
         plnRec(a,m++,[X,y,z],R,b.face<0?Math.PI-yaw:yaw,1,m,b.scanned?[.42,.62,.6]:K.fur,0);
@@ -104520,7 +104868,7 @@ function drawDigWorld(){
       ctx.fillRect(x+3,y+DIG_CELL-8,k,4);
       /* искры из-под резака — выше единицы, на видеокарте (23b digEmit) */
     }
-    if(TP)gpuShapes(TP,TS,{blend:"over"});
+    if(TP)gpuShapes(TP,gpuShpAt(TS,lifeHere(0,0)),{blend:"over"});   /* мир → CSS (08c) */
   }
   /* луч фонаря — сложением по сцене, как у main по породе (22c helmBeamGpu) */
   /* риг карточкой (21phc, M801b): карточка вклеивает 2D-темноту в сцену (gpuOver), поэтому луч
@@ -105465,14 +105813,16 @@ function digMidGpu(D,p,camx,camy,px,py,scanAll,r0,r1){
       rect(S,L,ry,R-L+1.8,1.7,164,124,74,.9);rect(S,L,ry+1.7,R-L+1.8,.9,0,0,0,.3);}
     if(row%4===0)rect(S,L-1.4,y+1.5,R-L+4.6,2.2,96,104,112,.8);
   }
-  gpuShapes(pass,O,{blend:"over"});
-  gpuShapes(pass,A,{blend:"add"});
-  gpuShapes(pass,S,{blend:"over"});
+  /* кадр шахты стоит в withScale: мировые пиксели → пиксели CSS (08c gpuShpAt) */
+  const o=lifeHere(0,0);
+  gpuShapes(pass,gpuShpAt(O,o),{blend:"over"});
+  gpuShapes(pass,gpuShpAt(A,o),{blend:"add"});
+  gpuShapes(pass,gpuShpAt(S,o),{blend:"over"});
   /* табличка глубины: число — выпечка GPU-холста, одна на число */
-  for(const [t,x,y] of TX){
+  for(const [t,x0,y0] of TX){const x=o.x+x0*o.s,y=o.y+y0*o.s;
     const B=gpuBaked(DIG_TXT,t,48,24,g=>{g.setTransform(4,0,0,4,0,0);g.fillStyle="rgba(255,228,170,.75)";
       g.font="5px ui-monospace,monospace";g.textAlign="center";g.fillText(t,6,5);},{mips:false,ss:1,keep:64});
-    if(B)gpuImage(pass,B,[{x,y,w:12,h:6}]);
+    if(B)gpuImage(pass,B,[{x,y,w:12*o.s,h:6*o.s}]);
   }
   return true;
 }
@@ -105515,7 +105865,7 @@ function digSurfFringeGpu(p,camx,camy){
              [0,x-rr*1.3,y,x+rr*1.3,y+1,0,0,0,0,0,.25]);
     }
   }
-  gpuShapes(pass,S,{blend:"over"});
+  gpuShapes(pass,gpuShpAt(S,lifeHere(0,0)),{blend:"over"});
   return true;
 }
 
@@ -105635,7 +105985,11 @@ function digLights(D,camx,camy,early){
 function digLitU(D,p,camx,camy,lamp,early){
   const U=CAVE_LIT_U,lk=kitStat().lamp,M=digMask(D,p);
   U.fill(0);
-  U[0]=camx;U[1]=camy;U[2]=G.viewK||1;U[3]=G.t;
+  /* U[2] — пикселей поля на пиксель мира. Кадр шахты стоит в withScale(K): W,H там уже
+     поделены на K (18c), и пиксель поля — пиксель мира (на том же стоит небо, 19ca).
+     Было G.viewK: K применялся дважды, и на большом экране светлый крест хода с конусом
+     уезжал вправо-вниз в K раз (автор, 15.10) */
+  U[0]=camx;U[1]=camy;U[2]=(G.viewK||1)*W/(GPU.cw||W);U[3]=G.t;
   U[4]=M.x0;U[5]=M.y0;U[6]=1/M.w;U[7]=1/M.h;
   const a=.12;
   U[8]=lamp.x;U[9]=lamp.y;U[10]=lamp.f*Math.cos(a);U[11]=Math.sin(a);
@@ -105660,7 +106014,7 @@ function digShade(D,p,camx,camy,lamp){
   gpuField(pass,"dig.mul",CAVE_MUL_WGSL+DIG_OWN_WGSL,CAVE_LIT_U,[{view:gpuMipTex(M.cv).view}],{blend:"mul",smp:gpuMipSmp()});
   /* тёплое у налобника — «digwarm» main: .20·(1−t)^2.2 на .34·R0 у человека, сложением по породе;
      заливка хода и небо (2D) ложатся поверх и его закрывают, как у main */
-  const K=G.viewK||1,R=Math.max(W,H)*.62*.34;
+  const K=CAVE_LIT_U[2],R=Math.max(W,H)*.62*.34;   /* в пикселях поля, как U[2] */
   warmGlow(pass,(lamp.x-camx)*K,(lamp.y+12-camy)*K,R*K,R*K,[1,.776,.502],.20,0);
 }
 /* темнота main поверх всего нарисованного, небо не трогает */
@@ -105711,6 +106065,938 @@ function digEmit(D,camx,camy,pass,K){
   }
   gpuShapes(pass,S,{blend:"add"});
 }
+
+/* ══════════════ шахта на движке: кадр и переключатель (M631a) ══════════════
+   Порода из выработки (23ca), свет и проходы пещеры (22db, 22dbw): шахта отдаёт свою плотность
+   и свои огни, рисует их движок пещеры. Здесь — объектив, человек, фонарь, день в стволе, копёр
+   над устьем и обёртка drawDig: старая рисовалка не тронута, новый вид упал — идёт она, после трёх
+   сбоев подряд новый вид снимает себя сам. ?dig=0 — старая. Игра не меняется: клетки, updateDig,
+   фауна — те же; кадр только смотрит на них.
+
+   Объектив — по docs/DESIGN-dig-scene.md §3: широкий держит все пятнадцать столбцов (34 м) и ходит
+   только по высоте, высокий держит четыре с половиной и ходит в обе стороны. Окно кадра лежит на
+   плоскости, где стоит человек (z = DIG3_Z), поэтому клетка игры на экране — чистый масштаб G.viewK:
+   тычок «копать сюда» (15-input) попадает в ту клетку, что показана. Когда человек грызёт вниз,
+   кадр забегает на полклетки вперёд — забой в кадре. */
+const DIG3={on:true,bad:0,err:"",live:false,D:null,t:0,mx:0,my:0,cx:0,cy:0,ld:null,lens:null,hf:null,stat:{cpu:0,chunks:0,left:0}};
+try{if(typeof location!=="undefined"&&/[?&]dig=0\b/.test(location.search))DIG3.on=false;}catch(e){}
+const DIG3_Z=1.1;
+/* доля роста человека в высоте кадра: высокий — широкий; линия ходьбы от низа; даль объектива;
+   глаз над полом; догон кадра и шага человека, с; забег кадра по ходу проходки, клеток */
+const DIG3_LENS={man:[.077,.085],walk:[.38,.34],dist:[18,32],eye:2.6,tau:.4,step:.12,lead:.5};   /* телефон: пол выше строки подсказки */
+
+function dig3Lens(asp,cx,floorY){
+  const L=DIG3_LENS,k=plnSmooth(.6,1.5,asp);
+  const Hf=1.8/lerp(L.man[0],L.man[1],k),f=lerp(L.walk[0],L.walk[1],k),D=lerp(L.dist[0],L.dist[1],k);
+  const w=Hf*asp,l=cx-w/2,r=cx+w/2,b=floorY-f*Hf,t=b+Hf;
+  const ex=cx,ey=floorY+L.eye,ez=DIG3_Z-D;
+  const vp=plnM4mul(plnM4lens(l-ex,r-ex,b-ey,t-ey,D,4,600),plnM4move(-ex,-ey,-ez));
+  return {k,Hf,f,D,w,l,r,b,t,vp,eye:[ex,ey,ez]};
+}
+/* доля человека в высоте кадра (для набора и ворот) */
+function dig3ManShare(asp){return 1.8/dig3Lens(asp,0,0).Hf;}
+/* середина кадра по x: широкий держит весь пролёт, узкий идёт за человеком, но не за край */
+/* пролёт рудника по x, м: участок ±40 клеток и метр камня с боков (23ca и 23cc склеены позже — считать здесь) */
+function dig3PanX(x,w){
+  const a=-MINE_HALF*DIG3_CM-1,b=(MINE_HALF+1)*DIG3_CM+1;
+  if(w>=b-a)return (a+b)/2;
+  return clamp(x,a+w/2,b-w/2);
+}
+/* куда грызёт: сосед, чья клетка — цель проходки */
+function dig3Dir(D){
+  const t=D.target;if(!t)return null;
+  for(const [dx,dy] of [[0,1],[0,-1],[-1,0],[1,0]])if(D.cells[(D.col+dx)+","+(D.row+dy)]===t)return [dx,dy];
+  return null;
+}
+
+/* ── копёр над устьем: две А-ноги из бруса, верхняя балка, шкив, оранжевый пояс, лампа ──
+   Свой, простой: тело планеты (plnThingMineMesh) просит землю мира, а у шахты своя линия */
+const DIG3_HF={h:5.4,foot:1.75,z0:.35,z1:2.45,wood:[.105,.07,.04],steel:[.07,.075,.08],band:[.62,.2,.03]};
+function dig3HeadMesh(F){
+  const m=plnMesh(1<<11),K=DIG3_HF,x0=DIG3_CM*.5,top=dig3Ground(F,x0)+K.h,M=PLN_MAT;
+  for(const z of [K.z0,K.z1]){
+    for(const s of [-1,1]){
+      const fx=x0+s*K.foot,fy=dig3Ground(F,fx)-.25;
+      plnTube(m,{path:[[fx,fy,z],[x0+s*.18,top,z]],rad:.11,sides:4,col:K.wood,mat:M.bark});
+    }
+    /* пояс: ригель на трети высоты — единственное яркое пятно копра */
+    const by=lerp(dig3Ground(F,x0),top,.38),bw=K.foot*.62+.1;
+    plnTube(m,{path:[[x0-bw,by,z],[x0+bw,by,z]],rad:.075,sides:4,col:K.band,mat:M.rock});
+    plnTube(m,{path:[[x0-K.foot*.7,lerp(dig3Ground(F,x0),top,.1),z],[x0+K.foot*.35,lerp(dig3Ground(F,x0),top,.7),z]],rad:.05,sides:4,col:K.wood,mat:M.bark});
+  }
+  plnTube(m,{path:[[x0,top+.05,K.z0-.2],[x0,top+.05,K.z1+.2]],rad:.13,sides:4,col:K.steel,mat:M.rock});
+  /* шкив: обод в плоскости x-y на середине глубины и ось */
+  const zc=(K.z0+K.z1)/2,R=.62,ring=[];
+  for(let k=0;k<=18;k++){const a=k/18*TAU;ring.push([x0+Math.cos(a)*R,top+.62+Math.sin(a)*R,zc]);}
+  plnTube(m,{path:ring,rad:.06,sides:5,col:K.steel,mat:M.rock});
+  for(let k=0;k<3;k++){const a=k/3*Math.PI;
+    plnTube(m,{path:[[x0-Math.cos(a)*R,top+.62-Math.sin(a)*R,zc],[x0+Math.cos(a)*R,top+.62+Math.sin(a)*R,zc]],rad:.025,sides:4,col:K.steel,mat:M.rock});}
+  /* канат идёт со шкива к клети — его тянет 23cb, здесь только точка схода с обода */
+  return {geo:plnGeo(plnMeshDone(m)),lamp:[x0,top+.1,K.z0-.25],rope:[x0+R*.98,top+.62,zc],gen:PLN_GPU.gen,f:F.gen};
+}
+
+function dig3Frame(){
+  const t0=wallMs(),D=G.dig,Fd=dig3Field(D),M=DIG3,Ln=DIG3_LENS,CM=DIG3_CM;
+  const first=M.D!==D,t=wallMs(),dt=first?0:Math.min(.1,Math.max(0,(t-M.t)/1000));
+  M.t=t;
+  /* человек: ноги рудника (23cc, px мира, y вниз) — без своего сглаживания, иначе он отстанет
+     от пола клети; у верха ствола пол клети — земля у устья */
+  const Mm=mineState(D),sY0=dig3Ground(Fd,CM*.5),gy=y=>-y/DIG3_PPM+sY0*Math.max(0,1-y/DIG_CELL);
+  if(first){M.D=D;M.ld=null;}
+  M.mx=Mm.x/DIG3_PPM;M.my=gy(Mm.y);
+  const mx=M.mx,my=M.my,dir=dig3Dir(D),face=D.face<0?-1:1;
+  /* кадр: за человеком с отставанием, с забегом по ходу — в забой, по штреку, по ходу клети */
+  const asp=W/H,L0=dig3Lens(asp,0,0),walk=Mm.mode==="walk"&&D.walkAmp>.2;
+  const lx=dir?dir[0]*Ln.lead*CM:walk?face*.9*CM:0;
+  /* клеть у устья: дорога — вниз, кадр опущен, чтобы небо не съело полэкрана (копёр ещё целиком) */
+  const ly=dir?-dir[1]*Ln.lead*CM:Mm.mode==="cage"&&Mm.cy<=0&&!Mm.cto?-L0.Hf*.12:-(Mm.ride||0)*1.4*CM;
+  const wx=dig3PanX(mx+lx,L0.w),wy=my+ly;
+  if(first){M.cx=wx;M.cy=wy;}
+  else{const e=1-Math.exp(-dt/Ln.tau);M.cx+=(wx-M.cx)*e;M.cy+=(wy-M.cy)*e;}
+  if(Math.abs(wy-M.cy)>L0.Hf*.6||Math.abs(wx-M.cx)>L0.w*.6){M.cx=wx;M.cy=wy;}   /* маяк, стенд: скачок — без догона */
+  const cx=M.cx,Ls=dig3Lens(asp,cx,M.cy),K=H/(Ls.Hf*DIG3_PPM);
+  G.viewK=K;G.viewX=cx*DIG3_PPM-W/(2*K);G.viewY=-Ls.t*DIG3_PPM;
+  M.lens=Ls;
+  /* линия земли у ствола — высота поверхности для неба и дня */
+  const sY=dig3Ground(Fd,CM*.5),land=Ls.t>sY-4;
+  /* куски: окно на глубине, до которой видно (у поверхности — до гряды) */
+  const zv=land?DIG3_CH.zcap:6,sp=(zv-Ls.eye[2])/Ls.D,hw=Ls.w/2*sp,hh=Ls.Hf/2*sp,mid=(Ls.b+Ls.t)/2;
+  const list=dig3Chunks(Fd,[cx-hw-2,cx+hw+2,mid-hh-2,mid+hh+2],mx,my,first);
+  const F={batches:[],lamps:[],draw:[],lights:[],glows:[]};
+  const S={walkPhase:D.walkPhase,walkAmp:D.walkAmp,on:true,jetOn:false,vy:0,mining:!!D.target,suit:G.surf?G.surf.suit:100};
+  plnManFrame(F,[mx,my,DIG3_Z],face,0,{S,lamp:0});
+  /* фонарь на шлеме: туда, куда грызёт (вниз — вниз), иначе по взгляду; поворачивается плавно */
+  const kit=typeof kitStat==="function"?kitStat():{lamp:1},reach=cave3Reach(kit.lamp)*.8;
+  const want=dir?plnNorm([dir[0]+(dir[1]?face*.3:0),dir[1]?-dir[1]*1.2:CAVE3_LAMP.tilt,.34]):plnNorm([face,CAVE3_LAMP.tilt,.34]);
+  M.ld=M.ld?plnNorm(plnMix3(M.ld,want,1-Math.exp(-dt/.18))):want;
+  const ld=M.ld,lp=[mx+.2*face,my+1.71,DIG3_Z-.17];
+  const lampVP=plnM4mul(cave3Persp(CAVE3_K.fov,1,.12,140),plnM4look(lp,[lp[0]+ld[0],lp[1]+ld[1],lp[2]+ld[2]],[0,1,0]));
+  /* день: час мира наверху; столб дня — во всю ширину земли (поверхность светит вся), под землёй
+     его гасит карта тени: камень над выработкой закрывает солнце, открыт только ствол */
+  const Hr=PLN.sun,night=Hr?clamp(Hr.night||0,0,1):0,dayK=(1-plnSmooth(.2,.9,night))*(1-plnSmooth(8*CM,12*CM,sY-my));
+  const sx=Hr&&Hr.dir&&Hr.dir[0]>0?1:-1,sun=plnNorm([.18*sx,1,.1]),lean=[-sun[0]/sun[1],sun[2]/sun[1]];
+  const mouth=[CM*.5,DIG3_ROOM.zd*.5,40,12];
+  const day=cave3DayBox(sun,[cx-Ls.w*.6-4,cx+Ls.w*.6+4,sY-8*CM,sY+6,-1,DIG3_CH.zcap+1]);
+  const lk=Hr&&Hr.look,skyLo=lk?lk.skyHor:[.62,.78,.95],skyHi=lk?lk.skyZen:[.13,.33,.78];
+  /* огни без теней: разлив фонаря, лужа там, куда он смотрит, отсвет на человеке, свод, задняя стена */
+  const Lt=(p,r,c,core)=>F.lights.push({p,r,c,core}),LL=CAVE3_LAMP,zb=Math.min(DIG3_ROOM.zd-.4,DIG3_Z+1.2);
+  /* фонарь днём над землёй не нужен — и светил бы сквозь лист разреза в камень под устьем */
+  const lon=1-dayK*plnSmooth(sY-2.2,sY-.4,my),Lk=c=>[c[0]*lon,c[1]*lon,c[2]*lon];
+  Lt(lp,LL.spillR*.8,Lk(LL.spill),1);
+  const pd=dir&&dir[1]>0?[mx,my-.1]:dir&&dir[1]<0?[mx,my+CM-.3]:[mx+(dir?dir[0]:face)*1.9,my+.25];
+  Lt([pd[0],pd[1],DIG3_Z+.4],LL.poolR*.85,Lk(LL.pool),1);
+  Lt([mx+.55*face,my+1.05,DIG3_Z-.9],1.9,LL.man,1);
+  Lt([mx+.4*face,my+CM-.25,DIG3_Z+.5],4.2,Lk(LL.vault),1);
+  Lt([mx-1.6*face,my+1.2,zb],6.5,Lk(LL.back),1);
+  Lt([mx+3.4*face,my+1.1,zb],8,Lk(LL.ahead),1);
+  /* забой: тёплая искра там, где грызёт резак */
+  if(dir){
+    const bx=(D.col+dir[0]+.5)*CM-dir[0]*CM*.45,by=-(D.row+dir[1]+.5)*CM+dir[1]*CM*.45,fl=.75+.25*Math.sin(G.t*.9)*Math.sin(G.t*.37);
+    Lt([bx,by,DIG3_Z+.3],3.2,[.55*fl,.32*fl,.12*fl],1);F.glows.push({p:[bx,by,DIG3_Z],c:[1,.62,.3],k:.55*fl,s:.35});
+  }
+  /* день в устье: столб сверху и отскок от стен ствола */
+  if(dayK>.01){
+    Lt([CM*.5,sY-2,DIG3_ROOM.zd*.5],11,[.30*dayK,.38*dayK,.44*dayK]);
+    Lt([CM*.5,sY-6,DIG3_ROOM.zd*.6],9,[.16*dayK,.20*dayK,.24*dayK]);
+  }
+  for(const q of F.lamps)Lt(q.p,q.r,[q.c[0]*q.k*.3,q.c[1]*q.k*.3,q.c[2]*q.k*.3]);
+  /* лампа площадки: на каждом открытом горизонте, у ворот ствола */
+  const r0=Math.max(0,Math.floor(-Ls.t/CM)-1),r1=Math.ceil(-Ls.b/CM)+1;
+  for(let r=r0;r<=r1;r++){
+    if(!mineIsLevel(r)||!dig3Dug(Fd,0,r))continue;
+    const q=[CM+.3,-(r+1)*CM+2.05,.55],fl=.9+.1*Math.sin(G.t*.05+r);
+    Lt(q,7.5,[.5*fl,.32*fl,.14*fl]);F.glows.push({p:q,c:[1,.68,.34],k:.6*fl,s:.4});
+  }
+  /* копёр */
+  if(land){
+    if(!M.hf||M.hf.gen!==PLN_GPU.gen||M.hf.D!==D){if(M.hf)plnGeoFree(M.hf.geo);M.hf=dig3HeadMesh(Fd);M.hf.D=D;}
+    F.draw.push({geo:M.hf.geo,lamp:true,sun:true,refl:false});
+    const q=M.hf.lamp,nk=1-plnSmooth(.1,.5,1-night);
+    Lt([q[0],q[1]-.6,q[2]+.4],9,[.5*(.3+nk),.33*(.3+nk),.15*(.3+nk)]);
+    F.glows.push({p:q,c:[1,.74,.42],k:.35+.5*nk,s:.5});
+  }
+  F.glows.push({p:lp,c:[1,.74,.42],k:.9,s:.42});
+  /* убранство: рельсы, крепь, лампы штреков, лестницы, ствол; клеть на канате (23cb) */
+  let tris=dig3DressFrame(F,Fd,D,{cy:Mm.cy,gy},cx-Ls.w*.6,cx+Ls.w*.6,Ls.b-2,Ls.t+2,Lt);
+  for(const c of list){
+    const g=c.geo;
+    if(c.nRock>0)F.draw.push({geo:g,first:0,n:c.nRock,lamp:true,sun:true,refl:true});
+    if(g.n>c.nRock)F.draw.push({geo:g,first:c.nRock,n:g.n-c.nRock,lamp:false,sun:true});
+    tris+=g.n/3;
+  }
+  for(const b of F.batches)F.draw.push({geo:b.geo,inst:b.inst,lamp:false,sun:true,refl:true});
+  if(F.lights.length>12){
+    const w=q=>Math.max(q.c[0],q.c[1],q.c[2])*q.r/(1+Math.hypot(q.p[0]-cx,q.p[1]-my)/8);
+    const core=F.lights.filter(q=>q.core),rest=F.lights.filter(q=>!q.core).sort((a,b)=>w(b)-w(a));
+    F.lights=core.concat(rest.slice(0,12-core.length));
+  }
+  Object.assign(F,{vp:Ls.vp,eye:Ls.eye,t:(G.t/60)%7200,lamp:{p:lp,d:ld,k:lon},lampVP,reach,near:reach*.45,
+    sun,sunVP:day.m,sunRange:day.range,dayK,mouth,lean,surfY:sY,skyLo,skyHi,expo:1,cutZ:0,bed:Fd.bed});
+  M.stat.chunks=list.length;M.stat.left=M.ch?M.ch.left:0;M.stat.tris=Math.round(tris);M.stat.lights=F.lights.length;
+  M.stat.cpu=+(wallMs()-t0).toFixed(2);
+  return cave3GpuFrame(F);
+}
+
+/* ── поверх кадра: то, что ещё не перерисовано (звери-грызуны и полоса проходки) ──
+   Та же кисть, что у старого кадра, в той же мерке: окно на линии человека — окно кадра */
+function dig3Over(){
+  const D=G.dig;
+  if(!D||!DIG3.lens)return;
+  const camx=G.viewX,camy=G.viewY;
+  drawDigFauna(camx,camy);
+  const t=D.target,dir=dig3Dir(D);
+  if(!t||!dir)return;
+  const col=D.col+dir[0],row=D.row+dir[1],x=col*DIG_CELL-camx,y=row*DIG_CELL-camy,k=(DIG_CELL-6)*clamp(t.prog/t.hard,0,1);
+  const TP=GPU.on?gpuNext():null;
+  if(TP){
+    const TS=[[0,x+3,y+DIG_CELL-8,x+DIG_CELL-3,y+DIG_CELL-4,0,0,0,0,0,.55]];
+    if(k>0)TS.push([0,x+3,y+DIG_CELL-8,x+3+k,y+DIG_CELL-4,0,0,242,178,92,1]);
+    gpuShapes(TP,gpuShpAt(TS,lifeHere(0,0)),{blend:"over"});
+    return;
+  }
+  ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x+3,y+DIG_CELL-8,DIG_CELL-6,4);
+  ctx.fillStyle="#f2b25c";ctx.fillRect(x+3,y+DIG_CELL-8,k,4);
+}
+
+/* ── переключатель ── */
+const DIG3_OLD_DRAW=drawDig;
+const DIG3_BLOOM=BLOOM_K.dig;
+drawDig=function(){
+  let ok=false;
+  if(DIG3.on&&DIG3.bad<3&&CAVE3.bad<3&&G.dig&&G.dig.p){
+    try{
+      plnQualAuto();
+      ok=cave3GpuReady()&&dig3Frame();
+      if(ok)DIG3.bad=0;
+    }catch(e){
+      DIG3.bad++;DIG3.err=String((e&&e.stack)||e).slice(0,600);plnLog("шахта: кадр: "+DIG3.err);
+      if(GPU.on&&GPU.dev){GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.scene3D=false;}
+    }
+  }
+  /* свечение у нового вида своё; движку оставлено только зерно */
+  BLOOM_K.dig=ok?0:DIG3_BLOOM;
+  DIG3.live=ok;
+  if(!ok){DIG3.D=null;DIG3_OLD_DRAW();return;}
+  withScale(G.viewK,dig3Over);
+};
+/* тычок по клетке: та клетка, что показана, — окно кадра лежит на плоскости человека */
+const DIG3_OLD_WALK=mouseWalkAt;
+mouseWalkAt=function(clientX,clientY){
+  if(G.mode==="dig"&&G.dig&&DIG3.live&&DIG3.lens){
+    const rc=cvsRect(),sx=(clientX-rc.left)*W/rc.width,sy=(clientY-rc.top)*H/rc.height,K=G.viewK||1;
+    G.dig.walkTarget={col:Math.floor((sx/K+G.viewX)/DIG_CELL),row:Math.floor((sy/K+G.viewY)/DIG_CELL)};
+    return;
+  }
+  return DIG3_OLD_WALK.apply(this,arguments);
+};
+
+/* ══════════════ шахта на движке: порода из выработки (M631a) ══════════════
+   Порода — одна функция плотности, как в пещере (22da): в камне больше нуля, в воздухе меньше.
+   Её начало — клетки игры: выкопанная клетка (D.cells «col,row».dug) — комната 2.29 × 2.29 м и
+   2.8 м вглубь от разреза. Комната тянется на полклетки в выкопанного соседа, поэтому ход из
+   нескольких клеток — один ход без перемычек, а скругляются только углы у камня. Пол — ровно по
+   низу клетки: на нём стоит человек игры. В стволе раз в одиннадцать рядов — камера (как у 2D,
+   23a digVoidPath): шире на 0.6 м и вдвое глубже. Над линией поверхности (digSurfY, 23aa — та же
+   кривая, что считает игра) — воздух мира; земля за разрезом уходит вглубь и поднимается грядой
+   к горизонту. Цвет — пласты геологии планеты (geologyOf, глубина × DIG_GEO_K, как у строки места),
+   под дёрном подпочва (digSoilCols); рудное тело (oreNode) — тусклым оранжевым по его центру и
+   радиусу. Лист разреза (z = 0) — тёмный, пласты на нём читаются.
+   Сетка граней — surface nets по кускам 8 × 8 м на вокселях 0.25 м (счёт 22da cave3Chunk, своя
+   глубина куска: камень без комнат — только лист, комнаты — 4.4 м, у поверхности — 16 м). Новая
+   клетка помечает куски рядом устаревшими: старая сетка рисуется, пока новая не построится.
+   Оси как в пещере: x вдоль разреза, y вверх, z от объектива; метры. Человек 23.6 px = 1.8 м. */
+const DIG3_PPM=23.6/1.8;
+const DIG3_CM=DIG_CELL/DIG3_PPM;
+/* комната: глубина, глубина камеры, скругление угла, вынос стены в камень, сглаживание стыка */
+const DIG3_ROOM={zd:2.8,hall:5.2,wide:.6,r:.42,e:.14,k:.35};
+const DIG3_CH={s:8,vox:.25,zcap:16,keep:80,ms:8,first:420};
+
+function dig3Hash(c,r){return (hashi(c,r,0xD16C)>>>8)/16777216;}
+function dig3Dug(F,c,r){return c>=-MINE_HALF&&c<=MINE_HALF&&r>=0&&r<F.NR&&F.g[r*F.NC+c+MINE_HALF]===1;}
+/* околоствольный двор: ствол на ряду горизонта (рудник, 23cc) — шире и вдвое глубже */
+function dig3Hall(F,c,r){return c===0&&r>0&&mineIsLevel(r)&&dig3Dug(F,0,r-1);}
+function dig3Smin(a,b,k){const h=clamp(.5+.5*(b-a)/k,0,1);return lerp(b,a,h)-k*h*(1-h);}
+function dig3Smax(a,b,k){return -dig3Smin(-a,-b,k);}
+
+/* ── поле выработки: клетки игры сеткой; пересобирается, когда игра копнула (D.maskV, 23-mode-dig) ── */
+function dig3Field(D){
+  const Q=DIG3.f,v=D.maskV|0;
+  if(Q&&Q.D===D&&Q.v===v)return Q;
+  let rmax=0;
+  for(const k in D.cells){if(!D.cells[k].dug)continue;const r=+k.slice(k.indexOf(",")+1);if(r>rmax)rmax=r;}
+  const NC=2*MINE_HALF+1,NR=rmax+2,g=new Uint8Array(NC*NR);
+  for(const k in D.cells){
+    if(!D.cells[k].dug)continue;
+    const i=k.indexOf(","),c=+k.slice(0,i),r=+k.slice(i+1);
+    if(Math.abs(c)<=MINE_HALF&&r>=0&&r<NR)g[r*NC+c+MINE_HALF]=1;
+  }
+  let F=Q&&Q.D===D?Q:null;
+  if(!F){
+    const p=D.p,seed=((p.seed|0)^0x3D16)&0xFFFF,sty=CAVE3_STY[cave3StyKind(p.type)];
+    const lay={tone:new Float32Array(128),shale:new Uint8Array(128)};
+    for(let k=0;k<128;k++){lay.tone[k]=cave3H3(k,7,43,seed);lay.shale[k]=cave3H3(k,11,47,seed)<.14?1:0;}
+    const lin=c=>[Math.pow(c[0]/255,2.2),Math.pow(c[1]/255,2.2),Math.pow(c[2]/255,2.2)];
+    const so=digSoilCols(p),pal=(p.T&&p.T.pal)||[[90,88,86]];
+    const geo=geologyOf(p).map(l=>({d0:l.d0,th:l.th,c:lin(l.col)}));
+    /* пласты на разрезе реже пещерных: кадр шахты вдвое дальше от камня */
+    F={D,p,seed,sty,lay,geo,turf:lin(so.turf),sub:lin(so.sub),top:lin(pal[Math.min(3,pal.length-1)]),
+      sa:cave3Hex(sty.a),sb:cave3Hex(sty.b),sh:cave3Hex(sty.sh),rust:cave3Hex(sty.rust),bed:sty.bed*1.6,air:so.air,nk:[],gen:0};
+  }
+  F.v=v;F.g=g;F.NC=NC;F.NR=NR;F.gen++;
+  DIG3.f=F;
+  return F;
+}
+/* линия поверхности на разрезе, м (y вверх) — та же кривая, что у игры */
+function dig3Ground(F,X){return -digSurfY(F.p,X*DIG3_PPM)/DIG3_PPM;}
+/* земля за разрезом: у разреза — линия игры, вдали гряда поднимается к горизонту и закрывает конец кусков */
+function dig3Land(F,X,Z){
+  const g=dig3Ground(F,X);
+  if(Z<=.4)return g;
+  const k=plnSmooth(.4,15,Z);
+  return g+k*(1.1+1.3*cave3N3(X*.055,.5,Z*.05,F.seed)+.45*cave3N3(X*.2,1.5,Z*.18,F.seed+7));
+}
+/* пустота в плоскости разреза: < 0 — комната; DIG3_VZ[0] — её глубина вглубь, м */
+const DIG3_VZ=new Float32Array(1);
+function dig3Void(F,X,Y){
+  const CM=DIG3_CM,R=DIG3_ROOM,c0=Math.floor(X/CM),r0=Math.floor(-Y/CM);
+  let d=9,hw=0;
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const c=c0+dc,r=r0+dr;
+    if(!dig3Dug(F,c,r))continue;
+    const h=dig3Hall(F,c,r),w=h?R.wide:0,hc=CM*.5;
+    const x0=c*CM-(dig3Dug(F,c-1,r)?hc:R.e+w),x1=(c+1)*CM+(dig3Dug(F,c+1,r)?hc:R.e+w);
+    const y1=-r*CM+(dig3Dug(F,c,r-1)?hc:R.e),y0=-(r+1)*CM-(dig3Dug(F,c,r+1)?hc:0);
+    const rr=R.r*(.75+.5*dig3Hash(c,r)),hx=(x1-x0)/2,hy=(y1-y0)/2;
+    const qx=Math.abs(X-(x0+x1)/2)-(hx-rr),qy=Math.abs(Y-(y0+y1)/2)-(hy-rr);
+    const s=Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-rr;
+    d=d>8?s:dig3Smin(d,s,R.k);
+    if(h)hw=Math.max(hw,1-plnSmooth(-.4,1.2,s));
+  }
+  DIG3_VZ[0]=lerp(R.zd,R.hall,hw);
+  return d;
+}
+/* плотность, м: > 0 — камень */
+function dig3Den(F,X,Y,Z){
+  const g=dig3Land(F,X,Z)-Y;
+  if(g<-2.5)return g;
+  let d=g;
+  const v=dig3Void(F,X,Y);
+  if(v<4){
+    /* свод: кровля сходит в заднюю стену дугой (радиус до 1 м), почва — почти прямым углом;
+       стык круглым скруглением, радиус по высоте в клетке */
+    const zd=DIG3_VZ[0],fr=-Y/DIG3_CM-Math.floor(-Y/DIG3_CM),rr=lerp(1,.22,plnSmooth(.25,.75,fr));
+    const ux=Math.max(rr+v,0),uz=Math.max(rr+Z-zd,0);
+    d=Math.min(d,Math.min(-rr,Math.max(v,Z-zd))+Math.hypot(ux,uz));
+  }
+  if(d>2||d<-2)return d;
+  /* камень шершав; у разреза вполовину — на линии ходьбы клетка игры остаётся клеткой */
+  const am=.35+.65*plnSmooth(0,1,Z);
+  d+=(.08*cave3N3(X*.9,Y*.9,Z*.9,5)+.04*cave3N3(X*2.3,Y*2.3,Z*2.3,9))*F.sty.grit*am;
+  /* сколы по стенам комнат глубже разреза — забой ровным не бывает */
+  if(Z>.5&&v<1.2)d+=.16*cave3N3(X*.6,Y*.7,Z*.6,21)*plnSmooth(.5,1.6,Z);
+  return d;
+}
+/* рудные тела рядом с куском: центр и радиус в метрах, цвет (линейный) */
+function dig3Nodes(F,x0,x1,y0,y1){
+  const D=F.D,CM=DIG3_CM,out=[];
+  const c0=Math.floor(x0/CM)-3,c1=Math.floor(x1/CM)+3,r0=Math.max(0,Math.floor(-y1/CM)-3),r1=Math.floor(-y0/CM)+3;
+  if(r1<0)return out;
+  for(let nr=Math.floor(r0/ORE_NODE_H);nr<=Math.floor(r1/ORE_NODE_H);nr++)
+    for(let nc=Math.floor(c0/ORE_NODE_W);nc<=Math.floor(c1/ORE_NODE_W);nc++){
+      const n=oreNode(D,nc,nr);
+      if(!n||!RES[n.res])continue;
+      out.push({x:(n.cx+.5)*CM,y:-(n.cy+.5)*CM,r:n.rad*CM,c:plnHex(RES[n.res].col)});
+    }
+  return out;
+}
+/* цвет камня в точке: rgb (линейный) и мокрость; ny — куда смотрит грань */
+function dig3Paint(F,X,Y,Z,ny){
+  const o=CAVE3_INK,P=DIG3_PPM,S=F.sty,L=F.geo;
+  /* пласт геологии на этой глубине; граница пластов волнистая и мягкая (четверть метра) */
+  const dg=Math.max(0,-Y*P)*DIG_GEO_K+2.2*cave3N3(X*.12,Y*.04,Z*.1,F.seed+3),bw=.3*P*DIG_GEO_K;
+  let i=0;while(i<L.length-1&&dg>=L[i].d0+L[i].th)i++;
+  let c=L[i].c;
+  if(i>0&&dg-L[i].d0<bw)c=plnMix3(L[i-1].c,c,.5+.5*(dg-L[i].d0)/bw);
+  else if(i<L.length-1&&L[i].d0+L[i].th-dg<bw)c=plnMix3(c,L[i+1].c,.5-.5*(L[i].d0+L[i].th-dg)/bw);
+  /* камень — рода пещеры (светлый/тёмный по пласту), пласт геологии даёт ему свой оттенок при той же
+     светлоте: иначе зелёная палитра мира красит весь разрез в зелень (правило богатой палитры) */
+  const s0=Y-.06*X+.25*Math.sin(X*.09+Z*.05),kb=(Math.floor((s0+.28*Math.sin(s0*1.9+.7))/F.bed)+64)&127;
+  const st=plnMix3(F.sa,F.sb,F.lay.tone[kb]),lg=.2126*c[0]+.7152*c[1]+.0722*c[2]+1e-4,ls=.2126*st[0]+.7152*st[1]+.0722*st[2],kl=ls/lg;
+  c=plnMix3(st,[c[0]*kl,c[1]*kl,c[2]*kl],.4);
+  if(F.lay.shale[kb])c=plnMix3(c,F.sh,.65);
+  const big=cave3N3(X*.22,Y*.22,Z*.22,21),mid=cave3N3(X*.8,Y*.8,Z*.8,23),m=1+.13*big+.06*mid;
+  c=[c[0]*m,c[1]*m,c[2]*m];
+  /* ржавчина — потёками вниз по камню, не пятнами */
+  c=plnMix3(c,F.rust,plnSmooth(.6,.9,cave3N3(X*1.1+9,Y*.18,Z*1.1,25))*.22);
+  /* под линией поверхности: дёрн, подпочва, потом камень — волнистыми полосами (23aa) */
+  const gd=(dig3Land(F,X,Z)-Y)*P,wv=3*cave3N3(X*.3,0,Z*.3,F.seed+11);
+  if(gd<DIG_TURF+DIG_SUB+10+wv){
+    const soil=plnMix3(F.turf,F.sub,plnSmooth(DIG_TURF-2,DIG_TURF+3,gd+wv));
+    c=plnMix3(soil,c,plnSmooth(DIG_TURF+DIG_SUB-4,DIG_TURF+DIG_SUB+10,gd+wv));
+  }
+  /* верх земли — то, что видно сверху: грунт мира */
+  if(ny>.55&&gd<4)c=plnMix3(c,F.top,plnSmooth(.55,.85,ny)*plnSmooth(4,1,gd));
+  /* рудное тело — линза с бугристым краем (край четверть метра, не туман) и блёстками в сердце */
+  for(const n of F.nk){
+    const e=Math.hypot((X-n.x)*.8,(Y-n.y)*1.25)+.45*n.r*cave3N3(X*.5,Y*.5,Z*.5,33);
+    if(e<n.r){
+      const w=1-plnSmooth(n.r*.82,n.r,e);
+      c=plnMix3(c,plnMix3(c,[n.c[0]*.5,n.c[1]*.5,n.c[2]*.5],.7),w*.75);
+      if(e<n.r*.6&&cave3N3(X*4.1,Y*4.1,Z*4.1,35)>.62)c=plnMix3(c,n.c,.85);
+    }
+  }
+  /* вода по стене — светлая корка, на полу осадок */
+  const run=plnSmooth(.4,.75,cave3N3(X*.55,Y*.1,Z*.55,27))*plnSmooth(.95,.55,Math.abs(ny));
+  o[0]=c[0];o[1]=c[1];o[2]=c[2];o[3]=run*.5;
+  return o;
+}
+/* глубина куска по z: −1 — весь воздух, 0 — только лист разреза (камень без комнат), иначе метры */
+function dig3Span(F,X0,Y0,s,v){
+  const x0=X0-v-1,x1=X0+s+1,y0=Y0-v-1,y1=Y0+s+1,CM=DIG3_CM,R=DIG3_ROOM;
+  if(y0>5)return -1;
+  let z=0;
+  for(let r=Math.max(0,Math.floor(-y1/CM)-1);r<=Math.floor(-y0/CM)+1;r++)
+    for(let c=Math.floor(x0/CM)-1;c<=Math.floor(x1/CM)+1;c++)
+      if(dig3Dug(F,c,r))z=Math.max(z,(dig3Hall(F,c,r)?R.hall:R.zd)+1.6);
+  if(y1>-3.2)return DIG3_CH.zcap;   /* у поверхности: земля уходит к горизонту */
+  return z;
+}
+/* ── кусок: surface nets (счёт 22da cave3Chunk; своя плотность, краска и глубина) ── */
+function dig3Chunk(F,ci,cj){
+  const s=DIG3_CH.s,v=DIG3_CH.vox,X0=ci*s,Y0=cj*s,n0=Math.round(s/v),NI=n0+2,NJ=NI;
+  const px=i=>X0+(i-1)*v,py=j=>Y0+(j-1)*v;
+  const zs=dig3Span(F,X0,Y0,s,v);
+  if(zs<0)return {v:new Float32Array(0),i:new Uint32Array(0),nv:0,ni:0,nRock:0};
+  F.nk=dig3Nodes(F,X0-v,X0+s,Y0-v,Y0+s);
+  const zmax=zs>0?zs:v*2,NK=Math.max(3,Math.ceil(zmax/v)+2);
+  const zk=k=>(k-.5)*v,sJ=NI,sK=NI*NJ,V=new Float32Array(NI*NJ*NK).fill(NaN);
+  /* блоки 4×4×4: далёкий от грани блок — одним числом */
+  const BI=Math.ceil((NI-1)/4),BJ=BI,BK=Math.ceil((NK-2)/4);
+  for(let bk=0;bk<BK;bk++)for(let bj=0;bj<BJ;bj++)for(let bi=0;bi<BI;bi++){
+    const i0=bi*4,j0=bj*4,k0=1+bk*4,i1=Math.min(i0+4,NI-1),j1=Math.min(j0+4,NJ-1),k1=Math.min(k0+4,NK-1);
+    const cxm=(px(i0)+px(i1))/2,cym=(py(j0)+py(j1))/2,d=dig3Den(F,cxm,cym,zk((k0+k1)/2));
+    const th=v*4.5+.8,far=e=>(e>0)===(d>0)&&Math.abs(e)>th;
+    const fill=far(d)&&far(dig3Den(F,cxm,cym,zk(k0)))&&far(dig3Den(F,cxm,cym,zk(k1)));
+    for(let k=k0;k<=k1;k++){const z=zk(k);for(let j=j0;j<=j1;j++){
+      let n=i0+sJ*j+sK*k;const y=py(j);
+      for(let i=i0;i<=i1;i++,n++)if(V[n]!==V[n])V[n]=fill?d:dig3Den(F,px(i),y,z);}}
+  }
+  /* слой перед разрезом — воздух: грань между ним и первым слоем — лист разреза */
+  for(let n=0;n<sK;n++)V[n]=-Math.abs(V[n+sK]);
+  const CI=NI-1,CJ=NJ-1,CK=NK-1,cell=new Int32Array(CI*CJ*CK).fill(-1);
+  let cap=4096,P=new Float32Array(cap*3),nv=0;
+  const E=[0,1,2,3,4,5,6,7,0,2,1,3,4,6,5,7,0,4,1,5,2,6,3,7],cv=new Float32Array(8);
+  for(let k=0;k<CK;k++)for(let j=0;j<CJ;j++){
+    let n=sJ*j+sK*k;
+    for(let i=0;i<CI;i++,n++){
+      cv[0]=V[n];cv[1]=V[n+1];cv[2]=V[n+sJ];cv[3]=V[n+sJ+1];
+      cv[4]=V[n+sK];cv[5]=V[n+sK+1];cv[6]=V[n+sK+sJ];cv[7]=V[n+sK+sJ+1];
+      let pos=0;for(let c=0;c<8;c++)if(cv[c]>0)pos++;
+      if(pos===0||pos===8)continue;
+      let ax=0,ay=0,az=0,cnt=0;
+      for(let e=0;e<24;e+=2){
+        const p=E[e],r=E[e+1],va=cv[p],vb=cv[r];
+        if((va>0)===(vb>0))continue;
+        const t=va/(va-vb);
+        ax+=(p&1)+((r&1)-(p&1))*t;ay+=(p>>1&1)+((r>>1&1)-(p>>1&1))*t;az+=(p>>2)+((r>>2)-(p>>2))*t;cnt++;
+      }
+      if(nv===cap){cap*=2;const b=new Float32Array(cap*3);b.set(P);P=b;}
+      P[nv*3]=px(i)+ax/cnt*v;P[nv*3+1]=py(j)+ay/cnt*v;P[nv*3+2]=zk(k+az/cnt);
+      cell[i+CI*(j+CJ*k)]=nv++;
+    }
+  }
+  const N=new Float32Array(nv*3),cutOf=new Int32Array(nv).fill(-1),cutP=[],IR=[],IC=[];
+  const cid=(i,j,k)=>(i<0||j<0||k<0||i>=CI||j>=CJ||k>=CK)?-1:cell[i+CI*(j+CJ*k)];
+  const own=(i,j)=>i>=1&&i<=n0&&j>=1&&j<=n0;
+  function quad(c0,c1,c2,c3,vx,vy,vz,front,mine){
+    if(c0<0||c1<0||c2<0||c3<0)return;
+    const ax=P[c1*3]-P[c0*3],ay=P[c1*3+1]-P[c0*3+1],az=P[c1*3+2]-P[c0*3+2];
+    const bx=P[c3*3]-P[c0*3],by=P[c3*3+1]-P[c0*3+1],bz=P[c3*3+2]-P[c0*3+2];
+    const ux=P[c2*3]-P[c1*3],uy=P[c2*3+1]-P[c1*3+1],uz=P[c2*3+2]-P[c1*3+2];
+    const wx=P[c2*3]-P[c3*3],wy=P[c2*3+1]-P[c3*3+1],wz=P[c2*3+2]-P[c3*3+2];
+    let nx=ay*bz-az*by+(wy*uz-wz*uy),ny=az*bx-ax*bz+(wz*ux-wx*uz),nz=ax*by-ay*bx+(wx*uy-wy*ux),flip=false;
+    if(nx*vx+ny*vy+nz*vz<0){nx=-nx;ny=-ny;nz=-nz;flip=true;}
+    const e1=flip?c3:c1,e3=flip?c1:c3;
+    if(front){
+      if(!mine)return;
+      const id=c=>{if(cutOf[c]<0){cutOf[c]=cutP.length;cutP.push(c);}return cutOf[c];};
+      IC.push(id(c0),id(e1),id(c2),id(c0),id(c2),id(e3));return;
+    }
+    for(const c of [c0,c1,c2,c3]){N[c*3]+=nx;N[c*3+1]+=ny;N[c*3+2]+=nz;}
+    if(mine)IR.push(c0,e1,c2,c0,c2,e3);
+  }
+  for(let k=0;k<NK;k++)for(let j=0;j<NJ;j++){
+    let n=sJ*j+sK*k;
+    for(let i=0;i<NI;i++,n++){
+      const a=V[n],sg=a>0?1:-1,m=own(i,j);
+      if(i<CI&&(V[n+1]>0)!==(a>0))quad(cid(i,j-1,k-1),cid(i,j,k-1),cid(i,j,k),cid(i,j-1,k),sg,0,0,false,m);
+      if(j<CJ&&(V[n+sJ]>0)!==(a>0))quad(cid(i-1,j,k-1),cid(i,j,k-1),cid(i,j,k),cid(i-1,j,k),0,sg,0,false,m);
+      if(k<CK&&(V[n+sK]>0)!==(a>0))quad(cid(i-1,j-1,k),cid(i,j-1,k),cid(i,j,k),cid(i-1,j,k),0,0,sg,k===0,m);
+    }
+  }
+  /* краска: порода — пласт, мокрость, открытость воздуха перед гранью; лист разреза — тот же пласт
+     втрое темнее (страница читается пластами), в нормали путь к пустоте в плоскости, в запасе — далеко ли она */
+  const nc=cutP.length,out=new Float32Array((nv+nc)*PLN_VS);
+  for(let c=0;c<nv;c++){
+    const x=P[c*3],y=P[c*3+1],z=P[c*3+2],l=Math.hypot(N[c*3],N[c*3+1],N[c*3+2])||1,nx=N[c*3]/l,ny=N[c*3+1]/l,nz=N[c*3+2]/l;
+    const ink=dig3Paint(F,x,y,z,ny);
+    const a=clamp(-dig3Den(F,x+nx*.4,y+ny*.4,z+nz*.4)/.4,0,1),b=clamp(-dig3Den(F,x+nx*1.6,y+ny*1.6,z+nz*1.6)/1.6,0,1);
+    const o=c*PLN_VS;
+    out[o]=x;out[o+1]=y;out[o+2]=z;out[o+3]=nx;out[o+4]=ny;out[o+5]=nz;out[o+6]=ink[0];out[o+7]=ink[1];out[o+8]=ink[2];
+    out[o+9]=PLN_MAT.rock;out[o+10]=0;out[o+11]=ink[3];out[o+12]=a*(.35+.65*b);
+  }
+  for(let c=0;c<nc;c++){
+    const p=cutP[c],x=P[p*3],y=P[p*3+1],z=P[p*3+2],zc=.08;
+    const dv=dig3Den(F,x,y,zc),gx=dig3Den(F,x+.06,y,zc)-dig3Den(F,x-.06,y,zc),gy=dig3Den(F,x,y+.06,zc)-dig3Den(F,x,y-.06,zc),gl=Math.hypot(gx,gy)||1;
+    /* страница темна и почти без цвета: пласт читается тоном и линией, оттенок — половиной */
+    const ink=dig3Paint(F,x,y,0,0),k=.3*(1+.16*cave3N3(x*.13,y*.13,3,31)),o=(nv+c)*PLN_VS,gr=(ink[0]+ink[1]+ink[2])/3;
+    out[o]=x;out[o+1]=y;out[o+2]=z;out[o+3]=-gx/gl;out[o+4]=-gy/gl;out[o+5]=0;
+    out[o+6]=lerp(gr,ink[0],.5)*k;out[o+7]=lerp(gr,ink[1],.5)*k;out[o+8]=lerp(gr,ink[2],.5)*k;
+    out[o+9]=CAVE3_MAT.cut;out[o+10]=0;out[o+11]=0;out[o+12]=clamp(dv,0,4);
+  }
+  const I=new Uint32Array(IR.length+IC.length);
+  I.set(IR,0);for(let k=0;k<IC.length;k++)I[IR.length+k]=IC[k]+nv;
+  return {v:out,i:I,nv:nv+nc,ni:I.length,nRock:IR.length};
+}
+
+/* ── кэш кусков: что видно — по бюджету, ближние к человеку первыми; устаревшие перестраиваются
+   первыми, а до того рисуются старой сеткой (дыры в кадре на время стройки нет) ── */
+function dig3Chunks(F,box,mx,my,first){
+  const s=DIG3_CH.s,Q=DIG3.ch||(DIG3.ch={m:new Map(),gen:-1,t:0,D:null,g:null,NC:0,NR:0});
+  if(Q.gen!==PLN_GPU.gen||Q.D!==F.D){for(const k of Q.m.values())plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;Q.D=F.D;Q.g=null;}
+  /* что выкопано с прошлого раза: куски вокруг этих клеток — устаревшие */
+  if(Q.g!==F.g){
+    if(Q.g){
+      const CM=DIG3_CM,ch=[];
+      for(let r=0;r<Math.max(Q.NR,F.NR);r++)for(let c=-MINE_HALF;c<=MINE_HALF;c++){
+        const a=r<Q.NR&&Q.g[r*Q.NC+c+MINE_HALF]===1,b=dig3Dug(F,c,r);
+        if(a!==b)ch.push([c*CM-CM-1.5,(c+1)*CM+CM+1.5,-(r+1)*CM-CM-1.5,-r*CM+CM+1.5]);
+      }
+      for(const k of Q.m.values()){
+        const x0=k.i*s,y0=k.j*s;
+        if(ch.some(b=>x0-1<b[1]&&x0+s+1>b[0]&&y0-1<b[3]&&y0+s+1>b[2]))k.stale=true;
+      }
+    }
+    Q.g=F.g;Q.NC=F.NC;Q.NR=F.NR;
+  }
+  Q.t++;
+  const i0=Math.floor(box[0]/s),i1=Math.floor(box[1]/s),j0=Math.floor(box[2]/s),j1=Math.min(Math.floor(box[3]/s),0),want=[],list=[];
+  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
+    const k=i+","+j,c=Q.m.get(k),d=Math.hypot((i+.5)*s-mx,(j+.5)*s-my);
+    if(c){c.t=Q.t;if(c.geo)list.push(c);if(c.stale)want.push([i,j,d-1e3]);}
+    else want.push([i,j,d]);
+  }
+  want.sort((a,b)=>a[2]-b[2]);
+  const t0=wallMs(),lim=first?DIG3_CH.first:DIG3_CH.ms;
+  let built=0;
+  for(const [i,j] of want){
+    if(built&&wallMs()-t0>lim)break;
+    const m=dig3Chunk(F,i,j),key=i+","+j,old=Q.m.get(key),c={i,j,t:Q.t,nRock:m.nRock,geo:m.ni?plnGeo(m):null};
+    if(old){plnGeoFree(old.geo);const at=list.indexOf(old);if(at>=0)list.splice(at,1);}
+    Q.m.set(key,c);if(c.geo)list.push(c);built++;
+  }
+  if(Q.m.size>DIG3_CH.keep){
+    const old=[...Q.m.entries()].filter(e=>e[1].t!==Q.t).sort((a,b)=>a[1].t-b[1].t);
+    for(let k=0;k<old.length&&Q.m.size>DIG3_CH.keep;k++){plnGeoFree(old[k][1].geo);Q.m.delete(old[k][0]);}
+  }
+  Q.left=want.length-built;Q.built=built;
+  return list;
+}
+
+/* ══════════════ рудник на движке: убранство выработки (M631) ══════════════
+   То, по чему шахту узнают: рельсы и шпалы по горизонтам, крепь рамами (задняя стойка, ближняя
+   стойка, верхняк поперёк штрека), лампы через четыре клетки, лестницы в выработке по руде,
+   проводники и расстрелы ствола, порог площадки на горизонте; клеть с человеком и канат до шкива.
+   Всё — тела людской грамматики: серая сталь, ржавчина, тёмный брус, одно оранжевое пятно на клети.
+   Статичное собирается одной сеткой и пересобирается, когда выработка изменилась (D.maskV);
+   клеть — одна запись экземпляра, канат — два кольца в своём буфере, их пишут каждый кадр. */
+const DIG3_DR={wood:[.105,.066,.036],woodD:[.062,.04,.022],steel:[.075,.078,.085],rail:[.15,.15,.16],
+  rust:[.13,.065,.03],band:[.62,.2,.03],lamp:[1,.72,.4],set:1.6,rails:[.82,1.42],lampStep:4};
+
+/* выкопан ли пол под клеткой: штрек стоит на полу, над пустотой — лестница */
+function dig3Floor(F,c,r){return !dig3Dug(F,c,r+1);}
+function dig3DressMesh(F){
+  const m=plnMesh(1<<14),K=DIG3_DR,CM=DIG3_CM,M=PLN_MAT,R=DIG3_ROOM,zd=R.zd,lamps=[];
+  const box=(x0,x1,y0,y1,z0,z1,col)=>{
+    /* брус: шесть граней, нормали наружу */
+    const P=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
+    const F6=[[0,3,2,1,[0,0,-1]],[4,5,6,7,[0,0,1]],[0,4,7,3,[-1,0,0]],[1,2,6,5,[1,0,0]],[3,7,6,2,[0,1,0]],[0,1,5,4,[0,-1,0]]];
+    for(const f of F6){const n=f[4],a=plnVert(m,P[f[0]],n,col,M.bark),b=plnVert(m,P[f[1]],n,col,M.bark),c=plnVert(m,P[f[2]],n,col,M.bark),d=plnVert(m,P[f[3]],n,col,M.bark);plnQuad(m,a,b,c,d);}
+  };
+  const NC=F.NC,H=MINE_HALF;
+  for(let r=0;r<F.NR;r++)for(let c=-H;c<=H;c++){
+    if(!dig3Dug(F,c,r))continue;
+    const x0=c*CM,x1=x0+CM,fy=-(r+1)*CM,h=dig3Hash(c,r);
+    if(c===0){
+      /* ствол: проводники у задней стены, расстрел через клетку; на горизонте — порог и стойки ворот */
+      const xc=CM*.5;
+      /* обшивка: доски по стенам ствола от разреза до задней стены — где сбоку нет штрека */
+      for(const s of [-1,1])if(!dig3Dug(F,s,r))box(s<0?-.06:CM-.04,s<0?.04:CM+.06,fy,fy+CM,0,zd-.05,K.woodD);
+      for(const s of [-1,1])box(xc+s*.78-.07,xc+s*.78+.07,fy,fy+CM,zd-.42,zd-.26,K.woodD);
+      box(xc-1.02,xc+1.02,fy+CM*.5-.07,fy+CM*.5+.07,zd-.5,zd-.36,K.steel);
+      if(r>0&&mineIsLevel(r)){
+        box(xc-1.15,xc+1.15,fy-.12,fy+.02,.15,zd-.2,K.steel);
+        for(const s of [-1,1]){box(xc+s*1.1-.06,xc+s*1.1+.06,fy,fy+2.05,.2,.32,K.steel);box(xc+s*1.1-.06,xc+s*1.1+.06,fy+1.0,fy+1.08,.2,.9,K.band);}
+      }
+      continue;
+    }
+    const lv=mineIsLevel(r)&&dig3Floor(F,c,r);
+    /* рельсы и шпалы: горизонт — откаточный, по нему возят */
+    if(lv){
+      for(let k=0;k<3;k++){const sx=x0+(k+.5)*CM/3;box(sx-.09,sx+.09,fy,fy+.07,.6,1.68,K.woodD);}
+      for(const z of K.rails)box(x0-.01,x1+.01,fy+.07,fy+.15,z-.025,z+.025,K.rail);
+    }
+    /* крепь: рама на клетку — стойка у задней стены и верхняк поперёк штрека; ближней стойки нет:
+       разрез её срезал, а в кадре она легла бы на человека */
+    if(lv){
+      const sx=x0+CM*.5+(h-.5)*.25,top=fy+CM-.34,lean=(dig3Hash(c+1,r)-.5)*.06;
+      box(sx-.1+lean,sx+.1+lean,fy,top,zd-.5,zd-.3,K.wood);
+      box(sx-.12,sx+.12,top,top+.21,.02,zd-.22,K.wood);
+      /* лампа: через четыре клетки, на задней стойке под верхняком */
+      if(((c%K.lampStep)+K.lampStep)%K.lampStep===2){
+        const lx=x0+CM*.25,ly=fy+CM-.62,lz=zd-.62;
+        box(lx-.07,lx+.07,ly,ly+.16,lz-.07,lz+.07,K.steel);
+        plnBlob(m,{c:[lx,ly-.06,lz],r:[.09,.1,.09],sub:1,col:K.lamp,mat:M.glow,glow:3});
+        lamps.push([lx,ly-.1,lz-.3]);
+      }
+    }
+    /* лестница: выработка уходит вверх или вниз — по стене тетивы и ступени */
+    if(dig3Dug(F,c,r+1)){
+      const lx=x0+CM*.5+(h<.5?-.55:.55),y0=fy-CM,y1=fy+.9;
+      for(const s of [-1,1])box(lx+s*.22-.04,lx+s*.22+.04,y0,y1,zd-.62,zd-.52,K.wood);
+      for(let y=y0+.25;y<y1-.05;y+=.3)box(lx-.22,lx+.22,y,y+.04,zd-.6,zd-.54,K.woodD);
+    }
+  }
+  return {geo:plnGeo(plnMeshDone(m)),lamps,gen:PLN_GPU.gen,v:F.v,D:F.D};
+}
+
+/* клеть: рама из уголка, крыша, сетка на задней стенке, оранжевый пояс; низ — в нуле (пол клети) */
+function dig3CageMesh(){
+  const m=plnMesh(1<<12),K=DIG3_DR,M=PLN_MAT,w=.9,h=2.45,z0=.3,z1=1.95;
+  const box=(x0,x1,y0,y1,za,zb,col)=>{
+    const P=[[x0,y0,za],[x1,y0,za],[x1,y1,za],[x0,y1,za],[x0,y0,zb],[x1,y0,zb],[x1,y1,zb],[x0,y1,zb]];
+    const F6=[[0,3,2,1,[0,0,-1]],[4,5,6,7,[0,0,1]],[0,4,7,3,[-1,0,0]],[1,2,6,5,[1,0,0]],[3,7,6,2,[0,1,0]],[0,1,5,4,[0,-1,0]]];
+    for(const f of F6){const n=f[4],a=plnVert(m,P[f[0]],n,col,M.bark),b=plnVert(m,P[f[1]],n,col,M.bark),c=plnVert(m,P[f[2]],n,col,M.bark),d=plnVert(m,P[f[3]],n,col,M.bark);plnQuad(m,a,b,c,d);}
+  };
+  /* пол и крыша */
+  box(-w,w,-.1,0,z0,z1,K.steel);box(-w,w,h,h+.08,z0,z1,K.steel);
+  /* стойки по углам */
+  for(const x of [-w,w-.08])for(const z of [z0,z1-.08])box(x,x+.08,0,h,z,z+.08,K.steel);
+  /* пояса: оранжевый на высоте пояса, серые — у пола и под крышей */
+  for(const z of [z0,z1-.05]){box(-w,w,1.05,1.12,z,z+.05,K.band);box(-w,w,.3,.35,z,z+.05,K.steel);box(-w,w,h-.3,h-.25,z,z+.05,K.steel);}
+  /* сетка задней стенки и боков — частые прутья */
+  for(let x=-w+.15;x<w-.1;x+=.16)box(x,x+.02,0,h,z1-.04,z1-.02,K.steel);
+  for(const x of [-w,w-.03])for(let z=z0+.15;z<z1-.1;z+=.16)box(x,x+.03,1.12,h,z,z+.02,K.steel);
+  /* подвеска: дуга над крышей и серьга каната */
+  plnTube(m,{path:[[-w*.7,h+.08,(z0+z1)/2],[0,h+.55,(z0+z1)/2],[w*.7,h+.08,(z0+z1)/2]],rad:.04,sides:4,col:K.steel,mat:M.bark});
+  return {geo:plnGeo(plnMeshDone(m)),inst:plnInst(new Float32Array(16),0,1),a:new Float32Array(16),gen:PLN_GPU.gen,top:h+.55};
+}
+/* канат: от серьги клети до шкива копра — два кольца по четыре вершины, верх и низ пишутся каждый кадр */
+function dig3RopeMesh(){
+  const m=plnMesh(64);
+  plnTube(m,{path:[[0,0,0],[0,1,0]],rad:.022,sides:4,col:[.03,.03,.032],mat:PLN_MAT.bark});
+  const d=plnMeshDone(m);
+  return {geo:plnGeo(d),V:d.v,gen:PLN_GPU.gen,y0:null,y1:null};
+}
+function dig3RopeSet(Q,xb,yb,xt,yt,z){
+  if(Q.y0===yb&&Q.y1===yt&&Q.x0===xb&&Q.x1===xt)return;
+  /* кольца по 4 вершины: первое — у серьги, второе — у шкива */
+  const V=Q.V,n=Math.min(8,V.length/PLN_VS);
+  for(let k=0;k<n;k++){const o=k*PLN_VS,a=k%4/4*TAU;V[o]=(k<4?xb:xt)+Math.cos(a)*.022;V[o+1]=k<4?yb:yt;V[o+2]=z+Math.sin(a)*.022;}
+  GPU.dev.queue.writeBuffer(Q.geo.vb,0,V);
+  Q.y0=yb;Q.y1=yt;Q.x0=xb;Q.x1=xt;
+}
+
+/* кадр: убранство, клеть, канат и огни ламп в окне */
+function dig3DressFrame(F,Fd,D,Mm,x0,x1,y0,y1,Lt){
+  const M=DIG3;
+  if(!M.dr||M.dr.gen!==PLN_GPU.gen||M.dr.v!==Fd.v||M.dr.D!==D){if(M.dr)plnGeoFree(M.dr.geo);M.dr=dig3DressMesh(Fd);}
+  F.draw.push({geo:M.dr.geo,lamp:true,sun:true,refl:false});
+  let tris=M.dr.geo.n/3;
+  for(const q of M.dr.lamps){
+    if(q[0]<x0||q[0]>x1||q[1]<y0||q[1]>y1)continue;
+    Lt(q,7.5,[.42,.28,.13]);
+  }
+  /* клеть: где она стоит (Mm.cy — пол клети в px мира, Mm.gy — в метры, как у человека) */
+  if(!M.cg||M.cg.gen!==PLN_GPU.gen){M.cg=dig3CageMesh();M.rp=dig3RopeMesh();}
+  const cy=Mm.gy(Mm.cy),cx=DIG3_CM*.5,zc=(.3+1.95)/2;
+  plnRec(M.cg.a,0,[cx,cy,0],1,0,1,0);plnInstSet(M.cg.inst,M.cg.a,1);
+  F.draw.push({geo:M.cg.geo,inst:M.cg.inst,lamp:true,sun:true,refl:false});
+  /* канат: с обода шкива к серьге (копра ещё нет — прямо вверх на его высоту) */
+  const tp=M.hf&&M.hf.rope?M.hf.rope:[cx,dig3Ground(Fd,cx)+6,zc];
+  dig3RopeSet(M.rp,cx,cy+M.cg.top,tp[0],tp[1],zc);
+  F.draw.push({geo:M.rp.geo,lamp:true,sun:true,refl:false});
+  return tris+M.cg.geo.n/3;
+}
+
+/* ══════════════ рудник: ствол, клеть, горизонты, забой (M631, docs/DESIGN-mine.md) ══════════════
+   Шахта была сыром: человек грыз клетки в четыре стороны и висел в пустой трубе (автор, 15.10:
+   «че он вниз лезет и висит … сгенерируй что типо реально шахта»). Теперь это рудник:
+   - ствол (столбец 0) с клетью на канате: W/S — клеть вверх/вниз по остановкам; у верха W — на волю;
+   - горизонты каждые пять рядов (4, 9, 14 …): с них в стороны ведут штреки, по полу которых человек
+     ходит (A/D, тычок) и нигде не висит;
+   - забой — конец штрека: идти в него — бурить, штрек прирастает клеткой (2.3 м); порода — в отвал,
+     руда — в трюм;
+   - углубка: в самом низу ствола S бурит ствол вниз, клеть опускается за забоем; дошёл до ряда
+     горизонта — горизонт открыт;
+   - вверх и вниз из штрека — только по руде (клетка с рудой или у рудного тела): так отбивают
+     рудное тело, а по выработке ходят лестницами.
+   Клетки, руда, твёрдость, ярусы, обвалы, грызуны, реликвии, скафандр, запись выработки — прежние
+   (23-mode-dig, не тронут): ход игры лишь решает, какую клетку грызть и где стоит человек.
+   Человек — ноги в мировых px (x, y; y вниз), клетка — floor(x/30), ряд — по полу; D.col/D.row
+   держатся по ним, поэтому фауна, приборы и маяк читают их как прежде. ?dig=0 — старая шахта целиком. */
+const MINE={on:true};
+try{if(typeof location!=="undefined"&&/[?&]dig=0\b/.test(location.search))MINE.on=false;}catch(e){}
+/* штрек тянется на 40 клеток в каждую сторону (92 м); горизонты — ряд 4 и дальше через пять */
+const MINE_HALF=40, MINE_L0=4, MINE_LS=5;
+/* скорости, px за шаг игры (60 в секунду): ход 2.3 м/с, лестница 1 м/с, клеть до 7.7 м/с */
+const MINE_V={walk:.5,climb:.22,cage:1.75,cageMin:.35,cageK:.05,body:7};
+
+function mineIsLevel(r){return r>=MINE_L0&&(r-MINE_L0)%MINE_LS===0;}
+function mineLevelNo(r){return (r-MINE_L0)/MINE_LS+1;}
+function mineDug(D,c,r){const k=D.cells[c+","+r];return !!(k&&k.dug);}
+/* низ ствола: последний выкопанный подряд ряд столбца 0 */
+function mineSump(D){let r=0;while(mineDug(D,0,r+1))r++;return r;}
+/* пол клети на остановке: у верха — земля, на ряду — низ клетки */
+function mineStopY(r){return r<=0?0:(r+1)*DIG_CELL;}
+/* остановки клети сверху вниз: верх, горизонты до низа ствола, сам низ (полок углубки) */
+function mineStops(D){
+  const s=mineSump(D),out=[0];
+  for(let r=MINE_L0;r<=s;r+=MINE_LS)out.push(r);
+  if(s>0&&out[out.length-1]!==s)out.push(s);
+  return out;
+}
+function mineRowOf(y){return Math.max(0,Math.floor((y-1)/DIG_CELL));}
+/* можно ли отбивать клетку вверх/вниз: только руду и то, что у рудного тела */
+function mineOre(D,c,r){const k=digCell(D,c,r);return !!(k.res||k.nearNode);}
+function mineState(D){
+  if(!D.mm)D.mm={mode:"cage",x:DIG_CELL/2,y:0,cy:0,cto:null,wait:false,word:"ВНИЗ",ride:0};
+  return D.mm;
+}
+
+/* ── укус: та же проходка, что у 2D (23-mode-dig updateDig), для одной клетки ──
+   возвращает true, когда клетка выкопана */
+function mineBite(D,tc,tr,dt,st,head,vert){
+  const S=G.surf;
+  if(tr<0||Math.abs(tc)>MINE_HALF){D.target=null;G.prompt=head+"\nДАЛЬШЕ ГРАНИЦА УЧАСТКА";return false;}
+  const ti=tierAt(tr);
+  if(ti>st.digTier){D.target=null;G.prompt=head+"\nПОРОДА НЕ ПОДДАЁТСЯ — НУЖЕН "+DEPTH_TIERS[ti].need.toUpperCase();return false;}
+  const cell=digCell(D,tc,tr);
+  if(cell.dug){D.target=null;return true;}
+  if(held()>=st.cargoMax&&cell.res){D.target=null;G.prompt=head+"\nТРЮМ ПОЛОН — НАВЕРХ, К КОРАБЛЮ";return false;}
+  D.target=cell;
+  cell.prog+=.019*st.drill*kitStat().drill*dt;
+  G.prompt=head+"\nПРОХОДКА "+Math.round(clamp(cell.prog/cell.hard,0,1)*100)+"%"+
+    (cell.res?" · ЖИЛА: "+RES[cell.res].ru.toUpperCase():"")+
+    (st.drill<1.3?"\nБЫСТРЕЕ — МОДУЛЬ «БУРОВАЯ УСТАНОВКА» НА СТАНЦИИ":"");
+  if(cell.prog<cell.hard)return false;
+  cell.dug=true;D.target=null;D.maskV=(D.maskV|0)+1;
+  if(vert){cell.ladder=true;digCell(D,D.col,D.row).ladder=true;}
+  D.deepest=Math.max(D.deepest,tr);
+  nodeDrop("в шахте",clamp(tr/60,0,1)+sysDanger(G.sx,G.sy)*.4,hashi(tc,tr,0x0DE7));
+  if(cell.res){
+    const got=addRes(cell.res,Math.round(cell.amount*st.refine));
+    if(got&&RES[cell.res].far&&typeof farTake==="function")farTake(cell.res,got);
+    if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);
+  }
+  if(tr>=14){
+    const onTrail=G.relicHint&&G.relicHint.sx===G.sx&&G.relicHint.sy===G.sy;
+    const ch=Math.min(.05,(tr-14)*.0012)*(onTrail?2:1);
+    const id=relicRoll(hashi(D.p.seed+tc*17,tr*91,0x2E1),ch);
+    if(id){relicFind(id,"из пласта на "+(tr*3)+" м");if(onTrail)G.relicHint=null;}
+  }
+  const cr=rng(hashi(D.p.seed+tc*31,tr*57,0xCAFE));
+  if(ti>0&&cr()<.03+ti*.015){
+    logAdd("warn","Обвал на глубине "+(tr*3)+" м · скафандр "+Math.round(Math.max(0,S.suit-8))+"%");
+    suitHit(8+ti*6+cr()*8,"Обвал породы");
+  }
+  return true;
+}
+
+/* подсказка: клавиши из живой раскладки, на телефоне — слова пэдов */
+function mineKeys(pc,ph){
+  const mob=typeof document!=="undefined"&&document.body&&document.body.classList.contains("mobile");
+  if(mob)return ph;
+  return pc.replace(/\{(\w+):(\w)\}/g,(m,k,d)=>(typeof ctlHint==="function")?ctlHint(k,d):d);
+}
+
+function mineUpdate(dt){
+  const D=G.dig,S=G.surf,st=stat(),M=mineState(D),V=MINE_V;
+  /* клетка — по ногам: их мог переставить маяк, загрузка или стенд */
+  D.col=Math.floor(M.x/DIG_CELL);D.row=mineRowOf(M.y);
+  document.getElementById("dronebtn").style.display="none";
+  S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*kitHeatMul()*dt);
+  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");
+    if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("копь до предупреждения");}
+  if(S.suit<=0){suitFailure();return;}
+  digFauna(dt,st);
+  if(G.mode!=="dig")return;
+  const depth=D.row*3;
+  let head="ГЛУБИНА "+depth+" м · "+(mineIsLevel(D.row)?"ГОРИЗОНТ "+mineLevelNo(D.row)+" · ":"")+
+    geoAt(D.p,D.row*DIG_CELL*DIG_GEO_K).ru.toUpperCase()+
+    "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
+  if(D.bugs.some(b=>b.stun<=0&&b.flee<=0)){
+    const fk=(typeof ctlHint==="function")?ctlHint("fire",""):"F";
+    head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ"+(fk?" ("+fk+")":"")+" — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
+  }
+  /* намерение: клавиши, иначе тычок (клетка) */
+  let up=!!keys.thrust,down=!!keys.brake,lr=keys.left?-1:keys.right?1:0;
+  const act=!!keys.act;
+  if(up||down||lr||act)D.walkTarget=null;
+  else if(D.walkTarget){
+    const T=D.walkTarget,dr=T.row-D.row,dc=T.col-D.col;
+    if(M.mode==="cage"){
+      if(dr&&M.cto==null)(dr>0?down=true:up=true);
+      else if(!dr&&dc)lr=Math.sign(dc);
+      else if(!dr&&!dc)D.walkTarget=null;
+    }else if(M.mode==="ladder"){
+      if(dr)(dr>0?down=true:up=true);else if(dc)lr=Math.sign(dc);else D.walkTarget=null;
+    }else{
+      /* по штреку к клетке; в другой ряд — через ствол: к клети, а там поедет */
+      if(dr&&D.col!==0&&T.col!==D.col)lr=-Math.sign(D.col);
+      else if(dr)(dr>0?down=true:up=true);
+      else if(dc){
+        const cx=T.col*DIG_CELL+DIG_CELL/2;
+        if(Math.abs(cx-M.x)>2)lr=Math.sign(cx-M.x);else D.walkTarget=null;
+      }else D.walkTarget=null;
+    }
+  }
+  const moving=M.mode==="walk"&&(lr||act)||M.mode==="ladder"&&(up||down);
+  D.walkAmp=clamp(D.walkAmp+(moving?1:-1)*.12*dt,0,1);
+  if(moving)D.walkPhase+=dt*.3;
+  D.target=null;
+  const sync=()=>{D.col=Math.floor(M.x/DIG_CELL);D.row=mineRowOf(M.y);};
+
+  /* ── клеть ── */
+  if(M.cto!=null){
+    const d=M.cto-M.cy,v=clamp(Math.abs(d)*V.cageK,V.cageMin,V.cage)*dt;
+    M.cy=Math.abs(d)<=v?M.cto:M.cy+Math.sign(d)*v;
+    M.ride=Math.sign(d);
+    if(M.cy===M.cto){M.cto=null;M.ride=0;
+      const r=mineRowOf(M.cy);
+      if(M.mode==="cage"&&mineIsLevel(r))say("ГОРИЗОНТ "+mineLevelNo(r)+" · "+r*3+" м",90);}
+  }
+  if(M.mode==="cage"){
+    M.x+=(DIG_CELL/2-M.x)*Math.min(1,.2*dt);M.y=M.cy;sync();
+    const stops=mineStops(D),here=stops.findIndex(r=>mineStopY(r)===M.cy),sump=mineSump(D),r=D.row;
+    M.word=here===stops.length-1?"УГЛУБИТЬ":"ВНИЗ";
+    if(M.cto!=null){G.prompt=head+"\nКЛЕТЬ "+(M.ride>0?"ВНИЗ":"ВВЕРХ");return;}
+    /* клеть меж остановок (выработку переписали) — к ближней */
+    if(here<0){let b=stops[0];for(const q of stops)if(Math.abs(mineStopY(q)-M.cy)<Math.abs(mineStopY(b)-M.cy))b=q;M.cto=mineStopY(b);return;}
+    if(up){
+      if(here<=0){exitDig();return;}
+      M.cto=mineStopY(stops[here-1]);return;
+    }
+    if(down||act){
+      if(here>=0&&here<stops.length-1){M.cto=mineStopY(stops[here+1]);return;}
+      /* низ ствола: углубка — ствол грызут вниз, полок с клетью идёт за забоем */
+      if(mineBite(D,0,sump+1,dt,st,head,true)){
+        M.cto=mineStopY(sump+1);
+        if(mineIsLevel(sump+1)){say("ГОРИЗОНТ "+mineLevelNo(sump+1)+" ОТКРЫТ · "+(sump+1)*3+" м\nштреки ведут с него в стороны");
+          logAdd("tech","Шахта на "+D.p.name+": горизонт "+mineLevelNo(sump+1)+" на "+(sump+1)*3+" м");}
+      }
+      return;
+    }
+    if(lr&&r>0){
+      if(mineDug(D,lr,r)){M.mode="walk";D.face=lr;M.x=DIG_CELL/2+lr*4;return;}
+      if(mineIsLevel(r)){D.face=lr;mineBite(D,lr,r,dt,st,head,false);return;}
+      G.prompt=head+"\nЗДЕСЬ НЕ ГОРИЗОНТ · ШТРЕКИ ВЕДУТ С ГОРИЗОНТОВ";return;
+    }
+    const nl=stops.find(s=>s>r&&mineIsLevel(s)),need=sump<MINE_L0?MINE_L0:Math.ceil((sump+1-MINE_L0)/MINE_LS)*MINE_LS+MINE_L0;
+    G.prompt=head+"\n"+(here===stops.length-1
+      ?(r===0&&sump===0?mineKeys("{brake:S} — ЗАЛОЖИТЬ СТВОЛ · ДО ГОРИЗОНТА 1: "+MINE_L0*3+" м","ВНИЗ — ЗАЛОЖИТЬ СТВОЛ")
+        :mineKeys("{brake:S} — УГЛУБИТЬ СТВОЛ · ДО ГОРИЗОНТА "+mineLevelNo(need)+": "+(need-sump)*3+" м","ВНИЗ — УГЛУБИТЬ СТВОЛ"))
+      :mineKeys("{brake:S} — КЛЕТЬ ВНИЗ"+(nl?" (ГОРИЗОНТ "+mineLevelNo(nl)+")":""),"ВНИЗ — КЛЕТЬ"))+
+      (r>0&&mineIsLevel(r)?mineKeys(" · {left:A} {right:D} — НА ГОРИЗОНТ"," · ◀ ▶ — НА ГОРИЗОНТ"):"")+
+      (r===0?mineKeys(" · {thrust:W} — НАВЕРХ"," · ВВЕРХ — НАВЕРХ"):"");
+    return;
+  }
+
+  /* ── штрек ── */
+  if(M.mode==="walk"){
+    const r=D.row;M.y=mineStopY(r);
+    const col=Math.floor(M.x/DIG_CELL);
+    M.word=col===0?"КЛЕТЬ":"БУРИТЬ";
+    /* у ствола: W/S — в клеть (клеть не здесь — её зовут, ждём) */
+    if((up||down||act&&col===0)&&col===0){
+      const sy=mineStopY(r);
+      if(M.cy!==sy){if(M.cto!==sy){M.cto=sy;say("Клеть вызвана",60);}G.prompt=head+"\nКЛЕТЬ ИДЁТ";return;}
+      M.mode="cage";
+      const stops=mineStops(D),here=stops.indexOf(r);
+      if(up&&here>0)M.cto=mineStopY(stops[here-1]);
+      else if(!up&&here>=0&&here<stops.length-1)M.cto=mineStopY(stops[here+1]);
+      return;
+    }
+    /* вверх/вниз из штрека: лестница по выработке или отбойка руды */
+    if((up||down)&&col!==0){
+      const dr=up?-1:1,tr=r+dr;
+      if(tr>=0&&mineDug(D,col,tr)){M.mode="ladder";M.x=col*DIG_CELL+DIG_CELL/2;return;}
+      if(tr>=0&&mineOre(D,col,tr)){mineBite(D,col,tr,dt,st,head,true);return;}
+      G.prompt=head+"\nПУСТАЯ ПОРОДА · ВВЕРХ И ВНИЗ ОТБИВАЮТ ТОЛЬКО РУДУ";return;
+    }
+    const dir=lr||(act?(D.face||1):0);
+    if(dir){
+      D.face=dir;
+      const nx=M.x+dir*V.walk*dt,edge=nx+dir*V.body,ca=Math.floor(edge/DIG_CELL);
+      /* ворота ствола: клети на этом горизонте нет — шаг в пустоту не делают, клеть зовут */
+      if(ca===0&&col!==0&&M.cy!==mineStopY(r)){
+        M.x=dir>0?Math.min(nx,-V.body-.01):Math.max(nx,DIG_CELL+V.body+.01);
+        if(M.cto!==mineStopY(r)){M.cto=mineStopY(r);say("Клеть вызвана",60);}
+        sync();G.prompt=head+"\nКЛЕТЬ ИДЁТ";return;
+      }
+      if(ca===col||mineDug(D,ca,r))M.x=nx;
+      else{
+        /* забой: встал вплотную и бурит */
+        M.x=dir>0?Math.min(nx,ca*DIG_CELL-V.body-.01):Math.max(nx,(ca+1)*DIG_CELL+V.body+.01);
+        sync();mineBite(D,ca,r,dt,st,head,false);return;
+      }
+    }
+    sync();
+    const ahead=Math.floor((M.x+(D.face||1)*(V.body+4))/DIG_CELL),atFace=ahead!==D.col&&!mineDug(D,ahead,r);
+    G.prompt=head+"\n"+(D.col===0?mineKeys("{thrust:W} {brake:S} — КЛЕТЬ · {left:A} {right:D} — ПО ШТРЕКУ","ВВЕРХ · ВНИЗ — КЛЕТЬ · ◀ ▶ — ПО ШТРЕКУ")
+      :atFace?mineKeys((D.face<0?"{left:A}":"{right:D}")+" — БУРИТЬ ЗАБОЙ · {brake:S} {thrust:W} — РУДУ ВНИЗ / ВВЕРХ",(D.face<0?"◀":"▶")+" — БУРИТЬ ЗАБОЙ")
+      :mineKeys("{left:A} {right:D} — ИДТИ · В ЗАБОЕ — БУРИТЬ","◀ ▶ — ИДТИ · В ЗАБОЕ — БУРИТЬ"));
+    return;
+  }
+
+  /* ── лестница по выработке ── */
+  if(M.mode==="ladder"){
+    const col=Math.floor(M.x/DIG_CELL);
+    M.word="ВНИЗ";
+    M.x+=(col*DIG_CELL+DIG_CELL/2-M.x)*Math.min(1,.25*dt);
+    let r0=mineRowOf(M.y),top=r0,bot=r0;
+    while(top>0&&mineDug(D,col,top-1))top--;
+    while(mineDug(D,col,bot+1))bot++;
+    const ymin=mineStopY(top),ymax=mineStopY(bot),onFloor=Math.abs(M.y-mineStopY(r0))<3;
+    if(up||down){
+      const ny=M.y+(up?-1:1)*V.climb*dt;
+      if(up&&ny<ymin){M.y=ymin;sync();if(top>0&&mineOre(D,col,top-1)){mineBite(D,col,top-1,dt,st,head,true);return;}}
+      else if(down&&ny>ymax){M.y=ymax;sync();if(mineOre(D,col,bot+1)){mineBite(D,col,bot+1,dt,st,head,true);return;}}
+      else M.y=ny;
+    }else if(lr&&onFloor){
+      M.y=mineStopY(r0);sync();
+      if(mineDug(D,col+lr,r0)){M.mode="walk";D.face=lr;return;}
+      if(mineOre(D,col+lr,r0)){D.face=lr;mineBite(D,col+lr,r0,dt,st,head,false);return;}
+    }else if(!up&&!down){
+      /* отпустил: на полу — стоит, между полами — держится за лестницу */
+      if(onFloor&&!mineDug(D,col,r0+1)){M.y=mineStopY(r0);M.mode="walk";}
+    }
+    sync();
+    G.prompt=head+"\n"+mineKeys("{thrust:W} {brake:S} — ПО ЛЕСТНИЦЕ · {left:A} {right:D} — СОЙТИ","ВВЕРХ · ВНИЗ — ПО ЛЕСТНИЦЕ · ◀ ▶ — СОЙТИ");
+  }
+}
+/* слово большой кнопки: в клети — вниз (внизу — углубить), в штреке — бурить, у ствола — клеть */
+function mineActWord(){
+  const D=G.dig;if(!MINE.on||!D||!D.mm)return "";
+  return D.mm.word;
+}
+
+/* ── переключатель ── */
+const MINE_OLD_UPDATE=updateDig;
+updateDig=function(dt){
+  if(!MINE.on||!G.dig)return MINE_OLD_UPDATE.apply(this,arguments);
+  return mineUpdate(dt);
+};
 
 /* ══════════════ ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ ══════════════ */
 /* hashi3, noise3, fbm3 — 24ba-belt-gpu.js */
@@ -107353,6 +108639,8 @@ function raidSprDesc(){
     primitive:{topology:"triangle-list"},
     depthStencil:{format:"depth24plus",depthWriteEnabled:true,depthCompare:"less"}};
 }
+GPU_PIPE_ONE["raid3d"]=()=>raidGpuDesc();      /* поздний прогрев (08b0): рейд входит не с первой секунды */
+GPU_PIPE_ONE["raid3d.spr"]=()=>raidSprDesc();
 /* общее: числа кадра, проекция, свет в точке мира (рассеянный, фонарь, лампы, тени на полу) */
 const RAID_WGSL_COMMON=`
 struct RU{cam:vec4f,fwd:vec4f,rgt:vec4f,up:vec4f,prj:vec4f,ply:vec4f,misc:vec4f,tor:vec4f,
@@ -116947,7 +118235,8 @@ function stTabMarket(st){
         Q=(typeof sellQuote==="function")?sellQuote(G.sys,k,q):{revenue:q*price,nA:0,priceA:price};
         tot+=Q.revenue;
         const tl=[];
-        if(Q.nA)tl.push("берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:""));
+        if(Q.nA)tl.push("берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+(Q.nF?Q.priceF:price):""));
+        else if(Q.nF)tl.push("норму смены взяли · сверх по "+Q.priceF+" кр");
         if((mkt.pressure[k]||0)<-.05)tl.push("недавно продавали здесь");
         /* дальний товар: едок говорит сам (M469), без едока — приёмщик про весы (review §3) */
         const fv=RES[k].far&&typeof farEaterVoice==="function"?farEaterVoice(G.sys,k):null;
@@ -122234,7 +123523,8 @@ function cpBand(K,TA,pts,k,w,t,M,n){
 /* краска — холоднее и глуше, чем кажется: под тёплыми лампами коричневое становится деревом, серо-синее — сукном */
 const CP_KIT={cmd:{jac:[50,56,64],mix:.1,coll:1},keep:{jac:[62,78,70],mix:.16,coll:1},fact:{jac:[86,40,46],mix:.1,coll:0},
   sci:{jac:[176,182,190],mix:.12,coll:2},clerk:{jac:[142,140,132],mix:.04,coll:1,vest:[40,44,52]}};
-function cpBody(m,lod,poseK){
+function cpBody(m,lod,poseK){return cpRun(cpBodyGen(m,lod,poseK));}
+function* cpBodyGen(m,lod,poseK){
   const g=cpGene(m),cl=cpCloth(g,m.seed),P=R3P,K=r3Kit(),J=cpPose(poseK);
   const wB=.86+(g.build-.7)*.36,hs=g.hs,pel=[0,J.pel,0],ln=J.lean;
   const ai=g.ai,rc=m.acc||(g.role?hex2rgb(g.role.col):[150,160,170]),rk=!ai&&m.role&&CP_KIT[m.role]?m.role:"",KT=rk?CP_KIT[rk]:null;
@@ -122383,7 +123673,8 @@ function cpBody(m,lod,poseK){
   const hc=[neck[0],neck[1]+.155*hs,neck[2]+.022+Math.sin(ln)*.04];
   K.tube([[neck[0],neck[1]-.02,neck[2]-.005],[neck[0],neck[1]+.05,neck[2]+.004],[hc[0],hc[1]-.06,hc[2]-.012]],[.058,.054,.05],ai?Msk:K.mt(mixc(g.skin,[40,24,20],.2),.3,5,P.skin),TN);   /* шея темнее лица: под челюстью тень */
   K.push(hc,0,-ln*.6,0,hs);
-  const rig=cpHead(K,g,lod,cl,m.seed);
+  yield;
+  const rig=yield* cpHeadGen(K,g,lod,cl,m.seed);
   K.pop();
   K.part=0;
   const M=K.pack();
@@ -122396,13 +123687,34 @@ function cpBody(m,lod,poseK){
 /* кэш сеток людей: зерно, поза, подробность, уровень (нашивки), роль и наряд. Настроение в сетку не входит — его
    играет cpRig */
 const CP_MESH=new Map();
+function cpMeshKey(m,pose,lod){
+  return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age);
+}
+function cpMeshPut(key,M){
+  if(CP_MESH.size>=48){const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
+  CP_MESH.set(key,M);
+}
 function cpMesh(m,pose,lod){
-  const key=(m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age);
+  const key=cpMeshKey(m,pose,lod);
   let M=CP_MESH.get(key);
   if(M){CP_MESH.delete(key);CP_MESH.set(key,M);return M;}
   M=cpBody(m,lod,pose);
-  if(CP_MESH.size>=48){const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
-  CP_MESH.set(key,M);return M;
+  cpMeshPut(key,M);return M;
+}
+/* то же по шагам: простой зала берёт тело частями, пока шаги укладываются в бюджет кадра. null — ещё строится */
+const CP_JOBS=new Map();
+function cpMeshPump(m,pose,lod,budget){
+  const key=cpMeshKey(m,pose,lod);
+  const M=CP_MESH.get(key);
+  if(M)return M;
+  let it=CP_JOBS.get(key);
+  if(!it){it=cpBodyGen(m,lod,pose);CP_JOBS.set(key,it);}
+  const t0=wallMs();
+  for(;;){
+    const r=it.next();
+    if(r.done){CP_JOBS.delete(key);cpMeshPut(key,r.value);return r.value;}
+    if(wallMs()-t0>=budget)return null;
+  }
 }
 
 /* ══════════════ лицо и голова в объёме (M725, M729) ══════════════
@@ -122586,7 +123898,10 @@ function cpTeeth(K,yTop,yBot,zf,R,w,lod,up,age){
     return [[R*Math.sin(a),y,zf-th+th*Math.cos(b)-R*(1-Math.cos(a))],col];},K.mt([255,255,255],.55,10,0),{wrap:0});
 }
 /* голова целиком (в своей системе: центр головы, лицо к +z). Возвращает точки оснастки лица для cpRig */
-function cpHead(K,g,lod,cl,seed){
+/* шаги: между частями головы — yield (cpMeshPump берёт по шагу в простое); cpHead гонит до конца */
+function cpRun(it){let r;while(!(r=it.next()).done);return r.value;}
+function cpHead(K,g,lod,cl,seed){return cpRun(cpHeadGen(K,g,lod,cl,seed));}
+function* cpHeadGen(K,g,lod,cl,seed){
   if(g.ai){cpHeadAI(K,g,lod);return null;}
   const P=R3P,H=cpHeadFn(g),F=cpFaceRig(H,g),TH=cpWarpTh(),PH=cpWarpPh();
   const NU=lod>1?168:lod?92:30,NV=lod>1?150:lod?84:24,NUh=lod>1?56:lod?32:14,NVh=lod>1?36:lod?20:10;
@@ -122626,6 +123941,7 @@ function cpHead(K,g,lod,cl,seed){
     if(brand&&dz>.2){const bx=Math.abs(p[0]-.38*H.a),by=Math.abs(p[1]-.4*H.b);col=r3Mix(col,brd,(bx<.009&&by<.008)?.55:0);}
     return [p,r3Sc(col,ao),o.sk];
   },Msk,{wrap:1});
+  yield;
   /* уши: раковина, завиток по краю, тёмная чаша */
   const er=.85+.3*g.ear;
   for(const s of [-1,1]){K.push([s*H.a*.95,-.012,-.012],-s*.36,0,s*.1);   /* перед уха к щеке, зад отходит от черепа */
@@ -122636,6 +123952,7 @@ function cpHead(K,g,lod,cl,seed){
       K.ell([s*.003,-.002,.002],[.004,.014*er,.009*er],K.mt(mixc(g.skin,[60,30,25],.35),.1,4,P.skin),4,8);
       K.ell([s*.002,-.021*er,.002],[.0055,.0065*er,.007*er],Me,4,8);}   /* мочка */
     K.pop();}
+  yield;
   /* глаза: яблоко — сфера с полюсом по взгляду (зрачок и радужка — кольцами, ровно), роговица чуть выпуклая;
      ресницы — тёмная лента по кромке верхнего века. Смотрит прямо — взгляд двигает cpRig */
   const iris=r3Lin(g.eye),scl=r3Lin([206,196,184]),pink=r3Lin([206,150,140]),pup=r3Lin([6,6,8]);
@@ -122670,15 +123987,18 @@ function cpHead(K,g,lod,cl,seed){
     }
     K.part=1;
   }
+  yield;
   /* зубы за губами: верхние стоят с головой (улыбка поднимает губу над ними), нижние ходят с нижней губой */
   if(lod){const zf=cpSkinZ(H,F,0,F.my)+.0016;
     K.part=CPR.teeth;cpTeeth(K,F.my+.0105,F.my-.0004,zf,.026,.0195,lod,1,F.age);
     K.part=CPR.lipL;cpTeeth(K,F.my-.0018,F.my-.0095,zf-.0024,.023,.0135,lod,0,F.age);   /* уже и глубже: края не пробивают кожу под губой */
     K.part=1;}
   rig.mouth=[0,F.my,cpSkinZ(H,F,0,F.my)];
+  yield;
   /* волосы и голова сверху — своя, редкая сетка */
   cpHair(K,g,H,lod,cl,NUh,NVh,skin,hairC,seed);
   /* борода — по коже лица (лежит на губах и подбородке, ходит за ними) */
+  yield;
   if(g.beard)cpBeard(K,g,H,F,lod);
   return rig;
 }
@@ -122870,7 +124190,7 @@ function c3Cam(cssW,cssH){
 function c3Seats(n){const step=Math.min(.8,(C3_CR-C3_CL-1)/Math.max(1,n)),c0=-.35,out=[];
   for(let i=0;i<n;i++)out.push(c0+(i-(n-1)/2)*step);return out;}
 /* раскладка зала: где кто сидит и стоит; чистый JS — попадания считаются и без видеокарты */
-function c3Layout(cssW,cssH,list,deals,folk){
+function c3Layout(cssW,cssH,list,deals,folk,lazy){
   const st=(G.st&&G.st.stype)||"trade",S=cantStyle(),seed=(G.sys.seed^0xCA47)>>>0,cam=c3Cam(cssW,cssH);
   const K9=(typeof kinoHere==="function")?kinoHere():null,tree=typeof holTreeUp==="function"&&holTreeUp();
   if(!C3.story||now()-C3.sT>3000||now()<C3.sT){C3.story=(typeof storyCantScene==="function")?storyCantScene():[];C3.sT=now();}
@@ -122891,7 +124211,7 @@ function c3Layout(cssW,cssH,list,deals,folk){
     L.tables.push({id:"deal:"+d.key,d,x,z,seed:hashi(d.seed||1,i*97,0x7AB)>>>0});
     L.people.push({id:"deal:"+d.key,m:{seed:hashi(d.seed||1,i,0xDEA1)>>>0,loy:50,traits:[]},pose:"table",x,z:z-.46,yaw:0,lod:1,kind:"deal"});}
   /* толпа — или ряды зрителей на кино */
-  const cr=C3_CROWD[st]||C3_CROWD.trade;
+  const cr=gaugeCrowd(C3_CROWD[st]||C3_CROWD.trade);   /* толпа — это ЛЮДИ станции (M906, 28l-gauge) */
   if(K9){const n=Math.min(cr.length+2,9);
     for(let i=0;i<n;i++){const row=i<5?0:1,x=(i-(row?7:2))*.78+(row?.39:0);
       L.people.push({id:null,m:{seed:hashi(seed,i,0xC0D)>>>0,loy:50+i*5,traits:[]},pose:"chair",x,z:1.55+row*.85,yaw:Math.PI,lod:0,kind:"kino"});}
@@ -122902,7 +124222,7 @@ function c3Layout(cssW,cssH,list,deals,folk){
     L.people.push({id:null,m:{seed:hashi(seed,(sc.seat||"x").length*31,0x5707)>>>0,loy:50,traits:[]},pose:p[2],x:p[0],z:p[1],yaw:Math.atan2(-p[0]*.3,2),lod:0,kind:"story",dim:sc.dim?.55:.15});}
   L.people=L.people.slice(0,R3_MAXI-1-L.tables.length);
   /* сетки людей (кэш 27f3) */
-  for(const p of L.people)p.mesh=cpMesh(p.m,p.pose,p.lod);
+  if(!lazy)for(const p of L.people)p.mesh=cpMesh(p.m,p.pose,p.lod);   /* lazy — заготовка зала (27f4a) мешает по одному */
   L.rkey=st+"|"+seed+"|"+L.seats.length+"|"+(K9?1:0)+"|"+(tree?1:0)+"|"+L.bx.toFixed(2)+"|"+L.stories.map(s=>(s.props||[]).join(",")+":"+s.seat).join(";");
   return L;
 }
@@ -123429,7 +124749,7 @@ function hallGo(place,first){
 
 /* ── раскладка: кто где стоит (чистый JS, без видеокарты) ── */
 function hallLum(c){return .3*c[0]+.59*c[1]+.11*c[2];}
-function hallLayout(st){
+function hallLayout(st,lazy){
   const T=hallT(st),seed=((G.sys&&G.sys.seed)^0x4A11)>>>0,CS=CANT_STYLE[st]||CANT_STYLE.trade;
   const acc=hex2rgb(CS.acc),bar=hallHasBar(st),R=rng(seed^0x77);
   const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st)};
@@ -123467,10 +124787,65 @@ function hallLayout(st){
     for(let i=0;i<n;i++){const s=HALL_STALLS[i%HALL_STALLS.length],side=i<HALL_STALLS.length?1:-1;
       L.people.push({id:null,m:{seed:hashi(seed,i,0xBA2)>>>0,loy:45+i*7,traits:[]},pose:i%2?"mug":"stand",
         x:s[0]+(R()-.5)*.5,z:s[1]+side*.95,yaw:side>0?Math.PI+(R()-.5)*.6:(R()-.5)*.6,lod:0,kind:"crowd"});}}
-  L.people=L.people.slice(0,R3_MAXI-2);   /* последний экземпляр — пилот */
-  for(const P of L.people)if(!P.mesh)P.mesh=cpMesh(P.m,P.pose,P.lod);
+  L.people=gaugeHallCrowd(L.people).slice(0,R3_MAXI-2);   /* последний экземпляр — пилот; толпа — по людям станции (M906) */
+  if(!lazy)for(const P of L.people)if(!P.mesh)P.mesh=cpMesh(P.m,P.pose,P.lod);   /* lazy — заготовка (hallPrepStep) мешает по одному */
   L.rkey=st+"|"+seed+"|"+L.seats.length+"|"+L.bx.toFixed(2)+"|"+L.stories.map(s=>(s.props||[]).join(",")+":"+s.seat).join(";");
   return L;
+}
+/* ── заготовка зала ──
+   Первый вход в док строил раскладку, тела людей, комнату и их выгрузку на одном кадре: 0,9 с
+   (QA 14.10, ПК). Пока корабль в системе со станцией, это делается по шагу раз в несколько кадров:
+   тела (cpMesh — по человеку), выгрузка сеток и комната. Раскладка при входе строится заново — она
+   дёшева и зависит от состояния дел, — но тела берутся из кэша, сетки уже на видеокарте, комната готова */
+const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:null,ci:0,cdone:true};
+function hallPrepStep(){
+  const sys=G.sys,S=sys&&sys.station,P=HALL_PRE;
+  if(G.mode!=="system"||!S||HALL.open||!GPU.ok||!GPU.dev||!HALL.on)return;
+  const st=S.stype||"trade",key=st+"|"+sys.key;
+  if(P.key!==key){P.key=key;P.L=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;if(P.room){r3Drop(P.room);P.room=null;}}
+  if(P.done){if(!P.cdone)hallCantPrep(S,sys);return;}
+  if(!P.L){P.L=hallLayout(st,true);return;}
+  const pe=P.L.people;
+  if(P.i<pe.length){
+    const q=pe[P.i];
+    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,5);return;}   /* тело — шаг, выгрузка — следующий */
+    r3Up(q.mesh);P.i++;return;
+  }
+  if(!P.room){P.room=hallRoomMesh(P.L);P.rkey=P.L.rkey;return;}
+  if(!P.up){r3Up(P.room);P.up=true;}
+  P.done=true;
+}
+/* люди кантины (вкладка «Кантина» дока): тела кандидатов, столиков, толпы — по одному на шаг.
+   Вкладка при первом открытии лепила их все разом: 0,35 с. Раскладка считается так же, как её
+   считает renderCantina, и с тем же G.st (в системе его нет — на время шага он станция) */
+function hallCantPrep(S,sys){
+  const P=HALL_PRE;
+  if(!P.cl){
+    const keep=G.st;G.st=S;
+    try{
+      const list=G.cantina&&G.cantina.key===sys.key?G.cantina.list:stationMgrs(sys);
+      const free=list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
+      const deals=stationDeals(sys).filter(d=>!dealTaken(d.key));
+      P.cl=c3Layout(980,320,free,deals,typeof folkShown==="function"?folkShown():null,true);
+      /* портреты карточек (27f5): тело «stand» второго уровня — отдельный ключ кэша, его лепил таймер портретов */
+      for(const m of free)P.cl.people.push({m,pose:"stand",lod:2});
+      P.cl.people.push({m:cantKeeper(),pose:"stand",lod:2});
+    }finally{G.st=keep;}
+    return;
+  }
+  const pe=P.cl.people;
+  if(P.ci<pe.length){
+    const q=pe[P.ci];
+    if(!q.mesh){q.mesh=cpMeshPump(q.m,q.pose,q.lod,5);return;}
+    r3Up(q.mesh);P.ci++;return;
+  }
+  P.cdone=true;
+}
+/* из кадра раз в восемь кадров: шаг — не больше кадра работы (тело ~20 мс), остальное — между */
+function hallPrepTick(){
+  if(HALL_PRE.done&&HALL_PRE.cdone&&HALL_PRE.key===((G.sys&&G.sys.station&&((G.sys.station.stype||"trade")+"|"+G.sys.key))||""))return;
+  if((++HALL_PRE.n&7)!==0)return;
+  try{hallPrepStep();}catch(e){HALL_PRE.done=true;HALL_PRE.cdone=true;console.error("заготовка зала",e);}
 }
 /* прилавки блошинца: x, z (перед окном — низкие, навес выше луча к окну) */
 const HALL_STALLS=[[-1.25,.55],[1.15,.55],[3.45,.55],[4.6,2.0],[6.5,2.0]];
@@ -123692,7 +125067,12 @@ function hallFrame(){
   if(!HALL.L||HALL.L.st!==st)HALL.L=hallLayout(st);
   const L=HALL.L,R=rpgGet(cn);if(!R)return false;
   R.dpr=cn.__dpr;
-  if(!HALL.room||HALL.rkey!==L.rkey){r3Drop(HALL.room);HALL.room=hallRoomMesh(L);HALL.rkey=L.rkey;}
+  if(!HALL.room||HALL.rkey!==L.rkey){
+    r3Drop(HALL.room);const pr=HALL_PRE;
+    if(pr.room&&pr.rkey===L.rkey){HALL.room=pr.room;pr.room=null;pr.done=false;pr.up=false;}   /* заготовка отдана: следующая — на обратном пути */
+    else HALL.room=hallRoomMesh(L);
+    HALL.rkey=L.rkey;
+  }
   L.room=HALL.room;
   if(L.bar)c3SignTex(L.S);
   hallOrbUp(L);
@@ -131554,7 +132934,7 @@ function hud(){
   const $act=$actBtn||($actBtn=document.querySelector("[data-k=act]"));
   let actLbl="ДЕЙСТВИЕ", hasAct=false;
   if(G.mode==="belt"){actLbl="РЕЗАК";hasAct=true;}
-  else if(G.mode==="dig"){actLbl="ВНИЗ";hasAct=true;}   // в шахте копают в четыре стороны, вниз — на большой кнопке
+  else if(G.mode==="dig"){actLbl=(typeof mineActWord==="function"&&mineActWord())||"ВНИЗ";hasAct=true;}   // рудник (23cc): слово по месту — вниз, углубить, бурить, клеть
   else{
     /* «УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — БУРЕНИЕ» кнопка раньше не разбирала: образец
        требовал, чтобы строка НАЧИНАЛАСЬ со слова ДЕЙСТВИЕ. У залежи кнопка
@@ -132219,6 +133599,9 @@ function frameBody(now){
   /* особая система корпуса (M484): долгое ДЕЙСТВИЕ — до кадра, пока на экране
      ещё подсказка, которую игрок видел в миг нажатия */
   if(G.mode==="system"&&typeof abilTick==="function")abilTick();
+  if(G.mode==="system")hallPrepTick();   /* зал станции — заранее, по шагу (27f4a) */
+  if(G.mode==="system")plnKitTick();   /* набор флоры планеты — заранее, по шагу (21pg) */
+  if(G.mode==="surface")caveTick();   /* пещера у устья — заранее, по куску (22d) */
   if(G.running){
     G.t+=dt;
     /* налёт для допуска (M363, 05e): настоящими миллисекундами и только в
@@ -132634,6 +134017,701 @@ applySave=function(s){
     const I=insAll();
     if(b.on&&typeof b.on==="object")for(const id in b.on)if(b.on[id])I.on[id]=1;
     if(Array.isArray(b.back))for(const x of b.back)if(x&&typeof x.id==="string"&&shipData(x.id))I.back.push({id:x.id,at:+x.at||0});
+  }
+  return r;
+};
+
+/* ══════════════ участок, норма, сдача смены (M905 · DESIGN-game §3.2, §3.4, §10.2, §10.3, §10.5) ══════════════
+   Наверху игры не было ничего, что говорило бы «что дальше»: у того, у кого всё есть, нет и дела.
+   Теперь у игрока есть УЧАСТОК — квадрат 5×5 систем вокруг места, где его приняли на трассу, — и
+   раз в сводку (шесть часов, 12am) план пишет его НОРМУ: какую долю нужд на станциях участка
+   закрыли вовремя — баржи, артели, вы. Норма — бумага, а не полоса: строка на доске и в трудовой
+   книжке, раз в сводку, голосом диспетчера участка.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Судится только сыгранное: нужды считаются по окнам (12aa, четверть часа игры), прожитым в эту
+      сводку за игрой; меньше двух окон — сводка не судится. Офлайн норму не портит.
+   2. Нужда закрыта, если её закрыли вы (продажа, 12aa needClose) или чужие: доля чужих — от
+      опасности системы, под блокадой (13b) — ноль. Наряд, сданный на станцию участка, — плюс.
+   3. Порогов два, последствий — по одному (§10.2): ≥ 90 % три сводки подряд — разнарядка (станция
+      назад, иначе корпус ступенью выше — не дороже «Обода», иначе ступень модуля; кредитов —
+      никогда); < 60 % — строка срыва; три срыва подряд — станция уходит соседу, и люди этой
+      станции больше вас не называют (дверь 11ah — тихо и навсегда).
+   4. Диспетчер — один человек на участок (генератор людей, L3): встречает на первой стыковке,
+      читает норму, держит смену, пока вас нет.
+   5. Сдать смену — одно нажатие в меню (§10.5: уходя надолго) или на доске станции участка; пока
+      сдана — не идёт ничего: ни бумага, ни оклады, ни руки, ни управляющие, ни дроны, ни норма;
+      страхует только «Стриж». Метки времени тянутся за часами, и, приняв смену, вы не получаете
+      долг за время отсутствия. Принять — у стойки любой станции. Смену держит сменщик — он и
+      скажет, что застал.
+   6. Участок живёт в G.uch, а не в G.watch: G.watch — камера, что следит за наёмником (27b),
+      и она стирает всё, что не похоже на номер наёмника. */
+const WATCH_R=2,WATCH_MIN_W=2,WATCH_HI=90,WATCH_LO=60,WATCH_RUN=3,WATCH_ALLOT_MAX=15000;
+const WATCH_LET="АБВГДЕЖИКЛМНПРСТ";
+/* имена делятся на два списка: у лица нет пола, но бывает борода (cpGene, 27f3) — бородатому
+   женское имя не дают; гладкому — любое из восьми */
+const WATCH_DISP_F=["Нина Аркадьевна","Валентина Сергеевна","Зоя Павловна","Тамара Ильинична","Клавдия Петровна"];
+const WATCH_DISP_M=["Аркадий Львович","Семён Борисович","Илья Ефимович"];
+const WATCH_DISP=WATCH_DISP_F.concat(WATCH_DISP_M);
+const WATCH_RELIEF=["Пётр Кузьмич","Глеб Ильич","Остап Назарович","Фрол Демидович","Влас Никитич","Гордей Саввич"];
+function watchSt(){
+  if(!G.uch||typeof G.uch!=="object")G.uch={};
+  const W=G.uch;
+  if(!W.c||typeof W.c!=="object"){
+    const H=G.home&&G.home.tier?G.home:null;   /* старое сохранение: участок — там, где дом */
+    W.c={sx:H?H.sx|0:G.sx|0,sy:H?H.sy|0:G.sy|0};
+  }
+  if(!W.off||typeof W.off!=="object")W.off={};
+  if(!W.fill||typeof W.fill!=="object")W.fill={};
+  if(!Array.isArray(W.hist))W.hist=[];
+  if(!W.run||typeof W.run!=="object")W.run={hi:0,lo:0};
+  W.ord=W.ord|0;
+  return W;
+}
+function watchSeed(){const W=watchSt();return hashi(W.c.sx,W.c.sy,0x57A7)>>>0;}
+function watchName(){const s=watchSeed();return (10+s%90)+"-"+WATCH_LET[(s>>>8)%WATCH_LET.length];}
+/* диспетчер участка: лицо и имя — от зерна участка, один человек на всё (§10.3) */
+function watchDisp(){
+  const s=watchSeed();
+  const D={seed:hashi(s,0xD15,1)>>>0,role:"fact",acc:[78,112,150],age:38+s%22,loy:70,xp:0,traits:[]};
+  const L=cpGene(D).beard?WATCH_DISP_M:WATCH_DISP;
+  D.name=L[(s>>>4)%L.length];
+  return D;
+}
+function watchIn(sx,sy){const W=watchSt();return Math.max(Math.abs(sx-W.c.sx),Math.abs(sy-W.c.sy))<=WATCH_R;}
+function watchStations(){
+  const W=watchSt(),out=[];
+  for(let x=W.c.sx-WATCH_R;x<=W.c.sx+WATCH_R;x++)for(let y=W.c.sy-WATCH_R;y<=W.c.sy+WATCH_R;y++){
+    if(!starAt(x,y))continue;
+    const S=getSystem(x,y);
+    if(S&&S.station&&S.station.prices&&!(S.key in W.off))out.push(S);
+  }
+  return out;
+}
+function watchHas(S){return !!(S&&S.station&&watchIn(S.sx,S.sy)&&!(S.key in watchSt().off));}
+/* нужда станции в окне w — тот же расчёт, что needOf (12aa), без отметки «закрыта»: тест сверяет */
+function watchNeedAt(S,w){
+  const r=rng(hashi(S.sx,S.sy,0x4EED+w));
+  if(r()>=NEED_P)return null;
+  const keys=TRADE_KEYS.filter(k=>S.station.prices[k]);
+  if(!keys.length)return null;
+  return keys[Math.floor(r()*keys.length)];
+}
+function watchNpcRate(S){
+  if(typeof occLvl==="function"&&occLvl(S.sx,S.sy)>=2)return 0;   /* блокада: баржи не ходят */
+  return clamp(.66-.3*sysDanger(S.sx,S.sy),.3,.66);
+}
+function watchNpc(S,w){return rng(hashi(S.sx,S.sy,0x4F11+w))()<watchNpcRate(S);}
+function watchHanded(){const W=G.uch;return !!(W&&W.hand);}
+/* такт: окна этой сводки; новая сводка — суд над прошлой */
+function watchTick(){
+  const W=watchSt();
+  if(W.hand)return null;
+  const n=chronNow(),w=needWin();
+  if(W.n==null||W.w0==null){W.n=n;W.w0=w;W.w1=w;return null;}
+  if(n!==W.n){
+    const rec=watchJudge(W);
+    W.n=n;W.w0=w;W.w1=w;W.fill={};W.ord=0;
+    return rec;
+  }
+  if(w<W.w0)W.w0=w;
+  if(w>W.w1)W.w1=w;
+  return null;
+}
+function watchJudge(W){
+  W=W||watchSt();
+  const nW=(W.w1|0)-(W.w0|0)+1;
+  if(W.w0==null||nW<WATCH_MIN_W)return null;
+  let tot=0,got=0,mine=0;
+  for(const S of watchStations()){
+    const F=W.fill[S.key]||[];
+    for(let w=W.w0;w<=W.w1;w++){
+      if(!watchNeedAt(S,w))continue;
+      tot++;
+      const my=F.indexOf(w)>=0;if(my)mine++;
+      if(my||watchNpc(S,w))got++;
+    }
+  }
+  tot+=W.ord;got+=W.ord;
+  const norm=tot?Math.round(100*got/tot):100;
+  const rec={n:W.n,norm,tot,mine,ord:W.ord};
+  W.hist.push(rec);if(W.hist.length>8)W.hist.shift();
+  W.last=rec;W.seen=0;
+  const D=watchDisp(),nm=watchName();
+  recordAdd(D.name,"Участок "+nm+". Норма "+norm+" %.");
+  logAdd(norm<WATCH_LO?"warn":"dim","Сводка по участку "+nm+": норма "+norm+" %");
+  if(norm>=WATCH_HI){W.run.hi++;W.run.lo=0;}
+  else if(norm<WATCH_LO){W.run.lo++;W.run.hi=0;recordAdd("ГЛАВТРАССА","Участок "+nm+" не тянет. Отмечено.");}
+  else{W.run.hi=0;W.run.lo=0;}
+  if(W.run.lo>=WATCH_RUN){W.run.lo=0;rec.lost=watchReassign(W);}
+  if(W.run.hi>=WATCH_RUN){W.run.hi=0;rec.allot=watchAllot(W);}
+  return rec;
+}
+/* три срыва: дальняя от центра станция уходит соседу; последняя не уходит никогда */
+function watchReassign(W){
+  const L=watchStations();if(L.length<=1)return null;
+  L.sort((a,b)=>(Math.max(Math.abs(b.sx-W.c.sx),Math.abs(b.sy-W.c.sy))-Math.max(Math.abs(a.sx-W.c.sx),Math.abs(a.sy-W.c.sy)))||(a.key<b.key?-1:1));
+  const S=L[0];
+  W.off[S.key]=W.n|0;
+  if(typeof folkShut==="function")folkShut("st:"+S.key);
+  recordAdd("ГЛАВТРАССА","Станция «"+S.station.name+"» передана участку соседа.");
+  logAdd("bad","Три срыва подряд · станция «"+S.station.name+"» передана участку соседа");
+  return S.station.name;
+}
+/* разнарядка за три сводки ≥ 90 %: станция назад, иначе корпус ступенью выше, иначе ступень модуля */
+function watchAllot(W){
+  const back=Object.keys(W.off).sort((a,b)=>(W.off[b]|0)-(W.off[a]|0))[0];
+  if(back){
+    delete W.off[back];
+    const [sx,sy]=back.split(",").map(Number),S=getSystem(sx,sy),nm=S&&S.station?S.station.name:back;
+    recordAdd("ГЛАВТРАССА","Станция «"+nm+"» возвращена участку.");
+    logAdd("good","Норма три сводки подряд · станция «"+nm+"» снова ваша");
+    return "станция «"+nm+"»";
+  }
+  let top=0;for(const id in G.owned)if(G.owned[id]&&SHIPS[id])top=Math.max(top,SHIPS[id].price|0);
+  const next=Object.keys(SHIPS).filter(id=>!G.owned[id]&&(SHIPS[id].price|0)>top&&(SHIPS[id].price|0)<=WATCH_ALLOT_MAX)
+    .sort((a,b)=>SHIPS[a].price-SHIPS[b].price)[0];
+  if(next){
+    G.owned[next]=true;
+    if(typeof wearAll==="function")wearAll()[next]=Math.round(WEAR_FULL*.55);
+    const ru="«"+SHIPS[next].ru+"»";
+    recordAdd("ГЛАВТРАССА","Разнарядка: "+ru+" — за норму по участку.");
+    logAdd("good","Разнарядка за норму: "+ru+" · б/у, с чужим износом · пересесть можно на верфи");
+    if(typeof thingAdd==="function")thingAdd("paper","Разнарядка на "+ru,"за норму по участку "+watchName()+" · б/у, с чужим износом");
+    return ru;
+  }
+  const k=Object.keys(MODS).filter(k=>MODS[k].base&&(G.modsOwned[k]|0)<4)
+    .sort((a,b)=>modCost(a,G.modsOwned[a]|0)-modCost(b,G.modsOwned[b]|0))[0];
+  if(k){
+    G.modsOwned[k]=(G.modsOwned[k]|0)+1;
+    recordAdd("ГЛАВТРАССА","Разнарядка: «"+MODS[k].ru+"», ступень "+G.modsOwned[k]+" — за норму по участку.");
+    logAdd("good","Разнарядка за норму: «"+MODS[k].ru+"», ступень "+G.modsOwned[k]+" · ставится на ОСНАСТКЕ");
+    return "«"+MODS[k].ru+"»";
+  }
+  return null;
+}
+/* ── сдать и принять смену ── */
+function watchHand(){
+  const W=watchSt();if(W.hand)return false;
+  watchTick();   /* окна до сдачи — в сводку */
+  const s=watchSeed();
+  W.hand={at:now(),who:WATCH_RELIEF[(s>>>12)%WATCH_RELIEF.length],seen:now()};
+  watchFreeze();
+  recordAdd(watchDisp().name,"Смену по участку "+watchName()+" принял "+W.hand.who+".");
+  logAdd("dim","Смена сдана · участок держит "+W.hand.who+" · счёт, люди, дроны и норма стоят");
+  return true;
+}
+function watchBack(){
+  const W=watchSt();if(!W.hand)return null;
+  watchFreeze();
+  const h=(now()-W.hand.at)/3600000,who=W.hand.who;
+  const line=h<1?"Ничего не случилось. Даже чаю не успел."
+    :h<24?"Принимайте. Станции на месте, люди на месте."
+    :h<24*7?"Долго вас не было. Участок держал как мог."
+    :"Думал, вы уже не вернётесь. Принимайте, пока не передумали.";
+  W.hand=null;
+  const B=billSt();if(B.from!=null)B.from=now();
+  W.n=chronNow();W.w0=needWin();W.w1=W.w0;W.fill={};W.ord=0;   /* сводка возврата судится с этой минуты */
+  recordAdd(who,line);
+  logAdd("dim","Смена принята · "+who+": «"+line+"»");
+  return line;
+}
+/* пока смена сдана, часы стоят: метки тянутся за временем, долга за отсутствие нет */
+function watchFreeze(){
+  const W=G.uch;if(!W||!W.hand)return;
+  const t=clockNow(),dt=Math.max(0,t-(W.hand.seen||t));
+  W.hand.seen=t;
+  for(const c of G.crew||[]){if(c.tMs)c.tMs=t;if(c.ransomAt)c.ransomAt+=dt;}
+  for(const m of G.mgrs||[])if(m.tMs)m.tMs=t;
+  for(const d of G.drones||[]){d.lastMs=t;d.t0=(d.t0||t)+dt;}
+  const B=G.bill;if(B&&B.from!=null)B.from=now();
+}
+const WATCH_OLD_DRONES=tickDrones;
+tickDrones=function(){if(watchHanded()){watchFreeze();return;}return WATCH_OLD_DRONES.apply(this,arguments);};
+const WATCH_OLD_CREW=crewTick;
+crewTick=function(){if(watchHanded()){watchFreeze();return;}return WATCH_OLD_CREW.apply(this,arguments);};
+const WATCH_OLD_MGR=mgrTick;
+mgrTick=function(){
+  if(watchHanded()){watchFreeze();return;}
+  try{watchTick();}catch(e){logAdd("warn","СБОЙ · участок: "+(e&&e.message));}
+  return WATCH_OLD_MGR.apply(this,arguments);
+};
+const WATCH_OLD_INSON=insOn;
+insOn=function(id){return watchHanded()?id==="strizh":WATCH_OLD_INSON.apply(this,arguments);};
+/* бумага: пока смена сдана, смена счёта не закрывается (окно стоит на «сейчас») */
+const WATCH_OLD_OPEN=openStation;
+openStation=function(){watchFreeze();return WATCH_OLD_OPEN.apply(this,arguments);};
+/* закрытая вами нужда и сданный наряд — в норму участка */
+const WATCH_OLD_NEED=needClose;
+needClose=function(sys,k){
+  const r=WATCH_OLD_NEED.apply(this,arguments);
+  if(r&&!watchHanded()&&watchHas(sys)){
+    const W=watchSt();watchTick();
+    const N=needAll()[sys.key],w=N?N.win:needWin();
+    (W.fill[sys.key]=W.fill[sys.key]||[]).push(w);
+  }
+  return r;
+};
+const WATCH_OLD_ORDER=orderDeliver;
+orderDeliver=function(){
+  const sys=G.sys,r=WATCH_OLD_ORDER.apply(this,arguments);
+  if(r&&!watchHanded()&&watchHas(sys)){watchTick();watchSt().ord++;}
+  return r;
+};
+/* ── плашка на доске: участок, диспетчер, норма, смена ── */
+function watchSection(){
+  if(!G.sys||!G.sys.station)return;
+  const W=watchSt(),here=watchHas(G.sys);
+  if(!here&&!W.hand&&!(W.last&&!W.seen))return;
+  const D=watchDisp(),nm=watchName(),L=W.last;
+  secHead("УЧАСТОК "+nm,{count:L?"норма "+L.norm+" %":"станций "+watchStations().length});
+  const line=W.hand?"Смену держит "+W.hand.who+". Вернётесь — примете."
+    :!W.met?"Участок "+nm+" ваш: "+watchStations().length+" станций вокруг "+((starAt(W.c.sx,W.c.sy)&&getSystem(W.c.sx,W.c.sy).name)||"места приёма")+". Норму пишем раз в сводку — по всем, кто возит."
+    :L?"Участок "+nm+". Норма "+L.norm+" %."+(L.norm<WATCH_LO?" Не тянем.":L.norm>=WATCH_HI?" Так держать.":"")
+    :"Сводки по участку ещё не было. Нужды на станциях — ваши.";
+  W.met=1;W.seen=1;
+  const r=el("div","row");
+  r.appendChild(faceEl(D,56));
+  const past=W.hist.slice(-5).map(x=>x.norm+" %").join(" · ");
+  r.appendChild(el("div","nm","<b>"+D.name+" · диспетчер участка</b><s>«"+line+"»"+
+    (past&&W.hist.length>1?"<br>прошлые сводки: "+past:"")+
+    (!here?"<br>эта станция — не ваш участок":"")+"</s>"));
+  $body.appendChild(r);
+  if(L&&(L.lost||L.allot))$body.appendChild(el("div","row","<div class='nm'><b>"+(L.lost?"станция «"+L.lost+"» передана соседу":"разнарядка: "+L.allot)+
+    "</b><s>"+(L.lost?"три срыва подряд — участок меньше":"три сводки подряд не ниже 90 %")+"</s></div>"));
+  if(here||W.hand){
+    const s=el("div","row");
+    s.appendChild(el("div","nm",W.hand
+      ?"<b>смена сдана · "+Math.max(1,Math.round((now()-W.hand.at)/60000))+" мин</b><s>счёт, оклады, руки, дроны и норма стоят; страхует только «Стриж»</s>"
+      :"<b>уезжаете надолго?</b><s>сданная смена: ни бумаги, ни окладов, ни нормы; люди и дроны стоят; страхует только «Стриж»</s>"));
+    const b=el("button","act"+(W.hand?" gold":""),W.hand?"ПРИНЯТЬ СМЕНУ":"СДАТЬ СМЕНУ");
+    b.onclick=()=>{sfx("ui");if(watchHanded())watchBack();else watchHand();renderTab();};
+    s.appendChild(b);$body.appendChild(s);
+  }
+}
+LANE_RX.unshift([/^УЧАСТОК/i,"you"]);
+const WATCH_OLD_BOARD=stTabBoard;
+stTabBoard=function(){watchSection();return WATCH_OLD_BOARD.apply(this,arguments);};
+/* запись: G.uch — в снимок и обратно (белый список 14-save не трогаем — обёртка) */
+const WATCH_OLD_SNAP=snapshot;
+snapshot=function(){const s=WATCH_OLD_SNAP.apply(this,arguments);s.uch=G.uch||null;return s;};
+const WATCH_OLD_APPLY=applySave;
+applySave=function(s){
+  const r=WATCH_OLD_APPLY.apply(this,arguments);
+  const b=s&&s.uch;G.uch=null;
+  if(b&&typeof b==="object"){
+    const W=watchSt();
+    if(b.c&&isFinite(b.c.sx)&&isFinite(b.c.sy))W.c={sx:b.c.sx|0,sy:b.c.sy|0};
+    if(b.off&&typeof b.off==="object")for(const k in b.off)W.off[k]=b.off[k]|0;
+    if(b.fill&&typeof b.fill==="object")for(const k in b.fill)if(Array.isArray(b.fill[k]))W.fill[k]=b.fill[k].map(x=>x|0);
+    if(Array.isArray(b.hist))W.hist=b.hist.filter(x=>x&&isFinite(x.norm)).slice(-8);
+    if(b.run)W.run={hi:b.run.hi|0,lo:b.run.lo|0};
+    W.ord=b.ord|0;W.met=b.met?1:0;W.seen=b.seen?1:0;
+    if(b.n!=null)W.n=b.n|0;
+    if(b.w0!=null){W.w0=b.w0|0;W.w1=(b.w1!=null?b.w1:b.w0)|0;}
+    if(b.last&&isFinite(b.last.norm))W.last=b.last;
+    if(b.hand&&typeof b.hand==="object")W.hand={at:+b.hand.at||now(),who:String(b.hand.who||WATCH_RELIEF[0]),seen:+b.hand.seen||+b.hand.at||now()};
+  }
+  return r;
+};
+/* ── меню: СДАТЬ СМЕНУ (§10.5) ──
+   Выхода из браузерной игры нет — есть закрытая вкладка. Поэтому сдача — пункт меню рядом с
+   НАСТРОЙКАМИ, с бумажного часа (раньше нечему набегать). Пока смена сдана, пункт говорит, кто
+   держит, и у стойки принимает её обратно. */
+function watchMenuSync(){
+  const b=document.getElementById("watchbtn");if(!b)return;
+  const W=G.uch,h=!!(W&&W.hand);
+  const on=h||(G.flownMs||0)>=FIRST_HOUR_MS;
+  b.style.display=on?"":"none";
+  if(!on)return;
+  const dock=G.mode==="dock";
+  b.querySelector("em").textContent=h?(dock?"ПРИНЯТЬ СМЕНУ":"СМЕНА СДАНА"):"СДАТЬ СМЕНУ";
+  b.querySelector("s").textContent=h?("держит "+W.hand.who+(dock?"":" · принять — у стойки")):
+    "надолго? ничего не пойдёт и не набежит";
+}
+function watchMenuTap(){
+  toggleMenu(false);
+  if(!watchHanded()){
+    if(!watchHand())return;
+    say("Смену принял "+G.uch.hand.who+"\nничего не идёт, ничего не набегает",200);
+  }else if(G.mode==="dock"){
+    const who=G.uch.hand.who,line=watchBack();
+    if(line)say(who+":\n«"+line+"»",240);
+    if(typeof renderTab==="function")renderTab();
+  }else{say("Принять смену — у стойки\nлюбой станции",160);return;}
+  if(typeof saveGame==="function")saveGame(true);
+}
+{
+  const M=document.getElementById("menu"),opt=document.getElementById("optbtn");
+  if(M&&opt&&typeof M.insertBefore==="function"&&!document.getElementById("watchbtn")){
+    const b=document.createElement("button");b.id="watchbtn";b.style.display="none";
+    b.innerHTML="<svg viewBox='0 0 16 16'><path d='M6 2.5h4v3.2l2.2 2.1V10H3.8V7.8L6 5.7z'/><path d='M3 13h10'/></svg>"+
+      "<span class='tx'><em>СДАТЬ СМЕНУ</em><s></s></span>";
+    M.insertBefore(b,opt);
+    b.addEventListener("click",watchMenuTap);
+  }
+}
+const WATCH_OLD_MENU=toggleMenu;
+toggleMenu=function(on){
+  const r=WATCH_OLD_MENU.apply(this,arguments);
+  if($menu.classList.contains("open"))watchMenuSync();
+  return r;
+};
+
+/* ══════════════ без присмотра: дроны на 60 %, не больше часа яруса (M905 · DESIGN-game §10.5) ══════════════
+   Люди работают только онлайн (12a-crew: загрузка и спящая вкладка ставят их часы на «сейчас»),
+   Страхкасса и оклады в счёте догоняют не больше часа (27ib-bill, 28i-insure). Без присмотра
+   оставались дроны: суточный догон на полном доходе — ночь простоя давала больше часа игры.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Такт дронов после разрыва дольше минуты (тот же порог, что у людей, PEOPLE_GAP_MS) —
+      догон без игрока. Круги, поломки, давление рынка — всё как было; меняется только касса.
+   2. В догоне приходит 60 % выручки и не больше часа чистого своего яруса — половины пола
+      кассы взаимопомощи (BILL_FLOOR_T — это два часа). Остальное ушло на сторону: присмотра
+      не было.
+   3. Сколько пришло и из скольких — одной строкой. Доля, которую не показали, читается как кража.
+   4. Сданная смена (28j-watch) — другое: там не идёт ничего, и догона нет вовсе. */
+const OFF_MUL=.6;
+let OFF_POOL=null;   /* {left, full, paid} — только пока идёт догон */
+function offCap(){return Math.round(BILL_FLOOR_T[billTier()]/2);}
+function offSpan(ms){
+  const m=Math.round(ms/60000);
+  if(m<90)return m+" мин";
+  const h=Math.round(ms/3600000);
+  return h<48?h+" ч":Math.round(h/24)+" сут.";
+}
+const OFF_OLD_EARN=earn;
+earn=function(sum,why){
+  if(OFF_POOL&&why==="drone"){
+    const full=Math.round(sum);
+    if(!isFinite(full)||full<=0)return 0;
+    const pay=Math.max(0,Math.min(Math.round(full*OFF_MUL),OFF_POOL.left));
+    OFF_POOL.full+=full;OFF_POOL.left-=pay;OFF_POOL.paid+=pay;
+    return pay>0?OFF_OLD_EARN(pay,why):0;
+  }
+  return OFF_OLD_EARN.apply(this,arguments);
+};
+const OFF_OLD_TICK=tickDrones;
+tickDrones=function(){
+  if(OFF_POOL||!(G.drones&&G.drones.length)||watchHanded())return OFF_OLD_TICK.apply(this,arguments);
+  const t=clockNow();let gap=0;
+  for(const d of G.drones)if(d&&d.lastMs>0)gap=Math.max(gap,t-d.lastMs);
+  if(gap<=PEOPLE_GAP_MS)return OFF_OLD_TICK.apply(this,arguments);
+  const before=G.drones.map(d=>[d,d.earned|0]);
+  OFF_POOL={left:offCap(),full:0,paid:0};
+  let r;
+  try{r=OFF_OLD_TICK.apply(this,arguments);}
+  finally{
+    const P=OFF_POOL;OFF_POOL=null;
+    if(P.full>0){
+      /* счётчик машины — то, что дошло до кассы, а не то, что она сдала */
+      const k=P.paid/P.full;
+      for(const [d,e0] of before)d.earned=e0+Math.round(((d.earned|0)-e0)*k);
+      offSay(gap,P);
+    }
+  }
+  return r;
+};
+function offSay(gap,P){
+  const capped=P.paid<Math.round(P.full*OFF_MUL);
+  logAdd("money","Дроны без вас, "+offSpan(gap)+": сдали на "+P.full.toLocaleString("ru")+" кр, в кассу — "+
+    P.paid.toLocaleString("ru")+(capped?" · больше часа работы без присмотра не платят":" · шестьдесят процентов: присмотра не было"));
+}
+
+/* ══════════════ три шкалы станции и каскад (M906 · DESIGN-game §4.2, §7.1) ══════════════
+   У каждой станции три числа: СКЛАД, ЛЮДИ, ПОРЯДОК (0–1). Нужда, которую не закрыли, бьёт по
+   складу и людям; пустой склад останавливает цех, и то, что станция делала, становится нуждой
+   у соседей — каскад. Занятость бьёт по порядку, освобождение его поднимает. Всё само тянется
+   к середине: оставленный участок — посредственный, а не мёртвый.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Числа игроку не показываются. Их видно по залу (толпа в кантине — ЛЮДИ), по цене, по
+      прилавку (цех стоит) и словами на доске. Ни процентов, ни полосок.
+   2. Судят только сыгранные окна нужд (15 минут игры, 12aa) и только станции участка плюс два
+      прыжка вокруг игрока. Остальная галактика не считается — она лениво стоит на середине.
+   3. Хранится разреженно: G.gauge[key]=[склад,люди,порядок в сотых, минута записи]. Чтение
+      досчитывает возврат к середине по времени (постоянная два часа); запись, вернувшаяся
+      к середине, удаляется. Каскад — G.casc {s: остановленные цеха, n: нужды у соседей}.
+   4. Нужду, закрытую баржами (watchNpc, 28j), не судят ни в плюс, ни в минус: в плюс идёт
+      только ваш привоз. Нужда соседей по каскаду живёт час и не каскадирует дальше.
+   5. Каскадная нужда идёт ПЕРВОЙ: своя нужда соседа на это время спрятана и потому не судится
+      ни здесь, ни в норме участка (watchNeedAt молчит). Иначе каскад прятался бы за своей
+      нуждой — кадр 15.10: «Энтурикс · кремний», а изотопы, ради которых всё, не видны.
+      Закрытая каскадная идёт в норму участка как сданный наряд (W.ord).
+   6. Отступления от §4.2 — в DESIGN-game (Built 14.10): цех встаёт не от каждой нужды, а
+      когда склад падает ниже четверти; возврат к середине — по времени, а не шагом сводки. */
+const GAUGE_MID=.6,GAUGE_TAU=7200000,GAUGE_DRY=.25,GAUGE_LOW=.4,GAUGE_SOUR_MUL=.92;
+const GAUGE_NEAR=2,CASC_MS=3600000,CASC_N=2,CASC_R=3;
+let GAUGE_W=null;   /* последнее окно нужд, которое видел такт; G.t начинается заново каждый заход */
+function gaugeAll(){return G.gauge||(G.gauge={});}
+function gaugeCasc(){const C=G.casc||(G.casc={s:{},n:{}});C.s=C.s||{};C.n=C.n||{};return C;}
+function gaugeKeyXY(key){const p=String(key).split(",");return [p[0]|0,p[1]|0];}
+/* куда тянется порядок: занятость держит его ниже */
+function gaugeMidO(sx,sy){return Math.max(0,GAUGE_MID-.15*occLvl(sx,sy));}
+function gaugeRead(key){
+  const xy=gaugeKeyXY(key),tO=gaugeMidO(xy[0],xy[1]),A=gaugeAll()[key];
+  if(!A)return {s:GAUGE_MID,m:GAUGE_MID,o:tO};
+  const f=Math.exp(-Math.max(0,now()-A[3]*60000)/GAUGE_TAU);
+  return {s:GAUGE_MID+(A[0]/100-GAUGE_MID)*f,m:GAUGE_MID+(A[1]/100-GAUGE_MID)*f,o:tO+(A[2]/100-tO)*f};
+}
+function gaugeOf(sys){return gaugeRead(sys.key);}
+function gaugeAdd(sys,ds,dm,dO){
+  const g=gaugeOf(sys),p=x=>Math.round(clamp(x,0,1)*100);
+  const A=[p(g.s+ds),p(g.m+dm),p(g.o+dO),Math.floor(now()/60000)];
+  gaugeAll()[sys.key]=A;
+  if(dm&&G.sys&&G.sys.key===sys.key)HALL.L=null;   /* люди сменились при вас — зал перестроится */
+  return {s:A[0]/100,m:A[1]/100,o:A[2]/100};
+}
+/* для тестов и стенда: поставить шкалы как есть */
+function gaugeSet(sys,v){const g=gaugeOf(sys);return gaugeAdd(sys,(v.s!=null?v.s:g.s)-g.s,(v.m!=null?v.m:g.m)-g.m,(v.o!=null?v.o:g.o)-g.o);}
+function gaugeSour(sys){return !!(sys&&sys.station)&&gaugeOf(sys).m<GAUGE_LOW;}
+/* наступление пиратов в эту систему: при плохом порядке — в полтора раза смелее (13b) */
+function gaugeSpread(sx,sy){
+  if(!starAt(sx,sy))return 1;
+  const S=getSystem(sx,sy);
+  return S&&S.station&&gaugeOf(S).o<GAUGE_LOW?1.5:1;
+}
+/* ── цех и каскад ── */
+function gaugeStopOf(sys){const C=G.casc&&G.casc.s&&G.casc.s[sys.key];return C&&C.u>now()?C:null;}
+function gaugeStopped(sys,k){const C=sys&&gaugeStopOf(sys);return !!(C&&C.k===k);}
+/* что станция делает сама: товар, который у неё дешевле всего против базовой цены */
+function gaugeMade(sys){
+  let best=null,bv=1e9;
+  for(const k of ORE_KEYS){const p=sys.station.prices[k];if(!p)continue;const v=p/RES[k].price;if(v<bv){bv=v;best=k;}}
+  return best;
+}
+function gaugeStop(S){
+  const k=gaugeMade(S);if(!k)return null;
+  const C=gaugeCasc(),u=now()+CASC_MS,nb=[];
+  C.s[S.key]={k,u};
+  for(let x=S.sx-CASC_R;x<=S.sx+CASC_R;x++)for(let y=S.sy-CASC_R;y<=S.sy+CASC_R;y++){
+    if((x===S.sx&&y===S.sy)||!starAt(x,y))continue;
+    const N=getSystem(x,y);
+    if(!N||!N.station||!N.station.prices||!N.station.prices[k])continue;
+    const c=C.n[N.key];if(c&&!c.d&&c.u>now())continue;
+    nb.push({N,d:Math.max(Math.abs(x-S.sx),Math.abs(y-S.sy))});
+  }
+  nb.sort((a,b)=>(a.d-b.d)||(a.N.key<b.N.key?-1:1));
+  const to=nb.slice(0,CASC_N).map(x=>x.N);
+  for(const N of to)C.n[N.key]={k,f:S.key,u,d:0};
+  logAdd("warn","«"+S.station.name+"»: склад пуст, встал цех — "+RES[k].ru.toLowerCase()+
+    (to.length?" ждут у "+gaugeNames(to.map(N=>N.key)):" здесь не купить"));
+  return {k,to:to.map(N=>N.key)};
+}
+/* ── суд над окном нужд ── */
+function gaugeJudgeSet(){
+  const out=new Map();
+  for(const S of watchStations())out.set(S.key,S);
+  for(let x=G.sx-GAUGE_NEAR;x<=G.sx+GAUGE_NEAR;x++)for(let y=G.sy-GAUGE_NEAR;y<=G.sy+GAUGE_NEAR;y++){
+    if(!starAt(x,y))continue;
+    const S=getSystem(x,y);
+    if(S&&S.station&&S.station.prices&&!out.has(S.key))out.set(S.key,S);
+  }
+  return [...out.values()];
+}
+function gaugeCascAt(sys){
+  const C=G.casc&&G.casc.n&&G.casc.n[sys.key];
+  return C&&!C.d&&C.u>now()&&sys.station&&sys.station.prices&&sys.station.prices[C.k]&&RES[C.k]?C:null;
+}
+function gaugeJudge(w){
+  const out=[];
+  for(const S of gaugeJudgeSet()){
+    const k=watchNeedAt(S,w);if(!k)continue;
+    const c=needAll()[S.key];
+    if(c&&c.win===w)continue;   /* закрыли вы (нужду соседей закрывают только после своей) */
+    if(watchNpc(S,w))continue;  /* закрыли баржи */
+    const g=gaugeAdd(S,-.2,-.1,0);
+    const stop=(g.s<GAUGE_DRY&&!gaugeStopOf(S))?gaugeStop(S):null;
+    out.push({key:S.key,k,stop});
+  }
+  return out;
+}
+function gaugePrune(){
+  const A=gaugeAll(),t=now();
+  for(const key in A){
+    const g=gaugeRead(key),xy=gaugeKeyXY(key);
+    if(Math.abs(g.s-GAUGE_MID)<.02&&Math.abs(g.m-GAUGE_MID)<.02&&Math.abs(g.o-gaugeMidO(xy[0],xy[1]))<.02)delete A[key];
+  }
+  if(G.casc){
+    for(const k in G.casc.s||{})if(!(G.casc.s[k].u>t))delete G.casc.s[k];
+    for(const k in G.casc.n||{})if(!(G.casc.n[k].u>t))delete G.casc.n[k];
+  }
+}
+function gaugeTick(){
+  const w=needWin();
+  if(GAUGE_W==null||w<GAUGE_W){GAUGE_W=w;return null;}
+  if(w===GAUGE_W)return null;
+  let out=[];
+  for(let v=Math.max(GAUGE_W,w-4);v<w;v++)out=out.concat(gaugeJudge(v));
+  GAUGE_W=w;
+  gaugePrune();
+  return out;
+}
+/* такт — вместе с участком (сданная смена его останавливает: 28j возвращается раньше) */
+const GAUGE_OLD_MGR=mgrTick;
+mgrTick=function(){
+  if(!watchHanded()){try{gaugeTick();}catch(e){logAdd("warn","СБОЙ · шкалы станций: "+(e&&e.message));}}
+  return GAUGE_OLD_MGR.apply(this,arguments);
+};
+/* нужда соседей идёт первой (правило 5); своя на это время молчит и в суде участка */
+const GAUGE_OLD_NEEDOF=needOf;
+needOf=function(sys){
+  const C=sys&&sys.station?gaugeCascAt(sys):null;
+  if(!C)return GAUGE_OLD_NEEDOF.apply(this,arguments);
+  const xy=gaugeKeyXY(C.f),F=starAt(xy[0],xy[1])?getSystem(xy[0],xy[1]):null;
+  return {k:C.k,win:needWin(),ru:RES[C.k].ru.toLowerCase(),casc:C.f,
+    why:"встал цех"+(F&&F.station?" у «"+F.station.name+"»":"")};
+};
+const GAUGE_OLD_NEEDAT=watchNeedAt;
+watchNeedAt=function(S,w){return gaugeCascAt(S)?null:GAUGE_OLD_NEEDAT.apply(this,arguments);};
+/* ваш привоз: склад +.3, люди +.05. Каскадную закрывают здесь же, мимо отметки окна (G.need):
+   иначе один привоз закрыл бы заодно и свою нужду станции в этом окне */
+const GAUGE_OLD_CLOSE=needClose;
+needClose=function(sys,k){
+  const N=needOf(sys);
+  if(N&&N.casc){
+    if(N.k!==k)return false;
+    G.casc.n[sys.key].d=1;
+    gaugeAdd(sys,.3,.05,0);
+    repAdd(2,sys);
+    recordAdd(sys.station.name,"благодарность: привёз "+N.ru+", когда "+N.why);
+    peopleLine("привезли "+N.ru+", когда "+N.why+". Это помнят.",sys.station.name,true);
+    sfx("ok",{v:.4});
+    if(!watchHanded()&&watchHas(sys)){watchTick();watchSt().ord++;}
+    return true;
+  }
+  const r=GAUGE_OLD_CLOSE.apply(this,arguments);
+  if(r&&sys&&sys.station)gaugeAdd(sys,.3,.05,0);
+  return r;
+};
+/* порядок: заняли — минус, отбили — плюс */
+const GAUGE_OLD_OCCSET=occSet;
+occSet=function(sx,sy,lvl){
+  const was=occLvl(sx,sy);
+  const r=GAUGE_OLD_OCCSET.apply(this,arguments);
+  const now_=occLvl(sx,sy);
+  if(now_!==was&&starAt(sx,sy)){
+    const S=getSystem(sx,sy);
+    if(S&&S.station){
+      if(now_>was)gaugeAdd(S,0,0,-.3*(now_-was));
+      else if(!now_)gaugeAdd(S,0,0,.5);
+    }
+  }
+  return r;
+};
+/* люди хмурые: скупщик берёт на восемь процентов дешевле; ваша покупка — по обычной цене */
+const GAUGE_OLD_CTX=marketCtx;
+marketCtx=function(sys,m){
+  const C=GAUGE_OLD_CTX.apply(this,arguments);
+  if(gaugeSour(sys))C.occ*=GAUGE_SOUR_MUL;
+  return C;
+};
+const GAUGE_OLD_BUYP=buyPriceFor;
+buyPriceFor=function(sys,k){
+  const p=GAUGE_OLD_BUYP.apply(this,arguments);
+  return gaugeSour(sys)?Math.max(p,Math.round(p/GAUGE_SOUR_MUL)):p;
+};
+/* и именного от хмурой станции не будет */
+const GAUGE_OLD_OFFER=offerAdd;
+offerAdd=function(kind,who,named){
+  const sour=G.sys&&who==="st:"+G.sys.key&&gaugeSour(G.sys);
+  if(!sour)return GAUGE_OLD_OFFER.apply(this,arguments);
+  const f=folkOf(who),w0=f.warm,n0=f.named;
+  const o=GAUGE_OLD_OFFER.call(this,kind,who,false);
+  if(o&&o.named){o.named=0;f.warm=w0;f.named=n0;}
+  return o;
+};
+/* цех стоит: сделанного здесь не купить */
+const GAUGE_OLD_BUY=buyCargo;
+buyCargo=function(sys,k,qty){
+  if(gaugeStopped(sys,k)){say("Цех стоит\n"+RES[k].ru.toLowerCase()+" здесь не делают",120);return 0;}
+  return GAUGE_OLD_BUY.apply(this,arguments);
+};
+const GAUGE_OLD_COOPBUY=coopBuy;
+coopBuy=function(sys,k,qty){
+  if(gaugeStopped(sys,k)){say("Цех стоит\n"+RES[k].ru.toLowerCase()+" здесь не делают",120);return 0;}
+  return GAUGE_OLD_COOPBUY.apply(this,arguments);
+};
+/* ── толпа в зале — это ЛЮДИ (§7.1): у середины столько, сколько у типа станции; выше — больше,
+   до девяти; к трети — один у стойки ── */
+function gaugeCrowd(list){
+  if(!G.sys||!G.sys.station)return list;
+  const m=gaugeOf(G.sys).m,b=list.length;
+  let n=m>=GAUGE_MID?Math.round(b*(1+(m-GAUGE_MID)/.3*.5)):Math.round(1+(b-1)*clamp((m-.3)/.3,0,1));
+  n=clamp(n,1,C3_SLOT.length);
+  if(n<=b)return list.slice(0,n);
+  const out=list.slice();
+  for(let k=0;k<C3_SLOT.length&&out.length<n;k++)if(out.indexOf(k)<0)out.push(k);
+  return out;
+}
+/* ходячий зал (27f4a): посетитель у доски, грузчик, пары за столиками стоят всегда — ниже
+   середины их становится меньше, к трети остаётся один; выше середины зал полнее за счёт кантины */
+function gaugeHallCrowd(P){
+  if(!G.sys||!G.sys.station)return P;
+  const m=gaugeOf(G.sys).m;if(m>=GAUGE_MID)return P;
+  const n=P.filter(p=>p.kind==="crowd").length,keep=Math.round(1+(n-1)*clamp((m-.3)/.3,0,1));
+  let i=0;return P.filter(p=>p.kind!=="crowd"||i++<keep);
+}
+/* ── доска: положение станции словами ── */
+function gaugeNames(keys){
+  const L=keys.map(k=>{const xy=gaugeKeyXY(k);return {n:getSystem(xy[0],xy[1]).station.name,xy};});
+  return L.map(x=>"«"+x.n+"»"+(L.filter(y=>y.n===x.n).length>1?" "+x.xy[0]+":"+x.xy[1]:"")).join(", ");
+}
+function gaugeRows(){
+  const rows=[],S=G.sys;
+  if(!S||!S.station||!S.station.prices)return rows;
+  const g=gaugeOf(S),st=gaugeStopOf(S);
+  if(st){
+    const c=G.casc.n,to=Object.keys(c).filter(k=>c[k].f===S.key&&!c[k].d&&c[k].u>now());
+    rows.push(["Цех стоит: "+RES[st.k].ru.toLowerCase()+" не делают","склад пуст — нужду не закрыли вовремя"+
+      (to.length?". Ждут у "+gaugeNames(to):"")+" · снова через "+Math.max(1,Math.round((st.u-now())/60000))+" мин"]);
+  }
+  if(g.m<GAUGE_LOW)rows.push(["Люди хмурые","скупщик сбавляет цену, именного не предложат. Привезёте, чего нет, — оттают"]);
+  if(g.o<GAUGE_LOW&&occLvl(S.sx,S.sy))rows.push(["Отбить «"+S.name+"»","порядка нет: пираты крепнут быстрее. Считаются сбитые в этой системе"]);
+  const W=G.uch;
+  if(W&&watchHas(S)){
+    let n=0;
+    for(const T of watchStations()){
+      if(T===S||n>=2)continue;
+      const ts=gaugeStopOf(T),lo=gaugeOf(T).o<GAUGE_LOW&&occLvl(T.sx,T.sy);
+      if(!ts&&!lo)continue;
+      const d=Math.max(Math.abs(T.sx-S.sx),Math.abs(T.sy-S.sy));
+      rows.push(["«"+T.station.name+"»: "+(ts?"цех стоит":"отбить"),(ts?"нет "+RES[ts.k].ru.toLowerCase():"пираты крепнут")+" · "+d+" "+pl3(d,"прыжок","прыжка","прыжков")]);
+      n++;
+    }
+  }
+  return rows;
+}
+function gaugeSection(){
+  const rows=gaugeRows();if(!rows.length)return;
+  secHead("ПОЛОЖЕНИЕ");
+  for(const [b,s] of rows)$body.appendChild(el("div","row","<div class='nm'><b>"+b+"</b><s>"+s+"</s></div>"));
+}
+const GAUGE_OLD_WSEC=watchSection;
+watchSection=function(){const r=GAUGE_OLD_WSEC.apply(this,arguments);gaugeSection();return r;};
+/* ── запись ── */
+const GAUGE_OLD_SNAP=snapshot;
+snapshot=function(){
+  const s=GAUGE_OLD_SNAP.apply(this,arguments);
+  s.gauge=G.gauge&&Object.keys(G.gauge).length?G.gauge:null;
+  s.casc=G.casc&&(Object.keys(G.casc.s||{}).length||Object.keys(G.casc.n||{}).length)?G.casc:null;
+  return s;
+};
+const GAUGE_OLD_APPLY=applySave;
+applySave=function(s){
+  const r=GAUGE_OLD_APPLY.apply(this,arguments);
+  G.gauge={};G.casc=null;GAUGE_W=null;
+  const g=s&&s.gauge;
+  if(g&&typeof g==="object")for(const k in g){
+    const A=g[k];
+    if(/^-?\d+,-?\d+$/.test(k)&&Array.isArray(A)&&A.length===4&&A.every(x=>isFinite(x)))
+      G.gauge[k]=[clamp(A[0]|0,0,100),clamp(A[1]|0,0,100),clamp(A[2]|0,0,100),A[3]|0];
+  }
+  const c=s&&s.casc;
+  if(c&&typeof c==="object"){
+    const C=gaugeCasc();
+    for(const k in c.s||{}){const x=c.s[k];if(x&&RES[x.k]&&isFinite(x.u))C.s[k]={k:x.k,u:+x.u};}
+    for(const k in c.n||{}){const x=c.n[k];if(x&&RES[x.k]&&isFinite(x.u))C.n[k]={k:x.k,f:String(x.f||""),u:+x.u,d:x.d?1:0};}
   }
   return r;
 };
