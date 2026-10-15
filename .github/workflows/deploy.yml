@@ -185,7 +185,8 @@ jobs:
           # страницы и их ассеты: битая картинка на заглавной — тоже поломка выкладки
           for u in mechanics.html parrot.html reset.html treplo.html treplo3d.html site.css sky.js planets.js \
                    auth.js parrot.js favicon.svg og.jpg shots/world.webp shots/land.webp \
-                   shots/bird3d.webp shots/road.webp \
+                   shots/bird3d.webp shots/road.webp war.html war.js war-map.js lightbox.js \
+                   shots/ice.webp shots/cave.webp shots/sys.webp shots/station.webp shots/night.webp \
                    icons/parrot-512.png icons/fav-32.png parrot.webmanifest \
                    treplo3d.webmanifest treplo3d-sw.js \
                    drift.webmanifest drift-sw.js; do
