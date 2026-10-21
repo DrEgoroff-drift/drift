@@ -2985,19 +2985,19 @@ body.rackon #prompt{opacity:0}
 /* слова у вещей (M810): табличка плиты на вещи места — точка на вещи, отвод вверх, плашка; не ловит пальцы */
 #stHallTags{display:none}
 #station.hall #stHallTags{display:block;position:absolute;left:0;top:0;width:0;height:0;z-index:-1;pointer-events:none}
-:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags) .ht{position:absolute;left:0;top:0;display:block;font-style:normal;white-space:nowrap;padding:6px 12px 7px 11px;
+:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht{position:absolute;left:0;top:0;display:block;font-style:normal;white-space:nowrap;padding:6px 12px 7px 11px;
   background:rgba(20,19,18,.9);border:1px solid rgba(255,236,200,.1);border-left:2px solid var(--amber);box-shadow:0 6px 18px rgba(0,0,0,.35)}
-:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags) .ht::after{content:"";position:absolute;left:-2px;top:100%;width:1px;height:28px;background:rgba(255,226,180,.5)}
-:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags) .ht::before{content:"";position:absolute;left:-5px;top:calc(100% + 25px);width:6px;height:6px;border-radius:50%;
+:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht::after{content:"";position:absolute;left:-2px;top:100%;width:1px;height:28px;background:rgba(255,226,180,.5)}
+:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht::before{content:"";position:absolute;left:-5px;top:calc(100% + 25px);width:6px;height:6px;border-radius:50%;
   background:var(--amber);box-shadow:0 0 0 3px rgba(255,170,90,.18)}
-:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags) .ht.dn::after{top:auto;bottom:100%}
-:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags) .ht.dn::before{top:auto;bottom:calc(100% + 25px)}
+:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.dn::after{top:auto;bottom:100%}
+:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.dn::before{top:auto;bottom:calc(100% + 25px)}
 /* комнаты игрока на движке (M850, 29r): холст комнаты под экраном, плита — как у зала станции */
 #room3d{display:none}
 .scr.room3 #room3d{display:block;position:absolute;left:0;top:0;z-index:-2;pointer-events:none}
 #room3Tags{display:none}
 /* дом на движке (29rb): холст во весь экран под приборами, таблички над ним — в мерке интерфейса */
-#home3Tags,#win3Tags{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;zoom:var(--ui,1)}
+#home3Tags,#win3Tags,#spa3Tags{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;zoom:var(--ui,1)}
 .scr.room3 #room3Tags{display:block;position:absolute;left:0;top:0;width:0;height:0;z-index:-1;pointer-events:none}
 .scr.room3{isolation:isolate;background:#0b0c0e}
 .scr.room3::before{content:"";position:absolute;right:0;bottom:0;z-index:-1;pointer-events:none;
@@ -3014,13 +3014,13 @@ body.rackon #prompt{opacity:0}
   .scr.room3,body.screen .scr.room3.open{padding-top:36vh}
   .scr.room3::before{left:0;top:36vh}
 }
-:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags) .ht b{display:block;font-size:12px;font-weight:600;letter-spacing:.14em;color:#f3e7d2;line-height:1.2}
-:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags) .ht s{display:block;text-decoration:none;font-size:11px;color:rgba(243,231,210,.66);line-height:1.25;margin-top:2px}
+:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht b{display:block;font-size:12px;font-weight:600;letter-spacing:.14em;color:#f3e7d2;line-height:1.2}
+:is(#stHallTags,#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht s{display:block;text-decoration:none;font-size:11px;color:rgba(243,231,210,.66);line-height:1.25;margin-top:2px}
 /* надпись на тёмном экране пустого пульта (M850a): без плашки и выноски — свет экрана, которого нет */
-:is(#room3Tags,#home3Tags,#win3Tags) .ht.lf{border-left:1px solid rgba(255,236,200,.1);border-right:2px solid var(--amber);text-align:right}
-:is(#room3Tags,#home3Tags,#win3Tags) .ht.lf::after{left:auto;right:-2px}
-:is(#room3Tags,#home3Tags,#win3Tags) .ht.lf::before{left:auto;right:-5px}
-:is(#room3Tags,#home3Tags,#win3Tags) .ht.sg{padding:0;background:none;border:0;box-shadow:none}
-:is(#room3Tags,#home3Tags,#win3Tags) .ht.sg::before,:is(#room3Tags,#home3Tags,#win3Tags) .ht.sg::after{display:none}
-:is(#room3Tags,#home3Tags,#win3Tags) .ht.sg b{font-size:11px;font-weight:500;letter-spacing:.2em;color:rgba(168,178,192,.62)}
-:is(#room3Tags,#home3Tags,#win3Tags) .ht.sg s{font-size:10px;color:rgba(168,178,192,.42)}
+:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.lf{border-left:1px solid rgba(255,236,200,.1);border-right:2px solid var(--amber);text-align:right}
+:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.lf::after{left:auto;right:-2px}
+:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.lf::before{left:auto;right:-5px}
+:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg{padding:0;background:none;border:0;box-shadow:none}
+:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg::before,:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg::after{display:none}
+:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg b{font-size:11px;font-weight:500;letter-spacing:.2em;color:rgba(168,178,192,.62)}
+:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg s{font-size:10px;color:rgba(168,178,192,.42)}
