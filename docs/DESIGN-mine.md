@@ -23,7 +23,14 @@ biters were a 2D brush unrelated to the planet's beasts.
 - **Levels** every five rows (4, 9, 14 …). From each one **drifts** run sideways up to 40 cells
   (92 m); the man walks their floor (A/D) and never hangs.
 - **The face** is a drift's end: walking into it drills, the drift grows a cell (2.3 m); rock goes
-  to the dump, ore to the hold.
+  to the dump, ore to the cage.
+- **The cage carries the ore up** (22.10). It has its own load meter, 24 places counted like the hold
+  (heavy ore takes more, `resW`); the prompt reads «КЛЕТЬ n/24 · ТРЮМ n/N». A full cage stops ore
+  faces with «КЛЕТЬ ПОЛНА — РУДУ НАВЕРХ, К УСТЬЮ»; dead rock still drills. When the cage stands at
+  the collar the load goes into the hold; what does not fit stays in the cage and waits. The load is
+  kept in the mine's record beside the workings (`rec.cage`, written only when non-empty, an array
+  from the cloud reads as empty). In the frame a tub stands at the cage's back mesh; the ore heap
+  rises over its rim with the load, tinted by the heaviest ore.
 - **Sinking:** at the bottom of the shaft S drills the shaft down and the cage follows the face;
   reaching a level row opens the level.
 - **Up and down off a drift only along ore** (an ore cell or one beside an ore body): that is how
@@ -53,6 +60,11 @@ per MSAA sample: the nearer of the two wins.
 - **The headframe** is a planet body in both modes (on the surface with the cage parked at the
   mouth), so the light does not change on the way in.
 - Deep down, when no ground is in the window, the planet frame is not computed.
+- **Depth deep down** (22.10): the collar's light falls into the shaft from above the frame — the sky
+  by day, the headframe lamp by night — and fades with depth (`dig3ShaftK`, 1/(1+(d/24)²)): at
+  27 m the shaft above the cage is lit, at 72 m and below only a thread is left. Each level's gate
+  carries a painted board with its depth from the collar («−72»), on the back wall of the drift
+  beside the shaft.
 
 ## 4. The biters are the planet's beasts
 
@@ -107,9 +119,16 @@ snippets from `mk_digcost.py`.
   refusals may be at most a third of the spots.
 - The lab's `91qm-seeds` waits outside the gate: it calls `surfGen` from the unmerged `qa-1014` work.
 - The surface labels count px as «м» — older than this work, left alone.
+- The cage's load is 24 places whatever the hold: a trip up per cage, not per hold. The cage rides up
+  only with the man (there is no sending it alone); the ore of a drift reaches the cage at once (the
+  tub on the level's rails is implied, not walked).
+- Ore in a cage left down the mine (suit failure, beacon) is kept and unloaded at the next arrival at
+  the collar.
+- The shaft light is point lights only (two of the twelve, both «core»): the cave shader (`22d*`)
+  is not this work's to edit, so there is no visible beam. Its effect is measured on the frame (the
+  shaft's top above the cage at lum 37 at 27 m, 26 at 72 m and 117 m) and is quiet to the eye; the
+  depth board carries the number.
 
 ## 8. Open
 
-- The cage could carry ore up with its own load meter; today ore goes straight to the hold.
-- Levels deeper than the planet frame's window show only rock overhead — a lit shaft light at
-  the collar would tell the depth.
+(none)
