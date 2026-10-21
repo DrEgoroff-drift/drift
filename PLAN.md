@@ -40,6 +40,14 @@ under the planets (17g), planets and moons (17ga), the system view on top — tr
 `#hud` gone in 0.466.0, the sticks and the watch line on `#ovl`, the iPod on its own WebGPU canvas), planet
 occluders (`GPU.oc`), the hull material (08cd), `docs/shot.py` and `docs/tour.py` on the GPU.
 
+**22.10 (the author: «мониторь, чтобы от 2D избавлялись, его не должно быть»).** Acceptance rule for every
+builder: what the engine has replaced loses its 2D code and its escape hatch in the same commit — `?spa3=0`,
+`?room=0`, `?walk=0`, the 2D winter and spa painters (29f–29i), the old hall without the walk, the section's
+2D sheet under the mine, the surface's front 2D layer (`front2`, 31 % of frames on the walk) and the 2D-canvas
+copy in the first surface frame (`copyExternalImageToTexture` 5.8 MB), the 2D base under the cross-section (21ac).
+A report lists the removed functions and the KB gone from `drift.html`. The hunter keeps the ledger: scene ·
+2D calls per frame · MB copied · owner.
+
 **The order (Контроль 26.09, after the audit: the middle was being built on an unchecked base):**
 1. Keep the base: the phone gate P1 (§1) passed on 0.468.0 and on 0.473.0 (26.09) and closed engine stage 1; it is re-run after
    every engine release, and while it fails, speed goes ahead of every picture pass.
