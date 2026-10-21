@@ -30,6 +30,11 @@ window.__J={on:false,t0:0,f:[],lt:[],pp:[],la:[]};
 try{["createRenderPipeline","createComputePipeline","createShaderModule","createRenderPipelineAsync","createComputePipelineAsync"].forEach(function(n){
   var o=GPUDevice.prototype[n];if(!o)return;GPUDevice.prototype[n]=function(){var s=performance.now(),r=o.apply(this,arguments);
     if(__J.on)__J.pp.push([s-__J.t0,n,performance.now()-s]);return r;};});}catch(e){}
+/* очередь видеокарты: отправки и загрузки (байты) — кадр, что ждёт процесс видеокарты без JS, ждёт вот это */
+__J.q=[];
+try{[["submit",function(a){return (a[0]||[]).length;}],["writeBuffer",function(a){var d=a[2];return d&&(a[4]!=null?a[4]*(d.BYTES_PER_ELEMENT||1):d.byteLength)||0;}],
+  ["writeTexture",function(a){var s=a[3]||{};return (s.width||s[0]||0)*(s.height||s[1]||1)*4;}],["copyExternalImageToTexture",function(a){var s=a[2]||{};return (s.width||s[0]||0)*(s.height||s[1]||1)*4;}]].forEach(function(p){
+  var o=GPUQueue.prototype[p[0]];if(!o)return;GPUQueue.prototype[p[0]]=function(){if(__J.on){var s=performance.now(),r=o.apply(this,arguments);__J.q.push([s-__J.t0,p[0],p[1](arguments),performance.now()-s]);return r;}return o.apply(this,arguments);};});}catch(e){}
 /* долгий кадр с виновником (Long Animation Frames): какая функция из какого файла съела кадр */
 try{new PerformanceObserver(function(l){if(__J.on)l.getEntries().forEach(function(e){
   __J.la.push([e.startTime-__J.t0,e.duration,e.blockingDuration||0,(e.scripts||[]).slice().sort(function(a,b){return b.duration-a.duration;}).slice(0,3).map(function(s){
@@ -304,7 +309,7 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
     t = json.load(urllib.request.urlopen(req, timeout=10))
     ws = shot.WS(t["webSocketDebuggerUrl"], 120)
     try:
-        ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=1, mobile=False)
+        ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=a.dpr, mobile=a.mobile)
         ws.call("Network.enable"); ws.call("Network.setBlockedURLs", urls=shot.BLOCK)
         ws.call("Page.enable"); ws.call("Page.addScriptToEvaluateOnNewDocument", source=shot.CATCH)
         ws.call("Page.navigate", url="file:///" + pg.replace("\\", "/") + "?s=" + sc)
@@ -391,9 +396,11 @@ TRWALK = r"""window.__TR={done:false,rows:[],err:null};
  const go=(s,x,y)=>{G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;G.mode="system";G.ship.x=x;G.ship.y=y;G.ship.vx=0;G.ship.vy=0;};
  const until=async(pred,ms)=>{const e=performance.now()+ms;while(performance.now()<e){try{if(pred())return true;}catch(e){}await sleep(40);}return false;};
  const step=async(n,act,pred,settle)=>{await sleep(1500);const t0=performance.now()-__J.t0;let err=null;
+   const pre=!!(G.surf&&G.surf.cavePre&&G.surf.cavePre.C),hp=(typeof HALL_PRE!=="undefined")?!!(HALL_PRE.done&&HALL_PRE.cdone):null;
    try{act();}catch(e){err=String(e&&e.message||e);}
+   const ta=performance.now()-__J.t0-t0;
    const ok=!err&&await until(pred,15000);const t1=performance.now()-__J.t0;await sleep(settle||2000);
-   __TR.rows.push({n,t0,t1,t2:performance.now()-__J.t0,ok,err,m:G.mode});return ok;};
+   __TR.rows.push({n,t0,t1,ta,pre,hp,t2:performance.now()-__J.t0,ok,err,m:G.mode});return ok;};
  try{
   const day=p=>p.type!=="gas"&&p.T&&p.T.atm!=="отсутствует";
   const sl=find(q=>(q.planets||[]).some(day)),p=sl.planets.find(day);
@@ -425,7 +432,7 @@ def run_trans(a, pg, bad):
     ws = shot.WS(t["webSocketDebuggerUrl"], 200)
     ok = 0
     try:
-        ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=1, mobile=False)
+        ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=a.dpr, mobile=a.mobile)
         ws.call("Network.enable"); ws.call("Network.setBlockedURLs", urls=shot.BLOCK)
         ws.call("Page.enable"); ws.call("Page.addScriptToEvaluateOnNewDocument", source=shot.CATCH)
         ws.call("Page.navigate", url="file:///" + pg.replace("\\", "/") + "?s=system")
@@ -438,10 +445,28 @@ def run_trans(a, pg, bad):
             bad.append(("переходы", "страница не поднялась за 30 с")); return 0
         time.sleep(2)
         if not shot.ev(ws, "!!GPU.ok"): bad.append(("переходы", "видеокарты нет — замер на 2D не годится"))
-        shot.ev(ws, "__J.t0=performance.now();__J.on=true;" + TRWALK)
+        # JS-профайлер на весь обход: выборки раз в 250 мкс раскладываются по окнам переходов — LoAF в
+        # file:// часто не называет скриптов, а профайлер называет функцию и строку (и мусор: «(garbage collector)»)
+        ws.call("Profiler.enable"); ws.call("Profiler.setSamplingInterval", interval=250)
+        shot.ev(ws, "__J.t0=performance.now();")
+        ws.call("Profiler.start"); off = shot.ev(ws, "performance.now()-__J.t0") or 0
+        shot.ev(ws, "__J.on=true;" + TRWALK)
         t0 = time.time()
         while time.time() - t0 < 160 and shot.ev(ws, "__TR.done") is not True: time.sleep(.5)
-        st = shot.ev(ws, "__J.on=false;JSON.stringify({tr:__TR,f:__J.f,lt:__J.lt,pp:__J.pp,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
+        try: prof = ws.call("Profiler.stop").get("profile")
+        except Exception: prof = None
+        samp = []   # [(t мс по часам __J, имя функции)]
+        if prof:
+            nodes = {n["id"]: n["callFrame"] for n in prof["nodes"]}
+            par = {c: n["id"] for n in prof["nodes"] for c in n.get("children", [])}
+            nm = lambda cf: (cf.get("functionName") or "(анон)") + (" :%d" % (cf.get("lineNumber", 0) + 1) if cf.get("url") else "")
+            ts = prof["startTime"]
+            for nid, dt in zip(prof["samples"], prof["timeDeltas"]):
+                ts += dt
+                chain, x = [], nid
+                while x is not None and len(chain) < 40: chain.append(nm(nodes.get(x, {}))); x = par.get(x)
+                samp.append((off + (ts - prof["startTime"]) / 1000.0, chain[0], chain))
+        st = shot.ev(ws, "__J.on=false;JSON.stringify({tr:__TR,f:__J.f,lt:__J.lt,pp:__J.pp,la:__J.la,q:__J.q,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
                          "errs:(window.__errs||[]).filter(function(e){return e[0]!=='W'}).slice(0,4),ver:typeof VER!=='undefined'?VER:'?'})")
         if not isinstance(st, str): bad.append(("переходы", "запись не прочиталась: %s" % st)); return 0
         d = json.loads(st)
@@ -459,8 +484,43 @@ def run_trans(a, pg, bad):
             w = max(F, key=lambda f: f["d"])
             lt = max([x[1] for x in d["lt"] if r["t0"] - 50 <= x[0] <= r["t2"]] or [0])
             sync = [p for p in d["pp"] if r["t0"] <= p[0] <= r["t2"] and p[1] in ("createRenderPipeline", "createComputePipeline")]
-            print("%-22s худший кадр %6.1f мс (%s) · ворота %5.0f мс · долгая задача %5.0f · конвейеров сразу %d" % (
-                r["n"], w["d"], w["m"], r["t1"] - r["t0"], lt, len(sync)))
+            # виновник: самые дорогие скрипты долгих кадров (LoAF) за переход, сложенные по функции
+            cul = {}
+            for x in d.get("la", []):
+                if r["t0"] - 50 <= x[0] <= r["t2"]:
+                    for fn, ms, src in x[3]: cul[fn + " " + src] = cul.get(fn + " " + src, 0) + ms
+            top = sorted(cul.items(), key=lambda kv: -kv[1])[:3]
+            print("%-22s худший кадр %6.1f мс (%s) · действие %5.0f мс · ворота %5.0f · долгая задача %5.0f · конвейеров %d%s%s" % (
+                r["n"], w["d"], w["m"], r.get("ta", 0), r["t1"] - r["t0"], lt, len(sync),
+                " · пещера готова" if r.get("pre") else "", " · зал готов" if r.get("hp") else ""))
+            for k, v in top: print("%24s%5d мс  %s" % ("", v, k))
+            # сборки на видеокарте за переход (и асинхронные): главный поток стоит без JS, а кадр ждёт процесс видеокарты
+            allp = {}
+            for p in d["pp"]:
+                if r["t0"] <= p[0] <= r["t2"]: allp[p[1]] = allp.get(p[1], 0) + 1
+            if allp: print("%24sсборки: %s" % ("", " · ".join("%s %d" % kv for kv in sorted(allp.items()))))
+            # очередь: в окне худшего кадра и в среднем ровном кадре до перехода (база)
+            def qsum(x0, x1):
+                o = {}
+                for q in d.get("q", []):
+                    if x0 <= q[0] <= x1:
+                        e = o.setdefault(q[1], [0, 0, 0.0]); e[0] += 1; e[1] += q[2]; e[2] += q[3]
+                return o
+            if w["d"] > 50:
+                qw = qsum(w["t"] - w["d"] - 20, w["t"] + 5)
+                print("%24sсъел: %s · очередь в рывке: %s" % ("", who(w), " · ".join("%s %d шт %.1f МБ %.0f мс" % (k, v[0], v[1] / 1e6, v[2]) for k, v in sorted(qw.items())) or "пусто"))
+            # профайлер: свои мс функций в окне худшего кадра (±1 кадр) — кто именно съел рывок
+            if samp and w["d"] > 50:
+                a0, a1 = w["t"] - w["d"] - 20, w["t"] + 5
+                cnt, inc = {}, {}
+                ROOTS = {"(root)", "(program)", "frame", "frameBody", "tick", "(анон)"}
+                for st_, fn, chain in samp:
+                    if a0 <= st_ <= a1 and fn != "(idle)":
+                        cnt[fn] = cnt.get(fn, 0) + .25
+                        for c in set(chain):
+                            if c.split(" ")[0] not in ROOTS: inc[c] = inc.get(c, 0) + .25
+                print("%24sсвоё: %s" % ("", " · ".join("%s %.0f" % kv for kv in sorted(cnt.items(), key=lambda kv: -kv[1])[:6] if kv[1] >= 2)))
+                print("%24sс детьми: %s" % ("", " · ".join("%s %.0f" % kv for kv in sorted(inc.items(), key=lambda kv: -kv[1])[:8] if kv[1] >= 3)))
             n0 = len(bad)
             if w["d"] > TRANS_MAX:
                 bad.append((nm, "кадр %d мс в режиме %s — съел: %s%s" % (w["d"], w["m"], who(w),
@@ -476,6 +536,8 @@ def run_trans(a, pg, bad):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-plant", action="store_true", help="skip the planted-defect run that proves the live-frame laws see")
+    ap.add_argument("--dpr", type=float, default=1, help="device pixel ratio of the emulated window (phone: 1.5)")
+    ap.add_argument("--mobile", action="store_true", help="emulate a touch phone (with --w 390 --h 844 --dpr 1.5)")
     ap.add_argument("--no-trans", action="store_true", help="skip the walk through mode transitions (worst frame per transition)")
     ap.add_argument("--pause", type=float, default=3, help="seconds the tab is frozen mid-walk (0 = no pause)")
     ap.add_argument("--scenes", default=",".join(SCENES))
