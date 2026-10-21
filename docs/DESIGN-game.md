@@ -532,7 +532,7 @@ what the game already does: a сводка ≥ 90 % (`norm`), a сводка ≥
 (`srv`), a hull lost, a door shut (`folkShut`), a ransom or a storm that frees hands, a named
 offer taken, a landmark acted on (`mark`), one's own notch on an obelisk (`notch`), a watch
 handed over and taken back, a story turned by a deed. The part doors follow the table above
-(chapter 55 takes `blade` or `hull` until M911 scripts the Blade). Inside a part the door is drawn
+(chapter 55 takes `blade` only since M911). Inside a part the door is drawn
 once per chapter, weighted 1/(1+times done); any two different deeds also open it, so nobody is
 stuck. Part I stays on landings. The диспетчер's 72 lines come from `SMENA_TEXT`: the chapter's
 first journal line, else its first spoken line without a «сказал» tag, cut at a sentence to 120
@@ -545,6 +545,20 @@ is demanded only on the participation's boards, barges with people leave from it
 at a participation station once the run of ≥ 90 % сводки is 365 sky days old and holds at least
 two. Not done: the rivals' traces at your landmarks, «a face gone from the hall», the `bill`
 deed (no stranger's bill exists yet). The door table is `tests/91zzzw9h-doors.js`.
+
+**Built 22.10 (M911, `28q-fork`).** Every paper on the dock row has two sides: КУРС (yourself) and
+РУКОЙ (a hand). A hand is an idle hired hand with a ship and no order; it takes the job for
+85 % of the pay minus the goods at base price and its wage for the road, takes 0.8 of your
+minutes (at least 4), and fails 3 % of the time into a real hostage with a real ransom. The face
+remembers: a record line «сами не пришли» and a cold counter, no penalty yet. With no idle hand
+the second side is named in words («свободных рук нет», «рука не успеет»). A read obelisk notch
+always adds one access line — the rune's own, else a price on an unknown station within four
+hops, else an address within eight; carving your own adds +0.05 mood at the nearest station.
+The Blade: once part VI is open, Рыба says one ether line — Гуся sat down on a world with no
+station, reachable on a full tank and not back (path cost in hops of the jump range). Arriving
+there is the `blade` deed and the only door to chapter 55; on an empty tank there, the rescue
+offers «РЫБА» (a free tow, once) instead of tow, rail and reset. Not done: the four folk as
+hands, «Гуся's order is carried yourself». The fork table is `tests/91zzzw9i-fork.js`.
 
 ---
 
@@ -778,7 +792,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M908 | access gates and the 30 rungs (§4.4) **done 22.10 (`28n-access`)** | no rung silent; «Мамонт» refused without clearance III + sponsor |
 | M909 | the first watch (§10.7) **done 22.10 (`28o-firstwatch`)** | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
 | M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) **done 22.10 (`28p-doors`)** | chapter N+1's door is a deed; the sixth is met on the watch |
-| M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) | every order has both sides; a found notch gives one access line |
+| M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) **done 22.10 (`28q-fork`)** | every order has both sides; a found notch gives one access line |
 
 Not built, and said so: anything that needs a new screen (none above does), a new currency
 (none), a reputation number (never), a difficulty slider («the planet is the difficulty»),

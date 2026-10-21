@@ -2,7 +2,7 @@
    «Смена» открывала главу посадкой в новом месте. Теперь посадка — только МЕСТО, где глава
    прожита; ДВЕРЬ главы N+1 — дело на участке, сделанное после главы N:
      • части (10, 19, 28, 37, 46, 55, 64) — по таблице §7.4: норма ≥ 90 %, выкуп или именное,
-       дверь в лицо, срыв пережит, своя засечка, корпус потерян (Клинок — M911), смена сдана
+       дверь в лицо, срыв пережит, найденная засечка, Клинок (28q, M911), смена сдана
        и принята;
      • главы внутри части — дверь вытянута из набора дел с весом «чего игрок ещё не делал»;
        чтобы никто не застрял, открывают и любые два разных дела;
@@ -16,7 +16,7 @@
    G.wd = {ключ:[сколько, now() последнего, storyDay() последнего]}; G.doors = {at:{n:now()},
    dr:{n:ключ}, y:сутки начала ряда ≥ 90 % или null, yn:сводок в ряду}. */
 const DOOR_KEYS=["norm","srv","notch","hull","blade","door","ransom","offer","mark","story","handover"];
-const DOOR_PART={10:["norm"],19:["ransom","offer"],28:["door"],37:["srv"],46:["notch"],55:["blade","hull"],64:["handover"]};
+const DOOR_PART={10:["norm"],19:["ransom","offer"],28:["door"],37:["srv"],46:["notch"],55:["blade"],64:["handover"]};
 const DOOR_INNER=["norm","mark","offer","ransom","notch","handover","door","srv","story"];
 const DOOR_DISP_MS=600000;            /* строка главы стоит у диспетчера десять минут */
 const DOOR_YEAR=365;                  /* «год» — сутки неба (CEL_DAY), как лента через год (11x) */
@@ -162,7 +162,7 @@ const DOOR_HOOKS=[
   ["ransomPay",   O=>function(){const r=O.apply(this,arguments);if(r)doorDeed("ransom");return r;}],
   ["crewFreeHostagesAt",O=>function(){const r=O.apply(this,arguments);if(r>0)doorDeed("ransom");return r;}],
   ["offerTake",   O=>function(o){const was=!!(o&&o.taken);const r=O.apply(this,arguments);if(o&&!was&&o.taken&&o.named)doorDeed("offer");return r;}],
-  ["plnActDo",    O=>function(q,id){const r=O.apply(this,arguments);if(r&&!r.keep){doorDeed("mark");if(id==="carve"&&r.way==="carve")doorDeed("notch");}return r;}],
+  ["plnActDo",    O=>function(q,id){const r=O.apply(this,arguments);if(r&&!r.keep){doorDeed("mark");if(id==="read"&&q&&q.k==="obelisk")doorDeed("notch");}return r;}],
   ["watchBack",   O=>function(){const r=O.apply(this,arguments);if(r)doorDeed("handover");return r;}],
   ["storySetFlag",O=>function(S,f){const r=O.apply(this,arguments);if(f==="wd")doorDeed("story");return r;}],
   ["smenaLand",   O=>function(){const n=smenaNext();if(n>=10&&!doorOpen(n))return 0;return O.apply(this,arguments);}],
