@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 620 · top-level symbols: 8739
+Files: 620 · top-level symbols: 8740
 
 ## SYMBOLS
 
@@ -397,17 +397,17 @@ CPP                          src/27f5-portrait3d.js:13
 CPP_IO                       src/27f5-portrait3d.js:19
 CPP_LIVE                     src/27f5-portrait3d.js:18
 CPR                          src/27f3a-face3d.js:57
-CP_CLOTH                     src/27f3-person3d.js:44
+CP_CLOTH                     src/27f3-person3d.js:45
 CP_EMO                       src/27f6-face-live.js:15-22
 CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_JOBS                      src/27f3-person3d.js:296
-CP_KIT                       src/27f3-person3d.js:115
-CP_MESH                      src/27f3-person3d.js:280
+CP_JOBS                      src/27f3-person3d.js:299
+CP_KIT                       src/27f3-person3d.js:118
+CP_MESH                      src/27f3-person3d.js:283
 CP_TEMPER                    src/27f6-face-live.js:25
-CP_TORSO                     src/27f3-person3d.js:86
+CP_TORSO                     src/27f3-person3d.js:89
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
@@ -1792,12 +1792,12 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:512
+R3                           src/27f2-room3d.js:513
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:491
+R3_DOWN_WGSL                 src/27f2-room3d.js:492
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:645
+R3_POST_WGSL                 src/27f2-room3d.js:646
 R3_UN                        src/27f2-room3d.js:30
 R3_WGSL                      src/27f2-room3d.js:156
 RACK                         src/25d-instr-rack.js:44
@@ -2416,14 +2416,15 @@ WEAR_RU                      src/12s-wear.js:39
 WEATHER                      src/19d-weather.js:15-26
 WEATHER_BY_TYPE              src/19d-weather.js:28-47
 WEATHER_CAP                  src/19d-weather.js:52
-WIN3                         src/29rc-winter-r3.js:15
-WIN3_CAMS                    src/29rc-winter-r3.js:171
-WIN3_L                       src/29rc-winter-r3.js:16
-WIN3_LEV                     src/29rc-winter-r3.js:113
-WIN3_M                       src/29rc-winter-r3.js:17
-WIN3_PARKA                   src/29rc-winter-r3.js:21
-WIN3_PX                      src/29rc-winter-r3.js:19
-WIN3_SLEEP                   src/29rc-winter-r3.js:20
+WIN3                         src/29rc-winter-r3.js:17
+WIN3_CAMS                    src/29rc-winter-r3.js:183
+WIN3_FX                      src/29rc-winter-r3.js:23
+WIN3_L                       src/29rc-winter-r3.js:18
+WIN3_LEV                     src/29rc-winter-r3.js:124
+WIN3_M                       src/29rc-winter-r3.js:19
+WIN3_PARKA                   src/29rc-winter-r3.js:25
+WIN3_PX                      src/29rc-winter-r3.js:21
+WIN3_SLEEP                   src/29rc-winter-r3.js:24
 WIND                         src/19c-light.js:41
 WIN_BAD                      src/29f-winter.js:32
 WIN_C                        src/29g-winter-draw.js:20-28
@@ -3492,12 +3493,12 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:100-108
-cpBasis                      src/27f3-person3d.js:78-82
+cpBand                       src/27f3-person3d.js:103-111
+cpBasis                      src/27f3-person3d.js:81-85
 cpBeard                      src/27f3a-face3d.js:381-396
-cpBody                       src/27f3-person3d.js:117
-cpBodyGen                    src/27f3-person3d.js:118-277
-cpCloth                      src/27f3-person3d.js:45-50
+cpBody                       src/27f3-person3d.js:120
+cpBodyGen                    src/27f3-person3d.js:121-280
+cpCloth                      src/27f3-person3d.js:46-51
 cpClump                      src/27f3a-face3d.js:372-379
 cpEmoMix                     src/27f6-face-live.js:56-58
 cpEmote                      src/27f6-face-live.js:43-46
@@ -3505,27 +3506,27 @@ cpFace                       src/27f6-face-live.js:60-89
 cpFaceAt                     src/27f3a-face3d.js:54
 cpFaceRig                    src/27f3a-face3d.js:71-77
 cpFaceState                  src/27f6-face-live.js:47-54
-cpGene                       src/27f3-person3d.js:20-42
+cpGene                       src/27f3-person3d.js:20-43
 cpHair                       src/27f3a-face3d.js:294-369
 cpHairline                   src/27f3a-face3d.js:287-293
 cpHead                       src/27f3a-face3d.js:184
 cpHeadAI                     src/27f3a-face3d.js:398-408
 cpHeadFn                     src/27f3a-face3d.js:18-52
 cpHeadGen                    src/27f3a-face3d.js:185-285
-cpMesh                       src/27f3-person3d.js:288-294
-cpMeshKey                    src/27f3-person3d.js:281-283
-cpMeshPump                   src/27f3-person3d.js:297-309
-cpMeshPut                    src/27f3-person3d.js:284-287
+cpMesh                       src/27f3-person3d.js:291-297
+cpMeshKey                    src/27f3-person3d.js:284-286
+cpMeshPump                   src/27f3-person3d.js:300-312
+cpMeshPut                    src/27f3-person3d.js:287-290
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
-cpPose                       src/27f3-person3d.js:52-76
+cpPose                       src/27f3-person3d.js:53-79
 cpRig                        src/27f3a-face3d.js:412-434
 cpRun                        src/27f3a-face3d.js:183
 cpSculpt                     src/27f3a-face3d.js:81-158
 cpSkin                       src/27f3a-face3d.js:160-163
 cpSkinZ                      src/27f3a-face3d.js:165
 cpTeeth                      src/27f3a-face3d.js:168-180
-cpTorsoAt                    src/27f3-person3d.js:89-98
+cpTorsoAt                    src/27f3-person3d.js:92-101
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
 cpWarpTh                     src/27f3a-face3d.js:68
@@ -7127,12 +7128,12 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:513-519
-r3Dev                        src/27f2-room3d.js:536-554
-r3DownDesc                   src/27f2-room3d.js:528-532
-r3Drop                       src/27f2-room3d.js:561
-r3Frame                      src/27f2-room3d.js:576-642
-r3Free                       src/27f2-room3d.js:563
+r3Desc                       src/27f2-room3d.js:514-520
+r3Dev                        src/27f2-room3d.js:537-555
+r3DownDesc                   src/27f2-room3d.js:529-533
+r3Drop                       src/27f2-room3d.js:562
+r3Frame                      src/27f2-room3d.js:577-643
+r3Free                       src/27f2-room3d.js:564
 r3Kit                        src/27f2-room3d.js:66-153
 r3Lin                        src/27f2-room3d.js:35
 r3Look                       src/27f2-room3d.js:43-153
@@ -7143,11 +7144,11 @@ r3Pivot                      src/27f2-room3d.js:57
 r3Proj                       src/27f2-room3d.js:60-153
 r3Pt                         src/27f2-room3d.js:58
 r3Sc                         src/27f2-room3d.js:37
-r3ShDesc                     src/27f2-room3d.js:520-525
-r3ShadowVP                   src/27f2-room3d.js:565-570
+r3ShDesc                     src/27f2-room3d.js:521-526
+r3ShadowVP                   src/27f2-room3d.js:566-571
 r3Step                       src/27f2-room3d.js:38
-r3Up                         src/27f2-room3d.js:556-560
-r3VB                         src/27f2-room3d.js:526
+r3Up                         src/27f2-room3d.js:557-561
+r3VB                         src/27f2-room3d.js:527
 r3Xf                         src/27f2-room3d.js:49-153
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -8650,26 +8651,26 @@ weatherGpu                   src/19d-weather.js:109-185
 weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
-win3Box                      src/29rc-winter-r3.js:212
-win3Cam                      src/29rc-winter-r3.js:173-181
-win3Canvas                   src/29rc-winter-r3.js:162-169
-win3Cost                     src/29rc-winter-r3.js:234
-win3Fade                     src/29rc-winter-r3.js:130
-win3Frame                    src/29rc-winter-r3.js:184-203
-win3Hide                     src/29rc-winter-r3.js:227-232
-win3Hit                      src/29rc-winter-r3.js:224
-win3Hits                     src/29rc-winter-r3.js:216
-win3LeverX                   src/29rc-winter-r3.js:23
-win3Man                      src/29rc-winter-r3.js:118-127
-win3Mesh                     src/29rc-winter-r3.js:29-112
-win3Ok                       src/29rc-winter-r3.js:183
-win3On                       src/29rc-winter-r3.js:235
-win3Pilot                    src/29rc-winter-r3.js:116
-win3Scene                    src/29rc-winter-r3.js:132-159
-win3SleepPh                  src/29rc-winter-r3.js:129
-win3Storm                    src/29rc-winter-r3.js:26
-win3Tags                     src/29rc-winter-r3.js:205
-win3Val                      src/29rc-winter-r3.js:24
+win3Box                      src/29rc-winter-r3.js:223
+win3Cam                      src/29rc-winter-r3.js:185-193
+win3Canvas                   src/29rc-winter-r3.js:173-180
+win3Cost                     src/29rc-winter-r3.js:245
+win3Fade                     src/29rc-winter-r3.js:141
+win3Frame                    src/29rc-winter-r3.js:196-215
+win3Hide                     src/29rc-winter-r3.js:238-243
+win3Hit                      src/29rc-winter-r3.js:235
+win3Hits                     src/29rc-winter-r3.js:227
+win3LeverX                   src/29rc-winter-r3.js:27
+win3Man                      src/29rc-winter-r3.js:129-138
+win3Mesh                     src/29rc-winter-r3.js:33-123
+win3Ok                       src/29rc-winter-r3.js:195
+win3On                       src/29rc-winter-r3.js:246
+win3Pilot                    src/29rc-winter-r3.js:127
+win3Scene                    src/29rc-winter-r3.js:143-170
+win3SleepPh                  src/29rc-winter-r3.js:140
+win3Storm                    src/29rc-winter-r3.js:30
+win3Tags                     src/29rc-winter-r3.js:217
+win3Val                      src/29rc-winter-r3.js:28
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
 winBlock                     src/29f-winter.js:253-270
@@ -10309,7 +10310,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f2-room3d.js · 59 KB
   · комната в объёме (M725):1
 
-## src/27f3-person3d.js · 27 KB
+## src/27f3-person3d.js · 28 KB
   · человек в объёме (M725):1
 
 ## src/27f3a-face3d.js · 37 KB
@@ -10482,7 +10483,7 @@ zoomTo                       src/15-input.js:358
 ## src/29rba-home-shell.js · 10 KB
   · дом снаружи: тело людской грамматики и двор (M850b, стенд M602 — docs/look/nt-home.js):1
 
-## src/29rc-winter-r3.js · 21 KB
+## src/29rc-winter-r3.js · 23 KB
   · зимовка на движке (M850c, docs/DESIGN-rooms.md §4):1
 
 ## src/29rz-snap-over.js · 1 KB
