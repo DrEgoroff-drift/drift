@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 630 · top-level symbols: 8892
+Files: 619 · top-level symbols: 8724
 
 ## SYMBOLS
 
@@ -51,11 +51,6 @@ ABIL_CONE_WGSL               src/16c-abil.js:156
 ABIL_HOLD                    src/16c-abil.js:29
 ABIL_KEY                     src/16c-abil.js:126
 ABIL_ST                      src/16c-abil.js:30
-ACC_FREE                     src/28n-access.js:20
-ACC_HOOKS                    src/28n-access.js:118-150
-ACC_NEVER_TIERS              src/28n-access.js:21
-ACC_RUNG                     src/28n-access.js:23-46
-ACC_TIER2                    src/28n-access.js:116
 ACTION_RU                    src/15-input.js:144
 ACT_WEEK_MS                  src/05e-clearance.js:36
 ADJ                          src/21a4-base-adj.js:17-27
@@ -93,6 +88,7 @@ AVR_HOLD                     src/21a6-base-avral.js:21
 AVR_KINDS                    src/21a6-base-avral.js:24-28
 AVR_NEAR                     src/21a6-base-avral.js:22
 AVR_TIME                     src/21a6-base-avral.js:20
+B3                           src/29rd-spa-r3.js:146
 BANYA_EVERY                  src/21ac1-base-banya.js:19
 BARGE_ART                    src/12l-barge.js:414
 BARGE_CAP                    src/12l-barge.js:13
@@ -401,17 +397,17 @@ CPP                          src/27f5-portrait3d.js:13
 CPP_IO                       src/27f5-portrait3d.js:19
 CPP_LIVE                     src/27f5-portrait3d.js:18
 CPR                          src/27f3a-face3d.js:57
-CP_CLOTH                     src/27f3-person3d.js:44
+CP_CLOTH                     src/27f3-person3d.js:45
 CP_EMO                       src/27f6-face-live.js:15-22
 CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_JOBS                      src/27f3-person3d.js:296
-CP_KIT                       src/27f3-person3d.js:115
-CP_MESH                      src/27f3-person3d.js:280
+CP_JOBS                      src/27f3-person3d.js:303
+CP_KIT                       src/27f3-person3d.js:122
+CP_MESH                      src/27f3-person3d.js:287
 CP_TEMPER                    src/27f6-face-live.js:25
-CP_TORSO                     src/27f3-person3d.js:86
+CP_TORSO                     src/27f3-person3d.js:93
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
@@ -547,14 +543,6 @@ DIR_THEMES                   src/12am-chron-director.js:57
 DIR_VEIN                     src/21a5-base-dir.js:29
 DIR_WORTH                    src/21a5-base-dir.js:25
 DIR_WORTH_CAP                src/21a5-base-dir.js:26
-DISP_ACC                     src/28m-dispatch.js:29
-DISP_DOCKING                 src/28m-dispatch.js:323
-DISP_HOOKS                   src/28m-dispatch.js:419-430
-DISP_KINDS                   src/28m-dispatch.js:25
-DISP_LIFE                    src/28m-dispatch.js:24
-DISP_NAMES                   src/28m-dispatch.js:26
-DISP_V                       src/28m-dispatch.js:31-52
-DISP_WIN                     src/28m-dispatch.js:23
 DLID                         src/08bh-gpu-hud.js:14
 DMG_KEYS                     src/05c-arms.js:35
 DMG_TYPES                    src/05c-arms.js:24-34
@@ -565,15 +553,6 @@ DOM_GAME                     src/11af-domino.js:12
 DOOM_FOLK                    src/12v-doom.js:23
 DOOM_LEAD                    src/12v-doom.js:21
 DOOM_WARN                    src/12v-doom.js:22
-DOOR_DISP_MS                 src/28p-doors.js:21
-DOOR_HOOKS                   src/28p-doors.js:158-175
-DOOR_INNER                   src/28p-doors.js:20
-DOOR_KEYS                    src/28p-doors.js:18
-DOOR_PART                    src/28p-doors.js:19
-DOOR_STORIES                 src/28p-doors.js:134-139
-DOOR_STORY_KEYS              src/28p-doors.js:24
-DOOR_STORY_N                 src/28p-doors.js:23
-DOOR_YEAR                    src/28p-doors.js:22
 DRILL_EAT                    src/13a-guns.js:37
 DRONES                       src/04-mods.js:63-69
 DRONE_BREAK_P                src/12e-drone-flight.js:21
@@ -586,9 +565,6 @@ DRONE_SEEN_DAYS              src/12-economy.js:293
 DRONE_SEG                    src/16ga-gpu-trail.js:147
 DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
-DR_ALSO                      tests/91zzzw9h-doors.js:31
-DR_DO                        tests/91zzzw9h-doors.js:15-29
-DR_P                         tests/91zzzw9h-doors.js:5
 DS_BAD                       src/12p1-doublespeak.js:18-25
 DS_DELAY                     src/12p1-doublespeak.js:26
 DS_GOOD                      src/12p1-doublespeak.js:10-17
@@ -696,8 +672,6 @@ FOE_KINDS                    src/24a-mode-raid.js:17-22
 FOLK                         src/12u-folk.js:31-80
 FOLK_IDS                     src/12u-folk.js:81
 FOOD_SUPPLY                  src/21a1b-base-food.js:16
-FORK_HOOKS                   src/28q-fork.js:200-213
-FORK_SHARE                   src/28q-fork.js:18
 FRAME_IN                     src/08-state.js:378
 FRAME_JS                     src/28-loop.js:119
 FRAME_MS                     src/28-loop.js:141
@@ -710,8 +684,6 @@ FWD_FAR                      src/21b6-base-forward.js:56
 FWD_NEED                     src/21b6-base-forward.js:21
 FWD_PAY                      src/21b6-base-forward.js:24
 FWD_PAY_EVERY                src/21b6-base-forward.js:23
-FW_HOOKS                     src/28o-firstwatch.js:81-87
-FW_URG_MIN                   src/28o-firstwatch.js:17
 G                            src/08-state.js:207-293
 G11_CPU                      src/28z-fps-probe.js:185
 G11_GPU_KILL                 src/28z-fps-probe.js:210-241
@@ -895,7 +867,6 @@ GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:44-65
 GPU_PL_WGSL                  src/08b-gpu.js:485
 GPU_POST_WGSL                src/08b-gpu.js:80
 GPU_SCR                      src/08c-gpu-kit.js:174
-GPU_SCREEN_LAYERS            src/18c-chunks.js:193
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:264
 GPU_SNAP_OVER                src/08b-gpu.js:29
 GPU_TONE_FILM                src/08b-gpu.js:521
@@ -1820,12 +1791,12 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:512
+R3                           src/27f2-room3d.js:536
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:491
+R3_DOWN_WGSL                 src/27f2-room3d.js:515
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:645
+R3_POST_WGSL                 src/27f2-room3d.js:669
 R3_UN                        src/27f2-room3d.js:30
 R3_WGSL                      src/27f2-room3d.js:156
 RACK                         src/25d-instr-rack.js:44
@@ -2028,9 +1999,8 @@ ROLE_LIM                     src/13c-roles.js:7
 ROMAN                        src/01-core.js:185
 ROOM3                        src/29r-rooms-r3.js:12
 ROOM3_M                      src/29r-rooms-r3.js:15
-ROOM_BAKE                    src/29c0-rooms-gpu.js:7
 ROOM_FIN                     src/21aa-base-rooms.js:70-80
-ROOM_WGSL_NOISE              src/29c0-rooms-gpu.js:17
+ROOM_WGSL_NOISE              src/29c0-rooms-gpu.js:2
 ROUTE_MAX                    src/12r-route.js:29
 RPG_CAP                      src/27f1-room-gpu.js:14
 RPG_IDS                      src/27f1-room-gpu.js:120
@@ -2181,17 +2151,20 @@ SOC_REFUGEE                  src/12ay-fx-soc.js:10
 SOC_REJOIN                   src/12al4-soc.js:16
 SOC_REVOLT                   src/12ay-fx-soc.js:14
 SOC_STRIKE                   src/12ay-fx-soc.js:11
+SPA3                         src/29rd-spa-r3.js:20
+SPA3_BD                      src/29rd-spa-r3.js:26
+SPA3_CAMS                    src/29rd-spa-r3.js:179
+SPA3_DAYMS                   src/29rd-spa-r3.js:22
+SPA3_L                       src/29rd-spa-r3.js:21
+SPA3_M                       src/29rd-spa-r3.js:24
+SPA3_MAN                     src/29rd-spa-r3.js:27
+SPA3_SHIRT                   src/29rd-spa-r3.js:28
+SPA3_SLEEP                   src/29rd-spa-r3.js:23
 SPACE_BG                     src/16g-gpu-space.js:16
-SPA_AIR_U                    src/29i-spa-draw.js:202
-SPA_AIR_WGSL                 src/29i-spa-draw.js:192
 SPA_BY_K                     src/29h-spa.js:35
-SPA_C                        src/29i-spa-draw.js:16-20
 SPA_DAYS                     src/29h-spa.js:25
-SPA_FEET                     src/29i-spa-draw.js:173
 SPA_FOLK                     src/29h-spa.js:37-44
 SPA_PLAN                     src/29h-spa.js:28-34
-SPA_SEA_U                    src/29i-spa-draw.js:163
-SPA_SEA_WGSL                 src/29i-spa-draw.js:86
 SPEC_KEYS                    src/12a-crew.js:17
 SPHERE                       src/24-mode-belt.js:32
 SPHERE2                      src/24-mode-belt.js:33
@@ -2227,8 +2200,8 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:321
-STORY_WHEN                   src/11c-stories.js:148-205
+STORY_SEAT                   src/11c-stories.js:320
+STORY_WHEN                   src/11c-stories.js:147-204
 STP_FADE                     src/26e2-stapel-draw.js:284
 STP_G                        src/26e2-stapel-draw.js:283
 STP_INK                      src/26e2-stapel-draw.js:182
@@ -2425,17 +2398,17 @@ WATCH_DISP                   src/28j-watch.js:32
 WATCH_DISP_F                 src/28j-watch.js:30
 WATCH_DISP_M                 src/28j-watch.js:31
 WATCH_LET                    src/28j-watch.js:27
-WATCH_OLD_APPLY              src/28j-watch.js:278
-WATCH_OLD_BOARD              src/28j-watch.js:273
+WATCH_OLD_APPLY              src/28j-watch.js:275
+WATCH_OLD_BOARD              src/28j-watch.js:270
 WATCH_OLD_CREW               src/28j-watch.js:208
 WATCH_OLD_DRONES             src/28j-watch.js:206
 WATCH_OLD_INSON              src/28j-watch.js:216
-WATCH_OLD_MENU               src/28j-watch.js:335
+WATCH_OLD_MENU               src/28j-watch.js:332
 WATCH_OLD_MGR                src/28j-watch.js:210
 WATCH_OLD_NEED               src/28j-watch.js:222
 WATCH_OLD_OPEN               src/28j-watch.js:219
 WATCH_OLD_ORDER              src/28j-watch.js:232
-WATCH_OLD_SNAP               src/28j-watch.js:276
+WATCH_OLD_SNAP               src/28j-watch.js:273
 WATCH_R                      src/28j-watch.js:26
 WATCH_RELIEF                 src/28j-watch.js:33
 WATER_MIN_SPAN               src/21e-surface-draw.js:177
@@ -2446,32 +2419,24 @@ WEAR_RU                      src/12s-wear.js:39
 WEATHER                      src/19d-weather.js:15-26
 WEATHER_BY_TYPE              src/19d-weather.js:28-47
 WEATHER_CAP                  src/19d-weather.js:52
-WIN3                         src/29rc-winter-r3.js:15
-WIN3_CAMS                    src/29rc-winter-r3.js:171
-WIN3_L                       src/29rc-winter-r3.js:16
-WIN3_LEV                     src/29rc-winter-r3.js:113
-WIN3_M                       src/29rc-winter-r3.js:17
-WIN3_PARKA                   src/29rc-winter-r3.js:21
-WIN3_PX                      src/29rc-winter-r3.js:19
-WIN3_SLEEP                   src/29rc-winter-r3.js:20
+WIN3                         src/29rc-winter-r3.js:19
+WIN3_CAMS                    src/29rc-winter-r3.js:210
+WIN3_FX                      src/29rc-winter-r3.js:25
+WIN3_L                       src/29rc-winter-r3.js:20
+WIN3_LEV                     src/29rc-winter-r3.js:125
+WIN3_M                       src/29rc-winter-r3.js:21
+WIN3_PARKA                   src/29rc-winter-r3.js:27
+WIN3_PX                      src/29rc-winter-r3.js:23
+WIN3_SLEEP                   src/29rc-winter-r3.js:26
 WIND                         src/19c-light.js:41
 WIN_BAD                      src/29f-winter.js:32
-WIN_C                        src/29g-winter-draw.js:20-28
-WIN_DARK_U                   src/29g-winter-draw.js:554
-WIN_DARK_WGSL                src/29g-winter-draw.js:548
 WIN_DAYS                     src/29f-winter.js:27
 WIN_FAULT                    src/29f-winter.js:34-40
 WIN_FAULT_BY                 src/29f-winter.js:41
-WIN_GLOW                     src/29g-winter-draw.js:517
-WIN_LIGHT_U                  src/29g-winter-draw.js:504
-WIN_LIGHT_WGSL               src/29g-winter-draw.js:443
 WIN_MIN                      src/29f-winter.js:31
 WIN_PAY                      src/29f-winter.js:28
 WIN_RU                       src/29f-winter.js:30
-WIN_RU_SHORT                 src/29g-winter-draw.js:71
 WIN_USE                      src/29f-winter.js:29
-WIN_VIEW_U                   src/29g-winter-draw.js:429
-WIN_VIEW_WGSL                src/29g-winter-draw.js:389
 WIN_WALL_EARLY               src/29f-winter.js:46-53
 WIN_WALL_LATE                src/29f-winter.js:54-61
 WORLD_MOOD                   src/10-music.js:39-52
@@ -2502,17 +2467,6 @@ abilPadRim                   src/16c-abil.js:139-150
 abilReady01                  src/16c-abil.js:35-38
 abilStale                    src/16c-abil.js:118-124
 abilTick                     src/16c-abil.js:127-136
-accCounter                   src/28n-access.js:104-108
-accGate                      src/28n-access.js:91-100
-accHullNeed                  src/28n-access.js:84-90
-accLever                     src/28n-access.js:57-66
-accLeverSys                  src/28n-access.js:67
-accNormOk                    src/28n-access.js:102
-accRestore                   src/28n-access.js:109-115
-accSponsor                   src/28n-access.js:76-82
-accSt                        src/28n-access.js:48-55
-accSupply                    src/28n-access.js:69-74
-accTestStation               tests/91zzzw9f-access.js:4-7
 actCouponUse                 src/05e-clearance.js:38
 actCoupons                   src/05e-clearance.js:37
 actPressT                    src/15-input.js:94
@@ -2579,7 +2533,7 @@ applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
 arrive                       src/16-flight.js:172-210
-arriveSystem                 src/18-mode-map.js:722-773
+arriveSystem                 src/18-mode-map.js:713-764
 artGet                       src/08ca-gpu-canvas.js:550
 artPut                       src/08ca-gpu-canvas.js:551-696
 asMap                        src/14-save.js:209-215
@@ -2901,15 +2855,6 @@ billTier                     src/27ib-bill.js:46-49
 billUnlend                   src/27ib-bill.js:61-65
 bioMark                      src/20e-species.js:310-314
 bioScan                      src/20e-species.js:315-329
-bladeArrive                  src/28q-fork.js:161-169
-bladeCost                    src/28q-fork.js:136
-bladeHop                     src/28q-fork.js:135
-bladeOn                      src/28q-fork.js:151
-bladeSt                      src/28q-fork.js:133
-bladeTarget                  src/28q-fork.js:138-150
-bladeTick                    src/28q-fork.js:152-160
-bladeTow                     src/28q-fork.js:172-185
-bladeTowOk                   src/28q-fork.js:171
 bldAdd                       src/12ac-bld.js:30-33
 bldAddFx                     src/12ac-bld.js:35-37
 bldAtWhy                     src/12ad-site.js:118-132
@@ -3542,12 +3487,12 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:100-108
-cpBasis                      src/27f3-person3d.js:78-82
+cpBand                       src/27f3-person3d.js:107-115
+cpBasis                      src/27f3-person3d.js:85-89
 cpBeard                      src/27f3a-face3d.js:381-396
-cpBody                       src/27f3-person3d.js:117
-cpBodyGen                    src/27f3-person3d.js:118-277
-cpCloth                      src/27f3-person3d.js:45-50
+cpBody                       src/27f3-person3d.js:124
+cpBodyGen                    src/27f3-person3d.js:125-284
+cpCloth                      src/27f3-person3d.js:46-51
 cpClump                      src/27f3a-face3d.js:372-379
 cpEmoMix                     src/27f6-face-live.js:56-58
 cpEmote                      src/27f6-face-live.js:43-46
@@ -3555,27 +3500,27 @@ cpFace                       src/27f6-face-live.js:60-89
 cpFaceAt                     src/27f3a-face3d.js:54
 cpFaceRig                    src/27f3a-face3d.js:71-77
 cpFaceState                  src/27f6-face-live.js:47-54
-cpGene                       src/27f3-person3d.js:20-42
+cpGene                       src/27f3-person3d.js:20-43
 cpHair                       src/27f3a-face3d.js:294-369
 cpHairline                   src/27f3a-face3d.js:287-293
 cpHead                       src/27f3a-face3d.js:184
 cpHeadAI                     src/27f3a-face3d.js:398-408
 cpHeadFn                     src/27f3a-face3d.js:18-52
 cpHeadGen                    src/27f3a-face3d.js:185-285
-cpMesh                       src/27f3-person3d.js:288-294
-cpMeshKey                    src/27f3-person3d.js:281-283
-cpMeshPump                   src/27f3-person3d.js:297-309
-cpMeshPut                    src/27f3-person3d.js:284-287
+cpMesh                       src/27f3-person3d.js:295-301
+cpMeshKey                    src/27f3-person3d.js:288-290
+cpMeshPump                   src/27f3-person3d.js:304-316
+cpMeshPut                    src/27f3-person3d.js:291-294
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
-cpPose                       src/27f3-person3d.js:52-76
+cpPose                       src/27f3-person3d.js:53-83
 cpRig                        src/27f3a-face3d.js:412-434
 cpRun                        src/27f3a-face3d.js:183
 cpSculpt                     src/27f3a-face3d.js:81-158
 cpSkin                       src/27f3a-face3d.js:160-163
 cpSkinZ                      src/27f3a-face3d.js:165
 cpTeeth                      src/27f3a-face3d.js:168-180
-cpTorsoAt                    src/27f3-person3d.js:89-98
+cpTorsoAt                    src/27f3-person3d.js:96-105
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
 cpWarpTh                     src/27f3a-face3d.js:68
@@ -3910,63 +3855,6 @@ dirAt                        src/01-core.js:166-171
 dirGoodShare                 src/21a5-base-dir.js:67-72
 dirPool                      src/21a5-base-dir.js:44-48
 dirWeights                   src/21a5-base-dir.js:55-66
-dispAdvance                  src/28m-dispatch.js:259-267
-dispAlarm                    src/28m-dispatch.js:336-343
-dispAlarmOff                 src/28m-dispatch.js:345-350
-dispCheck                    src/28m-dispatch.js:268-273
-dispDock                     src/28m-dispatch.js:324-333
-dispDone                     src/28m-dispatch.js:274-290
-dispFace                     src/28m-dispatch.js:210-215
-dispFill                     src/28m-dispatch.js:243-253
-dispGive                     src/28m-dispatch.js:292-304
-dispGood                     src/28m-dispatch.js:83-86
-dispHop                      src/28m-dispatch.js:62
-dispIssue                    src/28m-dispatch.js:219-241
-dispLandable                 src/28m-dispatch.js:81
-dispLane                     src/28m-dispatch.js:352-359
-dispLeg                      src/28m-dispatch.js:256
-dispLegWord                  src/28m-dispatch.js:360-369
-dispMins                     src/28m-dispatch.js:257
-dispMkBring                  src/28m-dispatch.js:89-95
-dispMkCarry                  src/28m-dispatch.js:130-134
-dispMkCasc                   src/28m-dispatch.js:103-109
-dispMkDoc                    src/28m-dispatch.js:135-139
-dispMkDoor                   src/28m-dispatch.js:161-165
-dispMkDouble                 src/28m-dispatch.js:166-172
-dispMkEscort                 src/28m-dispatch.js:146-150
-dispMkLand                   src/28m-dispatch.js:118-129
-dispMkLeave                  src/28m-dispatch.js:173-177
-dispMkPod                    src/28m-dispatch.js:156-160
-dispMkPost                   src/28m-dispatch.js:203-208
-dispMkRepel                  src/28m-dispatch.js:151-155
-dispMkRound                  src/28m-dispatch.js:198-202
-dispMkSos                    src/28m-dispatch.js:178-182
-dispMkTake                   src/28m-dispatch.js:96-102
-dispMkTalk                   src/28m-dispatch.js:140-145
-dispMkTri                    src/28m-dispatch.js:191-197
-dispMkYard                   src/28m-dispatch.js:110-117
-dispNear                     src/28m-dispatch.js:68-80
-dispOn                       src/28m-dispatch.js:320-322
-dispPath                     src/28m-dispatch.js:87
-dispPerson                   src/28m-dispatch.js:216
-dispPick                     src/28m-dispatch.js:82
-dispQ                        src/28m-dispatch.js:65
-dispR10                      src/28m-dispatch.js:63
-dispRestore                  src/28m-dispatch.js:397-415
-dispRow                      src/28m-dispatch.js:370-387
-dispRu                       src/28m-dispatch.js:64
-dispSafe                     src/28m-dispatch.js:418
-dispSection                  src/28m-dispatch.js:388-394
-dispSlotOk                   src/28m-dispatch.js:255
-dispSn                       src/28m-dispatch.js:66
-dispSt                       src/28m-dispatch.js:53-60
-dispSysOf                    src/28m-dispatch.js:61
-dispTestDock                 tests/91zzzw9e-dispatch.js:9-12
-dispTestStations             tests/91zzzw9e-dispatch.js:4-8
-dispThree                    src/28m-dispatch.js:184-190
-dispTick                     src/28m-dispatch.js:306-318
-dispUrg                      src/28m-dispatch.js:335
-dispW                        src/28m-dispatch.js:218
 dispatchEtherLine            src/12ag-holdfx.js:57-76
 dkPaper                      src/27ia-desk-top.js:37-45
 dkRule                       src/27ia-desk-top.js:46-52
@@ -3997,28 +3885,7 @@ doomLine                     src/12v-doom.js:170-177
 doomMins                     src/12v-doom.js:35
 doomStanding                 src/12v-doom.js:38
 doomTick                     src/12v-doom.js:137-167
-doorCut                      src/28p-doors.js:65-72
-doorDeed                     src/28p-doors.js:32-37
-doorDone                     src/28p-doors.js:38
-doorDraw                     src/28p-doors.js:43-52
-doorExpStation               src/28p-doors.js:141-144
-doorIsPart                   src/28p-doors.js:41
-doorJudged                   src/28p-doors.js:100-107
-doorLine                     src/28p-doors.js:73-82
-doorOpen                     src/28p-doors.js:54-61
-doorOpened                   src/28p-doors.js:91-98
-doorRestore                  src/28p-doors.js:146-156
-doorSince                    src/28p-doors.js:40
-doorSt                       src/28p-doors.js:26-30
-doorStoryDeed                src/28p-doors.js:115-119
-doorStoryPick                src/28p-doors.js:121-133
-doorWd                       src/28p-doors.js:25
-doorYearOk                   src/28p-doors.js:109
-doorsDispLine                src/28p-doors.js:84-89
 doorsShut                    src/11ar-doors.js:27-31
-drAt                         tests/91zzzw9h-doors.js:32-36
-drOutside                    tests/91zzzw9h-doors.js:6-12
-drSeed                       tests/91zzzw9h-doors.js:14
 draftAll                     src/27jb-kb.js:133
 draftOf                      src/27jb-kb.js:135-160
 draftSave                    src/27jb-kb.js:161-168
@@ -4113,7 +3980,7 @@ drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
 drawMap                      src/18-mode-map.js:219-222
-drawMapIn                    src/18-mode-map.js:223-671
+drawMapIn                    src/18-mode-map.js:223-662
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModuleBody               src/21aa-base-rooms.js:494-502
 drawModuleFloor              src/21aa-base-rooms.js:547-573
@@ -4151,7 +4018,7 @@ drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:71-113
 drawSkyBase                  src/19c-light.js:318
 drawSkyLayer                 src/19-mode-landing.js:179-182
-drawSpa                      src/29i-spa-draw.js:62-80
+drawSpa                      src/29rd-spa-r3.js:234-237
 drawStModule                 src/17a-station-mod.js:105-216
 drawStRod                    src/17a-station-mod.js:97-104
 drawStRods                   src/17a-station-mod.js:219
@@ -4187,7 +4054,7 @@ drawWanderer                 src/12v-wander.js:339-443
 drawWater                    src/21e-surface-draw.js:221-309
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-318
-drawWinter                   src/29g-winter-draw.js:365-386
+drawWinter                   src/29rc-winter-r3.js:276-279
 drawWorld                    src/28-loop.js:444-447
 drawWorldIn                  src/28-loop.js:448-471
 drawWreck                    src/20aa-poi-shapes.js:8-47
@@ -4406,8 +4273,6 @@ fitPart                      src/05-parts.js:389-406
 fittedGuns                   src/05-parts.js:323-334
 fittedOfKind                 src/05-parts.js:314-317
 fittedParts                  src/05-parts.js:344-348
-fkAll                        tests/91zzzw9i-fork.js:9-17
-fkHand                       tests/91zzzw9i-fork.js:5-8
 flagOf                       src/12al-powers.js:94-100
 flakCatch                    src/13a-guns.js:431-445
 flakTick                     src/13a-guns.js:379-398
@@ -4462,20 +4327,6 @@ folkShut                     src/11ah-offer.js:96-103
 folkState                    src/12u-folk.js:83-86
 folkVisit                    src/12u-folk.js:104-113
 foregroundGpu                src/21e3-surface-stand-gpu.js:116-145
-forkAccess                   src/28q-fork.js:96-112
-forkBusy                     src/28q-fork.js:23
-forkGoods                    src/28q-fork.js:27
-forkHands                    src/28q-fork.js:24
-forkHave                     src/28q-fork.js:114-116
-forkMins                     src/28q-fork.js:25
-forkNotch                    src/28q-fork.js:117-131
-forkRestore                  src/28q-fork.js:187-198
-forkRow                      src/28q-fork.js:83-94
-forkSend                     src/28q-fork.js:37-46
-forkSides                    src/28q-fork.js:29-36
-forkSt                       src/28q-fork.js:19-22
-forkTick                     src/28q-fork.js:56-81
-forkWage                     src/28q-fork.js:48-55
 foundBase                    src/21a-mode-base.js:101-115
 frame                        src/28-loop.js:674-720
 frameBody                    src/28-loop.js:472-606
@@ -4496,13 +4347,6 @@ fusePreview                  src/03-ships.js:46-63
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:64-102
 fuzzRich                     tests/90a-tools.js:701
-fwHome                       src/28o-firstwatch.js:33-38
-fwMin                        src/28o-firstwatch.js:31
-fwOn                         src/28o-firstwatch.js:25-30
-fwRestore                    src/28o-firstwatch.js:71-79
-fwSt                         src/28o-firstwatch.js:18-24
-fwTick                       src/28o-firstwatch.js:40-58
-fwUndock                     src/28o-firstwatch.js:60-70
 fwdAnnounce                  src/21b6-base-forward.js:83-94
 fwdBase                      src/21b6-base-forward.js:61-71
 fwdCorridor                  src/21b6-base-forward.js:57
@@ -4788,16 +4632,16 @@ gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:31-36
 gpuBursts                    src/13z-gpu-combat.js:277-297
 gpuCanvasTex                 src/08c-gpu-kit.js:49-64
-gpuChunkAt                   src/18c-chunks.js:209-215
+gpuChunkAt                   src/18c-chunks.js:198-204
 gpuChunkBake                 src/18c-chunks.js:179-183
 gpuChunkPut                  src/18c-chunks.js:186-190
-gpuChunkStore                src/18c-chunks.js:204-208
+gpuChunkStore                src/18c-chunks.js:193-197
 gpuClouds                    src/19cc-gpu-air.js:118-165
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:444-454
 gpuCvLevel                   src/08c-gpu-kit.js:82-93
-gpuDrawChunks                src/18c-chunks.js:216-220
-gpuDrawTiles                 src/18c-chunks.js:235-240
+gpuDrawChunks                src/18c-chunks.js:205-209
+gpuDrawTiles                 src/18c-chunks.js:224-229
 gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:276-302
@@ -4851,7 +4695,6 @@ gpuResize                    src/08b-gpu.js:400-442
 gpuScene                     src/08b-gpu.js:569-582
 gpuScene3D                   src/08b-gpu.js:586-594
 gpuScr                       src/08c-gpu-kit.js:175
-gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:349-360
@@ -4867,8 +4710,8 @@ gpuStationFlare              src/17c3-station-live.js:128-143
 gpuStoreDrop                 src/18c-chunks.js:191
 gpuSysUnder                  src/17g-gpu-system.js:447-453
 gpuTakeSnap                  src/08b-gpu.js:30-37
-gpuTileAt                    src/18c-chunks.js:228-234
-gpuTileStore                 src/18c-chunks.js:223-227
+gpuTileAt                    src/18c-chunks.js:217-223
+gpuTileStore                 src/18c-chunks.js:212-216
 gpuTrail                     src/16ga-gpu-trail.js:53-98
 gpuTs                        src/28z-fps-probe.js:128-135
 gpuTsAround                  src/28z-fps-probe.js:145-149
@@ -5631,7 +5474,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:709-717
+jump                         src/18-mode-map.js:700-708
 jumpToBase                   src/21a-mode-base.js:386-403
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
@@ -5961,7 +5804,7 @@ mapCellXY                    src/18a-map-addr.js:52
 mapCleanSet                  src/18-mode-map.js:187
 mapCourseDash                src/18l-map-plate.js:40-47
 mapDeck                      src/18-mode-map.js:14-18
-mapDryWord                   src/18-mode-map.js:683
+mapDryWord                   src/18-mode-map.js:674
 mapFace                      src/18l-map-plate.js:13
 mapFit                       src/18-mode-map.js:155-160
 mapFont                      src/18-mode-map.js:43
@@ -5972,14 +5815,14 @@ mapGridDraw                  src/18a-map-addr.js:55-66
 mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHintHung                  src/18l-map-plate.js:37
 mapHit                       src/18-mode-map.js:65-105
-mapHoldingsDraw              src/18b-map-hold.js:109-206
-mapHoldingsTop               src/18b-map-hold.js:208-248
+mapHoldingsDraw              src/18b-map-hold.js:109-212
+mapHoldingsTop               src/18b-map-hold.js:214-254
 mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:56
 mapInkPoly                   src/18-mode-map.js:54
 mapInkText                   src/18-mode-map.js:58
-mapJump                      src/18-mode-map.js:684-693
-mapJumpCost                  src/18-mode-map.js:678-681
+mapJump                      src/18-mode-map.js:675-684
+mapJumpCost                  src/18-mode-map.js:669-672
 mapLate                      src/18-mode-map.js:62
 mapLateFlush                 src/18-mode-map.js:72-105
 mapLayer                     src/18b-map-hold.js:26
@@ -7278,12 +7121,12 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:513-519
-r3Dev                        src/27f2-room3d.js:536-554
-r3DownDesc                   src/27f2-room3d.js:528-532
-r3Drop                       src/27f2-room3d.js:561
-r3Frame                      src/27f2-room3d.js:576-642
-r3Free                       src/27f2-room3d.js:563
+r3Desc                       src/27f2-room3d.js:537-543
+r3Dev                        src/27f2-room3d.js:560-578
+r3DownDesc                   src/27f2-room3d.js:552-556
+r3Drop                       src/27f2-room3d.js:585
+r3Frame                      src/27f2-room3d.js:600-666
+r3Free                       src/27f2-room3d.js:587
 r3Kit                        src/27f2-room3d.js:66-153
 r3Lin                        src/27f2-room3d.js:35
 r3Look                       src/27f2-room3d.js:43-153
@@ -7294,11 +7137,11 @@ r3Pivot                      src/27f2-room3d.js:57
 r3Proj                       src/27f2-room3d.js:60-153
 r3Pt                         src/27f2-room3d.js:58
 r3Sc                         src/27f2-room3d.js:37
-r3ShDesc                     src/27f2-room3d.js:520-525
-r3ShadowVP                   src/27f2-room3d.js:565-570
+r3ShDesc                     src/27f2-room3d.js:544-549
+r3ShadowVP                   src/27f2-room3d.js:589-594
 r3Step                       src/27f2-room3d.js:38
-r3Up                         src/27f2-room3d.js:556-560
-r3VB                         src/27f2-room3d.js:526
+r3Up                         src/27f2-room3d.js:580-584
+r3VB                         src/27f2-room3d.js:550
 r3Xf                         src/27f2-room3d.js:49-153
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -7796,8 +7639,6 @@ room3PickHq                  src/29r-rooms-r3.js:252-258
 room3Place                   src/29r-rooms-r3.js:187
 room3Size                    src/29r-rooms-r3.js:154-161
 room3TagsDraw                src/29r-rooms-r3.js:233-246
-roomBake                     src/29c0-rooms-gpu.js:8-14
-roomSz                       src/29c0-rooms-gpu.js:16
 roomToneTick                 src/09a-roomtone.js:79-99
 routeEarn                    src/12r-route.js:196-204
 routeFork                    src/12r-route.js:64-67
@@ -8156,38 +7997,47 @@ socStrikeHere                src/12ay-fx-soc.js:40-43
 socWageMul                   src/12ay-fx-soc.js:35
 socWeek                      src/12al4-soc.js:38
 socWeekTick                  src/12al4-soc.js:94-100
-spaAir                       src/29i-spa-draw.js:203-219
+spa3Board                    src/29rd-spa-r3.js:149-165
+spa3BoardGrid                src/29rd-spa-r3.js:166
+spa3Cam                      src/29rd-spa-r3.js:181-188
+spa3Canvas                   src/29rd-spa-r3.js:170-177
+spa3Cost                     src/29rd-spa-r3.js:230
+spa3Fade                     src/29rd-spa-r3.js:115
+spa3Folk                     src/29rd-spa-r3.js:112
+spa3Frame                    src/29rd-spa-r3.js:190-208
+spa3Hide                     src/29rd-spa-r3.js:223-228
+spa3Hit                      src/29rd-spa-r3.js:220
+spa3Hits                     src/29rd-spa-r3.js:210
+spa3Mesh                     src/29rd-spa-r3.js:43-106
+spa3Ok                       src/29rd-spa-r3.js:189
+spa3On                       src/29rd-spa-r3.js:231
+spa3Pilot                    src/29rd-spa-r3.js:109
+spa3Scene                    src/29rd-spa-r3.js:117-145
+spa3SleepPh                  src/29rd-spa-r3.js:114
+spa3Sun                      src/29rd-spa-r3.js:31-35
+spa3SunCol                   src/29rd-spa-r3.js:40
+spa3SunDir                   src/29rd-spa-r3.js:38
+spa3Tags                     src/29rd-spa-r3.js:209
 spaAll                       src/29h-spa.js:45
-spaBoardGrid                 src/29i-spa-draw.js:48-51
-spaBoardRows                 src/29i-spa-draw.js:46
-spaBoardText                 src/29i-spa-draw.js:446-480
 spaCanHere                   src/29h-spa.js:47-50
 spaEnd                       src/29h-spa.js:104-119
-spaFeet                      src/29i-spa-draw.js:174-189
-spaFloor                     src/29i-spa-draw.js:221-263
-spaFolk                      src/29i-spa-draw.js:484-574
-spaGeom                      src/29i-spa-draw.js:25-44
-spaHit                       src/29i-spa-draw.js:576-591
+spaHit                       src/29rd-spa-r3.js:239
 spaOn                        src/29h-spa.js:46
-spaProps                     src/29i-spa-draw.js:267-441
-spaSea                       src/29i-spa-draw.js:164-170
 spaSleep                     src/29h-spa.js:96-103
 spaTake                      src/29h-spa.js:68-84
 spaTalk                      src/29h-spa.js:86-94
-spaTap                       src/29i-spa-draw.js:592-598
-spaTookToday                 src/29i-spa-draw.js:52
+spaTap                       src/29rd-spa-r3.js:240-246
+spaTookToday                 src/29rd-spa-r3.js:238
 spareModLv                   src/12a-crew.js:296-299
 spawnAllies                  src/12a-crew.js:600-611
 spawnBarges                  src/12l-barge.js:110-166
 spawnPirates                 src/13-pirates.js:28-107
-spcol                        src/29i-spa-draw.js:21
 speciesBeast                 src/20e-species.js:234-267
 speciesPlant                 src/20e-species.js:40-85
 specimenBeast                src/20e-species.js:285-302
 specimenPlant                src/20e-species.js:134-191
 speechAll                    src/11b-speech.js:117
 speechHere                   src/11b-speech.js:119-154
-sprgba                       src/29i-spa-draw.js:23
 srcPrice                     src/12ad-site.js:294-297
 stBar                        src/17c3-station-live.js:44-47
 stCore                       src/17c-system-draw.js:38-52
@@ -8291,35 +8141,35 @@ stationYard                  src/04c-yards.js:127-142
 stepWorld                    src/28-loop.js:421-441
 steps                        tests/90-harness.js:459
 stopEngine                   src/09-audio.js:369-373
-storyAddrMatch               src/11c-stories.js:69-83
+storyAddrMatch               src/11c-stories.js:69-82
 storyAll                     src/11c-stories.js:32
-storyAnchorRoll              src/11c-stories.js:88-93
+storyAnchorRoll              src/11c-stories.js:87-92
 storyById                    src/11c-stories.js:33
-storyCantScene               src/11c-stories.js:322-327
-storyCheckWhen               src/11c-stories.js:211-216
+storyCantScene               src/11c-stories.js:321-326
+storyCheckWhen               src/11c-stories.js:210-215
 storyCtx                     src/11c-stories.js:39-48
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:262-268
-storyFindLine                src/11c-stories.js:290-295
+storyEtherLine               src/11c-stories.js:261-267
+storyFindLine                src/11c-stories.js:289-294
 storyFixedAddr               src/11c-stories.js:55-67
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:374-382
+storyGroundLine              src/11c-stories.js:373-381
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:331-368
-storyNewsItem                src/11c-stories.js:297-314
-storyNote                    src/11c-stories.js:386-389
-storyPickOne                 src/11c-stories.js:253-258
+storyLint                    src/11c-stories.js:330-367
+storyNewsItem                src/11c-stories.js:296-313
+storyNote                    src/11c-stories.js:385-388
+storyPickOne                 src/11c-stories.js:252-257
 storyPins                    src/11c-stories.js:30
-storyPlace                   src/11c-stories.js:94-107
-storyQueueLine               src/11c-stories.js:270-280
+storyPlace                   src/11c-stories.js:93-106
+storyQueueLine               src/11c-stories.js:269-279
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:239-251
-storyTableLine               src/11c-stories.js:282-288
-storyTraces                  src/11c-stories.js:220-237
-storyTurns                   src/11c-stories.js:122-143
-storyWhen                    src/11c-stories.js:206-210
+storyShow                    src/11c-stories.js:238-250
+storyTableLine               src/11c-stories.js:281-287
+storyTraces                  src/11c-stories.js:219-236
+storyTurns                   src/11c-stories.js:121-142
+storyWhen                    src/11c-stories.js:205-209
 stripPaint                   src/27i-ui-table.js:370-378
 stripSell                    src/11b-speech.js:231-242
 stripValue                   src/11b-speech.js:193-195
@@ -8559,15 +8409,15 @@ updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:73-145
-updateMap                    src/18-mode-map.js:694-708
+updateMap                    src/18-mode-map.js:685-699
 updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
-updateSpa                    src/29i-spa-draw.js:599-604
+updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
 updateSystem                 src/17-mode-system.js:106-513
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
-updateWinter                 src/29g-winter-draw.js:942-951
+updateWinter                 src/29rc-winter-r3.js:296-300
 useBeacon                    src/23-mode-dig.js:91-116
 vCloth                       src/18d-verlet.js:41-50
 vDrawCloth                   src/18d-verlet.js:110-133
@@ -8768,14 +8618,14 @@ watchHanded                  src/28j-watch.js:82
 watchHas                     src/28j-watch.js:68
 watchIn                      src/28j-watch.js:58
 watchJudge                   src/28j-watch.js:98-126
-watchMenuSync                src/28j-watch.js:302-312
-watchMenuTap                 src/28j-watch.js:313-324
+watchMenuSync                src/28j-watch.js:299-309
+watchMenuTap                 src/28j-watch.js:310-321
 watchName                    src/28j-watch.js:49
 watchNeedAt                  src/28j-watch.js:70-76
 watchNpc                     src/28j-watch.js:81
 watchNpcRate                 src/28j-watch.js:77-80
 watchReassign                src/28j-watch.js:128-137
-watchSection                 src/28j-watch.js:239-271
+watchSection                 src/28j-watch.js:239-268
 watchSeed                    src/28j-watch.js:48
 watchSt                      src/28j-watch.js:34-47
 watchStations                src/28j-watch.js:59-67
@@ -8788,7 +8638,6 @@ waveBlock                    src/12pa-beacon.js:146-175
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
 wcGauss                      src/16a-space.js:127
-wcol                         src/29g-winter-draw.js:29
 wearAll                      src/12s-wear.js:20
 wearFloor                    src/12s-wear.js:71-78
 wearLine                     src/12s-wear.js:45-49
@@ -8803,58 +8652,42 @@ weatherGpu                   src/19d-weather.js:109-185
 weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
-win3Box                      src/29rc-winter-r3.js:212
-win3Cam                      src/29rc-winter-r3.js:173-181
-win3Canvas                   src/29rc-winter-r3.js:162-169
-win3Cost                     src/29rc-winter-r3.js:234
-win3Fade                     src/29rc-winter-r3.js:130
-win3Frame                    src/29rc-winter-r3.js:184-203
-win3Hide                     src/29rc-winter-r3.js:227-232
-win3Hit                      src/29rc-winter-r3.js:224
-win3Hits                     src/29rc-winter-r3.js:216
-win3LeverX                   src/29rc-winter-r3.js:23
-win3Man                      src/29rc-winter-r3.js:118-127
-win3Mesh                     src/29rc-winter-r3.js:29-112
-win3Ok                       src/29rc-winter-r3.js:183
-win3On                       src/29rc-winter-r3.js:235
-win3Pilot                    src/29rc-winter-r3.js:116
-win3Scene                    src/29rc-winter-r3.js:132-159
-win3SleepPh                  src/29rc-winter-r3.js:129
-win3Storm                    src/29rc-winter-r3.js:26
-win3Tags                     src/29rc-winter-r3.js:205
-win3Val                      src/29rc-winter-r3.js:24
+win3Blanket                  src/29rc-winter-r3.js:128-147
+win3Box                      src/29rc-winter-r3.js:250
+win3Cam                      src/29rc-winter-r3.js:212-220
+win3Canvas                   src/29rc-winter-r3.js:200-207
+win3Cost                     src/29rc-winter-r3.js:272
+win3Fade                     src/29rc-winter-r3.js:165
+win3Frame                    src/29rc-winter-r3.js:223-242
+win3Hide                     src/29rc-winter-r3.js:265-270
+win3Hit                      src/29rc-winter-r3.js:262
+win3Hits                     src/29rc-winter-r3.js:254
+win3LeverX                   src/29rc-winter-r3.js:29
+win3Man                      src/29rc-winter-r3.js:152-162
+win3Mesh                     src/29rc-winter-r3.js:35-124
+win3Ok                       src/29rc-winter-r3.js:222
+win3On                       src/29rc-winter-r3.js:273
+win3Pilot                    src/29rc-winter-r3.js:150
+win3Scene                    src/29rc-winter-r3.js:167-197
+win3SleepPh                  src/29rc-winter-r3.js:164
+win3Storm                    src/29rc-winter-r3.js:32
+win3Tags                     src/29rc-winter-r3.js:244
+win3Val                      src/29rc-winter-r3.js:30
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
 winBlock                     src/29f-winter.js:253-270
-winBody                      src/29g-winter-draw.js:119-145
 winCap                       src/29f-winter.js:65-68
-winDark                      src/29g-winter-draw.js:555-558
 winDiaryToday                src/29f-winter.js:176-191
 winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:193-209
-winFigBox                    src/29g-winter-draw.js:761-765
-winFigure                    src/29g-winter-draw.js:769-883
 winFix                       src/29f-winter.js:149-160
-winGeom                      src/29g-winter-draw.js:38-57
-winGlow                      src/29g-winter-draw.js:518-546
-winHit                       src/29g-winter-draw.js:902-920
-winLeverLabels               src/29g-winter-draw.js:72-83
-winLevers                    src/29g-winter-draw.js:58-65
-winLight                     src/29g-winter-draw.js:505-514
-winLit                       src/29g-winter-draw.js:89-108
+winHit                       src/29rc-winter-r3.js:280
 winOfferHere                 src/29f-winter.js:76-94
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
-winPanel                     src/29g-winter-draw.js:677-759
-winPanelBox                  src/29g-winter-draw.js:669-673
-winProps                     src/29g-winter-draw.js:560-667
-winRoomLayer                 src/29g-winter-draw.js:149-354
 winShift                     src/29f-winter.js:123-148
 winTake                      src/29f-winter.js:95-111
-winTap                       src/29g-winter-draw.js:921-941
-winText                      src/29g-winter-draw.js:885-899
-winTone                      src/29g-winter-draw.js:111-116
-winView                      src/29g-winter-draw.js:430-439
+winTap                       src/29rc-winter-r3.js:281-293
 winWall                      src/29f-winter.js:162-172
 windOf                       src/19c-light.js:42-48
 withCtx                      src/18c-chunks.js:58-65
@@ -8869,7 +8702,6 @@ wrapLeft                     src/18-mode-map.js:106-115
 wreck                        src/28-loop.js:16-44
 wreckInteract                src/12l-barge.js:351-377
 wrecksHere                   src/12l-barge.js:348
-wrgba                        src/29g-winter-draw.js:31
 wtab                         src/02a-worldmix.js:85
 yachtMoraleMul               src/12j-home.js:255-258
 yachtOwned                   src/12j-home.js:248-254
@@ -9158,7 +8990,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/11c-stories.js · 23 KB
   · истории: следы, а не задания:1
-  · каналы:260
+  · каналы:259
 
 ## src/11d-clocks.js · 7 KB
   · часы над концами: сторож темпа (P8, M416):1
@@ -9798,7 +9630,7 @@ zoomTo                       src/15-input.js:358
 ## src/18b-map-hold.js · 16 KB
   · владения на карте (M348):1
 
-## src/18c-chunks.js · 15 KB
+## src/18c-chunks.js · 14 KB
   · кэш статичного: чанки и слои:1
 
 ## src/18d-postfx.js · 6 KB
@@ -10400,7 +10232,7 @@ zoomTo                       src/15-input.js:358
 ## src/25n-chess.js · 18 KB
   · шахматы по почте:1
 
-## src/26-ui-station.js · 54 KB
+## src/26-ui-station.js · 53 KB
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):355
   · настройки:741
@@ -10458,10 +10290,10 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 11 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 59 KB
+## src/27f2-room3d.js · 61 KB
   · комната в объёме (M725):1
 
-## src/27f3-person3d.js · 27 KB
+## src/27f3-person3d.js · 28 KB
   · человек в объёме (M725):1
 
 ## src/27f3a-face3d.js · 37 KB
@@ -10584,7 +10416,7 @@ zoomTo                       src/15-input.js:358
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
 
-## src/28j-watch.js · 21 KB
+## src/28j-watch.js · 20 KB
   · участок, норма, сдача смены (M905 · DESIGN-game §3.2, §3.4, §10.2, §10.3, §10.5):1
 
 ## src/28k-offline.js · 4 KB
@@ -10592,21 +10424,6 @@ zoomTo                       src/15-input.js:358
 
 ## src/28l-gauge.js · 17 KB
   · три шкалы станции и каскад (M906 · DESIGN-game §4.2, §7.1):1
-
-## src/28m-dispatch.js · 29 KB
-  · диспетчер: дело есть всегда (M907 · DESIGN-game §4.3):1
-
-## src/28n-access.js · 11 KB
-  · доступ: кредиты покупают вещи, допуск — нужные (M908 · DESIGN-game §4.4):1
-
-## src/28o-firstwatch.js · 5 KB
-  · первая вахта: первый час — это первая смена (M909 · DESIGN-game §10.7):1
-
-## src/28p-doors.js · 12 KB
-  · двери глав — дела на участке (M910, DESIGN-game §7.3, §7.4):1
-
-## src/28q-fork.js · 14 KB
-  · развилки: дело — сам или рукой; засечки; Клинок (M911, DESIGN-game §7.2, §7.4):1
 
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
@@ -10618,8 +10435,8 @@ zoomTo                       src/15-input.js:358
 ## src/29c-home-in.js · 16 KB
   · дом изнутри: по нему ходят:1
 
-## src/29c0-rooms-gpu.js · 2 KB
-  · комнаты на видеокарте (G11): общее для дома, зимовки, санатория:1
+## src/29c0-rooms-gpu.js · 1 KB
+  · шум для полей комнат: хеш и гладкий шум значений (дом 29d):1
 
 ## src/29d-home-draw.js · 60 KB
   · дом изнутри: кадр:1
@@ -10631,14 +10448,8 @@ zoomTo                       src/15-input.js:358
 ## src/29f-winter.js · 15 KB
   · зимовка: месяц одному:1
 
-## src/29g-winter-draw.js · 51 KB
-  · зимовка: кадр:1
-
 ## src/29h-spa.js · 8 KB
   · санаторий: три дня, и ничего не происходит:1
-
-## src/29i-spa-draw.js · 31 KB
-  · санаторий: веранда:1
 
 ## src/29r-rooms-r3.js · 22 KB
   · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
@@ -10649,8 +10460,11 @@ zoomTo                       src/15-input.js:358
 ## src/29rba-home-shell.js · 10 KB
   · дом снаружи: тело людской грамматики и двор (M850b, стенд M602 — docs/look/nt-home.js):1
 
-## src/29rc-winter-r3.js · 21 KB
+## src/29rc-winter-r3.js · 27 KB
   · зимовка на движке (M850c, docs/DESIGN-rooms.md §4):1
+
+## src/29rd-spa-r3.js · 21 KB
+  · санаторий на движке (M850d, docs/DESIGN-rooms.md §4):1
 
 ## src/29rz-snap-over.js · 1 KB
   · дом на движке — в снимок кадра (Контроль, 15.10):1
@@ -10783,16 +10597,6 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9c-offline.js · 3 KB
 
 ## tests/91zzzw9d-gauge.js · 8 KB
-
-## tests/91zzzw9e-dispatch.js · 11 KB
-
-## tests/91zzzw9f-access.js · 8 KB
-
-## tests/91zzzw9g-firstwatch.js · 5 KB
-
-## tests/91zzzw9h-doors.js · 12 KB
-
-## tests/91zzzw9i-fork.js · 9 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1

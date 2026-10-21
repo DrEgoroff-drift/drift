@@ -65,7 +65,7 @@ A new module `29r-rooms-r3.js` (after `29i`): the canvas `#room3d` (the hall's `
 one for the four modes), the scene cache per room, the camera stations, the breath and the
 glide, the hit rectangles of the room's things published in game pixels for `15-input`
 (anchors projected through `vp`, as the hall's plate does), the switch `ROOM3.on` true by
-default, `?room=0` the old painters until M890. New window kinds in `outside()` (`27f2:206`,
+default, `?room=0` the old painters until M890 (none left for the wintering and the spa: their 2D painters were deleted 22.10, no fallback path; without a GPU the game shows its «no WebGPU» plate). New window kinds in `outside()` (`27f2:206`,
 `C3_VIEW`): `planet` (the planet's sky at the hour as a card baked by `21pz`'s sky once per
 hour), `snow` (the ridge and the blizzard, driven by the wintering's storm), `sea` (the spa's
 `spaSea` ported: waves and the sun's path by the day's slot), `yard` (the home's yard, the
