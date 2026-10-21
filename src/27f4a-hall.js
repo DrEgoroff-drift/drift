@@ -323,7 +323,7 @@ function hallScene(L,cam,t){
   lights.push({p:[-3.4,Math.min(hc-.3,2.85),HALL_B+.75],range:3.6,c:r3Sc(r3Lin(dk?[200,190,170]:[214,224,240]),(dk?.8:1.4)*(1+.35*nk)),spot:1,d:[0,-.8,-.6],cosO:Math.cos(1.05),cosI:Math.cos(.6),vol:0});
   /* бра над полкой за хозяином: второй слой — стена и товар за спиной */
   if(!dk){lights.push({p:HALL_SCONCE,range:3.4+.8*nk,c:r3Sc(r3Lin(mixc(T.key,[255,190,120],.4)),1.5+1.1*nk),vol:0});bulbs.push([...HALL_SCONCE,.3+.2*nk]);}
-  lights.push({p:[5.45,1.22,-1.95],range:2.4,c:r3Sc(key,dk?.8:1.15),vol:.1});bulbs.push([5.45,1.22,-1.95,.35]);
+  lights.push({p:[5.45,1.22,-1.95],range:2.4,c:r3Sc(key,dk?.8:1.15),vol:.1});bulbs.push([5.45,1.22,-1.95,.1]);   /* ореол малый: с линии хода колбу под абажуром видно снизу — был шар в воздухе */
   /* над тарелкой ключа: открытый верх абажура — пятно на потолке и балках вокруг шнура (тела, а не чернота) */
   lights.push({p:[HALL_KEYX+.15,Math.min(hc-.14,ky+.5),.62],range:2.9,c:r3Sc(key,(dk?1.1:.8)*(1+.6*nk)),vol:0});
   /* своё у типа: трубчатые лампы комбината, сварка верфи (идёт по шву — движение, не мигание), лампы рядов */
@@ -379,7 +379,7 @@ function hallTagsDraw(L,cam,sz){
   const ui=(typeof UIK==="number"&&UIK>0)?UIK:1,mv=hallMoving();
   /* поле табличек: на ПК — герой без запаса под ширину таблички, на телефоне — верх полосы над наездом плиты */
   const W=hallWalkOn()?HALL.walk:null,full=!!W&&!W.eng;
-  const xr=full?sz.cw-200*ui:W?(sz.wide?.64*sz.cw-200*ui:sz.cw-170):sz.wide?hallHero(sz.cw)*sz.cw-200*ui:sz.cw-170,yr=full?sz.ch-60*ui:W?(sz.wide?sz.ch-60*ui:sz.ch*.45-8):sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8;
+  const xr=full?sz.cw-200*ui:W?(sz.wide?hallWalkFree(sz.cw)*sz.cw-200*ui:sz.cw-170):sz.wide?hallHero(sz.cw)*sz.cw-200*ui:sz.cw-170,yr=full?sz.ch-60*ui:W?(sz.wide?sz.ch-60*ui:sz.ch*.45-8):sz.wide?sz.ch-60*ui:sz.ch*(24/36)-8;
   const list=mv?[]:full?hallWalkTagList():hallTagList(L,HALL.place),key=list.map(x=>x.t+"/"+x.s).join("|");
   if(box.__key!==key){box.__key=key;box.textContent="";
     for(const g of list){const e=document.createElement("i"),b=document.createElement("b");e.className="ht";b.textContent=g.t;e.appendChild(b);
