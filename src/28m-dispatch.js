@@ -339,7 +339,7 @@ function dispAlarm(force){
   if(!force&&D.al===U.id)return false;
   D.al=U.id;
   const L=dispLeg(U);
-  return hangSay("disp.urg",["СРОЧНО · "+dispMins(U)+" мин",U.txt.split(". ")[0]+(L?" · "+dispSn(L.key):"")],"ship",420,{urg:true,disp:U.id});
+  return hangSay("disp.urg",["СРОЧНО · "+dispMins(U)+" мин",U.txt.split(". ")[0]+(L&&U.txt.split(". ")[0].indexOf(dispSn(L.key))<0?" · "+dispSn(L.key):"")],"ship",420,{urg:true,disp:U.id});
 }
 /* табличка гаснет, когда её срочного больше нет: сдано, просрочено или сменилось другим */
 function dispAlarmOff(){
