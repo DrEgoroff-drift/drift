@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 631 · top-level symbols: 8927
+Files: 631 · top-level symbols: 8943
 
 ## SYMBOLS
 
@@ -93,7 +93,7 @@ AVR_HOLD                     src/21a6-base-avral.js:21
 AVR_KINDS                    src/21a6-base-avral.js:24-28
 AVR_NEAR                     src/21a6-base-avral.js:22
 AVR_TIME                     src/21a6-base-avral.js:20
-B3                           src/29rd-spa-r3.js:138
+B3                           src/29rd-spa-r3.js:144
 BANYA_EVERY                  src/21ac1-base-banya.js:19
 BARGE_ART                    src/12l-barge.js:414
 BARGE_CAP                    src/12l-barge.js:13
@@ -247,8 +247,9 @@ CAST_MAXD                    src/19c1-cast.js:44
 CAST_MIN_ALT                 src/19c1-cast.js:46
 CAST_SOFT                    src/19c1-cast.js:45
 CAVE3                        src/22d-cave-pln.js:12
+CAVE3_AHEAD                  src/22d-cave-pln.js:121
 CAVE3_AMB_THREAD             src/22de-cave-pln-far.js:144
-CAVE3_BLOOM                  src/22d-cave-pln.js:310
+CAVE3_BLOOM                  src/22d-cave-pln.js:336
 CAVE3_CH                     src/22da-cave-pln-rock.js:17
 CAVE3_CUT                    src/22da-cave-pln-rock.js:32
 CAVE3_DC                     src/22dc-cave-pln-dress.js:11
@@ -262,25 +263,25 @@ CAVE3_FIELD0                 src/22de-cave-pln-far.js:55
 CAVE3_FOOT_Z                 src/22dg-cave-pln-life.js:16
 CAVE3_GAP                    src/22dh-cave-pln-gap.js:7
 CAVE3_GPU                    src/22db-cave-pln-light.js:8
-CAVE3_HUD                    src/22d-cave-pln.js:425
-CAVE3_INK                    src/22da-cave-pln-rock.js:228
+CAVE3_HUD                    src/22d-cave-pln.js:451
+CAVE3_INK                    src/22da-cave-pln-rock.js:261
 CAVE3_INKS                   src/22df-cave-pln-ink.js:9
 CAVE3_K                      src/22db-cave-pln-light.js:11
 CAVE3_LAKE                   src/22dd-cave-pln-lake.js:9
-CAVE3_LAMP                   src/22d-cave-pln.js:268
+CAVE3_LAMP                   src/22d-cave-pln.js:294
 CAVE3_LENS                   src/22d-cave-pln.js:16
 CAVE3_LIFE                   src/22dg-cave-pln-life.js:6
-CAVE3_MAT                    src/22da-cave-pln-rock.js:369
-CAVE3_OLD_DRAW               src/22d-cave-pln.js:291
-CAVE3_OLD_ENTER              src/22d-cave-pln.js:417
-CAVE3_OLD_EXIT               src/22d-cave-pln.js:318
-CAVE3_OLD_FLOOR              src/22d-cave-pln.js:426
-CAVE3_OLD_HSURF              src/22d-cave-pln.js:349
-CAVE3_OLD_HUD                src/22d-cave-pln.js:435
-CAVE3_OLD_NAV                src/22d-cave-pln.js:312
+CAVE3_MAT                    src/22da-cave-pln-rock.js:402
+CAVE3_OLD_DRAW               src/22d-cave-pln.js:317
+CAVE3_OLD_ENTER              src/22d-cave-pln.js:443
+CAVE3_OLD_EXIT               src/22d-cave-pln.js:344
+CAVE3_OLD_FLOOR              src/22d-cave-pln.js:452
+CAVE3_OLD_HSURF              src/22d-cave-pln.js:375
+CAVE3_OLD_HUD                src/22d-cave-pln.js:461
+CAVE3_OLD_NAV                src/22d-cave-pln.js:338
 CAVE3_STY                    src/22da-cave-pln-rock.js:20-28
-CAVE3_VAULT                  src/22da-cave-pln-rock.js:145
-CAVE3_W                      src/22d-cave-pln.js:332
+CAVE3_VAULT                  src/22da-cave-pln-rock.js:178
+CAVE3_W                      src/22d-cave-pln.js:358
 CAVE3_WG                     src/22di-cave-pln-wing.js:6
 CAVE3_WGSL_COMMON            src/22dbw-cave-pln-wgsl.js:8
 CAVE3_WGSL_POST              src/22dbx-cave-pln-post.js:4
@@ -303,7 +304,7 @@ CAVE_MUL_WGSL                src/22c-cave-gpu.js:68
 CAVE_NX                      src/22-mode-cave.js:14
 CAVE_OWN_WGSL                src/22c-cave-gpu.js:116
 CAVE_PPM                     src/22da-cave-pln-rock.js:16
-CAVE_PRE_N                   src/22d-cave-pln.js:113
+CAVE_PRE                     src/22d-cave-pln.js:116
 CAVE_ROOM_OLD_ENTER          src/21pigz-cave-room.js:35
 CAVE_W                       src/22-mode-cave.js:11
 CAVE_WALL_X0                 src/22-mode-cave.js:13
@@ -399,6 +400,7 @@ COSM_TRAIL                   src/12va-wander-cosm.js:32-37
 COSM_VISOR                   src/12va-wander-cosm.js:44-48
 COUNTY_LVL                   src/11l-county.js:20
 CPP                          src/27f5-portrait3d.js:13
+CPP_FLUSH_N                  src/27f5-portrait3d.js:32
 CPP_IO                       src/27f5-portrait3d.js:19
 CPP_LIVE                     src/27f5-portrait3d.js:18
 CPR                          src/27f3a-face3d.js:57
@@ -408,11 +410,11 @@ CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_JOBS                      src/27f3-person3d.js:301
-CP_KIT                       src/27f3-person3d.js:120
-CP_MESH                      src/27f3-person3d.js:285
+CP_JOBS                      src/27f3-person3d.js:304
+CP_KIT                       src/27f3-person3d.js:122
+CP_MESH                      src/27f3-person3d.js:287
 CP_TEMPER                    src/27f6-face-live.js:25
-CP_TORSO                     src/27f3-person3d.js:91
+CP_TORSO                     src/27f3-person3d.js:93
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
@@ -506,7 +508,8 @@ DIG3_OLD_WALK                src/23c-dig-pln.js:269
 DIG3_PLANT_GROUP             src/23cd-dig-pln-top.js:148
 DIG3_PPM                     src/23ca-dig-pln-rock.js:17
 DIG3_ROOM                    src/23ca-dig-pln-rock.js:20
-DIG3_SEG                     src/23cb-dig-pln-dress.js:15
+DIG3_SEAM                    src/23cb-dig-pln-dress.js:99
+DIG3_SEG                     src/23cb-dig-pln-dress.js:16
 DIG3_SHAFT                   src/23c-dig-pln.js:101
 DIG3_TOP                     src/23cd-dig-pln-top.js:13
 DIG3_TOP_DRAWSURF            src/23cd-dig-pln-top.js:372
@@ -515,7 +518,7 @@ DIG3_TOP_EXIT                src/23cd-dig-pln-top.js:360
 DIG3_TOP_MINE                src/23cd-dig-pln-top.js:199
 DIG3_TOP_SURF                src/23cd-dig-pln-top.js:351
 DIG3_TOP_WGSL                src/23cd-dig-pln-top.js:261
-DIG3_TUB                     src/23cb-dig-pln-dress.js:94
+DIG3_TUB                     src/23cb-dig-pln-dress.js:159
 DIG3_VZ                      src/23ca-dig-pln-rock.js:73
 DIG3_Z                       src/23c-dig-pln.js:15
 DIG_CELL                     src/23-mode-dig.js:3
@@ -962,7 +965,7 @@ H3D_CARGO                    src/17c2a-hull3d.js:23
 H3D_L                        src/17c2a-hull3d.js:17
 H3D_LZ                       src/17c2a-hull3d.js:19
 H3D_MK                       src/17c2a-hull3d.js:22
-H3D_PIR                      src/17c2a-hull3d.js:446
+H3D_PIR                      src/17c2a-hull3d.js:450
 H3D_RING                     src/17c2a-hull3d.js:20
 H3D_SIDES                    src/17c2a-hull3d.js:18
 H3D_WGSL                     src/17c2a-hull3d.js:218
@@ -990,6 +993,7 @@ HALL_DIAL_KEY                src/27f4g-hall-instr.js:27
 HALL_DRESS                   src/27f4b-hall-dress.js:235-341
 HALL_F                       src/27f4a-hall.js:30
 HALL_FCUT                    src/27f4a-hall.js:31
+HALL_FW                      src/27f4a-hall.js:467
 HALL_GOODS                   src/27f4e-hall-goods.js:6
 HALL_GOODS_ACC               src/27f4e-hall-goods.js:12
 HALL_HERO                    src/27f4a-hall.js:32
@@ -1004,7 +1008,7 @@ HALL_INSTR_X0                src/27f4g-hall-instr.js:33
 HALL_KEYX                    src/27f4a-hall.js:55
 HALL_L                       src/27f4a-hall.js:29
 HALL_LENS                    src/27f4e-hall-goods.js:57
-HALL_M                       src/27f4a-hall.js:246
+HALL_M                       src/27f4a-hall.js:250
 HALL_MAP                     src/27f4i-hall-hold.js:8
 HALL_N                       src/21a4-base-adj.js:28
 HALL_ORB_N                   src/27f4c-hall-sky.js:14
@@ -1014,7 +1018,7 @@ HALL_PLACES                  src/27f4l-hall-walk.js:19-36
 HALL_POWER                   src/21a4-base-adj.js:29
 HALL_PRE                     src/27f4a-hall.js:188
 HALL_PROP_C                  src/27f4d-hall-props.js:7
-HALL_PX                      src/27f4a-hall.js:403
+HALL_PX                      src/27f4a-hall.js:409
 HALL_RIG                     src/27f4j-hall-pilot.js:9
 HALL_RIG_POSE                src/27f4j-hall-pilot.js:11-34
 HALL_RIG_SEAT                src/27f4j-hall-pilot.js:17
@@ -1023,7 +1027,7 @@ HALL_SEAT_PILOT              src/27f4a-hall.js:45
 HALL_SGN                     src/27f4a-hall.js:52
 HALL_SHARP                   src/27f4a-hall.js:94
 HALL_SHEET                   src/27f4h-hall-board.js:17-24
-HALL_STALLS                  src/27f4a-hall.js:243
+HALL_STALLS                  src/27f4a-hall.js:247
 HALL_STRIP                   src/27f4a-hall.js:33
 HALL_TYPES                   src/27f4a-hall.js:59-67
 HALL_WALK_D                  src/27f4l-hall-walk.js:17
@@ -1031,7 +1035,7 @@ HALL_WALK_POV                src/27f4l-hall-walk.js:95
 HALL_WALK_Q                  src/27f4l-hall-walk.js:30
 HALL_WALK_SPOT               src/27f4l-hall-walk.js:94
 HALL_WALK_V                  src/27f4l-hall-walk.js:16
-HALL_WIN                     src/27f4a-hall.js:357
+HALL_WIN                     src/27f4a-hall.js:361
 HALL_WIN_FW                  src/27f4b-hall-dress.js:24
 HALL_WORK                    src/27f4a-hall.js:43
 HALL_WZ                      src/27f4l-hall-walk.js:15
@@ -1715,7 +1719,7 @@ PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:207
 PLN_OLD_HUD2                 src/21pzb-pln-words.js:100
 PLN_OLD_LANDING              src/21pza-pln-descent.js:221
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:437
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:439
 PLN_OLD_ULAND                src/21pza-pln-descent.js:212
 PLN_OVER                     src/21pj-pln-over.js:16
 PLN_OWN_GATE_R               src/21pig-pln-own.js:408
@@ -1826,7 +1830,7 @@ R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
 R3_DOWN_WGSL                 src/27f2-room3d.js:515
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:669
+R3_POST_WGSL                 src/27f2-room3d.js:675
 R3_UN                        src/27f2-room3d.js:30
 R3_WGSL                      src/27f2-room3d.js:156
 RACK                         src/25d-instr-rack.js:44
@@ -2186,7 +2190,7 @@ SOC_REVOLT                   src/12ay-fx-soc.js:14
 SOC_STRIKE                   src/12ay-fx-soc.js:11
 SPA3                         src/29rd-spa-r3.js:18
 SPA3_BD                      src/29rd-spa-r3.js:24
-SPA3_CAMS                    src/29rd-spa-r3.js:171
+SPA3_CAMS                    src/29rd-spa-r3.js:177
 SPA3_DAYMS                   src/29rd-spa-r3.js:20
 SPA3_L                       src/29rd-spa-r3.js:19
 SPA3_M                       src/29rd-spa-r3.js:22
@@ -3119,19 +3123,19 @@ cave3AmberGeo                src/22de-cave-pln-far.js:145-167
 cave3Band                    src/22dc-cave-pln-dress.js:61-86
 cave3BeastZ                  src/22dg-cave-pln-life.js:30
 cave3Bells                   src/22dc-cave-pln-dress.js:133-167
-cave3Biter                   src/22d-cave-pln.js:406-415
+cave3Biter                   src/22d-cave-pln.js:432-441
 cave3Caps                    src/22dc-cave-pln-dress.js:91-130
-cave3Chunk                   src/22da-cave-pln-rock.js:256-367
-cave3Chunks                  src/22da-cave-pln-rock.js:372-398
+cave3Chunk                   src/22da-cave-pln-rock.js:289-400
+cave3Chunks                  src/22da-cave-pln-rock.js:405-431
 cave3Cluster                 src/22dc-cave-pln-dress.js:245-253
 cave3Column                  src/22dc-cave-pln-dress.js:202-214
 cave3Cream                   src/22dc-cave-pln-dress.js:51-58
 cave3Crystal                 src/22dc-cave-pln-dress.js:241-244
 cave3DayBox                  src/22db-cave-pln-light.js:22-33
-cave3Den                     src/22da-cave-pln-rock.js:181-206
+cave3Den                     src/22da-cave-pln-rock.js:214-239
 cave3DiveFrame               src/22d-cave-pln.js:53-58
 cave3DiveW                   src/22d-cave-pln.js:49
-cave3Down                    src/22da-cave-pln-rock.js:208-214
+cave3Down                    src/22da-cave-pln-rock.js:241-247
 cave3DressBin                src/22dc-cave-pln-dress.js:316-379
 cave3DressCryst              src/22dc-cave-pln-dress.js:381-400
 cave3DressFrame              src/22dc-cave-pln-dress.js:402-445
@@ -3147,10 +3151,13 @@ cave3FarSeen                 src/22d-cave-pln.js:83
 cave3FarShift                src/22d-cave-pln.js:84-93
 cave3FarSite                 src/22de-cave-pln-far.js:12-31
 cave3FarVoid                 src/22de-cave-pln-far.js:34-48
-cave3Field                   src/22da-cave-pln-rock.js:50-125
-cave3Floor                   src/22da-cave-pln-rock.js:217-226
+cave3Field                   src/22da-cave-pln-rock.js:53-59
+cave3FieldGen                src/22da-cave-pln-rock.js:71-158
+cave3FieldJob                src/22da-cave-pln-rock.js:60-63
+cave3FieldStep               src/22da-cave-pln-rock.js:65-70
+cave3Floor                   src/22da-cave-pln-rock.js:250-259
 cave3Flute                   src/22dc-cave-pln-dress.js:169-181
-cave3Frame                   src/22d-cave-pln.js:128-265
+cave3Frame                   src/22d-cave-pln.js:154-291
 cave3GapBuild                src/22dh-cave-pln-gap.js:52-57
 cave3GapDeep                 src/22dh-cave-pln-gap.js:59-63
 cave3GapIce                  src/22dh-cave-pln-gap.js:152-179
@@ -3168,7 +3175,7 @@ cave3GpuTier                 src/22db-cave-pln-light.js:89-107
 cave3H3                      src/22da-cave-pln-rock.js:35-39
 cave3Hang                    src/22dc-cave-pln-dress.js:183-191
 cave3Hex                     src/22da-cave-pln-rock.js:30
-cave3InFrame                 src/22d-cave-pln.js:340
+cave3InFrame                 src/22d-cave-pln.js:366
 cave3InkBuild                src/22df-cave-pln-ink.js:61-146
 cave3InkItems                src/22df-cave-pln-ink.js:15-58
 cave3InkSolid                src/22df-cave-pln-ink.js:12
@@ -3188,23 +3195,24 @@ cave3Mouth                   src/22d-cave-pln.js:96-101
 cave3N3                      src/22da-cave-pln-rock.js:40-47
 cave3NearShift               src/22dg-cave-pln-life.js:109-118
 cave3Nrm                     src/22dc-cave-pln-dress.js:40-43
-cave3Over                    src/22d-cave-pln.js:274-288
-cave3Paint                   src/22da-cave-pln-rock.js:229-249
+cave3Over                    src/22d-cave-pln.js:300-314
+cave3Paint                   src/22da-cave-pln-rock.js:262-282
 cave3Persp                   src/22db-cave-pln-light.js:16-20
 cave3PipeDescs               src/22db-cave-pln-light.js:54-75
 cave3PipeKey                 src/22db-cave-pln-light.js:76
-cave3Pj                      src/22d-cave-pln.js:335-339
+cave3PipesAhead              src/22d-cave-pln.js:122-136
+cave3Pj                      src/22d-cave-pln.js:361-365
 cave3PlantZs                 src/22dg-cave-pln-life.js:26-29
 cave3PostWgsl                src/22db-cave-pln-light.js:52
 cave3Reach                   src/22d-cave-pln.js:62
-cave3Samp                    src/22da-cave-pln-rock.js:127-132
-cave3Sd                      src/22da-cave-pln-rock.js:134-137
-cave3Spots                   src/22d-cave-pln.js:342-348
+cave3Samp                    src/22da-cave-pln-rock.js:160-165
+cave3Sd                      src/22da-cave-pln-rock.js:167-170
+cave3Spots                   src/22d-cave-pln.js:368-374
 cave3StyKind                 src/22da-cave-pln-rock.js:26-28
 cave3Up                      src/22dc-cave-pln-dress.js:32-38
-cave3VaultCut                src/22da-cave-pln-rock.js:146
-cave3VaultLift               src/22da-cave-pln-rock.js:175-179
-cave3VaultPlan               src/22da-cave-pln-rock.js:147-174
+cave3VaultCut                src/22da-cave-pln-rock.js:179
+cave3VaultLift               src/22da-cave-pln-rock.js:208-212
+cave3VaultPlan               src/22da-cave-pln-rock.js:180-207
 cave3Veil                    src/22dc-cave-pln-dress.js:217-239
 cave3VeinBody                src/22dc-cave-pln-dress.js:283-314
 cave3WallZ                   src/22dh-cave-pln-gap.js:44-50
@@ -3213,7 +3221,7 @@ cave3WingCone                src/22di-cave-pln-wing.js:25-37
 cave3WingFrame               src/22di-cave-pln-wing.js:80-120
 cave3WingFree                src/22di-cave-pln-wing.js:76
 cave3WingItems               src/22di-cave-pln-wing.js:10-22
-cave3WordsOn                 src/22d-cave-pln.js:333
+cave3WordsOn                 src/22d-cave-pln.js:359
 cave3Zd                      src/22dc-cave-pln-dress.js:45-48
 caveBody                     src/21e1-surface-world.js:543-592
 caveBoxFree                  src/22-mode-cave.js:249-253
@@ -3257,7 +3265,7 @@ caveScanUp                   src/22-mode-cave.js:55-60
 caveSmoothPath               src/22b-cave-props.js:27-102
 caveSolidAt                  src/22-mode-cave.js:43-47
 caveStamp                    src/22-mode-cave.js:92-104
-caveTick                     src/22d-cave-pln.js:114-127
+caveTick                     src/22d-cave-pln.js:137-153
 caveTip                      src/22a-cave-deco.js:233-240
 caveVault                    src/22a-cave-deco.js:64-70
 caveWet                      src/22a-cave-deco.js:88-91
@@ -3549,11 +3557,11 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:105-113
-cpBasis                      src/27f3-person3d.js:83-87
+cpBand                       src/27f3-person3d.js:107-115
+cpBasis                      src/27f3-person3d.js:85-89
 cpBeard                      src/27f3a-face3d.js:381-396
-cpBody                       src/27f3-person3d.js:122
-cpBodyGen                    src/27f3-person3d.js:123-282
+cpBody                       src/27f3-person3d.js:124
+cpBodyGen                    src/27f3-person3d.js:125-284
 cpCloth                      src/27f3-person3d.js:46-51
 cpClump                      src/27f3a-face3d.js:372-379
 cpEmoMix                     src/27f6-face-live.js:56-58
@@ -3569,30 +3577,30 @@ cpHead                       src/27f3a-face3d.js:184
 cpHeadAI                     src/27f3a-face3d.js:398-408
 cpHeadFn                     src/27f3a-face3d.js:18-52
 cpHeadGen                    src/27f3a-face3d.js:185-285
-cpMesh                       src/27f3-person3d.js:293-299
-cpMeshKey                    src/27f3-person3d.js:286-288
-cpMeshPump                   src/27f3-person3d.js:302-314
-cpMeshPut                    src/27f3-person3d.js:289-292
+cpMesh                       src/27f3-person3d.js:296-302
+cpMeshKey                    src/27f3-person3d.js:288-290
+cpMeshPump                   src/27f3-person3d.js:305-317
+cpMeshPut                    src/27f3-person3d.js:291-295
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
-cpPose                       src/27f3-person3d.js:53-81
+cpPose                       src/27f3-person3d.js:53-83
 cpRig                        src/27f3a-face3d.js:412-434
 cpRun                        src/27f3a-face3d.js:183
 cpSculpt                     src/27f3a-face3d.js:81-158
 cpSkin                       src/27f3a-face3d.js:160-163
 cpSkinZ                      src/27f3a-face3d.js:165
 cpTeeth                      src/27f3a-face3d.js:168-180
-cpTorsoAt                    src/27f3-person3d.js:94-103
+cpTorsoAt                    src/27f3-person3d.js:96-105
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
 cpWarpTh                     src/27f3a-face3d.js:68
-cppBackdrop                  src/27f5-portrait3d.js:49-55
-cppFlush                     src/27f5-portrait3d.js:30-35
-cppPaint                     src/27f5-portrait3d.js:87-102
-cppScene                     src/27f5-portrait3d.js:56-84
-cppTick                      src/27f5-portrait3d.js:37-47
+cppBackdrop                  src/27f5-portrait3d.js:59-65
+cppFlush                     src/27f5-portrait3d.js:33-45
+cppPaint                     src/27f5-portrait3d.js:98-117
+cppScene                     src/27f5-portrait3d.js:66-94
+cppTick                      src/27f5-portrait3d.js:47-57
 cppVisible                   src/27f5-portrait3d.js:21
-cppX                         src/27f5-portrait3d.js:86
+cppX                         src/27f5-portrait3d.js:96
 craftAffordable              src/03-ships.js:110-114
 craftAmmo                    src/16b-missile.js:61-71
 craftPart                    src/03-ships.js:115-124
@@ -3821,15 +3829,15 @@ dig3BeastDrop                src/23ce-dig-pln-beasts.js:25-32
 dig3BeastFrame               src/23ce-dig-pln-beasts.js:35-73
 dig3BeastGeo                 src/23ce-dig-pln-beasts.js:13-18
 dig3Box                      src/23c-dig-pln.js:48-52
-dig3CageBody                 src/23cb-dig-pln-dress.js:121-144
-dig3CageMesh                 src/23cb-dig-pln-dress.js:116-119
+dig3CageBody                 src/23cb-dig-pln-dress.js:247-265
+dig3CageMesh                 src/23cb-dig-pln-dress.js:242-245
 dig3Chunk                    src/23ca-dig-pln-rock.js:179-274
 dig3Chunks                   src/23ca-dig-pln-rock.js:278-318
 dig3Den                      src/23ca-dig-pln-rock.js:93-112
-dig3DepthBoard               src/23cb-dig-pln-dress.js:16-33
+dig3DepthBoard               src/23cb-dig-pln-dress.js:17-34
 dig3Dir                      src/23c-dig-pln.js:38-42
-dig3DressFrame               src/23cb-dig-pln-dress.js:162-189
-dig3DressMesh                src/23cb-dig-pln-dress.js:34-91
+dig3DressFrame               src/23cb-dig-pln-dress.js:283-310
+dig3DressMesh                src/23cb-dig-pln-dress.js:35-93
 dig3Dug                      src/23ca-dig-pln-rock.js:24
 dig3EyesMesh                 src/23ce-dig-pln-beasts.js:20-24
 dig3Field                    src/23ca-dig-pln-rock.js:31-60
@@ -3841,21 +3849,23 @@ dig3HandU                    src/23cd-dig-pln-top.js:60-65
 dig3Hash                     src/23ca-dig-pln-rock.js:23
 dig3HeadBody                 src/23c-dig-pln.js:59-93
 dig3HeadMesh                 src/23c-dig-pln.js:53-56
-dig3HeapMesh                 src/23cb-dig-pln-dress.js:96-107
-dig3HeapTint                 src/23cb-dig-pln-dress.js:109-114
+dig3HeapMesh                 src/23cb-dig-pln-dress.js:222-233
+dig3HeapTint                 src/23cb-dig-pln-dress.js:235-240
+dig3Hex                      src/23cb-dig-pln-dress.js:161-167
 dig3Land                     src/23ca-dig-pln-rock.js:65-71
 dig3Lens                     src/23c-dig-pln.js:20-27
 dig3LensMk                   src/23cd-dig-pln-top.js:51-54
 dig3LensOf                   src/23cd-dig-pln-top.js:55-59
 dig3ManShare                 src/23c-dig-pln.js:29
 dig3Nodes                    src/23ca-dig-pln-rock.js:114-125
+dig3OreSeams                 src/23cb-dig-pln-dress.js:100-156
 dig3Over                     src/23c-dig-pln.js:228-245
 dig3Paint                    src/23ca-dig-pln-rock.js:127-166
 dig3PanX                     src/23c-dig-pln.js:32-36
 dig3PlantView                src/23cd-dig-pln-top.js:159-180
 dig3RibView                  src/23cd-dig-pln-top.js:98-121
-dig3RopeMesh                 src/23cb-dig-pln-dress.js:146-151
-dig3RopeSet                  src/23cb-dig-pln-dress.js:152-159
+dig3RopeMesh                 src/23cb-dig-pln-dress.js:267-272
+dig3RopeSet                  src/23cb-dig-pln-dress.js:273-280
 dig3ShaftK                   src/23c-dig-pln.js:103
 dig3ShaftLight               src/23c-dig-pln.js:104-119
 dig3Smax                     src/23ca-dig-pln-rock.js:28
@@ -3877,6 +3887,7 @@ dig3TopPost                  src/23cd-dig-pln-top.js:340-348
 dig3TopPre                   src/23cd-dig-pln-top.js:217-258
 dig3TopSkirt                 src/23cd-dig-pln-top.js:133-146
 dig3TopTab                   src/23cd-dig-pln-top.js:28-33
+dig3TubBody                  src/23cb-dig-pln-dress.js:170-219
 dig3Void                     src/23ca-dig-pln-rock.js:74-91
 dig3ZapRing                  src/23ce-dig-pln-beasts.js:76-82
 digBedding                   src/23aa-dig-rock.js:118-145
@@ -4965,13 +4976,13 @@ h3dKit                       src/17c2a-hull3d.js:28-91
 h3dMesh                      src/17c2a-hull3d.js:102-199
 h3dPack                      src/17c2a-hull3d.js:93-99
 h3dParts                     src/17c2b-parts3d.js:158-353
-h3dPirMesh                   src/17c2a-hull3d.js:447-503
-h3dPirate                    src/17c2a-hull3d.js:505-508
-h3dRun                       src/17c2a-hull3d.js:369-427
+h3dPirMesh                   src/17c2a-hull3d.js:451-507
+h3dPirate                    src/17c2a-hull3d.js:509-512
+h3dRun                       src/17c2a-hull3d.js:369-431
 h3dStationMesh               src/17c2g-body-station.js:97-129
 h3dStockGear                 src/17c2b-parts3d.js:374-383
 h3dStudioPt                  src/17c2a-hull3d.js:363-367
-h3dStudioRT                  src/17c2a-hull3d.js:430-440
+h3dStudioRT                  src/17c2a-hull3d.js:434-444
 hailAnger                    src/12ar-hail.js:91-114
 hailAnswer                   src/12ar-hail.js:179-206
 hailBlockade                 src/12ar-hail.js:58-60
@@ -5005,22 +5016,24 @@ hallBones                    src/27f4b-hall-dress.js:70-179
 hallCage                     src/27f4d-hall-props.js:38-47
 hallCam                      src/27f4a-hall.js:111-117
 hallCamFr                    src/27f4l-hall-walk.js:122-125
-hallCantPrep                 src/27f4a-hall.js:209-231
-hallCanvas                   src/27f4a-hall.js:394-400
+hallCantPrep                 src/27f4a-hall.js:213-235
+hallCanvas                   src/27f4a-hall.js:400-406
 hallClk                      src/27f4k-hall-phone.js:25
-hallClose                    src/27f4a-hall.js:429-436
+hallClose                    src/27f4a-hall.js:435-443
 hallClutter                  src/27f4d-hall-props.js:56-111
 hallCord                     src/27f4b-hall-dress.js:43
 hallCostWrap                 src/27f4k-hall-phone.js:40
 hallCrate                    src/27f4b-hall-dress.js:64
-hallCrop                     src/27f4a-hall.js:418
+hallCrop                     src/27f4a-hall.js:424
 hallDialSvg                  src/27f4g-hall-instr.js:164-260
 hallDoor                     src/27f4a-hall.js:119-122
-hallDpr                      src/27f4a-hall.js:404
-hallDrawW                    src/27f4a-hall.js:407
+hallDpr                      src/27f4a-hall.js:410
+hallDrawW                    src/27f4a-hall.js:413
 hallDrum                     src/27f4b-hall-dress.js:66
 hallEase                     src/27f4a-hall.js:123
-hallFrame                    src/27f4a-hall.js:463-499
+hallFleetList                src/27f4a-hall.js:468-477
+hallFleetWarm                src/27f4a-hall.js:478-481
+hallFrame                    src/27f4a-hall.js:494-530
 hallGlideAt                  src/27f4a-hall.js:125-129
 hallGlint                    src/27f4b-hall-dress.js:35-41
 hallGo                       src/27f4a-hall.js:132-136
@@ -5059,25 +5072,26 @@ hallInstrPose                src/27f4g-hall-instr.js:160
 hallInstrUp                  src/27f4g-hall-instr.js:147-151
 hallInstrXf                  src/27f4g-hall-instr.js:153-159
 hallKeyY                     src/27f4a-hall.js:99
-hallLamps                    src/27f4a-hall.js:247-352
+hallLamps                    src/27f4a-hall.js:251-356
 hallLayout                   src/27f4a-hall.js:140-182
 hallLens                     src/27f4e-hall-goods.js:88-93
 hallLensAim                  src/27f4e-hall-goods.js:75-86
 hallLensMoving               src/27f4e-hall-goods.js:72
 hallLensStep                 src/27f4e-hall-goods.js:67-71
 hallLensWant                 src/27f4e-hall-goods.js:59-65
-hallLimits                   src/27f4a-hall.js:360-363
-hallLoop                     src/27f4a-hall.js:452-461
+hallLimits                   src/27f4a-hall.js:366-369
+hallLoop                     src/27f4a-hall.js:482-492
 hallLum                      src/27f4a-hall.js:139
 hallManK                     src/27f4a-hall.js:97
-hallManMark                  src/27f4a-hall.js:355
+hallManMark                  src/27f4a-hall.js:359
+hallMeshParts                src/27f4a-hall.js:365
 hallMix3                     src/27f4a-hall.js:82
 hallMoving                   src/27f4a-hall.js:130
-hallMsgEther                 src/27f4a-hall.js:447-451
+hallMsgEther                 src/27f4a-hall.js:459-463
 hallNavOn                    src/27f4k-hall-phone.js:6-9
 hallNavSync                  src/27f4k-hall-phone.js:10-16
 hallNight                    src/27f4a-hall.js:85-89
-hallOpen                     src/27f4a-hall.js:419-428
+hallOpen                     src/27f4a-hall.js:425-434
 hallOrbBake                  src/27f4c-hall-sky.js:37-59
 hallOrbPlace                 src/27f4c-hall-sky.js:31-36
 hallOrbUp                    src/27f4c-hall-sky.js:61-72
@@ -5088,28 +5102,29 @@ hallPlacesHere               src/27f4l-hall-walk.js:38-41
 hallPlanet                   src/27f4c-hall-sky.js:16-21
 hallPlanetTone               src/27f4c-hall-sky.js:24-28
 hallPlate                    src/27f4d-hall-props.js:31-35
-hallPrepStep                 src/27f4a-hall.js:189-205
-hallPrepTick                 src/27f4a-hall.js:233-241
+hallPrepStep                 src/27f4a-hall.js:189-209
+hallPrepTick                 src/27f4a-hall.js:237-245
 hallR                        src/27f4a-hall.js:103
+hallRelease                  src/27f4a-hall.js:444-448
 hallRigDrop                  src/27f4j-hall-pilot.js:46
 hallRigMesh                  src/27f4j-hall-pilot.js:20-34
 hallRigPose                  src/27f4j-hall-pilot.js:36-45
 hallRoomMesh                 src/27f4b-hall-dress.js:343-350
 hallSack                     src/27f4b-hall-dress.js:59
-hallScene                    src/27f4a-hall.js:249-352
+hallScene                    src/27f4a-hall.js:253-356
 hallShade                    src/27f4b-hall-dress.js:46-57
 hallShipCard                 src/27f4f-hall-yard.js:9-15
 hallShipList                 src/27f4f-hall-yard.js:17-21
 hallSiteW                    src/27f4i-hall-hold.js:109-116
-hallSize                     src/27f4a-hall.js:409-416
+hallSize                     src/27f4a-hall.js:415-422
 hallSm                       src/27f4a-hall.js:83
 hallSmudge                   src/27f4d-hall-props.js:49-55
 hallStencil                  src/27f4e-hall-goods.js:14
 hallStool                    src/27f4d-hall-props.js:10-18
 hallT                        src/27f4a-hall.js:100
-hallTab                      src/27f4a-hall.js:438-444
-hallTagList                  src/27f4a-hall.js:367-376
-hallTagsDraw                 src/27f4a-hall.js:377-391
+hallTab                      src/27f4a-hall.js:450-456
+hallTagList                  src/27f4a-hall.js:373-382
+hallTagsDraw                 src/27f4a-hall.js:383-397
 hallTradeLine                src/27f4l-hall-walk.js:224-228
 hallWalkBack                 src/27f4l-hall-walk.js:159-162
 hallWalkCam                  src/27f4l-hall-walk.js:135-148
@@ -5135,7 +5150,7 @@ hallWalkTo                   src/27f4l-hall-walk.js:77-82
 hallWalkUi                   src/27f4l-hall-walk.js:210-216
 hallWall                     src/27f4b-hall-dress.js:16-21
 hallWide                     src/27f4a-hall.js:108
-hallWinY                     src/27f4a-hall.js:358
+hallWinY                     src/27f4a-hall.js:362
 hallWindow                   src/27f4b-hall-dress.js:25-32
 hallWorkY                    src/27f4a-hall.js:44
 hallYardFit                  src/27f4f-hall-yard.js:24-33
@@ -5973,8 +5988,8 @@ mapGridDraw                  src/18a-map-addr.js:55-66
 mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHintHung                  src/18l-map-plate.js:37
 mapHit                       src/18-mode-map.js:65-105
-mapHoldingsDraw              src/18b-map-hold.js:109-206
-mapHoldingsTop               src/18b-map-hold.js:208-248
+mapHoldingsDraw              src/18b-map-hold.js:109-212
+mapHoldingsTop               src/18b-map-hold.js:214-254
 mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:56
 mapInkPoly                   src/18-mode-map.js:54
@@ -7066,7 +7081,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:92
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:335-434
+plnSurface                   src/21pz-pln-frame.js:337-436
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -7103,7 +7118,7 @@ plnTreeWorldW                src/21pgd-pln-wild.js:81
 plnTri                       src/21pa-pln-mesh.js:23-26
 plnTube                      src/21pa-pln-mesh.js:120-151
 plnVert                      src/21pa-pln-mesh.js:16-22
-plnWarmStep                  src/21pz-pln-frame.js:301-334
+plnWarmStep                  src/21pz-pln-frame.js:301-336
 plnWaterEye                  src/21pw-pln-water.js:250
 plnWaterGrid                 src/21pw-pln-water.js:257-265
 plnWaterMirror               src/21pw-pln-water.js:238-248
@@ -7287,7 +7302,7 @@ r3Desc                       src/27f2-room3d.js:537-543
 r3Dev                        src/27f2-room3d.js:560-578
 r3DownDesc                   src/27f2-room3d.js:552-556
 r3Drop                       src/27f2-room3d.js:585
-r3Frame                      src/27f2-room3d.js:600-666
+r3Frame                      src/27f2-room3d.js:627-672
 r3Free                       src/27f2-room3d.js:587
 r3Kit                        src/27f2-room3d.js:66-153
 r3Lin                        src/27f2-room3d.js:35
@@ -7302,6 +7317,7 @@ r3Sc                         src/27f2-room3d.js:37
 r3ShDesc                     src/27f2-room3d.js:544-549
 r3ShadowVP                   src/27f2-room3d.js:589-594
 r3Step                       src/27f2-room3d.js:38
+r3Targets                    src/27f2-room3d.js:601-626
 r3Up                         src/27f2-room3d.js:580-584
 r3VB                         src/27f2-room3d.js:550
 r3Xf                         src/27f2-room3d.js:49-153
@@ -8169,27 +8185,27 @@ socStrikeHere                src/12ay-fx-soc.js:40-43
 socWageMul                   src/12ay-fx-soc.js:35
 socWeek                      src/12al4-soc.js:38
 socWeekTick                  src/12al4-soc.js:94-100
-spa3Board                    src/29rd-spa-r3.js:141-157
-spa3BoardGrid                src/29rd-spa-r3.js:158
-spa3Cam                      src/29rd-spa-r3.js:173-180
-spa3Canvas                   src/29rd-spa-r3.js:162-169
-spa3Cost                     src/29rd-spa-r3.js:225
+spa3Board                    src/29rd-spa-r3.js:147-163
+spa3BoardGrid                src/29rd-spa-r3.js:164
+spa3Cam                      src/29rd-spa-r3.js:179-186
+spa3Canvas                   src/29rd-spa-r3.js:168-175
+spa3Cost                     src/29rd-spa-r3.js:228
 spa3Fade                     src/29rd-spa-r3.js:113
 spa3Folk                     src/29rd-spa-r3.js:110
-spa3Frame                    src/29rd-spa-r3.js:182-203
-spa3Hide                     src/29rd-spa-r3.js:218-223
-spa3Hit                      src/29rd-spa-r3.js:215
-spa3Hits                     src/29rd-spa-r3.js:205
+spa3Frame                    src/29rd-spa-r3.js:188-206
+spa3Hide                     src/29rd-spa-r3.js:221-226
+spa3Hit                      src/29rd-spa-r3.js:218
+spa3Hits                     src/29rd-spa-r3.js:208
 spa3Mesh                     src/29rd-spa-r3.js:41-104
-spa3Ok                       src/29rd-spa-r3.js:181
-spa3On                       src/29rd-spa-r3.js:226
+spa3Ok                       src/29rd-spa-r3.js:187
+spa3On                       src/29rd-spa-r3.js:229
 spa3Pilot                    src/29rd-spa-r3.js:107
-spa3Scene                    src/29rd-spa-r3.js:115-137
+spa3Scene                    src/29rd-spa-r3.js:115-143
 spa3SleepPh                  src/29rd-spa-r3.js:112
 spa3Sun                      src/29rd-spa-r3.js:29-33
 spa3SunCol                   src/29rd-spa-r3.js:38
 spa3SunDir                   src/29rd-spa-r3.js:36
-spa3Tags                     src/29rd-spa-r3.js:204
+spa3Tags                     src/29rd-spa-r3.js:207
 spaAir                       src/29i-spa-draw.js:203-219
 spaAll                       src/29h-spa.js:45
 spaBoardGrid                 src/29i-spa-draw.js:48-51
@@ -9705,7 +9721,7 @@ zoomTo                       src/15-input.js:358
 ## src/17c2-hull-gpu.js · 19 KB
   · корпус корабля на видеокарте (15/n п.2, DESIGN-gpu §L.S):1
 
-## src/17c2a-hull3d.js · 42 KB
+## src/17c2a-hull3d.js · 43 KB
   · корабль в объёме (M710, docs/DESIGN-space.md «Ships»):1
 
 ## src/17c2b-parts3d.js · 33 KB
@@ -10233,7 +10249,7 @@ zoomTo                       src/15-input.js:358
 ## src/21pw-pln-water.js · 23 KB
   · вода на движке: одна на все сцены (M634):1
 
-## src/21pz-pln-frame.js · 34 KB
+## src/21pz-pln-frame.js · 35 KB
   · планета: кадр нового вида (M610):1
 
 ## src/21pza-pln-descent.js · 17 KB
@@ -10261,10 +10277,10 @@ zoomTo                       src/15-input.js:358
 ## src/22c-cave-gpu.js · 29 KB
   · пещера на видеокарте: темнота, фонарь, тени, пыль (G7):1
 
-## src/22d-cave-pln.js · 32 KB
+## src/22d-cave-pln.js · 34 KB
   · пещера на движке: кадр и переключатель (M630a):1
 
-## src/22da-cave-pln-rock.js · 26 KB
+## src/22da-cave-pln-rock.js · 27 KB
   · пещера на движке: порода из сетки игры (M630a):1
 
 ## src/22db-cave-pln-light.js · 17 KB
@@ -10317,7 +10333,7 @@ zoomTo                       src/15-input.js:358
 ## src/23ca-dig-pln-rock.js · 21 KB
   · шахта на движке: порода из выработки (M631a):1
 
-## src/23cb-dig-pln-dress.js · 13 KB
+## src/23cb-dig-pln-dress.js · 21 KB
   · рудник на движке: убранство выработки (M631):1
 
 ## src/23cc-mine-play.js · 24 KB
@@ -10508,7 +10524,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f4-cant3d.js · 37 KB
   · кантина в объёме (M725):1
 
-## src/27f4a-hall.js · 47 KB
+## src/27f4a-hall.js · 50 KB
   · зал за экранами (M810, docs/DESIGN-hall.md):1
 
 ## src/27f4b-hall-dress.js · 34 KB
@@ -10540,7 +10556,7 @@ zoomTo                       src/15-input.js:358
 ## src/27f4l-hall-walk.js · 20 KB
   · M816 станция пешком (docs/DESIGN-station-walk.md):1
 
-## src/27f5-portrait3d.js · 8 KB
+## src/27f5-portrait3d.js · 9 KB
   · портрет в объёме (M725):1
 
 ## src/27f6-face-live.js · 7 KB
@@ -10687,7 +10703,7 @@ zoomTo                       src/15-input.js:358
 ## src/29rc-winter-r3.js · 26 KB
   · зимовка на движке (M850c, docs/DESIGN-rooms.md §4):1
 
-## src/29rd-spa-r3.js · 20 KB
+## src/29rd-spa-r3.js · 21 KB
   · санаторий на движке (M850d, docs/DESIGN-rooms.md §4):1
 
 ## src/29rz-snap-over.js · 1 KB

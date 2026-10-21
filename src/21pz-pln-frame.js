@@ -301,6 +301,8 @@ function plnHandWin(S,ws,hs,f,h){
 function plnWarmStep(L,S,p,C,V){
   if(!L.warm){L.warm={st:0,k:0,n:0};return true;}   /* кадр, где заведён лист мира (plnLand), — только он */
   const w=L.warm;
+  /* конвейеры пещеры и шахты — фоном с первого кадра спуска (22d): до устья их соберёт компилятор */
+  if(w.n===0&&typeof cave3PipesAhead==="function")cave3PipesAhead();
   if(++w.n>240){L.warmDone=true;return false;}
   const B=7;
   /* набор флоры строится из системы по шагу (plnKitTick); не успел — достраивается здесь, в бюджет кадра */

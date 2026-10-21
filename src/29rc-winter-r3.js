@@ -235,7 +235,7 @@ function win3Frame(){
   WIN3.frames++;WIN3.stat=hallLimits(S);WIN3.vp=cam.vp;WIN3.sz=sz;
   const m=WIN3.man;WIN3.meas={man:m?+hallManK(cam,m[0],m[1],sz.ch).toFixed(3):0,light:win3Val(W,"light"),heat:win3Val(W,"heat"),sleep:+win3SleepPh().toFixed(2)};
   WIN3.hit=win3Hits(W,cam,sz);
-  room3TagsDraw(win3Tags(W,sz),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.cw-12,yr:sz.ch-(sz.wide?150:230)},WIN3.tags,win3SleepPh()>0);
+  room3TagsDraw(win3Tags(W,sz),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.wide?sz.cw-200*UIK:sz.cw-170,yr:sz.ch-(sz.wide?150:230)},WIN3.tags,win3SleepPh()>0);
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }
 /* слова на вещах (правило 4) */

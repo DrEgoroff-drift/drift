@@ -22,7 +22,7 @@ const SPA3_SLEEP=2600;
 const SPA3_M=new Float32Array(R3_MAXI*R3_PART*16),SPA3_OT=new Float32Array(R3_MAXI*R3_PART*4);
 /* где что стоит */
 const SPA3_BD={x:-2.75,z:-1.75,w:1.15,y0:1.02,y1:2.32};   /* грифельный щит на столбе у перил */
-const SPA3_MAN=[-1.35,-1.97],SPA3_TB=[-.15,-.35],SPA3_CH1=[1.75,.15],SPA3_CH2=[3.15,.75],SPA3_GL=[-.72,-2.15];
+const SPA3_MAN=[-1.35,-1.87],SPA3_TB=[-.15,-.35],SPA3_CH1=[1.75,.15],SPA3_CH2=[3.15,.75],SPA3_GL=[-.72,-2.15];
 const SPA3_SHIRT=[206,198,178],SPA3_Y1=-1.9,SPA3_Y2=-2.2;   /* шезлонги боком к объективу: сосед в профиль, а не спинкой */
 
 /* фаза дня 0..1: от часов на веранде; S.sun (стенд, тест) — как есть */
@@ -117,8 +117,8 @@ function spa3Scene(cam,t,S){
   for(let i=0;i<R3_MAXI*R3_PART;i++)M.set(I,i*16);OT.fill(0);
   const draws=[[SPA3.mesh,0,1]],f=spa3Fade(spa3SleepPh()),s=spa3Sun(S),sd=spa3SunDir(s),sc=spa3SunCol(s),hi=Math.sin(Math.PI*s);
   /* хозяин у перил; спит — в своём шезлонге, веки сомкнуты */
-  {const m=spa3Pilot(),zz=spa3SleepPh()>0,mesh=cpMesh(m,zz?"recline":"lean",1);m.zz=zz?1:0;
-    win3Man(M,1,m,mesh,zz?r3Xf([SPA3_CH2[0],0,SPA3_CH2[1]],SPA3_Y2):r3Xf([SPA3_MAN[0],0,SPA3_MAN[1]],.25),t,zz?null:cam.eye);draws.push([mesh,1,1]);}
+  {const m=spa3Pilot(),zz=spa3SleepPh()>0,mesh=cpMesh(m,zz?"recline":"rail",1);m.zz=zz?1:0;
+    win3Man(M,1,m,mesh,zz?r3Xf([SPA3_CH2[0],0,SPA3_CH2[1]],SPA3_Y2):r3Xf([SPA3_MAN[0],0,SPA3_MAN[1]],.12),t,zz?null:cam.eye);draws.push([mesh,1,1]);}
   {const m=spa3Folk(S),mesh=cpMesh(m,"recline",1);win3Man(M,2,m,mesh,r3Xf([SPA3_CH1[0],0,SPA3_CH1[1]],SPA3_Y1),t,null);draws.push([mesh,2,1]);}
   const lights=[],D=26,c0=[-.3,0,-.5];
   /* солнце — ключ с тенью: далёкий прожектор на палубу */
@@ -127,7 +127,13 @@ function spa3Scene(cam,t,S){
   /* блеск моря — холодная заливка спереди-снизу; отсвет досок — тёплая снизу; корпус за спиной — мягкий свет в лица */
   lights.push({p:[0,-.4,B3()-3],range:16,c:r3Sc(r3Lin([150,186,210]),9*f),spot:1,d:[0,.25,1],cosO:Math.cos(1.1),cosI:Math.cos(.5),vol:0});
   lights.push({p:[0,.25,0],range:9,c:r3Sc(r3Lin(mixc([214,170,120],sc,.3)),1.4*f),vol:0});
-  lights.push({p:[.5,2.4,9],range:16,c:r3Sc(r3Lin([210,214,220]),12*f),spot:1,d:[0,-.2,-1],cosO:Math.cos(.7),cosI:Math.cos(.3),vol:0});
+  lights.push({p:[.5,2.4,9],range:16,c:r3Sc(r3Lin([210,214,220]),8*f),spot:1,d:[0,-.2,-1],cosO:Math.cos(.7),cosI:Math.cos(.3),vol:0});
+  /* ключ на лицо и плечи хозяина: под перголой солнце до него не доходит, и лицо выходило плоским, кукольным.
+     Узкий тёплый прожектор сбоку-сверху, без тени: лепит щёку, нос и плечо. Дальность кончается сразу за ним —
+     иначе конус ложится на окно моря ореолом вокруг головы */
+  if(spa3SleepPh()<=0){const hx=SPA3_MAN[0],hz=SPA3_MAN[1],q=[hx+2.7+sd[0]*.6,2.45,hz+1.0],h=[hx,1.5,hz],
+    v=[h[0]-q[0],h[1]-q[1],h[2]-q[2]],L=Math.hypot(...v);
+    lights.push({p:q,range:L+.4,c:r3Sc(r3Lin(mixc([255,214,170],sc,.5)),L*L*5*f),spot:1,d:v.map(x=>x/L),cosO:Math.cos(.24),cosI:Math.cos(.1),vol:0});}
   const dw=clamp(hi*1.6-.45,0,1),sky=r3Lin(mixc([206,170,150],[120,170,220],dw)),gnd=r3Lin([150,118,84]);
   return {draws,vp:cam.vp,cam:cam.eye,t,lights,bulbs:[],
     sky:[...sky,(.55+.35*hi)*f],gnd:[...gnd,.012],fog:[...r3Sc(r3Lin([200,214,224]),.6),.02],acc:[...r3Lin([236,232,214]),1],
@@ -195,10 +201,7 @@ function spa3Frame(){
   SPA3.frames++;SPA3.stat=hallLimits(Sc);SPA3.vp=cam.vp;SPA3.sz=sz;
   SPA3.meas={man:+hallManK(cam,SPA3_MAN[0],SPA3_MAN[1],sz.ch).toFixed(3),sun:+spa3Sun(S).toFixed(2),day:S.day,sleep:+spa3SleepPh().toFixed(2)};
   SPA3.hit=spa3Hits(S,cam,sz);
-  /* поле табличек — как у зала (hallTagsDraw): правый край за кнопками правой кромки (Карта/Меню), иначе
-     «СПАТЬ» с ходом солнца и дыханием объектива вставала под «Меню» (зрение, 22.10) */
-  const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;
-  room3TagsDraw(spa3Tags(S),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.wide?sz.cw-200*ui:sz.cw-170,yr:sz.ch-(sz.wide?150:230)},SPA3.tags,spa3SleepPh()>0);
+  room3TagsDraw(spa3Tags(S),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.wide?sz.cw-200*UIK:sz.cw-170,yr:sz.ch-(sz.wide?150:230)},SPA3.tags,spa3SleepPh()>0);
   return r3Frame(cn,Sc,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }
 function spa3Tags(S){return [{p:[SPA3_CH2[0]-.2,.62,SPA3_CH2[1]+.2],t:"СПАТЬ",s:"день "+S.day+" из "+S.days,c:""}];}

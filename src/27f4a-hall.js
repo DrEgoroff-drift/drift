@@ -148,7 +148,7 @@ function hallLayout(st,lazy){
   for(let i=2;i<40&&!keepOk(cpGene(keep));i++)keep.seed=hashi(seed,0xC0E,i)>>>0;
   L.people.push({id:"hallkeep",m:keep,pose:"bar",x:-5.86,z:.62,yaw:Math.PI/2-.12,lod:1,kind:"keep"});
   /* зал не пуст: посетитель читает доску, грузчик у бочек под окном (стоят в работе, не в строю) */
-  L.people.push({id:null,m:{seed:hashi(seed,0xB0A,2)>>>0,loy:50,traits:[]},pose:"mug",x:-4.05,z:-1.9,yaw:Math.PI-.15,lod:1,kind:"crowd"});
+  L.people.push({id:null,m:{seed:hashi(seed,0xB0A,2)>>>0,loy:50,traits:[]},pose:"mug",x:-4.7,z:-2.0,yaw:Math.PI-.5,lod:1,kind:"crowd"});
   if(!T.stalls)L.people.push({id:null,m:{seed:hashi(seed,0x10AD,3)>>>0,loy:50,traits:[],jac:[204,98,38]},pose:"hips",x:-.05,z:-1.55,yaw:-2.3,lod:1,kind:"crowd"});
   /* бар: люди кантины на своих местах, сдвинутые в конец зала; кино и столики дел — забота M814 */
   if(bar&&typeof c3Layout==="function"){
@@ -185,13 +185,15 @@ function hallLayout(st,lazy){
    (QA 14.10, ПК). Пока корабль в системе со станцией, это делается по шагу раз в несколько кадров:
    тела (cpMesh — по человеку), выгрузка сеток и комната. Раскладка при входе строится заново — она
    дёшева и зависит от состояния дел, — но тела берутся из кэша, сетки уже на видеокарте, комната готова */
-const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:null,ci:0,cdone:true};
+const HALL_PRE={key:"",L:null,i:0,up:false,room:null,rkey:"",done:true,n:0,cl:null,ci:0,cdone:true,tg:false};
 function hallPrepStep(){
   const sys=G.sys,S=sys&&sys.station,P=HALL_PRE;
   if(G.mode!=="system"||!S||HALL.open||!GPU.ok||!GPU.dev||!HALL.on)return;
   const st=S.stype||"trade",key=st+"|"+sys.key;
-  if(P.key!==key){P.key=key;P.L=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;if(P.room){r3Drop(P.room);P.room=null;}}
+  if(P.key!==key){P.key=key;P.L=null;P.i=0;P.up=false;P.done=false;P.cl=null;P.ci=0;P.cdone=false;P.tg=false;if(P.room){r3Drop(P.room);P.room=null;}hallRelease();}
   if(P.done){if(!P.cdone)hallCantPrep(S,sys);return;}
+  /* цели кадра (MSAA, глубина, отсвет) и кубическая тень — пока корабль в системе: первый вход их не заводит */
+  if(!P.tg){P.tg=true;if(typeof document!=="undefined"&&$st){const cn=hallCanvas(),R=(hallSize(cn),rpgGet(cn));if(R&&r3Dev())r3Targets(R,cn.width,cn.height);}return;}
   if(!P.L){P.L=hallLayout(st,true);return;}
   const pe=P.L.people;
   if(P.i<pe.length){
@@ -200,7 +202,9 @@ function hallPrepStep(){
     r3Up(q.mesh);P.i++;return;
   }
   if(!P.room){P.room=hallRoomMesh(P.L);P.rkey=P.L.rkey;return;}
-  if(!P.up){r3Up(P.room);P.up=true;}
+  if(!P.up){r3Up(P.room);P.up=true;return;}
+  /* планета в окне — тоже заранее: печать шара (27f4c) живёт до смены станции */
+  {const keep=G.st;G.st=S;try{hallOrbUp(P.L);if(P.L.bar)c3SignTex(P.L.S);}finally{G.st=keep;}}   /* и вывеска бара */
   P.done=true;
 }
 /* люди кантины (вкладка «Кантина» дока): тела кандидатов, столиков, толпы — по одному на шаг.
@@ -356,9 +360,11 @@ function hallManMark(ii,x,z,r,rim){HALL_OT.set([x,z,r,rim*(1+2.2*hallNight())],(
 /* окно: проём по x и высоте (подоконник 1.2 м — мерило человека) */
 const HALL_WIN=[-1.4,3.6];
 function hallWinY(T){return [1.2,Math.min(T.hc-.38,3.25)];}
-/* пределы движка для сцены: экземпляры, части, лампы, тени — для теста */
+/* пределы движка для сцены: экземпляры, части, лампы, тени — для теста. Части меша считаются раз на массив
+   вершин (M816c: обход всех вершин зала каждый кадр стоил 5 мс CPU на ходу) */
+function hallMeshParts(m){if(m.__pv!==m.v){let p=0;for(let i=11;i<m.v.length;i+=12)p=Math.max(p,(m.v[i]|0)&15);m.__pv=m.v;m.__pp=p;}return m.__pp;}
 function hallLimits(S){
-  let parts=0;for(const [m] of S.draws){if(!m||!m.v)continue;for(let i=11;i<m.v.length;i+=12)parts=Math.max(parts,(m.v[i]|0)&15);}
+  let parts=0;for(const [m] of S.draws){if(!m||!m.v)continue;parts=Math.max(parts,hallMeshParts(m));}
   return {inst:S.draws.length,parts:parts+1,lamps:S.lights.length,shadow:S.lights.filter(l=>l.shadow).length};
 }
 
@@ -419,7 +425,7 @@ function hallCrop(vp,h){if(h>=1)return vp;const C=[1/h,0,0,0, 0,1,0,0, 0,0,1,0, 
 function hallOpen(){
   if(!HALL.on||typeof document==="undefined"||!$st)return;
   const cn=hallCanvas();$st.classList.add("hall");$st.classList.remove("up");
-  HALL.open=true;HALL.L=null;HALL.orbKey="";HALL.orbTry=0;HALL.err=0;
+  HALL.open=true;HALL.L=null;HALL.err=0;   /* шар в окне не перепекается: его ключ — система и тип станции */
   $body.querySelectorAll(".cant-stage").forEach(n=>n.remove());
   if(!$body.__hallScroll){$body.__hallScroll=1;
     $body.addEventListener("scroll",()=>{if(HALL.open)$st.classList.toggle("up",$body.scrollTop>8);},{passive:true});}
@@ -431,8 +437,14 @@ function hallClose(){
   if(typeof document==="undefined"||!$st)return;
   $st.classList.remove("hall","up","walk","eng","lock");
   if(HALL.tags){HALL.tags.textContent="";HALL.tags.__key="";}
-  if(HALL.cn){r3Free(HALL.cn);}r3Drop(HALL.room);HALL.room=null;HALL.rkey="";hallGoodsDrop();hallInstrDrop();hallBoardDrop();hallHoldDrop();hallRigDrop();
-  if(HALL.orbTex&&HALL.orbTex.dev===GPU.dev)GPU.trash.push(HALL.orbTex.tex);HALL.orbTex=null;HALL.orb=null;
+  /* цели кадра и вещи зала живут до смены станции (hallRelease из заготовки): второй вход их не заводит заново */
+  r3Drop(HALL.room);HALL.room=null;HALL.rkey="";
+  HALL_GOODS.hot=null;HALL_LENS.g=0;HALL_LENS.last=0;HALL_LENS.t=0;HALL_INSTR.hot=null;HALL_BOARD.hot=-1;HALL_HOLD.hot="";
+}
+function hallRelease(){
+  if(HALL.open)return;
+  if(HALL.cn)r3Free(HALL.cn);hallGoodsDrop();hallInstrDrop();hallBoardDrop();hallHoldDrop();hallRigDrop();
+  if(HALL.orbTex&&HALL.orbTex.dev===GPU.dev)GPU.trash.push(HALL.orbTex.tex);HALL.orbTex=null;HALL.orb=null;HALL.orbKey="";
 }
 /* вкладка сменилась: камера — к месту раздела; полоса кантины не нужна — бар рисует зал */
 function hallTab(){
@@ -449,6 +461,24 @@ function hallMsgEther(wide){
   if(!HALL.open||wide||G.msg===HALL.msgLast)return false;
   HALL.msgLast=G.msg;consoleHeard(String(G.msg).replace(/\s*\n\s*/g," · "),"");return true;
 }
+/* выход из дока: корабли у станции (флот линии, мирный флот хозяина) пекутся, пока игрок в доке — первый кадр
+   системы печь их не должен (closeStation 112–150 мс, M816c). По одному кораблю, только в покое зала и не чаще
+   раза в 400 мс: выпечка корабля целиком — один шаг, в простое зала 12 к/с её не видно */
+const HALL_FW={key:"",list:null,t:0};
+function hallFleetList(){
+  const sys=G.sys,key=sys?sys.key+"|"+Math.floor(now()/((typeof FLEET_PERIOD==="number")?FLEET_PERIOD:6e5)):"";
+  if(HALL_FW.key===key&&HALL_FW.list)return HALL_FW.list;
+  const L=[];
+  if(sys&&typeof fleetHere==="function")for(const f of fleetHere(sys))if(f&&f.k!=null)L.push(f);
+  const S=typeof peaceHere==="function"?peaceHere():null;
+  if(S){const s=S.seed,P={gt:[["tug",s],["tug",s+1]],co:[["ferry",s],["fridge",s],["patrol",s+1]],or:[["patrol",s+1],["patrol",s+2]],ra:[["tug",s]]}[S.by]||[];
+    for(const [k,seed] of P)L.push({k,seed,by:S.by});}
+  HALL_FW.key=key;HALL_FW.list=L;return L;
+}
+function hallFleetWarm(tw){
+  if(G.mode!=="dock"||!GPU.dev||typeof fleetArtOf!=="function"||tw-HALL_FW.t<400)return;
+  for(const f of hallFleetList()){if(FLEET_ART["fl"+f.k+f.seed+"!"+(f.by||"gt")])continue;HALL_FW.t=tw;fleetArtOf(f);return;}
+}
 function hallLoop(){
   HALL.raf=0;
   if(!HALL.open||!HALL.cn||!HALL.cn.isConnected)return;
@@ -457,6 +487,7 @@ function hallLoop(){
   let wm=false;if(hallWalkOn()&&HALL.walk){const W=HALL.walk,dt=W.ts?Math.min(.1,(tw-W.ts)/1000):0;W.ts=tw;wm=hallWalkStep(dt)||hallWalkMoving();hallWalkUi();}
   if(wm||hallMoving()||hallLensMoving()||tw-HALL.last>=1000/12-2){HALL.last=tw;
     try{hallFrame();}catch(e){HALL.err++;HALL.open=false;console.error("зал станции: кадр упал",e);return;}}
+  else try{hallFleetWarm(tw);}catch(e){HALL_FW.t=tw+6e4;console.error("зал: флот заранее",e);}
   HALL.raf=requestAnimationFrame(hallLoop);
 }
 /* кадр: раскладка по станции, сетка по ключу, свет и движение каждый кадр */
@@ -479,7 +510,7 @@ function hallFrame(){
   const c1=hallLens(hallGlideAt(wallMs())||HALL_CAMS.trade,L,hallLensStep(wallMs()));
   const cam=W?hallWalkCam(L,sz,W.eng||W.fk>0?c1:null):hallCam(c1,sz.cw,sz.ch,sz.wide),c=W?cam.c:c1,t=wallMs()/1000;
   const S=hallScene(L,cam,t);S.vp=hallCrop(cam.vp,sz.rw/sz.cw);
-  const lab=rpgBake(R,"r3lab","hall|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
+  const lab=r3Dev()?R3.blank:null;   /* подписей зал не печёт: пустой слой во весь холст тянул пул MSAA 2D (M816c) */
   const U=new Float32Array(60);
   S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
     if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});

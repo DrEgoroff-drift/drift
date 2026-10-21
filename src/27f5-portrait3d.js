@@ -27,10 +27,20 @@ function cpPortrait(m,css,cut){
   CPP.q.push([cv,m,!!cut,nd]);if(!CPP.t)CPP.t=setTimeout(cppFlush,0);
   return cv;
 }
+/* очередь — частями: за таймер не больше CPP_FLUSH_N портретов и CPP_FLUSH_MS работы, остаток — следующим.
+   Вкладка «Кантина» ставила разом 76–100 холстов, и всё — одним куском до 0,5 с (M816c) */
+const CPP_FLUSH_N=6,CPP_FLUSH_MS=4;
 function cppFlush(){
-  CPP.t=0;const L=CPP.q.splice(0);
-  if(GPU.enc){CPP.q.push(...L);CPP.t=setTimeout(cppFlush,0);return;}   /* кадр ещё открыт — следующим таймером */
-  for(const it of L)if(it[0].isConnected){cppPaint(it[0],it[1],it[2],it[3]);CPP.live.push(it);if(CPP_IO)CPP_IO.observe(it[0]);}
+  CPP.t=0;
+  if(GPU.enc){CPP.t=setTimeout(cppFlush,0);return;}   /* кадр ещё открыт — следующим таймером */
+  const L=CPP.q.splice(0),rest=[],t0=wallMs();let n=0;
+  for(const it of L){
+    if(!it[0].isConnected)continue;
+    if(n>=CPP_FLUSH_N||wallMs()-t0>=CPP_FLUSH_MS){rest.push(it);continue;}
+    n++;if(!cppPaint(it[0],it[1],it[2],it[3])){rest.push(it);continue;}   /* тело ещё строится */
+    CPP.live.push(it);if(CPP_IO)CPP_IO.observe(it[0]);
+  }
+  if(rest.length){CPP.q.unshift(...rest);CPP.t=setTimeout(cppFlush,16);}
   if(CPP.live.length&&!CPP.lt)CPP.lt=setTimeout(cppTick,CPP_MS);
 }
 /* такт живых портретов: отцепленные — вон; рисуются по кругу не больше CPP_LIVE за раз */
@@ -84,19 +94,24 @@ function cppScene(M,cut,asp){
 }
 /* выражение портрета: взгляд — в объектив (CP_GAZE), остальное — живое лицо человека */
 function cppX(M){return M.m?cpFace(M.m,CP_GAZE):null;}
+/* true — нарисован (или рисовать нечем), false — тело ещё строится по шагам */
 function cppPaint(cv,m,cut,nd){
-  if(!GPU.ok||GPU.lost||!GPU.dev||!r3Dev())return;
+  if(!GPU.ok||GPU.lost||!GPU.dev||!r3Dev())return true;
+  /* тело — своё у холста: кэш сеток (48) вытесняет его залом и кантиной, и живой портрет лепил его заново
+     на каждый такт (до 150 мс); строится шагами по 3 мс */
+  const mk=cpMeshKey(m,"stand",2);
+  if(!cv.__cpm||cv.__cpk!==mk){const B=cpMeshPump(m,"stand",2,3);if(!B)return false;cv.__cpm=B;cv.__cpk=mk;}
   const w=cv.width,h=cv.height,key=w+"x"+h;
   let hc=CPP.hid.get(key);
   if(hc){CPP.hid.delete(key);CPP.hid.set(key,hc);}
   else{if(CPP.hid.size>=4){const k0=CPP.hid.keys().next().value;r3Free(CPP.hid.get(k0));CPP.hid.delete(k0);}
     hc=document.createElement("canvas");hc.width=w;hc.height=h;CPP.hid.set(key,hc);}
   let cx=cv.__cpx;
-  if(!cx||cv.__cpd!==GPU.dev){cx=cv.getContext("webgpu");if(!cx)return;
+  if(!cx||cv.__cpd!==GPU.dev){cx=cv.getContext("webgpu");if(!cx)return true;
     cx.configure({device:GPU.dev,format:"rgba16float",alphaMode:"premultiplied"});cv.__cpx=cx;cv.__cpd=GPU.dev;}
-  const R=rpgGet(hc);if(!R)return;R.dpr=nd;
-  const M=cpMesh(m,"stand",2);M.m=m;const S=cppScene(M,cut,w/h);
+  const R=rpgGet(hc);if(!R)return true;R.dpr=nd;
+  const M=cv.__cpm;M.m=m;const S=cppScene(M,cut,w/h);
   const U=new Float32Array(60);U.set([1,1,1,1.05],24);U[44]=.45;U[47]=.6;
   r3Frame(hc,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,{view:R3.blank},Vv,Bv]),{cx,w,h});
-  CPP.n++;
+  CPP.n++;return true;
 }
