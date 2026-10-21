@@ -461,6 +461,24 @@ function hallMsgEther(wide){
   if(!HALL.open||wide||G.msg===HALL.msgLast)return false;
   HALL.msgLast=G.msg;consoleHeard(String(G.msg).replace(/\s*\n\s*/g," · "),"");return true;
 }
+/* выход из дока: корабли у станции (флот линии, мирный флот хозяина) пекутся, пока игрок в доке — первый кадр
+   системы печь их не должен (closeStation 112–150 мс, M816c). По одному кораблю, только в покое зала и не чаще
+   раза в 400 мс: выпечка корабля целиком — один шаг, в простое зала 12 к/с её не видно */
+const HALL_FW={key:"",list:null,t:0};
+function hallFleetList(){
+  const sys=G.sys,key=sys?sys.key+"|"+Math.floor(now()/((typeof FLEET_PERIOD==="number")?FLEET_PERIOD:6e5)):"";
+  if(HALL_FW.key===key&&HALL_FW.list)return HALL_FW.list;
+  const L=[];
+  if(sys&&typeof fleetHere==="function")for(const f of fleetHere(sys))if(f&&f.k!=null)L.push(f);
+  const S=typeof peaceHere==="function"?peaceHere():null;
+  if(S){const s=S.seed,P={gt:[["tug",s],["tug",s+1]],co:[["ferry",s],["fridge",s],["patrol",s+1]],or:[["patrol",s+1],["patrol",s+2]],ra:[["tug",s]]}[S.by]||[];
+    for(const [k,seed] of P)L.push({k,seed,by:S.by});}
+  HALL_FW.key=key;HALL_FW.list=L;return L;
+}
+function hallFleetWarm(tw){
+  if(G.mode!=="dock"||!GPU.dev||typeof fleetArtOf!=="function"||tw-HALL_FW.t<400)return;
+  for(const f of hallFleetList()){if(FLEET_ART["fl"+f.k+f.seed+"!"+(f.by||"gt")])continue;HALL_FW.t=tw;fleetArtOf(f);return;}
+}
 function hallLoop(){
   HALL.raf=0;
   if(!HALL.open||!HALL.cn||!HALL.cn.isConnected)return;
@@ -469,6 +487,7 @@ function hallLoop(){
   let wm=false;if(hallWalkOn()&&HALL.walk){const W=HALL.walk,dt=W.ts?Math.min(.1,(tw-W.ts)/1000):0;W.ts=tw;wm=hallWalkStep(dt)||hallWalkMoving();hallWalkUi();}
   if(wm||hallMoving()||hallLensMoving()||tw-HALL.last>=1000/12-2){HALL.last=tw;
     try{hallFrame();}catch(e){HALL.err++;HALL.open=false;console.error("зал станции: кадр упал",e);return;}}
+  else try{hallFleetWarm(tw);}catch(e){HALL_FW.t=tw+6e4;console.error("зал: флот заранее",e);}
   HALL.raf=requestAnimationFrame(hallLoop);
 }
 /* кадр: раскладка по станции, сетка по ключу, свет и движение каждый кадр */
