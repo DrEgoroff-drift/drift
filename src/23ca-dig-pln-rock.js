@@ -20,6 +20,10 @@ const DIG3_CM=DIG_CELL/DIG3_PPM;
 const DIG3_ROOM={zd:2.8,hall:5.2,wide:.6,r:.42,e:.14,k:.35};
 /* бюджет стройки кусков, мс в кадре: ms — обычный, hold — пока вход держит объектив у поверхности (23cd),
    first — первый кадр без съезда (сохранение, стенд): там порода нужна вся сразу */
+/* кромка листа разреза: шейдер пещеры (22dbw) жжёт её на полметра от пустоты, отсвет — на 3.6 м; объектив
+   рудника вчетверо ближе пещерного, и та же кромка в метрах обводила выработку белым ободом — запас до
+   пустоты отдаётся листу умноженным: обод ~6 см, отсвет ~.45 м — мягкий, как у пустот стенда (cave.html) */
+const DIG3_LIP=8;
 const DIG3_CH={s:8,vox:.25,zcap:16,keep:80,ms:8,hold:10,first:420};
 
 function dig3Hash(c,r){return (hashi(c,r,0xD16C)>>>8)/16777216;}
@@ -157,7 +161,7 @@ function dig3Paint(F,X,Y,Z,ny){
     const e=Math.hypot((X-n.x)*.8,(Y-n.y)*1.25)+.45*n.r*cave3N3(X*.5,Y*.5,Z*.5,33);
     if(e<n.r){
       const w=1-plnSmooth(n.r*.82,n.r,e);
-      c=plnMix3(c,[n.c[0]*.85,n.c[1]*.85,n.c[2]*.85],w*.8);   /* тело — пятно цвета руды; жилы и самородки на нём (23cb) */
+      c=plnMix3(c,[n.c[0]*.62,n.c[1]*.62,n.c[2]*.62],w*.6);   /* тело — тёмное пятно цвета руды под зерном (23cb); светлое туманило стену */
       if(e<n.r*.6&&cave3N3(X*4.1,Y*4.1,Z*4.1,35)>.62)c=plnMix3(c,n.c,.85);
     }
   }
@@ -274,7 +278,7 @@ function* dig3ChunkGen(F,ci,cj){
     const ink=dig3Paint(F,x,y,0,0),k=.3*(1+.16*cave3N3(x*.13,y*.13,3,31)),o=(nv+c)*PLN_VS,gr=(ink[0]+ink[1]+ink[2])/3;
     out[o]=x;out[o+1]=y;out[o+2]=z;out[o+3]=-gx/gl;out[o+4]=-gy/gl;out[o+5]=0;
     out[o+6]=lerp(gr,ink[0],.5)*k;out[o+7]=lerp(gr,ink[1],.5)*k;out[o+8]=lerp(gr,ink[2],.5)*k;
-    out[o+9]=CAVE3_MAT.cut;out[o+10]=0;out[o+11]=0;out[o+12]=clamp(dv,0,4);
+    out[o+9]=CAVE3_MAT.cut;out[o+10]=0;out[o+11]=0;out[o+12]=clamp(dv*DIG3_LIP,0,4);
   }
   const I=new Uint32Array(IR.length+IC.length);
   I.set(IR,0);for(let k=0;k<IC.length;k++)I[IR.length+k]=IC[k]+nv;

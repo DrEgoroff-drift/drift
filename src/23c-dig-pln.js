@@ -11,11 +11,10 @@
    тычок «копать сюда» (15-input) попадает в ту клетку, что показана. Когда человек грызёт вниз,
    кадр забегает на полклетки вперёд — забой в кадре. */
 const DIG3={on:true,bad:0,err:"",live:false,D:null,t:0,mx:0,my:0,cx:0,cy:0,ld:null,lens:null,hf:null,stat:{cpu:0,chunks:0,left:0}};
-try{if(typeof location!=="undefined"&&/[?&]dig=0\b/.test(location.search))DIG3.on=false;}catch(e){}
 const DIG3_Z=1.1;
 /* доля роста человека в высоте кадра: высокий — широкий; линия ходьбы от низа; даль объектива;
    глаз над полом; догон кадра и шага человека, с; забег кадра по ходу проходки, клеток */
-const DIG3_LENS={man:[.077,.085],walk:[.38,.34],dist:[18,32],eye:2.6,tau:.4,step:.12,lead:.5};   /* телефон: пол выше строки подсказки */
+const DIG3_LENS={man:[.11,.2],walk:[.38,.34],dist:[12.6,13.6],eye:2.6,tau:.4,step:.12,lead:.5};   /* телефон: пол выше строки подсказки */
 
 function dig3Lens(asp,cx,floorY){
   const L=DIG3_LENS,k=plnSmooth(.6,1.5,asp);
@@ -161,7 +160,9 @@ function dig3Frame(){
      его гасит карта тени: камень над выработкой закрывает солнце, открыт только ствол */
   const Hr=PLN.sun,night=Hr?clamp(Hr.night||0,0,1):0,dayK=(1-plnSmooth(.2,.9,night))*(1-plnSmooth(8*CM,12*CM,sY-my));
   const sx=Hr&&Hr.dir&&Hr.dir[0]>0?1:-1,sun=plnNorm([.18*sx,1,.1]),lean=[-sun[0]/sun[1],sun[2]/sun[1]];
-  const mouth=[CM*.5,DIG3_ROOM.zd*.5,40,12];
+  /* столб дня во всю ширину — пока человек у земли; ниже — только ствол: камня над кадром нет в карте тени
+     (куски строятся по окну), и широкий столб светил в штрек сквозь кровлю, которой нет, — мох на почве в 12 м */
+  const mouth=[CM*.5,DIG3_ROOM.zd*.5,lerp(40,CM*.5+.3,plnSmooth(sY-1.5,sY-4,my)),12];
   const day=cave3DayBox(sun,[cx-Ls.w*.6-4,cx+Ls.w*.6+4,sY-8*CM,sY+6,-1,DIG3_CH.zcap+1]);
   const lk=Hr&&Hr.look,skyLo=lk?lk.skyHor:[.62,.78,.95],skyHi=lk?lk.skyZen:[.13,.33,.78];
   /* огни без теней: разлив фонаря, лужа там, куда он смотрит, отсвет на человеке, свод, задняя стена */
@@ -206,6 +207,7 @@ function dig3Frame(){
   /* убранство: рельсы, крепь, лампы штреков, лестницы, ствол; клеть на канате (23cb) */
   let tris=dig3DressFrame(F,Fd,D,{cy:Mm.cy,gy},cx-Ls.w*.6,cx+Ls.w*.6,Ls.b-2,Ls.t+2,Lt);
   tris+=dig3BeastFrame(F,Fd,D,gy);   /* кусачие: звери планеты (23ce) */
+  tris+=dig3ZapFrame(F,D,gy);   /* импульс: кольцо и вспышка (23ce) */
   for(const c of list){
     const g=c.geo;
     if(c.nRock>0)F.draw.push({geo:g,first:0,n:c.nRock,lamp:true,sun:true,refl:true});
@@ -225,33 +227,29 @@ function dig3Frame(){
   return dig3TopPost(F,Tp);
 }
 
-/* ── поверх кадра: то, что ещё не перерисовано (кольцо импульса и полоса проходки) ──
-   Та же кисть, что у старого кадра, в той же мерке: окно на линии человека — окно кадра */
+/* ── поверх кадра: полоса проходки под клеткой забоя — фигурами движка (gpuShapes), не холстом ──
+   В той же мерке, что старый кадр: окно на линии человека — окно кадра */
 function dig3Over(){
   const D=G.dig;
   if(!D||!DIG3.lens)return;
   const camx=G.viewX,camy=G.viewY;
-  if(DIG3_BEAST.on)dig3ZapRing(camx,camy);else drawDigFauna(camx,camy);
   const t=D.target,dir=dig3Dir(D);
   if(!t||!dir)return;
   const col=D.col+dir[0],row=D.row+dir[1],x=col*DIG_CELL-camx,y=row*DIG_CELL-camy,k=(DIG_CELL-6)*clamp(t.prog/t.hard,0,1);
-  const TP=GPU.on?gpuNext():null;
-  if(TP){
-    const TS=[[0,x+3,y+DIG_CELL-8,x+DIG_CELL-3,y+DIG_CELL-4,0,0,0,0,0,.55]];
-    if(k>0)TS.push([0,x+3,y+DIG_CELL-8,x+3+k,y+DIG_CELL-4,0,0,242,178,92,1]);
-    gpuShapes(TP,gpuShpAt(TS,lifeHere(0,0)),{blend:"over"});
-    return;
-  }
-  ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x+3,y+DIG_CELL-8,DIG_CELL-6,4);
-  ctx.fillStyle="#f2b25c";ctx.fillRect(x+3,y+DIG_CELL-8,k,4);
+  const TP=gpuNext();
+  if(!TP)return;
+  const TS=[[0,x+3,y+DIG_CELL-8,x+DIG_CELL-3,y+DIG_CELL-4,0,0,0,0,0,.55]];
+  if(k>0)TS.push([0,x+3,y+DIG_CELL-8,x+3+k,y+DIG_CELL-4,0,0,242,178,92,1]);
+  gpuShapes(TP,gpuShpAt(TS,lifeHere(0,0)),{blend:"over"});
 }
 
-/* ── переключатель ── */
-const DIG3_OLD_DRAW=drawDig;
-const DIG3_BLOOM=BLOOM_K.dig;
+/* ── кадр рудника — только движком. Старого плоского кадра нет (автор: «от 2D избавляться»): пока
+   конвейеры не готовы, кадр пуст; сбой сборки кадра назван строкой «СБОЙ · … · шахта» (crashSay, 28-loop),
+   кадр пуст, интерфейс и ход игры живут, следующий кадр пробует снова ── */
+BLOOM_K.dig=0;   /* свечение у вида своё; движку оставлено только зерно */
 drawDig=function(){
   let ok=false;
-  if(DIG3.on&&DIG3.bad<3&&CAVE3.bad<3&&G.dig&&G.dig.p){
+  if(G.dig&&G.dig.p){
     try{
       plnQualAuto();
       ok=cave3GpuReady()&&dig3Frame();
@@ -259,12 +257,11 @@ drawDig=function(){
     }catch(e){
       DIG3.bad++;DIG3.err=String((e&&e.stack)||e).slice(0,600);plnLog("шахта: кадр: "+DIG3.err);
       if(GPU.on&&GPU.dev){GPU.enc=GPU.dev.createCommandEncoder();GPU.scenePass=null;GPU.sceneOn=false;GPU.scene3D=false;}
+      if(typeof crashSay==="function")crashSay(e,"шахта");
     }
   }
-  /* свечение у нового вида своё; движку оставлено только зерно */
-  BLOOM_K.dig=ok?0:DIG3_BLOOM;
   DIG3.live=ok;
-  if(!ok){DIG3.D=null;DIG3_OLD_DRAW();return;}
+  if(!ok){DIG3.D=null;return;}
   withScale(G.viewK,dig3Over);
 };
 /* тычок по клетке: та клетка, что показана, — окно кадра лежит на плоскости человека */

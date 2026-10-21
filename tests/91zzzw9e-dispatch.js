@@ -138,3 +138,17 @@ TEST_SUITES.push(()=>suite("диспетчер: шаги исполняются,
   ok(dispSt().it.length===0&&dispSt().vb.length===0,"битая запись диспетчера отброшена, мир цел");
   resetWorld();
 }));
+TEST_SUITES.push(()=>suite("диспетчер: СРОЧНО в системе не жмёт таблички черпака, захода и грунта",()=>{
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;
+  const S=dispTestStations()[0];dispTestDock(S);
+  dispSt().it=[];const U=dispIssue("urg",S,{});
+  ok(U&&dispUrg()===U,"срочное есть");
+  for(const m of ["scoop","landing","surface"]){G.mode=m;eq(dispAlarm(true),false,m+": табличку диспетчера не вешают");}
+  G.mode="system";HANG.alarmF=OVL.fno;HANG.alarmM="system";
+  ok(hangAlarmOn(),"в системе тревога держит спокойные у края");
+  for(const m of ["scoop","landing","surface"]){G.mode=m;eq(hangAlarmOn(),false,m+": выдержка тревоги из системы не действует (360: «Заход в атмосферу» ехал на «НАГРЕВ КОРПУСА»)");}
+  G.mode="scoop";HANG.alarmM="scoop";
+  ok(hangAlarmOn(),"тревога самого черпака — держит");
+  HANG.alarmF=-1e9;HANG.alarmM=null;
+  resetWorld();
+}));

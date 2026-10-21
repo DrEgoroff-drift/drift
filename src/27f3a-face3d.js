@@ -195,7 +195,7 @@ function* cpHeadGen(K,g,lod,cl,seed){
   const stub=!F.fem&&!g.beard&&(seed>>>3)%3===0?r3Mix(skin,r3Lin([70,76,90]),.3):null;
   const dseg=(px,py,ax,ay,bx,by)=>{const vx=bx-ax,vy=by-ay,t=clamp(((px-ax)*vx+(py-ay)*vy)/(vx*vx+vy*vy||1),0,1);return Math.hypot(px-ax-vx*t,py-ay-vy*t);};
   /* кожа: окклюзия глазниц и под челюстью, зоны тона, губы, брови, кромки век, ноздри, складки, метки */
-  K.surf(NU,NV,(u,v)=>{
+  const skf=(u,v)=>{
     const o=cpSkin(H,F,TH(u),PH(v)),p=o.p,dy=o.dy,dz=o.dz;
     let col=skin.slice();
     const ao=1-.42*clamp(o.sock,0,1)-.3*r3Step(-.55,-.95,dy)*r3Step(-.3,.5,dz);
@@ -221,7 +221,12 @@ function* cpHeadGen(K,g,lod,cl,seed){
     if(tat&&dz>.1){const d=Math.hypot(p[0]+.6*H.a,p[1]-.012);col=r3Mix(col,ink,(1-r3Step(.008,.014,d))*.5*(.6+.4*Math.sin(Math.atan2(p[1]-.012,p[0]+.6*H.a)*6)));}
     if(brand&&dz>.2){const bx=Math.abs(p[0]-.38*H.a),by=Math.abs(p[1]-.4*H.b);col=r3Mix(col,brd,(bx<.009&&by<.008)?.55:0);}
     return [p,r3Sc(col,ao),o.sk];
-  },Msk,{wrap:1});
+  };
+  /* вершины кожи — рядами, кусками по 2 мс: на портрете (lod 2) это 25 тыс. точек cpSkin, одним шагом 60–90 мс (M816c).
+     Порядок обхода тот же, что у K.surf (j, потом i), — сетка та же */
+  const SKV=new Array((NU+1)*(NV+1));
+  for(let j=0,t0=wallMs();j<=NV;j++){for(let i=0;i<=NU;i++)SKV[j*(NU+1)+i]=skf(i/NU,j/NV);if(j<NV&&wallMs()-t0>2){yield;t0=wallMs();}}
+  yield* K.surfG(NU,NV,(u,v)=>SKV[Math.round(v*NV)*(NU+1)+Math.round(u*NU)],Msk,{wrap:1},2);
   yield;
   /* уши: раковина, завиток по краю, тёмная чаша */
   const er=.85+.3*g.ear;
