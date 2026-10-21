@@ -11,7 +11,7 @@ function dispTestDock(S){
   G.st=G.sys.station;G.mode="dock";openStation();
 }
 TEST_SUITES.push(()=>suite("диспетчер: на каждой стыковке два адресных, срочное и наряд; глаголы не повторяются",()=>{
-  resetWorld();
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;   /* первая вахта (28o) держит срочное и наряд — здесь игрок налётан */
   const L=dispTestStations();
   ok(L.length>=6,"станций вокруг начала: "+L.length);
   const issued=[],O=dispIssue;
@@ -44,7 +44,7 @@ TEST_SUITES.push(()=>suite("диспетчер: на каждой стыковк
   resetWorld();
 }));
 TEST_SUITES.push(()=>suite("диспетчер: веса по шкалам станции",()=>{
-  resetWorld();
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;   /* первая вахта (28o) держит срочное и наряд — здесь игрок налётан */
   const S=dispTestStations()[0],D=dispSt();
   const share=(kind,v,set)=>{
     gaugeSet(S,set);let n=0,hit=0;
@@ -60,7 +60,7 @@ TEST_SUITES.push(()=>suite("диспетчер: веса по шкалам ст�
   resetWorld();
 }));
 TEST_SUITES.push(()=>suite("диспетчер: шаги исполняются, деньги через earn, срок, сданная смена, запись",()=>{
-  resetWorld();
+  resetWorld();G.flownMs=2*FIRST_HOUR_MS;   /* первая вахта (28o) держит срочное и наряд — здесь игрок налётан */
   const L=dispTestStations(),S=L[0],D=dispSt();
   dispTestDock(S);
   ok(D.it.length===4,"первая стыковка: пунктов "+D.it.length);

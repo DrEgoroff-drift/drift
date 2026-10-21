@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 624 · top-level symbols: 8823
+Files: 626 · top-level symbols: 8832
 
 ## SYMBOLS
 
@@ -696,6 +696,8 @@ FWD_FAR                      src/21b6-base-forward.js:56
 FWD_NEED                     src/21b6-base-forward.js:21
 FWD_PAY                      src/21b6-base-forward.js:24
 FWD_PAY_EVERY                src/21b6-base-forward.js:23
+FW_HOOKS                     src/28o-firstwatch.js:81-87
+FW_URG_MIN                   src/28o-firstwatch.js:17
 G                            src/08-state.js:207-293
 G11_CPU                      src/28z-fps-probe.js:185
 G11_GPU_KILL                 src/28z-fps-probe.js:210-241
@@ -2409,17 +2411,17 @@ WATCH_DISP                   src/28j-watch.js:32
 WATCH_DISP_F                 src/28j-watch.js:30
 WATCH_DISP_M                 src/28j-watch.js:31
 WATCH_LET                    src/28j-watch.js:27
-WATCH_OLD_APPLY              src/28j-watch.js:275
-WATCH_OLD_BOARD              src/28j-watch.js:270
+WATCH_OLD_APPLY              src/28j-watch.js:276
+WATCH_OLD_BOARD              src/28j-watch.js:271
 WATCH_OLD_CREW               src/28j-watch.js:208
 WATCH_OLD_DRONES             src/28j-watch.js:206
 WATCH_OLD_INSON              src/28j-watch.js:216
-WATCH_OLD_MENU               src/28j-watch.js:332
+WATCH_OLD_MENU               src/28j-watch.js:333
 WATCH_OLD_MGR                src/28j-watch.js:210
 WATCH_OLD_NEED               src/28j-watch.js:222
 WATCH_OLD_OPEN               src/28j-watch.js:219
 WATCH_OLD_ORDER              src/28j-watch.js:232
-WATCH_OLD_SNAP               src/28j-watch.js:273
+WATCH_OLD_SNAP               src/28j-watch.js:274
 WATCH_R                      src/28j-watch.js:26
 WATCH_RELIEF                 src/28j-watch.js:33
 WATER_MIN_SPAN               src/21e-surface-draw.js:177
@@ -3932,6 +3934,7 @@ dispRow                      src/28m-dispatch.js:370-387
 dispRu                       src/28m-dispatch.js:64
 dispSafe                     src/28m-dispatch.js:418
 dispSection                  src/28m-dispatch.js:388-394
+dispSlotOk                   src/28m-dispatch.js:255
 dispSn                       src/28m-dispatch.js:66
 dispSt                       src/28m-dispatch.js:53-60
 dispSysOf                    src/28m-dispatch.js:61
@@ -3940,7 +3943,6 @@ dispTestStations             tests/91zzzw9e-dispatch.js:4-8
 dispThree                    src/28m-dispatch.js:184-190
 dispTick                     src/28m-dispatch.js:306-318
 dispUrg                      src/28m-dispatch.js:335
-dispUrgOk                    src/28m-dispatch.js:255
 dispW                        src/28m-dispatch.js:218
 dispatchEtherLine            src/12ag-holdfx.js:57-76
 dkPaper                      src/27ia-desk-top.js:37-45
@@ -4434,6 +4436,13 @@ fusePreview                  src/03-ships.js:46-63
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:64-102
 fuzzRich                     tests/90a-tools.js:701
+fwHome                       src/28o-firstwatch.js:33-38
+fwMin                        src/28o-firstwatch.js:31
+fwOn                         src/28o-firstwatch.js:25-30
+fwRestore                    src/28o-firstwatch.js:71-79
+fwSt                         src/28o-firstwatch.js:18-24
+fwTick                       src/28o-firstwatch.js:40-58
+fwUndock                     src/28o-firstwatch.js:60-70
 fwdAnnounce                  src/21b6-base-forward.js:83-94
 fwdBase                      src/21b6-base-forward.js:61-71
 fwdCorridor                  src/21b6-base-forward.js:57
@@ -8699,14 +8708,14 @@ watchHanded                  src/28j-watch.js:82
 watchHas                     src/28j-watch.js:68
 watchIn                      src/28j-watch.js:58
 watchJudge                   src/28j-watch.js:98-126
-watchMenuSync                src/28j-watch.js:299-309
-watchMenuTap                 src/28j-watch.js:310-321
+watchMenuSync                src/28j-watch.js:300-310
+watchMenuTap                 src/28j-watch.js:311-322
 watchName                    src/28j-watch.js:49
 watchNeedAt                  src/28j-watch.js:70-76
 watchNpc                     src/28j-watch.js:81
 watchNpcRate                 src/28j-watch.js:77-80
 watchReassign                src/28j-watch.js:128-137
-watchSection                 src/28j-watch.js:239-268
+watchSection                 src/28j-watch.js:239-269
 watchSeed                    src/28j-watch.js:48
 watchSt                      src/28j-watch.js:34-47
 watchStations                src/28j-watch.js:59-67
@@ -10515,7 +10524,7 @@ zoomTo                       src/15-input.js:358
 ## src/28i-insure.js · 7 KB
   · Страхкасса и потеря корпуса (M904c · DESIGN-game §5.1, развилка F3):1
 
-## src/28j-watch.js · 20 KB
+## src/28j-watch.js · 21 KB
   · участок, норма, сдача смены (M905 · DESIGN-game §3.2, §3.4, §10.2, §10.3, §10.5):1
 
 ## src/28k-offline.js · 4 KB
@@ -10529,6 +10538,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/28n-access.js · 11 KB
   · доступ: кредиты покупают вещи, допуск — нужные (M908 · DESIGN-game §4.4):1
+
+## src/28o-firstwatch.js · 5 KB
+  · первая вахта: первый час — это первая смена (M909 · DESIGN-game §10.7):1
 
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
@@ -10706,9 +10718,11 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw9d-gauge.js · 8 KB
 
-## tests/91zzzw9e-dispatch.js · 10 KB
+## tests/91zzzw9e-dispatch.js · 11 KB
 
 ## tests/91zzzw9f-access.js · 8 KB
+
+## tests/91zzzw9g-firstwatch.js · 5 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
