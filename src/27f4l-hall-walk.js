@@ -46,6 +46,7 @@ function hallWalkSettle(){
   if(W.goal!=null){W.x=W.goal;W.goal=null;const g=W.go;W.go=null;if(g)hallWalkEngage(g);}
   else{const p=hallWalkNear(W);if(p&&!W.eng)W.x=p.x;}
   W.v=0;W.ph=0;W.cx=W.x;W.fk=W.eng?1:0;W.tl=0;W.ts=0;const n=hallWalkNear(W);if(n)W.at=n.id;
+  if(HALL.to)HALL.from=null;   /* и наезд камеры — сразу в конце: hallGlideAt отдаёт цель */
   hallWalkUi(true);
 }
 /* ход: x на линии, лицо (±1), фаза шага, скорость, цель (x) и место, в которое войти по приходу */
@@ -88,12 +89,21 @@ function hallWalkPose(W){
   return A.map((v2,i)=>st[i]+(v2-st[i])*m);
 }
 /* пилот на линии: x, z, разворот, поза (массив углов или имя) */
+/* в месте пилот подходит к вещи: прежние точки станции (HALL_PILOT_AT — под них сняты ближние виды), у доски,
+   конторы и шлюза — свои. Подход идёт вместе с наездом (W.fk): с линии к точке, поза точки — в конце */
+const HALL_WALK_SPOT={lock:[-6.75,HALL_WZ,-Math.PI/2,"stand"],board:[-3.05,-1.75,Math.PI,"stand"],hold:[4.3,-1.0,Math.PI-.4,"stand"]};
+const HALL_WALK_POV={board:1,hold:1};
+function hallWalkSpot(id){return id?HALL_WALK_SPOT[id]||HALL_PILOT_AT[id==="ship"&&tab==="site"?"site":id]||null:null;}
 function hallWalkPilot(){
   const W=HALL.walk;if(!W||!hallWalkOn()||HALL.pilot===false)return null;
   const mv=Math.abs(W.v)>.05,p=hallPlacesHere().find(q=>q.id===(W.eng||W.at));
+  const sp=W.fk>0?hallWalkSpot(W.eng||W.at):null,k=sp?hallEase(W.fk):0;
   /* идёт — боком на три четверти к объективу; стоит у места — к вещи; просто стоит — к объективу вполоборота */
-  const yaw=mv?W.face*(Math.PI/2-.42):p?p.yaw:W.face*(Math.PI/2-.9);
-  W.yaw=W.yaw==null?yaw:W.yaw+Math.atan2(Math.sin(yaw-W.yaw),Math.cos(yaw-W.yaw))*.22;
+  const yaw=k>.5?sp[2]:mv?W.face*(Math.PI/2-.42):p?p.yaw:W.face*(Math.PI/2-.9);
+  W.yaw=W.yaw==null||W.fk>=1?yaw:W.yaw+Math.atan2(Math.sin(yaw-W.yaw),Math.cos(yaw-W.yaw))*.22;
+  /* доска и контора: ближний вид — глаза самого пилота (M814), на подходе он уходит в объектив */
+  if(sp&&k>.6&&HALL_WALK_POV[W.eng||W.at])return null;
+  if(sp)return [W.x+(sp[0]-W.x)*k,HALL_WZ+(sp[1]-HALL_WZ)*k,W.yaw,k>.85?sp[3]:"stand"];
   return [W.x,HALL_WZ,W.yaw,mv||Math.abs(W.v)>.001?hallWalkPose(W):"stand"];
 }
 /* объектив хода: следом за пилотом с задержкой τ .45 с, в пределах зала (кромка кадра не уходит за торцы) */
@@ -109,8 +119,14 @@ function hallCamFr(c,w,h,cx,cy){
   const asp=w/Math.max(1,h),P=r3Persp(c.fy,asp,.1,90);P[8]=-(2*cx-1);P[9]=2*cy-1;
   return {eye:c.eye,tgt:c.tgt,fy:c.fy,asp,vp:r3Mul(P,r3Look(c.eye,c.tgt,[0,1,0]))};
 }
-/* поле места на телефоне: карточка снизу, место — в верхних 45 %: ширина та же, что у героя на ПК (≈ .71 высоты) */
-function hallPhFy(fy,asp){return 2*Math.atan(Math.tan(fy/2)*.82/Math.max(.3,asp));}
+/* ближний вид места на телефоне: лист снизу, место — в верхних 45 %. Цель — между вещью (табличкой) и пилотом,
+   пилот уже у вещи (hallWalkSpot), цель между ними; глаз спереди за 4,6 м и чуть выше; поле — чтобы от пола до 2,7 м легло в полосу (h 2,8 м на полосу .45) */
+function hallWalkPhCam(p,asp){
+  const sp=HALL_WALK_POV[p.id]?[p.tag[0],p.tag[2]]:hallWalkSpot(p.id)||[p.x,HALL_WZ];   /* без пилота — цель на вещи */
+  const tx=Math.max(HALL_L+1.1,(p.tag[0]+sp[0])/2),tz=Math.min(HALL_WZ,(p.tag[2]+sp[1])/2),D=4.6;
+  const fy=2*Math.atan(1.45/D/.45);
+  return {eye:[tx+.4,1.85,tz+D],tgt:[tx,1.25,tz],fy};
+}
 /* камера кадра: ход — объектив хода; в месте — станция места; переход — плавно (вход .45 с, выход .7 с) */
 function hallWalkCam(L,sz,c0){
   const W=HALL.walk,tm=wallMs(),dt=W.tl?Math.min(.1,(tm-W.tl)/1000):1;W.tl=tm;
@@ -118,12 +134,12 @@ function hallWalkCam(L,sz,c0){
   const fk=W.eng?1:0;W.fk+=(fk-W.fk)*(1-Math.exp(-dt/(W.eng?.16:.24)));if(Math.abs(W.fk-fk)<.002)W.fk=fk;
   const k=hallEase(W.fk);
   /* место: станция камеры (её наезд и линза строк — прежние); на телефоне поле шире под узкий кадр */
-  /* телефон: кадр узкий — цель и глаз сдвинуты по x на вещь места (табличка), иначе доска уходит за кромку */
-  const pl=ph&&c0&&W.eng?HALL_PLACES.find(q=>q.id===W.eng):null,sx=pl&&W.eng!=="lock"?pl.tag[0]-c0.tgt[0]:0;
-  const pc=c0?{eye:[c0.eye[0]+sx,c0.eye[1],c0.eye[2]],tgt:[c0.tgt[0]+sx,c0.tgt[1],c0.tgt[2]],fy:ph?hallPhFy(c0.fy,asp):c0.fy}:wl;
+  /* телефон: станции камер сняты под ПК (полкадра потолка) — у места свой ближний вид, hallWalkPhCam */
+  const pl=ph&&c0&&W.eng?HALL_PLACES.find(q=>q.id===W.eng):null;
+  const pc=pl?hallWalkPhCam(pl,asp):c0?{eye:c0.eye,tgt:c0.tgt,fy:c0.fy}:wl;
   const m=(a,b)=>a.map((v,i)=>v+(b[i]-v)*k);
   const c={eye:m(wl.eye,pc.eye),tgt:m(wl.tgt,pc.tgt),fy:wl.fy+(pc.fy-wl.fy)*k};
-  const cx=.5+((ph?.5:.32)-.5)*k,c0y=ph?.6:.5,cy=c0y+((ph?.1:.5)-c0y)*k;   /* телефон на ходу: цель ниже середины — сцена под полосой мест, а не над пустым срезом */
+  const cx=.5+((ph?.5:.32)-.5)*k,c0y=ph?.6:.5,cy=c0y+((ph?.225:.5)-c0y)*k;   /* телефон на ходу: цель ниже середины — сцена под полосой мест, а не над пустым срезом */
   const cam=hallCamFr(c,sz.cw,sz.ch,cx,cy);cam.c=c;return cam;
 }
 function hallWalkMoving(){const W=HALL.walk;return !!W&&(Math.abs(W.v)>.01||W.goal!=null||(W.fk>0&&W.fk<1)||(W.cx!=null&&Math.abs(W.cx-W.x)>.02&&Math.abs(W.v)>0));}
