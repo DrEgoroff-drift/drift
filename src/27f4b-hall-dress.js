@@ -68,7 +68,7 @@ function hallDrum(K,x,z,acc,c){K.push([x,0,z]);K.lathe([[0,.28],[.05,.3],[.45,.3
 
 /* ── кости: пол, стены, потолок, балки, окно, доска, стойка, верстак, контора ── */
 function hallBones(K,L,R){
-  const T=L.T,P=R3P,hc=T.hc,X0=HALL_L,X1=L.R,B=HALL_B,F=HALL_F,wall=T.wall,wy=hallWinY(T);
+  const T=L.T,P=R3P,hc=T.hc,X0=HALL_L,X1=L.R,B=HALL_B,F=L.cut?HALL_FCUT:HALL_F,wall=T.wall,wy=hallWinY(T);
   const rough=T.win===1||T.weld||T.dark;   /* литейка, верфь, застава — бетон и сталь, не плитка */
   const Mw=K.mt(wall.map(v=>v*1.25),.25,6,P.wall),Mw2=K.mt(mixc(wall,[12,10,10],.35),.3,6,P.wall);
   const Mf=K.mt(rough?[92,90,86]:mixc(wall,[100,92,82],.5),rough?.25:.32,rough?6:7,P.floor);   /* блеск мягкий: точечный свет окна в полу у камеры горел «пламенем» */
@@ -81,7 +81,16 @@ function hallBones(K,L,R){
   hallWall(K,X0,X1,0,1.0,B,[],Mw2);hallWall(K,X0,X1,1.0,hc,B,holes,Mw);
   K.quad([X0,0,F],[X0,0,B],[X0,hc,B],[X0,hc,F],Mw,[1,0,0]);
   K.quad([X1,0,B],[X1,0,F],[X1,hc,F],[X1,hc,B],Mw,[-1,0,0]);
-  K.quad([X1,0,F],[X0,0,F],[X0,hc,F],[X1,hc,F],Mw,[0,0,-1]);
+  /* M816: на ходу ближняя стена срезана, как у дома: вместо неё — срез, тёмная сталь по полу, стенам и потолку */
+  if(!L.cut)K.quad([X1,0,F],[X0,0,F],[X0,hc,F],[X1,hc,F],Mw,[0,0,-1]);
+  else{const Cs=K.mt([34,33,32],.35,7,P.brushed),Cb=K.mt(L.acc,.4,7,P.hazard);
+    K.box([(X0+X1)/2,-.8,F-.1],[(X1-X0)/2+.2,.8,.1],Cs,.01);   /* без жёлтой ленты по срезу: её резали кнопки хода */
+    K.box([(X0+X1)/2,hc+.2,F-.1],[(X1-X0)/2+.2,.2,.1],Cs,.01);
+    for(const x of [X0-.1,X1+.1])K.box([x,hc/2,F-.1],[.1,hc/2+.42,.1],Cs,.01);
+    /* шлюз в левой стене: рама, створка, жёлтая обвязка, лампа над ним */
+    const zc=HALL_WZ+.1;K.box([X0+.03,1.08,zc],[.04,1.1,.62],Cs,.02);K.box([X0+.06,1.04,zc],[.02,1.0,.5],K.mt([86,90,96],.5,9,P.brushed),.03);
+    K.box([X0+.075,1.04,zc],[.004,.9,.012],Cb,0);for(const y of [.06,2.12])K.box([X0+.05,y,zc],[.05,.04,.66],Cb,.006);
+    K.box([X0+.1,2.32,zc],[.07,.05,.12],K.mt([255,190,110],.2,4,0,1.4),.01);}
   K.quad([X0,hc,B],[X1,hc,B],[X1,hc,F],[X0,hc,F],K.mt(mixc(wall,[150,150,146],.2).map(v=>v*1.1),.2,4,P.ceil),[0,-1,0]);
   K.box([(X0+X1)/2,1.0,B+.02],[(X1-X0)/2,.025,.02],Tr,.008);K.box([(X0+X1)/2,.05,B+.015],[(X1-X0)/2,.05,.015],Tr,.006);
   K.box([X0+.015,.05,(B+F)/2],[.015,.05,(F-B)/2],Tr,.006);
@@ -104,7 +113,7 @@ function hallBones(K,L,R){
   K.box([(bx0+bx1)/2,by1+.16,bz+.03],[.34,.055,.012],K.mt([40,38,36],.4,8,0),.006);   /* табличка «ДОСКА» над рамой — тёмная плашка */
   K.box([(bx0+bx1)/2,by1+.16,bz+.043],[.28,.012,.001],K.mt(L.acc,.3,6,0,.35),0);}
   /* стойка вдоль левой стены: корпус, столешница, полка за спиной хозяина */
-  const cx=-5.2,cz0=-2.74,cz1=2.5,cm=(cz0+cz1)/2,ch=(cz1-cz0)/2,Ms=HALL_COUNTER[L.st]||HALL_COUNTER.trade;
+  const cx=-5.2,cz0=-2.74,cz1=L.cut?.95:2.5,cm=(cz0+cz1)/2,ch=(cz1-cz0)/2,Ms=HALL_COUNTER[L.st]||HALL_COUNTER.trade;
   const Mb=K.mt(Ms[0],.4,8,Ms[2]),Mt=K.mt(Ms[1],.55,10,Ms[3]);
   K.box([cx,.48,cm],[.33,.48,ch],Mb,.02);
   K.box([cx+.335,.05,cm],[.012,.05,ch-.02],K.mt(mixc(Ms[0],[0,0,0],.5),.3,6,0),.004);
