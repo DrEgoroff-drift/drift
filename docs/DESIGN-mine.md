@@ -117,7 +117,9 @@ snippets from `mk_digcost.py`.
   view would pop the whole ground); the lay rule keeps that slope within what the legs take.
 - The lab's law `91qk` was reworded by Control: the headframe is judged where the game puts it, and
   refusals may be at most a third of the spots.
-- The lab's `91qm-seeds` waits outside the gate: it calls `surfGen` from the unmerged `qa-1014` work.
+- The lab's `91qm-seeds` is back in the gate (22.10). It never was on main (it lived on `lab-local`) and
+  came back red on three surface laws; those defects are listed by world in `SEED_KNOWN` and put in
+  `PLAN.md` §11 rather than fixed here — the fixes move deposits and POI in the surface's modules.
 - The surface labels count px as «м» — older than this work, left alone.
 - The cage's load is 24 places whatever the hold: a trip up per cage, not per hold. The cage rides up
   only with the man (there is no sending it alone); the ore of a drift reaches the cage at once (the

@@ -31,6 +31,7 @@
   "tests/91qj-pace.js": ["src/06-galaxy.js", "src/08-state.js", "src/20e-species.js", "src/21pib-pln-beast.js"],
   "tests/91qk-ground.js": ["src/01-core.js", "src/07a-terrain.js", "src/08-state.js", "src/21e-surface-draw.js", "src/21p-pln.js", "src/21pb-pln-wgsl-air.js", "src/21pf-pln-land.js", "src/21pi-pln-things.js", "src/23cc-mine-play.js"],
   "tests/91ql-light.js": ["src/01-core.js", "src/06a-celest.js", "src/08-state.js", "src/21p-pln.js", "src/21pf-pln-land.js", "src/21pz-pln-frame.js", "src/28y-look.js"],
+  "tests/91qm-seeds.js": ["src/06-galaxy.js", "src/07a-terrain.js", "src/08-state.js", "src/16-flight.js", "src/17c-system-draw.js", "src/19f-lander.js", "src/20a-poi.js", "src/21-mode-surface.js", "src/21b-surface-deco.js", "src/21e-surface-draw.js", "src/21p-pln.js", "src/21pf-pln-land.js"],
   "tests/91qn-arb.js": ["src/01-core.js", "src/02-world.js", "src/06-galaxy.js", "src/08-state.js", "src/12-economy.js", "src/12ab-hold.js"],
   "tests/91qo-savefuzz.js": ["src/08-state.js", "src/08a-statehash.js", "src/14-save.js", "src/14a-cloud.js", "src/17c-system-draw.js"],
   "tests/91qp-cloudchaos.js": ["src/01-core.js", "src/14-save.js", "src/14a-cloud.js", "src/23cc-mine-play.js"],
