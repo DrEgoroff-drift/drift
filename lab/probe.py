@@ -24,6 +24,7 @@ def main():
     ap.add_argument("--wait", type=float, default=3, help="seconds of steady mode before the snippet")
     ap.add_argument("--port", type=int, default=9702)
     ap.add_argument("--profile", type=float, default=0, help="seconds of JS profile after the snippet: who eats frames over 33 ms")
+    ap.add_argument("--ws", type=float, default=300, help="CDP socket timeout, seconds: a long snippet needs more")
     a = ap.parse_args()
     if a.js.startswith("@"): a.js = open(a.js[1:], encoding="utf-8").read()   # сниппет файлом: кавычки консоли его не портят
     shot.HERE = os.path.join(a.root, "docs")
@@ -37,12 +38,12 @@ def main():
                              "--enable-unsafe-webgpu", "--enable-precise-memory-info", "--window-size=%d,%d" % (a.w, a.h), "about:blank"],
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
-        for _ in range(60):
+        for _ in range(160):
             try: urllib.request.urlopen("http://127.0.0.1:%d/json/version" % a.port, timeout=2); break
             except Exception: time.sleep(.25)
         req = urllib.request.Request("http://127.0.0.1:%d/json/new?about:blank" % a.port, method="PUT")
         t = json.load(urllib.request.urlopen(req, timeout=10))
-        ws = shot.WS(t["webSocketDebuggerUrl"], 300)
+        ws = shot.WS(t["webSocketDebuggerUrl"], a.ws)
         ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=a.dpr, mobile=a.mobile)
         ws.call("Network.enable"); ws.call("Network.setBlockedURLs", urls=shot.BLOCK)
         ws.call("Page.enable"); ws.call("Page.addScriptToEvaluateOnNewDocument", source=shot.CATCH)
