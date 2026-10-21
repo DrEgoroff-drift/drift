@@ -62,8 +62,9 @@ frame's fade of light (the spa from the shore's day, the wintering from the stat
 A new module `29r-rooms-r3.js` (after `29i`): the canvas `#room3d` (the hall's `#stHall` twin,
 one for the four modes), the scene cache per room, the camera stations, the breath and the
 glide, the hit rectangles of the room's things published in game pixels for `15-input`
-(anchors projected through `vp`, as the hall's plate does), the switch `ROOM3.on` true by
-default, `?room=0` the old painters until M890 (none left for the wintering and the spa: their 2D painters were deleted 22.10, no fallback path; without a GPU the game shows its «no WebGPU» plate). New window kinds in `outside()` (`27f2:206`,
+(anchors projected through `vp`, as the hall's plate does), and no 2D path: the old painters of
+all four rooms were deleted 22.10 together with `ROOM3.on` and `?room=0` (the author: «2D must not
+exist»); without a GPU a room draws nothing and the game shows its «no WebGPU» plate (08b2). New window kinds in `outside()` (`27f2:206`,
 `C3_VIEW`): `planet` (the planet's sky at the hour as a card baked by `21pz`'s sky once per
 hour), `snow` (the ridge and the blizzard, driven by the wintering's storm), `sea` (the spa's
 `spaSea` ported: waves and the sun's path by the day's slot), `yard` (the home's yard, the
@@ -82,17 +83,18 @@ spa, a jacket at home, the suit's underlayer in HQ); the live face reads the roo
 | **Spa** (M850d) | `instRest` on an ocean world | the veranda: deck, rail, the awning, the chess table, the deck chair, a glass; the sea as the window kind `sea` filling the back; the board on a post at the rail's end | **the sun** is the key with shadows — the awning's stripes lie on the deck and move with the day's slot (morning long, noon short, evening long and warm); the sea's glare the fill | the pilot at the rail (`lean`) and the neighbour reclining (`recline`), the generator, the live face `glad` | the schedule on its post, crossed lines as decals; «СПАТЬ» a plate on the deck chair |
 | **«Сорока»** (M851) | `wanderDock` | keep the corridor of cases and the slit window; the keeper gets the generator's body and a live face (a fixed gene, the kit `keep`), standing behind the cases | keep the room's light; the keeper's face takes a small key | the case under the cursor; the keeper when he speaks | the card's leader goes to **his head**; the road screen's (`27k`) ship becomes the 3D hull (`hullStudio`) and its sky soft |
 
-The old painters (`drawHqRoom`, `hqFigure`, `drawHomeRoom`, `drawHomeIn`, `hinFigure`,
-`drawWinter`, `winFigure`, `drawSpa`, `spaFolk`, `wanKeeper`) go behind `ROOM3.on`; none is
-edited. `mgrFace(` loses its last caller (M802's gate closes).
+The old room painters (`drawHqRoom`, the 2D `drawHomeIn`, `hinFigure`, `drawWinter`, `winFigure`,
+`drawSpa`, `spaFolk`) are deleted (22.10). `hqFigure` stays in `27f` for the panels that still
+call it (`11w-vega`, `27e-ui-home`); `drawHomeRoom` (`27e`) and `wanKeeper` (`24c`) are other
+screens. `mgrFace(` loses its last caller (M802's gate closes).
 
 ## 5. What stays, what goes
 
 - **Stays:** every mode's logic (`enterHomeIn`, `winShift`, `spaSleep`, `wanStep`, the tiers,
   the levers, the faults, the diary, the folk's lines), the saves, the HUD, `winGeom`'s hit
   shapes as the source of the hit rectangles, the DOM of HQ's card and «Сорока»'s panel.
-- **Goes behind the switch:** the 2D rooms and figures above; `roomBake`/`roomSz` for these
-  four modes.
+- **Gone (22.10):** the 2D rooms and figures above, `29c0-rooms-gpu` (`roomBake`/`roomSz`), the
+  panel sprites of `27f1` (`rpgFrame`/`rpgImage`/`rpgShapes`), the switch and `?room=0`.
 - **Changes:** `outside()` gains four kinds; `cpPose` gains `lie`, `recline`, `walk`; `CP_KIT`
   gains `pilot`; `15-input` reads the room's published rectangles where it read `winGeom`
   and `HOME_HIT` (at the seam, the tables kept as the fallback).
@@ -115,9 +117,8 @@ edited. `mgrFace(` loses its last caller (M802's gate closes).
 ## 7. Tests
 
 A Node suite `91qj-rooms`: every room has a scene builder and one shadowed key; shadowed
-lights ≤ 6 and lights ≤ 12 per frame; the four window kinds exist; under `ROOM3.on` no 2D
-figure painter runs (the old names are not called); each room publishes a hit rectangle for
+lights ≤ 6 and lights ≤ 12 per frame; the four window kinds exist; no 2D figure painter runs (the old names do not exist); each room publishes a hit rectangle for
 every thing its tap table names; the winter's key power follows `G.win.pw.light`; the spa's
 sun angle follows the day's slot; the pilot's gene is stable across a save round trip;
-`?room=0` leaves every old path whole. A browser suite: open each room, tap its things, close
+A browser suite: open each room, tap its things, close
 — `errs 0`, no bind group meets a foreign pipeline.

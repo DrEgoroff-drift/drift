@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 619 · top-level symbols: 8724
+Files: 617 · top-level symbols: 8660
 
 ## SYMBOLS
 
@@ -854,16 +854,16 @@ GPU_FRONT_LIKE               src/08b-gpu.js:533
 GPU_IMG_WGSL                 src/08c-gpu-kit.js:193
 GPU_KEEP_A                   src/08c-gpu-kit.js:11
 GPU_KIT_WGSL                 src/08c-gpu-kit.js:167
-GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:104
-GPU_LATE_KEYS                src/08b0-gpu-pipe.js:96-124
+GPU_LATE_GROUPS              src/08b0-gpu-pipe.js:103
+GPU_LATE_KEYS                src/08b0-gpu-pipe.js:95-123
 GPU_LIT_DK                   src/17c-system-draw.js:320
 GPU_LIT_SH                   src/17c-system-draw.js:318
 GPU_MIP                      src/08c-gpu-kit.js:98
 GPU_MIP_LOD                  src/08c-gpu-kit.js:192
 GPU_PIPES                    src/08b0-gpu-pipe.js:11
 GPU_PIPE_KEYS                src/08b1-gpu-pipe-keys.js:3-67
-GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:52
-GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:44-65
+GPU_PIPE_ONE                 src/08b0-gpu-pipe.js:51
+GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:43-64
 GPU_PL_WGSL                  src/08b-gpu.js:485
 GPU_POST_WGSL                src/08b-gpu.js:80
 GPU_SCR                      src/08c-gpu-kit.js:174
@@ -1090,18 +1090,8 @@ HG_LRU                       src/17c2-hull-gpu.js:14
 HG_SIDE                      src/17c2-hull-gpu.js:17
 HG_THR                       src/17c2-hull-gpu.js:16
 HG_U                         src/17c2-hull-gpu.js:92
-HIN_AIR_WGSL                 src/29d-home-draw.js:228
-HIN_CH                       src/29d-home-draw.js:123
-HIN_DOORW                    src/29c-home-in.js:24
-HIN_FLIT_WGSL                src/29d-home-draw.js:219
-HIN_FV                       src/29d-home-draw.js:240
-HIN_HAZE_WGSL                src/29d-home-draw.js:203
-HIN_LIGHT_U                  src/29d-home-draw.js:246
-HIN_LIGHT_WGSL               src/29d-home-draw.js:168
-HIN_MAN                      src/29c-home-in.js:20
-HIN_ROOM_H                   src/29c-home-in.js:21
-HIN_ROOM_W                   src/29c-home-in.js:26
-HIN_THINGS                   src/29c-home-in.js:204-228
+HIN_ROOM_W                   src/29c-home-in.js:21
+HIN_THINGS                   src/29c-home-in.js:199-223
 HIN_UP                       src/29e-home-up.js:20
 HIT_FX                       src/18d-postfx.js:10
 HIT_REAR                     src/13-combat.js:11
@@ -1168,11 +1158,7 @@ HQ3                          src/29r-rooms-r3.js:18
 HQ3_CAMS                     src/29r-rooms-r3.js:23
 HQ3_SCR                      src/29r-rooms-r3.js:21
 HQ3_X                        src/29r-rooms-r3.js:19
-HQ_FACE_ID                   src/27f-hq-room.js:38
-HQ_H                         src/27f-hq-room.js:18
-HQ_LIT_U                     src/27f-hq-room.js:109
-HQ_LIT_WGSL                  src/27f-hq-room.js:127
-HQ_ORDER                     src/27f-hq-room.js:21
+HQ_ORDER                     src/27f-hq-room.js:7
 HS_LT                        src/17c2-hull-gpu.js:147
 HS_SIDE                      src/17c2-hull-gpu.js:149
 HUD_BAND                     src/27z-telemetry.js:21
@@ -1997,17 +1983,11 @@ ROLE_BY_HULL                 src/03f-hull-role.js:33
 ROLE_KEYS                    src/12a-crew.js:169
 ROLE_LIM                     src/13c-roles.js:7
 ROMAN                        src/01-core.js:185
-ROOM3                        src/29r-rooms-r3.js:12
+ROOM3                        src/29r-rooms-r3.js:13
 ROOM3_M                      src/29r-rooms-r3.js:15
 ROOM_FIN                     src/21aa-base-rooms.js:70-80
-ROOM_WGSL_NOISE              src/29c0-rooms-gpu.js:2
 ROUTE_MAX                    src/12r-route.js:29
-RPG_CAP                      src/27f1-room-gpu.js:14
-RPG_IDS                      src/27f1-room-gpu.js:120
-RPG_NOP                      src/27f1-room-gpu.js:156
-RPG_NOP_R                    src/27f1-room-gpu.js:155
-RPG_NULL                     src/27f1-room-gpu.js:157
-RPG_WGSL                     src/27f1-room-gpu.js:132
+RPG_IDS                      src/27f1-room-gpu.js:37
 RTONE                        src/09a-roomtone.js:22
 RUIN_AFTER                   src/21b0-base-ruin.js:18
 RUIN_FIX                     src/21b0-base-ruin.js:22
@@ -3964,11 +3944,10 @@ drawGroundCrumbs             src/19-mode-landing-ground.js:271-281
 drawGroundGrass              src/19-mode-landing-ground.js:284-321
 drawHaul                     src/16c-rescue.js:531-538
 drawHitFx                    src/18d-postfx.js:81-87
-drawHomeIn                   src/29d-home-draw.js:9-110
+drawHomeIn                   src/29rb-home-r3.js:453-458
 drawHomeOut                  src/21f-home-out.js:75-265
 drawHomeRoom                 src/27e-ui-home.js:49-77
 drawHotel                    src/17l-hotel.js:147-174
-drawHqRoom                   src/27f-hq-room.js:51-99
 drawHull                     src/03e-hull-draw.js:117-196
 drawHullMarks                src/03b-hull-paint.js:184-491
 drawKitFigure                src/12x-suit.js:286-306
@@ -4116,7 +4095,7 @@ enterBase                    src/21a-mode-base.js:121-153
 enterBelt                    src/24-mode-belt.js:71-120
 enterCave                    src/22-mode-cave.js:227-242
 enterDig                     src/23-mode-dig.js:51-73
-enterHomeIn                  src/29c-home-in.js:65-73
+enterHomeIn                  src/29c-home-in.js:60-68
 enterRaid                    src/24a-mode-raid.js:219-274
 enterSpa                     src/29h-spa.js:51-66
 enterSurface                 src/21-mode-surface.js:173-209
@@ -4149,7 +4128,7 @@ exitBase                     src/21a-mode-base.js:154-158
 exitBelt                     src/24-mode-belt.js:161-169
 exitCave                     src/22-mode-cave.js:243-247
 exitDig                      src/23-mode-dig.js:74-84
-exitHomeIn                   src/29c-home-in.js:74-78
+exitHomeIn                   src/29c-home-in.js:69-73
 exitScoop                    src/19a-mode-scoop.js:65-78
 exitSpa                      src/29h-spa.js:120-126
 exitWanderer                 src/24c-mode-wanderer.js:42-48
@@ -4617,7 +4596,7 @@ gplSun                       src/17ga-gpu-planets.js:334-337
 gpsBake                      src/17gb-gpu-planet-strip.js:106-122
 gpsDesc                      src/17gb-gpu-planet-strip.js:98
 gpsPipe                      src/17gb-gpu-planet-strip.js:100-104
-gpuAfterWarm                 src/08b0-gpu-pipe.js:82-86
+gpuAfterWarm                 src/08b0-gpu-pipe.js:81-85
 gpuArena                     src/08c-gpu-kit.js:156-166
 gpuBake                      src/08ca-gpu-canvas.js:529-534
 gpuBakeDrop                  src/08ca-gpu-canvas.js:544
@@ -4680,12 +4659,12 @@ gpuOver                      src/08b-gpu.js:605-625
 gpuPass                      src/08b-gpu.js:455-458
 gpuPipe                      src/08c-gpu-kit.js:20-24
 gpuPipeDesc                  src/08c-gpu-kit.js:25-30
-gpuPipeRecipe                src/08b0-gpu-pipe.js:57-65
+gpuPipeRecipe                src/08b0-gpu-pipe.js:56-64
 gpuPipeline                  src/08b0-gpu-pipe.js:25-30
 gpuPipes                     src/08b-gpu.js:370-391
 gpuPipesDev                  src/08b0-gpu-pipe.js:13-17
-gpuPipesLate                 src/08b0-gpu-pipe.js:107-124
-gpuPipesWarm                 src/08b0-gpu-pipe.js:68-80
+gpuPipesLate                 src/08b0-gpu-pipe.js:106-123
+gpuPipesWarm                 src/08b0-gpu-pipe.js:67-79
 gpuPirateBody                src/12i-pirate-hull.js:425-436
 gpuPirateLive                src/12i-pirate-hull.js:443-489
 gpuPlanet                    src/17ga-gpu-planets.js:340-358
@@ -5108,39 +5087,20 @@ hgTick                       src/27j1-ui-hangar.js:299-355
 hgUnits                      src/27j1-ui-hangar.js:23-41
 hgWire                       src/27j1-ui-hangar.js:175-195
 hgZone                       src/27j1-ui-hangar.js:59-98
-hinChunks                    src/29d-home-draw.js:124-149
-hinDrawHole                  src/29e-home-up.js:219-238
-hinDrawShell                 src/29e-home-up.js:59-172
-hinDrawStair                 src/29e-home-up.js:175-217
-hinFigure                    src/29d-home-draw.js:820-936
-hinFolkMake                  src/29c-home-in.js:84-114
-hinFolkTick                  src/29c-home-in.js:115-158
-hinFrontStuff                src/29d-home-draw.js:516-549
-hinFrontTex                  src/29d-home-draw.js:241-245
-hinGlow                      src/29d-home-draw.js:260-285
-hinGroundRooms               src/29c-home-in.js:28-37
+hinFolkMake                  src/29c-home-in.js:79-109
+hinFolkTick                  src/29c-home-in.js:110-153
+hinGroundRooms               src/29c-home-in.js:23-32
 hinHasUp                     src/29e-home-up.js:22
 hinHoleX                     src/29e-home-up.js:41-45
-hinLightU                    src/29d-home-draw.js:248-259
-hinMaterialize               src/29d-home-draw.js:948-981
-hinNear                      src/29c-home-in.js:229-237
-hinPaintBack                 src/29d-home-draw.js:287-484
-hinPaintFront                src/29d-home-draw.js:486-510
-hinPal                       src/29d-home-draw.js:6-8
-hinRoomAt                    src/29c-home-in.js:60-63
-hinRoomStuff                 src/29d-home-draw.js:562-816
-hinRooms                     src/29c-home-in.js:42-49
-hinSeams                     src/29d-home-draw.js:556-561
-hinSig                       src/29d-home-draw.js:113-117
-hinSpan                      src/29c-home-in.js:52-59
+hinNear                      src/29c-home-in.js:224-232
+hinRoomAt                    src/29c-home-in.js:55-58
+hinRooms                     src/29c-home-in.js:37-44
+hinSpan                      src/29c-home-in.js:47-54
 hinStairX                    src/29e-home-up.js:36-39
-hinTalk                      src/29c-home-in.js:238-261
+hinTalk                      src/29c-home-in.js:233-256
 hinUpBounds                  src/29e-home-up.js:46-50
 hinUpRooms                   src/29e-home-up.js:24-34
-hinUpStuff                   src/29e-home-up.js:243-364
-hinUpWindow                  src/29e-home-up.js:367-417
-hinWidth                     src/29c-home-in.js:50
-hinWinXs                     src/29d-home-draw.js:151-160
+hinWidth                     src/29c-home-in.js:45
 hireMerc                     src/12a-crew.js:219-234
 hireMgr                      src/12c-mgr-core.js:302-318
 hitFx                        src/18d-postfx.js:11
@@ -5158,7 +5118,6 @@ holDock                      src/11am-holiday.js:86-121
 holEtherLine                 src/11am-holiday.js:76-82
 holMap                       src/11am-holiday.js:59
 holNow                       src/11am-holiday.js:61-73
-holTree                      src/11am-holiday.js:126-184
 holTreeUp                    src/11am-holiday.js:74
 holdAll                      src/12ab-hold.js:35
 holdAmbushMul                src/12ag-holdfx.js:115
@@ -5318,31 +5277,15 @@ hq3Scene                     src/29r-rooms-r3.js:105-142
 hq3Stand                     src/29r-rooms-r3.js:28
 hq3Tags                      src/29r-rooms-r3.js:225
 hqAiOffer                    src/27c-ui-hq.js:440-460
-hqBack                       src/27f-hq-room.js:294-365
 hqBtnTick                    src/27c-ui-hq.js:271-277
-hqConsole                    src/27f-hq-room.js:484-556
-hqFaceId                     src/27f-hq-room.js:39
-hqFigure                     src/27f-hq-room.js:675-781
-hqHolo                       src/27f-hq-room.js:368-423
-hqHover                      src/27f-hq-room.js:851
+hqFigure                     src/27f-hq-room.js:13-119
 hqJobCard                    src/27c-ui-hq.js:500-538
-hqLabels                     src/27f-hq-room.js:211-232
-hqLay                        src/27f-hq-room.js:30-35
-hqLitUni                     src/27f-hq-room.js:110-126
-hqLive                       src/27f-hq-room.js:237-292
-hqMgrAt                      src/27f-hq-room.js:36
-hqPx                         src/27f-hq-room.js:101-107
+hqMgrAt                      src/27f-hq-room.js:8
 hqRelicSlot                  src/27c-ui-hq.js:466-496
 hqRender                     src/27c-ui-hq.js:278-435
 hqRentOffer                  src/12f1-mgr-rent.js:59-77
-hqScene                      src/27f-hq-room.js:810-850
-hqScreenData                 src/27f-hq-room.js:558-610
-hqScreenKey                  src/27f-hq-room.js:41-50
+hqScene                      src/29r-rooms-r3.js:261
 hqSel                        src/27c-ui-hq.js:5
-hqStations                   src/27f-hq-room.js:475-479
-hqTable                      src/27f-hq-room.js:614-670
-hqWallProps                  src/27f-hq-room.js:426-472
-hqWindowView                 src/27f-hq-room.js:783-806
 hsAlive                      tests/91zzzzza-save-hostile.js:29-37
 hsMut                        tests/91zzzzza-save-hostile.js:20-27
 hud                          src/27z-telemetry.js:226-615
@@ -7086,7 +7029,6 @@ puFinger                     tests/91zzzzzd-pure.js:19-27
 putOnTable                   src/11b-speech.js:220-230
 qslAll                       src/11an-qsl.js:47-52
 qslDraw                      src/11an-qsl.js:116-144
-qslDrawWall                  src/11an-qsl.js:146-157
 qslEtherLine                 src/11an-qsl.js:72-77
 qslGot                       src/11an-qsl.js:55
 qslHear                      src/11an-qsl.js:60-70
@@ -7429,7 +7371,7 @@ renderLoreBoard              src/27h-ui-lore.js:26-79
 renderMail                   src/25k-post-mail.js:32-105
 renderOpts                   src/27-ui-ship.js:21-329
 renderPrices                 src/12aa-need.js:265-292
-renderQsl                    src/11an-qsl.js:160-201
+renderQsl                    src/11an-qsl.js:147-188
 renderRecord                 src/11aa-record.js:107-144
 renderRelays                 src/11ap-relay.js:253-301
 renderRoute                  src/12r-route.js:342-441
@@ -7662,16 +7604,10 @@ routeToggle                  src/12r-route.js:76-94
 routeValue                   src/12r-route.js:224-228
 routeVisit                   src/12r-route.js:179-191
 routeWhyNoPrice              src/12r-route.js:216-223
-rpgBake                      src/27f1-room-gpu.js:124-130
-rpgBindKit                   src/27f1-room-gpu.js:59-64
-rpgField                     src/27f1-room-gpu.js:103-118
-rpgFrame                     src/27f1-room-gpu.js:34-52
-rpgGet                       src/27f1-room-gpu.js:18-31
-rpgImage                     src/27f1-room-gpu.js:66-78
-rpgImgBind                   src/27f1-room-gpu.js:82-88
-rpgPut                       src/27f1-room-gpu.js:55-58
-rpgShapes                    src/27f1-room-gpu.js:90-101
-rpgTexId                     src/27f1-room-gpu.js:121
+rpgBake                      src/27f1-room-gpu.js:41-47
+rpgField                     src/27f1-room-gpu.js:20-35
+rpgGet                       src/27f1-room-gpu.js:7-18
+rpgTexId                     src/27f1-room-gpu.js:38
 rtInit                       src/09a-roomtone.js:23-40
 rtWant                       src/09a-roomtone.js:42-78
 rumourBlock                  src/11t-rumours.js:141-157
@@ -8407,7 +8343,7 @@ updateCave                   src/22-mode-cave.js:261-446
 updateCaveDeco               src/22a-cave-deco.js:205-228
 updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
-updateHomeIn                 src/29c-home-in.js:160-200
+updateHomeIn                 src/29c-home-in.js:155-195
 updateLanding                src/19-mode-landing.js:73-145
 updateMap                    src/18-mode-map.js:685-699
 updateRaid                   src/24a-mode-raid.js:300-430
@@ -8870,7 +8806,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/08b0-gpu-pipe.js · 11 KB
   · конвейеры: одна воронка и прогрев (DESIGN-gpu §G):1
-  · поздний прогрев: конвейеры режимов:87
+  · поздний прогрев: конвейеры режимов:86
 
 ## src/08b1-gpu-pipe-keys.js · 2 KB
   · таблица ключей прогрева (08b0) — пишет детектор, руками не править:1
@@ -8963,7 +8899,7 @@ zoomTo                       src/15-input.js:358
 ## src/11ak-skywatch.js · 17 KB
   · небесная вахта:1
 
-## src/11am-holiday.js · 11 KB
+## src/11am-holiday.js · 8 KB
   · праздники по настоящему календарю:1
 
 ## src/11an-qsl.js · 12 KB
@@ -10284,10 +10220,10 @@ zoomTo                       src/15-input.js:358
 ## src/27e-ui-home.js · 46 KB
   · дом: помещение, а не список:1
 
-## src/27f-hq-room.js · 53 KB
-  · ШТАБ: рубка, а не список:1
+## src/27f-hq-room.js · 8 KB
+  · штаб: порядок доменов и фигура человека:1
 
-## src/27f1-room-gpu.js · 11 KB
+## src/27f1-room-gpu.js · 3 KB
   · комната в панели — на видеокарте (G11):1
 
 ## src/27f2-room3d.js · 61 KB
@@ -10435,15 +10371,8 @@ zoomTo                       src/15-input.js:358
 ## src/29c-home-in.js · 16 KB
   · дом изнутри: по нему ходят:1
 
-## src/29c0-rooms-gpu.js · 1 KB
-  · шум для полей комнат: хеш и гладкий шум значений (дом 29d):1
-
-## src/29d-home-draw.js · 60 KB
-  · дом изнутри: кадр:1
-
-## src/29e-home-up.js · 22 KB
+## src/29e-home-up.js · 3 KB
   · второй этаж жилой части (M178-9):1
-  · оболочка дома (M178-9):52
 
 ## src/29f-winter.js · 15 KB
   · зимовка: месяц одному:1

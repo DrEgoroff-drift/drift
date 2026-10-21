@@ -226,7 +226,7 @@ function win3Frame(){
   const sl=win3SleepPh()>0,mk=WIN_USE.map(k=>win3Val(W,k)).join("")+"|"+W.day+"|"+(W.faults||[]).map(f=>f.k).join(",")+"|"+winCap(W)+(sl?"|z":"");
   if(!WIN3.mesh||WIN3.mkey!==mk){r3Drop(WIN3.mesh);WIN3.mesh=win3Mesh(W,sl);WIN3.mkey=mk;}
   const t=wallMs()/1000,cam=win3Cam(sz,t),S=win3Scene(cam,t);
-  const lab=rpgBake(R,"r3lab","win3|1",1,1,()=>{});   /* подписей поверх кадра нет: слой пустой, точка, а не холст в экран */
+  const lab=r3Dev()?R3.blank:null;   /* подписей поверх кадра нет: пустой вид движка, а не выпечка 2D (как зал, M816c) */
   const U=new Float32Array(60);
   S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
     if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});

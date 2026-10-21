@@ -8,9 +8,9 @@
    2. Одна лампа-ключ с тенью на комнату, герой под ней; заливка — второй свет места, вдвое тише.
    3. Палитра: один тон (холодная сталь штаба), один акцент — тёплые лампы занятых доменов; оранжевое людей — только
       на людях. Свет говорит о состоянии: пустой домен — тёмный пульт без лампы, выбранный — ярче всех.
-   4. Старые художники (drawHqRoom, hqFigure) не правятся: они живут за ROOM3.on (?room=0 — старый путь до M890). */
-const ROOM3={on:!(typeof location!=="undefined"&&/[?&]room=0(&|$)/.test(location.search||"")),
-  open:null,host:null,cn:null,raf:0,last:0,from:null,to:null,g0:0,gd:600,place:"all",
+   4. 2D-рубки нет (22.10, автор: «2D не должно быть»): drawHqRoom удалён вместе с ?room=0; без видеокарты
+      рубки нет — плашка «нет WebGPU» (08b2), как во всей игре. */
+const ROOM3={open:null,host:null,cn:null,raf:0,last:0,from:null,to:null,g0:0,gd:600,place:"all",
   L:null,mesh:null,rkey:"",err:0,frames:0,stat:null,vp:null,sz:null,night:null};
 const ROOM3_M=new Float32Array(R3_MAXI*R3_PART*16),ROOM3_OT=new Float32Array(R3_MAXI*R3_PART*4);
 
@@ -175,7 +175,7 @@ function room3Go(place,first){
 /* дыхание камеры: 2 см в секунду по кругу — комната живая, когда никто не двигается */
 function room3Breath(c,t){return {eye:[c.eye[0]+.02*Math.sin(t*.31),c.eye[1]+.012*Math.sin(t*.23),c.eye[2]],tgt:c.tgt,fy:c.fy};}
 function room3Night(){return ROOM3.night!=null?ROOM3.night:hallNight();}
-function room3Ok(){return ROOM3.on&&typeof document!=="undefined"&&!!(GPU&&GPU.dev)&&!(typeof HALL!=="undefined"&&HALL.err);}
+function room3Ok(){return typeof document!=="undefined"&&!!(GPU&&GPU.dev)&&!(typeof HALL!=="undefined"&&HALL.err);}
 function room3Open(id,host){
   const first=ROOM3.open!==id;
   ROOM3.open=id;ROOM3.host=host;host.classList.add("room3");room3Canvas(host);
@@ -208,7 +208,7 @@ function room3Frame(){
   if(!ROOM3.mesh||ROOM3.rkey!==L.rkey){r3Drop(ROOM3.mesh);ROOM3.mesh=hq3Mesh(L);ROOM3.rkey=L.rkey;}
   const t=wallMs()/1000,c0=room3GlideAt(wallMs())||HQ3_CAMS.all,cam=hallCam(room3Breath(c0,t),sz.cw,sz.ch,sz.wide);
   const S=hq3Scene(L,cam,t);S.vp=hallCrop(cam.vp,sz.rw/sz.cw);
-  const lab=rpgBake(R,"r3lab","room3|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
+  const lab=r3Dev()?R3.blank:null;   /* подписей поверх кадра нет: пустой вид движка, а не выпечка 2D (как зал, M816c) */
   const U=new Float32Array(60);
   S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
     if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
@@ -257,8 +257,8 @@ function room3PickHq(x,y){
   return best;
 }
 
-/* ── шов со штабом (27f): рубка 2D уходит за ROOM3.on; щелчок по полю экрана — выбор человека ── */
-{const f0=hqScene;hqScene=function(){if(!room3Ok())return f0();room3Open("hq",$hq);};}
+/* ── рубка штаба (27c зовёт hqScene): только движок; щелчок по полю экрана — выбор человека ── */
+function hqScene(){if(room3Ok())room3Open("hq",$hq);else if(ROOM3.open)room3Close();}
 if(typeof document!=="undefined"&&typeof $hq!=="undefined"&&$hq)$hq.addEventListener("click",ev=>{
   if(ROOM3.open!=="hq"||ev.target!==$hq)return;
   const id=room3PickHq(ev.clientX,ev.clientY);

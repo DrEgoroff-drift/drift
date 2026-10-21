@@ -194,7 +194,7 @@ function spa3Frame(){
   if(!SPA3.mesh||SPA3.mkey!==mk){r3Drop(SPA3.mesh);SPA3.mesh=spa3Mesh(S,sl);SPA3.mkey=mk;}
   spa3Board(S);
   const t=wallMs()/1000,cam=spa3Cam(sz,t),Sc=spa3Scene(cam,t,S);
-  const lab=rpgBake(R,"r3lab","spa3|1",1,1,()=>{});   /* подписей поверх кадра нет: слой пустой, точка, а не холст в экран */
+  const lab=r3Dev()?R3.blank:null;   /* подписей поверх кадра нет: пустой вид движка, а не выпечка 2D (как зал, M816c) */
   const U=new Float32Array(60);
   U.set([...r3Lin([255,236,200]),1.0],24);
   U[43]=t;U[44]=1;U[47]=1;
