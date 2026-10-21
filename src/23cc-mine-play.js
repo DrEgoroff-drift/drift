@@ -43,6 +43,52 @@ function mineState(D){
   return D.mm;
 }
 
+/* ── груз клети (DESIGN-mine §2): руда из забоя едет наверх в клети, не прямо в трюм ──
+   У клети свой счёт в местах, как у трюма (тяжёлое берёт больше, resW). Полная клеть — забой с рудой
+   не бурят, пока её не свезли к устью; у устья груз уходит в трюм, что не влезло — остаётся в клети
+   и ждёт (запись рудника хранит его, D.cage). */
+const MINE_CAGE_CAP=24;
+function mineCageW(D){let w=0;const L=D&&D.cage;if(L)for(const k in L)w+=(L[k]|0)*resW(k);return w;}
+function mineCageFree(D){return MINE_CAGE_CAP-mineCageW(D);}
+function mineCageTake(D,k,n){
+  if(!D.cage)D.cage={};
+  const t=Math.max(0,Math.min(n|0,Math.floor(mineCageFree(D)/resW(k))));
+  if(t>0)D.cage[k]=(D.cage[k]|0)+t;
+  return t;
+}
+function mineCageDump(D){
+  const L=D.cage||{},cap=stat().cargoMax,got=[];
+  for(const k of Object.keys(L)){
+    if(!RES[k]){delete L[k];continue;}
+    const w=resW(k),t=Math.max(0,Math.min(L[k]|0,Math.floor((cap-held())/w)));
+    if(t>0){G.cargo[k]=(G.cargo[k]||0)+t;got.push(RES[k].ru+" ×"+t);}
+    L[k]=(L[k]|0)-t;if(L[k]<=0)delete L[k];
+  }
+  const left=mineCageW(D);
+  if(got.length)say("Клеть у устья · в трюм: "+got.join(", ")+(left?"\nТРЮМ ПОЛОН — В КЛЕТИ ОСТАЛОСЬ "+left:""),150);
+  else if(left)say("ТРЮМ ПОЛОН — В КЛЕТИ "+left+" МЕСТ РУДЫ\nразгрузить корабль и вернуться",150);
+  return got.length;
+}
+/* груз клети живёт в записи рудника рядом с выработкой (23a mineSave/mineLoad не тронуты — обёртка) */
+if(typeof mineSave==="function"){
+  const _save=mineSave;
+  mineSave=function(D,p){
+    _save(D,p);
+    const rec=G.mines&&G.mines[mineKey(p)];
+    if(rec&&D&&mineCageW(D)>0){const o={};for(const k in D.cage)if(D.cage[k]>0)o[k]=D.cage[k]|0;rec.cage=o;}
+  };
+}
+if(typeof mineLoad==="function"){
+  const _load=mineLoad;
+  mineLoad=function(D,p){
+    _load(D,p);
+    const rec=G.mines&&G.mines[mineKey(p)],c=rec&&rec.cage;
+    D.cage={};
+    /* облако отдаёт пустую карту массивом — берём только счётные поля известных руд */
+    if(c&&typeof c==="object"&&!Array.isArray(c))for(const k in c)if(RES[k]&&c[k]>0)D.cage[k]=c[k]|0;
+  };
+}
+
 /* ── укус: та же проходка, что у 2D (23-mode-dig updateDig), для одной клетки ──
    возвращает true, когда клетка выкопана */
 function mineBite(D,tc,tr,dt,st,head,vert){
@@ -52,7 +98,7 @@ function mineBite(D,tc,tr,dt,st,head,vert){
   if(ti>st.digTier){D.target=null;G.prompt=head+"\nПОРОДА НЕ ПОДДАЁТСЯ — НУЖЕН "+DEPTH_TIERS[ti].need.toUpperCase();return false;}
   const cell=digCell(D,tc,tr);
   if(cell.dug){D.target=null;return true;}
-  if(held()>=st.cargoMax&&cell.res){D.target=null;G.prompt=head+"\nТРЮМ ПОЛОН — НАВЕРХ, К КОРАБЛЮ";return false;}
+  if(cell.res&&mineCageFree(D)<resW(cell.res)){D.target=null;G.prompt=head+"\nКЛЕТЬ ПОЛНА — РУДУ НАВЕРХ, К УСТЬЮ";return false;}
   D.target=cell;
   cell.prog+=.019*st.drill*kitStat().drill*dt;
   G.prompt=head+"\nПРОХОДКА "+Math.round(clamp(cell.prog/cell.hard,0,1)*100)+"%"+
@@ -64,9 +110,12 @@ function mineBite(D,tc,tr,dt,st,head,vert){
   D.deepest=Math.max(D.deepest,tr);
   nodeDrop("в шахте",clamp(tr/60,0,1)+sysDanger(G.sx,G.sy)*.4,hashi(tc,tr,0x0DE7));
   if(cell.res){
-    const got=addRes(cell.res,Math.round(cell.amount*st.refine));
+    /* руда — в клеть (вагонеткой по рельсам горизонта), наверх она едет с клетью */
+    let n=Math.round(cell.amount*st.refine);
+    if(typeof natOreMul==="function")n=Math.round(n*natOreMul(cell.res));
+    const got=mineCageTake(D,cell.res,n);
     if(got&&RES[cell.res].far&&typeof farTake==="function")farTake(cell.res,got);
-    if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);
+    if(got)say("В клеть: "+RES[cell.res].ru+" ×"+got+" · клеть "+mineCageW(D)+"/"+MINE_CAGE_CAP);
   }
   if(tr>=14){
     const onTrail=G.relicHint&&G.relicHint.sx===G.sx&&G.relicHint.sy===G.sy;
@@ -103,7 +152,7 @@ function mineUpdate(dt){
   const depth=D.row*3;
   let head="ГЛУБИНА "+depth+" м · "+(mineIsLevel(D.row)?"ГОРИЗОНТ "+mineLevelNo(D.row)+" · ":"")+
     geoAt(D.p,D.row*DIG_CELL*DIG_GEO_K).ru.toUpperCase()+
-    "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
+    "\nСКАФАНДР "+Math.round(S.suit)+"% · КЛЕТЬ "+mineCageW(D)+"/"+MINE_CAGE_CAP+" · ТРЮМ "+held()+"/"+st.cargoMax;
   if(D.bugs.some(b=>b.stun<=0&&b.flee<=0)){
     const fk=(typeof ctlHint==="function")?ctlHint("fire",""):"F";
     head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ"+(fk?" ("+fk+")":"")+" — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
@@ -145,6 +194,8 @@ function mineUpdate(dt){
       const r=mineRowOf(M.cy);
       if(M.mode==="cage"&&mineIsLevel(r))say("ГОРИЗОНТ "+mineLevelNo(r)+" · "+r*3+" м",90);}
   }
+  /* клеть у устья с рудой: разгрузка в трюм (не влезло — осталось в клети) */
+  if(M.cy<=0&&M.cto==null){if(!M.dumped&&mineCageW(D)>0)mineCageDump(D);M.dumped=true;}else M.dumped=false;
   if(M.mode==="cage"){
     M.x+=(DIG_CELL/2-M.x)*Math.min(1,.2*dt);M.y=M.cy;sync();
     const stops=mineStops(D),here=stops.findIndex(r=>mineStopY(r)===M.cy),sump=mineSump(D),r=D.row;
