@@ -221,10 +221,13 @@ function room3Frame(){
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }
 /* слова на вещах (L5): пустой пульт — тусклая надпись в углу его тёмного экрана (не табличка, не заглавные по центру);
-   подсказка — одна, на пустом кресле ближе к цели объектива; занятый пульт говорит плитой */
+   подсказка — одна, на пустом кресле ближе к цели объектива; занятый пульт говорит плитой.
+   Надпись прижата к дальнему от голо-стола углу экрана (правые — вправо), а если голограмма всё равно
+   встаёт поверх неё (обзор) — надписи нет: яркое кольцо поперёк слова не читается (av — что обходить) */
 function hq3Tags(L,tx){const out=[];let hi=-1;
-  HQ3_X.forEach((x,i)=>{if(L.occ[i])return;const R=MGR_ROLES[HQ_ORDER[i]];
-    out.push({p:[x-.7,1.22,HQ3.B+.22],t:"ДОМЕН СВОБОДЕН",s:R?R.dom:"",c:"sg"});
+  out.av=[[[-.6,1.0,.56],[.6,1.72,.56]]];   /* голограмма: кольца ±.6 и ±.36 вокруг 1.36, ближняя грань */
+  HQ3_X.forEach((x,i)=>{if(L.occ[i])return;const R=MGR_ROLES[HQ_ORDER[i]],r=x>0;
+    out.push({p:[r?x+.7:x-.7,1.22,HQ3.B+.22],t:"ДОМЕН СВОБОДЕН",s:R?R.dom:"",c:"sg",al:r?"r":""});
     if(hi<0||Math.abs(x-tx)<Math.abs(HQ3_X[hi]-tx))hi=i;});
   if(hi>=0&&L.sel<0){const C=hq3Chair(hi);out.push({p:[C.x,.42,C.z],t:"ПУСТОЕ КРЕСЛО",s:"управляющих нанимают в кантине станции",c:"dn"});}
   return out;}
@@ -239,10 +242,16 @@ function room3TagsDraw(list,cam,sz,box,mv){
       if(g.s){const s=document.createElement("s");s.textContent=g.s;e.appendChild(s);}box.appendChild(e);}}
   list.forEach((g,i)=>{const e=box.children[i],q=r3Proj(cam.vp,g.p,sz.cw,sz.ch),sg=g.c==="sg";
     const w=(sg?Math.max(g.t.length*9,(g.s||"").length*6.2):Math.max(g.t.length*11+24,(g.s||"").length*7+24))*ui;
-    const lf=!sg&&!!q&&q[0]+w>xr&&q[0]-w>16*ui;
-    const dn=g.c==="dn",ok=!!q&&(lf?q[0]-w>16*ui:q[0]>16*ui&&q[0]+w<xr)&&q[1]>110*ui&&q[1]+(dn?96*ui:0)<yr;
-    e.style.visibility=ok?"":"hidden";e.classList.toggle("lf",lf);
-    if(ok)e.style.transform="translate("+(q[0]/ui).toFixed(1)+"px,"+(q[1]/ui).toFixed(1)+"px) "+(sg?"translate(0,-100%)":(lf?"translate(calc(1px - 100%),":"translate(-1px,")+(dn?"28px)":"calc(-100% - 28px))"));});
+    const lf=!sg&&!!q&&q[0]+w>xr&&q[0]-w>16*ui,ar=sg&&g.al==="r";
+    const dn=g.c==="dn";let ok=!!q&&(lf||ar?q[0]-w>16*ui&&q[0]<xr:q[0]>16*ui&&q[0]+w<xr)&&q[1]>110*ui&&q[1]+(dn?96*ui:0)<yr;
+    if(ok&&sg&&list.av)ok=!room3Over(list.av,cam,sz,ar?q[0]-w:q[0],q[1]-30*ui,ar?q[0]:q[0]+w,q[1]);
+    e.style.visibility=ok?"":"hidden";e.classList.toggle("lf",lf);e.classList.toggle("r",ar);
+    if(ok)e.style.transform="translate("+(q[0]/ui).toFixed(1)+"px,"+(q[1]/ui).toFixed(1)+"px) "+(sg?(ar?"translate(-100%,-100%)":"translate(0,-100%)"):(lf?"translate(calc(1px - 100%),":"translate(-1px,")+(dn?"28px)":"calc(-100% - 28px))"));});
+}
+/* перекрывает ли надпись (x0..x1, y0..y1, px холста) хоть один мировой прямоугольник из av (две угловые точки) */
+function room3Over(av,cam,sz,x0,y0,x1,y1){
+  return av.some(b=>{const a=r3Proj(cam.vp,b[0],sz.cw,sz.ch),c=r3Proj(cam.vp,b[1],sz.cw,sz.ch);if(!a||!c)return false;
+    return Math.max(x0,Math.min(a[0],c[0]))<Math.min(x1,Math.max(a[0],c[0]))&&Math.max(y0,Math.min(a[1],c[1]))<Math.min(y1,Math.max(a[1],c[1]));});
 }
 /* цена кадра комнаты — тем же замером, что зал (27f4k): кадры подряд, GPU меткой времени, CPU часами */
 room3Frame=hallCostWrap(room3Frame);
