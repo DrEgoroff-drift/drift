@@ -100,11 +100,15 @@ function accGate(id,S){
 }
 /* ── цеха второго и третьего яруса: норма участка ── */
 function accNormOk(){const W=typeof watchSt==="function"?watchSt():null;return !!(W&&W.last&&W.last.norm>=ACC_NORM);}
-/* прилавок: скупка выше на sell — запрос не растёт вместе с ней; ниже на buy; и всегда дороже сдачи */
+/* прилавок: скупка выше на sell — запрос не растёт вместе с ней; ниже на buy; и всегда дороже сдачи —
+   на 3 %, не меньше кредита: спред внутри станции не схлопывается (Контроль, 22.10); но ступень
+   никогда не делает прилавок дороже, чем без неё */
+const ACC_SPREAD=1.03;
 function accCounter(sys,k,p){
   const L=accLeverSys(sys);
   if(L.sell===1&&L.buy===1)return p;
-  return Math.max((marketFor(sys)[k]|0)+1,Math.round(p*L.buy/L.sell));
+  const m=marketFor(sys)[k]|0;
+  return Math.max(m+1,Math.min(Math.round(p/L.sell),Math.max(Math.round(m*ACC_SPREAD),Math.round(p*L.buy/L.sell))));
 }
 function accRestore(s){
   const b=s&&s.acc;G.acc=null;

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 630 · top-level symbols: 8892
+Files: 630 · top-level symbols: 8894
 
 ## SYMBOLS
 
@@ -52,10 +52,11 @@ ABIL_HOLD                    src/16c-abil.js:29
 ABIL_KEY                     src/16c-abil.js:126
 ABIL_ST                      src/16c-abil.js:30
 ACC_FREE                     src/28n-access.js:20
-ACC_HOOKS                    src/28n-access.js:118-150
+ACC_HOOKS                    src/28n-access.js:122-154
 ACC_NEVER_TIERS              src/28n-access.js:21
 ACC_RUNG                     src/28n-access.js:23-46
-ACC_TIER2                    src/28n-access.js:116
+ACC_SPREAD                   src/28n-access.js:106
+ACC_TIER2                    src/28n-access.js:120
 ACTION_RU                    src/15-input.js:144
 ACT_WEEK_MS                  src/05e-clearance.js:36
 ADJ                          src/21a4-base-adj.js:17-27
@@ -1047,7 +1048,7 @@ HANGAR                       src/27j1-ui-hangar.js:15
 HANG_ACC                     src/27j1-ui-hangar.js:18
 HANG_ALARM_HOLD              src/08bj-ovl-hang.js:21
 HANG_DIR                     src/08bj-ovl-hang.js:26
-HANG_MSG_AT                  src/08bj-ovl-hang.js:309
+HANG_MSG_AT                  src/08bj-ovl-hang.js:313
 HAUL_BARGE_K                 src/16c-rescue.js:199
 HAUL_BIT_GAP                 src/16c-rescue.js:202
 HAUL_BIT_TALK                src/16c-rescue.js:209
@@ -2502,13 +2503,13 @@ abilPadRim                   src/16c-abil.js:139-150
 abilReady01                  src/16c-abil.js:35-38
 abilStale                    src/16c-abil.js:118-124
 abilTick                     src/16c-abil.js:127-136
-accCounter                   src/28n-access.js:104-108
+accCounter                   src/28n-access.js:107-112
 accGate                      src/28n-access.js:91-100
 accHullNeed                  src/28n-access.js:84-90
 accLever                     src/28n-access.js:57-66
 accLeverSys                  src/28n-access.js:67
 accNormOk                    src/28n-access.js:102
-accRestore                   src/28n-access.js:109-115
+accRestore                   src/28n-access.js:113-119
 accSponsor                   src/28n-access.js:76-82
 accSt                        src/28n-access.js:48-55
 accSupply                    src/28n-access.js:69-74
@@ -5139,33 +5140,34 @@ hallWindow                   src/27f4b-hall-dress.js:25-32
 hallWorkY                    src/27f4a-hall.js:43
 hallYardFit                  src/27f4f-hall-yard.js:24-33
 handBtnTick                  src/12td-settle-hand.js:123-134
+hangAlarmOn                  src/08bj-ovl-hang.js:63
 hangAt                       src/08bj-ovl-hang.js:41-45
 hangBlock                    src/08bj-ovl-hang.js:48-52
-hangCase                     src/08bj-ovl-hang.js:339-348
-hangCue                      src/08bj-ovl-hang.js:353-367
-hangCueHung                  src/08bj-ovl-hang.js:368
-hangCut                      src/08bj-ovl-hang.js:83-86
-hangDraw                     src/08bj-ovl-hang.js:225-245
-hangFont                     src/08bj-ovl-hang.js:72
-hangHex                      src/08bj-ovl-hang.js:219-224
-hangHint                     src/08bj-ovl-hang.js:372-384
-hangHit                      src/08bj-ovl-hang.js:81
+hangCase                     src/08bj-ovl-hang.js:343-352
+hangCue                      src/08bj-ovl-hang.js:357-371
+hangCueHung                  src/08bj-ovl-hang.js:372
+hangCut                      src/08bj-ovl-hang.js:85-88
+hangDraw                     src/08bj-ovl-hang.js:229-249
+hangFont                     src/08bj-ovl-hang.js:74
+hangHex                      src/08bj-ovl-hang.js:223-228
+hangHint                     src/08bj-ovl-hang.js:376-388
+hangHit                      src/08bj-ovl-hang.js:83
 hangIn                       src/08bj-ovl-hang.js:30
-hangLayout                   src/08bj-ovl-hang.js:180-210
-hangMsg                      src/08bj-ovl-hang.js:310-335
-hangMsgHung                  src/08bj-ovl-hang.js:336
-hangNamed                    src/08bj-ovl-hang.js:170-179
-hangObstacles                src/08bj-ovl-hang.js:93-115
+hangLayout                   src/08bj-ovl-hang.js:182-214
+hangMsg                      src/08bj-ovl-hang.js:314-339
+hangMsgHung                  src/08bj-ovl-hang.js:340
+hangNamed                    src/08bj-ovl-hang.js:172-181
+hangObstacles                src/08bj-ovl-hang.js:95-117
 hangOk                       src/08bj-ovl-hang.js:29
-hangPlace                    src/08bj-ovl-hang.js:123-153
-hangRectAt                   src/08bj-ovl-hang.js:87-91
+hangPlace                    src/08bj-ovl-hang.js:125-155
+hangRectAt                   src/08bj-ovl-hang.js:89-93
 hangSay                      src/08bj-ovl-hang.js:54-61
-hangSize                     src/08bj-ovl-hang.js:74-79
-hangSt                       src/08bj-ovl-hang.js:63
-hangSurface                  src/08bj-ovl-hang.js:269-303
-hangTW                       src/08bj-ovl-hang.js:64-71
-hangTri                      src/08bj-ovl-hang.js:212-215
-hangWrap                     src/08bj-ovl-hang.js:155-168
+hangSize                     src/08bj-ovl-hang.js:76-81
+hangSt                       src/08bj-ovl-hang.js:65
+hangSurface                  src/08bj-ovl-hang.js:273-307
+hangTW                       src/08bj-ovl-hang.js:66-73
+hangTri                      src/08bj-ovl-hang.js:216-219
+hangWrap                     src/08bj-ovl-hang.js:157-170
 hasEpisode                   src/03-ships.js:139-142
 hasSave                      src/14a-cloud.js:76
 hashi                        src/01-core.js:23-27
@@ -6445,7 +6447,7 @@ ovEll                        src/08bi-gpu-ovl.js:341-344
 ovFlush                      src/08bi-gpu-ovl.js:229-243
 ovGraph                      src/08bi-gpu-ovl.js:362-366
 ovHang                       src/08bj-ovl-hang.js:34-38
-ovHangFlush                  src/08bj-ovl-hang.js:247-264
+ovHangFlush                  src/08bj-ovl-hang.js:251-268
 ovHushed                     src/08bi-gpu-ovl.js:204
 ovImage                      src/08bi-gpu-ovl.js:290-296
 ovInto                       src/08bi-gpu-ovl.js:90-93
@@ -9052,7 +9054,7 @@ zoomTo                       src/15-input.js:358
 ## src/08bi-gpu-ovl.js · 31 KB
   · фишки у кромки и подписи мира — на видеокарте (docs/DESIGN-gpu.md §G, «Chips and labels»):1
 
-## src/08bj-ovl-hang.js · 28 KB
+## src/08bj-ovl-hang.js · 29 KB
   · Слова на вещах (M803): табличка у вещи, центр кадра пуст:1
 
 ## src/08c-gpu-kit.js · 34 KB
@@ -10784,7 +10786,7 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91zzzw9d-gauge.js · 8 KB
 
-## tests/91zzzw9e-dispatch.js · 11 KB
+## tests/91zzzw9e-dispatch.js · 12 KB
 
 ## tests/91zzzw9f-access.js · 8 KB
 
