@@ -63,35 +63,55 @@ function plnIco(sub){
       box (степень суперквадрики, <1 — брус), col (u,p,n)→rgb или rgb, mat,
       wind (p)→w или число, glow, x, nc (центр, от которого расходятся нормали), ncK,
       cut (что ниже этого местного y — поджать) */
+/* Тот же счёт, что был на массивах (бит в бит: те же действия в том же порядке), но без мусора:
+   места и нормали — в общих Float64Array, грани — плоским списком при икосфере. Заход строил сотни
+   тел за кадр, и сборщик съедал ~100 мс (охотник за рывками, 22.10). Коллбэки col/wind/x получают
+   p и n — короткие массивы на вершину, как прежде: их держат и меняют в своих формулах */
+const PLN_BLOB={P:new Float64Array(0),N:new Float64Array(0),p:[0,0,0],n:[0,0,0]};
 function plnBlob(m,o){
-  const g=plnIco(o.sub==null?2:o.sub),r=o.r,e=o.box||1,P=[],N=[],sd=o.seed||0,bf=o.bumpF||1.6;
-  for(const u of g.p){
-    let q=u;
-    if(e!==1)q=[Math.sign(u[0])*Math.pow(Math.abs(u[0]),e),Math.sign(u[1])*Math.pow(Math.abs(u[1]),e),Math.sign(u[2])*Math.pow(Math.abs(u[2]),e)];
+  const g=plnIco(o.sub==null?2:o.sub),r=o.r,e=o.box||1,sd=o.seed||0,bf=o.bumpF||1.6,gp=g.p,nv=gp.length;
+  const F=g.fi||(g.fi=Uint32Array.from(g.f.flat())),nf=F.length,Z=PLN_BLOB;
+  if(Z.P.length<nv*3){Z.P=new Float64Array(nv*3*2);Z.N=new Float64Array(nv*3*2);}
+  const P=Z.P,N=Z.N,c0=o.c[0],c1=o.c[1],c2=o.c[2],r0=r[0],r1=r[1],r2=r[2],cut=o.cut,bump=o.bump;
+  const pc=o.pitch?Math.cos(o.pitch):1,ps=o.pitch?Math.sin(o.pitch):0,lc=o.lean?Math.cos(o.lean):1,ls=o.lean?Math.sin(o.lean):0,
+    yc=o.yaw?Math.cos(o.yaw):1,ys=o.yaw?Math.sin(o.yaw):0;
+  N.fill(0,0,nv*3);
+  for(let k=0;k<nv;k++){
+    const u=gp[k];let q0=u[0],q1=u[1],q2=u[2];
+    if(e!==1){q0=Math.sign(u[0])*Math.pow(Math.abs(u[0]),e);q1=Math.sign(u[1])*Math.pow(Math.abs(u[1]),e);q2=Math.sign(u[2])*Math.pow(Math.abs(u[2]),e);}
     let b=1;
-    if(o.bump)b=1+o.bump*(plnNoise(u[0]*bf+sd*.37,u[1]*bf+u[2]*bf*.7,sd)+plnNoise(u[2]*bf-sd*.11,u[1]*bf*.8+3.1,sd+5))*.5;
-    let l=[q[0]*r[0]*b,q[1]*r[1]*b,q[2]*r[2]*b];
-    if(o.cut!=null&&l[1]<o.cut)l[1]=o.cut+(l[1]-o.cut)*.12;
-    if(o.pitch)l=plnRotX(l,o.pitch);
-    if(o.lean)l=plnRotZ(l,o.lean);
-    if(o.yaw)l=plnRotY(l,o.yaw);
-    P.push(plnAdd(l,o.c));N.push([0,0,0]);
+    if(bump)b=1+bump*(plnNoise(u[0]*bf+sd*.37,u[1]*bf+u[2]*bf*.7,sd)+plnNoise(u[2]*bf-sd*.11,u[1]*bf*.8+3.1,sd+5))*.5;
+    let x=q0*r0*b,y=q1*r1*b,z=q2*r2*b,t;
+    if(cut!=null&&y<cut)y=cut+(y-cut)*.12;
+    if(o.pitch){t=y*pc-z*ps;z=y*ps+z*pc;y=t;}
+    if(o.lean){t=x*lc-y*ls;y=x*ls+y*lc;x=t;}
+    if(o.yaw){t=x*yc+z*ys;z=-x*ys+z*yc;x=t;}
+    P[k*3]=x+c0;P[k*3+1]=y+c1;P[k*3+2]=z+c2;
   }
-  for(const [a,b,c] of g.f){
-    const n=plnCross(plnSub(P[b],P[a]),plnSub(P[c],P[a]));
-    for(const k of [a,b,c]){N[k][0]+=n[0];N[k][1]+=n[1];N[k][2]+=n[2];}
+  for(let f=0;f<nf;f+=3){
+    const a=F[f]*3,b=F[f+1]*3,c=F[f+2]*3;
+    const ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2],vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];
+    const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+    N[a]+=nx;N[a+1]+=ny;N[a+2]+=nz;N[b]+=nx;N[b+1]+=ny;N[b+2]+=nz;N[c]+=nx;N[c+1]+=ny;N[c+2]+=nz;
   }
-  const base=m.nv;
-  for(let k=0;k<P.length;k++){
-    let n=plnNorm(N[k]);
+  const base=m.nv,fc=typeof o.col==="function",fw=typeof o.wind==="function",fx=typeof o.x==="function",
+    ncK=o.ncK==null?.6:o.ncK,nc=o.nc,glow=o.glow||0,w0=o.wind||0,x0=o.x||0;
+  for(let k=0;k<nv;k++){
+    const i=k*3,px=P[i],py=P[i+1],pz=P[i+2];
+    let l=Math.hypot(N[i],N[i+1],N[i+2])||1,nx=N[i]/l,ny=N[i+1]/l,nz=N[i+2]/l;
     /* грани икосферы обходятся наружу в правой тройке: нормаль смотрит от центра */
-    if(plnDot(n,plnSub(P[k],o.c))<0)n=plnMul(n,-1);
-    if(o.nc)n=plnNorm(plnMix3(n,plnNorm(plnSub(P[k],o.nc)),o.ncK==null?.6:o.ncK));
-    const col=typeof o.col==="function"?o.col(g.p[k],P[k],n):o.col;
-    const w=typeof o.wind==="function"?o.wind(P[k]):(o.wind||0);
-    plnVert(m,P[k],n,col,o.mat,w,o.glow||0,typeof o.x==="function"?o.x(g.p[k],P[k],n):(o.x||0));
+    if(nx*(px-c0)+ny*(py-c1)+nz*(pz-c2)<0){nx=nx*-1;ny=ny*-1;nz=nz*-1;}
+    if(nc){
+      const dx=px-nc[0],dy=py-nc[1],dz=pz-nc[2],dl=Math.hypot(dx,dy,dz)||1,ex=dx/dl,ey=dy/dl,ez=dz/dl;
+      const mx=nx+(ex-nx)*ncK,my=ny+(ey-ny)*ncK,mz=nz+(ez-nz)*ncK,ml=Math.hypot(mx,my,mz)||1;
+      nx=mx/ml;ny=my/ml;nz=mz/ml;
+    }
+    /* коллбэков нет — массивы общие (plnVert копирует числа); есть — свои, их могут держать */
+    let p,n;
+    if(fc||fw||fx){p=[px,py,pz];n=[nx,ny,nz];}else{p=Z.p;n=Z.n;p[0]=px;p[1]=py;p[2]=pz;n[0]=nx;n[1]=ny;n[2]=nz;}
+    plnVert(m,p,n,fc?o.col(gp[k],p,n):o.col,o.mat,fw?o.wind(p):w0,glow,fx?o.x(gp[k],p,n):x0);
   }
-  for(const [a,b,c] of g.f)plnTri(m,base+a,base+b,base+c);
+  for(let f=0;f<nf;f+=3)plnTri(m,base+F[f],base+F[f+1],base+F[f+2]);
 }
 
 /* Труба вдоль пути. o: path [[x,y,z]…], rad число | (t)→r, sides, col (t,a,p)→rgb или rgb,

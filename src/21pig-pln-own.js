@@ -306,17 +306,19 @@ function plnOwnItem(kind,A,M,sd,key){
   it.inst=plnInst(it.a,5,5);
   return it;
 }
-function plnOwnStep(L,S){
-  const O=OWN,tr=S.tr,p=S.p;
+/* lim — бюджет кадра (заход): собрал базу и бюджет кончился — false, дом соберёт следующий вызов */
+function plnOwnStep(L,S,lim){
+  const O=OWN,tr=S.tr,p=S.p,t0=wallMs();let made=false;
   if(O.gen!==PLN_GPU.gen||O.L!==L){plnOwnFree(O.base);plnOwnFree(O.home);O.base=O.home=null;O.gen=PLN_GPU.gen;O.L=L;}
   const B=baseAt(G.sx,G.sy,p.idx);
   if(B){
     const A=plnOwnBaseAt(L,tr,p,B),bt=plnOwnBattOf(B),pn=plnOwnPennHere(p)&&!(typeof homeHereP==="function"&&homeHereP(p));
     const key=A.cells.map(c=>c?c.k:"-").join(",")+"|"+(bt!=null)+"|"+pn;
     if(!O.base||O.base.key!==key){plnOwnFree(O.base);
-      const sd=hashi(p.seed|0,0xBA5,17);O.base=plnOwnItem("base",A,plnOwnBaseMesh(L,A,sd,bt,pn),sd,key);}
+      const sd=hashi(p.seed|0,0xBA5,17);O.base=plnOwnItem("base",A,plnOwnBaseMesh(L,A,sd,bt,pn),sd,key);made=true;}
     O.base.batt=bt;O.gate=A.gx*PLN_M;
   }else{plnOwnFree(O.base);O.base=null;O.gate=null;}
+  if(made&&lim!=null&&wallMs()-t0>lim)return false;
   const H=(typeof homeHereP==="function"&&homeHereP(p))?plnOwnHomeAt(L,tr,p):null;
   if(H){
     const beds=greenAll().beds.map(b=>({g:greenGrow(b)})),pn=plnOwnPennHere(p),key=beds.map(b=>Math.round(b.g*8)).join(",")+"|"+pn;
@@ -324,6 +326,7 @@ function plnOwnStep(L,S){
       const sd=hashi(G.sx,G.sy,0x40E7);O.home=plnOwnItem("home",H,plnOwnHomeMesh(L,H,sd,beds,pn),sd,key);}
     O.porch=(H.x+H.door)*PLN_M;
   }else{plnOwnFree(O.home);O.home=null;O.porch=null;}
+  return true;
 }
 /* Ставит свои вещи в кадр: тела, свет записями, лампы ночью. ex — где объектив, V — {hw, D}, nk — ночь */
 function plnOwnFrame(L,F,S,p,ex,V,nk){

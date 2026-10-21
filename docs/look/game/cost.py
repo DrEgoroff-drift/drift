@@ -33,9 +33,10 @@ SIZES = {"pc": (1600, 900, 1), "2k": (2560, 1440, 1), "4k": (3840, 2160, 1), "s2
          "tab": (1024, 1366, 2)}
 # the real clock around the planet's CPU work: the frame, the land builder, the planter
 HOOK = ("(function(){var rp=window.__STEP?__STEP.real:performance.now.bind(performance),C=window.__CPU={first:0,frame:{ms:0,n:0},"
-        "land:{ms:0,n:0},flora:{ms:0,n:0}};function wrap(name,key){var f=window[name];if(typeof f!=='function')return;"
-        "window[name]=function(){var t=rp();try{return f.apply(this,arguments);}finally{var d=rp()-t;var s=C[key];s.ms+=d;s.n++;"
-        "if(key==='frame'&&s.n===1)C.first=d;}};}wrap('plnSurface','frame');wrap('plnLandStep','land');wrap('plnPlantStep','flora');})();")
+        "land:{ms:0,n:0},flora:{ms:0,n:0}};function wrap(name,key){var f=window[name];if(typeof f!=='function')return;C[key]=C[key]||{ms:0,n:0,max:0};"
+        "window[name]=function(){var t=rp();try{return f.apply(this,arguments);}finally{var d=rp()-t;var s=C[key];s.ms+=d;s.n++;if(!(s.max>=d))s.max=d;"
+        "if(key==='frame'&&s.n===1)C.first=d;}};}wrap('plnSurface','frame');wrap('plnLandStep','land');wrap('plnPlantStep','flora');"
+        "['plnWarmStep','plnFloraKitStep','plnThings','plnMarks','plnOwnStep','plnHerbs'].forEach(function(n){wrap(n,n);});})();")
 PASSES = ["pln.shadow", "pln.mirror", "pln.scene", "pln.wing", "pln.air", "pln.bloom"]
 
 
@@ -114,6 +115,10 @@ def main():
         ld, fl = cpu.get("land") or {}, cpu.get("flora") or {}
         print("wall ms: first frame %.0f, land builder %.0f in %d calls, planter %.0f in %d calls" %
               (cpu.get("first", 0), ld.get("ms", 0), ld.get("n", 0), fl.get("ms", 0), fl.get("n", 0)))
+        # the warm-up of a descent (21pz plnWarmStep) by stage: sum / calls / the worst single call
+        ws = [(k, v) for k, v in cpu.items() if k.startswith("pln") and isinstance(v, dict) and v.get("n")]
+        if ws:
+            print("warm ms (sum/n/max): " + ", ".join("%s %.0f/%d/%.1f" % (k[3:], v.get("ms", 0), v.get("n", 0), v.get("max", 0)) for k, v in ws))
 
 
 if __name__ == "__main__":
