@@ -139,7 +139,7 @@ function hallLum(c){return .3*c[0]+.59*c[1]+.11*c[2];}
 function hallLayout(st,lazy){
   const T=hallT(st),seed=((G.sys&&G.sys.seed)^0x4A11)>>>0,CS=CANT_STYLE[st]||CANT_STYLE.trade;
   const acc=hex2rgb(CS.acc),bar=hallHasBar(st),R=rng(seed^0x77);
-  const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st),cut:typeof hallWalkOn==="function"&&hallWalkOn()};   /* M816: срез ближней стены на ходу */
+  const L={st,T,seed,acc,bar,people:[],seats:[],bx:0,S:CS,stories:[],R:hallR(st),cut:hallWalkOn()};   /* M816: срез ближней стены на ходу */
   /* хозяин стойки: клерк (M814) — рубашка, жилет, галстук и бирка в цвет зала; стоит за стойкой лицом в зал */
   const keep={seed:hashi(seed,0xC0E,1)>>>0,role:"clerk",acc,loy:64,xp:0,traits:[]};
   /* волосы, а не бритая голова, и тёмные на коже не светлее средней: светлые на светлом рядом с пилотом читались манекеном */
@@ -274,7 +274,7 @@ function hallScene(L,cam,t){
     hallManMark(ii,P.x,P.z,P.kind==="keep"?.34:.3,dm>.2?.35:1.15);   /* притушенным за столиками — вполсилы */
     draws.push([P.mesh,ii,1]);P.ii=ii;ii++;}
   /* пилот: у места раздела, стоит, дышит; голова — к вещи места, не к камере */
-  const pa=(typeof hallWalkPilot==="function"&&hallWalkPilot())||(hallWalkOn()?null:hallPilotAt(HALL.place));   /* M816: на ходу — с линии хода */
+  const pa=hallWalkPilot()||(hallWalkOn()?null:hallPilotAt(HALL.place));   /* M816: на ходу — с линии хода */
   if(pa&&ii<R3_MAXI){hallRigPose(M,ii*R3_PART,r3Xf([pa[0],0,pa[1]],pa[2]),pa[3],t);   /* M814: пилот — риг планеты (27f4j) */
     hallManMark(ii,pa[0],pa[1],typeof pa[3]==="string"&&HALL_RIG_SEAT[pa[3]]!=null?.4:.32,.5);
     draws.push([hallRigMesh(),ii,1]);ii++;}

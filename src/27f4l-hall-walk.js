@@ -16,7 +16,7 @@ const HALL_WALK_V=2.6,HALL_JOG_V=4.5;   /* шаг и бег, м/с: дверь �
 const HALL_WALK_D={pc:10,ph:11.7,fy:.8,ey:1.9,ty:1.55};   /* объектив хода: от линии, поле, высота глаза и цели */
 /* места: id, x на линии, вкладки карточки, глагол, имя в полосе, куда смотрит стоя (yaw), табличка (точка, имя, строка) */
 const HALL_PLACES=[
-  {id:"lock", x:-6.45,tabs:[],verb:"ОТСТЫКОВАТЬСЯ",ru:"ШЛЮЗ",yaw:-Math.PI/2,tag:[-7.15,2.3,HALL_WZ],tn:"ШЛЮЗ",ts:"борт у причала"},
+  {id:"lock", x:-6.45,tabs:[],verb:"ЗАПРАВКА",ru:"ШЛЮЗ",yaw:-Math.PI/2,tag:[-7.15,2.3,HALL_WZ],tn:"ШЛЮЗ",ts:"борт у причала"},
   {id:"trade",x:-4.45,tabs:["market","barter","flea","scrip"],verb:"ТОРГОВАТЬ",ru:"СТОЙКА",yaw:-Math.PI/2-.35,tag:[-5.3,1.9,-1.4],tn:"СТОЙКА",ts:""},
   {id:"board",x:-2.85,tabs:["board"],verb:"ДОСКА",ru:"ДОСКА",yaw:Math.PI,tag:[-3.35,2.5,HALL_B+.05],tn:"ДОСКА",ts:"объявления станции"},
   {id:"ship", x:-.15, tabs:["yard","mods","fuse","site"],verb:"ВЕРФЬ",ru:"ВЕРФЬ",yaw:Math.PI+.25,tag:[.6,2.6,HALL_B],tn:"ОКНО",ts:"верфь и стройка"},
@@ -25,11 +25,27 @@ const HALL_PLACES=[
   {id:"folk", x:HALL_XB+.9,tabs:["crew","cantina"],verb:"ЛЮДИ",ru:"БАР",yaw:Math.PI,tag:[HALL_XB+.4,1.25,-.2],tn:"БАР",ts:"люди станции"}];
 /* шлюз — ближний вид: дверь в левой стене и пилот у неё */
 HALL_CAMS.lock={eye:[-3.2,1.6,5.4],tgt:[-6.4,1.25,1.3],fy:1.05};
-function hallWalkOn(){return HALL.on&&HALL.walkOn!==false&&typeof location!=="undefined"&&!/[?&]walk=0\b/.test(location.search);}
+/* ?walk=0 — прежний зал: адрес читается один раз, ход спрашивает его по нескольку раз за кадр */
+const HALL_WALK_Q=typeof location!=="undefined"&&/[?&]walk=0\b/.test(location.search);
+function hallWalkOn(){return HALL.on&&HALL.walkOn!==false&&!HALL_WALK_Q;}
+/* бар — место, если у станции есть стойка бара или наём; и хоть одна его вкладка здесь */
+function hallHasFolk(st,has){
+  const bar=hallHasBar(st)||has.indexOf("crew")>=0;
+  return bar&&HALL_PLACES[HALL_PLACES.length-1].tabs.some(t=>has.indexOf(t)>=0);
+}
 /* места этой станции: у места должна быть хоть одна вкладка здесь (шлюз — всегда) */
 function hallPlacesHere(){
-  const has=(typeof stTabsHere==="function"&&G.st)?stTabsHere():[];
-  return HALL_PLACES.filter(p=>p.id==="lock"||(p.id==="folk"?(hallHasBar((G.st&&G.st.stype)||"trade")||has.indexOf("crew")>=0)&&p.tabs.some(t=>has.indexOf(t)>=0):p.tabs.some(t=>has.indexOf(t)>=0)));
+  const has=G.st?stTabsHere():[],st=(G.st&&G.st.stype)||"trade";
+  return HALL_PLACES.filter(p=>p.id==="lock"||(p.id==="folk"?hallHasFolk(st,has):p.tabs.some(t=>has.indexOf(t)>=0)));
+}
+/* осадить ход: пилот встаёт в цель (или в ближнее место), скорость 0, объектив — на нём. Для зрения (90b2 geoSettle):
+   окно снимается при DPR 1 и 3 порознь, и человек на полпути дал бы «не на месте» */
+function hallWalkSettle(){
+  const W=HALL.walk;if(!W)return;
+  if(W.goal!=null){W.x=W.goal;W.goal=null;const g=W.go;W.go=null;if(g)hallWalkEngage(g);}
+  else{const p=hallWalkNear(W);if(p&&!W.eng)W.x=p.x;}
+  W.v=0;W.ph=0;W.cx=W.x;W.fk=W.eng?1:0;W.tl=0;W.ts=0;const n=hallWalkNear(W);if(n)W.at=n.id;
+  hallWalkUi._k="";hallWalkUi();
 }
 /* ход: x на линии, лицо (±1), фаза шага, скорость, цель (x) и место, в которое войти по приходу */
 function hallWalkInit(){
@@ -93,7 +109,7 @@ function hallCamFr(c,w,h,cx,cy){
   return {eye:c.eye,tgt:c.tgt,fy:c.fy,asp,vp:r3Mul(P,r3Look(c.eye,c.tgt,[0,1,0]))};
 }
 /* поле места на телефоне: карточка снизу, место — в верхних 45 %: ширина та же, что у героя на ПК (≈ .71 высоты) */
-function hallPhFy(fy,asp){return 2*Math.atan(Math.tan(fy/2)*.71/Math.max(.3,asp));}
+function hallPhFy(fy,asp){return 2*Math.atan(Math.tan(fy/2)*.82/Math.max(.3,asp));}
 /* камера кадра: ход — объектив хода; в месте — станция места; переход — плавно (вход .45 с, выход .7 с) */
 function hallWalkCam(L,sz,c0){
   const W=HALL.walk,tm=wallMs(),dt=W.tl?Math.min(.1,(tm-W.tl)/1000):1;W.tl=tm;
@@ -104,7 +120,7 @@ function hallWalkCam(L,sz,c0){
   const pc=c0?{eye:c0.eye,tgt:c0.tgt,fy:ph?hallPhFy(c0.fy,asp):c0.fy}:wl;
   const m=(a,b)=>a.map((v,i)=>v+(b[i]-v)*k);
   const c={eye:m(wl.eye,pc.eye),tgt:m(wl.tgt,pc.tgt),fy:wl.fy+(pc.fy-wl.fy)*k};
-  const cx=.5+((ph?.5:.32)-.5)*k,cy=.5+((ph?.225:.5)-.5)*k;
+  const cx=.5+((ph?.5:.32)-.5)*k,cy=.5+((ph?.1:.5)-.5)*k;
   const cam=hallCamFr(c,sz.cw,sz.ch,cx,cy);cam.c=c;return cam;
 }
 function hallWalkMoving(){const W=HALL.walk;return !!W&&(Math.abs(W.v)>.01||W.goal!=null||(W.fk>0&&W.fk<1)||(W.cx!=null&&Math.abs(W.cx-W.x)>.02&&Math.abs(W.v)>0));}
@@ -147,12 +163,14 @@ function hallWalkCls(){
 function hallWalkDom(){
   if(typeof document==="undefined"||!$st)return;
   let d=document.getElementById("stWalk");
+  /* узлы — createElement, не innerHTML: под заглушкой DOM ядра (Node) innerHTML детей не рождает */
+  const mk=(tag,id,cls,txt,fn)=>{const e=document.createElement(tag);e.id=id;if(cls)e.className=cls;if(txt)e.textContent=txt;if(fn)e.addEventListener("click",fn);d.appendChild(e);return e;};
   if(!d){d=document.createElement("div");d.id="stWalk";
-    d.innerHTML='<nav class="wstrip" id="stWalkStrip"></nav><button class="act gold" id="stWalkAct"></button><button class="act" id="stWalkOut">ВЫХОД</button><button class="act" id="stWalkBack">НАЗАД</button>';
+    mk("nav","stWalkStrip","wstrip");
+    mk("button","stWalkAct","act gold","",()=>{const W=HALL.walk;if(W&&W.at&&!W.eng)hallWalkEngage(W.at);});
+    mk("button","stWalkOut","act","ОТСТЫКОВАТЬСЯ",()=>closeStation());
+    mk("button","stWalkBack","act","НАЗАД",()=>hallWalkBack());
     $st.appendChild(d);
-    d.querySelector("#stWalkAct").addEventListener("click",()=>{const W=HALL.walk;if(W&&W.at&&!W.eng)hallWalkEngage(W.at);});
-    d.querySelector("#stWalkOut").addEventListener("click",()=>closeStation());
-    d.querySelector("#stWalkBack").addEventListener("click",()=>hallWalkBack());
     /* тап по полу: идти туда (только мимо кнопок и карточки) */
     $st.addEventListener("pointerdown",e=>{const W=HALL.walk;if(!W||!hallWalkOn()||!HALL.open||W.eng||!HALL.vp)return;
       if(e.target!==$st&&e.target.id!=="stHall"&&e.target.id!=="stWalk")return;
@@ -160,8 +178,8 @@ function hallWalkDom(){
       const L=HALL.L;if(!L)return;const c=hallWalkLens(L,{cw:w,ch:r.height*ui,wide:hallWide()},0);
       const half=(hallWide()?HALL_WALK_D.pc:HALL_WALK_D.ph)*Math.tan(HALL_WALK_D.fy/2)*w/Math.max(1,r.height*ui);
       W.goal=c.tgt[0]+(sx/w-.5)*2*half;W.go=null;W.jog=Math.abs(W.goal-W.x)>6;});}
-  const s=d.querySelector("#stWalkStrip");s.textContent="";
-  hallPlacesHere().forEach((p,i)=>{const b=document.createElement("button");b.dataset.place=p.id;
+  const s=document.getElementById("stWalkStrip");if(!s)return;s.textContent="";
+  hallPlacesHere().forEach((p,i)=>{const b=document.createElement("button");b.dataset.place=p.id;b.id="stWalk-"+p.id;
     const k=document.createElement("i");k.textContent=String(i+1);b.appendChild(k);b.appendChild(document.createTextNode(p.ru));
     b.addEventListener("click",()=>hallWalkTo(p.id,true));s.appendChild(b);});
 }
