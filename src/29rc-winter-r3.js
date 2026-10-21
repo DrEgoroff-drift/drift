@@ -7,9 +7,11 @@
    2. Свет — это приборы. Лампа над столом — СВЕТ: её сила = рычаг, тень от неё. Печь — ТЕПЛО: тёплая заливка
       с дрожью огня (вторая тень). Окно — метель, холод, не выключается. Полоса реактора — четвёртый, малый.
       Убавил лампу — комнату видно хуже по-настоящему: баланс видно глазами, не цифрой.
-   3. Смена сдана — свет гаснет, зимовщик на койке, объектив едет к нему; свет снова (WIN3_SLEEP).
-   4. Слова — на вещах: «СДАТЬ СМЕНУ» — табличка на койке, «ТРОНЬТЕ» — на лампочке поломки, сутки — тусклая надпись
-      над календарём; обратного отсчёта нет и здесь (правило 29f).
+   3. Смена сдана — лампа гаснет, зимовщик на койке под одеялом, объектив едет к нему; печь тлеет, метель светит
+      на койку (спящего видно); лампа снова (WIN3_SLEEP).
+   4. Слова — на вещах: «СДАТЬ СМЕНУ» — табличка на койке, «ТРОНЬТЕ» — на лампочке поломки; сутки — кресты календаря
+      (число и имя планеты уже на плашке прибора справа вверху); обратного отсчёта нет и здесь (правило 29f).
+      Строка подсказки внизу молчит: её хвост про лампочку висит табличкой, глагол ДЕЙСТВИЯ остаётся кнопке.
    5. Попадание пальцем — из тех же вещей: их рамки проецируются в кадр (winHit за швом); старый художник
       drawWinter живёт за ROOM3.on (?room=0). */
 const WIN3={cn:null,tags:null,mesh:null,mkey:"",t0:0,err:0,frames:0,stat:null,vp:null,sz:null,meas:null,hit:[],sl:0,storm:null};
@@ -17,6 +19,8 @@ const WIN3_L=-3.6,WIN3_R=3.6,WIN3_B=-1.8,WIN3_F=1.8,WIN3_H=2.6;
 const WIN3_M=new Float32Array(R3_MAXI*R3_PART*16),WIN3_OT=new Float32Array(R3_MAXI*R3_PART*4);
 /* где что стоит: панель на задней стене слева, печь у левой стены, трубы, календарь, стол с лампой, койка под окном */
 const WIN3_PX=-2.05,WIN3_PY=1.38,WIN3_TX=.45,WIN3_TZ=-1.05,WIN3_BX=2.45,WIN3_BZ=-1.38,WIN3_WIN=[1.75,3.15,1.05,2.0];
+/* лампочки поломок — на стене над правым углом панели, выше головы человека у рычагов: иначе он их заслоняет */
+const WIN3_FX=WIN3_PX+.74,WIN3_FY=WIN3_PY+.64;
 const WIN3_SLEEP=2600;   /* мс: свет гаснет, хозяин на койке, свет снова */
 const WIN3_PARKA=[168,86,46];   /* парка — вещь человека, значит оранжевое (палитра «Сцены») */
 
@@ -26,10 +30,10 @@ function win3Val(W,k){return clamp(W.pw[k]|0,0,3);}
 function win3Storm(W){return .3+.65*rng(hashi(W.day|0,(W.sx|0)*31+(W.sy|0),0x5E0))();}
 
 /* ── сетка каюты (меняется только рычагом, поломкой или сутками) ── */
-function win3Mesh(W){
+function win3Mesh(W,sl){
   const K=r3Kit(),P=R3P,L=WIN3_L,R=WIN3_R,B=WIN3_B,F=WIN3_F,H=WIN3_H;
   const li=win3Val(W,"light"),he=win3Val(W,"heat"),cap=winCap(W),dr=winDraw_(W),over=dr>cap;
-  const Mw=K.mt([88,98,102],.25,6,P.wall),Mcut=K.mt([22,24,26],.2,4,0),Mfl=K.mt([78,70,60],.3,7,P.floor),Mce=K.mt([70,76,80],.2,5,P.ceil);
+  const Mw=K.mt([168,160,140],.18,6,P.wall),Mcut=K.mt([22,24,26],.2,4,0),Mfl=K.mt([74,60,48],.06,9,P.wood),Mce=K.mt([70,76,80],.2,5,P.ceil);
   const Mst=K.mt([84,92,98],.55,10,P.brushed),Mdk=K.mt([24,27,30],.4,8,P.brushed),Mir=K.mt([34,32,30],.5,8,P.brushed);
   const Mwd=K.mt([104,76,52],.3,7,P.wood),Mpa=K.mt([214,204,182],.1,3,0);
   K.part=0;
@@ -44,6 +48,11 @@ function win3Mesh(W){
   /* рёбра потолка и плинтус: каюта собрана из панелей, а не отлита */
   for(let x=-2.4;x<=2.41;x+=1.2)K.box([x,H-.06,(B+F)/2],[.05,.06,(F-B)/2],Mst,.01);
   K.box([0,.05,B+.02],[R,.05,.02],Mdk,.005);
+  /* пояс цвета людей по стенам под подоконником — грамматика стенда (nt-home: кремовые панели, пояс, тёплый свет за стеклом) */
+  {const Mb=K.mt([206,98,40],.2,5,0),y=.9;K.box([0,y,B+.006],[R,.045,.004],Mb,0);
+    K.box([L+.006,y,(B+F)/2],[.004,.045,(F-B)/2],Mb,0);K.box([R-.006,y,(B+F)/2],[.004,.045,(F-B)/2],Mb,0);}
+  /* пол — доски: обжитая каюта, а не цех; у плитки «мокрые пятна» узора ловили огонь печи свечкой в углу кадра */
+  for(let z=B+.19;z<F;z+=.19)K.box([0,.0015,z],[R,.0015,.0035],K.mt([34,28,22],.1,4,0),0);
   /* окно: проём узора window (метель), рама, подоконник с намётом */
   {const [x0,x1,y0,y1]=WIN3_WIN,z=B,fw=.016;
     K.quad([x0,y0,z+.01],[x1,y0,z+.01],[x1,y1,z+.01],[x0,y1,z+.01],K.mt([3,3,3],.2,70,P.window,0,true),[0,0,1]);
@@ -73,13 +82,13 @@ function win3Mesh(W){
     K.tube([[px,py,zf+.03],[hx,hy,zf+.05]],.011,K.mt([96,112,124],.6,12,P.brushed),8);
     K.ell([hx,hy,zf+.05],[.028,.028,.028],low?K.mt([206,84,64],.4,9,0,.4):K.mt([150,160,166],.5,10,0),6,10);});
   /* лампочки поломок справа от панели: горят, пока не починены (их свет — в сцене) */
-  (W.faults||[]).forEach((f,i)=>{const x=WIN3_PX+.8+i*.14,y=WIN3_PY+.36;
+  (W.faults||[]).forEach((f,i)=>{const x=WIN3_FX+i*.14,y=WIN3_FY;
     K.ell([x,y,B+.06],[.05,.05,.03],Mdk,5,12);K.ell([x,y,B+.09],[.034,.034,.03],K.mt([255,70,50],.3,8,0,4.5,true),5,12);});
   /* печь у левой стены: тело, ножки, дверца с огнём (сила — ТЕПЛО), плита, чайник, дымоход в стену */
   {const x=-3.05,z=-.55,fire=he/3;
     K.box([x,.52,z],[.3,.4,.3],Mir,.03);for(const sx of [-1,1])for(const sz of [-1,1])K.box([x+sx*.24,.06,z+sz*.24],[.03,.06,.03],Mir,.006);
     K.box([x,.94,z],[.33,.02,.33],Mdk,.006);
-    K.box([x,.46,z+.305],[.15,.12,.008],K.mt([255,140,60],.2,4,0,.4+3.2*fire,true),0);
+    K.box([x,.46,z+.305],[.15,.12,.008],K.mt([255,140,60],.2,4,0,.4+3.2*fire+(sl?2.6:0),true),0);
     K.box([x,.46,z+.31],[.17,.14,.006],Mdk,0);K.box([x,.62,z+.31],[.17,.008,.01],Mst,0);
     K.push([x+.08,.96,z-.04]);K.lathe([[0,.07],[.1,.085],[.16,.06],[.19,.02]],12,K.mt([78,90,96],.6,11,P.brushed));K.pop();
     K.tube([[x-.08,.96,z-.1],[x-.08,2.2,z-.1],[x-.08,2.2,B+.1]],.065,Mir,10);}
@@ -106,14 +115,37 @@ function win3Mesh(W){
   {const x=WIN3_BX,z=WIN3_BZ;
     K.box([x,.32,z],[.98,.05,.4],Mst,.01);for(const sx of [-1,1])K.box([x+sx*.95,.36,z+.36],[.03,.36,.03],Mst,.005);
     K.box([x,.43,z],[.95,.065,.38],K.mt([150,146,132],.1,3,P.cloth),.03);
-    K.box([x-.18,.505,z+.02],[.72,.025,.39],K.mt([132,62,42],.1,3,P.cloth),.02);
-    K.ell([x+.72,.54,z-.02],[.2,.06,.15],K.mt([200,196,184],.1,3,P.cloth),6,12);}
+    /* спит — одеяло ложится по телу (win3Blanket), голова на подушке открыта; иначе ровно застелено */
+    if(sl)win3Blanket(K,x,z);else K.box([x-.18,.505,z+.02],[.72,.025,.39],K.mt([132,62,42],.1,3,P.cloth),.02);
+    K.ell([x+.72,.52,z-.02],[.2,.04,.16],K.mt([200,196,184],.1,3,P.cloth),6,12);}
   return K.pack();
 }
 const WIN3_LEV=WIN_USE;
+/* одеяло спящего: простыня сеткой по длине койки, горб по телу (ноги, колени, таз, грудь — не выше .04 над ним),
+   складки вдоль, передний край свисает с койки, у груди отворот; голова и плечи над ним открыты */
+function win3Blanket(K,x,z){
+  const yb=.505,zc=z+.02,x0=x-.97,x1=x-.84+1.36,M=K.mt([132,62,42],.1,3,R3P.cloth),Ms=K.mt([214,208,196],.08,3,R3P.cloth);
+  const AX=[[-.2,.26,.21],[-.04,.42,.23],[.14,.41,.24],[.36,.26,.26],[.6,.25,.3],[.95,.28,.34],[1.2,.29,.36],[1.4,.27,.36]];
+  const prof=u=>{let i=0;while(i<AX.length-2&&u>AX[i+1][0])i++;const a=AX[i],b=AX[i+1],k=clamp((u-a[0])/(b[0]-a[0]),0,1),e=k*k*(3-2*k);return [a[1]+(b[1]-a[1])*e,a[2]+(b[2]-a[2])*e];};
+  const ZS=[];for(let j=0;j<=22;j++)ZS.push(z-.4+.8*j/22);ZS.push(z+.425,z+.44);
+  const H=(xx,j)=>{const zz=ZS[j];if(j===ZS.length-2)return [zz,.47];if(j===ZS.length-1)return [zz,.35];
+    const [A,w]=prof(xx-(x-.84)),t=Math.abs(zz-zc)/w,b=t<1?Math.pow(1-t*t,.45):0;
+    const fold=.007*Math.sin(zz*41+xx*1.7)*(1-.6*b)+.004*Math.sin(zz*97);
+    const y=yb+A*b+fold;return [zz,xx<x0+.01?Math.min(y,.46):y];};   /* у изножья край свисает */
+  const NX=26,P=[];
+  for(let i=0;i<=NX;i++){const xx=x0+(x1-x0)*i/NX,row=[];for(let j=0;j<ZS.length;j++){const [zz,y]=H(xx,j);row.push([xx,y,zz]);}P.push(row);}
+  const nrm=(i,j)=>{const a=P[Math.min(i+1,NX)][j],b=P[Math.max(i-1,0)][j],c=P[i][Math.min(j+1,ZS.length-1)],d=P[i][Math.max(j-1,0)];
+    const dx=[a[0]-b[0],a[1]-b[1],a[2]-b[2]],dz=[c[0]-d[0],c[1]-d[1],c[2]-d[2]];
+    const n=[dz[1]*dx[2]-dz[2]*dx[1],dz[2]*dx[0]-dz[0]*dx[2],dz[0]*dx[1]-dz[1]*dx[0]],l=Math.hypot(...n)||1;return [n[0]/l,n[1]/l,n[2]/l];};
+  for(let i=0;i<NX;i++)for(let j=0;j<ZS.length-1;j++){
+    const v=[[i,j],[i,j+1],[i+1,j+1],[i,j],[i+1,j+1],[i+1,j]];
+    for(const [a,b] of v)K.vx(P[a][b],nrm(a,b),M);}
+  /* отворот простыни у груди */
+  K.tube(P[NX].slice(0,ZS.length-1).map(p=>[p[0]+.012,p[1]+.012,p[2]]),.022,Ms,6);
+}
 
 /* ── человек: стоит у панели, рука к рычагу; спит — на боку, лицом в комнату ── */
-function win3Pilot(W){const m=Object.assign({},home3PilotM(),{jac:WIN3_PARKA});
+function win3Pilot(W){const m=Object.assign({},home3PilotM(),{jac:WIN3_PARKA,style:4});   /* парка с капюшоном */
   m.mood=(W.faults||[]).length?"angry":win3Val(W,"heat")<WIN_MIN.heat?"sad":null;return m;}
 function win3Man(M,ii,m,mesh,A,t,look){
   const ph=(m.seed%1000)*.0063,br=1+.006*Math.sin(t*1.6+ph);
@@ -122,7 +154,8 @@ function win3Man(M,ii,m,mesh,A,t,look){
   if(look){const p=r3Pt(A,[0,0,0]),yaw=Math.atan2(A[8],A[10]),a=Math.atan2(look[0]-p[0],look[2]-p[2])-yaw;hy=clamp(Math.atan2(Math.sin(a),Math.cos(a)),-.6,.6);}
   M.set(Bm,(ii*R3_PART)*16);
   const Mh=r3Pivot(Bm,at.neck,hy,.04*Math.sin(t*.17+ph),0);M.set(Mh,(ii*R3_PART+1)*16);
-  cpRig(M,ii*R3_PART,Mh,mesh,cpFace(m,null));
+  const fc=cpFace(m,null);if(fc&&m.zz)fc.bl=1;   /* спящий — веки сомкнуты */
+  cpRig(M,ii*R3_PART,Mh,mesh,fc);
   for(let k=0;k<2;k++)M.set(Bm,(ii*R3_PART+2+k)*16);
 }
 /* фаза сна 0..1 (0 — не спит) и свет комнаты в ней: гаснет к середине, возвращается */
@@ -133,8 +166,9 @@ function win3Scene(cam,t){
   const W=winAll(),M=WIN3_M,OT=WIN3_OT,I=r3Xf([0,0,0]),B=WIN3_B;
   for(let i=0;i<R3_MAXI*R3_PART;i++)M.set(I,i*16);OT.fill(0);
   const draws=[[WIN3.mesh,0,1]],sp=win3SleepPh(),f=win3Fade(sp),m=win3Pilot(W);
-  if(sp>0){const mesh=cpMesh(m,"stand",1);win3Man(M,1,m,mesh,r3Xf([WIN3_BX-.9,.74,WIN3_BZ+.04],0,0,-Math.PI/2),t,null);draws.push([mesh,1,1]);WIN3.man=[WIN3_BX,WIN3_BZ];}
-  else{const mesh=cpMesh(m,"frame",1),x=-1.5,z=-.72;
+  /* спит на спине: голова на подушке, лицо повёрнуто к метели в окне */
+  if(sp>0){const mesh=cpMesh(m,"lie",1);m.zz=1;win3Man(M,1,m,mesh,r3Xf([WIN3_BX-.84,.6,WIN3_BZ+.02],0,-Math.PI/2,-Math.PI/2),t,[WIN3_BX+.3,1.5,WIN3_B]);draws.push([mesh,1,1]);WIN3.man=[WIN3_BX,WIN3_BZ];}
+  else{const mesh=cpMesh(m,"frame",1),x=-1.2,z=-1.25;   /* у правого края панели, в профиль: подписи рычагов не под ним, лицо видно */
     win3Man(M,1,m,mesh,r3Xf([x,0,z],-1.95),t,cam.eye);draws.push([mesh,1,1]);WIN3.man=[x,z];}
   const li=win3Val(W,"light"),he=win3Val(W,"heat"),over=winOver(W),lights=[],bulbs=[];
   /* ключ — лампа над столом (СВЕТ), с тенью; выключена — её нет */
@@ -142,19 +176,21 @@ function win3Scene(cam,t){
     cosO:Math.cos(1.15),cosI:Math.cos(.5),shadow:1,vol:.06+.02*li,key:1});bulbs.push([WIN3_TX,1.96,WIN3_TZ+.05,.35+.2*li]);}
   /* печь — ТЕПЛО: тёплая заливка у пола, огонь дрожит (движение, а не мигание) */
   if(he>0){const fl=1+.07*Math.sin(t*7.3)+.05*Math.sin(t*12.7+1.3)+.04*Math.sin(t*3.1);
-    lights.push({p:[-2.82,.5,-.1],range:3.2+he*.7,c:r3Sc(r3Lin([255,138,62]),(.7+1.1*he)*fl*f),shadow:li>0?0:1,vol:.03,key:li>0?0:1});
-    bulbs.push([-3.05,.46,-.23,.25+.2*he]);}
+    lights.push({p:[-2.82,.5,-.1],range:3.2+he*.7,c:r3Sc(r3Lin([255,138,62]),(.7+1.1*he)*fl*(.45+.55*f)),shadow:li>0?0:1,vol:.03,key:li>0?0:1});
+    bulbs.push([-3.05,.46,-.23,(.25+.2*he)*(1+1.4*(1-f))]);}
   /* окно — холод метели: конусом в комнату, на пол у койки; не выключается */
-  lights.push({p:[2.45,1.7,B+.3],range:6.5,c:r3Sc(r3Lin([140,170,214]),2.0*f),spot:1,d:[-.25,-.55,.8],cosO:Math.cos(1.0),cosI:Math.cos(.4),vol:.05});
+  lights.push({p:[2.45,1.7,B+.3],range:6.5,c:r3Sc(r3Lin([140,170,214]),2.6*(.8+.2*f)),spot:1,d:[-.25,-.55,.8],cosO:Math.cos(1.0),cosI:Math.cos(.4),vol:.05});
+  /* сон: метель кладёт холодный свет на подушку и лицо */
+  if(sp>0)lights.push({p:[WIN3_BX+.55,1.75,B+.25],range:2.4,c:r3Sc(r3Lin([150,182,226]),1.5*(1-f)),spot:1,d:[.1,-.85,.5],cosO:Math.cos(.7),cosI:Math.cos(.3),vol:0});
   /* реактор — полоса светит на плиту панели; перегрузка красная */
   lights.push({p:[WIN3_PX,WIN3_PY+.5,B+.45],range:1.3,c:r3Sc(r3Lin(over?[255,80,60]:[255,190,120]),.5*f),vol:0});
-  (W.faults||[]).forEach((q,i)=>{lights.push({p:[WIN3_PX+.8+i*.14,WIN3_PY+.36,B+.3],range:1.1,c:r3Sc(r3Lin([255,60,40]),.5*f),vol:0});bulbs.push([WIN3_PX+.8+i*.14,WIN3_PY+.36,B+.12,.5]);});
+  (W.faults||[]).forEach((q,i)=>{lights.push({p:[WIN3_FX+i*.14,WIN3_FY,B+.3],range:1.1,c:r3Sc(r3Lin([255,60,40]),.5*f),vol:0});bulbs.push([WIN3_FX+i*.14,WIN3_FY,B+.12,.5]);});
   /* слабая заливка от разреза: человек не чёрная вырезка, даже когда игрок погасил всё */
-  lights.push({p:[0,2.2,WIN3_F+2.6],range:9,c:r3Sc(r3Lin([150,166,190]),.55*f),spot:1,d:[0,-.25,-.97],cosO:Math.cos(.8),cosI:Math.cos(.3),vol:0});
+  lights.push({p:[0,2.2,WIN3_F+2.6],range:9,c:r3Sc(r3Lin([150,166,190]),.55*(.45+.55*f)),spot:1,d:[0,-.25,-.97],cosO:Math.cos(.8),cosI:Math.cos(.3),vol:0});
   const st=WIN3.storm!=null?WIN3.storm:win3Storm(W),sky=r3Lin([70,82,96]),gnd=r3Lin([70,58,46]),fog=r3Lin([40,46,56]);
   return {draws,vp:cam.vp,cam:cam.eye,t,lights:lights.slice(0,R3_MAXL),bulbs,
-    sky:[...sky,(.35+.12*li)*f],gnd:[...gnd,.05],fog:[...r3Sc(fog,.2),.04],acc:[...r3Lin([255,170,90]),1],
-    win:[WIN3_WIN[0],WIN3_WIN[2],WIN3_WIN[1],WIN3_WIN[3]],win2:[B,8,Math.min(.999,st),.9*(.3+.7*f)],sgn:[0,0,0,0],sgn2:[B,0,0,0],
+    sky:[...sky,(.35+.12*li)*(.4+.6*f)],gnd:[...gnd,.05],fog:[...r3Sc(fog,.2),.04],acc:[...r3Lin([255,170,90]),1],
+    win:[WIN3_WIN[0],WIN3_WIN[2],WIN3_WIN[1],WIN3_WIN[3]],win2:[B,8,Math.min(.999,st),.9*(.75+.25*f)],sgn:[0,0,0,0],sgn2:[B,0,0,0],
     flm:[0,0,1,0],flm2:[B,0,0,0],tsg:null,tfl:null,M,ot:OT};
 }
 
@@ -167,9 +203,10 @@ function win3Canvas(){
   if(!tg||!tg.isConnected){tg=document.getElementById("win3Tags")||document.createElement("div");tg.id="win3Tags";tg.setAttribute("aria-hidden","true");cn.after(tg);WIN3.tags=tg;}
   cn.style.display="";tg.style.display="";return cn;
 }
-/* станции: каюта прямо (на телефоне — дальше и выше, панель—стол в кадре); сон — объектив к койке */
-const WIN3_CAMS={pc:{eye:[.1,1.65,4.7],tgt:[-.1,1.15,-1.6],fy:.74},ph:{eye:[-.7,2.1,5.9],tgt:[-.7,1.0,-1.4],fy:1.15},
-  pcS:{eye:[1.9,1.55,2.6],tgt:[2.45,.62,-1.4],fy:.74},phS:{eye:[2.1,2.0,4.2],tgt:[2.3,.62,-1.4],fy:1.1}};
+/* станции: каюта прямо; сон — объектив к койке. Телефон: объектив у самого разреза, внутри коробки — высокий кадр
+   снаружи видел пустоту над потолком и под полом (полкадра чёрного); в кадре человек у панели, трубы, календарь */
+const WIN3_CAMS={pc:{eye:[.1,1.65,4.7],tgt:[-.1,1.15,-1.6],fy:.74},ph:{eye:[-1.3,1.5,2.15],tgt:[-1.3,.85,-1.8],fy:1.32},
+  pcS:{eye:[1.9,1.55,2.6],tgt:[2.45,.62,-1.4],fy:.74},phS:{eye:[1.75,1.45,1.9],tgt:[2.35,.6,-1.4],fy:1.2}};
 function win3Cam(sz,t){
   const ph=!sz.wide,A=WIN3_CAMS[ph?"ph":"pc"],S=WIN3_CAMS[ph?"phS":"pcS"],p=win3SleepPh();
   const k=p<=0?0:p<.3?r3Step(0,.3,p):p<.7?1:1-r3Step(.7,1,p);
@@ -179,13 +216,13 @@ function win3Cam(sz,t){
   const P=r3Persp(c.fy,sz.cw/Math.max(1,sz.ch),.1,90);
   return {eye:e,tgt:c.tgt,fy:c.fy,vp:r3Mul(P,r3Look(e,c.tgt,[0,1,0]))};
 }
-/* до проверки M850c — только по ?win3=1: иначе зимовка рисуется старым 2D */
-function win3Ok(){return typeof location!=="undefined"&&/[?&]win3=1/.test(location.search)&&ROOM3.on&&typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok)&&!WIN3.err;}
+/* M850c: по умолчанию на движке; ?win3=0 (или ?room=0) — старое 2D до M890 */
+function win3Ok(){return ROOM3.on&&!(typeof location!=="undefined"&&/[?&]win3=0/.test(location.search))&&typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok)&&!WIN3.err;}
 function win3Frame(){
   const W=winAll(),cn=win3Canvas(),sz=home3Size(cn),R=rpgGet(cn);if(!R)return false;
   R.dpr=cn.__dpr;
-  const mk=WIN_USE.map(k=>win3Val(W,k)).join("")+"|"+W.day+"|"+(W.faults||[]).map(f=>f.k).join(",")+"|"+winCap(W);
-  if(!WIN3.mesh||WIN3.mkey!==mk){r3Drop(WIN3.mesh);WIN3.mesh=win3Mesh(W);WIN3.mkey=mk;}
+  const sl=win3SleepPh()>0,mk=WIN_USE.map(k=>win3Val(W,k)).join("")+"|"+W.day+"|"+(W.faults||[]).map(f=>f.k).join(",")+"|"+winCap(W)+(sl?"|z":"");
+  if(!WIN3.mesh||WIN3.mkey!==mk){r3Drop(WIN3.mesh);WIN3.mesh=win3Mesh(W,sl);WIN3.mkey=mk;}
   const t=wallMs()/1000,cam=win3Cam(sz,t),S=win3Scene(cam,t);
   const lab=rpgBake(R,"r3lab","win3|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
   const U=new Float32Array(60);
@@ -203,9 +240,8 @@ function win3Frame(){
 }
 /* слова на вещах (правило 4) */
 function win3Tags(W,sz){const B=WIN3_B,out=[],F=W.faults||[];
-  out.push({p:[-.6,2.02,B+.02],t:"СУТКИ "+W.day+" ИЗ "+W.days,s:(W.pname||"").toUpperCase(),c:"sg"});
   if(sz.wide)WIN3_LEV.forEach((k,i)=>out.push({p:[win3LeverX(i)-.14,WIN3_PY-.5,B+.16],t:WIN_RU[k],s:"",c:"sg"}));
-  if(F.length){const f=WIN_FAULT_BY[F[0].k];out.push({p:[WIN3_PX+.8,WIN3_PY+.42,B+.1],t:"ТРОНЬТЕ",s:f?f.ru:"",c:""});}
+  if(F.length){const f=WIN_FAULT_BY[F[0].k];out.push({p:[WIN3_FX,WIN3_FY+.06,B+.1],t:"ТРОНЬТЕ",s:f?f.ru:"",c:""});}
   out.push({p:[WIN3_BX-.3,.6,WIN3_BZ+.3],t:"СДАТЬ СМЕНУ",s:"",c:F.length?"sg":""});
   return out;}
 /* куда попадает палец: рамки вещей, спроецированные в кадр (CSS px); порядок — как в winHit */
@@ -214,7 +250,7 @@ function win3Box(cam,sz,c,h){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,ok=0;
     if(!q)continue;ok++;x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[0]);y1=Math.max(y1,q[1]);}
   return ok?{x0,y0,x1,y1}:null;}
 function win3Hits(W,cam,sz){const B=WIN3_B,out=[],add=(k,id,c,h,pad)=>{const b=win3Box(cam,sz,c,h);if(b){const p=pad||0;out.push({k,id,x0:b.x0-p,y0:b.y0-p,x1:b.x1+p,y1:b.y1+p});}};
-  (W.faults||[]).forEach((f,i)=>add("fix",f.k,[WIN3_PX+.8+i*.14,WIN3_PY+.36,B+.08],[.06,.06,.04],10));
+  (W.faults||[]).forEach((f,i)=>add("fix",f.k,[WIN3_FX+i*.14,WIN3_FY,B+.08],[.06,.06,.04],10));
   WIN3_LEV.forEach((k,i)=>add("lever",k,[win3LeverX(i),WIN3_PY-.05,B+.15],[.155,.5,.05]));
   add("panel",null,[WIN3_PX,WIN3_PY,B+.1],[.65,.6,.08]);
   add("wall",null,[-.75,1.3,B+.1],[.5,1.3,.1]);
@@ -241,3 +277,4 @@ function win3On(){return !!(WIN3.cn&&WIN3.cn.style.display!=="none"&&WIN3.hit.le
 {const f0=drawWorldIn;drawWorldIn=function(){f0();if(WIN3.cn&&!(G.mode==="winter"&&G.win&&win3Ok()))win3Hide();};}
 {const f0=winHit;winHit=function(mx,my){return win3On()?win3Hit(mx,my):f0(mx,my);};}
 {const f0=winShift;winShift=function(){const r=f0();if(r&&win3On())WIN3.sl=wallMs();return r;};}
+{const f0=updateWinter;updateWinter=function(dt){f0(dt);if(win3On())G.prompt="ДЕЙСТВИЕ — СДАТЬ СМЕНУ";};}

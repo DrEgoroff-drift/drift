@@ -540,7 +540,16 @@ function drawMapIn(){
     const side=wid(L)+wid(Rr)+24<=RX-16-16;
     const rows=[];
     if(side)for(let i=0;i<Math.max(L.length,Rr.length);i++)rows.push([L[i]||null,Rr[i]||null]);
-    else{for(const r of L)rows.push([r,null]);for(const r of Rr)rows.push([r,null]);}
+    else{
+      /* столбиком на низком окне (568×320, курс с доски диспетчера — зрение 22.10): подвал лез под линейку X.
+         Правая колонка уступает с конца важности: сперва «цен не видели», потом счёт открытий */
+      const U2=mapU(),lim=mapRulerTop()+16*U2,top=n=>mapDeck()-(n-1)*16*U2-15*U2;
+      for(const rx of [/^цен станции/,/^ТЕЛ /]){
+        if(top(L.length+Rr.length)>=lim)break;
+        const i=Rr.findIndex(r=>rx.test(r[1]));if(i>=0)Rr.splice(i,1);
+      }
+      for(const r of L)rows.push([r,null]);for(const r of Rr)rows.push([r,null]);
+    }
     return {rows,side,RX};
   })();
   /* ── курс прыжка ──

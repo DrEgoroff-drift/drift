@@ -319,11 +319,15 @@ function plnWarmStep(L,S,p,C,V){
     if(++w.k>=3){w.st=2;w.k=0;}
     return true;
   }
+  /* этапы 2–5 — тоже в бюджет: строитель отдаёт кусок и говорит, всё ли (22.10: каждый целиком за
+     кадр давал 100–150 мс рывка на ЗАХОД → ГРУНТ) */
   if(S.deposits){
-    if(w.st===2)plnThings(L,S,p);
-    else if(w.st===3){if(PLN_MARK.on&&S.tr&&S.tr.poi&&S.tr.poi.length)plnMarks(L,S);}
-    else if(w.st===4){if(OWN.on&&S.tr&&S.p)plnOwnStep(L,S);}
-    else if(w.st===5)plnHerbs(L,S,p);
+    let done=true;
+    if(w.st===2)done=!!plnThings(L,S,p,B);
+    else if(w.st===3){if(PLN_MARK.on&&S.tr&&S.tr.poi&&S.tr.poi.length)done=!!plnMarks(L,S,B);}
+    else if(w.st===4){if(OWN.on&&S.tr&&S.p)done=plnOwnStep(L,S,B)!==false;}
+    else if(w.st===5)done=!!plnHerbs(L,S,p,B);
+    if(!done)return true;
   }
   if(++w.st>5){L.warmDone=true;return false;}
   return true;

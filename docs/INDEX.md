@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 622 · top-level symbols: 8795
+Files: 623 · top-level symbols: 8799
 
 ## SYMBOLS
 
@@ -1647,6 +1647,7 @@ PLN_AZ_ELEV                  src/21pf-pln-land.js:46
 PLN_BARK                     src/21pgb-pln-trees.js:29
 PLN_BEAST                    src/21pib-pln-beast.js:16
 PLN_BEAST_IDS                src/21piba-pln-gait.js:13
+PLN_BLOB                     src/21pa-pln-mesh.js:70
 PLN_BUILD                    src/21pf-pln-land.js:38
 PLN_CAST                     src/21ph-pln-cast.js:6
 PLN_DEG                      src/21p-pln.js:31
@@ -1695,16 +1696,16 @@ PLN_OLD_HSURF                src/21pzb-pln-words.js:59
 PLN_OLD_HUD                  src/21pza-pln-descent.js:207
 PLN_OLD_HUD2                 src/21pzb-pln-words.js:100
 PLN_OLD_LANDING              src/21pza-pln-descent.js:221
-PLN_OLD_SURFACE              src/21pz-pln-frame.js:433
+PLN_OLD_SURFACE              src/21pz-pln-frame.js:437
 PLN_OLD_ULAND                src/21pza-pln-descent.js:212
 PLN_OVER                     src/21pj-pln-over.js:16
-PLN_OWN_GATE_R               src/21pig-pln-own.js:405
-PLN_OWN_OLD_AT               src/21pig-pln-own.js:487
-PLN_OWN_OLD_DIG              src/21pig-pln-own.js:453
-PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:431
-PLN_OWN_OLD_HINT             src/21pig-pln-own.js:480
-PLN_OWN_OLD_UPD              src/21pig-pln-own.js:458
-PLN_OWN_UPD                  src/21pig-pln-own.js:430
+PLN_OWN_GATE_R               src/21pig-pln-own.js:408
+PLN_OWN_OLD_AT               src/21pig-pln-own.js:490
+PLN_OWN_OLD_DIG              src/21pig-pln-own.js:456
+PLN_OWN_OLD_ENTER            src/21pig-pln-own.js:434
+PLN_OWN_OLD_HINT             src/21pig-pln-own.js:483
+PLN_OWN_OLD_UPD              src/21pig-pln-own.js:461
+PLN_OWN_UPD                  src/21pig-pln-own.js:433
 PLN_PAD                      src/21pga-pln-plant.js:27
 PLN_PAL                      src/21pf-pln-land.js:41-65
 PLN_PAL0                     src/21pfa-pln-worlds.js:11
@@ -2098,7 +2099,7 @@ SEC_RELAY_GOAL               src/12b2-fx-sec.js:27
 SEC_SPY                      src/12b2-fx-sec.js:25
 SEC_SPY_CACHE                src/12b2-fx-sec.js:88
 SEC_SPY_MAX                  src/12b2-fx-sec.js:26
-SEED_KNOWN                   tests/91qm-seeds.js:12-29
+SEED_KNOWN                   tests/91qm-seeds.js:13
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -2238,6 +2239,9 @@ SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:159
 SURF_HOR                     src/19c-light.js:202
+SURF_LAW                     src/21pzd-surf-laws.js:11-15
+SURF_LAW_GEN                 src/21pzd-surf-laws.js:45
+SURF_LAW_WATER               src/21pzd-surf-laws.js:19
 SURF_LND                     src/21e3-surface-stand-gpu.js:187
 SURF_NEAR                    src/21e2-surface-gpu.js:505
 SURF_RF                      src/21e2-surface-gpu.js:463
@@ -6671,7 +6675,7 @@ plnActVerb                   src/21pif-pln-marks-act.js:97
 plnAdd                       src/21p-pln.js:34
 plnAnomFeed                  src/21pifb-pln-marks-act-move.js:162-165
 plnAnomTable                 src/21pifb-pln-marks-act-move.js:155-160
-plnAtThing                   src/21pi-pln-things.js:423-436
+plnAtThing                   src/21pi-pln-things.js:432-445
 plnBeastCapsule              src/21piba-pln-gait.js:76-101
 plnBeastDrop                 src/21pib-pln-beast.js:250-256
 plnBeastEarth                src/21piba-pln-gait.js:185-198
@@ -6690,12 +6694,12 @@ plnBeastStout                src/21piba-pln-gait.js:121-137
 plnBeastTilt                 src/21pib-pln-beast.js:38-47
 plnBeastUpright              src/21piba-pln-gait.js:139-158
 plnBeastZ                    src/21pib-pln-beast.js:26-29
-plnBez                       src/21pa-pln-mesh.js:175-179
-plnBlob                      src/21pa-pln-mesh.js:66-95
+plnBez                       src/21pa-pln-mesh.js:195-199
+plnBlob                      src/21pa-pln-mesh.js:71-115
 plnBodies                    src/21pz-pln-frame.js:84-110
 plnBox                       src/21pf-pln-land.js:67-74
 plnBoxF                      src/21pf-pln-land.js:82-87
-plnCard                      src/21pa-pln-mesh.js:168-173
+plnCard                      src/21pa-pln-mesh.js:188-193
 plnCast                      src/21ph-pln-cast.js:31-38
 plnCastFrame                 src/21ph-pln-cast.js:42-55
 plnCastResample              src/21ph-pln-cast.js:12-21
@@ -6749,12 +6753,12 @@ plnGunLaid                   src/21pifb-pln-marks-act-move.js:281
 plnHandAge                   src/21pz-pln-frame.js:278-288
 plnHandWin                   src/21pz-pln-frame.js:290-293
 plnHash                      src/21p-pln.js:55-59
-plnHerbAlgaMesh              src/21pia-pln-herb.js:399-423
-plnHerbAlgae                 src/21pia-pln-herb.js:424-449
+plnHerbAlgaMesh              src/21pia-pln-herb.js:405-429
+plnHerbAlgae                 src/21pia-pln-herb.js:430-455
 plnHerbBlade                 src/21pia-pln-herb.js:69-81
 plnHerbBranch                src/21pia-pln-herb.js:62-67
-plnHerbDrop                  src/21pia-pln-herb.js:459-466
-plnHerbFrame                 src/21pia-pln-herb.js:450-458
+plnHerbDrop                  src/21pia-pln-herb.js:465-472
+plnHerbFrame                 src/21pia-pln-herb.js:456-464
 plnHerbLeaf                  src/21pia-pln-herb.js:46
 plnHerbMesh                  src/21pia-pln-herb.js:309-344
 plnHerbPlate                 src/21pia-pln-herb.js:104-107
@@ -6765,7 +6769,7 @@ plnHerbSoft                  src/21pia-pln-herb.js:37
 plnHerbStem                  src/21pia-pln-herb.js:48-60
 plnHerbTone                  src/21pia-pln-herb.js:41-44
 plnHerbZ                     src/21pia-pln-herb.js:35
-plnHerbs                     src/21pia-pln-herb.js:347-394
+plnHerbs                     src/21pia-pln-herb.js:349-400
 plnHex                       src/21p-pln.js:46-49
 plnHour                      src/21pz-pln-frame.js:181-241
 plnIco                       src/21pa-pln-mesh.js:41-58
@@ -6823,7 +6827,7 @@ plnLiftSurvey                src/21pifc-pln-marks-act-lift.js:57-69
 plnLiftWhere                 src/21pifc-pln-marks-act-lift.js:16-26
 plnLiftWin                   src/21pifc-pln-marks-act-lift.js:139-145
 plnLightBox                  src/21pz-pln-frame.js:246-256
-plnLoft                      src/21pa-pln-mesh.js:135-165
+plnLoft                      src/21pa-pln-mesh.js:155-185
 plnLog                       src/21p-pln.js:25
 plnLookAt                    src/21pz-pln-frame.js:52-56
 plnLookMix                   src/21pz-pln-frame.js:47-51
@@ -6846,15 +6850,15 @@ plnMarkH                     src/21pie-pln-marks.js:40
 plnMarkMesh                  src/21pie-pln-marks.js:58-103
 plnMarkMove                  src/21piec-pln-marks-move.js:10-289
 plnMarkPad                   src/21pie-pln-marks.js:44-49
-plnMarkSpark                 src/21pie-pln-marks.js:153-162
+plnMarkSpark                 src/21pie-pln-marks.js:155-164
 plnMarkState                 src/21pif-pln-marks-act.js:51
 plnMarkStone                 src/21pieb-pln-marks-stone.js:8-213
-plnMarkWorld                 src/21pie-pln-marks.js:148-151
+plnMarkWorld                 src/21pie-pln-marks.js:150-153
 plnMarkWreck                 src/21piea-pln-marks-wreck.js:12-209
 plnMarkZ                     src/21pie-pln-marks.js:42
-plnMarks                     src/21pie-pln-marks.js:106-146
-plnMarksDrop                 src/21pie-pln-marks.js:226-232
-plnMarksFrame                src/21pie-pln-marks.js:168-225
+plnMarks                     src/21pie-pln-marks.js:107-148
+plnMarksDrop                 src/21pie-pln-marks.js:228-234
+plnMarksFrame                src/21pie-pln-marks.js:170-227
 plnMesh                      src/21pa-pln-mesh.js:12-15
 plnMeshAdd                   src/21pa-pln-mesh.js:29-37
 plnMeshDone                  src/21pa-pln-mesh.js:38
@@ -6871,29 +6875,29 @@ plnOver                      src/21pj-pln-over.js:48-122
 plnOverAt                    src/21pj-pln-over.js:19-22
 plnOverOld                   src/21pj-pln-over.js:29-47
 plnOverPlate                 src/21pj-pln-over.js:23-27
-plnOwnAtGate                 src/21pig-pln-own.js:406
+plnOwnAtGate                 src/21pig-pln-own.js:409
 plnOwnBaseAt                 src/21pig-pln-own.js:86-101
 plnOwnBaseMesh               src/21pig-pln-own.js:112-205
 plnOwnBaseX                  src/21pig-pln-own.js:57-82
 plnOwnBattOf                 src/21pig-pln-own.js:103-108
-plnOwnFrame                  src/21pig-pln-own.js:329-376
+plnOwnFrame                  src/21pig-pln-own.js:332-379
 plnOwnFree                   src/21pig-pln-own.js:296-300
-plnOwnGateNote               src/21pig-pln-own.js:418-424
-plnOwnGateX                  src/21pig-pln-own.js:400-404
+plnOwnGateNote               src/21pig-pln-own.js:421-427
+plnOwnGateX                  src/21pig-pln-own.js:403-407
 plnOwnHomeAt                 src/21pig-pln-own.js:208-223
 plnOwnHomeMesh               src/21pig-pln-own.js:224-293
-plnOwnInYard                 src/21pig-pln-own.js:438-441
+plnOwnInYard                 src/21pig-pln-own.js:441-444
 plnOwnItem                   src/21pig-pln-own.js:301-308
 plnOwnKit                    src/21pig-pln-own.js:41-51
-plnOwnMark                   src/21pig-pln-own.js:408
-plnOwnOcc                    src/21pig-pln-own.js:379-388
-plnOwnPads                   src/21pig-pln-own.js:390-397
+plnOwnMark                   src/21pig-pln-own.js:411
+plnOwnOcc                    src/21pig-pln-own.js:382-391
+plnOwnPads                   src/21pig-pln-own.js:393-400
 plnOwnPennHere               src/21pig-pln-own.js:109-111
 plnOwnSteel                  src/21pig-pln-own.js:34-39
-plnOwnStep                   src/21pig-pln-own.js:309-327
-plnOwnUnder                  src/21pig-pln-own.js:442-445
-plnOwnWordsAt                src/21pig-pln-own.js:410-415
-plnOwnYardPrompt             src/21pig-pln-own.js:446-452
+plnOwnStep                   src/21pig-pln-own.js:310-330
+plnOwnUnder                  src/21pig-pln-own.js:445-448
+plnOwnWordsAt                src/21pig-pln-own.js:413-418
+plnOwnYardPrompt             src/21pig-pln-own.js:449-455
 plnPadBulb                   src/21pza-pln-descent.js:120
 plnPadFrame                  src/21pza-pln-descent.js:134-164
 plnPadGeo                    src/21pza-pln-descent.js:83-105
@@ -6956,7 +6960,7 @@ plnSmooth                    src/21p-pln.js:32
 plnSoftp                     src/21pf-pln-land.js:92
 plnStride                    src/21piba-pln-gait.js:23-28
 plnSub                       src/21p-pln.js:35
-plnSurface                   src/21pz-pln-frame.js:331-430
+plnSurface                   src/21pz-pln-frame.js:335-434
 plnTempleGift                src/21pifa-pln-marks-act-stone.js:27-31
 plnTf                        src/21p-pln.js:141-143
 plnThingApron                src/21pi-pln-things.js:55-69
@@ -6970,10 +6974,10 @@ plnThingPrism                src/21pi-pln-things.js:34-38
 plnThingSeed                 src/21pi-pln-things.js:20-24
 plnThingSkin                 src/21pi-pln-things.js:40-50
 plnThingSpoil                src/21pi-pln-things.js:202-208
-plnThings                    src/21pi-pln-things.js:367-387
-plnThingsDeposits            src/21pi-pln-things.js:332-366
-plnThingsDrop                src/21pi-pln-things.js:410-419
-plnThingsFrame               src/21pi-pln-things.js:389-409
+plnThings                    src/21pi-pln-things.js:375-396
+plnThingsDeposits            src/21pi-pln-things.js:333-373
+plnThingsDrop                src/21pi-pln-things.js:419-428
+plnThingsFrame               src/21pi-pln-things.js:398-418
 plnThingsSrc                 src/21pga-pln-plant.js:100-104
 plnTrackMesh                 src/21pid-pln-tracks.js:10-16
 plnTracksFrame               src/21pid-pln-tracks.js:17-37
@@ -6991,9 +6995,9 @@ plnTreeTrunk                 src/21pgb-pln-trees.js:60-66
 plnTreeUmb                   src/21pgb-pln-trees.js:76-108
 plnTreeWorldW                src/21pgd-pln-wild.js:81
 plnTri                       src/21pa-pln-mesh.js:23-26
-plnTube                      src/21pa-pln-mesh.js:100-131
+plnTube                      src/21pa-pln-mesh.js:120-151
 plnVert                      src/21pa-pln-mesh.js:16-22
-plnWarmStep                  src/21pz-pln-frame.js:301-330
+plnWarmStep                  src/21pz-pln-frame.js:301-334
 plnWaterEye                  src/21pw-pln-water.js:250
 plnWaterGrid                 src/21pw-pln-water.js:257-265
 plnWaterMirror               src/21pw-pln-water.js:238-248
@@ -7899,8 +7903,8 @@ sectWith                     tests/91qf-sect.js:17-20
 sectWordsOn                  src/21ae-base-sect.js:494
 sectX                        src/21ae-base-sect.js:38
 sectY                        src/21ae-base-sect.js:39
-seedLand                     tests/91qm-seeds.js:30-36
-seedWorlds                   tests/91qm-seeds.js:17-29
+seedLand                     tests/91qm-seeds.js:27-33
+seedWorlds                   tests/91qm-seeds.js:14-26
 sellCargo                    src/12-economy.js:181-209
 sellDroneYield               src/12-economy.js:210-218
 sellQuote                    src/12ab-hold.js:134-152
@@ -9978,7 +9982,7 @@ zoomTo                       src/15-input.js:358
 ## src/21p-pln.js · 9 KB
   · планета заново: состояние, мерка, математика (M610):1
 
-## src/21pa-pln-mesh.js · 10 KB
+## src/21pa-pln-mesh.js · 12 KB
   · планета: тело и его генераторы (M610):1
 
 ## src/21pb-pln-wgsl-air.js · 24 KB
@@ -10031,10 +10035,10 @@ zoomTo                       src/15-input.js:358
 ## src/21phc-pln-rig-card.js · 22 KB
   · планета: человек в карточке — один астронавт везде (M801):1
 
-## src/21pi-pln-things.js · 26 KB
+## src/21pi-pln-things.js · 27 KB
   · планета: вещи игры — залежи, вход в пещеру, устье шахты (M611):1
 
-## src/21pia-pln-herb.js · 31 KB
+## src/21pia-pln-herb.js · 32 KB
   · планета: растения игры — двенадцать форм (M611):1
 
 ## src/21pib-pln-beast.js · 18 KB
@@ -10112,6 +10116,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/21pzc-dep-value.js · 3 KB
   · дорогая жила — находка (M904d · DESIGN-game §4.1a):1
+
+## src/21pzd-surf-laws.js · 5 KB
+  · законы поверхности: вещи не стоят друг на друге (22.10):1
 
 ## src/22-mode-cave.js · 46 KB
   · пещера: поле породы в двух измерениях:1
