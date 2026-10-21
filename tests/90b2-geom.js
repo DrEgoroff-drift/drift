@@ -879,7 +879,12 @@ function geoCalm(){
 
 /* экран в покое: появление окна (.scr.open — scrIn, 0.22 с) и прочие переходы — к концу;
    синхронный обход иначе видит окно на нулевой непрозрачности. Бесконечные не трогаем */
-function geoSettle(){for(const a of document.getAnimations()){try{const t=a.effect&&a.effect.getTiming();if(t&&t.iterations!==Infinity)a.finish();}catch(e){}}}
+function geoSettle(){for(const a of document.getAnimations()){try{const t=a.effect&&a.effect.getTiming();if(t&&t.iterations!==Infinity)a.finish();}catch(e){}}
+  /* разрез базы (21ae) везёт объектив по настоящим часам: въезд, ход за человеком, дальний на первые
+     1.4 с. Номера ярусов стоят в этом объективе — DPR 1 и 3 снимали разные мгновения въезда, и сверка
+     DPR краснела раз в восемь прогонов (15.10). Зрение берёт объектив осевшим, как его видит игрок */
+  if(typeof SECT==="object"&&SECT&&G.base&&SECT.b===G.base){const S=G.base;
+    SECT.ent=0;SECT.cx=null;SECT.t0=-1e9;SECT.far=W<=760?0:(S.menu||(S.cur|0)<0)?1:0;}}
 /* главный вход: {vp, font, self, screens, clicks, findings, errs, ms}. Сеть, окна и диалоги — заглушки */
 function geoRun(o){
   o=o||{};const t0=performance.now();

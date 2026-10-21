@@ -4463,7 +4463,7 @@ geoArea                      tests/90b2-geom.js:36
 geoAt                        src/18b-geology.js:73-77
 geoBoxy                      tests/90b2-geom.js:352-358
 geoBtns                      tests/90b2-geom.js:864
-geoCalm                      tests/90b2-geom.js:874-962
+geoCalm                      tests/90b2-geom.js:874-967
 geoClipPoly                  tests/90b2-geom.js:44
 geoCol                       tests/90b2-geom.js:73-84
 geoCompose                   tests/90b2-geom.js:679-704
@@ -4475,7 +4475,7 @@ geoExtra                     tests/90b2-geom.js:223-245
 geoFaultAt                   src/18b-geology.js:92-97
 geoFaultX                    src/18b-geology.js:99-102
 geoFin                       tests/90b2-geom.js:58
-geoFontProbe                 tests/90b2-geom.js:964-973
+geoFontProbe                 tests/90b2-geom.js:969-978
 geoFrame                     tests/90b2-geom.js:309-312
 geoFrame1                    tests/90b2-geom.js:313-329
 geoHang                      tests/90b2-geom.js:252
@@ -4502,7 +4502,7 @@ geoRec                       tests/90b2-geom.js:178-218
 geoRich                      tests/90b2-geom.js:824
 geoRoadFrame                 tests/90b2-geom.js:333-348
 geoRs                        tests/90b2-geom.js:69
-geoRun                       tests/90b2-geom.js:884-962
+geoRun                       tests/90b2-geom.js:889-967
 geoSat                       tests/90b2-geom.js:51
 geoScreens                   tests/90b2-geom.js:830-862
 geoSelf                      tests/90b2-geom.js:707-820
