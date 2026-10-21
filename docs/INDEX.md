@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 621 · top-level symbols: 8775
+Files: 619 · top-level symbols: 8724
 
 ## SYMBOLS
 
@@ -88,7 +88,7 @@ AVR_HOLD                     src/21a6-base-avral.js:21
 AVR_KINDS                    src/21a6-base-avral.js:24-28
 AVR_NEAR                     src/21a6-base-avral.js:22
 AVR_TIME                     src/21a6-base-avral.js:20
-B3                           src/29rd-spa-r3.js:144
+B3                           src/29rd-spa-r3.js:146
 BANYA_EVERY                  src/21ac1-base-banya.js:19
 BARGE_ART                    src/12l-barge.js:414
 BARGE_CAP                    src/12l-barge.js:13
@@ -867,7 +867,6 @@ GPU_PIPE_SRC                 src/08b0-gpu-pipe.js:44-65
 GPU_PL_WGSL                  src/08b-gpu.js:485
 GPU_POST_WGSL                src/08b-gpu.js:80
 GPU_SCR                      src/08c-gpu-kit.js:174
-GPU_SCREEN_LAYERS            src/18c-chunks.js:193
 GPU_SHP_WGSL                 src/08c-gpu-kit.js:264
 GPU_SNAP_OVER                src/08b-gpu.js:29
 GPU_TONE_FILM                src/08b-gpu.js:521
@@ -2000,9 +1999,8 @@ ROLE_LIM                     src/13c-roles.js:7
 ROMAN                        src/01-core.js:185
 ROOM3                        src/29r-rooms-r3.js:12
 ROOM3_M                      src/29r-rooms-r3.js:15
-ROOM_BAKE                    src/29c0-rooms-gpu.js:7
 ROOM_FIN                     src/21aa-base-rooms.js:70-80
-ROOM_WGSL_NOISE              src/29c0-rooms-gpu.js:17
+ROOM_WGSL_NOISE              src/29c0-rooms-gpu.js:2
 ROUTE_MAX                    src/12r-route.js:29
 RPG_CAP                      src/27f1-room-gpu.js:14
 RPG_IDS                      src/27f1-room-gpu.js:120
@@ -2153,26 +2151,20 @@ SOC_REFUGEE                  src/12ay-fx-soc.js:10
 SOC_REJOIN                   src/12al4-soc.js:16
 SOC_REVOLT                   src/12ay-fx-soc.js:14
 SOC_STRIKE                   src/12ay-fx-soc.js:11
-SPA3                         src/29rd-spa-r3.js:18
-SPA3_BD                      src/29rd-spa-r3.js:24
-SPA3_CAMS                    src/29rd-spa-r3.js:177
-SPA3_DAYMS                   src/29rd-spa-r3.js:20
-SPA3_L                       src/29rd-spa-r3.js:19
-SPA3_M                       src/29rd-spa-r3.js:22
-SPA3_MAN                     src/29rd-spa-r3.js:25
-SPA3_SHIRT                   src/29rd-spa-r3.js:26
-SPA3_SLEEP                   src/29rd-spa-r3.js:21
+SPA3                         src/29rd-spa-r3.js:20
+SPA3_BD                      src/29rd-spa-r3.js:26
+SPA3_CAMS                    src/29rd-spa-r3.js:179
+SPA3_DAYMS                   src/29rd-spa-r3.js:22
+SPA3_L                       src/29rd-spa-r3.js:21
+SPA3_M                       src/29rd-spa-r3.js:24
+SPA3_MAN                     src/29rd-spa-r3.js:27
+SPA3_SHIRT                   src/29rd-spa-r3.js:28
+SPA3_SLEEP                   src/29rd-spa-r3.js:23
 SPACE_BG                     src/16g-gpu-space.js:16
-SPA_AIR_U                    src/29i-spa-draw.js:202
-SPA_AIR_WGSL                 src/29i-spa-draw.js:192
 SPA_BY_K                     src/29h-spa.js:35
-SPA_C                        src/29i-spa-draw.js:16-20
 SPA_DAYS                     src/29h-spa.js:25
-SPA_FEET                     src/29i-spa-draw.js:173
 SPA_FOLK                     src/29h-spa.js:37-44
 SPA_PLAN                     src/29h-spa.js:28-34
-SPA_SEA_U                    src/29i-spa-draw.js:163
-SPA_SEA_WGSL                 src/29i-spa-draw.js:86
 SPEC_KEYS                    src/12a-crew.js:17
 SPHERE                       src/24-mode-belt.js:32
 SPHERE2                      src/24-mode-belt.js:33
@@ -2427,33 +2419,24 @@ WEAR_RU                      src/12s-wear.js:39
 WEATHER                      src/19d-weather.js:15-26
 WEATHER_BY_TYPE              src/19d-weather.js:28-47
 WEATHER_CAP                  src/19d-weather.js:52
-WIN3                         src/29rc-winter-r3.js:17
-WIN3_CAMS                    src/29rc-winter-r3.js:208
-WIN3_FX                      src/29rc-winter-r3.js:23
-WIN3_L                       src/29rc-winter-r3.js:18
-WIN3_LEV                     src/29rc-winter-r3.js:123
-WIN3_M                       src/29rc-winter-r3.js:19
-WIN3_PARKA                   src/29rc-winter-r3.js:25
-WIN3_PX                      src/29rc-winter-r3.js:21
-WIN3_SLEEP                   src/29rc-winter-r3.js:24
+WIN3                         src/29rc-winter-r3.js:19
+WIN3_CAMS                    src/29rc-winter-r3.js:210
+WIN3_FX                      src/29rc-winter-r3.js:25
+WIN3_L                       src/29rc-winter-r3.js:20
+WIN3_LEV                     src/29rc-winter-r3.js:125
+WIN3_M                       src/29rc-winter-r3.js:21
+WIN3_PARKA                   src/29rc-winter-r3.js:27
+WIN3_PX                      src/29rc-winter-r3.js:23
+WIN3_SLEEP                   src/29rc-winter-r3.js:26
 WIND                         src/19c-light.js:41
 WIN_BAD                      src/29f-winter.js:32
-WIN_C                        src/29g-winter-draw.js:20-28
-WIN_DARK_U                   src/29g-winter-draw.js:554
-WIN_DARK_WGSL                src/29g-winter-draw.js:548
 WIN_DAYS                     src/29f-winter.js:27
 WIN_FAULT                    src/29f-winter.js:34-40
 WIN_FAULT_BY                 src/29f-winter.js:41
-WIN_GLOW                     src/29g-winter-draw.js:517
-WIN_LIGHT_U                  src/29g-winter-draw.js:504
-WIN_LIGHT_WGSL               src/29g-winter-draw.js:443
 WIN_MIN                      src/29f-winter.js:31
 WIN_PAY                      src/29f-winter.js:28
 WIN_RU                       src/29f-winter.js:30
-WIN_RU_SHORT                 src/29g-winter-draw.js:71
 WIN_USE                      src/29f-winter.js:29
-WIN_VIEW_U                   src/29g-winter-draw.js:429
-WIN_VIEW_WGSL                src/29g-winter-draw.js:389
 WIN_WALL_EARLY               src/29f-winter.js:46-53
 WIN_WALL_LATE                src/29f-winter.js:54-61
 WORLD_MOOD                   src/10-music.js:39-52
@@ -4035,7 +4018,7 @@ drawSeams                    src/12s-wear.js:184-199
 drawShuttleArc               src/17f-sys-traffic.js:71-113
 drawSkyBase                  src/19c-light.js:318
 drawSkyLayer                 src/19-mode-landing.js:179-182
-drawSpa                      src/29i-spa-draw.js:62-80
+drawSpa                      src/29rd-spa-r3.js:234-237
 drawStModule                 src/17a-station-mod.js:105-216
 drawStRod                    src/17a-station-mod.js:97-104
 drawStRods                   src/17a-station-mod.js:219
@@ -4071,7 +4054,7 @@ drawWanderer                 src/12v-wander.js:339-443
 drawWater                    src/21e-surface-draw.js:221-309
 drawWear                     src/12s-wear.js:102-171
 drawWeather                  src/19d-weather.js:186-318
-drawWinter                   src/29g-winter-draw.js:365-386
+drawWinter                   src/29rc-winter-r3.js:276-279
 drawWorld                    src/28-loop.js:444-447
 drawWorldIn                  src/28-loop.js:448-471
 drawWreck                    src/20aa-poi-shapes.js:8-47
@@ -4649,16 +4632,16 @@ gpuBooms                     src/13z-gpu-combat.js:149-167
 gpuBuf                       src/08c-gpu-kit.js:31-36
 gpuBursts                    src/13z-gpu-combat.js:277-297
 gpuCanvasTex                 src/08c-gpu-kit.js:49-64
-gpuChunkAt                   src/18c-chunks.js:209-215
+gpuChunkAt                   src/18c-chunks.js:198-204
 gpuChunkBake                 src/18c-chunks.js:179-183
 gpuChunkPut                  src/18c-chunks.js:186-190
-gpuChunkStore                src/18c-chunks.js:204-208
+gpuChunkStore                src/18c-chunks.js:193-197
 gpuClouds                    src/19cc-gpu-air.js:118-165
 gpuCombatEnergy              src/13z-gpu-combat.js:64-115
 gpuCompNeb                   src/08b-gpu.js:444-454
 gpuCvLevel                   src/08c-gpu-kit.js:82-93
-gpuDrawChunks                src/18c-chunks.js:216-220
-gpuDrawTiles                 src/18c-chunks.js:235-240
+gpuDrawChunks                src/18c-chunks.js:205-209
+gpuDrawTiles                 src/18c-chunks.js:224-229
 gpuDrones                    src/16ga-gpu-trail.js:148-192
 gpuDrop                      src/08b2-gpu-loss.js:16-23
 gpuExhaust                   src/16ga-gpu-trail.js:276-302
@@ -4712,7 +4695,6 @@ gpuResize                    src/08b-gpu.js:400-442
 gpuScene                     src/08b-gpu.js:569-582
 gpuScene3D                   src/08b-gpu.js:586-594
 gpuScr                       src/08c-gpu-kit.js:175
-gpuScreenLayer               src/18c-chunks.js:194-202
 gpuSeg                       src/28z-fps-probe.js:139-142
 gpuShader                    src/08b0-gpu-pipe.js:18-22
 gpuShapes                    src/08c-gpu-kit.js:349-360
@@ -4728,8 +4710,8 @@ gpuStationFlare              src/17c3-station-live.js:128-143
 gpuStoreDrop                 src/18c-chunks.js:191
 gpuSysUnder                  src/17g-gpu-system.js:447-453
 gpuTakeSnap                  src/08b-gpu.js:30-37
-gpuTileAt                    src/18c-chunks.js:228-234
-gpuTileStore                 src/18c-chunks.js:223-227
+gpuTileAt                    src/18c-chunks.js:217-223
+gpuTileStore                 src/18c-chunks.js:212-216
 gpuTrail                     src/16ga-gpu-trail.js:53-98
 gpuTs                        src/28z-fps-probe.js:128-135
 gpuTsAround                  src/28z-fps-probe.js:145-149
@@ -7657,8 +7639,6 @@ room3PickHq                  src/29r-rooms-r3.js:252-258
 room3Place                   src/29r-rooms-r3.js:187
 room3Size                    src/29r-rooms-r3.js:154-161
 room3TagsDraw                src/29r-rooms-r3.js:233-246
-roomBake                     src/29c0-rooms-gpu.js:8-14
-roomSz                       src/29c0-rooms-gpu.js:16
 roomToneTick                 src/09a-roomtone.js:79-99
 routeEarn                    src/12r-route.js:196-204
 routeFork                    src/12r-route.js:64-67
@@ -8017,59 +7997,47 @@ socStrikeHere                src/12ay-fx-soc.js:40-43
 socWageMul                   src/12ay-fx-soc.js:35
 socWeek                      src/12al4-soc.js:38
 socWeekTick                  src/12al4-soc.js:94-100
-spa3Board                    src/29rd-spa-r3.js:147-163
-spa3BoardGrid                src/29rd-spa-r3.js:164
-spa3Cam                      src/29rd-spa-r3.js:179-186
-spa3Canvas                   src/29rd-spa-r3.js:168-175
-spa3Cost                     src/29rd-spa-r3.js:228
-spa3Fade                     src/29rd-spa-r3.js:113
-spa3Folk                     src/29rd-spa-r3.js:110
-spa3Frame                    src/29rd-spa-r3.js:188-206
-spa3Hide                     src/29rd-spa-r3.js:221-226
-spa3Hit                      src/29rd-spa-r3.js:218
-spa3Hits                     src/29rd-spa-r3.js:208
-spa3Mesh                     src/29rd-spa-r3.js:41-104
-spa3Ok                       src/29rd-spa-r3.js:187
-spa3On                       src/29rd-spa-r3.js:229
-spa3Pilot                    src/29rd-spa-r3.js:107
-spa3Scene                    src/29rd-spa-r3.js:115-143
-spa3SleepPh                  src/29rd-spa-r3.js:112
-spa3Sun                      src/29rd-spa-r3.js:29-33
-spa3SunCol                   src/29rd-spa-r3.js:38
-spa3SunDir                   src/29rd-spa-r3.js:36
-spa3Tags                     src/29rd-spa-r3.js:207
-spaAir                       src/29i-spa-draw.js:203-219
+spa3Board                    src/29rd-spa-r3.js:149-165
+spa3BoardGrid                src/29rd-spa-r3.js:166
+spa3Cam                      src/29rd-spa-r3.js:181-188
+spa3Canvas                   src/29rd-spa-r3.js:170-177
+spa3Cost                     src/29rd-spa-r3.js:230
+spa3Fade                     src/29rd-spa-r3.js:115
+spa3Folk                     src/29rd-spa-r3.js:112
+spa3Frame                    src/29rd-spa-r3.js:190-208
+spa3Hide                     src/29rd-spa-r3.js:223-228
+spa3Hit                      src/29rd-spa-r3.js:220
+spa3Hits                     src/29rd-spa-r3.js:210
+spa3Mesh                     src/29rd-spa-r3.js:43-106
+spa3Ok                       src/29rd-spa-r3.js:189
+spa3On                       src/29rd-spa-r3.js:231
+spa3Pilot                    src/29rd-spa-r3.js:109
+spa3Scene                    src/29rd-spa-r3.js:117-145
+spa3SleepPh                  src/29rd-spa-r3.js:114
+spa3Sun                      src/29rd-spa-r3.js:31-35
+spa3SunCol                   src/29rd-spa-r3.js:40
+spa3SunDir                   src/29rd-spa-r3.js:38
+spa3Tags                     src/29rd-spa-r3.js:209
 spaAll                       src/29h-spa.js:45
-spaBoardGrid                 src/29i-spa-draw.js:48-51
-spaBoardRows                 src/29i-spa-draw.js:46
-spaBoardText                 src/29i-spa-draw.js:446-480
 spaCanHere                   src/29h-spa.js:47-50
 spaEnd                       src/29h-spa.js:104-119
-spaFeet                      src/29i-spa-draw.js:174-189
-spaFloor                     src/29i-spa-draw.js:221-263
-spaFolk                      src/29i-spa-draw.js:484-574
-spaGeom                      src/29i-spa-draw.js:25-44
-spaHit                       src/29i-spa-draw.js:576-591
+spaHit                       src/29rd-spa-r3.js:239
 spaOn                        src/29h-spa.js:46
-spaProps                     src/29i-spa-draw.js:267-441
-spaSea                       src/29i-spa-draw.js:164-170
 spaSleep                     src/29h-spa.js:96-103
 spaTake                      src/29h-spa.js:68-84
 spaTalk                      src/29h-spa.js:86-94
-spaTap                       src/29i-spa-draw.js:592-598
-spaTookToday                 src/29i-spa-draw.js:52
+spaTap                       src/29rd-spa-r3.js:240-246
+spaTookToday                 src/29rd-spa-r3.js:238
 spareModLv                   src/12a-crew.js:296-299
 spawnAllies                  src/12a-crew.js:600-611
 spawnBarges                  src/12l-barge.js:110-166
 spawnPirates                 src/13-pirates.js:28-107
-spcol                        src/29i-spa-draw.js:21
 speciesBeast                 src/20e-species.js:234-267
 speciesPlant                 src/20e-species.js:40-85
 specimenBeast                src/20e-species.js:285-302
 specimenPlant                src/20e-species.js:134-191
 speechAll                    src/11b-speech.js:117
 speechHere                   src/11b-speech.js:119-154
-sprgba                       src/29i-spa-draw.js:23
 srcPrice                     src/12ad-site.js:294-297
 stBar                        src/17c3-station-live.js:44-47
 stCore                       src/17c-system-draw.js:38-52
@@ -8445,11 +8413,11 @@ updateMap                    src/18-mode-map.js:685-699
 updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
-updateSpa                    src/29i-spa-draw.js:599-604
+updateSpa                    src/29rd-spa-r3.js:247-251
 updateSurface                src/21-mode-surface.js:211-671
 updateSystem                 src/17-mode-system.js:106-513
 updateWanderRoom             src/24c-mode-wanderer.js:58-88
-updateWinter                 src/29g-winter-draw.js:942-951
+updateWinter                 src/29rc-winter-r3.js:296-300
 useBeacon                    src/23-mode-dig.js:91-116
 vCloth                       src/18d-verlet.js:41-50
 vDrawCloth                   src/18d-verlet.js:110-133
@@ -8670,7 +8638,6 @@ waveBlock                    src/12pa-beacon.js:146-175
 wcBlots                      src/16a-space.js:141-207
 wcDeform                     src/16a-space.js:128-140
 wcGauss                      src/16a-space.js:127
-wcol                         src/29g-winter-draw.js:29
 wearAll                      src/12s-wear.js:20
 wearFloor                    src/12s-wear.js:71-78
 wearLine                     src/12s-wear.js:45-49
@@ -8685,59 +8652,42 @@ weatherGpu                   src/19d-weather.js:109-185
 weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
-win3Blanket                  src/29rc-winter-r3.js:126-145
-win3Box                      src/29rc-winter-r3.js:248
-win3Cam                      src/29rc-winter-r3.js:210-218
-win3Canvas                   src/29rc-winter-r3.js:198-205
-win3Cost                     src/29rc-winter-r3.js:270
-win3Fade                     src/29rc-winter-r3.js:163
-win3Frame                    src/29rc-winter-r3.js:221-240
-win3Hide                     src/29rc-winter-r3.js:263-268
-win3Hit                      src/29rc-winter-r3.js:260
-win3Hits                     src/29rc-winter-r3.js:252
-win3LeverX                   src/29rc-winter-r3.js:27
-win3Man                      src/29rc-winter-r3.js:150-160
-win3Mesh                     src/29rc-winter-r3.js:33-122
-win3Ok                       src/29rc-winter-r3.js:220
-win3On                       src/29rc-winter-r3.js:271
-win3Pilot                    src/29rc-winter-r3.js:148
-win3Scene                    src/29rc-winter-r3.js:165-195
-win3SleepPh                  src/29rc-winter-r3.js:162
-win3Storm                    src/29rc-winter-r3.js:30
-win3Tags                     src/29rc-winter-r3.js:242
-win3Val                      src/29rc-winter-r3.js:28
+win3Blanket                  src/29rc-winter-r3.js:128-147
+win3Box                      src/29rc-winter-r3.js:250
+win3Cam                      src/29rc-winter-r3.js:212-220
+win3Canvas                   src/29rc-winter-r3.js:200-207
+win3Cost                     src/29rc-winter-r3.js:272
+win3Fade                     src/29rc-winter-r3.js:165
+win3Frame                    src/29rc-winter-r3.js:223-242
+win3Hide                     src/29rc-winter-r3.js:265-270
+win3Hit                      src/29rc-winter-r3.js:262
+win3Hits                     src/29rc-winter-r3.js:254
+win3LeverX                   src/29rc-winter-r3.js:29
+win3Man                      src/29rc-winter-r3.js:152-162
+win3Mesh                     src/29rc-winter-r3.js:35-124
+win3Ok                       src/29rc-winter-r3.js:222
+win3On                       src/29rc-winter-r3.js:273
+win3Pilot                    src/29rc-winter-r3.js:150
+win3Scene                    src/29rc-winter-r3.js:167-197
+win3SleepPh                  src/29rc-winter-r3.js:164
+win3Storm                    src/29rc-winter-r3.js:32
+win3Tags                     src/29rc-winter-r3.js:244
+win3Val                      src/29rc-winter-r3.js:30
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
 winBlock                     src/29f-winter.js:253-270
-winBody                      src/29g-winter-draw.js:119-145
 winCap                       src/29f-winter.js:65-68
-winDark                      src/29g-winter-draw.js:555-558
 winDiaryToday                src/29f-winter.js:176-191
 winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:193-209
-winFigBox                    src/29g-winter-draw.js:761-765
-winFigure                    src/29g-winter-draw.js:769-883
 winFix                       src/29f-winter.js:149-160
-winGeom                      src/29g-winter-draw.js:38-57
-winGlow                      src/29g-winter-draw.js:518-546
-winHit                       src/29g-winter-draw.js:902-920
-winLeverLabels               src/29g-winter-draw.js:72-83
-winLevers                    src/29g-winter-draw.js:58-65
-winLight                     src/29g-winter-draw.js:505-514
-winLit                       src/29g-winter-draw.js:89-108
+winHit                       src/29rc-winter-r3.js:280
 winOfferHere                 src/29f-winter.js:76-94
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
-winPanel                     src/29g-winter-draw.js:677-759
-winPanelBox                  src/29g-winter-draw.js:669-673
-winProps                     src/29g-winter-draw.js:560-667
-winRoomLayer                 src/29g-winter-draw.js:149-354
 winShift                     src/29f-winter.js:123-148
 winTake                      src/29f-winter.js:95-111
-winTap                       src/29g-winter-draw.js:921-941
-winText                      src/29g-winter-draw.js:885-899
-winTone                      src/29g-winter-draw.js:111-116
-winView                      src/29g-winter-draw.js:430-439
+winTap                       src/29rc-winter-r3.js:281-293
 winWall                      src/29f-winter.js:162-172
 windOf                       src/19c-light.js:42-48
 withCtx                      src/18c-chunks.js:58-65
@@ -8752,7 +8702,6 @@ wrapLeft                     src/18-mode-map.js:106-115
 wreck                        src/28-loop.js:16-44
 wreckInteract                src/12l-barge.js:351-377
 wrecksHere                   src/12l-barge.js:348
-wrgba                        src/29g-winter-draw.js:31
 wtab                         src/02a-worldmix.js:85
 yachtMoraleMul               src/12j-home.js:255-258
 yachtOwned                   src/12j-home.js:248-254
@@ -9681,7 +9630,7 @@ zoomTo                       src/15-input.js:358
 ## src/18b-map-hold.js · 16 KB
   · владения на карте (M348):1
 
-## src/18c-chunks.js · 15 KB
+## src/18c-chunks.js · 14 KB
   · кэш статичного: чанки и слои:1
 
 ## src/18d-postfx.js · 6 KB
@@ -10486,8 +10435,8 @@ zoomTo                       src/15-input.js:358
 ## src/29c-home-in.js · 16 KB
   · дом изнутри: по нему ходят:1
 
-## src/29c0-rooms-gpu.js · 2 KB
-  · комнаты на видеокарте (G11): общее для дома, зимовки, санатория:1
+## src/29c0-rooms-gpu.js · 1 KB
+  · шум для полей комнат: хеш и гладкий шум значений (дом 29d):1
 
 ## src/29d-home-draw.js · 60 KB
   · дом изнутри: кадр:1
@@ -10499,14 +10448,8 @@ zoomTo                       src/15-input.js:358
 ## src/29f-winter.js · 15 KB
   · зимовка: месяц одному:1
 
-## src/29g-winter-draw.js · 51 KB
-  · зимовка: кадр:1
-
 ## src/29h-spa.js · 8 KB
   · санаторий: три дня, и ничего не происходит:1
-
-## src/29i-spa-draw.js · 31 KB
-  · санаторий: веранда:1
 
 ## src/29r-rooms-r3.js · 22 KB
   · комнаты игрока на движке (M850, docs/DESIGN-rooms.md):1
@@ -10517,7 +10460,7 @@ zoomTo                       src/15-input.js:358
 ## src/29rba-home-shell.js · 10 KB
   · дом снаружи: тело людской грамматики и двор (M850b, стенд M602 — docs/look/nt-home.js):1
 
-## src/29rc-winter-r3.js · 26 KB
+## src/29rc-winter-r3.js · 27 KB
   · зимовка на движке (M850c, docs/DESIGN-rooms.md §4):1
 
 ## src/29rd-spa-r3.js · 21 KB

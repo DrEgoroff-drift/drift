@@ -13,7 +13,9 @@
    4. Слова — на вещах: распорядок мелом на грифельном щите у перил (вычеркнутое — чертой), «СПАТЬ» — табличка
       на пустом шезлонге. Строка подсказки молчит: глагол ДЕЙСТВИЯ остаётся кнопке.
    5. Попадание пальцем — из тех же вещей: строки щита, стакан на перилах, шахматы, сосед, перила (прогулка),
-      пустой шезлонг (сон); рамки проецируются в кадр. Старый художник drawSpa живёт за ROOM3.on (?room=0, ?spa3=0). */
+      пустой шезлонг (сон); рамки проецируются в кадр.
+   6. 2D-веранды нет (22.10, автор: «2D не должно быть»): старый художник 29i удалён вместе с ?room=0 и ?spa3=0.
+      Без видеокарты кадра нет — плашка «нет WebGPU» (08b2); сбой кадра называет страж (28-loop). */
 /* профиль токарки K.lathe — пары [y, r] */
 const SPA3={cn:null,tags:null,mesh:null,mkey:"",err:0,frames:0,stat:null,vp:null,sz:null,meas:null,hit:[],sl:0,day:0,dt0:0,board:null,bkey:""};
 const SPA3_L=-4.6,SPA3_R=6,SPA3_B=-2.2,SPA3_F=6.5;
@@ -184,7 +186,7 @@ function spa3Cam(sz,t){
   const P=r3Persp(c.fy,sz.cw/Math.max(1,sz.ch),.1,140);
   return {eye:e,tgt:c.tgt,fy:c.fy,vp:r3Mul(P,r3Look(e,c.tgt,[0,1,0]))};
 }
-function spa3Ok(){return ROOM3.on&&!(typeof location!=="undefined"&&/[?&]spa3=0/.test(location.search))&&typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok)&&!SPA3.err;}
+function spa3Ok(){return typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok);}
 function spa3Frame(){
   const S=spaAll(),cn=spa3Canvas(),sz=home3Size(cn),R=rpgGet(cn);if(!R)return false;
   R.dpr=cn.__dpr;
@@ -192,7 +194,7 @@ function spa3Frame(){
   if(!SPA3.mesh||SPA3.mkey!==mk){r3Drop(SPA3.mesh);SPA3.mesh=spa3Mesh(S,sl);SPA3.mkey=mk;}
   spa3Board(S);
   const t=wallMs()/1000,cam=spa3Cam(sz,t),Sc=spa3Scene(cam,t,S);
-  const lab=rpgBake(R,"r3lab","spa3|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
+  const lab=rpgBake(R,"r3lab","spa3|1",1,1,()=>{});   /* подписей поверх кадра нет: слой пустой, точка, а не холст в экран */
   const U=new Float32Array(60);
   U.set([...r3Lin([255,236,200]),1.0],24);
   U[43]=t;U[44]=1;U[47]=1;
@@ -228,19 +230,25 @@ spa3Frame=hallCostWrap(spa3Frame);
 function spa3Cost(sec){return SPA3.cn&&SPA3.cn.style.display!=="none"?hallCost(sec,()=>spa3Frame(),SPA3.cn):Promise.resolve(null);}
 function spa3On(){return !!(SPA3.cn&&SPA3.cn.style.display!=="none"&&SPA3.hit.length);}
 
-/* ── швы: кадр (28), попадание (15 → spaTap → spaHit), сон, подсказка ── */
-{const f0=drawSpa;drawSpa=function(){
-  if(!spa3Ok()||!G.spa)return f0();
-  try{spa3Frame();}catch(e){SPA3.err++;console.error("санаторий: кадр упал",e);spa3Hide();return f0();}};}
-{const f0=drawWorldIn;drawWorldIn=function(){f0();if(SPA3.cn&&!(G.mode==="spa"&&G.spa&&spa3Ok()))spa3Hide();};}
-{const f0=spaHit;spaHit=function(mx,my){return spa3On()?spa3Hit(mx,my):f0(mx,my);};}
-{const f0=spaTap;spaTap=function(mx,my){
-  if(!spa3On())return f0(mx,my);
-  const h=spa3Hit(mx,my);if(!h)return false;
+/* ── кадр (28), попадание (15 → spaTap → spaHit), сон, подсказка ── */
+function drawSpa(){
+  if(!G.spa||!spa3Ok()){spa3Hide();return;}
+  try{spa3Frame();}catch(e){SPA3.err++;spa3Hide();throw e;}   /* сбой называет страж кадра (28) */
+}
+function spaTookToday(S,k){return !!(S&&S.took&&S.took[S.day+":"+k]);}
+function spaHit(mx,my){return spa3Hit(mx,my);}
+function spaTap(mx,my){
+  const h=spaHit(mx,my);if(!h)return false;
   if(h.k==="take"){spaTake(h.id);return true;}
   if(h.k==="talk"){spaTalk();return true;}
   if(h.k==="sleep"){spaSleep();return true;}
-  return true;};}
+  return true;
+}
+function updateSpa(dt){
+  const S=spaAll();if(!S){G.mode="surface";return;}
+  if(actEdge)spaSleep();
+  G.prompt="ДЕЙСТВИЕ — СПАТЬ";
+}
+{const f0=drawWorldIn;drawWorldIn=function(){f0();if(SPA3.cn&&!(G.mode==="spa"&&G.spa&&spa3Ok()))spa3Hide();};}
 {const f0=spaSleep;spaSleep=function(){const r=f0();if(r&&spa3On())SPA3.sl=wallMs();return r;};}
-{const f0=updateSpa;updateSpa=function(dt){f0(dt);if(spa3On())G.prompt="ДЕЙСТВИЕ — СПАТЬ";};}
 GPU_SNAP_OVER.push(()=>SPA3.cn);

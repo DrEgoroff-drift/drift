@@ -116,7 +116,7 @@ One phrase per module; the module's own header says the rest. Grep `docs/INDEX.m
 | `18a-map-addr` `18b-map-hold` | the map's addresses (M347): grid, rulers, header, rumour areas, rings, the address field, `addrify`, matches as marks; holdings (M348): house patches, the трасса band and name, pirate hatch, own frames, changed-hands tags, layers |
 | `18c-chunks` `18d-verlet` | raster cache (world-x chunks, `screenLayer`); ropes and cloth |
 | `21a-mode-base` `21aa-base-rooms` `21ab-base-interiors` `21ac-base-draw` | the base in cross-section: grid and power, brushes and `drawModule`, the eight rooms, the frame |
-| `21g-greenhouse` `21h-pennant` `27da-kino` `29f/29g-winter` `29h/29i-spa` `25m-probe` `25n-chess` | the quiet features: greenhouse, travelling pennant, cinema, wintering, sanatorium, the probe, chess by post |
+| `21g-greenhouse` `21h-pennant` `27da-kino` `29f-winter`+`29rc` `29h-spa`+`29rd` `25m-probe` `25n-chess` | the quiet features: greenhouse, travelling pennant, cinema, wintering, sanatorium, the probe, chess by post |
 | `24a-mode-raid` `24aa-raid-draw` `24ab-raid-foe` | boarding a pirate base: grid and polygons, the compartment, the foe |
 | `25g-postcard` `25g-post-under` `25g-post-void` `25h-post-forms*` `25i-post-back` `25j-post-wire` `25k-post-mail` `25l-post-ether` | the postcard painter (`drawPostcard` from a ~200-byte snapshot), the eight places, a hundred blanks, the card's back, the global pool and replies, the night band |
 | `26-ui-station` `26a-ui-station-home` `26b-ui-station-work` | station screens: sections, home tab, ОСНАСТКА/ПРИБОРЫ/ЛАБОРАТОРИЯ tabs |
