@@ -5833,8 +5833,8 @@ mapGridDraw                  src/18a-map-addr.js:55-66
 mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHintHung                  src/18l-map-plate.js:37
 mapHit                       src/18-mode-map.js:65-105
-mapHoldingsDraw              src/18b-map-hold.js:109-206
-mapHoldingsTop               src/18b-map-hold.js:208-248
+mapHoldingsDraw              src/18b-map-hold.js:109-212
+mapHoldingsTop               src/18b-map-hold.js:214-254
 mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:56
 mapInkPoly                   src/18-mode-map.js:54
