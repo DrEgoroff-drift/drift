@@ -216,13 +216,13 @@ function dispFace(v,S,seed){
 function dispPerson(f){return {seed:f.seed>>>0,role:"fact",acc:f.acc||[150,150,150],age:f.age||40,loy:70,xp:0,traits:[],name:f.name};}
 /* ── выбор глагола: окно пяти, вес по шкалам ── */
 function dispW(cls,g){return cls==="s"?.5+3*(1-g.s):cls==="m"?.5+3*(1-g.m):cls==="o"?.5+3*(1-g.o):1.7;}
-function dispIssue(kind,S,memo){
+function dispIssue(kind,S,memo,only){
   const D=dispSt(),seq=++D.seq;
   const r=rng(hashi(S.sx*977+S.sy,seq,0xD157));
   const g=typeof gaugeOf==="function"?gaugeOf(S):{s:.6,m:.6,o:.6};
   const live=new Set(D.it.map(x=>x.v)),recent=D.vb.slice(-(DISP_WIN-1));
   const all=Object.keys(DISP_V).filter(v=>DISP_V[v].kind===kind&&!live.has(v));
-  let pool=all.filter(v=>recent.indexOf(v)<0);
+  let pool=only&&all.indexOf(only)>=0?[only]:all.filter(v=>recent.indexOf(v)<0);   /* only — сцена называет глагол сама (первая вахта) */
   /* окно не пускает — давно не звучавший (меньший индекс в истории) */
   if(!pool.length)pool=all.slice().sort((a,b)=>D.vb.lastIndexOf(a)-D.vb.lastIndexOf(b)).slice(0,1);
   const C={S,g,memo};
@@ -246,13 +246,13 @@ function dispFill(S){
   const D=dispSt(),memo={},out=[];
   for(const kind of DISP_KINDS){
     if(D.it.some(x=>x.kind===kind))continue;
-    if(kind==="urg"&&!dispUrgOk())continue;
+    if(!dispSlotOk(kind))continue;
     const it=dispIssue(kind,S,memo);if(it)out.push(it);
   }
   return out;
 }
-/* первая вахта решает, когда срочному можно (M909 переопределяет) */
-function dispUrgOk(){return true;}
+/* открыто ли место в полосе: первая вахта (28o, M909) держит срочное до шестой минуты, наряд — до бумаги */
+function dispSlotOk(kind){return true;}
 function dispLeg(it){return it.legs[it.leg]||null;}
 function dispMins(it){return Math.max(0,Math.ceil((it.due-now())/60000));}
 /* ── ход дела ── */

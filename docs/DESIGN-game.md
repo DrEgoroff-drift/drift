@@ -730,6 +730,17 @@ the first undock; she says the line that names the watch. Hour 1: the first pape
 стажёр line. Four ether lines of `11ao-firsthour` stay. The eight board sections stay; the
 К ВАМ lane is first and has two things in it.
 
+**Built 22.10 (M909, `28o-firstwatch`).** The first hour paces the dispatcher by the game clock
+from the start of the save. The first counter gets the participation plate (28j) and two
+addressed items with faces, a haul and a task; the urgent and the three-station order are held
+back. At minute 6 the first urgent comes by itself, wherever the player is: a barge's pod, 8
+minutes, as the plate at the ship or a board row. The first undock carries the диспетчер's ether
+line naming the watch, once per save. The first hour flown brings the first paper with the стажёр
+line (27ib, unchanged), and the lane opens fully. While the watch is handed over, the first watch
+stands still with everything else. The «уезжаете надолго?» row is hidden in the first watch; the
+menu keeps the hand-over. Not done: the participation is still the 5×5 square of 28j, not «one
+station, hers». The Node scenario `tests/91zzzw9g-firstwatch.js` plays the hour.
+
 ### 10.8 The queue — M900+
 
 Build order; each closes on its own and is measured by the bot before the next starts. Builders
@@ -745,7 +756,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M906 | station gauges and the cascade (§4.2); the hall shows them (§7.1) **done 15.10 (0.498.0)**: `28l-gauge` | an unfilled need produces a neighbour's need within one сводка; the hall's crowd follows mood |
 | M907 | the dispatcher generator (§4.3) **done 22.10 (`28m-dispatch`)** | at every dock К ВАМ has ≥ 2 addressed + 1 urgent; verbs vary over five |
 | M908 | access gates and the 30 rungs (§4.4) **done 22.10 (`28n-access`)** | no rung silent; «Мамонт» refused without clearance III + sponsor |
-| M909 | the first watch (§10.7) | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
+| M909 | the first watch (§10.7) **done 22.10 (`28o-firstwatch`)** | a fresh save: two addressed items by minute 2, urgent by minute 6, paper at hour 1 |
 | M910 | story doors on deeds, the диспетчер's 72 lines, 30 stories on watch deeds, act 2 on the participation (§7.3, §10.3) | chapter N+1's door is a deed; the sixth is met on the watch |
 | M911 | orders as forks (take / send a hand), obelisk notches as the exploration arc (§7.2) | every order has both sides; a found notch gives one access line |
 
