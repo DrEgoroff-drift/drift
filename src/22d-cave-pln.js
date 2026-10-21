@@ -54,7 +54,7 @@ function cave3DiveFrame(floorY,wy,k,asp){
   const L=CAVE3_LENS,kk=plnSmooth(.6,1.5,asp),f=lerp(L.walk[0],L.walk[1],kk),man=lerp(L.man[0],L.man[1],kk);
   const lo=Math.min(wy,floorY)-.9,hi=floorY+2.25,hd=Math.max(1.8/(man*L.dvN),hi-lo),b=lo-(hd-(hi-lo))*.3;
   /* глаз ниже на нырке; с высокого уступа — вполовину: снизу гладь под навесом видна ровной */
-  return {fy:k?lerp(floorY,b+f*hd,k):floorY,hd,drop:L.dvDrop*(1-.5*plnSmooth(1.5,3.5,floorY-wy))};
+  return {fy:k?lerp(floorY,b+f*hd,k):floorY,hd,drop:wy==null?L.dvDrop:L.dvDrop*(1-.5*plnSmooth(1.5,3.5,floorY-wy))};
 }
 /* доля человека в высоте кадра (для набора и ворот) */
 function cave3ManShare(asp){return 1.8/cave3Lens(asp,0,0,0).Hf;}
