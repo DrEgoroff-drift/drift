@@ -47,40 +47,68 @@ function cave3N3(x,y,z,s){
 }
 
 /* ── поле разреза из сетки игры: расстояние со знаком и полуразмер хода ── */
+/* Поле строится шагами (генератор, уступает каждые 16 строк): холодный JIT считал его одним куском
+   50–380 мс прямо на ходу у устья (охотник, 0.499.5). cave3FieldStep(C, мс) строит под бюджет из кадра
+   поверхности (22d caveTick); cave3Field(C) — целиком, как прежде: та же арифметика в том же порядке */
 function cave3Field(C){
   if(C.f3&&C.f3.g===C.g)return C.f3;
+  const J=cave3FieldJob(C);
+  while(!J.it.next().done){}
+  C.f3j=null;
+  return C.f3;
+}
+function cave3FieldJob(C){
+  if(!(C.f3j&&C.f3j.g===C.g))C.f3j={g:C.g,it:cave3FieldGen(C)};
+  return C.f3j;
+}
+/* true — поле готово */
+function cave3FieldStep(C,lim){
+  if(C.f3&&C.f3.g===C.g)return true;
+  const J=cave3FieldJob(C),t0=wallMs();
+  do{if(J.it.next().done){C.f3j=null;return true;}}while(wallMs()-t0<lim);
+  return false;
+}
+function* cave3FieldGen(C){
   const NX=CAVE_NX,NY=CAVE_NY,N=NX*NY,g=C.g,cm=CAVE_CS/CAVE_PPM,BIG=1e6;
   /* расстояние фаской (1 и √2) до ближайшей клетки другого рода, два прохода */
-  const dist=kind=>{
-    const d=new Float32Array(N);
+  const dist=function*(kind,d){
     for(let i=0;i<N;i++)d[i]=g[i]===kind?0:BIG;
     const D2=Math.SQRT2;
-    for(let y=0;y<NY;y++)for(let x=0;x<NX;x++){
-      const i=y*NX+x;let v=d[i];if(!v)continue;
-      if(x>0)v=Math.min(v,d[i-1]+1);
-      if(y>0){v=Math.min(v,d[i-NX]+1);if(x>0)v=Math.min(v,d[i-NX-1]+D2);if(x<NX-1)v=Math.min(v,d[i-NX+1]+D2);}
-      d[i]=v;
+    for(let y=0;y<NY;y++){
+      for(let x=0;x<NX;x++){
+        const i=y*NX+x;let v=d[i];if(!v)continue;
+        if(x>0)v=Math.min(v,d[i-1]+1);
+        if(y>0){v=Math.min(v,d[i-NX]+1);if(x>0)v=Math.min(v,d[i-NX-1]+D2);if(x<NX-1)v=Math.min(v,d[i-NX+1]+D2);}
+        d[i]=v;
+      }
+      if((y&15)===15)yield;
     }
-    for(let y=NY-1;y>=0;y--)for(let x=NX-1;x>=0;x--){
-      const i=y*NX+x;let v=d[i];if(!v)continue;
-      if(x<NX-1)v=Math.min(v,d[i+1]+1);
-      if(y<NY-1){v=Math.min(v,d[i+NX]+1);if(x<NX-1)v=Math.min(v,d[i+NX+1]+D2);if(x>0)v=Math.min(v,d[i+NX-1]+D2);}
-      d[i]=v;
+    for(let y=NY-1;y>=0;y--){
+      for(let x=NX-1;x>=0;x--){
+        const i=y*NX+x;let v=d[i];if(!v)continue;
+        if(x<NX-1)v=Math.min(v,d[i+1]+1);
+        if(y<NY-1){v=Math.min(v,d[i+NX]+1);if(x<NX-1)v=Math.min(v,d[i+NX+1]+D2);if(x>0)v=Math.min(v,d[i+NX-1]+D2);}
+        d[i]=v;
+      }
+      if((y&15)===0)yield;
     }
-    return d;
   };
-  const toVoid=dist(0),toRock=dist(1),raw=new Float32Array(N);
+  const toVoid=new Float32Array(N),toRock=new Float32Array(N),raw=new Float32Array(N);
+  yield* dist(0,toVoid);yield* dist(1,toRock);
   for(let i=0;i<N;i++)raw[i]=g[i]?(Math.min(toVoid[i],40)-.5)*cm:-(Math.min(toRock[i],40)-.5)*cm;
+  yield;
   /* сглаживание 1-2-1 в обе стороны: ступени клеток уходят, знак в глубине остаётся */
-  const blur=(a,w)=>{
-    const t=new Float32Array(N),o=new Float32Array(N);
-    for(let y=0;y<NY;y++)for(let x=0;x<NX;x++){
+  const blur=function*(a,w,o){
+    const t=new Float32Array(N);
+    for(let y=0;y<NY;y++){for(let x=0;x<NX;x++){
       const i=y*NX+x,l=x>0?a[i-1]:a[i],r=x<NX-1?a[i+1]:a[i];t[i]=(l+w*a[i]+r)/(w+2);}
-    for(let y=0;y<NY;y++)for(let x=0;x<NX;x++){
+      if((y&15)===15)yield;}
+    for(let y=0;y<NY;y++){for(let x=0;x<NX;x++){
       const i=y*NX+x,u=y>0?t[i-NX]:t[i],d=y<NY-1?t[i+NX]:t[i];o[i]=(u+w*t[i]+d)/(w+2);}
-    return o;
+      if((y&15)===15)yield;}
   };
-  const sd=blur(raw,2);
+  const sd=new Float32Array(N);
+  yield* blur(raw,2,sd);
   /* полуразмер хода: меньший из пробегов пустоты по столбцу и по строке, пополам */
   const run=new Float32Array(N);
   for(let y=0;y<NY;y++){
@@ -92,19 +120,24 @@ function cave3Field(C){
     while(y<NY){if(g[y*NX+x]){y++;continue;}let e=y;while(e<NY&&!g[e*NX+x])e++;
       for(let k=y;k<e;k++){const i=k*NX+x;run[i]=Math.min(run[i],e-y);}y=e;}
   }
+  yield;
   /* размытие по пустоте ящиком в 11 клеток, дважды: труба меняет глубину плавно */
   let hv=new Float32Array(N),wv=new Float32Array(N);
   for(let i=0;i<N;i++){wv[i]=g[i]?0:1;hv[i]=g[i]?0:run[i]*cm*.5;}
-  const box=(a,R,horiz)=>{
-    const o=new Float32Array(N),L=horiz?NX:NY,M=horiz?NY:NX,st=horiz?1:NX,rs=horiz?NX:1;
+  const box=function*(a,R,horiz,o){
+    const L=horiz?NX:NY,M=horiz?NY:NX,st=horiz?1:NX,rs=horiz?NX:1;
     for(let m=0;m<M;m++){
       const b=m*rs;let s=0;
       for(let k=-R;k<=R;k++)s+=a[b+clamp(k,0,L-1)*st];
       for(let k=0;k<L;k++){o[b+k*st]=s;s+=a[b+clamp(k+R+1,0,L-1)*st]-a[b+clamp(k-R,0,L-1)*st];}
+      if((m&15)===15)yield;
     }
-    return o;
   };
-  for(let it=0;it<2;it++){hv=box(box(hv,5,true),5,false);wv=box(box(wv,5,true),5,false);}
+  for(let it=0;it<2;it++)for(const which of [0,1]){
+    const a=which?wv:hv,t=new Float32Array(N),o=new Float32Array(N);
+    yield* box(a,5,true,t);yield* box(t,5,false,o);
+    if(which)wv=o;else hv=o;
+  }
   const hl=new Float32Array(N);
   for(let i=0;i<N;i++)hl[i]=wv[i]>1e-3?clamp(hv[i]/wv[i],.6,4.5):1.5;
   const sty=CAVE3_STY[cave3StyKind(G.surf&&G.surf.p&&G.surf.p.type)];
@@ -369,7 +402,7 @@ function cave3Chunk(F,ci,cj){
 const CAVE3_MAT={cut:10,drip:11,crystal:12};
 
 /* ── кэш кусков: что видно — строится по бюджету, ближние к человеку первыми ── */
-function cave3Chunks(C,box,mx,my,first){
+function cave3Chunks(C,box,mx,my,first,lim0){
   const F=cave3Field(C),s=CAVE3_CH.s,Q=C.ch3||(C.ch3={m:new Map(),gen:-1,t:0});
   if(Q.gen!==PLN_GPU.gen){for(const k of Q.m.values())plnGeoFree(k.geo);Q.m.clear();Q.gen=PLN_GPU.gen;}
   Q.t++;
@@ -381,7 +414,7 @@ function cave3Chunks(C,box,mx,my,first){
     if(c){c.t=Q.t;if(c.geo)list.push(c);}else want.push([i,j,Math.hypot((i+.5)*s-mx,(j+.5)*s-my)]);
   }
   want.sort((a,b)=>a[2]-b[2]);
-  const t0=wallMs(),lim=first?CAVE3_CH.first:CAVE3_CH.ms;
+  const t0=wallMs(),lim=first?CAVE3_CH.first:(lim0||CAVE3_CH.ms);
   let built=0;
   for(const [i,j] of want){
     if(built&&wallMs()-t0>lim)break;
