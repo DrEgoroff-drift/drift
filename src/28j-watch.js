@@ -256,7 +256,8 @@ function watchSection(){
   $body.appendChild(r);
   if(L&&(L.lost||L.allot))$body.appendChild(el("div","row","<div class='nm'><b>"+(L.lost?"станция «"+L.lost+"» передана соседу":"разнарядка: "+L.allot)+
     "</b><s>"+(L.lost?"три срыва подряд — участок меньше":"три сводки подряд не ниже 90 %")+"</s></div>"));
-  if(here||W.hand){
+  /* первая вахта (28o, M909): новичку «уезжаете надолго?» в первый час не нужно — сдать смену можно и из меню */
+  if(W.hand||(here&&!(typeof fwOn==="function"&&fwOn()))){
     const s=el("div","row");
     s.appendChild(el("div","nm",W.hand
       ?"<b>смена сдана · "+Math.max(1,Math.round((now()-W.hand.at)/60000))+" мин</b><s>счёт, оклады, руки, дроны и норма стоят; страхует только «Стриж»</s>"

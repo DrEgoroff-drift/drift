@@ -8,6 +8,9 @@
    — опора: человек ступает по нарисованной земле (как 91qk, но на каждом мире);
    — тесно: устье пещеры, памятники и площадка не стоят друг на друге;
    — залежь: каждая доступна — не под кораблём (там действие у корабля) и не на устье. */
+/* известный брак по законам и мирам (22.10, при возврате набора в ворота). Все десять починены законами
+   поверхности (src/21pzd-surf-laws, 22.10): площадка океана, два устья под памятником, семь залежей под кораблём */
+const SEED_KNOWN={};
 function seedWorlds(n){
   const W=[],seen={};
   for(let k=0;W.length<n&&k<400;k++){
@@ -31,12 +34,13 @@ function seedLand(w){
 TEST_SUITES.push(()=>suite("сиды: земля, площадка, опора и тесноты на двадцати мирах",{tier:"node"},()=>{
   resetWorld();
   const sx0=G.sx,sy0=G.sy,sys0=G.sys,Wd=seedWorlds(20),bad={числа:[],площадка:[],опора:[],тесно:[],залежь:[],сбой:[]};
-  const put=(k,s)=>{if(bad[k].length<3)bad[k].push(s);else bad[k].n=(bad[k].n||3)+1;};
+  let cur="";
+  const put=(k,s)=>{bad[k].push({w:cur,s});};
   const zone=shipZoneR();
   for(const w of Wd){
     let X;
     try{X=seedLand(w);}catch(e){put("сбой",w.p.type+"#"+(w.p.seed>>>0)+": "+String(e&&e.message||e).slice(0,80));continue;}
-    const {tr,g,L,name}=X,Wt=waterOf(tr,w.p);
+    const {tr,g,L,name}=X,Wt=waterOf(tr,w.p);cur=name;
     /* числа */
     let nan=0,big=0;
     for(let i=0;i<L.T.length;i+=7){const v=L.T[i];if(!isFinite(v))nan++;else if(Math.abs(v)>3000)big++;}
@@ -73,6 +77,15 @@ TEST_SUITES.push(()=>suite("сиды: земля, площадка, опора �
   }
   G.sx=sx0;G.sy=sy0;G.sys=sys0;
   ok(Wd.length>=16,"миров собрано: "+Wd.length+" ("+Wd.map(w=>w.p.type).join(",")+")");
-  for(const k in bad)ok(!bad[k].length,k+": "+bad[k].length+(bad[k].n?"+"+(bad[k].n-3):"")+" — "+bad[k].join("; "));
+  /* известный брак (22.10): законы ловят его на этих мирах с первого дня, починка — в PLAN.md (M631 «Small
+     things»); здесь он не красит ворота, но новый мир с тем же браком — красный, и починенный — тоже:
+     вычеркнуть его из списка в том же коммите, что и починку */
+  for(const k in bad){
+    const kn=SEED_KNOWN[k]||[],seen={};
+    const fresh=bad[k].filter(q=>{if(kn.indexOf(q.w)>=0){seen[q.w]=1;return false;}return true;});
+    const gone=kn.filter(w=>!seen[w]);
+    ok(!fresh.length,k+": "+fresh.length+" — "+fresh.slice(0,3).map(q=>q.s).join("; ")+(fresh.length>3?" …":""));
+    if(kn.length)ok(!gone.length,k+": известный брак ушёл — вычеркнуть из SEED_KNOWN: "+gone.join(", "));
+  }
   resetWorld();
 }));

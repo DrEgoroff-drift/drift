@@ -483,7 +483,7 @@ function shipRow(id,S){
     /* чужая линия (04c): в «Ялте» вдвое, без дела с державой — замок, а не кнопка */
     const gate=(typeof yardGate==="function")?yardGate(id,S):null;
     const pay=Math.round(S.price*repShipMul(G.sys)*(gate?gate.mul:1));
-    if(gate&&gate.lock&&!own){r.appendChild(el("div","qt","НУЖНО ДЕЛО С «"+makerRu(S.by).toUpperCase()+"»<br>"+pay.toLocaleString("ru")+" кр"));return r;}
+    if(gate&&gate.lock&&!own){r.appendChild(el("div","qt",(gate.why?gate.why.toUpperCase():"НУЖНО ДЕЛО С «"+makerRu(S.by).toUpperCase()+"»")+"<br>"+pay.toLocaleString("ru")+" кр"));return r;}
     const b=el("button","act"+(own?"":" gold"),own?"ПЕРЕСЕСТЬ":pay.toLocaleString("ru")+" кр");
     b.disabled=!own&&G.credits<pay;
     b.onclick=()=>{

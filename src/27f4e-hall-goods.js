@@ -7,7 +7,7 @@ const HALL_GOODS={mesh:null,key:"",hot:null};
 /* строки таблицы рынка (26e stTabMarket): торговые всегда, дальние — когда лежат в трюме */
 function hallGoodsKeys(){const c=(G&&G.cargo)||{};return TRADE_KEYS.concat(FAR_KEYS.filter(k=>(c[k]||0)>0));}
 /* место ящика: два ряда поперёк стойки, от ближнего к камере конца к хозяину */
-function hallGoodsAt(i){return [i&1?-4.97:-5.4,1.02,2.32-.33*(i>>1)];}
+function hallGoodsAt(i){const z0=HALL.L&&HALL.L.cut?.72:2.32;return [i&1?-4.97:-5.4,1.02,z0-.33*(i>>1)];}   /* M816: стойка на ходу короче — ряды от её торца */
 function hallGoodsCol(k){return hex2rgb(RES[k].col);}
 const HALL_GOODS_ACC=[255,106,43];   /* --c-acc плиты: подсветка строки и обвязка её ящика — один цвет */
 /* трафарет на доске: цвет ромба таблицы, приглушённый до насыщенности s (HSV) и чуть темнее — краска впиталась */

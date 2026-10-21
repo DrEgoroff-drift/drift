@@ -103,16 +103,18 @@ function plnMarkMesh(kind,H,sd,gy,P,oldCol,W,mound,o){
 }
 
 /* ── памятники этой посадки ── */
-function plnMarks(L,S){
+/* lim — бюджет кадра (заход): памятники по одному, пока он есть; не все — null, следующий вызов продолжит */
+function plnMarks(L,S,lim){
   let Q=L.marks;
   const tr=L.tr,list=(tr&&tr.poi)||[];
   if(Q&&Q.gen!==PLN_GPU.gen){plnMarksDrop(L);Q=null;}
-  if(Q&&Q.n===list.length)return Q;
-  if(Q)plnMarksDrop(L);
+  if(Q&&Q.n===list.length&&Q.k>=list.length)return Q;
+  if(Q&&Q.n!==list.length){plnMarksDrop(L);Q=null;}
   const t0=wallMs(),P=PLN_PAL,M=PLN_M,type=(S&&S.p&&S.p.type)||"terran",oldCol=plnHex(PLN_MARK.old[type]||"#c0a0ff");
-  Q=L.marks={gen:PLN_GPU.gen,n:list.length,items:[],ms:0};
-  for(const q of list){
-    const K=PLN_MARK.kinds[q.k];
+  if(!Q)Q=L.marks={gen:PLN_GPU.gen,n:list.length,k:0,items:[],ms:0};
+  for(let k0=Q.k;Q.k<list.length;){
+    if(lim!=null&&Q.k>k0&&wallMs()-t0>lim){Q.ms+=wallMs()-t0;return null;}
+    const q=list[Q.k++],K=PLN_MARK.kinds[q.k];
     if(!K||Q.items.length>=PLN_MARK.cap)continue;
     const H=plnMarkH(q),x=q.x/M,z=plnMarkZ(K,H),yaw=K.yaw,cy=Math.cos(yaw),sy=Math.sin(yaw),w=H*K.w;
     const at=(lx,lz)=>plnLandRibAt(L,x+lx*cy+lz*sy,z+lz*cy-lx*sy);
@@ -140,7 +142,7 @@ function plnMarks(L,S){
     it.inst=plnInst(it.a,4+parts.length,4+parts.length);
     Q.items.push(it);
   }
-  Q.ms=wallMs()-t0;
+  Q.ms+=wallMs()-t0;
   PLN.stat.marks={n:Q.items.length,kinds:Q.items.map(i=>i.kind+":"+Math.round(i.H)+"m"+(i.mound?"+"+i.mound:"")),ms:Math.round(Q.ms)};
   return Q;
 }

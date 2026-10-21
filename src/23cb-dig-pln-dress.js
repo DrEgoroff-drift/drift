@@ -6,10 +6,31 @@
    Статичное собирается одной сеткой и пересобирается, когда выработка изменилась (D.maskV);
    клеть — одна запись экземпляра, канат — два кольца в своём буфере, их пишут каждый кадр. */
 const DIG3_DR={wood:[.105,.066,.036],woodD:[.062,.04,.022],steel:[.075,.078,.085],rail:[.15,.15,.16],
-  rust:[.13,.065,.03],band:[.62,.2,.03],lamp:[1,.72,.4],set:1.6,rails:[.82,1.42],lampStep:4};
+  rust:[.13,.065,.03],band:[.62,.2,.03],paint:[.78,.74,.62],lamp:[1,.72,.4],set:1.6,rails:[.82,1.42],lampStep:4};
 
 /* выкопан ли пол под клеткой: штрек стоит на полу, над пустотой — лестница */
 function dig3Floor(F,c,r){return !dig3Dug(F,c,r+1);}
+/* доска с цифрами краской: семь брусков на знак (a верх, b c правые, d низ, e f левые, g середина);
+   середина доски — (x, y), лицо — к разрезу на глубине z */
+const DIG3_SEG={"0":"abcdef","1":"bc","2":"abdeg","3":"abcdg","4":"bcfg","5":"acdfg","6":"acdefg","7":"abc","8":"abcdefg","9":"abcdfg","-":"g"};
+function dig3DepthBoard(box,x,y,z,txt,K){
+  const h=.3,w=.16,t=.04,gap=.08,W=txt.length*w+(txt.length-1)*gap;
+  box(x-W/2-.14,x+W/2+.14,y-h/2-.12,y+h/2+.12,z-.04,z+.02,K.woodD);
+  box(x-W/2-.16,x+W/2+.16,y-h/2-.14,y-h/2-.1,z-.06,z+.02,K.steel);
+  const zf=z-.06,zb=z-.04;
+  for(let i=0;i<txt.length;i++){
+    const s=DIG3_SEG[txt[i]]||"",x0=x-W/2+i*(w+gap),x1=x0+w,y0=y-h/2,y1=y+h/2,ym=y;
+    for(const g of s){
+      if(g==="a")box(x0,x1,y1-t,y1,zf,zb,K.paint);
+      if(g==="d")box(x0,x1,y0,y0+t,zf,zb,K.paint);
+      if(g==="g")box(x0,x1,ym-t/2,ym+t/2,zf,zb,K.paint);
+      if(g==="b")box(x1-t,x1,ym,y1,zf,zb,K.paint);
+      if(g==="c")box(x1-t,x1,y0,ym,zf,zb,K.paint);
+      if(g==="f")box(x0,x0+t,ym,y1,zf,zb,K.paint);
+      if(g==="e")box(x0,x0+t,y0,ym,zf,zb,K.paint);
+    }
+  }
+}
 function dig3DressMesh(F){
   const m=plnMesh(1<<14),K=DIG3_DR,CM=DIG3_CM,M=PLN_MAT,R=DIG3_ROOM,zd=R.zd,lamps=[];
   const box=(x0,x1,y0,y1,z0,z1,col)=>{
@@ -30,6 +51,10 @@ function dig3DressMesh(F){
       for(const s of [-1,1])box(xc+s*.78-.07,xc+s*.78+.07,fy,fy+CM,zd-.42,zd-.26,K.woodD);
       box(xc-1.02,xc+1.02,fy+CM*.5-.07,fy+CM*.5+.07,zd-.5,zd-.36,K.steel);
       if(r>0&&mineIsLevel(r)){
+        /* доска горизонта у ворот, на задней стене штрека: «−72» — метры от устья, как в настоящем руднике
+           (глубину на горизонте говорит мир, а не только надпись подсказки) */
+        const sd=dig3Dug(F,1,r)?1:dig3Dug(F,-1,r)?-1:0;
+        if(sd)dig3DepthBoard(box,sd>0?CM+.62:-.62,fy+1.62,zd-.12,"-"+r*3,K);
         box(xc-1.15,xc+1.15,fy-.12,fy+.02,.15,zd-.2,K.steel);
         for(const s of [-1,1]){box(xc+s*1.1-.06,xc+s*1.1+.06,fy,fy+2.05,.2,.32,K.steel);box(xc+s*1.1-.06,xc+s*1.1+.06,fy+1.0,fy+1.08,.2,.9,K.band);}
       }
@@ -65,6 +90,28 @@ function dig3DressMesh(F){
   return {geo:plnGeo(plnMeshDone(m)),lamps,gen:PLN_GPU.gen,v:F.v,D:F.D};
 }
 
+/* вагонетка в клети: короб x ±w, по высоте y0..y1 над полом клети, вглубь z0..z1 (за человеком, z 1.1) */
+const DIG3_TUB={w:.62,y0:.12,y1:.62,z0:1.38,z1:1.9};
+/* куча руды в вагонетке: камни горкой, верх горки — y1+.22 при полной клети; цвет — от руды (экземпляр) */
+function dig3HeapMesh(){
+  const m=plnMesh(1<<14),T=DIG3_TUB,r=rng(0x4EA9),zm=(T.z0+T.z1)/2,zw=(T.z1-T.z0)/2-.16;
+  /* горка: камни мельче к краям, вершина посередине чуть выше борта; каждый свой тон — порода и руда вперемешку */
+  for(let i=0;i<70;i++){
+    const u=(r()*2-1),v=(r()*2-1),d=Math.min(1,Math.hypot(u,v*.8));
+    const cx=u*(T.w-.16),cz=zm+v*zw,s=.05+r()*.04+(1-d)*.03,top=T.y1+.3-d*d*.3;
+    const g=.14+r()*.26,ore=r()<.65;
+    plnBlob(m,{c:[cx,top-s*.6,cz],r:[s*(1+r()*.4),s*(.7+r()*.3),s*(.8+r()*.2)],sub:0,bump:.3,yaw:r()*6.3,pitch:r()-.5,seed:i*7+1,
+      col:ore?[g,g,g]:[g*.55,g*.52,g*.5],mat:PLN_MAT.bark});
+  }
+  return {geo:plnGeo(plnMeshDone(m)),inst:plnInst(new Float32Array(16),0,1),a:new Float32Array(16),gen:PLN_GPU.gen};
+}
+/* цвет кучи: руда, что больше всех весит в клети; тон приглушён — камень в свете лампы */
+function dig3HeapTint(L){
+  let k=null,b=0;for(const q in L||{}){const w=(L[q]|0)*resW(q);if(w>b){b=w;k=q;}}
+  const h=k&&RES[k]&&RES[k].col;if(!h||h[0]!=="#")return [.5,.48,.46];
+  const n=parseInt(h.slice(1),16),c=[(n>>16&255)/255,(n>>8&255)/255,(n&255)/255];
+  return c.map(x=>.12+x*.88);
+}
 /* клеть: рама из уголка, крыша, сетка на задней стенке, оранжевый пояс; низ — в нуле (пол клети) */
 function dig3CageMesh(){
   const m=plnMesh(1<<12),top=dig3CageBody(m,[0,0,0]);
@@ -83,6 +130,13 @@ function dig3CageBody(m,p){
   /* сетка задней стенки и боков — частые прутья */
   for(let x=-w+.15;x<w-.1;x+=.16)box(x,x+.02,0,h,z1-.04,z1-.02,K.steel);
   for(const x of [-w,w-.03])for(let z=z0+.15;z<z1-.1;z+=.16)box(x,x+.03,1.12,h,z,z+.02,K.steel);
+  /* вагонетка у задней сетки: в ней руда едет наверх (груз клети, 23cc); короб на раме, колёса */
+  const T=DIG3_TUB;
+  box(-T.w,T.w,T.y0,T.y0+.06,T.z0,T.z1,K.rust);
+  box(-T.w,T.w,T.y0,T.y1,T.z0,T.z0+.05,K.rust);box(-T.w,T.w,T.y0,T.y1,T.z1-.05,T.z1,K.rust);
+  for(const x of [-T.w,T.w-.05])box(x,x+.05,T.y0,T.y1,T.z0,T.z1,K.rust);
+  box(-T.w-.02,T.w+.02,T.y1-.05,T.y1+.01,T.z0-.02,T.z0+.03,K.steel);
+  for(const x of [-T.w+.18,T.w-.3])box(x,x+.12,0,T.y0,T.z0+.02,T.z0+.08,K.steel);
   /* подвеска: дуга над крышей и серьга каната */
   const zc=(z0+z1)/2+p[2];
   plnTube(m,{path:[[p[0]-w*.7,p[1]+h+.08,zc],[p[0],p[1]+h+.55,zc],[p[0]+w*.7,p[1]+h+.08,zc]],rad:.04,sides:4,col:K.steel,mat:M.bark});
@@ -119,9 +173,17 @@ function dig3DressFrame(F,Fd,D,Mm,x0,x1,y0,y1,Lt){
   const cy=Mm.gy(Mm.cy),cx=DIG3_CM*.5,zc=(.3+1.95)/2;
   plnRec(M.cg.a,0,[cx,cy,0],1,0,1,0);plnInstSet(M.cg.inst,M.cg.a,1);
   F.draw.push({geo:M.cg.geo,inst:M.cg.inst,lamp:true,sun:true,refl:false});
+  /* руда в вагонетке: горка поднимается над бортом по мере груза, пустая клеть — горки нет */
+  const fill=typeof mineCageW==="function"?clamp(mineCageW(D)/MINE_CAGE_CAP,0,1):0;
+  let ht=0;
+  if(fill>0){
+    if(!M.hp||M.hp.gen!==PLN_GPU.gen)M.hp=dig3HeapMesh();
+    plnRec(M.hp.a,0,[cx,cy-(1-Math.sqrt(fill))*.3,0],1,0,1,0,dig3HeapTint(D.cage));plnInstSet(M.hp.inst,M.hp.a,1);
+    F.draw.push({geo:M.hp.geo,inst:M.hp.inst,lamp:true,sun:true,refl:false});ht=M.hp.geo.n/3;
+  }
   /* канат: с обода шкива к серьге (копра ещё нет — прямо вверх на его высоту) */
   const tp=M.hf&&M.hf.rope?M.hf.rope:[cx,dig3Ground(Fd,cx)+6,zc];
   dig3RopeSet(M.rp,cx,cy+M.cg.top,tp[0],tp[1],zc);
   F.draw.push({geo:M.rp.geo,lamp:true,sun:true,refl:false});
-  return tris+M.cg.geo.n/3;
+  return tris+M.cg.geo.n/3+ht;
 }

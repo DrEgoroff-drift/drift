@@ -329,18 +329,24 @@ function plnThingMineMesh(L,xm){
 }
 
 /* ── то, что стоит на этой посадке ── */
-function plnThingsDeposits(Q,L,S){
+/* t0, lim — бюджет кадра (заход): тела залежей по ключу, пока он есть; не все — false */
+function plnThingsDeposits(Q,L,S,t0,lim){
   const list=S.deposits||[],M=PLN_M;
   let sig=list.length;
   for(const d of list)sig=(sig*31+((d.left|0)+1)*7+(d.i|0)*13+Math.round(d.x))|0;
-  if(sig===Q.sig&&Q.inst)return;
-  Q.sig=sig;
+  if(sig===Q.sig&&Q.inst)return true;
   const by={};
   for(const d of list){
     if(!(d.left>0)||!isFinite(d.x))continue;
     const key=d.res+"."+((d.i|0)&1);
     (by[key]=by[key]||[]).push(d);
   }
+  for(const key in by)if(!Q.geo[key]){
+    const res=key.slice(0,key.lastIndexOf(".")),sd=plnThingSeed(key);
+    Q.geo[key]=plnGeo(plnThingDeposit(res,sd));Q.geo[key+"~"]=plnGeo(plnThingSpoil(res,sd));
+    if(lim!=null&&wallMs()-t0>lim)return false;
+  }
+  Q.sig=sig;
   Q.parts.length=0;Q.blots.length=0;
   let n=0;
   for(const key in by){
@@ -363,17 +369,20 @@ function plnThingsDeposits(Q,L,S){
   }
   if(!Q.inst){Q.inst=plnInst(Q.a,n,PLN_THINGS.cap);Q.instS=plnInst(Q.as,n,PLN_THINGS.cap);}
   else{plnInstSet(Q.inst,Q.a,n);plnInstSet(Q.instS,Q.as,n);}
+  return true;
 }
-function plnThings(L,S,p){
+/* lim — бюджет кадра (заход): залежи, пещера, копёр — по куску, пока он есть; не всё — null */
+function plnThings(L,S,p,lim){
   let Q=L.things;
   if(Q&&Q.gen!==PLN_GPU.gen){plnThingsDrop(L);Q=null;}
   if(!Q)Q=L.things={gen:PLN_GPU.gen,dep:{geo:{},inst:null,instS:null,a:new Float32Array(16*PLN_THINGS.cap),as:new Float32Array(16*PLN_THINGS.cap),sig:-1,parts:[],blots:[]},cave:null,mine:null,ms:0};
-  const t0=wallMs();
-  plnThingsDeposits(Q.dep,L,S);
+  const t0=wallMs(),over=()=>{if(lim!=null&&wallMs()-t0>lim){Q.ms+=wallMs()-t0;return true;}return false;};
+  if(!plnThingsDeposits(Q.dep,L,S,t0,lim)||over())return null;
   const cx=S.cave&&isFinite(S.cave.x)?S.cave.x/PLN_M:null;
   if((Q.cave?Q.cave.x:null)!==cx){
     if(Q.cave)plnGeoFree(Q.cave.geo);
     Q.cave=cx==null?null:{x:cx,geo:plnGeo(plnThingCaveMesh(L,cx))};
+    if(over())return null;
   }
   const mu=mineSpotX(p),mx=mu==null||!isFinite(mu)?null:mu/PLN_M;
   if((Q.mine?Q.mine.x:null)!==mx){

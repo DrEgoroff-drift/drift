@@ -92,6 +92,31 @@ function dig3HeadBody(m,F,o,park){
   return {lamp:P(x0,top+.1,K.z0-.25),rope};
 }
 
+/* ── свет устья в стволе (DESIGN-mine §8) ──
+   Глубже окна планеты над головой одна порода, и глубину говорила только надпись. Теперь сверху в
+   ствол падает свет устья — днём небо, ночью фонарь копра — и гаснет с глубиной: у первого горизонта
+   ствол над клетью светлый и холодный, на сотне метров от неба остаётся тонкая нить. Огонь стоит над
+   верхним краем окна (за кадром, как само устье), его разлив виден на стенах ствола, проводниках и
+   канате; там, где ещё светит день у устья (dayK), этот свет уступает ему. */
+const DIG3_SHAFT={fall:24,k:3.2,r:9,lamp:[.5,.33,.15]};
+/* сила света устья на глубине d м под ним: квадрат расстояния, смягчённый отскоком от стен ствола */
+function dig3ShaftK(d){return 1/(1+Math.pow(Math.max(0,d)/DIG3_SHAFT.fall,2));}
+function dig3ShaftLight(F,Ls,sY,night,skyLo,dayK,my){
+  const CM=DIG3_CM,Z=DIG3_SHAFT,top=Math.min(Ls.t+1.5,sY-1),low=Math.max(Ls.b,my+3.2);
+  DIG3.stat.shaft=0;
+  if(sY-top<=0||top<=low||dayK>.99)return;
+  const day=1-plnSmooth(.2,.9,night),zc=DIG3_ROOM.zd*.5;
+  /* небо у горизонта — днём; тёплый фонарь копра — ночью; оба приглушены, как свет, отскочивший от стен */
+  const c0=[0,1,2].map(i=>(skyLo[i]*day+Z.lamp[i]*.55*(1-day))*Z.k*(1-dayK));
+  /* верхний огонь — над краем кадра, широкий: его разлив гаснет вниз по стволу, и ствол светлеет к верху
+     кадра, как труба, в которую сверху падает свет; второй — слабый, у середины, чтобы низ не провалился */
+  const k=dig3ShaftK(sY-top);
+  if(k<.02)return;
+  const span=top-low;
+  F.lights.push({p:[CM*.5,top+1,zc-.2],r:Math.max(Z.r,span*1.15),c:c0.map(v=>v*k*1.4),core:1});
+  F.lights.push({p:[CM*.5,top-span*.5,zc+.35],r:Z.r,c:c0.map(v=>v*dig3ShaftK(sY-top+span*.5)*.35),core:1});
+  DIG3.stat.shaft=+k.toFixed(3);
+}
 function dig3Frame(){
   const t0=wallMs(),D=G.dig,Fd=dig3Field(D),M=DIG3,Ln=DIG3_LENS,CM=DIG3_CM;
   const first=M.D!==D,t=wallMs(),dt=first?0:Math.min(.1,Math.max(0,(t-M.t)/1000));
@@ -158,6 +183,7 @@ function dig3Frame(){
     Lt([CM*.5,sY-2,DIG3_ROOM.zd*.5],11,[.30*dayK,.38*dayK,.44*dayK]);
     Lt([CM*.5,sY-6,DIG3_ROOM.zd*.6],9,[.16*dayK,.20*dayK,.24*dayK]);
   }
+  dig3ShaftLight(F,Ls,sY,night,skyLo,dayK,my);
   for(const q of F.lamps)Lt(q.p,q.r,[q.c[0]*q.k*.3,q.c[1]*q.k*.3,q.c[2]*q.k*.3]);
   /* лампа площадки: на каждом открытом горизонте, у ворот ствола */
   const r0=Math.max(0,Math.floor(-Ls.t/CM)-1),r1=Math.ceil(-Ls.b/CM)+1;
