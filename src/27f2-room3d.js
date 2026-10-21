@@ -574,9 +574,9 @@ function r3ShadowVP(p,dir,cosO,range){
    post(pass, Sv, Vv, Bv) — последний проход на холст (27f1 rpgField): цвет, дым (половина), ступени отсвета (мипы).
    dst {cx, w, h} — рисовать в чужой холст (портреты: цели рендера общие, картинка — в холст карточки).
    false — нет устройства */
-function r3Frame(cn,S,post,dst){
-  const R=rpgGet(cn);if(!R||!r3Dev())return false;
-  const d=GPU.dev,w=dst?dst.w:cn.width,h=dst?dst.h:cn.height,U=GPUTextureUsage;if(w<2||h<2)return false;
+/* цели кадра холста под размер w×h: заводятся раз и живут, пока размер тот же (r3Free — освободить) */
+function r3Targets(R,w,h){
+  const d=GPU.dev,U=GPUTextureUsage;
   let T=R.r3;
   if(!T||T.dev!==d||T.w!==w||T.h!==h){
     if(T&&T.dev===d)GPU.trash.push(T.ms,T.mv,T.md,T.res,T.vres,T.bl,T.vl,...T.ubs);
@@ -599,6 +599,12 @@ function r3Frame(cn,S,post,dst){
     dn(T.vresV,w,h,0,T.vlV);
     R.bg.clear();
   }
+  return T;
+}
+function r3Frame(cn,S,post,dst){
+  const R=rpgGet(cn);if(!R||!r3Dev())return false;
+  const d=GPU.dev,w=dst?dst.w:cn.width,h=dst?dst.h:cn.height;if(w<2||h<2)return false;
+  const T=r3Targets(R,w,h);
   /* форма */
   const F=R3.U;F.fill(0);
   F.set(S.vp,R3U.vp);F.set([S.cam[0],S.cam[1],S.cam[2],S.t||0],R3U.cam);
