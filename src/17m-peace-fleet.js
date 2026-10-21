@@ -80,16 +80,21 @@ function peaceFlag(x,y,Z,t,limp,SH){
     ctx.closePath();ctx.fill();
   }
 }
+/* состав мирного флота по хозяину: [вид, сдвиг зерна, чей борт] — одна таблица на сцену и на зал,
+   который печёт эти корабли заранее, пока игрок в доке (27f4a hallFleetList) */
+const PEACE_SHIPS={gt:[["tug",0,"gt"],["tug",1,"gt"]],co:[["ferry",0,"co"],["patrol",1,"co"]],
+  or:[["fridge",0,"co"],["patrol",1,"or"],["patrol",2,"or"]],ra:[["tug",0,"ra"]]};
+function peaceShipsOf(S){return (S&&PEACE_SHIPS[S.by]||[]).map(q=>({k:q[0],seed:S.seed+q[1],by:q[2]}));}
 function drawPeaceFleet(zx,zy,Z){
   const S=peaceHere();if(!S||typeof drawFleetShip!=="function")return;
-  const t=G.t/60,{by,cx,cy,seed}=S;
+  const t=G.t/60,{by,cx,cy,seed}=S,Q=PEACE_SHIPS[by],ps=(i,x,y,a)=>peaceShip(Q[i][0],seed+Q[i][1],Q[i][2],x,y,a,Z);
   /* с видеокарты (ступень 1): табло, флаг, дроны и камень — фигурами в проходе сцены,
      подписи — слоем подписей (DOM); корабли флота уже там (12ai1 fleetShipGpu) */
   const pass=gpuScene(),SH=pass?[]:null,lab=(k,text,x,y,col)=>{if(pass)domLabel("pf"+k,x,y,text,uiFont(8),col,"center");
     else{ctx.fillStyle=col;ctx.font=uiFont(8);ctx.textAlign="center";ctx.fillText(text,x,y);}};
   if(by==="gt"&&!peaceSubbot()){
     /* будни: два буксира стоят у причала носом к станции */
-    for(let i=0;i<2;i++)peaceShip("tug",seed+i,"gt",zx(cx+(i?60:-60)),zy(cy+40),Math.atan2(S.P.st.y-cy,S.P.st.x-cx),Z);
+    for(let i=0;i<2;i++)ps(i,zx(cx+(i?60:-60)),zy(cy+40),Math.atan2(S.P.st.y-cy,S.P.st.x-cx));
   }else if(by==="gt"){
     /* субботник (M455): буксиры ведут камни по малой дуге за станцией — в кадре,
        а не на дальнем поясе, где их не видно от причала */
@@ -99,11 +104,11 @@ function drawPeaceFleet(zx,zy,Z){
       const rx=cx+Math.cos(a+.2)*R,ry=cy+Math.sin(a+.2)*R*.55;
       if(SH)SH.push([1,zx(rx),zy(ry),Math.max(2,6*Z),0,0,0,58,52,46,1]);
       else{ctx.fillStyle="#3a342e";ctx.beginPath();ctx.arc(zx(rx),zy(ry),Math.max(2,6*Z),0,TAU);ctx.fill();}
-      peaceShip("tug",seed+i,"gt",zx(x),zy(y),a+Math.PI/2,Z);
+      ps(i,zx(x),zy(y),a+Math.PI/2);
     }
   }else if(by==="co"){
     const x=cx+Math.cos(t*.05)*160,y=cy+Math.sin(t*.05)*60,a=Math.atan2(Math.cos(t*.05)*60,-Math.sin(t*.05)*160);
-    peaceShip("ferry",seed,"co",zx(x),zy(y),a,Z);
+    ps(0,zx(x),zy(y),a);
     /* экран на рекламном борту (дизайн 18.09): бегущие цветные полосы, как у
        дрона-встречающего, — «партнёр» виден и без подписи */
     {const k=clamp(Z,.6,1.5),sx=zx(x),sy=zy(y)-12*k,off=(G.t*.6)%40;
@@ -120,12 +125,10 @@ function drawPeaceFleet(zx,zy,Z){
         ctx.fillStyle="rgba(255,230,120,.9)";ctx.fillRect(bx+2,.5,12,1.6);}
       ctx.restore();}}
     lab(1,"РЕКЛАМА · ПАРТНЁР™",zx(x),zy(y)-24*clamp(Z,.6,1.5),"rgba(255,70,160,.8)");
-    peaceShip("patrol",seed+1,"co",zx(x-60),zy(y+40),a,Z);
+    ps(1,zx(x-60),zy(y+40),a);
   }else if(by==="or"){
     /* досмотр: торговец стоит, двое по бокам, белые огни ровно */
-    peaceShip("fridge",seed,"co",zx(cx),zy(cy),0,Z);
-    peaceShip("patrol",seed+1,"or",zx(cx),zy(cy-70),0,Z);
-    peaceShip("patrol",seed+2,"or",zx(cx),zy(cy+70),0,Z);
+    ps(0,zx(cx),zy(cy),0);ps(1,zx(cx),zy(cy-70),0);ps(2,zx(cx),zy(cy+70),0);
     lab(2,"ДОСМОТР · ЭКЗ. 1 ИЗ 3",zx(cx),zy(cy)-26*clamp(Z,.6,1.5),"rgba(240,248,255,.9)");
   }else if(by==="km"){
     const strike=(typeof socStrikeHere==="function")&&socStrikeHere();
@@ -134,7 +137,7 @@ function drawPeaceFleet(zx,zy,Z){
     peaceFlag(zx(cx),zy(cy),Z,t,strike,SH);
     if(strike)lab(3,"ЗАБАСТОВКА · ФЛОТ СТОИТ",zx(cx),zy(cy)-26*clamp(Z,.6,1.5),"rgba(176,204,234,.8)");
   }else if(by==="ra"){
-    const R=peaceRepairPos(S);peaceShip("tug",seed,"ra",zx(R.x),zy(R.y),R.a,Z);
+    const R=peaceRepairPos(S);ps(0,zx(R.x),zy(R.y),R.a);
   }else if(by==="hf"){
     /* линия перезагрузки: огни гаснут волной, дрон за дроном */
     for(let i=0;i<6;i++){

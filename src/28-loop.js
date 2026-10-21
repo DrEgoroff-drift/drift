@@ -450,7 +450,8 @@ function drawWorldIn(){
      сюда азимут планеты, с которой игрок только что ушёл, — иначе тени в
      комнатах ложатся по вчерашнему закату */
   if(!(G.mode==="surface"||G.mode==="landing")&&typeof sunDirSet==="function")sunDirSet(null);
-  if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")drawSystem();
+  /* в доке зал на ходу закрывает весь экран (окно в зале — своя текстура шара): систему под ним не рисуем (M816c) */
+  if(G.mode==="system"||G.mode==="barge"||G.mode==="dock"&&!(typeof hallCovers==="function"&&hallCovers()))drawSystem();
   else if(G.mode==="map")drawMap();
   else if(G.mode==="landing")drawLanding();
   else if(G.mode==="surface")drawSurface();

@@ -321,7 +321,7 @@ const T=(()=>{
         const cr=G.credits;
         /* раздел — кнопкой, как игрок: запись (15c-rec) видит тычок, а не присваивание */
         /* M816: зал на ходу — разделов нет, есть места: стойка в полосе, шаги (часов у стенда нет — шаг 0,1 с), глагол сам */
-        const walk=!!(HALL.walk&&HALL.open&&hallWalkOn());
+        const walk=!!(HALL.walk&&HALL.open);
         if(walk){if(!tap("stWalk-trade"))return R(false,"места СТОЙКА в полосе зала нет");
           for(let i=0;i<200&&HALL.walk.eng!=="trade";i++)hallWalkStep(.1);
           if(HALL.walk.eng!=="trade")return R(false,"до стойки не дошёл: x "+HALL.walk.x.toFixed(2));

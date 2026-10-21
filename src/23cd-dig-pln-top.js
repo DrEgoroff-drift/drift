@@ -14,7 +14,8 @@ const DIG3_TOP={on:true,bad:0,err:"",live:false,T:null,hand:null,uFix:null,zc:0,
   ib:new Map(),hf:null,stat:{}};
 try{if(typeof location!=="undefined"&&/[?&]digtop=0\b/.test(location.search))DIG3_TOP.on=false;}catch(e){}
 /* вход: секунды; доля входа, на которой срез идёт от камеры к разрезу; откуда идёт срез, м */
-const DIG3_HAND={s:1.8,cut:[.05,.72],z0:-60};
+/* wait — сколько секунд вход ждёт породу у поверхности, прежде чем ехать без неё */
+const DIG3_HAND={s:1.8,cut:[.05,.72],z0:-60,wait:.6};
 
 /* ── место рудника на земле планеты ── */
 function dig3TopAt(D){
@@ -59,8 +60,13 @@ function dig3LensOf(C,ox,oy){
 }
 function dig3HandU(h){
   if(DIG3_TOP.uFix!=null)return DIG3_TOP.uFix;
-  /* первый кадр рудника строит породу долго — часы входа идут с третьего */
-  if(!h.t0){if((h.f=(h.f|0)+1)<3)return 0;h.t0=wallMs();}
+  /* часы входа идут с третьего кадра и когда порода в окне достроена (куски строятся по бюджету
+     кадра, 23ca): объектив стоит у поверхности, где рудника ещё не видно; не дольше wait */
+  if(!h.t0){
+    const Q=DIG3.ch,w0=h.w0||(h.w0=wallMs());
+    if((h.f=(h.f|0)+1)<3||(Q&&(Q.left>0||Q.busy)&&wallMs()-w0<DIG3_HAND.wait*1000))return 0;
+    h.t0=wallMs();
+  }
   return (wallMs()-h.t0)/1000/DIG3_HAND.s;
 }
 /* объектив кадра: на входе — между поверхностью и рудником; заодно место рудника и срез */
@@ -92,22 +98,24 @@ function dig3TopCam(Ls,T){
 }
 
 /* ── земля планеты со срезом и устьем ──
-   кусок ленты (21pfb): вершина (r, i) = r·nc + i; свои индексы — ряды от первого за срезом, без юбки,
-   без четырёхугольников над устьем ствола */
+   кусок ленты (21pfb): вершина (r, i) = r·nc + i; свои индексы — без юбки, без четырёхугольников над
+   устьем ствола, ряды от дальнего к ближнему: ряды за любым срезом — начало списка, и срез, что едет
+   на входе, меняет только счёт (переписывать индексы каждый кадр съезда — 22 МБ за вход, замер 22.10) */
 function dig3TopHole(T){const CM=DIG3_CM;return {x0:T.ox-.05,x1:T.ox+CM+.05,z0:-1,z1:DIG3_ROOM.zd+.1};}
 function dig3RibView(L,J,ra,H){
-  const Z=DIG3_TOP,g=J.geo,key=ra+":"+H.x0.toFixed(2);
+  const Z=DIG3_TOP,g=J.geo,key=H.x0.toFixed(2);
   let q=Z.ib.get(J);
-  if(q&&q.g===g&&q.key===key&&q.v.gen===PLN_GPU.gen)return q.v;
+  if(q&&q.g===g&&q.key===key&&q.v.gen===PLN_GPU.gen){q.v.n=q.to[Math.min(ra,q.to.length-1)];return q.v;}
   const C=PLN_LAND,i0=J.c*C.chunk,i1=Math.min(i0+C.chunk,L.NT-1),nc=i1-i0+1,R=L.R,zr=L.zr;
-  const a=new Uint32Array(Math.max(1,(R-1-ra)*(nc-1)*6));
+  const a=new Uint32Array(Math.max(1,(R-1)*(nc-1)*6)),to=new Uint32Array(R);
   let k=0;
-  for(let r=ra;r+1<R;r++){
+  for(let r=R-2;r>=0;r--){
     const hz=zr[r]<H.z1&&zr[r+1]>H.z0;
     for(let i=0;i+1<nc;i++){
       if(hz){const x0=L.x0+(i0+i)*L.dx;if(x0<H.x1&&x0+L.dx>H.x0)continue;}
       const v=r*nc+i;a[k++]=v;a[k++]=v+1;a[k++]=v+nc+1;a[k++]=v;a[k++]=v+nc+1;a[k++]=v+nc;
     }
+    to[r]=k;
   }
   if(!q||q.cap<k||q.v.gen!==PLN_GPU.gen){
     if(q&&q.v.gen===PLN_GPU.gen)q.buf.destroy();
@@ -116,7 +124,7 @@ function dig3RibView(L,J,ra,H){
     Z.ib.set(J,q);
   }
   if(k)GPU.dev.queue.writeBuffer(q.buf,0,a,0,k);
-  q.g=g;q.key=key;q.v={vb:g.vb,ib:q.buf,n:k,gen:g.gen};
+  q.g=g;q.key=key;q.to=to;q.v={vb:g.vb,ib:q.buf,n:to[Math.min(ra,R-1)],gen:g.gen};
   return q.v;
 }
 function dig3TopLand(L,out,ex,V,T){
@@ -156,26 +164,33 @@ plnPlantGroup=function(xa,xb,z,m,buckets,blots){
   }
   return G0;
 };
+/* записи, что видно за срезом: над устьем — долой раз на дыру, в каждой части — по глубине от ближних;
+   срез, что едет на входе, сдвигает только начало части (переписывать записи каждый кадр съезда —
+   40 МБ за вход, замер 22.10) */
 function dig3PlantView(G0,zc,H){
   const z0=zc+.15,hx0=H.x0-.35,hx1=H.x1+.35,hz1=H.z1+.35;
   if(G0.zlo>=z0&&(G0.zlo>=hz1||G0.xb<hx0||G0.xa>hx1))return null;
-  const key=z0.toFixed(2)+":"+hx0.toFixed(2);
+  const key=hx0.toFixed(2);
   let q=G0.cut;
-  if(q&&q.key===key&&q.inst.gen===PLN_GPU.gen)return q;
-  const a=G0.rec,b=new Float32Array(a.length),part=new Map();
-  let k=0;
-  for(const p of G0.parts){
-    const f=k;
-    for(let j=p.first;j<p.first+p.count;j++){
-      const o=j*16,x=a[o],z=a[o+2];
-      if(z<z0||(z<hz1&&x>hx0&&x<hx1))continue;
-      b.set(a.subarray(o,o+16),k*16);k++;
+  if(!q||q.key!==key||q.inst.gen!==PLN_GPU.gen){
+    const a=G0.rec,b=new Float32Array(a.length),part=new Map();
+    let k=0;
+    for(const p of G0.parts){
+      const f=k,ix=[];
+      for(let j=p.first;j<p.first+p.count;j++){const o=j*16,x=a[o],z=a[o+2];if(!(z<hz1&&x>hx0&&x<hx1))ix.push(j);}
+      ix.sort((u,v)=>a[u*16+2]-a[v*16+2]);
+      const zs=new Float32Array(ix.length);
+      for(const j of ix){zs[k-f]=a[j*16+2];b.set(a.subarray(j*16,j*16+16),k*16);k++;}
+      part.set(p.first,{f,n:k-f,zs,first:f,count:k-f});
     }
-    part.set(p.first,{first:f,count:k-f});
+    if(!q||q.inst.gen!==PLN_GPU.gen){q={inst:plnInst(b,k,G0.n)};G0.cut=q;}
+    else plnInstSet(q.inst,b,k);
+    q.key=key;q.part=part;q.z0=null;
   }
-  if(!q||q.inst.gen!==PLN_GPU.gen){q={inst:plnInst(b,k,G0.n)};G0.cut=q;}
-  else plnInstSet(q.inst,b,k);
-  q.key=key;q.part=part;
+  if(q.z0!==z0){
+    for(const P of q.part.values()){let lo=0,hi=P.n;while(lo<hi){const m=(lo+hi)>>1;if(P.zs[m]<z0)lo=m+1;else hi=m;}P.first=P.f+lo;P.count=P.n-lo;}
+    q.z0=z0;
+  }
   return q;
 }
 function dig3TopPlants(orig,L,F0,ex,V,T){
@@ -292,24 +307,31 @@ fn topDist(m: mat4x4f, eye: vec3f, uv: vec2f, d: f32) -> f32 {
   return vec4f(unshoulder(c), win / f32(TOP_NMS));
 }
 `;
-function dig3TopPipe(){
-  const Z=DIG3_TOP,Q=CAVE3_GPU,d=GPU.dev,ms=Q.ms;
-  if(Z.P&&Z.dev===d&&Z.ms===ms&&Z.gen===PLN_GPU.gen)return Z.P;
+/* свёртка рудника: один дескриптор и месту вызова, и позднему прогреву (08b0) — вход в шахту
+   конвейер не компилирует (замер 22.10: синхронный dig3.top4 в первом кадре рудника) */
+function dig3TopDesc(d,ms){
   const FR=GPUShaderStage.FRAGMENT,VF=GPUShaderStage.VERTEX|FR,tx=b=>({binding:b,visibility:FR,texture:{sampleType:"float"}}),
     dm={sampleType:"depth",multisampled:ms>1};
-  Z.L=d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
+  const L=d.createBindGroupLayout({entries:[{binding:0,visibility:VF,buffer:{type:"uniform"}},{binding:1,visibility:FR,buffer:{type:"uniform"}},
     tx(2),tx(3),tx(4),{binding:5,visibility:FR,sampler:{type:"filtering"}},{binding:6,visibility:FR,texture:dm},
     {binding:7,visibility:FR,texture:{sampleType:"depth"}},{binding:8,visibility:FR,texture:{sampleType:"depth"}},
     {binding:9,visibility:FR,sampler:{type:"comparison"}},{binding:10,visibility:FR,texture:dm},{binding:11,visibility:FR,buffer:{type:"uniform"}}]});
   let code=CAVE3_WGSL_POST+DIG3_TOP_WGSL;
   if(ms>1)code=code.replace("var depthTex: texture_depth_2d;","var depthTex: texture_depth_multisampled_2d;").replace("var plnDep: texture_depth_2d;","var plnDep: texture_depth_multisampled_2d;");
   code=code.replace("TOP_NMS",String(ms)).replace("TOP_NMS",String(ms)).replace(/TOP_SMP/g,ms>1?"i":"0");
-  const m=gpuShader(code),lay=d.createPipelineLayout({bindGroupLayouts:[Z.L]});
-  m.getCompilationInfo().then(i=>{for(const x of i.messages)if(x.type==="error"){Z.err="wgsl "+x.lineNum+":"+x.linePos+" "+x.message;plnLog("рудник: "+Z.err);}}).catch(()=>{});
-  Z.P=gpuPipeline("dig3.top"+ms,()=>({layout:lay,vertex:{module:m,entryPoint:"vs_full"},
+  const m=gpuShader(code),lay=d.createPipelineLayout({bindGroupLayouts:[L]});
+  return {L,m,desc:{layout:lay,vertex:{module:m,entryPoint:"vs_full"},
     fragment:{module:m,entryPoint:"fs_top",targets:[{format:PLN_HDR,writeMask:GPUColorWrite.RED|GPUColorWrite.GREEN|GPUColorWrite.BLUE,
       blend:{color:{srcFactor:"src-alpha",dstFactor:"one-minus-src-alpha",operation:"add"},alpha:{srcFactor:"zero",dstFactor:"one",operation:"add"}}}]},
-    primitive:{topology:"triangle-list",cullMode:"none"}}));
+    primitive:{topology:"triangle-list",cullMode:"none"}}};
+}
+GPU_LATE_GROUPS.push(()=>{const ms=PLN_QUAL[plnQualWant()].ms;return [["dig3.top"+ms,{desc:dig3TopDesc(GPU.dev,ms).desc}]];});
+function dig3TopPipe(){
+  const Z=DIG3_TOP,Q=CAVE3_GPU,d=GPU.dev,ms=Q.ms;
+  if(Z.P&&Z.dev===d&&Z.ms===ms&&Z.gen===PLN_GPU.gen)return Z.P;
+  const X=dig3TopDesc(d,ms),m=X.m;Z.L=X.L;
+  m.getCompilationInfo().then(i=>{for(const x of i.messages)if(x.type==="error"){Z.err="wgsl "+x.lineNum+":"+x.linePos+" "+x.message;plnLog("рудник: "+Z.err);}}).catch(()=>{});
+  Z.P=gpuPipeline("dig3.top"+ms,()=>X.desc);
   Z.U=d.createBuffer({size:80,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   Z.pp=d.createBuffer({size:32,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   const K=CAVE3_K.comp;

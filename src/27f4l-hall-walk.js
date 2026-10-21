@@ -4,7 +4,7 @@
    окно на верфь, верстак, контора, бар. У места его вещь названа табличкой, кнопка говорит глагол; «действие»
    входит в место: объектив плывёт к ближнему виду места (прежние станции камеры), а таблица места приходит
    карточкой сбоку (ПК, ≤ 36 % ширины) или снизу (телефон, ≤ 55 % высоты) — только строки этого места.
-   «Назад» закрывает карточку, он идёт дальше. ?hall=0 — прежний стол, ?walk=0 — прежний зал с плитой.
+   «Назад» закрывает карточку, он идёт дальше.
 
    ПРАВИЛА ФАЙЛА:
    1. Места — порядок постоянный (ноги игрока его выучивают); места без вкладок на этой станции нет, линия смыкается.
@@ -26,9 +26,6 @@ const HALL_PLACES=[
   {id:"folk", x:HALL_XB+.9,tabs:["crew","cantina"],verb:"ЛЮДИ",ru:"БАР",yaw:Math.PI,tag:[HALL_XB+.4,1.25,-.2],tn:"БАР",ts:"люди станции"}];
 /* шлюз — ближний вид: дверь в левой стене и пилот у неё */
 HALL_CAMS.lock={eye:[-3.2,1.6,5.4],tgt:[-6.4,1.25,1.3],fy:1.05};
-/* ?walk=0 — прежний зал: адрес читается один раз, ход спрашивает его по нескольку раз за кадр */
-const HALL_WALK_Q=typeof location!=="undefined"&&/[?&]walk=0\b/.test(location.search);
-function hallWalkOn(){return HALL.on&&HALL.walkOn!==false&&!HALL_WALK_Q;}
 /* бар — место, если у станции есть стойка бара или наём; и хоть одна его вкладка здесь */
 function hallHasFolk(st,has){
   const bar=hallHasBar(st)||has.indexOf("crew")>=0;
@@ -99,7 +96,7 @@ const HALL_CARD_MIN=560;
 function hallWalkFree(cw){const ui=(typeof UIK==="number"&&UIK>0)?UIK:1;return Math.max(0,Math.min(.64,1-HALL_CARD_MIN*ui/Math.max(1,cw)));}
 function hallWalkSpot(id){return id?HALL_WALK_SPOT[id]||HALL_PILOT_AT[id==="ship"&&tab==="site"?"site":id]||null:null;}
 function hallWalkPilot(){
-  const W=HALL.walk;if(!W||!hallWalkOn()||HALL.pilot===false)return null;
+  const W=HALL.walk;if(!W||HALL.pilot===false)return null;
   const mv=Math.abs(W.v)>.05,p=hallPlacesHere().find(q=>q.id===(W.eng||W.at));
   const sp=W.fk>0?hallWalkSpot(W.eng||W.at):null,k=sp?hallEase(W.fk):0;
   /* идёт — боком на три четверти к объективу; стоит у места — к вещи; просто стоит — к объективу вполоборота */
@@ -177,7 +174,7 @@ function hallWalkTabs(){
 }
 function hallWalkCls(){
   if(typeof $st==="undefined"||!$st)return;
-  const W=HALL.walk,on=!!W&&hallWalkOn()&&HALL.open;
+  const W=HALL.walk,on=!!W&&HALL.open;
   $st.classList.toggle("walk",on);$st.classList.toggle("eng",on&&!!W.eng);$st.classList.toggle("lock",on&&W.eng==="lock");
   const d=document.getElementById("stWalk");if(d)d.hidden=!on;
   hallWalkUi();
@@ -195,7 +192,7 @@ function hallWalkDom(){
     mk("button","stWalkBack","act","НАЗАД",()=>hallWalkBack());
     $st.appendChild(d);
     /* тап по полу: идти туда (только мимо кнопок и карточки) */
-    $st.addEventListener("pointerdown",e=>{const W=HALL.walk;if(!W||!hallWalkOn()||!HALL.open||W.eng||!HALL.vp)return;
+    $st.addEventListener("pointerdown",e=>{const W=HALL.walk;if(!W||!HALL.open||W.eng||!HALL.vp)return;
       if(e.target!==$st&&e.target.id!=="stHall"&&e.target.id!=="stWalk")return;
       const r=$st.getBoundingClientRect(),ui=(typeof UIK==="number"&&UIK>0)?UIK:1,sx=(e.clientX-r.left)*ui,w=r.width*ui;
       const L=HALL.L;if(!L)return;const c=hallWalkLens(L,{cw:w,ch:r.height*ui,wide:hallWide()},0);
@@ -228,7 +225,7 @@ function hallTradeLine(){
 }
 /* клавиши: действие входит, назад выходит, 1–7 — к месту по полосе */
 if(typeof addEventListener==="function")addEventListener("keydown",e=>{
-  const W=HALL.walk;if(!W||!HALL.open||!hallWalkOn()||typeof $st==="undefined"||!$st.classList.contains("open"))return;
+  const W=HALL.walk;if(!W||!HALL.open||typeof $st==="undefined"||!$st.classList.contains("open"))return;
   if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
   if(W.eng){if(e.code==="Escape"||e.code==="Backspace"||(e.code==="KeyS"&&!e.ctrlKey)){hallWalkBack();e.preventDefault();e.stopPropagation();}return;}
   if((e.code==="KeyE"||e.code==="Enter"||e.code==="Space")&&W.at){hallWalkEngage(W.at);e.preventDefault();return;}

@@ -12,8 +12,10 @@
    4. Слова — на вещах: «СДАТЬ СМЕНУ» — табличка на койке, «ТРОНЬТЕ» — на лампочке поломки; сутки — кресты календаря
       (число и имя планеты уже на плашке прибора справа вверху); обратного отсчёта нет и здесь (правило 29f).
       Строка подсказки внизу молчит: её хвост про лампочку висит табличкой, глагол ДЕЙСТВИЯ остаётся кнопке.
-   5. Попадание пальцем — из тех же вещей: их рамки проецируются в кадр (winHit за швом); старый художник
-      drawWinter живёт за ROOM3.on (?room=0). */
+   5. Попадание пальцем — из тех же вещей: их рамки проецируются в кадр (winHit).
+   6. 2D-зимовки нет (22.10, автор: «2D не должно быть»): старый художник 29g удалён вместе с ?room=0 и ?win3=0.
+      Без видеокарты кадра нет — игрок видит плашку «нет WebGPU» (08b2), как во всей игре; сбой кадра называет
+      страж (28-loop), а не запасной путь. */
 const WIN3={cn:null,tags:null,mesh:null,mkey:"",t0:0,err:0,frames:0,stat:null,vp:null,sz:null,meas:null,hit:[],sl:0,storm:null};
 const WIN3_L=-3.6,WIN3_R=3.6,WIN3_B=-1.8,WIN3_F=1.8,WIN3_H=2.6;
 const WIN3_M=new Float32Array(R3_MAXI*R3_PART*16),WIN3_OT=new Float32Array(R3_MAXI*R3_PART*4);
@@ -216,15 +218,15 @@ function win3Cam(sz,t){
   const P=r3Persp(c.fy,sz.cw/Math.max(1,sz.ch),.1,90);
   return {eye:e,tgt:c.tgt,fy:c.fy,vp:r3Mul(P,r3Look(e,c.tgt,[0,1,0]))};
 }
-/* M850c: по умолчанию на движке; ?win3=0 (или ?room=0) — старое 2D до M890 */
-function win3Ok(){return ROOM3.on&&!(typeof location!=="undefined"&&/[?&]win3=0/.test(location.search))&&typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok)&&!WIN3.err;}
+/* кадр есть, когда есть видеокарта; иначе — плашка 08b2 */
+function win3Ok(){return typeof document!=="undefined"&&!!(GPU&&GPU.dev&&GPU.ok);}
 function win3Frame(){
   const W=winAll(),cn=win3Canvas(),sz=home3Size(cn),R=rpgGet(cn);if(!R)return false;
   R.dpr=cn.__dpr;
   const sl=win3SleepPh()>0,mk=WIN_USE.map(k=>win3Val(W,k)).join("")+"|"+W.day+"|"+(W.faults||[]).map(f=>f.k).join(",")+"|"+winCap(W)+(sl?"|z":"");
   if(!WIN3.mesh||WIN3.mkey!==mk){r3Drop(WIN3.mesh);WIN3.mesh=win3Mesh(W,sl);WIN3.mkey=mk;}
   const t=wallMs()/1000,cam=win3Cam(sz,t),S=win3Scene(cam,t);
-  const lab=rpgBake(R,"r3lab","win3|"+cn.width+"x"+cn.height,cn.width,cn.height,()=>{});
+  const lab=r3Dev()?R3.blank:null;   /* подписей поверх кадра нет: пустой вид движка, а не выпечка 2D (как зал, M816c) */
   const U=new Float32Array(60);
   S.bulbs.slice(0,6).forEach((b,i)=>{const q=r3Proj(cam.vp,b,sz.cw,sz.ch),q2=r3Proj(cam.vp,[b[0]+.05,b[1],b[2]],sz.cw,sz.ch);
     if(q&&q2&&q[2]>0)U.set([q[0],q[1]+2,Math.max(2,Math.abs(q2[0]-q[0])),b[3]],i*4);});
@@ -270,11 +272,31 @@ win3Frame=hallCostWrap(win3Frame);
 function win3Cost(sec){return WIN3.cn&&WIN3.cn.style.display!=="none"?hallCost(sec,()=>win3Frame(),WIN3.cn):Promise.resolve(null);}
 function win3On(){return !!(WIN3.cn&&WIN3.cn.style.display!=="none"&&WIN3.hit.length);}
 
-/* ── швы: кадр (28), попадание (15 → winTap → winHit), смена (сон) ── */
-{const f0=drawWinter;drawWinter=function(){
-  if(!win3Ok()||!G.win)return f0();
-  try{win3Frame();}catch(e){WIN3.err++;console.error("зимовка: кадр упал",e);win3Hide();return f0();}};}
+/* ── кадр (28), попадание (15 → winTap → winHit), смена (сон), подсказка ── */
+function drawWinter(){
+  if(!G.win||!win3Ok()){win3Hide();return;}
+  try{win3Frame();}catch(e){WIN3.err++;win3Hide();throw e;}   /* сбой называет страж кадра (28) */
+}
+function winHit(mx,my){return win3Hit(mx,my);}
+function winTap(mx,my){
+  const W0=winAll();if(!W0)return false;
+  const h=winHit(mx,my);if(!h)return false;
+  if(h.k==="lever"){W0.pw[h.id]=((W0.pw[h.id]|0)+1)%4;sfx("ui",{f:420,to:300,d:.05,v:.16});return true;}
+  if(h.k==="fix"){winFix(h.id);return true;}
+  if(h.k==="wall"){winWall();return true;}
+  if(h.k==="diary"){
+    if(!winDiaryToday())say("Сегодня день ушёл на починку. Писать нечего.",180);
+    else tableToggle(true,"diary");
+    return true;}
+  if(h.k==="bunk"){winShift();return true;}
+  return true;
+}
+/* ДЕЙСТВИЕ — сдать смену, то же, что лечь на койку. По фронту, а не по удержанию: иначе зажатая клавиша
+   прогоняет месяц за секунду. Хвост про лампочку висит табличкой «ТРОНЬТЕ» на самой панели */
+function updateWinter(dt){
+  const W0=winAll();if(!W0){G.mode="system";return;}
+  if(actEdge)winShift();
+  G.prompt="ДЕЙСТВИЕ — СДАТЬ СМЕНУ";
+}
 {const f0=drawWorldIn;drawWorldIn=function(){f0();if(WIN3.cn&&!(G.mode==="winter"&&G.win&&win3Ok()))win3Hide();};}
-{const f0=winHit;winHit=function(mx,my){return win3On()?win3Hit(mx,my):f0(mx,my);};}
 {const f0=winShift;winShift=function(){const r=f0();if(r&&win3On())WIN3.sl=wallMs();return r;};}
-{const f0=updateWinter;updateWinter=function(dt){f0(dt);if(win3On())G.prompt="ДЕЙСТВИЕ — СДАТЬ СМЕНУ";};}
