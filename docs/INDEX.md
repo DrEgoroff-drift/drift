@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 621 · top-level symbols: 8743
+Files: 621 · top-level symbols: 8750
 
 ## SYMBOLS
 
@@ -2065,19 +2065,20 @@ SD_MAN                       src/12tb-settle-draw.js:31
 SD_SHSINK                    src/12tb-settle-draw.js:241
 SEAT                         src/27j-console.js:40
 SECT                         src/21ae-base-sect.js:16
-SECT_BLOOM                   src/21ae-base-sect.js:379
+SECT_BLOOM                   src/21ae-base-sect.js:462
 SECT_COLD                    src/21ae-base-sect.js:25
 SECT_KIT_C                   src/21aea-base-kits.js:13
 SECT_KIT_FILL                src/21aea-base-kits.js:17
 SECT_LIVE                    src/21ae-base-sect.js:27
 SECT_M                       src/21ae-base-sect.js:21
 SECT_MAT_WALL                src/21ae-base-sect.js:29
-SECT_OLD_DRAW                src/21ae-base-sect.js:380
-SECT_OLD_EXIT                src/21ae-base-sect.js:399
-SECT_OLD_HSURF               src/21ae-base-sect.js:420
-SECT_OLD_HUD                 src/21ae-base-sect.js:433
+SECT_MONO                    src/21ae-base-sect.js:333
+SECT_OLD_DRAW                src/21ae-base-sect.js:463
+SECT_OLD_EXIT                src/21ae-base-sect.js:482
+SECT_OLD_HSURF               src/21ae-base-sect.js:503
+SECT_OLD_HUD                 src/21ae-base-sect.js:516
 SECT_SIT                     src/21ae-base-sect.js:23
-SECT_W                       src/21ae-base-sect.js:410
+SECT_W                       src/21ae-base-sect.js:493
 SEC_CAP                      src/26-ui-station.js:411
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
@@ -7820,33 +7821,39 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:412-431
-sectAvr                      src/21ae-base-sect.js:366-376
+sectAvr                      src/21ae-base-sect.js:442-459
 sectBaseFix                  tests/91qf-sect.js:6-16
-sectBox                      src/21ae-base-sect.js:72-81
-sectBuild                    src/21ae-base-sect.js:102-198
-sectCageMesh                 src/21ae-base-sect.js:200-209
-sectCursor                   src/21ae-base-sect.js:349-365
+sectBox                      src/21ae-base-sect.js:73-82
+sectBuild                    src/21ae-base-sect.js:103-199
+sectCageMesh                 src/21ae-base-sect.js:201-210
+sectCursor                   src/21ae-base-sect.js:413-441
 sectCyl                      src/21aea-base-kits.js:20-34
 sectFarWin                   src/21ae-base-sect.js:50-54
 sectFloor                    src/21ae-base-sect.js:40
-sectFrame                    src/21ae-base-sect.js:243-318
-sectGeo                      src/21ae-base-sect.js:210-216
-sectKit                      src/21aea-base-kits.js:37-220
+sectFrame                    src/21ae-base-sect.js:245-320
+sectGeo                      src/21ae-base-sect.js:211-217
+sectKit                      src/21aea-base-kits.js:37-222
 sectLens                     src/21ae-base-sect.js:44-48
 sectLensAt                   tests/91qf-sect.js:21-30
-sectLensStep                 src/21ae-base-sect.js:220-242
-sectNearWin                  src/21ae-base-sect.js:56-61
-sectOver                     src/21ae-base-sect.js:327-347
+sectLensStep                 src/21ae-base-sect.js:221-244
+sectNearWin                  src/21ae-base-sect.js:57-62
+sectOv                       src/21ae-base-sect.js:332
+sectOvAdj                    src/21ae-base-sect.js:362-376
+sectOvBoard                  src/21ae-base-sect.js:378-398
+sectOvDash                   src/21ae-base-sect.js:336-339
+sectOvFrame                  src/21ae-base-sect.js:335
+sectOvNote                   src/21ae-base-sect.js:400-411
+sectOver                     src/21ae-base-sect.js:340-360
 sectPal                      src/21ae-base-sect.js:30-37
-sectPj                       src/21ae-base-sect.js:322-326
-sectPlate                    src/21ae-base-sect.js:412-419
-sectQuad                     src/21ae-base-sect.js:66-70
+sectPj                       src/21ae-base-sect.js:324-328
+sectPlate                    src/21ae-base-sect.js:495-502
+sectQuad                     src/21ae-base-sect.js:67-71
 sectRoomX                    src/21ae-base-sect.js:41
-sectShare                    src/21ae-base-sect.js:63
-sectSty                      src/21ae-base-sect.js:98-101
-sectVoids                    src/21ae-base-sect.js:83-97
+sectShare                    src/21ae-base-sect.js:64
+sectSty                      src/21ae-base-sect.js:99-102
+sectVoids                    src/21ae-base-sect.js:84-98
 sectWith                     tests/91qf-sect.js:17-20
-sectWordsOn                  src/21ae-base-sect.js:411
+sectWordsOn                  src/21ae-base-sect.js:494
 sectX                        src/21ae-base-sect.js:38
 sectY                        src/21ae-base-sect.js:39
 sellCargo                    src/12-economy.js:181-209
@@ -9845,7 +9852,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ad-base-gpu.js · 20 KB
   · база на видеокарте (G11):1
 
-## src/21ae-base-sect.js · 29 KB
+## src/21ae-base-sect.js · 35 KB
   · база в разрезе на движке (M632a):1
 
 ## src/21aea-base-kits.js · 16 KB
@@ -10560,7 +10567,7 @@ zoomTo                       src/15-input.js:358
 ## tests/91qe-rack.js · 4 KB
   · стойка уступает телу (M821):1
 
-## tests/91qf-sect.js · 6 KB
+## tests/91qf-sect.js · 7 KB
 
 ## tests/91qg-cave.js · 18 KB
   · пещера на движке (M630a):1
