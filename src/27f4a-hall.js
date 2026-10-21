@@ -439,6 +439,8 @@ function hallClose(){
   r3Drop(HALL.room);HALL.room=null;HALL.rkey="";
   HALL_GOODS.hot=null;HALL_LENS.g=0;HALL_LENS.last=0;HALL_LENS.t=0;HALL_INSTR.hot=null;HALL_BOARD.hot=-1;HALL_HOLD.hot="";
 }
+/* зал уже нарисован во весь экран: мир под станцией не виден */
+function hallCovers(){return HALL.open&&HALL.frames>0&&!HALL.err&&!!HALL.walk&&!!HALL.cn&&HALL.cn.isConnected;}
 function hallRelease(){
   if(HALL.open)return;
   if(HALL.cn)r3Free(HALL.cn);hallGoodsDrop();hallInstrDrop();hallBoardDrop();hallHoldDrop();hallRigDrop();
@@ -518,8 +520,8 @@ function hallFrame(){
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL.sharp==null?HALL_SHARP:HALL.sharp,1],52);
   /* на ходу дальний конец зала уходит в темноту, а не режется кромкой: сила и x пилота на экране (M816) */
   if(!W.eng){const pw=hallWalkPilot(),q=pw&&r3Proj(cam.vp,[pw[0],1,pw[1]],sz.cw,sz.ch);U.set([.6*(1-W.fk),q?q[0]/sz.cw:.5,0,1],56);}
-  HALL.frames++;HALL.stat=hallLimits(S);HALL.vp=cam.vp;
-  const k0=L.people[0],pw=hallWalkPilot(),pa=pw?[pw[0],pw[1]]:null,f=sz.wide?sz.ch:sz.ch;
+  HALL.frames++;HALL.S=S;HALL.vp=cam.vp;   /* пределы — hallLimits(HALL.S) по запросу теста, не в кадре (M816c) */
+  const k0=L.people[0],pw=hallWalkPilot(),pa=pw?[pw[0],pw[1]]:null,f=sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};
   hallTagsDraw(L,cam,sz);
   return r3Frame(cn,S,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));

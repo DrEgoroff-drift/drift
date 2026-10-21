@@ -456,6 +456,8 @@ Design: `docs/DESIGN-hall.md` (09.10) — the bones, the seven dressings, the ca
   pilot walks the places (airlock, counter, board, yard window, bench, office, bar); action at a
   place opens its card (≤ 36 % W on a PC, ≤ 55 % H on a phone) beside the thing. M816a the walk,
   M816b the cards, M816c cost and the phone. Builder: remake-a3, next after the home's fixes.
+  M816d the film night in the bar by the engine: when `kinoHere()`, a screen on the bar wall plays
+  `KINO_REEL` and lights the audience (the 2D strip that drew it is gone since M816c).
 
 ### Stage C — flight (M820–M829)
 
