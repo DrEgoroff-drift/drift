@@ -24,6 +24,7 @@ def main():
     ap.add_argument("--wait", type=float, default=3, help="seconds of steady mode before the snippet")
     ap.add_argument("--port", type=int, default=9702)
     ap.add_argument("--profile", type=float, default=0, help="seconds of JS profile after the snippet: who eats frames over 33 ms")
+    ap.add_argument("--all", action="store_true", help="--profile counts every sample, not only frames over 33 ms")
     ap.add_argument("--ws", type=float, default=300, help="CDP socket timeout, seconds: a long snippet needs more")
     a = ap.parse_args()
     if a.js.startswith("@"): a.js = open(a.js[1:], encoding="utf-8").read()   # сниппет файлом: кавычки консоли его не портят
@@ -79,7 +80,7 @@ def main():
             ROOTS = {"(root)", "(program)", "(анон)", "frame", "frameBody"}
             for nid, dt in zip(P["samples"], P["timeDeltas"]):
                 ts += dt; t = off + (ts - P["startTime"]) / 1000.0
-                if not any(a0 - 2 <= t <= a1 for a0, a1 in longs): continue
+                if not a.all and not any(a0 - 2 <= t <= a1 for a0, a1 in longs): continue
                 n0 = nm(nodes.get(nid, {}))
                 if n0 == "(idle)": continue
                 own[n0] = own.get(n0, 0) + .25
