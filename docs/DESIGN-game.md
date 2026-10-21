@@ -620,6 +620,23 @@ a «Стриж» and a kill for a warship, as §2 wanted. The remaining gaps:
 - **Stakes.** With §5.1 the fight has a cost; the salvage (the tow after a kill) is the money, a
   captured hull is access (§4.4), the bounty stays small.
 
+**Built 22.10 (M902c, `28r-fight`).** The slow-hull gap was a bug, not tuning: under 30 % hull the
+jackal re-entered his break every frame, and past 650 px the break handed over to a dash that the
+next frame turned back into a break — a hurt jackal flew nose-away for ever. The break under 30 %
+now fires once (`13c-roles`). After the fix every flying row resolves: «Вьюк» w2 at .2 kills in
+16.6 s (flank) and 7.8 s (orbit); the .8 orbit row, unresolved before, takes 17.4 s. The flee
+jump shows «УХОДИТ · N С» under the pirate's name while the clock runs. Rank was already on the
+hull as the name's prefix. «ОТПУСТИТЬ» is X, or ЦЕЛЬ held for 0.6 s (the press has already cycled
+the lock, so the pirate locked before the press is the one let go): a jackal takes the cheapest
+slot, a veteran the dearest, a captain the two dearest (there are no hands aboard — hands fly
+their own hulls), a baron, a renegade, a hunter and a rival do not deal; the pirate turns away,
+holds fire and jumps a second later; one КНИЖКА line in his voice. The duel: a row under the
+стрельбище, 50 cr, a real pirate of the next unbeaten rank (jackal, veteran, captain) at danger
+.5; under a quarter he yields; no bounty; «сбит» ends the duel with the hull returned; the best
+time per rank persists (`G.duel`). Marks are the probe's flank/orbit bounds: 17, 18, 38 s. Not
+done: shield type by where it glows, the rear hit as a brighter hit (pictures, for the remake).
+Tests: `tests/91zzzw9j-fight.js`.
+
 ---
 
 ## 9. The hostile read — what is wrong with §1–§8
@@ -783,7 +800,7 @@ read §2, §10 and the one section named in their brief. Tests live beside the t
 | M | what | gate |
 |---|---|---|
 | M901 | `tests/91zzzw-fightsim.js` — the duel measured under Node — **done 09.10** | the table of TTK / hits / hull by hull × gun × rank × danger |
-| M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
+| M902 | a/b **done 09.10** (cap, jump, captain, jammer); c: the slow-hull TTK at .2, readability, the стрельбище duel, «ОТПУСТИТЬ» (§8, §10.6) **done 22.10 (`28r-fight`)** | the §8 table holds as `91zzzw-duel` asserts; the стрельбище sells the duel |
 | M903 | the economy probe `tests/91zzzw4-ecosim.js` — **measured 14.10, §4.1a**: net 2.6–3.7× the oracle, U/G .06–.24 | the §4.1 oracles within ±20 %; a «Вьюк» lap ≤ 900 |
 | M904 | the bill (§10.1) and manager wages to the player — **a done 14.10 (0.494.0, T2 U/G .22, T3 .36)**; b the ledger (§5.2) and c Страхкасса with hull loss (§5.1) **done 14.10 (0.495.0)** — debt is its own number, not credits below zero (twenty `min(credits, x)` sites); d the gross lever and the bad hour **done 14.10 (0.496.0, §4.1a): good T2 hour +14 900, uninsured wreck −14 500** | the bot at T2 ends a bad hour negative and a good hour +15 000; the floor holds |
 | M905 | the participation, the диспетчер, the norm line, the handover, reassignment (§3.2–3.4, §10.2–10.5) **done 14.10 (0.497.0)**: `28j-watch`, `28k-offline`, the faucet in `12ab-hold` | the bot's norm moves with filled needs; handover stops every clock |
@@ -810,6 +827,14 @@ real-time simulation while away (lazy with cap, as `DECISIONS.md:53`).
 - **F4 · Orders expire into faces, not log lines.** Default: yes. Price if refused: D2 is gone.
 - **F5 · The norm.** Closest thing to a progress number the game has ever had. Default: one line
   per сводка, paper only. Price if refused: nothing at the top says what to do next.
+- **F6 · Who is a hand (M911).** Default: only an idle hired hand with a ship and no order takes
+  the second side of a paper; the four of the settlement (Гуся, Рыба, Гвоздь, Птица) do not, and
+  «Гуся's order is carried yourself» is not built. Price if refused: the four need their own
+  availability and a voice per job, and Гуся's order needs a paper that refuses the hand.
+- **F7 · The counter's floor (M908).** Default: the counter stays 3 % (at least 1 cr) above the
+  buyback, but a rung never makes it dearer than without the rungs (cap at the price before the
+  buyback lever); the rung's promise wins over the 3 %. Price: on narrow-spread goods the top
+  rungs leave the counter at base with a 1 cr spread.
 
 ---
 

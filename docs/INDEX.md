@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 630 · top-level symbols: 8894
+Files: 632 · top-level symbols: 8915
 
 ## SYMBOLS
 
@@ -594,6 +594,8 @@ DS_BAD                       src/12p1-doublespeak.js:18-25
 DS_DELAY                     src/12p1-doublespeak.js:26
 DS_GOOD                      src/12p1-doublespeak.js:10-17
 DS_Q                         src/12p1-doublespeak.js:27
+DUEL_FEE                     src/28r-fight.js:14
+DUEL_RANKS                   src/28r-fight.js:16
 DUST_COL                     src/16a-space.js:250
 DUST_LAYERS                  src/16a-space.js:272
 DUST_TAB                     src/16a-space.js:251
@@ -650,6 +652,7 @@ FAUCET_FLOOR                 src/12ab-hold.js:154
 FAUNA_RES                    src/02-world.js:137
 FG_BK                        src/21e3-surface-stand-gpu.js:115
 FG_MAN                       src/21b-surface-deco.js:268
+FIGHT_HOOKS                  src/28r-fight.js:127-155
 FIGHT_LENS                   src/17p-cam-frame.js:32
 FIGHT_LENS_MAX               src/17p-cam-frame.js:33
 FIND_BUCKET                  src/17b-finds.js:17
@@ -1312,7 +1315,10 @@ LAW_NORM_LEFT                src/12al2-laws.js:16
 LEADBREAK                    src/13a-guns.js:42
 LEFT_CACHE                   src/12as-left.js:19
 LEFT_RU                      src/12as-left.js:18
+LETGO_HOLD                   src/28r-fight.js:11
+LETGO_SAY                    src/28r-fight.js:12
 LETTERS                      src/12k-letters.js:18-39
+LG                           src/28r-fight.js:61
 LGF                          src/19g-landing-gpu.js:250
 LGL                          src/19g-landing-gpu.js:364
 LGR                          src/19g-landing-gpu.js:92
@@ -4057,7 +4063,7 @@ drawCaveWorld                src/22-mode-cave.js:657-733
 drawCheburek                 src/17j-cheburek.js:78-109
 drawChunks                   src/18c-chunks.js:90-96
 drawCockpit                  src/25-cockpit.js:405-680
-drawCombat                   src/13-pirates.js:378-483
+drawCombat                   src/13-pirates.js:378-486
 drawCosmMark                 src/12va-wander-cosm.js:112-132
 drawCrowns                   src/05a-nodes.js:379-414
 drawCrystalForest            src/20aa-poi-shapes.js:114-140
@@ -4225,6 +4231,13 @@ droneTarget                  src/12-economy.js:331
 droneTripMs                  src/12e-drone-flight.js:118-126
 dsDeed                       src/12p1-doublespeak.js:28-32
 dsTick                       src/12p1-doublespeak.js:33-42
+duelEnd                      src/28r-fight.js:106-120
+duelFoe                      src/28r-fight.js:86
+duelNext                     src/28r-fight.js:84
+duelOn                       src/28r-fight.js:85
+duelRestore                  src/28r-fight.js:121-126
+duelSt                       src/28r-fight.js:83
+duelStart                    src/28r-fight.js:87-105
 dustMotesGpu                 src/21e3-surface-stand-gpu.js:65-79
 dustTable                    src/16a-space.js:252-265
 e2eClickables                tests/91zzzzz-e2e-life.js:61
@@ -4487,10 +4500,11 @@ fridgeFee                    src/21ac4-base-fridge.js:19
 fridgeFirmAt                 src/21ac4-base-fridge.js:15-18
 fridgeLocked                 src/21ac4-base-fridge.js:36
 fridgeStep                   src/21ac4-base-fridge.js:37-56
+ftFoe                        tests/91zzzw9j-fight.js:4-12
 fuelPriceHere                src/12k-rep.js:63-70
 furColor                     src/20f-fauna.js:25-34
 fuseAffordable               src/03-ships.js:38-41
-fuseCard                     src/26b-ui-station-work.js:352-388
+fuseCard                     src/26b-ui-station-work.js:364-400
 fuseCost                     src/03-ships.js:33-37
 fuseGen                      src/03-ships.js:32
 fusePreview                  src/03-ships.js:46-63
@@ -5798,6 +5812,13 @@ leftThank                    src/12as-left.js:111-116
 leftThankNear                src/12as-left.js:182-189
 leftWorn                     src/12as-left.js:72-84
 lerp                         src/01-core.js:22
+letGo                        src/28r-fight.js:38-53
+letGoGone                    src/28r-fight.js:55-60
+letGoKey                     src/28r-fight.js:62-67
+letGoPad                     src/28r-fight.js:70-80
+letGoSlots                   src/28r-fight.js:19-23
+letGoTerms                   src/28r-fight.js:29-37
+letGoWho                     src/28r-fight.js:24-28
 letterAddresseeHere          src/12k-letters.js:78-82
 letterDeliver                src/12k-letters.js:83-98
 letterOfferHere              src/12k-letters.js:63-69
@@ -6646,7 +6667,7 @@ pirateClass                  src/12i-pirate-hull.js:47-52
 pirateFellTo                 src/13-combat.js:76-84
 pirateHas                    src/13d-loadout.js:34-37
 pirateLoadout                src/13d-loadout.js:33
-pirateRoleTick               src/13c-roles.js:54-143
+pirateRoleTick               src/13c-roles.js:54-145
 pirateShipId                 src/13-pirates.js:20-27
 pl3                          src/01-core.js:109-115
 plLand                       tests/90a-tools.js:735-741
@@ -8220,11 +8241,11 @@ stSpin                       src/17c3-station-live.js:50-53
 stSpinCv                     src/17c3-station-live.js:56-62
 stSplit                      src/17c3-station-live.js:20
 stTabBoard                   src/26e-ui-station-trade.js:11-148
-stTabFuse                    src/26b-ui-station-work.js:389
-stTabInstr                   src/26b-ui-station-work.js:231-388
-stTabLab                     src/26b-ui-station-work.js:320-388
+stTabFuse                    src/26b-ui-station-work.js:401
+stTabInstr                   src/26b-ui-station-work.js:243-400
+stTabLab                     src/26b-ui-station-work.js:332-400
 stTabMarket                  src/26e-ui-station-trade.js:149-277
-stTabMods                    src/26b-ui-station-work.js:105-388
+stTabMods                    src/26b-ui-station-work.js:105-400
 stTabYard                    src/26e-ui-station-trade.js:278-431
 stTabsHere                   src/26-ui-station.js:175
 stTypeOf                     src/06-galaxy.js:69
@@ -10410,7 +10431,7 @@ zoomTo                       src/15-input.js:358
 ## src/26a-ui-station-home.js · 22 KB
   · станция: вкладка «дом и базы»:1
 
-## src/26b-ui-station-work.js · 29 KB
+## src/26b-ui-station-work.js · 30 KB
   · станция: мастерская и наука:1
 
 ## src/26c-ui-station-site.js · 9 KB
@@ -10610,6 +10631,9 @@ zoomTo                       src/15-input.js:358
 ## src/28q-fork.js · 14 KB
   · развилки: дело — сам или рукой; засечки; Клинок (M911, DESIGN-game §7.2, §7.4):1
 
+## src/28r-fight.js · 10 KB
+  · бой: второй глагол и дуэль (M902c, DESIGN-game §8, §10.6):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10795,6 +10819,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9h-doors.js · 12 KB
 
 ## tests/91zzzw9i-fork.js · 9 KB
+
+## tests/91zzzw9j-fight.js · 7 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
