@@ -33,7 +33,7 @@ function sectPal(k,kind){
   const cold=!!SECT_COLD[k],lamp=cold?[.85,.93,1]:[1,.84,.6];
   if(k==="garden"||k==="vat")return {wall:[.36,.40,.26],floor:[.15,.10,.06],ceil:[.24,.25,.20],trim:[.22,.2,.12],lamp};
   if(SECT_LIVE[k])return {wall:[.52,.42,.29],floor:[.09,.13,.21],ceil:[.40,.34,.25],trim:[.30,.19,.10],lamp};
-  return {wall:[.30,.33,.36],floor:[.12,.12,.13],ceil:[.24,.26,.28],trim:[.16,.17,.18],lamp};
+  return {wall:[.40,.41,.42],floor:[.12,.12,.13],ceil:[.30,.31,.32],trim:[.16,.17,.18],lamp};
 }
 function sectX(px){return (px-BASE_OX)/BCELL_W*SECT_M.cw;}
 function sectY(py){return -(py-BASE_OY)/BCELL_H*SECT_M.ch;}
@@ -171,6 +171,8 @@ function sectBuild(B,eff){
     }
     /* сиденье там, где человек садится (жилой, лаборатория, медпункт, лавка) */
     if(SECT_SIT[cell.k])sectBox(m,lx-.75,lx+.55,y0,y0+PLN_MAN_SIT,M.z+.25,M.z+.85,[.20,.15,.11],PLN_MAT.man,{skip:"y"});
+    /* убранство рода (21aea, M632b) */
+    sectKit(m,cell.k,x0,x1,y0,y1,dp,!dead&&eff>0,mul,r*BASE_COLS+c);
   }
   /* ствол: два рельса на задней стене, огни ярусов */
   for(const rx of [M.sh0+.55,M.sh1-.55])sectBox(m,rx-.07,rx+.07,sectFloor(R-1),M.surf+5.6,3.9,4.1,[.42,.43,.45],PLN_MAT.man);
