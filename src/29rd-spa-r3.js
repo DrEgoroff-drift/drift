@@ -201,7 +201,7 @@ function spa3Frame(){
   SPA3.frames++;SPA3.stat=hallLimits(Sc);SPA3.vp=cam.vp;SPA3.sz=sz;
   SPA3.meas={man:+hallManK(cam,SPA3_MAN[0],SPA3_MAN[1],sz.ch).toFixed(3),sun:+spa3Sun(S).toFixed(2),day:S.day,sleep:+spa3SleepPh().toFixed(2)};
   SPA3.hit=spa3Hits(S,cam,sz);
-  room3TagsDraw(spa3Tags(S),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.cw-12,yr:sz.ch-(sz.wide?150:230)},SPA3.tags,spa3SleepPh()>0);
+  room3TagsDraw(spa3Tags(S),cam,{cw:sz.cw,ch:sz.ch,wide:sz.wide,xr:sz.wide?sz.cw-200*UIK:sz.cw-170,yr:sz.ch-(sz.wide?150:230)},SPA3.tags,spa3SleepPh()>0);
   return r3Frame(cn,Sc,(pl,Sv,Vv,Bv)=>rpgField(R,pl,"r3post",R3_POST_WGSL,U,[Sv,lab,Vv,Bv]));
 }
 function spa3Tags(S){return [{p:[SPA3_CH2[0]-.2,.62,SPA3_CH2[1]+.2],t:"СПАТЬ",s:"день "+S.day+" из "+S.days,c:""}];}
