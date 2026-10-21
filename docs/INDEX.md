@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 620 · top-level symbols: 8739
+Files: 622 · top-level symbols: 8810
 
 ## SYMBOLS
 
@@ -543,6 +543,23 @@ DIR_THEMES                   src/12am-chron-director.js:57
 DIR_VEIN                     src/21a5-base-dir.js:29
 DIR_WORTH                    src/21a5-base-dir.js:25
 DIR_WORTH_CAP                src/21a5-base-dir.js:26
+DISP_ACC                     src/28m-dispatch.js:29
+DISP_DOCKING                 src/28m-dispatch.js:321
+DISP_KINDS                   src/28m-dispatch.js:25
+DISP_LIFE                    src/28m-dispatch.js:24
+DISP_NAMES                   src/28m-dispatch.js:26
+DISP_OLD_APPLY               src/28m-dispatch.js:410
+DISP_OLD_ARRIVE              src/28m-dispatch.js:334
+DISP_OLD_BOARD               src/28m-dispatch.js:405
+DISP_OLD_CANT                src/28m-dispatch.js:344
+DISP_OLD_CLOSE               src/28m-dispatch.js:346
+DISP_OLD_KILL                src/28m-dispatch.js:342
+DISP_OLD_MGR                 src/28m-dispatch.js:348
+DISP_OLD_OPEN                src/28m-dispatch.js:332
+DISP_OLD_SNAP                src/28m-dispatch.js:408
+DISP_OLD_SURF                src/28m-dispatch.js:340
+DISP_V                       src/28m-dispatch.js:31-52
+DISP_WIN                     src/28m-dispatch.js:23
 DLID                         src/08bh-gpu-hud.js:14
 DMG_KEYS                     src/05c-arms.js:35
 DMG_TYPES                    src/05c-arms.js:24-34
@@ -2538,7 +2555,7 @@ applyVolumes                 src/09-audio.js:40-47
 arcHit                       src/13a-guns.js:337-354
 armedCount                   src/13-combat.js:237
 arrive                       src/16-flight.js:172-210
-arriveSystem                 src/18-mode-map.js:713-764
+arriveSystem                 src/18-mode-map.js:722-773
 artGet                       src/08ca-gpu-canvas.js:550
 artPut                       src/08ca-gpu-canvas.js:551-696
 asMap                        src/14-save.js:209-215
@@ -3860,6 +3877,60 @@ dirAt                        src/01-core.js:166-171
 dirGoodShare                 src/21a5-base-dir.js:67-72
 dirPool                      src/21a5-base-dir.js:44-48
 dirWeights                   src/21a5-base-dir.js:55-66
+dispAdvance                  src/28m-dispatch.js:259-267
+dispAlarm                    src/28m-dispatch.js:352-359
+dispCheck                    src/28m-dispatch.js:268-273
+dispDock                     src/28m-dispatch.js:322-331
+dispDone                     src/28m-dispatch.js:274-289
+dispFace                     src/28m-dispatch.js:210-215
+dispFill                     src/28m-dispatch.js:243-253
+dispGive                     src/28m-dispatch.js:291-303
+dispGood                     src/28m-dispatch.js:83-86
+dispHop                      src/28m-dispatch.js:62
+dispIssue                    src/28m-dispatch.js:219-241
+dispLandable                 src/28m-dispatch.js:81
+dispLane                     src/28m-dispatch.js:361-368
+dispLeg                      src/28m-dispatch.js:256
+dispLegWord                  src/28m-dispatch.js:369-378
+dispMins                     src/28m-dispatch.js:257
+dispMkBring                  src/28m-dispatch.js:89-95
+dispMkCarry                  src/28m-dispatch.js:130-134
+dispMkCasc                   src/28m-dispatch.js:103-109
+dispMkDoc                    src/28m-dispatch.js:135-139
+dispMkDoor                   src/28m-dispatch.js:161-165
+dispMkDouble                 src/28m-dispatch.js:166-172
+dispMkEscort                 src/28m-dispatch.js:146-150
+dispMkLand                   src/28m-dispatch.js:118-129
+dispMkLeave                  src/28m-dispatch.js:173-177
+dispMkPod                    src/28m-dispatch.js:156-160
+dispMkPost                   src/28m-dispatch.js:203-208
+dispMkRepel                  src/28m-dispatch.js:151-155
+dispMkRound                  src/28m-dispatch.js:198-202
+dispMkSos                    src/28m-dispatch.js:178-182
+dispMkTake                   src/28m-dispatch.js:96-102
+dispMkTalk                   src/28m-dispatch.js:140-145
+dispMkTri                    src/28m-dispatch.js:191-197
+dispMkYard                   src/28m-dispatch.js:110-117
+dispNear                     src/28m-dispatch.js:68-80
+dispOn                       src/28m-dispatch.js:318-320
+dispPath                     src/28m-dispatch.js:87
+dispPerson                   src/28m-dispatch.js:216
+dispPick                     src/28m-dispatch.js:82
+dispQ                        src/28m-dispatch.js:65
+dispR10                      src/28m-dispatch.js:63
+dispRow                      src/28m-dispatch.js:379-396
+dispRu                       src/28m-dispatch.js:64
+dispSection                  src/28m-dispatch.js:397-403
+dispSn                       src/28m-dispatch.js:66
+dispSt                       src/28m-dispatch.js:53-60
+dispSysOf                    src/28m-dispatch.js:61
+dispTestDock                 tests/91zzzw9e-dispatch.js:9-12
+dispTestStations             tests/91zzzw9e-dispatch.js:4-8
+dispThree                    src/28m-dispatch.js:184-190
+dispTick                     src/28m-dispatch.js:305-316
+dispUrg                      src/28m-dispatch.js:351
+dispUrgOk                    src/28m-dispatch.js:255
+dispW                        src/28m-dispatch.js:218
 dispatchEtherLine            src/12ag-holdfx.js:57-76
 dkPaper                      src/27ia-desk-top.js:37-45
 dkRule                       src/27ia-desk-top.js:46-52
@@ -3985,7 +4056,7 @@ drawLoreMarks                src/12q-lore.js:235-262
 drawLuxeDeck                 src/03c-hull-luxe.js:109-275
 drawLuxeSkin                 src/03c-hull-luxe.js:27-108
 drawMap                      src/18-mode-map.js:219-222
-drawMapIn                    src/18-mode-map.js:223-662
+drawMapIn                    src/18-mode-map.js:223-671
 drawMisFigure                src/11z-misclosure.js:63-87
 drawModuleBody               src/21aa-base-rooms.js:494-502
 drawModuleFloor              src/21aa-base-rooms.js:547-573
@@ -5480,7 +5551,7 @@ jobOffer                     src/12e-mgr-jobs.js:228-240
 jobPick                      src/12e-mgr-jobs.js:259-282
 jobRefuse                    src/12e-mgr-jobs.js:57-66
 jobTick                      src/12e-mgr-jobs.js:287-296
-jump                         src/18-mode-map.js:700-708
+jump                         src/18-mode-map.js:709-717
 jumpToBase                   src/21a-mode-base.js:386-403
 kbCellMap                    src/27jb-kb.js:32
 kbClose                      src/27jb-kb.js:220
@@ -5810,7 +5881,7 @@ mapCellXY                    src/18a-map-addr.js:52
 mapCleanSet                  src/18-mode-map.js:187
 mapCourseDash                src/18l-map-plate.js:40-47
 mapDeck                      src/18-mode-map.js:14-18
-mapDryWord                   src/18-mode-map.js:674
+mapDryWord                   src/18-mode-map.js:683
 mapFace                      src/18l-map-plate.js:13
 mapFit                       src/18-mode-map.js:155-160
 mapFont                      src/18-mode-map.js:43
@@ -5827,8 +5898,8 @@ mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:56
 mapInkPoly                   src/18-mode-map.js:54
 mapInkText                   src/18-mode-map.js:58
-mapJump                      src/18-mode-map.js:675-684
-mapJumpCost                  src/18-mode-map.js:669-672
+mapJump                      src/18-mode-map.js:684-693
+mapJumpCost                  src/18-mode-map.js:678-681
 mapLate                      src/18-mode-map.js:62
 mapLateFlush                 src/18-mode-map.js:72-105
 mapLayer                     src/18b-map-hold.js:26
@@ -8406,7 +8477,7 @@ updateCombat                 src/13-pirates.js:123-316
 updateDig                    src/23-mode-dig.js:147-256
 updateHomeIn                 src/29c-home-in.js:160-200
 updateLanding                src/19-mode-landing.js:73-145
-updateMap                    src/18-mode-map.js:685-699
+updateMap                    src/18-mode-map.js:694-708
 updateRaid                   src/24a-mode-raid.js:300-430
 updateRail                   src/18g-rail-ride.js:65-112
 updateScoop                  src/19a-mode-scoop.js:79-180
@@ -10441,6 +10512,9 @@ zoomTo                       src/15-input.js:358
 ## src/28l-gauge.js · 17 KB
   · три шкалы станции и каскад (M906 · DESIGN-game §4.2, §7.1):1
 
+## src/28m-dispatch.js · 28 KB
+  · диспетчер: дело есть всегда (M907 · DESIGN-game §4.3):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10616,6 +10690,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9c-offline.js · 3 KB
 
 ## tests/91zzzw9d-gauge.js · 8 KB
+
+## tests/91zzzw9e-dispatch.js · 8 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
