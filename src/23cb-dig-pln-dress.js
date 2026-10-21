@@ -6,15 +6,16 @@
    Статичное собирается одной сеткой и пересобирается, когда выработка изменилась (D.maskV);
    клеть — одна запись экземпляра, канат — два кольца в своём буфере, их пишут каждый кадр. */
 const DIG3_DR={wood:[.105,.066,.036],woodD:[.062,.04,.022],steel:[.075,.078,.085],rail:[.15,.15,.16],
-  rust:[.13,.065,.03],band:[.62,.2,.03],paint:[.78,.74,.62],lamp:[1,.72,.4],set:1.6,rails:[.82,1.42],lampStep:4};
+  rust:[.13,.065,.03],band:[.62,.2,.03],paint:[.78,.74,.62],steelD:[.038,.04,.044],bolt:[.2,.19,.17],wheel:[.03,.03,.03],lamp:[1,.72,.4],set:1.6,rails:[.82,1.42],lampStep:4};
 
 /* выкопан ли пол под клеткой: штрек стоит на полу, над пустотой — лестница */
 function dig3Floor(F,c,r){return !dig3Dug(F,c,r+1);}
 /* доска с цифрами краской: семь брусков на знак (a верх, b c правые, d низ, e f левые, g середина);
    середина доски — (x, y), лицо — к разрезу на глубине z */
-const DIG3_SEG={"0":"abcdef","1":"bc","2":"abdeg","3":"abcdg","4":"bcfg","5":"acdfg","6":"acdefg","7":"abc","8":"abcdefg","9":"abcdfg","-":"g"};
+/* семёрка с крючком (f), как на счётах: с одной верхней чертой она на телефоне читалась единицей («−27» как «−21») */
+const DIG3_SEG={"0":"abcdef","1":"bc","2":"abdeg","3":"abcdg","4":"bcfg","5":"acdfg","6":"acdefg","7":"abcf","8":"abcdefg","9":"abcdfg","-":"g"};
 function dig3DepthBoard(box,x,y,z,txt,K){
-  const h=.3,w=.16,t=.04,gap=.08,W=txt.length*w+(txt.length-1)*gap;
+  const h=.34,w=.2,t=.06,gap=.08,W=txt.length*w+(txt.length-1)*gap;
   box(x-W/2-.14,x+W/2+.14,y-h/2-.12,y+h/2+.12,z-.04,z+.02,K.woodD);
   box(x-W/2-.16,x+W/2+.16,y-h/2-.14,y-h/2-.1,z-.06,z+.02,K.steel);
   const zf=z-.06,zb=z-.04;
@@ -91,7 +92,68 @@ function dig3DressMesh(F){
 }
 
 /* вагонетка в клети: короб x ±w, по высоте y0..y1 над полом клети, вглубь z0..z1 (за человеком, z 1.1) */
-const DIG3_TUB={w:.62,y0:.12,y1:.62,z0:1.38,z1:1.9};
+const DIG3_TUB={w:.62,wb:.5,y0:.27,y1:.72,z0:1.38,z1:1.9,wr:.1,wx:.34,rail:.05};
+/* шестигранник по восьми углам в порядке dig3Box (низ z0: 0 1, верх z0: 3 2; z1 — 4..7); нормали — от граней */
+function dig3Hex(m,P,col,mat){
+  const F6=[[0,3,2,1],[4,5,6,7],[0,4,7,3],[1,2,6,5],[3,7,6,2],[0,1,5,4]],M=mat==null?PLN_MAT.bark:mat;
+  for(const f of F6){
+    const n=plnNorm(plnCross(plnSub(P[f[1]],P[f[0]]),plnSub(P[f[3]],P[f[0]])));
+    const q=f.map(i=>plnVert(m,P[i],n,col,M));plnQuad(m,q[0],q[1],q[2],q[3]);
+  }
+}
+/* вагонетка (как в штреке 23a): корыто шире кверху, отбортовка с заклёпками, ребро жёсткости,
+   два колеса на рельсе клети; всё в метрах клети, p — её угол */
+function dig3TubBody(m,p,K){
+  const T=DIG3_TUB,M=PLN_MAT,t=.045,X=x=>x+p[0],Y=y=>y+p[1],Z=z=>z+p[2];
+  const box=(x0,x1,y0,y1,za,zb,col)=>dig3Box(m,X(x0),X(x1),Y(y0),Y(y1),Z(za),Z(zb),col);
+  /* полстенки по x на высоте y: корыто раскрывается от wb у дна до w у борта */
+  const hx=y=>T.wb+(T.w-T.wb)*(y-T.y0)/(T.y1-T.y0);
+  const slab=(sx,za,zb)=>{   /* боковая стенка: наклонная плита от дна до борта */
+    const a=sx*T.wb,b=sx*T.w,ai=a-sx*t,bi=b-sx*t;
+    const P=sx<0?[[a,T.y0,za],[ai,T.y0,za],[bi,T.y1,za],[b,T.y1,za],[a,T.y0,zb],[ai,T.y0,zb],[bi,T.y1,zb],[b,T.y1,zb]]
+                :[[ai,T.y0,za],[a,T.y0,za],[b,T.y1,za],[bi,T.y1,za],[ai,T.y0,zb],[a,T.y0,zb],[b,T.y1,zb],[bi,T.y1,zb]];
+    dig3Hex(m,P.map(q=>[X(q[0]),Y(q[1]),Z(q[2])]),K.rust,M.bark);
+  };
+  const face=(za,zb)=>{       /* торец: трапеция */
+    const P=[[-T.wb,T.y0,za],[T.wb,T.y0,za],[T.w,T.y1,za],[-T.w,T.y1,za],[-T.wb,T.y0,zb],[T.wb,T.y0,zb],[T.w,T.y1,zb],[-T.w,T.y1,zb]];
+    dig3Hex(m,P.map(q=>[X(q[0]),Y(q[1]),Z(q[2])]),K.rust,M.bark);
+  };
+  box(-T.wb,T.wb,T.y0,T.y0+.05,T.z0,T.z1,K.rust);
+  face(T.z0,T.z0+t);face(T.z1-t,T.z1);slab(-1,T.z0,T.z1);slab(1,T.z0,T.z1);
+  /* отбортовка: стальной пояс поверх борта, чуть шире корыта */
+  const rw=T.w+.035,ry0=T.y1-.035,ry1=T.y1+.03;
+  box(-rw,rw,ry0,ry1,T.z0-.03,T.z0+.02,K.steel);box(-rw,rw,ry0,ry1,T.z1-.02,T.z1+.03,K.steel);
+  box(-rw,-T.w+.01,ry0,ry1,T.z0-.03,T.z1+.03,K.steel);box(T.w-.01,rw,ry0,ry1,T.z0-.03,T.z1+.03,K.steel);
+  /* ребро жёсткости поперёк торца и угловые накладки — тёмный металл по ржавчине */
+  const ym=(T.y0+T.y1)*.5-.02,xm=hx(ym);
+  box(-xm,xm,ym-.025,ym+.025,T.z0-.018,T.z0+.005,K.steelD);
+  for(const sx of [-1,1]){
+    const x0=sx*hx(T.y0+.06),x1=sx*hx(T.y1-.04);
+    plnTube(m,{path:[[X(x0-sx*.03),Y(T.y0+.06),Z(T.z0-.012)],[X(x1-sx*.03),Y(T.y1-.04),Z(T.z0-.012)]],rad:.024,sides:4,col:K.steelD,mat:M.bark});
+  }
+  /* заклёпки: по отбортовке и по ребру, шаг ~.13 м — точки света на торце */
+  const rv=(x,y)=>box(x-.017,x+.017,y-.017,y+.017,T.z0-.05,T.z0-.025,K.bolt);
+  for(let x=-T.w+.06;x<=T.w-.05;x+=.13)rv(x,(ry0+ry1)/2);
+  for(let x=-xm+.07;x<=xm-.06;x+=.16)rv(x,ym);
+  /* рама и буксы над колёсами */
+  box(-T.wb-.03,T.wb+.03,T.y0-.06,T.y0,T.z0-.01,T.z1+.01,K.steelD);
+  /* рельс клети: головка на шейке, по оси колёс, перед и зад */
+  for(const zr of [T.z0+.02,T.z1-.02]){
+    box(-.86,.86,0,.018,zr-.035,zr+.035,K.steelD);
+    box(-.86,.86,.018,T.rail-.016,zr-.008,zr+.008,K.steelD);
+    box(-.86,.86,T.rail-.016,T.rail,zr-.022,zr+.022,K.rail);
+  }
+  /* колёса: диск с ребордой и ступицей, стоит на головке рельса */
+  const wy=T.rail+T.wr;
+  for(const sx of [-1,1])for(const zw of [T.z0-.035,T.z1-.005]){
+    const x=sx*T.wx,za=zw,zb=zw+.04;
+    plnTube(m,{path:[[X(x),Y(wy),Z(za)],[X(x),Y(wy),Z(zb)]],rad:T.wr,sides:12,col:K.wheel,mat:M.bark,cap:true});
+    plnTube(m,{path:[[X(x),Y(wy),Z(zb-.005)],[X(x),Y(wy),Z(zb+.012)]],rad:T.wr+.018,sides:12,col:K.wheel,mat:M.bark,cap:true});
+    plnTube(m,{path:[[X(x),Y(wy),Z(za-.03)],[X(x),Y(wy),Z(za)]],rad:.032,sides:6,col:K.steel,mat:M.bark,cap:true});
+    box(x-.07,x+.07,wy+.02,T.y0-.06,za+.005,zb,K.steelD);
+  }
+}
+
 /* куча руды в вагонетке: камни горкой, верх горки — y1+.22 при полной клети; цвет — от руды (экземпляр) */
 function dig3HeapMesh(){
   const m=plnMesh(1<<14),T=DIG3_TUB,r=rng(0x4EA9),zm=(T.z0+T.z1)/2,zw=(T.z1-T.z0)/2-.16;
@@ -130,13 +192,8 @@ function dig3CageBody(m,p){
   /* сетка задней стенки и боков — частые прутья */
   for(let x=-w+.15;x<w-.1;x+=.16)box(x,x+.02,0,h,z1-.04,z1-.02,K.steel);
   for(const x of [-w,w-.03])for(let z=z0+.15;z<z1-.1;z+=.16)box(x,x+.03,1.12,h,z,z+.02,K.steel);
-  /* вагонетка у задней сетки: в ней руда едет наверх (груз клети, 23cc); короб на раме, колёса */
-  const T=DIG3_TUB;
-  box(-T.w,T.w,T.y0,T.y0+.06,T.z0,T.z1,K.rust);
-  box(-T.w,T.w,T.y0,T.y1,T.z0,T.z0+.05,K.rust);box(-T.w,T.w,T.y0,T.y1,T.z1-.05,T.z1,K.rust);
-  for(const x of [-T.w,T.w-.05])box(x,x+.05,T.y0,T.y1,T.z0,T.z1,K.rust);
-  box(-T.w-.02,T.w+.02,T.y1-.05,T.y1+.01,T.z0-.02,T.z0+.03,K.steel);
-  for(const x of [-T.w+.18,T.w-.3])box(x,x+.12,0,T.y0,T.z0+.02,T.z0+.08,K.steel);
+  /* вагонетка у задней сетки: в ней руда едет наверх (груз клети, 23cc) */
+  dig3TubBody(m,p,K);
   /* подвеска: дуга над крышей и серьга каната */
   const zc=(z0+z1)/2+p[2];
   plnTube(m,{path:[[p[0]-w*.7,p[1]+h+.08,zc],[p[0],p[1]+h+.55,zc],[p[0]+w*.7,p[1]+h+.08,zc]],rad:.04,sides:4,col:K.steel,mat:M.bark});
