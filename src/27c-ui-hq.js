@@ -71,11 +71,6 @@ function renderCantina(){
   const free=G.cantina.list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
   const deals=stationDeals(G.sys).filter(d=>!dealTaken(d.key));
   const folk=(typeof folkShown==="function")?folkShown():null;
-  /* ── зал — всегда, и зал — это ввод (M299) ──
-     Раньше сцена рисовалась только при кандидатах, а под ней всё равно шёл
-     список из четырнадцати блоков. Теперь стойка, люди и дверь — точки
-     нажатия; ниже рисуется только то, во что ткнули. */
-  cantinaScene(free,deals,folk);
   const isDeal=!!cantSel&&cantSel.indexOf("deal:")===0, isFolk=!!cantSel&&cantSel.indexOf("folk:")===0;
   if(cantSel&&cantSel!=="counter"&&!isDeal&&!isFolk&&!free.some(m=>m.id===cantSel))cantSel=null;
   if(isDeal&&!deals.some(d=>"deal:"+d.key===cantSel))cantSel=null;
@@ -221,52 +216,7 @@ function grokBlock(){
    а не только меняет строку списка */
 let cantBubble=null;
 function cantSay(line){cantBubble={line:String(line||"").replace(/^—\s*/,""),t:now()};}
-/* Зал: канва во всю ширину панели, по сидящему тыкают. Перерисовывается своим
-   rAF, пока канва жива и вкладка та же, — иначе цикл продолжал бы крутиться
-   после ухода со вкладки и жёг бы кадр впустую. */
-let cantSel=null, cantHover=null;
-function cantinaScene(list,deals,folk){
-  const wrap=el("div","cant-stage");
-  const cn=document.createElement("canvas");
-  /* кадр зала (M725): выше прежней ленты — люди крупнее, зал глубже; плотность — панели (с зумом --ui),
-     а не только экрана: на ПК при --ui 1.4 зал рисовался в 1/1.4 своего роста и мылился */
-  const cssW=Math.max(320,Math.min(($body.clientWidth||640)-4,980));
-  const cssH=Math.round(clamp(cssW*.36,200,320));
-  const dpr=Math.min(panelNd(),2.5);   /* потолок: зал печётся четырьмя слоями раз в три кадра */
-  cn.width=Math.round(cssW*dpr);cn.height=Math.round(cssH*dpr);cn.__dpr=dpr;
-  cn.className="cant-room";
-  cn.style.cssText="width:100%;height:"+cssH+"px;display:block;cursor:pointer;touch-action:manipulation";
-  wrap.appendChild(cn);
-  $body.appendChild(wrap);
-  /* выбор мог указывать на человека, которого уже наняли, или на дело,
-     на которое уже ответили: и то и другое просто снимается */
-  /* стойка и завсегдатай — тоже выбор (M299); сверка с залом делается в renderCantina */
-  if(cantSel&&cantSel!=="counter"&&cantSel.indexOf("folk:")!==0&&cantSel.indexOf("deal:")!==0&&!list.some(m=>m.id===cantSel))cantSel=null;
-  if(cantSel&&cantSel.indexOf("deal:")===0&&
-     !(deals||[]).some(d=>("deal:"+d.key)===cantSel))cantSel=null;
-  let hits=[];
-  const pick=ev=>{
-    const r=cn.getBoundingClientRect();
-    const px=(ev.clientX-r.left)/r.width*cn.width/dpr;
-    const py=(ev.clientY-r.top)/r.height*cn.height/dpr;
-    return (hits.find(h=>px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h)||{}).id||null;
-  };
-  cn.onmousemove=ev=>{cantHover=pick(ev);};
-  cn.onmouseleave=()=>{cantHover=null;};
-  cn.onclick=ev=>{
-    const id=pick(ev);
-    /* повторное касание того же человека закрывает карточку — так зал снова
-       виден целиком, и не приходится искать кнопку «назад» */
-    cantSel=(id&&id===cantSel)?null:id;
-    sfx("ui");renderTab();
-  };
-  const frame=()=>{
-    if(!cn.isConnected||tab!=="cantina")return;
-    hits=drawCantinaRoom(cn,list,cantSel,cantHover,deals,folk);
-    requestAnimationFrame(frame);
-  };
-  frame();
-}
+let cantSel=null;
 /* ── экран ШТАБ ── */
 function hqBtnTick(){
   const b=document.getElementById("hqbtn");if(!b)return;
