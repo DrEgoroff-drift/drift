@@ -3021,6 +3021,7 @@ body.rackon #prompt{opacity:0}
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.lf::after{left:auto;right:-2px}
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.lf::before{left:auto;right:-5px}
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg{padding:0;background:none;border:0;box-shadow:none}
+:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg.r{text-align:right}
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg::before,:is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg::after{display:none}
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg b{font-size:11px;font-weight:500;letter-spacing:.2em;color:rgba(168,178,192,.62)}
 :is(#room3Tags,#home3Tags,#win3Tags,#spa3Tags) .ht.sg s{font-size:10px;color:rgba(168,178,192,.42)}
