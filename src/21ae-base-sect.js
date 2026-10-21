@@ -33,7 +33,7 @@ function sectPal(k,kind){
   const cold=!!SECT_COLD[k],lamp=cold?[.85,.93,1]:[1,.84,.6];
   if(k==="garden"||k==="vat")return {wall:[.36,.40,.26],floor:[.15,.10,.06],ceil:[.24,.25,.20],trim:[.22,.2,.12],lamp};
   if(SECT_LIVE[k])return {wall:[.52,.42,.29],floor:[.09,.13,.21],ceil:[.40,.34,.25],trim:[.30,.19,.10],lamp};
-  return {wall:[.30,.33,.36],floor:[.12,.12,.13],ceil:[.24,.26,.28],trim:[.16,.17,.18],lamp};
+  return {wall:[.40,.41,.42],floor:[.12,.12,.13],ceil:[.30,.31,.32],trim:[.16,.17,.18],lamp};
 }
 function sectX(px){return (px-BASE_OX)/BCELL_W*SECT_M.cw;}
 function sectY(py){return -(py-BASE_OY)/BCELL_H*SECT_M.ch;}
@@ -52,12 +52,13 @@ function sectFarWin(B,asp){
   const need=(M.surf-bot)/(1-M.sky),Hf=Math.max((x1-x0)/asp,need),t=M.surf+M.sky*Hf+(Hf-need)*(1-M.sky)*.45;
   return {cx:(x0+x1)/2,cy:t-Hf/2,Hf};
 }
-/* ближний: 2.3 клетки, комната человека посередине; на телефоне — клетка с запасом, вслед за человеком */
-function sectNearWin(S,asp,mx){
+/* ближний: 2.3 клетки, комната человека посередине; на телефоне — клетка с запасом, вслед за человеком;
+   в стволе окно едет за клетью по высоте (my — пол под ногами), иначе стоит на ряду */
+function sectNearWin(S,asp,mx,my){
   const M=SECT_M,ph=W<=760;
   const Hf=ph?clamp(M.phone/asp,M.nearMin,M.phoneMax):clamp(M.near*M.cw/asp,M.nearMin,M.nearMax);
   const r=Math.max(0,Math.round((S.y-BASE_OY)/BCELL_H-.5));
-  return {cx:ph?mx:sectRoomX(S.cur|0),cy:sectFloor(r)+1.9,Hf};
+  return {cx:ph?mx:sectRoomX(S.cur|0),cy:((S.cur|0)<0&&my!=null?my:sectFloor(r))+1.9,Hf};
 }
 /* доля роста человека в высоте окна (для ворот) */
 function sectShare(L){return L?1.8/L.Hf:0;}
@@ -171,6 +172,8 @@ function sectBuild(B,eff){
     }
     /* сиденье там, где человек садится (жилой, лаборатория, медпункт, лавка) */
     if(SECT_SIT[cell.k])sectBox(m,lx-.75,lx+.55,y0,y0+PLN_MAN_SIT,M.z+.25,M.z+.85,[.20,.15,.11],PLN_MAT.man,{skip:"y"});
+    /* убранство рода (21aea, M632b) */
+    sectKit(m,cell.k,x0,x1,y0,y1,dp,!dead&&eff>0,mul,r*BASE_COLS+c);
   }
   /* ствол: два рельса на задней стене, огни ярусов */
   for(const rx of [M.sh0+.55,M.sh1-.55])sectBox(m,rx-.07,rx+.07,sectFloor(R-1),M.surf+5.6,3.9,4.1,[.42,.43,.45],PLN_MAT.man);
@@ -218,7 +221,7 @@ function sectGeo(B,eff){
 function sectLensStep(S,B,asp,mx,my,t,dt,first){
   const M=SECT_M;
   if(first){
-    SECT.b=S;SECT.t0=t;SECT.far=W>760?1:0;SECT.ent=1;SECT.cx=null;SECT.idle=0;SECT.cageY=null;
+    SECT.b=S;SECT.t0=t;SECT.far=W>760?1:0;SECT.ent=1;SECT.cx=null;SECT.cy=null;SECT.idle=0;SECT.cageY=null;
     /* вход без среза: окно хода по грунту — его высота и место человека в нём */
     const hs=typeof PLN==="object"&&PLN.cam&&PLN.cam.hs?PLN.cam.hs/PLN_M:null,Hf0=hs&&isFinite(hs)?hs:sectNearWin(S,asp,mx).Hf;
     SECT.lens0={cx:mx,cy:my+Hf0*.2,Hf:Hf0};
@@ -228,9 +231,10 @@ function sectLensStep(S,B,asp,mx,my,t,dt,first){
   const fw=SECT.farPin!=null?SECT.farPin:W<=760?0:(S.menu||(S.cur|0)<0||t-SECT.t0<M.hold*1000)?1:0;
   SECT.far=SECT.farPin!=null?fw:SECT.far+clamp(fw-SECT.far,-dt/M.glide,dt/M.glide);
   SECT.ent=Math.max(0,SECT.ent-dt/M.glide);
-  const Fw=sectFarWin(B,asp),Nw=sectNearWin(S,asp,mx);
-  SECT.cx=SECT.cx==null||SECT.farPin!=null?Nw.cx:SECT.cx+(Nw.cx-SECT.cx)*(1-Math.exp(-dt/.35));
-  Nw.cx=SECT.cx;
+  const Fw=sectFarWin(B,asp),Nw=sectNearWin(S,asp,mx,my),ek=1-Math.exp(-dt/.35),pin=SECT.farPin!=null;
+  SECT.cx=SECT.cx==null||pin?Nw.cx:SECT.cx+(Nw.cx-SECT.cx)*ek;
+  SECT.cy=SECT.cy==null||pin?Nw.cy:SECT.cy+(Nw.cy-SECT.cy)*ek;
+  Nw.cx=SECT.cx;Nw.cy=SECT.cy;
   const k=plnSmooth(0,1,SECT.far),e=plnSmooth(0,1,SECT.ent),L0=SECT.lens0;
   let Hf=Math.exp(lerp(Math.log(Nw.Hf),Math.log(Fw.Hf),k)),cx=lerp(Nw.cx,Fw.cx,k),cy=lerp(Nw.cy,Fw.cy,k);
   if(e>0){Hf=Math.exp(lerp(Math.log(Hf),Math.log(L0.Hf),e));cx=lerp(cx,L0.cx,e);cy=lerp(cy,L0.cy,e);}
@@ -267,7 +271,7 @@ function sectFrame(){
   /* ключ: светильник комнаты человека, с тенью; в тёмной или разбитой — его налобник */
   const keyRoom=!!room&&room.hp>0&&eff>0&&!moving;
   let lp,ld,lk;
-  if(keyRoom){const rx=sectRoomX(S.cur),f=sectFloor(S.row);lp=[rx,f+M.room-.2,2.3];ld=plnNorm([0,-1,.12]);lk=lit*.55;}
+  if(keyRoom){const rx=sectRoomX(S.cur),f=sectFloor(S.row);lp=[rx,f+M.room-.2,2.3];ld=plnNorm([0,-1,-.1]);lk=lit*.55;}
   else{lp=[mx+.2*face,my+1.71,M.z-.17];ld=plnNorm([face,CAVE3_LAMP.tilt,.34]);lk=1;}
   const lampVP=plnM4mul(cave3Persp(CAVE3_K.fov,1,.12,140),plnM4look(lp,[lp[0]+ld[0],lp[1]+ld[1],lp[2]+ld[2]],keyRoom?[0,0,1]:[0,1,0]));
   /* день — столбом ствола; час мира — последний кадр поверхности */
@@ -322,32 +326,106 @@ function sectPj(){
   return v=>{const cw=m[3]*v[0]+m[7]*v[1]+m[11]*v[2]+m[15];if(!(cw>0))return null;
     return [((m[0]*v[0]+m[4]*v[1]+m[8]*v[2]+m[12])/cw*.5+.5)*W,(.5-(m[1]*v[0]+m[5]*v[1]+m[9]*v[2]+m[13])/cw*.5)*H];};
 }
+/* M632c: всё, что рисуется каждый кадр, — в слой #ovl (08bi): 2D-холст пуст, и его копия в видеокарту
+   (front2, 1.2 мс на ПК, 3.4 на телефоне — дороже всего разреза) не нужна. Меню стройки — по-прежнему 2D:
+   оно открыто редко. Без видеокарты — прежние кисти 21ac */
+function sectOv(){return !!(GPU.ok&&GPU.on&&OVL&&typeof ovText==="function");}
+const SECT_MONO="ui-monospace,monospace";
+/* обвод прямоугольника в 1 px CSS и штрих — как strokeRect/setLineDash у 2D */
+function sectOvFrame(x0,y0,x1,y1,w,col,al){ovRect(x0,y0,x1,y0+w,col,al);ovRect(x0,y1-w,x1,y1,col,al);ovRect(x0,y0+w,x0+w,y1-w,col,al);ovRect(x1-w,y0+w,x1,y1-w,col,al);}
+function sectOvDash(x0,y0,x1,y1,w,on,off,col,al){
+  const L=Math.hypot(x1-x0,y1-y0);if(!(L>0))return;const ux=(x1-x0)/L,uy=(y1-y0)/L;
+  for(let s=0;s<L;s+=on+off){const e=Math.min(L,s+on);ovCap(x0+ux*s,y0+uy*s,x0+ux*e,y0+uy*e,w,col,al);}
+}
 function sectOver(){
-  const S=G.base,B=S.B,M=SECT_M,P=basePower(B),lit=.55+(P.eff||0)*.45,pj=sectPj();
+  const S=G.base,B=S.B,M=SECT_M,P=basePower(B),lit=.55+(P.eff||0)*.45,pj=sectPj(),ov=sectOv();
   /* px базы → экран на линии ходьбы: по каждой оси отдельно (окно смотрит вдоль z) */
   const ox=pj([0,0,M.z]),ax=pj([1,0,M.z]),ay=pj([0,1,M.z]);
   if(!ox||!ax||!ay)return;
   const kx=ax[0]-ox[0],ky=ay[1]-ox[1];
   const X=px=>ox[0]+sectX(px)*kx,Y=py=>ox[1]+sectY(py)*ky;
-  baseDrawAdj(B,X,Y,lit);
+  if(ov)sectOvAdj(B,X,Y,lit);else baseDrawAdj(B,X,Y,lit);
   /* номера ярусов в стволе */
-  ctx.font=uiFont(8);ctx.textAlign="center";
+  if(!ov){ctx.font=uiFont(8);ctx.textAlign="center";}
   for(let r=0;r<baseRows(B);r++){
     const q=pj([M.sh1-.2,sectFloor(r)+3,0]);if(!q)continue;
-    ctx.fillStyle="rgba(190,214,232,"+((r===(S.row|0)?.62:.3)+lit*.16).toFixed(2)+")";
-    ctx.fillText(String(r+1),q[0],q[1]);
+    const col="rgba(190,214,232,"+((r===(S.row|0)?.62:.3)+lit*.16).toFixed(2)+")";
+    if(ov)ovText(OVL.uq,q[0],q[1],String(r+1),uiFont(8),col,"center","alphabetic",1,1);
+    else{ctx.fillStyle=col;ctx.fillText(String(r+1),q[0],q[1]);}
   }
-  if(!SHOT_CLEAN&&(S.cur|0)>=0)sectCursor(S,B,pj);
-  sectAvr(S,pj);
-  baseDrawBoard(B,lit);
-  baseDrawNote(S);
+  if(!SHOT_CLEAN&&(S.cur|0)>=0)sectCursor(S,B,pj,ov);
+  sectAvr(S,pj,ov);
+  if(ov){sectOvBoard(B,lit);sectOvNote(S);}else{baseDrawBoard(B,lit);baseDrawNote(S);}
   if(S.menu)drawBuildMenu(S);
 }
+/* патрубки соседства (21ac baseDrawAdj) — капсулами слоя */
+function sectOvAdj(B,X,Y,lit){
+  if(typeof baseAdjPairs!=="function")return;
+  const COL={wire:[242,178,92],green:[140,220,150],care:[150,220,255],feed:[130,200,255],vent:[190,210,230],
+    store:[210,190,140],fix:[200,200,210],noise:[255,120,90],gun:[255,120,90]},ga=.78+lit*.2;
+  for(const P2 of baseAdjPairs(B)){
+    const x1=X(cellX(P2.ac)),y1=Y(cellY(P2.ar)),x2=X(cellX(P2.bc)),y2=Y(cellY(P2.br));
+    if(Math.min(x1,x2)<-BCELL_W||Math.max(x1,x2)>W+BCELL_W)continue;
+    const mx=(x1+x2)/2,my=(y1+y2)/2,c="rgb("+(COL[P2.k]||[200,200,200]).join(",")+")";
+    if(P2.k==="noise"||P2.k==="gun"){sectOvDash(mx-9,my-9,mx+9,my+9,2,4,4,c,.75*ga);continue;}
+    const ax=x1+(x2-x1)*.26,ay=y1+(y2-y1)*.26,bx=x1+(x2-x1)*.74,by=y1+(y2-y1)*.74;
+    ovCap(ax,ay,bx,by,7,"rgb(8,11,16)",.8*ga);ovCap(ax,ay,bx,by,4.5,c,.85*ga);
+    ovCap(ax,ay-1.4,bx,by-1.4,1.2,"#fff",(.12+lit*.16)*ga);
+    ovCap(mx,my,mx,my,8.8,"rgb(8,11,16)",.85*ga);ovCap(mx,my,mx,my,6,c,.95*ga);
+  }
+}
+/* приборная доска (21ac baseDrawBoard) в мерке uiK */
+function sectOvBoard(B,lit){
+  if(typeof baseLife!=="function"||typeof baseSharp!=="function")return;
+  const k=uiK(),hr=(typeof hudRect==="function")?hudRect():null,U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+  const L=baseLife(B),bx=14,by=Math.max(64,(hr&&hr.height>0)?Math.ceil(hr.bottom/U)+10:0);
+  const rows=[["ВОЗДУХ",L.air,LIFE_CAP,[150,220,255]],["ВОДА",L.water,LIFE_CAP,[120,190,255]],
+    ["ХАРЧ",L.food|0,LIFE_CAP,[190,220,140]],["ДУХ",(typeof baseSpirit==="function")?baseSpirit(B):100,100,[242,178,92]]];
+  const P4=(typeof basePower==="function")?basePower(B):{prod:0,cons:0,eff:1,store:0};
+  const warn=(typeof baseWarnLine==="function")?baseWarnLine(B):"";
+  const foot=["ЭНЕРГИЯ "+P4.prod+" / "+P4.cons+" · ОТДАЧА "+Math.round(P4.eff*100)+"%",
+    "СКЛАД "+((typeof basePoolHeld==="function")?basePoolHeld(B):0)+" / "+P4.store];
+  if(warn)foot.push(warn.toUpperCase());
+  const bw=176,bh=rows.length*12+foot.length*11+16,R=(x0,y0,w,h,c,a)=>ovRect(x0*k,y0*k,(x0+w)*k,(y0+h)*k,c,a);
+  const T=(s,x,y,c)=>ovText(OVL.uq,x*k,y*k,s,"8px "+SECT_MONO,c,"left","alphabetic",1,k);
+  R(bx-6,by-6,bw,bh,"rgb(10,13,18)",.82);
+  sectOvFrame((bx-6)*k,(by-6)*k,(bx-6+bw)*k,(by-6+bh)*k,k,"rgb(150,178,198)",.18+lit*.18);
+  rows.forEach((q,i)=>{const y=by+i*12,w=88,f=clamp(q[1]/q[2],0,1);
+    T(q[0],bx,y+7,"rgba(190,210,224,.75)");R(bx+52,y+2,w,5,"#fff",.10);R(bx+52,y+2,w*f,5,"rgb("+q[3].join(",")+")",.85);});
+  const fy=by+rows.length*12+2;
+  R(bx,fy,bw-14,1,"rgb(150,178,198)",.16);
+  foot.forEach((s,i)=>T(s.length>30?s.slice(0,30):s,bx,fy+11+i*11,i===2?"rgba(242,178,92,.72)":"rgba(178,198,214,.72)"));
+}
+/* карточка «пока вас не было» (21ac baseDrawNote) */
+function sectOvNote(S){
+  if(!(S.note&&S.note.t>0&&W>=BASE_NOTE_W))return;
+  const k=uiK(),N=S.note,a=clamp(N.t/60,0,1),f9="9px "+SECT_MONO,st=Object.assign({},GC_DEF,{font:f9});
+  let cw=150;for(const s of N.lines)cw=Math.max(cw,GC_GLYPHS.measure(st,s).width+22);
+  cw=Math.min(cw,Math.max(190,W*.34),W-214);
+  const cx=W-cw-18,cy=78,chh=N.lines.length*13+26,R=(x0,y0,w,h,c,al)=>ovRect(x0*k,y0*k,(x0+w)*k,(y0+h)*k,c,al*a);
+  R(cx,cy,cw,chh,"rgb(10,13,18)",.84);
+  sectOvFrame(cx*k,cy*k,(cx+cw)*k,(cy+chh)*k,k,"rgb(150,178,198)",.22*a);
+  R(cx,cy,3,chh,"rgb(242,178,92)",.5);
+  ovText(OVL.uq,(cx+12)*k,(cy+14)*k,"ПОКА ВАС НЕ БЫЛО","8px "+SECT_MONO,"rgba(150,178,198,.6)","left","alphabetic",a,k);
+  N.lines.forEach((s,i)=>ovText(OVL.uq,(cx+12)*k,(cy+29+i*13)*k,s,f9,"rgba(198,216,228,.86)","left","alphabetic",a,k));
+}
 /* курсор: уголки на дыре построенного отсека и имя над ней; под застройку — пунктир по камню */
-function sectCursor(S,B,pj){
+function sectCursor(S,B,pj,ov){
   const M=SECT_M,c=S.cur|0,r=S.row|0,f=sectFloor(r),x0=c*M.cw+.5,x1=x0+M.cw-1;
   const a=pj([x0,f+M.room,0]),b=pj([x1,f,0]);if(!a||!b)return;
   const on=Math.sin(G.t*.12)>0,cell=baseCell(B,c,r);
+  if(ov){
+    const col="rgb(127,230,216)",al=on?.95:.4,u=Math.min(14,(b[0]-a[0])*.12);
+    if(cell){
+      ovCap3(a[0],a[1]+u,a[0],a[1],a[0]+u,a[1],2,col,al);ovCap3(b[0]-u,a[1],b[0],a[1],b[0],a[1]+u,2,col,al);
+      ovCap3(b[0],b[1]-u,b[0],b[1],b[0]-u,b[1],2,col,al);ovCap3(a[0]+u,b[1],a[0],b[1],a[0],b[1]-u,2,col,al);
+    }else{
+      const p0=a[0]+4,q0=a[1]+4,p1=b[0]-4,q1=b[1]-4;
+      sectOvDash(p0,q0,p1,q0,2,7,7,col,al);sectOvDash(p1,q0,p1,q1,2,7,7,col,al);
+      sectOvDash(p1,q1,p0,q1,2,7,7,col,al);sectOvDash(p0,q1,p0,q0,2,7,7,col,al);
+    }
+    return;
+  }
   ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";ctx.lineWidth=2;
   const u=Math.min(14,(b[0]-a[0])*.12);
   if(cell){
@@ -361,10 +439,17 @@ function sectCursor(S,B,pj){
     ctx.setLineDash([7,7]);ctx.strokeRect(a[0]+4,a[1]+4,b[0]-a[0]-8,b[1]-a[1]-8);ctx.setLineDash([]);
   }
 }
-function sectAvr(S,pj){
+function sectAvr(S,pj,ov){
   const A=S&&S.avr;if(!A)return;
   const M=SECT_M,f=sectFloor(A.r),x0=A.c*M.cw+.5,a=pj([x0,f+M.room,0]),b=pj([x0+M.cw-1,f,0]);if(!a||!b)return;
   const p=.5+.5*Math.sin(G.t*.25),col=A.k==="fire"?[255,140,60]:(A.k==="vent"?[150,220,255]:(A.k==="grib"?[220,170,80]:[110,180,255]));
+  if(ov){
+    const c="rgb("+col.join(",")+")",kind=AVR_KINDS.find(q=>q.k===A.k)||AVR_KINDS[0];
+    sectOvFrame(a[0]+2.5,a[1]+2.5,b[0]-2.5,b[1]-2.5,2,c,.5+.4*p);
+    ovText(OVL.uq,(a[0]+b[0])/2,a[1]+16*uiK(),kind.ru,uiFont(10),c,"center","alphabetic",.95,1);
+    if(A.hold>0)ovRect(a[0]+12,b[1]-16,a[0]+12+(b[0]-a[0]-24)*clamp(A.hold/AVR_HOLD,0,1),b[1]-12,"rgb(127,230,216)",.85);
+    return;
+  }
   ctx.strokeStyle="rgba("+col.join(",")+","+(.5+.4*p).toFixed(2)+")";ctx.lineWidth=2;
   ctx.strokeRect(a[0]+3.5,a[1]+3.5,b[0]-a[0]-7,b[1]-a[1]-7);
   ctx.fillStyle="rgba("+col.join(",")+",.95)";ctx.font=uiFont(10);ctx.textAlign="center";

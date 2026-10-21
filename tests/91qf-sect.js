@@ -64,6 +64,17 @@ TEST_SUITES.push(()=>suite("база в разрезе: объективы, до
     ok(sectShare(L)>=.05,"телефон 390×844: человек ≥ .05 кадра ("+sectShare(L).toFixed(3)+")");
     S.menu=false;
 
+    /* телефон в стволе: окно едет за клетью по высоте плавно, без скачков по рядам (M632c) */
+    const cyAt=fy=>{S.y=BASE_OY-fy/M.ch*BCELL_H;return sectWith(390,844,()=>{SECT.ent=0;SECT.far=0;
+      let q;for(let i=0;i<80;i++)q=sectLensAt(390,844,S,B,false);return q;});};
+    S.cur=-1;S.x=BASE_OX+sectRoomX(-1)/M.cw*BCELL_W;
+    const myA=sectFloor(1)+2.4,LA=cyAt(myA+M.ch/2);
+    ok(LA.b<myA&&LA.t>myA+1.8,"телефон в стволе: человек в клети целиком в окне ("+LA.b.toFixed(1)+".."+LA.t.toFixed(1)+" при поле "+myA.toFixed(1)+")");
+    const c0=LA.cy;S.y-=.3/M.ch*BCELL_H;
+    const c1=sectWith(390,844,()=>sectLensAt(390,844,S,B,false)).cy;
+    ok(Math.abs(c1-c0)<.1,"телефон в стволе: шаг клети — шаг окна, без скачка ("+(c1-c0).toFixed(3)+")");
+    S.cur=1;S.x=cellX(1);S.y=cellY(0);
+
     /* ход по ярусу — только в просветах между отсеками */
     const V=sectVoids(B),rooms=V.filter(v=>v[4]==="room"),halls=V.filter(v=>v[4]==="hall");
     eq(rooms.length,B.cells.filter(Boolean).length,"у каждого отсека — своя пустота");
@@ -83,5 +94,15 @@ TEST_SUITES.push(()=>suite("база в разрезе: объективы, до
     const wo=glowOf(off,SECT_MAT_WALL);
     ok(wo.n>0&&wo.g===0,"без энергии стены отсеков тёмные");
     eq(glowOf(off,PLN_MAT.glow).g,0,"без энергии под землёй ни одна лампа не горит (копёр и ворота — на своей батарее)");
+
+    /* убранство (M632b): у каждого рода своё, и ни одна вещь не стоит на линии хода (z 1.1–2.0 над полом) */
+    const F=sectFloor(1),bad=[],none=[];
+    for(const k of Object.keys(BUILD)){
+      const m=plnMesh(1<<10);sectKit(m,k,.5,8.5,F,F+M.room,M.deep,true,1,7);
+      if(m.nv<8)none.push(k);
+      for(let i=0;i<m.nv;i++){const o=i*PLN_VS,y=m.v[o+1],z=m.v[o+2];if(y>F+.05&&z>1.1&&z<2.0){bad.push(k+"@"+z.toFixed(2));break;}}
+    }
+    eq(none.join(","),"","у каждого рода отсека есть вещи");
+    eq(bad.join(","),"","вещи не стоят на линии хода");
   }finally{SECT.b=b0;SECT.lens=l0;PLN.cam=cam0;}
 }));
