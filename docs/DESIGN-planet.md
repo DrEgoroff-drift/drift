@@ -204,7 +204,8 @@ after it pass by §5.4.
 
 **Stage 3 — underground and inside.**
 - M630 the cave: rock, lamp light, water, moss and amber, props, life; the way in without a cut
-- M631 the mine
+- M631 the mine — done 15.10 (0.499.0): a working rudnik under the planet it is dug in, seamless
+  in and out, the planet's beasts as biters; `docs/DESIGN-mine.md`
 - M632 the base in cross-section and the rooms entered from the planet
 - M634 one water everywhere (author, 08.10): the stand's water as one module `21pw-pln-water`
   — planet lakes, the ocean worlds' sea to the horizon with swell and a hazed horizon, the
