@@ -498,6 +498,21 @@ function drawBase(){
       }
     }
   }
+  /* ── переходящий вымпел (M206; переделка M413) ──
+     Разбор: «флаг ГЛАВТРАССЫ — самое яркое пятно кадра». Так и было: сто
+     процентов красного размером в пол-отсека, висящие посреди породы, в
+     сцене, где всё остальное — коричневое и бирюзовое под общим светом.
+     Вымпел ничего не даёт и не должен ничего требовать: он ВЕЩЬ НА СТЕНЕ у
+     ворот, вчетверо меньше, и живёт в том же свете, что и порода.
+     Стоит рядом с астронавтом: оба кладутся слоем видеокарты, и между ними
+     нет 2D, а значит нет и второго шва кадра (раньше вымпел шёл последним —
+     после курсора и патрубков — и стоил отдельной склейки холста). */
+  if(!SHOT_CLEAN&&typeof pennHere==="function"&&pennHere()&&typeof pennDraw==="function"){
+    ctx.save();
+    ctx.globalAlpha=.42+lit*.42;
+    pennDraw(X(BASE_OX+BCELL_W*.42),Y(BASE_OY-34),BCELL_W*0.24,BCELL_H*0.20);
+    ctx.restore();
+  }
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   {const ao={phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false};
@@ -635,7 +650,10 @@ function baseDrawAdj(B,X,Y,lit){
 }
 function baseDrawBoard(B,lit){
   if(typeof baseLife==="function"&&typeof baseSharp==="function")withScale(uiK(),()=>{
-    const L=baseLife(B),bx=14,by=64;
+    /* столбик шкал слева вверху растёт вместе с бортом: доска встаёт под ним, а не на фиксированной 64
+       (плейтест 14.10: строки жизни базы резались шкалами) */
+    const hr=(typeof hudRect==="function")?hudRect():null,U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+    const L=baseLife(B),bx=14,by=Math.max(64,(hr&&hr.height>0)?Math.ceil(hr.bottom/U)+10:0);
     const rows=[["ВОЗДУХ",L.air,LIFE_CAP,[150,220,255]],
                 ["ВОДА",  L.water,LIFE_CAP,[120,190,255]],
                 ["ХАРЧ",  L.food|0,LIFE_CAP,[190,220,140]],

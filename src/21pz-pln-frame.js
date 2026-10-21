@@ -293,6 +293,41 @@ function plnHandWin(S,ws,hs,f,h){
 }
 
 /* ── кадр ── */
+/* ── заход собирается за несколько кадров ──
+   Первый кадр спуска строил землю, расстановку, вещи, метки и травы разом: 90–150 мс. Пока идёт
+   сборка, на экране прежняя сцена (drawLanding рисует систему), спуск стоит; каждый кадр — не больше
+   7 мс работы. Этапы: куски ленты в окне (рядами), посадки, вещи земли, метки, своё, травы.
+   true — ещё собирается; страховка — 4 с (240 кадров) */
+function plnWarmStep(L,S,p,C,V){
+  if(!L.warm){L.warm={st:0,k:0,n:0};return true;}   /* кадр, где заведён лист мира (plnLand), — только он */
+  const w=L.warm;
+  if(++w.n>240){L.warmDone=true;return false;}
+  const B=7;
+  /* набор флоры строится из системы по шагу (plnKitTick); не успел — достраивается здесь, в бюджет кадра */
+  if(!(PLN_FLORA.kit&&PLN_FLORA.gen===PLN_GPU.gen)){
+    const t0=wallMs();
+    while(wallMs()-t0<B&&plnFloraKitStep());
+    return true;
+  }
+  if(w.st===0){
+    plnLandStep(L,C.ex,V,null,B,true);
+    if(!L.jobs.some(J=>!J.done&&plnLandSees(J,C.ex,V,20)))w.st=1;
+    return true;
+  }
+  if(w.st===1){
+    plnPlantStep(L,p,C.ex,V,B);
+    if(++w.k>=3){w.st=2;w.k=0;}
+    return true;
+  }
+  if(S.deposits){
+    if(w.st===2)plnThings(L,S,p);
+    else if(w.st===3){if(PLN_MARK.on&&S.tr&&S.tr.poi&&S.tr.poi.length)plnMarks(L,S);}
+    else if(w.st===4){if(OWN.on&&S.tr&&S.p)plnOwnStep(L,S);}
+    else if(w.st===5)plnHerbs(L,S,p);
+  }
+  if(++w.st>5){L.warmDone=true;return false;}
+  return true;
+}
 function plnSurface(S,o){
   /* ближний объектив (§8.4): масштаб игры не трогается, объектив подъезжает сам.
      S — состояние поверхности (без него G.surf); o — спуск (21pza): {lens(ws,hs) → {vx,vy},
@@ -317,10 +352,12 @@ function plnSurface(S,o){
   const B=PLN_BUILD,tb=wallMs(),bs=PLN.bld||(PLN.bld={base:3,ms:0});
   if(FRAME_JS>0)bs.base+=(Math.max(0,FRAME_JS-bs.ms)-bs.base)*.1;
   const lim=L.first?clamp(B.frame-bs.base,B.low,B.ms):B.first;
+  if(fly&&o.warm&&!PLN.rush&&!L.warmDone&&plnWarmStep(L,S,p,C,V))return "warm";
   plnLandStep(L,C.ex,V,null,lim);
   /* первый кадр после спуска: залежи, пещера и травы игры известны только теперь — расчистка
      заново, засаженное пересаживается (M621) */
-  if(!fly&&L.flora&&L.flora.src!==S)plnPlantRefit(L,-1e9,1e9);
+  /* с заходом, посчитанным заранее (G.land.pre), массивы те же — пересадки нет */
+  if(!fly&&L.flora&&L.flora.src!==S&&!(L.flora.src&&L.flora.src.deposits===S.deposits))plnPlantRefit(L,-1e9,1e9);
   plnPlantStep(L,p,C.ex,V,Math.max(B.low/2,lim-(wallMs()-tb)));
   bs.ms=wallMs()-tb;
   const Hr=plnHour(p,L.wl),span=plnLandSpan(L,C.ex-60,C.ex+60),look=Hr.look;
@@ -356,6 +393,15 @@ function plnSurface(S,o){
     plnShipFrame(F,sp,q.yaw==null?L.shipYaw:q.yaw,Object.assign({L,floor:lift>0?plnPadTop(L,tr,wy):null},q));
     if(o.extra)o.extra(F,L,C,sp);
     man=[sp[0],sp[1]-q.alt,sp[2]];
+    /* планета встречает готовой: вещи земли (G.land.pre) стоят уже в спуске и строятся здесь,
+       а не на первом кадре поверхности; человека, бура и следов ещё нет */
+    if(S.deposits){
+      plnThingsFrame(L,F,S,p,C.ex,V);
+      plnMarksFrame(L,F,S,p,C.ex,V,lampK);
+      plnOwnFrame(L,F,S,p,C.ex,V,lampK);
+      plnBeastFrame(L,F,S,p,C.ex,V);
+      plnHerbFrame(L,F,S,p,C.ex,V);
+    }
   }else{
     /* корабль стоит на плите площадки (21pza); плита — тело и на поверхности */
     const lift=plnPadLift(L,tr,wy,L.shipX),ship=[L.shipX,plnLandRibAt(L,L.shipX,L.shipZ)+lift,L.shipZ];

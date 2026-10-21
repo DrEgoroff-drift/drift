@@ -18,9 +18,10 @@
 import sys, os, json, re, time, hashlib, html
 
 HOME  = os.path.expanduser("~")
-DATA  = os.path.join(HOME, "drift-data", "lab")
-WEB   = os.path.join(HOME, "drift-game.ru", "docs", "lab")
-BUILD = os.path.join(HOME, "drift-lab", "build")
+# сервер — пути по умолчанию; домашняя лаборатория (lab/lab-local.py) задаёт свои через окружение
+DATA  = os.environ.get("LAB_DATA")  or os.path.join(HOME, "drift-data", "lab")
+WEB   = os.environ.get("LAB_WEB")   or os.path.join(HOME, "drift-game.ru", "docs", "lab")
+BUILD = os.environ.get("LAB_BUILD") or os.path.join(HOME, "drift-lab", "build")
 
 def now(): return time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 def jload(p, d):
@@ -75,7 +76,7 @@ def skip_list(ver):
 # ── разбор отчёта ──
 def parse(kind, text):
     """→ (head, failures[(suite,msg,detail)], passed, suites) ; head None = no report"""
-    if kind == "node":
+    if kind == "node" or '<pre id="testout"' not in text:   # node и дом: отчёт текстом (зрение, тур)
         body = text
     else:
         m = re.search(r'<pre id="testout"[^>]*>([\s\S]*?)</pre>', text)
@@ -168,14 +169,14 @@ def report(kind, arg, path, secs, mem, rc, ver, session, errfile="", oom=0):
         e["session"] = session
         e["count"] += 1; e["last"] = t
         e["versions"][ver] = e["versions"].get(ver, 0) + 1
-        if kind == "fuzz" and len(e["seeds"]) < 8 and arg not in e["seeds"]: e["seeds"].append(arg)
+        if kind in ("fuzz", "hunt") and len(e["seeds"]) < 8 and arg not in e["seeds"]: e["seeds"].append(arg)
     # не долбиться: тяжёлый или соло-набор, упавший или не давший отчёта, в этой версии больше не гоняется
     if kind in ("heavy", "solo") and verdict != "green":   # шарды окон (mobile/tall i/N) не выкидываются целиком — повисший набор уходит в соло, шард идёт без него
         st.setdefault("skip", {}).setdefault(ver, {})[uid] = verdict
     # повисший в шарде набор уходит в «соло»: шарды идут без него, он — один и с большим запасом
-    if hung and kind in ("light", "mobile", "tall"):
+    if hung and kind in ("light", "mobile", "tall", "wide"):
         st.setdefault("solo", {}).setdefault(ver, {})[hung] = uid
-    if kind == "fuzz":
+    if kind in ("fuzz", "hunt"):   # hunt — охота ботом по зерну дома (lab-local.py), учёт тот же
         f = st.setdefault("fuzz", {}).setdefault(ver, {"seeds": 0, "streak": 0, "exhausted": False, "new": 0, "red": 0})
         f["seeds"] += 1
         if verdict != "green": f["red"] += 1
@@ -189,6 +190,9 @@ def report(kind, arg, path, secs, mem, rc, ver, session, errfile="", oom=0):
                   "secs": secs, "rss": mem, "pass": passed, "suites": suites, "fails": len(fails),
                   "new": new, "known": known, "head": (head or "")[:160], "hung": hung})
     print("%s · %s · %d с · %d МБ · провалов %d · новых %d · известных %d%s" % (uid, verdict, secs, mem, len(fails), len(new), len(known), (" · повис: " + hung) if hung else ""))
+    global LAST_VERDICT
+    LAST_VERDICT = verdict   # пульт считает зелёные и красные (lab-local.py)
+    return [errs[k] for k in new]
 
 def fuzz_next(ver):
     st = jload(STATE, {})
