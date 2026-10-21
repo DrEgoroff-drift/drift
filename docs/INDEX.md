@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 620 · top-level symbols: 8740
+Files: 620 · top-level symbols: 8741
 
 ## SYMBOLS
 
@@ -2417,10 +2417,10 @@ WEATHER                      src/19d-weather.js:15-26
 WEATHER_BY_TYPE              src/19d-weather.js:28-47
 WEATHER_CAP                  src/19d-weather.js:52
 WIN3                         src/29rc-winter-r3.js:17
-WIN3_CAMS                    src/29rc-winter-r3.js:183
+WIN3_CAMS                    src/29rc-winter-r3.js:208
 WIN3_FX                      src/29rc-winter-r3.js:23
 WIN3_L                       src/29rc-winter-r3.js:18
-WIN3_LEV                     src/29rc-winter-r3.js:124
+WIN3_LEV                     src/29rc-winter-r3.js:123
 WIN3_M                       src/29rc-winter-r3.js:19
 WIN3_PARKA                   src/29rc-winter-r3.js:25
 WIN3_PX                      src/29rc-winter-r3.js:21
@@ -8651,25 +8651,26 @@ weatherGpu                   src/19d-weather.js:109-185
 weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
-win3Box                      src/29rc-winter-r3.js:223
-win3Cam                      src/29rc-winter-r3.js:185-193
-win3Canvas                   src/29rc-winter-r3.js:173-180
-win3Cost                     src/29rc-winter-r3.js:245
-win3Fade                     src/29rc-winter-r3.js:141
-win3Frame                    src/29rc-winter-r3.js:196-215
-win3Hide                     src/29rc-winter-r3.js:238-243
-win3Hit                      src/29rc-winter-r3.js:235
-win3Hits                     src/29rc-winter-r3.js:227
+win3Blanket                  src/29rc-winter-r3.js:126-145
+win3Box                      src/29rc-winter-r3.js:248
+win3Cam                      src/29rc-winter-r3.js:210-218
+win3Canvas                   src/29rc-winter-r3.js:198-205
+win3Cost                     src/29rc-winter-r3.js:270
+win3Fade                     src/29rc-winter-r3.js:163
+win3Frame                    src/29rc-winter-r3.js:221-240
+win3Hide                     src/29rc-winter-r3.js:263-268
+win3Hit                      src/29rc-winter-r3.js:260
+win3Hits                     src/29rc-winter-r3.js:252
 win3LeverX                   src/29rc-winter-r3.js:27
-win3Man                      src/29rc-winter-r3.js:129-138
-win3Mesh                     src/29rc-winter-r3.js:33-123
-win3Ok                       src/29rc-winter-r3.js:195
-win3On                       src/29rc-winter-r3.js:246
-win3Pilot                    src/29rc-winter-r3.js:127
-win3Scene                    src/29rc-winter-r3.js:143-170
-win3SleepPh                  src/29rc-winter-r3.js:140
+win3Man                      src/29rc-winter-r3.js:150-160
+win3Mesh                     src/29rc-winter-r3.js:33-122
+win3Ok                       src/29rc-winter-r3.js:220
+win3On                       src/29rc-winter-r3.js:271
+win3Pilot                    src/29rc-winter-r3.js:148
+win3Scene                    src/29rc-winter-r3.js:165-195
+win3SleepPh                  src/29rc-winter-r3.js:162
 win3Storm                    src/29rc-winter-r3.js:30
-win3Tags                     src/29rc-winter-r3.js:217
+win3Tags                     src/29rc-winter-r3.js:242
 win3Val                      src/29rc-winter-r3.js:28
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
@@ -10483,7 +10484,7 @@ zoomTo                       src/15-input.js:358
 ## src/29rba-home-shell.js · 10 KB
   · дом снаружи: тело людской грамматики и двор (M850b, стенд M602 — docs/look/nt-home.js):1
 
-## src/29rc-winter-r3.js · 23 KB
+## src/29rc-winter-r3.js · 26 KB
   · зимовка на движке (M850c, docs/DESIGN-rooms.md §4):1
 
 ## src/29rz-snap-over.js · 1 KB

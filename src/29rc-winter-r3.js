@@ -88,7 +88,7 @@ function win3Mesh(W,sl){
   {const x=-3.05,z=-.55,fire=he/3;
     K.box([x,.52,z],[.3,.4,.3],Mir,.03);for(const sx of [-1,1])for(const sz of [-1,1])K.box([x+sx*.24,.06,z+sz*.24],[.03,.06,.03],Mir,.006);
     K.box([x,.94,z],[.33,.02,.33],Mdk,.006);
-    K.box([x,.46,z+.305],[.15,.12,.008],K.mt([255,140,60],.2,4,0,.4+3.2*fire,true),0);
+    K.box([x,.46,z+.305],[.15,.12,.008],K.mt([255,140,60],.2,4,0,.4+3.2*fire+(sl?2.6:0),true),0);
     K.box([x,.46,z+.31],[.17,.14,.006],Mdk,0);K.box([x,.62,z+.31],[.17,.008,.01],Mst,0);
     K.push([x+.08,.96,z-.04]);K.lathe([[0,.07],[.1,.085],[.16,.06],[.19,.02]],12,K.mt([78,90,96],.6,11,P.brushed));K.pop();
     K.tube([[x-.08,.96,z-.1],[x-.08,2.2,z-.1],[x-.08,2.2,B+.1]],.065,Mir,10);}
@@ -115,13 +115,34 @@ function win3Mesh(W,sl){
   {const x=WIN3_BX,z=WIN3_BZ;
     K.box([x,.32,z],[.98,.05,.4],Mst,.01);for(const sx of [-1,1])K.box([x+sx*.95,.36,z+.36],[.03,.36,.03],Mst,.005);
     K.box([x,.43,z],[.95,.065,.38],K.mt([150,146,132],.1,3,P.cloth),.03);
-    /* спит — одеяло горбом поверх него (голова в капюшоне на подушке), иначе ровно застелено */
-    K.box([x-.18,.505,z+.02],[.72,.025,.39],K.mt([132,62,42],.1,3,P.cloth),.02);
-    if(sl)K.ell([x-.24,.56,z+.06],[.86,.32,.4],K.mt([132,62,42],.1,3,P.cloth),7,18);
-    K.ell([x+.72,.54,z-.02],[.2,.06,.15],K.mt([200,196,184],.1,3,P.cloth),6,12);}
+    /* спит — одеяло ложится по телу (win3Blanket), голова на подушке открыта; иначе ровно застелено */
+    if(sl)win3Blanket(K,x,z);else K.box([x-.18,.505,z+.02],[.72,.025,.39],K.mt([132,62,42],.1,3,P.cloth),.02);
+    K.ell([x+.72,.52,z-.02],[.2,.04,.16],K.mt([200,196,184],.1,3,P.cloth),6,12);}
   return K.pack();
 }
 const WIN3_LEV=WIN_USE;
+/* одеяло спящего: простыня сеткой по длине койки, горб по телу (ноги, колени, таз, грудь — не выше .04 над ним),
+   складки вдоль, передний край свисает с койки, у груди отворот; голова и плечи над ним открыты */
+function win3Blanket(K,x,z){
+  const yb=.505,zc=z+.02,x0=x-.97,x1=x-.84+1.36,M=K.mt([132,62,42],.1,3,R3P.cloth),Ms=K.mt([214,208,196],.08,3,R3P.cloth);
+  const AX=[[-.2,.26,.21],[-.04,.42,.23],[.14,.41,.24],[.36,.26,.26],[.6,.25,.3],[.95,.28,.34],[1.2,.29,.36],[1.4,.27,.36]];
+  const prof=u=>{let i=0;while(i<AX.length-2&&u>AX[i+1][0])i++;const a=AX[i],b=AX[i+1],k=clamp((u-a[0])/(b[0]-a[0]),0,1),e=k*k*(3-2*k);return [a[1]+(b[1]-a[1])*e,a[2]+(b[2]-a[2])*e];};
+  const ZS=[];for(let j=0;j<=22;j++)ZS.push(z-.4+.8*j/22);ZS.push(z+.425,z+.44);
+  const H=(xx,j)=>{const zz=ZS[j];if(j===ZS.length-2)return [zz,.47];if(j===ZS.length-1)return [zz,.35];
+    const [A,w]=prof(xx-(x-.84)),t=Math.abs(zz-zc)/w,b=t<1?Math.pow(1-t*t,.45):0;
+    const fold=.007*Math.sin(zz*41+xx*1.7)*(1-.6*b)+.004*Math.sin(zz*97);
+    const y=yb+A*b+fold;return [zz,xx<x0+.01?Math.min(y,.46):y];};   /* у изножья край свисает */
+  const NX=26,P=[];
+  for(let i=0;i<=NX;i++){const xx=x0+(x1-x0)*i/NX,row=[];for(let j=0;j<ZS.length;j++){const [zz,y]=H(xx,j);row.push([xx,y,zz]);}P.push(row);}
+  const nrm=(i,j)=>{const a=P[Math.min(i+1,NX)][j],b=P[Math.max(i-1,0)][j],c=P[i][Math.min(j+1,ZS.length-1)],d=P[i][Math.max(j-1,0)];
+    const dx=[a[0]-b[0],a[1]-b[1],a[2]-b[2]],dz=[c[0]-d[0],c[1]-d[1],c[2]-d[2]];
+    const n=[dz[1]*dx[2]-dz[2]*dx[1],dz[2]*dx[0]-dz[0]*dx[2],dz[0]*dx[1]-dz[1]*dx[0]],l=Math.hypot(...n)||1;return [n[0]/l,n[1]/l,n[2]/l];};
+  for(let i=0;i<NX;i++)for(let j=0;j<ZS.length-1;j++){
+    const v=[[i,j],[i,j+1],[i+1,j+1],[i,j],[i+1,j+1],[i+1,j]];
+    for(const [a,b] of v)K.vx(P[a][b],nrm(a,b),M);}
+  /* отворот простыни у груди */
+  K.tube(P[NX].slice(0,ZS.length-1).map(p=>[p[0]+.012,p[1]+.012,p[2]]),.022,Ms,6);
+}
 
 /* ── человек: стоит у панели, рука к рычагу; спит — на боку, лицом в комнату ── */
 function win3Pilot(W){const m=Object.assign({},home3PilotM(),{jac:WIN3_PARKA,style:4});   /* парка с капюшоном */
@@ -133,7 +154,8 @@ function win3Man(M,ii,m,mesh,A,t,look){
   if(look){const p=r3Pt(A,[0,0,0]),yaw=Math.atan2(A[8],A[10]),a=Math.atan2(look[0]-p[0],look[2]-p[2])-yaw;hy=clamp(Math.atan2(Math.sin(a),Math.cos(a)),-.6,.6);}
   M.set(Bm,(ii*R3_PART)*16);
   const Mh=r3Pivot(Bm,at.neck,hy,.04*Math.sin(t*.17+ph),0);M.set(Mh,(ii*R3_PART+1)*16);
-  cpRig(M,ii*R3_PART,Mh,mesh,cpFace(m,null));
+  const fc=cpFace(m,null);if(fc&&m.zz)fc.bl=1;   /* спящий — веки сомкнуты */
+  cpRig(M,ii*R3_PART,Mh,mesh,fc);
   for(let k=0;k<2;k++)M.set(Bm,(ii*R3_PART+2+k)*16);
 }
 /* фаза сна 0..1 (0 — не спит) и свет комнаты в ней: гаснет к середине, возвращается */
@@ -144,7 +166,8 @@ function win3Scene(cam,t){
   const W=winAll(),M=WIN3_M,OT=WIN3_OT,I=r3Xf([0,0,0]),B=WIN3_B;
   for(let i=0;i<R3_MAXI*R3_PART;i++)M.set(I,i*16);OT.fill(0);
   const draws=[[WIN3.mesh,0,1]],sp=win3SleepPh(),f=win3Fade(sp),m=win3Pilot(W);
-  if(sp>0){const mesh=cpMesh(m,"lie",1);win3Man(M,1,m,mesh,r3Xf([WIN3_BX-.84,.64,WIN3_BZ+.02],0,0,-Math.PI/2),t,null);draws.push([mesh,1,1]);WIN3.man=[WIN3_BX,WIN3_BZ];}
+  /* спит на спине: голова на подушке, лицо повёрнуто к метели в окне */
+  if(sp>0){const mesh=cpMesh(m,"lie",1);m.zz=1;win3Man(M,1,m,mesh,r3Xf([WIN3_BX-.84,.6,WIN3_BZ+.02],0,-Math.PI/2,-Math.PI/2),t,[WIN3_BX+.3,1.5,WIN3_B]);draws.push([mesh,1,1]);WIN3.man=[WIN3_BX,WIN3_BZ];}
   else{const mesh=cpMesh(m,"frame",1),x=-1.2,z=-1.25;   /* у правого края панели, в профиль: подписи рычагов не под ним, лицо видно */
     win3Man(M,1,m,mesh,r3Xf([x,0,z],-1.95),t,cam.eye);draws.push([mesh,1,1]);WIN3.man=[x,z];}
   const li=win3Val(W,"light"),he=win3Val(W,"heat"),over=winOver(W),lights=[],bulbs=[];
@@ -154,9 +177,11 @@ function win3Scene(cam,t){
   /* печь — ТЕПЛО: тёплая заливка у пола, огонь дрожит (движение, а не мигание) */
   if(he>0){const fl=1+.07*Math.sin(t*7.3)+.05*Math.sin(t*12.7+1.3)+.04*Math.sin(t*3.1);
     lights.push({p:[-2.82,.5,-.1],range:3.2+he*.7,c:r3Sc(r3Lin([255,138,62]),(.7+1.1*he)*fl*(.45+.55*f)),shadow:li>0?0:1,vol:.03,key:li>0?0:1});
-    bulbs.push([-3.05,.46,-.23,.25+.2*he]);}
+    bulbs.push([-3.05,.46,-.23,(.25+.2*he)*(1+1.4*(1-f))]);}
   /* окно — холод метели: конусом в комнату, на пол у койки; не выключается */
   lights.push({p:[2.45,1.7,B+.3],range:6.5,c:r3Sc(r3Lin([140,170,214]),2.6*(.8+.2*f)),spot:1,d:[-.25,-.55,.8],cosO:Math.cos(1.0),cosI:Math.cos(.4),vol:.05});
+  /* сон: метель кладёт холодный свет на подушку и лицо */
+  if(sp>0)lights.push({p:[WIN3_BX+.55,1.75,B+.25],range:2.4,c:r3Sc(r3Lin([150,182,226]),1.5*(1-f)),spot:1,d:[.1,-.85,.5],cosO:Math.cos(.7),cosI:Math.cos(.3),vol:0});
   /* реактор — полоса светит на плиту панели; перегрузка красная */
   lights.push({p:[WIN3_PX,WIN3_PY+.5,B+.45],range:1.3,c:r3Sc(r3Lin(over?[255,80,60]:[255,190,120]),.5*f),vol:0});
   (W.faults||[]).forEach((q,i)=>{lights.push({p:[WIN3_FX+i*.14,WIN3_FY,B+.3],range:1.1,c:r3Sc(r3Lin([255,60,40]),.5*f),vol:0});bulbs.push([WIN3_FX+i*.14,WIN3_FY,B+.12,.5]);});
