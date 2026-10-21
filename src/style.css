@@ -2983,6 +2983,51 @@ body.rackon #prompt{opacity:0}
 }
 
 /* слова у вещей (M810): табличка плиты на вещи места — точка на вещи, отвод вверх, плашка; не ловит пальцы */
+/* ── станция пешком (M816, docs/DESIGN-station-walk.md §3) ──
+   Ход: зал во весь экран, над ним только чип станции (шапка), полоса мест под ним, глагол внизу посередине и
+   выход у правого края. В месте: плита — карточка места, на ПК справа на 36 % ширины, на телефоне снизу на 55 %
+   высоты; полоса и выход прячутся, «назад» — в углу зала. ?walk=0 — прежний зал с плитой. */
+#stWalk{display:none}
+#stWalk [hidden]{display:none!important}
+#station.hall.walk #stWalk{display:block;position:absolute;inset:0;pointer-events:none;z-index:3}
+#station.hall.walk #stWalk>*{pointer-events:auto}
+#station.hall.walk:not(.eng){padding:0!important}
+#station.hall.walk:not(.eng)::before{display:none}
+#station.hall.walk:not(.eng)>:is(#stGroups,#stTabs,.body,footer){display:none!important}
+#station.hall.walk:not(.eng)>header{position:absolute;left:16px;top:16px;z-index:3;box-sizing:border-box;height:64px;min-height:0;
+  max-width:calc(100% - 32px);padding:10px 14px;gap:18px;background:rgba(14,13,12,.84);border:1px solid var(--pl-edge);border-radius:6px}
+body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:auto;right:16px;top:18px;transform:none}
+#stWalkStrip{position:absolute;left:16px;top:88px;display:flex;gap:2px;max-width:calc(100% - 32px);overflow-x:auto;scrollbar-width:none}
+#stWalkStrip button{min-height:44px;padding:0 14px 0 12px;display:flex;align-items:center;gap:8px;white-space:nowrap;font-size:12px;letter-spacing:.14em;
+  color:var(--ink2);background:rgba(14,13,12,.78);border:1px solid var(--pl-edge);border-radius:4px}
+#stWalkStrip button i{font-style:normal;font-size:10px;color:rgba(243,231,210,.4);letter-spacing:0}
+#stWalkStrip button.on{color:#f3e7d2;border-color:rgba(var(--c-acc),.7)}
+#stWalkAct{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);min-width:220px;min-height:52px}
+#stWalkOut{position:absolute;right:16px;bottom:24px;min-height:52px;min-width:120px}
+#stWalkBack{position:absolute;left:16px;bottom:24px;min-height:52px;min-width:120px;display:none}
+#station.hall.walk.eng :is(#stWalkStrip,#stWalkAct,#stWalkOut){display:none}
+#station.hall.walk.eng #stWalkBack{display:block}
+#station.hall.walk.eng:not(.lock)>footer{display:none!important}
+#station.hall.walk.eng.lock>:is(#stGroups,.body){display:none!important}
+#station.hall.walk.eng #stGroups>button{display:none}
+@media (min-width:900px){
+  #station.hall.walk.eng{padding-left:64%!important}
+  #station.hall.walk.eng::before{left:64%}
+  body:not(.mobile) #station.hall.walk.eng.open{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"head" "nav" "body"}
+  body:not(.mobile) #station.hall.walk.eng.lock.open{grid-template-rows:auto minmax(0,1fr);grid-template-areas:"head" "ship"}
+}
+@media (max-width:899.98px){
+  body.screen #station.hall.walk.eng.open,#station.hall.walk.eng{padding-top:45vh!important}
+  #station.hall.walk.eng::before{top:45vh}
+  #stWalkAct{bottom:20px}
+  #stWalkOut{right:12px;bottom:20px;min-width:96px}
+  #station.hall.walk.eng #stWalkBack{left:12px;top:calc(45vh - 64px);bottom:auto}
+  /* телефон: чип — имя и деньги одной строкой под эфиром; полоса под ним прокручивается; глагол слева от выхода */
+  #station.hall.walk:not(.eng)>header{left:12px;top:calc(env(safe-area-inset-top) + 58px);height:48px;padding:6px 12px;max-width:calc(100% - 24px)}
+  #station.hall.walk:not(.eng)>header #stKind,#station.hall.walk:not(.eng)>header #wDt,#station.hall.walk:not(.eng)>header #stDesk{display:none}
+  #stWalkStrip{left:12px;top:calc(env(safe-area-inset-top) + 114px);max-width:calc(100% - 24px)}
+  #stWalkAct{left:12px;right:120px;transform:none;min-width:0}
+}
 #stHallTags{display:none}
 #station.hall #stHallTags{display:block;position:absolute;left:0;top:0;width:0;height:0;z-index:-1;pointer-events:none}
 :is(#stHallTags,#room3Tags,#home3Tags,#win3Tags) .ht{position:absolute;left:0;top:0;display:block;font-style:normal;white-space:nowrap;padding:6px 12px 7px 11px;
