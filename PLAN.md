@@ -310,12 +310,6 @@ Check each against the code before building — some may already hold.
 - [ ] **The sun crosses the sky in an hour** (the author, 15.10: «солнце очень быстро»). The day is
   `CEL_DAY` of the sky calendar (`06a-celest`), copied in `21pifa` and `25m-probe`; a longer day moves
   the war chronicle's hashes and the need windows. Decide together with the chronicle, reshoot hashes.
-- [ ] **The seed fuzz's known defects** (`tests/91qm-seeds.js`, back in the gate 22.10 with a list
-  `SEED_KNOWN` by law and world; a fix goes red until its world is struck off the list). Three laws of
-  twenty worlds: a **deposit within the ship's zone** on 7 worlds (`surfGen` places them, the action
-  there is the ship's), a **POI on the cave mouth** (obelisk, portal; `genPOI` does not know the
-  mouth), the **ocean world's pad in the water** with a 2 m drop under the ship (`genTerrain`'s pad vs
-  `waterOf`). All in the surface's own modules; a fix moves deposits and POI on those worlds.
 - [ ] **`03e-hull-draw.js` grew to 49 KB** with the yard marks: move the hull's marks (scars, transit plate,
   seal, yard mark) to their own module along that seam.
 - [ ] **Old worktrees:** `C:\Claude\drift-refactor` (one WIP commit «stall report names who held the frame»,

@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 622 · top-level symbols: 8796
+Files: 623 · top-level symbols: 8799
 
 ## SYMBOLS
 
@@ -2099,7 +2099,7 @@ SEC_RELAY_GOAL               src/12b2-fx-sec.js:27
 SEC_SPY                      src/12b2-fx-sec.js:25
 SEC_SPY_CACHE                src/12b2-fx-sec.js:88
 SEC_SPY_MAX                  src/12b2-fx-sec.js:26
-SEED_KNOWN                   tests/91qm-seeds.js:12-29
+SEED_KNOWN                   tests/91qm-seeds.js:13
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -2239,6 +2239,9 @@ SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
 SURF_BASE                    src/21e-surface-draw.js:159
 SURF_HOR                     src/19c-light.js:202
+SURF_LAW                     src/21pzd-surf-laws.js:11-15
+SURF_LAW_GEN                 src/21pzd-surf-laws.js:45
+SURF_LAW_WATER               src/21pzd-surf-laws.js:19
 SURF_LND                     src/21e3-surface-stand-gpu.js:187
 SURF_NEAR                    src/21e2-surface-gpu.js:505
 SURF_RF                      src/21e2-surface-gpu.js:463
@@ -7900,8 +7903,8 @@ sectWith                     tests/91qf-sect.js:17-20
 sectWordsOn                  src/21ae-base-sect.js:494
 sectX                        src/21ae-base-sect.js:38
 sectY                        src/21ae-base-sect.js:39
-seedLand                     tests/91qm-seeds.js:30-36
-seedWorlds                   tests/91qm-seeds.js:17-29
+seedLand                     tests/91qm-seeds.js:27-33
+seedWorlds                   tests/91qm-seeds.js:14-26
 sellCargo                    src/12-economy.js:181-209
 sellDroneYield               src/12-economy.js:210-218
 sellQuote                    src/12ab-hold.js:134-152
@@ -10113,6 +10116,9 @@ zoomTo                       src/15-input.js:358
 
 ## src/21pzc-dep-value.js · 3 KB
   · дорогая жила — находка (M904d · DESIGN-game §4.1a):1
+
+## src/21pzd-surf-laws.js · 5 KB
+  · законы поверхности: вещи не стоят друг на друге (22.10):1
 
 ## src/22-mode-cave.js · 46 KB
   · пещера: поле породы в двух измерениях:1
