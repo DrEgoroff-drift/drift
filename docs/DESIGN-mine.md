@@ -114,10 +114,30 @@ spot within 90 px of the man (`mineLaySpot`); with none near, the prompt says «
 | 72 m, cage | 1.9 / 4.7 | 0.79 / 0.86 | 1.4 / 3.3 | 0.46 / 0.48 |
 
 Down to the first level the planet frame over the cut is most of the GPU bill; below the window's
-reach of the ground the mine costs under a millisecond. The tails are chunk rebuilds: a cell dug at
-the face rebuilds the chunks around it synchronously, 66–83 ms each (Control's measure of the
-entry, 22.10: worst entry frame 1.5 s). Ore bodies (§2) add 28–57 seams per scene, inside these
-numbers. Tool: `minecost.py` (scratchpad) — the scene from `mkmine.py`, the page's own rAF
+reach of the ground the mine costs under a millisecond. Ore bodies (§2) add 28–57 seams per scene,
+inside these numbers. The face row was measured before the chunk budget below; with it, a cell dug at
+the face costs JS max 4.9 ms on PC (was 712).
+
+**Entry** (22.10, three runs each, from the surface after the late warm-up, 3 s of frames):
+
+| | worst entry frame, ms | writeBuffer in 3 s | MB written |
+|---|---|---|---|
+| PC, before | 184 / 217 / 188 | ~4050 | 96 |
+| PC, after | 37.5 / 37.5 / 37.5 | ~3730 | 40 |
+| phone, before | 150 / 142 / 138 | ~3800 | 71 |
+| phone, after | 38 / 42 / 38 | ~3540 | 36 |
+
+What it took: the compositing pipeline (`dig3.top1/4`) is built by the late warm-up
+(`GPU_LATE_GROUPS`), so entry compiles nothing; a chunk is built in steps (`dig3ChunkGen`) within the
+frame's budget and resumed next frame; the slide from the surface holds its lens at the surface
+(where no rock shows) until the rock in the window is built, at most 0.6 s (`DIG3_HAND.wait`); the
+land ribbon's indices and the plants' records are written once per shaft mouth, and the cut that
+moves during the slide changes only counts and first instances (they were rewritten every frame of
+the slide: 22 MB and 40 MB). What is left of the first frame (~38 ms): the field, the planet's frame
+and the dressing, once. The remaining 40 MB per 3 s is the planet's man (`plnManFrame`, 21pha),
+rewritten every frame everywhere, not the mine's. Tool: `entry.py` (scratchpad).
+
+Steady frames: `minecost.py` (scratchpad) — the scene from `mkmine.py`, the page's own rAF
 (`--clock wall`; the stand's stepped clock lies about time), `FRAME_JS` and the GPU `frame`
 timestamp counted only on frames the GPU drew (the game skips rAF ticks on a 240 Hz screen).
 `cost.py` reads the CPU wrong inside the mine and is not used here.
