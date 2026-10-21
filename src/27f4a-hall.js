@@ -28,6 +28,7 @@ const HALL_XB=10;          /* бар: кантина 27f4, сдвинутая в
 const HALL_B=-2.8;         /* задняя стена (та же, что у кантины, C3_BACK) */
 const HALL_L=-7.2;         /* левая стена */
 const HALL_F=6.5;          /* передняя стена — за камерой, с дверью в док */
+const HALL_FCUT=3.8;       /* M816: срез на ходу — 2,3 м перед линией хода, а не пустые пять метров пола до камеры */
 const HALL_HERO=.4;        /* доля ширины кадра под зал на ПК: остальное — плита */
 const HALL_STRIP=.36;      /* телефон: доля высоты под полосу зала */
 /* пилот — сам игрок у места раздела, первым планом спиной на три четверти: мерило человека в кадре.
@@ -336,7 +337,9 @@ function hallScene(L,cam,t){
   if(nk>.05)for(const x of [HALL_WIN[0]-.45,HALL_WIN[1]+.45])lights.push({p:[x,Math.min(hc-.5,2.3)-.02,HALL_B+.32],range:3.4,c:r3Sc(r3Lin([255,196,130]),(dk?.9:1.4)*nk),vol:0});
   /* рассеянный: небо — свет дока сквозь окна (сверху и со стен), земля — отсвет пола (потолок, низы балок) */
   /* ночью рассеянный не падает в черноту: value ≥ .08 на всех плоскостях (потолок, дальняя стена, пол) */
-  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day),ptc=hallPlanetTone();
+  /* на ходу (M816) рассеянный тише: зал держат лампы мест — лужи на полу, а не ровный серый */
+  const wk=hallWalkOn()&&HALL.walk&&!HALL.walk.eng&&HALL.walk.fk<.5?.62:1;
+  const mx=(a,b2)=>r3Lin(mixc(a,b2,nk)),amb=(dk?.85:1.25)*(.49+.51*day)*wk,ptc=hallPlanetTone();
   const sky=mx(mixc(mixc(T.wall,T.day||[146,178,232],.62),ptc,.08),mixc(T.wall,[66,84,140],.5)),gnd=mx(mixc(T.wall,[204,164,118],.6),mixc(T.wall,[92,106,140],.58));
   const fog=mx(mixc(T.wall,[150,165,190],.4),[30,38,64]);
   const pl=HALL.orb&&HALL.orbTex?HALL.orb:null;
@@ -486,6 +489,8 @@ function hallFrame(){
   const oq=r3Proj(cam.vp,c.tgt,sz.cw,sz.ch);U.set([oq?oq[0]/sz.cw:.5,oq?oq[1]/sz.ch:.5,HALL_CA,1],48);
   /* холст — левая доля кадра: виньетка и хроматика считаются по всему кадру, как до среза */
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL.sharp==null?HALL_SHARP:HALL.sharp,1],52);
+  /* на ходу дальний конец зала уходит в темноту, а не режется кромкой: сила и x пилота на экране (M816) */
+  if(W&&!W.eng){const pw=hallWalkPilot(),q=pw&&r3Proj(cam.vp,[pw[0],1,pw[1]],sz.cw,sz.ch);U.set([.6*(1-W.fk),q?q[0]/sz.cw:.5,0,1],56);}
   HALL.frames++;HALL.stat=hallLimits(S);HALL.vp=cam.vp;
   const k0=L.people[0],pw=W?hallWalkPilot():null,pa=pw?[pw[0],pw[1]]:W?null:hallPilotAt(HALL.place),f=sz.wide?sz.ch:sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};

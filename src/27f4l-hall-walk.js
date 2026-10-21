@@ -8,15 +8,16 @@
 
    ПРАВИЛА ФАЙЛА:
    1. Места — порядок постоянный (ноги игрока его выучивают); места без вкладок на этой станции нет, линия смыкается.
-   2. Мерило — человек: идя, он .20–.22 высоты кадра на ПК и .18 на телефоне; линия пола — на .30 высоты снизу.
+   2. Мерило — человек: идя, он ≈ .28 высоты кадра на ПК и ≈ .25 на телефоне; зал от среза пола до потолка — почти весь кадр,
+      срез — у z 3,8 (HALL_FCUT): между линией хода и срезом 2,3 м пола, не пять.
    3. Над залом при ходьбе — только угловой чип станции, полоса мест и две кнопки (глагол, выход).
    4. Ход — по настоящим часам (интерфейс, как наезд камеры): в паузе игры и на стенде он идёт так же. */
 const HALL_WZ=1.5;            /* линия хода: перед стойкой бара и прилавками, за ней — столики бара */
 const HALL_WALK_V=2.6,HALL_JOG_V=4.5;   /* шаг и бег, м/с: дверь → бар (17 м) шагом ≤ 7 с */
-const HALL_WALK_D={pc:10,ph:11.7,fy:.8,ey:1.9,ty:1.55};   /* объектив хода: от линии, поле, высота глаза и цели */
+const HALL_WALK_D={pc:7.1,ph:8.4,fy:.8,ey:1.5,ty:1.45};   /* разрез: зал во весь кадр, пол до среза — не пустыня */   /* объектив хода: от линии, поле, высота глаза и цели */
 /* места: id, x на линии, вкладки карточки, глагол, имя в полосе, куда смотрит стоя (yaw), табличка (точка, имя, строка) */
 const HALL_PLACES=[
-  {id:"lock", x:-6.45,tabs:[],verb:"ЗАПРАВКА",ru:"ШЛЮЗ",yaw:-Math.PI/2,tag:[-7.15,2.3,HALL_WZ],tn:"ШЛЮЗ",ts:"борт у причала"},
+  {id:"lock", x:-6.9, tabs:[],verb:"ЗАПРАВКА",ru:"ШЛЮЗ",yaw:-Math.PI/2,tag:[-7.15,2.3,HALL_WZ],tn:"ШЛЮЗ",ts:"борт у причала"},
   {id:"trade",x:-4.45,tabs:["market","barter","flea","scrip"],verb:"ТОРГОВАТЬ",ru:"СТОЙКА",yaw:-Math.PI/2-.35,tag:[-5.3,1.9,-1.4],tn:"СТОЙКА",ts:""},
   {id:"board",x:-2.85,tabs:["board"],verb:"ДОСКА",ru:"ДОСКА",yaw:Math.PI,tag:[-3.35,2.5,HALL_B+.05],tn:"ДОСКА",ts:"объявления станции"},
   {id:"ship", x:-.15, tabs:["yard","mods","fuse","site"],verb:"ВЕРФЬ",ru:"ВЕРФЬ",yaw:Math.PI+.25,tag:[.6,2.6,HALL_B],tn:"ОКНО",ts:"верфь и стройка"},
@@ -45,7 +46,7 @@ function hallWalkSettle(){
   if(W.goal!=null){W.x=W.goal;W.goal=null;const g=W.go;W.go=null;if(g)hallWalkEngage(g);}
   else{const p=hallWalkNear(W);if(p&&!W.eng)W.x=p.x;}
   W.v=0;W.ph=0;W.cx=W.x;W.fk=W.eng?1:0;W.tl=0;W.ts=0;const n=hallWalkNear(W);if(n)W.at=n.id;
-  hallWalkUi._k="";hallWalkUi();
+  hallWalkUi(true);
 }
 /* ход: x на линии, лицо (±1), фаза шага, скорость, цель (x) и место, в которое войти по приходу */
 function hallWalkInit(){
@@ -117,10 +118,12 @@ function hallWalkCam(L,sz,c0){
   const fk=W.eng?1:0;W.fk+=(fk-W.fk)*(1-Math.exp(-dt/(W.eng?.16:.24)));if(Math.abs(W.fk-fk)<.002)W.fk=fk;
   const k=hallEase(W.fk);
   /* место: станция камеры (её наезд и линза строк — прежние); на телефоне поле шире под узкий кадр */
-  const pc=c0?{eye:c0.eye,tgt:c0.tgt,fy:ph?hallPhFy(c0.fy,asp):c0.fy}:wl;
+  /* телефон: кадр узкий — цель и глаз сдвинуты по x на вещь места (табличка), иначе доска уходит за кромку */
+  const pl=ph&&c0&&W.eng?HALL_PLACES.find(q=>q.id===W.eng):null,sx=pl&&W.eng!=="lock"?pl.tag[0]-c0.tgt[0]:0;
+  const pc=c0?{eye:[c0.eye[0]+sx,c0.eye[1],c0.eye[2]],tgt:[c0.tgt[0]+sx,c0.tgt[1],c0.tgt[2]],fy:ph?hallPhFy(c0.fy,asp):c0.fy}:wl;
   const m=(a,b)=>a.map((v,i)=>v+(b[i]-v)*k);
   const c={eye:m(wl.eye,pc.eye),tgt:m(wl.tgt,pc.tgt),fy:wl.fy+(pc.fy-wl.fy)*k};
-  const cx=.5+((ph?.5:.32)-.5)*k,cy=.5+((ph?.1:.5)-.5)*k;
+  const cx=.5+((ph?.5:.32)-.5)*k,c0y=ph?.6:.5,cy=c0y+((ph?.1:.5)-c0y)*k;   /* телефон на ходу: цель ниже середины — сцена под полосой мест, а не над пустым срезом */
   const cam=hallCamFr(c,sz.cw,sz.ch,cx,cy);cam.c=c;return cam;
 }
 function hallWalkMoving(){const W=HALL.walk;return !!W&&(Math.abs(W.v)>.01||W.goal!=null||(W.fk>0&&W.fk<1)||(W.cx!=null&&Math.abs(W.cx-W.x)>.02&&Math.abs(W.v)>0));}
@@ -184,9 +187,9 @@ function hallWalkDom(){
     b.addEventListener("click",()=>hallWalkTo(p.id,true));s.appendChild(b);});
 }
 /* подписи: полоса подсвечивает место под ногами, глагол — только у места */
-function hallWalkUi(){
+function hallWalkUi(force){
   const W=HALL.walk;if(!W||typeof document==="undefined")return;
-  const key=(W.at||"")+"|"+(W.eng||"");if(hallWalkUi._k===key)return;hallWalkUi._k=key;
+  const key=(W.at||"")+"|"+(W.eng||"");if(!force&&W.uik===key)return;W.uik=key;
   const p=W.at&&HALL_PLACES.find(q=>q.id===W.at),a=document.getElementById("stWalkAct");
   if(a){a.textContent=p?p.verb:"";a.hidden=!p||!!W.eng;}
   document.querySelectorAll("#stWalkStrip button").forEach(b=>b.classList.toggle("on",b.dataset.place===(W.eng||W.at)));
@@ -195,7 +198,13 @@ function hallWalkUi(){
 function hallWalkTagList(){
   const W=HALL.walk,P=hallPlacesHere();let i=P.findIndex(p=>p.id===W.at);
   if(i<0){let d=1e9;P.forEach((p,j)=>{const e=Math.abs(p.x-W.x);if(e<d){d=e;i=j;}});}
-  return P.slice(Math.max(0,i-1),i+2).map(p=>({p:p.tag,t:p.tn,s:p.id==="trade"?((ST_TYPES.find(x=>x.id===(G.st&&G.st.stype))||{}).ru||""):p.ts,dn:0}));
+  return P.slice(Math.max(0,i-1),i+2).map(p=>({p:p.tag,t:p.tn,s:p.id==="trade"?hallTradeLine():p.ts,dn:0}));
+}
+/* вторая строка стойки — что здесь дёшево (три товара ниже всего к базе), а не тип станции: он уже в шапке */
+function hallTradeLine(){
+  const sys=G.sys;if(!sys||!sys.station)return "";
+  const r=TRADE_KEYS.map(k=>({k,q:buyPriceFor(sys,k)/RES[k].price})).sort((a,b)=>a.q-b.q).slice(0,3);
+  return "дёшево: "+r.map(x=>RES[x.k].ru.toLowerCase()).join(", ");
 }
 /* клавиши: действие входит, назад выходит, 1–7 — к месту по полосе */
 if(typeof addEventListener==="function")addEventListener("keydown",e=>{

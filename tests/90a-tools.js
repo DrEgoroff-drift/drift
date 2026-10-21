@@ -324,7 +324,8 @@ const T=(()=>{
         const walk=!!(HALL.walk&&HALL.open&&hallWalkOn());
         if(walk){if(!tap("stWalk-trade"))return R(false,"места СТОЙКА в полосе зала нет");
           for(let i=0;i<200&&HALL.walk.eng!=="trade";i++)hallWalkStep(.1);
-          if(HALL.walk.eng!=="trade")return R(false,"до стойки не дошёл: x "+HALL.walk.x.toFixed(2));}
+          if(HALL.walk.eng!=="trade")return R(false,"до стойки не дошёл: x "+HALL.walk.x.toFixed(2));
+          step();}   /* карточка места строится в шаге входа; кадр — чтобы прилавок был на экране до тычка */
         else if(!tap("ТОРГОВЛЯ"))return R(false,"раздела ТОРГОВЛЯ на этой станции нет");
         const c=tap("ПРОДАТЬ ВСЁ");
         if(!c)return R(false,"кнопки ПРОДАТЬ ВСЁ нет на прилавке");

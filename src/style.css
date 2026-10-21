@@ -3024,7 +3024,7 @@ body.screen:not(.mobile):has(#station.hall.walk.open:not(.eng)) #console{left:au
   #stWalkOut{right:12px;bottom:20px;min-width:0;padding:0 12px}
   #station.hall.walk.eng #stWalkBack{left:auto;right:12px;top:calc(env(safe-area-inset-top) + 58px);bottom:auto;min-width:96px;min-height:44px}   /* над потолком, а не поперёк сцены */
   /* телефон: чип — имя и деньги одной строкой под эфиром; полоса под ним прокручивается; глагол слева от выхода */
-  #station.hall.walk:not(.eng)>header{left:12px;top:calc(env(safe-area-inset-top) + 58px);height:48px;padding:6px 12px;max-width:calc(100% - 24px)}
+  #station.hall.walk:not(.eng)>header{left:12px;top:calc(env(safe-area-inset-top) + 58px);height:48px;min-height:0;padding:6px 12px;max-width:calc(100% - 24px)}
   #station.hall.walk:not(.eng)>header #stKind,#station.hall.walk:not(.eng)>header #wDt,#station.hall.walk:not(.eng)>header #stDesk{display:none}
   #stWalkStrip{left:12px;top:calc(env(safe-area-inset-top) + 114px);max-width:calc(100% - 24px);flex-wrap:wrap;overflow:visible}   /* семь мест — в две строки, а не срезом за край */
   #stWalkStrip button{padding:0 10px 0 9px;gap:6px;letter-spacing:.1em}
