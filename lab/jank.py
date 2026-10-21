@@ -380,9 +380,103 @@ def run_scene(a, pg, sc, bad, plant=None, cpu=1):
         except Exception: pass
 
 
+TRANS_MAX = 250   # худший кадр перехода, мс: дольше — игрок видит, что игра встала
+# обход переходов настоящими воротами игры — тем же путём, каким ходит игрок (действие → ворота режима);
+# перед каждым шагом 1,5 с простоя, чтобы заготовки наперёд (зал, пещера, флора) успели то, что успели бы у игрока
+TRWALK = r"""window.__TR={done:false,rows:[],err:null};
+(async function(){
+ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+ const find=pred=>{for(let r0=0;r0<16;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
+   if(Math.max(Math.abs(x),Math.abs(y))!==r0)continue;const s=getSystem(x,y);if(pred(s))return s;}return null;};
+ const go=(s,x,y)=>{G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;G.mode="system";G.ship.x=x;G.ship.y=y;G.ship.vx=0;G.ship.vy=0;};
+ const until=async(pred,ms)=>{const e=performance.now()+ms;while(performance.now()<e){try{if(pred())return true;}catch(e){}await sleep(40);}return false;};
+ const step=async(n,act,pred,settle)=>{await sleep(1500);const t0=performance.now()-__J.t0;let err=null;
+   try{act();}catch(e){err=String(e&&e.message||e);}
+   const ok=!err&&await until(pred,15000);const t1=performance.now()-__J.t0;await sleep(settle||2000);
+   __TR.rows.push({n,t0,t1,t2:performance.now()-__J.t0,ok,err,m:G.mode});return ok;};
+ try{
+  const day=p=>p.type!=="gas"&&p.T&&p.T.atm!=="отсутствует";
+  const sl=find(q=>(q.planets||[]).some(day)),p=sl.planets.find(day);
+  G.fuel=Math.max(G.fuel,60);go(sl,p.x+400,p.y+200);await sleep(2500);
+  await step("система → заход",()=>{startLanding(p);G.land.y=groundAt(G.land.tr,G.land.x)-560;},()=>G.mode==="landing");
+  await step("заход → грунт",()=>{G.land.ok=true;G.land.over=.01;},()=>G.mode==="surface",3000);
+  await step("грунт → пещера",()=>enterCave(),()=>G.mode==="cave");
+  await step("пещера → грунт",()=>exitCave(),()=>G.mode==="surface");
+  await step("грунт → взлёт",()=>{G.fuel=Math.max(G.fuel,60);launch();},()=>G.mode==="system");
+  const ss=find(q=>q.station&&(stTypeOf(q.station.stype).tabs||[]).indexOf("cantina")>=0)||find(q=>!!q.station);
+  go(ss,ss.station.x+40,ss.station.y);await sleep(3000);
+  await step("система → док",()=>openStation(),()=>G.mode==="dock");
+  if(stTabsHere().indexOf("cantina")>=0)await step("док → Кантина",()=>{tab="cantina";syncTabs();renderTab();},()=>tab==="cantina",3000);
+  await step("док → система",()=>closeStation(),()=>G.mode==="system");
+  const sg=find(q=>(q.planets||[]).some(p=>p.type==="gas")),gp=sg.planets.find(p=>p.type==="gas");
+  go(sg,gp.x+gp.radius+200,gp.y);await sleep(2000);
+  await step("система → черпак",()=>startScoop(gp),()=>G.mode==="scoop");
+  await step("черпак → система",()=>exitScoop(),()=>G.mode==="system");
+ }catch(e){__TR.err=String(e&&e.stack||e).slice(0,300);}
+ __TR.done=true;})();"""
+
+
+def run_trans(a, pg, bad):
+    """переходы между режимами на живой видеокарте: худший кадр от действия до ровного режима + 2 с.
+    Ровный ход меряет run_scene; рывок перехода (стройка пещеры, лепка грунта, зал станции) живёт между
+    ними — 15.10 он был 1072 мс у пещеры и 479 у захода, и ни один прибор этого не видел"""
+    req = urllib.request.Request("http://127.0.0.1:%d/json/new?about:blank" % a.port, method="PUT")
+    t = json.load(urllib.request.urlopen(req, timeout=10))
+    ws = shot.WS(t["webSocketDebuggerUrl"], 200)
+    ok = 0
+    try:
+        ws.call("Emulation.setDeviceMetricsOverride", width=a.w, height=a.h, deviceScaleFactor=1, mobile=False)
+        ws.call("Network.enable"); ws.call("Network.setBlockedURLs", urls=shot.BLOCK)
+        ws.call("Page.enable"); ws.call("Page.addScriptToEvaluateOnNewDocument", source=shot.CATCH)
+        ws.call("Page.navigate", url="file:///" + pg.replace("\\", "/") + "?s=system")
+        t0 = time.time()
+        while time.time() - t0 < 30:
+            if shot.ev(ws, "typeof G!=='undefined'&&G.running&&typeof GPU!=='undefined'&&(GPU.ok||GPU.none)&&"
+                           "document.documentElement.hasAttribute('data-alive')") is True: break
+            time.sleep(.2)
+        else:
+            bad.append(("переходы", "страница не поднялась за 30 с")); return 0
+        time.sleep(2)
+        if not shot.ev(ws, "!!GPU.ok"): bad.append(("переходы", "видеокарты нет — замер на 2D не годится"))
+        shot.ev(ws, "__J.t0=performance.now();__J.on=true;" + TRWALK)
+        t0 = time.time()
+        while time.time() - t0 < 160 and shot.ev(ws, "__TR.done") is not True: time.sleep(.5)
+        st = shot.ev(ws, "__J.on=false;JSON.stringify({tr:__TR,f:__J.f,lt:__J.lt,pp:__J.pp,crash:document.body.innerText.indexOf('СБОЙ')>=0,"
+                         "errs:(window.__errs||[]).filter(function(e){return e[0]!=='W'}).slice(0,4),ver:typeof VER!=='undefined'?VER:'?'})")
+        if not isinstance(st, str): bad.append(("переходы", "запись не прочиталась: %s" % st)); return 0
+        d = json.loads(st)
+        tr = d["tr"]
+        if not tr.get("done"): bad.append(("переходы", "обход не дошёл до конца за 160 с"))
+        if tr.get("err"): bad.append(("переходы", "обход упал: " + re.sub(r"\s+", " ", tr["err"])[:200]))
+        if d["crash"]: bad.append(("переходы", "СБОЙ на экране"))
+        for e in d["errs"]: bad.append(("переходы", "ошибка страницы: " + re.sub(r"\s+", " ", e)[:160]))
+        for r in tr["rows"]:
+            nm = "переход " + r["n"]
+            if not r["ok"]:
+                bad.append((nm, "ворота не открылись за 15 с (режим %s)%s" % (r["m"], ": " + r["err"] if r["err"] else ""))); continue
+            F = [f for f in d["f"] if r["t0"] <= f["t"] <= r["t2"]]
+            if not F: bad.append((nm, "ни одного кадра за переход")); continue
+            w = max(F, key=lambda f: f["d"])
+            lt = max([x[1] for x in d["lt"] if r["t0"] - 50 <= x[0] <= r["t2"]] or [0])
+            sync = [p for p in d["pp"] if r["t0"] <= p[0] <= r["t2"] and p[1] in ("createRenderPipeline", "createComputePipeline")]
+            print("%-22s худший кадр %6.1f мс (%s) · ворота %5.0f мс · долгая задача %5.0f · конвейеров сразу %d" % (
+                r["n"], w["d"], w["m"], r["t1"] - r["t0"], lt, len(sync)))
+            n0 = len(bad)
+            if w["d"] > TRANS_MAX:
+                bad.append((nm, "кадр %d мс в режиме %s — съел: %s%s" % (w["d"], w["m"], who(w),
+                            " · конвейеров собрано сразу %d (%.0f мс)" % (len(sync), sum(p[2] for p in sync)) if sync else "")))
+            regress(nm, {"entry": round(w["d"], 1), "gate": round(r["t1"] - r["t0"])}, bad, d.get("ver", "?"))
+            if len(bad) == n0: ok += 1
+    finally:
+        try: urllib.request.urlopen("http://127.0.0.1:%d/json/close/%s" % (a.port, t["id"]), timeout=5)
+        except Exception: pass
+    return ok
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-plant", action="store_true", help="skip the planted-defect run that proves the live-frame laws see")
+    ap.add_argument("--no-trans", action="store_true", help="skip the walk through mode transitions (worst frame per transition)")
     ap.add_argument("--pause", type=float, default=3, help="seconds the tab is frozen mid-walk (0 = no pause)")
     ap.add_argument("--scenes", default=",".join(SCENES))
     ap.add_argument("--w", type=int, default=1280)
@@ -411,6 +505,7 @@ def main():
         for sc in [s for s in a.scenes.split(",") if s]:
             n0 = len(bad); run_scene(a, pg, sc, bad)
             if len(bad) == n0: ok += 1
+        if not a.no_trans: ok += run_trans(a, pg, bad)
         for sc in [s for s in a.cpu.split(",") if s]:
             n0 = len(bad); run_scene(a, pg, sc, bad, cpu=4)
             if len(bad) == n0: ok += 1

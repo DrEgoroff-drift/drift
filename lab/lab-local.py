@@ -203,6 +203,58 @@ def hunt_post(u, rc):
         with open(HUNT_LOG, "a", encoding="utf-8") as f: f.write(json.dumps(row, ensure_ascii=False) + "\n")
     except Exception: pass
 
+LEAK_SUITE = "91zzzzzzzzd-leak.js"
+
+def leak_suite(src):
+    """переменные верхнего уровня src/ (let/var и изменяемые объекты-константы) → набор «состояние вне мира»:
+    сцена начисто и та же сцена после двух чужих обязаны дать один мир; разошлись — названы переменные,
+    которые пережили resetWorld (так 15.10 нашлись GAUGE_W, HALL_PRE и открытый зал)"""
+    names = []
+    rx = re.compile(r"^(?:let|var)\s+([A-Za-z_$][\w$]*)|^const\s+([A-Z][A-Z0-9_]*)\s*=\s*(?:\{|\[|new (?:Map|Set)\b)")
+    for f in sorted(os.listdir(os.path.join(src, "src")), key=lambda s: s.encode()):
+        if not f.endswith(".js"): continue
+        for ln in open(os.path.join(src, "src", f), encoding="utf-8", errors="replace"):
+            m = rx.match(ln)
+            if m: names.append(m.group(1) or m.group(2))
+    names = sorted(set(names) - {"G"})
+    if not names: return 0
+    js = r'''/* состояние вне мира (лаборатория 15.10, генерирует lab-local.py — в гит не идёт). Мир живёт в G; всё,
+   что лежит в переменных модулей и переживает resetWorld, может менять мир по тому, что было ДО (окно шкал
+   GAUGE_W, заготовка зала HALL_PRE, открытый зал HALL.open). Закон: сцена начисто и та же сцена после двух
+   чужих — один хэш мира. Разошлись — набор называет переменные, сдвинувшиеся после сброса. */
+const LAB_MODVARS=[%s];
+function labVarH(f){
+  let s;try{s=JSON.stringify(f(),(k,v)=>typeof v==="function"?undefined:(v&&ArrayBuffer.isView(v))?"ta"+v.length:(typeof Node!=="undefined"&&v instanceof Node)?"node":v);}catch(e){return "?";}
+  if(s===undefined)return "u";if(s.length>300000)s=s.slice(0,300000);
+  let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+":"+s.length;
+}
+function labVars(){const o={};for(const [n,f] of LAB_MODVARS){try{o[n]=labVarH(f);}catch(e){o[n]="!";}}return o;}
+TEST_SUITES.push(()=>suite("состояние вне мира: сцена после чужих сцен — тот же мир",{tier:"browser"},()=>{
+  const S=lookScenes(),N=100,bad=[],moves={};
+  const run=sc=>{resetWorld();let ok0=true;try{ok0=sc.set()!==false;}catch(e){return null;}if(!ok0)return null;
+    const loop0=LOOP_OFF,dw=drawWorld,hu=hud;LOOP_OFF=false;drawWorld=function(){};hud=function(){};
+    try{for(let i=0;i<N;i++)frameBody(wallMs());}catch(e){return null;}finally{LOOP_OFF=loop0;drawWorld=dw;hud=hu;}
+    return stateHash();};
+  let ran=0;
+  for(let i=0;i<S.length;i++){
+    const sc=S[i],X1=S[(i+1)%%S.length],X2=S[(i+2)%%S.length];
+    const ref=run(sc);if(ref==null)continue;
+    resetWorld();const v0=labVars();
+    run(X1);run(X2);
+    resetWorld();const v1=labVars();
+    const moved=Object.keys(v0).filter(k=>v0[k]!==v1[k]);for(const k of moved)moves[k]=(moves[k]|0)+1;
+    const h=run(sc);ran++;
+    if(h!==ref)bad.push(sc.id+" после «"+X1.id+"», «"+X2.id+"»: другой мир; пережили сброс "+(moved.slice(0,10).join(", ")||"— (не переменные модулей)"));
+  }
+  note("переменных модулей "+LAB_MODVARS.length+"; переживают сброс (кэши — норма, мир они менять не вправе): "+Object.keys(moves).sort((a,b)=>moves[b]-moves[a]).slice(0,30).join(", "));
+  ok(ran>=3,"сцен прогнано "+ran+" из "+S.length);
+  ok(!bad.length,"мир зависит от прошлых сцен: "+bad.length+(bad.length?" — "+bad.slice(0,4).join("; "):""));
+  resetWorld();
+}));
+''' % ",".join('["%s",()=>%s]' % (n, n) for n in names)
+    open(os.path.join(src, "tests", LEAK_SUITE), "w", encoding="utf-8", newline="\n").write(js)
+    return len(names)
+
 CORPUS = os.path.join(os.path.dirname(HUNT_LOG), "corpus")
 CORPUS_SUITE = "91zzzzzzzzc-corpus.js"
 
@@ -324,12 +376,14 @@ def main():
         mine = os.path.join(os.path.dirname(HERE), "tests")
         # охота — инструмент самой лаборатории, а не закон игры: её копия в ветке (пришла слиянием lab-local)
         # отстаёт, поэтому кладётся всегда свежая
-        LAB_OWNED = {"91zzzzzzzzb-hunt.js"}
+        LAB_OWNED = {"91zzzzzzzzb-hunt.js", "91zzzzzzzze-idle.js"}
         add = [f for f in sorted(os.listdir(mine)) if f.endswith(".js") and (f in LAB_OWNED or not os.path.exists(os.path.join(src, "tests", f)))]
         for f in add: shutil.copyfile(os.path.join(mine, f), os.path.join(src, "tests", f))
         if add: print("lab: законы лаборатории подложены в копию: " + ", ".join(add))
         nc = corpus_suite(src)
         if nc: print("lab: корпус сейвов — %d миров прошлых охот в %s" % (nc, CORPUS_SUITE))
+        nl = leak_suite(src)
+        if nl: print("lab: состояние вне мира — %d переменных модулей под надзором (%s)" % (nl, LEAK_SUITE))
         r = sh(["powershell", "-ExecutionPolicy", "Bypass", "-File", os.path.join(src, "build.ps1")], cwd=src, timeout=600)
         if r.returncode:
             live_write(phase="failed", why="сборка упала")
