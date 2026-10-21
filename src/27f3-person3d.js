@@ -285,7 +285,8 @@ function cpMeshKey(m,pose,lod){
   return (m.seed>>>0)+"|"+pose+"|"+lod+"|"+(m.xp!=null?mgrLevel(m):1)+"|"+(m.ai?1:0)+"|"+(m.role||"")+(m.acc?m.acc.join(","):"")+"|"+(m.out||"")+"|"+(m.age==null?"":m.age)+(m.jac?"|j"+m.jac.join(","):"")+(m.style!=null?"|s"+m.style:"");
 }
 function cpMeshPut(key,M){
-  if(CP_MESH.size>=48){const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
+  if(CP_MESH.size>=96){   /* зал + кантина + портреты: 48 вытесняли друг друга по кругу */
+    const k0=CP_MESH.keys().next().value;r3Drop(CP_MESH.get(k0));CP_MESH.delete(k0);}
   CP_MESH.set(key,M);
 }
 function cpMesh(m,pose,lod){
