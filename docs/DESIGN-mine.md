@@ -29,8 +29,16 @@ biters were a 2D brush unrelated to the planet's beasts.
   faces with «КЛЕТЬ ПОЛНА — РУДУ НАВЕРХ, К УСТЬЮ»; dead rock still drills. When the cage stands at
   the collar the load goes into the hold; what does not fit stays in the cage and waits. The load is
   kept in the mine's record beside the workings (`rec.cage`, written only when non-empty, an array
-  from the cloud reads as empty). In the frame a tub stands at the cage's back mesh; the ore heap
-  rises over its rim with the load, tinted by the heaviest ore.
+  from the cloud reads as empty). In the frame a tub stands at the cage's back mesh — the drift tub
+  of the old mine in the body: a trough wider at the top, a steel rim with rivets, a rib across the
+  end, two wheels with flanges on the cage's own rail; the ore heap rises over the rim with the load,
+  tinted by the heaviest ore.
+- **Ore shows in the section** (22.10). An ore body is a patch of its ore's colour in the sheet's
+  paint (`23ca`), a few short seams in the cave's vein language (`CAVE3_MAT.vein`: a wet light ridge
+  over a dark undercut) and faceted nuggets crowding its heart (`23cb dig3OreSeams`). The tone is
+  half the ore's colour, half the cave's mineral band, so iron is not ice. Seams and nuggets break at
+  workings and half a metre off them. Only bodies within seven cells of a working (twelve under the
+  shaft's bottom) are built — what the player can see from the workings.
 - **Sinking:** at the bottom of the shaft S drills the shaft down and the cage follows the face;
   reaching a level row opens the level.
 - **Up and down off a drift only along ore** (an ore cell or one beside an ore body): that is how
@@ -60,11 +68,12 @@ per MSAA sample: the nearer of the two wins.
 - **The headframe** is a planet body in both modes (on the surface with the cage parked at the
   mouth), so the light does not change on the way in.
 - Deep down, when no ground is in the window, the planet frame is not computed.
-- **Depth deep down** (22.10): the collar's light falls into the shaft from above the frame — the sky
-  by day, the headframe lamp by night — and fades with depth (`dig3ShaftK`, 1/(1+(d/24)²)): at
-  27 m the shaft above the cage is lit, at 72 m and below only a thread is left. Each level's gate
-  carries a painted board with its depth from the collar («−72»), on the back wall of the drift
-  beside the shaft.
+- **Depth deep down** (22.10): the collar's light falls into the shaft from the top edge of the frame
+  — the sky by day, the headframe lamp by night — and fades with depth (`dig3ShaftK`, 1/(1+(d/30)³)),
+  so depth reads in three steps: the shaft's column above the cage measures lum 48 at 27 m, 37 at
+  72 m and 31 at 117 m (the light's own share +20 / +9 / +2.5, by A/B against the light off). Each
+  level's gate carries a painted board with its depth from the collar («−72»); the seven has a hook
+  (segment f), as on an abacus — with a bare top bar it read as a one on the phone.
 
 ## 4. The biters are the planet's beasts
 
@@ -94,15 +103,24 @@ spot within 90 px of the man (`mineLaySpot`); with none near, the prompt says «
 
 ## 6. Cost (PC 1600×900 / phone 390×844 @1.5, real clock and GPU timestamps)
 
-| where | CPU frame | GPU per frame |
-|---|---|---|
-| surface, no mine | — | 0.33 (renders on 6 % of frames; 3.7 per render) |
-| collar, planet over the cut | 1.07 | 4.31 / 1.21 |
-| level 1 | 1.43 | 1.73 / 0.99 |
+22.10, 0.499.5 + this work, ms per drawn frame, p50 / p99 over 400 frames after 120 of warm-up:
 
-The collar pays the full planet frame every tick (the surface caches it while nothing moves);
-it stays inside the planet's own per-render cost. Tool: `digprof.py` (scratchpad), the
-snippets from `mk_digcost.py`.
+| where | JS PC | GPU PC | JS phone | GPU phone |
+|---|---|---|---|---|
+| surface, no mine | 2.3 / 4.5 | 4.83 / 5.06 | 2.5 / 5.0 | 0.93 / 0.99 |
+| collar, planet over the cut | 3.0 / 15.1 | 4.36 / 4.51 | 2.2 / 19.1 | 1.24 / 1.42 |
+| level 1, gallery | 2.0 / 3.6 | 4.45 / 5.01 | 2.9 / 15.0 | 1.40 / 1.52 |
+| level 1, at the face | 3.2 / 33.8 (max 712) | 4.36 / 6.74 | 1.7 / 4.2 | 1.36 / 1.48 |
+| 72 m, cage | 1.9 / 4.7 | 0.79 / 0.86 | 1.4 / 3.3 | 0.46 / 0.48 |
+
+Down to the first level the planet frame over the cut is most of the GPU bill; below the window's
+reach of the ground the mine costs under a millisecond. The tails are chunk rebuilds: a cell dug at
+the face rebuilds the chunks around it synchronously, 66–83 ms each (Control's measure of the
+entry, 22.10: worst entry frame 1.5 s). Ore bodies (§2) add 28–57 seams per scene, inside these
+numbers. Tool: `minecost.py` (scratchpad) — the scene from `mkmine.py`, the page's own rAF
+(`--clock wall`; the stand's stepped clock lies about time), `FRAME_JS` and the GPU `frame`
+timestamp counted only on frames the GPU drew (the game skips rAF ticks on a 240 Hz screen).
+`cost.py` reads the CPU wrong inside the mine and is not used here.
 
 ## 7. Disputed — decided without the author
 
@@ -127,9 +145,11 @@ snippets from `mk_digcost.py`.
 - Ore in a cage left down the mine (suit failure, beacon) is kept and unloaded at the next arrival at
   the collar.
 - The shaft light is point lights only (two of the twelve, both «core»): the cave shader (`22d*`)
-  is not this work's to edit, so there is no visible beam. Its effect is measured on the frame (the
-  shaft's top above the cage at lum 37 at 27 m, 26 at 72 m and 117 m) and is quiet to the eye; the
-  depth board carries the number.
+  is not this work's to edit, so there is no visible beam; the steps are measured on the frame (§3).
+- Ore bodies borrow the cave's vein material and add the ore's colour, which the cave's veins refuse
+  («рыжего нет»): in the mine the ore's kind is the decision, so it must read. The sheet around and
+  between workings stays the cave's dark section paper with its strata lines — the planet session's
+  look; the mine fills it with ore bodies, not with a new paint.
 
 ## 8. Open
 

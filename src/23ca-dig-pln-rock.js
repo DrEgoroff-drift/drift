@@ -155,7 +155,7 @@ function dig3Paint(F,X,Y,Z,ny){
     const e=Math.hypot((X-n.x)*.8,(Y-n.y)*1.25)+.45*n.r*cave3N3(X*.5,Y*.5,Z*.5,33);
     if(e<n.r){
       const w=1-plnSmooth(n.r*.82,n.r,e);
-      c=plnMix3(c,plnMix3(c,[n.c[0]*.5,n.c[1]*.5,n.c[2]*.5],.7),w*.75);
+      c=plnMix3(c,[n.c[0]*.85,n.c[1]*.85,n.c[2]*.85],w*.8);   /* тело — пятно цвета руды; жилы и самородки на нём (23cb) */
       if(e<n.r*.6&&cave3N3(X*4.1,Y*4.1,Z*4.1,35)>.62)c=plnMix3(c,n.c,.85);
     }
   }

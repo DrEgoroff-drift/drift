@@ -88,7 +88,71 @@ function dig3DressMesh(F){
       for(let y=y0+.25;y<y1-.05;y+=.3)box(lx-.22,lx+.22,y,y+.04,zd-.6,zd-.54,K.woodD);
     }
   }
+  DIG3.stat.seams=dig3OreSeams(m,F);
   return {geo:plnGeo(plnMeshDone(m)),lamps,gen:PLN_GPU.gen,v:F.v,D:F.D};
+}
+/* рудное тело на листе разреза — пучок жил (язык жилы пещеры 22dc, материал vein): светлый мокрый валик
+   над тёмным подбоем, читается формой; тон — от руды, наполовину к светлой минеральной полосе пещеры, чтобы
+   железо отличалось от льда. Тусклая линза краски (23ca) остаётся фоном. Строится только у выработок
+   (в пределах DIG3_SEAM.near клеток от выкопанного и под забоем ствола) — дальше игрок тела не видит.
+   Возвращает число швов (для замера) */
+const DIG3_SEAM={near:7,step:.5,sides:5,z:-.05};
+function dig3OreSeams(m,F){
+  const D=F.D,CM=DIG3_CM,Z=DIG3_SEAM,want=new Set();
+  if(!D||!F.g)return 0;
+  /* какие узлы руды рядом с выработкой: каждая выкопанная клетка отмечает узлы в радиусе near */
+  for(let r=0;r<F.NR;r++)for(let c=-MINE_HALF;c<=MINE_HALF;c++){
+    if(!dig3Dug(F,c,r))continue;
+    const bottom=c===0&&!dig3Dug(F,0,r+1),dn=bottom?Z.near+5:Z.near;
+    for(let nr=Math.floor(Math.max(0,r-Z.near)/ORE_NODE_H);nr<=Math.floor((r+dn)/ORE_NODE_H);nr++)
+      for(let nc=Math.floor((c-Z.near)/ORE_NODE_W);nc<=Math.floor((c+Z.near)/ORE_NODE_W);nc++)want.add(nc+","+nr);
+  }
+  const dugAt=(x,y)=>dig3Dug(F,Math.floor(x/CM),Math.floor(-y/CM));
+  /* камень ли под точкой: в пустоте и в полуметре от её края жила не лежит (лист там — кромка) */
+  const rock=(x,y)=>!dugAt(x,y)&&!dugAt(x+.45,y)&&!dugAt(x-.45,y)&&!dugAt(x,y+.45)&&!dugAt(x,y-.45);
+  const band=typeof CAVE3_DC!=="undefined"&&CAVE3_DC.band?CAVE3_DC.band:[.42,.4,.36];
+  let n=0;
+  for(const key of want){
+    const [nc,nr]=key.split(",").map(Number),q=oreNode(D,nc,nr);
+    if(!q||!RES[q.res])continue;
+    const r=rng(hashi(nc*131+7,nr*977+3,0x5EA3)),R=q.rad*CM,cx=(q.cx+.5)*CM,cy=-(q.cy+.5)*CM;
+    const a=R/.8,b=R/1.25,th=(r()-.5)*.7,ux=Math.cos(th),uy=Math.sin(th);
+    const col=plnMix3(band,plnHex(RES[q.res].col),.55),k=2+Math.min(2,Math.round(q.rad*.9)),ph0=r()*TAU,wa0=.08+r()*.1;
+    for(let i=0;i<k;i++){
+      /* швы поперёк малой оси линзы: средние длинные и толстые, крайние короче */
+      const o=((i+.5)/k*2-1)*.8+(r()-.5)*.1,half=Math.sqrt(Math.max(0,1-o*o)),ph=ph0+(r()-.5)*.6,wa=wa0*(.8+r()*.4);
+      const pts=[];
+      for(let t=-half*.3;t<=half*.3;t+=Z.step/Math.max(a,1)){
+        /* точка на хорде: вдоль наклона th, поперёк — смещение o, волна шва */
+        const lx=t*a,ly=o*b+wa*Math.sin(t*a*.9+ph);
+        pts.push([cx+lx*ux-ly*uy,cy+lx*uy+ly*ux,Z.z]);
+      }
+      const rad=(.09+.08*half)*(.85+r()*.3);
+      let run=[];
+      const seam=()=>{
+        if(run.length>=3){
+          const d=plnSub(run[run.length-1],run[0]),l=Math.hypot(d[0],d[1])||1,L=l;
+          const rw=t=>rad*(.3+.7*Math.pow(Math.sin(Math.PI*t),.6))*(.85+.15*Math.sin(t*L*1.3+ph));
+          plnTube(m,{path:run.map(p=>[p[0],p[1]-rad*.6,p[2]+.09]),rad:t=>rw(t)*1.15,sides:Z.sides,flat:.4,up:[d[1]/l,-d[0]/l,0],col:plnMul(col,.12),mat:CAVE3_MAT.vein,glow:0,x:1,cap:true});
+          plnTube(m,{path:run,rad:rw,sides:Z.sides,flat:.45,up:[d[1]/l,-d[0]/l,0],col,mat:CAVE3_MAT.vein,glow:.9,x:1,cap:true});
+          n++;
+        }
+        run=[];
+      };
+      for(const p of pts){if(rock(p[0],p[1]))run.push(p);else seam();}
+      seam();
+    }
+    /* самородки: гранёные комья руды в сердце тела, гуще к середине; мокрая грань ловит фонарь */
+    const nk=8+Math.round(q.rad*6);
+    for(let j=0;j<nk;j++){
+      const u=Math.pow(r(),.75)*.8,an=r()*TAU,lx=Math.cos(an)*u*a,ly=Math.sin(an)*u*b,x=cx+lx*ux-ly*uy,y=cy+lx*uy+ly*ux;
+      if(!rock(x,y))continue;
+      const sz=.1+r()*.14*(1-u*.7);
+      plnBlob(m,{c:[x,y,Z.z+.04],r:[sz*(1+r()*.5),sz*(.7+r()*.4),sz*.8],sub:0,bump:.35,yaw:r()*6.3,pitch:r()-.5,lean:r()*3,seed:j*13+nc,
+        col:plnMul(col,1.05+r()*.25),mat:CAVE3_MAT.vein,glow:.9,x:1});
+    }
+  }
+  return n;
 }
 
 /* вагонетка в клети: короб x ±w, по высоте y0..y1 над полом клети, вглубь z0..z1 (за человеком, z 1.1) */
