@@ -292,6 +292,7 @@ Check each against the code before building — some may already hold.
   11.09: a separate field, `T.state()` returns both); `planetStripTick` by `wallMs()` writes `stripLvl` into
   hashed state.
 - [ ] **Watch:** «прогоны: двенадцать путей» flickered once under load.
+- [ ] **The vision flickers on real time (22.10):** the DPR pair (one window at 1 and 3) catches the game mid-motion. Settled in `geoSettle`: the base section lens and the man walking to his cell; the landing assembled over frames (`plnWarmStep`). Still open: after «карта» › «Назад» the system cues («Нейэль I · 760», «Звезда…») sit 5–12 px apart between the two runs, 2 of 16 runs — find what the system view eases on the real clock after the map closes, or make the DPR check skip cues anchored to moving bodies.
 - [ ] **Nets owed:** `TEST_T0` at local noon; not caught yet — the .55 auto-brake, the money-printing
   counter, idle drones; a per-suite dirty-page check after `fn()`.
 - [ ] **Refactor queue, each a commit:** `detStuck`'s key law (fires only on a diff of exactly 0 — soften

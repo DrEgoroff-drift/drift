@@ -8,6 +8,7 @@
       power=0     no reactor: the base has no power, rooms are lit by nothing but the man's lamp
       menu=1      the build menu is open
       deep=1      the fifth row is open
+      room=<kind> that kind of room at column 1, row 1 (the contact sheet of sectsheet.py stands the man there)
 Lands next to the shots as g_sect_<name>.js; shoot it with gshot.py js=g_sect_<name>.js eval=eval-sect.js
 """
 import json
@@ -25,6 +26,7 @@ T = """(function(){
   put(1,2,"battery");put(2,2,"garden",0);put(3,2,"cryo");
   put(2,3,"shop");put(3,3,"habitat");
   if(o.deep)put(1,4,"vat");
+  if(o.room)put(1,1,o.room);
   G.bases[baseKey(G.sx,G.sy,p.idx)]={sx:G.sx,sy:G.sy,idx:p.idx,name:"Проба",type:p.type,res:p.res.slice(0,3),cells:cells,pool:{},tMs:now(),built:now(),rows:R};
   if(o.night&&PLN.sun)PLN.sun=Object.assign({},PLN.sun,{night:1,look:Object.assign({},PLN.sun.look||{},{skyHor:[.012,.018,.03],skyZen:[.003,.005,.012]})});
   enterBase(p);
