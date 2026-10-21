@@ -601,6 +601,8 @@ function r3Targets(R,w,h){
   }
   return T;
 }
+/* радиус сетки от её начала (по вершинам, раз на массив) — отсечка тени по радиусу лампы */
+function r3MeshR(m){if(m.__rv!==m.v){let r=0;const v=m.v;for(let i=0;i<v.length;i+=12){const q=v[i]*v[i]+v[i+1]*v[i+1]+v[i+2]*v[i+2];if(q>r)r=q;}m.__rv=v;m.__r=Math.sqrt(r);}return m.__r;}
 function r3Frame(cn,S,post,dst){
   const R=rpgGet(cn);if(!R||!r3Dev())return false;
   const d=GPU.dev,w=dst?dst.w:cn.width,h=dst?dst.h:cn.height;if(w<2||h<2)return false;
@@ -611,10 +613,10 @@ function r3Frame(cn,S,post,dst){
   F.set(S.sky,R3U.sky);F.set(S.gnd,R3U.gnd);F.set(S.fog,R3U.fog);F.set(S.acc,R3U.acc);
   if(S.win)F.set(S.win,R3U.win);if(S.win2)F.set(S.win2,R3U.win2);if(S.sgn)F.set(S.sgn,R3U.sgn);if(S.sgn2)F.set(S.sgn2,R3U.sgn2);
   if(S.flm)F.set(S.flm,R3U.flm);if(S.flm2)F.set(S.flm2,R3U.flm2);
-  const L=S.lights.slice(0,R3_MAXL),SV=[];
+  const L=S.lights.slice(0,R3_MAXL),SV=[],SL=[];
   F[R3U.sgn2+2]=L.length;   /* число ламп — третье число вывески (её .x — глубина, .y — мигание) */
   L.forEach((l,k)=>{const o=R3U.lt+k*16;let si=-1;
-    if(l.shadow&&SV.length<R3_SH){si=SV.length;SV.push(r3ShadowVP(l.p,l.d||[0,-1,0],l.spot?l.cosO:-.2,l.range));}
+    if(l.shadow&&SV.length<R3_SH){si=SV.length;SL.push(l);SV.push(r3ShadowVP(l.p,l.d||[0,-1,0],l.spot?l.cosO:-.2,l.range));}
     F.set([l.p[0],l.p[1],l.p[2],l.range, l.c[0],l.c[1],l.c[2],l.spot?1:0, (l.d||[0,-1,0])[0],(l.d||[0,-1,0])[1],(l.d||[0,-1,0])[2],l.spot?l.cosO:-2, si,l.spot?l.cosI:-1,l.vol||0,0],o);});
   SV.forEach((m,k)=>F.set(m,R3U.sv+k*16));
   F.set(S.M,R3U.M);F.set(S.ot,R3U.ot);
@@ -627,10 +629,16 @@ function r3Frame(cn,S,post,dst){
       {binding:2,resource:R3.shA},{binding:3,resource:R3.cmp},{binding:4,resource:tsg},{binding:5,resource:tfl}]});R3.bgs.set(key,g0);}
   const enc=d.createCommandEncoder();
   const draw=(p)=>{for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}};
-  /* тени: по слою на лампу */
-  for(let k=0;k<R3_SH;k++){
-    const p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
-    if(k<SV.length){p.setPipeline(R3.PS);p.setBindGroup(0,R3.g0s);p.setBindGroup(1,R3.skG[k]);draw(p);}
+  /* тени: по слою на лампу; пустые слои не чистятся — их никто не читает (M816c: зал чистил 6 слоёв на 4 лампы).
+     В слой идут только тела в радиусе лампы: начало экземпляра (часть 0) ближе range + радиус сетки.
+     Кэшировать слой между кадрами в зале нечем: все люди жестикулируют в радиусе своих ламп */
+  for(let k=0;k<SV.length;k++){
+    const l=SL[k],p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
+    p.setPipeline(R3.PS);p.setBindGroup(0,R3.g0s);p.setBindGroup(1,R3.skG[k]);
+    for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;
+      if(!(cnt>1)){const o=(ii|0)*R3_PART*16,dx=S.M[o+12]-l.p[0],dy=S.M[o+13]-l.p[1],dz=S.M[o+14]-l.p[2],rr=l.range+r3MeshR(m);
+        if(dx*dx+dy*dy+dz*dz>rr*rr){R3.shCull=(R3.shCull||0)+1;continue;}}
+      p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}
     p.end();
   }
   const p=enc.beginRenderPass({colorAttachments:[{view:T.msV,resolveTarget:T.resV,loadOp:"clear",storeOp:"discard",clearValue:{r:0,g:0,b:0,a:1}},
