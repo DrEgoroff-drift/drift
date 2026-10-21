@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 621 · top-level symbols: 8764
+Files: 619 · top-level symbols: 8741
 
 ## SYMBOLS
 
@@ -486,6 +486,7 @@ DIAL_RU                      src/21a8-base-world.js:26
 DIAL_WORLD                   src/21a8-base-world.js:14-24
 DIG3                         src/23c-dig-pln.js:13
 DIG3B                        src/23ce-dig-pln-beasts.js:10
+DIG3OG                       src/23cb-dig-pln-dress.js:103
 DIG3Z                        src/23ce-dig-pln-beasts.js:79
 DIG3_BEAST                   src/23ce-dig-pln-beasts.js:8
 DIG3_CH                      src/23ca-dig-pln-rock.js:27
@@ -493,11 +494,12 @@ DIG3_CM                      src/23ca-dig-pln-rock.js:18
 DIG3_DR                      src/23cb-dig-pln-dress.js:8
 DIG3_HAND                    src/23cd-dig-pln-top.js:18
 DIG3_HF                      src/23c-dig-pln.js:45
+DIG3_HOOKS                   src/23c0-dig-hooks.js:6-10
 DIG3_LENS                    src/23c-dig-pln.js:17
 DIG3_LIP                     src/23ca-dig-pln-rock.js:26
 DIG3_NOSCENE                 src/23cd-dig-pln-top.js:361
 DIG3_OLD_WALK                src/23c-dig-pln.js:268
-DIG3_ORE                     src/23cb-dig-pln-dress.js:99
+DIG3_ORE                     src/23cb-dig-pln-dress.js:101
 DIG3_PLANT_GROUP             src/23cd-dig-pln-top.js:156
 DIG3_PPM                     src/23ca-dig-pln-rock.js:17
 DIG3_ROOM                    src/23ca-dig-pln-rock.js:20
@@ -510,19 +512,13 @@ DIG3_TOP_EXIT                src/23cd-dig-pln-top.js:382
 DIG3_TOP_MINE                src/23cd-dig-pln-top.js:214
 DIG3_TOP_SURF                src/23cd-dig-pln-top.js:373
 DIG3_TOP_WGSL                src/23cd-dig-pln-top.js:276
-DIG3_TUB                     src/23cb-dig-pln-dress.js:146
+DIG3_TUB                     src/23cb-dig-pln-dress.js:169
 DIG3_VZ                      src/23ca-dig-pln-rock.js:79
 DIG3_Z                       src/23c-dig-pln.js:14
 DIG3_ZAP                     src/23ce-dig-pln-beasts.js:78
 DIG_CELL                     src/23-mode-dig.js:3
-DIG_DARK_WGSL                src/23b-dig-gpu.js:150
-DIG_EMIT                     src/23b-dig-gpu.js:176
 DIG_GEO_K                    src/23-mode-dig.js:9
-DIG_LIT_C                    src/23b-dig-gpu.js:88
-DIG_MSK                      src/23b-dig-gpu.js:18
-DIG_OWN_WGSL                 src/23b-dig-gpu.js:25
-DIG_TURF                     src/23aa-dig-rock.js:463
-DIG_TXT                      src/23ac-dig-mid-gpu.js:13
+DIG_TURF                     src/23-0-mine-rec.js:48
 DIP_ENVOY                    src/12b1-fx-dip.js:23
 DIP_ESCORT                   src/12b1-fx-dip.js:24
 DIP_LETTER                   src/12b1-fx-dip.js:27
@@ -3772,15 +3768,16 @@ dig3BeastDrop                src/23ce-dig-pln-beasts.js:25-32
 dig3BeastFrame               src/23ce-dig-pln-beasts.js:35-73
 dig3BeastGeo                 src/23ce-dig-pln-beasts.js:13-18
 dig3Box                      src/23c-dig-pln.js:47-51
-dig3CageBody                 src/23cb-dig-pln-dress.js:234-252
-dig3CageMesh                 src/23cb-dig-pln-dress.js:229-232
+dig3CageBody                 src/23cb-dig-pln-dress.js:257-275
+dig3CageMesh                 src/23cb-dig-pln-dress.js:252-255
 dig3ChunkGen                 src/23ca-dig-pln-rock.js:187-286
 dig3Chunks                   src/23ca-dig-pln-rock.js:291-339
 dig3Den                      src/23ca-dig-pln-rock.js:99-118
 dig3DepthBoard               src/23cb-dig-pln-dress.js:17-34
 dig3Dir                      src/23c-dig-pln.js:37-41
-dig3DressFrame               src/23cb-dig-pln-dress.js:270-297
-dig3DressMesh                src/23cb-dig-pln-dress.js:35-93
+dig3Draw                     src/23c-dig-pln.js:250-266
+dig3DressFrame               src/23cb-dig-pln-dress.js:293-323
+dig3DressMesh                src/23cb-dig-pln-dress.js:35-94
 dig3Dug                      src/23ca-dig-pln-rock.js:30
 dig3EyesMesh                 src/23ce-dig-pln-beasts.js:20-24
 dig3Field                    src/23ca-dig-pln-rock.js:37-66
@@ -3792,23 +3789,25 @@ dig3HandU                    src/23cd-dig-pln-top.js:61-71
 dig3Hash                     src/23ca-dig-pln-rock.js:29
 dig3HeadBody                 src/23c-dig-pln.js:58-92
 dig3HeadMesh                 src/23c-dig-pln.js:52-55
-dig3HeapMesh                 src/23cb-dig-pln-dress.js:209-220
-dig3HeapTint                 src/23cb-dig-pln-dress.js:222-227
-dig3Hex                      src/23cb-dig-pln-dress.js:148-154
+dig3HeapMesh                 src/23cb-dig-pln-dress.js:232-243
+dig3HeapTint                 src/23cb-dig-pln-dress.js:245-250
+dig3Hex                      src/23cb-dig-pln-dress.js:171-177
 dig3Land                     src/23ca-dig-pln-rock.js:71-77
 dig3Lens                     src/23c-dig-pln.js:19-26
 dig3LensMk                   src/23cd-dig-pln-top.js:52-55
 dig3LensOf                   src/23cd-dig-pln-top.js:56-60
 dig3ManShare                 src/23c-dig-pln.js:28
 dig3Nodes                    src/23ca-dig-pln-rock.js:120-131
-dig3OreBodies                src/23cb-dig-pln-dress.js:100-143
+dig3OreBodies                src/23cb-dig-pln-dress.js:116-166
+dig3OreFree                  src/23cb-dig-pln-dress.js:115
+dig3OreGeo                   src/23cb-dig-pln-dress.js:105-114
 dig3Over                     src/23c-dig-pln.js:232-244
 dig3Paint                    src/23ca-dig-pln-rock.js:133-172
 dig3PanX                     src/23c-dig-pln.js:31-35
 dig3PlantView                src/23cd-dig-pln-top.js:170-195
 dig3RibView                  src/23cd-dig-pln-top.js:105-129
-dig3RopeMesh                 src/23cb-dig-pln-dress.js:254-259
-dig3RopeSet                  src/23cb-dig-pln-dress.js:260-267
+dig3RopeMesh                 src/23cb-dig-pln-dress.js:277-282
+dig3RopeSet                  src/23cb-dig-pln-dress.js:283-290
 dig3ShaftK                   src/23c-dig-pln.js:102
 dig3ShaftLight               src/23c-dig-pln.js:103-118
 dig3Smax                     src/23ca-dig-pln-rock.js:34
@@ -3831,33 +3830,14 @@ dig3TopPost                  src/23cd-dig-pln-top.js:362-370
 dig3TopPre                   src/23cd-dig-pln-top.js:232-273
 dig3TopSkirt                 src/23cd-dig-pln-top.js:141-154
 dig3TopTab                   src/23cd-dig-pln-top.js:29-34
-dig3TubBody                  src/23cb-dig-pln-dress.js:157-206
+dig3TubBody                  src/23cb-dig-pln-dress.js:180-229
 dig3Void                     src/23ca-dig-pln-rock.js:80-97
 dig3ZapFrame                 src/23ce-dig-pln-beasts.js:80-97
-digBedding                   src/23aa-dig-rock.js:118-145
 digCell                      src/23-mode-dig.js:30-50
-digCun                       src/23aa-dig-rock.js:158-182
-digEmit                      src/23b-dig-gpu.js:177-196
 digFauna                     src/23-mode-dig.js:259-335
-digLampsKeep                 src/23b-dig-gpu.js:170-173
-digLights                    src/23b-dig-gpu.js:90-112
-digLitU                      src/23b-dig-gpu.js:114-136
-digMask                      src/23b-dig-gpu.js:69-87
-digMid                       src/23a-dig-draw.js:58-455
-digMidGpu                    src/23ac-dig-mid-gpu.js:14-238
-digRGB                       src/23aa-dig-rock.js:465
-digRockBelow                 src/23a-dig-draw.js:48-55
-digRockMass                  src/23aa-dig-rock.js:183-446
-digRockPass                  src/23aa-dig-rock.js:26-101
-digSMix                      src/23aa-dig-rock.js:464
-digShade                     src/23b-dig-gpu.js:139-148
-digSoil                      src/23aa-dig-rock.js:499-599
-digSoilBand                  src/23aa-dig-rock.js:492-498
-digSoilCols                  src/23aa-dig-rock.js:473-490
-digSurfFringe                src/23aa-dig-rock.js:610-651
-digSurfFringeGpu             src/23ac-dig-mid-gpu.js:243-280
-digSurfY                     src/23aa-dig-rock.js:469-472
-digVoidPath                  src/23a-dig-draw.js:5-45
+digSMix                      src/23-0-mine-rec.js:49
+digSoilCols                  src/23-0-mine-rec.js:57-74
+digSurfY                     src/23-0-mine-rec.js:53-56
 dipBlock                     src/12b1-fx-dip.js:165-203
 dipEnvoyDue                  src/12b1-fx-dip.js:49-55
 dipEnvoyShip                 src/12b1-fx-dip.js:57-60
@@ -3952,10 +3932,7 @@ drawCrystalForest            src/20aa-poi-shapes.js:114-140
 drawDeadBattery              src/20aa-poi-shapes.js:217-271
 drawDeco                     src/21b-surface-deco.js:166-216
 drawDeposit                  src/21b-surface-deco.js:405-559
-drawDig                      src/23a-dig-draw.js:594-598
 drawDigFauna                 src/23-mode-dig.js:336-345
-drawDigLight                 src/23b-dig-gpu.js:156-168
-drawDigWorld                 src/23a-dig-draw.js:456-546
 drawDronesMap                src/12e-drone-flight.js:296-312
 drawDronesSystem             src/12e-drone-flight.js:252-283
 drawDustMotes                src/19-mode-landing.js:184-198
@@ -5980,25 +5957,25 @@ mineCageDump                 src/23cc-mine-play.js:59-71
 mineCageFree                 src/23cc-mine-play.js:52
 mineCageTake                 src/23cc-mine-play.js:53-58
 mineCageW                    src/23cc-mine-play.js:51
-mineDeep                     src/23a-dig-draw.js:564-567
+mineDeep                     src/23-0-mine-rec.js:23-26
 mineDug                      src/23cc-mine-play.js:26
 mineFlatten                  src/23cc-mine-play.js:326-335
 mineIsLevel                  src/23cc-mine-play.js:24
-mineKey                      src/23a-dig-draw.js:553
+mineKey                      src/23-0-mine-rec.js:12
 mineKeys                     src/23cc-mine-play.js:135-139
 mineLay                      src/13a-guns.js:267-275
 mineLayAt                    src/23cc-mine-play.js:362-368
 mineLayFits                  src/23cc-mine-play.js:343-354
 mineLaySpot                  src/23cc-mine-play.js:356-361
 mineLevelNo                  src/23cc-mine-play.js:25
-mineLoad                     src/23a-dig-draw.js:568-577
+mineLoad                     src/23-0-mine-rec.js:27-36
 mineMul                      src/21e1-surface-world.js:596-614
 mineOre                      src/23cc-mine-play.js:40
 mineOver                     src/21e1-surface-world.js:615-644
 mineRopeGpu                  src/21e1-surface-world.js:646-652
 mineRowOf                    src/23cc-mine-play.js:38
-mineSave                     src/23a-dig-draw.js:578-587
-mineSpotX                    src/23a-dig-draw.js:560-563
+mineSave                     src/23-0-mine-rec.js:37-46
+mineSpotX                    src/23-0-mine-rec.js:19-22
 mineState                    src/23cc-mine-play.js:41-44
 mineStopY                    src/23cc-mine-play.js:30
 mineStops                    src/23cc-mine-play.js:32-37
@@ -8908,7 +8885,7 @@ zoomTo                       src/15-input.js:358
 ## src/08b-gpu.js · 54 KB
   · видеокарта: кадр рисует WebGPU (docs/DESIGN-gpu.md):1
 
-## src/08b0-gpu-pipe.js · 11 KB
+## src/08b0-gpu-pipe.js · 10 KB
   · конвейеры: одна воронка и прогрев (DESIGN-gpu §G):1
   · поздний прогрев: конвейеры режимов:87
 
@@ -10129,29 +10106,22 @@ zoomTo                       src/15-input.js:358
 ## src/22di-cave-pln-wing.js · 7 KB
   · пещера на движке: кулисы (M630e):1
 
+## src/23-0-mine-rec.js · 5 KB
+  · шахта: запись выработки и земля над ней (M631, docs/DESIGN-mine.md «No 2D»):1
+
 ## src/23-mode-dig.js · 20 KB
   · шахта: спуск вглубь планеты:1
 
-## src/23a-dig-draw.js · 39 KB
-  · шахта: отрисовка:1
-
-## src/23aa-dig-rock.js · 39 KB
-  · шахта: порода:1
-  · почвенный профиль: небо кончается не линейкой:449
-
-## src/23ac-dig-mid-gpu.js · 16 KB
-  · средний слой шахты на видеокарте (G15):1
-
-## src/23b-dig-gpu.js · 13 KB
-  · шахта на видеокарте: свет, день в стволе, руда, пыль (G7):1
-
-## src/23c-dig-pln.js · 20 KB
+## src/23c-dig-pln.js · 21 KB
   · шахта на движке: кадр и переключатель (M631a):1
+
+## src/23c0-dig-hooks.js · 1 KB
+  · шахта: крючки к 23-mode-dig (M631, «No 2D»):1
 
 ## src/23ca-dig-pln-rock.js · 23 KB
   · шахта на движке: порода из выработки (M631a):1
 
-## src/23cb-dig-pln-dress.js · 21 KB
+## src/23cb-dig-pln-dress.js · 22 KB
   · рудник на движке: убранство выработки (M631):1
 
 ## src/23cc-mine-play.js · 24 KB

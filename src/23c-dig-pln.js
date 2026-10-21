@@ -243,11 +243,11 @@ function dig3Over(){
   gpuShapes(TP,gpuShpAt(TS,lifeHere(0,0)),{blend:"over"});
 }
 
-/* ── кадр рудника — только движком. Старого плоского кадра нет (автор: «от 2D избавляться»): пока
+/* ── кадр рудника (drawDig — крючком, 23c0) — только движком. Старого плоского кадра нет (автор: «от 2D избавляться»): пока
    конвейеры не готовы, кадр пуст; сбой сборки кадра назван строкой «СБОЙ · … · шахта» (crashSay, 28-loop),
    кадр пуст, интерфейс и ход игры живут, следующий кадр пробует снова ── */
 BLOOM_K.dig=0;   /* свечение у вида своё; движку оставлено только зерно */
-drawDig=function(){
+function dig3Draw(){
   let ok=false;
   if(G.dig&&G.dig.p){
     try{
@@ -263,7 +263,7 @@ drawDig=function(){
   DIG3.live=ok;
   if(!ok){DIG3.D=null;return;}
   withScale(G.viewK,dig3Over);
-};
+}
 /* тычок по клетке: та клетка, что показана, — окно кадра лежит на плоскости человека */
 const DIG3_OLD_WALK=mouseWalkAt;
 mouseWalkAt=function(clientX,clientY){
