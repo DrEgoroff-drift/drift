@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 621 · top-level symbols: 8762
+Files: 621 · top-level symbols: 8775
 
 ## SYMBOLS
 
@@ -88,6 +88,7 @@ AVR_HOLD                     src/21a6-base-avral.js:21
 AVR_KINDS                    src/21a6-base-avral.js:24-28
 AVR_NEAR                     src/21a6-base-avral.js:22
 AVR_TIME                     src/21a6-base-avral.js:20
+B3                           src/29rd-spa-r3.js:144
 BANYA_EVERY                  src/21ac1-base-banya.js:19
 BARGE_ART                    src/12l-barge.js:414
 BARGE_CAP                    src/12l-barge.js:13
@@ -396,17 +397,17 @@ CPP                          src/27f5-portrait3d.js:13
 CPP_IO                       src/27f5-portrait3d.js:19
 CPP_LIVE                     src/27f5-portrait3d.js:18
 CPR                          src/27f3a-face3d.js:57
-CP_CLOTH                     src/27f3-person3d.js:44
+CP_CLOTH                     src/27f3-person3d.js:45
 CP_EMO                       src/27f6-face-live.js:15-22
 CP_EMO_RU                    src/27f6-face-live.js:23
 CP_FACE                      src/27f6-face-live.js:41
 CP_GAZE                      src/27f3a-face3d.js:17
 CP_HLO                       src/27f3a-face3d.js:15
-CP_JOBS                      src/27f3-person3d.js:296
-CP_KIT                       src/27f3-person3d.js:115
-CP_MESH                      src/27f3-person3d.js:280
+CP_JOBS                      src/27f3-person3d.js:303
+CP_KIT                       src/27f3-person3d.js:122
+CP_MESH                      src/27f3-person3d.js:287
 CP_TEMPER                    src/27f6-face-live.js:25
-CP_TORSO                     src/27f3-person3d.js:86
+CP_TORSO                     src/27f3-person3d.js:93
 CP_WARP                      src/27f3a-face3d.js:60
 CRAFT_TIERS                  src/03-ships.js:105-109
 CRASH_SHIP                   src/01a-crashlog.js:19
@@ -487,7 +488,7 @@ DIAL_WORLD                   src/21a8-base-world.js:14-24
 DIG3                         src/23c-dig-pln.js:13
 DIG3B                        src/23ce-dig-pln-beasts.js:10
 DIG3_BEAST                   src/23ce-dig-pln-beasts.js:8
-DIG3_BLOOM                   src/23c-dig-pln.js:249
+DIG3_BLOOM                   src/23c-dig-pln.js:223
 DIG3_CH                      src/23ca-dig-pln-rock.js:21
 DIG3_CM                      src/23ca-dig-pln-rock.js:18
 DIG3_DR                      src/23cb-dig-pln-dress.js:8
@@ -495,14 +496,11 @@ DIG3_HAND                    src/23cd-dig-pln-top.js:17
 DIG3_HF                      src/23c-dig-pln.js:46
 DIG3_LENS                    src/23c-dig-pln.js:18
 DIG3_NOSCENE                 src/23cd-dig-pln-top.js:339
-DIG3_OLD_DRAW                src/23c-dig-pln.js:248
-DIG3_OLD_WALK                src/23c-dig-pln.js:269
+DIG3_OLD_DRAW                src/23c-dig-pln.js:222
+DIG3_OLD_WALK                src/23c-dig-pln.js:243
 DIG3_PLANT_GROUP             src/23cd-dig-pln-top.js:148
 DIG3_PPM                     src/23ca-dig-pln-rock.js:17
 DIG3_ROOM                    src/23ca-dig-pln-rock.js:20
-DIG3_SEAM                    src/23cb-dig-pln-dress.js:99
-DIG3_SEG                     src/23cb-dig-pln-dress.js:16
-DIG3_SHAFT                   src/23c-dig-pln.js:101
 DIG3_TOP                     src/23cd-dig-pln-top.js:13
 DIG3_TOP_DRAWSURF            src/23cd-dig-pln-top.js:372
 DIG3_TOP_ENTER               src/23cd-dig-pln-top.js:353
@@ -510,7 +508,6 @@ DIG3_TOP_EXIT                src/23cd-dig-pln-top.js:360
 DIG3_TOP_MINE                src/23cd-dig-pln-top.js:199
 DIG3_TOP_SURF                src/23cd-dig-pln-top.js:351
 DIG3_TOP_WGSL                src/23cd-dig-pln-top.js:261
-DIG3_TUB                     src/23cb-dig-pln-dress.js:159
 DIG3_VZ                      src/23ca-dig-pln-rock.js:73
 DIG3_Z                       src/23c-dig-pln.js:15
 DIG_CELL                     src/23-mode-dig.js:3
@@ -1391,16 +1388,15 @@ MGR_TRAITS                   src/12c-mgr-core.js:23-46
 MGR_XP                       src/12c-mgr-core.js:138
 MINE                         src/23cc-mine-play.js:17
 MINERAL                      src/18a-material.js:32
-MINE_CAGE_CAP                src/23cc-mine-play.js:50
 MINE_HALF                    src/23cc-mine-play.js:20
-MINE_LAY                     src/23cc-mine-play.js:342
+MINE_LAY                     src/23cc-mine-play.js:291
 MINE_LIFE                    src/13a-guns.js:31
 MINE_MOUTH_R                 src/21-mode-surface.js:4
-MINE_OLD_ENTER               src/23cc-mine-play.js:369
-MINE_OLD_POI                 src/23cc-mine-play.js:389
-MINE_OLD_SURF                src/23cc-mine-play.js:379
-MINE_OLD_UPDATE              src/23cc-mine-play.js:397
-MINE_PAD                     src/23cc-mine-play.js:325
+MINE_OLD_ENTER               src/23cc-mine-play.js:318
+MINE_OLD_POI                 src/23cc-mine-play.js:338
+MINE_OLD_SURF                src/23cc-mine-play.js:328
+MINE_OLD_UPDATE              src/23cc-mine-play.js:346
+MINE_PAD                     src/23cc-mine-play.js:274
 MINE_R                       src/13a-guns.js:32
 MINE_V                       src/23cc-mine-play.js:22
 MIRROR_CORE                  src/11f-mirror.js:22-29
@@ -1796,12 +1792,12 @@ QUANT_MAX                    src/28-loop.js:167
 QUANT_MS                     src/28-loop.js:165
 QUEST_MAX                    src/11a-quests.js:15
 QUIET_LINES                  src/11ar-doors.js:34-40
-R3                           src/27f2-room3d.js:512
+R3                           src/27f2-room3d.js:536
 R3P                          src/27f2-room3d.js:32
 R3U                          src/27f2-room3d.js:28
-R3_DOWN_WGSL                 src/27f2-room3d.js:491
+R3_DOWN_WGSL                 src/27f2-room3d.js:515
 R3_MAXI                      src/27f2-room3d.js:25
-R3_POST_WGSL                 src/27f2-room3d.js:645
+R3_POST_WGSL                 src/27f2-room3d.js:669
 R3_UN                        src/27f2-room3d.js:30
 R3_WGSL                      src/27f2-room3d.js:156
 RACK                         src/25d-instr-rack.js:44
@@ -2092,7 +2088,6 @@ SEC_RELAY_GOAL               src/12b2-fx-sec.js:27
 SEC_SPY                      src/12b2-fx-sec.js:25
 SEC_SPY_CACHE                src/12b2-fx-sec.js:88
 SEC_SPY_MAX                  src/12b2-fx-sec.js:26
-SEED_KNOWN                   tests/91qm-seeds.js:12-29
 SETTLE_BUILD                 src/12t-settle.js:31-38
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -2158,6 +2153,15 @@ SOC_REFUGEE                  src/12ay-fx-soc.js:10
 SOC_REJOIN                   src/12al4-soc.js:16
 SOC_REVOLT                   src/12ay-fx-soc.js:14
 SOC_STRIKE                   src/12ay-fx-soc.js:11
+SPA3                         src/29rd-spa-r3.js:18
+SPA3_BD                      src/29rd-spa-r3.js:24
+SPA3_CAMS                    src/29rd-spa-r3.js:177
+SPA3_DAYMS                   src/29rd-spa-r3.js:20
+SPA3_L                       src/29rd-spa-r3.js:19
+SPA3_M                       src/29rd-spa-r3.js:22
+SPA3_MAN                     src/29rd-spa-r3.js:25
+SPA3_SHIRT                   src/29rd-spa-r3.js:26
+SPA3_SLEEP                   src/29rd-spa-r3.js:21
 SPACE_BG                     src/16g-gpu-space.js:16
 SPA_AIR_U                    src/29i-spa-draw.js:202
 SPA_AIR_WGSL                 src/29i-spa-draw.js:192
@@ -2423,14 +2427,15 @@ WEAR_RU                      src/12s-wear.js:39
 WEATHER                      src/19d-weather.js:15-26
 WEATHER_BY_TYPE              src/19d-weather.js:28-47
 WEATHER_CAP                  src/19d-weather.js:52
-WIN3                         src/29rc-winter-r3.js:15
-WIN3_CAMS                    src/29rc-winter-r3.js:171
-WIN3_L                       src/29rc-winter-r3.js:16
-WIN3_LEV                     src/29rc-winter-r3.js:113
-WIN3_M                       src/29rc-winter-r3.js:17
-WIN3_PARKA                   src/29rc-winter-r3.js:21
-WIN3_PX                      src/29rc-winter-r3.js:19
-WIN3_SLEEP                   src/29rc-winter-r3.js:20
+WIN3                         src/29rc-winter-r3.js:17
+WIN3_CAMS                    src/29rc-winter-r3.js:208
+WIN3_FX                      src/29rc-winter-r3.js:23
+WIN3_L                       src/29rc-winter-r3.js:18
+WIN3_LEV                     src/29rc-winter-r3.js:123
+WIN3_M                       src/29rc-winter-r3.js:19
+WIN3_PARKA                   src/29rc-winter-r3.js:25
+WIN3_PX                      src/29rc-winter-r3.js:21
+WIN3_SLEEP                   src/29rc-winter-r3.js:24
 WIND                         src/19c-light.js:41
 WIN_BAD                      src/29f-winter.js:32
 WIN_C                        src/29g-winter-draw.js:20-28
@@ -3499,12 +3504,12 @@ countyIsCore                 src/11l-county.js:34
 countyLevel                  src/11l-county.js:59-63
 countyNoiseTick              src/11l-county.js:47-58
 countyPoiK                   src/11l-county.js:36
-cpBand                       src/27f3-person3d.js:100-108
-cpBasis                      src/27f3-person3d.js:78-82
+cpBand                       src/27f3-person3d.js:107-115
+cpBasis                      src/27f3-person3d.js:85-89
 cpBeard                      src/27f3a-face3d.js:381-396
-cpBody                       src/27f3-person3d.js:117
-cpBodyGen                    src/27f3-person3d.js:118-277
-cpCloth                      src/27f3-person3d.js:45-50
+cpBody                       src/27f3-person3d.js:124
+cpBodyGen                    src/27f3-person3d.js:125-284
+cpCloth                      src/27f3-person3d.js:46-51
 cpClump                      src/27f3a-face3d.js:372-379
 cpEmoMix                     src/27f6-face-live.js:56-58
 cpEmote                      src/27f6-face-live.js:43-46
@@ -3512,27 +3517,27 @@ cpFace                       src/27f6-face-live.js:60-89
 cpFaceAt                     src/27f3a-face3d.js:54
 cpFaceRig                    src/27f3a-face3d.js:71-77
 cpFaceState                  src/27f6-face-live.js:47-54
-cpGene                       src/27f3-person3d.js:20-42
+cpGene                       src/27f3-person3d.js:20-43
 cpHair                       src/27f3a-face3d.js:294-369
 cpHairline                   src/27f3a-face3d.js:287-293
 cpHead                       src/27f3a-face3d.js:184
 cpHeadAI                     src/27f3a-face3d.js:398-408
 cpHeadFn                     src/27f3a-face3d.js:18-52
 cpHeadGen                    src/27f3a-face3d.js:185-285
-cpMesh                       src/27f3-person3d.js:288-294
-cpMeshKey                    src/27f3-person3d.js:281-283
-cpMeshPump                   src/27f3-person3d.js:297-309
-cpMeshPut                    src/27f3-person3d.js:284-287
+cpMesh                       src/27f3-person3d.js:295-301
+cpMeshKey                    src/27f3-person3d.js:288-290
+cpMeshPump                   src/27f3-person3d.js:304-316
+cpMeshPut                    src/27f3-person3d.js:291-294
 cpMood                       src/27f6-face-live.js:30-40
 cpPortrait                   src/27f5-portrait3d.js:23-29
-cpPose                       src/27f3-person3d.js:52-76
+cpPose                       src/27f3-person3d.js:53-83
 cpRig                        src/27f3a-face3d.js:412-434
 cpRun                        src/27f3a-face3d.js:183
 cpSculpt                     src/27f3a-face3d.js:81-158
 cpSkin                       src/27f3a-face3d.js:160-163
 cpSkinZ                      src/27f3a-face3d.js:165
 cpTeeth                      src/27f3a-face3d.js:168-180
-cpTorsoAt                    src/27f3-person3d.js:89-98
+cpTorsoAt                    src/27f3-person3d.js:96-105
 cpWarp                       src/27f3a-face3d.js:61-67
 cpWarpPh                     src/27f3a-face3d.js:69
 cpWarpTh                     src/27f3a-face3d.js:68
@@ -3771,45 +3776,38 @@ dig3BeastDrop                src/23ce-dig-pln-beasts.js:25-32
 dig3BeastFrame               src/23ce-dig-pln-beasts.js:35-73
 dig3BeastGeo                 src/23ce-dig-pln-beasts.js:13-18
 dig3Box                      src/23c-dig-pln.js:48-52
-dig3CageBody                 src/23cb-dig-pln-dress.js:247-265
-dig3CageMesh                 src/23cb-dig-pln-dress.js:242-245
+dig3CageBody                 src/23cb-dig-pln-dress.js:74-90
+dig3CageMesh                 src/23cb-dig-pln-dress.js:69-72
 dig3Chunk                    src/23ca-dig-pln-rock.js:179-274
 dig3Chunks                   src/23ca-dig-pln-rock.js:278-318
 dig3Den                      src/23ca-dig-pln-rock.js:93-112
-dig3DepthBoard               src/23cb-dig-pln-dress.js:17-34
 dig3Dir                      src/23c-dig-pln.js:38-42
-dig3DressFrame               src/23cb-dig-pln-dress.js:283-310
-dig3DressMesh                src/23cb-dig-pln-dress.js:35-93
+dig3DressFrame               src/23cb-dig-pln-dress.js:108-127
+dig3DressMesh                src/23cb-dig-pln-dress.js:13-66
 dig3Dug                      src/23ca-dig-pln-rock.js:24
 dig3EyesMesh                 src/23ce-dig-pln-beasts.js:20-24
 dig3Field                    src/23ca-dig-pln-rock.js:31-60
 dig3Floor                    src/23cb-dig-pln-dress.js:12
-dig3Frame                    src/23c-dig-pln.js:120-224
+dig3Frame                    src/23c-dig-pln.js:95-198
 dig3Ground                   src/23ca-dig-pln-rock.js:62
 dig3Hall                     src/23ca-dig-pln-rock.js:26
 dig3HandU                    src/23cd-dig-pln-top.js:60-65
 dig3Hash                     src/23ca-dig-pln-rock.js:23
 dig3HeadBody                 src/23c-dig-pln.js:59-93
 dig3HeadMesh                 src/23c-dig-pln.js:53-56
-dig3HeapMesh                 src/23cb-dig-pln-dress.js:222-233
-dig3HeapTint                 src/23cb-dig-pln-dress.js:235-240
-dig3Hex                      src/23cb-dig-pln-dress.js:161-167
 dig3Land                     src/23ca-dig-pln-rock.js:65-71
 dig3Lens                     src/23c-dig-pln.js:20-27
 dig3LensMk                   src/23cd-dig-pln-top.js:51-54
 dig3LensOf                   src/23cd-dig-pln-top.js:55-59
 dig3ManShare                 src/23c-dig-pln.js:29
 dig3Nodes                    src/23ca-dig-pln-rock.js:114-125
-dig3OreSeams                 src/23cb-dig-pln-dress.js:100-156
-dig3Over                     src/23c-dig-pln.js:228-245
+dig3Over                     src/23c-dig-pln.js:202-219
 dig3Paint                    src/23ca-dig-pln-rock.js:127-166
 dig3PanX                     src/23c-dig-pln.js:32-36
 dig3PlantView                src/23cd-dig-pln-top.js:159-180
 dig3RibView                  src/23cd-dig-pln-top.js:98-121
-dig3RopeMesh                 src/23cb-dig-pln-dress.js:267-272
-dig3RopeSet                  src/23cb-dig-pln-dress.js:273-280
-dig3ShaftK                   src/23c-dig-pln.js:103
-dig3ShaftLight               src/23c-dig-pln.js:104-119
+dig3RopeMesh                 src/23cb-dig-pln-dress.js:92-97
+dig3RopeSet                  src/23cb-dig-pln-dress.js:98-105
 dig3Smax                     src/23ca-dig-pln-rock.js:28
 dig3Smin                     src/23ca-dig-pln-rock.js:27
 dig3Span                     src/23ca-dig-pln-rock.js:168-177
@@ -3829,7 +3827,6 @@ dig3TopPost                  src/23cd-dig-pln-top.js:340-348
 dig3TopPre                   src/23cd-dig-pln-top.js:217-258
 dig3TopSkirt                 src/23cd-dig-pln-top.js:133-146
 dig3TopTab                   src/23cd-dig-pln-top.js:28-33
-dig3TubBody                  src/23cb-dig-pln-dress.js:170-219
 dig3Void                     src/23ca-dig-pln-rock.js:74-91
 dig3ZapRing                  src/23ce-dig-pln-beasts.js:76-82
 digBedding                   src/23aa-dig-rock.js:118-145
@@ -5836,8 +5833,8 @@ mapGridDraw                  src/18a-map-addr.js:55-66
 mapGridPaint                 src/17z-map-backdrop.js:108-120
 mapHintHung                  src/18l-map-plate.js:37
 mapHit                       src/18-mode-map.js:65-105
-mapHoldingsDraw              src/18b-map-hold.js:109-206
-mapHoldingsTop               src/18b-map-hold.js:208-248
+mapHoldingsDraw              src/18b-map-hold.js:109-212
+mapHoldingsTop               src/18b-map-hold.js:214-254
 mapHousePatch                src/18b-map-hold.js:31-45
 mapInkBox                    src/18-mode-map.js:56
 mapInkPoly                   src/18-mode-map.js:54
@@ -5972,22 +5969,18 @@ mgrWorkFact                  src/12c-mgr-core.js:609-665
 mgrWorkKeep                  src/12c-mgr-core.js:555-564
 mgrWorkSci                   src/12c-mgr-core.js:690-745
 midiHz                       src/10-music.js:106
-mineActWord                  src/23cc-mine-play.js:315-318
-mineBite                     src/23cc-mine-play.js:94-132
-mineCageDump                 src/23cc-mine-play.js:59-71
-mineCageFree                 src/23cc-mine-play.js:52
-mineCageTake                 src/23cc-mine-play.js:53-58
-mineCageW                    src/23cc-mine-play.js:51
+mineActWord                  src/23cc-mine-play.js:264-267
+mineBite                     src/23cc-mine-play.js:48-83
 mineDeep                     src/23a-dig-draw.js:564-567
 mineDug                      src/23cc-mine-play.js:26
-mineFlatten                  src/23cc-mine-play.js:326-335
+mineFlatten                  src/23cc-mine-play.js:275-284
 mineIsLevel                  src/23cc-mine-play.js:24
 mineKey                      src/23a-dig-draw.js:553
-mineKeys                     src/23cc-mine-play.js:135-139
+mineKeys                     src/23cc-mine-play.js:86-90
 mineLay                      src/13a-guns.js:267-275
-mineLayAt                    src/23cc-mine-play.js:362-368
-mineLayFits                  src/23cc-mine-play.js:343-354
-mineLaySpot                  src/23cc-mine-play.js:356-361
+mineLayAt                    src/23cc-mine-play.js:311-317
+mineLayFits                  src/23cc-mine-play.js:292-303
+mineLaySpot                  src/23cc-mine-play.js:305-310
 mineLevelNo                  src/23cc-mine-play.js:25
 mineLoad                     src/23a-dig-draw.js:568-577
 mineMul                      src/21e1-surface-world.js:596-614
@@ -6001,7 +5994,7 @@ mineState                    src/23cc-mine-play.js:41-44
 mineStopY                    src/23cc-mine-play.js:30
 mineStops                    src/23cc-mine-play.js:32-37
 mineSump                     src/23cc-mine-play.js:28
-mineUpdate                   src/23cc-mine-play.js:141-313
+mineUpdate                   src/23cc-mine-play.js:92-262
 minedUnit                    src/11-log.js:171-179
 minesTick                    src/13a-guns.js:276-320
 mirrorAck                    src/11f-mirror.js:33-40
@@ -7146,12 +7139,12 @@ quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
 quietNoWear                  src/11n-quiet.js:31
 quietStay                    src/11n-quiet.js:39-44
-r3Desc                       src/27f2-room3d.js:513-519
-r3Dev                        src/27f2-room3d.js:536-554
-r3DownDesc                   src/27f2-room3d.js:528-532
-r3Drop                       src/27f2-room3d.js:561
-r3Frame                      src/27f2-room3d.js:576-642
-r3Free                       src/27f2-room3d.js:563
+r3Desc                       src/27f2-room3d.js:537-543
+r3Dev                        src/27f2-room3d.js:560-578
+r3DownDesc                   src/27f2-room3d.js:552-556
+r3Drop                       src/27f2-room3d.js:585
+r3Frame                      src/27f2-room3d.js:600-666
+r3Free                       src/27f2-room3d.js:587
 r3Kit                        src/27f2-room3d.js:66-153
 r3Lin                        src/27f2-room3d.js:35
 r3Look                       src/27f2-room3d.js:43-153
@@ -7162,11 +7155,11 @@ r3Pivot                      src/27f2-room3d.js:57
 r3Proj                       src/27f2-room3d.js:60-153
 r3Pt                         src/27f2-room3d.js:58
 r3Sc                         src/27f2-room3d.js:37
-r3ShDesc                     src/27f2-room3d.js:520-525
-r3ShadowVP                   src/27f2-room3d.js:565-570
+r3ShDesc                     src/27f2-room3d.js:544-549
+r3ShadowVP                   src/27f2-room3d.js:589-594
 r3Step                       src/27f2-room3d.js:38
-r3Up                         src/27f2-room3d.js:556-560
-r3VB                         src/27f2-room3d.js:526
+r3Up                         src/27f2-room3d.js:580-584
+r3VB                         src/27f2-room3d.js:550
 r3Xf                         src/27f2-room3d.js:49-153
 rackBakeJob                  src/25d-instr-rack.js:208-224
 rackBodies                   src/25d-instr-rack.js:97-111
@@ -7866,8 +7859,6 @@ sectWith                     tests/91qf-sect.js:17-20
 sectWordsOn                  src/21ae-base-sect.js:411
 sectX                        src/21ae-base-sect.js:38
 sectY                        src/21ae-base-sect.js:39
-seedLand                     tests/91qm-seeds.js:30-36
-seedWorlds                   tests/91qm-seeds.js:17-29
 sellCargo                    src/12-economy.js:181-209
 sellDroneYield               src/12-economy.js:210-218
 sellQuote                    src/12ab-hold.js:134-152
@@ -8026,6 +8017,27 @@ socStrikeHere                src/12ay-fx-soc.js:40-43
 socWageMul                   src/12ay-fx-soc.js:35
 socWeek                      src/12al4-soc.js:38
 socWeekTick                  src/12al4-soc.js:94-100
+spa3Board                    src/29rd-spa-r3.js:147-163
+spa3BoardGrid                src/29rd-spa-r3.js:164
+spa3Cam                      src/29rd-spa-r3.js:179-186
+spa3Canvas                   src/29rd-spa-r3.js:168-175
+spa3Cost                     src/29rd-spa-r3.js:228
+spa3Fade                     src/29rd-spa-r3.js:113
+spa3Folk                     src/29rd-spa-r3.js:110
+spa3Frame                    src/29rd-spa-r3.js:188-206
+spa3Hide                     src/29rd-spa-r3.js:221-226
+spa3Hit                      src/29rd-spa-r3.js:218
+spa3Hits                     src/29rd-spa-r3.js:208
+spa3Mesh                     src/29rd-spa-r3.js:41-104
+spa3Ok                       src/29rd-spa-r3.js:187
+spa3On                       src/29rd-spa-r3.js:229
+spa3Pilot                    src/29rd-spa-r3.js:107
+spa3Scene                    src/29rd-spa-r3.js:115-143
+spa3SleepPh                  src/29rd-spa-r3.js:112
+spa3Sun                      src/29rd-spa-r3.js:29-33
+spa3SunCol                   src/29rd-spa-r3.js:38
+spa3SunDir                   src/29rd-spa-r3.js:36
+spa3Tags                     src/29rd-spa-r3.js:207
 spaAir                       src/29i-spa-draw.js:203-219
 spaAll                       src/29h-spa.js:45
 spaBoardGrid                 src/29i-spa-draw.js:48-51
@@ -8673,26 +8685,27 @@ weatherGpu                   src/19d-weather.js:109-185
 weatherName                  src/19d-weather.js:76-88
 weatherOf                    src/19d-weather.js:53-67
 weatherPower                 src/19d-weather.js:69-75
-win3Box                      src/29rc-winter-r3.js:212
-win3Cam                      src/29rc-winter-r3.js:173-181
-win3Canvas                   src/29rc-winter-r3.js:162-169
-win3Cost                     src/29rc-winter-r3.js:234
-win3Fade                     src/29rc-winter-r3.js:130
-win3Frame                    src/29rc-winter-r3.js:184-203
-win3Hide                     src/29rc-winter-r3.js:227-232
-win3Hit                      src/29rc-winter-r3.js:224
-win3Hits                     src/29rc-winter-r3.js:216
-win3LeverX                   src/29rc-winter-r3.js:23
-win3Man                      src/29rc-winter-r3.js:118-127
-win3Mesh                     src/29rc-winter-r3.js:29-112
-win3Ok                       src/29rc-winter-r3.js:183
-win3On                       src/29rc-winter-r3.js:235
-win3Pilot                    src/29rc-winter-r3.js:116
-win3Scene                    src/29rc-winter-r3.js:132-159
-win3SleepPh                  src/29rc-winter-r3.js:129
-win3Storm                    src/29rc-winter-r3.js:26
-win3Tags                     src/29rc-winter-r3.js:205
-win3Val                      src/29rc-winter-r3.js:24
+win3Blanket                  src/29rc-winter-r3.js:126-145
+win3Box                      src/29rc-winter-r3.js:248
+win3Cam                      src/29rc-winter-r3.js:210-218
+win3Canvas                   src/29rc-winter-r3.js:198-205
+win3Cost                     src/29rc-winter-r3.js:270
+win3Fade                     src/29rc-winter-r3.js:163
+win3Frame                    src/29rc-winter-r3.js:221-240
+win3Hide                     src/29rc-winter-r3.js:263-268
+win3Hit                      src/29rc-winter-r3.js:260
+win3Hits                     src/29rc-winter-r3.js:252
+win3LeverX                   src/29rc-winter-r3.js:27
+win3Man                      src/29rc-winter-r3.js:150-160
+win3Mesh                     src/29rc-winter-r3.js:33-122
+win3Ok                       src/29rc-winter-r3.js:220
+win3On                       src/29rc-winter-r3.js:271
+win3Pilot                    src/29rc-winter-r3.js:148
+win3Scene                    src/29rc-winter-r3.js:165-195
+win3SleepPh                  src/29rc-winter-r3.js:162
+win3Storm                    src/29rc-winter-r3.js:30
+win3Tags                     src/29rc-winter-r3.js:242
+win3Val                      src/29rc-winter-r3.js:28
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72-74
 winBlock                     src/29f-winter.js:253-270
@@ -10143,16 +10156,16 @@ zoomTo                       src/15-input.js:358
 ## src/23b-dig-gpu.js · 13 KB
   · шахта на видеокарте: свет, день в стволе, руда, пыль (G7):1
 
-## src/23c-dig-pln.js · 20 KB
+## src/23c-dig-pln.js · 17 KB
   · шахта на движке: кадр и переключатель (M631a):1
 
 ## src/23ca-dig-pln-rock.js · 21 KB
   · шахта на движке: порода из выработки (M631a):1
 
-## src/23cb-dig-pln-dress.js · 21 KB
+## src/23cb-dig-pln-dress.js · 9 KB
   · рудник на движке: убранство выработки (M631):1
 
-## src/23cc-mine-play.js · 24 KB
+## src/23cc-mine-play.js · 21 KB
   · рудник: ствол, клеть, горизонты, забой (M631, docs/DESIGN-mine.md):1
 
 ## src/23cd-dig-pln-top.js · 22 KB
@@ -10328,10 +10341,10 @@ zoomTo                       src/15-input.js:358
 ## src/27f1-room-gpu.js · 11 KB
   · комната в панели — на видеокарте (G11):1
 
-## src/27f2-room3d.js · 59 KB
+## src/27f2-room3d.js · 61 KB
   · комната в объёме (M725):1
 
-## src/27f3-person3d.js · 27 KB
+## src/27f3-person3d.js · 28 KB
   · человек в объёме (M725):1
 
 ## src/27f3a-face3d.js · 37 KB
@@ -10504,8 +10517,11 @@ zoomTo                       src/15-input.js:358
 ## src/29rba-home-shell.js · 10 KB
   · дом снаружи: тело людской грамматики и двор (M850b, стенд M602 — docs/look/nt-home.js):1
 
-## src/29rc-winter-r3.js · 21 KB
+## src/29rc-winter-r3.js · 26 KB
   · зимовка на движке (M850c, docs/DESIGN-rooms.md §4):1
+
+## src/29rd-spa-r3.js · 21 KB
+  · санаторий на движке (M850d, docs/DESIGN-rooms.md §4):1
 
 ## src/29rz-snap-over.js · 1 KB
   · дом на движке — в снимок кадра (Контроль, 15.10):1
@@ -10595,9 +10611,6 @@ zoomTo                       src/15-input.js:358
 
 ## tests/91ql-light.js · 3 KB
   · свет без рывков (Зрение 2.0, закон «свет»):1
-
-## tests/91qm-seeds.js · 7 KB
-  · сиды: законы земли на многих мирах (лаборатория, 15.10):1
 
 ## tests/91qn-arb.js · 3 KB
 
