@@ -148,7 +148,7 @@ function hallLayout(st,lazy){
   for(let i=2;i<40&&!keepOk(cpGene(keep));i++)keep.seed=hashi(seed,0xC0E,i)>>>0;
   L.people.push({id:"hallkeep",m:keep,pose:"bar",x:-5.86,z:.62,yaw:Math.PI/2-.12,lod:1,kind:"keep"});
   /* зал не пуст: посетитель читает доску, грузчик у бочек под окном (стоят в работе, не в строю) */
-  L.people.push({id:null,m:{seed:hashi(seed,0xB0A,2)>>>0,loy:50,traits:[]},pose:"mug",x:-4.05,z:-1.9,yaw:Math.PI-.15,lod:1,kind:"crowd"});
+  L.people.push({id:null,m:{seed:hashi(seed,0xB0A,2)>>>0,loy:50,traits:[]},pose:"mug",x:-4.7,z:-2.0,yaw:Math.PI-.5,lod:1,kind:"crowd"});
   if(!T.stalls)L.people.push({id:null,m:{seed:hashi(seed,0x10AD,3)>>>0,loy:50,traits:[],jac:[204,98,38]},pose:"hips",x:-.05,z:-1.55,yaw:-2.3,lod:1,kind:"crowd"});
   /* бар: люди кантины на своих местах, сдвинутые в конец зала; кино и столики дел — забота M814 */
   if(bar&&typeof c3Layout==="function"){
@@ -356,9 +356,11 @@ function hallManMark(ii,x,z,r,rim){HALL_OT.set([x,z,r,rim*(1+2.2*hallNight())],(
 /* окно: проём по x и высоте (подоконник 1.2 м — мерило человека) */
 const HALL_WIN=[-1.4,3.6];
 function hallWinY(T){return [1.2,Math.min(T.hc-.38,3.25)];}
-/* пределы движка для сцены: экземпляры, части, лампы, тени — для теста */
+/* пределы движка для сцены: экземпляры, части, лампы, тени — для теста. Части меша считаются раз на массив
+   вершин (M816c: обход всех вершин зала каждый кадр стоил 5 мс CPU на ходу) */
+function hallMeshParts(m){if(m.__pv!==m.v){let p=0;for(let i=11;i<m.v.length;i+=12)p=Math.max(p,(m.v[i]|0)&15);m.__pv=m.v;m.__pp=p;}return m.__pp;}
 function hallLimits(S){
-  let parts=0;for(const [m] of S.draws){if(!m||!m.v)continue;for(let i=11;i<m.v.length;i+=12)parts=Math.max(parts,(m.v[i]|0)&15);}
+  let parts=0;for(const [m] of S.draws){if(!m||!m.v)continue;parts=Math.max(parts,hallMeshParts(m));}
   return {inst:S.draws.length,parts:parts+1,lamps:S.lights.length,shadow:S.lights.filter(l=>l.shadow).length};
 }
 
