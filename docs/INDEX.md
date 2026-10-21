@@ -2075,7 +2075,7 @@ SD_MAN                       src/12tb-settle-draw.js:31
 SD_SHSINK                    src/12tb-settle-draw.js:241
 SEAT                         src/27j-console.js:40
 SECT                         src/21ae-base-sect.js:16
-SECT_BLOOM                   src/21ae-base-sect.js:462
+SECT_BLOOM                   src/21ae-base-sect.js:470
 SECT_COLD                    src/21ae-base-sect.js:25
 SECT_KIT_C                   src/21aea-base-kits.js:13
 SECT_KIT_FILL                src/21aea-base-kits.js:17
@@ -2083,12 +2083,12 @@ SECT_LIVE                    src/21ae-base-sect.js:27
 SECT_M                       src/21ae-base-sect.js:21
 SECT_MAT_WALL                src/21ae-base-sect.js:29
 SECT_MONO                    src/21ae-base-sect.js:333
-SECT_OLD_DRAW                src/21ae-base-sect.js:463
-SECT_OLD_EXIT                src/21ae-base-sect.js:482
-SECT_OLD_HSURF               src/21ae-base-sect.js:503
-SECT_OLD_HUD                 src/21ae-base-sect.js:516
+SECT_OLD_DRAW                src/21ae-base-sect.js:471
+SECT_OLD_EXIT                src/21ae-base-sect.js:490
+SECT_OLD_HSURF               src/21ae-base-sect.js:511
+SECT_OLD_HUD                 src/21ae-base-sect.js:524
 SECT_SIT                     src/21ae-base-sect.js:23
-SECT_W                       src/21ae-base-sect.js:493
+SECT_W                       src/21ae-base-sect.js:501
 SEC_CAP                      src/26-ui-station.js:411
 SEC_KING_EVERY               src/12b2-fx-sec.js:21
 SEC_KING_GOAL                src/12b2-fx-sec.js:23
@@ -7868,12 +7868,12 @@ secSpyHere                   src/12b2-fx-sec.js:89-98
 secSpyMul                    src/12b2-fx-sec.js:99-106
 secSpyOn                     src/12b2-fx-sec.js:82-85
 secTidy                      src/26-ui-station.js:412-431
-sectAvr                      src/21ae-base-sect.js:442-459
+sectAvr                      src/21ae-base-sect.js:450-467
 sectBaseFix                  tests/91qf-sect.js:6-16
 sectBox                      src/21ae-base-sect.js:73-82
 sectBuild                    src/21ae-base-sect.js:103-199
 sectCageMesh                 src/21ae-base-sect.js:201-210
-sectCursor                   src/21ae-base-sect.js:413-441
+sectCursor                   src/21ae-base-sect.js:421-449
 sectCyl                      src/21aea-base-kits.js:20-34
 sectFarWin                   src/21ae-base-sect.js:50-54
 sectFloor                    src/21ae-base-sect.js:40
@@ -7885,22 +7885,22 @@ sectLensAt                   tests/91qf-sect.js:21-30
 sectLensStep                 src/21ae-base-sect.js:221-244
 sectNearWin                  src/21ae-base-sect.js:57-62
 sectOv                       src/21ae-base-sect.js:332
-sectOvAdj                    src/21ae-base-sect.js:362-376
-sectOvBoard                  src/21ae-base-sect.js:378-398
+sectOvAdj                    src/21ae-base-sect.js:365-384
+sectOvBoard                  src/21ae-base-sect.js:386-406
 sectOvDash                   src/21ae-base-sect.js:336-339
 sectOvFrame                  src/21ae-base-sect.js:335
-sectOvNote                   src/21ae-base-sect.js:400-411
+sectOvNote                   src/21ae-base-sect.js:408-419
 sectOver                     src/21ae-base-sect.js:340-360
 sectPal                      src/21ae-base-sect.js:30-37
 sectPj                       src/21ae-base-sect.js:324-328
-sectPlate                    src/21ae-base-sect.js:495-502
+sectPlate                    src/21ae-base-sect.js:503-510
 sectQuad                     src/21ae-base-sect.js:67-71
 sectRoomX                    src/21ae-base-sect.js:41
 sectShare                    src/21ae-base-sect.js:64
 sectSty                      src/21ae-base-sect.js:99-102
 sectVoids                    src/21ae-base-sect.js:84-98
 sectWith                     tests/91qf-sect.js:17-20
-sectWordsOn                  src/21ae-base-sect.js:494
+sectWordsOn                  src/21ae-base-sect.js:502
 sectX                        src/21ae-base-sect.js:38
 sectY                        src/21ae-base-sect.js:39
 seedLand                     tests/91qm-seeds.js:27-33
@@ -9901,7 +9901,7 @@ zoomTo                       src/15-input.js:358
 ## src/21ad-base-gpu.js · 20 KB
   · база на видеокарте (G11):1
 
-## src/21ae-base-sect.js · 35 KB
+## src/21ae-base-sect.js · 36 KB
   · база в разрезе на движке (M632a):1
 
 ## src/21aea-base-kits.js · 16 KB
