@@ -246,11 +246,13 @@ function watchSection(){
     :!W.met?"Участок "+nm+" ваш: "+watchStations().length+" станций вокруг "+((starAt(W.c.sx,W.c.sy)&&getSystem(W.c.sx,W.c.sy).name)||"места приёма")+". Норму пишем раз в сводку — по всем, кто возит."
     :L?"Участок "+nm+". Норма "+L.norm+" %."+(L.norm<WATCH_LO?" Не тянем.":L.norm>=WATCH_HI?" Так держать.":"")
     :"Сводки по участку ещё не было. Нужды на станциях — ваши.";
+  /* свежая глава «Смены» (28p, M910): десять минут диспетчер говорит её строкой — 72 главы, 72 её реплики */
+  const ch=W.met&&!W.hand&&typeof doorsDispLine==="function"?doorsDispLine():null;
   W.met=1;W.seen=1;
   const r=el("div","row");
   r.appendChild(faceEl(D,56));
   const past=W.hist.slice(-5).map(x=>x.norm+" %").join(" · ");
-  r.appendChild(el("div","nm","<b>"+D.name+" · диспетчер участка</b><s>«"+line+"»"+
+  r.appendChild(el("div","nm","<b>"+D.name+" · диспетчер участка</b><s>«"+(ch||line)+"»"+
     (past&&W.hist.length>1?"<br>прошлые сводки: "+past:"")+
     (!here?"<br>эта станция — не ваш участок":"")+"</s>"));
   $body.appendChild(r);

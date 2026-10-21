@@ -6,7 +6,7 @@ Do not read it whole — grep it:
     grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared: file:start-end
     grep -n "^## src/12" docs/INDEX.md      # what the file is and how big
 
-Files: 626 · top-level symbols: 8832
+Files: 628 · top-level symbols: 8865
 
 ## SYMBOLS
 
@@ -565,6 +565,15 @@ DOM_GAME                     src/11af-domino.js:12
 DOOM_FOLK                    src/12v-doom.js:23
 DOOM_LEAD                    src/12v-doom.js:21
 DOOM_WARN                    src/12v-doom.js:22
+DOOR_DISP_MS                 src/28p-doors.js:21
+DOOR_HOOKS                   src/28p-doors.js:158-175
+DOOR_INNER                   src/28p-doors.js:20
+DOOR_KEYS                    src/28p-doors.js:18
+DOOR_PART                    src/28p-doors.js:19
+DOOR_STORIES                 src/28p-doors.js:134-139
+DOOR_STORY_KEYS              src/28p-doors.js:24
+DOOR_STORY_N                 src/28p-doors.js:23
+DOOR_YEAR                    src/28p-doors.js:22
 DRILL_EAT                    src/13a-guns.js:37
 DRONES                       src/04-mods.js:63-69
 DRONE_BREAK_P                src/12e-drone-flight.js:21
@@ -577,6 +586,9 @@ DRONE_SEEN_DAYS              src/12-economy.js:293
 DRONE_SEG                    src/16ga-gpu-trail.js:147
 DRONE_TAIL                   src/12e-drone-flight.js:233
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
+DR_ALSO                      tests/91zzzw9h-doors.js:30
+DR_DO                        tests/91zzzw9h-doors.js:15-28
+DR_P                         tests/91zzzw9h-doors.js:5
 DS_BAD                       src/12p1-doublespeak.js:18-25
 DS_DELAY                     src/12p1-doublespeak.js:26
 DS_GOOD                      src/12p1-doublespeak.js:10-17
@@ -2213,8 +2225,8 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:320
-STORY_WHEN                   src/11c-stories.js:147-204
+STORY_SEAT                   src/11c-stories.js:321
+STORY_WHEN                   src/11c-stories.js:148-205
 STP_FADE                     src/26e2-stapel-draw.js:284
 STP_G                        src/26e2-stapel-draw.js:283
 STP_INK                      src/26e2-stapel-draw.js:182
@@ -2411,17 +2423,17 @@ WATCH_DISP                   src/28j-watch.js:32
 WATCH_DISP_F                 src/28j-watch.js:30
 WATCH_DISP_M                 src/28j-watch.js:31
 WATCH_LET                    src/28j-watch.js:27
-WATCH_OLD_APPLY              src/28j-watch.js:276
-WATCH_OLD_BOARD              src/28j-watch.js:271
+WATCH_OLD_APPLY              src/28j-watch.js:278
+WATCH_OLD_BOARD              src/28j-watch.js:273
 WATCH_OLD_CREW               src/28j-watch.js:208
 WATCH_OLD_DRONES             src/28j-watch.js:206
 WATCH_OLD_INSON              src/28j-watch.js:216
-WATCH_OLD_MENU               src/28j-watch.js:333
+WATCH_OLD_MENU               src/28j-watch.js:335
 WATCH_OLD_MGR                src/28j-watch.js:210
 WATCH_OLD_NEED               src/28j-watch.js:222
 WATCH_OLD_OPEN               src/28j-watch.js:219
 WATCH_OLD_ORDER              src/28j-watch.js:232
-WATCH_OLD_SNAP               src/28j-watch.js:274
+WATCH_OLD_SNAP               src/28j-watch.js:276
 WATCH_R                      src/28j-watch.js:26
 WATCH_RELIEF                 src/28j-watch.js:33
 WATER_MIN_SPAN               src/21e-surface-draw.js:177
@@ -3974,7 +3986,28 @@ doomLine                     src/12v-doom.js:170-177
 doomMins                     src/12v-doom.js:35
 doomStanding                 src/12v-doom.js:38
 doomTick                     src/12v-doom.js:137-167
+doorCut                      src/28p-doors.js:65-72
+doorDeed                     src/28p-doors.js:32-37
+doorDone                     src/28p-doors.js:38
+doorDraw                     src/28p-doors.js:43-52
+doorExpStation               src/28p-doors.js:141-144
+doorIsPart                   src/28p-doors.js:41
+doorJudged                   src/28p-doors.js:100-107
+doorLine                     src/28p-doors.js:73-82
+doorOpen                     src/28p-doors.js:54-61
+doorOpened                   src/28p-doors.js:91-98
+doorRestore                  src/28p-doors.js:146-156
+doorSince                    src/28p-doors.js:40
+doorSt                       src/28p-doors.js:26-30
+doorStoryDeed                src/28p-doors.js:115-119
+doorStoryPick                src/28p-doors.js:121-133
+doorWd                       src/28p-doors.js:25
+doorYearOk                   src/28p-doors.js:109
+doorsDispLine                src/28p-doors.js:84-89
 doorsShut                    src/11ar-doors.js:27-31
+drAt                         tests/91zzzw9h-doors.js:31-35
+drOutside                    tests/91zzzw9h-doors.js:6-12
+drSeed                       tests/91zzzw9h-doors.js:14
 draftAll                     src/27jb-kb.js:133
 draftOf                      src/27jb-kb.js:135-160
 draftSave                    src/27jb-kb.js:161-168
@@ -8231,35 +8264,35 @@ stationYard                  src/04c-yards.js:127-142
 stepWorld                    src/28-loop.js:421-441
 steps                        tests/90-harness.js:459
 stopEngine                   src/09-audio.js:369-373
-storyAddrMatch               src/11c-stories.js:69-82
+storyAddrMatch               src/11c-stories.js:69-83
 storyAll                     src/11c-stories.js:32
-storyAnchorRoll              src/11c-stories.js:87-92
+storyAnchorRoll              src/11c-stories.js:88-93
 storyById                    src/11c-stories.js:33
-storyCantScene               src/11c-stories.js:321-326
-storyCheckWhen               src/11c-stories.js:210-215
+storyCantScene               src/11c-stories.js:322-327
+storyCheckWhen               src/11c-stories.js:211-216
 storyCtx                     src/11c-stories.js:39-48
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:261-267
-storyFindLine                src/11c-stories.js:289-294
+storyEtherLine               src/11c-stories.js:262-268
+storyFindLine                src/11c-stories.js:290-295
 storyFixedAddr               src/11c-stories.js:55-67
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:373-381
+storyGroundLine              src/11c-stories.js:374-382
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:330-367
-storyNewsItem                src/11c-stories.js:296-313
-storyNote                    src/11c-stories.js:385-388
-storyPickOne                 src/11c-stories.js:252-257
+storyLint                    src/11c-stories.js:331-368
+storyNewsItem                src/11c-stories.js:297-314
+storyNote                    src/11c-stories.js:386-389
+storyPickOne                 src/11c-stories.js:253-258
 storyPins                    src/11c-stories.js:30
-storyPlace                   src/11c-stories.js:93-106
-storyQueueLine               src/11c-stories.js:269-279
+storyPlace                   src/11c-stories.js:94-107
+storyQueueLine               src/11c-stories.js:270-280
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:238-250
-storyTableLine               src/11c-stories.js:281-287
-storyTraces                  src/11c-stories.js:219-236
-storyTurns                   src/11c-stories.js:121-142
-storyWhen                    src/11c-stories.js:205-209
+storyShow                    src/11c-stories.js:239-251
+storyTableLine               src/11c-stories.js:282-288
+storyTraces                  src/11c-stories.js:220-237
+storyTurns                   src/11c-stories.js:122-143
+storyWhen                    src/11c-stories.js:206-210
 stripPaint                   src/27i-ui-table.js:370-378
 stripSell                    src/11b-speech.js:231-242
 stripValue                   src/11b-speech.js:193-195
@@ -8708,14 +8741,14 @@ watchHanded                  src/28j-watch.js:82
 watchHas                     src/28j-watch.js:68
 watchIn                      src/28j-watch.js:58
 watchJudge                   src/28j-watch.js:98-126
-watchMenuSync                src/28j-watch.js:300-310
-watchMenuTap                 src/28j-watch.js:311-322
+watchMenuSync                src/28j-watch.js:302-312
+watchMenuTap                 src/28j-watch.js:313-324
 watchName                    src/28j-watch.js:49
 watchNeedAt                  src/28j-watch.js:70-76
 watchNpc                     src/28j-watch.js:81
 watchNpcRate                 src/28j-watch.js:77-80
 watchReassign                src/28j-watch.js:128-137
-watchSection                 src/28j-watch.js:239-269
+watchSection                 src/28j-watch.js:239-271
 watchSeed                    src/28j-watch.js:48
 watchSt                      src/28j-watch.js:34-47
 watchStations                src/28j-watch.js:59-67
@@ -9098,7 +9131,7 @@ zoomTo                       src/15-input.js:358
 
 ## src/11c-stories.js · 23 KB
   · истории: следы, а не задания:1
-  · каналы:259
+  · каналы:260
 
 ## src/11d-clocks.js · 7 KB
   · часы над концами: сторож темпа (P8, M416):1
@@ -10542,6 +10575,9 @@ zoomTo                       src/15-input.js:358
 ## src/28o-firstwatch.js · 5 KB
   · первая вахта: первый час — это первая смена (M909 · DESIGN-game §10.7):1
 
+## src/28p-doors.js · 12 KB
+  · двери глав — дела на участке (M910, DESIGN-game §7.3, §7.4):1
+
 ## src/28y-look.js · 30 KB
   · look() — прибор кадра:1
   · читается ли изготовитель (M369, §19.4):299
@@ -10723,6 +10759,8 @@ zoomTo                       src/15-input.js:358
 ## tests/91zzzw9f-access.js · 8 KB
 
 ## tests/91zzzw9g-firstwatch.js · 5 KB
+
+## tests/91zzzw9h-doors.js · 12 KB
 
 ## tests/91zzzzb-save.js · 6 KB
   · запись, которая не убивает полёт:1
