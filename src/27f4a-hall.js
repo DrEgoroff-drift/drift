@@ -520,6 +520,8 @@ function hallFrame(){
   U.set([sz.rw/sz.cw,sz.ch/sz.cw,HALL.sharp==null?HALL_SHARP:HALL.sharp,1],52);
   /* на ходу дальний конец зала уходит в темноту, а не режется кромкой: сила и x пилота на экране (M816) */
   if(!W.eng){const pw=hallWalkPilot(),q=pw&&r3Proj(cam.vp,[pw[0],1,pw[1]],sz.cw,sz.ch);U.set([.6*(1-W.fk),q?q[0]/sz.cw:.5,0,1],56);}
+  /* тени в покое зала — через кадр (12 к/с, запаздывания жеста не видно); на ходу и в наезде — каждый кадр */
+  S.own="hall";S.shKeep=!!(HALL.frames&1)&&!hallMoving()&&!hallWalkMoving();
   HALL.frames++;HALL.S=S;HALL.vp=cam.vp;   /* пределы — hallLimits(HALL.S) по запросу теста, не в кадре (M816c) */
   const k0=L.people[0],pw=hallWalkPilot(),pa=pw?[pw[0],pw[1]]:null,f=sz.ch;
   HALL.meas={keep:k0?+hallManK(cam,k0.x,k0.z,f).toFixed(3):0,pilot:pa?+hallManK(cam,pa[0],pa[1],f).toFixed(3):0,night:+hallNight().toFixed(2)};

@@ -117,18 +117,23 @@ function r3Kit(){
       if(i<nl-1){K.vx(a[0],a[1],M,col);K.vx(e[0],e[1],M,col);K.vx(d[0],d[1],M,col);}}};
   /* поверхность по сетке параметров: f(u,v) → [p, краска?]; u — по кругу (wrap), v — вдоль. Нормаль — по сетке
      (центральные разности), наружу — cross(dP/du, dP/dv)·flip. keep(u,v) — какие клетки строить (вырезы) */
-  K.surf=(nu,nv,f,M,o)=>{o=o||{};const G=[],C=[],W=[];
+  /* поверхность по шагам: ms — бюджет шага (yield между рядами), без него — одним куском; K.surf гонит до конца */
+  K.surfG=function*(nu,nv,f,M,o,ms){o=o||{};const G=[],C=[],W=[];let t0=ms?wallMs():0;
+    const brk=()=>ms&&wallMs()-t0>ms;
     for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const r=f(i/nu,j/nv);G.push(r[0]);C.push(r[1]||null);W.push(r[2]||null);}
     const at=(i,j)=>{if(o.wrap)i=(i+nu)%nu;else i=Math.max(0,Math.min(nu,i));j=Math.max(0,Math.min(nv,j));return G[j*(nu+1)+i];};
     const NN=[];for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){
       const du=sub(at(i+1,j),at(i-1,j)),dv=sub(at(i,j+1),at(i,j-1));let n=cr(du,dv);
       if(Math.hypot(...n)<1e-14){const dv2=sub(at(i,j+(j<nv?2:-2)),at(i,j));n=cr(du,j<nv?dv2:[-dv2[0],-dv2[1],-dv2[2]]);}
-      n=nz(n);if(o.flip)n=[-n[0],-n[1],-n[2]];NN.push(n);}
+      n=nz(n);if(o.flip)n=[-n[0],-n[1],-n[2]];NN.push(n);
+      if(i===nu&&brk()){yield;t0=wallMs();}}
     const id=(i,j)=>j*(nu+1)+i;
-    for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){
+    for(let j=0;j<nv;j++){for(let i=0;i<nu;i++){
       if(o.keep&&!o.keep((i+.5)/nu,(j+.5)/nv))continue;
       const q=[id(i,j),id(i+1,j),id(i+1,j+1),id(i,j+1)];
-      for(const k of [q[0],q[1],q[2],q[0],q[2],q[3]])K.vx(G[k],NN[k],M,C[k]||null,W[k]);}};
+      for(const k of [q[0],q[1],q[2],q[0],q[2],q[3]])K.vx(G[k],NN[k],M,C[k]||null,W[k]);}
+      if(brk()){yield;t0=wallMs();}}};
+  K.surf=(nu,nv,f,M,o)=>{const it=K.surfG(nu,nv,f,M,o,0);while(!it.next().done);};
   /* труба по ломаной P с радиусом r (число или массив); N — граней; кольца — параллельным переносом */
   K.tube=(Pp,r,M,Nn,cap)=>{Nn=Math.round((Nn||8)*K.q);const R=[];let u0=null;
     for(let k=0;k<Pp.length;k++){const a=Pp[Math.max(0,k-1)],b=Pp[Math.min(Pp.length-1,k+1)],t=nz(sub(b,a));
@@ -563,7 +568,7 @@ function r3Dev(){
   R3.P=gpuPipeline("r3.main",r3Desc);R3.PS=gpuPipeline("r3.shadow",r3ShDesc);R3.PD=gpuPipeline("r3.down",r3DownDesc);
   R3.sh=d.createTexture({size:[R3_SHN,R3_SHN,R3_SH],format:"depth24plus",usage:U.RENDER_ATTACHMENT|U.TEXTURE_BINDING});
   R3.shA=R3.sh.createView({dimension:"2d-array"});
-  R3.shL=[];for(let i=0;i<R3_SH;i++)R3.shL.push(R3.sh.createView({dimension:"2d",baseArrayLayer:i,arrayLayerCount:1}));
+  R3.shOwn=null;R3.shL=[];for(let i=0;i<R3_SH;i++)R3.shL.push(R3.sh.createView({dimension:"2d",baseArrayLayer:i,arrayLayerCount:1}));
   R3.ub=d.createBuffer({size:R3_UN*4,usage:GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST});
   R3.cmp=d.createSampler({compare:"less",magFilter:"linear",minFilter:"linear"});
   R3.smp=d.createSampler({magFilter:"linear",minFilter:"linear"});
@@ -654,8 +659,11 @@ function r3Frame(cn,S,post,dst){
   const draw=(p)=>{for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;p.setVertexBuffer(0,r3Up(m));p.draw(m.n,cnt||1,0,ii);}};
   /* тени: по слою на лампу; пустые слои не чистятся — их никто не читает (M816c: зал чистил 6 слоёв на 4 лампы).
      В слой идут только тела в радиусе лампы: начало экземпляра (часть 0) ближе range + радиус сетки.
-     Кэшировать слой между кадрами в зале нечем: все люди жестикулируют в радиусе своих ламп */
-  for(let k=0;k<SV.length;k++){
+     Кэшировать слой между кадрами в зале нечем: все люди жестикулируют в радиусе своих ламп. S.shKeep — сцена просит
+     оставить прошлые слои (зал в покое — через кадр): можно, только если их писала она же (S.own) и ламп столько же */
+  const keep=S.shKeep&&S.own&&R3.shOwn===S.own&&R3.shN===SV.length;
+  if(!keep){R3.shOwn=S.own||null;R3.shN=SV.length;}
+  for(let k=0;k<(keep?0:SV.length);k++){
     const l=SL[k],p=enc.beginRenderPass({colorAttachments:[],depthStencilAttachment:{view:R3.shL[k],depthClearValue:1,depthLoadOp:"clear",depthStoreOp:"store"}});
     p.setPipeline(R3.PS);p.setBindGroup(0,R3.g0s);p.setBindGroup(1,R3.skG[k]);
     for(const [m,ii,cnt] of S.draws){if(!m||!m.n)continue;

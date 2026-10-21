@@ -159,6 +159,7 @@ function* cpBodyGen(m,lod,poseK){
     for(let j=Math.ceil(.8*NV);j<=NV;j++){const v=j/NV,h=vh(v);ed[0].push(TA(h,v,1.004));ed[1].push(TA(-h,v,1.004));}
     for(const e of ed)K.tube(e,.0042,K.mt(mixc(jac,[0,0,0],.16),.2,5,P.cloth),4);
   }
+  yield;
   /* воротник, молния, карманы, снаряжение роли, пряжка, нашивка */
   const zf=v=>TA(0,v)[2],yf=v=>TA(0,v)[1];
   if(!ai){
@@ -229,6 +230,7 @@ function* cpBodyGen(m,lod,poseK){
   {const bp=TA(.55,.78,rk==="cmd"?1.08:1.01);K.box([bp[0],bp[1],bp[2]+.004],[.014,.009,.003],K.mt(rc,.3,8,0,g.lv>=6?2.2:.6,true),.002);}   /* нашивка роли; с 6-го уровня светится */
   const shW=.205*wB,shY=.458*TL;
   K.pop();
+  yield;
   /* плечи и шея в мире позы */
   const rot=(p)=>{const c=Math.cos(ln),s=Math.sin(ln);return [pel[0]+p[0],pel[1]+p[1]*c-p[2]*s,pel[2]+p[1]*s+p[2]*c];};
   const sh=[rot([shW-.02,shY,-.005]),rot([-(shW-.02),shY,-.005])],neck=rot([0,.53*TL,0]);
@@ -255,6 +257,7 @@ function* cpBodyGen(m,lod,poseK){
     K.pop();
     arms.push({S,E,W,f});
   }
+  yield;
   /* ноги: таз → колено → лодыжка, ботинок по стопе */
   K.part=0;
   for(let k=0;k<2;k++){const s=k?-1:1,kn=k&&J.kneeR?J.kneeR:J.knee,an=k&&J.ankR?J.ankR:J.ank,Hh=[s*.095*wB,J.pel-.03,0],Kn=[s*kn[0],kn[1],kn[2]],A=[s*an[0],an[1],an[2]];
@@ -266,6 +269,7 @@ function* cpBodyGen(m,lod,poseK){
     K.box([0,-.036,.004],[.05,.009,.122],K.mt([22,20,20],.2,4,0),.006);
     K.pop();
   }
+  yield;
   /* голова: в своей системе, шарнир — основание шеи */
   K.part=1;
   const hc=[neck[0],neck[1]+.155*hs,neck[2]+.022+Math.sin(ln)*.04];
@@ -275,6 +279,7 @@ function* cpBodyGen(m,lod,poseK){
   const rig=yield* cpHeadGen(K,g,lod,cl,m.seed);
   K.pop();
   K.part=0;
+  yield;   /* упаковка — свой шаг (M816c: тело одним шагом стоило до 70 мс) */
   const M=K.pack();
   const H=cpHeadFn(g.ai?{w:.27,h:.345,jaw:.8,chin:.8,brow:.9}:g);
   M.at={neck,head:hc,top:[hc[0],hc[1]+H.b*hs+.03,hc[2]],sh,arms,pel,hand:arms.map(a=>[a.W[0]+a.f[0]*.07,a.W[1]+a.f[1]*.07,a.W[2]+a.f[2]*.07]),hold:J.hold||0,seat:!!J.seat};
